@@ -52,8 +52,11 @@ das Ergebnis als nicht gebaut, und nichts, was davon abhängt, wird gebaut
   Offset 0 `bsr.w`, Offset 4 `outside`) und `programs/ted/checklink.cmake`
   (keine libgcc-/libnix-Hilfsfunktionen, die `UtilityBase` bräuchten).
 
-`ctest --preset amiga` führt die Tests der Host-Werkzeuge aus (mit
-absichtlich kaputten Eingaben) und prüft die vorgebauten Libraries; die
+`ctest --preset amiga` führt die Tests der Host-Seite aus (Werkzeuge mit
+absichtlich kaputten Eingaben, Host-Tests des TED-Kerns) und prüft die
+vorgebauten Libraries; einzeln: `ctest --test-dir build/amiga/host`. Mit
+`-DHOST_SANITIZE=ON` wird die Host-Seite mit AddressSanitizer und UBSan
+gebaut. Die
 Tests mit dem Emulator haben das Label `emulator` (`-LE emulator` lässt sie
 weg) und werden ohne Amiberry oder ohne die Daten in `amiga-emulation/`
 übersprungen.
@@ -98,7 +101,11 @@ libs/acidlibs/               eine C-Datei je Library; prebuilt/: noch nicht
 libs/deflibs/                eine C-Datei je AmigaOS-Library
 shared/filereq/              Dateirequester von freqlib und TED (eine Quelle,
                              von beiden mit eigenen Optionen übersetzt)
-tools/                       Host-Werkzeuge (eigener nativer Build):
+host/                        die Host-Seite: alles, was mit dem nativen
+                             Compiler gebaut wird (Werkzeuge, Host-Tests),
+                             als ExternalProject (build/<preset>/host)
+programs/ted/tests/host/     Host-Tests des TED-Kerns (snitch)
+tools/                       Host-Werkzeuge:
   lib/                       die Logik als Libraries: hunk (Hunk-Format
                              lesen), blitzlib (Kopf, Token-Tabelle,
                              Prüfregeln), biglib (BigLib schreiben/lesen),

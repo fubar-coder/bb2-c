@@ -36,34 +36,40 @@ file(MAKE_DIRECTORY ${BLITZ2_DIR})
 # shared sources, compiled by each user with its own options
 set(FILEREQ_DIR ${PROJECT_SOURCE_DIR}/shared/filereq)
 
-# host tools (tools/), built with the native compiler before they are used
+# the host side (host/): the tools (tools/) and the host tests of the
+# components, built with the native compiler before the tools are used.
+# The target keeps its name host_tools (the m68k steps depend on it).
 include(ExternalProject)
-set(HOST_TOOLS_DIR ${CMAKE_BINARY_DIR}/host-tools)
+set(HOST_DIR ${CMAKE_BINARY_DIR}/host)
+set(HOST_TOOLS_DIR ${HOST_DIR}/tools)
 set(BIGLIB ${HOST_TOOLS_DIR}/biglib/biglib)                     # joins library files
 set(BLITZLIBCHECK ${HOST_TOOLS_DIR}/blitzlibcheck/blitzlibcheck) # checks a library file
 set(HUNKCHECK ${HOST_TOOLS_DIR}/hunkcheck/hunkcheck)             # checks the first hunk
 set(AMIGA_RUN ${HOST_TOOLS_DIR}/amiga_run/amiga_run)             # runs a script in Amiberry
+option(HOST_SANITIZE "host side with address/undefined behaviour sanitizers" OFF)
 ExternalProject_Add(host_tools
-	SOURCE_DIR ${PROJECT_SOURCE_DIR}/tools
-	BINARY_DIR ${HOST_TOOLS_DIR}
+	SOURCE_DIR ${PROJECT_SOURCE_DIR}/host
+	BINARY_DIR ${HOST_DIR}
 	CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
 		-DAMIGA_EMULATION_DIR=${PROJECT_SOURCE_DIR}/amiga-emulation
+		-DHOST_SANITIZE=${HOST_SANITIZE}
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
 	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${HUNKCHECK} ${AMIGA_RUN})
 
 include(cmake/BlitzLibrary.cmake)
 
-# ctest: the tests of the host tools (with broken inputs) and the checks
-# that are not part of a build step.  Label emulator: runs Amiberry
-# (skipped without it or without the data in amiga-emulation/);
-# ctest -LE emulator leaves them out.
+# ctest: the host side's tests (tools with broken inputs, host tests of
+# the components) and the checks that are not part of a build step.  Label
+# emulator: runs Amiberry (skipped without it or without the data in
+# amiga-emulation/); ctest -LE emulator leaves them out.  Single host tests:
+# ctest --test-dir build/<preset>/host
 enable_testing()
-add_test(NAME host_tools COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_TOOLS_DIR}
+add_test(NAME host COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}
 	--output-on-failure -LE emulator)
-add_test(NAME host_tools_emulator COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_TOOLS_DIR}
+add_test(NAME host_emulator COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}
 	--output-on-failure -L emulator)
-set_tests_properties(host_tools_emulator PROPERTIES LABELS emulator TIMEOUT 300)
+set_tests_properties(host_emulator PROPERTIES LABELS emulator TIMEOUT 300)
 
 add_subdirectory(libs)
 add_subdirectory(programs/blitz2)

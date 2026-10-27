@@ -1,10 +1,7 @@
 # ted - the C translation of TED 1.1, the Blitz Basic 2 editor (ted.s).
 # blitz2 loads it as blitz2:ted and calls hunk offset 4 (`outside`).
 
-# Core modules: no AmigaOS calls (they also build natively on a host, for
-# unit tests); everything else is the AmigaOS part.
-set(TED_CORE_MODULES state loadsave lines services fileio tokit lineedit keymap)
-set(TED_AMIGA_MODULES main edit mouse reqs screen input data filereq rawkey)
+include(sources.cmake)
 
 # resources: the binary includes of ted.s (incbin) as C arrays;
 # src/core/res.c embeds the original files of resources/ at build time

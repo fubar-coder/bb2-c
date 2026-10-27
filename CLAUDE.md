@@ -32,6 +32,11 @@ ctest --preset amiga                                   # Host-Werkzeuge, prebuil
   `tools/lib/amiga_emulation/default.uae`. Hardfiles schreibgeschützt:
   Tests schreiben nur nach `TEST:` oder `RAM:` (auch Systemprogramme wie
   `ShowConfig` schreiben auf `SYS:` und hängen dann).
+* **Host-Seite** (`host/`, ExternalProject, nativer Compiler): Werkzeuge
+  und Host-Tests. Host-Tests liegen bei ihrer Komponente
+  (`programs/ted/tests/host/`), sind snitch-Programme (C++20, C-Header in
+  `extern "C"`), **ein Programm je Testdatei** (der TED-Kern hat globalen
+  Zustand). Zum Prüfen auch mit `-DHOST_SANITIZE=ON` bauen.
 * Emulatorläufe nur über `tools/lib/amiga_emulation` bzw. `amiga_run`
   (isoliert, parallel möglich); Steuer-Socket: Argumente durch Tabs
   getrennt. Tests mit Emulator bekommen das ctest-Label `emulator` und

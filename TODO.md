@@ -29,7 +29,10 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
    kann den baserel-Daten-Hunk nicht, deshalb in bb2 ein zweiter Link).
 3. **`checklabels`** (bb2: `tools/checklabels.py`): jedes Code-Label von
    `ted.s` genau einmal als `ted.s:NNN label` in `src/`.
-4. **Host-Tests des TED-Kerns** (bb2: Preset `host`, `tests/host`, 13
+4. **Host-Tests des TED-Kerns** – begonnen (27.10.2026): Host-Seite
+   `host/`, Kern als `tedcore_host`, `test_state` und `test_lines_blocks`
+   auf snitch portiert (`programs/ted/tests/host`). Als Nächstes
+   `test_lines_edit`, dann die Tests mit Testdaten. Bisher (bb2: Preset `host`, `tests/host`, 13
    ctest): `src/core` nativ übersetzt (`TED_HOST`), Fixtures aus den
    CD-Quellen (`mkfixtures.py` + `bb2tok.py`). Hier bräuchte der Host-Teil
    wie `tools/` einen eigenen nativen Build (ExternalProject oder Preset).
