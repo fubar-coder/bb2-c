@@ -48,7 +48,7 @@ das Ergebnis als nicht gebaut, und nichts, was davon abhängt, wird gebaut
   Fehlerprüfbereich sind nur eine Warnung (ohne Debugger zeigen sie hinter
   das Code-Ende; die Originale tun das auch). `acidlibs`/`deflibs` entstehen
   nur aus geprüften Libraries.
-* Referenz-Build von TED: das Original `programs/ted/original/ted.s` mit
+* Referenz-Build von TED: das Original `archive/sources/ted-1.1/ted.s` mit
   vasm (wie Devpac) nach `build/amiga/programs/ted/ref/` (`ted`, Listing,
   `ted.map`, `ted.labels`); derselbe Schritt prüft, dass Listing und
   Binary übereinstimmen (`vasmlisting verify`). Referenz für den Port ist
@@ -105,12 +105,13 @@ mit `-DBLITZ2_CLANGD=OFF`.
 
 ```
 CMakeLists.txt, CMakePresets.json
+archive/                     unveränderte Originale (Quellen, Referenzdaten),
+                             siehe archive/README.md
 cmake/m68k-amigaos.cmake     Toolchain (die einzige)
 cmake/BlitzLibrary.cmake     blitz_library(), biglib_join()
 programs/blitz2/             Compiler (src/: Abschnitte von blitz2.s + Glue)
 programs/ted/                Editor (src/: Amiga-Teil, src/core/: OS-freier
-                             Kern, original/: Originalquellen ted.s mit
-                             Includes – Referenz-Build und #embed)
+                             Kern)
 libs/include/                blitzlib.h & Co. (Konventionen der Libraries)
 libs/blitzlib.ld             Linker-Skript: ein Code-Hunk, Kopf an Offset 0
 libs/acidlibs/               eine C-Datei je Library; prebuilt/: noch nicht

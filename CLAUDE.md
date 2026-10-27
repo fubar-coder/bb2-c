@@ -51,6 +51,11 @@ ctest --preset emulator                                # Tests in Amiberry
   Code-Umbau), funktional prüfen – solange die Tests noch in bb2 liegen,
   mit den bb2-Werkzeugen gegen `build/amiga/blitz2/` dieses Repositorys
   (Korpus, snitch-Tests, TED-A/B) – und die Abweichung im Commit nennen.
+* **`archive/`** enthält unveränderte Originale (Quellen wie
+  `sources/ted-1.1/`, Referenzdaten) – nie bearbeiten; ein neuer Stand ist
+  ein neues Verzeichnis mit Versionsnummer, die Herkunft steht in
+  `archive/README.md`. Daraus Abgeleitetes entsteht im Build-Verzeichnis
+  oder als erzeugte Testdaten unter `tests/data/`.
 * **Original-Fehler nicht beheben**, nur dokumentieren (`BUG(orig)` im
   Code, Verzeichnis der Abweichungen in bb2); `DIFF` nur, wo technisch
   nötig.

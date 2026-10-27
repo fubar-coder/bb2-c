@@ -3,11 +3,11 @@
 
 include(sources.cmake)
 
-# original/: the original sources of TED 1.1 (ted.s and its includes,
-# unchanged copy of bb2src.zip.dir/tedt) - for the reference build below
-# and for the resources: the binary includes of ted.s (incbin) as C
-# arrays, src/core/res.c embeds the original files at build time
-set(TED_ORIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/original)
+# archive/sources/ted-1.1: the original sources of TED 1.1 (ted.s and its
+# includes, unchanged) - for the reference build below and for the
+# resources: the binary includes of ted.s (incbin) as C arrays,
+# src/core/res.c embeds the original files at build time
+set(TED_ORIG_DIR ${PROJECT_SOURCE_DIR}/archive/sources/ted-1.1)
 set(RES_DIR ${TED_ORIG_DIR})
 set(RES_FILES sleep.bin pointer.bin src.info chars.b chars8.b)
 list(TRANSFORM RES_FILES PREPEND ${RES_DIR}/)

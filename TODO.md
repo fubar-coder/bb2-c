@@ -17,7 +17,7 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
 **TED (bb2: `ted-c/`)**
 
 1. ~~**Referenz-Build von `ted.s`**~~ erledigt (27.10.2026): Ziel
-   `ted_ref`, Originalquellen in `programs/ted/original/` (auch für
+   `ted_ref`, Originalquellen in `archive/sources/ted-1.1/` (auch für
    `#embed`, `resources/` entfällt), `tools/vasmlisting` statt
    `tedlisting.py` (`map`, `labels`, `verify`); `ref/ted`, Listing, Map
    und Labels byte-identisch zu bb2; `ref_verify` ist jetzt eine Prüfung
