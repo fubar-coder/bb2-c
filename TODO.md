@@ -85,6 +85,8 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
   Grenze zu `filereq_core.c`, 12 Bytes); Risiken `glue_start.c` am
   Hunk-Anfang (`hunkcheck` prüft das), `-fbaserel`, Glue mit
   Inline-Assembler. Nicht für die Libraries (`-fno-toplevel-reorder`).
+  ab3c nutzt LTO für seinen Amiga-Build (`AB3C_LTO`) – Erfahrungen dort
+  ansehen.
 
 ## 3 Erst wenn §1 erledigt ist
 
