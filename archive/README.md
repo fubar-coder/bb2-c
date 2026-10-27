@@ -30,7 +30,21 @@ Stand 28.10.2026, nach Recherche:
   sagt: „Auf Bestreben von Bernd Roesch durfte die Amiga-Version
   disassembliert und weiterentwickelt werden.“ Wann und auf welcher
   Grundlage der Wechsel zu Apache stattfand, ist nicht mehr
-  nachzuvollziehen. Dieses Projekt baut auf dem GPL-Stand auf.
+  nachzuvollziehen. **Im Code-Repository selbst** (SVN, nach git
+  konvertiert, 602 Commits ab 10.02.2009) gibt es weder eine Lizenzdatei
+  noch einen Commit zu einem Lizenzwechsel; `Docs/Amiblitz3.guide`,
+  Abschnitt „Program Licenses“, sagt seit dem ersten Commit bis zum
+  letzten Stand unverändert: „The "AmiBlitz3" and "PED" programs are
+  relased under the GNU General Public License […] either version 2 of
+  the License, or (at your own option) any later version.“, „The
+  libraries and additional tools are released under their own original
+  or updated licenses.“ und „No-one is claiming any intellectual or any
+  other copyright over software developed in AmiBlitz3. You are free to
+  release anything you create in AmiBlitz3 under any license you wish
+  (at the time of writing there are no GPL licensed libraries).“ Die
+  Apache-Angabe steht also nur in den Projekt-Angaben auf SourceForge.
+  Dieses Projekt baut auf dem GPL-Stand auf; die letzte Aussage entspricht
+  inhaltlich seiner Laufzeit-Ausnahme.
 * **Library-Anleitungen** der Zeit tragen den Vermerk „Used with the
   permission of Acid Software“ (z. B. AmiBlitz3
   `Docs/AcidLibs/SORTLIB.guide`).
