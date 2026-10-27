@@ -8,6 +8,7 @@ liegt als erzeugte Testdaten unter `tests/data/`.
 | Verzeichnis / Datei | Inhalt | Herkunft |
 |---|---|---|
 | `sources/amibl2src.readme` | die Readme des Aminet-Archivs `amibl2src.lha` – Beleg für Herkunft und Lizenz der Quellen | `amibl2src.lha` (Aminet `dev/blitz/amibl2src`) |
+| `sources/blitz2-1.95/` (in git) | der Compiler Blitz Basic 2 v1.95 (`version equ 195`): `blitz2.s` mit den Dateien, die er einbindet (`myoffs`, `wbheader`, `options2.src.new`, `asmmac`, `typereq`, `options.src`, `calcreq`, `obj.info`) und `GenAm.opts` (`nocase`) | `bb2src.zip` (Stand 14.09.1995, Hauptverzeichnis), aus `amibl2src.lha` wie unten; nur die Dateien, die `blitz2.s` braucht. `myoffs` und `wbheader` sind dieselben wie in `ted-1.1` (je Fassung vollständig). |
 | `sources/ted-1.1/` (in git) | TED 1.1, der Editor von Blitz Basic 2: `ted.s` mit Includes (`myoffs`, `wbheader`, `aboutreq`, `specialreq`, `filereq`) und Binärdateien (`rawed.obj`, Zeichensätze, Mauszeiger, Icon) | `bb2src.zip` → `tedt/` (Stand 14.09.1995), aus `amibl2src.lha` (Aminet `dev/basic`, Uploader Bernd Rösch; Quelltexte von Acid Software, laut Readme unter GNU-Lizenz). `tedt/ted.s` ist das `ted.s` des Archivs mit einfachen Include-Pfaden statt der Devpac-Zuweisung `e:` – so schon im Archiv. |
 
 ## Heruntergeladen (nicht in git)
@@ -30,8 +31,8 @@ SHA-256 geprüft.
   Namen. Einzige Änderung: die drei Namen mit Latin-1-Zeichen werden UTF-8
   (`BUI6/BLITZBANK/CATALOGS/FRANçAIS`, `BUI6/FRONTENDV1.0/CATALOGS/ESPAñOL`,
   `BUI7/FRONTENDV1.2/CATALOGS/ESPAñOL`).
-* Das Skript prüft, dass `sources/ted-1.1/` genau `bb2src.zip:tedt/` des
-  Aminet-Archivs entspricht.
+* Das Skript prüft, dass `sources/ted-1.1/` und `sources/blitz2-1.95/`
+  genau den Dateien in `bb2src.zip` des Aminet-Archivs entsprechen.
 
 ## Lizenzlage der Originale
 

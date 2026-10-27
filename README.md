@@ -48,6 +48,9 @@ das Ergebnis als nicht gebaut, und nichts, was davon abhängt, wird gebaut
   Fehlerprüfbereich sind nur eine Warnung (ohne Debugger zeigen sie hinter
   das Code-Ende; die Originale tun das auch). `acidlibs`/`deflibs` entstehen
   nur aus geprüften Libraries.
+* Referenz-Build von blitz2: das Original `archive/sources/blitz2-1.95/blitz2.s`
+  mit vasm nach `build/amiga/programs/blitz2/ref/` (`blitz2`, Listing,
+  `blitz2.map`, `blitz2.labels`), im selben Schritt `vasmlisting verify`.
 * Referenz-Build von TED: das Original `archive/sources/ted-1.1/ted.s` mit
   vasm (wie Devpac) nach `build/amiga/programs/ted/ref/` (`ted`, Listing,
   `ted.map`, `ted.labels`); derselbe Schritt prüft, dass Listing und

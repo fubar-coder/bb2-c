@@ -65,6 +65,10 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
 
 **Compiler und Ganzes (bb2: `compilerlauf/`)**
 
+* Referenz-Build von `blitz2.s` 1.95 erledigt (28.10.2026): Ziel
+  `blitz2_ref`, Quellen in `archive/sources/blitz2-1.95/`; `ref/blitz2`
+  byte-identisch zu bb2 `compilerlauf/blitz2-195`, `verify` 13592 Zeilen.
+
 9. **Korpus** (bb2: `tools/corpus_check.py`, `bb2corpus.py`,
    `bb2compile.py`, `serialrun.py`, `corpus/`, `tedstub`, `reqtrap`,
    `reqclose`): blitz2-c gegen blitz2 1.95, mit Original- und C-Libraries,

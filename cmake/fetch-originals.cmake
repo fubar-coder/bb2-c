@@ -14,6 +14,8 @@
 #                                           unpacked (bb2src/)
 # None of it is in git (.gitignore); archive/README.md lists the sources.
 # Already unpacked and checked material is not touched again.
+# At the end: archive/sources/ted-1.1 and blitz2-1.95 (in git) must equal
+# the files of bb2src.zip in the Aminet archive.
 cmake_minimum_required(VERSION 3.29)
 
 get_filename_component(root ${CMAKE_CURRENT_LIST_DIR}/.. ABSOLUTE)
@@ -119,12 +121,17 @@ if(unpacked)
 endif()
 
 # the sources in git must be the ones of the archive
-file(GLOB ted_files RELATIVE ${root}/archive/sources/ted-1.1 ${root}/archive/sources/ted-1.1/*)
-foreach(f IN LISTS ted_files)
-	execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files
-		${root}/archive/sources/ted-1.1/${f} ${aminet}/bb2src/tedt/${f} RESULT_VARIABLE diff)
-	if(diff)
-		message(FATAL_ERROR "archive/sources/ted-1.1/${f} differs from the Aminet archive")
-	endif()
+foreach(pair "ted-1.1|tedt/" "blitz2-1.95|")
+	string(REPLACE "|" ";" pair "${pair}")
+	list(GET pair 0 dir)
+	list(GET pair 1 sub)
+	file(GLOB names RELATIVE ${root}/archive/sources/${dir} ${root}/archive/sources/${dir}/*)
+	foreach(f IN LISTS names)
+		execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files
+			${root}/archive/sources/${dir}/${f} ${aminet}/bb2src/${sub}${f} RESULT_VARIABLE diff)
+		if(diff)
+			message(FATAL_ERROR "archive/sources/${dir}/${f} differs from the Aminet archive")
+		endif()
+	endforeach()
+	message(STATUS "archive/sources/${dir}: equal to amibl2src.lha bb2src.zip:${sub}")
 endforeach()
-message(STATUS "archive/sources/ted-1.1: equal to amibl2src.lha bb2src.zip:tedt/")
