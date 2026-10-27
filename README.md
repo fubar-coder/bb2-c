@@ -36,6 +36,25 @@ Ergebnis in `build/amiga/blitz2/` – der Inhalt des `blitz2:`-Verzeichnisses:
 
 Preset `amiga-debug`: derselbe Code (`-Os`) mit Symbolen, ohne Strip.
 
+## Prüfungen im Build
+
+Der Build prüft seine Ergebnisse selbst; schlägt eine Prüfung fehl, gilt
+das Ergebnis als nicht gebaut, und nichts, was davon abhängt, wird gebaut
+(beim nächsten Lauf wird erneut geprüft):
+
+* jede Library-Datei (`tools/blitzlibcheck`, im selben Schritt wie Link und
+  Strip): ein Code-Hunk, Relocs nur dorthin, Library-Kopf, Token-Tabelle
+  bis zum Ende lesbar. Verweise aus dem normalen Code in den
+  Fehlerprüfbereich sind nur eine Warnung (ohne Debugger zeigen sie hinter
+  das Code-Ende; die Originale tun das auch). `acidlibs`/`deflibs` entstehen
+  nur aus geprüften Libraries.
+* `ted` nach jedem Link (POST_BUILD): Hunk-Aufbau (`tools/hunkcheck`:
+  Offset 0 `bsr.w`, Offset 4 `outside`) und `programs/ted/checklink.cmake`
+  (keine libgcc-/libnix-Hilfsfunktionen, die `UtilityBase` bräuchten).
+
+`ctest --preset amiga` führt die Tests der Host-Werkzeuge aus (mit
+absichtlich kaputten Eingaben) und prüft die vorgebauten Libraries.
+
 Das erste Konfigurieren schreibt `.clangd` (aus `cmake/clangd.in`, mit den
 Include-Pfaden der gefundenen Toolchain; nicht im Repository). Nach einem
 Wechsel der Toolchain `.clangd` löschen und neu konfigurieren; abschalten
@@ -57,7 +76,11 @@ libs/acidlibs/               eine C-Datei je Library; prebuilt/: noch nicht
 libs/deflibs/                eine C-Datei je AmigaOS-Library
 shared/filereq/              Dateirequester von freqlib und TED (eine Quelle,
                              von beiden mit eigenen Optionen übersetzt)
-tools/biglib/                Host-Werkzeug: Library-Dateien → BigLib-Datei
+tools/                       Host-Werkzeuge (eigener nativer Build):
+  hunk/                      Hunk-Format lesen (gemeinsam)
+  biglib/                    Library-Dateien → BigLib-Datei
+  blitzlibcheck/, hunkcheck/ Prüfungen im Build
+  tests/                     ihre Tests
 ```
 
 Die Libraries werden mit den Blitz-Konventionen übersetzt

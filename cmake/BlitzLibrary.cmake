@@ -7,6 +7,10 @@
 #                 libs/blitzlib.ld already makes the layout; the relocs stay
 #                 in ld's order, a library without relocs has no
 #                 HUNK_RELOC32 - both fine for blitz2.s loadalib.
+#                 The same build step checks it (tools/blitzlibcheck: one
+#                 hunk, header, token table; warnings for references into
+#                 the error check area): if the check fails, NAME.obj does
+#                 not count as built and nothing that uses it is built.
 # The compiler options are the Blitz library conventions (include/blitzlib.h):
 # a3 string pointer, a4 locals, a5 globals of the Blitz program.
 set(BLITZLIB_LD ${CMAKE_CURRENT_LIST_DIR}/../libs/blitzlib.ld)
@@ -31,7 +35,8 @@ function(blitz_library name)
 			-Wl,--whole-archive $<TARGET_FILE:${name}> -Wl,--no-whole-archive -lgcc
 			-o ${linked}
 		COMMAND ${CMAKE_STRIP} -o ${obj} ${linked}
-		DEPENDS ${name} ${BLITZLIB_LD}
+		COMMAND ${BLITZLIBCHECK} ${obj}
+		DEPENDS ${name} ${BLITZLIB_LD} ${BLITZLIBCHECK} host_tools
 		COMMENT "Blitz library ${name}.obj"
 		VERBATIM)
 	add_custom_target(${name}_obj ALL DEPENDS ${obj})

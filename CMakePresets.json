@@ -21,5 +21,8 @@
 	"buildPresets": [
 		{ "name": "amiga", "configurePreset": "amiga" },
 		{ "name": "amiga-debug", "configurePreset": "amiga-debug" }
+	],
+	"testPresets": [
+		{ "name": "amiga", "configurePreset": "amiga", "output": { "outputOnFailure": true } }
 	]
 }

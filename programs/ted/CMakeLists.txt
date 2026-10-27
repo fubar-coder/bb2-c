@@ -54,6 +54,20 @@ if(TED_BASEREL)
 	target_link_options(ted PRIVATE -fbaserel)
 endif()
 # no symbol table in release builds
-target_link_options(ted PRIVATE $<$<CONFIG:Release,MinSizeRel>:-s>)
+target_link_options(ted PRIVATE $<$<CONFIG:Release,MinSizeRel>:-s>
+	-Wl,-Map,${CMAKE_CURRENT_BINARY_DIR}/ted.map)
 set_target_properties(ted PROPERTIES OUTPUT_NAME ted SUFFIX ""
 	RUNTIME_OUTPUT_DIRECTORY ${BLITZ2_DIR})
+
+# checks after every link; if one fails, ted does not count as built:
+#   - hunk layout: blitz2 calls offset 4 of the first hunk (`outside`), DOS
+#     a standalone TED at offset 0: bsr.w edstart ($6100), outside_stub
+#     starts with movem.l ...,-(sp) ($48E7)
+#   - no libgcc/libnix arithmetic helpers (they need UtilityBase, which TED
+#     never opens) and nothing else from the libraries but string/setjmp code
+add_dependencies(ted host_tools)
+add_custom_command(TARGET ted POST_BUILD
+	COMMAND ${HUNKCHECK} $<TARGET_FILE:ted> 0:6100 4:48e7
+	COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/checklink.cmake
+		${CMAKE_CURRENT_BINARY_DIR}/ted.map
+	VERBATIM)

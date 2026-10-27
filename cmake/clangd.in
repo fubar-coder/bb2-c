@@ -14,6 +14,8 @@
 #
 # CLion: its clangd engine takes the compile flags from the CMake project
 # model, not from CompileFlags here.
+If:
+  PathExclude: tools/.*
 CompileFlags:
   CompilationDatabase: @CLANGD_DATABASE@
   Compiler: clang
@@ -36,3 +38,9 @@ CompileFlags:
     - -I@AMIGA_TOOLCHAIN_PREFIX@/m68k-amigaos/ndk-include
     - -I@AMIGA_TOOLCHAIN_PREFIX@/m68k-amigaos/sys-include
     - -I@AMIGA_TOOLCHAIN_PREFIX@/m68k-amigaos/include
+---
+# the host tools (tools/, native compiler): their own build directory
+If:
+  PathMatch: tools/.*
+CompileFlags:
+  CompilationDatabase: @CLANGD_DATABASE@/host-tools

@@ -43,3 +43,9 @@ target_sources(freqlib PRIVATE ${FILEREQ_DIR}/filereq_core.c)
 target_include_directories(freqlib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${FILEREQ_DIR})
 
 biglib_join(acidlibs ${BLITZ2_DIR}/acidlibs ${objs})
+
+# the prebuilt libraries are not built here: checked by ctest
+file(GLOB prebuilt CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/prebuilt/*.obj)
+if(prebuilt)
+	add_test(NAME prebuilt_acidlibs COMMAND ${BLITZLIBCHECK} ${prebuilt})
+endif()

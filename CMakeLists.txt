@@ -39,16 +39,23 @@ set(FILEREQ_DIR ${PROJECT_SOURCE_DIR}/shared/filereq)
 # host tools (tools/), built with the native compiler before they are used
 include(ExternalProject)
 set(HOST_TOOLS_DIR ${CMAKE_BINARY_DIR}/host-tools)
-set(BIGLIB ${HOST_TOOLS_DIR}/biglib/biglib)
+set(BIGLIB ${HOST_TOOLS_DIR}/biglib/biglib)                     # joins library files
+set(BLITZLIBCHECK ${HOST_TOOLS_DIR}/blitzlibcheck/blitzlibcheck) # checks a library file
+set(HUNKCHECK ${HOST_TOOLS_DIR}/hunkcheck/hunkcheck)             # checks the first hunk
 ExternalProject_Add(host_tools
 	SOURCE_DIR ${PROJECT_SOURCE_DIR}/tools
 	BINARY_DIR ${HOST_TOOLS_DIR}
 	CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BIGLIB})
+	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${HUNKCHECK})
 
 include(cmake/BlitzLibrary.cmake)
+
+# ctest: the tests of the host tools (with broken inputs) and the checks
+# that are not part of a build step
+enable_testing()
+add_test(NAME host_tools COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_TOOLS_DIR} --output-on-failure)
 
 add_subdirectory(libs)
 add_subdirectory(programs/blitz2)
