@@ -11,5 +11,6 @@ add_subdirectory(biglib)
 add_subdirectory(blitzlibcheck)
 add_subdirectory(hunkcheck)
 add_subdirectory(amiga_run)
+add_subdirectory(vasmlisting)
 
 add_subdirectory(tests)

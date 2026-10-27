@@ -3,14 +3,48 @@
 
 include(sources.cmake)
 
-# resources: the binary includes of ted.s (incbin) as C arrays;
-# src/core/res.c embeds the original files of resources/ at build time
-set(RES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
+# original/: the original sources of TED 1.1 (ted.s and its includes,
+# unchanged copy of bb2src.zip.dir/tedt) - for the reference build below
+# and for the resources: the binary includes of ted.s (incbin) as C
+# arrays, src/core/res.c embeds the original files at build time
+set(TED_ORIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/original)
+set(RES_DIR ${TED_ORIG_DIR})
 set(RES_FILES sleep.bin pointer.bin src.info chars.b chars8.b)
 list(TRANSFORM RES_FILES PREPEND ${RES_DIR}/)
 set_source_files_properties(src/core/res.c PROPERTIES
 	COMPILE_OPTIONS --embed-dir=${RES_DIR}
 	OBJECT_DEPENDS "${RES_FILES}")
+
+# ------------------------------------------------------- reference build
+# The original ted.s assembled with vasm as Devpac did (-nocase as in
+# GenAm.opts): the reference of the port (not the CD binary, which is a
+# different build), in build/<preset>/programs/ted/ref/:
+#   ted         the original TED
+#   ted.lst     vasm listing (addresses + opcodes)
+#   ted.map     TSV address -> file:line, bytes, source
+#   ted.labels  TSV address, label, file:line
+# The same step checks that listing and binary agree (vasmlisting verify).
+if(NOT VASM)
+	find_program(VASM vasmm68k_mot REQUIRED)
+endif()
+set(REF_DIR ${CMAKE_CURRENT_BINARY_DIR}/ref)
+set(REF_INPUTS ted.s myoffs wbheader aboutreq specialreq
+	sleep.bin pointer.bin src.info rawed.obj filereq chars.b chars8.b)
+list(TRANSFORM REF_INPUTS PREPEND ${TED_ORIG_DIR}/)
+add_custom_command(
+	OUTPUT ${REF_DIR}/ted ${REF_DIR}/ted.lst ${REF_DIR}/ted.map ${REF_DIR}/ted.labels
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${REF_DIR}
+	COMMAND ${VASM} -quiet -devpac -nocase -m68000 -Fhunkexe
+		-nowarn=62 -nowarn=40 -nowarn=41 -nowarn=51
+		-o ${REF_DIR}/ted -L ${REF_DIR}/ted.lst -Lall ted.s > /dev/null
+	COMMAND ${VASMLISTING} ${REF_DIR}/ted.lst map > ${REF_DIR}/ted.map
+	COMMAND ${VASMLISTING} ${REF_DIR}/ted.lst labels > ${REF_DIR}/ted.labels
+	COMMAND ${VASMLISTING} ${REF_DIR}/ted.lst verify ${REF_DIR}/ted
+	DEPENDS ${REF_INPUTS} ${VASMLISTING} host_tools
+	WORKING_DIRECTORY ${TED_ORIG_DIR}
+	COMMENT "Assembling the original ted.s (reference)"
+	VERBATIM)
+add_custom_target(ted_ref ALL DEPENDS ${REF_DIR}/ted)
 
 set(core_sources)
 foreach(m IN LISTS TED_CORE_MODULES)

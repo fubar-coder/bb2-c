@@ -16,7 +16,12 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
 
 **TED (bb2: `ted-c/`)**
 
-1. **Referenz-Build von `ted.s`** (bb2: CMake-Ziel `ref`): `ted.s` mit vasm
+1. ~~**Referenz-Build von `ted.s`**~~ erledigt (27.10.2026): Ziel
+   `ted_ref`, Originalquellen in `programs/ted/original/` (auch für
+   `#embed`, `resources/` entfällt), `tools/vasmlisting` statt
+   `tedlisting.py` (`map`, `labels`, `verify`); `ref/ted`, Listing, Map
+   und Labels byte-identisch zu bb2; `ref_verify` ist jetzt eine Prüfung
+   im Build-Schritt. Bisher (bb2: CMake-Ziel `ref`): `ted.s` mit vasm
    (`-devpac -nocase`) assembliert → `ref/ted`, Listing `ted.lst`, daraus
    `ted.map`/`ted.labels` (`tools/tedlisting.py`); ctest `ref_verify`
    (jedes Listing-Byte gegen das Binary). Voraussetzung für 2 und 3.

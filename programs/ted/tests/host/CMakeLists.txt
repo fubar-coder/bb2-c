@@ -18,7 +18,7 @@ target_include_directories(tedcore_host PUBLIC ${TED_DIR}/src/core)
 target_compile_options(tedcore_host PRIVATE -Wall -Wno-pointer-sign -Wno-parentheses)
 set_target_properties(tedcore_host PROPERTIES C_STANDARD 11 C_EXTENSIONS ON)
 set_source_files_properties(${TED_DIR}/src/core/res.c PROPERTIES
-	COMPILE_OPTIONS --embed-dir=${TED_DIR}/resources)
+	COMPILE_OPTIONS --embed-dir=${TED_DIR}/original)
 
 add_library(tedhost STATIC stubs.c toklist.c)
 target_include_directories(tedhost PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

@@ -1,0 +1,4 @@
+add_library(lib_vasmlisting STATIC vasmlisting.c)
+set_target_properties(lib_vasmlisting PROPERTIES OUTPUT_NAME vasmlisting)
+target_include_directories(lib_vasmlisting PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(lib_vasmlisting PUBLIC lib_hunk)

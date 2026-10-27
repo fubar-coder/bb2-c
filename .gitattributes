@@ -13,6 +13,8 @@ CMakePresets.json       text eol=lf
 .gitignore              text eol=lf
 .gitattributes          text eol=lf
 
-# binaries: the original resources of TED and prebuilt library files
-/programs/ted/resources/**  binary
+# the original sources of TED (unchanged copy): binary, the assembler
+# sources get diffs but no conversion; prebuilt library files
+/programs/ted/original/**   binary
+/programs/ted/original/*.s  -text diff
 *.obj                   binary

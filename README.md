@@ -48,6 +48,11 @@ das Ergebnis als nicht gebaut, und nichts, was davon abhängt, wird gebaut
   Fehlerprüfbereich sind nur eine Warnung (ohne Debugger zeigen sie hinter
   das Code-Ende; die Originale tun das auch). `acidlibs`/`deflibs` entstehen
   nur aus geprüften Libraries.
+* Referenz-Build von TED: das Original `programs/ted/original/ted.s` mit
+  vasm (wie Devpac) nach `build/amiga/programs/ted/ref/` (`ted`, Listing,
+  `ted.map`, `ted.labels`); derselbe Schritt prüft, dass Listing und
+  Binary übereinstimmen (`vasmlisting verify`). Referenz für den Port ist
+  dieser Build, nicht das TED-Binary der CD (ein anderer Build).
 * `ted` nach jedem Link (POST_BUILD): Hunk-Aufbau (`tools/hunkcheck`:
   Offset 0 `bsr.w`, Offset 4 `outside`) und `programs/ted/checklink.cmake`
   (keine libgcc-/libnix-Hilfsfunktionen, die `UtilityBase` bräuchten).
@@ -104,7 +109,8 @@ cmake/m68k-amigaos.cmake     Toolchain (die einzige)
 cmake/BlitzLibrary.cmake     blitz_library(), biglib_join()
 programs/blitz2/             Compiler (src/: Abschnitte von blitz2.s + Glue)
 programs/ted/                Editor (src/: Amiga-Teil, src/core/: OS-freier
-                             Kern, resources/: Originaldateien für #embed)
+                             Kern, original/: Originalquellen ted.s mit
+                             Includes – Referenz-Build und #embed)
 libs/include/                blitzlib.h & Co. (Konventionen der Libraries)
 libs/blitzlib.ld             Linker-Skript: ein Code-Hunk, Kopf an Offset 0
 libs/acidlibs/               eine C-Datei je Library; prebuilt/: noch nicht
@@ -121,9 +127,11 @@ tools/                       Host-Werkzeuge:
                              lesen), blitzlib (Kopf, Token-Tabelle,
                              Prüfregeln), biglib (BigLib schreiben/lesen),
                              hunkcheck (Bytes im ersten Hunk),
-                             amiga_emulation (Skripte in Amiberry)
+                             amiga_emulation (Skripte in Amiberry),
+                             vasmlisting (vasm-Listings lesen)
   biglib/, blitzlibcheck/,   die Werkzeuge: je ein main.c um lib/
-  hunkcheck/, amiga_run/
+  hunkcheck/, amiga_run/,
+  vasmlisting/
   tests/                     Tests von lib/ mit Eingaben aus dem Speicher
 ```
 

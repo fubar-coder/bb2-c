@@ -46,6 +46,7 @@ set(BIGLIB ${HOST_TOOLS_DIR}/biglib/biglib)                     # joins library 
 set(BLITZLIBCHECK ${HOST_TOOLS_DIR}/blitzlibcheck/blitzlibcheck) # checks a library file
 set(HUNKCHECK ${HOST_TOOLS_DIR}/hunkcheck/hunkcheck)             # checks the first hunk
 set(AMIGA_RUN ${HOST_TOOLS_DIR}/amiga_run/amiga_run)             # runs a script in Amiberry
+set(VASMLISTING ${HOST_TOOLS_DIR}/vasmlisting/vasmlisting)       # views of a vasm listing
 option(HOST_SANITIZE "host side with address/undefined behaviour sanitizers" OFF)
 ExternalProject_Add(host_tools
 	SOURCE_DIR ${PROJECT_SOURCE_DIR}/host
@@ -55,7 +56,7 @@ ExternalProject_Add(host_tools
 		-DHOST_SANITIZE=${HOST_SANITIZE}
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${HUNKCHECK} ${AMIGA_RUN})
+	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING})
 
 include(cmake/BlitzLibrary.cmake)
 

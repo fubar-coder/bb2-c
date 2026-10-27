@@ -1,0 +1,28 @@
+OK,
+
+Programmers for Reflective Images:
+
+
+Hi, unfortunately I'm unable to convince Mark that handing out
+source code to blitz compiler is a good idea so until I do I
+am only able to give you source code to Ted.
+
+Things you probably need to do:
+
+1. Print it out on fanfold paper then in a big red pen analyse
+   the structure and basic logic flow and key routines.
+
+Note that the blitz compiler not only passes it a tokenising
+table but the compile menu also. Once you have got a new look
+ted up and running I'm sure there will be no problems convincing
+Mark we are serious and get you guys stuck into blitz2.s also.
+
+2. Work out how much work is required to replace the requesters
+   menus and character handling so you, Giles and I can formalise
+   this job.
+
+Any questions, please don't hesitate to ask.
+
+
+Simon
+
