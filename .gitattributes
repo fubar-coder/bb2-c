@@ -1,0 +1,17 @@
+# Default: never touch file contents (Amiga files, resources, library files)
+*                       -text
+
+# our own text files
+*.c                     text eol=lf
+*.h                     text eol=lf
+*.md                    text eol=lf
+*.cmake                 text eol=lf
+*.ld                    text eol=lf
+CMakeLists.txt          text eol=lf
+CMakePresets.json       text eol=lf
+.gitignore              text eol=lf
+.gitattributes          text eol=lf
+
+# binaries: the original resources of TED and prebuilt library files
+/programs/ted/resources/**  binary
+*.obj                   binary

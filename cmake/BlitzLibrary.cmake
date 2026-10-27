@@ -1,0 +1,49 @@
+# blitz_library(NAME SOURCES...) - one Blitz Basic 2 library from C
+#   libNAME.a     the library as static library
+#   NAME.linked   the link with symbols (for disassembly and comparisons)
+#   NAME.obj      the library file in Blitz 2 format (one code hunk, header
+#                 + token table at offset 0), as found in blitz2:acidlibs /
+#                 deflibs / userlibs: NAME.linked stripped (= ld -s).
+#                 libs/blitzlib.ld already makes the layout; the relocs stay
+#                 in ld's order, a library without relocs has no
+#                 HUNK_RELOC32 - both fine for blitz2.s loadalib.
+# The compiler options are the Blitz library conventions (include/blitzlib.h):
+# a3 string pointer, a4 locals, a5 globals of the Blitz program.
+set(BLITZLIB_LD ${CMAKE_CURRENT_LIST_DIR}/../libs/blitzlib.ld)
+set(BLITZLIB_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/../libs/include)
+
+function(blitz_library name)
+	add_library(${name} STATIC ${ARGN})
+	target_include_directories(${name} PUBLIC ${BLITZLIB_INCLUDE})
+	target_compile_options(${name} PRIVATE
+		-fomit-frame-pointer
+		-ffixed-a3 -ffixed-a4 -ffixed-a5   # Blitz string pointer/locals/globals (blitzlib.h)
+		-fno-toplevel-reorder          # token table in definition order
+		-ffreestanding -fno-tree-loop-distribute-patterns   # no libc: no memset/memcpy calls
+		-Os                            # also in Debug builds: -O0 would call libgcc (__mulsi3 ...)
+		-fno-strict-aliasing
+		-Wall -Wno-pointer-sign)
+	set(linked ${CMAKE_CURRENT_BINARY_DIR}/${name}.linked)
+	set(obj ${CMAKE_CURRENT_BINARY_DIR}/${name}.obj)
+	add_custom_command(OUTPUT ${obj}
+		COMMAND ${CMAKE_C_COMPILER} -m${AMIGA_CPU} -noixemul -nostartfiles -nostdlib
+			-Wl,-T,${BLITZLIB_LD}
+			-Wl,--whole-archive $<TARGET_FILE:${name}> -Wl,--no-whole-archive -lgcc
+			-o ${linked}
+		COMMAND ${CMAKE_STRIP} -o ${obj} ${linked}
+		DEPENDS ${name} ${BLITZLIB_LD}
+		COMMENT "Blitz library ${name}.obj"
+		VERBATIM)
+	add_custom_target(${name}_obj ALL DEPENDS ${obj})
+endfunction()
+
+# biglib_join(TARGET OUTPUT OBJS...) - join library files into one BigLib
+# file (blitz2:acidlibs, deflibs) with the host tool tools/biglib
+function(biglib_join target output)
+	add_custom_command(OUTPUT ${output}
+		COMMAND ${BIGLIB} join ${output} ${ARGN}
+		DEPENDS ${ARGN} ${BIGLIB} host_tools
+		COMMENT "BigLib ${output}"
+		VERBATIM)
+	add_custom_target(${target} ALL DEPENDS ${output})
+endfunction()

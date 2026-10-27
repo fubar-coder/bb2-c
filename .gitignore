@@ -1,0 +1,4 @@
+# build output (CMake presets and IDE profiles)
+build/
+cmake-build-*/
+.idea/
