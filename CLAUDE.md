@@ -55,7 +55,10 @@ ctest --preset emulator                                # Tests in Amiberry
   `sources/ted-1.1/`, Referenzdaten) – nie bearbeiten; ein neuer Stand ist
   ein neues Verzeichnis mit Versionsnummer, die Herkunft steht in
   `archive/README.md`. Daraus Abgeleitetes entsteht im Build-Verzeichnis
-  oder als erzeugte Testdaten unter `tests/data/`.
+  oder als erzeugte Testdaten unter `tests/data/`. Material ohne klare
+  Lizenz (CD) wird nicht eingecheckt, sondern mit
+  `cmake/fetch-originals.cmake` geladen (`archive/cd/`, `archive/aminet/`,
+  ignoriert); Tests, die es brauchen, werden ohne es übersprungen.
 * **Original-Fehler nicht beheben**, nur dokumentieren (`BUG(orig)` im
   Code, Verzeichnis der Abweichungen in bb2); `DIFF` nur, wo technisch
   nötig.

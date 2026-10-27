@@ -8,7 +8,30 @@ liegt als erzeugte Testdaten unter `tests/data/`.
 | Verzeichnis / Datei | Inhalt | Herkunft |
 |---|---|---|
 | `sources/amibl2src.readme` | die Readme des Aminet-Archivs `amibl2src.lha` – Beleg für Herkunft und Lizenz der Quellen | `amibl2src.lha` (Aminet `dev/blitz/amibl2src`) |
-| `sources/ted-1.1/` | TED 1.1, der Editor von Blitz Basic 2: `ted.s` mit Includes (`myoffs`, `wbheader`, `aboutreq`, `specialreq`, `filereq`) und Binärdateien (`rawed.obj`, Zeichensätze, Mauszeiger, Icon) | `bb2src.zip` → `tedt/` (Stand 14.09.1995), aus `amibl2src.lha` (Aminet `dev/basic`, Uploader Bernd Rösch; Quelltexte von Acid Software, laut Readme unter GNU-Lizenz). `tedt/ted.s` ist das `ted.s` des Archivs mit einfachen Include-Pfaden statt der Devpac-Zuweisung `e:` – so schon im Archiv. |
+| `sources/ted-1.1/` (in git) | TED 1.1, der Editor von Blitz Basic 2: `ted.s` mit Includes (`myoffs`, `wbheader`, `aboutreq`, `specialreq`, `filereq`) und Binärdateien (`rawed.obj`, Zeichensätze, Mauszeiger, Icon) | `bb2src.zip` → `tedt/` (Stand 14.09.1995), aus `amibl2src.lha` (Aminet `dev/basic`, Uploader Bernd Rösch; Quelltexte von Acid Software, laut Readme unter GNU-Lizenz). `tedt/ted.s` ist das `ted.s` des Archivs mit einfachen Include-Pfaden statt der Devpac-Zuweisung `e:` – so schon im Archiv. |
+
+## Heruntergeladen (nicht in git)
+
+Fremdes Material ohne klare Lizenz für die Weitergabe – vor allem die
+Beiträge Dritter auf der CD – liegt nicht im Repository. Für die Tests holt
+es `cmake -P cmake/fetch-originals.cmake` (oder das Build-Ziel
+`fetch-originals`); nur dieser Schritt braucht Netz, der normale Build
+nicht. Die Downloads landen in `.cache/downloads/` und werden über ihre
+SHA-256 geprüft.
+
+| Verzeichnis | Inhalt | Download | SHA-256 |
+|---|---|---|---|
+| `cd/ultimate-blitz-basic-2.1/` | die CD „Ultimate Blitz Basic 2.1“ (1997, Acid Software), 4310 Dateien | <https://archive.org/download/ultimate-blitz-basic-v2_1/Ultimate%20Blitz%20Basic%202.1%20%281997%29%28Acid%20Software%29.iso> | `205a16fa83403d61a785733cec2518bcc1fe5a6fae5b7da4da6329bd32c99166` |
+| `aminet/amibl2src/` | `amibl2src.lha`, darin `bb2src.zip` entpackt nach `bb2src/` | <https://aminet.net/dev/blitz/amibl2src.lha> | `b71e6445d0838b15416f5b55c5be422f07bd4fae5da5c065ce329042067628ff` |
+
+* Die CD hat nur ISO-9660-Namen (kein Rock Ridge, kein Joliet), also
+  Großbuchstaben – so bleiben sie. Der Linux-Kernel zeigt sie beim
+  Einbinden klein (`map=normal`); die Kopie in bb2 hat deshalb kleine
+  Namen. Einzige Änderung: die drei Namen mit Latin-1-Zeichen werden UTF-8
+  (`BUI6/BLITZBANK/CATALOGS/FRANçAIS`, `BUI6/FRONTENDV1.0/CATALOGS/ESPAñOL`,
+  `BUI7/FRONTENDV1.2/CATALOGS/ESPAñOL`).
+* Das Skript prüft, dass `sources/ted-1.1/` genau `bb2src.zip:tedt/` des
+  Aminet-Archivs entspricht.
 
 ## Lizenzlage der Originale
 

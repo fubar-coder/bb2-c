@@ -72,6 +72,12 @@ add_test(NAME host_emulator COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR
 	--output-on-failure -L emulator)
 set_tests_properties(host_emulator PROPERTIES LABELS emulator TIMEOUT 300)
 
+# downloading the originals the tests need (not part of ALL: needs network)
+add_custom_target(fetch-originals
+	COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/fetch-originals.cmake
+	USES_TERMINAL
+	COMMENT "Downloading the original material (archive/README.md)")
+
 add_subdirectory(libs)
 add_subdirectory(programs/blitz2)
 add_subdirectory(programs/ted)

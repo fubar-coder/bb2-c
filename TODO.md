@@ -154,10 +154,9 @@ bb2 `tools/amiberry.cmake` und die Steuerung in den Python-Werkzeugen.
 * **Lizenz-Kopfzeilen** (SPDX-Kennung `GPL-3.0-or-later WITH
   LicenseRef-BlitzBasic2-Runtime-exception` o. ä.) in den Quelldateien –
   noch nicht gesetzt; die Lizenz gilt über `LICENSE` und die README.
-* **CD-Daten** (Quellen der CD, Original-Libraries) für Tests: viele
-  Beiträge Dritter (BUM, BUI, PD-Disks, Shareware) mit unklarer Lizenz –
-  einchecken (Repository privat) oder lokal wie `amiga-emulation/`;
-  spätestens vor einer Veröffentlichung klären.
+* ~~**CD-Daten**~~ gelöst (28.10.2026): nicht im Repository,
+  `cmake/fetch-originals.cmake` lädt CD (archive.org) und Aminet-Archiv
+  mit fester SHA-256 nach `archive/cd/`, `archive/aminet/`.
 
 ## 3 Erst wenn §1 erledigt ist
 
