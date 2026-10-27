@@ -1,6 +1,7 @@
 // test_state - the globals of the TED core have their original initial
 // values and the fixed layouts fit (a smoke test of the host build).
 #include <cstring>
+#include <string_view>
 #include <snitch/snitch.hpp>
 extern "C" {
 #include "hostenv.h"
@@ -34,8 +35,8 @@ TEST_CASE("initial values of the globals", "[state]")
     CHECK(remark == 255);
     CHECK(bstx == -1);
     CHECK(bboty == 0);
-    CHECK(std::strcmp(defname, "l:blitzeditor.opts") == 0);
-    CHECK(std::strcmp(tokeerr + 6, "Token Unavailable") == 0);
+    CHECK(std::string_view(defname) == "l:blitzeditor.opts");
+    CHECK(std::string_view(tokeerr + 6) == "Token Unavailable");
     CHECK(germs[0] == 228);
     CHECK(germs[11] == 31);
 }

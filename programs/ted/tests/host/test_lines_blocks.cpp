@@ -2,15 +2,9 @@
 // derived from ted.s 1153-1974) as table tests: blokadj through
 // insertline/return, deleteline, join, split, and blokcopy's block move.
 // No token list: tokenise = 0, chmap rows written by the test.
-#include <cstdio>
-#include <cstring>
+#include <string_view>
 #include <snitch/snitch.hpp>
-extern "C" {
-#include "hostenv.h"
-#include "fileio.h"
-#include "lines.h"
-#include "tokit.h"
-}
+#include "lines_helpers.hpp"
 
 namespace {
 
@@ -26,54 +20,10 @@ void env()
     tokenise = 0;
 }
 
-// a list of n lines "line0".."line{n-1}" (or the given texts)
-void mklist(int n, const char *const *txt)
-{
-    struct item *last = nullptr, *it;
-    char buf[64];
-
-    hostenv_droplist();
-    for (int i = 0; i < n; i++) {
-        const char *s = txt ? txt[i] : buf;
-
-        if (!txt)
-            std::snprintf(buf, sizeof(buf), "line%d", i);
-        size_t len = std::strlen(s) + 1;
-        it = static_cast<struct item *>(ted_alloc(len + lenitem, TED_MEMF_PUBLIC));
-        it->numchars = static_cast<UBYTE>(len);
-        std::memcpy(it->chars, s, len);
-        it->lastitem = last;
-        it->nextitem = nullptr;
-        if (last)
-            last->nextitem = it;
-        else
-            firstitem = it;
-        last = it;
-    }
-    enditem = last;
-    numlines = static_cast<UWORD>(n);
-}
-
-const char *linetext(int i)
-{
-    struct item *it = firstitem;
-
-    while (i-- > 0 && it)
-        it = it->nextitem;
-    return it ? reinterpret_cast<const char *>(it->chars) : "<none>";
-}
-
-// cursor on line `line` (curstop 0), column col; chmap row = line text
+// cursor on line `line` (curstop 0), column col
 void cursorto(UWORD line, UWORD col)
 {
-    curstop = 0;
-    cursy = line;
-    cursx = col;
-    cursoff = 0;
-    calcpos();
-    struct item *it = calcitem();
-    std::memset(chmap + chloc, ' ', chcols);
-    std::memcpy(chmap + chloc, it->chars, std::strlen(reinterpret_cast<const char *>(it->chars)));
+    place(0, line, col);
 }
 
 void setblock(WORD tx, UWORD ty, WORD bx, UWORD by)
@@ -181,8 +131,8 @@ TEST_CASE("join and split: line contents", "[lines]")
     host_resetcalls();
     join();
     CHECK(numlines == 2);
-    CHECK(std::strcmp(linetext(0), "abcdefg") == 0);
-    CHECK(std::strcmp(linetext(1), "hi") == 0);
+    CHECK(std::string_view(linetext(0)) == "abcdefg");
+    CHECK(std::string_view(linetext(1)) == "hi");
     CHECK(firstitem->nextitem == enditem);
     CHECK(enditem->lastitem == firstitem);
     CHECK(host_hazards == 1);           // FreeMem(numchars) instead of +lenitem
@@ -204,9 +154,9 @@ TEST_CASE("join and split: line contents", "[lines]")
     qualifier = 0;
     split();
     CHECK(numlines == 4);
-    CHECK(std::strcmp(linetext(1), "d") == 0);
-    CHECK(std::strcmp(linetext(2), "efg") == 0);
-    CHECK(std::strcmp(linetext(3), "hi") == 0);
+    CHECK(std::string_view(linetext(1)) == "d");
+    CHECK(std::string_view(linetext(2)) == "efg");
+    CHECK(std::string_view(linetext(3)) == "hi");
     CHECK(chmap[chloc + 1] == ' ');
     CHECK(chmap[chloc] == 'd');
     CHECK(thisitem == firstitem->nextitem);
@@ -216,7 +166,7 @@ TEST_CASE("join and split: line contents", "[lines]")
     cursorto(2, 1);
     split();
     CHECK(numlines == 4);
-    CHECK(std::strcmp(reinterpret_cast<const char *>(enditem->chars), "i") == 0);
+    CHECK(std::string_view(chars(enditem)) == "i");
     CHECK(enditem->nextitem == nullptr);
     CHECK(enditem->lastitem == thisitem);
 }
@@ -234,7 +184,7 @@ TEST_CASE("blokcopy: content and block move", "[blocks]")
     setblock(1, 0, 2, 0);
     blokcopy();
     CHECK(numlines == 3);
-    CHECK(std::strcmp(linetext(2), "bcxyz") == 0);
+    CHECK(std::string_view(linetext(2)) == "bcxyz");
     CHECK(block(1, 0, 2, 0));
 
     // two line block copied into the middle of a line
@@ -243,8 +193,8 @@ TEST_CASE("blokcopy: content and block move", "[blocks]")
     setblock(2, 0, 1, 1);
     blokcopy();
     CHECK(numlines == 5);
-    CHECK(std::strcmp(linetext(3), "xcdef") == 0);
-    CHECK(std::strcmp(linetext(4), "ghyz") == 0);
+    CHECK(std::string_view(linetext(3)) == "xcdef");
+    CHECK(std::string_view(linetext(4)) == "ghyz");
     CHECK(block(2, 0, 1, 1));
 
     // copy in front of the block on its own line: block moves right
@@ -253,7 +203,7 @@ TEST_CASE("blokcopy: content and block move", "[blocks]")
     cursorto(2, 1);
     setblock(3, 2, 4, 2);
     blokcopy();
-    CHECK(std::strcmp(linetext(2), "adebcdefgh") == 0);
+    CHECK(std::string_view(linetext(2)) == "adebcdefgh");
     CHECK(block(5, 2, 6, 2));
 
     // cursor inside the block: beep, nothing changed
@@ -263,7 +213,7 @@ TEST_CASE("blokcopy: content and block move", "[blocks]")
     host_resetcalls();
     blokcopy();
     CHECK(host_calls[HC_BEEPEM] == 1);
-    CHECK(std::strcmp(linetext(2), "abcdefgh") == 0);
+    CHECK(std::string_view(linetext(2)) == "abcdefgh");
 
     // blokcopy2 = blokcopy + showvprop
     mklist(3, t1);
@@ -286,8 +236,8 @@ TEST_CASE("blokkill and blokforget", "[blocks]")
     host_resetcalls();
     blokkill();
     CHECK(numlines == 2);
-    CHECK(std::strcmp(linetext(0), "abop") == 0);
-    CHECK(std::strcmp(linetext(1), "rest") == 0);
+    CHECK(std::string_view(linetext(0)) == "abop");
+    CHECK(std::string_view(linetext(1)) == "rest");
     CHECK(bboty == (UWORD)-1);
     CHECK(bstx == -1);
     CHECK(host_hazards == 1);           // detoka5 without tokenise (I.8)
@@ -299,8 +249,8 @@ TEST_CASE("blokkill and blokforget", "[blocks]")
     setblock(0, 1, static_cast<WORD>(chcols - 1), 2);
     blokkill();
     CHECK(numlines == 2);
-    CHECK(std::strcmp(linetext(0), "abcdef") == 0);
-    CHECK(std::strcmp(linetext(1), "rest") == 0);
+    CHECK(std::string_view(linetext(0)) == "abcdef");
+    CHECK(std::string_view(linetext(1)) == "rest");
     // cursor line 3 >= numlines: bottom line, gotolined02
     CHECK(curstop + cursy == 1);
     CHECK(thisitem == enditem);
@@ -311,7 +261,7 @@ TEST_CASE("blokkill and blokforget", "[blocks]")
     setblock(1, 1, 3, 1);
     blokkill();
     CHECK(numlines == 4);
-    CHECK(std::strcmp(linetext(1), "gkl") == 0);
+    CHECK(std::string_view(linetext(1)) == "gkl");
 
     // no block: beep
     host_resetcalls();
