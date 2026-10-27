@@ -5,11 +5,12 @@ Editor `ted` (TED 1.1, `ted.s`) und die Libraries `acidlibs`/`deflibs`,
 gebaut für AmigaOS (68000) mit m68k-amigaos-gcc. Aufbau, Bauen und die
 Prüfungen im Build: `README.md`. Offene Punkte: `TODO.md`.
 
-Dieses Verzeichnis enthält **nur den Build**. Tests, Testkorpus,
-Referenz-Builds, Analysewerkzeuge, Notizen zur Übersetzung und die
-Originalquellen liegen im Arbeitsrepository `../bb2` (Übernahme von bb2
-`7b5df74`); dort stehen auch die Begründungen für Code-Kommentare wie
-`BUG(orig)`, `DIFF`, `ted.s:NNN` oder `blitz2.s:NNN`.
+**Dieses Repository ist die Referenz** für den Code (Entscheidung vom
+27.10.2026); bb2 baut nicht mehr maßgeblich. Es enthält bisher **nur den
+Build**. Tests, Testkorpus, Referenz-Builds, Analysewerkzeuge, Notizen zur
+Übersetzung und die Originalquellen liegen im Arbeitsrepository `../bb2`
+(Übernahme von bb2 `7b5df74`); dort stehen auch die Begründungen für
+Code-Kommentare wie `BUG(orig)`, `DIFF`, `ted.s:NNN` oder `blitz2.s:NNN`.
 
 ## Bauen und prüfen
 
@@ -30,10 +31,11 @@ ctest --preset amiga                                   # Host-Werkzeuge, prebuil
 ## Regeln
 
 * **Abnahme bei jedem Umbau:** `blitz2`, `ted`, `acidlibs`, `deflibs` und
-  alle Library-Dateien byte-identisch zum Stand davor (bzw. zum Build in
-  bb2). Ist eine Abweichung gewollt (z. B. Code-Umbau), funktional prüfen –
-  in bb2 (Korpus, snitch-Tests, TED-A/B) – und die Abweichung im Commit
-  nennen.
+  alle Library-Dateien byte-identisch zum Stand davor (Build des vorigen
+  Commits dieses Repositorys). Ist eine Abweichung gewollt (z. B.
+  Code-Umbau), funktional prüfen – solange die Tests noch in bb2 liegen,
+  mit den bb2-Werkzeugen gegen `build/amiga/blitz2/` dieses Repositorys
+  (Korpus, snitch-Tests, TED-A/B) – und die Abweichung im Commit nennen.
 * **Original-Fehler nicht beheben**, nur dokumentieren (`BUG(orig)` im
   Code, Verzeichnis der Abweichungen in bb2); `DIFF` nur, wo technisch
   nötig.

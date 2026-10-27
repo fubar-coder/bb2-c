@@ -1,8 +1,10 @@
 # TODO
 
-Stand 27.10.2026. Dieses Verzeichnis enthält nur den Build; die Tests und
-Prüfungen liegen noch im Arbeitsrepository `bb2` (Übernahme von bb2
-`7b5df74`). Ziel: alle Prüfungen, die bb2 vor dem Abbau von Python hatte,
+Stand 27.10.2026. Dieses Repository ist die Referenz für den Code
+(Entscheidung vom 27.10.2026). Es enthält bisher nur den Build; die Tests
+und Prüfungen liegen noch im Arbeitsrepository `bb2` (Übernahme von bb2
+`7b5df74`) und müssen auf dieses Repository umgestellt oder hierher
+geholt werden. Ziel: alle Prüfungen, die bb2 vor dem Abbau von Python hatte,
 wieder aktiv – hier im Build, als ctest oder als Werkzeug, das auf diesen
 Build zeigt. Erst danach die Umstellung auf C23 (§3).
 
@@ -74,8 +76,9 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
 
 ## 2 Weitere offene Punkte
 
-* **Neues Repository oder nicht, Git-Historie:** noch nicht entschieden;
-  das lokale Repository hier lässt sich verwerfen (`rm -rf .git`).
+* **Git-Historie und Remote:** dieses Repository ist die Referenz
+  (entschieden); offen, ob es mit dem frischen Anfang bleibt oder die
+  Historie der Dateien aus bb2 übernimmt, und wohin es gepusht wird.
 * **`dhandlerlib` (Lib 1) portieren:** bis dahin `prebuilt/dhandlerlib.obj`
   (Original der CD).
 * **Warnungen von `blitzlibcheck`:** 73 Warnungen (Verweise in den
