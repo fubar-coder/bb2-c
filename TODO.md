@@ -70,11 +70,14 @@ Skript, Zeitlimit)` → Handle; `amiga_emulation_command()` (Steuer-Socket),
 `amiga_emulation_join()` (fertig / Zeitlimit / vorzeitig beendet). Ersetzt
 bb2 `tools/amiberry.cmake` und die Steuerung in den Python-Werkzeugen.
 
-* Standard-Konfiguration als Vorlage im Repository; ROM und Hardfiles
-  unter `<repo>/amiga-emulation/` (nicht eingecheckt: `.gitkeep` +
-  README mit erwarteten Dateien und Prüfsummen; CMake meldet Fehlendes).
+* Standard-Konfiguration `tools/lib/amiga_emulation/default.uae` (aus der
+  AGA-Konfiguration, bereinigt; RTG-Variante = Änderungen) und
+  `amiga-emulation/` mit README (erwartete Dateien, Prüfsummen,
+  Bedingungen) liegen vor (27.10.2026); ROM und angepasste Hardfiles hat
+  der Benutzer abgelegt, beide Images geprüft. Offen: CMake meldet
+  fehlende Dateien.
 * Laufwerk der Tests heißt **`TEST:`** (nicht mehr `AB3C:`, das ist ein
-  anderes Projekt); der Benutzer passt das Hardfile an. Vorschlag für die
+  anderes Projekt); beide Hardfiles sind angepasst (27.10.2026). Vorschlag für die
   `user-startup` (Abfrage abgesichert – ein nicht eingebundenes Laufwerk
   gäbe sonst den Requester „Datenträger einlegen“):
 

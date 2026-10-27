@@ -27,6 +27,10 @@ ctest --preset amiga                                   # Host-Werkzeuge, prebuil
   die 73 Warnungen von `blitzlibcheck` (Verweise in den
   Fehlerprüfbereich, wie bei den Originalen).
 * `.clangd` erzeugt CMake beim ersten Konfigurieren (nicht in git).
+* Emulator: Kickstart-ROM und Hardfiles liegen lokal in `amiga-emulation/`
+  (nicht in git, siehe dortige README); Standard-Konfiguration
+  `tools/lib/amiga_emulation/default.uae`. Hardfiles schreibgeschützt:
+  Tests schreiben nur nach `TEST:` oder `RAM:`.
 
 ## Regeln
 
