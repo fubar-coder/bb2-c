@@ -62,6 +62,50 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
    mit und ohne Laufzeitfehlerprüfung, Requester- und serielle Tests (201
    Prüfungen). Emulatorlauf über bb2 `tools/amiberry.cmake`.
 
+**Grundlage für 5, 8, 9: Emulator-Bibliothek `tools/lib/amiga_emulation`**
+(Entwurf vom 27.10.2026, vom Benutzer gutgeheißen): C-Library auf dem Host,
+`amiga_emulation_start(Änderungen gegenüber der Standard-Konfiguration,
+Skript, Zeitlimit)` → Handle; `amiga_emulation_command()` (Steuer-Socket),
+`amiga_emulation_dir()` (Host-Verzeichnis = `TEST:`),
+`amiga_emulation_join()` (fertig / Zeitlimit / vorzeitig beendet). Ersetzt
+bb2 `tools/amiberry.cmake` und die Steuerung in den Python-Werkzeugen.
+
+* Standard-Konfiguration als Vorlage im Repository; ROM und Hardfiles
+  unter `<repo>/amiga-emulation/` (nicht eingecheckt: `.gitkeep` +
+  README mit erwarteten Dateien und Prüfsummen; CMake meldet Fehlendes).
+* Laufwerk der Tests heißt **`TEST:`** (nicht mehr `AB3C:`, das ist ein
+  anderes Projekt); der Benutzer passt das Hardfile an. Vorschlag für die
+  `user-startup` (Abfrage abgesichert – ein nicht eingebundenes Laufwerk
+  gäbe sonst den Requester „Datenträger einlegen“):
+
+  ```
+  Assign >NIL: TEST: EXISTS
+  If NOT WARN
+    If EXISTS TEST:run.script
+      Execute TEST:run.script
+    EndIf
+  EndIf
+  ```
+  Die heutigen Zeilen für `SPEC:`, `AB3C:` und `Assign add Blitz3: AB3:`
+  entfernen oder genauso absichern.
+* **Hardfile schreibgeschützt** einbinden (`hardfile2=ro,…`,
+  `uaehf0=hdf,ro,…`): geprüft am 27.10.2026 – bootet, `T:`/`ENV:` liegen
+  im RAM, zwei Instanzen teilen sich dasselbe Image, das Image bleibt
+  unverändert. Ein Schreibversuch auf `SYS:` öffnet aber „Datenträger
+  Workbench ist schreibgeschützt“ und hängt: Tests schreiben nur nach
+  `TEST:` oder `RAM:` (Requester abfangen: reqtrap aus bb2 oder Zeitlimit).
+* **Parallel:** je Lauf eigenes `TEST:`-Verzeichnis und eigene
+  `XDG_*`-Verzeichnisse inklusive `XDG_RUNTIME_DIR`; zwei Instanzen liefen
+  gleichzeitig. Dann kann ctest Emulator-Tests mit `-j` fahren.
+* **Steuer-Socket** (Amiberry 8.4, `$XDG_RUNTIME_DIR/amiberry.sock`):
+  eine Textzeile je Befehl, **Argumente durch Tabs getrennt** (mit
+  Leerzeichen wird die ganze Zeile als Befehlsname gelesen und in
+  Großbuchstaben gewandelt), Antwort `OK`/`ERROR` + Tab-Felder. Geprüft:
+  `GET_STATUS`, `READ_MEM 4 4` (ExecBase), `SCREENSHOT <pfad>` (PNG, auch
+  ohne Fenster), `SET_WARP 1`/`GET_WARP`, `DEBUG_STATUS`, `QUIT` (beendet
+  sofort – Ersatz für `uaequit`). Laut Hilfe außerdem `SEND_KEY`,
+  `SEND_MOUSE`, `WRITE_MEM`, Breakpoints, `SAVESTATE`/`LOADSTATE`.
+
 **Offene Grundsatzfragen dazu**
 
 * Wo die Tests künftig liegen: hier (Komponenten-Tests bei der
