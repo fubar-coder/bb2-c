@@ -30,7 +30,12 @@ ctest --preset amiga                                   # Host-Werkzeuge, prebuil
 * Emulator: Kickstart-ROM und Hardfiles liegen lokal in `amiga-emulation/`
   (nicht in git, siehe dortige README); Standard-Konfiguration
   `tools/lib/amiga_emulation/default.uae`. Hardfiles schreibgeschützt:
-  Tests schreiben nur nach `TEST:` oder `RAM:`.
+  Tests schreiben nur nach `TEST:` oder `RAM:` (auch Systemprogramme wie
+  `ShowConfig` schreiben auf `SYS:` und hängen dann).
+* Emulatorläufe nur über `tools/lib/amiga_emulation` bzw. `amiga_run`
+  (isoliert, parallel möglich); Steuer-Socket: Argumente durch Tabs
+  getrennt. Tests mit Emulator bekommen das ctest-Label `emulator` und
+  den Rückgabewert 77 (übersprungen), wenn Amiberry oder die Daten fehlen.
 
 ## Regeln
 

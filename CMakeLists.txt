@@ -42,20 +42,28 @@ set(HOST_TOOLS_DIR ${CMAKE_BINARY_DIR}/host-tools)
 set(BIGLIB ${HOST_TOOLS_DIR}/biglib/biglib)                     # joins library files
 set(BLITZLIBCHECK ${HOST_TOOLS_DIR}/blitzlibcheck/blitzlibcheck) # checks a library file
 set(HUNKCHECK ${HOST_TOOLS_DIR}/hunkcheck/hunkcheck)             # checks the first hunk
+set(AMIGA_RUN ${HOST_TOOLS_DIR}/amiga_run/amiga_run)             # runs a script in Amiberry
 ExternalProject_Add(host_tools
 	SOURCE_DIR ${PROJECT_SOURCE_DIR}/tools
 	BINARY_DIR ${HOST_TOOLS_DIR}
 	CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
+		-DAMIGA_EMULATION_DIR=${PROJECT_SOURCE_DIR}/amiga-emulation
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${HUNKCHECK})
+	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${HUNKCHECK} ${AMIGA_RUN})
 
 include(cmake/BlitzLibrary.cmake)
 
 # ctest: the tests of the host tools (with broken inputs) and the checks
-# that are not part of a build step
+# that are not part of a build step.  Label emulator: runs Amiberry
+# (skipped without it or without the data in amiga-emulation/);
+# ctest -LE emulator leaves them out.
 enable_testing()
-add_test(NAME host_tools COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_TOOLS_DIR} --output-on-failure)
+add_test(NAME host_tools COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_TOOLS_DIR}
+	--output-on-failure -LE emulator)
+add_test(NAME host_tools_emulator COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_TOOLS_DIR}
+	--output-on-failure -L emulator)
+set_tests_properties(host_tools_emulator PROPERTIES LABELS emulator TIMEOUT 300)
 
 add_subdirectory(libs)
 add_subdirectory(programs/blitz2)

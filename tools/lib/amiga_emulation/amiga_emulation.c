@@ -1,0 +1,660 @@
+/*
+ * amiga_emulation.c - run an AmigaDOS script in Amiberry for tests, see
+ * amiga_emulation.h.
+ */
+#define _XOPEN_SOURCE 700       /* mkdtemp, nftw, setenv, kill, setpgid */
+#include <errno.h>
+#include <fcntl.h>
+#include <ftw.h>
+#include <poll.h>
+#include <signal.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/un.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
+#include "amiga_emulation.h"
+
+#ifndef AMIGA_EMULATION_DIR_DEFAULT
+#define AMIGA_EMULATION_DIR_DEFAULT "amiga-emulation"
+#endif
+
+/* default.uae, 0-terminated */
+static const char template_text[] = {
+#embed "default.uae"
+    , 0
+};
+
+const struct amiga_emulation_option amiga_emulation_rtg[] = {
+    { "gfxcard_size", "16" },
+    { "gfxcard_type", "ZorroIII" },
+    { "hardfile2", "ro,DH0:@EMULATION_DIR@/Workbench_OS3.2-AB3.vhd,32,1,2,512,0,,uae0" },
+    { "uaehf0", "hdf,ro,DH0:@EMULATION_DIR@/Workbench_OS3.2-AB3.vhd,32,1,2,512,0,,uae0" },
+};
+const size_t amiga_emulation_rtg_count = sizeof amiga_emulation_rtg / sizeof amiga_emulation_rtg[0];
+
+#define DONE_FILE   "run.done"
+#define QUIT_GRACE  10          /* seconds between QUIT and SIGTERM */
+#define KILL_GRACE  5           /* seconds between SIGTERM and SIGKILL */
+
+struct amiga_emulation {
+    pid_t pid;                  /* also the process group */
+    double deadline;            /* monotonic seconds */
+    char *work_dir;
+    char *test_dir;
+    char *runtime_dir;          /* XDG_RUNTIME_DIR */
+    char *socket_path;
+    int own_work_dir;
+    int joined;
+    int exited;                 /* waitpid has reaped the process */
+    enum amiga_emulation_status status;
+};
+
+/* ------------------------------------------------------------- helpers */
+
+static double now(void)
+{
+    struct timespec ts;
+
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return ts.tv_sec + ts.tv_nsec / 1e9;
+}
+
+static void sleep_ms(long ms)
+{
+    struct timespec ts = { ms / 1000, (ms % 1000) * 1000000L };
+
+    nanosleep(&ts, NULL);
+}
+
+static char *str_printf(const char *fmt, ...)
+{
+    va_list ap;
+    int n;
+    char *s;
+
+    va_start(ap, fmt);
+    n = vsnprintf(NULL, 0, fmt, ap);
+    va_end(ap);
+    if (n < 0 || !(s = malloc((size_t)n + 1)))
+        return NULL;
+    va_start(ap, fmt);
+    vsnprintf(s, (size_t)n + 1, fmt, ap);
+    va_end(ap);
+    return s;
+}
+
+static void set_err(char *err, size_t errlen, const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    vsnprintf(err, errlen, fmt, ap);
+    va_end(ap);
+}
+
+/* growing string */
+struct sb {
+    char *p;
+    size_t n, cap;
+    int bad;
+};
+
+static void sb_add(struct sb *b, const char *s, size_t n)
+{
+    if (b->bad)
+        return;
+    if (b->n + n + 1 > b->cap) {
+        size_t cap = b->cap ? b->cap : 4096;
+        char *p;
+
+        while (cap < b->n + n + 1)
+            cap *= 2;
+        if (!(p = realloc(b->p, cap))) {
+            b->bad = 1;
+            return;
+        }
+        b->p = p;
+        b->cap = cap;
+    }
+    memcpy(b->p + b->n, s, n);
+    b->n += n;
+    b->p[b->n] = 0;
+}
+
+static void sb_str(struct sb *b, const char *s)
+{
+    sb_add(b, s, strlen(s));
+}
+
+/* s (n bytes) with @EMULATION_DIR@ replaced */
+static void sb_subst(struct sb *b, const char *s, size_t n, const char *emulation_dir)
+{
+    static const char ph[] = "@EMULATION_DIR@";
+    const size_t phn = sizeof ph - 1;
+    size_t i = 0, start = 0;
+
+    while (i + phn <= n) {
+        if (!memcmp(s + i, ph, phn)) {
+            sb_add(b, s + start, i - start);
+            sb_str(b, emulation_dir);
+            i += phn;
+            start = i;
+        } else {
+            i++;
+        }
+    }
+    sb_add(b, s + start, n - start);
+}
+
+static int has_char(const char *s, const char *chars)
+{
+    return strpbrk(s, chars) != NULL;
+}
+
+static int file_exists(const char *path)
+{
+    return access(path, F_OK) == 0;
+}
+
+static int rm_entry(const char *path, const struct stat *st, int flag, struct FTW *ftw)
+{
+    (void)st; (void)flag; (void)ftw;
+    remove(path);
+    return 0;
+}
+
+static void rm_tree(const char *dir)
+{
+    if (dir)
+        nftw(dir, rm_entry, 16, FTW_DEPTH | FTW_PHYS);
+}
+
+static int mkdirs(const char *base, const char *const *subs)
+{
+    for (; *subs; subs++) {
+        char *d = str_printf("%s/%s", base, *subs);
+        int r = d ? mkdir(d, 0700) : -1;
+
+        if (r && errno != EEXIST) {
+            free(d);
+            return -1;
+        }
+        free(d);
+    }
+    return 0;
+}
+
+static int write_file(const char *path, const char *text)
+{
+    FILE *f = fopen(path, "w");
+
+    if (!f)
+        return -1;
+    if (fputs(text, f) == EOF) {
+        fclose(f);
+        return -1;
+    }
+    return fclose(f) ? -1 : 0;
+}
+
+/* the value of `key=` in the configuration (malloc'd), NULL if missing */
+static char *config_value(const char *cfg, const char *key)
+{
+    size_t kn = strlen(key);
+    const char *p = cfg;
+
+    while (*p) {
+        const char *e = strchr(p, '\n');
+        size_t n = e ? (size_t)(e - p) : strlen(p);
+
+        if (n > kn && !strncmp(p, key, kn) && p[kn] == '=') {
+            char *v = malloc(n - kn);
+
+            if (v) {
+                memcpy(v, p + kn + 1, n - kn - 1);
+                v[n - kn - 1] = 0;
+            }
+            return v;
+        }
+        p += n + (e != NULL);
+    }
+    return NULL;
+}
+
+/* ------------------------------------------------------ configuration */
+
+char *amiga_emulation_config(const struct amiga_emulation_params *p, const char *emulation_dir,
+                             const char *test_dir, char *err, size_t errlen)
+{
+    struct sb b = { 0 };
+    const char *line = template_text;
+    size_t i;
+
+    if (has_char(test_dir, ",\n") || has_char(emulation_dir, ",\n")) {
+        set_err(err, errlen, "directories must not contain commas or newlines");
+        return NULL;
+    }
+    for (i = 0; i < p->nmounts; i++)
+        if (!p->mounts[i].volume || !*p->mounts[i].volume || has_char(p->mounts[i].volume, ":,\n")
+            || !p->mounts[i].host_dir || has_char(p->mounts[i].host_dir, ",\n")
+            || !strcmp(p->mounts[i].volume, "TEST")) {
+            set_err(err, errlen, "bad mount %zu (volume without colon/comma, not TEST; directory without comma)", i);
+            return NULL;
+        }
+
+    /* the template without the lines of changed keys */
+    while (*line) {
+        const char *end = strchr(line, '\n');
+        size_t n = end ? (size_t)(end - line) : strlen(line);
+        const char *eq = memchr(line, '=', n);
+        int skip = 0;
+
+        if (eq && *line != ';')
+            for (i = 0; i < p->nchanges && !skip; i++)
+                skip = strlen(p->changes[i].key) == (size_t)(eq - line)
+                       && !strncmp(line, p->changes[i].key, (size_t)(eq - line));
+        if (!skip) {
+            sb_subst(&b, line, n, emulation_dir);
+            sb_str(&b, "\n");
+        }
+        line += n + (end != NULL);
+    }
+    /* changed values */
+    for (i = 0; i < p->nchanges; i++) {
+        if (!p->changes[i].value)
+            continue;
+        if (has_char(p->changes[i].key, "=\n") || has_char(p->changes[i].value, "\n")) {
+            set_err(err, errlen, "bad change \"%s\"", p->changes[i].key);
+            free(b.p);
+            return NULL;
+        }
+        sb_str(&b, p->changes[i].key);
+        sb_str(&b, "=");
+        sb_subst(&b, p->changes[i].value, strlen(p->changes[i].value), emulation_dir);
+        sb_str(&b, "\n");
+    }
+    /* TEST: (DH1) and the extra mounts (DH2...); DH0 is the hardfile */
+    for (i = 0; i <= p->nmounts; i++) {
+        const char *vol = i ? p->mounts[i - 1].volume : "TEST";
+        const char *dir = i ? p->mounts[i - 1].host_dir : test_dir;
+        const char *rw = !i || p->mounts[i - 1].writable ? "rw" : "ro";
+        char *l = str_printf("filesystem2=%s,DH%zu:%s:%s,0\nuaehf%zu=dir,%s,DH%zu:%s:%s,0\n",
+                             rw, i + 1, vol, dir, i + 1, rw, i + 1, vol, dir);
+
+        if (!l) {
+            b.bad = 1;
+            break;
+        }
+        sb_str(&b, l);
+        free(l);
+    }
+    if (b.bad) {
+        set_err(err, errlen, "out of memory");
+        free(b.p);
+        return NULL;
+    }
+    return b.p;
+}
+
+char *amiga_emulation_script(const char *script)
+{
+    size_t n = script ? strlen(script) : 0;
+
+    return str_printf("; generated by amiga_emulation - TEST:%s marks the end\n"
+                      "FailAt 1000\n%s%s"
+                      "Echo \"done\" >TEST:%s\n",
+                      DONE_FILE, script ? script : "", n && script[n - 1] != '\n' ? "\n" : "",
+                      DONE_FILE);
+}
+
+const char *amiga_emulation_status_name(enum amiga_emulation_status s)
+{
+    switch (s) {
+    case AMIGA_EMULATION_DONE: return "done";
+    case AMIGA_EMULATION_TIMEOUT: return "timeout";
+    case AMIGA_EMULATION_EXITED: return "exited early";
+    default: return "failed";
+    }
+}
+
+/* ----------------------------------------------------------------- run */
+
+/* the files the configuration needs: Kickstart ROM and hardfile */
+static int check_files(const char *cfg, char *err, size_t errlen)
+{
+    char *rom = config_value(cfg, "kickstart_rom_file");
+    char *hdf = config_value(cfg, "hardfile2");
+    char *path = NULL;
+    int bad = 0;
+
+    if (rom && *rom && !file_exists(rom)) {
+        set_err(err, errlen, "Kickstart ROM %s missing (see amiga-emulation/README.md)", rom);
+        bad = 1;
+    } else if (hdf) {
+        char *p = strstr(hdf, "DH0:"), *c;
+
+        if (p && (c = strchr(p + 4, ',')) != NULL) {
+            path = strndup(p + 4, (size_t)(c - p - 4));
+            if (path && !file_exists(path)) {
+                set_err(err, errlen, "hardfile %s missing (see amiga-emulation/README.md)", path);
+                bad = 1;
+            }
+        }
+    }
+    free(rom);
+    free(hdf);
+    free(path);
+    return bad ? -1 : 0;
+}
+
+/* XDG_RUNTIME_DIR: short, the socket path must fit into sun_path */
+static char *make_runtime_dir(void)
+{
+    struct sockaddr_un sa;
+    const char *tmp = getenv("TMPDIR");
+    char *d;
+
+    if (!tmp || strlen(tmp) + 40 > sizeof sa.sun_path)
+        tmp = "/tmp";
+    d = str_printf("%s/amiemu-XXXXXX", tmp);
+    if (d && !mkdtemp(d)) {
+        free(d);
+        d = NULL;
+    }
+    return d;
+}
+
+static void child(const char *work_dir, const char *runtime_dir, const char *amiberry, int visible)
+{
+    static const char *const xdg[][2] = {
+        { "XDG_CONFIG_HOME", "xdg/config" }, { "XDG_DATA_HOME", "xdg/data" },
+        { "XDG_STATE_HOME", "xdg/state" }, { "XDG_CACHE_HOME", "xdg/cache" },
+    };
+    size_t i;
+    int log;
+
+    setpgid(0, 0);
+    if (chdir(work_dir))
+        _exit(126);
+    log = open("amiberry.log", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (log >= 0) {
+        dup2(log, 1);
+        dup2(log, 2);
+        close(log);
+    }
+    for (i = 0; i < sizeof xdg / sizeof xdg[0]; i++) {
+        char *v = str_printf("%s/%s", work_dir, xdg[i][1]);
+
+        if (v)
+            setenv(xdg[i][0], v, 1);
+    }
+    setenv("XDG_RUNTIME_DIR", runtime_dir, 1);
+    if (!visible) {
+        unsetenv("DISPLAY");
+        unsetenv("WAYLAND_DISPLAY");
+        unsetenv("XDG_ACTIVATION_TOKEN");
+        unsetenv("DESKTOP_STARTUP_ID");
+        setenv("SDL_VIDEO_DRIVER", "offscreen", 1);
+        setenv("SDL_AUDIO_DRIVER", "dummy", 1);
+    }
+    execlp(amiberry, amiberry, "--config", "amiberry.uae", "-G", (char *)NULL);
+    _exit(127);
+}
+
+struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_params *p,
+                                              char *err, size_t errlen)
+{
+    static const char *const subs[] = { "test", "xdg", "xdg/config", "xdg/data", "xdg/state",
+                                        "xdg/cache", NULL };
+    const char *emulation_dir = p->emulation_dir ? p->emulation_dir : getenv("AMIGA_EMULATION_DIR");
+    struct amiga_emulation *e = calloc(1, sizeof *e);
+    char *cfg = NULL, *script = NULL, *path;
+    struct sockaddr_un sa;
+
+    if (!emulation_dir || !*emulation_dir)
+        emulation_dir = AMIGA_EMULATION_DIR_DEFAULT;
+    if (!e) {
+        set_err(err, errlen, "out of memory");
+        return NULL;
+    }
+    e->status = AMIGA_EMULATION_FAILED;
+    if (p->work_dir) {
+        e->work_dir = strdup(p->work_dir);
+    } else {
+        const char *tmp = getenv("TMPDIR");
+
+        e->work_dir = str_printf("%s/amiga-emulation-XXXXXX", tmp && *tmp ? tmp : "/tmp");
+        if (e->work_dir && !mkdtemp(e->work_dir)) {
+            set_err(err, errlen, "cannot create a work directory: %s", strerror(errno));
+            goto fail;
+        }
+        e->own_work_dir = 1;
+    }
+    if (!e->work_dir || mkdirs(e->work_dir, subs)) {
+        set_err(err, errlen, "cannot create the work directory %s", e->work_dir ? e->work_dir : "");
+        goto fail;
+    }
+    e->test_dir = str_printf("%s/test", e->work_dir);
+    e->runtime_dir = make_runtime_dir();
+    e->socket_path = e->runtime_dir ? str_printf("%s/amiberry.sock", e->runtime_dir) : NULL;
+    if (!e->test_dir || !e->socket_path || strlen(e->socket_path) >= sizeof sa.sun_path) {
+        set_err(err, errlen, "cannot create the runtime directory");
+        goto fail;
+    }
+
+    if (!(cfg = amiga_emulation_config(p, emulation_dir, e->test_dir, err, errlen)))
+        goto fail;
+    if (check_files(cfg, err, errlen))
+        goto fail;
+    path = str_printf("%s/amiberry.uae", e->work_dir);
+    if (!path || write_file(path, cfg)) {
+        set_err(err, errlen, "cannot write the configuration");
+        free(path);
+        goto fail;
+    }
+    free(path);
+    script = amiga_emulation_script(p->script);
+    path = str_printf("%s/run.script", e->test_dir);
+    if (!script || !path || write_file(path, script)) {
+        set_err(err, errlen, "cannot write TEST:run.script");
+        free(path);
+        goto fail;
+    }
+    free(path);
+
+    e->deadline = now() + (p->timeout ? p->timeout : 60);
+    e->pid = fork();
+    if (e->pid < 0) {
+        set_err(err, errlen, "fork: %s", strerror(errno));
+        goto fail;
+    }
+    if (e->pid == 0)
+        child(e->work_dir, e->runtime_dir, p->amiberry ? p->amiberry : "amiberry", p->visible);
+    setpgid(e->pid, e->pid);
+    free(cfg);
+    free(script);
+    return e;
+
+fail:
+    free(cfg);
+    free(script);
+    amiga_emulation_free(e);
+    return NULL;
+}
+
+const char *amiga_emulation_test_dir(const struct amiga_emulation *e)
+{
+    return e->test_dir;
+}
+
+const char *amiga_emulation_work_dir(const struct amiga_emulation *e)
+{
+    return e->work_dir;
+}
+
+/* reaps the process if it has ended; 1 = ended */
+static int reaped(struct amiga_emulation *e)
+{
+    if (!e->exited && e->pid > 0 && waitpid(e->pid, NULL, WNOHANG) == e->pid)
+        e->exited = 1;
+    return e->exited;
+}
+
+static int command_wait(struct amiga_emulation *e, const char *const *args, char *reply,
+                        size_t len, double wait)
+{
+    struct sockaddr_un sa;
+    double until = now() + wait;
+    struct sb line = { 0 };
+    size_t i, got = 0;
+    int fd = -1;
+
+    if (len)
+        *reply = 0;
+    for (i = 0; args[i]; i++) {
+        if (i)
+            sb_str(&line, "\t");
+        sb_str(&line, args[i]);
+    }
+    sb_str(&line, "\n");
+    if (line.bad)
+        return -1;
+
+    memset(&sa, 0, sizeof sa);
+    sa.sun_family = AF_UNIX;
+    strncpy(sa.sun_path, e->socket_path, sizeof sa.sun_path - 1);
+    for (;;) {
+        fd = socket(AF_UNIX, SOCK_STREAM, 0);
+        if (fd >= 0 && connect(fd, (struct sockaddr *)&sa, sizeof sa) == 0)
+            break;
+        if (fd >= 0)
+            close(fd);
+        fd = -1;
+        if (reaped(e) || now() > until) {
+            free(line.p);
+            return -1;
+        }
+        sleep_ms(100);
+    }
+    if (write(fd, line.p, line.n) != (ssize_t)line.n) {
+        free(line.p);
+        close(fd);
+        return -1;
+    }
+    free(line.p);
+    /* one reply line */
+    until = now() + 10;
+    while (len && got < len - 1) {
+        struct pollfd pfd = { fd, POLLIN, 0 };
+        ssize_t n;
+
+        if (poll(&pfd, 1, 200) <= 0) {
+            if (now() > until)
+                break;
+            continue;
+        }
+        n = read(fd, reply + got, len - 1 - got);
+        if (n <= 0)
+            break;
+        got += (size_t)n;
+        reply[got] = 0;
+        if (memchr(reply, '\n', got))
+            break;
+    }
+    close(fd);
+    if (len) {
+        reply[got] = 0;
+        reply[strcspn(reply, "\r\n")] = 0;
+    }
+    return len && !strncmp(reply, "OK", 2) ? 0 : 1;
+}
+
+int amiga_emulation_command(struct amiga_emulation *e, const char *const *args, char *reply,
+                            size_t len)
+{
+    return command_wait(e, args, reply, len, 20);
+}
+
+/* SIGTERM to the group, SIGKILL after the grace time */
+static void stop_group(struct amiga_emulation *e)
+{
+    double until = now() + KILL_GRACE;
+
+    if (e->pid <= 0 || e->exited)
+        return;
+    kill(-e->pid, SIGTERM);
+    while (!reaped(e) && now() < until)
+        sleep_ms(100);
+    if (!e->exited) {
+        kill(-e->pid, SIGKILL);
+        waitpid(e->pid, NULL, 0);
+        e->exited = 1;
+    }
+}
+
+enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
+{
+    char *done = str_printf("%s/%s", e->test_dir, DONE_FILE);
+    double quit_until = 0;
+
+    if (e->joined || !done) {
+        free(done);
+        return e->status;
+    }
+    for (;;) {
+        if (reaped(e)) {
+            e->status = file_exists(done) ? AMIGA_EMULATION_DONE : AMIGA_EMULATION_EXITED;
+            break;
+        }
+        if (!quit_until && file_exists(done)) {
+            static const char *const quit[] = { "QUIT", NULL };
+            char reply[64];
+
+            command_wait(e, quit, reply, sizeof reply, 5);
+            quit_until = now() + QUIT_GRACE;
+        }
+        if (quit_until && now() > quit_until) {
+            stop_group(e);
+            e->status = AMIGA_EMULATION_DONE;
+            break;
+        }
+        if (!quit_until && now() > e->deadline) {
+            char *png = str_printf("%s/timeout.png", e->work_dir);
+            const char *shot[] = { "SCREENSHOT", png, NULL };
+            char reply[256];
+
+            if (png)
+                command_wait(e, shot, reply, sizeof reply, 2);
+            free(png);
+            stop_group(e);
+            e->status = AMIGA_EMULATION_TIMEOUT;
+            break;
+        }
+        sleep_ms(100);
+    }
+    free(done);
+    e->joined = 1;
+    return e->status;
+}
+
+void amiga_emulation_free(struct amiga_emulation *e)
+{
+    if (!e)
+        return;
+    if (e->pid > 0 && !e->exited)
+        stop_group(e);
+    rm_tree(e->runtime_dir);
+    if (e->own_work_dir)
+        rm_tree(e->work_dir);
+    free(e->work_dir);
+    free(e->test_dir);
+    free(e->runtime_dir);
+    free(e->socket_path);
+    free(e);
+}

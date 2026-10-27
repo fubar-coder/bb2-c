@@ -53,7 +53,29 @@ das Ergebnis als nicht gebaut, und nichts, was davon abhängt, wird gebaut
   (keine libgcc-/libnix-Hilfsfunktionen, die `UtilityBase` bräuchten).
 
 `ctest --preset amiga` führt die Tests der Host-Werkzeuge aus (mit
-absichtlich kaputten Eingaben) und prüft die vorgebauten Libraries.
+absichtlich kaputten Eingaben) und prüft die vorgebauten Libraries; die
+Tests mit dem Emulator haben das Label `emulator` (`-LE emulator` lässt sie
+weg) und werden ohne Amiberry oder ohne die Daten in `amiga-emulation/`
+übersprungen.
+
+## Emulator
+
+`tools/lib/amiga_emulation` führt AmigaDOS-Skripte in Amiberry aus –
+ohne Fenster, isoliert (eigenes Arbeitsverzeichnis, eigene
+XDG-Verzeichnisse, schreibgeschütztes Hardfile), deshalb auch parallel:
+`amiga_emulation_start()` (Konfiguration = `default.uae` plus Änderungen,
+Skript, Zeitlimit), `amiga_emulation_command()` (Steuer-Socket von
+Amiberry, z. B. `SCREENSHOT`, `READ_MEM`), `amiga_emulation_join()`. Das
+Skript sieht sein Verzeichnis als `TEST:`. Von Hand:
+
+```
+echo 'Version >TEST:v.txt' | build/amiga/host-tools/amiga_run/amiga_run -
+amiga_run [--rtg] [--visible] [--timeout SEC] [--set KEY=VALUE] [--unset KEY]
+          [--mount VOL=DIR] [--mount-ro VOL=DIR] [--dir WORKDIR] SCRIPT|-
+```
+
+Voraussetzung: Amiberry ≥ 8.4 im `PATH`, Kickstart-ROM und Hardfiles in
+`amiga-emulation/` (siehe dortige README).
 
 Das erste Konfigurieren schreibt `.clangd` (aus `cmake/clangd.in`, mit den
 Include-Pfaden der gefundenen Toolchain; nicht im Repository). Nach einem
@@ -80,9 +102,10 @@ tools/                       Host-Werkzeuge (eigener nativer Build):
   lib/                       die Logik als Libraries: hunk (Hunk-Format
                              lesen), blitzlib (Kopf, Token-Tabelle,
                              Prüfregeln), biglib (BigLib schreiben/lesen),
-                             hunkcheck (Bytes im ersten Hunk)
+                             hunkcheck (Bytes im ersten Hunk),
+                             amiga_emulation (Skripte in Amiberry)
   biglib/, blitzlibcheck/,   die Werkzeuge: je ein main.c um lib/
-  hunkcheck/
+  hunkcheck/, amiga_run/
   tests/                     Tests von lib/ mit Eingaben aus dem Speicher
 ```
 

@@ -16,6 +16,7 @@ add_subdirectory(lib)
 add_subdirectory(biglib)
 add_subdirectory(blitzlibcheck)
 add_subdirectory(hunkcheck)
+add_subdirectory(amiga_run)
 
 enable_testing()
 add_subdirectory(tests)

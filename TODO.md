@@ -63,7 +63,11 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
    Prüfungen). Emulatorlauf über bb2 `tools/amiberry.cmake`.
 
 **Grundlage für 5, 8, 9: Emulator-Bibliothek `tools/lib/amiga_emulation`**
-(Entwurf vom 27.10.2026, vom Benutzer gutgeheißen): C-Library auf dem Host,
+– **umgesetzt** (27.10.2026, mit `tools/amiga_run` und Tests: vier Läufe
+parallel, RTG, Steuer-Socket, Zeitlimit mit Screenshot). Noch offen: die
+bb2-Werkzeuge (Korpus, TED-A/B, snitch) laufen weiter über bb2
+`tools/amiberry.cmake` mit `AB3C:`; sie auf `amiga_run`/`TEST:` umstellen
+oder die Tests hierher holen. Entwurf: C-Library auf dem Host,
 `amiga_emulation_start(Änderungen gegenüber der Standard-Konfiguration,
 Skript, Zeitlimit)` → Handle; `amiga_emulation_command()` (Steuer-Socket),
 `amiga_emulation_dir()` (Host-Verzeichnis = `TEST:`),
