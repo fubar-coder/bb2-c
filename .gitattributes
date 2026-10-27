@@ -17,5 +17,7 @@ CMakePresets.json       text eol=lf
 # sources get diffs but no conversion; prebuilt library files
 /archive/**                 binary
 /archive/**/*.s             -text diff
-/archive/**/README.md       text eol=lf
+/archive/**/README.md       text eol=lf diff merge
+LICENSE                     text eol=lf
+RUNTIME-LIBRARY-EXCEPTION   text eol=lf
 *.obj                   binary

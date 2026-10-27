@@ -151,6 +151,14 @@ bb2 `tools/amiberry.cmake` und die Steuerung in den Python-Werkzeugen.
   ab3c nutzt LTO für seinen Amiga-Build (`AB3C_LTO`) – Erfahrungen dort
   ansehen.
 
+* **Lizenz-Kopfzeilen** (SPDX-Kennung `GPL-3.0-or-later WITH
+  LicenseRef-BlitzBasic2-Runtime-exception` o. ä.) in den Quelldateien –
+  noch nicht gesetzt; die Lizenz gilt über `LICENSE` und die README.
+* **CD-Daten** (Quellen der CD, Original-Libraries) für Tests: viele
+  Beiträge Dritter (BUM, BUI, PD-Disks, Shareware) mit unklarer Lizenz –
+  einchecken (Repository privat) oder lokal wie `amiga-emulation/`;
+  spätestens vor einer Veröffentlichung klären.
+
 ## 3 Erst wenn §1 erledigt ist
 
 * **C23** (`gnu23` statt `gnu11`): `static_assert` statt

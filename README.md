@@ -142,3 +142,20 @@ freestanding; ein Hunk), blitz2 und TED als normale Programme mit
 `-fbaserel` (a4 = Basis ihrer globalen Daten). Deshalb übersetzen
 `libs/acidlibs` (freqlib) und `programs/ted` den gemeinsamen Dateirequester
 je selbst; jede Seite liefert dafür ihre `filereq_env.h`.
+
+## Lizenz
+
+GPL-3.0-or-later (`LICENSE`) mit einer Laufzeit-Ausnahme
+(`RUNTIME-LIBRARY-EXCEPTION`): Programme, die blitz2 übersetzt, dürfen den
+Code, den blitz2 aus den Libraries (`acidlibs`, `deflibs`) und seinen
+Code-Vorlagen in sie kopiert, unter beliebiger Lizenz weitergeben;
+Compiler, Editor und Libraries selbst bleiben unter der GPL.
+
+Grundlage ist der Quelltext von Blitz Basic 2 und TED 1.1, den Acid
+Software als „under GNU“ freigegeben hat (ohne Versionsnummer – nach GPL 2
+§ 9 darf man dann jede Version wählen). Die Ausnahme geben die Beteiligten
+dieses Projekts für die Rechte, die sie haben; für die übersetzten
+Originalteile kann sie mangels erreichbarer Rechteinhaber niemand
+verbindlich erteilen. Was über die Lizenz der Originale bekannt ist, steht
+in `archive/README.md`.
+

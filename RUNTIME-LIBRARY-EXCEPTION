@@ -1,0 +1,37 @@
+BLITZ BASIC 2 RUNTIME LIBRARY EXCEPTION (blitzbasic2-c)
+
+This exception is an additional permission under section 7 of the GNU
+General Public License, version 3 ("GPLv3"). It applies to the Blitz
+Basic 2 libraries of this project (the files the build produces as
+blitz2:acidlibs and blitz2:deflibs, and their sources in libs/) and to
+the code templates that the compiler blitz2 of this project inserts
+into the programs it compiles (together: the "Runtime Code").
+
+When blitz2 compiles a Blitz Basic program, it copies parts of the
+Runtime Code into the compiled program. The purpose of this exception
+is to allow programs compiled this way to be distributed under terms of
+their authors' choice, also when they are not under the GPL.
+
+1. Grant of additional permission.
+
+You have permission to convey a program that the compiler blitz2 (of
+this project, or a work based on it that is itself under GPLv3 or a
+later version) produced from Blitz Basic source code, together with the
+parts of the Runtime Code that blitz2 combined with it, under terms of
+your choice, consistent with the licensing of that source code, even if
+this would otherwise violate the terms of GPLv3.
+
+2. No weakening of the copyleft.
+
+This exception does not apply to the Runtime Code itself, to the
+compiler, the editor or any other part of this project, or to modified
+versions of them: these remain under GPLv3 (or a later version).
+
+3. Scope.
+
+The licensors of this project grant this permission for the rights they
+hold. Parts of the Runtime Code are translations of the original
+Blitz Basic 2 libraries and compiler by Acid Software and Red When
+Excited, released under the GNU license; see archive/README.md for what
+is known about their licensing. Whoever holds the rights to those
+originals has not granted this exception.

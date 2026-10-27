@@ -79,6 +79,13 @@ ctest --preset emulator                                # Tests in Amiberry
   zusammengefügt (`ACIDLIBS_ORDER`); `prebuilt/` enthält Originale, die
   noch nicht portiert sind (`dhandlerlib`).
 
+## Lizenz
+
+GPL-3.0-or-later mit `RUNTIME-LIBRARY-EXCEPTION` (README, Abschnitt
+„Lizenz“); Lizenzlage der Originale in `archive/README.md`. Neuer Code
+steht unter derselben Lizenz; keinen Code mit unklarer oder
+GPL-inkompatibler Lizenz übernehmen.
+
 ## Git
 
 * Ein Thema pro Commit; trennbare Arbeiten nie zusammenfassen.
