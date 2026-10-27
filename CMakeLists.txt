@@ -19,6 +19,15 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)              # gnu11: inline asm in the glue, flexible array initialisers
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)   # for clangd
 
+# .clangd in the source directory for this machine's toolchain (generated,
+# not in git; the first configured build directory is the one clangd uses)
+option(BLITZ2_CLANGD "write .clangd into the source directory" ON)
+if(BLITZ2_CLANGD AND NOT EXISTS ${PROJECT_SOURCE_DIR}/.clangd)
+	string(REGEX MATCH "^[0-9]+" AMIGA_GCC_MAJOR ${CMAKE_C_COMPILER_VERSION})
+	file(RELATIVE_PATH CLANGD_DATABASE ${PROJECT_SOURCE_DIR} ${CMAKE_BINARY_DIR})
+	configure_file(cmake/clangd.in ${PROJECT_SOURCE_DIR}/.clangd @ONLY)
+endif()
+
 # build/<preset>/blitz2/ is the result: blitz2, ted, acidlibs, deflibs as
 # they belong into the blitz2: directory
 set(BLITZ2_DIR ${CMAKE_BINARY_DIR}/blitz2)

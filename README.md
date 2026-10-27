@@ -36,6 +36,11 @@ Ergebnis in `build/amiga/blitz2/` – der Inhalt des `blitz2:`-Verzeichnisses:
 
 Preset `amiga-debug`: derselbe Code (`-Os`) mit Symbolen, ohne Strip.
 
+Das erste Konfigurieren schreibt `.clangd` (aus `cmake/clangd.in`, mit den
+Include-Pfaden der gefundenen Toolchain; nicht im Repository). Nach einem
+Wechsel der Toolchain `.clangd` löschen und neu konfigurieren; abschalten
+mit `-DBLITZ2_CLANGD=OFF`.
+
 ## Struktur
 
 ```
