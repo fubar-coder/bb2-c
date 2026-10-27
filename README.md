@@ -52,14 +52,25 @@ das Ergebnis als nicht gebaut, und nichts, was davon abhängt, wird gebaut
   Offset 0 `bsr.w`, Offset 4 `outside`) und `programs/ted/checklink.cmake`
   (keine libgcc-/libnix-Hilfsfunktionen, die `UtilityBase` bräuchten).
 
-`ctest --preset amiga` führt die Tests der Host-Seite aus (Werkzeuge mit
-absichtlich kaputten Eingaben, Host-Tests des TED-Kerns) und prüft die
-vorgebauten Libraries; einzeln: `ctest --test-dir build/amiga/host`. Mit
-`-DHOST_SANITIZE=ON` wird die Host-Seite mit AddressSanitizer und UBSan
-gebaut. Die
-Tests mit dem Emulator haben das Label `emulator` (`-LE emulator` lässt sie
-weg) und werden ohne Amiberry oder ohne die Daten in `amiga-emulation/`
-übersprungen.
+## Tests
+
+Gebaut wird mit dem Preset `amiga` (Cross-Compiler für AmigaOS; die
+Werkzeuge und Host-Tests dafür baut es mit dem nativen Compiler mit).
+Die Test-Presets sagen, **wo** die Tests laufen:
+
+```
+ctest --preset host       # auf dem Host, ohne Emulator (Sekunden)
+ctest --preset emulator   # in Amiberry (Label emulator)
+ctest --preset all        # beides
+```
+
+* **host:** die Werkzeuge mit absichtlich kaputten Eingaben, die
+  Host-Tests des TED-Kerns (nativ übersetzt, snitch) und die Prüfung der
+  vorgebauten Libraries. Einzeln: `ctest --test-dir build/amiga/host`.
+  Mit `-DHOST_SANITIZE=ON` wird die Host-Seite mit AddressSanitizer und
+  UBSan gebaut.
+* **emulator:** Läufe in Amiberry; ohne Amiberry oder ohne die Daten in
+  `amiga-emulation/` werden sie übersprungen.
 
 ## Emulator
 

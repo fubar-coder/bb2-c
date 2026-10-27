@@ -23,6 +23,13 @@
 		{ "name": "amiga-debug", "configurePreset": "amiga-debug" }
 	],
 	"testPresets": [
-		{ "name": "amiga", "configurePreset": "amiga", "output": { "outputOnFailure": true } }
+		{ "name": "host", "displayName": "Tests on the host, without emulator",
+		  "configurePreset": "amiga", "output": { "outputOnFailure": true },
+		  "filter": { "exclude": { "label": "emulator" } } },
+		{ "name": "emulator", "displayName": "Tests in Amiberry",
+		  "configurePreset": "amiga", "output": { "outputOnFailure": true },
+		  "filter": { "include": { "label": "emulator" } } },
+		{ "name": "all", "displayName": "All tests",
+		  "configurePreset": "amiga", "output": { "outputOnFailure": true } }
 	]
 }

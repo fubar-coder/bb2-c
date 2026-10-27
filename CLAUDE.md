@@ -16,7 +16,8 @@ Code-Kommentare wie `BUG(orig)`, `DIFF`, `ted.s:NNN` oder `blitz2.s:NNN`.
 
 ```
 cmake --preset amiga && cmake --build --preset amiga   # Ergebnis: build/amiga/blitz2/
-ctest --preset amiga                                   # Host-Werkzeuge, prebuilt-Libraries
+ctest --preset host                                    # Tests ohne Emulator (Sekunden)
+ctest --preset emulator                                # Tests in Amiberry
 ```
 
 * Toolchain über `PATH` (`m68k-amigaos-gcc`, gcc ≥ 15 wegen `#embed`),
