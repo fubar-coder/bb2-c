@@ -34,6 +34,8 @@ struct hunk {
 };
 
 struct loadfile {
+    const uint8_t *data;        /* the whole file */
+    size_t size;
     uint8_t *buf;               /* owned by load_read, else NULL */
     uint32_t table_size;        /* number of hunks in the header */
     uint32_t nhunks;            /* hunks found in the file */

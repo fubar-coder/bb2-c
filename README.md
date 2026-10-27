@@ -15,7 +15,7 @@ Arbeitsrepository `bb2` (Stand der Übernahme: bb2 `7b5df74`).
 * m68k-amigaos-gcc (bebbo/AmigaDev, getestet mit gcc 16.2) im `PATH`, sonst
   `-DAMIGA_TOOLCHAIN_PREFIX=…` oder gleichnamige Umgebungsvariable;
   gcc ≥ 15 wegen `#embed`
-* ein C-Compiler für den Host (für `tools/biglib`)
+* ein C-Compiler für den Host (für die Werkzeuge in `tools/`)
 
 ## Bauen
 
@@ -77,10 +77,13 @@ libs/deflibs/                eine C-Datei je AmigaOS-Library
 shared/filereq/              Dateirequester von freqlib und TED (eine Quelle,
                              von beiden mit eigenen Optionen übersetzt)
 tools/                       Host-Werkzeuge (eigener nativer Build):
-  hunk/                      Hunk-Format lesen (gemeinsam)
-  biglib/                    Library-Dateien → BigLib-Datei
-  blitzlibcheck/, hunkcheck/ Prüfungen im Build
-  tests/                     ihre Tests
+  lib/                       die Logik als Libraries: hunk (Hunk-Format
+                             lesen), blitzlib (Kopf, Token-Tabelle,
+                             Prüfregeln), biglib (BigLib schreiben/lesen),
+                             hunkcheck (Bytes im ersten Hunk)
+  biglib/, blitzlibcheck/,   die Werkzeuge: je ein main.c um lib/
+  hunkcheck/
+  tests/                     Tests von lib/ mit Eingaben aus dem Speicher
 ```
 
 Die Libraries werden mit den Blitz-Konventionen übersetzt

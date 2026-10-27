@@ -1,2 +1,2 @@
-add_executable(biglib biglib.c)
-target_compile_options(biglib PRIVATE -Wall -Wextra)
+add_executable(biglib main.c)
+target_link_libraries(biglib PRIVATE lib_biglib)

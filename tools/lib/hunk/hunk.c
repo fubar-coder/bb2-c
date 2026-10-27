@@ -98,6 +98,8 @@ int load_parse(const uint8_t *buf, size_t size, struct loadfile *lf, char *err, 
     uint32_t n, i, first, last;
 
     memset(lf, 0, sizeof *lf);
+    lf->data = buf;
+    lf->size = size;
     if (rd32(&r) != HUNK_HEADER)
         return fail(lf, err, errlen, "not a load file (no HUNK_HEADER)");
     while ((n = rd32(&r)) != 0 && !r.bad)       /* resident library names */

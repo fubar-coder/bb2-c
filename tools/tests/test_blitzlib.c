@@ -1,6 +1,6 @@
 /*
- * test_blitzlibcheck.c - blitzlib_check on a minimal library and on broken
- * variants.
+ * test_blitzlib.c - blitzlib_read and blitzlib_check on a minimal library
+ * and on broken variants.
  */
 #include "testutil.h"
 #include "blitzlib.h"
@@ -65,6 +65,23 @@ int main(void)
 
     CHECK(check(&ok, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 0 && !*msg);
 
+    /* the reader: header, one entry with its names, end of the table */
+    {
+        struct hunk h = { HUNK_CODE, ok.p, (uint32_t)ok.n, 0, NULL, NULL };
+        struct blitzlib lib;
+        char err[200];
+
+        CHECK(blitzlib_read(&h, &lib, err, sizeof err) == 0);
+        CHECK(lib.libnum == 100 && lib.error == 0 && lib.libfin == 0);
+        CHECK(lib.nentries == 1 && lib.entries[0].offset == 0x30 && lib.entries[0].kind == 1);
+        CHECK(lib.entries[0].name && !strcmp(lib.entries[0].name, "Test"));
+        CHECK(lib.entries[0].help && !strcmp(lib.entries[0].help, "X"));
+        CHECK(lib.codestart == ok.n - 2);
+        blitzlib_free(&lib);
+        h.size = 0x20;
+        CHECK(blitzlib_read(&h, &lib, err, sizeof err) == -1 && strstr(err, "shorter"));
+    }
+
     /* deflibs: 4 zero bytes instead of MOVEQ #0,d0:RTS */
     b = (struct buf){ 0 };
     putbytes(&b, ok.p, ok.n);
@@ -122,6 +139,6 @@ int main(void)
 
     free(ok.p);
     if (failures)
-        fprintf(stderr, "test_blitzlibcheck: %d failures\n", failures);
+        fprintf(stderr, "test_blitzlib: %d failures\n", failures);
     return failures != 0;
 }

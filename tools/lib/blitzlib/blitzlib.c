@@ -1,18 +1,24 @@
 /*
- * blitzlib.c - checks of a Blitz Basic 2 library file, see blitzlib.h.
+ * blitzlib.c - reading and checking Blitz Basic 2 library files, see
+ * blitzlib.h.
  */
 #include <setjmp.h>
+#include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 #include "blitzlib.h"
 
+/* ------------------------------------------------------------ reading */
+
 /* reading the code with bounds: leaving the code or a broken structure
-   jumps back to blitzlib_check */
+   jumps back to blitzlib_read */
 struct cursor {
     const uint8_t *code;
     uint32_t size;
     jmp_buf fail;
     uint32_t at;                /* where it failed */
     const char *what;
+    struct blitzlib *lib;
 };
 
 static void stop(struct cursor *c, uint32_t p, const char *what)
@@ -56,8 +62,8 @@ static uint32_t libs(struct cursor *c, uint32_t p)
     return p + 2;
 }
 
-/* [$FFFF] next.l nummer.w "name",0 "help",0 [even] */
-static uint32_t namblock(struct cursor *c, uint32_t p, int lead)
+/* [$FFFF] next.l nummer.w "name",0 "help",0 [even]; sets the names of e */
+static uint32_t namblock(struct cursor *c, uint32_t p, int lead, struct blitzlib_entry *e)
 {
     if (lead) {
         if (W(c, p) != 0xFFFF)
@@ -65,32 +71,47 @@ static uint32_t namblock(struct cursor *c, uint32_t p, int lead)
         p += 2;
     }
     p += 6;
-    while (B(c, p))             /* name */
+    e->name = (const char *)c->code + p;
+    while (B(c, p))
         p++;
     p++;
-    while (B(c, p))             /* help text */
+    e->help = (const char *)c->code + p;
+    while (B(c, p))
         p++;
     return even(p + 1);
 }
 
-/* the token table from $30; returns the offset behind it (start of the
-   code) and the number of entries */
-static uint32_t parse(struct cursor *c, unsigned *entries)
+static void add(struct cursor *c, const struct blitzlib_entry *e)
+{
+    struct blitzlib *lib = c->lib;
+
+    if (lib->nentries % 32 == 0) {
+        struct blitzlib_entry *n = realloc(lib->entries, (lib->nentries + 32) * sizeof *n);
+
+        if (!n)
+            stop(c, e->offset, "out of memory");
+        lib->entries = n;
+    }
+    lib->entries[lib->nentries++] = *e;
+}
+
+/* the token table from $30 */
+static void parse(struct cursor *c)
 {
     uint32_t p = 0x30;
 
     while (!(W(c, p) & 0x8000)) {
-        uint16_t kind = W(c, p);
+        struct blitzlib_entry e = { p, W(c, p), NULL, NULL };
 
         p += 6;
-        if (kind == 8) {                        /* dumtoke */
-            p = namblock(c, p, 0);
-        } else if (kind & 4) {                  /* AmigaOS call */
+        if (e.kind == 8) {                      /* dumtoke */
+            p = namblock(c, p, 0, &e);
+        } else if (e.kind & 4) {                /* AmigaOS call */
             p += 4;                             /* library, LVO */
             while (B(c, p) != 0xFF)             /* registers */
                 p++;
-            p = namblock(c, even(p + 1), 0);
-        } else if ((kind & 0xF) == 0) {         /* nullsub */
+            p = namblock(c, even(p + 1), 0, &e);
+        } else if ((e.kind & 0xF) == 0) {       /* nullsub */
             p = libs(c, p) + 12;
         } else {                                /* statement/function/command */
             while (W(c, p) != 0xFFFF) {
@@ -99,14 +120,15 @@ static uint32_t parse(struct cursor *c, unsigned *entries)
                 p = even(p + 2 + (head & 0xFF));        /* argument types */
                 p = libs(c, p) + 12;                    /* libs, subs */
             }
-            p = namblock(c, p, 1);
+            p = namblock(c, p, 1, &e);
         }
-        (*entries)++;
+        add(c, &e);
     }
     if (W(c, p) != 0xFFFF)
         stop(c, p, "expected $FFFF behind the entries");
     p += 2;
     if (L(c, p)) {                              /* !libfin */
+        c->lib->libfin = p;
         W(c, p + 24);
         p += 26;
     } else {
@@ -114,18 +136,51 @@ static uint32_t parse(struct cursor *c, unsigned *entries)
     }
     if (p > c->size)
         stop(c, p, "runs past the end of the code");
-    return p;
+    c->lib->codestart = p;
 }
+
+int blitzlib_read(const struct hunk *h, struct blitzlib *lib, char *err, size_t errlen)
+{
+    /* static: longjmp leaves changed automatic variables indeterminate */
+    static struct cursor c;
+
+    memset(lib, 0, sizeof *lib);
+    lib->code = h->data;
+    lib->size = h->size;
+    if (!h->data || h->size < 0x30) {
+        snprintf(err, errlen, "no library header (code shorter than $30 bytes)");
+        return -1;
+    }
+    lib->libnum = be16(h->data + 4);
+    lib->error = be32(h->data + 0x2C);
+    c.code = h->data;
+    c.size = h->size;
+    c.lib = lib;
+    if (setjmp(c.fail)) {
+        snprintf(err, errlen, "token table does not parse: %s at $%X", c.what, (unsigned)c.at);
+        blitzlib_free(lib);
+        return -1;
+    }
+    parse(&c);
+    return 0;
+}
+
+void blitzlib_free(struct blitzlib *lib)
+{
+    free(lib->entries);
+    memset(lib, 0, sizeof *lib);
+}
+
+/* ------------------------------------------------------------- checks */
 
 int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out)
 {
     static const uint8_t moveq_rts[4] = { 0x70, 0x00, 0x4E, 0x75 };
     static const uint8_t zero[4];
     const struct hunk *h;
-    /* static: longjmp leaves changed automatic variables indeterminate */
-    static struct cursor c;
-    unsigned entries = 0;
-    uint32_t i, codestart, error;
+    struct blitzlib lib;
+    char err[200];
+    uint32_t i;
 
     if (lf->table_size != 1 || lf->nhunks != 1) {
         fprintf(out, "%s: %u hunks, a library needs exactly one (check the linker script)\n",
@@ -149,33 +204,28 @@ int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out)
             return 1;
         }
     }
-    if (h->size < 0x30
-        || (memcmp(h->data, moveq_rts, 4) && memcmp(h->data, zero, 4))) {
+    if (h->size < 4 || (memcmp(h->data, moveq_rts, 4) && memcmp(h->data, zero, 4))) {
         fprintf(out, "%s: code does not start with the library header (MOVEQ #0,d0:RTS)\n", name);
         return 1;
     }
-
-    c.code = h->data;
-    c.size = h->size;
-    if (setjmp(c.fail)) {
-        fprintf(out, "%s: token table does not parse: %s at $%X\n", name, c.what, (unsigned)c.at);
+    if (blitzlib_read(h, &lib, err, sizeof err)) {
+        fprintf(out, "%s: %s\n", name, err);
         return 1;
     }
-    codestart = parse(&c, &entries);
 
-    error = be32(h->data + 0x2C);
-    if (error) {
+    if (lib.error) {
         for (i = 0; i < h->nrelocs; i++) {
             uint32_t r = h->reloc_offset[i];
             uint32_t target = be32(h->data + r);
 
             if (target & 0x80000000)
                 continue;               /* ALibJsr placeholder, not an address */
-            if (codestart <= r && r < error && target >= error)
+            if (lib.codestart <= r && r < lib.error && target >= lib.error)
                 fprintf(out, "%s: warning: code at $%X refers to $%X in the error check area "
                         "(from $%X), dangling without debugger\n",
-                        name, (unsigned)r, (unsigned)target, (unsigned)error);
+                        name, (unsigned)r, (unsigned)target, (unsigned)lib.error);
         }
     }
+    blitzlib_free(&lib);
     return 0;
 }
