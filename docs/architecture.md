@@ -494,8 +494,8 @@ takes the first match [Schluss].
 
 Note: bb2's `bb2tok.py` looks up names in the order deflibs before acidlibs;
 v1.95 loads acidlibs first. For the tokens of the CD this makes no
-difference (no duplicate names); the order of 2.10 is not
-checked.
+difference (no duplicate names); 2.10 loads in the same order as
+v1.95 (`docs/v2.10/blitz2.md`).
 
 ### 4.8 Residents [S]
 
