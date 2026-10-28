@@ -3,7 +3,7 @@
 ; component, but DecodePalette sets only the top byte: under Kickstart
 ; < 3.0 (agamode 0, ShowPalette with LoadRGB4) such colours are black.
 ; agamode comes from ExecVersion when palettelib starts.  Here the program
-; (CORPUS:out/ID, where the runner puts it) runs itself a second time (dos
+; runs itself a second time (own name from dos GetProgramName, dos
 ; Execute, output to the same file) with the version of exec.library set
 ; to 37 for that run, then puts it back.
 ; The child opens a screen, decodes a CMAP (bytes i*21+5) and shows it;
@@ -13,7 +13,8 @@
 DEFTYPE .l
 If NumPars=0
   e=Peek.l(4) : v=Peek.w(e+20)
-  c$="CORPUS:out/palettelib-make4bitrgbs-lowbyte child"
+  nm$=String$(Chr$(0),256) : GetProgramName_ &nm$,255
+  c$=Peek$(&nm$)+" child"
   Poke.w e+20,37
   Execute_ &c$,0,Output_
   Poke.w e+20,v
