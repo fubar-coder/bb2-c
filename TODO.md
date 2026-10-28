@@ -49,6 +49,13 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
    `tedprobe` in `tests/amiga`): Original-TED gegen TED-C, mit blitz2 1.95
    und blitz2-c. Dazu die Host-Tests der Werkzeuge (`test_tedab.py`,
    `tdscript_host`).
+   Entschieden (28.10.2026): `teddrive` bleibt der Treiber im Gast. Amiberrys
+   Fernsteuerung (`SEND_KEY`, `SEND_MOUSE_ABS`, `READ_MEM`, `MONITOR tasks`,
+   `SCREENSHOT`) könnte ihn ersetzen, aber nur als Neubau: Fenster,
+   Requester, Gadgets und Menüs müsste der Host aus den Intuition-
+   Strukturen lesen, Menüs und Gadgets per Maus treffen, Dumps aus PNG
+   oder Speicher gewinnen. Die Vorteile (kein Testprogramm im Gast, echter
+   Eingabeweg) sind zu gering, das Ergebnis ist ungewiss.
 
 **Libraries (bb2: `libs-c/`)**
 
