@@ -42,11 +42,11 @@
  *     locks.
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
  *     than 34 characters overrun them.
- *   - There are 64 line gadgets (144 bytes each, $15AA-$39D9, the end of
- *     the data block), but the window shows (height - 85) / 8 lines with
- *     no limit: from a window height of 605 the layout writes the line
- *     gadgets beyond the data block into whatever follows the library in
- *     the program.  The first window is screen height - 40 high, so this
+ *   - There are 64 line gadgets (144 bytes each, $15AA-$39A9, then 48
+ *     bytes up to the end of the data block, $39D9), but the window shows
+ *     (height - 85) / 8 lines with no limit: from a window height of 605
+ *     the layout writes the line gadgets beyond the data block into
+ *     whatever follows the library in the program.  The first window is screen height - 40 high, so this
  *     happens on every screen of 645 lines or more (MaxHeight is $FFFF,
  *     so also after enlarging the window).  Measured in the host harness
  *     (screen height 1050: window 1010, 115 lines, 51 too many, ~7.2 KB

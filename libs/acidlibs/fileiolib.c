@@ -38,9 +38,6 @@
  *     Fields, the original loop leaves a2 = 0, and the name length is read
  *     from -4(0) (on the A1200's 24 bit bus the last long of the ROM),
  *     then name[(WORD)length] is cleared.  Nachgebildet.
- *   - The dos buffer (memlib globalloc, MEMF_PUBLIC) is not checked (in
- *     the original globalloc never returns 0: memlib err1 ends the
- *     program; only the C memlib returns 0, K).
  *   - CloseFile frees the record fields but leaves the pointer to them
  *     and the record length; OpenFile clears them.  Fields adds to the
  *     existing fields and record length (no reset); the list is built
@@ -49,7 +46,7 @@
  *     others 4; strings start at address-4.
  *   - Exists: 0 for a missing file AND for an empty file, -1 for a drawer
  *     (fib_DirEntryType = 2; a volume's root (1) gives its fib_Size); the
- *     FileInfoBlock comes from memlib globalloc (not checked, see above).
+ *     FileInfoBlock comes from memlib globalloc (not checked, see below).
  *   - myseek/myread/mywrite return d0 unchanged when there is nothing to
  *     do (length 0, position in the buffer): FileSeek/Put/Get compare the
  *     file number resp. the field address with -1 then.
@@ -60,6 +57,10 @@
  *     resets it - Loc and Lof are 1 too high afterwards (t50: "written
  *     lof 32 loc 32" for a file of 31 bytes; Blitz evaluates the NPrint
  *     arguments from the right, Eof first).
+ * Kept from the original, not a bug (no visible effect):
+ *   - The dos buffer (memlib globalloc, MEMF_PUBLIC) and the FileInfoBlock
+ *     of Exists are not checked: in the original globalloc never returns
+ *     0 (memlib err1 ends the program); only the C memlib returns 0 (K).
  * DIFF:
  *   - The original jumps from the normal code into the error check area
  *     (err1/err2 in the I/O handlers, err3 Put/Get, err6 FileSeek) and

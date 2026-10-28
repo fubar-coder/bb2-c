@@ -36,9 +36,6 @@
  *   - Implode: the match search reads up to 254 bytes past the end of
  *     the data (im30: up to 15, the length measurement im32/im33: up to
  *     254 - the two do not add up; results do not depend on them).
- *     After $4012 literal bytes
- *     in a row the rest of the data is stored uncrunched - a limit of the
- *     Imploder format (imtab4), not an error.
  *   - CrMDecrunch with one argument (destination = source) and with
  *     overlapping buffers: the crunched data are moved to MinSecDist
  *     bytes BEFORE the destination - up to MinSecDist bytes of foreign
@@ -54,6 +51,9 @@
  *     crunchable) after at least 64 bytes leaves the buffer partly
  *     overwritten.
  *   - No checks of the data at all: corrupt data write anywhere.
+ * Kept from the original, not a bug: after $4012 literal bytes in a row
+ * Implode stores the rest of the data uncrunched - a limit of the
+ * Imploder format (imtab4); the result decrunches correctly.
  * DIFF: corrupt CrM2 data can make ReadIt index RealTab with any word
  * (and GetBits2 use masks behind AndData2), i.e. read the library's own
  * code and data; the result then depends on the library's memory layout.

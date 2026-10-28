@@ -41,10 +41,6 @@
  *   - GetRexxCommand/GetResultString copy ra_Length+1 bytes (the 0 too):
  *     a3 is left BEHIND the 0.  GetResultString deletes the ArgString but
  *     leaves rm_Result2 pointing to it.
- *   - RexxError copies the message up to (not including) its 0, at least
- *     one byte; no terminating 0 (not visible: the compiler appends
- *     clr.b (a3)+ itself, blitz2.s:8767 sbtolong), d0 = word count; unknown code: "Returned
- *     Error not known to Arexx".
  *   - RexxEvent removes the first message like exec GetMsg (own copy with
  *     INTENA and IDNestCnt), returns replies as well (after ClearRexxMsg).
  *   - SendRexxCommand: if there is no REXX port, the alert comes with
@@ -57,6 +53,12 @@
  *     allocates length+9 bytes.
  *   - Without rexxsyslib the internal RexxMsg check shows the alert and
  *     then treats the message as valid with address 0.
+ * Kept from the original, not a bug (no visible effect):
+ *   - RexxError copies the message up to (not including) its 0, at least
+ *     one byte (rexxsyslib has no empty messages); no terminating 0 (the
+ *     compiler appends clr.b (a3)+ itself where it passes a string on,
+ *     blitz2.s:8767 sbtolong); d0 = word count (texts are far below 64K);
+ *     unknown code: "Returned Error not known to Arexx".
  * DIFF:
  *   - ReplyRexxMsg with something that is not a RexxMsg returns; the
  *     original pulls 15 registers it never pushed (crash).

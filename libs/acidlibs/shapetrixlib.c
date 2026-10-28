@@ -34,12 +34,13 @@
  *    still runs (seen with 13 and 21 pixel shapes, the latter only with
  *    runtime error checking on); t141 tests XFlip only without the
  *    shift blit (width = byte width * 8).
- *  - The brightness table keeps the values of an earlier Scale with a
- *    palette for colours beyond the current palette (never used: the
- *    colour choice only compares usevals[0..numcols], so no effect).
  *  - Scale reads source pixels to the right/bottom of the shape when a
  *    target size below 1 is raised to 1 (reads only).
  *  - Word arithmetic: row/plane steps ADDA.w, sizes are MULU low words.
+ * Kept from the original, not a bug: the brightness table keeps the values
+ * of an earlier Scale with a palette for colours beyond the current
+ * palette (never used: the colour choice only compares
+ * usevals[0..numcols]).
  */
 #include "blitzlib.h"
 #define __NOLIBBASE__

@@ -129,7 +129,10 @@ static void wbtest(struct set *s, struct result *rs)
     static const char *lines[] = {
         "  foo \"bar baz\" \"\" qux\n",
         "single\n",
-        "x y",                          /* no LF: BUG(orig) reads on */
+        "x y",                          /* no LF: reads on behind the 0
+                                           into what the earlier calls
+                                           left in cliString (a program
+                                           writes it only once: no bug) */
         "",
         "\"open quote\n",
     };

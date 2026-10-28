@@ -43,23 +43,26 @@
  *    (DBRA of tlen-2) writes 65536 spaces.
  *  - BoxString strips trailing spaces backwards without a limit: an
  *    all-space answer runs into the prompt / memory before the text (d0
- *    0: nothing, negative: a huge copy); no 0 is written, a3 = the end
- *    (the missing 0 is not visible: the compiler appends clr.b (a3)+
- *    itself, blitz2.s:8767 sbtolong).
+ *    0: nothing, negative: a huge copy).
  *  - BoxPrint Bank#,Line: skips lines over 0 bytes too, and replaces the
- *    line's LF in the bank by 0.  BoxPrint overwrites the string length
- *    at -4(a2) with Scroll's size (harmless: that argument area belongs to
- *    this call only and is dropped by the compiler unread).
+ *    line's LF in the bank by 0.
  *  - oneline: a box with tlen 0 but an old text pointer prints from
  *    address 0 with the pointer as length (fresh boxes have text 0).
  *  - BlitzEvent: with cursor up/down it reads btype of `selected` also
  *    when nothing is selected; Backspace at position 0 leaves the cursor
- *    off; the cursor key character cycle uses BMI after CMP.b (N flag -
- *    for all 256 values the same result as an unsigned compare, so no
- *    visible effect).
+ *    off.
+ *  - DeSelectBox does not clear `selected`.
+ * Kept from the original, not a bug (no visible effect):
+ *  - BoxString writes no 0, a3 = the end (the compiler appends
+ *    clr.b (a3)+ itself where it passes a string on, blitz2.s:8767
+ *    sbtolong).
+ *  - BoxPrint overwrites the string length at -4(a2) with Scroll's size
+ *    (that argument area belongs to this call only and is dropped by the
+ *    compiler unread).
+ *  - BlitzEvent: the cursor key character cycle uses BMI after CMP.b (N
+ *    flag - for all 256 values the same result as an unsigned compare).
  *  - SelectBox3 redraws the old box also when it is the new one (drawbox
  *    draws completely, so only extra time).
- *  - DeSelectBox does not clear `selected`.
  * DIFF: the coordinates passed to Boxf/Line/Locate are computed as words
  * and sign extended; the original leaves the sign of the box field in the
  * upper word (differs only for coordinates around 0/negative).

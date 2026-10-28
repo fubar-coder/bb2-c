@@ -37,7 +37,7 @@
  * Format: "#" = digit or space, "0" = digit or zero, "." decimal point,
  * "-" = "-" if negative else space, "+" = "+"/"-", "," = "," (space in
  * the leading pad), other characters literally.  Too many integer digits
- * give "?" and the lowest digits; rounding at the last decimal.
+ * give "?" and padding (see below); rounding at the last decimal.
  *
  * BUG(orig), kept (for the comparison with AmiBlitz3):
  *   - Quick: a fraction that rounds to 10000 (x.99995 and more) loses the
@@ -51,10 +51,7 @@
  *     the format (0.567 with ".##" or "###.##" -> ".56"); the
  *     sign is lost when the format has no "-"/"+" (-7 with "###" ->
  *     "  7"); too many integer digits give "?" and then only padding for
- *     the whole integer part (1234.5 with "##" -> "?  "); the round-up
- *     loop starts at the last copied digit (d1; d1 = 0 with "address -1"
- *     would need a rounding without a copied integer digit, which does
- *     not occur: rounding needs d3 != 0 = at least one integer digit).
+ *     the whole integer part (1234.5 with "##" -> "?  ").
  *   - Format with more than 32 characters (no check without the
  *     debugger): the copy runs over formlen/formlead/formtrail/decpos and
  *     further into the conversion buffers (the layout of the variables
@@ -71,6 +68,10 @@
  *   - Str$ installs its handler with dosetout twice (install and
  *     restore), so every Str$ pushes two entries on inputoutputlib's
  *     output stack (a ring of 16, harmless).
+ * Kept from the original, not a bug: the Format round-up loop starts at
+ * the last copied digit (d1); d1 = 0 ("address -1") would need a rounding
+ * without a copied integer digit, which does not occur (rounding needs
+ * d3 != 0 = at least one integer digit).
  *
  * Registers: the original changes d0-d7/a0-a2 (Print), d0-d1/a0-a2/d4-d6
  * (Str$, d2-d3 kept), d1-d5/a0-a1 (Format, d0 kept); C keeps d2-d7/a2/a6,

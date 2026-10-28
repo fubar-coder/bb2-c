@@ -14,10 +14,7 @@
  * memory and goes with the program.
  *
  * Kept from the original (BUG(orig)):
- *   - InitBank with size 0 only frees the bank; with a size it stores size
- *     and memtype BEFORE allocating (a failed allocation would leave pos =
- *     0 and BankSize = the requested size; in the original memlib never
- *     returns then - err1, "Out of Memory!" - only with the C memlib (K)).
+ *   - InitBank with size 0 only frees the bank.
  *   - FreeBank frees only if pos and size are both non-zero and does not
  *     clear memtype.
  *   - LoadBank asks fileiolib's Exists (ALibJsr $3E15) for the file size:
@@ -37,6 +34,11 @@
  *     a new file; errors of Open/Write are ignored.
  *   - The file handle and name are kept in two longs of the library
  *     (hand, fname) like the original's `Dc.l` variables.
+ * Kept from the original, not a bug (no visible effect):
+ *   - InitBank with a size stores size and memtype BEFORE allocating: a
+ *     failed allocation would leave pos = 0 and BankSize = the requested
+ *     size, but in the original memlib never returns then (err1, "Out of
+ *     Memory!"); only the C memlib returns (K).
  */
 #include "blitzlib.h"
 #include <dos/dos.h>

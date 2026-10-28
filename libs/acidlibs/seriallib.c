@@ -23,7 +23,8 @@
  *     unit*256 (ASL.w #8), but CloseSerial, SetSerialBuffer,
  *     SetSerialLens, SetSerialParams and SerialEvent use unit*128
  *     (ASL.w #7): only unit 0 works with all commands; for unit n > 0
- *     those reach the write half of unit n/2 (CloseSerial 1 closes the
+ *     those reach the write half of unit (n-1)/2 for an odd n, the read
+ *     half of unit n/2 for an even n (CloseSerial 1 closes the
  *     device through unit 0's write request and frees unit 1's read
  *     signal).  Index arithmetic is word sized (ADDA.w: sign extended).
  *   - ReadSerialMem reads through the WRITE request (+128).
@@ -34,10 +35,8 @@
  *     argument form takes a #long (an address), flags 0.
  *   - ReadSerial: the "wait" flag is bit 1 (value 2), not 1 as the help
  *     says; with it the query is skipped and the read waits for a byte.
- *   - ReadSerialString reads io_Actual bytes (unlimited) to a3 and writes
- *     no terminating 0 (not visible: the compiler appends clr.b (a3)+
- *     itself, blitz2.s:8767 sbtolong); d0 = number of bytes, 0 if nothing
- *     is waiting.
+ *   - ReadSerialString reads io_Actual bytes (unlimited) to a3; d0 =
+ *     number of bytes, 0 if nothing is waiting.
  *   - CloseSerial: AbortIO without WaitIO, the write half's request is
  *     neither aborted nor closed (a pending SendIO write stays pending).
  *   - OpenSerial: if the write half's AllocSignal fails, the device stays
@@ -48,6 +47,9 @@
  *     (TRAP #0, also without the debugger; the original then runs into
  *     the message text, the C version returns).  SerialEvent checks
  *     nothing.
+ * Kept from the original, not a bug: ReadSerialString writes no
+ * terminating 0 (the compiler appends clr.b (a3)+ itself where it passes
+ * a string on, blitz2.s:8767 sbtolong).
  * DIFF: ReadSerial does not change a3 (the original leaves it on its
  * one byte buffer rb1 inside the library); a2 is never changed (the
  * original sets it to the unit's slot, WriteSerialString pops the length).
