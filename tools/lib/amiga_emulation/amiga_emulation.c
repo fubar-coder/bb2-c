@@ -370,7 +370,8 @@ static char *make_runtime_dir(void)
     return d;
 }
 
-static void child(const char *work_dir, const char *runtime_dir, const char *amiberry, int visible)
+static void child(const char *work_dir, const char *runtime_dir, const char *amiberry, int visible,
+                  int log_on)
 {
     static const char *const xdg[][2] = {
         { "XDG_CONFIG_HOME", "xdg/config" }, { "XDG_DATA_HOME", "xdg/data" },
@@ -403,7 +404,10 @@ static void child(const char *work_dir, const char *runtime_dir, const char *ami
         setenv("SDL_VIDEO_DRIVER", "offscreen", 1);
         setenv("SDL_AUDIO_DRIVER", "dummy", 1);
     }
-    execlp(amiberry, amiberry, "--config", "amiberry.uae", "-G", (char *)NULL);
+    if (log_on)
+        execlp(amiberry, amiberry, "--config", "amiberry.uae", "-G", "--log", (char *)NULL);
+    else
+        execlp(amiberry, amiberry, "--config", "amiberry.uae", "-G", (char *)NULL);
     _exit(127);
 }
 
@@ -475,7 +479,8 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
         goto fail;
     }
     if (e->pid == 0)
-        child(e->work_dir, e->runtime_dir, p->amiberry ? p->amiberry : "amiberry", p->visible);
+        child(e->work_dir, e->runtime_dir, p->amiberry ? p->amiberry : "amiberry", p->visible,
+              p->log);
     setpgid(e->pid, e->pid);
     free(cfg);
     free(script);

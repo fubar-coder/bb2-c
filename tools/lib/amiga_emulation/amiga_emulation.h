@@ -10,7 +10,9 @@
  *   - the hardfile read-only (amiga-emulation/README.md): the script may
  *     write only to TEST: or RAM:, a write to SYS: blocks on a requester
  * Without `visible`, SDL gets the offscreen video and the dummy audio
- * driver: no window, no host input.
+ * driver: no window, no host input.  Amiberry's output goes to
+ * amiberry.log in the work directory; with `log` that includes its own
+ * log (write_log, e.g. "Illegal bget at ..." with log_illegal_mem).
  *
  * The configuration is default.uae (embedded) with the changes of the
  * test: a change replaces every line of its key (value NULL removes them).
@@ -47,6 +49,8 @@ struct amiga_emulation_params {
     const char *script;         /* AmigaDOS script text */
     unsigned timeout;           /* seconds for the whole run, boot included */
     int visible;                /* show the window (debugging) */
+    int log;                    /* Amiberry's own log (--log) into amiberry.log,
+                                   e.g. for log_illegal_mem */
     const char *emulation_dir;  /* NULL: $AMIGA_EMULATION_DIR, else built in */
     const char *work_dir;       /* NULL: new directory under $TMPDIR, removed by free */
     const char *amiberry;       /* NULL: "amiberry" from PATH */

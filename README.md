@@ -218,9 +218,14 @@ directory as `TEST:`. By hand:
 
 ```
 echo 'Version >TEST:v.txt' | build/amiga/host-tools/amiga_run/amiga_run -
-amiga_run [--rtg] [--visible] [--timeout SEC] [--set KEY=VALUE] [--unset KEY]
-          [--mount VOL=DIR] [--mount-ro VOL=DIR] [--dir WORKDIR] SCRIPT|-
+amiga_run [--rtg] [--visible] [--log] [--timeout SEC] [--set KEY=VALUE]
+          [--unset KEY] [--mount VOL=DIR] [--mount-ro VOL=DIR] [--dir WORKDIR]
+          SCRIPT|-
 ```
+
+`--log` writes Amiberry's own log into `amiberry.log` of the working
+directory (e.g. with `--set log_illegal_mem=true`: every access to
+unmapped memory as `Illegal bget at ADDRESS PC=...`).
 
 Requirement: Amiberry ≥ 8.4 in `PATH`, Kickstart ROM and hardfiles in
 `amiga-emulation/` (see the README there).

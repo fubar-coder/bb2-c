@@ -1,7 +1,7 @@
 /*
  * amiga_run - run an AmigaDOS script in Amiberry (tools/lib/amiga_emulation).
  *
- *   amiga_run [--rtg] [--visible] [--timeout SEC] [--set KEY=VALUE]...
+ *   amiga_run [--rtg] [--visible] [--log] [--timeout SEC] [--set KEY=VALUE]...
  *             [--unset KEY]... [--mount VOL=DIR]... [--mount-ro VOL=DIR]...
  *             [--dir WORKDIR] SCRIPT|-
  *
@@ -10,6 +10,7 @@
  * and the directory is removed; with --dir everything stays.  Exit status
  * 0 if the script ran to its end, 1 otherwise, 77 if the emulator cannot
  * start (Amiberry or its data missing: skipped), 2 on usage errors.
+ * --log: Amiberry's own log into WORKDIR/amiberry.log (with --dir).
  */
 #define _XOPEN_SOURCE 700       /* scandir */
 #include <dirent.h>
@@ -78,7 +79,7 @@ static void print_results(const char *dir)
 
 static int usage(void)
 {
-    fprintf(stderr, "usage: amiga_run [--rtg] [--visible] [--timeout SEC] [--set KEY=VALUE]...\n"
+    fprintf(stderr, "usage: amiga_run [--rtg] [--visible] [--log] [--timeout SEC] [--set KEY=VALUE]...\n"
                     "                 [--unset KEY]... [--mount VOL=DIR]... [--mount-ro VOL=DIR]...\n"
                     "                 [--dir WORKDIR] SCRIPT|-\n");
     return 2;
@@ -112,6 +113,8 @@ int main(int argc, char **argv)
             p.nchanges += amiga_emulation_rtg_count;
         } else if (!strcmp(a, "--visible")) {
             p.visible = 1;
+        } else if (!strcmp(a, "--log")) {
+            p.log = 1;
         } else if (!strcmp(a, "--timeout") && i + 1 < argc) {
             p.timeout = (unsigned)strtoul(argv[++i], NULL, 10);
         } else if (!strcmp(a, "--set") && i + 1 < argc && (eq = strchr(argv[i + 1], '='))) {
