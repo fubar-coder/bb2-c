@@ -1,12 +1,12 @@
 # TODO
 
-Stand 27.10.2026. Dieses Repository ist die Referenz für den Code
-(Entscheidung vom 27.10.2026). Es enthält bisher nur den Build; die Tests
-und Prüfungen liegen noch im Arbeitsrepository `bb2` (Übernahme von bb2
-`7b5df74`) und müssen auf dieses Repository umgestellt oder hierher
-geholt werden. Ziel: alle Prüfungen, die bb2 vor dem Abbau von Python hatte,
-wieder aktiv – hier im Build, als ctest oder als Werkzeug, das auf diesen
-Build zeigt. Erst danach die Umstellung auf C23 (§3).
+Stand 28.10.2026. Dieses Repository ist die Referenz für den Code
+(Entscheidung vom 27.10.2026; Übernahme von bb2 `7b5df74`). Build,
+Referenz-Builds, Orakel und die Host-Tests von TED sind hier; die übrigen
+Tests und Prüfungen liegen noch im Arbeitsrepository `bb2` und werden
+hierher geholt. Ziel: alle Prüfungen, die bb2 vor dem Abbau von Python
+hatte, wieder aktiv – hier im Build oder als ctest. Erst danach die
+Umstellung auf C23 (§3).
 
 ## 1 Prüfungen, die gegenüber bb2 noch fehlen
 
@@ -17,17 +17,10 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
 **TED (bb2: `ted-c/`)**
 
 1. ~~**Referenz-Build von `ted.s`**~~ erledigt (27.10.2026): Ziel
-   `ted_ref`, Originalquellen in `archive/sources/ted-1.1/` (auch für
-   `#embed`, `resources/` entfällt), `tools/vasmlisting` statt
-   `tedlisting.py` (`map`, `labels`, `verify`); `ref/ted`, Listing, Map
-   und Labels byte-identisch zu bb2; `ref_verify` ist jetzt eine Prüfung
-   im Build-Schritt. Bisher (bb2: CMake-Ziel `ref`): `ted.s` mit vasm
-   (`-devpac -nocase`) assembliert → `ref/ted`, Listing `ted.lst`, daraus
-   `ted.map`/`ted.labels` (`tools/tedlisting.py`); ctest `ref_verify`
-   (jedes Listing-Byte gegen das Binary). Voraussetzung für 2 und 3.
-   Offen: woher die Originalquellen kommen (hier liegen nur die 5
-   Ressourcen; Pfad als Cache-Variable auf bb2/`quelltext` oder Kopie
-   unter einem eigenen Verzeichnis).
+   `ted_ref`, Originalquellen in `archive/sources/ted-1.1/`,
+   `tools/vasmlisting` statt `tedlisting.py` (`map`, `labels`, `verify`);
+   `ref/ted`, Listing, Map und Labels byte-identisch zu bb2; `verify` ist
+   eine Prüfung im Build-Schritt.
 2. **`checkdata`** (bb2: `tools/checkdata.py`, 617 Zeilen): die Daten des
    C-Builds (`ted.sym`) gegen das Listing der Referenz – Requester,
    Menüs, Tabellen. Braucht einen Link mit Symbolen (`ted.sym`; `strip`
@@ -84,15 +77,12 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
 
 **Grundlage für 5, 8, 9: Emulator-Bibliothek `tools/lib/amiga_emulation`**
 – **umgesetzt** (27.10.2026, mit `tools/amiga_run` und Tests: vier Läufe
-parallel, RTG, Steuer-Socket, Zeitlimit mit Screenshot). Noch offen: die
-bb2-Werkzeuge (Korpus, TED-A/B, snitch) laufen weiter über bb2
-`tools/amiberry.cmake` mit `AB3C:`; sie auf `amiga_run`/`TEST:` umstellen
-oder die Tests hierher holen. Entwurf: C-Library auf dem Host,
-`amiga_emulation_start(Änderungen gegenüber der Standard-Konfiguration,
-Skript, Zeitlimit)` → Handle; `amiga_emulation_command()` (Steuer-Socket),
-`amiga_emulation_dir()` (Host-Verzeichnis = `TEST:`),
-`amiga_emulation_join()` (fertig / Zeitlimit / vorzeitig beendet). Ersetzt
-bb2 `tools/amiberry.cmake` und die Steuerung in den Python-Werkzeugen.
+parallel, RTG, Steuer-Socket, Zeitlimit mit Screenshot). Erster Nutzer:
+das TED-Orakel (`ted-oracle`, `amiga_run` mit zusätzlichen Laufwerken).
+Noch offen: Korpus, TED-A/B und snitch-Tests laufen in bb2 weiter über
+`tools/amiberry.cmake` mit `AB3C:`; beim Hierherholen auf
+`amiga_emulation` umstellen (für den Korpus-Stub gibt es den Rahmen
+`shared/edstub`).
 
 * Standard-Konfiguration `tools/lib/amiga_emulation/default.uae` (aus der
   AGA-Konfiguration, bereinigt; RTG-Variante = Änderungen) und
@@ -133,17 +123,17 @@ bb2 `tools/amiberry.cmake` und die Steuerung in den Python-Werkzeugen.
   sofort – Ersatz für `uaequit`). Laut Hilfe außerdem `SEND_KEY`,
   `SEND_MOUSE`, `WRITE_MEM`, Breakpoints, `SAVESTATE`/`LOADSTATE`.
 
-**Offene Grundsatzfragen dazu**
+**Grundsätze dazu**
 
-* Wo die Tests künftig liegen: hier (Komponenten-Tests bei der
-  Komponente, z. B. `libs/acidlibs/tests/`; übergreifende oben in
-  `tests/`) oder vorerst in bb2, mit Werkzeugen, die auf
-  `build/amiga/blitz2/` dieses Verzeichnisses zeigen.
+* Tests liegen hier bei ihrer Komponente (z. B. `programs/ted/tests/`,
+  später `libs/acidlibs/tests/`), übergreifende oben in `tests/`;
+  erzeugte Testdaten in `tests/data/` (so umgesetzt, 28.10.2026).
+* Referenzdaten: Originalquellen in `archive/sources/`, CD und
+  Aminet-Archiv über `fetch-originals` (Original-Libraries:
+  `archive/cd/…/BLITZ2/DEFLIBS`, `ACIDLIBS`).
 * Die komplexen Python-Werkzeuge bleiben vorerst Python (Entscheidung vom
   27.10.2026); hier nur C/C++ und CMake. Ein Test, der Python braucht,
   bleibt deshalb vorerst in bb2.
-* Referenzdaten (Original-Libraries, `ted.s`, CD-Quellen für Fixtures und
-  Korpus): kopieren oder per Pfad auf bb2 verweisen.
 
 ## 2 Weitere offene Punkte
 
