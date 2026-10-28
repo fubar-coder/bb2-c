@@ -11,6 +11,8 @@
  *   crunch-decrunch-corrupt   the decrunchers with corrupt data (crunchlib)
  *   crunchlib-crm-minsecdist  CrMDecrunch in place writes in front of the
  *                             buffer (crunchlib)
+ *   crunchlib-crm-overlap-4gb CrMDecrunch with a crunched length < 4
+ *                             copies 4 GB (crunchlib)
  *
  * crunch-implode-overread puts the data at the very end of the highest
  * memory region; what lies behind is not mapped, and with
@@ -464,5 +466,58 @@ int bugorig_crunchlib_crm_minsecdist(const char *dir)
              "(%lu of the %d guard bytes changed)", back, GUARD);
     check(msg, back == 0);
     FreeMem(arena, GUARD + blen + GUARD);
+    return failures ? 5 : 0;
+}
+
+/* ------------------------------------------- crunchlib-crm-overlap-4gb */
+
+#define LOWABSORB (64 * 1024)           /* room for the decruncher below */
+
+/* CrMDecrunch buffer (in place, so the overlap copy runs) on the CrM!
+   data of t60_crunch with a crunched length (header offset 10) of 0.
+   Correct: the overlap copy moves at most the crunched length (rounded up
+   to longs); what the decruncher then makes of the data is not checked -
+   it writes downwards from buffer+OrigLen (up to 16 KB below the buffer,
+   LOWABSORB), nothing behind the buffer: the GUARD bytes there stay.
+   BUG(orig): the copy counts (CrLen>>2) longs with SUBQ/BNE - 0 copies
+   2^32 longs over the whole memory, the system crashes (the line below
+   is the last output; the run ends in the emulator's time limit). */
+int bugorig_crunchlib_crm_overlap_4gb(const char *dir)
+{
+    static const char *names[] = { "crunchlib", NULL };
+    const ULONG blen = TEXTLEN + CRMMSD;
+    const ULONG alen = LOWABSORB + blen + GUARD;
+    struct lib *l;
+    UBYTE *arena, *buf;
+    ULONG back = 0, i;
+    char msg[200];
+
+    failures = 0;
+    if (!load_c(dir, names)) {
+        check("load crunchlib (C build)", FALSE);
+        return 20;
+    }
+    l = getlib(&cset, "crunchlib");
+    arena = AllocMem(alen, MEMF_PUBLIC);
+    if (!arena) {
+        check("setup: arena", FALSE);
+        return 20;
+    }
+    buf = arena + LOWABSORB;
+    memset(arena, GUARDVAL, alen);
+    memcpy(buf, crm1, sizeof crm1);
+    buf[10] = buf[11] = buf[12] = buf[13] = 0;                      /* CrLen 0 */
+    printf("  CrMDecrunch buffer with a crunched length of 0 at $%08lX\n", (ULONG)buf);
+    fflush(stdout);                     /* a crash leaves this line */
+    markregs(&r);
+    r.d[0] = (ULONG)buf;
+    callregs(cmd_form(l, 2, 0), &r, 0, 0);                          /* CrMDecrunch buffer */
+    for (i = 0; i < GUARD; i++)
+        back += buf[blen + i] != GUARDVAL;
+    snprintf(msg, sizeof msg,
+             "CrMDecrunch buffer with CrLen 0 writes nothing behind the buffer "
+             "(BUG(orig): copies 4 GB; %lu of the %d guard bytes changed)", back, GUARD);
+    check(msg, back == 0);
+    FreeMem(arena, alen);
     return failures ? 5 : 0;
 }
