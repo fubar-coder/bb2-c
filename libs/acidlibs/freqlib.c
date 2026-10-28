@@ -43,7 +43,7 @@
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
  *     than 34 characters overrun them.
  *   - There are 64 line gadgets (144 bytes each, $15AA-$39A9, then 48
- *     bytes up to the end of the data block, $39D9), but the window shows
+ *     bytes $39AA-$39D9 up to the end of the data block), but the window shows
  *     (height - 85) / 8 lines with no limit: from a window height of 605
  *     the layout writes the line gadgets beyond the data block into
  *     whatever follows the library in the program.  The first window is screen height - 40 high, so this
