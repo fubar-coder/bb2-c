@@ -71,6 +71,26 @@ static int fail(struct loadfile *lf, char *err, size_t errlen, const char *fmt, 
     return -1;
 }
 
+static int add_symbol(struct hunk *h, const char *name, uint32_t max, uint32_t value)
+{
+    uint32_t len = 0;
+
+    if (h->nsyms % 64 == 0) {
+        struct hunk_symbol *s = realloc(h->syms, (h->nsyms + 64) * sizeof *s);
+
+        if (!s)
+            return -1;
+        h->syms = s;
+    }
+    while (len < max && name[len])
+        len++;
+    h->syms[h->nsyms].name = name;
+    h->syms[h->nsyms].len = len;
+    h->syms[h->nsyms].value = value;
+    h->nsyms++;
+    return 0;
+}
+
 static int add_reloc(struct hunk *h, uint32_t offset, uint32_t target)
 {
     if (h->nrelocs % 64 == 0) {
@@ -168,8 +188,13 @@ int load_parse(const uint8_t *buf, size_t size, struct loadfile *lf, char *err, 
             break;
         case HUNK_SYMBOL:
             while ((n = rd32(&r)) != 0 && !r.bad) {
-                skip(&r, n);                    /* name */
-                rd32(&r);                       /* value */
+                const char *name = (const char *)buf + r.pos;
+                uint32_t value;
+
+                skip(&r, n);                    /* name, padded with 0 to longs */
+                value = rd32(&r);
+                if (!r.bad && cur >= 0 && add_symbol(&lf->hunks[cur], name, n * 4, value))
+                    return fail(lf, err, errlen, "out of memory");
             }
             break;
         case HUNK_DEBUG:
@@ -223,8 +248,28 @@ void load_free(struct loadfile *lf)
     for (i = 0; i < lf->nhunks; i++) {
         free(lf->hunks[i].reloc_offset);
         free(lf->hunks[i].reloc_target);
+        free(lf->hunks[i].syms);
     }
     free(lf->hunks);
     free(lf->buf);
     memset(lf, 0, sizeof *lf);
+}
+
+int load_symbol(const struct loadfile *lf, const char *name, uint32_t *hunk, uint32_t *value)
+{
+    size_t n = strlen(name);
+    uint32_t i, k;
+    int found = -1;
+
+    for (i = 0; i < lf->nhunks; i++)
+        for (k = 0; k < lf->hunks[i].nsyms; k++) {
+            const struct hunk_symbol *s = &lf->hunks[i].syms[k];
+
+            if (s->len == n && !memcmp(s->name, name, n)) {
+                *hunk = i;
+                *value = s->value;
+                found = 0;
+            }
+        }
+    return found;
 }

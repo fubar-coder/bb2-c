@@ -2,8 +2,8 @@
  * hunk.h - reading AmigaDOS load files (hunk format) on the host.
  *
  * load_parse() checks the structure (bounds, known hunk types) and lists
- * the hunks with their RELOC32 relocations; symbol, debug and name hunks
- * are skipped.  Memory flags (bits 30/31) are removed from types and sizes.
+ * the hunks with their RELOC32 relocations and their symbols (HUNK_SYMBOL);
+ * debug and name hunks are skipped.  Memory flags (bits 30/31) are removed from types and sizes.
  */
 #ifndef HUNK_H
 #define HUNK_H
@@ -24,6 +24,13 @@
 #define HUNK_RELOC32SHORT  0x3FC
 #define HUNK_RELRELOC32    0x3FD
 
+/* a symbol: the name points into the file (len bytes, not 0-terminated) */
+struct hunk_symbol {
+    const char *name;
+    uint32_t len;
+    uint32_t value;             /* offset in the hunk */
+};
+
 struct hunk {
     uint32_t type;              /* HUNK_CODE, HUNK_DATA or HUNK_BSS */
     const uint8_t *data;        /* contents (NULL for BSS) */
@@ -31,6 +38,8 @@ struct hunk {
     uint32_t nrelocs;           /* relocations in this hunk: */
     uint32_t *reloc_offset;     /*   offset of the long in this hunk */
     uint32_t *reloc_target;     /*   hunk it points into */
+    uint32_t nsyms;             /* HUNK_SYMBOL entries of this hunk: */
+    struct hunk_symbol *syms;
 };
 
 struct loadfile {
@@ -48,6 +57,9 @@ uint32_t be32(const uint8_t *p);
 /* 0 = ok; -1 = error, message in err (lf is empty then) */
 int load_parse(const uint8_t *buf, size_t size, struct loadfile *lf, char *err, size_t errlen);
 int load_read(const char *path, struct loadfile *lf, char *err, size_t errlen);
+/* the symbol NAME (0-terminated) in any hunk: its hunk index and value;
+   0 = found, -1 = not there (the last definition wins) */
+int load_symbol(const struct loadfile *lf, const char *name, uint32_t *hunk, uint32_t *value);
 void load_free(struct loadfile *lf);
 
 #endif

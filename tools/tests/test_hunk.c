@@ -42,10 +42,22 @@ int main(void)
     put32(&g, HUNK_RELOC32SHORT); put16(&g, 2); put16(&g, 0); put16(&g, 2); put16(&g, 4);
     put16(&g, 0);                       /* 5 words: */
     put16(&g, 0);                       /* padding to a long */
-    put32(&g, HUNK_SYMBOL); put32(&g, 1); putbytes(&g, "abc", 4); put32(&g, 0); put32(&g, 0);
+    put32(&g, HUNK_SYMBOL);
+    put32(&g, 1); putbytes(&g, "abc", 4); put32(&g, 4);             /* padded name */
+    put32(&g, 2); putbytes(&g, "longname", 8); put32(&g, 6);        /* no 0 byte */
+    put32(&g, 0);
     put32(&g, HUNK_END);
     CHECK(load_parse(g.p, g.n, &lf, err, sizeof err) == 0);
     CHECK(lf.nhunks == 1 && lf.hunks[0].nrelocs == 2 && lf.hunks[0].reloc_offset[1] == 4);
+    CHECK(lf.hunks[0].nsyms == 2 && lf.hunks[0].syms[1].len == 8);
+    {
+        uint32_t hunk = 9, value = 9;
+
+        CHECK(load_symbol(&lf, "abc", &hunk, &value) == 0 && hunk == 0 && value == 4);
+        CHECK(load_symbol(&lf, "longname", &hunk, &value) == 0 && value == 6);
+        CHECK(load_symbol(&lf, "ab", &hunk, &value) == -1);
+        CHECK(load_symbol(&lf, "longnam", &hunk, &value) == -1);
+    }
     load_free(&lf);
 
     /* unknown hunk type */
