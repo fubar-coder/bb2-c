@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+event 00000004 code 7
+rc=0
