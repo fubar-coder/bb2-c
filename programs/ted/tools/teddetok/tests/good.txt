@@ -1,0 +1,6 @@
+Print "Hi"
+a b
+
+If a=1 End
+NPrint 1
+; last

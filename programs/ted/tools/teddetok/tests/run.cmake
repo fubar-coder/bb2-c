@@ -1,0 +1,31 @@
+# One test of teddetok (ctest, see ../CMakeLists.txt):
+#   cmake -DTEDDETOK=... -DTOKENS=... -DIN=... -DOUT=... -DEXPECT=FILE -P run.cmake
+#       IN must give exactly EXPECT (and NOTE, if set, on stderr)
+#   cmake ... -DERROR=REGEX -P run.cmake
+#       IN must fail with exit status 1, REGEX on stderr, OUT not written
+file(REMOVE ${OUT})
+execute_process(COMMAND ${TEDDETOK} ${TOKENS} ${IN} ${OUT}
+	RESULT_VARIABLE rc ERROR_VARIABLE err)
+message(STATUS "teddetok: exit ${rc}\n${err}")
+if(DEFINED ERROR)
+	if(NOT rc EQUAL 1)
+		message(FATAL_ERROR "exit status ${rc}, 1 expected")
+	endif()
+	if(NOT err MATCHES "${ERROR}")
+		message(FATAL_ERROR "stderr does not match ${ERROR}")
+	endif()
+	if(EXISTS ${OUT})
+		message(FATAL_ERROR "${OUT} written despite the error")
+	endif()
+	return()
+endif()
+if(NOT rc EQUAL 0)
+	message(FATAL_ERROR "exit status ${rc}, 0 expected")
+endif()
+if(DEFINED NOTE AND NOT err MATCHES "${NOTE}")
+	message(FATAL_ERROR "stderr does not match ${NOTE}")
+endif()
+execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files ${OUT} ${EXPECT} RESULT_VARIABLE diff)
+if(diff)
+	message(FATAL_ERROR "${OUT} differs from ${EXPECT}")
+endif()
