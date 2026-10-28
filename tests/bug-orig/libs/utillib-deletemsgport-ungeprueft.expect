@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+queued -1
+replied -1
+rc=0
