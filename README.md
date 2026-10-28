@@ -157,9 +157,8 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   They check the *correct* behaviour and therefore **fail** as long as the
   bug is reproduced; the failure message names the bug. Label `bug-orig`:
   `host`, `emulator` and `all` exclude it, only the preset `bug-orig`
-  runs these tests. A test is named after the placeholder of its issue
-  (`{{TEST:ID}}` -> ctest `bug_orig_ID` with `-` as `_`, snitch test case
-  `ID`). In the snitch programs they carry the hidden tag `[.bug-orig]`,
+  runs these tests. Naming: ctest `bug_orig_ID` (ID with `-` as `_`),
+  snitch test case `ID`; the issue names the test. In the snitch programs they carry the hidden tag `[.bug-orig]`,
   so a plain run of the program skips them too (`libs_tests "[bug-orig]"`
   or the name runs them). Tests in the emulator also have the label
   `emulator` and are skipped (77) without Amiberry. So far
@@ -238,7 +237,7 @@ hardfile), hence also in parallel: `amiga_emulation_start()`
 directory as `TEST:`. By hand:
 
 ```
-echo 'Version >TEST:v.txt' | build/amiga/host-tools/amiga_run/amiga_run -
+echo 'Version >TEST:v.txt' | build/amiga/host/tools/amiga_run/amiga_run -
 amiga_run [--rtg] [--visible] [--log] [--timeout SEC] [--set KEY=VALUE]
           [--unset KEY] [--mount VOL=DIR] [--mount-ro VOL=DIR] [--dir WORKDIR]
           SCRIPT|-
