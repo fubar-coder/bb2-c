@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+font -1 proportional -1
+edit -1
+same pixels -1
+rc=0
