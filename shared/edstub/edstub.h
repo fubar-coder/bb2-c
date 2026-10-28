@@ -66,6 +66,10 @@ extern char edstub_logname[EDSTUB_PATHLEN];
 void edstub_log(const char *s);
 int edstub_set_log(const char *path);
 
+/* the busy pointer: sleepon sets it, pointeron clears it (ted.s: the
+   window pointer); the frame shows nothing, it only keeps the state */
+extern int edstub_busy;
+
 /* a new job: the counters of the requester answers start again */
 void edstub_reset_requests(void);
 

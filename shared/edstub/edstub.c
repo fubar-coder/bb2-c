@@ -386,8 +386,9 @@ void tokall_c(struct regs *r) { (void)r; }
 void refgads_c(struct regs *r) { (void)r; }
 void openio_c(struct regs *r) { (void)r; }
 void closeio_c(struct regs *r) { (void)r; }
-void pointeron_c(struct regs *r) { (void)r; }
-void sleepon_c(struct regs *r) { (void)r; }
+int edstub_busy;
+void pointeron_c(struct regs *r) { (void)r; edstub_busy = 0; }
+void sleepon_c(struct regs *r) { (void)r; edstub_busy = 1; }
 void actgad_c(struct regs *r) { r->d[0] = 1; }      /* ActivateGadget() TRUE */
 
 void tokone_c(struct regs *r)

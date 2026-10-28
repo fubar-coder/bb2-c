@@ -13,6 +13,11 @@
  *                   debugger off (bytes 2-5 of the .xtra zeroed; a source
  *                   with its own .xtra keeps its options)
  *   job=ID|SOURCE|OUTPUT[|DIR]
+ *   menu=ID|ITEM[|ANSWER]  the compiler's menu item ITEM (blitz2.s
+ *                   menuadds, e.g. 9 = load debug module, 8 = reload libs)
+ *                   with no source; a file requester gets ANSWER (none:
+ *                   cancelled).  Jobs and menu items run in the order of
+ *                   the list.
  * Every job: CurrentDir(DIR, default: the source's directory - relative
  * INCLUDE/INCBIN), load the source like TED's readline/allocline,
  * loadxtra (SOURCE.xtra or defaults), menu CREATE EXECUTABLE, result.
@@ -25,6 +30,10 @@
  *   RESULT ID ok SIZE
  *   RESULT ID error LINE MESSAGE TEXT  the compiler's error, TEXT = the line
  *   RESULT ID failed REASON
+ *   MENU ID ITEM RET [MESSAGE]        a menu item: what it returned
+ *                                     (menuret), the compiler's error
+ *   POINTER ID busy|normal            behind a menu item: the busy pointer
+ *                                     (sleepon without pointeron)
  * plus the frame's requester lines.  Only a compiler that keeps waiting
  * for input or a failed extalloc end the session (RESULT ID failed abort:
  * ...); the runner goes on with the remaining jobs in a new session.
@@ -84,9 +93,15 @@ static void error_hook(const char *m)
     LOG_END;
 }
 
+/* menu=: the answer for every file requester of the menu item */
+static const char *menu_answer;
+static int in_menu_job;
+
 /* the only file requester of the batch flow: CREATE EXECUTABLE */
 static const char *ezfreq_hook(const char *title)
 {
+    if (in_menu_job)
+        return menu_answer;
     return edstub_streq(title, "Name of Executable to create") ? outname : 0;
 }
 
@@ -293,13 +308,13 @@ static void save_defaults(void)
 
 /* the compiler's menu callback: d6 = item, a5 = first line, d7 = lines;
    returns d0 = the line of the error (menuret) */
-static WORD call_menu(void)
+static WORD call_menu(UWORD item)
 {
     struct regs cr;
 
     errpending = 0;
     memset(&cr, 0, sizeof cr);
-    cr.d[6] = MENU_CREATE_EXECUTABLE;
+    cr.d[6] = item;
     cr.d[7] = numlines;
     cr.a[5] = (ULONG)firstitem;
     in_menu = 1;
@@ -402,7 +417,7 @@ static void batch_job(char *id, char *src, char *out, char *dirname)
         call_loadxtra();
     }
     DeleteFile(outname);                /* no stale executable */
-    ret = call_menu();
+    ret = call_menu(MENU_CREATE_EXECUTABLE);
     size = filesize(outname);
     {
         LOG_BEGIN;
@@ -442,6 +457,46 @@ out:
     if (dir) {
         CurrentDir(old);
         UnLock(dir);
+    }
+    cur_id[0] = 0;
+}
+
+/* menu=ID|ITEM|ANSWER: a menu item without a source */
+static void menu_job(char *id, char *item, char *answer)
+{
+    UWORD n = 0;
+    WORD ret;
+
+    while (*item >= '0' && *item <= '9')
+        n = n * 10 + (UWORD)(*item++ - '0');
+    edstub_strcpy(cur_id, id, sizeof cur_id);
+    edstub_reset_requests();
+    menu_answer = answer && *answer ? answer : 0;
+    in_menu_job = 1;
+    ret = call_menu(n);
+    in_menu_job = 0;
+    {
+        LOG_BEGIN;
+
+        sbs(&L, "MENU\t");
+        sbs(&L, id);
+        sbc(&L, '\t');
+        sbn(&L, n);
+        sbc(&L, '\t');
+        sbn(&L, ret);
+        if (errpending) {
+            sbc(&L, '\t');
+            tsv(&L, errmsg);
+        }
+        LOG_END;
+    }
+    {
+        LOG_BEGIN;
+
+        sbs(&L, "POINTER\t");
+        sbs(&L, id);
+        sbs(&L, edstub_busy ? "\tbusy" : "\tnormal");
+        LOG_END;
     }
     cur_id[0] = 0;
 }
@@ -519,6 +574,10 @@ void edstub_main(const char *arg)
             char *id = field(&v), *src = field(&v), *out = field(&v), *dir = field(&v);
 
             batch_job(id, src, out, dir);
+        } else if ((v = value(p, "menu="))) {
+            char *id = field(&v), *item = field(&v), *answer = field(&v);
+
+            menu_job(id, item, answer);
         }
     edstub_log("BATCH\tend");
     FreeMem(buf, size + 1);
