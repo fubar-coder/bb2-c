@@ -1,12 +1,11 @@
 // test_lines_edit - line list operations of chunk 02 (ted.s 1041-1806):
 // cursor up/down, insertline/deleteline/return, gotolined0 arithmetic,
 // bloksave/blokload through the file hooks.  tokenise = 0.
-#include <cstdlib>
 #include <string>
-#include <unistd.h>
 #include <string_view>
 #include <snitch/snitch.hpp>
 #include "lines_helpers.hpp"
+#include "tempdir.hpp"
 
 namespace {
 
@@ -23,25 +22,6 @@ void env()
     fontmul = 8;
     qualifier = 0;
 }
-
-// a temporary directory, removed with its files at the end
-struct tempdir {
-    std::string path;
-
-    tempdir()
-    {
-        const char *tmp = std::getenv("TMPDIR");
-        std::string tpl = std::string(tmp && *tmp ? tmp : "/tmp") + "/ted-host-XXXXXX";
-
-        if (mkdtemp(tpl.data()))
-            path = tpl;
-    }
-    ~tempdir()
-    {
-        if (!path.empty())
-            rmdir(path.c_str());
-    }
-};
 
 } // namespace
 

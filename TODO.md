@@ -34,25 +34,21 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
    kann den baserel-Daten-Hunk nicht, deshalb in bb2 ein zweiter Link).
 3. **`checklabels`** (bb2: `tools/checklabels.py`): jedes Code-Label von
    `ted.s` genau einmal als `ted.s:NNN label` in `src/`.
-4. **Host-Tests des TED-Kerns** – begonnen (27.10.2026): Host-Seite
-   `host/`, Kern als `tedcore_host`; `test_state`, `test_lines_blocks`,
-   `test_lines_edit` auf snitch portiert (`programs/ted/tests/host`,
-   gemeinsame Hilfen in `lines_helpers.hpp`). Als Nächstes die Tests mit
-   Testdaten (Token-Liste, CD-Quellen). Orakel dafür erledigt
-   (28.10.2026): `programs/ted/tests/oracle` (Rahmen `shared/edstub`,
-   Ziel `ted-oracle`) → `tests/data/ted-oracle.sha256` (724 Quellen,
-   715 tokenisiert) und `tests/data/ted-tokens.txt`. Gegen bb2tok
-   geprüft: Laden/Speichern aller 724 gleich; detok/tokall weichen in
-   84 Dateien nur bei unbekannten Tokens ab (`<$XXXX>` gegen `?????`).
+4. **Host-Tests des TED-Kerns** – erledigt (28.10.2026): alle 10 Tests von
+   bb2 `ted-c/tests/host` auf snitch portiert (`programs/ted/tests/host`,
+   Kern als `tedcore_host`, Hilfen `lines_helpers.hpp`, `tempdir.hpp`,
+   `oracle.hpp`, `corpus.hpp`). Die Korpus-Tests detok, tokit, loadsave
+   vergleichen exakt per SHA-256 mit dem Original-TED
+   (`programs/ted/tests/oracle`, Rahmen `shared/edstub`, Ziel
+   `ted-oracle` → `tests/data/ted-oracle.sha256`, 724 Quellen, 715
+   tokenisiert; Token-Liste `tests/data/ted-tokens.txt`), ohne die
+   bb2tok-Ausnahmen; ohne CD übersprungen. `TED_TEST_DUMP=DIR` schreibt
+   abweichende Ergebnisse zum Vergleich mit einem Orakel-Lauf. Gegen
+   bb2tok geprüft: Laden/Speichern aller 724 gleich; detok/tokall weichen
+   in 84 Dateien nur bei unbekannten Tokens ab (`<$XXXX>` gegen `?????`).
    Die Token-Liste des Compilers hat dieselben 1821 Einträge wie bb2tok,
    aber in **anderer Reihenfolge** (bb2tok: eingebaute, deflibs,
-   acidlibs). Offen: die 7 Tests detok, tokit, loadsave, fileio, search,
-   services_core, lineedit_keys portieren – Vergleich per SHA-256 gegen
-   das Manifest, ohne bb2tok-Ausnahmen; `toklist.c` liest dann
-   `ted-tokens.txt`. Bisher (bb2: Preset `host`, `tests/host`, 13
-   ctest): `src/core` nativ übersetzt (`TED_HOST`), Fixtures aus den
-   CD-Quellen (`mkfixtures.py` + `bb2tok.py`). Hier bräuchte der Host-Teil
-   wie `tools/` einen eigenen nativen Build (ExternalProject oder Preset).
+   acidlibs).
 5. **TED-A/B-Tests im Emulator** (bb2: `tools/tedab.py`, `teddump.py`,
    `tests/emu/*.drv`, Amiga-Werkzeuge `teddrive`, `teddrivetest`,
    `tedprobe` in `tests/amiga`): Original-TED gegen TED-C, mit blitz2 1.95

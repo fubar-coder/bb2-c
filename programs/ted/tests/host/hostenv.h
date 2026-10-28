@@ -1,6 +1,6 @@
 /*
  * hostenv.h - the host test environment of the TED core: hook stubs
- * (stubs.c), token list (toklist.c), fixtures (mkfixtures.py).
+ * (stubs.c), token list (toklist.c), the oracle data (oracle.hpp).
  *
  * The stubs implement every function of src/core/hooks.h:
  *   - memory: malloc with a header (requested size + slack for the larger
@@ -22,24 +22,16 @@
 
 /* set up the globals like outside does for blitz2: buffers (one block,
    dosbuff + charbuff1..3 as in ted.s:41), chmap (rows x chcols), token
-   list from the fixtures, colon/quote/label/remark = ':' '"' '.' ';',
-   tokenise = 1.  fixdir may be NULL (no token list). */
-void hostenv_init(const char *fixdir, UWORD rows);
+   list from tokfile (tests/data/ted-tokens.txt), colon/quote/label/remark =
+   ':' '"' '.' ';', tokenise = 1.  tokfile may be NULL (no token list,
+   tokenise = 0). */
+void hostenv_init(const char *tokfile, UWORD rows);
 /* free the line list (if any) without the core: for resetting between
    files independent of freeall */
 void hostenv_droplist(void);
 
-/* token list from FIXDIR/tokens.txt (toklist.c); NULL if missing */
-struct tokennode *host_loadtokens(const char *fixdir);
-
-/* fixtures: FIXDIR/sources.tsv lines "index<TAB>kind<TAB>path" */
-struct hostsrc {
-    int index;
-    char kind[8];               /* "tok" / "text" */
-    char path[1024];
-};
-/* returns the number of sources (0 if the fixtures are missing) */
-int host_sources(const char *fixdir, struct hostsrc **out);
+/* token list from a file "XXXX name" per line (toklist.c); NULL if missing */
+struct tokennode *host_loadtokens(const char *path);
 /* read a whole file (malloc'd, *len); NULL if missing */
 UBYTE *host_readfile(const char *path, long *len);
 

@@ -3,9 +3,14 @@
 #   tedcore_host  the core with TED_HOST (resources via #embed as on Amiga)
 #   tedhost       the test environment: hook stubs (stubs.c), token list
 #                 (toklist.c), see hostenv.h
+#   oracle data   tests/data (ted-oracle.sha256, ted-tokens.txt: the
+#                 original TED, programs/ted/tests/oracle) and the CD
+#                 sources (archive/cd); without the CD the corpus tests
+#                 skip (snitch SKIP -> ctest "skipped")
 #   test_*.cpp    one snitch program each - every file starts with the
 #                 core's initial global state (test_state checks it)
 set(TED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+get_filename_component(REPO_DIR ${TED_DIR}/../.. ABSOLUTE)
 include(${TED_DIR}/sources.cmake)
 
 set(core_sources)
@@ -34,9 +39,12 @@ foreach(t IN LISTS tests)
 	# the core and the stubs reference each other (core -> hooks, stubs ->
 	# core): link them as a group
 	target_link_libraries(ted_${name} PRIVATE "$<LINK_GROUP:RESCAN,tedhost,tedcore_host>"
-		snitch::snitch)
+		snitch::snitch lib_sha256)
+	target_compile_definitions(ted_${name} PRIVATE
+		TED_TEST_DATA_DIR="${REPO_DIR}/tests/data"
+		TED_CD_DIR="${REPO_DIR}/archive/cd/ultimate-blitz-basic-2.1")
 	target_compile_options(ted_${name} PRIVATE -Wall)
 	set_target_properties(ted_${name} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 	add_test(NAME ted_core_${short} COMMAND ted_${name})
-	set_tests_properties(ted_core_${short} PROPERTIES LABELS ted)
+	set_tests_properties(ted_core_${short} PROPERTIES LABELS ted SKIP_REGULAR_EXPRESSION "test cases skipped")
 endforeach()

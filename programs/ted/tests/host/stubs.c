@@ -181,7 +181,7 @@ void call_savextra(tedfh fh) { (void)fh; called(HC_SAVEXTRA); }
 
 /* ------------------------------------------------------- environment */
 
-void hostenv_init(const char *fixdir, UWORD rows)
+void hostenv_init(const char *tokfile, UWORD rows)
 {
     static UBYTE *block, *map;
     ULONG size = doslen + 3 * (chcols + 2);
@@ -203,8 +203,8 @@ void hostenv_init(const char *fixdir, UWORD rows)
     quote = '"';
     label = '.';
     remark = ';';
-    if (fixdir)
-        tokens = host_loadtokens(fixdir);
+    if (tokfile)
+        tokens = host_loadtokens(tokfile);
     tokenise = tokens ? 1 : 0;
     firstitem = enditem = thisitem = NULL;
     numlines = 0;
@@ -226,41 +226,6 @@ void hostenv_droplist(void)
     }
     firstitem = enditem = thisitem = NULL;
     numlines = 0;
-}
-
-/* the list lives until the test exits (freed then, so LeakSanitizer stays
-   quiet without every test having to free it) */
-static struct hostsrc *host_srclist;
-static void host_sources_free(void) { free(host_srclist); host_srclist = NULL; }
-
-int host_sources(const char *fixdir, struct hostsrc **out)
-{
-    char path[1024];
-    FILE *f;
-    int n = 0, cap = 0;
-    struct hostsrc s, *v = NULL;
-
-    snprintf(path, sizeof(path), "%s/sources.tsv", fixdir);
-    f = fopen(path, "r");
-    if (!f) {
-        *out = NULL;
-        return 0;
-    }
-    while (fscanf(f, "%d\t%7s\t%1023[^\n]\n", &s.index, s.kind, s.path) == 3) {
-        if (n == cap) {
-            cap = cap ? 2 * cap : 256;
-            v = realloc(v, cap * sizeof(*v));
-        }
-        v[n++] = s;
-    }
-    fclose(f);
-    if (!host_srclist)
-        atexit(host_sources_free);
-    else
-        free(host_srclist);
-    host_srclist = v;
-    *out = v;
-    return n;
 }
 
 UBYTE *host_readfile(const char *path, long *len)
