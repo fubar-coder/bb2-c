@@ -77,11 +77,13 @@ Einige Tests brauchen Originalmaterial, das nicht im Repository liegt (die
 CD, das Aminet-Archiv der Quellen): einmal
 
 ```
-cmake --build --preset amiga --target fetch-originals
+cmake -P cmake/fetch-originals.cmake
 ```
 
-(lädt etwa 40 MB, siehe `archive/README.md`). Ohne diese Daten werden die
-betroffenen Tests übersprungen.
+(lädt etwa 40 MB, siehe `archive/README.md`; braucht kein
+Build-Verzeichnis). In einem schon konfigurierten Build geht auch
+`cmake --build --preset amiga --target fetch-originals`. Ohne diese Daten
+werden die betroffenen Tests übersprungen.
 
 Gebaut wird mit dem Preset `amiga` (Cross-Compiler für AmigaOS; die
 Werkzeuge und Host-Tests dafür baut es mit dem nativen Compiler mit).
