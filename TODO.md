@@ -283,10 +283,10 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
 * ~~**CD data**~~ solved (2026-10-28): not in the repository,
   `cmake/fetch-originals.cmake` loads the CD (archive.org) and the Aminet
   archive with a fixed SHA-256 to `archive/cd/`, `archive/aminet/`.
-* **Documentation `docs/`** (taken over from bb2 `ee6174b` on 2026-10-28,
-  unchanged): switch paths, commands and line references in the texts to
-  the layout of this repository (mapping in `docs/README.md`); line
-  references into the C code have to be determined anew in the process.
+* ~~**Documentation `docs/`**~~ done (2026-10-28): paths, commands and
+  line references (C code: determined anew by content) adapted to this
+  repository; history of bb2 (plans, logs, reviews) unchanged in content,
+  remaining bb2 mentions explained in `docs/README.md`.
 * **Tests for the issues labelled `needs-test`** (99 open issues; for
   most a test program that triggers the bug is missing, the trigger is
   described in the issue). A failing test is added with label `bug-orig`
