@@ -1,0 +1,6 @@
+[log]
+...
+ezfreq "Debug module to load" -> blitz2:dbgmod
+MENU	j001	9	*
+POINTER	j001	normal
+...
