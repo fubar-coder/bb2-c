@@ -1,0 +1,5 @@
+[run]
+shape 0 16 4 01
+load PRT:
+REQUESTER: AutoRequest body *
+rc=*
