@@ -157,7 +157,7 @@ tools/                       Host-Werkzeuge:
                              Prüfregeln), biglib (BigLib schreiben/lesen),
                              hunkcheck (Bytes im ersten Hunk),
                              amiga_emulation (Skripte in Amiberry),
-                             vasmlisting (vasm-Listings lesen)
+                             vasmlisting (vasm-Listings lesen), sha256
   biglib/, blitzlibcheck/,   die Werkzeuge: je ein main.c um lib/
   hunkcheck/, amiga_run/,
   vasmlisting/
