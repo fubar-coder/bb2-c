@@ -1,0 +1,7 @@
+# host tests of the TED A/B tools (built by host/CMakeLists.txt)
+add_executable(test_tdscript test_tdscript.cpp)
+target_include_directories(test_tdscript PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../amiga)
+target_link_libraries(test_tdscript PRIVATE snitch::snitch)
+target_compile_options(test_tdscript PRIVATE -Wall -Wno-unused-function)
+set_target_properties(test_tdscript PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME ted_ab_tdscript COMMAND test_tdscript)

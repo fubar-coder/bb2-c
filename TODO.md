@@ -57,6 +57,26 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
    oder Speicher gewinnen. Die Vorteile (kein Testprogramm im Gast, echter
    Eingabeweg) sind zu gering, das Ergebnis ist ungewiss.
 
+   **Plan (28.10.2026, abgestimmt):** Ablage `tests/ted-ab/` (übergreifend:
+   TED plus blitz2, teilt `reqtrap`, Quellen und Runner-Teile mit dem
+   Korpus); ein ctest `ted_ab` (Label emulator, intern parallel bis
+   `CORPUS_PARALLEL`, Auswahl über einen Filter).
+   1. ~~Amiga-Werkzeuge~~ erledigt (28.10.2026): `tests/ted-ab/amiga/`
+      `teddrive`, `teddrivetest`, `tedprobe` (byte-gleich zu bb2;
+      `teddrive` bindet `tests/corpus/amiga/reqclose.h` ein); Host-Test des
+      Skript-Parsers `tdscript.h` als snitch (`ted_ab_tdscript`).
+   2. Dumps auf dem Host: `teddump` in C (Dekodieren mit den Fonts aus
+      `archive/sources/ted-1.1/`, „Free“ maskieren, vergleichen), Tests aus
+      bb2s `test_teddump.py`; PNG vorerst nicht.
+   3. Runner `tedab` in C (wie `corpusrun`): Kombinationen R5/C5/Cc/Rc,
+      Quellen (`T`/`E` mit `tedtok`, `K` von der CD, `S`), Sperren 0 und D,
+      Sitzungen mit Neustart nach einem Hänger, Erwartungen (`tok` über
+      `tedtok`, `equals` über den Orakel-Hash bzw. den ref-Lauf des
+      Korpus), Vergleich der Läufe, Bericht.
+   4. ctest `ted_ab`. Abnahme: bb2-Stand (Stufe 1/2a, alle 52 Vergleiche
+      gleich); die offenen Fälle aus Stufe 2b (`09-opts`, `23-font6`, nicht
+      gelaufene Tests) danach getrennt.
+
 **Libraries (bb2: `libs-c/`)**
 
 6. ~~**Befehlsvergleich der Assembler-Routinen**~~ erledigt (28.10.2026):

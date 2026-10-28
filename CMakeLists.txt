@@ -90,6 +90,7 @@ add_subdirectory(libs)
 add_subdirectory(programs/blitz2)
 add_subdirectory(programs/ted)
 add_subdirectory(tests/corpus)
+add_subdirectory(tests/ted-ab)
 
 # cmake --install: a blitz2: directory (default build/<preset>/install/blitz2)
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
