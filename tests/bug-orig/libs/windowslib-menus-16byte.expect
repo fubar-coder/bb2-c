@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+rmbtrap 00010000 00010000
+rc=0
