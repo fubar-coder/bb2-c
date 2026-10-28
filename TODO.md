@@ -55,11 +55,12 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
    `tools/asmcmp.py` mit `objdump`): runerrlib, debuglib, memacclib gegen
    die Originale (`ref/*.obj`). Braucht die Original-Libraries als
    Referenz und `NAME.linked` (gibt es hier schon).
-7. **Deklarationsvergleich mit den Originalen** (bb2: von Hand mit
-   `biglib.py compare`): Kopf, Einträge, `!libfin` jeder Library gleich dem
-   Original. Hier automatisch möglich: `tools/lib/blitzlib` liest die
-   Token-Tabelle schon; fehlt der Vergleich und die Original-Libraries als
-   Referenz.
+7. ~~**Deklarationsvergleich mit den Originalen**~~ erledigt
+   (28.10.2026): `tools/blitzlibcompare` (Regeln von bb2 `biglib.py
+   compare`, bisher von Hand), ctest `declarations_acidlibs`,
+   `declarations_deflibs` gegen `BLITZ2/ACIDLIBS`, `DEFLIBS` der CD:
+   83 + 39 Libraries, Deklarationen identisch, gleiche Reihenfolge (mit
+   `biglib.py compare` gegengeprüft: 122 identisch).
 8. **snitch-Tests im Emulator** (bb2: `tests/libs_tests`,
    `tools/amiga_test.py`): jede Library gegen ihr Original geladen „wie der
    Compiler“, Register-Erhalt, Ergebnisse (7 Testfälle, 19372 Assertions).

@@ -6,6 +6,11 @@ foreach(t hunk blitzlib biglib hunkcheck amiga_emulation vasmlisting sha256 chec
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
 
+add_executable(test_blitzlib_compare test_blitzlib_compare.c)
+target_link_libraries(test_blitzlib_compare PRIVATE lib_blitzlib lib_hunk)
+target_compile_options(test_blitzlib_compare PRIVATE -Wno-unused-function)
+add_test(NAME blitzlib_compare COMMAND test_blitzlib_compare)
+
 # with the emulator (label emulator; skipped without Amiberry or the
 # emulation data in amiga-emulation/): four runs in parallel
 add_executable(test_amiga_emulation_run test_amiga_emulation_run.c)

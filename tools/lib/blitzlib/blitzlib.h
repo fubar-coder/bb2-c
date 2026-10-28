@@ -26,6 +26,16 @@ struct blitzlib {
     struct blitzlib_entry *entries;
     uint32_t libfin;            /* offset of !libfin's toke field, 0 if the long is 0 */
     uint32_t codestart;         /* first byte behind the token table */
+    uint8_t *mask;              /* per byte of [0, codestart): BLITZLIB_* */
+};
+
+/* the declaration part (header, token table, !libfin) byte by byte, for
+   comparing two builds of a library (blitzlib_compare): */
+enum {
+    BLITZLIB_DECL,              /* declaration: must be equal */
+    BLITZLIB_IGNORE,            /* filled in at run time (next.l, nummer.w,
+                                   the long behind the entry kind) or padding */
+    BLITZLIB_CODE               /* a code offset (long): only set or not */
 };
 
 /* reads header and token table of the code hunk h (bounds-checked);
@@ -43,5 +53,13 @@ void blitzlib_free(struct blitzlib *lib);
  *     originals do it too, e.g. memlib err1 -> mess1)
  * 0 = ok, 1 = error; errors and warnings go to out, prefixed with name */
 int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out);
+
+/* compares the declaration parts of two builds of a library (the rules of
+   bb2 biglib.py compare): header, entries (kind, forms with argument
+   types, libs, names, help texts, AmigaOS calls with registers), !libfin;
+   code offsets only set/not set; the number of relocations inside the
+   declaration part.  Differences go to out, prefixed with name; returns
+   their number (-1 = a library does not read, message to out). */
+int blitzlib_compare(const struct hunk *orig, const struct hunk *new, const char *name, FILE *out);
 
 #endif

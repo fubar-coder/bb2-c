@@ -54,6 +54,21 @@ static uint32_t even(uint32_t p)
     return (p + 1) & ~1u;
 }
 
+/* marks n bytes from p in the mask (as far as they are inside the code) */
+static void mark(struct cursor *c, uint32_t p, uint32_t n, uint8_t what)
+{
+    while (n-- && p < c->size)
+        c->lib->mask[p++] = what;
+}
+
+/* padding up to the next even offset */
+static uint32_t pad(struct cursor *c, uint32_t p)
+{
+    if (p & 1)
+        mark(c, p, 1, BLITZLIB_IGNORE);
+    return even(p);
+}
+
 /* {libnum.w, offset.w}* 0.w */
 static uint32_t libs(struct cursor *c, uint32_t p)
 {
@@ -70,6 +85,7 @@ static uint32_t namblock(struct cursor *c, uint32_t p, int lead, struct blitzlib
             stop(c, p, "expected $FFFF in front of the name block");
         p += 2;
     }
+    mark(c, p, 6, BLITZLIB_IGNORE);         /* next.l nummer.w: run time */
     p += 6;
     e->name = (const char *)c->code + p;
     while (B(c, p))
@@ -78,7 +94,7 @@ static uint32_t namblock(struct cursor *c, uint32_t p, int lead, struct blitzlib
     e->help = (const char *)c->code + p;
     while (B(c, p))
         p++;
-    return even(p + 1);
+    return pad(c, p + 1);
 }
 
 static void add(struct cursor *c, const struct blitzlib_entry *e)
@@ -103,6 +119,7 @@ static void parse(struct cursor *c)
     while (!(W(c, p) & 0x8000)) {
         struct blitzlib_entry e = { p, W(c, p), NULL, NULL };
 
+        mark(c, p + 2, 4, BLITZLIB_IGNORE);
         p += 6;
         if (e.kind == 8) {                      /* dumtoke */
             p = namblock(c, p, 0, &e);
@@ -110,15 +127,21 @@ static void parse(struct cursor *c)
             p += 4;                             /* library, LVO */
             while (B(c, p) != 0xFF)             /* registers */
                 p++;
-            p = namblock(c, even(p + 1), 0, &e);
+            p = namblock(c, pad(c, p + 1), 0, &e);
         } else if ((e.kind & 0xF) == 0) {       /* nullsub */
-            p = libs(c, p) + 12;
+            p = libs(c, p);
+            L(c, p + 8);
+            mark(c, p, 12, BLITZLIB_CODE);
+            p += 12;
         } else {                                /* statement/function/command */
             while (W(c, p) != 0xFFFF) {
                 uint16_t head = W(c, p);
 
-                p = even(p + 2 + (head & 0xFF));        /* argument types */
-                p = libs(c, p) + 12;                    /* libs, subs */
+                p = pad(c, p + 2 + (head & 0xFF));      /* argument types */
+                p = libs(c, p);
+                L(c, p + 8);
+                mark(c, p, 12, BLITZLIB_CODE);          /* subs */
+                p += 12;
             }
             p = namblock(c, p, 1, &e);
         }
@@ -130,6 +153,8 @@ static void parse(struct cursor *c)
     if (L(c, p)) {                              /* !libfin */
         c->lib->libfin = p;
         W(c, p + 24);
+        mark(c, p, 20, BLITZLIB_CODE);          /* toke load save use free */
+        mark(c, p + 20, 2, BLITZLIB_IGNORE);
         p += 26;
     } else {
         p += 4;
@@ -137,6 +162,16 @@ static void parse(struct cursor *c)
     if (p > c->size)
         stop(c, p, "runs past the end of the code");
     c->lib->codestart = p;
+}
+
+/* the code offsets of the header: init, finit, error */
+static void mark_header(struct blitzlib *lib)
+{
+    static const uint32_t code[] = { 0x16, 0x1C, 0x2C };
+    unsigned i;
+
+    for (i = 0; i < 3; i++)
+        memset(lib->mask + code[i], BLITZLIB_CODE, 4);
 }
 
 int blitzlib_read(const struct hunk *h, struct blitzlib *lib, char *err, size_t errlen)
@@ -151,6 +186,11 @@ int blitzlib_read(const struct hunk *h, struct blitzlib *lib, char *err, size_t 
         snprintf(err, errlen, "no library header (code shorter than $30 bytes)");
         return -1;
     }
+    if (!(lib->mask = calloc(h->size, 1))) {
+        snprintf(err, errlen, "out of memory");
+        return -1;
+    }
+    mark_header(lib);
     lib->libnum = be16(h->data + 4);
     lib->error = be32(h->data + 0x2C);
     c.code = h->data;
@@ -168,6 +208,7 @@ int blitzlib_read(const struct hunk *h, struct blitzlib *lib, char *err, size_t 
 void blitzlib_free(struct blitzlib *lib)
 {
     free(lib->entries);
+    free(lib->mask);
     memset(lib, 0, sizeof *lib);
 }
 

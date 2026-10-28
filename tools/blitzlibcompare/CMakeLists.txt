@@ -1,0 +1,2 @@
+add_executable(blitzlibcompare main.c)
+target_link_libraries(blitzlibcompare PRIVATE lib_blitzlib lib_biglib)
