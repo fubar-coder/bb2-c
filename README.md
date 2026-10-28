@@ -94,10 +94,13 @@ ctest --preset all        # beides
 
 * **host:** die Werkzeuge mit absichtlich kaputten Eingaben, die
   Host-Tests des TED-Kerns (nativ übersetzt, snitch), die Prüfung der
-  vorgebauten Libraries und der Deklarationsvergleich (`declarations_*`:
+  vorgebauten Libraries, der Deklarationsvergleich (`declarations_*`:
   Kopf, Einträge, `!libfin` jeder gebauten Library gegen das Original der
-  CD, gleiche Libraries in gleicher Reihenfolge; `tools/blitzlibcompare`;
-  ohne CD übersprungen). Die Host-Seite einzeln:
+  CD, gleiche Libraries in gleicher Reihenfolge; `tools/blitzlibcompare`)
+  und der Befehlsvergleich (`asmcmp_*`: die in Assembler gebliebenen
+  Routinen von runerrlib, debuglib, memacclib gegen die Originale der CD,
+  mit `objdump` der Toolchain; `tools/asmcmp`). Die beiden Vergleiche
+  werden ohne CD übersprungen. Die Host-Seite einzeln:
   `ctest --test-dir build/amiga/host`.
   Mit `-DHOST_SANITIZE=ON` wird die Host-Seite mit AddressSanitizer und
   UBSan gebaut.
@@ -173,13 +176,14 @@ tools/                       Host-Werkzeuge:
                              amiga_emulation (Skripte in Amiberry),
                              vasmlisting (vasm-Listings lesen), sha256,
                              checklabels (Labels von ted.s im C-Code),
-                             checkdata (Daten gegen den Referenz-Build);
+                             checkdata (Daten gegen den Referenz-Build),
+                             asmcmp (Assembler-Routinen gegen Originale);
                              blitzlib vergleicht auch Deklarationen
   biglib/, blitzlibcheck/,   die Werkzeuge: je ein main.c um lib/
   blitzlibcompare/
   hunkcheck/, amiga_run/,
   vasmlisting/, checklabels/,
-  checkdata/
+  checkdata/, asmcmp/
   tests/                     Tests von lib/ mit Eingaben aus dem Speicher
 ```
 

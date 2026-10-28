@@ -52,10 +52,12 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
 
 **Libraries (bb2: `libs-c/`)**
 
-6. **Befehlsvergleich der Assembler-Routinen** (bb2: ctest `asmcmp_*`,
-   `tools/asmcmp.py` mit `objdump`): runerrlib, debuglib, memacclib gegen
-   die Originale (`ref/*.obj`). Braucht die Original-Libraries als
-   Referenz und `NAME.linked` (gibt es hier schon).
+6. ~~**Befehlsvergleich der Assembler-Routinen**~~ erledigt (28.10.2026):
+   `tools/asmcmp` (statt bb2 `tools/asmcmp.py`, Ausgabe gleich, auch bei
+   Abweichungen), ctest `asmcmp_runerrlib`, `asmcmp_debuglib`,
+   `asmcmp_memacclib` mit den Routinen-Listen aus bb2; Originale aus der
+   CD (`BLITZ2/ACIDLIBS`, gleich bb2 `ref/*.obj`), Symbole aus
+   `NAME.linked` (`HUNK_SYMBOL`, kein `nm`).
 7. ~~**Deklarationsvergleich mit den Originalen**~~ erledigt
    (28.10.2026): `tools/blitzlibcompare` (Regeln von bb2 `biglib.py
    compare`, bisher von Hand), ctest `declarations_acidlibs`,

@@ -9,6 +9,7 @@
 #   sha256     SHA-256 (hashes of generated test data)
 #   checklabels  every code label of an assembler source marked once in C
 #   checkdata  data of a C build against the reference build (labels)
+#   asmcmp     assembler routines against the original (objdump)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -18,3 +19,4 @@ add_subdirectory(vasmlisting)
 add_subdirectory(sha256)
 add_subdirectory(checklabels)
 add_subdirectory(checkdata)
+add_subdirectory(asmcmp)

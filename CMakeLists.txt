@@ -45,6 +45,7 @@ set(HOST_TOOLS_DIR ${HOST_DIR}/tools)
 set(BIGLIB ${HOST_TOOLS_DIR}/biglib/biglib)                     # joins library files
 set(BLITZLIBCHECK ${HOST_TOOLS_DIR}/blitzlibcheck/blitzlibcheck) # checks a library file
 set(BLITZLIBCOMPARE ${HOST_TOOLS_DIR}/blitzlibcompare/blitzlibcompare) # declarations vs original
+set(ASMCMP ${HOST_TOOLS_DIR}/asmcmp/asmcmp)                     # asm routines vs original
 set(HUNKCHECK ${HOST_TOOLS_DIR}/hunkcheck/hunkcheck)             # checks the first hunk
 set(AMIGA_RUN ${HOST_TOOLS_DIR}/amiga_run/amiga_run)             # runs a script in Amiberry
 set(VASMLISTING ${HOST_TOOLS_DIR}/vasmlisting/vasmlisting)       # views of a vasm listing
@@ -59,7 +60,7 @@ ExternalProject_Add(host_tools
 		-DHOST_SANITIZE=${HOST_SANITIZE}
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA})
+	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${ASMCMP} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA})
 
 include(cmake/BlitzLibrary.cmake)
 
