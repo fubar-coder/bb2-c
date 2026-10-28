@@ -285,3 +285,7 @@ Libraries (`libs_emulator`) laufen inzwischen hier über `amiga_emulation`
 * **C23** (`gnu23` statt `gnu11`): `static_assert` statt
   `_Static_assert`, `constexpr` für Konstanten. Abnahme: alle Produkte
   byte-identisch, alle Prüfungen aus §1 grün.
+* **Abgleich mit blitz2 2.10** (das Binary der CD): Abschluss der
+  Portierung. Erst danach dürfen Original-Fehler behoben werden
+  (`CLAUDE.md`, „Original-Fehler nicht beheben“); Grundlage sind die
+  Issues mit Label `bug-orig`.

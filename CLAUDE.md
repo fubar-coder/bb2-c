@@ -65,7 +65,10 @@ ctest --preset emulator                                # Tests in Amiberry
   ignoriert); Tests, die es brauchen, werden ohne es übersprungen.
 * **Original-Fehler nicht beheben**, nur dokumentieren (`BUG(orig)` im
   Code, Verzeichnis der Abweichungen in `docs/*/abweichungen.md`);
-  `DIFF` nur, wo technisch nötig.
+  `DIFF` nur, wo technisch nötig. Gilt nur für die Portierung: Ist sie
+  abgeschlossen (einschließlich des Abgleichs mit blitz2 2.10), dürfen
+  Original-Fehler gezielt behoben werden (je Fehler ein Issue, als
+  gewollte Abweichung gekennzeichnet).
 * **Nur C/C++ und CMake.** Kein Python, keine Shell-Skripte im Build. Was
   Compiler und Linker selbst können, ohne Werkzeug (`#embed` +
   `_Static_assert`, `strip`); Text und Steuerung als CMake; Binärformate
