@@ -292,8 +292,11 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   described in the issue). A failing test is added with label `bug-orig`
   (README, "Tests") and named in the issue. What is needed:
   - *Test programs only* (no example, no corpus test yet) – compiler:
-    #2, #3, #5, #8, #14, #16, #18, #22, #23, #26 (needs a free block of
-    ≥ 256 MB), #27, #28, #32; libraries: #58, #65, #90, #91, #100,
+    #14 (the "Not Enough Object Memory" path was not reached in the
+    batch run, even with a 128 KB executable: to be found out how;
+    `inject track` shows 1 allocation of 14 bytes left after a normal
+    compile, in the original as in the port - a leak of its own?),
+    #26 (needs a free block of ≥ 256 MB); libraries: #58, #65, #90, #91, #100,
     #104, #110, #115–#118, #127, #133, #135, #137, #171, #177, #191,
     #224, #245, #246, #263, #264, #266, #268, #269, #274, #280, #281,
     #286, #299, #303, #304, #308, #310, #314, #316, #318, #319, #321,
@@ -316,8 +319,27 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     pending writes (#252, #256, #258, #259).
   - *Not reproducible in the emulator:* #42 (a real 68010 with a moved
     VBR; Amiberry runs a 68020).
+  - *Not observable / not reachable* (no test; the reason, to be added
+    to the issue): #5 (after the digits of `` `@ `` the rest
+    of the line is copied with the bounds check, so the result is
+    "Macro Buffer Overflow" with or without the bug; only up to 6 bytes
+    behind the buffer differ), #18 (with bit 31 as PANIC mask, Wait and
+    Signal still work, a foreign signal is ignored by the `stopit`
+    check of menu10), #32 (makeallox allocates through TED's extalloc,
+    which never returns 0 but jumps to outmem, ted.s:3049–3055: the
+    fallback in newallox is never reached).
   - Done: #112, #119 (`bug_orig_crunch_implode_overread`,
-    `bug_orig_crunch_decrunch_corrupt`).
+    `bug_orig_crunch_decrunch_corrupt`); with a Blitz program
+    (`tests/bug-orig/compiler/`): #2
+    (`bug_orig_compiler_userlibs_doubleslash`), #3
+    (`bug_orig_compiler_loadalib_readerr`), #8
+    (`bug_orig_compiler_optreqprep_allocmem`), #16
+    (`bug_orig_compiler_incdir_overflow`, verdict DIFFERS: the port has
+    other data behind `incdir`), #22
+    (`bug_orig_compiler_wbexit_returncode`), #23
+    (`bug_orig_compiler_loaddmod_pointer`), #27
+    (`bug_orig_compiler_checklib_examine`), #28
+    (`bug_orig_compiler_libsnode_name`).
 
 ## 3 Only once §1 is done
 
