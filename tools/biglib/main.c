@@ -1,10 +1,14 @@
 /*
  * biglib - join Blitz Basic 2 library files into one BigLib file
- * (blitz2:acidlibs, blitz2:deflibs; format: lib/biglib/biglib.h).
+ * (blitz2:acidlibs, blitz2:deflibs; format: lib/biglib/biglib.h), or take
+ * one out of it.
  *
  *   biglib join OUT LIB.obj...
+ *   biglib extract BIGLIB NUMBER|LIB.obj OUT
  *
- * Every input must be a well-formed AmigaDOS load file (lib/hunk).
+ * join: every input must be a well-formed AmigaDOS load file (lib/hunk).
+ * extract: the library with that number (or the number of LIB.obj, e.g.
+ * the original of a library built here) as a file of its own.
  */
 #include <stdlib.h>
 #include <string.h>
@@ -58,10 +62,76 @@ done:
     return rc;
 }
 
+static uint8_t *read_all(const char *path, size_t *len)
+{
+    FILE *f = fopen(path, "rb");
+    uint8_t *s = NULL;
+    long n;
+
+    if (!f)
+        return NULL;
+    if (!fseek(f, 0, SEEK_END) && (n = ftell(f)) >= 0 && !fseek(f, 0, SEEK_SET)
+        && (s = malloc((size_t)n + 1)) && fread(s, 1, (size_t)n, f) == (size_t)n)
+        *len = (size_t)n;
+    else {
+        free(s);
+        s = NULL;
+    }
+    fclose(f);
+    return s;
+}
+
+/* the library WHICH (a number, or a library file: its number) of BIGLIB */
+static int extract(const char *big, const char *which, const char *out)
+{
+    size_t size, n, len;
+    uint8_t *buf = read_all(big, &size), *lib = NULL;
+    struct biglib_entry *e = NULL;
+    char err[200], *end;
+    unsigned num = (unsigned)strtoul(which, &end, 0);
+    long i;
+    int rc = 1;
+    FILE *f;
+
+    if (!buf || biglib_read(buf, size, &e, &n, err, sizeof err)) {
+        fprintf(stderr, "biglib: %s: %s\n", big, buf ? err : "cannot read");
+        goto done;
+    }
+    if (!*which || *end) {              /* not a number: a library file */
+        if (!(lib = read_all(which, &len)) || biglib_number(lib, len, &num)) {
+            fprintf(stderr, "biglib: %s: no library file\n", which);
+            goto done;
+        }
+    }
+    if ((i = biglib_find(e, n, num)) < 0) {
+        fprintf(stderr, "biglib: %s: no library %u\n", big, num & 0xFFFF);
+        goto done;
+    }
+    if (!(f = fopen(out, "wb")) || fwrite(e[i].data, 1, e[i].size, f) != e[i].size) {
+        perror(out);
+        if (f)
+            fclose(f);
+        goto done;
+    }
+    if (fclose(f)) {
+        perror(out);
+        goto done;
+    }
+    rc = 0;
+done:
+    free(e);
+    free(buf);
+    free(lib);
+    return rc;
+}
+
 int main(int argc, char **argv)
 {
     if (argc >= 3 && !strcmp(argv[1], "join"))
         return join(argv[2], argc - 3, argv + 3);
-    fprintf(stderr, "usage: biglib join OUT LIB.obj...\n");
+    if (argc == 5 && !strcmp(argv[1], "extract"))
+        return extract(argv[2], argv[3], argv[4]);
+    fprintf(stderr, "usage: biglib join OUT LIB.obj...\n"
+                    "       biglib extract BIGLIB NUMBER|LIB.obj OUT\n");
     return 2;
 }

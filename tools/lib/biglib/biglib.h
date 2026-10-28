@@ -22,4 +22,11 @@ int biglib_write(FILE *out, const struct biglib_entry *entries, size_t n);
 int biglib_read(const uint8_t *buf, size_t size, struct biglib_entry **entries, size_t *n,
                 char *err, size_t errlen);
 
+/* the number of a library file (word at offset 4 of its code hunk); 0 = ok,
+   -1 = not a load file with such a hunk */
+int biglib_number(const uint8_t *data, size_t size, unsigned *libnum);
+
+/* the index of the library with that number (the first one), -1 = none */
+long biglib_find(const struct biglib_entry *entries, size_t n, unsigned libnum);
+
 #endif

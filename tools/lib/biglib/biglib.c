@@ -64,3 +64,30 @@ int biglib_read(const uint8_t *buf, size_t size, struct biglib_entry **entries, 
     *n = 0;
     return -1;
 }
+
+int biglib_number(const uint8_t *data, size_t size, unsigned *libnum)
+{
+    struct loadfile lf;
+    char err[200];
+    int r = -1;
+
+    if (!load_parse(data, size, &lf, err, sizeof err)) {
+        if (lf.nhunks && lf.hunks[0].data && lf.hunks[0].size >= 6) {
+            *libnum = be16(lf.hunks[0].data + 4);
+            r = 0;
+        }
+        load_free(&lf);
+    }
+    return r;
+}
+
+long biglib_find(const struct biglib_entry *entries, size_t n, unsigned libnum)
+{
+    size_t i;
+    unsigned num;
+
+    for (i = 0; i < n; i++)
+        if (!biglib_number(entries[i].data, entries[i].size, &num) && num == (libnum & 0xFFFF))
+            return (long)i;
+    return -1;
+}

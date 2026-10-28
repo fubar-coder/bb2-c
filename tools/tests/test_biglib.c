@@ -38,6 +38,43 @@ int main(void)
     CHECK(biglib_read(expect + 20, 4, &out, &n, err, sizeof err) == 0 && n == 0);
     free(out);
 
+    /* library numbers (word at offset 4 of the code hunk) and finding one */
+    {
+        struct buf c1 = { 0 }, c2 = { 0 }, l1, l2, short_code = { 0 }, l3;
+        struct biglib_entry libs[3];
+        unsigned num = 0;
+
+        put32(&c1, 0x70004E75);
+        put16(&c1, 100);
+        put16(&c1, 0);
+        put32(&c2, 0x70004E75);
+        put16(&c2, 0xFFDC);                 /* 65500 */
+        put16(&c2, 0);
+        put16(&short_code, 0x4E75);         /* too short for a number */
+        l1 = loadfile1(1, HUNK_CODE, &c1, NULL, 0, 0);
+        l2 = loadfile1(1, HUNK_CODE, &c2, NULL, 0, 0);
+        l3 = loadfile1(1, HUNK_CODE, &short_code, NULL, 0, 0);
+        CHECK(biglib_number(l2.p, l2.n, &num) == 0 && num == 65500);
+        CHECK(biglib_number(l3.p, l3.n, &num) == -1);
+        CHECK(biglib_number(a, sizeof a, &num) == -1);  /* no load file */
+        libs[0].data = l3.p;
+        libs[0].size = (uint32_t)l3.n;
+        libs[1].data = l1.p;
+        libs[1].size = (uint32_t)l1.n;
+        libs[2].data = l2.p;
+        libs[2].size = (uint32_t)l2.n;
+        CHECK(biglib_find(libs, 3, 100) == 1);
+        CHECK(biglib_find(libs, 3, 65500) == 2);
+        CHECK(biglib_find(libs, 3, 0x1FFDC) == 2);      /* 16 bits count */
+        CHECK(biglib_find(libs, 3, 7) == -1);
+        free(c1.p);
+        free(c2.p);
+        free(short_code.p);
+        free(l1.p);
+        free(l2.p);
+        free(l3.p);
+    }
+
     if (failures)
         fprintf(stderr, "test_biglib: %d failures\n", failures);
     return failures != 0;

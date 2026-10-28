@@ -8,7 +8,8 @@
  * The script runs with TEST: = WORKDIR/test.  Without --dir the work
  * directory is temporary: the files the script wrote to TEST: are printed
  * and the directory is removed; with --dir everything stays.  Exit status
- * 0 if the script ran to its end, 1 otherwise, 2 on usage errors.
+ * 0 if the script ran to its end, 1 otherwise, 77 if the emulator cannot
+ * start (Amiberry or its data missing: skipped), 2 on usage errors.
  */
 #define _XOPEN_SOURCE 700       /* scandir */
 #include <dirent.h>
@@ -151,7 +152,7 @@ int main(int argc, char **argv)
 
     if (!(e = amiga_emulation_start(&p, err, sizeof err))) {
         fprintf(stderr, "amiga_run: %s\n", err);
-        return 1;
+        return 77;                      /* no emulator (or its data): skipped */
     }
     st = amiga_emulation_join(e);
     if (p.work_dir)
