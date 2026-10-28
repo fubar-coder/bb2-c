@@ -16,6 +16,8 @@
  *                          ends in NAME (case ignored) returns -1
  *   examinefail=NAME       Examine of a lock on a name that ends in NAME
  *                          returns DOSFALSE
+ *   openlibfail=NAME       OpenLibrary/OldOpenLibrary of a library whose
+ *                          name ends in NAME (case ignored) returns 0
  *   track                  the process's AllocMem/FreeMem are recorded; what
  *                          is still allocated when COMMAND ends is reported
  * COMMAND is loaded with LoadSeg and run with RunCommand in this process
@@ -41,6 +43,8 @@
 #define LVO_READ     (-42)
 #define LVO_LOCK     (-84)
 #define LVO_EXAMINE  (-102)
+#define LVO_OLDOPENLIBRARY (-408)
+#define LVO_OPENLIBRARY    (-552)
 
 static BPTR out;
 static struct Task *me;
@@ -52,14 +56,15 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 
 static int o_signals, o_track, o_allocfail;
 static ULONG af_min, af_max, af_chip, af_count, af_done;
-static char rf_name[108], ef_name[108];
-static ULONG rf_n, rf_done, ef_done;
+static char rf_name[108], ef_name[108], olf_name[108];
+static ULONG rf_n, rf_done, ef_done, olf_done;
 
 /* the patches: asm entry, C decision (only for this process while COMMAND
    runs); the original is called with the registers it got */
 APTR old_allocmem, old_freemem, old_open, old_read, old_lock, old_examine;
+APTR old_oldopenlib, old_openlib;
 void allocmem_patch(void), freemem_patch(void), open_patch(void), read_patch(void);
-void lock_patch(void), examine_patch(void);
+void lock_patch(void), examine_patch(void), oldopenlib_patch(void), openlib_patch(void);
 
 __asm__(
 "   .text\n"
@@ -146,6 +151,26 @@ __asm__(
 "   move.l  _old_examine,-(sp)\n"
 "   rts\n"
 "4: moveq   #0,d0\n"
+"   rts\n"
+/* OldOpenLibrary(a1 name) / OpenLibrary(a1 name, d0 version):
+   openlib_pre != 0 -> 0, else the original */
+"   .even\n"
+"_oldopenlib_patch:\n"
+"   move.l  _old_oldopenlib,-(sp)\n"
+"   bra.s   5f\n"
+"   .even\n"
+"_openlib_patch:\n"
+"   move.l  _old_openlib,-(sp)\n"
+"5: movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  a1,-(sp)\n"
+"   jsr     _openlib_pre\n"
+"   addq.l  #4,sp\n"
+"   tst.l   d0\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   bne.s   6f\n"
+"   rts\n"                          /* to the original */
+"6: addq.l  #4,sp\n"
+"   moveq   #0,d0\n"
 "   rts\n"
 );
 
@@ -270,6 +295,16 @@ ULONG examine_pre(ULONG lock)
     return 0;
 }
 
+/* ---------------------------------------------------- exec libraries */
+
+ULONG openlib_pre(const char *name)
+{
+    if (!olf_name[0] || !ours() || !name || !ends(name, olf_name))
+        return 0;
+    olf_done++;
+    return 1;
+}
+
 /* ------------------------------------------------------------ main */
 
 static int number(const char **s, ULONG *v)
@@ -323,6 +358,12 @@ static int option(const char *a)
         strcpy(ef_name, a + 12);
         return 1;
     }
+    if (!strncmp(a, "openlibfail=", 12)) {
+        if (!a[12] || strlen(a + 12) >= sizeof olf_name)
+            return -1;
+        strcpy(olf_name, a + 12);
+        return 1;
+    }
     return 0;
 }
 
@@ -338,6 +379,8 @@ static void patch(int on)
         old_read = SetFunction(dos, LVO_READ, (APTR)read_patch);
         old_lock = SetFunction(dos, LVO_LOCK, (APTR)lock_patch);
         old_examine = SetFunction(dos, LVO_EXAMINE, (APTR)examine_patch);
+        old_oldopenlib = SetFunction(ex, LVO_OLDOPENLIBRARY, (APTR)oldopenlib_patch);
+        old_openlib = SetFunction(ex, LVO_OPENLIBRARY, (APTR)openlib_patch);
     } else {
         SetFunction(ex, LVO_ALLOCMEM, old_allocmem);
         SetFunction(ex, LVO_FREEMEM, old_freemem);
@@ -345,6 +388,8 @@ static void patch(int on)
         SetFunction(dos, LVO_READ, old_read);
         SetFunction(dos, LVO_LOCK, old_lock);
         SetFunction(dos, LVO_EXAMINE, old_examine);
+        SetFunction(ex, LVO_OLDOPENLIBRARY, old_oldopenlib);
+        SetFunction(ex, LVO_OPENLIBRARY, old_openlib);
     }
     CacheClearU();
     Permit();
@@ -399,7 +444,7 @@ int main(int argc, char **argv)
         }
     if (i >= argc) {
         put("usage: inject [signals] [allocfail=MIN-MAX[/chip][/COUNT]] [readfail=NAME/N]\n"
-            "              [examinefail=NAME] [track] COMMAND [ARGS]\n");
+            "              [examinefail=NAME] [openlibfail=NAME] [track] COMMAND [ARGS]\n");
         return 20;
     }
     for (k = i + 1; k < argc; k++) {
@@ -443,6 +488,10 @@ int main(int argc, char **argv)
     }
     if (ef_name[0]) {
         sprintf(line, "inject: examinefail: %lu examines failed\n", ef_done);
+        put(line);
+    }
+    if (olf_name[0]) {
+        sprintf(line, "inject: openlibfail: %lu opens failed\n", olf_done);
         put(line);
     }
     sprintf(line, "inject: rc=%ld\n", rc);
