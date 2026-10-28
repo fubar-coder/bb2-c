@@ -438,8 +438,8 @@ static char *result_of(const char *log, size_t id)
 }
 
 struct outcome {
-    uint8_t *exe, *run, *line;
-    size_t exelen, runlen, linelen;
+    uint8_t *exe, *run, *serial;   /* serial: sent over the serial port */
+    size_t exelen, runlen, seriallen;
     char *result;
 };
 
@@ -449,27 +449,27 @@ static void load_outcome(const struct corpus_pass *p, size_t c, size_t i, const 
     char *n = corpus_name(p->sources[i]);
     char *exe = str_printf("%s/%s/vol/out/%s", p->work, p->configs[c].tag, n);
     char *run = str_printf("%s/%s/vol/out/%s.run", p->work, p->configs[c].tag, n);
-    char *line = str_printf("%s/%s/vol/out/%s.serial", p->work, p->configs[c].tag, n);
+    char *serial = str_printf("%s/%s/vol/out/%s.serial", p->work, p->configs[c].tag, n);
 
     memset(o, 0, sizeof *o);
     if (exe)
         o->exe = read_file(exe, &o->exelen);
     if (run)
         o->run = read_file(run, &o->runlen);
-    if (line && p->serial)
-        o->line = read_file(line, &o->linelen);
+    if (serial && p->serial)
+        o->serial = read_file(serial, &o->seriallen);
     if (o->exe && p->runtime_errors)
         corpus_mask_traps(o->exe, o->exelen);
     o->result = result_of(log, i);
     free(n);
     free(exe);
     free(run);
-    free(line);
+    free(serial);
 }
 
 static void free_outcome(struct outcome *o)
 {
-    free(o->line);
+    free(o->serial);
     free(o->exe);
     free(o->run);
     free(o->result);
@@ -544,12 +544,12 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
             unsigned port = 0;
 
             if (p->serial && (!(port = serial_free_port()) || !(resp[next] = serial_start(port)))) {
-                fprintf(log, "corpus: %s: no TCP port for the serial line\n",
+                fprintf(log, "corpus: %s: no TCP port for the serial port\n",
                         p->configs[next].tag);
                 goto out;
             }
             fprintf(log, "corpus: %s: emulator session%s\n", p->configs[next].tag,
-                    port ? ", serial line" : "");
+                    port ? ", serial port" : "");
             fflush(log);
             if (!(e[next] = start(p, next, text, port, err, sizeof err))) {
                 fprintf(log, "corpus: %s: %s - skipped\n", p->configs[next].tag, err);
@@ -585,7 +585,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
     text_add(&rep, "\n");
     if (p->serial)
         for (c = 0; c < p->nconfigs; c++) {
-            text_add(&rep, "serial line %s: %d sessions\n", p->configs[c].tag, nsessions[c]);
+            text_add(&rep, "serial port %s: %d sessions\n", p->configs[c].tag, nsessions[c]);
             if (nsessions[c] < 0)
                 bad++;
         }
@@ -636,10 +636,10 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
                 text_add(&rep, " OUTPUT DIFFERS");
             diff |= !same(ref.run, ref.runlen, o.run, o.runlen);
             if (p->serial) {
-                int ok = same(ref.line, ref.linelen, o.line, o.linelen);
+                int ok = same(ref.serial, ref.seriallen, o.serial, o.seriallen);
 
-                text_add(&rep, !ref.line ? ", NO REFERENCE LINE" : ok ? ", line same"
-                               : ", LINE DIFFERS");
+                text_add(&rep, !ref.serial ? ", NO REFERENCE SERIAL DATA" : ok ? ", serial data same"
+                               : ", SERIAL DATA DIFFERS");
                 diff |= !ok;
                 if (o.run && strstr((const char *)o.run, "TIMEOUT")) {
                     text_add(&rep, ", TIMEOUT");
@@ -652,7 +652,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
             text_add(&rep, "; reference: TIMEOUT");
             diff = 1;
         }
-        /* the reference's line also as in the other pass (runtime error
+        /* the reference's serial data also as in the other pass (runtime error
            checking off/on); not there: that pass has not run */
         if (p->serial && p->serial_same_as && name) {
             char *other = str_printf("%s/%s.serial", p->serial_same_as, name);
@@ -660,11 +660,11 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
             uint8_t *od = other ? read_file(other, &olen) : NULL;
 
             if (!od)
-                text_add(&rep, "; (no line of the other pass)");
-            else if (same(ref.line, ref.linelen, od, olen))
-                text_add(&rep, "; line as in the other pass");
+                text_add(&rep, "; (no serial data of the other pass)");
+            else if (same(ref.serial, ref.seriallen, od, olen))
+                text_add(&rep, "; serial data as in the other pass");
             else {
-                text_add(&rep, "; LINE DIFFERS FROM THE OTHER PASS");
+                text_add(&rep, "; SERIAL DATA DIFFERS FROM THE OTHER PASS");
                 diff = 1;
             }
             free(od);

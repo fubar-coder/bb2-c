@@ -27,11 +27,13 @@
  *   source=PATH       a tokenised source (NAME.bb2), any number
  *   serial=on|off     on: the emulated serial port is a TCP server, a
  *                     remote end answers the programs (serial.h); the bytes
- *                     on the line (NAME.serial) are compared as well, and a
- *                     TIMEOUT in an output counts as a difference
- *   serial_same_as=DIR  the reference's line must also equal DIR/NAME.serial
- *                     (the other pass, runtime error checking off/on); if
- *                     that file is missing, only noted
+ *                     a program sends over the serial port (NAME.serial) are
+ *                     compared as well, and a TIMEOUT in an output counts as
+ *                     a difference
+ *   serial_same_as=DIR  what the reference sent over the serial port must
+ *                     also equal DIR/NAME.serial (the other pass, runtime
+ *                     error checking off/on); if that file is missing, only
+ *                     noted
  *   mount=NAME|DIR    a read-only volume for the programs (e.g. BB2: = the
  *                     CD, where the tests load sounds and modules from),
  *                     any number

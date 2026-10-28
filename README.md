@@ -116,7 +116,8 @@ ctest --preset all        # beides
   blockierenden Requestern, hinter der Sperre `reqclosetest`),
   `corpus_serial` / `corpus_serial_runerr` (ein Programm, das über die
   emulierte serielle Schnittstelle mit einer Gegenstelle auf dem Host
-  spricht; verglichen werden auch die Bytes auf der Leitung). Je
+  spricht; verglichen werden auch die Bytes, die es über die serielle
+  Schnittstelle sendet). Je
   Durchgang übersetzen drei Konfigurationen dieselben Quellen und führen
   die Programme aus: ref (Original-blitz2 1.95, Libraries der CD), port
   (blitz2-c, Libraries der CD: Executable gleich, Ausgabe gleich), clib

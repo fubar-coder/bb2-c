@@ -53,12 +53,13 @@ set(REF_BLITZ2 ${CMAKE_BINARY_DIR}/programs/blitz2/ref/blitz2)
 # corpus_pass(NAME [RUNTIME_ERRORS] [SERIAL] LAUNCHER TARGET [GATE TARGET]
 #             [SERIAL_SAME_AS PASS] SOURCES FILES...): pass file + ctest
 #   RUNTIME_ERRORS  runtime error checking on (else off)
-#   SERIAL          the remote end on the serial line (runner/serial.h)
+#   SERIAL          a remote end on the host for the serial port
+#                   (runner/serial.h)
 #   LAUNCHER        the program that starts every test program (reqtrap or
 #                   reqclose: they answer the programs' requesters)
 #   GATE            run first; the programs only if it returns 0
-#   SERIAL_SAME_AS  the reference's line must equal that of pass PASS
-#                   (run after it)
+#   SERIAL_SAME_AS  what the reference sent over the serial port must equal
+#                   that of pass PASS (run after it)
 function(corpus_pass name)
 	cmake_parse_arguments(PARSE_ARGV 1 arg "RUNTIME_ERRORS;SERIAL" "LAUNCHER;GATE;SERIAL_SAME_AS"
 		"SOURCES")
@@ -114,9 +115,9 @@ corpus_pass(corpus_runerr RUNTIME_ERRORS LAUNCHER reqtrap
 corpus_pass(corpus_req RUNTIME_ERRORS LAUNCHER reqclose GATE reqclosetest
 	SOURCES ${corpus_tests-req})
 # serial tests: the programs talk to a remote end on the host over the
-# emulated serial port (runner/serial.h); the bytes on the line are
+# emulated serial port (runner/serial.h); the bytes they send over it are
 # compared as well - without and with runtime error checking, and the
-# reference's line must be the same in both
+# reference must send the same in both
 corpus_pass(corpus_serial SERIAL LAUNCHER reqtrap SOURCES ${corpus_tests-serial})
 corpus_pass(corpus_serial_runerr RUNTIME_ERRORS SERIAL LAUNCHER reqtrap
 	SERIAL_SAME_AS corpus_serial

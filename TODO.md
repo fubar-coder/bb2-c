@@ -122,10 +122,11 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
       (Gegenstelle mit POSIX-Sockets und pthread, Protokoll wie bb2s
       `serialrun.py`), Pass-Schlüssel `serial=on`: je Konfiguration eigener
       Emulator mit eigenem Port (`serial_port=TCP://127.0.0.1:PORT`) und
-      eigener Gegenstelle; verglichen werden auch die Leitungsbytes, ein
-      `TIMEOUT` in der Ausgabe zählt als Abweichung. ctest `corpus_serial`,
-      `corpus_serial_runerr` (dieser prüft auch: Leitung der Referenz gleich
-      der ohne Fehlerprüfung): `t64_serialrx` 0 Abweichungen, je etwa
+      eigener Gegenstelle; verglichen werden auch die über die serielle
+      Schnittstelle gesendeten Bytes, ein `TIMEOUT` in der Ausgabe zählt als
+      Abweichung. ctest `corpus_serial`, `corpus_serial_runerr` (dieser
+      prüft auch: die Referenz sendet dasselbe wie ohne Fehlerprüfung):
+      `t64_serialrx` 0 Abweichungen, je etwa
       17 s. bb2 hat von seinen Seriell-Läufen nur den Bericht aufbewahrt,
       ein Byte-Vergleich damit war nicht möglich.
    Parallele Emulatorläufe nur mit **konfigurierbarer Obergrenze** (1 muss
