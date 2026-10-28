@@ -105,6 +105,8 @@ endfunction()
 
 # without runtime error checking: the programs of tests/
 corpus_pass(corpus LAUNCHER reqtrap SOURCES ${corpus_tests})
+# the TED A/B tests (tests/ted-ab) use its ref run: executables, defaults.xtra
+set_tests_properties(corpus PROPERTIES FIXTURES_SETUP corpus)
 # with runtime error checking: tests/ and the programs that trigger runtime
 # errors on purpose (tests-runerr/, they would crash without the checks)
 corpus_pass(corpus_runerr RUNTIME_ERRORS LAUNCHER reqtrap

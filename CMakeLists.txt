@@ -54,6 +54,7 @@ set(CHECKDATA ${HOST_TOOLS_DIR}/checkdata/checkdata)           # C data vs refer
 set(TEDTOK ${HOST_DIR}/ted-tools/tedtok/tedtok)                 # tokenise like TED
 set(CORPUSRUN ${HOST_DIR}/corpus-runner/corpusrun)              # one corpus pass in Amiberry
 set(CDRUN ${HOST_DIR}/corpus-runner/cdrun)                      # the CD through one compiler
+set(TEDAB ${HOST_DIR}/ted-ab-runner/tedab)                      # the TED A/B tests in Amiberry
 option(HOST_SANITIZE "host side with address/undefined behaviour sanitizers" OFF)
 ExternalProject_Add(host_tools
 	SOURCE_DIR ${PROJECT_SOURCE_DIR}/host
@@ -63,7 +64,7 @@ ExternalProject_Add(host_tools
 		-DHOST_SANITIZE=${HOST_SANITIZE}
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${ASMCMP} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA} ${TEDTOK} ${CORPUSRUN} ${CDRUN})
+	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${ASMCMP} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA} ${TEDTOK} ${CORPUSRUN} ${CDRUN} ${TEDAB})
 
 include(cmake/BlitzLibrary.cmake)
 

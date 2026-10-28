@@ -137,6 +137,17 @@ ctest --preset all        # beides
   cmake --build --preset amiga --target blitz2-cd-reference   # etwa 35 s
   ```
 
+  TED-A/B (`tests/ted-ab/`): `ted_ab` spielt die Skripte
+  `tests/ted-ab/scripts/*.drv` mit `teddrive` gegen TED, in vier
+  Kombinationen (R5: Original-TED + blitz2 1.95, C5: TED-C + 1.95, Cc:
+  TED-C + blitz2-c, Rc: Original-TED + blitz2-c), prüft die Erwartungen
+  der Skripte und vergleicht die Läufe paarweise (Ergebnis, Requester,
+  Bildschirm-Dumps, Dateien). Braucht den ref-Lauf von `corpus` (Fixture,
+  ctest startet ihn mit). Auswahl: `-DTED_AB_FILTER=02-*,29-cmp-*`,
+  `-DTED_AB_COMBOS=R5,C5`; Bericht in `build/<preset>/tests/ted-ab/
+  ted_ab.txt`, etwa 13 Minuten. `ted_ab_lint` prüft die Skripte ohne
+  Emulator.
+
 Die Orakel-Daten der TED-Tests (`tests/data/ted-oracle.sha256`: SHA-256
 von detok, tokit2 und Laden/Speichern für jede Quelle der CD;
 `tests/data/ted-tokens.txt`: die Token-Liste) erzeugt der Original-TED
@@ -203,7 +214,9 @@ tests/data/                  erzeugte Testdaten (Orakel-Hashes, Token-Liste,
                              CD-Referenz von blitz2 1.95)
 tests/ted-ab/                TED-A/B: Original-TED gegen TED-C im Emulator;
                              amiga/: teddrive, teddrivetest, tedprobe
-                             runner/: teddump (Bildschirm-Dumps), host/: Tests
+                             scripts/: die Tests (.drv), src/: Quellen,
+                             runner/: tedab (die Läufe), teddump
+                             (Bildschirm-Dumps), beide Host; host/: Tests
 tests/corpus/                Korpus: blitz2-c gegen blitz2 1.95 im Emulator;
                              amiga/: tedstub (blitz2:ted für Batch-Läufe),
                              reqtrap, reqclose, reqclosetest

@@ -72,14 +72,27 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
       abweichenden Zeilen; PNG vorerst nicht. Test `ted_ab_teddump` nach bb2s
       `test_teddump.py`. An bb2s 150 echten Dumps: Text byte-gleich zu
       `teddump.py`, alle 124 Paar-Vergleiche gleich beurteilt.
-   3. Runner `tedab` in C (wie `corpusrun`): Kombinationen R5/C5/Cc/Rc,
-      Quellen (`T`/`E` mit `tedtok`, `K` von der CD, `S`), Sperren 0 und D,
-      Sitzungen mit Neustart nach einem Hänger, Erwartungen (`tok` über
-      `tedtok`, `equals` über den Orakel-Hash bzw. den ref-Lauf des
-      Korpus), Vergleich der Läufe, Bericht.
-   4. ctest `ted_ab`. Abnahme: bb2-Stand (Stufe 1/2a, alle 52 Vergleiche
-      gleich); die offenen Fälle aus Stufe 2b (`09-opts`, `23-font6`, nicht
-      gelaufene Tests) danach getrennt.
+   3. ~~Runner `tedab` in C~~ erledigt (28.10.2026): `tests/ted-ab/runner/`
+      (`lib_tedab` + `tedab`, Passdatei von CMake), Skripte nach
+      `tests/ted-ab/scripts/`, Quellen `E`/`S` nach `tests/ted-ab/src/`.
+      Erwartungen ohne bb2-Pfade: `corpus` (Programm des Korpus-ref-Laufs),
+      `tedsave` (Orakel-Hash `save/`), `cd` (Datei der CD); `tok` über die
+      zur Bauzeit mit `tedtok` tokenisierten `*.expect`. `E` wird als Text
+      bereitgestellt (TED tokenisiert selbst), `K` auf der CD ohne Rücksicht
+      auf Groß-/Kleinschreibung gesucht. Sitzungen parallel bis
+      `CORPUS_PARALLEL`, nicht erreichte Läufe nach einem Hänger einmal neu.
+      Requester-Folge und Sperren-Auswertung an bb2s Daten geprüft (79 Logs,
+      Sperren-Bericht gleich). Neu gegenüber bb2: alle vier Kombinationen
+      in einer Sitzung (Budget 60 s, Limit 120 s statt 25/60 s); blitz2s
+      Übersetzungsfenster (`STOP!`) zählt beim Requester-Vergleich nicht
+      mit, ob `teddrive` es sieht, hängt vom Timing ab (0–2 Mal).
+   4. ~~ctest `ted_ab`~~ (Label emulator, Fixture auf `corpus`; Filter
+      `TED_AB_FILTER`, `TED_AB_COMBOS`) und `ted_ab_lint` (ohne Emulator).
+      Stand 28.10.2026: 43 Tests, 168 von 172 Läufen OK, alle 168
+      Vergleiche mit OK-Läufen gleich – Stufe 1/2a wie in bb2, dazu
+      `09-opts` (jetzt auch Cc/Rc), 24–29 (in bb2 nicht gelaufen). Offen:
+      `23-font6` – R5 hängt, der Emulator bootet neu (wie bb2: TIMEOUT);
+      deshalb schlägt `ted_ab` derzeit fehl.
 
 **Libraries (bb2: `libs-c/`)**
 
@@ -162,10 +175,9 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
 – **umgesetzt** (27.10.2026, mit `tools/amiga_run` und Tests: vier Läufe
 parallel, RTG, Steuer-Socket, Zeitlimit mit Screenshot). Erster Nutzer:
 das TED-Orakel (`ted-oracle`, `amiga_run` mit zusätzlichen Laufwerken).
-Noch offen: Korpus, TED-A/B und snitch-Tests laufen in bb2 weiter über
-`tools/amiberry.cmake` mit `AB3C:`; beim Hierherholen auf
-`amiga_emulation` umstellen (für den Korpus-Stub gibt es den Rahmen
-`shared/edstub`).
+Korpus (`corpusrun`, `cdrun`), TED-A/B (`tedab`) und die snitch-Tests der
+Libraries (`libs_emulator`) laufen inzwischen hier über `amiga_emulation`
+(28.10.2026), nicht mehr über bb2s `tools/amiberry.cmake`.
 
 * Standard-Konfiguration `tools/lib/amiga_emulation/default.uae` (aus der
   AGA-Konfiguration, bereinigt; RTG-Variante = Änderungen) und
