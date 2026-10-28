@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+window 0 -1
+window 1 0
+rc=0
