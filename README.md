@@ -172,7 +172,10 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   `log_illegal_mem`; `emulator.cmake -DILLEGAL_WATCH=ON` evaluates the
   log), `bug_orig_crunch_decrunch_corrupt` (Deplode, CrMDecrunch,
   PPDecrunch with corrupt data write outside the destination; guard
-  bytes).
+  bytes), `bug_orig_crunchlib_crm_minsecdist`,
+  `bug_orig_crunchlib_crm_overlap_4gb`, `bug_orig_crunchlib_crm2_readtab`,
+  `bug_orig_crunchlib_pp_readd1` (one bug of the decrunchers each, #115
+  to #118), `bug_orig_debuglib_findoff_flags` (#127).
 
   **bug-orig tests with a Blitz program** (`tests/bug-orig/`, runner:
   the corpus runner, `corpusrun` with `expect=`; verdict in
@@ -204,7 +207,8 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   observation of each configuration in `.../ID/TAG/observation`.
   Helpers (`tests/bug-orig/amiga/`): `inject` runs the compiler with
   faults (no free signal, failing AllocMem of a size, Read error, failing
-  Examine, recorded allocations), `userlib.c` is a library for
+  Examine, failing OpenLibrary of a name, recorded allocations; for the
+  compiled programs with `runwrap=@INJECT@|...`), `userlib.c` is a library for
   `blitz2:userlibs` (function `BugOrigUserLib`, token in
   `userlib.tokens`). tedstub also runs menu items
   (`menu=ID|ITEM|ANSWER`) and logs the busy pointer after them;
@@ -216,9 +220,11 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   the issue: `ID.bas` (the program as text; in its header comment
   `; @pass KEY=VALUE` for extra lines of the pass file, see
   `tests/corpus/runner/corpus.h`: `file=`, `dir=`, `remove=`, `wrap=`,
-  `jobline=`, `timeout=`, `runtime_errors=on`, with `@USERLIB@`,
+  `runwrap=`, `jobline=`, `timeout=`, `runtime_errors=on`, with `@USERLIB@`,
   `@INJECT@`, `@CD_BLITZ2@`, `@TESTDATA@`; `; @configs port` restricts the
-  configurations judged) and `ID.expect` (the correct behaviour). Test
+  configurations judged) and `ID.expect` (the correct behaviour; a line
+  beginning with `[` is a section header, so the program's output must
+  not begin with `[`). Test
   data (sounds, pictures, modules) is generated, not checked in: a
   description `NAME.spec` in an area directory (`tools/mktestdata`:
   bytes, words, longs, texts, labels, IFF chunks with their lengths filled
