@@ -1,0 +1,22 @@
+; Test 08: loadxtra/savextra.  A CD source with its own .xtra, SAVE under
+; a new name; let2.bb2.xtra must equal let.bb2.xtra (checked on the host),
+; let2.bb2 = let.bb2.  TED prefills the file gadget with the FULL name
+; (TEDRUN:work/let.bb2, PATH: empty) - a bare "let2.bb2" was saved relative
+; to the current directory (sessions F/H), so the full name is given.
+; @source K internet/manual_source/blitz_manual/02.variable_handling/let.bb2
+; @est 3
+; @expect cd let2.bb2 internet/manual_source/blitz_manual/02.variable_handling/let.bb2
+; @expect exists let2.bb2.xtra
+; @expect exists let2.bb2.info
+; @expect same let.bb2
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 0 2
+wait freq "Name to save file as"
+freq ok "TEDRUN:work/let2.bb2"
+wait screen
+dump saved
+menu 0 9
+wait exit

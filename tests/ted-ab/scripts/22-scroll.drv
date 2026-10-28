@@ -1,0 +1,86 @@
+; Stage 2b: scrolling and positioning on a long source (189 lines):
+; BOTTOM, TOP, 62 lines down (blitter scroll from line 60 on), GOTO 30
+; (goto requester: integer gadget 1, OK = gadget 2).  Nothing saved.
+; @source K bui7/marbles/source/cathwheel.bb2
+; @expect same cathwheel.bb2
+; @expect absent cathwheel.bb2.bak
+; @est 12
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 2 1
+dump bottom
+menu 2 0
+dump top
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+key 4d
+dump down
+menu 2 2
+wait req "OK" "CANCEL"
+str 1 "30"
+gad 2
+wait screen
+dump goto
+menu 0 9
+wait exit

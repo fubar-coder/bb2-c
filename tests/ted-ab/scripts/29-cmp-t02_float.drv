@@ -1,0 +1,19 @@
+; Stage 2b compile through the menu (generated once by bb2 gen2b.py): corpus t02_float
+; CREATE EXECUTABLE without runtime errors; = the corpus ref run (tests/corpus)
+; @source T t02_float
+; @xtra norunerr
+; @expect corpus t02_float t02_float
+; @expect same t02_float.bb2
+; @est 4
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 4 2
+wait freq "Name of Executable to create"
+timeout 30
+freq ok "t02_float" "TEDRUN:work"
+timeout 10
+wait screen
+menu 0 9
+wait exit

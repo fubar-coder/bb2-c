@@ -1,0 +1,24 @@
+; Test 07: compile error.  syntaxerr.bb2 (error in line 2): CREATE
+; EXECUTABLE, error requester (OKAY), cursor to the error line.  Compared:
+; dumps (status line Line: 2), requester sequence.
+; @source S syntaxerr
+; @xtra norunerr
+; @est 6
+; @expect absent syntaxerr
+; @expect same syntaxerr.bb2
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 4 2
+wait freq "Name of Executable to create"
+timeout 30
+freq ok "syntaxerr" "TEDRUN:work"
+wait req "OKAY"
+timeout 10
+dump error
+gad 1
+wait screen
+dump line
+menu 0 9
+wait exit

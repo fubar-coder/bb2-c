@@ -1,0 +1,29 @@
+; Stage 2b: NEW with the erase requester (changed text): CANCEL, then OK;
+; LOAD the file again (full name).  Nothing saved.
+; @source T t01_int
+; @expect same t01_int.bb2
+; @expect absent t01_int.bb2.bak
+; @est 7
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+type "x"
+menu 0 0
+wait req "OK" "CANCEL"
+dump erase
+gad 2
+wait screen
+dump kept
+menu 0 0
+wait req "OK" "CANCEL"
+gad 1
+wait screen
+dump new
+menu 0 1
+wait freq "Name of file to load"
+freq ok "TEDRUN:work/t01_int.bb2"
+wait screen
+dump loaded
+menu 0 9
+wait exit

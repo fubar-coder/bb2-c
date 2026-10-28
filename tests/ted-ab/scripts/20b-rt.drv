@@ -1,0 +1,18 @@
+; Stage 2b round trip (generated once by bb2 gen2b.py): CD internet/manual_source/blitz_manual/25.windows/wbox.bb2
+; load, SAVE over the file, QUIT; saved file and .bak = original
+; @source K internet/manual_source/blitz_manual/25.windows/wbox.bb2
+; @roundtrip
+; @expect exists wbox.bb2.info
+; @est 3
+timeout 30
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+dump start
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+dump saved
+menu 0 9
+wait exit

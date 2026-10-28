@@ -1,0 +1,28 @@
+; Test 01d (K bui6/mapslib/mikesmaplib.bb): round trip with missing
+; residents.  The .xtra names blitzlibs:libmacs.res and blitzlibs:blitzoffs.res;
+; blitzlibs: does not exist: two DOS requesters (answered "cancel" by
+; reqtrap, REQUESTER: lines in stdout) and two blitz2 error requesters
+; " OKAY " (comdata error) after the version requester - seen in the
+; reference (stage 1 session 1).  Afterwards TED reopens its screen (other
+; geometry: the label column).  Then SAVE over the file and QUIT.
+; @source K bui6/mapslib/mikesmaplib.bb
+; @roundtrip
+; @est 3
+; @expect exists mikesmaplib.bb.info
+; @expect exists mikesmaplib.bb.xtra
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait req "OKAY"
+gad 1
+wait req "OKAY"
+gad 1
+wait screen
+dump start
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+dump saved
+menu 0 9
+wait exit

@@ -1,0 +1,19 @@
+; Stage 2b: 6 pixel font from the option file (a synthetic GADGETUP does
+; not toggle the font gadget - Intuition sets GFLG_SELECTED, not the message):
+; L/blitzeditor.opts with fonthite 6; start, BOTTOM.  Nothing saved.
+; @source T t01_int
+; @opts fonthite=6,fonthite2=5,fontmul=960
+; @font 6
+; @expect same t01_int.bb2
+; @expect absent t01_int.bb2.bak
+; @expect opts blitzeditor.opts fonthite=6,fonthite2=5,fontmul=960
+; @est 4
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+dump start
+menu 2 1
+dump bottom
+menu 0 9
+wait exit

@@ -1,0 +1,16 @@
+; Stage 2b: Help key ($5F) on the token NPrint (line 3): the screen title
+; shows the help text of blitz2's token list (dump header).  Nothing saved.
+; @source T t01_int
+; @expect same t01_int.bb2
+; @expect absent t01_int.bb2.bak
+; @est 3
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+key 4d
+key 4d
+key 5f
+dump help
+menu 0 9
+wait exit

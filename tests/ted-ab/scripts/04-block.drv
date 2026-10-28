@@ -1,0 +1,31 @@
+; Test 04: block.  F1 on line 1, three lines down, F2, two lines down,
+; COPY (menu 1 0), KILL (menu 1 1), FORGET (menu 1 4), SAVE.  Compared:
+; file, dumps (block inverse).
+; @source T t04_arr
+; @est 5
+; @expect tok t04_arr.bb2 04-block.expect
+; @expect bak t04_arr.bb2.bak
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+key 4d
+key 50
+key 4d
+key 4d
+key 4d
+key 51
+key 4d
+key 4d
+dump marked
+menu 1 0
+dump copied
+menu 1 1
+dump killed
+menu 1 4
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+menu 0 9
+wait exit

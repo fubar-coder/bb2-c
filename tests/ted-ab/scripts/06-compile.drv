@@ -1,0 +1,23 @@
+; Test 06: COMPILER/CREATE EXECUTABLE through the menu (no runtime error
+; checks).  File requester of blitz2 -> TEDRUN:work/t01_int, wait for the
+; end of COMPILING, QUIT.  Compared: executable A<->B (and later against
+; the tedstub result), requester sequence.
+; @source T t01_int
+; @xtra norunerr
+; @est 6
+; @expect corpus t01_int t01_int
+; @expect exists t01_int.info
+; @expect same t01_int.bb2
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 4 2
+wait freq "Name of Executable to create"
+timeout 30
+freq ok "t01_int" "TEDRUN:work"
+timeout 10
+wait screen
+dump compiled
+menu 0 9
+wait exit

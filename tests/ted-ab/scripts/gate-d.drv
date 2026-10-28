@@ -1,0 +1,24 @@
+; Gate D: teddrive against teddrivetest (tests/amiga/teddrivetest.c, mode
+; main).  Every input type of "Weg D", idle synchronisation (menu 0 2 keeps
+; the program busy for 1 s), string gadgets, a wait that must time out,
+; screen dumps (the runner checks the rectangle).  Result must be OK.
+timeout 10
+wait screen
+dump gd-start
+key 20
+type "Ab1\n"
+menu 0 1
+wait req "OK" "Cancel"
+str 3 "hello"
+str 4 "42"
+gad 1
+wait gone
+menu 0 2
+key 21
+timeout 2
+expectfail wait req "Nope"
+timeout 10
+dump gd-end
+mem gd
+menu 0 9
+wait exit

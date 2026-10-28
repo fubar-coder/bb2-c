@@ -1,0 +1,33 @@
+; Test 05: find/replace.  FIND (menu 3 0) "NPrint" -> replace "Print",
+; NEXT gadget; menu NEXT; REPLACE; REPLACE ALL (repall requester, FROM
+; TOP); SAVE.  Compared: file, dumps, requester sequence.
+; @source T t03_str
+; @est 6
+; @expect tok t03_str.bb2 05-find.expect
+; @expect bak t03_str.bb2.bak
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 3 0
+wait req "NEXT" "PREVIOUS" "REPLACE ALL"
+str 1 "NPrint"
+str 2 "Print"
+gad 3
+wait screen
+dump found
+menu 3 1
+dump next
+menu 3 3
+dump replaced
+menu 3 4
+wait req "FROM HERE" "FROM TOP"
+gad 2
+wait screen
+dump all
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+menu 0 9
+wait exit

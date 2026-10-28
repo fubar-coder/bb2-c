@@ -1,0 +1,25 @@
+; Test 02: typing + save.  TOP, typing at column 0 of line 0, then Return
+; and two more lines: keywords, string, ';' comment, '$' hex, Tab.  TED's
+; Return does not split: it opens a new line below (observed in R5 and C5,
+; stage 1 session C), so the first text goes in front of the old line 0.
+; Saved file = tedtok of the expected text incl. the empty last line
+; (checked on the host).  Compared: saved file A<->B, dumps.
+; @source T t01_int
+; @est 9
+; @expect tok t01_int.bb2 02-type.expect
+; @expect bak t01_int.bb2.bak
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 2 0
+type "NPrint \"Hi\" ;c\n"
+type "x.l=$1F : y=x*2\n"
+type "\tNPrint x\n"
+dump typed
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+menu 0 9
+wait exit

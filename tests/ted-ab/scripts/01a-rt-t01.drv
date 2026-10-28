@@ -1,0 +1,20 @@
+; Test 01 (T t01_int): round trip - load, SAVE over the file (file requester
+; prefilled with the loaded path/name), QUIT.  Compared: saved file (= the
+; original, @roundtrip), .bak (= the original), .xtra, .info, dump, requesters.
+; @source T t01_int
+; @roundtrip
+; @est 3
+; @expect exists t01_int.bb2.info
+; @expect exists t01_int.bb2.xtra
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+dump start
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+dump saved
+menu 0 9
+wait exit

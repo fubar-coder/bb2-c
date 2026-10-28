@@ -1,0 +1,28 @@
+NPrint "Hi" ;c; t01_int - integer arithmetic (byte, word, long, quick)
+x.l=$1F : y=x*2
+  NPrint x
+
+a.w=1234 : b.w=-567
+NPrint a+b," ",a-b," ",a*b," ",a/b
+c.l=100000 : d.l=-7
+NPrint c+d," ",c-d," ",c*d," ",c/d," ",c MOD d," ",d MOD 3
+e.b=100 : f.b=50
+e=e+f : NPrint "byte wrap ",e
+w.w=32767 : w=w+1 : NPrint "word wrap ",w
+l.l=$7fffffff : l=l+1 : NPrint "long wrap ",l
+NPrint "div0 long ",c/0
+NPrint "neg div ",-7/2," ",7/-2," ",-7 MOD 2
+NPrint "and/or/eor ",$f0f0 & $ff00," ",$f0f0 | $0f0f," ",$f0f0 EOR $ffff
+NPrint "not ",NOT 5
+s.w=1000 : NPrint "lsl word ",s LSL 6," lsr ",s LSR 2," asr ",-s ASR 2," asl ",s ASL 7
+t.l=1 : NPrint "lsl long ",t LSL 31," ",(t LSL 31) LSR 31
+NPrint "bits ",5 BitTst 0," ",5 BitTst 1," ",0 BitSet 4," ",255 BitClr 0," ",1 BitChg 1
+NPrint "cmp ",3<4," ",3>4," ",3=3," ",3<>3," ",4<=4," ",5>=6
+NPrint "hex ",$ff," bin ",%1010," neg ",-$10
+NPrint "abs ",Abs(-12)," sgn ",Sgn(-12)," ",Sgn(0)," ",Sgn(9)
+q.q=3.5 : r.q=-1.25
+NPrint "quick ",q+r," ",q-r," ",q*r," ",q/r
+NPrint "quick mod ",q MOD 2
+x=7 : y=3
+NPrint "default ",x/y," ",x*y
+End

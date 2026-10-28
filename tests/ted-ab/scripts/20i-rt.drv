@@ -1,0 +1,18 @@
+; Stage 2b round trip (generated once by bb2 gen2b.py): CD internet/dungen/dungenpal.bb
+; load, SAVE over the file, QUIT; saved file and .bak = original
+; @source K internet/dungen/dungenpal.bb
+; @roundtrip
+; @expect exists dungenpal.bb.info
+; @est 8
+timeout 30
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+dump start
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+dump saved
+menu 0 9
+wait exit

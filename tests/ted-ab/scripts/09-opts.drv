@@ -1,0 +1,23 @@
+; Test 09: options.  blitz2 without a file, DEFAULTS (menu 0 3; TED closes
+; and reopens its screen), tab stop gadget 6 = 8 + GADGETUP on it (TED
+; applies the numbers only on the string gadget's GADGETUP, like Return -
+; OK alone keeps them: stage 1 saved tabstop 2), OK (gadget 26), QUIT
+; (savedefs -> L:blitzeditor.opts = TEDRUN:L).  Compared: option file
+; A<->B, dump.
+; @source none
+; @est 5
+; @expect opts blitzeditor.opts tabstop=8
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 0 3
+wait req "OK" "CANCEL"
+str 6 "8"
+gad 6
+dump defaults
+gad 26
+wait screen
+dump after
+menu 0 9
+wait exit

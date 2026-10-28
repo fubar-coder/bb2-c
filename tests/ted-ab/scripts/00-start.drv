@@ -1,0 +1,15 @@
+; Test 00: start and quit (smoke test, PHASE3-PLAN.md 7.1).
+; blitz2 starts TED with the file, version requester of blitz2, TED's
+; screen with the source, menu PROJECT/QUIT (no changes: no erase
+; requester).  Compared: dump "start", requester sequence, rc.
+; @source T t01_int
+; @combos R5 C5 Rc Cc
+; @est 3
+; @nofiles
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+dump start
+menu 0 9
+wait exit
