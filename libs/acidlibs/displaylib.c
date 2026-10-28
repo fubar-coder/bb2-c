@@ -43,6 +43,10 @@
  *     >= 2731 go backwards), signed CMPA.l in the overrun checks.
  *   - DisplayBitMap / the double form leave a3 on the bp1 table,
  *     CreateDisplay on the last coplist - reproduced.
+ *   - CustomSprites is declared with the !libs of DisplaySprite
+ *     (#spriteslib,$1181): the compiler treats CCOffset as a sprite
+ *     number (maximum check, d1 shifted by 4) and the routine's ASL #2
+ *     makes the offset CCOffset * 64 bytes instead of * 4.
  * DIFF: a2 stays unchanged where it is the argument stack (port
  * convention, notes/cmdlibs-port.md); the error branches are JSRs (a
  * return address more on the stack); indexes outside the data tables
@@ -203,6 +207,8 @@ BLITZ_NAME("DisplayScroll", "CopList#,&xpos.q(n),&xpos.q(n)[,Offset]   ;3");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
+/* BUG(orig): copied from DisplaySprite - $1181 loads a sprite object for
+   CCOffset (d1 arrives shifted by 4, checked against the sprite maximum) */
 BLITZ_LIBS(LIB_spriteslib, 0x1181, LIB_displaylib, COP);
 BLITZ_SUBS(_customsprites, _checkcoplist, 0);
 BLITZ_NAME("CustomSprites", "CopList#,CCOffset,YPos,NumSprites ;4n+2");
@@ -1458,7 +1464,9 @@ static void BLITZ_ROUTINE _displaydblscan_c(UWORD d1 BL_REG(d1), UWORD d2 BL_REG
 BLITZ_THUNK(_displaydblscan0, _displaydblscan0_c, "a0");
 BLITZ_THUNK(_displaydblscan, _displaydblscan_c, "a0");
 
-/* CustomSprites CopList#,CCOffset,YPos,NumSprites */
+/* CustomSprites CopList#,CCOffset,YPos,NumSprites.  BUG(orig): d1 is
+   CCOffset * 16 (see the declaration), the a1 the compiler loaded is not
+   used: the offset is CCOffset * 64 bytes */
 static void BLITZ_ROUTINE _customsprites_c(UWORD d1 BL_REG(d1), UWORD d2 BL_REG(d2),
                                            UWORD d3 BL_REG(d3))
 {

@@ -95,6 +95,7 @@ static void BLITZ_ROUTINE codeinit_c(const void *intuition BL_REG(a6))
 
     {
         ULONG vbr = 0;                                  /* MOVEQ #0,d2 */
+        /* BUG(orig): a 68010 (cpu == 1) has a VBR too, it is not read */
         if (cpu >= 2) {                                 /* CMP #2,d1:BCS 'skip */
             APTR ssp = SuperState();                    /* supervisor state! */
             vbr = getvbr();

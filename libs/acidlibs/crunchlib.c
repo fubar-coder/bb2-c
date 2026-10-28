@@ -27,7 +27,8 @@
  * Deplode(buffer): -1 = ok, 0 = not "IMP!" / error.
  * CrMDecrunch buffer[,dest]: one argument = in place; then the data are
  * first copied to buffer-MinSecDist (memory BEFORE the buffer is
- * overwritten, as documented in the original).
+ * overwritten, as the Crunch-Mania listing requires - BUG(orig), see
+ * below).
  * PPDecrunch start,end,dest: end = end of the packed file (the last long
  * holds the original length and the number of empty bits).
  *
@@ -38,6 +39,11 @@
  *     After $4012 literal bytes
  *     in a row the rest of the data is stored uncrunched - a limit of the
  *     Imploder format (imtab4), not an error.
+ *   - CrMDecrunch with one argument (destination = source) and with
+ *     overlapping buffers: the crunched data are moved to MinSecDist
+ *     bytes BEFORE the destination - up to MinSecDist bytes of foreign
+ *     memory in front of the buffer are overwritten (the BB2 docs only
+ *     say "works like the Deplode command").
  *   - CrMDecrunch: overlap copy of (CrLen>>2) longs with SUBQ/BNE: a
  *     crunched length below 4 copies 4 GB; the address comparisons are
  *     signed (BLE).
@@ -966,6 +972,8 @@ static void overlapdecrunch(const UBYTE *a0, UBYTE *a1)
     d2 = RL(a0 + 6);                    /* SrcLen */
     a0 += 10;
     a2 = a0 + d0;
+    /* BUG(orig): a1 - MinSecDist lies in front of the destination buffer
+       (always for _crm, destination = source) */
     if ((LONG)a2 > (LONG)a1) {          /* copy below the destination */
         ULONG *s = (ULONG *)a0, *d, n = d2 >> 2;
         a0 = a1 - d0;

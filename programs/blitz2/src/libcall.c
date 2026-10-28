@@ -1242,6 +1242,9 @@ WORD makeiname(void)
     WORD d2 = -1;
     UWORD c;
 
+    /* BUG(orig): neither loop checks the length - incdir + name beyond
+       127 characters run past namebuff (namebuff2, then what follows).
+       Like doincdir the rest of the line (also after ':') is copied. */
     do {
         d2++;
     } while ((*a1++ = (UBYTE)*a0++) != 0);

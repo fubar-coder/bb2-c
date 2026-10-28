@@ -28,6 +28,10 @@
  *   - Without high/low colours the range is 0..min(colours of the
  *     palette, colours of the slice)-1; with them nothing is clipped.
  *   - The init clears fadenum and fadetype together (CLR.l fadenum).
+ *   - Wrong messages: an uninitialized palette gives "Not enough colours
+ *     in Slice" (err2; mess3 "Uninitialized Palette" is never used), a
+ *     low/high colour beyond the slice's colours "Uninitialized Slice"
+ *     (err1).
  */
 #include "blitzlib.h"
 
@@ -279,7 +283,7 @@ void BLITZ_ROUTINE dofadeout2(ULONG d0 BL_REG(d0), const UBYTE *pal BL_REG(a0),
 
 BLITZ_ERRCHK_MESSAGE(mess1, "Uninitialized Slice");
 BLITZ_ERRCHK_MESSAGE(mess2, "Not enough colours in Slice");
-BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialized Palette");
+BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialized Palette");     /* BUG(orig): unused */
 
 /* fadechk0 - slice and palette set up (word tests), slice with colours */
 static int BLITZ_ERRCHK fadechk0_x(const UWORD *pal, const UWORD *slice)
@@ -289,7 +293,7 @@ static int BLITZ_ERRCHK fadechk0_x(const UWORD *pal, const UWORD *slice)
         return 0;
     }
     if (!pal[0] || !slice[4]) {
-        BLITZ_RUNERR(mess2);
+        BLITZ_RUNERR(mess2);            /* BUG(orig): also for the palette */
         return 0;
     }
     return 1;
@@ -307,7 +311,7 @@ static void BLITZ_ERRCHK fadechk_c(UWORD lo BL_REG(d2), UWORD hi BL_REG(d3),
     if (!fadechk0_x(pal, slice))
         return;
     if (lo >= slice[4] || hi >= slice[4])
-        BLITZ_RUNERR(mess1);
+        BLITZ_RUNERR(mess1);            /* BUG(orig): err1, not err2 */
 }
 
 BLITZ_ERRCHK_THUNK(fadechk0, fadechk0_c, "d0-d1/a0-a1");

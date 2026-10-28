@@ -32,7 +32,8 @@
  *      defin    -4: Read(Input(), a0, d0+1) - 1 (the last character, the
  *               newline of a console line, is dropped; d0 = -1 at end of
  *               file, -2 on an error);  0: no single characters - runtime
- *               error "Can't Input Character from Defualt Input" (sic)
+ *               error "Can't Input Character from Defualt Input" (sic,
+ *               BUG(orig): typo kept)
  *
  * Stacks: DefaultInput/DefaultOutput and every dosetin/dosetout push the
  * previous handler (word index & 63: a ring of 16 longs) and count;
@@ -230,7 +231,8 @@ static LONG BLITZ_ROUTINE defin2_c(ULONG len BL_REG(d0), UBYTE *buf BL_REG(a0))
 }
 
 /* message of defin's single character entry - in the normal code (DIFF,
-   see the head comment; the original's text is in the error area) */
+   see the head comment; the original's text is in the error area).
+   BUG(orig): "Defualt" - the typo of the original, kept */
 const char mess1[] = "Can't Input Character from Defualt Input";
 
 void defin(void);

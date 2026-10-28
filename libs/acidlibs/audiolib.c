@@ -40,6 +40,10 @@
  *     the error area (dangling without the debugger) - the C library
  *     calls err5 there in the same way; err1-err4 are in the normal code
  *     with their texts in the error area, as in the original.
+ *   - PeekSound (like every $1380 object function): the object pointer
+ *     comes in a3, which is also the string buffer pointer; inside a
+ *     string expression the following string parts are written into the
+ *     Sound object.
  * DIFF: a2 stays unchanged (the original pops volumes / lengths).
  */
 #include "blitzlib.h"
@@ -429,7 +433,9 @@ void BLITZ_ROUTINE doisound(ULONG len BL_REG(d1), UWORD period BL_REG(d2),
 }
 
 /* SoundData n,offset,byte / PeekSound(n,offset) - inline as in the
-   original */
+   original.  BUG(orig): a3 = the Sound object (!libs $1380) is left as
+   it is - a PeekSound inside a string expression makes the rest of the
+   expression write into the object. */
 BLITZ_INLINE(dosdata,
     "   move.l  (a3),a0\n"
     "   move.b  d2,0(a0,d1.l)");
