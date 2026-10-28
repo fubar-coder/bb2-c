@@ -196,8 +196,9 @@ Noch offen: Korpus, TED-A/B und snitch-Tests laufen in bb2 weiter über
   (corpusrun, cdrun) und die Amiga-Programme `reqtrap`, `reqclose`,
   `reqclosetest`. Nicht dabei: `tedstub` und `tedoracle` (lädt nur
   blitz2 als `blitz2:ted`, aus der Shell gestartet enden sie mit 20).
-  Offen: `blitz2` und `ted` selbst – sie bilden das Verhalten der Originale
-  nach (Argument = Datei), eine Hilfe wäre ein `DIFF`.
+  Ebenfalls ausgenommen (Entscheidung vom 28.10.2026, kann sich viel später
+  ändern): `blitz2` und `ted` selbst – sie bilden das Verhalten der
+  Originale nach (Argument = Datei), eine Hilfe wäre ein `DIFF`.
 
 * **Git-Historie und Remote:** dieses Repository ist die Referenz
   (entschieden); offen, ob es mit dem frischen Anfang bleibt oder die
