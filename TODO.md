@@ -275,6 +275,10 @@ Libraries (`libs_emulator`) laufen inzwischen hier über `amiga_emulation`
 * ~~**CD-Daten**~~ gelöst (28.10.2026): nicht im Repository,
   `cmake/fetch-originals.cmake` lädt CD (archive.org) und Aminet-Archiv
   mit fester SHA-256 nach `archive/cd/`, `archive/aminet/`.
+* **Dokumentation `docs/`** (28.10.2026 aus bb2 `ee6174b` übernommen,
+  unverändert): Pfade, Befehle und Zeilenverweise in den Texten auf den
+  Aufbau dieses Repositorys umstellen (Zuordnung in `docs/README.md`);
+  Zeilenverweise in den C-Code müssen dabei neu bestimmt werden.
 
 ## 3 Erst wenn §1 erledigt ist
 

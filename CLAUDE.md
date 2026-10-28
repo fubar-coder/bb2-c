@@ -10,7 +10,8 @@ Prüfungen im Build: `README.md`. Offene Punkte: `TODO.md`.
 Hier liegen Build, Referenz-Builds (`ted_ref`, `blitz2_ref`), die
 Originalquellen (`archive/`), das TED-Orakel und die Host-Tests von TED.
 Noch in `../bb2`: Korpus, TED-A/B- und Library-Tests im Emulator,
-Analysewerkzeuge und die Notizen zur Übersetzung – dort stehen auch die
+Analysewerkzeuge. Die Notizen zur Übersetzung liegen in `docs/` (aus bb2
+`ee6174b`, unverändert, Pfade im Aufbau von bb2) – dort stehen auch die
 Begründungen für Code-Kommentare wie `BUG(orig)`, `DIFF`, `ted.s:NNN` oder
 `blitz2.s:NNN`. Stand der Übernahme: `TODO.md`.
 
@@ -63,8 +64,8 @@ ctest --preset emulator                                # Tests in Amiberry
   `cmake/fetch-originals.cmake` geladen (`archive/cd/`, `archive/aminet/`,
   ignoriert); Tests, die es brauchen, werden ohne es übersprungen.
 * **Original-Fehler nicht beheben**, nur dokumentieren (`BUG(orig)` im
-  Code, Verzeichnis der Abweichungen in bb2); `DIFF` nur, wo technisch
-  nötig.
+  Code, Verzeichnis der Abweichungen in `docs/*/abweichungen.md`);
+  `DIFF` nur, wo technisch nötig.
 * **Nur C/C++ und CMake.** Kein Python, keine Shell-Skripte im Build. Was
   Compiler und Linker selbst können, ohne Werkzeug (`#embed` +
   `_Static_assert`, `strip`); Text und Steuerung als CMake; Binärformate

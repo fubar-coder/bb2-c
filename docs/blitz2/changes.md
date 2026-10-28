@@ -1,0 +1,20 @@
+- chunk 03: structs.h: added struct asmentry (asm mnemonic table entry, 16 bytes, asmpnts[] element; chk is APTR until chunk 01 fixes the checker typedef).
+- chunk 04: structs.h + struct asmregs, typedef asmchkfn, struct asment (asm mnemonic data of asmmac, 16 bytes). Chunk 01 should declare `struct asment *asmpnts[]` and implement the asmmac checkers as `asmchkfn` (WORD -2/-1/0/1).
+- chunk 06: structs.h: added typedefs convhandler, ophandler and struct opentry (operators entry, 32 bytes), struct precent (precedence stack entry, 6 bytes).
+- chunk 01: structs.h: removed duplicate struct asmentry (03) in favour of struct asment (04) + `#define asmentry asment`; checker signature = asmchkfn/struct asmregs (04) confirmed; added struct token, struct edstruct.
+- coordinator: merged struct asmentry (chunk 03) into struct asment (chunk 04); use struct asment. asmpnts[] is owned by chunk 03, checkers (asmchkfn) by chunk 01.
+- chunk 08: ISSUE: main.h `#define version 195` breaks NDK headers (proto/exec.h, proto/dos.h) included after blitz2.h; tokens1.c includes the proto headers first. Consider renaming/undef.
+- chunk 08: ISSUE: eval.h getvname() does not return asm d2 (name length) that fetchvar(len,...) needs; tokens1.c uses strlen(namebuff) (namebuff is NUL terminated by makename).
+- coordinator: main.h `version` macro renamed to `blitz2version` (clashed with NDK headers). getvname length: use getvnamelen (eval.h).
+- coordinator: build uses -fno-strict-aliasing (Makefile+CMake); L_()/W_() on templates are fine now, tl() helpers are not required.
+- chunk 10: data.h: argreqla8 is now UBYTE[128] (was char) to match the requester data.
+- ISSUE (chunk 10 -> 01): ed_actgad() (main.h) is void, but menu7 loops until comdata+68 returns d0 != 0 (ActivateGadget result). data.c calls comdata+68 itself via callregs (actgad_d0); consider making ed_actgad return ULONG.
+- chunk 02: compile.h: stopit is now volatile WORD (set by the exception handler, read by the program process); reqmessage is a #define into stopreqla7 (same bytes as the asm); createlab returns the name length (UWORD).
+- chunk 03 ISSUE: eval.h getvname() does not return the name length (asm d2), which fetchvar() needs; stmts.c (excget, doputreg) uses strlen(namebuff) instead. Chunk 06 may want an out-parameter or a global.
+- chunk 07: libcall.h: added constotype() (dead in the asm, translated for completeness).
+- ISSUE (chunk 07 -> 06): eval.h declares `UWORD fetchhex/fetchbin(UWORD *type)`, but they end in fetchnum2, which returns the 32-bit value in dfetch (Data) mode. libcall.c works around it (fetchnum3 also stores the value in a static that fetchdata reads), so it is only a problem if 06 relies on the return value in dfetch mode. Changing them to return ULONG would make the contract explicit.
+- chunk 01: structs.h: struct edstruct field `tokens` renamed `toklist` (main.h now has `#define tokens (*(struct token *)&tokimg)`; aliases are not supported by the amigaos target).
+- chunk 06: structs.h: forthent field lasta6 renamed lasta6w (clashed with the lasta6 macro of data.h).
+- chunk 06: eval.h: fetchhex/fetchbin now return ULONG (fetchnum2 contract: value if dfetch, else next char).
+- chunk 06: eval.h: added `extern UWORD getvnamelen` = asm d2 (name length) after getvname; callers of getvname that need the length (fetchvar, findproc, dolet2's len) read it there.
+- chunk 06: eval.h: makealab2 is now makealab2(UWORD len, UWORD *c) (asm d2 = name length).

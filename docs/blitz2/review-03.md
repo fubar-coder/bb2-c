@@ -1,0 +1,14 @@
+# Review 03 - src/stmts.c, src/glue_direct.c vs blitz2.s 3291-4999
+
+Findings (`LINE(asm) func: problem -> status`, severity):
+
+- 3599 dotokejsr: the asm calls gettokeps without `tst d0`, so it branches on the N flag that getchar3 leaves. For the Else token ($8000+34) getchar3 returns through `cmp`/`beq .zero` with N=0, so the asm takes the evalconst path. The C tests `c & 0x8000` and takes the token path, which raises tokeerr where the asm gives an error from evalconst. The same applies in quote mode (`move.b gs(pc,d0),d0` sets N from the byte). -> REPORTED (both paths end in an error, only the message differs; matching it would need a flag parameter in the gettokeps contract in stmts.h). low
+- 4353 resconsts: the BUG(orig) comment said the next link is wrong "even if the next label is not a constant". That is not true: the link points to the next item written, which is the next constant. Only the last constant's next, when non-constant labels follow it, points past the section. -> FIXED (comment reworded only). low
+
+No other differences found.
+
+Routines checked and found correct:
+dorunerrson, dorunerrsoff, dousepath, swapb..pulla1 (template bytes checked with asmlisting), doexchange, excget, doallocmem, dowbstartup, dopop, popreturn (rfix bytes, beq.w displacement 8), popnext2, popnext3, popnext, popselect2, popselect, dorepeat, endininfo, gettokeps, dolibjsr, doblibjsr, dosysjsr, dotokejsr (apart from the finding above), dovwait, fvwait/cgoblitz/cgoamiga (bytes), debugmode, doblitz, doamiga, doqamiga, toamode, intstart0/intfin (bytes), doclrint, doclrerr, doendseterr, doerrfail, doseterr, dosetint, setint2, directtrap, directdo/direxit/dircont (glue frame offsets 60/62, parameter offsets -2/-6/-10/-14/-18, error path returns to ret15add), directdo_c, stamigalib (reverse pop order, Dn/An encodings, libbase/libjsr patching order), alloxinc, alloxadj, newallox, freeallox, makeiallox, makeallox, makelong, menu5, writelist, writeitem, resoff, writeoffs, countem, resmacs, restypes, resconsts, loadres (resume at .next, freeres on clash), checkclash (findlab continues after the node, same as asm), freeres, freeres2, fixconsts, fixmacs, fixtypes (dbf counts, unsigned `cmp #7`), runerropts, makeasmtab (lnum-1 / tnum-fnum iterations), getimm, regmovems, dounmove, doputreg, dosetreg, getreg, getreg2, getan, getan2, getan3, getmovem, getmovem2, getea (all modes; `.w/.l` absolute returns without getchar3, as in the asm), tstend2, getrest.
+menu3 is not built (final=-1), so it was not checked in depth.
+
+BUG(orig)/DIFF claims checked and true: newallox fallback, restypes forward type, fixtypes type without fields, loadres firstconst name offset 25 (findconst uses 9; correction: firstconst is never filled, constants are in firstlabel, so the clash check for constants never fires at all), loadres ezerr not reset, dotokejsr/doseterr/setint2 placeholder longs, directdo_c errjmp restore and flushc order.

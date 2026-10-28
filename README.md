@@ -6,8 +6,9 @@ als C-Übersetzung der Originalquelltexte – gebaut für AmigaOS mit dem
 m68k-amigaos-gcc.
 
 Dieses Verzeichnis enthält nur, was zum Bauen nötig ist. Tests, Testkorpus,
-Referenz-Builds, Analysewerkzeuge und Notizen zur Übersetzung liegen im
-Arbeitsrepository `bb2` (Stand der Übernahme: bb2 `7b5df74`).
+Referenz-Builds und Analysewerkzeuge liegen im Arbeitsrepository `bb2`
+(Stand der Übernahme: bb2 `7b5df74`). Die Notizen zur Übersetzung
+(Analyse der Originale, Abweichungen) stehen in `docs/`.
 
 ## Voraussetzungen
 
