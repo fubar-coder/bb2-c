@@ -30,7 +30,7 @@
  *     parameter to return the same.  Inkey$(n) counts n as unsigned long.
  *   - The padding starts with SUBQ #1,a3 when the default is not at a3 -
  *     meant for a string argument, where a3 points behind the terminating
- *     0 (so Edit$ is fine).  Edit(Wert,n): UStr$ leaves a3 right behind
+ *     0 (so Edit$ is fine).  Edit(value,n): UStr$ leaves a3 right behind
  *     the last digit (no 0), so the first padding space overwrites the
  *     last digit of the default.
  *   - Edit calls UStr$ and Val with the a6 of the caller (Edit has no
