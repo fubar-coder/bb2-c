@@ -12,6 +12,8 @@
  *   runerr=off      in those defaults runtime error checking and the
  *                   debugger off (bytes 2-5 of the .xtra zeroed; a source
  *                   with its own .xtra keeps its options)
+ *   strbuf=N        in those defaults the size of the string buffer N
+ *                   bytes (bytes 50-53 of the .xtra; default 10240)
  *   job=ID|SOURCE|OUTPUT[|DIR]
  *   menu=ID|ITEM[|ANSWER]  the compiler's menu item ITEM (blitz2.s
  *                   menuadds, e.g. 9 = load debug module, 8 = reload libs)
@@ -51,6 +53,7 @@ extern struct DosLibrary *DOSBase;
 static char srcname[PATHLEN], outname[PATHLEN], xtraname[PATHLEN], defname[PATHLEN];
 static char cur_id[16];
 static int in_menu, runerr_off;
+static ULONG strbuf;
 
 static char lbuf[600];
 #define LOG_BEGIN struct sb L = { lbuf, 0, sizeof lbuf }; lbuf[0] = 0
@@ -300,6 +303,10 @@ static void save_defaults(void)
 
         Seek(fh, 2, OFFSET_BEGINNING);  /* options runtime errors, debugger */
         Write(fh, (APTR)off, 4);
+    }
+    if (strbuf) {
+        Seek(fh, 50, OFFSET_BEGINNING); /* buffer sizes: the string buffer */
+        Write(fh, &strbuf, 4);
     }
     Close(fh);
 }
@@ -566,6 +573,9 @@ void edstub_main(const char *arg)
             edstub_strcpy(defname, v, PATHLEN);
         else if ((v = value(p, "runerr=")))
             runerr_off = edstub_streq(v, "off");
+        else if ((v = value(p, "strbuf=")))
+            while (*v >= '0' && *v <= '9')
+                strbuf = strbuf * 10 + (ULONG)(*v++ - '0');
     edstub_log("BATCH\tstart");
     save_defaults();
     /* pass 2: jobs */
