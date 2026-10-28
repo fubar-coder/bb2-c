@@ -1,5 +1,5 @@
 # tests of lib/, with inputs built in memory (testutil.h)
-foreach(t hunk blitzlib biglib hunkcheck amiga_emulation vasmlisting sha256)
+foreach(t hunk blitzlib biglib hunkcheck amiga_emulation vasmlisting sha256 checklabels)
 	add_executable(test_${t} test_${t}.c)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk)
 	target_compile_options(test_${t} PRIVATE -Wno-unused-function)

@@ -58,7 +58,11 @@ das Ergebnis als nicht gebaut, und nichts, was davon abhängt, wird gebaut
   dieser Build, nicht das TED-Binary der CD (ein anderer Build).
 * `ted` nach jedem Link (POST_BUILD): Hunk-Aufbau (`tools/hunkcheck`:
   Offset 0 `bsr.w`, Offset 4 `outside`) und `programs/ted/checklink.cmake`
-  (keine libgcc-/libnix-Hilfsfunktionen, die `UtilityBase` bräuchten).
+  (keine libgcc-/libnix-Hilfsfunktionen, die `UtilityBase` bräuchten) und
+  `tools/checklabels`: jedes Code-Label von `ted.s` genau einmal als
+  `ted.s:NNN label` in `programs/ted/src/` (Vollständigkeit der
+  Übersetzung; eine geänderte Kommentarzeile baut das Objekt neu, also
+  läuft die Prüfung auch dann).
 
 ## Tests
 
@@ -157,10 +161,11 @@ tools/                       Host-Werkzeuge:
                              Prüfregeln), biglib (BigLib schreiben/lesen),
                              hunkcheck (Bytes im ersten Hunk),
                              amiga_emulation (Skripte in Amiberry),
-                             vasmlisting (vasm-Listings lesen), sha256
+                             vasmlisting (vasm-Listings lesen), sha256,
+                             checklabels (Labels von ted.s im C-Code)
   biglib/, blitzlibcheck/,   die Werkzeuge: je ein main.c um lib/
   hunkcheck/, amiga_run/,
-  vasmlisting/
+  vasmlisting/, checklabels/
   tests/                     Tests von lib/ mit Eingaben aus dem Speicher
 ```
 

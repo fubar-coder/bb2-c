@@ -12,5 +12,6 @@ add_subdirectory(blitzlibcheck)
 add_subdirectory(hunkcheck)
 add_subdirectory(amiga_run)
 add_subdirectory(vasmlisting)
+add_subdirectory(checklabels)
 
 add_subdirectory(tests)

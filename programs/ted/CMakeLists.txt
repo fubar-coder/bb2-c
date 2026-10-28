@@ -96,10 +96,13 @@ set_target_properties(ted PROPERTIES OUTPUT_NAME ted SUFFIX ""
 #     starts with movem.l ...,-(sp) ($48E7)
 #   - no libgcc/libnix arithmetic helpers (they need UtilityBase, which TED
 #     never opens) and nothing else from the libraries but string/setjmp code
+#   - every code label of ted.s exactly once as "ted.s:NNN label" in src/
+#     (checklabels; a changed comment rebuilds the object, so ted relinks)
 add_dependencies(ted host_tools)
 add_custom_command(TARGET ted POST_BUILD
 	COMMAND ${HUNKCHECK} $<TARGET_FILE:ted> 0:6100 4:48e7
 	COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/checklink.cmake
 		${CMAKE_CURRENT_BINARY_DIR}/ted.map
+	COMMAND ${CHECKLABELS} -q ${TED_ORIG_DIR}/ted.s ${CMAKE_CURRENT_SOURCE_DIR}/src
 	VERBATIM)
 add_subdirectory(tests/oracle)

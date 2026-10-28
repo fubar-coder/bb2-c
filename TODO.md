@@ -25,8 +25,9 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
    C-Builds (`ted.sym`) gegen das Listing der Referenz – Requester,
    Menüs, Tabellen. Braucht einen Link mit Symbolen (`ted.sym`; `strip`
    kann den baserel-Daten-Hunk nicht, deshalb in bb2 ein zweiter Link).
-3. **`checklabels`** (bb2: `tools/checklabels.py`): jedes Code-Label von
-   `ted.s` genau einmal als `ted.s:NNN label` in `src/`.
+3. ~~**`checklabels`**~~ erledigt (28.10.2026): `tools/checklabels`
+   (statt bb2 `tools/checklabels.py`, Ausgabe byte-identisch) als
+   POST_BUILD von `ted`: 278 Code-Labels, alle genau einmal.
 4. **Host-Tests des TED-Kerns** – erledigt (28.10.2026): alle 10 Tests von
    bb2 `ted-c/tests/host` auf snitch portiert (`programs/ted/tests/host`,
    Kern als `tedcore_host`, Hilfen `lines_helpers.hpp`, `tempdir.hpp`,
