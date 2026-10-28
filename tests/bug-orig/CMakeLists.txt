@@ -75,7 +75,9 @@ function(bug_orig_test bas name)
 
 	set(configs port clib)
 	set(extra "")
-	# the header lines begin with ';' - the list separator: replaced first
+	# the header lines begin with ';' - the list separator: replaced first.
+	# They make the pass file: a changed header configures again.
+	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${bas})
 	file(READ ${bas} content)
 	string(REPLACE ";" "<semicolon>" content "${content}")
 	string(REGEX MATCHALL "(^|\n)<semicolon> @[^\n]*" header "${content}")
