@@ -37,6 +37,12 @@
  *                          opts NAME K=V,..   L/NAME = that option block
  *   ; @nofiles           the test writes no file (otherwise a test without
  *                        @roundtrip/@expect is refused: OK alone is no pass)
+ * Postfix of a command line (a comment, teddrive ignores it, its log has it):
+ *   CMD ARGS ; @ignore compilewindow
+ *                        blitz2's compile window (no title, one gadget
+ *                        "STOP!") is left out of the requester sequence in
+ *                        this step: whether teddrive sees it depends on the
+ *                        timing (0, 1 or 2 times for the same run)
  */
 #ifndef TEDAB_H
 #define TEDAB_H
@@ -97,8 +103,12 @@ int tedab_lint(const char *text, FILE *out);
 int tedab_opts_file(const char *spec, uint8_t out[50], char *err, size_t errlen);
 
 /* the requester sequence of a teddrive log: one line per requester window,
-   "requester TITLE ID:LABEL ...", without addresses; malloc'd lines (NULL
-   at the end), *n of them */
+   "requester TITLE ID:LABEL ...", without addresses (and without the
+   compile window in steps whose line has @ignore compilewindow); malloc'd lines
+   (NULL at the end), *n of them */
+/* the postfix (a comment) of a script line: 0 = none, 1 = "@ignore
+   compilewindow", -1 = an unknown one (lint) */
+int tedab_postfix(const char *line, size_t len);
 char **tedab_requesters(const char *log, size_t *n);
 void tedab_free_lines(char **lines);
 
@@ -135,8 +145,7 @@ char *tedab_resolve(const char *base, const char *rel);
 int tedab_eval_gate(const char *gdir, struct text *out);
 
 /* A/B comparison of two run directories (out/ work/ L/; na, nb their
-   names): result OK in both, blitz2's rc, requesters (without blitz2's
-   compile window), dumps (font fh), the
+   names): result OK in both, blitz2's rc, requesters, dumps (font fh), the
    files.  0 = same, 1 = different, -1 = a result not OK; the details as
    report lines */
 int tedab_compare_runs(const char *a, const char *b, const char *na, const char *nb,

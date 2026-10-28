@@ -270,3 +270,46 @@ TEST_CASE("oracle", "[files]")
     rmdir(sub.c_str());
     rmdir(dir);
 }
+
+TEST_CASE("postfix", "[postfix]")
+{
+    auto pf = [](const char *s) { return tedab_postfix(s, strlen(s)); };
+
+    CHECK(pf("freq ok \"a\" \"TEDRUN:work\"") == 0);
+    CHECK(pf("freq ok \"a\" \"TEDRUN:work\"  ; @ignore compilewindow") == 1);
+    CHECK(pf("freq ok \"a\" \"TEDRUN:work\" ;@ignore   compilewindow \r") == 1);
+    CHECK(pf("gad 1 ; a plain comment") == 0);
+    CHECK(pf("gad 1 ; @ignore everything") == -1);
+    CHECK(pf("gad 1 ; @unless compilewindow") == -1);
+    CHECK(pf("type \"x ; @ignore compilewindow\"") == 0);      // inside the string
+    CHECK(pf("type \"a\\\"b ; @frob\"") == 0);                   // escaped quote
+    CHECK(pf("key 45;@ignore compilewindow") == 0);             // not at a word start
+
+    int n;
+    CHECK(lint("freq ok \"a\" \"TEDRUN:work\"  ; @ignore compilewindow\n", &n) == "");
+    CHECK(lint("gad 1 ; @frob\n", &n) == "line 1: unknown postfix (only ; @ignore compilewindow)\n");
+    CHECK(lint("; @frob directive lines are no commands\n", &n) == "");
+}
+
+TEST_CASE("requesters: compile window", "[log]")
+{
+    const char *log =
+        "step 7 t=0.90: timeout 30\n"
+        "  ok t=0.90\n"
+        "step 8 t=0.90: freq ok \"t01_int\" \"TEDRUN:work\"  ; @ignore compilewindow\n"
+        "window closed #3 \"Name of Executable to create\"\n"
+        "window new #4 requester \"\" pos 202,225 size 220,59 flags $0 gadgets 1\n"
+        "  gadget id 1 type $00000001 flags $0 size 60,12 \"STOP!\"\n"
+        "window closed #4 \"\"\n"
+        "window new #5 requester \"\" pos 202,225 size 220,59 flags $0 gadgets 1\n"
+        "  gadget id 1 type $00000001 flags $0 size 60,12 \"OKAY\"\n"
+        "step 9 t=1.18: timeout 10\n"
+        "window new #6 requester \"\" pos 202,225 size 220,59 flags $0 gadgets 1\n"
+        "  gadget id 1 type $00000001 flags $0 size 60,12 \"STOP!\"\n";
+    auto v = requesters(log);
+
+    // the compile window counts outside the marked step, other requesters always
+    REQUIRE(v.size() == 2);
+    CHECK(v[0] == "requester  1:OKAY");
+    CHECK(v[1] == "requester  1:STOP!");
+}

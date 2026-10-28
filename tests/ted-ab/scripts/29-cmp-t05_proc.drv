@@ -12,7 +12,7 @@ wait screen
 menu 4 2
 wait freq "Name of Executable to create"
 timeout 30
-freq ok "t05_proc" "TEDRUN:work"
+freq ok "t05_proc" "TEDRUN:work"  ; @ignore compilewindow
 timeout 10
 wait screen
 menu 0 9

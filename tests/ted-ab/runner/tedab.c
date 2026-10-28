@@ -322,6 +322,7 @@ int tedab_lint(const char *text, FILE *out)
     while (*line) {
         const char *eol = strchr(line, '\n');
         char buf[1024], *w[128], *cmd, **args;
+        const char *buf_line;
         size_t n, k;
         int nw, nargs, found = -1;
 
@@ -335,10 +336,15 @@ int tedab_lint(const char *text, FILE *out)
         }
         if (n >= sizeof buf)
             n = sizeof buf - 1;
+        buf_line = line;
         memcpy(buf, line, n);
         buf[n] = 0;
         line = *eol ? eol + 1 : eol;
         nw = td_split(buf, w, 128);
+        if (nw && tedab_postfix(buf_line, n) < 0) {
+            fprintf(out, "line %u: unknown postfix (only ; @ignore compilewindow)\n", no);
+            errors++;
+        }
         if (!nw)
             continue;
         args = w;
@@ -479,11 +485,66 @@ static void add_line(char ***lines, size_t *n, char *s)
     *lines = l;
 }
 
+/* blitz2's compile window: no title, one gadget "STOP!".  It is open only
+   while blitz2 compiles, and whether teddrive sees it depends on the timing
+   (0, 1 or 2 times for the same run); a step whose script line ends in
+   "; @ignore compilewindow" leaves it out. */
+#define COMPILE_WINDOW "requester  1:STOP!"
+
+int tedab_postfix(const char *line, size_t len)
+{
+    const char *p = line, *end = line + len, *w;
+    int quoted = 0;
+
+    /* the comment as td_split finds it: ';' at the start of a word, not in
+       a "..." string */
+    for (; p < end; p++) {
+        if (quoted) {
+            if (*p == '\\' && p + 1 < end)
+                p++;
+            else if (*p == '"')
+                quoted = 0;
+        } else if (*p == '"' && (p == line || p[-1] == ' ' || p[-1] == '\t'))
+            quoted = 1;
+        else if (*p == ';' && (p == line || p[-1] == ' ' || p[-1] == '\t' || p[-1] == '\r'))
+            break;
+    }
+    if (p >= end)
+        return 0;
+    for (p++; p < end && (*p == ' ' || *p == '\t'); p++)
+        ;
+    if (p >= end || *p != '@')
+        return 0;                       /* a plain comment */
+    w = p + 1;
+    if (end - w >= 6 && !strncmp(w, "ignore", 6)) {
+        for (w += 6; w < end && (*w == ' ' || *w == '\t'); w++)
+            ;
+        if (end - w >= 13 && !strncmp(w, "compilewindow", 13)) {
+            for (w += 13; w < end && (*w == ' ' || *w == '\t' || *w == '\r'); w++)
+                ;
+            if (w == end)
+                return 1;
+        }
+    }
+    return -1;
+}
+
+/* the requester just read (cur) into the sequence, unless it is the compile
+   window and appeared in a step that ignores it */
+static void flush(char ***out, size_t *n, struct text *cur, int in, int ignore)
+{
+    if (in == 2 && !cur->bad && !(ignore && !strcmp(cur->p, COMPILE_WINDOW)))
+        add_line(out, n, strdup(cur->p));
+    free(cur->p);
+    memset(cur, 0, sizeof *cur);
+}
+
 char **tedab_requesters(const char *log, size_t *n)
 {
     char **out = NULL;
     struct text cur = { 0 };
     int in = 0;                         /* 1 = in a window, 2 = a requester */
+    int step_ignores = 0, ignore = 0;   /* the step's / the window's */
     const char *line = log;
 
     *n = 0;
@@ -496,6 +557,11 @@ char **tedab_requesters(const char *log, size_t *n)
         len = (size_t)(eol - line);
         if (len && line[len - 1] == '\r')
             len--;
+        /* step N t=T: SCRIPT LINE (with its comment) */
+        if (len > 5 && !strncmp(line, "step ", 5) && isdigit((unsigned char)line[5])) {
+            p = memchr(line, ':', len);
+            step_ignores = p && tedab_postfix(p + 1, len - (size_t)(p + 1 - line)) == 1;
+        }
         /* window new #N (main|requester) "TITLE" pos ... */
         if (len > 12 && !strncmp(line, "window new #", 12)) {
             p = line + 12;
@@ -512,11 +578,9 @@ char **tedab_requesters(const char *log, size_t *n)
                         if (!strncmp(q, "\" pos", 5))
                             e = q;
                     if (e) {
-                        if (in == 2 && !cur.bad)
-                            add_line(&out, n, strdup(cur.p));
-                        free(cur.p);
-                        memset(&cur, 0, sizeof cur);
+                        flush(&out, n, &cur, in, ignore);
                         in = req ? 2 : 1;
+                        ignore = step_ignores;
                         if (req)
                             text_add(&cur, "requester %.*s", (int)(e - t), t);
                         line = *eol ? eol + 1 : eol;
@@ -581,17 +645,12 @@ char **tedab_requesters(const char *log, size_t *n)
             }
         }
         if (len < 2 || strncmp(line, "  ", 2)) {
-            if (in == 2 && !cur.bad)
-                add_line(&out, n, strdup(cur.p));
-            free(cur.p);
-            memset(&cur, 0, sizeof cur);
+            flush(&out, n, &cur, in, ignore);
             in = 0;
         }
         line = *eol ? eol + 1 : eol;
     }
-    if (in == 2 && !cur.bad)
-        add_line(&out, n, strdup(cur.p));
-    free(cur.p);
+    flush(&out, n, &cur, in, ignore);
     if (!out)
         out = calloc(1, sizeof *out);
     return out;
@@ -1093,23 +1152,6 @@ static char **union_names(const char *a, const char *b, const char *sub, const c
     return names;
 }
 
-/* blitz2's compile window (no title, one gadget "STOP!") is not compared:
-   it is open only while blitz2 compiles, and whether teddrive sees it
-   depends on the timing (0, 1 or 2 times for the same run, more so with
-   emulators in parallel) */
-static size_t drop_transient(char **l, size_t n)
-{
-    size_t i, k = 0;
-
-    for (i = 0; i < n; i++)
-        if (!strcmp(l[i], "requester  1:STOP!"))
-            free(l[i]);
-        else
-            l[k++] = l[i];
-    l[k] = NULL;
-    return k;
-}
-
 static int same_lines(char **a, size_t na, char **b, size_t nb)
 {
     size_t i;
@@ -1162,9 +1204,7 @@ int tedab_compare_runs(const char *a, const char *b, const char *na, const char 
     la = read_text(oa, "log");
     lb = read_text(ob, "log");
     qa = tedab_requesters(la, &nqa);
-    nqa = drop_transient(qa, nqa);
     qb = tedab_requesters(lb, &nqb);
-    nqb = drop_transient(qb, nqb);
     if (!same_lines(qa, nqa, qb, nqb)) {
         text_add(out, "    requesters ");
         python_list(out, qa, nqa);
