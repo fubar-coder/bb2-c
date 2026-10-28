@@ -1,106 +1,107 @@
-# blitzbasic2-c – Hinweise für Claude
+# blitzbasic2-c – notes for Claude
 
-C-Übersetzung von Blitz Basic 2: Compiler `blitz2` (v1.95, `blitz2.s`),
-Editor `ted` (TED 1.1, `ted.s`) und die Libraries `acidlibs`/`deflibs`,
-gebaut für AmigaOS (68000) mit m68k-amigaos-gcc. Aufbau, Bauen und die
-Prüfungen im Build: `README.md`. Offene Punkte: `TODO.md`.
+C translation of Blitz Basic 2: compiler `blitz2` (v1.95, `blitz2.s`),
+editor `ted` (TED 1.1, `ted.s`) and the libraries `acidlibs`/`deflibs`,
+built for AmigaOS (68000) with m68k-amigaos-gcc. Structure, building and
+the checks in the build: `README.md`. Open items: `TODO.md`.
 
-**Dieses Repository ist die Referenz** für den Code (Entscheidung vom
-27.10.2026, Übernahme von bb2 `7b5df74`); bb2 baut nicht mehr maßgeblich.
-Hier liegen Build, Referenz-Builds (`ted_ref`, `blitz2_ref`), die
-Originalquellen (`archive/`), das TED-Orakel und die Host-Tests von TED.
-Noch in `../bb2`: Korpus, TED-A/B- und Library-Tests im Emulator,
-Analysewerkzeuge. Die Notizen zur Übersetzung liegen in `docs/` (aus bb2
-`ee6174b`, unverändert, Pfade im Aufbau von bb2) – dort stehen auch die
-Begründungen für Code-Kommentare wie `BUG(orig)`, `DIFF`, `ted.s:NNN` oder
-`blitz2.s:NNN`. Stand der Übernahme: `TODO.md`.
+**This repository is the reference** for the code (decision of
+2026-10-27, takeover from bb2 `7b5df74`); bb2 no longer builds the
+authoritative state. Here are the build, the reference builds (`ted_ref`,
+`blitz2_ref`), the original sources (`archive/`), the TED oracle and the
+host tests of TED. Still in `../bb2`: corpus, TED A/B and library tests in
+the emulator, analysis tools. The notes on the translation are in `docs/`
+(from bb2 `ee6174b`, unchanged, paths in the layout of bb2) – that is also
+where the reasons for code comments like `BUG(orig)`, `DIFF`, `ted.s:NNN`
+or `blitz2.s:NNN` are. State of the takeover: `TODO.md`.
 
-## Bauen und prüfen
+## Building and checking
 
 ```
-cmake --preset amiga && cmake --build --preset amiga   # Ergebnis: build/amiga/blitz2/
-ctest --preset host                                    # Tests ohne Emulator (Sekunden)
-ctest --preset emulator                                # Tests in Amiberry
+cmake --preset amiga && cmake --build --preset amiga   # result: build/amiga/blitz2/
+ctest --preset host                                    # tests without emulator (seconds)
+ctest --preset emulator                                # tests in Amiberry
 ```
 
-* Toolchain über `PATH` (`m68k-amigaos-gcc`, gcc ≥ 15 wegen `#embed`),
-  sonst `AMIGA_TOOLCHAIN_PREFIX`. Ninja.
-* Shell ist **fish**: Schleifen, `$(...)`, Heredocs in `bash -c '…'` oder
-  `bash <<'EOF'` packen.
-* Ein sauberer Neubau hat **keine Compiler-Warnungen**; erwartet sind nur
-  die 73 Warnungen von `blitzlibcheck` (Verweise in den
-  Fehlerprüfbereich, wie bei den Originalen).
-* `.clangd` erzeugt CMake beim ersten Konfigurieren (nicht in git).
-* Emulator: Kickstart-ROM und Hardfiles liegen lokal in `amiga-emulation/`
-  (nicht in git, siehe dortige README); Standard-Konfiguration
-  `tools/lib/amiga_emulation/default.uae`. Hardfiles schreibgeschützt:
-  Tests schreiben nur nach `TEST:` oder `RAM:` (auch Systemprogramme wie
-  `ShowConfig` schreiben auf `SYS:` und hängen dann).
-* **Host-Seite** (`host/`, ExternalProject, nativer Compiler): Werkzeuge
-  und Host-Tests. Host-Tests liegen bei ihrer Komponente
-  (`programs/ted/tests/host/`), sind snitch-Programme (C++20, C-Header in
-  `extern "C"`), **ein Programm je Testdatei** (der TED-Kern hat globalen
-  Zustand). Zum Prüfen auch mit `-DHOST_SANITIZE=ON` bauen.
-* Emulatorläufe nur über `tools/lib/amiga_emulation` bzw. `amiga_run`
-  (isoliert, parallel möglich); Steuer-Socket: Argumente durch Tabs
-  getrennt. Tests mit Emulator bekommen das ctest-Label `emulator` und
-  den Rückgabewert 77 (übersprungen), wenn Amiberry oder die Daten fehlen.
+* Toolchain via `PATH` (`m68k-amigaos-gcc`, gcc ≥ 15 because of
+  `#embed`), otherwise `AMIGA_TOOLCHAIN_PREFIX`. Ninja.
+* The shell is **fish**: wrap loops, `$(...)`, heredocs in `bash -c '…'`
+  or `bash <<'EOF'`.
+* A clean rebuild has **no compiler warnings**; the only expected ones are
+  the 73 warnings of `blitzlibcheck` (references into the error check
+  area, as with the originals).
+* CMake generates `.clangd` on the first configure (not in git).
+* Emulator: the Kickstart ROM and hardfiles are local in
+  `amiga-emulation/` (not in git, see the README there); default
+  configuration `tools/lib/amiga_emulation/default.uae`. Hardfiles are
+  read-only: tests write only to `TEST:` or `RAM:` (system programs like
+  `ShowConfig` also write to `SYS:` and then hang).
+* **Host side** (`host/`, ExternalProject, native compiler): tools and
+  host tests. Host tests live with their component
+  (`programs/ted/tests/host/`), are snitch programs (C++20, C headers in
+  `extern "C"`), **one program per test file** (the TED core has global
+  state). For checking, also build with `-DHOST_SANITIZE=ON`.
+* Emulator runs only via `tools/lib/amiga_emulation` or `amiga_run`
+  (isolated, can run in parallel); control socket: arguments separated by
+  tabs. Tests with the emulator get the ctest label `emulator` and the
+  return value 77 (skipped) if Amiberry or the data are missing.
 
-## Regeln
+## Rules
 
-* **Abnahme bei jedem Umbau:** `blitz2`, `ted`, `acidlibs`, `deflibs` und
-  alle Library-Dateien byte-identisch zum Stand davor (Build des vorigen
-  Commits dieses Repositorys). Ist eine Abweichung gewollt (z. B.
-  Code-Umbau), funktional prüfen – mit den Tests hier
-  (`ctest --preset all`) und, solange sie noch in bb2 liegen, mit den
-  bb2-Werkzeugen gegen `build/amiga/blitz2/` dieses Repositorys (Korpus,
-  snitch-Tests, TED-A/B) – und die Abweichung im Commit nennen.
-* **`archive/`** enthält unveränderte Originale (Quellen wie
-  `sources/ted-1.1/`, Referenzdaten) – nie bearbeiten; ein neuer Stand ist
-  ein neues Verzeichnis mit Versionsnummer, die Herkunft steht in
-  `archive/README.md`. Daraus Abgeleitetes entsteht im Build-Verzeichnis
-  oder als erzeugte Testdaten unter `tests/data/`. Material ohne klare
-  Lizenz (CD) wird nicht eingecheckt, sondern mit
-  `cmake/fetch-originals.cmake` geladen (`archive/cd/`, `archive/aminet/`,
-  ignoriert); Tests, die es brauchen, werden ohne es übersprungen.
-* **Original-Fehler nicht beheben**, nur dokumentieren (`BUG(orig)` im
-  Code, Verzeichnis der Abweichungen in `docs/*/abweichungen.md`);
-  `DIFF` nur, wo technisch nötig. Gilt nur für die Portierung: Ist sie
-  abgeschlossen (einschließlich des Abgleichs mit blitz2 2.10), dürfen
-  Original-Fehler gezielt behoben werden (je Fehler ein Issue, als
-  gewollte Abweichung gekennzeichnet).
-* **Nur C/C++ und CMake.** Kein Python, keine Shell-Skripte im Build. Was
-  Compiler und Linker selbst können, ohne Werkzeug (`#embed` +
-  `_Static_assert`, `strip`); Text und Steuerung als CMake; Binärformate
-  und Logik als C-Werkzeug in `tools/` (Logik in `tools/lib/`, Werkzeug =
-  `main.c`, Tests in `tools/tests/` mit Eingaben aus dem Speicher).
-* **Prüfungen im Build:** im selben Build-Schritt wie das Ergebnis (weiteres
-  `COMMAND` der Custom Command bzw. `POST_BUILD` am Target). Schlägt die
-  Prüfung fehl, gilt das Ergebnis als nicht gebaut, und nichts davon
-  Abhängige wird gebaut. Keine temporären Dateien, keine Stamp-Dateien.
-  Jede Prüfung braucht einen Test mit absichtlich kaputter Eingabe.
-* **Zwei Übersetzungswelten:** Libraries mit den Blitz-Konventionen
+* **Acceptance for every rework:** `blitz2`, `ted`, `acidlibs`, `deflibs`
+  and all library files byte-identical to the state before (build of the
+  previous commit of this repository). If a deviation is intended (e.g. a
+  code rework), check functionally – with the tests here
+  (`ctest --preset all`) and, as long as they are still in bb2, with the
+  bb2 tools against `build/amiga/blitz2/` of this repository (corpus,
+  snitch tests, TED A/B) – and name the deviation in the commit.
+* **`archive/`** contains unchanged originals (sources like
+  `sources/ted-1.1/`, reference data) – never edit; a new state is a new
+  directory with a version number, the origin is in `archive/README.md`.
+  Anything derived from it is created in the build directory or as
+  generated test data under `tests/data/`. Material without a clear
+  license (CD) is not checked in but loaded with
+  `cmake/fetch-originals.cmake` (`archive/cd/`, `archive/aminet/`,
+  ignored); tests that need it are skipped without it.
+* **Do not fix original bugs**, only document them (`BUG(orig)` in the
+  code, list of deviations in `docs/*/abweichungen.md`); `DIFF` only where
+  technically necessary. Applies only to the port: once it is complete
+  (including the comparison with blitz2 2.10), original bugs may be fixed
+  deliberately (one issue per bug, marked as an intended deviation).
+* **Only C/C++ and CMake.** No Python, no shell scripts in the build.
+  Whatever compiler and linker can do themselves, without a tool
+  (`#embed` + `_Static_assert`, `strip`); text and control as CMake;
+  binary formats and logic as a C tool in `tools/` (logic in
+  `tools/lib/`, tool = `main.c`, tests in `tools/tests/` with inputs from
+  memory).
+* **Checks in the build:** in the same build step as the result (another
+  `COMMAND` of the custom command or `POST_BUILD` on the target). If the
+  check fails, the result counts as not built, and nothing that depends on
+  it is built. No temporary files, no stamp files. Every check needs a
+  test with deliberately broken input.
+* **Two compilation worlds:** libraries with the Blitz conventions
   (`cmake/BlitzLibrary.cmake`: `-ffixed-a3/a4/a5`, freestanding,
-  `-fno-toplevel-reorder`, ein Hunk über `libs/blitzlib.ld`); blitz2 und
-  TED als Programme mit `-fbaserel` (a4 = Basis der Globals). Code für
-  beide Seiten (`shared/`) übersetzt jede Seite selbst, mit eigener
-  Umgebungs-Header (`filereq_env.h`).
-* `libs/acidlibs` wird in der Reihenfolge der Original-Datei
-  zusammengefügt (`ACIDLIBS_ORDER`); `prebuilt/` enthält Originale, die
-  noch nicht portiert sind (`dhandlerlib`).
+  `-fno-toplevel-reorder`, one hunk via `libs/blitzlib.ld`); blitz2 and
+  TED as programs with `-fbaserel` (a4 = base of the globals). Code for
+  both sides (`shared/`) is compiled by each side itself, with its own
+  environment header (`filereq_env.h`).
+* `libs/acidlibs` is joined in the order of the original file
+  (`ACIDLIBS_ORDER`); `prebuilt/` contains originals that are not ported
+  yet (`dhandlerlib`).
 
-## Lizenz
+## License
 
-GPL-3.0-or-later mit `RUNTIME-LIBRARY-EXCEPTION` (README, Abschnitt
-„Lizenz“); Lizenzlage der Originale in `archive/README.md`. Neuer Code
-steht unter derselben Lizenz; keinen Code mit unklarer oder
-GPL-inkompatibler Lizenz übernehmen.
+GPL-3.0-or-later with `RUNTIME-LIBRARY-EXCEPTION` (README, section
+"License"); license situation of the originals in `archive/README.md`.
+New code is under the same license; do not take over code with an unclear
+or GPL-incompatible license.
 
 ## Git
 
-* Ein Thema pro Commit; trennbare Arbeiten nie zusammenfassen.
-  Commit-Texte und Code-Kommentare englisch, Dokumentation deutsch.
-* Vor einem Commit `git status` prüfen: nur die Dateien des Themas
-  stagen (vorgemerkte `git mv` rutschen sonst mit).
-* Remote `origin` (GitHub `fubar-coder/bb2-c`): kein force-push,
-  gepushte Historie nicht umschreiben.
+* One topic per commit; never combine separable work.
+  All texts in the repository (documentation, comments, commit messages,
+  messages of tools) and GitHub issues are English.
+* Before a commit, check `git status`: stage only the files of the topic
+  (otherwise staged `git mv` slip in).
+* Remote `origin` (GitHub `fubar-coder/bb2-c`): no force push, do not
+  rewrite pushed history.

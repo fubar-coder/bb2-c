@@ -45,7 +45,7 @@
  * into the error check area: with the debugger the runtime error, without
  * the debugger a jump behind the library code (the error area is not in
  * the program).  The C library must not reference the error check area
- * from normal code (README: Prüfroutinen), so the trap and its message are in
+ * from normal code (README: check routines), so the trap and its message are in
  * the normal code: the runtime error comes also without the debugger.
  *
  * Registers (thunks keep at least what the original keeps): handlers
