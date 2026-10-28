@@ -102,9 +102,11 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
       Klänge und Module von der CD über `BB2:` (wie in bb2). Programmausgaben
       byte-gleich zu bb2s Läufen bis auf `t13_env` (liest absichtlich die
       Umgebung: Workbench 640×512×8 statt 640×256×2).
-   4. CD-Referenzlauf wie das Orakel: Ziel erzeugt mit blitz2 1.95
-      `tests/data/blitz2-cd.tsv` (eingecheckt), der ctest übersetzt nur mit
-      blitz2-c und vergleicht.
+   4. ~~CD-Referenzlauf~~ erledigt (28.10.2026): `tests/corpus/runner/cdrun`,
+      Ziel `blitz2-cd-reference` (blitz2 1.95, etwa 35 s) →
+      `tests/data/blitz2-cd.tsv`: 498 übersetzt, 217 Fehler, 9 Textquellen;
+      alle 724 Zeilen gleich bb2 `reference/195.tsv`, reproduzierbar. ctest
+      `corpus_cd` (blitz2-c): 724 gleich, etwa 30 s.
    5. Serielltest (TCP-Gegenstelle in C) zuletzt.
    Parallele Emulatorläufe nur mit **konfigurierbarer Obergrenze** (1 muss
    immer gehen): Windows-Amiberry nutzt durchnummerierte Named Pipes,

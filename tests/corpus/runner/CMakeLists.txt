@@ -1,5 +1,5 @@
 # corpusrun: one pass of the corpus check in Amiberry (host side)
-add_library(lib_corpus STATIC corpus.c)
+add_library(lib_corpus STATIC corpus.c util.c)
 target_include_directories(lib_corpus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(lib_corpus PUBLIC lib_amiga_emulation)
 target_compile_options(lib_corpus PRIVATE -Wall -Wextra)
@@ -12,3 +12,9 @@ add_executable(test_corpus test_corpus.c)
 target_link_libraries(test_corpus PRIVATE lib_corpus)
 target_compile_options(test_corpus PRIVATE -Wall -Wextra)
 add_test(NAME corpus_runner COMMAND test_corpus)
+
+# cdrun: every source of the CD compiled by one compiler (reference table /
+# comparison with it)
+add_executable(cdrun cdrun.c)
+target_link_libraries(cdrun PRIVATE lib_corpus lib_sha256)
+target_compile_options(cdrun PRIVATE -Wall -Wextra)

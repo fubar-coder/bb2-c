@@ -117,7 +117,16 @@ ctest --preset all        # beides
   gleichzeitigen Emulatoren, `CORPUS_TIMEOUT` eine Sitzung; Berichte in
   `build/<preset>/tests/corpus/NAME.txt`. Die Durchgänge nicht mit
   `ctest -j` parallel starten: jeder nutzt selbst bis zu
-  `CORPUS_PARALLEL` Emulatoren.
+  `CORPUS_PARALLEL` Emulatoren. `corpus_cd`: alle 724 Quellen der CD mit
+  blitz2-c übersetzt (wie bb2s bb2corpus: `.xtra` der Quellen, Assigns auf
+  CD-Verzeichnisse, Verzeichnis der relativen INCLUDEs) und mit
+  `tests/data/blitz2-cd.tsv` verglichen (Ergebnis, Fehlerzeile und
+  -meldung, Größe, Hash mit maskierten trap-Blöcken). Die Tabelle erzeugt
+  das Original-blitz2 1.95:
+
+  ```
+  cmake --build --preset amiga --target blitz2-cd-reference   # etwa 35 s
+  ```
 
 Die Orakel-Daten der TED-Tests (`tests/data/ted-oracle.sha256`: SHA-256
 von detok, tokit2 und Laden/Speichern für jede Quelle der CD;
@@ -179,12 +188,14 @@ host/                        die Host-Seite: alles, was mit dem nativen
                              als ExternalProject (build/<preset>/host)
 programs/ted/tests/host/     Host-Tests des TED-Kerns (snitch)
 programs/ted/tests/oracle/   TED-Orakel: Original-TED als Bibliothek (m68k)
-tests/data/                  erzeugte Testdaten (Orakel-Hashes, Token-Liste)
+tests/data/                  erzeugte Testdaten (Orakel-Hashes, Token-Liste,
+                             CD-Referenz von blitz2 1.95)
 tests/corpus/                Korpus: blitz2-c gegen blitz2 1.95 im Emulator;
                              amiga/: tedstub (blitz2:ted für Batch-Läufe),
                              reqtrap, reqclose, reqclosetest
                              tests*/: die Testprogramme (Klartext, .bas),
-                             runner/: corpusrun (Host, ein Durchgang)
+                             runner/: corpusrun (ein Durchgang), cdrun (die
+                             CD durch einen Compiler), beide Host
 tools/                       Host-Werkzeuge:
   lib/                       die Logik als Libraries: hunk (Hunk-Format
                              lesen), blitzlib (Kopf, Token-Tabelle,

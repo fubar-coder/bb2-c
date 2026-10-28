@@ -12,55 +12,12 @@
 #include <unistd.h>
 #include "amiga_emulation.h"
 #include "corpus.h"
+#include "util.h"
 
 #define VOLUME "CORPUS"                 /* the configuration's directory */
 
 /* ------------------------------------------------------------ strings */
 
-static char *str_printf(const char *fmt, ...)
-{
-    va_list ap;
-    char *s;
-    int n;
-
-    va_start(ap, fmt);
-    n = vsnprintf(NULL, 0, fmt, ap);
-    va_end(ap);
-    if (n < 0 || !(s = malloc((size_t)n + 1)))
-        return NULL;
-    va_start(ap, fmt);
-    vsnprintf(s, (size_t)n + 1, fmt, ap);
-    va_end(ap);
-    return s;
-}
-
-/* growing text */
-struct text {
-    char *p;
-    size_t n, cap;
-    int bad;
-};
-
-static void add(struct text *t, const char *fmt, ...)
-{
-    va_list ap;
-    int n;
-
-    if (t->bad)
-        return;
-    va_start(ap, fmt);
-    n = vsnprintf(NULL, 0, fmt, ap);
-    va_end(ap);
-    if (n < 0 || (t->n + (size_t)n + 1 > t->cap
-                  && !(t->p = realloc(t->p, t->cap = (t->n + (size_t)n + 1) * 2)))) {
-        t->bad = 1;
-        return;
-    }
-    va_start(ap, fmt);
-    vsnprintf(t->p + t->n, (size_t)n + 1, fmt, ap);
-    va_end(ap);
-    t->n += (size_t)n;
-}
 
 /* ------------------------------------------------------- the pass file */
 
@@ -299,76 +256,6 @@ void corpus_mask_traps(uint8_t *data, size_t len)
 
 /* ------------------------------------------------------------- files */
 
-static int rm_entry(const char *path, const struct stat *st, int type, struct FTW *ftw)
-{
-    (void)st;
-    (void)ftw;
-    return type == FTW_DP ? rmdir(path) : unlink(path);
-}
-
-static void rm_tree(const char *dir)
-{
-    nftw(dir, rm_entry, 16, FTW_DEPTH | FTW_PHYS);
-}
-
-static int mkdir_p(const char *path)
-{
-    char *p = strdup(path), *s;
-    int r = 0;
-
-    if (!p)
-        return -1;
-    for (s = p + 1; *s && !r; s++)
-        if (*s == '/') {
-            *s = 0;
-            r = mkdir(p, 0755) && errno != EEXIST;
-            *s = '/';
-        }
-    if (!r)
-        r = mkdir(p, 0755) && errno != EEXIST;
-    free(p);
-    return r ? -1 : 0;
-}
-
-static uint8_t *read_file(const char *path, size_t *len)
-{
-    FILE *f = fopen(path, "rb");
-    uint8_t *s = NULL;
-    long n;
-
-    if (!f)
-        return NULL;
-    if (!fseek(f, 0, SEEK_END) && (n = ftell(f)) >= 0 && !fseek(f, 0, SEEK_SET)
-        && (s = malloc((size_t)n + 1)) && fread(s, 1, (size_t)n, f) == (size_t)n) {
-        s[n] = 0;
-        *len = (size_t)n;
-    } else {
-        free(s);
-        s = NULL;
-    }
-    fclose(f);
-    return s;
-}
-
-static int write_file(const char *path, const void *data, size_t len)
-{
-    FILE *f = fopen(path, "wb");
-    int ok = f && fwrite(data, 1, len, f) == len;
-
-    if (f && fclose(f))
-        ok = 0;
-    return ok ? 0 : -1;
-}
-
-static int copy_file(const char *from, const char *to)
-{
-    size_t len;
-    uint8_t *d = read_file(from, &len);
-    int r = d ? write_file(to, d, len) : -1;
-
-    free(d);
-    return r;
-}
 
 /* ------------------------------------------------------------- staging */
 
@@ -423,9 +310,9 @@ static int stage(const struct corpus_pass *p, size_t c, FILE *log)
         }
         free(to);
     }
-    add(&jobs, "log=" VOLUME ":out/session.log\ndefaults=" VOLUME ":out/defaults.xtra\n");
+    text_add(&jobs, "log=" VOLUME ":out/session.log\ndefaults=" VOLUME ":out/defaults.xtra\n");
     if (!p->runerr)
-        add(&jobs, "runerr=off\n");
+        text_add(&jobs, "runerr=off\n");
     for (i = 0; i < p->nsources; i++) {
         char *name = corpus_name(p->sources[i]), *to = str_printf("%s/src/%s.bb2", vol, name);
 
@@ -435,7 +322,7 @@ static int stage(const struct corpus_pass *p, size_t c, FILE *log)
             free(to);
             goto out;
         }
-        add(&jobs, "job=j%03zu|" VOLUME ":src/%s.bb2|" VOLUME ":out/%s\n", i, name, name);
+        text_add(&jobs, "job=j%03zu|" VOLUME ":src/%s.bb2|" VOLUME ":out/%s\n", i, name, name);
         free(name);
         free(to);
     }
@@ -457,13 +344,13 @@ static char *script(const struct corpus_pass *p)
     struct text s = { 0 };
     size_t i;
 
-    add(&s, "Assign blitz2: " VOLUME ":blitz2\n"
+    text_add(&s, "Assign blitz2: " VOLUME ":blitz2\n"
             "Stack %u\n"
             "blitz2:blitz2 " VOLUME ":jobs >" VOLUME ":out/blitz2.out\n"
             "Echo \"rc=$RC\" >>" VOLUME ":out/blitz2.out\n"
             "Assign blitz2:\n", p->stack);
     if (p->gate)
-        add(&s, "SetEnv REQCLOSELOG " VOLUME ":out/reqclose.log\n"
+        text_add(&s, "SetEnv REQCLOSELOG " VOLUME ":out/reqclose.log\n"
                 VOLUME ":run " VOLUME ":gate >" VOLUME ":out/gate.run\n"
                 "Set gate $RC\n"
                 "Echo \"rc=$gate\" >>" VOLUME ":out/gate.run\n"
@@ -471,14 +358,14 @@ static char *script(const struct corpus_pass *p)
     for (i = 0; i < p->nsources; i++) {
         char *n = corpus_name(p->sources[i]);
 
-        add(&s, "If EXISTS " VOLUME ":out/%s\n"
+        text_add(&s, "If EXISTS " VOLUME ":out/%s\n"
                 "  " VOLUME ":run " VOLUME ":out/%s >" VOLUME ":out/%s.run\n"
                 "  Echo \"rc=$RC\" >>" VOLUME ":out/%s.run\n"
                 "EndIf\n", n, n, n, n);
         free(n);
     }
     if (p->gate)
-        add(&s, "EndIf\nUnSetEnv REQCLOSELOG\n");
+        text_add(&s, "EndIf\nUnSetEnv REQCLOSELOG\n");
     if (s.bad) {
         free(s.p);
         return NULL;
@@ -653,21 +540,21 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
         slog[c] = path ? (char *)read_file(path, &len) : NULL;
         free(path);
     }
-    add(&rep, "== runtime error checking %s, %zu sources:", p->runerr ? "on" : "off",
+    text_add(&rep, "== runtime error checking %s, %zu sources:", p->runerr ? "on" : "off",
         p->nsources);
     for (c = 0; c < p->nconfigs; c++)
-        add(&rep, " %s%s", p->configs[c].tag, c ? "" : " (reference)");
-    add(&rep, "\n");
+        text_add(&rep, " %s%s", p->configs[c].tag, c ? "" : " (reference)");
+    text_add(&rep, "\n");
     for (c = 0; c < p->nconfigs; c++)
         if (st[c] != AMIGA_EMULATION_DONE) {
-            add(&rep, "session %s: %s (%s/%s/emu)\n", p->configs[c].tag,
+            text_add(&rep, "session %s: %s (%s/%s/emu)\n", p->configs[c].tag,
                 amiga_emulation_status_name(st[c]), p->work, p->configs[c].tag);
             bad++;
         }
     if (p->gate)
         for (c = 0; c < p->nconfigs; c++)
             if (gate_rc(p, c) != 0) {
-                add(&rep, "gate %s: rc %d - the programs did not run (%s/%s/vol/out/gate.run)\n",
+                text_add(&rep, "gate %s: rc %d - the programs did not run (%s/%s/vol/out/gate.run)\n",
                     p->configs[c].tag, gate_rc(p, c), p->work, p->configs[c].tag);
                 bad++;
             }
@@ -677,9 +564,9 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
         int diff = 0;
 
         load_outcome(p, 0, i, slog[0], &ref);
-        add(&rep, "%-16s", name ? name : "?");
+        text_add(&rep, "%-16s", name ? name : "?");
         if (!ref.exe) {
-            add(&rep, " reference did not compile: %s\n", ref.result);
+            text_add(&rep, " reference did not compile: %s\n", ref.result);
             bad++;
             free_outcome(&ref);
             free(name);
@@ -689,29 +576,29 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
             const struct corpus_config *cf = &p->configs[c];
 
             load_outcome(p, c, i, slog[c], &o);
-            add(&rep, "%s %s:", c > 1 ? ";" : "", cf->tag);
+            text_add(&rep, "%s %s:", c > 1 ? ";" : "", cf->tag);
             if (cf->expect == CORPUS_EXE) {
                 int ok = same(ref.exe, ref.exelen, o.exe, o.exelen);
 
-                add(&rep, ok ? " exe identical," : o.exe ? " EXE DIFFERS," : " NO EXE (%s),",
+                text_add(&rep, ok ? " exe identical," : o.exe ? " EXE DIFFERS," : " NO EXE (%s),",
                     o.result);
                 diff |= !ok;
             }
             if (!o.run)
-                add(&rep, " NO OUTPUT");
+                text_add(&rep, " NO OUTPUT");
             else if (same(ref.run, ref.runlen, o.run, o.runlen))
-                add(&rep, " output same");
+                text_add(&rep, " output same");
             else
-                add(&rep, " OUTPUT DIFFERS");
+                text_add(&rep, " OUTPUT DIFFERS");
             diff |= !same(ref.run, ref.runlen, o.run, o.runlen);
             free_outcome(&o);
         }
-        add(&rep, "\n");
+        text_add(&rep, "\n");
         bad += diff;
         free_outcome(&ref);
         free(name);
     }
-    add(&rep, "%zu checks, %ld with differences\n", p->nsources, bad);
+    text_add(&rep, "%zu checks, %ld with differences\n", p->nsources, bad);
     if (rep.bad || write_file(p->report, rep.p, rep.n)) {
         fprintf(log, "corpus: cannot write %s\n", p->report);
         goto out;
