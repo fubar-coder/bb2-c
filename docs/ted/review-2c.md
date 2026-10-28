@@ -198,7 +198,7 @@ Finding minor 5b (width, practically not reachable):
 4469–4472: `moveq #0,d0 / move blitmod,d0 / addq #2,d0 / sub.l d0,d5`;
 `addq` is `.w`, i.e. (blitmod+2) is truncated to 16 bits. Difference only
 for blitmod ≥ $FFFE. Proposal: `d5 = pixrows22 - (ULONG)(UWORD)(blitmod +
-2);` (the same spot in `scrollrite`, `src/screen.c:524`, has the same
+2);` (the same spot in `scrollrite`, `src/screen.c:533`, has the same
 pattern, asm 5023–5027 – same correction; not part of the sample).
 
 ## 6 openreq / closereq (`src/reqs.c`)

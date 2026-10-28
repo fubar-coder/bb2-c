@@ -1,7 +1,7 @@
 # Binary formats of Blitz Basic 2.1
 
-> As of 26.10.2026. Basis: copy of the Blitz 2.1 CD under `cd/`
-> (4310 files). Goal: settle open questions for the planned converter
+> As of 26.10.2026. Basis: copy of the Blitz 2.1 CD under `archive/cd/ultimate-blitz-basic-2.1/`
+> (4310 files; paths below in lower case). Goal: settle open questions for the planned converter
 > `.bb2` → `.ab3` (cf. `ab3c/docs/bb2-converter/bb2-format.md`,
 > `bb2-corpus.md`).
 >
@@ -12,7 +12,7 @@
 > (`AmiBlitz3/Sourcecodes/Amiblitz3/Compiler/AmiBlitz3.ab3`). None of this
 > is verified in Amiberry. CD programs were not run.
 
-Tools (Python, call with `-I`) in `tools/`:
+Tools (Python, call with `-I`) in bb2 `tools/` (bb2 only, not taken over):
 
 | Script | Purpose |
 |---|---|
@@ -24,7 +24,7 @@ Tools (Python, call with `-I`) in `tools/`:
 
 An important finding up front: `blitz2.s` (v1.95) and `ted.s` (TED 1.1) from
 `amibl2src` match the CD. TED 1.1 announces itself with the same text
-"Blitz Basic 2 - Ted Version 1.1" as `cd/blitz2/ted`. The
+"Blitz Basic 2 - Ted Version 1.1" as `BLITZ2/TED` of the CD. The
 option table, the token list and the umlaut table in compiler 2.10
 have exactly the structure from `blitz2.s`. The sources therefore interpret the binary data
 reliably.
@@ -222,7 +222,7 @@ extension at all. `.xtra` is appended to the full name (`x.bb.xtra`).
 
 ### 4.1 Umlaut table **[B]** **[S]**
 
-`cd/blitz2/ted` (TED 1.1), file offset `$5DCE`, label `germs` in ted.s
+`BLITZ2/TED` of the CD (TED 1.1), file offset `$5DCE`, label `germs` in ted.s
 line 6022:
 
 ```
@@ -280,7 +280,7 @@ Blitz 2.1. For the converter this means: in strings and comments
 
 ### 5.1 Version **[B]**
 
-`cd/blitz2/blitz2` (86 216 bytes, one code hunk with 73 568 bytes and 3149
+`BLITZ2/BLITZ2` of the CD (86 216 bytes, one code hunk with 73 568 bytes and 3149
 relocs): "Blitz Basic 2 Version 2.10", "(C)opyright 1995 - Acid Software",
 "Release Version". The commands are in `blitz2:acidlibs`, `deflibs` and
 `userlibs/` (releasenotes).
@@ -294,7 +294,7 @@ Token = `$8000 + nummer`. In compiler 2.10 the list begins at code offset
 and from two code locations.
 
 **Result:** 210 entries `$8001`–`$80D3`. Only `$80B6` is missing (commented out
-in blitz2.s: `Ern`). The list is in `builtin_tokens.txt`
+in blitz2.s: `Ern`). The list is in bb2 `builtin_tokens.txt` (not taken over)
 (`TOKEN $xxxx name`):
 
 * `$8001`–`$803B`: language (`NEWTYPE`, `End`, `Let`, `Dim` … `CNIF`, `CSIF`,

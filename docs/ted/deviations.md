@@ -6,7 +6,7 @@ Reference: vasm build of `ted.s` ([reference.md](reference.md)). Rule
 `DIFF:` and a justification, and listed here in full.
 Categories as in [`../libs/deviations.md`](../libs/deviations.md)
 (**B** decided by the user, **T** technically unavoidable, **K** silent
-correction – not permitted). The lines concerning the file requester shared with libs-c
+correction – not permitted). The lines concerning the file requester shared with freqlib
 are additionally listed there in section 5a.
 
 As of: phase 2c (integration review). All "safer" spots of phase
@@ -17,7 +17,7 @@ of the Amiga version and are not deviations.
 
 | Location | Original | C version | Kind | observable? |
 |---|---|---|---|---|
-| `flink` (ted.s:7953; src/filereq.c) | relocates the embedded requester hunk `filereq` itself at startup (312 RELOC32, without cache flush; a second run would relocate twice – BUG(orig)) | dropped: the requester is C code from `../shared/filereq/filereq_core.c`, LoadSeg relocates | **T** | no |
+| `flink` (ted.s:7953; src/filereq.c) | relocates the embedded requester hunk `filereq` itself at startup (312 RELOC32, without cache flush; a second run would relocate twice – BUG(orig)) | dropped: the requester is C code from `shared/filereq/filereq_core.c`, LoadSeg relocates | **T** | no |
 | Requester data block (src/filereq.c) | TED's `filereq` differs from freqlib in 7 padding bytes (`"OK",0,$06` instead of `$00` …, rest at the hunk end) | data block of the freqlib version (one source, "variant C") | **B**/**T** | no (bytes are never read) |
 | `ezfreq` → `filerequest+36` (src/filereq.c) | a0 = `reqstruct`, the requester reads the block directly | `filerequest()` copies the 4 longwords to `fq_args` and calls `fq_request()` | **T** | no (the block is not changed while the requester runs) |
 | `jumptable`/`menutable` (src/input.c) | packed 6-byte entries `{code.b, flag.b, fn.l}` | array `struct jtentry` (function pointers) in the same order, same end markers | **T** | no (nobody else reads the tables) |
@@ -28,7 +28,7 @@ of the Amiga version and are not deviations.
 | edstruct copy (ted.s:24) | 14 words in one go to `tokens…remark` | field by field into individual globals | **T** | no |
 | chmap blits in `scrollup`/`scrolldown`/`eraseline`/`cls` | blitter also on the character map | `chmap_*` in the core with the CPU (same bytes), bitplanes still via blitter | **T** | no (timing: blitter and CPU work in parallel in the original) |
 | fixed strides over structures (survey-07 G.1) | `ga4 + n*84`, `hp1 + n*86`, `ga10 + n*44`, `bo14 + n*28/56` | pointer tables `intgads`, `hps`, `colgads`, `colbords` (src/data.c) | **T** | no |
-| comdata entry points (src/glue.c) | partly save nothing (openreq, getinput, error …) | REGSTUB saves all registers except the results | **B** (as libs-c: "at least what the original preserves") | no |
+| comdata entry points (src/glue.c) | partly save nothing (openreq, getinput, error …) | REGSTUB saves all registers except the results | **B** (as the libraries: "at least what the original preserves") | no |
 | `edstart`/wbheader, `dosopen` fails (src/main.c `edstart_c`) | `wb_exit` `rts` returns to `outside`, a1 undefined (survey-01 I.2) | `edstart_stub` always sets a1 = 0: `outside` continues as standalone (without DOSBase) | **T** | no (dos.library is never missing) |
 | Menu items: padding byte after `Command` (src/data.c) | `dc.b 'X '`: padding byte = space | `struct MenuItem` has padding there, C initialises it with 0 | **T** | no (never read; not in the COMPILER copies of `getstuff` either) |
 | `sleepon` path "already active" (src/main.c) | after the `movem` restore, `makemenus` destroys a0/d0 of the blitz2 caller (survey-01 I.7) | glue saves all registers (line "comdata entry points") | **B** | no |

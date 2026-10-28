@@ -2,11 +2,11 @@
 
 Basis: [PLAN.md](PLAN.md) §6 (c), [reference.md](reference.md),
 [overview.md](overview.md) §4, [deviations.md](deviations.md) and the
-existing emulator infrastructure in `../compilerlauf` (runner
-`tools/bb2compile.py`, stub and requester tools in `tedstub/`,
-[`../compilerlauf/README.md`](../../compilerlauf/README.md),
-[`../compilerlauf/tedstub/README.md`](../../compilerlauf/tedstub/README.md))
-as well as [`../ci-exploration.md`](../../ci-exploration.md).
+existing emulator infrastructure in bb2 `compilerlauf/` (runner
+`tools/bb2compile.py`, stub and requester tools in `tedstub/` – here `tests/corpus/amiga/`,
+`compilerlauf/README.md`,
+`compilerlauf/tedstub/README.md`)
+as well as bb2 `ci-exploration.md` (bb2 only, not taken over).
 
 State at planning (26.10.2026): phase 2b completed, `ctest --preset
 amiga` (ref_verify, checkhunk, checkdata, checklabels, checklink) and
@@ -14,8 +14,8 @@ amiga` (ref_verify, checkhunk, checkdata, checklabels, checklink) and
 0 errors) green. TED-C has **never run** yet – phase 3 is the first
 start on an Amiga.
 
-Goal: **same observable behaviour** of TED-C (`build/amiga/ted`)
-and reference TED (`build/amiga/ref/ted`, vasm build of `ted.s`), measured
+Goal: **same observable behaviour** of TED-C (`build/amiga/blitz2/ted`)
+and reference TED (`build/amiga/programs/ted/ref/ted`, vasm build of `ted.s`), measured
 in the emulator with both compilers, without operator, never blocking.
 Not a goal: comparison with the CD binary of TED (reference.md §1, separate
 step), performance measurement.
@@ -26,15 +26,15 @@ step), performance measurement.
 
 | Component | Path | State |
 |---|---|---|
-| Reference TED | `ted-c/build/amiga/ref/ted` (57060 bytes) + `ted.lst`/`ted.map`/`ted.labels` | present, `ref_verify` green |
-| TED-C | `ted-c/build/amiga/ted` (69432 bytes), link map `build/amiga/ted.map`, symbols `build/amiga/ted.sym` | built, untested |
-| blitz2 v1.95 (vasm) | `compilerlauf/blitz2-195` | proven in the corpus |
-| blitz2-c | `blitz2-c/build/amiga/blitz2` | byte-equal with 1.95 in the corpus (724/724) |
-| Libraries/helpers | `cd/blitz2/{deflibs,acidlibs,userlibs,defaultdbug,help,help.dat}` | copied by `bb2compile.prepare()` (except `help`, `help.dat`) |
-| Emulator start | `bb2/tools/amiberry.cmake` (without window; script to `AB3C:build/amiberry/run.script`, `user-startup` runs it, end via `RES:done` and `uaequit`, time limit terminates Amiberry; until 27.10.2026 `../ab3c/tools/amiberry_run.py`) | proven; configuration via `--config`/`AMIBERRY_CONFIG` |
-| Lock | `libs-c/build/.amiberry.lock` (`bb2compile.LOCK`) | one emulator at a time |
-| Synthetic inputs | `compilerlauf/tedstub/src/reqclose.h` (IntuiMessages into the UserPort, `-DREQCLOSE_INPUT`: old input.device variant), starter `reqtrap.c` (AutoRequest/EasyRequest patch, `SystemTags`) | proven for requesters; **no** tool for operating TED |
-| Oracles without TED | `compilerlauf/tools/bb2tok.py` (tokenizer like TED), `tedstub` (compiles without UI), `corpus_check.mask_trap1()` | present |
+| Reference TED | `build/amiga/programs/ted/ref/ted` (57060 bytes) + `ted.lst`/`ted.map`/`ted.labels` | present, `ref_verify` green |
+| TED-C | `build/amiga/blitz2/ted` (69432 bytes), link map `build/amiga/programs/ted/ted.map`, symbols `build/amiga/programs/ted/ted.sym` | built, untested |
+| blitz2 v1.95 (vasm) | `compilerlauf/blitz2-195` (here `build/amiga/programs/blitz2/ref/blitz2`) | proven in the corpus |
+| blitz2-c | `build/amiga/blitz2/blitz2` | byte-equal with 1.95 in the corpus (724/724) |
+| Libraries/helpers | `archive/cd/ultimate-blitz-basic-2.1/BLITZ2/{DEFLIBS,ACIDLIBS,USERLIBS,DEFAULTDBUG,HELP,HELP.DAT}` | copied by `bb2compile.prepare()` (except `help`, `help.dat`) |
+| Emulator start | `bb2/tools/amiberry.cmake` (bb2; here `tools/lib/amiga_emulation`) (without window; script to `AB3C:build/amiberry/run.script`, `user-startup` runs it, end via `RES:done` and `uaequit`, time limit terminates Amiberry; until 27.10.2026 `../ab3c/tools/amiberry_run.py`) | proven; configuration via `--config`/`AMIBERRY_CONFIG` |
+| Lock | bb2 `libs-c/build/.amiberry.lock` (`bb2compile.LOCK`) | one emulator at a time |
+| Synthetic inputs | `tests/corpus/amiga/reqclose.h` (IntuiMessages into the UserPort, `-DREQCLOSE_INPUT`: old input.device variant), starter `reqtrap.c` (AutoRequest/EasyRequest patch, `SystemTags`) | proven for requesters; **no** tool for operating TED |
+| Oracles without TED | bb2 `compilerlauf/tools/bb2tok.py` (tokenizer like TED), `tedstub` (compiles without UI), `corpus_check.mask_trap1()` | present |
 
 To be newly built are the companion process `teddrive` (§4), the runner
 `tedab.py` (§5), the dump decoder `teddump.py` (§6.1) and an
@@ -46,8 +46,8 @@ emulator configuration with a native Workbench screen (§3).
 
 | Code | TED | Compiler | Role |
 |---|---|---|---|
-| **R5** | reference (`build/amiga/ref/ted`) | blitz2-195 | **reference** (everything original, only vasm-assembled) |
-| **C5** | TED-C (`build/amiga/ted`) | blitz2-195 | **mandatory**: checks TED-C against the original compiler (register interface `comdata`, callbacks `menurout`/`loadxtra`/`savextra`/`cleanup` in asm code) |
+| **R5** | reference (`build/amiga/programs/ted/ref/ted`) | blitz2-195 | **reference** (everything original, only vasm-assembled) |
+| **C5** | TED-C (`build/amiga/blitz2/ted`) | blitz2-195 | **mandatory**: checks TED-C against the original compiler (register interface `comdata`, callbacks `menurout`/`loadxtra`/`savextra`/`cleanup` in asm code) |
 | **Cc** | TED-C | blitz2-c | **mandatory**: target combination (everything C); two `-fbaserel` programs each with its own a4 (overview.md §4 risk 2) |
 | **Rc** | reference | blitz2-c | control: on a deviation Cc↔R5 separates the cause (compiler or editor); blitz2-c is already confirmed against 1.95 in the corpus, hence lower priority |
 
@@ -88,8 +88,8 @@ TAG/teddrive      the companion process
   `checkdata`). Before the first run check that `SYS:L/blitzeditor.opts`
   does **not** exist on the disk (otherwise it would apply to tests without their own
   file – `List SYS:L/blitzeditor.opts` in the gate run, §3.3).
-* Test sources: `.bas` from `compilerlauf/corpus/tests` are generated as in
-  `prepare()` with `bb2tok.tokenise()`, CD sources copied from `cd/`
+* Test sources: `.bas` from `tests/corpus/tests` are generated as in
+  `prepare()` with `bb2tok.tokenise()`, CD sources copied from `archive/cd/ultimate-blitz-basic-2.1/`
   (with `.xtra`).
 
 ## 3 Emulator: native chipset is mandatory
@@ -110,7 +110,7 @@ ci-exploration.md §2.1). TED would clone an RTG screen there: the
 bitplanes would be in graphics card memory, the blitter cannot
 address them (drawing into nowhere or into foreign chip RAM), and with 1050
 lines the file requester hits the known overflow from 605 pixels
-window height (reference.md §3.2, `libs-c/libs/freqlib.c`). **TED is not testable with
+window height (reference.md §3.2, `libs/acidlibs/freqlib.c`). **TED is not testable with
 this configuration** – this applies equally to both TEDs, so it is
 not an A/B error, but a blocker.
 
@@ -137,7 +137,7 @@ user: `run.script`, `RES:`, `AB3C:`, `BB2:` work.
 ### 3.3 Gate 0 (before all tests)
 
 A run without TED: a small probe program (`tedprobe`, own program
-`tests/amiga/tedprobe.c`, target `build/amiga/tests/tedprobe`) writes `GetScreenData(WBENCHSCREEN)` (width, height, `ViewPort.Modes`,
+`tests/ted-ab/amiga/tedprobe.c`, target `build/amiga/tests/ted-ab/amiga/tedprobe`) writes `GetScreenData(WBENCHSCREEN)` (width, height, `ViewPort.Modes`,
 `GetVPModeID`, depth), `TypeOfMem(Planes[0])` (must be `MEMF_CHIP`),
 `AvailMem(MEMF_CHIP)` and the presence of `SYS:L/blitzeditor.opts`
 to `out/gate0.txt`. The runner aborts if the mode is not native
@@ -150,7 +150,7 @@ the same geometry.
 ### 4.1 Structure
 
 `teddrive SCRIPT COMMAND [ARGS]` – built like `reqclose` from
-`compilerlauf/tedstub/src/reqtrap.c` (there: AutoRequest/EasyRequestArgs
+`tests/corpus/amiga/reqtrap.c` (there: AutoRequest/EasyRequestArgs
 patched, command via `SystemTags`, second process via
 `CreateNewProcTags`, end via stop flag and signal). New is the second
 process: instead of the autonomous requester loop of `reqclose.h` it plays back
@@ -171,10 +171,10 @@ Implemented (deviations from this section, justification in
 `PREFIXresult`, dumps `PREFIXNAME.scr`); the AutoRequest/EasyRequest patch
 comes from the unchanged `reqtrap` (`reqtrap teddrive …`), `REQUESTER:` lines
 are therefore in the `.stdout` file; script syntax in
-`tests/amiga/tdscript.h` (checked on the host against `tedab.py`).
+`tests/ted-ab/amiga/tdscript.h` (checked on the host against `tedab.py`).
 
-Location: `ted-c/tests/amiga/teddrive.c` (+ `teddrive.h`), CMake target in preset
-`amiga` (`build/amiga/tests/teddrive`), compilable like `reqtrap` without C
+Location: `tests/ted-ab/amiga/teddrive.c` (+ `teddrive.h`), CMake target in preset
+`amiga` (`build/amiga/tests/ted-ab/amiga/teddrive`), compilable like `reqtrap` without C
 runtime. The AutoRequest patch stays: DOS requesters ("Please insert
 volume …") and alerts via EasyRequest must not stop the run; their
 text appears as `REQUESTER: …` in the log.
@@ -285,7 +285,7 @@ but did not finish and the session ended early).
 
 ## 5 Runner `tedab.py` and sessions
 
-Location `ted-c/tools/tedab.py` (imports `compilerlauf/tools/bb2compile.py`
+Location bb2 `ted-c/tools/tedab.py` (here `tests/ted-ab/runner/`; imports `compilerlauf/tools/bb2compile.py`
 for `prepare` parts, `LOCK`, `AB3C`, `amiga_path`, and `corpus_check.mask_trap1`).
 
 ```
@@ -362,9 +362,9 @@ and is the same for both TEDs. Open TED requesters are windows on
 the same screen and are in the picture too – desired (requester contents
 equal), position is in the header.
 
-**Evaluation** (`ted-c/tools/teddump.py`): PNG for humans; text
+**Evaluation** (bb2 `ted-c/tools/teddump.py`, here `tests/ted-ab/runner/teddump.c`): PNG for humans; text
 decoding of the editor area with the TED fonts (`chars8.b`/
-`chars.b` from `quelltext/amibl2src/files/amiblitz2source/bb2src.zip.dir/tedt`,
+`chars.b` from `archive/sources/ted-1.1`,
 like `bin2c.py`; position: from line `topskip` = 12, `fonthite` 8 or 6,
 character `(c&15) + (c>>4)*128 + r*16` or `*96`, reference.md §3) → text
 per line + attribute (inverse = block/cursor, plane 1), so that a DIFF appears as a
@@ -395,10 +395,10 @@ same hunk (`deftitname` "Blitz Basic 2 - Ted Version 1.1" or another
 constant datum located in the same hunk). The offsets are generated
 by the runner per TED as a description `TED.desc`:
 
-* Reference: `build/amiga/ref/ted.labels` (one hunk; e.g. `myint` `$632`,
+* Reference: `build/amiga/programs/ted/ref/ted.labels` (one hunk; e.g. `myint` `$632`,
   `chmap` `$5E5A`, `cursx` `$5E3E`, `curstop` `$5E54`, `firstitem`
   `$5E60`, `numlines` `$5E6C`, `defstart` `$5E8C`),
-* TED-C: `build/amiga/ted.map` / `ted.sym` (`-fbaserel`: variables and
+* TED-C: `build/amiga/programs/ted/ted.map` / `ted.sym` (`-fbaserel`: variables and
   `myint` in the data hunk; offsets relative to its start).
 
 Field widths according to `structs.h`/`state.h` (the Amiga layout is bound to the original via
@@ -406,9 +406,9 @@ Field widths according to `structs.h`/`state.h` (the Amiga layout is bound to th
 
 ## 7 Test list
 
-Sources: `T` = `compilerlauf/corpus/tests/NAME.bas` (tokenised by the runner with
-`bb2tok`), `S` = `compilerlauf/tedstub/tests/syntaxerr.bb2`
-(error in line 2, `b=(a+`), `K` = CD source from `cd/`. Every test
+Sources: `T` = `tests/corpus/tests/NAME.bas` (tokenised by the runner with
+`bb2tok`), `S` = `tests/ted-ab/src/syntaxerr.bb2`
+(error in line 2, `b=(a+`), `K` = CD source from `archive/cd/ultimate-blitz-basic-2.1/`. Every test
 starts with `wait req "OKEE DOKEE"` → `gad 1` (version requester of
 blitz2) and `wait screen`, ends with QUIT (`menu 0 9`) and if needed the erase
 requester, `wait exit`; in between `dump` at the named places.
@@ -496,14 +496,14 @@ equally wrong). Deviations only for the `DIFF:` lines of
 The report distinguishes: `SAME`, `DIFF`, `KNOWN-DIFF` (line in
 deviations.md), `KNOWN-BOTH` (both equally faulty/crashed),
 `FAIL`/`TIMEOUT` (run not complete). Expectations are per test in
-`tests/emu/NAME.expect` next to the script `tests/emu/NAME.drv`.
+`tests/emu/NAME.expect` next to the script `tests/emu/NAME.drv` (here `tests/ted-ab/scripts/`).
 
 ## 9 Prerequisites and blockers
 
 | # | Point | Kind | What needs to be done |
 |---|---|---|---|
 | B1 | ~~RTG Workbench of the test configuration~~ | **solved** (27.10.) | the user's `A1200-AB3-AGA.uae` (§3.2), native PAL hires laced Workbench, depth 8; gate 0 checks it in every session (§3.3) |
-| B2 | companion process `teddrive` | implemented (route D) | `tests/amiga/teddrive.c`, self-test `teddrivetest` (gate D); `reqclose.h` included unchanged (O-P1) |
+| B2 | companion process `teddrive` | implemented (route D) | `tests/ted-ab/amiga/teddrive.c`, self-test `teddrivetest` (gate D); `reqclose.h` included unchanged (O-P1) |
 | B3 | runner `tedab.py`, decoder `teddump.py`, test scripts | implemented (gate, test 00) | §5, §6.1; host tests `tests/tools/` (ctest host `tedab_tools`, `tdscript`); further `tests/emu/*.drv` after test 00 |
 | B4 | mouse position/shortcuts only via input.device, which paralysed the input task in the test emulator (RTG) | risk for stage 3 | gate I on the native screen; stage 1/2 manage without |
 | B5 | synchronisation "idle" not tried (TS_WAIT/SigWait) | risk | first try with test 00 on R5 (reference must run reliably), log every wait time |
@@ -531,14 +531,14 @@ deviations.md), `KNOWN-BOTH` (both equally faulty/crashed),
 5. Add Rc/Cc (stage 2a), then the broader tests (stage 2b), `state`
    (§6.2).
 6. Gate I (input.device on native screen) → stage 3.
-7. Result in `notes/deviations.md` (new observed DIFFs, column
+7. Result in [deviations.md](deviations.md) (new observed DIFFs, column
    "observable?" with test number), state in `README.md`.
 
 Decided points (coordinator, 27.10.2026):
 
 * **O-P1**: `reqclose.h` is **not** copied and not split:
   `teddrive.c` includes the file unchanged from
-  `compilerlauf/tedstub/src` (one source like `freqlib_req.inc`) and
+  `compilerlauf/tedstub/src` (here `tests/corpus/amiga/`; one source like `freqlib_req.inc`) and
   uses the log buffer (`rc_cat`/`rc_hex`/`rc_dec`), `rc_valid`, `rc_label`,
   `rc_copytitle` and the static message buffers including reply port
   (`rc_msg`/`rc_busy`/`rc_port`/`rc_replies`); the rest (own loop

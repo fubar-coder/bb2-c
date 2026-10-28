@@ -1,6 +1,6 @@
 # Cross-references between the chunks of ted.s
 
-Generated with `tools/xrefs.py`. Per chunk: labels that other chunks use –
+Generated with bb2 `tools/xrefs.py` (not taken over). Per chunk: labels that other chunks use –
 `name(definition<-using chunks)`. All of them must go into the chunk's header.
 
 ## Chunk 01 main (lines 1-1015, 19 exported)

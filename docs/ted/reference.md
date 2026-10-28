@@ -8,35 +8,35 @@ CD versions (TED, compiler, libraries) is done by a separate, later step;
 it is explicitly not the subject here.
 
 ```
-cmake --build --preset amiga --target ref
-→ build/amiga/ref/ted        vasm build (hunk executable, 57060 bytes)
-→ build/amiga/ref/ted.lst    vasm listing (-Lall)
-→ build/amiga/ref/ted.map    TSV: address  file:line  bytes  source (7280 lines)
-→ build/amiga/ref/ted.labels TSV: address  label  file:line (1103 symbols)
+cmake --build --preset amiga --target ted_ref
+→ build/amiga/programs/ted/ref/ted        vasm build (hunk executable, 57060 bytes)
+→ build/amiga/programs/ted/ref/ted.lst    vasm listing (-Lall)
+→ build/amiga/programs/ted/ref/ted.map    TSV: address  file:line  bytes  source (7280 lines)
+→ build/amiga/programs/ted/ref/ted.labels TSV: address  label  file:line (1103 symbols)
 ```
 
-Invocation as for the compiler (`compilerlauf/blitz2-195`):
+Invocation as for the compiler (`blitz2_ref`, `build/amiga/programs/blitz2/ref/blitz2`):
 `vasmm68k_mot -quiet -devpac -nocase -m68000 -Fhunkexe` (`-nocase` like
-`GenAm.opts`), warnings 40/41/51/62 off as in the listing of blitz2-c (CMake target `listing`).
-What gets assembled is `tedt/ted.s`: it differs from `ted.s` only in the
+`GenAm.opts`), warnings 40/41/51/62 off as in the listing of blitz2-c (CMake target `blitz2_ref`).
+What gets assembled is `tedt/ted.s` (here `archive/sources/ted-1.1/ted.s`): it differs from `ted.s` only in the
 include paths (line 12 `e:myoffs`, line 136 `e:wbheader` – `e:` was a
 Devpac assign); all includes and binary files in `tedt/` are equal to those
-in `bb2src.zip.dir/`, the line numbers are equal (listing line =
+in `bb2src.zip.dir/` (`archive/aminet/amibl2src/bb2src/`), the line numbers are equal (listing line =
 `ted.s:NNN`).
 
 Result: one hunk (HUNK_CODE, section `CODE` 0–`$D4FA`, `$353F`
 longwords), 1245 relocations (vasm writes them as `HUNK_RELOC32SHORT`),
-no errors. Listing and binary match (`tedlisting.py verify`:
-7280 lines, 0 deviations; runs as `ctest` `ref_verify`).
+no errors. Listing and binary match (`tedlisting.py verify`, here `tools/vasmlisting verify`:
+7280 lines, 0 deviations; runs in the build step of `ted_ref`, bb2: `ctest` `ref_verify`).
 
-## 2 Tools (`ted-c/tools/`)
+## 2 Tools (bb2 `ted-c/tools/`; here `tools/vasmlisting` with `map`, `labels`, `verify`; the rest not taken over)
 
 | File | Purpose |
 |---|---|
 | `tedlisting.py LST …` | `map`, `labels`, `addr LABEL`, `line ADDR`, `bytes A B`, `carray NAME A B` (constant `UWORD` array with `ted.s:NNN` comments, for tables/data), `verify EXE` (every listing byte against the code hunk of a binary, relocated longwords excepted) |
-| `xrefs.py ORIGDIR` | cross-references between the chunks → `notes/xrefs.md` |
+| `xrefs.py ORIGDIR` | cross-references between the chunks → [xrefs.md](xrefs.md) |
 
-CMake: target `ref` (in `ALL`: vasm build with listing, then `ted.map`/`ted.labels` and `verify`; until 27.10.2026 `tools/mkref.sh`), `listing`; `ctest` runs `ref_verify`.
+CMake: target `ted_ref` (bb2: `ref`; in `ALL`: vasm build with listing, then `ted.map`/`ted.labels` and `verify`; until 27.10.2026 `tools/mkref.sh`), `listing`; in bb2 `ctest` ran `ref_verify`.
 
 ## 3 The binary includes
 
@@ -46,7 +46,7 @@ CMake: target `ref` (in `ALL`: vasm build with listing, then `ted.map`/`ted.labe
 | `pointer` (319) | `pointer.bin` | 64 | `$916` | data: sprite image of the normal pointer (14 lines, 16 px, 2 bitplanes) | **data** – resource |
 | `srcinfo` (827) | `src.info` | 396 | `$1074` | data: `DiskObject` (magic `$E310`, version 1) – icon written as `NAME.info` when saving | **data** – resource |
 | `rawed` (7109) | `rawed.obj` | 660 | `$73E0` | **code**: complete AmigaDOS hunk file (header 32 bytes, 624 bytes code, no relocations), entry points `rawed+32+0/4/8` | **port** (C, `rawkey.c`) |
-| `filerequest` (7967) | `filereq` | 15916 | `$8CE0` | **code**: complete hunk file (14616 bytes code+data, 312 RELOC32), relocated at runtime by `flink` (7953) itself, entry point `filerequest+36` = code+4 | **port** by taking over `libs-c/libs/freqlib.c` (see 4.2) |
+| `filerequest` (7967) | `filereq` | 15916 | `$8CE0` | **code**: complete hunk file (14616 bytes code+data, 312 RELOC32), relocated at runtime by `flink` (7953) itself, entry point `filerequest+36` = code+4 | **port** by taking over `libs/acidlibs/freqlib.c` (see 4.2) |
 | `font6` (8070) | `chars.b` | 768 | `$CDFA` | data: font 8 pixels wide, 6 high, 128 characters in 8 blocks of 16 (line r of character c at `(c&15) + (c>>4)*96 + r*16`, `fontcalc` 5214) | **data** – resource |
 | `font8` (8071) | `chars8.b` | 1024 | `$D0FA` | data: font 8×8 pixels, 128 characters (`(c&15) + (c>>4)*128 + r*16`) | **data** – resource |
 
@@ -58,12 +58,12 @@ block; this stays so (C: normal `const` array + the same copy).
 
 ### 3.1 `rawed.obj` – rawkey → ASCII
 
-No source available: neither in `quelltext/` nor on the CD is there
+No source available: neither in the Aminet archive (`archive/aminet/`) nor on the CD is there
 `rawed.s`/`rawmaker` (`ted.s:7107` refers, commented out, to
-`rad:rawmaker.obj`); `bb2src.zip.dir/rawed.obj.dsm` is a
+`rad:rawmaker.obj`); `archive/aminet/amibl2src/bb2src/rawed.obj.dsm` is a
 DSM disassembly (1988 disassembler, so already present at the author's).
 The same conversion routine (byte sequence from code+`$10A`) is also in
-`cd/blitz2/acidlibs`, `defaultdbug`, `help` and several PD programs –
+`BLITZ2/ACIDLIBS`, `DEFAULTDBUG`, `HELP` of the CD and several PD programs –
 apparently a standard routine of the authors; a source for it is not present
 in `bblibsrc`.
 
@@ -101,10 +101,10 @@ TED-internal. The tables are built as well (same side effects:
 No source (`ted.s:7969 ;include rad:filerequester`), **but the code
 is the same as in the file requester of Blitz's `freqlib`** (`FileRequest$`,
 `bblibsrc/freqlib` includes `libincs:filereq.s`): code+data of `filereq`
-(14616 bytes) match `cd/blitz2/acidlibs` from offset `$114FA` except for
+(14616 bytes) match `BLITZ2/ACIDLIBS` of the CD from offset `$114FA` except for
 7 bytes, all in padding bytes behind gadget texts (`"OK",0,$06` instead of
 `"OK",0,$00` etc.) or in the leftover at the hunk end. This requester is
-already translated to C in `libs-c/libs/freqlib.c` (from the disassembly,
+already translated to C in `libs/acidlibs/freqlib.c` (from the disassembly,
 with all BUG(orig) notes, among others writing past the data block with
 windows from 605 pixels height – this affects TED on tall screens just the same).
 
@@ -139,18 +139,18 @@ until then `libs-c/libs/freqlib_req.inc`, pulled in via `#include`):
   because the options are incompatible: in the library `-ffixed-a3/a4/a5`,
   freestanding, one hunk; in TED `-fbaserel` (a4 = base register of the
   globals) and libnix.
-* `libs-c/libs/freqlib.c` – only the BlitzLib shell (`dofreq`/`freqchk`);
-  `libs-c/libs/filereq_env.h`: `blitzlib.h`, `blitzexec.h`,
+* `libs/acidlibs/freqlib.c` – only the BlitzLib shell (`dofreq`/`freqchk`);
+  `libs/acidlibs/filereq_env.h`: `blitzlib.h`, `blitzexec.h`,
   `fq_divu_w` = `bl_divu_w`. The declarations are identical to the original
-  (`biglib.py compare ref/freqlib.obj …`). With `struct fq_data` instead of the
+  (`tools/blitzlibcompare`, bb2: `biglib.py compare ref/freqlib.obj …`). With `struct fq_data` instead of the
   assembler block, the data block (bytes + relocs) has stayed the same,
   but the code is shorter: for GCC the byte array `fq_data[]` had
   alignment 1, every word/longword access was assembled from single bytes
   (freqlib $4A00 → $3F20, TED's filereq code $1600 → $CA4
   bytes; host comparison in unicorn: 27 scenarios equal).
-* `ted-c/src/filereq.c` – `filerequest(reqstruct)` copies the block to
+* `programs/ted/src/filereq.c` – `filerequest(reqstruct)` copies the block to
   `fq_args` and calls `fq_request()`; `ezfreq` (reqs.c) maps the
-  register interface onto it (comdata+24: d0, Z). `ted-c/src/filereq_env.h`:
+  register interface onto it (comdata+24: d0, Z). `programs/ted/src/filereq_env.h`:
   `<proto/exec.h>`, `fq_divu_w` = `divu_w` (glue.c; none of the three
   divisions can overflow).
 
@@ -164,10 +164,10 @@ known overflow with windows from 605 pixels height writes in TED beyond
 
 ### 3.3 Other TED versions on the CD (not reference)
 
-`cd/internet/newted/ted`, `cd/bum10a/ted223/ted`, `cd/bui5/superted/ted`,
-`cd/bss3/superted/programs/ted`, `cd/extras/newteditor/ted`,
-`cd/bum9a/bum9examples2/harddiskusers/ted` are other (later) editors.
-`amiblitz2source/ted2.bb2` is the AmiBlitz2 editor (Blitz source with
+`INTERNET/NEWTED/TED`, `BUM10A/TED223/TED`, `BUI5/SUPERTED/TED`,
+`BSS3/SUPERTED/PROGRAMS/TED`, `EXTRAS/NEWTEDITOR/TED`,
+`BUM9A/BUM9EXAMPLES2/HARDDISKUSERS/TED` (on the CD) are other (later) editors.
+`archive/aminet/amibl2src/amiblitz2source/ted2.bb2` is the AmiBlitz2 editor (Blitz source with
 asm, StormWizard interface) and not a translation of `ted.s`
 (no common labels like `tokit`, `comdata`); unsuitable as a reference for the
 behaviour of TED 1.1.

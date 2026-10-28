@@ -1,9 +1,9 @@
 # Command libraries in C: findings per library
 
 State of the port of the "simple" command libraries from `acidlibs`
-(overview and test state: `../README.md`). Source in each case
-`bb2src/NAME.bb` (detokenised from `bblibsrc`), reference the CD binary
-`ref/NAME.obj`. `BUG(orig)` = peculiarity of the original, deliberately
+(overview and test state: [bb2-readme.md](bb2-readme.md)). Source in each case
+`build/<preset>/bblibsrc/NAME` (detokenised from `bblibsrc`), reference the CD binary
+(`BLITZ2/ACIDLIBS`, `tools/biglib extract`). `BUG(orig)` = peculiarity of the original, deliberately
 carried over (for the comparison with AmiBlitz3).
 
 ## General
@@ -20,7 +20,7 @@ carried over (for the comparison with AmiBlitz3).
   afterwards (it cleans up the stack via a7), and lib code relies on
   a2 being preserved across ALibJsr calls (windowslib `dowtitle`,
   screenslib); the libsdev documentation describes a2 only as input.
-  See `architecture.md` 5.5 and `cd/extras/libsdev/documentation`.
+  See [architecture.md](../architecture.md) 5.5 and `EXTRAS/LIBSDEV/DOCUMENTATION` of the CD.
 * **String results** from a3 on, d0 = length; a3 then normally points
   to the zero byte (`blitz_string` in C). A **missing terminating 0**
   is practically invisible: assignment, Print and concatenation work with
@@ -36,7 +36,7 @@ carried over (for the comparison with AmiBlitz3).
   nevertheless preserve at least the registers that the original preserves (thunks,
   checked in `[cmd]`).
 * **Shared helpers:** what several ports need is in
-  `include/blitzlib.h`/`blitzhelp.h` instead of locally: `BLITZ_ALIBJSR_A6`
+  `libs/include/blitzlib.h`/`blitzhelp.h` instead of locally: `BLITZ_ALIBJSR_A6`
   (ALibJsr with a6, vallib), `BLITZ_ERRCHK_THUNK`/`BLITZ_ERRCHK_MESSAGE`
   (error checks in C with messages in the error check area, linklistlib,
   vallib), `BLITZ_BASEJSR1/2` + `LVO_SP…` (mathffp), `BL_SETW`/`BL_SETB`/
@@ -198,7 +198,7 @@ C, declarations identical, binary = source. BB2 ArgStrings (memlib, ra_Size with
 
 ## 90 seriallib
 
-C, declarations identical, binary = source. allio: 8 units × 256 bytes (read half +0, write half +128, each with request pointer, MsgPort, IOExtSer). BUG(orig): CloseSerial/SetSerialBuffer/SetSerialLens/SetSerialParams/SerialEvent calculate unit*128, the others unit*256 (only unit 0 consistent); ReadSerialMem reads via the write request; WriteSerialString flag 2 = TrueString and DoIO at the same time (flag 1 unchecked), ReadSerial "wait" = flag 2; CloseSerial AbortIO without WaitIO, write request remains; if AllocSignal of the write half fails, the device stays open; "Serial Device Not Open" via TRAP #0 even without debugger. Kept, not a bug: ReadSerialString without 0 (invisible, see General). DIFF: ReadSerial leaves a3 unchanged. Test: t62_serial (unit 0 without remote station), t63_serialerr in tests-runerr, t64_serialrx in `compilerlauf/corpus/tests-serial` with remote station (`compilerlauf/tools/serialrun.py`: Amiberry `serial_port=TCP://…`, answering program on the host): ReadSerial without/with flag 1/with wait bit 2 (blocking), ReadSerialString with data, ReadSerialMem (via the write request), SerialEvent 1/2/both, WriteSerialString asynchronous (length -1 sends the terminating 0 along) and address form, SetSerialLens 7 bit, SetSerialParams (baud, EOF mode: has no effect on ReadSerialMem, since the write request has the old flags), SetSerialBuffer 64 with overflow (reading returns SerErr_BufOverflow 12). Result: line bytes the same in all four configurations, output the same except for the DIFF a3 (two ReadSerial in one statement: in the original the second read overwrites the string part built in rb1 in between, `97b98`; the test now reads separately, after that 0 deviations). Not tested: units > 0 with remote station, 7WIRE/handshake, parity, break.
+C, declarations identical, binary = source. allio: 8 units × 256 bytes (read half +0, write half +128, each with request pointer, MsgPort, IOExtSer). BUG(orig): CloseSerial/SetSerialBuffer/SetSerialLens/SetSerialParams/SerialEvent calculate unit*128, the others unit*256 (only unit 0 consistent); ReadSerialMem reads via the write request; WriteSerialString flag 2 = TrueString and DoIO at the same time (flag 1 unchecked), ReadSerial "wait" = flag 2; CloseSerial AbortIO without WaitIO, write request remains; if AllocSignal of the write half fails, the device stays open; "Serial Device Not Open" via TRAP #0 even without debugger. Kept, not a bug: ReadSerialString without 0 (invisible, see General). DIFF: ReadSerial leaves a3 unchanged. Test: t62_serial (unit 0 without remote station), t63_serialerr in tests-runerr, t64_serialrx in `tests/corpus/tests-serial` with remote station (`tests/corpus/runner/serial.c`: Amiberry `serial_port=TCP://…`, answering program on the host): ReadSerial without/with flag 1/with wait bit 2 (blocking), ReadSerialString with data, ReadSerialMem (via the write request), SerialEvent 1/2/both, WriteSerialString asynchronous (length -1 sends the terminating 0 along) and address form, SetSerialLens 7 bit, SetSerialParams (baud, EOF mode: has no effect on ReadSerialMem, since the write request has the old flags), SetSerialBuffer 64 with overflow (reading returns SerErr_BufOverflow 12). Result: line bytes the same in all four configurations, output the same except for the DIFF a3 (two ReadSerial in one statement: in the original the second read overwrites the string part built in rb1 in between, `97b98`; the test now reads separately, after that 0 deviations). Not tested: units > 0 with remote station, 7WIRE/handshake, parity, break.
 
 ## 158 screenslib
 
@@ -280,7 +280,7 @@ C, declarations identical; the binary differs from the source (additional font t
 
 ## 152 freqlib
 
-C: wrapper from the source, the requester (libincs:filereq.s, not on the CD) from the disassembly; its data as a data block with the original offsets (bytes + relocs from the binary), meanwhile as `struct fq_data fq` (NDK structures, variables, buffers; every offset checked via `_Static_assert` against the address in the binary; data block byte- and reloc-identical, code shorter because GCC saw the assembler block as a byte array with alignment 1; host comparison unicorn 27 scenarios the same). **Split (for TED, "Variante C"):** the requester core (code, data block `fq`, parameter block `freqst[4]`, entry `freqcode()`) is in `libs/freqlib_req.inc`, everything `static`, without blitzlib.h; `freqlib.c` is now only the BlitzLib shell (`dofreq`/`freqchk`) and defines `fq_divu_w` (= `bl_divu_w`) before the `#include`. The same file is included by `../ted-c/src/filereq.c` (TED's embedded hunk `filereq` is the same code). What the includer has to provide beforehand is stated at the head of the .inc. `freqlib.obj` is byte-identical after the split (`cmp` against the state before; `biglib.py compare` with ref: declarations identical). Host comparison identical in 7 scenarios. BUG(orig): path$/file$ without new length, libraries never closed, volume list without locking the DOS list (the labels <ASN>/<VOL> are correct: `dl_Type` 1 = DLT_DIRECTORY → "<ASN>", 2 = DLT_VOLUME → "<VOL>"), the CD gadget changes the current directory and clears the upper word of the UndoBuffer pointer of the path gadget ($111A instead of DispPos), ParentDir locks stay open. The FileInfoBlock must be longword-aligned (BPTR) – explicitly aligned in C (the first emulator run hung because of this). BUG(orig): the window shows (height − 85) / 8 lines without limit, but there are only 64 line gadgets (up to the end of the data block $39DA); from window height 605 on (first window = screen height − 40, so every screen from 645 lines on) the layout writes the further lines behind the data block into the following program. Measured in the host harness (screen 1050: window 1010, 115 lines, ~7.2 KB behind $39DA; screen 256: nothing); stack, a2–a6, pr_WindowPtr, locks and memory are in order on return. On the RTG Workbench (1680×1050) of the test emulator the program therefore crashes directly after the requester (Cancel as well as OK, t93/t94 with reqclose: reboot, earlier "ILLEGAL Instruction"). Names over 34 characters also overwrite their 40-byte list nodes. Tests t93 (Cancel) and t94 (OK) in `compilerlauf/corpus/tests-req` via reqclose, therefore on a separate 320×256 screen (window 216, 16 lines; in the harness without overflow, Cancel as well as OK).
+C: wrapper from the source, the requester (libincs:filereq.s, not on the CD) from the disassembly; its data as a data block with the original offsets (bytes + relocs from the binary), meanwhile as `struct fq_data fq` (NDK structures, variables, buffers; every offset checked via `_Static_assert` against the address in the binary; data block byte- and reloc-identical, code shorter because GCC saw the assembler block as a byte array with alignment 1; host comparison unicorn 27 scenarios the same). **Split (for TED, "Variante C"):** the requester core (code, data block `fq`, parameter block `freqst[4]`, entry `freqcode()`) is in `libs/freqlib_req.inc`, everything `static`, without blitzlib.h; `freqlib.c` is now only the BlitzLib shell (`dofreq`/`freqchk`) and defines `fq_divu_w` (= `bl_divu_w`) before the `#include`. The same file is included by `programs/ted/src/filereq.c` (TED's embedded hunk `filereq` is the same code). What the includer has to provide beforehand is stated at the head of the .inc. `freqlib.obj` is byte-identical after the split (`cmp` against the state before; `biglib.py compare` with ref: declarations identical). Host comparison identical in 7 scenarios. BUG(orig): path$/file$ without new length, libraries never closed, volume list without locking the DOS list (the labels <ASN>/<VOL> are correct: `dl_Type` 1 = DLT_DIRECTORY → "<ASN>", 2 = DLT_VOLUME → "<VOL>"), the CD gadget changes the current directory and clears the upper word of the UndoBuffer pointer of the path gadget ($111A instead of DispPos), ParentDir locks stay open. The FileInfoBlock must be longword-aligned (BPTR) – explicitly aligned in C (the first emulator run hung because of this). BUG(orig): the window shows (height − 85) / 8 lines without limit, but there are only 64 line gadgets (up to the end of the data block $39DA); from window height 605 on (first window = screen height − 40, so every screen from 645 lines on) the layout writes the further lines behind the data block into the following program. Measured in the host harness (screen 1050: window 1010, 115 lines, ~7.2 KB behind $39DA; screen 256: nothing); stack, a2–a6, pr_WindowPtr, locks and memory are in order on return. On the RTG Workbench (1680×1050) of the test emulator the program therefore crashes directly after the requester (Cancel as well as OK, t93/t94 with reqclose: reboot, earlier "ILLEGAL Instruction"). Names over 34 characters also overwrite their 40-byte list nodes. Tests t93 (Cancel) and t94 (OK) in `tests/corpus/tests-req` via reqclose, therefore on a separate 320×256 screen (window 216, 16 lines; in the harness without overflow, Cancel as well as OK).
 
 ## 160 bitmaplib
 
@@ -342,7 +342,7 @@ C, declarations identical, binary = source. Object "CopList" (128 bytes), mode v
 
 ## Incidentally
 
-* `tests/systest_system.c`: the log entry "trap N handler" contained the
+* `libs/tests/systest_system.c`: the log entry "trap N handler" contained the
   upper word of an absolute address in the lib copy and thus depended on the
   memory layout (flipped after adding `systest_cmdlibs.c`);
   now only the opcode.

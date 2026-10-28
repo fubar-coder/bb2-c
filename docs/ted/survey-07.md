@@ -1,7 +1,7 @@
 # Survey 07 – ted.s:6286–8072 (Intuition data, menus, requesters, incbins, `flink`)
 
 Scope: almost only data. The only code: `flink` (7953) plus the entries into the
-incbin blocks `rawed` and `filerequest`. Addresses from `build/ref/ted.labels`.
+incbin blocks `rawed` and `filerequest`. Addresses from `build/ref/ted.labels` (here `build/amiga/programs/ted/ref/ted.labels`).
 
 | Label | Address | Line |
 |---|---|---|
@@ -286,7 +286,7 @@ code hunk at runtime.
 * freqlib.c: `freqst[4] = {path, file, title, screen}` and `freqcode()` = the same
   code (offsets there "in the binary", data block `fq_data`). TED's `reqstruct` has the
   same layout as `freqst`; `dofreq_c` is only the Blitz string wrapper around it.
-  → In C: use `freqcode()` from libs-c/libs/freqlib.c as common source, with
+  → In C: use `freqcode()` from libs/acidlibs/freqlib.c as common source, with
   parameter `ULONG st[4]` instead of static `freqst`; return pointer (0 = cancel), generate Z flag
   for asm callers (`comdata+24` = `ezfreq`) in the glue.
 * Result = pointer into the requester data block (`RESULT`), used further by TED via
@@ -350,7 +350,7 @@ No further allocations in the scope (filereq internally allocates 48 B chip + 40
 8. The NewScreen tags (`SA_LikeWorkbench`, `SA_Pens`) need the NS_EXTENDED struct
    (`struct ExtNewScreen`).
 
-### Suitability of `blitz2-c/tools/req2c.py`
+### Suitability of bb2 `blitz2-c/tools/req2c.py`
 Suitable for the six requesters (same directive signatures as blitz2's
 `optreq`/`typereq`), with small extensions:
 * Parts list: `ted.s` 6906–7104, 7111–7308, 7310–7946, 7971–8068; extend `EXPORT_RE`/`req` detection

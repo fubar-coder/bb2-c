@@ -2,10 +2,10 @@
 
 State: comparison of the **declaration parts** (header, token entries with
 kind/forms/args/libs/name/help text, libfin) of the 58 command libraries in
-`cd/blitz2/acidlibs` (BB2.1; identical to `cd/bum9a/blitz2/acidlibs` and
-`cd/bum10b/blitz2/acidlibs`) with the sources in
-`quelltext/amibl2src/files/amiblitz2source/bblibsrc.lha.dir/bblibsrc/`.
-The code itself is **not** compared.
+`BLITZ2/ACIDLIBS` of the CD (BB2.1; identical to `BUM9A/BLITZ2/ACIDLIBS` and
+`BUM10B/BLITZ2/ACIDLIBS`, all under `archive/cd/ultimate-blitz-basic-2.1/`) with the sources in
+`archive/aminet/amibl2src/bblibsrc/`.
+The code itself is **not** compared. Tool (bb2 only, not taken over):
 
 ```
 python3 -I libs-c/tools/srcdecl.py report cd/blitz2/acidlibs <bblibsrc>
@@ -17,8 +17,8 @@ python3 -I libs-c/tools/srcdecl.py compare cd/blitz2/acidlibs <bblibsrc>/gtlib
 The sources are normal BB2 programs that were assembled with the Blitz
 assembler; the declaration macros (`!libheader`, `!astatement`,
 `!args`, `!libs`, `!subs`, `!name`, `!nullsub`, `!libfin` …) are in
-`cd/extras/blitzlibs/libmacs.bb` (identical in `cd/bum9b|bum10a/blitzlibs/
-libmacs.bb2`, there also `.res`), the lib numbers in `libnums.bb`
+`EXTRAS/BLITZLIBS/LIBMACS.BB` of the CD (identical in `BUM9B|BUM10A/BLITZLIBS/
+LIBMACS.BB2`, there also `.res`), the lib numbers in `libnums.bb`
 (`INCLUDE "blitzlibs:libnums.bb"` at the end of libmacs). The macros generate
 only `Dc` data in exactly the format that `biglib.parse_lib` reads. That is why
 `srcdecl.py` evaluates the macros on the host (no Amiberry needed):
@@ -33,7 +33,7 @@ only `Dc` data in exactly the format that `biglib.parse_lib` reads. That is why
 
 Cross-check: 24 of 25 system lib sources yield "identical"; exception
 debuglib (binary has one more nullsub, `last` different - known, see
-libs/debuglib.c: binary newer than source).
+libs/acidlibs/debuglib.c: binary newer than source).
 
 ## Result
 
@@ -133,7 +133,7 @@ libs/debuglib.c: binary newer than source).
 * Not in acidlibs: alglib (#algebralib=9), cd32lib (113), chunkylib (72 from
   libnums; 29 entries, ChunkyCLS… - the tokens of 121 come from polylib),
   ctrlclib and xprlib (`#ctrlclib`/`#xprlib` not in libnums).
-* `bb2src.zip.dir/linklistlib` is byte-identical to bblibsrc/linklistlib.
+* `archive/aminet/amibl2src/bb2src/linklistlib` is byte-identical to bblibsrc/linklistlib.
 * The RWE sources (`RWELibSourc.lha.dir/Libs`) contain none of the
   acidlibs numbers.
 
@@ -148,6 +148,6 @@ the same acidlibs as the 2.1 CD. The sources are therefore roughly the
 ## Open points
 
 * Code parts are not compared; for the port, as with the
-  system libs: the binary is the reference (`tools/disasm.py`).
+  system libs: the binary is the reference (bb2 `tools/disasm.py`, not taken over).
 * Lib 1 (dhandlerlib): which number definition it was built with is
   unclear (libnums.bb does not know `#dhandlerlib`).

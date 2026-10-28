@@ -13,7 +13,7 @@ by the coordinator**, new drivers at first only with the gates.
 Starting point checked: `ctest --preset amiga` 5/5, `ctest --preset host`
 11/11 green.
 
-### Gate 0: `tedprobe` (`tests/amiga/tedprobe.c`)
+### Gate 0: `tedprobe` (`tests/ted-ab/amiga/tedprobe.c`)
 
 `tedprobe OUTPUT` writes "key value" lines: system versions,
 `GetScreenData(84 bytes, WBENCHSCREEN)` like TED's `calcscreen` and the
@@ -27,7 +27,7 @@ screen taller than 604 lines, Workbench narrower than 640.
 
 ### `teddrive` (route D) and gate D
 
-* `tests/amiga/teddrive.c`: `teddrive SCRIPT PREFIX COMMAND [ARGS]`, flow
+* `tests/ted-ab/amiga/teddrive.c`: `teddrive SCRIPT PREFIX COMMAND [ARGS]`, flow
   and script language in the header comment. The main process starts the command with
   `SystemTags`, a second process plays the script. Program screen =
   first new screen with a backdrop window; target of every input = youngest
@@ -40,22 +40,22 @@ screen taller than 604 lines, Workbench narrower than 640.
   main window → menu QUIT, file requester → Cancel/CLOSEWINDOW,
   TED requester → gadget 1 as ENDGADGET, otherwise Esc).
 * **O-P1** (decision of the coordinator): `reqclose.h` included
-  unchanged (include path `compilerlauf/tedstub/src`, CMake cache
+  unchanged (include path `compilerlauf/tedstub/src`, here `tests/corpus/amiga/`; CMake cache
   `TEDSTUB_SRC`), no copy, no split. `reqclose` is untouched.
-* `tests/amiga/tdscript.h`: the pure script syntax (words, strings with
+* `tests/ted-ab/amiga/tdscript.h`: the pure script syntax (words, strings with
   `\n \t \xHH`, numbers, label comparison) without AmigaOS headers – compiled on the
   host (`tests/tools/tdscript_host.c`, ctest `tdscript`) and
   checked against `tedab.split_line` (same words for every line of every
   `.drv` file).
-* `tests/amiga/teddrivetest.c` (gate D): reads inputs like TED (own
+* `tests/ted-ab/amiga/teddrivetest.c` (gate D): reads inputs like TED (own
   screen with `SA_LikeWorkbench` + depth 2, backdrop main window with menu,
   requesters as title-less windows, `Wait` only on the port of the youngest
   window, reply before processing, keys via `RawKeyConvert`).
-  Two scripts: `tests/emu/gate-d.drv` (RAWKEY, `type` with MapANSI,
+  Two scripts: `tests/ted-ab/scripts/gate-d.drv` (RAWKEY, `type` with MapANSI,
   MENUPICK, `wait req`, `str` text and LONGINT, GADGETUP, `wait gone`,
   busy step 1 s – no input may come during that time –, a
   wait point that must expire (`expectfail`), two dumps with a
-  rectangle in colour 3, QUIT) and `tests/emu/gate-d-rescue.drv` (fails
+  rectangle in colour 3, QUIT) and `tests/ted-ab/scripts/gate-d-rescue.drv` (fails
   deliberately in step 6, the rescue must end the program).
   Self-limited by a 20 s timer.
 
@@ -191,7 +191,7 @@ Fixed (host only): every run gets its directory as `TEDRUN:`
 
 ### Preparation of stage 1 (host only)
 
-* Test scripts `tests/emu/01a…01d` (round trip: t01_int, t08_tokquirk,
+* Test scripts `tests/ted-ab/scripts/01a…01d` (round trip: t01_int, t08_tokquirk,
   CD `finish_mouse.bb`, `mikesmaplib.bb`), `02-type`, `03-join`,
   `04-block`, `05-find`, `06-compile`, `07-error`, `08-xtra`
   (`let.bb2` with its own `.xtra`), `09-opts` (without file, DEFAULTS,
@@ -336,7 +336,7 @@ Once each, emulator rc 0, gates green, `keys_down` empty.
 `@nofiles` is rejected. A run is only passed if teddrive reports OK
 **and** all expectations hold, otherwise `FAIL (expectations)`.
 Expectations entered for all tests (01: file, `.bak`, `.info`,
-`.xtra`; 02/04/05: text oracle `tests/emu/0x-*.expect` via bb2tok; 03:
+`.xtra`; 02/04/05: text oracle `tests/ted-ab/scripts/0x-*.expect` via bb2tok; 03:
 = original; 06: executable = `compilerlauf/results/corpus-ref/t01_int`;
 07: no executable, source unchanged; 08: `let2.bb2` = `let.bb2`,
 `.xtra`/`.info` present; 09: `L/blitzeditor.opts`). Checked against the
@@ -470,7 +470,7 @@ Preparation (host only):
   SAVE/LOAD), `25-tab` (TAB/UNTAB/MARK INDENT), `26-newload` (NEW with
   erase requester, LOAD), `27-help` (Help key), `28-long` (line > 127
   characters, umlauts, $FD–$FF, typed umlauts; source
-  `tests/emu/src/long_umlaut.bas`, source kind `E`).
+  `tests/ted-ab/src/long_umlaut.bas`, source kind `E`).
 * tedab: `@opts` (stage options file to `L/`), expectation `opts`
   (contents of the options file; generator checked against TED's own file from 09:
   byte-equal), `@font 6`, planner refuses sessions over

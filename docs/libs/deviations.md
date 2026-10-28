@@ -1,10 +1,10 @@
 # Deviations of the C ports from the originals
 
 Complete overview of all known places where the
-C versions (`libs/*.c`, `deflibs/*`, `../blitz2-c`, `../ted-c`) behave differently from the
+C versions (`libs/acidlibs/*.c`, `libs/deflibs/*`, `programs/blitz2`, `programs/ted`) behave differently from the
 originals (CD binaries or `blitz2.s`). Basis: all `DIFF` markers
-in the sources, the DIFF sections in `cmdlibs-port.md` and
-`deflibs.md`, the project conventions and a review of our own ports
+in the sources, the DIFF sections in [cmdlibs-port.md](cmdlibs-port.md) and
+[deflibs.md](deflibs.md), the project conventions and a review of our own ports
 for unmarked deviations. `BUG(orig)` (original bugs deliberately
 carried over) is **not** listed here, but in the header comments
 and in `cmdlibs-port.md`.
@@ -48,7 +48,7 @@ documented here.
 | modlib domodquick (modlib.c:29) | d1 returned swapped | d1 preserved | **B** | not a result |
 | runerrlib check chains (runerrlib.c:238) | continues through the error chain after a returning trap | C check returns | **K** | only with a returning trap (the debugger terminates). Practically not observable |
 | fontlib calcoff (fontlib.c:45) | after a trap (no bitmap/font) it runs into the next trap | draws nothing; unreferenced check `bitmapchk` missing | **K** | only with a returning trap |
-| inputoutputlib defin single character (inputoutputlib.c:44, :232) | `BRA err1` into the error check area (without debugger: jump behind the lib) | trap and message in normal code | **K** | without debugger: runtime error instead of jump into nowhere (observable only in this error case). The jump would be technically possible (cf. audiolib, screenslib, shapeslib) |
+| inputoutputlib defin single character (inputoutputlib.c:45, :233) | `BRA err1` into the error check area (without debugger: jump behind the lib) | trap and message in normal code | **K** | without debugger: runtime error instead of jump into nowhere (observable only in this error case). The jump would be technically possible (cf. audiolib, screenslib, shapeslib) |
 | wbstartuplib AddArg (wbstartuplib.c:74) | without memory, jump to `err` in the error check area | runtime error, NULL, caller aborts | **K** | only without memory |
 | linklistlib SortList (linklistlib.c:35) | destroys a3 and d6 | a3 unchanged | **K** | statement, a3 is not read afterwards. Not observable |
 
@@ -60,29 +60,29 @@ documented here.
 | polylib overflows (polylib.c:34) | more than 16 points / 10 edges per side hit the lib's own code | hit the data behind them | **T** | memory layout; only with overflows |
 | animlib err6/err7 (animlib.c:45) | `BEQ err7` into the error check area or err6 in normal code | reached via JSR (return address and saved registers of the C function on the stack) | **T** | GCC drops code after an inline BRA or merges the paths; target and message as in the original, only the stack at the trap differs; not observable |
 | animlib a2 (animlib.c:45) | a2 decremented | unchanged | **B** | convention |
-| arexxlib ReplyRexxMsg (arexxlib.c:60, :503) | with a non-RexxMsg: pops 15 never-saved registers (crash) | returns | **K** | observable only in this error case (crash vs. nothing) |
-| arexxlib CreateRexxMsg (arexxlib.c:60) | copies -8(a2) to -4(a2) on the compiler stack | does not copy, a2 unchanged | **B** | convention; the compiler does not read the value |
+| arexxlib ReplyRexxMsg (arexxlib.c:62, :505) | with a non-RexxMsg: pops 15 never-saved registers (crash) | returns | **K** | observable only in this error case (crash vs. nothing) |
+| arexxlib CreateRexxMsg (arexxlib.c:62) | copies -8(a2) to -4(a2) on the compiler stack | does not copy, a2 unchanged | **B** | convention; the compiler does not read the value |
 | asllib title (asllib.c:44) | writes maxslib's d1 (-1) into the length cell of the title on the compiler stack | stack and a2 stay | **B** | convention; not observable |
-| audiolib (audiolib.c:43) | a2 decremented (volumes/lengths) | unchanged | **B** | convention |
+| audiolib (audiolib.c:47) | a2 decremented (volumes/lengths) | unchanged | **B** | convention |
 | bblitlib (bblitlib.c:25) | entries without nullsub save a4/a5 | likewise (note: no deviation in behaviour) | – | – |
 | blitlib BlitColl Amiga (blitlib.c:323) | upper word of d0 = leftover from DisownBlitter | 0 | **T** | register leftover of the OS (undefined); #word function, not observable |
 | blitzcoplib CustomCop (blitzcoplib.c:56) | a2 decremented by 4 | unchanged | **B** | convention |
 | blitzkeyslib | – | no deviation (DIFF-free; binary has 6 more unused bytes) | – | – |
-| displaylib a2 (displaylib.c:46) | a2 decremented as argument stack | unchanged | **B** | convention |
-| displaylib error jumps (displaylib.c:46) | all errors: Bcc from normal code into the error check area | via JSR (one more return address on the stack) | **T** | like animlib; same target, only stack contents at the trap |
-| displaylib table indices (displaylib.c:46) | sprite mode > 5, mode table beyond resolution 2 / fetch 3, doublescan > 6 read the lib's own code | read other data | **T** | memory layout; only with invalid values |
-| blitzoslib coordinates (blitzoslib.c:63) | upper word of the coordinates passed to Boxf/Line/Locate = sign of the box field | word value sign-extended | **K** | reproducible; differs only for coordinates around 0/negative and only if the called lib uses the upper word |
-| blitzoslib BCALL (blitzoslib.c:305) | Blitz calls from BoxShow (dobs) leave a3 = bitmap of the page | BCALL restores a3/a4 (and a6) after every call | **K** | **not yet marked as DIFF**; statements, a3 is not read afterwards |
+| displaylib a2 (displaylib.c:50) | a2 decremented as argument stack | unchanged | **B** | convention |
+| displaylib error jumps (displaylib.c:50) | all errors: Bcc from normal code into the error check area | via JSR (one more return address on the stack) | **T** | like animlib; same target, only stack contents at the trap |
+| displaylib table indices (displaylib.c:50) | sprite mode > 5, mode table beyond resolution 2 / fetch 3, doublescan > 6 read the lib's own code | read other data | **T** | memory layout; only with invalid values |
+| blitzoslib coordinates (blitzoslib.c:66) | upper word of the coordinates passed to Boxf/Line/Locate = sign of the box field | word value sign-extended | **K** | reproducible; differs only for coordinates around 0/negative and only if the called lib uses the upper word |
+| blitzoslib BCALL (blitzoslib.c:308) | Blitz calls from BoxShow (dobs) leave a3 = bitmap of the page | BCALL restores a3/a4 (and a6) after every call | **K** | **not yet marked as DIFF**; statements, a3 is not read afterwards |
 | brexxlib SaveTape/LoadTape (brexxlib.c:60, :594) | `BEQ err1` into the error check area | trap and message in normal code | **K** | observable only for "Can't Open File" without debugger |
 | cliargslib ParPath$ (cliargslib.c:24, :117) | branches on the CCR that dos.library leaves after NameFromLock | checks d0 = 0 | **T** | CCR of an OS function is undocumented; result the same |
-| crunchlib CrM2 (crunchlib.c:49) | corrupted data index into code/data of the lib | likewise, but the layout of the C lib is different | **T** | only with corrupted CrM2 data |
-| crunchlib work area (crunchlib.c:49) | clears 176 bytes on the stack before returning; uses a5 as work register | leaves locals in place; a5 unchanged | **T** | stack below sp, a5 is a fixed register. Not observable |
+| crunchlib CrM2 (crunchlib.c:57) | corrupted data index into code/data of the lib | likewise, but the layout of the C lib is different | **T** | only with corrupted CrM2 data |
+| crunchlib work area (crunchlib.c:61) | clears 176 bytes on the stack before returning; uses a5 as work register | leaves locals in place; a5 unchanged | **T** | stack below sp, a5 is a fixed register. Not observable |
 | editlib (editlib.c:24) | a2 decremented | unchanged | **B** | convention |
-| fileiolib errors in normal code (fileiolib.c:63, :278) | err1/err2/err3/err6 (and message err7) in the error check area, without debugger jump into nowhere | trap and message in normal code | **K** | only in these error cases without debugger |
-| fileiolib registers (fileiolib.c:63) | changes d4-d7, a2, a3 | unchanged; unused check `reclenchk` missing | **B**/**K** | not observable |
+| fileiolib errors in normal code (fileiolib.c:64, :279) | err1/err2/err3/err6 (and message err7) in the error check area, without debugger jump into nowhere | trap and message in normal code | **K** | only in these error cases without debugger |
+| fileiolib registers (fileiolib.c:64) | changes d4-d7, a2, a3 | unchanged; unused check `reclenchk` missing | **B**/**K** | not observable |
 | freqlib error path (shared/filereq/filereq_core.c, header and `fq_request`; also applies to TED) | without chip memory/library/window: first long of the (uninitialised) FIB buffer | 0 | **T** | contents of uninitialised memory |
 | gameiolib | – | no deviation (DIFF-free) | – | – |
-| gtlib GTTags/GTSetAttrs (gtlib.c:53) | pop the tag pairs from a2 | a2 unchanged; unused check routine freqchk missing | **B** | convention |
+| gtlib GTTags/GTSetAttrs (gtlib.c:58) | pop the tag pairs from a2 | a2 unchanged; unused check routine freqchk missing | **B** | convention |
 | iffiolib iffopen (iffiolib.c:34) | a0 lost after dos Open | a0 preserved | **B** (register preservation) | **not marked as DIFF**, described in the header; not observable |
 | ilbmifflib ilbminit (ilbmifflib.c:46) | a0 after failure = leftover from dos.library | a0 = file name | **T** | register leftover; described in the header |
 | intuifontlib (intuifontlib.c:28) | a2 decremented | unchanged | **B** | convention |
@@ -94,9 +94,9 @@ documented here.
 | screenslib (screenslib.c:57) | a2 popped | unchanged | **B** | convention |
 | screenslib err1 (screenslib.c:53, :412) | Can't open Screen: `BEQ err1` from normal code into the error check area | reached via JSR (one more return address on the stack) | **T** | like animlib/displaylib; same target (without debugger likewise jump behind the lib), only the stack at the trap differs; not observable |
 | scrolllib | – | no deviation (DIFF-free; clsnotint after the binary) | – | – |
-| seriallib ReadSerial (seriallib.c:51, :422) | a3 stays on the 1-byte buffer rb1 in the lib; a2 = unit slot | a3/a2 unchanged | **K**/**B** | a3: **observable** when `ReadSerial` is in a string expression – the rest of the expression is then built from rb1 on, two `ReadSerial` in one statement give "97b98" in the original, "97 98" in C (t64 therefore reads in separate statements, `compilerlauf/README.md` "Serielle Tests"); a2: convention |
-| seriallib noser (seriallib.c:201) | "Serial Device Not Open": `TRAP #0` in normal code; if the trap returns, the code runs into the message text (saved a6 still on the stack) | runtime error, after which the routine returns without input/output | **K** | only with a returning trap (otherwise the program ends with the message) |
-| speaklib (speaklib.c:28) | a2 popped | unchanged | **B** | convention |
+| seriallib ReadSerial (seriallib.c:53, :424) | a3 stays on the 1-byte buffer rb1 in the lib; a2 = unit slot | a3/a2 unchanged | **K**/**B** | a3: **observable** when `ReadSerial` is in a string expression – the rest of the expression is then built from rb1 on, two `ReadSerial` in one statement give "97b98" in the original, "97 98" in C (t64 therefore reads in separate statements, bb2 `compilerlauf/README.md` "Serielle Tests", not taken over); a2: convention |
+| seriallib noser (seriallib.c:203) | "Serial Device Not Open": `TRAP #0` in normal code; if the trap returns, the code runs into the message text (saved a6 still on the stack) | runtime error, after which the routine returns without input/output | **K** | only with a returning trap (otherwise the program ends with the message) |
+| speaklib (speaklib.c:30) | a2 popped | unchanged | **B** | convention |
 | stringfunclib (stringfunclib.c:24, :634, :730, :815) | a2 decremented differently depending on the path (String$ ≤ 0, Replace$ empty, Cvi/Cvl/Cvq not at all) | always unchanged | **B** | convention |
 | utillib CreateMsgPort (utillib.c:30, :153, :165, :193) | after the runtime error (`TRAP #0`, "Failed to allocate memory/signal for Port") the code runs into the message text; the NoSig branch first falls into `Error_NoMemory` (pops a0 and the registers from the stack a second time, second trap) | runtime error, then return with 0 | **K** | only with a returning trap; the original never reaches the NoMem branches anyway (memlib globalloc does not return on lack of memory), the NoSig branch never (`AllocSignal(-1)` does not return 0) |
 | trackerlib (trackerlib.c:47) | – | interrupt routine in C, same registers | – | explicitly "no deviation" |
@@ -114,16 +114,16 @@ documented here.
 
 | Library/routine (file:line) | Original | C version | Kind | Reason / observable? |
 |---|---|---|---|---|
-| init of all libraries/resources (deflibs/deflib.h:20) | `BEQ init+6` jumps into the middle of the `LEA`: `ORI.b #0,(a0)+` with arbitrary a0, then OpenLibrary with the a1 left by the failure | endless loop, each time with the correct name | **T** | a0/a1 after a failed OpenLibrary are undefined; observable only if the library is missing (both hang) |
-| init/finit in general (notes/deflibs.md) | destroys a6, `JMP CloseLibrary` | GCC saves a6, `JSR` | **B** (register preservation) | not observable |
+| init of all libraries/resources (libs/deflibs/deflib.h:20) | `BEQ init+6` jumps into the middle of the `LEA`: `ORI.b #0,(a0)+` with arbitrary a0, then OpenLibrary with the a1 left by the failure | endless loop, each time with the correct name | **T** | a0/a1 after a failed OpenLibrary are undefined; observable only if the library is missing (both hang) |
+| init/finit in general ([deflibs.md](deflibs.md)) | destroys a6, `JMP CloseLibrary` | GCC saves a6, `JSR` | **B** (register preservation) | not observable |
 | Resources (deflib.h) | `LEA` points 6 bytes into the name | reproduced (`libname + DEFLIB_RESOURCE_SKEW`) | – | BUG(orig), no deviation |
 
-## 5. Compiler blitz2-c
+## 5. Compiler blitz2-c (`programs/blitz2`)
 
 Produces byte-identical programs (test corpus and CD reference run), hence only
 internal deviations. Conventions: `-fbaserel` (globals a4-relative,
-`GLUE_LOAD_A4` in all entry points from outside, README), assembler only in
-`src/glue*.c`, registers with persistent state as globals
+`GLUE_LOAD_A4` in all entry points from outside, [README](../blitz2/bb2-readme.md)), assembler only in
+`programs/blitz2/src/glue*.c`, registers with persistent state as globals
 (`srcptr`, `numd3`/`numd6`, `getvnamelen`).
 
 | Place (file:line) | Original | C version | Kind | observable? |
@@ -136,7 +136,7 @@ internal deviations. Conventions: `-fbaserel` (globals a4-relative,
 | Range/overflow checks (eval.c:485, data.c:1693, parse.c:351, compile.c:198) | without check (reading/writing beyond tables, DIVU by 0) | C checks and does nothing | **K** | only in cases that according to the comment do not occur |
 | pushprec (eval.c:929) | stores operator/precedence without bounds check; "Expression too complex" only in `popprec`, after writing past the end of the stack | checks before writing and reports `pserr` immediately | **K** | same message; the only difference is that the original first writes beyond `precstackf` (only with very deeply nested expressions) |
 | savefile HUNK_SYMBOL (parse.c:269) | writes the name length rounded up to longwords directly from the label node: **reads** up to 3 bytes behind the allocation and writes them as padding bytes into the executable | copy padded with zeros (padding bytes 0) | **K** | only with "Create Debug Info": the padding bytes in HUNK_SYMBOL (original random, C always 0); otherwise no |
-| libcall.c:256, libcall.c:1435 | makeint/comparison with leftovers in the upper byte | FALSE / defined comparison | **T** | no |
+| libcall.c:256, libcall.c:1438 | makeint/comparison with leftovers in the upper byte | FALSE / defined comparison | **T** | no |
 | parse.c:538, parse.h:75, compile.h:32 | err without a set return | message + `exit(RETURN_FAIL)` | **T** | only with internal errors |
 | parse.c:797 | `findlast` (dead code) | walks the list | **T** | no |
 | stmts.c:1664 | flushc after the register restore | before it | **T** | no |
@@ -144,19 +144,19 @@ internal deviations. Conventions: `-fbaserel` (globals a4-relative,
 | main.c:1529 | SuperState/movec/UserState | `Supervisor()` | **T** | no |
 
 The individual reasons are each given at the comment `DIFF:` in
-`../blitz2-c/src/`.
+`programs/blitz2/src/`.
 
-## 5a. Editor ted-c (TED 1.1)
+## 5a. Editor ted-c (TED 1.1, `programs/ted`)
 
-The reference is the vasm build of `ted.s` (`../ted-c/notes/reference.md`).
+The reference is the vasm build of `ted.s` ([`../ted/reference.md`](../ted/reference.md)).
 Separate list of the TED deviations: [`../ted/deviations.md`](../ted/deviations.md)
 (continuously extended there); here the rows that concern the shared
 file requester.
 
 | Place (file:line) | Original | C version | Kind | observable? |
 |---|---|---|---|---|
-| `flink` (ted.s:7953; ted-c/src/filereq.c) | the embedded requester hunk `filereq` relocates itself at runtime on start (from `outside`) (`add.l basis` on 312 longwords in its own code hunk, without cache flush; a second run would relocate twice – BUG(orig)) | dropped: the requester is C code (`shared/filereq/filereq_core.c`), its pointers are relocated by LoadSeg | **T** | technically unavoidable: no embedded hunk any more, nothing to relocate. No (except the double relocation, which never happens in the original) |
-| Requester data block (ted-c/src/filereq.c with `shared/filereq/filereq_core.c`) | TED's copy of `filereq` differs from the one in freqlib in 7 bytes (padding bytes behind gadget texts, e.g. `"OK",0,$06` instead of `$00`, and remainder at the hunk end) | data block of the freqlib version | **T** | one source for both programs (user decision "Variante C"); the bytes are never read. No |
+| `flink` (ted.s:7953; programs/ted/src/filereq.c) | the embedded requester hunk `filereq` relocates itself at runtime on start (from `outside`) (`add.l basis` on 312 longwords in its own code hunk, without cache flush; a second run would relocate twice – BUG(orig)) | dropped: the requester is C code (`shared/filereq/filereq_core.c`), its pointers are relocated by LoadSeg | **T** | technically unavoidable: no embedded hunk any more, nothing to relocate. No (except the double relocation, which never happens in the original) |
+| Requester data block (programs/ted/src/filereq.c with `shared/filereq/filereq_core.c`) | TED's copy of `filereq` differs from the one in freqlib in 7 bytes (padding bytes behind gadget texts, e.g. `"OK",0,$06` instead of `$00`, and remainder at the hunk end) | data block of the freqlib version | **T** | one source for both programs (user decision "Variante C"); the bytes are never read. No |
 
 ## 6. Error checks outside the error check area
 
@@ -168,7 +168,7 @@ C function follows such a thunk, GCC emits no new
 Behaviour the same (the thunks are in the check area and call them), but without
 debugger the code is not cut off. Remedy: all thunks behind all
 check functions (as in shapeslib, shapetrixlib, spriteslib, collslib).
-Checked by compiling all `libs/*.c` with `-S` and evaluating the
+Checked by compiling all `libs/acidlibs/*.c` with `-S` and evaluating the
 effective section of each `BLITZ_ERRCHK` function (as of c4a736d):
 **no** check function is in normal code. (iffmakelib had four –
 `bitchk_c`, `bitchk2_c`, `sschk1_c`, `sschk2_c` –, fixed in c4a736d.)

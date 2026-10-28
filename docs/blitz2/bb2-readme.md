@@ -2,7 +2,7 @@
 
 C translation of `blitz2.s` (Blitz Basic 2 v1.95, Acid Software 1995,
 Devpac assembler, ~16 000 lines + includes) from
-`../quelltext/amibl2src/files/amiblitz2source/bb2src.zip.dir/`.
+`archive/sources/blitz2-1.95/`; the C code is in `programs/blitz2/`.
 
 Purpose: **readability for the compatibility comparison with AmiBlitz3.** Hence
 fidelity beats elegance: same algorithms, same data layouts, same
@@ -13,13 +13,13 @@ quirks, the original labels as C names, line references
 
 Toolchain: bebbo `m68k-amigaos-gcc` in `/opt/amiga` (libnix, `-noixemul`,
 68000); building the toolchain on Arch/CachyOS:
-[../toolchain.md](../toolchain.md).
+bb2 `toolchain.md` (not taken over).
 
 ```
 cmake --preset amiga
-cmake --build --preset amiga                    # -> build/amiga/blitz2
-cmake --build --preset amiga --target headers   # do all headers fit together?
-cmake --build --preset amiga --target listing   # vasm listing of the original
+cmake --build --preset amiga                    # -> build/amiga/blitz2/blitz2
+cmake --build --preset amiga --target headers   # (bb2 only, not taken over)
+cmake --build --preset amiga --target blitz2_ref # reference build and vasm listing of the original
 ```
 
 Global variables are addressed a4-relative (`-fbaserel`, option
@@ -62,8 +62,8 @@ Each `NAME.c` has a `NAME.h` (contract for the other parts);
   return values (the mapping is in the respective header).
 * Code templates (machine code that the compiler copies into the generated program)
   are writable `UWORD` arrays with the original bytes, generated
-  from the vasm listing (`tools/asmlisting.py`) and checked against the binary.
-* `CONVENTIONS.md` – rules of the translation; `notes/` – analyses per section
+  from the vasm listing (bb2 `tools/asmlisting.py`) and checked against the binary.
+* `CONVENTIONS.md` – rules of the translation; `docs/blitz2/` – analyses per section
   (`survey-NN.md`), cross references, change log, reviews.
 
 ## State of checking
@@ -71,7 +71,7 @@ Each `NAME.c` has a `NAME.h` (contract for the other parts);
 After translation, each section was checked by an independent pass
 routine by routine against the assembler (flags, branches,
 generated opcodes, templates, data layouts, contracts between the parts);
-findings and corrections in `notes/review-NN.md`. Data areas (token list,
+findings and corrections in `review-NN.md`. Data areas (token list,
 requesters, templates, error texts) were compared byte for byte with the
 original by script. Runtime behaviour has **not** been checked.
 
@@ -82,13 +82,13 @@ automatically). `.clangd` makes clangd parse the sources as m68k.
 
 ## Tools
 
-* CMake target `listing` – vasm listing of the original (addresses + opcodes),
-  `build/amiga/blitz2.lst`.
-* `tools/asmlisting.py` – bytes/templates of a label range as a C array.
-* `tools/xrefs.py` – which labels of each section other sections use.
-* `tools/req2c.py` – Intuition requester data → NDK structs.
+* CMake target `blitz2_ref` – vasm listing of the original (addresses + opcodes),
+  `build/amiga/programs/blitz2/ref/blitz2.lst`.
+* `tools/asmlisting.py` – bytes/templates of a label range as a C array (bb2 only).
+* `tools/xrefs.py` – which labels of each section other sections use (bb2 only).
+* `tools/req2c.py` – Intuition requester data → NDK structs (bb2 only).
 * `cmake -P tools/checkfile.cmake src/NAME.c` – compile one file with the flags from
-  `build/amiga/compile_commands.json` (usable in parallel).
+  `build/amiga/compile_commands.json` (usable in parallel; bb2 only).
 
 ## Running
 
@@ -96,9 +96,9 @@ Not tested. The program is a replacement for `blitz2:blitz2` and needs
 the same environment as the original: `blitz2:ted` (editor, loaded via LoadSeg
 and calls back into the compiler via `edstruct`),
 `blitz2:deflibs`, `blitz2:acidlibs`, `blitz2:userlibs/`,
-`blitz2:defaultdbug` – all in `../cd/blitz2/`. Test in Amiberry: assign `blitz2:`
-to a copy of `cd/blitz2/` and replace `blitz2` there with
-`build/amiga/blitz2`.
+`blitz2:defaultdbug` – all in `archive/cd/ultimate-blitz-basic-2.1/BLITZ2/`. Test in Amiberry: assign `blitz2:`
+to a copy of that directory and replace `blitz2` there with
+`build/amiga/blitz2/blitz2`.
 
 Limitations: the generated code is partly executed at compile time
 (constant folding, `evalconst2`) – so the compiler only runs

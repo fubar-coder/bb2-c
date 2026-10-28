@@ -3,7 +3,7 @@
 All 10 headers exist and `make headers` passes. Now translate your chunk into
 src/NAME.c following CONVENTIONS.md.
 
-1. Read ALL headers in src/ (they are the contract) and notes/changes.md.
+1. Read ALL headers in src/ (they are the contract) and changes.md.
 2. Translate EVERY routine and data label of your line range – no stubs, no
    "TODO: translate". If something truly cannot be done, implement the closest
    correct behaviour, mark it `DIFF:` and report it.
@@ -28,9 +28,9 @@ Cross-chunk facts settled in phase A (check the headers for details):
 - Template arrays: owners define them; others use the externs/#defines.
 
 If you need a declaration another header lacks, add it there marked
-`/* added by chunk NN */` and log it in notes/changes.md (one line). If you
+`/* added by chunk NN */` and log it in changes.md (one line). If you
 find that another chunk's header contract is wrong for your caller, do not
-change its semantics silently – log it in notes/changes.md under "ISSUE:".
+change its semantics silently – log it in changes.md under "ISSUE:".
 
 When done, reply with: build status, number of BUG(orig)/DIFF markers,
 declarations you added to other headers, ISSUEs, anything left incomplete.

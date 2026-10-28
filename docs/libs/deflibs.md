@@ -1,10 +1,10 @@
 # deflibs in C: AmigaOS call declarations
 
-`blitz2:deflibs` (`cd/blitz2/deflibs`) contains no commands, but the
+`blitz2:deflibs` (`BLITZ2/DEFLIBS` of the CD) contains no commands, but the
 declarations of the AmigaOS calls (`Open_`, `AllocMem_`, `OpenWindow_` …):
 39 libraries, one per AmigaOS library/resource. They are now reproducible as C sources
-under `deflibs/NAME.c`; `cmake --build --preset amiga
---target deflibs` builds `build/amiga/deflibs-c` from them (BigLib, same
+under `libs/deflibs/NAME.c`; `cmake --build --preset amiga
+--target deflibs` builds `build/amiga/blitz2/deflibs` from them (BigLib, same
 order as the original).
 
 ## Structure of a deflibs library
@@ -33,7 +33,7 @@ Variants (recognised by the generator from the code, otherwise abort):
 * **Without init/finit** (`doslib2` 249, `graphicslib2` 250): only further
   calls with the base of 252 or 254.
 
-File names = `LIB_` names from `include/libnums.h`. Exceptions with a local
+File names = `LIB_` names from `libs/include/libnums.h`. Exceptions with a local
 `#define`: 225 `mathtranslib` (`LIB_mathtransoslib`; in `libnums.bb`
 `#mathtranslib` is later redefined to 192, the command lib), 219
 `colorwheellib` (there `#cdtvlib`, reserved), 2 `xprzmodemlib` (not present
@@ -70,31 +70,31 @@ init:  MOVE.l  4,a6
 The rest of the code differs only in form: GCC saves a6 (the
 original destroys it), calls `CloseLibrary` via `JSR` instead of `JMP`, the
 length of the code part changes (that is why programs that use a
-deflibs library are not byte-identical with `deflibs-c`).
+deflibs library are not byte-identical with the C `deflibs`).
 
 ## Origin and order
 
-* `tools/mkdeflibs.py` (one-time, standard library only): reads
-  `cd/blitz2/deflibs`, checks header, entries and the code against the
+* bb2 `tools/mkdeflibs.py` (one-time, standard library only; not taken over): reads
+  `BLITZ2/DEFLIBS` of the CD, checks header, entries and the code against the
   known templates and writes `deflibs/NAME.c`; outputs the order
-  for `DEFLIBS_ORDER` in `CMakeLists.txt`. After that, the C files are
-  the source; `deflibs/deflib.h` (shared init code) is hand-written.
-* The 38 files in `cd/extras/blitzlibs/amigalibs/` are byte-identical
+  for `DEFLIBS_ORDER` in `libs/deflibs/CMakeLists.txt`. After that, the C files are
+  the source; `libs/deflibs/deflib.h` (shared init code) is hand-written.
+* The 38 files in `EXTRAS/BLITZLIBS/AMIGALIBS/` of the CD are byte-identical
   to the entries of `deflibs` (CrM is missing there).
   `makedeflibs.bb2` simply concatenates all files of the subdirectories of
   `blitzlibs:` in `ExNext` order; the order in
   `deflibs` is exactly the FFS hash order of the file names
   (`(len·13…+toupper(c)) & $7FF mod 72` increases monotonically: 0, 0, 4, 12, …, 71;
   `CrM.library1` fits its place with hash 26).
-* `tools/biglib.py join OUT LIB…` assembles the BigLib file.
+* `tools/biglib join OUT LIB…` assembles the BigLib file.
 
 ## Checks
 
-* `tools/biglib.py compare` original against C, all 39 libraries:
+* `tools/biglib.py compare` (bb2; here `tools/blitzlibcompare`, ctest `declarations_deflibs`) original against C, all 39 libraries:
   **39/39 declarations identical** (header, all entries, relocs of the
   declaration part); order identical.
-* Emulator (`compilerlauf/tools/corpus_check.py --deflibs
-  libs-c/build/amiga/deflibs-c`, acidlibs from the committed C libs,
+* Emulator (bb2 `compilerlauf/tools/corpus_check.py --deflibs
+  libs-c/build/amiga/deflibs-c`; here ctest `corpus`, configuration clib), acidlibs from the committed C libs,
   one emulator session per run): without t4*/t6*/t7* with 37 C libs
   **53 checks, 0 differences**; again with 40 C libs (plus printlib,
   inputoutputlib, editlib), without t6*/t7*/t8*: **66 checks, 0
@@ -102,9 +102,9 @@ deflibs library are not byte-identical with `deflibs-c`).
   `_` calls directly, but the command libraries pull in doslib,
   intuitionlib and graphicslib via `!libs` (e.g. fileiolib, environlib, intlib);
   so their C init/finit run in every test.
-* CD-wide (`compilerlauf/tools/bb2corpus.py --compiler 195 --deflibs …`):
+* CD-wide (bb2 `compilerlauf/tools/bb2corpus.py --compiler 195 --deflibs …`):
   tag `195-cdeflibs`, 6 sessions: 498 ok, 217 errors, 9 skipped –
   **result, line and message for all 724 sources as in
-  `reference/195.tsv`**, no crashes. 85 of the 498 executables are
+  `reference/195.tsv`** (bb2; here `tests/data/blitz2-cd.tsv`), no crashes. 85 of the 498 executables are
   byte-identical (masked hash); the others contain the init/finit code
   of a deflibs library and therefore differ, as expected.

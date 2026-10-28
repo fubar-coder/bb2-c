@@ -4,12 +4,12 @@
 > and know 68k/AmigaOS, but not the internals of BB2.
 >
 > Basis: compiler `blitz2.s` v1.95 and editor `ted.s` (TED 1.1) from
-> `quelltext/amibl2src/files/amiblitz2source/bb2src.zip.dir/`, the C translation
-> [`blitz2-c/`](blitz2-c/README.md) (same labels, line references per
-> function), the libraries of the CD (`cd/blitz2/acidlibs`, `deflibs`) and
-> [`libs-c/`](libs-c/README.md). The binaries of the CD are v2.10; the
+> `archive/sources/blitz2-1.95/`, `archive/sources/ted-1.1/`, the C translation
+> [`programs/blitz2/`](blitz2/bb2-readme.md) (same labels, line references per
+> function), the libraries of the CD (`archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS`, `DEFLIBS`) and
+> [`libs/`](libs/bb2-readme.md). The binaries of the CD are v2.10; the
 > reference run over all 724 CD sources gave the same programs with v1.95 and v2.10
-> except for one assembler encoding ([compilerlauf/README.md](compilerlauf/README.md)).
+> except for one assembler encoding (bb2 `compilerlauf/README.md`, not taken over).
 >
 > Evidence: **[S]** from source (`blitz2.s:ZEILE label`, `ted.s:ZEILE label`;
 > the C function is given as `datei.c funktion()`), **[B]** from binaries
@@ -45,7 +45,7 @@ libraries along and writes the buffer as an executable file with **one**
 code hunk – or runs it directly in memory.
 
 ```
-  blitz2:  (assign, all files in cd/blitz2/)
+  blitz2:  (assign, all files in archive/cd/ultimate-blitz-basic-2.1/BLITZ2/)
   ├── blitz2        compiler, started from CLI/WB                    86 KB
   ├── ted           editor, loaded by blitz2 via LoadSeg             59 KB
   ├── acidlibs      BigLib: command libs + system libs              219 KB
@@ -245,7 +245,7 @@ zero byte (`blitz2.s:2038 nextline`, `compile.c nextline()`):
 
 * ASCII characters < `$80` unchanged (names, numbers, strings, operators).
 * A byte ≥ `$80` starts a **token word** (big-endian, 2 bytes):
-  * `$8001`–`$80D3` built-in words (`builtin_tokens.txt`), among them
+  * `$8001`–`$80D3` built-in words (bb2 `builtin_tokens.txt`, not taken over), among them
     `$803C`–`$80B2` the assembler mnemonics.
   * `$8000 | (lib·128 + i)` commands of the libraries, e.g. `Print` = `$DD81`
     (lib 187, entry 1), `Left$` = `$DC81` (lib 185/1). The compiler
@@ -253,8 +253,8 @@ zero byte (`blitz2.s:2038 nextline`, `compile.c nextline()`):
     handletoken`).
 * Lines are at most 127 characters long; tabs become spaces.
 
-The tokenizer is rebuilt in `compilerlauf/tools/bb2tok.py`
-(peculiarities in its header).
+The tokenizer is rebuilt in bb2 `compilerlauf/tools/bb2tok.py`
+(peculiarities in its header; bb2 only, not taken over).
 
 ### 3.6 Errors back to TED [S]
 
@@ -305,7 +305,7 @@ compiled** (the object buffer contains absolute addresses, 5.2).
 `procstart` is a fake segment list in the data area of blitz2
 (`blitz2.s:1683`).
 
-**Debugger** [S, lib part from libs-c]: if the option "Runtime Errors"
+**Debugger** [S, lib part from libs/acidlibs]: if the option "Runtime Errors"
 (`optreqga10`, internally `debugga`) is on, `dopass` additionally links in:
 
 | Target | Libs | Function |
@@ -320,17 +320,17 @@ For this the compiler generates:
   `dc.w` offset of the statement in the line, `dc.w` distance to the next
   block (linked, last = 0). The line address points into the memory
   of TED – that is why executables with runtime checking are not byte-identical between two
-  runs (compilerlauf/README.md).
+  runs (bb2 `compilerlauf/README.md`, not taken over).
 * `trap #4`/`#5` at procedure start/end, `trap #2`/`#3` around
   interrupt routines.
 * check calls before or after lib routines (`fehler1`/`fehler2` from `!subs`,
   5.5) and the error check routines of the libs (area from `error` on, 4.6).
 * at the program end `finalscheck` (`$C300`) and `moveq #3,d0 : trap #0`
   (`blitz2.s:2683 eopcode`) – in executables without `End` this makes
-  an empty requester appear (tedstub/README.md).
+  an empty requester appear (bb2 `compilerlauf/tedstub/README.md`, not taken over).
 
 Lib code reports runtime errors with `move.l #text,d0 : trap #0`
-(`BLITZ_RUNERR` in `libs-c/include/blitzlib.h`).
+(`BLITZ_RUNERR` in `libs/include/blitzlib.h`).
 
 **Direct mode, `trap #15`** [S]: evaluating/executing in the debugger
 (`debuglib` `doevaluate`/`doexecute`) triggers `trap #15` in the child process with
@@ -358,16 +358,16 @@ and signals `panicmask`.
 * When executing, the signal wakes `menu10`; on a real PANIC the
   child process is removed with `RemTask` **without cleanup**.
 * blitz2 does not evaluate Ctrl-C. In `rundebuglib` there is a flag
-  `ctrlc` that is never set (BUG(orig), `libs-c/libs/rundebuglib.c`).
+  `ctrlc` that is never set (BUG(orig), `libs/acidlibs/rundebuglib.c`).
 
 ### 3.9 What of this is really needed: tedstub [B]
 
-`compilerlauf/tedstub/` replaces TED without a screen and compiles
+`tests/corpus/amiga/tedstub.c` replaces TED without a screen and compiles
 all 724 CD sources with it. It shows the minimum: init entry at hunk+4,
 `comdata` with meaningful `openreq`/`getinput`/`error`/`ezfreq`/`extalloc`
 and data (`combitmap`, window with UserPort), line list as in TED,
 `loadxtra` with d7/a6 and `menu` with d6 = 2. All other entries may
-be empty (table in [tedstub/README.md](compilerlauf/tedstub/README.md)).
+be empty (table `struct comdata_s` in [`shared/edstub/edstub.c`](../shared/edstub/edstub.c)).
 
 ---
 
@@ -385,7 +385,7 @@ be empty (table in [tedstub/README.md](compilerlauf/tedstub/README.md)).
 
 Being a "system lib" depends only on the number, not on the file:
 `acidlibs` contains 57 command libraries **and** the 25 system libs as well as lib 1
-(`dhandlerlib`) [B, `biglib.py list`]. `deflibs` of the CD contains 39 libs:
+(`dhandlerlib`) [B, bb2 `biglib.py list`]. `deflibs` of the CD contains 39 libs:
 lib 2 and the OS call libs 200, 219–255 [B].
 
 ### 4.2 Built-in words [S]
@@ -395,7 +395,7 @@ lib 2 and the OS call libs 200, 219–255 [B].
 (60–178, for the inline assembler, table `asmmac`), a further 33 words
 (`List`, `SetErr`, `Repeat`, `BitTst` … 179–211). Everything that is not
 here – so also `Print`, `Left$`, `Str$` – comes from libraries.
-Overview: `builtin_tokens.txt`, [formats.md](formats.md).
+Overview: bb2 `builtin_tokens.txt` (not taken over), [formats.md](formats.md).
 
 ### 4.3 Command libraries [S/B]
 
@@ -422,14 +422,14 @@ Runtime code without names that the compiler links in itself – via
 | `datalib` | 64535 | `Read`/`Restore` |
 | `runerrlib`, `debuglib`, `rundebuglib` | 65500, 64060, 64050 | runtime checking, debugger (3.7) |
 
-All 25 are rebuilt as C in [libs-c/](libs-c/README.md) and checked against the
+All 25 are rebuilt as C in [libs/acidlibs/](libs/bb2-readme.md) and checked against the
 originals.
 
 ### 4.5 OS call libs (deflibs) [S/B]
 
 A lib like `doslib` 252 contains practically only declarations: entries of
 "kind 6" with base lib, LVO and register bytes, e.g. `Open_` = lib 252,
-LVO −30, parameters in d1, d2 [B, `biglib.py dump`]. It has code only for
+LVO −30, parameters in d1, d2 [B, bb2 `biglib.py dump`]. It has code only for
 init (open the library, return the base) and finit (close): of the
 5756 bytes of `doslib`, 44 end up in the program (section 6). A call
 `Open_(n$,1005)` is compiled in `stamigalib` (`blitz2.s:3879`,
@@ -466,8 +466,8 @@ Lib image:
 
 Details (kind values, register codes `#ld0`/`#la6`/`#lpush`/`#pd0`,
 repetition groups) are in Spec 09 §9.2 and in the macros
-`cd/extras/blitzlibs/libmacs.bb` or their C reproduction
-`libs-c/include/blitzlib.h`. Additionally important for linking:
+`archive/cd/ultimate-blitz-basic-2.1/EXTRAS/BLITZLIBS/LIBMACS.BB` or their C reproduction
+`libs/include/blitzlib.h`. Additionally important for linking:
 
 * **Inline routines:** if a routine begins with `$A000,len`, the
   compiler copies `len` bytes to the call site instead of `jsr`; `$A001,adr.l`
@@ -492,7 +492,7 @@ the name blocks to the token list (`lasttoken`). There is **no**
 replacement of equal lib numbers as in AB3 (Spec 09 §9.1.1) – `findlib`
 takes the first match [Schluss].
 
-Note: `bb2tok.py` looks up names in the order deflibs before acidlibs;
+Note: bb2's `bb2tok.py` looks up names in the order deflibs before acidlibs;
 v1.95 loads acidlibs first. For the tokens of the CD this makes no
 difference (no duplicate names); the order of 2.10 is not
 checked.
@@ -634,7 +634,7 @@ For statements `handlelib` → `dolibtoke`, for functions
 
 The result is in d0; a string result is written by the routine from a3 on,
 afterwards a3 points to the zero byte and d0 contains the length
-(`libs-c/libs/stringfunclib.c`, header).
+(`libs/acidlibs/stringfunclib.c`, header).
 
 Built-in commands `ALibJsr`/`BLibJsr`/`TokeJsr`/`SysJsr` (lib sources,
 inline assembler) generate the same placeholders or calls directly
@@ -770,7 +770,7 @@ without gaps. Optionally `savefile` writes an icon (`obj.info`).
 
 ## 6 Example: three lines to the hunk
 
-Source (`hallo.bas`), compiled with the original v1.95 in Amiberry:
+Source (`hallo.bas`), compiled with the original v1.95 in Amiberry (bb2 tool, not taken over):
 
 ```
 a$="Hallo"

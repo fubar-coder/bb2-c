@@ -1,6 +1,6 @@
 # Blitz2 asm → C: translation conventions (phase 2)
 
-Source: `../quelltext/amibl2src/files/amiblitz2source/bb2src.zip.dir/blitz2.s`
+Source: `archive/sources/blitz2-1.95/blitz2.s`
 (Blitz Basic 2 v1.95, Devpac). Target: m68k-amigaos-gcc 16 in `/opt/amiga`,
 68000, libnix (`-noixemul`). Purpose: a **readable** C version for comparing
 behaviour with AmiBlitz3, so **fidelity beats elegance**: same algorithms, same
@@ -24,15 +24,15 @@ data layouts, same quirks; the original label names stay as C identifiers.
 Shared, owned by the coordinator (edit only as described in §9):
 `src/blitz2.h` (umbrella), `src/structs.h`, `src/glue.h`, `src/glue.c`, `CMakeLists.txt`, `cmake/`.
 
-Your notes: `notes/survey-NN.md` (yours and everybody else's – read the
+Your notes: `survey-NN.md` (yours and everybody else's – read the
 others when you call into their code). Cross references:
-`notes/xrefs.md` lists, per chunk, every label used from another chunk
+`xrefs.md` lists, per chunk, every label used from another chunk
 (`name(defline<-using chunks)`); all of those must be in your header.
 
 ## 2. Process
 
 **Phase A – header only.** Write `src/NAME.h`: declarations of everything in
-`notes/xrefs.md` for your chunk (plus whatever else you think others need).
+`xrefs.md` for your chunk (plus whatever else you think others need).
 Do not write NAME.c yet. Check with `cmake --build --preset amiga --target headers` (it fails until all 10
 headers exist; to test yours alone use
 `echo '#include "structs.h"
@@ -130,7 +130,7 @@ errors (warnings: fix what is reasonable). Never edit another chunk's .c.
 
 * Never take the address of compiled C code as a template. Templates are
   **writable** `UWORD` arrays defined in the chunk where the label is, with
-  the exact bytes of the original. Generate them from the original listing:
+  the exact bytes of the original. Generate them from the original listing (bb2 tool, not taken over):
   ```
   python3 -I tools/asmlisting.py build/amiga/blitz2.lst block START END
   ```
@@ -166,10 +166,10 @@ errors (warnings: fix what is reasonable). Never edit another chunk's .c.
 * `structs.h`: node layouts with `OFFS()` asserts. If a field is wrong,
   missing, or you need a new struct/typedef, edit structs.h (Read it fresh,
   minimal Edit, never change an offset without evidence from the source) and
-  log one line in `notes/changes.md`.
+  log one line in `changes.md`.
 * Your header contains only `extern`s, prototypes, `#define`s, and
   `extern UWORD template[]`s. Typedefs/structs go into structs.h.
 * Phase B: if another header lacks something you need, add the declaration
   there with `/* added by chunk NN */`, matching the asm semantics in that
-  chunk's survey, and log it in `notes/changes.md`; the coordinator checks
+  chunk's survey, and log it in `changes.md`; the coordinator checks
   that it gets implemented.

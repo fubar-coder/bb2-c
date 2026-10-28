@@ -29,9 +29,9 @@ One line per change to a file owned by the coordinator
 | 2026-10-26 | `src/input.c` | `showvprop`/`showhprop` via `divu_w` | item 1 (`__umodsi3`) |
 | 2026-10-26 | `src/filereq.c` | `#define fq_divu_w divu_w` (freqlib_req.inc unchanged) | item 1 |
 | 2026-10-26 | `src/mouse.h`/`.c` | `openio(UWORD *ccr)` → `ULONG` (d0 + CCR of `WBenchToFront` via `callregs`), `mycli` checks Z; `refgads(…, LONG d0)` (whole register); `outmem` → `memcont_nostack` when `memstack == 0` | item 2/3 |
-| 2026-10-26 | `src/glue.c` | `ezfreq_c`: a3 = `&reqstruct[3]` (address, not contents); `openio` with `REGSTUB_CCR` | item 3, notes/comdata.md |
+| 2026-10-26 | `src/glue.c` | `ezfreq_c`: a3 = `&reqstruct[3]` (address, not contents); `openio` with `REGSTUB_CCR` | item 3, comdata.md |
 | 2026-10-26 | `src/core/tokit.c`, `src/core/fileio.c` | guard checks `tokens == 0`, `freeall`, `freeupa5`, `chmap_scrolldown` only for `TED_HOST`; `(UWORD)d6 << 6` | item 2, review-2c.md |
 | 2026-10-26 | `src/reqs.c` | `swapd0bord` index ≥ 16 like the original (original strides) | item 2 |
 | 2026-10-26 | `src/screen.c` | `pixrows22 - (UWORD)(blitmod + 2)` (addq.w) in scrolldown/scrollrite | review-2c.md |
-| 2026-10-26 | `tools/checklink.py`, `CMakeLists.txt` | ctest `checklink`: no library/arithmetic helpers in the linked ted (map) | item 1 |
+| 2026-10-26 | `tools/checklink.py` (here `programs/ted/checklink.cmake`), `CMakeLists.txt` | ctest `checklink`: no library/arithmetic helpers in the linked ted (map) | item 1 |
 | 2026-10-26 | `tests/host/CMakeLists.txt` | `TED_XFAIL_TESTS` no longer a cache entry (old build kept the 2a value, green tests ran red as WILL_FAIL) | item 4 |

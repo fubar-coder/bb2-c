@@ -2,7 +2,7 @@
 
 As of 26.10.2026. Analysed was the local copy of the "Blitz Basic CD"
 (Guildhall Leisure / BUI, compiled by Kevin Winspear) under
-`bb2/cd/`. The paths below are relative to `bb2/cd/`.
+`archive/cd/ultimate-blitz-basic-2.1/`. The paths below are relative to it (there in upper case).
 
 | Component | Version / date | Evidence |
 |---|---|---|
@@ -443,7 +443,7 @@ quirks I-28 and I-65 come from 2.10.
 * [Schluss] An automatic conversion of old token numbers (like
   `replacedat` in AB3, I-33) is mentioned nowhere for 2.1. The recommended
   way was to save the source as ASCII and tokenise it again. The
-  tables in `bb2/tokens/` (already present) show the numbers of 2.1,
+  tables in bb2 `tokens/` (not taken over) show the numbers of 2.1,
   e.g. the string commands in lib 185 and `Edit$`/`Inkey$` in lib 186.
 
 ---
@@ -542,7 +542,7 @@ or binary differ; **answered** = settles an open point;
 | Keywords as text (`Macro`, `End NEWTYPE`, `XINCLUDE`) | TED could switch off tokenisation; NewTED saves the "entire file as ASCII". Files with text keywords came about this way or with third-party editors. For INCLUDE the docs require "tokenised form – ascii files may not be INCLUDE'd" | [Doku], [Schluss] |
 | `.xtra` layout (README no. 8) | Structure see §3.4 (offsets from hex dumps, matches the order of `ptr_xtradata`). Deviation: BB2 has 14 switch words, AB3 lists 15 | [Bin]/[Schluss] |
 | Header `BB22` | Not explained on the CD; no file with this header (hits only by chance in binary data) | open |
-| Old token numbers | Docs: number = lib × 128 + index; tokens not found appear as `?????` and result in "Token Not Found". Lib change: save the source as ASCII beforehand. Numbers of 2.1: `bb2/tokens/acidlibs.txt` | [Doku] |
+| Old token numbers | Docs: number = lib × 128 + index; tokens not found appear as `?????` and result in "Token Not Found". Lib change: save the source as ASCII beforehand. Numbers of 2.1: bb2 `tokens/acidlibs.txt` (not taken over) | [Doku] |
 | `~…~` "kommt im Korpus nicht vor" (corpus §2) | The search was for `$7F`; but in Blitz 2 it is `~` (`$7E`). The corpus must be searched for `~` in macro bodies | [Bin] → new search needed |
 
 ---

@@ -1,11 +1,11 @@
 # TED 1.1 (`ted.s`) – overview for the C port
 
-Source: `quelltext/amibl2src/files/amiblitz2source/bb2src.zip.dir/ted.s`
+Source: `archive/sources/ted-1.1/ted.s`
 (8072 lines, Devpac, 68000) + includes `myoffs` (LVOs), `wbheader` (startup code,
 the same as in blitz2), `aboutreq`, `specialreq` (requester data).
 Reference build and binary includes: [reference.md](reference.md).
-Cross-references between the chunks: [xrefs.md](xrefs.md) (`tools/xrefs.py`).
-Brief of the surveys: [SURVEY-BRIEF.md](SURVEY-BRIEF.md). Plan: [PLAN.md](PLAN.md).
+Cross-references between the chunks: [xrefs.md](xrefs.md) (bb2 `tools/xrefs.py`).
+Brief of the surveys: `SURVEY-BRIEF.md` (bb2 only, not taken over). Plan: [PLAN.md](PLAN.md).
 
 ## 1 Chunks
 
@@ -20,7 +20,7 @@ Brief of the surveys: [SURVEY-BRIEF.md](SURVEY-BRIEF.md). Plan: [PLAN.md](PLAN.m
 | 07 | 6286–8072 | 1787 (almost only data) | [survey-07](survey-07.md) | NewScreen/NewWindow/gadgets, menu bar (PROJECT/EDIT/SOURCE/SEARCH), requesters `findreq`, `repall`, `errorreq`, `erasereq`, `defaultreq`, `prtreq`, `undobuffer` (only string gadget undo, TED 1.1 has **no** editor undo), `rawed` (incbin), `flink` + `filerequest` (incbin), fonts |
 
 Chunk 07 is large, but 90 % Intuition structures; they can be generated with
-an extended version of `blitz2-c/tools/req2c.py` (survey-07 G).
+an extended version of bb2 `blitz2-c/tools/req2c.py` (survey-07 G; not taken over).
 
 ## 2 Architecture of TED in one picture
 
@@ -160,7 +160,7 @@ Exceptions (interleaved): `return` (scroll with temporarily changed
    (end of allocation), reading via NULL in `bloksave`/`gd03`, tokenizer reads
    past the end of line, `tabstop = 0` → division by zero. Host tests
    need a mode that detects these spots instead of crashing.
-10. **File requester**: reusing `libs-c/libs/freqlib.c` requires
+10. **File requester**: reusing `libs/acidlibs/freqlib.c` requires
     that the requester core there can be cleanly separated from the lib shell;
     its known overflow with tall windows affects TED just the same.
 

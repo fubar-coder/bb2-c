@@ -2,7 +2,7 @@
 
 Basis: [overview.md](overview.md), [survey-01 … 07](overview.md#1-chunks),
 [reference.md](reference.md), [xrefs.md](xrefs.md). Method as in the
-compiler port (`blitz2-c/CONVENTIONS.md`): readable C, **fidelity before elegance**,
+compiler port ([`../blitz2/CONVENTIONS.md`](../blitz2/CONVENTIONS.md)): readable C, **fidelity before elegance**,
 original label names as C identifiers, `/* ted.s:NNN label */` at every
 function, `BUG(orig)` / `DIFF:` markers, inline asm only in `src/glue*.c`,
 m68k-amigaos-gcc (`/opt/amiga`), 68000, libnix, `-fbaserel`.
@@ -13,7 +13,7 @@ line editor) is written so that it **also compiles natively on the host**
 and can be tested there against `bb2tok.py` and the CD sources.
 
 The reference for all checks is the **vasm build of `ted.s` and its listing**
-(`build/ref`, reference.md §1); a comparison with the CD binary is not part
+(`build/ref`, here `build/amiga/programs/ted/ref`, reference.md §1); a comparison with the CD binary is not part
 of this plan.
 
 ---
@@ -82,9 +82,9 @@ ted-c/
 The core files are cut by chunk (not by topic), so that
 parallel translators never edit the same file; their names name the
 main topic. Cross-references between chunks go only via headers
-(`notes/xrefs.md` = mandatory contents of every chunk header, as in blitz2-c).
+(`xrefs.md` = mandatory contents of every chunk header, as in blitz2-c).
 `state.c`/`structs.h`/`glue*`/`hooks.h`/`tedcore.h` belong to the coordinator
-(changes as in `blitz2-c/CONVENTIONS.md` §9 with `notes/changes.md`).
+(changes as in `../blitz2/CONVENTIONS.md` §9 with `changes.md`).
 
 ## 3 Shared headers
 
@@ -243,7 +243,7 @@ Since no original code is taken over as asm, this concerns:
   with compiler (vasm build 1.95 **and** blitz2-c) + `ted` (reference vasm build
   from `build/ref` or TED-C). Same script against both TEDs → A/B.
 * Inputs as synthetic events via a companion process following the
-  pattern of `compilerlauf/tedstub/src/reqclose.h` (script from `ENV:`,
+  pattern of `compilerlauf/tedstub/src/reqclose.h` (here `tests/corpus/amiga/reqclose.h`; script from `ENV:`,
   events via `input.device` `IND_WRITEEVENT`: RAWKEY with qualifier,
   menu selection via Amiga keyboard shortcuts or RAWMOUSE, gadget clicks at
   window coordinates). Requesters of TED (erase, error, file requester) are
@@ -280,7 +280,7 @@ Since no original code is taken over as asm, this concerns:
 * Behaviour on `outmem` before the first main loop (original crashes).
 * ~~Shared requester core with libs-c~~: done (variant C,
   today `shared/filereq/`).
-* State of phase 2a and further open decisions: [PHASE2B-BRIEF.md](PHASE2B-BRIEF.md) §7.
+* State of phase 2a and further open decisions: `PHASE2B-BRIEF.md` §7 (bb2 only, not taken over).
 * `.clangd` for `src/core`: runs as m68k profile; a host profile for
   `tests/host` is entered.
 * Whether `chmap` in the core necessarily needs chip RAM: no on the host; on the

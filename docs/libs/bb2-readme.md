@@ -3,13 +3,13 @@
 The libraries of Blitz Basic 2 (system libs like `ldivlib`, later the
 command libraries) as readable C sources from which **functionally equivalent
 library files in BB2 format** can be built. The basis are the
-BB2 originals in `../quelltext/amibl2src/files/amiblitz2source/bblibsrc.lha.dir/bblibsrc/`.
+BB2 originals in `archive/aminet/amibl2src/bblibsrc/` (readable: `build/<preset>/bblibsrc/`).
 
 Two ways (see agreement):
 
-* **Original libraries** (`../cd/blitz2/deflibs`, `acidlibs`): with these a
+* **Original libraries** (`archive/cd/ultimate-blitz-basic-2.1/BLITZ2/DEFLIBS`, `ACIDLIBS`): with these a
   compiler must produce byte-identical programs. Nothing is rebuilt here.
-* **C libraries** (this directory): same format, same tokens,
+* **C libraries** (`libs/`): same format, same tokens,
   same calling convention, **functionally the same** – checked in the emulator
   against the original. The machine code is different (GCC instead of
   hand-written assembler), so programs produced with them are not byte-identical.
@@ -18,20 +18,20 @@ Two ways (see agreement):
 
 ```
 cmake --preset amiga && cmake --build --preset amiga
-#  -> build/amiga/libNAME.a   static library (basis, later usable directly with ld)
-#  -> build/amiga/NAME.obj    library file in BB2 format
-python3 -I tools/biglib.py extract ../cd/blitz2/acidlibs 64735 ref/ldivlib.obj
-python3 -I tools/biglib.py compare ref/ldivlib.obj build/amiga/ldivlib.obj
-python3 -I tools/amiga_test.py "[libtest]"         # Amiberry (snitch filter), see below
+#  -> build/amiga/libs/acidlibs/libNAME.a   static library (basis, later usable directly with ld)
+#  -> build/amiga/libs/acidlibs/NAME.obj    library file in BB2 format
+build/amiga/host/tools/biglib/biglib extract archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS 64735 ldivlib.orig
+build/amiga/host/tools/blitzlibcompare/blitzlibcompare ldivlib.orig build/amiga/libs/acidlibs/ldivlib.obj
+ctest --preset emulator -R libs_emulator          # Amiberry, see below
 ```
 
 ## What a library looks like in C
 
 A BB2 library was a Blitz program: the macros from `libmacs.res`
-(`../cd/extras/blitzlibs/libmacs.bb`) generated header and
-token table with `Dc` in front of the assembler code. `include/blitzlib.h` reproduces each
+(`archive/cd/ultimate-blitz-basic-2.1/EXTRAS/BLITZLIBS/LIBMACS.BB`) generated header and
+token table with `Dc` in front of the assembler code. `libs/include/blitzlib.h` reproduces each
 of these macros and generates **the same bytes** – as data in the
-section `.blitzlib.head`, which `ld/blitzlib.ld` places at offset 0 of the only
+section `.blitzlib.head`, which `libs/blitzlib.ld` places at offset 0 of the only
 code hunk:
 
 ```c
@@ -52,7 +52,7 @@ LONG ldivide(LONG a BL_REG(d0), LONG b BL_REG(d1)) { ... }
   `BLITZ_ERROR_AREA`. References from normal code to there point, without
   debugger, behind the end of the code (the originals partly do that too, e.g.
   memlib err1 → mess1); until 27.10.2026 `mkblitzlib.py` warned about it, since then
-  nobody checks this automatically any more.
+  nobody checks this automatically any more (here `tools/blitzlibcheck` warns again).
 * **Order in the error check area:** the GNU as of this toolchain does not know
   `.pushsection`/`.popsection`. `BLITZ_ERRCHK_THUNK` (likewise
   `BLITZ_ERRCHK_MESSAGE` and `BLITZ_ERRCHK_AB`) therefore switches with
@@ -65,7 +65,7 @@ LONG ldivide(LONG a BL_REG(d0), LONG b BL_REG(d1)) { ... }
 * **Fidelity:** algorithms are taken over bit-exactly (e.g. division by 0,
   overflow), not replaced by C operators.
 
-Further macros in `include/blitzlib.h` (details in the comments there):
+Further macros in `libs/include/blitzlib.h` (details in the comments there):
 
 | Macro | Purpose |
 |---|---|
@@ -83,7 +83,7 @@ Further macros in `include/blitzlib.h` (details in the comments there):
 | `BLITZ_RUNERR(msg)` | runtime error (`TRAP #0`) |
 | `BLITZ_INLINE`, `BLITZ_AB_ROUTINE`, `BLITZ_ASM_ROUTINE` | inline routine, Blitz/Amiga variant, assembler routine |
 
-`include/blitzhelp.h` (included by `blitzlib.h`) contains small
+`libs/include/blitzhelp.h` (included by `blitzlib.h`) contains small
 shared helpers: `BL_SETW`/`BL_SETB` (word/byte operation, rest of the
 register stays), `BL_EXTL`, `BL_SWAP`, `bl_divu_w`/`bl_divs_w` (DIVU/DIVS
 as an instruction, overflow leaves the register as is), `BL_POPL`/`BL_POPW` (local
@@ -97,32 +97,32 @@ command libraries (`TOK_allocst`/`TOK_freest`, `TOK_setint`/`TOK_clrint`/`TOK_vw
 `TOK_execversion`, `TOK_iffopen` … `TOK_iffread`, `TOK_ilbminit` …
 `TOK_ilbmbitmap`, `TOK_getpal`/`TOK_getpal2`, `TOK_convertkey` …
 `TOK_qconvertkey`, `TOK_showsprite`, `TOK_setevfilter`, `TOK_extbitmap`).
-`include/blitzexec.h` has `BL_FREESIGNAL(sig)` (FreeSignal with
+`libs/include/blitzexec.h` has `BL_FREESIGNAL(sig)` (FreeSignal with
 zero-extended signal number like the originals; the NDK inline takes a
 BYTE). What only one library needs stays in its source.
 
 ## Tools
 
-| File | Purpose |
-|---|---|
-| `tools/detok.py` | make tokenised BB2 sources (`bblibsrc`) readable |
-| `cmake -P tools/mklibnums.cmake` | generate `include/libnums.h` from the original `libnums.bb` (`LIB_ldivlib` = `#ldivlib`) |
-| `tools/biglib.py` | extract libs from BigLib files (`extract`), show them (`dump`), compare declarations (`compare`), replace (`replace`), reassemble (`join`) |
-| `tools/mkdeflibs.py` | one-time generator: `deflibs/NAME.c` from `cd/blitz2/deflibs` (see below, `notes/deflibs.md`) |
-| `tools/srcdecl.py` | evaluate the declarations (libmacs macros) of a Blitz source on the host and compare them with a lib binary (`dump`/`compare`/`report`), see `notes/cmdlibs-decl.md` |
-| `tools/amiga_test.py` | `tests/libs_tests` (snitch) in Amiberry, optionally with a filter; serial, timeout 30 s |
-| `tools/disasm.py` | disassemble the code of a library, entry points and relocs marked |
-| `tools/asmcmp.py` | compare assembler routines original/C build instruction by instruction |
+| File (bb2 `libs-c/`) | Purpose | here |
+|---|---|---|
+| `tools/detok.py` | make tokenised BB2 sources (`bblibsrc`) readable | `programs/ted/tools/teddetok`, target `bblibsrc` |
+| `cmake -P tools/mklibnums.cmake` | generate `include/libnums.h` from the original `libnums.bb` (`LIB_ldivlib` = `#ldivlib`) | not taken over (`libs/include/libnums.h` is in git) |
+| `tools/biglib.py` | extract libs from BigLib files (`extract`), show them (`dump`), compare declarations (`compare`), replace (`replace`), reassemble (`join`) | `tools/biglib` (`extract`, `join`), `tools/blitzlibcompare` (compare) |
+| `tools/mkdeflibs.py` | one-time generator: `deflibs/NAME.c` from `cd/blitz2/deflibs` (see below, [deflibs.md](deflibs.md)) | not taken over |
+| `tools/srcdecl.py` | evaluate the declarations (libmacs macros) of a Blitz source on the host and compare them with a lib binary (`dump`/`compare`/`report`), see [cmdlibs-decl.md](cmdlibs-decl.md) | not taken over |
+| `tools/amiga_test.py` | `tests/libs_tests` (snitch) in Amiberry, optionally with a filter; serial, timeout 30 s | `libs/tests/emulator.cmake`, ctest `libs_emulator` |
+| `tools/disasm.py` | disassemble the code of a library, entry points and relocs marked | not taken over |
+| `tools/asmcmp.py` | compare assembler routines original/C build instruction by instruction | `tools/asmcmp` |
 
-`amiga_test.py` uses `tools/amiberry.cmake` (emulator without window,
-configuration `A1200-AB3.uae`, 68020, drive `AB3C:`) and puts the test files under
-`ab3c/build/amiberry/bb2-libs-c/`.
+`amiga_test.py` used `tools/amiberry.cmake` of bb2 (emulator without window,
+configuration `A1200-AB3.uae`, 68020, drive `AB3C:`) and put the test files under
+`ab3c/build/amiberry/bb2-libs-c/`; here `tools/lib/amiga_emulation` (drive `TEST:`).
 
 ## State: all 25 system libs
 
 All declaration parts are identical to the originals
-(`tools/biglib.py compare`); all tests in the emulator pass. The tests
-are a snitch program (`tests/libs_tests`, same setup as ab3c);
+(`tools/blitzlibcompare`); all tests in the emulator pass. The tests
+are a snitch program (`libs/tests/libs_tests`, same setup as ab3c);
 the test logic itself is C:
 
 | Test case (tag) | File | Libraries | Checks |
@@ -135,17 +135,17 @@ the test logic itself is C:
 | `[cmd]` | `systest_cmdlibs.c` | memacclib, sortlib, mathtranslib, utillib, environlib (command libraries, see below) | 2 057 |
 
 ```
-python3 -I tools/amiga_test.py                    # all
-python3 -I tools/amiga_test.py "[mathstr]"        # one group
+ctest --preset emulator -R libs_emulator          # all
+cmake ... -DFILTER="[mathstr]" -P libs/tests/emulator.cmake   # one group (README)
 ```
 
-Reference logs: `tests/ref-logs/` (snitch run, structure comparison,
-instruction comparison).
+Reference logs: bb2 `libs-c/tests/ref-logs/` (snitch run, structure comparison,
+instruction comparison; not taken over).
 
 Every call is additionally checked that the C version preserves at least
 all registers that the original preserves. Routines that remain
-assembler are compared by `ctest --preset amiga` (`asmcmp_*`, list in
-`CMakeLists.txt`) instruction by instruction with the original.
+assembler are compared by `ctest --preset host` (`asmcmp_*`, list in
+`libs/acidlibs/CMakeLists.txt`) instruction by instruction with the original.
 
 **Assembler remains** only where C cannot express it: saving/setting the
 stack pointer (exitslib, parts of runerrlib, errtraplib), exception and
@@ -177,17 +177,17 @@ size 0 (e.g. dimension −1), 8 bytes behind the block; division by 0 returns
 ## State: command libraries (acidlibs)
 
 The "simple" command libraries, ordered by size. Declarations
-with `tools/biglib.py compare` against the CD binary
-(`biglib.py extract ../cd/blitz2/acidlibs NUM ref/NAME.obj`), function
+with `tools/blitzlibcompare` against the CD binary
+(`biglib extract archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS NUM NAME.orig`), function
 checked twice:
 
-* **BASIC level:** test programs `../compilerlauf/corpus/tests/` t09–t13, t20, t21, t30, t31
+* **BASIC level:** test programs `tests/corpus/tests/` t09–t13, t20, t21, t30, t31
   as well as `tests-runerr/` t32–t36 (only with error checking)
-  (every token, edge cases); `compilerlauf/tools/corpus_check.py` compiles
-  them with original compiler + original libs and with the C port + `acidlibs-c`
-  (the CMake target `acidlibs` picks up every `libs/*.c`) and compares
+  (every token, edge cases); ctest `corpus`/`corpus_runerr` (`tests/corpus/runner`) compiles
+  them with original compiler + original libs and with the C port + C `acidlibs`
+  (the CMake target `acidlibs` picks up every `libs/acidlibs/*.c`) and compares
   the outputs, with and without runtime error checking.
-* **Routine level:** `[cmd]` in `tests/libs_tests` (results, memory,
+* **Routine level:** `[cmd]` in `libs/tests/libs_tests` (results, memory,
   a3, register preservation as with the system libs).
 
 | No | Library | Tokens | Declarations | Tests | Assembler |
@@ -209,7 +209,7 @@ checked twice:
 | 186 | editlib | Edit$ Inkey$ Edit | identical | t41, t42, t46–t49 (runtime errors) | – |
 | 74 | crunchlib (`#romuluscrunchlib`) | Implode Deplode CrMDecrunch PPDecrunch | identical | t60, host comparison (unicorn) | – |
 | 92 | arexxlib | CreateRexxMsg DeleteRexxMsg FillRexxMsg … RexxEvent IsRexxMsg RexxError | identical | t61 | – |
-| 90 | seriallib | OpenSerial WriteSerial … SerialEvent ReadSerialMem WriteSerialMem | identical | t62, t63 (runtime errors), t64 (reception with remote station, `compilerlauf/tools/serialrun.py`) | – |
+| 90 | seriallib | OpenSerial WriteSerial … SerialEvent ReadSerialMem WriteSerialMem | identical | t62, t63 (runtime errors), t64 (reception with remote station, `tests/corpus/runner/serial.c`) | – |
 | 158 | screenslib | Screen WbToScreen LoadScreen FindScreen … ShowBitMap ScreenTags | identical | t81, t86–t89 (runtime errors) | inline ViewPort/Show/Hide/Beep/MoveScreen/SMouseX/Y |
 | 142 | fontlib | LoadBlitzFont BitMapOutput Colour Locate CursX CursY BitMapInput | identical | t82, t84 (BitMapInput not testable) | BRA.w heads of the handlers, `doinput1` |
 | 134 | intuifontlib | LoadFont (binary without `Text`) | identical | t82, t85 | `loadchk` (CCR check) |
@@ -250,29 +250,29 @@ checked twice:
 | 144 | blitzcoplib | Slice CopLoc CustomCop Show ShowF ShowB CopLen ColSplit ShowBlitz FreeSlices DisplayOff DisplayOn SetBPLCON0 SetBLWait (binary without Help) | identical | t163, t166 | $A001 heads |
 | 143 | displaylib | InitCopList CreateDisplay DisplayBitMap … DisplayGenlock (24) | identical | t164, t167, t169 | error stubs, _checkcoplist |
 
-Findings and `BUG(orig)` peculiarities per library: `notes/cmdlibs-port.md`.
+Findings and `BUG(orig)` peculiarities per library: [cmdlibs-port.md](cmdlibs-port.md).
 All deviations of the C versions from the originals (DIFF, conventions,
-compiler): `notes/deviations.md`.
+compiler): [deviations.md](deviations.md).
 
 Open: the remaining command libraries (deflibs/acidlibs). Integrating the
-C libraries into a real compiler run (C port `../blitz2-c`) is done for the
-test corpus (`corpus_check.py`, configuration clib).
+C libraries into a real compiler run (C port `programs/blitz2`) is done for the
+test corpus (`tests/corpus/runner`, configuration clib).
 
 ## deflibs: AmigaOS calls
 
 `blitz2:deflibs` (39 libraries with the declarations `Open_`, `AllocMem_` …,
-numbers 2, 200, 219–255) exists as C source under `deflibs/NAME.c`,
-generated once by `tools/mkdeflibs.py`; since then the C files are the
+numbers 2, 200, 219–255) exists as C source under `libs/deflibs/NAME.c`,
+generated once by bb2 `tools/mkdeflibs.py`; since then the C files are the
 source. Per call one line `BLITZ_OSCALL(baselib, lvo, "Name_", "(help)",
-regs…)`, header `BLITZ_OSLIBHEADER`, init/finit in C (`deflibs/deflib.h`,
+regs…)`, header `BLITZ_OSLIBHEADER`, init/finit in C (`libs/deflibs/deflib.h`,
 including the `BUG(orig)` endless loop and the wrong name pointer of the
 resources).
 
 ```
-cmake --build --preset amiga --target deflibs   # -> build/amiga/deflibs-c
-python3 -I ../compilerlauf/tools/corpus_check.py --deflibs build/amiga/deflibs-c
+cmake --build --preset amiga --target deflibs   # -> build/amiga/blitz2/deflibs
+ctest --preset emulator -R corpus               # configuration clib with C deflibs
 ```
 
-All 39 declaration parts are identical to the original (`biglib.py
-compare`), and so is the order. Details and test results:
-`notes/deflibs.md`.
+All 39 declaration parts are identical to the original (`tools/blitzlibcompare`,
+ctest `declarations_deflibs`), and so is the order. Details and test results:
+[deflibs.md](deflibs.md).

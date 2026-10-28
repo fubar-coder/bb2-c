@@ -1,7 +1,7 @@
 # comdata and callbacks: register interface original ↔ glue ↔ C
 
 As of phase 2c. Source: `ted.s` (lines below), [architecture.md](../architecture.md) §3.2/3.3,
-call sites in `blitz2.s` (CD source) and `../blitz2-c/src/main.c`
+call sites in `blitz2.s` (CD source) and `programs/blitz2/src/main.c`
 (`ed_*`). Glue: `src/glue.c` (`REGSTUB`, `REGSTUB_CCR`, adapters `*_c`).
 
 ## 1 Mechanics

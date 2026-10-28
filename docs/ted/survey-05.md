@@ -67,7 +67,7 @@ Tokeniser algorithm (exact):
    copied; quote → `.quoteon`; first non-letter character → `.ppp2` (so a digit after an
    identifier ends it: `x1print` → x 1 Print).
 
-#### Comparison with `compilerlauf/tools/bb2tok.py`
+#### Comparison with bb2 `compilerlauf/tools/bb2tok.py`
 bb2tok.py reproduces the state machine correctly (incl. `.nothex` quirk, `or $20`,
 digits after names, `_` `.` `\`). Not modelled:
 - **Quote/remark characters are runtime variables** (`quote`, `remark`, copied from edstruct in

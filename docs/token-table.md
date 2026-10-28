@@ -1,6 +1,6 @@
 # Token table of Blitz Basic 2.1
 
-As of 26.10.2026. Source: Blitz Basic CD (`cd/`), libraries
+As of 26.10.2026. Source: Blitz Basic CD (`archive/cd/ultimate-blitz-basic-2.1/`, paths in lower case), libraries
 `blitz2/deflibs` (standard), `extras/bigdeflibs/deflibs` (large variant) and
 `blitz2/acidlibs`. The files have **the same BigLib format** as the
 BlitzLibs of AmiBlitz3 (Compiler-Spec 09); `biglib_dump.py --tokens` reads
@@ -11,7 +11,7 @@ libraries but in the compiler `blitz2/blitz2` (see `formats.md`).
 
 ## Files
 
-| File | Contents |
+| File (bb2 only, not taken over) | Contents |
 |---|---|
 | `tokens/deflibs.txt` | `blitz2/deflibs`, 992 tokens, libs 2 and 200–255 (OS calls `…_`) |
 | `tokens/bigdeflibs.txt` | `extras/bigdeflibs/deflibs`, 1408 tokens: like `deflibs` without lib 200, plus libs 11–111 (third-party libs: lists, requesters, modules, `Request`, file system …) |
@@ -20,7 +20,7 @@ libraries but in the compiler `blitz2/blitz2` (see `formats.md`).
 | `tokens/vergleich.txt` | every BB2.1 token with its status relative to AB3 |
 | `tokens/corpus_unbekannt.txt` | the words of the Aminet corpus unknown to AB3, with BB2.1 names |
 
-Generated with `tools/compare_tokens.py` and `tools/resolve_unknown.py`:
+Generated with `tools/compare_tokens.py` and `tools/resolve_unknown.py` (in bb2, not taken over):
 
 ```
 T=../AmiBlitz3/Docs/Compiler-Spec/verification/tools

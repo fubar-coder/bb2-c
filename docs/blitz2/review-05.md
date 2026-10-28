@@ -1,7 +1,7 @@
 # Review 05: src/parse.c vs blitz2.s 6740-8450
 
 Reviewer 05. I compared each routine with the asm. Templates came from
-build/amiga/blitz2.lst (zarrchk, arrmul1..listarfix, brchkcode0). I checked
+build/amiga/programs/blitz2/ref/blitz2.lst (zarrchk, arrmul1..listarfix, brchkcode0). I checked
 the objects[] offsets in main.h (numtoa2, endarray, pusha2, pulla2, movea0,
 adda0a0, movea5a0, movea0a0, addqa0, leaa0a0, addrega2), and they all
 match. I compared objicon byte for byte with obj.info (383 bytes, same). I

@@ -1,6 +1,6 @@
 # Translation conventions ted.s → C (phase 2b)
 
-Derived from [`../../blitz2-c/CONVENTIONS.md`](../../blitz2-c/CONVENTIONS.md)
+Derived from [`../blitz2/CONVENTIONS.md`](../blitz2/CONVENTIONS.md)
 with the points of [PLAN.md](PLAN.md) §1–§5. Where nothing is stated here,
 blitz2-c applies. Code comments and documentation in English.
 
@@ -21,7 +21,7 @@ Shared, **owned by the coordinator** (do not change without agreement, §9):
 `core/state.c`, `src/structs.h`, `src/glue.h`, `src/glue.c`,
 `src/glue_start.c`, `src/ted.h`, `src/filereq.c`, `CMakeLists.txt`,
 `tests/host/hostenv.h`, `tests/host/stubs.c`, `tools/*`, and
-`../shared/filereq/` (shared with libs-c).
+`shared/filereq/` (shared with freqlib in `libs/acidlibs`).
 
 The chunk headers (`core/<x>.h`, `src/<x>.h`) already contain **every
 routine** of the chunk with prototype and comment (inputs/outputs, asm
@@ -56,7 +56,7 @@ signatures are agreed – changes only per §9.
   a function (goto targets, fail chain, `done2`, `getline2`, `ginp1` …)
   get a comment `/* ted.s:NNN label */` at their place. The
   skeletons collect these markers at the end of the file – move them to the
-  right place when translating. `tools/checklabels.py` (ctest `checklabels`)
+  right place when translating. `tools/checklabels.py` (ctest `checklabels`; here `tools/checklabels`, POST_BUILD of `ted`)
   requires every code label **exactly once** in `src/**/*.c`. References that
   are not a definition site are written differently (`ted.s:570 (prtfile, …)`,
   "ted.s line 128").
@@ -127,18 +127,18 @@ signatures are agreed – changes only per §9.
   with `#embed` (sizes via `_Static_assert`), never copies into the
   repository.
 * Data check: `tools/checkdata.py` – new data must be entered there
-  in `CHECKS`.
+  in `CHECKS` (here `tools/checkdata` with the table `programs/ted/checkdata.tsv`).
 
 ## 8 Checking
 
-* Amiga: `cmake --build --preset amiga` (without warnings as far as sensible),
-  `--target headers`, `ctest --preset amiga` (`ref_verify`, `checkhunk`,
-  `checkdata`, `checklabels`).
-* Host: `cmake --build --preset host`, `ctest --preset host`; with
-  sanitizers `cmake --preset host -DTED_SANITIZE=ON`. Single test with
-  output: `build/host/tests/host/test_tokit build/host/fixtures -v`.
+* Amiga: `cmake --build --preset amiga` (without warnings as far as sensible);
+  bb2: `--target headers`, `ctest --preset amiga` (`ref_verify`, `checkhunk`,
+  `checkdata`, `checklabels`) – here checks in the build step (README).
+* Host: bb2 `cmake --build --preset host`, `ctest --preset host`; with
+  sanitizers `-DHOST_SANITIZE=ON` (bb2: `TED_SANITIZE`). Single test with
+  output: bb2 `build/host/tests/host/test_tokit build/host/fixtures -v`.
 * Listing of the reference: `tools/tedlisting.py build/amiga/ref/ted.lst …`
-  (`addr`, `line`, `bytes`, `carray`).
+  (`addr`, `line`, `bytes`, `carray`; bb2 only; here `tools/vasmlisting` – `map`, `labels`, `verify` – on `build/amiga/programs/ted/ref/ted.lst`).
 
 ## 9 Changing shared headers
 

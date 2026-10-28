@@ -4,7 +4,7 @@ convtable/operators skipped (reviewer 06).
 
 ## Method for the data
 blitz2.s was assembled with vasm (-Fhunk, then objcopy to a binary; it matches
-build/amiga/blitz2.lst byte for byte). data.c was compiled with -S, and every
+build/amiga/programs/blitz2/ref/blitz2.lst byte for byte). data.c was compiled with -S, and every
 data/bss label in it was checked item by item against the asm image at the
 label of the same name. Plain values had to match exactly. Every pointer
 (`sym+off`) had to resolve to the same address as the asm long (relocation
