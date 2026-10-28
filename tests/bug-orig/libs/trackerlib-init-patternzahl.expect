@@ -1,0 +1,4 @@
+[run]
+pattern 2 00000000
+pattern 78 22222222
+rc=0
