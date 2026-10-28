@@ -23,7 +23,7 @@ SHA-256 geprüft.
 | Verzeichnis | Inhalt | Download | SHA-256 |
 |---|---|---|---|
 | `cd/ultimate-blitz-basic-2.1/` | die CD „Ultimate Blitz Basic 2.1“ (1997, Acid Software), 4310 Dateien | <https://archive.org/download/ultimate-blitz-basic-v2_1/Ultimate%20Blitz%20Basic%202.1%20%281997%29%28Acid%20Software%29.iso> | `205a16fa83403d61a785733cec2518bcc1fe5a6fae5b7da4da6329bd32c99166` |
-| `aminet/amibl2src/` | `amibl2src.lha`, darin `bb2src.zip` entpackt nach `bb2src/` | <https://aminet.net/dev/blitz/amibl2src.lha> | `b71e6445d0838b15416f5b55c5be422f07bd4fae5da5c065ce329042067628ff` |
+| `aminet/amibl2src/` | `amibl2src.lha`, darin `bb2src.zip` entpackt nach `bb2src/` und `bblibsrc.lha` (Blitz-Quellen der Libraries, tokenisiert, 209 Dateien) nach `bblibsrc/` | <https://aminet.net/dev/blitz/amibl2src.lha> | `b71e6445d0838b15416f5b55c5be422f07bd4fae5da5c065ce329042067628ff` |
 
 * Die CD hat nur ISO-9660-Namen (kein Rock Ridge, kein Joliet), also
   Großbuchstaben – so bleiben sie. Der Linux-Kernel zeigt sie beim
@@ -33,6 +33,14 @@ SHA-256 geprüft.
   `BUI7/FRONTENDV1.2/CATALOGS/ESPAñOL`).
 * Das Skript prüft, dass `sources/ted-1.1/` und `sources/blitz2-1.95/`
   genau den Dateien in `bb2src.zip` des Aminet-Archivs entsprechen.
+* `bblibsrc/` ist der Inhalt des Verzeichnisses `bblibsrc/` von
+  `bblibsrc.lha` (eigene Marke `bblibsrc.sha256`, wird also auch in einem
+  schon entpackten Archiv nachgeholt).
+* `RWELibSourc.lha` bleibt gepackt: spätere Libraries von Red When
+  Excited (287 Dateien), nicht Teil von blitz2 1.95 und
+  seinen acidlibs, also keine Referenz für diesen Port; die Token-Liste
+  von blitz2 1.95 (`tests/data/ted-tokens.txt`) kennt nicht alle ihre
+  Tokens.
 
 ## Lizenzlage der Originale
 

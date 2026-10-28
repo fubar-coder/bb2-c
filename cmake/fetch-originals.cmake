@@ -11,7 +11,8 @@
 #                                           Linux kernel shows them lower
 #                                           case with map=normal)
 #   archive/aminet/amibl2src/               amibl2src.lha with bb2src.zip
-#                                           unpacked (bb2src/)
+#                                           unpacked (bb2src/) and
+#                                           bblibsrc.lha (bblibsrc/)
 # None of it is in git (.gitignore); archive/README.md lists the sources.
 # Already unpacked and checked material is not touched again.
 # At the end: archive/sources/ted-1.1 and blitz2-1.95 (in git) must equal
@@ -118,6 +119,29 @@ if(unpacked)
 	file(MAKE_DIRECTORY ${aminet}.part/bb2src)
 	file(ARCHIVE_EXTRACT INPUT ${zip} DESTINATION ${aminet}.part/bb2src)
 	finish(${aminet} ${DOWNLOAD_DIR}/amibl2src.lha)
+endif()
+
+# the Blitz sources of the libraries: bblibsrc.lha (its directory
+# bblibsrc/) to bblibsrc/, tokenised as TED saves them.  Inside ${aminet}:
+# unpacking the Aminet archive again also redoes this.  RWELibSourc.lha
+# stays packed (later libraries of Red When Excited, not part of blitz2
+# 1.95).
+set(bblibsrc ${aminet}/bblibsrc)
+unpack(${aminet}/amiblitz2source/bblibsrc.lha ${bblibsrc})
+if(unpacked)
+	if(NOT IS_DIRECTORY ${bblibsrc}.part/bblibsrc)
+		message(FATAL_ERROR "bblibsrc.lha: directory bblibsrc/ not found")
+	endif()
+	file(REMOVE_RECURSE ${bblibsrc}.files)
+	file(RENAME ${bblibsrc}.part/bblibsrc ${bblibsrc}.files)
+	file(REMOVE_RECURSE ${bblibsrc}.part)
+	file(RENAME ${bblibsrc}.files ${bblibsrc}.part)
+	file(GLOB_RECURSE files ${bblibsrc}.part/*)
+	list(LENGTH files n)
+	if(NOT n EQUAL 209)
+		message(FATAL_ERROR "bblibsrc.lha: ${n} files, 209 expected")
+	endif()
+	finish(${bblibsrc} ${aminet}/amiblitz2source/bblibsrc.lha)
 endif()
 
 # the sources in git must be the ones of the archive
