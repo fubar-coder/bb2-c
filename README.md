@@ -164,6 +164,47 @@ cmake --build --preset amiga --target ted-oracle     # etwa 40 s
 cmake -DORACLE_LIMIT=5 build/amiga                   # Probelauf, tests/data bleibt
 ```
 
+## Lesbare Quellen der Libraries
+
+Die Blitz-Quellen der Libraries (`bblibsrc.lha` im Aminet-Archiv,
+entpackt nach `archive/aminet/amibl2src/bblibsrc/`) sind tokenisiert. Der
+Build legt sie als Text ab, so wie TED sie zeigt – **Zeile N der Datei =
+Zeile N in TED**; auf diese Zählung beziehen sich Zeilenangaben wie
+„bblibsrc/windowslib Zeile 1277“ in den Issues:
+
+```
+cmake -P cmake/fetch-originals.cmake          # einmal (siehe Tests)
+cmake --build --preset amiga --target bblibsrc
+build/amiga/bblibsrc/NAME                     # z. B. windowslib, palettelib.aga
+```
+
+Gleicher Name wie im Archiv (ohne Endung, wo das Archiv keine hat);
+ausgelassen sind `NAME.xtra` (TEDs Editorzustand) und die Daten-/
+Objektdateien `*.bin`, `*.inc`, `*.obj`. Das Ziel gehört zu `ALL`, sobald
+das Archiv da ist; ohne Archiv meldet es nur, dass es übersprungen wird.
+Die Dateien sind byte-gleich zu bb2 `libs-c/bb2src/NAME.bb` (Verweise
+`windowslib.bb:NNN` meinen also dieselbe Zeile); bb2 hatte nur 82 der
+102. Mehrere Fassungen derselben Library: `palettelib`/`palettelib.aga`,
+`displaylib`/`displaylibfuk`/`olddisplaylib`, `gtlib`/`oldgtlib`,
+`switchlib`/`switchlib.ok`, `wbstartuplib`/`wbstartuplibnew`,
+`2dlib`/`sis2dlib.bb`.
+
+Das Werkzeug dahinter ist `teddetok` (`programs/ted/tools/teddetok`, auf
+dem C-Kern von TED wie `tedtok`): lädt eine Quelle wie TED (`fileopen2`)
+und schreibt jede Zeile detokenisiert. Ein Token, das TED nicht kennt
+(TED zeigt `?????`), ist ein Fehler, die Datei wird dann nicht
+geschrieben; eine Zeile, die länger ist als TEDs Zeilenpuffer, teilt TED
+beim Laden – `teddetok` meldet das und zählt wie TED.
+
+```
+build/amiga/host/ted-tools/teddetok/teddetok tests/data/ted-tokens.txt IN OUT
+build/amiga/host/ted-tools/teddetok/teddetok tests/data/ted-tokens.txt --check IN...
+```
+
+ctest `teddetok_*` prüft es mit kleinen Eingaben (auch kaputten: unbekanntes
+Token, Token-Byte am Dateiende) und `teddetok_bblibsrc` alle Quellen von
+`bblibsrc/` (ohne Archiv übersprungen).
+
 ## Emulator
 
 `tools/lib/amiga_emulation` führt AmigaDOS-Skripte in Amiberry aus –
@@ -214,6 +255,9 @@ host/                        die Host-Seite: alles, was mit dem nativen
                              Compiler gebaut wird (Werkzeuge, Host-Tests),
                              als ExternalProject (build/<preset>/host)
 programs/ted/tests/host/     Host-Tests des TED-Kerns (snitch)
+programs/ted/tools/          Host-Werkzeuge auf dem TED-Kern: tedtok
+                             (tokenisieren wie TED), teddetok (Quelle wie
+                             TED sie zeigt; Ziel bblibsrc)
 programs/ted/tests/oracle/   TED-Orakel: Original-TED als Bibliothek (m68k)
 tests/data/                  erzeugte Testdaten (Orakel-Hashes, Token-Liste,
                              CD-Referenz von blitz2 1.95)

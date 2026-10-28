@@ -35,7 +35,9 @@ SHA-256 geprüft.
   genau den Dateien in `bb2src.zip` des Aminet-Archivs entsprechen.
 * `bblibsrc/` ist der Inhalt des Verzeichnisses `bblibsrc/` von
   `bblibsrc.lha` (eigene Marke `bblibsrc.sha256`, wird also auch in einem
-  schon entpackten Archiv nachgeholt).
+  schon entpackten Archiv nachgeholt). Lesbar als Text macht ihn das
+  Build-Ziel `bblibsrc` (`build/<preset>/bblibsrc/NAME`, README,
+  Abschnitt „Lesbare Quellen der Libraries“).
 * `RWELibSourc.lha` bleibt gepackt: spätere Libraries von Red When
   Excited (287 Dateien), nicht Teil von blitz2 1.95 und
   seinen acidlibs, also keine Referenz für diesen Port; die Token-Liste
