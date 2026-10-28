@@ -1,0 +1,5 @@
+[compile]
+none
+[blitz2]
+inject: rc=-1
+rc=*
