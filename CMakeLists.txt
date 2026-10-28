@@ -51,6 +51,7 @@ set(AMIGA_RUN ${HOST_TOOLS_DIR}/amiga_run/amiga_run)             # runs a script
 set(VASMLISTING ${HOST_TOOLS_DIR}/vasmlisting/vasmlisting)       # views of a vasm listing
 set(CHECKLABELS ${HOST_TOOLS_DIR}/checklabels/checklabels)     # labels of ted.s marked in C
 set(CHECKDATA ${HOST_TOOLS_DIR}/checkdata/checkdata)           # C data vs reference build
+set(TEDTOK ${HOST_DIR}/ted-tools/tedtok/tedtok)                 # tokenise like TED
 option(HOST_SANITIZE "host side with address/undefined behaviour sanitizers" OFF)
 ExternalProject_Add(host_tools
 	SOURCE_DIR ${PROJECT_SOURCE_DIR}/host
@@ -60,7 +61,7 @@ ExternalProject_Add(host_tools
 		-DHOST_SANITIZE=${HOST_SANITIZE}
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${ASMCMP} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA})
+	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${ASMCMP} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA} ${TEDTOK})
 
 include(cmake/BlitzLibrary.cmake)
 

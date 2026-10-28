@@ -9,6 +9,9 @@
  *   defaults=PATH   the compiler's start options are saved there with
  *                   savextra before the first job and loaded for every job
  *                   without its own .xtra (no options of the previous job)
+ *   runerr=off      in those defaults runtime error checking and the
+ *                   debugger off (bytes 2-5 of the .xtra zeroed; a source
+ *                   with its own .xtra keeps its options)
  *   job=ID|SOURCE|OUTPUT[|DIR]
  * Every job: CurrentDir(DIR, default: the source's directory - relative
  * INCLUDE/INCBIN), load the source like TED's readline/allocline,
@@ -38,7 +41,7 @@ extern struct DosLibrary *DOSBase;
 #define PATHLEN EDSTUB_PATHLEN
 static char srcname[PATHLEN], outname[PATHLEN], xtraname[PATHLEN], defname[PATHLEN];
 static char cur_id[16];
-static int in_menu;
+static int in_menu, runerr_off;
 
 static char lbuf[600];
 #define LOG_BEGIN struct sb L = { lbuf, 0, sizeof lbuf }; lbuf[0] = 0
@@ -277,6 +280,12 @@ static void save_defaults(void)
         return;
     }
     call_xtra(edstub_ed->savextra, fh);
+    if (runerr_off) {
+        static const UBYTE off[4];
+
+        Seek(fh, 2, OFFSET_BEGINNING);  /* options runtime errors, debugger */
+        Write(fh, (APTR)off, 4);
+    }
     Close(fh);
 }
 
@@ -500,6 +509,8 @@ void edstub_main(const char *arg)
             edstub_set_log(v);
         else if ((v = value(p, "defaults=")))
             edstub_strcpy(defname, v, PATHLEN);
+        else if ((v = value(p, "runerr=")))
+            runerr_off = edstub_streq(v, "off");
     edstub_log("BATCH\tstart");
     save_defaults();
     /* pass 2: jobs */

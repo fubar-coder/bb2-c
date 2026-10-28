@@ -86,9 +86,14 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
       Liste mit einem Eintrag), `reqtrap`, `reqclose`, `reqclosetest`
       (byte-gleich zu bb2). Probelauf mit blitz2 1.95: Ergebnisse, Fehler-
       zeile und Hashes wie bb2 `reference/195.tsv`.
-   2. Testquellen (`tests/corpus/tests*/*.bas`, `default.xtra`); tokenisiert
-      mit dem C-Kern von TED (`fileopen2` + `realsave`, echte Token-Liste)
-      statt bb2tok, Abweichungen zu bb2tok einmal dokumentiert.
+   2. ~~Testquellen~~ erledigt (28.10.2026): `tests/corpus/tests*/*.bas`
+      (135); tokenisiert mit `tedtok` (C-Kern von TED, `fileopen2` +
+      `realsave`, echte Token-Liste), das Textzeilen über 129 Zeichen
+      ablehnt (TED schneidet sie). 15 solche Zeilen in 9 Quellen aus bb2
+      geteilt (`NPrint a,…,z` → `Print a,…` / `NPrint …,z`, gleiche
+      Ausgabe); danach alle 135 byte-gleich zu bb2tok. Statt bb2s
+      `default.xtra` (Herkunft unklar) schreibt der Stub mit `runerr=off`
+      die Startoptionen des Compilers ohne Fehlerprüfung/Debugger.
    3. Prüfmatrix als ctest (C-Runner auf `amiga_emulation`): ref / port /
       clib, mit und ohne Fehlerprüfung, Requester-Tests hinter der Sperre;
       clib = C-acidlibs **und** C-deflibs. Abnahme: 201 Prüfungen.

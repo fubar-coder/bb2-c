@@ -18,3 +18,5 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Snitch.cmake)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tools tools)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/ted/tests/host ted-tests-host)
+# tools on the TED core: tedtok (tokenising like TED, for the corpus)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/ted/tools/tedtok ted-tools/tedtok)

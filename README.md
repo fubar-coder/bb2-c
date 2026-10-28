@@ -171,6 +171,7 @@ tests/data/                  erzeugte Testdaten (Orakel-Hashes, Token-Liste)
 tests/corpus/                Korpus: blitz2-c gegen blitz2 1.95 im Emulator;
                              amiga/: tedstub (blitz2:ted für Batch-Läufe),
                              reqtrap, reqclose, reqclosetest
+                             tests*/: die Testprogramme (Klartext, .bas)
 tools/                       Host-Werkzeuge:
   lib/                       die Logik als Libraries: hunk (Hunk-Format
                              lesen), blitzlib (Kopf, Token-Tabelle,

@@ -8,6 +8,7 @@
 *.cmake                 text eol=lf
 *.ld                    text eol=lf
 *.uae                   text eol=lf
+*.bas                   text eol=lf
 CMakeLists.txt          text eol=lf
 CMakePresets.json       text eol=lf
 .gitignore              text eol=lf
