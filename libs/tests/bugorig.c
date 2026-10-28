@@ -13,6 +13,8 @@
  *                             buffer (crunchlib)
  *   crunchlib-crm-overlap-4gb CrMDecrunch with a crunched length < 4
  *                             copies 4 GB (crunchlib)
+ *   crunchlib-crm2-readtab    CrM2: ReadTab with a count of 0 writes
+ *                             behind the tables (crunchlib)
  *
  * crunch-implode-overread puts the data at the very end of the highest
  * memory region; what lies behind is not mapped, and with
@@ -518,6 +520,106 @@ int bugorig_crunchlib_crm_overlap_4gb(const char *dir)
              "CrMDecrunch buffer with CrLen 0 writes nothing behind the buffer "
              "(BUG(orig): copies 4 GB; %lu of the %d guard bytes changed)", back, GUARD);
     check(msg, back == 0);
+    FreeMem(arena, alen);
+    return failures ? 5 : 0;
+}
+
+/* ---------------------------------------------- crunchlib-crm2-readtab */
+
+#define HABSORB  (256 * 1024)           /* room behind the library's hunk */
+
+/* load the C build of crunchlib into a block with GUARD bytes (GUARDVAL)
+   and HABSORB bytes behind the hunk, then link it; NULL = error */
+static struct lib *load_crunchlib_guarded(const char *dir, UBYTE **block, ULONG *blen)
+{
+    char path[256];
+    struct lib *l = &cset.lib[0];
+    UBYTE *b;
+
+    cset.what = "C";
+    cset.n = 0;
+    snprintf(path, sizeof path, "%s/crunchlib.obj", dir);
+    l->name = "crunchlib";
+    if (!loadfile(l, path))
+        return NULL;
+    *blen = l->size + GUARD + HABSORB;
+    b = AllocMem(*blen, MEMF_PUBLIC);
+    if (!b)
+        return NULL;
+    memcpy(b, l->code, l->size);
+    memset(b + l->size, GUARDVAL, GUARD + HABSORB);
+    FreeMem(l->code, l->size);
+    l->code = b;
+    *block = b;
+    cset.n = 1;
+    return link_set(&cset) ? l : NULL;
+}
+
+/* CrMDecrunch source,dest on the CrM2 data of t60_crunch whose first
+   4 bit count of ReadTab (the first bits read: the low bits of the long
+   6 bytes before the end of the data, shifted right by 16 - the word at
+   the end) is made 0.  The tables (Tabbs) are static data at the end of
+   the library's hunk, as in the original; the library is loaded with
+   GUARD bytes behind its hunk.  Correct: corrupt data do not write
+   outside the tables - the guard bytes stay.  BUG(orig): ReadTab counts
+   with SUBQ/DBF, 0 reads 65536 entries and writes 128 KB behind the
+   tables. */
+int bugorig_crunchlib_crm2_readtab(const char *dir)
+{
+    const ULONG dlen = 4096 + TEXTLEN + GUARD;
+    struct lib *l;
+    UBYTE *hunk, *arena, *src, *dest, *end;
+    ULONG hlen, alen, changed, i, *lp;
+    int pass, shift;
+    char msg[200];
+
+    failures = 0;
+    l = load_crunchlib_guarded(dir, &hunk, &hlen);
+    if (!l) {
+        check("load crunchlib (C build) with guard bytes behind it", FALSE);
+        return 20;
+    }
+    alen = ABSORB + dlen;
+    arena = AllocMem(alen, MEMF_PUBLIC);
+    if (!arena) {
+        check("setup: arena", FALSE);
+        return 20;
+    }
+    make_text();
+    src = arena;                        /* far below dest: no overlap copy */
+    dest = arena + ABSORB + 4096;
+    for (pass = 0; pass < 2; pass++) {
+        memset(arena + 4096, GUARDVAL, alen - 4096);
+        memcpy(src, crm2, sizeof crm2);
+        end = src + 14 + L(src + 10);   /* end of the crunched data */
+        if (pass) {
+            shift = 16 - W(end - 2);
+            lp = (ULONG *)(end - 6);
+            check("setup: the first ReadTab count of the CrM2 data is not 0",
+                  ((*lp >> shift) & 15) != 0);
+            *lp &= ~(15UL << shift);
+            printf("  CrMDecrunch of CrM2 data with a ReadTab count of 0, "
+                   "crunchlib at $%08lX..$%08lX\n", (ULONG)hunk, (ULONG)hunk + l->size);
+            fflush(stdout);             /* a crash leaves this line */
+        }
+        markregs(&r);
+        r.d[0] = (ULONG)src;
+        r.d[1] = (ULONG)dest;
+        callregs(cmd_form(l, 2, 1), &r, 0, 0);                      /* CrMDecrunch src,dest */
+        changed = 0;
+        for (i = 0; i < GUARD; i++)
+            changed += hunk[l->size + i] != GUARDVAL;
+        if (!pass) {
+            check("setup: CrMDecrunch of the intact CrM2 data",
+                  changed == 0 && !memcmp(dest, text, TEXTLEN));
+        } else {
+            snprintf(msg, sizeof msg,
+                     "CrMDecrunch of CrM2 data with a ReadTab count of 0 writes nothing "
+                     "behind the library's tables (BUG(orig): 65536 entries; %lu of the "
+                     "%d guard bytes behind the hunk changed)", changed, GUARD);
+            check(msg, changed == 0);
+        }
+    }
     FreeMem(arena, alen);
     return failures ? 5 : 0;
 }

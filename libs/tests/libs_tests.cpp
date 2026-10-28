@@ -31,6 +31,7 @@ int bugorig_crunch_implode_overread(const char *dir);
 int bugorig_crunch_decrunch_corrupt(const char *dir);
 int bugorig_crunchlib_crm_minsecdist(const char *dir);
 int bugorig_crunchlib_crm_overlap_4gb(const char *dir);
+int bugorig_crunchlib_crm2_readtab(const char *dir);
 
 void bl_test_check(const char *what, int ok)
 {
@@ -128,4 +129,9 @@ TEST_CASE("crunchlib-crm-minsecdist", "[.bug-orig]")
 TEST_CASE("crunchlib-crm-overlap-4gb", "[.bug-orig]")
 {
     CHECK(bugorig_crunchlib_crm_overlap_4gb(progdir()) == 0);
+}
+
+TEST_CASE("crunchlib-crm2-readtab", "[.bug-orig]")
+{
+    CHECK(bugorig_crunchlib_crm2_readtab(progdir()) == 0);
 }
