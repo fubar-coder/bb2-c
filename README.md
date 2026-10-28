@@ -168,6 +168,9 @@ host/                        die Host-Seite: alles, was mit dem nativen
 programs/ted/tests/host/     Host-Tests des TED-Kerns (snitch)
 programs/ted/tests/oracle/   TED-Orakel: Original-TED als Bibliothek (m68k)
 tests/data/                  erzeugte Testdaten (Orakel-Hashes, Token-Liste)
+tests/corpus/                Korpus: blitz2-c gegen blitz2 1.95 im Emulator;
+                             amiga/: tedstub (blitz2:ted für Batch-Läufe),
+                             reqtrap, reqclose, reqclosetest
 tools/                       Host-Werkzeuge:
   lib/                       die Logik als Libraries: hunk (Hunk-Format
                              lesen), blitzlib (Kopf, Token-Tabelle,

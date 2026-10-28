@@ -81,8 +81,11 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
    Prüfungen). Emulatorlauf über bb2 `tools/amiberry.cmake`.
 
    **Plan (28.10.2026, abgestimmt):** Ablage `tests/corpus/` (übergreifend).
-   1. Amiga-Werkzeuge: `tedstub` auf `shared/edstub` (Einzel- und
-      Batchmodus), `reqtrap`, `reqclose`, `reqclosetest`.
+   1. ~~Amiga-Werkzeuge~~ erledigt (28.10.2026): `tests/corpus/amiga/`
+      `tedstub` auf `shared/edstub` (nur Batchmodus; ein Einzeljob ist eine
+      Liste mit einem Eintrag), `reqtrap`, `reqclose`, `reqclosetest`
+      (byte-gleich zu bb2). Probelauf mit blitz2 1.95: Ergebnisse, Fehler-
+      zeile und Hashes wie bb2 `reference/195.tsv`.
    2. Testquellen (`tests/corpus/tests*/*.bas`, `default.xtra`); tokenisiert
       mit dem C-Kern von TED (`fileopen2` + `realsave`, echte Token-Liste)
       statt bb2tok, Abweichungen zu bb2tok einmal dokumentiert.

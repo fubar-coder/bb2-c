@@ -54,11 +54,20 @@ void edstub_abort(void) __attribute__((noreturn));
 extern const char *(*edstub_ezfreq_hook)(const char *title);  /* file name or NULL */
 extern void (*edstub_error_hook)(const char *msg);
 extern void (*edstub_tokone_hook)(UBYTE *line);
+/* before the frame aborts inside main (compiler waits for input forever,
+   extalloc failed): the program can log its result and free its data */
+extern void (*edstub_abort_hook)(const char *why);
 
-/* log: a line to Output() and, if edstub_logname[0], appended to that file */
+/* log: a line to Output() and appended to the log file; before there is
+   one, the lines are kept and edstub_set_log writes them first (new file;
+   0 = cannot create it, no log file then) */
 #define EDSTUB_PATHLEN 256
 extern char edstub_logname[EDSTUB_PATHLEN];
 void edstub_log(const char *s);
+int edstub_set_log(const char *path);
+
+/* a new job: the counters of the requester answers start again */
+void edstub_reset_requests(void);
 
 /* small libc replacements (memset/memcpy for the compiler as well) */
 void *memset(void *d, int c, size_t n);

@@ -427,7 +427,7 @@ void edstub_main(const char *arg)
             else if (edstub_streq(p, "out"))
                 edstub_strcpy(outdir, v, sizeof outdir);
             else if (edstub_streq(p, "log"))
-                edstub_strcpy(edstub_logname, v, sizeof edstub_logname);
+                edstub_set_log(v);
             else if (edstub_streq(p, "src")) {
                 if (!ted) {
                     if (!ted_setup() || !write_tokens())

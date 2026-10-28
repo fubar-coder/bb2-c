@@ -21,6 +21,7 @@ struct edstruct *edstub_ed;
 const char *(*edstub_ezfreq_hook)(const char *title);
 void (*edstub_error_hook)(const char *msg);
 void (*edstub_tokone_hook)(UBYTE *line);
+void (*edstub_abort_hook)(const char *why);
 char edstub_logname[EDSTUB_PATHLEN];
 
 void edstub_tomain(void);
@@ -247,6 +248,13 @@ void sbq(struct sb *b, const char *s)
 /* ---------------------------------------------------------------------
  * log
  * ------------------------------------------------------------------- */
+/* lines before the log file is known (the version requester comes before
+   main); they go into the file when edstub_set_log opens it */
+static char early[2048];
+static struct sb earlyb = { early, 0, sizeof early };
+
+/* every line is appended and the file closed again: the log survives a
+   crash of the compiler */
 void edstub_log(const char *s)
 {
     ULONG n = edstub_strlen(s);
@@ -256,12 +264,33 @@ void edstub_log(const char *s)
         Write(out, (APTR)s, n);
         Write(out, "\n", 1);
     }
-    if (!edstub_logname[0] || !(fh = Open(edstub_logname, MODE_READWRITE)))
+    if (!edstub_logname[0]) {
+        sbs(&earlyb, s);
+        sbc(&earlyb, '\n');
+        return;
+    }
+    if (!(fh = Open(edstub_logname, MODE_READWRITE)))
         return;
     Seek(fh, 0, OFFSET_END);
     Write(fh, (APTR)s, n);
     Write(fh, "\n", 1);
     Close(fh);
+}
+
+int edstub_set_log(const char *path)
+{
+    BPTR fh;
+
+    edstub_strcpy(edstub_logname, path, sizeof edstub_logname);
+    if (!(fh = Open(edstub_logname, MODE_NEWFILE))) {
+        edstub_logname[0] = 0;
+        return 0;
+    }
+    Write(fh, early, earlyb.len);
+    Close(fh);
+    earlyb.len = 0;
+    early[0] = 0;
+    return 1;
 }
 
 static char lbuf[600];
@@ -307,6 +336,8 @@ static void abort_job(const char *why)
     sbs(&L, why);
     LOG_END;
     if (in_main) {
+        if (edstub_abort_hook)
+            edstub_abort_hook(why);
         in_main = 0;
         closeall();
         edstub_abort();
@@ -322,6 +353,11 @@ static void abort_job(const char *why)
 #define MAXREQ 8
 static struct Requester *reqstack[MAXREQ];
 static int nomem_answers, unexpected;
+
+void edstub_reset_requests(void)
+{
+    nomem_answers = unexpected = 0;
+}
 
 static const char *reqtext(struct Requester *r)
 {
