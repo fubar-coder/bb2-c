@@ -29,6 +29,7 @@ int systest_cmdlibs_main(int argc, char **argv);
 int bugorig_cliargs_parpath_cli(const char *dir);
 int bugorig_crunch_implode_overread(const char *dir);
 int bugorig_crunch_decrunch_corrupt(const char *dir);
+int bugorig_crunchlib_crm_minsecdist(const char *dir);
 
 void bl_test_check(const char *what, int ok)
 {
@@ -115,4 +116,9 @@ TEST_CASE("crunch-implode-overread", "[.bug-orig]")
 TEST_CASE("crunch-decrunch-corrupt", "[.bug-orig]")
 {
     CHECK(bugorig_crunch_decrunch_corrupt(progdir()) == 0);
+}
+
+TEST_CASE("crunchlib-crm-minsecdist", "[.bug-orig]")
+{
+    CHECK(bugorig_crunchlib_crm_minsecdist(progdir()) == 0);
 }

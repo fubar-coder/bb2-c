@@ -59,7 +59,8 @@ set_tests_properties(libs_emulator PROPERTIES LABELS emulator SKIP_RETURN_CODE 7
 # runs them.  One emulator run each (a corrupt decrunch may crash it),
 # only the C build (no CD needed).  ILLEGAL_WATCH: Amiberry logs accesses
 # to unmapped memory, emulator.cmake checks the ranges the program names.
-foreach(t cliargs-parpath-cli crunch-implode-overread crunch-decrunch-corrupt)
+foreach(t cliargs-parpath-cli crunch-implode-overread crunch-decrunch-corrupt
+		crunchlib-crm-minsecdist)
 	string(REPLACE "-" "_" name "bug_orig_${t}")
 	set(watch OFF)
 	if(t STREQUAL "crunch-implode-overread")

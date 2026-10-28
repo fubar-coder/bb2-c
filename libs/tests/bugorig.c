@@ -9,6 +9,8 @@
  *   cliargs-parpath-cli       ParPath$ of a CLI argument (cliargslib)
  *   crunch-implode-overread   Implode reads behind its data (crunchlib)
  *   crunch-decrunch-corrupt   the decrunchers with corrupt data (crunchlib)
+ *   crunchlib-crm-minsecdist  CrMDecrunch in place writes in front of the
+ *                             buffer (crunchlib)
  *
  * crunch-implode-overread puts the data at the very end of the highest
  * memory region; what lies behind is not mapped, and with
@@ -265,6 +267,19 @@ static UBYTE packed[NFORMATS][DESTMAX + 64];
 static ULONG plen[NFORMATS], olen[NFORMATS], first[NFORMATS], last[NFORMATS];
 static UBYTE text[TEXTLEN], impsrc[IMPSRC];
 
+/* the original of the PP20, CrM! and CrM2 data */
+static void make_text(void)
+{
+    int i;
+    for (i = 0; i < TEXTLEN; i++)
+        text[i] = "Blitz Basic 2 crunchlib test "[i % 32 < 29 ? i % 32 : 0];
+    for (i = 0; i < 10; i++) {
+        text[i * 32 + 29] = (UBYTE)(65 + i);
+        text[i * 32 + 30] = '.';
+        text[i * 32 + 31] = ' ';
+    }
+}
+
 /* number of guard bytes in front of / behind the destination that changed */
 static ULONG guards_changed(const UBYTE *dest, ULONG dlen)
 {
@@ -293,7 +308,7 @@ int bugorig_crunch_decrunch_corrupt(const char *dir)
     UBYTE *arena, *work, *dest;
     const UBYTE *expect;
     ULONG wrongok = 0;
-    int f, v, i, bad;
+    int f, v, bad;
     char buf[200];
 
     failures = 0;
@@ -311,13 +326,7 @@ int bugorig_crunch_decrunch_corrupt(const char *dir)
     dest = arena + SRCAREA + ABSORB + GUARD;
 
     /* the formats: IMP! from Implode, the others from t60_crunch */
-    for (i = 0; i < TEXTLEN; i++)
-        text[i] = "Blitz Basic 2 crunchlib test "[i % 32 < 29 ? i % 32 : 0];
-    for (i = 0; i < 10; i++) {
-        text[i * 32 + 29] = (UBYTE)(65 + i);
-        text[i * 32 + 30] = '.';
-        text[i * 32 + 31] = ' ';
-    }
+    make_text();
     memcpy(packed[F_PP20], pp20, plen[F_PP20] = sizeof pp20);
     memcpy(packed[F_CRM], crm1, plen[F_CRM] = sizeof crm1);
     memcpy(packed[F_CRM2], crm2, plen[F_CRM2] = sizeof crm2);
@@ -398,5 +407,62 @@ int bugorig_crunch_decrunch_corrupt(const char *dir)
     printf("  Deplode: %lu corrupt variants returned success with wrong data (no "
            "checksum in the format; not checked)\n", wrongok);
     FreeMem(arena, ARENA);
+    return failures ? 5 : 0;
+}
+
+/* -------------------------------------------- crunchlib-crm-minsecdist */
+
+#define CRMMSD   0x64                   /* MinSecDist of crm1 */
+
+/* CrMDecrunch buffer (one argument: in place) on the intact CrM! data of
+   t60_crunch.  The buffer has room for the original and MinSecDist bytes
+   more (the room a fix that moves the data to the end of the buffer
+   needs); GUARD bytes in front of and behind it.  Correct ("works like
+   the Deplode command", ROMULUSLIBS.DOC): the original in the buffer,
+   nothing written outside it.  BUG(orig): OverlapDecrunch moves the
+   crunched data to MinSecDist bytes in front of the buffer and decrunches
+   from there. */
+int bugorig_crunchlib_crm_minsecdist(const char *dir)
+{
+    static const char *names[] = { "crunchlib", NULL };
+    const ULONG blen = TEXTLEN + CRMMSD;
+    struct lib *l;
+    UBYTE *arena, *buf;
+    ULONG front = 0, back = 0, i;
+    char msg[200];
+
+    failures = 0;
+    if (!load_c(dir, names)) {
+        check("load crunchlib (C build)", FALSE);
+        return 20;
+    }
+    l = getlib(&cset, "crunchlib");
+    arena = AllocMem(GUARD + blen + GUARD, MEMF_PUBLIC);
+    if (!arena) {
+        check("setup: arena", FALSE);
+        return 20;
+    }
+    make_text();
+    buf = arena + GUARD;
+    memset(arena, GUARDVAL, GUARD + blen + GUARD);
+    memcpy(buf, crm1, sizeof crm1);
+    check("setup: MinSecDist of the CrM! data", W(buf + 4) == CRMMSD);
+    markregs(&r);
+    r.d[0] = (ULONG)buf;
+    callregs(cmd_form(l, 2, 0), &r, 0, 0);                          /* CrMDecrunch buffer */
+    for (i = 0; i < GUARD; i++) {
+        front += buf[-1 - (LONG)i] != GUARDVAL;
+        back += buf[blen + i] != GUARDVAL;
+    }
+    check("CrMDecrunch buffer decrunches the CrM! data in place",
+          !memcmp(buf, text, TEXTLEN));
+    snprintf(msg, sizeof msg,
+             "CrMDecrunch buffer writes nothing in front of the buffer (BUG(orig): "
+             "%lu of the %d guard bytes changed, MinSecDist is %d)", front, GUARD, CRMMSD);
+    check(msg, front == 0);
+    snprintf(msg, sizeof msg, "CrMDecrunch buffer writes nothing behind the buffer "
+             "(%lu of the %d guard bytes changed)", back, GUARD);
+    check(msg, back == 0);
+    FreeMem(arena, GUARD + blen + GUARD);
     return failures ? 5 : 0;
 }
