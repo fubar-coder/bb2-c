@@ -288,6 +288,37 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   unchanged): switch paths, commands and line references in the texts to
   the layout of this repository (mapping in `docs/README.md`); line
   references into the C code have to be determined anew in the process.
+* **Tests for the issues labelled `braucht-test`** (99 open issues; for
+  most a test program that triggers the bug is missing, the trigger is
+  described in the issue). A failing test is added with label `bug-orig`
+  (README, "Tests") and named in the issue. What is needed:
+  - *Test programs only* (no example, no corpus test yet) – compiler:
+    #2, #3, #5, #8, #14, #16, #18, #22, #23, #26 (needs a free block of
+    ≥ 256 MB), #27, #28, #32; libraries: #58, #65, #90, #91, #100,
+    #104, #110, #115–#118, #127, #133, #135, #137, #171, #177, #191,
+    #224, #245, #246, #263, #264, #266, #268, #269, #274, #280, #281,
+    #286, #299, #303, #304, #308, #310, #314, #316, #318, #319, #321,
+    #322; medlib/trackerlib without own data: #204–#207, #289–#291,
+    #293–#295 (need a module that uses the effect).
+  - *Test data* (generated or freely licensed, under `tests/data/`):
+    MED modules – any (#212), with 8 tracks (#209), several tracks for
+    SetMedMask gaps (#208), 19xx/0Bxx in one line (#203), finetune
+    outside −8..7 (#211); 8SVX – BODY ≥ 131072 bytes (#67), BODY length
+    a multiple of the DiskBuffer length (#69), BODY length 0 (#179);
+    ILBM – 5 planes in memory (#80), odd-sized text chunk before the
+    BODY (#189) or before CMAP/CRNG in memory (#225).
+  - *Runner features:* other compiler options (buffer sizes; the corpus
+    stub sets fixed ones) for #4, #57; creating residents for #34, #35,
+    #36; start with program arguments in the corpus runner (#107,
+    covered at library level by `bug_orig_cliargs_parpath_cli`); start
+    from the Workbench (blitz2: #19, #20, #21; programs: #306, #307);
+    Compile & Run / PANIC from the editor (#24, #25); GUI input in the
+    file requester (#154, #156–#158); a serial peer for unit > 0 and
+    pending writes (#252, #256, #258, #259).
+  - *Not reproducible in the emulator:* #42 (a real 68010 with a moved
+    VBR; Amiberry runs a 68020).
+  - Done: #112, #119 (`bug_orig_crunch_implode_overread`,
+    `bug_orig_crunch_decrunch_corrupt`).
 
 ## 3 Only once §1 is done
 
