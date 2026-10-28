@@ -5,10 +5,11 @@ and the libraries blitz2 reads at startup (**acidlibs**, **deflibs**), as
 a C translation of the original sources – built for AmigaOS with
 m68k-amigaos-gcc.
 
-This directory contains only what is needed for building. Tests, test
-corpus, reference builds and analysis tools are in the working repository
-`bb2` (state of the takeover: bb2 `7b5df74`). The notes on the translation
-(analysis of the originals, deviations) are in `docs/`.
+This repository contains the build, the reference builds, the tests
+(host, corpus, TED A/B and library tests in the emulator) and the notes on
+the translation (analysis of the originals, deviations) in `docs/`. It
+replaces the former working repository `bb2` (state of the takeover: bb2
+`7b5df74`); only bb2's analysis tools (Python) were not taken over.
 
 ## Requirements
 

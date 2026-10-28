@@ -8,12 +8,13 @@ the checks in the build: `README.md`. Open items: `TODO.md`.
 **This repository is the reference** for the code (decision of
 2026-10-27, takeover from bb2 `7b5df74`); bb2 no longer builds the
 authoritative state. Here are the build, the reference builds (`ted_ref`,
-`blitz2_ref`), the original sources (`archive/`), the TED oracle and the
-host tests of TED. Still in `../bb2`: corpus, TED A/B and library tests in
-the emulator, analysis tools. The notes on the translation are in `docs/`
-(from bb2 `ee6174b`, unchanged, paths in the layout of bb2) – that is also
-where the reasons for code comments like `BUG(orig)`, `DIFF`, `ted.s:NNN`
-or `blitz2.s:NNN` are. State of the takeover: `TODO.md`.
+`blitz2_ref`), the original sources (`archive/`), all tests (host tests,
+TED oracle, corpus, TED A/B, library tests in the emulator, tests of
+reproduced original bugs) and the notes on the translation in `docs/`
+(from bb2 `ee6174b`, translated to English) – that is also where the
+reasons for code comments like `BUG(orig)`, `DIFF`, `ted.s:NNN` or
+`blitz2.s:NNN` are. Only bb2's analysis tools (Python) were not taken
+over. State of the takeover: `TODO.md`.
 
 ## Building and checking
 
@@ -51,10 +52,9 @@ ctest --preset emulator                                # tests in Amiberry
 * **Acceptance for every rework:** `blitz2`, `ted`, `acidlibs`, `deflibs`
   and all library files byte-identical to the state before (build of the
   previous commit of this repository). If a deviation is intended (e.g. a
-  code rework), check functionally – with the tests here
-  (`ctest --preset all`) and, as long as they are still in bb2, with the
-  bb2 tools against `build/amiga/blitz2/` of this repository (corpus,
-  snitch tests, TED A/B) – and name the deviation in the commit.
+  code rework), check functionally with the tests here
+  (`ctest --preset all`, needs Amiberry and the originals) and name the
+  deviation in the commit.
 * **`archive/`** contains unchanged originals (sources like
   `sources/ted-1.1/`, reference data) – never edit; a new state is a new
   directory with a version number, the origin is in `archive/README.md`.

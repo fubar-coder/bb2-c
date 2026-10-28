@@ -2,11 +2,10 @@
 
 As of 2026-10-28. This repository is the reference for the code
 (decision of 2026-10-27; takeover from bb2 `7b5df74`). Build, reference
-builds, oracle and the host tests of TED are here; the remaining tests and
-checks are still in the working repository `bb2` and are being brought
-over. Goal: all checks that bb2 had before Python was removed active
-again – here in the build or as ctest. Only after that the switch to C23
-(§3).
+builds, oracle and all tests are here now (§1, the open points are noted
+there); only bb2's analysis tools in Python were not taken over. Goal: all
+checks that bb2 had before Python was removed active again – here in the
+build or as ctest. Only after that the switch to C23 (§3).
 
 ## 1 Checks still missing compared to bb2
 
