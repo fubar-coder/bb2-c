@@ -105,7 +105,12 @@ ctest --preset all        # beides
   Mit `-DHOST_SANITIZE=ON` wird die Host-Seite mit AddressSanitizer und
   UBSan gebaut.
 * **emulator:** Läufe in Amiberry; ohne Amiberry oder ohne die Daten in
-  `amiga-emulation/` werden sie übersprungen. Darunter der Korpus
+  `amiga-emulation/` werden sie übersprungen. `libs_emulator`: das
+  Testprogramm `libs/tests/libs_tests` (snitch, m68k) lädt jede acidlib
+  dieses Builds und ihr Original der CD wie der Compiler und vergleicht
+  Ergebnisse, Register und Speicher (ohne CD übersprungen; Auswahl:
+  `cmake ... -DFILTER="[mathstr]" -P libs/tests/emulator.cmake`). Darunter
+  der Korpus
   (`tests/corpus/`): `corpus` (67 Testprogramme ohne Laufzeit-
   Fehlerprüfung), `corpus_runerr` (131 mit), `corpus_req` (3 mit
   blockierenden Requestern, hinter der Sperre `reqclosetest`),
@@ -182,6 +187,8 @@ libs/blitzlib.ld             Linker-Skript: ein Code-Hunk, Kopf an Offset 0
 libs/acidlibs/               eine C-Datei je Library; prebuilt/: noch nicht
                              portierte Libraries im Original (dhandlerlib)
 libs/deflibs/                eine C-Datei je AmigaOS-Library
+libs/tests/                  libs_tests: die Libraries gegen ihre Originale
+                             im Emulator (m68k, snitch)
 shared/filereq/              Dateirequester von freqlib und TED (eine Quelle,
                              von beiden mit eigenen Optionen übersetzt)
 shared/edstub/               Rahmen für Programme, die blitz2 als blitz2:ted

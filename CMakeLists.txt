@@ -8,7 +8,7 @@ if(NOT CMAKE_TOOLCHAIN_FILE)
 	set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/m68k-amigaos.cmake)
 endif()
 
-project(blitzbasic2 VERSION 1.95 LANGUAGES C)
+project(blitzbasic2 VERSION 1.95 LANGUAGES C CXX)
 
 if(NOT AMIGAOS)
 	message(FATAL_ERROR "Wrong toolchain file ${CMAKE_TOOLCHAIN_FILE}: only AmigaOS (cmake/m68k-amigaos.cmake)")

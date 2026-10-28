@@ -64,9 +64,14 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
    `declarations_deflibs` gegen `BLITZ2/ACIDLIBS`, `DEFLIBS` der CD:
    83 + 39 Libraries, Deklarationen identisch, gleiche Reihenfolge (mit
    `biglib.py compare` gegengeprüft: 122 identisch).
-8. **snitch-Tests im Emulator** (bb2: `tests/libs_tests`,
-   `tools/amiga_test.py`): jede Library gegen ihr Original geladen „wie der
-   Compiler“, Register-Erhalt, Ergebnisse (7 Testfälle, 19372 Assertions).
+8. ~~**snitch-Tests im Emulator**~~ erledigt (28.10.2026): `libs/tests/`
+   (`libs_tests`, m68k-snitch-Programm aus bb2 `libs-c/tests`, unverändert
+   bis auf Kommentare), ctest `libs_emulator` (`emulator.cmake` statt
+   `tools/amiga_test.py`): jede acidlib dieses Builds gegen ihr Original,
+   das `biglib extract` zur Testzeit aus `BLITZ2/ACIDLIBS` der CD holt
+   (gleich bb2 `ref/*.obj`). 7 Testfälle, 19372 Assertions wie bb2, etwa
+   18 s; Ausgabe gleich bb2s Referenzprotokoll bis auf eine Stackadresse.
+   Ein verändertes Byte in `ldivlib` lässt den Test scheitern.
 
 **Compiler und Ganzes (bb2: `compilerlauf/`)**
 
