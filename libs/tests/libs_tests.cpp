@@ -33,6 +33,7 @@ int bugorig_crunchlib_crm_minsecdist(const char *dir);
 int bugorig_crunchlib_crm_overlap_4gb(const char *dir);
 int bugorig_crunchlib_crm2_readtab(const char *dir);
 int bugorig_crunchlib_pp_readd1(const char *dir);
+int bugorig_debuglib_findoff_flags(const char *dir);
 
 void bl_test_check(const char *what, int ok)
 {
@@ -140,4 +141,9 @@ TEST_CASE("crunchlib-crm2-readtab", "[.bug-orig]")
 TEST_CASE("crunchlib-pp-readd1", "[.bug-orig]")
 {
     CHECK(bugorig_crunchlib_pp_readd1(progdir()) == 0);
+}
+
+TEST_CASE("debuglib-findoff-flags", "[.bug-orig]")
+{
+    CHECK(bugorig_debuglib_findoff_flags(progdir()) == 0);
 }
