@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+parent
+child 1 1006 abc xyz
+child end
+execute -1
+rc=0
