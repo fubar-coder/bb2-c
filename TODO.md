@@ -83,16 +83,24 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
       `CORPUS_PARALLEL`, nicht erreichte Läufe nach einem Hänger einmal neu.
       Requester-Folge und Sperren-Auswertung an bb2s Daten geprüft (79 Logs,
       Sperren-Bericht gleich). Neu gegenüber bb2: alle vier Kombinationen
-      in einer Sitzung (Budget 60 s, Limit 120 s statt 25/60 s); blitz2s
-      Übersetzungsfenster (`STOP!`) zählt beim Requester-Vergleich nicht
-      mit, ob `teddrive` es sieht, hängt vom Timing ab (0–2 Mal).
+      in einer Sitzung (Budget 60 s, Limit 120 s statt 25/60 s). blitz2s
+      Übersetzungsfenster (`STOP!`) sieht `teddrive` je nach Timing 0–2
+      Mal; der Postfix `; @ignore compilewindow` an einer Skriptzeile nimmt
+      es in diesem Schritt aus der Requester-Folge (ein Kommentar: teddrive
+      überliest ihn, sein Log enthält ihn; `ted_ab_lint` prüft ihn). Gesetzt
+      bei den `freq ok`-Schritten von `06-compile`, `07-error`, `29-cmp-*`.
    4. ~~ctest `ted_ab`~~ (Label emulator, Fixture auf `corpus`; Filter
       `TED_AB_FILTER`, `TED_AB_COMBOS`) und `ted_ab_lint` (ohne Emulator).
       Stand 28.10.2026: 43 Tests, 168 von 172 Läufen OK, alle 168
-      Vergleiche mit OK-Läufen gleich – Stufe 1/2a wie in bb2, dazu
+      Vergleiche zwischen OK-Läufen gleich – Stufe 1/2a wie in bb2, dazu
       `09-opts` (jetzt auch Cc/Rc), 24–29 (in bb2 nicht gelaufen). Offen:
-      `23-font6` – R5 hängt, der Emulator bootet neu (wie bb2: TIMEOUT);
-      deshalb schlägt `ted_ab` derzeit fehl.
+      `23-font6` (KNOWN-BOTH, im Emulator bestätigt: Exception-Abfang und
+      Befehlsverlauf über Amiberrys Steuer-Socket): `calcscreen` macht den
+      Font-6-Screen auf einem 512-Zeilen-Workbench 513 Zeilen hoch, OS 3.2
+      öffnet ihn mit 512, `OpenWindow` scheitert, der Fehlerweg von
+      `screenopen` stürzt ab (BUG(orig) survey-05 I.1, in TED-C
+      nachgebildet; neu als BUG(orig) in `calcscreen` vermerkt). Der Test
+      kann so nie gelingen; deshalb schlägt `ted_ab` derzeit fehl.
 
 **Libraries (bb2: `libs-c/`)**
 

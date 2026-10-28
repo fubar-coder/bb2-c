@@ -200,6 +200,15 @@ void calcscreen(void)
     edrows = d0;
     d0 = (UWORD)((ULONG)d0 * fonthite);         /* mulu (low word) */
     pixrows = d0;
+    /* BUG(orig): subtracted were topskip + botskip (20), added back are
+       fonthite + botskip + 1 + topskip (edrows = quotient - 1): if
+       Height - 20 is a multiple of fonthite, the screen is one row taller
+       than the Workbench.  OS 3.2 opens it with the Workbench height, the
+       main window (topskip + newwindow.Height) no longer fits, OpenWindow
+       fails and screenopen's error path crashes (cfail, BUG(orig)
+       survey-05 I.1).  Seen with fonthite 6 on a 512 row Workbench: 513
+       rows (TED A/B 23-font6, original and TED-C, confirmed in Amiberry
+       28.10.2026). */
     d0 = (UWORD)(d0 + fonthite + botskip + 1);
     newwindow.Height = d0;
     d0 = (UWORD)(d0 + topskip);

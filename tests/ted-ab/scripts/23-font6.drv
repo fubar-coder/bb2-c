@@ -1,6 +1,9 @@
 ; Stage 2b: 6 pixel font from the option file (a synthetic GADGETUP does
 ; not toggle the font gadget - Intuition sets GFLG_SELECTED, not the message):
 ; L/blitzeditor.opts with fonthite 6; start, BOTTOM.  Nothing saved.
+; KNOWN-BOTH (28.10.2026): fails in every combination on a 512 row
+; Workbench - calcscreen makes the font 6 screen 513 rows, OpenWindow fails,
+; screenopen's error path crashes (BUG(orig), src/screen.c calcscreen).
 ; @source T t01_int
 ; @opts fonthite=6,fonthite2=5,fontmul=960
 ; @font 6
