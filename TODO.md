@@ -191,7 +191,7 @@ Libraries (`libs_emulator`) laufen inzwischen hier über `amiga_emulation`
 
 * Standard-Konfiguration `tools/lib/amiga_emulation/default.uae` (aus der
   AGA-Konfiguration, bereinigt; RTG-Variante = Änderungen) und
-  `amiga-emulation/` mit README (erwartete Dateien, Prüfsummen,
+  `amiga-emulation/` mit README (erwartete Dateien, Prüfsumme des ROMs,
   Bedingungen) liegen vor (27.10.2026); ROM und angepasste Hardfiles hat
   der Benutzer abgelegt, beide Images geprüft. Offen: CMake meldet
   fehlende Dateien.

@@ -8,11 +8,11 @@ Kopien hier ab.
 | Datei | Inhalt | Größe | SHA-256 (Stand 27.10.2026) |
 |---|---|---|---|
 | `A1200.47.115.rom` | Kickstart 3.2 (47.115), A1200 | 524288 | `27ddaf0a460e2ee85935139cbac1df234c283b3979c50526d118e9a55c61100a` |
-| `Workbench_OS3.2-AB3-AGA.vhd` | AmigaOS 3.2, Workbench nativ (PAL HighRes Laced, 256 Farben) – Standard | 67176960 | `503b2abdbff6d4e653aeb654f535fe0c5beea725c7df5dd44e4f3fcf56f09627` |
-| `Workbench_OS3.2-AB3.vhd` | AmigaOS 3.2, Workbench auf RTG (uaegfx, 1680×1050) | 67176960 | `07cbf885f4bdf51198e5a4634945a4f19e6be9d1e888935ec3e2a03204a24a7d` |
+| `Workbench_OS3.2-AB3-AGA.vhd` | AmigaOS 3.2, Workbench nativ (PAL HighRes Laced, 256 Farben) – Standard | 67176960 | – |
+| `Workbench_OS3.2-AB3.vhd` | AmigaOS 3.2, Workbench auf RTG (uaegfx, 1680×1050) | 67176960 | – |
 
-Eigene Images mit anderen Prüfsummen gehen auch, solange sie die
-Bedingungen unten erfüllen.
+Die Hardfiles hat jeder selbst eingerichtet, deshalb gibt es für sie keine
+Prüfsumme; sie müssen nur die Bedingungen unten erfüllen.
 
 ## Konfiguration
 
@@ -52,4 +52,4 @@ Grafikkartenspeicher, wo der Blitter sie nicht erreicht).
   schreibt auf `SYS:` und hängt deshalb (geprüft 27.10.2026). Tests
   schreiben nur nach `TEST:` oder `RAM:`.
 * Ein Image ändern: mit einer eigenen, beschreibbaren Konfiguration
-  starten, danach die Prüfsumme hier anpassen.
+  starten.
