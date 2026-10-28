@@ -262,9 +262,10 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   `blitz2` and `ted` themselves – they reproduce the behaviour of the
   originals (argument = file), a help would be a `DIFF`.
 
-* **Git history and remote:** this repository is the reference
-  (decided); open whether it stays with the fresh start or takes over the
-  history of the files from bb2, and where it is pushed to.
+* ~~**Git history**~~ decided (2026-10-28): this repository is the
+  reference and stays with the fresh start; the history of the files is
+  not taken over from bb2 (it remains there). Remote: `origin`
+  (GitHub `fubar-coder/bb2-c`).
 * **Port `dhandlerlib` (lib 1):** until then `prebuilt/dhandlerlib.obj`
   (original of the CD).
 * **Warnings of `blitzlibcheck`:** 73 warnings (references into the error
@@ -277,9 +278,8 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   ab3c uses LTO for its Amiga build (`AB3C_LTO`) – look at the experience
   there.
 
-* **License header lines** (SPDX identifier `GPL-3.0-or-later WITH
-  LicenseRef-BlitzBasic2-Runtime-exception` or similar) in the source
-  files – not set yet; the license applies via `LICENSE` and the README.
+* ~~**License header lines**~~ decided (2026-10-28): no SPDX lines in the
+  source files; the license applies via `LICENSE` and the README.
 * ~~**CD data**~~ solved (2026-10-28): not in the repository,
   `cmake/fetch-originals.cmake` loads the CD (archive.org) and the Aminet
   archive with a fixed SHA-256 to `archive/cd/`, `archive/aminet/`.
