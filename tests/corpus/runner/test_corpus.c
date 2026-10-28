@@ -79,7 +79,10 @@ int main(void)
     CHECK(p.njoblines == 1 && !strcmp(p.joblines[0], "menu=j1|9|X") && !strcmp(p.expect, "/e"));
     corpus_free(&p);
     CHECK(corpus_parse(BASE CONFIGS "source=/s\nwrap=/w2\n", &p, err, sizeof err) == 0);
-    CHECK(!strcmp(p.wrap, "/w2") && !p.wrap_args);
+    CHECK(!strcmp(p.wrap, "/w2") && !p.wrap_args && !p.runwrap);
+    corpus_free(&p);
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\nrunwrap=/r|signals\n", &p, err, sizeof err) == 0);
+    CHECK(!strcmp(p.runwrap, "/r") && !strcmp(p.runwrap_args, "signals") && !p.wrap);
     corpus_free(&p);
     CHECK(parse(BASE CONFIGS "source=/s\nfile=/abs|/l\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\nfile=a/../../x|/l\n", err, sizeof err) == -1);
@@ -91,6 +94,7 @@ int main(void)
     CHECK(parse(BASE CONFIGS "source=/s\nremove=../x\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\njobline=\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\nwrap=|x\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "source=/s\nrunwrap=|x\n", err, sizeof err) == -1);
     /* bug-orig: exactly one source */
     CHECK(parse(BASE CONFIGS "source=/s\nsource=/t\nexpect=/e\n", err, sizeof err) == -1
           && strstr(err, "one source"));

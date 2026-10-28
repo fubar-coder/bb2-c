@@ -37,6 +37,8 @@ void corpus_free(struct corpus_pass *p)
     free(p->expect);
     free(p->wrap);
     free(p->wrap_args);
+    free(p->runwrap);
+    free(p->runwrap_args);
     for (i = 0; i < p->nfiles; i++) {
         free(p->file_dest[i]);
         free(p->file_src[i]);
@@ -289,20 +291,21 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             }
             continue;
         }
-        if (!strcmp(key, "wrap")) {
+        if (!strcmp(key, "wrap") || !strcmp(key, "runwrap")) {
             const char *s = val;
             char *path = field(&s), *args = *val && strchr(val, '|') ? strdup(s) : NULL;
+            int run = !strcmp(key, "runwrap");
 
             if (!path || !*path || (strchr(val, '|') && !args)) {
                 free(path);
                 free(args);
                 free(val);
-                return fail(p, err, errlen, "line %u: wrap=PATH[|ARGS]", no);
+                return fail(p, err, errlen, "line %u: %s=PATH[|ARGS]", no, key);
             }
-            free(p->wrap);
-            free(p->wrap_args);
-            p->wrap = path;
-            p->wrap_args = args;
+            free(run ? p->runwrap : p->wrap);
+            free(run ? p->runwrap_args : p->wrap_args);
+            *(run ? &p->runwrap : &p->wrap) = path;
+            *(run ? &p->runwrap_args : &p->wrap_args) = args;
             free(val);
             continue;
         }
@@ -389,7 +392,7 @@ static int stage(const struct corpus_pass *p, size_t c, FILE *log)
         { cf->blitz2, "blitz2/blitz2" }, { p->ted, "blitz2/ted" },
         { cf->deflibs, "blitz2/deflibs" }, { cf->acidlibs, "blitz2/acidlibs" },
         { p->defaultdbug, "blitz2/defaultdbug" }, { p->launcher, "run" },
-        { p->gate, "gate" }, { p->wrap, "wrap" },
+        { p->gate, "gate" }, { p->wrap, "wrap" }, { p->runwrap, "runwrap" },
     };
     struct text jobs = { 0 };
     size_t i;
@@ -504,9 +507,10 @@ static char *script(const struct corpus_pass *p)
         char *n = corpus_name(p->sources[i]);
 
         text_add(&s, "If EXISTS " VOLUME ":out/%s\n"
-                "  " VOLUME ":run " VOLUME ":out/%s >" VOLUME ":out/%s.run\n"
+                "  " VOLUME ":run %s%s%s" VOLUME ":out/%s >" VOLUME ":out/%s.run\n"
                 "  Echo \"rc=$RC\" >>" VOLUME ":out/%s.run\n"
-                "EndIf\n", n, n, n, n);
+                "EndIf\n", n, p->runwrap ? VOLUME ":runwrap " : "",
+                p->runwrap_args ? p->runwrap_args : "", p->runwrap_args ? " " : "", n, n, n);
         free(n);
     }
     if (p->gate)
@@ -776,8 +780,8 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
                 goto out;
             }
     }
-    for (i = 0; i <= p->nfiles; i++) {
-        const char *f = i < p->nfiles ? p->file_src[i] : p->wrap;
+    for (i = 0; i <= p->nfiles + 1; i++) {
+        const char *f = i < p->nfiles ? p->file_src[i] : i == p->nfiles ? p->wrap : p->runwrap;
 
         if (f && access(f, R_OK)) {
             fprintf(log, "corpus: no %s - skipped\n", f);

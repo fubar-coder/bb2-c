@@ -1,8 +1,9 @@
 /*
  * inject - run a command in this process with faults injected, for the
- * bug-orig tests (tests/bug-orig, pass file key wrap=): conditions the
- * original reacts to wrongly but that a normal system never shows - no
- * free signal, an allocation that fails, a read error.
+ * bug-orig tests (tests/bug-orig, pass file keys wrap= for the compiler
+ * and runwrap= for the programs): conditions the original reacts to
+ * wrongly but that a normal system never shows - no free signal, an
+ * allocation that fails, a read error.
  *
  * usage: inject [OPTION...] COMMAND [ARGS]
  *   signals                every free signal bit of the process allocated
