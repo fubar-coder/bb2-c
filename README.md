@@ -359,13 +359,16 @@ tools/                       host tools:
                              vasmlisting (read vasm listings), sha256,
                              checklabels (labels of ted.s in the C code),
                              checkdata (data against the reference build),
-                             asmcmp (assembler routines against originals);
+                             asmcmp (assembler routines against originals),
+                             mktestdata (binary test data from a text
+                             description: 8SVX, ILBM, modules);
                              blitzlib also compares declarations
   biglib/, blitzlibcheck/,   the tools: one main.c each around lib/
   blitzlibcompare/
   hunkcheck/, amiga_run/,
   vasmlisting/, checklabels/,
-  checkdata/, asmcmp/
+  checkdata/, asmcmp/,
+  mktestdata/
   tests/                     tests of lib/ with inputs from memory
 ```
 

@@ -10,6 +10,8 @@
 #   checklabels  every code label of an assembler source marked once in C
 #   checkdata  data of a C build against the reference build (labels)
 #   asmcmp     assembler routines against the original (objdump)
+#   mktestdata  binary test data (8SVX, ILBM, MED and tracker modules) from
+#              a text description (the bug-orig tests)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -20,3 +22,4 @@ add_subdirectory(sha256)
 add_subdirectory(checklabels)
 add_subdirectory(checkdata)
 add_subdirectory(asmcmp)
+add_subdirectory(mktestdata)
