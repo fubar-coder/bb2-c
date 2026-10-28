@@ -3,9 +3,9 @@
 ; codefinit (fixtraps, CloseLibrary) and then gives TRAP #0 to the old
 ; vector - with d0 changed by codefinit.
 ; rundebuglib keeps the TRAP #0 vector it finds at start as the old one.
-; Here the program (CORPUS:out/ID, where the runner puts it) sets its own
-; TRAP #0 handler, runs itself a second time (dos Execute, output to the
-; same file) and puts the vector back.  The child makes a runtime error
+; Here the program sets its own TRAP #0 handler, runs itself a second
+; time (own name from dos GetProgramName, dos Execute, output to the same
+; file) and puts the vector back.  The child makes a runtime error
 ; (ShapeWidth of an unused shape: "Uninitialized Shape") inside exec
 ; Supervisor(); the handler of the parent keeps d0 and returns to the
 ; child's Supervisor() call with the stack pointer the child noted (the
@@ -19,7 +19,8 @@ If NumPars=0
   v=cr_vbr
   o=Peek.l(v+128)
   Poke.l ?ar,0
-  c$="CORPUS:out/rundebuglib-supertrap-d0-lost "+Str$(?ar)
+  nm$=String$(Chr$(0),256) : GetProgramName_ &nm$,255
+  c$=Peek$(&nm$)+" "+Str$(?ar)
   Poke.l v+128,?th
   Execute_ &c$,0,Output_
   Poke.l v+128,o
