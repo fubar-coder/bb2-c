@@ -294,8 +294,12 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   - *Test programs only* (no example, no corpus test yet) – compiler:
     #14 (the "Not Enough Object Memory" path was not reached in the
     batch run, even with a 128 KB executable: to be found out how;
-    `inject track` shows 1 allocation of 14 bytes left after a normal
-    compile, in the original as in the port - a leak of its own?),
+    a leak of 14 bytes once seen with `inject track` is not
+    reproducible (2026-10-28, no issue): no allocation is left in the
+    original or the port after small programs of every construct,
+    generated programs of 4000 lines, the largest CD programs (among them
+    `GORNY3DLIB.BB2`, 127996 bytes) and one CD source of each of the 47
+    compile errors of `blitz2-cd.tsv`),
     #26 (needs a free block of ≥ 256 MB); libraries: #58, #65, #90, #91, #100,
     #104, #110, #115–#118, #127, #133, #135, #137, #171, #177, #191,
     #224, #245, #246, #263, #264, #266, #268, #269, #274, #280, #281,
@@ -359,11 +363,12 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     2. Then the runner features one after the other (compiler options,
        residents, program arguments, Workbench start, editor Compile &
        Run, file requester input, serial peer) and their tests.
-    3. Phase 3, on GitHub (ask first): name the test in each issue and
-       remove `needs-test`; add the reasons of "not observable / not
-       reachable" to #5, #18, #32 and ask whether to close them; note the
-       DIFFERS finding at #16; decide whether the 14-byte leak (#14
-       above) gets an issue of its own.
+    3. Phase 3, on GitHub (allowed for `needs-test` issues, 2026-10-28):
+       name the test in the section "Test" of each issue and remove
+       `needs-test`. Done for the tests of the first batch (#2, #3, #8,
+       #16 with the DIFFERS finding, #22, #23, #27, #28, #112, #119);
+       #5, #18, #32 have a comment with the reason why there is no
+       test, open whether they are closed.
 
 ## 3 Only once §1 is done
 
