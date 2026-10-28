@@ -15,6 +15,8 @@
  *                             copies 4 GB (crunchlib)
  *   crunchlib-crm2-readtab    CrM2: ReadTab with a count of 0 writes
  *                             behind the tables (crunchlib)
+ *   crunchlib-pp-readd1       PPDecrunch with an efficiency value of 0
+ *                             (crunchlib)
  *
  * crunch-implode-overread puts the data at the very end of the highest
  * memory region; what lies behind is not mapped, and with
@@ -623,3 +625,73 @@ int bugorig_crunchlib_crm2_readtab(const char *dir)
     FreeMem(arena, alen);
     return failures ? 5 : 0;
 }
+
+/* ------------------------------------------------- crunchlib-pp-readd1 */
+
+#define SRCLOW   (16 * 1024)            /* readable room below the source */
+
+/* PPDecrunch on the PP20 data of t60_crunch with the first efficiency
+   value (header byte 4: offset bits of the 2 byte sequences, which these
+   data use) made 0.  Arena: [SRCLOW][source][ABSORB][GUARD][dest][GUARD]
+   [ABSORB].  Correct (fix of the issue: efficiency values outside 1-15
+   abort before unpacking): the destination and the guard bytes stay
+   unchanged.  BUG(orig): ReadD1_SUB reads efficiency-1 = 65535 bits
+   (8 KB below the read pointer), the bit stream is shifted and garbage is
+   unpacked into the destination. */
+int bugorig_crunchlib_pp_readd1(const char *dir)
+{
+    static const char *names[] = { "crunchlib", NULL };
+    const ULONG alen = SRCLOW + SRCAREA + ABSORB + GUARD + TEXTLEN + GUARD + ABSORB;
+    struct lib *l;
+    UBYTE *arena, *src, *dest;
+    ULONG changed, i;
+    int pass;
+    char msg[200];
+
+    failures = 0;
+    if (!load_c(dir, names)) {
+        check("load crunchlib (C build)", FALSE);
+        return 20;
+    }
+    l = getlib(&cset, "crunchlib");
+    arena = AllocMem(alen, MEMF_PUBLIC);
+    if (!arena) {
+        check("setup: arena", FALSE);
+        return 20;
+    }
+    make_text();
+    src = arena + SRCLOW;
+    dest = src + SRCAREA + ABSORB + GUARD;
+    for (pass = 0; pass < 2; pass++) {
+        memset(dest - GUARD, GUARDVAL, GUARD + TEXTLEN + GUARD);
+        memcpy(src, pp20, sizeof pp20);
+        if (pass) {
+            check("setup: the first efficiency value of the PP20 data is not 0", src[4] != 0);
+            src[4] = 0;
+            printf("  PPDecrunch of PP20 data with an efficiency value of 0\n");
+            fflush(stdout);             /* a crash leaves this line */
+        }
+        markregs(&r);
+        r.d[0] = (ULONG)src;
+        r.d[1] = (ULONG)src + sizeof pp20;
+        r.d[2] = (ULONG)dest;
+        callregs(cmd_entry(l, 3), &r, 0, 0);                        /* PPDecrunch */
+        changed = guards_changed(dest, TEXTLEN);
+        if (!pass) {
+            check("setup: PPDecrunch of the intact PP20 data",
+                  changed == 0 && !memcmp(dest, text, TEXTLEN));
+            continue;
+        }
+        for (i = 0; i < TEXTLEN; i++)
+            changed += dest[i] != GUARDVAL;
+        snprintf(msg, sizeof msg,
+                 "PPDecrunch of PP20 data with an efficiency value of 0 writes nothing "
+                 "(BUG(orig): reads 65536 bits and unpacks garbage; %lu of the %d bytes of "
+                 "the destination and the guard bytes changed)", changed,
+                 GUARD + TEXTLEN + GUARD);
+        check(msg, changed == 0);
+    }
+    FreeMem(arena, alen);
+    return failures ? 5 : 0;
+}
+
