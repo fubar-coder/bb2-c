@@ -330,16 +330,40 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     fallback in newallox is never reached).
   - Done: #112, #119 (`bug_orig_crunch_implode_overread`,
     `bug_orig_crunch_decrunch_corrupt`); with a Blitz program
-    (`tests/bug-orig/compiler/`): #2
-    (`bug_orig_compiler_userlibs_doubleslash`), #3
-    (`bug_orig_compiler_loadalib_readerr`), #8
-    (`bug_orig_compiler_optreqprep_allocmem`), #16
-    (`bug_orig_compiler_incdir_overflow`, verdict DIFFERS: the port has
-    other data behind `incdir`), #22
-    (`bug_orig_compiler_wbexit_returncode`), #23
-    (`bug_orig_compiler_loaddmod_pointer`), #27
-    (`bug_orig_compiler_checklib_examine`), #28
-    (`bug_orig_compiler_libsnode_name`).
+    (`tests/bug-orig/compiler/`, infrastructure: README, "Tests"):
+
+    | Issue | ctest | Original (and port) | Expected |
+    |---|---|---|---|
+    | #2 | `bug_orig_compiler_userlibs_doubleslash` | userlib in `blitz2:userlibs/bugorig` is not loaded | loaded, prints 42 |
+    | #3 | `bug_orig_compiler_loadalib_readerr` | a read error counts as success, the session aborts | library loaded |
+    | #8 | `bug_orig_compiler_optreqprep_allocmem` | failing AllocMem: the system hangs | session ends normally |
+    | #16 | `bug_orig_compiler_incdir_overflow` | `IncDir` with 97 characters: the program crashes | error in the `IncDir` line |
+    | #22 | `bug_orig_compiler_wbexit_returncode` | `blitz2:ted` missing: return code 0 | −1 |
+    | #23 | `bug_orig_compiler_loaddmod_pointer` | `defaultdbug` missing: busy pointer stays | normal pointer |
+    | #27 | `bug_orig_compiler_checklib_examine` | failing Examine: a truncated acidlibs is linked | as without acidlibs |
+    | #28 | `bug_orig_compiler_libsnode_name` | directory name of 100 characters in userlibs: the compiler hangs | compiles and runs |
+
+    All REPRODUCED except #16: verdict DIFFERS, the port has other data
+    behind `incdir` (BSS, followed by `comdata`), so the port's compiler
+    crashes already, not only the compiled program. For seven tests the
+    expectation was checked with a temporary fix in the port (verdict
+    FIXED, fix reverted afterwards).
+  - *How to continue* (plan of 2026-10-28):
+    1. Phase 2, in parallel (separate worktrees; a test is
+       `AREA/ID.bas` + `AREA/ID.expect`, found by the CMake glob, so no
+       shared list to merge): (a) the library issues of "test programs
+       only" above, split by library over about three agents; (b) a C
+       tool in `tools/` that generates MED modules, 8SVX and ILBM files
+       for `tests/data/`, then the tests of "test data" and of
+       medlib/trackerlib.
+    2. Then the runner features one after the other (compiler options,
+       residents, program arguments, Workbench start, editor Compile &
+       Run, file requester input, serial peer) and their tests.
+    3. Phase 3, on GitHub (ask first): name the test in each issue and
+       remove `needs-test`; add the reasons of "not observable / not
+       reachable" to #5, #18, #32 and ask whether to close them; note the
+       DIFFERS finding at #16; decide whether the 14-byte leak (#14
+       above) gets an issue of its own.
 
 ## 3 Only once §1 is done
 
