@@ -1,0 +1,4 @@
+[run]
+voices found -1
+voice 0 note 21AC0000 start outside the module 0
+rc=0
