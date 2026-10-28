@@ -1,178 +1,178 @@
-# TED 1.1 (`ted.s`) – Überblick für den C-Port
+# TED 1.1 (`ted.s`) – overview for the C port
 
-Quelle: `quelltext/amibl2src/files/amiblitz2source/bb2src.zip.dir/ted.s`
-(8072 Zeilen, Devpac, 68000) + Includes `myoffs` (LVOs), `wbheader` (Startcode,
-derselbe wie bei blitz2), `aboutreq`, `specialreq` (Requester-Daten).
-Referenz-Build und Binär-Includes: [reference.md](reference.md).
-Querverweise zwischen den Chunks: [xrefs.md](xrefs.md) (`tools/xrefs.py`).
-Auftrag der Surveys: [SURVEY-BRIEF.md](SURVEY-BRIEF.md). Plan: [PLAN.md](PLAN.md).
+Source: `quelltext/amibl2src/files/amiblitz2source/bb2src.zip.dir/ted.s`
+(8072 lines, Devpac, 68000) + includes `myoffs` (LVOs), `wbheader` (startup code,
+the same as in blitz2), `aboutreq`, `specialreq` (requester data).
+Reference build and binary includes: [reference.md](reference.md).
+Cross-references between the chunks: [xrefs.md](xrefs.md) (`tools/xrefs.py`).
+Brief of the surveys: [SURVEY-BRIEF.md](SURVEY-BRIEF.md). Plan: [PLAN.md](PLAN.md).
 
 ## 1 Chunks
 
-| # | Zeilen | Umfang | Survey | Inhalt |
+| # | Lines | Size | Survey | Contents |
 |---|---|---|---|---|
-| 01 | 1–1015 + `wbheader` (114), `aboutreq` (113), `specialreq` (138) | ~1380 | [survey-01](survey-01.md) | Zeilen-`rs`-Offsets, Init-Einsprung `outside` (Hunk+4) und `.tomain`, Standalone-Start `edstart`, Fail-Kette, `mainedit`/`memcont` (Hauptschleife, `jumptable`-Dispatch), Mauszeiger/Sanduhr mit VBlank-Server, Menüs an/aus, `blocktab`/`blockuntab`, Optionsrequester `defaults`, Drucken `prtfile`, `.xtra`/`.info`, Laden/Speichern (`fileopen*`, `filesave`, `realsave`), About, Suchen/Ersetzen |
-| 02 | 1016–1980 | 965 | [survey-02](survey-02.md) | `escape` (Ende), Cursor hoch/runter, `markindent`, Zeile einfügen/löschen, `join`/`split`, `return`, `top`/`bottom`, Scroll-Gadgets, `gotolined0`, `extmenu` (Rückruf in blitz2), `menu`-Dispatch (`menutable`), `new`, Blockoperationen (kill/save/load/copy/forget) |
-| 03 | 1981–3062 | 1082 | [survey-03](survey-03.md) | Maus (`gomouse`, `mousedown`: Klick/Ziehen/Scrollen), Goto-Requester, `blockstart`/`blockend`, WB öffnen/schließen, Konsolenfenster `openio`/`closeio` (für laufende Programme), comdata-Dienste (`refgads`, `tokone`, `tokall`, `detokallz`, `actgad`), Hilfe (Token-Hilfe aus der Tokenliste), `doclean`, `getstuff` (Menü COMPILER aus `menitems` bauen), Label-Spalte „mice“, `outmem`/`alloc2`/`extalloc` |
-| 04 | 3063–4197 | 1135 | [survey-04](survey-04.md) | Optionsdatei `l:blitzeditor.opts`, Options-Requester-Hilfen, Datei-I/O (`doopen`/`doread`/`fillbuff`/`readline`/`allocline`), `detok`/`findtoke`, Dateirequester-Brücke `ezfreq`, `error`, `openreq`/`closereq` (Requester als Fenster), Suche `isithere2`, Zeilenliste (`freeupa5`, `makeline`, `calcitem`), Block-Hilfen (`getbchar`, `sortblox`, `invertarea`), Zeilenausgabe (`showall`, `showa2item`, `tokprint`), `charstobuff` |
-| 05 | 4198–5252 | 1055 | [survey-05](survey-05.md) | **Tokenizer `tokit`**, `alpha`, Scrollen (Blitter), Zeilen anlegen/freigeben (`allocnull`, `freethis`, `freeall`, `donew`), Bildschirm (`calcscreen`, `screenopen`, `makecop`, `screenclose`), Farben, `getblitter`/`putblitter`, `cls`, horizontales Scrollen, eigene Textausgabe (`print*`, `fontcalc`), `calcpos` |
-| 06 | 5253–6285 | 1033 | [survey-06](survey-06.md) | Cursor, Prop-Gadgets, `refresh`, Blockgrenzen (`blokfix`), **Zeileneditor `getline`**, `horizpos`, `getinput`/`handled0` (IDCMP, Rawkey über `rawed`), Datenblock: `comdata` (−8…+94), Editor-Globals, Optionsblock `defstart` (= Dateiformat der Optionsdatei), `jumptable`/`menutable`, Fehlertexte, `edstruct`-Kopie |
-| 07 | 6286–8072 | 1787 (fast nur Daten) | [survey-07](survey-07.md) | NewScreen/NewWindow/Gadgets, Menüleiste (PROJECT/EDIT/SOURCE/SEARCH), Requester `findreq`, `repall`, `errorreq`, `erasereq`, `defaultreq`, `prtreq`, `undobuffer` (nur String-Gadget-Undo, TED 1.1 hat **kein** Editor-Undo), `rawed` (incbin), `flink` + `filerequest` (incbin), Fonts |
+| 01 | 1–1015 + `wbheader` (114), `aboutreq` (113), `specialreq` (138) | ~1380 | [survey-01](survey-01.md) | line `rs` offsets, init entry `outside` (hunk+4) and `.tomain`, standalone start `edstart`, fail chain, `mainedit`/`memcont` (main loop, `jumptable` dispatch), mouse pointer/hourglass with VBlank server, menus on/off, `blocktab`/`blockuntab`, options requester `defaults`, printing `prtfile`, `.xtra`/`.info`, loading/saving (`fileopen*`, `filesave`, `realsave`), About, search/replace |
+| 02 | 1016–1980 | 965 | [survey-02](survey-02.md) | `escape` (exit), cursor up/down, `markindent`, insert/delete line, `join`/`split`, `return`, `top`/`bottom`, scroll gadgets, `gotolined0`, `extmenu` (callback into blitz2), `menu` dispatch (`menutable`), `new`, block operations (kill/save/load/copy/forget) |
+| 03 | 1981–3062 | 1082 | [survey-03](survey-03.md) | mouse (`gomouse`, `mousedown`: click/drag/scroll), goto requester, `blockstart`/`blockend`, open/close WB, console window `openio`/`closeio` (for running programs), comdata services (`refgads`, `tokone`, `tokall`, `detokallz`, `actgad`), help (token help from the token list), `doclean`, `getstuff` (build COMPILER menu from `menitems`), label column "mice", `outmem`/`alloc2`/`extalloc` |
+| 04 | 3063–4197 | 1135 | [survey-04](survey-04.md) | options file `l:blitzeditor.opts`, options requester helpers, file I/O (`doopen`/`doread`/`fillbuff`/`readline`/`allocline`), `detok`/`findtoke`, file requester bridge `ezfreq`, `error`, `openreq`/`closereq` (requester as window), search `isithere2`, line list (`freeupa5`, `makeline`, `calcitem`), block helpers (`getbchar`, `sortblox`, `invertarea`), line output (`showall`, `showa2item`, `tokprint`), `charstobuff` |
+| 05 | 4198–5252 | 1055 | [survey-05](survey-05.md) | **tokenizer `tokit`**, `alpha`, scrolling (blitter), allocating/freeing lines (`allocnull`, `freethis`, `freeall`, `donew`), screen (`calcscreen`, `screenopen`, `makecop`, `screenclose`), colours, `getblitter`/`putblitter`, `cls`, horizontal scrolling, own text output (`print*`, `fontcalc`), `calcpos` |
+| 06 | 5253–6285 | 1033 | [survey-06](survey-06.md) | cursor, prop gadgets, `refresh`, block boundaries (`blokfix`), **line editor `getline`**, `horizpos`, `getinput`/`handled0` (IDCMP, rawkey via `rawed`), data block: `comdata` (−8…+94), editor globals, options block `defstart` (= file format of the options file), `jumptable`/`menutable`, error texts, `edstruct` copy |
+| 07 | 6286–8072 | 1787 (almost only data) | [survey-07](survey-07.md) | NewScreen/NewWindow/gadgets, menu bar (PROJECT/EDIT/SOURCE/SEARCH), requesters `findreq`, `repall`, `errorreq`, `erasereq`, `defaultreq`, `prtreq`, `undobuffer` (only string gadget undo, TED 1.1 has **no** editor undo), `rawed` (incbin), `flink` + `filerequest` (incbin), fonts |
 
-Chunk 07 ist groß, aber zu 90 % Intuition-Strukturen; sie lassen sich mit
-einer erweiterten Fassung von `blitz2-c/tools/req2c.py` erzeugen (survey-07 G).
+Chunk 07 is large, but 90 % Intuition structures; they can be generated with
+an extended version of `blitz2-c/tools/req2c.py` (survey-07 G).
 
-## 2 Architektur von TED in einem Bild
+## 2 Architecture of TED in one picture
 
 ```
-blitz2 (Hauptprogramm)                     TED (LoadSeg-Segment)
- jsr BADDR(seg)+8 ─ a1=edstruct ─────────► outside (Hunk+4): 28 Bytes edstruct kopieren,
-                                           Screen/Fenster, rawed-Init, flink, Puffer
+blitz2 (main program)                      TED (LoadSeg segment)
+ jsr BADDR(seg)+8 ─ a1=edstruct ─────────► outside (hunk+4): copy 28 bytes of edstruct,
+                                           screen/window, rawed init, flink, buffers
  ◄──────── a0=.tomain, a1=comdata, Z=1 ──
- jsr (a0) ─ a0=Dateiname ────────────────► .tomain → Datei laden → mainedit-Schleife:
-                                             getline (Zeileneditor, chmap = Zeile)
+ jsr (a0) ─ a0=file name ────────────────► .tomain → load file → mainedit loop:
+                                             getline (line editor, chmap = line)
                                              → charstobuff/tokit → makeline
-                                             → jumptable[d7] (Taste/Menü/Maus/Gadget)
- menu (d6,a5=firstitem,d7=numlines) ◄───── extmenu (Menü COMPILER) ── d0 = Zeile/−1/−2
+                                             → jumptable[d7] (key/menu/mouse/gadget)
+ menu (d6,a5=firstitem,d7=numlines) ◄───── extmenu (menu COMPILER) ── d0 = line/−1/−2
  loadxtra/savextra (d7=fh,a6=dos)   ◄───── fileopen2 / realsave
- cleanup (edstruct+20)              ◄───── doclean (Wert 0 → nicht gerufen)
- comdata+0…+94 (openreq, getinput,  ─────► Dienste; einige kehren bei Fehler nicht
-   error, ezfreq, tokone, extalloc …)       zurück (outmem → longjmp nach memcont)
+ cleanup (edstruct+20)              ◄───── doclean (value 0 → not called)
+ comdata+0…+94 (openreq, getinput,  ─────► services; some do not return on error
+   error, ezfreq, tokone, extalloc …)       (outmem → longjmp to memcont)
 ```
 
-Zentrale Datenmodelle:
+Central data models:
 
-* **Zeilenliste**: doppelt verkettet, `{nextitem.l, lastitem.l, numchars.b
-  (Länge inkl. 0), chars[] tokenisiert, 0}`, AllocMem(`numchars+9`,
-  MEMF_PUBLIC). Köpfe `firstitem`, `enditem`, `thisitem`, `numlines` (Wort).
-  Nie leer. blitz2 liest diese Liste direkt (Layout fest).
-* **chmap**: Zeichenkarte des Bildschirms (`chcols` = 128 Bytes je Zeile,
-  Chip-RAM, wird mit dem Blitter gescrollt). Die **gerade bearbeitete Zeile
-  existiert nur in chmap** (Bit 7 = Zeichen aus einem Token-Namen); beim
-  Verlassen macht `charstobuff` → `tokit` → `makeline` daraus wieder einen
-  Listenknoten. `join`, `split`, `blokload`, `blokcopy` lesen/schreiben chmap.
-  → chmap gehört in den Host-Kern.
-* **Cursor-/Blockzustand**: `cursx/cursy`, `cursoff/curstop`, `scloc/chloc`,
-  `btopx/btopy/bbotx/bboty` (`bboty = -1` = kein Block) – Wortpaare, die der
-  Code oft als Langwort kopiert/vergleicht.
-* **Tokenliste** von blitz2 (`{next.l, num.w, name\0, help\0, even}`),
-  Trenner `colon`/`quote`/`label`/`remark` aus edstruct (Standalone: 255 =
-  aus, dann kein Quote-/Remark-Modus im Tokenizer).
-* **Optionsblock** `defstart..defend` (50 Bytes) = Dateiformat von
+* **Line list**: doubly linked, `{nextitem.l, lastitem.l, numchars.b
+  (length incl. 0), chars[] tokenised, 0}`, AllocMem(`numchars+9`,
+  MEMF_PUBLIC). Heads `firstitem`, `enditem`, `thisitem`, `numlines` (word).
+  Never empty. blitz2 reads this list directly (layout fixed).
+* **chmap**: character map of the screen (`chcols` = 128 bytes per line,
+  chip RAM, scrolled with the blitter). The **line currently being edited
+  exists only in chmap** (bit 7 = character from a token name); on
+  leaving, `charstobuff` → `tokit` → `makeline` turn it back into a
+  list node. `join`, `split`, `blokload`, `blokcopy` read/write chmap.
+  → chmap belongs in the host core.
+* **Cursor/block state**: `cursx/cursy`, `cursoff/curstop`, `scloc/chloc`,
+  `btopx/btopy/bbotx/bboty` (`bboty = -1` = no block) – word pairs that the
+  code often copies/compares as a longword.
+* **Token list** of blitz2 (`{next.l, num.w, name\0, help\0, even}`),
+  separators `colon`/`quote`/`label`/`remark` from edstruct (standalone: 255 =
+  off, then no quote/remark mode in the tokenizer).
+* **Options block** `defstart..defend` (50 bytes) = file format of
   `l:blitzeditor.opts`.
 
-## 3 Querschnitt aus den Surveys
+## 3 Cross-section of the surveys
 
-### 3.1 Register- und Kontrollfluss-Konventionen
+### 3.1 Register and control flow conventions
 
-* Hauptschleife: a4 = `thisitem`, d7 = Ereigniscode (Taste 1…$FF, Bit 30 =
-  Umlaut aus `germs`; −1 Gadget, −2 Menü, −3/−4 Maus), d6 = ID. `jumptable`
-  (6-Byte-Einträge `{code.b, flag.b, fn.l}`) wird per `cmp.b` durchsucht
-  (−1/−2/−3 = $FF/$FE/$FD – Latin-1 `$FD–$FF` kollidieren, survey-06 I).
-* Laden: d7 = FileHandle, a5 = Lesezeiger, d6 = Restbytes (`doread`).
-  Blockdurchlauf: a5 = item, d6 = Zeile, d5 = Spalte (`getbchar`).
-  Ausgabe: a2/a3/d2/d3 (`showa2item`). Tokenizer: a1/a2/d1/d5.
-* **Nicht-lokale Rücksprünge**: `outmem` (a7 = `memstack`, `jmp memcont` – auch
-  aus blitz2 heraus über `extalloc`/`openreq`); `addq #4,a7` in `erase`,
-  `getfname3`, `doopen` (Abbruch des Aufrufers); `escape` `lea 12(a7)`
-  (Stacktiefe Dispatch 4+2 + Menü 4+2); `pchover` im Tokenizer; `mousedown`
-  (`addq #8,a7`); `reline` liest Parameter vom Stack; `charstobuff`/`tokit`/
-  `enddo` teilen ein Stackwort.
-* **Condition Codes als Ergebnis** überall (readline dreiwertig N/Z,
+* Main loop: a4 = `thisitem`, d7 = event code (key 1…$FF, bit 30 =
+  umlaut from `germs`; −1 gadget, −2 menu, −3/−4 mouse), d6 = ID. `jumptable`
+  (6-byte entries `{code.b, flag.b, fn.l}`) is searched via `cmp.b`
+  (−1/−2/−3 = $FF/$FE/$FD – Latin-1 `$FD–$FF` collide, survey-06 I).
+* Loading: d7 = FileHandle, a5 = read pointer, d6 = remaining bytes (`doread`).
+  Block pass: a5 = item, d6 = line, d5 = column (`getbchar`).
+  Output: a2/a3/d2/d3 (`showa2item`). Tokenizer: a1/a2/d1/d5.
+* **Non-local returns**: `outmem` (a7 = `memstack`, `jmp memcont` – also
+  from within blitz2 via `extalloc`/`openreq`); `addq #4,a7` in `erase`,
+  `getfname3`, `doopen` (abort of the caller); `escape` `lea 12(a7)`
+  (stack depth dispatch 4+2 + menu 4+2); `pchover` in the tokenizer; `mousedown`
+  (`addq #8,a7`); `reline` reads parameters from the stack; `charstobuff`/`tokit`/
+  `enddo` share a stack word.
+* **Condition codes as result** everywhere (readline three-valued N/Z,
   `getbchar`, `alpha`, `allocnull`, `erase2`, `openio`, `screenopen` …) →
-  in C Rückgabewerte.
-* blitz2-Einsprünge in comdata sichern teils nichts (`openreq`, `error` nur
-  d7, `screenopen2`, `colors`) – die C-Stubs dürfen mehr sichern.
+  return values in C.
+* blitz2 entry points in comdata partly save nothing (`openreq`, `error` only
+  d7, `screenopen2`, `colors`) – the C stubs may save more.
 
-### 3.2 OS und Hardware
+### 3.2 OS and hardware
 
-| Bereich | Nutzung |
+| Area | Use |
 |---|---|
-| exec | AllocMem/FreeMem (Zeilen, Puffer, Menüs; Chip für Zeiger/chmap), AddIntServer(VERTB) für die Sanduhr-Animation, FindTask/AllocSignal, OpenDevice/CloseDevice (console), GetMsg/ReplyMsg |
-| dos | Open/Read/Write/Close, Rename (.bak), Lock/CurrentDir, DeleteFile, Execute (Hilfe, CLI), Delay, DOS-Liste (`findio`) |
-| intuition | OpenScreen (ExtNewScreen mit Tags), OpenWindow, Menüs, Requester **als eigene Fenster** (nie `Request()`), NewModifyProp, RefreshGList, SetPointer/ClearPointer, ShowTitle, DisplayAlert, WBenchToFront/CloseWorkBench/OpenWorkBench |
-| graphics | OwnBlitter/WaitBlit/DisownBlitter, SetRGB4, UCopList (Farbverlauf in der Titelleiste), Sprites über SetPointer |
-| console.device | nur `RawKeyConvert` (in `rawed.obj`) |
-| Hardware direkt | Blitter über `$DFF000` (Scrollen, cls, chmap), CPU schreibt Glyphen direkt in die Bitplanes (planar, kein RTG), `flash` schreibt `$DFF180` (unbenutzt), `mwait` liest CIA `$BFE001` (toter Code) |
+| exec | AllocMem/FreeMem (lines, buffers, menus; chip for pointer/chmap), AddIntServer(VERTB) for the hourglass animation, FindTask/AllocSignal, OpenDevice/CloseDevice (console), GetMsg/ReplyMsg |
+| dos | Open/Read/Write/Close, Rename (.bak), Lock/CurrentDir, DeleteFile, Execute (help, CLI), Delay, DOS list (`findio`) |
+| intuition | OpenScreen (ExtNewScreen with tags), OpenWindow, menus, requesters **as separate windows** (never `Request()`), NewModifyProp, RefreshGList, SetPointer/ClearPointer, ShowTitle, DisplayAlert, WBenchToFront/CloseWorkBench/OpenWorkBench |
+| graphics | OwnBlitter/WaitBlit/DisownBlitter, SetRGB4, UCopList (colour gradient in the title bar), sprites via SetPointer |
+| console.device | only `RawKeyConvert` (in `rawed.obj`) |
+| Hardware directly | blitter via `$DFF000` (scrolling, cls, chmap), CPU writes glyphs directly into the bitplanes (planar, no RTG), `flash` writes `$DFF180` (unused), `mwait` reads CIA `$BFE001` (dead code) |
 
-### 3.3 Selbstmodifikation und Daten im Code
+### 3.3 Self-modification and data in the code
 
-* Kein Patchen von Befehlen. Aber: `flink` reloziert den eingebetteten
-  `filereq`-Hunk zur Laufzeit (einmalig, ohne Cache-Flush); `openreq`
-  verschiebt beim ersten Öffnen die Gadgets jedes Requesters (+6/+12) und
-  merkt sich das im UserData des ersten Gadgets – **auch bei Requestern von
+* No patching of instructions. But: `flink` relocates the embedded
+  `filereq` hunk at runtime (once, without cache flush); `openreq`
+  shifts the gadgets of every requester on first opening (+6/+12) and
+  remembers this in the UserData of the first gadget – **also for requesters of
   blitz2**.
-* Viele Daten liegen PC-relativ zwischen dem Code und werden beschrieben
-  (Intuition-Strukturen, Flags, Puffer) – in C normale, schreibbare Statics.
-* Feste Schrittweiten über Struktur-Grenzen (84/86/44/56/28/54 Bytes,
-  survey-07 G.1) und Alias-Labels mitten in Strukturen (`int1..3`, `errorpnt`,
+* Much data lies PC-relative between the code and is written to
+  (Intuition structures, flags, buffers) – in C normal, writable statics.
+* Fixed strides across structure boundaries (84/86/44/56/28/54 bytes,
+  survey-07 G.1) and alias labels in the middle of structures (`int1..3`, `errorpnt`,
   `viewmode`, `winscreen`, `idcmp`).
-* Sentinel-Wort `' :'` vor `filepath`; Wortpaare als Langwort; `bloktopx`
-  als Wort, Byte-Puffer und Zeiger; `nummice` `dc.l`, als Wort benutzt.
+* Sentinel word `' :'` before `filepath`; word pairs as longword; `bloktopx`
+  as word, byte buffer and pointer; `nummice` `dc.l`, used as word.
 
-### 3.4 Einstufung (Zusammenfassung der H-Tabellen)
+### 3.4 Classification (summary of the H tables)
 
-| Klasse | Routinen (Auswahl) |
+| Class | Routines (selection) |
 |---|---|
-| KERN (host-testbar) | Tokenizer `tokit*`/`alpha`/`mytoke`/`tokone`, `detok`/`findtoke`/`detoka5`/`charstobuff`, Hilfe-Suche, Laden `readline`/`doread`/`allocline`/`linka0`, Schreibschleife `realsave`, `.bak`/`.xtra`/`.info`-Logik, Optionsdatei, Zeilenliste (`allocnull`, `makeline`, `freeupa5`, `freethis`, `freeall`, `calcitem`), Kernanteile von `insertline`/`deleteline`/`join`/`split`/`return`/`gotolined0`, Blocklogik (`blokadj`, `sortblox`, `orderem`, `inbloks`, `blokfix`, `getbchar`, `bloksetup`, `blokcopy`, `bloksave`/`blokload`, `blocktab`/`blockuntab`, `markindent`), Suchen/Ersetzen (`isithere2`, `dosearch`, `replace2`), Zeilenpuffer-Operationen von `getline`, `horizpos`/Cursor-Arithmetik, `mice`-Liste, `a0toname`, Druckformatierung, Sondertasten-Mapping von `rawed`, `germs`, Dispatch-Tabellen |
-| UI | Bildschirm/Fenster/Menüs/Requester, Zeichnen (`print*`, `showall`, Scroll-Blits, `cursor`, `invertarea`), Props, Maus, IDCMP (`getinput`/`handled0`), Konsolenfenster, Zeiger |
-| GLUE (Asm-Stub) | Hunk-Anfang + `outside`/`.tomain`, alle comdata-Einsprünge (Registerkonvention), Rückrufe nach blitz2 (`menurout`, `loadxtra`, `savextra`, `cleanup`), VBlank-Server `myint`, `outmem`-Longjmp über fremde Frames |
+| CORE (host-testable) | tokenizer `tokit*`/`alpha`/`mytoke`/`tokone`, `detok`/`findtoke`/`detoka5`/`charstobuff`, help search, loading `readline`/`doread`/`allocline`/`linka0`, write loop `realsave`, `.bak`/`.xtra`/`.info` logic, options file, line list (`allocnull`, `makeline`, `freeupa5`, `freethis`, `freeall`, `calcitem`), core parts of `insertline`/`deleteline`/`join`/`split`/`return`/`gotolined0`, block logic (`blokadj`, `sortblox`, `orderem`, `inbloks`, `blokfix`, `getbchar`, `bloksetup`, `blokcopy`, `bloksave`/`blokload`, `blocktab`/`blockuntab`, `markindent`), search/replace (`isithere2`, `dosearch`, `replace2`), line buffer operations of `getline`, `horizpos`/cursor arithmetic, `mice` list, `a0toname`, print formatting, special key mapping of `rawed`, `germs`, dispatch tables |
+| UI | screen/window/menus/requesters, drawing (`print*`, `showall`, scroll blits, `cursor`, `invertarea`), props, mouse, IDCMP (`getinput`/`handled0`), console window, pointer |
+| GLUE (asm stub) | hunk start + `outside`/`.tomain`, all comdata entry points (register convention), callbacks to blitz2 (`menurout`, `loadxtra`, `savextra`, `cleanup`), VBlank server `myint`, `outmem` longjmp across foreign frames |
 
-Alle Surveys stellen fest: Die Kernroutinen ändern zuerst die Daten und
-zeichnen danach – die Ausgabe lässt sich als Hook-Aufrufe am Ende abtrennen.
-Ausnahmen (verschränkt): `return` (Scroll mit temporär geändertem
+All surveys find: the core routines change the data first and
+draw afterwards – the output can be split off as hook calls at the end.
+Exceptions (interleaved): `return` (scroll with temporarily changed
 `edrows`/`pixrows`), `freeonly`/`allocfirst` (`cls`), `gadget`/`mousedown`
-(Polling-Schleifen), `getline` (Zeichnen nach jedem Tastendruck).
+(polling loops), `getline` (drawing after every key press).
 
-## 4 Risiken
+## 4 Risks
 
-1. **`outmem` als Longjmp über blitz2 hinweg** (comdata `extalloc`,
-   `openreq`): verwirft Compiler-Frames (auch die von blitz2-c, inkl. dessen
-   `errjmp`-Kette). Vor der ersten Hauptschleife ist `memstack = 0` → Absturz.
-   Muss in C exakt so (oder bewusst als `DIFF`) gelöst werden.
-2. **Register-Schnittstelle zu zwei Compilern**: TED-C muss mit blitz2 1.95
-   (asm, vasm-Build) **und** blitz2-c laufen; jeder Stub lädt sein eigenes a4
-   (`-fbaserel`), Rückrufe nach blitz2 über `callregs`.
-3. **Hunk-Layout**: Hunk+4 = `outside`, kein libnix-Startcode davor; eigener
-   Standalone-Start (wbheader-Ersatz) → `-nostartfiles`, Bibliotheksbasen
-   selbst setzen.
-4. **Interrupt-Code** (`myroutine`, VBlank): Glue mit a4-Laden, `volatile`,
-   Z-Flag-Rückgabe; schreibt in Chip-RAM-Sprite-Daten.
-5. **Hardware/Timing**: direkter Blitter (`$DFF000`) zwischen
-   OwnBlitter/DisownBlitter, CPU-Zeichnen direkt in planare Bitplanes,
-   chmap im Chip-RAM und vom Blitter mitbearbeitet. Läuft nur auf nativen
-   Chipset-Screens (kein RTG) – im Emulator nur so testen. Busy-Polls
-   (`gadget`, `mousedown` über `getinput2`) und `Delay`.
-6. **Rawkey/Konsole**: `rawed` liefert F-Tasten/Cursor/Help als eigene Codes
-   (`$81–$8B`, `$1C–$1F`), Qualifier separat, Umlaute über `germs` mit Bit 30;
-   `OpenDevice`-Fehler unerkannt; `cmp.b`-Dispatch macht Latin-1 `$FD–$FF`
-   zu Maus/Menü/Gadget. Emulator-Tests müssen echte RAWKEY-IntuiMessages mit
-   Qualifier erzeugen.
-7. **Stack-Tricks** (`addq #4,a7`, `lea 12(a7)`, `reline`-Parameter,
-   `charstobuff`↔`enddo`) → in C Rückgabestatus; Gefahr, Abbruchpfade zu
-   vergessen (Liste der betroffenen Aufrufer in survey-01/02/04 G).
-8. **Byte/Wort-Aliasing** und big-endian-Annahmen (Wortpaare als Long,
-   Gadget-Flags `+13`, `comdata+84` zeigt auf ein Flags-Low-Byte) – beim
-   Host-Build darf der Kern **keine** dieser Aliasierungen benutzen.
-9. **Original-Bugs mit Speicherfolgen** (müssen als `BUG(orig)` erhalten
-   bleiben, auf dem Host aber Sanitizer stören): `join` gibt mit falscher
-   Größe frei (`+lenitem` fehlt), `detoka5` schreibt hinter `charbuff3`
-   (Allokationsende), Lesen über NULL in `bloksave`/`gd03`, Tokenizer liest
-   über das Zeilenende, `tabstop = 0` → Division durch null. Für Host-Tests
-   braucht es einen Modus, der diese Stellen erkennt statt abzustürzen.
-10. **Dateirequester**: Wiederverwendung von `libs-c/libs/freqlib.c` setzt
-    voraus, dass der Requester-Kern dort sauber von der Lib-Hülle trennbar ist;
-    sein bekannter Überlauf bei hohen Fenstern betrifft TED genauso.
+1. **`outmem` as longjmp across blitz2** (comdata `extalloc`,
+   `openreq`): discards compiler frames (also those of blitz2-c, incl. its
+   `errjmp` chain). Before the first main loop `memstack = 0` → crash.
+   Must be solved in C exactly like this (or deliberately as a `DIFF`).
+2. **Register interface to two compilers**: TED-C must run with blitz2 1.95
+   (asm, vasm build) **and** blitz2-c; every stub loads its own a4
+   (`-fbaserel`), callbacks to blitz2 via `callregs`.
+3. **Hunk layout**: hunk+4 = `outside`, no libnix startup code before it; own
+   standalone start (wbheader replacement) → `-nostartfiles`, set library bases
+   oneself.
+4. **Interrupt code** (`myroutine`, VBlank): glue with a4 loading, `volatile`,
+   Z flag return; writes into chip RAM sprite data.
+5. **Hardware/timing**: direct blitter (`$DFF000`) between
+   OwnBlitter/DisownBlitter, CPU drawing directly into planar bitplanes,
+   chmap in chip RAM and also processed by the blitter. Runs only on native
+   chipset screens (no RTG) – test in the emulator only that way. Busy polls
+   (`gadget`, `mousedown` via `getinput2`) and `Delay`.
+6. **Rawkey/console**: `rawed` delivers F keys/cursor/Help as own codes
+   (`$81–$8B`, `$1C–$1F`), qualifier separately, umlauts via `germs` with bit 30;
+   `OpenDevice` errors undetected; `cmp.b` dispatch turns Latin-1 `$FD–$FF`
+   into mouse/menu/gadget. Emulator tests must generate real RAWKEY IntuiMessages with
+   qualifier.
+7. **Stack tricks** (`addq #4,a7`, `lea 12(a7)`, `reline` parameters,
+   `charstobuff`↔`enddo`) → return status in C; danger of forgetting abort paths
+   (list of the affected callers in survey-01/02/04 G).
+8. **Byte/word aliasing** and big-endian assumptions (word pairs as long,
+   gadget flags `+13`, `comdata+84` points to a flags low byte) – in the
+   host build the core must use **none** of these aliasings.
+9. **Original bugs with memory consequences** (must be kept as `BUG(orig)`,
+   but disturb sanitizers on the host): `join` frees with the wrong
+   size (`+lenitem` missing), `detoka5` writes past `charbuff3`
+   (end of allocation), reading via NULL in `bloksave`/`gd03`, tokenizer reads
+   past the end of line, `tabstop = 0` → division by zero. Host tests
+   need a mode that detects these spots instead of crashing.
+10. **File requester**: reusing `libs-c/libs/freqlib.c` requires
+    that the requester core there can be cleanly separated from the lib shell;
+    its known overflow with tall windows affects TED just the same.
 
-## 5 Wichtigste BUG(orig)-Kandidaten (Auswahl, Details in den Surveys, Abschnitt I)
+## 5 Most important BUG(orig) candidates (selection, details in the surveys, section I)
 
-* `join` FreeMem ohne `lenitem` (bestätigt im Referenzlisting, `$1FE0`) – survey-02.
-* `blokfixb` vergleicht `btopy` statt `bbotx` mit `chcols` – survey-06.
-* `readline`: letzte Zeile ohne LF nie tokenisiert; Latin-1-Byte vor LF
-  verschluckt den Umbruch; zu lange Zeile beendet `blokload` – survey-04.
-* `blockuntab` löscht Nicht-Leerzeichen; `tabstop = 0` – survey-01/06.
-* `a0toname` vergleicht d0 statt des Zeichens – survey-03.
-* `screenopen`-Fehlerpfade rufen CloseScreen mit a6 = ExecBase;
-  `freethis`/`freeall` Größe per `add.b` – survey-05.
-* `int3` startet mit 4, Puffer zeigt „2“ (tabstop) – survey-07.
-* `outside`-Fehlschlag meldet an blitz2 trotzdem Erfolg (Z=1) – survey-01.
+* `join` FreeMem without `lenitem` (confirmed in the reference listing, `$1FE0`) – survey-02.
+* `blokfixb` compares `btopy` instead of `bbotx` with `chcols` – survey-06.
+* `readline`: last line without LF never tokenised; Latin-1 byte before LF
+  swallows the line break; too long a line ends `blokload` – survey-04.
+* `blockuntab` deletes non-spaces; `tabstop = 0` – survey-01/06.
+* `a0toname` compares d0 instead of the character – survey-03.
+* `screenopen` error paths call CloseScreen with a6 = ExecBase;
+  `freethis`/`freeall` size via `add.b` – survey-05.
+* `int3` starts with 4, buffer shows "2" (tabstop) – survey-07.
+* `outside` failure still reports success to blitz2 (Z=1) – survey-01.

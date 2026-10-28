@@ -1,300 +1,300 @@
-# Plan Phase 3: Emulator-A/B-Tests von TED-C
+# Plan phase 3: emulator A/B tests of TED-C
 
-Grundlage: [PLAN.md](PLAN.md) §6 (c), [reference.md](reference.md),
-[overview.md](overview.md) §4, [abweichungen.md](abweichungen.md) und die
-vorhandene Emulator-Infrastruktur in `../compilerlauf` (Runner
-`tools/bb2compile.py`, Stub und Requester-Werkzeuge in `tedstub/`,
+Basis: [PLAN.md](PLAN.md) §6 (c), [reference.md](reference.md),
+[overview.md](overview.md) §4, [abweichungen.md](abweichungen.md) and the
+existing emulator infrastructure in `../compilerlauf` (runner
+`tools/bb2compile.py`, stub and requester tools in `tedstub/`,
 [`../compilerlauf/README.md`](../../compilerlauf/README.md),
 [`../compilerlauf/tedstub/README.md`](../../compilerlauf/tedstub/README.md))
-sowie [`../ci-exploration.md`](../../ci-exploration.md).
+as well as [`../ci-exploration.md`](../../ci-exploration.md).
 
-Stand bei Planung (26.10.2026): Phase 2b abgeschlossen, `ctest --preset
-amiga` (ref_verify, checkhunk, checkdata, checklabels, checklink) und
-`ctest --preset host` (11 Tests, u. a. `test_loadsave`: 724 Dateien,
-0 Fehler) grün. TED-C ist noch **nie gelaufen** – Phase 3 ist der erste
-Start auf einem Amiga.
+State at planning (26.10.2026): phase 2b completed, `ctest --preset
+amiga` (ref_verify, checkhunk, checkdata, checklabels, checklink) and
+`ctest --preset host` (11 tests, among them `test_loadsave`: 724 files,
+0 errors) green. TED-C has **never run** yet – phase 3 is the first
+start on an Amiga.
 
-Ziel: **gleiches beobachtbares Verhalten** von TED-C (`build/amiga/ted`)
-und Referenz-TED (`build/amiga/ref/ted`, vasm-Build von `ted.s`), gemessen
-im Emulator mit beiden Compilern, ohne Bedienung, nie blockierend.
-Nicht Ziel: Abgleich mit dem CD-Binary von TED (reference.md §1, eigener
-Schritt), Leistungsmessung.
+Goal: **same observable behaviour** of TED-C (`build/amiga/ted`)
+and reference TED (`build/amiga/ref/ted`, vasm build of `ted.s`), measured
+in the emulator with both compilers, without operator, never blocking.
+Not a goal: comparison with the CD binary of TED (reference.md §1, separate
+step), performance measurement.
 
 ---
 
-## 1 Ausgangslage
+## 1 Starting point
 
-| Baustein | Pfad | Stand |
+| Component | Path | State |
 |---|---|---|
-| Referenz-TED | `ted-c/build/amiga/ref/ted` (57060 Bytes) + `ted.lst`/`ted.map`/`ted.labels` | vorhanden, `ref_verify` grün |
-| TED-C | `ted-c/build/amiga/ted` (69432 Bytes), Linkmap `build/amiga/ted.map`, Symbole `build/amiga/ted.sym` | gebaut, ungetestet |
-| blitz2 v1.95 (vasm) | `compilerlauf/blitz2-195` | im Korpus bewährt |
-| blitz2-c | `blitz2-c/build/amiga/blitz2` | im Korpus bytegleich mit 1.95 (724/724) |
-| Libraries/Hilfen | `cd/blitz2/{deflibs,acidlibs,userlibs,defaultdbug,help,help.dat}` | von `bb2compile.prepare()` kopiert (außer `help`, `help.dat`) |
-| Emulator-Start | `bb2/tools/amiberry.cmake` (ohne Fenster; Skript nach `AB3C:build/amiberry/run.script`, `user-startup` führt es aus, Ende über `RES:done` und `uaequit`, Zeitlimit beendet Amiberry; bis 27.10.2026 `../ab3c/tools/amiberry_run.py`) | bewährt; Konfiguration über `--config`/`AMIBERRY_CONFIG` |
-| Sperre | `libs-c/build/.amiberry.lock` (`bb2compile.LOCK`) | ein Emulator gleichzeitig |
-| Synthetische Eingaben | `compilerlauf/tedstub/src/reqclose.h` (IntuiMessages in den UserPort, `-DREQCLOSE_INPUT`: alte input.device-Variante), Starter `reqtrap.c` (AutoRequest/EasyRequest-Patch, `SystemTags`) | bewährt für Requester; **kein** Werkzeug für TED-Bedienung |
-| Orakel ohne TED | `compilerlauf/tools/bb2tok.py` (Tokenizer wie TED), `tedstub` (übersetzt ohne Oberfläche), `corpus_check.mask_trap1()` | vorhanden |
+| Reference TED | `ted-c/build/amiga/ref/ted` (57060 bytes) + `ted.lst`/`ted.map`/`ted.labels` | present, `ref_verify` green |
+| TED-C | `ted-c/build/amiga/ted` (69432 bytes), link map `build/amiga/ted.map`, symbols `build/amiga/ted.sym` | built, untested |
+| blitz2 v1.95 (vasm) | `compilerlauf/blitz2-195` | proven in the corpus |
+| blitz2-c | `blitz2-c/build/amiga/blitz2` | byte-equal with 1.95 in the corpus (724/724) |
+| Libraries/helpers | `cd/blitz2/{deflibs,acidlibs,userlibs,defaultdbug,help,help.dat}` | copied by `bb2compile.prepare()` (except `help`, `help.dat`) |
+| Emulator start | `bb2/tools/amiberry.cmake` (without window; script to `AB3C:build/amiberry/run.script`, `user-startup` runs it, end via `RES:done` and `uaequit`, time limit terminates Amiberry; until 27.10.2026 `../ab3c/tools/amiberry_run.py`) | proven; configuration via `--config`/`AMIBERRY_CONFIG` |
+| Lock | `libs-c/build/.amiberry.lock` (`bb2compile.LOCK`) | one emulator at a time |
+| Synthetic inputs | `compilerlauf/tedstub/src/reqclose.h` (IntuiMessages into the UserPort, `-DREQCLOSE_INPUT`: old input.device variant), starter `reqtrap.c` (AutoRequest/EasyRequest patch, `SystemTags`) | proven for requesters; **no** tool for operating TED |
+| Oracles without TED | `compilerlauf/tools/bb2tok.py` (tokenizer like TED), `tedstub` (compiles without UI), `corpus_check.mask_trap1()` | present |
 
-Neu zu bauen sind der Begleitprozess `teddrive` (§4), der Runner
-`tedab.py` (§5), der Dump-Decoder `teddump.py` (§6.1) und eine
-Emulator-Konfiguration mit nativem Workbench-Screen (§3).
+To be newly built are the companion process `teddrive` (§4), the runner
+`tedab.py` (§5), the dump decoder `teddump.py` (§6.1) and an
+emulator configuration with a native Workbench screen (§3).
 
-## 2 A/B-Aufbau
+## 2 A/B setup
 
-### 2.1 Vier Kombinationen
+### 2.1 Four combinations
 
-| Kürzel | TED | Compiler | Rolle |
+| Code | TED | Compiler | Role |
 |---|---|---|---|
-| **R5** | Referenz (`build/amiga/ref/ted`) | blitz2-195 | **Referenz** (alles Original, nur vasm-assembliert) |
-| **C5** | TED-C (`build/amiga/ted`) | blitz2-195 | **Pflicht**: prüft TED-C gegen den Original-Compiler (Register-Schnittstelle `comdata`, Rückrufe `menurout`/`loadxtra`/`savextra`/`cleanup` in Asm-Code) |
-| **Cc** | TED-C | blitz2-c | **Pflicht**: Zielkombination (alles C); zwei `-fbaserel`-Programme mit je eigenem a4 (overview.md §4 Risiko 2) |
-| **Rc** | Referenz | blitz2-c | Kontrolle: trennt bei einer Abweichung Cc↔R5 die Ursache (Compiler oder Editor); blitz2-c ist im Korpus schon gegen 1.95 bestätigt, daher nachrangig |
+| **R5** | reference (`build/amiga/ref/ted`) | blitz2-195 | **reference** (everything original, only vasm-assembled) |
+| **C5** | TED-C (`build/amiga/ted`) | blitz2-195 | **mandatory**: checks TED-C against the original compiler (register interface `comdata`, callbacks `menurout`/`loadxtra`/`savextra`/`cleanup` in asm code) |
+| **Cc** | TED-C | blitz2-c | **mandatory**: target combination (everything C); two `-fbaserel` programs each with its own a4 (overview.md §4 risk 2) |
+| **Rc** | reference | blitz2-c | control: on a deviation Cc↔R5 separates the cause (compiler or editor); blitz2-c is already confirmed against 1.95 in the corpus, hence lower priority |
 
-Jeder Vergleich ändert nur eine Größe: **R5↔C5** (Editor bei
-Original-Compiler) ist der Haupt-A/B-Vergleich, **Rc↔Cc** derselbe mit dem
-C-Compiler, **R5↔Rc** bestätigt den Compiler. Erwartung: alle vier gleich
-bis auf die Masken in §6. Stufe 1 (§7.1) läuft nur R5 und C5; Rc/Cc kommen
-dazu, sobald R5↔C5 sauber ist.
+Each comparison changes only one variable: **R5↔C5** (editor with the
+original compiler) is the main A/B comparison, **Rc↔Cc** the same with the
+C compiler, **R5↔Rc** confirms the compiler. Expectation: all four equal
+except for the masks in §6. Stage 1 (§7.1) runs only R5 and C5; Rc/Cc are
+added as soon as R5↔C5 is clean.
 
-### 2.2 Aufbau im Emulator
+### 2.2 Setup in the emulator
 
-Wie `bb2compile.prepare()` (`compilerlauf/tools/bb2compile.py`), aber mit
-echtem TED (der Runner hat dafür schon `--ted PATH`), unter
-`../ab3c/build/amiberry/ted-ab/TAG/` (Emulator: `AB3C:build/amiberry/ted-ab/TAG/`):
+Like `bb2compile.prepare()` (`compilerlauf/tools/bb2compile.py`), but with
+real TED (the runner already has `--ted PATH` for this), under
+`../ab3c/build/amiberry/ted-ab/TAG/` (emulator: `AB3C:build/amiberry/ted-ab/TAG/`):
 
 ```
 TAG/blitz2/       blitz2, ted, deflibs, acidlibs, userlibs/, defaultdbug, help, help.dat
-TAG/L/            blitzeditor.opts (je Test vorgegeben oder leer)
-TAG/orig/         unveränderte Testquellen (+ .xtra)
-TAG/work/         Arbeitskopien, die TED lädt und speichert (je Lauf neu kopiert)
-TAG/out/          Dumps, Logs, Ergebnisdateien, Executables
-TAG/teddrive      der Begleitprozess
+TAG/L/            blitzeditor.opts (given per test or empty)
+TAG/orig/         unchanged test sources (+ .xtra)
+TAG/work/         working copies that TED loads and saves (copied anew per run)
+TAG/out/          dumps, logs, result files, executables
+TAG/teddrive      the companion process
 ```
 
-* **blitz2 startet TED selbst**: `blitz2:blitz2 AB3C:…/work/NAME.bb2` →
-  blitz2 lädt `blitz2:ted`, ruft Hunk+4 (`outside`) und danach `.tomain`
-  mit dem Dateinamen; TED lädt die Datei (wie im tedstub-Ablauf,
-  `tedstub/README.md` „Ablauf“). Beenden über das Menü QUIT (`escape`)
-  → TED kehrt zurück → blitz2 endet.
-* **Kein Standalone-TED**: ohne blitz2 ist `tokens = 0` (abweichungen.md,
-  Zeile `findtoke`), tokenisierte Quellen würden über die Adresse 0
-  gelesen. Alle Tests laufen über blitz2.
-* **`l:blitzeditor.opts` isolieren** (`defname`, src/core/state.c:60):
-  `loaddefs`/`savedefs` lesen/schreiben `L:` der Systemplatte. Der Lauf
-  setzt `Assign L: AB3C:…/TAG/L` + `Assign L: SYS:L ADD` (eigenes
-  Verzeichnis zuerst, Schreiben geht dorthin) und am Ende `Assign L: SYS:L`.
-  Ohne vorgegebene Datei startet TED mit `defstart` (Daten aus dem Listing,
-  `checkdata`). Vor dem ersten Lauf prüfen, dass `SYS:L/blitzeditor.opts`
-  auf der Platte **nicht** existiert (sonst gälte sie bei Tests ohne eigene
-  Datei – `List SYS:L/blitzeditor.opts` im Gate-Lauf, §3.3).
-* Testquellen: `.bas` aus `compilerlauf/corpus/tests` werden wie in
-  `prepare()` mit `bb2tok.tokenise()` erzeugt, CD-Quellen aus `cd/` kopiert
-  (mit `.xtra`).
+* **blitz2 starts TED itself**: `blitz2:blitz2 AB3C:…/work/NAME.bb2` →
+  blitz2 loads `blitz2:ted`, calls hunk+4 (`outside`) and then `.tomain`
+  with the file name; TED loads the file (as in the tedstub flow,
+  `tedstub/README.md` "Ablauf"). Exit via the menu QUIT (`escape`)
+  → TED returns → blitz2 ends.
+* **No standalone TED**: without blitz2, `tokens = 0` (abweichungen.md,
+  line `findtoke`), tokenised sources would be read via address 0.
+  All tests run via blitz2.
+* **Isolate `l:blitzeditor.opts`** (`defname`, src/core/state.c:60):
+  `loaddefs`/`savedefs` read/write `L:` of the system disk. The run
+  sets `Assign L: AB3C:…/TAG/L` + `Assign L: SYS:L ADD` (own
+  directory first, writing goes there) and at the end `Assign L: SYS:L`.
+  Without a given file TED starts with `defstart` (data from the listing,
+  `checkdata`). Before the first run check that `SYS:L/blitzeditor.opts`
+  does **not** exist on the disk (otherwise it would apply to tests without their own
+  file – `List SYS:L/blitzeditor.opts` in the gate run, §3.3).
+* Test sources: `.bas` from `compilerlauf/corpus/tests` are generated as in
+  `prepare()` with `bb2tok.tokenise()`, CD sources copied from `cd/`
+  (with `.xtra`).
 
-## 3 Emulator: natives Chipset ist Pflicht
+## 3 Emulator: native chipset is mandatory
 
-### 3.1 Befund
+### 3.1 Finding
 
-TED öffnet seinen Screen **als Kopie des Workbench-Modus**:
-`calcscreen` (ted.s:4619, src/screen.c `calcscreen`) liest
-`GetScreenData(…, WBENCHSCREEN)` und übernimmt Breite, Höhe und
-`ViewPort.Modes`; `extnewscreen` (src/data.c) setzt zusätzlich
-`SA_LikeWorkbench` (nur `SA_Depth` = 2 wird überschrieben). Danach zeichnet
-TED **direkt** in `BitMap->Planes[0/1]` (CPU, `print3`) und mit dem Blitter
-über `$DFF000` (`eraseline`, `scrollup`/`scrolldown`, `cls`; src/screen.c).
+TED opens its screen **as a copy of the Workbench mode**:
+`calcscreen` (ted.s:4619, src/screen.c `calcscreen`) reads
+`GetScreenData(…, WBENCHSCREEN)` and takes over width, height and
+`ViewPort.Modes`; `extnewscreen` (src/data.c) additionally sets
+`SA_LikeWorkbench` (only `SA_Depth` = 2 is overridden). Then TED draws
+**directly** into `BitMap->Planes[0/1]` (CPU, `print3`) and with the blitter
+via `$DFF000` (`eraseline`, `scrollup`/`scrolldown`, `cls`; src/screen.c).
 
-Die gemeinsame Testkonfiguration `~/Amiberry/Configurations/A1200-AB3.uae`
-hat eine **RTG-Workbench** (uaegfx, `gfxcard_size=16`, 1680×1050, siehe
-ci-exploration.md §2.1). TED würde dort einen RTG-Screen klonen: die
-Bitplanes lägen im Grafikkartenspeicher, der Blitter kann sie nicht
-adressieren (Zeichnen ins Leere oder in fremdes Chip-RAM), und mit 1050
-Zeilen trifft der Dateirequester den bekannten Überlauf ab 605 Pixel
-Fensterhöhe (reference.md §3.2, `libs-c/libs/freqlib.c`). **TED ist mit
-dieser Konfiguration nicht testbar** – das gilt für beide TEDs gleich, ist
-also kein A/B-Fehler, aber ein Blocker.
+The shared test configuration `~/Amiberry/Configurations/A1200-AB3.uae`
+has an **RTG Workbench** (uaegfx, `gfxcard_size=16`, 1680×1050, see
+ci-exploration.md §2.1). TED would clone an RTG screen there: the
+bitplanes would be in graphics card memory, the blitter cannot
+address them (drawing into nowhere or into foreign chip RAM), and with 1050
+lines the file requester hits the known overflow from 605 pixels
+window height (reference.md §3.2, `libs-c/libs/freqlib.c`). **TED is not testable with
+this configuration** – this applies equally to both TEDs, so it is
+not an A/B error, but a blocker.
 
-### 3.2 Testkonfiguration `A1200-AB3-AGA.uae` (B1 gelöst)
+### 3.2 Test configuration `A1200-AB3-AGA.uae` (B1 solved)
 
-Vom Benutzer angelegt (27.10.2026): `~/Amiberry/Configurations/A1200-AB3-AGA.uae`
-= `A1200-AB3.uae` ohne RTG-Karte (`gfxcard_size`/`gfxcard_type` entfernt)
-mit eigener Hardfile `Workbench_OS3.2-AB3-AGA.vhd`; Workbench-Modus **PAL
-High Res Laced, 256 Farben (Tiefe 8)**. Auswahl über `AMIBERRY_CONFIG`
-(`tedab.py` setzt sie selbst, `--config` überschreibt). Konfiguration und
-Hardfile gehören dem Benutzer und werden von den Werkzeugen nicht
-verändert; eine eigene `A1200-TED.uae` gibt es nicht. Rauchtest des
-Benutzers: `run.script`, `RES:`, `AB3C:`, `BB2:` funktionieren.
+Created by the user (27.10.2026): `~/Amiberry/Configurations/A1200-AB3-AGA.uae`
+= `A1200-AB3.uae` without RTG card (`gfxcard_size`/`gfxcard_type` removed)
+with its own hardfile `Workbench_OS3.2-AB3-AGA.vhd`; Workbench mode **PAL
+High Res Laced, 256 colours (depth 8)**. Selection via `AMIBERRY_CONFIG`
+(`tedab.py` sets it itself, `--config` overrides). Configuration and
+hardfile belong to the user and are not changed by the tools;
+there is no separate `A1200-TED.uae`. Smoke test of the
+user: `run.script`, `RES:`, `AB3C:`, `BB2:` work.
 
-| Einstellung | Wert | Bemerkung |
+| Setting | Value | Remark |
 |---|---|---|
-| `chipset=aga`, `ntsc=false` | wie `A1200-AB3.uae` | PAL/AGA |
-| Workbench-Modus | nativ, PAL High Res Laced, Tiefe 8 | TED klont Breite/Höhe/Modus (`calcscreen`), Tiefe immer 2 (`SA_Depth`); Gate 0 hält die tatsächlichen Werte fest (O-P2) |
-| RTG-Karte | keine | kein Bildschirm kann auf uaegfx landen |
-| `joyport0` | `mouse` (unverändert) | Weg D braucht die Mausposition nicht. **Risiko:** ein Klick der Host-Maus ins Amiberry-Fenster erzeugt echte MOUSEBUTTONS-Nachrichten für TED – während einer Sitzung nicht ins Emulatorfenster klicken |
-| `chipmem_size` | 8 (unverändert) | mehr als ein echter A1200; ändert nur `AvailMem` (maskiert) |
-| `cpu_speed=max`, JIT | wie bisher | Timing über „TED wartet“ (§4.4), nicht über Zeit |
+| `chipset=aga`, `ntsc=false` | as `A1200-AB3.uae` | PAL/AGA |
+| Workbench mode | native, PAL High Res Laced, depth 8 | TED clones width/height/mode (`calcscreen`), depth always 2 (`SA_Depth`); gate 0 records the actual values (O-P2) |
+| RTG card | none | no screen can end up on uaegfx |
+| `joyport0` | `mouse` (unchanged) | route D does not need the mouse position. **Risk:** a click of the host mouse into the Amiberry window generates real MOUSEBUTTONS messages for TED – do not click into the emulator window during a session |
+| `chipmem_size` | 8 (unchanged) | more than a real A1200; changes only `AvailMem` (masked) |
+| `cpu_speed=max`, JIT | as before | timing via "TED is waiting" (§4.4), not via time |
 
-### 3.3 Gate 0 (vor allen Tests)
+### 3.3 Gate 0 (before all tests)
 
-Ein Lauf ohne TED: kleines Prüfprogramm (`tedprobe`, eigenes Programm
-`tests/amiga/tedprobe.c`, Ziel `build/amiga/tests/tedprobe`) schreibt `GetScreenData(WBENCHSCREEN)` (Breite, Höhe, `ViewPort.Modes`,
-`GetVPModeID`, Tiefe), `TypeOfMem(Planes[0])` (muss `MEMF_CHIP` sein),
-`AvailMem(MEMF_CHIP)` und das Vorhandensein von `SYS:L/blitzeditor.opts`
-nach `out/gate0.txt`. Der Runner bricht ab, wenn der Modus nicht nativ
-oder die Größe nicht die erwartete ist. Dasselbe Ergebnis steht in jedem
-Bildschirm-Dump (Kopf, §6.1), damit Dumps verschiedener Läufe nur bei
-gleicher Geometrie verglichen werden.
+A run without TED: a small probe program (`tedprobe`, own program
+`tests/amiga/tedprobe.c`, target `build/amiga/tests/tedprobe`) writes `GetScreenData(WBENCHSCREEN)` (width, height, `ViewPort.Modes`,
+`GetVPModeID`, depth), `TypeOfMem(Planes[0])` (must be `MEMF_CHIP`),
+`AvailMem(MEMF_CHIP)` and the presence of `SYS:L/blitzeditor.opts`
+to `out/gate0.txt`. The runner aborts if the mode is not native
+or the size is not the expected one. The same result is in every
+screen dump (header, §6.1), so that dumps of different runs are only compared with
+the same geometry.
 
-## 4 Begleitprozess `teddrive`
+## 4 Companion process `teddrive`
 
-### 4.1 Aufbau
+### 4.1 Structure
 
-`teddrive SKRIPT BEFEHL [ARGS]` – gebaut wie `reqclose` aus
-`compilerlauf/tedstub/src/reqtrap.c` (dort: AutoRequest/EasyRequestArgs
-gepatcht, Befehl über `SystemTags`, zweiter Prozess über
-`CreateNewProcTags`, Ende über Stop-Flag und Signal). Neu ist der zweite
-Prozess: statt der autonomen Requester-Schleife von `reqclose.h` spielt er
-ein **Skript** ab. Übernommen werden aus `reqclose.h` die erprobten Teile:
-Fenstersuche unter `LockIBase` in den Fensterlisten aller Screens,
-`rc_valid`, `rc_send` (Forbid + LockIBase, Fenster erneut prüfen,
-`PutMsg` einer statischen `ExtIntuiMessage` mit eigenem Reply-Port und
-`IDCMPWindow`), Gadgetsuche über IntuiText, Logpuffer. Dafür
-`reqclose.h` so aufteilen, dass die Helfer ohne `rc_main` einbindbar sind
-(Besitz compilerlauf; `reqclose` muss danach bytegleich oder mit
-`reqclosetest` unverändert grün sein), oder die Helfer als Kopie mit
-Herkunftsvermerk in `ted-c/tests/amiga/` – Entscheidung beim Umsetzen
+`teddrive SCRIPT COMMAND [ARGS]` – built like `reqclose` from
+`compilerlauf/tedstub/src/reqtrap.c` (there: AutoRequest/EasyRequestArgs
+patched, command via `SystemTags`, second process via
+`CreateNewProcTags`, end via stop flag and signal). New is the second
+process: instead of the autonomous requester loop of `reqclose.h` it plays back
+a **script**. Taken over from `reqclose.h` are the proven parts:
+window search under `LockIBase` in the window lists of all screens,
+`rc_valid`, `rc_send` (Forbid + LockIBase, check window again,
+`PutMsg` of a static `ExtIntuiMessage` with its own reply port and
+`IDCMPWindow`), gadget search via IntuiText, log buffer. For this,
+split `reqclose.h` so that the helpers can be included without `rc_main`
+(owned by compilerlauf; `reqclose` must afterwards be byte-equal or
+unchanged green with `reqclosetest`), or the helpers as a copy with
+an origin note in `ted-c/tests/amiga/` – decision when implementing
 (O-P1, §10).
 
-Umgesetzt (Abweichungen von diesem Abschnitt, Begründung in
-[PHASE3-LOG.md](PHASE3-LOG.md)): Aufruf `teddrive SKRIPT PRÄFIX BEFEHL
-[ARGS]` statt `ENV:TEDDRIVE`/`ENV:TEDDRIVELOG` (Log `PRÄFIXlog`, Ergebnis
-`PRÄFIXresult`, Dumps `PRÄFIXNAME.scr`); der AutoRequest/EasyRequest-Patch
-kommt vom unveränderten `reqtrap` (`reqtrap teddrive …`), `REQUESTER:`-Zeilen
-stehen daher in der `.stdout`-Datei; Skriptsyntax in
-`tests/amiga/tdscript.h` (auf dem Host gegen `tedab.py` geprüft).
+Implemented (deviations from this section, justification in
+[PHASE3-LOG.md](PHASE3-LOG.md)): invocation `teddrive SCRIPT PREFIX COMMAND
+[ARGS]` instead of `ENV:TEDDRIVE`/`ENV:TEDDRIVELOG` (log `PREFIXlog`, result
+`PREFIXresult`, dumps `PREFIXNAME.scr`); the AutoRequest/EasyRequest patch
+comes from the unchanged `reqtrap` (`reqtrap teddrive …`), `REQUESTER:` lines
+are therefore in the `.stdout` file; script syntax in
+`tests/amiga/tdscript.h` (checked on the host against `tedab.py`).
 
-Ort: `ted-c/tests/amiga/teddrive.c` (+ `teddrive.h`), CMake-Ziel im Preset
-`amiga` (`build/amiga/tests/teddrive`), wie `reqtrap` ohne C-Laufzeit
-übersetzbar. Der AutoRequest-Patch bleibt: DOS-Requester („Please insert
-volume …“) und Alerts über EasyRequest dürfen den Lauf nicht anhalten; ihr
-Text erscheint als `REQUESTER: …` im Log.
+Location: `ted-c/tests/amiga/teddrive.c` (+ `teddrive.h`), CMake target in preset
+`amiga` (`build/amiga/tests/teddrive`), compilable like `reqtrap` without C
+runtime. The AutoRequest patch stays: DOS requesters ("Please insert
+volume …") and alerts via EasyRequest must not stop the run; their
+text appears as `REQUESTER: …` in the log.
 
-Skript: Pfad in `ENV:TEDDRIVE` (oder erstes Argument); Log angehängt an
-`ENV:TEDDRIVELOG` (Datei auf `AB3C:`, `Open`/`Seek`/`Write`/`Close` je
-Zeile wie das tedstub-Log, übersteht Hänger und Abstürze).
+Script: path in `ENV:TEDDRIVE` (or first argument); log appended to
+`ENV:TEDDRIVELOG` (file on `AB3C:`, `Open`/`Seek`/`Write`/`Close` per
+line like the tedstub log, survives hangs and crashes).
 
-### 4.2 Wie TED Eingaben liest – was injiziert werden muss
+### 4.2 How TED reads input – what must be injected
 
-TED liest **nur IDCMP** des aktuellen Fensters: `getinput`/`getinput2`
-(ted.s:5845/5833, src/input.c) holen aus `pickwindow()->UserPort`
-(`req_window`, sonst `mywindow`), `handled0` (ted.s:5866) wertet aus:
+TED reads **only IDCMP** of the current window: `getinput`/`getinput2`
+(ted.s:5845/5833, src/input.c) fetch from `pickwindow()->UserPort`
+(`req_window`, otherwise `mywindow`), `handled0` (ted.s:5866) evaluates:
 
-| Klasse | was TED liest | Injektion |
+| Class | what TED reads | Injection |
 |---|---|---|
-| `IDCMP_RAWKEY` | `Code` (Key-Up ignoriert), `Qualifier` → `rawed_convert` (RawKeyConvert mit eigener InputEvent, F1–F10 → `$81–$8A`, Cursor → `$1C–$1F`, Help → `$8B`) | **direkte IntuiMessage** (wie `rc_send`): `Class`, `Code`, `Qualifier`; Text über `MapANSI` (keymap.library V36) in Rawkey+Qualifier, damit die eingestellte Tastaturbelegung stimmt (TED benutzt sie über console.device) |
-| `IDCMP_MENUPICK` | nur `Code` (`FULLMENUNUM`), `menu`/`extmenu` rechnen Menü/Punkt selbst um (src/edit.c `menu`), `NextSelect` ignoriert | **direkte IntuiMessage**, `Code = menu | item<<5 | 31<<11` |
-| `IDCMP_GADGETUP/DOWN` | `IAddress` → `GadgetID`, `GadgetType`, `Activation & ENDGADGET` | **direkte IntuiMessage** mit `IAddress` = Gadget (wie reqclose) |
-| Return / Esc im Requester | `handled0`: Return → erstes ENDGADGET (Bool), Esc → letztes ENDGADGET | RAWKEY `$44` / `$45` – prüft TEDs eigenen Pfad mit |
-| `IDCMP_MOUSEBUTTONS` | nur `Code` (SELECTDOWN/UP); die **Position** liest `getmousexy` (ted.s:4015) aus `myscreen->MouseX/MouseY` | Zeiger muss wirklich stehen → `input.device` `IND_WRITEEVENT` `IECLASS_NEWPOINTERPOS` (`IESUBCLASS_PIXEL`, Screen = TEDs Screen), dann Knopf als RAWMOUSE-Ereignis oder direkte MOUSEBUTTONS-Nachricht |
-| Amiga-Tastenkürzel (`COMMSEQ`, z. B. Amiga-S) | erzeugt Intuition aus RAWKEY+Amiga | nur über `input.device` (RAWKEY mit `IEQUALIFIER_RCOMMAND`) |
+| `IDCMP_RAWKEY` | `Code` (key-up ignored), `Qualifier` → `rawed_convert` (RawKeyConvert with its own InputEvent, F1–F10 → `$81–$8A`, cursor → `$1C–$1F`, Help → `$8B`) | **direct IntuiMessage** (like `rc_send`): `Class`, `Code`, `Qualifier`; text via `MapANSI` (keymap.library V36) into rawkey+qualifier, so that the configured keyboard layout matches (TED uses it via console.device) |
+| `IDCMP_MENUPICK` | only `Code` (`FULLMENUNUM`), `menu`/`extmenu` convert menu/item themselves (src/edit.c `menu`), `NextSelect` ignored | **direct IntuiMessage**, `Code = menu | item<<5 | 31<<11` |
+| `IDCMP_GADGETUP/DOWN` | `IAddress` → `GadgetID`, `GadgetType`, `Activation & ENDGADGET` | **direct IntuiMessage** with `IAddress` = gadget (like reqclose) |
+| Return / Esc in the requester | `handled0`: Return → first ENDGADGET (bool), Esc → last ENDGADGET | RAWKEY `$44` / `$45` – also checks TED's own path |
+| `IDCMP_MOUSEBUTTONS` | only `Code` (SELECTDOWN/UP); the **position** is read by `getmousexy` (ted.s:4015) from `myscreen->MouseX/MouseY` | the pointer must really be there → `input.device` `IND_WRITEEVENT` `IECLASS_NEWPOINTERPOS` (`IESUBCLASS_PIXEL`, screen = TED's screen), then the button as RAWMOUSE event or direct MOUSEBUTTONS message |
+| Amiga keyboard shortcuts (`COMMSEQ`, e.g. Amiga-S) | generated by Intuition from RAWKEY+Amiga | only via `input.device` (RAWKEY with `IEQUALIFIER_RCOMMAND`) |
 
-Daraus zwei Wege:
+From this, two routes:
 
-* **Weg D (direkt, Stufe 1/2)**: Tasten, Menüwahl, Gadgets, Requester-
-  Antworten als IntuiMessages in den UserPort. Deterministisch, ohne
-  input.device; reqclose hat genau diese Technik im Testemulator bewährt.
-* **Weg I (input.device, Stufe 3)**: nur für Mausposition, Klicks ins
-  Textfeld/die Prop-Gadgets und Amiga-Kürzel. Die frühere input.device-
-  Variante von reqclose legte im Testemulator den input-Task lahm – das
-  war auf der **RTG**-Workbench (tedstub/README.md „reqclose“, letzter
-  Punkt); auf dem nativen Screen neu prüfen: **Gate I** = kleiner
-  `teddrivetest` (eigener Screen, Zeiger setzen, Klick, Kürzel, Ergebnis
-  „expected“/„MISMATCH“ wie `reqclosetest`), Weg I nur, wenn das Gate
-  grün ist.
+* **Route D (direct, stage 1/2)**: keys, menu selection, gadgets, requester
+  answers as IntuiMessages into the UserPort. Deterministic, without
+  input.device; reqclose has proven exactly this technique in the test emulator.
+* **Route I (input.device, stage 3)**: only for mouse position, clicks into the
+  text area/the prop gadgets and Amiga shortcuts. The former input.device
+  variant of reqclose paralysed the input task in the test emulator – that
+  was on the **RTG** Workbench (tedstub/README.md "reqclose", last
+  point); re-check on the native screen: **gate I** = small
+  `teddrivetest` (own screen, set pointer, click, shortcut, result
+  "expected"/"MISMATCH" like `reqclosetest`), route I only if the gate
+  is green.
 
-### 4.3 Requester
+### 4.3 Requesters
 
-| Requester | Erkennung | Antwort |
+| Requester | Detection | Answer |
 |---|---|---|
-| TEDs eigene (`openreq`, src/reqs.c: Fenster `reqwindow` **ohne Titel** auf TEDs Screen): erase, error, find, repall, goto, defaults, about | neues Fenster auf TEDs Screen; Kennung = Liste der Gadget-Texte und -IDs (IntuiText), z. B. erasereq, errorreq aus src/data.c | `gad ID` (GADGETUP auf ENDGADGET → `handled0` schließt), `key $44`/`$45` |
-| blitz2-Requester über comdata `openreq` (Versionsrequester „OKEE DOKEE“, „COMPILING“, Fehler über `error` comdata+12) | wie oben (laufen durch TEDs `openreq`; Gadgets werden einmalig +6/+12 verschoben, abweichungen-relevant O6) | Versionsrequester: `gad 1` bzw. Return |
-| Dateirequester (freqlib-Kern, `ezfreq`) | Fenstertitel = Titeltext: „Name of file to load“, „Name to save file as“ (src/core/state.c:72/73), „Name of Executable to create“ (blitz2) | `freq ok` = GADGETUP auf „OK“ (wie `reqclose ok TITEL`; Pfad/Name sind vorbelegt mit `filepath`/`filename` der geladenen Datei); `freq ok NAME` schreibt vorher den Namen in den Puffer des Namens-Stringgadgets |
-| unerwartet | jedes andere neue Fenster | Log mit allen Gadgets (wie `rc_dumpgadgets`), Test = FAIL, Rettungsfolge §4.5 |
+| TED's own (`openreq`, src/reqs.c: window `reqwindow` **without title** on TED's screen): erase, error, find, repall, goto, defaults, about | new window on TED's screen; identifier = list of the gadget texts and IDs (IntuiText), e.g. erasereq, errorreq from src/data.c | `gad ID` (GADGETUP on ENDGADGET → `handled0` closes), `key $44`/`$45` |
+| blitz2 requesters via comdata `openreq` (version requester "OKEE DOKEE", "COMPILING", errors via `error` comdata+12) | as above (run through TED's `openreq`; gadgets are shifted once by +6/+12, relevant for deviations O6) | version requester: `gad 1` or Return |
+| File requester (freqlib core, `ezfreq`) | window title = title text: "Name of file to load", "Name to save file as" (src/core/state.c:72/73), "Name of Executable to create" (blitz2) | `freq ok` = GADGETUP on "OK" (like `reqclose ok TITLE`; path/name are preset with `filepath`/`filename` of the loaded file); `freq ok NAME` first writes the name into the buffer of the name string gadget |
+| unexpected | any other new window | log with all gadgets (like `rc_dumpgadgets`), test = FAIL, rescue sequence §4.5 |
 
-**String-/Integer-Gadgets** (Such-/Ersetztext `findreqsg1/2`, Zeile im
-goto-Requester, Tabstop/Farben im defaults-Requester): Tippen über Weg D
-erreicht sie nicht (die Bearbeitung macht Intuition). `str ID "text"`
-schreibt unter Forbid + LockIBase in `StringInfo->Buffer`, setzt
-`NumChars`, `BufferPos = DispPos = 0` und bei `GACT_LONGINT` auch
-`LongInt` (TED liest z. B. `int3 = defaultreqsg3.LongInt`, src/data.h:79),
-dann `RefreshGList`; danach GADGETUP auf das Stringgadget oder auf den
-Knopf. Gleich für A und B, also für den Vergleich neutral.
+**String/integer gadgets** (search/replace text `findreqsg1/2`, line in the
+goto requester, tab stop/colours in the defaults requester): typing via route D
+does not reach them (the editing is done by Intuition). `str ID "text"`
+writes under Forbid + LockIBase into `StringInfo->Buffer`, sets
+`NumChars`, `BufferPos = DispPos = 0` and with `GACT_LONGINT` also
+`LongInt` (TED reads e.g. `int3 = defaultreqsg3.LongInt`, src/data.h:79),
+then `RefreshGList`; afterwards GADGETUP on the string gadget or on the
+button. Same for A and B, hence neutral for the comparison.
 
-### 4.4 Synchronisation: „TED wartet“
+### 4.4 Synchronisation: "TED is waiting"
 
-Jeder Schritt wartet, bis TED die vorige Eingabe verarbeitet hat – nie
-feste Pausen. Das Reply (`ReplyMsg`) genügt **nicht**: `handled0` antwortet
-vor dem Ausführen der Routine. Kriterium `idle` (unter `Forbid` gelesen):
+Every step waits until TED has processed the previous input – never
+fixed pauses. The reply (`ReplyMsg`) is **not** sufficient: `handled0` replies
+before executing the routine. Criterion `idle` (read under `Forbid`):
 
-* Task des Fensters (`UserPort->mp_SigTask`) in `TS_WAIT`,
-* `tc_SigWait` enthält `1 << UserPort->mp_SigBit` (TED steht in
-  `WaitPort` von `getinput`, nicht in `Delay` von `refme`/`actgad` – dort
-  wartet er auf das DOS-Signal),
-* Port leer, keine eigene Nachricht unbeantwortet,
-* das dreimal in Folge im 40-ms-Takt (`Delay(2)` wie reqclose).
+* task of the window (`UserPort->mp_SigTask`) in `TS_WAIT`,
+* `tc_SigWait` contains `1 << UserPort->mp_SigBit` (TED is in
+  `WaitPort` of `getinput`, not in `Delay` of `refme`/`actgad` – there
+  it waits for the DOS signal),
+* port empty, no own message unanswered,
+* this three times in a row at a 40 ms interval (`Delay(2)` like reqclose).
 
-Busy-Polls (`mousedown`-Ziehen, Kompilieren mit STOP-Abfrage über
-`getinput2`) sind nie `idle`; dort wartet das Skript auf das Ergebnis
-(neues Fenster, Fenster weg, Prozess beendet).
+Busy polls (`mousedown` dragging, compiling with STOP query via
+`getinput2`) are never `idle`; there the script waits for the result
+(new window, window gone, process ended).
 
-### 4.5 Skriptsprache (Vorschlag)
+### 4.5 Script language (proposal)
 
 ```
-; Kommentar
-timeout 15                 Zeitgrenze für jedes folgende wait (s)
-wait screen                TEDs Screen offen (Titel "Blitz Basic 2"/"File: ") und idle
-wait req LABEL [LABEL…]    neues Fenster auf TEDs Screen mit diesen Gadget-Texten, TED idle
-wait freq TITLE            Dateirequester mit diesem Titel
-wait gone                  oberstes Requester-Fenster geschlossen, TED idle
+; comment
+timeout 15                 time limit for every following wait (s)
+wait screen                TED's screen open (title "Blitz Basic 2"/"File: ") and idle
+wait req LABEL [LABEL…]    new window on TED's screen with these gadget texts, TED idle
+wait freq TITLE            file requester with this title
+wait gone                  topmost requester window closed, TED idle
 wait idle
-wait exit                  blitz2 beendet (SystemTags kehrt zurück)
-key CODE [QUAL]            RAWKEY (hex), danach idle
-type "TEXT"                MapANSI → RAWKEY-Folge, idle nach jeder Taste; \n = Return
-menu M I                   MENUPICK (Menü M, Punkt I; COMPILER = Menü 4)
-gad ID                     GADGETUP im obersten TED-Fenster
-str ID "TEXT"              Stringgadget füllen (§4.3)
+wait exit                  blitz2 ended (SystemTags returns)
+key CODE [QUAL]            RAWKEY (hex), then idle
+type "TEXT"                MapANSI → RAWKEY sequence, idle after every key; \n = Return
+menu M I                   MENUPICK (menu M, item I; COMPILER = menu 4)
+gad ID                     GADGETUP in the topmost TED window
+str ID "TEXT"              fill string gadget (§4.3)
 freq ok|cancel [NAME]
-pointer X Y | click X Y    nur Weg I (Gate I)
-dump NAME                  Bildschirm nach out/NAME.scr (§6.1)
-state NAME                 interner Zustand nach out/NAME.st (§6.2, Stufe 2)
-mem NAME                   AvailMem(MEMF_ANY/CHIP) ins Log
+pointer X Y | click X Y    route I only (gate I)
+dump NAME                  screen to out/NAME.scr (§6.1)
+state NAME                 internal state to out/NAME.st (§6.2, stage 2)
+mem NAME                   AvailMem(MEMF_ANY/CHIP) into the log
 log "TEXT"
 ```
 
-Jede Zeile wird **vor** der Ausführung ins Log geschrieben (`step N …`),
-das Ergebnis danach (`ok`, `timeout`, gesehene Fenster mit Gadgets). Läuft
-ein `wait` in die Zeitgrenze: Rettungsfolge – Esc in jedes TED-Fenster,
-`freq cancel`, Menü QUIT (`menu 0 9`), auf den erase-Requester Gadget 1
-(`erase2` beendet nur bei `d6 == 1`, src/reqs.c) – dann `RESULT FAIL schritt grund`; blockiert auch das, beendet der
-Emulator-Watchdog die Sitzung (§5).
+Every line is written to the log **before** execution (`step N …`),
+the result afterwards (`ok`, `timeout`, seen windows with gadgets). If
+a `wait` runs into the time limit: rescue sequence – Esc into every TED window,
+`freq cancel`, menu QUIT (`menu 0 9`), on the erase requester gadget 1
+(`erase2` only ends with `d6 == 1`, src/reqs.c) – then `RESULT FAIL step reason`; if that blocks too, the
+emulator watchdog ends the session (§5).
 
-Ergebnis je Lauf: `out/RUN.result` mit genau einer Zeile `OK`,
-`FAIL schritt grund` – geschrieben von teddrive; fehlt die Datei nach der
-Sitzung, setzt der Runner `TIMEOUT` (bzw. `CRASH`, wenn der Lauf begonnen,
-aber nicht beendet wurde und die Sitzung früh endete).
+Result per run: `out/RUN.result` with exactly one line `OK`,
+`FAIL step reason` – written by teddrive; if the file is missing after the
+session, the runner sets `TIMEOUT` (or `CRASH` if the run started
+but did not finish and the session ended early).
 
-## 5 Runner `tedab.py` und Sitzungen
+## 5 Runner `tedab.py` and sessions
 
-Ort `ted-c/tools/tedab.py` (importiert `compilerlauf/tools/bb2compile.py`
-für `prepare`-Teile, `LOCK`, `AB3C`, `amiga_path`, und `corpus_check.mask_trap1`).
+Location `ted-c/tools/tedab.py` (imports `compilerlauf/tools/bb2compile.py`
+for `prepare` parts, `LOCK`, `AB3C`, `amiga_path`, and `corpus_check.mask_trap1`).
 
 ```
 python3 -I tools/tedab.py [--combos R5,C5,Rc,Cc] [--test GLOB] [--timeout 90] [--keep]
-  -> results/ted-ab/COMBO/TEST/…   (Dateien, Dumps, Logs, .result)
-  -> results/ted-ab/report.txt     (Matrix Test × Vergleich: SAME/DIFF/KNOWN/FAIL/TIMEOUT)
+  -> results/ted-ab/COMBO/TEST/…   (files, dumps, logs, .result)
+  -> results/ted-ab/report.txt     (matrix test × comparison: SAME/DIFF/KNOWN/FAIL/TIMEOUT)
 ```
 
-* **Lauf** = (Test, Kombination). Skriptteil je Lauf:
+* **Run** = (test, combination). Script part per run:
   ```
   Echo "RUN t03-join C5 start" >>AB3C:…/out/session.log
   Assign blitz2: AB3C:…/C5/blitz2
@@ -310,247 +310,247 @@ python3 -I tools/tedab.py [--combos R5,C5,Rc,Cc] [--test GLOB] [--timeout 90] [-
   Assign blitz2:
   Echo "RUN t03-join C5 end" >>AB3C:…/out/session.log
   ```
-* **Sitzung** = mehrere Läufe hintereinander in **einem** Emulatorstart
-  (Boot ≈ 15 s, `tools/amiberry.cmake`), `--timeout 90` (wie
-  `bb2compile.BATCH_TIMEOUT`). Der Runner packt nach gemessener Laufzeit
-  (Startwert: 10 s je Lauf) höchstens so viele Läufe, dass ≤ 60 s erwartet
-  werden; die Kombinationen eines Tests liegen in derselben Sitzung
-  (gleicher Systemzustand für A und B).
-* **Hänger**: Watchdog = Zeitlimit von `tools/amiberry.cmake` (beendet Amiberry,
-  Teilergebnisse bleiben in `AB3C:`). Der Runner liest `session.log`: der
-  Lauf mit `start` ohne `end` wird `TIMEOUT`, die übrigen werden in einer
-  neuen Sitzung wiederholt (Muster `bb2corpus.run_session`). Nach zwei
-  TIMEOUTs desselben Tests in derselben Kombination kein dritter Versuch.
-* Läufe ändern das System nicht dauerhaft: `L:` wird zurückgesetzt, alle
-  Dateien liegen auf `AB3C:`; ein abgestürzter TED hinterlässt höchstens
-  Speicher (nächster Lauf = neue Sitzung, frischer Boot).
+* **Session** = several runs one after another in **one** emulator start
+  (boot ≈ 15 s, `tools/amiberry.cmake`), `--timeout 90` (like
+  `bb2compile.BATCH_TIMEOUT`). Based on the measured run time
+  (initial value: 10 s per run), the runner packs at most as many runs that ≤ 60 s are
+  expected; the combinations of a test are in the same session
+  (same system state for A and B).
+* **Hangs**: watchdog = time limit of `tools/amiberry.cmake` (terminates Amiberry,
+  partial results remain in `AB3C:`). The runner reads `session.log`: the
+  run with `start` without `end` becomes `TIMEOUT`, the rest are repeated in a
+  new session (pattern `bb2corpus.run_session`). After two
+  TIMEOUTs of the same test in the same combination no third attempt.
+* Runs do not change the system permanently: `L:` is reset, all
+  files are on `AB3C:`; a crashed TED leaves at most
+  memory (next run = new session, fresh boot).
 
-## 6 Was verglichen wird
+## 6 What is compared
 
-| Gegenstand | Quelle | Vergleich | Maske/Hinweis |
+| Subject | Source | Comparison | Mask/note |
 |---|---|---|---|
-| gespeicherte Quelle | `work/NAME.bb2` nach SAVE | A↔B **bytegleich**; zusätzlich gegen Orakel (Rundreise: = Original; getippter Text: = `bb2tok.tokenise(erwarteter Text)`) | – |
-| `.bak` | `work/NAME.bb2.bak` (filesave: Delete + Rename, src/main.c `filesave`) | Existenz und Inhalt = alte Datei | – |
-| `.xtra` | `savextra`-Rückruf beim Speichern | A↔B bytegleich; R5↔Rc zeigt, ob blitz2-c dieselben Optionen schreibt | – |
-| `.info` | `srcinfo` (396 Bytes, reference.md §3) bei `makeicons` | bytegleich (Icon-Position wird von TED nicht gesetzt) | – |
-| Executable | COMPILER → CREATE EXECUTABLE | A↔B bytegleich; zusätzlich = Executable von tedstub für dieselbe Quelle und denselben Compiler | mit „Runtime Errors“: `mask_trap1` (Adresse der Editorzeile hinter `trap #1`/`#4` hängt vom Speicher ab); bevorzugt `.xtra` mit abgeschalteter Option (wie `bb2compile --no-runerr`, Bytes 2–5) |
-| Fehlerzeile → Cursor | `error` (comdata+12) → errorreq, dann `menurout` → d0 → `gotolined0` (src/edit.c) | Requester-Kennung gleich; danach Statuszeile „Line:“/„Column:“ und Cursor im Dump gleich und = erwartete Zeile | – |
-| Bildschirm | `dump` (§6.1) nach festgelegten Schritten | Bitplanes bytegleich | Feld „Free“ (Statuszeile, `printmem`: `statsloc+38`, 5 Zeichen) |
-| Requester-Folge | teddrive-Log: jedes neue Fenster mit Titel und Gadget-Texten | Folge gleich | Fensterzeiger/Adressen nicht vergleichen |
-| Optionsdatei | `TAG/L/blitzeditor.opts` nach DEFAULTS → OK (`savedefs`, 50 Bytes) | bytegleich, = erwartetes Abbild aus `defstart` mit Änderung | – |
-| Screen-Titel | `Screen->Title` im Dump-Kopf (`newsctit`: „File: NAME“, Hilfetext nach Help) | gleich | – |
-| Speicherbilanz | `mem` vor dem Start und nach `wait exit` | Differenz A↔B gleich (Lecks wie `join`-FreeMem ohne `lenitem` treten in beiden auf) | absolute Werte nicht (Programmgrößen verschieden); Stufe 2 |
-| Rückgabe von blitz2 | `rc=` in `.stdout` | gleich | – |
+| saved source | `work/NAME.bb2` after SAVE | A↔B **byte-equal**; additionally against oracle (round trip: = original; typed text: = `bb2tok.tokenise(expected text)`) | – |
+| `.bak` | `work/NAME.bb2.bak` (filesave: Delete + Rename, src/main.c `filesave`) | existence and contents = old file | – |
+| `.xtra` | `savextra` callback when saving | A↔B byte-equal; R5↔Rc shows whether blitz2-c writes the same options | – |
+| `.info` | `srcinfo` (396 bytes, reference.md §3) with `makeicons` | byte-equal (icon position is not set by TED) | – |
+| Executable | COMPILER → CREATE EXECUTABLE | A↔B byte-equal; additionally = executable of tedstub for the same source and the same compiler | with "Runtime Errors": `mask_trap1` (address of the editor line after `trap #1`/`#4` depends on memory); preferably `.xtra` with the option switched off (like `bb2compile --no-runerr`, bytes 2–5) |
+| Error line → cursor | `error` (comdata+12) → errorreq, then `menurout` → d0 → `gotolined0` (src/edit.c) | requester identifier equal; afterwards status line "Line:"/"Column:" and cursor in the dump equal and = expected line | – |
+| Screen | `dump` (§6.1) after defined steps | bitplanes byte-equal | field "Free" (status line, `printmem`: `statsloc+38`, 5 characters) |
+| Requester sequence | teddrive log: every new window with title and gadget texts | sequence equal | do not compare window pointers/addresses |
+| Options file | `TAG/L/blitzeditor.opts` after DEFAULTS → OK (`savedefs`, 50 bytes) | byte-equal, = expected image from `defstart` with change | – |
+| Screen title | `Screen->Title` in the dump header (`newsctit`: "File: NAME", help text after Help) | equal | – |
+| Memory balance | `mem` before the start and after `wait exit` | difference A↔B equal (leaks like `join` FreeMem without `lenitem` occur in both) | not absolute values (program sizes differ); stage 2 |
+| Return of blitz2 | `rc=` in `.stdout` | equal | – |
 
-### 6.1 Bildschirm-Dump
+### 6.1 Screen dump
 
-**Mechanismus**: teddrive wartet auf `idle`, dann unter `Forbid` (TED
-zeichnet nur im eigenen Task, der wartet; der Blitter ist nach
-`WaitBlit`/`DisownBlitter` frei): TEDs Screen suchen (Fenster des
-blitz2-Prozesses, Titel), `BitMap = Screen->RastPort.BitMap`, Datei
-`out/NAME.scr` schreiben:
+**Mechanism**: teddrive waits for `idle`, then under `Forbid` (TED
+draws only in its own task, which is waiting; the blitter is free after
+`WaitBlit`/`DisownBlitter`): find TED's screen (window of the
+blitz2 process, title), `BitMap = Screen->RastPort.BitMap`, write file
+`out/NAME.scr`:
 
 ```
-Kopf (Text, 1 Zeile je Feld): magic TEDSCR1, Width, Height, Depth,
-  BytesPerRow, Rows, ModeID, MouseX, MouseY, Title, Anzahl Fenster auf
-  dem Screen (mit Lage/Größe), TypeOfMem(Planes[0])
-dann Depth × BytesPerRow × Rows Bytes (Plane 0, Plane 1)
+Header (text, 1 line per field): magic TEDSCR1, Width, Height, Depth,
+  BytesPerRow, Rows, ModeID, MouseX, MouseY, Title, number of windows on
+  the screen (with position/size), TypeOfMem(Planes[0])
+then Depth × BytesPerRow × Rows bytes (plane 0, plane 1)
 ```
 
-(640×512×2: 80 KB je Dump.) Das ist robust, braucht keine Adressen in TED
-und ist für beide TEDs gleich. Offene TED-Requester sind Fenster auf
-demselben Screen und stehen mit im Bild – erwünscht (Requester-Inhalt
-gleich), Lage steht im Kopf.
+(640×512×2: 80 KB per dump.) This is robust, needs no addresses in TED
+and is the same for both TEDs. Open TED requesters are windows on
+the same screen and are in the picture too – desired (requester contents
+equal), position is in the header.
 
-**Auswertung** (`ted-c/tools/teddump.py`): PNG für Menschen; Text-
-Dekodierung des Editorbereichs mit den TED-Zeichensätzen (`chars8.b`/
-`chars.b` aus `quelltext/amibl2src/files/amiblitz2source/bb2src.zip.dir/tedt`,
-wie `bin2c.py`; Lage: ab Zeile `topskip` = 12, `fonthite` 8 oder 6,
-Zeichen `(c&15) + (c>>4)*128 + r*16` bzw. `*96`, reference.md §3) → Text
-je Zeile + Attribut (invers = Block/Cursor, Plane 1), damit ein DIFF als
-lesbarer Zeilenunterschied erscheint; Statuszeile (`statsloc`, Texte
-„Line:“, „Column:“, „Block“) dekodiert, „Free“ maskiert. Vergleich:
-Planes bytegleich nach Maske, sonst Textdiff + Differenzbild.
+**Evaluation** (`ted-c/tools/teddump.py`): PNG for humans; text
+decoding of the editor area with the TED fonts (`chars8.b`/
+`chars.b` from `quelltext/amibl2src/files/amiblitz2source/bb2src.zip.dir/tedt`,
+like `bin2c.py`; position: from line `topskip` = 12, `fonthite` 8 or 6,
+character `(c&15) + (c>>4)*128 + r*16` or `*96`, reference.md §3) → text
+per line + attribute (inverse = block/cursor, plane 1), so that a DIFF appears as a
+readable line difference; status line (`statsloc`, texts
+"Line:", "Column:", "Block") decoded, "Free" masked. Comparison:
+planes byte-equal after mask, otherwise text diff + difference image.
 
-**chmap** (TEDs Zeichenkarte, `chmap`, chcols × edrows, Chip-RAM) ist
-damit nicht nötig: TED führt sie parallel zu den Bitplanes (gleiche
-Zeichen; DIFF „chmap-Blits“: in TED-C mit der CPU statt dem Blitter), die
-Dekodierung liefert für den sichtbaren Bereich dieselbe Information. Wer sie direkt will: §6.2.
+**chmap** (TED's character map, `chmap`, chcols × edrows, chip RAM) is
+thus not needed: TED maintains it in parallel to the bitplanes (same
+characters; DIFF "chmap blits": in TED-C with the CPU instead of the blitter), the
+decoding delivers the same information for the visible area. Whoever wants it directly: §6.2.
 
-### 6.2 Interner Zustand (Stufe 2, optional)
+### 6.2 Internal state (stage 2, optional)
 
-Für Fehlersuche: `state NAME` liest TEDs Variablen (`chmap`-Inhalt,
+For debugging: `state NAME` reads TED's variables (`chmap` contents,
 `cursx`/`cursy`/`cursoff`/`curstop`, `numlines`, `btopx…bboty`,
-`allalt`, `tabstop`, `tokenise`) und die Zeilenliste ab `firstitem`
-(`struct item`: Länge + Bytes – das In-Memory-Abbild der Quelle, ohne
-Speichern vergleichbar).
+`allalt`, `tabstop`, `tokenise`) and the line list from `firstitem`
+(`struct item`: length + bytes – the in-memory image of the source, comparable
+without saving).
 
-TED veröffentlicht keine Adressen (`comdata` kennt nur blitz2). Einstieg
-über den **VBlank-Server `myint`** (ted.s:306, src/main.c:22;
-`AddIntServer(INTB_VERTB, &myint)`): teddrive durchläuft unter `Disable`
-die Serverliste `SysBase->IntVects[INTB_VERTB].iv_Data`, nimmt Knoten mit
-`ln_Type = NT_INTERRUPT`, `ln_Name = NULL`, `is_Data = NULL`, berechnet
-die Hunkbasis `= &myint − OFF(myint)` und prüft sie mit einer Kennung im
-selben Hunk (`deftitname` „Blitz Basic 2 - Ted Version 1.1“ bzw. ein
-anderes konstantes Datum, das im selben Hunk liegt). Die Offsets erzeugt
-der Runner je TED als Beschreibung `TED.desc`:
+TED publishes no addresses (`comdata` is known only to blitz2). Entry
+via the **VBlank server `myint`** (ted.s:306, src/main.c:22;
+`AddIntServer(INTB_VERTB, &myint)`): under `Disable`, teddrive walks
+the server list `SysBase->IntVects[INTB_VERTB].iv_Data`, takes nodes with
+`ln_Type = NT_INTERRUPT`, `ln_Name = NULL`, `is_Data = NULL`, computes
+the hunk base `= &myint − OFF(myint)` and checks it with an identifier in the
+same hunk (`deftitname` "Blitz Basic 2 - Ted Version 1.1" or another
+constant datum located in the same hunk). The offsets are generated
+by the runner per TED as a description `TED.desc`:
 
-* Referenz: `build/amiga/ref/ted.labels` (ein Hunk; z. B. `myint` `$632`,
+* Reference: `build/amiga/ref/ted.labels` (one hunk; e.g. `myint` `$632`,
   `chmap` `$5E5A`, `cursx` `$5E3E`, `curstop` `$5E54`, `firstitem`
   `$5E60`, `numlines` `$5E6C`, `defstart` `$5E8C`),
-* TED-C: `build/amiga/ted.map` / `ted.sym` (`-fbaserel`: Variablen und
-  `myint` im Daten-Hunk; Offsets relativ zu dessen Anfang).
+* TED-C: `build/amiga/ted.map` / `ted.sym` (`-fbaserel`: variables and
+  `myint` in the data hunk; offsets relative to its start).
 
-Feldbreiten nach `structs.h`/`state.h` (Amiga-Layout ist per
-`_Static_assert` an das Original gebunden). Stufe 1 braucht das nicht.
+Field widths according to `structs.h`/`state.h` (the Amiga layout is bound to the original via
+`_Static_assert`). Stage 1 does not need this.
 
-## 7 Testliste
+## 7 Test list
 
-Quellen: `T` = `compilerlauf/corpus/tests/NAME.bas` (vom Runner mit
-`bb2tok` tokenisiert), `S` = `compilerlauf/tedstub/tests/syntaxerr.bb2`
-(Fehler in Zeile 2, `b=(a+`), `K` = CD-Quelle aus `cd/`. Jeder Test
-beginnt mit `wait req "OKEE DOKEE"` → `gad 1` (Versionsrequester von
-blitz2) und `wait screen`, endet mit QUIT (`menu 0 9`) und ggf. erase-
-Requester, `wait exit`; dazwischen `dump` an den genannten Stellen.
+Sources: `T` = `compilerlauf/corpus/tests/NAME.bas` (tokenised by the runner with
+`bb2tok`), `S` = `compilerlauf/tedstub/tests/syntaxerr.bb2`
+(error in line 2, `b=(a+`), `K` = CD source from `cd/`. Every test
+starts with `wait req "OKEE DOKEE"` → `gad 1` (version requester of
+blitz2) and `wait screen`, ends with QUIT (`menu 0 9`) and if needed the erase
+requester, `wait exit`; in between `dump` at the named places.
 
-Menünummern aus `menutable` (src/input.c): PROJECT 0 (NEW 0, LOAD 1, SAVE 2,
+Menu numbers from `menutable` (src/input.c): PROJECT 0 (NEW 0, LOAD 1, SAVE 2,
 DEFAULTS 3, ABOUT 4, PRINT 5, CLI 6, CLOSE WB 7, OPEN WB 8, QUIT 9), EDIT 1
 (COPY 0, KILL 1, BLOCK SAVE 2, BLOCK LOAD 3, FORGET 4, INSERT LINE 5,
 DELETE LINE 6, JOIN 8, BLOCK TAB 9, UNTAB 10, MARK INDENT 11), SOURCE 2
 (TOP 0, BOTTOM 1, GOTO 2), SEARCH 3 (FIND 0, NEXT 1, PREVIOUS 2,
-REPLACE 3, REPLACE ALL 4), COMPILER 4 (blitz2; CREATE EXECUTABLE = Punkt 2
-wie im tedstub). Tasten: F1/F2 Blockanfang/-ende (`$50`/`$51` → 129/130),
-F3 Block speichern, F4 Block kopieren, Help `$5F`, Cursor `$4C–$4F`.
+REPLACE 3, REPLACE ALL 4), COMPILER 4 (blitz2; CREATE EXECUTABLE = item 2
+as in tedstub). Keys: F1/F2 block start/end (`$50`/`$51` → 129/130),
+F3 save block, F4 copy block, Help `$5F`, cursor `$4C–$4F`.
 
-### 7.1 Stufe 1 (R5 ↔ C5, nur Weg D)
+### 7.1 Stage 1 (R5 ↔ C5, route D only)
 
-| Nr | Test | Quelle | Schritte | Verglichen |
+| No | Test | Source | Steps | Compared |
 |---|---|---|---|---|
-| 00 | Start/Ende | T `t01_int` | laden, `dump start`, QUIT | Dump, Requester-Folge, rc; **Rauchtest** – erst wenn er in C5 läuft, lohnt der Rest |
-| 01 | Rundreise | T `t01_int`, T `t08_tokquirk`, K 2–3 kleine tokenisierte Quellen (z. B. `bui5/makefile/includes/finish_mouse.bb`, `bui6/mapslib/mikesmaplib.bb`) | laden, SAVE (`freq ok`), QUIT | `.bb2` = Original, `.bak`, `.xtra`, `.info`, Dump |
-| 02 | Tippen + Speichern | T `t01_int` | BOTTOM, `type` mehrere Zeilen (Schlüsselwörter, Strings, `;`-Kommentar, `$`-Hex, Tab), SAVE | `.bb2` A↔B und = `bb2tok.tokenise` des erwarteten Textes; Dumps nach dem Tippen |
-| 03 | Join/Split | T `t02_float` | Cursor auf Zeile n, Spalte k, Return (Split); JOIN (`menu 1 8`); SAVE | Datei, Dumps, Speicherbilanz (Join-Leck BUG(orig), gleich in A und B) |
-| 04 | Block kopieren/löschen | T `t04_arr` | F1/F2 über 3 Zeilen, Cursor weiter, COPY (`menu 1 0`) bzw. F4, KILL (`menu 1 1`), FORGET; SAVE | Datei, Dumps (Blockmarkierung invers) |
-| 05 | Suchen/Ersetzen | T `t03_str` | FIND (`menu 3 0`), `str` Such-/Ersetztext, NEXT; REPLACE; REPLACE ALL (repall-Requester), SAVE | Datei, Dumps, Requester-Folge |
-| 06 | Kompilieren über Menü | T `t01_int` (`.xtra` ohne Runtime Errors) | `menu 4 2`, `freq ok` („Name of Executable to create“), warten auf Ende von „COMPILING“, QUIT | Executable A↔B und = tedstub-Ergebnis (corpus `results/blitz2-195-…`), Requester-Folge |
-| 07 | Fehlerzeile | S | `menu 4 2`, `freq ok`, `wait req` errorreq → `gad 1`, `dump` | Cursor/Statuszeile = Zeile 2, Dump A↔B |
-| 08 | loadxtra/savextra | K Quelle mit eigener `.xtra` | laden (loadxtra), SAVE unter neuem Namen (`freq ok NAME2`), QUIT; zweiter Lauf lädt NAME2 und speichert wieder | `NAME2.xtra` = Original-`.xtra`; zweite Rundreise unverändert |
-| 09 | Optionen | – (neue Datei) | DEFAULTS (`menu 0 3`), `str` Tabstop 4, OK; QUIT; zweiter Lauf mit dieser `L/blitzeditor.opts` | Optionsdatei A↔B, Dump im zweiten Lauf (Tab-Breite) |
+| 00 | Start/exit | T `t01_int` | load, `dump start`, QUIT | dump, requester sequence, rc; **smoke test** – only when it runs in C5 is the rest worthwhile |
+| 01 | Round trip | T `t01_int`, T `t08_tokquirk`, K 2–3 small tokenised sources (e.g. `bui5/makefile/includes/finish_mouse.bb`, `bui6/mapslib/mikesmaplib.bb`) | load, SAVE (`freq ok`), QUIT | `.bb2` = original, `.bak`, `.xtra`, `.info`, dump |
+| 02 | Typing + saving | T `t01_int` | BOTTOM, `type` several lines (keywords, strings, `;` comment, `$` hex, tab), SAVE | `.bb2` A↔B and = `bb2tok.tokenise` of the expected text; dumps after typing |
+| 03 | Join/split | T `t02_float` | cursor to line n, column k, Return (split); JOIN (`menu 1 8`); SAVE | file, dumps, memory balance (join leak BUG(orig), equal in A and B) |
+| 04 | Copy/delete block | T `t04_arr` | F1/F2 over 3 lines, cursor further, COPY (`menu 1 0`) or F4, KILL (`menu 1 1`), FORGET; SAVE | file, dumps (block marking inverse) |
+| 05 | Search/replace | T `t03_str` | FIND (`menu 3 0`), `str` search/replace text, NEXT; REPLACE; REPLACE ALL (repall requester), SAVE | file, dumps, requester sequence |
+| 06 | Compiling via menu | T `t01_int` (`.xtra` without runtime errors) | `menu 4 2`, `freq ok` ("Name of Executable to create"), wait for end of "COMPILING", QUIT | executable A↔B and = tedstub result (corpus `results/blitz2-195-…`), requester sequence |
+| 07 | Error line | S | `menu 4 2`, `freq ok`, `wait req` errorreq → `gad 1`, `dump` | cursor/status line = line 2, dump A↔B |
+| 08 | loadxtra/savextra | K source with its own `.xtra` | load (loadxtra), SAVE under a new name (`freq ok NAME2`), QUIT; second run loads NAME2 and saves again | `NAME2.xtra` = original `.xtra`; second round trip unchanged |
+| 09 | Options | – (new file) | DEFAULTS (`menu 0 3`), `str` tab stop 4, OK; QUIT; second run with this `L/blitzeditor.opts` | options file A↔B, dump in the second run (tab width) |
 
-### 7.2 Stufe 2 (alle vier Kombinationen, breiter)
+### 7.2 Stage 2 (all four combinations, broader)
 
-* Rundreise über eine größere Auswahl der 724 CD-Quellen (Sitzungen voll
-  packen; die Host-Rundreise `test_loadsave` ist schon grün – hier zählt
-  der echte Ein-/Ausgabeweg mit `dos.library`, `.bak`, `.info`).
-* Textdateien (9 Klartext-`.bb2` der CD) mit `tokenise` an: Ergebnis =
-  `bb2tok tok` unter Beachtung von `readline` (letzte Zeile ohne LF bleibt
-  untokenisiert, BUG(orig), fileio.c:215).
-* Zeichensatz 6 Pixel (`fonthite` über DEFAULTS), Fensteraufteilung,
-  Rollen über Fensterende (`scrollup`/`scrolldown`, Blitter), TOP/BOTTOM/GOTO.
-* Block in Datei / aus Datei (BLOCK SAVE/LOAD, Dateirequester mit
+* Round trip over a larger selection of the 724 CD sources (pack sessions
+  full; the host round trip `test_loadsave` is already green – what counts here is
+  the real input/output path with `dos.library`, `.bak`, `.info`).
+* Text files (9 plain-text `.bb2` of the CD) with `tokenise` on: result =
+  `bb2tok tok` taking `readline` into account (last line without LF stays
+  untokenised, BUG(orig), fileio.c:215).
+* Font 6 pixels (`fonthite` via DEFAULTS), window split,
+  scrolling past the window end (`scrollup`/`scrolldown`, blitter), TOP/BOTTOM/GOTO.
+* Block to file / from file (BLOCK SAVE/LOAD, file requester with
   `blokpath`/`blokname`), BLOCK TAB/UNTAB, MARK INDENT.
-* NEW mit Rückfrage (erase-Requester ja/nein), LOAD einer zweiten Datei.
-* Help-Taste auf einem Token (Titelzeile = Hilfetext, im Dump-Kopf); nicht
-  mit rechter Amiga-Taste (startet `blitz2:help`).
-* Lange Zeilen (127/128 Zeichen, Umbruch in `readline`), Umlaute (`germs`,
-  Bit 30), Latin-1 `$FD–$FF` (cmp.b-Dispatch, overview.md §4 Risiko 6).
-* Kompilieren aller `corpus/tests/*.bas` über das Menü (Executables gegen
-  `compilerlauf/results/…`), Fehlerzeilen aus `reference/195.tsv`
-  (Quellen mit `error`, Zeile → Cursor).
-* `state`-Vergleich (§6.2) und Speicherbilanz für alle Stufe-1-Tests.
-* Speichermangel: `outmem` während des Editierens (longjmp auf `memcont`) –
-  nur mit einem Speicherfresser im Begleitprozess, eigene Sitzung.
+* NEW with confirmation (erase requester yes/no), LOAD of a second file.
+* Help key on a token (title bar = help text, in the dump header); not
+  with the right Amiga key (starts `blitz2:help`).
+* Long lines (127/128 characters, wrap in `readline`), umlauts (`germs`,
+  bit 30), Latin-1 `$FD–$FF` (cmp.b dispatch, overview.md §4 risk 6).
+* Compiling all `corpus/tests/*.bas` via the menu (executables against
+  `compilerlauf/results/…`), error lines from `reference/195.tsv`
+  (sources with `error`, line → cursor).
+* `state` comparison (§6.2) and memory balance for all stage 1 tests.
+* Out of memory: `outmem` during editing (longjmp to `memcont`) –
+  only with a memory eater in the companion process, own session.
 
-### 7.3 Stufe 3 (Weg I, nach Gate I)
+### 7.3 Stage 3 (route I, after gate I)
 
-Mausklick setzt Cursor, Ziehen markiert Block (auch nach oben – im Original
-„currently FUCKED“, src/mouse.c `mousedown`), Klick in die Labelspalte
-(`gomouse`), Prop-Gadgets (`gadget`, busy poll), Amiga-Kürzel (Amiga-S,
+Mouse click sets cursor, dragging marks block (also upwards – in the original
+"currently FUCKED", src/mouse.c `mousedown`), click into the label column
+(`gomouse`), prop gadgets (`gadget`, busy poll), Amiga shortcuts (Amiga-S,
 Amiga-L, Amiga-?), CLOSE WB/OPEN WB.
 
-## 8 Fälle mit besonderer Erwartung
+## 8 Cases with special expectation
 
-Grundregel: `BUG(orig)` ist in C nachgebildet → **A und B gleich** (auch
-gleich falsch). Abweichungen nur bei den `DIFF:`-Zeilen von
-[abweichungen.md](abweichungen.md) mit „beobachtbar: ja/nur …“.
+Basic rule: `BUG(orig)` is reproduced in C → **A and B equal** (also
+equally wrong). Deviations only for the `DIFF:` lines of
+[abweichungen.md](abweichungen.md) with "observable: yes/only …".
 
-| Fall | Quelle | Erwartung im Test |
+| Case | Source | Expectation in the test |
 |---|---|---|
-| `tabstop = 0` (DEFAULTS akzeptiert 0, BUG(orig) src/main.c:748) → `divu` durch 0 in `readline` | PHASE2B-BRIEF O3; seit Phase 2c echtes `divu.w` (src/glue.c `divu_w`) | beide: Trap (Guru 5, Division by zero) → Lauf CRASH/TIMEOUT. **KNOWN-BOTH**, eigener Lauf am Ende einer Sitzung |
-| beschädigte Optionsdatei, Farbwert ≥ 4 (`swapd0bord`) | abweichungen.md „`swapd0bord`“ | beide tauschen Bytes mit den Original-Schrittweiten hinter `defaultreqbo14`; die Daten dort sind in C andere Variablen → Folgen können abweichen. **KNOWN-DIFF**, nur Stufe 2 |
-| CLI (`mycli` → `openio`) | seit 2c: Z-Flag von `WBenchToFront` über `callregs` (src/mouse.c) | „gleich“ |
-| `outmem` vor der ersten Hauptschleife (`memstack == 0`) | seit 2c: `memcont_nostack` (src/glue.c) setzt a7 = 0 und läuft memcont wie das Original | beide stürzen ab (Absturzstelle kann sich unterscheiden: die gerufenen C-Routinen benutzen den Stapel anders) – nur Stufe 2, KNOWN-BOTH |
-| `join`: FreeMem ohne `lenitem` (9 Bytes je Join), `freethis`/`freeall` per `add.b` ab `numchars` ≥ 247 | lines.c:407, tokit.c:303 | gleiche Speicherbilanz A↔B (Leck in beiden) |
-| `join` ohne Längenprüfung, `split` hängt Präfixlänge an (I.3/I.4) | lines.c:382, lines.c:1036 | nur mit kurzen Zeilen in Stufe 1; lange Zeilen in Stufe 2 mit Erwartung „gleich“ (Speicherüberschreiben kann beide gleich treffen – bei CRASH in beiden: KNOWN-BOTH) |
-| `gotolined0` ohne Bereichsprüfung (GOTO/Fehlerzeile ≥ `numlines`, I.13) | lines.c:602, edit.c:110 | nicht in Stufe 1; in Stufe 2 Erwartung „beide gleich“ (NULL-Lauf) – KNOWN-BOTH |
-| ASCII-Block bekommt ein 0-Byte je Zeile (`tokenise` aus) | loadsave.c:52 | BLOCK SAVE ohne Tokenisieren: Datei enthält `text\0\n` in A und B |
-| UNTAB löscht beliebige Zeichen | loadsave.c:102 | Datei gleich in A und B, ≠ „vernünftigem“ Ergebnis |
-| `readline`: letzte Zeile ohne LF untokenisiert, Byte ≥ `$80` = Token auch im Text | fileio.c:215 | Orakel `bb2tok` mit derselben Ausnahme (wie `test_loadsave`) |
-| Block endet bei Umlaut (`getbchar` N-Flag) | fileio.c:715 | gleich in A und B |
-| leere Datei laden: alte Zeilen verloren (kein `freeall`) | loadsave.c:237 | Speicherbilanz gleich |
-| Speicherfehler beim Schreiben: `allalt` bleibt, `.xtra`/`.info` trotzdem | loadsave.c:317 | nur mit vollem Datenträger, Stufe 2 optional |
-| Executable mit „Runtime Errors“ | tedstub/README.md „Bekannt“ | Adressen hinter `trap #1`/`#4` verschieden → maskieren; leerer „OKAY!“-Requester beim Ausführen (nur relevant, wenn Programme gestartet werden – hier nicht) |
-| Dateirequester ab 605 Zeilen | reference.md §3.2 | durch 640×512 ausgeschlossen; Screens > 604 Zeilen nie testen |
-| Sanduhr-Animation (`myroutine`, VBlank) | src/main.c | Sprite, nicht in den Bitplanes – kein Einfluss auf Dumps |
+| `tabstop = 0` (DEFAULTS accepts 0, BUG(orig) src/main.c:748) → `divu` by 0 in `readline` | PHASE2B-BRIEF O3; since phase 2c real `divu.w` (src/glue.c `divu_w`) | both: trap (Guru 5, Division by zero) → run CRASH/TIMEOUT. **KNOWN-BOTH**, own run at the end of a session |
+| damaged options file, colour value ≥ 4 (`swapd0bord`) | abweichungen.md "`swapd0bord`" | both swap bytes with the original strides behind `defaultreqbo14`; the data there are other variables in C → consequences may differ. **KNOWN-DIFF**, stage 2 only |
+| CLI (`mycli` → `openio`) | since 2c: Z flag of `WBenchToFront` via `callregs` (src/mouse.c) | "equal" |
+| `outmem` before the first main loop (`memstack == 0`) | since 2c: `memcont_nostack` (src/glue.c) sets a7 = 0 and runs memcont like the original | both crash (crash location may differ: the called C routines use the stack differently) – stage 2 only, KNOWN-BOTH |
+| `join`: FreeMem without `lenitem` (9 bytes per join), `freethis`/`freeall` via `add.b` from `numchars` ≥ 247 | lines.c:407, tokit.c:303 | same memory balance A↔B (leak in both) |
+| `join` without length check, `split` appends prefix length (I.3/I.4) | lines.c:382, lines.c:1036 | only with short lines in stage 1; long lines in stage 2 with expectation "equal" (memory overwriting may hit both equally – with CRASH in both: KNOWN-BOTH) |
+| `gotolined0` without range check (GOTO/error line ≥ `numlines`, I.13) | lines.c:602, edit.c:110 | not in stage 1; in stage 2 expectation "both equal" (NULL walk) – KNOWN-BOTH |
+| ASCII block gets a 0 byte per line (`tokenise` off) | loadsave.c:52 | BLOCK SAVE without tokenising: file contains `text\0\n` in A and B |
+| UNTAB deletes arbitrary characters | loadsave.c:102 | file equal in A and B, ≠ "sensible" result |
+| `readline`: last line without LF untokenised, byte ≥ `$80` = token also in text | fileio.c:215 | oracle `bb2tok` with the same exception (like `test_loadsave`) |
+| block ends at umlaut (`getbchar` N flag) | fileio.c:715 | equal in A and B |
+| loading an empty file: old lines lost (no `freeall`) | loadsave.c:237 | memory balance equal |
+| memory error while writing: `allalt` stays, `.xtra`/`.info` anyway | loadsave.c:317 | only with a full volume, stage 2 optional |
+| executable with "Runtime Errors" | tedstub/README.md "Bekannt" | addresses after `trap #1`/`#4` differ → mask; empty "OKAY!" requester when running (only relevant if programs are started – not here) |
+| file requester from 605 lines | reference.md §3.2 | excluded by 640×512; never test screens > 604 lines |
+| hourglass animation (`myroutine`, VBlank) | src/main.c | sprite, not in the bitplanes – no influence on dumps |
 
-Der Bericht unterscheidet: `SAME`, `DIFF`, `KNOWN-DIFF` (Zeile in
-abweichungen.md), `KNOWN-BOTH` (beide gleich fehlerhaft/abgestürzt),
-`FAIL`/`TIMEOUT` (Lauf nicht vollständig). Erwartungen stehen je Test in
-`tests/emu/NAME.expect` neben dem Skript `tests/emu/NAME.drv`.
+The report distinguishes: `SAME`, `DIFF`, `KNOWN-DIFF` (line in
+abweichungen.md), `KNOWN-BOTH` (both equally faulty/crashed),
+`FAIL`/`TIMEOUT` (run not complete). Expectations are per test in
+`tests/emu/NAME.expect` next to the script `tests/emu/NAME.drv`.
 
-## 9 Voraussetzungen und Blocker
+## 9 Prerequisites and blockers
 
-| # | Punkt | Art | Was zu tun ist |
+| # | Point | Kind | What needs to be done |
 |---|---|---|---|
-| B1 | ~~RTG-Workbench der Testkonfiguration~~ | **gelöst** (27.10.) | `A1200-AB3-AGA.uae` des Benutzers (§3.2), nativer PAL-Hires-Laced-Workbench, Tiefe 8; Gate 0 prüft es in jeder Sitzung (§3.3) |
-| B2 | Begleitprozess `teddrive` | umgesetzt (Weg D) | `tests/amiga/teddrive.c`, Selbsttest `teddrivetest` (Gate D); `reqclose.h` unverändert eingebunden (O-P1) |
-| B3 | Runner `tedab.py`, Decoder `teddump.py`, Testskripte | umgesetzt (Gate, Test 00) | §5, §6.1; Host-Tests `tests/tools/` (ctest host `tedab_tools`, `tdscript`); weitere `tests/emu/*.drv` nach Test 00 |
-| B4 | Mausposition/Kürzel nur über input.device, das im Testemulator den input-Task lahmlegte (RTG) | Risiko für Stufe 3 | Gate I auf dem nativen Screen; Stufe 1/2 kommen ohne aus |
-| B5 | Synchronisation „idle“ nicht erprobt (TS_WAIT/SigWait) | Risiko | erst mit Test 00 an R5 erproben (Referenz muss sicher laufen), Log jeder Wartezeit |
-| B6 | TED-C ist noch nie gestartet | Risiko | Test 00 zuerst mit R5 (Werkzeug prüfen), dann C5; bei Absturz: Enforcer/MuForce im Testabbild wäre hilfreich (Treffer ins Log), sonst Sitzungs-TIMEOUT und Logschritt als Anhaltspunkt |
-| B7 | `help`, `help.dat` werden von `bb2compile.prepare()` nicht kopiert | erledigt | `tedab.py` kopiert sie in jede Kombination |
-| B8 | `SYS:L/blitzeditor.opts` auf der Hardfile unbekannt | klein | Gate 0 meldet sie; `Assign L:`-Reihenfolge (§2.2) |
-| B9 | ~~O1/O3~~: in Phase 2c erledigt (beide wie das Original: Absturz bzw. Trap, §8) | – | – |
-| B10 | ~~README~~: in Phase 2c nachgezogen | – | – |
-| B11 | Laufzeit: Boot ≈ 15 s, TED-Start und Requester-Takt unbekannt | Planung | nach Test 00 messen, Sitzungsgröße in `tedab.py` daraus |
-| B12 | CI: Hardfile/ROM lizenzpflichtig, Emulatorlauf nur lokal/self-hosted (ci-exploration.md §2.2/2.3) | Rahmen | Phase 3 lokal; CI später mit derselben Konfiguration |
+| B1 | ~~RTG Workbench of the test configuration~~ | **solved** (27.10.) | the user's `A1200-AB3-AGA.uae` (§3.2), native PAL hires laced Workbench, depth 8; gate 0 checks it in every session (§3.3) |
+| B2 | companion process `teddrive` | implemented (route D) | `tests/amiga/teddrive.c`, self-test `teddrivetest` (gate D); `reqclose.h` included unchanged (O-P1) |
+| B3 | runner `tedab.py`, decoder `teddump.py`, test scripts | implemented (gate, test 00) | §5, §6.1; host tests `tests/tools/` (ctest host `tedab_tools`, `tdscript`); further `tests/emu/*.drv` after test 00 |
+| B4 | mouse position/shortcuts only via input.device, which paralysed the input task in the test emulator (RTG) | risk for stage 3 | gate I on the native screen; stage 1/2 manage without |
+| B5 | synchronisation "idle" not tried (TS_WAIT/SigWait) | risk | first try with test 00 on R5 (reference must run reliably), log every wait time |
+| B6 | TED-C has never been started | risk | test 00 first with R5 (check the tool), then C5; on crash: Enforcer/MuForce in the test image would be helpful (hits into the log), otherwise session TIMEOUT and log step as a clue |
+| B7 | `help`, `help.dat` are not copied by `bb2compile.prepare()` | done | `tedab.py` copies them into every combination |
+| B8 | `SYS:L/blitzeditor.opts` on the hardfile unknown | small | gate 0 reports it; `Assign L:` order (§2.2) |
+| B9 | ~~O1/O3~~: done in phase 2c (both like the original: crash or trap, §8) | – | – |
+| B10 | ~~README~~: updated in phase 2c | – | – |
+| B11 | run time: boot ≈ 15 s, TED start and requester timing unknown | planning | measure after test 00, derive session size in `tedab.py` from it |
+| B12 | CI: hardfile/ROM require a licence, emulator run only local/self-hosted (ci-exploration.md §2.2/2.3) | framework | phase 3 locally; CI later with the same configuration |
 
-## 10 Ablauf (Arbeitspakete)
+## 10 Procedure (work packages)
 
-1. **Konfiguration** (B1, erledigt: `A1200-AB3-AGA.uae` des Benutzers),
-   `tedprobe` → Gate 0 grün (nativer Modus, Planes in Chip-RAM, Höhe
-   unter 605).
-2. **teddrive** Weg D + `dump` + Log + `.result`; Entscheidung **O-P1**
-   (reqclose.h teilen oder kopieren). Selbsttest `teddrivetest` (eigenes
-   Fenster mit Gadgets/Stringgadget, prüft RAWKEY/MENUPICK/GADGETUP/`str`/
-   `idle`) – Gate D, analog `reqclosetest`.
-3. **tedab.py** (Staging, Sitzungen, Wiederholung nach Hänger, Bericht) und
+1. **Configuration** (B1, done: the user's `A1200-AB3-AGA.uae`),
+   `tedprobe` → gate 0 green (native mode, planes in chip RAM, height
+   below 605).
+2. **teddrive** route D + `dump` + log + `.result`; decision **O-P1**
+   (split or copy reqclose.h). Self-test `teddrivetest` (own
+   window with gadgets/string gadget, checks RAWKEY/MENUPICK/GADGETUP/`str`/
+   `idle`) – gate D, analogous to `reqclosetest`.
+3. **tedab.py** (staging, sessions, repetition after hang, report) and
    **teddump.py**.
-4. Test 00 mit **R5** (Werkzeugprobe am Original), dann **C5**; erst danach
-   01–09 (Stufe 1).
-5. Rc/Cc dazu (Stufe 2a), dann die breiteren Tests (Stufe 2b), `state`
+4. Test 00 with **R5** (tool trial on the original), then **C5**; only then
+   01–09 (stage 1).
+5. Add Rc/Cc (stage 2a), then the broader tests (stage 2b), `state`
    (§6.2).
-6. Gate I (input.device auf nativem Screen) → Stufe 3.
-7. Ergebnis in `notes/abweichungen.md` (neue beobachtete DIFFs, Spalte
-   „beobachtbar?“ mit Testnummer), Stand in `README.md`.
+6. Gate I (input.device on native screen) → stage 3.
+7. Result in `notes/abweichungen.md` (new observed DIFFs, column
+   "observable?" with test number), state in `README.md`.
 
-Entschiedene Punkte (Koordinator, 27.10.2026):
+Decided points (coordinator, 27.10.2026):
 
-* **O-P1**: `reqclose.h` wird **nicht** kopiert und nicht aufgeteilt:
-  `teddrive.c` bindet die Datei unverändert aus
-  `compilerlauf/tedstub/src` ein (eine Quelle wie `freqlib_req.inc`) und
-  benutzt Logpuffer (`rc_cat`/`rc_hex`/`rc_dec`), `rc_valid`, `rc_label`,
-  `rc_copytitle` und die statischen Nachrichtenpuffer samt Reply-Port
-  (`rc_msg`/`rc_busy`/`rc_port`/`rc_replies`); der Rest (eigene Schleife
-  von reqclose) bleibt ungenutzt (`-Wno-unused-function`). Senden mit
-  Qualifier (`td_send`) ist eine Abwandlung von `rc_send` in teddrive.c.
-  `reqclose` selbst ist unberührt (bytegleich).
-* **O-P2**: maßgeblich ist der tatsächliche Workbench-Modus (erwartet
-  640×512 laced, Tiefe 8); Gate 0 hält ihn fest, Dumps werden nur bei
-  gleicher Geometrie verglichen (`teddump.compare`).
-* **O-P3**: Ergebnisse in `ted-c/results/ted-ab/` wie `compilerlauf/results/`
-  – nur Text (Logs, `.result`, dekodierte Dumps, Prüfsummen, `report.txt`);
-  Binärdumps und gespeicherte Dateien unter `ted-c/build/ted-ab/` (nicht
+* **O-P1**: `reqclose.h` is **not** copied and not split:
+  `teddrive.c` includes the file unchanged from
+  `compilerlauf/tedstub/src` (one source like `freqlib_req.inc`) and
+  uses the log buffer (`rc_cat`/`rc_hex`/`rc_dec`), `rc_valid`, `rc_label`,
+  `rc_copytitle` and the static message buffers including reply port
+  (`rc_msg`/`rc_busy`/`rc_port`/`rc_replies`); the rest (own loop
+  of reqclose) stays unused (`-Wno-unused-function`). Sending with
+  qualifier (`td_send`) is a variation of `rc_send` in teddrive.c.
+  `reqclose` itself is untouched (byte-equal).
+* **O-P2**: what counts is the actual Workbench mode (expected
+  640×512 laced, depth 8); gate 0 records it, dumps are only compared with
+  the same geometry (`teddump.compare`).
+* **O-P3**: results in `ted-c/results/ted-ab/` like `compilerlauf/results/`
+  – text only (logs, `.result`, decoded dumps, checksums, `report.txt`);
+  binary dumps and saved files under `ted-c/build/ted-ab/` (not
   in git).
 
-Umsetzung und Abweichungen vom Plan: [PHASE3-LOG.md](PHASE3-LOG.md).
+Implementation and deviations from the plan: [PHASE3-LOG.md](PHASE3-LOG.md).

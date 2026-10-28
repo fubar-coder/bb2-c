@@ -1,153 +1,153 @@
-# Befehls-Libraries: Quelltext (bblibsrc) vs. CD-Binary (acidlibs)
+# Command libraries: source (bblibsrc) vs. CD binary (acidlibs)
 
-Stand: Vergleich der **Deklarationsteile** (Header, Token-Einträge mit
-Art/Formen/Args/Libs/Name/Hilfetext, libfin) der 58 Befehls-Libs in
-`cd/blitz2/acidlibs` (BB2.1; identisch mit `cd/bum9a/blitz2/acidlibs` und
-`cd/bum10b/blitz2/acidlibs`) mit den Quelltexten in
+State: comparison of the **declaration parts** (header, token entries with
+kind/forms/args/libs/name/help text, libfin) of the 58 command libraries in
+`cd/blitz2/acidlibs` (BB2.1; identical to `cd/bum9a/blitz2/acidlibs` and
+`cd/bum10b/blitz2/acidlibs`) with the sources in
 `quelltext/amibl2src/files/amiblitz2source/bblibsrc.lha.dir/bblibsrc/`.
-Der Code selbst ist **nicht** verglichen.
+The code itself is **not** compared.
 
 ```
 python3 -I libs-c/tools/srcdecl.py report cd/blitz2/acidlibs <bblibsrc>
 python3 -I libs-c/tools/srcdecl.py compare cd/blitz2/acidlibs <bblibsrc>/gtlib
 ```
 
-## Wie die Libs gebaut wurden
+## How the libs were built
 
-Die Quelltexte sind normale BB2-Programme, die mit dem Blitz-Assembler
-übersetzt wurden; die Deklarationsmakros (`!libheader`, `!astatement`,
-`!args`, `!libs`, `!subs`, `!name`, `!nullsub`, `!libfin` …) stehen in
-`cd/extras/blitzlibs/libmacs.bb` (identisch in `cd/bum9b|bum10a/blitzlibs/
-libmacs.bb2`, dort auch `.res`), die Lib-Nummern in `libnums.bb`
-(`INCLUDE "blitzlibs:libnums.bb"` am Ende von libmacs). Die Makros erzeugen
-nur `Dc`-Daten in genau dem Format, das `biglib.parse_lib` liest. Deshalb
-wertet `srcdecl.py` die Makros host-seitig aus (kein Amiberry nötig):
+The sources are normal BB2 programs that were assembled with the Blitz
+assembler; the declaration macros (`!libheader`, `!astatement`,
+`!args`, `!libs`, `!subs`, `!name`, `!nullsub`, `!libfin` …) are in
+`cd/extras/blitzlibs/libmacs.bb` (identical in `cd/bum9b|bum10a/blitzlibs/
+libmacs.bb2`, there also `.res`), the lib numbers in `libnums.bb`
+(`INCLUDE "blitzlibs:libnums.bb"` at the end of libmacs). The macros generate
+only `Dc` data in exactly the format that `biglib.parse_lib` reads. That is why
+`srcdecl.py` evaluates the macros on the host (no Amiberry needed):
 
-* Konstanten aus libmacs.bb, libnums.bb (spätere Definition gewinnt), dann
-  `#x=…` des Quelltexts.
-* BB2-Eigenheit: `#` ist in Assembler-Ausdrücken optional (`la6`,
-  `shapeslib`, `#word|push` ergeben die Konstanten) - im Binary bestätigt.
-* Labels = gesetzter Code-Offset, `0` = ungesetzt (wie `biglib.without_code`).
-* Handgeschriebener Eintragskopf `Dc 3 LSL 8+3,0,0` (windowslib WaitEvent)
-  wird erkannt.
+* Constants from libmacs.bb, libnums.bb (later definition wins), then
+  `#x=…` of the source.
+* BB2 peculiarity: `#` is optional in assembler expressions (`la6`,
+  `shapeslib`, `#word|push` yield the constants) - confirmed in the binary.
+* Labels = set code offset, `0` = unset (like `biglib.without_code`).
+* Hand-written entry header `Dc 3 LSL 8+3,0,0` (windowslib WaitEvent)
+  is recognised.
 
-Gegenprobe: 24 von 25 Systemlib-Quellen ergeben "identical"; Ausnahme
-debuglib (Binary hat einen nullsub mehr, `last` anders - bekannt, siehe
-libs/debuglib.c: Binary neuer als Quelle).
+Cross-check: 24 of 25 system lib sources yield "identical"; exception
+debuglib (binary has one more nullsub, `last` different - known, see
+libs/debuglib.c: binary newer than source).
 
-## Ergebnis
+## Result
 
-* **52 identisch**, **1 bis auf die Lib-Nummer identisch** (Lib 1),
-  **5 mit Abweichungen**, **0 ohne Quelle**.
-* Lib-Nummer stammt immer aus `#name` + libnums.bb, außer wo angegeben.
+* **52 identical**, **1 identical except for the lib number** (lib 1),
+  **5 with deviations**, **0 without source**.
+* The lib number always comes from `#name` + libnums.bb, except where stated.
 
-| Nr | Quelle | Einträge Src/Bin | Ergebnis |
+| No | Source | Entries src/bin | Result |
 |---:|---|---|---|
-| 1 | dhandlerlib | 2/2 | identisch bis auf Lib-Nr.: `#dhandlerlib` ist in libnums.bb nicht definiert, Binary hat 1 |
-| 74 | crunchlib (`#romuluscrunchlib`) | 4/4 | identisch |
-| 76 | banklib | 13/13 | identisch |
-| 78 | datelib | 11/11 | identisch |
-| 80 | asllib (`#myasllib`) | 6/6 | identisch |
-| 82 | medlib | 18/18 | identisch |
-| 88 | speaklib | 7/7 | identisch |
-| 90 | seriallib | 13/13 | identisch |
-| 92 | arexxlib | 16/16 | identisch |
-| 94 | animlib | 10/10 | identisch |
-| 96 | trackerlib | 9/9 | identisch |
-| 98 | blitzkeyslib | 7/7 | identisch |
-| 100 | scrolllib | 7/7 | identisch |
-| 104 | collslib | 12/12 | identisch |
-| 106 | cliargslib | 4/4 | identisch |
-| 108 | mouselib | 9/9 | identisch |
-| 110 | sortlib | 4/4 | identisch |
-| 112 | spriteslib | 14/14 | identisch |
-| 114 | iffmakelib | 5/5 | identisch |
-| 116 | audiolib | 18/18 | identisch |
-| 117 | blitzoslib | 32/32 | identisch |
-| 118 | shapetrixlib | 4/4 | identisch |
-| 119 | 2dlib (`#sis2dlib`) | 17/17 | identisch |
-| 120 | vallib | 16/16 | identisch |
-| 121 | polylib (`#chunkylib=121` im Quelltext) | 8/8 | identisch |
-| 122 | stencillib | 7/7 | identisch |
-| 124 | fileiolib | 25/25 | identisch |
-| 128 | linklistlib | 18/15 | **Quelle neuer**: SetItem, CountList, CountItem am Ende zusätzlich |
-| 130 | rawkeylib | 5/5 | identisch |
-| 132 | brexxlib | 23/23 | identisch |
-| 134 | intuifontlib | 8/7 | **Quelle neuer**: Token `Text` am Ende zusätzlich |
-| 136 | menuslib | 17/17 | identisch |
-| 138 | windowslib | 75/75 | identisch |
-| 140 | gadgetslib | 39/39 | identisch |
-| 141 | gtlib (`#mygadtoolslib`) | 37/40 | **anderer Stand**, s. u. |
-| 142 | fontlib | 15/15 | identisch |
-| 143 | displaylib | 25/25 | identisch |
-| 144 | blitzcoplib | 20/19 | **Quelle neuer**: Token `Help` am Ende zusätzlich |
-| 146 | bblitlib | 11/11 | identisch |
-| 148 | qblitlib | 10/10 | identisch |
-| 150 | blitlib | 10/10 | identisch |
-| 152 | freqlib | 1/1 | identisch |
-| 154 | shapeslib | 21/21 | identisch |
-| 156 | palettelib | 33/33 | **Args**: Red/Green/Blue Quelle `!args{2}` (#word), Binary 3 (#long) |
-| 157 | fadelib (`libheader{157`) | 6/6 | identisch |
-| 158 | screenslib | 20/20 | identisch |
-| 160 | bitmaplib | 11/11 | identisch |
-| 161 | ilbmifflib | 9/9 | identisch |
-| 162 | iffiolib | 9/9 | identisch |
-| 164 | inputoutputlib | 12/12 | identisch |
-| 180 | memacclib | 4/4 | identisch |
-| 185 | stringfunclib | 28/28 | identisch |
-| 186 | editlib | 3/3 | identisch |
-| 187 | printlib | 7/7 | identisch |
-| 190 | gameiolib | 5/5 | identisch |
-| 192 | mathtranslib (2. Definition =192) | 16/16 | identisch |
-| 193 | environlib | 9/9 | identisch |
-| 194 | utillib | 6/6 | identisch |
+| 1 | dhandlerlib | 2/2 | identical except for lib no.: `#dhandlerlib` is not defined in libnums.bb, binary has 1 |
+| 74 | crunchlib (`#romuluscrunchlib`) | 4/4 | identical |
+| 76 | banklib | 13/13 | identical |
+| 78 | datelib | 11/11 | identical |
+| 80 | asllib (`#myasllib`) | 6/6 | identical |
+| 82 | medlib | 18/18 | identical |
+| 88 | speaklib | 7/7 | identical |
+| 90 | seriallib | 13/13 | identical |
+| 92 | arexxlib | 16/16 | identical |
+| 94 | animlib | 10/10 | identical |
+| 96 | trackerlib | 9/9 | identical |
+| 98 | blitzkeyslib | 7/7 | identical |
+| 100 | scrolllib | 7/7 | identical |
+| 104 | collslib | 12/12 | identical |
+| 106 | cliargslib | 4/4 | identical |
+| 108 | mouselib | 9/9 | identical |
+| 110 | sortlib | 4/4 | identical |
+| 112 | spriteslib | 14/14 | identical |
+| 114 | iffmakelib | 5/5 | identical |
+| 116 | audiolib | 18/18 | identical |
+| 117 | blitzoslib | 32/32 | identical |
+| 118 | shapetrixlib | 4/4 | identical |
+| 119 | 2dlib (`#sis2dlib`) | 17/17 | identical |
+| 120 | vallib | 16/16 | identical |
+| 121 | polylib (`#chunkylib=121` in the source) | 8/8 | identical |
+| 122 | stencillib | 7/7 | identical |
+| 124 | fileiolib | 25/25 | identical |
+| 128 | linklistlib | 18/15 | **source newer**: SetItem, CountList, CountItem additionally at the end |
+| 130 | rawkeylib | 5/5 | identical |
+| 132 | brexxlib | 23/23 | identical |
+| 134 | intuifontlib | 8/7 | **source newer**: token `Text` additionally at the end |
+| 136 | menuslib | 17/17 | identical |
+| 138 | windowslib | 75/75 | identical |
+| 140 | gadgetslib | 39/39 | identical |
+| 141 | gtlib (`#mygadtoolslib`) | 37/40 | **different state**, see below |
+| 142 | fontlib | 15/15 | identical |
+| 143 | displaylib | 25/25 | identical |
+| 144 | blitzcoplib | 20/19 | **source newer**: token `Help` additionally at the end |
+| 146 | bblitlib | 11/11 | identical |
+| 148 | qblitlib | 10/10 | identical |
+| 150 | blitlib | 10/10 | identical |
+| 152 | freqlib | 1/1 | identical |
+| 154 | shapeslib | 21/21 | identical |
+| 156 | palettelib | 33/33 | **Args**: Red/Green/Blue source `!args{2}` (#word), binary 3 (#long) |
+| 157 | fadelib (`libheader{157`) | 6/6 | identical |
+| 158 | screenslib | 20/20 | identical |
+| 160 | bitmaplib | 11/11 | identical |
+| 161 | ilbmifflib | 9/9 | identical |
+| 162 | iffiolib | 9/9 | identical |
+| 164 | inputoutputlib | 12/12 | identical |
+| 180 | memacclib | 4/4 | identical |
+| 185 | stringfunclib | 28/28 | identical |
+| 186 | editlib | 3/3 | identical |
+| 187 | printlib | 7/7 | identical |
+| 190 | gameiolib | 5/5 | identical |
+| 192 | mathtranslib (2nd definition =192) | 16/16 | identical |
+| 193 | environlib | 9/9 | identical |
+| 194 | utillib | 6/6 | identical |
 
-## Details zu den Abweichungen
+## Details on the deviations
 
-* **141 gtlib** - Quelle und Binary sind getrennte Weiterentwicklungen
-  (Quelle-Kommentare bis "November 1994 gtsetattrs fixed by Steve"):
-  * nur Quelle: `GTMakeCycleTag` (Token 31, "Simon was here!");
-  * nur Binary: `DetachGTList`, `GTGimmeCludge`, `GTSetHighlight`,
-    `GTFreeGadget` (Token 31-34);
-  * `GTList` Hilfe: Quelle "A Gadg**T**ools GadgetList", Binary "A GadTools …";
-  * `AttachGTList`: Binary hat eine Fehlerprüf-Routine (subs err1 gesetzt),
-    Quelle nicht;
-  * `GTSetAttrs`: Quelle `!astatement`, Binary Art $303 (Statement *und*
-    Funktion, Typ #long - wie windowslib WaitEvent).
-  * `oldgtlib` ist älter (ohne GTStatus/GTArrowSize/GTMakeCycleTag;
-    AttachGTList ohne intuitionlib-Basis in a6 - "presumed a6 had gtlib").
-* **156 palettelib**: nur die Argumenttypen von Red/Green/Blue (Binary
-  nimmt #long). `palettelib.aga` ist ein älterer AGA-Entwurf (18 Einträge,
-  ohne AGARGB/AGAPalRGB/AGARed…).
-* **128/134/144**: Quelle hat neue Tokens am Ende (Token-Nummern der
-  übrigen bleiben gleich) - Quelle ist also neuer als BB2.1.
+* **141 gtlib** - source and binary are separate further developments
+  (source comments up to "November 1994 gtsetattrs fixed by Steve"):
+  * source only: `GTMakeCycleTag` (token 31, "Simon was here!");
+  * binary only: `DetachGTList`, `GTGimmeCludge`, `GTSetHighlight`,
+    `GTFreeGadget` (tokens 31-34);
+  * `GTList` help: source "A Gadg**T**ools GadgetList", binary "A GadTools …";
+  * `AttachGTList`: binary has an error check routine (subs err1 set),
+    source does not;
+  * `GTSetAttrs`: source `!astatement`, binary kind $303 (statement *and*
+    function, type #long - like windowslib WaitEvent).
+  * `oldgtlib` is older (without GTStatus/GTArrowSize/GTMakeCycleTag;
+    AttachGTList without intuitionlib base in a6 - "presumed a6 had gtlib").
+* **156 palettelib**: only the argument types of Red/Green/Blue (binary
+  takes #long). `palettelib.aga` is an older AGA draft (18 entries,
+  without AGARGB/AGAPalRGB/AGARed…).
+* **128/134/144**: source has new tokens at the end (token numbers of the
+  others stay the same) - so the source is newer than BB2.1.
 
-## Weitere Quelldateien (nicht auf der CD bzw. Varianten)
+## Further source files (not on the CD, or variants)
 
-* Varianten derselben Nummer: `sis2dlib.bb` (älter als 2dlib: ohne
-  ClipBlitMode/BitMapWindow/BitMapOrigin, Line/ClipBlit mit weniger Formen),
-  `olddisplaylib`, `displaylibfuk` (ältere displaylib-Stände), `oldgtlib`,
+* Variants of the same number: `sis2dlib.bb` (older than 2dlib: without
+  ClipBlitMode/BitMapWindow/BitMapOrigin, Line/ClipBlit with fewer forms),
+  `olddisplaylib`, `displaylibfuk` (older displaylib states), `oldgtlib`,
   `palettelib.aga`.
-* `renderlib` = polylib bis auf `#renderlib` (libnums: 87, Kommentar
-  `; #renderlib=121`): Deklarationen identisch zu Lib 121.
-* Nicht in acidlibs: alglib (#algebralib=9), cd32lib (113), chunkylib (72 aus
-  libnums; 29 Einträge, ChunkyCLS… - die Tokens von 121 kommen aus polylib),
-  ctrlclib und xprlib (`#ctrlclib`/`#xprlib` nicht in libnums).
-* `bb2src.zip.dir/linklistlib` ist byte-gleich mit bblibsrc/linklistlib.
-* Die RWE-Quellen (`RWELibSourc.lha.dir/Libs`) enthalten keine der
-  acidlibs-Nummern.
+* `renderlib` = polylib except for `#renderlib` (libnums: 87, comment
+  `; #renderlib=121`): declarations identical to lib 121.
+* Not in acidlibs: alglib (#algebralib=9), cd32lib (113), chunkylib (72 from
+  libnums; 29 entries, ChunkyCLS… - the tokens of 121 come from polylib),
+  ctrlclib and xprlib (`#ctrlclib`/`#xprlib` not in libnums).
+* `bb2src.zip.dir/linklistlib` is byte-identical to bblibsrc/linklistlib.
+* The RWE sources (`RWELibSourc.lha.dir/Libs`) contain none of the
+  acidlibs numbers.
 
-## Versionshinweise
+## Version hints
 
-Alle Dateien im Archiv tragen dasselbe Datum (14.09.1995), also kein
-Hinweis. Kommentare in den Quellen reichen bis "bum8" (animlib, 2dlib,
-utillib, blitzoslib) bzw. "March 1995" (fileiolib); bum9a/bum10b liefern
-dieselbe acidlibs wie die 2.1-CD. Die Quellen sind daher grob der
-2.1-Stand, bei linklistlib/intuifontlib/blitzcoplib/gtlib etwas danach.
+All files in the archive carry the same date (14.09.1995), so no
+hint. Comments in the sources go up to "bum8" (animlib, 2dlib,
+utillib, blitzoslib) or "March 1995" (fileiolib); bum9a/bum10b ship
+the same acidlibs as the 2.1 CD. The sources are therefore roughly the
+2.1 state, for linklistlib/intuifontlib/blitzcoplib/gtlib somewhat later.
 
-## Offene Punkte
+## Open points
 
-* Code-Teile sind nicht verglichen; für die Portierung gilt wie bei den
-  Systemlibs: Binary ist die Referenz (`tools/disasm.py`).
-* Lib 1 (dhandlerlib): Mit welcher Nummer-Definition gebaut wurde, ist
-  unklar (libnums.bb kennt `#dhandlerlib` nicht).
+* Code parts are not compared; for the port, as with the
+  system libs: the binary is the reference (`tools/disasm.py`).
+* Lib 1 (dhandlerlib): which number definition it was built with is
+  unclear (libnums.bb does not know `#dhandlerlib`).

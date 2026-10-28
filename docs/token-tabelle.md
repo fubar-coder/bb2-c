@@ -1,26 +1,26 @@
-# Token-Tabelle von Blitz Basic 2.1
+# Token table of Blitz Basic 2.1
 
-Stand 26.10.2026. Quelle: Blitz-Basic-CD (`cd/`), Libraries
-`blitz2/deflibs` (Standard), `extras/bigdeflibs/deflibs` (große Variante) und
-`blitz2/acidlibs`. Die Dateien haben **dasselbe BigLib-Format** wie die
-BlitzLibs von AmiBlitz3 (Compiler-Spec 09); `biglib_dump.py --tokens` liest
-sie unverändert.
+As of 26.10.2026. Source: Blitz Basic CD (`cd/`), libraries
+`blitz2/deflibs` (standard), `extras/bigdeflibs/deflibs` (large variant) and
+`blitz2/acidlibs`. The files have **the same BigLib format** as the
+BlitzLibs of AmiBlitz3 (Compiler-Spec 09); `biglib_dump.py --tokens` reads
+them unchanged.
 
-Die eingebauten Befehle (Lib 0/1, Wörter `$80xx`) stehen nicht in den
-Libraries, sondern im Compiler `blitz2/blitz2` (siehe `formate.md`).
+The built-in commands (lib 0/1, words `$80xx`) are not in the
+libraries but in the compiler `blitz2/blitz2` (see `formate.md`).
 
-## Dateien
+## Files
 
-| Datei | Inhalt |
+| File | Contents |
 |---|---|
-| `tokens/deflibs.txt` | `blitz2/deflibs`, 992 Tokens, Libs 2 und 200–255 (OS-Aufrufe `…_`) |
-| `tokens/bigdeflibs.txt` | `extras/bigdeflibs/deflibs`, 1408 Tokens: wie `deflibs` ohne Lib 200, dazu Libs 11–111 (Fremd-Libs: Listen, Requester, Module, `Request`, Dateisystem …) |
-| `tokens/acidlibs.txt` | `blitz2/acidlibs`, 619 Tokens, Libs 74–194 (Acid-Befehle: Strings Lib 185, `Edit$`/`Inkey$` Lib 186 …) |
-| `tokens/ab3.txt` | AmiBlitz3 zum Vergleich (`ab3c -dump token` mit `AmiBlitz3-Original/BlitzLibs`), 4653 Zeilen |
-| `tokens/vergleich.txt` | jedes BB2.1-Token mit Status gegenüber AB3 |
-| `tokens/corpus_unbekannt.txt` | die AB3-unbekannten Wörter des Aminet-Korpus mit BB2.1-Namen |
+| `tokens/deflibs.txt` | `blitz2/deflibs`, 992 tokens, libs 2 and 200–255 (OS calls `…_`) |
+| `tokens/bigdeflibs.txt` | `extras/bigdeflibs/deflibs`, 1408 tokens: like `deflibs` without lib 200, plus libs 11–111 (third-party libs: lists, requesters, modules, `Request`, file system …) |
+| `tokens/acidlibs.txt` | `blitz2/acidlibs`, 619 tokens, libs 74–194 (Acid commands: strings lib 185, `Edit$`/`Inkey$` lib 186 …) |
+| `tokens/ab3.txt` | AmiBlitz3 for comparison (`ab3c -dump token` with `AmiBlitz3-Original/BlitzLibs`), 4653 lines |
+| `tokens/vergleich.txt` | every BB2.1 token with its status relative to AB3 |
+| `tokens/corpus_unbekannt.txt` | the words of the Aminet corpus unknown to AB3, with BB2.1 names |
 
-Erzeugt mit `tools/compare_tokens.py` und `tools/resolve_unknown.py`:
+Generated with `tools/compare_tokens.py` and `tools/resolve_unknown.py`:
 
 ```
 T=../AmiBlitz3/Docs/Compiler-Spec/verification/tools
@@ -32,19 +32,19 @@ python3 -I tools/resolve_unknown.py \
     tokens/deflibs.txt tokens/bigdeflibs.txt tokens/acidlibs.txt
 ```
 
-## Vergleich mit AmiBlitz3 (Lib/Index → Name)
+## Comparison with AmiBlitz3 (lib/index → name)
 
-| Status | Anzahl | Bedeutung |
+| Status | Count | Meaning |
 |---|---|---|
-| gleich | 1706 | gleicher Name unter gleicher Nummer |
-| anderer Name | 223 | Nummer gibt es in AB3, aber mit **anderem** Befehl |
-| fehlt | 102 | Nummer gibt es in AB3 nicht |
+| same | 1706 | same name under the same number |
+| other name | 223 | number exists in AB3, but with a **different** command |
+| missing | 102 | number does not exist in AB3 |
 
-Die 223 Fälle mit anderem Namen sind meist **verschobene Indizes**: AB3 hat
-in eine Lib einen Befehl eingefügt oder entfernt, alle folgenden rücken.
-Beispiele:
+The 223 cases with a different name are mostly **shifted indices**: AB3 has
+inserted a command into a lib or removed one, and all following ones move up.
+Examples:
 
-| Wort | BB2.1 | AB3 |
+| Word | BB2.1 | AB3 |
 |---|---|---|
 | `$A589` (75/9) | `Min` | `CopyByte` |
 | `$A58D` (75/13) | `Max` | `BLoad` |
@@ -54,22 +54,22 @@ Beispiele:
 | `$F581` (235/1) | `GetIcon_` | `FreeFreeList_` |
 | `$A781` (79/1) | `ReqFileRequest` | `Edit$` |
 
-Folge für den Konverter: Ein Token-Wort einer BB2.1-Datei, das AB3 kennt, ist
-**kein** Beleg dafür, dass es dasselbe bedeutet. Eine `.bb2`-Datei lässt sich
-nur mit der Tabelle der Version übersetzen, mit der sie gespeichert wurde.
-Welche Version das war, steht nicht in der Datei (Kopf `BB22` siehe
-`formate.md`); der Konverter braucht die Version als Option oder eine
-Plausibilitätsprüfung (z. B. Parameterzahl).
+Consequence for the converter: a token word of a BB2.1 file that AB3 knows is
+**no** proof that it means the same. A `.bb2` file can only be
+translated with the table of the version it was saved with.
+Which version that was is not stated in the file (header `BB22`, see
+`formate.md`); the converter needs the version as an option or a
+plausibility check (e.g. number of parameters).
 
-## Die alten Wörter aus dem Aminet-Korpus
+## The old words from the Aminet corpus
 
-`docs/bb2-converter/bb2-corpus.md` §5 listet Wörter, die AB3 nicht kennt
-(CSV: 57 verschiedene). Mit BB2.1 sind **37** davon benannt
+`docs/bb2-converter/bb2-corpus.md` §5 lists words that AB3 does not know
+(CSV: 57 distinct). With BB2.1, **37** of them are named
 (`tokens/corpus_unbekannt.txt`):
 
-| Wörter | Lib | BB2.1 | Dateien |
+| Words | Lib | BB2.1 | Files |
 |---|---|---|---|
-| `$DC81`–`$DC99` | 185 (acidlibs) | `Left$`, `Right$`, `Mid$`, `Hex$`, `Bin$`, `Chr$`, `Asc`, `String$`, `Instr`, `Replace$`, `Mki$` … `CaseSense` | bis 100 je Wort |
+| `$DC81`–`$DC99` | 185 (acidlibs) | `Left$`, `Right$`, `Mid$`, `Hex$`, `Bin$`, `Chr$`, `Asc`, `String$`, `Instr`, `Replace$`, `Mki$` … `CaseSense` | up to 100 per word |
 | `$DD01`–`$DD03` | 186 (acidlibs) | `Edit$`, `Inkey$`, `Edit` | 57/90/16 |
 | `$B58D`, `$B58F`–`$B591` | 107 (bigdeflibs) | `Request`, `ScreenWidth`, `ScreenHeight`, `ActiveWindow` | 13/21/21/2 |
 | `$A596`, `$A599` | 75 | `NextBank`, `FillMem` | 7/3 |
@@ -77,35 +77,35 @@ Plausibilitätsprüfung (z. B. Parameterzahl).
 | `$C70D` | 142 | `BlitzFont` | 1 |
 | `$FD28` | 250 | `BestModeIDA_` | 2 |
 
-Die Zuordnung in `bb2-corpus.md` §5, die aus dem Kontext erschlossen war
-(Lib 185 → heute Lib 6 gleicher Index, Lib 186 → Lib 79), stimmt damit
-überein. **Nicht** BB2.1 sind 20 Wörter: Lib 5, 29, 39, 109/27–48, 123, 147
-– sie stammen aus späteren oder fremden Libraries (AmiBlitz 2, Fremd-Libs).
+The mapping in `bb2-corpus.md` §5, which had been inferred from context
+(lib 185 → today lib 6 same index, lib 186 → lib 79), agrees
+with this. **Not** BB2.1 are 20 words: lib 5, 29, 39, 109/27–48, 123, 147
+– they come from later or third-party libraries (AmiBlitz 2, third-party libs).
 
-## Bezug zu `replacedat` und den defekten Resident-Makros
+## Relation to `replacedat` and the broken resident macros
 
-`replacedat` setzt in AmiBlitz3 nur FPU-Varianten um (Befund vom 26.10.,
-Change `macros` in ab3c); alte Lib-Nummern bildet AB3 **nicht** ab. Die
-Wörter in den fünf defekten Makros von `all.res` sind genau BB2.1-Wörter:
+`replacedat` in AmiBlitz3 only converts FPU variants (finding of 26.10.,
+change `macros` in ab3c); AB3 does **not** map old lib numbers. The
+words in the five broken macros of `all.res` are exactly BB2.1 words:
 
-| Wort in `all.res` | BB2.1 |
+| Word in `all.res` | BB2.1 |
 |---|---|
 | `$DC86` | `Chr$` (185/6) |
 | `$DC87` | `Asc` (185/7) |
 | `$B58D` | `Request` (107/13) |
 | `$B593` | `ShowRequesters` (107/19) |
 
-Die Makros (`PSD_NAME_FRONTMOST`, `Toolbar_KeyButton`, `checklib`, `cout`,
-`screen_`) wurden also mit einer Blitz-2-Tabelle tokenisiert und nie
-umgesetzt. Ein Konverter für `.bb2` muss die BB2.1-Tabelle selbst
-mitbringen; `replacedat` hilft dafür nicht. Das korrigiert die Annahme in
-`bb2-corpus.md` §5 und Anforderung 4 in `docs/bb2-converter/README.md`.
+So the macros (`PSD_NAME_FRONTMOST`, `Toolbar_KeyButton`, `checklib`, `cout`,
+`screen_`) were tokenised with a Blitz 2 table and never
+converted. A converter for `.bb2` has to bring the BB2.1 table
+itself; `replacedat` does not help with that. This corrects the assumption in
+`bb2-corpus.md` §5 and requirement 4 in `docs/bb2-converter/README.md`.
 
-## Offen
+## Open
 
-* Ob Dateien des Korpus bekannte, aber **verschobene** Wörter enthalten
-  (z. B. `$A589` als `Min`): dafür die Token-Zählung je Datei
-  (`tests/external/aminet/tools/analyze.py`) gegen `vergleich.txt` laufen
-  lassen.
-* Ältere Versionen (2.0, 1.x) und AmiBlitz 2 haben eigene Tabellen; die CD
-  enthält nur 2.1 (die `bum*`-Disketten eventuell Zwischenstände).
+* Whether files of the corpus contain known but **shifted** words
+  (e.g. `$A589` as `Min`): for this, run the token count per file
+  (`tests/external/aminet/tools/analyze.py`) against
+  `vergleich.txt`.
+* Older versions (2.0, 1.x) and AmiBlitz 2 have their own tables; the CD
+  contains only 2.1 (the `bum*` disks possibly intermediate states).

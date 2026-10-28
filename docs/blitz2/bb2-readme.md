@@ -1,106 +1,106 @@
-# blitz2-c – Blitz-Basic-2-Compiler v1.95 in C
+# blitz2-c – Blitz Basic 2 compiler v1.95 in C
 
-C-Übersetzung von `blitz2.s` (Blitz Basic 2 v1.95, Acid Software 1995,
-Devpac-Assembler, ~16 000 Zeilen + Includes) aus
+C translation of `blitz2.s` (Blitz Basic 2 v1.95, Acid Software 1995,
+Devpac assembler, ~16 000 lines + includes) from
 `../quelltext/amibl2src/files/amiblitz2source/bb2src.zip.dir/`.
 
-Zweck: **Lesbarkeit für den Kompatibilitätsvergleich mit AmiBlitz3.** Deshalb
-gilt Treue vor Eleganz: gleiche Algorithmen, gleiche Datenlayouts, gleiche
-Eigenheiten, die originalen Labels als C-Namen, Zeilenverweise
-`/* blitz2.s:NNNN */` an jeder Funktion.
+Purpose: **readability for the compatibility comparison with AmiBlitz3.** Hence
+fidelity beats elegance: same algorithms, same data layouts, same
+quirks, the original labels as C names, line references
+`/* blitz2.s:NNNN */` at every function.
 
-## Bauen
+## Building
 
 Toolchain: bebbo `m68k-amigaos-gcc` in `/opt/amiga` (libnix, `-noixemul`,
-68000); Bauen der Toolchain unter Arch/CachyOS:
+68000); building the toolchain on Arch/CachyOS:
 [../toolchain.md](../toolchain.md).
 
 ```
 cmake --preset amiga
 cmake --build --preset amiga                    # -> build/amiga/blitz2
-cmake --build --preset amiga --target headers   # passen alle Header zusammen?
-cmake --build --preset amiga --target listing   # vasm-Listing des Originals
+cmake --build --preset amiga --target headers   # do all headers fit together?
+cmake --build --preset amiga --target listing   # vasm listing of the original
 ```
 
-Globale Variablen werden a4-relativ adressiert (`-fbaserel`, Option
-`BLITZ2_BASEREL`, Standard an): kürzere Befehle, weniger Relocations. Alle
-Einsprünge von außen (Editor-Callbacks, `stopcode`, `trap #15`) laden a4 in
-`glue*.c` (`GLUE_LOAD_A4`). Release-Builds werden ohne Symbole gelinkt.
-Größe: 96 KB statt 127 KB (Original 2.10: 86 KB); CD-Referenzlauf und
-Testkorpus danach unverändert gleich.
+Global variables are addressed a4-relative (`-fbaserel`, option
+`BLITZ2_BASEREL`, on by default): shorter instructions, fewer relocations. All
+entries from outside (editor callbacks, `stopcode`, `trap #15`) load a4 in
+`glue*.c` (`GLUE_LOAD_A4`). Release builds are linked without symbols.
+Size: 96 KB instead of 127 KB (original 2.10: 86 KB); CD reference run and
+test corpus unchanged afterwards.
 
-## Aufbau
+## Structure
 
-Jede Datei entspricht einem Zeilenbereich von `blitz2.s` (in Quellreihenfolge):
+Each file corresponds to a line range of `blitz2.s` (in source order):
 
-| Datei | blitz2.s | Inhalt |
+| File | blitz2.s | Contents |
 |---|---|---|
-| `src/main.c` | 1–1911, wbheader, asmmac | Start, Tokenliste, edstruct, Editor-Wrapper `ed_*`, Menüs, Programmstart, Asm-Prüfroutinen |
-| `src/compile.c` | 1912–3290 | `compile`, `dopass`, Makroexpansion, STOP-Requester, Statement-Dispatch (`atokens`) |
-| `src/stmts.c` | 3291–4999 | Statements, Direktmodus, Objektpuffer, Residents, Asm-EA-Parser |
-| `src/asmlibs.c` | 5000–6739 | Inline-Assembler, Parameter, `uselib`, Laden der Libraries |
-| `src/parse.c` | 6740–8450 | Statics/Data, `savefile`, `getchar`, `err` + Fehlermeldungen, Namen, Variablen |
-| `src/eval.c` | 8451–10683 | Code-Emitter `poke*`, `convtype`, Ausdrucksauswertung, Operatoren |
-| `src/libcall.c` | 10684–12135 | Zahlen, Lib-Aufrufe, Includes |
-| `src/tokens1.c` | 12136–13326 | eingebaute Befehle Teil 1 (DefType … If/While) |
-| `src/tokens2.c` | 13327–14655 | eingebaute Befehle Teil 2 (Then … Dim) |
-| `src/data.c` | 14656–Ende, options*.src, typereq, calcreq | Globals, Typen, Requester, Optionen, `.xtra` |
-| `src/structs.h` | – | alle Heap-Knoten, Offsets per `_Static_assert` gegen das Original geprüft |
-| `src/glue.c`, `src/glue_direct.c` | – | **der einzige Assembler**: Register-Thunk `callregs`, Einstiegsstubs für Editor/exec, VBR, Trap-#15-Handler des Direktmodus |
+| `src/main.c` | 1–1911, wbheader, asmmac | startup, token list, edstruct, editor wrappers `ed_*`, menus, program start, asm check routines |
+| `src/compile.c` | 1912–3290 | `compile`, `dopass`, macro expansion, STOP requester, statement dispatch (`atokens`) |
+| `src/stmts.c` | 3291–4999 | statements, direct mode, object buffer, residents, asm EA parser |
+| `src/asmlibs.c` | 5000–6739 | inline assembler, parameters, `uselib`, loading the libraries |
+| `src/parse.c` | 6740–8450 | statics/data, `savefile`, `getchar`, `err` + error messages, names, variables |
+| `src/eval.c` | 8451–10683 | code emitter `poke*`, `convtype`, expression evaluation, operators |
+| `src/libcall.c` | 10684–12135 | numbers, lib calls, includes |
+| `src/tokens1.c` | 12136–13326 | built-in commands part 1 (DefType … If/While) |
+| `src/tokens2.c` | 13327–14655 | built-in commands part 2 (Then … Dim) |
+| `src/data.c` | 14656–end, options*.src, typereq, calcreq | globals, types, requesters, options, `.xtra` |
+| `src/structs.h` | – | all heap nodes, offsets checked against the original via `_Static_assert` |
+| `src/glue.c`, `src/glue_direct.c` | – | **the only assembler**: register thunk `callregs`, entry stubs for editor/exec, VBR, trap #15 handler of the direct mode |
 
-Jede `NAME.c` hat eine `NAME.h` (Vertrag für die anderen Teile);
-`src/blitz2.h` bindet alle ein.
+Each `NAME.c` has a `NAME.h` (contract for the other parts);
+`src/blitz2.h` includes all of them.
 
-## Lesehilfen
+## Reading aids
 
-* `BUG(orig): …` – Fehler/Eigenheit des Originals, bewusst beibehalten.
-* `DIFF: …` – bewusste Abweichung, nur wo C das Gleiche nicht kann
-  (Stacktricks, Registerrahmen); der Kommentar sagt, was das Original tat.
-* Register, die im Original dauerhaft Zustand tragen, sind Globals:
-  `srcptr` = a5 des Parsers, `numd3`/`numd6` = d3/d6 nach Zahlen-Fetch,
-  `getvnamelen` = d2 nach `getvname`. Bedingungscodes als Ergebnis wurden zu
-  Rückgabewerten (Abbildung steht im jeweiligen Header).
-* Code-Templates (Maschinencode, den der Compiler ins erzeugte Programm
-  kopiert) sind beschreibbare `UWORD`-Arrays mit den Originalbytes, erzeugt
-  aus dem vasm-Listing (`tools/asmlisting.py`) und gegen das Binary geprüft.
-* `CONVENTIONS.md` – Regeln der Übersetzung; `notes/` – Analysen je Abschnitt
-  (`survey-NN.md`), Querverweise, Änderungsprotokoll, Reviews.
+* `BUG(orig): …` – bug/quirk of the original, deliberately kept.
+* `DIFF: …` – deliberate deviation, only where C cannot do the same
+  (stack tricks, register frames); the comment says what the original did.
+* Registers that permanently carry state in the original are globals:
+  `srcptr` = a5 of the parser, `numd3`/`numd6` = d3/d6 after number fetch,
+  `getvnamelen` = d2 after `getvname`. Condition codes as results became
+  return values (the mapping is in the respective header).
+* Code templates (machine code that the compiler copies into the generated program)
+  are writable `UWORD` arrays with the original bytes, generated
+  from the vasm listing (`tools/asmlisting.py`) and checked against the binary.
+* `CONVENTIONS.md` – rules of the translation; `notes/` – analyses per section
+  (`survey-NN.md`), cross references, change log, reviews.
 
-## Stand der Prüfung
+## State of checking
 
-Jeder Abschnitt wurde nach der Übersetzung von einem unabhängigen Durchgang
-Routine für Routine gegen den Assembler geprüft (Flags, Sprünge,
-erzeugte Opcodes, Templates, Datenlayouts, Verträge zwischen den Teilen);
-Befunde und Korrekturen in `notes/review-NN.md`. Datenbereiche (Tokenliste,
-Requester, Templates, Fehlertexte) wurden per Skript bytegenau mit dem
-Original verglichen. **Nicht** geprüft ist das Laufzeitverhalten.
+After translation, each section was checked by an independent pass
+routine by routine against the assembler (flags, branches,
+generated opcodes, templates, data layouts, contracts between the parts);
+findings and corrections in `notes/review-NN.md`. Data areas (token list,
+requesters, templates, error texts) were compared byte for byte with the
+original by script. Runtime behaviour has **not** been checked.
 
 ## IDE
 
-CMake-Projekt direkt in CLion öffnen (die Toolchain wird automatisch
-gesetzt). `.clangd` lässt clangd die Quellen als m68k parsen.
+Open the CMake project directly in CLion (the toolchain is set
+automatically). `.clangd` makes clangd parse the sources as m68k.
 
-## Werkzeuge
+## Tools
 
-* CMake-Ziel `listing` – vasm-Listing des Originals (Adressen + Opcodes),
+* CMake target `listing` – vasm listing of the original (addresses + opcodes),
   `build/amiga/blitz2.lst`.
-* `tools/asmlisting.py` – Bytes/Templates eines Label-Bereichs als C-Array.
-* `tools/xrefs.py` – welche Labels jedes Abschnitts andere Abschnitte nutzen.
-* `tools/req2c.py` – Intuition-Requester-Daten → NDK-Structs.
-* `cmake -P tools/checkfile.cmake src/NAME.c` – eine Datei mit den Flags aus
-  `build/amiga/compile_commands.json` übersetzen (parallel nutzbar).
+* `tools/asmlisting.py` – bytes/templates of a label range as a C array.
+* `tools/xrefs.py` – which labels of each section other sections use.
+* `tools/req2c.py` – Intuition requester data → NDK structs.
+* `cmake -P tools/checkfile.cmake src/NAME.c` – compile one file with the flags from
+  `build/amiga/compile_commands.json` (usable in parallel).
 
-## Laufen lassen
+## Running
 
-Nicht getestet. Das Programm ist ein Ersatz für `blitz2:blitz2` und braucht
-dieselbe Umgebung wie das Original: `blitz2:ted` (Editor, wird per LoadSeg
-geladen und ruft den Compiler über `edstruct` zurück),
+Not tested. The program is a replacement for `blitz2:blitz2` and needs
+the same environment as the original: `blitz2:ted` (editor, loaded via LoadSeg
+and calls back into the compiler via `edstruct`),
 `blitz2:deflibs`, `blitz2:acidlibs`, `blitz2:userlibs/`,
-`blitz2:defaultdbug` – alles in `../cd/blitz2/`. Test in Amiberry: `blitz2:`
-auf eine Kopie von `cd/blitz2/` legen und dort `blitz2` durch
-`build/amiga/blitz2` ersetzen.
+`blitz2:defaultdbug` – all in `../cd/blitz2/`. Test in Amiberry: assign `blitz2:`
+to a copy of `cd/blitz2/` and replace `blitz2` there with
+`build/amiga/blitz2`.
 
-Einschränkungen: Der erzeugte Code wird teils noch zur Compile-Zeit
-ausgeführt (Konstantenfaltung, `evalconst2`) – der Compiler läuft also nur
-auf einem 68k-Amiga bzw. Emulator. Das Binary auf der CD ist v2.10; der
-Quelltext ist v1.95.
+Limitations: the generated code is partly executed at compile time
+(constant folding, `evalconst2`) – so the compiler only runs
+on a 68k Amiga or emulator. The binary on the CD is v2.10; the
+source is v1.95.
