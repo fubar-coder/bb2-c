@@ -10,5 +10,5 @@ cmake-build-*/
 !/amiga-emulation/README.md
 # downloaded originals (cmake/fetch-originals.cmake), see archive/README.md
 /.cache/
-/archive/cd/
-/archive/aminet/
+/archive/cd
+/archive/aminet
