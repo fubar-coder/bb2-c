@@ -164,11 +164,11 @@ The details are in the header comments of the libraries.
 device list) and `debuglib` (additional token `$D509`, extended
 handler table) – the reference is the binary of the CD.
 
-**For the comparison with AmiBlitz3** (kept as `BUG(orig)`, selection):
-`MOD` on Quick/Float calculates only with the integer parts (the
-library returns `Quotient<<16|Rest` for Quick, a long for Float – but the
-compiler reads the result as word or long, blitz2.s:9459/9463,
-so this is not a visible bug);
+**For the comparison with AmiBlitz3** (kept as `BUG(orig)`, selection;
+not a bug, only kept: `MOD` on Quick/Float uses the integer parts – the
+library returns `Quotient<<16|Rest` for Quick, a long for Float, but the
+compiler reads the result as word or long, blitz2.s:9459/9463 – which is
+the intended integer semantics of MOD):
 Quick 0 → Float `$00000080`; `lmultiply`/`arrmult` add
 partial products via SWAP (visible only on overflow); `newlist` writes, for
 size 0 (e.g. dimension −1), 8 bytes behind the block; division by 0 returns
