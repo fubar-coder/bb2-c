@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "amiga_emulation.h"
+#include "bugorig.h"
 #include "corpus.h"
 #include "serial.h"
 #include "util.h"
@@ -33,6 +34,24 @@ void corpus_free(struct corpus_pass *p)
     free(p->gate);
     free(p->defaultdbug);
     free(p->serial_same_as);
+    free(p->expect);
+    free(p->wrap);
+    free(p->wrap_args);
+    for (i = 0; i < p->nfiles; i++) {
+        free(p->file_dest[i]);
+        free(p->file_src[i]);
+    }
+    free(p->file_dest);
+    free(p->file_src);
+    for (i = 0; i < p->ndirs; i++)
+        free(p->dirs[i]);
+    free(p->dirs);
+    for (i = 0; i < p->nremoves; i++)
+        free(p->removes[i]);
+    free(p->removes);
+    for (i = 0; i < p->njoblines; i++)
+        free(p->joblines[i]);
+    free(p->joblines);
     for (i = 0; i < p->nconfigs; i++) {
         free(p->configs[i].tag);
         free(p->configs[i].blitz2);
@@ -76,6 +95,36 @@ static char *field(const char **s)
     return f;
 }
 
+/* appends v to the list (takes it); 0 = ok */
+static int push(char ***list, size_t *n, char *v)
+{
+    char **l = realloc(*list, (*n + 1) * sizeof *l);
+
+    if (!l)
+        return -1;
+    *list = l;
+    l[(*n)++] = v;
+    return 0;
+}
+
+/* a path inside the volume: relative, no colon, no empty or .. part */
+static int inside(const char *d)
+{
+    const char *s = d;
+
+    if (!*d || *d == '/' || strchr(d, ':') || strchr(d, '\\'))
+        return 0;
+    for (;;) {
+        size_t n = strcspn(s, "/");
+
+        if (!n || (n == 2 && !strncmp(s, "..", 2)))
+            return 0;
+        if (!s[n])
+            return 1;
+        s += n + 1;
+    }
+}
+
 int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errlen)
 {
     const char *line = text;
@@ -112,10 +161,10 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
 
         if (!strcmp(key, "work") || !strcmp(key, "report") || !strcmp(key, "ted")
             || !strcmp(key, "launcher") || !strcmp(key, "gate") || !strcmp(key, "defaultdbug")
-            || !strcmp(key, "serial_same_as")) {
+            || !strcmp(key, "serial_same_as") || !strcmp(key, "expect")) {
             char **dst = !strcmp(key, "work") ? &p->work : !strcmp(key, "report") ? &p->report
                          : !strcmp(key, "ted") ? &p->ted : !strcmp(key, "launcher") ? &p->launcher
-                         : !strcmp(key, "gate") ? &p->gate
+                         : !strcmp(key, "gate") ? &p->gate : !strcmp(key, "expect") ? &p->expect
                          : !strcmp(key, "defaultdbug") ? &p->defaultdbug : &p->serial_same_as;
 
             free(*dst);
@@ -206,6 +255,57 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             free(val);
             continue;
         }
+        if (!strcmp(key, "file")) {
+            const char *s = val;
+            char *dest = field(&s), *src = field(&s), **d2, **s2;
+
+            if (!dest || !src || !inside(dest) || !*src || *s
+                || !(d2 = realloc(p->file_dest, (p->nfiles + 1) * sizeof *d2))
+                || !(p->file_dest = d2, s2 = realloc(p->file_src, (p->nfiles + 1) * sizeof *s2))) {
+                free(dest);
+                free(src);
+                free(val);
+                return fail(p, err, errlen, "line %u: file=DEST|SRC (DEST inside the volume)", no);
+            }
+            p->file_src = s2;
+            p->file_dest[p->nfiles] = dest;
+            p->file_src[p->nfiles++] = src;
+            free(val);
+            continue;
+        }
+        if (!strcmp(key, "dir") || !strcmp(key, "remove")) {
+            int d = !strcmp(key, "dir");
+
+            if (!inside(val) || push(d ? &p->dirs : &p->removes, d ? &p->ndirs : &p->nremoves, val)) {
+                free(val);
+                return fail(p, err, errlen, "line %u: %s=DEST (inside the volume)", no, key);
+            }
+            continue;
+        }
+        if (!strcmp(key, "jobline")) {
+            if (!*val || push(&p->joblines, &p->njoblines, val)) {
+                free(val);
+                return fail(p, err, errlen, "line %u: jobline=LINE", no);
+            }
+            continue;
+        }
+        if (!strcmp(key, "wrap")) {
+            const char *s = val;
+            char *path = field(&s), *args = *val && strchr(val, '|') ? strdup(s) : NULL;
+
+            if (!path || !*path || (strchr(val, '|') && !args)) {
+                free(path);
+                free(args);
+                free(val);
+                return fail(p, err, errlen, "line %u: wrap=PATH[|ARGS]", no);
+            }
+            free(p->wrap);
+            free(p->wrap_args);
+            p->wrap = path;
+            p->wrap_args = args;
+            free(val);
+            continue;
+        }
         free(val);
         return fail(p, err, errlen, "line %u: unknown key %s", no, key);
     }
@@ -213,6 +313,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         return fail(p, err, errlen, "work, report, ted, launcher and defaultdbug are needed");
     if (p->nconfigs < 2 || !p->nsources)
         return fail(p, err, errlen, "a reference, another configuration and sources are needed");
+    if (p->expect && (p->nsources != 1 || p->serial || p->serial_same_as))
+        return fail(p, err, errlen, "expect= needs exactly one source and no serial port");
     /* names: one directory per configuration, AmigaDOS ignores case */
     for (i = 0; i < p->nconfigs; i++)
         for (k = 0; k < i; k++)
@@ -287,7 +389,7 @@ static int stage(const struct corpus_pass *p, size_t c, FILE *log)
         { cf->blitz2, "blitz2/blitz2" }, { p->ted, "blitz2/ted" },
         { cf->deflibs, "blitz2/deflibs" }, { cf->acidlibs, "blitz2/acidlibs" },
         { p->defaultdbug, "blitz2/defaultdbug" }, { p->launcher, "run" },
-        { p->gate, "gate" },
+        { p->gate, "gate" }, { p->wrap, "wrap" },
     };
     struct text jobs = { 0 };
     size_t i;
@@ -314,6 +416,42 @@ static int stage(const struct corpus_pass *p, size_t c, FILE *log)
         }
         free(to);
     }
+    for (i = 0; i < p->nfiles; i++) {
+        char *to = str_printf("%s/%s", vol, p->file_dest[i]), *slash = to ? strrchr(to, '/') : NULL;
+        int bad = !to;
+
+        if (slash) {
+            *slash = 0;
+            bad = mkdir_p(to);
+            *slash = '/';
+        }
+        if (bad || copy_file(p->file_src[i], to)) {
+            fprintf(log, "corpus: cannot copy %s to %s\n", p->file_src[i], p->file_dest[i]);
+            free(to);
+            goto out;
+        }
+        free(to);
+    }
+    for (i = 0; i < p->ndirs; i++) {
+        char *d = str_printf("%s/%s", vol, p->dirs[i]);
+
+        if (!d || mkdir_p(d)) {
+            fprintf(log, "corpus: cannot create %s\n", p->dirs[i]);
+            free(d);
+            goto out;
+        }
+        free(d);
+    }
+    for (i = 0; i < p->nremoves; i++) {
+        char *d = str_printf("%s/%s", vol, p->removes[i]);
+
+        if (!d) {
+            fprintf(log, "corpus: out of memory\n");
+            goto out;
+        }
+        rm_tree(d);
+        free(d);
+    }
     text_add(&jobs, "log=" VOLUME ":out/session.log\ndefaults=" VOLUME ":out/defaults.xtra\n");
     if (!p->runtime_errors)
         text_add(&jobs, "runerr=off\n");
@@ -330,6 +468,8 @@ static int stage(const struct corpus_pass *p, size_t c, FILE *log)
         free(name);
         free(to);
     }
+    for (i = 0; i < p->njoblines; i++)
+        text_add(&jobs, "%s\n", p->joblines[i]);
     {
         char *to = str_printf("%s/jobs", vol);
 
@@ -350,9 +490,10 @@ static char *script(const struct corpus_pass *p)
 
     text_add(&s, "Assign blitz2: " VOLUME ":blitz2\n"
             "Stack %u\n"
-            "blitz2:blitz2 " VOLUME ":jobs >" VOLUME ":out/blitz2.out\n"
+            "%s%s%sblitz2:blitz2 " VOLUME ":jobs >" VOLUME ":out/blitz2.out\n"
             "Echo \"rc=$RC\" >>" VOLUME ":out/blitz2.out\n"
-            "Assign blitz2:\n", p->stack);
+            "Assign blitz2:\n", p->stack, p->wrap ? VOLUME ":wrap " : "",
+            p->wrap_args ? p->wrap_args : "", p->wrap_args ? " " : "");
     if (p->gate)
         text_add(&s, "SetEnv REQCLOSELOG " VOLUME ":out/reqclose.log\n"
                 VOLUME ":run " VOLUME ":gate >" VOLUME ":out/gate.run\n"
@@ -495,6 +636,118 @@ static int same(const uint8_t *a, size_t al, const uint8_t *b, size_t bl)
     return a && b && al == bl && !memcmp(a, b, al);
 }
 
+/* ------------------------------------------------------------ bug-orig */
+
+/* the observation of configuration c (bugorig_observe) */
+static int observe(const struct corpus_pass *p, size_t c, enum amiga_emulation_status st,
+                   const char *slog, struct bugorig_obs *o)
+{
+    char *n = corpus_name(p->sources[0]);
+    char *run = n ? str_printf("%s/%s/vol/out/%s.run", p->work, p->configs[c].tag, n) : NULL;
+    char *b2 = str_printf("%s/%s/vol/out/blitz2.out", p->work, p->configs[c].tag);
+    size_t len;
+    char *rt = run ? (char *)read_file(run, &len) : NULL, *bt = b2 ? (char *)read_file(b2, &len) : NULL;
+    struct bugorig_outputs out = { amiga_emulation_status_name(st), slog, bt, rt, "j000" };
+    int r = n && run && b2 ? bugorig_observe(&out, o) : -1;
+
+    free(rt);
+    free(bt);
+    free(run);
+    free(b2);
+    free(n);
+    return r;
+}
+
+/* bug-orig mode (expect=): every configuration judged against the
+   expectation and the reference; exit status in corpus.h */
+static int judge(const struct corpus_pass *p, const enum amiga_emulation_status *st, char **slog,
+                 FILE *log)
+{
+    struct bugorig_obs e, *o = calloc(p->nconfigs, sizeof *o);
+    struct text rep = { 0 };
+    char err[300], *name = corpus_name(p->sources[0]);
+    size_t len, c;
+    char *etext = (char *)read_file(p->expect, &len);
+    int rc = 2, worst = 0;
+
+    if (!o || !name) {
+        fprintf(log, "corpus: out of memory\n");
+        goto out;
+    }
+    if (!etext || bugorig_parse(etext, &e, err, sizeof err)) {
+        fprintf(log, "corpus: %s: %s\n", p->expect, etext ? err : "cannot read it");
+        goto out;
+    }
+    /* a session that could not run is no observation (a timeout is one: a
+       crash or a hang) */
+    for (c = 0; c < p->nconfigs; c++)
+        if (st[c] == AMIGA_EMULATION_FAILED || st[c] == AMIGA_EMULATION_EXITED) {
+            fprintf(log, "corpus: %s: session %s (%s/%s/emu)\n", p->configs[c].tag,
+                    amiga_emulation_status_name(st[c]), p->work, p->configs[c].tag);
+            goto out_e;
+        }
+    for (c = 0; c < p->nconfigs; c++)
+        if (observe(p, c, st[c], slog[c], &o[c])) {
+            fprintf(log, "corpus: out of memory\n");
+            goto out_e;
+        }
+    /* what each configuration showed, for writing an expectation */
+    for (c = 0; c < p->nconfigs; c++) {
+        struct text t = { 0 };
+        char *path = str_printf("%s/%s/observation", p->work, p->configs[c].tag);
+        size_t k;
+
+        for (k = 0; k < o[c].n; k++)
+            text_add(&t, "[%s]\n%s", o[c].sec[k].name, o[c].sec[k].text);
+        if (t.bad || !path || write_file(path, t.p ? t.p : "", t.n))
+            fprintf(log, "corpus: cannot write %s\n", path ? path : "the observation");
+        free(t.p);
+        free(path);
+    }
+    text_add(&rep, "== bug-orig %s: runtime error checking %s, expectation %s\n", name,
+        p->runtime_errors ? "on" : "off", p->expect);
+    if (bugorig_matches(&e, &o[0])) {
+        text_add(&rep, "BROKEN TEST: the original shows the expected (correct) behaviour - it does "
+            "not have the bug, or the expectation describes the bug\n");
+        worst = 3;
+    }
+    for (c = 1; c < p->nconfigs && worst < 3; c++) {
+        struct text why = { 0 };
+        enum bugorig_verdict v = bugorig_judge(&e, &o[0], &o[c], &why);
+        static const int order[] = { [BUGORIG_FIXED] = 0, [BUGORIG_REPRODUCED] = 1,
+                                     [BUGORIG_DIFFERS] = 2, [BUGORIG_BROKEN] = 3 };
+
+        text_add(&rep, "%s: %s%s\n", p->configs[c].tag, bugorig_verdict_name(v),
+            v == BUGORIG_FIXED ? " - the configuration behaves correctly"
+            : v == BUGORIG_REPRODUCED ? " - the bug of the original, reproduced on purpose"
+            : " - THE PORT DOES NOT REPRODUCE THE ORIGINAL");
+        if (why.p)
+            text_add(&rep, "%s", why.p);
+        free(why.p);
+        if (order[v] > worst)
+            worst = order[v];
+    }
+    for (c = 0; c < p->nconfigs; c++)
+        text_add(&rep, "session %s: %s (observation: %s/%s/observation)\n", p->configs[c].tag,
+            amiga_emulation_status_name(st[c]), p->work, p->configs[c].tag);
+    if (rep.bad || write_file(p->report, rep.p, rep.n)) {
+        fprintf(log, "corpus: cannot write %s\n", p->report);
+        goto out_e;
+    }
+    fwrite(rep.p, 1, rep.n, log);
+    rc = (int[]){ 0, 1, 4, 3 }[worst];
+out_e:
+    bugorig_free(&e);
+out:
+    for (c = 0; o && c < p->nconfigs; c++)
+        bugorig_free(&o[c]);
+    free(o);
+    free(etext);
+    free(name);
+    free(rep.p);
+    return rc;
+}
+
 int corpus_run(const struct corpus_pass *p, FILE *log)
 {
     struct amiga_emulation **e = calloc(p->nconfigs, sizeof *e);
@@ -522,6 +775,15 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
                 rc = 77;
                 goto out;
             }
+    }
+    for (i = 0; i <= p->nfiles; i++) {
+        const char *f = i < p->nfiles ? p->file_src[i] : p->wrap;
+
+        if (f && access(f, R_OK)) {
+            fprintf(log, "corpus: no %s - skipped\n", f);
+            rc = 77;
+            goto out;
+        }
     }
     for (i = 0; i < p->nmounts; i++)
         if (access(p->mount_dir[i], R_OK | X_OK)) {
@@ -577,6 +839,10 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
 
         slog[c] = path ? (char *)read_file(path, &len) : NULL;
         free(path);
+    }
+    if (p->expect) {
+        rc = judge(p, st, slog, log);
+        goto out;
     }
     text_add(&rep, "== runtime error checking %s, %zu sources:", p->runtime_errors ? "on" : "off",
         p->nsources);

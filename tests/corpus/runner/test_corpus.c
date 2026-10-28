@@ -68,6 +68,34 @@ int main(void)
     CHECK(parse(BASE CONFIGS "source=/s\nmount=BB2\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\nmount=BB2|/cd|x\n", err, sizeof err) == -1);
 
+    /* files of the volume, wrapper, job lines, bug-orig expectation */
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\nfile=blitz2/userlibs/x/lib|/l\ndir=blitz2/userlibs/y\n"
+                       "remove=blitz2/ted\nwrap=/w2|allocfail=64-64\njobline=menu=j1|9|X\n"
+                       "expect=/e\n", &p, err, sizeof err) == 0);
+    CHECK(p.nfiles == 1 && !strcmp(p.file_dest[0], "blitz2/userlibs/x/lib")
+          && !strcmp(p.file_src[0], "/l"));
+    CHECK(p.ndirs == 1 && p.nremoves == 1 && !strcmp(p.removes[0], "blitz2/ted"));
+    CHECK(!strcmp(p.wrap, "/w2") && !strcmp(p.wrap_args, "allocfail=64-64"));
+    CHECK(p.njoblines == 1 && !strcmp(p.joblines[0], "menu=j1|9|X") && !strcmp(p.expect, "/e"));
+    corpus_free(&p);
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\nwrap=/w2\n", &p, err, sizeof err) == 0);
+    CHECK(!strcmp(p.wrap, "/w2") && !p.wrap_args);
+    corpus_free(&p);
+    CHECK(parse(BASE CONFIGS "source=/s\nfile=/abs|/l\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "source=/s\nfile=a/../../x|/l\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "source=/s\nfile=SYS:x|/l\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "source=/s\nfile=a//b|/l\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "source=/s\nfile=a\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "source=/s\nfile=a|/l|x\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "source=/s\ndir=\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "source=/s\nremove=../x\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "source=/s\njobline=\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "source=/s\nwrap=|x\n", err, sizeof err) == -1);
+    /* bug-orig: exactly one source */
+    CHECK(parse(BASE CONFIGS "source=/s\nsource=/t\nexpect=/e\n", err, sizeof err) == -1
+          && strstr(err, "one source"));
+    CHECK(parse(BASE CONFIGS "source=/s\nserial=on\nexpect=/e\n", err, sizeof err) == -1);
+
     /* masking: 8 bytes behind each trap #1 / #4, the search goes on behind
        the block; first every trap #1, then every trap #4 (as bb2's
        mask_trap1: the trap #1 at 14 also clears the $4E71, the trap #4 at

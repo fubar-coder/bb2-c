@@ -37,6 +37,26 @@
  *   mount=NAME|DIR    a read-only volume for the programs (e.g. BB2: = the
  *                     CD, where the tests load sounds and modules from),
  *                     any number
+ *   file=DEST|SRC     SRC copied to CORPUS:DEST (DEST relative, parent
+ *                     directories made), after the files above: replaces
+ *                     one of them (e.g. blitz2/deflibs) or adds one (a
+ *                     library in blitz2/userlibs/DIR/), any number
+ *   dir=DEST          an empty directory CORPUS:DEST, any number
+ *   remove=DEST       CORPUS:DEST removed after staging (e.g. blitz2/ted,
+ *                     blitz2/defaultdbug), any number
+ *   wrap=PATH[|ARGS]  the compiler is started through PATH (CORPUS:wrap
+ *                     ARGS blitz2:blitz2 CORPUS:jobs), e.g. with faults
+ *                     injected (tests/bug-orig/amiga/inject.c)
+ *   jobline=LINE      a line appended to tedstub's job list (behind the
+ *                     job= lines), any number
+ *   expect=PATH       bug-orig test (bugorig.h): exactly one source; instead
+ *                     of comparing the configurations with the reference,
+ *                     each is judged against the expectation PATH (the
+ *                     correct behaviour) and the reference.  Exit status
+ *                     0 = every configuration FIXED, 1 = REPRODUCED (the
+ *                     bug, as intended), 3 = BROKEN (the original does not
+ *                     show the bug), 4 = DIFFERS (the port does not
+ *                     reproduce the original)
  * With runtime error checking the 8 byte parameter blocks behind trap #1
  * and trap #4 are zeroed before comparing (the memory address of the
  * editor's line item, depends on the memory layout).
@@ -58,6 +78,7 @@ struct corpus_config {
 
 struct corpus_pass {
     char *work, *report, *ted, *launcher, *gate, *defaultdbug, *serial_same_as;
+    char *expect, *wrap, *wrap_args;
     int runtime_errors, serial;
     unsigned timeout, parallel, stack;
     struct corpus_config *configs;
@@ -66,6 +87,10 @@ struct corpus_pass {
     size_t nsources;
     char **mount_name, **mount_dir;
     size_t nmounts;
+    char **file_dest, **file_src;
+    size_t nfiles;
+    char **dirs, **removes, **joblines;
+    size_t ndirs, nremoves, njoblines;
 };
 
 /* 0 = ok, -1 = error (message in err) */
@@ -79,7 +104,8 @@ char *corpus_name(const char *source);
 void corpus_mask_traps(uint8_t *data, size_t len);
 
 /* runs the pass: 0 = no differences, 1 = differences (report), 77 = the
-   emulator or a file of the pass is missing (skipped), 2 = error */
+   emulator or a file of the pass is missing (skipped), 2 = error; with
+   expect= the bug-orig exit status above */
 int corpus_run(const struct corpus_pass *p, FILE *log);
 
 #endif
