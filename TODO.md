@@ -288,7 +288,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   unchanged): switch paths, commands and line references in the texts to
   the layout of this repository (mapping in `docs/README.md`); line
   references into the C code have to be determined anew in the process.
-* **Tests for the issues labelled `braucht-test`** (99 open issues; for
+* **Tests for the issues labelled `needs-test`** (99 open issues; for
   most a test program that triggers the bug is missing, the trigger is
   described in the issue). A failing test is added with label `bug-orig`
   (README, "Tests") and named in the issue. What is needed:
