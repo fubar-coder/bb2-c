@@ -65,9 +65,13 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
       `teddrive`, `teddrivetest`, `tedprobe` (byte-gleich zu bb2;
       `teddrive` bindet `tests/corpus/amiga/reqclose.h` ein); Host-Test des
       Skript-Parsers `tdscript.h` als snitch (`ted_ab_tdscript`).
-   2. Dumps auf dem Host: `teddump` in C (Dekodieren mit den Fonts aus
-      `archive/sources/ted-1.1/`, „Free“ maskieren, vergleichen), Tests aus
-      bb2s `test_teddump.py`; PNG vorerst nicht.
+   2. ~~Dumps auf dem Host~~ erledigt (28.10.2026): `tests/ted-ab/runner/`
+      `teddump` (Library `lib_teddump` und Werkzeug `teddump info|text|cmp`):
+      Dekodieren mit den Fonts aus `archive/sources/ted-1.1/`, „Free“
+      maskieren, vergleichen; SHA-256 statt SHA-1, statt unified diff die
+      abweichenden Zeilen; PNG vorerst nicht. Test `ted_ab_teddump` nach bb2s
+      `test_teddump.py`. An bb2s 150 echten Dumps: Text byte-gleich zu
+      `teddump.py`, alle 124 Paar-Vergleiche gleich beurteilt.
    3. Runner `tedab` in C (wie `corpusrun`): Kombinationen R5/C5/Cc/Rc,
       Quellen (`T`/`E` mit `tedtok`, `K` von der CD, `S`), Sperren 0 und D,
       Sitzungen mit Neustart nach einem Hänger, Erwartungen (`tok` über

@@ -203,6 +203,7 @@ tests/data/                  erzeugte Testdaten (Orakel-Hashes, Token-Liste,
                              CD-Referenz von blitz2 1.95)
 tests/ted-ab/                TED-A/B: Original-TED gegen TED-C im Emulator;
                              amiga/: teddrive, teddrivetest, tedprobe
+                             runner/: teddump (Bildschirm-Dumps), host/: Tests
 tests/corpus/                Korpus: blitz2-c gegen blitz2 1.95 im Emulator;
                              amiga/: tedstub (blitz2:ted für Batch-Läufe),
                              reqtrap, reqclose, reqclosetest
