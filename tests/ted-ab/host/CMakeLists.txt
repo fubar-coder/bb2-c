@@ -13,3 +13,9 @@ target_compile_definitions(test_teddump PRIVATE
 target_compile_options(test_teddump PRIVATE -Wall)
 set_target_properties(test_teddump PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME ted_ab_teddump COMMAND test_teddump)
+
+add_executable(test_tedab test_tedab.cpp)
+target_link_libraries(test_tedab PRIVATE lib_tedab snitch::snitch)
+target_compile_options(test_tedab PRIVATE -Wall)
+set_target_properties(test_tedab PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME ted_ab_tedab COMMAND test_tedab)

@@ -14,3 +14,17 @@ add_executable(teddump main_teddump.c)
 target_link_libraries(teddump PRIVATE lib_teddump)
 target_compile_definitions(teddump PRIVATE TED_FONTS_DIR="${TED_FONTS_DIR}")
 target_compile_options(teddump PRIVATE -Wall -Wextra)
+
+# lib_tedab   the TED A/B tests without emulator: directives, lint, option
+#             block, requesters, session script, evaluation (tedab.h)
+# tedab       runs them in Amiberry (main_tedab.c)
+add_library(lib_tedab STATIC tedab.c)
+target_include_directories(lib_tedab PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../amiga)
+target_link_libraries(lib_tedab PUBLIC lib_teddump lib_runner_util lib_sha256)
+target_compile_options(lib_tedab PRIVATE -Wall -Wextra -Wno-unused-function)
+set_target_properties(lib_tedab PROPERTIES C_STANDARD 11)
+
+add_executable(tedab main_tedab.c)
+target_link_libraries(tedab PRIVATE lib_tedab lib_amiga_emulation)
+target_compile_options(tedab PRIVATE -Wall -Wextra)

@@ -1,0 +1,272 @@
+// test_tedab - the TED A/B runner without emulator (runner/tedab.h):
+// directives, lint, option block, requester sequence, session script,
+// session log, oracle lookup.  From bb2 ted-c/tests/tools/test_tedab.py.
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <vector>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <snitch/snitch.hpp>
+extern "C" {
+#include "tedab.h"
+}
+
+namespace {
+
+std::string lint(const char *text, int *n = nullptr)
+{
+    char *buf = nullptr;
+    size_t len = 0;
+    FILE *m = open_memstream(&buf, &len);
+    int k = tedab_lint(text, m);
+
+    fclose(m);
+    std::string s(buf ? buf : "");
+    free(buf);
+    if (n)
+        *n = k;
+    return s;
+}
+
+struct Test {
+    tedab_test t{};
+    int rc;
+    char err[300] = "";
+
+    Test(const char *text, const char *name = "x") { rc = tedab_test_parse(name, text, &t, err, sizeof err); }
+    ~Test() { tedab_test_free(&t); }
+};
+
+std::vector<std::string> requesters(const char *log)
+{
+    size_t n;
+    char **l = tedab_requesters(log, &n);
+    std::vector<std::string> v;
+
+    for (size_t i = 0; i < n; i++)
+        v.emplace_back(l[i]);
+    tedab_free_lines(l);
+    return v;
+}
+
+}  // namespace
+
+TEST_CASE("directives", "[test]")
+{
+    Test a("; @source T t01_int\n; @roundtrip\n; @expect absent t01_int.bb2.xtra\n"
+           "; @xtra norunerr\n; @est 4\n; @combos R5 C5\ntimeout 10\n");
+    REQUIRE(a.rc == 0);
+    CHECK(a.t.src_kind == 'T');
+    CHECK(std::string(a.t.file) == "t01_int.bb2");
+    CHECK(a.t.norunerr == 1);
+    CHECK(a.t.est == 4);
+    CHECK(a.t.combos == ((1u << TEDAB_R5) | (1u << TEDAB_C5)));
+    // @roundtrip's expectations first
+    REQUIRE(a.t.nexpects == 3);
+    CHECK(std::string(a.t.expects[0].kind) == "same");
+    CHECK(std::string(a.t.expects[1].kind) == "bak");
+    CHECK(std::string(a.t.expects[1].a) == "t01_int.bb2.bak");
+    CHECK(std::string(a.t.expects[2].kind) == "absent");
+
+    Test k("; @source K internet/demos/memo.bb2\n; @expect tedsave memo.bb2 internet/demos/memo.bb2\n");
+    REQUIRE(k.rc == 0);
+    CHECK(std::string(k.t.file) == "memo.bb2");
+    CHECK(k.t.combos == 15u);
+
+    Test none("; @source none\n; @nofiles\n");
+    REQUIRE(none.rc == 0);
+    CHECK(none.t.file == nullptr);
+
+    // a comment that mentions an @word in text is no directive
+    Test text("; @source T t01_int\n; original, @roundtrip), .bak\n; @nofiles\n");
+    REQUIRE(text.rc == 0);
+    CHECK(text.t.roundtrip == 0);
+}
+
+TEST_CASE("directives refused", "[test]")
+{
+    CHECK(Test("; @roundtrip\n").rc == -1);                                // no @source
+    CHECK(Test("; @source T t01_int\n").rc == -1);                         // OK alone is no pass
+    CHECK(Test("; @source T t01_int\n; @expect same\n").rc == -1);         // arity
+    CHECK(Test("; @source T t01_int\n; @expect equals a b\n").rc == -1);   // bb2's kind, gone
+    CHECK(Test("; @source T t01_int\n; @nofiles\n; @combos R5 X9\n").rc == -1);
+    CHECK(Test("; @source Q x\n; @nofiles\n").rc == -1);
+    CHECK(Test("; @source none\n; @roundtrip\n").rc == -1);                // nothing to compare
+    CHECK(Test("; @source T a\n; @nofiles\n; @opts nosuch=1\n").rc == -1);
+    Test t("; @source T a\n; @nofiles\n; @font 7\n");
+    CHECK(t.rc == -1);
+    CHECK(std::string(t.err).find("@font") != std::string::npos);
+}
+
+TEST_CASE("lint", "[lint]")
+{
+    int n;
+
+    CHECK(lint("; comment\ntimeout 10\nwait req \"OKEE DOKEE\"\ngad 1\nkey $45 1\n"
+               "menu 0 2\nfreq ok \"TEDRUN:work/a.bb2\"\nexpectfail wait exit\nlog\n", &n) == "");
+    CHECK(n == 0);
+    CHECK(lint("frob 1\n", &n) == "line 1: unknown command frob\n");
+    CHECK(lint("wait\n", &n) == "line 1: unknown wait (none)\n");
+    CHECK(lint("wait screen 1\n", &n) == "line 1: wait screen: 1 arguments\n");
+    CHECK(lint("menu 1\n", &n) == "line 1: menu: 1 arguments\n");
+    CHECK(lint("freq maybe\n", &n) == "line 1: freq ok|cancel\n");
+    CHECK(lint("freq ok \"a.bb2\"\n", &n).find("relative name without PATH") != std::string::npos);
+    CHECK(lint("freq ok \"a\" \"TEDRUN:work\"\n", &n) == "");
+    CHECK(lint("gad x\n", &n) == "line 1: gad: bad number 'x'\n");
+    CHECK(lint("key 4G\n", &n) == "line 1: key: bad number '4G'\n");
+    CHECK(lint("key 45\nmenu $1 2\n", &n) == "");     // key: hex, "$" = hex
+    CHECK(lint("expectfail\n", &n) == "line 1: expectfail without command\n");
+    std::string longline = "type \"" + std::string(290, 'a') + "\"\n";
+    CHECK(lint(longline.c_str(), &n).find("longer than 290") != std::string::npos);
+}
+
+TEST_CASE("option block", "[opts]")
+{
+    uint8_t o[50];
+    char err[200];
+
+    REQUIRE(tedab_opts_file("", o, err, sizeof err) == 0);
+    // fonthite 8, fonthite2 7, fontmul 1280 ...
+    CHECK(o[0] == 0);
+    CHECK(o[1] == 8);
+    CHECK(o[3] == 7);
+    CHECK(o[4] == 0x05);
+    CHECK(o[5] == 0x00);
+    CHECK(o[23] == 2);              // tabstop
+    CHECK(o[24 * 2 + 1] == 0);      // the last word
+    CHECK(o[12 * 2 + 1] == 8);      // palette
+    REQUIRE(tedab_opts_file("fonthite=6,fonthite2=5,fontmul=960", o, err, sizeof err) == 0);
+    CHECK(o[1] == 6);
+    CHECK(o[3] == 5);
+    CHECK(((o[4] << 8) | o[5]) == 960);
+    CHECK(tedab_opts_file("tabstop=x", o, err, sizeof err) == -1);
+    CHECK(tedab_opts_file("tab=1", o, err, sizeof err) == -1);
+    CHECK(std::string(err) == "unknown option field tab");
+}
+
+TEST_CASE("requesters", "[log]")
+{
+    const char *log =
+        "step 1 wait req \"OKEE DOKEE\"\n"
+        "window new #1 main \"\" pos 0,12 size 640,497 flags $0 gadgets 2\n"
+        "  gadget id 1 type $00000001 pos 1,2 size 104,12 \"Main\"\n"
+        "window new #2 requester \"Blitz Basic 2\" pos 10,20 size 300,80 flags $0 gadgets 2\n"
+        "  gadget id 1 type $00000001 flags $0 size 104,12 \" OKEE DOKEE \"\n"
+        "  gadget id 2 type $00000004 flags $0 size -10,12 \"name\" buffer \"x\"\n"
+        "step 2 gad 1\n"
+        "window new #3 requester \"a \" pos x\" pos 1,1 size 1,1 gadgets 0\n";
+    auto v = requesters(log);
+
+    REQUIRE(v.size() == 2);
+    CHECK(v[0] == "requester Blitz Basic 2 1:OKEE DOKEE 2:name");
+    CHECK(v[1] == "requester a \" pos x");
+    CHECK(requesters("").empty());
+}
+
+TEST_CASE("session script", "[script]")
+{
+    Test a("; @source T t01_int\n; @roundtrip\n", "01a-rt-t01");
+    Test b("; @source none\n; @nofiles\n", "00-start");
+    REQUIRE(a.rc == 0);
+    REQUIRE(b.rc == 0);
+    tedab_run runs[3] = { { &a.t, TEDAB_R5 }, { &a.t, TEDAB_C5 }, { &b.t, TEDAB_R5 } };
+    char *s = tedab_session_script(runs, 3, 40000);
+
+    REQUIRE(s != nullptr);
+    std::string sc(s);
+    CHECK(sc.find("If EXISTS TEDAB:booted\n") == 0);
+    CHECK(sc.find("  Stack 40000\n") != std::string::npos);
+    CHECK(sc.find("TEDAB:tools/reqtrap TEDAB:tools/teddrive TEDAB:tests/01a-rt-t01.drv TEDRUN:out/ "
+                  "blitz2:blitz2 TEDRUN:work/t01_int.bb2 >TEDRUN:out/stdout\n") != std::string::npos);
+    CHECK(sc.find("TEDAB:tests/00-start.drv TEDRUN:out/ blitz2:blitz2 >TEDRUN:out/stdout\n")
+          != std::string::npos);
+    // the other combination needs the test's first one, the next test the
+    // session's first run
+    CHECK(sc.find("If EXISTS TEDAB:runs/01a-rt-t01/R5/out/ok\n") != std::string::npos);
+    CHECK(sc.find("skipped (01a-rt-t01 R5 not OK)") != std::string::npos);
+    CHECK(sc.find("Assign blitz2: TEDAB:combo/C5/blitz2\n") != std::string::npos);
+    CHECK(sc.find("TEDAB:gate/out/gr. TEDAB:tools/teddrivetest rescue >TEDAB:gate/out/gr.stdout")
+          != std::string::npos);
+
+    char *buf = nullptr;
+    size_t len = 0;
+    FILE *m = open_memstream(&buf, &len);
+    CHECK(tedab_check_script(s, m) == 0);
+    fclose(m);
+    free(buf);
+    free(s);
+}
+
+TEST_CASE("script check", "[script]")
+{
+    char *buf = nullptr;
+    size_t len = 0;
+    FILE *m = open_memstream(&buf, &len);
+    std::string lng = "Echo " + std::string(260, 'x') + "\n";
+
+    CHECK(tedab_check_script("If A\n  If B\n  EndIf\n", m) == 1);
+    CHECK(tedab_check_script("EndIf\n", m) == 1);
+    CHECK(tedab_check_script(lng.c_str(), m) == 1);
+    CHECK(tedab_check_script("IfX\nEndIfY\n", m) == 0);    // other words
+    fclose(m);
+    CHECK(std::string(buf).find("script: 1 If without EndIf") != std::string::npos);
+    CHECK(std::string(buf).find("EndIf without If") != std::string::npos);
+    free(buf);
+}
+
+TEST_CASE("session log", "[log]")
+{
+    Test a("; @source none\n; @nofiles\n", "00-start");
+    Test b("; @source none\n; @nofiles\n", "02-type");
+    tedab_run runs[4] = { { &a.t, TEDAB_R5 }, { &a.t, TEDAB_C5 }, { &b.t, TEDAB_R5 },
+                          { &b.t, TEDAB_C5 } };
+    int st[4];
+    text ev{};
+
+    CHECK(tedab_session_log("SESSION start\nGATE0 OK\nGATED OK\nRUN 00-start R5 start\n"
+                            "RUN 00-start R5 end\nRUN 00-start C5 start\n"
+                            "RUN 02-type R5 skipped (00-start R5 not OK)\n", runs, 4, st, &ev) == 4);
+    CHECK(st[0] == TEDAB_ENDED);
+    CHECK(st[1] == TEDAB_STARTED);
+    CHECK(st[2] == TEDAB_SKIPPED);
+    CHECK(st[3] == TEDAB_NOTRUN);
+    CHECK(std::string(ev.p) == "SESSION start, GATE0 OK, GATED OK");
+    free(ev.p);
+}
+
+TEST_CASE("oracle", "[files]")
+{
+    char dir[] = "/tmp/test_tedab_XXXXXX";
+    REQUIRE(mkdtemp(dir) != nullptr);
+    std::string p = std::string(dir) + "/m.sha256";
+    std::string h(64, 'a');
+    FILE *f = fopen(p.c_str(), "w");
+
+    REQUIRE(f != nullptr);
+    fprintf(f, "%s  detok/INTERNET/MEMO.BB2\n%s  save/INTERNET/MEMO.BB2X\n", std::string(64, 'b').c_str(),
+            std::string(64, 'c').c_str());
+    fprintf(f, "%s  save/INTERNET/MEMO.BB2\n", h.c_str());
+    fclose(f);
+    char hex[65];
+    REQUIRE(tedab_oracle_hash(p.c_str(), "internet/memo.bb2", hex) == 0);
+    CHECK(std::string(hex) == h);
+    CHECK(tedab_oracle_hash(p.c_str(), "internet/memo", hex) == -1);
+    // resolve without case
+    std::string sub = std::string(dir) + "/SUB";
+    mkdir(sub.c_str(), 0755);
+    char *r = tedab_resolve(dir, "sub");
+    REQUIRE(r != nullptr);
+    CHECK(std::string(r) == sub);
+    free(r);
+    CHECK(tedab_resolve(dir, "sub/m.sha256") == nullptr);
+    r = tedab_resolve(dir, "M.SHA256");
+    REQUIRE(r != nullptr);
+    CHECK(std::string(r) == p);
+    free(r);
+    CHECK(tedab_resolve(dir, "nosuch") == nullptr);
+    remove(p.c_str());
+    rmdir(sub.c_str());
+    rmdir(dir);
+}
