@@ -1,0 +1,4 @@
+[run]
+shape 512 520 per plane 33280
+top 00 bottom AB
+rc=0
