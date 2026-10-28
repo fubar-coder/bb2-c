@@ -1,0 +1,4 @@
+[run]
+shape 640 200 5 per plane 16000
+file 80032
+rc=0
