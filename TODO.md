@@ -94,9 +94,14 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
       Ausgabe); danach alle 135 byte-gleich zu bb2tok. Statt bb2s
       `default.xtra` (Herkunft unklar) schreibt der Stub mit `runerr=off`
       die Startoptionen des Compilers ohne Fehlerprüfung/Debugger.
-   3. Prüfmatrix als ctest (C-Runner auf `amiga_emulation`): ref / port /
-      clib, mit und ohne Fehlerprüfung, Requester-Tests hinter der Sperre;
-      clib = C-acidlibs **und** C-deflibs. Abnahme: 201 Prüfungen.
+   3. ~~Prüfmatrix~~ erledigt (28.10.2026): `tests/corpus/runner`
+      (`corpusrun`, C auf `amiga_emulation`), ctest `corpus`,
+      `corpus_runerr`, `corpus_req` (Label emulator): **201 Prüfungen, 0
+      Abweichungen**, etwa 100 s (3 Emulatoren parallel; seriell etwa
+      dreimal so lang). clib = C-acidlibs und C-deflibs. Die Programme laden
+      Klänge und Module von der CD über `BB2:` (wie in bb2). Programmausgaben
+      byte-gleich zu bb2s Läufen bis auf `t13_env` (liest absichtlich die
+      Umgebung: Workbench 640×512×8 statt 640×256×2).
    4. CD-Referenzlauf wie das Orakel: Ziel erzeugt mit blitz2 1.95
       `tests/data/blitz2-cd.tsv` (eingecheckt), der ctest übersetzt nur mit
       blitz2-c und vergleicht.

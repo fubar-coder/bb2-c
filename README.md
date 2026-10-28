@@ -105,7 +105,19 @@ ctest --preset all        # beides
   Mit `-DHOST_SANITIZE=ON` wird die Host-Seite mit AddressSanitizer und
   UBSan gebaut.
 * **emulator:** Läufe in Amiberry; ohne Amiberry oder ohne die Daten in
-  `amiga-emulation/` werden sie übersprungen.
+  `amiga-emulation/` werden sie übersprungen. Darunter der Korpus
+  (`tests/corpus/`): `corpus` (67 Testprogramme ohne Laufzeit-
+  Fehlerprüfung), `corpus_runerr` (131 mit), `corpus_req` (3 mit
+  blockierenden Requestern, hinter der Sperre `reqclosetest`). Je
+  Durchgang übersetzen drei Konfigurationen dieselben Quellen und führen
+  die Programme aus: ref (Original-blitz2 1.95, Libraries der CD), port
+  (blitz2-c, Libraries der CD: Executable gleich, Ausgabe gleich), clib
+  (blitz2-c mit den C-Libraries: Ausgabe gleich). Ohne CD übersprungen.
+  `CORPUS_PARALLEL` (Standard 3 unter Linux, sonst 1) begrenzt die
+  gleichzeitigen Emulatoren, `CORPUS_TIMEOUT` eine Sitzung; Berichte in
+  `build/<preset>/tests/corpus/NAME.txt`. Die Durchgänge nicht mit
+  `ctest -j` parallel starten: jeder nutzt selbst bis zu
+  `CORPUS_PARALLEL` Emulatoren.
 
 Die Orakel-Daten der TED-Tests (`tests/data/ted-oracle.sha256`: SHA-256
 von detok, tokit2 und Laden/Speichern für jede Quelle der CD;
@@ -171,7 +183,8 @@ tests/data/                  erzeugte Testdaten (Orakel-Hashes, Token-Liste)
 tests/corpus/                Korpus: blitz2-c gegen blitz2 1.95 im Emulator;
                              amiga/: tedstub (blitz2:ted für Batch-Läufe),
                              reqtrap, reqclose, reqclosetest
-                             tests*/: die Testprogramme (Klartext, .bas)
+                             tests*/: die Testprogramme (Klartext, .bas),
+                             runner/: corpusrun (Host, ein Durchgang)
 tools/                       Host-Werkzeuge:
   lib/                       die Logik als Libraries: hunk (Hunk-Format
                              lesen), blitzlib (Kopf, Token-Tabelle,
