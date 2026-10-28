@@ -217,8 +217,15 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   `; @pass KEY=VALUE` for extra lines of the pass file, see
   `tests/corpus/runner/corpus.h`: `file=`, `dir=`, `remove=`, `wrap=`,
   `jobline=`, `timeout=`, `runtime_errors=on`, with `@USERLIB@`,
-  `@INJECT@`, `@CD_BLITZ2@`; `; @configs port` restricts the
-  configurations judged) and `ID.expect` (the correct behaviour). Run
+  `@INJECT@`, `@CD_BLITZ2@`, `@TESTDATA@`; `; @configs port` restricts the
+  configurations judged) and `ID.expect` (the correct behaviour). Test
+  data (sounds, pictures, modules) is generated, not checked in: a
+  description `NAME.spec` in an area directory (`tools/mktestdata`:
+  bytes, words, longs, texts, labels, IFF chunks with their lengths filled
+  in; `tools/lib/mktestdata/mktestdata.h`) becomes
+  `build/<preset>/tests/bug-orig/testdata/NAME`, passed to the program
+  with `; @pass file=DEST|@TESTDATA@/NAME` (the program reads
+  `CORPUS:DEST`); NAME begins with the ID of the test. Run
   `ctest --preset bug-orig -R bug_orig_ID`; the result must be
   REPRODUCED. Look at the observation of ref to write the expectation,
   and check the expectation if possible with a temporary fix in the port

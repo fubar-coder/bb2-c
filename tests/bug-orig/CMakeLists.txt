@@ -20,7 +20,16 @@
 # files are found by a glob: adding a test touches no list.
 #   @VAR@ in @pass: USERLIB (amiga/userlib.c: a library for
 #   blitz2:userlibs), INJECT (amiga/inject.c: faults for the compiler, use
-#   wrap=@INJECT@|...), CD_BLITZ2 (the CD's BLITZ2 directory)
+#   wrap=@INJECT@|...), CD_BLITZ2 (the CD's BLITZ2 directory), TESTDATA
+#   (the generated test data, see below; use
+#   file=DEST|@TESTDATA@/NAME, the program reads CORPUS:DEST)
+#
+# Test data (sounds, pictures, modules) is generated, not checked in:
+#   AREA/NAME.spec   a description for tools/mktestdata (bytes, IFF
+#                    chunks, labels; tools/lib/mktestdata/mktestdata.h),
+#                    built to testdata/NAME in the build directory
+# NAME is unique over all areas and begins with the ID of the test that
+# uses it (e.g. libs/ID.8svx.spec).
 add_subdirectory(amiga)
 
 set(BUG_ORIG_TIMEOUT 90 CACHE STRING "bug-orig: time limit of one emulator session (seconds)")
@@ -28,6 +37,7 @@ set(CD_BLITZ2 ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2)
 set(REF_BLITZ2 ${CMAKE_BINARY_DIR}/programs/blitz2/ref/blitz2)
 set(USERLIB ${CMAKE_CURRENT_BINARY_DIR}/amiga/bugorig_userlib.obj)
 set(INJECT $<TARGET_FILE:inject>)
+set(TESTDATA ${CMAKE_CURRENT_BINARY_DIR}/testdata)
 if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 	set(parallel 3)
 else()
@@ -117,6 +127,25 @@ function(bug_orig_test bas name)
 		TIMEOUT ${limit})
 endfunction()
 
+# the test data: AREA/NAME.spec -> testdata/NAME
+set(testdata_files)
+file(GLOB specs CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*/*.spec)
+foreach(spec IN LISTS specs)
+	get_filename_component(name ${spec} NAME)
+	string(REGEX REPLACE "\\.spec$" "" name "${name}")
+	set(out ${TESTDATA}/${name})
+	if(out IN_LIST testdata_files)
+		message(FATAL_ERROR "bug-orig: test data ${name} described twice (${spec})")
+	endif()
+	add_custom_command(OUTPUT ${out}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${TESTDATA}
+		COMMAND ${MKTESTDATA} ${spec} ${out}
+		DEPENDS ${spec} ${MKTESTDATA} host_tools
+		COMMENT "Generating bug-orig test data ${name}"
+		VERBATIM)
+	list(APPEND testdata_files ${out})
+endforeach()
+
 file(GLOB tests CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*/*.bas)
 foreach(bas IN LISTS tests)
 	get_filename_component(dir ${bas} DIRECTORY)
@@ -134,4 +163,4 @@ endforeach()
 bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/bug-orig-selftest-broken.bas
 	bug_orig_selftest_broken WANT 3)
 
-add_custom_target(bug_orig_sources ALL DEPENDS ${bug_orig_sources})
+add_custom_target(bug_orig_sources ALL DEPENDS ${bug_orig_sources} ${testdata_files})
