@@ -9,6 +9,10 @@
 // NAME.orig (original from the CD's acidlibs) and NAME.obj (C build) - see
 // emulator.cmake (ctest libs_emulator).  Select tests with snitch filters:
 //   libs_tests "[mathstr]"      libs_tests "libtest ldivlib"
+// The test cases tagged [.bug-orig] (bugorig.c) are hidden: they check
+// the correct behaviour where the C build reproduces an original bug, so
+// they fail until it is fixed; only an explicit filter runs them
+// (libs_tests "[bug-orig]", ctest bug_orig_*).
 #include <snitch/snitch.hpp>
 
 #include <cstdio>
@@ -22,6 +26,9 @@ int systest_mathstr_main(int argc, char **argv);
 int systest_runtime_main(int argc, char **argv);
 int systest_system_main(int argc, char **argv);
 int systest_cmdlibs_main(int argc, char **argv);
+int bugorig_cliargs_parpath_cli(const char *dir);
+int bugorig_crunch_implode_overread(const char *dir);
+int bugorig_crunch_decrunch_corrupt(const char *dir);
 
 void bl_test_check(const char *what, int ok)
 {
@@ -91,4 +98,21 @@ TEST_CASE("systest_system: wbstartuplib intlib switchlib runerrlib debuglib", "[
 TEST_CASE("systest_cmdlibs: memacclib sortlib mathtranslib utillib environlib", "[cmd]")
 {
     CHECK(run_systest(systest_cmdlibs_main) == 0);
+}
+
+// reproduced original bugs: fail as long as the C build reproduces them
+TEST_CASE("cliargs-parpath-cli", "[.bug-orig]")
+{
+    CHECK(bugorig_cliargs_parpath_cli(progdir()) == 0);
+}
+
+// the verdict on the reads behind the data is emulator.cmake's (ILLEGAL_WATCH)
+TEST_CASE("crunch-implode-overread", "[.bug-orig]")
+{
+    CHECK(bugorig_crunch_implode_overread(progdir()) == 0);
+}
+
+TEST_CASE("crunch-decrunch-corrupt", "[.bug-orig]")
+{
+    CHECK(bugorig_crunch_decrunch_corrupt(progdir()) == 0);
 }

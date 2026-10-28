@@ -1,13 +1,25 @@
 # libs_tests in Amiberry (bb2 libs-c/tools/amiga_test.py):
 #   cmake -DAMIGA_RUN=... -DBIGLIB=... -DPROGRAM=libs_tests -DLIBS=DIR
 #         -DORIGINALS=acidlibs-of-the-CD -DWORK=DIR [-DTIMEOUT=SEC]
-#         [-DFILTER=snitch-filter] -P emulator.cmake
+#         [-DFILTER=snitch-filter] [-DNO_ORIGINALS=ON] [-DILLEGAL_WATCH=ON]
+#         -P emulator.cmake
 # TEST: (WORK/test) gets libs_tests, every DIR/NAME.obj and the library
 # with the same number from ORIGINALS as NAME.orig.  The exit status is
 # that of libs_tests; 77 (skipped) without the CD or the emulator.
+# NO_ORIGINALS: only the NAME.obj (BIGLIB and ORIGINALS not needed).
+# ILLEGAL_WATCH: Amiberry logs every access to unmapped memory
+# (log_illegal_mem, --log); for every line
+#   illegal-watch START END CODESTART CODEEND        (hex, from libs_tests)
+# the run needs at least one logged access to START from outside the code
+# range (the program's probe: the range is unmapped and the log works) and
+# fails if code in [CODESTART,CODEEND) accessed [START,END).
 cmake_minimum_required(VERSION 3.29)
 
-foreach(v AMIGA_RUN BIGLIB PROGRAM LIBS ORIGINALS WORK)
+set(required AMIGA_RUN PROGRAM LIBS WORK)
+if(NOT NO_ORIGINALS)
+	list(APPEND required BIGLIB ORIGINALS)
+endif()
+foreach(v IN LISTS required)
 	if(NOT ${v})
 		message(FATAL_ERROR "emulator.cmake: -D${v}=... missing")
 	endif()
@@ -15,7 +27,7 @@ endforeach()
 if(NOT TIMEOUT)
 	set(TIMEOUT 120)
 endif()
-if(NOT EXISTS ${ORIGINALS})
+if(NOT NO_ORIGINALS AND NOT EXISTS ${ORIGINALS})
 	message(STATUS "libs_emulator: no ${ORIGINALS} - skipped (fetch-originals)")
 	cmake_language(EXIT 77)
 endif()
@@ -28,10 +40,12 @@ file(GLOB objs ${LIBS}/*.obj)
 foreach(obj IN LISTS objs)
 	get_filename_component(name ${obj} NAME_WE)
 	file(COPY_FILE ${obj} ${test}/${name}.obj)
-	execute_process(COMMAND ${BIGLIB} extract ${ORIGINALS} ${obj} ${test}/${name}.orig
-		RESULT_VARIABLE rc)
-	if(rc)
-		message(FATAL_ERROR "libs_emulator: no original of ${name}")
+	if(NOT NO_ORIGINALS)
+		execute_process(COMMAND ${BIGLIB} extract ${ORIGINALS} ${obj} ${test}/${name}.orig
+			RESULT_VARIABLE rc)
+		if(rc)
+			message(FATAL_ERROR "libs_emulator: no original of ${name}")
+		endif()
 	endif()
 endforeach()
 
@@ -39,9 +53,14 @@ set(args "")
 if(FILTER)
 	set(args " \"${FILTER}\"")
 endif()
+set(run_opts "")
+if(ILLEGAL_WATCH)
+	set(run_opts --log --set log_illegal_mem=true)
+endif()
 file(WRITE ${WORK}/run.script "TEST:libs_tests${args} >TEST:libs_tests.txt\n"
 	"Echo \"rc=$RC\" >>TEST:libs_tests.txt\n")
-execute_process(COMMAND ${AMIGA_RUN} --timeout ${TIMEOUT} --dir ${WORK} ${WORK}/run.script
+execute_process(COMMAND ${AMIGA_RUN} ${run_opts} --timeout ${TIMEOUT} --dir ${WORK}
+	${WORK}/run.script
 	RESULT_VARIABLE rc)
 if(rc EQUAL 77)
 	cmake_language(EXIT 77)
@@ -56,6 +75,70 @@ endif()
 if(NOT out MATCHES "rc=([0-9]+)[\r\n]*$")
 	message(FATAL_ERROR "libs_emulator: no result in ${test}/libs_tests.txt")
 endif()
-if(NOT CMAKE_MATCH_1 EQUAL 0)
-	message(FATAL_ERROR "libs_emulator: libs_tests returned ${CMAKE_MATCH_1}")
+set(result ${CMAKE_MATCH_1})
+
+set(watch_failed "")
+if(ILLEGAL_WATCH)
+	string(REGEX MATCHALL "illegal-watch [0-9a-f]+ [0-9a-f]+ [0-9a-f]+ [0-9a-f]+" watches "${out}")
+	if(NOT watches)
+		message(FATAL_ERROR "libs_emulator: ILLEGAL_WATCH, but libs_tests named no range")
+	endif()
+	file(STRINGS ${WORK}/amiberry.log illegal REGEX "Illegal [bwl](get|put) at [0-9a-f]+")
+	foreach(w IN LISTS watches)
+		string(REPLACE " " ";" w "${w}")
+		list(TRANSFORM w PREPEND "0x" AT 1 2 3 4)
+		list(GET w 1 start)
+		list(GET w 2 end)
+		list(GET w 3 code)
+		list(GET w 4 codeend)
+		math(EXPR start "${start}")
+		math(EXPR end "${end}")
+		math(EXPR code "${code}")
+		math(EXPR codeend "${codeend}")
+		set(probe 0)
+		set(hits 0)
+		set(first "")
+		set(highest -1)
+		foreach(line IN LISTS illegal)
+			if(NOT line MATCHES "Illegal ([bwl])(get|put) at ([0-9a-f]+).* PC=([0-9a-f]+)")
+				continue()
+			endif()
+			math(EXPR at "0x${CMAKE_MATCH_3}")
+			math(EXPR pc "0x${CMAKE_MATCH_4}")
+			if(at LESS start OR NOT at LESS end)
+				continue()
+			endif()
+			if(pc LESS code OR NOT pc LESS codeend)
+				if(at EQUAL start)
+					math(EXPR probe "${probe} + 1")
+				endif()
+				continue()
+			endif()
+			math(EXPR hits "${hits} + 1")
+			if(NOT first)
+				set(first "${line}")
+			endif()
+			math(EXPR off "${at} - ${start}")
+			if(off GREATER highest)
+				set(highest ${off})
+			endif()
+		endforeach()
+		math(EXPR start_hex "${start}" OUTPUT_FORMAT HEXADECIMAL)
+		if(NOT probe)
+			message(FATAL_ERROR "libs_emulator: no logged access to ${start_hex} by the probe"
+				" - the range is mapped or the log is off (${WORK}/amiberry.log)")
+		endif()
+		if(hits)
+			math(EXPR highest "${highest} + 1")
+			string(APPEND watch_failed "the library code read behind the data at ${start_hex}:"
+				" ${hits} logged accesses, up to ${highest} bytes behind it (first: ${first})\n")
+		endif()
+	endforeach()
+endif()
+
+if(watch_failed)
+	message(FATAL_ERROR "libs_emulator: ${watch_failed}")
+endif()
+if(NOT result EQUAL 0)
+	message(FATAL_ERROR "libs_emulator: libs_tests returned ${result}")
 endif()

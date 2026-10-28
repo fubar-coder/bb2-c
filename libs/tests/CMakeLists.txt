@@ -27,7 +27,8 @@ target_compile_options(snitch PRIVATE -fno-exceptions -fno-rtti)
 
 set(c_tests libtest systest systest_mathstr systest_runtime systest_system systest_cmdlibs)
 list(TRANSFORM c_tests APPEND .c OUTPUT_VARIABLE c_sources)
-add_executable(libs_tests libs_tests.cpp callregs.c ${c_sources})
+add_executable(libs_tests libs_tests.cpp callregs.c bugorig.c ${c_sources})
+set_source_files_properties(bugorig.c PROPERTIES COMPILE_DEFINITIONS BL_SNITCH)
 set_target_properties(libs_tests PROPERTIES SUFFIX "" CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 target_compile_options(libs_tests PRIVATE -Wall -fomit-frame-pointer
 	$<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions -fno-rtti>)
@@ -51,3 +52,25 @@ add_test(NAME libs_emulator COMMAND ${CMAKE_COMMAND}
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
 set_tests_properties(libs_emulator PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT 600)
+
+# reproduced original bugs (bugorig.c, hidden snitch tests [.bug-orig]):
+# each checks the correct behaviour and FAILS as long as the C build
+# reproduces the original; label bug-orig, only the test preset bug-orig
+# runs them.  One emulator run each (a corrupt decrunch may crash it),
+# only the C build (no CD needed).  ILLEGAL_WATCH: Amiberry logs accesses
+# to unmapped memory, emulator.cmake checks the ranges the program names.
+foreach(t cliargs-parpath-cli crunch-implode-overread crunch-decrunch-corrupt)
+	string(REPLACE "-" "_" name "bug_orig_${t}")
+	set(watch OFF)
+	if(t STREQUAL "crunch-implode-overread")
+		set(watch ON)
+	endif()
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
+		-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
+		-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON
+		-DILLEGAL_WATCH=${watch} -DFILTER=${t}
+		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DTIMEOUT=${LIBS_TESTS_TIMEOUT}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+	set_tests_properties(${name} PROPERTIES LABELS "emulator;bug-orig" SKIP_RETURN_CODE 77
+		TIMEOUT 300)
+endforeach()

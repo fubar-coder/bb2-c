@@ -94,6 +94,7 @@ presets say **where** the tests run:
 ctest --preset host       # on the host, without emulator (seconds)
 ctest --preset emulator   # in Amiberry (label emulator)
 ctest --preset all        # both
+ctest --preset bug-orig   # reproduced original bugs: fail on purpose
 ```
 
 * **host:** the tools with deliberately broken inputs, the host tests of
@@ -152,6 +153,26 @@ ctest --preset all        # both
   script) are not run and are listed as KNOWN in the report; an exact
   name in the filter runs them anyway. `ted_ab_lint` checks the scripts
   without the emulator.
+* **bug-orig:** tests of original bugs the port reproduces (`BUG(orig)`).
+  They check the *correct* behaviour and therefore **fail** as long as the
+  bug is reproduced; the failure message names the bug. Label `bug-orig`:
+  `host`, `emulator` and `all` exclude it, only the preset `bug-orig`
+  runs these tests. A test is named after the placeholder of its issue
+  (`{{TEST:ID}}` -> ctest `bug_orig_ID` with `-` as `_`, snitch test case
+  `ID`). In the snitch programs they carry the hidden tag `[.bug-orig]`,
+  so a plain run of the program skips them too (`libs_tests "[bug-orig]"`
+  or the name runs them). Tests in the emulator also have the label
+  `emulator` and are skipped (77) without Amiberry. So far
+  (`libs/tests/bugorig.c`, in Amiberry, only the C build of the
+  libraries, no CD needed, one emulator run each):
+  `bug_orig_cliargs_parpath_cli` (ParPath$ of a CLI argument: lock 0 to
+  NameFromLock), `bug_orig_crunch_implode_overread` (Implode reads
+  behind its data: the data end at the end of the highest memory region,
+  Amiberry logs the accesses to the unmapped memory behind it,
+  `log_illegal_mem`; `emulator.cmake -DILLEGAL_WATCH=ON` evaluates the
+  log), `bug_orig_crunch_decrunch_corrupt` (Deplode, CrMDecrunch,
+  PPDecrunch with corrupt data write outside the destination; guard
+  bytes).
 
 The oracle data of the TED tests (`tests/data/ted-oracle.sha256`: SHA-256
 of detok, tokit2 and load/save for every source of the CD;
