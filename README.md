@@ -63,6 +63,12 @@ das Ergebnis als nicht gebaut, und nichts, was davon abhängt, wird gebaut
   `ted.s:NNN label` in `programs/ted/src/` (Vollständigkeit der
   Übersetzung; eine geänderte Kommentarzeile baut das Objekt neu, also
   läuft die Prüfung auch dann).
+* `ted.sym` (derselbe Link mit Symbolen) nach jedem Link: `tools/checkdata`
+  vergleicht die Daten des C-Builds mit dem Referenz-Build von `ted.s`
+  (`programs/ted/checkdata.tsv`: 534 Einträge – Fonts, Mauszeiger,
+  Optionsblock, Texte, Screen, Fenster, Gadgets, Menüs, Requester;
+  relozierte Langworte der Referenz übersprungen). `ted` wird erst danach
+  gelinkt.
 
 ## Tests
 
@@ -166,12 +172,14 @@ tools/                       Host-Werkzeuge:
                              hunkcheck (Bytes im ersten Hunk),
                              amiga_emulation (Skripte in Amiberry),
                              vasmlisting (vasm-Listings lesen), sha256,
-                             checklabels (Labels von ted.s im C-Code);
+                             checklabels (Labels von ted.s im C-Code),
+                             checkdata (Daten gegen den Referenz-Build);
                              blitzlib vergleicht auch Deklarationen
   biglib/, blitzlibcheck/,   die Werkzeuge: je ein main.c um lib/
   blitzlibcompare/
   hunkcheck/, amiga_run/,
-  vasmlisting/, checklabels/
+  vasmlisting/, checklabels/,
+  checkdata/
   tests/                     Tests von lib/ mit Eingaben aus dem Speicher
 ```
 

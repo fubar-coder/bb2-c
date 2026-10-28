@@ -8,6 +8,7 @@
 #   vasmlisting  reading vasm listings (rows, symbols)
 #   sha256     SHA-256 (hashes of generated test data)
 #   checklabels  every code label of an assembler source marked once in C
+#   checkdata  data of a C build against the reference build (labels)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -16,3 +17,4 @@ add_subdirectory(amiga_emulation)
 add_subdirectory(vasmlisting)
 add_subdirectory(sha256)
 add_subdirectory(checklabels)
+add_subdirectory(checkdata)

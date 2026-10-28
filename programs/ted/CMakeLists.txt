@@ -77,18 +77,23 @@ if(TED_BASEREL)
 	target_compile_options(tedobj PRIVATE -fbaserel)
 endif()
 
-add_executable(ted $<TARGET_OBJECTS:tedobj>)
-target_link_options(ted PRIVATE -nostartfiles)
-# whole archive: every core module is linked
-target_link_libraries(ted PRIVATE -Wl,--whole-archive tedcore -Wl,--no-whole-archive)
-if(TED_BASEREL)
-	target_link_options(ted PRIVATE -fbaserel)
-endif()
-# no symbol table in release builds
+# ted: the editor (no symbols in release builds); ted.sym: the same link
+# with symbols, for checkdata below and for debugging (strip cannot handle
+# the baserel data hunk, so it is linked twice)
+foreach(exe ted ted_sym)
+	add_executable(${exe} $<TARGET_OBJECTS:tedobj>)
+	target_link_options(${exe} PRIVATE -nostartfiles)
+	# whole archive: every core module is linked
+	target_link_libraries(${exe} PRIVATE -Wl,--whole-archive tedcore -Wl,--no-whole-archive)
+	if(TED_BASEREL)
+		target_link_options(${exe} PRIVATE -fbaserel)
+	endif()
+endforeach()
 target_link_options(ted PRIVATE $<$<CONFIG:Release,MinSizeRel>:-s>
 	-Wl,-Map,${CMAKE_CURRENT_BINARY_DIR}/ted.map)
 set_target_properties(ted PROPERTIES OUTPUT_NAME ted SUFFIX ""
 	RUNTIME_OUTPUT_DIRECTORY ${BLITZ2_DIR})
+set_target_properties(ted_sym PROPERTIES OUTPUT_NAME ted.sym SUFFIX "")
 
 # checks after every link; if one fails, ted does not count as built:
 #   - hunk layout: blitz2 calls offset 4 of the first hunk (`outside`), DOS
@@ -106,3 +111,17 @@ add_custom_command(TARGET ted POST_BUILD
 	COMMAND ${CHECKLABELS} -q ${TED_ORIG_DIR}/ted.s ${CMAKE_CURRENT_SOURCE_DIR}/src
 	VERBATIM)
 add_subdirectory(tests/oracle)
+
+# the data of the C build against the reference build of ted.s, after every
+# link of ted.sym (it has the symbols): checkdata.tsv lists C symbol, start
+# label, end label or size - fonts, pointers, option block, texts, screen,
+# window, gadgets, menus, requesters (534 checks; relocated longs of the
+# reference are skipped).  ted is linked only after this check passed.
+add_dependencies(ted_sym ted_ref host_tools)
+set_target_properties(ted_sym PROPERTIES
+	LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv;${REF_DIR}/ted.lst")
+add_custom_command(TARGET ted_sym POST_BUILD
+	COMMAND ${CHECKDATA} -q ${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv
+		${REF_DIR}/ted.lst ${REF_DIR}/ted $<TARGET_FILE:ted_sym>
+	VERBATIM)
+add_dependencies(ted ted_sym)

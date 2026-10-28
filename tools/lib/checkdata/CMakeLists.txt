@@ -1,0 +1,4 @@
+add_library(lib_checkdata STATIC checkdata.c)
+set_target_properties(lib_checkdata PROPERTIES OUTPUT_NAME checkdata)
+target_include_directories(lib_checkdata PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(lib_checkdata PUBLIC lib_hunk lib_vasmlisting)

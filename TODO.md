@@ -21,10 +21,11 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
    `tools/vasmlisting` statt `tedlisting.py` (`map`, `labels`, `verify`);
    `ref/ted`, Listing, Map und Labels byte-identisch zu bb2; `verify` ist
    eine Prüfung im Build-Schritt.
-2. **`checkdata`** (bb2: `tools/checkdata.py`, 617 Zeilen): die Daten des
-   C-Builds (`ted.sym`) gegen das Listing der Referenz – Requester,
-   Menüs, Tabellen. Braucht einen Link mit Symbolen (`ted.sym`; `strip`
-   kann den baserel-Daten-Hunk nicht, deshalb in bb2 ein zweiter Link).
+2. ~~**`checkdata`**~~ erledigt (28.10.2026): `tools/checkdata` (statt bb2
+   `tools/checkdata.py`, Ausgabe zeilengleich), Tabelle
+   `programs/ted/checkdata.tsv` (534 Einträge), POST_BUILD von `ted.sym`
+   (zweiter Link mit Symbolen wie in bb2); `ted` wird erst danach gelinkt.
+   Ein fehlendes C-Symbol ist jetzt ein Fehler (in bb2 „todo“).
 3. ~~**`checklabels`**~~ erledigt (28.10.2026): `tools/checklabels`
    (statt bb2 `tools/checklabels.py`, Ausgabe byte-identisch) als
    POST_BUILD von `ted`: 278 Code-Labels, alle genau einmal.
