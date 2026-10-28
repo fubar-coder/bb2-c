@@ -98,5 +98,5 @@ GPL-inkompatibler Lizenz übernehmen.
   Commit-Texte und Code-Kommentare englisch, Dokumentation deutsch.
 * Vor einem Commit `git status` prüfen: nur die Dateien des Themas
   stagen (vorgemerkte `git mv` rutschen sonst mit).
-* Noch kein Remote. Später gilt: kein force-push, gepushte Historie nicht
-  umschreiben.
+* Remote `origin` (GitHub `fubar-coder/bb2-c`): kein force-push,
+  gepushte Historie nicht umschreiben.
