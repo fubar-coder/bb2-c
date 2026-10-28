@@ -92,6 +92,7 @@ add_subdirectory(libs)
 add_subdirectory(programs/blitz2)
 add_subdirectory(programs/ted)
 add_subdirectory(tests/corpus)
+add_subdirectory(tests/bug-orig)
 add_subdirectory(tests/ted-ab)
 
 # the Blitz sources of the libraries, readable: build/<preset>/bblibsrc/
