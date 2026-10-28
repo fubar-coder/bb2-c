@@ -1,6 +1,6 @@
 # comdata and callbacks: register interface original ↔ glue ↔ C
 
-As of phase 2c. Source: `ted.s` (lines below), [architektur.md](../../architektur.md) §3.2/3.3,
+As of phase 2c. Source: `ted.s` (lines below), [architecture.md](../architecture.md) §3.2/3.3,
 call sites in `blitz2.s` (CD source) and `../blitz2-c/src/main.c`
 (`ed_*`). Glue: `src/glue.c` (`REGSTUB`, `REGSTUB_CCR`, adapters `*_c`).
 
@@ -10,7 +10,7 @@ call sites in `blitz2.s` (CD source) and `../blitz2-c/src/main.c`
   `name_c(frame)`, all registers back from the frame (as changed by the adapter),
   `tst.l d0`, `rts`. Result: all registers except the
   explicit outputs are preserved (line "comdata entry points" in
-  [abweichungen.md](abweichungen.md), category **B**); the flags are those
+  [deviations.md](deviations.md), category **B**); the flags are those
   of `tst.l d0`.
 * **`REGSTUB_CCR(name)`** (new in 2c): as above, but the adapter returns
   the CCR with which the entry point returns (`move.w …,ccr` after the
@@ -44,7 +44,7 @@ blitz2" = what the call sites in `blitz2.s` read afterwards.
 | 64 | `closeio` 2597 | – | destroyed | nothing (1722) | REGSTUB | OK |
 | 68 | `actgad` 2409 | a0 gadget | d0 = `ActivateGadget` result | nothing (15176) | REGSTUB, d0 | OK (flags: original those of intuition, here `tst.l d0`; not used) |
 | 72 | `pointeron` 209 | – | saves a0-a1/d0-d3/a6 | – (blitz2 1490 `jmp`) | REGSTUB | OK |
-| 76 | `sleepon` 223 | – | saves a0-a1/d0-d3/a6; path "already active" destroys a0/d0 via `makemenus` | – (1494) | REGSTUB | **B** (line `sleepon` in abweichungen.md) |
+| 76 | `sleepon` 223 | – | saves a0-a1/d0-d3/a6; path "already active" destroys a0/d0 via `makemenus` | – (1494) | REGSTUB | **B** (line `sleepon` in deviations.md) |
 | 80/84 | data `mywindow2`, (gadget address) | | | | structs.h | OK |
 | 88 | `extalloc` 3049 | d0 size, d1 flags, **a6 of the caller** (`jsr allocmem(a6)`) | d0 = memory, Z=0; failure: `closereq` + `outmem` (does not return) | d0 (`doallocmem` 3379 = `jmp`) | REGSTUB, `extalloc(d0, d1)` with `AllocMem` via SysBase | OK (blitz2 calls with a6 = exec; a different a6 would hit a different library in the original – not reachable) |
 | 92/94 | data `bmapmul`, `req_window` | | | 1939, 2546 | `struct mydata` | OK |

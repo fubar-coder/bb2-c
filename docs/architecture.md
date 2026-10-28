@@ -228,7 +228,7 @@ C: `data.c loadxtra_c()`) reads the options directly into the
 gadget structures of the options requester (the flags of the gadgets *are* the
 option storage), the CLI argument, the maximum values per object library,
 reallocates the object buffer (`makeiallox`) and loads the residents
-(`loadres`, 4.5). Format of the file: [formate.md](formate.md).
+(`loadres`, 4.5). Format of the file: [formats.md](formats.md).
 
 ### 3.5 Source lines: TED passes its line storage on directly [S]
 
@@ -395,7 +395,7 @@ lib 2 and the OS call libs 200, 219–255 [B].
 (60–178, for the inline assembler, table `asmmac`), a further 33 words
 (`List`, `SetErr`, `Repeat`, `BitTst` … 179–211). Everything that is not
 here – so also `Print`, `Left$`, `Str$` – comes from libraries.
-Overview: `builtin_tokens.txt`, [formate.md](formate.md).
+Overview: `builtin_tokens.txt`, [formats.md](formats.md).
 
 ### 4.3 Command libraries [S/B]
 
@@ -505,7 +505,7 @@ with "CREATE RESIDENT" (`blitz2.s:4105 menu5`), up to 8 of them loaded from
 the list in the `.xtra` (`blitz2.s:4393 loadres`, `stmts.c loadres()`),
 hooked into the lists `firsttype`/`firstmacro`/`firstconst`
 (`fixtypes`/`fixmacs`/`fixconsts`), then checked for equal names
-("Clash in Residents"). Format: [formate.md](formate.md) (same as AB3,
+("Clash in Residents"). Format: [formats.md](formats.md) (same as AB3,
 Spec 06 §6.1.1).
 
 ---

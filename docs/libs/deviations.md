@@ -149,7 +149,7 @@ The individual reasons are each given at the comment `DIFF:` in
 ## 5a. Editor ted-c (TED 1.1)
 
 The reference is the vasm build of `ted.s` (`../ted-c/notes/reference.md`).
-Separate list of the TED deviations: [`../../ted-c/notes/abweichungen.md`](../../ted-c/notes/abweichungen.md)
+Separate list of the TED deviations: [`../ted/deviations.md`](../ted/deviations.md)
 (continuously extended there); here the rows that concern the shared
 file requester.
 

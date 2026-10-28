@@ -406,7 +406,7 @@ archiving was only introduced afterwards):
 Result: **TED-C behaves observably like the reference in all stage 1 tests**
 (screen byte-equal except for the masked memory display,
 files byte-equal, requester sequence and rc equal). No new line for
-`abweichungen.md`. Observed original behaviour (equal in both):
+`deviations.md`. Observed original behaviour (equal in both):
 Return does not split a line, but opens a new one below; the
 status line is not updated after the jump to the error line;
 file name gadget preset with the full name, `PATH:` empty.

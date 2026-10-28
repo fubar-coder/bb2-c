@@ -1,7 +1,7 @@
 # Plan phase 3: emulator A/B tests of TED-C
 
 Basis: [PLAN.md](PLAN.md) §6 (c), [reference.md](reference.md),
-[overview.md](overview.md) §4, [abweichungen.md](abweichungen.md) and the
+[overview.md](overview.md) §4, [deviations.md](deviations.md) and the
 existing emulator infrastructure in `../compilerlauf` (runner
 `tools/bb2compile.py`, stub and requester tools in `tedstub/`,
 [`../compilerlauf/README.md`](../../compilerlauf/README.md),
@@ -77,7 +77,7 @@ TAG/teddrive      the companion process
   with the file name; TED loads the file (as in the tedstub flow,
   `tedstub/README.md` "Ablauf"). Exit via the menu QUIT (`escape`)
   → TED returns → blitz2 ends.
-* **No standalone TED**: without blitz2, `tokens = 0` (abweichungen.md,
+* **No standalone TED**: without blitz2, `tokens = 0` (deviations.md,
   line `findtoke`), tokenised sources would be read via address 0.
   All tests run via blitz2.
 * **Isolate `l:blitzeditor.opts`** (`defname`, src/core/state.c:60):
@@ -472,12 +472,12 @@ Amiga-L, Amiga-?), CLOSE WB/OPEN WB.
 
 Basic rule: `BUG(orig)` is reproduced in C → **A and B equal** (also
 equally wrong). Deviations only for the `DIFF:` lines of
-[abweichungen.md](abweichungen.md) with "observable: yes/only …".
+[deviations.md](deviations.md) with "observable: yes/only …".
 
 | Case | Source | Expectation in the test |
 |---|---|---|
 | `tabstop = 0` (DEFAULTS accepts 0, BUG(orig) src/main.c:748) → `divu` by 0 in `readline` | PHASE2B-BRIEF O3; since phase 2c real `divu.w` (src/glue.c `divu_w`) | both: trap (Guru 5, Division by zero) → run CRASH/TIMEOUT. **KNOWN-BOTH**, own run at the end of a session |
-| damaged options file, colour value ≥ 4 (`swapd0bord`) | abweichungen.md "`swapd0bord`" | both swap bytes with the original strides behind `defaultreqbo14`; the data there are other variables in C → consequences may differ. **KNOWN-DIFF**, stage 2 only |
+| damaged options file, colour value ≥ 4 (`swapd0bord`) | deviations.md "`swapd0bord`" | both swap bytes with the original strides behind `defaultreqbo14`; the data there are other variables in C → consequences may differ. **KNOWN-DIFF**, stage 2 only |
 | CLI (`mycli` → `openio`) | since 2c: Z flag of `WBenchToFront` via `callregs` (src/mouse.c) | "equal" |
 | `outmem` before the first main loop (`memstack == 0`) | since 2c: `memcont_nostack` (src/glue.c) sets a7 = 0 and runs memcont like the original | both crash (crash location may differ: the called C routines use the stack differently) – stage 2 only, KNOWN-BOTH |
 | `join`: FreeMem without `lenitem` (9 bytes per join), `freethis`/`freeall` via `add.b` from `numchars` ≥ 247 | lines.c:407, tokit.c:303 | same memory balance A↔B (leak in both) |
@@ -494,7 +494,7 @@ equally wrong). Deviations only for the `DIFF:` lines of
 | hourglass animation (`myroutine`, VBlank) | src/main.c | sprite, not in the bitplanes – no influence on dumps |
 
 The report distinguishes: `SAME`, `DIFF`, `KNOWN-DIFF` (line in
-abweichungen.md), `KNOWN-BOTH` (both equally faulty/crashed),
+deviations.md), `KNOWN-BOTH` (both equally faulty/crashed),
 `FAIL`/`TIMEOUT` (run not complete). Expectations are per test in
 `tests/emu/NAME.expect` next to the script `tests/emu/NAME.drv`.
 
@@ -531,7 +531,7 @@ abweichungen.md), `KNOWN-BOTH` (both equally faulty/crashed),
 5. Add Rc/Cc (stage 2a), then the broader tests (stage 2b), `state`
    (§6.2).
 6. Gate I (input.device on native screen) → stage 3.
-7. Result in `notes/abweichungen.md` (new observed DIFFs, column
+7. Result in `notes/deviations.md` (new observed DIFFs, column
    "observable?" with test number), state in `README.md`.
 
 Decided points (coordinator, 27.10.2026):

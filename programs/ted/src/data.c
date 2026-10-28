@@ -94,7 +94,7 @@ struct PropInfo prop2sinfo = {          /* ted.s:6375 */
 #define mj      1
 /* DIFF: the asm item has `dc.b 'X '` = Command + the pad byte behind it
    (a space); C cannot initialise the padding of struct MenuItem, it is 0
-   there (never read; notes/abweichungen.md). */
+   there (never read; docs/ted/deviations.md). */
 struct mitem menu1item1, menu1item2, menu1item3, menu1item4, menu1item6,
     menu1item7, menu1item8, menu1item9, menu1item10, menu1item11,
     menu2item1, menu2itema, menu2item2, menu2item3, menu2item4,

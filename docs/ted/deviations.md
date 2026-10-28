@@ -4,7 +4,7 @@ Reference: vasm build of `ted.s` ([reference.md](reference.md)). Rule
 (user decision): bugs of the original are reproduced
 (`BUG(orig)`), deviations only where technically unavoidable – marked in the code with
 `DIFF:` and a justification, and listed here in full.
-Categories as in [`../../libs-c/notes/abweichungen.md`](../../libs-c/notes/abweichungen.md)
+Categories as in [`../libs/deviations.md`](../libs/deviations.md)
 (**B** decided by the user, **T** technically unavoidable, **K** silent
 correction – not permitted). The lines concerning the file requester shared with libs-c
 are additionally listed there in section 5a.

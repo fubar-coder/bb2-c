@@ -154,9 +154,9 @@ until then `libs-c/libs/freqlib_req.inc`, pulled in via `#include`):
   `<proto/exec.h>`, `fq_divu_w` = `divu_w` (glue.c; none of the three
   divisions can overflow).
 
-`flink` is dropped (`DIFF:`, [abweichungen.md](abweichungen.md)). The
+`flink` is dropped (`DIFF:`, [deviations.md](deviations.md)). The
 data block is that of the freqlib: the 7 differing padding bytes of TED's copy
-are not taken over (never read; likewise in abweichungen.md). The
+are not taken over (never read; likewise in deviations.md). The
 known overflow with windows from 605 pixels height writes in TED beyond
 `fq.line[63]` past `fq` into the following data of the data hunk
 (BUG(orig), as in freqlib). The former option `TED_FILEREQ_BLOB` (original hunk via

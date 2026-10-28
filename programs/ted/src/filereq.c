@@ -12,7 +12,7 @@
  * DIFF: the data block is the freqlib version - TED's embedded copy differs
  * in 7 bytes, all padding behind gadget texts ("OK",0,$06 instead of $00)
  * and the rest at the end of the hunk; never read (reference.md 3.2).
- * Listed in notes/abweichungen.md.
+ * Listed in docs/ted/deviations.md.
  */
 #include <exec/types.h>
 #include "filereq.h"
@@ -22,7 +22,7 @@
    of the embedded hunk to its 312 RELOC32 longs at every outside (no cache
    flush; a second run would relocate twice, BUG(orig) survey-07 I.4).  The
    C requester is ordinary code and data: LoadSeg relocates it.  Row in
-   notes/abweichungen.md (category T). */
+   docs/ted/deviations.md (category T). */
 
 /* ted.s:7967 filerequest (+36 = code+4: movem.l d1-a6,-(sp) / a5 = a0) */
 UBYTE *filerequest(const ULONG *a0)

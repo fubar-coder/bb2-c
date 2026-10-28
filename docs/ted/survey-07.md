@@ -143,7 +143,7 @@ Initially disabled (without ITEMENABLED): COPY, KILL (`2+64+4`), BLOCK TO DISK (
    set/cleared.
 5. `SetMenuStrip(mywindow, menu1)` as tail `jmp`.
 Freeing in `escape` (ted.s:1018): Menu (30) + all items (54) via FreeMem.
-MENUNUM 4 → `extmenu` (ted.s:1542) → blitz2 `menu` (architektur.md §3.3).
+MENUNUM 4 → `extmenu` (ted.s:1542) → blitz2 `menu` (architecture.md §3.3).
 `screenopen` reattaches `menu1` on every opening (4774), the COMPILER menu is preserved
 via `menu2.NextMenu`.
 

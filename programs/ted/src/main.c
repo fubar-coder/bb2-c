@@ -248,7 +248,7 @@ static APTR wb_exit(void)
    CLI arguments.  The stub returns into outside_stub with a1 = 0.
    DIFF: when dosopen fails, the original returns from wb_exit into
    outside with an undefined a1 (survey-01 I.2); the stub always clears a1
-   (notes/abweichungen.md). */
+   (docs/ted/deviations.md). */
 void edstart_c(struct m68kregs *r)
 {
     struct Process *a4;
@@ -402,7 +402,7 @@ static void outside_run(struct m68kregs *r, BOOL tomain)
     printmem();
     mouseinit();
     pointeron();
-    /* jsr flink: DIFF, the file requester is C code (notes/abweichungen.md) */
+    /* jsr flink: DIFF, the file requester is C code (docs/ted/deviations.md) */
     if (external) {
         getstuff();
         r->a[0] = (ULONG)tomain_stub;

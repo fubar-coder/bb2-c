@@ -4,7 +4,7 @@
  * Blitter scrolling of the text area, screen/window open and close, user
  * copper list, colours, cls, horizontal scrolling and the own text output.
  * The chmap halves of the blits are chmap_* in the core (tokit.c, DIFF:
- * CPU instead of blitter, notes/abweichungen.md); the bitplane blits stay
+ * CPU instead of blitter, docs/ted/deviations.md); the bitplane blits stay
  * on the blitter with the same register writes as the asm.
  */
 #include <proto/exec.h>

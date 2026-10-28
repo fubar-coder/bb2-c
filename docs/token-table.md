@@ -7,7 +7,7 @@ BlitzLibs of AmiBlitz3 (Compiler-Spec 09); `biglib_dump.py --tokens` reads
 them unchanged.
 
 The built-in commands (lib 0/1, words `$80xx`) are not in the
-libraries but in the compiler `blitz2/blitz2` (see `formate.md`).
+libraries but in the compiler `blitz2/blitz2` (see `formats.md`).
 
 ## Files
 
@@ -58,7 +58,7 @@ Consequence for the converter: a token word of a BB2.1 file that AB3 knows is
 **no** proof that it means the same. A `.bb2` file can only be
 translated with the table of the version it was saved with.
 Which version that was is not stated in the file (header `BB22`, see
-`formate.md`); the converter needs the version as an option or a
+`formats.md`); the converter needs the version as an option or a
 plausibility check (e.g. number of parameters).
 
 ## The old words from the Aminet corpus

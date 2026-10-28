@@ -252,7 +252,7 @@ checked twice:
 
 Findings and `BUG(orig)` peculiarities per library: `notes/cmdlibs-port.md`.
 All deviations of the C versions from the originals (DIFF, conventions,
-compiler): `notes/abweichungen.md`.
+compiler): `notes/deviations.md`.
 
 Open: the remaining command libraries (deflibs/acidlibs). Integrating the
 C libraries into a real compiler run (C port `../blitz2-c`) is done for the

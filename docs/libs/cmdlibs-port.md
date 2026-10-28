@@ -20,7 +20,7 @@ carried over (for the comparison with AmiBlitz3).
   afterwards (it cleans up the stack via a7), and lib code relies on
   a2 being preserved across ALibJsr calls (windowslib `dowtitle`,
   screenslib); the libsdev documentation describes a2 only as input.
-  See `architektur.md` 5.5 and `cd/extras/libsdev/documentation`.
+  See `architecture.md` 5.5 and `cd/extras/libsdev/documentation`.
 * **String results** from a3 on, d0 = length; a3 then normally points
   to the zero byte (`blitz_string` in C). A **missing terminating 0**
   is practically invisible: assignment, Print and concatenation work with

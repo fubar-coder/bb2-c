@@ -15,10 +15,10 @@ numbers of the files are the same as in bb2.
 
 | here | bb2 |
 |---|---|
-| `architektur.md`, `dokumentation.md`, `formate.md`, `token-tabelle.md` | same name in the top-level directory |
+| `architecture.md`, `documentation.md`, `formats.md`, `token-table.md` | `architektur.md`, `dokumentation.md`, `formate.md`, `token-tabelle.md` in the top-level directory |
 | `blitz2/` | `blitz2-c/notes/`; `CONVENTIONS.md` from `blitz2-c/`, `bb2-readme.md` = `blitz2-c/README.md` |
-| `ted/` | `ted-c/notes/`; `bb2-readme.md` = `ted-c/README.md` |
-| `libs/` | `libs-c/notes/`; `bb2-readme.md` = `libs-c/README.md` |
+| `ted/` | `ted-c/notes/`; `deviations.md` = `abweichungen.md`, `bb2-readme.md` = `ted-c/README.md` |
+| `libs/` | `libs-c/notes/`; `deviations.md` = `abweichungen.md`, `bb2-readme.md` = `libs-c/README.md` |
 
 Not taken over: the work orders (`*BRIEF*.md`), the detokenised library
 sources (`libs-c/bb2src/*.bb`, from material without a clear licence;

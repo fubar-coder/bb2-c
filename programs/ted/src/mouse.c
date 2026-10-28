@@ -825,7 +825,7 @@ NORETURN void outmem(void)
     thisitem = firstitem;
     showall();
     /* move.l memstack,a7 / bra memcont: longjmp to the setjmp in
-       mainedit (DIFF in abweichungen.md: outmem/memcont).
+       mainedit (DIFF in docs/ted/deviations.md: outmem/memcont).
        BUG(orig) (O1, survey-03 I.6): before the first dispatch memstack
        is 0 - the asm continues memcont with a7 = 0 and crashes; the glue
        does exactly that (memcont_nostack, glue.c). */

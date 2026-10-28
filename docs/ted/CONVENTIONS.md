@@ -64,7 +64,7 @@ signatures are agreed – changes only per §9.
   long functions.
 * `BUG(orig): …` – deliberately carried-over bug (all from the surveys,
   section I). `DIFF: …` – unavoidable deviation with justification; every
-  new location as a line in [abweichungen.md](abweichungen.md).
+  new location as a line in [deviations.md](deviations.md).
 * `ORIG_HAZARD("…")` (tedcore.h) at places where the original reads/writes outside
   its buffers or uses NULL and C reproduces that
   (Amiga: empty; host: counted).

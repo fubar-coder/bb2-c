@@ -37,7 +37,7 @@ python3 -I tools/tedab.py report --all                  # report over all sessio
 | `notes/SURVEY-BRIEF.md` | brief of the surveys |
 | `notes/CONVENTIONS.md` | translation conventions (phase 2b) |
 | `notes/PHASE2B-BRIEF.md` | brief phase 2b: ownership, check, split, open decisions |
-| `notes/abweichungen.md` | all `DIFF:` locations |
+| `notes/deviations.md` | all `DIFF:` locations |
 | `notes/changes.md` | changes to shared headers |
 | `notes/comdata.md` | register interface comdata/callbacks: original ↔ glue ↔ C |
 | `notes/review-2c.md` | phase 2c: sample at instruction level, results |

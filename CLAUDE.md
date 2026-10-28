@@ -64,7 +64,7 @@ ctest --preset emulator                                # tests in Amiberry
   `cmake/fetch-originals.cmake` (`archive/cd/`, `archive/aminet/`,
   ignored); tests that need it are skipped without it.
 * **Do not fix original bugs**, only document them (`BUG(orig)` in the
-  code, list of deviations in `docs/*/abweichungen.md`); `DIFF` only where
+  code, list of deviations in `docs/*/deviations.md`); `DIFF` only where
   technically necessary. Applies only to the port: once it is complete
   (including the comparison with blitz2 2.10), original bugs may be fixed
   deliberately (one issue per bug, marked as an intended deviation).

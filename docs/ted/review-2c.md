@@ -239,7 +239,7 @@ All three proposals are adopted: `chrow()` with `(WORD)chloc`,
 `(ULONG)(UWORD)(blitmod + 2)` in `scrolldown` and `scrollrite`.
 
 Further findings of the integration review (outside this sample,
-details in [comdata.md](comdata.md), [abweichungen.md](abweichungen.md),
+details in [comdata.md](comdata.md), [deviations.md](deviations.md),
 [changes.md](changes.md)):
 
 * **32-bit division**: `showvprop`/`showhprop` (input.c) and the

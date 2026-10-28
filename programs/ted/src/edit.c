@@ -37,7 +37,7 @@ void escape(void)
     doclean();
     freemice();
     allalt = 0;
-    /* DIFF (abweichungen.md, escape): `lea 12(a7),a7` + `bra freeall`
+    /* DIFF (docs/ted/deviations.md, escape): `lea 12(a7),a7` + `bra freeall`
        returns behind `bsr mainedit`; C: edquit, mainedit returns */
     freeall();
     edquit = TRUE;
