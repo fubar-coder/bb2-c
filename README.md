@@ -145,8 +145,10 @@ ctest --preset all        # beides
   Bildschirm-Dumps, Dateien). Braucht den ref-Lauf von `corpus` (Fixture,
   ctest startet ihn mit). Auswahl: `-DTED_AB_FILTER=02-*,29-cmp-*`,
   `-DTED_AB_COMBOS=R5,C5`; Bericht in `build/<preset>/tests/ted-ab/
-  ted_ab.txt`, etwa 13 Minuten. `ted_ab_lint` prüft die Skripte ohne
-  Emulator.
+  ted_ab.txt`, etwa 13 Minuten. Bekannte Fehler (`; @known GRUND` im
+  Skript) laufen nicht mit und stehen als KNOWN im Bericht; ein exakter
+  Name im Filter führt sie trotzdem aus. `ted_ab_lint` prüft die Skripte
+  ohne Emulator.
 
 Die Orakel-Daten der TED-Tests (`tests/data/ted-oracle.sha256`: SHA-256
 von detok, tokit2 und Laden/Speichern für jede Quelle der CD;

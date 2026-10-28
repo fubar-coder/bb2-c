@@ -129,6 +129,20 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
             continue;
         if (*p && *p != ' ' && *p != '\t' && *p != '\r')
             continue;                   /* "@word" must end at a blank */
+        if (!strncmp(buf, "known", 5) && p == buf + 5) {
+            const char *r = p;
+
+            while (*r == ' ' || *r == '\t')
+                r++;
+            free(t->known);
+            if (!(t->known = strndup(r, strcspn(r, "\r"))))
+                return -1;
+            if (!*t->known) {
+                snprintf(err, errlen, "%s line %u: @known REASON", name, no);
+                return -1;
+            }
+            continue;
+        }
         nw = *p ? words(buf + (p - buf) + 1, w, 24) : 0;
         buf[p - buf] = 0;
         if (!strcmp(key, "source")) {
@@ -282,6 +296,7 @@ void tedab_test_free(struct tedab_test *t)
     free(t->src_arg);
     free(t->file);
     free(t->opts);
+    free(t->known);
     memset(t, 0, sizeof *t);
 }
 

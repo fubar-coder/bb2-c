@@ -83,6 +83,12 @@ TEST_CASE("directives", "[test]")
     Test text("; @source T t01_int\n; original, @roundtrip), .bak\n; @nofiles\n");
     REQUIRE(text.rc == 0);
     CHECK(text.t.roundtrip == 0);
+    CHECK(text.t.known == nullptr);
+
+    // @known keeps the rest of the line as its reason
+    Test kn("; @source none\n; @nofiles\n; @known KNOWN-BOTH (28.10.2026): 513 rows\r\n");
+    REQUIRE(kn.rc == 0);
+    CHECK(std::string(kn.t.known) == "KNOWN-BOTH (28.10.2026): 513 rows");
 }
 
 TEST_CASE("directives refused", "[test]")
@@ -95,6 +101,7 @@ TEST_CASE("directives refused", "[test]")
     CHECK(Test("; @source Q x\n; @nofiles\n").rc == -1);
     CHECK(Test("; @source none\n; @roundtrip\n").rc == -1);                // nothing to compare
     CHECK(Test("; @source T a\n; @nofiles\n; @opts nosuch=1\n").rc == -1);
+    CHECK(Test("; @source none\n; @nofiles\n; @known\n").rc == -1);    // no reason
     Test t("; @source T a\n; @nofiles\n; @font 7\n");
     CHECK(t.rc == -1);
     CHECK(std::string(t.err).find("@font") != std::string::npos);

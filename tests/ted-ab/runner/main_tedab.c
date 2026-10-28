@@ -35,6 +35,8 @@
  * test did not start there or its first run is OK.  The rest stays
  * "NOTRUN".  Each session's directory: work/sNNN/vol (the volume TEDAB:)
  * and work/sNNN/emu (Amiberry); the dumps get a decoded NAME.txt.
+ * Tests with @known are not run (unless the filter names them exactly); the
+ * report lists them as KNOWN with their reason, they do not fail the run.
  *
  * Exit status 0 = all gates and runs OK and every comparison the same,
  * 1 = not, 77 = the emulator or a file is missing (skipped), 2 = error.
@@ -70,6 +72,8 @@ struct run {
 static struct pass P;
 static struct tedab_test *tests;
 static size_t ntests;
+static struct tedab_test *known;  /* @known, not run */
+static size_t nknown;
 static struct run *runs;
 static size_t nruns;
 static int combo_order[TEDAB_NCOMBOS], ncombo_order;
@@ -201,6 +205,7 @@ static int by_name(const void *a, const void *b)
     return strcmp(*(char *const *)a, *(char *const *)b);
 }
 
+/* 0 = not selected, 1 = by a glob (or no filter), 2 = by its exact name */
 static int selected(const char *name)
 {
     char *f, *w, *save = NULL;
@@ -210,7 +215,7 @@ static int selected(const char *name)
         return 1;
     f = strdup(P.filter);
     for (w = f ? strtok_r(f, ",", &save) : NULL; w && !hit; w = strtok_r(NULL, ",", &save))
-        hit = !fnmatch(w, name, 0);
+        hit = !strcmp(w, name) ? 2 : !fnmatch(w, name, 0);
     free(f);
     return hit;
 }
@@ -243,11 +248,12 @@ static int load_tests(FILE *log)
     closedir(d);
     qsort(names, n, sizeof *names, by_name);
     tests = calloc(n + 1, sizeof *tests);
-    for (i = 0; tests && i < n; i++) {
+    known = calloc(n + 1, sizeof *known);
+    for (i = 0; tests && known && i < n; i++) {
         char *path = str_printf("%s/%s.drv", P.scripts, names[i]), err[300];
         size_t len;
         char *text = path ? (char *)read_file(path, &len) : NULL;
-        int gate = !strncmp(names[i], "gate-", 5), k;
+        int gate = !strncmp(names[i], "gate-", 5), k, sel;
 
         free(path);
         if (!text) {
@@ -286,10 +292,12 @@ static int load_tests(FILE *log)
                 fprintf(log, "%s\n", err);
                 tedab_test_free(&t);
                 bad++;
-            } else if (selected(names[i]))
-                tests[ntests++] = t;
-            else
+            } else if (!(sel = selected(names[i])))
                 tedab_test_free(&t);
+            else if (t.known && sel < 2)
+                known[nknown++] = t;       /* a known failure: only by name */
+            else
+                tests[ntests++] = t;
         }
         free(text);
     }
@@ -890,8 +898,11 @@ static int run(FILE *log)
                     nsame++;
             }
         }
+        for (i = 0; i < nknown; i++)
+            text_add(&rep, "%s: KNOWN %s\n", known[i].name, known[i].known);
         text_add(&rep, "== %zu tests, %zu runs (%zu OK), %u sessions, %zu comparisons "
-                       "(%zu SAME)\n", ntests, nruns, nok, nsess, npairs, nsame);
+                       "(%zu SAME), %zu known\n", ntests, nruns, nok, nsess, npairs, nsame,
+                 nknown);
     }
     if (rep.bad || write_file(P.report, rep.p, rep.n)) {
         fprintf(log, "tedab: cannot write %s\n", P.report);

@@ -37,6 +37,9 @@
  *                          opts NAME K=V,..   L/NAME = that option block
  *   ; @nofiles           the test writes no file (otherwise a test without
  *                        @roundtrip/@expect is refused: OK alone is no pass)
+ *   ; @known REASON      a known failure (REASON e.g. "KNOWN-BOTH ..."): not
+ *                        run, listed in the report as KNOWN with REASON;
+ *                        run all the same when the filter names it exactly
  * Postfix of a command line (a comment, teddrive ignores it, its log has it):
  *   CMD ARGS ; @ignore compilewindow
  *                        blitz2's compile window (no title, one gadget
@@ -84,6 +87,7 @@ struct tedab_test {
     unsigned combos;            /* bit = 1 << TEDAB_R5 ... */
     int norunerr, roundtrip, nofiles, font, est;
     char *opts;                 /* @opts spec, NULL = none */
+    char *known;                /* @known REASON, NULL = none */
     struct tedab_expect *expects;   /* @roundtrip's in front */
     size_t nexpects;
 };

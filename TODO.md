@@ -100,7 +100,9 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
       öffnet ihn mit 512, `OpenWindow` scheitert, der Fehlerweg von
       `screenopen` stürzt ab (BUG(orig) survey-05 I.1, in TED-C
       nachgebildet; neu als BUG(orig) in `calcscreen` vermerkt). Der Test
-      kann so nie gelingen; deshalb schlägt `ted_ab` derzeit fehl.
+      kann so nie gelingen; er trägt deshalb `@known` (nicht gelaufen, im
+      Bericht als KNOWN mit Grund; per exaktem Namen im Filter trotzdem
+      ausführbar).
 
 **Libraries (bb2: `libs-c/`)**
 
