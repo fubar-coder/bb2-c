@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+tags 100 100 120 60
+again *
+same as first -1
+rc=0
