@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+lost under 50000 -1
+rc=0
