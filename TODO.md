@@ -80,6 +80,24 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
    mit und ohne Laufzeitfehlerprüfung, Requester- und serielle Tests (201
    Prüfungen). Emulatorlauf über bb2 `tools/amiberry.cmake`.
 
+   **Plan (28.10.2026, abgestimmt):** Ablage `tests/corpus/` (übergreifend).
+   1. Amiga-Werkzeuge: `tedstub` auf `shared/edstub` (Einzel- und
+      Batchmodus), `reqtrap`, `reqclose`, `reqclosetest`.
+   2. Testquellen (`tests/corpus/tests*/*.bas`, `default.xtra`); tokenisiert
+      mit dem C-Kern von TED (`fileopen2` + `realsave`, echte Token-Liste)
+      statt bb2tok, Abweichungen zu bb2tok einmal dokumentiert.
+   3. Prüfmatrix als ctest (C-Runner auf `amiga_emulation`): ref / port /
+      clib, mit und ohne Fehlerprüfung, Requester-Tests hinter der Sperre;
+      clib = C-acidlibs **und** C-deflibs. Abnahme: 201 Prüfungen.
+   4. CD-Referenzlauf wie das Orakel: Ziel erzeugt mit blitz2 1.95
+      `tests/data/blitz2-cd.tsv` (eingecheckt), der ctest übersetzt nur mit
+      blitz2-c und vergleicht.
+   5. Serielltest (TCP-Gegenstelle in C) zuletzt.
+   Parallele Emulatorläufe nur mit **konfigurierbarer Obergrenze** (1 muss
+   immer gehen): Windows-Amiberry nutzt durchnummerierte Named Pipes,
+   macOS einen festen Socket unter `/tmp`; die heutige Isolation über
+   `XDG_RUNTIME_DIR` gibt es nur unter Linux.
+
 **Grundlage für 5, 8, 9: Emulator-Bibliothek `tools/lib/amiga_emulation`**
 – **umgesetzt** (27.10.2026, mit `tools/amiga_run` und Tests: vier Läufe
 parallel, RTG, Steuer-Socket, Zeitlimit mit Screenshot). Erster Nutzer:
