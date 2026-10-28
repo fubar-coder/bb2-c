@@ -124,8 +124,8 @@ Integration into TED:
 
 **Decision: port by reuse ("variant C", user,
 implemented in phase 2a).** One source for both programs, translated by each with its
-own options (since 27.10.2026 as a separate translation unit;
-until then `libs-c/libs/freqlib_req.inc`, pulled in via `#include`):
+own options (`shared/filereq/filereq_core.c`, a separate translation
+unit):
 
 * `shared/filereq/filereq_core.c` – the requester core: code, data block
   `fq` (`struct fq_data`: NewWindow, gadgets, borders, IntuiTexts,

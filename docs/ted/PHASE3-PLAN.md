@@ -538,7 +538,7 @@ Decided points (coordinator, 27.10.2026):
 
 * **O-P1**: `reqclose.h` is **not** copied and not split:
   `teddrive.c` includes the file unchanged from
-  `compilerlauf/tedstub/src` (here `tests/corpus/amiga/`; one source like `freqlib_req.inc`) and
+  `compilerlauf/tedstub/src` (here `tests/corpus/amiga/`; one source like `shared/filereq/filereq_core.c`) and
   uses the log buffer (`rc_cat`/`rc_hex`/`rc_dec`), `rc_valid`, `rc_label`,
   `rc_copytitle` and the static message buffers including reply port
   (`rc_msg`/`rc_busy`/`rc_port`/`rc_replies`); the rest (own loop

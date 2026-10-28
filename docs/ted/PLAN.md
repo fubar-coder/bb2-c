@@ -158,9 +158,9 @@ state + status line), the routine is split: state change in the core
   (DIFF, same behaviour). Menus, NewScreen/NewWindow by hand.
 * `rawed.obj` → `rawkey.c` (decision in reference.md §3.1),
   `filereq` → `filereq.c` with the shared requester core
-  `shared/filereq/filereq_core.c` ("variant C", reference.md §3.2; in phase 2a
-  implemented as `libs-c/libs/freqlib_req.inc`, since 27.10.2026 a separate
-  translation unit).
+  `shared/filereq/filereq_core.c` ("variant C", reference.md §3.2; a
+  separate translation unit, translated by blitz2's freqlib and TED each
+  with its own options).
 
 ## 4 What stays asm (`glue*.c`)
 
