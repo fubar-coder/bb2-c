@@ -1,0 +1,5 @@
+[run]
+decoded 0000634C
+freed 00000000
+leak 0
+rc=0
