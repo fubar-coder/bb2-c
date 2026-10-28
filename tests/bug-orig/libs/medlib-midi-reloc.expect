@@ -1,0 +1,5 @@
+[run]
+chip memory -1
+in place -1
+id RMD1 boundary+8 relocated 0
+rc=0
