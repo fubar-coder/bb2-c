@@ -90,6 +90,17 @@ ctest --preset all        # beides
 * **emulator:** Läufe in Amiberry; ohne Amiberry oder ohne die Daten in
   `amiga-emulation/` werden sie übersprungen.
 
+Die Orakel-Daten der TED-Tests (`tests/data/ted-oracle.sha256`: SHA-256
+von detok, tokit2 und Laden/Speichern für jede Quelle der CD;
+`tests/data/ted-tokens.txt`: die Token-Liste) erzeugt der Original-TED
+selbst: `programs/ted/tests/oracle` lädt den Referenz-Build von `ted.s` als
+Bibliothek, unter dem Original-blitz2 1.95 in Amiberry (braucht die CD):
+
+```
+cmake --build --preset amiga --target ted-oracle     # etwa 40 s
+cmake -DORACLE_LIMIT=5 build/amiga                   # Probelauf, tests/data bleibt
+```
+
 ## Emulator
 
 `tools/lib/amiga_emulation` führt AmigaDOS-Skripte in Amiberry aus –
@@ -132,10 +143,14 @@ libs/acidlibs/               eine C-Datei je Library; prebuilt/: noch nicht
 libs/deflibs/                eine C-Datei je AmigaOS-Library
 shared/filereq/              Dateirequester von freqlib und TED (eine Quelle,
                              von beiden mit eigenen Optionen übersetzt)
+shared/edstub/               Rahmen für Programme, die blitz2 als blitz2:ted
+                             lädt (Einsprünge, comdata, ohne Bildschirm)
 host/                        die Host-Seite: alles, was mit dem nativen
                              Compiler gebaut wird (Werkzeuge, Host-Tests),
                              als ExternalProject (build/<preset>/host)
 programs/ted/tests/host/     Host-Tests des TED-Kerns (snitch)
+programs/ted/tests/oracle/   TED-Orakel: Original-TED als Bibliothek (m68k)
+tests/data/                  erzeugte Testdaten (Orakel-Hashes, Token-Liste)
 tools/                       Host-Werkzeuge:
   lib/                       die Logik als Libraries: hunk (Hunk-Format
                              lesen), blitzlib (Kopf, Token-Tabelle,

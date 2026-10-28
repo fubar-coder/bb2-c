@@ -102,3 +102,4 @@ add_custom_command(TARGET ted POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/checklink.cmake
 		${CMAKE_CURRENT_BINARY_DIR}/ted.map
 	VERBATIM)
+add_subdirectory(tests/oracle)

@@ -78,6 +78,7 @@ add_custom_target(fetch-originals
 	USES_TERMINAL
 	COMMENT "Downloading the original material (archive/README.md)")
 
+add_subdirectory(shared/edstub)
 add_subdirectory(libs)
 add_subdirectory(programs/blitz2)
 add_subdirectory(programs/ted)
