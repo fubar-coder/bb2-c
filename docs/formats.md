@@ -38,7 +38,7 @@ reliably.
 **[S]** `loadxtra`/`savextra` and the table `optspnts` (blitz2.s
 lines 15288–15450) read and write blocks: a word gives the size,
 followed by the target pointers up to 0. **[B]** In compiler 2.10 the same
-table is at code offset `$F918`: block 1 with 2 pointers, block 2 with **14**,
+table is at code offset `$F936` (`optspnts`): block 1 with 2 pointers, block 2 with **14**,
 block 4 with 6, `$220` with 1, `$180` with 1, then end. This gives
 this layout (big endian):
 

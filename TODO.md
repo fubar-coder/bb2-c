@@ -327,4 +327,8 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
 * **Comparison with blitz2 2.10** (the binary of the CD): completion of
   the port. Only after that may original bugs be fixed
   (`CLAUDE.md`, "Do not fix original bugs"); the basis are the
-  issues with the label `bug-orig`.
+  issues with the label `bug-orig`. Analysis: `docs/v2.10/` – 2.10 is
+  `blitz2.s` with `version equ 210` and one fix (`loadblitzlibs` tests
+  for `/`, issue #2); TED, acidlibs and deflibs on the CD are the ported
+  state. Steps: version 210, the `/` test, optionally the `Select`
+  templates as Devpac encodes them (byte-identical programs).

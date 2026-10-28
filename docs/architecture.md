@@ -943,8 +943,8 @@ debug block:
 * Exact function of `dhandlerlib` (lib 1) and `defaultdbug`: only known from
   `makeinits` (gets `&dseg`) and the lib header (init/finit, needs
   DOS and graphics base) – not checked.
-* Order `acidlibs`/`deflibs` when loading in v2.10 (v1.95: acidlibs
-  first) – not checked.
+* Order `acidlibs`/`deflibs` when loading in v2.10: as in v1.95,
+  acidlibs first (checked statically, `docs/v2.10/blitz2.md`).
 * `End` → `exitslib` → `endop`: flow inferred from init parameter and code,
   routine not disassembled.
 * Errors in include files on the `INCLUDE` line: inferred from `nextline`,
