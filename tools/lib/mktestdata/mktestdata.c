@@ -235,14 +235,17 @@ static int count(struct state *s, const char **t, size_t *out)
 static int iff_id(struct state *s, const char **t, uint32_t *id)
 {
     const char *q = *t;
-    int i;
+    int i, quoted = *q == '\'';
 
     *id = 0;
+    q += quoted;
     for (i = 0; i < 4; i++, q++) {
-        if (*q < 0x20 || *q > 0x7e || *q == ' ')
+        if (*q < 0x20 || *q > 0x7e || (*q == ' ' && !quoted))
             return fail(s, "an IFF id has 4 characters");
         *id = (*id << 8) | (uint8_t)*q;
     }
+    if (quoted && *q++ != '\'')
+        return fail(s, "an IFF id has 4 characters");
     if (*q && *q != ' ' && *q != '\t')
         return fail(s, "an IFF id has 4 characters");
     *t = skip_space(q);

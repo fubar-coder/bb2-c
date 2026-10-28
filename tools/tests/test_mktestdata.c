@@ -51,6 +51,7 @@ int main(void)
                "FORM\0\0\0\x10" "8SVX" "VHDR\0\0\0\x03\x01\x02\x03\0", 24));
     CHECK(same("chunk BODY 131072\nb 5\nend\n", "BODY\0\x02\0\0\x05\0", 10));
     CHECK(same("form ILBM\nend\n", "FORM\0\0\0\x04ILBM", 12));
+    CHECK(same("chunk '(c) ' 2 ; c\nend\n", "(c) \0\0\0\x02", 8));
     CHECK(same("chunk BODY 0\nend\nchunk XMRK\ns \"ab\"\nend\n",
                "BODY\0\0\0\0XMRK\0\0\0\x02" "ab", 18));
 
@@ -67,6 +68,8 @@ int main(void)
     CHECK(broken("fill @x 0\nx:\n", "line 1: a count must not refer to a later label"));
     CHECK(broken("align 0\n", "line 1: align N"));
     CHECK(broken("chunk BOD\nend\n", "line 1: an IFF id has 4 characters"));
+    CHECK(broken("chunk 'AB C\nend\n", "line 1: an IFF id has 4 characters"));
+    CHECK(broken("chunk 'AB '\nend\n", "line 1: an IFF id has 4 characters"));
     CHECK(broken("form ILBM\nchunk BMHD\nend\n", "line 3: 1 form(s)/chunk(s) without end"));
     CHECK(broken("end\n", "line 1: end without form or chunk"));
     CHECK(broken("s \"abc\n", "line 1: unterminated text"));

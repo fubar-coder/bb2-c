@@ -13,7 +13,8 @@
  *   align N         zero bytes up to a multiple of N (from the start)
  *   NAME:           a label: the offset at this point
  *   form TYPE [LEN] an IFF FORM: "FORM", its length, TYPE
- *   chunk ID [LEN]  an IFF chunk: ID, its length
+ *   chunk ID [LEN]  an IFF chunk: ID, its length (an ID with a blank in
+ *                   quotes: '(c) ')
  *   end             closes the innermost form/chunk: its length is
  *                   written (the bytes behind the length field) and an
  *                   odd length gets a pad byte; with LEN that length is
