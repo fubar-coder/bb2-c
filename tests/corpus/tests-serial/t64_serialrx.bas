@@ -1,7 +1,7 @@
 ; t64_serialrx - seriallib with a remote end: serial.device unit 0 of the
-; emulator is connected (Amiberry serial_port=TCP://...) to the responder
-; of compilerlauf/tools/serialrun.py.  Only run through serialrun.py
-; (corpus_check has no remote end).
+; emulator is connected (Amiberry serial_port=TCP://...) to the remote end
+; of tests/corpus/runner (serial.h).  Only run with serial=on (ctest
+; corpus_serial, corpus_serial_runerr): the other passes have no remote end.
 ; Protocol: Chr$(1)+name+Chr$(2) starts a session, Chr$(5)+code asks for
 ; a canned reply (A "Z", B "HELLO", C "0123456789ABCDEF", D bytes
 ; $80-$87, E echo of the data since the last request, L 100 bytes

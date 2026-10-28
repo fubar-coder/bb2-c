@@ -108,7 +108,10 @@ ctest --preset all        # beides
   `amiga-emulation/` werden sie übersprungen. Darunter der Korpus
   (`tests/corpus/`): `corpus` (67 Testprogramme ohne Laufzeit-
   Fehlerprüfung), `corpus_runerr` (131 mit), `corpus_req` (3 mit
-  blockierenden Requestern, hinter der Sperre `reqclosetest`). Je
+  blockierenden Requestern, hinter der Sperre `reqclosetest`),
+  `corpus_serial` / `corpus_serial_runerr` (ein Programm, das über die
+  emulierte serielle Schnittstelle mit einer Gegenstelle auf dem Host
+  spricht; verglichen werden auch die Bytes auf der Leitung). Je
   Durchgang übersetzen drei Konfigurationen dieselben Quellen und führen
   die Programme aus: ref (Original-blitz2 1.95, Libraries der CD), port
   (blitz2-c, Libraries der CD: Executable gleich, Ausgabe gleich), clib

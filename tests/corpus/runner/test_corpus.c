@@ -22,7 +22,7 @@ static int parse(const char *text, char *err, size_t len)
     return r;
 }
 
-#define BASE "work=/w\nreport=/r\nted=/t\nrunner=/x\ndefaultdbug=/d\n"
+#define BASE "work=/w\nreport=/r\nted=/t\nlauncher=/x\ndefaultdbug=/d\n"
 #define CONFIGS "config=ref|ref|/a|/b|/c\nconfig=port|exe|/a2|/b|/c\n"
 
 int main(void)
@@ -31,10 +31,10 @@ int main(void)
     char err[300], *n;
 
     /* a valid pass */
-    CHECK(corpus_parse("# comment\n\n" BASE "runerr=on\ntimeout=90\nparallel=3\n" CONFIGS
+    CHECK(corpus_parse("# comment\n\n" BASE "runtime_errors=on\ntimeout=90\nparallel=3\n" CONFIGS
                        "config=clib|output|/a2|/b2|/c2\nsource=/s/t01_int.bb2\n"
                        "source=/s/T02_float.BB2\n", &p, err, sizeof err) == 0);
-    CHECK(p.runerr == 1 && p.timeout == 90 && p.parallel == 3 && p.stack == 40000);
+    CHECK(p.runtime_errors == 1 && p.timeout == 90 && p.parallel == 3 && p.stack == 40000);
     CHECK(p.nconfigs == 3 && p.configs[1].expect == CORPUS_EXE
           && p.configs[2].expect == CORPUS_OUTPUT && !strcmp(p.configs[2].acidlibs, "/c2"));
     CHECK(p.nsources == 2 && !p.gate);
@@ -54,7 +54,7 @@ int main(void)
     CHECK(parse(BASE CONFIGS "config=x|maybe|/a|/b|/c\nsource=/s\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "config=x|output|/a|/b\nsource=/s\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "parallel=0\nsource=/s\n", err, sizeof err) == -1);
-    CHECK(parse(BASE CONFIGS "runerr=yes\nsource=/s\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "runtime_errors=yes\nsource=/s\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "colour=red\nsource=/s\n", err, sizeof err) == -1
           && strstr(err, "unknown key"));
     CHECK(parse("work=/w\n" CONFIGS "source=/s\n", err, sizeof err) == -1);

@@ -7,15 +7,16 @@
  * The pass file (written by CMake), lines KEY=VALUE, '#' comments:
  *   work=DIR          work directory (emptied first)
  *   report=PATH       the report (also to stdout)
- *   runerr=on|off     runtime error checking of the sources (no .xtra:
- *                     the compiler's start options, with off without
- *                     runtime errors and debugger - tedstub runerr=off)
+ *   runtime_errors=on|off
+ *                     runtime error checking of the sources (no .xtra: the
+ *                     compiler's start options, with off without runtime
+ *                     errors and debugger - tedstub runerr=off)
  *   timeout=SEC       per emulator session (boot, compiles, runs)
  *   parallel=N        emulator sessions at the same time (1 always works)
  *   stack=N           Stack for blitz2 and the programs
  *   ted=PATH          tedstub (blitz2:ted)
- *   runner=PATH       runs every program: reqtrap or reqclose
- *   gate=PATH         optional: run through the runner first (reqclosetest);
+ *   launcher=PATH     starts every program: reqtrap or reqclose
+ *   gate=PATH         optional: run through the launcher first (reqclosetest);
  *                     if it does not return 0, the programs are not run and
  *                     the pass fails (they would block on their requesters)
  *   defaultdbug=PATH  blitz2:defaultdbug
@@ -24,6 +25,13 @@
  *                     exe = executable identical and output the same,
  *                     output = output the same
  *   source=PATH       a tokenised source (NAME.bb2), any number
+ *   serial=on|off     on: the emulated serial port is a TCP server, a
+ *                     remote end answers the programs (serial.h); the bytes
+ *                     on the line (NAME.serial) are compared as well, and a
+ *                     TIMEOUT in an output counts as a difference
+ *   serial_same_as=DIR  the reference's line must also equal DIR/NAME.serial
+ *                     (the other pass, runtime error checking off/on); if
+ *                     that file is missing, only noted
  *   mount=NAME|DIR    a read-only volume for the programs (e.g. BB2: = the
  *                     CD, where the tests load sounds and modules from),
  *                     any number
@@ -47,8 +55,8 @@ struct corpus_config {
 };
 
 struct corpus_pass {
-    char *work, *report, *ted, *runner, *gate, *defaultdbug;
-    int runerr;
+    char *work, *report, *ted, *launcher, *gate, *defaultdbug, *serial_same_as;
+    int runtime_errors, serial;
     unsigned timeout, parallel, stack;
     struct corpus_config *configs;
     size_t nconfigs;

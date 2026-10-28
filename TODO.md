@@ -74,11 +74,10 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
   `blitz2_ref`, Quellen in `archive/sources/blitz2-1.95/`; `ref/blitz2`
   byte-identisch zu bb2 `compilerlauf/blitz2-195`, `verify` 13592 Zeilen.
 
-9. **Korpus** (bb2: `tools/corpus_check.py`, `bb2corpus.py`,
-   `bb2compile.py`, `serialrun.py`, `corpus/`, `tedstub`, `reqtrap`,
-   `reqclose`): blitz2-c gegen blitz2 1.95, mit Original- und C-Libraries,
-   mit und ohne Laufzeitfehlerprüfung, Requester- und serielle Tests (201
-   Prüfungen). Emulatorlauf über bb2 `tools/amiberry.cmake`.
+9. ~~**Korpus**~~ erledigt (28.10.2026, Phasen 1-5 unten): bb2s
+   `tools/corpus_check.py`, `bb2corpus.py`, `bb2compile.py`,
+   `serialrun.py`, `corpus/`, `tedstub`, `reqtrap`, `reqclose` sind hier in
+   C/CMake (`tests/corpus/`); `ctest --preset emulator` etwa 3 Minuten.
 
    **Plan (28.10.2026, abgestimmt):** Ablage `tests/corpus/` (übergreifend).
    1. ~~Amiga-Werkzeuge~~ erledigt (28.10.2026): `tests/corpus/amiga/`
@@ -107,7 +106,16 @@ Schon wieder aktiv (hier): Library-Dateien (`tools/blitzlibcheck`, früher
       `tests/data/blitz2-cd.tsv`: 498 übersetzt, 217 Fehler, 9 Textquellen;
       alle 724 Zeilen gleich bb2 `reference/195.tsv`, reproduzierbar. ctest
       `corpus_cd` (blitz2-c): 724 gleich, etwa 30 s.
-   5. Serielltest (TCP-Gegenstelle in C) zuletzt.
+   5. ~~Serielltest~~ erledigt (28.10.2026): `tests/corpus/runner/serial.c`
+      (Gegenstelle mit POSIX-Sockets und pthread, Protokoll wie bb2s
+      `serialrun.py`), Pass-Schlüssel `serial=on`: je Konfiguration eigener
+      Emulator mit eigenem Port (`serial_port=TCP://127.0.0.1:PORT`) und
+      eigener Gegenstelle; verglichen werden auch die Leitungsbytes, ein
+      `TIMEOUT` in der Ausgabe zählt als Abweichung. ctest `corpus_serial`,
+      `corpus_serial_runerr` (dieser prüft auch: Leitung der Referenz gleich
+      der ohne Fehlerprüfung): `t64_serialrx` 0 Abweichungen, je etwa
+      17 s. bb2 hat von seinen Seriell-Läufen nur den Bericht aufbewahrt,
+      ein Byte-Vergleich damit war nicht möglich.
    Parallele Emulatorläufe nur mit **konfigurierbarer Obergrenze** (1 muss
    immer gehen): Windows-Amiberry nutzt durchnummerierte Named Pipes,
    macOS einen festen Socket unter `/tmp`; die heutige Isolation über

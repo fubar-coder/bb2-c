@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include "amiga_emulation.h"
 #include "corpus.h"
+#include "serial.h"
 #include "util.h"
 
 #define VOLUME "CORPUS"                 /* the configuration's directory */
@@ -28,9 +29,10 @@ void corpus_free(struct corpus_pass *p)
     free(p->work);
     free(p->report);
     free(p->ted);
-    free(p->runner);
+    free(p->launcher);
     free(p->gate);
     free(p->defaultdbug);
+    free(p->serial_same_as);
     for (i = 0; i < p->nconfigs; i++) {
         free(p->configs[i].tag);
         free(p->configs[i].blitz2);
@@ -109,26 +111,28 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         line = *eol ? eol + 1 : eol;
 
         if (!strcmp(key, "work") || !strcmp(key, "report") || !strcmp(key, "ted")
-            || !strcmp(key, "runner") || !strcmp(key, "gate") || !strcmp(key, "defaultdbug")) {
+            || !strcmp(key, "launcher") || !strcmp(key, "gate") || !strcmp(key, "defaultdbug")
+            || !strcmp(key, "serial_same_as")) {
             char **dst = !strcmp(key, "work") ? &p->work : !strcmp(key, "report") ? &p->report
-                         : !strcmp(key, "ted") ? &p->ted : !strcmp(key, "runner") ? &p->runner
-                         : !strcmp(key, "gate") ? &p->gate : &p->defaultdbug;
+                         : !strcmp(key, "ted") ? &p->ted : !strcmp(key, "launcher") ? &p->launcher
+                         : !strcmp(key, "gate") ? &p->gate
+                         : !strcmp(key, "defaultdbug") ? &p->defaultdbug : &p->serial_same_as;
 
             free(*dst);
             *dst = val;
             continue;
         }
-        if (!strcmp(key, "runerr") || !strcmp(key, "timeout") || !strcmp(key, "parallel")
-            || !strcmp(key, "stack")) {
+        if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial") || !strcmp(key, "timeout")
+            || !strcmp(key, "parallel") || !strcmp(key, "stack")) {
             char *e;
             unsigned long u = strtoul(val, &e, 10);
 
-            if (!strcmp(key, "runerr")) {
+            if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial")) {
                 if (strcmp(val, "on") && strcmp(val, "off")) {
                     free(val);
-                    return fail(p, err, errlen, "line %u: runerr=on or runerr=off", no);
+                    return fail(p, err, errlen, "line %u: %s=on or %s=off", no, key, key);
                 }
-                p->runerr = !strcmp(val, "on");
+                *(!strcmp(key, "runtime_errors") ? &p->runtime_errors : &p->serial) = !strcmp(val, "on");
             } else if (!*val || *e || !u) {
                 free(val);
                 return fail(p, err, errlen, "line %u: %s needs a number > 0", no, key);
@@ -205,8 +209,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         free(val);
         return fail(p, err, errlen, "line %u: unknown key %s", no, key);
     }
-    if (!p->work || !p->report || !p->ted || !p->runner || !p->defaultdbug)
-        return fail(p, err, errlen, "work, report, ted, runner and defaultdbug are needed");
+    if (!p->work || !p->report || !p->ted || !p->launcher || !p->defaultdbug)
+        return fail(p, err, errlen, "work, report, ted, launcher and defaultdbug are needed");
     if (p->nconfigs < 2 || !p->nsources)
         return fail(p, err, errlen, "a reference, another configuration and sources are needed");
     /* names: one directory per configuration, AmigaDOS ignores case */
@@ -282,7 +286,7 @@ static int stage(const struct corpus_pass *p, size_t c, FILE *log)
     struct { const char *from, *to; } files[] = {
         { cf->blitz2, "blitz2/blitz2" }, { p->ted, "blitz2/ted" },
         { cf->deflibs, "blitz2/deflibs" }, { cf->acidlibs, "blitz2/acidlibs" },
-        { p->defaultdbug, "blitz2/defaultdbug" }, { p->runner, "run" },
+        { p->defaultdbug, "blitz2/defaultdbug" }, { p->launcher, "run" },
         { p->gate, "gate" },
     };
     struct text jobs = { 0 };
@@ -311,7 +315,7 @@ static int stage(const struct corpus_pass *p, size_t c, FILE *log)
         free(to);
     }
     text_add(&jobs, "log=" VOLUME ":out/session.log\ndefaults=" VOLUME ":out/defaults.xtra\n");
-    if (!p->runerr)
+    if (!p->runtime_errors)
         text_add(&jobs, "runerr=off\n");
     for (i = 0; i < p->nsources; i++) {
         char *name = corpus_name(p->sources[i]), *to = str_printf("%s/src/%s.bb2", vol, name);
@@ -375,16 +379,26 @@ static char *script(const struct corpus_pass *p)
 
 /* ------------------------------------------------------------ running */
 
+/* port != 0: the serial port is a TCP server on 127.0.0.1:port */
 static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, const char *text,
-                                     char *err, size_t errlen)
+                                     unsigned port, char *err, size_t errlen)
 {
     char *vol = dir_of(p, c, "vol"), *emu = dir_of(p, c, "emu");
+    char *tcp = str_printf("TCP://127.0.0.1:%u", port);
     struct amiga_emulation_mount *m = calloc(p->nmounts + 1, sizeof *m);
+    struct amiga_emulation_option serial[] = {
+        { "serial_port", tcp }, { "serial_on_demand", "false" },
+        { "serial_direct", "false" }, { "serial_hardware_ctsrts", "false" },
+    };
     struct amiga_emulation_params ep = { 0 };
     struct amiga_emulation *e = NULL;
     size_t i;
 
-    if (vol && emu && m) {
+    if (vol && emu && m && tcp) {
+        if (port) {
+            ep.changes = serial;
+            ep.nchanges = sizeof serial / sizeof serial[0];
+        }
         /* CORPUS: the configuration's directory, the read-only volumes */
         m[0].volume = VOLUME;
         m[0].host_dir = vol;
@@ -402,6 +416,7 @@ static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, cons
     } else
         snprintf(err, errlen, "out of memory");
     free(m);
+    free(tcp);
     free(vol);
     free(emu);
     return e;
@@ -423,8 +438,8 @@ static char *result_of(const char *log, size_t id)
 }
 
 struct outcome {
-    uint8_t *exe, *run;
-    size_t exelen, runlen;
+    uint8_t *exe, *run, *line;
+    size_t exelen, runlen, linelen;
     char *result;
 };
 
@@ -434,22 +449,27 @@ static void load_outcome(const struct corpus_pass *p, size_t c, size_t i, const 
     char *n = corpus_name(p->sources[i]);
     char *exe = str_printf("%s/%s/vol/out/%s", p->work, p->configs[c].tag, n);
     char *run = str_printf("%s/%s/vol/out/%s.run", p->work, p->configs[c].tag, n);
+    char *line = str_printf("%s/%s/vol/out/%s.serial", p->work, p->configs[c].tag, n);
 
     memset(o, 0, sizeof *o);
     if (exe)
         o->exe = read_file(exe, &o->exelen);
     if (run)
         o->run = read_file(run, &o->runlen);
-    if (o->exe && p->runerr)
+    if (line && p->serial)
+        o->line = read_file(line, &o->linelen);
+    if (o->exe && p->runtime_errors)
         corpus_mask_traps(o->exe, o->exelen);
     o->result = result_of(log, i);
     free(n);
     free(exe);
     free(run);
+    free(line);
 }
 
 static void free_outcome(struct outcome *o)
 {
+    free(o->line);
     free(o->exe);
     free(o->run);
     free(o->result);
@@ -479,6 +499,8 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
 {
     struct amiga_emulation **e = calloc(p->nconfigs, sizeof *e);
     enum amiga_emulation_status *st = calloc(p->nconfigs, sizeof *st);
+    struct responder **resp = calloc(p->nconfigs, sizeof *resp);
+    int *nsessions = calloc(p->nconfigs, sizeof *nsessions);
     char **slog = calloc(p->nconfigs, sizeof *slog);
     char *text = script(p), err[300];
     struct text rep = { 0 };
@@ -486,13 +508,13 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
     long bad = 0;
     int rc = 2;
 
-    if (!e || !st || !slog || !text)
+    if (!e || !st || !resp || !nsessions || !slog || !text)
         goto out;
     /* without the files of the pass (the CD's libraries...) or the emulator:
        skipped */
     for (c = 0; c < p->nconfigs; c++) {
         const char *f[] = { p->configs[c].blitz2, p->configs[c].deflibs, p->configs[c].acidlibs,
-                            p->ted, p->runner, p->defaultdbug, p->gate };
+                            p->ted, p->launcher, p->defaultdbug, p->gate };
 
         for (i = 0; i < sizeof f / sizeof f[0]; i++)
             if (f[i] && access(f[i], R_OK)) {
@@ -515,12 +537,21 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
     for (c = 0; c < p->nconfigs; c++)
         if (stage(p, c, log))
             goto out;
-    /* at most `parallel` sessions at a time, joined in start order */
+    /* at most `parallel` sessions at a time, joined in start order; with
+       serial=on each one with its own port and remote end */
     while (done < p->nconfigs) {
         while (next < p->nconfigs && next - done < p->parallel) {
-            fprintf(log, "corpus: %s: emulator session\n", p->configs[next].tag);
+            unsigned port = 0;
+
+            if (p->serial && (!(port = serial_free_port()) || !(resp[next] = serial_start(port)))) {
+                fprintf(log, "corpus: %s: no TCP port for the serial line\n",
+                        p->configs[next].tag);
+                goto out;
+            }
+            fprintf(log, "corpus: %s: emulator session%s\n", p->configs[next].tag,
+                    port ? ", serial line" : "");
             fflush(log);
-            if (!(e[next] = start(p, next, text, err, sizeof err))) {
+            if (!(e[next] = start(p, next, text, port, err, sizeof err))) {
                 fprintf(log, "corpus: %s: %s - skipped\n", p->configs[next].tag, err);
                 rc = next ? 2 : 77;
                 goto out;
@@ -530,6 +561,13 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
         st[done] = amiga_emulation_join(e[done]);
         amiga_emulation_free(e[done]);
         e[done] = NULL;
+        if (resp[done]) {
+            char *out = dir_of(p, done, "vol/out");
+
+            nsessions[done] = out ? serial_stop(resp[done], out) : -1;
+            resp[done] = NULL;
+            free(out);
+        }
         done++;
     }
 
@@ -540,11 +578,17 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
         slog[c] = path ? (char *)read_file(path, &len) : NULL;
         free(path);
     }
-    text_add(&rep, "== runtime error checking %s, %zu sources:", p->runerr ? "on" : "off",
+    text_add(&rep, "== runtime error checking %s, %zu sources:", p->runtime_errors ? "on" : "off",
         p->nsources);
     for (c = 0; c < p->nconfigs; c++)
         text_add(&rep, " %s%s", p->configs[c].tag, c ? "" : " (reference)");
     text_add(&rep, "\n");
+    if (p->serial)
+        for (c = 0; c < p->nconfigs; c++) {
+            text_add(&rep, "serial line %s: %d sessions\n", p->configs[c].tag, nsessions[c]);
+            if (nsessions[c] < 0)
+                bad++;
+        }
     for (c = 0; c < p->nconfigs; c++)
         if (st[c] != AMIGA_EMULATION_DONE) {
             text_add(&rep, "session %s: %s (%s/%s/emu)\n", p->configs[c].tag,
@@ -591,7 +635,40 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
             else
                 text_add(&rep, " OUTPUT DIFFERS");
             diff |= !same(ref.run, ref.runlen, o.run, o.runlen);
+            if (p->serial) {
+                int ok = same(ref.line, ref.linelen, o.line, o.linelen);
+
+                text_add(&rep, !ref.line ? ", NO REFERENCE LINE" : ok ? ", line same"
+                               : ", LINE DIFFERS");
+                diff |= !ok;
+                if (o.run && strstr((const char *)o.run, "TIMEOUT")) {
+                    text_add(&rep, ", TIMEOUT");
+                    diff = 1;
+                }
+            }
             free_outcome(&o);
+        }
+        if (p->serial && ref.run && strstr((const char *)ref.run, "TIMEOUT")) {
+            text_add(&rep, "; reference: TIMEOUT");
+            diff = 1;
+        }
+        /* the reference's line also as in the other pass (runtime error
+           checking off/on); not there: that pass has not run */
+        if (p->serial && p->serial_same_as && name) {
+            char *other = str_printf("%s/%s.serial", p->serial_same_as, name);
+            size_t olen;
+            uint8_t *od = other ? read_file(other, &olen) : NULL;
+
+            if (!od)
+                text_add(&rep, "; (no line of the other pass)");
+            else if (same(ref.line, ref.linelen, od, olen))
+                text_add(&rep, "; line as in the other pass");
+            else {
+                text_add(&rep, "; LINE DIFFERS FROM THE OTHER PASS");
+                diff = 1;
+            }
+            free(od);
+            free(other);
         }
         text_add(&rep, "\n");
         bad += diff;
@@ -611,9 +688,18 @@ out:
             amiga_emulation_join(e[c]);
             amiga_emulation_free(e[c]);
         }
+    for (c = 0; resp && c < p->nconfigs; c++)
+        if (resp[c]) {
+            char *out = dir_of(p, c, "vol/out");
+
+            serial_stop(resp[c], out ? out : ".");
+            free(out);
+        }
     for (c = 0; slog && c < p->nconfigs; c++)
         free(slog[c]);
     free(slog);
+    free(resp);
+    free(nsessions);
     free(e);
     free(st);
     free(text);
