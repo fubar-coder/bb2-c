@@ -1,0 +1,5 @@
+[run]
+child
+child back
+message -1
+rc=0
