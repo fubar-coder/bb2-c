@@ -69,7 +69,7 @@ latest date in the header comments.
 | AMOS functions | 75 | `AMOSFunclib/func-library4`…`7` | RI | 1996-01-11 | 7 **=** BSS2 `RIAMOSFUNCLIB` (4768 B); 6: names equal, 1 help text differs; AB3's file differs from BSS2 | func-library7 |
 | Anim | 57 | `ANIMLib/Anim-Library3` | RI (McNamara) | 1994-11-07 | ≈ 88 % BSS2 `RIANIMLIB` | open |
 | App | 61 | `AppLib/AppLib`, `applib2`, `applib3` | – | – | applib2 **=** BSS2/AB3 `RIAPPLIB` (2892 B); applib3 in the `BB22` format | applib2 (applib3: check) |
-| Arrays | – (`#riarrayslib` in no table) | `ArraysLib` | RI | – | – | open |
+| Arrays | 7 (`#riarrayslib`, from a program using it; clash `om3dlib`, AB3) | `ArraysLib` | RI | – | – | open |
 | CompactDisk | 14 (`#ricompactdisclib`, lit. 14) | `CDlib/cd`, `cd2`, `cd3`, `cdSCSI` | – | 1995-07-03 | ≈ 96 % OL `RICOMPACTDISKLIB` | open |
 | Commodities | 89 | `Commoditieslib/CommoditiesLib2` | – | – | **=** BSS2/AB3 (2604 B) | CommoditiesLib2 |
 | CopperFX | 11 (bin.) | `Copperlib/CopperFX3` | RI | 1995-03-08 | **=** BSS2/AB3 (1856 B) | CopperFX3 |
@@ -247,14 +247,25 @@ these sources. Four things were needed:
   confirmed: `datatypes.res` (no datatypes source equals a binary, the
   closest is another version), `AHI.res` not made.
 * **Library numbers** [B]: the numbers the sources use but no libnums
-  defines (`#riarrayslib`, `#ricopperfx` …) appended to the staged
+  defines (`#ricopperfx`, `#ridoslib` …) appended to the staged
   `LIBNUMS.BB` – 28 names, the number from AmiBlitz3's libnums or of the
   binary with the same declarations; the 14 also in the CD's libnums
   agree. Confirmed by the identical binaries (`#ricopperfx`=11,
   `#ridoslib`=33, `#rifastseriallib`=36, `#rinonvolatilelib`=35,
   `#ridebuglib`=51). Still without a number: `#ritrackerlib`,
-  `#riarrayslib`, `#riintuilib`, `#rithreadlib`, `#ribbmaplib`,
-  `#popupwinlib`, `#blitzbomberslibtwo`.
+  `#riintuilib`, `#rithreadlib`, `#ribbmaplib`, `#popupwinlib`,
+  `#blitzbomberslibtwo`.
+* **`#riarrayslib` = 7** [B, S], from a program that uses the library:
+  its only command `FillArray` has index 0, so its token is `$8000 |
+  number<<7 | 1`. `Debuglib/defaultdbug50.bb2` (RWE's debugger, in
+  the archive) has the token `$8381` (library 7) in `… winstatus(),0`
+  and `… memwin(),0`, where AmiBlitz3's `REDDebugger.ab3` writes
+  `FillArray winstatus(),0` (AmiBlitz3 moved `FillArray` into its
+  `linklistlib`). The code of `FillArray` (ArraysLib built with 7) is
+  unchanged in the CD's `BSS2/REDDEBUGGER/PROGRAMS/REDDEBUGGER` and
+  `BSS3/REDMAPEDITOR/PROGRAMS/REDMAPEDITOR`. 7 is also Oliver Michel's
+  `OM3D` (CD `INTERNET/DOOM4BB2`, AmiBlitz3 `#om3dlib`) and AmiBlitz3's
+  `LotanCP2`.
 
 `optidec.bin` (`IncBin` of `stclib`, `stcdecrunchlib`) is in the
 archive next to them; with the INCDIR lines gone, `cdrun` runs these jobs
