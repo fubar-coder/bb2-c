@@ -81,7 +81,8 @@ static void flush_rx(struct responder *r)
 
 static void begin(struct responder *r, const struct text *name)
 {
-    static const uint8_t one = 1, two = 2;
+    static constexpr uint8_t one = 1;
+    static constexpr uint8_t two = 2;
     struct session *s;
 
     flush_rx(r);                        /* r->cur: before the realloc moves it */
@@ -104,7 +105,7 @@ static void begin(struct responder *r, const struct text *name)
 static void reply(struct responder *r, int sock, uint8_t code, unsigned n)
 {
     static const uint8_t d[] = { 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87 };
-    static const uint8_t xoff = 0x13;
+    static constexpr uint8_t xoff = 0x13;
     struct session *s = r->cur;
     struct text out = { 0 };
     uint8_t l[9999];

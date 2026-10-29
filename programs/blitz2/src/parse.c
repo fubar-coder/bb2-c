@@ -78,7 +78,7 @@ static UWORD arrmul1[] = {
 #define listarfix      (&arrmul1[14])
 
 /* blitz2.s:8423 calcvar2.pfix: move.l (a2),a2 */
-static const UWORD calcvar_pfix = 0x2452;
+static constexpr UWORD calcvar_pfix = 0x2452;
 
 /* blitz2.s:8442-8449, 14 bytes */
 static UWORD brchkcode0[] = {
@@ -93,7 +93,7 @@ static UWORD brchkcode0[] = {
 /* ================================================== object file data */
 
 static const char infoname[] = ".info";     /* blitz2.s:6992 */
-static const ULONG sysdebug = 0x3f0;        /* blitz2.s:6995 HUNK_SYMBOL */
+static constexpr ULONG sysdebug = 0x3f0;    /* blitz2.s:6995 HUNK_SYMBOL */
 
 /* blitz2.s:6989 objicon incbin obj.info (383 bytes) .. objiconf */
 static const UBYTE objicon[] = {

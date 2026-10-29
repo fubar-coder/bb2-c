@@ -1322,8 +1322,8 @@ static WORD inprop, inedit, indrag;
 static WORD edxyc[3];                           /* x, y, cursor */
 
 static WORD status, delay, button, mo, jx, jy, jb, mx, my, mb, ox, oy;
-static const WORD dcon = 6;                     /* delay constant */
-static const WORD pspd = 1024;                  /* prop speed */
+static constexpr WORD dcon = 6;                 /* delay constant */
+static constexpr WORD pspd = 1024;              /* prop speed */
 
 /* SelectBox Box# (negative / >= 1024: deselect) */
 static void BLITZ_ROUTINE selectbox_c(ULONG n BL_REG(d0))

@@ -433,7 +433,7 @@ int bugorig_crunch_decrunch_corrupt(const char *dir)
 int bugorig_crunchlib_crm_minsecdist(const char *dir)
 {
     static const char *names[] = { "crunchlib", NULL };
-    const ULONG blen = TEXTLEN + CRMMSD;
+    constexpr ULONG blen = TEXTLEN + CRMMSD;
     struct lib *l;
     UBYTE *arena, *buf;
     ULONG front = 0, back = 0, i;
@@ -491,8 +491,8 @@ int bugorig_crunchlib_crm_minsecdist(const char *dir)
 int bugorig_crunchlib_crm_overlap_4gb(const char *dir)
 {
     static const char *names[] = { "crunchlib", NULL };
-    const ULONG blen = TEXTLEN + CRMMSD;
-    const ULONG alen = LOWABSORB + blen + GUARD;
+    constexpr ULONG blen = TEXTLEN + CRMMSD;
+    constexpr ULONG alen = LOWABSORB + blen + GUARD;
     struct lib *l;
     UBYTE *arena, *buf;
     ULONG back = 0, i;
@@ -570,7 +570,7 @@ static struct lib *load_crunchlib_guarded(const char *dir, UBYTE **block, ULONG 
    tables. */
 int bugorig_crunchlib_crm2_readtab(const char *dir)
 {
-    const ULONG dlen = 4096 + TEXTLEN + GUARD;
+    constexpr ULONG dlen = 4096 + TEXTLEN + GUARD;
     struct lib *l;
     UBYTE *hunk, *arena, *src, *dest, *end;
     ULONG hlen, alen, changed, i, *lp;
@@ -643,7 +643,7 @@ int bugorig_crunchlib_crm2_readtab(const char *dir)
 int bugorig_crunchlib_pp_readd1(const char *dir)
 {
     static const char *names[] = { "crunchlib", NULL };
-    const ULONG alen = SRCLOW + SRCAREA + ABSORB + GUARD + TEXTLEN + GUARD + ABSORB;
+    constexpr ULONG alen = SRCLOW + SRCAREA + ABSORB + GUARD + TEXTLEN + GUARD + ABSORB;
     struct lib *l;
     UBYTE *arena, *src, *dest;
     ULONG changed, i;
