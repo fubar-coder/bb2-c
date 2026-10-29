@@ -12,6 +12,11 @@
  * included here unchanged: log buffer, rc_valid, rc_label, the static
  * message buffers with their own reply port).  No input.device.
  *
+ * While the command runs, intuition's CloseWindow is patched (a window
+ * opened at the address of a closed one counts as new).  The patch is
+ * removed at the end; a call still inside CloseWindow then returns into
+ * teddrive, which waits 0.2 s before it ends (not a guarantee, TODO.md).
+ *
  * Run it under reqtrap (tests/corpus/amiga), which answers AutoRequest and
  * EasyRequestArgs at once (DOS requesters, alerts):
  *   reqtrap teddrive SCRIPT PREFIX blitz2:blitz2 FILE >STDOUT
@@ -206,11 +211,40 @@ struct tdwin {
     UBYTE *title;               /* title pointer when first seen */
     int main;                   /* backdrop: TED's mywindow */
     int seq;                    /* order of appearance */
+    ULONG since;                /* td_ncl when first seen */
     char text[64];              /* title text */
 };
 static struct Screen *td_scr;  /* the program's screen */
 static struct tdwin td_w[TD_MAXWIN];
 static int td_nw, td_seq;
+
+/* CloseWindow is patched while the command runs: the closed windows go to
+   a ring, so that a new window at the address of a closed one (with the
+   same title pointer - blitz2's requesters all have "") is seen as new.
+   td_ncl counts the closes; entry k is td_cl[k % TD_NCL]. */
+#define TD_NCL 16
+struct Window *td_cl[TD_NCL];
+volatile ULONG td_ncl;
+APTR td_oldclose;
+static ULONG td_sawcl;          /* closes handled by td_scan */
+__asm__(
+"   .text\n"
+"   .even\n"
+"_td_closepatch:\n"            /* CloseWindow(a0 window): first closed, then */
+"   move.l  a0,-(sp)\n"           /* entered (td_scan must not find it in */
+"   move.l  _td_oldclose,a1\n"    /* the list any more) */
+"   jsr     (a1)\n"
+"   move.l  (sp)+,a0\n"
+"   move.l  _td_ncl,d0\n"
+"   and.w   #15,d0\n"
+"   lsl.w   #2,d0\n"
+"   lea     _td_cl,a1\n"
+"   move.l  a0,0(a1,d0.w)\n"
+"   addq.l  #1,_td_ncl\n"
+"   rts\n"
+);
+void td_closepatch(void);
+
 
 /* new windows of this tick, logged after UnlockIBase */
 static struct tdwin td_new[4];
@@ -292,7 +326,17 @@ static void td_scan(void)
         }
         if (!td_scr) return;
     }
-    /* windows that are gone (or reused with another title) */
+    /* windows that are gone (or reused with another title, or closed and
+       opened again at the same address) */
+    {
+        ULONG n = td_ncl, k;
+        if (n - td_sawcl > TD_NCL) td_sawcl = n - TD_NCL;
+        for (k = td_sawcl; k != n; k++)
+            for (i = 0; i < td_nw; i++)
+                if (td_w[i].w == td_cl[k % TD_NCL] && td_w[i].since <= k)
+                    td_w[i].title = (UBYTE *)-1;    /* closed: below */
+        td_sawcl = n;
+    }
     for (i = 0; i < td_nw; i++) {
         for (w = td_scr->FirstWindow; w && w != td_w[i].w; w = w->NextWindow) ;
         if (!w || w->Title != td_w[i].title) {
@@ -312,6 +356,7 @@ static void td_scan(void)
         td_w[td_nw].title = w->Title;
         td_w[td_nw].main = (w->Flags & WFLG_BACKDROP) != 0;
         td_w[td_nw].seq = ++td_seq;
+        td_w[td_nw].since = td_ncl;
         rc_copytitle(td_w[td_nw].text, w->Title, sizeof td_w[0].text);
         if (td_nnew < 4) {
             td_new[td_nnew] = td_w[td_nw];
@@ -1230,11 +1275,20 @@ int main(int argc, char **argv)
         td_writefile("result", "FAIL step 0 no driver process\n");
         return 20;
     }
+    Forbid();
+    td_oldclose = SetFunction((struct Library *)IntuitionBase, -72, (APTR)td_closepatch);
+    CacheClearU();
+    Permit();
     rc = SystemTags((CONST_STRPTR)td_cmd, SYS_Input, Input(), SYS_Output, out, SYS_Asynch, FALSE,
                     NP_CloseInput, FALSE, NP_CloseOutput, FALSE, TAG_END);
     td_rc = rc;
     td_exited = 1;
     Wait(1UL << td_donesig);        /* the driver ends (all its waits are bounded) */
+    Forbid();
+    SetFunction((struct Library *)IntuitionBase, -72, td_oldclose);
+    CacheClearU();
+    Permit();
+    Delay(10);                      /* a CloseWindow still inside returns to us */
     FreeSignal(td_donesig);
     td_log("teddrive end", 0);
     CloseLibrary(KeymapBase);
