@@ -109,7 +109,11 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   instruction comparison (`asmcmp_*`: the routines of runerrlib, debuglib,
   memacclib that remained in assembler against the originals of the CD,
   with `objdump` of the toolchain; `tools/asmcmp`). Both comparisons are
-  skipped without the CD. The host side on its own:
+  skipped without the CD. The token list (`tokens_*`: `tools/blitztokens`
+  makes it from a compiler and its libraries the way blitz2 builds it for
+  the editor) must equal `tests/data/ted-tokens.txt` – with the CD's
+  compiler and libraries (skipped without the CD) and with the ones built
+  here; `tokens_broken` checks that a missing library is noticed. The host side on its own:
   `ctest --test-dir build/amiga/host`.
   With `-DHOST_SANITIZE=ON` the host side is built with AddressSanitizer
   and UBSan.
@@ -405,6 +409,8 @@ tools/                       host tools:
   lib/                       the logic as libraries: hunk (read the hunk
                              format), blitzlib (header, token table,
                              check rules), biglib (write/read BigLib),
+                             blitztokens (the token list of compiler
+                             and libraries),
                              hunkcheck (bytes in the first hunk),
                              amiga_emulation (scripts in Amiberry),
                              vasmlisting (read vasm listings), sha256,
@@ -415,7 +421,8 @@ tools/                       host tools:
                              description: 8SVX, ILBM, modules);
                              blitzlib also compares declarations
   biglib/, blitzlibcheck/,   the tools: one main.c each around lib/
-  blitzlibcompare/
+  blitzlibcompare/,
+  blitztokens/
   hunkcheck/, amiga_run/,
   vasmlisting/, checklabels/,
   checkdata/, asmcmp/,

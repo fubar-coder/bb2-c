@@ -29,7 +29,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tests/ted-ab/runner ted-ab-runne
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tests/ted-ab/host ted-ab-host)
 
 # -h / --help of every callable host program: usage on stdout, exit 0
-foreach(t amiga_run asmcmp biglib blitzlibcheck blitzlibcompare checkdata checklabels
+foreach(t amiga_run asmcmp biglib blitztokens blitzlibcheck blitzlibcompare checkdata checklabels
 		hunkcheck mktestdata vasmlisting tedtok teddetok corpusrun cdrun tedab teddump)
 	add_test(NAME help_${t} COMMAND ${CMAKE_COMMAND} -DPROGRAM=$<TARGET_FILE:${t}>
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/check-help.cmake)

@@ -466,14 +466,22 @@ several versions.
    in the history of blitz_ptplayer), so the libraries are built in
    variants, and the tokens of a source come from the library files it
    was written for, not from one fixed list:
-   1. **Token list from library files**: a C tool (logic in
-      `tools/lib/`, `tools/lib/blitzlib` reads the files) that makes
-      the token list from blitz2 (the BASIC keywords: where does blitz2
-      keep them, in the format of a library?), `deflibs`, `acidlibs`
-      and userlibs (token = `$8000 | number<<7 | index+1`). Check: from
-      the files of the CD it gives `tests/data/ted-tokens.txt` (made by
-      the original TED, `ted-oracle`), also in which token TED takes
-      for a name defined twice.
+   1. ~~**Token list from library files**~~ done (2026-10-29):
+      `tools/blitztokens` (logic `tools/lib/blitztokens`) makes the list
+      as blitz2 builds it for the editor. The BASIC keywords and
+      assembler mnemonics are not in library format: blitz2 keeps them
+      as a linked list of nodes (`blitz2.s` 283 `tokens`, next.l num.w
+      name help) in its own file; the tool finds the node of token 1
+      `NEWTYPE` and follows the relocated `next` longs. Then the
+      libraries in the compiler's order (`loadlibs`: acidlibs, deflibs,
+      userlibs) numbered like `fixlibs` (user library libnum*128+1,
+      system library from libnum, every entry counts, a nullsub has no
+      token). Equal to `tests/data/ted-tokens.txt` (1821 tokens, the
+      same order, so also the same choice for a name defined twice) for
+      the CD's 2.10 compiler, the reference build of `blitz2.s` 1.95 and
+      the port, each with the CD's acidlibs/deflibs, and for the port
+      with the libraries built here (ctest `tokens_cd`, `tokens_port`,
+      `tokens_broken`; unit test `blitztokens`).
    2. **`tedtok`/`teddetok` with library files** as the reference
       instead of `TOKENS` (or both); the readable `rwelibsrc` from the
       files of its variant instead of the provisional `tokens-ext.txt`

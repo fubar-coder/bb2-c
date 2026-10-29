@@ -8,6 +8,7 @@ add_compile_options(-Wall -Wextra)
 
 add_subdirectory(lib)
 add_subdirectory(biglib)
+add_subdirectory(blitztokens)
 add_subdirectory(blitzlibcheck)
 add_subdirectory(blitzlibcompare)
 add_subdirectory(hunkcheck)

@@ -3,6 +3,8 @@
 #   hunk       reading AmigaDOS load files
 #   blitzlib   Blitz Basic 2 library files: header, token table, checks
 #   biglib     BigLib files (acidlibs, deflibs): writing and reading
+#   blitztokens  the token list of the compiler and its libraries (as
+#              the editor gets it)
 #   hunkcheck  checking bytes at offsets of the first hunk
 #   amiga_emulation  running AmigaDOS scripts in Amiberry for tests
 #   vasmlisting  reading vasm listings (rows, symbols)
@@ -15,6 +17,7 @@
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
+add_subdirectory(blitztokens)
 add_subdirectory(hunkcheck)
 add_subdirectory(amiga_emulation)
 add_subdirectory(vasmlisting)
