@@ -22,6 +22,17 @@
  *                          is still allocated when COMMAND ends is reported
  *                          and every FreeMem whose size differs from the
  *                          allocation's
+ *   pad                    every AllocMem of the process gets 64 bytes
+ *                          more, zeroed, behind the bytes asked for (also
+ *                          a LoadSeg in the process: a pointer just past
+ *                          the end of a hunk finds zeros); FreeMem of the
+ *                          allocation frees them too.  A FreeMem inside an
+ *                          allocation of the process (or in its 64 bytes),
+ *                          not at its start, is not done and reported once
+ *                          (the count could depend on garbage) - e.g. a
+ *                          list followed past the end of a hunk.  Other
+ *                          memory (allocated before COMMAND, by another
+ *                          task, ...) is freed as asked
  * COMMAND is loaded with LoadSeg and run with RunCommand in this process
  * (the signals and the recorded allocations are the process's); the
  * patches are system-wide but act only for this process.  Behind COMMAND
@@ -56,7 +67,7 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 
 /* -------------------------------------------------------------- options */
 
-static int o_signals, o_track, o_allocfail;
+static int o_signals, o_track, o_pad, o_allocfail;
 static ULONG af_min, af_max, af_chip, af_count, af_done;
 static char rf_name[108], ef_name[108], olf_name[108];
 static ULONG rf_n, rf_done, ef_done, olf_done;
@@ -83,6 +94,11 @@ __asm__(
 "   movem.l (sp)+,d0-d1/a0-a1\n"     /* movem leaves the flags */
 "   bne.s   1f\n"
 "   movem.l d0-d1,-(sp)\n"
+"   movem.l d1/a0-a1,-(sp)\n"
+"   move.l  d0,-(sp)\n"
+"   jsr     _alloc_size\n"            /* d0 = the size allocated */
+"   addq.l  #4,sp\n"
+"   movem.l (sp)+,d1/a0-a1\n"
 "   move.l  _old_allocmem,a0\n"
 "   jsr     (a0)\n"
 "   move.l  d0,-(sp)\n"
@@ -92,17 +108,20 @@ __asm__(
 "   rts\n"
 "1: moveq   #0,d0\n"
 "   rts\n"
-/* FreeMem(a1 memory, d0 size): free_pre(memory, size), the original */
+/* FreeMem(a1 memory, d0 size): d0 = free_pre(memory, size), the original
+   with that size (0: not done) */
 "   .even\n"
 "_freemem_patch:\n"
-"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   movem.l d1/a0-a1,-(sp)\n"
 "   move.l  d0,-(sp)\n"
 "   move.l  a1,-(sp)\n"
 "   jsr     _free_pre\n"
 "   addq.l  #8,sp\n"
-"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   movem.l (sp)+,d1/a0-a1\n"
+"   tst.l   d0\n"
+"   beq.s   7f\n"
 "   move.l  _old_freemem,-(sp)\n"
-"   rts\n"
+"7: rts\n"
 /* Open(d1 name, d2 mode) / Lock(d1 name, d2 mode): the original, then
    named_post(result, name, which) */
 "   .even\n"
@@ -185,6 +204,8 @@ static struct { ULONG addr, size, flags; } slot[SLOTS];
 static ULONG nalloc, tbl_full;
 static ULONG nwrong, wrong_alloc[16], wrong_free[16];   /* FreeMem of another size */
 #define TOMB 1UL                        /* removed (odd: no allocation) */
+#define PAD 64                          /* pad: the bytes behind */
+static ULONG bad_free;                  /* pad: a FreeMem not done */
 
 static ULONG hash(ULONG a) { return ((a >> 3) * 2654435761UL) >> 18 & (SLOTS - 1); }
 
@@ -197,12 +218,20 @@ ULONG alloc_pre(ULONG size, ULONG flags)
     return 1;
 }
 
+/* the size AllocMem allocates (pad: 64 bytes more) */
+ULONG alloc_size(ULONG size)
+{
+    return o_pad && ours() ? size + PAD : size;
+}
+
 void alloc_post(ULONG mem, ULONG size, ULONG flags)
 {
     ULONG h, i;
 
-    if (!o_track || !mem || !ours())
+    if ((!o_track && !o_pad) || !mem || !ours())
         return;
+    if (o_pad)
+        memset((UBYTE *)mem + size, 0, PAD);
     for (h = hash(mem), i = 0; i < SLOTS; i++, h = (h + 1) & (SLOTS - 1))
         if (slot[h].addr == 0 || slot[h].addr == TOMB) {
             slot[h].addr = mem;
@@ -214,12 +243,13 @@ void alloc_post(ULONG mem, ULONG size, ULONG flags)
     tbl_full++;
 }
 
-void free_pre(ULONG mem, ULONG size)
+/* the size FreeMem frees (pad: with the 64 bytes; 0: not done) */
+ULONG free_pre(ULONG mem, ULONG size)
 {
     ULONG h, i;
 
-    if (!o_track || !mem || !ours())
-        return;
+    if ((!o_track && !o_pad) || !mem || !ours())
+        return size;
     for (h = hash(mem), i = 0; i < SLOTS && slot[h].addr; i++, h = (h + 1) & (SLOTS - 1))
         if (slot[h].addr == mem) {
             if (slot[h].size != size && nwrong < 16) {
@@ -228,8 +258,17 @@ void free_pre(ULONG mem, ULONG size)
             }
             slot[h].addr = TOMB;
             nalloc--;
-            return;
+            return o_pad ? size + PAD : size;
         }
+    /* not the start of an allocation of the process: inside one or in
+       its pad not done, else (memory from elsewhere) as it is */
+    if (o_pad)
+        for (i = 0; i < SLOTS; i++)
+            if (slot[i].addr > TOMB && mem > slot[i].addr && mem < slot[i].addr + slot[i].size + PAD) {
+                bad_free = 1;
+                return 0;
+            }
+    return size;
 }
 
 /* ---------------------------------------------------- dos.library */
@@ -335,6 +374,8 @@ static int option(const char *a)
         return o_signals = 1;
     if (!strcmp(a, "track"))
         return o_track = 1;
+    if (!strcmp(a, "pad"))
+        return o_pad = 1;
     if (!strncmp(a, "allocfail=", 10)) {
         s = a + 10;
         if (!number(&s, &af_min) || *s++ != '-' || !number(&s, &af_max) || af_min > af_max)
@@ -455,7 +496,7 @@ int main(int argc, char **argv)
         }
     if (i >= argc) {
         put("usage: inject [signals] [allocfail=MIN-MAX[/chip][/COUNT]] [readfail=NAME/N]\n"
-            "              [examinefail=NAME] [openlibfail=NAME] [track] COMMAND [ARGS]\n");
+            "              [examinefail=NAME] [openlibfail=NAME] [track] [pad] COMMAND [ARGS]\n");
         return 20;
     }
     for (k = i + 1; k < argc; k++) {
@@ -509,5 +550,7 @@ int main(int argc, char **argv)
     put(line);
     if (o_track)
         report_track();
+    if (bad_free)
+        put("inject: pad: FreeMem inside an allocation (not done)\n");
     return 0;
 }

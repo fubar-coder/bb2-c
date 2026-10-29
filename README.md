@@ -208,7 +208,9 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   Helpers (`tests/bug-orig/amiga/`): `inject` runs the compiler with
   faults (no free signal, failing AllocMem of a size, Read error, failing
   Examine, failing OpenLibrary of a name, recorded allocations and FreeMem
-  of another size than allocated; for the
+  of another size than allocated; with `pad` 64 zeroed bytes behind every
+  allocation, also a hunk of LoadSeg, and a FreeMem inside an allocation
+  is reported and not done; for the
   compiled programs with `runwrap=@INJECT@|...`), `wbrun` starts the compiler
   (`wrap=@WBRUN@|...`) or a program (`runwrap=@WBRUN@|...`) like the
   Workbench and reports the current directory at the end, how often the
