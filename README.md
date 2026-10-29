@@ -222,6 +222,11 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   `blitz2:userlibs` (function `BugOrigUserLib`, token in
   `userlib.tokens`). tedstub also runs menu items
   (`menu=ID|ITEM|ANSWER`) and logs the busy pointer after them;
+  `run=ID|SOURCE|CONSOLE|PANIC` runs a source with COMPILE/RUN as from
+  the editor (the program in blitz2's own process, the stop requester
+  open; its console is the file CONSOLE, the output goes into the log),
+  optionally with !PANIC! hit PANIC ticks after the program started, and
+  logs the requesters left open;
   `strbuf=N` sets the string buffer of the default options (strings
   longer than 10240 bytes), `macrobuf=N` their macro buffer;
   `resident=ID|SOURCE|RESFILE` (up to 8) compiles SOURCE before the first

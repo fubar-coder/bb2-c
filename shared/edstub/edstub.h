@@ -57,6 +57,22 @@ extern void (*edstub_tokone_hook)(UBYTE *line);
 /* before the frame aborts inside main (compiler waits for input forever,
    extalloc failed): the program can log its result and free its data */
 extern void (*edstub_abort_hook)(const char *why);
+/* openio/closeio (ted.s: the console window of a program run from the
+   editor): called in the program's process, runtheprog, before and after
+   the program */
+extern void (*edstub_openio_hook)(void);
+extern void (*edstub_closeio_hook)(void);
+/* getinput2 (the compiler polls the stop requester, chkrealstop): the id
+   of the gadget hit, 0 = nothing (default: nothing) */
+extern UWORD (*edstub_getinput2_hook)(void);
+
+/* the requesters open now (openreq not yet closed) */
+int edstub_open_requests(void);
+/* the UserPort of the requester window: its signal is the stop
+   requester's exception (blitz2 openstopreq), a message there is "a
+   gadget was hit" */
+struct MsgPort;
+struct MsgPort *edstub_req_port(void);
 
 /* log: a line to Output() and appended to the log file; before there is
    one, the lines are kept and edstub_set_log writes them first (new file;

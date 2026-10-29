@@ -31,9 +31,20 @@
  *   menu=ID|ITEM[|ANSWER]  the compiler's menu item ITEM (blitz2.s
  *                   menuadds, e.g. 9 = load debug module, 8 = reload libs)
  *                   with no source; a file requester gets ANSWER (none:
- *                   cancelled).  Jobs and menu items run in the order of
- *                   the list.
- * Every job: CurrentDir(DIR, default: the source's directory - relative
+ *                   cancelled).
+ *   run=ID|SOURCE|CONSOLE[|PANIC]  the source like a job, but with the
+ *                   menu item COMPILE/RUN: blitz2 runs the program in a
+ *                   process of its own (menu10, runtheprog) and waits with
+ *                   the stop requester "EXECUTING" open.  The editor's
+ *                   console for the program (openio/closeio: pr_CIS and
+ *                   pr_COS) is the file CONSOLE, its lines go into the
+ *                   log behind the run.  PANIC: N ticks (1/50 s) after the
+ *                   program started (openio), its gadget !PANIC! is hit (a
+ *                   timer request comes back to the requester window's
+ *                   port: the stop requester's signal, then getinput2
+ *                   reports gadget 1 once).
+ * Jobs, menu items and runs go in the order of the list.  Every job:
+ * CurrentDir(DIR, default: the source's directory - relative
  * INCLUDE/INCBIN), load the source like TED's readline/allocline,
  * loadxtra (SOURCE.xtra or defaults), menu CREATE EXECUTABLE, result.
  *
@@ -49,6 +60,15 @@
  *                                     (menuret), the compiler's error
  *   POINTER ID busy|normal            behind a menu item: the busy pointer
  *                                     (sleepon without pointeron)
+ *   OPENIO ID                         run: the program starts (openio)
+ *   PANIC ID                          run: !PANIC! hit
+ *   CLOSEIO ID                        run: the program ended (closeio)
+ *   RESULT ID error LINE MESSAGE TEXT run: the compiler's error
+ *   CONSOLE ID left open              run: no closeio behind openio (the
+ *                                     stub closes the console then)
+ *   OUTPUT ID LINE                    run: what the program wrote to the
+ *                                     console, line by line
+ *   REQUESTERS ID N                   run: the requesters still open
  * plus the frame's requester lines.  Only a compiler that keeps waiting
  * for input or a failed extalloc end the session (RESULT ID failed abort:
  * ...); the runner goes on with the remaining jobs in a new session.
@@ -56,6 +76,7 @@
 #include <exec/memory.h>
 #include <dos/dos.h>
 #include <dos/dosextens.h>
+#include <devices/timer.h>
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include "edstub.h"
@@ -398,15 +419,14 @@ static void abort_hook(const char *why)
 /* ---------------------------------------------------------------------
  * the jobs
  * ------------------------------------------------------------------- */
-static void batch_job(char *id, char *src, char *out, char *dirname, int noxtra)
+/* the start of a job: log JOB, CurrentDir, load the source and its
+   options. noxtra: no options of the source and no defaults (resident=).
+   0 = source not loaded (RESULT failed logged); *dir and *old for end_job
+   either way */
+static int begin_job(char *id, char *src, char *dirname, int noxtra, BPTR *dir, BPTR *old)
 {
-    BPTR dir, old = 0;
-    WORD ret;
-    LONG size;
-
     edstub_strcpy(cur_id, id, sizeof cur_id);
     edstub_strcpy(srcname, src, PATHLEN);
-    edstub_strcpy(outname, out, PATHLEN);
     edstub_strcpy(xtraname, src, PATHLEN);
     edstub_strcat(xtraname, ".xtra", PATHLEN);
     edstub_reset_requests();
@@ -418,24 +438,25 @@ static void batch_job(char *id, char *src, char *out, char *dirname, int noxtra)
         sbs(&L, src);
         LOG_END;
     }
+    *old = 0;
     if (dirname && *dirname)
-        dir = Lock(dirname, ACCESS_READ);
+        *dir = Lock(dirname, ACCESS_READ);
     else {
         BPTR l = Lock(src, ACCESS_READ);
 
-        dir = l ? ParentDir(l) : 0;
+        *dir = l ? ParentDir(l) : 0;
         if (l)
             UnLock(l);
     }
-    if (dir)
-        old = CurrentDir(dir);
+    if (*dir)
+        *old = CurrentDir(*dir);
     if (!load_source()) {
         LOG_BEGIN;
         sbs(&L, "RESULT\t");
         sbs(&L, id);
         sbs(&L, "\tfailed\tsource not loaded");
         LOG_END;
-        goto out;
+        return 0;
     }
     {
         BPTR fh = noxtra ? 0 : Open(xtraname, MODE_OLDFILE);
@@ -456,34 +477,67 @@ static void batch_job(char *id, char *src, char *out, char *dirname, int noxtra)
         LOG_END;
         call_loadxtra();
     }
+    return 1;
+}
+
+static void end_job(BPTR dir, BPTR old)
+{
+    freelines();
+    if (dir) {
+        CurrentDir(old);
+        UnLock(dir);
+    }
+    cur_id[0] = 0;
+}
+
+/* the compiler's error of the last menu call (ret = menuret, its line):
+   RESULT ID error LINE MESSAGE TEXT */
+static void log_error(WORD ret)
+{
+    struct item *it = firstitem;
+    WORD i;
+    LOG_BEGIN;
+
+    for (i = 0; it && i < ret; i++)
+        it = it->next;
+    sbs(&L, "RESULT\t");
+    sbs(&L, cur_id);
+    sbs(&L, "\terror\t");
+    sbn(&L, ret + 1);
+    sbc(&L, '\t');
+    tsv(&L, errmsg);
+    sbc(&L, '\t');
+    if (ret >= 0 && it) {
+        char tb[300];
+        struct sb t = { tb, 0, sizeof tb };
+
+        tb[0] = 0;
+        detok(&t, it->chars);
+        tsv(&L, tb);
+    }
+    LOG_END;
+}
+
+static void batch_job(char *id, char *src, char *out, char *dirname, int noxtra)
+{
+    BPTR dir, old;
+    WORD ret;
+    LONG size;
+
+    edstub_strcpy(outname, out, PATHLEN);
+    if (!begin_job(id, src, dirname, noxtra, &dir, &old))
+        goto out;
     DeleteFile(outname);                /* no stale executable */
     ret = call_menu(MENU_CREATE_EXECUTABLE);
     size = filesize(outname);
-    {
+    if (errpending)
+        log_error(ret);
+    else {
         LOG_BEGIN;
 
         sbs(&L, "RESULT\t");
         sbs(&L, id);
-        if (errpending) {
-            struct item *it = firstitem;
-            WORD i;
-
-            for (i = 0; it && i < ret; i++)
-                it = it->next;
-            sbs(&L, "\terror\t");
-            sbn(&L, ret + 1);
-            sbc(&L, '\t');
-            tsv(&L, errmsg);
-            sbc(&L, '\t');
-            if (ret >= 0 && it) {
-                char tb[300];
-                struct sb t = { tb, 0, sizeof tb };
-
-                tb[0] = 0;
-                detok(&t, it->chars);
-                tsv(&L, tb);
-            }
-        } else if (size >= 0) {
+        if (size >= 0) {
             sbs(&L, "\tok\t");
             sbn(&L, size);
         } else {
@@ -493,12 +547,188 @@ static void batch_job(char *id, char *src, char *out, char *dirname, int noxtra)
         LOG_END;
     }
 out:
-    freelines();
-    if (dir) {
-        CurrentDir(old);
-        UnLock(dir);
+    end_job(dir, old);
+}
+
+/* ---------------------------------------------------------------------
+ * run=: COMPILE/RUN - blitz2 runs the program in a process of its own
+ * (menu10, runtheprog) and waits for its end or the PANIC gadget of the
+ * stop requester.  The editor's console for the program (openio/closeio)
+ * is a file; PANIC is hit when a timer request started by openio comes
+ * back to the requester window's port.
+ * ------------------------------------------------------------------- */
+static char conname[PATHLEN];
+static BPTR con, old_cis, old_cos;
+static struct timerequest *panic_req;
+static ULONG panic_ticks;
+static int panic_sent, panic_back;     /* the request sent; back and taken */
+
+static void log_id(const char *what, const char *tail)
+{
+    LOG_BEGIN;
+
+    sbs(&L, what);
+    sbc(&L, '\t');
+    sbs(&L, cur_id);
+    if (tail) {
+        sbc(&L, '\t');
+        sbs(&L, tail);
     }
-    cur_id[0] = 0;
+    LOG_END;
+}
+
+/* in the program's process, before the program: the console (ted.s
+   openio: pr_CIS and pr_COS), and the time until PANIC starts */
+static void openio_hook(void)
+{
+    struct Process *me = (struct Process *)FindTask(0);
+
+    log_id("OPENIO", 0);                /* while Output() is not the console */
+    if ((con = Open(conname, MODE_NEWFILE))) {
+        old_cis = me->pr_CIS;
+        old_cos = me->pr_COS;
+        me->pr_CIS = con;
+        me->pr_COS = con;
+    }
+    if (panic_req && !panic_sent) {
+        ULONG t = panic_ticks, s = 0;
+
+        while (t >= 50) {               /* no division in this build */
+            t -= 50;
+            s++;
+        }
+        panic_req->tr_node.io_Command = TR_ADDREQUEST;
+        panic_req->tr_time.tv_secs = s;
+        panic_req->tr_time.tv_micro = t * 20000;
+        SendIO((struct IORequest *)panic_req);
+        panic_sent = 1;
+    }
+}
+
+/* in the program's process, behind the program (ted.s closeio) */
+static void closeio_hook(void)
+{
+    struct Process *me = (struct Process *)FindTask(0);
+
+    if (con) {
+        me->pr_CIS = old_cis;
+        me->pr_COS = old_cos;
+        Close(con);
+        con = 0;
+    }
+    log_id("CLOSEIO", 0);
+}
+
+/* the time is up (the timer request is back at the requester window's
+   port): the PANIC gadget was hit (id 1, blitz2.s stopreqga1), once */
+static UWORD getinput2_hook(void)
+{
+    struct Message *m = GetMsg(edstub_req_port());
+
+    if (!m || !panic_req || m != &panic_req->tr_node.io_Message)
+        return 0;
+    panic_back = 1;
+    log_id("PANIC", 0);
+    return 1;
+}
+
+/* the console's lines as OUTPUT ID LINE */
+static void log_console(void)
+{
+    BPTR fh = Open(conname, MODE_OLDFILE);
+    char line[200];
+    ULONG n = 0;
+    LONG got;
+    UBYTE c;
+
+    if (!fh)
+        return;
+    for (;;) {
+        got = Read(fh, &c, 1);
+        if (got == 1 && c != '\n') {
+            if (n + 1 < sizeof line)
+                line[n++] = c;
+            continue;
+        }
+        if (got == 1 || n) {
+            LOG_BEGIN;
+
+            line[n] = 0;
+            sbs(&L, "OUTPUT\t");
+            sbs(&L, cur_id);
+            sbc(&L, '\t');
+            tsv(&L, line);
+            LOG_END;
+            n = 0;
+        }
+        if (got != 1)
+            break;
+    }
+    Close(fh);
+}
+
+#define MENU_COMPILE_RUN 0              /* blitz2.s menuadds: menu0 */
+
+static void run_job(char *id, char *src, char *console, char *panic)
+{
+    BPTR dir, old;
+    WORD ret;
+
+    edstub_strcpy(conname, console, PATHLEN);
+    con = 0;
+    panic_sent = panic_back = 0;
+    panic_ticks = 0;
+    while (panic && *panic >= '0' && *panic <= '9')
+        panic_ticks = panic_ticks * 10 + (ULONG)(*panic++ - '0');
+    if (!begin_job(id, src, 0, 0, &dir, &old))
+        goto out;
+    if (panic_ticks) {
+        panic_req = (struct timerequest *)CreateIORequest(edstub_req_port(), sizeof *panic_req);
+        if (panic_req && OpenDevice("timer.device", UNIT_VBLANK,
+                                    (struct IORequest *)panic_req, 0)) {
+            DeleteIORequest((struct IORequest *)panic_req);
+            panic_req = 0;
+        }
+        if (!panic_req) {
+            log_id("RESULT", "failed\tno timer for PANIC");
+            goto out;
+        }
+    }
+    edstub_openio_hook = openio_hook;
+    edstub_closeio_hook = closeio_hook;
+    edstub_getinput2_hook = getinput2_hook;
+    ret = call_menu(MENU_COMPILE_RUN);
+    edstub_openio_hook = 0;
+    edstub_closeio_hook = 0;
+    edstub_getinput2_hook = 0;
+    if (panic_req) {
+        if (panic_sent && !panic_back) {  /* not hit: aborted (or back, not taken) */
+            AbortIO((struct IORequest *)panic_req);
+            WaitIO((struct IORequest *)panic_req);
+        }
+        CloseDevice((struct IORequest *)panic_req);
+        DeleteIORequest((struct IORequest *)panic_req);
+        panic_req = 0;
+    }
+    if (errpending)
+        log_error(ret);
+    if (con) {                          /* closeio never came */
+        log_id("CONSOLE", "left open");
+        Close(con);
+        con = 0;
+    }
+    log_console();
+    {
+        LOG_BEGIN;
+
+        sbs(&L, "REQUESTERS\t");
+        sbs(&L, id);
+        sbc(&L, '\t');
+        sbn(&L, edstub_open_requests());
+        LOG_END;
+    }
+out:
+    end_job(dir, old);
 }
 
 /* menu=ID|ITEM|ANSWER: a menu item without a source */
@@ -648,6 +878,10 @@ void edstub_main(const char *arg)
             char *id = field(&v), *item = field(&v), *answer = field(&v);
 
             menu_job(id, item, answer);
+        } else if ((v = value(p, "run="))) {
+            char *id = field(&v), *src = field(&v), *con = field(&v), *panic = field(&v);
+
+            run_job(id, src, con, panic);
         }
     edstub_log("BATCH\tend");
     FreeMem(buf, size + 1);

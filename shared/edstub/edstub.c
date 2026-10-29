@@ -22,6 +22,9 @@ const char *(*edstub_ezfreq_hook)(const char *title);
 void (*edstub_error_hook)(const char *msg);
 void (*edstub_tokone_hook)(UBYTE *line);
 void (*edstub_abort_hook)(const char *why);
+void (*edstub_openio_hook)(void);
+void (*edstub_closeio_hook)(void);
+UWORD (*edstub_getinput2_hook)(void);
 char edstub_logname[EDSTUB_PATHLEN];
 
 void edstub_tomain(void);
@@ -384,8 +387,19 @@ void screenopen2_c(struct regs *r) { (void)r; }
 void detokallz_c(struct regs *r) { (void)r; }
 void tokall_c(struct regs *r) { (void)r; }
 void refgads_c(struct regs *r) { (void)r; }
-void openio_c(struct regs *r) { (void)r; }
-void closeio_c(struct regs *r) { (void)r; }
+void openio_c(struct regs *r)
+{
+    (void)r;
+    if (edstub_openio_hook)
+        edstub_openio_hook();
+}
+
+void closeio_c(struct regs *r)
+{
+    (void)r;
+    if (edstub_closeio_hook)
+        edstub_closeio_hook();
+}
 int edstub_busy;
 void pointeron_c(struct regs *r) { (void)r; edstub_busy = 0; }
 void sleepon_c(struct regs *r) { (void)r; edstub_busy = 1; }
@@ -423,9 +437,25 @@ void closereq_c(struct regs *r)
     popreq();
 }
 
+/* getinput2: the gadget the program's hook reports as hit (d7 = -1, d6 =
+   its id), else nothing (d7 = 0: STOP never hit) */
 void getinput2_c(struct regs *r)
 {
-    r->d[7] = 0;                        /* nothing there; STOP never hit */
+    UWORD id = edstub_getinput2_hook ? edstub_getinput2_hook() : 0;
+
+    r->d[7] = id ? (ULONG)-1 : 0;
+    if (id)
+        r->d[6] = id;
+}
+
+int edstub_open_requests(void)
+{
+    return reqdepth;
+}
+
+struct MsgPort *edstub_req_port(void)
+{
+    return winport;
 }
 
 /* getinput: answer the topmost requester.  An ENDGADGET closes it, like
