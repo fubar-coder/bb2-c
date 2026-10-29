@@ -417,3 +417,28 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   the CD are the ported state. With this the port is complete: original
   bugs may now be fixed (`CLAUDE.md`, "Do not fix original bugs"); the
   basis are the issues with the label `bug-orig`.
+
+## 4 The libraries of Red When Excited
+
+Decision of 2026-10-29: the library sources RWE released in September
+1999 (`archive/aminet/amibl2src/rwelibsrc/`, from `RWELibSourc.lha`;
+origin and license: `archive/README.md`) are ported – as libraries of
+their own for `blitz2:userlibs/<dir>/` (works since #2), next to the 2.10
+state; `acidlibs`/`deflibs` stay byte-identical. About 45 libraries
+(Reflective Images, Leading Edge Software, RWE and a few others), many in
+several versions.
+
+1. **Inventory** (`docs/rwelibs/`): per library the source files and
+   versions, author, library number, tokens; the matching binaries of the
+   CD (`EXTRAS/BLITZLIBS/RILIBS`, `BSS2/REDBLITZLIBS`, `…/OTHERLIBS`,
+   `docs/v2.10/libs.md` §3) and from that the version that is the
+   reference; number clashes with acidlibs/deflibs.
+2. **Tokens**: 18 of the 118 sources use tokens the list of blitz2 1.95
+   (`tests/data/ted-tokens.txt`) does not know – the token list for
+   reading them (teddetok, a readable `rwelibsrc` like `bblibsrc`).
+3. **Reference**: how the libraries were built from the Blitz sources
+   (`libmacs.bb`, `!libheader`), and whether a reference build is
+   possible here; otherwise the CD binaries.
+4. **Port** per library to C (`cmake/BlitzLibrary.cmake`), with the
+   checks of the acidlibs (`blitzlibcheck`, declarations, `asmcmp`,
+   emulator tests); output `build/<preset>/blitz2/userlibs/…`.
