@@ -313,7 +313,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     fails with "Can't Read File" or crashes without error checking, like
     any load error, no shape with arbitrary contents), #65 (ASL returns
     font file names of at most 30 characters, a name over 95 is not
-    reachable; input in the requester cannot be tested).
+    reachable; input in the requester cannot be tested), #133 (no
+    error raiser passes a number in d1, so Ern has no correct value; it
+    looks like a planned feature that was never carried out).
   - *Still open, test programs:*
     #14 (the "Not Enough Object Memory" path was not reached in the
     batch run, even with a 128 KB executable: to be found out how;
@@ -327,8 +329,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   - *Skipped in phase 2, reason in the issue:* #90/#91 (a program
     using blitzoslib does not end in the emulator, the original as
     well, see #335), #100 (needs several input events in one
-    input-handler call at controlled times), #133 (the correct value of
-    Ern is undefined, the issue itself asks for a design decision).
+    input-handler call at controlled times).
   - *Runner features:* other compiler options (buffer sizes; the corpus
     stub sets fixed ones) for #4, #57; creating residents for #34, #35,
     #36; start with program arguments in the corpus runner (#107,
