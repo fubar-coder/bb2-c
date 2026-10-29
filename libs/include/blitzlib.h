@@ -56,10 +56,19 @@
    - loops must not become memset/memcpy calls (also set by CMake),
    - linked with -nostdlib, so a call GCC still emits anyway (it may for
      large struct copies) is a link error, never a hidden dependency. */
-#if !defined(__clang__) && __STDC_HOSTED__
+/* BL_CODE_MODEL: the file is read by an IDE's code model, not compiled by
+   GCC - clangd (__clang__) and CLion, whose clangd engine takes GCC's
+   predefined macros (no __clang__) and defines __JETBRAINS_IDE__.  The
+   GCC-only constructs (register parameters, global register variables,
+   asm with operands clang cannot check) are left out there. */
+#if defined(__clang__) || defined(__JETBRAINS_IDE__)
+#define BL_CODE_MODEL 1
+#endif
+
+#if !defined(BL_CODE_MODEL) && __STDC_HOSTED__
 #error "compile Blitz libraries with -ffreestanding (see CMakeLists.txt)"
 #endif
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
 #pragma GCC optimize ("no-tree-loop-distribute-patterns")
 #endif
 
@@ -108,7 +117,7 @@
    which then points to the terminating 0).  Declared as GCC global
    register variables; every unit that includes this header must be
    compiled with -ffixed-a3 -ffixed-a4 -ffixed-a5. */
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
 register UBYTE *blitz_globals __asm("a5");
 register UBYTE *blitz_locals __asm("a4");
 register UBYTE *blitz_string __asm("a3");
@@ -120,7 +129,7 @@ extern UBYTE *blitz_globals, *blitz_locals, *blitz_string;
 /* register parameter: LONG a BL_REG(d0) = GCC's `LONG a __asm("d0")`.
    clang does not know register parameters (amigaos GCC extension), so
    for clangd the macro is empty. */
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
 #define BL_REG(r) __asm(#r)
 #else
 #define BL_REG(r)
@@ -383,7 +392,7 @@ struct bl_regs {
 #define BLITZ_ALIBJSR(tok, r) BL_JSR_(BL_TOKVAL(tok, 0), r)
 #define BLITZ_ALIBJSR_FORM(tok, form, r) BL_JSR_(BL_TOKVAL(tok, form), r)
 #define BLITZ_BLIBJSR(tok, r) BL_JSR_(BL_BTOKVAL(tok, 0), r)
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
 #define BL_JSR_(val, r) ({                                                  \
     register ULONG _d0 __asm("d0") = (r).d0;                                \
     register ULONG _d1 __asm("d1") = (r).d1;                                \
@@ -406,7 +415,7 @@ ULONG bl_jsr_clang(ULONG val, struct bl_regs *r);
    BLITZ_ALIBJSR; the callee may change every register except a3-a5/a7
    (a6 included), so all others are declared clobbered.  (added by the
    mathstr group: strings2lib, maxlenlib, floatquicklib, modlib) */
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
 #define BLITZ_BASEJSR(base, off, r) ({                                      \
     register ULONG _d0 __asm("d0") = (r).d0;                                \
     register ULONG _d1 __asm("d1") = (r).d1;                                \
@@ -440,7 +449,7 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
    changed; a2 (the compiler's argument stack) is kept like by every
    library routine (see notes/cmdlibs-port.md), a3-a5/a7 anyway.  (from
    vallib Int) */
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
 #define BLITZ_ALIBJSR_A6(tok, base, x) ({                                   \
     register ULONG _d0 __asm("d0") = (x);                                   \
     register const void *_a6 __asm("a6") = (base);                          \
@@ -455,7 +464,7 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
 /* ALibJsr with d0 = x, a2 = a2v (argument stack for the callee, e.g. a
    string length or type word) and a6 = a6v; result d0.  The callee may
    change every register except a3-a5/a7. */
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
 #define BLITZ_ALIBJSR_A2A6(tok, x, a2v, a6v) ({                             \
     register ULONG _d0 __asm("d0") = (ULONG)(x);                            \
     register const void *_a2 __asm("a2") = (a2v);                           \
@@ -473,7 +482,7 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
    like BLITZ_ALIBJSR, the result is `Scc` right after the call (0 or
    0xff), e.g. BLITZ_ALIBJSR_CCR(TOK_iffopen, r, "ne") = 0xff on error.
    (from audiolib/ilbmifflib IFFCALL/IFFJSR) */
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
 #define BLITZ_ALIBJSR_CCR(tok, r, cc) ({                                    \
     register ULONG _d0 __asm("d0") = (r).d0;                                \
     register ULONG _d1 __asm("d1") = (r).d1;                                \
@@ -493,7 +502,7 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
    *d0p, a0 = a0v (d1/a1 undefined), out *d0p = d0; result `Scc` after
    the call.  Same register contract as BLITZ_ALIBJSR.  (from ilbmifflib
    IFFJSR: BLITZ_ALIBJSR_CCR_D0A0(TOK_iffbyte, "eq", &d0, st) = ok) */
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
 #define BLITZ_ALIBJSR_CCR_D0A0(tok, cc, d0p, a0v) ({                        \
     register ULONG _d0 __asm("d0") = *(d0p);                                \
     register ULONG _d1 __asm("d1");                                         \
@@ -513,7 +522,7 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
    another library with its arguments in d0-d3 (BLITZ_ALIBJSR only passes
    d0/d1/a0/a1), e.g. spriteslib ShowSprite (sprite, x, y, channel).
    Result d0; the callee may change every register except a3-a5/a7. */
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
 #define BL_JSR_D4_(val, x0, x1, x2, x3) ({                                  \
     register ULONG _d0 __asm("d0") = (x0);                                  \
     register ULONG _d1 __asm("d1") = (x1);                                  \
@@ -689,7 +698,7 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
 
 /* Runtime error: `MOVE.l #message,d0:TRAP #0` - handled by the debugger
    (runtime error requester). */
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
 #define BLITZ_RUNERR(msg) do {                                              \
     register const char *_m __asm("d0") = (msg);                            \
     __asm volatile("trap #0" : : "d"(_m) : "memory");                       \

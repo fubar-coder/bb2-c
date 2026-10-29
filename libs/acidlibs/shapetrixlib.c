@@ -110,7 +110,7 @@ static void globfree(void *mem, ULONG size)
 /* shapeslib docookie with a3 = shape (a3/a4 kept around the call) */
 static void docookie(UBYTE *shape)
 {
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
     register UBYTE *_s __asm("a0") = shape;
 
     __asm volatile("movem.l a3-a4,-(sp)\n\t"

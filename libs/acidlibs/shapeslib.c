@@ -186,7 +186,7 @@ struct xregs {
 };
 
 /* ALibJsr tok with the registers of r; a3/a4/a6 are restored */
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
 #define XJSR(tok, r) do {                                                   \
     register struct xregs *_r __asm("a6") = &(r);                           \
     __asm volatile("movem.l a3-a4/a6,-(sp)\n\t"                             \

@@ -304,7 +304,7 @@ struct bregs {
 /* BLibJsr tok,form with the registers of r (d0-d4/a0-a2; a3 stays the
    page, as in the original; BCALL_A3 also loads r.a3); a3/a4 (and a6) are
    restored, d0-d7/a0-a2 may change */
-#ifndef __clang__
+#ifndef BL_CODE_MODEL
 #define BCALL_(tok, form, r, regs) do {                                     \
     register struct bregs *_r __asm("a6") = &(r);                           \
     __asm volatile("movem.l a3-a4/a6,-(sp)\n\t"                             \
