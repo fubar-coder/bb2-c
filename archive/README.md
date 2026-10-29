@@ -23,7 +23,7 @@ network, the normal build does not. The downloads end up in
 | Directory | Contents | Download | SHA-256 |
 |---|---|---|---|
 | `cd/ultimate-blitz-basic-2.1/` | the CD "Ultimate Blitz Basic 2.1" (1997, Acid Software), 4310 files | <https://archive.org/download/ultimate-blitz-basic-v2_1/Ultimate%20Blitz%20Basic%202.1%20%281997%29%28Acid%20Software%29.iso> | `205a16fa83403d61a785733cec2518bcc1fe5a6fae5b7da4da6329bd32c99166` |
-| `aminet/amibl2src/` | `amibl2src.lha`, in it `bb2src.zip` unpacked to `bb2src/` and `bblibsrc.lha` (Blitz sources of the libraries, tokenized, 209 files) to `bblibsrc/` | <https://aminet.net/dev/blitz/amibl2src.lha> | `b71e6445d0838b15416f5b55c5be422f07bd4fae5da5c065ce329042067628ff` |
+| `aminet/amibl2src/` | `amibl2src.lha`, in it `bb2src.zip` unpacked to `bb2src/` and `bblibsrc.lha` (Blitz sources of the libraries, tokenized, 209 files) to `bblibsrc/`, `RWELibSourc.lha` (Blitz sources of the libraries Red When Excited released in September 1999, tokenized, 287 files) to `rwelibsrc/` | <https://aminet.net/dev/blitz/amibl2src.lha> | `b71e6445d0838b15416f5b55c5be422f07bd4fae5da5c065ce329042067628ff` |
 
 * The CD has only ISO 9660 names (no Rock Ridge, no Joliet), hence upper
   case – they stay that way. The Linux kernel shows them in lower case
@@ -39,10 +39,18 @@ network, the normal build does not. The downloads end up in
   an archive that is already unpacked). The build target `bblibsrc` makes
   it readable as text (`build/<preset>/bblibsrc/NAME`, README, section
   "Readable library sources").
-* `RWELibSourc.lha` stays packed: later libraries by Red When Excited
-  (287 files), not part of blitz2 1.95 and its acidlibs, thus no
-  reference for this port; the token list of blitz2 1.95
-  (`tests/data/ted-tokens.txt`) does not know all of their tokens.
+* `rwelibsrc/` is the contents of the directory `Libs/` of
+  `RWELibSourc.lha` (marker `rwelibsrc.sha256`, as `bblibsrc/`): the
+  library sources Red When Excited released in September 1999
+  (`amibl2src.readme`: "RWElibsource this is part what RWE release on
+  September 1999"). About 45 libraries, many in several versions; by
+  their headers mostly Reflective Images (1994–1996), Leading Edge
+  Software, Red When Excited (Registry, LVCallHook) and a few others
+  (section "License situation"); not part of blitz2 2.10 and its
+  acidlibs. They are to be ported as libraries of their own (userlibs),
+  next to the 2.10 state. The token list of blitz2
+  1.95 (`tests/data/ted-tokens.txt`) does not know all of their tokens
+  (18 of the 118 sources).
 
 ## License situation of the originals
 
@@ -80,6 +88,16 @@ As of 2026-10-28, after research:
   in the project details on SourceForge. This project builds on the GPL
   state; the last statement corresponds in substance to its runtime
   exception.
+* **Library sources of Red When Excited** (`RWELibSourc.lha` in the same
+  Aminet archive): released by RWE in September 1999 together with the
+  Blitz 2 sources (`amibl2src.readme`: "Red When Excited (RWE) have
+  released their Blitz2 Source(incl. Superted) on their Homepage on
+  September 1999"); the readme's thanks to RWE and its GNU statement
+  cover them as they cover blitz2 and TED. Decision of 2026-10-29: taken
+  over on this basis (RWE had taken over Blitz Basic 2 and allowed the
+  release). Contained code of others: the Protracker 2.3A play routine in
+  `ptlib/` (its authors are not named in the source), `RTLib.bb` (the
+  ReqTools interface by Neil O'Rourke, 1994).
 * **Library manuals** of the time carry the note "Used with the
   permission of Acid Software" (e.g. AmiBlitz3
   `Docs/AcidLibs/SORTLIB.guide`).
