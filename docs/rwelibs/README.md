@@ -195,14 +195,19 @@ compile, **10 are byte-identical** to a binary [B]:
 So a reference build is possible: the binaries are blitz2 2.10 output of
 these sources. Two things were needed:
 
-* **`INCDIR` with a path breaks the include in blitz2 2.10**: `INCDIR
-  "BlitzLibs:"` + `XINCLUDE "LibMacs.bb"` gives "Can't open Include",
-  also with `INCLUDE`, also with a path without assign; with the INCDIR
-  line removed (relative include in the current directory) or with an
-  absolute `XINCLUDE "BlitzLibs:LibMacs.bb"` it compiles. No source of
-  the CD uses INCDIR with a path. For the reference build the INCDIR
-  lines are replaced by `;` (INCDIR generates no code). Cause: under
-  investigation – likely an original bug [B; cause open].
+* **`INCDIR` + an absolute nested include fails in blitz2 2.10**:
+  `INCDIR "BlitzLibs:"` + `XINCLUDE "LibMacs.bb"` gives "Can't open
+  Include" at the XINCLUDE line. INCDIR itself works; the failing open is
+  line 278 of `LIBMACS.BB`, `INCLUDE "blitzlibs:libnums.bb"`: `makeiname`
+  (`blitz2.s:11947`) always puts `incdir` in front of the name, also of
+  an absolute one (with `:`) – "BlitzLibs:blitzlibs:libnums.bb"; the
+  error is reported at the outer line. Besides, `incdir`
+  (`blitz2.s:14862`) is never reset: it carries over into the next
+  compile of the same blitz2 session. Both are original bugs; the C port
+  has them as well (experiments with both compilers in Amiberry,
+  `.cache/…/refbuild/`; no issue yet). No source of the CD uses INCDIR
+  with a path. For the reference build the INCDIR lines are replaced by
+  `;` (INCDIR generates no code) [B, S].
 * `sbra.res` (and other residents of RWE) exist nowhere; `ASMMACS.RES`
   serves for `sbra.res`.
 
@@ -326,8 +331,7 @@ repository).
    *Create Executable* with libmacs; 10 RWE sources build
    byte-identically with blitz2 2.10 (3.1). Open: the residents RWE
    used that exist nowhere (`lvo.res`, `custom.res`, `datatypes.res`,
-   `AHI.res`), the missing library numbers, and the cause of the INCDIR
-   problem.
+   `AHI.res`) and the missing library numbers.
 2. Which libraries belong together as one product (e.g. the three Blitz
    Bombers libraries, MapEd/MapShapes, Registry/support)?
 3. The libraries with literal test numbers (5, 8, 10, 19, 22, 39, 195,
