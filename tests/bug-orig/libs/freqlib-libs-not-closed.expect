@@ -1,0 +1,8 @@
+[run]
+cancel 0
+inject: rc=0
+inject: opencount: dos.library +0
+inject: opencount: intuition.library +0
+inject: opencount: graphics.library +0
+inject: click FQ/CANCEL: answered
+rc=0
