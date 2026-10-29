@@ -213,7 +213,7 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   (`wrap=@WBRUN@|...`) or a program (`runwrap=@WBRUN@|...`) like the
   Workbench and reports the current directory at the end, how often the
   process opened minus closed dos.library and files left in use (a Blitz program
-  has to use wbstartuplib, which answers the WBStartup message; what it
+  needs the command WBStartup, as from the real Workbench; what it
   prints is lost), `userlib.c` is a library for
   `blitz2:userlibs` (function `BugOrigUserLib`, token in
   `userlib.tokens`). tedstub also runs menu items

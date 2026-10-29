@@ -17,7 +17,8 @@
  *   inuse=PATH   after the end: is PATH still in use (an exclusive Lock
  *                fails with ERROR_OBJECT_IN_USE, e.g. a file left open)
  * The tool has to answer the WBStartup message (a Blitz program only
- * does with wbstartuplib), otherwise wbrun waits for ever.
+ * does with the command WBStartup; without it, the manual says, it
+ * crashes when run from the Workbench), otherwise wbrun waits for ever.
  *
  * Behind the end it writes what the options ask for (lines "wbrun: ..."):
  *   current dir at end: start | tool dir | project dir N | other
