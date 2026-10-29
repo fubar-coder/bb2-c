@@ -525,7 +525,11 @@ several versions.
    5. **First users** (started 2026-10-29: variant `rwe-1999`, userlib
       build `libs/userlibs/rwe/` with the list `RWE_LIBS`, target
       `rwelibsrc`; stage A of `docs/rwelibs/README.md` – the 15 libraries
-      with a byte-identical reference build – being ported): the RWE userlibs (their numbers: AmiBlitz3's
+      with a byte-identical reference build – being ported as real C,
+      decision 2026-10-29: declarations equal to the CD binary, behaviour
+      compared with it in Amiberry (`libs/tests/rwe/NAME.c`); a first
+      round made them byte-identical in assembler, kept on the agent
+      branches only as a reference): the RWE userlibs (their numbers: AmiBlitz3's
       libnums, the matching binaries, `#riarrayslib` = 7 from
       `defaultdbug50.bb2`; `docs/rwelibs/README.md` §3.1). No
       Protracker library: neither RI's ptlib nor a replacement around

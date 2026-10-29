@@ -5,8 +5,11 @@
 # RWE_LIBS: NAME|SOURCE|REFERENCE[|USES] per library - SOURCE in rwelibsrc
 # (the Blitz source the C file translates), REFERENCE the CD binary that
 # the reference build of SOURCE with blitz2 2.10 equals byte for byte
-# (docs/rwelibs/README.md 3.1); the C build must equal it as well (ctest
-# rwe_identical_NAME, skipped without the CD).  USES: CD binaries of other
+# (docs/rwelibs/README.md 3.1).  The C build is real C (assembler only
+# where needed), checked like the acidlibs: the declarations equal
+# REFERENCE's (ctest rwe_declarations_NAME, skipped without the CD), and
+# the behaviour is compared with REFERENCE in Amiberry (libs_emulator:
+# libs/tests/rwe/NAME.c, the property RWE_EMULATOR_LIBS lists obj|orig).  USES: CD binaries of other
 # RWE libraries whose tokens SOURCE has (ALibJsr calls), for reading it.
 # A library is built as soon as NAME.c exists.
 set(RWE_VARIANT rwe-1999)
@@ -92,9 +95,9 @@ foreach(l IN LISTS RWE_LIBS)
 	blitz_library(${RWE_VARIANT}-${name} VARIANT ${variant_dir} OBJ ${obj} ${name}.c
 		CHECK ${out}/acidlibs ${out}/deflibs)
 	list(APPEND objs ${obj})
-	add_test(NAME rwe_identical_${name} COMMAND ${CMAKE_COMMAND}
-		-DA=${obj} -DB=${cd}/${reference} -P ${PROJECT_SOURCE_DIR}/cmake/compare-or-skip.cmake)
-	set_tests_properties(rwe_identical_${name} PROPERTIES SKIP_RETURN_CODE 77)
+	add_test(NAME rwe_declarations_${name} COMMAND ${BLITZLIBCOMPARE} ${cd}/${reference} ${obj})
+	set_tests_properties(rwe_declarations_${name} PROPERTIES SKIP_RETURN_CODE 77)
+	set_property(GLOBAL APPEND PROPERTY RWE_EMULATOR_LIBS "${obj}|${cd}/${reference}")
 endforeach()
 if(readable)
 	add_custom_target(rwelibsrc ALL DEPENDS ${readable})

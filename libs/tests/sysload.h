@@ -81,24 +81,63 @@ static BOOL loadfile(struct lib *l, const char *path)
     return TRUE;
 }
 
-/* address of the code of entry `idx` (nullsubs only) */
-static UBYTE *entry_code(struct lib *l, int idx)
+/* address of the code of entry `idx`: a nullsub, or form `form` of a
+   statement/function/command (ALibJsr placeholder $8000|form); NULL for
+   a dumtoke, an AmigaOS call or a form the entry does not have */
+static UBYTE *entry_form(struct lib *l, int idx, int form)
 {
-    UBYTE *p = l->code + 0x30;
+    UBYTE *b = l->code, *p = b + 0x30;
     int i = 0;
     while (!(W(p) & 0x8000)) {
         UWORD kind = W(p);
+        UBYTE *code = NULL;
         p += 6;
-        if ((kind & 0xf) != 0)
-            return NULL;            /* only nullsub libs here */
-        while (W(p)) p += 4;
-        p += 2;
+        if (kind == 8) {                        /* dumtoke */
+            p += 6;
+            while (*p++) ;
+            while (*p++) ;
+            p = b + ((p - b + 1) & ~1);
+        } else if (kind & 4) {                  /* AmigaOS call */
+            p += 4;
+            while (*p++ != 0xff) ;
+            p = b + ((p - b + 1) & ~1);
+            p += 6;
+            while (*p++) ;
+            while (*p++) ;
+            p = b + ((p - b + 1) & ~1);
+        } else if ((kind & 0xf) == 0) {         /* nullsub */
+            while (W(p)) p += 4;
+            p += 2;
+            if (form == 0)
+                code = (UBYTE *)L(p + 4);
+            p += 12;
+        } else {                                /* forms, name block */
+            int f = 0;
+            while (W(p) != 0xffff) {
+                p += 2 + (W(p) & 0xff);
+                p = b + ((p - b + 1) & ~1);
+                while (W(p)) p += 4;
+                p += 2;
+                if (f++ == form)
+                    code = (UBYTE *)L(p + 4);
+                p += 12;
+            }
+            p += 2 + 6;                         /* $FFFF, next.l, num.w */
+            while (*p++) ;
+            while (*p++) ;
+            p = b + ((p - b + 1) & ~1);
+        }
         if (i == idx)
-            return (UBYTE *)L(p + 4);
-        p += 12;
+            return code;
         i++;
     }
     return NULL;
+}
+
+/* address of the code of entry `idx` (form 0; a nullsub) */
+static __attribute__((unused)) UBYTE *entry_code(struct lib *l, int idx)
+{
+    return entry_form(l, idx, 0);
 }
 
 /* optional stubs for tokens of libraries the test does not load (e.g. a
@@ -107,14 +146,19 @@ static UBYTE *entry_code(struct lib *l, int idx)
 struct stub { UWORD tok; APTR code; };
 static const struct stub *sysload_stubs;
 
-static UBYTE *find_token(struct set *s, UWORD tok)
+static UBYTE *find_token(struct set *s, UWORD tok, int form)
 {
     const struct stub *st;
     int i;
     for (i = 0; i < s->n; i++) {
         struct lib *l = &s->lib[i];
-        if (l->first <= tok && tok < l->last)
-            return entry_code(l, tok - l->first);
+        UWORD first = l->first, last = l->last;
+        if (!(l->num & 0x8000)) {               /* user library: libnum*128+1 */
+            first = (UWORD)((l->num << 7) + 1);
+            last = (UWORD)(first + 127);
+        }
+        if (first <= tok && tok < last)
+            return entry_form(l, tok - first, form);
     }
     for (st = sysload_stubs; st && st->code; st++)
         if (st->tok == tok)
@@ -142,7 +186,7 @@ static BOOL link_set(struct set *s)
         for (r = 0; r < l->nrelocs; r++) {
             ULONG *at = (ULONG *)(l->code + l->relocs[r]);
             if (*at & 0x80000000) {
-                UBYTE *to = find_token(s, (UWORD)*at);
+                UBYTE *to = find_token(s, (UWORD)*at, (int)((*at >> 16) & 0x3fff));
                 if (!to) {
                     printf("%s %s: token $%04lX not found\n", s->what, l->name,
                            (ULONG)(UWORD)*at);

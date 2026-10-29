@@ -34,6 +34,10 @@ int bugorig_crunchlib_crm_overlap_4gb(const char *dir);
 int bugorig_crunchlib_crm2_readtab(const char *dir);
 int bugorig_crunchlib_pp_readd1(const char *dir);
 int bugorig_debuglib_findoff_flags(const char *dir);
+// the tests of the RWE userlibs (rwe/NAME.c, generated list)
+#define RWE_TEST(n) int rwe_##n##_main(int argc, char **argv);
+#include "rwe_tests.inc"
+#undef RWE_TEST
 
 void bl_test_check(const char *what, int ok)
 {
@@ -104,6 +108,12 @@ TEST_CASE("systest_cmdlibs: memacclib sortlib mathtranslib utillib environlib", 
 {
     CHECK(run_systest(systest_cmdlibs_main) == 0);
 }
+
+// the RWE userlibs (libs/userlibs/rwe), each against its CD binary
+#define RWE_TEST(n) \
+    TEST_CASE("rwe " #n, "[rwe]") { CHECK(run_systest(rwe_##n##_main) == 0); }
+#include "rwe_tests.inc"
+#undef RWE_TEST
 
 // reproduced original bugs: fail as long as the C build reproduces them
 TEST_CASE("cliargs-parpath-cli", "[.bug-orig]")

@@ -2,9 +2,11 @@
 #   cmake -DAMIGA_RUN=... -DBIGLIB=... -DPROGRAM=libs_tests -DLIBS=DIR
 #         -DORIGINALS=acidlibs-of-the-CD -DWORK=DIR [-DTIMEOUT=SEC]
 #         [-DFILTER=snitch-filter] [-DNO_ORIGINALS=ON] [-DILLEGAL_WATCH=ON]
-#         -P emulator.cmake
+#         [-DUSERLIBS=OBJ|ORIG;...] -P emulator.cmake
 # TEST: (WORK/test) gets libs_tests, every DIR/NAME.obj and the library
-# with the same number from ORIGINALS as NAME.orig.  The exit status is
+# with the same number from ORIGINALS as NAME.orig; USERLIBS: further
+# library files OBJ (C build, as NAME.obj) with their original ORIG (as
+# NAME.orig), e.g. the RWE userlibs.  The exit status is
 # that of libs_tests; 77 (skipped) without the CD or the emulator.
 # NO_ORIGINALS: only the NAME.obj (BIGLIB and ORIGINALS not needed).
 # ILLEGAL_WATCH: Amiberry logs every access to unmapped memory
@@ -46,6 +48,21 @@ foreach(obj IN LISTS objs)
 		if(rc)
 			message(FATAL_ERROR "libs_emulator: no original of ${name}")
 		endif()
+	endif()
+endforeach()
+
+foreach(u IN LISTS USERLIBS)
+	string(REPLACE "|" ";" u "${u}")
+	list(GET u 0 obj)
+	list(GET u 1 orig)
+	get_filename_component(name ${obj} NAME_WE)
+	file(COPY_FILE ${obj} ${test}/${name}.obj)
+	if(NOT NO_ORIGINALS)
+		if(NOT EXISTS ${orig})
+			message(STATUS "libs_emulator: no ${orig} - skipped (fetch-originals)")
+			cmake_language(EXIT 77)
+		endif()
+		file(COPY_FILE ${orig} ${test}/${name}.orig)
 	endif()
 endforeach()
 

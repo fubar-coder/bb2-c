@@ -27,7 +27,27 @@ target_compile_options(snitch PRIVATE -fno-exceptions -fno-rtti)
 
 set(c_tests libtest systest systest_mathstr systest_runtime systest_system systest_cmdlibs)
 list(TRANSFORM c_tests APPEND .c OUTPUT_VARIABLE c_sources)
-add_executable(libs_tests libs_tests.cpp callregs.c bugorig.c ${c_sources})
+# the tests of the RWE userlibs: rwe/NAME.c (main renamed rwe_NAME_main;
+# argv[1] = the directory with NAME.obj and NAME.orig, see sysload.h),
+# one snitch test case each ("rwe NAME", tag [rwe]) through the generated
+# rwe_tests.inc; their library files come with USERLIBS below.  A test
+# needs its library libs/userlibs/rwe/NAME.c.
+file(GLOB rwe_all CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/rwe/*.c)
+set(rwe_tests)
+set(rwe_inc "")
+foreach(t IN LISTS rwe_all)
+	get_filename_component(n ${t} NAME_WE)
+	if(NOT EXISTS ${PROJECT_SOURCE_DIR}/libs/userlibs/rwe/${n}.c)
+		message(FATAL_ERROR "libs/tests/rwe/${n}.c: no libs/userlibs/rwe/${n}.c")
+	endif()
+	list(APPEND rwe_tests ${t})
+	set_source_files_properties(${t} PROPERTIES COMPILE_DEFINITIONS "main=rwe_${n}_main;BL_SNITCH")
+	string(APPEND rwe_inc "RWE_TEST(${n})\n")
+endforeach()
+file(CONFIGURE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/rwe_tests.inc CONTENT "${rwe_inc}" @ONLY)
+
+add_executable(libs_tests libs_tests.cpp callregs.c bugorig.c ${c_sources} ${rwe_tests})
+target_include_directories(libs_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 set_source_files_properties(bugorig.c PROPERTIES COMPILE_DEFINITIONS BL_SNITCH)
 set_target_properties(libs_tests PROPERTIES SUFFIX "" CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 target_compile_options(libs_tests PRIVATE -Wall -fomit-frame-pointer
@@ -40,14 +60,18 @@ endforeach()
 target_link_options(libs_tests PRIVATE -Wl,-u,___stkinit)
 target_link_libraries(libs_tests PRIVATE snitch::snitch)
 
-# in Amiberry: libs_tests with every acidlib of this build and its original
-# (label emulator; skipped without Amiberry or the CD)
+# in Amiberry: libs_tests with every acidlib of this build and its original,
+# and the RWE userlibs with theirs (label emulator; skipped without Amiberry
+# or the CD)
+get_property(rwe_userlibs GLOBAL PROPERTY RWE_EMULATOR_LIBS)
+string(REPLACE ";" "$<SEMICOLON>" rwe_userlibs "${rwe_userlibs}")
 set(LIBS_TESTS_TIMEOUT 120 CACHE STRING "libs_emulator: time limit of the emulator run (seconds)")
 add_test(NAME libs_emulator COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DBIGLIB=${BIGLIB}
 	-DPROGRAM=$<TARGET_FILE:libs_tests>
 	-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs
 	-DORIGINALS=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/ACIDLIBS
+	-DUSERLIBS=${rwe_userlibs}
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/emulator -DTIMEOUT=${LIBS_TESTS_TIMEOUT}
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
 set_tests_properties(libs_emulator PROPERTIES LABELS emulator SKIP_RETURN_CODE 77

@@ -60,8 +60,11 @@ source written for the variant come from its files (`blitztokens`,
 `build/amiga/variants/VARIANT/userlibs/DIR/NAME.obj` (for
 `blitz2:userlibs/DIR/`). `libs/userlibs/rwe/`: the libraries of Red When
 Excited's sources (`docs/rwelibs/README.md`), variant `rwe-1999`; the
-list `RWE_LIBS` there names per library the Blitz source and the CD binary
-the C build must equal (ctest `rwe_identical_NAME`, `rwe_numbers`). Target
+list `RWE_LIBS` there names per library the Blitz source and its CD
+binary. They are checked like the acidlibs: declarations equal to the
+binary's (ctest `rwe_declarations_NAME`, `rwe_numbers`), behaviour
+compared with it in Amiberry (`libs/tests/rwe/NAME.c`, test cases
+`rwe NAME` of `libs_emulator`). Target
 `rwelibsrc`: those Blitz sources as TED shows them, in
 `build/amiga/rwelibsrc/` (like `bblibsrc`).
 
