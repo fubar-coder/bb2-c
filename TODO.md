@@ -288,7 +288,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   repository; history of bb2 (plans, logs, reviews) unchanged in content,
   remaining bb2 mentions explained in `docs/README.md`.
 * **Tests for the issues labelled `needs-test`** (99 open issues at the
-  start, 19 open on 2026-10-29). A failing test is added with label
+  start, 3 open on 2026-10-29: #14, #26, #42). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,
   and `needs-test` is removed (allowed for these issues, 2026-10-28).
   - Done (2026-10-28), every test REPRODUCED and, except where noted in
@@ -331,10 +331,19 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     `GORNY3DLIB.BB2`, 127996 bytes) and one CD source of each of the 47
     compile errors of `blitz2-cd.tsv`), #26 (needs a free block of
     ≥ 256 MB).
-  - *Skipped in phase 2, reason in the issue:* #90/#91 (a program
-    using blitzoslib does not end in the emulator, the original as
-    well, see #335), #100 (needs several input events in one
-    input-handler call at controlled times).
+  - *Done 2026-10-29 by five agents in parallel* (worktrees, integrated
+    on main): residents (tedstub `resident=`, inject `pad`, sources as
+    test data `AREA/NAME.src`: #34, #35, #36); Compile & Run / PANIC
+    (tedstub `run=`, inject `createprocfail`: #24, #25); input (inject
+    `click=`, `doslocked`, `keys=`, `opencount=`, `cd`, `inuse=`: #100,
+    #154, #156, #157, #158); the serial remote end for bug-orig tests
+    (replies `N`, `S`: #252, #256, #258, #259); the cause of #335 (a
+    compiler bug, test added) and with it #90, #91. Found there: #338
+    (port: runtheprog did not load a4 with -fbaserel, Compile & Run never
+    started a program; fixed, the binary changed).
+  - *Open:* `ted_ab` case 01d-rt-maplib times out in the reference
+    configuration R5 (original TED and blitz2), with and without the fix
+    of #338 (2026-10-29); not investigated, whether it failed before.
   - *Runner features:* done: program arguments (`runargs=`, #107),
     the macro buffer of the default options (tedstub `macrobuf=`, used
     for #336), the start from the Workbench (`wbrun`: #19, #20, #306,
@@ -346,12 +355,8 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     Permit); a program needs the command WBStartup to run from the
     Workbench (manual), not a bug; lib_OpenCnt of dos.library is no
     measure in the emulator (VNCClip.supervisor opens and closes it in
-    the background), wbrun counts the calls of the process; open:
-    creating residents for #34, #35, #36;
-    Compile & Run / PANIC from the editor (#24, #25); GUI input in the
-    file requester (#154, #156–#158); a serial peer for unit > 0 and
-    pending writes (#252, #256, #258, #259). Plan: one feature after the
-    other, with its tests.
+    the background), wbrun counts the calls of the process; the
+    others see above.
   - *Not reproducible in the emulator:* #42 (a real 68010 with a moved
     VBR; Amiberry runs a 68020).
   - *Found during phase 2:* #333 (palettelib chunk walk: the port
@@ -359,7 +364,8 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     label `bug-port`, with an audit of the same pattern in 2dlib,
     polylib, linklistlib), #334 (medlib: a masked track does not
     advance the note pointer, original bug, test done), #335
-    (programs using blitzoslib hang at End, to investigate).
+    (programs using blitzoslib hang at End: a compiler bug, calcmaxs
+    before fixjsrs, test done).
 
 ## 3 Only once §1 is done
 
