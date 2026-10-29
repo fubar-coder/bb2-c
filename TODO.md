@@ -288,7 +288,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   repository; history of bb2 (plans, logs, reviews) unchanged in content,
   remaining bb2 mentions explained in `docs/README.md`.
 * **Tests for the issues labelled `needs-test`** (99 open issues at the
-  start, 20 left on 2026-10-29). A failing test is added with label
+  start, 19 left on 2026-10-29). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,
   and `needs-test` is removed (allowed for these issues, 2026-10-28).
   - Done (2026-10-28), every test REPRODUCED and, except where noted in
@@ -338,8 +338,8 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   - *Runner features:* done: program arguments (`runargs=`, #107),
     the macro buffer of the default options (tedstub `macrobuf=`, used
     for #336), the start from the Workbench (`wbrun`: #19, #20, #306,
-    #307; #21 not yet: the port ends in the start directory, libnix's
-    startup restores it - a deviation of the port, to be decided; from
+    #307, #21: the port ends in the start directory, libnix's startup
+    restores it - a deviation, documented (user decision 2026-10-29); from
     the CLI blitz2 does not change the directory, correctly); found
     there: #337 (wb_exit: Permit before blitz2 has returned, from the
     source); a program needs the command WBStartup to run from the
