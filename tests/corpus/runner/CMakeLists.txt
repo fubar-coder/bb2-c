@@ -30,3 +30,7 @@ add_test(NAME bugorig_verdict COMMAND test_bugorig)
 add_executable(cdrun cdrun.c)
 target_link_libraries(cdrun PRIVATE lib_corpus lib_sha256)
 target_compile_options(cdrun PRIVATE -Wall -Wextra)
+# its source= lines with broken input (no emulator needed)
+add_test(NAME cdrun_source COMMAND ${CMAKE_COMMAND} -DCDRUN=$<TARGET_FILE:cdrun>
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/cdrun_source
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/check-cdrun-source.cmake)

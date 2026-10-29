@@ -24,6 +24,12 @@
  *   parallel=N         workers (emulator sessions at the same time)
  *   stack=N            Stack for blitz2
  *   limit=N            only the first N tokenised sources (trial run)
+ *   source=REL|OUT     only these sources (REL as below cd=, any number of
+ *                      lines): the executable of each one that compiles is
+ *                      copied to OUT (OUTs are removed first); a REL that
+ *                      is not there is an error, one that does not compile
+ *                      gives exit status 1 (the reference build of the RWE
+ *                      sources, libs/userlibs/rwe/refbuild.cmake)
  *
  * Sources: sorted by path; text sources (no 0 byte) are not compiled
  * ("skipped").  A job runs with the source's .xtra (next to it) or the
@@ -38,8 +44,9 @@
  * with the trap #1 / #4 parameter blocks zeroed.  Compared: result, line,
  * message, size, sha256_masked.
  *
- * Exit status 0 = written (and no difference), 1 = differences, 77 = the
- * emulator or a file is missing (skipped), 2 = error.
+ * Exit status 0 = written (and no difference), 1 = differences or a
+ * source= that does not compile, 77 = the emulator or a file is missing
+ * (skipped), 2 = error.
  */
 #define _XOPEN_SOURCE 700       /* nftw, strdup, strndup */
 #include <ctype.h>
@@ -64,6 +71,8 @@ struct pass {
     char *blitz2, *deflibs, *acidlibs, *defaultdbug, *ted;
     char **assign_name, **assign_dir;
     size_t nassigns;
+    char **source_rel, **source_out;    /* source=REL|OUT */
+    size_t nsources;
     unsigned timeout, parallel, stack, limit;
 };
 
@@ -175,6 +184,24 @@ static int parse(const char *text, char *err, size_t errlen)
             }
             P.assign_name[P.nassigns] = name;
             P.assign_dir[P.nassigns++] = dir;
+            free(val);
+            continue;
+        }
+        if (!strcmp(key, "source")) {
+            const char *s = val;
+            char *rel = field(&s), *out = field(&s);
+
+            P.source_rel = realloc(P.source_rel, (P.nsources + 1) * sizeof(char *));
+            P.source_out = realloc(P.source_out, (P.nsources + 1) * sizeof(char *));
+            if (!rel || !*rel || !out || !*out || *s || !P.source_rel || !P.source_out) {
+                snprintf(err, errlen, "line %u: source=REL|OUT", no);
+                free(rel);
+                free(out);
+                free(val);
+                return -1;
+            }
+            P.source_rel[P.nsources] = rel;
+            P.source_out[P.nsources++] = out;
             free(val);
             continue;
         }
@@ -770,6 +797,72 @@ static int compare(const char *mine, FILE *log)
 
 /* ----------------------------------------------------------------- run */
 
+/* source=: only the listed sources stay in the job list (each must be
+   there) */
+static int select_sources(FILE *log)
+{
+    size_t i, k, n = 0;
+    int bad = 0;
+
+    for (k = 0; k < P.nsources; k++) {
+        for (i = 0; i < njobs && strcmp(jobs[i].rel, P.source_rel[k]); i++)
+            ;
+        if (i == njobs) {
+            fprintf(log, "cdrun: source %s is not below %s\n", P.source_rel[k], P.cd);
+            bad = 1;
+        }
+    }
+    for (i = 0; i < njobs; i++) {
+        for (k = 0; k < P.nsources && strcmp(jobs[i].rel, P.source_rel[k]); k++)
+            ;
+        if (k < P.nsources)
+            jobs[n++] = jobs[i];
+        else
+            free(jobs[i].rel);
+    }
+    njobs = n;
+    return bad ? -1 : 0;
+}
+
+/* source=: the executables of the listed sources to their OUT; 1 if one
+   did not compile */
+static int copy_sources(FILE *log)
+{
+    size_t i, k;
+    int rc = 0;
+
+    for (k = 0; k < P.nsources; k++) {
+        struct job *j = NULL;
+
+        for (i = 0; i < njobs; i++)
+            if (!strcmp(jobs[i].rel, P.source_rel[k]))
+                j = &jobs[i];
+        if (!j || !j->tok || !j->nresult || strcmp(j->result[0], "ok")) {
+            fprintf(log, "cdrun: %s: %s%s%s\n", P.source_rel[k],
+                    !j || !j->tok ? "not tokenised"
+                    : j->nresult ? j->result[0] : "nostart",
+                    j && j->nresult > 2 ? " " : "", j && j->nresult > 2 ? j->result[2] : "");
+            rc = 1;
+            continue;
+        }
+        {
+            char *exe = str_printf("%s/w%u/vol/out/%s", P.work, j->worker, j->id);
+            char *dir = strdup(P.source_out[k]), *slash = dir ? strrchr(dir, '/') : NULL;
+
+            if (slash)
+                *slash = 0;
+            if (!exe || !dir || (slash && mkdir_p(dir)) || copy_file(exe, P.source_out[k])) {
+                fprintf(log, "cdrun: cannot copy %s to %s\n", exe ? exe : "?",
+                        P.source_out[k]);
+                rc = 1;
+            }
+            free(exe);
+            free(dir);
+        }
+    }
+    return rc;
+}
+
 static int run(FILE *log)
 {
     const char *files[] = { P.blitz2, P.deflibs, P.acidlibs, P.defaultdbug, P.ted, P.tokens };
@@ -779,23 +872,30 @@ static int run(FILE *log)
     char err[300], *t;
     int rc = 2;
 
+    /* source=: no executable of an earlier run stays */
+    for (i = 0; i < P.nsources; i++)
+        remove(P.source_out[i]);
     for (i = 0; i < sizeof files / sizeof files[0]; i++)
         if (access(files[i], R_OK)) {
             fprintf(log, "cdrun: no %s - skipped\n", files[i]);
-            return 77;
+            rc = 77;
+            goto out;
         }
     if (access(P.cd, R_OK | X_OK)) {
         fprintf(log, "cdrun: no CD %s - skipped\n", P.cd);
-        return 77;
+        rc = 77;
+        goto out;
     }
     if (!e || !empty || load_tokens())
-        return 2;
+        goto out;
     cdlen = strlen(P.cd);
     while (cdlen > 1 && P.cd[cdlen - 1] == '/')
         P.cd[--cdlen] = 0;
     if (nftw(P.cd, collect, 16, FTW_PHYS))
-        return 2;
+        goto out;
     qsort(jobs, njobs, sizeof *jobs, by_rel);
+    if (P.nsources && select_sources(log))
+        goto out;
     /* ids, kinds, job directories; the tokenised ones spread over the
        workers */
     for (i = 0; i < njobs; i++) {
@@ -911,6 +1011,8 @@ static int run(FILE *log)
     }
     rc = P.reference ? compare(t, log) : 0;
     free(t);
+    if (P.nsources && rc != 2 && copy_sources(log))
+        rc = 1;
 out:
     for (w = 0; w < P.parallel; w++)
         if (e && e[w]) {
@@ -948,6 +1050,7 @@ int main(int argc, char **argv)
     }
     if (parse(text, err, sizeof err)) {
         fprintf(stderr, "cdrun: %s: %s\n", argv[1], err);
+        free(text);
         return 2;
     }
     free(text);

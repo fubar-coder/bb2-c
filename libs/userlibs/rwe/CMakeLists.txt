@@ -51,6 +51,11 @@ set(out ${BLITZ_VARIANTS_DIR}/${RWE_VARIANT})
 set(archive ${PROJECT_SOURCE_DIR}/archive)
 set(rwesrc ${PROJECT_SOURCE_DIR}/archive/aminet/amibl2src/rwelibsrc)
 
+# the residents the sources load that exist nowhere, from the NDK; the
+# reference build of the sources with blitz2 2.10
+include(${CMAKE_CURRENT_SOURCE_DIR}/residents.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/refbuild.cmake)
+
 file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
 set(names)
 foreach(l IN LISTS RWE_LIBS)
@@ -120,6 +125,3 @@ endif()
 if(objs)
 	add_test(NAME rwe_numbers COMMAND ${BIGLIB} check ${out}/acidlibs ${out}/deflibs ${objs})
 endif()
-
-# the residents the sources load that exist nowhere, from the NDK
-include(${CMAKE_CURRENT_SOURCE_DIR}/residents.cmake)

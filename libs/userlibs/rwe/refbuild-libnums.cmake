@@ -1,0 +1,62 @@
+# The LIBNUMS.BB of the reference build (refbuild.cmake): the CD's
+# EXTRAS/BLITZLIBS/LIBNUMS.BB with a #name=N line appended for every
+# LIB_name of the variant's libnums.h (only its own #defines, not those of
+# the header it includes - the CD's file has them).  A name the CD's file
+# has already must have the same number (it is not appended again).
+# The CD's file has a line longer than TED takes, so it does not go
+# through TED as text: the new lines are tokenised by tedtok (OUT.add,
+# from the text OUT.add.txt) and appended to its bytes; teddetok gives
+# its text (OUT.txt) for the names it has.
+#   cmake -DIN=LIBNUMS.BB -DLIBNUMS_H=... -DTEDDETOK=... -DTEDTOK=...
+#         -DTOKENS=ted-tokens.txt -DOUT=... -P refbuild-libnums.cmake
+foreach(v TEDDETOK TEDTOK TOKENS LIBNUMS_H OUT)
+	if("${${v}}" STREQUAL "")
+		message(FATAL_ERROR "refbuild-libnums.cmake: -D${v}=... missing")
+	endif()
+endforeach()
+if(NOT EXISTS "${IN}")
+	message(FATAL_ERROR "refbuild-libnums.cmake: no -DIN=${IN}")
+endif()
+# a tokenised file: every line ends with a 0 byte (also the last)
+file(SIZE ${IN} size)
+math(EXPR at "${size} - 1")
+file(READ ${IN} last OFFSET ${at} HEX)
+if(NOT last STREQUAL "00")
+	message(FATAL_ERROR "${IN}: not a tokenised source ending with a line end")
+endif()
+execute_process(COMMAND ${TEDDETOK} ${TOKENS} ${IN} ${OUT}.txt RESULT_VARIABLE rc)
+if(rc)
+	message(FATAL_ERROR "teddetok ${IN}: exit ${rc}")
+endif()
+file(READ ${OUT}.txt cd)
+string(TOLOWER "${cd}" cd_lower)
+file(STRINGS ${LIBNUMS_H} defines REGEX "^#define[ \t]+LIB_[A-Za-z0-9_]+[ \t]+[0-9]+")
+if(NOT defines)
+	message(FATAL_ERROR "${LIBNUMS_H}: no #define LIB_name N")
+endif()
+get_filename_component(h ${LIBNUMS_H} NAME)
+set(add "; the numbers of ${h} of the variant\n")
+foreach(d IN LISTS defines)
+	string(REGEX REPLACE "^#define[ \t]+LIB_([A-Za-z0-9_]+)[ \t]+([0-9]+).*" "\\1;\\2" nv "${d}")
+	list(GET nv 0 name)
+	list(GET nv 1 num)
+	string(TOLOWER "${name}" lname)
+	if(cd_lower MATCHES "(^|\n)[ \t]*#${lname}[ \t]*=[ \t]*([0-9]+)")
+		if(NOT CMAKE_MATCH_2 EQUAL num)
+			message(FATAL_ERROR "#${name}: ${CMAKE_MATCH_2} in ${IN}, ${num} in ${LIBNUMS_H}")
+		endif()
+		continue()
+	endif()
+	string(APPEND add "#${name}=${num}\n")
+endforeach()
+file(WRITE ${OUT}.add.txt "${add}")
+execute_process(COMMAND ${TEDTOK} ${TOKENS} ${OUT}.add.txt ${OUT}.add RESULT_VARIABLE rc)
+if(rc)
+	message(FATAL_ERROR "tedtok ${OUT}.add.txt: exit ${rc}")
+endif()
+execute_process(COMMAND ${CMAKE_COMMAND} -E cat ${IN} ${OUT}.add OUTPUT_FILE ${OUT}
+	RESULT_VARIABLE rc)
+if(rc)
+	file(REMOVE ${OUT})
+	message(FATAL_ERROR "joining ${IN} and ${OUT}.add: exit ${rc}")
+endif()
