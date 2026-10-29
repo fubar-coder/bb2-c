@@ -33,11 +33,11 @@ Variants (recognised by the generator from the code, otherwise abort):
 * **Without init/finit** (`doslib2` 249, `graphicslib2` 250): only further
   calls with the base of 252 or 254.
 
-File names = `LIB_` names from `libs/include/libnums.h`. Exceptions with a local
-`#define`: 225 `mathtranslib` (`LIB_mathtransoslib`; in `libnums.bb`
-`#mathtranslib` is later redefined to 192, the command lib), 219
-`colorwheellib` (there `#cdtvlib`, reserved), 2 `xprzmodemlib` (not present
-there). CMake targets are called `deflib_NAME` (otherwise collision with the
+File names = `LIB_` names from `libnums.h` (`libs/variants/bb2-2.10/`).
+Numbers not from `libnums.bb`, at the end of that file: 225 `mathtranslib`
+(`LIB_mathtransoslib`; in `libnums.bb` `#mathtranslib` is later redefined
+to 192, the command lib), 219 `colorwheellib` (there `#cdtvlib`,
+reserved), 2 `xprzmodemlib` (not present there). CMake targets are called `deflib_NAME` (otherwise collision with the
 command lib `mathtranslib`).
 
 ## BUG(orig): the init loop

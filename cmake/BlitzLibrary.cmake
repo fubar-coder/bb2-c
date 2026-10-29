@@ -1,9 +1,10 @@
 # blitz_library(NAME [VARIANT DIR] SOURCES...) - one Blitz Basic 2 library
 # from C
-#   VARIANT DIR   a variant (libs/variants/NAME): its directory comes first
-#                 in the include path, so its libnums.h (the library
-#                 numbers, blitzlib.h includes <libnums.h>) is taken
-#                 instead of libs/include/libnums.h
+#   VARIANT DIR   the variant (libs/variants/NAME, a test variant in
+#                 libs/tests/variants): its directory comes first in the
+#                 include path, so its libnums.h (the library numbers,
+#                 blitzlib.h includes <libnums.h>) is taken; default
+#                 BLITZ_DEFAULT_VARIANT
 #   libNAME.a     the library as static library
 #   NAME.linked   the link with symbols (for disassembly and comparisons)
 #   NAME.obj      the library file in Blitz 2 format (one code hunk, header
@@ -21,12 +22,23 @@
 set(BLITZLIB_LD ${CMAKE_CURRENT_LIST_DIR}/../libs/blitzlib.ld)
 set(BLITZLIB_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/../libs/include)
 
+# the variant of the libraries built to blitz2/acidlibs and deflibs (and
+# checked against the CD): libs/variants/NAME/libnums.h
+set(BLITZ_DEFAULT_VARIANT bb2-2.10 CACHE STRING
+	"variant of the libraries (libs/variants/NAME) built to blitz2/acidlibs, deflibs")
+get_filename_component(BLITZ_VARIANTS_SOURCE ${CMAKE_CURRENT_LIST_DIR}/../libs/variants ABSOLUTE)
+set(BLITZ_DEFAULT_VARIANT_DIR ${BLITZ_VARIANTS_SOURCE}/${BLITZ_DEFAULT_VARIANT})
+if(NOT EXISTS ${BLITZ_DEFAULT_VARIANT_DIR}/libnums.h)
+	message(FATAL_ERROR "BLITZ_DEFAULT_VARIANT ${BLITZ_DEFAULT_VARIANT}: no ${BLITZ_DEFAULT_VARIANT_DIR}/libnums.h")
+endif()
+
 function(blitz_library name)
 	cmake_parse_arguments(PARSE_ARGV 1 arg "" "VARIANT" "")
 	add_library(${name} STATIC ${arg_UNPARSED_ARGUMENTS})
-	if(arg_VARIANT)
-		target_include_directories(${name} BEFORE PUBLIC ${arg_VARIANT})
+	if(NOT arg_VARIANT)
+		set(arg_VARIANT ${BLITZ_DEFAULT_VARIANT_DIR})
 	endif()
+	target_include_directories(${name} BEFORE PUBLIC ${arg_VARIANT})
 	target_include_directories(${name} PUBLIC ${BLITZLIB_INCLUDE})
 	target_compile_options(${name} PRIVATE
 		-fomit-frame-pointer

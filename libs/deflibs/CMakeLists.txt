@@ -20,24 +20,23 @@ foreach(src ${sources})
 	endif()
 endforeach()
 
-# the libraries and deflibs of the default build (prefix "", variant "")
-# or of a variant; the join checks that no number of deflibs is also in
-# the acidlibs ACIDLIBS loaded with it
+# the libraries and deflibs of a variant (VARIANT: its directory; PREFIX ""
+# for the default variant); the join checks that no number of deflibs is
+# also in the acidlibs ACIDLIBS loaded with it
 function(deflibs_build prefix variant output acidlibs)
 	set(objs)
-	set(varg)
-	if(variant)
-		set(varg VARIANT ${variant})
-	endif()
 	foreach(name ${DEFLIBS_ORDER})
-		blitz_library(${prefix}deflib_${name} ${varg} ${name}.c)
+		blitz_library(${prefix}deflib_${name} VARIANT ${variant} ${name}.c)
 		list(APPEND objs ${CMAKE_CURRENT_BINARY_DIR}/${prefix}deflib_${name}.obj)
 	endforeach()
 	biglib_join(${prefix}deflibs ${output} ${objs} CHECK ${acidlibs})
 endfunction()
 
-deflibs_build("" "" ${BLITZ2_DIR}/deflibs ${BLITZ2_DIR}/acidlibs)
-foreach(v IN LISTS BLITZ_VARIANTS)
-	deflibs_build(${v}- ${PROJECT_SOURCE_DIR}/libs/variants/${v} ${BLITZ_VARIANTS_DIR}/${v}/deflibs
-		${BLITZ_VARIANTS_DIR}/${v}/acidlibs)
+deflibs_build("" ${BLITZ_DEFAULT_VARIANT_DIR} ${BLITZ2_DIR}/deflibs ${BLITZ2_DIR}/acidlibs)
+foreach(build IN LISTS BLITZ_VARIANT_BUILDS)
+	string(REPLACE "|" ";" build "${build}")
+	list(GET build 0 dir)
+	list(GET build 1 out)
+	get_filename_component(v ${dir} NAME)
+	deflibs_build(${v}- ${dir} ${out}/deflibs ${out}/acidlibs)
 endforeach()

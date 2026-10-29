@@ -76,3 +76,23 @@ foreach(t cliargs-parpath-cli crunch-implode-overread crunch-decrunch-corrupt
 	set_tests_properties(${name} PROPERTIES LABELS "emulator;bug-orig" SKIP_RETURN_CODE 77
 		TIMEOUT 300)
 endforeach()
+
+# the test variants (variants/selftest-*, built by ../CMakeLists.txt to
+# variants/NAME here): one with the numbers of bb2-2.10 unchanged must give
+# the files of the default build (if bb2-2.10 is the default variant); one
+# with fadelib (157) and inputoutputlib (164) moved to 3 and 4 must move
+# their tokens, and debuglib's call of inputoutputlib (#inputoutputlib<<7+4)
+# with them
+set(vcheck ${CMAKE_CURRENT_SOURCE_DIR}/variants/check.cmake)
+if(BLITZ_DEFAULT_VARIANT STREQUAL "bb2-2.10")
+	add_test(NAME variant_selftest_same COMMAND ${CMAKE_COMMAND} -DMODE=same
+		-DVARIANT=${CMAKE_CURRENT_BINARY_DIR}/variants/selftest-same -DDEFAULT=${BLITZ2_DIR}
+		-P ${vcheck})
+	add_test(NAME variant_selftest_renumbered COMMAND ${CMAKE_COMMAND} -DMODE=renumbered
+		-DVARIANT=${CMAKE_CURRENT_BINARY_DIR}/variants/selftest-renumbered
+		-DBLITZTOKENS=${BLITZTOKENS} -DBLITZ2=$<TARGET_FILE:blitz2>
+		-DTOKENS=${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt -DMAP=157:3$<SEMICOLON>164:4
+		-DOBJ=${CMAKE_BINARY_DIR}/libs/acidlibs/selftest-renumbered-debuglib.obj
+		-DCALL=80000204 -DOLDCALL=80005204
+		-DOUT=${CMAKE_CURRENT_BINARY_DIR}/variant_renumbered_tokens.txt -P ${vcheck})
+endif()

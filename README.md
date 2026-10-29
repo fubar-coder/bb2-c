@@ -41,17 +41,20 @@ Result in `build/amiga/blitz2/` – the contents of the `blitz2:` directory:
 
 Preset `amiga-debug`: the same code (`-Os`) with symbols, without strip.
 
-**Variants** of the libraries: every directory `libs/variants/NAME/` with
-a `libnums.h` builds the same libraries once more with its library
-numbers, to `build/amiga/variants/NAME/acidlibs` and `deflibs` (targets
-`NAME-acidlibs`, `NAME-deflibs`); the default build above stays as it is.
-A variant's `libnums.h` usually includes `../../include/libnums.h` and
-changes single numbers (`#undef`/`#define LIB_xxx`). Every number in the
-libraries comes from `libnums.h` – header, `!libs` references, the calls
-of other libraries (ALibJsr) – so a changed number moves all of them,
-and the tokens of a source written for the variant come from its files
-(`blitztokens`, `teddetok --blitz2 … --lib …`). The two variants there
-(`selftest-same`, `selftest-renumbered`) are checks (ctest `variant_*`).
+**Variants** of the libraries: a directory `libs/variants/NAME/` with a
+`libnums.h` (the library numbers) is a variant. The default variant
+(`-DBLITZ_DEFAULT_VARIANT=NAME`, default `bb2-2.10`: the numbers of the
+CD's `libnums.bb`) is built to `build/amiga/blitz2/acidlibs` and
+`deflibs` and checked against the CD; every other one to
+`build/amiga/variants/NAME/acidlibs` and `deflibs` (targets
+`NAME-acidlibs`, `NAME-deflibs`). A variant's `libnums.h` can include the
+one of another (`../bb2-2.10/libnums.h`) and change single numbers
+(`#undef`/`#define LIB_xxx`). Every number in the libraries comes from
+`libnums.h` – header, `!libs` references, the calls of other libraries
+(ALibJsr) – so a changed number moves all of them, and the tokens of a
+source written for the variant come from its files (`blitztokens`,
+`teddetok --blitz2 … --lib …`). Test variants are in
+`libs/tests/variants/` (ctest `variant_*`).
 
 ## Checks in the build
 
@@ -401,14 +404,15 @@ programs/blitz2/             compiler (src/: sections of blitz2.s + glue)
 programs/ted/                editor (src/: Amiga part, src/core/: OS-free
                              core)
 libs/include/                blitzlib.h & co. (conventions of the libraries)
+libs/variants/               the variants of the libraries (NAME/libnums.h:
+                             the library numbers; bb2-2.10 the default)
 libs/blitzlib.ld             linker script: one code hunk, header at offset 0
 libs/acidlibs/               one C file per library; prebuilt/: libraries
                              not yet ported, as originals (dhandlerlib)
 libs/deflibs/                one C file per AmigaOS library
-libs/variants/               variants of the libraries (NAME/libnums.h:
-                             other library numbers), check.cmake
 libs/tests/                  libs_tests: the libraries against their
-                             originals in the emulator (m68k, snitch)
+                             originals in the emulator (m68k, snitch);
+                             variants/: the test variants, check.cmake
 shared/filereq/              file requester of freqlib and TED (one source,
                              compiled by both with their own options)
 shared/edstub/               frame for programs that blitz2 loads as

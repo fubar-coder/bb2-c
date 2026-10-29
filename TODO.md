@@ -503,16 +503,19 @@ several versions.
       `BLITZ_LIBS`, tokens of ALibJsr/BLibJsr all through `LIB_xxx`
       of `libnums.h`).
    4. ~~**Variant build**~~ done (2026-10-29): `libs/variants/NAME/`
-      with its own `libnums.h` (usually the default one included and
-      single numbers changed); `acidlibs_build`/`deflibs_build` build the
-      same sources with that directory first in the include path
-      (`blitz_library … VARIANT`, `blitzlib.h` includes `<libnums.h>`)
-      to `build/<preset>/variants/NAME/acidlibs`, `deflibs`. The default
+      with its own `libnums.h` (it may include another one and change
+      single numbers); `libs/variants/bb2-2.10` (the former
+      `libs/include/libnums.h`) is the default variant
+      (`BLITZ_DEFAULT_VARIANT`), built to `blitz2/`; `acidlibs_build`/
+      `deflibs_build` build the same sources with the variant's
+      directory first in the include path (`blitz_library … VARIANT`,
+      `blitzlib.h` includes `<libnums.h>`), the other variants to
+      `build/<preset>/variants/NAME/acidlibs`, `deflibs`. The default
       build is byte-identical. Check in the build: `biglib check` in the
       join (no number twice in acidlibs, in deflibs with acidlibs),
       tests `biglib_check_clash` (must fail) and the unit test.
-      Variants as checks: `selftest-same` (byte-identical to the
-      default), `selftest-renumbered` (fadelib 157→3, inputoutputlib
+      Test variants (`libs/tests/variants/`): `selftest-same`
+      (byte-identical to bb2-2.10), `selftest-renumbered` (fadelib 157→3, inputoutputlib
       164→4: the tokens move, debuglib's call of inputoutputlib with
       them; `variant_selftest_renumbered`). Open: userlibs of a variant
       (with 4.5.5); further switches besides the numbers when a library
