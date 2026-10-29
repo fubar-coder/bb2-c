@@ -1,0 +1,3 @@
+[run]
+wbrun: dos.library open count +0
+rc=0
