@@ -119,7 +119,7 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   registers and memory (skipped without the CD; selection:
   `cmake ... -DFILTER="[mathstr]" -P libs/tests/emulator.cmake`). Among
   them the corpus
-  (`tests/corpus/`): `corpus` (67 test programs without runtime error
+  (`tests/corpus/`): `corpus` (68 test programs without runtime error
   checking), `corpus_runerr` (131 with), `corpus_req` (3 with blocking
   requesters, behind the lock `reqclosetest`),
   `corpus_serial` / `corpus_serial_runerr` (a program that talks over the
