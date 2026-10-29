@@ -29,8 +29,15 @@ of the left 8 columns of the 16-pixel cell – the whole glyph except for
 `%`, `m` and `^`, which are cut there –, best horizontal and vertical
 shift), 24 of 90 are identical
 (`$ ' ( ) * + , - . / : ; < > ] _ `` ` `` c e k n o s x`), many more differ
-in one row only (e.g. `a`: the last row). Own drawings are mainly `[`
-(an arrow), `^` (a trade mark sign), `=`, `M`, `y`, `Q`, `X` and `V`.
+in one row only (e.g. `a`: the last row). Drawn differently (31–61 %
+overlap, against 75–100 % for most others): `[` and `^` carry other
+symbols (an arrow, a "TM"); `=` has its bars in rows 2 and 4 (IBM 2 and
+5); `M` is 8 wide with a V from the corners (IBM: 7 wide, a closed top);
+`y` is built of diagonals like a `v` with a descender (IBM: a `u` with a
+hook); `X` has flatter diagonals meeting in 2 pixels; `V` narrows to a
+single pixel (IBM: straight stems for 5 rows); `Q` has the wider body of
+this font's `O` and its tail in the descender row. That the designers
+started from the IBM font is a conclusion from the pixels [Schluss].
 
 Two keys have other symbols: `[` (code 91) is a right-pointing arrow,
 `^` (code 94) a small "TM". The library's binary (BSS2 `RIFNSLIB.OBJ`,
