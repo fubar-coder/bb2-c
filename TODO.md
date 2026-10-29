@@ -254,17 +254,19 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   2026-10-29): since m68k-amigaos-gcc 16.2-rc21 (AmigaPorts/gcc#141)
   `__saveds` loads a4 again (`jsr ___restore_a4`); older versions accept
   it and generate nothing - wrong code without a warning. Steps:
-  1. a toolchain check in CMake: a test compile of a `__saveds` function
-     must call `___restore_a4`, else configure fails (with a test with
-     deliberately broken input: a compiler without it); README and
-     CLAUDE.md: gcc ≥ 16.2-rc21
-  2. `runtheprog` (blitz2 `main.c`, #338): `__saveds` instead of the
-     `runtheprog_a4` stub
+  1. ~~toolchain check~~ done (e6e3dbb): configure compiles
+     `cmake/saveds/good.c` and needs `jsr ___restore_a4`; test
+     `toolchain_saveds_broken`; README and CLAUDE.md: gcc ≥ 16.2-rc21
+  2. ~~`runtheprog`~~ done (3a572c3): `__saveds` instead of the
+     `runtheprog_a4` stub; blitz2 changed (intended), checked with
+     `ctest --preset all` and the bug-orig tests with Compile & Run
   3. the other `GLUE_LOAD_A4` places (blitz2 `glue.c`, `glue_direct.c`;
-     TED `glue.c`, `glue_start.c`) one by one: they are asm thunks that
-     convert the register convention, only the `lea` could go
-  The binaries change (`___restore_a4` instead of `lea ___a4_init,a4`):
-  an intended deviation, checked with `ctest --preset all`.
+     TED `glue.c`, `glue_start.c`): recommendation, not done - they are asm
+     thunks that save all registers with movem and pass the frame to C;
+     `__saveds` on the C function would only replace the one `lea`, save
+     a4 a second time and call `___restore_a4`; the thunk stays anyway.
+     `directdo` is entered from an exception (rte): the explicit `lea`
+     is the clearer form there. Open for a user decision.
 * **`-h` / `--help` for all callable programs** (request of
   2026-10-28): usage text to stdout, return 0; today none of them knows
   it. Affected: the host tools `tools/*` (amiga_run, asmcmp, biglib,
