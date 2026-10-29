@@ -579,6 +579,21 @@ static void decode_dumps(const char *rundir, const struct teddump_fonts *f, int 
     free(out);
 }
 
+/* teddrive marked the failure as #340 (TED's a0toname split the file name) */
+static int hit340(const struct run *r)
+{
+    char *res = NULL, *out = r->dir ? str_printf("%s/out/result", r->dir) : NULL;
+    size_t n;
+    int hit;
+
+    if (out)
+        res = (char *)read_file(out, &n);
+    free(out);
+    hit = res && strstr(res, "(#340") != NULL;
+    free(res);
+    return hit;
+}
+
 static const char *state_text(const struct run *r, char *buf, size_t len)
 {
     char *res = NULL, *out = r->dir ? str_printf("%s/out/result", r->dir) : NULL;
@@ -775,6 +790,19 @@ static int run(FILE *log)
                 int requeue = 0;
 
                 r->state = state[k];
+                /* the run hit #340 (TED's a0toname, depends on the memory
+                   layout), or was skipped because the test's first run (the
+                   reference) did: again, first in a new session */
+                for (f = 0; f < s->n && rs[f].test != r->r.test; f++)
+                    ;
+                if ((hit340(r) || (r->state == TEDAB_SKIPPED && hit340(&runs[list[s->first + f]])))
+                    && r->attempts < 3) {
+                    fprintf(log, "tedab: %s %s: #340 (a0toname), again\n", r->r.test->name,
+                            tedab_combo_names[r->r.combo]);
+                    next[nn++] = list[s->first + k];
+                    again++;
+                    continue;
+                }
                 if (r->state != TEDAB_NOTRUN) {
                     r->done = 1;
                     if (r->dir)

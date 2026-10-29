@@ -13,7 +13,8 @@
  * message buffers with their own reply port).  No input.device.
  *
  * While the command runs, intuition's CloseWindow is patched (a window
- * opened at the address of a closed one counts as new).  The patch is
+ * opened at the address of a closed one counts as new) and dos's Open
+ * (did TED open the file argument as it is, #340).  The patches are
  * removed at the end; a call still inside CloseWindow then returns into
  * teddrive, which waits 0.2 s before it ends (not a guarantee, TODO.md).
  *
@@ -76,7 +77,8 @@
  *                            out); its failure does not end the script
  *
  * A failing command writes "FAIL step N reason" into the result file at
- * once, then the rescue: as long as the program runs and its target window
+ * once (with " (#340: ...)" behind it if TED did not open the file argument as
+ * it is), then the rescue: as long as the program runs and its target window
  * becomes idle (at most 8 rounds, 15 s): main window -> menu QUIT, file
  * requester -> Cancel, TED requester -> gadget 1 if it is an ENDGADGET (yes
  * on the erase requester, OK on error/version requesters) else Esc.  If the
@@ -245,6 +247,33 @@ __asm__(
 );
 void td_closepatch(void);
 
+/* Open is patched too: did TED open the file argument as it is, or split
+   wrongly by a0toname (#340: it compares the caller's d0, blitz2's LoadSeg
+   result, instead of the characters; low byte '/' turns "dir/name.bb"
+   into "dir/name.b/b", ':' into no file at all)? */
+static const char *td_farg;     /* the last argument, NULL: none */
+static char td_fsplit[256];     /* its wrong split */
+volatile int td_fseen;          /* 1: opened as it is, 2: split wrongly */
+APTR td_oldopen;
+__asm__(
+"   .text\n"
+"   .even\n"
+"_td_openpatch:\n"             /* Open(d1 name, d2 mode) */
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  d1,-(sp)\n"
+"   jsr     _td_openc\n"
+"   addq.l  #4,sp\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   move.l  _td_oldopen,-(sp)\n"
+"   rts\n"
+);
+void td_openpatch(void);
+void td_openc(const char *name)
+{
+    if (!td_farg || !name) return;
+    if (!strcmp(name, td_farg)) td_fseen |= 1;
+    else if (!strcmp(name, td_fsplit)) td_fseen |= 2;
+}
 
 /* new windows of this tick, logged after UnlockIBase */
 static struct tdwin td_new[4];
@@ -1170,6 +1199,10 @@ static void td_main(void)
             }
             strcat(r, " ");
             strncat(r, td_why, 100);
+            if (td_farg && (td_fseen & 2))
+                strcat(r, " (#340: TED opened the file name split wrongly)");
+            else if (td_farg && strpbrk(td_farg, ":/") && td_seq && !(td_fseen & 1))
+                strcat(r, " (#340: TED did not open the file)");
             strcat(r, "\n");
             td_writefile("result", r);
             failed = 1;
@@ -1244,6 +1277,15 @@ int main(int argc, char **argv)
     }
     out = Output();
     td_log("teddrive start: ", td_cmd);
+    if (argc > 4 && argv[argc - 1][0] != '"' && strlen(argv[argc - 1]) >= 2
+        && strlen(argv[argc - 1]) < sizeof td_fsplit - 1) {
+        size_t n = strlen(argv[argc - 1]);
+        td_farg = argv[argc - 1];
+        memcpy(td_fsplit, td_farg, n - 1);
+        td_fsplit[n - 1] = '/';
+        td_fsplit[n] = td_farg[n - 1];
+        td_fsplit[n + 1] = 0;
+    }
     td_log("script: ", argv[1]);
     IntuitionBase = (struct IntuitionBase *)OpenLibrary((CONST_STRPTR)"intuition.library", 39);
     GfxBase = (struct GfxBase *)OpenLibrary((CONST_STRPTR)"graphics.library", 39);
@@ -1277,6 +1319,7 @@ int main(int argc, char **argv)
     }
     Forbid();
     td_oldclose = SetFunction((struct Library *)IntuitionBase, -72, (APTR)td_closepatch);
+    td_oldopen = SetFunction((struct Library *)DOSBase, -30, (APTR)td_openpatch);
     CacheClearU();
     Permit();
     rc = SystemTags((CONST_STRPTR)td_cmd, SYS_Input, Input(), SYS_Output, out, SYS_Asynch, FALSE,
@@ -1286,6 +1329,7 @@ int main(int argc, char **argv)
     Wait(1UL << td_donesig);        /* the driver ends (all its waits are bounded) */
     Forbid();
     SetFunction((struct Library *)IntuitionBase, -72, td_oldclose);
+    SetFunction((struct Library *)DOSBase, -30, td_oldopen);
     CacheClearU();
     Permit();
     Delay(10);                      /* a CloseWindow still inside returns to us */
