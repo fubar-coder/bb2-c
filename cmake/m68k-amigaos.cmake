@@ -2,7 +2,9 @@
 # the project; the top-level CMakeLists.txt uses it by default.
 #   cmake --preset amiga
 # AMIGA_TOOLCHAIN_PREFIX (-D or environment) defaults to the installation
-# of the m68k-amigaos-gcc found in PATH, else /opt/amiga.
+# of the m68k-amigaos-gcc found in PATH, else the first of /opt/amiga,
+# /opt/m68k-amigaos that has it (an IDE often starts CMake without the
+# shell's PATH).
 
 set(CMAKE_SYSTEM_NAME Generic)         # CMake has no AmigaOS platform module
 set(AMIGAOS ON)
@@ -19,6 +21,12 @@ if(NOT AMIGA_TOOLCHAIN_PREFIX)
 		get_filename_component(AMIGA_TOOLCHAIN_PREFIX ${_amiga_bin} DIRECTORY)
 	else()
 		set(AMIGA_TOOLCHAIN_PREFIX /opt/amiga)
+		foreach(_p /opt/amiga /opt/m68k-amigaos)
+			if(EXISTS ${_p}/bin/m68k-amigaos-gcc)
+				set(AMIGA_TOOLCHAIN_PREFIX ${_p})
+				break()
+			endif()
+		endforeach()
 	endif()
 endif()
 # Blitz 2 and TED ran on a plain 68000; the generated code and the glue

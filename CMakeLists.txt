@@ -4,6 +4,20 @@ cmake_minimum_required(VERSION 3.28)
 # libraries blitz2 reads (acidlibs, deflibs), built for AmigaOS with the
 # m68k-amigaos-gcc.  The m68k toolchain is the default, also for IDEs that
 # configure without a preset.
+#
+# BLITZ2_HOST=ON (preset native): only the host side (host/: the tools and
+# the host tests) with the native compiler, as a project of its own - the
+# m68k build has it as ExternalProject (build/<preset>/host), which an IDE
+# does not see; this profile is for working on, running and debugging the
+# host code in an IDE (README "IDE").
+option(BLITZ2_HOST "only the host side (tools, host tests) with the native compiler" OFF)
+if(BLITZ2_HOST)
+	cmake_minimum_required(VERSION 3.28)
+	project(blitzbasic2_native LANGUAGES C CXX)
+	enable_testing()
+	add_subdirectory(host)
+	return()
+endif()
 if(NOT CMAKE_TOOLCHAIN_FILE)
 	set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/m68k-amigaos.cmake)
 endif()

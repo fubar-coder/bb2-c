@@ -16,13 +16,24 @@
 			"binaryDir": "${sourceDir}/build/amiga-debug",
 			"toolchainFile": "${sourceDir}/cmake/m68k-amigaos.cmake",
 			"cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "CMAKE_C_FLAGS_DEBUG": "-Os -g" }
+		},
+		{
+			"name": "native",
+			"displayName": "Host side only (tools, host tests), native compiler, debug - for IDEs",
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/build/native",
+			"cacheVariables": { "BLITZ2_HOST": "ON", "CMAKE_BUILD_TYPE": "Debug" }
 		}
 	],
 	"buildPresets": [
 		{ "name": "amiga", "configurePreset": "amiga" },
-		{ "name": "amiga-debug", "configurePreset": "amiga-debug" }
+		{ "name": "amiga-debug", "configurePreset": "amiga-debug" },
+		{ "name": "native", "configurePreset": "native" }
 	],
 	"testPresets": [
+		{ "name": "native", "displayName": "Host tests of the native profile, without emulator",
+		  "configurePreset": "native", "output": { "outputOnFailure": true },
+		  "filter": { "exclude": { "label": "emulator" } } },
 		{ "name": "host", "displayName": "Tests on the host, without emulator",
 		  "configurePreset": "amiga", "output": { "outputOnFailure": true },
 		  "filter": { "exclude": { "label": "emulator|bug-orig" } } },

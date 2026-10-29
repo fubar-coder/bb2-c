@@ -68,6 +68,37 @@ compared with it in Amiberry (`libs/tests/rwe/NAME.c`, test cases
 `rwelibsrc`: those Blitz sources as TED shows them, in
 `build/amiga/rwelibsrc/` (like `bblibsrc`).
 
+## IDE (CLion and others)
+
+The build uses two compilers: the m68k-amigaos-gcc for everything that
+runs on the Amiga, the native compiler for the host side (`host/`: the
+tools the build uses and the host tests). One CMake build has one
+compiler per language, so the m68k build runs the host side as
+`ExternalProject` (`build/<preset>/host`) – an IDE does not see its
+targets. Hence two profiles from `CMakePresets.json`:
+
+* **`amiga`** (or `amiga-debug`): the real build. Editing, navigation and
+  building of blitz2, ted and the libraries; the m68k programs do not run
+  on the host – their tests run through CTest (the emulator tests in
+  Amiberry). Without a preset the m68k toolchain is the default too.
+* **`native`** (`BLITZ2_HOST=ON`, `build/native`, Debug): only the host
+  side as a project of its own, native compiler – every tool and host
+  test is a target of its own, to run and debug in the IDE; CTest lists
+  its 58 tests one by one (`ctest --preset native`).
+
+CLion reads the presets as CMake profiles (Settings → Build, Execution,
+Deployment → CMake: enable `amiga` and `native`; the profile CLion adds
+itself, `Debug` in `cmake-build-debug`, is not needed). The toolchain is
+found through `PATH`, else in `/opt/amiga` or `/opt/m68k-amigaos`, else
+set `AMIGA_TOOLCHAIN_PREFIX` (environment or cache). Tests are not
+projects of their own: they are targets of the same CMake project,
+registered with `add_test`, and run by CTest – in CLion through a CTest
+run configuration (labels as arguments, e.g. `-LE emulator`). The host
+tests use snitch (a Catch2-like framework), which CLion does not know
+as a test framework; they run as CTest tests and as plain programs.
+`.clangd` (generated) is for clangd-based editors; it holds the m68k
+options clangd does not know.
+
 ## Checks in the build
 
 The build checks its results itself; if a check fails, the result counts
