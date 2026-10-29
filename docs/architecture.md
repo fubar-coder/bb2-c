@@ -940,9 +940,10 @@ debug block:
 
 ## 8 Open points
 
-* Exact function of `dhandlerlib` (lib 1) and `defaultdbug`: only known from
-  `makeinits` (gets `&dseg`) and the lib header (init/finit, needs
-  DOS and graphics base) – not checked.
+* Exact function of `defaultdbug`: only known from `makeinits`. `dhandlerlib`
+  (lib 1) is ported and described in `docs/libs/cmdlibs-port.md`: it
+  starts the program at `dseg` as the debugger process and connects it
+  with debuglib.
 * Order `acidlibs`/`deflibs` when loading in v2.10: as in v1.95,
   acidlibs first (checked statically, `docs/v2.10/blitz2.md`).
 * `End` → `exitslib` → `endop`: flow inferred from init parameter and code,

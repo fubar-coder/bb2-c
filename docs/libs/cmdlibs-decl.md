@@ -150,4 +150,5 @@ the same acidlibs as the 2.1 CD. The sources are therefore roughly the
 * Code parts are not compared; for the port, as with the
   system libs: the binary is the reference (bb2 `tools/disasm.py`, not taken over).
 * Lib 1 (dhandlerlib): which number definition it was built with is
-  unclear (libnums.bb does not know `#dhandlerlib`).
+  unclear (libnums.bb does not know `#dhandlerlib`); the port takes 1 from
+  `LIB_dhandlerlib` (libnums.h, section "not in libnums.bb").

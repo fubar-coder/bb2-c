@@ -180,5 +180,8 @@
 #define LIB_mathtransoslib         225
 /* deflibs xprzmodem.library (#xprzlib=218 is reserved, unused) */
 #define LIB_xprzmodemlib             2
+/* dhandlerlib: `#dhandlerlib` is not defined in libnums.bb, the binary
+   has 1 (blitz2.s: dhandlerlib=1) */
+#define LIB_dhandlerlib              1
 
 #endif

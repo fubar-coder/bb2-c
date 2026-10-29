@@ -1,8 +1,6 @@
 # blitz2:acidlibs - the command libraries, one C file each (NAME.c ->
 # NAME.obj), joined in the order of the original file (blitz2.s loads the
-# libraries in file order).  A library without C source comes from
-# prebuilt/NAME.obj: dhandlerlib (lib 1) is the original, taken from the CD's
-# acidlibs, until it is ported.
+# libraries in file order).
 set(ACIDLIBS_ORDER
 	animlib arexxlib audiolib banklib asllib gtlib bblitlib bitmaplib
 	blitlib blitzcoplib blitzkeyslib blitzoslib brexxlib cliargslib collslib
@@ -30,20 +28,17 @@ endforeach()
 function(acidlibs_build prefix variant output)
 	set(objs)
 	foreach(name ${ACIDLIBS_ORDER})
-		if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.c)
-			# a variant's library files in variants/ (not next to the default
-			# ones: libs_emulator takes every NAME.obj of this directory)
-			set(obj ${CMAKE_CURRENT_BINARY_DIR}/${name}.obj)
-			if(prefix)
-				set(obj ${CMAKE_CURRENT_BINARY_DIR}/variants/${prefix}${name}.obj)
-			endif()
-			blitz_library(${prefix}${name} VARIANT ${variant} OBJ ${obj} ${name}.c)
-			list(APPEND objs ${obj})
-		elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/prebuilt/${name}.obj)
-			list(APPEND objs ${CMAKE_CURRENT_SOURCE_DIR}/prebuilt/${name}.obj)
-		else()
-			message(FATAL_ERROR "acidlibs: neither ${name}.c nor prebuilt/${name}.obj")
+		if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.c)
+			message(FATAL_ERROR "acidlibs: no ${name}.c")
 		endif()
+		# a variant's library files in variants/ (not next to the default
+		# ones: libs_emulator takes every NAME.obj of this directory)
+		set(obj ${CMAKE_CURRENT_BINARY_DIR}/${name}.obj)
+		if(prefix)
+			set(obj ${CMAKE_CURRENT_BINARY_DIR}/variants/${prefix}${name}.obj)
+		endif()
+		blitz_library(${prefix}${name} VARIANT ${variant} OBJ ${obj} ${name}.c)
+		list(APPEND objs ${obj})
 	endforeach()
 
 	# freqlib: the file requester core shared with TED, compiled here with
@@ -63,18 +58,13 @@ foreach(build IN LISTS BLITZ_VARIANT_BUILDS)
 	acidlibs_build(${v}- ${dir} ${out}/acidlibs)
 endforeach()
 
-# the prebuilt libraries are not built here: checked by ctest
-file(GLOB prebuilt CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/prebuilt/*.obj)
-if(prebuilt)
-	add_test(NAME prebuilt_acidlibs COMMAND ${BLITZLIBCHECK} ${prebuilt})
-endif()
-
 # asm checks: the routines that stay assembler, compared with the original
 # libraries of the CD (BLITZ2/ACIDLIBS, by library number) instruction by
 # instruction (tools/asmcmp with the toolchain's objdump; skipped without
 # the CD).  wbstartuplib, intlib and switchlib are C (intlib's only
 # assembler is the `Dc $a001` prefixes, checked by declarations_acidlibs),
-# so only runerrlib, debuglib and memacclib have routines here.  debuglib's
+# so only runerrlib, debuglib, dhandlerlib and memacclib have routines
+# here.  debuglib's
 # handleflags state machine (and executestate behind it) is left out: it
 # is being rewritten in C.
 # Arguments NAME:ORIGADDR:CSYMBOL:COUNT; routines without a global symbol of
@@ -121,6 +111,18 @@ asm_check(debuglib 64060
 	dirdone:a10:doutx+-5a:21
 	douttab:a6c:douthandler+-8:2
 	docall:bd2:docall:3)
+
+# dhandlerlib: all code is assembler (the process segment template
+# mystart with off_1/off_2, the ltable stubs, init/finit, the VBlank
+# server check_c).  Only _codeinit/_codefinit are global:
+#   mystart code = codeinit-$94, l0 = codeinit-$4e, check_c = codeinit+$90
+#   codefinit includes the trailing MOVEQ #0,d0:RTS (program end)
+asm_check(dhandlerlib 1
+	mystart:9c:codeinit+-94:7
+	ltable_stubs:e2:codeinit+-4e:19
+	codeinit:130:codeinit:35
+	check_c:1c0:codeinit+90:18
+	codefinit:20a:codefinit:21)
 
 # memacclib: Call (JMP with every register passed through).  The inline
 # routines of mathtranslib are compared byte by byte in the emulator tests

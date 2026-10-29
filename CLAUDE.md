@@ -88,8 +88,8 @@ ctest --preset emulator                                # tests in Amiberry
   both sides (`shared/`) is compiled by each side itself, with its own
   environment header (`filereq_env.h`).
 * `libs/acidlibs` is joined in the order of the original file
-  (`ACIDLIBS_ORDER`); `prebuilt/` contains originals that are not ported
-  yet (`dhandlerlib`).
+  (`ACIDLIBS_ORDER`); every library is a C file (no prebuilt originals
+  any more; the originals for comparison come from the CD).
 
 ## License
 

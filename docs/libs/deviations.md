@@ -68,6 +68,7 @@ documented here.
 | blitlib BlitColl Amiga (blitlib.c:323) | upper word of d0 = leftover from DisownBlitter | 0 | **T** | register leftover of the OS (undefined); #word function, not observable |
 | blitzcoplib CustomCop (blitzcoplib.c:56) | a2 decremented by 4 | unchanged | **B** | convention |
 | blitzkeyslib | – | no deviation (DIFF-free; binary has 6 more unused bytes) | – | – |
+| dhandlerlib | – | no deviation (byte-identical to the CD's library, relocation table included) | – | – |
 | displaylib a2 (displaylib.c:50) | a2 decremented as argument stack | unchanged | **B** | convention |
 | displaylib error jumps (displaylib.c:50) | all errors: Bcc from normal code into the error check area | via JSR (one more return address on the stack) | **T** | like animlib; same target, only stack contents at the trap |
 | displaylib table indices (displaylib.c:50) | sprite mode > 5, mode table beyond resolution 2 / fetch 3, doublescan > 6 read the lib's own code | read other data | **T** | memory layout; only with invalid values |
@@ -177,7 +178,8 @@ effective section of each `BLITZ_ERRCHK` function (as of c4a736d):
 
 All command libraries are ported (c4a736d); the tables also contain
 scrolllib, 2dlib, polylib (S12) and gameiolib, blitzkeyslib, animlib,
-blitzcoplib, displaylib (S13).
+blitzcoplib, displaylib (S13); dhandlerlib (lib 1), the last original
+binary in acidlibs, followed on 2026-10-29.
 
 ## Summary
 

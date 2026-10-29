@@ -131,12 +131,11 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
 ```
 
 * **host:** the tools with deliberately broken inputs, the host tests of
-  the TED core (compiled natively, snitch), the check of the prebuilt
-  libraries, the declaration comparison (`declarations_*`: header,
+  the TED core (compiled natively, snitch), the declaration comparison (`declarations_*`: header,
   entries, `!libfin` of every built library against the original of the
   CD, same libraries in the same order; `tools/blitzlibcompare`) and the
   instruction comparison (`asmcmp_*`: the routines of runerrlib, debuglib,
-  memacclib that remained in assembler against the originals of the CD,
+  dhandlerlib, memacclib that remained in assembler against the originals of the CD,
   with `objdump` of the toolchain; `tools/asmcmp`). Both comparisons are
   skipped without the CD. The token list (`tokens_*`: `tools/blitztokens`
   makes it from a compiler and its libraries the way blitz2 builds it for
@@ -419,8 +418,7 @@ libs/variants/               the variants of the libraries (NAME/libnums.h:
 libs/userlibs/               userlibs of a variant (rwe/: Red When Excited,
                              variant rwe-1999)
 libs/blitzlib.ld             linker script: one code hunk, header at offset 0
-libs/acidlibs/               one C file per library; prebuilt/: libraries
-                             not yet ported, as originals (dhandlerlib)
+libs/acidlibs/               one C file per library
 libs/deflibs/                one C file per AmigaOS library
 libs/tests/                  libs_tests: the libraries against their
                              originals in the emulator (m68k, snitch);

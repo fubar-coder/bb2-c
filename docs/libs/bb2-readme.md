@@ -249,6 +249,7 @@ checked twice:
 | 94 | animlib | LoadAnim InitAnim NextFrame Frames | identical | t162, t168 | inline Frames; err1–7 stubs |
 | 144 | blitzcoplib | Slice CopLoc CustomCop Show ShowF ShowB CopLen ColSplit ShowBlitz FreeSlices DisplayOff DisplayOn SetBPLCON0 SetBLWait (binary without Help) | identical | t163, t166 | $A001 heads |
 | 143 | displaylib | InitCopList CreateDisplay DisplayBitMap … DisplayGenlock (24) | identical | t164, t167, t169 | error stubs, _checkcoplist |
+| 1 | dhandlerlib | – (init/finit: the debugger process, Ctrl-LAlt-C) | identical (lib number `LIB_dhandlerlib`) | `asmcmp_dhandlerlib`; the binary is byte-identical to the original | everything but the header and token table (process segment template, relocation order) |
 
 Findings and `BUG(orig)` peculiarities per library: [cmdlibs-port.md](cmdlibs-port.md).
 All deviations of the C versions from the originals (DIFF, conventions,

@@ -282,8 +282,10 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   reference and stays with the fresh start; the history of the files is
   not taken over from bb2 (it remains there). Remote: `origin`
   (GitHub `fubar-coder/bb2-c`).
-* **Port `dhandlerlib` (lib 1):** until then `prebuilt/dhandlerlib.obj`
-  (original of the CD).
+* ~~**Port `dhandlerlib` (lib 1)**~~ done (2026-10-29):
+  `libs/acidlibs/dhandlerlib.c`, byte-identical to the CD's library
+  (header in C, the rest assembler: process segment template, relocation
+  order; `asmcmp_dhandlerlib`); `prebuilt/` removed.
 * **Warnings of `blitzlibcheck`:** 73 warnings (references into the error
   check area, as with `mkblitzlib.py`) on every rebuild of the affected
   libraries – if needed, behind an option.

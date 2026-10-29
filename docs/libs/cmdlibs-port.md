@@ -340,6 +340,60 @@ C, declarations identical to the binary (source additionally has `Help`, CNIF #d
 
 C, declarations identical, binary = source. Object "CopList" (128 bytes), mode values from the table (resolution × fetch, 64 bytes per entry). BUG(orig): all errors are jumps from normal code into the error check area (reproduced via JSR); init writes the mysprite address into the SPR0POS/CTL data; DisplayBitMap without x,y stores the caller's d2/d3 in x0/x1; DBF/word arithmetic, CMPA.l signed; attached sprites with an odd channel number overwrite memory; CustomSprites loads via `!libs{#spriteslib,$1181}` the sprite object with the number from d1 (= CCOffset) – the compiler shifts d1 by the object shift (×16) in the process, CCOffset acts 16-fold and must be a valid sprite number (maximum check); without debugger the overflow leads via the jump into the error check area to somewhere (found in the test: the original happened to continue, C hung); a3 stays on bp1 or the last CopList. DIFF: a2 unchanged, table indices beyond the data (the original reads its own code). Test: t164 (all commands except CreateDisplay), t167, t169. Not tested: CreateDisplay (Blitz mode).
 
+## 1 dhandlerlib
+
+Binary = source; the C build (`libs/acidlibs/dhandlerlib.c`) is
+**byte-identical** to the CD's library, relocation table included. No
+tokens, only init/finit (`!libs #doslib,#la6,#graphicslib,#ld6`). The
+number is not in libnums.bb; the binary has 1 (`LIB_dhandlerlib` in the
+section "not in libnums.bb" of `libnums.h`, like blitz2.s
+`dhandlerlib=1`). blitz2 uses it together with debuglib when a program
+is RUN from the editor (not for executables: rundebuglib).
+
+* **init** gets d0 = the BPTR of the debugger program (blitz2 makeinits
+  `move.l #dseg,d0`; `bblibsrc/dhandler.bb2` is such a program) and
+  starts it as the process "Blitz ][ Debug Proc" (CreateProc, stack 4096):
+  the segment is a copy (memlib globalloc) of the template
+  `mystart`..`mystart_f`, patched at `off_1` (address of `ltable`, put
+  into the process's `tc_UserData`) and `off_2` (address of `progadd` =
+  BPTR*4+4, the debugger's code). `ltable` = 9 stubs l0..l8 that call
+  debuglib $D500..$D508; l2 (dosethandler) also keeps a0 = the
+  debugger's handler table. init waits (WaitTOF) until l2 was called,
+  then installs `check_c` as VBlank server (intlib SetInt, $8035):
+  Ctrl ($63), LAlt ($64) and C ($33) pressed together call debuglib
+  dostop ($D501), once per key press (`laststop`).
+* **finit** removes the server, calls the cleanup handler (handler table
+  +20), waits (WaitTOF) for `taskdone` (set by the process after the
+  debugger's code returned) and frees the segment (globfree).
+* **Assembler:** everything but the header and the token table (the
+  libmacs macros in C). Reasons: the template is copied and patched at
+  fixed offsets; init/finit consist only of calls with their own register
+  contracts (EXG d6,a6, a5/a6 kept around the cleanup handler); and byte
+  identity of the relocation table: Blitz 2 wrote the references to its
+  own labels in ascending order (the last ALibJsr, globfree in finit,
+  among them) and then the other ALibJsr placeholders in descending
+  order. gas groups relocations by target (section, then external
+  symbol) in the order they are made and ld keeps that order, so code and
+  data are in `.blitzlib.head` with the token table (otherwise the
+  header's references to the code would come before those to the table
+  entries), the globfree placeholder is relative to a label at offset 0
+  of that section, and the other placeholders are absolute operands with
+  explicit `.reloc` directives against `_blitz_tok`, in descending order.
+  The trailing `MOVEQ #0,d0:RTS` is the end code Blitz 2 appends to every
+  program. `asmcmp_dhandlerlib` compares all code with the CD.
+* **BUG(orig):** the copied process code is started without a cache
+  flush (CacheClearU; 68020+ instruction cache, 68040/060 copyback);
+  finit frees the segment as soon as `taskdone` is set, while the process
+  still has to execute the RTS behind it (small window, finit looks only
+  after a WaitTOF). Not bugs: the unchecked globalloc result (memlib ends
+  the program with "Out of Memory!"), and check_c's return without
+  `MOVEQ #0,d0` when the keys stay pressed (Z is set by `TST laststop`,
+  the server chain goes on).
+* **Tests:** none in `libs/tests`: original against C build compares
+  identical bytes, and a functional test needs a debugger program as
+  seglist, debuglib with its trap vectors, intlib's VBlank server and a
+  running process - out of proportion for a byte-identical binary.
+
 ## Incidentally
 
 * `libs/tests/systest_system.c`: the log entry "trap N handler" contained the
