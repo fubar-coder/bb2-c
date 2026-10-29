@@ -61,4 +61,11 @@ set_tests_properties(tokens_broken PROPERTIES WILL_FAIL TRUE)
 add_test(NAME biglib_check_clash COMMAND ${BIGLIB} check ${BLITZ2_DIR}/acidlibs
 	${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj)
 set_tests_properties(biglib_check_clash PROPERTIES WILL_FAIL TRUE)
+# blitzlibcompare on single library files (the RWE userlibs against their
+# originals): a file against itself, and two different libraries (must fail)
+add_test(NAME blitzlibcompare_single COMMAND ${BLITZLIBCOMPARE}
+	${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj ${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj)
+add_test(NAME blitzlibcompare_single_differs COMMAND ${BLITZLIBCOMPARE}
+	${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj ${CMAKE_CURRENT_BINARY_DIR}/acidlibs/trackerlib.obj)
+set_tests_properties(blitzlibcompare_single_differs PROPERTIES WILL_FAIL TRUE)
 add_subdirectory(tests)

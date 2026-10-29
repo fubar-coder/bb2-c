@@ -4,6 +4,9 @@
  *
  *   blitzlibcompare ORIGINAL NEW          e.g. CD BLITZ2/DEFLIBS and deflibs
  *
+ * ORIGINAL and NEW may also be single library files (a userlib against
+ * its original).
+ *
  * Both must hold the same libraries in the same order (the order of the
  * compiler's token list).  Prints the differences and a summary; exit
  * status 1 if there are any, 77 (skipped) if ORIGINAL does not exist (the
@@ -41,7 +44,13 @@ static int read_biglib(const char *path, struct biglibfile *b)
         return -1;
     }
     fclose(f);
-    if (biglib_read(b->buf, (size_t)size, &b->e, &b->n, err, sizeof err)) {
+    if (size >= 4 && be32(b->buf) == HUNK_HEADER) {     /* one library file */
+        if (!(b->e = malloc(sizeof *b->e)))
+            return -1;
+        b->e->data = b->buf;
+        b->e->size = (uint32_t)size;
+        b->n = 1;
+    } else if (biglib_read(b->buf, (size_t)size, &b->e, &b->n, err, sizeof err)) {
         fprintf(stderr, "blitzlibcompare: %s: %s\n", path, err);
         return -1;
     }
@@ -75,7 +84,8 @@ static void free_biglib(struct biglibfile *b)
 
 static const char usage[] =
     "usage: blitzlibcompare ORIGINAL NEW\n"
-    "  the declarations of every library of a BigLib file against the original\n";
+    "  the declarations of every library of a BigLib file (or of a library\n"
+    "  file) against the original\n";
 
 int main(int argc, char **argv)
 {
