@@ -5,10 +5,14 @@
  *
  *   biglib join OUT LIB.obj...
  *   biglib extract BIGLIB NUMBER|LIB.obj OUT
+ *   biglib check FILE...
  *
  * join: every input must be a well-formed AmigaDOS load file (lib/hunk).
  * extract: the library with that number (or the number of LIB.obj, e.g.
  * the original of a library built here) as a file of its own.
+ * check: no two libraries of the FILEs (BigLib or library files, e.g.
+ * acidlibs, deflibs and the userlibs of a variant) with the same number;
+ * exit status 1 with both named if there are.
  */
 #include <stdlib.h>
 #include <string.h>
@@ -125,10 +129,91 @@ done:
     return rc;
 }
 
+/* room for n entries in the three arrays of check; 0 = out of memory */
+static int grow(struct biglib_entry **all, int **from, int **index, size_t n)
+{
+    struct biglib_entry *a = realloc(*all, (n ? n : 1) * sizeof *a);
+    int *f, *x;
+
+    if (a)
+        *all = a;
+    f = realloc(*from, (n ? n : 1) * sizeof *f);
+    if (f)
+        *from = f;
+    x = realloc(*index, (n ? n : 1) * sizeof *x);
+    if (x)
+        *index = x;
+    return a && f && x;
+}
+
+/* the libraries of FILES (BigLib or library files) with the same number */
+static int check(int n, char **files)
+{
+    struct biglib_entry *all = NULL, *e;
+    size_t nall = 0, ne, k, earlier;
+    uint8_t **bufs = calloc(n ? (size_t)n : 1, sizeof *bufs);
+    int *from = NULL, *index = NULL, i, rc = 1;
+    long c;
+
+    if (!bufs)
+        goto nomem;
+    for (i = 0; i < n; i++) {
+        char err[200];
+        size_t size;
+
+        if (!(bufs[i] = read_all(files[i], &size))) {
+            fprintf(stderr, "biglib: %s: cannot read\n", files[i]);
+            goto done;
+        }
+        if (size >= 4 && be32(bufs[i]) == HUNK_HEADER) {      /* one library */
+            if (!(e = malloc(sizeof *e)))
+                goto nomem;
+            e->data = bufs[i];
+            e->size = (uint32_t)size;
+            ne = 1;
+        } else if (biglib_read(bufs[i], size, &e, &ne, err, sizeof err)) {
+            fprintf(stderr, "biglib: %s: %s\n", files[i], err);
+            goto done;
+        }
+        if (!grow(&all, &from, &index, nall + ne)) {
+            free(e);
+            goto nomem;
+        }
+        for (k = 0; k < ne; k++) {
+            all[nall] = e[k];
+            from[nall] = i;
+            index[nall++] = (int)k + 1;
+        }
+        free(e);
+    }
+    if ((c = biglib_clash(all, nall, &earlier)) >= 0) {
+        unsigned num = 0;
+
+        biglib_number(all[c].data, all[c].size, &num);
+        fprintf(stderr, "biglib: library number %u twice: %s (library %d) and %s (library %d)\n",
+                num, files[from[earlier]], index[earlier], files[from[c]], index[c]);
+        goto done;
+    }
+    rc = 0;
+    goto done;
+nomem:
+    fprintf(stderr, "biglib: out of memory\n");
+done:
+    for (i = 0; bufs && i < n; i++)
+        free(bufs[i]);
+    free(bufs);
+    free(all);
+    free(from);
+    free(index);
+    return rc;
+}
+
 static const char usage[] =
     "usage: biglib join OUT LIB.obj...\n"
     "       biglib extract BIGLIB NUMBER|LIB.obj OUT\n"
-    "  join Blitz Basic 2 library files into one BigLib file, or take one out\n";
+    "       biglib check FILE...\n"
+    "  join Blitz Basic 2 library files into one BigLib file, or take one out;\n"
+    "  check: no library number twice in the FILEs (BigLib or library files)\n";
 
 int main(int argc, char **argv)
 {
@@ -140,6 +225,8 @@ int main(int argc, char **argv)
         return join(argv[2], argc - 3, argv + 3);
     if (argc == 5 && !strcmp(argv[1], "extract"))
         return extract(argv[2], argv[3], argv[4]);
+    if (argc >= 3 && !strcmp(argv[1], "check"))
+        return check(argc - 2, argv + 2);
     fputs(usage, stderr);
     return 2;
 }

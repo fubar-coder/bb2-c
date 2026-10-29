@@ -53,6 +53,10 @@ again):
   check area are only a warning (without the debugger they point behind
   the end of the code; the originals do that too). `acidlibs`/`deflibs`
   are made only from checked libraries.
+* `acidlibs`, `deflibs`, in the same step as the
+  join: no library number twice (`biglib check`; deflibs together with
+  the acidlibs loaded with it) – two libraries with one number would have
+  the same tokens.
 * reference build of blitz2: the original
   `archive/sources/blitz2-1.95/blitz2.s` with vasm to
   `build/amiga/programs/blitz2/ref/` (`blitz2`, listing, `blitz2.map`,

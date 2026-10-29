@@ -42,12 +42,20 @@ function(blitz_library name)
 	add_custom_target(${name}_obj ALL DEPENDS ${obj})
 endfunction()
 
-# biglib_join(TARGET OUTPUT OBJS...) - join library files into one BigLib
-# file (blitz2:acidlibs, deflibs) with the host tool tools/biglib
+# biglib_join(TARGET OUTPUT OBJS... [CHECK FILES...]) - join library files
+# into one BigLib file (blitz2:acidlibs, deflibs) with the host tool
+# tools/biglib.  In the same build step: no library number twice in OUTPUT
+# and the files CHECK (the other library files the compiler loads with it,
+# e.g. acidlibs for deflibs; biglib check) - two libraries with one number
+# would have the same tokens.
 function(biglib_join target output)
+	cmake_parse_arguments(PARSE_ARGV 2 arg "" "" "CHECK")
+	get_filename_component(dir ${output} DIRECTORY)
+	file(MAKE_DIRECTORY ${dir})
 	add_custom_command(OUTPUT ${output}
-		COMMAND ${BIGLIB} join ${output} ${ARGN}
-		DEPENDS ${ARGN} ${BIGLIB} host_tools
+		COMMAND ${BIGLIB} join ${output} ${arg_UNPARSED_ARGUMENTS}
+		COMMAND ${BIGLIB} check ${output} ${arg_CHECK}
+		DEPENDS ${arg_UNPARSED_ARGUMENTS} ${arg_CHECK} ${BIGLIB} host_tools
 		COMMENT "BigLib ${output}"
 		VERBATIM)
 	add_custom_target(${target} ALL DEPENDS ${output})

@@ -26,4 +26,4 @@ foreach(name ${DEFLIBS_ORDER})
 	list(APPEND objs ${CMAKE_CURRENT_BINARY_DIR}/deflib_${name}.obj)
 endforeach()
 
-biglib_join(deflibs ${BLITZ2_DIR}/deflibs ${objs})
+biglib_join(deflibs ${BLITZ2_DIR}/deflibs ${objs} CHECK ${BLITZ2_DIR}/acidlibs)

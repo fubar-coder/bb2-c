@@ -67,6 +67,16 @@ int main(void)
         CHECK(biglib_find(libs, 3, 65500) == 2);
         CHECK(biglib_find(libs, 3, 0x1FFDC) == 2);      /* 16 bits count */
         CHECK(biglib_find(libs, 3, 7) == -1);
+        /* clashes: all numbers differ (the one without a number does not
+           count), then the third has the number of the second */
+        {
+            size_t e = 99;
+
+            CHECK(biglib_clash(libs, 3, &e) == -1 && e == 99);
+            libs[2] = libs[1];
+            CHECK(biglib_clash(libs, 3, &e) == 2 && e == 1);
+            CHECK(biglib_clash(libs, 2, &e) == -1);
+        }
         free(c1.p);
         free(c2.p);
         free(short_code.p);

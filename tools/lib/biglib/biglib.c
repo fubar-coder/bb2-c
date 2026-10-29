@@ -91,3 +91,20 @@ long biglib_find(const struct biglib_entry *entries, size_t n, unsigned libnum)
             return (long)i;
     return -1;
 }
+
+long biglib_clash(const struct biglib_entry *entries, size_t n, size_t *earlier)
+{
+    size_t i, j;
+    unsigned a, b;
+
+    for (i = 1; i < n; i++) {
+        if (biglib_number(entries[i].data, entries[i].size, &a))
+            continue;
+        for (j = 0; j < i; j++)
+            if (!biglib_number(entries[j].data, entries[j].size, &b) && a == b) {
+                *earlier = j;
+                return (long)i;
+            }
+    }
+    return -1;
+}

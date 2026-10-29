@@ -28,5 +28,10 @@ int biglib_number(const uint8_t *data, size_t size, unsigned *libnum);
 
 /* the index of the library with that number (the first one), -1 = none */
 long biglib_find(const struct biglib_entry *entries, size_t n, unsigned libnum);
+/* the first library with the number of an earlier one: its index, and the
+   earlier one's in *earlier; -1 = all numbers differ (an entry without a
+   number does not count).  Two libraries with one number cannot both be
+   loaded by blitz2: their tokens and !libs references would be the same. */
+long biglib_clash(const struct biglib_entry *entries, size_t n, size_t *earlier);
 
 #endif

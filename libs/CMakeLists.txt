@@ -31,4 +31,9 @@ set_tests_properties(tokens_cd tokens_port PROPERTIES SKIP_RETURN_CODE 77)
 add_test(NAME tokens_broken COMMAND ${CMAKE_COMMAND} -DOUT=${CMAKE_CURRENT_BINARY_DIR}/tokens_broken.txt
 	"-DFILES=$<TARGET_FILE:blitz2>;${BLITZ2_DIR}/acidlibs" ${tokens_check})
 set_tests_properties(tokens_broken PROPERTIES WILL_FAIL TRUE)
+# the check in the build (biglib check, biglib_join CHECK): a library number
+# twice must fail - fadelib once more besides acidlibs
+add_test(NAME biglib_check_clash COMMAND ${BIGLIB} check ${BLITZ2_DIR}/acidlibs
+	${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj)
+set_tests_properties(biglib_check_clash PROPERTIES WILL_FAIL TRUE)
 add_subdirectory(tests)
