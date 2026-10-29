@@ -67,6 +67,11 @@ static void fail(const char *what, ULONG o, ULONG c)
         for (cur = 0; cur < 2; cur++) v_[cur] = (ULONG)(expr);              \
         if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
     } while (0)
+/* the bytes of both sets the same (SAME(what, memcmp(x[0], x[1], n)) would
+   compare the one memcmp result with itself and never fail) */
+#define SAMEBYTES(what, x, n) do {                                          \
+        if (memcmp((x)[0], (x)[1], (n))) fail(what, 0, 1); else checks++;   \
+    } while (0)
 
 static void preserve(void)
 {
@@ -180,7 +185,7 @@ static void test_memacclib(void)
                 R[cur].a[3] = (ULONG)out[cur]);
             SAME("d0", R[cur].d[0]);
             SAME("a3", R[cur].a[3] - (ULONG)out[cur]);
-            SAME("out", memcmp(out[0], out[1], 256) == 0 ? 0 : 1);
+            SAMEBYTES("out", out, 256);
         }
     ROUT = "Peeks$";
     for (i = 0; i < sizeof lens / sizeof lens[0]; i++) {
@@ -189,7 +194,7 @@ static void test_memacclib(void)
             R[cur].a[3] = (ULONG)out[cur] + 3);
         SAME("d0", R[cur].d[0]);
         SAME("a3", R[cur].a[3] - (ULONG)out[cur]);
-        SAME("out", memcmp(out[0], out[1], 256) == 0 ? 0 : 1);
+        SAMEBYTES("out", out, 256);
     }
     ROUT = "Poke";
     for (i = 0; i < sizeof types / sizeof types[0]; i++) {
@@ -198,7 +203,7 @@ static void test_memacclib(void)
         DO2(E("memacclib", 0), R[cur].d[0] = types[i]; R[cur].d[1] = (ULONG)&mem[cur][10];
             R[cur].d[2] = (types[i] & 0xffff) == 7 ? (ULONG)&mem[cur][100] : data;
             frame[cur][1] = 1 + i; R[cur].a[2] = (ULONG)&frame[cur][2]);
-        SAME("mem", memcmp(mem[0], mem[1], 256) == 0 ? 0 : 1);
+        SAMEBYTES("mem", mem, 256);
         SAME("mem[10..20] sum", mem[cur][10] + mem[cur][11] * 3 + mem[cur][12] * 5 + mem[cur][13] * 7
              + mem[cur][14] * 11 + mem[cur][20]);
     }
@@ -206,7 +211,7 @@ static void test_memacclib(void)
     strcpy(VEC, "string len 0");
     DO2(E("memacclib", 0), R[cur].d[0] = 7; R[cur].d[1] = (ULONG)&mem[cur][30];
         R[cur].d[2] = (ULONG)&mem[cur][100]; frame[cur][1] = 0; R[cur].a[2] = (ULONG)&frame[cur][2]);
-    SAME("mem", memcmp(mem[0], mem[1], 256) == 0 ? 0 : 1);
+    SAMEBYTES("mem", mem, 256);
 
     /* Call: moveq #7,d3 / move.l a0,d4 / rts */
     ROUT = "Call";
@@ -296,7 +301,7 @@ static void sort_one(UWORD type, int n, int down, int pattern)
         }
         SAME("same order", ok);
     } else
-        SAME("array", memcmp(arr[0], arr[1], sizeof arr[0]) == 0 ? 0 : 1);
+        SAMEBYTES("array", arr, sizeof arr[0]);
 }
 
 static void test_sortlib(void)
@@ -370,7 +375,7 @@ static void test_utillib(void)
             R[cur].a[3] = (ULONG)out[cur]);
         SAME("d0", R[cur].d[0]);
         SAME("a3", R[cur].a[3] - (ULONG)out[cur]);
-        SAME("out", memcmp(out[0], out[1], 256) == 0 ? 0 : 1);
+        SAMEBYTES("out", out, 256);
     }
 
     ROUT = "CreateMsgPort";
