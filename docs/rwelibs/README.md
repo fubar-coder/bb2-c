@@ -288,7 +288,13 @@ checked older or newer versions (`func-library7`: the binary has one
 **Ported (stage A, 2026-10-29):** the 15 libraries of the table above
 are real C in `libs/userlibs/rwe/` (variant `rwe-1999`): declarations
 equal to the binary, behaviour compared with it in Amiberry; notes per
-library in `port/`.
+library in `port/`. Stage B with a binary as the reference (AMOS
+functions, Sound, StoneCracker, FNS) and Anim followed the same day;
+the 12 libraries whose reference is the reference build of their source
+(3.2 "Source": LVCallHook, Misc, STC decrunch, CompactDisk, GTMenu,
+Linked list, ReqTools, DataTypes, ARexx, Shapes, Sort, Disasm) on
+2026-10-30. Open: CIA tracker (the Protracker 2.3A play routine, as
+ptlib: not decided yet), LES debug (no `Font.bin`, no reference build).
 
 **In the build** (2026-10-29; `libs/userlibs/rwe/refbuild.cmake`,
 `residents.cmake`, README "Userlibs", "Tests"): the reference build is
