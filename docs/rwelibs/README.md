@@ -201,12 +201,12 @@ these sources. Two things were needed:
   line 278 of `LIBMACS.BB`, `INCLUDE "blitzlibs:libnums.bb"`: `makeiname`
   (`blitz2.s:11947`) always puts `incdir` in front of the name, also of
   an absolute one (with `:`) – "BlitzLibs:blitzlibs:libnums.bb"; the
-  error is reported at the outer line. Besides, `incdir`
+  error is reported at the outer line (#341). Besides, `incdir`
   (`blitz2.s:14862`) is never reset: it carries over into the next
-  compile of the same blitz2 session. Both are original bugs; the C port
-  has them as well (experiments with both compilers in Amiberry,
-  `.cache/…/refbuild/`; no issue yet). No source of the CD uses INCDIR
-  with a path. For the reference build the INCDIR lines are replaced by
+  compile of the same blitz2 session (#342). Both are original bugs; the
+  C port has them as well (experiments with both compilers in Amiberry,
+  `.cache/…/refbuild/`, and the bug-orig tests of the issues). No source
+  of the CD uses INCDIR with a path. For the reference build the INCDIR lines are replaced by
   `;` (INCDIR generates no code) [B, S].
 * `sbra.res` (and other residents of RWE) exist nowhere; `ASMMACS.RES`
   serves for `sbra.res`.
