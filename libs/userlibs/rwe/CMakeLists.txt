@@ -39,7 +39,12 @@ set(RWE_LIBS
 	# stage B (docs/rwelibs/README.md 3.2): the AmiBlitz3 SVN binary =
 	# BSS2 plus fixes of the AmiBlitz3 team; func-library7 is the closest
 	# source
-	"riamosfunclib|AMOSFunclib/func-library7.bb|${ab3}/RIAmosFuncLib.obj|${ab3}/RIAmosFuncLib.obj")
+	"riamosfunclib|AMOSFunclib/func-library7.bb|${ab3}/RIAmosFuncLib.obj|${ab3}/RIAmosFuncLib.obj"
+	# stage B, the BSS2 binary newer than the source (3.2): the port has
+	# the binary's state
+	"risoundlib|soundlib/risoundlib.bb|${bss2}/RISOUNDLIB.OBJ"
+	"ristonecrackerlib|stclib.bb|${bss2}/RISTONECRACKERLIB.OBJ"
+	"rifnslib|FNSLib/fns-library11.bb|${bss2}/RIFNSLIB.OBJ|${bss2}/RIAMOSFUNCLIB.OBJ")
 
 set(variant_dir ${PROJECT_SOURCE_DIR}/libs/variants/${RWE_VARIANT})
 set(out ${BLITZ_VARIANTS_DIR}/${RWE_VARIANT})

@@ -13,4 +13,6 @@
 #define LIB_rinonvolatilelib        35   /* BSS2 RINONVOLATILELIB */
 #define LIB_rifastseriallib         36   /* BSS2 RIFASTSERIALLIB */
 #define LIB_ridebuglib              51   /* OL RIDEBUGLIB (Leading Edge Software) */
+#define LIB_ristonecrackerlib       17   /* BSS2 RISTONECRACKERLIB; RWE's list */
+#define LIB_risoundlib              45   /* BSS2 RISOUNDLIB; RWE's list */
 #endif
