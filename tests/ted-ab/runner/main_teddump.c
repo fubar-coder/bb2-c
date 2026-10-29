@@ -19,12 +19,14 @@
 #define TED_FONTS_DIR "."
 #endif
 
-static int usage(void)
+/* to stdout for -h/--help (0), else to stderr (2) */
+static int usage(FILE *out)
 {
-    fprintf(stderr, "usage: teddump info FILE.scr\n"
-                    "       teddump text FILE.scr [--font 8|6] [--fonts DIR]\n"
-                    "       teddump cmp A.scr B.scr [--font 8|6] [--fonts DIR] [--no-mask]\n");
-    return 2;
+    fprintf(out, "usage: teddump info FILE.scr\n"
+                 "       teddump text FILE.scr [--font 8|6] [--fonts DIR]\n"
+                 "       teddump cmp A.scr B.scr [--font 8|6] [--fonts DIR] [--no-mask]\n"
+                 "  screen dumps of teddrive: header, as text, compared\n");
+    return out == stdout ? 0 : 2;
 }
 
 int main(int argc, char **argv)
@@ -35,8 +37,10 @@ int main(int argc, char **argv)
     int i, nfiles = 0, fh = 8, no_mask = 0, rc = 2;
     char err[300];
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")))
+        return usage(stdout);
     if (argc < 3)
-        return usage();
+        return usage(stderr);
     cmd = argv[1];
     for (i = 2; i < argc; i++) {
         if (!strcmp(argv[i], "--font") && i + 1 < argc)
@@ -48,11 +52,11 @@ int main(int argc, char **argv)
         else if (argv[i][0] != '-' && nfiles < 2)
             files[nfiles++] = argv[i];
         else
-            return usage();
+            return usage(stderr);
     }
     if ((fh != 8 && fh != 6) || nfiles != (!strcmp(cmd, "cmp") ? 2 : 1)
         || (strcmp(cmd, "info") && strcmp(cmd, "text") && strcmp(cmd, "cmp")))
-        return usage();
+        return usage(stderr);
     for (i = 0; i < nfiles; i++)
         if (teddump_load(files[i], &d[i], err, sizeof err)) {
             fprintf(stderr, "teddump: %s: %s\n", files[i], err);

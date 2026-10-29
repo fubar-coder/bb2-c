@@ -34,6 +34,10 @@ static char *read_all(const char *path, size_t *len)
     return s;
 }
 
+static const char usage[] =
+    "usage: checkdata [-v|-q] TABLE LISTING REFERENCE CBUILD\n"
+    "  data of a C build against the reference build of the assembler original\n";
+
 int main(int argc, char **argv)
 {
     int verbose = argc > 1 && !strcmp(argv[1], "-v");
@@ -47,8 +51,12 @@ int main(int argc, char **argv)
     FILE *out;
     long bad;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        fputs(usage, stdout);
+        return 0;
+    }
     if (argc - opt != 5) {
-        fprintf(stderr, "usage: checkdata [-v|-q] TABLE LISTING REFERENCE CBUILD\n");
+        fputs(usage, stderr);
         return 2;
     }
     argv += opt;

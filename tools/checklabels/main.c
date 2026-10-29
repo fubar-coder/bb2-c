@@ -61,6 +61,10 @@ static char *read_all(const char *path, size_t *len)
     return s;
 }
 
+static const char usage[] =
+    "usage: checklabels [-v|-q] FILE.s SRCDIR\n"
+    "  every code label of FILE.s exactly once in the C sources of SRCDIR\n";
+
 int main(int argc, char **argv)
 {
     int verbose = argc > 1 && !strcmp(argv[1], "-v");
@@ -76,8 +80,12 @@ int main(int argc, char **argv)
     size_t len, i;
     long bad;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        fputs(usage, stdout);
+        return 0;
+    }
     if (argc - opt != 3) {
-        fprintf(stderr, "usage: checklabels [-v|-q] FILE.s SRCDIR\n");
+        fputs(usage, stderr);
         return 2;
     }
     asm_path = argv[1 + opt];

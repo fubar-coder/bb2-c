@@ -36,15 +36,23 @@ static int verify(const struct listing *l, const char *exe)
     return bad ? 1 : 0;
 }
 
+static const char usage[] =
+    "usage: vasmlisting LISTING map|labels|verify EXE\n"
+    "  views of a vasm listing\n";
+
 int main(int argc, char **argv)
 {
     struct listing l;
     char err[200];
     int rc;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        fputs(usage, stdout);
+        return 0;
+    }
     if (argc < 3 || (strcmp(argv[2], "map") && strcmp(argv[2], "labels")
                      && (strcmp(argv[2], "verify") || argc < 4))) {
-        fprintf(stderr, "usage: vasmlisting LISTING map|labels|verify EXE\n");
+        fputs(usage, stderr);
         return 2;
     }
     if (listing_read(argv[1], &l, err, sizeof err)) {

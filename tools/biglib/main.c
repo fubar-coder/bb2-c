@@ -125,13 +125,21 @@ done:
     return rc;
 }
 
+static const char usage[] =
+    "usage: biglib join OUT LIB.obj...\n"
+    "       biglib extract BIGLIB NUMBER|LIB.obj OUT\n"
+    "  join Blitz Basic 2 library files into one BigLib file, or take one out\n";
+
 int main(int argc, char **argv)
 {
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        fputs(usage, stdout);
+        return 0;
+    }
     if (argc >= 3 && !strcmp(argv[1], "join"))
         return join(argv[2], argc - 3, argv + 3);
     if (argc == 5 && !strcmp(argv[1], "extract"))
         return extract(argv[2], argv[3], argv[4]);
-    fprintf(stderr, "usage: biglib join OUT LIB.obj...\n"
-                    "       biglib extract BIGLIB NUMBER|LIB.obj OUT\n");
+    fputs(usage, stderr);
     return 2;
 }

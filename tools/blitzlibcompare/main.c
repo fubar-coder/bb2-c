@@ -11,6 +11,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include "biglib.h"
 #include "blitzlib.h"
@@ -72,14 +73,22 @@ static void free_biglib(struct biglibfile *b)
     free(b->buf);
 }
 
+static const char usage[] =
+    "usage: blitzlibcompare ORIGINAL NEW\n"
+    "  the declarations of every library of a BigLib file against the original\n";
+
 int main(int argc, char **argv)
 {
     struct biglibfile a, b;
     size_t i, n;
     long diffs = 0;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        fputs(usage, stdout);
+        return 0;
+    }
     if (argc != 3) {
-        fprintf(stderr, "usage: blitzlibcompare ORIGINAL NEW\n");
+        fputs(usage, stderr);
         return 2;
     }
     if (access(argv[1], F_OK)) {

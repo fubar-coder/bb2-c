@@ -8,7 +8,12 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "corpus.h"
+
+static const char usage[] =
+    "usage: corpusrun PASSFILE\n"
+    "  one pass of the corpus check in Amiberry\n";
 
 int main(int argc, char **argv)
 {
@@ -18,8 +23,12 @@ int main(int argc, char **argv)
     long n;
     int rc;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        fputs(usage, stdout);
+        return 0;
+    }
     if (argc != 2) {
-        fprintf(stderr, "usage: corpusrun PASSFILE\n");
+        fputs(usage, stderr);
         return 2;
     }
     if (!(f = fopen(argv[1], "rb")) || fseek(f, 0, SEEK_END) || (n = ftell(f)) < 0

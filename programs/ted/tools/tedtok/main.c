@@ -33,13 +33,21 @@ static long text_lines(const char *path)
     return n;
 }
 
+static const char usage[] =
+    "usage: tedtok TOKENS IN OUT\n"
+    "  a source through TED (load and save, tokenised) on the host\n";
+
 int main(int argc, char **argv)
 {
     static jmp_buf jb;
     long lines;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        fputs(usage, stdout);
+        return 0;
+    }
     if (argc != 4) {
-        fprintf(stderr, "usage: tedtok TOKENS IN OUT\n");
+        fputs(usage, stderr);
         return 2;
     }
     hostenv_init(argv[1], 25);

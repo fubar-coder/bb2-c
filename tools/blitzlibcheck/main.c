@@ -7,14 +7,23 @@
  * a file is not a valid library file.
  */
 #include <stdio.h>
+#include <string.h>
 #include "blitzlib.h"
+
+static const char usage[] =
+    "usage: blitzlibcheck LIB.obj...\n"
+    "  check Blitz Basic 2 library files\n";
 
 int main(int argc, char **argv)
 {
     int i, bad = 0;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        fputs(usage, stdout);
+        return 0;
+    }
     if (argc < 2) {
-        fprintf(stderr, "usage: blitzlibcheck LIB.obj...\n");
+        fputs(usage, stderr);
         return 2;
     }
     for (i = 1; i < argc; i++) {

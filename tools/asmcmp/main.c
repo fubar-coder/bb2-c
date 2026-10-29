@@ -12,6 +12,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include "asmcmp.h"
 #include "biglib.h"
@@ -35,6 +36,10 @@ static uint8_t *read_all(const char *path, size_t *len)
     return s;
 }
 
+static const char usage[] =
+    "usage: asmcmp OBJDUMP ORIGINAL LIBNUM NAME.linked NAME:ORIGADDR:CSYMBOL:COUNT...\n"
+    "  asm routines of a C library against the original, instruction by instruction\n";
+
 int main(int argc, char **argv)
 {
     struct biglib_entry *e;
@@ -45,9 +50,12 @@ int main(int argc, char **argv)
     size_t size, n, i;
     int bad = 0, found = 0;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        fputs(usage, stdout);
+        return 0;
+    }
     if (argc < 6) {
-        fprintf(stderr, "usage: asmcmp OBJDUMP ORIGINAL LIBNUM NAME.linked "
-                        "NAME:ORIGADDR:CSYMBOL:COUNT...\n");
+        fputs(usage, stderr);
         return 2;
     }
     if (access(argv[2], F_OK)) {

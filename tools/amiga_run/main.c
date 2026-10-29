@@ -77,12 +77,14 @@ static void print_results(const char *dir)
         free(list);
 }
 
-static int usage(void)
+/* to stdout for -h/--help (0), else to stderr (2) */
+static int usage(FILE *out)
 {
-    fprintf(stderr, "usage: amiga_run [--rtg] [--visible] [--log] [--timeout SEC] [--set KEY=VALUE]...\n"
-                    "                 [--unset KEY]... [--mount VOL=DIR]... [--mount-ro VOL=DIR]...\n"
-                    "                 [--dir WORKDIR] SCRIPT|-\n");
-    return 2;
+    fprintf(out, "usage: amiga_run [--rtg] [--visible] [--log] [--timeout SEC] [--set KEY=VALUE]...\n"
+                 "                 [--unset KEY]... [--mount VOL=DIR]... [--mount-ro VOL=DIR]...\n"
+                 "                 [--dir WORKDIR] SCRIPT|-\n"
+                 "  run an AmigaDOS script (a file or - for stdin) in Amiberry\n");
+    return out == stdout ? 0 : 2;
 }
 
 int main(int argc, char **argv)
@@ -98,6 +100,11 @@ int main(int argc, char **argv)
     FILE *f;
     int i;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        free(changes);
+        free(mounts);
+        return usage(stdout);
+    }
     if (!changes || !mounts)
         return 2;
     p.changes = changes;
@@ -132,15 +139,15 @@ int main(int argc, char **argv)
         } else if (!strcmp(a, "--dir") && i + 1 < argc) {
             p.work_dir = argv[++i];
         } else if (a[0] == '-' && a[1]) {
-            return usage();
+            return usage(stderr);
         } else if (!script_path) {
             script_path = a;
         } else {
-            return usage();
+            return usage(stderr);
         }
     }
     if (!script_path)
-        return usage();
+        return usage(stderr);
     f = strcmp(script_path, "-") ? fopen(script_path, "r") : stdin;
     if (!f) {
         perror(script_path);

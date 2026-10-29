@@ -9,6 +9,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "mktestdata.h"
 
 static char *read_text(const char *path)
@@ -30,6 +31,10 @@ static char *read_text(const char *path)
     return s;
 }
 
+static const char usage[] =
+    "usage: mktestdata SPEC OUT\n"
+    "  binary test data (8SVX, ILBM, MED, tracker modules) from a text description\n";
+
 int main(int argc, char **argv)
 {
     char err[200], *spec;
@@ -38,8 +43,12 @@ int main(int argc, char **argv)
     FILE *f;
     int bad;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        fputs(usage, stdout);
+        return 0;
+    }
     if (argc != 3) {
-        fprintf(stderr, "usage: mktestdata SPEC OUT\n");
+        fputs(usage, stderr);
         return 2;
     }
     if (!(spec = read_text(argv[1]))) {

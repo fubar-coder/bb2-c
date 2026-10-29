@@ -924,14 +924,22 @@ out:
     return rc;
 }
 
+static const char usage[] =
+    "usage: cdrun PASSFILE\n"
+    "  every .bb2/.bb of the CD compiled by one compiler in Amiberry\n";
+
 int main(int argc, char **argv)
 {
     char err[300];
     size_t len;
     char *text;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        fputs(usage, stdout);
+        return 0;
+    }
     if (argc != 2) {
-        fprintf(stderr, "usage: cdrun PASSFILE\n");
+        fputs(usage, stderr);
         return 2;
     }
     if (!(text = (char *)read_file(argv[1], &len))) {
