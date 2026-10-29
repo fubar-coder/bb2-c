@@ -129,6 +129,9 @@ struct tedab_run {
    the session's first run is OK, the other combinations of a test only if
    its first one is OK */
 char *tedab_session_script(const struct tedab_run *runs, size_t n, unsigned stack);
+/* the run whose out/ok run i of a session waits for in the script: the
+   test's first run, for that one the session's first (0, also for i = 0) */
+size_t tedab_session_waits_for(const struct tedab_run *runs, size_t i);
 /* If/EndIf balanced, no line longer than the shell takes (255); prints the
    problems, returns their number */
 int tedab_check_script(const char *script, FILE *out);

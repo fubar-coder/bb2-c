@@ -715,11 +715,20 @@ static void gate_script(struct text *s, const char *ind, const char *key, const 
              ind, key);
 }
 
+size_t tedab_session_waits_for(const struct tedab_run *runs, size_t i)
+{
+    size_t k;
+
+    for (k = 0; k < i && runs[k].test != runs[i].test; k++)
+        ;
+    return k < i ? k : 0;
+}
+
 char *tedab_session_script(const struct tedab_run *runs, size_t n, unsigned stack)
 {
     struct text s = { 0 };
     const char *log = ">>" TEDAB_VOL ":session.log";
-    size_t i, k;
+    size_t i;
 
     /* reboot guard: a crash that reboots the emulator would run the script
        again - the second boot only writes a note */
@@ -744,11 +753,8 @@ char *tedab_session_script(const struct tedab_run *runs, size_t n, unsigned stac
                  "      Else\n"
                  "        Echo \"GATED OK\" %s\n", log, log);
     for (i = 0; i < n; i++) {
-        const struct tedab_run *r = &runs[i], *first = NULL;
+        const struct tedab_run *r = &runs[i], *first = &runs[tedab_session_waits_for(runs, i)];
 
-        for (k = 0; k < i && !first; k++)
-            if (runs[k].test == r->test)
-                first = &runs[k];
         if (!i) {
             /* the first run of the session: everything else needs it OK (a
                tool problem would otherwise hit every test until the
@@ -759,8 +765,6 @@ char *tedab_session_script(const struct tedab_run *runs, size_t n, unsigned stac
         /* a new test: if the session's first run is OK; another
            combination: if the test's first one (the reference) is OK - a
            tool problem with TED stops the test here */
-        if (!first)
-            first = &runs[0];
         text_add(&s, "        If EXISTS " TEDAB_VOL ":runs/%s/%s/out/ok\n", first->test->name,
                  tedab_combo_names[first->combo]);
         run_script(&s, "          ", r);

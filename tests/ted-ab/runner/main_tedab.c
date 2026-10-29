@@ -786,16 +786,17 @@ static int run(FILE *log)
             s->gates_ok = gd ? tedab_eval_gate(gd, &s->gate) : 0;
             for (k = 0; rs && state && k < s->n; k++) {
                 struct run *r = &runs[list[s->first + k]];
-                size_t f;
+                size_t f, d;
                 int requeue = 0;
 
                 r->state = state[k];
                 /* the run hit #340 (TED's a0toname, depends on the memory
-                   layout), or was skipped because the test's first run (the
-                   reference) did: again, first in a new session */
-                for (f = 0; f < s->n && rs[f].test != r->r.test; f++)
+                   layout), or was skipped because the run it waited for did
+                   (tedab_session_waits_for): again, first in a new
+                   session */
+                for (d = k; d && state[d] == TEDAB_SKIPPED; d = tedab_session_waits_for(rs, d))
                     ;
-                if ((hit340(r) || (r->state == TEDAB_SKIPPED && hit340(&runs[list[s->first + f]])))
+                if ((hit340(r) || (r->state == TEDAB_SKIPPED && hit340(&runs[list[s->first + d]])))
                     && r->attempts < 3) {
                     fprintf(log, "tedab: %s %s: #340 (a0toname), again\n", r->r.test->name,
                             tedab_combo_names[r->r.combo]);

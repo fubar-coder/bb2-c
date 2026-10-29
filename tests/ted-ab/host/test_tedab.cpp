@@ -206,6 +206,31 @@ TEST_CASE("session script", "[script]")
     free(s);
 }
 
+TEST_CASE("session waits for", "[script]")
+{
+    // as session 011 of a run that hit #340: 28-long R5 first, then the
+    // other combinations, then the next test
+    Test a("; @source none\n; @nofiles\n", "28-long");
+    Test b("; @source none\n; @nofiles\n", "29-cmp-t02_float");
+    tedab_run runs[5] = { { &a.t, TEDAB_R5 }, { &a.t, TEDAB_C5 }, { &a.t, TEDAB_CC },
+                          { &b.t, TEDAB_R5 }, { &b.t, TEDAB_C5 } };
+
+    CHECK(tedab_session_waits_for(runs, 0) == 0);
+    CHECK(tedab_session_waits_for(runs, 1) == 0);
+    CHECK(tedab_session_waits_for(runs, 2) == 0);
+    CHECK(tedab_session_waits_for(runs, 3) == 0);   // a new test: the session's first
+    CHECK(tedab_session_waits_for(runs, 4) == 3);   // its reference
+
+    // the script says the same
+    char *s = tedab_session_script(runs, 5, 40000);
+    REQUIRE(s != nullptr);
+    std::string sc(s);
+    CHECK(sc.find("RUN 29-cmp-t02_float R5 skipped (28-long R5 not OK)") != std::string::npos);
+    CHECK(sc.find("RUN 29-cmp-t02_float C5 skipped (29-cmp-t02_float R5 not OK)")
+          != std::string::npos);
+    free(s);
+}
+
 TEST_CASE("script check", "[script]")
 {
     char *buf = nullptr;
