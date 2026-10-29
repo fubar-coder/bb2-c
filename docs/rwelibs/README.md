@@ -223,7 +223,8 @@ these sources. Four things were needed:
   `.cache/…/residents/`): `lvo.res`, `custom.res` and `datatypes.res`
   exist nowhere; they only hold constants, so they are made from the
   NDK of the toolchain as Blitz sources and saved with *Create
-  Resident* (tedstub `resident=`) by blitz2 2.10:
+  Resident* (tedstub `resident=`) by blitz2 2.10 (in the build:
+  `tools/blitzres`, below):
   * `lvo.res`: `#_Name=-offset` of every public function of the OS 3.1
     libraries (FD files: exec, dos, graphics, intuition, icon, wb,
     layers, gadtools, utility … – 1060 names, no name with two
@@ -288,6 +289,30 @@ checked older or newer versions (`func-library7`: the binary has one
 are real C in `libs/userlibs/rwe/` (variant `rwe-1999`): declarations
 equal to the binary, behaviour compared with it in Amiberry; notes per
 library in `port/`.
+
+**In the build** (2026-10-29; `libs/userlibs/rwe/refbuild.cmake`,
+`residents.cmake`, README "Userlibs", "Tests"): the reference build is
+no longer a throw-away run. The residents are written by the host tool
+`tools/blitzres` directly in the format of *Create Resident* (no
+emulator), from the same NDK files with the same rules; their contents
+equal those blitz2 2.10 made above (ctest `rwe_resident_NAME`, compared
+without the unused node bytes). The staging (target `rwe_refstage`,
+`build/<preset>/libs/userlibs/rwe/refstage/`) is the one above with
+two changes: the `INCDIR` lines are neutralised on the bytes of the
+sources (`tools/bblines`) – a text round trip through TED tokenises
+other lines with a different token list (`Pack-Library8`: the label
+`allocmem` became a token) – and the RWE numbers come from the
+variant's `libnums.h` (its own `LIB_` defines), tokenised and appended
+to the bytes of the CD's `LIBNUMS.BB` (its text has a line longer than
+TED takes). `FNS:` is staged with `PERSONAL.FNS` of BSS2's examples,
+so `fns-library11` compiles too. ctest `rwe_refbuild` (Amiberry, about
+20 s) compiles the sources of all `RWE_LIBS` entries to
+`build/<preset>/libs/userlibs/rwe/ref/NAME.obj` – all 19 compile – and
+`rwe_refbuild_NAME` checks that the 15 of stage A equal their binaries
+byte for byte. An entry whose reference is the reference build of its
+source (stage B/C "Source", 3.3) writes `refbuild` as REFERENCE: its
+`rwe_declarations_NAME` and its pair in `libs_emulator` use
+`ref/NAME.obj` (with the fixture of `rwe_refbuild`).
 
 ### 3.2 Which version is the reference (stages B and C)
 

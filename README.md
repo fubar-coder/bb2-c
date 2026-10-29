@@ -66,7 +66,18 @@ binary's (ctest `rwe_declarations_NAME`, `rwe_numbers`), behaviour
 compared with it in Amiberry (`libs/tests/rwe/NAME.c`, test cases
 `rwe NAME` of `libs_emulator`). Target
 `rwelibsrc`: those Blitz sources as TED shows them, in
-`build/amiga/rwelibsrc/` (like `bblibsrc`).
+`build/amiga/rwelibsrc/` (like `bblibsrc`). The **reference build** of
+those sources (`libs/userlibs/rwe/refbuild.cmake`,
+`docs/rwelibs/README.md` §3.1): the build stages them (target
+`rwe_refstage`: `build/amiga/libs/userlibs/rwe/refstage/` with the CD's
+`EXTRAS/BLITZLIBS/`, the residents `lvo.res`, `custom.res`,
+`datatypes.res` that `tools/blitzres` writes from the toolchain's NDK
+(target `rwe_residents`), a `LIBNUMS.BB` with the numbers of the
+variant's `libnums.h`, the sources with their `INCDIR` lines neutralised
+by `tools/bblines`), ctest `rwe_refbuild` compiles them with the CD's
+blitz2 2.10 in Amiberry to `build/amiga/libs/userlibs/rwe/ref/NAME.obj`.
+An `RWE_LIBS` entry with REFERENCE `refbuild` is compared with that
+file.
 
 ## IDE (CLion and others)
 
@@ -132,6 +143,12 @@ again):
   `ted.s:NNN label` in `programs/ted/src/` (completeness of the
   translation; a changed comment line rebuilds the object, so the check
   runs then as well).
+* the residents of the RWE reference build (`tools/blitzres`, in the
+  same step as the write): read back, the file holds exactly the
+  constants written. Its staging: `tools/bblines` fails on an `INCDIR`
+  line with a further statement, the `LIBNUMS.BB` step on a number of
+  `libnums.h` the CD's file has with another value (ctest
+  `rwe_refbuild_libnums_broken`).
 * `ted.sym` (the same link with symbols) after every link:
   `tools/checkdata` compares the data of the C build with the reference
   build of `ted.s` (`programs/ted/checkdata.tsv`: 534 entries – fonts,
@@ -175,7 +192,12 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   makes it from a compiler and its libraries the way blitz2 builds it for
   the editor) must equal `tests/data/ted-tokens.txt` – with the CD's
   compiler and libraries (skipped without the CD) and with the ones built
-  here; `tokens_broken` checks that a missing library is noticed. The host side on its own:
+  here; `tokens_broken` checks that a missing library is noticed.
+  `rwe_resident_NAME`: the residents `blitzres` writes have the contents
+  (`blitzres --dump`: types, macros, constants without the unused node
+  bytes) of those blitz2 2.10's Create Resident made in the analysis
+  (`RWE_ANALYSIS_DIR`, default `.cache/rwelibs-analysis`, not in the
+  repository: skipped without). The host side on its own:
   `ctest --test-dir build/amiga/host`.
   With `-DHOST_SANITIZE=ON` the host side is built with AddressSanitizer
   and UBSan.
@@ -224,6 +246,18 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   script) are not run and are listed as KNOWN in the report; an exact
   name in the filter runs them anyway. `ted_ab_lint` checks the scripts
   without the emulator.
+  The reference build of the RWE sources: `rwe_refbuild` (fixture
+  `rwe_refbuild`, about 20 s; `cdrun` with `source=` lines over the
+  staging directory, `RWE_REFBUILD_PARALLEL`, `RWE_REFBUILD_TIMEOUT`;
+  table `build/<preset>/libs/userlibs/rwe/refbuild.tsv`) compiles the
+  source of every `RWE_LIBS` entry and fails if one does not compile;
+  `rwe_refbuild_NAME`: the result equals the CD binary byte for byte, for
+  every entry of stage A (not for those in `RWE_REFBUILD_NEWER`, whose
+  reference is a newer binary); `rwe_refbuild_selftest` takes the dry
+  entry `RWE_REFBUILD_SELFTEST` (REFERENCE `refbuild`) through the
+  declaration comparison. A test that needs the reference build has the
+  label `emulator` (ctest starts a fixture's setup even for a test
+  outside the label filter).
 * **bug-orig:** tests of original bugs the port reproduces (`BUG(orig)`).
   They check the *correct* behaviour and therefore **fail** as long as the
   bug is reproduced; the failure message names the bug. Label `bug-orig`:
@@ -512,7 +546,10 @@ tools/                       host tools:
                              mktestdata (binary test data from a text
                              description: 8SVX, ILBM, modules),
                              bb22 (the BB22 source format of RWE, in
-                             TED's format);
+                             TED's format),
+                             blitzres (residents: constants written,
+                             contents read; NDK FD files and includes),
+                             bblines (line edits of tokenised sources);
                              blitzlib also compares declarations
   biglib/, blitzlibcheck/,   the tools: one main.c each around lib/
   blitzlibcompare/,
@@ -520,7 +557,8 @@ tools/                       host tools:
   hunkcheck/, amiga_run/,
   vasmlisting/, checklabels/,
   checkdata/, asmcmp/,
-  mktestdata/, bb22/
+  mktestdata/, bb22/, blitzres/,
+  bblines/
   tests/                     tests of lib/ with inputs from memory
 ```
 

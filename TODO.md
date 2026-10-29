@@ -531,7 +531,18 @@ several versions.
       library in `docs/rwelibs/port/`). Next: stages B and C with the
       references of `docs/rwelibs/README.md` §3.2, starting with AMOS
       functions (GFX and Pack call it; their tests stub those calls so
-      far). The RWE userlibs (their numbers: AmiBlitz3's
+      far). ~~**Reference build in the build**~~ done (2026-10-29,
+      `libs/userlibs/rwe/refbuild.cmake`): residents by `tools/blitzres`
+      from the NDK (contents equal to blitz2's, `rwe_resident_NAME`),
+      staging (target `rwe_refstage`; `INCDIR` neutralised on the bytes
+      by `tools/bblines`, `LIBNUMS.BB` with the numbers of `libnums.h`),
+      ctest `rwe_refbuild` (cdrun `source=`, Amiberry, fixture) to
+      `build/<preset>/libs/userlibs/rwe/ref/NAME.obj`; stage A byte for
+      byte equal to its binaries (`rwe_refbuild_NAME`). For the
+      libraries whose reference is the source (§3.2 "Source", §3.3):
+      REFERENCE `refbuild` in `RWE_LIBS`. Open: residents other than
+      constants (`AHI.res` of risoundlib2), the further includes of the
+      sources not yet buildable (README §3.1). The RWE userlibs (their numbers: AmiBlitz3's
       libnums, the matching binaries, `#riarrayslib` = 7 from
       `defaultdbug50.bb2`; `docs/rwelibs/README.md` §3.1). No
       Protracker library: neither RI's ptlib nor a replacement around
