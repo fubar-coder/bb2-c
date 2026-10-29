@@ -284,6 +284,11 @@ tokens of other libraries (`defaultdbug50`, `TrackerTest`,
 checked older or newer versions (`func-library7`: the binary has one
 `JSR _UnLock(a6)` more).
 
+**Ported (stage A, 2026-10-29):** the 15 libraries of the table above
+are real C in `libs/userlibs/rwe/` (variant `rwe-1999`): declarations
+equal to the binary, behaviour compared with it in Amiberry; notes per
+library in `port/`.
+
 ### 3.2 Which version is the reference (stages B and C)
 
 For the libraries whose source and binary differ (stage B: same
