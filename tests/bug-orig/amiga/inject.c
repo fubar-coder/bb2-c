@@ -20,6 +20,8 @@
  *                          name ends in NAME (case ignored) returns 0
  *   track                  the process's AllocMem/FreeMem are recorded; what
  *                          is still allocated when COMMAND ends is reported
+ *                          and every FreeMem whose size differs from the
+ *                          allocation's
  * COMMAND is loaded with LoadSeg and run with RunCommand in this process
  * (the signals and the recorded allocations are the process's); the
  * patches are system-wide but act only for this process.  Behind COMMAND
@@ -181,6 +183,7 @@ static int ours(void) { return active && SysBase->ThisTask == me; }
 #define SLOTS 16384                     /* power of 2 */
 static struct { ULONG addr, size, flags; } slot[SLOTS];
 static ULONG nalloc, tbl_full;
+static ULONG nwrong, wrong_alloc[16], wrong_free[16];   /* FreeMem of another size */
 #define TOMB 1UL                        /* removed (odd: no allocation) */
 
 static ULONG hash(ULONG a) { return ((a >> 3) * 2654435761UL) >> 18 & (SLOTS - 1); }
@@ -215,11 +218,14 @@ void free_pre(ULONG mem, ULONG size)
 {
     ULONG h, i;
 
-    (void)size;
     if (!o_track || !mem || !ours())
         return;
     for (h = hash(mem), i = 0; i < SLOTS && slot[h].addr; i++, h = (h + 1) & (SLOTS - 1))
         if (slot[h].addr == mem) {
+            if (slot[h].size != size && nwrong < 16) {
+                wrong_alloc[nwrong] = slot[h].size;
+                wrong_free[nwrong++] = size;
+            }
             slot[h].addr = TOMB;
             nalloc--;
             return;
@@ -420,6 +426,11 @@ static void report_track(void)
     put(line);
     for (i = 0; i < n; i++) {
         sprintf(line, "inject:   %lu bytes, flags $%lx\n", sz[i], fl[i]);
+        put(line);
+    }
+    for (i = 0; i < nwrong; i++) {
+        sprintf(line, "inject: track: FreeMem of %lu bytes for an allocation of %lu bytes\n",
+                wrong_free[i], wrong_alloc[i]);
         put(line);
     }
 }

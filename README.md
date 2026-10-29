@@ -207,7 +207,8 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   observation of each configuration in `.../ID/TAG/observation`.
   Helpers (`tests/bug-orig/amiga/`): `inject` runs the compiler with
   faults (no free signal, failing AllocMem of a size, Read error, failing
-  Examine, failing OpenLibrary of a name, recorded allocations; for the
+  Examine, failing OpenLibrary of a name, recorded allocations and FreeMem
+  of another size than allocated; for the
   compiled programs with `runwrap=@INJECT@|...`), `userlib.c` is a library for
   `blitz2:userlibs` (function `BugOrigUserLib`, token in
   `userlib.tokens`). tedstub also runs menu items
