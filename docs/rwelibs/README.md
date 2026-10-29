@@ -69,7 +69,7 @@ latest date in the header comments.
 | AMOS functions | 75 | `AMOSFunclib/func-library4`…`7` | RI | 1996-01-11 | 7 **=** BSS2 `RIAMOSFUNCLIB` (4768 B); 6: names equal, 1 help text differs; AB3's file differs from BSS2 | func-library7 |
 | Anim | 57 | `ANIMLib/Anim-Library3` | RI (McNamara) | 1994-11-07 | ≈ 88 % BSS2 `RIANIMLIB` | open |
 | App | 61 | `AppLib/AppLib`, `applib2`, `applib3` | – | – | applib2 **=** BSS2/AB3 `RIAPPLIB` (2892 B); applib3 in the `BB22` format | applib2 (applib3: check) |
-| Arrays | 7 (`#riarrayslib`, from a program using it; clash `om3dlib`, AB3) | `ArraysLib` | RI | – | – | open |
+| Arrays | 7 (`#riarrayslib`: RWE's list, REDHELP.DAT, a program using it; clash `om3dlib`, AB3) | `ArraysLib` | RI | – | – | open |
 | CompactDisk | 14 (`#ricompactdisclib`, lit. 14) | `CDlib/cd`, `cd2`, `cd3`, `cdSCSI` | – | 1995-07-03 | ≈ 96 % OL `RICOMPACTDISKLIB` | open |
 | Commodities | 89 | `Commoditieslib/CommoditiesLib2` | – | – | **=** BSS2/AB3 (2604 B) | CommoditiesLib2 |
 | CopperFX | 11 (bin.) | `Copperlib/CopperFX3` | RI | 1995-03-08 | **=** BSS2/AB3 (1856 B) | CopperFX3 |
@@ -94,7 +94,7 @@ latest date in the header comments.
 | Blitz Bombers | 30 | `blitzbomberslib/blitzbombers86`, `87`, `88` | RI | 1996-10-04 | – | not ported (decision 2026-10-29): needs `bomberman:shapeoffsets.bb` of the game, not in the archive |
 | Blitz Bombers 2 | – (`#blitzbomberslibtwo`) | `blitzbomberslib/blitzbombersTwo00` | RI | – | – | open |
 | BB blit | 19 (lit., = `#bb_blitlib`) | `blitzbomberslib/BB_BlitLib4` | RI (McNamara) | 1996-01-30 | – | open |
-| BB map | – (`#ribbmaplib`) | `blitzbomberslib/bbmaplib2` | RI | 1995-09-30 | – | open |
+| BB map | 34 (`#ribbmaplib`, RWE's list) | `blitzbomberslib/bbmaplib2` | RI | 1995-09-30 | – | open |
 | (tests) | lit. 5 / – | `blitzbomberslib/TestBlit`, `PredatorBlit` | – | – | – | not a library / test |
 | C2P | lit. 8 | `c2plib`, `c2plibA` | RI | 1995 | – | open |
 | Chunky | 24 | `chunkylib`, `chunkylib2` | RI | 1995-08-14 | – | open |
@@ -107,11 +107,11 @@ latest date in the header comments.
 | NonVolatile | 35 (clash `mazfpulib`, AB3) | `nonvolatile` | RI | 1994 | **=** BSS2/AB3 (640 B) | nonvolatile |
 | Pack | 73 | `packlib/Pack-Library8`, `8_Mc`, `9` | RI | 1996-05-09 | 8 **=** BUM (2564 B), 8_Mc **=** OL (2388 B); 9 newer, ≈ 88 % | open (9 newer than the binaries) |
 | PopUp window | – (`#popupwinlib`) | `popuplib/popupwinlib` (+ `test2`) | RI | 1994 | – | open |
-| Protracker | – (`#ritrackerlib`) | `ptlib/ptlib` … `ptlib7`, `ptlibmatty` | Protracker 2.3A routine, adapted | 1995-04-08 | – | not ported (decision 2026-10-29; the authors of the routine unknown); not the acidlibs `trackerlib` (96: NoiseTracker in the vertical blank, Module objects, `LoadModule`…) but its own library: CIA interrupt, `TrackInit address`, `TrackPlay`, `TrackStop`, `TrackDMA`, `Tracker`, `TrackerChannels` (`TrackerTimer` from ptlib7); no binary, no number anywhere |
+| Protracker | 58 (`#ritrackerlib`, RWE's list) | `ptlib/ptlib` … `ptlib7`, `ptlibmatty` | Protracker 2.3A routine, adapted | 1995-04-08 | – | not ported (decision 2026-10-29; the authors of the routine unknown); not the acidlibs `trackerlib` (96: NoiseTracker in the vertical blank, Module objects, `LoadModule`…) but its own library: CIA interrupt, `TrackInit address`, `TrackPlay`, `TrackStop`, `TrackDMA`, `Tracker`, `TrackerChannels` (`TrackerTimer` from ptlib7); no binary; the number only in RWE's list |
 | CIA tracker | 56 (`#ciatrklib`; clash `xbciatrackerlib`, AB3) | `ptlib/CIATrackerLib1` (+ `SamplePrograms/TrackerTest`) | Neil O'Rourke, Delirium Softdesign | – | ≈ 88 % OL `XBONESCIATRKLIB` | open |
 | Req | 79 | `reqlib/ReqLib`, `2`, `3` | – | – | all three **=** OL/AB3 `RIREQLIB` (964 B) | ReqLib2 (built identically, 3.1) |
 | ARexx | 133 (`#myconst=133`) | `rexxlib/…` (9 versions) | RI; `NEWAREXXLIB`: RWE (Matty) | 1997-02-09 | ≈ 76 % BSS2 `RIAREXXLIB` | open |
-| Intuition | – (`#riintuilib`) | `riintuilib`, `riintuilib2` | RI | 1995 | – | open |
+| Intuition | 15 (`#riintuilib`, RWE's list) | `riintuilib`, `riintuilib2` | RI | 1995 | – | open |
 | PRO-PACK | lit. 197 | `ROBNORTHFAST` | Rob Northen Computing (All Rights Reserved) | 1991/92 | – | **not ported** (license) |
 | Serial | lit. 22 | `seriallib/Serial-Library` | – | – | – | open |
 | Shapes | 46 | `shapeslib/RIShapesLib`, `RIShapesLib2` (+ `Test`, `Comparison`) | RI, Nigel Hughes | – | ≈ 92 % BUM `RISHAPESLIB`; RIShapesLib2 in the `BB22` format | open |
@@ -120,7 +120,7 @@ latest date in the header comments.
 | Sound | 45 | `soundlib/risoundlib`, `risoundlib2` | – | – | risoundlib **=** BSS2/AB3 (496 B); risoundlib2 (8 entries) – | open |
 | STC decrunch | 18 | `stcdecrunchlib` | – | – | **=** BSS2/AB3 (576 B) | stcdecrunchlib |
 | StoneCracker | 17 | `stclib` | – | – | **=** BSS2/AB3 (1136 B) | stclib |
-| Thread | – (`#rithreadlib`) | `threadlib` | RI | 1995 | – | open |
+| Thread | 44 (`#rithreadlib`, RWE's list) | `threadlib` | RI | 1995 | – | open |
 | ToolTypes | 59 (bin.) | `tooltypeslib/ToolTypes4` | RI (McNamara) | 1995-04-05 | **=** BSS2/AB3 (3564 B) | ToolTypes4 |
 | TrackDisk | 91 | `trackdisklib/trackdisk`, `trackdisk2` | – | – | both **=** BSS2/AB3 (1892 B) | trackdisk2 (both build identically, 3.1) |
 | WB sprite | lit. 10 | `wbspritelib/WBSprite-library2` | RI | 1994 | – | open |
@@ -283,6 +283,68 @@ tokens of other libraries (`defaultdbug50`, `TrackerTest`,
 `MapEd_Bit`, `emptylib`). 68 sources compile but match no binary – as far as
 checked older or newer versions (`func-library7`: the binary has one
 `JSR _UnLock(a6)` more).
+
+### 3.2 Which version is the reference (stages B and C)
+
+For the libraries whose source and binary differ (stage B: same
+declarations, other code; stage C: other declarations too) the
+differences were analysed and weighed (raw material
+`.cache/rwelibs-analysis/versions/NAME.md`): fixes or features on one
+side only, dated header comments (the archive's 1996-07-26 and the CD's
+1997-10-02 are copy dates, only later dates are edit dates), version
+strings, the order of the source versions, the release docs (REDBlitzLibs
+V2.5 of BSS2). Binaries built by AmiBlitz (hunk ending `7000 4E75` plus
+16 × `$01`) are later changes of the AmiBlitz3 team, not RWE's. Decision
+of 2026-10-29 – the reference of the port:
+
+| Library | Newer | Reference |
+|---|---|---|
+| AMOS functions | AB3 (BSS2 + AB3 fixes, e.g. ChangeDir `MOVE.L oldlock`) | the AB3 binary |
+| Disasm | the AB3 binary is an AB3 derivative (THOR's disassembler.library) | the RWE source |
+| LVCallHook | source (LVCallHook3, 1997-01-14) | source |
+| Sound | BSS2 (risoundlib + `sloop`/`srep`) | binary |
+| Misc | source misclib2 newer than BSS2; AB3 an AB3 extension | source |
+| LES debug | source LESDebuglib (1996-12-02) | source |
+| FNS | BSS2 (a wrong guard removed) | binary |
+| StoneCracker | BSS2 (`S404` checks) | binary |
+| STC decrunch | unclear | source |
+| Anim | source (BSS2 = source without the unfinished `RIDiskAnimInit`) | source |
+| CompactDisk | source cdSCSI | source |
+| Eval | BSS2 (`{}` indirection, a fix) | binary |
+| GTMenu | GTMenuLib3 (4 bytes differ from BSS2) | source |
+| Linked list | source listlib4 | source |
+| ReqTools | source RTLib (Matty 1997-01-29) | source |
+| DataTypes | source datatypeslib6 (13 checks more than BSS2) | source |
+| CIA tracker | source 1.02b, between OL (1.02a) and BUM9B (1.03) | source |
+| ARexx | source NEWAREXXLIB | source |
+| Shapes | source RIShapesLib2 | source |
+| Sort | source RISortlib2 | source |
+| Pack | BSS2 (Pack-Library9 + IFF size functions, a fix) | binary |
+
+"Source" means: the reference build of that source with blitz2 2.10 (the
+binary only for the parts it shares); "binary": the source is brought to
+the binary's state first. Also found: Pack-Library8_Mc is not identical
+to the OL binary (an older build with `$VER`); GTMenuLib3, datatypeslib6
+and CIATrackerLib1 have the declarations of their binaries; the BB22
+files convert to TED's format and build (`versions/tools/bb22.py`, a
+throw-away converter: a C tool for it is still to do); the constants of
+`datatypes.res` that datatypeslib6 uses are confirmed.
+
+### 3.3 Numbers of the libraries without a binary (stage D)
+
+RWE's "Official Blitz Library Number List" of 1997-02-02 (a copy on the
+CD of Amiga MA Magazine 1998 #7, discmaster.textfiles.com …/www/rwe/
+liblist_nf.html; AmiBlitz3's `sorted_libnums.ab3` is a copy with RI lines
+lost) gives: `#riintuilib` 15, `#ribbmaplib` 34, `#rithreadlib` 44,
+`#ritrackerlib` 58, `#riarrayslib` 7, MapEd 8, MapShapes 6, Registry 3,
+BB blit 19, Chunky 24, Display 29, Shapez 21. Not in it: Snow (literal
+195, probably a test number), Serial (literal 22 – the list gives 22 to
+`#riblitlib`), WB sprite (literal 10), PopUp window, Blitz Bombers 2. C2P
+(literal 8, like MapEd) is a preliminary RIChunkyLib (its `.xtra` writes
+`ChunkyLib.obj`). No binary of any of them exists anywhere. Contexts for
+variant names: REDMapEditor (MapEd, MapShapes, partly Shapez), REDRegistry,
+Blitz Bombers (BB blit, BB map, Blitz Bombers 2; Serial a guess). Raw
+material `.cache/rwelibs-analysis/research/`.
 
 ## 4 Tokens
 
