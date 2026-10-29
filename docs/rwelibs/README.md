@@ -48,8 +48,10 @@
   RIShapesLib) [S].
 * **Tokens:** with the token list of blitz2 1.95 alone 100 of the 123
   sources are readable; with the token tables of the binaries added
-  (1773 tokens, provisional) 120. The other three use a token with index
-  0 (`$B900`, `$CF12`, `$AA00`) [B].
+  (1773 tokens, provisional) 120. Of the other three, two are no token
+  problem: they are saved in another file format, **`BB22`** (section
+  4.1; 9 files in all); the third uses `GetPubScreen` (`$CF12`) of a
+  later screenslib that is not on the CD [B, AB3].
 
 ## 2 Libraries
 
@@ -66,7 +68,7 @@ latest date in the header comments.
 |---|---|---|---|---|---|---|
 | AMOS functions | 75 | `AMOSFunclib/func-library4`…`7` | RI | 1996-01-11 | 7 **=** BSS2 `RIAMOSFUNCLIB` (4768 B); 6: names equal, 1 help text differs; AB3's file differs from BSS2 | func-library7 |
 | Anim | 57 | `ANIMLib/Anim-Library3` | RI (McNamara) | 1994-11-07 | ≈ 88 % BSS2 `RIANIMLIB` | open |
-| App | 61 | `AppLib/AppLib`, `applib2`, `applib3` | – | – | applib2 **=** BSS2/AB3 `RIAPPLIB` (2892 B); applib3 not readable (`$B900`) | applib2 (applib3: check) |
+| App | 61 | `AppLib/AppLib`, `applib2`, `applib3` | – | – | applib2 **=** BSS2/AB3 `RIAPPLIB` (2892 B); applib3 in the `BB22` format | applib2 (applib3: check) |
 | Arrays | – (`#riarrayslib` in no table) | `ArraysLib` | RI | – | – | open |
 | CompactDisk | 14 (`#ricompactdisclib`, lit. 14) | `CDlib/cd`, `cd2`, `cd3`, `cdSCSI` | – | 1995-07-03 | ≈ 96 % OL `RICOMPACTDISKLIB` | open |
 | Commodities | 89 | `Commoditieslib/CommoditiesLib2` | – | – | **=** BSS2/AB3 (2604 B) | CommoditiesLib2 |
@@ -112,7 +114,7 @@ latest date in the header comments.
 | Intuition | – (`#riintuilib`) | `riintuilib`, `riintuilib2` | RI | 1995 | – | open |
 | PRO-PACK | lit. 197 | `ROBNORTHFAST` | Rob Northen Computing (All Rights Reserved) | 1991/92 | – | **not ported** (license) |
 | Serial | lit. 22 | `seriallib/Serial-Library` | – | – | – | open |
-| Shapes | 46 | `shapeslib/RIShapesLib`, `RIShapesLib2` (+ `Test`, `Comparison`) | RI, Nigel Hughes | – | ≈ 92 % BUM `RISHAPESLIB`; RIShapesLib2 not readable (`$AA00`) | open |
+| Shapes | 46 | `shapeslib/RIShapesLib`, `RIShapesLib2` (+ `Test`, `Comparison`) | RI, Nigel Hughes | – | ≈ 92 % BUM `RISHAPESLIB`; RIShapesLib2 in the `BB22` format | open |
 | Shapez | 21 | `shapezlib` | RI | 1995 | – | open |
 | Sort | 13 | `sortlib/RISortlib2` | RI | 1996-08-30 | ≈ 80 % BUM/BSS2/OL `RISORTLIB` (one file) | open (source newer than the binary) |
 | Sound | 45 | `soundlib/risoundlib`, `risoundlib2` | – | – | risoundlib **=** BSS2/AB3 (496 B); risoundlib2 (8 entries) – | open |
@@ -125,7 +127,7 @@ latest date in the header comments.
 | ZoneJoy | 64 | `zonejoylib/…` (6 versions) | RI | 1995-08-12 | 3 and 4 **=** BSS2/AB3 (3656 B); 1 and 2 **=** BUM/OL (3396 B); the two 020 versions (1994) ≈ 76 % | one of 3/4 (code decides) |
 
 Also in `rwelibsrc/`: `Debuglib/defaultdbug50.bb2` (a debugger, not a
-library; not readable, `$CF12`), `optidec.bin`, documentation
+library; uses `GetPubScreen` of a later screenslib, section 4), `optidec.bin`, documentation
 (`RIShapesLib.doc`, `RIPackLib.doc`, `ptlib/Docs`), icons and `.bak`
 copies [S].
 
@@ -162,9 +164,43 @@ token tables of the binaries give 1773 tokens beyond the 1.95 list
 (provisional: per number the version with the most entries; for numbers
 used by several libraries – 7, 10, 15, 35, 40, 41, 56, 60, 66, 69, 75,
 107, 109 – names may be wrong). For the port this has to become a
-generated list from exactly the reference binaries (step 2). The three
-tokens with index 0 (`$B900` lib 114, `$CF12` lib 158, `$AA00` lib 84)
-are not explained yet.
+generated list from exactly the reference binaries (step 2).
+
+`$CF12` (`Debuglib/defaultdbug50.bb2`, `*scr.Screen=GetPubScreen(0,"Workbench")`)
+is entry 18 of screenslib (158). The screenslib of 2.10 ends with entry
+15 (`ScreenTags`, `$CF0F`); AmiBlitz3's has 20, 16 to 20 are
+`FrontScreen`, `NewCloseScreen`, `GetPubScreen`, `ReleasePubScreen`,
+`ScreenPens2` (`BlitzLibs/tokenlist.txt`). So `defaultdbug50` was written
+for a later acidlibs – one that is not on the CD [B, AB3]. The other two
+"tokens" (`$B900`, `$AA00`) were bytes of a file header (4.1).
+
+### 4.1 The `BB22` format
+
+9 files of `rwelibsrc/` do not have TED's format (lines of tokenised
+text, each ended by a 0 byte) but begin with `BB22` [B]:
+`ANIMLib/Anim-Library3.bb` (+ `.bak`), `AppLib/applib3.bb` (+ `.bak`),
+`Registry/Registry3.bb`, `rexxlib/NEWAREXXLIB.bb`,
+`shapeslib/RIShapesLib2.bb`, `soundlib/risoundlib2.bb` (+ `.bak`) – all
+saved between June and September 1997 – shortly before the date of the
+CD's files (2 October 1997), yet none of the CD's editors knows the
+format (below).
+
+| Version (word +4) | Header | Line |
+|---|---|---|
+| 10 (5 files) | 16 bytes: `BB22`, then the words 10, a, b, 0, c, 2 (e.g. `applib3`: 10, 13, 25, 0, 441, 2) | 2 bytes (always 0 so far), tokenised text, 0 byte |
+| 8 (`Anim-Library3`) | 14 bytes: `BB22`, then 8, a, b, 0, c | 1 byte, tokenised text, 0 byte |
+
+All five files of version 10 split into lines exactly to their end. The
+meaning of the words a, b, c (cursor? first line shown?) and of the
+line prefix is not known. Which editor wrote it is not known either:
+none of the editors on the CD (TED 1.1, TED 2.1, SuperTED 2.1/2.23/2.50)
+contains `BB22`, nor do AmiBlitz3's PED and compiler (sources and history
+searched) [B, AB3]. That it comes from RWE's own later editor (the files
+are RWE's, 1997) is a conclusion [Schluss].
+
+For reading these sources a reader for `BB22` is needed (teddetok only
+splits at 0 bytes: the text survives, the line structure does not; the
+inventory of section 2 is not affected, it only uses the `!name` lines).
 
 AmiBlitz3's `BlitzLibs/tokenlist.txt` (`NAME.obj(NUM):INDEX token`) has
 the same names for the RI libraries it contains; it knows none of the
