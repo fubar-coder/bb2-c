@@ -339,7 +339,13 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     the macro buffer of the default options (tedstub `macrobuf=`, used
     for #336), the start from the Workbench (`wbrun`: #19, #20, #306,
     #307; #21 not yet: the port ends in the start directory, libnix's
-    startup restores it - a deviation of the port, to be decided); open:
+    startup restores it - a deviation of the port, to be decided; from
+    the CLI blitz2 does not change the directory, correctly); found
+    there: #337 (wb_exit: Permit before blitz2 has returned, from the
+    source); a program needs the command WBStartup to run from the
+    Workbench (manual), not a bug; lib_OpenCnt of dos.library is no
+    measure in the emulator (VNCClip.supervisor opens and closes it in
+    the background), wbrun counts the calls of the process; open:
     creating residents for #34, #35, #36;
     Compile & Run / PANIC from the editor (#24, #25); GUI input in the
     file requester (#154, #156–#158); a serial peer for unit > 0 and
