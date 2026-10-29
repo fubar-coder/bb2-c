@@ -12,7 +12,7 @@ comparisons were made with throw-away scripts (`.cache/fns/`).
 | | |
 |---|---|
 | Height | 8 rows: cap height 7 (rows 0–6), x-height 5 (rows 2–6), descenders in row 7 (`, ; g j p q y` and `Q`'s tail) |
-| Cell | 16 pixels wide (the format's minimum); the widest glyph is 11 pixels (`m`, `%`) |
+| Cell | 16 × 8 pixels (width × height; the width is the format's minimum, a multiple of 16); 87 of the 91 glyphs are at most 8 pixels wide, the wider ones are `%` (11), `m` (10) and the TM on `^` (9) |
 | Underline | row 7 (the descender row); `_` is a line in row 7 |
 | Characters | 91 bitmaps: codes 32 (space) to 122 (`z`) – digits, both cases, the ASCII punctuation; no `{ | } ~`, no codes above 122 (the advance table says 8 for them) |
 | Advance | proportional, 3–12 pixels: the ink width plus a gap of 1 pixel (2 for some, e.g. `i`, `!`: 3 for a 2-pixel glyph); space 6 |
@@ -24,8 +24,10 @@ horizontals 1 pixel, round letters with cut corners (`O`, `C`, `G` …),
 a dotted/slashed `0` (a diagonal pixel inside), open `4`, flat-topped
 `3`. It is in the style of the IBM PC's 8×8 BIOS font, made proportional:
 compared with the 8×8 PC console fonts (kbd `lat1-08`, descendants of the
-IBM VGA ROM fonts) the glyphs match on average to 80 % (pixel overlap,
-best horizontal and vertical shift), 24 of 90 are identical
+IBM VGA ROM fonts) the glyphs match on average to 80 % (pixel overlap
+of the left 8 columns of the 16-pixel cell – the whole glyph except for
+`%`, `m` and `^`, which are cut there –, best horizontal and vertical
+shift), 24 of 90 are identical
 (`$ ' ( ) * + , - . / : ; < > ] _ `` ` `` c e k n o s x`), many more differ
 in one row only (e.g. `a`: the last row). Own drawings are mainly `[`
 (an arrow), `^` (a trade mark sign), `=`, `M`, `y`, `Q`, `X` and `V`.
