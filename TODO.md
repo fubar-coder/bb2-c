@@ -288,7 +288,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   repository; history of bb2 (plans, logs, reviews) unchanged in content,
   remaining bb2 mentions explained in `docs/README.md`.
 * **Tests for the issues labelled `needs-test`** (99 open issues at the
-  start, 20 open on 2026-10-29, among them the new #337). A failing test is added with label
+  start, 19 open on 2026-10-29). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,
   and `needs-test` is removed (allowed for these issues, 2026-10-28).
   - Done (2026-10-28), every test REPRODUCED and, except where noted in
@@ -341,8 +341,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     #307, #21: the port ends in the start directory, libnix's startup
     restores it - a deviation, documented (user decision 2026-10-29); from
     the CLI blitz2 does not change the directory, correctly); found
-    there: #337 (wb_exit: Permit before blitz2 has returned, from the
-    source); a program needs the command WBStartup to run from the
+    there: #337 (wb_exit: Permit before blitz2 has returned; test with
+    wbrun freeseg, the port comes out FIXED, libnix answers without
+    Permit); a program needs the command WBStartup to run from the
     Workbench (manual), not a bug; lib_OpenCnt of dos.library is no
     measure in the emulator (VNCClip.supervisor opens and closes it in
     the background), wbrun counts the calls of the process; open:
