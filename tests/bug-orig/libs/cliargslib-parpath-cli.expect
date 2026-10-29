@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+numpars 1 datei.txt
+parpath0 []
+parpath1 []
+rc=0
