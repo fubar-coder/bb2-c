@@ -1,0 +1,8 @@
+[run]
+cancel 0
+inject: rc=0
+inject: current dir at end: start
+inject: not in use: CORPUS:a
+inject: click FQ/PARENT: answered
+inject: click FQ/CANCEL: answered
+rc=0
