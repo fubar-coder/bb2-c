@@ -363,6 +363,12 @@ extern char blitz_tok[];
 #define BL_TOKVAL(tok, form) (0x80000000UL | ((ULONG)(form) << 16) | (UWORD)(tok))
 #define BL_BTOKVAL(tok, form) (0xC0000000UL | ((ULONG)(form) << 16) | (UWORD)(tok))
 #define BLITZ_TOKE(tok)      ((void *)(blitz_tok + BL_TOKVAL(tok, 0)))
+/* the same placeholder as text for inline assembler, from the library
+   number and the low part of the token (libnum<<7 + n):
+   "jsr _blitz_tok+" BL_ASMTOK(LIB_printlib, 1) */
+#define BL_STR_(x) #x
+#define BL_STR(x) BL_STR_(x)
+#define BL_ASMTOK(lib, n) "0x80000000+((" BL_STR(lib) "<<7)+" BL_STR(n) ")"
 
 /* Registers passed to / returned from a routine of another library. */
 struct bl_regs {

@@ -490,11 +490,15 @@ several versions.
       readable `rwelibsrc` from the files of its variant (once the RWE
       userlibs are built, 4.5.5) instead of the provisional
       `tokens-ext.txt` of `.cache/rwelibs-analysis/`.
-   3. **Numbers only through `libnums.h`**: the literals left in the
-      libraries on macros – `debuglib.c` (four `jsr
-      _blitz_tok+0x80005204`/`…5d81` in inline assembler: `#inputoutputlib
-      LSL 7+4` …), `fadelib.c` (`BLITZ_LIBHEADER(157, …)`);
-      byte-identical.
+   3. ~~**Numbers only through `libnums.h`**~~ done (2026-10-29):
+      `debuglib.c` writes its four tokens in inline assembler with
+      `BL_ASMTOK(LIB_inputoutputlib, 4)`/`(LIB_printlib, 1)`
+      (`blitzlib.h`), `fadelib.c` its number as `LIB_fadelib_header`
+      (157, given literally in the original; `#fadelib` of libnums.bb
+      is 102 and used by no library), at the end of `libnums.h`; all
+      994 results byte-identical. No other literal number in the
+      libraries (`BLITZ_LIBHEADER`, `BLITZ_LIBS`, tokens of
+      ALibJsr/BLibJsr all through `LIB_xxx`).
    4. **Variant build**: a variant is a directory with its own
       `libnums.h` (and further switches), e.g. `bb-1.95` with today's
       numbers; a CMake function builds the same library sources with

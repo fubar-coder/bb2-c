@@ -336,7 +336,7 @@ __asm__(
 "   tst.l   d0\n"
 "   beq.w   1f\n"
 "   move.l  d0,a0\n"
-"   jsr     _blitz_tok+0x80005204\n"    /* ALibJsr #inputoutputlib LSL 7+4 */
+"   jsr     _blitz_tok+" BL_ASMTOK(LIB_inputoutputlib, 4) "\n"    /* ALibJsr */
 "   move.l  d0,_oldouth\n"
 "1: clr.w   _doutx\n"
 "   move.l  _procsp(pc),a0\n"
@@ -371,7 +371,7 @@ __asm__(
 "   beq.w   3f\n"
 "   clr.l   _oldouth\n"
 "   move.l  d0,a0\n"
-"   jsr     _blitz_tok+0x80005204\n"
+"   jsr     _blitz_tok+" BL_ASMTOK(LIB_inputoutputlib, 4) "\n"
 "3: lea     _astring(pc),a0\n"
 "   move.w  _doutx(pc),d0\n"
 "   clr.b   0(a0,d0.w)\n"
@@ -785,6 +785,6 @@ BLITZ_THUNK_POST(dofindoff, dofindoff_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 /* unreferenced, as in the binary: makes the compiler include printlib */
 __asm__(
 "   .text\n"
-"   jsr     _blitz_tok+0x80005d81\n"
-"   jsr     _blitz_tok+0x80005d81\n"
+"   jsr     _blitz_tok+" BL_ASMTOK(LIB_printlib, 1) "\n"
+"   jsr     _blitz_tok+" BL_ASMTOK(LIB_printlib, 1) "\n"
 );

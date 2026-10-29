@@ -3,8 +3,8 @@
  * mode - FadeIn, FadeOut, ASyncFade, DoFade, FadeStatus.
  *
  * C translation of bblibsrc/fadelib (!libheader{157,...}: the number is
- * given literally, #fadelib does not exist; binary checked: same as the
- * source).  FadeIn/FadeOut/DoFade/FadeStatus are Blitz mode only (err1 =
+ * given literally - LIB_fadelib_header, #fadelib of libnums.bb is 102;
+ * binary checked: same as the source).  FadeIn/FadeOut/DoFade/FadeStatus are Blitz mode only (err1 =
  * 1 resp. a check + 1).  A fade works on the colour pokes of the used
  * slice (blitzcoplib: slice+18 = copper colour moves, slice+8 = number of
  * colours) in 16 steps of 4 bit colours:
@@ -59,7 +59,7 @@ void BLITZ_ROUTINE doasyncfade(void);
 BLITZ_ENTRY_DECL(init);
 
 /* !libheader{157,init,0,0,errors} */
-BLITZ_LIBHEADER(157, init, BL_NORET, 0, BLITZ_ERROR_AREA);
+BLITZ_LIBHEADER(LIB_fadelib_header, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
 #define FADE_FORMS(c2, c3, c)                                               \
     BLITZ_ARGS(BL_WORD);                                                    \
