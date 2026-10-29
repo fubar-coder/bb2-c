@@ -1,0 +1,7 @@
+[run]
+key 00000020
+key 00000035
+key 00000033
+inject: rc=0
+inject: keys: sent
+rc=0
