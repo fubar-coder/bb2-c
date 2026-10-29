@@ -25,24 +25,37 @@ foreach(src ${sources})
 	endif()
 endforeach()
 
-set(objs)
-foreach(name ${ACIDLIBS_ORDER})
-	if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.c)
-		blitz_library(${name} ${name}.c)
-		list(APPEND objs ${CMAKE_CURRENT_BINARY_DIR}/${name}.obj)
-	elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/prebuilt/${name}.obj)
-		list(APPEND objs ${CMAKE_CURRENT_SOURCE_DIR}/prebuilt/${name}.obj)
-	else()
-		message(FATAL_ERROR "acidlibs: neither ${name}.c nor prebuilt/${name}.obj")
+# the libraries and acidlibs of the default build (prefix "", variant "")
+# or of a variant (target names PREFIX + name, its libnums.h from VARIANT)
+function(acidlibs_build prefix variant output)
+	set(objs)
+	set(varg)
+	if(variant)
+		set(varg VARIANT ${variant})
 	endif()
+	foreach(name ${ACIDLIBS_ORDER})
+		if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.c)
+			blitz_library(${prefix}${name} ${varg} ${name}.c)
+			list(APPEND objs ${CMAKE_CURRENT_BINARY_DIR}/${prefix}${name}.obj)
+		elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/prebuilt/${name}.obj)
+			list(APPEND objs ${CMAKE_CURRENT_SOURCE_DIR}/prebuilt/${name}.obj)
+		else()
+			message(FATAL_ERROR "acidlibs: neither ${name}.c nor prebuilt/${name}.obj")
+		endif()
+	endforeach()
+
+	# freqlib: the file requester core shared with TED, compiled here with
+	# the library options; filereq_env.h (this directory) is its environment
+	target_sources(${prefix}freqlib PRIVATE ${FILEREQ_DIR}/filereq_core.c)
+	target_include_directories(${prefix}freqlib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${FILEREQ_DIR})
+
+	biglib_join(${prefix}acidlibs ${output} ${objs})
+endfunction()
+
+acidlibs_build("" "" ${BLITZ2_DIR}/acidlibs)
+foreach(v IN LISTS BLITZ_VARIANTS)
+	acidlibs_build(${v}- ${PROJECT_SOURCE_DIR}/libs/variants/${v} ${BLITZ_VARIANTS_DIR}/${v}/acidlibs)
 endforeach()
-
-# freqlib: the file requester core shared with TED, compiled here with the
-# library options; filereq_env.h (this directory) is its environment
-target_sources(freqlib PRIVATE ${FILEREQ_DIR}/filereq_core.c)
-target_include_directories(freqlib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${FILEREQ_DIR})
-
-biglib_join(acidlibs ${BLITZ2_DIR}/acidlibs ${objs})
 
 # the prebuilt libraries are not built here: checked by ctest
 file(GLOB prebuilt CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/prebuilt/*.obj)

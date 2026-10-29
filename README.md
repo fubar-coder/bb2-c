@@ -41,6 +41,18 @@ Result in `build/amiga/blitz2/` – the contents of the `blitz2:` directory:
 
 Preset `amiga-debug`: the same code (`-Os`) with symbols, without strip.
 
+**Variants** of the libraries: every directory `libs/variants/NAME/` with
+a `libnums.h` builds the same libraries once more with its library
+numbers, to `build/amiga/variants/NAME/acidlibs` and `deflibs` (targets
+`NAME-acidlibs`, `NAME-deflibs`); the default build above stays as it is.
+A variant's `libnums.h` usually includes `../../include/libnums.h` and
+changes single numbers (`#undef`/`#define LIB_xxx`). Every number in the
+libraries comes from `libnums.h` – header, `!libs` references, the calls
+of other libraries (ALibJsr) – so a changed number moves all of them,
+and the tokens of a source written for the variant come from its files
+(`blitztokens`, `teddetok --blitz2 … --lib …`). The two variants there
+(`selftest-same`, `selftest-renumbered`) are checks (ctest `variant_*`).
+
 ## Checks in the build
 
 The build checks its results itself; if a check fails, the result counts
@@ -53,7 +65,7 @@ again):
   check area are only a warning (without the debugger they point behind
   the end of the code; the originals do that too). `acidlibs`/`deflibs`
   are made only from checked libraries.
-* `acidlibs`, `deflibs`, in the same step as the
+* `acidlibs`, `deflibs` (also of every variant), in the same step as the
   join: no library number twice (`biglib check`; deflibs together with
   the acidlibs loaded with it) – two libraries with one number would have
   the same tokens.
@@ -393,6 +405,8 @@ libs/blitzlib.ld             linker script: one code hunk, header at offset 0
 libs/acidlibs/               one C file per library; prebuilt/: libraries
                              not yet ported, as originals (dhandlerlib)
 libs/deflibs/                one C file per AmigaOS library
+libs/variants/               variants of the libraries (NAME/libnums.h:
+                             other library numbers), check.cmake
 libs/tests/                  libs_tests: the libraries against their
                              originals in the emulator (m68k, snitch)
 shared/filereq/              file requester of freqlib and TED (one source,

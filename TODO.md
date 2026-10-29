@@ -502,14 +502,21 @@ several versions.
       literal or local number in the libraries (`BLITZ_LIBHEADER`,
       `BLITZ_LIBS`, tokens of ALibJsr/BLibJsr all through `LIB_xxx`
       of `libnums.h`).
-   4. **Variant build**: a variant is a directory with its own
-      `libnums.h` (and further switches), e.g. `bb-1.95` with today's
-      numbers; a CMake function builds the same library sources with
-      that include directory to `build/<preset>/variants/<name>/`
-      (`acidlibs`, `deflibs`, `userlibs/…`). The default variant stays
-      byte-identical; a check in the build: no two libraries of a
-      variant with the same number (with a test with a clash on
-      purpose).
+   4. ~~**Variant build**~~ done (2026-10-29): `libs/variants/NAME/`
+      with its own `libnums.h` (usually the default one included and
+      single numbers changed); `acidlibs_build`/`deflibs_build` build the
+      same sources with that directory first in the include path
+      (`blitz_library … VARIANT`, `blitzlib.h` includes `<libnums.h>`)
+      to `build/<preset>/variants/NAME/acidlibs`, `deflibs`. The default
+      build is byte-identical. Check in the build: `biglib check` in the
+      join (no number twice in acidlibs, in deflibs with acidlibs),
+      tests `biglib_check_clash` (must fail) and the unit test.
+      Variants as checks: `selftest-same` (byte-identical to the
+      default), `selftest-renumbered` (fadelib 157→3, inputoutputlib
+      164→4: the tokens move, debuglib's call of inputoutputlib with
+      them; `variant_selftest_renumbered`). Open: userlibs of a variant
+      (with 4.5.5); further switches besides the numbers when a library
+      needs them.
    5. **First users**: the RWE userlibs (their numbers: AmiBlitz3's
       libnums, the matching binaries, `#riarrayslib` = 7 from
       `defaultdbug50.bb2`; `docs/rwelibs/README.md` §3.1). No

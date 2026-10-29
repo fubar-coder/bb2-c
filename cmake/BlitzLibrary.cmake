@@ -1,4 +1,9 @@
-# blitz_library(NAME SOURCES...) - one Blitz Basic 2 library from C
+# blitz_library(NAME [VARIANT DIR] SOURCES...) - one Blitz Basic 2 library
+# from C
+#   VARIANT DIR   a variant (libs/variants/NAME): its directory comes first
+#                 in the include path, so its libnums.h (the library
+#                 numbers, blitzlib.h includes <libnums.h>) is taken
+#                 instead of libs/include/libnums.h
 #   libNAME.a     the library as static library
 #   NAME.linked   the link with symbols (for disassembly and comparisons)
 #   NAME.obj      the library file in Blitz 2 format (one code hunk, header
@@ -17,7 +22,11 @@ set(BLITZLIB_LD ${CMAKE_CURRENT_LIST_DIR}/../libs/blitzlib.ld)
 set(BLITZLIB_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/../libs/include)
 
 function(blitz_library name)
-	add_library(${name} STATIC ${ARGN})
+	cmake_parse_arguments(PARSE_ARGV 1 arg "" "VARIANT" "")
+	add_library(${name} STATIC ${arg_UNPARSED_ARGUMENTS})
+	if(arg_VARIANT)
+		target_include_directories(${name} BEFORE PUBLIC ${arg_VARIANT})
+	endif()
 	target_include_directories(${name} PUBLIC ${BLITZLIB_INCLUDE})
 	target_compile_options(${name} PRIVATE
 		-fomit-frame-pointer

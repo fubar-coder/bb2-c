@@ -65,7 +65,8 @@
 
 #include <exec/types.h>
 #include <exec/memory.h>
-#include "libnums.h"     /* LIB_xxx = #xxx of libnums.bb */
+#include <libnums.h>     /* LIB_xxx = #xxx of libnums.bb; <>: a variant
+                             (libs/variants) brings its own */
 
 /* ----------------------------------------------------------- constants */
 
