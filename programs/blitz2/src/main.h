@@ -33,7 +33,8 @@
 #define release  (-1)
 #define cripple  0
 #define final    (-1)          /* -1: final version (no PRINT TOKENS menu) */
-#define blitz2version 195     /* asm: version (renamed: `version` clashes with NDK struct fields) */
+/* DIFF: 210 as in the compiler of the CD (blitz2.s says 195; docs/v2.10) */
+#define blitz2version 210     /* asm: version (renamed: `version` clashes with NDK struct fields) */
 
 /* internal library token numbers (passed to tokejsr / uselib) */
 #define wbstart     0xbf00     /* lib 65533 wbstartuplib */
