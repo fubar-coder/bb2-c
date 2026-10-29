@@ -1,0 +1,201 @@
+# The libraries of Red When Excited: inventory
+
+> As of 29.10.2026. Static analysis: sources read as text, token tables
+> of the binaries compared; nothing compiled or run.
+> Evidence: **[B]** binary / token table, **[S]** source, **[AB3]**
+> AmiBlitz3 (SourceForge `amiblitz3`, git of the SVN), **[Schluss]**
+> conclusion, not proven. Plan: `TODO.md` §4; origin and license:
+> `archive/README.md`.
+
+## 1 Summary
+
+* **Sources:** `archive/aminet/amibl2src/rwelibsrc/` (from
+  `RWELibSourc.lha` in `amibl2src.lha`, what RWE released in September
+  1999): 287 files, 123 Blitz sources, of them 117 library sources (with
+  `!libheader`) of **about 50 libraries**, many in several versions; the
+  rest examples, tests and a debugger [S].
+* **Authors** (by the headers): mostly **Reflective Images** (Stephen
+  McNamara, Steven Matty; 1994–1996), some marked **Leading Edge
+  Software** (Matty: datatypes, Disasm, Debuglib), **Red When Excited**
+  (Registry 1997, LVCallHook 1996, the ARexx library of 1997), **Neil
+  O'Rourke** (ReqTools interface, CIA tracker library) [S].
+* **Binaries** to compare with: the CD (`BSS2/REDBLITZLIBS/LIBRARIES/USERLIBS/`
+  = Blitz Support Suite 2 of RWE, the latest; `BUM9B`/`BUM10A/BLITZLIBS/RILIBS/`,
+  `EXTRAS/BLITZLIBS/OTHERLIBS/`) and AmiBlitz3 (`BlitzLibs/UserLibs/userlibs/`,
+  32 RI/RWE files, 27 of them byte-identical to the CD, never changed in
+  its history) [B, AB3].
+* **29 sources have the declarations of a binary exactly** (same names in
+  the same order, same help texts): for 22 libraries there is a source
+  version whose binary exists (section 3) [B].
+* **About 25 libraries exist only as source** (no binary on the CD nor
+  in AmiBlitz3), e.g. Registry, the Blitz Bombers libraries, ptlib,
+  MapEd, threadlib [B].
+* **Only one RI/RWE binary has no source:** `RWEMathLib` (23,
+  `BUM10A/BLITZLIBS/TESTLIBS`), besides the four later acidlibs of
+  `BSS2/REDBLITZLIBS/LIBRARIES/BASIC/` (documented only,
+  `docs/v2.10/libs.md` §4) [B].
+* **Numbers:** taken from AmiBlitz3's `sorted_libnums.ab3` (it lists
+  every RI library); **clash with acidlibs/deflibs only 121** (RIEvalLib
+  vs acidlibs' polylib, `docs/v2.10/libs.md` §4). Several sources carry
+  literal test numbers (5, 8, 10, 19, 22, 39, 195, 197, 198), some of
+  them used by other libraries [S, AB3].
+* **License:** `ROBNORTHFAST.bb` contains Rob Northen's PRO-PACK unpacker
+  "Copyright (c) 1991,92 Rob Northen Computing, U.K. All Rights
+  Reserved." – not covered by RWE's release, **not to be ported**. The
+  Protracker 2.3A play routine (ptlib) names no authors. Further credits
+  in the sources (Ott/The Farm: bug reports; Delirium Softdesign: a
+  busy-wait fix in the CIA tracker library; Nigel Hughes: an addition to
+  RIShapesLib) [S].
+* **Tokens:** with the token list of blitz2 1.95 alone 100 of the 123
+  sources are readable; with the token tables of the binaries added
+  (1773 tokens, provisional) 120. The other three use a token with index
+  0 (`$B900`, `$CF12`, `$AA00`) [B].
+
+## 2 Libraries
+
+Number: `!libheader` constant resolved by AmiBlitz3 (`#name` →), a
+literal number in the source (lit.), or – where the constant is in no
+table – the number of the matching binary (bin.). Binary: **=** the
+declarations are identical (names, order, help texts), **≈ n %** only the
+name sets overlap that much (Jaccard), – none. BSS2 =
+`BSS2/REDBLITZLIBS/LIBRARIES/USERLIBS/`, OL = `EXTRAS/BLITZLIBS/OTHERLIBS/`,
+BUM = `BUM9B`/`BUM10A/BLITZLIBS/RILIBS/`, AB3 = AmiBlitz3. Date: the
+latest date in the header comments.
+
+| Library | Number | Source versions (`rwelibsrc/…`) | Author (header) | Date | Binary | Reference |
+|---|---|---|---|---|---|---|
+| AMOS functions | 75 | `AMOSFunclib/func-library4`…`7` | RI | 1996-01-11 | 7 **=** BSS2 `RIAMOSFUNCLIB` (4768 B); 6: names equal, 1 help text differs; AB3's file differs from BSS2 | func-library7 |
+| Anim | 57 | `ANIMLib/Anim-Library3` | RI (McNamara) | 1994-11-07 | ≈ 88 % BSS2 `RIANIMLIB` | open |
+| App | 61 | `AppLib/AppLib`, `applib2`, `applib3` | – | – | applib2 **=** BSS2/AB3 `RIAPPLIB` (2892 B); applib3 not readable (`$B900`) | applib2 (applib3: check) |
+| Arrays | – (`#riarrayslib` in no table) | `ArraysLib` | RI | – | – | open |
+| CompactDisk | 14 (`#ricompactdisclib`, lit. 14) | `CDlib/cd`, `cd2`, `cd3`, `cdSCSI` | – | 1995-07-03 | ≈ 96 % OL `RICOMPACTDISKLIB` | open |
+| Commodities | 89 | `Commoditieslib/CommoditiesLib2` | – | – | **=** BSS2/AB3 (2604 B) | CommoditiesLib2 |
+| CopperFX | 11 (bin.) | `Copperlib/CopperFX3` | RI | 1995-03-08 | **=** BSS2/AB3 (1856 B) | CopperFX3 |
+| DOS | 33 | `DOSLib/ridoslib`, `ridoslib2` | – | – | ridoslib2 **=** BSS2/AB3 (2416 B) | ridoslib2 |
+| Debug | 51 | `Debuglib/Debuglib4` | LES | 1995-02-27 | **=** OL `RIDEBUGLIB` (1380 B); BSS2's differs | Debuglib4 (BSS2: check) |
+| LES debug | 49 | `Debuglib/LESDEBUGlib`, `LESDebuglib/LESDEBUGlib` | – | 1996-09-17 / 1996-12-01 | the older **=** AB3 `RILESDEBUGLib` (11216 B); the newer ≈ 94 % | open (newer source than the binary) |
+| Disasm | 50 (bin.) | `Disasmlib/Disasm-library.bb2` | LES | 1994 | **=** AB3 `RIDisAsm` (9228 B) | Disasm-library |
+| Encrypt | 52 | `Encryptlib/Encrypt-Library` | RI (McNamara) | 1996-01-21 | **=** BSS2/AB3 (636 B); BUM/OL (680 B) same declarations | Encrypt-Library |
+| Eval | 121 (bin.; clash with acidlibs) | `EvalLib4` | RI | 1995-11-17 | ≈ 83 % BSS2 `RIEVALLIB` | open |
+| FastSerial | 36 | `FASTSerial/fastseriallib`, `2`, `3` | – | – | 3 **=** BSS2/AB3 (1920 B) | fastseriallib3 |
+| FNS | 93 | `FNSLib/fns-library11`; `FNS2` (lit. 39, 3 entries) | RI | 1995-11-14 | 11: names equal BSS2, 1 help text differs | fns-library11 (check) |
+| FX | 66 | `FXLib/FX-Library13` | RI (McNamara) | 1996-01-21 | **=** BSS2/AB3 (4632 B) | FX-Library13 |
+| GFX | 65 | `GFXLib/GFX-Library2` | – | 1996-01-21 | **=** BSS2/AB3 (2036 B) | GFX-Library2 |
+| GTMenu | 37 | `GTMenuLib/GTMenuLib`, `2`, `3` | RI | 1996-03-10 | ≈ 92 % BSS2 | open |
+| Linked list | 12 (bin.) | `Listlib/listlib4` | RI | – | ≈ 92 % OL `RILISTLIB` | open |
+| MapEd | 8 | `MapEd/MapEd_Bit`, `MapEd_Bit2` | RI | – | – | open |
+| MapShapes | 6 | `MapEd/MapShape`, `MapShape2` | RI | 1996-12-22 | – | open |
+| ReqTools | 54 (`#neilsreqtoolslib`) | `RTLib` | Neil O'Rourke | 1997-01-29 | ≈ 97 % `BUM10A/BLITZLIBS/OTHERLIBS/NEILSREQTOOLSLIB` | open |
+| Registry | 3 | `Registry`, `Registry/Registry2`, `Registry3` | RWE | 1997 | – | open |
+| Registry support | – (`#registrysupplib`) | `Registry/regsupplib` | RWE | 1997 | – | open |
+| Snow | lit. 195 | `Snow/SnowLib3` | RI | 1994 | – | open |
+| Blitz Bombers | 30 | `blitzbomberslib/blitzbombers86`, `87`, `88` | RI | 1996-10-04 | – | open |
+| Blitz Bombers 2 | – (`#blitzbomberslibtwo`) | `blitzbomberslib/blitzbombersTwo00` | RI | – | – | open |
+| BB blit | 19 (lit., = `#bb_blitlib`) | `blitzbomberslib/BB_BlitLib4` | RI (McNamara) | 1996-01-30 | – | open |
+| BB map | – (`#ribbmaplib`) | `blitzbomberslib/bbmaplib2` | RI | 1995-09-30 | – | open |
+| (tests) | lit. 5 / – | `blitzbomberslib/TestBlit`, `PredatorBlit` | – | – | – | not a library / test |
+| C2P | lit. 8 | `c2plib`, `c2plibA` | RI | 1995 | – | open |
+| Chunky | 24 | `chunkylib`, `chunkylib2` | RI | 1995-08-14 | – | open |
+| DataTypes | 25 | `datatypeslib` … `datatypeslib6` | RI / LES (Matty) | 1995 | 6 ≈ 95 % BSS2 | open |
+| (template) | – | `emptylib` | RI | 1995 | – | not a library |
+| LVCallHook | 27 (bin.) | `lvcallhook/LVCallHook3` | RWE | 1996 | **=** AB3 `RILVCallHook` (1172 B) | LVCallHook3 |
+| Misc | 47 | `misclib/misclib`, `misclib2` | – | 1996-05-23 | misclib2: names equal AB3 `Rimisclib`, 2 help texts differ; BSS2 ≈ 72 % | open |
+| (argument tests) | lit. 198 | `myaudiolib`, `myctrlclib` | – | – | – | test |
+| Display | 29 | `mydisplaylib` | RI | – | – | open |
+| NonVolatile | 35 (clash `mazfpulib`, AB3) | `nonvolatile` | RI | 1994 | **=** BSS2/AB3 (640 B) | nonvolatile |
+| Pack | 73 | `packlib/Pack-Library8`, `8_Mc`, `9` | RI | 1996-05-09 | 8 **=** BUM (2564 B), 8_Mc **=** OL (2388 B); 9 newer, ≈ 88 % | open (9 newer than the binaries) |
+| PopUp window | – (`#popupwinlib`) | `popuplib/popupwinlib` (+ `test2`) | RI | 1994 | – | open |
+| Protracker | – (`#ritrackerlib`) | `ptlib/ptlib` … `ptlib7`, `ptlibmatty` | Protracker 2.3A routine, adapted | 1995-04-08 | – | open (authors of the routine) |
+| CIA tracker | 56 (`#ciatrklib`; clash `xbciatrackerlib`, AB3) | `ptlib/CIATrackerLib1` (+ `SamplePrograms/TrackerTest`) | Neil O'Rourke, Delirium Softdesign | – | ≈ 88 % OL `XBONESCIATRKLIB` | open |
+| Req | 79 | `reqlib/ReqLib`, `2`, `3` | – | – | all three **=** OL/AB3 `RIREQLIB` (964 B) | one of three (code decides) |
+| ARexx | 133 (`#myconst=133`) | `rexxlib/…` (9 versions) | RI; `NEWAREXXLIB`: RWE (Matty) | 1997-02-09 | ≈ 76 % BSS2 `RIAREXXLIB` | open |
+| Intuition | – (`#riintuilib`) | `riintuilib`, `riintuilib2` | RI | 1995 | – | open |
+| PRO-PACK | lit. 197 | `ROBNORTHFAST` | Rob Northen Computing (All Rights Reserved) | 1991/92 | – | **not ported** (license) |
+| Serial | lit. 22 | `seriallib/Serial-Library` | – | – | – | open |
+| Shapes | 46 | `shapeslib/RIShapesLib`, `RIShapesLib2` (+ `Test`, `Comparison`) | RI, Nigel Hughes | – | ≈ 92 % BUM `RISHAPESLIB`; RIShapesLib2 not readable (`$AA00`) | open |
+| Shapez | 21 | `shapezlib` | RI | 1995 | – | open |
+| Sort | 13 | `sortlib/RISortlib2` | RI | 1996-08-30 | ≈ 80 % BUM/BSS2/OL `RISORTLIB` (one file) | open (source newer than the binary) |
+| Sound | 45 | `soundlib/risoundlib`, `risoundlib2` | – | – | risoundlib **=** BSS2/AB3 (496 B); risoundlib2 (8 entries) – | open |
+| STC decrunch | 18 | `stcdecrunchlib` | – | – | **=** BSS2/AB3 (576 B) | stcdecrunchlib |
+| StoneCracker | 17 | `stclib` | – | – | **=** BSS2/AB3 (1136 B) | stclib |
+| Thread | – (`#rithreadlib`) | `threadlib` | RI | 1995 | – | open |
+| ToolTypes | 59 (bin.) | `tooltypeslib/ToolTypes4` | RI (McNamara) | 1995-04-05 | **=** BSS2/AB3 (3564 B) | ToolTypes4 |
+| TrackDisk | 91 | `trackdisklib/trackdisk`, `trackdisk2` | – | – | both **=** BSS2/AB3 (1892 B) | one of two (code decides) |
+| WB sprite | lit. 10 | `wbspritelib/WBSprite-library2` | RI | 1994 | – | open |
+| ZoneJoy | 64 | `zonejoylib/…` (6 versions) | RI | 1995-08-12 | 3 and 4 **=** BSS2/AB3 (3656 B); 1 and 2 **=** BUM/OL (3396 B); the two 020 versions (1994) ≈ 76 % | one of 3/4 (code decides) |
+
+Also in `rwelibsrc/`: `Debuglib/defaultdbug50.bb2` (a debugger, not a
+library; not readable, `$CF12`), `optidec.bin`, documentation
+(`RIShapesLib.doc`, `RIPackLib.doc`, `ptlib/Docs`), icons and `.bak`
+copies [S].
+
+## 3 What "reference" means here
+
+For the acidlibs the reference was the binary of the 2.10 release. For
+these libraries there is no release that contains all of them; the CD
+and AmiBlitz3 have binaries of about half of them, in partly several
+builds. Proposed rule (to be decided in step 3 of `TODO.md` §4):
+
+1. **A source version whose declarations equal a binary** (22 libraries,
+   column "Reference" above): that version, the binary is the reference
+   for the comparison (declarations as with `blitzlibcompare`, code as
+   with `asmcmp`). If several versions equal the same binary (Req,
+   TrackDisk, ZoneJoy), the code decides.
+2. **A source newer than every binary** (LES debug, Pack, Sort, maybe
+   more): the newest source; the binary only as a comparison for the
+   unchanged parts.
+3. **Only a source** (about 25 libraries): the newest version; a
+   reference build from the Blitz source would be needed to compare –
+   whether blitz2 can build a library from `libmacs.bb` sources is step
+   3.
+4. **Not ported:** `ROBNORTHFAST` (license); examples, tests and the
+   template (`emptylib`, `myaudiolib`, `myctrlclib`, `TestBlit`,
+   `PredatorBlit`, `popuplib/test2`, `shapeslib/Test`, `Comparison`,
+   `ptlib/SamplePrograms`) – they may serve as test programs.
+
+## 4 Tokens
+
+Token = `$8000 | number<<7 | (index + 1)` (checked with acidlibs'
+sortlib 110 against `tests/data/ted-tokens.txt`). For reading the
+sources a token list is needed that knows the libraries they call: the
+token tables of the binaries give 1773 tokens beyond the 1.95 list
+(provisional: per number the version with the most entries; for numbers
+used by several libraries – 7, 10, 15, 35, 40, 41, 56, 60, 66, 69, 75,
+107, 109 – names may be wrong). For the port this has to become a
+generated list from exactly the reference binaries (step 2). The three
+tokens with index 0 (`$B900` lib 114, `$CF12` lib 158, `$AA00` lib 84)
+are not explained yet.
+
+AmiBlitz3's `BlitzLibs/tokenlist.txt` (`NAME.obj(NUM):INDEX token`) has
+the same names for the RI libraries it contains; it knows none of the
+source-only libraries [AB3].
+
+## 5 Method
+
+Raw material (git-ignored): `.cache/rwelibs-analysis/` with `INDEX.md`
+(scripts and outputs; throw-away, Python with `python3 -I`, not in the
+repository).
+
+1. All `*.OBJ` of the CD and `BlitzLibs/UserLibs/userlibs/*.obj` of
+   AmiBlitz3 read with `tools/lib/blitzlib` (number, size, entries with
+   name and help text).
+2. The sources made readable with `teddetok` and the extended token list.
+3. Per source: `!libheader`, `!name` entries (order, help text), the
+   header comments (authors, dates).
+4. Matching: equal declarations (names in order and help texts) =
+   "**=**"; otherwise the overlap of the name sets.
+5. Numbers from AmiBlitz3 `Sourcecodes/Includes/System/sorted_libnums.ab3`
+   and `Sourcecodes/Amiblitz3/BlitzLibs/libnums.ab3`; clashes with the
+   number lists of `BLITZ2/ACIDLIBS` and `BLITZ2/DEFLIBS`.
+
+## 6 Open questions
+
+1. How were these libraries built from the Blitz sources (`libmacs.bb`,
+   `!libheader`; `INCDIR "BlitzLibs:"`), and can blitz2 (port) do it
+   here – the basis of a reference build (`TODO.md` §4 step 3)?
+2. Which libraries belong together as one product (e.g. the three Blitz
+   Bombers libraries, MapEd/MapShapes, Registry/support)?
+3. The libraries with literal test numbers (5, 8, 10, 19, 22, 39, 195,
+   197, 198): which number do they get as userlibs?
+4. The Protracker play routine in ptlib: whose is it (the readme of
+   Protracker 2.3A names the authors), and may it be taken over?

@@ -50,7 +50,7 @@ network, the normal build does not. The downloads end up in
   acidlibs. They are to be ported as libraries of their own (userlibs),
   next to the 2.10 state. The token list of blitz2
   1.95 (`tests/data/ted-tokens.txt`) does not know all of their tokens
-  (18 of the 118 sources).
+  (23 of the 123 sources).
 
 ## License situation of the originals
 

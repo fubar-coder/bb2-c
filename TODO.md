@@ -428,7 +428,10 @@ state; `acidlibs`/`deflibs` stay byte-identical. About 45 libraries
 (Reflective Images, Leading Edge Software, RWE and a few others), many in
 several versions.
 
-1. **Inventory** (`docs/rwelibs/`): per library the source files and
+1. ~~**Inventory**~~ done (2026-10-29): `docs/rwelibs/README.md` –
+   about 50 libraries, 22 with a source version whose declarations
+   equal a binary, about 25 only as source; `ROBNORTHFAST` not ported
+   (license). Was: per library the source files and
    versions, author, library number, tokens; the matching binaries of the
    CD (`EXTRAS/BLITZLIBS/RILIBS`, `BSS2/REDBLITZLIBS`, `…/OTHERLIBS`,
    `docs/v2.10/libs.md` §3) and from that the version that is the
@@ -445,7 +448,7 @@ several versions.
    (30 manuals) and `Docs/UserLibs/Examples/RI*` (example programs) for
    the behaviour and the tests. No library sources of RI/RWE in its
    history.
-2. **Tokens**: 18 of the 118 sources use tokens the list of blitz2 1.95
+2. **Tokens**: 23 of the 123 sources use tokens the list of blitz2 1.95
    (`tests/data/ted-tokens.txt`) does not know – the token list for
    reading them (teddetok, a readable `rwelibsrc` like `bblibsrc`). The
    token tables are in the binaries (CD, for the five others AmiBlitz3);
