@@ -1,0 +1,964 @@
+/*
+ * rimisclib - RWE userlib 47 (Reflective Images, font prefs and fixes by
+ * Steve Matty): miscellaneous commands - TimerReset, PortSigBit,
+ * WorkbenchHere, EZRequest, Flip$, InitArgParse, NextArg$, EZOutput,
+ * EZRequestArgs, EZSeparator, ClickWait, ProgPath$, ProgDir$, ProgName$,
+ * FromBlitz, LtoS, ASCRaw, RawASC, OpenFontPrefs, CloseFontPrefs,
+ * DefaultFontHeight, DefaultFontName, NextArgChar$, BInstr.
+ *
+ * C translation of rwelibsrc/misclib/misclib2.bb (1997-03-13, newer than
+ * the CD's BSS2 RIMISCLIB.OBJ, docs/rwelibs/README.md 3.2); reference the
+ * reference build of that source by blitz2 2.10 (refbuild).  Notes:
+ * docs/rwelibs/port/rimisclib.md.
+ *
+ * init opens dos.library and intuition.library (any version); finit
+ * closes both and frees the font prefs buffer.
+ *   EZRequest            EasyRequestArgs on the EZOutput window (0: the
+ *                        default screen); '|' in the body becomes a line
+ *                        feed; with arguments (title$,body$,gadget$,
+ *                        var..) they are the format arguments
+ *   EZRequestArgs args.. the body is built from the arguments: %s / %ld /
+ *                        %d per type, separated by the EZSeparator
+ *                        character ('|': a line feed), gadget "Ok"
+ *   InitArgParse s$      copies s$ to a 256 byte buffer; NextArg$ gives
+ *                        the next word (quotes group, "" inside quotes is
+ *                        a quote), NextArgChar$ c everything up to c
+ *   ProgPath$/Dir$/Name$ GetProgramDir/GetProgramName (the task name if
+ *                        there is no program name)
+ *   OpenFontPrefs        reads ENV:SYS/Font.Prefs into a 16K buffer;
+ *                        DefaultFontHeight/Name(type) search its FONT
+ *                        chunks (fp_Type), CloseFontPrefs frees it
+ *   Flip$, LtoS, ASCRaw, RawASC, BInstr, PortSigBit, FromBlitz,
+ *   WorkbenchHere, TimerReset (CIA-A TOD), ClickWait (left mouse button)
+ *
+ * Everything is C behind the thunks; dos and intuition through the NDK
+ * inlines, floatquicklib's fltoqu through BLITZ_ALIBJSR_A6.
+ *
+ * BUG(orig), kept:
+ *   - WorkbenchHere takes IntuitionBase from d0 (MOVE.l intuibase,a0 is
+ *     overwritten by MOVE.l d0,a0), and the function has no arguments: d0
+ *     is whatever the program left there.  The search for "Workbench" in
+ *     the screen titles never ends the list (no 0 check: it reads the
+ *     "screen" at 0 and goes on), so it returns -1 or hangs; a title that
+ *     ends with the start of "Workbench" ("...Work") restarts the same
+ *     screen for ever; after a partial match it goes on with the next
+ *     screen ("WWorkbench" is not found in its own title).
+ *   - Flip$ of a string with 0 or 1 characters swaps 65536 byte pairs
+ *     around the string (DBRA with -1).
+ *   - InitArgParse copies without a limit into its 256 byte buffer (the
+ *     original overwrites the code behind it, the C build other data).
+ *   - NextArgChar$ does not check the parse pointer: before InitArgParse
+ *     and after NextArg$ came to the end it reads from address 0.
+ *   - NextArg$ ends a quoted word at the closing quote even if no space
+ *     follows ("ab"cd gives ab, then cd); after "" inside quotes, the
+ *     next quote copies the character behind it.  NextArg$/NextArgChar$
+ *     write no 0 behind the result.
+ *   - EZRequest/EZRequestArgs replace '|' in the body string itself (the
+ *     caller's string, a constant string of the program for good).
+ *   - EZRequestArgs writes no 0 behind the format text it builds (160
+ *     byte buffer): a shorter text than the one before keeps the end of
+ *     the old one.  Neither form limits the arguments (16 longs).
+ *   - A Quick argument is passed as its integer part zero extended
+ *     (SWAP:ANDI.l #$ffff): negative values become 65536 - n; a Float is
+ *     converted with floatquicklib's fltoqu with the caller's a6 (not the
+ *     ffp base) and the result written back onto the argument stack.
+ *   - EZRequestArgs without arguments reads one type word from a2 (the
+ *     count 0 runs the DBRA loop 65536 times).
+ *   - ProgPath$ leaves a3 behind the 0 of the result (d0 is right) and
+ *     reads the byte before the result when the directory name is empty;
+ *     ProgDir$/ProgName$ only call it if their buffer is still empty, and
+ *     a3 is behind the 0 too.
+ *   - LtoS replaces the bytes 0-31 and 128-255 by 128 (signed compare).
+ *   - ASCRaw/RawASC do not check the range: a raw key beyond the 114
+ *     entries of the table (e.g. a key up code) reads the code behind it,
+ *     RawASC of a character not in the table searches until it finds the
+ *     byte somewhere (DIFF: what is behind the table differs, see the
+ *     notes).
+ *   - OpenFontPrefs does not check AllocMem, and a second OpenFontPrefs
+ *     loses the first buffer.  DefaultFontHeight/Name step through the
+ *     buffer by 164 bytes (the size of a FONT chunk) until its end,
+ *     through the uncleared memory behind the file, and read the last
+ *     chunk up to 26 bytes behind the buffer.
+ *   - finit closes intuition.library and dos.library without clearing
+ *     the bases.
+ *
+ * DIFF: a2 stays unchanged where the original uses it as a work register
+ * (EZRequest/EZRequestArgs: 0; BInstr: on the string), and so does a3 in
+ * BInstr (the original leaves it on the search string),
+ * docs/libs/cmdlibs-port.md "General".  EZRequest/EZRequestArgs leave
+ * a3 = the argument array (0 without) like the original: the NDK inline
+ * of EasyRequestArgs loads the fixed register a3 and does not restore it.
+ * The format text of EZRequestArgs is written byte by byte (the
+ * original's MOVE.w at odd addresses is an address error on a 68000);
+ * FromBlitz compares bytes (the original CMPM.l, also at an odd task
+ * name).
+ */
+#include "blitzlib.h"
+#include "blitzexec.h"
+#include <exec/execbase.h>
+#include <dos/dos.h>
+#include <intuition/intuition.h>
+#define __NOLIBBASE__
+#define DOS_BASE_NAME dosbase_
+#define INTUITION_BASE_NAME intuibase
+#include <proto/dos.h>
+#include <proto/intuition.h>
+#undef __NOLIBBASE__
+
+/* entry points (thunks, below) */
+void _resettimer(void), _getsigbit(void), _iswbhere(void);
+void _doeasy(void), _doeasy2(void), _doeasy3(void), _doeasy4(void);
+void _doflip(void), _parseinit(void), _nextparsearg(void);
+void _ezoutput(void), _ezoutput2(void), _doeasy6(void), _doeasysep(void);
+void _doclickwait(void), _doprogpath(void), _doprogdir(void), _doprogname(void);
+void _fromblitz(void), _ltos(void), _ascraw(void), _rawasc(void);
+void _openfontprefs(void), _closefontprefs(void);
+void _defaultfontheight(void), _defaultfontname(void);
+void _nextparseuntilchar(void), _binstr(void);
+void _libinit(void), _libfinit(void);
+
+BLITZ_ENTRY_DECL(init);
+BLITZ_ENTRY_DECL(finit);
+
+/* !libheader {#rimisclib,init,0,finit,0} */
+BLITZ_LIBHEADER(LIB_rimisclib, init, BL_NORET, finit, 0);
+
+BLITZ_NULLSUB(0, 0, 0);
+BLITZ_NULLSUB(0, 0, 0);
+BLITZ_NULLSUB(0, 0, 0);
+
+BLITZ_ASTATEMENT();
+BLITZ_ARGS0();
+BLITZ_LIBS0();
+BLITZ_SUBS(_resettimer, 0, 0);
+BLITZ_NAME("TimerReset", "");
+
+BLITZ_AFUNCTION(BL_BYTE);
+BLITZ_ARGS(BL_LONG);
+BLITZ_LIBS0();
+BLITZ_SUBS(_getsigbit, 0, 0);
+BLITZ_NAME("PortSigBit", "msgport");
+
+BLITZ_AFUNCTION(BL_LONG);
+BLITZ_ARGS0();
+BLITZ_LIBS0();
+BLITZ_SUBS(BLITZ_AMIGAONLY(_iswbhere), 0, 0);
+BLITZ_NAME("WorkbenchHere", "");
+
+BLITZ_ACOMMAND(BL_LONG);
+BLITZ_ARGS(BL_STRING, BL_STRING, BL_STRING);
+BLITZ_LIBS0();
+BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy), 0, 0);
+BLITZ_ARGS(BL_STRING, BL_STRING);
+BLITZ_LIBS0();
+BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy2), 0, 0);
+BLITZ_ARGS(BL_STRING);
+BLITZ_LIBS0();
+BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy3), 0, 0);
+BLITZ_REPARGS(3, 1, BL_STRING, BL_STRING, BL_STRING, BL_UNKNOWN | BL_PUSH);
+BLITZ_LIBS0();
+BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy4), 0, 0);
+BLITZ_NAME("EZRequest", "[title$,]body$[,gadget$] | title$,body$,gadget$[,var..]");
+
+BLITZ_AFUNCTION(BL_STRING);
+BLITZ_ARGS(BL_STRING);
+BLITZ_LIBS0();
+BLITZ_SUBS(_doflip, 0, 0);
+BLITZ_NAME("Flip$", "(String$)");
+
+BLITZ_ASTATEMENT();
+BLITZ_ARGS(BL_LONG);
+BLITZ_LIBS0();
+BLITZ_SUBS(_parseinit, 0, 0);
+BLITZ_NAME("InitArgParse", "parameter$");
+
+BLITZ_AFUNCTION(BL_STRING);
+BLITZ_ARGS0();
+BLITZ_LIBS0();
+BLITZ_SUBS(_nextparsearg, 0, 0);
+BLITZ_NAME("NextArg$", "- get next parameter");
+
+BLITZ_ASTATEMENT();
+BLITZ_ARGS(BL_LONG);
+BLITZ_LIBS(LIB_windowslib, BL_LA(0) | BL_ITEM | BL_PD(0));
+BLITZ_SUBS(_ezoutput, 0, 0);
+BLITZ_ARGS0();
+BLITZ_LIBS0();
+BLITZ_SUBS(_ezoutput2, 0, 0);
+BLITZ_NAME("EZOutput", "[win#]");
+
+BLITZ_ACOMMAND(BL_LONG);
+BLITZ_REPARGS(0, 1, BL_UNKNOWN | BL_PUSH);
+BLITZ_LIBS0();
+BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasy6), 0, 0);
+BLITZ_NAME("EZRequestArgs", "args..");
+
+BLITZ_ASTATEMENT();
+BLITZ_ARGS(BL_STRING);
+BLITZ_LIBS0();
+BLITZ_SUBS(BLITZ_AMIGAONLY(_doeasysep), 0, 0);
+BLITZ_NAME("EZSeparator", "char");
+
+BLITZ_ASTATEMENT();
+BLITZ_ARGS0();
+BLITZ_LIBS0();
+BLITZ_SUBS(_doclickwait, 0, 0);
+BLITZ_NAME("ClickWait", "");
+
+BLITZ_AFUNCTION(BL_STRING);
+BLITZ_ARGS0();
+BLITZ_LIBS0();
+BLITZ_SUBS(BLITZ_AMIGAONLY(_doprogpath), 0, 0);
+BLITZ_NAME("ProgPath$", "");
+
+BLITZ_AFUNCTION(BL_STRING);
+BLITZ_ARGS0();
+BLITZ_LIBS0();
+BLITZ_SUBS(BLITZ_AMIGAONLY(_doprogdir), 0, 0);
+BLITZ_NAME("ProgDir$", "");
+
+BLITZ_AFUNCTION(BL_STRING);
+BLITZ_ARGS0();
+BLITZ_LIBS0();
+BLITZ_SUBS(BLITZ_AMIGAONLY(_doprogname), 0, 0);
+BLITZ_NAME("ProgName$", "");
+
+BLITZ_AFUNCTION(BL_LONG);
+BLITZ_ARGS0();
+BLITZ_LIBS0();
+BLITZ_SUBS(_fromblitz, 0, 0);
+BLITZ_NAME("FromBlitz", "");
+
+BLITZ_AFUNCTION(BL_STRING);
+BLITZ_ARGS(BL_LONG);
+BLITZ_LIBS0();
+BLITZ_SUBS(_ltos, 0, 0);
+BLITZ_NAME("LtoS", "(longword) -- convert LONG to STRING");
+
+BLITZ_AFUNCTION(BL_STRING);
+BLITZ_ARGS(BL_WORD);
+BLITZ_LIBS0();
+BLITZ_SUBS(_ascraw, 0, 0);
+BLITZ_NAME("ASCRaw", "(rawkey)");
+
+BLITZ_AFUNCTION(BL_WORD);
+BLITZ_ARGS(BL_STRING);
+BLITZ_LIBS0();
+BLITZ_SUBS(_rawasc, 0, 0);
+BLITZ_NAME("RawASC", "(char)");
+
+BLITZ_ACOMMAND(BL_WORD);
+BLITZ_ARGS0();
+BLITZ_LIBS0();
+BLITZ_SUBS(BLITZ_AMIGAONLY(_openfontprefs), 0, 0);
+BLITZ_NAME("OpenFontPrefs", "[filename$]");
+
+BLITZ_ASTATEMENT();
+BLITZ_ARGS0();
+BLITZ_LIBS0();
+BLITZ_SUBS(BLITZ_AMIGAONLY(_closefontprefs), 0, 0);
+BLITZ_NAME("CloseFontPrefs", "");
+
+BLITZ_AFUNCTION(BL_WORD);
+BLITZ_ARGS(BL_WORD);
+BLITZ_LIBS0();
+BLITZ_SUBS(_defaultfontheight, 0, 0);
+BLITZ_NAME("DefaultFontHeight", "fonttype  (0=Icon,1=System,2=Screen)");
+
+BLITZ_AFUNCTION(BL_STRING);
+BLITZ_ARGS(BL_WORD);
+BLITZ_LIBS0();
+BLITZ_SUBS(_defaultfontname, 0, 0);
+BLITZ_NAME("DefaultFontName", "fonttype  (0=Icon,1=System,2=Screen)");
+
+BLITZ_AFUNCTION(BL_STRING);
+BLITZ_ARGS(BL_WORD);
+BLITZ_LIBS0();
+BLITZ_SUBS(_nextparseuntilchar, 0, 0);
+BLITZ_NAME("NextArgChar$", "char - get next parameter up until char");
+
+BLITZ_AFUNCTION(BL_LONG);
+BLITZ_ARGS(BL_STRING, BL_STRING);
+BLITZ_LIBS0();
+BLITZ_SUBS(_binstr, 0, 0);
+BLITZ_NAME("BInstr", "(String$,Findstring$)");
+
+BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0, LIB_doslib, BL_LA(6));
+BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+
+BLITZ_LIBFIN();
+
+/* ------------------------------------------------------------ the data */
+
+#define BL_ID4(a, b, c, d) ((ULONG)(a) << 24 | (ULONG)(b) << 16 | (ULONG)(c) << 8 | (ULONG)(d))
+#define FONTBUF 16384
+#define FONTCHUNK 164                   /* "FONT", size, struct FontPrefs */
+
+static struct DosLibrary *dosbase_;                     /* _dosbase */
+static struct IntuitionBase *intuibase;
+static const char dosname[] = "dos.library";
+static const char intuiname[] = "intuition.library";
+
+/* font prefs: the buffer (fontloc) and the first FONT chunk's data */
+static UBYTE *fontpos, *fontloc;
+static BPTR fontfh;
+static const char fontname[] = "ENV:SYS/Font.Prefs";
+
+/* ProgPath$: the 0 in front of tempprogname ends the backward search */
+static struct {
+    UBYTE z0[2], tempprogname[256];
+    UBYTE z1[2], progname[256];
+    UBYTE z2[2], progdir[256];
+} pd;
+
+/* the argument parser */
+static UBYTE *parseadr, *curadr;
+static UBYTE tempstorage[256];
+
+/* EZRequest: the EasyStruct, the argument array, the window */
+static struct {
+    struct EasyStruct es;                               /* ezstruct */
+    APTR args;                                          /* ezargs */
+    ULONG args2[16];                                    /* ezargs2 */
+} ez = { { 20, 0, NULL, NULL, NULL }, NULL, { 0 } };
+static UBYTE ezargsbuf[160];
+static ULONG numargs;
+static UBYTE flag, sep = '|';
+static struct Window *win;
+static const char okgad[] = "Ok";
+
+static const UBYTE *thisscreen;
+static const char titlestring[] = "Workbench";
+static const char procname[] = "Blitz ][ Program Proc";
+
+/* ASCRaw / RawASC: the raw key codes, the 114 bytes of the original (its
+   comments count the rows one off from the third on) */
+static const UBYTE rawtable[114] = {
+    /* 0-15 */
+    '\'', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\\', 0, '0',
+    /* 16-31 */
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', 0, '1', '2', '3',
+    /* 32-48 */
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '#', 0, 0, '4', '5', '6', 0,
+    /* 49-68 */
+    'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0, '.', '7', '8', '9', ' ', 0, 9, 13,
+    0,
+    /* 69-79 */
+    27, 8, 0, 0, 0, '-', 0, 28, 29, 30, 31,
+    /* 80-113 */
+    129, 130, 131, 132, 133, 134, 135, 136, 137, 138,
+    '(', ')', '/', '*', '+', 139, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+/* CIA-A */
+#define CIAA_PRA     (*(volatile UBYTE *)0xbfe001)
+#define CIAA_TODLOW  (*(volatile UBYTE *)0xbfe801)
+#define CIAA_TODMID  (*(volatile UBYTE *)0xbfe901)
+#define CIAA_TODHI   (*(volatile UBYTE *)0xbfea01)
+
+/* copy s with its 0 to a3, a3 behind the 0; the length */
+static ULONG copyout(const UBYTE *s)
+{
+    ULONG n = (ULONG)-1;
+
+    do
+        n++;
+    while ((*blitz_string++ = *s++) != 0);
+    return n;
+}
+
+/* ------------------------------------------------------------ init/finit */
+
+static ULONG BLITZ_ROUTINE libinit_c(void)
+{
+    dosbase_ = (struct DosLibrary *)OpenLibrary((CONST_STRPTR)dosname, 0);
+    intuibase = (struct IntuitionBase *)OpenLibrary((CONST_STRPTR)intuiname, 0);
+    fontloc = NULL;
+    fontpos = NULL;
+    return (ULONG)intuibase;
+}
+
+static ULONG BLITZ_ROUTINE closefontprefs_c(void);
+
+static void BLITZ_ROUTINE libfinit_c(void)
+{
+    if (intuibase)
+        CloseLibrary(&intuibase->LibNode);
+    CloseLibrary(&dosbase_->dl_lib);                    /* BUG(orig): bases kept */
+    closefontprefs_c();
+}
+
+/* ------------------------------------------------------------ hardware */
+
+/* TimerReset: CIA-A TOD to 0 (hi stops it, lo starts it again) */
+static void BLITZ_ROUTINE resettimer_c(void)
+{
+    CIAA_TODHI = 0;
+    CIAA_TODMID = 0;
+    CIAA_TODLOW = 0;
+}
+
+/* ClickWait: until the left mouse button is pressed, a short delay, until
+   it is released */
+static void BLITZ_ROUTINE doclickwait_c(void)
+{
+    UWORD n = 12767;
+
+    while (CIAA_PRA & 0x40)
+        ;
+    do
+        __asm__ volatile("");                           /* DBRA d0,'loopy */
+    while (n-- != 0);
+    while (!(CIAA_PRA & 0x40))
+        ;
+}
+
+/* ---------------------------------------------------------- small ones */
+
+/* PortSigBit(msgport) (d0): mp_SigBit */
+static ULONG BLITZ_ROUTINE getsigbit_c(const struct MsgPort *port BL_REG(d0))
+{
+    return port->mp_SigBit;
+}
+
+/* WorkbenchHere: d0 = IntuitionBase (BUG(orig): d0 is no argument) */
+static ULONG BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0))
+{
+    const struct Screen *scr = ib->FirstScreen;
+    const UBYTE *t, *s;
+    UBYTE c;
+
+    thisscreen = (const UBYTE *)scr;
+    for (;;) {
+    restart:                                            /* 'loop */
+        t = (const UBYTE *)titlestring;
+        s = scr->Title;
+        for (;;) {                                      /* 'findloop */
+            c = *s++;
+            if (!c)
+                break;
+            if (c != *t)
+                continue;
+            t++;
+            for (;;) {                                  /* 'innerloop */
+                if (!*t)
+                    return (ULONG)-1;
+                if (!*s)
+                    goto restart;                       /* BUG(orig): same screen */
+                c = *t++;
+                if (c != *s++)
+                    goto next;
+            }
+        }
+    next:
+        scr = scr->NextScreen;                          /* BUG(orig): no 0 check */
+    }
+}
+
+/* FromBlitz: the task name starts with "Blitz ][ Program Proc" */
+static ULONG BLITZ_ROUTINE fromblitz_c(void)
+{
+    const UBYTE *n = (const UBYTE *)SysBase->ThisTask->tc_Node.ln_Name;
+    int i;
+
+    for (i = 0; i < 20; i++)                            /* 5 x CMPM.l */
+        if (n[i] != (UBYTE)procname[i])
+            return 0;
+    return n[20] == 'c' ? (ULONG)-1 : 0;
+}
+
+/* LtoS(l) (d0): the 4 bytes, highest first, no 0; 0-31 and 128-255 as
+   128 (BUG(orig): signed CMPI.b #32) */
+static ULONG BLITZ_ROUTINE ltos_c(ULONG v BL_REG(d0))
+{
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        BYTE b;
+
+        v = v << 8 | v >> 24;                           /* ROL.l #8 */
+        b = (BYTE)v;
+        if (b < 32)
+            b = (BYTE)128;
+        *blitz_string++ = (UBYTE)b;
+    }
+    return 4;
+}
+
+/* ASCRaw(rawkey) (d0.w, signed, unchecked) */
+static ULONG BLITZ_ROUTINE ascraw_c(UWORD key BL_REG(d0))
+{
+    *blitz_string++ = rawtable[(WORD)key];
+    *blitz_string = 0;
+    return 1;
+}
+
+/* RawASC(char$) (d0): the first index of its first character (searched
+   for ever, BUG(orig)) */
+static ULONG BLITZ_ROUTINE rawasc_c(const UBYTE *s BL_REG(d0))
+{
+    UBYTE c = *s;
+    UWORD i = 0;
+
+    while (rawtable[(WORD)i] != c)
+        i++;                                            /* ADDQ.w #1,d0 */
+    return i;
+}
+
+/* Flip$(s$): reversed in place - the argument below a3 (length -4(a2)),
+   a3 unchanged */
+static ULONG BLITZ_ROUTINE doflip_c(const ULONG *lens BL_REG(a2))
+{
+    ULONG len = lens[-1];
+    UBYTE *a = blitz_string - len - 1, *e = blitz_string - 2;
+    UWORD n = (UWORD)((len >> 1) - 1);                  /* BUG(orig): len < 2 */
+
+    do {
+        UBYTE c = *a;
+
+        *a++ = *e;
+        *e-- = c;
+    } while (n-- != 0);
+    return len;
+}
+
+/* BInstr(s$,f$) (d0, d1; the length of s$ at -4(a2)): the position of the
+   last f$ in s$, 1 based; 0 if none (and for f$ = "") */
+static ULONG BLITZ_ROUTINE binstr_c(const UBYTE *src BL_REG(d0), const UBYTE *find BL_REG(d1),
+                                    const ULONG *lens BL_REG(a2))
+{
+    const UBYTE *a = src + lens[-1], *p, *q;
+
+    for (;;) {
+        a--;                                            /* 'check */
+        if ((LONG)src > (LONG)a)
+            return 0;
+        p = a;
+        q = find;
+        for (;;) {                                      /* 'checkpos */
+            if (!*p)
+                break;
+            if (*p++ != *q++)
+                break;
+            if (!*q)
+                return (ULONG)(a - src) + 1;
+        }
+    }
+}
+
+/* -------------------------------------------------------- arg parsing */
+
+/* InitArgParse s (d0): the copy and four more 0 (BUG(orig): no limit) */
+static void BLITZ_ROUTINE parseinit_c(const UBYTE *s BL_REG(d0))
+{
+    UBYTE *t = tempstorage;
+
+    while ((*t++ = *s++) != 0)
+        ;
+    t[0] = 0;
+    t[1] = 0;
+    t[2] = 0;
+    t[3] = 0;
+    parseadr = tempstorage;
+    curadr = tempstorage;
+}
+
+/* NextArg$: the next word to a3 (no 0), its length; 0 at the end */
+static ULONG BLITZ_ROUTINE nextparsearg_c(void)
+{
+    UBYTE *a = curadr, *start = blitz_string, c;
+    ULONG quotes = 0;                                   /* d7 */
+
+    if (!curadr)
+        return 0;
+    for (;;) {                                          /* 'strip */
+        c = *a;
+        if (!c) {
+            curadr = NULL;                              /* 'lastarg */
+            return 0;
+        }
+        if (c != ' ')
+            break;
+        a++;
+    }
+    for (;;) {                                          /* 'cmploop */
+        c = *a++;
+        if (!c || c == ' ')
+            goto endthis;
+        if (c == '"')
+            break;
+        *blitz_string++ = c;
+    }
+    quotes++;                                           /* 'insidequotedloop */
+    for (;;) {                                          /* 'quoteloop */
+        c = *a++;
+        if (!c)
+            break;
+        if (c != '"') {
+            *blitz_string++ = c;
+            continue;
+        }
+        quotes++;                                       /* 'gotquote */
+        if (!(quotes & 1) && *a != '"')
+            break;
+        *blitz_string++ = *a++;                         /* 'cantquityet */
+    }
+endthis:
+    curadr = a;
+    return (ULONG)(blitz_string - start);
+}
+
+/* NextArgChar$ c (d0.b): everything up to c (or the end) to a3, no 0;
+   BUG(orig): curadr unchecked */
+static ULONG BLITZ_ROUTINE nextparseuntilchar_c(UBYTE ch BL_REG(d0))
+{
+    UBYTE *a = curadr, c;
+    ULONG n = 0;
+
+    for (;;) {
+        c = *a++;
+        if (!c) {
+            a--;                                        /* 'eol */
+            break;
+        }
+        if (c == ch)
+            break;
+        *blitz_string++ = c;
+        n++;
+    }
+    curadr = a;
+    return n;
+}
+
+/* ------------------------------------------------------------ EZRequest */
+
+/* doeasybegin: '|' to line feeds in the body, EasyRequestArgs */
+static ULONG doeasybegin(void)
+{
+    UBYTE *p = (UBYTE *)ez.es.es_TextFormat, c;
+
+    while ((c = *p++) != 0)
+        if (c == '|')
+            p[-1] = 10;
+    return (ULONG)EasyRequestArgs(win, &ez.es, NULL, ez.args);
+}
+
+/* the argument array (and with fmt the format text) from the repeated
+   #unknown|#push arguments below sp: per argument the type word, below
+   it the value (a string: its length, below that the address); `cnt`
+   arguments (DBRA: 0 = 65536).  a6 is passed to fltoqu. */
+static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *a6)
+{
+    UBYTE *a = (UBYTE *)ez.args2;
+    UWORD n = (UWORD)(cnt - 1);
+
+    flag = 0;
+    do {
+        UWORD type;
+        ULONG v;
+
+        if (fmt) {
+            if (flag)
+                *fmt++ = sep;
+            flag = 0xff;
+        }
+        type = BL_POPW(sp);
+        if (type == BL_STRING) {
+            (void)BL_POPL(sp);                          /* the length */
+            *(ULONG *)a = BL_POPL(sp);
+            a += 4;
+            if (fmt) {
+                *fmt++ = '%';
+                *fmt++ = 's';
+            }
+        } else if (type == BL_LONG) {
+            *(ULONG *)a = BL_POPL(sp);
+            a += 4;
+            if (fmt) {
+                *fmt++ = '%';
+                *fmt++ = 'l';
+                *fmt++ = 'd';
+            }
+        } else if (type == BL_WORD || type == BL_BYTE) {
+            *(UWORD *)a = BL_POPW(sp);
+            a += 2;
+            if (fmt) {
+                *fmt++ = '%';
+                *fmt++ = 'd';
+            }
+        } else {
+            if (type != BL_QUICK) {
+                /* MOVE.l -(a2),d0:ALibJsr $d301:MOVE.l d0,(a2)+ */
+                v = BL_POPL(sp);
+                *(ULONG *)(UBYTE *)sp = BLITZ_ALIBJSR_A6(TOK_fltoqu, a6, v);
+                sp += 4;
+            }
+            v = BL_POPL(sp);
+            *(ULONG *)a = v >> 16;                      /* SWAP:ANDI.l #$ffff */
+            a += 4;
+            if (fmt) {
+                *fmt++ = '%';
+                *fmt++ = 'l';
+                *fmt++ = 'd';
+            }
+        }
+    } while (n-- != 0);
+}
+
+/* EZRequest title$,body$,gadget$ (d0, d1, d2) */
+static ULONG BLITZ_ROUTINE doeasy_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
+                                    STRPTR gadget BL_REG(d2))
+{
+    ez.es.es_Title = title;
+    ez.es.es_TextFormat = body;
+    ez.es.es_GadgetFormat = gadget;
+    ez.args = NULL;
+    return doeasybegin();
+}
+
+/* EZRequest body$,gadget$ (d0, d1) */
+static ULONG BLITZ_ROUTINE doeasy2_c(STRPTR body BL_REG(d0), STRPTR gadget BL_REG(d1))
+{
+    ez.es.es_GadgetFormat = gadget;
+    ez.es.es_TextFormat = body;
+    ez.es.es_Title = NULL;
+    ez.args = NULL;
+    return doeasybegin();
+}
+
+/* EZRequest body$ (d0): gadget "Ok" */
+static ULONG BLITZ_ROUTINE doeasy3_c(STRPTR body BL_REG(d0))
+{
+    return doeasy2_c(body, (STRPTR)okgad);
+}
+
+/* EZRequest title$,body$,gadget$,var.. (d0-d2; a2: the three lengths,
+   below them the arguments; d7.w their number) */
+static ULONG BLITZ_ROUTINE doeasy4_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
+                                     STRPTR gadget BL_REG(d2), UBYTE *args BL_REG(a2),
+                                     UWORD reps BL_REG(d7), const void *a6 BL_REG(a6))
+{
+    ez.es.es_Title = title;
+    ez.es.es_TextFormat = body;
+    ez.es.es_GadgetFormat = gadget;
+    ez.args = ez.args2;
+    doargs(args - 12, reps, NULL, a6);
+    return doeasybegin();
+}
+
+/* EZRequestArgs var.. (a2, d7.w as above): the body from the arguments */
+static ULONG BLITZ_ROUTINE doeasy6_c(UBYTE *args BL_REG(a2), ULONG reps BL_REG(d7),
+                                     const void *a6 BL_REG(a6))
+{
+    numargs = reps & 0xffff;
+    ez.es.es_TextFormat = ezargsbuf;
+    ez.args = ez.args2;
+    doargs(args, (UWORD)reps, ezargsbuf, a6);           /* BUG(orig): no 0 */
+    ez.es.es_GadgetFormat = (STRPTR)okgad;
+    ez.es.es_Title = NULL;
+    return doeasybegin();
+}
+
+/* EZOutput win# (a0 = the window object, its first long the Window) */
+static void BLITZ_ROUTINE ezoutput_c(struct Window **w BL_REG(a0))
+{
+    win = *w;
+}
+
+/* EZOutput */
+static void BLITZ_ROUTINE ezoutput2_c(void)
+{
+    win = NULL;
+}
+
+/* EZSeparator c$ (d0): its first character */
+static void BLITZ_ROUTINE doeasysep_c(const UBYTE *s BL_REG(d0))
+{
+    sep = *s;
+}
+
+/* ------------------------------------------------------------ the paths */
+
+/* ProgPath$: the program's directory and name (a3 behind the 0) */
+static ULONG BLITZ_ROUTINE doprogpath_c(void)
+{
+    BPTR lock = GetProgramDir();
+    const UBYTE *s;
+    UBYTE *t, c;
+    ULONG n;
+
+    if (!lock)
+        GetCurrentDirName(pd.progdir, 255);
+    else
+        NameFromLock(lock, pd.progdir, 255);
+    pd.tempprogname[0] = 0;
+    GetProgramName(pd.tempprogname, 255);
+    if (!pd.tempprogname[0]) {
+        s = (const UBYTE *)SysBase->ThisTask->tc_Node.ln_Name;
+        t = pd.progname;
+        while ((*t++ = *s++) != 0)
+            ;
+    } else {
+        s = pd.tempprogname;
+        while (*s++)
+            ;
+        s--;
+        do                                              /* back to : / or the 0 */
+            c = *--s;
+        while (c && c != ':' && c != '/');
+        s++;
+        t = pd.progname;
+        while ((*t++ = *s++) != 0)
+            ;
+    }
+    n = copyout(pd.progdir);
+    blitz_string--;
+    n--;
+    if (blitz_string[-1] != ':') {
+        n++;
+        *blitz_string++ = '/';
+    }
+    s = pd.progname;
+    do {
+        n++;
+        c = *s++;
+        *blitz_string++ = c;
+    } while (c);
+    return n;
+}
+
+/* ProgDir$ */
+static ULONG BLITZ_ROUTINE doprogdir_c(void)
+{
+    if (!pd.progdir[0]) {
+        UBYTE *a3 = blitz_string;
+
+        doprogpath_c();
+        blitz_string = a3;
+    }
+    return copyout(pd.progdir);
+}
+
+/* ProgName$ */
+static ULONG BLITZ_ROUTINE doprogname_c(void)
+{
+    if (!pd.progname[0]) {
+        UBYTE *a3 = blitz_string;
+
+        doprogpath_c();
+        blitz_string = a3;
+    }
+    return copyout(pd.progname);
+}
+
+/* ---------------------------------------------------------- font prefs */
+
+/* CloseFontPrefs: 0 */
+static ULONG BLITZ_ROUTINE closefontprefs_c(void)
+{
+    if (!fontloc)
+        return 0;
+    FreeMem(fontloc, FONTBUF);
+    fontloc = NULL;
+    fontpos = NULL;
+    return 0;
+}
+
+/* OpenFontPrefs: ENV:SYS/Font.Prefs into the buffer; -1 if it is a FORM
+   PREF with PRHD and a FONT chunk behind it, else 0 (buffer freed) */
+static ULONG BLITZ_ROUTINE openfontprefs_c(void)
+{
+    const ULONG *p;
+
+    fontloc = AllocMem(FONTBUF, 0);                     /* BUG(orig): unchecked */
+    fontfh = Open((CONST_STRPTR)fontname, MODE_OLDFILE);
+    if (!fontfh)
+        return closefontprefs_c();
+    Read(fontfh, fontloc, FONTBUF);
+    Close(fontfh);
+    p = (const ULONG *)fontloc;
+    if (*p++ != BL_ID4('F', 'O', 'R', 'M'))
+        return closefontprefs_c();
+    p++;
+    if (*p++ != BL_ID4('P', 'R', 'E', 'F'))
+        return closefontprefs_c();
+    if (*p++ != BL_ID4('P', 'R', 'H', 'D'))
+        return closefontprefs_c();
+    p = (const ULONG *)((const UBYTE *)p + *p);         /* ADD.l (a0),a0 */
+    p++;
+    if (*p++ != BL_ID4('F', 'O', 'N', 'T'))
+        return closefontprefs_c();
+    p++;
+    fontpos = (UBYTE *)p;
+    return (ULONG)-1;
+}
+
+/* the FONT chunk with fp_Type = type, stepping by 164 bytes to the end of
+   the buffer; NULL if none */
+static const UBYTE *findfont(UWORD type)
+{
+    const UBYTE *end, *p;
+
+    if (!fontpos)
+        return NULL;
+    end = fontloc + FONTBUF;
+    for (p = fontpos; (LONG)end >= (LONG)p; p += FONTCHUNK)
+        if (*(const UWORD *)(p + 14) == type)
+            return p;
+    return NULL;
+}
+
+/* DefaultFontHeight(type) (d0.w): ta_YSize (d0's high word kept), 0 */
+static ULONG BLITZ_ROUTINE defaultfontheight_c(ULONG type BL_REG(d0))
+{
+    const UBYTE *p = findfont((UWORD)type);
+
+    if (!p)
+        return 0;
+    return (type & 0xffff0000UL) | *(const UWORD *)(p + 24);
+}
+
+/* DefaultFontName(type) (d0.w): fp_Name (a3 behind the 0), "" */
+static ULONG BLITZ_ROUTINE defaultfontname_c(UWORD type BL_REG(d0))
+{
+    const UBYTE *p = findfont(type);
+
+    if (!p)
+        return 0;
+    return copyout(p + 28);
+}
+
+/* Registers: the original changes d0, a0/a1 (most), d1-d3/a6 (the system
+   calls), d2 (LtoS, Flip$, NextArg$...), d6/d7 (EZRequest, BInstr), a2/a3
+   (EZRequest, BInstr); the thunks keep d1/a0/a1, the statements that keep
+   d0 also d0, the C code d2-d7/a2-a6. */
+BLITZ_THUNK(_libinit, libinit_c, "d1/a0-a1");
+BLITZ_THUNK(_libfinit, libfinit_c, "d1/a0-a1");
+BLITZ_THUNK(_resettimer, resettimer_c, "d0-d1/a0-a1");
+BLITZ_THUNK(_doclickwait, doclickwait_c, "d1/a0-a1");
+BLITZ_THUNK(_getsigbit, getsigbit_c, "d1/a0-a1");
+BLITZ_THUNK(_iswbhere, iswbhere_c, "d1/a0-a1");
+BLITZ_THUNK(_fromblitz, fromblitz_c, "d1/a0-a1");
+BLITZ_THUNK(_ltos, ltos_c, "d1/a0-a1");
+BLITZ_THUNK(_ascraw, ascraw_c, "d1/a0-a1");
+BLITZ_THUNK(_rawasc, rawasc_c, "d1/a0-a1");
+BLITZ_THUNK(_doflip, doflip_c, "d1/a0-a1");
+BLITZ_THUNK(_binstr, binstr_c, "d1/a0-a1");
+BLITZ_THUNK(_parseinit, parseinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(_nextparsearg, nextparsearg_c, "d1/a0-a1");
+BLITZ_THUNK(_nextparseuntilchar, nextparseuntilchar_c, "d1/a0-a1");
+BLITZ_THUNK(_doeasy, doeasy_c, "d1/a0-a1");
+BLITZ_THUNK(_doeasy2, doeasy2_c, "d1/a0-a1");
+BLITZ_THUNK(_doeasy3, doeasy3_c, "d1/a0-a1");
+BLITZ_THUNK(_doeasy4, doeasy4_c, "d1/a0-a1");
+BLITZ_THUNK(_doeasy6, doeasy6_c, "d1/a0-a1");
+BLITZ_THUNK(_ezoutput, ezoutput_c, "d0-d1/a0-a1");
+BLITZ_THUNK(_ezoutput2, ezoutput2_c, "d0-d1/a0-a1");
+BLITZ_THUNK(_doeasysep, doeasysep_c, "d0-d1/a0-a1");
+BLITZ_THUNK(_doprogpath, doprogpath_c, "d1/a0-a1");
+BLITZ_THUNK(_doprogdir, doprogdir_c, "d1/a0-a1");
+BLITZ_THUNK(_doprogname, doprogname_c, "d1/a0-a1");
+BLITZ_THUNK(_openfontprefs, openfontprefs_c, "d1/a0-a1");
+BLITZ_THUNK(_closefontprefs, closefontprefs_c, "d1/a0-a1");
+BLITZ_THUNK(_defaultfontheight, defaultfontheight_c, "d1/a0-a1");
+BLITZ_THUNK(_defaultfontname, defaultfontname_c, "d1/a0-a1");
