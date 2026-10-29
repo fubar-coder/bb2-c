@@ -54,6 +54,8 @@ struct type addresstype = {&stringtype,  {6}, 4, 13, "a"};  /* 14850 */
 struct type stringtype  = {NULL,         {7}, 4, 13, "s"};  /* 14854 */
 struct type dummytype   = {NULL,         {0}, 0, 1};        /* 14858 */
 
+/* BUG(orig): set only by doincdir and never cleared - the IncDir of one
+   compile stays for the following ones of the same session.  Kept. */
 char  incdir[96];                       /* 14862 */
 WORD  dirmode = 0;                      /* 14865 direct mode flag */
 /* 14866 int: IntuitionBase, defined in main.c */
