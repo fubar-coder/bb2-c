@@ -19,16 +19,16 @@
 #include "state.h"
 
 #define OFFS(type, field, off) \
-    _Static_assert(offsetof(struct type, field) == (off), #type "." #field " must be at " #off)
+    static_assert(offsetof(struct type, field) == (off), #type "." #field " must be at " #off)
 #define SIZE(type, size) \
-    _Static_assert(sizeof(struct type) == (size), "sizeof " #type " must be " #size)
+    static_assert(sizeof(struct type) == (size), "sizeof " #type " must be " #size)
 
 /* ------------------------------------------------- core layouts (asserts) */
 
 /* ted.s:15 rsreset - blitz2 walks this list (menurout a5 = firstitem) */
 OFFS(item, nextitem, 0); OFFS(item, lastitem, 4);
 OFFS(item, numchars, 8); OFFS(item, chars, 9);
-_Static_assert(lenitem == offsetof(struct item, chars), "lenitem");
+static_assert(lenitem == offsetof(struct item, chars), "lenitem");
 
 /* blitz2's token list node */
 OFFS(tokennode, num, 4); OFFS(tokennode, name, 6);

@@ -22,9 +22,9 @@
 #include <stddef.h>
 
 #define OFFS(type, field, off) \
-    _Static_assert(offsetof(struct type, field) == (off), #type "." #field " must be at " #off)
+    static_assert(offsetof(struct type, field) == (off), #type "." #field " must be at " #off)
 #define SIZE(type, size) \
-    _Static_assert(sizeof(struct type) == (size), "sizeof " #type " must be " #size)
+    static_assert(sizeof(struct type) == (size), "sizeof " #type " must be " #size)
 
 /* generic list node: every list in the compiler has `next` at offset 0, and
    the asm often treats the address of a list head variable as a node */

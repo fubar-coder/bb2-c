@@ -124,7 +124,7 @@ signatures are agreed – changes only per §9.
   `#define` (`int1`, `errorpnt`, `gotoint`, `viewmode` …), strides via
   pointer tables (data.h).
 * Binary includes: `src/core/res.c` embeds the original files at build time
-  with `#embed` (sizes via `_Static_assert`), never copies into the
+  with `#embed` (sizes via `static_assert`), never copies into the
   repository.
 * Data check: `tools/checkdata.py` – new data must be entered there
   in `CHECKS` (here `tools/checkdata` with the table `programs/ted/checkdata.tsv`).

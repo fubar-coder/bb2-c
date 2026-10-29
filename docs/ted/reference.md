@@ -130,7 +130,7 @@ unit):
 * `shared/filereq/filereq_core.c` – the requester core: code, data block
   `fq` (`struct fq_data`: NewWindow, gadgets, borders, IntuiTexts,
   StringInfo/PropInfo/images as NDK structures, variables and buffers in the
-  layout of the freqlib, every offset checked via `_Static_assert`; pointers as
+  layout of the freqlib, every offset checked via `static_assert`; pointers as
   static initialisers `&fq.…` = the same relocs). Interface in
   `filereq_core.h`: parameter block `ULONG fq_args[4]` = {path, name, title,
   screen} (= TED's `reqstruct`), entry point `ULONG fq_request(void)`; everything

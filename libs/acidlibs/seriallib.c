@@ -179,8 +179,8 @@ struct serio {
     struct IOExtSer io;                 /* +38 */
     UBYTE pad[8];                       /* to 128 bytes */
 };
-_Static_assert(offsetof(struct serio, io) == 38, "serio layout");
-_Static_assert(sizeof(struct serio) == 128, "serio size");
+static_assert(offsetof(struct serio, io) == 38, "serio layout");
+static_assert(sizeof(struct serio) == 128, "serio size");
 
 /* allio: Dcb.b 2048,0 - unit n: read half at 2n, write half at 2n+1 */
 static struct serio allio[16];

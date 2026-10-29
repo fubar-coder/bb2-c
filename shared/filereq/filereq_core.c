@@ -34,7 +34,7 @@
  * structures (NewWindow, Gadget, StringInfo, PropInfo, Image, IntuiText,
  * Border), its variables, buffers and strings, in the original order with
  * no gap (m68k: long and pointer members are 2-aligned, the layout is that
- * of the binary - every member offset is checked by a _Static_assert at the
+ * of the binary - every member offset is checked by a static_assert at the
  * end of this file).  The pointers inside it are static initializers
  * (&fq.member: the same relocations as the original).  It compiles the
  * same way in both environments (.data; with -fbaserel the code addresses
@@ -1062,8 +1062,8 @@ static struct fq_data fq = {
 /* the layout of the original (m68k only: elsewhere pointers are wider) -
    every member at its address in the freqlib binary, no padding */
 #include <stddef.h>
-#define FQ_AT(m, a) _Static_assert(offsetof(struct fq_data, m) == (a) - 0xc04, \
-                                   #m " not at " #a)
+#define FQ_AT(m, a) static_assert(offsetof(struct fq_data, m) == (a) - 0xc04, \
+                                  #m " not at " #a)
 FQ_AT(defparams, 0xc04);    FQ_AT(pad_c14, 0xc14);
 FQ_AT(temp, 0xc1a);         FQ_AT(deffile, 0xcba);
 FQ_AT(deftitle, 0xcfa);     FQ_AT(intname, 0xd0f);
@@ -1117,8 +1117,8 @@ FQ_AT(g_prop.Height, 0x14de);
 FQ_AT(line[0].itext, 0x15d6);
 FQ_AT(line[0].text, 0x15ea);
 FQ_AT(line[1], 0x163a);
-_Static_assert(sizeof(struct fq_border) == 28, "struct fq_border");
-_Static_assert(sizeof(struct fq_line) == 144, "struct fq_line");
-_Static_assert(sizeof(struct fq_data) == 0x39da - 0xc04, "struct fq_data");
+static_assert(sizeof(struct fq_border) == 28, "struct fq_border");
+static_assert(sizeof(struct fq_line) == 144, "struct fq_line");
+static_assert(sizeof(struct fq_data) == 0x39da - 0xc04, "struct fq_data");
 #undef FQ_AT
 #endif

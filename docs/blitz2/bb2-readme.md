@@ -45,7 +45,7 @@ Each file corresponds to a line range of `blitz2.s` (in source order):
 | `src/tokens1.c` | 12136–13326 | built-in commands part 1 (DefType … If/While) |
 | `src/tokens2.c` | 13327–14655 | built-in commands part 2 (Then … Dim) |
 | `src/data.c` | 14656–end, options*.src, typereq, calcreq | globals, types, requesters, options, `.xtra` |
-| `src/structs.h` | – | all heap nodes, offsets checked against the original via `_Static_assert` |
+| `src/structs.h` | – | all heap nodes, offsets checked against the original via `static_assert` |
 | `src/glue.c`, `src/glue_direct.c` | – | **the only assembler**: register thunk `callregs`, entry stubs for editor/exec, VBR, trap #15 handler of the direct mode |
 
 Each `NAME.c` has a `NAME.h` (contract for the other parts);

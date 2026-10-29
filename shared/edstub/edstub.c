@@ -72,20 +72,20 @@ struct comdata_s {
     APTR req_window;    /* 94 window, +86 = UserPort */
 };
 #define CDOFF(m) (offsetof(struct comdata_s, m) - 8)
-_Static_assert(CDOFF(openreq) == 0, "openreq");
-_Static_assert(CDOFF(getinput2) == 32, "getinput2");
-_Static_assert(CDOFF(combitmap) == 36, "combitmap");
-_Static_assert(CDOFF(extint) == 44, "extint");
-_Static_assert(CDOFF(tokone) == 56, "tokone");
-_Static_assert(CDOFF(pointeron) == 72, "pointeron");
-_Static_assert(CDOFF(mywindow2) == 80, "mywindow2");
-_Static_assert(CDOFF(extalloc) == 88, "extalloc");
-_Static_assert(CDOFF(bmapmul) == 92, "bmapmul");
-_Static_assert(CDOFF(req_window) == 94, "req_window");
-_Static_assert(offsetof(struct Window, UserPort) == 86, "UserPort");
-_Static_assert(offsetof(struct Window, Width) == 8, "Width");
-_Static_assert(offsetof(struct edstruct, colon) == 24, "edstruct");
-_Static_assert(sizeof(struct edstruct) == 28, "edstruct: 14 words");
+static_assert(CDOFF(openreq) == 0, "openreq");
+static_assert(CDOFF(getinput2) == 32, "getinput2");
+static_assert(CDOFF(combitmap) == 36, "combitmap");
+static_assert(CDOFF(extint) == 44, "extint");
+static_assert(CDOFF(tokone) == 56, "tokone");
+static_assert(CDOFF(pointeron) == 72, "pointeron");
+static_assert(CDOFF(mywindow2) == 80, "mywindow2");
+static_assert(CDOFF(extalloc) == 88, "extalloc");
+static_assert(CDOFF(bmapmul) == 92, "bmapmul");
+static_assert(CDOFF(req_window) == 94, "req_window");
+static_assert(offsetof(struct Window, UserPort) == 86, "UserPort");
+static_assert(offsetof(struct Window, Width) == 8, "Width");
+static_assert(offsetof(struct edstruct, colon) == 24, "edstruct");
+static_assert(sizeof(struct edstruct) == 28, "edstruct: 14 words");
 
 static struct comdata_s cd = {
     screenclose_stub, screenopen2_stub,

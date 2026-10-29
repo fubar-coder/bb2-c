@@ -71,7 +71,7 @@ ctest --preset emulator                                # tests in Amiberry
   deliberately (one issue per bug, marked as an intended deviation).
 * **Only C/C++ and CMake.** No Python, no shell scripts in the build.
   Whatever compiler and linker can do themselves, without a tool
-  (`#embed` + `_Static_assert`, `strip`); text and control as CMake;
+  (`#embed` + `static_assert`, `strip`); text and control as CMake;
   binary formats and logic as a C tool in `tools/` (logic in
   `tools/lib/`, tool = `main.c`, tests in `tools/tests/` with inputs from
   memory).

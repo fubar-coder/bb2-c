@@ -11,7 +11,7 @@
  * 80 character text), string buffers and its variables - keep the layout
  * of the original: they are one data block, the variable fq (struct
  * fq_data, NDK structures and fields at the original offsets, checked by
- * _Static_assert; contents and relocations as in the binary).
+ * static_assert; contents and relocations as in the binary).
  *
  * FileRequest$(title$,path$,file$): path$ and file$ are string variables
  * (#varptr, buffers of 160/64 bytes - checked by the debugger).  OK
