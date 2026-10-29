@@ -2,7 +2,9 @@
 # native compiler by host/CMakeLists.txt:
 #   tedcore_host  the core with TED_HOST (resources via #embed as on Amiga)
 #   tedhost       the test environment: hook stubs (stubs.c), token list
-#                 (toklist.c), see hostenv.h
+#                 (toklist.c; tokref.c: from the arguments of the tools,
+#                 a list file or the compiler and its libraries), see
+#                 hostenv.h
 #   oracle data   tests/data (ted-oracle.sha256, ted-tokens.txt: the
 #                 original TED, programs/ted/tests/oracle) and the CD
 #                 sources (archive/cd); without the CD the corpus tests
@@ -25,9 +27,9 @@ set_target_properties(tedcore_host PROPERTIES C_STANDARD 23 C_EXTENSIONS ON)
 set_source_files_properties(${TED_DIR}/src/core/res.c PROPERTIES
 	COMPILE_OPTIONS --embed-dir=${TED_DIR}/../../archive/sources/ted-1.1)
 
-add_library(tedhost STATIC stubs.c toklist.c)
+add_library(tedhost STATIC stubs.c toklist.c tokref.c)
 target_include_directories(tedhost PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(tedhost PUBLIC tedcore_host)
+target_link_libraries(tedhost PUBLIC tedcore_host lib_blitztokens)
 target_compile_options(tedhost PRIVATE -Wall)
 set_target_properties(tedhost PROPERTIES C_STANDARD 23 C_EXTENSIONS ON)
 

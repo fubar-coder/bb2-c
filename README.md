@@ -326,11 +326,23 @@ and counts like TED.
 ```
 build/amiga/host/ted-tools/teddetok/teddetok tests/data/ted-tokens.txt IN OUT
 build/amiga/host/ted-tools/teddetok/teddetok tests/data/ted-tokens.txt --check IN...
+build/amiga/host/ted-tools/teddetok/teddetok --blitz2 BLITZ2 [--lib LIB]... IN OUT
 ```
 
+The token list is either a list file (`tests/data/ted-tokens.txt`, made
+by the original TED) or it is made from the compiler and its libraries
+(`--blitz2` and `--lib` in the compiler's order: acidlibs, deflibs, then
+userlibs; library or BigLib files) as blitz2 builds it for TED – for
+sources written with other libraries. `tedtok` takes the same forms.
+`tools/blitztokens` writes such a list as a list file
+(`blitztokens BLITZ2 LIB... > tokens.txt`), for both tools.
+
 ctest `teddetok_*` checks it with small inputs (also broken ones: unknown
-token, token byte at the end of the file) and `teddetok_bblibsrc` all
-sources of `bblibsrc/` (skipped without the archive).
+token, token byte at the end of the file, a compiler that is no load file)
+and `teddetok_bblibsrc` all sources of `bblibsrc/` (skipped without the
+archive); the `*_libs` tests do the same with the list made from the CD's
+compiler and libraries (`tedtok_libs`: the same file as with the list
+file).
 
 ## Emulator
 

@@ -10,3 +10,11 @@ foreach(n 129 130)
 		${CMAKE_CURRENT_SOURCE_DIR}/tests/line${n}.bas ${CMAKE_CURRENT_BINARY_DIR}/line${n}.bb2)
 endforeach()
 set_tests_properties(tedtok_line130 PROPERTIES WILL_FAIL TRUE)
+
+# the token list made from the CD's compiler and libraries: the same file
+# as with the list file (skipped without the CD)
+set(cd ${CMAKE_CURRENT_SOURCE_DIR}/../../../../archive/cd/ultimate-blitz-basic-2.1/BLITZ2)
+add_test(NAME tedtok_libs COMMAND ${CMAKE_COMMAND} -DTEDTOK=$<TARGET_FILE:tedtok>
+	-DTOKENS=${tokens} -DCD=${cd} -DIN=${CMAKE_CURRENT_SOURCE_DIR}/tests/tokens.bas
+	-DOUT=${CMAKE_CURRENT_BINARY_DIR}/tokens -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/libs.cmake)
+set_tests_properties(tedtok_libs PROPERTIES SKIP_RETURN_CODE 77)

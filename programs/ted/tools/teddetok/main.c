@@ -7,6 +7,12 @@
  *
  *   teddetok TOKENS IN OUT          TOKENS: tests/data/ted-tokens.txt
  *   teddetok TOKENS --check IN...   only the checks, no output
+ *   teddetok --blitz2 BLITZ2 [--lib LIB]... IN OUT | --check IN...
+ *
+ * The token list: a list file (tests/data/ted-tokens.txt, or one written
+ * by tools/blitztokens), or made from the compiler BLITZ2 and the library
+ * or BigLib files LIB in the compiler's order (acidlibs, deflibs,
+ * userlibs) as blitz2 builds it for TED (tools/lib/blitztokens).
  *
  * The text is TED's, with its quirks: TAB expanded to tabstop 2, a line
  * longer than TED's line buffer (chcols + 1 = 129 bytes, tokenised) split
@@ -28,9 +34,12 @@
 static const char usage[] =
     "usage: teddetok TOKENS IN OUT\n"
     "       teddetok TOKENS --check IN...\n"
+    "       teddetok --blitz2 BLITZ2 [--lib LIB]... IN OUT\n"
+    "       teddetok --blitz2 BLITZ2 [--lib LIB]... --check IN...\n"
     "A Blitz 2 source (tokenised or text) as TED shows it, one line per\n"
-    "line of TED; TOKENS is the token list (tests/data/ted-tokens.txt).\n"
-    "Fails on tokens TED does not know.\n";
+    "line of TED; TOKENS is the token list (tests/data/ted-tokens.txt),\n"
+    "or it is made from the compiler and its libraries (acidlibs, deflibs,\n"
+    "userlibs, in this order). Fails on tokens TED does not know.\n";
 
 /* lines of the file as written: ended by 0 (tokenised) or LF (text), a
    byte with bit 7 takes the next one with it (readline); a last line
@@ -148,25 +157,27 @@ static BOOL detok_file(const char *in, const char *out)
 
 int main(int argc, char **argv)
 {
+    struct tokennode *list;
     BOOL ok = TRUE;
-    int i;
+    int i, a;
 
     if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
         fputs(usage, stdout);
         return 0;
     }
-    if (argc < 4 || (strcmp(argv[2], "--check") != 0 && argc != 4)) {
+    list = host_tokens_args("teddetok", argc, argv, &a);
+    if (!list && a < 0)
+        return 1;
+    if (!list || argc - a < 2 || (strcmp(argv[a], "--check") != 0 && argc - a != 2)) {
         fputs(usage, stderr);
         return 2;
     }
-    hostenv_init(argv[1], 25);
-    if (!tokens) {
-        fprintf(stderr, "teddetok: no token list %s\n", argv[1]);
-        return 1;
-    }
-    if (strcmp(argv[2], "--check") != 0)
-        return detok_file(argv[2], argv[3]) ? 0 : 1;
-    for (i = 3; i < argc; i++)
+    hostenv_init(NULL, 25);
+    tokens = list;
+    tokenise = 1;
+    if (strcmp(argv[a], "--check") != 0)
+        return detok_file(argv[a], argv[a + 1]) ? 0 : 1;
+    for (i = a + 1; i < argc; i++)
         ok &= detok_file(argv[i], NULL);
     return ok ? 0 : 1;
 }

@@ -31,3 +31,25 @@ add_test(NAME teddetok_missing COMMAND ${CMAKE_COMMAND} ${run} -DIN=${t}/missing
 add_test(NAME teddetok_bblibsrc COMMAND ${CMAKE_COMMAND} ${run} -DREPO=${repo}
 	-P ${t}/bblibsrc.cmake)
 set_tests_properties(teddetok_bblibsrc PROPERTIES SKIP_RETURN_CODE 77)
+
+# the token list made from the CD's compiler and libraries instead of the
+# list file: the same text (skipped without the CD); a compiler that is no
+# load file must fail
+set(cd ${repo}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2)
+# ($<SEMICOLON>: the lists must reach run.cmake as one argument each)
+set(S $<SEMICOLON>)
+set(cdrun -DTEDDETOK=$<TARGET_FILE:teddetok>
+	-DTOKENS=--blitz2${S}${cd}/BLITZ2${S}--lib${S}${cd}/ACIDLIBS${S}--lib${S}${cd}/DEFLIBS
+	-DREQUIRE=${cd}/BLITZ2${S}${cd}/ACIDLIBS${S}${cd}/DEFLIBS)
+add_test(NAME teddetok_good_libs COMMAND ${CMAKE_COMMAND} ${cdrun} -DIN=${t}/good.bb2
+	-DOUT=${CMAKE_CURRENT_BINARY_DIR}/good_libs.txt -DEXPECT=${t}/good.txt -P ${t}/run.cmake)
+add_test(NAME teddetok_unknown_libs COMMAND ${CMAKE_COMMAND} ${cdrun} -DIN=${t}/unknown.bb2
+	-DOUT=${CMAKE_CURRENT_BINARY_DIR}/unknown_libs.txt "-DERROR=unknown.bb2:2: unknown token \\$9001"
+	-P ${t}/run.cmake)
+add_test(NAME teddetok_bblibsrc_libs COMMAND ${CMAKE_COMMAND} ${cdrun} -DREPO=${repo}
+	-P ${t}/bblibsrc.cmake)
+add_test(NAME teddetok_badcompiler COMMAND ${CMAKE_COMMAND} -DTEDDETOK=$<TARGET_FILE:teddetok>
+	-DTOKENS=--blitz2${S}${tokens} -DIN=${t}/good.bb2 -DOUT=${CMAKE_CURRENT_BINARY_DIR}/bad.txt
+	"-DERROR=ted-tokens.txt: not a load file" -P ${t}/run.cmake)
+set_tests_properties(teddetok_good_libs teddetok_unknown_libs teddetok_bblibsrc_libs
+	PROPERTIES SKIP_RETURN_CODE 77)

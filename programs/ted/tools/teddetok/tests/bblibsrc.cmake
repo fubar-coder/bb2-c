@@ -2,6 +2,12 @@
 # bblibsrc.lha through teddetok --check (all tokens known).  Exit 77
 # (skipped) without the archive (cmake -P cmake/fetch-originals.cmake).
 #   cmake -DTEDDETOK=... -DTOKENS=... -DREPO=... -P bblibsrc.cmake
+foreach(f IN LISTS REQUIRE)
+	if(NOT EXISTS ${f})
+		message(STATUS "no ${f}: skipped")
+		cmake_language(EXIT 77)
+	endif()
+endforeach()
 include(${CMAKE_CURRENT_LIST_DIR}/../bblibsrc_files.cmake)
 bblibsrc_files(${REPO} dir files)
 if(NOT files)

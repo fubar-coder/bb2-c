@@ -3,6 +3,14 @@
 #       IN must give exactly EXPECT (and NOTE, if set, on stderr)
 #   cmake ... -DERROR=REGEX -P run.cmake
 #       IN must fail with exit status 1, REGEX on stderr, OUT not written
+# TOKENS may be a list: "--blitz2;BLITZ2;--lib;LIB..." (the token list
+# from the files); REQUIRE: files that must exist, else exit 77 (skipped)
+foreach(f IN LISTS REQUIRE)
+	if(NOT EXISTS ${f})
+		message(STATUS "no ${f}: skipped")
+		cmake_language(EXIT 77)
+	endif()
+endforeach()
 file(REMOVE ${OUT})
 execute_process(COMMAND ${TEDDETOK} ${TOKENS} ${IN} ${OUT}
 	RESULT_VARIABLE rc ERROR_VARIABLE err)

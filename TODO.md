@@ -482,10 +482,14 @@ several versions.
       the port, each with the CD's acidlibs/deflibs, and for the port
       with the libraries built here (ctest `tokens_cd`, `tokens_port`,
       `tokens_broken`; unit test `blitztokens`).
-   2. **`tedtok`/`teddetok` with library files** as the reference
-      instead of `TOKENS` (or both); the readable `rwelibsrc` from the
-      files of its variant instead of the provisional `tokens-ext.txt`
-      of `.cache/rwelibs-analysis/`.
+   2. ~~**`tedtok`/`teddetok` with library files**~~ done
+      (2026-10-29): besides `TOKENS` (a list file, as before) the form
+      `--blitz2 BLITZ2 [--lib LIB]...` makes the list from the files
+      (`programs/ted/tests/host/tokref.c` on `tools/lib/blitztokens`);
+      `blitztokens` exports it as a list file for both. Open: the
+      readable `rwelibsrc` from the files of its variant (once the RWE
+      userlibs are built, 4.5.5) instead of the provisional
+      `tokens-ext.txt` of `.cache/rwelibs-analysis/`.
    3. **Numbers only through `libnums.h`**: the literals left in the
       libraries on macros – `debuglib.c` (four `jsr
       _blitz_tok+0x80005204`/`…5d81` in inline assembler: `#inputoutputlib
