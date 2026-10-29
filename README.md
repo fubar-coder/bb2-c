@@ -247,7 +247,8 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   the issue: `ID.bas` (the program as text; in its header comment
   `; @pass KEY=VALUE` for extra lines of the pass file, see
   `tests/corpus/runner/corpus.h`: `file=`, `dir=`, `remove=`, `wrap=`,
-  `runwrap=`, `runargs=` (arguments of the program, a CLI start), `jobline=`,
+  `runwrap=`, `runargs=` (arguments of the program, a CLI start),
+  `uae=KEY=VALUE` (a change of the emulator configuration), `jobline=`,
   `timeout=`, `runtime_errors=on`, `serial=on` (the remote end of the
   serial tests on the emulated serial port, `tests/corpus/runner/serial.h`:
   canned replies, among them `N` with a byte count and `S`, an XOFF that

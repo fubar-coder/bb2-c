@@ -55,6 +55,9 @@
  *                     a CLI start with arguments)
  *   jobline=LINE      a line appended to tedstub's job list (behind the
  *                     job= lines), any number
+ *   uae=KEY=VALUE     a change of the emulator configuration
+ *                     (tools/lib/amiga_emulation/default.uae), e.g. more
+ *                     memory; any number
  *   expect=PATH       bug-orig test (bugorig.h): exactly one source, no
  *                     serial_same_as (serial=on gives the program the
  *                     remote end; what it sends is not judged); instead
@@ -99,6 +102,8 @@ struct corpus_pass {
     size_t nfiles;
     char **dirs, **removes, **joblines;
     size_t ndirs, nremoves, njoblines;
+    char **uae;                         /* KEY=VALUE */
+    size_t nuae;
 };
 
 /* 0 = ok, -1 = error (message in err) */

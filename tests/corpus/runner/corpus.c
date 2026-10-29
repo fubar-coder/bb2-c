@@ -55,6 +55,9 @@ void corpus_free(struct corpus_pass *p)
     for (i = 0; i < p->njoblines; i++)
         free(p->joblines[i]);
     free(p->joblines);
+    for (i = 0; i < p->nuae; i++)
+        free(p->uae[i]);
+    free(p->uae);
     for (i = 0; i < p->nconfigs; i++) {
         free(p->configs[i].tag);
         free(p->configs[i].blitz2);
@@ -282,6 +285,15 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             if (!inside(val) || push(d ? &p->dirs : &p->removes, d ? &p->ndirs : &p->nremoves, val)) {
                 free(val);
                 return fail(p, err, errlen, "line %u: %s=DEST (inside the volume)", no, key);
+            }
+            continue;
+        }
+        if (!strcmp(key, "uae")) {
+            const char *eq = strchr(val, '=');
+
+            if (!eq || eq == val || push(&p->uae, &p->nuae, val)) {
+                free(val);
+                return fail(p, err, errlen, "line %u: uae=KEY=VALUE", no);
             }
             continue;
         }
@@ -546,15 +558,25 @@ static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, cons
         { "serial_port", tcp }, { "serial_on_demand", "false" },
         { "serial_direct", "false" }, { "serial_hardware_ctsrts", "false" },
     };
+    size_t nserial = port ? sizeof serial / sizeof serial[0] : 0;
+    struct amiga_emulation_option *ch = calloc(nserial + p->nuae + 1, sizeof *ch);
+    char **keys = calloc(p->nuae + 1, sizeof *keys);
     struct amiga_emulation_params ep = { 0 };
     struct amiga_emulation *e = NULL;
     size_t i;
 
-    if (vol && emu && m && tcp) {
-        if (port) {
-            ep.changes = serial;
-            ep.nchanges = sizeof serial / sizeof serial[0];
+    if (vol && emu && m && tcp && ch && keys) {
+        for (i = 0; i < nserial; i++)
+            ch[i] = serial[i];
+        for (i = 0; i < p->nuae && (keys[i] = strdup(p->uae[i])); i++) {
+            char *eq = strchr(keys[i], '=');
+
+            *eq = 0;
+            ch[nserial + i].key = keys[i];
+            ch[nserial + i].value = eq + 1;
         }
+        ep.changes = ch;
+        ep.nchanges = nserial + i;
         /* CORPUS: the configuration's directory, the read-only volumes */
         m[0].volume = VOLUME;
         m[0].host_dir = vol;
@@ -572,6 +594,10 @@ static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, cons
     } else
         snprintf(err, errlen, "out of memory");
     free(m);
+    for (i = 0; keys && i < p->nuae; i++)
+        free(keys[i]);
+    free(keys);
+    free(ch);
     free(tcp);
     free(vol);
     free(emu);
