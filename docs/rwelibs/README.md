@@ -307,7 +307,9 @@ to the bytes of the CD's `LIBNUMS.BB` (its text has a line longer than
 TED takes). `FNS:` is staged with `PERSONAL.FNS` of BSS2's examples,
 so `fns-library11` compiles too. ctest `rwe_refbuild` (Amiberry, about
 20 s) compiles the sources of all `RWE_LIBS` entries to
-`build/<preset>/libs/userlibs/rwe/ref/NAME.obj` – all 19 compile – and
+`build/<preset>/libs/userlibs/rwe/ref/NAME.obj` – all 32 compile
+(the 19 of stages A/B, the 13 of 3.2 "Source"; a `BB22` source is
+converted by `tools/bb22` first) – and
 `rwe_refbuild_NAME` checks that the 15 of stage A equal their binaries
 byte for byte. An entry whose reference is the reference build of its
 source (stage B/C "Source", 3.3) writes `refbuild` as REFERENCE: its
@@ -338,7 +340,7 @@ of 2026-10-29 – the reference of the port:
 | FNS | BSS2 (a wrong guard removed) | binary |
 | StoneCracker | BSS2 (`S404` checks) | binary |
 | STC decrunch | unclear | source |
-| Anim | source (BSS2 = source without the unfinished `RIDiskAnimInit`) | source |
+| Anim | source (BSS2 = source without the unfinished `RIDiskAnimInit`) | binary (the source does not compile, below) |
 | CompactDisk | source cdSCSI | source |
 | Eval | BSS2 (`{}` indirection, a fix) | binary |
 | GTMenu | GTMenuLib3 (4 bytes differ from BSS2) | source |
@@ -353,7 +355,13 @@ of 2026-10-29 – the reference of the port:
 
 "Source" means: the reference build of that source with blitz2 2.10 (the
 binary only for the parts it shares); "binary": the source is brought to
-the binary's state first. Also found: Pack-Library8_Mc is not identical
+the binary's state first. Anim (changed 2026-10-29): `Anim-Library3`
+does not compile – its unfinished `RIDiskAnimInit` uses `diskanimflag`
+and `animfile`, defined nowhere ("Constant Not Found", line 153) – and
+without that command it is the BSS2 binary but for a padding word, so
+the BSS2 binary is the reference (`RWE_REFBUILD_SKIP`). LES debug has
+no reference build either (`Blitz2:Debugger/Font.bin` exists nowhere);
+not yet in `RWE_LIBS`. Also found: Pack-Library8_Mc is not identical
 to the OL binary (an older build with `$VER`); GTMenuLib3, datatypeslib6
 and CIATrackerLib1 have the declarations of their binaries; the BB22
 files convert to TED's format and build (`versions/tools/bb22.py`, a

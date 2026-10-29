@@ -46,7 +46,25 @@ set(RWE_LIBS
 	# the binary's state
 	"risoundlib|soundlib/risoundlib.bb|${bss2}/RISOUNDLIB.OBJ"
 	"ristonecrackerlib|stclib.bb|${bss2}/RISTONECRACKERLIB.OBJ"
-	"rifnslib|FNSLib/fns-library11.bb|${bss2}/RIFNSLIB.OBJ|${bss2}/RIAMOSFUNCLIB.OBJ")
+	"rifnslib|FNSLib/fns-library11.bb|${bss2}/RIFNSLIB.OBJ|${bss2}/RIAMOSFUNCLIB.OBJ"
+	# the source does not compile (its RIDiskAnimInit is unfinished, see
+	# RWE_REFBUILD_SKIP); the BSS2 binary is the source without it
+	"rianimlib|ANIMLib/Anim-Library3.bb|${bss2}/RIANIMLIB.OBJ|${bss2}/RIPACKLIB.OBJ"
+	# stages B/C, the source newer than the binaries (3.2 "Source"): the
+	# reference build of the source
+	"rilvcallhooklib|lvcallhook/LVCallHook3.bb|refbuild"
+	"rimisclib|misclib/misclib2.bb|refbuild"
+	"ristcdecrunchlib|stcdecrunchlib.bb|refbuild"
+	"ricompactdisclib|CDlib/cdSCSI.bb|refbuild|${bss2}/RICOMPACTDISKLIB.OBJ"
+	"rigtmenulib|GTMenuLib/GTMenuLib3.bb|refbuild"
+	"rilinkedlistlib|Listlib/listlib4.bb|refbuild|${bss2}/RIAMOSFUNCLIB.OBJ"
+	"neilsreqtoolslib|RTLib.bb|refbuild"
+	"ridatatypeslib|datatypeslib6.bb|refbuild"
+	"ciatrklib|ptlib/CIATrackerLib1.bb|refbuild"
+	"riarexxlib|rexxlib/NEWAREXXLIB.bb|refbuild"
+	"rishapeslib|shapeslib/RIShapesLib2.bb|refbuild|${bss2}/RIPACKLIB.OBJ"
+	"risortlib|sortlib/RISortlib2.bb|refbuild"
+	"ridisasmlib|Disasmlib/Disasm-library.bb2|refbuild")
 
 set(variant_dir ${PROJECT_SOURCE_DIR}/libs/variants/${RWE_VARIANT})
 set(out ${BLITZ_VARIANTS_DIR}/${RWE_VARIANT})

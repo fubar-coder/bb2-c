@@ -15,4 +15,17 @@
 #define LIB_ridebuglib              51   /* OL RIDEBUGLIB (Leading Edge Software) */
 #define LIB_ristonecrackerlib       17   /* BSS2 RISTONECRACKERLIB; RWE's list */
 #define LIB_risoundlib              45   /* BSS2 RISOUNDLIB; RWE's list */
+/* the libraries whose reference is the reference build of the source
+   (docs/rwelibs/README.md 3.2 "Source"), numbers as their binaries */
+#define LIB_rilinkedlistlib         12   /* OL RILISTLIB; AmiBlitz3 */
+#define LIB_risortlib               13   /* BSS2 RISORTLIB; AmiBlitz3 */
+#define LIB_ricompactdisclib        14   /* BSS2 RICOMPACTDISKLIB; AmiBlitz3 */
+#define LIB_ristcdecrunchlib        18   /* BSS2 RISTCDECRUNCHLIB; AmiBlitz3 */
+#define LIB_ridatatypeslib          25   /* BSS2 RIDATATYPESLIB; AmiBlitz3 */
+#define LIB_rilvcallhooklib         27   /* AmiBlitz3 RILVCallHook */
+#define LIB_rigtmenulib             37   /* BSS2 RIGTMENULIB; AmiBlitz3 */
+#define LIB_rishapeslib             46   /* BSS2 RISHAPESLIB; AmiBlitz3 */
+#define LIB_rimisclib               47   /* BSS2 RIMISCLIB; AmiBlitz3 */
+#define LIB_ridisasmlib             50   /* AmiBlitz3 RIDisAsm */
+#define LIB_ciatrklib               56   /* = #neilsciatrklib of the CD's libnums */
 #endif

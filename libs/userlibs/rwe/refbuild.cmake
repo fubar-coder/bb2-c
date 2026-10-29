@@ -26,7 +26,9 @@
 #                      for byte - for the entries whose REFERENCE is the
 #                      binary of the source (stage A, 3.1), not for those
 #                      in RWE_REFBUILD_NEWER (3.2: a newer binary is the
-#                      reference; they only have to compile)
+#                      reference; they only have to compile) nor those in
+#                      RWE_REFBUILD_SKIP (the source does not compile; not
+#                      in the reference build at all)
 #   REFERENCE refbuild an entry whose reference is the reference build of
 #                      its SOURCE (3.2 "Source", 3.3): rwe_reference()
 #                      gives ref/NAME.obj and the fixture, for
@@ -36,6 +38,10 @@
 #                      rwe_reference(), against the C build
 set(RWE_REF_DIR ${CMAKE_CURRENT_BINARY_DIR}/ref)
 set(RWE_REFBUILD_NEWER riamosfunclib risoundlib ristonecrackerlib rifnslib)
+# the entries whose source does not compile, not in the reference build:
+# Anim-Library3 (its unfinished RIDiskAnimInit uses diskanimflag and
+# animfile, defined nowhere; .cache analysis, README 3.2)
+set(RWE_REFBUILD_SKIP rianimlib)
 set(RWE_REFBUILD_SELFTEST "riencryptlib|Encryptlib/Encrypt-Library.bb|refbuild")
 
 # rwe_reference(NAME REFERENCE OUT_FILE OUT_FIXTURE): the reference file
@@ -81,7 +87,7 @@ foreach(l IN LISTS ref_entries)
 		continue()
 	endif()
 	list(APPEND ref_names ${name})
-	if(NOT have_originals OR NOT EXISTS ${rwesrc}/${source})
+	if(NOT have_originals OR NOT EXISTS ${rwesrc}/${source} OR name IN_LIST RWE_REFBUILD_SKIP)
 		continue()
 	endif()
 	string(APPEND ref_pass "source=RWE/${source}|${RWE_REF_DIR}/${name}.obj\n")
@@ -210,7 +216,8 @@ foreach(l IN LISTS RWE_LIBS)
 	string(REPLACE "|" ";" l "${l}")
 	list(GET l 0 name)
 	list(GET l 2 reference)
-	if(reference STREQUAL "refbuild" OR name IN_LIST RWE_REFBUILD_NEWER)
+	if(reference STREQUAL "refbuild" OR name IN_LIST RWE_REFBUILD_NEWER
+			OR name IN_LIST RWE_REFBUILD_SKIP)
 		continue()
 	endif()
 	add_test(NAME rwe_refbuild_${name} COMMAND ${CMAKE_COMMAND}

@@ -532,8 +532,12 @@ several versions.
       reference: AMOS functions (the AmiBlitz3 SVN binary), Sound,
       StoneCracker and FNS (BSS2) done (2026-10-29); the reference build
       of the sources is part of the tests (`rwe_refbuild`, REFERENCE
-      `refbuild`). Next: the stage B/C libraries whose reference is the
-      source (§3.2) and stage D (§3.3), with REFERENCE `refbuild`; Eval
+      `refbuild`). The stage B/C libraries whose reference is the source
+      (§3.2) are in `RWE_LIBS` (2026-10-29): 13 with REFERENCE
+      `refbuild`, all compile in `rwe_refbuild` (BB22 sources through
+      `tools/bb22`); Anim with the BSS2 binary (its source does not
+      compile); LES debug not yet (`Font.bin` is missing). Next: their
+      C ports, then stage D (§3.3), with REFERENCE `refbuild`; Eval
       (121, clashes with polylib) needs a variant of its own. ~~**Reference build in the build**~~ done (2026-10-29,
       `libs/userlibs/rwe/refbuild.cmake`): residents by `tools/blitzres`
       from the NDK (contents equal to blitz2's, `rwe_resident_NAME`),
