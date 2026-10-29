@@ -220,6 +220,11 @@ static int split(const char *path, struct WBArg *a)
     return a->wa_Lock != 0;
 }
 
+static const char usage[] =
+    "usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [inuse=PATH]...\n"
+    "             TOOL [PROJECT...]\n"
+    "  start TOOL like the Workbench does (no CLI, a WBStartup message)\n";
+
 int main(int argc, char **argv)
 {
     static char line[300];
@@ -232,6 +237,10 @@ int main(int argc, char **argv)
     BPTR seg;
     int i, k, ninuse = 0, noprojects = 0, o_cd = 0, o_dos = 0, o_free = 0;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        Write(Output(), (APTR)usage, sizeof usage - 1);
+        return 0;
+    }
     out = Output();
     parent = FindTask(NULL);
     for (i = 1; i < argc; i++)

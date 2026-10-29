@@ -211,6 +211,10 @@ static void event(ULONG class, UWORD code, UWORD qual, APTR addr)
     check("unexpected event", 0);
 }
 
+static const char usage[] =
+    "usage: teddrive SCRIPT PREFIX teddrivetest main|rescue\n"
+    "  gate D of the TED A/B tests: a program that reads its input like TED\n";
+
 int main(int argc, char **argv)
 {
     struct MsgPort *tport = NULL;
@@ -218,6 +222,10 @@ int main(int argc, char **argv)
     int timer = 0, timedout = 0, con = 0;
     UWORD pens[] = { (UWORD)~0 };
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        Write(Output(), (APTR)usage, sizeof usage - 1);
+        return 0;
+    }
     rescue = argc > 1 && !strcmp(argv[1], "rescue");
     IntuitionBase = (struct IntuitionBase *)OpenLibrary((CONST_STRPTR)"intuition.library", 39);
     GfxBase = (struct GfxBase *)OpenLibrary((CONST_STRPTR)"graphics.library", 39);

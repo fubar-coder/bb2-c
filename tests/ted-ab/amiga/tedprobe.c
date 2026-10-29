@@ -67,6 +67,10 @@ static int exists(const char *path)
     return l != 0;
 }
 
+static const char usage[] =
+    "usage: tedprobe OUTFILE\n"
+    "  gate 0 of the TED A/B tests: what TED finds when it clones the Workbench\n";
+
 int main(int argc, char **argv)
 {
     UBYTE gsd[sizeof(struct Screen)];
@@ -74,6 +78,10 @@ int main(int argc, char **argv)
     struct Task *me = FindTask(NULL);
     struct CommandLineInterface *cli = Cli();
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        Write(Output(), (APTR)usage, sizeof usage - 1);
+        return 0;
+    }
     if (argc != 2) {
         o_str("usage: tedprobe OUTFILE");
         o_line();

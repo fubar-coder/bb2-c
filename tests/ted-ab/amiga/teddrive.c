@@ -1253,6 +1253,10 @@ static int td_readscript(const char *path)
     return 1;
 }
 
+static const char usage[] =
+    "usage: teddrive SCRIPT PREFIX COMMAND [ARGS]\n"
+    "  run COMMAND and play SCRIPT against its windows (TED A/B tests)\n";
+
 int main(int argc, char **argv)
 {
     struct CommandLineInterface *cli = Cli();
@@ -1261,9 +1265,12 @@ int main(int argc, char **argv)
     LONG rc;
     int i;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        Write(Output(), (APTR)usage, sizeof usage - 1);
+        return 0;
+    }
     if (argc < 4) {
-        static const char u[] = "usage: teddrive SCRIPT PREFIX COMMAND [ARGS]\n";
-        Write(Output(), (APTR)u, sizeof u - 1);
+        Write(Output(), (APTR)usage, sizeof usage - 1);
         return 20;
     }
     strncpy(td_prefix, argv[2], sizeof td_prefix - 1);

@@ -903,6 +903,14 @@ static void report_track(void)
     }
 }
 
+static const char usage[] =
+    "usage: inject [OPTION...] COMMAND [ARGS]\n"
+    "  run COMMAND in this process with faults injected (bug-orig tests)\n"
+    "  options: signals allocfail=MIN-MAX[/chip][/COUNT] readfail=NAME/N\n"
+    "    examinefail=NAME openlibfail=NAME createprocfail track pad\n"
+    "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked\n"
+    "    keys=TITLE/CODE@SECS[,CODE@SECS]...  (described in inject.c)\n";
+
 int main(int argc, char **argv)
 {
     static char args[512], line[200];
@@ -915,6 +923,10 @@ int main(int argc, char **argv)
     LONG rc;
     int i, k, r = 0;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        Write(Output(), (APTR)usage, sizeof usage - 1);
+        return 0;
+    }
     out = Output();
     me = FindTask(NULL);
     for (i = 1; i < argc && (r = option(argv[i])) != 0; i++)

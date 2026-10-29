@@ -155,11 +155,19 @@ static void aslfile(const char *title, int expect)
     FreeAslRequest(fr);
 }
 
-int main(void)
+static const char usage[] =
+    "usage: reqclose reqclosetest\n"
+    "  proves reqclose; return 5 on a mismatch or if the closer did not answer\n";
+
+int main(int argc, char **argv)
 {
     struct FontRequester *fo;
     int answered;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        Write(Output(), (APTR)usage, sizeof usage - 1);
+        return 0;
+    }
     IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", 39);
     GadToolsBase = OpenLibrary("gadtools.library", 39);
     AslBase = OpenLibrary("asl.library", 39);

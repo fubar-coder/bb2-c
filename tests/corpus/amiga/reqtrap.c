@@ -78,12 +78,27 @@ void easy_c(struct EasyStruct *es)
     put("\" -> answered 0\n");
 }
 
+#ifdef REQCLOSE
+static const char usage[] =
+    "usage: reqclose COMMAND [ARGS]\n"
+    "  as reqtrap, and modal requesters answered as ENV:REQCLOSE says\n";
+#else
+static const char usage[] =
+    "usage: reqtrap COMMAND [ARGS]\n"
+    "  run COMMAND with AutoRequest/EasyRequestArgs answered at once (texts\n"
+    "  to stdout, prefix REQUESTER:)\n";
+#endif
+
 int main(int argc, char **argv)
 {
     char cmd[512];
     LONG rc;
     int i;
 
+    if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
+        Write(Output(), (APTR)usage, sizeof usage - 1);
+        return 0;
+    }
     if (argc < 2) return 20;
     cmd[0] = 0;
     for (i = 1; i < argc; i++) {

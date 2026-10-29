@@ -114,3 +114,10 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 install(PROGRAMS ${BLITZ2_DIR}/blitz2 ${BLITZ2_DIR}/ted DESTINATION blitz2)
 install(FILES ${BLITZ2_DIR}/acidlibs ${BLITZ2_DIR}/deflibs DESTINATION blitz2)
+
+# -h / --help of the Amiga test tools, in Amiberry
+add_test(NAME help_amiga COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+	-DWORK=${CMAKE_BINARY_DIR}/help-amiga
+	"-DPROGRAMS=$<TARGET_FILE:reqtrap>;$<TARGET_FILE:reqclose>;$<TARGET_FILE:reqclosetest>;$<TARGET_FILE:inject>;$<TARGET_FILE:wbrun>;$<TARGET_FILE:teddrive>;$<TARGET_FILE:teddrivetest>;$<TARGET_FILE:tedprobe>"
+	-P ${PROJECT_SOURCE_DIR}/cmake/check-help-amiga.cmake)
+set_tests_properties(help_amiga PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT 120)
