@@ -1,0 +1,3 @@
+[run]
+exclusive lock -1
+rc=0
