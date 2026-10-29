@@ -125,8 +125,9 @@ fixed `libsdir` (`blitz2:userlibs/`, never written) 2.10 builds
 = parent directory, i.e. `blitz2:<dir>`). 2.10 no longer tests for `:` at
 all; with the constant `libsdir` this makes no difference [Schluss].
 
-The C port reproduces the 1.95 behaviour: `programs/blitz2/src/asmlibs.c`
-`loadblitzlibs()` (`if (*a0++ != ':')`, comment `BUG(orig)` at line 1255).
+The C port had the 1.95 behaviour (`if (*a0++ != ':')`, `BUG(orig)`);
+since 29.10.2026 it tests `'/'` as 2.10 does (`asmlibs.c`
+`loadblitzlibs()`, `DIFF`; #2 fixed).
 
 ## 3 Assembler encodings (no functional difference)
 

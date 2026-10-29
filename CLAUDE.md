@@ -1,6 +1,7 @@
 # blitzbasic2-c – notes for Claude
 
-C translation of Blitz Basic 2: compiler `blitz2` (v1.95, `blitz2.s`),
+C translation of Blitz Basic 2: compiler `blitz2` (v2.10: `blitz2.s` 1.95
+with the changes of the CD's compiler, `docs/v2.10/`),
 editor `ted` (TED 1.1, `ted.s`) and the libraries `acidlibs`/`deflibs`,
 built for AmigaOS (68000) with m68k-amigaos-gcc. Structure, building and
 the checks in the build: `README.md`. Open items: `TODO.md`.

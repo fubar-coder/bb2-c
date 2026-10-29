@@ -1,6 +1,7 @@
 # Blitz Basic 2 in C
 
-The compiler **blitz2** (Blitz Basic 2 v1.95), the editor **ted** (TED 1.1)
+The compiler **blitz2** (Blitz Basic 2 v2.10: the source of 1.95 with the
+changes of the CD's compiler, `docs/v2.10/`), the editor **ted** (TED 1.1)
 and the libraries blitz2 reads at startup (**acidlibs**, **deflibs**), as
 a C translation of the original sources – built for AmigaOS with
 m68k-amigaos-gcc.

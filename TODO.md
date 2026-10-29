@@ -408,11 +408,12 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   used in `#if` and asm strings); the `enum`s are real enumerations.
   All 4732 hunk files of the build byte-identical, `ctest --preset all`
   green.
-* **Comparison with blitz2 2.10** (the binary of the CD): completion of
-  the port. Only after that may original bugs be fixed
-  (`CLAUDE.md`, "Do not fix original bugs"); the basis are the
-  issues with the label `bug-orig`. Analysis: `docs/v2.10/` – 2.10 is
-  `blitz2.s` with `version equ 210` and one fix (`loadblitzlibs` tests
-  for `/`, issue #2); TED, acidlibs and deflibs on the CD are the ported
-  state. Steps: version 210, the `/` test, optionally the `Select`
-  templates as Devpac encodes them (byte-identical programs).
+* ~~**Comparison with blitz2 2.10**~~ done (2026-10-29): version 210,
+  the `/` test (#2 fixed), the `Select` templates as Devpac encodes them;
+  the compiler's output is compared with `BLITZ2/BLITZ2` of the CD
+  (corpus, `corpus_cd`, `ted_ab`; `tests/data/blitz2-cd.tsv`
+  regenerated), the bug-orig tests keep the 1.95 build; new corpus test
+  `t14_select` (`docs/v2.10/README.md` §4). TED, acidlibs and deflibs on
+  the CD are the ported state. With this the port is complete: original
+  bugs may now be fixed (`CLAUDE.md`, "Do not fix original bugs"); the
+  basis are the issues with the label `bug-orig`.
