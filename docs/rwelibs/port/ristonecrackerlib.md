@@ -43,7 +43,8 @@ STC packed file").
 
 All C behind `BLITZ_THUNK`s (keep d1/a0/a1; the original changes d0/a0
 in the header functions and d0–d7/a0/a1/a6 in STCLoad). The decruncher
-is C too, translated register by register like the decrunchers of
+is C too (`libs/userlibs/rwe/optidec.h`, shared with
+`ristcdecrunchlib`), translated register by register like the decrunchers of
 `libs/acidlibs/crunchlib.c`: d6 is the 32-bit bit buffer (`ADD.w d6,d6`
 for a bit, `LSL.l` with the count modulo 64, `ROL.w #8`, `SWAP`), d7 the
 bit count as a word, `DBF` loops on the low word, the targets of the
@@ -88,7 +89,8 @@ same.
 
 ## Test
 
-The test makes its own S404 files: a random sequence of all the codes
+The test makes its own S404 files (`libs/tests/rwe/s404.h`, shared with
+the test of `ristcdecrunchlib`): a random sequence of all the codes
 above (literal bytes, literal runs, all match lengths including the 255
 continuation, near/middle/far distances with 0..16 offset bits, first bit
 buffers of 0..16 bits) is written as the bit stream, and the data it
