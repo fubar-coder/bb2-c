@@ -52,7 +52,8 @@ string(APPEND text "work=${work}\nreport=${work}.txt\n"
 	"teddrive=$<TARGET_FILE:teddrive>\nteddrivetest=$<TARGET_FILE:teddrivetest>\n"
 	"tedprobe=$<TARGET_FILE:tedprobe>\nreqtrap=$<TARGET_FILE:reqtrap>\n"
 	"ted_ref=${CMAKE_BINARY_DIR}/programs/ted/ref/ted\nted_c=$<TARGET_FILE:ted>\n"
-	"blitz2_ref=${CMAKE_BINARY_DIR}/programs/blitz2/ref/blitz2\nblitz2_c=$<TARGET_FILE:blitz2>\n"
+	"blitz2_ref=${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/BLITZ2\n"
+	"blitz2_c=$<TARGET_FILE:blitz2>\n"
 	"timeout=${TED_AB_TIMEOUT}\nbudget=${TED_AB_BUDGET}\nparallel=${CORPUS_PARALLEL}\n")
 file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 

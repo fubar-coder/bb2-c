@@ -1,5 +1,6 @@
-# The corpus: blitz2-c against the original blitz2 1.95 in Amiberry, with
-# the original and the C libraries (TODO.md item 9).
+# The corpus: blitz2-c against the original blitz2 2.10 (the compiler of
+# the CD, docs/v2.10) in Amiberry, with the original and the C libraries
+# (TODO.md item 9).
 #   amiga/    the m68k programs of the runs: tedstub (blitz2:ted for batch
 #             compiles), reqtrap / reqclose (requesters of the compiled
 #             programs), reqclosetest (the gate of the requester tests)
@@ -31,8 +32,8 @@ endforeach()
 add_custom_target(corpus_sources ALL DEPENDS ${corpus_tokenised})
 
 # ---------------------------------------------------------- the passes
-# Configurations (bb2 corpus_check): ref = the original compiler with the
-# CD's libraries (the reference), port = blitz2-c with the CD's libraries
+# Configurations (bb2 corpus_check): ref = the original compiler (2.10,
+# BLITZ2/BLITZ2 of the CD) with the CD's libraries (the reference), port = blitz2-c with the CD's libraries
 # (executable identical, output the same), clib = blitz2-c with the C
 # libraries of this build (output the same).  Without the CD the tests
 # skip.  CORPUS_PARALLEL: emulator sessions at the same time (Amiberry's
@@ -48,7 +49,7 @@ set(CORPUS_PARALLEL ${parallel_default} CACHE STRING
 	"corpus: emulator sessions at the same time")
 set(CORPUS_TIMEOUT 300 CACHE STRING "corpus: time limit of one emulator session (seconds)")
 set(CD_BLITZ2 ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2)
-set(REF_BLITZ2 ${CMAKE_BINARY_DIR}/programs/blitz2/ref/blitz2)
+set(REF_BLITZ2 ${CD_BLITZ2}/BLITZ2)
 
 # corpus_pass(NAME [RUNTIME_ERRORS] [SERIAL] LAUNCHER TARGET [GATE TARGET]
 #             [SERIAL_SAME_AS PASS] SOURCES FILES...): pass file + ctest
@@ -129,7 +130,7 @@ corpus_pass(corpus_serial_runerr RUNTIME_ERRORS SERIAL LAUNCHER reqtrap
 # Every .bb2/.bb of the CD compiled (not run) as bb2's bb2corpus did: with
 # the sources' .xtra, assigns to directories of the CD, in the directory of
 # a relative INCLUDE.  The reference (target blitz2-cd-reference, not ALL:
-# needs the CD and Amiberry) is the original blitz2 1.95, its table goes
+# needs the CD and Amiberry) is the original blitz2 2.10, its table goes
 # to tests/data/blitz2-cd.tsv; ctest corpus_cd compiles with blitz2-c and
 # compares (result, error line and message, size, hash with the trap
 # blocks zeroed).  CORPUS_CD_TIMEOUT: one session (all remaining jobs of a
@@ -163,9 +164,9 @@ endfunction()
 cd_pass(cd-reference ${REF_BLITZ2} ${CD_TABLE})
 add_custom_target(blitz2-cd-reference
 	COMMAND ${CDRUN} ${CMAKE_CURRENT_BINARY_DIR}/cd-reference.pass
-	DEPENDS tedstub blitz2_ref host_tools
+	DEPENDS tedstub host_tools
 	USES_TERMINAL
-	COMMENT "The CD through the original blitz2 1.95 -> tests/data/blitz2-cd.tsv"
+	COMMENT "The CD through the original blitz2 2.10 -> tests/data/blitz2-cd.tsv"
 	VERBATIM)
 
 cd_pass(corpus_cd $<TARGET_FILE:blitz2> ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd.tsv ${CD_TABLE})

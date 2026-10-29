@@ -4,7 +4,9 @@
 # blitz2-c with the CD's libraries, clib: blitz2-c with the C libraries).
 # The expectation is the correct behaviour: the test fails as long as the
 # port reproduces the bug, and it is broken if the original does not show
-# the bug (corpus.h expect=, bugorig.h).
+# the bug (corpus.h expect=, bugorig.h).  The reference stays 1.95 (the
+# build of blitz2.s), not 2.10 like the corpus: 2.10 fixed #2 and has all
+# other bugs unchanged (docs/v2.10), so the test of #2 stays valid.
 #
 # One test = two files in an area directory (compiler/, libs/ ...):
 #   AREA/ID.bas      the program (text, tokenised here like TED would save

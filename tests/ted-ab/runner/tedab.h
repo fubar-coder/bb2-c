@@ -3,8 +3,8 @@
  * scripts/NAME.drv (teddrive syntax, amiga/teddrive.c) with directives in
  * comments, run in four combinations
  *
- *   R5  reference TED (ref/ted)  + blitz2 1.95 (ref/blitz2)
- *   C5  TED-C                    + blitz2 1.95
+ *   R5  reference TED (ref/ted)  + blitz2 2.10 (BLITZ2/BLITZ2 of the CD)
+ *   C5  TED-C                    + blitz2 2.10
  *   Cc  TED-C                    + blitz2-c
  *   Rc  reference TED            + blitz2-c
  *

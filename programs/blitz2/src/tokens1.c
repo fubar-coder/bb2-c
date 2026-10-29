@@ -72,13 +72,16 @@ UWORD thetst1[] = {
 /* blitz2.s:13014 firstsel dc.l 0 */
 struct selnode *firstsel;
 
-/* blitz2.s:13015 selpushb..endsel (26 bytes) */
+/* blitz2.s:13015 selpushb..endsel (26 bytes).  DIFF: and #255,d0 as Devpac
+   encodes it (andi, $0240) like the compiler of the CD (2.10, docs/v2.10):
+   the programs are byte-identical to those of 2.10; the reference build
+   (vasm) has $C07C */
 UWORD selpushb[] = {
-    0xC07C, 0x00FF,                    /* +0   selpushb and #255,d0 */
+    0x0240, 0x00FF,                    /* +0   selpushb and #255,d0 */
     0x3F00,                            /* +4   selpushw move d0,-(a7) */
     0x2F00,                            /* +6   selpushl move.l d0,-(a7) */
     0x45EF, 0x0004,                    /* +8   selpushs lea 4(a7),a2 ;(a7)=len of string! */
-    0xC07C, 0x00FF,                    /* +12  selcomb and #255,d0 */
+    0x0240, 0x00FF,                    /* +12  selcomb and #255,d0 */
     0xB057,                            /* +16  selcomw cmp (a7),d0 */
     0xB097,                            /* +18  selcoml cmp.l (a7),d0 */
     0x6600, 0xFFFE,                    /* +20  selbne bne selbne */
