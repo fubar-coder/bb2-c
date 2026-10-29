@@ -420,6 +420,19 @@ row the line of the cursor in it is a conclusion: the sum is the line,
 and row goes up to 54 (a window of 55 lines and more, an interlaced or
 overscan screen) [Schluss].
 
+**The editor's state in the file** [B, Schluss]: the BB22 sources still
+have a normal `.xtra` next to them (same format and size as those of the
+TED sources, 1206–1226 bytes); blitz2's `.xtra` holds only compiler
+things (the options, the CLI arguments, the object maxima per library:
+`savextra_c`), no cursor. The BB22 header adds the editor's part – where
+the cursor and the window were – which a TED source loses. AmiBlitz3
+later took both into the source, as an "Embedded .xtra Header" of
+comment lines at its start, with the compiler options and
+`CursorLine`/`CursorColumn` (e.g. `Sourcecodes/Amiblitz3/Shared/
+library_offsets.ab3`); BB22 looks like an early step of that: RWE's 1997
+editor kept the editor's state in the file, the compiler options stayed
+in the `.xtra` [Schluss].
+
 **Not known:** the word at +10 (always 0; a horizontal scroll offset?),
 the word at +14 of version 10 (always 2 – the size of the line prefix,
 which version 8 lacks with its 1-byte prefix?) and the meaning of the
