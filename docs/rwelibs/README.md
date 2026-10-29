@@ -109,7 +109,7 @@ latest date in the header comments.
 | PopUp window | – (`#popupwinlib`) | `popuplib/popupwinlib` (+ `test2`) | RI | 1994 | – | open |
 | Protracker | – (`#ritrackerlib`) | `ptlib/ptlib` … `ptlib7`, `ptlibmatty` | Protracker 2.3A routine, adapted | 1995-04-08 | – | open (authors of the routine) |
 | CIA tracker | 56 (`#ciatrklib`; clash `xbciatrackerlib`, AB3) | `ptlib/CIATrackerLib1` (+ `SamplePrograms/TrackerTest`) | Neil O'Rourke, Delirium Softdesign | – | ≈ 88 % OL `XBONESCIATRKLIB` | open |
-| Req | 79 | `reqlib/ReqLib`, `2`, `3` | – | – | all three **=** OL/AB3 `RIREQLIB` (964 B) | one of three (code decides) |
+| Req | 79 | `reqlib/ReqLib`, `2`, `3` | – | – | all three **=** OL/AB3 `RIREQLIB` (964 B) | ReqLib2 (built identically, 3.1) |
 | ARexx | 133 (`#myconst=133`) | `rexxlib/…` (9 versions) | RI; `NEWAREXXLIB`: RWE (Matty) | 1997-02-09 | ≈ 76 % BSS2 `RIAREXXLIB` | open |
 | Intuition | – (`#riintuilib`) | `riintuilib`, `riintuilib2` | RI | 1995 | – | open |
 | PRO-PACK | lit. 197 | `ROBNORTHFAST` | Rob Northen Computing (All Rights Reserved) | 1991/92 | – | **not ported** (license) |
@@ -122,9 +122,9 @@ latest date in the header comments.
 | StoneCracker | 17 | `stclib` | – | – | **=** BSS2/AB3 (1136 B) | stclib |
 | Thread | – (`#rithreadlib`) | `threadlib` | RI | 1995 | – | open |
 | ToolTypes | 59 (bin.) | `tooltypeslib/ToolTypes4` | RI (McNamara) | 1995-04-05 | **=** BSS2/AB3 (3564 B) | ToolTypes4 |
-| TrackDisk | 91 | `trackdisklib/trackdisk`, `trackdisk2` | – | – | both **=** BSS2/AB3 (1892 B) | one of two (code decides) |
+| TrackDisk | 91 | `trackdisklib/trackdisk`, `trackdisk2` | – | – | both **=** BSS2/AB3 (1892 B) | trackdisk2 (both build identically, 3.1) |
 | WB sprite | lit. 10 | `wbspritelib/WBSprite-library2` | RI | 1994 | – | open |
-| ZoneJoy | 64 | `zonejoylib/…` (6 versions) | RI | 1995-08-12 | 3 and 4 **=** BSS2/AB3 (3656 B); 1 and 2 **=** BUM/OL (3396 B); the two 020 versions (1994) ≈ 76 % | one of 3/4 (code decides) |
+| ZoneJoy | 64 | `zonejoylib/…` (6 versions) | RI | 1995-08-12 | 3 and 4 **=** BSS2/AB3 (3656 B); 1 and 2 **=** BUM/OL (3396 B); the two 020 versions (1994) ≈ 76 % | ZoneJoy-Library4 (built identically, 3.1) |
 
 Also in `rwelibsrc/`: `Debuglib/defaultdbug50.bb2` (a debugger, not a
 library; uses `GetPubScreen` of a later screenslib, section 4), `optidec.bin`, documentation
@@ -154,6 +154,66 @@ builds. Proposed rule (to be decided in step 3 of `TODO.md` §4):
    template (`emptylib`, `myaudiolib`, `myctrlclib`, `TestBlit`,
    `PredatorBlit`, `popuplib/test2`, `shapeslib/Test`, `Comparison`,
    `ptlib/SamplePrograms`) – they may serve as test programs.
+
+### 3.1 Reference build with blitz2 2.10 (step 3)
+
+**How libraries were built** (`EXTRAS/LIBSDEV/DOCUMENTATION`, Acid's
+"Blitz2 Library Developers Documents"): the source is compiled with
+blitz2 by *Create Executable*; the executable *is* the library file
+("create an executable by the name of 'Blitzlibs:userlibs/examplelib.obj'").
+The macros come from `libmacs` (resident `libmacs.res` or `XINCLUDE
+"libmacs.bb"`); runtime errors must be off and no BASIC token (`End`)
+may be in it [Doku].
+
+**Checked with the CD** [B]: `cdrun` compiled `EXTRAS/LIBSDEV/USERLIBSRC/`
+with blitz2 2.10 (`blitz2-cd-reference`): 9 third-party libraries are
+**byte-identical** to their binaries on the CD (AaronsIcon, ElmoreDos,
+ElmoreFuncs, ElmoreMath, ElmoreSys, FuzziesReq, RomulusConsole,
+RomulusCrunch, RomulusRequest). The RI sources there are older versions
+(e.g. RIEncrypt without the optional parameters) – no binary of them is
+on the CD.
+
+**The RWE sources** (`cdrun` over a staging directory, raw material
+`.cache/rwelibs-analysis/refbuild/`): with the files of
+`EXTRAS/BLITZLIBS/` (libmacs, libnums, residents) and `sbra.res` =
+`BUM10A/BLITZLIBS/ASMMACS.RES` ("donated by Steve Matty – RI/RWE –
+August '96": the `!SBRA`… short branch macros) 34 of the 123 sources
+compile, **10 are byte-identical** to a binary [B]:
+
+| Source | Identical to |
+|---|---|
+| `Commoditieslib/CommoditiesLib2` | BSS2/AB3 `RICOMMODITIESLIB` |
+| `Encryptlib/Encrypt-Library` | BSS2/AB3 `RIENCRYPTLIB` |
+| `FXLib/FX-Library13` | BSS2/AB3 `RIFXLIB` |
+| `GFXLib/GFX-Library2` | BSS2/AB3 `RIGFXLIB` |
+| `packlib/Pack-Library8` | BUM `RIPACKLIB` |
+| `reqlib/ReqLib2` | OL/AB3 `RIREQLIB` (so ReqLib2 is the reference, not 1 or 3) |
+| `tooltypeslib/ToolTypes4` | BSS2/AB3 `RITOOLTYPESLIB` |
+| `trackdisklib/trackdisk`, `trackdisk2` | BSS2/AB3 `RITRACKDISKLIB` (both the same code) |
+| `zonejoylib/ZoneJoy-Library4` | BSS2/AB3 `RIZONEJOYLIB` (so 4, not 3) |
+
+So a reference build is possible: the binaries are blitz2 2.10 output of
+these sources. Two things were needed:
+
+* **`INCDIR` with a path breaks the include in blitz2 2.10**: `INCDIR
+  "BlitzLibs:"` + `XINCLUDE "LibMacs.bb"` gives "Can't open Include",
+  also with `INCLUDE`, also with a path without assign; with the INCDIR
+  line removed (relative include in the current directory) or with an
+  absolute `XINCLUDE "BlitzLibs:LibMacs.bb"` it compiles. No source of
+  the CD uses INCDIR with a path. For the reference build the INCDIR
+  lines are replaced by `;` (INCDIR generates no code). Cause: under
+  investigation – likely an original bug [B; cause open].
+* `sbra.res` (and other residents of RWE) exist nowhere; `ASMMACS.RES`
+  serves for `sbra.res`.
+
+**Not yet buildable** (89 sources) [B]: missing constants of residents
+that exist nowhere – `lvo.res` (`JSR _RemPort(a6)`, `_CloseLibrary`,
+`_Wait` …), `custom.res` (`custom`, `#dmacon` …), `datatypes.res`,
+`AHI.res`; library numbers no libnums defines (`#ritrackerlib`,
+`#ricompactdisclib`, `#rigtmenulib` as written in the sources …); the
+`BB22` files (blitz2 cannot read them); further includes (`optidec.bin`,
+`registry.inc`, `bomberman:shapeoffsets.bb`). 24 sources compile but
+match no binary (older or newer versions, or other options).
 
 ## 4 Tokens
 
@@ -262,9 +322,12 @@ repository).
 
 ## 7 Open questions
 
-1. How were these libraries built from the Blitz sources (`libmacs.bb`,
-   `!libheader`; `INCDIR "BlitzLibs:"`), and can blitz2 (port) do it
-   here – the basis of a reference build (`TODO.md` §4 step 3)?
+1. ~~How were these libraries built, can blitz2 do it here?~~ Yes:
+   *Create Executable* with libmacs; 10 RWE sources build
+   byte-identically with blitz2 2.10 (3.1). Open: the residents RWE
+   used that exist nowhere (`lvo.res`, `custom.res`, `datatypes.res`,
+   `AHI.res`), the missing library numbers, and the cause of the INCDIR
+   problem.
 2. Which libraries belong together as one product (e.g. the three Blitz
    Bombers libraries, MapEd/MapShapes, Registry/support)?
 3. The libraries with literal test numbers (5, 8, 10, 19, 22, 39, 195,
