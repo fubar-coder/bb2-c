@@ -23,6 +23,7 @@ network, the normal build does not. The downloads end up in
 | Directory | Contents | Download | SHA-256 |
 |---|---|---|---|
 | `cd/ultimate-blitz-basic-2.1/` | the CD "Ultimate Blitz Basic 2.1" (1997, Acid Software), 4310 files | <https://archive.org/download/ultimate-blitz-basic-v2_1/Ultimate%20Blitz%20Basic%202.1%20%281997%29%28Acid%20Software%29.iso> | `205a16fa83403d61a785733cec2518bcc1fe5a6fae5b7da4da6329bd32c99166` |
+| `amiblitz3/svn-r279/` | single files of AmiBlitz3's SVN repository, revision 279 (2016-06-01, the AmiBlitz3 team), paths as there: `BlitzLibs/UserLibs/userlibs/RIAmosFuncLib.obj` – RIAmosFuncLib of the BSS2 release with fixes of the AmiBlitz3 team, the reference of the port of AMOS functions (`docs/rwelibs/README.md` §3.2) | <https://sourceforge.net/p/amiblitz3/code/279/tree/BlitzLibs/UserLibs/userlibs/RIAmosFuncLib.obj?format=raw> | `0863e9766957ee548cd7d9393e85d80c28a896a208d183487dbde5fe3aa45ea2` |
 | `aminet/amibl2src/` | `amibl2src.lha`, in it `bb2src.zip` unpacked to `bb2src/` and `bblibsrc.lha` (Blitz sources of the libraries, tokenized, 209 files) to `bblibsrc/`, `RWELibSourc.lha` (Blitz sources of the libraries Red When Excited released in September 1999, tokenized, 287 files) to `rwelibsrc/` | <https://aminet.net/dev/blitz/amibl2src.lha> | `b71e6445d0838b15416f5b55c5be422f07bd4fae5da5c065ce329042067628ff` |
 
 * The CD has only ISO 9660 names (no Rock Ridge, no Joliet), hence upper

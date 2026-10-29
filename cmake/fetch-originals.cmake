@@ -14,6 +14,9 @@
 #                                           unpacked (bb2src/),
 #                                           bblibsrc.lha (bblibsrc/) and
 #                                           RWELibSourc.lha (rwelibsrc/)
+#   archive/amiblitz3/svn-r279/             single files of AmiBlitz3's SVN
+#                                           (SourceForge amiblitz3/code,
+#                                           revision 279), paths as there
 # None of it is in git (.gitignore); archive/README.md lists the sources.
 # Already unpacked and checked material is not touched again.
 # At the end: archive/sources/ted-1.1 and blitz2-1.95 (in git) must equal
@@ -28,7 +31,8 @@ endif()
 # name  url  sha256
 set(downloads
 	"ubb21.iso|https://archive.org/download/ultimate-blitz-basic-v2_1/Ultimate%20Blitz%20Basic%202.1%20%281997%29%28Acid%20Software%29.iso|205a16fa83403d61a785733cec2518bcc1fe5a6fae5b7da4da6329bd32c99166"
-	"amibl2src.lha|https://aminet.net/dev/blitz/amibl2src.lha|b71e6445d0838b15416f5b55c5be422f07bd4fae5da5c065ce329042067628ff")
+	"amibl2src.lha|https://aminet.net/dev/blitz/amibl2src.lha|b71e6445d0838b15416f5b55c5be422f07bd4fae5da5c065ce329042067628ff"
+	"ab3-RIAmosFuncLib.obj|https://sourceforge.net/p/amiblitz3/code/279/tree/BlitzLibs/UserLibs/userlibs/RIAmosFuncLib.obj?format=raw|0863e9766957ee548cd7d9393e85d80c28a896a208d183487dbde5fe3aa45ea2")
 
 file(MAKE_DIRECTORY ${DOWNLOAD_DIR})
 foreach(d IN LISTS downloads)
@@ -150,6 +154,21 @@ foreach(l "bblibsrc|bblibsrc.lha|bblibsrc|209" "rwelibsrc|RWELibSourc.lha|Libs|2
 			message(FATAL_ERROR "${lha}: ${n} files, ${count} expected")
 		endif()
 		finish(${dest} ${aminet}/amiblitz2source/${lha})
+	endif()
+endforeach()
+
+# single files of AmiBlitz3's SVN (revision 279): download name ab3-NAME ->
+# archive/amiblitz3/svn-r279/PATH
+foreach(f "ab3-RIAmosFuncLib.obj|BlitzLibs/UserLibs/userlibs/RIAmosFuncLib.obj")
+	string(REPLACE "|" ";" f "${f}")
+	list(GET f 0 name)
+	list(GET f 1 path)
+	set(dest ${root}/archive/amiblitz3/svn-r279/${path})
+	if(NOT EXISTS ${dest})
+		get_filename_component(dir ${dest} DIRECTORY)
+		file(MAKE_DIRECTORY ${dir})
+		file(COPY_FILE ${DOWNLOAD_DIR}/${name} ${dest})
+		message(STATUS "${dest}: copied")
 	endif()
 endforeach()
 
