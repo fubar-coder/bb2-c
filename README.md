@@ -211,8 +211,8 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   of another size than allocated; for the
   compiled programs with `runwrap=@INJECT@|...`), `wbrun` starts the compiler
   (`wrap=@WBRUN@|...`) or a program (`runwrap=@WBRUN@|...`) like the
-  Workbench and reports the current directory at the end, the change of
-  the open count of dos.library and files left in use (a Blitz program
+  Workbench and reports the current directory at the end, how often the
+  process opened minus closed dos.library and files left in use (a Blitz program
   has to use wbstartuplib, which answers the WBStartup message; what it
   prints is lost), `userlib.c` is a library for
   `blitz2:userlibs` (function `BugOrigUserLib`, token in

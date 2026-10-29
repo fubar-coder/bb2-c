@@ -9,7 +9,11 @@
  *   noprojects   start the tool alone, without the PROJECTs (for a
  *                wrapper whose caller always passes one)
  *   cd           report the current directory at the end
- *   dosopen      report the change of the open count of dos.library
+ *   dosopen      report how often the process opened dos.library minus
+ *                how often it closed it (exec's OpenLibrary,
+ *                OldOpenLibrary, CloseLibrary patched while it runs;
+ *                other tasks do not count - lib_OpenCnt would, e.g. a
+ *                background tool of the Workbench closing its own)
  *   inuse=PATH   after the end: is PATH still in use (an exclusive Lock
  *                fails with ERROR_OBJECT_IN_USE, e.g. a file left open)
  * The tool has to answer the WBStartup message (a Blitz program only
@@ -21,7 +25,7 @@
  *                (NP_ExitCode, in the process): start = the one it was
  *                started with, tool dir / project dir N = the lock of
  *                that WBArg
- *   dos.library open count +N   the change of lib_OpenCnt over the run
+ *   dos.library open count +N   opened minus closed by the process
  *   in use: PATH | not in use: PATH | missing: PATH   for every inuse=
  *
  * Like the Workbench the process has no input and output handles (0):
@@ -53,6 +57,7 @@ static BPTR startdir;
 static struct WBArg args[MAXARGS];
 static int nargs;
 static int cd_end = -2;                 /* -1 start, 0.. WBArg, -3 other */
+static struct Task *parent;
 
 static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 
@@ -71,6 +76,104 @@ void exit_c(void)
             cd_end = i;
     if (cd != startdir)
         CurrentDir(startdir);
+    Signal(parent, SIGBREAKF_CTRL_F);
+}
+
+void exit_stub(void);
+
+/* the process started by wbrun: its exit code is wbrun's hook */
+static int ours(void)
+{
+    struct Task *t = FindTask(NULL);
+
+    return t->tc_Node.ln_Type == NT_PROCESS
+           && ((struct Process *)t)->pr_ExitCode == (APTR)exit_stub;
+}
+
+/* dosopen: the calls of the process, counted in the process */
+static volatile LONG dos_count;
+static volatile int in_old;             /* OldOpenLibrary calls OpenLibrary */
+APTR old_open, old_oldopen, old_close;
+
+void enter_old_c(void)
+{
+    if (ours())
+        in_old = 1;
+}
+
+void opened_c(ULONG base, ULONG old)
+{
+    if (!ours())
+        return;
+    if (old)
+        in_old = 0;
+    else if (in_old)
+        return;
+    if (base && base == (ULONG)DOSBase)
+        dos_count++;
+}
+
+void close_c(ULONG base)
+{
+    if (ours() && base == (ULONG)DOSBase)
+        dos_count--;
+}
+
+void open_patch(void), oldopen_patch(void), close_patch(void);
+__asm__(
+"   .text\n"
+"   .even\n"
+"_open_patch:\n"
+"   pea     _open_ret\n"
+"   move.l  _old_open,-(sp)\n"
+"   rts\n"
+"_open_ret:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   clr.l   -(sp)\n"
+"   move.l  d0,-(sp)\n"
+"   jsr     _opened_c\n"
+"   addq.l  #8,sp\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   rts\n"
+"   .even\n"
+"_oldopen_patch:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   jsr     _enter_old_c\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   pea     _oldopen_ret\n"
+"   move.l  _old_oldopen,-(sp)\n"
+"   rts\n"
+"_oldopen_ret:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  #1,-(sp)\n"
+"   move.l  d0,-(sp)\n"
+"   jsr     _opened_c\n"
+"   addq.l  #8,sp\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   rts\n"
+"   .even\n"
+"_close_patch:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  a1,-(sp)\n"
+"   jsr     _close_c\n"
+"   addq.l  #4,sp\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   move.l  _old_close,-(sp)\n"
+"   rts\n");
+
+static void patch(int on)
+{
+    struct Library *e = (struct Library *)SysBase;
+
+    if (on) {
+        old_open = SetFunction(e, -552, (APTR)open_patch);
+        old_oldopen = SetFunction(e, -408, (APTR)oldopen_patch);
+        old_close = SetFunction(e, -414, (APTR)close_patch);
+    } else {
+        SetFunction(e, -552, old_open);
+        SetFunction(e, -408, old_oldopen);
+        SetFunction(e, -414, old_close);
+    }
 }
 
 void exit_stub(void);
@@ -117,10 +220,10 @@ int main(int argc, char **argv)
     struct WBStartup msg;
     struct Process *pr;
     BPTR seg;
-    UWORD cnt0;
     int i, k, ninuse = 0, noprojects = 0, o_cd = 0, o_dos = 0;
 
     out = Output();
+    parent = FindTask(NULL);
     for (i = 1; i < argc; i++)
         if (!strcmp(argv[i], "noprojects"))
             noprojects = 1;
@@ -152,7 +255,11 @@ int main(int argc, char **argv)
     if (!(port = CreateMsgPort()))
         return 20;
     startdir = DupLock(((struct Process *)FindTask(NULL))->pr_CurrentDir);
-    cnt0 = DOSBase->dl_lib.lib_OpenCnt;
+    if (o_dos) {
+        Forbid();
+        patch(1);
+        Permit();
+    }
     pr = CreateNewProcTags(NP_Seglist, seg, NP_FreeSeglist, FALSE,
                            NP_Name, args[0].wa_Name, NP_StackSize, stack,
                            NP_CurrentDir, startdir, NP_HomeDir, DupLock(args[0].wa_Lock),
@@ -176,6 +283,13 @@ int main(int argc, char **argv)
        ended when this task runs again */
     WaitPort(port);
     GetMsg(port);
+    Wait(SIGBREAKF_CTRL_F);             /* the exit hook ran */
+    Delay(5);                           /* DOS has removed the process */
+    if (o_dos) {
+        Forbid();
+        patch(0);
+        Permit();
+    }
 
     if (!o_cd)
         ;
@@ -189,8 +303,7 @@ int main(int argc, char **argv)
     } else
         put("wbrun: current dir at end: other\n");
     if (o_dos) {
-        sprintf(line, "wbrun: dos.library open count %+d\n",
-                (int)DOSBase->dl_lib.lib_OpenCnt - (int)cnt0);
+        sprintf(line, "wbrun: dos.library open count %+ld\n", (long)dos_count);
         put(line);
     }
     for (k = 0; k < ninuse; k++) {
