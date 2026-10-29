@@ -62,6 +62,10 @@ int main(int argc, char **argv)
     }
     if (!load_sets(argv[1], names))
         return 20;
+    /* every routine returns in d0 (Encrypt/Decrypt: the buffer address
+       with the last byte in its low byte, GetWheel: the wheel), compared
+       by the "d0" checks; whether it equals the input is chance */
+    DONTCARE = 1;
 
     ROUT = "GetWheel start";
     strcpy(VEC, "");
@@ -73,14 +77,14 @@ int main(int argc, char **argv)
         ROUT = "Encrypt 5";
         DO2(ENT(LIB, 0, 1), R[cur].d[0] = (ULONG)buf[cur] + OFF; R[cur].d[1] = v[i].len;
             R[cur].d[2] = v[i].w1; R[cur].d[3] = v[i].w2; R[cur].d[4] = v[i].w3);
-        SAME("buffer", memcmp(buf[0], buf[1], BUFSZ));
+        SAMEBYTES("buffer", buf, BUFSZ);
         SAME("d0", (R[cur].d[0] & 0xff) | ((R[cur].d[0] ^ ((ULONG)buf[cur] + OFF)) & ~0xffUL));
         SAME("changed", memcmp(buf[cur], ref, BUFSZ) != 0);
         wheels();
         ROUT = "Decrypt 5";
         DO2(ENT(LIB, 1, 0), R[cur].d[0] = (ULONG)buf[cur] + OFF; R[cur].d[1] = v[i].len;
             R[cur].d[2] = v[i].w1; R[cur].d[3] = v[i].w2; R[cur].d[4] = v[i].w3);
-        SAME("buffer", memcmp(buf[0], buf[1], BUFSZ));
+        SAMEBYTES("buffer", buf, BUFSZ);
         SAME("d0", (R[cur].d[0] & 0xff) | ((R[cur].d[0] ^ ((ULONG)buf[cur] + OFF)) & ~0xffUL));
         wheels();
         for (m = 0; m < sizeof modes / sizeof modes[0]; m++) {
@@ -94,7 +98,7 @@ int main(int argc, char **argv)
             DO2(ENT(LIB, 1, 1), R[cur].d[0] = (ULONG)buf[cur] + OFF; R[cur].d[1] = v[i].len;
                 R[cur].d[2] = v[i].w1; R[cur].d[3] = v[i].w2; R[cur].d[4] = v[i].w3;
                 R[cur].d[5] = modes[m]);
-            SAME("buffer", memcmp(buf[0], buf[1], BUFSZ));
+            SAMEBYTES("buffer", buf, BUFSZ);
             SAME("d0", (R[cur].d[0] & 0xff) | ((R[cur].d[0] ^ ((ULONG)buf[cur] + OFF)) & ~0xffUL));
             SAME("restored", memcmp(buf[cur], ref, BUFSZ) == 0);
             wheels();

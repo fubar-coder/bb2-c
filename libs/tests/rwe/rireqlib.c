@@ -96,7 +96,7 @@ static void filereq(int form, const char *title, ULONG flags, ULONG ret, const c
         R[cur].a[3] = (ULONG)out[cur] + 20 + (title ? strlen(title) + 1 : 0));
     SAME("d0", R[cur].d[0]);
     SAME("a3", R[cur].a[3] - (ULONG)out[cur]);
-    SAME("out", memcmp(out[0], out[1], sizeof out[0]));
+    SAMEBYTES("out", out, sizeof out[0]);
     SAME("called", fk_calls[cur]);
     for (k = 0; k < (int)sizeof rec_fr[0]; k += 2) {
         char what[40];

@@ -43,7 +43,7 @@ static ULONG coplist[2][4];
 
 #define SENT() do {                                                         \
         SAME("messages", nmsg[cur]);                                        \
-        SAME("message", memcmp(msg[0], msg[1], sizeof msg[0]));             \
+        SAMEBYTES("message", msg, sizeof msg[0]);             \
     } while (0)
 
 /* call the check of entry e, form f */
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
     SAME("address = the TRAP", *(ULONG *)(msg[cur] + 4) - (ULONG)code[cur]);
     for (cur = 0; cur < 2; cur++)
         *(ULONG *)(msg[cur] + 4) = 0;
-    SAME("message", memcmp(msg[0], msg[1], sizeof msg[0]));
+    SAMEBYTES("message", msg, sizeof msg[0]);
 
     ROUT = "CopperTrace";
     for (cur = 0; cur < 2; cur++) {

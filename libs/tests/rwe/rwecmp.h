@@ -128,6 +128,12 @@ static void fail(const char *what, ULONG o, ULONG c)
         if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
     } while (0)
 
+/* the bytes of both sets the same: SAME(what, memcmp(x[0], x[1], n))
+   would compare the one memcmp result with itself and never fail */
+#define SAMEBYTES(what, x, n) do {                                          \
+        if (memcmp((x)[0], (x)[1], (n))) fail(what, 0, 1); else checks++;   \
+    } while (0)
+
 /* a check on each set separately (results that may differ between the
    sets, e.g. random numbers): `expr` must hold for both */
 #define BOTH(what, expr) do {                                               \
@@ -135,14 +141,29 @@ static void fail(const char *what, ULONG o, ULONG c)
             if (!(expr)) fail(what, cur == 0, cur == 1); else checks++;     \
     } while (0)
 
+/* registers (bit 0-7 d0-d7, 8-14 a0-a6) whose "kept" says nothing for the
+   calls that follow: a routine leaves a result there that may equal the
+   input by chance (e.g. Encrypt's d0 = buffer address with the last data
+   byte in its low byte - the buffers of the two sets are at different
+   addresses, so the chance hits one set only); their values are compared
+   by the test itself.  Set before DO2, cleared by the test. */
+static ULONG DONTCARE;
+
 static void preserve(void)
 {
     struct call c[2];
     char buf[140];
-    int s;
+    int s, r;
     for (s = 0; s < 2; s++) {
         c[s].in = IN[s];
         c[s].out = R[s];
+        for (r = 0; r < 15; r++)
+            if (DONTCARE & (1UL << r)) {
+                if (r < 8)
+                    c[s].out.d[r] = c[s].in.d[r];
+                else
+                    c[s].out.a[r - 8] = c[s].in.a[r - 8];
+            }
     }
     note_kept();
     sprintf(buf, "%.38s %s", ROUT, VEC);

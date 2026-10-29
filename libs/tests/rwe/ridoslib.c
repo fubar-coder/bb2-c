@@ -48,7 +48,7 @@ static struct DosLibrary *dos;
 #define STRRES() do {                                                       \
         SAME("d0", R[cur].d[0]);                                            \
         SAME("a3", R[cur].a[3] - (ULONG)out[cur]);                          \
-        SAME("out", memcmp(out[0], out[1], sizeof out[0]));                 \
+        SAMEBYTES("out", out, sizeof out[0]);                 \
     } while (0)
 
 static void paths(void)
