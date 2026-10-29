@@ -341,20 +341,25 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     compiler bug, test added) and with it #90, #91. Found there: #338
     (port: runtheprog did not load a4 with -fbaserel, Compile & Run never
     started a program; fixed, the binary changed).
-  - *Open:* `ted_ab` case 01d-rt-maplib times out in the reference
-    configuration R5 (original TED and blitz2): alone, or after any one of
-    00-start, 01a, 01b, 01c, it passes; after all of them in the same
-    emulator session (16 runs) the first click on the version requester
-    is lost and the DOS requesters for blitzlibs: never come. The state
-    of 8825131 fails the same way with the same selection, so it is no
-    regression: the session grouping changed when 23-font6 became
-    @known. Not the Amiberry update (8.4.2 fails too) and not the load
-    of orphaned emulators (see below). Cause in the session not found
-    yet. Deferred, kept open as #339 (user decision 2026-10-29). Orphaned Amiberry processes: a runner that crashed or was killed
-    left its emulators running (setpgid), each at 100 % CPU; eight from
-    a crashed corpusrun ran for 85 minutes (2026-10-29). Fixed:
-    amiga_emulation sets PR_SET_PDEATHSIG (Linux), tested in
-    amiga_emulation_run.
+  - *Solved:* `ted_ab` case 01d-rt-maplib timed out in R5 after 16
+    runs in one session (#339). Cause: the original bug #340 - TED's
+    a0toname splits the file argument by blitz2's LoadSeg result in d0;
+    with the low byte '/' TED opened `mikesmaplib.b/b` ("Couldn't open
+    file!"). It depends on the memory layout, so any run can hit it (seen
+    also: 05-find C5). Found with `AMIGA_EMULATION_SHOTS` and a temporary
+    log of failing DOS `Open` calls. teddrive now recognises it and tedab
+    repeats such runs in a new session (76ea411); teddrive also sees a
+    window opened at the address of a closed one as new (66fa3db).
+    Orphaned Amiberry processes of a crashed runner: fixed with
+    PR_SET_PDEATHSIG (1651778).
+  - *Deferred (user decision 2026-10-29):* removing a patch is racy.
+    teddrive's CloseWindow patch calls the original with `jsr`: a task
+    still inside it when teddrive removes the patch and ends returns into
+    freed code; the Delay of 0.2 s only narrows that. Also with a `jmp`
+    patch (teddrive's Open, reqtrap's AutoRequest/EasyRequestArgs) a task
+    interrupted between the library vector and the stub runs into freed
+    code. Fix: stub and its data in an AllocMem block that is never freed
+    (about 100 bytes per run), teddrive reads the data through a pointer.
   - *Runner features:* done: program arguments (`runargs=`, #107),
     the macro buffer of the default options (tedstub `macrobuf=`, used
     for #336), the start from the Workbench (`wbrun`: #19, #20, #306,
