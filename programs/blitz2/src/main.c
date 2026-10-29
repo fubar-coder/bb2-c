@@ -1424,13 +1424,10 @@ ULONG panicbit;                         /* 1677 */
 ULONG panicmask;                        /* 1678 */
 static char procname[] = "Blitz ][ Program Proc";   /* 1680 */
 
-/* DIFF: the new process enters here from CreateProc; with -fbaserel the C
-   code needs a4 = the base of the globals, which the process does not
-   have, so a stub loads it first (like every other entry from outside,
-   glue.h) */
-static void runtheprog(void) __attribute__((used));
-void runtheprog_a4(void);
-__asm__("   .text\n   .even\n_runtheprog_a4:\n" GLUE_LOAD_A4 "   jmp     _runtheprog\n");
+/* DIFF: the new process enters runtheprog from CreateProc; with -fbaserel
+   the C code needs a4 = the base of the globals, which the process does
+   not have: __saveds loads it (#338) */
+static __saveds void runtheprog(void);
 
 /* 1683-1687 procstart: a fake segment list for CreateProc: length, next
    BPTR, then the code (asm: runtheprog itself; here a jmp.l to it). */
@@ -1439,7 +1436,7 @@ static struct {
     ULONG next;                         /* procstart: dc.l 0 ;next */
     UWORD jmp;                          /* jmp abs.l */
     void (*addr)(void);
-} __attribute__((aligned(4))) procstart = { 0, 0, 0x4ef9, runtheprog_a4 };
+} __attribute__((aligned(4))) procstart = { 0, 0, 0x4ef9, runtheprog };
 
 /* blitz2.s:1595 menu0 - compile/run (falls into menu10) */
 void menu0(void)
@@ -1493,7 +1490,7 @@ void menu10(void)
 }
 
 /* blitz2.s:1688 runtheprog - runs as the new process (procstart) */
-static void runtheprog(void)
+static __saveds void runtheprog(void)
 {
     struct m68kregs r = {{0}};
 
