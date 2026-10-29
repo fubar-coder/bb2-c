@@ -21,6 +21,8 @@
 #   @VAR@ in @pass: USERLIB (amiga/userlib.c: a library for
 #   blitz2:userlibs), INJECT (amiga/inject.c: faults for the compiler with
 #   wrap=@INJECT@|..., for the programs with runwrap=@INJECT@|...),
+#   WBRUN (amiga/wbrun.c: started like from the Workbench, wrap=@WBRUN@ or
+#   runwrap=@WBRUN@),
 #   CD_BLITZ2 (the CD's BLITZ2 directory), TESTDATA
 #   (the generated test data, see below; use
 #   file=DEST|@TESTDATA@/NAME, the program reads CORPUS:DEST)
@@ -38,6 +40,7 @@ set(CD_BLITZ2 ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2)
 set(REF_BLITZ2 ${CMAKE_BINARY_DIR}/programs/blitz2/ref/blitz2)
 set(USERLIB ${CMAKE_CURRENT_BINARY_DIR}/amiga/bugorig_userlib.obj)
 set(INJECT $<TARGET_FILE:inject>)
+set(WBRUN $<TARGET_FILE:wbrun>)
 set(TESTDATA ${CMAKE_CURRENT_BINARY_DIR}/testdata)
 if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 	set(parallel 3)

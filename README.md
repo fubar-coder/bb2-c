@@ -209,7 +209,12 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   faults (no free signal, failing AllocMem of a size, Read error, failing
   Examine, failing OpenLibrary of a name, recorded allocations and FreeMem
   of another size than allocated; for the
-  compiled programs with `runwrap=@INJECT@|...`), `userlib.c` is a library for
+  compiled programs with `runwrap=@INJECT@|...`), `wbrun` starts the compiler
+  (`wrap=@WBRUN@|...`) or a program (`runwrap=@WBRUN@|...`) like the
+  Workbench and reports the current directory at the end, the change of
+  the open count of dos.library and files left in use (a Blitz program
+  has to use wbstartuplib, which answers the WBStartup message; what it
+  prints is lost), `userlib.c` is a library for
   `blitz2:userlibs` (function `BugOrigUserLib`, token in
   `userlib.tokens`). tedstub also runs menu items
   (`menu=ID|ITEM|ANSWER`) and logs the busy pointer after them;
@@ -224,7 +229,7 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   `tests/corpus/runner/corpus.h`: `file=`, `dir=`, `remove=`, `wrap=`,
   `runwrap=`, `runargs=` (arguments of the program, a CLI start), `jobline=`,
   `timeout=`, `runtime_errors=on`, with `@USERLIB@`,
-  `@INJECT@`, `@CD_BLITZ2@`, `@TESTDATA@`; `; @configs port` restricts the
+  `@INJECT@`, `@WBRUN@`, `@CD_BLITZ2@`, `@TESTDATA@`; `; @configs port` restricts the
   configurations judged) and `ID.expect` (the correct behaviour; a line
   beginning with `[` is a section header, so the program's output must
   not begin with `[`). Test
