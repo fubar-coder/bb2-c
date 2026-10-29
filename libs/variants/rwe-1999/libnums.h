@@ -28,4 +28,7 @@
 #define LIB_rimisclib               47   /* BSS2 RIMISCLIB; AmiBlitz3 */
 #define LIB_ridisasmlib             50   /* AmiBlitz3 RIDisAsm */
 #define LIB_ciatrklib               56   /* = #neilsciatrklib of the CD's libnums */
+/* riarexxlib: the source defines its number itself (#myconst=133 in
+   NEWAREXXLIB.bb, !libheader {#myconst,...}); BSS2 RIAREXXLIB has 133 */
+#define LIB_riarexxlib             133
 #endif
