@@ -267,17 +267,16 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      a4 a second time and call `___restore_a4`; the thunk stays anyway.
      `directdo` is entered from an exception (rte): the explicit `lea`
      is the clearer form there. Open for a user decision.
-* **`-h` / `--help` for all callable programs** (request of
-  2026-10-28): usage text to stdout, return 0; today none of them knows
-  it. Affected: the host tools `tools/*` (amiga_run, asmcmp, biglib,
-  blitzlibcheck, blitzlibcompare, checkdata, checklabels, hunkcheck,
-  vasmlisting), `programs/ted/tools/tedtok`, `tests/corpus/runner`
-  (corpusrun, cdrun) and the Amiga programs `reqtrap`, `reqclose`,
-  `reqclosetest`. Not included: `tedstub` and `tedoracle` (only blitz2
-  loads them as `blitz2:ted`; started from the shell they end with 20).
-  Also excluded (decision of 2026-10-28, may change much later):
-  `blitz2` and `ted` themselves – they reproduce the behaviour of the
-  originals (argument = file), a help would be a `DIFF`.
+* ~~**`-h` / `--help` for all callable programs**~~ done (2026-10-29,
+  request of 2026-10-28): usage text with a line on what the program
+  does, to stdout, return 0. Host (61736be): the tools, tedtok, teddetok,
+  corpusrun, cdrun, tedab, teddump - tests `help_*`
+  (`cmake/check-help.cmake`). Amiga (2d19438): reqtrap, reqclose,
+  reqclosetest, inject, wbrun, teddrive, teddrivetest, tedprobe - test
+  `help_amiga` in Amiberry. Not included: `tedstub` and `tedoracle`
+  (only blitz2 loads them as `blitz2:ted`), and `blitz2` and `ted`
+  themselves (decision of 2026-10-28: they reproduce the originals,
+  argument = file; a help would be a `DIFF`).
 
 * ~~**Git history**~~ decided (2026-10-28): this repository is the
   reference and stays with the fresh start; the history of the files is
