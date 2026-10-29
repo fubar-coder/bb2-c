@@ -1251,9 +1251,10 @@ void loadblitzlibs(void)
         a0 = undobuffer;
     } else {
         a0 -= 2;
-        if (*a0++ != ':')
-            /* BUG(orig): the default libsdir already ends with '/', giving
-               "blitz2:userlibs//dir" (AmigaDOS: parent directory) */
+        /* DIFF: '/' as in the compiler of the CD (2.10, docs/v2.10, #2);
+           blitz2.s tests ':', and the default libsdir already ends with
+           '/': "blitz2:userlibs//dir" (AmigaDOS: parent directory) */
+        if (*a0++ != '/')
             *a0++ = '/';
     }
     namepos = a0;                       /* store first pos for chars */
