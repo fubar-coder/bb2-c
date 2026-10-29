@@ -89,9 +89,9 @@ latest date in the header comments.
 | MapShapes | 6 | `MapEd/MapShape`, `MapShape2` | RI | 1996-12-22 | – | open |
 | ReqTools | 54 (`#neilsreqtoolslib`) | `RTLib` | Neil O'Rourke | 1997-01-29 | ≈ 97 % `BUM10A/BLITZLIBS/OTHERLIBS/NEILSREQTOOLSLIB` | open |
 | Registry | 3 | `Registry`, `Registry/Registry2`, `Registry3` | RWE | 1997 | – | open |
-| Registry support | – (`#registrysupplib`) | `Registry/regsupplib` | RWE | 1997 | – | open |
+| Registry support | – (`#registrysupplib`) | `Registry/regsupplib` | RWE | 1997 | – | not ported: needs `registry.inc` (tags `#SS_ApplicationName`, `#SS_ApplicationParameters`) and `registrysupp.library`, neither of which exists anywhere (REDRegistry was only given out as pre-release) |
 | Snow | lit. 195 | `Snow/SnowLib3` | RI | 1994 | – | open |
-| Blitz Bombers | 30 | `blitzbomberslib/blitzbombers86`, `87`, `88` | RI | 1996-10-04 | – | open |
+| Blitz Bombers | 30 | `blitzbomberslib/blitzbombers86`, `87`, `88` | RI | 1996-10-04 | – | not ported (decision 2026-10-29): needs `bomberman:shapeoffsets.bb` of the game, not in the archive |
 | Blitz Bombers 2 | – (`#blitzbomberslibtwo`) | `blitzbomberslib/blitzbombersTwo00` | RI | – | – | open |
 | BB blit | 19 (lit., = `#bb_blitlib`) | `blitzbomberslib/BB_BlitLib4` | RI (McNamara) | 1996-01-30 | – | open |
 | BB map | – (`#ribbmaplib`) | `blitzbomberslib/bbmaplib2` | RI | 1995-09-30 | – | open |
@@ -107,7 +107,7 @@ latest date in the header comments.
 | NonVolatile | 35 (clash `mazfpulib`, AB3) | `nonvolatile` | RI | 1994 | **=** BSS2/AB3 (640 B) | nonvolatile |
 | Pack | 73 | `packlib/Pack-Library8`, `8_Mc`, `9` | RI | 1996-05-09 | 8 **=** BUM (2564 B), 8_Mc **=** OL (2388 B); 9 newer, ≈ 88 % | open (9 newer than the binaries) |
 | PopUp window | – (`#popupwinlib`) | `popuplib/popupwinlib` (+ `test2`) | RI | 1994 | – | open |
-| Protracker | – (`#ritrackerlib`) | `ptlib/ptlib` … `ptlib7`, `ptlibmatty` | Protracker 2.3A routine, adapted | 1995-04-08 | – | open (authors of the routine) |
+| Protracker | – (`#ritrackerlib`) | `ptlib/ptlib` … `ptlib7`, `ptlibmatty` | Protracker 2.3A routine, adapted | 1995-04-08 | – | open (authors of the routine); not the acidlibs `trackerlib` (96: NoiseTracker in the vertical blank, Module objects, `LoadModule`…) but its own library: CIA interrupt, `TrackInit address`, `TrackPlay`, `TrackStop`, `TrackDMA`, `Tracker`, `TrackerChannels` (`TrackerTimer` from ptlib7); no binary, no number anywhere |
 | CIA tracker | 56 (`#ciatrklib`; clash `xbciatrackerlib`, AB3) | `ptlib/CIATrackerLib1` (+ `SamplePrograms/TrackerTest`) | Neil O'Rourke, Delirium Softdesign | – | ≈ 88 % OL `XBONESCIATRKLIB` | open |
 | Req | 79 | `reqlib/ReqLib`, `2`, `3` | – | – | all three **=** OL/AB3 `RIREQLIB` (964 B) | ReqLib2 (built identically, 3.1) |
 | ARexx | 133 (`#myconst=133`) | `rexxlib/…` (9 versions) | RI; `NEWAREXXLIB`: RWE (Matty) | 1997-02-09 | ≈ 76 % BSS2 `RIAREXXLIB` | open |
@@ -178,7 +178,7 @@ on the CD.
 `EXTRAS/BLITZLIBS/` (libmacs, libnums, residents) and `sbra.res` =
 `BUM10A/BLITZLIBS/ASMMACS.RES` ("donated by Steve Matty – RI/RWE –
 August '96": the `!SBRA`… short branch macros), the reconstructed
-residents and library numbers (below) 82 of the 123 sources compile,
+residents and library numbers (below) 84 of the 123 sources compile,
 **16 are byte-identical** to a binary [B] (compared as files; the
 `cdrun` table hashes with the trap blocks zeroed and misses
 `Debuglib4`):
@@ -256,14 +256,20 @@ these sources. Four things were needed:
   `#riarrayslib`, `#riintuilib`, `#rithreadlib`, `#ribbmaplib`,
   `#popupwinlib`, `#blitzbomberslibtwo`.
 
-**Not yet buildable** (40 sources) [B]: the library numbers above (15
+`optidec.bin` (`IncBin` of `stclib`, `stcdecrunchlib`) is in the
+archive next to them; with the INCDIR lines gone, `cdrun` runs these jobs
+in the staging root (where `libmacs.bb` is), so it is staged there too.
+Both compile; their binaries contain `optidec.bin` unchanged but are
+other versions (644/1296 bytes against 648/1276).
+
+**Not yet buildable** (38 sources) [B]: the library numbers above (15
 sources, 8 of them ptlib); the `BB22` files (blitz2 cannot read them,
-6); further includes (`optidec.bin`, `registry.inc`,
-`bomberman:shapeoffsets.bb`, `Blitz2:Debugger/Font.bin`, `c2p`,
-`dt_table.bin`, `FNS:Personal.FNS`, 11); programs, not libraries, with
+6); further includes (`registry.inc`, `bomberman:shapeoffsets.bb`,
+`Blitz2:Debugger/Font.bin`, `c2p`, `dt_table.bin`, `FNS:Personal.FNS`,
+9); programs, not libraries, with
 tokens of other libraries (`defaultdbug50`, `TrackerTest`,
 `Comparison`, `Test`, `test2`, 5); single errors (`func-library4`,
-`MapEd_Bit`, `emptylib`). 66 sources compile but match no binary – as far as
+`MapEd_Bit`, `emptylib`). 68 sources compile but match no binary – as far as
 checked older or newer versions (`func-library7`: the binary has one
 `JSR _UnLock(a6)` more).
 
