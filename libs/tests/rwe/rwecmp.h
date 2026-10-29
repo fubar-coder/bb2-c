@@ -7,10 +7,11 @@
  * compares results and memory (SAME), and every register the original
  * keeps must be kept by the C build (preserve, after every DO2).
  *
- *   ENT(lib, idx, form)   code of form `form` of entry `idx` of `lib`
+ *   ENT(lib, idx, form)   code of form `form` of entry `idx` of `lib` (0: none)
  *   DO2(fn, setup)        call fn on both sets; `setup` sets R[cur] ...
  *   DO2S(fn, setup)       the same with stack arguments ARGS[cur][0..NARGS-1]
  *   SAME(what, expr)      expr (evaluated with cur = 0 and 1) equal
+ *   fake_library() ...    a fake system library (requesters, storage)
  *   rwe_done()            summary, the exit status
  */
 #ifndef RWECMP_H
@@ -30,7 +31,9 @@ static const char *ROUT;                /* routine under test */
 static char VEC[100];                   /* current case, for messages */
 static int prints;
 
-#define ENT(lib, idx, form) entry_form(getlib(&sets[cur], lib), idx, form)
+/* bit 0 of the address = Amiga mode only (blitz2.s), not part of it */
+#define ENT(lib, idx, form) \
+    ((UBYTE *)((ULONG)entry_form(getlib(&sets[cur], lib), idx, form) & ~1UL))
 
 #define MAXROUT 40
 static struct { const char *name; ULONG ko, kc; ULONG n; } stat[MAXROUT];
@@ -117,6 +120,58 @@ static __attribute__((unused)) ULONG rnd(void)
     rwe_seed = rwe_seed * 1103515245UL + 12345;
     return (rwe_seed >> 16) | ((rwe_seed * 69069UL + 1) & 0xffff0000UL);
 }
+
+/* fake_library(name, pri, vec, n): a library in the system list (AddLibrary,
+   priority `pri` - before a real one of the same name with a higher one)
+   with the functions vec[0..n-1] (vec[0] Open, [1] Close, ..., [k] = LVO
+   -6*(k+1)); fake_open/fake_close count the opens.  fake_remove takes it
+   out again. */
+static __attribute__((unused)) struct Library *fake_open(struct Library *base __asm("a6"))
+{
+    base->lib_OpenCnt++;
+    return base;
+}
+
+static __attribute__((unused)) ULONG fake_close(struct Library *base __asm("a6"))
+{
+    base->lib_OpenCnt--;
+    return 0;
+}
+
+static __attribute__((unused)) ULONG fake_null(void)
+{
+    return 0;
+}
+
+static __attribute__((unused)) struct Library *fake_library(const char *name, int pri,
+                                                             APTR *vec, int n)
+{
+    struct Library *l;
+    int i;
+    vec[n] = (APTR)-1;
+    for (i = 0; i < n; i++)
+        if (!vec[i])
+            vec[i] = i == 0 ? (APTR)fake_open : i == 1 ? (APTR)fake_close : (APTR)fake_null;
+    l = MakeLibrary(vec, NULL, NULL, sizeof(struct Library), 0);
+    l->lib_Node.ln_Name = (char *)name;
+    l->lib_Node.ln_Type = NT_LIBRARY;
+    l->lib_Node.ln_Pri = pri;
+    l->lib_Version = 99;
+    AddLibrary(l);
+    return l;
+}
+
+static __attribute__((unused)) void fake_remove(struct Library *l)
+{
+    Forbid();
+    Remove(&l->lib_Node);
+    Permit();
+    FreeMem((UBYTE *)l - l->lib_NegSize, l->lib_NegSize + l->lib_PosSize);
+}
+
+/* a system call replaced by `moveq #0,d0:rts` (SetFunction), e.g. to let
+   an init's OpenLibrary or AllocMem fail */
+static const UWORD rwe_fail0[] = { 0x7000, 0x4e75 };
 
 static int rwe_done(const char *name)
 {
