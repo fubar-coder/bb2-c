@@ -8,6 +8,7 @@
  * keeps must be kept by the C build (preserve, after every DO2).
  *
  *   ENT(lib, idx, form)   code of form `form` of entry `idx` of `lib` (0: none)
+ *   ERR(lib, idx, form)   its error check routine (0: none)
  *   DO2(fn, setup)        call fn on both sets; `setup` sets R[cur] ...
  *   DO2S(fn, setup)       the same with stack arguments ARGS[cur][0..NARGS-1]
  *   SAME(what, expr)      expr (evaluated with cur = 0 and 1) equal
@@ -34,6 +35,59 @@ static int prints;
 /* bit 0 of the address = Amiga mode only (blitz2.s), not part of it */
 #define ENT(lib, idx, form) \
     ((UBYTE *)((ULONG)entry_form(getlib(&sets[cur], lib), idx, form) & ~1UL))
+
+/* entry_err(lib, idx, form): the error check routine (first !subs field)
+   of form `form` of entry `idx` (NULL: none) - entry_form's walk */
+static __attribute__((unused)) UBYTE *entry_err(struct lib *l, int idx, int form)
+{
+    UBYTE *b = l->code, *p = b + 0x30;
+    int i = 0;
+    while (!(W(p) & 0x8000)) {
+        UWORD kind = W(p);
+        UBYTE *err = NULL;
+        p += 6;
+        if (kind == 8) {                        /* dumtoke */
+            p += 6;
+            while (*p++) ;
+            while (*p++) ;
+            p = b + ((p - b + 1) & ~1);
+        } else if (kind & 4) {                  /* AmigaOS call */
+            p += 4;
+            while (*p++ != 0xff) ;
+            p = b + ((p - b + 1) & ~1);
+            p += 6;
+            while (*p++) ;
+            while (*p++) ;
+            p = b + ((p - b + 1) & ~1);
+        } else if ((kind & 0xf) == 0) {         /* nullsub */
+            while (W(p)) p += 4;
+            p += 2;
+            if (form == 0)
+                err = (UBYTE *)L(p);
+            p += 12;
+        } else {                                /* forms, name block */
+            int f = 0;
+            while (W(p) != 0xffff) {
+                p += 2 + (W(p) & 0xff);
+                p = b + ((p - b + 1) & ~1);
+                while (W(p)) p += 4;
+                p += 2;
+                if (f++ == form)
+                    err = (UBYTE *)L(p);
+                p += 12;
+            }
+            p += 2 + 6;
+            while (*p++) ;
+            while (*p++) ;
+            p = b + ((p - b + 1) & ~1);
+        }
+        if (i == idx)
+            return err;
+        i++;
+    }
+    return NULL;
+}
+#define ERR(lib, idx, form) entry_err(getlib(&sets[cur], lib), idx, form)
 
 #define MAXROUT 40
 static struct { const char *name; ULONG ko, kc; ULONG n; } stat[MAXROUT];
