@@ -92,7 +92,7 @@ if(BLITZ_DEFAULT_VARIANT STREQUAL "bb2-2.10")
 		-DVARIANT=${CMAKE_CURRENT_BINARY_DIR}/variants/selftest-renumbered
 		-DBLITZTOKENS=${BLITZTOKENS} -DBLITZ2=$<TARGET_FILE:blitz2>
 		-DTOKENS=${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt -DMAP=157:3$<SEMICOLON>164:4
-		-DOBJ=${CMAKE_BINARY_DIR}/libs/acidlibs/selftest-renumbered-debuglib.obj
+		-DOBJ=${CMAKE_BINARY_DIR}/libs/acidlibs/variants/selftest-renumbered-debuglib.obj
 		-DCALL=80000204 -DOLDCALL=80005204
 		-DOUT=${CMAKE_CURRENT_BINARY_DIR}/variant_renumbered_tokens.txt -P ${vcheck})
 endif()
