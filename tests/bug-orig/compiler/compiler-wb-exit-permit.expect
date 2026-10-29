@@ -1,0 +1,5 @@
+[session]
+done
+[blitz2]
+wbrun: seglist overwritten and freed after the reply
+rc=0
