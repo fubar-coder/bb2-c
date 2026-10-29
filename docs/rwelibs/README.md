@@ -170,7 +170,43 @@ AmiBlitz3's `BlitzLibs/tokenlist.txt` (`NAME.obj(NUM):INDEX token`) has
 the same names for the RI libraries it contains; it knows none of the
 source-only libraries [AB3].
 
-## 5 Method
+## 5 Documentation and examples of the release
+
+`BSS2/REDBLITZLIBS/DOCUMENTATION/DOCS.CAT` (93 933 bytes) and
+`BSS2/REDBLITZLIBS/EXAMPLES/EXAMPLES.CAT` are archives of RWE's
+installer: one StoneCracker 4.04 (`S404`) packed file after the other,
+each behind its name (`REDBlitzLibs.guide.stc` …). `BSS1/INSTALL`
+unpacks them with `BSS1/INSTALLFILES/PROGRAMS/CONCAT DECAT ARCHIVE DIR`;
+the same call in Amiberry gives [B]:
+
+* **`DOCS.CAT`**: 30 AmigaGuides (284 605 bytes) –
+  `REDBlitzLibs.guide` (overview: "COPYRIGHT 1996 Red When Excited Ltd.
+  All Rights Reserved", the RIBlitzLibs renamed REDBlitzLibs with "many
+  new commands since the public release of RIBlitzLibs" and bug fixes;
+  needs Kickstart 1.3, Blitz Basic 2 V1.7 or later, V1.9 for string
+  functions) and one manual per library, all "**V2.5**": AmosFunc, Anim,
+  App, ARexx, Commodities, CompactDisk, CopperFX, DataTypes, Debug, DOS,
+  Encrypt, Eval, FastSerial, FNS, FX, GFX, GTMenu (twice:
+  `RIGTMenuLib.guide`, `RIGTMenusLib.guide`), Misc, NonVolatile, Pack,
+  Shapes, Sort, Sound, STCDecrunch, STC, ToolTypes, TrackDisk, ZoneJoy.
+  So the release BSS2 consists of these 28 libraries – the binaries of
+  `BSS2/REDBLITZLIBS/LIBRARIES/USERLIBS/` [Schluss].
+* **`EXAMPLES.CAT`**: 69 files, 30 example programs (`RI…Lib1.bb` …,
+  tokenised, with `.xtra`) and their data (fonts, shapes, IFF, an anim).
+* AmiBlitz3's `Docs/UserLibs/RI*.guide` are later edits of these
+  manuals (e.g. RISortLib V2.6 "Updated by mrodfr", 2007; links to
+  AmiBlitz3); its examples are there only as `.ab3` today [AB3]. The
+  originals are the ones of the CD.
+
+Use: the manuals describe the behaviour the port has to have, the
+examples are test programs. They are RWE's commercial documentation
+("Unauthorised duplicaton … prohibited"), not part of the release of
+1999 – reference only, not in the repository. Unpacked copies:
+`.cache/rwelibs-analysis/bss2/`. `BSS2/REDDEBUGGER/EXAMPLES/TOKENLIST`
+(also `S404` inside) is a program (`TOKENLIST.BB` compiled), not a token
+list.
+
+## 6 Method
 
 Raw material (git-ignored): `.cache/rwelibs-analysis/` with `INDEX.md`
 (scripts and outputs; throw-away, Python with `python3 -I`, not in the
@@ -188,7 +224,7 @@ repository).
    and `Sourcecodes/Amiblitz3/BlitzLibs/libnums.ab3`; clashes with the
    number lists of `BLITZ2/ACIDLIBS` and `BLITZ2/DEFLIBS`.
 
-## 6 Open questions
+## 7 Open questions
 
 1. How were these libraries built from the Blitz sources (`libmacs.bb`,
    `!libheader`; `INCDIR "BlitzLibs:"`), and can blitz2 (port) do it
