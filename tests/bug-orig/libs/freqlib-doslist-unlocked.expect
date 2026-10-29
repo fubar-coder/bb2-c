@@ -1,0 +1,6 @@
+[run]
+cancel 0
+inject: rc=0
+inject: click FQ/DRIVES: answered
+inject: click FQ/CANCEL: answered after the DOS list was unlocked
+rc=0
