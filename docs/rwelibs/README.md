@@ -177,15 +177,24 @@ on the CD.
 `.cache/rwelibs-analysis/refbuild/`): with the files of
 `EXTRAS/BLITZLIBS/` (libmacs, libnums, residents) and `sbra.res` =
 `BUM10A/BLITZLIBS/ASMMACS.RES` ("donated by Steve Matty – RI/RWE –
-August '96": the `!SBRA`… short branch macros) 34 of the 123 sources
-compile, **10 are byte-identical** to a binary [B]:
+August '96": the `!SBRA`… short branch macros), the reconstructed
+residents and library numbers (below) 82 of the 123 sources compile,
+**16 are byte-identical** to a binary [B] (compared as files; the
+`cdrun` table hashes with the trap blocks zeroed and misses
+`Debuglib4`):
 
 | Source | Identical to |
 |---|---|
+| `AppLib/applib2` | BSS2/AB3 `RIAPPLIB` |
 | `Commoditieslib/CommoditiesLib2` | BSS2/AB3 `RICOMMODITIESLIB` |
+| `Copperlib/CopperFX3` | BSS2 `RICOPPERFXLIB` |
+| `Debuglib/Debuglib4` | OL `RIDEBUGLIB` |
+| `DOSLib/ridoslib2` | BSS2 `RIDOSLIB` |
 | `Encryptlib/Encrypt-Library` | BSS2/AB3 `RIENCRYPTLIB` |
+| `FASTSerial/fastseriallib3` | BSS2 `RIFASTSERIALLIB` |
 | `FXLib/FX-Library13` | BSS2/AB3 `RIFXLIB` |
 | `GFXLib/GFX-Library2` | BSS2/AB3 `RIGFXLIB` |
+| `nonvolatile` | BSS2 `RINONVOLATILELIB` |
 | `packlib/Pack-Library8` | BUM `RIPACKLIB` |
 | `reqlib/ReqLib2` | OL/AB3 `RIREQLIB` (so ReqLib2 is the reference, not 1 or 3) |
 | `tooltypeslib/ToolTypes4` | BSS2/AB3 `RITOOLTYPESLIB` |
@@ -193,7 +202,7 @@ compile, **10 are byte-identical** to a binary [B]:
 | `zonejoylib/ZoneJoy-Library4` | BSS2/AB3 `RIZONEJOYLIB` (so 4, not 3) |
 
 So a reference build is possible: the binaries are blitz2 2.10 output of
-these sources. Two things were needed:
+these sources. Four things were needed:
 
 * **`INCDIR` + an absolute nested include fails in blitz2 2.10**:
   `INCDIR "BlitzLibs:"` + `XINCLUDE "LibMacs.bb"` gives "Can't open
@@ -206,19 +215,57 @@ these sources. Two things were needed:
   compile of the same blitz2 session (#342). Both are original bugs; the
   C port has them as well (experiments with both compilers in Amiberry,
   `.cache/…/refbuild/`, and the bug-orig tests of the issues). No source
-  of the CD uses INCDIR with a path. For the reference build the INCDIR lines are replaced by
-  `;` (INCDIR generates no code) [B, S].
+  of the CD uses INCDIR with a path. For the reference build the INCDIR
+  lines are replaced by `;` (INCDIR generates no code) [B, S].
 * `sbra.res` (and other residents of RWE) exist nowhere; `ASMMACS.RES`
   serves for `sbra.res`.
+* **Residents reconstructed** [B, S] (raw material
+  `.cache/…/residents/`): `lvo.res`, `custom.res` and `datatypes.res`
+  exist nowhere; they only hold constants, so they are made from the
+  NDK of the toolchain as Blitz sources and saved with *Create
+  Resident* (tedstub `resident=`) by blitz2 2.10:
+  * `lvo.res`: `#_Name=-offset` of every public function of the OS 3.1
+    libraries (FD files: exec, dos, graphics, intuition, icon, wb,
+    layers, gadtools, utility … – 1060 names, no name with two
+    offsets). The 50 sources that load it use 87 of them.
+  * `custom.res`: `#custom=$dff000`, the registers of
+    `hardware/custom.i` (`#dmacon=$96` …) and `#color00`…`#color31`
+    (CopperFX3 uses `color00`).
+  * `datatypes.res`: the datatypes.library offsets (with `_SetDTAttrs`
+    for `SetDTAttrsA`, as the sources write it) and the constants of
+    `datatypes/*.i` (`#PDTA_Remap` …). Not in `lvo.res`: two residents
+    with the same name give "Clash in Residents" (`checkclash`), and
+    the sources that use datatypes functions all load both.
+  Left out: `_Date2Amiga`, `bpl1mod`, `bpl2mod` – TED tokenises the
+  keyword behind the digit (`AMIGA`, `BPL`), no source uses them. A
+  source may define a constant of a resident again (FASTSerial
+  `#custom`): blitz2 does not check that. Checked: the method gives the
+  contents of `BLITZOFFS.RES`, `LIBMACS.RES` and `BB2OBJTYPES.RES` of the
+  CD (only unused node bytes differ – memory junk in the originals); the
+  values used by applib2, CopperFX3, ridoslib2, fastseriallib3 and
+  nonvolatile are confirmed by their byte-identical binaries. Not yet
+  confirmed: `datatypes.res` (no datatypes source equals a binary, the
+  closest is another version), `AHI.res` not made.
+* **Library numbers** [B]: the numbers the sources use but no libnums
+  defines (`#riarrayslib`, `#ricopperfx` …) appended to the staged
+  `LIBNUMS.BB` – 28 names, the number from AmiBlitz3's libnums or of the
+  binary with the same declarations; the 14 also in the CD's libnums
+  agree. Confirmed by the identical binaries (`#ricopperfx`=11,
+  `#ridoslib`=33, `#rifastseriallib`=36, `#rinonvolatilelib`=35,
+  `#ridebuglib`=51). Still without a number: `#ritrackerlib`,
+  `#riarrayslib`, `#riintuilib`, `#rithreadlib`, `#ribbmaplib`,
+  `#popupwinlib`, `#blitzbomberslibtwo`.
 
-**Not yet buildable** (89 sources) [B]: missing constants of residents
-that exist nowhere – `lvo.res` (`JSR _RemPort(a6)`, `_CloseLibrary`,
-`_Wait` …), `custom.res` (`custom`, `#dmacon` …), `datatypes.res`,
-`AHI.res`; library numbers no libnums defines (`#ritrackerlib`,
-`#ricompactdisclib`, `#rigtmenulib` as written in the sources …); the
-`BB22` files (blitz2 cannot read them); further includes (`optidec.bin`,
-`registry.inc`, `bomberman:shapeoffsets.bb`). 24 sources compile but
-match no binary (older or newer versions, or other options).
+**Not yet buildable** (40 sources) [B]: the library numbers above (15
+sources, 8 of them ptlib); the `BB22` files (blitz2 cannot read them,
+6); further includes (`optidec.bin`, `registry.inc`,
+`bomberman:shapeoffsets.bb`, `Blitz2:Debugger/Font.bin`, `c2p`,
+`dt_table.bin`, `FNS:Personal.FNS`, 11); programs, not libraries, with
+tokens of other libraries (`defaultdbug50`, `TrackerTest`,
+`Comparison`, `Test`, `test2`, 5); single errors (`func-library4`,
+`MapEd_Bit`, `emptylib`). 66 sources compile but match no binary – as far as
+checked older or newer versions (`func-library7`: the binary has one
+`JSR _UnLock(a6)` more).
 
 ## 4 Tokens
 
@@ -328,10 +375,10 @@ repository).
 ## 7 Open questions
 
 1. ~~How were these libraries built, can blitz2 do it here?~~ Yes:
-   *Create Executable* with libmacs; 10 RWE sources build
-   byte-identically with blitz2 2.10 (3.1). Open: the residents RWE
-   used that exist nowhere (`lvo.res`, `custom.res`, `datatypes.res`,
-   `AHI.res`) and the missing library numbers.
+   *Create Executable* with libmacs; 16 RWE sources build
+   byte-identically with blitz2 2.10 (3.1), with `lvo.res`,
+   `custom.res` and `datatypes.res` reconstructed from the NDK. Open:
+   `AHI.res`, `datatypes.res` unconfirmed, seven library numbers.
 2. Which libraries belong together as one product (e.g. the three Blitz
    Bombers libraries, MapEd/MapShapes, Registry/support)?
 3. The libraries with literal test numbers (5, 8, 10, 19, 22, 39, 195,
