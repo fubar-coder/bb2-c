@@ -219,7 +219,9 @@ void doincdir(UWORD c);
 
 /* blitz2.s:11947 makeiname - namebuff = incdir + file name from the
    source (bakup first, '"' skipped); returns the total length (asm d2,
-   used by addhere for the node); 0 -> syntaxerr */
+   used by addhere for the node); 0 -> syntaxerr.
+   BUG(orig): incdir is put in front of a name with a device (':') too,
+   e.g. "BlitzLibs:" + "blitzlibs:libnums.bb".  Kept. */
 WORD makeiname(void);
 
 /* blitz2.s:11972 readinc - next line of the current include (firstinc).
