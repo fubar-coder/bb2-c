@@ -288,7 +288,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   repository; history of bb2 (plans, logs, reviews) unchanged in content,
   remaining bb2 mentions explained in `docs/README.md`.
 * **Tests for the issues labelled `needs-test`** (99 open issues at the
-  start, 29 left on 2026-10-28). A failing test is added with label
+  start, 25 left on 2026-10-29). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,
   and `needs-test` is removed (allowed for these issues, 2026-10-28).
   - Done (2026-10-28), every test REPRODUCED and, except where noted in
@@ -297,9 +297,11 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
       #16 (verdict DIFFERS: the port has other data behind `incdir`, BSS
       followed by `comdata`, so the port's compiler crashes already, not
       only the compiled program; noted in the issue), #22, #23, #27,
-      #28;
+      #28, #336 (inject track reports the FreeMem of another size);
     - libraries, Blitz programs in `tests/bug-orig/libs/` (judged with
       the C libraries, `; @configs clib`): #58, #67, #69, #80, #104,
+      #57 (string buffer raised with tedstub `strbuf=`), #107 (started
+      with an argument, `runargs=`),
       #110, #135, #137, #171, #177, #179, #189, #191, #203–#209, #211,
       #212, #224, #225, #245, #246, #263, #266, #268, #269, #274, #280,
       #281, #286, #289–#291, #293–#295, #299, #303, #304, #308, #310,
@@ -315,7 +317,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     font file names of at most 30 characters, a name over 95 is not
     reachable; input in the requester cannot be tested), #133 (no
     error raiser passes a number in d1, so Ern has no correct value; it
-    looks like a planned feature that was never carried out).
+    looks like a planned feature that was never carried out), #4
+    (`macrobuff` always has 8192 bytes, more than 1365 parameters do not
+    fit in a line, nested macros add none).
   - *Still open, test programs:*
     #14 (the "Not Enough Object Memory" path was not reached in the
     batch run, even with a 128 KB executable: to be found out how;
@@ -330,10 +334,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     using blitzoslib does not end in the emulator, the original as
     well, see #335), #100 (needs several input events in one
     input-handler call at controlled times).
-  - *Runner features:* other compiler options (buffer sizes; the corpus
-    stub sets fixed ones) for #4, #57; creating residents for #34, #35,
-    #36; start with program arguments in the corpus runner (#107,
-    covered at library level by `bug_orig_cliargs_parpath_cli`); start
+  - *Runner features:* done: program arguments (`runargs=`, #107),
+    the macro buffer of the default options (tedstub `macrobuf=`, used
+    for #336); open: creating residents for #34, #35, #36; start
     from the Workbench (blitz2: #19, #20, #21; programs: #306, #307);
     Compile & Run / PANIC from the editor (#24, #25); GUI input in the
     file requester (#154, #156–#158); a serial peer for unit > 0 and
