@@ -1,10 +1,14 @@
-# blitz_library(NAME [VARIANT DIR] SOURCES...) - one Blitz Basic 2 library
-# from C
+# blitz_library(NAME [VARIANT DIR] [OBJ PATH] SOURCES... [CHECK FILES...])
+# - one Blitz Basic 2 library from C
 #   VARIANT DIR   the variant (libs/variants/NAME, a test variant in
 #                 libs/tests/variants): its directory comes first in the
 #                 include path, so its libnums.h (the library numbers,
 #                 blitzlib.h includes <libnums.h>) is taken; default
 #                 BLITZ_DEFAULT_VARIANT
+#   OBJ PATH      the library file (default NAME.obj in the build
+#                 directory), e.g. in the userlibs directory of a variant
+#   CHECK FILES   in the same step: its number is in none of FILES (the
+#                 acidlibs and deflibs it is loaded with; biglib check)
 #   libNAME.a     the library as static library
 #   NAME.linked   the link with symbols (for disassembly and comparisons)
 #   NAME.obj      the library file in Blitz 2 format (one code hunk, header
@@ -33,7 +37,7 @@ if(NOT EXISTS ${BLITZ_DEFAULT_VARIANT_DIR}/libnums.h)
 endif()
 
 function(blitz_library name)
-	cmake_parse_arguments(PARSE_ARGV 1 arg "" "VARIANT" "")
+	cmake_parse_arguments(PARSE_ARGV 1 arg "" "VARIANT;OBJ" "CHECK")
 	add_library(${name} STATIC ${arg_UNPARSED_ARGUMENTS})
 	if(NOT arg_VARIANT)
 		set(arg_VARIANT ${BLITZ_DEFAULT_VARIANT_DIR})
@@ -50,6 +54,15 @@ function(blitz_library name)
 		-Wall -Wno-pointer-sign)
 	set(linked ${CMAKE_CURRENT_BINARY_DIR}/${name}.linked)
 	set(obj ${CMAKE_CURRENT_BINARY_DIR}/${name}.obj)
+	if(arg_OBJ)
+		set(obj ${arg_OBJ})
+		get_filename_component(dir ${obj} DIRECTORY)
+		file(MAKE_DIRECTORY ${dir})
+	endif()
+	set(check)
+	if(arg_CHECK)
+		set(check COMMAND ${BIGLIB} check ${obj} ${arg_CHECK})
+	endif()
 	add_custom_command(OUTPUT ${obj}
 		COMMAND ${CMAKE_C_COMPILER} -m${AMIGA_CPU} -noixemul -nostartfiles -nostdlib
 			-Wl,-T,${BLITZLIB_LD}
@@ -57,7 +70,8 @@ function(blitz_library name)
 			-o ${linked}
 		COMMAND ${CMAKE_STRIP} -o ${obj} ${linked}
 		COMMAND ${BLITZLIBCHECK} ${obj}
-		DEPENDS ${name} ${BLITZLIB_LD} ${BLITZLIBCHECK} host_tools
+		${check}
+		DEPENDS ${name} ${BLITZLIB_LD} ${BLITZLIBCHECK} ${arg_CHECK} host_tools
 		COMMENT "Blitz library ${name}.obj"
 		VERBATIM)
 	add_custom_target(${name}_obj ALL DEPENDS ${obj})

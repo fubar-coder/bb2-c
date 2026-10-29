@@ -520,7 +520,10 @@ several versions.
       them; `variant_selftest_renumbered`). Open: userlibs of a variant
       (with 4.5.5); further switches besides the numbers when a library
       needs them.
-   5. **First users**: the RWE userlibs (their numbers: AmiBlitz3's
+   5. **First users** (started 2026-10-29: variant `rwe-1999`, userlib
+      build `libs/userlibs/rwe/` with the list `RWE_LIBS`, target
+      `rwelibsrc`; stage A of `docs/rwelibs/README.md` – the 15 libraries
+      with a byte-identical reference build – being ported): the RWE userlibs (their numbers: AmiBlitz3's
       libnums, the matching binaries, `#riarrayslib` = 7 from
       `defaultdbug50.bb2`; `docs/rwelibs/README.md` §3.1). No
       Protracker library: neither RI's ptlib nor a replacement around

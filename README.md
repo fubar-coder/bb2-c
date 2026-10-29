@@ -56,6 +56,15 @@ source written for the variant come from its files (`blitztokens`,
 `teddetok --blitz2 … --lib …`). Test variants are in
 `libs/tests/variants/` (ctest `variant_*`).
 
+**Userlibs** of a variant: `libs/userlibs/DIR/NAME.c` →
+`build/amiga/variants/VARIANT/userlibs/DIR/NAME.obj` (for
+`blitz2:userlibs/DIR/`). `libs/userlibs/rwe/`: the libraries of Red When
+Excited's sources (`docs/rwelibs/README.md`), variant `rwe-1999`; the
+list `RWE_LIBS` there names per library the Blitz source and the CD binary
+the C build must equal (ctest `rwe_identical_NAME`, `rwe_numbers`). Target
+`rwelibsrc`: those Blitz sources as TED shows them, in
+`build/amiga/rwelibsrc/` (like `bblibsrc`).
+
 ## Checks in the build
 
 The build checks its results itself; if a check fails, the result counts
@@ -69,7 +78,8 @@ again):
   the end of the code; the originals do that too). `acidlibs`/`deflibs`
   are made only from checked libraries.
 * `acidlibs`, `deflibs` (also of every variant), in the same step as the
-  join: no library number twice (`biglib check`; deflibs together with
+  join, and every userlib in its build step (against the acidlibs and
+  deflibs of its variant): no library number twice (`biglib check`; deflibs together with
   the acidlibs loaded with it) – two libraries with one number would have
   the same tokens.
 * reference build of blitz2: the original
@@ -406,6 +416,8 @@ programs/ted/                editor (src/: Amiga part, src/core/: OS-free
 libs/include/                blitzlib.h & co. (conventions of the libraries)
 libs/variants/               the variants of the libraries (NAME/libnums.h:
                              the library numbers; bb2-2.10 the default)
+libs/userlibs/               userlibs of a variant (rwe/: Red When Excited,
+                             variant rwe-1999)
 libs/blitzlib.ld             linker script: one code hunk, header at offset 0
 libs/acidlibs/               one C file per library; prebuilt/: libraries
                              not yet ported, as originals (dhandlerlib)

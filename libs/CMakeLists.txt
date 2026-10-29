@@ -27,6 +27,7 @@ endforeach()
 
 add_subdirectory(acidlibs)
 add_subdirectory(deflibs)
+add_subdirectory(userlibs)
 
 # the declarations of every library (header, entries, !libfin; code
 # offsets only set or not) against the originals of the CD, same libraries
