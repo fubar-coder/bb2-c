@@ -120,3 +120,6 @@ endif()
 if(objs)
 	add_test(NAME rwe_numbers COMMAND ${BIGLIB} check ${out}/acidlibs ${out}/deflibs ${objs})
 endif()
+
+# the residents the sources load that exist nowhere, from the NDK
+include(${CMAKE_CURRENT_SOURCE_DIR}/residents.cmake)

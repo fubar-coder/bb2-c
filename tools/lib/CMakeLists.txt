@@ -15,6 +15,8 @@
 #   mktestdata  binary test data (8SVX, ILBM, MED and tracker modules) from
 #              a text description (the bug-orig tests)
 #   bb22       the "BB22" source format of some RWE sources, in TED's format
+#   blitzres   Blitz Basic 2 resident files: constants written, contents
+#              read; the constants of NDK FD files and includes
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -28,3 +30,4 @@ add_subdirectory(checkdata)
 add_subdirectory(asmcmp)
 add_subdirectory(mktestdata)
 add_subdirectory(bb22)
+add_subdirectory(blitzres)
