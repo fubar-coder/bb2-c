@@ -93,10 +93,14 @@ CD original with memlib, side by side; word arguments carry markers in
 their upper word. Palettes and bitmaps lie in one buffer of 72000 bytes
 per set, filled the same, so reads and writes outside the palettes are
 compared too (the whole buffer after every call), as are d0 and the
-registers the original keeps. RIAmosFuncLib is not loaded (not ported,
-not in the test directory): a stub (`sysload_stubs`) takes the place of
-`BSave` in both sets, records name, length and file data and returns a
-chosen value. Covered: all colour functions (in range, beyond the
+registers the original keeps. RIAmosFuncLib is loaded too
+([riamosfunclib.md](riamosfunclib.md)): its C build with the C set, the
+AmiBlitz3 binary (the port's reference, the token list of the BSS2
+binary the original was built against) with the original, initialised
+after memlib, the ALibJsr targets fixed up with `amosfunc_fixjsrs`
+(`libs/tests/rwe/amosfunc.h`: BSave is Amiga mode only). Each set writes
+its own file in `RAM:`, read back and compared (FORM header, length);
+BSave failing is a file in a missing directory. Covered: all colour functions (in range, beyond the
 palette, the negative word index, before PaletteInfo), PalAdjust both
 forms with nine ratios (saturation, negative, fractions) and ranges past
 the palette and before it, both fill commands with all forms of start/end

@@ -17,11 +17,18 @@
  * offset class, runs, the picture mode).  The ICE results are also
  * checked against the plain data (that checks the encoder).
  *
- * LoadIFF calls RIAmosFuncLib (NextBank, BLoad, Start, Erase), a library
- * that is not ported: stubs (sysload_stubs) take its place for both sets,
- * log the calls and "load" an ILBM of this test into a bank buffer.
+ * LoadIFF calls RIAmosFuncLib (NextBank, BLoad, Start, Erase): the
+ * library is loaded too - the C build with the C set, the AmiBlitz3
+ * binary (the reference of the port; its token list is the one of the
+ * BSS2 binary the original ripacklib was built against) with the
+ * original - and initialised after memlib.  LoadIFF reads an ILBM of
+ * this test from RAM: into bank 51; compared are the bitmap, the palette
+ * and the bank afterwards (free again, NextBank(51)); with RIAmosFuncLib's
+ * default of 50 banks there is no bank 51 (0, BUG(orig)), so the test
+ * raises it with BankLimit 60.
  */
 #include "sysload.h"
+#include "amosfunc.h"
 
 extern UWORD callstk(APTR fn, struct regs *r, const ULONG *args, ULONG nargs, ULONG *popped);
 
@@ -758,103 +765,79 @@ static void test_ilbmgrab(void)
     samepal();
 }
 
-/* ---------------------------------------------- RIAmosFuncLib stubs */
+/* ------------------------------------------------- LoadIFF (the banks) */
 
-enum { NEXTBANK = 1, BLOAD, START, ERASE };
-struct fcall { int fn; ULONG d0, d1; };
-static struct fcall flog[2][16];
-static int nflog[2];
-static int nobank;
-static UBYTE bankmem[2][BUFSZ];
-static ULONG ilbmlen;
+#define ILBMFILE "RAM:rwe-pack.iff"
+static ULONG ilbmlen, liff;              /* LoadIFF's d0 (orig) */
 
-static void flogit(int fn, ULONG d0, ULONG d1)
+/* a routine of RIAmosFuncLib with d0 = x (other registers markers) */
+static ULONG amos(int idx, int form, ULONG x)
 {
-    if (nflog[cur] < 16) {
-        flog[cur][nflog[cur]].fn = fn;
-        flog[cur][nflog[cur]].d0 = d0;
-        flog[cur][nflog[cur]].d1 = d1;
-        nflog[cur]++;
+    markregs(&R[cur]);
+    R[cur].d[0] = x;
+    callstk(entry_form(getlib(&sets[cur], "riamosfunclib"), idx, form), &R[cur], NULL, 0,
+            &POP[cur]);
+    return R[cur].d[0];
+}
+
+static void writeilbm(ULONG len)
+{
+    BPTR f = Open((STRPTR)ILBMFILE, MODE_NEWFILE);
+    if (f) {
+        Write(f, ilbm, (LONG)len);
+        Close(f);
     }
 }
 
-static ULONG __attribute__((used)) st_nextbank(ULONG first __asm("d0"))
+static void loadiff(const char *name, int form, const char *what)
 {
-    flogit(NEXTBANK, first, 0);
-    return nobank ? (ULONG)-1 : first + 3;
-}
-
-/* BLoad form 1 (filename$, bank): the file "good" is the ILBM */
-static ULONG __attribute__((used)) st_bload(ULONG name __asm("d0"), ULONG bank __asm("d1"))
-{
-    flogit(BLOAD, strcmp((const char *)name, "RAM:good") == 0, bank);
-    if (strcmp((const char *)name, "RAM:good"))
-        return 0;
-    memcpy(bankmem[cur], ilbm, ilbmlen + 64);
-    return (ULONG)-1;
-}
-
-static ULONG __attribute__((used)) st_start(ULONG bank __asm("d0"))
-{
-    flogit(START, bank, 0);
-    return (ULONG)bankmem[cur];
-}
-
-static void __attribute__((used)) st_erase(ULONG bank __asm("d0"))
-{
-    flogit(ERASE, bank, 0);
-    memset(bankmem[cur], 0, sizeof bankmem[cur]);
-}
-
-static const struct stub packstubs[] = {
-    { (75 << 7) + 15, (APTR)st_bload },
-    { (75 << 7) + 17, (APTR)st_start },
-    { (75 << 7) + 19, (APTR)st_erase },
-    { (75 << 7) + 22, (APTR)st_nextbank },
-    { 0, NULL }
-};
-
-static void loadiff(const char *name, int form)
-{
-    int i;
+    ULONG len[2], next[2];
 
     ROUT = "LoadIFF";
-    sprintf(VEC, "%s form %d%s", name, form, nobank ? " no bank" : "");
-    nflog[0] = nflog[1] = 0;
+    sprintf(VEC, "%s form %d%s", name, form, what);
     mkbitmap(10, 12, 3, 1);
     memset(palo, 0, sizeof palo);
     DO2(ent(LOADIFF, form), R[cur].d[0] = (ULONG)name; R[cur].d[1] = 0x5A000001;
         R[cur].d[2] = 0x5A000002; R[cur].a[0] = (ULONG)bmo[cur]; R[cur].a[1] = (ULONG)palo[cur]);
     SAME("d0", R[cur].d[0]);
-    SAME("calls", nflog[cur]);
-    for (i = 0; i < nflog[0] && i < nflog[1]; i++) {
-        SAME("call fn", flog[cur][i].fn);
-        SAME("call d0", flog[cur][i].d0);
-        SAME("call d1", flog[cur][i].d1);
-    }
+    liff = R[0].d[0];
     samebytes("planes", pb[0], pb[1], sizeof pb[0]);
     samepal();
+    /* the bank (51) erased again: free, the next free bank from 51 the same */
+    for (cur = 0; cur < 2; cur++) {
+        len[cur] = amos(AMOS_E_LENGTH, 0, 51);
+        next[cur] = amos(AMOS_E_NEXTBANK, 1, 51);
+    }
+    SAME("bank 51 length", len[cur]);
+    check("LoadIFF: bank 51 free afterwards", len[0] == 0);
+    SAME("NextBank(51)", next[cur]);
 }
 
 static void test_loadiff(void)
 {
     seed = 41;
     ilbmlen = mkilbm(ilbm, 64, 10, 3, 8, 0);
-    loadiff("RAM:good", 0);
-    loadiff("RAM:good", 1);
-    loadiff("RAM:bad", 1);
-    nobank = 1;
-    loadiff("RAM:good", 1);
-    nobank = 0;
+    writeilbm(ilbmlen);
+    /* BUG(orig): LoadIFF looks for a bank from 51 on, RIAmosFuncLib has 50
+       unless BankLimit raised the number: no bank, 0 */
+    loadiff(ILBMFILE, 1, ", 50 banks");
+    check("LoadIFF: 0 with 50 banks", liff == 0);
+    for (cur = 0; cur < 2; cur++)
+        amos(AMOS_E_BANKLIMIT, 0, 60);
+    loadiff(ILBMFILE, 0, "");
+    check("LoadIFF: -1 with 60 banks", liff == (ULONG)-1);
+    loadiff(ILBMFILE, 1, "");
+    loadiff("RAM:rwe-pack.bad", 1, "");                 /* missing: 0 */
     /* a file that is no ILBM: UnpackIFF fails, LoadIFF says -1 (BUG(orig)) */
     memset(ilbm, 0, 5300);
-    ilbmlen = 5200;
-    loadiff("RAM:good", 0);
+    writeilbm(5200);
+    loadiff(ILBMFILE, 0, "");
+    DeleteFile((STRPTR)ILBMFILE);
 }
 
 /* ----------------------------------------------------------------- main */
 
-static const char *names[] = { "memlib", "ripacklib", NULL };
+static const char *names[] = { "memlib", "ripacklib", "riamosfunclib", NULL };
 
 int main(int argc, char **argv)
 {
@@ -864,12 +847,9 @@ int main(int argc, char **argv)
         printf("usage: rwe_ripacklib DIR\n");
         return 20;
     }
-    sysload_stubs = packstubs;
-    if (!load_sets(argv[1], names)) {
-        sysload_stubs = NULL;
+    if (!load_sets(argv[1], names))
         return 20;
-    }
-    sysload_stubs = NULL;
+    amosfunc_fixjsrs();                 /* LoadIFF's ALibJsr BLoad (Amiga only) */
 
     ROUT = "init";
     strcpy(VEC, "");
@@ -883,11 +863,13 @@ int main(int argc, char **argv)
     for (cur = 0; cur < 2; cur++) {
         markregs(&R[cur]);
         callstk(entry_form(getlib(&sets[cur], "memlib"), 7, 0), &R[cur], NULL, 0, &POP[cur]);
+        amos(AMOS_E_INIT, 0, 0);
     }
     test_ilbmpalette();
     test_ilbmgrab();
     test_loadiff();
     for (cur = 0; cur < 2; cur++) {
+        amos(AMOS_E_FINIT, 0, 0);
         markregs(&R[cur]);
         callstk(entry_form(getlib(&sets[cur], "memlib"), 8, 0), &R[cur], NULL, 0, &POP[cur]);
     }

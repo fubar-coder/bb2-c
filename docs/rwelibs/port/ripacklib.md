@@ -118,11 +118,18 @@ ILBMGrab; LoadIFF both forms with a good file, a file that does not load,
 no free bank, a file that is no ILBM; ChunkHeader; memlib's memory all
 back.
 
-RIAmosFuncLib is not loaded (not ported, not in the test directory):
-stubs (`sysload_stubs`) take the place of NextBank/BLoad/Start/Erase in
-both sets, log the calls (compared) and "load" an ILBM of the test into
-a bank buffer.
+RIAmosFuncLib is loaded too ([riamosfunclib.md](riamosfunclib.md)): its C
+build with the C set, the AmiBlitz3 binary (the port's reference; its
+token list is the one of the BSS2 binary the original was built against)
+with the original, both initialised after memlib, the ALibJsr targets
+fixed up with `amosfunc_fixjsrs` (`libs/tests/rwe/amosfunc.h`: BLoad is
+Amiga mode only). LoadIFF reads an ILBM of the test from `RAM:`; besides
+bitmap and palette the bank afterwards is compared (bank 51 free again,
+NextBank(51)). With RIAmosFuncLib's default of 50 banks there is no
+bank 51: LoadIFF returns 0 (a real program needs `BankLimit` above 51 –
+BUG(orig) of the combination); the test checks that case and then raises
+the limit to 60.
 
 Not covered: corrupt ICE data, PackPBM's failure with a large d3,
 nPlanes 0, DIVU overflows (CMAP chunks of 196 KB), a failing memlib
-allocation, the real RIAmosFuncLib.
+allocation.

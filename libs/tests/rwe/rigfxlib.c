@@ -12,11 +12,16 @@
  * same bytes), and every register the original keeps must be kept by the
  * C build.
  *
- * SaveCMAP calls RIAmosFuncLib's BSave, a library that is not ported: a
- * stub (sysload_stubs) takes its place for both sets, records the name,
- * the length and the file data and returns -1 (or 0).
+ * SaveCMAP calls RIAmosFuncLib's BSave (form 1): the library is loaded
+ * too - the C build with the C set, the AmiBlitz3 binary (the reference
+ * of the port; its token list is the one of the BSS2 binary the original
+ * rigfxlib was built against) with the original - and initialised after
+ * memlib; each set writes its own file in RAM: (read back and compared,
+ * with the FORM header and length checked), one into a missing
+ * directory (BSave fails: 0).
  */
 #include "sysload.h"
+#include "amosfunc.h"
 
 extern UWORD callstk(APTR fn, struct regs *r, const ULONG *args, ULONG nargs, ULONG *popped);
 
@@ -138,26 +143,23 @@ static void samemem(void)
     samebytes("memory", mem[0], mem[1], MEMSZ);
 }
 
-/* ------------------------------------------------------------ BSave stub */
+/* ------------------------------------------------------- the CMAP files */
 
-static ULONG bs_name[2], bs_len[2], bs_calls[2], bs_ret;
+/* the file SaveCMAP wrote through RIAmosFuncLib's BSave, per set (-1: none) */
+static LONG bs_len[2];
 static UBYTE bs_data[2][1024];
 
-static ULONG __attribute__((used)) st_bsave(ULONG name __asm("d0"), ULONG addr __asm("d1"),
-                                            ULONG len __asm("d2"))
+static void readfile(const char *name)
 {
-    bs_calls[cur]++;
-    bs_name[cur] = name;
-    bs_len[cur] = len;
-    memset(bs_data[cur], 0, sizeof bs_data[cur]);
-    memcpy(bs_data[cur], (void *)addr, len < sizeof bs_data[cur] ? len : sizeof bs_data[cur]);
-    return bs_ret;
-}
+    BPTR f = Open((STRPTR)name, MODE_OLDFILE);
 
-static const struct stub gfxstubs[] = {
-    { (75 << 7) + 16, (APTR)st_bsave },     /* RIAmosFuncLib BSave */
-    { 0, NULL }
-};
+    memset(bs_data[cur], 0, sizeof bs_data[cur]);
+    bs_len[cur] = -1;
+    if (f) {
+        bs_len[cur] = Read(f, bs_data[cur], sizeof bs_data[cur]);
+        Close(f);
+    }
+}
 
 /* --------------------------------------------------------------- tests */
 
@@ -314,26 +316,40 @@ static void test_cpucls(void)
     cpucls(320 / 8, 256, 1, offs1);
 }
 
-static char cmapname[] = "RAM:rwe-cmap";
+/* one file per set (BSave opens with MODE_NEWFILE), names of the same
+   length; "RAM:rwe-nodir/..." cannot be opened: BSave returns 0 */
+static char cmapname[2][40];
 
-static void savecmap(ULONG (*obj)[4], ULONG ret)
+static void setname(const char *dir)
 {
-    ROUT = "SaveCMAP";
-    sprintf(VEC, "%u colours, BSave %ld", *(UWORD *)obj[0][0], (LONG)ret);
-    bs_ret = ret;
     for (cur = 0; cur < 2; cur++) {
-        bs_calls[cur] = bs_len[cur] = bs_name[cur] = 0;
-        memset(bs_data[cur], 0, sizeof bs_data[cur]);
+        sprintf(cmapname[cur], "RAM:%s%scmap%d", dir, *dir ? "/" : "", cur);
+        DeleteFile((STRPTR)cmapname[cur]);
     }
-    DO2(ent(SAVECMAP, 0), R[cur].d[0] = 3; R[cur].d[1] = (ULONG)cmapname;
+}
+
+static void savecmap(ULONG (*obj)[4], const char *dir)
+{
+    ULONG n = *(UWORD *)obj[0][0];
+
+    ROUT = "SaveCMAP";
+    sprintf(VEC, "%lu colours, %s", n, dir);
+    setname(dir);
+    DO2(ent(SAVECMAP, 0), R[cur].d[0] = 3; R[cur].d[1] = (ULONG)cmapname[cur];
         R[cur].a[0] = (ULONG)obj[cur]);
     SAME("d0", R[cur].d[0]);
-    SAME("BSave calls", bs_calls[cur]);
-    check("SaveCMAP: BSave called once", bs_calls[0] == 1);
-    SAME("BSave name", bs_name[cur]);
-    SAME("BSave length", bs_len[cur]);
+    for (cur = 0; cur < 2; cur++)
+        readfile(cmapname[cur]);
+    SAME("file length", bs_len[cur]);
+    if (R[0].d[0])                              /* written: FORM, the length */
+        check("SaveCMAP: the file", bs_len[0] == (LONG)(n * 3 + 48)
+              && !memcmp(bs_data[0], "FORM", 4));
+    else
+        check("SaveCMAP: no file", bs_len[0] == -1);
     samebytes("file", bs_data[0], bs_data[1], sizeof bs_data[0]);
     samemem();
+    for (cur = 0; cur < 2; cur++)
+        DeleteFile((STRPTR)cmapname[cur]);
 }
 
 static void test_savecmap(void)
@@ -343,15 +359,19 @@ static void test_savecmap(void)
     fillmem();
     setpal(objA, PALA, 5, 5);
     setpal(objB, PALB, 32, 32);
-    savecmap(objA, -1);
-    savecmap(objB, -1);
-    savecmap(objB, 0);
+    savecmap(objA, "");
+    savecmap(objB, "");
+    savecmap(objB, "rwe-nodir");                /* BSave: 0 */
     setpal(objB, PALB, 1, 1);
-    savecmap(objB, 1234);
+    savecmap(objB, "");
     ROUT = "SaveCMAP";
     strcpy(VEC, "no data");
-    DO2(ent(SAVECMAP, 0), R[cur].d[1] = (ULONG)cmapname; R[cur].a[0] = (ULONG)zero[cur]);
+    setname("");
+    DO2(ent(SAVECMAP, 0), R[cur].d[1] = (ULONG)cmapname[cur]; R[cur].a[0] = (ULONG)zero[cur]);
     SAME("d0", R[cur].d[0]);
+    for (cur = 0; cur < 2; cur++)
+        readfile(cmapname[cur]);
+    SAME("no file", bs_len[cur]);
 }
 
 /* MergeBitplanes: objects of 64 bytes, the same constant contents */
@@ -395,7 +415,7 @@ static void test_merge(void)
     merge(0x7fff, 0x7fff, WA(3), 1, 1, 0);      /* sum negative as a word */
 }
 
-static const char *names[] = { "memlib", "rigfxlib", NULL };
+static const char *names[] = { "memlib", "rigfxlib", "riamosfunclib", NULL };
 
 int main(int argc, char **argv)
 {
@@ -405,12 +425,9 @@ int main(int argc, char **argv)
         printf("usage: rwe_rigfxlib DIR\n");
         return 20;
     }
-    sysload_stubs = gfxstubs;
-    if (!load_sets(argv[1], names)) {
-        sysload_stubs = NULL;
+    if (!load_sets(argv[1], names))
         return 20;
-    }
-    sysload_stubs = NULL;
+    amosfunc_fixjsrs();                 /* SaveCMAP's ALibJsr BSave (Amiga only) */
 
     test_colours();
     test_paladjust();
@@ -425,9 +442,15 @@ int main(int argc, char **argv)
     for (cur = 0; cur < 2; cur++) {
         markregs(&R[cur]);
         callstk(entry_form(getlib(&sets[cur], "memlib"), 7, 0), &R[cur], NULL, 0, &POP[cur]);
+        markregs(&R[cur]);                      /* RIAmosFuncLib: dos.library */
+        callstk(entry_form(getlib(&sets[cur], "riamosfunclib"), AMOS_E_INIT, 0), &R[cur],
+                NULL, 0, &POP[cur]);
     }
     test_savecmap();
     for (cur = 0; cur < 2; cur++) {
+        markregs(&R[cur]);
+        callstk(entry_form(getlib(&sets[cur], "riamosfunclib"), AMOS_E_FINIT, 0), &R[cur],
+                NULL, 0, &POP[cur]);
         markregs(&R[cur]);
         callstk(entry_form(getlib(&sets[cur], "memlib"), 8, 0), &R[cur], NULL, 0, &POP[cur]);
     }

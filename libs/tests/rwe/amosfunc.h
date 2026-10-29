@@ -2,7 +2,8 @@
  * amosfunc.h - RIAmosFuncLib (userlib 75) in the RWE tests that load it
  * (riamosfunclib, rigfxlib, ripacklib; header only, after sysload.h).
  *
- *   TOK_amos_...        the tokens of its routines other libraries call
+ *   AMOS_E_...          indexes in its token list (token = (75 << 7) + 1 +
+ *                       index; the same in the BSS2 and the AmiBlitz3 binary)
  *   amosfunc_fixjsrs()  after load_sets(): clear bit 0 of ALibJsr targets
  *
  * Several of its routines are Amiga mode only (`!subs {code+1,...}`:
@@ -17,20 +18,12 @@
 #ifndef AMOSFUNC_H
 #define AMOSFUNC_H
 
-/* tokens: (75 << 7) + 1 + index in the token list (the same in the
-   BSS2 and the AmiBlitz3 binary) */
-#define TOK_amos(i)      ((UWORD)((LIB_RIAMOSFUNC << 7) + 1 + (i)))
-#define LIB_RIAMOSFUNC   75
-#define TOK_amos_filesize TOK_amos(13)  /* d0 name -> d0 size */
-#define TOK_amos_bload   TOK_amos(14)   /* form 1: d0 name, d1 address/bank -> d0 */
-#define TOK_amos_bsave   TOK_amos(15)   /* form 1: d0 name, d1 address, d2 length */
-#define TOK_amos_start   TOK_amos(16)   /* d0 bank -> d0 address */
-#define TOK_amos_erase   TOK_amos(18)   /* d0 bank */
-#define TOK_amos_reserve TOK_amos(20)
-#define TOK_amos_nextbank TOK_amos(21)  /* d0 first -> d0 bank or -1 */
-/* entries of the token list */
-#define AMOS_E_FINIT 37
-#define AMOS_E_INIT  38
+/* entries of the token list (the ones the tests call directly) */
+#define AMOS_E_LENGTH    17
+#define AMOS_E_NEXTBANK  21
+#define AMOS_E_BANKLIMIT 35
+#define AMOS_E_FINIT     37
+#define AMOS_E_INIT      38
 
 static __attribute__((unused)) void amosfunc_fixjsrs(void)
 {
