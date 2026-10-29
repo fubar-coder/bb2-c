@@ -208,10 +208,17 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   Helpers (`tests/bug-orig/amiga/`): `inject` runs the compiler with
   faults (no free signal, failing AllocMem of a size, Read error, failing
   Examine, failing OpenLibrary of a name, failing CreateProc, recorded
-  allocations and FreeMem of another size than allocated; with `pad` 64 zeroed bytes behind every
-  allocation, also a hunk of LoadSeg, and a FreeMem inside an allocation
-  is reported and not done; for the
-  compiled programs with `runwrap=@INJECT@|...`), `wbrun` starts the compiler
+  allocations and FreeMem of another size than allocated; with `pad` 64
+  zeroed bytes behind every allocation, also a hunk of LoadSeg, and a
+  FreeMem inside an allocation is reported and not done; for the
+  compiled programs with `runwrap=@INJECT@|...`) and reports what the
+  command leaves behind (library opens minus closes of the process, its
+  current directory and whether it unlocked the start lock, paths still in
+  use); it also gives a program input while it runs: gadget clicks as
+  synthetic IntuiMessages (`click=TITLE/TEXT`, optionally while the DOS
+  list is locked for writing) and several RAWKEY events in one call of
+  the input handlers at controlled times (`keys=`, an input handler with
+  a clock of its own); `wbrun` starts the compiler
   (`wrap=@WBRUN@|...`) or a program (`runwrap=@WBRUN@|...`) like the
   Workbench and reports the current directory at the end, how often the
   process opened minus closed dos.library and files left in use; with

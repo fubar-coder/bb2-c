@@ -19,7 +19,8 @@
 # bug-orig and emulator, skipped (77) without Amiberry or the CD.  The
 # files are found by a glob: adding a test touches no list.
 #   @VAR@ in @pass: USERLIB (amiga/userlib.c: a library for
-#   blitz2:userlibs), INJECT (amiga/inject.c: faults for the compiler with
+#   blitz2:userlibs), INJECT (amiga/inject.c: faults, counts and input;
+#   for the compiler with
 #   wrap=@INJECT@|..., for the programs with runwrap=@INJECT@|...),
 #   WBRUN (amiga/wbrun.c: started like from the Workbench, wrap=@WBRUN@ or
 #   runwrap=@WBRUN@),

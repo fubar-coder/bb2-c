@@ -35,20 +35,77 @@
  *                          list followed past the end of a hunk.  Other
  *                          memory (allocated before COMMAND, by another
  *                          task, ...) is freed as asked
+ * What COMMAND leaves behind:
+ *   opencount=NAME         how often the process opened a library whose
+ *                          name ends in NAME (OpenLibrary, OldOpenLibrary)
+ *                          minus how often it closed it (CloseLibrary of
+ *                          that base); up to 4 times.  Only this process
+ *                          counts (lib_OpenCnt would count the background
+ *                          tools of the Workbench too)
+ *   cd[=PATH]              COMMAND runs with a lock of its own as current
+ *                          directory (a DupLock of inject's or a lock on
+ *                          PATH); afterwards: is it still the current
+ *                          directory, did COMMAND UnLock it (inject's own
+ *                          current directory is restored in any case)
+ *   inuse=PATH             after COMMAND: is PATH still in use (an
+ *                          exclusive Lock fails with ERROR_OBJECT_IN_USE,
+ *                          e.g. a lock left over); up to 4 times
+ * Input while COMMAND runs (by a second process, the driver):
+ *   click=TITLE/TEXT       GADGETUP on the gadget with the text TEXT
+ *                          (GadgetText->IText) of the window with the title
+ *                          TITLE: a synthetic IntuiMessage put into the
+ *                          window's UserPort, as reqclose does
+ *                          (tests/corpus/amiga/reqclose.h); the requester
+ *                          replies to the driver.  Up to 8, sent in this
+ *                          order, each after the reply of the one before
+ *                          (the first 0.5 s after its window appeared,
+ *                          the others 0.2 s after the reply)
+ *   doslocked              the clicks are sent while the driver holds the
+ *                          DOS list locked for writing (LockDosList); a
+ *                          click not answered within 1 s ends the lock and
+ *                          the clicks behind it are sent without it (a
+ *                          program that locks the DOS list waits for it,
+ *                          one that walks it without a lock does not)
+ *   keys=TITLE/CODE@SECS[,CODE@SECS]...
+ *                          an input handler (priority 100, before
+ *                          Intuition and the handlers of the program)
+ *                          stamps every input event with a clock of its
+ *                          own instead of the real time: 1000 s, standing
+ *                          still.  0.5 s after a window TITLE appeared, its
+ *                          next call puts RAWKEY events (CODE hex, up to 8)
+ *                          in front of the incoming events, in one list,
+ *                          each stamped with the clock + its SECS; then the
+ *                          clock stands at the last of them.  So a handler
+ *                          behind it sees several events at controlled
+ *                          times in one call (input.device's IND_WRITEEVENT
+ *                          writes one event per call, with the real time)
  * COMMAND is loaded with LoadSeg and run with RunCommand in this process
  * (the signals and the recorded allocations are the process's); the
  * patches are system-wide but act only for this process.  Behind COMMAND
  * it writes (lines "inject: ..."): how often each fault was injected,
- * rc=N of COMMAND and with track the allocations left (sorted by size:
- * the addresses differ between runs).
+ * rc=N of COMMAND, with track the allocations left (sorted by size:
+ * the addresses differ between runs), then
+ *   opencount: NAME +N           opened minus closed
+ *   current dir at end: start | other
+ *   current dir: the start lock was unlocked   (only if so)
+ *   in use: PATH | not in use: PATH | missing: PATH
+ *   click TITLE/TEXT: answered | answered after the DOS list was unlocked
+ *                | not answered | no gadget | no window | not sent
+ *   keys: sent | keys: no window | keys: not sent
  */
 #include <exec/types.h>
 #include <exec/memory.h>
 #include <exec/execbase.h>
 #include <dos/dos.h>
 #include <dos/dosextens.h>
+#include <dos/dostags.h>
+#include <devices/input.h>
+#include <devices/inputevent.h>
+#include <intuition/intuitionbase.h>
+#include <intuition/screens.h>
 #include <proto/exec.h>
 #include <proto/dos.h>
+#include <proto/intuition.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -57,10 +114,14 @@
 #define LVO_OPEN     (-30)
 #define LVO_READ     (-42)
 #define LVO_LOCK     (-84)
+#define LVO_UNLOCK   (-90)
 #define LVO_EXAMINE  (-102)
 #define LVO_CREATEPROC (-138)
 #define LVO_OLDOPENLIBRARY (-408)
+#define LVO_CLOSELIBRARY   (-414)
 #define LVO_OPENLIBRARY    (-552)
+
+struct IntuitionBase *IntuitionBase;
 
 static BPTR out;
 static struct Task *me;
@@ -78,10 +139,10 @@ static ULONG rf_n, rf_done, ef_done, olf_done, cpf_done;
 /* the patches: asm entry, C decision (only for this process while COMMAND
    runs); the original is called with the registers it got */
 APTR old_allocmem, old_freemem, old_open, old_read, old_lock, old_examine;
-APTR old_oldopenlib, old_openlib, old_createproc;
+APTR old_oldopenlib, old_openlib, old_createproc, old_closelib, old_unlock;
 void allocmem_patch(void), freemem_patch(void), open_patch(void), read_patch(void);
 void lock_patch(void), examine_patch(void), oldopenlib_patch(void), openlib_patch(void);
-void createproc_patch(void);
+void createproc_patch(void), closelib_patch(void), unlock_patch(void), keys_stub(void);
 
 __asm__(
 "   .text\n"
@@ -178,24 +239,60 @@ __asm__(
 "4: moveq   #0,d0\n"
 "   rts\n"
 /* OldOpenLibrary(a1 name) / OpenLibrary(a1 name, d0 version):
-   openlib_pre != 0 -> 0, else the original */
+   openlib_pre != 0 -> 0, else the original and openlib_post(result,
+   name) */
 "   .even\n"
 "_oldopenlib_patch:\n"
-"   move.l  _old_oldopenlib,-(sp)\n"
+"   move.l  _old_oldopenlib,a0\n"
 "   bra.s   5f\n"
 "   .even\n"
 "_openlib_patch:\n"
-"   move.l  _old_openlib,-(sp)\n"
-"5: movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  _old_openlib,a0\n"
+"5: movem.l d0/a0-a1,-(sp)\n"
 "   move.l  a1,-(sp)\n"
 "   jsr     _openlib_pre\n"
 "   addq.l  #4,sp\n"
 "   tst.l   d0\n"
-"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   movem.l (sp)+,d0/a0-a1\n"
 "   bne.s   6f\n"
-"   rts\n"                          /* to the original */
-"6: addq.l  #4,sp\n"
-"   moveq   #0,d0\n"
+"   move.l  a1,-(sp)\n"
+"   jsr     (a0)\n"                  /* the original */
+"   move.l  (sp)+,a1\n"
+"   move.l  d0,-(sp)\n"
+"   move.l  a1,-(sp)\n"
+"   move.l  d0,-(sp)\n"
+"   jsr     _openlib_post\n"
+"   addq.l  #8,sp\n"
+"   move.l  (sp)+,d0\n"
+"   rts\n"
+"6: moveq   #0,d0\n"
+"   rts\n"
+/* CloseLibrary(a1 library): closelib_pre(library), the original */
+"   .even\n"
+"_closelib_patch:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  a1,-(sp)\n"
+"   jsr     _closelib_pre\n"
+"   addq.l  #4,sp\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   move.l  _old_closelib,-(sp)\n"
+"   rts\n"
+/* UnLock(d1 lock): unlock_pre(lock), the original */
+"   .even\n"
+"_unlock_patch:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  d1,-(sp)\n"
+"   jsr     _unlock_pre\n"
+"   addq.l  #4,sp\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   move.l  _old_unlock,-(sp)\n"
+"   rts\n"
+/* the input handler of keys=: a0 events -> d0 events */
+"   .even\n"
+"_keys_stub:\n"
+"   move.l  a0,-(sp)\n"
+"   jsr     _keys_handler\n"
+"   addq.l  #4,sp\n"
 "   rts\n"
 /* CreateProc(d1 name, d2 pri, d3 seglist, d4 stack): createproc_pre != 0
    -> 0, else the original */
@@ -359,10 +456,21 @@ ULONG examine_pre(ULONG lock)
 
 /* ---------------------------------------------------- exec libraries */
 
+#define MAXOC 4
+static char oc_name[MAXOC][40];
+static ULONG oc_base[MAXOC];
+static LONG oc_count[MAXOC];
+static int noc;
+static ULONG ol_depth;                  /* OldOpenLibrary calls OpenLibrary */
+
 ULONG openlib_pre(const char *name)
 {
-    if (!olf_name[0] || !ours() || !name || !ends(name, olf_name))
+    if (!ours())
         return 0;
+    if (!olf_name[0] || !name || !ends(name, olf_name)) {
+        ol_depth++;
+        return 0;
+    }
     olf_done++;
     return 1;
 }
@@ -373,6 +481,234 @@ ULONG createproc_pre(void)
         return 0;
     cpf_done++;
     return 1;
+}
+
+void openlib_post(ULONG base, const char *name)
+{
+    int i;
+
+    if (!ours() || !ol_depth || --ol_depth || !base || !name)
+        return;
+    for (i = 0; i < noc; i++)
+        if (ends(name, oc_name[i])) {
+            oc_base[i] = base;
+            oc_count[i]++;
+        }
+}
+
+void closelib_pre(ULONG base)
+{
+    int i;
+
+    if (!ours() || !base)
+        return;
+    for (i = 0; i < noc; i++)
+        if (base == oc_base[i])
+            oc_count[i]--;
+}
+
+/* ------------------------------------------------- current directory */
+
+static int o_cd;
+static char cd_path[108];
+static BPTR cd_lock;                    /* COMMAND's current dir at its start */
+static volatile int cd_unlocked;
+static int cd_end_start;                /* still the current dir at the end */
+
+void unlock_pre(ULONG lock)
+{
+    if (ours() && cd_lock && lock == (ULONG)cd_lock)
+        cd_unlocked = 1;
+}
+
+#define MAXINUSE 4
+static const char *inuse[MAXINUSE];
+static int ninuse;
+
+/* --------------------------------------------- input: the driver */
+
+#define MAXCLICK 8
+static struct {
+    char title[40], text[40];
+    int result;
+} click[MAXCLICK];
+static int nclick, o_doslocked;
+enum { CL_NOTSENT, CL_ANSWERED, CL_LATE, CL_NOANSWER, CL_NOGADGET, CL_NOWINDOW };
+static const char *const cl_text[] = {
+    "not sent", "answered", "answered after the DOS list was unlocked",
+    "not answered", "no gadget", "no window"
+};
+
+#define MAXKEYS 8
+static char k_title[40];
+static UWORD k_code[MAXKEYS];
+static ULONG k_secs[MAXKEYS];
+static int nkeys;
+static struct InputEvent k_ev[MAXKEYS];
+static volatile ULONG k_clock = 1000;
+static volatile int k_fire, k_sent;
+enum { KS_NOTSENT, KS_SENT, KS_NOWINDOW };
+static int k_result;
+
+static volatile int cmd_done, drv_done;
+
+/* the input handler (input.device's task) */
+struct InputEvent *keys_handler(struct InputEvent *ev)
+{
+    struct InputEvent *e, *head = ev;
+    int i;
+
+    if (k_fire) {
+        for (i = 0; i < nkeys; i++) {
+            k_ev[i].ie_NextEvent = i + 1 < nkeys ? &k_ev[i + 1] : ev;
+            k_ev[i].ie_Class = IECLASS_RAWKEY;
+            k_ev[i].ie_Code = k_code[i];
+            k_ev[i].ie_TimeStamp.tv_secs = k_clock + k_secs[i];
+            k_ev[i].ie_TimeStamp.tv_micro = 0;
+        }
+        k_clock += k_secs[nkeys - 1];
+        head = k_ev;
+        k_fire = 0;
+        k_sent = 1;
+    }
+    for (e = ev; e; e = e->ie_NextEvent) {
+        e->ie_TimeStamp.tv_secs = k_clock;
+        e->ie_TimeStamp.tv_micro = 0;
+    }
+    return head;
+}
+
+/* the window with that title (IBase locked) */
+static struct Window *findwin(const char *title)
+{
+    struct Screen *s;
+    struct Window *w;
+
+    for (s = IntuitionBase->FirstScreen; s; s = s->NextScreen)
+        for (w = s->FirstWindow; w; w = w->NextWindow)
+            if (w->Title && !strcmp((const char *)w->Title, title))
+                return w;
+    return NULL;
+}
+
+/* wait up to 20 s (or the end of COMMAND) for the window: 0 = none */
+static int waitwin(const char *title)
+{
+    int t;
+
+    for (t = 0; t < 500 && !cmd_done; t++) {
+        ULONG ib = LockIBase(0);
+        struct Window *w = findwin(title);
+
+        UnlockIBase(ib);
+        if (w)
+            return 1;
+        Delay(2);
+    }
+    return 0;
+}
+
+/* GADGETUP on the gadget: CL_ANSWERED when sent (the reply is waited for
+   by the caller), else CL_NOWINDOW / CL_NOGADGET */
+static int sendclick(int n, struct IntuiMessage *m, struct MsgPort *reply)
+{
+    struct Window *w;
+    struct Gadget *g = NULL;
+    struct MsgPort *port = NULL;
+    ULONG ib;
+
+    Forbid();
+    ib = LockIBase(0);
+    w = findwin(click[n].title);
+    if (w) {
+        port = w->UserPort;
+        for (g = w->FirstGadget; g; g = g->NextGadget)
+            if (g->GadgetText && g->GadgetText->IText
+                && !strcmp((const char *)g->GadgetText->IText, click[n].text))
+                break;
+    }
+    UnlockIBase(ib);
+    if (!w || !port || !g) {
+        Permit();
+        return w && port ? CL_NOGADGET : CL_NOWINDOW;
+    }
+    memset(m, 0, sizeof *m);
+    m->ExecMessage.mn_Node.ln_Type = NT_MESSAGE;
+    m->ExecMessage.mn_ReplyPort = reply;
+    m->ExecMessage.mn_Length = sizeof *m;
+    m->Class = IDCMP_GADGETUP;
+    m->IAddress = g;
+    m->IDCMPWindow = w;
+    PutMsg(port, &m->ExecMessage);
+    Permit();
+    return CL_ANSWERED;
+}
+
+static void driver_clicks(void)
+{
+    static struct IntuiMessage m;
+    struct MsgPort *reply = CreateMsgPort();
+    int n, t, locked = 0;
+
+    if (!reply)
+        return;
+    for (n = 0; n < nclick; n++) {
+        if (!waitwin(click[n].title)) {
+            click[n].result = CL_NOWINDOW;
+            break;
+        }
+        Delay(n ? 10 : 25);
+        if (o_doslocked && n == 0) {
+            LockDosList(LDF_ALL | LDF_WRITE);
+            locked = 1;
+        }
+        click[n].result = sendclick(n, &m, reply);
+        if (click[n].result != CL_ANSWERED)
+            break;
+        for (t = 0; !GetMsg(reply); t++) {
+            if (locked && t == 50) {
+                UnLockDosList(LDF_ALL | LDF_WRITE);
+                locked = 0;
+                click[n].result = CL_LATE;
+            }
+            if (cmd_done && t >= 100) {         /* COMMAND ended: none */
+                click[n].result = CL_NOANSWER;
+                break;
+            }
+            Delay(1);
+        }
+        if (click[n].result == CL_NOANSWER)
+            break;
+    }
+    if (locked)
+        UnLockDosList(LDF_ALL | LDF_WRITE);
+    if (n == nclick || click[n].result != CL_NOANSWER)
+        DeleteMsgPort(reply);           /* (else a reply may still come) */
+}
+
+static void driver_keys(void)
+{
+    int t;
+
+    if (!waitwin(k_title)) {
+        k_result = KS_NOWINDOW;
+        return;
+    }
+    Delay(25);
+    k_fire = 1;
+    for (t = 0; t < 250 && !k_sent; t++)
+        Delay(1);
+    k_result = k_sent ? KS_SENT : KS_NOTSENT;
+}
+
+static void driver(void)
+{
+    if (nclick)
+        driver_clicks();
+    if (nkeys)
+        driver_keys();
+    Forbid();
+    drv_done = 1;
 }
 
 /* ------------------------------------------------------------ main */
@@ -438,6 +774,64 @@ static int option(const char *a)
         strcpy(olf_name, a + 12);
         return 1;
     }
+    if (!strncmp(a, "opencount=", 10)) {
+        if (!a[10] || strlen(a + 10) >= sizeof oc_name[0] || noc >= MAXOC)
+            return -1;
+        strcpy(oc_name[noc++], a + 10);
+        return 1;
+    }
+    if (!strcmp(a, "cd"))
+        return o_cd = 1;
+    if (!strncmp(a, "cd=", 3)) {
+        if (!a[3] || strlen(a + 3) >= sizeof cd_path)
+            return -1;
+        strcpy(cd_path, a + 3);
+        return o_cd = 1;
+    }
+    if (!strncmp(a, "inuse=", 6)) {
+        if (!a[6] || strlen(a + 6) > 100 || ninuse >= MAXINUSE)
+            return -1;
+        inuse[ninuse++] = a + 6;
+        return 1;
+    }
+    if (!strcmp(a, "doslocked"))
+        return o_doslocked = 1;
+    if (!strncmp(a, "click=", 6)) {
+        const char *slash = strchr(a + 6, '/');
+
+        if (!slash || slash == a + 6 || !slash[1] || nclick >= MAXCLICK
+            || (ULONG)(slash - a - 6) >= sizeof click[0].title
+            || strlen(slash + 1) >= sizeof click[0].text)
+            return -1;
+        memcpy(click[nclick].title, a + 6, (ULONG)(slash - a - 6));
+        strcpy(click[nclick++].text, slash + 1);
+        return 1;
+    }
+    if (!strncmp(a, "keys=", 5)) {
+        const char *slash = strchr(a + 5, '/');
+
+        if (nkeys || !slash || slash == a + 5 || (ULONG)(slash - a - 5) >= sizeof k_title)
+            return -1;
+        memcpy(k_title, a + 5, (ULONG)(slash - a - 5));
+        s = slash;
+        do {
+            ULONG code = 0;
+            int digits = 0;
+
+            for (s++; ; s++, digits++)
+                if (*s >= '0' && *s <= '9')
+                    code = code * 16 + (ULONG)(*s - '0');
+                else if (lower(*s) >= 'a' && lower(*s) <= 'f')
+                    code = code * 16 + (ULONG)(lower(*s) - 'a' + 10);
+                else
+                    break;
+            if (!digits || code > 0xffff || *s++ != '@' || nkeys >= MAXKEYS
+                || !number(&s, &k_secs[nkeys]))
+                return -1;
+            k_code[nkeys++] = (UWORD)code;
+        } while (*s == ',');
+        return *s ? -1 : 1;
+    }
     return 0;
 }
 
@@ -456,7 +850,11 @@ static void patch(int on)
         old_oldopenlib = SetFunction(ex, LVO_OLDOPENLIBRARY, (APTR)oldopenlib_patch);
         old_openlib = SetFunction(ex, LVO_OPENLIBRARY, (APTR)openlib_patch);
         old_createproc = SetFunction(dos, LVO_CREATEPROC, (APTR)createproc_patch);
+        old_closelib = SetFunction(ex, LVO_CLOSELIBRARY, (APTR)closelib_patch);
+        old_unlock = SetFunction(dos, LVO_UNLOCK, (APTR)unlock_patch);
     } else {
+        SetFunction(ex, LVO_CLOSELIBRARY, old_closelib);
+        SetFunction(dos, LVO_UNLOCK, old_unlock);
         SetFunction(ex, LVO_ALLOCMEM, old_allocmem);
         SetFunction(ex, LVO_FREEMEM, old_freemem);
         SetFunction(dos, LVO_OPEN, old_open);
@@ -507,10 +905,13 @@ static void report_track(void)
 
 int main(int argc, char **argv)
 {
-    static char args[512], line[100];
+    static char args[512], line[200];
+    static struct Interrupt kint;
     struct CommandLineInterface *cli = Cli();
     ULONG stack = cli ? cli->cli_DefaultStack * 4 : 4096, sigs = 0;
-    BPTR seg;
+    struct MsgPort *iport = NULL;
+    struct IOStdReq *io = NULL;
+    BPTR seg, old_cd = 0;
     LONG rc;
     int i, k, r = 0;
 
@@ -526,7 +927,9 @@ int main(int argc, char **argv)
     if (i >= argc) {
         put("usage: inject [signals] [allocfail=MIN-MAX[/chip][/COUNT]] [readfail=NAME/N]\n"
             "              [examinefail=NAME] [openlibfail=NAME] [createprocfail] [track] [pad]\n"
-            "              COMMAND [ARGS]\n");
+            "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
+            "              [click=TITLE/TEXT]... [doslocked]\n"
+            "              [keys=TITLE/CODE@SECS[,CODE@SECS]...] COMMAND [ARGS]\n");
         return 20;
     }
     for (k = i + 1; k < argc; k++) {
@@ -543,6 +946,43 @@ int main(int argc, char **argv)
         put("\n");
         return 20;
     }
+    if (nclick || nkeys) {
+        IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", 36);
+        if (!IntuitionBase)
+            return 20;
+    }
+    if (nkeys) {
+        if (!(iport = CreateMsgPort())
+            || !(io = (struct IOStdReq *)CreateIORequest(iport, sizeof *io))
+            || OpenDevice("input.device", 0, (struct IORequest *)io, 0)) {
+            put("inject: cannot open input.device\n");
+            return 20;
+        }
+        kint.is_Node.ln_Type = NT_INTERRUPT;
+        kint.is_Node.ln_Pri = 100;
+        kint.is_Node.ln_Name = "inject";
+        kint.is_Code = keys_stub;
+        io->io_Command = IND_ADDHANDLER;
+        io->io_Data = &kint;
+        DoIO((struct IORequest *)io);
+    }
+    if ((nclick || nkeys)
+        && !CreateNewProcTags(NP_Entry, (ULONG)driver, NP_Name, (ULONG)"inject driver",
+                              NP_StackSize, 4096, NP_CurrentDir, 0,
+                              NP_Input, 0, NP_CloseInput, FALSE,
+                              NP_Output, 0, NP_CloseOutput, FALSE, TAG_DONE)) {
+        put("inject: cannot start the driver\n");
+        return 20;
+    }
+    if (o_cd) {
+        cd_lock = cd_path[0] ? Lock(cd_path, SHARED_LOCK)
+            : DupLock(((struct Process *)me)->pr_CurrentDir);
+        if (!cd_lock) {
+            put("inject: cannot lock the current directory for COMMAND\n");
+            return 20;
+        }
+        old_cd = CurrentDir(cd_lock);
+    }
     if (o_signals)
         for (;;) {
             BYTE s = AllocSignal(-1);
@@ -556,10 +996,29 @@ int main(int argc, char **argv)
     rc = RunCommand(seg, stack, args, strlen(args));
     active = 0;
     patch(0);
+    cmd_done = 1;
     for (k = 0; k < 32; k++)
         if (sigs & (1UL << k))
             FreeSignal(k);
     UnLoadSeg(seg);
+    if (nclick || nkeys)
+        while (!drv_done)
+            Delay(2);
+    if (nkeys) {
+        io->io_Command = IND_REMHANDLER;
+        io->io_Data = &kint;
+        DoIO((struct IORequest *)io);
+        CloseDevice((struct IORequest *)io);
+        DeleteIORequest((struct IORequest *)io);
+        DeleteMsgPort(iport);
+    }
+    if (o_cd) {
+        BPTR now = CurrentDir(old_cd);
+
+        cd_end_start = now == cd_lock && !cd_unlocked;
+        if (!cd_unlocked)
+            UnLock(cd_lock);
+    }
     if (o_allocfail) {
         sprintf(line, "inject: allocfail: %lu allocations failed\n", af_done);
         put(line);
@@ -586,5 +1045,36 @@ int main(int argc, char **argv)
         report_track();
     if (bad_free)
         put("inject: pad: FreeMem inside an allocation (not done)\n");
+    for (k = 0; k < noc; k++) {
+        sprintf(line, "inject: opencount: %s %+ld\n", oc_name[k], (long)oc_count[k]);
+        put(line);
+    }
+    if (o_cd) {
+        put(cd_end_start ? "inject: current dir at end: start\n"
+            : "inject: current dir at end: other\n");
+        if (cd_unlocked)
+            put("inject: current dir: the start lock was unlocked\n");
+    }
+    for (k = 0; k < ninuse; k++) {
+        BPTR l = Lock(inuse[k], EXCLUSIVE_LOCK);
+
+        if (l) {
+            UnLock(l);
+            sprintf(line, "inject: not in use: %.100s\n", inuse[k]);
+        } else
+            sprintf(line, IoErr() == ERROR_OBJECT_IN_USE ? "inject: in use: %.100s\n"
+                    : "inject: missing: %.100s\n", inuse[k]);
+        put(line);
+    }
+    for (k = 0; k < nclick; k++) {
+        sprintf(line, "inject: click %.39s/%.39s: %s\n", click[k].title, click[k].text,
+                cl_text[click[k].result]);
+        put(line);
+    }
+    if (nkeys)
+        put(k_result == KS_SENT ? "inject: keys: sent\n"
+            : k_result == KS_NOWINDOW ? "inject: keys: no window\n" : "inject: keys: not sent\n");
+    if (IntuitionBase)
+        CloseLibrary((struct Library *)IntuitionBase);
     return 0;
 }
