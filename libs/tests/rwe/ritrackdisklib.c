@@ -61,6 +61,11 @@ static void fail(const char *what, ULONG o, ULONG c)
         if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
     } while (0)
 
+/* a comparison of the data of both sets (once, not per set) */
+#define BOTH(what, cond) do {                                               \
+        if (!(cond)) fail(what, 0, 1); else checks++;                       \
+    } while (0)
+
 static void preserve(void)
 {
     struct call c[2];
@@ -268,11 +273,11 @@ static void same_device(int data)
     SAME("unit", last[cur].unit);
     SAME("actual", last[cur].actual);
     SAME("buffer", relbuf(last[cur].data));
-    SAME("head", memcmp(last[0].head, last[1].head, 8) == 0);
+    BOTH("head", memcmp(last[0].head, last[1].head, 8) == 0);
     if (data)
         SAME("data written", last[cur].sum);
-    SAME("disk", memcmp(disk[0], disk[1], DISKSIZE) == 0);
-    SAME("read buffer", memcmp(rbuf[0], rbuf[1], BUFSIZE) == 0);
+    BOTH("disk", memcmp(disk[0], disk[1], DISKSIZE) == 0);
+    BOTH("read buffer", memcmp(rbuf[0], rbuf[1], BUFSIZE) == 0);
 }
 
 static void fill(UBYTE **b, ULONG size, ULONG seed)
@@ -425,7 +430,7 @@ int main(int argc, char **argv)
         sprintf(VEC, "0,boot %d", i);
         DO2(BOOTPROG, 0, R[cur].d[0] = 0; R[cur].d[1] = (ULONG)boot[cur]);
         SAME("d0", R[cur].d[0]);
-        SAME("boot block", memcmp(boot[0], boot[1], 1024) == 0);
+        BOTH("boot block", memcmp(boot[0], boot[1], 1024) == 0);
         SAME("checksum", ((ULONG *)boot[cur])[1]);
         same_device(1);
     }
@@ -454,7 +459,7 @@ int main(int argc, char **argv)
     strcpy(VEC, "7,boot");
     DO2(BOOTPROG, 0, R[cur].d[0] = 7; R[cur].d[1] = (ULONG)boot[cur]);
     SAME("d0", R[cur].d[0]);
-    SAME("boot block", memcmp(boot[0], boot[1], 1024) == 0);
+    BOTH("boot block", memcmp(boot[0], boot[1], 1024) == 0);
     same_device(0);
     ROUT = "DiskMotor";
     strcpy(VEC, "");

@@ -48,6 +48,11 @@ static void fail(const char *what, ULONG o, ULONG c)
         if (v_[0] != v_[1]) fail(what, v_[0], v_[1]); else checks++;        \
     } while (0)
 
+/* a comparison of the data of both sets (once, not per set) */
+#define BOTH(what, cond) do {                                               \
+        if (!(cond)) fail(what, 0, 1); else checks++;                       \
+    } while (0)
+
 static void preserve(void)
 {
     struct call c[2];
@@ -115,7 +120,7 @@ static ULONG relptr(ULONG p)
 
 static void same_state(void)
 {
-    SAME("custom space", memcmp(buf[0], buf[1], BUFSIZE) == 0 ? 0 : 1);
+    BOTH("custom space", memcmp(buf[0], buf[1], BUFSIZE) == 0);
     SAME("coplistaddr", relptr(*(ULONG *)info[cur]));
     SAME("customaddr", relptr(*(ULONG *)(info[cur] + 4)));
     SAME("startline/ccoffset", *(ULONG *)(info[cur] + 8));
