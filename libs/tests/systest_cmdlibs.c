@@ -455,7 +455,7 @@ static const char *names[] = {
 int main(int argc, char **argv)
 {
     int i;
-    ULONG avail;
+    ULONG avail, after, dispatches;
     struct Library *ffp;
 
     if (argc < 2) {
@@ -472,6 +472,17 @@ int main(int argc, char **argv)
     test_mathtranslib();
     test_environlib();
 
+    /* The memory balance is measured under Forbid(): AvailMem() counts the
+       whole system, and other tasks allocate during the run (in Amiberry
+       a task took 536 bytes, 496 of them back right after, in 3 of 30
+       runs at this point, and 40 bytes a second later in every run).
+       Under Forbid() only this task and the libraries it calls change the
+       free memory, so the comparison stays exact.  Nothing in between
+       waits (utillib's Wait gets its signal beforehand, check() prints
+       only on a failure); a Wait would break the Forbid(), so the
+       dispatch counter must not change either. */
+    Forbid();
+    dispatches = SysBase->DispCount;
     avail = AvailMem(MEMF_ANY);
     ROUT = "memlib init";
     strcpy(VEC, "");
@@ -481,7 +492,11 @@ int main(int argc, char **argv)
     test_utillib();
     ROUT = "memlib finit";
     DO2(cmd_entry(getlib(&sets[cur], "memlib"), 8), (void)0);
-    check("utillib: all memory back", AvailMem(MEMF_ANY) == avail);
+    after = AvailMem(MEMF_ANY);
+    dispatches = SysBase->DispCount - dispatches;
+    Permit();
+    check("utillib: no task switch while measuring the memory", dispatches == 0);
+    check("utillib: all memory back", after == avail);
 
     CloseLibrary(ffp);
     printf("%d checks, %d failures\n", checks, failures);
