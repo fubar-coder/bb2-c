@@ -207,8 +207,8 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   observation of each configuration in `.../ID/TAG/observation`.
   Helpers (`tests/bug-orig/amiga/`): `inject` runs the compiler with
   faults (no free signal, failing AllocMem of a size, Read error, failing
-  Examine, failing OpenLibrary of a name, recorded allocations and FreeMem
-  of another size than allocated; with `pad` 64 zeroed bytes behind every
+  Examine, failing OpenLibrary of a name, failing CreateProc, recorded
+  allocations and FreeMem of another size than allocated; with `pad` 64 zeroed bytes behind every
   allocation, also a hunk of LoadSeg, and a FreeMem inside an allocation
   is reported and not done; for the
   compiled programs with `runwrap=@INJECT@|...`), `wbrun` starts the compiler

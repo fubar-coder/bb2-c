@@ -18,6 +18,8 @@
  *                          returns DOSFALSE
  *   openlibfail=NAME       OpenLibrary/OldOpenLibrary of a library whose
  *                          name ends in NAME (case ignored) returns 0
+ *   createprocfail         CreateProc returns 0 (no process: as without
+ *                          memory for it or its stack)
  *   track                  the process's AllocMem/FreeMem are recorded; what
  *                          is still allocated when COMMAND ends is reported
  *                          and every FreeMem whose size differs from the
@@ -56,6 +58,7 @@
 #define LVO_READ     (-42)
 #define LVO_LOCK     (-84)
 #define LVO_EXAMINE  (-102)
+#define LVO_CREATEPROC (-138)
 #define LVO_OLDOPENLIBRARY (-408)
 #define LVO_OPENLIBRARY    (-552)
 
@@ -67,17 +70,18 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 
 /* -------------------------------------------------------------- options */
 
-static int o_signals, o_track, o_pad, o_allocfail;
+static int o_signals, o_track, o_pad, o_allocfail, o_createprocfail;
 static ULONG af_min, af_max, af_chip, af_count, af_done;
 static char rf_name[108], ef_name[108], olf_name[108];
-static ULONG rf_n, rf_done, ef_done, olf_done;
+static ULONG rf_n, rf_done, ef_done, olf_done, cpf_done;
 
 /* the patches: asm entry, C decision (only for this process while COMMAND
    runs); the original is called with the registers it got */
 APTR old_allocmem, old_freemem, old_open, old_read, old_lock, old_examine;
-APTR old_oldopenlib, old_openlib;
+APTR old_oldopenlib, old_openlib, old_createproc;
 void allocmem_patch(void), freemem_patch(void), open_patch(void), read_patch(void);
 void lock_patch(void), examine_patch(void), oldopenlib_patch(void), openlib_patch(void);
+void createproc_patch(void);
 
 __asm__(
 "   .text\n"
@@ -192,6 +196,19 @@ __asm__(
 "   rts\n"                          /* to the original */
 "6: addq.l  #4,sp\n"
 "   moveq   #0,d0\n"
+"   rts\n"
+/* CreateProc(d1 name, d2 pri, d3 seglist, d4 stack): createproc_pre != 0
+   -> 0, else the original */
+"   .even\n"
+"_createproc_patch:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   jsr     _createproc_pre\n"
+"   tst.l   d0\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   bne.s   7f\n"
+"   move.l  _old_createproc,-(sp)\n"
+"   rts\n"
+"7: moveq   #0,d0\n"
 "   rts\n"
 );
 
@@ -350,6 +367,14 @@ ULONG openlib_pre(const char *name)
     return 1;
 }
 
+ULONG createproc_pre(void)
+{
+    if (!o_createprocfail || !ours())
+        return 0;
+    cpf_done++;
+    return 1;
+}
+
 /* ------------------------------------------------------------ main */
 
 static int number(const char **s, ULONG *v)
@@ -376,6 +401,8 @@ static int option(const char *a)
         return o_track = 1;
     if (!strcmp(a, "pad"))
         return o_pad = 1;
+    if (!strcmp(a, "createprocfail"))
+        return o_createprocfail = 1;
     if (!strncmp(a, "allocfail=", 10)) {
         s = a + 10;
         if (!number(&s, &af_min) || *s++ != '-' || !number(&s, &af_max) || af_min > af_max)
@@ -428,6 +455,7 @@ static void patch(int on)
         old_examine = SetFunction(dos, LVO_EXAMINE, (APTR)examine_patch);
         old_oldopenlib = SetFunction(ex, LVO_OLDOPENLIBRARY, (APTR)oldopenlib_patch);
         old_openlib = SetFunction(ex, LVO_OPENLIBRARY, (APTR)openlib_patch);
+        old_createproc = SetFunction(dos, LVO_CREATEPROC, (APTR)createproc_patch);
     } else {
         SetFunction(ex, LVO_ALLOCMEM, old_allocmem);
         SetFunction(ex, LVO_FREEMEM, old_freemem);
@@ -437,6 +465,7 @@ static void patch(int on)
         SetFunction(dos, LVO_EXAMINE, old_examine);
         SetFunction(ex, LVO_OLDOPENLIBRARY, old_oldopenlib);
         SetFunction(ex, LVO_OPENLIBRARY, old_openlib);
+        SetFunction(dos, LVO_CREATEPROC, old_createproc);
     }
     CacheClearU();
     Permit();
@@ -496,7 +525,8 @@ int main(int argc, char **argv)
         }
     if (i >= argc) {
         put("usage: inject [signals] [allocfail=MIN-MAX[/chip][/COUNT]] [readfail=NAME/N]\n"
-            "              [examinefail=NAME] [openlibfail=NAME] [track] [pad] COMMAND [ARGS]\n");
+            "              [examinefail=NAME] [openlibfail=NAME] [createprocfail] [track] [pad]\n"
+            "              COMMAND [ARGS]\n");
         return 20;
     }
     for (k = i + 1; k < argc; k++) {
@@ -544,6 +574,10 @@ int main(int argc, char **argv)
     }
     if (olf_name[0]) {
         sprintf(line, "inject: openlibfail: %lu opens failed\n", olf_done);
+        put(line);
+    }
+    if (o_createprocfail) {
+        sprintf(line, "inject: createprocfail: %lu processes not created\n", cpf_done);
         put(line);
     }
     sprintf(line, "inject: rc=%ld\n", rc);
