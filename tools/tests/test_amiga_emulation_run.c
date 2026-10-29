@@ -1,7 +1,8 @@
 /*
  * test_amiga_emulation_run.c - amiga_emulation with the emulator: four
  * runs in parallel - a script to its end with control commands, the RTG
- * variant, a second plain run, a script that does not end (time limit);
+ * variant, a second plain run, a script that does not end (time limit,
+ * screenshots every 2 seconds);
  * then an emulator whose starting process dies (Linux: it dies too).
  * Exit 77 (skipped) without Amiberry or the emulation data.
  */
@@ -138,7 +139,10 @@ int main(void)
     }
     b = amiga_emulation_start(&rtg, err, sizeof err);
     c = amiga_emulation_start(&plain, err, sizeof err);
+    /* screenshots every 2 seconds, only for the hanging run */
+    setenv("AMIGA_EMULATION_SHOTS", "2", 1);
     d = amiga_emulation_start(&hang, err, sizeof err);
+    unsetenv("AMIGA_EMULATION_SHOTS");
     CHECK(b && c && d);
     if (!b || !c || !d)
         return 1;
@@ -162,6 +166,8 @@ int main(void)
     CHECK(file_exists_in(amiga_emulation_test_dir(d), "before.txt"));
     CHECK(!file_exists_in(amiga_emulation_test_dir(d), "run.done"));
     CHECK(file_exists_in(amiga_emulation_work_dir(d), "timeout.png"));
+    CHECK(file_exists_in(amiga_emulation_work_dir(d), "shots/0001.png"));
+    CHECK(!file_exists_in(amiga_emulation_work_dir(a), "shots/0001.png"));
 
     amiga_emulation_free(a);
     amiga_emulation_free(b);

@@ -26,6 +26,12 @@
  * (timeout.png in the work directory) and kills the process group.
  * On Linux, Amiberry also dies (SIGKILL) when the process that started it
  * ends without amiga_emulation_free, e.g. a crashed test runner.
+ *
+ * For debugging, from the environment (for every runner):
+ *   AMIGA_EMULATION_VISIBLE=1   as `visible`: the window, host input
+ *   AMIGA_EMULATION_SHOTS=N     a screenshot every N seconds (0.2 too) while
+ *                               amiga_emulation_join waits, to
+ *                               shots/NNNN.png in the work directory
  */
 #ifndef AMIGA_EMULATION_H
 #define AMIGA_EMULATION_H

@@ -55,6 +55,9 @@ struct amiga_emulation {
     int own_work_dir;
     int joined;
     int exited;                 /* waitpid has reaped the process */
+    double shots;               /* $AMIGA_EMULATION_SHOTS: seconds between screenshots */
+    unsigned nshots;
+    double next_shot;
     enum amiga_emulation_status status;
 };
 
@@ -158,6 +161,14 @@ static void sb_subst(struct sb *b, const char *s, size_t n, const char *emulatio
 static int has_char(const char *s, const char *chars)
 {
     return strpbrk(s, chars) != NULL;
+}
+
+/* an environment switch: set, not empty and not "0" */
+static int env_on(const char *name)
+{
+    const char *v = getenv(name);
+
+    return v && *v && strcmp(v, "0");
 }
 
 static int file_exists(const char *path)
@@ -484,13 +495,21 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
 
     parent = getpid();
     e->deadline = now() + (p->timeout ? p->timeout : 60);
+    if (getenv("AMIGA_EMULATION_SHOTS"))
+        e->shots = strtod(getenv("AMIGA_EMULATION_SHOTS"), NULL);
+    if (!(e->shots > 0))
+        e->shots = 0;
+    if (e->shots && mkdirs(e->work_dir, (const char *const[]){ "shots", NULL }))
+        e->shots = 0;
+    e->next_shot = now() + e->shots;
     e->pid = fork();
     if (e->pid < 0) {
         set_err(err, errlen, "fork: %s", strerror(errno));
         goto fail;
     }
     if (e->pid == 0)
-        child(e->work_dir, e->runtime_dir, p->amiberry ? p->amiberry : "amiberry", p->visible,
+        child(e->work_dir, e->runtime_dir, p->amiberry ? p->amiberry : "amiberry",
+              p->visible || env_on("AMIGA_EMULATION_VISIBLE"),
               p->log, parent);
     setpgid(e->pid, e->pid);
     free(cfg);
@@ -639,6 +658,16 @@ enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
             stop_group(e);
             e->status = AMIGA_EMULATION_DONE;
             break;
+        }
+        if (e->shots && !quit_until && now() >= e->next_shot) {
+            char *png = str_printf("%s/shots/%04u.png", e->work_dir, ++e->nshots);
+            const char *shot[] = { "SCREENSHOT", png, NULL };
+            char reply[256];
+
+            if (png)
+                command_wait(e, shot, reply, sizeof reply, 2);
+            free(png);
+            e->next_shot = now() + e->shots;
         }
         if (!quit_until && now() > e->deadline) {
             char *png = str_printf("%s/timeout.png", e->work_dir);
