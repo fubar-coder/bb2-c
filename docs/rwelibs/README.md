@@ -107,7 +107,7 @@ latest date in the header comments.
 | NonVolatile | 35 (clash `mazfpulib`, AB3) | `nonvolatile` | RI | 1994 | **=** BSS2/AB3 (640 B) | nonvolatile |
 | Pack | 73 | `packlib/Pack-Library8`, `8_Mc`, `9` | RI | 1996-05-09 | 8 **=** BUM (2564 B), 8_Mc **=** OL (2388 B); 9 newer, ≈ 88 % | open (9 newer than the binaries) |
 | PopUp window | – (`#popupwinlib`) | `popuplib/popupwinlib` (+ `test2`) | RI | 1994 | – | open |
-| Protracker | – (`#ritrackerlib`) | `ptlib/ptlib` … `ptlib7`, `ptlibmatty` | Protracker 2.3A routine, adapted | 1995-04-08 | – | open (authors of the routine); not the acidlibs `trackerlib` (96: NoiseTracker in the vertical blank, Module objects, `LoadModule`…) but its own library: CIA interrupt, `TrackInit address`, `TrackPlay`, `TrackStop`, `TrackDMA`, `Tracker`, `TrackerChannels` (`TrackerTimer` from ptlib7); no binary, no number anywhere |
+| Protracker | – (`#ritrackerlib`) | `ptlib/ptlib` … `ptlib7`, `ptlibmatty` | Protracker 2.3A routine, adapted | 1995-04-08 | – | not ported (decision 2026-10-29; the authors of the routine unknown); not the acidlibs `trackerlib` (96: NoiseTracker in the vertical blank, Module objects, `LoadModule`…) but its own library: CIA interrupt, `TrackInit address`, `TrackPlay`, `TrackStop`, `TrackDMA`, `Tracker`, `TrackerChannels` (`TrackerTimer` from ptlib7); no binary, no number anywhere |
 | CIA tracker | 56 (`#ciatrklib`; clash `xbciatrackerlib`, AB3) | `ptlib/CIATrackerLib1` (+ `SamplePrograms/TrackerTest`) | Neil O'Rourke, Delirium Softdesign | – | ≈ 88 % OL `XBONESCIATRKLIB` | open |
 | Req | 79 | `reqlib/ReqLib`, `2`, `3` | – | – | all three **=** OL/AB3 `RIREQLIB` (964 B) | ReqLib2 (built identically, 3.1) |
 | ARexx | 133 (`#myconst=133`) | `rexxlib/…` (9 versions) | RI; `NEWAREXXLIB`: RWE (Matty) | 1997-02-09 | ≈ 76 % BSS2 `RIAREXXLIB` | open |
@@ -400,5 +400,8 @@ repository).
    Bombers libraries, MapEd/MapShapes, Registry/support)?
 3. The libraries with literal test numbers (5, 8, 10, 19, 22, 39, 195,
    197, 198): which number do they get as userlibs?
-4. The Protracker play routine in ptlib: whose is it (the readme of
-   Protracker 2.3A names the authors), and may it be taken over?
+4. ~~The Protracker play routine in ptlib: whose is it, and may it be
+   taken over?~~ Not needed: ptlib is not ported, nor is a replacement
+   (decision 2026-10-29). AmiBlitz3 has no ptlib either (its Protracker
+   support: Paul Reece's EMLLib, 60, binary only; `ptplay.include`
+   around `ptplay.library`).

@@ -493,8 +493,6 @@ several versions.
       purpose).
    5. **First users**: the RWE userlibs (their numbers: AmiBlitz3's
       libnums, the matching binaries, `#riarrayslib` = 7 from
-      `defaultdbug50.bb2`; `docs/rwelibs/README.md` §3.1); a Protracker
-      library as a C wrapper of its own around Frank Wille's ptplayer
-      (public domain) – the Blitz wrappers on GitHub
-      (`idrougge/blitz_ptplayer`, `E-Penguin/blitz_ptplayer`,
-      `earok/ptplayer_blitzwrapper_scorpion`) have no license.
+      `defaultdbug50.bb2`; `docs/rwelibs/README.md` §3.1). No
+      Protracker library: neither RI's ptlib nor a replacement around
+      Frank Wille's ptplayer (decision 2026-10-29).
