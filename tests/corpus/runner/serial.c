@@ -81,11 +81,11 @@ static void flush_rx(struct responder *r)
 
 static void begin(struct responder *r, const struct text *name)
 {
-    struct session *s = realloc(r->s, (r->ns + 1) * sizeof *s);
     static const uint8_t one = 1, two = 2;
+    struct session *s;
 
-    flush_rx(r);
-    if (!s) {
+    flush_rx(r);                        /* r->cur: before the realloc moves it */
+    if (!(s = realloc(r->s, (r->ns + 1) * sizeof *s))) {
         r->cur = NULL;
         return;
     }
