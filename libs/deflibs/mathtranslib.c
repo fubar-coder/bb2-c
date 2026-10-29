@@ -18,10 +18,6 @@
 #include "blitzlib.h"
 #include "deflib.h"
 
-/* #mathtranslib=225 in libnums.bb, redefined there to 192 (the
-   command library mathtranslib); deflibs keeps 225 */
-#define LIB_mathtransoslib 225
-
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 static ULONG libinit(void);

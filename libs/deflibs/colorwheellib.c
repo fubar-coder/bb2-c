@@ -18,10 +18,6 @@
 #include "blitzlib.h"
 #include "deflib.h"
 
-/* libnums.bb: #cdtvlib=219 (reserved); deflibs uses 219 for
-   colorwheel.gadget */
-#define LIB_colorwheellib 219
-
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 static ULONG libinit(void);

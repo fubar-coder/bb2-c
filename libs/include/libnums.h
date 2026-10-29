@@ -167,8 +167,17 @@
 #define LIB_rianimlib               57
 #define LIB_riencryptlib            52
 
-/* not in libnums.bb: the number fadelib gives literally
-   (!libheader{157,...}); #fadelib = 102 above is used by no library */
+/* not in libnums.bb: the numbers libraries give literally */
+/* fadelib: !libheader{157,...}; #fadelib = 102 above is used by no library */
 #define LIB_fadelib_header         157
+/* polylib: #chunkylib=121 in its source; #chunkylib above is 72 */
+#define LIB_polylib                121
+/* deflibs colorwheel.gadget; libnums.bb: #cdtvlib=219 (reserved) */
+#define LIB_colorwheellib          219
+/* deflibs mathtrans.library: #mathtranslib=225 in libnums.bb, redefined
+   there to 192 (the command library mathtranslib); deflibs keeps 225 */
+#define LIB_mathtransoslib         225
+/* deflibs xprzmodem.library (#xprzlib=218 is reserved, unused) */
+#define LIB_xprzmodemlib             2
 
 #endif

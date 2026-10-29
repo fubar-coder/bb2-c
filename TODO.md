@@ -493,12 +493,15 @@ several versions.
    3. ~~**Numbers only through `libnums.h`**~~ done (2026-10-29):
       `debuglib.c` writes its four tokens in inline assembler with
       `BL_ASMTOK(LIB_inputoutputlib, 4)`/`(LIB_printlib, 1)`
-      (`blitzlib.h`), `fadelib.c` its number as `LIB_fadelib_header`
-      (157, given literally in the original; `#fadelib` of libnums.bb
-      is 102 and used by no library), at the end of `libnums.h`; all
-      994 results byte-identical. No other literal number in the
-      libraries (`BLITZ_LIBHEADER`, `BLITZ_LIBS`, tokens of
-      ALibJsr/BLibJsr all through `LIB_xxx`).
+      (`blitzlib.h`); the numbers libraries gave literally or defined
+      themselves are at the end of `libnums.h`: `LIB_fadelib_header`
+      (157; `#fadelib` of libnums.bb is 102 and used by no library),
+      `LIB_polylib` (121, `#chunkylib` in its source), and of deflibs
+      `LIB_colorwheellib` (219), `LIB_mathtransoslib` (225),
+      `LIB_xprzmodemlib` (2); all 994 results byte-identical. No other
+      literal or local number in the libraries (`BLITZ_LIBHEADER`,
+      `BLITZ_LIBS`, tokens of ALibJsr/BLibJsr all through `LIB_xxx`
+      of `libnums.h`).
    4. **Variant build**: a variant is a directory with its own
       `libnums.h` (and further switches), e.g. `bb-1.95` with today's
       numbers; a CMake function builds the same library sources with

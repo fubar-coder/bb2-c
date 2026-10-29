@@ -18,9 +18,6 @@
 #include "blitzlib.h"
 #include "deflib.h"
 
-/* not in libnums.bb (#xprzlib=218 is reserved, unused) */
-#define LIB_xprzmodemlib 2
-
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 static ULONG libinit(void);

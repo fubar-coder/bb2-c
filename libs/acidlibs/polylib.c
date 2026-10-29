@@ -42,7 +42,6 @@ void _rendertochunky(void), _rendertochunky2(void), _renderpoly(void);
 
 
 /* !libheader {#chunkylib,0,0,0,0} */
-#define LIB_polylib 121                 /* #chunkylib=121 in the source; libnums.h has chunkylib = 72 */
 BLITZ_LIBHEADER(LIB_polylib, 0, BL_NORET, 0, 0);
 
 BLITZ_ASTATEMENT();
