@@ -90,13 +90,15 @@ foreach(l IN LISTS ref_entries)
 	endif()
 	list(APPEND ref_staged RWE/${source})
 	# the INCDIR lines neutralised on the bytes (a text round trip through
-	# TED would tokenise other lines with this build's token list)
+	# TED would tokenise other lines with this build's token list); a BB22
+	# source in TED's format first (blitz2 does not read BB22)
+	rwe_ted_source(${source} tedsrc)
 	set(tok ${gen}/src/${source})
 	get_filename_component(tokdir ${tok} DIRECTORY)
 	add_custom_command(OUTPUT ${tok}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${tokdir}
-		COMMAND ${BBLINES} --comment ${incdir} ${rwesrc}/${source} ${tok}
-		DEPENDS ${rwesrc}/${source} ${BBLINES} host_tools
+		COMMAND ${BBLINES} --comment ${incdir} ${tedsrc} ${tok}
+		DEPENDS ${tedsrc} ${BBLINES} host_tools
 		COMMENT "Reference build: rwelibsrc/${source} without INCDIR"
 		VERBATIM)
 	# the .xtra next to the source (the name may differ in case:

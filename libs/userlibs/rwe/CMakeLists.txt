@@ -53,6 +53,33 @@ set(out ${BLITZ_VARIANTS_DIR}/${RWE_VARIANT})
 set(archive ${PROJECT_SOURCE_DIR}/archive)
 set(rwesrc ${PROJECT_SOURCE_DIR}/archive/aminet/amibl2src/rwelibsrc)
 
+# rwe_ted_source(SOURCE OUT_VAR): rwelibsrc/SOURCE in TED's format - the
+# file itself, or for a source in the BB22 format (docs/rwelibs/README.md
+# 4.1; neither blitz2 nor TED reads it) its conversion by tools/bb22,
+# ted/SOURCE here (one command per source, for the readable source and
+# the reference build alike)
+function(rwe_ted_source source out)
+	set(f ${rwesrc}/${source})
+	file(READ ${f} magic LIMIT 4 HEX)
+	if(NOT magic STREQUAL "42423232")
+		set(${out} ${f} PARENT_SCOPE)
+		return()
+	endif()
+	set(ted ${CMAKE_CURRENT_BINARY_DIR}/ted/${source})
+	get_property(done DIRECTORY PROPERTY RWE_TED_SOURCES)
+	if(NOT source IN_LIST done)
+		set_property(DIRECTORY APPEND PROPERTY RWE_TED_SOURCES ${source})
+		get_filename_component(dir ${ted} DIRECTORY)
+		add_custom_command(OUTPUT ${ted}
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${dir}
+			COMMAND ${BB22} ${f} ${ted}
+			DEPENDS ${f} ${BB22} host_tools
+			COMMENT "rwelibsrc/${source}: BB22 to TED's format"
+			VERBATIM)
+	endif()
+	set(${out} ${ted} PARENT_SCOPE)
+endfunction()
+
 # the residents the sources load that exist nowhere, from the NDK; the
 # reference build of the sources with blitz2 2.10 (REFERENCE "refbuild":
 # rwe_reference() there)
@@ -100,11 +127,12 @@ foreach(l IN LISTS RWE_LIBS)
 	if(EXISTS ${rwesrc}/${source} AND have_uses)
 		set(txt ${CMAKE_BINARY_DIR}/rwelibsrc/${source})
 		get_filename_component(txtdir ${txt} DIRECTORY)
+		rwe_ted_source(${source} tedsrc)
 		add_custom_command(OUTPUT ${txt}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${txtdir}
 			COMMAND ${TEDDETOK} --blitz2 $<TARGET_FILE:blitz2> --lib ${BLITZ2_DIR}/acidlibs
-				--lib ${BLITZ2_DIR}/deflibs ${uses} ${rwesrc}/${source} ${txt}
-			DEPENDS ${rwesrc}/${source} ${BLITZ2_DIR}/acidlibs ${BLITZ2_DIR}/deflibs ${usefiles}
+				--lib ${BLITZ2_DIR}/deflibs ${uses} ${tedsrc} ${txt}
+			DEPENDS ${tedsrc} ${BLITZ2_DIR}/acidlibs ${BLITZ2_DIR}/deflibs ${usefiles}
 				blitz2 ${TEDDETOK} host_tools
 			COMMENT "Detokenising rwelibsrc/${source}"
 			VERBATIM)

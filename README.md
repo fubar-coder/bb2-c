@@ -452,7 +452,10 @@ build/amiga/host/tools/bb22/bb22 --info IN
 
 ctest `bb22` checks it with files built in memory (also broken ones),
 `bb22_rwelibsrc` converts the 9 `BB22` files of `rwelibsrc/` and reads
-them with teddetok (skipped without the archive or the CD).
+them with teddetok (skipped without the archive or the CD). The
+userlibs build converts a `BB22` source of `RWE_LIBS` the same way
+before teddetok (target `rwelibsrc`) and before the staging of the
+reference build (`build/amiga/libs/userlibs/rwe/ted/SOURCE`).
 
 ## Emulator
 
