@@ -401,9 +401,13 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
 
 ## 3 Only once §1 is done
 
-* **C23** (`gnu23` instead of `gnu11`): `static_assert` instead of
-  `_Static_assert`, `constexpr` for constants. Acceptance: all products
-  byte-identical, all checks from §1 green.
+* ~~**C23**~~ done (2026-10-29): `gnu23` instead of `gnu11` on both
+  sides, `static_assert` instead of `_Static_assert`, `constexpr` for
+  the constant scalars (`static const` with a fixed value, constant
+  local lengths). The `#define` constants stay (mostly mirrors of `equ`,
+  used in `#if` and asm strings); the `enum`s are real enumerations.
+  All 4732 hunk files of the build byte-identical, `ctest --preset all`
+  green.
 * **Comparison with blitz2 2.10** (the binary of the CD): completion of
   the port. Only after that may original bugs be fixed
   (`CLAUDE.md`, "Do not fix original bugs"); the basis are the
