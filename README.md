@@ -248,7 +248,10 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   `; @pass KEY=VALUE` for extra lines of the pass file, see
   `tests/corpus/runner/corpus.h`: `file=`, `dir=`, `remove=`, `wrap=`,
   `runwrap=`, `runargs=` (arguments of the program, a CLI start), `jobline=`,
-  `timeout=`, `runtime_errors=on`, with `@USERLIB@`,
+  `timeout=`, `runtime_errors=on`, `serial=on` (the remote end of the
+  serial tests on the emulated serial port, `tests/corpus/runner/serial.h`:
+  canned replies, among them `N` with a byte count and `S`, an XOFF that
+  holds the program's writes), with `@USERLIB@`,
   `@INJECT@`, `@WBRUN@`, `@CD_BLITZ2@`, `@TESTDATA@`; `; @configs port` restricts the
   configurations judged) and `ID.expect` (the correct behaviour; a line
   beginning with `[` is a section header, so the program's output must

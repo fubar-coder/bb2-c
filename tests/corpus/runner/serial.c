@@ -100,13 +100,15 @@ static void begin(struct responder *r, const struct text *name)
     r->cur = s;
 }
 
-static void reply(struct responder *r, int sock, uint8_t code)
+/* the canned reply `code` (serial.h); n: the count of N */
+static void reply(struct responder *r, int sock, uint8_t code, unsigned n)
 {
     static const uint8_t d[] = { 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87 };
+    static const uint8_t xoff = 0x13;
     struct session *s = r->cur;
     struct text out = { 0 };
-    uint8_t l[100];
-    int i;
+    uint8_t l[9999];
+    unsigned i;
 
     flush_rx(r);
     switch (code) {
@@ -116,10 +118,14 @@ static void reply(struct responder *r, int sock, uint8_t code)
     case 'D': bytes_add(&out, d, sizeof d); break;
     case 'E': bytes_add(&out, (const uint8_t *)s->data.p, s->data.n); break;
     case 'L':
-        for (i = 0; i < 100; i++)
+        n = 100;
+        /* fall through */
+    case 'N':
+        for (i = 0; i < n && i < sizeof l; i++)
             l[i] = (uint8_t)(0x30 + i % 40);
-        bytes_add(&out, l, sizeof l);
+        bytes_add(&out, l, i);
         break;
+    case 'S': bytes_add(&out, &xoff, 1); break;
     case 'W':
         usleep(100000);
         bytes_add(&out, (const uint8_t *)"w", 1);
@@ -138,8 +144,9 @@ static void reply(struct responder *r, int sock, uint8_t code)
 /* one connection: the protocol of serial.h */
 static void serve(struct responder *r, int sock)
 {
-    enum { IDLE, NAME, CODE } state = IDLE;
+    enum { IDLE, NAME, CODE, COUNT } state = IDLE;
     struct text name = { 0 };
+    unsigned count = 0, digits = 0;
 
     while (!r->stop) {
         struct pollfd pf = { sock, POLLIN, 0 };
@@ -164,9 +171,19 @@ static void serve(struct responder *r, int sock)
                     state = IDLE;
                 } else
                     bytes_add(&name, &b, 1);
+            } else if (state == CODE && b == 'N') {
+                state = COUNT;
+                count = digits = 0;
             } else if (state == CODE) {
                 state = IDLE;
-                reply(r, sock, b);
+                reply(r, sock, b, 0);
+            } else if (state == COUNT) {
+                /* four decimal digits; anything else counts as 0 */
+                count = count * 10 + (b >= '0' && b <= '9' ? (unsigned)(b - '0') : 0);
+                if (++digits == 4) {
+                    state = IDLE;
+                    reply(r, sock, 'N', count);
+                }
             } else if (b == 1) {
                 state = NAME;
                 name.n = 0;

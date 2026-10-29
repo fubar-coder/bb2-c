@@ -9,7 +9,11 @@
  *   05 CODE      a canned reply: A "Z", B "HELLO", C "0123456789ABCDEF",
  *                D bytes $80..$87, E echo of the data bytes received since
  *                the previous request, L 100 bytes "0".."W" repeated, W "w"
- *                after 0.1 s, anything else "?"
+ *                after 0.1 s, S an XOFF ($13: serial.device with xON/xOFF
+ *                enabled, io_SerFlags without SERF_XDISABLED, holds its
+ *                writes - they stay pending), anything else "?"
+ *   05 N DDDD    DDDD (four decimal digits) bytes "0".."W" repeated, as L
+ *                (e.g. more than a buffer of the program holds)
  *   04           end of the session
  * Per session: everything received raw (with the control bytes) and a
  * readable transcript of both directions.
