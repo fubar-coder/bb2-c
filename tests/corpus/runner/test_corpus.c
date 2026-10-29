@@ -102,7 +102,12 @@ int main(void)
     /* bug-orig: exactly one source */
     CHECK(parse(BASE CONFIGS "source=/s\nsource=/t\nexpect=/e\n", err, sizeof err) == -1
           && strstr(err, "one source"));
-    CHECK(parse(BASE CONFIGS "source=/s\nserial=on\nexpect=/e\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "source=/s\nserial_same_as=/o\nexpect=/e\n", err, sizeof err) == -1
+          && strstr(err, "serial_same_as"));
+    /* bug-orig with the remote end on the serial port */
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\nserial=on\nexpect=/e\n", &p, err, sizeof err) == 0);
+    CHECK(p.serial && !strcmp(p.expect, "/e"));
+    corpus_free(&p);
 
     /* masking: 8 bytes behind each trap #1 / #4, the search goes on behind
        the block; first every trap #1, then every trap #4 (as bb2's

@@ -326,8 +326,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         return fail(p, err, errlen, "work, report, ted, launcher and defaultdbug are needed");
     if (p->nconfigs < 2 || !p->nsources)
         return fail(p, err, errlen, "a reference, another configuration and sources are needed");
-    if (p->expect && (p->nsources != 1 || p->serial || p->serial_same_as))
-        return fail(p, err, errlen, "expect= needs exactly one source and no serial port");
+    if (p->expect && (p->nsources != 1 || p->serial_same_as))
+        return fail(p, err, errlen, "expect= needs exactly one source and no serial_same_as");
     /* names: one directory per configuration, AmigaDOS ignores case */
     for (i = 0; i < p->nconfigs; i++)
         for (k = 0; k < i; k++)

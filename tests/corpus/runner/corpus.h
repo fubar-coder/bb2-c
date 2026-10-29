@@ -55,7 +55,9 @@
  *                     a CLI start with arguments)
  *   jobline=LINE      a line appended to tedstub's job list (behind the
  *                     job= lines), any number
- *   expect=PATH       bug-orig test (bugorig.h): exactly one source; instead
+ *   expect=PATH       bug-orig test (bugorig.h): exactly one source, no
+ *                     serial_same_as (serial=on gives the program the
+ *                     remote end; what it sends is not judged); instead
  *                     of comparing the configurations with the reference,
  *                     each is judged against the expectation PATH (the
  *                     correct behaviour) and the reference.  Exit status
