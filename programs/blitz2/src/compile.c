@@ -820,6 +820,9 @@ void dopass(void)
         tokejsr2(intcleanup);   /* $c105: interupts off! */
 
     numstatic = (WORD)calcstatic(&staticdata);
+    /* BUG(orig) (#335): before fixjsrs - an object library only reached
+       from the code of another library gets no array (base 0), but
+       makefinits frees its objects at End */
     calcmaxs();
 
     if (tokeslist) {
