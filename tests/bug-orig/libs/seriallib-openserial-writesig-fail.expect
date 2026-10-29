@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+closed, users 0
+open with one free signal 0
+users 0
+open again ok
+rc=0
