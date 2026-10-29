@@ -1,9 +1,16 @@
 /*
  * test_amiga_emulation_run.c - amiga_emulation with the emulator: four
  * runs in parallel - a script to its end with control commands, the RTG
- * variant, a second plain run, a script that does not end (time limit).
+ * variant, a second plain run, a script that does not end (time limit);
+ * then an emulator whose starting process dies (Linux: it dies too).
  * Exit 77 (skipped) without Amiberry or the emulation data.
  */
+#define _XOPEN_SOURCE 700       /* mkdtemp, nftw, readlink, nanosleep */
+#include <dirent.h>
+#include <ftw.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
 #include "testutil.h"
 #include "amiga_emulation.h"
 
@@ -34,6 +41,80 @@ static int file_exists_in(const char *dir, const char *name)
     fclose(f);
     return 1;
 }
+
+#ifdef __linux__
+static int remove_entry(const char *path, const struct stat *st, int flag, struct FTW *ftw)
+{
+    (void)st, (void)flag, (void)ftw;
+    return remove(path);
+}
+
+/* 1 while a process runs in the directory dir (Amiberry chdirs to its
+   work directory) */
+static int runs_in(const char *dir)
+{
+    DIR *d = opendir("/proc");
+    struct dirent *de;
+    char path[300], link[4096];
+    int found = 0;
+    ssize_t n;
+
+    if (!d)
+        return 0;
+    while (!found && (de = readdir(d)) != NULL) {
+        if (de->d_name[0] < '1' || de->d_name[0] > '9')
+            continue;
+        snprintf(path, sizeof path, "/proc/%s/cwd", de->d_name);
+        n = readlink(path, link, sizeof link - 1);
+        if (n > 0) {
+            link[n] = 0;
+            found = !strcmp(link, dir);
+        }
+    }
+    closedir(d);
+    return found;
+}
+
+/* a process starts an emulation and ends without amiga_emulation_free:
+   the emulator must not outlive it */
+static void orphan(void)
+{
+    struct amiga_emulation_params p = { 0 };
+    const char *status[] = { "GET_STATUS", NULL };
+    char dir[] = "/tmp/amiga-emulation-orphan-XXXXXX", err[300], reply[256];
+    pid_t helper;
+    int i, alive;
+
+    if (!mkdtemp(dir)) {
+        CHECK(!"mkdtemp");
+        return;
+    }
+    p.script = "Wait 200\n";
+    p.timeout = 60;
+    p.work_dir = dir;
+    helper = fork();
+    if (helper == 0) {
+        struct amiga_emulation *e = amiga_emulation_start(&p, err, sizeof err);
+
+        /* wait until Amiberry answers, then end with it running */
+        for (i = 0; e && i < 100; i++) {
+            if (amiga_emulation_command(e, status, reply, sizeof reply) == 0)
+                _exit(0);
+            nanosleep(&(struct timespec){ 0, 200000000 }, NULL);
+        }
+        _exit(1);
+    }
+    CHECK(helper > 0);
+    if (helper <= 0)
+        return;
+    waitpid(helper, &i, 0);
+    CHECK(WIFEXITED(i) && WEXITSTATUS(i) == 0);
+    for (i = 0; (alive = runs_in(dir)) && i < 50; i++)
+        nanosleep(&(struct timespec){ 0, 200000000 }, NULL);
+    CHECK(!alive);
+    nftw(dir, remove_entry, 16, FTW_DEPTH | FTW_PHYS);
+}
+#endif
 
 int main(void)
 {
@@ -86,6 +167,9 @@ int main(void)
     amiga_emulation_free(b);
     amiga_emulation_free(c);
     amiga_emulation_free(d);
+#ifdef __linux__
+    orphan();
+#endif
     if (failures)
         fprintf(stderr, "test_amiga_emulation_run: %d failures\n", failures);
     return failures != 0;

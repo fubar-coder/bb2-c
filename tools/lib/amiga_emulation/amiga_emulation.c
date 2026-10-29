@@ -18,6 +18,9 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#ifdef __linux__
+#include <sys/prctl.h>
+#endif
 #include "amiga_emulation.h"
 
 #ifndef AMIGA_EMULATION_DIR_DEFAULT
@@ -371,7 +374,7 @@ static char *make_runtime_dir(void)
 }
 
 static void child(const char *work_dir, const char *runtime_dir, const char *amiberry, int visible,
-                  int log_on)
+                  int log_on, pid_t parent)
 {
     static const char *const xdg[][2] = {
         { "XDG_CONFIG_HOME", "xdg/config" }, { "XDG_DATA_HOME", "xdg/data" },
@@ -381,6 +384,12 @@ static void child(const char *work_dir, const char *runtime_dir, const char *ami
     int log;
 
     setpgid(0, 0);
+#ifdef __linux__
+    /* the emulator dies with the process that started it (a crashed or
+       killed runner would leave it running in its own group) */
+    if (prctl(PR_SET_PDEATHSIG, SIGKILL) || getppid() != parent)
+        _exit(126);
+#endif
     if (chdir(work_dir))
         _exit(126);
     log = open("amiberry.log", O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -420,6 +429,7 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     struct amiga_emulation *e = calloc(1, sizeof *e);
     char *cfg = NULL, *script = NULL, *path;
     struct sockaddr_un sa;
+    pid_t parent;
 
     if (!emulation_dir || !*emulation_dir)
         emulation_dir = AMIGA_EMULATION_DIR_DEFAULT;
@@ -472,6 +482,7 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     }
     free(path);
 
+    parent = getpid();
     e->deadline = now() + (p->timeout ? p->timeout : 60);
     e->pid = fork();
     if (e->pid < 0) {
@@ -480,7 +491,7 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     }
     if (e->pid == 0)
         child(e->work_dir, e->runtime_dir, p->amiberry ? p->amiberry : "amiberry", p->visible,
-              p->log);
+              p->log, parent);
     setpgid(e->pid, e->pid);
     free(cfg);
     free(script);

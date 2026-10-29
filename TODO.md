@@ -350,9 +350,11 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     regression: the session grouping changed when 23-font6 became
     @known. Not the Amiberry update (8.4.2 fails too) and not the load
     of orphaned emulators (see below). Cause in the session not found
-    yet. Orphaned Amiberry processes: a runner that crashes or is killed
-    leaves its emulators running (setpgid), each at 100 % CPU; eight from
-    a crashed corpusrun ran for 85 minutes (2026-10-29).
+    yet. Orphaned Amiberry processes: a runner that crashed or was killed
+    left its emulators running (setpgid), each at 100 % CPU; eight from
+    a crashed corpusrun ran for 85 minutes (2026-10-29). Fixed:
+    amiga_emulation sets PR_SET_PDEATHSIG (Linux), tested in
+    amiga_emulation_run.
   - *Runner features:* done: program arguments (`runargs=`, #107),
     the macro buffer of the default options (tedstub `macrobuf=`, used
     for #336), the start from the Workbench (`wbrun`: #19, #20, #306,
