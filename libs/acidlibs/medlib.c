@@ -1316,6 +1316,8 @@ static ULONG IntHandler(void)
 plr_loop0:
     d5 = 0;
     a5 = *tdp++;
+    /* BUG(orig): a masked track is skipped before its note is read, so
+       noteptr stays: the next track reads this track's note */
     if (!(B(ChanMask) & (1 << (d7 & 7))))
         goto plr_endloop0;
     d3 = 0;
