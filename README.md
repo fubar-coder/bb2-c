@@ -213,7 +213,8 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   `userlib.tokens`). tedstub also runs menu items
   (`menu=ID|ITEM|ANSWER`) and logs the busy pointer after them;
   `strbuf=N` sets the string buffer of the default options (strings
-  longer than 10240 bytes). Both as `; @pass jobline=...`.
+  longer than 10240 bytes), `macrobuf=N` their macro buffer. All as
+  `; @pass jobline=...`.
 
   *Adding a test* (no shared list, a glob finds the files): two files in
   an area directory (`compiler/`, `libs/` ...), named after the bug ID of

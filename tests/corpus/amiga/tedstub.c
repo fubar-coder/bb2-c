@@ -14,6 +14,8 @@
  *                   with its own .xtra keeps its options)
  *   strbuf=N        in those defaults the size of the string buffer N
  *                   bytes (bytes 50-53 of the .xtra; default 10240)
+ *   macrobuf=N      in those defaults the size of the macro buffer N
+ *                   bytes (bytes 46-49 of the .xtra; default 8192)
  *   job=ID|SOURCE|OUTPUT[|DIR]
  *   menu=ID|ITEM[|ANSWER]  the compiler's menu item ITEM (blitz2.s
  *                   menuadds, e.g. 9 = load debug module, 8 = reload libs)
@@ -53,7 +55,7 @@ extern struct DosLibrary *DOSBase;
 static char srcname[PATHLEN], outname[PATHLEN], xtraname[PATHLEN], defname[PATHLEN];
 static char cur_id[16];
 static int in_menu, runerr_off;
-static ULONG strbuf;
+static ULONG strbuf, macrobuf;
 
 static char lbuf[600];
 #define LOG_BEGIN struct sb L = { lbuf, 0, sizeof lbuf }; lbuf[0] = 0
@@ -303,6 +305,10 @@ static void save_defaults(void)
 
         Seek(fh, 2, OFFSET_BEGINNING);  /* options runtime errors, debugger */
         Write(fh, (APTR)off, 4);
+    }
+    if (macrobuf) {
+        Seek(fh, 46, OFFSET_BEGINNING); /* buffer sizes: the macro buffer */
+        Write(fh, &macrobuf, 4);
     }
     if (strbuf) {
         Seek(fh, 50, OFFSET_BEGINNING); /* buffer sizes: the string buffer */
@@ -576,6 +582,9 @@ void edstub_main(const char *arg)
         else if ((v = value(p, "strbuf=")))
             while (*v >= '0' && *v <= '9')
                 strbuf = strbuf * 10 + (ULONG)(*v++ - '0');
+        else if ((v = value(p, "macrobuf=")))
+            while (*v >= '0' && *v <= '9')
+                macrobuf = macrobuf * 10 + (ULONG)(*v++ - '0');
     edstub_log("BATCH\tstart");
     save_defaults();
     /* pass 2: jobs */
