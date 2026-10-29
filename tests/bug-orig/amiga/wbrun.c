@@ -5,9 +5,16 @@
  * tool and the projects as WBArgs (lock of the directory + name), wait
  * for the reply.
  *
- * usage: wbrun [noprojects] [cd] [dosopen] [inuse=PATH]... TOOL [PROJECT...]
+ * usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [inuse=PATH]...
+ *              TOOL [PROJECT...]
  *   noprojects   start the tool alone, without the PROJECTs (for a
  *                wrapper whose caller always passes one)
+ *   freeseg      like the Workbench (priority 1, the tool 0) with a memory
+ *                checker like MungWall: right after the reply the
+ *                seglist is overwritten with ILLEGAL ($4AFC) and freed,
+ *                before the process has ended; wbrun then waits up to 2 s
+ *                for the end (a tool that still runs its code after the
+ *                reply crashes; without dosopen)
  *   cd           report the current directory at the end
  *   dosopen      report how often the process opened dos.library minus
  *                how often it closed it (exec's OpenLibrary,
@@ -27,6 +34,8 @@
  *                started with, tool dir / project dir N = the lock of
  *                that WBArg
  *   dos.library open count +N   opened minus closed by the process
+ *   seglist overwritten and freed after the reply   with freeseg
+ *   the process did not end     with freeseg (then nothing else)
  *   in use: PATH | not in use: PATH | missing: PATH   for every inuse=
  *
  * Like the Workbench the process has no input and output handles (0):
@@ -221,13 +230,15 @@ int main(int argc, char **argv)
     struct WBStartup msg;
     struct Process *pr;
     BPTR seg;
-    int i, k, ninuse = 0, noprojects = 0, o_cd = 0, o_dos = 0;
+    int i, k, ninuse = 0, noprojects = 0, o_cd = 0, o_dos = 0, o_free = 0;
 
     out = Output();
     parent = FindTask(NULL);
     for (i = 1; i < argc; i++)
         if (!strcmp(argv[i], "noprojects"))
             noprojects = 1;
+        else if (!strcmp(argv[i], "freeseg"))
+            o_free = 1;
         else if (!strcmp(argv[i], "cd"))
             o_cd = 1;
         else if (!strcmp(argv[i], "dosopen"))
@@ -238,8 +249,9 @@ int main(int argc, char **argv)
             break;
     if (i < argc && noprojects)
         argc = i + 1;
-    if (i >= argc || argc - i > MAXARGS) {
-        put("usage: wbrun [noprojects] [cd] [dosopen] [inuse=PATH]... TOOL [PROJECT...]\n");
+    if (i >= argc || argc - i > MAXARGS || (o_free && o_dos)) {
+        put("usage: wbrun [noprojects] [freeseg] [cd] [dosopen] [inuse=PATH]...\n"
+            "             TOOL [PROJECT...]   (freeseg not with dosopen)\n");
         return 20;
     }
     if (!(seg = LoadSeg(argv[i]))) {
@@ -262,7 +274,7 @@ int main(int argc, char **argv)
         Permit();
     }
     pr = CreateNewProcTags(NP_Seglist, seg, NP_FreeSeglist, FALSE,
-                           NP_Name, args[0].wa_Name, NP_StackSize, stack,
+                           NP_Name, args[0].wa_Name, NP_StackSize, stack, NP_Priority, 0,
                            NP_CurrentDir, startdir, NP_HomeDir, DupLock(args[0].wa_Lock),
                            NP_Input, 0, NP_CloseInput, FALSE,
                            NP_Output, 0, NP_CloseOutput, FALSE,
@@ -279,12 +291,32 @@ int main(int argc, char **argv)
     msg.sm_Segment = seg;
     msg.sm_NumArgs = nargs;
     msg.sm_ArgList = args;
+    if (o_free)                         /* the Workbench runs at 1 */
+        SetTaskPri(parent, 1);
     PutMsg(&pr->pr_MsgPort, &msg.sm_Message);
     /* the reply comes under Forbid (the startup code); the process has
-       ended when this task runs again */
+       ended when this task runs again - unless the startup code calls
+       Permit before it returns */
     WaitPort(port);
     GetMsg(port);
-    Wait(SIGBREAKF_CTRL_F);             /* the exit hook ran */
+    if (o_free) {
+        ULONG s, a, end;
+
+        for (s = (ULONG)BADDR(seg); s; s = (ULONG)BADDR(*(BPTR *)s))
+            for (a = s + 4, end = s - 4 + *(ULONG *)(s - 4); a + 2 <= end; a += 2)
+                *(UWORD *)a = 0x4afc;
+        UnLoadSeg(seg);
+        seg = 0;
+        put("wbrun: seglist overwritten and freed after the reply\n");
+        SetTaskPri(parent, 0);
+        for (k = 0; k < 100 && !(SetSignal(0, 0) & SIGBREAKF_CTRL_F); k++)
+            Delay(1);
+        if (!(SetSignal(0, SIGBREAKF_CTRL_F) & SIGBREAKF_CTRL_F)) {
+            put("wbrun: the process did not end\n");
+            return 0;
+        }
+    } else
+        Wait(SIGBREAKF_CTRL_F);         /* the exit hook ran */
     Delay(5);                           /* DOS has removed the process */
     if (o_dos) {
         Forbid();
@@ -320,7 +352,8 @@ int main(int argc, char **argv)
     }
     for (k = 0; k < nargs; k++)
         UnLock(args[k].wa_Lock);
-    UnLoadSeg(seg);
+    if (seg)
+        UnLoadSeg(seg);
     DeleteMsgPort(port);
     return 0;
 }

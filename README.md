@@ -212,7 +212,9 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   compiled programs with `runwrap=@INJECT@|...`), `wbrun` starts the compiler
   (`wrap=@WBRUN@|...`) or a program (`runwrap=@WBRUN@|...`) like the
   Workbench and reports the current directory at the end, how often the
-  process opened minus closed dos.library and files left in use (a Blitz program
+  process opened minus closed dos.library and files left in use; with
+  `freeseg` it overwrites and frees the seglist right after the reply, as
+  a memory checker would (a Blitz program
   needs the command WBStartup, as from the real Workbench; what it
   prints is lost), `userlib.c` is a library for
   `blitz2:userlibs` (function `BugOrigUserLib`, token in
