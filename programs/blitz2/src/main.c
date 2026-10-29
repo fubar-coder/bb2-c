@@ -1066,7 +1066,8 @@ fail3:                                  /* 1460 */
     UnLoadSeg(segadd);
 fail2a:                                 /* 1462 */
     freeallox();
-    /* fail2b 1463 */
+    /* fail2b 1463 - BUG(orig): freed with the current macrolen, not the
+       size of the allocation (options loaded later change macrolen) */
     FreeMem(macrobuff, macrolen);
 fail2:                                  /* 1467 closedos */
     /* DIFF: asm closes dos.library here; libnix owns DOSBase and closes
