@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+opened, users 1
+read half open
+write half open
+users 1
+rc=0
