@@ -433,9 +433,24 @@ several versions.
    CD (`EXTRAS/BLITZLIBS/RILIBS`, `BSS2/REDBLITZLIBS`, `…/OTHERLIBS`,
    `docs/v2.10/libs.md` §3) and from that the version that is the
    reference; number clashes with acidlibs/deflibs.
+   AmiBlitz3 (SourceForge `amiblitz3`, git of the SVN) helps (checked
+   2026-10-29): `Sourcecodes/Includes/System/sorted_libnums.ab3` names
+   number and often author of every RI/RWE library (e.g. `#Risortlib`
+   = 13, `#RILVCallHook` = 27; clashes noted there, e.g. 35, 56, 74);
+   `BlitzLibs/UserLibs/userlibs/` has 32 RI/RWE binaries, never changed
+   in its history (all from commit `8a56975`, 2012), 27 of them
+   byte-identical to `BSS2/REDBLITZLIBS/LIBRARIES/USERLIBS/` (and
+   others) of the CD; only in AmiBlitz3: RIAmosFuncLib, RIDisAsm,
+   RILESDEBUGLib, RILVCallHook, Rimisclib. `Docs/UserLibs/RI*.guide`
+   (30 manuals) and `Docs/UserLibs/Examples/RI*` (example programs) for
+   the behaviour and the tests. No library sources of RI/RWE in its
+   history.
 2. **Tokens**: 18 of the 118 sources use tokens the list of blitz2 1.95
    (`tests/data/ted-tokens.txt`) does not know – the token list for
-   reading them (teddetok, a readable `rwelibsrc` like `bblibsrc`).
+   reading them (teddetok, a readable `rwelibsrc` like `bblibsrc`). The
+   token tables are in the binaries (CD, for the five others AmiBlitz3);
+   AmiBlitz3's `BlitzLibs/tokenlist.txt` (`NAME.obj(NUM):INDEX token`)
+   lists them as well, for comparison.
 3. **Reference**: how the libraries were built from the Blitz sources
    (`libmacs.bb`, `!libheader`), and whether a reference build is
    possible here; otherwise the CD binaries.
