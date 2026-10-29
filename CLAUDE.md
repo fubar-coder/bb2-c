@@ -25,7 +25,8 @@ ctest --preset emulator                                # tests in Amiberry
 ```
 
 * Toolchain via `PATH` (`m68k-amigaos-gcc`, gcc ≥ 15 because of
-  `#embed`), otherwise `AMIGA_TOOLCHAIN_PREFIX`. Ninja.
+  `#embed`, ≥ 16.2-rc21 because of `__saveds`, checked by configure),
+  otherwise `AMIGA_TOOLCHAIN_PREFIX`. Ninja.
 * The shell is **fish**: wrap loops, `$(...)`, heredocs in `bash -c '…'`
   or `bash <<'EOF'`.
 * A clean rebuild has **no compiler warnings**; the only expected ones are

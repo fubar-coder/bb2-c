@@ -14,6 +14,10 @@ if(NOT AMIGAOS)
 	message(FATAL_ERROR "Wrong toolchain file ${CMAKE_TOOLCHAIN_FILE}: only AmigaOS (cmake/m68k-amigaos.cmake)")
 endif()
 
+# the glue relies on __saveds (m68k-amigaos-gcc 16.2-rc21 or later)
+include(cmake/check-saveds.cmake)
+amiga_check_saveds(${CMAKE_C_COMPILER} ${PROJECT_SOURCE_DIR}/cmake/saveds/good.c)
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)              # gnu11: inline asm in the glue, flexible array initialisers
@@ -81,6 +85,11 @@ add_test(NAME host COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}
 add_test(NAME host_emulator COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}
 	--output-on-failure -L emulator)
 set_tests_properties(host_emulator PROPERTIES LABELS emulator TIMEOUT 300)
+# the __saveds check of the configure step with a function without it
+add_test(NAME toolchain_saveds_broken COMMAND ${CMAKE_COMMAND} -DCC=${CMAKE_C_COMPILER}
+	-DSRC=${PROJECT_SOURCE_DIR}/cmake/saveds/broken.c -P ${PROJECT_SOURCE_DIR}/cmake/check-saveds.cmake)
+set_tests_properties(toolchain_saveds_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "__saveds does not load a4")
 
 # downloading the originals the tests need (not part of ALL: needs network)
 add_custom_target(fetch-originals

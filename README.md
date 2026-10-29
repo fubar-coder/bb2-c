@@ -14,9 +14,11 @@ replaces the former working repository `bb2` (state of the takeover: bb2
 ## Requirements
 
 * CMake ≥ 3.28 and Ninja
-* m68k-amigaos-gcc (bebbo/AmigaDev, tested with gcc 16.2) in `PATH`,
+* m68k-amigaos-gcc (bebbo/AmigaDev, tested with gcc 16.2-rc21) in `PATH`,
   otherwise `-DAMIGA_TOOLCHAIN_PREFIX=…` or the environment variable of the
-  same name; gcc ≥ 15 because of `#embed`
+  same name; gcc ≥ 15 because of `#embed`, 16.2-rc21 or later because of
+  `__saveds` (AmigaPorts/gcc#141; configure checks it,
+  `cmake/check-saveds.cmake`)
 * a C compiler for the host (for the tools in `tools/`)
 
 ## Building
