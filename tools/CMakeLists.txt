@@ -18,5 +18,6 @@ add_subdirectory(checklabels)
 add_subdirectory(checkdata)
 add_subdirectory(asmcmp)
 add_subdirectory(mktestdata)
+add_subdirectory(bb22)
 
 add_subdirectory(tests)

@@ -50,7 +50,7 @@
   sources are readable; with the token tables of the binaries added
   (1773 tokens, provisional) 120. Of the other three, two are no token
   problem: they are saved in another file format, **`BB22`** (section
-  4.1; 9 files in all); the third uses `GetPubScreen` (`$CF12`) of a
+  4.1; 9 files in all; `tools/bb22` converts them to TED's format); the third uses `GetPubScreen` (`$CF12`) of a
   later screenslib that is not on the CD [B, AB3].
 
 ## 2 Libraries
@@ -383,20 +383,72 @@ format (below).
 
 | Version (word +4) | Header | Line |
 |---|---|---|
-| 10 (5 files) | 16 bytes: `BB22`, then the words 10, a, b, 0, c, 2 (e.g. `applib3`: 10, 13, 25, 0, 441, 2) | 2 bytes (always 0 so far), tokenised text, 0 byte |
-| 8 (`Anim-Library3`) | 14 bytes: `BB22`, then 8, a, b, 0, c | 1 byte, tokenised text, 0 byte |
+| 10 (7 files) | 16 bytes: `BB22`, then the words 10, column, row, 0, top, 2 (e.g. `applib3`: 10, 13, 25, 0, 441, 2) | 2 bytes (always 0), tokenised text, 0 byte |
+| 8 (`Anim-Library3` + `.bak`) | 14 bytes: `BB22`, then 8, column, row, 0, top | 1 byte (always 0), tokenised text, 0 byte |
 
-All five files of version 10 split into lines exactly to their end. The
-meaning of the words a, b, c (cursor? first line shown?) and of the
-line prefix is not known. Which editor wrote it is not known either:
+The tokenised text is that of TED's format (a byte with bit 7 and the
+byte after it are a token); in none of the files is the second byte of a
+token 0, and there is no LF in a line, so the lines are the same whether
+split at every 0 byte or token by token. All 9 files split into lines
+exactly to their end [B].
+
+| File | Version | column, row, top | Lines | Longest (bytes) | Line top + row |
+|---|---|---|---|---|---|
+| `Anim-Library3.bb` | 8 | 19, 1, 96 | 786 | 69 | 97 (19 characters) |
+| `Anim-Library3.bb.bak` | 8 | 9, 45, 49 | 733 | 69 | 94 (9 characters) |
+| `applib3.bb` | 10 | 13, 25, 441 | 791 | 64 | 466 |
+| `applib3.bb.bak` | 10 | 20, 8, 441 | 791 | 64 | 449 (20 characters) |
+| `Registry3.bb` | 10 | 0, 54, 571 | 626 | 93 | 625 (the last, empty) |
+| `NEWAREXXLIB.bb` | 10 | 0, 6, 606 | 1039 | 92 | 612 |
+| `RIShapesLib2.bb` | 10 | 8, 7, 170 | 1151 | 102 | 177 |
+| `risoundlib2.bb` (= `.bak`) | 10 | 13, 32, 315 | 494 | 75 | 347 |
+
+(lines counted from 0, characters as TED shows the line)
+
+**The header words are the cursor** [B]: the cursor is in line
+top + row (from 0) at column `column` of the line as shown. Evidence:
+`applib3.bb` and its `.bak` differ only in the header words and in two
+bytes – the offsets in line 462 (`ADD     8(a1),d2`, the `.bak` has
+`6(a1)`) and line 466 (`MOVE    6(a1),d2`, the `.bak` has `8(a1)`); after
+the edit the cursor is in line 466 at column 13, just behind the digit
+typed at column 12. In the `.bak` (the state saved before) and in
+`Anim-Library3` (both versions) the cursor stands exactly at the end of
+line top + row (column = its length as shown: `MOVE.l  msgid,d2`,
+`ilbmbuffer: Dc.l  0`, `      RTS`); in `Registry3` at the start of the
+last (empty) line. That top is the first line shown in the window and
+row the line of the cursor in it is a conclusion: the sum is the line,
+and row goes up to 54 (a window of 55 lines and more, an interlaced or
+overscan screen) [Schluss].
+
+**Not known:** the word at +10 (always 0; a horizontal scroll offset?),
+the word at +14 of version 10 (always 2 – the size of the line prefix,
+which version 8 lacks with its 1-byte prefix?) and the meaning of the
+prefix bytes (always 0; flags per line, e.g. folding or marks?) [Schluss].
+The `.bak` files show how the editor saves: like TED it renames the old
+file to `.bak` – `NEWAREXXLIB.bb.bak` (March 1997) and `Registry3.bb.bak`
+(February 1997) are still in TED's format, `NEWAREXXLIB.bb` is its `.bak`
+plus 3 inserted lines, `Registry3.bb` its `.bak` plus 5 blocks of
+inserted lines (nothing removed); `risoundlib2.bb.bak` equals the file
+(saved twice) [B].
+
+Which editor wrote it is not known:
 none of the editors on the CD (TED 1.1, TED 2.1, SuperTED 2.1/2.23/2.50)
 contains `BB22`, nor do AmiBlitz3's PED and compiler (sources and history
 searched) [B, AB3]. That it comes from RWE's own later editor (the files
 are RWE's, 1997) is a conclusion [Schluss].
 
-For reading these sources a reader for `BB22` is needed (teddetok only
-splits at 0 bytes: the text survives, the line structure does not; the
-inventory of section 2 is not affected, it only uses the `!name` lines).
+**The reader:** `tools/bb22` (logic `tools/lib/bb22`) converts a `BB22`
+file into TED's format, `bb22 IN OUT`; `bb22 --info IN` shows the
+version, the cursor, the line count and the longest line. It is strict:
+another version, a word at +10 other than 0 or at +14 other than 2, a
+prefix byte other than 0, a line without its 0 byte before the end of the
+file, a token byte without its second byte or followed by a 0 byte, an LF
+in a line – each is refused with a message (offset, line), nothing is
+written. The converted files are read by teddetok with the tokens of the
+CD's compiler, acidlibs, deflibs and BSS2's `RIPACKLIB` (`Anim-Library3`
+and `RIShapesLib2` call the Pack library, 73): ctest `bb22_rwelibsrc`
+(skipped without the archive or the CD); `NEWAREXXLIB` and `RIShapesLib2`
+then compile with blitz2 2.10.
 
 AmiBlitz3's `BlitzLibs/tokenlist.txt` (`NAME.obj(NUM):INDEX token`) has
 the same names for the RI libraries it contains; it knows none of the

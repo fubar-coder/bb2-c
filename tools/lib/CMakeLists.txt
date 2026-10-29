@@ -14,6 +14,7 @@
 #   asmcmp     assembler routines against the original (objdump)
 #   mktestdata  binary test data (8SVX, ILBM, MED and tracker modules) from
 #              a text description (the bug-orig tests)
+#   bb22       the "BB22" source format of some RWE sources, in TED's format
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -26,3 +27,4 @@ add_subdirectory(checklabels)
 add_subdirectory(checkdata)
 add_subdirectory(asmcmp)
 add_subdirectory(mktestdata)
+add_subdirectory(bb22)

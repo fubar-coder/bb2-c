@@ -406,6 +406,20 @@ archive); the `*_libs` tests do the same with the list made from the CD's
 compiler and libraries (`tedtok_libs`: the same file as with the list
 file).
 
+Some of RWE's library sources (`rwelibsrc/`, 1997) are saved in another
+format, `BB22` (`docs/rwelibs/README.md` §4.1: a header with the cursor,
+a prefix before each line). `tools/bb22` converts them into TED's format,
+for teddetok and the compiler; it refuses whatever it does not know:
+
+```
+build/amiga/host/tools/bb22/bb22 IN OUT
+build/amiga/host/tools/bb22/bb22 --info IN
+```
+
+ctest `bb22` checks it with files built in memory (also broken ones),
+`bb22_rwelibsrc` converts the 9 `BB22` files of `rwelibsrc/` and reads
+them with teddetok (skipped without the archive or the CD).
+
 ## Emulator
 
 `tools/lib/amiga_emulation` runs AmigaDOS scripts in Amiberry – without a
@@ -496,7 +510,9 @@ tools/                       host tools:
                              checkdata (data against the reference build),
                              asmcmp (assembler routines against originals),
                              mktestdata (binary test data from a text
-                             description: 8SVX, ILBM, modules);
+                             description: 8SVX, ILBM, modules),
+                             bb22 (the BB22 source format of RWE, in
+                             TED's format);
                              blitzlib also compares declarations
   biglib/, blitzlibcheck/,   the tools: one main.c each around lib/
   blitzlibcompare/,
@@ -504,7 +520,7 @@ tools/                       host tools:
   hunkcheck/, amiga_run/,
   vasmlisting/, checklabels/,
   checkdata/, asmcmp/,
-  mktestdata/
+  mktestdata/, bb22/
   tests/                     tests of lib/ with inputs from memory
 ```
 
