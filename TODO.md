@@ -528,10 +528,13 @@ several versions.
       reference build are real C (decision 2026-10-29: declarations equal
       to the CD binary, behaviour compared with it in Amiberry,
       `libs/tests/rwe/NAME.c`, 22 test cases of `libs_emulator`; notes per
-      library in `docs/rwelibs/port/`). Next: stages B and C with the
-      references of `docs/rwelibs/README.md` §3.2, starting with AMOS
-      functions (GFX and Pack call it; their tests stub those calls so
-      far). ~~**Reference build in the build**~~ done (2026-10-29,
+      library in `docs/rwelibs/port/`). Stage B with a binary as the
+      reference: AMOS functions (the AmiBlitz3 SVN binary), Sound,
+      StoneCracker and FNS (BSS2) done (2026-10-29); the reference build
+      of the sources is part of the tests (`rwe_refbuild`, REFERENCE
+      `refbuild`). Next: the stage B/C libraries whose reference is the
+      source (§3.2) and stage D (§3.3), with REFERENCE `refbuild`; Eval
+      (121, clashes with polylib) needs a variant of its own. ~~**Reference build in the build**~~ done (2026-10-29,
       `libs/userlibs/rwe/refbuild.cmake`): residents by `tools/blitzres`
       from the NDK (contents equal to blitz2's, `rwe_resident_NAME`),
       staging (target `rwe_refstage`; `INCDIR` neutralised on the bytes
