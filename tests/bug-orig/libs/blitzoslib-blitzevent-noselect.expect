@@ -1,0 +1,5 @@
+[run]
+cursor up -1
+event 0
+address 12 unchanged -1
+rc=0
