@@ -220,7 +220,8 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   the issue: `ID.bas` (the program as text; in its header comment
   `; @pass KEY=VALUE` for extra lines of the pass file, see
   `tests/corpus/runner/corpus.h`: `file=`, `dir=`, `remove=`, `wrap=`,
-  `runwrap=`, `jobline=`, `timeout=`, `runtime_errors=on`, with `@USERLIB@`,
+  `runwrap=`, `runargs=` (arguments of the program, a CLI start), `jobline=`,
+  `timeout=`, `runtime_errors=on`, with `@USERLIB@`,
   `@INJECT@`, `@CD_BLITZ2@`, `@TESTDATA@`; `; @configs port` restricts the
   configurations judged) and `ID.expect` (the correct behaviour; a line
   beginning with `[` is a section header, so the program's output must

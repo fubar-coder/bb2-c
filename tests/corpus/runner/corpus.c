@@ -39,6 +39,7 @@ void corpus_free(struct corpus_pass *p)
     free(p->wrap_args);
     free(p->runwrap);
     free(p->runwrap_args);
+    free(p->runargs);
     for (i = 0; i < p->nfiles; i++) {
         free(p->file_dest[i]);
         free(p->file_src[i]);
@@ -291,6 +292,15 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             }
             continue;
         }
+        if (!strcmp(key, "runargs")) {
+            if (!*val) {
+                free(val);
+                return fail(p, err, errlen, "line %u: runargs=ARGS", no);
+            }
+            free(p->runargs);
+            p->runargs = val;
+            continue;
+        }
         if (!strcmp(key, "wrap") || !strcmp(key, "runwrap")) {
             const char *s = val;
             char *path = field(&s), *args = *val && strchr(val, '|') ? strdup(s) : NULL;
@@ -507,10 +517,11 @@ static char *script(const struct corpus_pass *p)
         char *n = corpus_name(p->sources[i]);
 
         text_add(&s, "If EXISTS " VOLUME ":out/%s\n"
-                "  " VOLUME ":run %s%s%s" VOLUME ":out/%s >" VOLUME ":out/%s.run\n"
+                "  " VOLUME ":run %s%s%s" VOLUME ":out/%s%s%s >" VOLUME ":out/%s.run\n"
                 "  Echo \"rc=$RC\" >>" VOLUME ":out/%s.run\n"
                 "EndIf\n", n, p->runwrap ? VOLUME ":runwrap " : "",
-                p->runwrap_args ? p->runwrap_args : "", p->runwrap_args ? " " : "", n, n, n);
+                p->runwrap_args ? p->runwrap_args : "", p->runwrap_args ? " " : "", n,
+                p->runargs ? " " : "", p->runargs ? p->runargs : "", n, n);
         free(n);
     }
     if (p->gate)

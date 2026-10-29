@@ -51,6 +51,8 @@
  *                     every program is started through PATH, inside the
  *                     launcher (CORPUS:run CORPUS:runwrap ARGS
  *                     CORPUS:out/NAME), e.g. inject without free signals
+ *   runargs=ARGS      arguments for every program (CORPUS:out/NAME ARGS,
+ *                     a CLI start with arguments)
  *   jobline=LINE      a line appended to tedstub's job list (behind the
  *                     job= lines), any number
  *   expect=PATH       bug-orig test (bugorig.h): exactly one source; instead
@@ -82,7 +84,7 @@ struct corpus_config {
 
 struct corpus_pass {
     char *work, *report, *ted, *launcher, *gate, *defaultdbug, *serial_same_as;
-    char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args;
+    char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs;
     int runtime_errors, serial;
     unsigned timeout, parallel, stack;
     struct corpus_config *configs;
