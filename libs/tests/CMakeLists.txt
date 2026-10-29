@@ -76,6 +76,13 @@ add_test(NAME libs_emulator COMMAND ${CMAKE_COMMAND}
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
 set_tests_properties(libs_emulator PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT 600)
+# a USERLIBS original made by a test (the reference build of an RWE
+# source, libs/userlibs/rwe/refbuild.cmake): its fixture
+get_property(rwe_fixtures GLOBAL PROPERTY RWE_EMULATOR_FIXTURES)
+if(rwe_fixtures)
+	list(REMOVE_DUPLICATES rwe_fixtures)
+	set_tests_properties(libs_emulator PROPERTIES FIXTURES_REQUIRED "${rwe_fixtures}")
+endif()
 
 # reproduced original bugs (bugorig.c, hidden snitch tests [.bug-orig]):
 # each checks the correct behaviour and FAILS as long as the C build

@@ -7,7 +7,9 @@
 # archive/ (fetch-originals: the CD, AmiBlitz3's SVN) whose state the
 # port has: the one the reference build of SOURCE with blitz2 2.10 equals
 # byte for byte (docs/rwelibs/README.md 3.1), or the newer binary chosen
-# in 3.2 (then SOURCE is the closest source).  USES: binaries below
+# in 3.2 (then SOURCE is the closest source); or "refbuild": the reference
+# build of SOURCE itself (refbuild.cmake: ref/NAME.obj, made by ctest
+# rwe_refbuild in Amiberry).  USES: binaries below
 # archive/ whose tokens SOURCE has (ALibJsr calls into other libraries or
 # its own), for reading it.  A library is built as soon as NAME.c exists.
 # The C build is real C (assembler only where needed), checked like the
@@ -52,7 +54,8 @@ set(archive ${PROJECT_SOURCE_DIR}/archive)
 set(rwesrc ${PROJECT_SOURCE_DIR}/archive/aminet/amibl2src/rwelibsrc)
 
 # the residents the sources load that exist nowhere, from the NDK; the
-# reference build of the sources with blitz2 2.10
+# reference build of the sources with blitz2 2.10 (REFERENCE "refbuild":
+# rwe_reference() there)
 include(${CMAKE_CURRENT_SOURCE_DIR}/residents.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/refbuild.cmake)
 
@@ -114,9 +117,16 @@ foreach(l IN LISTS RWE_LIBS)
 	blitz_library(${RWE_VARIANT}-${name} VARIANT ${variant_dir} OBJ ${obj} ${name}.c
 		CHECK ${out}/acidlibs ${out}/deflibs)
 	list(APPEND objs ${obj})
-	add_test(NAME rwe_declarations_${name} COMMAND ${BLITZLIBCOMPARE} ${archive}/${reference} ${obj})
+	rwe_reference(${name} ${reference} reffile fixture)
+	add_test(NAME rwe_declarations_${name} COMMAND ${BLITZLIBCOMPARE} ${reffile} ${obj})
 	set_tests_properties(rwe_declarations_${name} PROPERTIES SKIP_RETURN_CODE 77)
-	set_property(GLOBAL APPEND PROPERTY RWE_EMULATOR_LIBS "${obj}|${archive}/${reference}")
+	set_property(GLOBAL APPEND PROPERTY RWE_EMULATOR_LIBS "${obj}|${reffile}")
+	if(fixture)
+		# the reference build is a test in Amiberry (refbuild.cmake)
+		set_tests_properties(rwe_declarations_${name} PROPERTIES LABELS emulator
+			FIXTURES_REQUIRED ${fixture})
+		set_property(GLOBAL APPEND PROPERTY RWE_EMULATOR_FIXTURES ${fixture})
+	endif()
 endforeach()
 if(readable)
 	add_custom_target(rwelibsrc ALL DEPENDS ${readable})

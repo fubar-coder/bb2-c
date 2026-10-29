@@ -20,7 +20,37 @@
 #   build/<preset>/libs/userlibs/rwe/ref/NAME.obj
 # (removed first; skipped with 77 without Amiberry or the CD, fails if a
 # source does not compile).  The table: refbuild.tsv next to ref/.
+#
+# Its uses:
+#   rwe_refbuild_NAME  the reference build of SOURCE equals REFERENCE byte
+#                      for byte - for the entries whose REFERENCE is the
+#                      binary of the source (stage A, 3.1), not for those
+#                      in RWE_REFBUILD_NEWER (3.2: a newer binary is the
+#                      reference; they only have to compile)
+#   REFERENCE refbuild an entry whose reference is the reference build of
+#                      its SOURCE (3.2 "Source", 3.3): rwe_reference()
+#                      gives ref/NAME.obj and the fixture, for
+#                      rwe_declarations_NAME and the pairs of libs_emulator
+#   rwe_refbuild_selftest  a dry refbuild entry (RWE_REFBUILD_SELFTEST),
+#                      not in RWE_LIBS: its declarations test through
+#                      rwe_reference(), against the C build
 set(RWE_REF_DIR ${CMAKE_CURRENT_BINARY_DIR}/ref)
+set(RWE_REFBUILD_NEWER riamosfunclib risoundlib ristonecrackerlib rifnslib)
+set(RWE_REFBUILD_SELFTEST "riencryptlib|Encryptlib/Encrypt-Library.bb|refbuild")
+
+# rwe_reference(NAME REFERENCE OUT_FILE OUT_FIXTURE): the reference file
+# of an entry - archive/REFERENCE, or for "refbuild" ref/NAME.obj and the
+# fixture its tests need (else OUT_FIXTURE is empty)
+function(rwe_reference name reference out_file out_fixture)
+	if(reference STREQUAL "refbuild")
+		set(${out_file} ${RWE_REF_DIR}/${name}.obj PARENT_SCOPE)
+		set(${out_fixture} rwe_refbuild PARENT_SCOPE)
+	else()
+		set(${out_file} ${PROJECT_SOURCE_DIR}/archive/${reference} PARENT_SCOPE)
+		set(${out_fixture} "" PARENT_SCOPE)
+	endif()
+endfunction()
+
 set(cd ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1)
 set(cdlibs ${cd}/EXTRAS/BLITZLIBS)
 set(stage ${CMAKE_CURRENT_BINARY_DIR}/refstage)
@@ -37,8 +67,8 @@ if(NOT incdir MATCHES "^[0-9A-F]+$")
 	message(FATAL_ERROR "${tokens}: no INCDIR")
 endif()
 
-# the entries: a source once per name
-set(ref_entries ${RWE_LIBS})
+# the entries: RWE_LIBS and the dry one; a source once per name
+set(ref_entries ${RWE_LIBS} ${RWE_REFBUILD_SELFTEST})
 set(ref_names)
 set(ref_sources)        # REL|FILE[|XTRA] for the staging
 set(ref_staged)
@@ -173,3 +203,38 @@ math(EXPR limit "${RWE_REFBUILD_TIMEOUT} * 3 + 120")
 set_tests_properties(rwe_refbuild PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${limit} FIXTURES_SETUP rwe_refbuild)
 
+# stage A: the reference build is the reference binary, byte for byte
+foreach(l IN LISTS RWE_LIBS)
+	string(REPLACE "|" ";" l "${l}")
+	list(GET l 0 name)
+	list(GET l 2 reference)
+	if(reference STREQUAL "refbuild" OR name IN_LIST RWE_REFBUILD_NEWER)
+		continue()
+	endif()
+	add_test(NAME rwe_refbuild_${name} COMMAND ${CMAKE_COMMAND}
+		-DREF=${RWE_REF_DIR}/${name}.obj -DORIG=${archive}/${reference}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/refbuild-compare.cmake)
+	set_tests_properties(rwe_refbuild_${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		FIXTURES_REQUIRED rwe_refbuild)
+endforeach()
+
+# the dry refbuild entry: its reference through rwe_reference() (the
+# path and the fixture an entry with REFERENCE refbuild gets), against
+# the C build of the library
+string(REPLACE "|" ";" l "${RWE_REFBUILD_SELFTEST}")
+list(GET l 0 name)
+list(GET l 2 reference)
+rwe_reference(${name} ${reference} file fixture)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.c)
+	add_test(NAME rwe_refbuild_selftest COMMAND ${BLITZLIBCOMPARE} ${file}
+		${out}/userlibs/rwe/${name}.obj)
+	set_tests_properties(rwe_refbuild_selftest PROPERTIES LABELS emulator
+		SKIP_RETURN_CODE 77 FIXTURES_REQUIRED ${fixture})
+endif()
+
+# the comparison with broken input: two different files
+add_test(NAME rwe_refbuild_compare_broken COMMAND ${CMAKE_COMMAND}
+	-DREF=${CMAKE_CURRENT_SOURCE_DIR}/refbuild-compare.cmake
+	-DORIG=${CMAKE_CURRENT_SOURCE_DIR}/refbuild-stage.cmake
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/refbuild-compare.cmake)
+set_tests_properties(rwe_refbuild_compare_broken PROPERTIES PASS_REGULAR_EXPRESSION "differs from")
