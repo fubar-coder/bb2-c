@@ -460,3 +460,41 @@ several versions.
 4. **Port** per library to C (`cmake/BlitzLibrary.cmake`), with the
    checks of the acidlibs (`blitzlibcheck`, declarations, `asmcmp`,
    emulator tests); output `build/<preset>/blitz2/userlibs/…`.
+5. **Library variants and token lists from library files** (decision
+   of 2026-10-29). Library numbers clash between libraries of different
+   authors (7: RI `ArraysLib` and Oliver Michel's `OM3D`; 195 and 48
+   in the history of blitz_ptplayer), so the libraries are built in
+   variants, and the tokens of a source come from the library files it
+   was written for, not from one fixed list:
+   1. **Token list from library files**: a C tool (logic in
+      `tools/lib/`, `tools/lib/blitzlib` reads the files) that makes
+      the token list from blitz2 (the BASIC keywords: where does blitz2
+      keep them, in the format of a library?), `deflibs`, `acidlibs`
+      and userlibs (token = `$8000 | number<<7 | index+1`). Check: from
+      the files of the CD it gives `tests/data/ted-tokens.txt` (made by
+      the original TED, `ted-oracle`), also in which token TED takes
+      for a name defined twice.
+   2. **`tedtok`/`teddetok` with library files** as the reference
+      instead of `TOKENS` (or both); the readable `rwelibsrc` from the
+      files of its variant instead of the provisional `tokens-ext.txt`
+      of `.cache/rwelibs-analysis/`.
+   3. **Numbers only through `libnums.h`**: the literals left in the
+      libraries on macros – `debuglib.c` (four `jsr
+      _blitz_tok+0x80005204`/`…5d81` in inline assembler: `#inputoutputlib
+      LSL 7+4` …), `fadelib.c` (`BLITZ_LIBHEADER(157, …)`);
+      byte-identical.
+   4. **Variant build**: a variant is a directory with its own
+      `libnums.h` (and further switches), e.g. `bb-1.95` with today's
+      numbers; a CMake function builds the same library sources with
+      that include directory to `build/<preset>/variants/<name>/`
+      (`acidlibs`, `deflibs`, `userlibs/…`). The default variant stays
+      byte-identical; a check in the build: no two libraries of a
+      variant with the same number (with a test with a clash on
+      purpose).
+   5. **First users**: the RWE userlibs (their numbers: AmiBlitz3's
+      libnums, the matching binaries, `#riarrayslib` = 7 from
+      `defaultdbug50.bb2`; `docs/rwelibs/README.md` §3.1); a Protracker
+      library as a C wrapper of its own around Frank Wille's ptplayer
+      (public domain) – the Blitz wrappers on GitHub
+      (`idrougge/blitz_ptplayer`, `E-Penguin/blitz_ptplayer`,
+      `earok/ptplayer_blitzwrapper_scorpion`) have no license.
