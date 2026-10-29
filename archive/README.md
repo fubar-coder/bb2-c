@@ -9,6 +9,7 @@ stored as generated test data under `tests/data/`.
 |---|---|---|
 | `sources/amibl2src.readme` | the readme of the Aminet archive `amibl2src.lha` – evidence of the origin and license of the sources | `amibl2src.lha` (Aminet `dev/blitz/amibl2src`) |
 | `sources/blitz2-1.95/` (in git) | the compiler Blitz Basic 2 v1.95 (`version equ 195`): `blitz2.s` with the files it includes (`myoffs`, `wbheader`, `options2.src.new`, `asmmac`, `typereq`, `options.src`, `calcreq`, `obj.info`) and `GenAm.opts` (`nocase`) | `bb2src.zip` (as of 1995-09-14, top-level directory), from `amibl2src.lha` as below; only the files `blitz2.s` needs. `myoffs` and `wbheader` are the same as in `ted-1.1` (each version complete). |
+| `amiblitz3-github/Sourcecodes/Data/fns/fonts/PERSONAL.FNS` (in git) | the FNS font "Personal" (1712 bytes) of Reflective Images' FNS library: the font RIFNSLib builds in (`IncBin "FNS:Personal.FNS"` of `rwelibsrc/FNSLib/fns-library11.bb`; the library's binary has it with 7 words changed, which the C port applies itself, `libs/userlibs/rwe/rifnslib.c`) | AmiBlitz3 on GitHub, <https://github.com/AmiBlitz/AmiBlitz3>, commit `b1a9dee150ef4d2793d9745a49a958fdb9178124` (file last changed in `df78b6840e14`), path as there; the repository is under the Apache License 2.0. The same file is on the CD (`BSS2/REDBLITZLIBS/EXAMPLES/FNS/FONTS/PERSONAL.FNS`) and in AmiBlitz3's SVN; AmiBlitz3's `BlitzLibs/Decompiled/thirdpartylibs/Rifnslib.obj` is byte-identical to the CD's BSS2 `RIFNSLIB.OBJ`. Decision of 2026-10-29: in git because AmiBlitz3 publishes it. |
 | `sources/ted-1.1/` (in git) | TED 1.1, the editor of Blitz Basic 2: `ted.s` with includes (`myoffs`, `wbheader`, `aboutreq`, `specialreq`, `filereq`) and binary files (`rawed.obj`, fonts, mouse pointers, icon) | `bb2src.zip` → `tedt/` (as of 1995-09-14), from `amibl2src.lha` (Aminet `dev/basic`, uploader Bernd Rösch; sources by Acid Software, under GNU license according to the readme). `tedt/ted.s` is the `ted.s` of the archive with simple include paths instead of the Devpac assignment `e:` – already so in the archive. |
 
 ## Downloaded (not in git)
@@ -99,6 +100,11 @@ As of 2026-10-28, after research:
   release). Contained code of others: the Protracker 2.3A play routine in
   `ptlib/` (its authors are not named in the source), `RTLib.bb` (the
   ReqTools interface by Neil O'Rourke, 1994).
+* **The FNS font "Personal"** (`amiblitz3-github/…/PERSONAL.FNS`): not in
+  RWE's 1999 release (the source only `IncBin`s it); part of the FNS
+  library's binary and its examples on the CD and published by AmiBlitz3
+  in its repository (Apache License 2.0) – in git on that basis (decision
+  of 2026-10-29).
 * **Library manuals** of the time carry the note "Used with the
   permission of Acid Software" (e.g. AmiBlitz3
   `Docs/AcidLibs/SORTLIB.guide`).
