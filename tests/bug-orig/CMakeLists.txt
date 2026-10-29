@@ -31,6 +31,9 @@
 #   AREA/NAME.spec   a description for tools/mktestdata (bytes, IFF
 #                    chunks, labels; tools/lib/mktestdata/mktestdata.h),
 #                    built to testdata/NAME in the build directory
+#   AREA/NAME.src    a further Blitz source as text (e.g. the source of a
+#                    resident, tedstub resident=), tokenised like ID.bas
+#                    to testdata/NAME
 # NAME is unique over all areas and begins with the ID of the test that
 # uses it (e.g. libs/ID.8svx.spec).
 add_subdirectory(amiga)
@@ -148,6 +151,26 @@ foreach(spec IN LISTS specs)
 		COMMAND ${MKTESTDATA} ${spec} ${out}
 		DEPENDS ${spec} ${MKTESTDATA} host_tools
 		COMMENT "Generating bug-orig test data ${name}"
+		VERBATIM)
+	list(APPEND testdata_files ${out})
+endforeach()
+
+# further sources: AREA/NAME.src (text like ID.bas) -> testdata/NAME,
+# tokenised like the tests (e.g. the source of a resident, tedstub
+# resident=)
+file(GLOB srcs CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*/*.src)
+foreach(s IN LISTS srcs)
+	get_filename_component(name ${s} NAME)
+	string(REGEX REPLACE "\\.src$" "" name "${name}")
+	set(out ${TESTDATA}/${name})
+	if(out IN_LIST testdata_files)
+		message(FATAL_ERROR "bug-orig: test data ${name} described twice (${s})")
+	endif()
+	add_custom_command(OUTPUT ${out}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${TESTDATA}
+		COMMAND ${TEDTOK} ${tokens} ${s} ${out}
+		DEPENDS ${s} ${tokens} ${TEDTOK} host_tools
+		COMMENT "Tokenising bug-orig source ${name}"
 		VERBATIM)
 	list(APPEND testdata_files ${out})
 endforeach()

@@ -247,7 +247,9 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   in; `tools/lib/mktestdata/mktestdata.h`) becomes
   `build/<preset>/tests/bug-orig/testdata/NAME`, passed to the program
   with `; @pass file=DEST|@TESTDATA@/NAME` (the program reads
-  `CORPUS:DEST`); NAME begins with the ID of the test. Run
+  `CORPUS:DEST`); NAME begins with the ID of the test. A further Blitz
+  source (e.g. the source of a resident) is a text `NAME.src`, tokenised
+  like `ID.bas` to `testdata/NAME`. Run
   `ctest --preset bug-orig -R bug_orig_ID`; the result must be
   REPRODUCED. Look at the observation of ref to write the expectation,
   and check the expectation if possible with a temporary fix in the port
