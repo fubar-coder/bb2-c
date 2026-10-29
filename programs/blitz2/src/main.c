@@ -1122,7 +1122,11 @@ int main(int argc, char **argv)
         /* .openok: a project icon given? (asm: word at sm_NumArgs+2) */
         if ((UWORD)wbmess->sm_NumArgs >= 2) {
             CurrentDir(wa[1].wa_Lock);
-            /* BUG(orig): old current dir lock never restored */
+            /* the old current dir lock is dropped as in the original
+               (BUG(orig), #21).  DIFF: libnix's startup code restores
+               the directory it saved before main at exit, so the port
+               ends in the start directory, the original in the
+               project's (or blitz2's) directory */
             strcpy(progfile, (char *)wa[1].wa_Name);
         }
     } else {
