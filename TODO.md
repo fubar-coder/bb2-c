@@ -342,8 +342,17 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     (port: runtheprog did not load a4 with -fbaserel, Compile & Run never
     started a program; fixed, the binary changed).
   - *Open:* `ted_ab` case 01d-rt-maplib times out in the reference
-    configuration R5 (original TED and blitz2), with and without the fix
-    of #338 (2026-10-29); not investigated, whether it failed before.
+    configuration R5 (original TED and blitz2): alone, or after any one of
+    00-start, 01a, 01b, 01c, it passes; after all of them in the same
+    emulator session (16 runs) the first click on the version requester
+    is lost and the DOS requesters for blitzlibs: never come. The state
+    of 8825131 fails the same way with the same selection, so it is no
+    regression: the session grouping changed when 23-font6 became
+    @known. Not the Amiberry update (8.4.2 fails too) and not the load
+    of orphaned emulators (see below). Cause in the session not found
+    yet. Orphaned Amiberry processes: a runner that crashes or is killed
+    leaves its emulators running (setpgid), each at 100 % CPU; eight from
+    a crashed corpusrun ran for 85 minutes (2026-10-29).
   - *Runner features:* done: program arguments (`runargs=`, #107),
     the macro buffer of the default options (tedstub `macrobuf=`, used
     for #336), the start from the Workbench (`wbrun`: #19, #20, #306,
