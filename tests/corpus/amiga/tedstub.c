@@ -16,6 +16,17 @@
  *                   bytes (bytes 50-53 of the .xtra; default 10240)
  *   macrobuf=N      in those defaults the size of the macro buffer N
  *                   bytes (bytes 46-49 of the .xtra; default 8192)
+ *   resident=ID|SOURCE|RESFILE
+ *                   a resident (at most 8, in this order): before the
+ *                   first job SOURCE is compiled like a job, but with
+ *                   the options the compiler has then (no .xtra, no
+ *                   residents loaded), RESFILE as the executable, which
+ *                   is deleted again; then menu item 4 (Create Resident)
+ *                   saves the resident as RESFILE (logged as job ID and
+ *                   MENU ID 4).  In the defaults RESFILE (at most 63
+ *                   characters) is entered in the resident list (byte
+ *                   54 + 68 * N of the .xtra, N = 0 for the first): every
+ *                   job with the defaults compiles with the residents.
  *   job=ID|SOURCE|OUTPUT[|DIR]
  *   menu=ID|ITEM[|ANSWER]  the compiler's menu item ITEM (blitz2.s
  *                   menuadds, e.g. 9 = load debug module, 8 = reload libs)
@@ -56,6 +67,13 @@ static char srcname[PATHLEN], outname[PATHLEN], xtraname[PATHLEN], defname[PATHL
 static char cur_id[16];
 static int in_menu, runerr_off;
 static ULONG strbuf, macrobuf;
+
+/* resident=: the lines (ID|SOURCE|RESFILE split in place) */
+#define MAXRES 8                        /* blitz2.s resbuff: 8 entries */
+#define RESNAME 64                      /* of 68 bytes: the name, seglist */
+#define RESBUFF 54                      /* .xtra: vers, flags, 14 words, 6 longs */
+static char *res_id[MAXRES], *res_src[MAXRES], *res_file[MAXRES];
+static int nres;
 
 static char lbuf[600];
 #define LOG_BEGIN struct sb L = { lbuf, 0, sizeof lbuf }; lbuf[0] = 0
@@ -292,6 +310,7 @@ static void call_loadxtra(void)
 static void save_defaults(void)
 {
     BPTR fh;
+    int i;
 
     if (!defname[0] || !edstub_ed->savextra)
         return;
@@ -313,6 +332,14 @@ static void save_defaults(void)
     if (strbuf) {
         Seek(fh, 50, OFFSET_BEGINNING); /* buffer sizes: the string buffer */
         Write(fh, &strbuf, 4);
+    }
+    for (i = 0; i < nres; i++) {        /* the resident list: the names */
+        char name[RESNAME];
+
+        memset(name, 0, sizeof name);
+        edstub_strcpy(name, res_file[i], sizeof name);
+        Seek(fh, RESBUFF + 68 * i, OFFSET_BEGINNING);
+        Write(fh, name, sizeof name);
     }
     Close(fh);
 }
@@ -371,7 +398,7 @@ static void abort_hook(const char *why)
 /* ---------------------------------------------------------------------
  * the jobs
  * ------------------------------------------------------------------- */
-static void batch_job(char *id, char *src, char *out, char *dirname)
+static void batch_job(char *id, char *src, char *out, char *dirname, int noxtra)
 {
     BPTR dir, old = 0;
     WORD ret;
@@ -411,7 +438,7 @@ static void batch_job(char *id, char *src, char *out, char *dirname)
         goto out;
     }
     {
-        BPTR fh = Open(xtraname, MODE_OLDFILE);
+        BPTR fh = noxtra ? 0 : Open(xtraname, MODE_OLDFILE);
         LOG_BEGIN;
 
         sbs(&L, "XTRA\t");
@@ -419,7 +446,7 @@ static void batch_job(char *id, char *src, char *out, char *dirname)
         if (fh) {
             Close(fh);
             sbs(&L, "\town");
-        } else if (defname[0]) {
+        } else if (defname[0] && !noxtra) {
             edstub_strcpy(xtraname, defname, PATHLEN);
             sbs(&L, "\tdefaults");
         } else {
@@ -546,6 +573,7 @@ void edstub_main(const char *arg)
     BPTR fh = Open(arg, MODE_OLDFILE);
     LONG size;
     char *buf, *p, *v;
+    int i;
 
     edstub_error_hook = error_hook;
     edstub_ezfreq_hook = ezfreq_hook;
@@ -585,14 +613,37 @@ void edstub_main(const char *arg)
         else if ((v = value(p, "macrobuf=")))
             while (*v >= '0' && *v <= '9')
                 macrobuf = macrobuf * 10 + (ULONG)(*v++ - '0');
+        else if ((v = value(p, "resident="))) {
+            if (nres == MAXRES) {
+                edstub_log("FATAL: more than 8 residents");
+                continue;
+            }
+            res_id[nres] = field(&v);
+            res_src[nres] = field(&v);
+            res_file[nres] = field(&v);
+            if (edstub_strlen(res_file[nres]) >= RESNAME) {
+                edstub_log("FATAL: resident name longer than 63 characters");
+                continue;
+            }
+            nres++;
+        }
     edstub_log("BATCH\tstart");
     save_defaults();
+    /* the residents, compiled with the options the compiler has now; the
+       executable only made the compile, Create Resident writes the file */
+    for (i = 0; i < nres; i++) {
+        char item[] = "4";              /* blitz2.s menuadds: menu5 */
+
+        batch_job(res_id[i], res_src[i], res_file[i], 0, 1);
+        DeleteFile(res_file[i]);
+        menu_job(res_id[i], item, res_file[i]);
+    }
     /* pass 2: jobs */
     for (p = buf; p < buf + size; p += edstub_strlen(p) + 1)
         if ((v = value(p, "job="))) {
             char *id = field(&v), *src = field(&v), *out = field(&v), *dir = field(&v);
 
-            batch_job(id, src, out, dir);
+            batch_job(id, src, out, dir, 0);
         } else if ((v = value(p, "menu="))) {
             char *id = field(&v), *item = field(&v), *answer = field(&v);
 

@@ -223,7 +223,11 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   `userlib.tokens`). tedstub also runs menu items
   (`menu=ID|ITEM|ANSWER`) and logs the busy pointer after them;
   `strbuf=N` sets the string buffer of the default options (strings
-  longer than 10240 bytes), `macrobuf=N` their macro buffer. All as
+  longer than 10240 bytes), `macrobuf=N` their macro buffer;
+  `resident=ID|SOURCE|RESFILE` (up to 8) compiles SOURCE before the first
+  job with the start options, saves it as the resident RESFILE (Create
+  Resident) and enters RESFILE in the resident list of the default
+  options, so the test program is compiled with the residents. All as
   `; @pass jobline=...`.
 
   *Adding a test* (no shared list, a glob finds the files): two files in
