@@ -1,0 +1,7 @@
+[run]
+cancel 0
+inject: rc=0
+inject: current dir at end: start
+inject: click FQ/CD: answered
+inject: click FQ/CANCEL: answered
+rc=0
