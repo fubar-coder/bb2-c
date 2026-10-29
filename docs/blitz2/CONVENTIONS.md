@@ -37,7 +37,7 @@ Do not write NAME.c yet. Check with `cmake --build --preset amiga --target heade
 headers exist; to test yours alone use
 `echo '#include "structs.h"
 #include "glue.h"
-#include "NAME.h"' | /opt/amiga/bin/m68k-amigaos-gcc -noixemul -std=gnu11 -Isrc -fsyntax-only -xc -`).
+#include "NAME.h"' | /opt/amiga/bin/m68k-amigaos-gcc -noixemul -std=gnu23 -Isrc -fsyntax-only -xc -`).
 Then reply briefly and stop. You will get a "go" message when all headers
 are integrated.
 

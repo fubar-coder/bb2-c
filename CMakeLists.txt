@@ -18,9 +18,9 @@ endif()
 include(cmake/check-saveds.cmake)
 amiga_check_saveds(${CMAKE_C_COMPILER} ${PROJECT_SOURCE_DIR}/cmake/saveds/good.c)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS ON)              # gnu11: inline asm in the glue, flexible array initialisers
+set(CMAKE_C_EXTENSIONS ON)              # gnu23: inline asm in the glue, flexible array initialisers
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)   # for clangd
 
 # .clangd in the source directory for this machine's toolchain (generated,

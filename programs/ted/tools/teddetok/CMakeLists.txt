@@ -2,7 +2,7 @@
 add_executable(teddetok main.c)
 target_link_libraries(teddetok PRIVATE "$<LINK_GROUP:RESCAN,tedhost,tedcore_host>")
 target_compile_options(teddetok PRIVATE -Wall)
-set_target_properties(teddetok PROPERTIES C_STANDARD 11 C_EXTENSIONS ON)
+set_target_properties(teddetok PROPERTIES C_STANDARD 23 C_EXTENSIONS ON)
 
 # tests: tests/*.bb2 (tokenised, written byte by byte), the expected text
 # next to them; unknown token and half token must fail without output
