@@ -427,7 +427,6 @@ int main(int argc, char **argv)
     }
     if (!load_sets(argv[1], names))
         return 20;
-    amosfunc_fixjsrs();                 /* SaveCMAP's ALibJsr BSave (Amiga only) */
 
     test_colours();
     test_paladjust();

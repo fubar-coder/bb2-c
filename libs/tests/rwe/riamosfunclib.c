@@ -678,7 +678,6 @@ int main(int argc, char **argv)
     }
     if (!load_sets(argv[1], names))
         return 20;
-    amosfunc_fixjsrs();                 /* the original's ALibJsr FileSize, BLoad */
     for (i = 0; i < sizeof pattern; i++)
         pattern[i] = (UBYTE)(i * 7 + (i >> 3));
     cleanup();

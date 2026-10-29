@@ -192,7 +192,11 @@ static BOOL link_set(struct set *s)
                            (ULONG)(UWORD)*at);
                     return FALSE;
                 }
-                *at = (ULONG)to;
+                /* bit 0 of a routine's address: Amiga mode only
+                   (`!subs {code+1,...}`, blitz2.s); a program never jumps
+                   there directly, the compiler makes a stub that calls
+                   the even address (tokecode/cutejsr) - so the even one */
+                *at = (ULONG)to & ~1UL;
             }
         }
     }

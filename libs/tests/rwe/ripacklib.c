@@ -849,7 +849,6 @@ int main(int argc, char **argv)
     }
     if (!load_sets(argv[1], names))
         return 20;
-    amosfunc_fixjsrs();                 /* LoadIFF's ALibJsr BLoad (Amiga only) */
 
     ROUT = "init";
     strcpy(VEC, "");
