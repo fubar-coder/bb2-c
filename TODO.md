@@ -288,7 +288,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   repository; history of bb2 (plans, logs, reviews) unchanged in content,
   remaining bb2 mentions explained in `docs/README.md`.
 * **Tests for the issues labelled `needs-test`** (99 open issues at the
-  start, 19 left on 2026-10-29). A failing test is added with label
+  start, 20 open on 2026-10-29, among them the new #337). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,
   and `needs-test` is removed (allowed for these issues, 2026-10-28).
   - Done (2026-10-28), every test REPRODUCED and, except where noted in
