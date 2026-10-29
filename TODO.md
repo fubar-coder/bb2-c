@@ -311,7 +311,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   - Closed as not planned (no test possible, reason in the issue): #5,
     #18, #32, #264 (its impact was corrected: without BODY the decoder
     fails with "Can't Read File" or crashes without error checking, like
-    any load error, no shape with arbitrary contents).
+    any load error, no shape with arbitrary contents), #65 (ASL returns
+    font file names of at most 30 characters, a name over 95 is not
+    reachable; input in the requester cannot be tested).
   - *Still open, test programs:*
     #14 (the "Not Enough Object Memory" path was not reached in the
     batch run, even with a 128 KB executable: to be found out how;
@@ -322,13 +324,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     `GORNY3DLIB.BB2`, 127996 bytes) and one CD source of each of the 47
     compile errors of `blitz2-cd.tsv`), #26 (needs a free block of
     ≥ 256 MB).
-  - *Skipped in phase 2, reason not yet in the issue:* #65 (needs the ASL
-    font requester with user input; ASL returns font file names of at
-    most 30 characters, a name over 95 is not reachable), #90/#91 (a
-    program using blitzoslib does not end in the emulator, the original
-    as well: `BitMap 0,320,200,2 : InitPage 0,0,2 : NPrint "x" : End`
-    hangs at End, so "done" cannot be observed; the hang may be an
-    original bug of its own), #100 (needs several input events in one
+  - *Skipped in phase 2, reason in the issue:* #90/#91 (a program
+    using blitzoslib does not end in the emulator, the original as
+    well, see #335), #100 (needs several input events in one
     input-handler call at controlled times), #133 (the correct value of
     Ern is undefined, the issue itself asks for a design decision).
   - *Runner features:* other compiler options (buffer sizes; the corpus
@@ -342,17 +340,12 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     other, with its tests.
   - *Not reproducible in the emulator:* #42 (a real 68010 with a moved
     VBR; Amiberry runs a 68020).
-  - *Found during phase 2, no issue yet:* (1) palettelib
-    `cludgepalette` (`libs/acidlibs/palettelib.c`, the two
-    `(LONG)(end - a0) <= 0`) tests the sign of the difference, the
-    original `CMP.l a0,a1 : BLE` compares the addresses signed (with
-    overflow): with a chunk length that makes the difference overflow
-    the original runs on and hangs, the port stops - a deviation of the
-    port; the same pattern is in 2dlib, polylib, linklistlib (correct
-    where the original uses BMI/BPL). (2) medlib `plr_loop0`
-    (bblibsrc/medlib 1004–1005): a track masked out by SetMedMask is
-    skipped without advancing the note pointer, so the following tracks
-    read the notes of the track before them - an original bug, reproduced.
+  - *Found during phase 2:* #333 (palettelib chunk walk: the port
+    compares the sign of the difference, the original the addresses;
+    label `bug-port`, with an audit of the same pattern in 2dlib,
+    polylib, linklistlib), #334 (medlib: a masked track does not
+    advance the note pointer, original bug, needs a test), #335
+    (programs using blitzoslib hang at End, to investigate).
 
 ## 3 Only once §1 is done
 
