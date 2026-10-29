@@ -95,8 +95,8 @@ the identity for all 2319 labels of `build/amiga/programs/blitz2/ref/blitz2.labe
 | `gs` (`blitz2.s:7181`) | `$7BEE` | 26 × `00`, then `E4 F6 FC C4 D6 DC` |
 | `optspnts` (`blitz2.s:15293`) | `$F936` | `0001 0000FD8E 00010FB9 00000000 0002 …` |
 
-Note: `docs/formats.md` §1.1 gives `$F918` for the option table; the table
-`optspnts` is at code offset `$F936` (file offset `$F956`) in both builds.
+The table `optspnts` is at code offset `$F936` (file offset `$F956`) in
+both builds (`docs/formats.md` §1.1).
 
 So the C port, whose functions carry `blitz2.s:NNN label` references, is
 aligned with 2.10 by these labels without further work.
