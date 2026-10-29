@@ -328,6 +328,36 @@ the CD they do not occur). `Jimi` is only a placeholder.
 
 ---
 
+## 6 FNS fonts (RIFNSLib)
+
+The bitmap font format of Reflective Images' FNS library (`InstallFNS`,
+`FNSLoad`; userlib `rifnslib`, `libs/userlibs/rwe/rifnslib.c`). Described
+in the library's guide ("my own (rather primitive) font file format",
+AmiBlitz3 `Docs/UserLibs/RIFNSLib.guide`) and checked against
+`PERSONAL.FNS` and the library code (`InstallFNS` tests `FNS.`) [B, S].
+
+| Offset | Size | Contents |
+|---|---|---|
+| 0 | 4 | `FNS.` – identifier, checked by InstallFNS |
+| 4 | word | height in pixels (rows) |
+| 6 | word | width of a character cell in pixels, a multiple of 16 |
+| 8 | word | underline position: row from the top |
+| 10 | word | bytes per character = width / 8 × height |
+| 12 | 20 | unused (0 in `PERSONAL.FNS`) |
+| 32 | 224 | one byte per character code 32–255 (offset = code): the advance – the value added to x after printing the character, i.e. the proportional width including the gap (not the cell width) |
+| 256 | … | the bitmaps, one per character from code 32 (space) on, as many as the file holds; each row width/8 bytes, big-endian, bit 15 of the first word = leftmost pixel |
+
+One plane: the library colours a character with `FNSInk`/`FNSPrefs`
+while drawing (shadow, underline, "chr$(1)" control codes – the guide).
+A font covers codes from 32 up to as many bitmaps as follow; the advance
+bytes of codes behind the last bitmap are still read (`PERSONAL.FNS`: 8
+for 123–255, no bitmaps – printing them reads past the font, a
+`BUG(orig)` of the library's use, see `docs/rwelibs/port/rifnslib.md`).
+The font built into the library is described in
+[docs/rwelibs/fns-personal.md](rwelibs/fns-personal.md).
+
+---
+
 ## Open points
 
 1. **AB3 reads `.xtra` with 15 two-byte switches** (since `bdae3f9e`,
@@ -342,7 +372,8 @@ the CD they do not occur). `Jimi` is only a placeholder.
    goes through `getchar3` should be settled by a test with the real 2.10 in Amiberry
    (`NPrint` with `$1A`–`$1F`).
 4. `BB22` header: not present on the CD; origin (Reflective Images /
-   RI editor?) still open.
+   RI editor?) still open. The format is described in
+   `docs/rwelibs/README.md` §4.1 (reader `tools/bb22`).
 5. Lib tokens: mapping the 100 used lib numbers to command names
    needs `acidlibs`/`deflibs` (BlitzLib format, chapter 09) or AB3's
    `replacedat`. Not part of this analysis.
