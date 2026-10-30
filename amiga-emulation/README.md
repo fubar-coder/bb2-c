@@ -53,3 +53,64 @@ in graphics card memory, where the blitter cannot reach them).
   to `SYS:` and therefore hangs (checked 2026-10-27). Tests write only to
   `TEST:` or `RAM:`.
 * To change an image: start with a separate, writable configuration.
+
+## A500 machine (Kickstart 1.3)
+
+The machine `a500` (`params.machine`, `amiga_run --machine a500`, pass
+file `machine=a500`, bug-orig header `; @machine a500`) is for tests of
+bugs that only show on a 68000/68010 or under Kickstart 1.x. Its
+configuration is `tools/lib/amiga_emulation/a500.uae` (taken from the
+user's "A500 - Kick 1.3.uae", Amiberry 8.5.0): A500, ECS Agnus, 68000
+cycle-exact, 24-bit addressing, `chipmem_size=2` (1 MB chip),
+`bogomem_size=4` (1 MB slow memory at $C00000), no Zorro II/III fast
+memory (Amiberry crashes with Zorro II fast memory in this setup), the
+hardfile read-only. `a500-68010` is the same machine with a 68010
+(`cpu_type`/`cpu_model`, e.g. for #42).
+
+| File | Contents | Size | SHA-256 (as of 2026-10-30) |
+|---|---|---|---|
+| `amiga-os-130.rom` | Kickstart 1.3 (34.5), A500/A1000/A2000, Cloanto-encrypted (`AMIROMTYPE1`) | 262155 | `caa4910942b8d558c9ae2284405af81db3752535192cc25f7939765c3ea2d5e0` |
+| `rom.key` | the Cloanto key for the encrypted ROM (Amiga Forever) | 1426 | – |
+| `workbench-135.hdf` | Workbench 1.3.5 (34.34, Amiga Forever), RDB hardfile, partition DH0 (DOS\1, FFS in the RDB) | 3145728 | – |
+
+* **`rom.key`:** Amiberry decrypts the ROM only with `rom.key` in the
+  directory of the ROM's real path (it resolves symbolic links; a key
+  elsewhere, e.g. in `~/Amiberry/ROMs`, or `kickstart_key_file=`, which
+  Amiberry ignores as obsolete, does not help: "Unknown ROM", the CPU
+  halts, the screen stays black). `amiga_emulation` checks this before
+  starting and refuses the run (the test is skipped). Instead of the
+  key, a decrypted ROM (262144 bytes) under the same name works too.
+* **The hardfile's startup:** `S:Startup-Sequence` ends with
+  `IF EXISTS S:User-Startup` / `Execute S:User-Startup`, and
+  `S:User-Startup` executes `TEST:run.script` (same conditions as above,
+  in 1.3 syntax):
+
+  ```
+  FAILAT 21
+  ASSIGN >NIL: TEST: EXISTS
+  IF NOT WARN
+  IF EXISTS TEST:run.script
+  EXECUTE TEST:run.script
+  ENDIF
+  ENDIF
+  ```
+  The startup also runs Amiga Forever's `S:AFShared-Startup` (harmless
+  without the Amiga Forever host). Checked 2026-10-30: boot to the end of
+  a short script in about 14 s; `TEST:` (uae filesystem, directory mount)
+  works under Kickstart 1.3, also writing, `MakeDir`, `Copy`.
+* **AmigaDOS 1.3 in scripts:** the redirection must follow the command
+  name directly (`Echo >TEST:x "text"`; `Echo "text" >TEST:x` takes
+  `>TEST:x` as an argument and asks for the volume `>TEST`, which blocks
+  the run); there is no `>>` (append), no local variables (`$RC` stays
+  text), only `If WARN`/`ERROR`/`FAIL` for the return code. The end mark
+  of `amiga_emulation` is written in this form.
+* **What runs there** (checked 2026-10-30): the CD's blitz2 2.10 with
+  TED 1.1 starts; programs compiled elsewhere (e.g. by a bug-orig run on
+  the A1200) run. The port's `blitz2` does not start ("utility.library
+  failed to load": its libnix startup opens utility.library, which
+  Kickstart 1.x lacks). The bug-orig/corpus harness does not run on 1.x
+  yet: its session script uses `$RC`, `>>` and redirection behind the
+  arguments; tedstub (with the edstub frame), reqtrap, inject and wbrun
+  call V36+ functions (`CreateMsgPort`, `CreateIORequest`,
+  `AllocDosObject`, `EasyRequestArgs`, `SystemTags`, `CreateNewProcTags`,
+  `RunCommand`, `CacheClearU`).
