@@ -298,9 +298,10 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   the normal code of the command; the checks the compiler calls before a
   command (`!subs`, e.g. `prescreen`) stay in the area. Without the
   debugger the moved routine raises `TRAP #0` as before (decision
-  2026-10-30: a clean crash, no silent error value). Open: whether these
-  fixes go into the default variant (acidlibs no longer equal to the CD)
-  or into a variant of their own. Each fixed site removes its warning.
+  2026-10-30: a clean crash, no silent error value). The fixes go into the
+  default variant (decision 2026-10-30: byte equality with the CD's
+  originals mattered only for the port). Each fixed site removes its
+  warning.
 * ~~**License header lines**~~ decided (2026-10-28): no SPDX lines in the
   source files; the license applies via `LICENSE` and the README.
 * ~~**CD data**~~ solved (2026-10-28): not in the repository,

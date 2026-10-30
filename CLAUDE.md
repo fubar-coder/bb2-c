@@ -69,7 +69,10 @@ ctest --preset emulator                                # tests in Amiberry
   code, list of deviations in `docs/*/deviations.md`); `DIFF` only where
   technically necessary. Applies only to the port: once it is complete
   (including the comparison with blitz2 2.10), original bugs may be fixed
-  deliberately (one issue per bug, marked as an intended deviation).
+  deliberately (one issue per bug, marked as an intended deviation), in
+  the default variant: byte equality with the CD's originals mattered
+  only for the port (decision 2026-10-30); the comparison with the
+  previous commit of this repository stays.
 * **Only C/C++ and CMake.** No Python, no shell scripts in the build.
   Whatever compiler and linker can do themselves, without a tool
   (`#embed` + `static_assert`, `strip`); text and control as CMake;
