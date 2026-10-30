@@ -19,6 +19,7 @@
 #define RWECMP_H
 
 #include "../sysload.h"
+#include <exec/execbase.h>
 
 /* callstk() is defined in systest_mathstr.c (same executable) */
 extern UWORD callstk(APTR fn, struct regs *r, const ULONG *args, ULONG nargs, ULONG *popped);
@@ -248,9 +249,78 @@ static __attribute__((unused)) void fake_remove(struct Library *l)
    an init's OpenLibrary or AllocMem fail */
 static const UWORD rwe_fail0[] = { 0x7000, 0x4e75 };
 
+/* rwe_mem_start() ... rwe_mem_stop(): the memory balance of this task.
+   AvailMem() counts the whole system, and other tasks allocate while a
+   test runs (a test that does DOS I/O cannot hold Forbid() for its
+   measurement, see systest_cmdlibs.c); so exec's AllocMem/FreeMem are
+   patched (SetFunction, every allocation of exec's goes through them)
+   to count only what this task allocates and frees, in MEM_BLOCKSIZE
+   units.  rwe_mem_stop() takes the patches out and returns the
+   balance (0: everything freed); rwe_memallocs counts the allocations
+   (a balance of 0 with none says nothing).  rwe_done() takes them out
+   too, so that no early return leaves them in place. */
+static struct Task *rwe_memtask;
+static LONG rwe_membal;
+static ULONG rwe_memallocs;
+static APTR rwe_oldalloc, rwe_oldfree;
+#define RWE_MEMSIZE(n) (((n) + 7) & ~7UL)
+
+static __attribute__((unused)) APTR rwe_allocmem(ULONG size __asm("d0"), ULONG req __asm("d1"),
+                                                 struct ExecBase *sb __asm("a6"))
+{
+    register ULONG d0 __asm("d0") = size;
+    register ULONG d1 __asm("d1") = req;
+    register struct ExecBase *a6 __asm("a6") = sb;
+    __asm volatile("jsr (%3)" : "+d"(d0), "+d"(d1) : "a"(a6), "a"(rwe_oldalloc)
+                   : "a0", "a1", "cc", "memory");
+    if (d0 && sb->ThisTask == rwe_memtask) {
+        rwe_membal += RWE_MEMSIZE(size);
+        rwe_memallocs++;
+    }
+    return (APTR)d0;
+}
+
+static __attribute__((unused)) void rwe_freemem(APTR mem __asm("a1"), ULONG size __asm("d0"),
+                                                struct ExecBase *sb __asm("a6"))
+{
+    register APTR a1 __asm("a1") = mem;
+    register ULONG d0 __asm("d0") = size;
+    register struct ExecBase *a6 __asm("a6") = sb;
+    if (mem && sb->ThisTask == rwe_memtask)
+        rwe_membal -= RWE_MEMSIZE(size);
+    __asm volatile("jsr (%3)" : "+a"(a1), "+d"(d0) : "a"(a6), "a"(rwe_oldfree)
+                   : "d1", "a0", "cc", "memory");
+}
+
+static __attribute__((unused)) void rwe_mem_start(void)
+{
+    if (rwe_memtask)
+        return;
+    rwe_memtask = FindTask(NULL);
+    rwe_membal = 0;
+    rwe_memallocs = 0;
+    Forbid();
+    rwe_oldalloc = SetFunction((struct Library *)SysBase, -198, (APTR)rwe_allocmem);
+    rwe_oldfree = SetFunction((struct Library *)SysBase, -210, (APTR)rwe_freemem);
+    Permit();
+}
+
+static __attribute__((unused)) LONG rwe_mem_stop(void)
+{
+    if (!rwe_memtask)
+        return rwe_membal;
+    rwe_memtask = NULL;
+    Forbid();
+    SetFunction((struct Library *)SysBase, -198, rwe_oldalloc);
+    SetFunction((struct Library *)SysBase, -210, rwe_oldfree);
+    Permit();
+    return rwe_membal;
+}
+
 static int rwe_done(const char *name)
 {
     int i;
+    rwe_mem_stop();                     /* the patches out on every way out */
     printf("%s: %d checks, %d failures\n", name, checks, failures);
     printf("kept registers (bit 0-7 d0-d7, 8-14 a0-a6), all calls:\n");
     for (i = 0; i < nstat; i++)

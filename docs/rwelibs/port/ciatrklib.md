@@ -152,7 +152,10 @@ numbers above 31).
   Get/`CheckTrackerEvent`, `WaitTrackerEvent` (its WaitTOF plays a
   tick), `StopTracker`, `LoadTrackerModule` (a6 = DOSBase; sizes 8768
   and $10FE), `FreeTrackerModule`, `ModuleToChip`, finit; memlib's memory
-  all back.
+  all back: the balance of what the test task allocated and freed from
+  the start to the end (`rwe_mem_start`/`rwe_mem_stop` of `rwecmp.h`),
+  not `AvailMem()`, which also counts what other tasks allocate
+  meanwhile.
 
 Not covered: the runtime errors (missing file, failing error checks), a
 Read error, failing allocations, sample numbers above 31, finetune 15

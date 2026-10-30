@@ -743,6 +743,7 @@ int main(int argc, char **argv)
     if (!load_sets(argv[1], names))
         return 20;
     avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
     buildmod();
     for (s = 0; s < 2; s++) {
         mod[s] = AllocMem(MODMAX, MEMF_CHIP | MEMF_CLEAR);
@@ -929,6 +930,16 @@ int main(int argc, char **argv)
     }
     fake_remove(fakegfx);
     PRA = (PRA & ~2) | (pra0 & 2);
-    check("ciatrklib: all memory back", AvailMem(MEMF_ANY) == avail);
+    /* this task's balance: AvailMem() also counts what other tasks
+       allocate meanwhile (rwecmp.h) */
+    {
+        LONG bal = rwe_mem_stop();
+        LONG other = (LONG)(avail - AvailMem(MEMF_ANY)) - bal;
+        if (other)
+            printf("ciatrklib: %ld bytes allocated by other tasks meanwhile\n", other);
+        if (bal)
+            printf("ciatrklib: %ld bytes not freed\n", bal);
+        check("ciatrklib: all memory back", bal == 0 && rwe_memallocs > 0);
+    }
     return rwe_done(LIB);
 }
