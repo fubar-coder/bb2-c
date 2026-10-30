@@ -115,7 +115,7 @@ latest date in the header comments.
 | CIA tracker | 56 (`#ciatrklib`; clash `xbciatrackerlib`, AB3) | `ptlib/CIATrackerLib1` (+ `SamplePrograms/TrackerTest`) | Neil O'Rourke, Delirium Softdesign | – | ≈ 88 % OL `XBONESCIATRKLIB` | CIATrackerLib1 (ported 2026-10-30, `port/ciatrklib.md`) |
 | Req | 79 | `reqlib/ReqLib`, `2`, `3` | – | – | all three **=** OL/AB3 `RIREQLIB` (964 B) | ReqLib2 (built identically, 3.1) |
 | ARexx | 133 (`#myconst=133`) | `rexxlib/…` (9 versions) | RI; `NEWAREXXLIB`: RWE (Matty) | 1997-02-09 | ≈ 76 % BSS2 `RIAREXXLIB` | open |
-| Intuition | 15 (`#riintuilib`, RWE's list) | `riintuilib`, `riintuilib2` | RI | 1995 | – | riintuilib2 (reference build): Rast objects (`IPBitMap`) and `IPOutput` redirecting Print through inputoutputlib replace riintuilib's own `IPPrint`/`IPRastPort` |
+| Intuition | 15 (`#riintuilib`, RWE's list) | `riintuilib`, `riintuilib2` | RI | 1995 | – | riintuilib2 (reference build), ported 2026-10-30 (`port/riintuilib.md`): Rast objects (`IPBitMap`) and `IPOutput` redirecting Print through inputoutputlib replace riintuilib's own `IPPrint`/`IPRastPort` |
 | PRO-PACK | lit. 197 | `ROBNORTHFAST` | Rob Northen Computing (All Rights Reserved) | 1991/92 | – | **not ported** (license) |
 | Serial | lit. 22 | `seriallib/Serial-Library` | – | – | – | Serial-Library (reference build); number 22 (the literal: RWE's list gives it to `#riblitlib`, of which no source exists, so it is free in rwe-1999) |
 | Shapes | 46 | `shapeslib/RIShapesLib`, `RIShapesLib2` (+ `Test`, `Comparison`) | RI, Nigel Hughes | – | ≈ 92 % BUM `RISHAPESLIB`; RIShapesLib2 in the `BB22` format | open |
