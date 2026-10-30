@@ -48,30 +48,34 @@ a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
 
 * DataTypeOpen copies the name into its 384 byte buffer without a limit
   and reads the DataTypeHeader from ObtainDataType's result without
-  checking it for 0.
+  checking it for 0 (#604, #605).
 * DataTypeClose disposes of the object without detaching it from a
-  window; it unlocks the file only if there is a DataType.
+  window; it unlocks the file only if there is a DataType (#599, #605).
 * DataTypeCreate without a tag list does not check for an open file
   (the name is the last one DataTypeOpen copied, at first ""); a second
-  DataTypeCreate loses the object before it.
+  DataTypeCreate loses the object before it (#601, #600).
 * AttachDataType window,id takes the size from the BitMapHeader without
   checking it (no DataTypeBitmap: reads at address 0); window,id,x,y,w,h
   puts its word arguments into the tag list as longs, with whatever
   upper words the registers have; window,id,&taglist passes the id as
-  the tag list of its second SetAttrsA and ignores the tag list. Only
-  the second form checks datatypes.library.
-* DataTypeBitmap takes whatever is in the buffer if GetAttr fails.
+  the tag list of its second SetAttrsA and ignores the tag list (#595,
+  #597, #596).
+* DataTypeBitmap takes whatever is in the buffer if GetAttr fails
+  (#598).
 * DataTypesPalette copies as many colours as the palette object has
   (reads behind the picture's colours; 0 colours are 65536); without
-  colours it returns GetAttr's result, otherwise the buffer's address.
+  colours it returns GetAttr's result, otherwise the buffer's address
+  (#606, #607).
 * SetDataTypeAttr with pairs: 0 pairs are 65536 (DBRA), more than 127
-  overflow the buffer.
-* DataTypeModeID taglist writes its own tags into the caller's list.
-* DataTypeHeight, Depth, ModeID, DataTypesPalette, Set/GetDataTypeAttr,
-  DetachDataType and AttachDataType without x,y,w,h do not check
-  datatypes.library (harmless: without it there is no file or object).
+  overflow the buffer (#608).
+* DataTypeModeID taglist writes its own tags into the caller's list
+  (#603).
 * finit closes the libraries only up to the first one that did not
-  open.
+  open (#602).
+
+Not a defect (kept): DataTypeHeight, Depth, ModeID, DataTypesPalette,
+Set/GetDataTypeAttr, DetachDataType and AttachDataType without x,y,w,h
+do not check datatypes.library (without it there is no file or object).
 
 **DIFF:** SetDataTypeAttr with pairs leaves a2 unchanged (the original
 leaves it below the pairs), as in all C ports

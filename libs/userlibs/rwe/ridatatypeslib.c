@@ -38,32 +38,34 @@
  * BUG(orig):
  *   - DataTypeOpen copies the name into its 384 byte buffer without a
  *     limit and reads the DataTypeHeader from the result of
- *     ObtainDataType without checking it for 0.
+ *     ObtainDataType without checking it for 0 (#604, #605).
  *   - DataTypeClose disposes of the object without detaching it from the
- *     window; it unlocks the file only if there is a DataType.
+ *     window; it unlocks the file only if there is a DataType (#599, #605).
  *   - DataTypeCreate without a tag list does not need an open file (the
  *     name is the last one DataTypeOpen copied, at first ""); a second
- *     DataTypeCreate loses the object before.
+ *     DataTypeCreate loses the object before (#601, #600).
  *   - AttachDataType window,id reads the size from the BitMapHeader
  *     without checking it (DataTypeBitmap not called: address 0);
  *     AttachDataType window,id,x,y,w,h puts the word arguments into the
  *     tag list as longs (with the upper words the registers have);
  *     AttachDataType window,id,&taglist passes the id as the tag list to
- *     SetAttrsA and ignores the tag list.  Only the second form checks
- *     datatypes.library.
- *   - DataTypeBitmap takes whatever is in the buffer if GetAttr fails.
+ *     SetAttrsA and ignores the tag list (#595, #597, #596).
+ *   - DataTypeBitmap takes whatever is in the buffer if GetAttr fails
+ *     (#598).
  *   - DataTypesPalette copies as many colours as the palette has (read
  *     behind the datatype's colours; 0 colours: 65536); without colours
- *     it returns GetAttr's result, otherwise the address of its buffer.
+ *     it returns GetAttr's result, otherwise the address of its buffer
+ *     (#606, #607).
  *   - SetDataTypeAttr with pairs: 0 pairs are 65536 (DBRA), more than 127
- *     overflow the 1024 byte buffer.
- *   - DataTypeModeID with a tag list writes its own tags into it.
- *   - DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
- *     SetDataTypeAttr, GetDataTypeAttr, DetachDataType do not check
- *     datatypes.library (without it there is no object nor header, so
- *     they do nothing either).
+ *     overflow the 1024 byte buffer (#608).
+ *   - DataTypeModeID with a tag list writes its own tags into it (#603).
  *   - finit closes the libraries only up to the first one that did not
- *     open.
+ *     open (#602).
+ * DataTypeHeight, DataTypeDepth, DataTypeModeID, DataTypesPalette,
+ * SetDataTypeAttr, GetDataTypeAttr, DetachDataType and AttachDataType
+ * (but its second form) do not check datatypes.library, like the
+ * original: no defect, without it there is no object nor header, so
+ * they do nothing either.
  * DIFF: a2 unchanged by SetDataTypeAttr with pairs (the original leaves
  * it below the pairs), as in all C ports (docs/libs/cmdlibs-port.md).
  */
@@ -293,7 +295,7 @@ void BLITZ_ROUTINE c_datatypeclose(void)
     if (!database)
         return;
     if (object) {
-        DisposeDTObject(object);        /* BUG(orig): not detached */
+        DisposeDTObject(object);        /* BUG(orig) (#599): not detached */
         object = NULL;
     }
     if (!dtype)
@@ -313,7 +315,7 @@ void BLITZ_ROUTINE c_libfinit(void)
 
     c_detachdatatype();
     c_datatypeclose();
-    for (p = libbases; *p; p++) {       /* BUG(orig): up to the first 0 */
+    for (p = libbases; *p; p++) {       /* BUG(orig) (#602): up to the first 0 */
         struct Library *l = *p;
 
         *p = NULL;
@@ -358,13 +360,13 @@ ULONG BLITZ_ROUTINE c_datatypeopen(CONST_STRPTR name BL_REG(d0))
 
     if (!database || lock)
         return 0;
-    while ((*d++ = *s++) != 0)          /* BUG(orig): no limit */
+    while ((*d++ = *s++) != 0)          /* BUG(orig) (#604): no limit */
         ;
     lock = Lock(name, SHARED_LOCK);
     if (!lock)
         return 0;
     dtype = ObtainDataTypeA(DTST_FILE, (APTR)lock, NULL);
-    dtypehead = dtype->dtn_Header;      /* BUG(orig): 0 not checked */
+    dtypehead = dtype->dtn_Header;      /* BUG(orig) (#605): 0 not checked */
     return (ULONG)dtype;
 }
 
@@ -400,7 +402,7 @@ ULONG BLITZ_ROUTINE c_datatypegroup(void)
 /* DataTypeCreate [&taglist]: NewDTObject of the file's name */
 static ULONG create(struct TagItem *tags)
 {
-    object = NewDTObjectA(fname, tags); /* BUG(orig): the old one lost */
+    object = NewDTObjectA(fname, tags); /* BUG(orig) (#600): the old one lost */
     return (ULONG)object;
 }
 
@@ -452,7 +454,7 @@ ULONG BLITZ_ROUTINE c_attachdatatype(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a
     *t++ = GA_Top;
     *t++ = 0;
     *t++ = GA_Width;
-    *t++ = bitmapheader->bmh_Width;     /* BUG(orig): 0 not checked */
+    *t++ = bitmapheader->bmh_Width;     /* BUG(orig) (#595): 0 not checked */
     *t++ = GA_Height;
     *t++ = bitmapheader->bmh_Height;
     *t++ = GA_ID;
@@ -462,7 +464,7 @@ ULONG BLITZ_ROUTINE c_attachdatatype(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a
     return doattach((const ULONG *)attached);
 }
 
-/* AttachDataType window,id,x,y,width,height (BUG(orig): the words as
+/* AttachDataType window,id,x,y,width,height (BUG(orig) (#597): the words as
    longs) */
 ULONG BLITZ_ROUTINE c_attachdatatype2(ULONG id BL_REG(d1), ULONG x BL_REG(d2),
                                       ULONG y BL_REG(d3), ULONG w BL_REG(d4),
@@ -488,7 +490,7 @@ ULONG BLITZ_ROUTINE c_attachdatatype2(ULONG id BL_REG(d1), ULONG x BL_REG(d2),
     return doattach((const ULONG *)attached);
 }
 
-/* AttachDataType window,id,&taglist (BUG(orig): the id is the tag list
+/* AttachDataType window,id,&taglist (BUG(orig) (#596): the id is the tag list
    of the second SetAttrsA) */
 ULONG BLITZ_ROUTINE c_attachdatatype3(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a0))
 {
@@ -525,7 +527,7 @@ ULONG BLITZ_ROUTINE c_datatypesuper(void)
     return putstring((const UBYTE *)OCLASS(object)->cl_ID);
 }
 
-/* DataTypeBitmap: the BitMapHeader (BUG(orig): GetAttr not checked) */
+/* DataTypeBitmap: the BitMapHeader (BUG(orig) (#598): GetAttr not checked) */
 ULONG BLITZ_ROUTINE c_datatypebitmap(void)
 {
     if (!database || !object)
@@ -549,12 +551,12 @@ ULONG BLITZ_ROUTINE c_datatypespalette(UBYTE **palobj BL_REG(a0))
     r = GetAttr(PDTA_ColorRegisters, object, storage);
     cr = (const UBYTE *)storage[0];
     if (!cr)
-        return r;                       /* BUG(orig): GetAttr's result */
+        return r;                       /* BUG(orig) (#607): GetAttr's result */
     p = *palobj;
     n = *(const UWORD *)p;
     p += 4;
     n--;
-    do {                                /* BUG(orig): DBRA, 0 = 65536 */
+    do {                                /* BUG(orig) (#606): DBRA, 0 = 65536 */
         p[0] = *cr++;
         p[4] = *cr++;
         p[8] = *cr++;
@@ -601,7 +603,7 @@ void BLITZ_ROUTINE c_setdatatypeattr2(UWORD n BL_REG(d7), const ULONG *sp BL_REG
     if (!object)
         return;
     n--;
-    do {                                /* BUG(orig): DBRA, no limit */
+    do {                                /* BUG(orig) (#608): DBRA, no limit */
         *t++ = *--sp;
         *t++ = *--sp;
     } while (n-- != 0);
@@ -619,7 +621,7 @@ ULONG BLITZ_ROUTINE c_getdatatypeattr(ULONG attr BL_REG(d0))
 }
 
 /* DataTypeModeID [taglist]: BestModeID for the picture's size and depth
-   (the tags are written to the tag list, BUG(orig)) */
+   (the tags are written to the tag list, BUG(orig) (#603)) */
 static ULONG domodeid(ULONG *t)
 {
     if (!bitmapheader)

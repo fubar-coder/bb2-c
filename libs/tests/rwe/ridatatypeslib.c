@@ -20,21 +20,21 @@
  * process: not compared call by call).
  *
  * Covered: every command and form before DataTypeOpen (nothing, 0);
- * DataTypeCreate without a file (BUG(orig): no check, name ""); a
+ * DataTypeCreate without a file (BUG(orig) (#601): no check, name ""); a
  * missing file; the text file (name, base name, ID, group, a second
  * DataTypeOpen: 0); the picture: the strings, DataTypeCreate both forms,
  * DataTypeSuper, DataTypeBitmap, Width/Height/Depth, DataTypeModeID both
- * forms (BUG(orig): the tags written to the caller's list),
+ * forms (BUG(orig) (#603): the tags written to the caller's list),
  * GetDataTypeAttr (known and unknown attributes), SetDataTypeAttr with a
  * tag list and with 1 and 2 pairs (the upper word of d7 a marker),
  * DataTypesPalette with 4 and 2 colours, AttachDataType in all three
- * forms (BUG(orig): the words of the second as longs - x and y with upper
+ * forms (BUG(orig) (#597, #596): the words of the second as longs - x and y with upper
  * words 1 and 2; the id 0 as tag list of the third), a second AttachDataType (0),
  * DataTypeReady, DetachDataType (twice), DataTypeClose (then the strings
  * and sizes give 0), finit with an attached object (detached, closed, the
  * file unlocked), init again.
  * Not covered: a library missing at init (finit closes only up to it),
- * ObtainDataType failing (BUG(orig): reads the header from 0),
+ * ObtainDataType failing (BUG(orig) (#605): reads the header from 0),
  * AttachDataType window,id without DataTypeBitmap (reads at 0),
  * DataTypeClose of an attached object, DataTypesPalette with more colours
  * than the picture or 0 (65536), SetDataTypeAttr with 0 or more than 127
