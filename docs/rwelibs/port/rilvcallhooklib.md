@@ -52,22 +52,24 @@ with `$FFFF` above, its length as a long). The original's unused load of
 * The test for the short tree line of the last indent level reads the
   next node's indent at the offset of the first field entry's *width*
   (`dispaddress` is already past the first entry), not at the indent
-  offset; an odd width is an address error on a 68000.
+  offset; an odd width is an address error on a 68000 (#739).
 * The number of tree lines, indent / 16 − 1, is computed as a long with
   the upper word of the caller's d7 (`MOVE.w indent,d7:ASR.w #4:SUBQ.l
   #1:BMI`): with a negative d7 no tree lines are drawn and the RastPort's
   line pattern stays `$AAAA`; with an indent below 16 and an upper word
-  of 1..`$8000` 65536 lines are drawn (`DBRA` on the low word).
+  of 1..`$8000` 65536 lines are drawn (`DBRA` on the low word) (#737).
 * `TextFit` gets the constraining width with `$FFFF` in the upper word
-  (`MOVEQ #-3,d2` and word arithmetic).
+  (`MOVEQ #-3,d2` and word arithmetic) (#741).
 * A right-aligned BitMap is drawn `ob_MinX` too far right: the alignment
   adds the offset a text extent needs, but the BitMap's extent already
-  starts at `ob_MinX`.
+  starts at `ob_MinX` (#740).
 * The tree line pattern is written to `rp_LinePtrn` without the flags and
-  count `SetDrPt` sets.
-* A text pointer 0 in a text field is read as a string at address 0.
-* The hook needs `RetrieveCallHook` to have been called (the graphics
-  base is 0 before).
+  count `SetDrPt` sets (#738).
+* A text pointer 0 in a text field is read as a string at address 0
+  (#742).
+
+The hook needs `RetrieveCallHook` to have been called (the graphics base
+is 0 before); that is the documented usage, not a defect.
 
 ## Test
 

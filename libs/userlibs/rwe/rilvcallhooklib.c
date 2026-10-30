@@ -35,21 +35,24 @@
  *   - The test for the tree line of the last indent level reads the
  *     indent of the next node at the offset of the first field entry's
  *     width (dispaddress is already past the first entry), not at the
- *     indent offset (an odd width: an address error on a 68000).
+ *     indent offset (an odd width: an address error on a 68000) (#739).
  *   - The number of tree lines, indent / 16 - 1, is taken as a long with
  *     the upper word of the caller's d7 (MOVE.w indent,d7:ASR.w #4:SUBQ.l
  *     #1): a negative d7 draws no lines and leaves the RastPort's line
  *     pattern at $AAAA; an indent below 16 with an upper word other than
- *     0 and $8001..$FFFF draws 65536 lines (DBRA on the low word).
+ *     0 and $8001..$FFFF draws 65536 lines (DBRA on the low word) (#737).
  *   - TextFit gets the width with $FFFF in the upper word (MOVEQ #-3,d2
- *     with ADD.w/SUB.w).
+ *     with ADD.w/SUB.w) (#741).
  *   - A right aligned BitMap is drawn ob_MinX too far right (the
- *     alignment adds the text's offset, but te_MinX is already ob_MinX).
+ *     alignment adds the text's offset, but te_MinX is already ob_MinX)
+ *     (#740).
  *   - The tree line pattern is written to rp_LinePtrn without the flags
- *     and count SetDrPt sets.
- *   - A text pointer 0 in a text field is read as a string at address 0.
- *   - RetrieveCallHook must be called before the hook is used (the
- *     graphics base is 0 before).
+ *     and count SetDrPt sets (#738).
+ *   - A text pointer 0 in a text field is read as a string at address 0
+ *     (#742).
+ *
+ * RetrieveCallHook must be called before the hook is used (the graphics
+ * base is 0 before): documented usage, not a defect.
  */
 #include "blitzlib.h"
 #include <graphics/rastport.h>
@@ -164,11 +167,11 @@ static void displayfield(struct Library *gfx)
     WORD x, y;
 
     if (!isbitmap) {
-        const char *s = (const char *)text;     /* BUG(orig): 0 not checked */
+        const char *s = (const char *)text;     /* BUG(orig): 0 not checked (#742) */
         ULONG n = 0, w, h;
 
         /* the constraining width: MOVEQ #-3,d2 + word arithmetic */
-        w = 0xffff0000UL | (UWORD)(-3 + ob.MaxX - ob.MinX);    /* BUG(orig) */
+        w = 0xffff0000UL | (UWORD)(-3 + ob.MaxX - ob.MinX);    /* BUG(orig) (#741) */
         h = (UWORD)(1 + ob.MaxY - ob.MinY);
         while (s[n])
             n++;
@@ -209,7 +212,7 @@ static void displayfield(struct Library *gfx)
         extent.te_Extent.MaxX = (WORD)(ob.MinX + extent.te_Width - 1);
         extent.te_Extent.MaxY = (WORD)(ob.MinY + extent.te_Height - 1);
     }
-    place(&x, &y);                      /* BUG(orig): right: + ob.MinX */
+    place(&x, &y);                      /* BUG(orig): right: + ob.MinX (#740) */
     if (extent.te_Width)
         BltBitMapRastPort((const struct BitMap *)text, 0, 0, rp, extent.te_Extent.MinX,
                           extent.te_Extent.MinY, extent.te_Width, extent.te_Height, 0xc0);
@@ -218,7 +221,7 @@ static void displayfield(struct Library *gfx)
 }
 
 /* ClearIndent: the indent in pen 0, the tree lines in pen 1; d7 = the
-   caller's d7 (its upper word, BUG(orig)) */
+   caller's d7 (its upper word, BUG(orig) #737) */
 static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *node, ULONG d7)
 {
     WORD x, y;
@@ -227,7 +230,7 @@ static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *n
     SetAPen(rp, 0);
     RectFill(rp, ob.MinX, ob.MinY, (WORD)(ob.MinX + indent - 1), ob.MaxY);
     SetAPen(rp, 1);
-    rp->LinePtrn = 0xaaaa;              /* BUG(orig): not SetDrPt */
+    rp->LinePtrn = 0xaaaa;              /* BUG(orig): not SetDrPt (#738) */
     x = (WORD)(ob.MinX + 8);
     d7 = (d7 & 0xffff0000UL) | (UWORD)(indent >> 4);
     d7--;                               /* SUBQ.l #1,d7:BMI */
@@ -240,7 +243,7 @@ static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *n
         if (k == 0) {                   /* the last level: short if the last node */
             const UBYTE *next = *(const UBYTE *const *)node;
             if (!*(const ULONG *)next
-                || WAT(next, *dispaddress) < indent)   /* BUG(orig): width offset */
+                || WAT(next, *dispaddress) < indent)   /* BUG(orig): width offset (#739) */
                 y = (WORD)((WORD)(y + ob.MinY) >> 1);
         }
         Draw(rp, x, y);
