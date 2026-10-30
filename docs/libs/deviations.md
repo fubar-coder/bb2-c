@@ -125,7 +125,7 @@ Produces byte-identical programs (test corpus and CD reference run), hence only
 internal deviations. Conventions: `-fbaserel` (globals a4-relative,
 `GLUE_LOAD_A4` in all entry points from outside, [README](../blitz2/bb2-readme.md)), assembler only in
 `programs/blitz2/src/glue*.c`, registers with persistent state as globals
-(`srcptr`, `numd3`/`numd6`, `getvnamelen`).
+(`srcptr`, `numval`/`numfloat`).
 
 | Place (file:line) | Original | C version | Kind | observable? |
 |---|---|---|---|---|

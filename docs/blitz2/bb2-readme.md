@@ -57,9 +57,11 @@ Each `NAME.c` has a `NAME.h` (contract for the other parts);
 * `DIFF: …` – deliberate deviation, only where C cannot do the same
   (stack tricks, register frames); the comment says what the original did.
 * Registers that permanently carry state in the original are globals:
-  `srcptr` = a5 of the parser, `numd3`/`numd6` = d3/d6 after number fetch,
-  `getvnamelen` = d2 after `getvname`. Condition codes as results became
-  return values (the mapping is in the respective header).
+  `srcptr` = a5 of the parser, `numval`/`numfloat` = d3/d6 after number
+  fetch. Register results that are only read by the caller became return
+  values or out parameters (e.g. the name length d2 of `getvname`),
+  condition codes as results return values (the mapping is in the
+  respective header).
 * Code templates (machine code that the compiler copies into the generated program)
   are writable `UWORD` arrays with the original bytes, generated
   from the vasm listing (bb2 `tools/asmlisting.py`) and checked against the binary.
