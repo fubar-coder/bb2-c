@@ -37,58 +37,58 @@ ULONG pixrows22;                        /* ted.s:5017 */
 /* ted.s:4407 scup2 - one plane a0: rows up (if the height is not 0),
    then the last row filled with 0, or $FFFF if that screen row is in the
    block (whole width, survey-05 I.9) */
-static void scup2(UBYTE *a0, ULONG d5, UWORD d4, ULONG d3, UWORD d2)
+static void scup2(UBYTE *a0, ULONG rowoff, UWORD size, ULONG lastoff, UWORD rowsize)
 {
     UBYTE *a1 = a0;
 
-    if (d4 >= 64) {                             /* cmp #64,d4 / bcs .skip0 */
-        a0 += d5;
+    if (size >= 64) {                           /* cmp #64,d4 / bcs .skip0 */
+        a0 += rowoff;
         hw.bltdpt = a0;
         a0 += (WORD)fontmul;
         hw.bltapt = a0;
-        hw.bltsize = d4;
+        hw.bltsize = size;
         WaitBlit();
     }
     /* .skip0 */
-    a1 += d3;
+    a1 += lastoff;
     hw.bltdpt = a1;
     hw.bltadat = 0;
     if (bboty != (UWORD)-1) {
-        UWORD d0 = (UWORD)(curstop + edrows - 1);
+        UWORD lastline = (UWORD)(curstop + edrows - 1);
 
-        if (d0 >= btopy && d0 <= bboty)
+        if (lastline >= btopy && lastline <= bboty)
             hw.bltadat = 0xFFFF;
     }
     /* .skip */
     hw.bltcon0 = 0x1F0;
-    hw.bltsize = d2;
+    hw.bltsize = rowsize;
     WaitBlit();                                 /* jmp waitblit(a6) */
 }
 
 /* ted.s:4346 scrollup - screen up from d7 to bottom */
-void scrollup(UWORD d7)
+void scrollup(UWORD row)
 {
-    WORD d6 = (WORD)(edrows - d7 - 1);          /* rows to scroll */
-    ULONG d5, d3;
-    UWORD d4, d2, d0;
+    WORD rows = (WORD)(edrows - row - 1);       /* rows to scroll */
+    ULONG rowoff, lastoff;
+    UWORD size, rowsize, d0;
 
     getblitter();
     hw.bltcon0 = 0x9F0;
     /* the chmap blits (rows up, last row = $2020): CPU, DIFF */
-    chmap_scrollup(d7);
+    chmap_scrollup(row);
     /* .skip */
-    d5 = (ULONG)d7 * fontmul;                   /* mulu */
+    rowoff = (ULONG)row * fontmul;              /* mulu */
     d0 = blitmod;
     hw.bltamod = d0;
     hw.bltdmod = d0;
-    d4 = (UWORD)((UWORD)((ULONG)(UWORD)d6 * fonthite) << 6);
+    size = (UWORD)((UWORD)((ULONG)(UWORD)rows * fonthite) << 6);
     d0 = (UWORD)(edcols >> 1);
-    d4 |= d0;
-    d2 = (UWORD)((UWORD)(fonthite << 6) | d0);
-    d3 = (ULONG)(UWORD)(edrows - 1) * fontmul;
-    scup2(bitmaps[0], d5, d4, d3, d2);
+    size |= d0;
+    rowsize = (UWORD)((UWORD)(fonthite << 6) | d0);
+    lastoff = (ULONG)(UWORD)(edrows - 1) * fontmul;
+    scup2(bitmaps[0], rowoff, size, lastoff, rowsize);
     hw.bltcon0 = 0x9F0;
-    scup2(bitmaps[1], d5, d4, d3, d2);
+    scup2(bitmaps[1], rowoff, size, lastoff, rowsize);
     putblitter();
 }
 
@@ -99,41 +99,41 @@ void scrupall(void)
 }
 
 /* ted.s:4523 scdown2 - one plane down (descending) */
-static void scdown2(UBYTE *a0, ULONG d5, UWORD d6)
+static void scdown2(UBYTE *a0, ULONG off, UWORD size)
 {
-    a0 += d5;
+    a0 += off;
     hw.bltdpt = a0;
     a0 -= (WORD)fontmul;
     hw.bltapt = a0;
-    hw.bltsize = d6;
+    hw.bltsize = size;
     WaitBlit();
 }
 
 /* ted.s:4434 scrolldown - scroll screen down from d7 to bottom */
-void scrolldown(UWORD d7)
+void scrolldown(UWORD row)
 {
-    WORD d6;
+    WORD rows;
     UWORD size;
-    ULONG d5;
+    ULONG off;
 
     getblitter();
-    d6 = (WORD)(edrows - d7 - 1);               /* rows to scroll */
-    if (d6 != 0) {
+    rows = (WORD)(edrows - row - 1);            /* rows to scroll */
+    if (rows != 0) {
         hw.bltcon0 = 0x9F0;
         hw.bltcon1 = 2;
-        /* the chmap blit (descending, one row too many for even d6,
+        /* the chmap blit (descending, one row too many for even rows,
            survey-05 I.4): CPU, DIFF.  chmap_scrolldown also erases chmap
-           row d7, which eraseline below does again (same bytes). */
-        chmap_scrolldown(d7);
+           row `row`, which eraseline below does again (same bytes). */
+        chmap_scrolldown(row);
         hw.bltamod = blitmod;
         hw.bltdmod = blitmod;
-        size = (UWORD)((UWORD)((ULONG)(UWORD)d6 * fonthite) << 6);
+        size = (UWORD)((UWORD)((ULONG)(UWORD)rows * fonthite) << 6);
         size |= (UWORD)(edcols >> 1);           /* bltsize */
-        d5 = pixrows22 - (ULONG)(UWORD)(blitmod + 2);   /* moveq #0 / move / addq.w #2 / sub.l */
-        scdown2(bitmaps[0], d5, size);
-        scdown2(bitmaps[1], d5, size);
+        off = pixrows22 - (ULONG)(UWORD)(blitmod + 2);  /* moveq #0 / move / addq.w #2 / sub.l */
+        scdown2(bitmaps[0], off, size);
+        scdown2(bitmaps[1], off, size);
     }
-    eraseline(d7);                              /* falls through into eraseline */
+    eraseline(row);                             /* falls through into eraseline */
 }
 
 /* ted.s:4433 scrdownall */
@@ -143,33 +143,33 @@ void scrdownall(void)
 }
 
 /* ted.s:4479 eraseline */
-void eraseline(UWORD d7)
+void eraseline(UWORD row)
 {
-    ULONG d6;
-    UWORD d5;
+    ULONG rowoff;
+    UWORD size;
 
     hw.bltamod = blitmod;
     hw.bltdmod = blitmod;
     hw.bltcon0 = 0x1F0;                         /* move.l #$1f00000,$040 */
     hw.bltcon1 = 0;
-    d6 = (ULONG)d7 * fontmul;
-    d5 = (UWORD)((UWORD)(fonthite << 6) | (edcols >> 1));  /* bltsize */
+    rowoff = (ULONG)row * fontmul;
+    size = (UWORD)((UWORD)(fonthite << 6) | (edcols >> 1)); /* bltsize */
     hw.bltadat = 0;
     if (bboty != (UWORD)-1) {
-        UWORD d0 = (UWORD)(d7 + curstop);
+        UWORD line = (UWORD)(row + curstop);
 
-        if (d0 >= btopy && d0 <= bboty)
+        if (line >= btopy && line <= bboty)
             hw.bltadat = 0xFFFF;
     }
     /* .skip0 */
-    hw.bltdpt = bitmaps[0] + d6;
-    hw.bltsize = d5;
+    hw.bltdpt = bitmaps[0] + rowoff;
+    hw.bltsize = size;
     WaitBlit();
-    hw.bltdpt = bitmaps[1] + d6;
-    hw.bltsize = d5;
+    hw.bltdpt = bitmaps[1] + rowoff;
+    hw.bltsize = size;
     WaitBlit();
     /* chmap row d7 = $2020: CPU, DIFF */
-    chmap_eraseline(d7);
+    chmap_eraseline(row);
     putblitter();
 }
 
@@ -230,7 +230,7 @@ BOOL screenopen(void)
     struct BitMap *bm;
     struct Process *pr;
     UBYTE *a1;
-    UWORD d1, d0;
+    UWORD bpr, d0;
     ULONG l;
 
     calcscreen();
@@ -240,14 +240,14 @@ BOOL screenopen(void)
     winscreen = myscreen;
     reqstruct[3] = (ULONG)myscreen;
     bm = myscreen->RastPort.BitMap;             /* 88(a0) */
-    d1 = bm->BytesPerRow;
-    bmapmul = d1;
-    blitmod = (UWORD)(d1 - edcols);
-    l = (ULONG)d1 * pixrows;
+    bpr = bm->BytesPerRow;
+    bmapmul = bpr;
+    blitmod = (UWORD)(bpr - edcols);
+    l = (ULONG)bpr * pixrows;
     pixrows2 = (UWORD)l;
     pixrows22 = l;
-    fontmul = (UWORD)((ULONG)d1 * fonthite);
-    l = (ULONG)d1 * topskip;
+    fontmul = (UWORD)((ULONG)bpr * fonthite);
+    l = (ULONG)bpr * topskip;
     a1 = bm->Planes[0];
     combitmap = a1;
     bitmaps[0] = a1 + l;
@@ -344,41 +344,41 @@ sfail:
    end CWait has no CBump (harmless, MrgCop ends the list). */
 void makecop(void)
 {
-    struct UCopList *d7;
-    UWORD d0;
-    LONG d6;
+    struct UCopList *ucl;
+    UWORD rgb;
+    LONG line;
 
     if (copok)
         return;
     /* .doit: col2 = RGB4 of colour 2 (byte operations as in the asm) */
-    d0 = (UWORD)(palit[6] << 8);
-    d0 = (UWORD)((d0 & 0xFF00) | (UBYTE)palit[7]);
-    d0 = (UWORD)((d0 & 0xFF00) | (UBYTE)(((UBYTE)d0) << 4));
-    d0 = (UWORD)(d0 | (UBYTE)palit[8]);
-    col2 = d0;
-    d7 = AllocMem(12, MEMF_PUBLIC | MEMF_CLEAR);
-    coplist = d7;
-    UCopperListInit(d7, 24);
-    for (d6 = 0; d6 < 12; d6++) {
-        CWait(d7, d6, 0);
-        CBump(d7);
-        CMove(d7, (APTR)0x184, cols[d6]);       /* COLOR02 */
-        CBump(d7);
+    rgb = (UWORD)(palit[6] << 8);
+    rgb = (UWORD)((rgb & 0xFF00) | (UBYTE)palit[7]);
+    rgb = (UWORD)((rgb & 0xFF00) | (UBYTE)(((UBYTE)rgb) << 4));
+    rgb = (UWORD)(rgb | (UBYTE)palit[8]);
+    col2 = rgb;
+    ucl = AllocMem(12, MEMF_PUBLIC | MEMF_CLEAR);
+    coplist = ucl;
+    UCopperListInit(ucl, 24);
+    for (line = 0; line < 12; line++) {
+        CWait(ucl, line, 0);
+        CBump(ucl);
+        CMove(ucl, (APTR)0x184, cols[line]);    /* COLOR02 */
+        CBump(ucl);
     }
-    CWait(d7, 10000, 255);
-    d7->Next = myscreen->ViewPort.UCopIns;      /* 44+20 */
-    myscreen->ViewPort.UCopIns = d7;
+    CWait(ucl, 10000, 255);
+    ucl->Next = myscreen->ViewPort.UCopIns;     /* 44+20 */
+    myscreen->ViewPort.UCopIns = ucl;
     RemakeDisplay();
 }
 
 /* ted.s:4880 pstats */
-void pstats(const char *a3, UBYTE *a1)
+void pstats(const char *text, UBYTE *at)
 {
-    UBYTE d0;
+    UBYTE c;
 
-    while ((d0 = (UBYTE)*a3++) != 0) {
-        qprint(d0, a1);
-        a1++;
+    while ((c = (UBYTE)*text++) != 0) {
+        qprint(c, at);
+        at++;
     }
 }
 
@@ -419,35 +419,35 @@ void mwait(void)
    survey-05 I.7) */
 void halfcolors(void)
 {
-    struct ViewPort *a5 = &myscreen->ViewPort;
-    const UWORD *a4 = palit;
-    UWORD d7;
+    struct ViewPort *vp = &myscreen->ViewPort;
+    const UWORD *rgb = palit;
+    UWORD pen;
 
-    for (d7 = 0; d7 < 4; d7++) {
-        UWORD r = (UWORD)(a4[0] >> 1), g = (UWORD)(a4[1] >> 1), b = (UWORD)(a4[2] >> 1);
+    for (pen = 0; pen < 4; pen++) {
+        UWORD r = (UWORD)(rgb[0] >> 1), g = (UWORD)(rgb[1] >> 1), b = (UWORD)(rgb[2] >> 1);
 
-        a4 += 3;
-        SetRGB4(a5, d7, r, g, b);
+        rgb += 3;
+        SetRGB4(vp, pen, r, g, b);
     }
 }
 
 /* ted.s:4940 colors: 0-3 from palit, 17-19 (pointer) from mpalit */
 void colors(void)
 {
-    struct ViewPort *a5 = &myscreen->ViewPort;
-    const UWORD *a4 = palit;
-    UWORD d7 = 0;
-    WORD d6;
+    struct ViewPort *vp = &myscreen->ViewPort;
+    const UWORD *rgb = palit;
+    UWORD pen = 0;
+    WORD n;
 
-    for (d6 = 6; d6 >= 0; d6--) {               /* dbf d6 */
-        UWORD r = a4[0], g = a4[1], b = a4[2];
+    for (n = 6; n >= 0; n--) {                  /* dbf d6 */
+        UWORD r = rgb[0], g = rgb[1], b = rgb[2];
 
-        a4 += 3;
-        SetRGB4(a5, d7, r, g, b);
-        d7++;
-        if (d7 == 4) {
-            a4 = mpalit;
-            d7 = 17;
+        rgb += 3;
+        SetRGB4(vp, pen, r, g, b);
+        pen++;
+        if (pen == 4) {
+            rgb = mpalit;
+            pen = 17;
         }
     }
 }
@@ -472,9 +472,9 @@ void putblitter(void)
 }
 
 /* ted.s:5006 cls2 - starts the clear blit of one plane (no wait) */
-static void cls2(UBYTE *a0)
+static void cls2(UBYTE *plane)
 {
-    hw.bltdpt = a0;
+    hw.bltdpt = plane;
     hw.bltdmod = blitmod;
     hw.bltsize = (UWORD)((UWORD)(pixrows << 6) | (edcols >> 1));
 }
@@ -496,26 +496,26 @@ void cls(void)
 /* ted.s:5112 hscmods */
 static void hscmods(void)
 {
-    UWORD d0 = (UWORD)(blitmod + 2);
+    UWORD mod = (UWORD)(blitmod + 2);
 
-    hw.bltamod = d0;
-    hw.bltdmod = d0;
+    hw.bltamod = mod;
+    hw.bltdmod = mod;
     hw.bltsize = (UWORD)((UWORD)(pixrows << 6) | ((UWORD)(edcols - 2) >> 1));
 }
 
 /* ted.s:5064 scrite2 */
-static void scrite2(UBYTE *a0)
+static void scrite2(UBYTE *plane)
 {
-    hw.bltdpt = a0;
-    hw.bltapt = a0 - 2;
+    hw.bltdpt = plane;
+    hw.bltapt = plane - 2;
     hscmods();
 }
 
 /* ted.s:5108 scleft2 */
-static void scleft2(UBYTE *a0)
+static void scleft2(UBYTE *plane)
 {
-    hw.bltdpt = a0;
-    hw.bltapt = a0 + 2;
+    hw.bltdpt = plane;
+    hw.bltapt = plane + 2;
     hscmods();                                  /* falls through into hscmods */
 }
 
@@ -523,17 +523,17 @@ static void scleft2(UBYTE *a0)
    two left columns from chmap (cursoff already adjusted by the caller) */
 void scrollrite(void)
 {
-    const UBYTE *a5;
-    ULONG d7;
-    UWORD d2;
+    const UBYTE *src;
+    ULONG endoff;
+    UWORD n;
 
     getblitter();
     hw.bltcon0 = 0x9F0;                         /* move.l #$9f00002,$040 */
     hw.bltcon1 = 2;
-    d7 = pixrows22 - (ULONG)(UWORD)(blitmod + 2);   /* moveq #0 / move / addq.w #2 / sub.l */
-    scrite2(bitmaps[0] + d7);
+    endoff = pixrows22 - (ULONG)(UWORD)(blitmod + 2); /* moveq #0 / move / addq.w #2 / sub.l */
+    scrite2(bitmaps[0] + endoff);
     WaitBlit();
-    scrite2(bitmaps[1] + d7);
+    scrite2(bitmaps[1] + endoff);
     putblitter();
 
     storepos();
@@ -541,19 +541,19 @@ void scrollrite(void)
     cursy = 0;
     scloc = 0;
     chloc = 0;
-    a5 = chmap + cursoff;
-    d2 = (UWORD)(edrows - 1);
+    src = chmap + cursoff;
+    n = (UWORD)(edrows - 1);
     do {                                        /* .loop ... dbf d2 */
-        print3(*a5++);
+        print3(*src++);
         cursx = 1;
-        print3(*a5);
+        print3(*src);
         cursx = 0;
         scloc += fontmul;
-        a5 += (WORD)chcols;
-        a5--;
+        src += (WORD)chcols;
+        src--;
         chloc = (UWORD)(chloc + chcols);
         cursy++;
-    } while (d2-- != 0);
+    } while (n-- != 0);
     color = normcol;
     restorepos();
 }
@@ -562,8 +562,8 @@ void scrollrite(void)
    right columns */
 void scrollleft(void)
 {
-    const UBYTE *a5;
-    UWORD d0, d2;
+    const UBYTE *src;
+    UWORD col, n;
 
     getblitter();
     hw.bltcon0 = 0x9F0;
@@ -573,23 +573,23 @@ void scrollleft(void)
     putblitter();
 
     storepos();
-    d0 = (UWORD)(edcols - 2);
-    cursx = d0;
+    col = (UWORD)(edcols - 2);
+    cursx = col;
     cursy = 0;
     scloc = 0;
     chloc = 0;
-    a5 = chmap + cursoff + (WORD)d0;
-    d2 = (UWORD)(edrows - 1);
+    src = chmap + cursoff + (WORD)col;
+    n = (UWORD)(edrows - 1);
     do {
-        print3(a5[0]);
+        print3(src[0]);
         cursx++;
-        print3(a5[1]);
+        print3(src[1]);
         cursx--;
         scloc += fontmul;
-        a5 += (WORD)chcols;
+        src += (WORD)chcols;
         chloc = (UWORD)(chloc + chcols);
         cursy++;
-    } while (d2-- != 0);
+    } while (n-- != 0);
     color = normcol;
     restorepos();
 }
@@ -597,48 +597,48 @@ void scrollleft(void)
 /* ------------------------------------------------------ text output */
 
 /* ted.s:5125 print3 */
-void print3(UBYTE d0)
+void print3(UBYTE c)
 {
     color = normcol;
-    if (d0 & 0x80) {
-        d0 &= 0x7F;
+    if (c & 0x80) {
+        c &= 0x7F;
         color = tokcol;
     }
-    printa0(d0, print4);
+    printa0(c, print4);
 }
 
 /* ted.s:5132 print - print d0 at cursx,cursy, in color (1,2,3) */
-void print(UBYTE d0)
+void print(UBYTE c)
 {
-    printa0(d0, print2);                        /* falls through into printa0 */
+    printa0(c, print2);                         /* falls through into printa0 */
 }
 
 /* ted.s:5135 printa0: inverse from the block bounds (rows unsigned,
    columns signed), then the computed call jsr (a0) */
-void printa0(UBYTE d0, void (*a0)(UBYTE))
+void printa0(UBYTE c, void (*out)(UBYTE))
 {
-    UWORD d2;
-    WORD d3;
+    UWORD line;
+    WORD col;
 
     if (bboty == (UWORD)-1)
         goto skip0;
-    d2 = (UWORD)(curstop + cursy);
-    if (d2 < btopy)
+    line = (UWORD)(curstop + cursy);
+    if (line < btopy)
         goto skip0;
-    if (d2 == btopy) {
-        d3 = (WORD)(cursoff + cursx);
-        if (d3 < btopx)
+    if (line == btopy) {
+        col = (WORD)(cursoff + cursx);
+        if (col < btopx)
             goto skip0;
-        if (d2 < bboty)
+        if (line < bboty)
             goto skipdo;
-        if (d3 > bbotx)
+        if (col > bbotx)
             goto skip0;
         goto skipdo;
     }
     /* .skip01 */
-    if (d2 > bboty)
+    if (line > bboty)
         goto skip0;
-    if (d2 != bboty)
+    if (line != bboty)
         goto skipdo;
     if ((WORD)(cursoff + cursx) <= bbotx)
         goto skipdo;
@@ -649,60 +649,60 @@ skipdo:
     inverse = (UWORD)-1;
 prinv:
     /* ted.s:5163 prinv */
-    a0(d0);
+    out(c);
 }
 
 /* ted.s:5167 print2 */
-void print2(UBYTE d0)
+void print2(UBYTE c)
 {
-    UBYTE d2 = d0;
+    UBYTE mapped = c;
 
     if (color != normcol)
-        d2 |= 128;
-    chmap[(WORD)chloc + cursoff + (WORD)cursx] = d2;
-    print4(d0);                                 /* falls through into print4 */
+        mapped |= 128;
+    chmap[(WORD)chloc + cursoff + (WORD)cursx] = mapped;
+    print4(c);                                  /* falls through into print4 */
 }
 
 /* ted.s:5178 print4 - glyph into both planes (colour bits, inverse).
    d0 >= 128 reads behind the font (survey-05 I.11). */
-void print4(UBYTE d0)
+void print4(UBYTE c)
 {
-    UBYTE *a0, *a1, d1, d2, d4;
-    const UBYTE *a2;
-    UWORD d3;
+    UBYTE *p0, *p1, mask0, mask1, inv;
+    const UBYTE *glyph;
+    UWORD n;
 
-    calcphys(&a0, &a1);
-    a2 = fontcalc(d0);
-    d1 = (color & 1) ? 0xFF : 0;
-    d2 = (color & 2) ? 0xFF : 0;
-    d4 = (UBYTE)inverse;
-    d3 = fonthite2;
+    calcphys(&p0, &p1);
+    glyph = fontcalc(c);
+    mask0 = (color & 1) ? 0xFF : 0;
+    mask1 = (color & 2) ? 0xFF : 0;
+    inv = (UBYTE)inverse;
+    n = fonthite2;
     do {                                        /* .loop ... dbf d3 */
-        *a0 = (UBYTE)((*a2 & d1) ^ d4);
-        *a1 = (UBYTE)((*a2 & d2) ^ d4);
-        a2 += 16;
-        a0 += (WORD)bmapmul;
-        a1 += (WORD)bmapmul;
-    } while (d3-- != 0);
+        *p0 = (UBYTE)((*glyph & mask0) ^ inv);
+        *p1 = (UBYTE)((*glyph & mask1) ^ inv);
+        glyph += 16;
+        p0 += (WORD)bmapmul;
+        p1 += (WORD)bmapmul;
+    } while (n-- != 0);
 }
 
 /* ted.s:5205 qprint - print d0 to a0, 1 bitplane only, quick */
-void qprint(UBYTE d0, UBYTE *a0)
+void qprint(UBYTE c, UBYTE *at)
 {
-    const UBYTE *a2 = fontcalc(d0);
-    UWORD d1;
+    const UBYTE *glyph = fontcalc(c);
+    UWORD n;
 
-    d1 = fonthite2;
+    n = fonthite2;
     do {
-        *a0 = *a2;
-        a2 += 16;
-        a0 += (WORD)bmapmul;
-    } while (d1-- != 0);
+        *at = *glyph;
+        glyph += 16;
+        at += (WORD)bmapmul;
+    } while (n-- != 0);
 }
 
 /* ted.s:5244 calcphys - calculate physical coords of cursor */
-void calcphys(UBYTE **a0, UBYTE **a1)
+void calcphys(UBYTE **p0, UBYTE **p1)
 {
-    *a0 = bitmaps[0] + scloc + (WORD)cursx;
-    *a1 = bitmaps[1] + scloc + (WORD)cursx;
+    *p0 = bitmaps[0] + scloc + (WORD)cursx;
+    *p1 = bitmaps[1] + scloc + (WORD)cursx;
 }

@@ -20,9 +20,10 @@
 /* scrupall (4345), scrollup (4346), scrdownall (4433), scrolldown (4434):
    hooks.h.  Internal (static in screen.c): scup2 (4407, one plane up +
    fill), scdown2 (4523, one plane down). */
-/* ted.s:4479 eraseline: row d7 = spaces in chmap, 0/$FFFF (block) in
-   both planes (blitter already owned: entered from scrolldown) */
-void eraseline(UWORD d7);
+/* ted.s:4479 eraseline: screen row `row` (asm d7) = spaces in chmap,
+   0/$FFFF (block) in both planes (blitter already owned: entered from
+   scrolldown) */
+void eraseline(UWORD row);
 
 /* ------------------------------------------------------------ screen */
 
@@ -40,9 +41,9 @@ BOOL screenopen(void);
 /* ted.s:4823 makecop: colour gradient of pen 2 in the title bar (UCopList)
    unless copok */
 void makecop(void);
-/* ted.s:4880 pstats: string a3 into the status line at a1 (one plane,
-   qprint per character) */
-void pstats(const char *a3, UBYTE *a1);
+/* ted.s:4880 pstats: string text (asm a3) into the status line at `at`
+   (asm a1; one plane, qprint per character) */
+void pstats(const char *text, UBYTE *at);
 /* ted.s:4888 freechmap: FreeMem(chmap, chcols*edrows) */
 void freechmap(void);
 /* ted.s:4895 screenclose (comdata-8): window, menus, chmap, screen */
@@ -65,24 +66,25 @@ void putblitter(void);
 
 /* ------------------------------------------------------ text output */
 
-/* ted.s:5125 print3: d0 bit 7 -> tokcol else normcol, bit 7 cleared, draw
-   only (print4) - no chmap write */
-void print3(UBYTE d0);
-/* ted.s:5132 print: print d0 at cursx/cursy in `color` (print2: chmap +
+/* ted.s:5125 print3: character c (asm d0) bit 7 -> tokcol else normcol,
+   bit 7 cleared, draw only (print4) - no chmap write */
+void print3(UBYTE c);
+/* ted.s:5132 print: print c at cursx/cursy in `color` (print2: chmap +
    draw), through printa0 */
-void print(UBYTE d0);
-/* ted.s:5135 printa0: `inverse` from the block bounds, then a0(d0)
-   (computed call).  `prinv` (5163) is a label inside. */
-void printa0(UBYTE d0, void (*a0)(UBYTE));
-/* ted.s:5167 print2: chmap[chloc+cursoff+cursx] = d0 (| $80 if color !=
+void print(UBYTE c);
+/* ted.s:5135 printa0: `inverse` from the block bounds, then out(c) (asm:
+   computed call jsr (a0)).  `prinv` (5163) is a label inside. */
+void printa0(UBYTE c, void (*out)(UBYTE));
+/* ted.s:5167 print2: chmap[chloc+cursoff+cursx] = c (| $80 if color !=
    normcol), falls into print4 */
-void print2(UBYTE d0);
-/* ted.s:5178 print4: draw glyph d0 into both planes (colour bits, inverse) */
-void print4(UBYTE d0);
-/* ted.s:5205 qprint: glyph d0 at a0, one plane, no colour/inverse */
-void qprint(UBYTE d0, UBYTE *a0);
-/* ted.s:5244 calcphys: *a0, *a1 = bitmaps[0/1] + scloc + cursx */
-void calcphys(UBYTE **a0, UBYTE **a1);
+void print2(UBYTE c);
+/* ted.s:5178 print4: draw glyph c into both planes (colour bits, inverse) */
+void print4(UBYTE c);
+/* ted.s:5205 qprint: glyph c (asm d0) at `at` (asm a0), one plane, no
+   colour/inverse */
+void qprint(UBYTE c, UBYTE *at);
+/* ted.s:5244 calcphys: *p0, *p1 (asm a0, a1) = bitmaps[0/1] + scloc + cursx */
+void calcphys(UBYTE **p0, UBYTE **p1);
 
 /* ------------------------------------------------------------- data */
 
