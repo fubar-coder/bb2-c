@@ -33,38 +33,45 @@
  *
  * BUG(orig):
  *   - GetIconObject copies the icon's tool types without a limit into the
- *     100 entries (and reads from address 0 if the icon has none);
- *     NewToolType appends without a limit either; nothing checks for the
- *     last entry (a full array runs into memory behind it).
+ *     100 entries (#855) (and reads from address 0 if the icon has none)
+ *     (#845); NewToolType appends without a limit either; nothing checks
+ *     for the last entry (a full array runs into memory behind it) (#855).
  *   - SetToolValue matches a name that is a prefix of the entry ("FL"
- *     replaces "FLAG"); the entry's own "(" is skipped, so the name
- *     "OFF" replaces "(OFF)=1".  The new string is built with
- *     do-while loops: an empty name copies its 0 and then whatever
- *     follows the name up to the next 0.
+ *     replaces "FLAG") (#853).  The new string is built with do-while
+ *     loops: an empty name copies its 0 and then whatever follows the
+ *     name up to the next 0 (#841).
+ *   - SetToolValue/NewToolType/IconDefTool: a failing AddFreeList frees
+ *     address 0, the block is lost (#840).
  *   - FindToolType tt$,1 sets the bracket check flag, which only a
  *     bracket search clears: after a hit without brackets, a name with
  *     "(", a FindToolType before GetIconObject, the next FindToolType
- *     tt$ also searches "(tt$)".  The bracket hit returns 1, not -1.
- *     A name over 253 characters overflows the 256 byte buffer.
+ *     tt$ also searches "(tt$)" (#843).  A name over 253 characters
+ *     overflows the 256 byte buffer (#842).
  *   - FindToolValue stops at ")" (the end of "(name=value)") but also at
- *     a ")" inside the value; FindToolValue/FindToolNumber write no
- *     terminating 0 (invisible, see docs/libs/cmdlibs-port.md).
+ *     a ")" inside the value (#844).
  *   - IconDefTool rewinds a3 by the length of its argument + 1 (like
- *     FindToolValue does for its result) and leaves it there.
- *   - SetIconType without an icon returns its argument.
- *   - PutIconObject writes the icon (PutDiskObject's result ignored),
- *     then forgets it without FreeDiskObject (lost).
+ *     FindToolValue does for its result) and leaves it there (#846).
+ *   - SetIconType without an icon returns its argument (#852).
+ *   - PutIconObject writes the icon (PutDiskObject's result ignored)
+ *     (#851), then forgets it without FreeDiskObject (lost) (#850).
  *   - ShapeToIcon shape,shape uses the library's own Image for the
  *     selected image with PlanePick/PlaneOnOff 0 and sets the gadget
- *     flags to 6 (GADGHIMAGE), dropping all others.
+ *     flags to 6 (GADGHIMAGE), dropping all others (#854).
  *   - IconToShape: the shape is filled before the data is allocated (no
- *     memory: the shape keeps its size and has no data); the copy takes
- *     (width >> 4) + 1 words per row, one word more than the shape's
- *     data has when the width is a multiple of 16 (writes behind it);
- *     MakeCookie is called with a3 = the shape only if the shape was in
- *     use before (freeashape), otherwise with the caller's a3 - a cookie
- *     for whatever a3 points to; IconToShape shape,shape gives the second
- *     shape the cookie of the first (a3 is still the first shape).
+ *     memory: the shape keeps its size and has no data) (#848); the copy
+ *     takes (width >> 4) + 1 words per row, one word more than the
+ *     shape's data has when the width is a multiple of 16 (writes behind
+ *     it) (#847); MakeCookie is called with a3 = the shape only if the
+ *     shape was in use before (freeashape), otherwise with the caller's
+ *     a3 - a cookie for whatever a3 points to; IconToShape shape,shape
+ *     gives the second shape the cookie of the first (a3 is still the
+ *     first shape) (#849).
+ * Original behaviour that is no defect: SetToolValue skips the entry's
+ * own "(", so the name "OFF" replaces "(OFF)=1" (the switched-off form of
+ * the same entry).  FindToolType's bracket hit (a switched-off entry)
+ * returns 1, not -1 (it tells the two apart).  FindToolValue and
+ * FindToolNumber write no terminating 0 (string results need none, see
+ * #257 and docs/libs/cmdlibs-port.md).
  * DIFF: ShapeToIcon shape,shape and IconToShape leave a3 unchanged (the
  * original uses it as a work register and leaves it on its own Image or
  * the shape); a2 unchanged.
@@ -311,7 +318,7 @@ ULONG BLITZ_ROUTINE c_getstructure(CONST_STRPTR name BL_REG(d0))
     diskobject->do_ToolTypes = tooltypearray;
     for (i = 0; i < NTOOLTYPES; i++)
         tooltypearray[i] = NULL;
-    while (*from)                       /* BUG(orig): no limit, no NULL check */
+    while (*from)                       /* BUG(orig): no limit, no NULL check (#855, #845) */
         *to++ = *from++;
     return (ULONG)diskobject;
 }
@@ -425,8 +432,8 @@ ULONG BLITZ_ROUTINE c_Put_icon(CONST_STRPTR name BL_REG(d0), ULONG type BL_REG(d
         return 0;
     if ((UBYTE)type)
         diskobject->do_Type = (UBYTE)type;
-    PutDiskObject(name, diskobject);    /* BUG(orig): result ignored */
-    diskobject = NULL;                  /* BUG(orig): not freed */
+    PutDiskObject(name, diskobject);    /* BUG(orig): result ignored (#851) */
+    diskobject = NULL;                  /* BUG(orig): not freed (#850) */
     tooltype = NULL;
     return (ULONG)-1;
 }
@@ -469,7 +476,7 @@ static ULONG gotit(STRPTR *entry)
         return 0;
     if (!AddFreeList((struct FreeList *)((UBYTE *)diskobject + DO_FREELIST), mem,
                      toolbuffersize)) {
-        /* BUG(orig): MOVE.l d0,a1 with d0 = AddFreeList's 0 - frees
+        /* BUG(orig) #840: MOVE.l d0,a1 with d0 = AddFreeList's 0 - frees
            address 0, the block is lost */
         FreeMem(nofree(), toolbuffersize);
         return 0;
@@ -479,7 +486,7 @@ static ULONG gotit(STRPTR *entry)
     s = tooltype_address;
     if (!status_tool)
         *d++ = '(';
-    do                                  /* BUG(orig): do-while (see above) */
+    do                                  /* BUG(orig): do-while (see above, #841) */
         *d++ = *s++;
     while (*s);
     s = string_address;
@@ -534,7 +541,7 @@ ULONG BLITZ_ROUTINE c_NewTool(const char *name BL_REG(d0), const char *value BL_
     toolargs(name, value, status, lens);
     if (!(p = tooltype))
         return 0;
-    while (*p)                          /* BUG(orig): no limit */
+    while (*p)                          /* BUG(orig): no limit (#855) */
         p++;
     p[1] = NULL;
     return gotit(p);
@@ -586,7 +593,7 @@ void BLITZ_ROUTINE c_shapetoicon2(const UBYTE *shape BL_REG(a0), const UBYTE *sh
     c_shapetoicon(shape);
 }
 
-/* SetIconType object_type (1-5): -1; BUG(orig) without icon d0 = type */
+/* SetIconType object_type (1-5): -1; BUG(orig) without icon d0 = type (#852) */
 ULONG BLITZ_ROUTINE c_icontype(ULONG type BL_REG(d0))
 {
     if (!diskobject)
@@ -618,13 +625,13 @@ ULONG BLITZ_ROUTINE c_defaulttool(const char *tool BL_REG(d0), const ULONG *lens
     if (!len)
         return 0;
     toolbuffersize = len + 1;
-    blitz_string -= toolbuffersize;     /* BUG(orig): a3 rewound */
+    blitz_string -= toolbuffersize;     /* BUG(orig): a3 rewound (#846) */
     mem = AllocMem(toolbuffersize, MEMF_CLEAR | MEMF_PUBLIC);
     if (!mem)
         return 0;
     if (!AddFreeList((struct FreeList *)((UBYTE *)diskobject + DO_FREELIST), mem,
                      toolbuffersize)) {
-        /* BUG(orig): MOVE.l d0,a1 with d0 = AddFreeList's 0 - frees
+        /* BUG(orig) #840: MOVE.l d0,a1 with d0 = AddFreeList's 0 - frees
            address 0, the block is lost */
         FreeMem(nofree(), toolbuffersize);
         return 0;
@@ -697,7 +704,7 @@ static void icontoshape_jump(ULONG d0, UBYTE *shape, UWORD render, UBYTE **a3)
     SL(shape, 14) = mem;
     from = *(const UWORD **)(im + 6);   /* ImageData */
     to = (UWORD *)mem;
-    /* BUG(orig): (width >> 4) + 1 words per row (MULU.w: low words) */
+    /* BUG(orig) #847: (width >> 4) + 1 words per row (MULU.w: low words) */
     d = (UWORD)bl_mulu_w((UWORD)bl_mulu_w((UWORD)(((WORD)w >> 4) + 1), h), SW(im, 4));
     d--;
     do

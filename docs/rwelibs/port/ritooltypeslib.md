@@ -33,36 +33,42 @@ that are not the result.
 **BUG(orig)** (kept):
 
 * GetIconObject copies the icon's tool types without a limit into the
-  100 entries (and reads from address 0 if the icon has none);
-  NewToolType appends without a limit.
+  100 entries (#855) (and reads from address 0 if the icon has none)
+  (#845); NewToolType appends without a limit (#855).
 * SetToolValue matches a name that is a prefix of the entry (`FL`
-  replaces `FLAG`) and skips the entry's own `(` (`OFF` replaces
-  `(OFF)=1`); the new string is built with do-while loops (an empty name
-  copies its 0 and then whatever follows).
+  replaces `FLAG`) (#853); the new string is built with do-while loops
+  (an empty name copies its 0 and then whatever follows) (#841).
 * SetToolValue/NewToolType/IconDefTool: if AddFreeList fails, `MOVE.l
-  d0,a1` frees address 0 (d0 is AddFreeList's 0), the block is lost.
+  d0,a1` frees address 0 (d0 is AddFreeList's 0), the block is lost
+  (#840).
 * FindToolType tt$,1 sets the bracket check flag, which only a bracket
   search clears: after a hit without brackets, a name beginning with `(`
   or a call before GetIconObject the next FindToolType tt$ also looks for
-  `(tt$)`. The bracket hit returns 1, not -1; a name over 253 characters
-  overflows the 256-byte buffer.
-* FindToolValue stops at a `)` also inside the value; it and
-  FindToolNumber write no terminating 0 (invisible, see
-  `docs/libs/cmdlibs-port.md`).
+  `(tt$)` (#843). A name over 253 characters overflows the 256-byte
+  buffer (#842).
+* FindToolValue stops at a `)` also inside the value (#844).
 * IconDefTool rewinds a3 by the length of its argument + 1 and leaves it
-  there.
-* SetIconType without an icon returns its argument.
-* PutIconObject ignores PutDiskObject's result and forgets the icon
-  without FreeDiskObject (lost).
+  there (#846).
+* SetIconType without an icon returns its argument (#852).
+* PutIconObject ignores PutDiskObject's result (#851) and forgets the
+  icon without FreeDiskObject (lost) (#850).
 * ShapeToIcon shape,shape uses the library's own Image (PlanePick 0) as
-  selected image and sets the gadget flags to 6, dropping the others.
+  selected image and sets the gadget flags to 6, dropping the others
+  (#854).
 * IconToShape fills the shape before allocating its data (no memory:
-  size without data); copies `(width >> 4) + 1` words per row, one more
-  than the shape's data has when the width is a multiple of 16; calls
-  MakeCookie with a3 = the shape only if it was in use before
-  (freeashape), otherwise with the caller's a3 (a cookie for whatever a3
-  points to); with two shapes the second gets the cookie of the first
-  if it is fresh (a3 still the first).
+  size without data) (#848); copies `(width >> 4) + 1` words per row, one
+  more than the shape's data has when the width is a multiple of 16
+  (#847); calls MakeCookie with a3 = the shape only if it was in use
+  before (freeashape), otherwise with the caller's a3 (a cookie for
+  whatever a3 points to); with two shapes the second gets the cookie of
+  the first if it is fresh (a3 still the first) (#849).
+
+Original behaviour that is no defect: SetToolValue skips the entry's own
+`(` (`OFF` replaces `(OFF)=1`, the switched-off form of the same entry);
+FindToolType's bracket hit (a switched-off entry) returns 1, not -1 (it
+tells the two apart); FindToolValue and FindToolNumber write no
+terminating 0 (invisible: string results need none, see #257 and
+`docs/libs/cmdlibs-port.md`).
 
 **DIFF:** ShapeToIcon shape,shape and IconToShape leave a3 unchanged (the
 original uses it as a work register and leaves it on its Image or the
