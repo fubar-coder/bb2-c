@@ -45,16 +45,17 @@ original changes d1-d7, a0, a1 (it saves a2-a6 itself).
   its local label `'l8`, which blitz2 2.10 assembles as the absolute
   address 8 (no relocation, the bus error vector): every displacement 0
   (d16(an), brief extension, bd/od 0 or of size "null") shows the bytes
-  at address 8 up to a 0 byte (Kickstart 3.2 in the emulator: `@J(`).
+  at address 8 up to a 0 byte (Kickstart 3.2 in the emulator: `@J(`)
+  (#614).
 * `docomma` is "a2 <> a5" after the source operand, but a5 is also the
   pointer the operand routines use for numbers and register lists: a
   source that only moves a5 (MOVEM with an empty register list) still
-  gets a comma.
+  gets a comma (#615).
 * The string is cut after 34 columns; two memory indirect `<ea>`s with
   32-bit displacements make a line of 86 bytes, over the end of the
-  80-byte LineBuff (opsize, opextra, extrainstr).
+  80-byte LineBuff (opsize, opextra, extrainstr) (#616).
 * Word writes to a3 and word/long reads of the code: an odd a3 or address
-  is an address error on a 68000.
+  is an address error on a 68000 (#617).
 
 **Test** (`libs/tests/rwe/ridisasmlib.c`, snitch case "rwe ridisasmlib"):
 C build and reference build disassemble the same buffer (same addresses,

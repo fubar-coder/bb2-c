@@ -27,7 +27,7 @@
  * condition tables), so that a line longer than 80 bytes and the look at
  * the bytes in front of a short name hit the same things.  The original's
  * register juggling is kept where it decides something: the operand
- * pointer a5 (docomma compares it with a2 - see BUG(orig)).  The memory
+ * pointer a5 (docomma compares it with a2 - see BUG(orig) (#615)).  The memory
  * is read with the original's access widths (word/long reads at the
  * given, possibly odd, address).
  *
@@ -37,16 +37,17 @@
  *     `LEA .l8,a0` for its local label 'l8, which blitz2 2.10 assembles
  *     as the absolute address 8 - the line gets the bytes of the bus
  *     error vector up to a 0 byte (on Kickstart 3.2 in the emulator
- *     "@J(" ...).
+ *     "@J(" ...) (#614).
  *   - docomma (a comma between the operands) is "a2 <> a5" after the
  *     source operand, but a5 is also the number/register list pointer of
  *     the operand routines: a source that only moves a5 (MOVEM with an
- *     empty register list) still gets a comma.
+ *     empty register list) still gets a comma (#615).
  *   - The string is cut after 34 columns: longer operands are lost; a line
  *     can grow to 86 bytes (two memory indirect <ea>s with 32 bit
- *     displacements) and overwrite opsize, opextra and extrainstr.
+ *     displacements) and overwrite opsize, opextra and extrainstr (#616).
  *   - DisAssemble$ writes words to a3: an odd a3 is an address error on a
- *     68000 (here as well), like the instruction reads at an odd address.
+ *     68000 (here as well), like the instruction reads at an odd address
+ *     (#617).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -440,7 +441,7 @@ static char *decprint(ULONG n)
     int i, started = 0;
 
     if (!n)
-        return DECZERO;                 /* BUG(orig) */
+        return DECZERO;                 /* BUG(orig) (#614) */
     *p = '0';
     for (i = 0; i < 10; i++) {
         if (!started) {
@@ -973,7 +974,7 @@ static int decode(const struct disdata *e, UWORD op)
         v.isdestop = 0;
         decodespecial(e->src, op);
     }
-    v.docomma = a2 != a5;               /* BUG(orig): a5 moves too */
+    v.docomma = a2 != a5;               /* BUG(orig) (#615): a5 moves too */
     if (e->dstmask) {
         UWORD ea = lsrw(op & e->dstmask, e->dst);
 
