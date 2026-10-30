@@ -7,7 +7,8 @@
 # Staging (build step, target rwe_refstage, part of ALL when the CD and
 # rwelibsrc are there): build/<preset>/libs/userlibs/rwe/refstage/, see
 # refbuild-stage.cmake - the CD's EXTRAS/BLITZLIBS/ with a LIBNUMS.BB that
-# has the numbers of the variant's libnums.h appended
+# has the numbers of the variant's libnums.h (and of the own variants',
+# RWE_OWN_VARIANTS) appended
 # (refbuild-libnums.cmake), the residents of residents.cmake, sbra.res,
 # and the sources with their INCDIR lines neutralised (tools/bblines: the
 # line becomes ";" - original bugs #341/#342: blitz2 2.10 puts the INCDIR
@@ -37,7 +38,7 @@
 #                      not in RWE_LIBS: its declarations test through
 #                      rwe_reference(), against the C build
 set(RWE_REF_DIR ${CMAKE_CURRENT_BINARY_DIR}/ref)
-set(RWE_REFBUILD_NEWER riamosfunclib risoundlib ristonecrackerlib rifnslib)
+set(RWE_REFBUILD_NEWER riamosfunclib risoundlib ristonecrackerlib rifnslib rievallib)
 # the entries whose source does not compile, not in the reference build:
 # Anim-Library3 (its unfinished RIDiskAnimInit uses diskanimflag and
 # animfile, defined nowhere; .cache analysis, README 3.2)
@@ -126,10 +127,19 @@ endforeach()
 
 if(have_originals)
 	set(libnums ${gen}/LIBNUMS.BB)
+	# the numbers of the variant and of the own variants (RWE_OWN_VARIANTS:
+	# what they add, e.g. #evallib)
 	set(libnums_h ${variant_dir}/libnums.h)
+	foreach(o IN LISTS RWE_OWN_VARIANTS)
+		string(REPLACE "|" ";" o "${o}")
+		list(GET o 1 v)
+		list(APPEND libnums_h ${PROJECT_SOURCE_DIR}/libs/variants/${v}/libnums.h)
+	endforeach()
+	list(REMOVE_DUPLICATES libnums_h)
+	string(REPLACE ";" "$<SEMICOLON>" libnums_h_arg "${libnums_h}")
 	add_custom_command(OUTPUT ${libnums}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${gen}
-		COMMAND ${CMAKE_COMMAND} -DIN=${cdlibs}/LIBNUMS.BB -DLIBNUMS_H=${libnums_h}
+		COMMAND ${CMAKE_COMMAND} -DIN=${cdlibs}/LIBNUMS.BB "-DLIBNUMS_H=${libnums_h_arg}"
 			-DTEDDETOK=${TEDDETOK} -DTEDTOK=${TEDTOK} -DTOKENS=${tokens} -DOUT=${libnums}
 			-P ${CMAKE_CURRENT_SOURCE_DIR}/refbuild-libnums.cmake
 		BYPRODUCTS ${libnums}.txt ${libnums}.add ${libnums}.add.txt
@@ -171,6 +181,15 @@ if(have_originals)
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/refbuild-libnums.cmake)
 	set_tests_properties(rwe_refbuild_libnums_broken PROPERTIES
 		PASS_REGULAR_EXPRESSION "#ripacklib: 73 in")
+	# two headers with another number for the same name
+	file(WRITE ${broken}/a/libnums.h "#define LIB_rwetestlib 5\n")
+	file(WRITE ${broken}/b/libnums.h "#define LIB_rwetestlib 6\n")
+	add_test(NAME rwe_refbuild_libnums_twice COMMAND ${CMAKE_COMMAND}
+		-DIN=${cdlibs}/LIBNUMS.BB "-DLIBNUMS_H=${broken}/a/libnums.h$<SEMICOLON>${broken}/b/libnums.h"
+		-DTEDDETOK=${TEDDETOK} -DTEDTOK=${TEDTOK} -DTOKENS=${tokens} -DOUT=${broken}/LIBNUMS2.BB
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/refbuild-libnums.cmake)
+	set_tests_properties(rwe_refbuild_libnums_twice PROPERTIES
+		PASS_REGULAR_EXPRESSION "#rwetestlib: 5 and 6 in")
 else()
 	add_custom_target(rwe_refstage
 		COMMAND ${CMAKE_COMMAND} -E echo "rwe_refstage: no CD or rwelibsrc (cmake -P cmake/fetch-originals.cmake): skipped"

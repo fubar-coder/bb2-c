@@ -36,7 +36,8 @@
   `docs/v2.10/libs.md` §4) [B].
 * **Numbers:** taken from AmiBlitz3's `sorted_libnums.ab3` (it lists
   every RI library); **clash with acidlibs/deflibs only 121** (RIEvalLib
-  vs acidlibs' polylib, `docs/v2.10/libs.md` §4). Several sources carry
+  vs acidlibs' polylib, `docs/v2.10/libs.md` §4; resolved by the variant
+  `rwe-1999-eval`, polylib at 87 = `#renderlib`, `port/rievallib.md`). Several sources carry
   literal test numbers (5, 8, 10, 19, 22, 39, 195, 197, 198), some of
   them used by other libraries [S, AB3].
 * **License:** `ROBNORTHFAST.bb` contains Rob Northen's PRO-PACK unpacker

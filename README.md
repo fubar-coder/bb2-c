@@ -64,7 +64,13 @@ list `RWE_LIBS` there names per library the Blitz source and its CD
 binary. They are checked like the acidlibs: declarations equal to the
 binary's (ctest `rwe_declarations_NAME`, `rwe_numbers`), behaviour
 compared with it in Amiberry (`libs/tests/rwe/NAME.c`, test cases
-`rwe NAME` of `libs_emulator`). Target
+`rwe NAME` of `libs_emulator`). A library whose number the acidlibs
+have is built in a variant of its own (`RWE_OWN_VARIANTS`):
+`rwe-1999-eval` is `rwe-1999` with polylib moved from 121 to 87
+(`#renderlib`) for RIEvalLib (121,
+`variants/rwe-1999-eval/userlibs/rwe/rievallib.obj`, used with the RWE
+userlibs of `rwe-1999`, whose numbers are the same; ctest
+`variant_rwe_1999_eval`, `rwe_numbers_rwe-1999-eval`). Target
 `rwelibsrc`: those Blitz sources as TED shows them, in
 `build/amiga/rwelibsrc/` (like `bblibsrc`). The **reference build** of
 those sources (`libs/userlibs/rwe/refbuild.cmake`,
@@ -501,7 +507,7 @@ libs/include/                blitzlib.h & co. (conventions of the libraries)
 libs/variants/               the variants of the libraries (NAME/libnums.h:
                              the library numbers; bb2-2.10 the default)
 libs/userlibs/               userlibs of a variant (rwe/: Red When Excited,
-                             variant rwe-1999)
+                             variant rwe-1999; rievallib: rwe-1999-eval)
 libs/blitzlib.ld             linker script: one code hunk, header at offset 0
 libs/acidlibs/               one C file per library
 libs/deflibs/                one C file per AmigaOS library

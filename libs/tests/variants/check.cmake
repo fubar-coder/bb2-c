@@ -9,6 +9,7 @@
 #       TOKENS with the tokens of every library OLD moved to NEW (same
 #       order, same names); the library file OBJ calls another library
 #       through the placeholder CALL (ALibJsr), no longer through OLDCALL
+#       (without -DOBJ: no call to check, no library calls a moved one)
 if(MODE STREQUAL "same")
 	foreach(f acidlibs deflibs)
 		execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files ${VARIANT}/${f} ${DEFAULT}/${f}
@@ -63,6 +64,10 @@ foreach(i RANGE ${last})
 endforeach()
 if(NOT moved)
 	message(FATAL_ERROR "no token of ${MAP} in ${TOKENS}")
+endif()
+if(NOT OBJ)
+	message(STATUS "${VARIANT}: ${moved} tokens moved (${MAP})")
+	return()
 endif()
 file(READ ${OBJ} hex HEX)
 string(FIND "${hex}" "${CALL}" a)

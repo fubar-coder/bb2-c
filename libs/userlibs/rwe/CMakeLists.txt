@@ -1,6 +1,7 @@
 # The libraries of the sources Red When Excited released in September 1999
 # (archive/aminet/amibl2src/rwelibsrc, docs/rwelibs/README.md), as
-# userlibs of the variant rwe-1999: NAME.c -> userlibs/rwe/NAME.obj.
+# userlibs of the variant rwe-1999: NAME.c -> userlibs/rwe/NAME.obj (of
+# the variant; of its own variant for RWE_OWN_VARIANTS).
 #
 # RWE_LIBS: NAME|SOURCE|REFERENCE[|USES] per library - SOURCE in rwelibsrc
 # (the Blitz source the C file translates), REFERENCE the binary below
@@ -18,6 +19,11 @@
 # behaviour is compared with REFERENCE in Amiberry (libs_emulator:
 # libs/tests/rwe/NAME.c, the property RWE_EMULATOR_LIBS lists obj|orig).
 set(RWE_VARIANT rwe-1999)
+# RWE_OWN_VARIANTS: NAME|VARIANT for a library whose number another
+# library of RWE_VARIANT has: built with the numbers of VARIANT (which
+# includes RWE_VARIANT's libnums.h and frees the number), checked against
+# VARIANT's acidlibs and deflibs (ctest rwe_numbers_VARIANT)
+set(RWE_OWN_VARIANTS "rievallib|rwe-1999-eval")
 set(bss2 cd/ultimate-blitz-basic-2.1/BSS2/REDBLITZLIBS/LIBRARIES/USERLIBS)
 set(ol cd/ultimate-blitz-basic-2.1/EXTRAS/BLITZLIBS/OTHERLIBS)
 set(bum cd/ultimate-blitz-basic-2.1/BUM10A/BLITZLIBS/RILIBS)
@@ -66,6 +72,9 @@ set(RWE_LIBS
 	"rishapeslib|shapeslib/RIShapesLib2.bb|refbuild|${bss2}/RIPACKLIB.OBJ"
 	"risortlib|sortlib/RISortlib2.bb|refbuild"
 	"ridisasmlib|Disasmlib/Disasm-library.bb2|refbuild"
+	# the BSS2 binary newer than the source (3.2), number 121 = the
+	# acidlibs' polylib: variant rwe-1999-eval (RWE_OWN_VARIANTS)
+	"rievallib|EvalLib4.bb|${bss2}/RIEVALLIB.OBJ"
 	# stage D (3.3): no binary anywhere; the reference build of the
 	# newest source (docs/rwelibs/README.md 2, column Reference)
 	"riregistrylib|Registry/Registry3.bb|refbuild"
@@ -138,6 +147,7 @@ foreach(src IN LISTS sources)
 endforeach()
 
 set(objs)
+set(own_variants)
 set(readable)
 foreach(l IN LISTS RWE_LIBS)
 	string(REPLACE "|" ";" l "${l}")
@@ -178,10 +188,25 @@ foreach(l IN LISTS RWE_LIBS)
 	if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.c)
 		continue()
 	endif()
-	set(obj ${out}/userlibs/rwe/${name}.obj)
-	blitz_library(${RWE_VARIANT}-${name} VARIANT ${variant_dir} OBJ ${obj} ${name}.c
-		CHECK ${out}/acidlibs ${out}/deflibs)
-	list(APPEND objs ${obj})
+	# the variant: RWE_VARIANT or the library's own (RWE_OWN_VARIANTS)
+	set(v ${RWE_VARIANT})
+	foreach(o IN LISTS RWE_OWN_VARIANTS)
+		string(REPLACE "|" ";" o "${o}")
+		list(GET o 0 oname)
+		if(oname STREQUAL name)
+			list(GET o 1 v)
+		endif()
+	endforeach()
+	set(vout ${BLITZ_VARIANTS_DIR}/${v})
+	set(obj ${vout}/userlibs/rwe/${name}.obj)
+	blitz_library(${v}-${name} VARIANT ${PROJECT_SOURCE_DIR}/libs/variants/${v} OBJ ${obj}
+		${name}.c CHECK ${vout}/acidlibs ${vout}/deflibs)
+	if(v STREQUAL RWE_VARIANT)
+		list(APPEND objs ${obj})
+	else()
+		list(APPEND own_${v} ${obj})
+		list(APPEND own_variants ${v})
+	endif()
 	rwe_reference(${name} ${reference} reffile fixture)
 	add_test(NAME rwe_declarations_${name} COMMAND ${BLITZLIBCOMPARE} ${reffile} ${obj})
 	set_tests_properties(rwe_declarations_${name} PROPERTIES SKIP_RETURN_CODE 77)
@@ -200,3 +225,15 @@ endif()
 if(objs)
 	add_test(NAME rwe_numbers COMMAND ${BIGLIB} check ${out}/acidlibs ${out}/deflibs ${objs})
 endif()
+# a variant of its own: its acidlibs, deflibs, all RWE userlibs and its
+# libraries (its numbers include RWE_VARIANT's); and the reason for it,
+# its libraries clash with RWE_VARIANT's acidlibs/deflibs (must fail)
+list(REMOVE_DUPLICATES own_variants)
+foreach(v IN LISTS own_variants)
+	set(vout ${BLITZ_VARIANTS_DIR}/${v})
+	add_test(NAME rwe_numbers_${v} COMMAND ${BIGLIB} check ${vout}/acidlibs ${vout}/deflibs
+		${objs} ${own_${v}})
+	add_test(NAME rwe_numbers_${v}_clash COMMAND ${BIGLIB} check ${out}/acidlibs
+		${out}/deflibs ${own_${v}})
+	set_tests_properties(rwe_numbers_${v}_clash PROPERTIES WILL_FAIL TRUE)
+endforeach()
