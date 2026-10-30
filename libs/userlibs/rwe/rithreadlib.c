@@ -35,15 +35,17 @@
  *   - The registers, the memory and the address are single variables:
  *     a second CreateThread before the first thread has started
  *     (CreateNewProc returns before the process runs) gives both
- *     threads the second call's registers, memory and code.
- *   - The name is the string argument as it is (CreateNewProc copies it).
+ *     threads the second call's registers, memory and code (#838).
  *   - finit waits only once: a signal left from an earlier time the
  *     count was 0 lets it go on while threads run (and their code, the
- *     exit code in this library, may be gone); the signal is never freed,
- *     dos.library's base not cleared.
- *   - ActiveThreads (#word) returns the count as a long.
+ *     exit code in this library, may be gone) (#837); the signal is never
+ *     freed, dos.library's base not cleared (#839).
  *   - No check of the memory: without it the thread runs with its
  *     registers based on 0.
+ *
+ * No defects: the name is the string argument as it is (CreateNewProc
+ * copies it); ActiveThreads (#word) returns the count as a long (the
+ * caller takes the low word, which is the count).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -136,7 +138,7 @@ void BLITZ_ROUTINE c_cleanup(void)
         Signal(th.parenttask, 1UL << th.thesignal);
 }
 
-/* ActiveThreads: the count, as a long (BUG(orig)) */
+/* ActiveThreads: the count, as a long (no defect, see above) */
 ULONG BLITZ_ROUTINE c_activethreads(void)
 {
     return th.threadcount;
@@ -202,7 +204,7 @@ void BLITZ_ROUTINE c_libinit(void)
     th.dbase = OpenLibrary((CONST_STRPTR)dosname, 36);
 }
 
-/* finit: wait for the last thread (once, BUG(orig)), close dos.library */
+/* finit: wait for the last thread (once, BUG(orig) #837), close dos.library */
 void BLITZ_ROUTINE c_libfinit(void)
 {
     if (!th.dbase)

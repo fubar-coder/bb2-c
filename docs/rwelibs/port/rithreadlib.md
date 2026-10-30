@@ -49,14 +49,16 @@ the start code reads by name.
 * The registers, the memory and the address are single variables: a
   second `CreateThread` before the first thread has started
   (`CreateNewProc` returns before the process runs) gives both threads
-  the second call's registers, memory and code.
+  the second call's registers, memory and code (#838).
 * finit waits only once: a signal left from an earlier time the count
   was 0 lets it return while threads still run (whose exit code is in
-  this library); the signal is never freed and dos.library's base not
-  cleared.
-* `ActiveThreads` (`#word`) returns the count as a long.
+  this library) (#837); the signal is never freed and dos.library's base
+  not cleared (#839).
 * The memory is not checked: without it the thread's registers are
   based on 0.
+
+`ActiveThreads` (`#word`) returns the count as a long; that is no defect
+(the caller takes the low word, which is the count).
 
 ## Test
 
@@ -74,7 +76,7 @@ when the test ends.
   signal), B released, finit waits for its signal (0);
 * phase 2: init again, thread C ends (0, the signal stays pending),
   thread D, finit returns at once while D runs (`ActiveThreads` 1,
-  BUG(orig)), D ends.
+  BUG(orig) #837), D ends.
 
 Compared: the registers of every call (the original's kept ones kept),
 `ActiveThreads`, the signal of each init and whether it is pending, the
@@ -83,4 +85,4 @@ memory + 1024/3072/7168, the memory cleared) and its name. The test
 frees the signals the library leaves allocated.
 
 Not covered: two `CreateThread` before the first thread runs (the
-shared variables, BUG(orig)): its outcome depends on the scheduling.
+shared variables, BUG(orig) #838): its outcome depends on the scheduling.
