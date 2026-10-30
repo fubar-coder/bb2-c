@@ -61,6 +61,7 @@ set(RWE_LIBS
 	"neilsreqtoolslib|RTLib.bb|refbuild"
 	"ridatatypeslib|datatypeslib6.bb|refbuild"
 	"ciatrklib|ptlib/CIATrackerLib1.bb|refbuild"
+	"ritrackerlib|ptlib/ptlib6.bb|refbuild"
 	"riarexxlib|rexxlib/NEWAREXXLIB.bb|refbuild"
 	"rishapeslib|shapeslib/RIShapesLib2.bb|refbuild|${bss2}/RIPACKLIB.OBJ"
 	"risortlib|sortlib/RISortlib2.bb|refbuild"
