@@ -32,14 +32,16 @@ the whole d0 of the library – only the low word is the command's result.
 * `StoreNVData`: `DIVU.w #10` overflows for 655360 bytes and more (the
   quotient does not fit into a word, d3 stays unchanged): StoreNV gets
   the low word of the length (+1 if the high word is not 0) as the number
-  of tens – 655365 bytes become 60.
+  of tens – 655365 bytes become 60 (#764).
 * `StoreNVData` deletes the item unconditionally before storing it (an
-  item that cannot be stored again is lost); DeleteNV's result is ignored.
+  item that cannot be stored again is lost); DeleteNV's result is ignored
+  (#763).
 * `StoreNVData` returns StoreNV's result (0 = stored, otherwise an
   `NVERR_…` code) - and 0 as well if the library is not open, i.e.
-  "stored".
-* finit closes the library but leaves `libbase` set (no consequence, it
-  is the last call).
+  "stored" (#765).
+
+finit closes the library but leaves `libbase` set; that is no defect (it
+is the last call).
 
 ## Test
 

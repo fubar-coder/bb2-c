@@ -21,14 +21,16 @@
  *   - StoreNVData: DIVU.w #10 overflows for lengths of 655360 bytes and
  *     more (the quotient does not fit into a word: d3 stays unchanged),
  *     StoreNV then gets the low word of the length (+1 if the high word
- *     is not 0) as the number of tens of bytes.
+ *     is not 0) as the number of tens of bytes (#764).
  *   - StoreNVData: the DeleteNV before StoreNV is unconditional (an item
- *     that cannot be stored again is lost), and its result is ignored.
+ *     that cannot be stored again is lost), and its result is ignored
+ *     (#763).
  *   - StoreNVData returns StoreNV's result (!acommand #word): 0 means
  *     stored, otherwise an NVERR_... code - and the "library not open"
- *     case returns 0 as well, "stored".
- *   - finit closes the library but leaves libbase set (no consequence: it
- *     is the last call).
+ *     case returns 0 as well, "stored" (#765).
+ *
+ * finit closes the library but leaves libbase set: no defect, it is the
+ * last call.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -92,7 +94,7 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
     return (ULONG)libbase;
 }
 
-/* finit: CloseLibrary if open (libbase stays set, BUG(orig) above) */
+/* finit: CloseLibrary if open (libbase stays set, no defect, see above) */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (libbase)
@@ -116,7 +118,7 @@ static ULONG BLITZ_ROUTINE storenvdata_c(CONST_STRPTR app BL_REG(d0),
     if (!libbase)
         return 0;                                       /* ReturnFalse */
     DeleteNV(app, item, 0);
-    q = bl_divu_w(len, 10);                     /* DIVU.w #10,d3, BUG(orig) */
+    q = bl_divu_w(len, 10);                     /* DIVU.w #10,d3, BUG(orig) #764 */
     tens = (UWORD)q;
     if (q >> 16)                                        /* remainder */
         tens++;
