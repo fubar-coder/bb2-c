@@ -31,20 +31,21 @@
  * BUG(orig):
  *   - ChunkyBitmap decides whether the object holds data by TST.l 6(a0),
  *     the unused word and the upper word of the data pointer: data below
- *     $10000 is not freed (and never is).
- *   - The free routine extends the width twice (EXT.l d0 twice) and not
- *     the height: the size it computes (unused: globfree needs none) has
- *     the caller's upper word of d1.
+ *     $10000 is not freed (and never is) (#885).
  *   - The free routine toggles CIA-A PRA bit 1 (BCHG #1,$bfe001: the
- *     power LED / audio filter), a debug flash left in.
+ *     power LED / audio filter), a debug flash left in (#886).
  *   - ChunkyBitmap on an object whose data was not freed (the TST.l above)
  *     overwrites width and height and, if the allocation fails, clears
- *     them but keeps the old data pointer.
+ *     them but keeps the old data pointer (#885).
  *   - ChunkyToPlanar ignores the sizes (the chunky data must have 81920
- *     bytes, the bitmap 8 contiguous planes of 10240 bytes); a depth word
- *     below 8 (signed) does nothing.
+ *     bytes, the bitmap 8 contiguous planes of 10240 bytes) (#884); a
+ *     depth word below 8 (signed) does nothing (#883).
  *   - RaycastSky: no checks; the offsets x and column are added as signed
- *     words, the height is a DBRA count (height 0 copies 65536 bytes).
+ *     words, the height is a DBRA count (height 0 copies 65536 bytes)
+ *     (#887).
+ * Not a defect: the free routine extends the width twice (EXT.l d0
+ * twice) and not the height, so the size it computes has the caller's
+ * upper word of d1 - but the size is unused (globfree needs none).
  */
 #include "blitzlib.h"
 
@@ -129,8 +130,9 @@ static void BLITZ_ROUTINE nothing_c(void)
 }
 
 /* _freechunkybitmap (a0 = the object): the size width*height through
-   lmullib (BUG(orig): the width extended twice, d1's upper word the
-   caller's; unused), globfree, the fields cleared, the LED toggled */
+   lmullib (the width extended twice, d1's upper word the caller's - no
+   defect, the product is unused), globfree, the fields cleared, the LED
+   toggled */
 static void freechunky(UBYTE *o, ULONG d1)
 {
     struct bl_regs r;
@@ -147,7 +149,7 @@ static void freechunky(UBYTE *o, ULONG d1)
     OL(o, CW) = 0;
     OW(o, CD) = 0;
     OL(o, CDATA) = 0;
-    CIAA_PRA ^= 2;                              /* BCHG #1,$bfe001: BUG(orig) */
+    CIAA_PRA ^= 2;                              /* BCHG #1,$bfe001: BUG(orig) (#886) */
 }
 
 /* the object manager's free routine: a3 = the object */
@@ -163,7 +165,7 @@ static void BLITZ_ROUTINE chunkybitmap_c(ULONG w BL_REG(d1), ULONG h BL_REG(d2),
     struct bl_regs r;
 
     /* TST.l 6(a0): the unused word and the pointer's upper word,
-       BUG(orig) */
+       BUG(orig) (#885) */
     if (*(ULONG *)(o + 6))
         freechunky(o, w);
     OW(o, CW) = (WORD)w;

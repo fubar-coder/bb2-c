@@ -46,17 +46,19 @@ C.
 * ChunkyBitmap decides whether the object holds data by `TST.l 6(a0)`:
   the unused word and the upper word of the data pointer. Data below
   `$10000` is never freed, and a ChunkyBitmap on such an object whose
-  allocation fails keeps the old pointer.
-* The free routine extends the width twice and not the height (`EXT.l
-  d0` twice): the size it computes has the caller's upper word of d1
-  (unused, `globfree` needs no size).
+  allocation fails keeps the old pointer (#885).
 * The free routine toggles CIA-A PRA bit 1 (`BCHG #1,$bfe001`, the power
-  LED / audio filter), a debug flash left in.
+  LED / audio filter), a debug flash left in (#886).
 * ChunkyToPlanar checks nothing but the depth word (signed, `bm_Flags`
-  in its upper byte) and the data pointer: the sizes of both bitmaps are
-  assumed.
+  in its upper byte) (#883) and the data pointer: the sizes of both
+  bitmaps are assumed (#884).
 * RaycastSky checks nothing; x and column are added as signed words, the
-  height is a `DBRA` count (0 copies 65536 rows).
+  height is a `DBRA` count (0 copies 65536 rows) (#887).
+
+Not a defect: the free routine extends the width twice and not the
+height (`EXT.l d0` twice), so the size it computes has the caller's
+upper word of d1 – but the product is unused (`globfree` needs no
+size).
 
 ## Test
 
