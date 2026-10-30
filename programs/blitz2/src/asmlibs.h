@@ -54,15 +54,17 @@ void asmoff(ULONG addr);
 /* 5286 end of pass asm filler-inner: resolve all firstasm nodes */
 void asmfixer(void);
 /* 5386 or the ea bits for (reg, mode) into *opcode, write extension
-   words at *at (advanced).  extra = extraword, mask = allowed mode mask,
+   words at *at (advanced).  extra = extraword, size = asmsize (0/4/8 =
+   .b/.w/.l), mask = allowed mode mask,
    shifts = shift byte (lo nibble mode shift, hi nibble reg shift, 15 = none).
    illeaerr if mode not allowed. */
-void doea(UWORD *opcode, UWORD reg, UWORD mode, UWORD extra, UWORD mask,
-          UBYTE shifts, const struct asment *e, ULONG *at);
+void doea(UWORD *opcode, UWORD reg, UWORD mode, UWORD extra, WORD size,
+          UWORD mask, UBYTE shifts, const struct asment *e, ULONG *at);
 /* 5474 extension words / asmnodes for mode at *at.
    returns TRUE for mode 15 (movem list): DIFF: asm `addq #4,a7` returned
    past doea to doea's caller; doea returns at once when TRUE. */
-BOOL makemode(UWORD reg, UWORD mode, UWORD extra, const struct asment *e, ULONG *at);
+BOOL makemode(UWORD reg, UWORD mode, UWORD extra, WORD size,
+              const struct asment *e, ULONG *at);
 /* 5423/5429 range checks on a value (illdiserr) */
 void chkbyte(LONG val);
 void chkword(LONG val);

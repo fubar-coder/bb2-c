@@ -96,8 +96,6 @@ extern ULONG allat;                     /* 14903 highest allocated code location
 extern struct asment dummyasm;        /* 14905 all zero */
 
 /* assembler */
-extern UBYTE *buff1;                    /* 14911 text buffer for get (namebuff/namebuff2) */
-extern UBYTE *buff2;                    /* 14912 ditto for dest */
 extern WORD  constmode;                 /* 14913 0 norm, <>0 assembler */
 extern WORD  asmtype;                   /* 14914 0 = no prog reference */
 /* 14915 extraword, extraword2: contiguous, also read/written as one long
@@ -105,7 +103,6 @@ extern WORD  asmtype;                   /* 14914 0 = no prog reference */
 extern UWORD extrawords[2];
 #define extraword  (extrawords[0])
 #define extraword2 (extrawords[1])
-extern WORD  asmsize;                   /* 14917 0/4/8 = .b/.w/.l */
 extern UBYTE *asmbuff;                  /* 14918 */
 extern WORD  asmlen, asmlen2;           /* 14919 src/dest text len */
 extern struct asmnode *firstasm;        /* 14921 expressions to resolve */

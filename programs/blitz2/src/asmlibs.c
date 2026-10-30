@@ -111,6 +111,8 @@ void asmit(UWORD c)
     UWORD opcode;
     ULONG at, opat;
     WORD f;
+    WORD asmsize;                       /* 14917: 0/4/8 = .b/.w/.l */
+    UBYTE *buff1, *buff2;               /* 14911/14912: src/dest text */
 
     alignpc();
     idx = (UWORD)(c - (0x8000 + fnum)) << 2;
@@ -243,7 +245,7 @@ skipsrc:
     goto skipsrc2;
 
 nothing:
-    doea(&opcode, srcreg, srcmode, extraword2, e->srcmask, e->srcshift, e, &at); /* do src */
+    doea(&opcode, srcreg, srcmode, extraword2, asmsize, e->srcmask, e->srcshift, e, &at); /* do src */
 skipsrc2:
     if (destmode < 0) {                 /* .one */
         if (e->destmask)
@@ -252,7 +254,7 @@ skipsrc2:
     }
     asmbuff = buff2;
     asmlen = asmlen2;
-    doea(&opcode, destreg, destmode, extraword, e->destmask, e->destshift, e, &at);
+    doea(&opcode, destreg, destmode, extraword, asmsize, e->destmask, e->destshift, e, &at);
 
 putit:
     /* @5252 put in the opcode */
@@ -371,16 +373,16 @@ void asmfixer(void)
 }
 
 /* blitz2.s:5386 doea - d2=reg, d3=ea, d4=extraword, d6=allowable mask,
-   d7=shift data; or in bits for opcode in d1 */
-void doea(UWORD *opcode, UWORD reg, UWORD mode, UWORD extra, UWORD mask,
-          UBYTE shifts, const struct asment *e, ULONG *at)
+   d7=shift data; or in bits for opcode in d1; size = asmsize */
+void doea(UWORD *opcode, UWORD reg, UWORD mode, UWORD extra, WORD size,
+          UWORD mask, UBYTE shifts, const struct asment *e, ULONG *at)
 {
     UWORD s;
 
     /* btst d3,d6 (register form: bit d3 mod 32; modes are 0..15 here) */
     if (mode >= 16 || !((mask >> mode) & 1))
         illeaerr();
-    if (makemode(reg, mode, extra, e, at))
+    if (makemode(reg, mode, extra, size, e, at))
         return;                         /* DIFF: asm addq #4,a7 in makemode */
     if (mode >= 7) {
         reg = mode - 7;
@@ -438,7 +440,8 @@ void insasm(const struct asment *e, ULONG addr, UWORD mode)
 }
 
 /* blitz2.s:5474 makemode */
-BOOL makemode(UWORD reg, UWORD mode, UWORD extra, const struct asment *e, ULONG *at)
+BOOL makemode(UWORD reg, UWORD mode, UWORD extra, WORD size,
+              const struct asment *e, ULONG *at)
 {
     if (mode < 5)
         return FALSE;
@@ -452,7 +455,7 @@ BOOL makemode(UWORD reg, UWORD mode, UWORD extra, const struct asment *e, ULONG 
         return TRUE;
     }
     if (mode == 11) {                   /* .imm */
-        if ((UWORD)asmsize < 8) {
+        if ((UWORD)size < 8) {
             insasm(e, *at, 16);
             *at += 2;
         } else {

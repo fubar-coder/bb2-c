@@ -89,12 +89,11 @@ ULONG lib = 0;                          /* 14902 */
 ULONG allat = 0;                        /* 14903 highest allocmemd location for code */
 struct asment dummyasm;                 /* 14905 dc 0,0,0,0,0 / dc.l 0 / dc 0 */
 /* data for assembler */
-UBYTE *buff1 = NULL;                    /* 14911 buffer for text get */
-UBYTE *buff2 = NULL;                    /* 14912 ditto for dest */
+/* 14911 buff1, 14912 buff2: locals of asmit */
 WORD  constmode = 0;                    /* 14913 0 for norm, <>0 for assembler */
 WORD  asmtype = 0;                      /* 14914 0=contains no prog reference */
 UWORD extrawords[2] = {0, 0};           /* 14915 extraword, extraword2 */
-WORD  asmsize = 0;                      /* 14917 */
+/* 14917 asmsize: local of asmit, a parameter of doea/makemode */
 UBYTE *asmbuff = NULL;                  /* 14918 */
 WORD  asmlen = 0;                       /* 14919 first (src) text len */
 WORD  asmlen2 = 0;                      /* 14920 second (dest) */
