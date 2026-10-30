@@ -122,6 +122,7 @@ int main(int argc, char **argv)
     init_failing(-552, "init (OpenLibrary fails)");
     fake_add();
     avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
     init_failing(-198, "init (AllocMem fails)");
 
     ROUT = "init";
@@ -176,7 +177,7 @@ int main(int argc, char **argv)
     DO2(ENT(LIB, E_FINIT, 0), (void)0);
     SAME("library closed", fake->lib_OpenCnt);
     check("rireqlib: library closed", fake->lib_OpenCnt == 0);
-    check("rireqlib: all memory back", AvailMem(MEMF_ANY) == avail);
+    rwe_mem_check(LIB, avail, TRUE);
     ROUT = "finit (again)";
     DO2(ENT(LIB, E_FINIT, 0), (void)0);
     fake_remove(fake);

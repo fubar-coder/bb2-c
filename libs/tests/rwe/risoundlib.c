@@ -164,6 +164,7 @@ int main(int argc, char **argv)
         memset(obj[s] + OFF + 4, 0x77, 12);
 
     avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
     ROUT = "memlib init";
     memlib(7);
 
@@ -275,7 +276,7 @@ int main(int argc, char **argv)
 
     ROUT = "memlib finit";
     memlib(8);
-    check("risoundlib: all memory back", AvailMem(MEMF_ANY) == avail);
+    rwe_mem_check(LIB, avail, TRUE);
     for (s = 0; s < 2; s++)
         FreeMem(file[s], FILESZ);
     return rwe_done(LIB);

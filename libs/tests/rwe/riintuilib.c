@@ -156,6 +156,7 @@ int main(int argc, char **argv)
         memset(a2area[s], 0, sizeof a2area[s]);
     }
     avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
 
     ROUT = "inputoutputlib init";
     strcpy(VEC, "");
@@ -199,10 +200,7 @@ int main(int argc, char **argv)
     ROUT = "finit";
     strcpy(VEC, "");
     DO2(nullsub(LIB, 28), (void)0);
-
-    if (AvailMem(MEMF_ANY) != avail)
-        printf("riintuilib: %ld bytes missing\n", (LONG)(avail - AvailMem(MEMF_ANY)));
-    check("riintuilib: all memory back", AvailMem(MEMF_ANY) == avail);
+    rwe_mem_check(LIB, avail, FALSE);    /* nothing allocated */
     for (s = 0; s < 2; s++)
         FreeBitMap(bm[s]);
     CloseLibrary(ipgfx);

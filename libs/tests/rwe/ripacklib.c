@@ -29,6 +29,7 @@
  */
 #include "sysload.h"
 #include "amosfunc.h"
+#include "rwemem.h"
 
 extern UWORD callstk(APTR fn, struct regs *r, const ULONG *args, ULONG nargs, ULONG *popped);
 
@@ -859,6 +860,7 @@ int main(int argc, char **argv)
     test_unpackiff();
 
     avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
     for (cur = 0; cur < 2; cur++) {
         markregs(&R[cur]);
         callstk(entry_form(getlib(&sets[cur], "memlib"), 7, 0), &R[cur], NULL, 0, &POP[cur]);
@@ -872,7 +874,7 @@ int main(int argc, char **argv)
         markregs(&R[cur]);
         callstk(entry_form(getlib(&sets[cur], "memlib"), 8, 0), &R[cur], NULL, 0, &POP[cur]);
     }
-    check("ripacklib: all memory back", AvailMem(MEMF_ANY) == avail);
+    rwe_mem_check("ripacklib", avail, TRUE);
 
     ROUT = "finit";
     DO2(ent(FINIT, 0), (void)0);

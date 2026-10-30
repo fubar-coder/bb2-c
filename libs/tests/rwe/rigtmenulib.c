@@ -326,6 +326,7 @@ int main(int argc, char **argv)
         winobj[s][0] = (ULONG)win[s];
     }
     avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
     ROUT = "memlib init";
     memlib(7);
     ROUT = "init";
@@ -419,9 +420,7 @@ int main(int argc, char **argv)
 
     ROUT = "memlib finit";
     memlib(8);
-    if (AvailMem(MEMF_ANY) != avail)
-        printf("rigtmenulib: %ld bytes missing\n", (LONG)(avail - AvailMem(MEMF_ANY)));
-    check("rigtmenulib: all memory back", AvailMem(MEMF_ANY) == avail);
+    rwe_mem_check(LIB, avail, TRUE);
     for (s = 0; s < 2; s++)
         CloseWindow(win[s]);
     UnlockPubScreen(NULL, scr);

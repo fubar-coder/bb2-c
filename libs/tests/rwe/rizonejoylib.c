@@ -225,6 +225,7 @@ int main(int argc, char **argv)
 
     /* ------------------------------------------------ with table 0 */
     avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
     strcpy(VEC, "");
     ROUT = "init";
     DO2(ENT(LIB, E_INIT, 0), (void)0);
@@ -350,7 +351,7 @@ int main(int argc, char **argv)
     for (cur = 0; cur < 2; cur++)
         for (i = 0; i < 16; i++)
             zlist[cur][i] = 0;                  /* finit leaves them set */
-    check("rizonejoylib: all memory back", AvailMem(MEMF_ANY) == avail);
+    rwe_mem_check(LIB, avail, TRUE);
 
     /* ------------------------------------------- no memory for table 0 */
     Forbid();

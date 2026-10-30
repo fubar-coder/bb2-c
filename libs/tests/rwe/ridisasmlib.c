@@ -143,6 +143,7 @@ int main(int argc, char **argv)
     if (!load_sets(argv[1], names))
         return 20;
     avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
     code = AllocMem(CODEWORDS * 2, MEMF_PUBLIC | MEMF_CLEAR);
     for (s = 0; s < 2; s++)
         sarea[s] = AllocMem(SAREA, MEMF_PUBLIC);
@@ -182,7 +183,7 @@ int main(int argc, char **argv)
     FreeMem(code, CODEWORDS * 2);
     for (s = 0; s < 2; s++)
         FreeMem(sarea[s], SAREA);
-    check("ridisasmlib: all memory back", AvailMem(MEMF_ANY) == avail);
+    rwe_mem_check(LIB, avail, TRUE);
     printf("ridisasmlib: %lu DisAssemble$ calls\n", calls);
     return rwe_done(LIB);
 }

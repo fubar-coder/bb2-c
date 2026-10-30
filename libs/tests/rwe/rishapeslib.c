@@ -325,6 +325,7 @@ int main(int argc, char **argv)
     if (!load_sets(argv[1], names))
         return 20;
     avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
     ROUT = "memlib/shapeslib init";
     memlib(7);
     for (cur = 0; cur < 2; cur++) {
@@ -505,8 +506,6 @@ int main(int argc, char **argv)
             DeleteFile((STRPTR)setname(i));
     DeleteFile((STRPTR)"RAM:rwesh_form");
     DeleteFile((STRPTR)"RAM:rwesh_acid");
-    if (AvailMem(MEMF_ANY) != avail)
-        printf("rishapeslib: %ld bytes missing\n", (LONG)(avail - AvailMem(MEMF_ANY)));
-    check("rishapeslib: all memory back", AvailMem(MEMF_ANY) == avail);
+    rwe_mem_check(LIB, avail, TRUE);
     return rwe_done(LIB);
 }

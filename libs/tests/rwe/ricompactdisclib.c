@@ -440,6 +440,7 @@ int main(int argc, char **argv)
         DeleteMsgPort(mp);
     }
     avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
     ROUT = "memlib init";
     strcpy(VEC, "");
     for (cur = 0; cur < 2; cur++) {
@@ -602,7 +603,7 @@ int main(int argc, char **argv)
         markregs(&R[cur]);
         callstk(entry_form(getlib(&sets[cur], "memlib"), 8, 0), &R[cur], NULL, 0, &POP[cur]);
     }
-    check("ricompactdisclib: all memory back", AvailMem(MEMF_ANY) == avail);
+    rwe_mem_check(LIB, avail, TRUE);
     rem_device();
     return rwe_done(LIB);
 }

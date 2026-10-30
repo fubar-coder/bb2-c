@@ -931,15 +931,7 @@ int main(int argc, char **argv)
     fake_remove(fakegfx);
     PRA = (PRA & ~2) | (pra0 & 2);
     /* this task's balance: AvailMem() also counts what other tasks
-       allocate meanwhile (rwecmp.h) */
-    {
-        LONG bal = rwe_mem_stop();
-        LONG other = (LONG)(avail - AvailMem(MEMF_ANY)) - bal;
-        if (other)
-            printf("ciatrklib: %ld bytes allocated by other tasks meanwhile\n", other);
-        if (bal)
-            printf("ciatrklib: %ld bytes not freed\n", bal);
-        check("ciatrklib: all memory back", bal == 0 && rwe_memallocs > 0);
-    }
+       allocate meanwhile (rwemem.h) */
+    rwe_mem_check(LIB, avail, TRUE);
     return rwe_done(LIB);
 }

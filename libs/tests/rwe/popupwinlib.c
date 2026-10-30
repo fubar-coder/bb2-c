@@ -257,6 +257,7 @@ int main(int argc, char **argv)
     static const char *names[] = { LIB, NULL };
     struct MsgPort *oldport[2];
     ULONG avail;
+    LONG ports;
     int s, ih, y0, yA, yB, ySep, yC;
 
     if (argc < 2) {
@@ -331,6 +332,8 @@ int main(int argc, char **argv)
     /* the memory from here on: the first windows leave memory in the
        system's caches (layers' ClipRects ...), differently for each set */
     avail = AvailMem(MEMF_ANY);
+    rwe_memothers = TRUE;
+    rwe_mem_start();
 
     nscript = 0;
     ev(IDCMP_MOUSEMOVE, 0, 10, yA);     /* Open */
@@ -361,11 +364,22 @@ int main(int argc, char **argv)
     Forbid();
     SetFunction((struct Library *)SysBase, LVO_WaitPort, old_waitport);
     Permit();
-    /* init's ports are freed now: at least as much as after the first
-       popup */
-    if (AvailMem(MEMF_ANY) < avail)
-        printf("popupwinlib: %ld bytes missing\n", (LONG)(avail - AvailMem(MEMF_ANY)));
-    check("popupwinlib: all memory back", AvailMem(MEMF_ANY) >= avail);
+    /* init's ports are freed now: this task's balance (rwemem.h) is
+       just the two ports of the first init, once input.device has freed
+       what intuition allocated in this task (a few blocks of 36 bytes;
+       wait up to a second) */
+    ports = 2 * (LONG)RWE_MEMSIZE(sizeof(struct MsgPort));
+    for (s = 0; s < 50 && rwe_membal - rwe_memotherfree != -ports; s++)
+        Delay(1);
+    {
+        LONG own = rwe_mem_stop(), bal = own + ports;
+        LONG other = (LONG)(avail - AvailMem(MEMF_ANY)) - own;
+        if (other)
+            printf("popupwinlib: %ld bytes allocated by other tasks meanwhile\n", other);
+        if (bal)
+            printf("popupwinlib: %ld bytes not freed\n", bal);
+        check("popupwinlib: all memory back", bal == 0 && rwe_memallocs > 0 && !rwe_memfull);
+    }
     FreeBitMap(tbm);
     DeleteMsgPort(replyport);
     UnlockPubScreen(NULL, scr);

@@ -313,6 +313,7 @@ int main(int argc, char **argv)
     if (!load_sets(argv[1], names))
         return 20;
     avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
 
     /* no registry.library */
     initfinit(22);
@@ -365,8 +366,6 @@ int main(int argc, char **argv)
     BOTH("closed again", fake->lib_OpenCnt == 0);
 
     fake_remove(fake);
-    if (AvailMem(MEMF_ANY) != avail)
-        printf("riregistrylib: %ld bytes missing\n", (LONG)(avail - AvailMem(MEMF_ANY)));
-    check("riregistrylib: all memory back", AvailMem(MEMF_ANY) == avail);
+    rwe_mem_check(LIB, avail, TRUE);
     return rwe_done(LIB);
 }

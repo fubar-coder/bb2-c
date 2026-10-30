@@ -790,7 +790,6 @@ static void binstr(void)
 int main(int argc, char **argv)
 {
     static const char *names[] = { "floatquicklib", LIB, NULL };
-    ULONG avail;
 
     if (argc < 2) {
         printf("usage: rimisclib DIR\n");
@@ -823,10 +822,10 @@ int main(int argc, char **argv)
 
     ROUT = "finit";
     strcpy(VEC, "font prefs open");
-    avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
     DO2(ENT(LIB, E_FINIT, 0), R[cur].a[6] = (ULONG)DOSBase);
     check("rimisclib: finit frees both font prefs buffers",
-          AvailMem(MEMF_ANY) >= avail + 2 * FPSIZE);
+          -rwe_mem_stop() >= (LONG)(2 * RWE_MEMSIZE(FPSIZE)));
     CloseLibrary(mathffp);
     return rwe_done(LIB);
 }
