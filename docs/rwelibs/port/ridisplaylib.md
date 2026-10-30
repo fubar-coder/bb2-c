@@ -34,24 +34,24 @@ absolute addresses the original reads (below), as volatile words.
 
 * InitView loses the colour count (`MOVE.w d0,d3` overwrites it with
   the height before it is read): the size is 16 × numsprites + 16 ×
-  depth + 8 × height + 38, computed as a word and sign-extended.
+  depth + 8 × height + 38, computed as a word and sign-extended (#890).
 * `!cmove{diwstrt,$2c81}` assembles to `MOVE.w diwstrt,(a0)+` /
   `MOVE.w $2c81,(a0)+`: the register name is its offset (`diwstrt` =
   `$8E`) and the value has no `#`, so both are read as absolute
   addresses: the list gets the words at `$8E`, `$2C81`, `$90`, `$2CC1`, `$92`,
   `$38`, `$94`, `$D0` – low memory and the vector table, two of them at
-  odd addresses (an address error on a 68000).
+  odd addresses (an address error on a 68000) (#889).
 * AllocMem is not checked: without chip memory the eight words go to
-  address 0 (over ExecBase at 4).
+  address 0 (over ExecBase at 4) (#888).
 * Every InitView allocates a new list and forgets the old one; finit
-  frees only the last, and only if graphics.library was opened
-  (`FreeMem(0,size)` if the last allocation failed).
+  frees only the last, and only if graphics.library was opened (#891)
+  (`FreeMem(0,size)` if the last allocation failed, #888).
 
 ## Test
 
 Compared after every call: d0 (InitView: as "is the list the library
 keeps"), `viewsize` and `cop`, the list's eight words (each equal to the
-word at its address, BUG(orig), and equal between the sets for the
+word at its address, BUG(orig) #889, and equal between the sets for the
 even ones), the change of graphics.library's open count, the test task's
 memory balance (rwemem.h), kept registers. Cases: init, five InitViews (marker upper
 words, colour counts that change nothing), ViewBitmap, finit with a

@@ -22,18 +22,18 @@
  * BUG(orig):
  *   - InitView: the colour count is lost (MOVE.w d0,d3 overwrites it with
  *     the height before it is read): the size is 16*numsprites +
- *     16*depth + 8*height + 38, computed as a word.
+ *     16*depth + 8*height + 38, computed as a word (#890).
  *   - The copper moves are read from absolute addresses: !cmove{diwstrt,
  *     $2c81} is MOVE.w diwstrt,(a0)+:MOVE.w $2c81,(a0)+, the register
  *     name is its offset ($8E) and the value has no #: the list gets the
  *     words at $8E, $2C81, $90, $2CC1, $92, $38, $94, $D0 - low memory
  *     and the vector table, two odd addresses (an address error on a
- *     68000).
+ *     68000) (#889).
  *   - No check of AllocMem: without chip memory the moves go to address
- *     0 (over ExecBase at 4).
+ *     0 (over ExecBase at 4) (#888).
  *   - Every InitView allocates a new list; only the last one is freed (by
- *     finit, and only if graphics.library was opened: FreeMem(0, size)
- *     if the last allocation failed).
+ *     finit, and only if graphics.library was opened) (#891):
+ *     FreeMem(0, size) if the last allocation failed (#888).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -93,7 +93,7 @@ static void BLITZ_ROUTINE codefinit_c(void)
     vd.cop = NULL;
 }
 
-/* the word at an absolute address (a "register name", BUG(orig)) */
+/* the word at an absolute address (a "register name", BUG(orig), #889) */
 #define ABSW(a) (*(volatile const UWORD *)(a))
 
 /* InitView height,depth,numsprites,numcolours (d0-d3) */
@@ -103,7 +103,7 @@ static ULONG BLITZ_ROUTINE initview_c(UWORD height BL_REG(d0), UWORD depth BL_RE
     UWORD size;
     UWORD *p;
 
-    /* d3 = height (MOVE.w d0,d3: the colours are lost, BUG(orig)) */
+    /* d3 = height (MOVE.w d0,d3: the colours are lost, BUG(orig), #890) */
     size = (UWORD)(sprites << 4);                       /* ASL.w #4,d2 */
     size += (UWORD)(depth << 3);                        /* + depth*8 */
     size += (UWORD)(height << 3);                       /* + "colours"*8 */
