@@ -20,10 +20,12 @@
 #                                           file machine=, corpus.h:
 #                                           a1200 default, a500 = 68000
 #                                           with Kickstart 1.3,
-#                                           a500-68010); the harness
-#                                           does not run on Kickstart
-#                                           1.x yet (amiga-emulation/
-#                                           README.md, "A500")
+#                                           a500-68010); on Kickstart
+#                                           1.x the compiler and the
+#                                           program run there too (no
+#                                           gate, no @INJECT@/@WBRUN@:
+#                                           they need V36; README,
+#                                           "Tests")
 #                      ; @rwe NAME...       RWE userlibs (libs/userlibs/
 #                                           rwe/NAME.c) in blitz2:userlibs/
 #                                           rwe/: ref (blitz2 2.10 of the
@@ -186,7 +188,7 @@ function(bug_orig_test bas name)
 	string(APPEND text "work=${work}\nreport=${work}.txt\nruntime_errors=off\n"
 		"timeout=${BUG_ORIG_TIMEOUT}\nparallel=${parallel}\n"
 		"ted=$<TARGET_FILE:tedstub>\nlauncher=$<TARGET_FILE:reqtrap>\n"
-		"defaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n"
+		"rcput=$<TARGET_FILE:rcput>\ndefaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n"
 		"config=ref|ref|${ref_blitz2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
 	foreach(c IN LISTS configs)
 		if(c STREQUAL "port")

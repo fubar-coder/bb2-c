@@ -63,7 +63,13 @@
  *                     memory; any number
  *   machine=NAME      the emulated machine (amiga_emulation.h: a1200, the
  *                     default; a500 = 68000 with Kickstart 1.3; a500-68010);
- *                     uae= changes its template
+ *                     uae= changes its template.  On Kickstart 1.x the
+ *                     session script is in AmigaDOS 1.3 syntax (rcput
+ *                     instead of $RC and >>), there is no gate=, and the
+ *                     launcher, wrap= and runwrap= must run there
+ *   rcput=PATH        tests/corpus/amiga/rcput.c, staged as CORPUS:rcput
+ *                     on a Kickstart 1.x machine (needed there, ignored
+ *                     otherwise)
  *   expect=PATH       bug-orig test (bugorig.h): exactly one source, no
  *                     serial_same_as (serial=on gives the program the
  *                     remote end; what it sends is not judged); instead
@@ -95,7 +101,7 @@ struct corpus_config {
 
 struct corpus_pass {
     char *work, *report, *ted, *launcher, *gate, *defaultdbug, *serial_same_as;
-    char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs, *machine;
+    char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs, *machine, *rcput;
     int runtime_errors, serial;
     unsigned timeout, parallel, stack;
     struct corpus_config *configs;
@@ -121,6 +127,12 @@ char *corpus_name(const char *source);
 
 /* zero the 8 bytes behind every trap #1 ($4E41) and trap #4 ($4E44) */
 void corpus_mask_traps(uint8_t *data, size_t len);
+
+/* the session script of the pass (malloc'd, NULL if out of memory):
+   compile with tedstub's job list, run every program through the
+   launcher, rc=N behind the outputs; AmigaDOS 1.3 syntax on a Kickstart
+   1.x machine */
+char *corpus_script(const struct corpus_pass *p);
 
 /* runs the pass: 0 = no differences, 1 = differences (report), 77 = the
    emulator or a file of the pass is missing (skipped), 2 = error; with

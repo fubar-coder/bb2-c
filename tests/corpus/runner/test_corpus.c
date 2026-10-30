@@ -116,10 +116,17 @@ int main(void)
     /* the machine: a known one, the last line wins; none = the default */
     CHECK(corpus_parse(BASE CONFIGS "source=/s\n", &p, err, sizeof err) == 0 && !p.machine);
     corpus_free(&p);
-    CHECK(corpus_parse(BASE CONFIGS "source=/s\nmachine=a1200\nmachine=a500\n", &p, err, sizeof err) == 0);
-    CHECK(p.machine && !strcmp(p.machine, "a500"));
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\nmachine=a1200\nmachine=a500\nrcput=/rc\n", &p,
+                       err, sizeof err) == 0);
+    CHECK(p.machine && !strcmp(p.machine, "a500") && !strcmp(p.rcput, "/rc"));
     corpus_free(&p);
-    CHECK(parse(BASE CONFIGS "source=/s\nmachine=a500-68010\n", err, sizeof err) == 0);
+    CHECK(parse(BASE CONFIGS "source=/s\nmachine=a500-68010\nrcput=/rc\n", err, sizeof err) == 0);
+    /* Kickstart 1.x: rcput needed, no gate; rcput does not matter elsewhere */
+    CHECK(parse(BASE CONFIGS "source=/s\nmachine=a500\n", err, sizeof err) == -1
+          && strstr(err, "rcput="));
+    CHECK(parse(BASE CONFIGS "source=/s\nmachine=a500\nrcput=/rc\ngate=/g\n", err, sizeof err) == -1
+          && strstr(err, "gate="));
+    CHECK(parse(BASE CONFIGS "source=/s\nrcput=/rc\ngate=/g\n", err, sizeof err) == 0);
     CHECK(parse(BASE CONFIGS "source=/s\nmachine=a3000\n", err, sizeof err) == -1 && strstr(err, "machine="));
     CHECK(parse(BASE CONFIGS "source=/s\nmachine=\n", err, sizeof err) == -1);
     /* bug-orig: exactly one source */
@@ -131,6 +138,62 @@ int main(void)
     CHECK(corpus_parse(BASE CONFIGS "source=/s\nserial=on\nexpect=/e\n", &p, err, sizeof err) == 0);
     CHECK(p.serial && !strcmp(p.expect, "/e"));
     corpus_free(&p);
+
+    /* the session script: on the A1200 with $RC and >> (unchanged), on
+       Kickstart 1.x in AmigaDOS 1.3 syntax - the redirection right behind
+       the command name, rcput instead of $RC and >> */
+    {
+        static const char want20[] =
+            "Assign blitz2: CORPUS:blitz2\n"
+            "Stack 40000\n"
+            "CORPUS:wrap fail=3 blitz2:blitz2 CORPUS:jobs >CORPUS:out/blitz2.out\n"
+            "Echo \"rc=$RC\" >>CORPUS:out/blitz2.out\n"
+            "Assign blitz2:\n"
+            "If EXISTS CORPUS:out/t01\n"
+            "  CORPUS:run CORPUS:runwrap sig CORPUS:out/t01 a b >CORPUS:out/t01.run\n"
+            "  Echo \"rc=$RC\" >>CORPUS:out/t01.run\n"
+            "EndIf\n";
+        static const char want13[] =
+            "Assign blitz2: CORPUS:blitz2\n"
+            "Stack 40000\n"
+            "CORPUS:wrap >CORPUS:out/blitz2.out fail=3 blitz2:blitz2 CORPUS:jobs\n"
+            "CORPUS:rcput CORPUS:out/blitz2.out\n"
+            "Assign blitz2:\n"
+            "If EXISTS CORPUS:out/t01\n"
+            "  CORPUS:run >CORPUS:out/t01.run CORPUS:runwrap sig CORPUS:out/t01 a b\n"
+            "  CORPUS:rcput CORPUS:out/t01.run\n"
+            "EndIf\n";
+        static const char want13plain[] =
+            "Assign blitz2: CORPUS:blitz2\n"
+            "Stack 40000\n"
+            "blitz2:blitz2 >CORPUS:out/blitz2.out CORPUS:jobs\n"
+            "CORPUS:rcput CORPUS:out/blitz2.out\n"
+            "Assign blitz2:\n"
+            "If EXISTS CORPUS:out/t01\n"
+            "  CORPUS:run >CORPUS:out/t01.run CORPUS:out/t01\n"
+            "  CORPUS:rcput CORPUS:out/t01.run\n"
+            "EndIf\n";
+        char *t;
+
+        CHECK(corpus_parse(BASE CONFIGS "source=/s/t01.bb2\nwrap=/w|fail=3\nrunwrap=/r|sig\n"
+                           "runargs=a b\nrcput=/rc\n", &p, err, sizeof err) == 0);
+        t = corpus_script(&p);
+        CHECK(t && !strcmp(t, want20));
+        free(t);
+        corpus_free(&p);
+        CHECK(corpus_parse(BASE CONFIGS "source=/s/t01.bb2\nwrap=/w|fail=3\nrunwrap=/r|sig\n"
+                           "runargs=a b\nrcput=/rc\nmachine=a500\n", &p, err, sizeof err) == 0);
+        t = corpus_script(&p);
+        CHECK(t && !strcmp(t, want13));
+        free(t);
+        corpus_free(&p);
+        CHECK(corpus_parse(BASE CONFIGS "source=/s/t01.bb2\nrcput=/rc\nmachine=a500-68010\n", &p,
+                           err, sizeof err) == 0);
+        t = corpus_script(&p);
+        CHECK(t && !strcmp(t, want13plain) && !strstr(t, "$RC") && !strstr(t, ">>"));
+        free(t);
+        corpus_free(&p);
+    }
 
     /* masking: 8 bytes behind each trap #1 / #4, the search goes on behind
        the block; first every trap #1, then every trap #4 (as bb2's

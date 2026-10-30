@@ -3,7 +3,8 @@
 # (TODO.md item 9).
 #   amiga/    the m68k programs of the runs: tedstub (blitz2:ted for batch
 #             compiles), reqtrap / reqclose (requesters of the compiled
-#             programs), reqclosetest (the gate of the requester tests)
+#             programs), reqclosetest (the gate of the requester tests),
+#             rcput (rc=N in the session scripts on Kickstart 1.x)
 #   tests*/   the test programs (text); tokenised here with tedtok (the TED
 #             core), which also refuses lines TED would cut
 #   runner/   corpusrun (host side): one pass, see runner/corpus.h
