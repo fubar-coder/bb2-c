@@ -56,16 +56,19 @@ variant of WaitWinEvent (`#GADTOOLS = 0`).
 
 * **PopUpWindow always returns 0.** The menu levels return the chosen
   item, but the result is `selecteditem`, which is only cleared. (It is
-  a statement anyway.)
+  a statement anyway.) (#471)
 * **Sizing a menu with sub menus toggles bit 1 of CIA-A PRA**
-  (`BCHG #1,$bfe001`: the power LED / audio filter), a debug leftover.
-* **PopUpInit creates a new port** without deleting the old one.
+  (`BCHG #1,$bfe001`: the power LED / audio filter), a debug leftover
+  (#468).
+* **PopUpInit creates a new port** without deleting the old one (#470).
 * **A failed AllocVec is not checked:** the menu structure is then at
-  address 0. A failed OpenWindow returns 0 and closes nothing else.
+  address 0. A failed OpenWindow returns 0 and closes nothing else
+  (#467).
 * **Closing a menu window replies every message in the shared port**,
-  also those for the other levels.
-* **The item count** at +8 of the structure is the number of items − 1
-  (and not used).
+  also those for the other levels (#469).
+
+Not a defect: the item count at +8 of the structure is the number of
+items − 1, but nothing uses the field.
 
 ## Test
 

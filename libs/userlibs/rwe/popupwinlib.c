@@ -36,16 +36,17 @@
  * BUG(orig), kept:
  *   - PopUpWindow always returns 0: the item chosen is returned by the
  *     menu levels, but the result is `selecteditem`, which is only
- *     cleared.
+ *     cleared (#471).
  *   - Sizing a menu with sub menus toggles bit 1 of CIA-A PRA ($BFE001:
- *     the power LED / audio filter), a debug leftover.
- *   - PopUpInit creates a new message port without deleting the old one.
+ *     the power LED / audio filter), a debug leftover (#468).
+ *   - PopUpInit creates a new message port without deleting the old one
+ *     (#470).
  *   - A failed AllocVec is not checked: the menu structure is at address
- *     0; a failed OpenWindow returns 0 and closes nothing else.
+ *     0; a failed OpenWindow returns 0 and closes nothing else (#467).
  *   - Closing a menu window replies every message in the shared port,
- *     also those for the other levels.
- *   - The item number count at +8 of the structure is the number of
- *     items - 1 (and not used).
+ *     also those for the other levels (#469).
+ * Not a defect: the item number count at +8 of the structure is the
+ * number of items - 1, but nothing uses that field.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -225,7 +226,7 @@ static ULONG waitwinevent(void)
     return e_msg[0];
 }
 
-/* CloseWin: BUG(orig): replies every message of the shared port */
+/* CloseWin: BUG(orig): replies every message of the shared port (#469) */
 static void closewin(struct Window *win)
 {
     if (!win)
@@ -388,7 +389,7 @@ static void mousemove(struct popup *p)
 
 /* ------------------------------------------------------------ a level */
 
-/* AllocStruct - BUG(orig): not checked */
+/* AllocStruct - BUG(orig): not checked (#467) */
 static struct popup *allocstruct(UBYTE *items, struct popup *parent)
 {
     struct popup *p = AllocVec(STRUCT_SIZEOF, MEMF_PUBLIC | MEMF_CLEAR);
@@ -439,7 +440,7 @@ static UWORD calcwinsize(struct popup *p, UWORD *h)
     p->textyoffset = ((WORD)(p->itemheight - fontheight) >> 1) + baseline;    /* ASR.w */
     if (*(UWORD *)hassubs) {
         w += 8;
-        *(volatile UBYTE *)0xbfe001 ^= 2;           /* BUG(orig): BCHG #1,$bfe001 */
+        *(volatile UBYTE *)0xbfe001 ^= 2;           /* BUG(orig): BCHG #1,$bfe001 (#468) */
     }
     p->winwidth = w;
     return w;
@@ -540,14 +541,14 @@ static void BLITZ_ROUTINE libfinit_c(void)
     CloseLibrary(gfxbase);
 }
 
-/* PopUpInit: BUG(orig): the old port is not deleted */
+/* PopUpInit: BUG(orig): the old port is not deleted (#470) */
 static void BLITZ_ROUTINE popupinit_c(void)
 {
     windowinit();
 }
 
 /* PopUpWindow screen#,*items: a0 = the screen object.  BUG(orig): the
-   result is selecteditem, always 0 */
+   result is selecteditem, always 0 (#471) */
 static ULONG BLITZ_ROUTINE dopopup_c(struct Screen **scr BL_REG(a0), UBYTE *items BL_REG(d1))
 {
     myscreen = *scr;
