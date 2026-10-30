@@ -43,7 +43,7 @@ NPrint "no pens screen ",s<>0," type ",Hex$(Peek.w(s+20))
 ScreenPens 1
 CloseScreen 4
 ; front screen / FindScreen / WbToScreen (object 4 is cleared before each
-; FindScreen: freescreen would close a found Blitz screen, BUG(orig))
+; FindScreen: freescreen would close a found Blitz screen, BUG(orig) (#248))
 Poke.l Addr Screen(4),0 : FindScreen 4
 NPrint "front is 3 ",Peek.l(Addr Screen(4))=Peek.l(Addr Screen(3))
 ShowScreen 0

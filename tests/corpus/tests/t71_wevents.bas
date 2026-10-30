@@ -38,7 +38,7 @@ e=Event : NPrint "then ",e
 ecls=$400 : ecode=$20 : equal=0 : eia=0 : ewin=w0 : Gosub post
 ecode=$A0 : Gosub post
 ecode=$35 : equal=1 : Gosub post
-; Qualifier sets only the low word (BUG(orig)), the upper word is whatever
+; Qualifier sets only the low word (BUG(orig) (#313)), the upper word is whatever
 ; was in d0 (memory layout) - masked
 e=Event : r=RawKey : NPrint "key ",Hex$(e)," ",r," ",Qualifier AND $FFFF
 a$=Inkey$ : NPrint "inkey [",a$,"] ",RawKey," ",Qualifier AND $FFFF

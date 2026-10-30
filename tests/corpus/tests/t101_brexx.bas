@@ -1,6 +1,6 @@
 ; t101_brexx - brexxlib: events go to a tape (TapeTrap Tape#, QuietTrap
 ; On: nothing is executed): Type, AbsMouse, RelMouse, MouseButton,
-; ClickButton (BUG(orig): button up with the QuietTrap value), XStatus,
+; ClickButton (BUG(orig) (#97): button up with the QuietTrap value), XStatus,
 ; SaveTape/LoadTape round trip, MacroKey/FreeMacroKey, Record/PlayBack
 ; off, QuickPlay.  No event reaches the input stream.
 DEFTYPE .l

@@ -122,7 +122,7 @@ fmt{"##############################.#"} : fmt{"(+##0.00)"} : fmt{"#.#.#"} : fmt{
 Format "##.##" : NPrint "after fmt [",1.5,"] [",Str$(2.5),"] [",UStr$(2.5),"]" : Format ""
 NPrint "no fmt [",1.5,"]"
 ; (literal exponents only up to 18: smaller numbers with pf)
-; ---- FloatMode -1 with a tiny number: the digits run into the table (BUG(orig))
+; ---- FloatMode -1 with a tiny number: the digits run into the table (BUG(orig) (#241))
 FloatMode -1 : pf{$80000080} : pf{$C0000002} : NPrint "after [",123.5,"]" : FloatMode 0
 NPrint "small [",1E+17,"] [",-42.125,"]"
 ; ---- Format longer than 32 characters: runtime error with the debugger,

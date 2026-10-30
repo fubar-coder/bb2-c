@@ -3,7 +3,7 @@
 ; with and without a palette); shapes with and without a cookie.
 ; XFlip only for shape 1 (32 pixels = byte width * 8: no shift blit).
 ; Shapes that need the shift blit are not tested: the original flips on
-; the CPU while the last blit may still run (BUG(orig)); the result
+; the CPU while the last blit may still run (BUG(orig) (#271)); the result
 ; depends on timing (CPU speed, debugger traps between the statements).
 ; Results: the shape blocks (without pointers) and data/cookie checksums.
 DEFTYPE .l

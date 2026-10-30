@@ -34,7 +34,7 @@ NPrint "buffer ",Peek.l(u+90)," err ",Peek.b(u+69)
 WriteSerialString 0,Chr$(1)+"t64_serialrx"+Chr$(2),2
 NPrint "start err ",Peek.b(u+128+69)," len ",Peek.l(u+128+74)," actual ",Peek.l(u+128+70)
 
-; nothing waiting: -1 / empty string; flag 1 does not wait (BUG(orig))
+; nothing waiting: -1 / empty string; flag 1 does not wait (BUG(orig) (#255))
 NPrint "empty ",ReadSerial(0)," ",ReadSerial(0,0)," ",ReadSerial(0,1)
 s$=ReadSerialString(0) : NPrint "emptystr [",s$,"] ",Len(s$)
 NPrint "event ",SerialEvent(0)

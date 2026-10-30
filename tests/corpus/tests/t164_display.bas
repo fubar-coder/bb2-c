@@ -38,7 +38,7 @@ cn=7 : Print "genlock " : Gosub info
 ; A: AGA, plain custom area
 InitCopList 0,44,32,$10004,8,32,80
 cn=0 : Gosub info
-; the blank sprite's address: in the SPR0POS/CTL data of a fresh list (BUG(orig))
+; the blank sprite's address: in the SPR0POS/CTL data of a fresh list (BUG(orig) (#413))
 p=Peek.l(Addr CopList(0)+12) : mh=Peek.w(p+2) AND $FFFF : ml=Peek.w(p+6) AND $FFFF
 ms=(mh LSL 16) | ml
 DisplayBitMap 0,0 : Gosub info : Gosub planes
@@ -53,7 +53,7 @@ DisplayAdjust 0,1,2,3,4,5 : Gosub info
 CustomColors 0,0,5,0,8,4 : Gosub info
 CustomColors 0,12,9,0,0,2,1 : Gosub info
 CustomString 0,20,12,Mkl$($01800FFF)+Mkl$($01820F00) : Gosub info
-; BUG(orig): CustomSprites has !libs{#spriteslib,$1181} (Sprite object
+; BUG(orig) (#324): CustomSprites has !libs{#spriteslib,$1181} (Sprite object
 ; from parameter d1 = CCOffset): the compiler shifts d1 by the object
 ; shift (4) before the call, so CCOffset 1 means 64 bytes (and must be a
 ; valid Sprite number for the maximum check)
