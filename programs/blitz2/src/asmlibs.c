@@ -564,17 +564,16 @@ static UWORD fetchpees_p(UWORD n, const UBYTE **tp, UWORD pushmode)
 /* blitz2.s:5563 fetchlibps - fetch library parameters */
 UWORD fetchlibps(UWORD spec, const UBYTE *types)
 {
-    UWORD n, nreps;
+    UWORD first, nreps;
     UWORD c = 0;
 
     numreps = 0;
-    n = spec & 0xff00;
-    if (n == 0)
+    if ((spec & 0xff00) == 0)
         goto noreps;
-    n >>= 12;                           /* d0 = start of reps */
-    if (n) {
-        spec = (spec & 0xff00) | (UBYTE)(spec - n); /* new number to fetch */
-        c = fetchpees_p(n & 15, &types, 0);     /* fetch first parms */
+    first = spec >> 12;                 /* d0 = start of reps */
+    if (first) {
+        spec = (spec & 0xff00) | (UBYTE)(spec - first); /* new number to fetch */
+        c = fetchpees_p(first & 15, &types, 0); /* fetch first parms */
         if (c != ',')
             syntaxerr();
     }
@@ -595,10 +594,9 @@ UWORD fetchlibps(UWORD spec, const UBYTE *types)
     if (c != ',')
         syntaxerr();
 noreps:
-    n = spec;
-    if (n)
-        return fetchpees_p(n & 15, &types, 0);
-    return n;
+    if (spec)
+        return fetchpees_p(spec & 15, &types, 0);
+    return 0;
 }
 
 /* blitz2.s:5620 fetchpees4 - always push */
@@ -1192,16 +1190,17 @@ APTR loadlibgroup(ULONG len, STRPTR name, struct node **tail)
 
     p = buf;
     for (;;) {
-        ULONG size = L_(p);
+        ULONG filelen = L_(p);
+        ULONG size;
         struct blitzlib *s;
         UBYTE *r;
         p += 4;
-        if (!size)
+        if (!filelen)
             break;
         s = (struct blitzlib *)(p + 32);
         (*tail)->next = (struct node *)s;   /* link in. */
         *tail = (struct node *)s;
-        p += size;
+        p += filelen;
         /* fix stuff - done by loadalib */
         size = L_((UBYTE *)s - 4) * 4;  /* number of longwords -> bytes */
         s->size = size;
