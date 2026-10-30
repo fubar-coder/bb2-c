@@ -1,0 +1,29 @@
+; ted-detok-no-length-check (#355): detoka5 expands a tokenised line into
+; charbuff3 (the last 130 bytes of TED's buffer block of 2438 bytes)
+; without a length check.  blitz2 under inject pad (64 zeroed bytes behind
+; every allocation, checked when it is freed), a tokenised file: "x",
+; 23 x "NPrint:" (69 bytes, 161 characters detokenised), "y".  Block from
+; the start of line 1 to the end of line 2 (BOTTOM, F2 at the start of
+; line 3), Block Kill: detoka5 for the last block line.  SAVE, QUIT (TED
+; frees its buffer block).  Correct: nothing is written behind the block;
+; the original writes the text behind it (inject: "written behind").
+; @file bo.bb2 "x\x00\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:"
+; @file bo.bb2 "\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:"
+; @file bo.bb2 "\xdd\x82:\xdd\x82:\xdd\x82:\x00y\x00"
+; @source F bo.bb2
+; @command TEDAB:tools/inject pad blitz2:blitz2 @FILE@
+; @expect nostdout "inject: pad: written behind an allocation of 2438 bytes"
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+key 50
+menu 2 1
+key 51
+menu 1 1
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+menu 0 9
+wait exit

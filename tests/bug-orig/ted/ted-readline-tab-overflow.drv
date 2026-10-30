@@ -1,0 +1,19 @@
+; ted-readline-tab-overflow (#378): readline expands a TAB before it
+; checks the end of the line buffer charbuff2; with a tab size above 133
+; (only from L:blitzeditor.opts) the blanks run past the end of TED's
+; buffer block (2438 bytes, charbuff3 is its last 130 bytes).  blitz2
+; under inject pad (64 zeroed bytes behind every allocation, checked when
+; it is freed), tab size 300, a text file "a<TAB>b"; QUIT (TED frees its
+; buffer block).  Correct: nothing is written behind the block; the
+; original writes blanks behind it (inject: "written behind").
+; @file bo.bas "a\tb\n"
+; @source F bo.bas
+; @opts tabstop=300
+; @command TEDAB:tools/inject pad blitz2:blitz2 @FILE@
+; @expect nostdout "inject: pad: written behind an allocation of 2438 bytes"
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 0 9
+wait exit
