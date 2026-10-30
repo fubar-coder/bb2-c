@@ -11,9 +11,9 @@
 /* rawed+32+0 (called at ted.s:39): open console.device (result unchecked,
    BUG(orig) #373), build the two 105 byte tables (never read) */
 void rawed_init(void);
-/* rawed+32+4 (called at ted.s:5928): code (d0) = raw key (key down), d1 =
-   qualifier -> character (0 = none) */
-UWORD rawed_convert(UWORD code, UWORD d1);
+/* rawed+32+4 (called at ted.s:5928): code (d0) = raw key (key down), qual
+   (d1) = qualifier -> character (0 = none) */
+UWORD rawed_convert(UWORD code, UWORD qual);
 /* rawed+32+8 (called from the fail chain, ted.s line 128): CloseDevice (signal not freed) */
 void rawed_finit(void);
 

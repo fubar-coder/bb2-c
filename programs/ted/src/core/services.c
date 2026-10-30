@@ -176,17 +176,19 @@ const char *help_core(struct item *line, UWORD col, UWORD *num)
     const UBYTE *p = line->chars;               /* a4 = start of line */
     const char *result = NULL;                  /* no token found yet */
     const char *name;
-    UWORD c, x = 0;                             /* chk x */
+    UWORD x = 0;                                /* d2: chk x */
 
     for (;;) {
         /* .loop */
-        c = *p++;
+        UBYTE c = *p++;                         /* d0 */
+
         if (c == 0)
             break;                              /* .done */
         if (c & 0x80) {
-            c = (UWORD)((c << 8) | *p++);
-            *num = c;                           /* move d0,helptoke */
-            name = findtoke(c);
+            UWORD tok = (UWORD)((c << 8) | *p++);   /* d0 */
+
+            *num = tok;                         /* move d0,helptoke */
+            name = findtoke(tok);
             result = name;
             do                                  /* .loop2 */
                 x++;

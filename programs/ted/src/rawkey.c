@@ -67,7 +67,7 @@ void rawed_init(void)
 }
 
 /* rawed+32+4 (called at ted.s line 5928): L7 */
-UWORD rawed_convert(UWORD code, UWORD d1)
+UWORD rawed_convert(UWORD code, UWORD qual)
 {
     UWORD sp = rawspecial(code);
     LONG r;
@@ -76,14 +76,13 @@ UWORD rawed_convert(UWORD code, UWORD d1)
         return sp;
     /* L10 */
     rawed_ie.ie_Code = code;
-    rawed_ie.ie_Qualifier = d1;
+    rawed_ie.ie_Qualifier = qual;
     rawed_buf[0] = rawed_buf[1] = 0;
     r = RawKeyConvert(&rawed_ie, (STRPTR)rawed_buf, 1, NULL);
-    d1 = 0;
+    /* L11 (d1) */
     if ((WORD)r != -1)          /* cmpi.w #-1,d0: buffer overflow -> 0 */
-        d1 = rawed_buf[0];      /* 0 if no character */
-    /* L11 */
-    return d1;
+        return rawed_buf[0];    /* 0 if no character */
+    return 0;
 }
 
 /* rawed+32+8 (called from the fail chain, ted.s line 128): CloseDevice
