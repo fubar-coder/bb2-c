@@ -232,10 +232,9 @@ UWORD ampersand2(UWORD *type);
    (usedfrom = old srcptr-1).  Returns the char after the name (after a
    '.'/'$' suffix: the char at the suffix - srcptr is rewound by resloc).
    Empty name -> syntaxerr.
-   The name length (asm d2, needed by fetchvar / findproc / dolet2) is left
-   in getvnamelen (DIFF: asm register d2). */
-UWORD getvname(UWORD c);
-extern UWORD getvnamelen;
+   The name length (asm d2, needed by fetchvar / findproc / dolet2) goes
+   to *namelen (DIFF: asm register d2). */
+UWORD getvname(UWORD c, UWORD *namelen);
 /* srcptr saved while reading from usedpath (restored by getchar) */
 extern UBYTE *usedfrom;
 

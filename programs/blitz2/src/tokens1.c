@@ -16,8 +16,6 @@
 #include <proto/dos.h>
 #include "blitz2.h"
 
-/* asm d2 after getvname = length of the name in namebuff (eval.h's
-   getvname does not return it; the name is NUL terminated there) */
 /* a template long (two UWORDs, high first) - avoids type-punned L_() reads
    of UWORD arrays */
 static inline ULONG tl(const UWORD *p)
@@ -25,7 +23,6 @@ static inline ULONG tl(const UWORD *p)
     return ((ULONG)p[0] << 16) | p[1];
 }
 
-#define VNAMELEN() getvnamelen    /* asm d2 after getvname */
 
 /* ======================================================= templates / data */
 
@@ -105,6 +102,7 @@ WORD iflineat;
 /* blitz2.s:12139 dodeftype */
 void dodeftype(UWORD c)
 {
+    UWORD namelen;          /* asm d2 after getvname */
     struct type *t, *old, *vt;
     UWORD len;
 
@@ -123,8 +121,8 @@ void dodeftype(UWORD c)
     old = defaulttype;
     defaulttype = t;
     for (;;) {                                  /* .loopz */
-        c = getvname(c);
-        fetchvar(VNAMELEN(), &vt, &c);
+        c = getvname(c, &namelen);
+        fetchvar(namelen, &vt, &c);
         if (c != ',')
             break;
         c = getchar3();
@@ -135,14 +133,15 @@ void dodeftype(UWORD c)
 /* blitz2.s:12168 domaxlen - set a strings maximum length. */
 void domaxlen(UWORD c)
 {
+    UWORD namelen;          /* asm d2 after getvname */
     struct var *v;
     struct type *t;
     WORD off;
     UWORD vtype, type;
     WORD vm;
 
-    c = getvname(c);
-    v = fetchvar(VNAMELEN(), &t, &c);
+    c = getvname(c, &namelen);
+    v = fetchvar(namelen, &t, &c);
     vtype = calcvar(&v, &t, &c, &off);
     if ((vtype & 0xff) != T_STRING)
         mismatcherr();
@@ -384,6 +383,7 @@ void dorestore(UWORD c)
 /* blitz2.s:12384 doread */
 void doread(UWORD c)
 {
+    UWORD namelen;          /* asm d2 after getvname */
     struct var *v;
     struct type *t;
     WORD off;
@@ -393,8 +393,8 @@ void doread(UWORD c)
     uselib(64535);
     for (;;) {                                  /* .loop */
         pokel(tl(dataget));
-        c = getvname(c);
-        v = fetchvar(VNAMELEN(), &t, &c);
+        c = getvname(c, &namelen);
+        v = fetchvar(namelen, &t, &c);
         vtype = calcvar(&v, &t, &c, &off);
         if (vtype & TF_POINTER)
             vtype = (vtype & 0xff00) | T_ADDR;  /* pointer becomes an address! */
@@ -685,8 +685,7 @@ void doshared(UWORD c)
         sharederr();
     procmode = 0;
     for (;;) {                                  /* .loop2 */
-        c = getvname(c);
-        len = VNAMELEN();
+        c = getvname(c, &len);
         g = findvar((struct node *)&firstglob, len, &last);
         while (g) {                             /* .try2 */
             if (((g->flags ^ flagmask) & 0xff) == 0)

@@ -1185,8 +1185,7 @@ static void handleascii(UWORD c)
     UWORD len;
 
     letstart = (ULONG)srcptr;
-    getvname(c);
-    len = getvnamelen;                          /* asm d2 from makename */
+    getvname(c, &len);
     c = reget();
     if (eos(c)) {
         handlelabel(len);

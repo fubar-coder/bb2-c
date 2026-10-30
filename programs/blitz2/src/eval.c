@@ -125,7 +125,6 @@ struct precent *precsp = precstack;     /* 9171 */
 struct forthent forthstack[32];         /* 9715 ds.b 18*32 */
 struct forthent *forthsp = forthstack;  /* 9716 */
 WORD fuckpos = 0;           /* 10303 */
-UWORD getvnamelen = 0;      /* DIFF: asm d2 after getvname */
 
 /* forward declarations of the internal routines */
 static void fdo2(WORD lvo);
@@ -150,7 +149,7 @@ static void makesbase(void);
 static UWORD varcont(UWORD oldtype, UWORD *type);
 static UWORD variable(UWORD c, UWORD *type);
 static UWORD function(UWORD c, UWORD *type);
-static UWORD afunction(UWORD oldtype, UWORD *type);
+static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen);
 static void dopusha3(void);
 static void dopulla3(void);
 
@@ -508,7 +507,7 @@ convhandler *const convtable[49] = {
 
 /* blitz2.s:8709 getvname - transfer chars to namebuff. set flagmask
    according to array/pointer etc status */
-UWORD getvname(UWORD c)
+UWORD getvname(UWORD c, UWORD *namelen)
 {
     UWORD len, next;
 
@@ -527,7 +526,7 @@ UWORD getvname(UWORD c)
     } else {
         len = makename2(&c);        /* .skip2 */
     }
-    getvnamelen = len;
+    *namelen = len;
     if (!len)                       /* .more */
         syntaxerr();
     if (c == '(') {
@@ -1734,14 +1733,15 @@ static UWORD ampersand(UWORD *type)
 /* blitz2.s:9910 ampersand2 */
 UWORD ampersand2(UWORD *type)
 {
+    UWORD namelen;          /* asm d2 after getvname */
     UWORD c, vartype;
     struct var *v;
     struct type *t;
     WORD off = 0;
 
     c = getchar3();
-    c = getvname(c);
-    v = fetchvar(getvnamelen, &t, &c);
+    c = getvname(c, &namelen);
+    v = fetchvar(namelen, &t, &c);
     vartype = calcvar(&v, &t, &c, &off);
     *type = vartype;
 
@@ -2250,16 +2250,17 @@ static void variable2(UWORD vartype, WORD off, UWORD *type)
 /* blitz2.s:10471 variable */
 static UWORD variable(UWORD c, UWORD *type)
 {
+    UWORD namelen;          /* asm d2 after getvname */
     UWORD old = *type;              /* remember old type */
     struct var *v;
     struct type *t;
     WORD off = 0;
     UWORD vartype;
 
-    c = getvname(c);
+    c = getvname(c, &namelen);
     if (c == '{')
-        return afunction(old, type);
-    v = fetchvar(getvnamelen, &t, &c);
+        return afunction(old, type, namelen);
+    v = fetchvar(namelen, &t, &c);
     vartype = calcvar(&v, &t, &c, &off);
     variable2(vartype, off, type);
     return varcont(old, type);
@@ -2310,9 +2311,9 @@ void makefjsr(ULONG addr)
 }
 
 /* blitz2.s:10522 afunction - do a local function, eg a=pixel{x,y} */
-static UWORD afunction(UWORD oldtype, UWORD *type)
+static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen)
 {
-    struct proc *p = findproc(getvnamelen, NULL);
+    struct proc *p = findproc(namelen, NULL);
     UWORD rt, n, mask, c;
     WORD ssg;
     ULONG addr;

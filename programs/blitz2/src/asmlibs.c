@@ -728,12 +728,13 @@ void sendtype(struct var *v, struct type *t)
 /* blitz2.s:5759 baseadd - send base on stack or in reg */
 void baseadd(struct var **v, struct type **t, UWORD pmode)
 {
+    UWORD namelen;          /* asm d2 after getvname */
     UWORD c = getchar3();
 
-    getvname(c);
+    getvname(c, &namelen);
     if (!(flagmask & 2))
         syntaxerr();
-    *v = fetchvar(getvnamelen, t, NULL);
+    *v = fetchvar(namelen, t, NULL);
     c = getchar3();
     if (c != ')')                       /* we just want a() or whatever */
         syntaxerr();

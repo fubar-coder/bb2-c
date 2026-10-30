@@ -10,7 +10,7 @@
  *  - DIFF: "garbage" longs: the asm sometimes pokes whatever is in d1 as a long
  *    placeholder that is always patched later (unless nomemleft); the C
  *    code pokes the value d1 would have had where it is obvious, else 0.
- *  - the name length after getvname (asm d2) is getvnamelen (eval.h).
+ *  - the name length after getvname (asm d2) is getvname's out parameter.
  */
 #include <string.h>
 #include <proto/exec.h>
@@ -276,6 +276,7 @@ void dofunc(UWORD c)
    (-1 statement, else the function's type) */
 static void dofunc2(WORD mode, UWORD c)
 {
+    UWORD namelen;          /* asm d2 after getvname */
     struct node *last;
     struct proc *p;
     struct var *v;
@@ -318,8 +319,8 @@ static void dofunc2(WORD mode, UWORD c)
     c = getchar3();
     if (c != '}') {
         for (;;) {
-            c = getvname(c);
-            v = fetchvar(getvnamelen, &t, &c);
+            c = getvname(c, &namelen);
+            v = fetchvar(namelen, &t, &c);
             if (t->u.code == T_STRING) {
                 UWORD *sb = (UWORD *)stbuff;
                 sb[nstrs * 2] = npars;
@@ -868,8 +869,7 @@ void donext(UWORD c)
         struct fornode *f;
         UWORD len;
 
-        c = getvname(c);
-        len = getvnamelen;
+        c = getvname(c, &len);
         f = firstfor;
         if ((UWORD)(f->len - 18) != len)
             noforerr();
@@ -935,8 +935,7 @@ void dofor(UWORD c)
     forlineat = linenumat;
     /* new stuff! */
     letstart = (ULONG)srcptr;
-    c = getvname(c);
-    namelen = getvnamelen;
+    c = getvname(c, &namelen);
     if (findfor(namelen, &last))
         fornexterr();
     f = (struct fornode *)addhere2((struct node *)&firstfor, NAMEOFF_FOR,
@@ -1000,9 +999,10 @@ void dofor(UWORD c)
 /* blitz2.s:14338 dolet */
 void dolet(UWORD c)
 {
+    UWORD namelen;          /* asm d2 after getvname */
     letstart = (ULONG)srcptr;
-    c = getvname(c);
-    dolet2(c, getvnamelen, NULL, NULL);
+    c = getvname(c, &namelen);
+    dolet2(c, namelen, NULL, NULL);
 }
 
 /* blitz2.s:14468 dolet2 .code - poke the store opcode for type vartype (asm d1, d2) */
@@ -1160,6 +1160,7 @@ void dodim(UWORD c)
 /* blitz2.s:14520 dodim2 */
 static void dodim2(UWORD c)
 {
+    UWORD namelen;          /* asm d2 after getvname */
     struct var *v;
     struct type *t;
     UWORD listadd;          /* asm: global listadd (14510), 8 = Dim List */
@@ -1173,10 +1174,10 @@ static void dodim2(UWORD c)
             c = getchar3();
         }
         nonew = 0;
-        c = getvname(c);
+        c = getvname(c, &namelen);
         if (!(flagmask & 2))
             syntaxerr();
-        v = fetchvar(getvnamelen, &t, &c);
+        v = fetchvar(namelen, &t, &c);
         if (!added) {
             /* Here, an Array is being Re-Dimmed */
             wantdims = v->ndims;          /* move 8(a3),temp1: high word */

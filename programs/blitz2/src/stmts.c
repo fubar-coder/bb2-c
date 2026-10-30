@@ -144,13 +144,14 @@ void dousepath(UWORD c)
 /* blitz2.s:3363 excget - get an Exchange operand */
 UWORD excget(UWORD c, UBYTE *type)
 {
+    UWORD namelen;          /* asm d2 after getvname */
     struct var *v;
     struct type *t;
     WORD offset = 0;
     UWORD vtype;
 
-    c = getvname(c);
-    v = fetchvar(getvnamelen, &t, &c);     /* asm d2 from getvname */
+    c = getvname(c, &namelen);
+    v = fetchvar(namelen, &t, &c);     /* asm d2 from getvname */
     vtype = calcvar(&v, &t, &c, &offset);
     if (vtype & TF_POINTER)
         vtype = (vtype & 0xff00) | 4;   /* move.b #4,d2 */
@@ -1271,6 +1272,7 @@ void dounmove(UWORD unmove)
 /* blitz2.s:4665 doputreg */
 void doputreg(UWORD c)
 {
+    UWORD namelen;          /* asm d2 after getvname */
     struct var *v;
     struct type *t;
     WORD offset = 0;
@@ -1282,8 +1284,8 @@ void doputreg(UWORD c)
     pokel(0x48e7fffe);                  /* movem to stack */
     pokewd(reg | 0x2f00);
     c = getchar3();
-    c = getvname(c);
-    v = fetchvar(getvnamelen, &t, &c);     /* asm d2 from getvname */
+    c = getvname(c, &namelen);
+    v = fetchvar(namelen, &t, &c);     /* asm d2 from getvname */
     vtype = calcvar(&v, &t, &c, &offset);
     if ((vtype & TF_POINTER) || (vtype & 0xff) == 0 || (vtype & 0xff) == 7)
         vtype = (vtype & 0xff00) | 3;   /* .issa */
