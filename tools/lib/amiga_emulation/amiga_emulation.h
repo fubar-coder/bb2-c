@@ -14,8 +14,10 @@
  * amiberry.log in the work directory; with `log` that includes its own
  * log (write_log, e.g. "Illegal bget at ..." with log_illegal_mem).
  *
- * The configuration is default.uae (embedded) with the changes of the
- * test: a change replaces every line of its key (value NULL removes them).
+ * The configuration is the machine's template (embedded: default.uae for
+ * the A1200, a500.uae for the A500 with Kickstart 1.3; a machine may change
+ * keys of its template, e.g. a500-68010) with the changes of the test: a
+ * change replaces every line of its key (value NULL removes them).
  * @EMULATION_DIR@ stands for the directory with the Kickstart ROM and the
  * hardfiles.  TEST: and the extra mounts are appended.
  *
@@ -61,7 +63,10 @@ struct amiga_emulation_mount {
 };
 
 struct amiga_emulation_params {
-    const struct amiga_emulation_option *changes;   /* to default.uae */
+    const char *machine;        /* NULL or "a1200": default.uae; "a500":
+                                   a500.uae (68000, Kickstart 1.3);
+                                   "a500-68010": a500.uae with a 68010 */
+    const struct amiga_emulation_option *changes;   /* to the machine's template */
     size_t nchanges;
     const struct amiga_emulation_mount *mounts;     /* besides TEST: */
     size_t nmounts;
@@ -116,6 +121,14 @@ char *amiga_emulation_config(const struct amiga_emulation_params *p, const char 
 char *amiga_emulation_script(const char *script);
 
 const char *amiga_emulation_status_name(enum amiga_emulation_status s);
+
+/* checks the Kickstart ROM file before a run: it exists, and an encrypted
+   one (Cloanto, "AMIROMTYPE1") has rom.key in the directory of its real
+   path (where Amiberry looks).  0, or -1 with a message in err. */
+int amiga_emulation_check_rom(const char *rom, char *err, size_t errlen);
+
+/* whether params.machine may be name (NULL: the default) */
+int amiga_emulation_machine_known(const char *name);
 
 /* the slots (see above): takes a free one of max in dir (created if
    missing); with wait, waits for one.  The locked file descriptor, -1 if

@@ -1,10 +1,12 @@
 /*
  * amiga_run - run an AmigaDOS script in Amiberry (tools/lib/amiga_emulation).
  *
- *   amiga_run [--rtg] [--visible] [--log] [--timeout SEC] [--set KEY=VALUE]...
- *             [--unset KEY]... [--mount VOL=DIR]... [--mount-ro VOL=DIR]...
- *             [--dir WORKDIR] SCRIPT|-
+ *   amiga_run [--machine NAME] [--rtg] [--visible] [--log] [--timeout SEC]
+ *             [--set KEY=VALUE]... [--unset KEY]... [--mount VOL=DIR]...
+ *             [--mount-ro VOL=DIR]... [--dir WORKDIR] SCRIPT|-
  *
+ * --machine: a1200 (the default), a500 (68000, Kickstart 1.3) or
+ * a500-68010 (amiga_emulation.h).
  * The script runs with TEST: = WORKDIR/test.  Without --dir the work
  * directory is temporary: the files the script wrote to TEST: are printed
  * and the directory is removed; with --dir everything stays.  Exit status
@@ -80,10 +82,11 @@ static void print_results(const char *dir)
 /* to stdout for -h/--help (0), else to stderr (2) */
 static int usage(FILE *out)
 {
-    fprintf(out, "usage: amiga_run [--rtg] [--visible] [--log] [--timeout SEC] [--set KEY=VALUE]...\n"
-                 "                 [--unset KEY]... [--mount VOL=DIR]... [--mount-ro VOL=DIR]...\n"
-                 "                 [--dir WORKDIR] SCRIPT|-\n"
-                 "  run an AmigaDOS script (a file or - for stdin) in Amiberry\n");
+    fprintf(out, "usage: amiga_run [--machine NAME] [--rtg] [--visible] [--log] [--timeout SEC]\n"
+                 "                 [--set KEY=VALUE]... [--unset KEY]... [--mount VOL=DIR]...\n"
+                 "                 [--mount-ro VOL=DIR]... [--dir WORKDIR] SCRIPT|-\n"
+                 "  run an AmigaDOS script (a file or - for stdin) in Amiberry\n"
+                 "  --machine: a1200 (default), a500 (68000, Kickstart 1.3), a500-68010\n");
     return out == stdout ? 0 : 2;
 }
 
@@ -114,7 +117,13 @@ int main(int argc, char **argv)
         const char *a = argv[i];
         char *eq;
 
-        if (!strcmp(a, "--rtg")) {
+        if (!strcmp(a, "--machine") && i + 1 < argc) {
+            p.machine = argv[++i];
+            if (!amiga_emulation_machine_known(p.machine)) {
+                fprintf(stderr, "amiga_run: unknown machine \"%s\"\n", p.machine);
+                return usage(stderr);
+            }
+        } else if (!strcmp(a, "--rtg")) {
             memcpy(changes + p.nchanges, amiga_emulation_rtg,
                    amiga_emulation_rtg_count * sizeof *changes);
             p.nchanges += amiga_emulation_rtg_count;

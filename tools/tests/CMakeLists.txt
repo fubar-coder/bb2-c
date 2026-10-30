@@ -20,6 +20,14 @@ add_test(NAME amiga_emulation_run COMMAND test_amiga_emulation_run)
 math(EXPR limit "180 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(amiga_emulation_run PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+# the A500 machines (Kickstart 1.3), one run after the other
+add_executable(test_amiga_emulation_a500 test_amiga_emulation_a500.c)
+target_link_libraries(test_amiga_emulation_a500 PRIVATE lib_amiga_emulation lib_hunk)
+target_compile_options(test_amiga_emulation_a500 PRIVATE -Wno-unused-function)
+add_test(NAME amiga_emulation_a500 COMMAND test_amiga_emulation_a500)
+math(EXPR limit "200 + 2 * ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(amiga_emulation_a500 PROPERTIES
+	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 
 # the .xtra model of shared/xtra (lib_xtra): snitch programs, one per file
 foreach(t xtra_load xtra_blitz2 xtra_bb22 xtra_ab3 xtra_ab3_update)

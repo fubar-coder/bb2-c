@@ -3,6 +3,7 @@
  * (no emulator), the slots that limit the runs.
  */
 #define _XOPEN_SOURCE 700       /* mkdtemp */
+#include <sys/stat.h>
 #include <unistd.h>
 #include "testutil.h"
 #include "amiga_emulation.h"
@@ -88,6 +89,52 @@ int main(void)
           && lines_equal(cfg, "hardfile2=ro,DH0:/emu/Workbench_OS3.2-AB3.vhd,32,1,2,512,0,,uae0") == 1);
     free(cfg);
 
+    /* the machines: a1200 is the default; a500 has its own template */
+    p.nchanges = 0;
+    p.machine = "a1200";
+    cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
+    CHECK(cfg && lines_equal(cfg, "kickstart_rom_file=/emu/A1200.47.115.rom") == 1);
+    free(cfg);
+    p.machine = "a500";
+    cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
+    CHECK(cfg && !strstr(cfg, "@EMULATION_DIR@"));
+    CHECK(cfg && lines_equal(cfg, "kickstart_rom_file=/emu/amiga-os-130.rom") == 1);
+    CHECK(cfg && lines_equal(cfg, "hardfile2=ro,DH0:/emu/workbench-135.hdf,0,0,0,512,0,,uae0") == 1);
+    CHECK(cfg && lines_equal(cfg, "uaehf0=hdf,ro,DH0:/emu/workbench-135.hdf,0,0,0,512,0,,uae0") == 1);
+    CHECK(cfg && key_lines(cfg, "hardfile2") == 1 && key_lines(cfg, "uaehf0") == 1);
+    CHECK(cfg && lines_equal(cfg, "cpu_model=68000") == 1 && lines_equal(cfg, "cpu_24bit_addressing=true") == 1);
+    CHECK(cfg && lines_equal(cfg, "chipset=ecs_agnus") == 1 && lines_equal(cfg, "use_gui=no") == 1);
+    CHECK(cfg && lines_equal(cfg, "filesystem2=rw,DH1:TEST:/run/test,0") == 1);
+    CHECK(cfg && lines_equal(cfg, "uaehf1=dir,rw,DH1:TEST:/run/test,0") == 1);
+    /* nothing of the user's host in it */
+    CHECK(cfg && !strstr(cfg, "amiberry.") && !strstr(cfg, "/home/") && key_lines(cfg, "gfx_width") == 0);
+    free(cfg);
+    p.machine = "a500-68010";
+    cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
+    CHECK(cfg && key_lines(cfg, "cpu_model") == 1 && lines_equal(cfg, "cpu_model=68010") == 1);
+    CHECK(cfg && key_lines(cfg, "cpu_type") == 1 && lines_equal(cfg, "cpu_type=68010") == 1);
+    CHECK(cfg && lines_equal(cfg, "kickstart_rom_file=/emu/amiga-os-130.rom") == 1);
+    free(cfg);
+    /* a change of the test wins over the machine's */
+    {
+        struct amiga_emulation_option cpu[] = { { "cpu_model", "68020" } };
+
+        p.changes = cpu;
+        p.nchanges = 1;
+        cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
+        CHECK(cfg && key_lines(cfg, "cpu_model") == 1 && lines_equal(cfg, "cpu_model=68020") == 1);
+        CHECK(cfg && lines_equal(cfg, "cpu_type=68010") == 1);
+        free(cfg);
+        p.nchanges = 0;
+    }
+    /* refused: an unknown machine */
+    CHECK(amiga_emulation_machine_known(NULL) && amiga_emulation_machine_known("a500-68010"));
+    CHECK(!amiga_emulation_machine_known("a3000") && !amiga_emulation_machine_known(""));
+    p.machine = "a3000";
+    CHECK(amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err) == NULL
+          && strstr(err, "unknown machine"));
+    p.machine = NULL;
+
     /* refused: commas in paths, TEST as extra volume */
     p.nchanges = 0;
     CHECK(amiga_emulation_config(&p, "/emu", "/run,test", err, sizeof err) == NULL);
@@ -97,10 +144,10 @@ int main(void)
 
     /* the script: FailAt, the text, the end mark */
     s = amiga_emulation_script("Echo hi");
-    CHECK(s && strstr(s, "FailAt 1000\nEcho hi\nEcho \"done\" >TEST:run.done\n"));
+    CHECK(s && strstr(s, "FailAt 1000\nEcho hi\nEcho >TEST:run.done \"done\"\n"));
     free(s);
     s = amiga_emulation_script(NULL);
-    CHECK(s && strstr(s, "FailAt 1000\nEcho \"done\" >TEST:run.done\n"));
+    CHECK(s && strstr(s, "FailAt 1000\nEcho >TEST:run.done \"done\"\n"));
     free(s);
 
     /* the slots: max of them, the next waits (here: refused), a freed
@@ -129,6 +176,44 @@ int main(void)
             snprintf(lock, sizeof lock, "%s/slot-%d.lock", dir, a);
             remove(lock);
         }
+        rmdir(dir);
+    }
+
+    /* the ROM check: missing, plain, encrypted without and with rom.key
+       (beside the real file, not beside a link to it) */
+    {
+        char dir[] = "/tmp/amiga-emulation-romtest-XXXXXX";
+        char plain[96], enc[96], key[96], sub[96], link[96];
+        FILE *f;
+
+        CHECK(mkdtemp(dir) != NULL);
+        snprintf(plain, sizeof plain, "%s/plain.rom", dir);
+        snprintf(enc, sizeof enc, "%s/enc.rom", dir);
+        snprintf(key, sizeof key, "%s/rom.key", dir);
+        snprintf(sub, sizeof sub, "%s/sub", dir);
+        snprintf(link, sizeof link, "%s/sub/enc.rom", dir);
+        CHECK(amiga_emulation_check_rom(plain, err, sizeof err) == -1 && strstr(err, "missing"));
+        if ((f = fopen(plain, "wb")) != NULL) {
+            fputs("\x11\x11\x4e\xf9 a plain ROM", f);
+            fclose(f);
+        }
+        if ((f = fopen(enc, "wb")) != NULL) {
+            fputs("AMIROMTYPE1 encrypted", f);
+            fclose(f);
+        }
+        CHECK(amiga_emulation_check_rom(plain, err, sizeof err) == 0);
+        CHECK(amiga_emulation_check_rom(enc, err, sizeof err) == -1 && strstr(err, "rom.key"));
+        CHECK(mkdir(sub, 0700) == 0 && symlink(enc, link) == 0);
+        if ((f = fopen(key, "wb")) != NULL)
+            fclose(f);
+        CHECK(amiga_emulation_check_rom(enc, err, sizeof err) == 0);
+        CHECK(amiga_emulation_check_rom(link, err, sizeof err) == 0);
+        remove(key);
+        CHECK(amiga_emulation_check_rom(link, err, sizeof err) == -1);
+        remove(link);
+        rmdir(sub);
+        remove(plain);
+        remove(enc);
         rmdir(dir);
     }
 

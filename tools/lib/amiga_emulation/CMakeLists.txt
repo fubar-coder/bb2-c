@@ -9,6 +9,6 @@ set_target_properties(lib_amiga_emulation PROPERTIES OUTPUT_NAME amiga_emulation
 target_include_directories(lib_amiga_emulation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(lib_amiga_emulation PRIVATE
 	AMIGA_EMULATION_DIR_DEFAULT="${emulation_dir}")
-# default.uae is embedded (#embed)
+# the templates are embedded (#embed)
 set_source_files_properties(amiga_emulation.c PROPERTIES
-	OBJECT_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/default.uae)
+	OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/default.uae;${CMAKE_CURRENT_SOURCE_DIR}/a500.uae")

@@ -555,15 +555,17 @@ their `.xtra`, `xtra_ab3_examples` five AmiBlitz3 sources from GitHub
 `tools/lib/amiga_emulation` runs AmigaDOS scripts in Amiberry – without a
 window, isolated (own working directory, own XDG directories, read-only
 hardfile), hence also in parallel: `amiga_emulation_start()`
-(configuration = `default.uae` plus changes, script, time limit),
+(configuration = the machine's template plus changes, script, time
+limit; machines: `a1200` = `default.uae`, `a500` = `a500.uae` with
+Kickstart 1.3, `a500-68010`),
 `amiga_emulation_command()` (control socket of Amiberry, e.g.
 `SCREENSHOT`, `READ_MEM`), `amiga_emulation_join()`. The script sees its
 directory as `TEST:`. By hand:
 
 ```
 echo 'Version >TEST:v.txt' | build/amiga/host/tools/amiga_run/amiga_run -
-amiga_run [--rtg] [--visible] [--log] [--timeout SEC] [--set KEY=VALUE]
-          [--unset KEY] [--mount VOL=DIR] [--mount-ro VOL=DIR] [--dir WORKDIR]
+amiga_run [--machine NAME] [--rtg] [--visible] [--log] [--timeout SEC]
+          [--set KEY=VALUE] [--unset KEY] [--mount VOL=DIR] [--mount-ro VOL=DIR] [--dir WORKDIR]
           SCRIPT|-
 ```
 
