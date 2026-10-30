@@ -1,0 +1,21 @@
+; ted-wb-exit-permit (#387): started from the Workbench, TED answers the
+; WBStartup message in wb_exit with Forbid, ReplyMsg, Permit and only then
+; returns: after the Permit the Workbench may unload TED while its last
+; instructions are still to be executed.  TED (a copy in work/, a ted.info
+; of $4E zero bytes: read in full, stack size 0, so #388/#389 stay out)
+; started by wbrun with freeseg: right after the reply the seglist is
+; overwritten with ILLEGAL and freed, as a memory checker would.
+; Correct: TED has ended when the reply arrives; the original runs into
+; the overwritten code (software failure, the session hangs).
+; @file run.script "Copy blitz2:ted TEDRUN:work/ted QUIET\nTEDAB:tools/wbrun freeseg TEDRUN:work/ted\nDelete TEDRUN:work/ted QUIET\n"
+; @file ted.info "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+; @file ted.info "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+; @source none
+; @command Execute TEDRUN:work/run.script
+; @expect stdout "wbrun: seglist overwritten and freed after the reply"
+; @expect nostdout "did not end"
+; @expect nostdout "REQUESTER"
+timeout 15
+wait screen
+menu 0 9
+wait exit

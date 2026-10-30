@@ -1,0 +1,15 @@
+; ted-wb-info-progfile (#388): started from the Workbench, TED's startup
+; code builds "<name>.info" in progfile and clears progfile only after a
+; full read of the icon; without a project, outside loads progfile as the
+; text.  TED (a copy in work/, no ted.info) started by wbrun like the
+; Workbench, without a project.  Correct: TED starts with an empty text;
+; the original tries to load "ted.info" and shows its error requester
+; (" OKAY ") instead of the editor waiting for input: `wait screen` fails.
+; @file run.script "Copy blitz2:ted TEDRUN:work/ted QUIET\nTEDAB:tools/wbrun TEDRUN:work/ted\nDelete TEDRUN:work/ted QUIET\n"
+; @source none
+; @command Execute TEDRUN:work/run.script
+; @expect nolog "OKAY"
+timeout 15
+wait screen
+menu 0 9
+wait exit

@@ -1,0 +1,16 @@
+; ted-wb-info-shortread (#389): started from the Workbench, TED's startup
+; code reads $4E bytes of its own "<name>.info" and leaves the file open
+; when Read returns fewer.  TED (a copy in work/) with a ted.info of 5
+; bytes, started by wbrun like the Workbench with bo.bas as project (so
+; that #388 does not load the icon as the text); wbrun checks after the
+; end whether ted.info is still in use.  Correct: it is closed.
+; @file run.script "Copy blitz2:ted TEDRUN:work/ted QUIET\nTEDAB:tools/wbrun inuse=TEDRUN:work/ted.info TEDRUN:work/ted TEDRUN:work/bo.bas\nDelete TEDRUN:work/ted QUIET\n"
+; @file ted.info "short"
+; @file bo.bas "a=1\n"
+; @source none
+; @command Execute TEDRUN:work/run.script
+; @expect stdout "wbrun: not in use: TEDRUN:work/ted.info"
+timeout 15
+wait screen
+menu 0 9
+wait exit
