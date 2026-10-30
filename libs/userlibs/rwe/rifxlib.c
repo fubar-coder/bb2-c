@@ -30,30 +30,36 @@
  * Kept from the original (BUG(orig)):
  *   - ClearBitmap starts at end-4 (its comment says 2): every pass is one
  *     word too low, the last word of the area stays and the last pass
- *     clears the word before the area (before the bitplane for offset 0);
+ *     clears the word before the area (before the bitplane for offset 0)
+ *     (#668);
  *   - ClearBitmap, FadeInBitmap and ZoomyZoom read the depth as the word
- *     at 4 (bm_Flags:bm_Depth), right only while bm_Flags is 0;
- *   - delay 0 in ClearBitmap/FadeInBitmap means 2^32 turns of the loop;
+ *     at 4 (bm_Flags:bm_Depth), right only while bm_Flags is 0 (#670);
+ *   - delay 0 in ClearBitmap/FadeInBitmap means 2^32 turns of the loop
+ *     (#669);
  *   - Derez is declared with a result (!acommand{#long}) but sets none:
  *     d0 is what the routine leaves there (the input for derez 0) -
- *     reproduced, it is what a Blitz program gets;
+ *     reproduced, it is what a Blitz program gets (#672);
  *   - Derez and ZoomXY keep the upper byte of sbitdepth from the previous
- *     call (MOVE.b into its low byte; after a depth 0 it is $FF);
+ *     call (MOVE.b into its low byte; after a depth 0 it is $FF) (#675);
  *   - Derez with a value >= 3 builds its mask table myline with 20 words
  *     (21 for values > 31) into the 18 words the source reserves: the
  *     19th goes over myflag and the pad byte, the 20th (21st) over the
  *     first instruction(s) of ZoomXY (_AsmZoom: TST.w d0, BEQ ...).  DIFF:
  *     here myline has room for 21 words, ZoomXY stays intact - corrupting
- *     code cannot be translated (the values read back are the same);
+ *     code cannot be translated (the values read back are the same)
+ *     (#671);
  *   - ZoomyZoom ignores the bitmap's size: fixed 32 lines of 80 bytes, the
- *     left 40 bytes doubled in place;
+ *     left 40 bytes doubled in place (#676);
  *   - the pointer arrays bit_add/dest_add hold 16 longs each and are not
- *     checked: FadeInBitmap with more than 8 planes runs from bit_add into
- *     dest_add (as in the original: one array pa[] here, with the
- *     variables that follow them in the same order), more than 18 planes
- *     overwrite the variables behind them (in the original: the code of
- *     InitZoomXY);
- *   - finit frees the tables but keeps the pointers.
+ *     checked (#674): FadeInBitmap (two pointers per plane in each) runs
+ *     from bit_add into dest_add and from dest_add over the four
+ *     variables behind it from 9 planes on, and from 11 planes on over
+ *     what follows them; ClearBitmap, Derez and ZoomXY (one pointer per
+ *     plane) reach the variables from 17 planes on and what follows from
+ *     21 on.  What follows is the code of InitZoomXY in the original,
+ *     other variables here (one array pa[] with the four variables in the
+ *     same order);
+ *   - finit frees the tables but keeps the pointers (#673).
  * Not bugs but limits the source names: ZoomXY, Derez (and their
  * ScreenCopy) only for lores bitmaps (40 bytes per line).
  */
@@ -112,7 +118,7 @@ RI_BMAPS();
 BLITZ_SUBS(zoomx4_xy, 0, 0);
 BLITZ_NAME("ZoomX4", "source#,dest#,sourceadd,destadd,width,height[,xy_select]");
 
-/* BUG(orig): declared with a result, sets none (see asmderez) */
+/* BUG(orig) (#672): declared with a result, sets none (see asmderez) */
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG, BL_LONG, BL_WORD, BL_WORD);
 RI_BMAPS();
@@ -207,8 +213,8 @@ static ULONG tables[4];
 
 static ULONG add_value = 1;
 static UWORD res_value, res_value2, res_value3;
-/* myline: 18 words in the source, written with up to 21 (BUG(orig) and
-   DIFF, see the head of the file) */
+/* myline: 18 words in the source, written with up to 21 (BUG(orig)
+   (#671) and DIFF, see the head of the file) */
 static UWORD myline[21] = {
     0x6db6, 0xdb6d, 0xb6db, 0x6db6, 0xdb6d, 0xb6db,
     0x6db6, 0xdb6d, 0xb6db, 0x6db6, 0xdb6d, 0xb6db,
@@ -240,7 +246,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
     if (!tableaddress)
         return;
     r = (struct bl_regs){ .d0 = TABLESIZE, .a1 = tableaddress };
-    BLITZ_ALIBJSR(TOK_globfree, r);     /* BUG(orig): the pointers stay */
+    BLITZ_ALIBJSR(TOK_globfree, r);     /* BUG(orig) (#673): the pointers stay */
 }
 BLITZ_THUNK(libfinit, libfinit_c, "d1/a0-a1");
 
@@ -311,7 +317,7 @@ BLITZ_THUNK(zoomtables, zoomtables_c, "d1/a0-a1");
 
 /* ------------------------------------------------- ClearBitmap/FadeIn */
 
-/* the delay: SUBQ.l #1,d7:BNE - BUG(orig): 0 = 2^32 turns */
+/* the delay: SUBQ.l #1,d7:BNE - BUG(orig) (#669): 0 = 2^32 turns */
 static void slow_down(void)
 {
     volatile ULONG t = delay_timer;
@@ -333,10 +339,10 @@ static void clearbitmap_c(ULONG delay, UWORD h, UWORD off, ULONG bm)
 
     delay_timer = delay;
     EWWidth = (UWORD)(((WORD)BM_BPR(bm) >> 1) - 1);
-    BDepth = (UWORD)(BM_FLDEPTH(bm) - 1);       /* BUG(orig): word at 4 */
+    BDepth = (UWORD)(BM_FLDEPTH(bm) - 1);       /* BUG(orig) (#670): word at 4 */
     BHeight = (UWORD)(h - 1);
     d2 = bl_mulu_w((UWORD)(h + off), BM_BPR(bm));
-    d2 -= 4;                                    /* BUG(orig): 4, not 2 */
+    d2 -= 4;                                    /* BUG(orig) (#668): 4, not 2 */
 
     a0 = (ULONG *)BM_PLANES(bm);
     a1 = bit_add;
@@ -411,7 +417,7 @@ static void fadein_c(ULONG delay, UWORD h, UWORD off1, UWORD off2, ULONG src, UL
 
     delay_timer = delay;
     EWWidth = (UWORD)(((WORD)BM_BPR(src) >> 1) - 1);
-    BDepth = (UWORD)(BM_FLDEPTH(src) - 1);      /* BUG(orig): word at 4 */
+    BDepth = (UWORD)(BM_FLDEPTH(src) - 1);      /* BUG(orig) (#670): word at 4 */
     BHeight = (UWORD)(h - 1);
     o1 = bl_mulu_w(off1, BM_BPR(src));
     o2 = bl_mulu_w(off2, BM_BPR(src));
@@ -703,10 +709,10 @@ static void BLITZ_ROUTINE zoomx8_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(
 }
 BLITZ_THUNK(zoomx8, zoomx8_c, "d0-d1/a0-a1");
 
-/* ZoomyZoom bitmap# - BUG(orig): depth = the word at 4, and fixed 32
-   lines of 80 bytes whatever the bitmap's size; the left 40 bytes of a
-   line are doubled in place (from the right, so nothing is read after
-   it is written) */
+/* ZoomyZoom bitmap# - BUG(orig) (#670, #676): depth = the word at 4, and
+   fixed 32 lines of 80 bytes whatever the bitmap's size; the left 40
+   bytes of a line are doubled in place (from the right, so nothing is
+   read after it is written) */
 static void BLITZ_ROUTINE dozoomy_c(ULONG bm BL_REG(a0))
 {
     ULONG planes = BM_PLANES(bm), a1, tab = zoomx2table;
@@ -855,7 +861,7 @@ static ULONG unrezx2(void)
 /* Derez source#,dest#,sourceadd,destadd,derez_value,height - lores
    bitmaps: blocks of derez_value pixels and lines get the colour of
    their first pixel (1 = ScreenCopy, 2 = UnrezX2, up to 17 through the
-   mask table myline, above that bit by bit).  BUG(orig): no result is
+   mask table myline, above that bit by bit).  BUG(orig) (#672): no result is
    set - the d0 returned here is what the original leaves in d0. */
 static ULONG BLITZ_ROUTINE asmderez_c(ULONG d0 BL_REG(d0), ULONG sadd BL_REG(d2),
                                       ULONG dadd BL_REG(d3), ULONG rez BL_REG(d4),
@@ -873,7 +879,7 @@ static ULONG BLITZ_ROUTINE asmderez_c(ULONG d0 BL_REG(d0), ULONG sadd BL_REG(d2)
     res_value2 = (UWORD)(rez - 1);
     res_value3 = (UWORD)(rez - 2);
     height = (UWORD)(h - 1);
-    sbitdepth = (UWORD)((sbitdepth & 0xff00) | BM_DEPTH(src));  /* BUG(orig) */
+    sbitdepth = (UWORD)((sbitdepth & 0xff00) | BM_DEPTH(src));  /* BUG(orig) (#675) */
     sbitdepth--;
     store_bitplanes(src, dst, sadd, dadd);
     d0 = (d0 & 0xffff0000UL) | 0xffff;          /* DBRA d0 of store_bitplanes */
@@ -889,7 +895,7 @@ static ULONG BLITZ_ROUTINE asmderez_c(ULONG d0 BL_REG(d0), ULONG sadd BL_REG(d2)
     yvalue = height;
 
     /* myline: one word per 16 pixels, a bit at the first pixel of every
-       block.  BUG(orig): 20 (21) words, see the head of the file. */
+       block.  BUG(orig) (#671): 20 (21) words, see the head of the file. */
     a5 = myline;
     c = 19;
     b = 15;

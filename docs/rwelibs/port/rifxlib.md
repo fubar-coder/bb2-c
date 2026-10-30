@@ -35,33 +35,38 @@ counts a `volatile` variable (the compiler would drop an empty loop).
 
 * `ClearBitmap` starts at end-4 (its comment says 2): every line pass is
   one word too low, the last word of the area stays and the last pass
-  clears the word before the area (before the bitplane for offset 0);
+  clears the word before the area (before the bitplane for offset 0)
+  (#668);
 * `ClearBitmap`, `FadeInBitmap`, `ZoomyZoom` read the depth as the word
-  at 4 (`bm_Flags:bm_Depth`), right only while `bm_Flags` is 0;
+  at 4 (`bm_Flags:bm_Depth`), right only while `bm_Flags` is 0 (#670);
 * delay 0 in `ClearBitmap`/`FadeInBitmap` means 2^32 turns of the busy
-  loop;
+  loop (#669);
 * `Derez` is declared with a result (`!acommand{#long}`) but sets none:
   d0 is whatever the routine leaves there (the input for 0, the input's
   upper word and $FFFF for 1, the last long for 2, the last mask word
   swapped/the last source word for the others). The C version returns
-  exactly that – it is what a Blitz program gets;
+  exactly that – it is what a Blitz program gets (#672);
 * `Derez` and `ZoomXY` set only the low byte of `sbitdepth` (`MOVE.b`
   into `sbitdepth+1`): after a depth-0 bitmap the upper byte is $FF and
-  stays;
+  stays (#675);
 * `Derez` with a value ≥ 3 builds its mask table `myline` with 20 words
   (21 for values > 31) into the 18 words the source reserves: the 19th
   goes over `myflag` and the pad byte, the 20th (and 21st) over the first
   instruction(s) of `ZoomXY` (`TST.w d0`, `BEQ …`; checked in the CD
   binary: `myline` at $F84, `_AsmZoom` at $FAA of the file). After such a
   `Derez`, `ZoomXY` of the original runs a mask word as its first
-  instruction (for 3: `MOVE.l (a2),d2`, the height comes from memory);
+  instruction (for 3: `MOVE.l (a2),d2`, the height comes from memory)
+  (#671);
 * `ZoomyZoom` ignores the bitmap's size: fixed 32 lines of 80 bytes, the
-  left 40 bytes doubled in place;
-* the pointer arrays hold 16 longs each and the depth is not checked:
-  `FadeInBitmap` stores two per plane, so more than 8 planes run from
-  `bit_add` into `dest_add`; beyond the 36 longs of the array the
-  original overwrites the code of `InitZoomXY`;
-* finit frees the tables but keeps the pointers.
+  left 40 bytes doubled in place (#676);
+* the pointer arrays hold 16 longs each and the depth is not checked
+  (#674): `FadeInBitmap` stores two per plane in each, so from 9 planes
+  on it runs from `bit_add` into `dest_add` and from `dest_add` over the
+  four variables behind it, from 11 planes on beyond the 36 longs of
+  the array; `ClearBitmap`, `Derez` and `ZoomXY` (one per plane) reach
+  the variables from 17 planes on and go beyond the array from 21 on.
+  Beyond the array the original overwrites the code of `InitZoomXY`;
+* finit frees the tables but keeps the pointers (#673).
 
 Not bugs but limits the source names: `ZoomXY` and `Derez` (and
 `ScreenCopy`) only for lores bitmaps (40 bytes per line).
@@ -69,7 +74,8 @@ Not bugs but limits the source names: `ZoomXY` and `Derez` (and
 **DIFF:** `myline` has room for 21 words, so `ZoomXY` stays intact after
 a `Derez` ≥ 3 (code that corrupts code cannot be translated; the mask
 words read back are the same). The overflow of the 36 pointer longs
-(more than 18 planes) lands on other variables of the C build.
+(`FadeInBitmap` from 11 planes, the others from 21) lands on other
+variables of the C build.
 
 **Test** (`libs/tests/rwe/rifxlib.c`, snitch case "rwe rifxlib", with
 memlib): every call on both sets with the same inputs – bitmaps in an

@@ -20,7 +20,7 @@
  * ZoomXY (screen copy and x/y factors), Derez (0, 1 = screen copy, 2 =
  * UnrezX2, 3-17 with the mask table, 18 and 40 bit by bit).  ZoomXY is
  * tested before Derez: a Derez >= 3 of the original overwrites the first
- * instruction of ZoomXY (BUG(orig), see rifxlib.c).
+ * instruction of ZoomXY (BUG(orig) (#671), see rifxlib.c).
  *
  * Not covered: delay 0 (2^32 turns), bitmaps with bm_Flags != 0 (the
  * depth word: plane counts in the thousands), depths above 8.
