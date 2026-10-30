@@ -62,11 +62,9 @@ set(USERLIB ${CMAKE_CURRENT_BINARY_DIR}/amiga/bugorig_userlib.obj)
 set(INJECT $<TARGET_FILE:inject>)
 set(WBRUN $<TARGET_FILE:wbrun>)
 set(TESTDATA ${CMAKE_CURRENT_BINARY_DIR}/testdata)
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
-	set(parallel 3)
-else()
-	set(parallel 1)
-endif()
+# the configurations of a test run at the same time as the corpus passes
+# do (CORPUS_PARALLEL, tests/corpus/CMakeLists.txt)
+set(parallel ${CORPUS_PARALLEL})
 
 # the token list: TED's plus the test library's
 set(ted_tokens ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
