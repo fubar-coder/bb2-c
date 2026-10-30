@@ -36,20 +36,20 @@ reproduced.
 **BUG(orig)** (kept):
 
 * `GetCCOffset` tests the coplist pointer, not the custom space: after
-  `CopperResetAdr` (coplist 0) it returns -1 although the commands work.
+  `CopperResetAdr` (coplist 0) it returns -1 although the commands work (#593).
 * `DoColSplit` is a command with a word result, but d0 is the red step
   at the end (its `cols_adr` argument without a custom space);
   `CopperAGACol` (long result) returns 1234 without custom space,
-  otherwise its `col#` argument.
+  otherwise its `col#` argument (#592, #590).
 * `DoColSplit`/`RedoColSplit` do not check numlines (0: DIVS by zero;
   negative: the DBRA counter as a word, up to 65536 lines; the step
   `(1<<14)/numlines` is a word quotient); the `$FFE1FFFE` wait (line
   256) is written whenever the low byte of the line is 0, also for line
-  0.
+  0 (#589, #588).
 * `RedoColSplit`: `ASL.w #2` of the ccoffset argument shifts only the
-  low word, the upper word is added unchanged.
+  low word, the upper word is added unchanged (#594).
 * `CopperWait`: x becomes `((x >> 1) & $FE) + 6` as a word, the +6 can
-  carry into the line byte.
+  carry into the line byte (#591).
 
 **Test** (`libs/tests/rwe/ricopperfxlib.c`, snitch case "rwe
 ricopperfxlib"): C build and CD original side by side, every command

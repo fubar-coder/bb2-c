@@ -36,21 +36,21 @@
  *
  * BUG(orig):
  *   - GetCCOffset tests coplistaddr, not customaddr: after CopperResetAdr
- *     (coplistaddr 0) it returns -1 although the commands work.
+ *     (coplistaddr 0) it returns -1 although the commands work (#593).
  *   - DoColSplit is a command with a word result, but d0 is the red step
  *     value at the end (its cols_adr argument without a custom space);
  *     CopperAGACol (long result) returns 1234 without a custom space,
- *     otherwise its col# argument.
+ *     otherwise its col# argument (#592, #590).
  *   - DoColSplit/RedoColSplit: numlines is not checked (0: DIVS by zero,
  *     the divide-by-zero exception as in the original; negative: the DBRA
  *     counter numlines-1 as a word, up to 65536 lines); the step
  *     (1 << 14) / numlines is a word quotient; the $FFE1FFFE wait (line
  *     256) is written whenever the low byte of the line is 0, also for
- *     line 0.
+ *     line 0 (#589, #588).
  *   - RedoColSplit: ccoffset * 4 is ASL.w (only the low word is
- *     shifted), the upper word of the argument is added unchanged.
+ *     shifted), the upper word of the argument is added unchanged (#594).
  *   - CopperWait: the x position is ((x >> 1) & $FE) + 6 as a word, so the
- *     +6 can carry into the line bits (x >= 500).
+ *     +6 can carry into the line bits (x >= 500) (#591).
  * Registers: the original changes d6/d7/a0 (and more) in every command,
  * but keeps others depending on the routine (a1 nearly always, d0/d1 in
  * the statements); the thunks keep all of d0/d1/a0/a1 that are not the
@@ -300,7 +300,7 @@ void BLITZ_ROUTINE c_redocolsplit(const LONG *cols BL_REG(d0),
 
     if (!getcustom())
         return;
-    /* ASL.w #2,d2:ADD.l d2,a0 (BUG(orig): only the low word shifted) */
+    /* ASL.w #2,d2:ADD.l d2,a0 (BUG(orig) (#594): only the low word shifted) */
     p = (UWORD *)(cfx.customaddr
                   + ((ccoffset & 0xffff0000UL) | (UWORD)(ccoffset << 2)));
     gradient(&g, cols, numlines);
@@ -348,7 +348,7 @@ void BLITZ_ROUTINE c_splitresethard(UBYTE *custom BL_REG(d0),
     cfx.ccoffset = 0;
 }
 
-/* GetCCOffset: instructions, -1 without coplist (BUG(orig), see above);
+/* GetCCOffset: instructions, -1 without coplist (BUG(orig) (#593), see above);
    ASR.w on a d0 cleared by MOVEQ: the upper word is 0 */
 ULONG BLITZ_ROUTINE c_getccoffset(void)
 {
