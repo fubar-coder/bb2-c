@@ -824,72 +824,73 @@ void orderem(struct quad *r)
 
 /* ------------------------------------------------ line output (chmap) */
 
-/* register state of showa2item and its helpers (asm a2/a3/d2/d3) */
-static struct {
+/* register state of showa2item and its helpers (asm a2/a3/d2/d3); lives
+   on chmap_showa2item's stack, the helpers get a pointer to it */
+struct showa2 {
     const UBYTE *src;           /* a2: source (chars) */
     UBYTE *row;                 /* a3: chmap row */
     UWORD col;                  /* d2: chmap column */
     UWORD scrcol;               /* d3: screen column */
     void (*draw)(UBYTE);
-} sa;
+};
 
 /* the chmap part of print (ted.s line 5132 -> print2 5167): c (bit 7
    if color != normcol) to chmap + chloc + cursoff + cursx (word adds),
    then draw (printa0/print4 on the Amiga) */
-static void sa_print(UBYTE c)
+static void sa_print(struct showa2 *sa, UBYTE c)
 {
     UBYTE cell = c;
 
     if (color != normcol)
         cell |= 128;
     chmap[(WORD)chloc + cursoff + (WORD)cursx] = cell;
-    if (sa.draw)
-        sa.draw(c);
+    if (sa->draw)
+        sa->draw(c);
 }
 
 /* normprint2 (ted.s line 4143, below in chmap_showa2item's family) */
-static void sa_normprint2(UBYTE c)
+static void sa_normprint2(struct showa2 *sa, UBYTE c)
 {
-    if (sa.col < (UWORD)cursoff)                /* bcs .skip (unsigned) */
+    if (sa->col < (UWORD)cursoff)               /* bcs .skip (unsigned) */
         return;
-    if (sa.scrcol >= edcols)
+    if (sa->scrcol >= edcols)
         return;
-    cursx = sa.scrcol;
-    sa_print(c);
-    sa.scrcol++;
+    cursx = sa->scrcol;
+    sa_print(sa, c);
+    sa->scrcol++;
 }
 
 /* normprint (ted.s line 4142) */
-static void sa_normprint(UBYTE c)
+static void sa_normprint(struct showa2 *sa, UBYTE c)
 {
-    sa.row[(WORD)sa.col] = c;
-    sa_normprint2(c);                           /* falls through */
+    sa->row[(WORD)sa->col] = c;
+    sa_normprint2(sa, c);                       /* falls through */
 }
 
 /* tokprint (ted.s line 4152); the asm destroys a5 (exg trick) */
-static void sa_tokprint(UBYTE c)
+static void sa_tokprint(struct showa2 *sa, UBYTE c)
 {
     const char *name;
 
     if (!tokenise || !(c & 0x80)) {
-        sa_normprint(c);
+        sa_normprint(sa, c);
         return;
     }
-    name = findtoke((UWORD)((c << 8) | *sa.src++));
+    name = findtoke((UWORD)((c << 8) | *sa->src++));
     color = tokcol;                             /* .doit */
     for (;;) {                                  /* .doit2 */
         UBYTE ch = (UBYTE)*name++;
 
         if (!ch)
             break;
-        sa.row[(WORD)sa.col] = ch;
-        sa.row[(WORD)sa.col] |= 0x80;           /* bset.b #7 */
-        sa_normprint2(ch);
-        sa.col++;
+        sa->row[(WORD)sa->col] = ch;
+        sa->row[(WORD)sa->col] |= 0x80;         /* bset.b #7 */
+        sa_normprint2(sa, ch);
+        sa->col++;
     }
     /* .pdone */
     color = normcol;
-    sa.col--;
+    sa->col--;
 }
 
 /* ted.s:4104 (showa2item, core part).  Labels of the asm routine family:
@@ -898,26 +899,27 @@ static void sa_tokprint(UBYTE c)
 void chmap_showa2item(struct item *line, void (*draw)(UBYTE c))
 {
     UWORD savex = cursx;                        /* move cursx,-(a7) */
+    struct showa2 state, *sa = &state;
     UBYTE c;
 
-    sa.src = line->chars;
-    sa.row = chmap + (WORD)chloc;               /* add.w chloc,a3 */
-    sa.scrcol = 0;
-    sa.col = 0;
-    sa.draw = draw;
-    c = *sa.src++;
+    sa->src = line->chars;
+    sa->row = chmap + (WORD)chloc;              /* add.w chloc,a3 */
+    sa->scrcol = 0;
+    sa->col = 0;
+    sa->draw = draw;
+    c = *sa->src++;
     if (c) {
         if (c == label)
-            sa_normprint(c);                    /* label line: no tokens at col 0 */
+            sa_normprint(sa, c);                /* label line: no tokens at col 0 */
         else
             goto skip;
         for (;;) {                              /* .loop */
-            sa.col++;
-            c = *sa.src++;
+            sa->col++;
+            c = *sa->src++;
             if (!c)
                 break;
 skip:
-            sa_tokprint(c);                     /* .skip */
+            sa_tokprint(sa, c);                 /* .skip */
         }
     }
     /* endofline: block line -> pad the screen row with spaces */
@@ -925,10 +927,10 @@ skip:
         UWORD y = (UWORD)(curstop + cursy);
 
         if (y >= btopy && y <= bboty) {
-            while (sa.scrcol < edcols) {        /* .done3 */
-                cursx = sa.scrcol;
-                sa_print(32);
-                sa.scrcol++;
+            while (sa->scrcol < edcols) {       /* .done3 */
+                cursx = sa->scrcol;
+                sa_print(sa, 32);
+                sa->scrcol++;
             }
         }
     }
