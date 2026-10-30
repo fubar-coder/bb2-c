@@ -472,8 +472,9 @@ shows, checks and converts them:
 ```
 build/amiga/host/tools/xtra/xtra dump FILE.xtra [--bb22 SRC]
 build/amiga/host/tools/xtra/xtra dump --ab3 SRC.ab3
+build/amiga/host/tools/xtra/xtra dump --source SRC
 build/amiga/host/tools/xtra/xtra check [--bb22|--ab3] [--exact] FILE...
-build/amiga/host/tools/xtra/xtra convert --to-ab3 IN.xtra OUT [--bb22 SRC]
+build/amiga/host/tools/xtra/xtra convert --to-ab3 IN.xtra OUT [--bb22 SRC | --ab3 SRC]
 build/amiga/host/tools/xtra/xtra convert --to-xtra IN.ab3 OUT.xtra
 ```
 
