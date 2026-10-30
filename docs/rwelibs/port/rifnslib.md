@@ -63,23 +63,24 @@ glyph `ROR.l`/`SWAP` as `data << (16 - x & 15)`.
 
 ## BUG(orig), kept
 
-* FNSPrint/FNSShadowPrint before FNSOutput: a crash (above).
+* FNSPrint/FNSShadowPrint before FNSOutput: a crash (above) (#665).
 * An empty text, or a line starting with `chr$(10)`, counts width 1:
-  underlined it sets 1 pixel, centred x moves by −32767.
-* FNSLength returns width − 2 (at least 0), takes the prefs of the last
-  FNSPrint when called without prefs, and does not mask the font number
-  (`ASL.w #2` of the word): 16 on read the built-in font's bytes as font
-  pointers, negative numbers the variables before `font_add`.
+  underlined it sets 1 pixel, centred x moves by −32767 (#659).
+* FNSLength returns width − 2 (at least 0) (#662), takes the prefs of
+  the last FNSPrint when called without prefs (#661), and does not mask
+  the font number (`ASL.w #2` of the word): 16 on read the built-in
+  font's bytes as font pointers, negative numbers the variables before
+  `font_add` (#660).
 * A bitmap depth of 0 or above 8 overruns `bitstack` (256 / depth plane
   pointers over the variables and the font); the 16-pixel loop draws
   `(Flags<<8 | Depth)` planes, the 32/48/64-pixel loops `Depth` (256 for
-  0), planes from 8 on with the colour bit `plane & 7`.
-* Rows are clipped signed at ymin, unsigned at ymax; 48/64-pixel fonts
-  read their 3rd/4th glyph word only for rows that are drawn, so after a
-  clipped row the glyph is shifted.
-* FNSSetTab 0: a tab divides by 0. The underline is clipped at x = 0, not
-  at xmin. A font height of 0 draws 65536 rows. Codes from 160 end the
-  text (signed byte compare).
+  0), planes from 8 on with the colour bit `plane & 7` (#658).
+* Rows are clipped signed at ymin, unsigned at ymax (with x: #664);
+  48/64-pixel fonts read their 3rd/4th glyph word only for rows that are
+  drawn, so after a clipped row the glyph is shifted (#656).
+* FNSSetTab 0: a tab divides by 0 (#666). The underline is clipped at
+  x = 0, not at xmin (#667). A font height of 0 draws 65536 rows (#663).
+  Codes from 160 end the text (signed byte compare) (#657).
 
 ## DIFF
 
@@ -120,5 +121,5 @@ from 160, every x bit position, xmax, xmin, rows clipped at ymin/ymax for
 every font width, empty texts, origin, FNSLength's unmasked numbers 16,
 17, −1, −2, InstallFNS of a non-font, FNSLoad ok/BLoad fails/Start 0,
 FNSUnload). Not covered: the crash without a bitmap, depth 0 / above 8 /
-flags, FNSSetTab 0, negative xmin (writes 64 KB away), font 0 with the
+flags, FNSSetTab 0, negative xmin (writes 64 KB away, #664), font 0 with the
 codes behind `z` (the DIFF).

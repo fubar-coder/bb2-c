@@ -44,27 +44,31 @@
  *
  * BUG(orig):
  *   - FNSPrint before FNSOutput (no bitmap): RTS with 13 registers on the
- *     stack - it returns to the pushed d0, a crash.
+ *     stack - it returns to the pushed d0, a crash (#665).
  *   - An empty text (or a line that begins with chr$(10), which the
  *     binary prints - the source's guard stopped there) still counts
  *     width + 1 = 1: underlined, it sets 1 pixel; centred, the ASR.l of
- *     $0000FFFF moves x by -32767.
- *   - FNSLength gives the width - 2 (0 at least) and does not mask the font
- *     number (ASL.w #2 of the whole word: slots 16 on read the font data,
- *     negative ones the variables before font_add).  FNSLength without
- *     prefs takes the prefs of the last FNSPrint, not FNSPrefs'.
+ *     $0000FFFF moves x by -32767 (#659).
+ *   - FNSLength gives the width - 2 (0 at least) (#662) and does not mask
+ *     the font number (ASL.w #2 of the whole word: slots 16 on read the
+ *     font data, negative ones the variables before font_add) (#660).
+ *     FNSLength without prefs takes the prefs of the last FNSPrint, not
+ *     FNSPrefs' (#661).
  *   - A depth of 0 (or more than 8) overruns bitstack: 256 (depth) plane
  *     pointers are written over the variables and the font; the 16 pixel
  *     loop draws bitdepthminusone + 1 planes, the word (Flags<<8|Depth) - 1
- *     of the bitmap - with Flags set or depth 0 hundreds or 65536 planes.
- *   - Rows above ymax are tested unsigned, rows below ymin signed; 48 and
- *     64 pixel fonts read their third/fourth word only for rows that are
- *     not clipped: after a clipped row the glyph data are shifted.
+ *     of the bitmap - with Flags set or depth 0 hundreds or 65536 planes
+ *     (#658).
+ *   - Rows above ymax are tested unsigned, rows below ymin signed (#664);
+ *     48 and 64 pixel fonts read their third/fourth word only for rows
+ *     that are not clipped: after a clipped row the glyph data are
+ *     shifted (#656).
  *   - Planes 8 and on take the colour bit of plane & 7 (BTST on memory)
- *     in the 32/48/64 pixel loops, 0 in the 16 pixel loop.
- *   - FNSSetTab 0: chr$(9) divides by 0 (exception).
- *   - The underline ignores xmin (it is clipped at x = 0 only).
- *   - A font height of 0 draws 65536 rows.
+ *     in the 32/48/64 pixel loops, 0 in the 16 pixel loop (#658).
+ *   - FNSSetTab 0: chr$(9) divides by 0 (exception) (#666).
+ *   - The underline ignores xmin (it is clipped at x = 0 only) (#667).
+ *   - A font height of 0 draws 65536 rows (#663).
+ *   - Codes from 160 end the text (a sign test after CMPI.b #32) (#657).
  * DIFF: what the original reads behind its variables reads other bytes
  *   here (its code there): FNSLength's font number outside the block, and
  *   the glyphs of codes the font has no data for - the built-in font ends
@@ -516,7 +520,7 @@ static void underline(UWORD x)
     ULONG off;
     UBYTE pl, bit, b;
 
-    if ((WORD)x < 0) {                  /* clipped at 0, not at xmin */
+    if ((WORD)x < 0) {                  /* clipped at 0, not at xmin (#667) */
         fns.linewidth = (UWORD)(fns.linewidth + x);
         x = 0;
     }
@@ -574,7 +578,7 @@ static UBYTE *BLITZ_ROUTINE shadow_c(UWORD fontnum BL_REG(d0), UWORD x BL_REG(d1
 
 /* The FNSPrint entries.  _FNSPrint2 pushes d0-d6/a1-a6 and then, without
    a bitmap (bit_address 0), returns with RTS - to the pushed d0
-   (BUG(orig)): a stack imbalance C cannot express, so the entries are
+   (BUG(orig) (#665)): a stack imbalance C cannot express, so the entries are
    assembler; the work is print_c/shadow_c.  They keep d0-d6/a1-a6 (the
    original restores them), a0 = the result; the forms without prefs and
    colour take FNSPrefs'/FNSInk's (d4/d5 changed, as in the original),
@@ -727,7 +731,7 @@ static void BLITZ_ROUTINE clipset_c(UWORD x0 BL_REG(d0), UWORD y0 BL_REG(d1),
 }
 
 /* FNSLength(fontnum,a$[,prefs]): width - 2, at least 0; -1 without a
-   font.  The number is not masked (BUG(orig), DIFF outside the block) */
+   font.  The number is not masked (BUG(orig) (#660), DIFF outside the block) */
 static ULONG BLITZ_ROUTINE length_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG(d1),
                                     UWORD prefs BL_REG(d2))
 {
@@ -742,7 +746,7 @@ static ULONG BLITZ_ROUTINE length_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG(
     return w;
 }
 
-/* FNSLength without prefs: the prefs of the last FNSPrint (BUG(orig)) */
+/* FNSLength without prefs: the prefs of the last FNSPrint (BUG(orig) (#661)) */
 static ULONG BLITZ_ROUTINE length2_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG(d1))
 {
     return length_c(n, str, fns.textprefs);
