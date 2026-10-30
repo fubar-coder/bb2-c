@@ -123,19 +123,18 @@ void blokfixb(void)
 /* ted.s:5742 horizpos */
 void horizpos(WORD col)
 {
-    /* position cursor at d1 */
-    WORD oldoff = cursoff;
-    UWORD d2 = (UWORD)(edcols - hscmarg);
-    WORD newoff, maxoff;
+    /* position cursor at col (d1) */
+    WORD oldoff = cursoff;              /* d4 */
 
-    if ((UWORD)col < d2) {              /* bcc .skip3 not taken */
+    if ((UWORD)col < (UWORD)(edcols - hscmarg)) {   /* bcc .skip3 not taken */
         cursoff = 0;
         cursx = (UWORD)col;
     } else {
         /* .skip3 */
-        d2 = (UWORD)(edcols >> 1);      /* lsr #1 */
-        newoff = (WORD)(col - d2);
-        maxoff = (WORD)(chcols - edcols);
+        UWORD x = (UWORD)(edcols >> 1); /* d2: lsr #1, the new cursx */
+        WORD newoff = (WORD)(col - x);  /* d0 */
+        WORD maxoff = (WORD)(chcols - edcols);      /* d3 */
+
         if (newoff > maxoff) {          /* bgt .skip4 */
             /* .skip4: may give an odd cursoff (survey-06 I.5) */
             cursoff = maxoff;
@@ -143,11 +142,11 @@ void horizpos(WORD col)
         } else {
             if (newoff & 1) {
                 newoff++;
-                d2--;
+                x--;
             }
-            /* .skip5: d0 < 0 possible if hscmarg > edcols/2 (I.5) */
+            /* .skip5: newoff < 0 possible if hscmarg > edcols/2 (I.5) */
             cursoff = newoff;
-            cursx = d2;
+            cursx = x;
         }
     }
     /* .moverite */
@@ -178,18 +177,14 @@ void cursleft(void)
 /* ted.s:5789 cursrite (asm: d0 = cursx at every call) */
 void cursrite(void)
 {
-    UWORD d2 = edcols;
-
-    if ((UWORD)(cursoff + d2) >= chcols) {      /* bcs .skip not taken */
-        d2--;
-        if (cursx < d2)
+    if ((UWORD)(cursoff + edcols) >= chcols) {  /* bcs .skip not taken */
+        if (cursx < (UWORD)(edcols - 1))        /* d2 = edcols - 1 */
             cursx++;                    /* bcs .skip3 */
         return;
     }
     /* .skip */
     if (cursx >= hscmarg) {             /* bcs .skip3 not taken */
-        d2 = (UWORD)(d2 - hscmarg);
-        if (cursx >= d2) {              /* bcc .skip2 */
+        if (cursx >= (UWORD)(edcols - hscmarg)) {   /* bcc .skip2 */
             cursoff += 2;
             scrollleft();
             cursx--;
@@ -264,31 +259,31 @@ void gl_char127(UBYTE c)
 WORD gl_tab(void)
 {
     UBYTE *row = chrow();
-    UWORD d0, col, dst, target;
+    UWORD col, dst, target, n;
     WORD src;
 
-    d0 = col = abscol();                /* add cursoff,d0 / move d0,d2 */
+    target = col = abscol();            /* add cursoff,d0 / move d0,d2 */
     do {
-        d0++;                           /* .loop */
-        if (d0 >= chcols)
+        target++;                       /* .loop (d0) */
+        if (target >= chcols)
             return -1;                  /* bcc getline2 */
-    } while (tabrem(d0) != 0);
+    } while (tabrem(target) != 0);
     anyalt = 9;                         /* move d7,anyalt */
-    target = d0;                        /* move d0,-(a7) */
-    d0 = (UWORD)(d0 - col);             /* d0=number of chars to insert */
+    /* move d0,-(a7): the target column */
+    n = (UWORD)(target - col);          /* d0=number of chars to insert */
     /* adjust for block */
     if (bboty != (UWORD)-1) {
         if (inbloks())
-            btopx += (WORD)d0;
+            btopx += (WORD)n;
         if (inblokf())
-            bbotx += (WORD)d0;          /* .zap2 */
+            bbotx += (WORD)n;           /* .zap2 */
         blokfix();                      /* .zap3 */
     }
-    /* .zap: row from the column d0 to the right (overflow is lost) */
+    /* .zap: row n columns to the right (overflow is lost) */
     dst = chcols;
     for (;;) {
         dst--;                          /* .loop2 */
-        src = (WORD)(dst - d0);
+        src = (WORD)(dst - n);
         if (src < 0)                    /* bmi .done */
             break;
         if ((UWORD)src < col)           /* bcs .done */
