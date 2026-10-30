@@ -90,8 +90,8 @@ static ULONG tl(const UWORD *p)
 #define HIW(l)        ((UWORD)((l) >> 16))
 #define SETHIW(l, w)  ((l) = ((l) & 0xffff) | ((ULONG)(UWORD)(w) << 16))
 
-static void dofunc2(WORD d1, UWORD c);
-static void linkput(ULONG a0);
+static void dofunc2(WORD mode, UWORD c);
+static void linkput(ULONG at);
 static void procfixer(void);
 static struct ifnode *doendif3(UWORD kind);
 static void dowend2(void);
@@ -129,11 +129,11 @@ void ifdone(void)
 /* blitz2.s:13370 doongo - On expression Goto/Gosub Label[,Label...] */
 void doongo(UWORD c)
 {
-    UWORD *a0 = ongotocode, *a1 = ongotocodef;
-    UWORD d1 = 26;          /* gc1skip-ongotocode */
+    UWORD *code = ongotocode, *codeend = ongotocodef;
+    UWORD skipoff = 26;     /* gc1skip-ongotocode */
     UWORD t = T_WORD;       /* Get expression as a word. */
     ULONG start;
-    UWORD d2;
+    UWORD skip;
     struct label *lab;
 
     (void)c;
@@ -141,17 +141,17 @@ void doongo(UWORD c)
     if (c != 0x8005) {
         if (c != 0x8006)
             syntaxerr();
-        a0 = ongosubcode; a1 = ongosubcodef;
-        d1 = 26;            /* gc2skip-ongosubcode */
+        code = ongosubcode; codeend = ongosubcodef;
+        skipoff = 26;       /* gc2skip-ongosubcode */
         if (debugga) {
             chkstak();
-            a0 = ongcode; a1 = ongcodef;
-            d1 = 30;        /* gc3skip-ongcode */
+            code = ongcode; codeend = ongcodef;
+            skipoff = 30;   /* gc3skip-ongcode */
         }
     }
-    d2 = d1;
+    skip = skipoff;
     start = pc;             /* for when we know number of labels! */
-    pokecode(a0, a1);
+    pokecode(code, codeend);
     labcnt = 0;
     /* now, make a labels list! */
     do {
@@ -167,7 +167,7 @@ void doongo(UWORD c)
     if (nomemleft)
         return;
     W_(start + 10) = labcnt;                    /* for cmp# */
-    W_(start + d2 + 2) = labcnt * 4 + 2;        /* for bra! */
+    W_(start + skip + 2) = labcnt * 4 + 2;      /* for bra! */
 }
 
 /* ================================================= Goto / Gosub / Return */
@@ -264,36 +264,36 @@ void dostate(UWORD c)
 /* blitz2.s:13498 dofunc */
 void dofunc(UWORD c)
 {
-    WORD d1;
+    WORD mode;
 
     if (c == 0x8007) {
         funcret(c);
         return;
     }
     bakup();
-    d1 = sizespec2();
+    mode = sizespec2();
     c = getchar3();
-    dofunc2(d1, c);         /* falls through into dofunc2 */
+    dofunc2(mode, c);       /* falls through into dofunc2 */
 }
 
-/* blitz2.s:13504 dofunc2 - do some checking..... d1 = procmode value
+/* blitz2.s:13504 dofunc2 - do some checking..... mode = procmode value (asm d1)
    (-1 statement, else the function's type) */
-static void dofunc2(WORD d1, UWORD c)
+static void dofunc2(WORD mode, UWORD c)
 {
     struct node *last;
     struct proc *p;
     struct var *v;
     struct type *t;
-    UBYTE *a4;
-    UWORD d6, d5, d2, len, i;
-    UWORD *a0;
+    UBYTE *types;
+    UWORD npars, nstrs, partype, len, i;
+    UWORD *st;
 
     (void)c;
     errchx();
     prolineat = linenumat;
     procnum2++;
     procnum = procnum2;
-    procmode = d1;
+    procmode = mode;
     locvaroff = 0;
     len = makename2(&c);
     if (c != '{')
@@ -315,10 +315,10 @@ static void dofunc2(WORD d1, UWORD c)
         pokel(0x4e44);      /* asm: d1 from maketrap - filled by droplocals */
         pokel(0x4e44);
     }
-    a4 = p->params;
+    types = p->params;
     p->rettype = (BYTE)procmode;            /* move.b procmode+1,5(a2) */
-    d6 = 0;
-    d5 = 0;
+    npars = 0;
+    nstrs = 0;
     c = getchar3();
     if (c != '}') {
         for (;;) {
@@ -326,30 +326,30 @@ static void dofunc2(WORD d1, UWORD c)
             v = fetchvar(getvnamelen, &t, &c);
             if (t->u.code == T_STRING) {
                 UWORD *sb = (UWORD *)stbuff;
-                sb[d5 * 2] = d6;
-                sb[d5 * 2 + 1] = v->offset;
-                d5++;
-                d2 = T_STRING;
+                sb[nstrs * 2] = npars;
+                sb[nstrs * 2 + 1] = v->offset;
+                nstrs++;
+                partype = T_STRING;
             } else {
                 UWORD op = 0x2940;          /* move.l dN,x(a4) */
-                d2 = T_LONG;
+                partype = T_LONG;
                 if (!(flagmask & 1)) {
                     if (t->u.code >= 256)
                         illprocperr();
-                    d2 = TYPE_CODE(t);
-                    if (d2 == 2)
+                    partype = TYPE_CODE(t);
+                    if (partype == 2)
                         op |= 0x1000;       /* move.w */
-                    else if (d2 < 2)
+                    else if (partype < 2)
                         op ^= 0x3000;       /* move.b */
                 }
-                op |= d6;
+                op |= npars;
                 pokewd(op);
                 pokewd(v->offset);
             }
-            d6++;
-            if (d6 >= 7)
+            npars++;
+            if (npars >= 7)
                 toovarerr();
-            *a4++ = d2;
+            *types++ = partype;
             if (c != ',')
                 break;
             c = getchar3();
@@ -358,14 +358,14 @@ static void dofunc2(WORD d1, UWORD c)
             syntaxerr();
     }
     p = thisproc;
-    p->nparams = d6 | (d5 << 4);
+    p->nparams = npars | (nstrs << 4);
     /* do all the string things */
-    a0 = (UWORD *)stbuff;
-    for (i = d5; i-- > 0;) {
+    st = (UWORD *)stbuff;
+    for (i = nstrs; i-- > 0;) {
         funcst[1] = i * 4 + 8;
         pokel(tl(funcst));
-        pokewd(*a0++ | movedna3[0]);
-        least[1] = *a0++;
+        pokewd(*st++ | movedna3[0]);
+        least[1] = *st++;
         pokel(tl(least));
         tokejsr(lastring);
     }
@@ -373,14 +373,14 @@ static void dofunc2(WORD d1, UWORD c)
 }
 
 /* blitz2.s:13623 linkput - poke link a4,#n + jsr clrloc at a0 */
-static void linkput(ULONG a0)
+static void linkput(ULONG at)
 {
     ULONG save;
 
     if (nomemleft)
         return;
     save = pc;
-    pc = a0;
+    pc = at;
     pokel(tl(linka4));
     tokejsr2(clrloc);
     pc = save;
@@ -390,30 +390,30 @@ static void linkput(ULONG a0)
 static void procfixer(void)
 {
     struct proc *p = thisproc;
-    ULONG a0 = p->pc;       /* pc of proc */
-    UWORD d4;
+    ULONG at = p->pc;       /* pc of proc */
+    UWORD statics;
 
     if (p->linksize) {
         linka4[1] = p->linksize;
         if (p->nstatics == 0) {
             /* link only */
-            a0 += 6;
-            p->pc = a0;
-            linkput(a0);
+            at += 6;
+            p->pc = at;
+            linkput(at);
             return;
         }
         /* link and jsr */
-        linkput(a0);
-        a0 += 10;
+        linkput(at);
+        at += 10;
         p = thisproc;
     } else if (p->nstatics == 0) {
-        p->pc = a0 + 16;
+        p->pc = at + 16;
         return;
     }
     /* .cont */
     if (!nomemleft) {
         ULONG save = pc;
-        pc = a0;
+        pc = at;
         pokewd(0x4eb9);     /* jsr */
         addoff();
         pokel(0x4eb9);      /* asm: d1 - overwritten right below */
@@ -421,18 +421,18 @@ static void procfixer(void)
         pc = save;
     }
     /* .contskip */
-    d4 = p->nstatics;
-    if (d4 & 0x8000) {
+    statics = p->nstatics;
+    if (statics & 0x8000) {
         tokejsr2(newmem);
         p = thisproc;
-        d4 = p->nstatics & 32767;
+        statics = p->nstatics & 32767;
     }
-    if (d4) {
+    if (statics) {
         /* allocate statics! */
         UWORD n = p->nparams & 15;
         if (n >= 5)
             pokewd(0x2f04);             /* move.l d4,-(a7) */
-        datastart(locdatast, d4);
+        datastart(locdatast, statics);
         tokejsr2(localstat);
         if (n >= 5)
             pokewd(0x281f);             /* move.l (a7)+,d4 */
@@ -443,22 +443,22 @@ static void procfixer(void)
 /* blitz2.s:14001 endstate - End Statement / End Function */
 static void endstate(void)
 {
-    struct addrnode *a2;
+    struct addrnode *pend;
     struct proc *p;
     ULONG tab, save;
-    UWORD d4, n;
+    UWORD statics, n;
 
     /* first, fill in any FUNCTION RETURN type shit..... */
     if (procmode == 0)
         badpenderr();
     if (!nomemleft)
-        for (a2 = firstpend; a2; a2 = a2->next)
-            L_(a2->addr) = pc;
+        for (pend = firstpend; pend; pend = pend->next)
+            L_(pend->addr) = pc;
     if (debugga)
         maketrap(5);
-    d4 = calcstatic2(firstlocal, &tab);
+    statics = calcstatic2(firstlocal, &tab);
     p = thisproc;
-    p->nstatics = d4;
+    p->nstatics = statics;
     locdatast = tab;
     if ((WORD)memlib->flags < 0) {
         p->nstatics |= 0x8000;          /* bset #7,8(a0) */
@@ -481,13 +481,13 @@ static void endstate(void)
         if (n == 1)
             pokewd(fix1[0]);
         else {
-            UWORD d1 = n << 2;
-            moverts[1] = d1;
+            UWORD size = n << 2;
+            moverts[1] = size;
             pokel(tl(moverts));
-            if (d1 <= 8)
-                pokewd(((d1 & 7) << 9) | fixq[0]);
+            if (size <= 8)
+                pokewd(((size & 7) << 9) | fixq[0]);
             else {
-                fixstack[1] = d1;
+                fixstack[1] = size;
                 pokel(tl(fixstack));
             }
         }
@@ -508,20 +508,20 @@ static void endstate(void)
 /* blitz2.s:14104 droplocals */
 void droplocals(void)
 {
-    struct alllocal *a0 = doallocmem(12, MEMF_PUBLIC);
-    struct var *d0, *d1;
+    struct alllocal *al = doallocmem(12, MEMF_PUBLIC);
+    struct var *locals, *globs;
 
-    a0->next = alllocals;
-    alllocals = a0;
-    d0 = firstlocal;
+    al->next = alllocals;
+    alllocals = al;
+    locals = firstlocal;
     firstlocal = NULL;
-    a0->locals = d0;
-    d1 = firstglob;
+    al->locals = locals;
+    globs = firstglob;
     firstglob = NULL;
-    a0->globs = d1;
+    al->globs = globs;
     if (debugga && !nomemleft) {
-        L_(proclocals) = (ULONG)d0;
-        L_(proclocals + 4) = (ULONG)d1;
+        L_(proclocals) = (ULONG)locals;
+        L_(proclocals + 4) = (ULONG)globs;
     }
 }
 
@@ -593,24 +593,24 @@ void typemode(UWORD c)
 {
     struct node *last;
     struct var *f;
-    struct type *d2;
-    UWORD d6, len;
-    ULONG d3, d4;
+    struct type *ftype;
+    UWORD flags, len;
+    ULONG size, offset;
 
     if (c == 0x8002) {
         doend2();
         return;
     }
     bakup();
-    d6 = 0;                 /* not pointer */
+    flags = 0;              /* not pointer */
     if (c == '*') {
-        d6 = 1;
+        flags = 1;
         getchar3();
     } else if (c == '@') {
-        d6 = 5;
+        flags = 5;
         getchar3();
     }
-    flagmask = d6;
+    flagmask = flags;
     len = makename(&c);
     if (!len)
         syntaxerr();
@@ -623,54 +623,54 @@ void typemode(UWORD c)
         len = makename(&c);
         if (!len)
             syntaxerr();
-        d2 = findtype((struct node *)&alltypes, len, &last);
-        if (!d2) {
+        ftype = findtype((struct node *)&alltypes, len, &last);
+        if (!ftype) {
             if (!(flagmask & 1))
                 notypeerr();
             /* pointer type, gotta do something tricky! */
-            d2 = (struct type *)addhere(last, NAMEOFF_TYPE, len);
+            ftype = (struct type *)addhere(last, NAMEOFF_TYPE, len);
             c = reget();
-            d2->size = linenumat;
-            d2->u.code = TYPE_FORWARD;  /* set to pointer crap */
+            ftype->size = linenumat;
+            ftype->u.code = TYPE_FORWARD; /* set to pointer crap */
         }
-        if (d2 != &bytetype)
+        if (ftype != &bytetype)
             typelen = (typelen + 1) & ~1;
     } else if (c == '$') {
-        d2 = &stringtype;
+        ftype = &stringtype;
         c = getchar3();
         typelen = (typelen + 1) & ~1;
     } else {
-        d2 = prevtype;
-        if (!d2)
+        ftype = prevtype;
+        if (!ftype)
             notypeerr();
-        if (d2 != &bytetype)
+        if (ftype != &bytetype)
             typelen = (typelen + 1) & ~1;
     }
     /* .byte */
-    d3 = (UWORD)d2->size;
-    prevtype = d2;
-    f->type = d2;
-    d4 = typelen;
-    f->offset = d4;
+    size = (UWORD)ftype->size;
+    prevtype = ftype;
+    f->type = ftype;
+    offset = typelen;
+    f->offset = offset;
     if (flagmask & 1)
-        d3 = 4;
+        size = 4;
     if (c == '[') {
         /* get constant value! */
-        ULONG d1 = evalconst2(&c);
+        ULONG count = evalconst2(&c);
         if (c != ']')
             syntaxerr();
         if (numfloat)
             fpconerr();
         getchar3();
-        f->ndims = d1;
-        d3 = (ULONG)(UWORD)d1 * (UWORD)d3;      /* mulu d1,d3 */
+        f->ndims = count;
+        size = (ULONG)(UWORD)count * (UWORD)size; /* mulu d1,d3 */
         flagmask |= 2;
     }
-    d4 += d3;
-    if (d4 >= 32768)
+    offset += size;
+    if (offset >= 32768)
         toolongerr();
     f->flags = flagmask;
-    typelen = d4;
+    typelen = offset;
 }
 
 /* ============================================================ End If */
@@ -678,33 +678,33 @@ void typemode(UWORD c)
 /* blitz2.s:13830 doendif3 */
 static struct ifnode *doendif3(UWORD kind)
 {
-    struct ifnode *a0 = firstif;
+    struct ifnode *node = firstif;
 
-    if (!a0)
+    if (!node)
         noiferr();
-    if ((a0->kind & 255) != kind)
+    if ((node->kind & 255) != kind)
         badenderr();
-    doendif2(a0, kind);
-    return a0;
+    doendif2(node, kind);
+    return node;
 }
 
 /* blitz2.s:13837 doendif2 */
-void doendif2(struct ifnode *a0, UWORD kind)
+void doendif2(struct ifnode *node, UWORD kind)
 {
-    ULONG d1;
+    ULONG dist;
 
     if (kind == 1) {
         /* put in while bra */
-        ULONG a1;
+        ULONG at;
         pokewd(0x6000);
-        a1 = pc;
-        pokewd(a0->startpc - a1);
+        at = pc;
+        pokewd(node->startpc - at);
     }
-    d1 = pc - a0->brapc + 2;
-    if (d1 >= 32768)
+    dist = pc - node->brapc + 2;
+    if (dist >= 32768)
         bigiferr();
     if (!nomemleft)
-        W_(a0->brapc - 2) = d1;
+        W_(node->brapc - 2) = dist;
 }
 
 /* blitz2.s:13860 dowend */
@@ -743,10 +743,10 @@ static void doendif(UWORD kind)
 }
 
 /* blitz2.s:13869 freetheifz */
-void freetheifz(struct ifnode *a0)
+void freetheifz(struct ifnode *node)
 {
-    firstif = a0->next;
-    FreeMem(a0, 14);
+    firstif = node->next;
+    FreeMem(node, 14);
 }
 
 /* ================================================================ End */
@@ -843,13 +843,13 @@ static void doend3(UWORD c)
 /* blitz2.s:13988 freefors */
 void freefors(void)
 {
-    struct fornode *a2 = firstfor, *a1;
+    struct fornode *f = firstfor, *dead;
 
     firstfor = NULL;
-    while (a2) {
-        a1 = a2;
-        a2 = a1->next;
-        FreeMem(a1, a1->len);
+    while (f) {
+        dead = f;
+        f = dead->next;
+        FreeMem(dead, dead->len);
     }
 }
 
@@ -869,17 +869,17 @@ void donext(UWORD c)
     }
     /* here, we've got 'Next Var[,Var...]' */
     for (;;) {
-        struct fornode *a2;
-        UWORD d2;
+        struct fornode *f;
+        UWORD len;
 
         c = getvname(c);
-        d2 = getvnamelen;
-        a2 = firstfor;
-        if ((UWORD)(a2->len - 18) != d2)
+        len = getvnamelen;
+        f = firstfor;
+        if ((UWORD)(f->len - 18) != len)
             noforerr();
-        if (memcmp(namebuff, a2->name, d2))
+        if (memcmp(namebuff, f->name, len))
             noforerr();
-        donext2(a2);
+        donext2(f);
         c = reget();
         if (eos(c))
             return;
@@ -890,38 +890,38 @@ void donext(UWORD c)
 }
 
 /* blitz2.s:14163 donext .unknown2 - close For node a2 (= firstfor) */
-static void donext2(struct fornode *a2)
+static void donext2(struct fornode *f)
 {
-    UWORD *a0 = nextl, *a1 = nextlf;
-    UWORD d0;
-    ULONG d1;
+    UWORD *code = nextl, *codeend = nextlf;
+    UWORD vtype;
+    ULONG dist;
 
-    popnext(a2);            /* error checking for next. */
-    d0 = a2->vartype;
-    if (d0 == 1) {
-        a0 = nextb; a1 = nextbf;
-    } else if (d0 == 2) {
-        a0 = nextw; a1 = nextwf;
-    } else if (d0 == 5) {
+    popnext(f);             /* error checking for next. */
+    vtype = f->vartype;
+    if (vtype == 1) {
+        code = nextb; codeend = nextbf;
+    } else if (vtype == 2) {
+        code = nextw; codeend = nextwf;
+    } else if (vtype == 5) {
         tokejsr(getffpbase);
-        a0 = nextf; a1 = nextff;
+        code = nextf; codeend = nextff;
     }
-    pokecode(a0, a1);
+    pokecode(code, codeend);
     pokel(tl(thebra));
-    firstfor = a2->next;
+    firstfor = f->next;
     /* pass2, o.k. to put in my BRA's! */
-    d1 = pc - a2->brapc + 2;            /* d1=positive bra */
-    if (d1 >= 32768)
+    dist = pc - f->brapc + 2;           /* d1=positive bra */
+    if (dist >= 32768)
         bigforerr();
     if (!nomemleft)
-        W_(a2->brapc - 2) = d1;
-    d1 = pc - a2->toppc - 6;
-    if (d1 >= 32768)
+        W_(f->brapc - 2) = dist;
+    dist = pc - f->toppc - 6;
+    if (dist >= 32768)
         bigforerr();
     if (!nomemleft)
-        W_(pc - 2) = -d1;
-    popnext3(a2);           /* fix stack */
-    FreeMem(a2, a2->len);
+        W_(pc - 2) = -dist;
+    popnext3(f);            /* fix stack */
+    FreeMem(f, f->len);
     reget();
 }
 
@@ -930,9 +930,9 @@ void dofor(UWORD c)
 {
     struct node *last;
     struct fornode *f;
-    UWORD d2, t, op;
-    WORD d3;
-    UWORD *a0, *a1;
+    UWORD vartype, t, op;
+    WORD offset;
+    UWORD *code, *codeend;
 
     if (dirmode)
         baddirerr();
@@ -950,30 +950,30 @@ void dofor(UWORD c)
         chkstak();
         pokel(tl(forset));
     }
-    c = dolet2(c, fortemp, &d2, &d3);
+    c = dolet2(c, fortemp, &vartype, &offset);
     if (c != 0x8018)
         syntaxerr();
     if (commode)
         syntaxerr();
-    if ((UBYTE)d2 >= 6)
+    if ((UBYTE)vartype >= 6)
         badforerr();
-    if (!(d2 & 0x8000)) {
+    if (!(vartype & 0x8000)) {
         pokewda5s(leaamp[0]);
-        pokewd(d3);
+        pokewd(offset);
     }
     pokewd(pushindex[0]);   /* index lea on stack */
-    d2 &= 255;
-    f->vartype = d2;
-    t = d2;
+    vartype &= 255;
+    f->vartype = vartype;
+    t = vartype;
     c = eval(&t);           /* get fin */
-    op = d2 >= 3 ? pushd0l[0] : pushd0wd[0];
+    op = vartype >= 3 ? pushd0l[0] : pushd0wd[0];
     pokewd(op);             /* push fin on stack */
     if (c == 0x8019) {
-        t = d2;
+        t = vartype;
         eval(&t);           /* get step */
-    } else if (d2 < 4)
+    } else if (vartype < 4)
         pokewd(0x7001);     /* moveq #1,d0 */
-    else if (d2 == 4) {
+    else if (vartype == 4) {
         pokewd(0x7001);
         pokewd(swapd0[0]);
     } else {
@@ -982,18 +982,18 @@ void dofor(UWORD c)
     }
     pokewd(op);             /* push step on stack */
     f->toppc = pc;
-    if (d2 == 1) {
-        a0 = forcompb; a1 = forcompbf;
-    } else if (d2 == 2) {
-        a0 = forcompw; a1 = forcompwf;
-    } else if (d2 == 5) {
+    if (vartype == 1) {
+        code = forcompb; codeend = forcompbf;
+    } else if (vartype == 2) {
+        code = forcompw; codeend = forcompwf;
+    } else if (vartype == 5) {
         pokecode(forcompf, forcompff);
         tokejsr(getffpbase);
-        a0 = forcompf2; a1 = forcompf2f;
+        code = forcompf2; codeend = forcompf2f;
     } else {
-        a0 = forcompl; a1 = forcomplf;
+        code = forcompl; codeend = forcomplf;
     }
-    pokecode(a0, a1);
+    pokecode(code, codeend);
     pokel(tl(thebgt));
     f->brapc = pc;
     reget();
@@ -1009,20 +1009,20 @@ void dolet(UWORD c)
     dolet2(c, getvnamelen, NULL, NULL);
 }
 
-/* blitz2.s:14468 dolet2 .code - poke the store opcode d1 for type d2 */
-static void letcode(UWORD d1, UWORD d2, WORD d3)
+/* blitz2.s:14468 dolet2 .code - poke the store opcode for type vartype (asm d1, d2) */
+static void letcode(UWORD opcode, UWORD vartype, WORD offset)
 {
-    if ((UBYTE)d2 == 1) {
+    if ((UBYTE)vartype == 1) {
         pcodd++;
-        d1 ^= 0x3000;
+        opcode ^= 0x3000;
     } else {
         alignletpc();
-        if ((UBYTE)d2 < 3)
-            d1 |= 0x1000;
+        if ((UBYTE)vartype < 3)
+            opcode |= 0x1000;
     }
-    pokewd(d1);
-    if (!(d1 & 0x80))
-        pokewd(d3);
+    pokewd(opcode);
+    if (!(opcode & 0x80))
+        pokewd(offset);
 }
 
 /* blitz2.s:14340 dolet2 */
@@ -1030,13 +1030,13 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
 {
     struct var *v;
     struct type *t;
-    UWORD d2, et;
-    WORD d3;
+    UWORD vartype, et;
+    WORD voff;
 
     pushstart();
     regat = 1;              /* don't disturb this reg! */
     v = fetchvar(len, &t, &c);              /* var in a3, type in a2 */
-    d2 = calcvar(&v, &t, &c, &d3);          /* get offset stuff */
+    vartype = calcvar(&v, &t, &c, &voff);   /* get offset stuff */
     regat = 0;
     pushdo();
     commode = 0;
@@ -1048,7 +1048,7 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
         ULONG svoff;
         WORD svmode;
 
-        if ((UBYTE)d2 == T_STRING) {
+        if ((UBYTE)vartype == T_STRING) {
             /* string get! */
             svoff = lastoffset;
             svmode = varmode;
@@ -1062,8 +1062,8 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
                 pokecode(pulla2st, pulla2stf);
             else
                 pushput();
-            if (!(d2 & 0x8000)) {
-                leaa5d3a2[1] = d3;
+            if (!(vartype & 0x8000)) {
+                leaa5d3a2[1] = voff;
                 pokela5s(tl(leaa5d3a2));
             }
             uselib(65135);
@@ -1072,45 +1072,45 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
                 /* review: BUG(orig) (#39) kept - asm `move varmode,d2` (14389)
                    leaves d2 = varmode (0/$ffff) as the returned type, so
                    `For a$=..` passes dofor's type check for a global a$ */
-                d2 = (UWORD)varmode;
+                vartype = (UWORD)varmode;
                 break;
             }
             pokewd(addq4a2[0]);
         } else {
-            UWORD d1;
+            UWORD opcode;
 
-            if (d2 & 0x4000)                /* pointer, ignore! */
-                d2 = (d2 & 0xff00) | 3;
-            else if ((UBYTE)d2 == 0)
+            if (vartype & 0x4000)           /* pointer, ignore! */
+                vartype = (vartype & 0xff00) | 3;
+            else if ((UBYTE)vartype == 0)
                 noleterr();                 /* tried to assign a struct - later! */
             /* let's get what is to be assigned..... */
             svmode = varmode;
             svoff = lastoffset;
-            et = d2 & 0xff;
+            et = vartype & 0xff;
             c = eval(&et);
             lastoffset = svoff;
             if (!commode)
                 pushput();
             varmode = svmode;
-            d1 = 0x2b40;                    /* move.l d0,x(a5) */
+            opcode = 0x2b40;                /* move.l d0,x(a5) */
             if (varmode)
-                d1 &= ~0x200;
-            if (!(d2 & 0x8000)) {
-                letcode(d1, d2, d3);
+                opcode &= ~0x200;
+            if (!(vartype & 0x8000)) {
+                letcode(opcode, vartype, voff);
                 break;
             }
             if (commode)
                 pokewd(pulla2[0]);
-            d1 = 0x2480;                    /* move.l d0,(a2) */
+            opcode = 0x2480;                /* move.l d0,(a2) */
             if (c != ',') {
-                letcode(d1, d2, d3);
+                letcode(opcode, vartype, voff);
                 break;
             }
-            letcode(0x24c0, d2, d3);        /* move.l d0,(a2)+ */
+            letcode(0x24c0, vartype, voff); /* move.l d0,(a2)+ */
         }
         /* .nextstr */
         {
-            struct var *a0;
+            struct var *field;
             ULONG nt;
 
             if (!lastoffset)
@@ -1118,26 +1118,26 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
             commode = -1;
             varcodelen = 0;
             pokewd(pusha2[0]);
-            a0 = ((struct var *)lastoffset)->next;
-            if (!a0)
+            field = ((struct var *)lastoffset)->next;
+            if (!field)
                 comerr();                   /* comma past end of struct */
-            lastoffset = (ULONG)a0;
-            if (a0->flags & 2)
+            lastoffset = (ULONG)field;
+            if (field->flags & 2)
                 nocomerr();                 /* can't use comma on multiple entries */
-            nt = a0->type->u.code;
-            if (a0->flags & 1) {            /* pointer */
+            nt = field->type->u.code;
+            if (field->flags & 1) {         /* pointer */
                 if (nt >= 256)
                     nt = 0;
                 nt |= 0x4000;
             } else if (nt >= 256)
                 nocomerr();                 /* or on structs */
-            d2 = nt | 0x8000;
+            vartype = nt | 0x8000;
         }
     }
     if (type)
-        *type = d2;
+        *type = vartype;
     if (offset)
-        *offset = d3;
+        *offset = voff;
     return c;
 }
 
@@ -1209,20 +1209,20 @@ static void dodim2(UWORD c)
 }
 
 /* blitz2.s:14571 dimwit */
-static void dimwit(struct var *a3, struct type *a2)
+static void dimwit(struct var *v, struct type *vt)
 {
-    UWORD d1, t;
+    UWORD size, t;
     UWORD c;
 
     nonew = -1;
     pokewd(beginarr[0]);
     pokewd(0);
-    d1 = 4;
+    size = 4;
     if (!(flagmask & 1))
-        d1 = a2->size;
-    d1 += listadd;          /* size of one element. */
-    listsize = d1;
-    pokewd(d1);
+        size = vt->size;
+    size += listadd;        /* size of one element. */
+    listsize = size;
+    pokewd(size);
     SETHIW(temp2, 0);         /* # dim's got */
     for (;;) {
         SETHIW(temp2, HIW(temp2) + 1);
@@ -1245,15 +1245,15 @@ static void dimwit(struct var *a3, struct type *a2)
             syntaxerr();
         break;
     }
-    d1 = HIW(temp1);
-    if ((WORD)d1 >= 0) {
-        if (d1 & 0x4000) {
+    size = HIW(temp1);
+    if ((WORD)size >= 0) {
+        if (size & 0x4000) {
             /* is it a list? */
             if (HIW(temp2) != 1)
                 redimerr();
-            a3->ndims = HIW(temp2);
+            v->ndims = HIW(temp2);
         } else {
-            if (d1 != HIW(temp2))
+            if (size != HIW(temp2))
                 redimerr();
             /* writes the assembler's extension word into
                varoff/locvaroff (harmless: the caller restores it) */
@@ -1263,19 +1263,19 @@ static void dimwit(struct var *a3, struct type *a2)
                 varoff = extraword;
         }
     } else
-        a3->ndims = HIW(temp2); /* set # dim's */
+        v->ndims = HIW(temp2);  /* set # dim's */
     /* .care */
-    doarr[1] = a3->offset;
+    doarr[1] = v->offset;
     doarr[3] = putarr[1];
     pokel(tl(&doarr[0]));
     pokel(tl(&doarr[2]));
-    d1 = newarr;
+    size = newarr;
     if (procmode)
-        d1++;
+        size++;
     if (listadd) {
         pokewd(setles[0]);      /* move #x,d4 */
         pokewd(listsize);
-        d1 += 3;                /* for list Tokejsr */
+        size += 3;              /* for list Tokejsr */
     }
-    tokejsr(d1);
+    tokejsr(size);
 }

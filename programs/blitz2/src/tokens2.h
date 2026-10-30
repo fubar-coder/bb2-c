@@ -27,7 +27,7 @@ void dothen(UWORD c);
    chunk 08 may simply return instead. */
 void ifdone(void);
 
-/* blitz2.s:13837 doendif2 - close If/While node `a0` of kind `d1`
+/* blitz2.s:13837 doendif2 - close If/While node `node` (asm a0) of kind `kind` (asm d1)
    (0 = If, 1 = While): While emits `bra.w` back to node->startpc, then
    patches the bcc disp at node->brapc-2 (unless nomemleft).
    bigiferr if out of range.  Does not unlink/free the node. */
