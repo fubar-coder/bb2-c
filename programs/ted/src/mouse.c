@@ -140,8 +140,8 @@ void mousedown(void)
 
     if (!getmousexy(&q))
         return;                                 /* bmi .done */
-    d2 = q.d2;
-    d3 = q.d3;
+    d2 = q.botx;
+    d3 = q.boty;
     if ((UWORD)d2 >= edcols) {
         gomouse(d2, (UWORD)d3);                 /* bcc gomouse */
         return;
@@ -181,7 +181,7 @@ loop:
     if ((WORD)d7 == -4)
         goto mouseup;
     in = getmousexy(&q);
-    d0 = q.d0; d1 = q.d1; d2 = q.d2; d3 = q.d3;
+    d0 = q.topx; d1 = q.topy; d2 = q.botx; d3 = q.boty;
     if (in)
         goto skip0;
     if ((UWORD)d1 < topskip)                    /* bcs .mup */
@@ -307,20 +307,20 @@ skip2:
 below:
     if (invflag)
         goto fix;
-    q.d0 = d5; q.d1 = (WORD)d6; q.d2 = d2; q.d3 = d3;
+    q.topx = d5; q.topy = (WORD)d6; q.botx = d2; q.boty = d3;
     d5 = d2;
     d6 = (UWORD)d3;
     orderem(&q);
-    invertarea2((WORD)(q.d0 + 1), q.d1, q.d2, q.d3);
+    invertarea2((WORD)(q.topx + 1), q.topy, q.botx, q.boty);
     goto loop;
 above:
     if (!invflag)
         goto fix;
-    q.d0 = d5; q.d1 = (WORD)d6; q.d2 = d2; q.d3 = d3;
+    q.topx = d5; q.topy = (WORD)d6; q.botx = d2; q.boty = d3;
     d5 = d2;
     d6 = (UWORD)d3;
     orderem(&q);
-    invertarea2(q.d0, q.d1, (WORD)(q.d2 - 1), q.d3);
+    invertarea2(q.topx, q.topy, (WORD)(q.botx - 1), q.boty);
     goto loop;
 fix:
     invflag = (UWORD)~invflag;
@@ -430,7 +430,7 @@ ULONG actgad(struct Gadget *a0)
 /* ted.s:2420 gotoline */
 void gotoline(void)
 {
-    UWORD d6 = ev_d6;
+    UWORD d6 = ev_data;
     LONG d7;
     ULONG d0;
 

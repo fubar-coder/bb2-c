@@ -62,7 +62,7 @@ static UWORD vpos(void)
 /* ted.s:1460 gadget - some one hit my vprop gadget! */
 void gadget(void)
 {
-    UWORD d0, d6 = ev_d6;
+    UWORD d0, d6 = ev_data;
     LONG d7;
 
     if (edrows >= numlines)                     /* bcs .skip */
@@ -113,7 +113,7 @@ void extmenu(UWORD d6)
 /* ted.s:1565 menu - menu number in d6 */
 void menu(void)
 {
-    UWORD d6 = ev_d6, d0;
+    UWORD d6 = ev_data, d0;
     const struct jtentry *a0;
     UBYTE flag;
 

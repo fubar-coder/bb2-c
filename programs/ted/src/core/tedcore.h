@@ -69,7 +69,7 @@ struct micenode {
 /* d0-d3 as left by sortblox/orderem (survey-04 A): x/y of block start and
    end (columns signed, rows unsigned). */
 struct quad {
-    WORD d0, d1, d2, d3;
+    WORD topx, topy, botx, boty;        /* d0, d1, d2, d3 */
 };
 
 /* ------------------------------------------- hazards of the original */

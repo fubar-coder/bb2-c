@@ -110,5 +110,5 @@ UBYTE findreqla16[64];          /* ted.s:7061 (chunk 07 data) */
 UBYTE findreqla17[64];          /* ted.s:7072 (chunk 07 data) */
 
 BOOL edquit;                    /* new: escape -> leave mainedit */
-LONG ev_d7;                     /* new: d7 of the dispatch */
-UWORD ev_d6;                    /* new: d6 of the dispatch */
+LONG ev_code;                   /* new: d7 of the dispatch */
+UWORD ev_data;                  /* new: d6 of the dispatch */

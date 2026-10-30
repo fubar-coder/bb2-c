@@ -40,7 +40,7 @@ void blockend(void)
     /* survey-03 I.2 (no effect): `move d0,btopx` with the d0 of mainedit's
        dispatch = the jumptable code byte (130); its upper byte is 0 unless
        showthisitem ran before (undefined there) - C: the event code */
-    btopx = (WORD)(UBYTE)ev_d7;
+    btopx = (WORD)(UBYTE)ev_code;
     d3 = (UWORD)bsty;                           /* y start */
     d1 = (UWORD)(curstop + cursy);              /* y end */
     d0 = (WORD)(cursoff + cursx);               /* x end */

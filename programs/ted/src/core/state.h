@@ -217,7 +217,7 @@ extern BOOL edquit;
 /* asm d7/d6 at the entry of a jumptable/menutable handler (getline's
    result: event code, gadget id / menu code).  Set by mainedit before the
    dispatch; handlers that read d7/d6 (menu, blockend's d0 byte) use these. */
-extern LONG ev_d7;
-extern UWORD ev_d6;
+extern LONG ev_code;
+extern UWORD ev_data;
 
 #endif

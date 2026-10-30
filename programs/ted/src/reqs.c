@@ -351,12 +351,12 @@ void invertarea(WORD d0, WORD d1, WORD d2, WORD d3)
 {
     struct quad q;
 
-    q.d0 = d0;
-    q.d1 = d1;
-    q.d2 = d2;
-    q.d3 = d3;
+    q.topx = d0;
+    q.topy = d1;
+    q.botx = d2;
+    q.boty = d3;
     orderem(&q);
-    invertarea2(q.d0, q.d1, q.d2, q.d3);        /* falls through into invertarea2 */
+    invertarea2(q.topx, q.topy, q.botx, q.boty); /* falls through into invertarea2 */
 }
 
 /* ted.s:3977 invertarea2: not.b directly in both planes */
@@ -414,21 +414,21 @@ BOOL getmousexy(struct quad *r)
     UWORD d1 = (UWORD)a0->MouseY;               /* 16(a0) */
     UWORD d2 = topskip;
 
-    r->d1 = (WORD)d1;
+    r->topy = (WORD)d1;
     if (d1 < d2)
         goto done;
     d2 = (UWORD)(d2 + pixrows);
     if (d1 >= d2)
         goto done;
-    r->d0 = a0->MouseX;                         /* 18(a0) */
-    r->d2 = (WORD)((UWORD)r->d0 >> 3);
+    r->topx = a0->MouseX;                       /* 18(a0) */
+    r->botx = (WORD)((UWORD)r->topx >> 3);
     /* divu fonthite: quotient (the remainder is in the high word) */
-    r->d3 = (WORD)(UWORD)divu_w((UWORD)(d1 - topskip), fonthite);
+    r->boty = (WORD)(UWORD)divu_w((UWORD)(d1 - topskip), fonthite);
     return TRUE;
 done:
-    r->d0 = a0->MouseX;
-    r->d2 = (WORD)((UWORD)r->d0 >> 3);
-    r->d3 = -1;
+    r->topx = a0->MouseX;
+    r->botx = (WORD)((UWORD)r->topx >> 3);
+    r->boty = -1;
     return FALSE;
 }
 

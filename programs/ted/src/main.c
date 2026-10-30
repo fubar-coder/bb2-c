@@ -516,8 +516,8 @@ void mainedit(void)
             continue;           /* beq mainedit */
         /* .found */
         flag = a0->flag;
-        ev_d7 = d7;
-        ev_d6 = d6;
+        ev_code = d7;
+        ev_data = d6;
         memstack = &jb;         /* move.l a7,memstack */
         if (setjmp(jb) == 0) {
             a0->routine();      /* jsr (a0), a4 = thisitem */

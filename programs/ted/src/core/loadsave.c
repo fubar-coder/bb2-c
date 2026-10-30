@@ -35,8 +35,8 @@ void blocktab(void)
     }
     bloksetup2();
     /* a5 = btopy, d6 = btop line; a4 = thisy, d7 = this line */
-    a4 = bc.a5;
-    d6 = bc.d6;
+    a4 = bc.item;
+    d6 = bc.line;
     do {
         /* @335 .loop2 */
         a1 = charbuff2;
@@ -83,8 +83,8 @@ void blockuntab(void)
         return;
     }
     bloksetup2();
-    a4 = bc.a5;
-    d6 = bc.d6;
+    a4 = bc.item;
+    d6 = bc.line;
     do {
         /* @369 .loop2 */
         a1 = charbuff2;

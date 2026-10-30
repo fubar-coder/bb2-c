@@ -185,13 +185,13 @@ void doclose(void)
 /* ted.s:3337 fillbuff */
 LONG fillbuff(void)
 {
-    rd.a5 = dosbuff;
-    rd.d6 = ted_read(rd.fh, dosbuff, doslen);
-    if (rd.d6 < 0) {                            /* bpl .skip */
+    rd.ptr = dosbuff;
+    rd.left = ted_read(rd.fh, dosbuff, doslen);
+    if (rd.left < 0) {                          /* bpl .skip */
         error(error2);
-        rd.d6 = 0;
+        rd.left = 0;
     }
-    return rd.d6;                               /* asm: Z=1 if 0 */
+    return rd.left;                             /* asm: Z=1 if 0 */
 }
 
 /* ted.s:3325 doread - next character from the file (or <0 if eof!).
@@ -201,8 +201,8 @@ WORD doread(void)
 {
     for (;;) {
         /* .skip2 */
-        if (--rd.d6 >= 0)
-            return *rd.a5++;
+        if (--rd.left >= 0)
+            return *rd.ptr++;
         /* .skip */
         if (!fillbuff())
             return -1;
@@ -672,8 +672,8 @@ UWORD bloksetup2(void)
         }
     }
     /* ted.s:3750 found */
-    bc.a5 = a5;
-    bc.d6 = d6;
+    bc.item = a5;
+    bc.line = d6;
     return d7;
 }
 
@@ -681,9 +681,9 @@ UWORD bloksetup2(void)
 void bloksetup(void)
 {
     bloksetup2();
-    bc.d5 = btopx;
+    bc.col = btopx;
     if (tokenise)
-        detoka5(bc.a5);                         /* bra detoka5 */
+        detoka5(bc.item);                       /* bra detoka5 */
     /* .hendrix */
 }
 
@@ -691,49 +691,49 @@ void bloksetup(void)
    the block, Z (0) at the end of a line; a5 = item, d6 = y, d5 = x */
 WORD getbchar(void)
 {
-    if (bc.d5 >= (WORD)chcols)                  /* bge newline (signed) */
+    if (bc.col >= (WORD)chcols)                 /* bge newline (signed) */
         goto newline;
-    if (bc.d6 < bboty)                          /* bcs getbchar2 (unsigned) */
+    if (bc.line < bboty)                        /* bcs getbchar2 (unsigned) */
         return getbchar2();
-    if (bc.d6 == bboty && (UWORD)bc.d5 <= (UWORD)bbotx)  /* bls: unsigned */
+    if (bc.line == bboty && (UWORD)bc.col <= (UWORD)bbotx) /* bls: unsigned */
         return getbchar2();
     /* .eob */
     return -1;
 
 newline:
     /* ted.s:3884 newline */
-    bc.a5 = bc.a5->nextitem;
-    bc.d6++;
-    bc.d5 = 0;
+    bc.item = bc.item->nextitem;
+    bc.line++;
+    bc.col = 0;
     return 0;
 }
 
 /* ted.s:3865 getbchar2 */
 WORD getbchar2(void)
 {
-    bc.d5++;
+    bc.col++;
     if (tokenise) {
         const UBYTE *a3 = charbuff3;
 
-        if ((UBYTE)bc.d5 >= a3[0])              /* cmp.b (a3),d5 / bcc .space */
+        if ((UBYTE)bc.col >= a3[0])             /* cmp.b (a3),d5 / bcc .space */
             goto space;
-        return a3[bc.d5];                       /* tst d0: make plus! */
+        return a3[bc.col];                      /* tst d0: make plus! */
     }
     /* .skipz */
-    if ((UBYTE)bc.d5 >= bc.a5->numchars)        /* cmp.b numchars(a5),d5 */
+    if ((UBYTE)bc.col >= bc.item->numchars)     /* cmp.b numchars(a5),d5 */
         goto space;
     /* move.b chars-1(a5,d5),d0 sets N for bytes >= $80: the callers see the
        end of the block (bmi) - BUG(orig) (#362) survey-04 I.9, kept as a negative
        return value */
-    return (WORD)(BYTE)bc.a5->chars[bc.d5 - 1];
+    return (WORD)(BYTE)bc.item->chars[bc.col - 1];
 
 space:
     /* .space */
     if (blokop) {
         /* bne newline (ted.s:3884, in getbchar) */
-        bc.a5 = bc.a5->nextitem;
-        bc.d6++;
-        bc.d5 = 0;
+        bc.item = bc.item->nextitem;
+        bc.line++;
+        bc.col = 0;
         return 0;
     }
     return 32;
@@ -801,10 +801,10 @@ void sortblox(struct quad *r)
     bboty = d3;
 ok:
     if (r) {
-        r->d0 = d0;
-        r->d1 = (WORD)d1;
-        r->d2 = d2;
-        r->d3 = (WORD)d3;
+        r->topx = d0;
+        r->topy = (WORD)d1;
+        r->botx = d2;
+        r->boty = (WORD)d3;
     }
 }
 
@@ -813,13 +813,13 @@ void orderem(struct quad *r)
 {
     WORD t;
 
-    if ((UWORD)r->d1 < (UWORD)r->d3)            /* bcs .noswap */
+    if ((UWORD)r->topy < (UWORD)r->boty)        /* bcs .noswap */
         return;
-    if (r->d1 == r->d3 && r->d0 <= r->d2)       /* ble .noswap (signed) */
+    if (r->topy == r->boty && r->topx <= r->botx) /* ble .noswap (signed) */
         return;
     /* .swap */
-    t = r->d0; r->d0 = r->d2; r->d2 = t;
-    t = r->d1; r->d1 = r->d3; r->d3 = t;
+    t = r->topx; r->topx = r->botx; r->botx = t;
+    t = r->topy; r->topy = r->boty; r->boty = t;
 }
 
 /* ------------------------------------------------ line output (chmap) */

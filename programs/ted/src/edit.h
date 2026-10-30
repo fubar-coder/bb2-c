@@ -23,7 +23,7 @@ void gadget(void);
 /* ted.s:1542 extmenu: menurout == 0 -> return; call_menurout(item) (glue.h);
    showme; -2 -> showall, -1 -> return, else gotolined0 */
 void extmenu(UWORD d6);
-/* ted.s:1565 menu - event 254: ev_d6 = Intuition menu code; menu 4 ->
+/* ted.s:1565 menu - event 254: ev_data = Intuition menu code; menu 4 ->
    extmenu, else search menutable (input.h) for item<<4|menu, call, flag ->
    showvprop */
 void menu(void);

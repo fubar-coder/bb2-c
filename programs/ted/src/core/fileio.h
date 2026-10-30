@@ -49,8 +49,8 @@ extern const UWORD powersof10[5];   /* ted.s:3165 10000,1000,100,10,1 */
    dosbuff, d6 = bytes left), kept between doopen and doclose (survey-04 G.4). */
 struct rdstate {
     tedfh fh;                   /* d7 (before doopen: the name) */
-    UBYTE *a5;                  /* read pointer */
-    LONG d6;                    /* bytes left in dosbuff */
+    UBYTE *ptr;                 /* a5: read pointer */
+    LONG left;                  /* d6: bytes left in dosbuff */
 };
 extern struct rdstate rd;
 
@@ -59,8 +59,8 @@ extern struct rdstate rd;
 BOOL doopen(const UBYTE *d7, LONG d2);
 /* ted.s:3302 doclose: filehand = 0, Close(rd.fh) */
 void doclose(void);
-/* ted.s:3337 fillbuff: rd.a5 = dosbuff, rd.d6 = Read(doslen); error ->
-   error(error2), d6 = 0.  Returns d6 (asm: Z=1 if 0). */
+/* ted.s:3337 fillbuff: rd.ptr = dosbuff, rd.left = Read(doslen); error ->
+   error(error2), rd.left = 0.  Returns rd.left (asm: Z=1 if 0). */
 LONG fillbuff(void);
 /* ted.s:3325 doread: next byte (0..255) or -1 at EOF (asm: N=1) */
 WORD doread(void);
@@ -140,17 +140,17 @@ void allocfirst(void);
 
 /* Block walk state (asm: a5 = item, d6 = line, d5 = column), survey-04 G.4 */
 struct bcur {
-    struct item *a5;
-    UWORD d6;
-    WORD d5;
+    struct item *item;          /* a5 */
+    UWORD line;                 /* d6 */
+    WORD col;                   /* d5 */
 };
 extern struct bcur bc;
 
 /* ted.s:3727 bloksetup2: walk from thisitem (line curstop+cursy) to line
-   btopy: bc.a5, bc.d6 = btopy.  Returns d7 = curstop+cursy.  `found`
+   btopy: bc.item, bc.line = btopy.  Returns d7 = curstop+cursy.  `found`
    (3750) is its end label (only rts). */
 UWORD bloksetup2(void);
-/* ted.s:3752 bloksetup: bloksetup2, bc.d5 = btopx, tokenise -> detoka5 */
+/* ted.s:3752 bloksetup: bloksetup2, bc.col = btopx, tokenise -> detoka5 */
 void bloksetup(void);
 /* ted.s:3849 getbchar: next block character: -1 block end (asm N=1), 0 end
    of line (Z=1; bc already on the next line - caller re-runs detoka5 when

@@ -677,35 +677,35 @@ void blokkill(void)
     blokop = 0;
     allalt = (UWORD)-1;
     bloksetup();
-    bc.d5 = 0;                                  /* moveq #0,d5 */
+    bc.col = 0;                                 /* moveq #0,d5 */
     a0 = charbuff2;
-    while ((UWORD)bc.d5 < (UWORD)btopx)         /* .loop: bcc .skip0 */
+    while ((UWORD)bc.col < (UWORD)btopx)        /* .loop: bcc .skip0 */
         *a0++ = (UBYTE)getbchar2();
     /* .skip0 */
     keep = a0;                                  /* move.l a0,-(a7) */
-    while (bc.d6 < bboty) {                     /* .skip: bcc .done0 */
-        next = bc.a5->nextitem;
-        freeupa5(bc.a5);
-        bc.a5 = next;
-        bc.d6++;
+    while (bc.line < bboty) {                   /* .skip: bcc .done0 */
+        next = bc.item->nextitem;
+        freeupa5(bc.item);
+        bc.item = next;
+        bc.line++;
     }
     /* .done0 */
-    if (bc.d6 != btopy) {
+    if (bc.line != btopy) {
         /* BUG(orig) (#354) survey-02 I.8: detoka5 also without tokenise (bytes
            >= $80 then go to findtoke with tokens possibly 0) */
         if (!tokenise)
             ORIG_HAZARD("blokkill: detoka5 without tokenise");
-        detoka5(bc.a5);
+        detoka5(bc.item);
     }
     /* .done */
     a0 = keep;
-    bc.d5 = bbotx;
+    bc.col = bbotx;
     for (;;) {                                  /* .done3 */
-        bc.d5++;
-        if ((UWORD)bc.d5 >= chcols)             /* bcc .done2 */
+        bc.col++;
+        if ((UWORD)bc.col >= chcols)            /* bcc .done2 */
             break;
         d0 = getbchar2();
-        bc.d5--;
+        bc.col--;
         *a0++ = (UBYTE)d0;
     }
     /* .done2 */
@@ -713,10 +713,10 @@ void blokkill(void)
         *a0++ = 32;
     /* .done4 */
     if (btopx == 0 && (UWORD)(bbotx + 1) >= chcols) {
-        freeupa5(bc.a5);                        /* whole last line */
+        freeupa5(bc.item);                      /* whole last line */
     } else {
         /* .doit */
-        a4 = bc.a5;
+        a4 = bc.item;
         thisitem = a4;
         makefirst(a4);
     }
@@ -788,28 +788,28 @@ void bloksave(void)
         }
         /* .newline */
         bsbyte(fh, 10);
-        bc.d5 = 0;
+        bc.col = 0;
         for (;;) {
             /* .loop3 */
-            if (bc.d6 >= bboty) {               /* bcs .bok */
+            if (bc.line >= bboty) {             /* bcs .bok */
                 if (tokenise) {
                     /* BUG(orig) (#350) survey-02 G: a block ending behind the
                        last text line arrives here with a5 = 0 */
-                    if (!bc.a5) {
+                    if (!bc.item) {
                         ORIG_HAZARD("bloksave: detoka5 on a5 = 0");
 #ifdef TED_HOST
                         /* host-only guard: the asm reads chars(0) */
-                        bc.d5 = 0;
+                        bc.col = 0;
                         break;
 #endif
                     }
-                    detoka5(bc.a5);
-                    bc.d5 = 0;
+                    detoka5(bc.item);
+                    bc.col = 0;
                 }
                 break;                          /* bra .loop */
             }
             /* .bok: a whole line at once */
-            detoka5(bc.a5);
+            detoka5(bc.item);
             a0 = charbuff3;
             d3 = a0[0];
             a0[d3] = 10;
@@ -819,8 +819,8 @@ void bloksave(void)
                 return;
             }
             /* .skip2 */
-            bc.a5 = bc.a5->nextitem;
-            bc.d6++;
+            bc.item = bc.item->nextitem;
+            bc.line++;
         }
     }
     /* .done */
@@ -1013,24 +1013,24 @@ void bcopyok(void)
             /* .skipy */
             a4->lastitem = a0;
             a0->nextitem = a4;
-            if (bc.d6 >= bboty)                 /* bcc .skipx */
+            if (bc.line >= bboty)               /* bcc .skipx */
                 break;
             /* a whole line in the middle: raw copy (tokenised) */
-            d5 = bc.a5->numchars;
+            d5 = bc.item->numchars;
             a0 = alloc2((UWORD)(d5 + lenitem), TED_MEMF_PUBLIC);
             b0 = a0->chars;
-            s = bc.a5->chars;
+            s = bc.item->chars;
             while ((*b0++ = *s++) != 0)         /* .loopz */
                 ;
-            bc.d6++;
-            bc.a5 = bc.a5->nextitem;
+            bc.line++;
+            bc.item = bc.item->nextitem;
         }
         /* .skipx */
         if (tokenise)
-            detoka5(bc.a5);
+            detoka5(bc.item);
         /* .skipx2 */
         b0 = charbuff2;
-        bc.d5 = 0;
+        bc.col = 0;
         d1 = 0;
     }
     /* .oneline.  survey-02 I.4: d1 = the PREFIX length again,

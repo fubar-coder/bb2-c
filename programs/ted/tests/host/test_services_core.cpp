@@ -53,7 +53,7 @@ TEST_CASE("block marks: blockstart, blockend", "[services][blocks]")
     cursy = 2;
     cursx = 5;
     thisitem = firstitem->nextitem->nextitem;
-    ev_d7 = 130;
+    ev_code = 130;
     blockend();
     CHECK(btopx == 3);
     CHECK(btopy == 1);
