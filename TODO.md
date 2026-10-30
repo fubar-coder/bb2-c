@@ -590,9 +590,11 @@ several versions.
       `rwe-1999-eval`, polylib at 87) and stage D (§3.3, 16 libraries
       without a binary, REFERENCE `refbuild`) ported (2026-10-30): all
       52 libraries of `RWE_LIBS` are C (`docs/rwelibs/README.md` 3.1
-      "Ported"). Every `BUG(orig)` of the RWE libraries
-      has its GitHub issue (#344–#922, 2026-10-30; the numbers in the code,
-      port notes and tests). ~~**Reference build in the build**~~ done (2026-10-29,
+      "Ported"); then risoundlib2 (Sound with AHI, variant `rwe-1999-ahi`
+      instead of risoundlib, 2026-10-30): 53. Every `BUG(orig)` of the
+      RWE libraries has its GitHub issue (#344–#922, 2026-10-30; the
+      numbers in the code, port notes and tests) – open: the 11 of
+      risoundlib2 (bug IDs in `docs/rwelibs/port/risoundlib2.md`). ~~**Reference build in the build**~~ done (2026-10-29,
       `libs/userlibs/rwe/refbuild.cmake`): residents by `tools/blitzres`
       from the NDK (contents equal to blitz2's, `rwe_resident_NAME`),
       staging (target `rwe_refstage`; `INCDIR` neutralised on the bytes
@@ -601,8 +603,9 @@ several versions.
       `build/<preset>/libs/userlibs/rwe/ref/NAME.obj`; stage A byte for
       byte equal to its binaries (`rwe_refbuild_NAME`). For the
       libraries whose reference is the source (§3.2 "Source", §3.3):
-      REFERENCE `refbuild` in `RWE_LIBS`. Open: residents other than
-      constants (`AHI.res` of risoundlib2), the further includes of the
+      REFERENCE `refbuild` in `RWE_LIBS`. ~~`AHI.res` of risoundlib2~~
+      done (2026-10-30): constants only, from the AHI SDK of the
+      toolchain (`rwe_resident_AHI`). Open: the further includes of the
       sources not yet buildable (README §3.1). The RWE userlibs (their numbers: AmiBlitz3's
       libnums, the matching binaries, `#riarrayslib` = 7 from
       `defaultdbug50.bb2`; `docs/rwelibs/README.md` §3.1). ptlib is
