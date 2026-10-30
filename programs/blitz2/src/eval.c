@@ -9,7 +9,7 @@
  *   asm d0 (current char)   -> return value UWORD c
  *   asm d2 (type, in/out)   -> UWORD *type
  *   asm d3 (offset/value)   -> parameters
- *   asm d1 (opcode)         -> local `d1`
+ *   asm d1 (opcode)         -> local `opcode`
  *   regat                   -> global (D register of the result)
  */
 #include "blitz2.h"
@@ -202,37 +202,37 @@ void pokelc(ULONG l)
 /* blitz2.s:8476 pokewd - poke d1.w into pc - not an opcode */
 void pokewd(UWORD w)
 {
-    ULONG a4;
+    ULONG at;
 
     pc = (pc + 1) & ~1UL;           /* addq.l #1,pc / bclr #0,pc+3 */
-    a4 = pc;
-    if (a4 >= libat) {
+    at = pc;
+    if (at >= libat) {
         nomemleft = -1;             /* .over */
-        a4 += 2;
+        at += 2;
     } else {
-        W_(a4) = w;
-        a4 += 2;
+        W_(at) = w;
+        at += 2;
     }
-    pc = a4;                        /* .ms */
-    if (a4 > bigpc && !cfetchmode)
-        bigpc = a4;
+    pc = at;                        /* .ms */
+    if (at > bigpc && !cfetchmode)
+        bigpc = at;
 }
 
 /* blitz2.s:8496 pokebyte */
 void pokebyte(UBYTE b)
 {
-    ULONG a4 = pc;
+    ULONG at = pc;
 
-    if (a4 >= libat) {
+    if (at >= libat) {
         nomemleft = -1;
-        a4 += 1;
+        at += 1;
     } else {
-        B_(a4) = b;
-        a4 += 1;
+        B_(at) = b;
+        at += 1;
     }
-    pc = a4;
-    if (a4 > bigpc && !cfetchmode)
-        bigpc = a4;
+    pc = at;
+    if (at > bigpc && !cfetchmode)
+        bigpc = at;
 }
 
 /* blitz2.s:8514 pokecode - a0=start of code to poke, a1=end */
@@ -309,16 +309,16 @@ static void bytetof2(void)
 /* blitz2.s:8557 fdo2 - call FFP routine lvo on D(regat) */
 static void fdo2(WORD lvo)
 {
-    ULONG d4, d5;
+    ULONG push, pull;
 
     libjsr[1] = (UWORD)lvo;         /* move d1,libjsr+2 */
-    savereg(&d4, &d5);
-    pokemovem(d4);
+    savereg(&push, &pull);
+    pokemovem(push);
     tokejsr(getffpbase);
     ritetod0();
     pokel(L_(libjsr));
     ritefromd0();
-    pokemovem(d5);
+    pokemovem(pull);
 }
 
 /* blitz2.s:8570 wordtobyte - falls through into overchk */
@@ -415,14 +415,14 @@ void quicktofloat(void)
 /* blitz2.s:8639 qtof2 - call Blitz lib routine tok on D(regat) */
 static void qtof2(UWORD tok)
 {
-    ULONG d4, d5;
+    ULONG push, pull;
 
-    savereg(&d4, &d5);
-    pokemovem(d4);
+    savereg(&push, &pull);
+    pokemovem(push);
     ritetod0();
     tokejsr(tok);
     ritefromd0();
-    pokemovem(d5);
+    pokemovem(pull);
 }
 
 /* blitz2.s:8652 floattobyte */
@@ -508,7 +508,7 @@ convhandler *const convtable[49] = {
    according to array/pointer etc status */
 UWORD getvname(UWORD c)
 {
-    UWORD len, d1;
+    UWORD len, next;
 
     if (c == '\\') {
         usedfrom = srcptr - 1;      /* subq #1,a5 */
@@ -542,9 +542,9 @@ UWORD getvname(UWORD c)
         c = getchar3();
     } else
         return c;                   /* .done */
-    d1 = c;                         /* .morez */
+    next = c;                       /* .morez */
     c = resloc();
-    if (d1 == '(')
+    if (next == '(')
         flagmask |= 2;              /* .setmask */
     return c;
 }
@@ -566,22 +566,22 @@ static void dopulla3(void)
 /* blitz2.s:8769 sbtolong - make sbase into a long */
 void sbtolong(void)
 {
-    UWORD d1;
+    UWORD regfield;
 
     pokewd(ceos[0]);                /* clr.b (a3)+ */
-    d1 = regat << 9;
+    regfield = regat << 9;
     if ((UWORD)sbgot >= 2) {
-        WORD d3 = stackuse - thisstuse;
-        if (d3 == 6) {
-            pokewd(d1 | *movestst2);
+        WORD used = stackuse - thisstuse;
+        if (used == 6) {
+            pokewd(regfield | *movestst2);
             pokecode2(movestst2 + 1, movestst2f);
             return;
         }
-        pokewd(d1 | *movea7dn);     /* .lenonly */
+        pokewd(regfield | *movea7dn); /* .lenonly */
         pokel(L_(movea7dn + 1));
         return;
     }
-    pokewd(d1 | *movestdn);         /* .skip2 */
+    pokewd(regfield | *movestdn);   /* .skip2 */
     pokewd(uselib(65235)->varoff);
 }
 
@@ -706,7 +706,7 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
 {
     WORD s_thisstuse = thisstuse;
     WORD s_pushflag, s_sbgot, s_unknown;
-    UWORD asked, t, c, d1;
+    UWORD asked, t, c, opcode;
 
     thisstuse = stackuse;
     s_pushflag = pushflag;
@@ -726,12 +726,12 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
     unknown = s_unknown;            /* .noconv */
     if (pushflag > 0) {
         /* push the type got. */
-        d1 = regat << 9;
+        opcode = regat << 9;
         if (t == T_STRING)
-            pokewd(d1 | *getstlen);
+            pokewd(opcode | *getstlen);
         stackuse += 2;                              /* .hi1 */
-        d1 = ((d1 | 0x7000) + 0x0200) | t;         /* moveq #x,dREGAT+1 */
-        pokewd(d1);
+        opcode = ((opcode | 0x7000) + 0x0200) | t; /* moveq #x,dREGAT+1 */
+        pokewd(opcode);
         pokewd((*pushut | regat) + 1);
         if (t == T_STRING)
             pokewd(*putstlen | regat);
@@ -744,12 +744,12 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
     sbgot = s_sbgot;                                /* .notst2 */
     if (pushflag < 0) {
         stackuse += 2;
-        d1 = *pushd0wd;
+        opcode = *pushd0wd;
         if (t >= 3) {
             stackuse += 2;
-            d1 = *pushd0l;
+            opcode = *pushd0l;
         }
-        pokewd(d1 | regat);
+        pokewd(opcode | regat);
     }
     pushflag = s_pushflag;                          /* .skip */
     thisstuse = s_thisstuse;
@@ -811,9 +811,9 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
         if (!fs[-2].constgot && !nomemleft) {
             /* YES! We can do it!  Set up MOVE.l regat,d0 */
             struct m68kregs r;
-            struct offnode *a2, *a3;
-            ULONG d0;
-            UWORD d1;
+            struct offnode *node, *keep;
+            ULONG value;
+            UWORD opcode;
 
             pokewd(0x2000 | regat);
             pokewd(0x4e75);                         /* rts */
@@ -836,24 +836,24 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
             r.a[5] = (ULONG)&MathBase - (LONG)ffplib->varoff;
             flushc();
             callregs((APTR)pc, &r);
-            d0 = r.d[0];                            /* d0 has got constant! */
-            d1 = (regat << 9) | 0x203c;             /* move.l #x,dn */
+            value = r.d[0];                         /* d0 has got constant! */
+            opcode = (regat << 9) | 0x203c;         /* move.l #x,dn */
             if (*type < 3) {
-                pokewd(d1 | 0x1000);
-                pokewd((UWORD)d0);
+                pokewd(opcode | 0x1000);
+                pokewd((UWORD)value);
             } else {
-                pokewd(d1);
-                pokel(d0);
+                pokewd(opcode);
+                pokel(value);
             }
             /* .mode - clean up offset stack */
-            a3 = fs[-2].firstoff;
-            a2 = firstoff;
-            firstoff = a3;
-            while (a3 != a2) {
-                struct offnode *a1 = a2;
+            keep = fs[-2].firstoff;
+            node = firstoff;
+            firstoff = keep;
+            while (keep != node) {
+                struct offnode *dead = node;
                 numoffs--;
-                a2 = a2->next;
-                FreeMem(a1, 8);
+                node = node->next;
+                FreeMem(dead, 8);
             }
             fs = forthsp;
         }
@@ -868,54 +868,54 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
    Returns op prec (asm d1, 0 if .done), *op = operator address (a0). */
 static UWORD eval2(UWORD *type, UWORD *c, struct opentry **op)
 {
-    struct opentry *a0;
-    UWORD d0;
+    struct opentry *ent;
+    UWORD ch;
 
-    d0 = *c = getelement(type);
-    for (a0 = operators; a0->op; a0++)
-        if (a0->op == d0)
+    ch = *c = getelement(type);
+    for (ent = operators; ent->op; ent++)
+        if (ent->op == ch)
             goto found;
     return 0;                       /* .done */
 found:
-    if (d0 == '<') {
-        d0 = *c = getchar3();
-        if (d0 == '=') {
-            a0 = ople;
+    if (ch == '<') {
+        ch = *c = getchar3();
+        if (ch == '=') {
+            ent = ople;
             goto found2;
         }
-        if (d0 != '>')              /* .notlteq */
+        if (ch != '>')              /* .notlteq */
             goto found3;
         goto isne;
     }
-    if (d0 == '>') {                /* .notlt */
-        d0 = *c = getchar3();
-        if (d0 == '=') {
-            a0 = opge;
+    if (ch == '>') {                /* .notlt */
+        ch = *c = getchar3();
+        if (ch == '=') {
+            ent = opge;
             goto found2;
         }
-        if (d0 == '<')              /* .notgteq */
+        if (ch == '<')              /* .notgteq */
             goto isne;
         goto found3;
     }
-    if (d0 != '=')                  /* .notgt */
+    if (ch != '=')                  /* .notgt */
         goto found2;
-    d0 = *c = getchar3();
-    if (d0 == '>') {
-        a0 = opge;
+    ch = *c = getchar3();
+    if (ch == '>') {
+        ent = opge;
         goto found2;
     }
-    if (d0 != '<')                  /* .noteqgt */
+    if (ch != '<')                  /* .noteqgt */
         goto found3;
     /* BUG(orig) (#9): "=<" is compiled as "<>" (falls into .isne) */
 isne:
-    a0 = opne;
+    ent = opne;
     goto found2;
 found3:
     bakup();
 found2:
     /* We've found the operator. */
-    *op = a0;
-    return a0->prec;
+    *op = ent;
+    return ent->prec;
 }
 
 /* blitz2.s:9142 doop - a0=operator,d2=type */
@@ -956,19 +956,19 @@ static struct opentry *popprec(UWORD *prec)
 /* ============================================ PLUS / compare operators */
 
 /* blitz2.s:9292 cmpit - cmp.x D(regat+1),D(regat) */
-static void cmpit(UWORD d1)
+static void cmpit(UWORD opcode)
 {
-    UWORD d3 = regat;
-    d1 |= d3;
-    d1 |= d3 << 9;
-    d1 += 1;
-    pokewd(d1);
+    UWORD reg = regat;
+    opcode |= reg;
+    opcode |= reg << 9;
+    opcode += 1;
+    pokewd(opcode);
 }
 
 /* blitz2.s:9322 cpoke - Scc Dn / ext.w Dn; type now WORD! */
-static UWORD cpoke(UWORD d1)
+static UWORD cpoke(UWORD opcode)
 {
-    pokewd(d1 | regat);
+    pokewd(opcode | regat);
     pokewd(0x4880 | regat);         /* ext.w D regat */
     return T_WORD;
 }
@@ -980,12 +980,12 @@ static UWORD doltcmp(void) { return cpoke(*mslt); }
 static UWORD dolecmp(void) { return cpoke(*msle); }
 static UWORD dogtcmp(void) { return cpoke(*msgt); }
 static UWORD dogecmp(void) { return cpoke(*msge); }
-static UWORD doeqcmp2(UWORD d1) { cmpit(d1); return doeqcmp(); }
-static UWORD donecmp2(UWORD d1) { cmpit(d1); return donecmp(); }
-static UWORD doltcmp2(UWORD d1) { cmpit(d1); return doltcmp(); }
-static UWORD dolecmp2(UWORD d1) { cmpit(d1); return dolecmp(); }
-static UWORD dogtcmp2(UWORD d1) { cmpit(d1); return dogtcmp(); }
-static UWORD dogecmp2(UWORD d1) { cmpit(d1); return dogecmp(); }
+static UWORD doeqcmp2(UWORD opcode) { cmpit(opcode); return doeqcmp(); }
+static UWORD donecmp2(UWORD opcode) { cmpit(opcode); return donecmp(); }
+static UWORD doltcmp2(UWORD opcode) { cmpit(opcode); return doltcmp(); }
+static UWORD dolecmp2(UWORD opcode) { cmpit(opcode); return dolecmp(); }
+static UWORD dogtcmp2(UWORD opcode) { cmpit(opcode); return dogtcmp(); }
+static UWORD dogecmp2(UWORD opcode) { cmpit(opcode); return dogecmp(); }
 
 /* blitz2.s:9189-9226 byte/word/long compares */
 UWORD doeqb(UWORD t) { (void)t; return doeqcmp2(*cmp0); }
@@ -1010,14 +1010,14 @@ UWORD dogel(UWORD t) { (void)t; return dogecmp2(*cmp2_); }
 /* blitz2.s:9229 docflib - FFP lib call whose CCR result is used: the Scc
    goes to d0 (regat=0), docflib2 moves it back.  asm keeps d5 (pull
    mask) in the register across the Scc code. */
-static ULONG cf_d5;
+static ULONG cf_pull;
 static void docflib(WORD lvo)
 {
-    ULONG d4;
+    ULONG push;
 
     libjsr[1] = (UWORD)lvo;
-    savereg(&d4, &cf_d5);
-    pokemovem(d4);
+    savereg(&push, &cf_pull);
+    pokemovem(push);
     tokejsr(getffpbase);
     ritetod0();
     pokel(L_(libjsr));
@@ -1030,7 +1030,7 @@ static void docflib2(void)
 {
     regat = cfregat;
     ritefromd0();
-    pokemovem(cf_d5);
+    pokemovem(cf_pull);
 }
 
 /* blitz2.s:9248-9271 float compares (SPCmp) */
@@ -1050,13 +1050,13 @@ UWORD dogts(UWORD t) { (void)t; tokejsr(strcomp); return dogtcmp(); }
 UWORD doges(UWORD t) { (void)t; tokejsr(strcomp); return dogecmp(); }
 
 /* blitz2.s:9343 doplus2 - op.x D(regat+1),D(regat) */
-static void doplus2(UWORD d1)
+static void doplus2(UWORD opcode)
 {
-    UWORD d3 = regat;
-    d1 |= d3;
-    d1 += 1;
-    d1 |= d3 << 9;
-    pokewd(d1);
+    UWORD reg = regat;
+    opcode |= reg;
+    opcode += 1;
+    opcode |= reg << 9;
+    pokewd(opcode);
 }
 
 /* blitz2.s:9334 doplusb - now a word */
@@ -1093,24 +1093,24 @@ UWORD doplusf(UWORD t)
 /* blitz2.s:9355 doflib - same code as fdo2 */
 static void doflib(WORD lvo)
 {
-    ULONG d4, d5;
+    ULONG push, pull;
 
     libjsr[1] = (UWORD)lvo;
-    savereg(&d4, &d5);
-    pokemovem(d4);
+    savereg(&push, &pull);
+    pokemovem(push);
     tokejsr(getffpbase);
     ritetod0();
     pokel(L_(libjsr));
     ritefromd0();
-    pokemovem(d5);
+    pokemovem(pull);
 }
 
 /* blitz2.s:9368 addstrings - add the lengths on the stack */
 UWORD addstrings(UWORD t)
 {
-    UWORD d1 = regat << 9;
-    pokewd(d1 | addcode[0]);
-    pokewd(d1 | addcode[1]);
+    UWORD regfield = regat << 9;
+    pokewd(regfield | addcode[0]);
+    pokewd(regfield | addcode[1]);
     return t;
 }
 
@@ -1160,14 +1160,14 @@ UWORD dotimesl(UWORD t)
 /* blitz2.s:9414 domylib - call Blitz lib routine on D(regat),D(regat+1) */
 static void domylib(UWORD tok)
 {
-    ULONG d4, d5;
+    ULONG push, pull;
 
-    savereg(&d4, &d5);
-    pokemovem(d4);
+    savereg(&push, &pull);
+    pokemovem(push);
     ritetod0();
     tokejsr(tok);
     ritefromd0();
-    pokemovem(d5);
+    pokemovem(pull);
 }
 
 /* blitz2.s:9425 dotimesf */
@@ -1233,9 +1233,9 @@ UWORD domodf(UWORD t)
 /* blitz2.s:9472 dodivb - ext.l both; falls through into dodivw */
 UWORD dodivb(UWORD t)
 {
-    UWORD d1 = 0x48c0 | regat;
-    pokewd(d1);
-    pokewd(d1 + 1);
+    UWORD opcode = 0x48c0 | regat;
+    pokewd(opcode);
+    pokewd(opcode + 1);
     return dodivw(t);
 }
 
@@ -1268,13 +1268,13 @@ UWORD doorl(UWORD t) { doplus2(0x8080); return t; }
 
 /* blitz2.s:9512 doeor2 - eor.x D(regat+1),D(regat) (EOR: source Dn in
    bits 9-11, destination in the ea field) */
-static void doeor2(UWORD d1)
+static void doeor2(UWORD opcode)
 {
-    UWORD d3 = regat;
-    d1 |= d3;
-    d3 += 1;
-    d1 |= d3 << 9;
-    pokewd(d1);
+    UWORD reg = regat;
+    opcode |= reg;
+    reg += 1;
+    opcode |= reg << 9;
+    pokewd(opcode);
 }
 
 /* blitz2.s:9510 doeorb - falls through into doeor2 */
@@ -1287,9 +1287,9 @@ UWORD doeorl(UWORD t) { doeor2(0xb180); return t; }
 /* -------------------------------------------------------------- shifts */
 
 /* blitz2.s:9547 shpoke - lsx.l D(regat+1),D(regat) */
-static UWORD shpoke(UWORD d1, UWORD t)
+static UWORD shpoke(UWORD opcode, UWORD t)
 {
-    UWORD d3;
+    UWORD reg;
 
     regat++;                        /* make second a word! */
     convtype(t, T_WORD);
@@ -1299,11 +1299,11 @@ static UWORD shpoke(UWORD d1, UWORD t)
         t = T_LONG;                 /* review: asm moveq #3,d2 before
                                        convtypef - the result is a long */
     }
-    d3 = regat;                     /* .skip */
-    d1 |= d3;
-    d3 += 1;
-    d1 |= d3 << 9;
-    pokewd(d1);
+    reg = regat;                    /* .skip */
+    opcode |= reg;
+    reg += 1;
+    opcode |= reg << 9;
+    pokewd(opcode);
     return t;
 }
 
@@ -1325,17 +1325,17 @@ UWORD doasrl(UWORD t) { return shpoke(0xe0a0, t); }
 /* blitz2.s:9599 dothebit - bxxx D(regat+1),D(regat) */
 static void dothebit(UWORD op, UWORD t)
 {
-    UWORD d1, d2;
+    UWORD opcode, destfield;
 
     convtypef(t, T_LONG);           /* first to long! */
     regat++;
     convtype(t, T_BYTE);            /* second to byte! */
     regat--;
-    d1 = regat;
-    d2 = (d1 + 1) << 9;
-    d1 |= op;
-    d1 |= d2;
-    pokewd(d1);                     /* btst regat+1,regat */
+    opcode = regat;
+    destfield = (opcode + 1) << 9;
+    opcode |= op;
+    opcode |= destfield;
+    pokewd(opcode);                 /* btst regat+1,regat */
 }
 
 /* blitz2.s:9572 bittst */
@@ -1404,14 +1404,14 @@ struct opentry operators[] = {
 /* blitz2.s:9623 ritetod0 - put regat to d0 (and regat+1 to d1) */
 void ritetod0(void)
 {
-    UWORD d1 = regat;
+    UWORD opcode = regat;
 
-    if (!d1)
+    if (!opcode)
         return;
-    d1 |= 0x2000;
-    pokewd(d1);                     /* move.l Dn,d0 */
-    d1 += 0x201;
-    pokewd(d1);                     /* move.l D(n+1),d1 */
+    opcode |= 0x2000;
+    pokewd(opcode);                 /* move.l Dn,d0 */
+    opcode += 0x201;
+    pokewd(opcode);                 /* move.l D(n+1),d1 */
 }
 
 /* blitz2.s:9633 ritefromd0 - get regat from d0 */
@@ -1428,17 +1428,17 @@ void ritefromd0(void)
    keep the old d6 on the stack */
 static UWORD getelement(UWORD *type)
 {
-    UWORD d1, c;
+    UWORD opcode, c;
 
     if (regat < 7)
         return getelement2(type);
-    d1 = *type < 3 ? 0x3f06 : 0x2f06;   /* move.x d6,-(a7) */
-    pokewd(d1);
+    opcode = *type < 3 ? 0x3f06 : 0x2f06; /* move.x d6,-(a7) */
+    pokewd(opcode);
     regat--;
     c = getelement2(type);
     regat++;
     pokewd(*type < 3 ? 0x3e06 : 0x2e06);    /* move.x d6,d7 */
-    pokewd((d1 & 0xf000) | 0x0c1f);         /* move.x (a7)+,d6 */
+    pokewd((opcode & 0xf000) | 0x0c1f);     /* move.x (a7)+,d6 */
     return c;
 }
 
@@ -1446,10 +1446,10 @@ static UWORD getelement(UWORD *type)
 static UWORD negate(UWORD *type)
 {
     UWORD c = getelement2(type);
-    UWORD d1 = 0x4440;              /* neg.w */
+    UWORD opcode = 0x4440;          /* neg.w */
 
     if (*type >= 3) {
-        d1 = 0x4480;                /* neg.l */
+        opcode = 0x4480;            /* neg.l */
         if (*type >= 5) {
             if (*type >= 6)
                 illoperr();
@@ -1457,7 +1457,7 @@ static UWORD negate(UWORD *type)
             return c;
         }
     }
-    pokewd(d1 | regat);             /* .doneg */
+    pokewd(opcode | regat);         /* .doneg */
     return c;
 }
 
@@ -1476,14 +1476,14 @@ static UWORD bracket(UWORD *type)
 static UWORD notit(UWORD *type)
 {
     UWORD c = eval4(type);
-    UWORD d1;
+    UWORD opcode;
 
     if (*type >= 5)
         illoperr();
-    d1 = regat | 0x4640;            /* not.w */
+    opcode = regat | 0x4640;        /* not.w */
     if (*type >= 3)
-        d1 ^= 0xc0;                 /* not.l */
-    pokewd(d1);
+        opcode ^= 0xc0;             /* not.l */
+    pokewd(opcode);
     return c;
 }
 
@@ -1582,7 +1582,7 @@ static UWORD fetchsize(UWORD *type)
 {
     UWORD c = getchar3();
     UWORD saved, len;
-    ULONG d3;
+    ULONG value;
 
     if (c == '.') {
         struct type *t;                             /* .sizeobj */
@@ -1593,7 +1593,7 @@ static UWORD fetchsize(UWORD *type)
         t = findtype((struct node *)&alltypes, len, NULL);
         if (!t)
             notypeerr();
-        d3 = 0;
+        value = 0;
         c = reget();                                /* d0 after findtype */
         if (c == '\\') {
             struct var *v;
@@ -1603,11 +1603,11 @@ static UWORD fetchsize(UWORD *type)
             v = findvar((struct node *)&t->u.fields, len, NULL);
             if (!v)
                 noofferr();
-            d3 = (UWORD)v->offset;
+            value = (UWORD)v->offset;
         } else
-            d3 = (UWORD)t->size;                    /* .jty */
+            value = (UWORD)t->size;                 /* .jty */
         *type = saved;                              /* .jty2 */
-        return (UWORD)fetchnum2(d3, type);
+        return (UWORD)fetchnum2(value, type);
     }
     /* find size of a var! */
     {
@@ -1620,9 +1620,9 @@ static UWORD fetchsize(UWORD *type)
         v = findvar((struct node *)&firstvar, len, NULL);
         if (!v)
             notypeerr();                            /* ! */
-        d3 = (ULONG)(LONG)v->offset;                /* .found: 4(a2), ext.l */
+        value = (ULONG)(LONG)v->offset;             /* .found: 4(a2), ext.l */
         *type = saved;
-        return (UWORD)fetchnum2(d3, type);
+        return (UWORD)fetchnum2(value, type);
     }
 }
 
@@ -1666,42 +1666,42 @@ static BOOL chkbin(UWORD c)
 ULONG fetchhex(UWORD *type)
 {
     UWORD c = getchar3();
-    ULONG d3;
+    ULONG value;
 
     if (!chkhex(&c))
         syntaxerr();
-    d3 = 0;
+    value = 0;
     do {
-        UWORD d0;
-        if (d3 >= 0x10000000UL)
+        UWORD digit;
+        if (value >= 0x10000000UL)
             overerr();
-        d3 <<= 4;
-        d0 = c - 48;
-        if (d0 > 9)
-            d0 -= 7;
-        d3 |= d0;                   /* or d0,d3 (word) */
+        value <<= 4;
+        digit = c - 48;
+        if (digit > 9)
+            digit -= 7;
+        value |= digit;             /* or d0,d3 (word) */
         c = getchar3();
     } while (chkhex(&c));
-    return fetchnum2(d3, type);
+    return fetchnum2(value, type);
 }
 
 /* blitz2.s:9883 fetchbin */
 ULONG fetchbin(UWORD *type)
 {
     UWORD c = getchar3();
-    ULONG d3;
+    ULONG value;
 
     if (!chkbin(c))
         syntaxerr();
-    d3 = 0;
+    value = 0;
     do {
-        if (d3 & 0x80000000UL)      /* lsl.l #1,d3 / bcs overerr */
+        if (value & 0x80000000UL)   /* lsl.l #1,d3 / bcs overerr */
             overerr();
-        d3 <<= 1;
-        d3 |= (UWORD)(c - 48);
+        value <<= 1;
+        value |= (UWORD)(c - 48);
         c = getchar3();
     } while (chkbin(c));
-    return fetchnum2(d3, type);
+    return fetchnum2(value, type);
 }
 
 /* blitz2.s:9896 fetchconst - #name */
@@ -1731,7 +1731,7 @@ static UWORD ampersand(UWORD *type)
 /* blitz2.s:9910 ampersand2 */
 UWORD ampersand2(UWORD *type)
 {
-    UWORD c, d2;
+    UWORD c, vartype;
     struct var *v;
     struct type *t;
     WORD off = 0;
@@ -1739,17 +1739,17 @@ UWORD ampersand2(UWORD *type)
     c = getchar3();
     c = getvname(c);
     v = fetchvar(getvnamelen, &t, &c);
-    d2 = calcvar(&v, &t, &c, &off);
-    *type = d2;
+    vartype = calcvar(&v, &t, &c, &off);
+    *type = vartype;
 
-    if ((d2 & 0xff) == T_STRING) {
-        if (d2 & 0x8000) {                          /* .algot2 */
+    if ((vartype & 0xff) == T_STRING) {
+        if (vartype & 0x8000) {                     /* .algot2 */
             pokewd((regat << 9) | *stamp);          /* move.l (a2),Dn */
             return c;
         }
         stamp2[1] = off;                            /* move d3,stamp2+2 */
         pokela5s(L_(stamp2));                       /* move.l x(a5),a2 */
-    } else if (!(d2 & 0x8000)) {                    /* .notst */
+    } else if (!(vartype & 0x8000)) {               /* .notst */
         leaamp[1] = off;
         pokela5s(L_(leaamp));                       /* lea x(a5),a2 */
     }
@@ -1782,44 +1782,44 @@ static struct blitzlib *fetchit(void)
 }
 
 /* blitz2.s:10169/10585 .loopsw: bit-reverse a movem mask (lsl #1,d3 / roxr #1,d1 x16) */
-static UWORD revmask(UWORD d3)
+static UWORD revmask(UWORD mask)
 {
-    UWORD d1 = 0;
+    UWORD rev = 0;
     int i;
 
     for (i = 0; i < 16; i++) {
-        d1 = (d1 >> 1) | (d3 & 0x8000);
-        d3 <<= 1;
+        rev = (rev >> 1) | (mask & 0x8000);
+        mask <<= 1;
     }
-    return d1;
+    return rev;
 }
 
 /* blitz2.s:9989 doused - return 'used' object. */
 static UWORD doused(UWORD *type)
 {
     struct blitzlib *lib = fetchit();
-    UWORD d3 = LIBMAX_SHIFT(lib);
-    UWORD *a0, *a1;
+    UWORD shift = LIBMAX_SHIFT(lib);
+    UWORD *start, *end;
 
-    if (d3 < 9) {
+    if (shift < 9) {
         /* shift 1-8 */
-        a0 = usedcode;
-        a1 = usedcodef;
+        start = usedcode;
+        end = usedcodef;
         *ucodediv &= 0xf1ff;
-        *ucodediv |= (UWORD)((d3 & 7) << 9);
+        *ucodediv |= (UWORD)((shift & 7) << 9);
     } else {
         /* .skip: shift 9+ */
-        a0 = usedcode2;
-        a1 = usedcodef2;
+        start = usedcode2;
+        end = usedcodef2;
         *ucodediv2 &= 0xf1ff;
-        *ucodediv2 |= (UWORD)((d3 - 8) << 9);
+        *ucodediv2 |= (UWORD)((shift - 8) << 9);
     }
-    d3 = LIBMAX_VAROFF(lib);        /* .skip2 */
-    a0[(ucodeskip - usedcode) + 1] = d3;
-    a0[1] = d3 + 4;
+    shift = LIBMAX_VAROFF(lib);     /* .skip2 */
+    start[(ucodeskip - usedcode) + 1] = shift;
+    start[1] = shift + 4;
     if (regat)
         pokewd(*usedprep);
-    pokecode(a0, a1);               /* .skip3 */
+    pokecode(start, end);           /* .skip3 */
     if (regat) {
         pokewd((regat << 9) | *usedfix);
         pokewd(*useddone);
@@ -1832,10 +1832,10 @@ static UWORD doused(UWORD *type)
 static UWORD domaximum(UWORD *type)
 {
     struct blitzlib *lib = fetchit();
-    ULONG d3 = (UWORD)LIBMAX_COUNT(lib);
+    ULONG count = (UWORD)LIBMAX_COUNT(lib);
 
     getchar3();
-    return (UWORD)fetchnum2(d3, type);
+    return (UWORD)fetchnum2(count, type);
 }
 
 /* blitz2.s:10053 doaddr - address of something, eg a.l=Addr Window(0) */
@@ -1885,26 +1885,26 @@ static UWORD tstbras(UWORD first, UWORD c, UWORD n)
 static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
 {
     struct blitzlib *ol;
-    ULONG d4, d5, saved5;
+    ULONG push, pull, savedpull;
     UWORD base, lvo, first, c, n;
-    UBYTE *a3, *regs;
-    WORD d3;
+    UBYTE *p, *regs;
+    WORD i;
 
     ol = uselib(W_(sub + 6));       /* get lib for base address */
-    savereg(&d4, &d5);
-    saved5 = d5;
-    pokemovem(d4);
+    savereg(&push, &pull);
+    savedpull = pull;
+    pokemovem(push);
     base = ol->varoff;              /* libbase reg */
-    a3 = sub + 8;
-    lvo = W_(a3);                   /* get offset for lib */
-    a3 += 2;
-    regs = a3;
+    p = sub + 8;
+    lvo = W_(p);                    /* get offset for lib */
+    p += 2;
+    regs = p;
     c = first = getchar3();         /* remember first bracket.... */
     /* collect longs for lib */
     n = 0;
     for (;;) {
         UWORD t;
-        if ((BYTE)*a3++ < 0)
+        if ((BYTE)*p++ < 0)
             break;                  /* .done */
         t = T_LONG;
         n++;
@@ -1912,32 +1912,32 @@ static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
         stackuse -= 4;              /* readjust stack! it's coming off later! */
         if (c == ',')
             continue;
-        if ((BYTE)*a3 >= 0)
+        if ((BYTE)*p >= 0)
             syntaxerr();
         break;
     }
     c = tstbras(first, c, n);       /* .done */
-    a3 = regs;
-    d3 = (WORD)n - 1;
-    if (d3 >= 0) {
-        while ((BYTE)*a3++ >= 0)    /* .toend: go to end of params */
+    p = regs;
+    i = (WORD)n - 1;
+    if (i >= 0) {
+        while ((BYTE)*p++ >= 0)     /* .toend: go to end of params */
             ;
-        a3--;
+        p--;
         do {                        /* .loop2 */
-            UWORD d1 = *--a3;
-            if (d1 & 0x10) {
-                d1 = ((d1 & 7) << 9) | 0x205f;      /* .addreg: move.l (a7)+,An */
+            UWORD reg = *--p;
+            if (reg & 0x10) {
+                reg = ((reg & 7) << 9) | 0x205f;    /* .addreg: move.l (a7)+,An */
             } else {
-                if (d1 < regat) {
+                if (reg < regat) {
                     /* BUG(orig) (#344): dead - d4 was poked already and d5 was
                        saved on the stack before; these bits are lost */
-                    d5 |= 1UL << d1;
-                    d4 |= 1UL << (15 - d1);
+                    pull |= 1UL << reg;
+                    push |= 1UL << (15 - reg);
                 }
-                d1 = (d1 << 9) | 0x201f;            /* .nomovem: move.l (a7)+,Dn */
+                reg = (reg << 9) | 0x201f;          /* .nomovem: move.l (a7)+,Dn */
             }
-            pokewd(d1);                             /* .gotit */
-        } while (--d3 >= 0);
+            pokewd(reg);                            /* .gotit */
+        } while (--i >= 0);
     }
     libjsr[1] = lvo;                /* .nopars */
     libbase[1] = base;
@@ -1945,7 +1945,7 @@ static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
     pokel(L_(libjsr));
     if (regat)
         pokewd((regat << 9) | 0x2000);
-    pokemovem(saved5);              /* .nofin */
+    pokemovem(savedpull);           /* .nofin */
     *type = T_LONG;
     reget();
     (void)c;
@@ -1957,13 +1957,13 @@ static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
 static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *lib,
                          UBYTE *sub, UWORD *type)
 {
-    UWORD d1, rettype, mask, c, np, sregat;
+    UWORD rtype, rettype, mask, c, np, sregat;
 
-    d1 = flags >> 8;
+    rtype = flags >> 8;
     if (B_(sub + 1) & 8)
-        d1 = sizespec2();
-    rettype = d1;                   /* .no0 */
-    if (d1 == T_STRING)
+        rtype = sizespec2();
+    rettype = rtype;                /* .no0 */
+    if (rtype == T_STRING)
         makesbase();
     mask = savem();                 /* .notst0: the movem regs */
     c = getchar3();
@@ -2038,21 +2038,21 @@ void pokemovem(ULONG l)
    movem (a7)+ */
 void savereg(ULONG *push, ULONG *pull)
 {
-    ULONG d4 = 0x48e70000UL, d5 = 0x4cdf0000UL;
+    ULONG pushop = 0x48e70000UL, pullop = 0x4cdf0000UL;
 
     if (regat) {
-        d4 |= 1 << 15;
-        d5 |= 1 << 0;
+        pushop |= 1 << 15;
+        pullop |= 1 << 0;
         if (regat >= 2) {
-            d4 |= 1 << 14;          /* .skip3 */
-            d5 |= 1 << 1;
+            pushop |= 1 << 14;      /* .skip3 */
+            pullop |= 1 << 1;
         }
     } else if (fuckpos) {           /* .skip */
-        d4 |= 1 << 14;
-        d5 |= 1 << 1;
+        pushop |= 1 << 14;
+        pullop |= 1 << 1;
     }
-    *push = d4;
-    *pull = d5;
+    *push = pushop;
+    *pull = pullop;
 }
 
 /* blitz2.s:10305 makesbase */
@@ -2086,7 +2086,7 @@ static void makelit(void)
 /* blitz2.s:10327 litstring */
 static UWORD litstring(UWORD *type)
 {
-    UWORD d2 = 0, c;
+    UWORD len = 0, c;
 
     makesbase();
     litdata1 = data1;
@@ -2099,12 +2099,12 @@ static UWORD litstring(UWORD *type)
             notqerr();
         if (c == '"')
             break;
-        d2++;
+        len++;
         pokedata1b((UBYTE)c);
     }
     if (!nomemleft) {               /* .done */
         W_(litdata1) = 0;
-        W_(litdata1 + 2) = d2;
+        W_(litdata1 + 2) = len;
     }
     data1 = (data1 + 1) & ~1UL;     /* .skip */
     makelit();
@@ -2173,7 +2173,7 @@ static UWORD qmark(UWORD *type)
 /* blitz2.s:10449 fetchqasm - "abcd" character constant */
 static UWORD fetchqasm(UWORD *type)
 {
-    ULONG d3 = 0;
+    ULONG value = 0;
     UWORD c;
 
     for (;;) {
@@ -2182,10 +2182,10 @@ static UWORD fetchqasm(UWORD *type)
             syntaxerr();
         if (c == '"')
             break;
-        d3 = (d3 << 8) | (UBYTE)c;
+        value = (value << 8) | (UBYTE)c;
     }
     getchar3();                     /* .done */
-    return (UWORD)fetchnum2(d3, type);
+    return (UWORD)fetchnum2(value, type);
 }
 
 /* blitz2.s:10460 fetchasm - label/constant value in an asm operand */
@@ -2207,42 +2207,42 @@ static UWORD fetchasm(UWORD *type)
 /* ------------------------------------------------------------- variables */
 
 /* blitz2.s:10641 variable2 - get the value of a var into D(regat).
-   d2 = calcvar result, off = a5/a4 offset (asm d3) */
-static UWORD stvar(UWORD d2, WORD off, UWORD *type);
-static void variable2(UWORD d2, WORD off, UWORD *type)
+   vartype = calcvar result (asm d2), off = a5/a4 offset (asm d3) */
+static UWORD stvar(UWORD vartype, WORD off, UWORD *type);
+static void variable2(UWORD vartype, WORD off, UWORD *type)
 {
-    UWORD d1;
+    UWORD opcode;
 
-    if ((d2 & 0xff) == T_STRING) {
-        stvar(d2, off, type);
+    if ((vartype & 0xff) == T_STRING) {
+        stvar(vartype, off, type);
         return;
     }
-    d1 = regat << 9;
-    if (d2 & TF_POINTER)
-        d2 = (d2 & 0xff00) | 3;     /* .pointer: move.b #3,d2 */
-    else if (!(d2 & 0xff)) {
+    opcode = regat << 9;
+    if (vartype & TF_POINTER)
+        vartype = (vartype & 0xff00) | 3; /* .pointer: move.b #3,d2 */
+    else if (!(vartype & 0xff)) {
         *type = T_LONG;
-        pokewd(d1 | 0x200a);        /* move.l a2,Dn */
+        pokewd(opcode | 0x200a);    /* move.l a2,Dn */
         return;
     }
-    if (d2 & TF_ADDRINA2) {         /* .skip2 */
-        d1 |= *movea2dn;
+    if (vartype & TF_ADDRINA2) {    /* .skip2 */
+        opcode |= *movea2dn;
     } else
-        d1 |= *moved3a5dn;          /* .simpvar */
+        opcode |= *moved3a5dn;      /* .simpvar */
     /* .size - correct for size */
-    if (!(d2 & TF_POINTER)) {
-        if ((d2 & 0xff) == 1)
-            d1 ^= 0x3000;           /* .byte */
-        else if ((d2 & 0xff) == 2)
-            d1 |= 0x1000;           /* .word */
+    if (!(vartype & TF_POINTER)) {
+        if ((vartype & 0xff) == 1)
+            opcode ^= 0x3000;       /* .byte */
+        else if ((vartype & 0xff) == 2)
+            opcode |= 0x1000;       /* .word */
     }
-    if (d2 & TF_ADDRINA2)
-        pokewd(d1);
+    if (vartype & TF_ADDRINA2)
+        pokewd(opcode);
     else {
-        pokewda5s(d1);
+        pokewda5s(opcode);
         pokewd(off);
     }
-    *type = d2 & 255;               /* .more */
+    *type = vartype & 255;          /* .more */
 }
 
 /* blitz2.s:10471 variable */
@@ -2252,14 +2252,14 @@ static UWORD variable(UWORD c, UWORD *type)
     struct var *v;
     struct type *t;
     WORD off = 0;
-    UWORD d2;
+    UWORD vartype;
 
     c = getvname(c);
     if (c == '{')
         return afunction(old, type);
     v = fetchvar(getvnamelen, &t, &c);
-    d2 = calcvar(&v, &t, &c, &off);
-    variable2(d2, off, type);
+    vartype = calcvar(&v, &t, &c, &off);
+    variable2(vartype, off, type);
     return varcont(old, type);
 }
 
@@ -2285,18 +2285,18 @@ conv2:
 /* blitz2.s:10502 savem */
 UWORD savem(void)
 {
-    ULONG d3 = 0;
-    UWORD d1 = regat;
+    ULONG mask = 0;
+    UWORD n = regat;
 
-    if (!d1)
+    if (!n)
         return 0;
-    while (d1--) {
-        d3 >>= 1;
-        d3 |= 0x8000;
+    while (n--) {
+        mask >>= 1;
+        mask |= 0x8000;
     }
     pokewd(0x48e7);
-    pokewd((UWORD)d3);
-    return (UWORD)d3;
+    pokewd((UWORD)mask);
+    return (UWORD)mask;
 }
 
 /* blitz2.s:10515 makefjsr */
@@ -2365,10 +2365,10 @@ static UWORD afunction(UWORD oldtype, UWORD *type)
 }
 
 /* blitz2.s:10617 stvar - handle string variable get! */
-static UWORD stvar(UWORD d2, WORD off, UWORD *type)
+static UWORD stvar(UWORD vartype, WORD off, UWORD *type)
 {
     makesbase();
-    if (!(d2 & TF_ADDRINA2)) {
+    if (!(vartype & TF_ADDRINA2)) {
         leaa5d3a2[1] = off;
         pokela5s(L_(leaa5d3a2));
     }
