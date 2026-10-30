@@ -102,10 +102,9 @@ void gomouse(WORD col, UWORD row)
 {
     struct micenode *node;
     struct item *item;
-    UWORD d0, n;
+    UWORD line, n;
 
-    d0 = (UWORD)(edcols + 2);
-    if ((UWORD)col < d0)                        /* bcs .skip */
+    if ((UWORD)col < (UWORD)(edcols + 2))       /* bcs .skip */
         return;
     if (row >= nummice)                         /* bcc .skip */
         return;
@@ -113,15 +112,15 @@ void gomouse(WORD col, UWORD row)
     while (row--)                               /* dbf d3,.loop */
         node = node->next;
     item = firstitem;
-    d0 = 0;
+    line = 0;
     n = (UWORD)(numlines - 1);
     do {                                        /* .loop2 */
         if (node->line == item) {
-            gotolined0(d0);                     /* beq gotolined0 */
+            gotolined0(line);                   /* beq gotolined0 */
             return;
         }
         item = item->nextitem;
-        d0++;
+        line++;
     } while (n-- != 0);
     /* .skip */
 }
@@ -133,7 +132,10 @@ void mousedown(void)
     struct item *item = thisitem, *s_item;
     struct mousexy m;
     struct quad q;
-    WORD d0, d1, col, row, lastcol, savedline;
+    WORD col, row, lastcol;     /* d2, d3, d5 */
+    WORD mx, my;                /* d0, d1 after getmousexy: mouse position */
+    WORD line;                  /* d1 (d0): a line number */
+    WORD scrcol, endcol;        /* d0: screen column, end column at mouseup */
     UWORD lastrow, s_curstop;
     WORD s_btopx, s_bbotx, s_cursoff;
     UWORD s_btopy, s_bboty;
@@ -148,8 +150,8 @@ void mousedown(void)
         gomouse(col, (UWORD)row);               /* bcc gomouse */
         return;
     }
-    d1 = (WORD)(row + curstop);
-    if ((UWORD)d1 >= numlines)
+    line = (WORD)(row + curstop);
+    if ((UWORD)line >= numlines)
         return;
     /* the stack frame: btop/bbot (as longs) */
     s_btopx = btopx; s_btopy = btopy;
@@ -159,23 +161,21 @@ void mousedown(void)
         showall();
     }
     /* .skipsal */
-    d1 = (WORD)(row + curstop);
-    bloktopy = d1;
-    blokboty = d1;
+    line = (WORD)(row + curstop);
+    bloktopy = line;
+    blokboty = line;
     col = (WORD)(col + cursoff);
     bloktopx = col;
     blokbotx = col;
     showprops2(col, (UWORD)row);
     lastcol = col;
     lastrow = (UWORD)row;
-    d0 = col;
-    d1 = row;
     invflag = 0;
     s_curstop = curstop;
     s_cursoff = cursoff;
     s_item = item;
     /* .loop2 */
-    invertarea(d0, d1, col, row);
+    invertarea(col, row, col, row);             /* d0/d1 = d2/d3 */
 loop:
     /* busy poll (survey-03 I.11); handled0 writes d6 for gadget and menu
        messages - the asm's d6 (end row, lastrow) as well */
@@ -183,20 +183,20 @@ loop:
     if ((WORD)ev == -4)
         goto mouseup;
     inside = getmousexy(&m);
-    d0 = m.x; d1 = m.y; col = m.col; row = m.row;
+    mx = m.x; my = m.y; col = m.col; row = m.row;
     if (inside)
         goto skip0;
-    if ((UWORD)d1 < topskip)                    /* bcs .mup */
+    if ((UWORD)my < topskip)                    /* bcs .mup */
         goto mup;
     /* mouse drag down */
     row = (WORD)edrows;
-    d0 = (WORD)(row + curstop);
-    if ((UWORD)d0 >= numlines)
+    line = (WORD)(row + curstop);
+    if ((UWORD)line >= numlines)
         goto loop;
     row--;
     col = (WORD)chcols;
-    d0 = (WORD)(curstop + edrows);
-    if ((UWORD)d0 >= numlines)                  /* never (survey-03 I.11) */
+    line = (WORD)(curstop + edrows);
+    if ((UWORD)line >= numlines)                /* never (survey-03 I.11) */
         goto skip2;
     scrupall();                                 /* (d5/d6 saved) */
     item = item->nextitem;
@@ -207,17 +207,16 @@ loop:
     /* .ok (unused label) */
     col = (WORD)chcols;
     row = (WORD)(edrows - 1);
-    d1 = (WORD)(row + curstop);
-    if ((UWORD)d1 > (UWORD)bloktopy)            /* bhi .skip2 */
+    line = (WORD)(row + curstop);
+    if ((UWORD)line > (UWORD)bloktopy)          /* bhi .skip2 */
         goto skip2;
-    savedline = d1;                             /* move d1,-(a7) */
+    /* move d1,-(a7) ... move (a7)+,d1: line survives invertarea */
     invertarea((WORD)chcols, (WORD)(edrows - 2), lastcol, (WORD)lastrow);
     lastcol = (WORD)chcols;
     lastrow = (UWORD)(edrows - 1);
     row = (WORD)lastrow;
     col = -1;
-    d1 = savedline;
-    if (d1 != bloktopy)
+    if (line != bloktopy)
         goto skip2;
     lastcol = (WORD)(bloktopx + 1);
     goto skip2;
@@ -237,27 +236,27 @@ mup:
     /* .ok2 (unused label) */
     row = 0;
     col = 0;
-    d1 = (WORD)curstop;
-    if ((UWORD)d1 < (UWORD)bloktopy)            /* bcs .skip2 */
+    line = (WORD)curstop;
+    if ((UWORD)line < (UWORD)bloktopy)          /* bcs .skip2 */
         goto skip2;
     invertarea(0, 1, lastcol, (WORD)lastrow);
     col = (WORD)chcols;
     row = 0;
     lastcol = -1;
     lastrow = 0;
-    d1 = (WORD)curstop;
-    if (d1 != bloktopy)
+    line = (WORD)curstop;
+    if (line != bloktopy)
         goto skip2;
     lastcol = (WORD)(bloktopx - 1);
     goto skip2;
 
 skip0:
     col = (WORD)(col + cursoff);
-    d1 = (WORD)(row + curstop);
-    if ((UWORD)d1 >= numlines)                  /* bcs .skip0z */
+    line = (WORD)(row + curstop);
+    if ((UWORD)line >= numlines)                /* bcs .skip0z */
         row = (WORD)(numlines - curstop - 1);
     /* .skip0z */
-    if (d0 == 0) {
+    if (mx == 0) {
         /* go left */
         col--;
         if (cursoff == 0)
@@ -275,8 +274,8 @@ skip0:
         goto skip2;
     }
     /* .skip0y - go rite */
-    d0 = (WORD)(col - cursoff);
-    if ((UWORD)d0 < edcols)                     /* bcs .skip2 */
+    scrcol = (WORD)(col - cursoff);
+    if ((UWORD)scrcol < edcols)                 /* bcs .skip2 */
         goto skip2;
     col = (WORD)(cursoff + edcols);
     if ((UWORD)col >= chcols)                   /* bcc .skip2 */
@@ -298,11 +297,11 @@ skip2:
     /* .skip */
     showprops2(col, (UWORD)row);
     blokbotx = col;
-    d1 = (WORD)(row + curstop);
-    blokboty = d1;
-    if ((UWORD)d1 < (UWORD)bloktopy)            /* bcs .above */
+    line = (WORD)(row + curstop);
+    blokboty = line;
+    if ((UWORD)line < (UWORD)bloktopy)          /* bcs .above */
         goto above;
-    if (d1 != bloktopy)                         /* bne .below */
+    if (line != bloktopy)                       /* bne .below */
         goto below;
     if (col < bloktopx)                         /* blt .above */
         goto above;
@@ -328,25 +327,26 @@ fix:
     invflag = (UWORD)~invflag;
     {
         WORD scol = col, srow = row;            /* movem d2-d3,-(a7) */
+        WORD ancol, anrow;                      /* d0/d1: the anchor on screen */
 
         col = lastcol;
         row = (WORD)lastrow;
-        d0 = bloktopx;
-        d1 = (WORD)(bloktopy - curstop);
-        if (d1 < 0) {                           /* bpl .fskip */
-            d0 = 0;
-            d1 = 0;
-        } else if ((UWORD)d1 >= edrows) {       /* .fskip: bcs .fskip2 */
-            d1 = (WORD)(edrows - 1);
-            d0 = (WORD)(chcols - 1);
+        ancol = bloktopx;
+        anrow = (WORD)(bloktopy - curstop);
+        if (anrow < 0) {                        /* bpl .fskip */
+            ancol = 0;
+            anrow = 0;
+        } else if ((UWORD)anrow >= edrows) {    /* .fskip: bcs .fskip2 */
+            anrow = (WORD)(edrows - 1);
+            ancol = (WORD)(chcols - 1);
         }
         /* .fskip2 */
-        invertarea(d0, d1, col, row);
+        invertarea(ancol, anrow, col, row);
         col = scol;
         row = srow;
         lastcol = col;
         lastrow = (UWORD)row;
-        invertarea(d0, d1, col, row);
+        invertarea(ancol, anrow, col, row);
     }
     goto loop;
 
@@ -357,22 +357,21 @@ mouseup:
     thisitem = s_item;
     cursoff = s_cursoff;
     curstop = s_curstop;
-    d0 = blokbotx;
-    if (d0 >= 0) {                              /* bpl .shit */
-        if ((UWORD)d0 < chcols)                 /* .shit: bcs .shit2 */
+    endcol = blokbotx;
+    if (endcol >= 0) {                          /* bpl .shit */
+        if ((UWORD)endcol < chcols)             /* .shit: bcs .shit2 */
             goto shit2;
         goto shit4;
     }
-    d1 = blokboty;
-    if ((UWORD)d1 <= (UWORD)bloktopy) {         /* bls .shit3 */
-        d0 = 0;                                 /* .shit3 */
+    if ((UWORD)blokboty <= (UWORD)bloktopy) {   /* bls .shit3 */
+        endcol = 0;                             /* .shit3 */
         goto shit2;
     }
     blokboty--;
 shit4:
-    d0 = (WORD)(chcols - 1);
+    endcol = (WORD)(chcols - 1);
 shit2:
-    blokbotx = d0;
+    blokbotx = endcol;
     if (bloktopx == blokbotx && bloktopy == blokboty)   /* cmp.l d1,d0 */
         goto one;
     bloken();
@@ -389,22 +388,22 @@ one:
     bbotx = s_bbotx; bboty = s_bboty;
     btopx = s_btopx; btopy = s_btopy;
     cursx = (UWORD)(bloktopx - cursoff);
-    d0 = (WORD)(curstop + cursy);
+    line = (WORD)(curstop + cursy);
     item = thisitem;
     for (;;) {
         /* ted.s:2290 oneloop */
-        if ((UWORD)d0 == (UWORD)bloktopy)
+        if ((UWORD)line == (UWORD)bloktopy)
             break;                              /* beq .skip */
-        if ((UWORD)d0 < (UWORD)bloktopy) {      /* bcs .skip2 */
+        if ((UWORD)line < (UWORD)bloktopy) {    /* bcs .skip2 */
             item = item->nextitem;
-            d0++;
+            line++;
         } else {
             item = item->lastitem;
-            d0--;
+            line--;
         }
     }
     /* .skip */
-    cursy = (UWORD)(d0 - curstop);
+    cursy = (UWORD)(line - curstop);
     thisitem = item;
     calcpos();
     if (bboty != (UWORD)-1) {
@@ -787,11 +786,10 @@ next:
 /* ted.s:3019 printmem */
 void printmem(void)
 {
-    ULONG d0 = AvailMem(MEMF_LARGEST | MEMF_PUBLIC);    /* #1<<17+1 */
+    ULONG kb = AvailMem(MEMF_LARGEST | MEMF_PUBLIC) >> 10;  /* #1<<17+1 */
 
-    d0 >>= 10;
     memcpy(numtext, "     ", 6);                 /* $20202020 / $2000 */
-    numtoascii((UWORD)d0, (UBYTE *)numtext);    /* survey-03 I.18: low word */
+    numtoascii((UWORD)kb, (UBYTE *)numtext);    /* survey-03 I.18: low word */
     pstats(numtext, statsloc + 38);             /* bra pstats */
 }
 
