@@ -29,13 +29,17 @@
  * On Linux, Amiberry also dies (SIGKILL) when the process that started it
  * ends without amiga_emulation_free, e.g. a crashed test runner.
  *
- * At most AMIGA_EMULATION_MAX runs (default 4, 0 = no limit) go at the
- * same time on the machine, over all runners, build directories and
- * worktrees: amiga_emulation_start first takes one of the slots
- * (flock on slot-K.lock in $XDG_RUNTIME_DIR/amiga-emulation-slots, else
+ * At most AMIGA_EMULATION_MAX runs (0 = no limit) go at the same time on
+ * the machine, over all runners, build directories and worktrees:
+ * amiga_emulation_start first takes one of the slots (flock on
+ * slot-K.lock in $XDG_RUNTIME_DIR/amiga-emulation-slots, else
  * /tmp/amiga-emulation-slots-UID) and waits for a free one; the slot is
  * held until amiga_emulation_free (the kernel frees it if the runner
- * dies).  The wait does not count into the run's timeout.  Only a process
+ * dies).  The wait does not count into the run's timeout.  Without
+ * AMIGA_EMULATION_MAX in the environment, the limit is the number in the
+ * file max of the slot directory (1 to 64, e.g. `echo 6 > .../max`), else
+ * 4; it is read again on every try of a waiting run, so a change takes
+ * effect for the runs that already wait.  Only a process
  * without a run of its own waits; a runner that already runs sessions
  * takes a free slot or runs the further session without one (no deadlock
  * between runners that each hold slots and wait for more).
@@ -133,7 +137,18 @@ int amiga_emulation_machine_known(const char *name);
 /* the slots (see above): takes a free one of max in dir (created if
    missing); with wait, waits for one.  The locked file descriptor, -1 if
    none was free (without wait) or on error; release with close().  max 0:
-   no limit, returns a descriptor of /dev/null. */
+   no limit, returns a descriptor of /dev/null.  max
+   AMIGA_EMULATION_SLOTS_AUTO: amiga_emulation_slot_max(dir), read again
+   on every try. */
+#define AMIGA_EMULATION_SLOTS_AUTO    (~0u)
+#define AMIGA_EMULATION_SLOTS_DEFAULT 4u
+#define AMIGA_EMULATION_SLOTS_LIMIT   64u
 int amiga_emulation_slot(const char *dir, unsigned max, int wait);
+
+/* the limit: $AMIGA_EMULATION_MAX if set (0 = no limit), else the number
+   in dir/max (decimal, blanks and newlines around it; 1 to
+   AMIGA_EMULATION_SLOTS_LIMIT), else (missing, not a number, 0, too
+   large) AMIGA_EMULATION_SLOTS_DEFAULT */
+unsigned amiga_emulation_slot_max(const char *dir);
 
 #endif

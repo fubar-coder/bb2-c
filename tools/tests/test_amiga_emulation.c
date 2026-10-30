@@ -3,10 +3,38 @@
  * (no emulator), the slots that limit the runs.
  */
 #define _XOPEN_SOURCE 700       /* mkdtemp */
+#include <signal.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 #include "testutil.h"
 #include "amiga_emulation.h"
+
+/* writes text to dir/max ("" = removes it) */
+static void put_max(const char *dir, const char *text)
+{
+    char path[96];
+    FILE *f;
+
+    snprintf(path, sizeof path, "%s/max", dir);
+    remove(path);
+    if (!*text)
+        return;
+    f = fopen(path, "wb");
+    CHECK(f != NULL);
+    if (f) {
+        fputs(text, f);
+        fclose(f);
+    }
+}
+
+/* the limit of the slot directory without AMIGA_EMULATION_MAX */
+static unsigned max_of(const char *dir, const char *text)
+{
+    put_max(dir, text);
+    return amiga_emulation_slot_max(dir);
+}
 
 /* number of lines of cfg that equal line */
 static int lines_equal(const char *cfg, const char *line)
@@ -170,7 +198,73 @@ int main(void)
         CHECK(a >= 0);
         close(a);
         CHECK(amiga_emulation_slot("/nonexistent/dir/slots", 2, 0) < 0);
-        for (a = 0; a < 2; a++) {
+
+        /* the limit: the environment, else the file max, else 4 - also
+           for broken files (garbage, 0, too large, negative, two
+           numbers, a number with garbage behind it, too long) */
+        {
+            char *old = getenv("AMIGA_EMULATION_MAX");
+            char *saved = old ? strdup(old) : NULL;
+            char big[200];
+            pid_t pid;
+            int st;
+
+            unsetenv("AMIGA_EMULATION_MAX");
+            CHECK(max_of(dir, "") == 4);
+            CHECK(max_of(dir, "6\n") == 6);
+            CHECK(max_of(dir, " 2 ") == 2);
+            CHECK(max_of(dir, "1") == 1);
+            CHECK(max_of(dir, "64") == 64);
+            CHECK(max_of(dir, "garbage\n") == 4);
+            CHECK(max_of(dir, "0\n") == 4);
+            CHECK(max_of(dir, "65") == 4);
+            CHECK(max_of(dir, "99999999999999999999999") == 4);
+            CHECK(max_of(dir, "-3") == 4);
+            CHECK(max_of(dir, "3 4") == 4);
+            CHECK(max_of(dir, "3x") == 4);
+            CHECK(max_of(dir, "\n") == 4);
+            memset(big, ' ', sizeof big - 2);
+            big[sizeof big - 2] = '5';
+            big[sizeof big - 1] = 0;
+            CHECK(max_of(dir, big) == 4);
+            CHECK(amiga_emulation_slot_max("/nonexistent/dir/slots") == 4);
+            /* the environment wins, also 0 (no limit) */
+            put_max(dir, "6");
+            setenv("AMIGA_EMULATION_MAX", "3", 1);
+            CHECK(amiga_emulation_slot_max(dir) == 3);
+            setenv("AMIGA_EMULATION_MAX", "0", 1);
+            CHECK(amiga_emulation_slot_max(dir) == 0);
+            unsetenv("AMIGA_EMULATION_MAX");
+
+            /* AUTO takes the file's limit: two slots, the third refused */
+            put_max(dir, "2");
+            a = amiga_emulation_slot(dir, AMIGA_EMULATION_SLOTS_AUTO, 0);
+            b = amiga_emulation_slot(dir, AMIGA_EMULATION_SLOTS_AUTO, 0);
+            CHECK(a >= 0 && b >= 0);
+            CHECK(amiga_emulation_slot(dir, AMIGA_EMULATION_SLOTS_AUTO, 0) < 0);
+            /* a run that waits gets a slot when the limit is raised while
+               it waits (the child; alarm ends it if it never does) */
+            pid = fork();
+            if (pid == 0) {
+                alarm(10);
+                c = amiga_emulation_slot(dir, AMIGA_EMULATION_SLOTS_AUTO, 1);
+                _exit(c >= 0 ? 0 : 1);
+            }
+            CHECK(pid > 0);
+            nanosleep(&(struct timespec){ 0, 600000000 }, NULL);
+            CHECK(pid > 0 && waitpid(pid, &st, WNOHANG) == 0);
+            put_max(dir, "3");
+            CHECK(pid > 0 && waitpid(pid, &st, 0) == pid && WIFEXITED(st)
+                  && WEXITSTATUS(st) == 0);
+            close(a);
+            close(b);
+            put_max(dir, "");
+            if (saved) {
+                setenv("AMIGA_EMULATION_MAX", saved, 1);
+                free(saved);
+            }
+        }
+        for (a = 0; a < 3; a++) {
             char lock[64];
 
             snprintf(lock, sizeof lock, "%s/slot-%d.lock", dir, a);

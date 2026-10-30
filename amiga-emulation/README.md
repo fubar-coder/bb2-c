@@ -29,6 +29,26 @@ hardfile2 / uaehf0: Workbench_OS3.2-AB3.vhd instead of Workbench_OS3.2-AB3-AGA.v
 TED can only be tested with the AGA variant (on RTG its bitplanes would be
 in graphics card memory, where the blitter cannot reach them).
 
+## How many emulators at once
+
+At most 4 Amiberry sessions run at the same time on the machine, over all
+runners, build directories and worktrees (the slots of
+`tools/lib/amiga_emulation`, lock files in
+`$XDG_RUNTIME_DIR/amiga-emulation-slots/`, without `XDG_RUNTIME_DIR` in
+`/tmp/amiga-emulation-slots-UID/`). The limit can be changed while tests
+run, by the file `max` in that directory:
+
+```
+echo 6 > $XDG_RUNTIME_DIR/amiga-emulation-slots/max
+```
+
+A session that waits for a slot reads it again on every try, so the new
+limit also counts for the sessions that already wait (a lower limit does
+not stop running sessions; the next ones wait). Only a number from 1 to
+64 counts; a missing file or anything else (text, 0, a larger number)
+means 4. `AMIGA_EMULATION_MAX` in the environment of a runner overrides
+the file for that runner (0 = no limit).
+
 ## Conditions for the hardfiles
 
 * **`user-startup`** executes `TEST:run.script` if `TEST:` is mounted,

@@ -528,16 +528,55 @@ static void child(const char *work_dir, const char *runtime_dir, const char *ami
     _exit(127);
 }
 
+unsigned amiga_emulation_slot_max(const char *dir)
+{
+    const char *env = getenv("AMIGA_EMULATION_MAX");
+    char *path, buf[32], *p, *e;
+    unsigned long n;
+    size_t len = 0;
+    FILE *f;
+
+    if (env && *env)
+        return (unsigned)strtoul(env, NULL, 10);
+    path = str_printf("%s/max", dir);
+    f = path ? fopen(path, "r") : NULL;
+    free(path);
+    if (f) {
+        len = fread(buf, 1, sizeof buf - 1, f);
+        /* more than a number fits: not a number of slots */
+        if (fgetc(f) != EOF)
+            len = 0;
+        fclose(f);
+    }
+    buf[len] = 0;
+    for (p = buf; *p == ' ' || *p == '\t' || *p == '\n' || *p == '\r'; p++)
+        ;
+    if (*p < '0' || *p > '9')
+        return AMIGA_EMULATION_SLOTS_DEFAULT;
+    errno = 0;
+    n = strtoul(p, &e, 10);
+    while (*e == ' ' || *e == '\t' || *e == '\n' || *e == '\r')
+        e++;
+    if (errno || *e || !n || n > AMIGA_EMULATION_SLOTS_LIMIT)
+        return AMIGA_EMULATION_SLOTS_DEFAULT;
+    return (unsigned)n;
+}
+
 int amiga_emulation_slot(const char *dir, unsigned max, int wait)
 {
-    unsigned k;
+    unsigned k, m;
 
     if (!max)
         return open("/dev/null", O_RDONLY | O_CLOEXEC);
     if (mkdir(dir, 0700) && errno != EEXIST)
         return -1;
     for (;;) {
-        for (k = 0; k < max; k++) {
+        /* the limit of the slot directory: read again on every try, so a
+           change also counts for a waiting run */
+        m = max == AMIGA_EMULATION_SLOTS_AUTO ? amiga_emulation_slot_max(dir) : max;
+        if (!m)
+            return open("/dev/null", O_RDONLY | O_CLOEXEC);
+        for (k = 0; k < m; k++) {
             char *path = str_printf("%s/slot-%u.lock", dir, k);
             int fd = path ? open(path, O_RDWR | O_CREAT | O_CLOEXEC, 0600) : -1;
 
@@ -557,7 +596,8 @@ int amiga_emulation_slot(const char *dir, unsigned max, int wait)
 /* the runs of this process that are started and not freed yet */
 static unsigned active_runs;
 
-/* a slot for this run: $AMIGA_EMULATION_MAX of them (default 4).  Only a
+/* a slot for this run: $AMIGA_EMULATION_MAX of them, else the number in
+   the slot directory's file max, else 4 (amiga_emulation_slot_max).  Only a
    process without a run of its own waits: one that already runs sessions
    (a runner with parallel > 1) takes a free slot if there is one and
    otherwise runs this session without one - waiting while holding slots
@@ -565,12 +605,10 @@ static unsigned active_runs;
    running sessions' time limits would not be watched meanwhile. */
 static int take_slot(char *err, size_t errlen)
 {
-    const char *env = getenv("AMIGA_EMULATION_MAX");
     const char *xdg = getenv("XDG_RUNTIME_DIR");
-    unsigned max = env && *env ? (unsigned)strtoul(env, NULL, 10) : 4;
     char *dir = xdg && *xdg ? str_printf("%s/amiga-emulation-slots", xdg)
                             : str_printf("/tmp/amiga-emulation-slots-%u", (unsigned)getuid());
-    int fd = dir ? amiga_emulation_slot(dir, max, active_runs == 0) : -1;
+    int fd = dir ? amiga_emulation_slot(dir, AMIGA_EMULATION_SLOTS_AUTO, active_runs == 0) : -1;
 
     if (fd < 0 && active_runs) {
         free(dir);

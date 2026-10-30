@@ -239,7 +239,11 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   `CORPUS_PARALLEL` emulators. Over everything (all runners, build
   directories and worktrees of the machine) at most
   `AMIGA_EMULATION_MAX` Amiberry sessions run at once (environment,
-  default 4, 0 = no limit): a further session waits for a free slot
+  0 = no limit; without it the number in the file `max` of the slot
+  directory, e.g. `echo 6 > $XDG_RUNTIME_DIR/amiga-emulation-slots/max`,
+  read again while a session waits, so it can be changed while tests
+  run; missing or not a number from 1 to 64: 4; see
+  `amiga-emulation/README.md`): a further session waits for a free slot
   (`tools/lib/amiga_emulation`; the wait does not count into the
   session's timeout, and every emulator test has `EMULATION_QUEUE_WAIT`
   seconds (default 7200, `cmake/emulation-queue.cmake`) more in its
