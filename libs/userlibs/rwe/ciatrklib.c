@@ -78,8 +78,13 @@
  *     without a matching period, the arpeggio and a sample number > 31
  *     read behind the tables (mt_chan1temp, mt_SongDataPtr ...); E8x
  *     (Karplus-Strong) with a loop length of 0 rewrites 64 KB; the repeat
- *     offset is repeat * 2 as a word (ASL.w); F00 stops the module
- *     (mt_end); effect 8 (the event) is seen only on ticks other than 0.
+ *     offset is repeat * 2 as a word (ASL.w); the sample offset compares
+ *     signed with n_length (CMP.w, BGE): 9xx on a length of $8000 words
+ *     or more sets the length to 1; F00 stops the module (as in every
+ *     Protracker), but mt_end loads a0 with $DFF000: after an F00 on
+ *     voice 1-3 the voices behind read their notes from the custom chip
+ *     registers ($DFF000 + the pattern offset) instead of the pattern;
+ *     effect 8 (the event) is seen only on ticks other than 0.
  *   - FreeTrackerModule does not stop a module that plays from the slot.
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
@@ -484,6 +489,11 @@ static void globfree(ULONG mem, ULONG size)
 static void mt_end(void);
 static void resetciaint(void);
 
+/* a0 of mt_GetNewNote, the pattern data; mt_end sets a0 to $DFF000, so
+   after an F00 (mt_SetSpeed: BEQ mt_end) the voices behind read their
+   notes from the custom chip registers (BUG(orig)) */
+static const UBYTE *patdata;
+
 /* SetCIAInt: the interrupt on timer A of ciaa, else timer B of ciab */
 static void setciaint(void)
 {
@@ -634,6 +644,7 @@ static void mt_end(void)
     volatile struct Custom *cu = CUSTOM;
 
     p.Enable = 0;
+    patdata = (const UBYTE *)cu;        /* LEA $DFF000,A0 (BUG(orig)) */
     cu->aud[0].ac_vol = 0;
     cu->aud[1].ac_vol = 0;
     cu->aud[2].ac_vol = 0;
@@ -948,7 +959,7 @@ static void sampleoffset(struct chan *ch)
     if (ch->n.f.cmdlo)
         ch->sampleoffset = ch->n.f.cmdlo;
     d0 = (UWORD)(ch->sampleoffset << 7);
-    if ((WORD)d0 >= (WORD)ch->length) {
+    if ((WORD)d0 >= (WORD)ch->length) { /* BUG(orig): signed (CMP.w, BGE) */
         ch->length = 1;
         return;
     }
@@ -1336,15 +1347,16 @@ static void nonewallchannels(void)
 static void getnewnote(void)
 {
     const UBYTE *a0 = p.SongDataPtr;
-    const UBYTE *a3 = a0 + 12, *pat = a0 + 1084;
+    const UBYTE *a3 = a0 + 12;
     ULONG d1 = (ULONG)a0[952 + p.SongPos] << 10;
     volatile struct Custom *cu = CUSTOM;
     int i;
 
     d1 = (d1 & 0xffff0000UL) | (UWORD)(d1 + p.PatternPos);     /* ADD.W */
+    patdata = a0 + 1084;
     p.DMACONtemp = 0;
     for (i = 0; i < 4; i++, d1 += 4)
-        playvoice(&p.chan[i], voice(i), a3, pat + d1);
+        playvoice(&p.chan[i], voice(i), a3, patdata + d1);    /* 0(A0,D1.L) */
     playsamples(set_real_mask(p.DMACONtemp));   /* mt_SetDMA */
     for (i = 0; i < 4; i++)
         if (g.master_mask & (1 << i)) {

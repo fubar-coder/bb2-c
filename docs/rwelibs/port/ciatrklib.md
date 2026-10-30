@@ -110,8 +110,20 @@ read); the chip memory is not
   behind the finetune's table (for finetune 15 into `mt_chan1temp`); a
   sample number above 31 reads behind `mt_SampleStarts`; E8x
   (Karplus-Strong) with a loop length of 0 rewrites 64 KB; the repeat
-  offset is repeat × 2 as a word; F00 stops the module (`mt_end`);
-  effect 8 is seen only on ticks other than 0 (never at speed 1).
+  offset is repeat × 2 as a word; `mt_SampleOffset` compares the offset
+  with `n_length` signed (`CMP.W`, `BGE`): 9xx on a sample of $8000 words
+  or more sets the length to 1; effect 8 is seen only on ticks other than
+  0 (never at speed 1).
+* F00: that it stops the module (`mt_SetSpeed`: `BEQ mt_end`) is normal
+  Protracker behaviour. The defect is that `mt_end` loads a0 with
+  `$DFF000` (for its `CLR.W $A8(A0)` …), and in `mt_GetNewNote` a0 is
+  the pattern data: after an F00 on voice 1–3 the voices behind it read
+  their notes with `MOVE.L 0(A0,D1.L),(A6)` from the custom chip
+  registers at `$DFF000` + the pattern offset (registers that change by
+  the moment or are write-only) and play them in the same row. The C
+  build keeps that pointer in `patdata`, which `mt_end` sets to `$DFF000`
+  (checked against the reference build: `LEA $DFF000,A0` in `mt_end`,
+  nothing else changes a0 between the four `mt_PlayVoice` calls).
 
 ## DIFF and not reproducible
 
@@ -130,6 +142,17 @@ after every call. The modules are built in memory (fixed random seed: 6
 patterns, 9 positions, 31 samples with loops, finetunes 0–14, a volume
 above 64, a sample of length 0; every effect but F00, E5F and sample
 numbers above 31).
+
+F00 has a module of its own (sample 1; row 0 notes and F01, row 1 F00 on
+voice 1, 2 or 3 and nothing behind it), played to the stop for each
+voice. For these calls the test patches the `$DFF000` of `mt_end` in the
+code of both builds (`LEA $DFF000,A0` before `CLR.W $A8(A0)` in the
+original, `MOVE.L #$DFF000,patdata` in the C build; exactly one of each
+is required) to a RAM copy of the registers per set, filled with a note
+(period 428, sample 1, C20), and restores it afterwards. Only this one
+address is redirected: the routine polls VHPOSR, DMACONR and INTREQR,
+which a RAM copy would never change. Compared besides the blocks: the
+voices behind the F00 hold the note from the copy.
 
 * Phase A (CIA, each set alone): `AddICRVector`/`RemICRVector` of both
   CIA resources are replaced (SetFunction) by stand-ins that record the
@@ -150,7 +173,7 @@ numbers above 31).
   `TrackerVolume` (0, 1, 32, 63, 64, 65, garbage in the upper word),
   `ModulePositionJump`, `GetModulePosition`, `PauseModule`,
   Get/`CheckTrackerEvent`, `WaitTrackerEvent` (its WaitTOF plays a
-  tick), `StopTracker`, `LoadTrackerModule` (a6 = DOSBase; sizes 8768
+  tick), `StopTracker`, F00 on voices 1–3 (above), `LoadTrackerModule` (a6 = DOSBase; sizes 8768
   and $10FE), `FreeTrackerModule`, `ModuleToChip`, finit; memlib's memory
   all back: the balance of what the test task allocated and freed from
   the start to the end (`rwe_mem_start`/`rwe_mem_check` of `rwemem.h`),

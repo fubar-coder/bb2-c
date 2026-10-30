@@ -41,6 +41,12 @@
  *     plays one tick), StopTracker, LoadTrackerModule (a6 = DOSBase;
  *     a file size with the low byte $FE: the byte add, BUG(orig)),
  *     FreeTrackerModule (loaded, copied, linked), ModuleToChip, finit.
+ *     F00 on voice 1, 2 and 3 of a small module (BUG(orig): mt_end loads
+ *     a0 with $DFF000, the voices behind read their notes from the
+ *     custom chip registers): the $DFF000 of mt_end is patched in the
+ *     code of both builds to a RAM copy of the registers per set, filled
+ *     with a note, only for these calls (the routine polls VHPOSR,
+ *     DMACONR and INTREQR: they cannot be redirected).
  * Not covered: the runtime errors (missing file, error checks that
  * fail), a Read error, failing allocations, sample numbers above 31 and
  * finetune 15 / above 15 (they read behind the tables into data that
@@ -611,6 +617,114 @@ static void ciaphase(UBYTE *const mod[2])
     }
 }
 
+/* ------------------------------------------------- F00: mt_end's a0 */
+
+#define FAKESZ 0x200                    /* $DFF000 ... $DFF1FF */
+#define FNOTE 0x01ac1c20UL              /* the fake registers: period 428, sample 1, C20 */
+#define FMODSZ (1084 + 1024 + 32)
+#define FMODALLOC (FMODSZ + 16)         /* the empty samples start at the end,
+                                           mt_init clears their first long */
+
+/* the $DFF000 that mt_end loads into a0: LEA $DFF000,A0 before
+   CLR.W $A8(A0) in the original, MOVE.L #$DFF000,patdata in the C build;
+   returns its offset in the code, 0 if not exactly one */
+static ULONG findend(struct lib *l)
+{
+    ULONG i, at = 0;
+    int n = 0;
+    for (i = 2; i + 8 <= l->size; i += 2)
+        if (GL(l->code + i) == 0xdff000UL
+            && ((GW(l->code + i - 2) == 0x41f9 && GL(l->code + i + 4) == 0x426800a8UL)
+                || GW(l->code + i - 2) == 0x23fc)) {
+            at = i;
+            n++;
+        }
+    return n == 1 ? at : 0;
+}
+
+/* the module: sample 1 (16 words, volume 64); row 0 notes on all
+   voices, F01 on voice 4; row 1 F00 on voice k, the voices behind empty
+   (the original reads FNOTE for them) */
+static void buildfmod(UBYTE *m, int k)
+{
+    int v;
+    memset(m, 0, FMODALLOC);
+    strcpy((char *)m, "f00");
+    pw(m + 20 + 22, 16);
+    m[20 + 25] = 64;
+    pw(m + 20 + 28, 1);
+    m[950] = 1;
+    memcpy(m + 1080, "M.K.", 4);
+    for (v = 0; v < 4; v++) {
+        UBYTE *c = m + 1084 + 4 * v;
+        c[0] = 0x01; c[1] = 0x40; c[2] = 0x10;  /* period 320, sample 1 */
+    }
+    m[1084 + 12 + 2] = 0x1f;            /* F01 */
+    m[1084 + 12 + 3] = 1;
+    m[1084 + 16 + 4 * k + 2] = 0xf;     /* F00 */
+    memset(m + 1084 + 1024, 0x33, 32);
+}
+
+/* the modules stay allocated and a region to the end: the play routine
+   keeps its pointers into them */
+static UBYTE *fm[2];
+
+static void f00(void)
+{
+    UBYTE *fake[2];
+    ULONG at[2];
+    int s, k, i;
+
+    for (s = 0; s < 2; s++) {
+        struct lib *l = getlib(&sets[s], LIB);
+        fm[s] = AllocMem(FMODALLOC, MEMF_CHIP | MEMF_CLEAR);
+        fake[s] = AllocMem(FAKESZ, MEMF_ANY | MEMF_CLEAR);
+        at[s] = findend(l);
+    }
+    check("ciatrklib: mt_end's $DFF000 found (orig)", at[0] != 0);
+    check("ciatrklib: mt_end's $DFF000 found (C)", at[1] != 0);
+    if (!fm[0] || !fm[1] || !fake[0] || !fake[1] || !at[0] || !at[1])
+        goto out;
+    for (s = 0; s < 2; s++)
+        PL(getlib(&sets[s], LIB)->code + at[s], (ULONG)fake[s]);
+    CacheClearU();
+    region(fm[0], fm[1], FMODALLOC);
+    for (k = 0; k < 3; k++) {
+        for (s = 0; s < 2; s++) {
+            buildfmod(fm[s], k);
+            for (i = 0; i < FAKESZ; i += 4)
+                PL(fake[s] + i, FNOTE);
+        }
+        ROUT = "DecodeModule";
+        sprintf(VEC, "slot 6, F00 on voice %d", k + 1);
+        DO2(ENT(LIB, DECODE, 0), R[cur].d[0] = 6; R[cur].d[1] = (ULONG)fm[cur]);
+        sameall();
+        func("StartTracker", START, 6);
+        for (i = 0; i < 10; i++) {
+            sprintf(VEC, "F00 on voice %d, tick %d", k + 1, i);
+            stmt("PlayTracker", PLAY, 0);
+        }
+        BOTH("stopped", blkP[cur][P_ENABLE] == 0);
+        for (i = k + 1; i < 4; i++)
+            BOTH("voice behind F00: note from $DFF000 + offset",
+                 GL(blkP[cur] + P_CHAN + 44 * i) == FNOTE);
+        {
+            const UBYTE *m[2] = { fm[0], fm[1] };
+            SAMEBYTES("module bytes", m, FMODALLOC);
+        }
+        sprintf(VEC, "F00 on voice %d", k + 1);
+        stmt("StopTracker", STOP, 0);
+        stmt("FreeTrackerModule", FREE, 6);
+    }
+    for (s = 0; s < 2; s++)
+        PL(getlib(&sets[s], LIB)->code + at[s], 0xdff000UL);
+    CacheClearU();
+out:
+    for (s = 0; s < 2; s++)
+        if (fake[s])
+            FreeMem(fake[s], FAKESZ);
+}
+
 /* ------------------------------------------------------ phase B */
 
 static UBYTE *curmod[2];                /* the module that plays */
@@ -884,6 +998,9 @@ int main(int argc, char **argv)
         SAMEBYTES("module bytes", m, reflen);
     }
 
+    /* F00 on voices 1-3 (BUG(orig)) */
+    f00();
+
     /* DecodeModule from fast memory: a copy in chip memory */
     if (fast[0] && fast[1] && (LONG)fast[0] >= 0x200000 && (LONG)fast[1] >= 0x200000) {
         UBYTE *e[2] = { blkG[0] + G_MODTABLE + 10, blkG[1] + G_MODTABLE + 10 };
@@ -927,6 +1044,8 @@ int main(int argc, char **argv)
         FreeMem(ciamod[s], 1084 + 1024);
         if (fast[s])
             FreeMem(fast[s], MODMAX);
+        if (fm[s])
+            FreeMem(fm[s], FMODALLOC);
     }
     fake_remove(fakegfx);
     PRA = (PRA & ~2) | (pra0 & 2);
