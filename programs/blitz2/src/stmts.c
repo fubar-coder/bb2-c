@@ -900,8 +900,9 @@ static void restypes(void)
     countem((struct node *)a3);
     for (; a3; a3 = a3->next) {
         start = resd6;
-        /* BUG(orig): a forward declared type (fields == TYPE_FORWARD) would
-           be walked as a field list */
+        /* no test for TYPE_FORWARD, as in the original: latent, a forward
+           type cannot reach here (#33, closed as invalid: every aborted
+           compilation frees the non-resident types) */
         writeoffs(a3->u.fields, 14);
         save = a3->u.code;
         a3->u.code = start;
