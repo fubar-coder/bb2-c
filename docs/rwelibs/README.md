@@ -127,7 +127,7 @@ latest date in the header comments.
 | Thread | 44 (`#rithreadlib`, RWE's list) | `threadlib` | RI | 1995 | – | threadlib (reference build), ported 2026-10-30 (`port/rithreadlib.md`) |
 | ToolTypes | 59 (bin.) | `tooltypeslib/ToolTypes4` | RI (McNamara) | 1995-04-05 | **=** BSS2/AB3 (3564 B) | ToolTypes4 |
 | TrackDisk | 91 | `trackdisklib/trackdisk`, `trackdisk2` | – | – | both **=** BSS2/AB3 (1892 B) | trackdisk2 (both build identically, 3.1) |
-| WB sprite | lit. 10 | `wbspritelib/WBSprite-library2` | RI | 1994 | – | WBSprite-library2 (reference build); number 10 (the literal, free in rwe-1999) |
+| WB sprite | lit. 10 | `wbspritelib/WBSprite-library2` | RI | 1994 | – | WBSprite-library2 (reference build), ported 2026-10-30 (`port/riwbspritelib.md`); number 10 (the literal, free in rwe-1999) |
 | ZoneJoy | 64 | `zonejoylib/…` (6 versions) | RI | 1995-08-12 | 3 and 4 **=** BSS2/AB3 (3656 B); 1 and 2 **=** BUM/OL (3396 B); the two 020 versions (1994) ≈ 76 % | ZoneJoy-Library4 (built identically, 3.1) |
 
 Also in `rwelibsrc/`: `Debuglib/defaultdbug50.bb2` (a debugger, not a
