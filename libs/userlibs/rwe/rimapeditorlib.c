@@ -40,23 +40,25 @@
  *   - CreateMap tests the long at 12 (the low word of the data pointer
  *     and viewx) instead of the data pointer to decide whether to free
  *     the old map: a map whose data lies at $xxxx0000 with viewx 0 is not
- *     freed (lost); the fields 24/28 are not cleared then either.
- *   - CreateMap of a map that cannot be allocated (also width or height
- *     0) clears width, height, bwidth, bheight but leaves datasize 1.
+ *     freed (lost); the fields 24/28 are not cleared then either (#894).
  *   - MapCanDraw compares x/y signed: negative values pass and index far
- *     behind the data; the stencil index is the map value as a signed
- *     word; without SetStencil the stencil is at address 0.
+ *     behind the data (#892); the stencil index is the map value as a
+ *     signed word; without SetStencil the stencil is at address 0 (#893).
  *   - MapDataGrab of bytes keeps the upper byte of the previous value in
  *     the register (MOVE.b): a byte + mapnull beyond 255 carries into the
- *     following values.
+ *     following values (#898).
  *   - The DBRA loops (MapDataGrab, ShapeTo1616, FillBitplane) run 65536
- *     times for a size of 0; ShapeTo1616 copies a word from every row
- *     regardless of the destination's size.
+ *     times for a size of 0 (#895); ShapeTo1616 copies a word from every
+ *     row regardless of the destination's size (#900).
  *   - M_InitParse copies without limit into its 256-byte buffer (the
- *     pointer behind it is overwritten by a longer string); the comment
- *     "strip leading spaces" of M_NextArg$ is not implemented.
- *   - MapObjName$ returns the length as a byte (ADDQ.b).
- *   - finit closes graphics.library also if it did not open.
+ *     pointer behind it is overwritten by a longer string) (#897).
+ *   - MapObjName$ returns the length as a byte (ADDQ.b) (#899).
+ *   - finit closes graphics.library also if it did not open (#896).
+ * Not defects: CreateMap of a map that cannot be allocated (also width
+ * or height 0) clears width, height, bwidth, bheight but leaves datasize
+ * 1 (nothing reads it then); the comment "strip leading spaces" of
+ * M_NextArg$ is not implemented (a comment of the source, not a promise
+ * of the command).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -346,7 +348,7 @@ static void BLITZ_ROUTINE libinit_c(void)
 }
 BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
 
-/* BUG(orig): CloseLibrary also of a base 0 */
+/* BUG(orig): CloseLibrary also of a base 0 (#896) */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     CloseLibrary(gfxbase);
@@ -464,7 +466,7 @@ BLITZ_THUNK(_scanmaxdepth, scanmaxdepth_c, "d1/a0-a1");
 
 /* ShapeTo1616 src,dest: the first word of every row of every plane of
    src into dest's data, 16 rows per plane (missing rows 0, more rows
-   skipped).  BUG(orig): height or depth 0 -> 65536 (DBRA) */
+   skipped).  BUG(orig): height or depth 0 -> 65536 (DBRA) (#895) */
 static void BLITZ_ROUTINE shapetosquare_c(const UBYTE *src BL_REG(a0), UBYTE *dst BL_REG(a1))
 {
     WORD h = (WORD)SW(src, 2);
@@ -582,7 +584,7 @@ static void BLITZ_ROUTINE newmap_c(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD
     UBYTE *mem;
 
     *(UBYTE **)(blitz_globals + (WORD)used) = map;      /* MOVE.l a3,0(a5,d6) */
-    if (ML(map, 12))                    /* BUG(orig): not 10 */
+    if (ML(map, 12))                    /* BUG(orig): not 10 (#894) */
         freemap(map);
     MW(map, M_WIDTH) = w;
     MW(map, M_HEIGHT) = h;
@@ -645,7 +647,7 @@ static void BLITZ_ROUTINE mapgrab_c(const UBYTE *src BL_REG(d0), UWORD type BL_R
         do {
             n = MW(map, M_WIDTH) - 1;
             do {
-                v = (v & 0xff00) | *src++;      /* BUG(orig): MOVE.b */
+                v = (v & 0xff00) | *src++;      /* BUG(orig): MOVE.b (#898) */
                 v += null;
                 *dst++ = v;
             } while (n-- != 0);
@@ -802,7 +804,7 @@ BLITZ_THUNK(_SetWindowDraw, setwindowdraw_c, "d0-d1/a0-a1");
 /* -------------------------------------------------------------- parsing */
 
 /* M_InitParse string: copied (with its 0) into the buffer.  BUG(orig): no
-   limit */
+   limit (#897) */
 static void BLITZ_ROUTINE initparse_c(const UBYTE *s BL_REG(d0))
 {
     UBYTE *d = parse.parseadr;

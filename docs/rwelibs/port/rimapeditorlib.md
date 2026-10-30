@@ -91,24 +91,28 @@ loop optimisation (no `__mulsi3`).
 * `CreateMap` tests the long at 12 (the low word of the data pointer and
   viewx) instead of the data pointer to decide whether to free the old
   map: a map whose data lies at `$xxxx0000` with viewx 0 is not freed
-  (lost); the fields 24/28 are not cleared then either.
-* `CreateMap` of a map whose data cannot be allocated (also width or
-  height 0) clears width, height, bwidth and bheight but leaves datasize
-  1.
+  (lost); the fields 24/28 are not cleared then either (#894).
 * `MapCanDraw` compares x/y signed: negative values pass and index far
-  behind the data; the stencil index is the map's word as a signed word;
-  without `SetStencil` the stencil is at address 0.
+  behind the data (#892); the stencil index is the map's word as a signed
+  word; without `SetStencil` the stencil is at address 0 (#893).
 * `MapDataGrab` of bytes keeps the upper byte of the previous value in
   the register (`MOVE.b`): a byte + mapnull beyond 255 carries into the
-  following values.
+  following values (#898).
 * The `DBRA` loops (`MapDataGrab`, `ShapeTo1616`, `FillBitplane`) run
-  65536 times for a size of 0; `ShapeTo1616` writes 16 words per plane
-  regardless of the destination's size.
+  65536 times for a size of 0 (#895); `ShapeTo1616` writes 16 words per
+  plane regardless of the destination's size (#900).
 * `M_InitParse` copies without limit into its 256-byte buffer (a longer
-  string overwrites the pointer behind it); the "strip leading spaces" of
-  `M_NextArg$` is only a comment.
-* `MapObjName$` counts the length in a byte (`ADDQ.b`).
-* finit closes graphics.library also if it did not open.
+  string overwrites the pointer behind it) (#897).
+* `MapObjName$` counts the length in a byte (`ADDQ.b`) (#899).
+* finit closes graphics.library also if it did not open (#896).
+
+Original behaviour that is not a defect:
+
+* `CreateMap` of a map whose data cannot be allocated (also width or
+  height 0) clears width, height, bwidth and bheight but leaves datasize
+  1: nothing reads it then.
+* The "strip leading spaces" of `M_NextArg$` is only a comment of the
+  source, not something the command promises.
 
 ## Test
 
