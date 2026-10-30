@@ -48,7 +48,7 @@ UWORD callregs(APTR fn, struct m68kregs *r);
    receives the CCR (SPFix uses V for overflow, SPCmp returns via CCR).
    `lvo` is the negative offset: -30 SPFix, -36 SPFlt, -42 SPCmp, -48 SPTst,
    -54 SPAbs, -60 SPNeg, -66 SPAdd, -72 SPSub, -78 SPMul, -84 SPDiv. */
-ULONG ffpcall(WORD lvo, ULONG d0, ULONG d1, UWORD *ccr);
+ULONG ffpcall(WORD lvo, ULONG arg1, ULONG arg2, UWORD *ccr);
 
 /* ------------------------------------------- callbacks called BY the editor */
 

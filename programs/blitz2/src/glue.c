@@ -76,13 +76,13 @@ REGSTUB(loadxtra);
 REGSTUB(savextra);
 REGSTUB(stopcode);
 
-ULONG ffpcall(WORD lvo, ULONG d0, ULONG d1, UWORD *ccr)
+ULONG ffpcall(WORD lvo, ULONG arg1, ULONG arg2, UWORD *ccr)
 {
     struct m68kregs r = {{0}};
     UWORD cc;
 
-    r.d[0] = d0;
-    r.d[1] = d1;
+    r.d[0] = arg1;
+    r.d[1] = arg2;
     r.a[6] = (ULONG)MathBase;
     cc = callregs(LVO(MathBase, lvo), &r);
     if (ccr)
