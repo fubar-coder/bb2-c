@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+first attach -1
+second attach -1
+rc=0

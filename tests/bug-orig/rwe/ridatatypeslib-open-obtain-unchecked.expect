@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+empty file *
+directory *
+picture -1
+rc=0

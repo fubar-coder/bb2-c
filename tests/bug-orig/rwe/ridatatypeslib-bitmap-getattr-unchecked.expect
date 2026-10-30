@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+object -1
+bitmapheader 00000000
+rc=0

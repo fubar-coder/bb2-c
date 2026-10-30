@@ -1,0 +1,10 @@
+[compile]
+ok
+[run]
+open 0
+inject: openlibfail: *
+inject: rc=0
+inject: opencount: dos.library +0
+inject: opencount: tion.library +0
+inject: opencount: hics.library +0
+rc=0

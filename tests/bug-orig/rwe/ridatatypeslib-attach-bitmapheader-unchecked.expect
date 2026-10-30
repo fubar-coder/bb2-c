@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+object -1
+attached with 0 x 0 0
+rc=0
