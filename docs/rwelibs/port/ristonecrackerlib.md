@@ -69,14 +69,14 @@ entry and never called: left out.
 * `STCLoad`: `OpenFromLock` takes over the lock, but after `Close` the
   lock is unlocked once more (`BSR oopsfreefib`: FreeMem + UnLock) – a
   second UnLock of a lock the file system has already freed (on `RAM:` in
-  the test without visible effect).
+  the test without visible effect) (#835).
 * `STCLoad` does not check the header (any file is unpacked with what its
   words say), reads the whole file whatever the buffer's size, and does
-  not check Examine's and Read's results.
-* dos.library is opened by init and never closed (finit is 0).
+  not check Examine's and Read's results (#836).
+* dos.library is opened by init and never closed (finit is 0) (#834).
 * The decruncher checks nothing: corrupt data write below the
   destination (a match or literal run past the start) and read packed
-  words below the file.
+  words below the file (#833).
 
 ## DIFF
 
