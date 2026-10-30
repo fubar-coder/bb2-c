@@ -81,8 +81,12 @@ const struct amiga_emulation_option amiga_emulation_rtg[] = {
 const size_t amiga_emulation_rtg_count = sizeof amiga_emulation_rtg / sizeof amiga_emulation_rtg[0];
 
 #define DONE_FILE   "run.done"
-#define QUIT_GRACE  10          /* seconds between QUIT and SIGTERM */
-#define KILL_GRACE  5           /* seconds between SIGTERM and SIGKILL */
+/* After TEST:run.done the results are on the host already (the TEST:
+   directory is the host's): Amiberry gets QUIT and a short grace, then the
+   signals.  Amiberry 8.4 acknowledges QUIT ("IPC: Received QUIT") but often
+   does not end within 10 s, which cost every session about 15 s. */
+#define QUIT_GRACE  1           /* seconds between QUIT and SIGTERM */
+#define KILL_GRACE  1           /* seconds between SIGTERM and SIGKILL */
 
 struct amiga_emulation {
     pid_t pid;                  /* also the process group */
