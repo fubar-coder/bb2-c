@@ -22,8 +22,6 @@
 #endif
 
 const UWORD powersof10[5] = { 10000, 1000, 100, 10, 1 };   /* ted.s:3165 */
-struct rdstate rd;              /* asm d7/a5/d6 of a load */
-struct bcur bc;                 /* asm a5/d6/d5 of a block walk */
 
 #ifdef TED_HOST
 /* see fileio.h.  Host only: the Amiga build uses the real DIVU.W from
@@ -162,49 +160,49 @@ UBYTE *numtoascii(UWORD num, UBYTE *buf)
 
 /* ted.s:3307 doopen - open the file (name in d7, mode in d2).  The
    comment "and fill buffer" is wrong: the caller calls fillbuff. */
-BOOL doopen(const UBYTE *name, LONG mode)
+BOOL doopen(struct rdstate *rd, const UBYTE *name, LONG mode)
 {
-    rd.fh = ted_open((const char *)name, mode);
-    if (!rd.fh) {
+    rd->fh = ted_open((const char *)name, mode);
+    if (!rd->fh) {
         /* addq #4,a7 / bra error: error1, then back to the CALLER's
            caller - here: FALSE, the caller returns at once */
         error(error1);
         return FALSE;
     }
-    filehand = rd.fh;                           /* .skip */
+    filehand = rd->fh;                          /* .skip */
     return TRUE;
 }
 
 /* ted.s:3302 doclose */
-void doclose(void)
+void doclose(struct rdstate *rd)
 {
     filehand = 0;
-    ted_close(rd.fh);
+    ted_close(rd->fh);
 }
 
 /* ted.s:3337 fillbuff */
-LONG fillbuff(void)
+LONG fillbuff(struct rdstate *rd)
 {
-    rd.ptr = dosbuff;
-    rd.left = ted_read(rd.fh, dosbuff, doslen);
-    if (rd.left < 0) {                          /* bpl .skip */
+    rd->ptr = dosbuff;
+    rd->left = ted_read(rd->fh, dosbuff, doslen);
+    if (rd->left < 0) {                         /* bpl .skip */
         error(error2);
-        rd.left = 0;
+        rd->left = 0;
     }
-    return rd.left;                             /* asm: Z=1 if 0 */
+    return rd->left;                            /* asm: Z=1 if 0 */
 }
 
 /* ted.s:3325 doread - next character from the file (or <0 if eof!).
    asm: N=0 with the byte in d0.b, d0 = -1 / N=1 at EOF.  d6 counts with
    subq.w; it never exceeds doslen, so a LONG gives the same result. */
-WORD doread(void)
+WORD doread(struct rdstate *rd)
 {
     for (;;) {
         /* .skip2 */
-        if (--rd.left >= 0)
-            return *rd.ptr++;
+        if (--rd->left >= 0)
+            return *rd->ptr++;
         /* .skip */
-        if (!fillbuff())
+        if (!fillbuff(rd))
             return -1;
     }
 }
@@ -219,7 +217,7 @@ WORD doread(void)
    half token in front of the 0 (#379); TAB is expanded before the overflow test
    (may write up to tabstop-1 bytes beyond charbuff3; #378); tabstop = 0 is a
    zero divide (#385); TAB counts token pairs as 2 columns (#377); CR stays. */
-int readline(UWORD *length)
+int readline(struct rdstate *rd, UWORD *length)
 {
     UBYTE *dst;
     WORD c;
@@ -227,7 +225,7 @@ int readline(UWORD *length)
     ULONG len;
     int ret;
 
-    c = doread();
+    c = doread(rd);
     if (c < 0)
         return RL_EOF;                          /* .skip */
     dst = charbuff2;
@@ -236,7 +234,7 @@ int readline(UWORD *length)
         /* .loop */
         if (c & 0x80) {                         /* token pair, copied unchecked */
             *dst++ = (UBYTE)c;
-            c = doread();
+            c = doread(rd);
             if (c < 0)
                 goto oops;
             *dst++ = (UBYTE)c;
@@ -270,7 +268,7 @@ nottab:
             goto oops;
         }
         /* .ok */
-        c = doread();
+        c = doread(rd);
         if (c < 0)
             goto oops;
     }
@@ -648,7 +646,7 @@ void allocfirst(void)
 
 /* ted.s:3727 bloksetup2 - find first item of block
    (a5 = btopy line item, d6 = btop line; a4 = this item, d7 = this line) */
-UWORD bloksetup2(void)
+UWORD bloksetup2(struct bcur *bc)
 {
     UWORD cur = (UWORD)(curstop + cursy);
     struct item *item = thisitem;               /* asm: a4 (= thisitem at all callers) */
@@ -668,68 +666,68 @@ UWORD bloksetup2(void)
         }
     }
     /* ted.s:3750 found */
-    bc.item = item;
-    bc.line = line;
+    bc->item = item;
+    bc->line = line;
     return cur;
 }
 
 /* ted.s:3752 bloksetup */
-void bloksetup(void)
+void bloksetup(struct bcur *bc)
 {
-    bloksetup2();
-    bc.col = btopx;
+    bloksetup2(bc);
+    bc->col = btopx;
     if (tokenise)
-        detoka5(bc.item);                       /* bra detoka5 */
+        detoka5(bc->item);                      /* bra detoka5 */
     /* .hendrix */
 }
 
 /* ted.s:3849 getbchar - get next char from block: N (-1) at the end of
    the block, Z (0) at the end of a line; a5 = item, d6 = y, d5 = x */
-WORD getbchar(void)
+WORD getbchar(struct bcur *bc)
 {
-    if (bc.col >= (WORD)chcols)                 /* bge newline (signed) */
+    if (bc->col >= (WORD)chcols)                /* bge newline (signed) */
         goto newline;
-    if (bc.line < bboty)                        /* bcs getbchar2 (unsigned) */
-        return getbchar2();
-    if (bc.line == bboty && (UWORD)bc.col <= (UWORD)bbotx) /* bls: unsigned */
-        return getbchar2();
+    if (bc->line < bboty)                       /* bcs getbchar2 (unsigned) */
+        return getbchar2(bc);
+    if (bc->line == bboty && (UWORD)bc->col <= (UWORD)bbotx) /* bls: unsigned */
+        return getbchar2(bc);
     /* .eob */
     return -1;
 
 newline:
     /* ted.s:3884 newline */
-    bc.item = bc.item->nextitem;
-    bc.line++;
-    bc.col = 0;
+    bc->item = bc->item->nextitem;
+    bc->line++;
+    bc->col = 0;
     return 0;
 }
 
 /* ted.s:3865 getbchar2 */
-WORD getbchar2(void)
+WORD getbchar2(struct bcur *bc)
 {
-    bc.col++;
+    bc->col++;
     if (tokenise) {
         const UBYTE *a3 = charbuff3;
 
-        if ((UBYTE)bc.col >= a3[0])             /* cmp.b (a3),d5 / bcc .space */
+        if ((UBYTE)bc->col >= a3[0])            /* cmp.b (a3),d5 / bcc .space */
             goto space;
-        return a3[bc.col];                      /* tst d0: make plus! */
+        return a3[bc->col];                     /* tst d0: make plus! */
     }
     /* .skipz */
-    if ((UBYTE)bc.col >= bc.item->numchars)     /* cmp.b numchars(a5),d5 */
+    if ((UBYTE)bc->col >= bc->item->numchars)   /* cmp.b numchars(a5),d5 */
         goto space;
     /* move.b chars-1(a5,d5),d0 sets N for bytes >= $80: the callers see the
        end of the block (bmi) - BUG(orig) (#362) survey-04 I.9, kept as a negative
        return value */
-    return (WORD)(BYTE)bc.item->chars[bc.col - 1];
+    return (WORD)(BYTE)bc->item->chars[bc->col - 1];
 
 space:
     /* .space */
     if (blokop) {
         /* bne newline (ted.s:3884, in getbchar) */
-        bc.item = bc.item->nextitem;
-        bc.line++;
-        bc.col = 0;
+        bc->item = bc->item->nextitem;
+        bc->line++;
+        bc->col = 0;
         return 0;
     }
     return 32;

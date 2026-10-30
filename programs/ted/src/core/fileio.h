@@ -46,26 +46,28 @@ extern const UWORD powersof10[5];   /* ted.s:3165 10000,1000,100,10,1 */
 
 /* ------------------------------------------------------ reading files */
 
-/* Register state of a load (asm: d7 = file handle, a5 = read pointer in
-   dosbuff, d6 = bytes left), kept between doopen and doclose (survey-04 G.4). */
+/* Register state of a load or save (asm: d7 = file handle, a5 = read
+   pointer in dosbuff, d6 = bytes left), kept between doopen and doclose
+   (survey-04 G.4).  A local of the file operation (fileopen2, filesave,
+   bloksave, blokload) passed down by pointer; the global filehand (for
+   outmem) is set by doopen as in the asm. */
 struct rdstate {
     tedfh fh;                   /* d7 (before doopen: the name) */
     UBYTE *ptr;                 /* a5: read pointer */
     LONG left;                  /* d6: bytes left in dosbuff */
 };
-extern struct rdstate rd;
 
-/* ted.s:3307 doopen: Open(name (d7), mode (d2)) -> rd.fh, filehand.
+/* ted.s:3307 doopen: Open(name (d7), mode (d2)) -> rd->fh, filehand.
    Failure: error(error1) and FALSE (asm: addq #4,a7 + bra error = the
    CALLER returns). */
-BOOL doopen(const UBYTE *name, LONG mode);
-/* ted.s:3302 doclose: filehand = 0, Close(rd.fh) */
-void doclose(void);
-/* ted.s:3337 fillbuff: rd.ptr = dosbuff, rd.left = Read(doslen); error ->
-   error(error2), rd.left = 0.  Returns rd.left (asm: Z=1 if 0). */
-LONG fillbuff(void);
+BOOL doopen(struct rdstate *rd, const UBYTE *name, LONG mode);
+/* ted.s:3302 doclose: filehand = 0, Close(rd->fh) */
+void doclose(struct rdstate *rd);
+/* ted.s:3337 fillbuff: rd->ptr = dosbuff, rd->left = Read(doslen); error ->
+   error(error2), rd->left = 0.  Returns rd->left (asm: Z=1 if 0). */
+LONG fillbuff(struct rdstate *rd);
 /* ted.s:3325 doread: next byte (0..255) or -1 at EOF (asm: N=1) */
-WORD doread(void);
+WORD doread(struct rdstate *rd);
 
 /* readline results (asm: d0 + N/Z) */
 #define RL_EOF   (-1)           /* N=1: nothing read */
@@ -75,7 +77,7 @@ WORD doread(void);
    unchecked, LF -> 0 + "ASCII", TAB expanded with divu tabstop - 0 traps
    in the original, overflow at charbuff3), tokenised via mytoke if ASCII
    and tokenise.  *length (d5) = length incl. 0.  BUG(orig) list: survey-04 I.1-6, I.22 (#374-#379, #385). */
-int readline(UWORD *length);
+int readline(struct rdstate *rd, UWORD *length);
 /* ted.s:3447 mytoke: tokit2 in place on charbuff2 (d1 = len (d5) =
    length without 0); returns the new length (d5, incl. 0) */
 UWORD mytoke(UWORD len);
@@ -142,28 +144,28 @@ void allocfirst(void);
 
 /* ------------------------------------------------------- block cursor */
 
-/* Block walk state (asm: a5 = item, d6 = line, d5 = column), survey-04 G.4 */
+/* Block walk state (asm: a5 = item, d6 = line, d5 = column), survey-04
+   G.4.  A local of the block operation, passed down by pointer. */
 struct bcur {
     struct item *item;          /* a5 */
     UWORD line;                 /* d6 */
     WORD col;                   /* d5 */
 };
-extern struct bcur bc;
 
 /* ted.s:3727 bloksetup2: walk from thisitem (line curstop+cursy) to line
-   btopy: bc.item, bc.line = btopy.  Returns d7 = curstop+cursy.  `found`
+   btopy: bc->item, bc->line = btopy.  Returns d7 = curstop+cursy.  `found`
    (3750) is its end label (only rts). */
-UWORD bloksetup2(void);
-/* ted.s:3752 bloksetup: bloksetup2, bc.col = btopx, tokenise -> detoka5 */
-void bloksetup(void);
+UWORD bloksetup2(struct bcur *bc);
+/* ted.s:3752 bloksetup: bloksetup2, bc->col = btopx, tokenise -> detoka5 */
+void bloksetup(struct bcur *bc);
 /* ted.s:3849 getbchar: next block character: -1 block end (asm N=1), 0 end
    of line (Z=1; bc already on the next line - caller re-runs detoka5 when
    tokenise), else the character.  Non-token mode returns bytes >= $80 as
    NEGATIVE (move.b sets N: umlauts end the block, BUG(orig) (#362) survey-04
    I.9) - keep the sign extension.  `newline` (3884) is a label inside. */
-WORD getbchar(void);
+WORD getbchar(struct bcur *bc);
 /* ted.s:3865 getbchar2: second entry without the block end check */
-WORD getbchar2(void);
+WORD getbchar2(struct bcur *bc);
 
 /* ------------------------------------------------------- block state */
 

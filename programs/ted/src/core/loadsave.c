@@ -28,12 +28,13 @@ void blocktab(void)
     struct item *item;
     UBYTE *src, *dst;
     UWORD n, lineno;
+    struct bcur bc;
 
     if (bboty == (UWORD)-1) {
         beepem();
         return;
     }
-    bloksetup2();
+    bloksetup2(&bc);
     /* a5 = btopy, d6 = btop line; a4 = thisy, d7 = this line */
     item = bc.item;
     lineno = bc.line;
@@ -77,12 +78,13 @@ void blockuntab(void)
     struct item *item;
     UBYTE *src, *dst;
     UWORD n, lineno;
+    struct bcur bc;
 
     if (bboty == (UWORD)-1) {
         beepem();
         return;
     }
-    bloksetup2();
+    bloksetup2(&bc);
     item = bc.item;
     lineno = bc.line;
     do {
@@ -227,16 +229,17 @@ void fileopen2(UBYTE *name)
     struct item *item, *prev;
     UWORD len = 0;
     tedfh fh;
+    struct rdstate rd;
 
     xtraat = name;
-    if (!doopen(name, TED_MODE_OLDFILE))
+    if (!doopen(&rd, name, TED_MODE_OLDFILE))
         return;                 /* asm: addq #4,a7 + bra error */
     allalt = 0;
     doclean();
-    if (fillbuff() == 0) {
+    if (fillbuff(&rd) == 0) {
         /* BUG(orig) (#358): empty file (or read error): donew without freeall -
            the old lines are lost (not freed) */
-        doclose();
+        doclose(&rd);
         donew();
         return;
     }
@@ -245,7 +248,7 @@ void fileopen2(UBYTE *name)
     blokdis();
     freeall();
     numlines = 1;
-    readline(&len);             /* result ignored: fillbuff had bytes */
+    readline(&rd, &len);        /* result ignored: fillbuff had bytes */
     item = allocline(len);
     firstitem = item;
     thisitem = item;
@@ -254,7 +257,7 @@ void fileopen2(UBYTE *name)
     for (;;) {
         /* @699 .loop */
         prev = item;
-        if (readline(&len) == RL_EOF)
+        if (readline(&rd, &len) == RL_EOF)
             break;
         item = allocline(len);
         enditem = item;
@@ -263,7 +266,7 @@ void fileopen2(UBYTE *name)
         item->lastitem = prev;
     }
     /* @708 .done */
-    doclose();
+    doclose(&rd);
     if (loadxtra) {
         fh = openxtra(TED_MODE_OLDFILE);
         if (fh) {
@@ -297,8 +300,9 @@ void realsave(UBYTE *name)
     UWORD len, n;
     LONG written;
     tedfh fh;
+    struct rdstate rd;
 
-    if (!doopen(name, TED_MODE_NEWFILE))
+    if (!doopen(&rd, name, TED_MODE_NEWFILE))
         return;                 /* the file is then only there as .bak
                                    (survey-01 I.15) */
     sleepon();
@@ -326,7 +330,7 @@ void realsave(UBYTE *name)
     }
     allalt = 0;
 skip3:  /* @794 .skip3 */
-    doclose();
+    doclose(&rd);
     if (savextra) {
         fh = openxtra(TED_MODE_NEWFILE);
         if (fh) {

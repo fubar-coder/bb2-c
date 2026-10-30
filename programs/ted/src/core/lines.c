@@ -10,7 +10,8 @@
  * Word arithmetic as in the asm: bcs/bcc/bhi/bls compare unsigned (UWORD
  * casts), blt/bgt/bmi/bpl signed (WORD casts).  Line numbers are
  * curstop + cursy (16 bit).  The block walk registers a5/d6/d5 of the asm
- * are the struct bc of fileio.h (bloksetup/getbchar work on it).
+ * are a local struct bcur (fileio.h) of each block operation, passed to
+ * bloksetup/getbchar.
  */
 #include "tedcore.h"
 #include "hooks.h"
@@ -656,6 +657,7 @@ void blokkill(void)
     struct item *cur, *next;
     UBYTE *p, *keep;
     WORD c;
+    struct bcur bc;
 
     if (bboty == (UWORD)-1) {
         beepem();
@@ -663,11 +665,11 @@ void blokkill(void)
     }
     blokop = 0;
     allalt = (UWORD)-1;
-    bloksetup();
+    bloksetup(&bc);
     bc.col = 0;                                 /* moveq #0,d5 */
     p = charbuff2;
     while ((UWORD)bc.col < (UWORD)btopx)        /* .loop: bcc .skip0 */
-        *p++ = (UBYTE)getbchar2();
+        *p++ = (UBYTE)getbchar2(&bc);
     /* .skip0 */
     keep = p;                                   /* move.l a0,-(a7) */
     while (bc.line < bboty) {                   /* .skip: bcc .done0 */
@@ -691,7 +693,7 @@ void blokkill(void)
         bc.col++;
         if ((UWORD)bc.col >= chcols)            /* bcc .done2 */
             break;
-        c = getbchar2();
+        c = getbchar2(&bc);
         bc.col--;
         *p++ = (UBYTE)c;
     }
@@ -750,6 +752,8 @@ void bloksave(void)
     WORD c;
     UWORD len;
     UBYTE *buf;
+    struct rdstate rd;
+    struct bcur bc;
 
     /* cripple = 0: the full version */
     if (bboty == (UWORD)-1) {
@@ -759,14 +763,14 @@ void bloksave(void)
     name = getbname(bloktext2);
     if (!name)
         return;                                 /* asm: addq #4,a7 in getbname */
-    if (!doopen(name, TED_MODE_NEWFILE))
+    if (!doopen(&rd, name, TED_MODE_NEWFILE))
         return;                                 /* asm: addq #4,a7 + error */
     fh = rd.fh;                                 /* d7 */
-    bloksetup();                                /* a4 = thisitem */
+    bloksetup(&bc);                             /* a4 = thisitem */
     blokop = (UWORD)-1;
     for (;;) {
         /* .loop */
-        c = getbchar();
+        c = getbchar(&bc);
         if (c < 0)                              /* bmi .done */
             break;
         if (c != 0) {
@@ -802,7 +806,7 @@ void bloksave(void)
             buf[len] = 10;
             if (ted_write(fh, buf + 1, len) < 0) {  /* tst.l d0 / bpl .skip2 */
                 error(error3);
-                doclose();                      /* .done */
+                doclose(&rd);                   /* .done */
                 return;
             }
             /* .skip2 */
@@ -811,7 +815,7 @@ void bloksave(void)
         }
     }
     /* .done */
-    doclose();                                  /* bra doclose (the rts behind
+    doclose(&rd);                               /* bra doclose (the rts behind
                                                    is cripple only) */
 }
 
@@ -824,16 +828,17 @@ void blokload(void)
     UWORD col, i, len;
     ULONG l;
     int r;
+    struct rdstate rd;
 
     blokop = 0;
     name = getbname(bloktext);
     if (!name)
         return;                                 /* asm: addq #4,a7 in getbname */
     cur = thisitem;
-    if (!doopen(name, TED_MODE_OLDFILE))
+    if (!doopen(&rd, name, TED_MODE_OLDFILE))
         return;
-    if (fillbuff() == 0) {
-        doclose();                              /* beq doclose */
+    if (fillbuff(&rd) == 0) {
+        doclose(&rd);                           /* beq doclose */
         return;
     }
     mousealt = (UWORD)-1;
@@ -854,14 +859,14 @@ void blokload(void)
     }
     /* .skip */
     keep = src;                                 /* move.l a2,-(a7) */
-    r = readline(&len);
+    r = readline(&rd, &len);
     if (r == RL_NOEOL)                          /* beq done2 */
         goto done2;
     dst = bloadadd(dst);
     cur = makeline2(dst, cur);
     for (;;) {
         /* .big */
-        r = readline(&len);
+        r = readline(&rd, &len);
         if (r == RL_EOF)                        /* bmi done3 */
             goto done3;
         if (r == RL_NOEOL)                      /* beq done4 */
@@ -890,7 +895,7 @@ done4:
     /* falls through into done */
 done:
     /* ted.s:1791 done */
-    doclose();
+    doclose(&rd);
     src = keep;
     while (src < endp && dst < charbuff2) {     /* cmp.l bloktopx,a2 / cmp.l charbuff2,a3 */
         *dst++ = *src++ & 0x7F;
@@ -945,8 +950,9 @@ void bcopyok(void)
     const UBYTE *s;
     UWORD col, curcol, len, line, keepcol, rows, shift;
     WORD c, x;
+    struct bcur bc;
 
-    bloksetup();
+    bloksetup(&bc);
     /* a5 = btopy, d6 = btop line, d5 = btopx; a4 = thisy, d7 = this line */
     row = chmap + chloc;
     curcol = (UWORD)(cursoff + cursx);          /* d2 */
@@ -961,7 +967,7 @@ void bcopyok(void)
     keeprow = row;
     for (;;) {
         /* .skip */
-        c = getbchar();                         /* d0 */
+        c = getbchar(&bc);                      /* d0 */
         if (c < 0)                              /* bmi .oneline */
             break;
         if (c != 0) {

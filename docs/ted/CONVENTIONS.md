@@ -80,9 +80,11 @@ signatures are agreed – changes only per §9.
   (gadget `+13` bit 7 = `Flags & GFLG_SELECTED`, `numchars`+`chars[0]` as
   word) explicit. Options block: `struct defblock defstart` with macros
   `fonthite`, `tabstop` … – **no local variables with these names**.
-* Register state across several calls: `rd` (loading: d7/a5/d6), `bc`
-  (block cursor: a5/d6/d5), `ev_d7`/`ev_d6` (event at dispatch).
-  Otherwise parameters/return values, assignment in the header comment
+* Register state across several calls: a context struct on the stack of
+  the operation, passed down by pointer: `struct rdstate` (loading:
+  d7/a5/d6), `struct bcur` (block cursor: a5/d6/d5).  `ev_code`/`ev_data`
+  (event at dispatch: d7/d6) are globals because the handlers of the
+  dispatch tables take no parameters.  Otherwise parameters/return values, assignment in the header comment
   (`asm: Z=1 -> TRUE`).
 * Handlers from `jumptable`/`menutable`: `void name(void)`, asm a4 = `thisitem`
   on entry (`struct item *a4 = thisitem;`).
