@@ -18,9 +18,9 @@
  * aligned, cut to the field, the BitMap pointer 0), the last field cut at
  * the right edge, with and without an indent of 1..60 pixels (tree lines
  * every 16 pixels, the short last line by the next node: the end of the
- * list or the BUG(orig) reading of its "indent" at the first field
+ * list or the BUG(orig) (#739) reading of its "indent" at the first field
  * width), and the caller's d7 with upper words 0, $FFFF, $8001, $0001 and
- * $8000 (BUG(orig): a negative d7 draws no tree lines and leaves the line
+ * $8000 (BUG(orig) #737: a negative d7 draws no tree lines and leaves the line
  * pattern $AAAA).  Also a message other than LV_DRAW (LVCB_UNKNOWN,
  * nothing drawn).
  *
@@ -28,8 +28,8 @@
  * RastPort without a layer is not clipped) are skipped: item heights of
  * 10 lines and more, BitMaps lower than the item, no text and no BitMap
  * that ends exactly at the field's edge.  Not covered: d7 with an indent
- * below 16 and an upper word that makes 65536 tree lines (BUG(orig)), a
- * text pointer 0 (BUG(orig): reads address 0), negative indents.
+ * below 16 and an upper word that makes 65536 tree lines (BUG(orig), #737), a
+ * text pointer 0 (BUG(orig) #742: reads address 0), negative indents.
  */
 #include "rwecmp.h"
 #include <exec/memory.h>

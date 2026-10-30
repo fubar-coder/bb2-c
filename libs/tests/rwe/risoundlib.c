@@ -13,12 +13,12 @@
  * and the registers the original keeps; memlib's memory all back at the
  * end.  Covered: the period (several rates, the signed subtraction loop),
  * BODY behind further chunks (the 7th chunk found, the 8th not), no
- * "8SVX", no "VHDR", a VHDR of another length (BUG(orig): the rate is
- * read at VHDR + length), an odd chunk with its pad byte (BUG(orig): the
+ * "8SVX", no "VHDR", a VHDR of another length (BUG(orig) #832: the rate is
+ * read at VHDR + length), an odd chunk with its pad byte (BUG(orig) #828: the
  * walk misses BODY) and without it (found), a BODY longer than 65536
- * bytes (BUG(orig): (length - 1) & $FFFF + 1 bytes copied, the length in
+ * bytes (BUG(orig) #829: (length - 1) & $FFFF + 1 bytes copied, the length in
  * words of the low word), the old sample freed and the stale pointer on a
- * failure (BUG(orig)), an odd BODY length.  Not covered: rate 0 (never
+ * failure (BUG(orig), #831), an odd BODY length.  Not covered: rate 0 (never
  * returns), an empty BODY (copies 65536 bytes into an 8 byte block).
  */
 #include "rwecmp.h"
@@ -126,7 +126,7 @@ static void cludge(ULONG snd)
     }
 }
 
-/* the stale pointer of a failed call (BUG(orig)) must not be freed again */
+/* the stale pointer of a failed call (BUG(orig), #831) must not be freed again */
 static void forget(void)
 {
     int s;
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
     chunk("ANNO", 5, 1, 9);
     /* the walk lands on the pad byte: id 00 'A' 'B' 00, length = 00 and
        the upper three bytes of $400 = 4, then zeros (id 0, length 0) up
-       to the 7th chunk - BODY behind is missed (BUG(orig)) */
+       to the 7th chunk - BODY behind is missed (BUG(orig), #828) */
     i = flen + 8;
     chunk("AB\0\0", 0x400, 1, 0);
     memset(ref + i, 0, 0x400);

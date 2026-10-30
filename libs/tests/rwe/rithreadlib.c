@@ -25,10 +25,10 @@
  *      1, 2), A ends (1, no signal), B released, finit waits for it (0).
  *   2  init again, thread C ends (0: the signal is sent and stays
  *      pending), thread D, finit: returns at once while D runs
- *      (BUG(orig), ActiveThreads still 1), D ends.
- * The signals init allocates are never freed (BUG(orig)); the test frees
+ *      (BUG(orig) #837, ActiveThreads still 1), D ends.
+ * The signals init allocates are never freed (BUG(orig), #839); the test frees
  * them.  Not covered: two CreateThread before the first thread runs (the
- * shared registers, BUG(orig): depends on the scheduling).
+ * shared registers, BUG(orig) #838: depends on the scheduling).
  */
 #include "rwecmp.h"
 #include <exec/memory.h>

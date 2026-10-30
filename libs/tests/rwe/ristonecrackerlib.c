@@ -20,7 +20,7 @@
  * across words), the three header functions on S404 data and on other
  * data (0, the S404 check of the binary), STCLoad with a missing file and
  * with a directory (OpenFromLock fails), and with a file that is no S404
- * file (BUG(orig): unpacked anyway - a harmless one: offset and lengths
+ * file (BUG(orig) #836: unpacked anyway - a harmless one: offset and lengths
  * chosen so).  Not covered: corrupt data (writes anywhere), more than 16
  * far offset bits (the DIFF of the run table), a far offset that is
  * negative as a word (16 bits >= $8000: reads before the destination).
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
         load(1, (UBYTE)(i * 13));
     }
 
-    /* no S404 file, unpacked anyway (BUG(orig)): a header whose words make
+    /* no S404 file, unpacked anyway (BUG(orig), #836): a header whose words make
        a short literal stream inside the buffer */
     strcpy(VEC, "S403 file");
     make(100, 16, 4, 0, 0x01);

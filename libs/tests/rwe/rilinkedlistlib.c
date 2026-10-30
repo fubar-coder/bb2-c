@@ -11,7 +11,7 @@
  * pattern, as AllocMem without MEMF_CLEAR leaves garbage; freed blocks
  * overwritten), log every call (sizes, flags, addresses relative to the
  * region) and can let the n-th allocation of a call fail.  A wrong free
- * (DelListItem, BUG(orig)) is only logged - the real memlib would stop
+ * (DelListItem, BUG(orig) #729) is only logged - the real memlib would stop
  * with "Unable to Free Memory".  The copies are made by the real
  * RIAmosFuncLib CopyByte of each set (C build / AmiBlitz3 binary).  The
  * variables lie in the region too, with their size word in front.
@@ -24,14 +24,14 @@
  * words below 8: almost 4 GB); AddrListItem, FirstListItem, LastListItem,
  * DelListItem on empty lists; InitList (also again on a list that has
  * one: the old one is not freed); AddListItem at the end and in the
- * middle (BUG(orig): prev of the node behind not set, the stale size);
+ * middle (BUG(orig) #727 #735: prev of the node behind not set, the stale size);
  * SetListItem (the old copy not freed, the size field unchanged);
  * GetListItem (with and without data, a variable larger than the copy);
  * NextListItem/PrevListItem over the list and past its ends;
- * AddLastListItem; AddFirstListItem (BUG(orig): the old first's next, the
+ * AddLastListItem; AddFirstListItem (BUG(orig) #724 #726 #725: the old first's next, the
  * garbage in the new node, the result list# * 4); DelListItem in the
- * middle, at the end, at the start (BUG(orig): the new first's next
- * cleared), the only node (0), with and without data (BUG(orig): the
+ * middle, at the end, at the start (BUG(orig) #728: the new first's next
+ * cleared), the only node (0), with and without data (BUG(orig) #729: the
  * wrong free); every allocation failing (InitList node and data,
  * AddListItem, SetListItem, AddFirstListItem, AddLastListItem); lists 0
  * to 4.
@@ -317,7 +317,7 @@ int main(int argc, char **argv)
     call("AddListItem", ADDLISTITEM, 0, -1, 0);
     call("SetListItem", SETLISTITEM, 0, 6, 0);
     call("NextListItem", NEXTLISTITEM, 0, -1, 0);
-    call("PrevListItem", PREVLISTITEM, 0, -1, 0);       /* BUG(orig): the first */
+    call("PrevListItem", PREVLISTITEM, 0, -1, 0);       /* BUG(orig) (#727): the first */
     ADDR(0);
     call("LastListItem", LASTLISTITEM, 0, -1, 0);
     ADDR(0);
@@ -333,7 +333,7 @@ int main(int argc, char **argv)
     call("AddListItem", ADDLISTITEM, 0, -1, 0);         /* the size of the last */
     call("DelListItem", DELLISTITEM, 0, -1, 0);         /* no data */
     /* A -> C now (B deleted, D reachable from nothing); X behind C, then
-       A deleted at the start (BUG(orig): C's next cleared, X lost), X at
+       A deleted at the start (BUG(orig) #728: C's next cleared, X lost), X at
        the end */
     call("AddLastListItem", ADDLASTLISTITEM, 0, -1, 0);
     call("FirstListItem", FIRSTLISTITEM, 0, -1, 0);
@@ -370,7 +370,7 @@ int main(int argc, char **argv)
     ADDR(2);
     call("NextListItem", NEXTLISTITEM, 2, -1, 0);
     ADDR(2);
-    call("NextListItem", NEXTLISTITEM, 2, -1, 0);       /* BUG(orig): the loop */
+    call("NextListItem", NEXTLISTITEM, 2, -1, 0);       /* BUG(orig) (#724): the loop */
     ADDR(2);
     call("LastListItem", LASTLISTITEM, 2, -1, 0);
     ADDR(2);

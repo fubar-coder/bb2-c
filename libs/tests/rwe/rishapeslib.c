@@ -15,20 +15,20 @@
  * buffer), the palettes made by the loaders, the files LESaveShapes
  * writes (all bytes), the kept registers; memlib's memory all back at
  * the end.
- * Covered: init, LEInitShape (fresh, used: BUG(orig) the cookie stays),
- * LEScanShapes and LEMaxShape*, SafeToBlit (BUG(orig) shape/32 against
+ * Covered: init, LEInitShape (fresh, used: BUG(orig) #810 the cookie stays),
+ * LEScanShapes and LEMaxShape*, SafeToBlit (BUG(orig) #822 shape/32 against
  * the maximum; no cookie, negative and too large coordinates),
  * LESaveShapes both forms (without and with a palette, packed with
  * packable and unpackable data - PackPBM's failure path -, the shape
  * count from the >>5 of the shape numbers, with the upper word of d1),
- * LELoadShapes all four forms (BUG(orig) form 3: the palette of d3),
+ * LELoadShapes all four forms (BUG(orig) #812 form 3: the palette of d3),
  * a missing file, a file that is FORM but no LESH, a file in shapeslib's
- * format (BUG(orig): LoadShapes into the last shape), LECludgeShapes from
+ * format (BUG(orig) #813: LoadShapes into the last shape), LECludgeShapes from
  * fast memory (copied) and chip memory (linked, "cL", and copied with
  * copymemflag -1), packed (copied), with and without a palette, a CMAP
- * of 7 bytes (BUG(orig): SDAT then not found), no FORM;
+ * of 7 bytes (BUG(orig) #811: SDAT then not found), no FORM;
  * CludgeShapes/CludgeShapesToAddress with and without LEAutoCookie, an
- * empty shape in memory (BUG(orig): the stale size), 0 shapes, into used
+ * empty shape in memory (BUG(orig) #809: the stale size), 0 shapes, into used
  * and linked shapes; LECompressShapes; finit.
  * Not covered: the stack imbalances (LELoadShapes/LECludgeShapes on a
  * linked shape, failing allocations in the shape loop: jumps into data),
@@ -468,7 +468,7 @@ int main(int argc, char **argv)
     memlen = 4096;
     for (cur = 0; cur < 2; cur++) {
         /* an empty shape advances by 32 + the size of the one before
-           (BUG(orig)): padding of that size behind each */
+           (BUG(orig), #809): padding of that size behind each */
         off = ramshape(mem[cur], 20, 4, 2, 1);                  /* 32 bytes */
         off += ramshape(mem[cur] + off, 0, 4, 2, 2) + 32;       /* empty */
         off += ramshape(mem[cur] + off, 17, 3, 3, 3);           /* 36 bytes */

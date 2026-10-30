@@ -24,7 +24,7 @@
  * original - and initialised after memlib.  LoadIFF reads an ILBM of
  * this test from RAM: into bank 51; compared are the bitmap, the palette
  * and the bank afterwards (free again, NextBank(51)); with RIAmosFuncLib's
- * default of 50 banks there is no bank 51 (0, BUG(orig)), so the test
+ * default of 50 banks there is no bank 51 (0, BUG(orig), #770), so the test
  * raises it with BankLimit 60.
  */
 #include "sysload.h"
@@ -219,7 +219,7 @@ static void test_pbm(void)
     packpbm("129 literals, 131 equal", 300, 0);
     unpackpbm("129 literals, 131 equal", out[0] + 16, out[1] + 16, packed[0], 300);
 
-    /* not smaller: -1, BUG(orig) - then UnPackPBM from address -1 into
+    /* not smaller: -1, BUG(orig) (#772) - then UnPackPBM from address -1 into
        dest, as far as the caller's d3 allows */
     seed = 77;
     mkdata(src, 600, 0);
@@ -819,7 +819,7 @@ static void test_loadiff(void)
     seed = 41;
     ilbmlen = mkilbm(ilbm, 64, 10, 3, 8, 0);
     writeilbm(ilbmlen);
-    /* BUG(orig): LoadIFF looks for a bank from 51 on, RIAmosFuncLib has 50
+    /* BUG(orig) (#770): LoadIFF looks for a bank from 51 on, RIAmosFuncLib has 50
        unless BankLimit raised the number: no bank, 0 */
     loadiff(ILBMFILE, 1, ", 50 banks");
     check("LoadIFF: 0 with 50 banks", liff == 0);
@@ -829,7 +829,7 @@ static void test_loadiff(void)
     check("LoadIFF: -1 with 60 banks", liff == (ULONG)-1);
     loadiff(ILBMFILE, 1, "");
     loadiff("RAM:rwe-pack.bad", 1, "");                 /* missing: 0 */
-    /* a file that is no ILBM: UnpackIFF fails, LoadIFF says -1 (BUG(orig)) */
+    /* a file that is no ILBM: UnpackIFF fails, LoadIFF says -1 (BUG(orig), #771) */
     memset(ilbm, 0, 5300);
     writeilbm(5200);
     loadiff(ILBMFILE, 0, "");

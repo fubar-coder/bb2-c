@@ -15,7 +15,7 @@
  * structure, d0), finit (library closed, memory back).  Not covered: the
  * real req.library (not in the system, and its requesters need a user);
  * ReqFileRequest/ReqColour without the library (they call through a6 =
- * 0, BUG(orig)).
+ * 0, BUG(orig), #788).
  */
 #include "rwecmp.h"
 

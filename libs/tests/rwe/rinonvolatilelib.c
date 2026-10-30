@@ -17,7 +17,7 @@
  *     library list) that logs every call with its registers and returns
  *     chosen values: the system calls each routine makes (DeleteNV, then
  *     StoreNV with the length in tens; killRequesters), lengths 0, 1, 10,
- *     25, 65535, 655359 and 655365 (BUG(orig): DIVU overflow), the
+ *     25, 65535, 655359 and 655365 (BUG(orig) #764: DIVU overflow), the
  *     results (d0; StoreNVData only the low word, the command is #word).
  * Kept registers on every call.
  */

@@ -15,14 +15,14 @@
  *     (start clamped, bad ranges), GetZoneX1/Y1/X2/Y2, ZoneInit's three
  *     forms (bad ranges too);
  *   - NewZoneTable (bad numbers and sizes; it initialises the current
- *     table, BUG(orig)), UseZoneTable, ZoneTableNumber, ZoneTableSize,
- *     ZoneTable, ZoneTest from zone 256 on (low byte, BUG(orig)),
- *     FreeZoneTable (the entry stays set, BUG(orig));
+ *     table, BUG(orig), #875), UseZoneTable, ZoneTableNumber, ZoneTableSize,
+ *     ZoneTable, ZoneTest from zone 256 on (low byte, BUG(orig), #881),
+ *     FreeZoneTable (the entry stays set, BUG(orig), #868);
  *   - JFire, JVert, JHoriz for the ports 0..5 with the adaptor on and
  *     off, JAdaptorStatus, AllFire with and without bits, ReadJoyPad for
  *     ports 0, 1, 2 - with nobody at the joysticks the hardware gives the
  *     same values to both builds.
- * Freed tables stay in the library's list (BUG(orig)); the test finds the
+ * Freed tables stay in the library's list (BUG(orig), #868 #871); the test finds the
  * list in each build's data and clears those entries, so that a later
  * finit does not free them twice.  Not covered: negative zone or table
  * numbers and zones behind a table (they write or read outside it).

@@ -18,11 +18,11 @@
  * word arguments with garbage in the upper words; a string pointer 0
  * (stops: 0); the priority sort (SortPriorityOffset, priorities from a
  * small range so that equal ones fall back to the strings), including
- * BUG(orig) - the stale compare string after a swap by priority, which
+ * BUG(orig) #826 - the stale compare string after a swap by priority, which
  * a1 of the caller can be (set to a string here); ListBase; finit.  For
  * lists of lower case strings without the priority the result is also
- * checked to be sorted.  Not covered: size 0 (BUG(orig): swaps 65536
- * bytes), the 68000 address error of the priority read (BUG(orig)).
+ * checked to be sorted.  Not covered: size 0 (BUG(orig) #827: swaps 65536
+ * bytes), the 68000 address error of the priority read (BUG(orig), #825).
  */
 #include "rwecmp.h"
 #include <exec/memory.h>
@@ -255,7 +255,7 @@ int main(int argc, char **argv)
         sort(E_SORT, 0, 0);
         BOTH("-1", R[cur].d[0] == 0xffffffffUL);
     }
-    /* BUG(orig): the first comparison swaps by priority - the compare
+    /* BUG(orig) (#826): the first comparison swaps by priority - the compare
        string becomes a1 of the caller ("middle") */
     {
         static const char *const two[] = { "aaa", "zzz" };

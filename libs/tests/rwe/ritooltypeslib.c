@@ -17,24 +17,24 @@
  * gadget size and flags, images), the shapes made by IconToShape (fields,
  * data, cookie) and the icons written by PutIconObject (read back with
  * GetDiskObject).
- * Covered: every command and form without an icon (nothing, BUG(orig):
+ * Covered: every command and form without an icon (nothing, BUG(orig) #852:
  * SetIconType returns its argument), GetIconObject (twice: the second
  * gives 0; a missing file), FindToolValue (value up to ")", missing
  * name), FindToolNumber (all entries, beyond the end), MatchToolValue,
- * FindToolType with and without bracket check (BUG(orig): the flag
+ * FindToolType with and without bracket check (BUG(orig) #843: the flag
  * stays set), SetToolValue (replace, prefix match "FL" -> "FLAG", the
  * entry's "(" skipped, status 0 = "(name=value)", not found), NewToolType
  * (with and without value and status), ClearToolTypes, SetIconHit,
- * IconRender, SetIconType 0-6, IconDefTool (BUG(orig): a3 rewound; empty
+ * IconRender, SetIconType 0-6, IconDefTool (BUG(orig) #846: a3 rewound; empty
  * string), ShapeToIcon (both forms), IconToShape (both forms, shapes in
- * use and fresh, BUG(orig): MakeCookie on the caller's a3 for a fresh
+ * use and fresh, BUG(orig) #849: MakeCookie on the caller's a3 for a fresh
  * shape - here a3 points to a decoy shape; the second shape of the two
  * argument form gets no cookie), PutIconObject (both forms), FreeIconObject,
  * finit with an icon open, init.
  * Not covered: icon.library missing, AllocMem/AddFreeList failing (the
- * FreeMem(0) of BUG(orig)), more than 100 tool types, IconToShape with a
+ * FreeMem(0) of BUG(orig), #840), more than 100 tool types, IconToShape with a
  * width that is a multiple of 16 (writes behind the shape's data,
- * BUG(orig)) or into a shape when the icon has no image.
+ * BUG(orig), #847) or into a shape when the icon has no image.
  */
 #include "sysload.h"
 #define __NOLIBBASE__

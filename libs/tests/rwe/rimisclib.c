@@ -17,7 +17,7 @@
  * type: string, long, word, byte, quick also negative, float through
  * fltoqu with a6 = mathffp, the stack written back); EZRequestArgs with
  * the same types, EZSeparator, the stale end of a longer format text
- * (BUG(orig)); Flip$ with 2..250 characters and with 0 and 1 (BUG(orig):
+ * (BUG(orig), #747); Flip$ with 2..250 characters and with 0 and 1 (BUG(orig) #751:
  * 65536 swaps, in a big buffer); InitArgParse/NextArg$/NextArgChar$ on
  * many lines (spaces, quotes, "", unterminated quotes, separators), both
  * before InitArgParse and after the end (address 0); ProgPath$/ProgDir$/
@@ -140,7 +140,7 @@ static void workbenchhere(void)
     static const char *const b[] = { "Other", "My Workbench" };
     static const char *const c[] = { "WWorkbench", "Work bench", "xWorkbench" };
     /* a title ending in "W" or "Wo" would restart its screen for ever
-       (BUG(orig)): the partial matches here end with a mismatch */
+       (BUG(orig), #762): the partial matches here end with a mismatch */
     static const char *const d[] = { "", "Wx", "Wox", "a Workbench b" };
     ROUT = "WorkbenchHere";
     wbhere(a, 1);
@@ -339,7 +339,7 @@ static void easyrequest(void)
     ezreq_args("title$,body$,gadget$,var.. all types", "%s|%ld|%d|%d|%ld|%ld|%ld|%ld|%s",
                all, sizeof all / sizeof all[0]);
     /* the arguments as RawDoFmt reads them: string, long, word, word
-       (the byte), the quicks' integer parts zero extended (BUG(orig)),
+       (the byte), the quicks' integer parts zero extended (BUG(orig), #750),
        the floats through fltoqu (3.5 -> 3, -2.25 -> Quick -3 + .75:
        65533), string */
     BOTH("arguments of all types",
@@ -363,7 +363,7 @@ static void easyrequest(void)
     BOTH("body", !strcmp((char *)rec[cur].body, "%s\n%ld\n%d\n%d\n%ld\n%ld\n%ld\n%ld\n%s"));
     BOTH("gadget Ok, no title", !strcmp((char *)rec[cur].gad, "Ok")
          && !strcmp((char *)rec[cur].title, "<null>"));
-    ezargs("one (stale end, BUG(orig))", one, 1);
+    ezargs("one (stale end, BUG(orig) #747)", one, 1);
     ezsep(",");
     ezargs("separator ,", all, 4);
     ezsep("");
@@ -416,7 +416,7 @@ static void flip(void)
     DO2(ENT(LIB, E_FLIP, 0), STRARG(longstr));
     STRRES();
 
-    /* 0 and 1 character: 65536 swaps around the string (BUG(orig)) */
+    /* 0 and 1 character: 65536 swaps around the string (BUG(orig), #751) */
     big[0] = AllocMem(BIGSZ, MEMF_ANY);
     big[1] = AllocMem(BIGSZ, MEMF_ANY);
     if (big[0] && big[1]) {
@@ -486,7 +486,7 @@ static void parsing(void)
 
     strcpy(VEC, "before InitArgParse");
     nextarg(1);
-    nextchar(',', 1);                   /* reads address 0, BUG(orig) */
+    nextchar(',', 1);                   /* reads address 0, BUG(orig) (#754) */
     for (i = 0; i < sizeof lines / sizeof lines[0]; i++) {
         parseinit(lines[i]);
         nextarg(6);
