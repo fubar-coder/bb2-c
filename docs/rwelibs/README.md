@@ -119,7 +119,7 @@ latest date in the header comments.
 | PRO-PACK | lit. 197 | `ROBNORTHFAST` | Rob Northen Computing (All Rights Reserved) | 1991/92 | – | **not ported** (license) |
 | Serial | lit. 22 | `seriallib/Serial-Library` | – | – | – | Serial-Library (reference build), ported 2026-10-30 (`port/riseriallib.md`); number 22 (the literal: RWE's list gives it to `#riblitlib`, of which no source exists, so it is free in rwe-1999) |
 | Shapes | 46 | `shapeslib/RIShapesLib`, `RIShapesLib2` (+ `Test`, `Comparison`) | RI, Nigel Hughes | – | ≈ 92 % BUM `RISHAPESLIB`; RIShapesLib2 in the `BB22` format | open |
-| Shapez | 21 | `shapezlib` | RI | 1995 | – | shapezlib (reference build) |
+| Shapez | 21 | `shapezlib` | RI | 1995 | – | shapezlib (reference build), ported 2026-10-30 (`port/rishapezlib.md`) |
 | Sort | 13 | `sortlib/RISortlib2` | RI | 1996-08-30 | ≈ 80 % BUM/BSS2/OL `RISORTLIB` (one file) | open (source newer than the binary) |
 | Sound | 45 | `soundlib/risoundlib`, `risoundlib2` | – | – | risoundlib **=** BSS2/AB3 (496 B); risoundlib2 (8 entries) – | open |
 | STC decrunch | 18 | `stcdecrunchlib` | – | – | **=** BSS2/AB3 (576 B) | stcdecrunchlib |
