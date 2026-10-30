@@ -666,8 +666,9 @@ void myroutine(void)
 void defaults(void)
 {
     struct defblock *bak = (struct defblock *)charbuff;
-    UWORD *s, *d, *colopt, *rgb;
-    UWORD d0, oldcol, pen, id;
+    UWORD *s, *d;
+    UWORD id, hite;
+    BOOL bad;
     LONG event;
     WORD n;
 
@@ -693,34 +694,36 @@ void defaults(void)
             continue;
         if (id >= 10 && id < 26) {
             /* colour buttons: group = ((id-10) >> 1) & 6 */
-            id -= 10;
-            d0 = (id >> 1) & 6;         /* col hit (0,2,4) */
-            colopt = &normcol + d0 / 2;
-            oldcol = *colopt;
-            d0 = (d0 << 1) + oldcol;    /* old gad */
-            if (d0 == id) {
+            UWORD button = (UWORD)(id - 10);
+            UWORD group = (button >> 1) & 6;    /* col hit (0,2,4) */
+            UWORD *colopt = &normcol + group / 2;
+            UWORD oldgad = (UWORD)((group << 1) + *colopt);    /* old gad */
+            UWORD newcol;
+
+            if (oldgad == button) {
                 /* @451 .skip2 */
-                swapd0bord(d0);
-                dispgadd0(id);
-                swapd0bord(id);
+                swapd0bord(oldgad);
+                dispgadd0(button);
+                swapd0bord(button);
                 continue;
             }
-            dispgadd0(d0);
-            swapd0bord(d0);
-            swapd0bord(id);
-            d0 = id & 3;
-            *colopt = d0;
-            if (id < 12)
+            dispgadd0(oldgad);
+            swapd0bord(oldgad);
+            swapd0bord(button);
+            newcol = button & 3;
+            *colopt = newcol;
+            if (button < 12)
                 continue;
-            setprops(d0);
+            setprops(newcol);
             dispprops();
             continue;
         }
         /* @457 .skip */
         if (id < 4) {
             /* sliders: live SetRGB4 of propcol until something happens */
-            pen = propcol;
-            rgb = palit + propcol * 3;  /* palit offset */
+            UWORD pen = propcol;
+            UWORD *rgb = palit + propcol * 3;   /* palit offset */
+
             do {
                 propadj(rgb, pen);
                 event = getinput2(&id);
@@ -731,19 +734,19 @@ void defaults(void)
         /* @474 .end */
         if (id >= 26)
             break;
-        d0 = 0;
+        bad = FALSE;
         if ((ULONG)int1 >= 32) {
             int1 = 0;
             defaultreqla47[0] = '0';    /* move #$3000 */
             defaultreqla47[1] = 0;
-            d0 = (UWORD)-1;
+            bad = TRUE;
         }
         /* .sskip1 */
         if ((ULONG)int2 >= 10) {
             int2 = 0;
             defaultreqla48[0] = '0';
             defaultreqla48[1] = 0;
-            d0 = (UWORD)-1;
+            bad = TRUE;
         }
         /* .sskip2 - BUG(orig) (#385): no lower bound, tabstop 0 is accepted
            (divu by 0 in readline, survey-01 I.12) */
@@ -751,24 +754,24 @@ void defaults(void)
             int3 = 0;
             defaultreqla49[0] = '0';
             defaultreqla49[1] = 0;
-            d0 = (UWORD)-1;
+            bad = TRUE;
         }
         /* .sskip */
-        if (d0) {
+        if (bad) {
             beepem();
             for (n = 2; n >= 0; n--)    /* stride ga5-ga4 = 84 bytes */
                 intgads[2 - n]->Flags &= ~GFLG_SELECTED;
             RefreshGList(&defaultreqga4, req_window, &defaultreq, 3);
         }
         /* .sskip3 */
-        d0 = 5;
+        hite = 5;
         if (!(defaultreqga7.Flags & GFLG_SELECTED))     /* btst #7,+13 */
-            d0 = 7;
+            hite = 7;
         /* .eskip */
-        fonthite2 = d0;
-        d0++;
-        fonthite = d0;
-        fontmul = (UWORD)((ULONG)d0 * bmapmul);
+        fonthite2 = hite;
+        hite++;
+        fonthite = hite;
+        fontmul = (UWORD)((ULONG)hite * bmapmul);
         tokenise = (defaultreqga8.Flags & 128) >> 7;
         makeicons = (defaultreqga9.Flags & 128) >> 7;
         hscmarg = (UWORD)int1;          /* int1+2: low word */
@@ -791,26 +794,26 @@ void defaults(void)
     swapbords();
     if (bak->d_fonthite != fonthite) {
         struct item *item = thisitem;
+        UWORD row;
 
         /* BUG(orig) (#352): limited with the OLD edrows, before the screen is
            reopened with the new font (survey-01 I.13) */
-        d0 = cursy;
-        while (!(d0 < edrows)) {        /* .loopy, bcs */
-            d0--;
+        row = cursy;
+        while (!(row < edrows)) {       /* .loopy, bcs */
+            row--;
             item = item->lastitem;
         }
         /* .skip6 */
         thisitem = item;
-        cursy = d0;
+        cursy = row;
         calcpos();
     }
     /* .skip5 */
     screenclose();
     screenopen2();
-    d0 = bak->d_tokenise;
-    if (d0 == tokenise)
+    if (bak->d_tokenise == tokenise)
         return;                 /* .byebye */
-    if (d0)
+    if (bak->d_tokenise)
         detokall2();
     else
         tokall2();
@@ -821,32 +824,32 @@ void prtfile(void)
 {
     struct item *item;
     LONG event;
-    UWORD d6;
+    UWORD id, n;
     BPTR fh;
 
     openreq(&prtreq);
     actgad(&prtreqga1);         /* (a2 = prtreq, unused) */
     for (;;) {
         /* .loop */
-        event = getinput(&d6);
+        event = getinput(&id);
         if ((WORD)event != -1)
             continue;
-        if (d6 == 2)
+        if (id == 2)
             break;
-        if (d6 == 3)
+        if (id == 3)
             return;             /* .cancel */
     }
     /* .print */
     fh = Open((CONST_STRPTR)prtname, MODE_NEWFILE);
     if (!fh)
         return;
-    d6 = numlines;              /* subq / bne: 0 = 65536 lines */
+    n = numlines;               /* subq / bne: 0 = 65536 lines */
     item = firstitem;
     do {
         /* .ploop - write errors are ignored */
         Write(fh, charbuff, prtfile_line(item, charbuff));
         item = item->nextitem;
-    } while (--d6 != 0);
+    } while (--n != 0);
     Close(fh);
 }
 
