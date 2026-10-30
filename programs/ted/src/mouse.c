@@ -130,6 +130,7 @@ void gomouse(WORD d2, UWORD d3)
 void mousedown(void)
 {
     struct item *a4 = thisitem, *s_a4;
+    struct mousexy m;
     struct quad q;
     WORD d0, d1, d2, d3, d5, t;
     UWORD d6, s_curstop;
@@ -138,10 +139,10 @@ void mousedown(void)
     LONG d7;
     BOOL in;
 
-    if (!getmousexy(&q))
+    if (!getmousexy(&m))
         return;                                 /* bmi .done */
-    d2 = q.botx;
-    d3 = q.boty;
+    d2 = m.col;
+    d3 = m.row;
     if ((UWORD)d2 >= edcols) {
         gomouse(d2, (UWORD)d3);                 /* bcc gomouse */
         return;
@@ -180,8 +181,8 @@ loop:
     d7 = getinput2(&d6);
     if ((WORD)d7 == -4)
         goto mouseup;
-    in = getmousexy(&q);
-    d0 = q.topx; d1 = q.topy; d2 = q.botx; d3 = q.boty;
+    in = getmousexy(&m);
+    d0 = m.x; d1 = m.y; d2 = m.col; d3 = m.row;
     if (in)
         goto skip0;
     if ((UWORD)d1 < topskip)                    /* bcs .mup */

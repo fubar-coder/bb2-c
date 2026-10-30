@@ -408,27 +408,27 @@ nextrow:
 
 /* ted.s:4015 getmousexy - get mouse coords in d0,d1; d2,d3 = col,row;
    return mi if too high or low */
-BOOL getmousexy(struct quad *r)
+BOOL getmousexy(struct mousexy *r)
 {
     struct Screen *a0 = myscreen;
     UWORD d1 = (UWORD)a0->MouseY;               /* 16(a0) */
     UWORD d2 = topskip;
 
-    r->topy = (WORD)d1;
+    r->y = (WORD)d1;
     if (d1 < d2)
         goto done;
     d2 = (UWORD)(d2 + pixrows);
     if (d1 >= d2)
         goto done;
-    r->topx = a0->MouseX;                       /* 18(a0) */
-    r->botx = (WORD)((UWORD)r->topx >> 3);
+    r->x = a0->MouseX;                          /* 18(a0) */
+    r->col = (WORD)((UWORD)r->x >> 3);
     /* divu fonthite: quotient (the remainder is in the high word) */
-    r->boty = (WORD)(UWORD)divu_w((UWORD)(d1 - topskip), fonthite);
+    r->row = (WORD)(UWORD)divu_w((UWORD)(d1 - topskip), fonthite);
     return TRUE;
 done:
-    r->topx = a0->MouseX;
-    r->botx = (WORD)((UWORD)r->topx >> 3);
-    r->boty = -1;
+    r->x = a0->MouseX;
+    r->col = (WORD)((UWORD)r->x >> 3);
+    r->row = -1;
     return FALSE;
 }
 

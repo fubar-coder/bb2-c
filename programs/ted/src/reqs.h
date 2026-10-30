@@ -87,10 +87,15 @@ void invertarea(WORD d0, WORD d1, WORD d2, WORD d3);
 /* ted.s:3977 invertarea2: not.b over the cells (d0,d1)-(d2,d3) in both
    planes (direct chip RAM access) */
 void invertarea2(WORD d0, WORD d1, WORD d2, WORD d3);
-/* ted.s:4015 getmousexy: screen MouseX/Y -> r->d0 = x, d1 = y, d2 = x>>3,
-   d3 = (y-topskip)/fonthite (word; the asm leaves the remainder in the
-   high word).  Outside the text area: d3 = -1, FALSE (asm N=1). */
-BOOL getmousexy(struct quad *r);
+/* getmousexy's result (asm d0-d3) */
+struct mousexy {
+    WORD x, y;                  /* d0, d1: screen MouseX/MouseY */
+    WORD col, row;              /* d2, d3: character column and row */
+};
+/* ted.s:4015 getmousexy: screen MouseX/Y -> r->x, r->y, r->col = x>>3,
+   r->row = (y-topskip)/fonthite (word; the asm leaves the remainder in the
+   high word).  Outside the text area: r->row = -1, FALSE (asm N=1). */
+BOOL getmousexy(struct mousexy *r);
 
 /* -------------------------------------------------- line output */
 
