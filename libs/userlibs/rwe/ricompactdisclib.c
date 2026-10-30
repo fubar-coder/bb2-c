@@ -40,35 +40,36 @@
  *   - OpenCD name$,unit copies the name into username (40 bytes) without
  *     a limit (a longer name overwrites toc, toclen, temptoc, qcodeinfo,
  *     ioreq ...) and keeps it, the unit and scsiflag for later OpenCDs;
- *     scsiflag is only cleared by init.
+ *     scsiflag is only cleared by init (#576, #577).
  *   - OpenCD while open: the old request stays open, lost.  If OpenDevice
  *     fails the request is deleted but stays in ioreq, and OpenCD returns
- *     d0 of DeleteIORequest (not 0).
+ *     d0 of DeleteIORequest (not 0) (#578, #575).
  *   - CDStop (also in CloseCD) is AbortIO only: no WaitIO, and it sets
- *     io_Command of the request first.
+ *     io_Command of the request first (#574).
  *   - CDPlayTrack with scsiflag ignores its arguments: it plays the
  *     blocks 14000 to 15000 (test values), sets io_Offset = 1, and writes
  *     the two longs to odd addresses (MOVE.l #14000,(a0)+ after a byte):
- *     an address error on a 68000.
+ *     an address error on a 68000 (#580, #579).
  *   - CDReadTOC with scsiflag reads into its own buffer only: CDFirstTrack,
  *     CDLastTrack and CDTrackLength still use toc (0 before a CDReadTOC
- *     without scsiflag: they read address 0).
+ *     without scsiflag: they read address 0) (#582).
  *   - CDReadTOC: the summary read is not checked; the globalloc of the
  *     TOC is not checked (DoIO then writes to address 0).  toclen =
- *     (last track + 2) * 8 + 32 for entries of 6 bytes.
+ *     (last track + 2) * 8 + 32 for entries of 6 bytes (#581).
  *   - CDTrackLength n: start of track n+1 - start of track n in seconds
  *     (minutes * 60 + seconds); for track 1 the start of track 2 (the
  *     pregap counted).  From track 44 on the offset (n-1)*6 is > 255 and
  *     its high byte stays in the low word that MULU.w multiplies: the
  *     start of track n is wrong.  The last track takes the entry behind
  *     it (CD_TOCMSF does not write it: the lead-out is in the summary),
- *     track 0 reads 65539 bytes behind toc.  No check that toc exists.
- *   - CDUpdateInfo without an open device returns the caller's a0 + 5.
+ *     track 0 reads 65539 bytes behind toc.  No check that toc exists
+ *     (#584, #585, #583).
+ *   - CDUpdateInfo without an open device returns the caller's a0 + 5 (#587).
  *   - CDTrackMins/CDTrackSecs offset: ASL.b #2 shifts the low byte only,
  *     the index is the whole word (high byte kept), and the high bytes of
  *     d0 stay in the result; any offset reads qcodeinfo[5 + 4 * offset]
  *     (6 + ...) without a limit.  They and CDTrackPlaying do not check
- *     flag.
+ *     flag (#586).
  * Registers: the original changes d0/d1/a0/a1, a6 and (CDReadTOC d7,
  * CDTrackLength d1/d2) others; the thunks keep d1/a0/a1, GCC keeps
  * d2-d7/a2-a6.
@@ -362,7 +363,7 @@ void BLITZ_ROUTINE c_libinit(void)
     scsiflag = 0;
 }
 
-/* CDStop: AbortIO only (BUG(orig): no WaitIO) */
+/* CDStop: AbortIO only (BUG(orig) (#574): no WaitIO) */
 ULONG BLITZ_ROUTINE c_stoptrack(void)
 {
     if (!cd.flag)
@@ -407,11 +408,11 @@ ULONG BLITZ_ROUTINE c_opencd(void)
         cd.flag = 0;
         return 0;
     }
-    cd.ioreq = req;                     /* BUG(orig): an open one is lost */
+    cd.ioreq = req;                     /* BUG(orig) (#578): an open one is lost */
     r = (struct bl_regs){ .d0 = cd.trackversion, .d1 = 0, .a0 = (ULONG)cd.trackname,
                           .a1 = (ULONG)req };
     if (BLITZ_BASEJSR(SysBase, LVO_OpenDevice, r)) {
-        /* BUG(orig): ioreq keeps the deleted request, the result is d0
+        /* BUG(orig) (#575): ioreq keeps the deleted request, the result is d0
            of DeleteIORequest */
         r = (struct bl_regs){ .a0 = (ULONG)cd.ioreq };
         r.d0 = BLITZ_BASEJSR(SysBase, LVO_DeleteIORequest, r);
@@ -428,7 +429,7 @@ ULONG BLITZ_ROUTINE c_opencd2(const char *name BL_REG(d0), ULONG unit BL_REG(d1)
     char *p = cd.username;
 
     cd.trackname = p;
-    while ((*p++ = *name++) != 0)       /* BUG(orig): no limit */
+    while ((*p++ = *name++) != 0)       /* BUG(orig) (#576): no limit */
         ;
     cd.trackversion = unit;
     return c_opencd();
@@ -468,11 +469,11 @@ ULONG BLITZ_ROUTINE c_playtrack(ULONG track BL_REG(d0), ULONG num BL_REG(d1))
         return 0;
     if (!scsiflag)
         return cdio(SENDIO, CD_PLAYTRACK, NULL, track, num);
-    /* _playtrackscsi - BUG(orig): the arguments are ignored */
+    /* _playtrackscsi - BUG(orig) (#580): the arguments are ignored */
     cd.ioreq->io_Offset = 1;
     c = SCSICMD12;
     c[0] = SCSI_CMD_PLAYAUDIO12;
-    /* BUG(orig): MOVE.l to odd addresses - an address error on a 68000,
+    /* BUG(orig) (#579): MOVE.l to odd addresses - an address error on a 68000,
        here as well (volatile: GCC keeps the long writes) */
     *(volatile ULONG *)(c + 1) = 14000;
     *(volatile ULONG *)(c + 5) = 15000;
@@ -509,7 +510,7 @@ ULONG BLITZ_ROUTINE c_gettoc(void)
     cdio(DOIO, CD_TOCMSF, cd.temptoc, 0, 1);    /* the summary */
     n = (ULONG)cd.temptoc[1] + 2;
     cd.toclen = bl_mulu_w((UWORD)n, 8) + 32;
-    cd.toc = (UBYTE *)globalloc(cd.toclen, 0);      /* BUG(orig): unchecked */
+    cd.toc = (UBYTE *)globalloc(cd.toclen, 0);      /* BUG(orig) (#581): unchecked */
     if (cdio(DOIO, CD_TOCMSF, cd.toc, 0, n))
         return 0;
     return (ULONG)-1;
@@ -547,7 +548,7 @@ ULONG BLITZ_ROUTINE c_cdlasttrack(void)
     return cd.toc[1];
 }
 
-/* CDTrackLength track#: in seconds, see BUG(orig) above */
+/* CDTrackLength track#: in seconds, see BUG(orig) above (#583-#585) */
 ULONG BLITZ_ROUTINE c_cdtracklength(ULONG track BL_REG(d0))
 {
     const UBYTE *p;
@@ -567,7 +568,7 @@ ULONG BLITZ_ROUTINE c_cdtracklength(ULONG track BL_REG(d0))
 }
 
 /* CDUpdateInfo (doinfo: CD_QCODEMSF into qcodeinfo): the address of the track position's minutes;
-   BUG(orig) without device the caller's a0 + 5 */
+   BUG(orig) (#587): without device the caller's a0 + 5 */
 ULONG BLITZ_ROUTINE c_cdtracktime(ULONG a0 BL_REG(a0))
 {
     if (!cd.flag)

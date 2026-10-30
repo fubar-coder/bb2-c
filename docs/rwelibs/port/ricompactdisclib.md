@@ -42,32 +42,32 @@ d1/d2 (CDTrackLength) are not reproduced.
 * `OpenCD name$,unit` copies the name into the 40-byte `username`
   without a limit (a longer one overwrites toc, toclen, temptoc,
   qcodeinfo, ioreq ...) and keeps name, unit and scsiflag for later
-  `OpenCD`s; only init clears scsiflag (and sets the name back).
+  `OpenCD`s; only init clears scsiflag (and sets the name back). (#576, #577)
 * `OpenCD` while open: the old request stays open, lost. If OpenDevice
   fails, the request is deleted but stays in ioreq, and `OpenCD` returns
-  d0 of DeleteIORequest (200 on Kickstart 3.2), not 0.
+  d0 of DeleteIORequest (200 on Kickstart 3.2), not 0. (#578, #575)
 * `CDStop` (also in `CloseCD`) is AbortIO only, no WaitIO; it sets
-  io_Command first.
+  io_Command first. (#574)
 * `CDPlayTrack` with scsiflag ignores its arguments: blocks 14000 to
   15000 (test values), io_Offset = 1, and the longs are written to odd
-  addresses - an address error on a 68000.
+  addresses - an address error on a 68000. (#580, #579)
 * `CDReadTOC` with scsiflag fills only its own buffer: `CDFirstTrack`,
   `CDLastTrack`, `CDTrackLength` still use toc (address 0 before any
-  `CDReadTOC` without scsiflag).
+  `CDReadTOC` without scsiflag). (#582)
 * `CDReadTOC`: the summary read is not checked, nor the globalloc of the
-  TOC; toclen = (last + 2) × 8 + 32 for 6-byte entries.
+  TOC; toclen = (last + 2) × 8 + 32 for 6-byte entries. (#581)
 * `CDTrackLength n` = start of track n+1 − start of track n in seconds
   (minutes × 60 + seconds), for track 1 the start of track 2. From track
   44 the offset (n−1) × 6 exceeds 255 and its high byte stays in the
   word that `MULU.w #60` multiplies (`MOVE.b (a0),d0` replaces the low
   byte only): the start is wrong. The last track takes the entry behind
   it, which CD_TOCMSF does not write; track 0 reads 65539 bytes behind
-  toc.
-* `CDUpdateInfo` without an open device returns the caller's a0 + 5.
+  toc. (#584, #585, #583)
+* `CDUpdateInfo` without an open device returns the caller's a0 + 5. (#587)
 * `CDTrackMins`/`CDTrackSecs offset`: `ASL.b #2` shifts the low byte
   only, the index is the whole word, the high bytes of d0 stay in the
   result; no limit. They and `CDTrackPlaying` do not check for an open
-  device.
+  device. (#586)
 
 **Test** (`libs/tests/rwe/ricompactdisclib.c`, snitch case "rwe
 ricompactdisclib"): C build and reference build side by side, each with

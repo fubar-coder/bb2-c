@@ -20,17 +20,17 @@
  * (other registers = markers); compared are d0, the requests the device
  * saw, the data the commands return (the Q-code bytes behind
  * CDUpdateInfo's address) and every register the original keeps.
- * Covered: every command without an open device (0; BUG(orig):
+ * Covered: every command without an open device (0; BUG(orig) (#587, #586):
  * CDUpdateInfo returns a0 + 5, CDTrackMins/Secs/Playing read their data
  * anyway), OpenCD of cd.device (missing in the emulator: the failure
- * path, BUG(orig): d0 of DeleteIORequest), of unit 3 (OpenDevice fails),
+ * path, BUG(orig) (#575): d0 of DeleteIORequest), of unit 3 (OpenDevice fails),
  * the name and unit kept for OpenCD without arguments, OpenCD while open
- * (BUG(orig): the old request is lost), all CD commands with their
+ * (BUG(orig) (#578): the old request is lost), all CD commands with their
  * arguments and io_Errors, CDReadTOC twice (the old TOC freed, the second
  * read failing), CDTrackLength of every track 1..9 of the 9 track CD
- * and 40..50 of the 50 track CD (BUG(orig): from track 44 the start is
+ * and 40..50 of the 50 track CD (BUG(orig) (#585, #583): from track 44 the start is
  * wrong; the last track reads the entry behind it), CDTrackMins/CDTrackSecs offsets 0, 1, 4, 5, -1..-5 and the
- * high bits of d0 (BUG(orig)), the SCSI path (scsiflag: CDPlayTrack's
+ * high bits of d0 (BUG(orig) (#586)), the SCSI path (scsiflag: CDPlayTrack's
  * fixed blocks 14000-15000 and io_Offset 1, READ TOC, CDNumTracks from
  * the SCSI TOC data, CDFirstTrack still from toc; the flag kept by OpenCD
  * without arguments), CloseCD (twice), finit with a device open and
@@ -38,14 +38,14 @@
  * (CreateMsgPort fails) and OpenCD without a request (CreateIORequest
  * fails).
  * Not covered: a real CD drive (none in the emulator); a device name of
- * more than 40 bytes (overwrites toc ..., BUG(orig)); CDTrackLength 0
+ * more than 40 bytes (overwrites toc ..., BUG(orig) (#576)); CDTrackLength 0
  * (reads 64 KB behind toc) and of tracks behind the last (memory
  * globalloc did not clear: differs between the sets); the TOC functions
  * before any CDReadTOC (they read address 0); CDPlayTrack with scsiflag
  * on a 68000 (address error; the emulator has a 68020); a globalloc
  * failing.  The test device leaves the entries behind the last track
  * $EE (a real one would not write them: the last track's length is then
- * garbage, BUG(orig)).
+ * garbage, BUG(orig) (#583)).
  */
 #include "rwecmp.h"
 #include <exec/devices.h>
@@ -486,7 +486,7 @@ int main(int argc, char **argv)
     updateinfo();
     qcode();
 
-    /* a CD with 50 tracks: the old TOC freed; from track 44 BUG(orig) */
+    /* a CD with 50 tracks: the old TOC freed; from track 44 BUG(orig) (#585) */
     ntracks = 50;
     strcpy(VEC, "50 tracks");
     CALL0(READTOC, "CDReadTOC");
@@ -502,7 +502,7 @@ int main(int argc, char **argv)
     CALL0(STATUS, "CDStatus");
 
     /* OpenCD without arguments: rwecd.device unit 1 kept; the open
-       request is lost (BUG(orig)) */
+       request is lost (BUG(orig) (#578)) */
     ntracks = 9;
     opencd(NULL, 0, 0, 0);
     CALL0(READTOC, "CDReadTOC");
