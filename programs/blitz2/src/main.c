@@ -1701,181 +1701,181 @@ WORD movemchk(struct asmregs *r)
     ULONG d0;
     int i;
 
-    if (r->d3 == r->d5)
+    if (r->srcmode == r->destmode)
         return eaerror;
-    if (r->d3 != 15) {
-        if (r->d5 != 15)
+    if (r->srcmode != 15) {
+        if (r->destmode != 15)
             return eaerror;
         /* .regdest */
-        d0 = 1UL << (r->d3 & 31);
+        d0 = 1UL << (r->srcmode & 31);
         if (d0 & 0x813)
             return eaerror;
-        r->d1 |= 1 << 10;
+        r->opcode |= 1 << 10;
         return swapem;
     }
     /* .regsrc */
-    d0 = 1UL << (r->d5 & 31);
+    d0 = 1UL << (r->destmode & 31);
     if (d0 & 0xe0b)
         return eaerror;
-    if (r->d5 != 4)
+    if (r->destmode != 4)
         return noerror;
     /* -(An): reverse the register mask (lsl d2 / roxr d6, 16 times) */
     for (i = 0; i < 16; i++) {
-        UWORD x = r->d2 >> 15;
+        UWORD x = r->srcreg >> 15;
 
-        r->d2 <<= 1;
-        r->d6 = (r->d6 >> 1) | (x << 15);
+        r->srcreg <<= 1;
+        r->size = (r->size >> 1) | (x << 15);
     }
-    r->d2 = r->d6;
+    r->srcreg = r->size;
     return noerror;
 }
 
 /* asmmac movepchk */
 WORD movepchk(struct asmregs *r)
 {
-    if (r->d3 == r->d5)
+    if (r->srcmode == r->destmode)
         return eaerror;
-    if (r->d3 != 0)
+    if (r->srcmode != 0)
         return noerror;
-    r->d1 |= 1 << 7;
+    r->opcode |= 1 << 7;
     return noerror;
 }
 
 /* asmmac movechk (move to/from ccr/sr/usp, size bits) */
 WORD movechk(struct asmregs *r)
 {
-    if (r->d3 >= 12) {
-        if (r->d5 >= 12)
+    if (r->srcmode >= 12) {
+        if (r->destmode >= 12)
             return eaerror;
-        if (r->d3 == 12) {              /* .fromccr */
-            r->d1 = 0x42c0;
+        if (r->srcmode == 12) {              /* .fromccr */
+            r->opcode = 0x42c0;
             goto from;
         }
-        if (r->d3 == 13) {              /* .fromsr */
-            r->d1 = 0x40c0;
+        if (r->srcmode == 13) {              /* .fromsr */
+            r->opcode = 0x40c0;
             goto from;
         }
-        if (r->d3 == 14) {              /* .fromusp: to address reg? */
-            if (r->d5 != 1)
+        if (r->srcmode == 14) {              /* .fromusp: to address reg? */
+            if (r->destmode != 1)
                 return eaerror;
-            r->d1 = 0x4e68 | r->d4;
+            r->opcode = 0x4e68 | r->destreg;
             goto usp;
         }
         return eaerror;
     }
     /* .notfrom */
-    if (r->d5 < 12) {                   /* .dosize */
-        r->d1 = 0x1000;
-        if (r->d6 == 0)
+    if (r->destmode < 12) {                   /* .dosize */
+        r->opcode = 0x1000;
+        if (r->size == 0)
             return noerror;
-        r->d1 = 0x3000;
-        if (r->d6 == 4)
+        r->opcode = 0x3000;
+        if (r->size == 4)
             return noerror;
-        r->d1 = 0x2000;
+        r->opcode = 0x2000;
         return noerror;
     }
-    if (r->d3 >= 12)
+    if (r->srcmode >= 12)
         return eaerror;
-    if (r->d5 == 12) {                  /* .toccr */
-        r->d1 = 0x44c0;
+    if (r->destmode == 12) {                  /* .toccr */
+        r->opcode = 0x44c0;
         goto to;
     }
-    if (r->d5 == 13) {                  /* .tosr */
-        r->d1 = 0x46c0;
+    if (r->destmode == 13) {                  /* .tosr */
+        r->opcode = 0x46c0;
         goto to;
     }
-    if (r->d5 == 14) {                  /* .tousp */
-        if (r->d3 != 1)
+    if (r->destmode == 14) {                  /* .tousp */
+        if (r->srcmode != 1)
             return eaerror;
-        r->d1 = 0x4e60 | r->d2;
+        r->opcode = 0x4e60 | r->srcreg;
         goto usp;
     }
     return eaerror;
 usp:
-    r->d2 = 0;
-    r->d3 = 0;
-    r->d4 = 0;
-    r->d5 = 0;
+    r->srcreg = 0;
+    r->srcmode = 0;
+    r->destreg = 0;
+    r->destmode = 0;
     return noerror;
 from:
-    if (r->d6 != 4)
+    if (r->size != 4)
         return szerror;
-    r->d3 = 0;
-    r->d2 = 0;
+    r->srcmode = 0;
+    r->srcreg = 0;
     return swapem;
 to:
-    if (r->d6 != 4)
+    if (r->size != 4)
         return szerror;
-    r->d5 = 0;
-    r->d4 = 0;
+    r->destmode = 0;
+    r->destreg = 0;
     return noerror;
 }
 
 /* asmmac exgchk */
 WORD exgchk(struct asmregs *r)
 {
-    if (r->d3 != r->d5) {
-        r->d1 |= 0x88;
-        if (r->d3 == 0)
+    if (r->srcmode != r->destmode) {
+        r->opcode |= 0x88;
+        if (r->srcmode == 0)
             return noerror;
         return swapem;
     }
     /* .skip */
-    if (r->d3 != 0)
-        r->d1 |= 0x48;
+    if (r->srcmode != 0)
+        r->opcode |= 0x48;
     else
-        r->d1 |= 0x40;                  /* .data */
+        r->opcode |= 0x40;                  /* .data */
     return noerror;
 }
 
 /* asmmac bitchk */
 WORD bitchk(struct asmregs *r)
 {
-    if (r->d3 == 0) {
-        r->d2 <<= 9;                    /* review: asm shifts d2 itself */
-        r->d1 |= r->d2;
+    if (r->srcmode == 0) {
+        r->srcreg <<= 9;                    /* review: asm shifts d2 itself */
+        r->opcode |= r->srcreg;
         return noerror;
     }
     /* .notdn */
-    if (r->d6 >= 8)
+    if (r->size >= 8)
         return szerror;
-    r->d1 ^= 0x900;
+    r->opcode ^= 0x900;
     return noerror;
 }
 
 /* asmmac aslchk2 - d0 = opcode of the memory form */
 static WORD aslchk2(struct asmregs *r, UWORD d0)
 {
-    if ((WORD)r->d5 < 0) {              /* .word: memory shift */
-        UWORD d2 = r->d2, d3 = r->d3;
+    if ((WORD)r->destmode < 0) {              /* .word: memory shift */
+        UWORD d2 = r->srcreg, d3 = r->srcmode;
 
-        r->d5 = 0;                      /* dummy d0 */
-        if (r->d3 == 0)
+        r->destmode = 0;                      /* dummy d0 */
+        if (r->srcmode == 0)
             return eaerror;
-        if (r->d6 != 4)
+        if (r->size != 4)
             return szerror;
-        r->d1 &= 0x100;
-        r->d1 |= d0;
+        r->opcode &= 0x100;
+        r->opcode |= d0;
         if (d3 >= 7) {
             d2 = d3 - 7;
             d3 = 7;
         }
-        r->d1 |= d2;
-        r->d1 |= d3 << 3;               /* d2/d3 restored (movem) */
+        r->opcode |= d2;
+        r->opcode |= d3 << 3;               /* d2/d3 restored (movem) */
         return noerror;
     }
-    if (r->d5 != 0)
+    if (r->destmode != 0)
         return eaerror;
-    r->d6 <<= 4;
-    r->d1 |= r->d6;
-    r->d1 |= r->d4;
-    if (r->d3 == 11)
+    r->size <<= 4;
+    r->opcode |= r->size;
+    r->opcode |= r->destreg;
+    if (r->srcmode == 11)
         return noerror;
-    if (r->d3 != 0)
+    if (r->srcmode != 0)
         return eaerror;
-    r->d2 <<= 9;                        /* review: asm shifts d2 itself */
-    r->d1 |= r->d2;
-    r->d1 |= 1 << 5;
+    r->srcreg <<= 9;                        /* review: asm shifts d2 itself */
+    r->opcode |= r->srcreg;
+    r->opcode |= 1 << 5;
     return noerror;
 }
 
@@ -1892,35 +1892,35 @@ WORD aslchk(struct asmregs *r) { return aslchk2(r, 0xe0c0); }
    noerror for asmit) */
 WORD abcdchk(struct asmregs *r)
 {
-    if (r->d3 != r->d5)
+    if (r->srcmode != r->destmode)
         return eaerror;
-    if (r->d3 != 0)
-        r->d1 |= 1 << 3;
+    if (r->srcmode != 0)
+        r->opcode |= 1 << 3;
     return noerror;
 }
 
 /* asmmac addchk - if dest is dn, ok */
 WORD addchk(struct asmregs *r)
 {
-    if (r->d5 == 0)
+    if (r->destmode == 0)
         return noerror;                 /* asm: rts with Z=1 */
-    if (r->d3 != 0)
+    if (r->srcmode != 0)
         return eaerror;                 /* src not dn - fuct */
-    r->d1 |= 1 << 8;                    /* turn into dn,<ea> */
+    r->opcode |= 1 << 8;                    /* turn into dn,<ea> */
     return swapem;
 }
 
 /* asmmac andichk */
 WORD andichk(struct asmregs *r)
 {
-    if (r->d5 == 12) {                  /* dest ccr? */
-        if (r->d6 != 0)
+    if (r->destmode == 12) {                  /* dest ccr? */
+        if (r->size != 0)
             return szerror;
         return noerror;
     }
-    if (r->d5 != 13)                    /* or sr? */
+    if (r->destmode != 13)                    /* or sr? */
         return noerror;
-    if (r->d6 != 4)
+    if (r->size != 4)
         return szerror;
     return noerror;
 }

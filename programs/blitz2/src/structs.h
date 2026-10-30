@@ -297,12 +297,12 @@ OFFS(asmnode, text, 16);
 /* registers handed to an asm checker routine (asmmac abcdchk, movechk ...,
    called by asmit via asment.chk).  The checker may modify every field. */
 struct asmregs {
-    UWORD d1;               /* opcode being built */
-    UWORD d2;               /* src reg / value (movem: reg mask) */
-    UWORD d3;               /* src ea mode (0..15, see asmit) */
-    UWORD d4;               /* dest reg */
-    UWORD d5;               /* dest ea mode (-1 = none) */
-    UWORD d6;               /* asmsize: 0 .b, 4 .w, 8 .l */
+    UWORD opcode;           /* opcode being built */
+    UWORD srcreg;           /* src reg / value (movem: reg mask) */
+    UWORD srcmode;          /* src ea mode (0..15, see asmit) */
+    UWORD destreg;          /* dest reg */
+    UWORD destmode;         /* dest ea mode (-1 = none) */
+    UWORD size;             /* asmsize: 0 .b, 4 .w, 8 .l */
 };
 /* asm: result in d0 + CCR: -2 (szerror) illegal size, -1 (eaerror) illegal
    ea, 0 (noerror) ok, 1 (swapem) ok and swap src/dest */

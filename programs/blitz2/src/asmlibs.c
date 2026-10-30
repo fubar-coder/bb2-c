@@ -204,10 +204,10 @@ void asmit(UWORD c)
     if (e->chk) {
         struct asmregs r;
         WORD res;
-        r.d1 = d1; r.d2 = d2; r.d3 = d3; r.d4 = d4; r.d5 = d5;
-        r.d6 = asmsize;
+        r.opcode = d1; r.srcreg = d2; r.srcmode = d3; r.destreg = d4; r.destmode = d5;
+        r.size = asmsize;
         res = e->chk(&r);
-        d1 = r.d1; d2 = r.d2; d3 = r.d3; d4 = r.d4; d5 = r.d5;
+        d1 = r.opcode; d2 = r.srcreg; d3 = r.srcmode; d4 = r.destreg; d5 = r.destmode;
         if (res < 0) {
             if (res == -2)
                 illsizeerr();
