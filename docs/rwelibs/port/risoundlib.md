@@ -46,16 +46,17 @@ with its signed compare.
 * The old sample is freed before the file is checked, and the pointer
   stays in the object: a CludgeSound that fails leaves the object
   pointing to freed memory, and the next CludgeSound on it frees it again
-  (memlib's "not found" error).
+  (memlib's "not found" error) (#831).
 * The rate is the word at VHDR + the VHDR length (`ADD.l 4(a0),a0`): it is
-  `samplesPerSec` only for the usual length 20. Rate 0 never returns
-  (the subtraction loop).
+  `samplesPerSec` only for the usual length 20 (#832). Rate 0 never
+  returns (the subtraction loop) (#830).
 * The chunk walk adds length + 8 without the pad byte of an odd chunk: a
   correct file with an odd chunk before BODY is not found (or walks off
-  into its data); a file without the pad byte works.
+  into its data); a file without the pad byte works (#828).
 * The copy is `DBRA` on length − 1: ((length − 1) & $FFFF) + 1 bytes – an
   empty BODY copies 65536 bytes into a block of 8, a BODY over 65536
-  bytes only the rest; the length in words is (length & $FFFF) / 2.
+  bytes only the rest; the length in words is (length & $FFFF) / 2
+  (#829).
 
 ## Test
 

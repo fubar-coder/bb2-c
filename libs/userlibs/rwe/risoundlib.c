@@ -23,15 +23,18 @@
  * BUG(orig):
  *   - The old sample is freed before the file is checked, but the object
  *     keeps the pointer: when CludgeSound then fails, the sound object
- *     points to freed memory (and the next CludgeSound frees it again).
+ *     points to freed memory (and the next CludgeSound frees it again)
+ *     (#831).
  *   - The sample rate is the word at VHDR + 4(VHDR) (the chunk length):
  *     right only for the usual VHDR length 20 (samplesPerSec at +12 of
- *     the data); the period is a subtraction loop, rate 0 never ends.
+ *     the data) (#832); the period is a subtraction loop, rate 0 never
+ *     ends (#830).
  *   - The chunk walk adds length + 8 without the IFF pad byte of an odd
- *     chunk.
+ *     chunk (#828).
  *   - The copy is a DBRA loop on length - 1: it copies ((length - 1) &
  *     $FFFF) + 1 bytes - 65536 for an empty BODY, only the rest modulo
- *     65536 for a longer one; the length in words is (length & $FFFF) / 2.
+ *     65536 for a longer one; the length in words is (length & $FFFF) / 2
+ *     (#829).
  */
 #include "blitzlib.h"
 
@@ -78,7 +81,7 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG d0 BL_REG(d0), UBYTE *sram BL_REG(
     UWORD sper, n;
     int chunk;
 
-    if (LONGAT(saddr)) {                /* free the old sample (BUG(orig)) */
+    if (LONGAT(saddr)) {                /* free the old sample (BUG(orig) #831) */
         struct bl_regs r = { .a1 = LONGAT(saddr) };
         r.d0 = BL_SETW(d0, WORDAT(saddr + 6));
         BLITZ_ALIBJSR(TOK_globfree, r);
@@ -86,17 +89,17 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG d0 BL_REG(d0), UBYTE *sram BL_REG(
     if (LONGAT(sram + 8) != ID('8', 'S', 'V', 'X') || LONGAT(sram + 12) != ID('V', 'H', 'D', 'R'))
         return 0;
     a0 = sram + 12;
-    a0 += LONGAT(a0 + 4);               /* BUG(orig): VHDR length 20 only */
+    a0 += LONGAT(a0 + 4);               /* BUG(orig): VHDR length 20 only (#832) */
     rate = WORDAT(a0);
     clock = 3579545;                    /* CMP.l d1,d0:BLT: signed */
     sper = 0;
-    while ((LONG)clock >= (LONG)rate) { /* BUG(orig): rate 0 never ends */
+    while ((LONG)clock >= (LONG)rate) { /* BUG(orig): rate 0 never ends (#830) */
         sper++;
         clock -= rate;
     }
     a0 = sram + 12;
     for (chunk = 0; LONGAT(a0) != ID('B', 'O', 'D', 'Y'); ) {
-        a0 += LONGAT(a0 + 4);           /* BUG(orig): no pad byte */
+        a0 += LONGAT(a0 + 4);           /* BUG(orig): no pad byte (#828) */
         a0 += 8;
         if (++chunk > 6)
             return 0;
@@ -109,7 +112,7 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG d0 BL_REG(d0), UBYTE *sram BL_REG(
     }
     if (!mem)
         return 0;
-    n = (UWORD)(slen - 1);              /* DBRA: BUG(orig), see above */
+    n = (UWORD)(slen - 1);              /* DBRA: BUG(orig) #829, see above */
     do
         *dst++ = *src++;
     while (n-- != 0);
