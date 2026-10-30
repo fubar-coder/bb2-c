@@ -1,0 +1,19 @@
+; ted-openio-z-flag (#368): mycli goes on only if openio returns Z=0,
+; but openio returns the condition codes of WBenchToFront.  TED alone
+; under inject: WBenchToFront returns FALSE (as with the Workbench
+; closed); menu CLI; inject types "endcli" + Return into the console
+; window ("Blitz 2 CLI Window") 0.5 s after it opened; QUIT; inject
+; reports whether the process's input/output handles are the ones it
+; started with.  Correct: the shell runs in the console, ends with endcli,
+; closeio restores the handles and closes the window; the original
+; returns at once and leaves the console as TED's input/output.
+; @source none
+; @command TEDAB:tools/inject wbfrontfail handles keys=Blitz_2_CLI_Window/12@0,36@0,22@0,33@0,28@0,17@0,44@0 blitz2:ted
+; @expect stdout "inject: wbfrontfail: 1 calls failed"
+; @expect stdout "inject: handles: kept"
+timeout 15
+wait screen
+menu 0 6
+wait screen
+menu 0 9
+wait exit
