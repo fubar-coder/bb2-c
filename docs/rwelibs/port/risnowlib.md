@@ -51,20 +51,27 @@ right-first), COLOR00 is written as the original writes it.
 
 ## BUG(orig), kept
 
-* No routine checks the list number (0–3; `ASL.w #4` as the index) or
-  the allocation; InitSnowDrop computes the size with `ASL.w #2` on
-  numpoints × 16 (from numpoints 1024 on the block is too small) and
-  never frees an earlier block.
+* No routine checks the list number (0–3; `ASL.w #4` as the index)
+  (#913); InitSnowDrop computes the size with `ASL.w #2` on
+  numpoints × 16 (from numpoints 1024 on the block is too small) (#912)
+  and never frees an earlier block (#911).
 * The drop lists' "last" stays 0 until the first LDoSnow:
-  LDoSnowActivate before it writes to address 0.
+  LDoSnowActivate before it writes to address 0 (#908).
 * The lists have no bounds: more than numpoints × 4 entries run into the
-  next list and behind the block.
+  next list and behind the block (#914).
 * A bit number above 7 from the random table indexes the lookup tables
-  beyond their end; the table's offsets are bytes (the first rows only).
+  beyond their end; the table's offsets are bytes (the first rows only)
+  (#910).
+* LDoSnowActivate does not update the drop list's "last" (#909).
+
+## Original behaviour, not defects
+
+* The allocation is not checked: memlib's `globalloc` raises Out of
+  Memory itself.
 * LDoSnowActivate tests plane 2 at the killed pixel again (always clear
-  there) and does not update the drop list's "last".
-* The end of LDoSnow behind its loop (`'endthis`) is dead: the loop ends
-  only at `$ABCD`, with a new flake.
+  there): redundant, without effect.
+* The end of LDoSnow behind its loop (`'endthis`) is dead code: the loop
+  ends only at `$ABCD`, with a new flake.
 
 ## Test
 

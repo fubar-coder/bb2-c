@@ -38,22 +38,24 @@
  *
  * BUG(orig):
  *   - No routine checks the list number (0-3; 16 bytes per number
- *     indexed by ASL.w #4), nor the allocation; InitSnowDrop computes the
- *     size with ASL.w #2 on numpoints*16 (numpoints from 1024 on the
- *     block is too small for the lists written into it) and never frees
- *     an earlier block of the same number.
+ *     indexed by ASL.w #4) (#913); InitSnowDrop computes the size with
+ *     ASL.w #2 on numpoints*16 (numpoints from 1024 on the block is too
+ *     small for the lists written into it) (#912) and never frees an
+ *     earlier block of the same number (#911).
  *   - The drop lists' "last" stays 0 until the first LDoSnow:
- *     LDoSnowActivate before it writes to address 0.
+ *     LDoSnowActivate before it writes to address 0 (#908).
  *   - The lists have no bounds: more entries than numpoints*4 run into
- *     the next list (and behind the block).
+ *     the next list (and behind the block) (#914).
  *   - A bit number above 7 (from the random table) indexes the lookup
  *     tables beyond their end; the offsets of the table are bytes (only
- *     the first rows).
- *   - LDoSnowActivate checks plane 2 at the killed pixel again (always
- *     clear there) and does not update the drop list's "last" (the next
- *     LDoSnowActivate before an LDoSnow overwrites the entries).
- *   - The dead end of LDoSnow ('endthis) is not reached: the loop ends
- *     only at $ABCD with a new flake.
+ *     the first rows) (#910).
+ *   - LDoSnowActivate does not update the drop list's "last" (the next
+ *     LDoSnowActivate before an LDoSnow overwrites the entries) (#909).
+ * Not defects: the allocation is not checked (memlib's globalloc raises
+ * Out of Memory itself); LDoSnowActivate checks plane 2 at the killed
+ * pixel again (always clear there: redundant, no effect); the end of
+ * LDoSnow behind its loop ('endthis) is dead code: the loop ends only at
+ * $ABCD with a new flake.
  */
 #include "blitzlib.h"
 
@@ -179,12 +181,12 @@ static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d
     struct bl_regs r;
     UBYTE *p;
 
-    r.d0 = ASLW(size, 2) + 32 + 8;      /* BUG(orig): ASL.w */
+    r.d0 = ASLW(size, 2) + 32 + 8;      /* BUG(orig): ASL.w (#912) */
     r.d1 = 0x10000;                     /* MEMF_CLEAR */
     r.a0 = 0;
     r.a1 = 0;
     BLITZ_ALIBJSR(TOK_globalloc, r);
-    p = (UBYTE *)r.d0;                  /* not checked: BUG(orig) */
+    p = (UBYTE *)r.d0;                  /* not checked: memlib raises Out of Memory */
     e[0] = (ULONG)p;
     p = drophead(p, size, bm, bpsize);
     e[1] = (ULONG)p;
