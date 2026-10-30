@@ -367,7 +367,7 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   canned replies, among them `N` with a byte count and `S`, an XOFF that
   holds the program's writes), with `@USERLIB@`,
   `@INJECT@`, `@WBRUN@`, `@CD_BLITZ2@`, `@TESTDATA@`; `; @configs port` restricts the
-  configurations judged) and `ID.expect` (the correct behaviour; a line
+  configurations judged; `; @rwe NAME...` for the RWE userlibs, below) and `ID.expect` (the correct behaviour; a line
   beginning with `[` is a section header, so the program's output must
   not begin with `[`). Test
   data (sounds, pictures, modules) is generated, not checked in: a
@@ -383,6 +383,25 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   REPRODUCED. Look at the observation of ref to write the expectation,
   and check the expectation if possible with a temporary fix in the port
   (then FIXED, the test passes); name the test in the issue.
+
+  *A bug of an RWE userlib* (`libs/userlibs/rwe/NAME.c`): the same, in
+  `tests/bug-orig/rwe/ID.bas` with the header line `; @rwe NAME...` (the
+  libraries the program uses, e.g. also one that NAME calls). The
+  "original" is the library's reference (`RWE_LIBS`: the CD's or
+  AmiBlitz3's binary, or the reference build `rwe_refbuild` - then the
+  test requires that fixture, ctest runs it first, about 20 s): ref is
+  blitz2 2.10 of the CD (1.95 never loads a library of
+  `blitz2:userlibs/DIR`, #2) with the CD's libraries and the reference
+  in `blitz2:userlibs/rwe/`; port (blitz2-c, the CD's libraries) and clib
+  (blitz2-c with the acidlibs/deflibs of the library's variant,
+  `variants/rwe-1999`) get the C build there (the pass file's
+  `file=DEST|SRC|TAG`: a file for one configuration). The source is
+  tokenised with a token list of blitz2-c, that variant and the named
+  libraries (`blitztokens`, `tests/bug-orig/tokens/ID.txt` in the build
+  directory). The libraries of one test must have the same variant
+  (rievallib has its own, `rwe-1999-eval`, whose polylib number the CD's
+  acidlibs give to polylib: its tests need a ref with other acidlibs,
+  not done yet).
 
 The oracle data of the TED tests (`tests/data/ted-oracle.sha256`: SHA-256
 of detok, tokit2 and load/save for every source of the CD;

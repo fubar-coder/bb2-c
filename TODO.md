@@ -397,6 +397,19 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     measure in the emulator (VNCClip.supervisor opens and closes it in
     the background), wbrun counts the calls of the process; the
     others see above.
+  - *RWE userlibs* (about 180 issues, labels `lib:ri…`, `ciatrklib`,
+    `bb_blitlib` ...; 2026-10-30): Blitz programs in
+    `tests/bug-orig/rwe/ID.bas` with `; @rwe NAME...` (README, "Tests"):
+    ref = blitz2 2.10 of the CD with the library's reference (`RWE_LIBS`;
+    a reference build requires the fixture `rwe_refbuild`), port/clib
+    with the C build; the pass file's `file=DEST|SRC|TAG` stages a file
+    for one configuration (`corpus_runner`: a tag without configuration
+    fails). Pilot, all REPRODUCED and FIXED with a temporary fix: #851
+    (wrong result), #827 (64 KB overwrite kept inside the list's own
+    memory), #649 (d0 left as the address argument; the serial remote
+    end), #680 (stack: crash, the session ends in a timeout). Open: a
+    test of rievallib (variant `rwe-1999-eval`, number 121 = polylib of
+    the CD's acidlibs) needs a ref with other acidlibs.
   - *Not reproducible in the emulator:* #42 (a real 68010 with a moved
     VBR; Amiberry runs a 68020).
   - *Found during phase 2:* #333 (palettelib chunk walk: the port

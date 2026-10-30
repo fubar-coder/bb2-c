@@ -95,7 +95,16 @@ int main(void)
     CHECK(parse(BASE CONFIGS "source=/s\nfile=SYS:x|/l\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\nfile=a//b|/l\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\nfile=a\n", err, sizeof err) == -1);
-    CHECK(parse(BASE CONFIGS "source=/s\nfile=a|/l|x\n", err, sizeof err) == -1);
+    /* a file for one configuration only: the tag must name one */
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\nfile=u/lib|/r|ref\nfile=u/lib|/c|port\nfile=x|/x\n",
+                       &p, err, sizeof err) == 0);
+    CHECK(p.nfiles == 3 && !strcmp(p.file_tag[0], "ref") && !strcmp(p.file_src[1], "/c")
+          && !strcmp(p.file_tag[1], "port") && !p.file_tag[2]);
+    corpus_free(&p);
+    CHECK(parse(BASE CONFIGS "source=/s\nfile=a|/l|x\n", err, sizeof err) == -1
+          && strstr(err, "no configuration x"));
+    CHECK(parse(BASE CONFIGS "source=/s\nfile=a|/l|\n", err, sizeof err) == -1);
+    CHECK(parse(BASE CONFIGS "source=/s\nfile=a|/l|ref|x\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\ndir=\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\nremove=../x\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\njobline=\n", err, sizeof err) == -1);

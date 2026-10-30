@@ -16,6 +16,20 @@
 #                                           @VAR@ replaced (see below)
 #                      ; @configs TAG...    the configurations judged
 #                                           (port clib, default both)
+#                      ; @rwe NAME...       RWE userlibs (libs/userlibs/
+#                                           rwe/NAME.c) in blitz2:userlibs/
+#                                           rwe/: ref (blitz2 2.10 of the
+#                                           CD) gets the reference
+#                                           (RWE_LIBS: the CD's binary or
+#                                           the reference build, then the
+#                                           test needs the fixture
+#                                           rwe_refbuild), port and clib
+#                                           the C build; clib with the
+#                                           acidlibs/deflibs of the
+#                                           library's variant, the source
+#                                           tokenised with the tokens of
+#                                           blitz2-c, that variant and
+#                                           the libraries (blitztokens)
 #   AREA/ID.expect   the correct behaviour (sections, bugorig.h)
 # ID is the bug ID of the issue; ctest bug_orig_ID (- as _), labels
 # bug-orig and emulator, skipped (77) without Amiberry or the CD.  The
@@ -66,6 +80,7 @@ file(CONFIGURE OUTPUT ${tokens} CONTENT "${t1}${t2}" @ONLY)
 # bug_orig_test(BAS NAME [WANT RC]): tokenise, pass file, ctest NAME.
 # WANT: the test passes if corpusrun returns RC (the self test).
 set(bug_orig_sources)
+set(bug_orig_deps)
 function(bug_orig_test bas name)
 	cmake_parse_arguments(PARSE_ARGV 2 arg "" "WANT" "")
 	get_filename_component(id ${bas} NAME_WE)
@@ -74,16 +89,8 @@ function(bug_orig_test bas name)
 	if(NOT EXISTS ${expect})
 		message(FATAL_ERROR "bug-orig: ${bas} has no ${id}.expect")
 	endif()
-	set(src ${CMAKE_CURRENT_BINARY_DIR}/src/${id}.bb2)
-	add_custom_command(OUTPUT ${src}
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/src
-		COMMAND ${TEDTOK} ${tokens} ${bas} ${src}
-		DEPENDS ${bas} ${tokens} ${TEDTOK} host_tools
-		COMMENT "Tokenising bug-orig ${id}.bas"
-		VERBATIM)
-	set(bug_orig_sources ${bug_orig_sources} ${src} PARENT_SCOPE)
-
 	set(configs port clib)
+	set(rwe "")
 	set(extra "")
 	# the header lines begin with ';' - the list separator: replaced first.
 	# They make the pass file: a changed header configures again.
@@ -95,6 +102,8 @@ function(bug_orig_test bas name)
 		string(STRIP "${h}" h)
 		if(h MATCHES "^<semicolon> @configs (.+)$")
 			separate_arguments(configs UNIX_COMMAND "${CMAKE_MATCH_1}")
+		elseif(h MATCHES "^<semicolon> @rwe (.+)$")
+			separate_arguments(rwe UNIX_COMMAND "${CMAKE_MATCH_1}")
 		elseif(h MATCHES "^<semicolon> @pass ([a-z_]+=.*)$")
 			string(REPLACE "<semicolon>" ";" line "${CMAKE_MATCH_1}")
 			string(CONFIGURE "${line}" line @ONLY)
@@ -104,20 +113,80 @@ function(bug_orig_test bas name)
 		endif()
 	endforeach()
 
+	# RWE userlibs: per configuration the reference or the C build, the
+	# variant's libraries for clib, a token list with the libraries
+	set(clib_dir ${BLITZ2_DIR})
+	set(ref_blitz2 ${REF_BLITZ2})
+	set(fixtures "")
+	set(tok ${tokens})
+	set(tokdeps "")
+	if(rwe)
+		# the reference compiler: 2.10 (1.95 never loads a library of
+		# blitz2:userlibs/DIR, #2)
+		set(ref_blitz2 ${CD_BLITZ2}/BLITZ2)
+		set(variant "")
+		set(objs "")
+		foreach(n IN LISTS rwe)
+			get_property(info GLOBAL PROPERTY RWE_LIB_${n})
+			if(NOT info)
+				message(FATAL_ERROR "bug-orig: ${bas}: @rwe ${n}: no RWE userlib of that name "
+					"(libs/userlibs/rwe/${n}.c, RWE_LIBS)")
+			endif()
+			string(REPLACE "|" ";" info "${info}")
+			list(GET info 0 obj)
+			list(GET info 1 reffile)
+			list(GET info 2 fixture)
+			list(GET info 3 v)
+			list(GET info 4 vout)
+			if(variant AND NOT v STREQUAL variant)
+				message(FATAL_ERROR "bug-orig: ${bas}: @rwe: ${n} is built for the variant ${v}, "
+					"the others for ${variant}")
+			endif()
+			set(variant ${v})
+			set(clib_dir ${vout})
+			string(APPEND extra "file=blitz2/userlibs/rwe/${n}.obj|${reffile}|ref\n")
+			foreach(c IN LISTS configs)
+				string(APPEND extra "file=blitz2/userlibs/rwe/${n}.obj|${obj}|${c}\n")
+			endforeach()
+			list(APPEND fixtures ${fixture})
+			list(APPEND objs ${obj})
+			list(APPEND tokdeps ${v}-${n}_obj)
+		endforeach()
+		list(APPEND tokdeps ${variant}-acidlibs ${variant}-deflibs)
+		set(tok ${CMAKE_CURRENT_BINARY_DIR}/tokens/${id}.txt)
+		add_custom_command(OUTPUT ${tok}
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/tokens
+			COMMAND ${BLITZTOKENS} -o ${tok} $<TARGET_FILE:blitz2> ${clib_dir}/acidlibs
+				${clib_dir}/deflibs ${objs}
+			DEPENDS ${objs} ${clib_dir}/acidlibs ${clib_dir}/deflibs blitz2 ${BLITZTOKENS}
+				host_tools
+			COMMENT "bug-orig ${id}: token list with the RWE userlibs"
+			VERBATIM)
+		set(bug_orig_deps ${bug_orig_deps} ${tokdeps} PARENT_SCOPE)
+	endif()
+	set(src ${CMAKE_CURRENT_BINARY_DIR}/src/${id}.bb2)
+	add_custom_command(OUTPUT ${src}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/src
+		COMMAND ${TEDTOK} ${tok} ${bas} ${src}
+		DEPENDS ${bas} ${tok} ${TEDTOK} host_tools
+		COMMENT "Tokenising bug-orig ${id}.bas"
+		VERBATIM)
+	set(bug_orig_sources ${bug_orig_sources} ${src} PARENT_SCOPE)
+
 	set(work ${CMAKE_CURRENT_BINARY_DIR}/${id})
 	set(text "# ${name}: generated by tests/bug-orig/CMakeLists.txt from ${bas}\n")
 	string(APPEND text "work=${work}\nreport=${work}.txt\nruntime_errors=off\n"
 		"timeout=${BUG_ORIG_TIMEOUT}\nparallel=${parallel}\n"
 		"ted=$<TARGET_FILE:tedstub>\nlauncher=$<TARGET_FILE:reqtrap>\n"
 		"defaultdbug=${CD_BLITZ2}/DEFAULTDBUG\n"
-		"config=ref|ref|${REF_BLITZ2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
+		"config=ref|ref|${ref_blitz2}|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
 	foreach(c IN LISTS configs)
 		if(c STREQUAL "port")
 			string(APPEND text
 				"config=port|exe|$<TARGET_FILE:blitz2>|${CD_BLITZ2}/DEFLIBS|${CD_BLITZ2}/ACIDLIBS\n")
 		elseif(c STREQUAL "clib")
 			string(APPEND text
-				"config=clib|output|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n")
+				"config=clib|output|$<TARGET_FILE:blitz2>|${clib_dir}/deflibs|${clib_dir}/acidlibs\n")
 		else()
 			message(FATAL_ERROR "bug-orig: ${bas}: unknown configuration ${c} (port, clib)")
 		endif()
@@ -137,6 +206,11 @@ function(bug_orig_test bas name)
 	math(EXPR limit "${BUG_ORIG_TIMEOUT} * 2 + 60")
 	set_tests_properties(${name} PROPERTIES LABELS "${labels}" SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
+	list(REMOVE_DUPLICATES fixtures)
+	list(REMOVE_ITEM fixtures "")
+	if(fixtures)
+		set_tests_properties(${name} PROPERTIES FIXTURES_REQUIRED "${fixtures}")
+	endif()
 endfunction()
 
 # the test data: AREA/NAME.spec -> testdata/NAME
@@ -196,3 +270,7 @@ bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/bug-orig-selftest-broken.bas
 	bug_orig_selftest_broken WANT 3)
 
 add_custom_target(bug_orig_sources ALL DEPENDS ${bug_orig_sources} ${testdata_files})
+if(bug_orig_deps)
+	list(REMOVE_DUPLICATES bug_orig_deps)
+	add_dependencies(bug_orig_sources ${bug_orig_deps})
+endif()

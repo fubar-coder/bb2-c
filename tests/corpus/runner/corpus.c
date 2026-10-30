@@ -43,9 +43,11 @@ void corpus_free(struct corpus_pass *p)
     for (i = 0; i < p->nfiles; i++) {
         free(p->file_dest[i]);
         free(p->file_src[i]);
+        free(p->file_tag[i]);
     }
     free(p->file_dest);
     free(p->file_src);
+    free(p->file_tag);
     for (i = 0; i < p->ndirs; i++)
         free(p->dirs[i]);
     free(p->dirs);
@@ -263,17 +265,23 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         }
         if (!strcmp(key, "file")) {
             const char *s = val;
-            char *dest = field(&s), *src = field(&s), **d2, **s2;
+            char *dest = field(&s), *src = field(&s), **d2, **s2, **t2;
+            /* a third field (also an empty one) is the configuration */
+            char *tag = s > val && s[-1] == '|' ? field(&s) : NULL;
 
-            if (!dest || !src || !inside(dest) || !*src || *s
+            if (!dest || !src || !inside(dest) || !*src || (tag && !*tag) || *s
                 || !(d2 = realloc(p->file_dest, (p->nfiles + 1) * sizeof *d2))
-                || !(p->file_dest = d2, s2 = realloc(p->file_src, (p->nfiles + 1) * sizeof *s2))) {
+                || !(p->file_dest = d2, s2 = realloc(p->file_src, (p->nfiles + 1) * sizeof *s2))
+                || !(p->file_src = s2, t2 = realloc(p->file_tag, (p->nfiles + 1) * sizeof *t2))) {
                 free(dest);
                 free(src);
+                free(tag);
                 free(val);
-                return fail(p, err, errlen, "line %u: file=DEST|SRC (DEST inside the volume)", no);
+                return fail(p, err, errlen,
+                            "line %u: file=DEST|SRC[|TAG] (DEST inside the volume)", no);
             }
-            p->file_src = s2;
+            p->file_tag = t2;
+            p->file_tag[p->nfiles] = tag;
             p->file_dest[p->nfiles] = dest;
             p->file_src[p->nfiles++] = src;
             free(val);
@@ -345,6 +353,17 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         for (k = 0; k < i; k++)
             if (!strcasecmp(p->configs[i].tag, p->configs[k].tag))
                 return fail(p, err, errlen, "configuration %s twice", p->configs[i].tag);
+    /* the configuration of a file= with TAG */
+    for (i = 0; i < p->nfiles; i++) {
+        if (!p->file_tag[i])
+            continue;
+        for (k = 0; k < p->nconfigs; k++)
+            if (!strcmp(p->file_tag[i], p->configs[k].tag))
+                break;
+        if (k == p->nconfigs)
+            return fail(p, err, errlen, "file=%s: no configuration %s", p->file_dest[i],
+                        p->file_tag[i]);
+    }
     for (i = 0; i < p->nsources; i++)
         for (k = 0; k < i; k++) {
             char *a = corpus_name(p->sources[i]), *b = corpus_name(p->sources[k]);
@@ -442,8 +461,14 @@ static int stage(const struct corpus_pass *p, size_t c, FILE *log)
         free(to);
     }
     for (i = 0; i < p->nfiles; i++) {
-        char *to = str_printf("%s/%s", vol, p->file_dest[i]), *slash = to ? strrchr(to, '/') : NULL;
-        int bad = !to;
+        char *to, *slash;
+        int bad;
+
+        if (p->file_tag[i] && strcmp(p->file_tag[i], cf->tag))
+            continue;
+        to = str_printf("%s/%s", vol, p->file_dest[i]);
+        slash = to ? strrchr(to, '/') : NULL;
+        bad = !to;
 
         if (slash) {
             *slash = 0;

@@ -188,6 +188,9 @@ foreach(l IN LISTS RWE_LIBS)
 		list(APPEND readable_entries "${source}|${v}")
 	endif()
 	rwe_reference(${name} ${reference} reffile fixture)
+	# for other directories (tests/bug-orig: ; @rwe NAME): the C build, the
+	# reference, its fixture (empty: none) and the variant's directory
+	set_property(GLOBAL PROPERTY RWE_LIB_${name} "${obj}|${reffile}|${fixture}|${v}|${vout}")
 	add_test(NAME rwe_declarations_${name} COMMAND ${BLITZLIBCOMPARE} ${reffile} ${obj})
 	set_tests_properties(rwe_declarations_${name} PROPERTIES SKIP_RETURN_CODE 77)
 	set_property(GLOBAL APPEND PROPERTY RWE_EMULATOR_LIBS "${obj}|${reffile}")

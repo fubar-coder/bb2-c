@@ -37,10 +37,13 @@
  *   mount=NAME|DIR    a read-only volume for the programs (e.g. BB2: = the
  *                     CD, where the tests load sounds and modules from),
  *                     any number
- *   file=DEST|SRC     SRC copied to CORPUS:DEST (DEST relative, parent
+ *   file=DEST|SRC[|TAG]
+ *                     SRC copied to CORPUS:DEST (DEST relative, parent
  *                     directories made), after the files above: replaces
  *                     one of them (e.g. blitz2/deflibs) or adds one (a
- *                     library in blitz2/userlibs/DIR/), any number
+ *                     library in blitz2/userlibs/DIR/), any number; with
+ *                     TAG only for that configuration (e.g. the reference
+ *                     of a library for ref, its C build for the others)
  *   dir=DEST          an empty directory CORPUS:DEST, any number
  *   remove=DEST       CORPUS:DEST removed after staging (e.g. blitz2/ted,
  *                     blitz2/defaultdbug), any number
@@ -98,7 +101,7 @@ struct corpus_pass {
     size_t nsources;
     char **mount_name, **mount_dir;
     size_t nmounts;
-    char **file_dest, **file_src;
+    char **file_dest, **file_src, **file_tag;   /* file_tag[i] NULL: every configuration */
     size_t nfiles;
     char **dirs, **removes, **joblines;
     size_t ndirs, nremoves, njoblines;
