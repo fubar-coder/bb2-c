@@ -39,7 +39,7 @@ static const struct {
     { "corpus", 2 }, { "tedsave", 2 }, { "cd", 2 }, { "lexists", 1 }, { "opts", 2 },
     /* with a "..." string (any number of words in it) as the last argument */
     { "data", 2 }, { "stdout", 1 }, { "nostdout", 1 }, { "log", 1 }, { "nolog", 1 },
-    { "screen", 2 }, { "noscreen", 2 },
+    { "screen", 2 }, { "noscreen", 2 }, { "file", 2 }, { "nofile", 2 },
 };
 
 /* the kinds whose last argument is a "..." string */
@@ -47,7 +47,7 @@ static int quoted_kind(const char *kind)
 {
     return !strcmp(kind, "data") || !strcmp(kind, "stdout") || !strcmp(kind, "nostdout")
            || !strcmp(kind, "log") || !strcmp(kind, "nolog") || !strcmp(kind, "screen")
-           || !strcmp(kind, "noscreen");
+           || !strcmp(kind, "noscreen") || !strcmp(kind, "file") || !strcmp(kind, "nofile");
 }
 
 /* "..." at s (blanks before it skipped) with \n \t \xHH (also \x00), \ +
@@ -1510,25 +1510,45 @@ int tedab_check_expects(const struct tedab_test *t, const char *rundir,
         int l = !strcmp(e->kind, "lexists") || !strcmp(e->kind, "opts");
 
         if (quoted_kind(e->kind) && strcmp(e->kind, "data")) {
-            /* [no]stdout, [no]log, [no]screen: TEXT in a file of out/ */
+            /* [no]stdout, [no]log, [no]screen: TEXT in a file of out/;
+               [no]file: in work/NAME */
             int neg = !strncmp(e->kind, "no", 2);
             const char *k = e->kind + (neg ? 2 : 0);
             char *p = !strcmp(k, "screen") ? str_printf("%s/out/%s.txt", rundir, e->a)
+                      : !strcmp(k, "file") ? str_printf("%s/work/%s", rundir, e->a)
                       : str_printf("%s/out/%s", rundir, k);
             size_t len;
             char *text = p ? (char *)read_file(p, &len) : NULL;
             int has = text && strstr(text, (const char *)e->data) != NULL;
 
             free(p);
+            int named = !strcmp(k, "screen") || !strcmp(k, "file");
+
             if (!text && !neg) {
                 text_add(out, "  %s expect: %s%s%s missing\n", src->combo,
-                         strcmp(k, "screen") ? "" : "dump ", strcmp(k, "screen") ? k : e->a,
-                         strcmp(k, "screen") ? "" : ".txt");
+                         !strcmp(k, "screen") ? "dump " : "", named ? e->a : k,
+                         !strcmp(k, "screen") ? ".txt" : "");
                 problems++;
             } else if (has == neg) {
+                /* TEXT as in the directive: \n, \t, \xHH */
+                struct text q = { 0 };
+
+                for (size_t j = 0; j < e->len; j++) {
+                    uint8_t c = e->data[j];
+
+                    if (c == '\n')
+                        text_add(&q, "\\n");
+                    else if (c == '\t')
+                        text_add(&q, "\\t");
+                    else if (c < 32 || c == 127)
+                        text_add(&q, "\\x%02x", c);
+                    else
+                        text_add(&q, "%c", c);
+                }
                 text_add(out, "  %s expect: %s%s%s %s \"%s\"\n", src->combo, k,
-                         strcmp(k, "screen") ? "" : " ", strcmp(k, "screen") ? "" : e->a,
-                         neg ? "has" : "lacks", (const char *)e->data);
+                         named ? " " : "", named ? e->a : "", neg ? "has" : "lacks",
+                         q.p ? q.p : "");
+                free(q.p);
                 problems++;
             }
             free(text);

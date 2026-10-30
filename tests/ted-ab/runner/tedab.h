@@ -55,6 +55,8 @@
  *   ; @expect nolog "TEXT"
  *   ; @expect screen DUMP "TEXT"   the decoded dump DUMP (out/DUMP.txt)
  *   ; @expect noscreen DUMP "TEXT" has / has not TEXT in it
+ *   ; @expect file NAME "TEXT"     work/NAME has / has not TEXT in it
+ *   ; @expect nofile NAME "TEXT"
  * Postfix of a command line (a comment, teddrive ignores it, its log has it):
  *   CMD ARGS ; @ignore compilewindow
  *                        blitz2's compile window (no title, one gadget

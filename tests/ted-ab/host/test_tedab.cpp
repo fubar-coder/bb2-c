@@ -433,12 +433,20 @@ TEST_CASE("bug-orig expectations", "[bugorig]")
     CHECK(check("; @source none\n; @expect stdout \"inject: rc=0\"\n") == 0);
     CHECK(check("; @source none\n; @expect nostdout \"inject: rc=0\"\n", &rep) == 1);
     CHECK(rep == "  R5 expect: stdout has \"inject: rc=0\"\n");
+    // the text in the report as in the directive
+    CHECK(check("; @source none\n; @expect nostdout \"rc=0\\n\"\n", &rep) == 1);
+    CHECK(rep == "  R5 expect: stdout has \"rc=0\\n\"\n");
     CHECK(check("; @source none\n; @expect log \"step 1\"\n; @expect nolog \"step 2\"\n") == 0);
     CHECK(check("; @source none\n; @expect screen joined \"a=1.loop\"\n") == 0);
     CHECK(check("; @source none\n; @expect noscreen joined \"\\xc2\\xb7loop\"\n", &rep) == 1);
     CHECK(rep == "  R5 expect: screen joined has \"\xc2\xb7loop\"\n");
     CHECK(check("; @source none\n; @expect screen nosuch \"x\"\n", &rep) == 1);
     CHECK(rep == "  R5 expect: dump nosuch.txt missing\n");
+    CHECK(check("; @source none\n; @expect file blk.txt \"a\"\n") == 0);
+    CHECK(check("; @source none\n; @expect nofile blk.txt \"a\"\n", &rep) == 1);
+    CHECK(rep == "  R5 expect: file blk.txt has \"a\"\n");
+    CHECK(check("; @source none\n; @expect file nosuch \"a\"\n", &rep) == 1);
+    CHECK(rep == "  R5 expect: nosuch missing\n");
     // a missing file has no text in it
     CHECK(check("; @source none\n; @expect noscreen nosuch \"x\"\n") == 0);
     for (const char *f : { "work/blk.txt", "out/stdout", "out/log", "out/joined.txt" })
