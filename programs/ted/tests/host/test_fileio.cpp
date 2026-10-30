@@ -87,20 +87,20 @@ TEST_CASE("tokit2 quirks", "[fileio][tokit]")
     env();
     REQUIRE(tokens != nullptr);
     UBYTE out[256], txt[512], *end;
-    UWORD d5;
+    UWORD len;
 
-    // all spaces: d5 = 1, a1 ON the 0
-    d5 = tok("    ", out, &end);
-    CHECK(d5 == 1);
+    // all spaces: len = 1, a1 ON the 0
+    len = tok("    ", out, &end);
+    CHECK(len == 1);
     CHECK(end == out);
     CHECK(out[0] == 0);
     // x1print: x 1 Print (the digit ends the identifier)
-    d5 = tok("x1print", out, &end);
+    len = tok("x1print", out, &end);
     CHECK(out[0] == 'x');
     CHECK(out[1] == '1');
     CHECK((out[2] & 0x80) != 0);
-    CHECK(d5 == 5);
-    CHECK(end == out + d5);             // a1 behind the 0
+    CHECK(len == 5);
+    CHECK(end == out + len);            // a1 behind the 0
     // a token inside quotes stays text
     CHECK(tok("\"print\"", out) == 8);
     CHECK(is(out, "\"print\"", 8));

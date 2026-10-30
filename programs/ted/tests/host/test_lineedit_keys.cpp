@@ -39,32 +39,32 @@ void env()
     edcols = 80;
 }
 
-// getline's dispatch for one event d7 (d6 = id), without drawing.
-// Returns d7 if getline would leave (glinedone), else 0.
-LONG feed(LONG d7, UWORD q, UWORD d6 = 0)
+// getline's dispatch for one event (d7; id = d6), without drawing.
+// Returns event if getline would leave (glinedone), else 0.
+LONG feed(LONG event, UWORD q, UWORD id = 0)
 {
     WORD col;
 
     qualifier = q;
-    if (d7 < 0)
+    if (event < 0)
         goto charhi;
-    if (d7 & (1L << 30)) {
-        d7 &= ~(1L << 30);
+    if (event & (1L << 30)) {
+        event &= ~(1L << 30);
         goto isasc;
     }
-    if (static_cast<UWORD>(d7) < 32)
+    if (static_cast<UWORD>(event) < 32)
         goto charlow;
-    if (static_cast<UWORD>(d7) >= 127)
+    if (static_cast<UWORD>(event) >= 127)
         goto charhi;
 isasc:
-    gl_isasc(static_cast<UBYTE>(d7));
-    // print d7 -> print2: chmap[chloc + cursoff + cursx] (+$80 if color
+    gl_isasc(static_cast<UBYTE>(event));
+    // print event -> print2: chmap[chloc + cursoff + cursx] (+$80 if color
     // != normcol)
-    chmap[chloc + cursoff + cursx] = static_cast<UBYTE>(d7) | (color != normcol ? 0x80 : 0);
+    chmap[chloc + cursoff + cursx] = static_cast<UBYTE>(event) | (color != normcol ? 0x80 : 0);
     cursrite();
     return 0;
 charlow:
-    if (d7 == 31) {
+    if (event == 31) {
         if ((qualifier & 3) == 0) {
             cursleft();
             return 0;
@@ -78,41 +78,41 @@ charlow:
             horizpos(col);
         return 0;
     }
-    if (d7 == 30) {
+    if (event == 30) {
         if ((qualifier & 3) == 0)
             cursrite();
         else
             horizpos(gl_lastcol());
         return 0;
     }
-    if (d7 == 8) {
+    if (event == 8) {
         if ((cursx | cursoff) == 0)
             return 0;
         cursleft();
-        d7 = 8;
+        event = 8;
         goto char127;
     }
-    if (d7 == 9) {
+    if (event == 9) {
         col = (qualifier & 3) ? gl_untab() : gl_tab();
         if (col >= 0)
             horizpos(col);              // reline -> curspos
         return 0;
     }
-    return d7;                          // charnot9 -> glinedone
+    return event;                       // charnot9 -> glinedone
 charhi:
-    if (static_cast<UWORD>(d7) != 127)
+    if (static_cast<UWORD>(event) != 127)
         goto charnot127;
 char127:
-    gl_char127(static_cast<UBYTE>(d7));
+    gl_char127(static_cast<UBYTE>(event));
     return 0;
 charnot127:
-    if (static_cast<UWORD>(d7) == 0xFFFF && d6 == 1)
+    if (static_cast<UWORD>(event) == 0xFFFF && id == 1)
         return 0;                       // hprop: needs prop2sinfo (UI)
-    if (static_cast<UWORD>(d7) == 0xFFFE && d6 == 0xf8e1) {
+    if (static_cast<UWORD>(event) == 0xFFFE && id == 0xf8e1) {
         horizpos(gl_delright());
         return 0;
     }
-    return d7;                          // glinedone
+    return event;                       // glinedone
 }
 
 void typestr(const char *s)

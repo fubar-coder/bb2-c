@@ -40,8 +40,8 @@ TEST_CASE("tokit2 on the detok text of every tokenised CD source", "[tokit][corp
             if (used > tl)
                 std::memset(in.data() + tl, 0, used - tl);
             used = tl + 16;
-            UWORD d5 = tokit2(out.data(), in.data(), static_cast<WORD>(tl), nullptr);
-            tok.insert(tok.end(), out.begin(), out.begin() + d5);
+            UWORD len = tokit2(out.data(), in.data(), static_cast<WORD>(tl), nullptr);
+            tok.insert(tok.end(), out.begin(), out.begin() + len);
             t = q + 1;
         }
         CHECK(corpus::matches("tokall", s, tok));

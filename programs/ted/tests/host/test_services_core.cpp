@@ -145,19 +145,19 @@ TEST_CASE("tokone, help_core, tokall, detokallz", "[services][tokit]")
     std::string src = std::string(name) + " x";
     UBYTE line[200], ref[200];
     std::strcpy(reinterpret_cast<char *>(line), src.c_str());
-    UWORD d5 = tokone(line);
+    UWORD len = tokone(line);
     UWORD ref5 = tokit2(ref, reinterpret_cast<const UBYTE *>(src.c_str()),
                         static_cast<WORD>(src.size()), nullptr);
-    CHECK(d5 == ref5);
-    CHECK(std::memcmp(line, ref, d5) == 0);
+    CHECK(len == ref5);
+    CHECK(std::memcmp(line, ref, len) == 0);
     CHECK((line[0] & 0x80) != 0);
 
     // help_core: the token at column 0
     const char *t1[] = { src.c_str() };
     list(t1);
     struct item *it = firstitem;
-    std::memcpy(it->chars, line, d5);   // same size or shorter
-    it->numchars = static_cast<UBYTE>(d5);
+    std::memcpy(it->chars, line, len);  // same size or shorter
+    it->numchars = static_cast<UBYTE>(len);
     UWORD num = 0;
     const char *help = help_core(it, 0, &num);
     REQUIRE(help != nullptr);

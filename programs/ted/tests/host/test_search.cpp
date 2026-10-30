@@ -74,7 +74,7 @@ struct no_outmem {
 TEST_CASE("replace2 and replace", "[search]")
 {
     static const char *const l1[] = { "abc abc", "xyz", "aXa" };
-    struct item *a4;
+    struct item *item;
     no_outmem om;
 
     env();
@@ -84,33 +84,33 @@ TEST_CASE("replace2 and replace", "[search]")
     list(l1);
     search("abc", "x");
     allalt = 0;
-    CHECK(replace2(thisitem, &a4));
-    CHECK(text(a4) == "x x");
-    CHECK(a4->numchars == 4);
-    CHECK(a4 == thisitem);
-    CHECK(a4 == firstitem);
+    CHECK(replace2(thisitem, &item));
+    CHECK(text(item) == "x x");
+    CHECK(item->numchars == 4);
+    CHECK(item == thisitem);
+    CHECK(item == firstitem);
     CHECK(allalt == 0xffff);
 
     // nothing found: Z=0, list unchanged
     thisitem = nth(1);
-    CHECK(!replace2(thisitem, &a4));
-    CHECK(a4 == nth(1));
+    CHECK(!replace2(thisitem, &item));
+    CHECK(item == nth(1));
 
     // replacement containing the search text: continues behind it
     search("a", "aa");
     thisitem = nth(2);
-    CHECK(replace2(thisitem, &a4));
-    CHECK(text(a4) == "aaXaa");
+    CHECK(replace2(thisitem, &item));
+    CHECK(text(item) == "aaXaa");
 
     // case insensitive unless findcase(): "ABC" matches "abc"
     static const char *const l2[] = { "ABC Abc" };
     list(l2);
     search("abc", "1");
-    CHECK(replace2(thisitem, &a4));
-    CHECK(text(a4) == "1 1");
+    CHECK(replace2(thisitem, &item));
+    CHECK(text(item) == "1 1");
     list(l2);
     host_findcase = TRUE;
-    CHECK(!replace2(thisitem, &a4));
+    CHECK(!replace2(thisitem, &item));
     host_findcase = FALSE;
 
     // replace (menu): empty search text -> beep; nothing -> beep
