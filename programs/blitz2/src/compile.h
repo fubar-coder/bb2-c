@@ -132,17 +132,17 @@ void dopass(void);          /* 2556 one compile pass */
  * (a5) then points to it.  Also frees the macro buffer and updates the
  * racing stripe. */
 BOOL nextline(void);
-/* 2105: write d1 as 4 upper case hex digits at a0 (no NUL) */
-void hexascii(UWORD d1, UBYTE *a0);
+/* 2105: write val as 4 upper case hex digits at buf (no NUL) */
+void hexascii(UWORD val, UBYTE *buf);
 
 /* --- macros */
 void expandmax(void);       /* 2121 expand `!name{..}` macros in the statement
                                at srcptr; srcptr may move to myline buffer */
 void freembuff(void);       /* 2342 free myline (macrolen bytes) */
-/* 2351: scan a macro parameter at *a4 (in/out, past the terminator);
+/* 2351: scan a macro parameter at *pp (in/out, past the terminator);
  * returns the terminator ',' or '}' found at nesting 0; toggles quoteflag;
  * NUL -> syntaxerr */
-UWORD findit(UBYTE **a4);
+UWORD findit(UBYTE **pp);
 BOOL isitopen(UWORD c);     /* 2384 asm Z=1: c is '{' or '(' */
 BOOL isitclose(UWORD c);    /* 2389 asm Z=1: c is '}' or ')' */
 
@@ -181,9 +181,9 @@ void dostatement(void);     /* 2953 compile one statement (falls into
                                handlechar); leaves current char for reget */
 
 /* 3181 dolibtoke: emit a library statement/function call.
- * in: nparams (asm d1), lib (a2), sub (a3, from findtoke), usertype.
+ * in: nparams (asm d1), blib (a2), sub (a3, from findtoke), usertype.
  * Returns current char (asm: tail `bra reget`, use eos()). */
-UWORD dolibtoke(UWORD nparams, struct blitzlib *lib, UBYTE *sub);
+UWORD dolibtoke(UWORD nparams, struct blitzlib *blib, UBYTE *sub);
 
 /* 3260 sizespec2: parse optional size specifier (.type / $) after a lib
  * token.  Returns the primitive type code (asm d1), also stored in
