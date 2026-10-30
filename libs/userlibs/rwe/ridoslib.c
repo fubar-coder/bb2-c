@@ -36,25 +36,33 @@
  *     id*4 as a word), AllocMem's results are not checked, an id used
  *     twice loses the first request; a request whose StartNotify failed
  *     stays in the table (RemNotify / finit would EndNotify it) and is
- *     not counted, so finit may stop before it.
- *   - RemNotify: no range check either; filelens[id] stays set; d4 is
- *     set to $12345678 (a debugging leftover).
+ *     not counted, so finit may stop before it (#626, #619, #620, #621).
+ *   - RemNotify: no range check either (#626).
  *   - finit removes the requests from id 63 down only while the counter
- *     is not 0; it deletes the port only if dos.library was open.
- *   - FreeDeviceList checks _dosbase (init's) but unlocks through the
- *     program's dos base; it does not check that the list is locked, and
+ *     is not 0 (#621).
+ *   - FreeDeviceList does not check that the list is locked (#623), and
  *     leaves the current entry: DeviceEntryType then reads the entry of
- *     the unlocked list.
+ *     the unlocked list (#622).
  *   - NextDevice without GetDeviceList returns with d0 unchanged (the
- *     result string's length is whatever d0 was); it copies the name up
- *     to its 0 (DOS BSTRs have one) and leaves a3 behind the 0, d0 = the
- *     BSTR's length byte.
+ *     result string's length is whatever d0 was) (#625); it copies the
+ *     name up to its 0 (DOS BSTRs have one) and leaves a3 behind the 0
+ *     (#618).
  *   - GetPathName never looks at the first character: "/abc" and ":x"
- *     give "", like a name without separator; the result has a3 behind
- *     its 0.  GetFileName writes no 0 (a3 on the end of the characters).
- *     Both take the length as a word (MOVE.w -(a2): the low word of the
- *     long), and nothing limits tbuf to 256 characters (the original
- *     overwrites the code behind it, the C build other data).
+ *     give "", like a name without separator (#624); the result has a3
+ *     behind its 0 (#618).  GetFileName and GetPathName take the length
+ *     as a word (MOVE.w -(a2): the low word of the long) (#628), and
+ *     nothing limits tbuf to 256 characters (the original overwrites the
+ *     code behind it, the C build other data) (#627).
+ * Like the original, no defects: RemNotify leaves filelens[id] set (the
+ * next AddNotify of the id sets it again) and sets d4 to $12345678 (a
+ * debugging leftover, d4 is no result); finit deletes the port only if
+ * dos.library was open (V36 is always there where init's CreateMsgPort,
+ * exec V36, is); NextDevice's d0 is the BSTR's length byte (the length
+ * of the string it copied); GetFileName writes no 0, a3 on the end of
+ * the characters (string results need none, the compiler adds it, see
+ * #257).  FreeDeviceList, like GetDeviceList and NextDevice, goes
+ * through init's _dosbase (it also checks it); the C build uses a6, the
+ * program's dos base (!libs #doslib,#la6): the same pointer.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -186,7 +194,7 @@ static ULONG BLITZ_ROUTINE getfilename_c(const UBYTE *s BL_REG(d0), const UWORD 
         if (c == '/' || c == ':')
             t = tbuf;
         else
-            *t++ = c;                                   /* BUG(orig): no limit */
+            *t++ = c;                                   /* BUG(orig) (#627): no limit */
     }
     *t = 0;
     for (t = tbuf; (c = *t++) != 0; n++)                /* no 0 at a3 */
@@ -195,7 +203,7 @@ static ULONG BLITZ_ROUTINE getfilename_c(const UBYTE *s BL_REG(d0), const UWORD 
 }
 
 /* GetPathName(p$) (d0; -2(a2) as above): searched from the end, the
-   first character is never looked at (BUG(orig)) */
+   first character is never looked at (BUG(orig) (#624)) */
 static ULONG BLITZ_ROUTINE getpathname_c(const UBYTE *s BL_REG(d0), const UWORD *lens BL_REG(a2))
 {
     ULONG n = (ULONG)lens[-1] + 1, i;
@@ -294,12 +302,12 @@ static ULONG BLITZ_ROUTINE addnotify_c(ULONG id BL_REG(d0), STRPTR file BL_REG(d
     if (!dosbase_ || !msgport)
         return 0;                                       /* whoops */
     filelen = lens[-1] + 1;
-    filecop = AllocMem(filelen, MEMF_CLEAR);            /* BUG(orig): unchecked */
+    filecop = AllocMem(filelen, MEMF_CLEAR);            /* BUG(orig) (#619): unchecked */
     s = fileptr;
     d = filecop;
     while ((*d++ = *s++) != 0)
         ;
-    notify = AllocMem(NOTIFYSIZE, MEMF_CLEAR);          /* BUG(orig): unchecked */
+    notify = AllocMem(NOTIFYSIZE, MEMF_CLEAR);          /* BUG(orig) (#619): unchecked */
     off = (WORD)(notifynum << 2);                       /* ASL.w #2 */
     AT(filelens, off) = filelen;
     AT(notifys, off) = (ULONG)notify;
@@ -356,7 +364,7 @@ static ULONG BLITZ_ROUTINE lockdoslist_c(UWORD flags BL_REG(d0),
     return (ULONG)-1;
 }
 
-/* NextDevice: d0 unchanged without a list (BUG(orig)) */
+/* NextDevice: d0 unchanged without a list (BUG(orig) (#625)) */
 static ULONG BLITZ_ROUTINE nextlistitem_c(ULONG d0 BL_REG(d0),
                                           struct DosLibrary *dos BL_REG(a6))
 {

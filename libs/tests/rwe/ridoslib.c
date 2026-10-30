@@ -15,8 +15,8 @@
  * StartNotify on a missing device, one request left for finit);
  * GetDeviceList (devices, volumes, assigns) and NextDevice to the end
  * with DeviceEntryType after each, NextDevice/DeviceEntryType after
- * FreeDeviceList (stale entry, BUG(orig)); finit (ends the requests left;
- * the failed request stays allocated, BUG(orig)).  Each set its own state,
+ * FreeDeviceList (stale entry, BUG(orig) (#622)); finit (ends the requests left;
+ * the failed request stays allocated, BUG(orig) (#621)).  Each set its own state,
  * the system the same: the results must be equal.
  * Not covered: ids outside 0..63 (they write outside the tables), names
  * longer than tbuf.
@@ -256,7 +256,7 @@ int main(int argc, char **argv)
     devlist(LDF_DEVICES, 1);
 
     /* finit ends request 40; the failed request 2 stays allocated
-       (BUG(orig)) */
+       (BUG(orig) (#621)) */
     ROUT = "finit";
     strcpy(VEC, "");
     DO2(ENT(LIB, E_FINIT, 0), (void)0);

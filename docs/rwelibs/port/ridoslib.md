@@ -10,8 +10,9 @@ through one message port, the DOS device list and two string functions:
 * `CheckNotify` / `WaitNotify` – the id of the next message (replied), 0
   if there is none; WaitNotify waits for one first.
 * `NotifyPort` – the port.
-* `GetDeviceList flags` – `LockDosList(flags | LDF_READ)` through the
-  program's dos base (`!libs #doslib,#la6`); `NextDevice` – the name of
+* `GetDeviceList flags` – `LockDosList(flags | LDF_READ)` through init's
+  `_dosbase` (the C build through a6, the program's dos base of `!libs
+  #doslib,#la6`: the same pointer); `NextDevice` – the name of
   the next entry (`NextDosEntry`), "" at the end; `DeviceEntryType` –
   `dol_Type` of the current entry, -1 if none; `FreeDeviceList` –
   `UnLockDosList`.
@@ -49,25 +50,35 @@ d0-d2, d4/d5, a0/a1 and a6 in places.
   first request. A request whose StartNotify failed stays in the table
   (RemNotify or finit would EndNotify it) and is not counted, so finit,
   which stops when the counter is 0, may never reach it: it stays
-  allocated.
-* RemNotify: no range check either; `filelens[id]` stays set; d4 is set
-  to `$12345678` (a debugging leftover).
+  allocated (#626, #619, #620, #621).
+* RemNotify: no range check either (#626).
 * finit removes the requests from id 63 down only while the counter is
-  not 0, and deletes the port only if dos.library was open.
-* FreeDeviceList checks init's `_dosbase` but unlocks through the
-  program's dos base; it does not check that the list is locked, and it
+  not 0 (#621).
+* FreeDeviceList does not check that the list is locked (#623), and it
   leaves the current entry: DeviceEntryType then reads an entry of the
-  unlocked list.
+  unlocked list (#622).
 * NextDevice without GetDeviceList returns with d0 unchanged (the result
-  string's length is whatever d0 was). It copies the name up to its 0 (the
-  BSTRs of the DOS list have one), leaves a3 behind the 0, and d0 is the
-  BSTR's length byte.
+  string's length is whatever d0 was) (#625). It copies the name up to
+  its 0 (the BSTRs of the DOS list have one) and leaves a3 behind the 0
+  (#618).
 * GetPathName never looks at the first character: `/abc` and `:x` give
-  "", like a name without separator; a3 ends behind the result's 0.
-  GetFileName writes no 0 (a3 on the end of the characters). Both take
-  the length as a word (`MOVE.w -(a2)`: the low word of the long), and
-  nothing limits the 256 byte buffer (the original overwrites the code
-  behind it, the C build other data).
+  "", like a name without separator (#624); a3 ends behind the result's
+  0 (#618). GetFileName and GetPathName take the length as a word
+  (`MOVE.w -(a2)`: the low word of the long) (#628), and nothing limits
+  the 256 byte buffer (the original overwrites the code behind it, the C
+  build other data) (#627).
+
+Like the original, and no defects: RemNotify leaves `filelens[id]` set
+(the next AddNotify of the id sets it again) and sets d4 to `$12345678`
+(a debugging leftover; d4 is no result); finit deletes the port only if
+dos.library was open (V36 is always there where init's CreateMsgPort,
+exec V36, is); NextDevice's d0 is the BSTR's length byte (the length
+of the string it copied); GetFileName writes no 0, a3 on the end of the
+characters (string results need none, the compiler adds it, see #257).
+FreeDeviceList, like GetDeviceList and
+NextDevice, goes through init's `_dosbase` (it also checks it); the C
+build uses a6, the program's dos base: the same pointer, nothing
+observable.
 
 ## Test
 
