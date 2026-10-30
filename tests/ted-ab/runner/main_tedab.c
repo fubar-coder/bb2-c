@@ -74,7 +74,7 @@ struct pass {
 /* one run over all sessions */
 struct run {
     struct tedab_run r;
-    int state, attempts, done;
+    int state, attempts, done, gates_ok;  /* gates_ok: of its last session */
     unsigned session;           /* the last one it was in */
     char *dir;                  /* its run directory (work/sNNN/vol/runs/T/XX) */
 };
@@ -703,8 +703,9 @@ static void bugorig_verdicts(const struct tedab_test *t, struct run **tr,
             free(d.p);
         }
         if (!strncmp(rs, "NOTRUN", 6) || !strncmp(rs, "SKIPPED", 7)
-            || !strncmp(ps, "NOTRUN", 6) || !strncmp(ps, "SKIPPED", 7))
-            v = 2;              /* not run: no verdict */
+            || !strncmp(ps, "NOTRUN", 6) || !strncmp(ps, "SKIPPED", 7)
+            || !tr[ref]->gates_ok || !tr[cc]->gates_ok)
+            v = 2;              /* not run (or the tools failed): no verdict */
         else
             v = tedab_bugorig_verdict(rs, rp.p ? rp.p : "", ps, pp.p ? pp.p : "", cmp);
         text_add(rep, "  bug-orig %s against %s: %s\n", tedab_combo_names[cc],
@@ -728,7 +729,7 @@ static int run(FILE *log)
     struct teddump_fonts fonts;
     unsigned nsess = 0;
     struct text rep = { 0 };
-    int rc = 2, all_ok = 1, c, worst = -1, all_gates = 1;
+    int rc = 2, all_ok = 1, c, worst = -1;
 
     for (i = 0; i < sizeof files / sizeof files[0]; i++)
         if (access(files[i], R_OK)) {
@@ -884,6 +885,7 @@ static int run(FILE *log)
                 int requeue = 0;
 
                 r->state = state[k];
+                r->gates_ok = s->gates_ok;
                 /* the run hit #340 (TED's a0toname, depends on the memory
                    layout), or was skipped because the run it waited for did
                    (tedab_session_waits_for): again, first in a new
@@ -963,7 +965,6 @@ static int run(FILE *log)
                  s->events.p ? s->events.p : "", s->gate.p ? s->gate.p : "",
                  s->gates_ok ? "OK" : "FAILED");
         all_ok &= s->gates_ok;
-        all_gates &= s->gates_ok;
     }
     {
         size_t npairs = 0, nsame = 0, nok = 0;
@@ -1035,7 +1036,7 @@ static int run(FILE *log)
         goto out;
     }
     fwrite(rep.p, 1, rep.n, log);
-    rc = P.bugorig ? (all_gates && worst >= 0 ? worst : 2) : all_ok ? 0 : 1;
+    rc = P.bugorig ? (worst >= 0 ? worst : 2) : all_ok ? 0 : 1;
 out:
     for (unsigned w = 0; w < nsess; w++) {
         if (ss[w].e) {
