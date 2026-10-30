@@ -41,35 +41,40 @@
  *
  * BUG(orig), kept:
  *   - RTEZScreenModeRequest calls rtFontRequestA (-96) with the screen
- *     mode requester instead of rtScreenModeRequestA (-144).
+ *     mode requester instead of rtScreenModeRequestA (-144) (#466).
  *   - RTEZFlagsRequest stores the title in RTEZRequest's tag list, not in
  *     its own: its requester always has reqtools' default title (there
  *     the title tag is off until RTEZRequest with a title sets it, and
- *     RTEZRequest resets the title after every call).
+ *     RTEZRequest resets the title after every call) (#455).
  *   - RTEZFreePattern 2 resets the multi-load requester's flags (the
- *     multi-load is 3 in RTEZSetPattern and RTEZSetDefaultDirectory).
+ *     multi-load is 3 in RTEZSetPattern and RTEZSetDefaultDirectory)
+ *     (#456).
  *   - RTEZMultiLoadFile tests only the low byte of the file list address
  *     (CMP.b #0,d0): a list at an address ending in $00 is returned as
- *     the address instead of -1.
+ *     the address instead of -1 (#462).
  *   - RTEZGetLong returns the value also on cancel (TST.l without a
- *     branch); the value and the default stay for the next call.
+ *     branch); the value and the default stay for the next call (#457).
  *   - RTEZGetString on cancel does not free its buffer (memlib frees it
- *     at the end of the program); the default string is copied without
- *     a limit into the buffer of MaxChars bytes; the result has no 0.
- *   - RTEZPathRequest writes no 0 behind the path; RTEZSaveFile builds
- *     its result at the title but restores a3 (MOVEM a3-a6), RTEZLoadFile/
- *     RTFileRequest leave a3 behind the 0.  FileName$ is copied with a
- *     length of 108, whatever its own (maxslib copies 108 bytes).
+ *     at the end of the program) (#458); the default string is copied
+ *     without a limit into the buffer of MaxChars bytes (#459).
+ *   - RTEZSaveFile builds its result at the title but restores a3 (MOVEM
+ *     a3-a6) (#465), RTEZLoadFile/RTFileRequest leave a3 behind the 0
+ *     (#461).
  *   - RTASyncRequest/RTASyncPaletteRequest read the "user port" at 86 of
  *     the window object (not of the Window) and keep its signal bit
  *     shifted by one (LSL.b #1) in a byte nobody reads; the handlers are
- *     called with no signals (sigs is never set).  RTASyncPaletteRequest
- *     and RTEZPaletteRequest do not store RTReturnValue.
+ *     called with no signals (sigs is never set) (#454).
+ *     RTASyncPaletteRequest and RTEZPaletteRequest do not store
+ *     RTReturnValue (#464).
  *   - init: when a requester cannot be allocated, the library and the
  *     requesters allocated so far stay (finit does nothing then); finit
- *     does not clear anything (a second finit frees again).  No routine
- *     checks the library: without reqtools.library they call through
- *     a6 = 0 (RTVersion/RTRevision read address $14/$16).
+ *     does not clear anything (a second finit frees again) (#460).  No
+ *     routine checks the library: without reqtools.library they call
+ *     through a6 = 0 (RTVersion/RTRevision read address $14/$16) (#463).
+ * Not defects: the string results (RTEZGetString, RTEZPathRequest, ...)
+ * have no 0 behind them (a string function returns its length, as
+ * usual); FileName$ is copied with a length of 108, whatever its own
+ * (maxslib copies 108 bytes: reqtools' file name buffer size).
  *
  * DIFF: a2 stays unchanged (the original loads its arguments for
  * reqtools there; docs/libs/cmdlibs-port.md "General").
@@ -489,7 +494,7 @@ static ULONG spTagList[] = { RTFI_MatchPat, 0, 0, 0 };
 static STRPTR swsPreq;
 static ULONG preqTagList[] = { RTFI_Flags, FREQF_NOFILES, RT_LockWindow, (ULONG)-1, 0, 0 };
 
-/* RTEZFlagsRequest: RequestFTitle is never set (BUG(orig)) */
+/* RTEZFlagsRequest: RequestFTitle is never set (BUG(orig), #455) */
 static ULONG RequestFTagList[] = {
     RTEZ_ReqTitle, 0, RT_ReqPos, REQPOS_CENTERSCR, RT_LockWindow, (ULONG)-1,
     RT_Underscore, '_', RT_IDCMPFlags, 0, 0, 0
@@ -596,7 +601,7 @@ static ULONG BLITZ_ROUTINE initreqlib_c(void)
     ALLOC(Mfilereq, RT_FILEREQ);
     ReqToolsActive = (ULONG)-1;
     return (ULONG)Mfilereq;
-failed:                                 /* BUG(orig): nothing given back */
+failed:                                 /* BUG(orig): nothing given back (#460) */
     ReqToolsActive = 0;
     return 0;
 }
@@ -695,7 +700,7 @@ static ULONG BLITZ_ROUTINE rtTagrequest_c(STRPTR body BL_REG(d0), STRPTR gadget 
 }
 
 /* RTEZFlagsRequest(title$,body$,gadget$,idcmp) (d0-d3; the gadget's
-   length -12(a2): none = no gadgets); BUG(orig): the title goes to
+   length -12(a2): none = no gadgets); BUG(orig) (#455): the title goes to
    RTEZRequest's list */
 static ULONG BLITZ_ROUTINE rtflagsrequest_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                             STRPTR gadget BL_REG(d2), ULONG idcmp BL_REG(d3),
@@ -839,7 +844,7 @@ static ULONG BLITZ_ROUTINE rtsetpat_c(ULONG n BL_REG(d0), STRPTR pat BL_REG(d1))
     return 0;
 }
 
-/* RTEZFreePattern n (d0): BUG(orig): 2 for the multi-load */
+/* RTEZFreePattern n (d0): BUG(orig): 2 for the multi-load (#456) */
 static ULONG BLITZ_ROUTINE rtfreepat_c(ULONG n BL_REG(d0))
 {
     if (n == 0)
@@ -903,7 +908,7 @@ static ULONG BLITZ_ROUTINE rtfontreq_c(STRPTR title BL_REG(d0))
     return (ULONG)&myfont;
 }
 
-/* RTEZScreenModeRequest(title$) (d0): BUG(orig): rtFontRequestA */
+/* RTEZScreenModeRequest(title$) (d0): BUG(orig): rtFontRequestA (#466) */
 static ULONG BLITZ_ROUTINE rtsmreq_c(STRPTR title BL_REG(d0))
 {
     ULONG r = RTJSR(LVO_rtFontRequestA, 0, smTagList, smreq, 0, title);
@@ -990,7 +995,7 @@ static UBYTE *gsalloc(ULONG size)
 
 /* gsCont: the requester on gsBuffer; the string from the title on (no 0,
    a3 behind it), its length; 0 and a3 unchanged on cancel (the buffer
-   stays, BUG(orig)) */
+   stays, BUG(orig), #458) */
 static ULONG getstring(STRPTR title, STRPTR body, ULONG max)
 {
     ULONG r;
@@ -1023,7 +1028,7 @@ static ULONG BLITZ_ROUTINE rtgetstr_c(STRPTR title BL_REG(d0), STRPTR body BL_RE
 }
 
 /* RTEZGetString(title$,body$,max,default$) (d3): the default copied into
-   the buffer (BUG(orig): without a limit) */
+   the buffer (BUG(orig): without a limit, #459) */
 static ULONG BLITZ_ROUTINE rtgetstrDef_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                          ULONG max BL_REG(d2), const UBYTE *def BL_REG(d3))
 {
@@ -1055,7 +1060,7 @@ static ULONG BLITZ_ROUTINE rtunlockwin_c(ULONG lock BL_REG(d1), APTR *win BL_REG
 /* ---------------------------------------------------- async requesters */
 
 /* the signal bit of the "user port" at 86 of the window object (the
-   object, not the Window: BUG(orig)), shifted by one */
+   object, not the Window: BUG(orig), #454), shifted by one */
 static UBYTE portmask(const UBYTE *obj)
 {
     const struct MsgPort *port = *(const struct MsgPort *const *)(obj + 86);

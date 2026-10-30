@@ -69,7 +69,7 @@ with the original's contents and are changed in place like the original's
 (`freqFlags+4` …); init stores a requester only when it was allocated
 (the variable keeps its old value otherwise), as the original. String
 results are built from the title argument's address, like the original
-(`MOVE.l d0,a3`); a3 ends where the original leaves it (see BUG(orig)).
+(`MOVE.l d0,a3`); a3 ends where the original leaves it (see BUG(orig), #461 #465).
 The thunks keep d1/a0/a1 (finit also d0), the C code d2-d7/a2-a6; the
 original changes d0-d2, a0-a2 and what reqtools changes.
 
@@ -79,34 +79,42 @@ there; `docs/libs/cmdlibs-port.md` "General").
 ## BUG(orig)
 
 * RTEZScreenModeRequest calls `rtFontRequestA` (-96) with the screen mode
-  requester instead of `rtScreenModeRequestA` (-144).
+  requester instead of `rtScreenModeRequestA` (-144) (#466).
 * RTEZFlagsRequest stores its title in RTEZRequest's tag list (where the
   title tag is off and the next RTEZRequest resets it): its own list has
-  `RTEZ_ReqTitle, 0`, the requester always gets reqtools' default title.
+  `RTEZ_ReqTitle, 0`, the requester always gets reqtools' default title
+  (#455).
 * RTEZFreePattern 2 resets the multi-load requester's flags; the
   multi-load is 3 in RTEZSetPattern and RTEZSetDefaultDirectory (2 is the
-  path requester there, RTEZSetPattern 2 does nothing).
+  path requester there, RTEZSetPattern 2 does nothing) (#456).
 * RTEZMultiLoadFile tests the file list with `CMP.b #0,d0`: a list at an
-  address ending in `$00` is returned as its address instead of -1.
+  address ending in `$00` is returned as its address instead of -1
+  (#462).
 * RTEZGetLong returns the value also on cancel (`TST.l d0` without a
-  branch); the value (and so the default) stays for the next call.
+  branch); the value (and so the default) stays for the next call
+  (#457).
 * RTEZGetString does not free its buffer on cancel (memlib frees it at
-  the end of the program); the default string is copied into the buffer
-  of MaxChars bytes without a limit; the result has no 0 behind it.
-* RTEZPathRequest writes no 0 behind the path. RTEZSaveFile builds its
-  result at the title but restores a3 (`MOVEM a3-a6`), RTEZLoadFile and
-  RTFileRequest leave a3 behind the 0 (on cancel at the title). FileName$
-  is copied with a length of 108 whatever its own length is.
+  the end of the program) (#458); the default string is copied into the
+  buffer of MaxChars bytes without a limit (#459).
+* RTEZSaveFile builds its result at the title but restores a3 (`MOVEM
+  a3-a6`) (#465), RTEZLoadFile and RTFileRequest leave a3 behind the 0
+  (on cancel at the title) (#461).
 * RTASyncRequest/RTASyncPaletteRequest read the "user port" at offset 86
   of the window object (not of the Window it points to) and keep its
   signal bit shifted by one (`LSL.b #1`) in a byte nobody reads; the
-  handler is always called with no signals (`sigs` is never set).
-  RTEZPaletteRequest and RTASyncPaletteRequest do not set RTReturnValue.
+  handler is always called with no signals (`sigs` is never set) (#454).
+  RTEZPaletteRequest and RTASyncPaletteRequest do not set RTReturnValue
+  (#464).
 * init: when a requester cannot be allocated, the library and the
   requesters allocated so far stay (finit does nothing then). finit
-  clears nothing: a second finit frees again. Without reqtools.library
-  every requester calls through a6 = 0 (RTVersion/RTRevision read the
-  addresses `$14`/`$16`).
+  clears nothing: a second finit frees again (#460). Without
+  reqtools.library every requester calls through a6 = 0
+  (RTVersion/RTRevision read the addresses `$14`/`$16`) (#463).
+
+Original behaviour that is not a defect: RTEZGetString's result and
+RTEZPathRequest's path have no 0 behind them (the usual convention of a
+string result, which has its length); FileName$ is copied with a length
+of 108 whatever its own length is (reqtools' file name buffer size).
 
 ## Test
 
