@@ -67,33 +67,34 @@ odd address).
 * `PackPBM`'s failure path has no RTS: it falls into `UnPackPBM` with the
   registers of the caller and d0 = -1, i.e. it unpacks from address -1
   (then 0, 1, …) into dest, as far as the **caller's d3** + dest allows,
-  before returning -1. With a large d3 that overwrites memory.
+  before returning -1. With a large d3 that overwrites memory (#772).
 * `UnPackPBM` tests its limits after the access and signed: it reads the
-  byte at source+length and writes one byte past destlength.
+  byte at source+length and writes one byte past destlength (#778).
 * `UnpackIFF` treats every BODY as ByteRun1 (the compression byte of the
-  BMHD is not read), takes the row width as width/8 (`ASR.w #3`; rows that
-  ILBM pads to words lose their alignment), counts the bytes of a row in
-  a signed byte (rows of 129 bytes and more unpack nothing but still
-  return -1), does not stop a run at the end of a row (it runs into the
-  next row or behind the plane), and nPlanes 0 stores 256 plane pointers
-  into its table of 8 (over its other variables).
+  BMHD is not read) (#773), takes the row width as width/8 (`ASR.w #3`;
+  rows that ILBM pads to words lose their alignment) (#775), counts the
+  bytes of a row in a signed byte (rows of 129 bytes and more unpack
+  nothing but still return -1) (#774), does not stop a run at the end of
+  a row (it runs into the next row or behind the plane) (#776), and
+  nPlanes 0 stores 256 plane pointers into its table of 8 (over its other
+  variables) (#777).
 * The chunk searches step by 2 bytes from the given address: BMHD within
   5120 bytes, BODY within 5120 bytes from the BMHD on (a word counter),
-  CMAP within 5122 bytes.
+  CMAP within 5122 bytes (#766).
 * `ILBMPalette` without offset always frees the palette's colour block
   (if it has one) and allocates a new one of the CMAP's size; with an
   offset into a palette that is too small it does the same and ignores
-  the offset. The size passed for the freed block comes from the object's
-  colour count; if the new allocation fails, the object keeps the freed
-  block.
+  the offset (#769). The size passed for the freed block comes from the
+  object's colour count; if the new allocation fails, the object keeps
+  the freed block (#768).
 * `LoadIFF` returns -1 even if UnpackIFF failed (its result is not
-  looked at).
+  looked at) (#771).
 * `DeIce`: the picture flag of Pack-Ice loads the default count `$0f9f`
   into d7, the register of the bit buffer; the next bit (the "own count"
   flag) and the first 6 bits of the count then come from `$9f`: the
   default is never used, and the count is at least `$3C00` – 15361 or
   more groups of 8 bytes are converted, ending at the end of the data
-  (123 KB and more below it for short data).
+  (123 KB and more below it for short data) (#767).
 
 ## Test
 
@@ -127,7 +128,7 @@ Amiga mode only). LoadIFF reads an ILBM of the test from `RAM:`; besides
 bitmap and palette the bank afterwards is compared (bank 51 free again,
 NextBank(51)). With RIAmosFuncLib's default of 50 banks there is no
 bank 51: LoadIFF returns 0 (a real program needs `BankLimit` above 51 –
-BUG(orig) of the combination); the test checks that case and then raises
+BUG(orig) of the combination, #770); the test checks that case and then raises
 the limit to 60.
 
 Not covered: corrupt ICE data, PackPBM's failure with a large d3,

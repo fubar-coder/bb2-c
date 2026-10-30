@@ -25,27 +25,32 @@
  *   - PackPBM's failure (the packed data would not be smaller than the
  *     source: -1) falls into UnPackPBM with the restored registers and
  *     d0 = -1: it unpacks from address -1 (then 0, 1 ...) into dest,
- *     limited by the CALLER'S d3 + dest, before returning -1.
+ *     limited by the CALLER'S d3 + dest, before returning -1 (#772).
  *   - UnPackPBM reads the byte at source+length and writes one byte
- *     past destlength (the limits are tested after the access, signed).
+ *     past destlength (the limits are tested after the access, signed)
+ *     (#778).
  *   - UnpackIFF treats every BODY as ByteRun1 (the compression byte of
- *     the BMHD is not read), takes the row width as width/8 (rows that
- *     ILBM pads to words lose their alignment), counts the bytes of a row
- *     in a signed byte (rows of 129 bytes and more are skipped) and does
- *     not stop a run at the end of the row; nPlanes 0 stores 256 plane
- *     pointers into its table of 8.
+ *     the BMHD is not read) (#773), takes the row width as width/8 (rows
+ *     that ILBM pads to words lose their alignment) (#775), counts the
+ *     bytes of a row in a signed byte (rows of 129 bytes and more are
+ *     skipped) (#774) and does not stop a run at the end of the row
+ *     (#776); nPlanes 0 stores 256 plane pointers into its table of 8
+ *     (#777).
  *   - The chunk searches step by 2 bytes from the given address (BMHD:
- *     5120 bytes, BODY: from the BMHD on, word counter; CMAP 5122 bytes).
+ *     5120 bytes, BODY: from the BMHD on, word counter; CMAP 5122 bytes)
+ *     (#766).
  *   - ILBMPalette without offset always frees the palette's colour block
  *     (when there is one) and allocates a new one; with an offset into a
- *     palette that is too small it does the same and ignores the offset.
- *     The size of the freed block comes from the object's colour count.
- *   - LoadIFF returns -1 even if UnpackIFF failed.
+ *     palette that is too small it does the same and ignores the offset
+ *     (#769).  The size of the freed block comes from the object's colour
+ *     count; if the new allocation fails, the object keeps the freed
+ *     block (#768).
+ *   - LoadIFF returns -1 even if UnpackIFF failed (#771).
  *   - DeIce: the picture flag of Pack-Ice overwrites the bit buffer with
  *     the default count $0f9f, whose bits then give the "own count" flag
  *     (always set) and the first 6 bits of the count: the default is
  *     never used, and the count read is at least $3C00 (15361 groups of
- *     8 bytes converted below the end of the data).
+ *     8 bytes converted below the end of the data) (#767).
  */
 #include "blitzlib.h"
 
@@ -161,7 +166,7 @@ BLITZ_THUNK(chunkheader, chunkheader_c, "d1/a0-a1");
 /* ByteRun1: n >= 0 copies n+1 bytes, n < 0 (not -128) repeats the next
    byte 1-n times, -128 is skipped.  BUG(orig): the end tests come after
    the access and compare signed - the byte at source+length is read, one
-   byte past destlength written. */
+   byte past destlength written (#778). */
 static void BLITZ_ROUTINE unpackpbm_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_REG(d1),
                                       ULONG len BL_REG(d2), ULONG dlen BL_REG(d3))
 {
@@ -200,7 +205,7 @@ BLITZ_THUNK(unpackpbm, unpackpbm_c, "d0-d1/a0-a1");
 
 /* PackPBM(source,dest,length) - ByteRun1 with runs of at most 128 (127
    in the counter); -1 if the result would reach `length` bytes.  d3 is
-   only used by the failure (BUG(orig): UnPackPBM, see above). */
+   only used by the failure (BUG(orig): UnPackPBM, see above, #772). */
 static ULONG BLITZ_ROUTINE packpbm_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_REG(d1),
                                      ULONG size BL_REG(d2), ULONG d3 BL_REG(d3))
 {
@@ -268,7 +273,7 @@ static ULONG BLITZ_ROUTINE packpbm_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_
         }
     }
 failure:
-    /* BUG(orig): no RTS - into _UnPackPBM with d0 = -1 */
+    /* BUG(orig): no RTS - into _UnPackPBM with d0 = -1 (#772) */
     unpackpbm_c((const UBYTE *)-1, dst, size, d3);
     return -1;
 #undef PUT
@@ -411,7 +416,7 @@ static ULONG BLITZ_ROUTINE deice_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_RE
     /* the picture flag: Atari ST low-res bitplanes -> interleaved words */
     if (!ice_bit(&s))
         return -1;
-    /* BUG(orig): MOVE.w #$0f9f,d7 replaces the bit buffer */
+    /* BUG(orig): MOVE.w #$0f9f,d7 replaces the bit buffer (#767) */
     s.bits = 0x9f;
     count = 0x0f9f;
     if (ice_bit(&s))
@@ -440,7 +445,7 @@ BLITZ_THUNK(deice, deice_c, "d1/a0-a1");
 /* ------------------------------------------------------------ UnpackIFF */
 
 /* the variables of the unpacker in the original's order (nPlanes 0
-   writes 256 plane pointers from `bitplanes` on, BUG(orig)) */
+   writes 256 plane pointers from `bitplanes` on, BUG(orig) #777) */
 static struct {
     ULONG iffsource, iffdest;
     UBYTE *bitplanes[8];
@@ -550,7 +555,7 @@ BLITZ_THUNK(iff1, iff1_c, "d1/a0-a1");
 
 /* ILBMPalette(source,palette#,offset): the CMAP into the palette object
    (a1) from colour `offset` on (< 0: a new block, see the BUG(orig) at
-   the top); -1, or 0 without CMAP or memory */
+   the top, #768, #769); -1, or 0 without CMAP or memory */
 static ULONG BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0), UBYTE *obj BL_REG(a1),
                                           LONG offset BL_REG(d2))
 {
@@ -634,7 +639,7 @@ BLITZ_THUNK(ilbmgrab, ilbmgrab_c, "d0-d1/a0-a1");
 
 /* LoadIFF(filename$,bitmap[,palette]): the file into a free bank of
    RIAmosFuncLib (from 51 on), UnpackIFF and ILBMPalette from there, the
-   bank erased; -1 (BUG(orig): also if UnpackIFF failed), 0 if there is
+   bank erased; -1 (BUG(orig): also if UnpackIFF failed, #771), 0 if there is
    no bank or the file does not load */
 static ULONG BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), UBYTE *bm BL_REG(a0),
                                       UBYTE *pal BL_REG(a1))
