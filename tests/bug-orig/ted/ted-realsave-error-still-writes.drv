@@ -1,0 +1,23 @@
+; ted-realsave-error-still-writes (#380): after a failed Write, realsave
+; stops writing lines but still writes the .xtra file and the icon.
+; blitz2 under inject, the second Write on bo.bas fails; SAVE, TED's error
+; requester (OKAY).  Correct: neither bo.bas.xtra nor bo.bas.info is
+; written; the original writes both.
+; @file bo.bas "a=1\nb=2\nc=3\n"
+; @source F bo.bas
+; @command TEDAB:tools/inject writefail=bo.bas/2 blitz2:blitz2 @FILE@
+; @expect stdout "inject: writefail: 1 writes failed"
+; @expect absent bo.bas.xtra
+; @expect absent bo.bas.info
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait req "OKAY"
+gad 1
+wait screen
+menu 0 9
+wait exit
