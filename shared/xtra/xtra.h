@@ -1,16 +1,19 @@
 /*
  * xtra.h - the companion settings of a Blitz source (".xtra") as one
  * structure, with readers and writers for the formats that carry them
- * (docs/formats.md 1):
+ * (docs/formats.md 1 and 7):
  *
  *   Blitz 2 .xtra        binary, vers 0 and 1 (blitz2.s:15290 optspnts,
  *                        loadxtra/savextra): read and written byte-exact
  *   BB22 source header   the editor part (cursor, top line) of the "BB22"
  *                        sources (docs/rwelibs/README.md 4.1): read
+ *   AmiBlitz3 .ab3       (xtra_ab3.h) the "Embedded .xtra Header" (comment
+ *                        lines at the start of a text source): read and
+ *                        written
  *
- * Shared code like shared/filereq: every user compiles xtra.c itself
- * with its own options - the host tools (tools/lib/xtra), later blitz2
- * and TED (-fbaserel).  Pure C99
+ * Shared code like shared/filereq: every user compiles xtra.c (and
+ * xtra_ab3.c for the AmiBlitz3 text) itself with its own options - the
+ * host tools (tools/lib/xtra), later blitz2 and TED (-fbaserel).  Pure C99
  * on the freestanding headers: no libc, no libgcc (no 32-bit multiply or
  * divide on the 68000), no writable static data, no allocation; the
  * caller provides the memory (a struct xtra of about 11 KB and the file

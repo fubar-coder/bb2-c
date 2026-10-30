@@ -21,7 +21,7 @@ set_tests_properties(amiga_emulation_run PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT 180)
 
 # the .xtra model of shared/xtra (lib_xtra): snitch programs, one per file
-foreach(t xtra_blitz2 xtra_bb22)
+foreach(t xtra_blitz2 xtra_bb22 xtra_ab3)
 	add_executable(test_${t} test_${t}.cpp)
 	target_link_libraries(test_${t} PRIVATE lib_xtra snitch::snitch)
 	target_compile_options(test_${t} PRIVATE -Wall -Wextra)

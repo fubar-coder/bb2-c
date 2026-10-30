@@ -18,8 +18,8 @@
 #   blitzres   Blitz Basic 2 resident files: constants written, contents
 #              read; the constants of NDK FD files and includes
 #   bblines    edits of the lines of a tokenised Blitz 2 source (bytes)
-#   xtra       the .xtra model of shared/xtra (Blitz 2 .xtra, BB22 header),
-#              compiled for the host
+#   xtra       the .xtra model of shared/xtra (Blitz 2 .xtra, BB22 header,
+#              AmiBlitz3 embedded header), compiled for the host
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
