@@ -37,50 +37,60 @@
  * BUG(orig), kept:
  *   - WorkbenchHere takes IntuitionBase from d0 (MOVE.l intuibase,a0 is
  *     overwritten by MOVE.l d0,a0), and the function has no arguments: d0
- *     is whatever the program left there.  The search for "Workbench" in
- *     the screen titles never ends the list (no 0 check: it reads the
- *     "screen" at 0 and goes on), so it returns -1 or hangs; a title that
- *     ends with the start of "Workbench" ("...Work") restarts the same
- *     screen for ever; after a partial match it goes on with the next
- *     screen ("WWorkbench" is not found in its own title).
+ *     is whatever the program left there (#759).  The search for
+ *     "Workbench" in the screen titles never ends the list (no 0 check:
+ *     it reads the "screen" at 0 and goes on), so it returns -1 or hangs
+ *     (#761); a title that ends with the start of "Workbench" ("...Work")
+ *     restarts the same screen for ever (#762); after a partial match it
+ *     goes on with the next screen ("WWorkbench" is not found in its own
+ *     title) (#760).
  *   - Flip$ of a string with 0 or 1 characters swaps 65536 byte pairs
- *     around the string (DBRA with -1).
+ *     around the string (DBRA with -1) (#751).
  *   - InitArgParse copies without a limit into its 256 byte buffer (the
- *     original overwrites the code behind it, the C build other data).
+ *     original overwrites the code behind it, the C build other data)
+ *     (#752).
  *   - NextArgChar$ does not check the parse pointer: before InitArgParse
- *     and after NextArg$ came to the end it reads from address 0.
- *   - NextArg$ ends a quoted word at the closing quote even if no space
- *     follows ("ab"cd gives ab, then cd); after "" inside quotes, the
- *     next quote copies the character behind it.  NextArg$/NextArgChar$
- *     write no 0 behind the result.
- *   - EZRequest/EZRequestArgs replace '|' in the body string itself (the
- *     caller's string, a constant string of the program for good).
+ *     and after NextArg$ came to the end it reads from address 0 (#754).
+ *   - NextArg$: after "" inside quotes, the next quote copies the
+ *     character behind it (#755).
  *   - EZRequestArgs writes no 0 behind the format text it builds (160
  *     byte buffer): a shorter text than the one before keeps the end of
- *     the old one.  Neither form limits the arguments (16 longs).
+ *     the old one (#747).  Neither form limits the arguments (16 longs)
+ *     (#748).
  *   - A Quick argument is passed as its integer part zero extended
- *     (SWAP:ANDI.l #$ffff): negative values become 65536 - n; a Float is
- *     converted with floatquicklib's fltoqu with the caller's a6 (not the
- *     ffp base) and the result written back onto the argument stack.
+ *     (SWAP:ANDI.l #$ffff): negative values become 65536 - n (#750); a
+ *     Float is converted with floatquicklib's fltoqu with the caller's a6
+ *     (not the ffp base) and the result written back onto the argument
+ *     stack (#749).
  *   - EZRequestArgs without arguments reads one type word from a2 (the
- *     count 0 runs the DBRA loop 65536 times).
- *   - ProgPath$ leaves a3 behind the 0 of the result (d0 is right) and
- *     reads the byte before the result when the directory name is empty;
- *     ProgDir$/ProgName$ only call it if their buffer is still empty, and
- *     a3 is behind the 0 too.
- *   - LtoS replaces the bytes 0-31 and 128-255 by 128 (signed compare).
+ *     count 0 runs the DBRA loop 65536 times) (#746).
+ *   - ProgPath$ leaves a3 behind the 0 of the result (d0 is right) (#743)
+ *     and reads the byte before the result when the directory name is
+ *     empty (#758); in ProgDir$/ProgName$ a3 is behind the 0 too (#743).
+ *   - LtoS replaces the bytes 0-31 and 128-255 by 128 (signed compare)
+ *     (#753).
  *   - ASCRaw/RawASC do not check the range: a raw key beyond the 114
  *     entries of the table (e.g. a key up code) reads the code behind it,
  *     RawASC of a character not in the table searches until it finds the
  *     byte somewhere (DIFF: what is behind the table differs, see the
- *     notes).
- *   - OpenFontPrefs does not check AllocMem, and a second OpenFontPrefs
- *     loses the first buffer.  DefaultFontHeight/Name step through the
- *     buffer by 164 bytes (the size of a FONT chunk) until its end,
- *     through the uncleared memory behind the file, and read the last
- *     chunk up to 26 bytes behind the buffer.
- *   - finit closes intuition.library and dos.library without clearing
- *     the bases.
+ *     notes) (#744).
+ *   - OpenFontPrefs does not check AllocMem (#756), and a second
+ *     OpenFontPrefs loses the first buffer (#757).  DefaultFontHeight/Name
+ *     step through the buffer by 164 bytes (the size of a FONT chunk)
+ *     until its end, through the uncleared memory behind the file, and
+ *     read the last chunk up to 26 bytes behind the buffer (#745).
+ *
+ * Original behaviour that is no defect: NextArg$ ends a quoted word at
+ * the closing quote even if no space follows ("ab"cd gives ab, then cd),
+ * as ReadItem does.  NextArg$/NextArgChar$ write no 0 behind the result
+ * (string results need none: d0 has the length, the compiler adds the 0
+ * where it passes the result on, see #257).  EZRequest/EZRequestArgs
+ * replace '|' in the body string they get, which is the compiler's copy
+ * of the argument.  ProgDir$/ProgName$ call ProgPath$ only while their
+ * buffer is empty (the program's directory and name do not change).
+ * DefaultFontHeight keeps d0's high word (the result is a word).  finit
+ * closes intuition.library and dos.library without clearing the bases
+ * (nothing uses them after finit).
  *
  * DIFF: a2 stays unchanged where the original uses it as a work register
  * (EZRequest/EZRequestArgs: 0; BInstr: on the string), and so does a3 in
@@ -384,7 +394,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (intuibase)
         CloseLibrary(&intuibase->LibNode);
-    CloseLibrary(&dosbase_->dl_lib);                    /* BUG(orig): bases kept */
+    CloseLibrary(&dosbase_->dl_lib);                    /* bases kept (no defect) */
     closefontprefs_c();
 }
 
@@ -421,7 +431,7 @@ static ULONG BLITZ_ROUTINE getsigbit_c(const struct MsgPort *port BL_REG(d0))
     return port->mp_SigBit;
 }
 
-/* WorkbenchHere: d0 = IntuitionBase (BUG(orig): d0 is no argument) */
+/* WorkbenchHere: d0 = IntuitionBase (BUG(orig): d0 is no argument, #759) */
 static ULONG BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0))
 {
     const struct Screen *scr = ib->FirstScreen;
@@ -444,14 +454,14 @@ static ULONG BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0))
                 if (!*t)
                     return (ULONG)-1;
                 if (!*s)
-                    goto restart;                       /* BUG(orig): same screen */
+                    goto restart;                       /* BUG(orig): same screen (#762) */
                 c = *t++;
                 if (c != *s++)
                     goto next;
             }
         }
     next:
-        scr = scr->NextScreen;                          /* BUG(orig): no 0 check */
+        scr = scr->NextScreen;                          /* BUG(orig): no 0 check (#761) */
     }
 }
 
@@ -468,7 +478,7 @@ static ULONG BLITZ_ROUTINE fromblitz_c(void)
 }
 
 /* LtoS(l) (d0): the 4 bytes, highest first, no 0; 0-31 and 128-255 as
-   128 (BUG(orig): signed CMPI.b #32) */
+   128 (BUG(orig): signed CMPI.b #32, #753) */
 static ULONG BLITZ_ROUTINE ltos_c(ULONG v BL_REG(d0))
 {
     int i;
@@ -494,7 +504,7 @@ static ULONG BLITZ_ROUTINE ascraw_c(UWORD key BL_REG(d0))
 }
 
 /* RawASC(char$) (d0): the first index of its first character (searched
-   for ever, BUG(orig)) */
+   for ever, BUG(orig) #744) */
 static ULONG BLITZ_ROUTINE rawasc_c(const UBYTE *s BL_REG(d0))
 {
     UBYTE c = *s;
@@ -511,7 +521,7 @@ static ULONG BLITZ_ROUTINE doflip_c(const ULONG *lens BL_REG(a2))
 {
     ULONG len = lens[-1];
     UBYTE *a = blitz_string - len - 1, *e = blitz_string - 2;
-    UWORD n = (UWORD)((len >> 1) - 1);                  /* BUG(orig): len < 2 */
+    UWORD n = (UWORD)((len >> 1) - 1);                  /* BUG(orig): len < 2 (#751) */
 
     do {
         UBYTE c = *a;
@@ -548,7 +558,7 @@ static ULONG BLITZ_ROUTINE binstr_c(const UBYTE *src BL_REG(d0), const UBYTE *fi
 
 /* -------------------------------------------------------- arg parsing */
 
-/* InitArgParse s (d0): the copy and four more 0 (BUG(orig): no limit) */
+/* InitArgParse s (d0): the copy and four more 0 (BUG(orig): no limit, #752) */
 static void BLITZ_ROUTINE parseinit_c(const UBYTE *s BL_REG(d0))
 {
     UBYTE *t = tempstorage;
@@ -609,7 +619,7 @@ endthis:
 }
 
 /* NextArgChar$ c (d0.b): everything up to c (or the end) to a3, no 0;
-   BUG(orig): curadr unchecked */
+   BUG(orig): curadr unchecked (#754) */
 static ULONG BLITZ_ROUTINE nextparseuntilchar_c(UBYTE ch BL_REG(d0))
 {
     UBYTE *a = curadr, c;
@@ -753,7 +763,7 @@ static ULONG BLITZ_ROUTINE doeasy6_c(UBYTE *args BL_REG(a2), ULONG reps BL_REG(d
     numargs = reps & 0xffff;
     ez.es.es_TextFormat = ezargsbuf;
     ez.args = ez.args2;
-    doargs(args, (UWORD)reps, ezargsbuf, a6);           /* BUG(orig): no 0 */
+    doargs(args, (UWORD)reps, ezargsbuf, a6);           /* BUG(orig): no 0 (#747) */
     ez.es.es_GadgetFormat = (STRPTR)okgad;
     ez.es.es_Title = NULL;
     return doeasybegin();
@@ -870,7 +880,7 @@ static ULONG BLITZ_ROUTINE openfontprefs_c(void)
 {
     const ULONG *p;
 
-    fontloc = AllocMem(FONTBUF, 0);                     /* BUG(orig): unchecked */
+    fontloc = AllocMem(FONTBUF, 0);                     /* BUG(orig): unchecked (#756) */
     fontfh = Open((CONST_STRPTR)fontname, MODE_OLDFILE);
     if (!fontfh)
         return closefontprefs_c();

@@ -81,51 +81,60 @@ original changes d0-d3, d6/d7, a0-a3 and a6 in places.
 
 * WorkbenchHere takes IntuitionBase from d0 (`MOVE.l intuibase,a0` is
   overwritten by `MOVE.l d0,a0`) and has no arguments: d0 is whatever
-  the program left there. The search never ends the screen list (no 0
-  check: it reads the "screen" at 0 and goes on), so it returns -1 or
-  hangs; a title that ends with the start of "Workbench" ("…Work")
-  restarts the same screen for ever; after a partial match it goes on
-  with the next screen (a title "WWorkbench" does not count).
+  the program left there (#759). The search never ends the screen list
+  (no 0 check: it reads the "screen" at 0 and goes on), so it returns -1
+  or hangs (#761); a title that ends with the start of "Workbench"
+  ("…Work") restarts the same screen for ever (#762); after a partial
+  match it goes on with the next screen (a title "WWorkbench" does not
+  count) (#760).
 * Flip$ of a string of 0 or 1 characters: the count `len/2 - 1` is -1,
-  the DBRA swaps 65536 byte pairs around the string.
+  the DBRA swaps 65536 byte pairs around the string (#751).
 * InitArgParse copies without a limit (256 byte buffer, 4 zeros behind
-  the copy). NextArgChar$ does not check the parse pointer: before
+  the copy) (#752). NextArgChar$ does not check the parse pointer: before
   InitArgParse and after NextArg$ came to the end it reads from address
-  0.
-* NextArg$ ends a quoted word at the closing quote even without a space
-  behind it (`"ab"cd` gives `ab`, then `cd`); after `""` inside quotes the
-  next quote copies the character behind it and the word goes on
-  (`"a""b" c` gives `a"b c`). NextArg$/NextArgChar$ write no 0 behind the
-  result.
-* EZRequest/EZRequestArgs change `|` to a line feed in the body string
-  itself (the caller's string – a constant string of the program for
-  good).
+  0 (#754).
+* NextArg$: after `""` inside quotes the next quote copies the character
+  behind it and the word goes on (`"a""b" c` gives `a"b c`) (#755).
 * EZRequestArgs writes no 0 behind its format text (160 byte buffer): a
   shorter text than the one before keeps the end of the old one (and so
-  more formats than arguments). Neither form limits the number of
-  arguments (16 longs, the original overwrites code behind them), and
-  EZRequestArgs without an argument reads one type word from a2 (the
-  count 0 runs the DBRA 65536 times).
+  more formats than arguments) (#747). Neither form limits the number of
+  arguments (16 longs, the original overwrites code behind them) (#748),
+  and EZRequestArgs without an argument reads one type word from a2 (the
+  count 0 runs the DBRA 65536 times) (#746).
 * A Quick argument is passed as its integer part zero extended (`SWAP:
-  ANDI.l #$ffff`): -3.5 gives 65532. A Float is converted with
+  ANDI.l #$ffff`): -3.5 gives 65532 (#750). A Float is converted with
   floatquicklib's fltoqu with the caller's a6 (fltoqu needs the ffp base
   there), and the converted value is written back onto the argument
-  stack.
-* ProgPath$ leaves a3 behind the 0 of the result (d0 is right) and reads
-  the byte before the result when the directory name is empty;
-  ProgDir$/ProgName$ call it only while their buffer is empty (the result
-  is never updated), a3 behind the 0 too.
+  stack (#749).
+* ProgPath$ leaves a3 behind the 0 of the result (d0 is right) (#743) and
+  reads the byte before the result when the directory name is empty
+  (#758); ProgDir$/ProgName$ leave a3 behind the 0 too (#743).
 * LtoS replaces the bytes 0-31 and 128-255 by 128 (`CMPI.b #32` with a
-  signed branch).
+  signed branch) (#753).
 * ASCRaw/RawASC do not check the range (see DIFF); RawASC searches until
-  it finds the character somewhere.
-* OpenFontPrefs does not check AllocMem; a second OpenFontPrefs loses the
-  first buffer. DefaultFontHeight/Name step through the whole buffer by
-  164 bytes (the size of a FONT chunk), also through the uncleared memory
-  behind the file, and read the last step up to 26 bytes behind the
-  buffer; DefaultFontHeight keeps d0's high word.
+  it finds the character somewhere (#744).
+* OpenFontPrefs does not check AllocMem (#756); a second OpenFontPrefs
+  loses the first buffer (#757). DefaultFontHeight/Name step through the
+  whole buffer by 164 bytes (the size of a FONT chunk), also through the
+  uncleared memory behind the file, and read the last step up to 26
+  bytes behind the buffer (#745).
+
+Original behaviour that is no defect:
+
+* NextArg$ ends a quoted word at the closing quote even without a space
+  behind it (`"ab"cd` gives `ab`, then `cd`), as ReadItem does.
+* NextArg$/NextArgChar$ write no 0 behind the result: a string result
+  needs none (d0 has the length; where the result is passed on, the
+  compiler adds the 0; see #257).
+* EZRequest/EZRequestArgs change `|` to a line feed in the body string
+  they get, which is the compiler's copy of the argument.
+* ProgDir$/ProgName$ call ProgPath$ only while their buffer is empty (the
+  result is never updated; the program's directory and name do not
+  change).
+* DefaultFontHeight keeps d0's high word (the result is a word).
 * finit closes intuition.library and dos.library without clearing the
-  bases (CloseLibrary(0) for a missing dos.library).
+  bases (CloseLibrary(0) for a missing dos.library); nothing uses them
+  after finit.
 
 ## Test
 
