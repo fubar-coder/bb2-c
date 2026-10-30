@@ -507,10 +507,12 @@ several versions.
       (2026-10-29): besides `TOKENS` (a list file, as before) the form
       `--blitz2 BLITZ2 [--lib LIB]...` makes the list from the files
       (`programs/ted/tests/host/tokref.c` on `tools/lib/blitztokens`);
-      `blitztokens` exports it as a list file for both. Open: the
-      readable `rwelibsrc` from the files of its variant (once the RWE
-      userlibs are built, 4.5.5) instead of the provisional
-      `tokens-ext.txt` of `.cache/rwelibs-analysis/`.
+      `blitztokens` exports it as a list file for both. ~~The
+      readable `rwelibsrc` from the files of its variant~~ done
+      (2026-10-30): `blitz2`, the variant's acidlibs/deflibs and all
+      RWE userlibs built here (for rievallib its own variant), no CD
+      binaries (the USES field of `RWE_LIBS` is gone); all 52 files
+      identical to those read with the CD binaries.
    3. ~~**Numbers only through `libnums.h`**~~ done (2026-10-29):
       `debuglib.c` writes its four tokens in inline assembler with
       `BL_ASMTOK(LIB_inputoutputlib, 4)`/`(LIB_printlib, 1)`

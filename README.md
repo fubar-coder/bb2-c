@@ -72,7 +72,10 @@ have is built in a variant of its own (`RWE_OWN_VARIANTS`):
 userlibs of `rwe-1999`, whose numbers are the same; ctest
 `variant_rwe_1999_eval`, `rwe_numbers_rwe-1999-eval`). Target
 `rwelibsrc`: those Blitz sources as TED shows them, in
-`build/amiga/rwelibsrc/` (like `bblibsrc`). The **reference build** of
+`build/amiga/rwelibsrc/` (like `bblibsrc`), with the tokens of the
+library files of their variant built here (blitz2, the variant's
+acidlibs and deflibs, all RWE userlibs; needs the Aminet archive, not
+the CD). The **reference build** of
 those sources (`libs/userlibs/rwe/refbuild.cmake`,
 `docs/rwelibs/README.md` §3.1): the build stages them (target
 `rwe_refstage`: `build/amiga/libs/userlibs/rwe/refstage/` with the CD's

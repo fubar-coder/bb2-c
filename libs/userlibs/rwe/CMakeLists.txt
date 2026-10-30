@@ -3,16 +3,22 @@
 # userlibs of the variant rwe-1999: NAME.c -> userlibs/rwe/NAME.obj (of
 # the variant; of its own variant for RWE_OWN_VARIANTS).
 #
-# RWE_LIBS: NAME|SOURCE|REFERENCE[|USES] per library - SOURCE in rwelibsrc
-# (the Blitz source the C file translates), REFERENCE the binary below
-# archive/ (fetch-originals: the CD, AmiBlitz3's SVN) whose state the
-# port has: the one the reference build of SOURCE with blitz2 2.10 equals
-# byte for byte (docs/rwelibs/README.md 3.1), or the newer binary chosen
-# in 3.2 (then SOURCE is the closest source); or "refbuild": the reference
-# build of SOURCE itself (refbuild.cmake: ref/NAME.obj, made by ctest
-# rwe_refbuild in Amiberry).  USES: binaries below
-# archive/ whose tokens SOURCE has (ALibJsr calls into other libraries or
-# its own), for reading it.  A library is built as soon as NAME.c exists.
+# RWE_LIBS: NAME|SOURCE|REFERENCE per library - SOURCE in rwelibsrc (the
+# Blitz source the C file translates), REFERENCE the binary below archive/
+# (fetch-originals: the CD, AmiBlitz3's SVN) whose state the port has: the
+# one the reference build of SOURCE with blitz2 2.10 equals byte for byte
+# (docs/rwelibs/README.md 3.1), or the newer binary chosen in 3.2 (then
+# SOURCE is the closest source); or "refbuild": the reference build of
+# SOURCE itself (refbuild.cmake: ref/NAME.obj, made by ctest rwe_refbuild
+# in Amiberry).  Every library is built from NAME.c.
+#
+# Target rwelibsrc: every SOURCE as TED shows it (like bblibsrc), in
+# build/<preset>/rwelibsrc/SOURCE, with the tokens of the files of the
+# library's variant - blitz2, the variant's acidlibs and deflibs, all RWE
+# userlibs of RWE_VARIANT built here and those of its own variant (the
+# tokens of ALibJsr calls into other RWE libraries or its own).  So it
+# needs only the Aminet archive, not the CD.  It depends on the userlibs;
+# their build does not depend on it.
 # The C build is real C (assembler only where needed), checked like the
 # acidlibs: the declarations equal REFERENCE's (ctest
 # rwe_declarations_NAME, skipped without the originals), and the
@@ -36,9 +42,9 @@ set(RWE_LIBS
 	"ricopperfxlib|Copperlib/CopperFX3.bb|${bss2}/RICOPPERFXLIB.OBJ"
 	"ritrackdisklib|trackdisklib/trackdisk2.bb|${bss2}/RITRACKDISKLIB.OBJ"
 	"rifastseriallib|FASTSerial/fastseriallib3.bb|${bss2}/RIFASTSERIALLIB.OBJ"
-	"rigfxlib|GFXLib/GFX-Library2.bb|${bss2}/RIGFXLIB.OBJ|${bss2}/RIAMOSFUNCLIB.OBJ"
+	"rigfxlib|GFXLib/GFX-Library2.bb|${bss2}/RIGFXLIB.OBJ"
 	"ridoslib|DOSLib/ridoslib2.bb|${bss2}/RIDOSLIB.OBJ"
-	"ripacklib|packlib/Pack-Library8.bb|${bum}/RIPACKLIB.OBJ|${bss2}/RIAMOSFUNCLIB.OBJ"
+	"ripacklib|packlib/Pack-Library8.bb|${bum}/RIPACKLIB.OBJ"
 	"ricommoditieslib|Commoditieslib/CommoditiesLib2.bb|${bss2}/RICOMMODITIESLIB.OBJ"
 	"riapplib|AppLib/applib2.bb|${bss2}/RIAPPLIB.OBJ"
 	"ritooltypeslib|tooltypeslib/ToolTypes4.bb|${bss2}/RITOOLTYPESLIB.OBJ"
@@ -47,29 +53,29 @@ set(RWE_LIBS
 	# stage B (docs/rwelibs/README.md 3.2): the AmiBlitz3 SVN binary =
 	# BSS2 plus fixes of the AmiBlitz3 team; func-library7 is the closest
 	# source
-	"riamosfunclib|AMOSFunclib/func-library7.bb|${ab3}/RIAmosFuncLib.obj|${ab3}/RIAmosFuncLib.obj"
+	"riamosfunclib|AMOSFunclib/func-library7.bb|${ab3}/RIAmosFuncLib.obj"
 	# stage B, the BSS2 binary newer than the source (3.2): the port has
 	# the binary's state
 	"risoundlib|soundlib/risoundlib.bb|${bss2}/RISOUNDLIB.OBJ"
 	"ristonecrackerlib|stclib.bb|${bss2}/RISTONECRACKERLIB.OBJ"
-	"rifnslib|FNSLib/fns-library11.bb|${bss2}/RIFNSLIB.OBJ|${bss2}/RIAMOSFUNCLIB.OBJ"
+	"rifnslib|FNSLib/fns-library11.bb|${bss2}/RIFNSLIB.OBJ"
 	# the source does not compile (its RIDiskAnimInit is unfinished, see
 	# RWE_REFBUILD_SKIP); the BSS2 binary is the source without it
-	"rianimlib|ANIMLib/Anim-Library3.bb|${bss2}/RIANIMLIB.OBJ|${bss2}/RIPACKLIB.OBJ"
+	"rianimlib|ANIMLib/Anim-Library3.bb|${bss2}/RIANIMLIB.OBJ"
 	# stages B/C, the source newer than the binaries (3.2 "Source"): the
 	# reference build of the source
 	"rilvcallhooklib|lvcallhook/LVCallHook3.bb|refbuild"
 	"rimisclib|misclib/misclib2.bb|refbuild"
 	"ristcdecrunchlib|stcdecrunchlib.bb|refbuild"
-	"ricompactdisclib|CDlib/cdSCSI.bb|refbuild|${bss2}/RICOMPACTDISKLIB.OBJ"
+	"ricompactdisclib|CDlib/cdSCSI.bb|refbuild"
 	"rigtmenulib|GTMenuLib/GTMenuLib3.bb|refbuild"
-	"rilinkedlistlib|Listlib/listlib4.bb|refbuild|${bss2}/RIAMOSFUNCLIB.OBJ"
+	"rilinkedlistlib|Listlib/listlib4.bb|refbuild"
 	"neilsreqtoolslib|RTLib.bb|refbuild"
 	"ridatatypeslib|datatypeslib6.bb|refbuild"
 	"ciatrklib|ptlib/CIATrackerLib1.bb|refbuild"
 	"ritrackerlib|ptlib/ptlib6.bb|refbuild"
 	"riarexxlib|rexxlib/NEWAREXXLIB.bb|refbuild"
-	"rishapeslib|shapeslib/RIShapesLib2.bb|refbuild|${bss2}/RIPACKLIB.OBJ"
+	"rishapeslib|shapeslib/RIShapesLib2.bb|refbuild"
 	"risortlib|sortlib/RISortlib2.bb|refbuild"
 	"ridisasmlib|Disasmlib/Disasm-library.bb2|refbuild"
 	# the font of its IncBin: rilesdebuglib-font.bin (from AmiBlitz3)
@@ -140,6 +146,9 @@ foreach(l IN LISTS RWE_LIBS)
 	string(REPLACE "|" ";" l "${l}")
 	list(GET l 0 name)
 	list(APPEND names ${name})
+	if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.c)
+		message(FATAL_ERROR "RWE_LIBS: ${name} has no libs/userlibs/rwe/${name}.c")
+	endif()
 endforeach()
 foreach(src IN LISTS sources)
 	get_filename_component(name ${src} NAME_WE)
@@ -150,46 +159,12 @@ endforeach()
 
 set(objs)
 set(own_variants)
-set(readable)
+set(readable_entries)    # SOURCE|VARIANT for rwelibsrc
 foreach(l IN LISTS RWE_LIBS)
 	string(REPLACE "|" ";" l "${l}")
 	list(GET l 0 name)
 	list(GET l 1 source)
 	list(GET l 2 reference)
-	set(uses)
-	set(usefiles)
-	list(LENGTH l n)
-	if(n GREATER 3)
-		list(GET l 3 u)
-		set(uses --lib ${archive}/${u})
-		set(usefiles ${archive}/${u})
-	endif()
-	# the Blitz source as TED shows it (like bblibsrc): build/<preset>/rwelibsrc/
-	# SOURCE, tokens of the compiler and acidlibs/deflibs built here and of
-	# USES (skipped if those are missing)
-	set(have_uses TRUE)
-	foreach(u IN LISTS usefiles)
-		if(NOT EXISTS ${u})
-			set(have_uses FALSE)
-		endif()
-	endforeach()
-	if(EXISTS ${rwesrc}/${source} AND have_uses)
-		set(txt ${CMAKE_BINARY_DIR}/rwelibsrc/${source})
-		get_filename_component(txtdir ${txt} DIRECTORY)
-		rwe_ted_source(${source} tedsrc)
-		add_custom_command(OUTPUT ${txt}
-			COMMAND ${CMAKE_COMMAND} -E make_directory ${txtdir}
-			COMMAND ${TEDDETOK} --blitz2 $<TARGET_FILE:blitz2> --lib ${BLITZ2_DIR}/acidlibs
-				--lib ${BLITZ2_DIR}/deflibs ${uses} ${tedsrc} ${txt}
-			DEPENDS ${tedsrc} ${BLITZ2_DIR}/acidlibs ${BLITZ2_DIR}/deflibs ${usefiles}
-				blitz2 ${TEDDETOK} host_tools
-			COMMENT "Detokenising rwelibsrc/${source}"
-			VERBATIM)
-		list(APPEND readable ${txt})
-	endif()
-	if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.c)
-		continue()
-	endif()
 	# the variant: RWE_VARIANT or the library's own (RWE_OWN_VARIANTS)
 	set(v ${RWE_VARIANT})
 	foreach(o IN LISTS RWE_OWN_VARIANTS)
@@ -209,6 +184,9 @@ foreach(l IN LISTS RWE_LIBS)
 		list(APPEND own_${v} ${obj})
 		list(APPEND own_variants ${v})
 	endif()
+	if(EXISTS ${rwesrc}/${source})
+		list(APPEND readable_entries "${source}|${v}")
+	endif()
 	rwe_reference(${name} ${reference} reffile fixture)
 	add_test(NAME rwe_declarations_${name} COMMAND ${BLITZLIBCOMPARE} ${reffile} ${obj})
 	set_tests_properties(rwe_declarations_${name} PROPERTIES SKIP_RETURN_CODE 77)
@@ -219,6 +197,34 @@ foreach(l IN LISTS RWE_LIBS)
 			FIXTURES_REQUIRED ${fixture})
 		set_property(GLOBAL APPEND PROPERTY RWE_EMULATOR_FIXTURES ${fixture})
 	endif()
+endforeach()
+# the readable sources (target rwelibsrc, see above): the libraries of
+# the source's variant, those of RWE_VARIANT for an own variant as well
+# (its numbers include RWE_VARIANT's)
+set(readable)
+foreach(e IN LISTS readable_entries)
+	string(REPLACE "|" ";" e "${e}")
+	list(GET e 0 source)
+	list(GET e 1 v)
+	set(vout ${BLITZ_VARIANTS_DIR}/${v})
+	set(libs ${vout}/acidlibs ${vout}/deflibs ${objs})
+	if(NOT v STREQUAL RWE_VARIANT)
+		list(APPEND libs ${own_${v}})
+	endif()
+	set(args)
+	foreach(lib IN LISTS libs)
+		list(APPEND args --lib ${lib})
+	endforeach()
+	set(txt ${CMAKE_BINARY_DIR}/rwelibsrc/${source})
+	get_filename_component(txtdir ${txt} DIRECTORY)
+	rwe_ted_source(${source} tedsrc)
+	add_custom_command(OUTPUT ${txt}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${txtdir}
+		COMMAND ${TEDDETOK} --blitz2 $<TARGET_FILE:blitz2> ${args} ${tedsrc} ${txt}
+		DEPENDS ${tedsrc} ${libs} blitz2 ${TEDDETOK} host_tools
+		COMMENT "Detokenising rwelibsrc/${source}"
+		VERBATIM)
+	list(APPEND readable ${txt})
 endforeach()
 if(readable)
 	add_custom_target(rwelibsrc ALL DEPENDS ${readable})

@@ -435,6 +435,18 @@ used by several libraries – 7, 10, 15, 35, 40, 41, 56, 60, 66, 69, 75,
 107, 109 – names may be wrong). For the port this has to become a
 generated list from exactly the reference binaries (step 2).
 
+Done (2026-10-30): the readable sources (target `rwelibsrc`,
+`build/<preset>/rwelibsrc/`) take their tokens from the library files of
+their variant built here – `blitz2`, the variant's `acidlibs` and
+`deflibs` (`build/<preset>/variants/rwe-1999/`, for `EvalLib4` those of
+`rwe-1999-eval`) and all RWE userlibs (`…/userlibs/rwe/*.obj`, for
+`EvalLib4` with its own `rievallib.obj`) – no longer from CD/AmiBlitz3
+binaries named per source (the former USES field of `RWE_LIBS`). So
+they need only the Aminet archive; the tokens resolve the same: all 52
+files are identical to those read with the CD binaries (the C builds
+have the declarations of their references, `rwe_declarations_NAME`).
+The reference build still stages the CD's own libraries (3.1).
+
 `$CF12` (`Debuglib/defaultdbug50.bb2`, `*scr.Screen=GetPubScreen(0,"Workbench")`)
 is entry 18 of screenslib (158). The screenslib of 2.10 ends with entry
 15 (`ScreenTags`, `$CF0F`); AmiBlitz3's has 20, 16 to 20 are
