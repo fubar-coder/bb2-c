@@ -25,35 +25,39 @@
  * the condition codes GetMsg leaves (C cannot see them, getmsg_cc).
  *
  * Kept from the original (BUG(orig)):
- *   - the help text of MakeCommodity lacks the closing parenthesis;
+ *   - the help text of MakeCommodity lacks the closing parenthesis
+ *     (#558);
  *   - init does not check OpenLibrary: without commodities.library V37
- *     every command calls through a base of 0;
+ *     every command calls through a base of 0 (#559);
  *   - finit closes commodities.library first and then calls DeleteCxObj
- *     through the closed base; DeleteCxObj (not DeleteCxObjAll) leaves
- *     the filters and senders of the broker allocated; the message port
- *     is deleted with whatever messages are still queued;
+ *     through the closed base (#556); DeleteCxObj (not DeleteCxObjAll)
+ *     leaves the filters and senders of the broker allocated (#557); the
+ *     message port is deleted with whatever messages are still queued
+ *     (#561);
  *   - WaitCommodity branches on the CCR after GetMsg (not on its result)
  *     and the logic is inverted: "ne" -> WaitPort (waits for and returns
  *     the NEXT message, which stays queued; the one GetMsg removed is
  *     lost), "eq" -> msg = GetMsg's result; -1 either way.  Since exec's
  *     GetMsg leaves "ne" in practice, WaitCommodity waits when the port
- *     is empty and skips a message when it is not;
+ *     is empty and skips a message when it is not (#566);
  *   - messages are never replied (replymessage starts with RTS and is
- *     not called; kept as the dead code it is: not translated);
+ *     not called; kept as the dead code it is: not translated) (#561);
  *   - SetHotKey does not check the number: the slots are cxfilter[n] /
  *     cxsends[n] in the variables' original layout (st below), so n >= 16
- *     or < 0 hits the variables around them; a replaced filter/sender is
- *     removed but not deleted; the sender is only removed if the filter
- *     existed; objects made before a failure stay; AttachCxObj (void) is
- *     tested through the d0 it leaves; CxObjError is not looked at (the
- *     unreachable 'oops2 tail is not translated);
+ *     or < 0 hits the variables around them (#564); a replaced
+ *     filter/sender is removed but not deleted; the sender is only
+ *     removed if the filter existed; objects made before a failure stay
+ *     (#563); AttachCxObj (void) is tested through the d0 it leaves;
+ *     CxObjError is not looked at (the unreachable 'oops2 tail is not
+ *     translated) (#565);
  *   - MakeCommodity makes a new broker on every call without deleting the
  *     previous one (on failure the old one stays in use; on success the
- *     old one stays active with the same port, which finit deletes);
+ *     old one stays active with the same port, which finit deletes)
+ *     (#560);
  *   - SetCxStatus tests the message port, not the broker; any value other
- *     than -1 and 0 does nothing and returns 0;
+ *     than -1 and 0 does nothing and returns 0 (#562);
  *   - the Exchange* functions look at the id of the last message whatever
- *     its type (a hotkey id 15 counts as ExchangeDisable).
+ *     its type (a hotkey id 15 counts as ExchangeDisable) (#555).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -95,7 +99,7 @@ BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_STRING, BL_STRING, BL_STRING);
 BLITZ_LIBS0();
 BLITZ_SUBS(BLITZ_AMIGAONLY(makecommodity), 0, 0);
-/* BUG(orig): the help text lacks the closing parenthesis */
+/* BUG(orig): the help text lacks the closing parenthesis (#558) */
 BLITZ_NAME("MakeCommodity", "(name$,title$,description$");
 
 BLITZ_ACOMMAND(BL_LONG);
@@ -183,7 +187,8 @@ static const char cname[] = "commodities.library";
 
 /* ------------------------------------------------------------- routines */
 
-/* init: OpenLibrary("commodities.library",37).  BUG(orig): not checked. */
+/* init: OpenLibrary("commodities.library",37).  BUG(orig): not checked
+   (#559). */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     st_cbase = OpenLibrary((CONST_STRPTR)cname, 37);
@@ -198,7 +203,7 @@ static void delmsgport(struct MsgPort *p)
 }
 
 /* finit.  BUG(orig): CloseLibrary first, then DeleteCxObj through the
-   closed base; only the broker is deleted. */
+   closed base; only the broker is deleted (#556, #557). */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (!st_cbase)
@@ -232,7 +237,7 @@ static struct Message *getmsg_cc(struct MsgPort *port, UBYTE *ne)
 }
 
 /* WaitCommodity.  BUG(orig): see the head of the file - the CCR of
-   GetMsg decides, and inverted: "ne" waits for the next message. */
+   GetMsg decides, and inverted: "ne" waits for the next message (#566). */
 static LONG BLITZ_ROUTINE waitevent_c(void)
 {
     struct Message *m;
@@ -274,7 +279,7 @@ static LONG BLITZ_ROUTINE hotkeyhit_c(void)
     getmessage();
     if (st.cxmsgtype != CXM_IEVENT)
         return -1;
-    return st.cxmsgid;                  /* BUG(orig): no ReplyMsg */
+    return st.cxmsgid;                  /* BUG(orig): no ReplyMsg (#561) */
 }
 BLITZ_THUNK(hotkeyhit, hotkeyhit_c, "d1/a0-a1");
 
@@ -329,7 +334,8 @@ static ULONG attach(CxObj *head, CxObj *co)
     return BLITZ_BASEJSR(st_cbase, -84, r);
 }
 
-/* SetHotKey n,hotkey$.  BUG(orig): see the head of the file. */
+/* SetHotKey n,hotkey$.  BUG(orig): see the head of the file (#564, #563,
+   #565). */
 static LONG BLITZ_ROUTINE addhotkey_c(LONG n BL_REG(d0), STRPTR desc BL_REG(d1))
 {
     ULONG *slot, o;
@@ -377,7 +383,7 @@ static ULONG BLITZ_ROUTINE port_c(void)
 BLITZ_THUNK(port, port_c, "d1/a0-a1");
 
 /* SetCxStatus on|off: -1 activates, 0 deactivates the broker.
-   BUG(orig): tests the message port, not the broker. */
+   BUG(orig): tests the message port, not the broker (#562). */
 static LONG BLITZ_ROUTINE status_c(LONG on BL_REG(d0))
 {
     if (!st.msgport)
@@ -392,7 +398,7 @@ static LONG BLITZ_ROUTINE status_c(LONG on BL_REG(d0))
 BLITZ_THUNK(status, status_c, "d1/a0-a1");
 
 /* MakeCommodity name$,title$,description$.  BUG(orig): a new broker on
-   every call, the previous one is not deleted. */
+   every call, the previous one is not deleted (#560). */
 static LONG BLITZ_ROUTINE makecommodity_c(STRPTR name BL_REG(d0), STRPTR title BL_REG(d1),
                                           STRPTR descr BL_REG(d2))
 {

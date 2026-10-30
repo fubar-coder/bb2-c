@@ -34,32 +34,32 @@ are one packed struct in the order of the original's data block, so that
 
 **BUG(orig)** (kept, commented in the code):
 
-* the help text of `MakeCommodity` lacks the closing parenthesis;
+* the help text of `MakeCommodity` lacks the closing parenthesis (#558);
 * init does not check `OpenLibrary`; without commodities.library V37
-  every command calls through a base of 0;
+  every command calls through a base of 0 (#559);
 * finit closes commodities.library first and then calls `DeleteCxObj`
-  through the closed base; `DeleteCxObj` (not `DeleteCxObjAll`) leaves
-  the filters and senders allocated; the port is deleted with whatever is
-  still queued;
+  through the closed base (#556); `DeleteCxObj` (not `DeleteCxObjAll`)
+  leaves the filters and senders allocated (#557); the port is deleted
+  with whatever is still queued (#561);
 * `WaitCommodity` tests the CCR after `GetMsg` and is inverted: "ne" →
   `WaitPort` (waits for the *next* message and leaves it queued; the one
   `GetMsg` removed is lost), "eq" → `msg` = the result of `GetMsg`. Exec
   (3.2) leaves "ne", so it waits when the port is empty and skips one
-  message when it is not;
+  message when it is not (#566);
 * messages are never replied (`replymessage` starts with `RTS` and is
-  never called; not translated);
-* `SetHotKey` does not check the number; a replaced filter/sender is
-  removed but not deleted; the sender is only removed if the filter
-  existed; objects made before a failure stay; `CxObjError` is not looked
-  at (the `'oops2` tail is unreachable, not translated);
+  never called; not translated) (#561);
+* `SetHotKey` does not check the number (#564); a replaced filter/sender
+  is removed but not deleted; the sender is only removed if the filter
+  existed; objects made before a failure stay (#563); `CxObjError` is not
+  looked at (the `'oops2` tail is unreachable, not translated) (#565);
 * `MakeCommodity` makes a new broker on every call without deleting the
   previous one (which stays active, with the same port: finit deletes
   only the last one, so the first keeps the deleted port – a crash as
-  soon as commodities sends it something, e.g. `CXCMD_LIST_CHG`);
+  soon as commodities sends it something, e.g. `CXCMD_LIST_CHG`) (#560);
 * `SetCxStatus` tests the message port, not the broker; values other than
-  -1/0 do nothing and return 0;
+  -1/0 do nothing and return 0 (#562);
 * the `Exchange…` functions look at the id of the last message whatever
-  its type (a hotkey with id 15 counts as `ExchangeDisable`).
+  its type (a hotkey with id 15 counts as `ExchangeDisable`) (#555).
 
 No `DIFF`.
 
