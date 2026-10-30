@@ -36,11 +36,12 @@ build keeps). The address arithmetic is the original's: word results
 (`LSR.w`/`LSL.w`, `ADD.w`), word offsets added with their sign
 (`ADDA.w`, `x(an,dn.w)`), `MULU.w`.
 
-## BUG(orig), kept
+## Original behaviour, not defects
 
 * Nothing is checked; the sizes are constants of the game.
 * `DrawStarField` takes the bit numbers modulo 8 (`BCLR`/`BSET` on
-  memory).
+  memory address a byte): the table gives the bit within the star's
+  byte.
 
 ## Test
 

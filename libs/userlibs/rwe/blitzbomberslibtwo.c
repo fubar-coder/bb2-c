@@ -21,9 +21,10 @@
  * No init or finit.  Plain memory accesses, no assembler besides the
  * thunks; offsets are words (x(an,dn.w)) as in the original.
  *
- * BUG(orig), kept: nothing is checked (bitmap width 40 bytes and the
- * 236-line playfield are fixed); DrawStarField's bit numbers are taken
- * modulo 8 (BCLR/BSET on memory).
+ * Original behaviour, not defects: nothing is checked (bitmap width 40
+ * bytes and the 236-line playfield are the game's constants);
+ * DrawStarField's bit numbers are taken modulo 8 (BCLR/BSET on memory
+ * address a byte; the table gives the bit within the star's byte).
  */
 #include "blitzlib.h"
 
