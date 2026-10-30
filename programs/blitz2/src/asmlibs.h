@@ -18,7 +18,7 @@
 /* ============================================================ globals */
 
 extern UWORD lc;                     /* 5026 local label char seen by copyconst */
-extern UWORD pmode;                  /* 5618 push mode.  BUG(orig)/aliasing: the
+extern UWORD pmode;                  /* 5618 push mode.  Byte/word aliasing: the
                                         asm writes the HIGH byte with move.b
                                         (handlep: $40 push bit, highadd: 1) and
                                         the whole word in fetchpees (0/1);

@@ -231,7 +231,7 @@ BOOL tstlab(UWORD c);       /* 7704 alpha, digit, '_', loclabch (') */
 /* ================================================== names */
 /* Result: name length (asm d2.w; 0 == asm Z=1 "no name"), name + NUL in the
    buffer.  *c (may be NULL) = following char (asm d0; spaces after the name
-   skipped).  No length check (BUG(orig)). */
+   skipped).  No length check (BUG(orig) (#29)). */
 UWORD makename(UWORD *c);                     /* 7716 into namebuff */
 UWORD makename2(UWORD *c);                    /* 7715 bakup() first */
 UWORD makename3(char *buf, UWORD *c);         /* 7722 into buf */
@@ -249,7 +249,7 @@ UWORD makename4(char *at, UWORD len, UWORD *c);
 
    findlab: returns the node (asm Z=1, a2=node) or NULL (asm Z=0); if NULL
    and last != NULL, *last = last node of the list (or `link` itself if
-   empty) - pass it to addhere to append.  BUG(orig): len==0 compares
+   empty) - pass it to addhere to append.  BUG(orig) (#30): len==0 compares
    past the name. */
 struct node *findlab(struct node *link, UWORD nameoff, UWORD len,
                      struct node **last);

@@ -218,7 +218,7 @@ void savefile(void)
     }
 
     sleepon();
-    anyerrs = -1;                           /* BUG(orig): never cleared here */
+    anyerrs = -1;                           /* forces a recompile before Run */
     if (!nomemleft) {
         UBYTE *a1 = (UBYTE *)pcat;
         ULONG d2 = pcat + noinits;
@@ -423,7 +423,7 @@ UWORD getchar_(void)
             memcpy(cmakebak, namebuff, 128);
             d3 = evalconst2(&c);            /* get constant into d3 */
             if (c != '~')
-                syntaxerr();                /* BUG(orig): cmake stays set */
+                syntaxerr();                /* cmake stays set (cleared per pass) */
             cmakea5 = srcptr;
             a0 = makelong((char *)cmakebuff, d3);
             (*(UBYTE *)a0)++;               /* NUL -> 1 = end of cmake chars */
@@ -774,7 +774,7 @@ UWORD makename4(char *at, UWORD len, UWORD *c)
     UWORD d0 = getchar3();
     if (d0 == '_' || tstalpha(d0)) {
         do {
-            *at++ = (char)d0;               /* BUG(orig): no length check */
+            *at++ = (char)d0;               /* BUG(orig) (#29): no length check */
             len++;
             d0 = getchar_();
         } while (tstlab(d0));
@@ -792,7 +792,7 @@ UWORD makename4(char *at, UWORD len, UWORD *c)
  * ================================================================= */
 
 /* blitz2.s:7746 findlast - look for last entry in list from a2.
-   review: BUG(orig) the asm loops back to `beq` with the flags of the first
+   review: the asm loops back to `beq` with the flags of the first
    move.l (movea sets none), so it hangs on a non-empty list; never called
    in blitz2.s.  C walks the list (DIFF, dead code). */
 struct node *findlast(struct node *link)
@@ -854,7 +854,7 @@ struct node *findlab(struct node *link, UWORD nameoff, UWORD len,
             continue;
         a1 = (UBYTE *)a2 + nameoff;
         a0 = namebuff;
-        cnt = d0 - 1;                       /* dbf: BUG(orig) len==0 runs on */
+        cnt = d0 - 1;                       /* dbf: BUG(orig) (#30) len==0 runs on */
         for (;;) {
             if (*a1++ != *a0++)
                 goto next;

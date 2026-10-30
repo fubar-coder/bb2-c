@@ -1069,7 +1069,7 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
             uselib(65135);
             tokejsr(varmode ? lastring : lastring + 1);  /* +1: global allocmem */
             if (c != ',') {
-                /* review: BUG(orig) kept - asm `move varmode,d2` (14389)
+                /* review: BUG(orig) (#39) kept - asm `move varmode,d2` (14389)
                    leaves d2 = varmode (0/$ffff) as the returned type, so
                    `For a$=..` passes dofor's type check for a global a$ */
                 d2 = (UWORD)varmode;
@@ -1255,7 +1255,7 @@ static void dimwit(struct var *a3, struct type *a2)
         } else {
             if (d1 != HIW(temp2))
                 redimerr();
-            /* BUG(orig): writes the assembler's extension word into
+            /* writes the assembler's extension word into
                varoff/locvaroff (harmless: the caller restores it) */
             if (procmode)
                 locvaroff = extraword;

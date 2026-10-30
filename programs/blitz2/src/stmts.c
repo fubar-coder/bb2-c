@@ -145,7 +145,7 @@ void dousepath(UWORD c)
     do {
         if (c & 0x8000)
             syntaxerr();
-        *a0++ = (UBYTE)c;   /* BUG(orig): no length check (128 bytes) */
+        *a0++ = (UBYTE)c;   /* BUG(orig) (#31): no length check (128 bytes) */
         c = getchar3();
     } while (!eos(c));
     *a0 = 2;
@@ -701,7 +701,7 @@ BOOL newallox(ULONG d2, ULONG d3, ULONG d4, ULONG d5)
 {
     if (makeallox(d2, d3, d4, d5))
         return TRUE;
-    /* BUG(orig): falls back to the initial sizes and reports their result,
+    /* BUG(orig) (#32): falls back to the initial sizes and reports their result,
        so TRUE does not mean the new sizes were allocated */
     return makeiallox();
 }
@@ -936,7 +936,7 @@ static void resconsts(void)
         resd6 += d3;
         save = a2->next;
         /* next := offset of the following written item (= the next
-           constant).  BUG(orig): for the last constant, if non-constant
+           constant).  BUG(orig) (#34): for the last constant, if non-constant
            labels follow it, next points past the section (fixconsts
            leaves it as loaded) */
         if (a2->next) {
@@ -1061,7 +1061,7 @@ UBYTE *fixtypes(UBYTE *a3)
     d1 = n - 1;
     a2 = start = lastrestype;
     do {
-        /* skip through offsets.  BUG(orig): a type without fields is not
+        /* skip through offsets.  BUG(orig) (#35): a type without fields is not
            handled (its raw next pointer is followed) */
         while (L_(a3))
             a3 = (UBYTE *)L_(a3);
@@ -1154,7 +1154,7 @@ void loadres(void)
     UBYTE *a3;
     BPTR seg;
 
-    ezerr = -1;         /* BUG(orig): never reset here */
+    ezerr = -1;         /* not reset here: compile clears it */
     freeemup();
     freeres();
     for (d6 = 0, a5 = resbuff; d6 < MOSTRES; d6++, a5++) {
@@ -1184,7 +1184,7 @@ void loadres(void)
     }
     checkclash((struct node *)firsttype, NAMEOFF_TYPE);
     checkclash((struct node *)firstmacro, NAMEOFF_MACRO);
-    /* BUG(orig): firstconst is never filled (findconst has no caller,
+    /* BUG(orig) (#36): firstconst is never filled (findconst has no caller,
        constants live in firstlabel, name at 19 - fixconsts appends the
        resident ones via lastrescon), so this walks an empty list and
        clashing constants are never detected; offset 25 does not matter */

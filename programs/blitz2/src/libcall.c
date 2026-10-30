@@ -119,11 +119,11 @@ static ULONG fetchpoint2(UWORD *type)
     whole = ffpcall(SPFlt, numd3, 0, NULL);     /* save whole number */
     c = getchar3();
     if (!tstnum(c))
-        syntaxerr();                /* BUG(orig): "1." is a syntax error */
+        syntaxerr();                /* BUG(orig) (#10): "1." is a syntax error */
     numd3 = 0;
     c = fetchdec(c, &d5);           /* get int frac */
     if (numd3 == 0) {
-        /* .pskip.  BUG(orig): no check for an E exponent here
+        /* .pskip.  BUG(orig) (#11): no check for an E exponent here
            ("1.0e5" leaves the 'e' unparsed). */
         numd3 = whole;
     } else {
@@ -333,7 +333,7 @@ byte2:
 
 word:
     if (numd6)
-        goto quick2;    /* BUG(orig): d0 not loaded (see .quick2) */
+        goto quick2;    /* BUG(orig) (#12): d0 not loaded (see .quick2) */
     if (!makeint(&d0))
         goto numdofloat;
     goto over1;
@@ -344,7 +344,7 @@ quick:
     if (numd6 == 0)
         goto qint;
 quick2:
-    /* BUG(orig): expects d0 = int part (from makeint), but the paths
+    /* BUG(orig) (#12): expects d0 = int part (from makeint), but the paths
        "type 0 + float" and "type w + float" arrive with d0 = the current
        char.  The fraction is then usually out of range and the constant
        falls back to float.  Kept.  (a6 = maths assumed, as the asm) */
@@ -355,7 +355,7 @@ quick2:
     d0 = ffpcall(SPSub, numd3, t, NULL);                /* d0=fraction! */
     d0 = ffpcall(SPMul, d0, 0x80000051, NULL);          /* *65536 */
     d0 = ffpcall(SPFix, d0, 0, &ccr);                   /* back to int */
-    /* BUG(orig): a zero fraction (beq) and a negative one (unsigned bcc)
+    /* BUG(orig) (#13): a zero fraction (beq) and a negative one (unsigned bcc)
        also go to numdofloat.  Kept. */
     if ((ccr & CCR_Z) || d0 >= 65536)
         goto numdofloat;                                /* .knob */
@@ -451,7 +451,7 @@ void pushput(void)
     do {
         if (a1 >= libat) {
             nomemleft = -1;
-            return;     /* BUG(orig): save buffer pushat is not freed */
+            return;     /* BUG(orig) (#14): save buffer pushat is not freed */
         }
         W_(a1) = W_(a0);
         a1 += 2;
@@ -507,7 +507,7 @@ void muld1(UWORD d1)
         muld1once(d1);
         return;
     }
-    /* BUG(orig): d1 == 8 (x256) emits lsl #8 twice (count field 0 = 8),
+    /* BUG(orig) (#15): d1 == 8 (x256) emits lsl #8 twice (count field 0 = 8),
        i.e. x65536.  Kept. */
     muld1once(d1 - 8);
     muld1once(0);
@@ -890,8 +890,8 @@ static void doajsr2(ULONG d1)
             continue;
         }
         /* .isone: here, a blitzmode variation is available.
-           BUG(orig): makebtst recurses into doajsr2, which clears the
-           global inline length of this call.  Kept. */
+           Original: makebtst recurses into doajsr2, which clears the
+           global inline length of this call (at worst jsr instead of inline). */
         if (blitzmode < 0) {
             if (DEBUGGA_B)
                 makebtst(inblitz);
@@ -983,8 +983,8 @@ static void sendmd(struct blitzlib *a1, UWORD d2, LONG off, UWORD add)
     d2 >>= 8;
     if (d2 & 0x80) {
         d1 = 0x307c;                /* move.w #x,an */
-        /* BUG(orig): bit 7 means An here, bit 4 in makeregop - so this
-           a6 test can never be true.  Kept. */
+        /* original: bit 7 means An here, bit 4 in makeregop - so this
+           a6 test can never be true (no library needs it). */
         if (d2 == 0x16)
             lasta6 = -1;
     }
@@ -1223,7 +1223,7 @@ void doincdir(UWORD c)
 
     for (;;) {
         if (c != '"') {
-            /* BUG(orig): no length check, ':' is copied too.  Kept. */
+            /* BUG(orig) (#16, #17): no length check, ':' is copied too.  Kept. */
             *a0++ = (char)c;
             if (c == 0)
                 return;
@@ -1242,7 +1242,7 @@ WORD makeiname(void)
     WORD d2 = -1;
     UWORD c;
 
-    /* BUG(orig): neither loop checks the length - incdir + name beyond
+    /* BUG(orig) (#325): neither loop checks the length - incdir + name beyond
        127 characters run past namebuff (namebuff2, then what follows).
        Like doincdir the rest of the line (also after ':') is copied. */
     do {

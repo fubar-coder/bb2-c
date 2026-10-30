@@ -54,7 +54,7 @@ struct type addresstype = {&stringtype,  {6}, 4, 13, "a"};  /* 14850 */
 struct type stringtype  = {NULL,         {7}, 4, 13, "s"};  /* 14854 */
 struct type dummytype   = {NULL,         {0}, 0, 1};        /* 14858 */
 
-/* BUG(orig): set only by doincdir and never cleared - the IncDir of one
+/* BUG(orig) (#342): set only by doincdir and never cleared - the IncDir of one
    compile stays for the following ones of the same session.  Kept. */
 char  incdir[96];                       /* 14862 */
 WORD  dirmode = 0;                      /* 14865 direct mode flag */
@@ -1370,7 +1370,7 @@ reflist_:
 }
 
 /* blitz2.s:15281 typename - copy into the TYPE: string buffer.
-   BUG(orig): a 31 char name is left without NUL (buffer byte 31 is kept). */
+   A 31 char name ends at buffer byte 31, which stays 0 (MaxChars 32). */
 void typename(const char *a1)
 {
     UBYTE *a0 = typereqla21;
@@ -1447,7 +1447,7 @@ void loadxtra_c(struct m68kregs *r)
        unknown number of max's */
     olderr = errjmp;
     errjmp = &jb;
-    ezerr = -1;                 /* BUG(orig): never reset here */
+    ezerr = -1;                 /* not reset here: compile clears it */
     if (!setjmp(jb)) {
         for (;;) {                                      /* .dloop */
             struct blitzlib *l;
@@ -1707,7 +1707,7 @@ void maxit(WORD d1, UBYTE *label, UBYTE *num)
 }
 
 /* options.src optreqprep - chip mem copy of the arrow images.
-   BUG(orig): AllocMem result not checked. */
+   BUG(orig) (#8): AllocMem result not checked. */
 void optreqprep(void)
 {
     UBYTE *m = AllocMem(arrowsize, MEMF_CHIP);

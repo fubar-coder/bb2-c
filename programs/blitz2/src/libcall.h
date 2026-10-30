@@ -45,10 +45,10 @@ extern WORD dfetch;
              dfetch == 0 -> `move.w/.l #value,D(regat)` has been emitted and
              the next char/token is returned (asm reget: use eos()).
    Errors: overerr, syntaxerr, mismatcherr (never return).
-   BUG(orig): consttype2 (internal) reaches `.quick2` with d0 not loaded
+   BUG(orig) (#12): consttype2 (internal) reaches `.quick2` with d0 not loaded
    (it holds the last char) for type w and type 0 with a float value; the
    result then usually falls back to float.  Kept.
-   BUG(orig): a fraction that is exactly 0 after *65536 or negative also
+   BUG(orig) (#13): a fraction that is exactly 0 after *65536 or negative also
    turns a quick into a float.  Kept. */
 
 /* blitz2.s:10686 fetchdata - fetch a (optionally negative) number for Data:
@@ -59,7 +59,7 @@ extern WORD dfetch;
 ULONG fetchdata(UWORD *type);
 
 /* blitz2.s:10709 fetchfrac - number starting with '.', c = '.'
-   BUG(orig): "1." without fraction digits is a syntaxerr; after a zero
+   BUG(orig) (#10, #11): "1." without fraction digits is a syntaxerr; after a zero
    fraction ("1.0e5") the E exponent is not parsed.  Kept. */
 ULONG fetchfrac(UWORD c, UWORD *type);
 
@@ -87,7 +87,7 @@ void pushstart(void);
 void pushdo(void);
 /* blitz2.s:11057 pushput - re-emit the saved code at the current pc and
    relocate its offset nodes by the move distance; frees the buffer.
-   BUG(orig): if the object buffer overflows here (nomemleft), the save
+   BUG(orig) (#14): if the object buffer overflows here (nomemleft), the save
    buffer is not freed.  Kept. */
 void pushput(void);
 
@@ -95,7 +95,7 @@ void pushput(void);
 
 /* blitz2.s:11106 muld1 - emit D(regat) *= #d1: lsl.l for a power of two,
    else mulu.w #d1.  (asm clobbered d1-d4)
-   BUG(orig): d1 == 256 emits lsl #8 twice (= *65536).  Kept. */
+   BUG(orig) (#15): d1 == 256 emits lsl #8 twice (= *65536).  Kept. */
 void muld1(UWORD d1);
 
 /* blitz2.s:11140 makeinits - emit the init calls of all used libs
@@ -120,11 +120,11 @@ struct blitzlib *tokejsr2(UWORD token);
    error-check routines (debugga), blitz/amiga mode checks, then jsr or
    inline copy.  Saves/restores the current lib (libisat).  Returns lib
    (asm a2).  Uses uselib (asm a1 clobbered).
-   BUG(orig): toreg's max-count/used forms (spec low byte 3/4) test bit 7
+   Original: toreg's max-count/used forms (spec low byte 3/4) test bit 7
    of the register byte for "address register" while makeregop tests
-   bit 4, so the a6 check there is unreachable.  Kept.
-   BUG(orig): doajsr2's global `inline` length is cleared when a nested
-   makebtst (debug mode check) recurses into doajsr2.  Kept. */
+   bit 4, so the a6 check there is unreachable (no library needs it).
+   Original: doajsr2's global `inline` length is cleared when a nested
+   makebtst (debug mode check) recurses into doajsr2 (at worst jsr instead of inline). */
 struct blitzlib *makelibsub(struct blitzlib *lib, ULONG off);
 
 /* blitz2.s:11444 userjsr - like makelibsub, `params` = sub entry starting
@@ -213,14 +213,14 @@ extern ULONG oldlibat;
 
 /* blitz2.s:11936 doincdir - IncDir "path" statement handler: copies the
    chars (without '"') into incdir up to end of line; token -> syntaxerr.
-   BUG(orig): no length check (incdir is 96 bytes) and a ':' is copied
+   BUG(orig) (#16, #17): no length check (incdir is 96 bytes) and a ':' is copied
    (getchar3 returns it with Z=1).  Kept. */
 void doincdir(UWORD c);
 
 /* blitz2.s:11947 makeiname - namebuff = incdir + file name from the
    source (bakup first, '"' skipped); returns the total length (asm d2,
    used by addhere for the node); 0 -> syntaxerr.
-   BUG(orig): incdir is put in front of a name with a device (':') too,
+   BUG(orig) (#341): incdir is put in front of a name with a device (':') too,
    e.g. "BlitzLibs:" + "blitzlibs:libnums.bb".  Kept. */
 WORD makeiname(void);
 

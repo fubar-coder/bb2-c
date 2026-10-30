@@ -1046,7 +1046,7 @@ static WORD begin(void)
     do {
         ;
     } while (!ed_getinput(&d6) || d6 != 1);
-    /* grab a panic bit (BUG(orig): failure of AllocSignal not checked) */
+    /* grab a panic bit (BUG(orig) (#18): failure of AllocSignal not checked) */
     panicbit = (ULONG)(LONG)AllocSignal(-1);
     panicmask = 1UL << (panicbit & 31);
     /* loadseg default debugger (blitz2:defaultdbug) */
@@ -1066,7 +1066,7 @@ fail3:                                  /* 1460 */
     UnLoadSeg(segadd);
 fail2a:                                 /* 1462 */
     freeallox();
-    /* fail2b 1463 - BUG(orig): freed with the current macrolen, not the
+    /* fail2b 1463 - BUG(orig) (#336): freed with the current macrolen, not the
        size of the allocation (options loaded later change macrolen) */
     FreeMem(macrobuff, macrolen);
 fail2:                                  /* 1467 closedos */
@@ -1112,9 +1112,9 @@ int main(int argc, char **argv)
                 progfile[0] = 0;
                 d2 = L_(progfile + 0x4a);           /* do_StackSize */
             }
-            /* BUG(orig): on a short read the file is not closed */
+            /* BUG(orig) (#19): on a short read the file is not closed */
         }
-        /* BUG(orig): if the .info could not be opened progfile still holds
+        /* BUG(orig) (#20): if the .info could not be opened progfile still holds
            "<name>.info" (after a short read: the partial .info bytes) and
            the editor is asked to load it */
         if (!d2)
@@ -1150,7 +1150,7 @@ int main(int argc, char **argv)
 #endif
     stackfuck = d2;
     begin();
-    /* BUG(orig): wb_exit overwrites d0 (0 from the CLI; from the Workbench
+    /* BUG(orig) (#22): wb_exit overwrites d0 (0 from the CLI; from the Workbench
        whatever ReplyMsg/Permit leave), so DOS never sees returncode */
     return 0;
 }
@@ -1354,7 +1354,7 @@ void loaddmod(const char *name)
         UnLoadSeg(dseg);
         pointeron();
     }
-    /* BUG(orig): without an old dseg the busy pointer stays on */
+    /* BUG(orig) (#23): without an old dseg the busy pointer stays on */
     dseg = d7;
     errjmp = olderr;                    /* DIFF: asm never restored errstack */
     nodload();
@@ -1473,14 +1473,14 @@ void menu10(void)
             if (!chkrealstop())
                 continue;
             if (panictask)
-                RemTask(panictask);     /* BUG(orig): no cleanup at all */
+                RemTask(panictask);     /* BUG(orig) (#24): no cleanup at all */
             break;
         }
         /* .notpanic */
         if (!closeed)
             endstop();
     }
-    /* .fatal (BUG(orig): CreateProc failure leaves the stop requester open) */
+    /* .fatal (BUG(orig) (#25): CreateProc failure leaves the stop requester open) */
     firstlocal = NULL;
     firstglob = NULL;
     if (closeed)
@@ -1532,7 +1532,7 @@ ULONG calcvbr(void)
         d1++;
         d0 >>= 1;
     }
-    /* BUG(orig): a 68010 (d1 == 1) is treated as having no VBR */
+    /* BUG(orig) (#42): a 68010 (d1 == 1) is treated as having no VBR */
     if (d1 >= 2)
         d2 = getvbr();                  /* DIFF: Supervisor() instead of
                                            SuperState/movec/UserState */
@@ -1561,7 +1561,7 @@ void flash2(void)
 }
 
 /* blitz2.s:1765 flushlibs - ask for 256 MEG! (forces library expunge;
-   BUG(orig): the memory would leak if the allocation ever succeeded) */
+   BUG(orig) (#26): the memory would leak if the allocation ever succeeded) */
 void flushlibs(void)
 {
     AllocMem(1024 * 1024 * 256, MEMF_PUBLIC);
@@ -1590,7 +1590,7 @@ ULONG checklib(const char *name)
     if (!d7)
         return 0;
     /* 'deflibs' has been found! - pick up file length
-       (BUG(orig): Examine result not checked) */
+       (BUG(orig) (#27): Examine result not checked) */
     Examine(d7, namebufffib);
     UnLock(d7);
     return (ULONG)namebufffib->fib_Size;
@@ -1665,7 +1665,7 @@ BOOL makeblitzlibs(void)
         d6->next = *a0;                 /* next of last is next of me */
         *a0 = d6;                       /* I am next of last */
         d6->used = -1;                  /* set 'Used' flag */
-        /* BUG(orig): no length check, name[32] can overflow */
+        /* BUG(orig) (#28): no length check, name[32] can overflow */
         strcpy(d6->name, (const char *)fib->fib_FileName);
     }
     /* .ok */

@@ -11,7 +11,7 @@
  *   and its right operand in D(regat+1); the result goes to D(regat).
  *   Callers set regat before evaluating (normally 0) and get it back
  *   unchanged, except: maineval with regat >= 6 forces push mode and leaves
- *   regat = 6 (BUG(orig), kept).
+ *   regat = 6 (setsvars resets it for the next statement).
  * Current char: every evaluator / element entry point RETURNS the current
  *   char/token (asm d0) after the expression, like getchar3; the asm Z flag
  *   is not meaningful there (callers compare the char).
@@ -146,7 +146,7 @@ UWORD bakevalu(UWORD *type);    /* 8845  bakup; evalu               */
 UWORD evalu2(UWORD *type);      /* 8851  push type, unknown         */
 UWORD peval(UWORD *type);       /* 8841  push result, convert       */
 UWORD bakpeval(UWORD *type);    /* 8839  bakup; peval               */
-UWORD pevalu(UWORD *type);      /* 8835  BUG(orig): same as peval   */
+UWORD pevalu(UWORD *type);      /* 8835  same as peval (unused)     */
 UWORD bakpevalu(UWORD *type);   /* 8833  bakup; pevalu              */
 /* array index evaluation (calcvar): result in D(regat), type fixed */
 UWORD arreval(void);            /* 8828  long, no push              */

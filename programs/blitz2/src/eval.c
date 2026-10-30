@@ -632,7 +632,7 @@ UWORD bakpevalu(UWORD *type)
 }
 
 /* blitz2.s:8835 pevalu
-   BUG(orig): moveq #-1,d3 / bra peval - peval reloads d3 with 0, so pevalu
+   Unused (no caller in blitz2.s): moveq #-1,d3 / bra peval - peval reloads d3 with 0, so pevalu
    behaves exactly like peval. */
 UWORD pevalu(UWORD *type)
 {
@@ -696,7 +696,7 @@ UWORD maineval(WORD push, UWORD *type, WORD unk)
 {
     if (regat >= 6) {
         push = -1;
-        regat = 6;                  /* BUG(orig): not restored */
+        regat = 6;                  /* not restored (setsvars resets it) */
     }
     return maineval2(push, type, unk);
 }
@@ -818,7 +818,7 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
             pokewd(0x2000 | regat);
             pokewd(0x4e75);                         /* rts */
             lasta6 = fs[-2].lasta6w;
-            /* BUG(orig): the long move (blitz2.s:9025) also restores
+            /* BUG(orig) (#343): the long move (blitz2.s:9025) also restores
                quoteflag as getelement2 saved it - after getchar3 had read
                the left operand's first char.  For a character constant
                ("x"*8, only in asmfixer: constmode) that is the opening
@@ -906,7 +906,7 @@ found:
     }
     if (d0 != '<')                  /* .noteqgt */
         goto found3;
-    /* BUG(orig): "=<" is compiled as "<>" (falls into .isne) */
+    /* BUG(orig) (#9): "=<" is compiled as "<>" (falls into .isne) */
 isne:
     a0 = opne;
     goto found2;
@@ -1929,7 +1929,7 @@ static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
                 d1 = ((d1 & 7) << 9) | 0x205f;      /* .addreg: move.l (a7)+,An */
             } else {
                 if (d1 < regat) {
-                    /* BUG(orig): dead - d4 was poked already and d5 was
+                    /* BUG(orig) (#344): dead - d4 was poked already and d5 was
                        saved on the stack before; these bits are lost */
                     d5 |= 1UL << d1;
                     d4 |= 1UL << (15 - d1);

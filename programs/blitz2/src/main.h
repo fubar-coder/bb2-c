@@ -439,7 +439,7 @@ void docloseed(UWORD c);   /* 1578 CloseEd statement (atokens) */
 void donocli(UWORD c);     /* 1581 NoCli statement (atokens) */
 void flushc(void);         /* 1587 CacheClearU if exec has it (NegSize>=636) */
 ULONG calcvbr(void);       /* 1734 vbr = (AttnFlags highest bit >= 020) ?
-                              getvbr() : 0; also returned.  BUG(orig): 68010 -> 0 */
+                              getvbr() : 0; also returned.  BUG(orig) (#42): 68010 -> 0 */
 void flash(void);          /* 1751 debug: COLOR00 flicker */
 void flash2(void);         /* 1758 */
 void flushlibs(void);      /* 1765 AllocMem(256MB) to expunge libs */

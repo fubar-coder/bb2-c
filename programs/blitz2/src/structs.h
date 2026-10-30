@@ -284,7 +284,7 @@ struct asmnode {
     UWORD mode;             /* 8  patch mode 5-11,16,17 (see asmfixer) */
     UWORD flag;             /* 10 asm entry flag (0 if negative) */
     UWORD line;             /* 12 linenumat */
-    UBYTE size;             /* 14 allocation size (BUG(orig): byte, truncates
+    UBYTE size;             /* 14 allocation size (BUG(orig) (#1): byte, truncates
                                   for long texts) */
     UBYTE type;             /* 15 0 = indirect (text is a pointer into the
                                   source), else direct */
@@ -361,7 +361,7 @@ struct libsnode {
     struct libsnode *next;  /* 0 */
     WORD used;              /* 4 -1 = load it */
     char name[32];          /* 6 dir name under blitz2:userlibs/
-                                 (BUG(orig): copied without length check) */
+                                 (BUG(orig) (#28): copied without length check) */
 };
 SIZE(libsnode, 38);
 

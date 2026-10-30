@@ -446,7 +446,7 @@ void expandmax(void)
         if (*a4++ == '{') {
             struct macparam *mp = (struct macparam *)macrobuff;
             UWORD t;
-            /* BUG(orig): no check against the end of macrobuff */
+            /* BUG(orig) (#4): no check against the end of macrobuff */
             do {
                 d4++;           /* another p */
                 mp->start = a4;
@@ -517,7 +517,7 @@ void expandmax(void)
                     goto l_itsgot;
                 }
                 if (d0 == '@') {
-                    /* macro num parameter.  BUG(orig): no buffer
+                    /* macro num parameter.  BUG(orig) (#5): no buffer
                        overflow check for the digits */
                     a1 = (UBYTE *)makelong((char *)a1, (UWORD)macnum);
                     continue;
@@ -780,7 +780,7 @@ void dopass(void)
         }
     }
 
-    /* BUG(orig): the result of the first nextline is not tested */
+    /* the result of the first nextline is not tested (TED always has a line) */
     nextline();
 
     /* passloop / passnxt.  doinc2 longjmps to passnxt (asm: move.l
@@ -802,7 +802,7 @@ void dopass(void)
         debugstuff();
         tokejsr(finalscheck);
         debugstuff();
-        /* BUG(orig): also in executables (makeexec); without the debugger
+        /* BUG(orig) (#6): also in executables (makeexec); without the debugger
            rundebuglib shows an empty requester when the program runs off
            its end (code 3 is no text pointer; End jumps behind it) */
         pokel(L_(eopcode));
@@ -1297,7 +1297,7 @@ static void handleconst(void)
     UWORD len, c;
 
     prepstack();                /* forth stax */
-    len = makename(NULL);       /* BUG(orig): empty name not checked */
+    len = makename(NULL);       /* BUG(orig) (#7): empty name not checked */
     a2 = findadd(len, &last);
     if (!a2) {
         a2 = (struct label *)addhere(last, NAMEOFF_LABEL, len);

@@ -442,7 +442,7 @@ void insasm(const struct asment *e, ULONG a1, UWORD d3)
     n->addr = a1;
     n->mode = d3;
     n->flag = e->flag < 0 ? 0 : e->flag;
-    /* BUG(orig): size stored as a byte - texts longer than 239 bytes give
+    /* BUG(orig) (#1): size stored as a byte - texts longer than 239 bytes give
        a wrong size for freeasms */
     n->size = (UBYTE)d2;
     s = asmbuff + 1;
@@ -1322,7 +1322,7 @@ void loadalib(STRPTR name, struct node **tail)
     a5->size = d6;
     a5->nrelocs = 0;
     got = Read(fh, optstuff, 12);
-    /* BUG(orig): unsigned compare - a read error (-1) passes */
+    /* BUG(orig) (#3): unsigned compare - a read error (-1) passes */
     if ((ULONG)got >= 12) {
         ULONG cnt = L_(optstuff + 4);
         ULONG d5 = cnt << 2;            /* length of reloc info */

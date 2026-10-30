@@ -161,7 +161,7 @@ void domaxlen(UWORD c)
         pokewd((UWORD)off);
     }
     pokewd(maxprep2[0]);                        /* .already: move.l a2,d0 */
-    regat++;                                    /* BUG(orig): never restored here */
+    regat++;                                    /* setsvars resets it per statement */
     type = T_LONG;
     eval(&type);
     tokejsr(vm ? maxlen + 1 : maxlen);
@@ -476,7 +476,7 @@ void dodcb(UWORD c)
     if (c != ',')
         syntaxerr();
     val = evalconst2(&c);                       /* to put in memory */
-    /* BUG(orig): do-while loops: a count of 0 repeats 2^32 times */
+    /* BUG(orig) (#37): do-while loops: a count of 0 repeats 2^32 times */
     if (size == 0) {
         do pokebyte((UBYTE)val); while (--cnt);         /* .byte */
         return;
@@ -738,7 +738,7 @@ void doincbin(UWORD c)
     Examine(lk, (struct FileInfoBlock *)macrobuff);
     fib = (struct FileInfoBlock *)macrobuff;
     if (fib->fib_DirEntryType >= 0)
-        noincerr();                             /* BUG(orig): lock not released */
+        noincerr();                             /* BUG(orig) (#38): lock not released */
     size = fib->fib_Size;                       /* length */
     UnLock(lk);
     fh = Open((CONST_STRPTR)namebuff, MODE_OLDFILE);
@@ -751,7 +751,7 @@ void doincbin(UWORD c)
     } else {
         r = Read(fh, (APTR)pc, size);
         if (r == -1)
-            readerr();                          /* BUG(orig): fh not closed */
+            readerr();                          /* BUG(orig) (#38): fh not closed */
         pc += r;
     }
     Close(fh);                                  /* .close */
@@ -849,8 +849,8 @@ void domacro(UWORD c)
             c = getchar3();
             if (c == 0x800d && --coolnest < 0)
                 break;                          /* .macdone */
-            /* .notem.  BUG(orig): a plain char after End is put as a word
-               ($00,char), and spaces/comments after End are lost */
+            /* .notem.  A plain char after End is put as a word
+               ($00,char; the 0 ends the statement), spaces/comments after End are lost */
             macputw(0x8002);
         }
         macputw(c);                             /* .notend */
@@ -867,7 +867,7 @@ void domacro(UWORD c)
         n--;                                    /* .cdo */
     }
     m->textlen = (UWORD)n;                      /* .cdone */
-    if (m->textlen) {   /* BUG(orig): text left unset when the macro is empty */
+    if (m->textlen) {   /* text left unset when empty (never read then) */
         m->text = doallocmem(n, MEMF_PUBLIC);
         memcpy(m->text, macrobuff, m->textlen);
     }
