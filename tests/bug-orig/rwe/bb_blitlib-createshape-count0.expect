@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+before
+shape 2 width 0
+rc=0
