@@ -46,31 +46,31 @@ compute the loops' end pointer with `__mulsi3`, no libgcc in a library).
 
 * RINextAnimFrame returns without restoring its 14 saved registers when
   a frame has no DLTA after its ANHD (and CMAP): the RTS takes the saved
-  d1 as return address. Reproduced by the thunk.
+  d1 as return address. Reproduced by the thunk (#515).
 * InitFindChunk on data that is not a FORM but has the wanted ID at +8
   pushes a1 and returns without popping it: the RTS jumps to the
   caller's a1. **DIFF:** the C build returns -1 as if a1 had been popped
-  (the original crashes; not reproducible in C).
+  (the original crashes; not reproducible in C) (#513).
 * The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers) add
-  length + 8 without the pad byte of odd lengths and compare addresses
-  signed; RIAnimFrameCount counts every chunk of the ANIM, not only the
-  frames.
+  length + 8 without the pad byte of odd lengths (#505) and compare
+  addresses signed (#506); RIAnimFrameCount counts every chunk of the
+  ANIM, not only the frames (#510).
 * RIAnimInit searches the BMHD from the first frame's chunks up to the
   end of the ANIM (a BMHD chunk of the ANIM behind the first frame is
-  found); if no ILBM or BMHD is found it keeps the ANIM's address and
-  end (RIAnimFrameCount counts it) and the frame pointers of the
-  animation before.
+  found) (#511); if no ILBM or BMHD is found it keeps the ANIM's address
+  and end (RIAnimFrameCount counts it) and the frame pointers of the
+  animation before (#512).
 * RIAnimInit x,y: the offset is ebwidth × y (MULU.w, low words) + x >> 3
   (ASR.l); the `DIVU.w #64` that undoes the compiler's bitmap# × 64
-  overflows (no change) from 64 × 65536 on.
+  overflows (no change) from 64 × 65536 on (#514).
 * ANIM7: the test for the short (word) form tests the operation
   (always 7), so the long form is always used and the short code is
-  unreachable; the columns are width >> 5 (ASR.w) – the rest of a width
-  that is not a multiple of 32 is dropped, a width below 32 gives 65536
-  columns (DBRA). ANIM5 likewise with width >> 3.
+  unreachable (#504); the columns are width >> 5 (ASR.w) – the rest of a
+  width that is not a multiple of 32 is dropped, a width below 32 gives
+  65536 columns (DBRA). ANIM5 likewise with width >> 3 (#507).
 * The planes loop counts a byte up to the depth: depth 0 gives 256
-  planes, more than 8 read behind the bitmap's plane pointers. A run or
-  copy count of 0 is 256 (DBRA on the byte).
+  planes, more than 8 read behind the bitmap's plane pointers (#509). A
+  run or copy count of 0 is 256 (DBRA on the byte) (#508).
 
 **Test** (`libs/tests/rwe/rianimlib.c`, snitch case "rwe rianimlib"):
 the test builds small ANIMs in memory (64×8, 2 planes: frames with ANHD

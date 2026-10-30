@@ -26,7 +26,7 @@
  * InitFindChunk/FindChunk code of RIPackLib (Pack-Library9).
  *
  * C behind thunks; RINextAnimFrame's thunk is assembler for its stack
- * (BUG(orig) below).  The thunks keep d1/a0/a1 (GCC the rest); the
+ * (BUG(orig) below, #515).  The thunks keep d1/a0/a1 (GCC the rest); the
  * original changes d1, d3, d6, d7 and a2 in RIAnimInit, a0/a2 in
  * RIAnimDepth/Width/Height, a0/a1 in RIAnimFrameCount.
  *
@@ -35,29 +35,31 @@
  *     chunk "pointed at directly") pushes a1 and returns without popping
  *     it: the RTS jumps to the caller's a1 (DIFF: the C build returns
  *     -1 as if a1 had been popped - a crash in the original, not
- *     reproducible).
+ *     reproducible) (#513).
  *   - RINextAnimFrame returns without restoring its 14 saved registers
  *     when a frame has no DLTA after ANHD (and CMAP): its RTS jumps to
- *     the saved d1 (reproduced by the thunk).
+ *     the saved d1 (reproduced by the thunk) (#515).
  *   - The chunk walks (FindChunk, RIAnimFrameCount, the frame pointers)
- *     add the chunk length + 8 without the pad byte of odd lengths and
- *     compare addresses signed; RIAnimFrameCount counts every chunk of
- *     the ANIM, not only the frames.
+ *     add the chunk length + 8 without the pad byte of odd lengths
+ *     (#505) and compare addresses signed (#506); RIAnimFrameCount counts
+ *     every chunk of the ANIM, not only the frames (#510).
  *   - RIAnimInit searches the BMHD up to the end of the ANIM, not of the
- *     first frame; it keeps the ANIM's address and end even if no ILBM
- *     or BMHD is found (RIAnimFrameCount then counts), and the frame
- *     pointers of the animation before.
+ *     first frame (#511); it keeps the ANIM's address and end even if no
+ *     ILBM or BMHD is found (RIAnimFrameCount then counts), and the frame
+ *     pointers of the animation before (#512).
  *   - RIAnimInit x,y form: the offset is ebwidth * y (MULU.w: the low
  *     words) + x >> 3 (ASR.l); DIVU.w #64 of the bitmap# overflows (no
- *     change) for numbers of 64 * 65536 and above.
+ *     change) for numbers of 64 * 65536 and above (#514).
  *   - ANIM7: the test for the short (word) form tests the operation (7),
  *     so the long form is always used (the short code is unreachable and
- *     not ported); the columns are width >> 5 (ASR.w), dropping the rest
- *     of a width that is not a multiple of 32, and a width below 32 gives
- *     65536 columns (DBRA); ANIM5 likewise with width >> 3.
+ *     not ported) (#504); the columns are width >> 5 (ASR.w), dropping
+ *     the rest of a width that is not a multiple of 32, and a width below
+ *     32 gives 65536 columns (DBRA); ANIM5 likewise with width >> 3
+ *     (#507).
  *   - The planes loop runs until the counter (a byte) equals the depth:
  *     depth 0 is 256 planes; more than 8 read behind the bitmap's plane
- *     pointers.  A run or copy count of 0 is 256 (DBRA on the byte).
+ *     pointers (#509).  A run or copy count of 0 is 256 (DBRA on the
+ *     byte) (#508).
  * Not ported (no effect): GetChunkHeader (called by nothing), _libfinit
  * (an RTS no header refers to), the short ANIM7 code.
  */
@@ -166,7 +168,7 @@ static LONG initfindchunk(UBYTE *a0, ULONG id)
     }
     if (LG(a0 + 8) != id)
         return 0;
-    /* DIFF: the original returns to the caller's a1 here (BUG(orig)) */
+    /* DIFF: the original returns to the caller's a1 here (BUG(orig), #513) */
     firstchunk = lastfoundchunk = a0;
     endoffile = a0 + LG(a0 + 4) + 8;
     return -1;
@@ -182,7 +184,7 @@ static LONG fcloop(UBYTE *p, ULONG id, UBYTE **a2)
         }
         if (LG(p) == id)
             break;
-        p += LG(p + 4) + 8;             /* BUG(orig): no pad byte */
+        p += LG(p + 4) + 8;             /* BUG(orig): no pad byte (#505) */
     }
     lastfoundchunk = p;
     *a2 = p + 8;
@@ -261,7 +263,7 @@ ULONG BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     animaddress = (UBYTE *)address;
     if (!initfindchunk(firstchunk, ID_ILBM))
         return 0;
-    endoffile = animend;                /* BUG(orig): the whole ANIM */
+    endoffile = animend;                /* BUG(orig): the whole ANIM (#511) */
     if (!findchunk(ID_BMHD, &a2))
         return 0;
     animwidth = WD(a2);
@@ -298,7 +300,7 @@ ULONG BLITZ_ROUTINE c_InitAnim3(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     return c_InitAnim(address, bl_divu_w(bm, SIZEOF_BITMAP), pal, off);
 }
 
-/* RIAnimFrameCount: the chunks of the ANIM (BUG(orig): all of them) */
+/* RIAnimFrameCount: the chunks of the ANIM (BUG(orig): all of them, #510) */
 ULONG BLITZ_ROUTINE c_CountFrames(void)
 {
     UBYTE *p;
@@ -398,7 +400,7 @@ static void unpackanim(UBYTE *dlta, BOOL seven)
     UBYTE d4 = 0;
 
     animwidthtemp = (UWORD)(((WORD)animwidth >> (seven ? 5 : 3)) - 1);
-    do {                                /* BUG(orig): up to the byte */
+    do {                                /* BUG(orig): up to the byte (#509) */
         UBYTE *a1 = (UBYTE *)*a6++ + bitplaneoffset;
         ULONG op = a5[0], data = a5[8];
 
@@ -446,11 +448,11 @@ unsigned long long BLITZ_ROUTINE c_NextAnimFrame(ULONG *bitmap BL_REG(a0))
         a0 += LG(a0 + 4) + 8;
     }
     if (LG(a0) != ID_DLTA)
-        return 1;                       /* BUG(orig): RTS without MOVEM */
+        return 1;                       /* BUG(orig): RTS without MOVEM (#515) */
     if (animtype == 5 || animtype == 65)
         unpackanim(a0, FALSE);
     else if (animtype == 7)
-        unpackanim(a0, TRUE);           /* BUG(orig): never the short form */
+        unpackanim(a0, TRUE);           /* BUG(orig): never the short form (#504) */
     else
         return 0;
     return 0xffffffffULL << 32;
@@ -468,7 +470,7 @@ BLITZ_THUNK(_AnimHeight, c_AnimHeight, "d1/a0-a1");
 
 /* RINextAnimFrame: d1-d7/a0-a6 saved as by the original; restored unless
    the C function says the original does not (d1 = 1: the RTS takes the
-   saved d1 as its return address, BUG(orig)) */
+   saved d1 as its return address, BUG(orig), #515) */
 __asm__(
 "   .text\n"
 "   .even\n"
