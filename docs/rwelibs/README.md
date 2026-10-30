@@ -73,7 +73,7 @@ latest date in the header comments.
 | AMOS functions | 75 | `AMOSFunclib/func-library4`…`7` | RI | 1996-01-11 | 7 **=** BSS2 `RIAMOSFUNCLIB` (4768 B); 6: names equal, 1 help text differs; AB3's file differs from BSS2 | func-library7 |
 | Anim | 57 | `ANIMLib/Anim-Library3` | RI (McNamara) | 1994-11-07 | ≈ 88 % BSS2 `RIANIMLIB` | open |
 | App | 61 | `AppLib/AppLib`, `applib2`, `applib3` | – | – | applib2 **=** BSS2/AB3 `RIAPPLIB` (2892 B); applib3 in the `BB22` format | applib2 (applib3: check) |
-| Arrays | 7 (`#riarrayslib`: RWE's list, REDHELP.DAT, a program using it; clash `om3dlib`, AB3) | `ArraysLib` | RI | – | – | ArraysLib (the only version; reference build, 3.3) |
+| Arrays | 7 (`#riarrayslib`: RWE's list, REDHELP.DAT, a program using it; clash `om3dlib`, AB3) | `ArraysLib` | RI | – | – | ArraysLib (the only version; reference build, 3.3), ported 2026-10-30 (`port/riarrayslib.md`) |
 | CompactDisk | 14 (`#ricompactdisclib`, lit. 14) | `CDlib/cd`, `cd2`, `cd3`, `cdSCSI` | – | 1995-07-03 | ≈ 96 % OL `RICOMPACTDISKLIB` | open |
 | Commodities | 89 | `Commoditieslib/CommoditiesLib2` | – | – | **=** BSS2/AB3 (2604 B) | CommoditiesLib2 |
 | CopperFX | 11 (bin.) | `Copperlib/CopperFX3` | RI | 1995-03-08 | **=** BSS2/AB3 (1856 B) | CopperFX3 |
