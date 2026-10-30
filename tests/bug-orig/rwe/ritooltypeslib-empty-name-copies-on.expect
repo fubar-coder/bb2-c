@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+-1
+entry <=abc>
+rc=0
