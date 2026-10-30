@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+address 10 kept
+0
+rc=0
