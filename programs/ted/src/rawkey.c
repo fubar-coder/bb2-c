@@ -39,43 +39,43 @@ static struct {
 /* rawed+32+0 (called at ted.s line 39): L12 */
 void rawed_init(void)
 {
-    struct IOStdReq *a2 = &rawed_io.io;
-    struct MsgPort *a3 = &rawed_io.port;
-    struct List *a0;
-    UWORD d2;
+    struct IOStdReq *io = &rawed_io.io;
+    struct MsgPort *port = &rawed_io.port;
+    struct List *list;
+    UWORD key;
 
     memset(&rawed_io, 0, sizeof(rawed_io));     /* 41 words */
-    a2->io_Message.mn_Node.ln_Type = NT_MESSAGE;        /* 5 */
-    a2->io_Message.mn_Length = sizeof(struct IOStdReq); /* $30 */
-    a0 = &a3->mp_MsgList;       /* NewList by hand */
-    a0->lh_TailPred = (struct Node *)a0;
-    a0->lh_Head = (struct Node *)&a0->lh_Tail;
-    a3->mp_Node.ln_Type = NT_MSGPORT;                   /* 4 */
-    a3->mp_SigTask = FindTask(NULL);
+    io->io_Message.mn_Node.ln_Type = NT_MESSAGE;        /* 5 */
+    io->io_Message.mn_Length = sizeof(struct IOStdReq); /* $30 */
+    list = &port->mp_MsgList;   /* NewList by hand */
+    list->lh_TailPred = (struct Node *)list;
+    list->lh_Head = (struct Node *)&list->lh_Tail;
+    port->mp_Node.ln_Type = NT_MSGPORT;                 /* 4 */
+    port->mp_SigTask = FindTask(NULL);
     /* the signal is never freed (finit does not; ends with the process) */
-    a3->mp_SigBit = (UBYTE)AllocSignal(-1);
-    a2->io_Message.mn_ReplyPort = a3;
+    port->mp_SigBit = (UBYTE)AllocSignal(-1);
+    io->io_Message.mn_ReplyPort = port;
     /* BUG(orig) (#373): result not checked - a failure leaves ConsoleDevice = 0
        and convert calls through a NULL base */
-    OpenDevice((CONST_STRPTR)rawed_devname, (ULONG)-1, (struct IORequest *)a2, 0);
-    ConsoleDevice = a2->io_Device;
+    OpenDevice((CONST_STRPTR)rawed_devname, (ULONG)-1, (struct IORequest *)io, 0);
+    ConsoleDevice = io->io_Device;
     /* L14: both (unused) tables through convert */
-    for (d2 = 0; d2 != 0x69; d2++) {
-        rawed_tab1[d2] = (UBYTE)rawed_convert(d2, 0);
-        rawed_tab2[d2] = (UBYTE)rawed_convert(d2, 1);
+    for (key = 0; key != 0x69; key++) {
+        rawed_tab1[key] = (UBYTE)rawed_convert(key, 0);
+        rawed_tab2[key] = (UBYTE)rawed_convert(key, 1);
     }
 }
 
 /* rawed+32+4 (called at ted.s line 5928): L7 */
-UWORD rawed_convert(UWORD d0, UWORD d1)
+UWORD rawed_convert(UWORD code, UWORD d1)
 {
-    UWORD sp = rawspecial(d0);
+    UWORD sp = rawspecial(code);
     LONG r;
 
     if (sp)                     /* F1-F10, cursor keys, Help (any qualifier) */
         return sp;
     /* L10 */
-    rawed_ie.ie_Code = d0;
+    rawed_ie.ie_Code = code;
     rawed_ie.ie_Qualifier = d1;
     rawed_buf[0] = rawed_buf[1] = 0;
     r = RawKeyConvert(&rawed_ie, (STRPTR)rawed_buf, 1, NULL);
