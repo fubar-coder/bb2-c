@@ -40,12 +40,12 @@
  *     count was 0 lets it go on while threads run (and their code, the
  *     exit code in this library, may be gone) (#837); the signal is never
  *     freed, dos.library's base not cleared (#839).
- *   - No check of the memory: without it the thread runs with its
- *     registers based on 0.
  *
- * No defects: the name is the string argument as it is (CreateNewProc
- * copies it); ActiveThreads (#word) returns the count as a long (the
- * caller takes the low word, which is the count).
+ * No defects: the memory is not checked, but memlib's globalloc never
+ * returns 0 (it raises "Out of Memory!"); the name is the string
+ * argument as it is (CreateNewProc copies it); ActiveThreads (#word)
+ * returns the count as a long (the caller takes the low word, which is
+ * the count).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"

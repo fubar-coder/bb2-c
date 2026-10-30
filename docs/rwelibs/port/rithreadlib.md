@@ -54,8 +54,9 @@ the start code reads by name.
   was 0 lets it return while threads still run (whose exit code is in
   this library) (#837); the signal is never freed and dos.library's base
   not cleared (#839).
-* The memory is not checked: without it the thread's registers are
-  based on 0.
+
+The memory is not checked; that is no defect: memlib's `globalloc`
+never returns 0 (it raises "Out of Memory!").
 
 `ActiveThreads` (`#word`) returns the count as a long; that is no defect
 (the caller takes the low word, which is the count).
