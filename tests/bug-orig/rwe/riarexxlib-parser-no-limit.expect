@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+received -1
+arg xxx
+rc=0

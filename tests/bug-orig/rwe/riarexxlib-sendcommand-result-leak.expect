@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+4000
+leaked 0
+rc=0

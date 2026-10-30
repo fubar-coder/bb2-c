@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
++++ Error 6 in line 1: Unterminated comment
+empty -1
+rc=0
