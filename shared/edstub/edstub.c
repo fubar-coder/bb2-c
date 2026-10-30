@@ -6,6 +6,7 @@
 #include <exec/memory.h>
 #include <exec/ports.h>
 #include <exec/tasks.h>
+#include <exec/io.h>
 #include <dos/dos.h>
 #include <dos/dosextens.h>
 #include <intuition/intuition.h>
@@ -304,7 +305,7 @@ static void closeall(void)
 {
     ((struct Process *)FindTask(0))->pr_WindowPtr = old_winptr;
     if (winport) {
-        DeleteMsgPort(winport);
+        edstub_delete_port(winport);
         winport = 0;
     }
     if (bitmap) {
@@ -576,6 +577,58 @@ void error_c(struct regs *r)
 }
 
 /* ---------------------------------------------------------------------
+ * ports and IO requests with Kickstart 1.x calls (edstub.h)
+ * ------------------------------------------------------------------- */
+struct MsgPort *edstub_create_port(void)
+{
+    struct MsgPort *port = AllocMem(sizeof *port, MEMF_PUBLIC | MEMF_CLEAR);
+    BYTE sig;
+
+    if (!port)
+        return 0;
+    if ((sig = AllocSignal(-1)) < 0) {
+        FreeMem(port, sizeof *port);
+        return 0;
+    }
+    port->mp_Node.ln_Type = NT_MSGPORT;
+    port->mp_Flags = PA_SIGNAL;
+    port->mp_SigBit = sig;
+    port->mp_SigTask = FindTask(0);
+    port->mp_MsgList.lh_Head = (struct Node *)&port->mp_MsgList.lh_Tail;
+    port->mp_MsgList.lh_TailPred = (struct Node *)&port->mp_MsgList.lh_Head;
+    return port;
+}
+
+void edstub_delete_port(struct MsgPort *port)
+{
+    if (!port)
+        return;
+    FreeSignal(port->mp_SigBit);
+    FreeMem(port, sizeof *port);
+}
+
+struct IORequest *edstub_create_ioreq(struct MsgPort *port, ULONG size)
+{
+    struct IORequest *io;
+
+    if (!port || !(io = AllocMem(size, MEMF_PUBLIC | MEMF_CLEAR)))
+        return 0;
+    io->io_Message.mn_Node.ln_Type = NT_REPLYMSG;
+    io->io_Message.mn_ReplyPort = port;
+    io->io_Message.mn_Length = size;
+    return io;
+}
+
+void edstub_delete_ioreq(struct IORequest *io)
+{
+    if (!io)
+        return;
+    io->io_Message.mn_Node.ln_Succ = (struct Node *)-1;     /* as DeleteIORequest */
+    io->io_Device = (struct Device *)-1;
+    FreeMem(io, io->io_Message.mn_Length);
+}
+
+/* ---------------------------------------------------------------------
  * entries
  * ------------------------------------------------------------------- */
 void edstub_init_c(struct regs *r)
@@ -585,12 +638,12 @@ void edstub_init_c(struct regs *r)
     SysBase = *(struct ExecBase **)4;
     edstub_ed = (struct edstruct *)r->a[1];
     r->d[0] = 1;                        /* fail unless everything is there */
-    if (!edstub_ed || SysBase->LibNode.lib_Version < 36)
+    if (!edstub_ed || SysBase->LibNode.lib_Version < 33)
         return;
-    DOSBase = (struct DosLibrary *)OpenLibrary("dos.library", 36);
-    IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", 36);
+    DOSBase = (struct DosLibrary *)OpenLibrary("dos.library", 33);
+    IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", 33);
     bitmap = AllocMem(BITMAP_SIZE, MEMF_PUBLIC | MEMF_CLEAR);
-    winport = CreateMsgPort();          /* real port: blitz2 reads mp_SigBit */
+    winport = edstub_create_port();     /* real port: blitz2 reads mp_SigBit */
     if (!DOSBase || !IntuitionBase || !bitmap || !winport) {
         closeall();
         return;

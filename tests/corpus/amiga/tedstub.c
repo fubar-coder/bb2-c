@@ -409,12 +409,13 @@ static LONG filesize(const char *name)
     LONG size = -1;
 
     if (l) {
-        struct FileInfoBlock *fib = AllocDosObject(DOS_FIB, 0);
+        /* AllocMem, not AllocDosObject (V36): Kickstart 1.x */
+        struct FileInfoBlock *fib = AllocMem(sizeof *fib, MEMF_PUBLIC | MEMF_CLEAR);
 
         if (fib) {
             if (Examine(l, fib))
                 size = fib->fib_Size;
-            FreeDosObject(DOS_FIB, fib);
+            FreeMem(fib, sizeof *fib);
         }
         UnLock(l);
     }
@@ -702,10 +703,10 @@ static void run_job(char *id, char *src, char *console, char *panic)
     if (!begin_job(id, src, 0, 0, &dir, &old))
         goto out;
     if (panic_ticks) {
-        panic_req = (struct timerequest *)CreateIORequest(edstub_req_port(), sizeof *panic_req);
+        panic_req = (struct timerequest *)edstub_create_ioreq(edstub_req_port(), sizeof *panic_req);
         if (panic_req && OpenDevice("timer.device", UNIT_VBLANK,
                                     (struct IORequest *)panic_req, 0)) {
-            DeleteIORequest((struct IORequest *)panic_req);
+            edstub_delete_ioreq((struct IORequest *)panic_req);
             panic_req = 0;
         }
         if (!panic_req) {
@@ -726,7 +727,7 @@ static void run_job(char *id, char *src, char *console, char *panic)
             WaitIO((struct IORequest *)panic_req);
         }
         CloseDevice((struct IORequest *)panic_req);
-        DeleteIORequest((struct IORequest *)panic_req);
+        edstub_delete_ioreq((struct IORequest *)panic_req);
         panic_req = 0;
     }
     if (errpending)

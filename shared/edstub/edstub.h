@@ -15,6 +15,10 @@
  *
  * Built without any C runtime (-nostdlib, -ffreestanding): no startup
  * code, no libc, no libgcc - no 32 bit multiplication or division.
+ *
+ * Runs on Kickstart 1.2 (V33) and later: only functions of V33 (no
+ * CreateMsgPort, CreateIORequest, AllocDosObject ...; the helpers below
+ * do what those do).
  */
 #ifndef EDSTUB_H
 #define EDSTUB_H
@@ -88,6 +92,15 @@ extern int edstub_busy;
 
 /* a new job: the counters of the requester answers start again */
 void edstub_reset_requests(void);
+
+/* a message port with a signal of its own (CreateMsgPort of V36) and an
+   IO request of size bytes for port (CreateIORequest of V36), with
+   Kickstart 1.x calls; NULL if out of memory or signals */
+struct IORequest;
+struct MsgPort *edstub_create_port(void);
+void edstub_delete_port(struct MsgPort *port);
+struct IORequest *edstub_create_ioreq(struct MsgPort *port, ULONG size);
+void edstub_delete_ioreq(struct IORequest *io);
 
 /* small libc replacements (memset/memcpy for the compiler as well) */
 void *memset(void *d, int c, size_t n);
