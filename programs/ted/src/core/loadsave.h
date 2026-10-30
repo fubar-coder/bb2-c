@@ -19,11 +19,11 @@ void blocktab(void);
    every block line, WHATEVER they are (BUG(orig) #348, survey-01 I.11). */
 void blockuntab(void);
 
-/* ted.s:570 (prtfile, core part - NEW name): format line a4 for the printer
+/* ted.s:570 (prtfile, core part - NEW name): format line (a4) for the printer
    into buf: token -> ESC[1m name ESC[22m, end of line -> LF.  Returns the
    number of bytes (asm: Write length).  Bytes >= $80 are always tokens
    (survey-01 I.14).  The requester/Open/Write loop is prtfile (main.h). */
-UWORD prtfile_line(struct item *a4, UBYTE *buf);
+UWORD prtfile_line(struct item *line, UBYTE *buf);
 
 /* ----------------------------------------------------- .xtra / .info */
 
@@ -34,47 +34,48 @@ extern const char bakname[];    /* ted.s:742 '.bak' (filesave, main.c) */
 /* ted.s:641 openinfo: name(xtraat)+".info" exists (Lock) -> 0; else
    Open(..., NEWFILE).  asm: d7 = handle, Z=1 if 0. */
 tedfh openinfo(void);
-/* ted.s:658 openxtra: Open(name+".xtra", d2).  asm: d7, Z=1 if failed. */
-tedfh openxtra(LONG d2);
-/* ted.s:664 openmore: append extension a1 at xtraat, remember the old end
-   in xtranull.  Returns the name (asm: d1 = xtraat). */
-UBYTE *openmore(const char *a1);
+/* ted.s:658 openxtra: Open(name+".xtra", mode (d2)).  asm: d7, Z=1 if
+   failed. */
+tedfh openxtra(LONG mode);
+/* ted.s:664 openmore: append extension ext (a1) at xtraat, remember the
+   old end in xtranull.  Returns the name (asm: d1 = xtraat). */
+UBYTE *openmore(const char *ext);
 /* ted.s:674 closextra: *xtranull = 0 (remove the extension again) */
 void closextra(void);
 
 /* ------------------------------------------------------- load / save */
 
-/* ted.s:680 fileopen2 - load file d7 (full path) into the line list:
-   xtraat = d7, doopen (failure: error() was shown, return), allalt = 0,
-   doclean, fillbuff (empty file: doclose, donew), sleepon, blokdis,
+/* ted.s:680 fileopen2 - load file name (d7, full path) into the line
+   list: xtraat = name, doopen (failure: error() was shown, return),
+   allalt = 0, doclean, fillbuff (empty file: doclose, donew), sleepon, blokdis,
    freeall, readline/allocline loop, doclose, loadxtra callback (.xtra),
    cursor/scroll 0, showhprop, showall, pointeron, showfname.
    Also reached from fileopen (main.c) and outside.tomain. */
-void fileopen2(UBYTE *d7);
-/* ted.s:769 realsave - write the list to file d7 (filesave falls through
-   after the .bak rename): doopen(NEWFILE) (failure: return - the file is
-   then only there as .bak, survey-01 I.15), sleepon, write loop (ASCII
-   mode: LF instead of the 0), error(error3) on a write error, doclose,
-   savextra callback, .info if icongad(), pointeron, showfname. */
-void realsave(UBYTE *d7);
+void fileopen2(UBYTE *name);
+/* ted.s:769 realsave - write the list to file name (d7) (filesave falls
+   through after the .bak rename): doopen(NEWFILE) (failure: return -
+   the file is then only there as .bak, survey-01 I.15), sleepon, write
+   loop (ASCII mode: LF instead of the 0), error(error3) on a write error,
+   doclose, savextra callback, .info if icongad(), pointeron, showfname. */
+void realsave(UBYTE *name);
 
 /* --------------------------------------------------- search / replace */
 
-/* ted.s:926 next - menu $13: search from the line after a4 forwards */
+/* ted.s:926 next - menu $13: search from the line after thisitem forwards */
 void next(void);
-/* ted.s:959 previous - menu $23: backwards from the line before a4 */
+/* ted.s:959 previous - menu $23: backwards from the line before thisitem */
 void previous(void);
-/* ted.s:931 dosearch: d6 = direction +1/-1, a4 = first line to search
-   (already the neighbour).  Empty search text / not found: beepem.  Found:
-   pointeron, gotolined0, horizpos(column), showhprop.  Never searches the
-   rest of the current line (survey-01 I.18). */
-void dosearch(struct item *a4, WORD d6);
+/* ted.s:931 dosearch: dir (d6) = direction +1/-1, line (a4) = first line
+   to search (already the neighbour).  Empty search text / not found:
+   beepem.  Found: pointeron, gotolined0, horizpos(column), showhprop.
+   Never searches the rest of the current line (survey-01 I.18). */
+void dosearch(struct item *line, WORD dir);
 /* ted.s:965 replace - menu $33: replace2 on the current line; nothing
    replaced -> beepem, else showall */
 void replace(void);
-/* ted.s:971 replace2: replace ALL occurrences in line a4 (thisitem).
+/* ted.s:971 replace2: replace ALL occurrences in line (a4, thisitem).
    asm: Z=1 (d0=0) if at least one replacement -> TRUE; a4/thisitem = the
-   new line (makeline).  New a4 via *a4out (may be NULL). */
-BOOL replace2(struct item *a4, struct item **a4out);
+   new line (makeline).  New line via *lineout (may be NULL). */
+BOOL replace2(struct item *line, struct item **lineout);
 
 #endif

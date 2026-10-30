@@ -25,9 +25,9 @@ const char bakname[] = ".bak";  /* ted.s:742 */
 /* ted.s:327 blocktab */
 void blocktab(void)
 {
-    struct item *a4;
-    UBYTE *a0, *a1;
-    UWORD d0, d6;
+    struct item *item;
+    UBYTE *src, *dst;
+    UWORD n, lineno;
 
     if (bboty == (UWORD)-1) {
         beepem();
@@ -35,38 +35,38 @@ void blocktab(void)
     }
     bloksetup2();
     /* a5 = btopy, d6 = btop line; a4 = thisy, d7 = this line */
-    a4 = bc.item;
-    d6 = bc.line;
+    item = bc.item;
+    lineno = bc.line;
     do {
         /* @335 .loop2 */
-        a1 = charbuff2;
-        d0 = tabstop;
-        while (d0) {            /* subq #1 / dbf: tabstop spaces */
-            *a1++ = 32;
-            d0--;
+        dst = charbuff2;
+        n = tabstop;
+        while (n) {             /* subq #1 / dbf: tabstop spaces */
+            *dst++ = 32;
+            n--;
         }
-        a0 = a4->chars;
+        src = item->chars;
         if (tokenise) {
-            a1 = detok(a0, a1);         /* a1 ON the 0 byte */
+            dst = detok(src, dst);      /* dst (a1) ON the 0 byte */
         } else {
             /* BUG(orig) (#347): the copy leaves a1 BEHIND the 0 byte, so the 0
                stays in the chmap style line and charstobuff keeps it as
                the last "non space": every ASCII line of the block gets an
                extra 0 byte (numchars + 1, written as "text\0\n"). */
-            while ((*a1++ = *a0++) != 0)
+            while ((*dst++ = *src++) != 0)
                 ;
         }
         /* @348 .loop3 */
-        if (a1 > charbuff3)
+        if (dst > charbuff3)
             ORIG_HAZARD("blocktab: tabstop + line longer than charbuff2 "
                         "(survey-01 I.10)");
-        while (a1 < charbuff3)
-            *a1++ = 32;
-        thisitem = a4;
-        a4 = makefirst(a4);
-        a4 = a4->nextitem;
-        d6++;
-    } while (d6 <= bboty);      /* bls: unsigned */
+        while (dst < charbuff3)
+            *dst++ = 32;
+        thisitem = item;
+        item = makefirst(item);
+        item = item->nextitem;
+        lineno++;
+    } while (lineno <= bboty);  /* bls: unsigned */
     calcitem();
     showall();
 }
@@ -74,51 +74,51 @@ void blocktab(void)
 /* ted.s:361 blockuntab */
 void blockuntab(void)
 {
-    struct item *a4;
-    UBYTE *a0, *a1;
-    UWORD d0, d6;
+    struct item *item;
+    UBYTE *src, *dst;
+    UWORD n, lineno;
 
     if (bboty == (UWORD)-1) {
         beepem();
         return;
     }
     bloksetup2();
-    a4 = bc.item;
-    d6 = bc.line;
+    item = bc.item;
+    lineno = bc.line;
     do {
         /* @369 .loop2 */
-        a1 = charbuff2;
-        a0 = a4->chars;
+        dst = charbuff2;
+        src = item->chars;
         if (tokenise) {
-            detok(a0, a1);
+            detok(src, dst);
         } else {
-            while ((*a1++ = *a0++) != 0)
+            while ((*dst++ = *src++) != 0)
                 ;
         }
         /* @377 .skip3 */
-        a1 = charbuff2;
-        a0 = a1;
-        d0 = tabstop;
+        dst = charbuff2;
+        src = dst;
+        n = tabstop;
         /* BUG(orig) (#348): removes the first tabstop characters WHATEVER they
            are; tabstop = 0 or a line shorter than tabstop leaves a1 at
            the start: the whole line becomes spaces (survey-01 I.11). */
-        if (d0 == 0)
+        if (n == 0)
             goto loop3;
         do {
-            if (*a0++ == 0)     /* tst.b (a0)+ / beq .loop3 */
+            if (*src++ == 0)    /* tst.b (a0)+ / beq .loop3 */
                 goto loop3;
-        } while (--d0);         /* dbf d0 (tabstop iterations) */
-        while ((*a1++ = *a0++) != 0)    /* .loop5 */
+        } while (--n);          /* dbf d0 (tabstop iterations) */
+        while ((*dst++ = *src++) != 0)  /* .loop5 */
             ;
-        a1--;
+        dst--;
 loop3:  /* @388 .loop3 */
-        while (a1 < charbuff3)
-            *a1++ = 32;
-        thisitem = a4;
-        a4 = makefirst(a4);
-        a4 = a4->nextitem;
-        d6++;
-    } while (d6 <= bboty);
+        while (dst < charbuff3)
+            *dst++ = 32;
+        thisitem = item;
+        item = makefirst(item);
+        item = item->nextitem;
+        lineno++;
+    } while (lineno <= bboty);
     calcitem();
     showall();
 }
@@ -131,46 +131,46 @@ loop3:  /* @388 .loop3 */
    length.  BUG(orig) (#371, #372): bytes >= $80 are always tokens (also in ASCII mode
    and standalone, where tokens == 0 makes findtoke read at 0; survey-01
    I.14); no limit for buf (charbuff: chcols+2 bytes, survey-01 I.10). */
-UWORD prtfile_line(struct item *a4, UBYTE *buf)
+UWORD prtfile_line(struct item *line, UBYTE *buf)
 {
-    UBYTE *a0 = buf;
-    const UBYTE *a1 = a4->chars;
-    const UBYTE *a3;
-    UWORD d0;
+    UBYTE *dst = buf;
+    const UBYTE *src = line->chars;
+    const UBYTE *name;
+    UWORD tok;
     UBYTE c;
 
     for (;;) {
         /* @598 .dloop */
-        c = *a1++;
-        *a0++ = c;
+        c = *src++;
+        *dst++ = c;
         if (c == 0)
             break;
         if (!(c & 0x80))
             continue;
-        d0 = (UWORD)(*--a0 << 8);
-        d0 |= *a1++;
+        tok = (UWORD)(*--dst << 8);
+        tok |= *src++;
         /* bold on */
-        *a0++ = 27;
-        *a0++ = '[';
-        *a0++ = '1';
-        *a0++ = 'm';
+        *dst++ = 27;
+        *dst++ = '[';
+        *dst++ = '1';
+        *dst++ = 'm';
         if (!tokens)
             ORIG_HAZARD("prtfile: token without token list (survey-01 I.14)");
-        a3 = (const UBYTE *)findtoke(d0);
-        while ((*a0++ = *a3++) != 0)
+        name = (const UBYTE *)findtoke(tok);
+        while ((*dst++ = *name++) != 0)
             ;
         /* bold off (over the 0 byte of the name) */
-        a0[-1] = 27;
-        *a0++ = '[';
-        *a0++ = '2';
-        *a0++ = '2';
-        *a0++ = 'm';
+        dst[-1] = 27;
+        *dst++ = '[';
+        *dst++ = '2';
+        *dst++ = '2';
+        *dst++ = 'm';
     }
     /* @622 .ddone */
-    a0[-1] = 10;
-    if (buf == charbuff && a0 > charbuff2)
+    dst[-1] = 10;
+    if (buf == charbuff && dst > charbuff2)
         ORIG_HAZARD("prtfile: printer line longer than charbuff (survey-01 I.10)");
-    return (UWORD)(a0 - buf);
+    return (UWORD)(dst - buf);
 }
 
 /* ----------------------------------------------------- .xtra / .info */
@@ -179,9 +179,9 @@ UWORD prtfile_line(struct item *a4, UBYTE *buf)
 tedfh openinfo(void)
 {
     tedfh lock;
-    UBYTE *d1 = openmore(infotxt);
+    UBYTE *name = openmore(infotxt);
 
-    lock = ted_lock((const char *)d1, TED_ACCESS_READ);
+    lock = ted_lock((const char *)name, TED_ACCESS_READ);
     if (lock) {
         /* the icon exists: never overwritten */
         ted_unlock(lock);
@@ -192,23 +192,23 @@ tedfh openinfo(void)
 }
 
 /* ted.s:658 openxtra */
-tedfh openxtra(LONG d2)
+tedfh openxtra(LONG mode)
 {
-    UBYTE *d1 = openmore(xtratxt);
+    UBYTE *name = openmore(xtratxt);
 
-    return ted_open((const char *)d1, d2);
+    return ted_open((const char *)name, mode);
 }
 
 /* ted.s:664 openmore */
-UBYTE *openmore(const char *a1)
+UBYTE *openmore(const char *ext)
 {
-    UBYTE *a0 = xtraat;
+    UBYTE *p = xtraat;
 
-    while (*a0++ != 0)
+    while (*p++ != 0)
         ;
-    a0--;
-    xtranull = a0;
-    while ((*a0++ = (UBYTE)*a1++) != 0)
+    p--;
+    xtranull = p;
+    while ((*p++ = (UBYTE)*ext++) != 0)
         ;
     return xtraat;
 }
@@ -222,14 +222,14 @@ void closextra(void)
 /* ------------------------------------------------------- load / save */
 
 /* ted.s:680 fileopen2 */
-void fileopen2(UBYTE *d7)
+void fileopen2(UBYTE *name)
 {
-    struct item *a0, *a4;
-    UWORD d5 = 0;
+    struct item *item, *prev;
+    UWORD len = 0;
     tedfh fh;
 
-    xtraat = d7;
-    if (!doopen(d7, TED_MODE_OLDFILE))
+    xtraat = name;
+    if (!doopen(name, TED_MODE_OLDFILE))
         return;                 /* asm: addq #4,a7 + bra error */
     allalt = 0;
     doclean();
@@ -245,22 +245,22 @@ void fileopen2(UBYTE *d7)
     blokdis();
     freeall();
     numlines = 1;
-    readline(&d5);              /* result ignored: fillbuff had bytes */
-    a0 = allocline(d5);
-    firstitem = a0;
-    thisitem = a0;
-    a0->lastitem = NULL;
-    enditem = a0;
+    readline(&len);             /* result ignored: fillbuff had bytes */
+    item = allocline(len);
+    firstitem = item;
+    thisitem = item;
+    item->lastitem = NULL;
+    enditem = item;
     for (;;) {
         /* @699 .loop */
-        a4 = a0;
-        if (readline(&d5) == RL_EOF)
+        prev = item;
+        if (readline(&len) == RL_EOF)
             break;
-        a0 = allocline(d5);
-        enditem = a0;
-        a4->nextitem = a0;
+        item = allocline(len);
+        enditem = item;
+        prev->nextitem = item;
         numlines++;
-        a0->lastitem = a4;
+        item->lastitem = prev;
     }
     /* @708 .done */
     doclose();
@@ -290,38 +290,38 @@ void fileopen2(UBYTE *d7)
 }
 
 /* ted.s:769 realsave */
-void realsave(UBYTE *d7)
+void realsave(UBYTE *name)
 {
-    struct item *a2;
-    UBYTE *a3;
-    UWORD d4, d5;
-    LONG d0;
+    struct item *item;
+    UBYTE *chars;
+    UWORD len, n;
+    LONG written;
     tedfh fh;
 
-    if (!doopen(d7, TED_MODE_NEWFILE))
+    if (!doopen(name, TED_MODE_NEWFILE))
         return;                 /* the file is then only there as .bak
                                    (survey-01 I.15) */
     sleepon();
-    a2 = firstitem;
-    d5 = numlines - 1;          /* dbf: numlines 0 = 65536 rounds */
+    item = firstitem;
+    n = numlines - 1;           /* dbf: numlines 0 = 65536 rounds */
     for (;;) {
         /* @775 .loop */
-        d4 = a2->numchars;
-        a3 = a2->chars;
+        len = item->numchars;
+        chars = item->chars;
         if (!tokenise)
-            a3[d4 - 1] = 10;    /* ASCII: the 0 byte becomes LF */
+            chars[len - 1] = 10; /* ASCII: the 0 byte becomes LF */
         /* @781 .nocr */
-        d0 = ted_write(rd.fh, a3, d4);
-        a3[d4 - 1] = 0;
-        if (d0 < 0) {
+        written = ted_write(rd.fh, chars, len);
+        chars[len - 1] = 0;
+        if (written < 0) {
             /* BUG(orig) (#380): allalt stays set, but .xtra/.info are still
                written (survey-01 I.15) */
             error(error3);
             goto skip3;
         }
         /* @791 .skip2 */
-        a2 = a2->nextitem;
-        if (d5-- == 0)
+        item = item->nextitem;
+        if (n-- == 0)
             break;
     }
     allalt = 0;
@@ -358,19 +358,19 @@ skip3:  /* @794 .skip3 */
 /* ted.s:926 next */
 void next(void)
 {
-    struct item *a4 = thisitem;
+    struct item *line = thisitem;
 
-    if (!a4->nextitem) {
+    if (!line->nextitem) {
         beepem();
         return;
     }
-    dosearch(a4->nextitem, 1);  /* falls through into dosearch */
+    dosearch(line->nextitem, 1); /* falls through into dosearch */
 }
 
 /* ted.s:931 dosearch */
-void dosearch(struct item *a4, WORD d6)
+void dosearch(struct item *line, WORD dir)
 {
-    WORD d0, d7;
+    WORD col, lineno;
 
     /* direction in d6 (1 or -1), line in a4 */
     if (findreqla16[0] == 0) {
@@ -378,44 +378,44 @@ void dosearch(struct item *a4, WORD d6)
         return;
     }
     sleepon();
-    d7 = (WORD)(curstop + cursy);
-    d7 += d6;
+    lineno = (WORD)(curstop + cursy);
+    lineno += dir;
     for (;;) {
         /* @938 .loop */
-        d0 = isithere(a4, NULL);
-        if (d0 >= 0)
+        col = isithere(line, NULL);
+        if (col >= 0)
             break;
-        d7 += d6;
-        if (d7 < 0) {           /* bmi (word) */
+        lineno += dir;
+        if (lineno < 0) {       /* bmi (word) */
             beepem();
             return;
         }
-        if ((UWORD)d7 >= numlines) {    /* bcc */
+        if ((UWORD)lineno >= numlines) { /* bcc */
             beepem();
             return;
         }
-        if (d6 < 0)
-            a4 = a4->lastitem;
+        if (dir < 0)
+            line = line->lastitem;
         else
-            a4 = a4->nextitem;  /* @948 .skip */
+            line = line->nextitem; /* @948 .skip */
     }
     /* @950 .gotit */
     pointeron();
-    gotolined0((UWORD)d7);      /* a4 = thisitem */
-    horizpos(d0);
+    gotolined0((UWORD)lineno);  /* a4 = thisitem */
+    horizpos(col);
     showhprop();
 }
 
 /* ted.s:959 previous */
 void previous(void)
 {
-    struct item *a4 = thisitem;
+    struct item *line = thisitem;
 
-    if (!a4->lastitem) {
+    if (!line->lastitem) {
         beepem();
         return;
     }
-    dosearch(a4->lastitem, -1);
+    dosearch(line->lastitem, -1);
 }
 
 /* ted.s:965 replace */
@@ -433,57 +433,57 @@ void replace(void)
 }
 
 /* ted.s:971 replace2 */
-BOOL replace2(struct item *a4, struct item **a4out)
+BOOL replace2(struct item *line, struct item **lineout)
 {
     /* do all replaces on a4 line; return eq if at least one was done! */
-    UBYTE *a0, *a1;
-    const UBYTE *a2;
-    WORD d0;
-    UWORD d1, d5;
+    UBYTE *dst, *src;
+    const UBYTE *p;
+    WORD col;
+    UWORD pos, len;
 
-    d0 = isithere(a4, &a1);
-    if (d0 < 0) {
+    col = isithere(line, &src);
+    if (col < 0) {
         /* @1013 .skip */
-        if (a4out)
-            *a4out = a4;
+        if (lineout)
+            *lineout = line;
         return FALSE;
     }
     allalt = (UWORD)-1;
     do {
         /* @977 .big */
-        a0 = charbuff2;
-        d1 = 0;
-        while (d1 < (UWORD)d0) {        /* cmp d0,d1 / bcc */
-            *a0++ = *a1++;
-            d1++;
+        dst = charbuff2;
+        pos = 0;
+        while (pos < (UWORD)col) {      /* cmp d0,d1 / bcc */
+            *dst++ = *src++;
+            pos++;
         }
         /* @984 .skip2: skip the search text */
-        for (a2 = findreqla16; *a2++ != 0; )
-            a1++;
+        for (p = findreqla16; *p++ != 0; )
+            src++;
         /* @990 .skip2a: the replacement */
-        a2 = findreqla17;
+        p = findreqla17;
         do
-            d1++;
-        while ((*a0++ = *a2++) != 0);
-        a0--;
-        d1--;                   /* column behind the replacement */
+            pos++;
+        while ((*dst++ = *p++) != 0);
+        dst--;
+        pos--;                  /* column behind the replacement */
         /* @998 .loop3: rest of the line */
-        while ((*a0++ = *a1++) != 0)
+        while ((*dst++ = *src++) != 0)
             ;
-        a0--;
-        if (a0 > charbuff3)
+        dst--;
+        if (dst > charbuff3)
             ORIG_HAZARD("replace2: line longer than charbuff2 (survey-01 I.10)");
-        while (a0 < charbuff3)  /* @1001 .loop4 */
-            *a0++ = 32;
+        while (dst < charbuff3) /* @1001 .loop4 */
+            *dst++ = 32;
         /* @1005 .skip3 */
-        d5 = charstobuff(charbuff2);
-        a4 = makeline(a4, d5);
-        d5 = d1;                /* move (a7)+,d5 */
+        len = charstobuff(charbuff2);
+        line = makeline(line, len);
+        len = pos;              /* move (a7)+,d5 */
         /* searching again from behind the replacement prevents an
            endless loop when the replacement contains the search text */
-        d0 = isithere2(a4, d5, &a1);
-    } while (d0 >= 0);
-    if (a4out)
-        *a4out = a4;
+        col = isithere2(line, len, &src);
+    } while (col >= 0);
+    if (lineout)
+        *lineout = line;
     return TRUE;
 }
