@@ -49,14 +49,14 @@ see the second bug below.
 * The priority of the item the others are compared with is read before
   the test whether the priority is enabled: with the default -1 a long at
   data − 1, an odd address – an address error on a 68000 (68020 and up
-  read it, the result is not used).
+  read it, the result is not used) (#825).
 * After a swap by priority the item's string is not loaded: the compare
   string becomes the one of the last string comparison (a1, possibly of
   an earlier item, or the caller's a1 if there was none yet), and the
   priority to compare with stays the old one (the swapped-in item's is
-  not taken over). The result is then not sorted.
-* `size` 0 swaps 65536 bytes (`DBRA` with size − 1 = `$FFFF`).
-* finit closes utility.library without checking it was opened.
+  not taken over). The result is then not sorted (#826).
+* `size` 0 swaps 65536 bytes (`DBRA` with size − 1 = `$FFFF`) (#827).
+* finit closes utility.library without checking it was opened (#824).
 
 ## Test
 

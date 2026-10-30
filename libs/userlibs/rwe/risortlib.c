@@ -35,14 +35,14 @@
  *   - The priority of the item compared with the others is read before
  *     the test whether the priority is enabled: with the default -1 a
  *     long at data - 1, an odd address - an address error on a 68000
- *     (68020 and up read it).
+ *     (68020 and up read it) (#825).
  *   - Swapped by the priority, the item's string is not loaded: the
  *     compare string becomes the one of the last string comparison
  *     (a1, possibly from an earlier item, or a1 of the caller if none
  *     was made yet), and the priority to compare with is not updated
- *     (the swapped-in item's priority is not taken over).
- *   - size 0 swaps 65536 bytes (DBRA with size - 1 = $FFFF).
- *   - finit closes utility.library without checking it was opened.
+ *     (the swapped-in item's priority is not taken over) (#826).
+ *   - size 0 swaps 65536 bytes (DBRA with size - 1 = $FFFF) (#827).
+ *   - finit closes utility.library without checking it was opened (#824).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -124,7 +124,7 @@ static void BLITZ_ROUTINE libinit_c(void)
     utillibbase = OpenLibrary((CONST_STRPTR)utillibname, 0);
 }
 
-/* finit: BUG(orig): also when OpenLibrary failed (CloseLibrary(0)) */
+/* finit: BUG(orig): also when OpenLibrary failed (CloseLibrary(0)) (#824) */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     CloseLibrary(utillibbase);
@@ -149,7 +149,7 @@ static ULONG BLITZ_ROUTINE listbase_c(ULONG list BL_REG(d0))
 }
 
 /* dosort: hdr = the list header field of the start item (d6), off = the
-   string field (d5), size (d1), a1 = the caller's a1 (BUG(orig): the
+   string field (d5), size (d1), a1 = the caller's a1 (BUG(orig) #826: the
    compare string after a swap by priority before any string compare) */
 static ULONG dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *a1)
 {
@@ -174,7 +174,7 @@ static ULONG dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *a1)
         a0 = FIELD(a3, off, const char *);
         if (!a0)
             return 0;
-        priority = FIELD(a3, d4, LONG); /* BUG(orig): also with d4 = -1 */
+        priority = FIELD(a3, d4, LONG); /* BUG(orig): also with d4 = -1 (#825) */
         for (;;) {                      /* '_nitem */
             UBYTE *p, *q;
             ULONG n;
@@ -188,7 +188,7 @@ static ULONG dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *a1)
                 if (v < priority)
                     continue;
                 if (v > priority)
-                    goto doswap;        /* BUG(orig): a1 not loaded */
+                    goto doswap;        /* BUG(orig): a1 not loaded (#826) */
             }
             a1 = FIELD(a3, off, const char *);
             if (!a1)
@@ -200,7 +200,7 @@ doswap:
             a0 = a1;
             p = lpntr + 8;
             q = a3 + 8;
-            n = (ULONG)d7 + 1;          /* BUG(orig): size 0 = 65536 */
+            n = (ULONG)d7 + 1;          /* BUG(orig): size 0 = 65536 (#827) */
             do {
                 UBYTE b = *p;
                 *p++ = *q;
