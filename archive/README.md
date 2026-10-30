@@ -125,6 +125,25 @@ As of 2026-10-28, after research:
   library's binary and its examples on the CD and published by AmiBlitz3
   in its repository (Apache License 2.0) – in git on that basis (decision
   of 2026-10-29).
+* **The font of the LES debug library**
+  (`libs/userlibs/rwe/rilesdebuglib-font.bin`, 2048 bytes: 256
+  characters of 8 rows; derived data, so not here but next to its user):
+  both LES debug sources of RWE's release (`rwelibsrc/Debuglib/` and
+  `LESDebuglib/LESDEBUGlib.bb`) only `IncBin "Blitz2:Debugger/Font.bin"`,
+  a file that exists nowhere. The bytes are cut from AmiBlitz3's
+  `BlitzLibs/Decompiled/thirdpartylibs/RILESDEBUGLib.obj` on GitHub
+  (<https://github.com/AmiBlitz/AmiBlitz3>, commit
+  `b1a9dee150ef4d2793d9745a49a958fdb9178124`, file last changed in
+  `9d854a532a39`; 11632 bytes, the same as `RILESDEBUGLib.obj` of
+  AmiBlitz3's SVN revision 279), file offset 4566 – the place of the
+  IncBin, between the code of `draw_char` and `_GetHexAdr`. The same
+  bytes are the commented `Dc.l`/`Ds.l` lines of AmiBlitz3's disassembly
+  `Sourcecodes/Amiblitz3/BlitzLibs/Blitzlibs/rilesdebuglib.ab3` (same
+  commit, file last changed in `3c24a4c3d161`) and are in the CD's
+  `BUM9B`/`BUM10A` `BLITZLIBS/RILIBS/RILESDEBUGLIB.OBJ` at offset 3460
+  (ctest `rwe_lesfont_cd` compares them). The repository is under the
+  Apache License 2.0. Decision of 2026-10-30: only the font is taken
+  over, not the library's binary.
 * **Library manuals** of the time carry the note "Used with the
   permission of Acid Software" (e.g. AmiBlitz3
   `Docs/AcidLibs/SORTLIB.guide`).
