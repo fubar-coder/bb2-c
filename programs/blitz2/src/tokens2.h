@@ -97,7 +97,6 @@ void donext(UWORD c);       /* 14130 Next [var[,var...]] */
 /* blitz2.s:13988 freefors - free the whole firstfor list */
 void freefors(void);
 extern UWORD forlineat;     /* 14225 line of the last For (errchx) */
-extern UWORD fortemp;       /* 14226 */
 
 /* ---------------------------------------------------------- Let / Dim */
 
@@ -111,11 +110,6 @@ void dolet(UWORD c);        /* 14338 Let */
    No '=' after the name rewinds srcptr to letstart-1 (`a+1` == `a=a+1`). */
 UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset);
 void dodim(UWORD c);        /* 14513 Dim [List] a(..)[,...] */
-
-extern UWORD labcnt;        /* 13368 On..Goto label count */
-extern UWORD pcodd;         /* 14509 byte counter for (a2)+ alignment */
-extern UWORD listadd;       /* 14510 8 = Dim List */
-extern UWORD listsize;      /* 14511 */
 
 /* ------------------------------------------------------------ templates */
 

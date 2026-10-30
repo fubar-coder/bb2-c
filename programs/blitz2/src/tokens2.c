@@ -18,17 +18,18 @@
 
 /* ================================================================ data */
 
-UWORD labcnt;               /* blitz2.s:13368 */
+/* The scratch globals labcnt (13368), fortemp (14226), pcodd (14509),
+   listadd (14510) and listsize (14511) are locals/parameters of their
+   routines in C (doongo, dofor, dolet2, dodim2/dimwit). */
 ULONG localslist;           /* blitz2.s:13488 all locals for procs (unused) */
-ULONG proclocals;           /* blitz2.s:13489 for debugga! */
+ULONG proclocals;           /* blitz2.s:13489 for debugga!  Global: set by
+                               Statement/Function (dofunc2), read by
+                               droplocals at End Statement/Function, i.e.
+                               in a later statement */
 WORD procnum;               /* blitz2.s:13490 */
 WORD procnum2;              /* blitz2.s:13491 */
 UWORD prolineat;            /* blitz2.s:13492 */
 UWORD forlineat;            /* blitz2.s:14225 */
-UWORD fortemp;              /* blitz2.s:14226 */
-UWORD pcodd;                /* blitz2.s:14509 add 1 to this for bytes */
-UWORD listadd;              /* blitz2.s:14510 set to 8 if it's a list */
-UWORD listsize;             /* blitz2.s:14511 */
 
 /* ============================================================ templates */
 /* exact bytes from build/blitz2.lst (tools/asmlisting.py) */
@@ -106,8 +107,8 @@ static void funcret(UWORD c);
 static void dogoto2(UWORD op);
 static void donext2(struct fornode *f);
 static void dodim2(UWORD c);
-static void dimwit(struct var *v, struct type *t);
-static void alignletpc(void);
+static void dimwit(struct var *v, struct type *t, UWORD listadd);
+static void alignletpc(UWORD *pcodd);
 
 /* =============================================================== Then */
 
@@ -133,7 +134,7 @@ void doongo(UWORD c)
     UWORD skipoff = 26;     /* gc1skip-ongotocode */
     UWORD t = T_WORD;       /* Get expression as a word. */
     ULONG start;
-    UWORD skip;
+    UWORD labcnt;           /* asm: global labcnt (13368) */
     struct label *lab;
 
     (void)c;
@@ -149,8 +150,7 @@ void doongo(UWORD c)
             skipoff = 30;   /* gc3skip-ongcode */
         }
     }
-    skip = skipoff;
-    start = pc;             /* for when we know number of labels! */
+    start = pc;            /* for when we know number of labels! */
     pokecode(code, codeend);
     labcnt = 0;
     /* now, make a labels list! */
@@ -167,7 +167,7 @@ void doongo(UWORD c)
     if (nomemleft)
         return;
     W_(start + 10) = labcnt;                    /* for cmp# */
-    W_(start + skip + 2) = labcnt * 4 + 2;      /* for bra! */
+    W_(start + skipoff + 2) = labcnt * 4 + 2;   /* for bra! */
 }
 
 /* ================================================= Goto / Gosub / Return */
@@ -894,7 +894,7 @@ static void donext2(struct fornode *f)
 {
     UWORD *code = nextl, *codeend = nextlf;
     UWORD vtype;
-    ULONG dist;
+    ULONG exitdist, backdist;
 
     popnext(f);             /* error checking for next. */
     vtype = f->vartype;
@@ -910,16 +910,16 @@ static void donext2(struct fornode *f)
     pokel(tl(thebra));
     firstfor = f->next;
     /* pass2, o.k. to put in my BRA's! */
-    dist = pc - f->brapc + 2;           /* d1=positive bra */
-    if (dist >= 32768)
+    exitdist = pc - f->brapc + 2;       /* d1=positive bra */
+    if (exitdist >= 32768)
         bigforerr();
     if (!nomemleft)
-        W_(f->brapc - 2) = dist;
-    dist = pc - f->toppc - 6;
-    if (dist >= 32768)
+        W_(f->brapc - 2) = exitdist;
+    backdist = pc - f->toppc - 6;
+    if (backdist >= 32768)
         bigforerr();
     if (!nomemleft)
-        W_(pc - 2) = -dist;
+        W_(pc - 2) = -backdist;
     popnext3(f);            /* fix stack */
     FreeMem(f, f->len);
     reget();
@@ -930,7 +930,7 @@ void dofor(UWORD c)
 {
     struct node *last;
     struct fornode *f;
-    UWORD vartype, t, op;
+    UWORD vartype, t, op, namelen;  /* namelen: asm global fortemp (14226) */
     WORD offset;
     UWORD *code, *codeend;
 
@@ -940,17 +940,17 @@ void dofor(UWORD c)
     /* new stuff! */
     letstart = (ULONG)srcptr;
     c = getvname(c);
-    fortemp = getvnamelen;
-    if (findfor(fortemp, &last))
+    namelen = getvnamelen;
+    if (findfor(namelen, &last))
         fornexterr();
     f = (struct fornode *)addhere2((struct node *)&firstfor, NAMEOFF_FOR,
-                                   fortemp);
+                                   namelen);
     c = reget();
     if (debugga) {
         chkstak();
         pokel(tl(forset));
     }
-    c = dolet2(c, fortemp, &vartype, &offset);
+    c = dolet2(c, namelen, &vartype, &offset);
     if (c != 0x8018)
         syntaxerr();
     if (commode)
@@ -1010,13 +1010,13 @@ void dolet(UWORD c)
 }
 
 /* blitz2.s:14468 dolet2 .code - poke the store opcode for type vartype (asm d1, d2) */
-static void letcode(UWORD opcode, UWORD vartype, WORD offset)
+static void letcode(UWORD opcode, UWORD vartype, WORD offset, UWORD *pcodd)
 {
     if ((UBYTE)vartype == 1) {
-        pcodd++;
+        (*pcodd)++;
         opcode ^= 0x3000;
     } else {
-        alignletpc();
+        alignletpc(pcodd);
         if ((UBYTE)vartype < 3)
             opcode |= 0x1000;
     }
@@ -1031,6 +1031,7 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
     struct var *v;
     struct type *t;
     UWORD vartype, et;
+    UWORD pcodd;            /* asm: global pcodd (14509), add 1 for bytes */
     WORD voff;
 
     pushstart();
@@ -1096,17 +1097,17 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
             if (varmode)
                 opcode &= ~0x200;
             if (!(vartype & 0x8000)) {
-                letcode(opcode, vartype, voff);
+                letcode(opcode, vartype, voff, &pcodd);
                 break;
             }
             if (commode)
                 pokewd(pulla2[0]);
             opcode = 0x2480;                /* move.l d0,(a2) */
             if (c != ',') {
-                letcode(opcode, vartype, voff);
+                letcode(opcode, vartype, voff, &pcodd);
                 break;
             }
-            letcode(0x24c0, vartype, voff); /* move.l d0,(a2)+ */
+            letcode(0x24c0, vartype, voff, &pcodd); /* move.l d0,(a2)+ */
         }
         /* .nextstr */
         {
@@ -1142,10 +1143,10 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
 }
 
 /* blitz2.s:14498 alignletpc */
-static void alignletpc(void)
+static void alignletpc(UWORD *pcodd)
 {
-    if (pcodd & 1) {
-        pcodd = 0;
+    if (*pcodd & 1) {
+        *pcodd = 0;
         pokewd(add1a2[0]);
     }
 }
@@ -1165,6 +1166,7 @@ static void dodim2(UWORD c)
 {
     struct var *v;
     struct type *t;
+    UWORD listadd;          /* asm: global listadd (14510), 8 = Dim List */
 
     for (;;) {
         listadd = 0;
@@ -1184,12 +1186,12 @@ static void dodim2(UWORD c)
             if (procmode == 0) {
                 WORD save = varoff;
                 varoff = v->offset + 4;
-                dimwit(v, t);
+                dimwit(v, t, listadd);
                 varoff = save;
             } else {
                 WORD save = locvaroff;
                 locvaroff = v->offset - 4;
-                dimwit(v, t);
+                dimwit(v, t, listadd);
                 locvaroff = save;
             }
         } else {
@@ -1199,7 +1201,7 @@ static void dodim2(UWORD c)
                 SETHIW(temp1, 0x4000);    /* yes, we do care - must be 1 coz it's a list */
                 v->flags |= 0x0100;     /* set to list type of array */
             }
-            dimwit(v, t);
+            dimwit(v, t, listadd);
         }
         c = getchar3();
         if (c != ',')
@@ -1209,9 +1211,9 @@ static void dodim2(UWORD c)
 }
 
 /* blitz2.s:14571 dimwit */
-static void dimwit(struct var *v, struct type *vt)
+static void dimwit(struct var *v, struct type *vt, UWORD listadd)
 {
-    UWORD size, t;
+    UWORD size, wantdims, tok, t;
     UWORD c;
 
     nonew = -1;
@@ -1221,7 +1223,6 @@ static void dimwit(struct var *v, struct type *vt)
     if (!(flagmask & 1))
         size = vt->size;
     size += listadd;        /* size of one element. */
-    listsize = size;
     pokewd(size);
     SETHIW(temp2, 0);         /* # dim's got */
     for (;;) {
@@ -1245,15 +1246,15 @@ static void dimwit(struct var *v, struct type *vt)
             syntaxerr();
         break;
     }
-    size = HIW(temp1);
-    if ((WORD)size >= 0) {
-        if (size & 0x4000) {
+    wantdims = HIW(temp1);
+    if ((WORD)wantdims >= 0) {
+        if (wantdims & 0x4000) {
             /* is it a list? */
             if (HIW(temp2) != 1)
                 redimerr();
             v->ndims = HIW(temp2);
         } else {
-            if (size != HIW(temp2))
+            if (wantdims != HIW(temp2))
                 redimerr();
             /* writes the assembler's extension word into
                varoff/locvaroff (harmless: the caller restores it) */
@@ -1269,13 +1270,13 @@ static void dimwit(struct var *v, struct type *vt)
     doarr[3] = putarr[1];
     pokel(tl(&doarr[0]));
     pokel(tl(&doarr[2]));
-    size = newarr;
+    tok = newarr;
     if (procmode)
-        size++;
+        tok++;
     if (listadd) {
         pokewd(setles[0]);      /* move #x,d4 */
-        pokewd(listsize);
-        size += 3;              /* for list Tokejsr */
+        pokewd(size);           /* asm: listsize (14511) */
+        tok += 3;               /* for list Tokejsr */
     }
-    tokejsr(size);
+    tokejsr(tok);
 }
