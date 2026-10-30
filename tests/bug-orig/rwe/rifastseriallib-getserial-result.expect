@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+HELLO
+79
+rc=0
