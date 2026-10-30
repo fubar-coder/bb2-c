@@ -1,0 +1,19 @@
+; ted-fileopen-empty-leak (#358): Open of an empty file goes to donew
+; without freeing the lines of the current text.  TED alone under inject
+; track (the allocations left when TED ends), a text of two lines (line
+; items of 46 and 48 bytes), Open of an empty file, QUIT.  Correct: no
+; line item is left; the original leaves both.
+; @file bo.bas "abcdefghijklmnopqrstuvwxyz0123456789\nABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ab\n"
+; @file empty.bas ""
+; @source F bo.bas
+; @command TEDAB:tools/inject track blitz2:ted @FILE@
+; @expect nostdout "inject:   46 bytes, flags $1\n"
+; @expect nostdout "inject:   48 bytes, flags $1\n"
+timeout 15
+wait screen
+menu 0 1
+wait freq "Name of file to load"
+freq ok "TEDRUN:work/empty.bas"
+wait screen
+menu 0 9
+wait exit
