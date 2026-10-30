@@ -124,7 +124,7 @@ latest date in the header comments.
 | Sound | 45 | `soundlib/risoundlib`, `risoundlib2` | – | – | risoundlib **=** BSS2/AB3 (496 B); risoundlib2 (8 entries) – | open |
 | STC decrunch | 18 | `stcdecrunchlib` | – | – | **=** BSS2/AB3 (576 B) | stcdecrunchlib |
 | StoneCracker | 17 | `stclib` | – | – | **=** BSS2/AB3 (1136 B) | stclib |
-| Thread | 44 (`#rithreadlib`, RWE's list) | `threadlib` | RI | 1995 | – | threadlib (reference build) |
+| Thread | 44 (`#rithreadlib`, RWE's list) | `threadlib` | RI | 1995 | – | threadlib (reference build), ported 2026-10-30 (`port/rithreadlib.md`) |
 | ToolTypes | 59 (bin.) | `tooltypeslib/ToolTypes4` | RI (McNamara) | 1995-04-05 | **=** BSS2/AB3 (3564 B) | ToolTypes4 |
 | TrackDisk | 91 | `trackdisklib/trackdisk`, `trackdisk2` | – | – | both **=** BSS2/AB3 (1892 B) | trackdisk2 (both build identically, 3.1) |
 | WB sprite | lit. 10 | `wbspritelib/WBSprite-library2` | RI | 1994 | – | WBSprite-library2 (reference build); number 10 (the literal, free in rwe-1999) |
