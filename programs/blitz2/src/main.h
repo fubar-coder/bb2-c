@@ -181,8 +181,8 @@ void  ed_screenclose(void);                 /* -8  close editor screen */
 void  ed_screenopen2(void);                 /* -4  reopen it */
 ULONG ed_openreq(struct Requester *req);    /* 0   a0=req template; d0=0 fail */
 void  ed_closereq(void);                    /* 4 */
-BOOL  ed_getinput(WORD *d6);                /* 8   wait; TRUE if d7==-1 (gadget),
-                                                   *d6 = GadgetID (or menu code) */
+BOOL  ed_getinput(WORD *gadget);            /* 8   wait; TRUE if d7==-1 (gadget),
+                                                   *gadget = GadgetID (d6, or menu code) */
 void  ed_error(const char *msg);            /* 12  a0=msg, modal, waits OK */
 void  ed_detokallz(void);                   /* 16 */
 void  ed_tokall(void);                      /* 20 */
@@ -190,8 +190,8 @@ char *ed_ezfreq(char *path, char *name, const char *title);
                                             /* 24  a0 path,a1 name,a2 title;
                                                    Z=1 cancel -> NULL, else d0 */
 void  ed_refgads(struct Gadget *g, WORD n); /* 28  a0 gadget, d0 count */
-LONG  ed_getinput2(WORD *d6);               /* 32  poll: returns d7 (0 = no
-                                                   input, -1 gadget, *d6 id) */
+LONG  ed_getinput2(WORD *gadget);           /* 32  poll: returns d7 (0 = no
+                                                   input, -1 gadget, *gadget id) */
 void  ed_tokone(UBYTE *line);               /* 56  a0 line, tokenise in place */
 void  ed_openio(void);                      /* 60  open program IO window */
 void  ed_closeio(void);                     /* 64 */

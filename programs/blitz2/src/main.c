@@ -988,21 +988,21 @@ static char debugname[] = "blitz2:defaultdbug"; /* 1483 */
 static WORD begin(void)
 {
     struct m68kregs r;
-    struct token *a0;
+    struct token *tok;
     APTR edmain;
-    WORD d6;
-    UWORD d0 = 0;
+    WORD gadget;
+    UWORD count = 0;
 
     /* find out how many system tokens exist */
-    a0 = &tokens;
+    tok = &tokens;
     for (;;) {
-        d0++;                           /* count is not used */
-        if (!a0->next)
+        count++;                        /* count is not used */
+        if (!tok->next)
             break;
-        a0 = a0->next;
+        tok = tok->next;
     }
-    (void)d0;
-    lasttoken = (ULONG)a0;
+    (void)count;
+    lasttoken = (ULONG)tok;
     makeasmtab();
     optreqprep();
     /* @1369 */
@@ -1045,7 +1045,7 @@ static WORD begin(void)
     /* click cancel of version requester... */
     do {
         ;
-    } while (!ed_getinput(&d6) || d6 != 1);
+    } while (!ed_getinput(&gadget) || gadget != 1);
     /* grab a panic bit (failure of AllocSignal not checked, as in the
        original: not observable, #18 closed) */
     panicbit = (ULONG)(LONG)AllocSignal(-1);
@@ -1089,7 +1089,7 @@ fail0:                                  /* 1477 */
    size (into asm d2 -> stackfuck) and the file to edit (progfile). */
 int main(int argc, char **argv)
 {
-    ULONG d2;
+    ULONG stack;
     BPTR fh;
 
     us = FindTask(NULL);                /* asm: 276(execbase) = ThisTask */
@@ -1106,20 +1106,20 @@ int main(int argc, char **argv)
         strcpy(progfile, (char *)wa[0].wa_Name);    /* make name+.info */
         strcat(progfile, wb_infoname);
         fh = Open((CONST_STRPTR)progfile, MODE_OLDFILE);
-        d2 = 0;
+        stack = 0;
         if (fh) {
             if (Read(fh, progfile, 0x4e) == 0x4e) {
                 Close(fh);
                 progfile[0] = 0;
-                d2 = L_(progfile + 0x4a);           /* do_StackSize */
+                stack = L_(progfile + 0x4a);        /* do_StackSize */
             }
             /* BUG(orig) (#19): on a short read the file is not closed */
         }
         /* BUG(orig) (#20): if the .info could not be opened progfile still holds
            "<name>.info" (after a short read: the partial .info bytes) and
            the editor is asked to load it */
-        if (!d2)
-            d2 = 4000;                  /* .openfailed */
+        if (!stack)
+            stack = 4000;               /* .openfailed */
         /* .openok: a project icon given? (asm: word at sm_NumArgs+2) */
         if ((UWORD)wbmess->sm_NumArgs >= 2) {
             CurrentDir(wa[1].wa_Lock);
@@ -1135,7 +1135,7 @@ int main(int argc, char **argv)
         struct Process *pr = (struct Process *)us;
         struct CommandLineInterface *cli = BADDR(pr->pr_CLI);
 
-        d2 = cli ? (ULONG)cli->cli_DefaultStack * 4 : 4000;
+        stack = cli ? (ULONG)cli->cli_DefaultStack * 4 : 4000;
         wbmess = NULL;
         /* DIFF: asm copied the raw argument line up to the first space or
            LF; libnix splits (and unquotes) it into argv */
@@ -1147,9 +1147,9 @@ int main(int argc, char **argv)
     /* DIFF: dosopen (wb:97) - libnix opens dos.library */
     /* wb_allgo / mainbit */
 #if !final
-    d2 = 4000;
+    stack = 4000;
 #endif
-    stackfuck = d2;
+    stackfuck = stack;
     begin();
     /* BUG(orig) (#22): wb_exit overwrites d0 (0 from the CLI; from the Workbench
        whatever ReplyMsg/Permit leave), so DOS never sees returncode */
@@ -1196,11 +1196,11 @@ void ed_closereq(void)
 }
 
 /* comdata+8 getinput: wait for input; d7=-1 gadget (d6 = GadgetID) */
-BOOL ed_getinput(WORD *d6)
+BOOL ed_getinput(WORD *gadget)
 {
     struct m68kregs r = {{0}};
     ed_call(8, &r);
-    *d6 = (WORD)r.d[6];
+    *gadget = (WORD)r.d[6];
     return (WORD)r.d[7] == -1;
 }
 
@@ -1248,11 +1248,11 @@ void ed_refgads(struct Gadget *g, WORD n)
 }
 
 /* comdata+32 getinput2: poll; returns d7 (0 = nothing), d6 = GadgetID */
-LONG ed_getinput2(WORD *d6)
+LONG ed_getinput2(WORD *gadget)
 {
     struct m68kregs r = {{0}};
     ed_call(32, &r);
-    *d6 = (WORD)r.d[6];
+    *gadget = (WORD)r.d[6];
     return (LONG)r.d[7];
 }
 
@@ -1338,7 +1338,7 @@ void menu_d(void)
 void loaddmod(const char *name)
 {
     jmp_buf jb, *olderr = errjmp;
-    BPTR d7;
+    BPTR seg;
 
     dname2 = name;
     sleepon();
@@ -1348,15 +1348,15 @@ void loaddmod(const char *name)
         nodload();
         return;
     }
-    d7 = LoadSeg((CONST_STRPTR)dname2);
-    if (!d7)
+    seg = LoadSeg((CONST_STRPTR)dname2);
+    if (!seg)
         dloaderr();
     if (dseg) {
         UnLoadSeg(dseg);
         pointeron();
     }
     /* BUG(orig) (#23): without an old dseg the busy pointer stays on */
-    dseg = d7;
+    dseg = seg;
     errjmp = olderr;                    /* DIFF: asm never restored errstack */
     nodload();
 }
@@ -1525,40 +1525,40 @@ static __saveds void runtheprog(void)
 /* blitz2.s:1734 calcvbr */
 ULONG calcvbr(void)
 {
-    UWORD d0 = SysBase->AttnFlags & 15;
-    UWORD d1 = 0;
-    ULONG d2 = 0;
+    UWORD cpubits = SysBase->AttnFlags & 15;
+    UWORD cpu = 0;
+    ULONG base = 0;
 
-    while (d0) {                        /* position of highest CPU bit */
-        d1++;
-        d0 >>= 1;
+    while (cpubits) {                   /* position of highest CPU bit */
+        cpu++;
+        cpubits >>= 1;
     }
-    /* BUG(orig) (#42): a 68010 (d1 == 1) is treated as having no VBR */
-    if (d1 >= 2)
-        d2 = getvbr();                  /* DIFF: Supervisor() instead of
+    /* BUG(orig) (#42): a 68010 (cpu == 1) is treated as having no VBR */
+    if (cpu >= 2)
+        base = getvbr();                /* DIFF: Supervisor() instead of
                                            SuperState/movec/UserState */
-    vbr = d2;
-    return d2;
+    vbr = base;
+    return base;
 }
 
 /* blitz2.s:1751 flash - debug: flicker COLOR00 */
 void flash(void)
 {
-    UWORD d0 = 0xffff;
+    UWORD count = 0xffff;
 
     do {
-        *(volatile UWORD *)0xdff180 = d0;
-    } while (d0-- != 0);
+        *(volatile UWORD *)0xdff180 = count;
+    } while (count-- != 0);
 }
 
 /* blitz2.s:1758 flash2 */
 void flash2(void)
 {
-    UWORD d0 = 0xffff;
+    UWORD count = 0xffff;
 
     do {
         *(volatile UWORD *)0xdff180 = 15;
-    } while (d0-- != 0);
+    } while (count-- != 0);
 }
 
 /* blitz2.s:1765 flushlibs - ask for 256 MEG! (forces library expunge;
@@ -1586,14 +1586,14 @@ void menu8(void)
 /* blitz2.s:1784 checklib - size of file `name`, 0 if it can't be locked */
 ULONG checklib(const char *name)
 {
-    BPTR d7 = Lock((CONST_STRPTR)name, ACCESS_READ);
+    BPTR lock = Lock((CONST_STRPTR)name, ACCESS_READ);
 
-    if (!d7)
+    if (!lock)
         return 0;
     /* 'deflibs' has been found! - pick up file length
        (BUG(orig) (#27): Examine result not checked) */
-    Examine(d7, namebufffib);
-    UnLock(d7);
+    Examine(lock, namebufffib);
+    UnLock(lock);
     return (ULONG)namebufffib->fib_Size;
 }
 
@@ -1610,42 +1610,42 @@ BOOL makelibs(void)
 BOOL makeblitzlibs(void)
 {
     struct FileInfoBlock *fib = namebufffib;
-    BPTR d7 = Lock((CONST_STRPTR)libsdir, ACCESS_READ);
+    BPTR lock = Lock((CONST_STRPTR)libsdir, ACCESS_READ);
 
-    if (!d7)
+    if (!lock)
         return FALSE;
-    if (!Examine(d7, fib) || fib->fib_DirEntryType < 0) {
-        UnLock(d7);                     /* .done2 */
+    if (!Examine(lock, fib) || fib->fib_DirEntryType < 0) {
+        UnLock(lock);                   /* .done2 */
         return FALSE;
     }
     /* OK to do exnext on dir... */
-    while (ExNext(d7, fib)) {
-        struct libsnode *d6, **a0;
+    while (ExNext(lock, fib)) {
+        struct libsnode *node, **link;
 
         if (fib->fib_DirEntryType < 0)
             continue;
         if (endininfo(fib->fib_FileName))
             continue;
-        d6 = doallocmem(sizeof(struct libsnode), MEMF_PUBLIC);
+        node = doallocmem(sizeof(struct libsnode), MEMF_PUBLIC);
         /* insert sorted (case insensitive); &libslist acts as a node */
-        a0 = &libslist;
+        link = &libslist;
         for (;;) {                      /* .insloop */
-            struct libsnode *d5 = *a0;
-            const UBYTE *a1 = (const UBYTE *)fib->fib_FileName;
-            const UBYTE *a2;
+            struct libsnode *cur = *link;
+            const UBYTE *mine = (const UBYTE *)fib->fib_FileName;
+            const UBYTE *theirs;
             BOOL here = FALSE;
 
-            if (!d5)
+            if (!cur)
                 break;
-            a2 = (const UBYTE *)d5->name;
+            theirs = (const UBYTE *)cur->name;
             for (;;) {                  /* .comloop */
-                UWORD c0 = *a1++, c1;
+                UWORD c0 = *mine++, c1;
 
                 if (!c0) {
                     here = TRUE;        /* I'm shorter */
                     break;
                 }
-                c1 = *a2++;
+                c1 = *theirs++;
                 if (!c1)
                     break;              /* I'm longer -> .next */
                 if (tstalpha(c0))
@@ -1660,31 +1660,31 @@ BOOL makeblitzlibs(void)
             }
             if (here)
                 break;
-            a0 = &d5->next;             /* .next */
+            link = &cur->next;          /* .next */
         }
         /* .here */
-        d6->next = *a0;                 /* next of last is next of me */
-        *a0 = d6;                       /* I am next of last */
-        d6->used = -1;                  /* set 'Used' flag */
+        node->next = *link;             /* next of last is next of me */
+        *link = node;                   /* I am next of last */
+        node->used = -1;                /* set 'Used' flag */
         /* BUG(orig) (#28): no length check, name[32] can overflow */
-        strcpy(d6->name, (const char *)fib->fib_FileName);
+        strcpy(node->name, (const char *)fib->fib_FileName);
     }
     /* .ok */
-    UnLock(d7);
+    UnLock(lock);
     return TRUE;
 }
 
 /* blitz2.s:1898 frlibslist - free up a libs list */
 void frlibslist(void)
 {
-    struct libsnode *a2 = libslist;
+    struct libsnode *node = libslist;
 
     libslist = NULL;
-    while (a2) {
-        struct libsnode *a1 = a2;
+    while (node) {
+        struct libsnode *dead = node;
 
-        a2 = a2->next;
-        FreeMem(a1, sizeof(struct libsnode));
+        node = node->next;
+        FreeMem(dead, sizeof(struct libsnode));
     }
 }
 
@@ -1692,13 +1692,14 @@ void frlibslist(void)
  * the last parameter of the asm token macro is a 'do it yourself'
  * subroutine that allows you to do your own error chking for silly
  * opmodes!  size/ea's have already been created.
- * d1=opcode, d2=src reg, d3=src ea, d4=dest reg, d5=dest ea, d6=size.
+ * struct asmregs: opcode (d1), srcreg (d2), srcmode (d3), destreg (d4),
+ * destmode (d5), size (d6).
  * return ne if no can do!  (noerror/eaerror/szerror/swapem: main.h) */
 
 /* asmmac movemchk */
 WORD movemchk(struct asmregs *r)
 {
-    ULONG d0;
+    ULONG modebit;
     int i;
 
     if (r->srcmode == r->destmode)
@@ -1707,15 +1708,15 @@ WORD movemchk(struct asmregs *r)
         if (r->destmode != 15)
             return eaerror;
         /* .regdest */
-        d0 = 1UL << (r->srcmode & 31);
-        if (d0 & 0x813)
+        modebit = 1UL << (r->srcmode & 31);
+        if (modebit & 0x813)
             return eaerror;
         r->opcode |= 1 << 10;
         return swapem;
     }
     /* .regsrc */
-    d0 = 1UL << (r->destmode & 31);
-    if (d0 & 0xe0b)
+    modebit = 1UL << (r->destmode & 31);
+    if (modebit & 0xe0b)
         return eaerror;
     if (r->destmode != 4)
         return noerror;
@@ -1747,15 +1748,15 @@ WORD movechk(struct asmregs *r)
     if (r->srcmode >= 12) {
         if (r->destmode >= 12)
             return eaerror;
-        if (r->srcmode == 12) {              /* .fromccr */
+        if (r->srcmode == 12) {         /* .fromccr */
             r->opcode = 0x42c0;
             goto from;
         }
-        if (r->srcmode == 13) {              /* .fromsr */
+        if (r->srcmode == 13) {         /* .fromsr */
             r->opcode = 0x40c0;
             goto from;
         }
-        if (r->srcmode == 14) {              /* .fromusp: to address reg? */
+        if (r->srcmode == 14) {         /* .fromusp: to address reg? */
             if (r->destmode != 1)
                 return eaerror;
             r->opcode = 0x4e68 | r->destreg;
@@ -1764,7 +1765,7 @@ WORD movechk(struct asmregs *r)
         return eaerror;
     }
     /* .notfrom */
-    if (r->destmode < 12) {                   /* .dosize */
+    if (r->destmode < 12) {             /* .dosize */
         r->opcode = 0x1000;
         if (r->size == 0)
             return noerror;
@@ -1776,15 +1777,15 @@ WORD movechk(struct asmregs *r)
     }
     if (r->srcmode >= 12)
         return eaerror;
-    if (r->destmode == 12) {                  /* .toccr */
+    if (r->destmode == 12) {            /* .toccr */
         r->opcode = 0x44c0;
         goto to;
     }
-    if (r->destmode == 13) {                  /* .tosr */
+    if (r->destmode == 13) {            /* .tosr */
         r->opcode = 0x46c0;
         goto to;
     }
-    if (r->destmode == 14) {                  /* .tousp */
+    if (r->destmode == 14) {            /* .tousp */
         if (r->srcmode != 1)
             return eaerror;
         r->opcode = 0x4e60 | r->srcreg;
@@ -1824,7 +1825,7 @@ WORD exgchk(struct asmregs *r)
     if (r->srcmode != 0)
         r->opcode |= 0x48;
     else
-        r->opcode |= 0x40;                  /* .data */
+        r->opcode |= 0x40;              /* .data */
     return noerror;
 }
 
@@ -1832,7 +1833,7 @@ WORD exgchk(struct asmregs *r)
 WORD bitchk(struct asmregs *r)
 {
     if (r->srcmode == 0) {
-        r->srcreg <<= 9;                    /* review: asm shifts d2 itself */
+        r->srcreg <<= 9;                /* review: asm shifts d2 itself */
         r->opcode |= r->srcreg;
         return noerror;
     }
@@ -1844,24 +1845,24 @@ WORD bitchk(struct asmregs *r)
 }
 
 /* asmmac aslchk2 - d0 = opcode of the memory form */
-static WORD aslchk2(struct asmregs *r, UWORD d0)
+static WORD aslchk2(struct asmregs *r, UWORD memop)
 {
-    if ((WORD)r->destmode < 0) {              /* .word: memory shift */
-        UWORD d2 = r->srcreg, d3 = r->srcmode;
+    if ((WORD)r->destmode < 0) {        /* .word: memory shift */
+        UWORD reg = r->srcreg, mode = r->srcmode;
 
-        r->destmode = 0;                      /* dummy d0 */
+        r->destmode = 0;                /* dummy d0 */
         if (r->srcmode == 0)
             return eaerror;
         if (r->size != 4)
             return szerror;
         r->opcode &= 0x100;
-        r->opcode |= d0;
-        if (d3 >= 7) {
-            d2 = d3 - 7;
-            d3 = 7;
+        r->opcode |= memop;
+        if (mode >= 7) {
+            reg = mode - 7;
+            mode = 7;
         }
-        r->opcode |= d2;
-        r->opcode |= d3 << 3;               /* d2/d3 restored (movem) */
+        r->opcode |= reg;
+        r->opcode |= mode << 3;         /* d2/d3 restored (movem) */
         return noerror;
     }
     if (r->destmode != 0)
@@ -1873,7 +1874,7 @@ static WORD aslchk2(struct asmregs *r, UWORD d0)
         return noerror;
     if (r->srcmode != 0)
         return eaerror;
-    r->srcreg <<= 9;                        /* review: asm shifts d2 itself */
+    r->srcreg <<= 9;                    /* review: asm shifts d2 itself */
     r->opcode |= r->srcreg;
     r->opcode |= 1 << 5;
     return noerror;
@@ -1906,19 +1907,19 @@ WORD addchk(struct asmregs *r)
         return noerror;                 /* asm: rts with Z=1 */
     if (r->srcmode != 0)
         return eaerror;                 /* src not dn - fuct */
-    r->opcode |= 1 << 8;                    /* turn into dn,<ea> */
+    r->opcode |= 1 << 8;                /* turn into dn,<ea> */
     return swapem;
 }
 
 /* asmmac andichk */
 WORD andichk(struct asmregs *r)
 {
-    if (r->destmode == 12) {                  /* dest ccr? */
+    if (r->destmode == 12) {            /* dest ccr? */
         if (r->size != 0)
             return szerror;
         return noerror;
     }
-    if (r->destmode != 13)                    /* or sr? */
+    if (r->destmode != 13)              /* or sr? */
         return noerror;
     if (r->size != 4)
         return szerror;
