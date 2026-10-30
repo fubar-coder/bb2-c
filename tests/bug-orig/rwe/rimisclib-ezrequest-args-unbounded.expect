@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+REQUESTER: EasyRequest title "BO" text "x" gadgets "OK" -> answered 0
+before
+-1
+rc=0
