@@ -46,22 +46,22 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
   word index); FreeWBSprite takes the channel modulo 16 for the table
   (entries 8–15 are the name and the base) but passes the whole register
   to `FreeSprite`; MoveWBSprite, ChangeWBSprite and WBSpriteX/Y index the
-  table with the channel as is (without a sprite WBSpriteX/Y read the
-  words at addresses 6 and 8).
+  table with the channel as is (#916) (without a sprite WBSpriteX/Y read
+  the words at addresses 6 and 8, #922).
 * GetWBSprite: when `GetExtSpriteA` fails, the result is still the
   channel if the table has a sprite there (an earlier one of the
   library), else 0 (for channel -1 the entry before the table, the end
   of the tag list: 0). Results: no graphics.library or a shape narrower
-  than 16: 0; no shape data or a failing `AllocBitMap`: -1.
+  than 16: 0; no shape data or a failing `AllocBitMap`: -1 (#920).
 * The shape is copied width/16 words per row into the bitmap, without
-  its `BytesPerRow` or the shape's `ebwidth`, with `DBRA` counts (height
-  or depth 0: 65536 rows/planes).
+  its `BytesPerRow` or the shape's `ebwidth` (#918), with `DBRA` counts
+  (height or depth 0: 65536 rows/planes) (#917).
 * ChangeWBSprite does not free the new sprite data if
-  `ChangeExtSpriteA` fails.
+  `ChangeExtSpriteA` fails (#915).
 * MoveWBSprite returns the d0 `MoveSprite` leaves (declared as a byte
-  result).
+  result) (#921).
 * finit does not clear the library base: a second finit closes
-  graphics.library again.
+  graphics.library again (#919).
 
 ## Test
 
@@ -76,7 +76,7 @@ graphics.library's open count. Afterwards the free hardware sprites
 (`GetSprite` 1–7) must be those of the start. Shapes are built in
 memory (16, 20 and 32 wide, 1 and 2 planes, narrow, without data).
 Steps: WBSpriteX without a sprite, init, GetWBSprite on a free channel,
-on any (-1), on its own channel again (BUG(orig): the channel), on the
+on any (-1), on its own channel again (BUG(orig) #920: the channel), on the
 pointer's channel 0, 32 wide (refused on this screen), narrow, no data,
 20 wide; WBSpriteX/Y; MoveWBSprite on two sprites and without one;
 ChangeWBSprite (2 and 1 planes, no sprite, narrow, no data);

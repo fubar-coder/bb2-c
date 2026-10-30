@@ -21,7 +21,7 @@
  * ExtSprite of each channel), the library name and base are one block
  * in the original's order (struct wbs): the routines index the sprite
  * table without bounds and so read the tag list before it and the name
- * behind it (BUG(orig)).  A shape is copied into a bitmap of
+ * behind it (BUG(orig), #916).  A shape is copied into a bitmap of
  * AllocBitMap, which AllocSpriteDataA converts.  Assembler besides the
  * thunks: the calls of MoveSprite and FreeSpriteData (the original
  * returns the d0 they leave) and ChangeExtSpriteA (its tag list in a3).
@@ -32,23 +32,24 @@
  *     the channel modulo 16 for the table (entries 8-15 are the name and
  *     the base) but passes the whole register to FreeSprite; MoveWBSprite,
  *     ChangeWBSprite, WBSpriteX/Y index the table with the channel as is
- *     (WBSpriteX/Y without a sprite read the words at 6 and 8).
+ *     (#916) (WBSpriteX/Y without a sprite read the words at 6 and 8,
+ *     #922).
  *   - GetWBSprite: if GetExtSpriteA fails (channel in use), the result
  *     is still the channel when the table has a sprite there (an earlier
  *     one of the library), else 0 (for channel -1 the table's entry -1 is
  *     the end of the tag list before it: 0).  A shape without data gives
  *     -1, a narrow shape (< 16) or no graphics.library 0, a failing
  *     AllocBitMap -1, a failing AllocSpriteDataA 0 or the channel as
- *     above.
+ *     above (#920).
  *   - The shape is copied without the bitmap's BytesPerRow, width/16
- *     words per row (the shape's ebwidth is not used either), and with
- *     DBRA counts: height or depth 0 copy 65536 rows/planes.
+ *     words per row (the shape's ebwidth is not used either) (#918), and
+ *     with DBRA counts: height or depth 0 copy 65536 rows/planes (#917).
  *   - ChangeWBSprite: if ChangeExtSpriteA fails, the new sprite data is
- *     not freed.
+ *     not freed (#915).
  *   - MoveWBSprite returns d0 as MoveSprite leaves it (declared as a
- *     byte result).
+ *     byte result) (#921).
  *   - finit does not clear the library base: a second finit closes
- *     graphics.library again.
+ *     graphics.library again (#919).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -213,7 +214,7 @@ static void BLITZ_ROUTINE libinit_c(void)
 }
 
 /* finit: every sprite freed, the library closed (the base kept,
-   BUG(orig)) */
+   BUG(orig), #919) */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     int i;
@@ -340,7 +341,7 @@ static ULONG BLITZ_ROUTINE freesprite_c(ULONG d0 BL_REG(d0))
     if (!*e)
         return 0;
     wd.temppointer = (ULONG)e;
-    FreeSprite((WORD)d0);                               /* the whole d0: BUG(orig) */
+    FreeSprite((WORD)d0);                               /* the whole d0: BUG(orig) (#916) */
     spr = *e;
     *e = 0;
     return freespritedata(spr);
