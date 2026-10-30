@@ -22,21 +22,21 @@
  * BUG(orig):
  *   - #frq_Flags = #FRQCACHINGB|#FRQINFOGADGETB|#FRQCACHEPURGEB ORs bit
  *     numbers (2|4|7 = 7): the default flags are bits 0-2 instead of
- *     caching, info gadget and cache purge.
+ *     caching, info gadget and cache purge (#787).
  *   - init stores the buffer addresses in its own four longs (frq_Title
  *     ... frq_PathName), never in FrStruct's Directory/File/PathName
  *     fields: the requester gets 0 for them, and ReqFileRequest copies
  *     the cleared path buffer, which nothing but the program (through
- *     ReqFileLoc) writes.
+ *     ReqFileLoc) writes (#785).
  *   - No routine checks the library base: without req.library (or after
  *     init's AllocMem failed, which closes it again) ReqFileRequest and
- *     ReqColour call through a6 = 0, ReqFileLoc returns 0.
+ *     ReqColour call through a6 = 0, ReqFileLoc returns 0 (#788).
  *   - ReqFileRequest leaves a3 behind the terminating 0 of the result
  *     (d0 = length is right); on cancel d0 = 0 and a3 stays (with a
- *     title: at the start of the title string).
- *   - ReqColour ignores its argument: DefColour stays 0.
+ *     title: at the start of the title string) (#784).
+ *   - ReqColour ignores its argument: DefColour stays 0 (#786).
  *   - ReqFileRequest(title$,flags) changes the flags for good (like
- *     ReqFlags), and a title stays for later calls without one.
+ *     ReqFlags), and a title stays for later calls without one (#789).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -112,7 +112,7 @@ struct BL_PACKED frstruct {
 };
 
 /* #frq_VersionNumber=2, #frq_Window=0, #frq_numlines=20,
-   #frq_numcolumns=28, #frq_devcolumns=12, #frq_Flags (BUG(orig): 7) */
+   #frq_numcolumns=28, #frq_devcolumns=12, #frq_Flags (BUG(orig): 7, #787) */
 static struct frstruct FrStruct = {
     2, 0, 0, 0, 0, 0, 0, 20, 28, 12, 2 | 4 | 7, { 0 }
 };
@@ -179,7 +179,7 @@ static ULONG BLITZ_ROUTINE file_c(void)
 }
 
 /* ReqFileRequest: FileRequester(FrStruct); the path buffer to a3 (a3
-   behind the 0, BUG(orig)), d0 = its length; 0 on cancel */
+   behind the 0, BUG(orig) #784), d0 = its length; 0 on cancel */
 static ULONG BLITZ_ROUTINE requestfile_c(void)
 {
     struct bl_regs r = { .a0 = (ULONG)&FrStruct };
@@ -214,7 +214,7 @@ static ULONG BLITZ_ROUTINE requestfiletitleflags_c(STRPTR title BL_REG(d0),
     return requestfiletitle_c(title, lens);
 }
 
-/* ReqColour(colour) (d0, ignored: BUG(orig)) */
+/* ReqColour(colour) (d0, ignored: BUG(orig) #786) */
 static ULONG BLITZ_ROUTINE colourreq_c(void)
 {
     struct bl_regs r = { .a0 = (ULONG)&ecr };

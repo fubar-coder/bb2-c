@@ -35,22 +35,22 @@ a0 too.
 
 * `#frq_Flags = #FRQCACHINGB|#FRQINFOGADGETB|#FRQCACHEPURGEB` ORs bit
   numbers (2|4|7 = 7): the default flags are bits 0-2 (extended select,
-  caching) instead of caching, info gadget and cache purge.
+  caching) instead of caching, info gadget and cache purge (#787).
 * init stores the four buffer addresses in `frq_Title`…`frq_PathName`
   behind the structure, never in `FrStruct`'s Directory/File/PathName
   fields: the requester gets 0 for them, and ReqFileRequest copies the
   cleared path buffer of init, which only the program (through
   ReqFileLoc) writes. Unless req.library copes with the 0 pointers itself,
-  the result is always empty.
+  the result is always empty (#785).
 * No routine checks the library base: without req.library (or after
   init's AllocMem failed, which closes it again) ReqFileRequest and
-  ReqColour call through a6 = 0.
+  ReqColour call through a6 = 0 (#788).
 * ReqFileRequest leaves a3 behind the terminating 0 of the result (d0 =
   length is right); see `docs/libs/cmdlibs-port.md`, "String results".
-  On cancel d0 = 0 and a3 stays (with a title: at its start).
-* ReqColour ignores its argument: DefColour stays 0.
+  On cancel d0 = 0 and a3 stays (with a title: at its start) (#784).
+* ReqColour ignores its argument: DefColour stays 0 (#786).
 * ReqFileRequest(title$,flags) changes the flags for good (like
-  ReqFlags), and a title stays for later calls without one.
+  ReqFlags), and a title stays for later calls without one (#789).
 
 ## Test
 
