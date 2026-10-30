@@ -19,7 +19,7 @@
  *
  * BUG(orig): the loops store first and compare after (CMP.l a0,a1:BNE):
  * an end that is not reached exactly (a size that is no multiple of the
- * element size; an array of 0 elements) runs through memory.
+ * element size; an array of 0 elements) runs through memory (#882).
  */
 #include "blitzlib.h"
 

@@ -29,7 +29,8 @@ byte for byte. init and finit are empty C functions.
 
 * The loops store first and compare after (`CMP.l a0,a1:BNE`): an end
   that is not reached exactly – an array size that is not a multiple of
-  the element size, or no element at all – runs on through memory.
+  the element size, or no element at all – runs on through memory
+  (#882).
 
 ## Test
 
