@@ -24,10 +24,10 @@ ULONG germs_map(UBYTE c);
 UWORD rawspecial(UWORD code);
 
 /* ted.s:5214 fontcalc (chunk 05 code, here with the font data): glyph of
-   character d0 (0-127, no check: >= 128 reads behind the font, survey-05
-   I.11): font8 + (c&15) + (c>>4)*128, or font6 + (c&15) + (c>>4)*96 if
+   character c (asm d0; 0-127, no check: >= 128 reads behind the font,
+   survey-05 I.11): font8 + (c&15) + (c>>4)*128, or font6 + (c&15) + (c>>4)*96 if
    fonthite == 6.  Glyph rows are 16 bytes apart. */
-const UBYTE *fontcalc(UBYTE d0);
+const UBYTE *fontcalc(UBYTE c);
 
 /* resources (res.c: #embed of the original files at build time, see
    CMakeLists.txt) */

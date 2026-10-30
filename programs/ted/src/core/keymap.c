@@ -24,13 +24,13 @@ const UBYTE germs[2 * ngerms] = {     /* ted.s:6022 */
    part (NEW name): d7 = c; found in germs -> replacement byte, bset #30 */
 ULONG germs_map(UBYTE c)
 {
-    const UBYTE *a0 = germs;
-    WORD d0;
+    const UBYTE *pair = germs;                  /* a0 */
+    WORD n;                                     /* d0 */
 
-    for (d0 = ngerms - 1; d0 >= 0; d0--) {      /* .gloop, dbf */
-        if (*a0++ == c)
-            return (ULONG)*a0 | (1UL << 30);    /* .gskip */
-        a0++;
+    for (n = ngerms - 1; n >= 0; n--) {         /* .gloop, dbf */
+        if (*pair++ == c)
+            return (ULONG)*pair | (1UL << 30);  /* .gskip */
+        pair++;
     }
     return c;
 }
@@ -53,14 +53,14 @@ UWORD rawspecial(UWORD code)
 }
 
 /* ted.s:5214 fontcalc */
-const UBYTE *fontcalc(UBYTE d0)
+const UBYTE *fontcalc(UBYTE c)
 {
-    UWORD d1 = d0 & 0xf0;
+    UWORD high = c & 0xf0;                      /* d1 */
 
     /* no check: characters >= 128 lie behind the font (survey-05 I.11) */
-    if (d0 >= 128)
+    if (c >= 128)
         ORIG_HAZARD("fontcalc: character >= 128 behind the font");
     if (fonthite == 6)          /* .font6: (c >> 4) * 96 */
-        return font6 + (d0 & 15) + (d1 << 1) + (d1 << 2);
-    return font8 + (d0 & 15) + (d1 << 3);      /* (c >> 4) * 128 */
+        return font6 + (c & 15) + (high << 1) + (high << 2);
+    return font8 + (c & 15) + (high << 3);     /* (c >> 4) * 128 */
 }
