@@ -110,7 +110,7 @@ latest date in the header comments.
 | NonVolatile | 35 (clash `mazfpulib`, AB3) | `nonvolatile` | RI | 1994 | **=** BSS2/AB3 (640 B) | nonvolatile |
 | Pack | 73 | `packlib/Pack-Library8`, `8_Mc`, `9` | RI | 1996-05-09 | 8 **=** BUM (2564 B), 8_Mc **=** OL (2388 B); 9 newer, ≈ 88 % | open (9 newer than the binaries) |
 | PopUp window | – (`#popupwinlib`) | `popuplib/popupwinlib` (+ `test2`) | RI | 1994 | – | open |
-| Protracker | 58 (`#ritrackerlib`, RWE's list) | `ptlib/ptlib` … `ptlib7`, `ptlibmatty` | Protracker 2.3A routine, adapted | 1995-04-08 | – | in work (decision 2026-10-30, `archive/README.md`; before: not ported, 2026-10-29); not the acidlibs `trackerlib` (96: NoiseTracker in the vertical blank, Module objects, `LoadModule`…) but its own library: CIA interrupt, `TrackInit address`, `TrackPlay`, `TrackStop`, `TrackDMA`, `Tracker`, `TrackerChannels` (`TrackerTimer` from ptlib7); no binary; the number only in RWE's list |
+| Protracker | 58 (`#ritrackerlib`, RWE's list) | `ptlib/ptlib` … `ptlib7`, `ptlibmatty` | Protracker 2.3A routine, adapted | 1995-04-08 | – | ptlib6 (reference build), ported 2026-10-30 (`port/ritrackerlib.md`: why ptlib6; decision to port: `archive/README.md`); not the acidlibs `trackerlib` (96: NoiseTracker in the vertical blank, Module objects, `LoadModule`…) but its own library: `TrackInit address`, `TrackPlay` (called by the program: the CIA interrupt code is dead), `TrackStop`, `TrackDMA`, `Tracker`, `TrackerChannels`, `TrackerPause` (`TrackerTimer` only in ptlib4/7/matty); no binary; the number only in RWE's list |
 | CIA tracker | 56 (`#ciatrklib`; clash `xbciatrackerlib`, AB3) | `ptlib/CIATrackerLib1` (+ `SamplePrograms/TrackerTest`) | Neil O'Rourke, Delirium Softdesign | – | ≈ 88 % OL `XBONESCIATRKLIB` | open |
 | Req | 79 | `reqlib/ReqLib`, `2`, `3` | – | – | all three **=** OL/AB3 `RIREQLIB` (964 B) | ReqLib2 (built identically, 3.1) |
 | ARexx | 133 (`#myconst=133`) | `rexxlib/…` (9 versions) | RI; `NEWAREXXLIB`: RWE (Matty) | 1997-02-09 | ≈ 76 % BSS2 `RIAREXXLIB` | open |
@@ -296,7 +296,7 @@ functions, Sound, StoneCracker, FNS) and Anim followed the same day;
 the 12 libraries whose reference is the reference build of their source
 (3.2 "Source": LVCallHook, Misc, STC decrunch, CompactDisk, GTMenu,
 Linked list, ReqTools, DataTypes, ARexx, Shapes, Sort, Disasm) on
-2026-10-30. Open: CIA tracker and ptlib (the Protracker 2.3A play
+2026-10-30, ptlib (Protracker, ptlib6) the same day. Open: CIA tracker (the Protracker 2.3A play
 routine; ported on the basis of its release as "Public Domain",
 decision 2026-10-30), LES debug (no `Font.bin`, no reference build).
 
@@ -384,7 +384,7 @@ RWE's "Official Blitz Library Number List" of 1997-02-02 (a copy on the
 CD of Amiga MA Magazine 1998 #7, discmaster.textfiles.com …/www/rwe/
 liblist_nf.html; AmiBlitz3's `sorted_libnums.ab3` is a copy with RI lines
 lost) gives: `#riintuilib` 15, `#ribbmaplib` 34, `#rithreadlib` 44,
-`#ritrackerlib` 58, `#riarrayslib` 7, MapEd 8, MapShapes 6, Registry 3,
+`#ritrackerlib` 58 (used by the port of ptlib6), `#riarrayslib` 7, MapEd 8, MapShapes 6, Registry 3,
 BB blit 19, Chunky 24, Display 29, Shapez 21. Not in it: Snow (literal
 195, probably a test number), Serial (literal 22 – the list gives 22 to
 `#riblitlib`), WB sprite (literal 10), PopUp window, Blitz Bombers 2. C2P
