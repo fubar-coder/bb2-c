@@ -14,7 +14,7 @@
  * (bytes), values with garbage above the element size, both forms; the
  * types that do nothing (0, quick, float, string, 8, and a type word
  * with byte/word/long only in its upper byte); init and finit.  Not
- * covered: an end that is not reached exactly (BUG(orig): runs through
+ * covered: an end that is not reached exactly (BUG(orig) #882: runs through
  * memory).
  */
 #include "rwecmp.h"

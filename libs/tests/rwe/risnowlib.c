@@ -30,7 +30,7 @@
  * LDoSnowActivate every 7 steps, finit.  Not covered: list numbers
  * outside 0-3, numpoints from 1024 on, more flakes than the lists hold,
  * bits above 7 in the random table, LDoSnowActivate before the first
- * LDoSnow (all BUG(orig): memory outside the library's).
+ * LDoSnow (all BUG(orig), #913 #912 #914 #910 #908: memory outside the library's).
  */
 #include "rwecmp.h"
 #include <exec/memory.h>

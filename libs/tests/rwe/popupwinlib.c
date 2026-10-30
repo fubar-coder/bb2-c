@@ -17,8 +17,8 @@
  * and are all closed by the library before PopUpWindow returns.
  * Compared per snapshot: the popup windows (position, size, IDCMP) and
  * their contents (copied with ClipBlit, hashed), bit 1 of CIA-A PRA
- * relative to the start (BUG(orig): toggled by a menu with sub menus);
- * the number of waits and menu levels, d0 (BUG(orig): always 0), the
+ * relative to the start (BUG(orig) #468: toggled by a menu with sub menus);
+ * the number of waits and menu levels, d0 (BUG(orig) #471: always 0), the
  * kept registers, no memory lost after the first popup (the first
  * windows leave memory in the system's caches, differently per set).
  * Covered: init; PopUpWindow with three levels: highlighting items, a
@@ -27,9 +27,9 @@
  * the sub menu), onto the parent's active item (the sub menu stays), a
  * third level left for the first (two levels closed), a mouse button
  * with and without an active item; a menu without sub menus that starts
- * with a separator; PopUpInit (a new port, BUG(orig): the old one is
+ * with a separator; PopUpInit (a new port, BUG(orig) #470: the old one is
  * not deleted - the test deletes it); finit.
- * Not covered: a failed AllocVec or OpenWindow (BUG(orig): not
+ * Not covered: a failed AllocVec or OpenWindow (BUG(orig) #467: not
  * checked), real mouse input.
  */
 #include "rwecmp.h"
@@ -213,7 +213,7 @@ static void popup(const char *what, int first, int levels)
     script_on = 0;
     while (GetMsg(replyport))
         ;
-    BOTH("d0 0 (BUG(orig))", R[cur].d[0] == 0);
+    BOTH("d0 0 (BUG(orig) #471)", R[cur].d[0] == 0);
     BOTH("the whole script", nev[cur] == nscript);
     SAME("waits", nev[cur]);
     for (k = 0; k < nev[0] && k < nev[1] && k < MAXEV; k++) {
@@ -359,7 +359,7 @@ int main(int argc, char **argv)
     strcpy(VEC, "");
     DO2(nullsub(28), (void)0);
     for (s = 0; s < 2; s++)
-        DeleteMsgPort(oldport[s]);      /* BUG(orig): left by PopUpInit */
+        DeleteMsgPort(oldport[s]);      /* BUG(orig) (#470): left by PopUpInit */
 
     Forbid();
     SetFunction((struct Library *)SysBase, LVO_WaitPort, old_waitport);

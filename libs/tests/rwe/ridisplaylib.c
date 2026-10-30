@@ -10,14 +10,14 @@
  * the list, as "is the list the library keeps"), the variables viewsize
  * and cop (found in both libraries by the list InitView returns), the
  * list's 8 words (the words at the absolute addresses $8E, $2C81, $90,
- * $2CC1, $92, $38, $94, $D0, BUG(orig): equal to those words, and equal
+ * $2CC1, $92, $38, $94, $D0, BUG(orig) #889: equal to those words, and equal
  * between the sets for the ones in the vector table), the change of
  * graphics.library's open count and the test task's memory balance
  * (rwemem.h), and the registers the original keeps.  The lists InitView
- * leaks (only the last one is kept, BUG(orig)) are freed by the test.
+ * leaks (only the last one is kept, BUG(orig), #891) are freed by the test.
  *
  * Covered: init, InitView (sizes with marker upper words, the colour
- * count ignored, BUG(orig)), ViewBitmap (no code), finit with a list,
+ * count ignored, BUG(orig), #890), ViewBitmap (no code), finit with a list,
  * finit again (nothing: graphics.library closed), init and finit
  * without a list.  Not covered: InitView without chip memory or with a
  * size that is negative as a word (both write to address 0).

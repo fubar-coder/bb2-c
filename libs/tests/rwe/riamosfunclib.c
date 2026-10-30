@@ -30,19 +30,19 @@
  * was given back), FileSize (file, directory, missing), BSave (bank,
  * address with and without a length, a free bank, a bad path), BLoad in
  * all five forms (into a new bank, an address, a used bank, a length, an
- * offset, chip memory; empty and missing files, BUG(orig): the bank of a
+ * offset, chip memory; empty and missing files, BUG(orig) (#487): the bank of a
  * failed open stays), its error check (an RTS), Rename (done, missing),
  * ChangeDir (absolute, relative, missing; the current directory after
  * it), FindVolume, DeviceName$ (with and without ":", volume and device
  * names, unknown, empty, d0 pointing elsewhere), SaveExec (a list with
  * two code hunks - relocations, memory flags, a length not a multiple
  * of 4 - and a symbol hunk; no list; a file that cannot be made; an
- * empty list, BUG(orig): the file stays open); EraseAll, finit.
+ * empty list, BUG(orig) (#501): the file stays open); EraseAll, finit.
  * Not covered: Reboot; counts of 0 (2^32 units) and bank numbers that
  * index outside the tables (negative, Reserve above the limit, Reserve
  * with every bank in use) - they write outside the test's memory;
  * BankLimit 0 or above 65536; a ChangeDir before BankLimit/finit while
- * its lock is current (BUG(orig): unlocked while in use - the test
+ * its lock is current (BUG(orig) #491: unlocked while in use - the test
  * restores the directory first); CurrentDir returning 0.
  */
 #include "rwecmp.h"
@@ -521,7 +521,7 @@ static void files(void)
     BOTH("chip", TypeOfMem((APTR)bankstart[cur]) & MEMF_CHIP);
     bload(4, "p.bin", -1, 16, 1, MEMF_CHIP);            /* an address: no memtype */
     bload(1, "missing.bin", 11, 0, 0, 0);               /* no length: 0 */
-    bload(2, "missing.bin", 11, 16, 0, 0);              /* BUG(orig): bank 11 stays */
+    bload(2, "missing.bin", 11, 16, 0, 0);              /* BUG(orig) (#487): bank 11 stays */
     length(11);
     bload(1, "empty.bin", -1, 0, 0, 0);
     for (f = 0; f < 5; f++) {
@@ -706,7 +706,7 @@ int main(int argc, char **argv)
     saveexecs();
 
     /* ChangeDir last: its lock stays current until the test restores the
-       directory (finit unlocks it, BUG(orig)) */
+       directory (finit unlocks it, BUG(orig), #491) */
     home = me->pr_CurrentDir;
     for (cur = 0; cur < 2; cur++) {
         mybase[cur] = Lock((STRPTR)P(""), ACCESS_READ);

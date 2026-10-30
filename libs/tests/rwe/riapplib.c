@@ -277,7 +277,7 @@ static void addmenu(LONG id, const char *text, int failit)
     sprintf(VEC, "id %ld%s", id, failit ? " (fails)" : "");
     wbmark();
     DO2(ent(ADDMENU, 0), wbfail = failit; R[cur].d[0] = id; R[cur].d[1] = (ULONG)text);
-    SAME("d0 = item (BUG(orig))", R[cur].d[0] ? R[cur].d[0] - nextobj[cur] : 1);
+    SAME("d0 = item (BUG(orig) #518)", R[cur].d[0] ? R[cur].d[0] - nextobj[cur] : 1);
     wbcompare();
 }
 
@@ -301,7 +301,7 @@ static void addicon(int form, LONG id, const char *name, LONG x, LONG y, int fai
         R[cur].d[2] = (ULONG)name; R[cur].d[3] = x; R[cur].d[4] = y);
     SAME("d0", R[cur].d[0]);
     wbcompare();
-    /* BUG(orig): a3 = the DiskObject, a4 = 0 once AddAppIconA was called */
+    /* BUG(orig) (#516): a3 = the DiskObject, a4 = 0 once AddAppIconA was called */
     SAME("a3 = DiskObject", nlog[cur] > mark[cur] ? R[cur].a[3] == wblog[cur][nlog[cur] - 1].a3
          : R[cur].a[3] == IN[cur].a[3]);
     SAME("a4", R[cur].a[4] == IN[cur].a[4] ? 1 : R[cur].a[4]);
@@ -383,7 +383,7 @@ static void test_messages(void)
         SAME("d0 = lock", R[cur].d[0] == (ULONG)args[cur][0].wa_Lock);
         if (i == 0) {
             /* the first argument: "Ram Disk:" ends with ':' - the lock
-               stays; the second is unlocked (BUG(orig)) */
+               stays; the second is unlocked (BUG(orig), #521) */
             stringfn("NextAppFile", NEXTAPPFILE, 0);
             stringfn("NextAppFile", NEXTAPPFILE, 0);
             stringfn("NextAppFile (none left)", NEXTAPPFILE, 0);
@@ -484,7 +484,7 @@ int main(int argc, char **argv)
     test_objects();
     test_messages();
 
-    /* finit with no current message: BUG(orig) - the queue stays */
+    /* finit with no current message: BUG(orig) (#525) - the queue stays */
     for (cur = 0; cur < 2; cur++) {
         putmsg(4, AMTYPE_APPICON, 1, 0);
     }

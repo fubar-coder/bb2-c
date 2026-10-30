@@ -32,14 +32,14 @@
  * random notes and every effect (speeds 1-8, tempos, position jumps,
  * pattern breaks, loops, delays, retrigs, invert loop ...), and a
  * second, small module for the speed/tempo corner cases (F80: a speed,
- * BUG(orig); F00 on voice 1 stops, and voices 2-4 then read their notes
- * from the custom chip registers, BUG(orig)).  Rows by hand: the first
- * 1xx (mt_LowMask 0, BUG(orig)), volume above 64, tremolo's ramp-down
- * with a negative vibrato position (BUG(orig)), 9xx with a note
- * (twice, BUG(orig)), invert loop, retrig.  Covered besides playing: TrackDMA, Tracker Off
- * (mt_end) / On (stays stopped, BUG(orig)), TrackInit while Tracker Off
- * (no mt_init, BUG(orig)), TrackerChannels (the voices shift,
- * BUG(orig)), TrackerPause, TrackStop, init, finit with and without
+ * BUG(orig) #569; F00 on voice 1 stops, and voices 2-4 then read their notes
+ * from the custom chip registers, BUG(orig) #475).  Rows by hand: the first
+ * 1xx (mt_LowMask 0, BUG(orig), #478), volume above 64, tremolo's ramp-down
+ * with a negative vibrato position (BUG(orig), #482), 9xx with a note
+ * (twice, BUG(orig), #473), invert loop, retrig.  Covered besides playing: TrackDMA, Tracker Off
+ * (mt_end) / On (stays stopped, BUG(orig), #572), TrackInit while Tracker Off
+ * (no mt_init, BUG(orig), #573), TrackerChannels (the voices shift,
+ * BUG(orig), #568), TrackerPause, TrackStop, init, finit with and without
  * TrackInit.  Not covered: sample numbers above 31, finetune bytes above
  * 15 (both read outside the library's tables, different memory in the
  * two builds), and the dead CIA/SetInt code.
@@ -131,7 +131,7 @@ static void snapshot(int s, UBYTE *b, UBYTE *g)
 }
 
 /* the custom chip registers before each call: notes for an F00 on voices
-   1-3 (the voices behind read their notes here, BUG(orig)): period 428,
+   1-3 (the voices behind read their notes here, BUG(orig), #475): period 428,
    sample 1, C20 */
 static void fillfake(int s)
 {
@@ -392,7 +392,7 @@ static void build_speed(void)
     note(pat + 16 * 4, 0, 0, 0xe, 0x01);                /* filter */
     note(pat + 16 * 5, 0, 0, 0xf, 0x00);                /* stop on voice 1: voices 2-4 read
                                                            their notes from the custom chip
-                                                           registers (BUG(orig)) */
+                                                           registers (BUG(orig), #475) */
     modsz = 1084 + 1024 + 100;
     memset(ref + 1084 + 1024, 0x11, 100);
 }

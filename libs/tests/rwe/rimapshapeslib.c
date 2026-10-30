@@ -20,11 +20,11 @@
  * smaller and larger (clamped) heights; RemapMapShape (nothing);
  * ResetGroup;
  * AddGroupMember (also an empty map shape), BlitGroup with a6 =
- * graphics.library (BUG(orig): the caller's a6), twice with another
+ * graphics.library (BUG(orig) #902: the caller's a6), twice with another
  * ResetGroup; FreeMapShapes (a range, last < first, one shape, first
  * -1: the word compare passes, the address compare not); finit.
  * Not covered: map shapes before SetNumMapShapes (address 0), depth 0,
- * more than 63 group members, BlitGroup with another a6 (all BUG(orig));
+ * more than 63 group members, BlitGroup with another a6 (all BUG(orig): #906 #903 #904 #902);
  * blits that leave the bitmap or have a size <= 0 (without a layer
  * nothing clips them).
  */

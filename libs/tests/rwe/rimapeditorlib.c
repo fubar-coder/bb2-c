@@ -16,19 +16,19 @@
  * the kept registers; memlib's memory back at the end.
  * Covered: every entry; the inline routines (checked inline with the same
  * length, their code called as a subroutine); CreateMap (new, again on
- * the same object: the old one freed, an empty name, AllocMem failing: BUG(orig)
- * datasize stays 1); MapDataGrab of bytes (BUG(orig): the carry into the
- * next values) and words; MapCanDraw inside and outside the map, with
+ * the same object: the old one freed, an empty name, AllocMem failing:
+ * datasize stays 1, never read); MapDataGrab of bytes (BUG(orig) #898:
+ * the carry into the next values) and words; MapCanDraw inside and outside the map, with
  * and without a rub-through map (smaller than the map), stencil hits;
  * ScanShapes (to highest, to an empty shape, start > highest) and the
  * maxima; ShapeTo1616 of heights < 16, 16, > 16, depths 1-4;
  * ShapeMaskFill; FillBitplane; MapObjName$ (no name, a name of 300
- * characters: BUG(orig) the byte length) and SetMapObjName$; the text
+ * characters: BUG(orig) #899 the byte length) and SetMapObjName$; the text
  * commands and the pen; SetWindowDraw; M_NextArg$ before M_InitParse,
  * strings with empty arguments; the free routine; init, finit.
  * Not covered: negative coordinates for MapCanDraw, sizes 0 of the DBRA
- * loops, M_InitParse of more than 255 characters (BUG(orig)), a map whose
- * data lies at $xxxx0000 (BUG(orig): not freed).
+ * loops, M_InitParse of more than 255 characters (BUG(orig), #897), a map whose
+ * data lies at $xxxx0000 (BUG(orig) #894: not freed).
  */
 #include "rwecmp.h"
 #include <exec/memory.h>
@@ -396,7 +396,7 @@ int main(int argc, char **argv)
     /* the maps */
     create(0, 10, 8, 16, 16, "level1", 0);
     create(1, 6, 5, 32, 8, "", 0);
-    create(2, 4, 5, 1, 2, "nothing", 1);        /* BUG(orig): datasize stays */
+    create(2, 4, 5, 1, 2, "nothing", 1);        /* datasize stays (never read) */
     create(3, 7, 3, 8, 8, "first", 0);
     create(3, 9, 4, 8, 16, "second", 0);        /* the old one freed */
     grab(0, 0, 1);
@@ -404,7 +404,7 @@ int main(int argc, char **argv)
     grab(3, 0, 0);
     for (k = 0; k < 40; k++)
         grabsrc[k] = 250 + k % 6;
-    grab(3, 0, 10);                     /* BUG(orig): the carry */
+    grab(3, 0, 10);                     /* BUG(orig) (#898): the carry */
     for (k = 0; k < 40; k++)
         grabsrc[k] = (UBYTE)(rnd() % 30);
     grab(3, 1, 0xfff0);
@@ -492,7 +492,7 @@ int main(int argc, char **argv)
     objname(0);
     objname(1);                         /* no name: "" */
     setname(1, "renamed map");
-    setname(0, longname);               /* BUG(orig): the length as a byte */
+    setname(0, longname);               /* BUG(orig) (#899): the length as a byte */
     setname(0, "");
     setname(3, "third");
 

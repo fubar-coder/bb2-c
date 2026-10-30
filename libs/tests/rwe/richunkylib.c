@@ -16,14 +16,14 @@
  * after every call: d0 where there is a result (pointers as "is the data
  * of the object"), the objects (the data pointer as 0 / not 0), the
  * chunky data, the planes with the guard, the number of blocks
- * allocated, CIA-A PRA bit 1 (the free routine toggles it, BUG(orig);
+ * allocated, CIA-A PRA bit 1 (the free routine toggles it, BUG(orig) #886;
  * put back before every call and at the end) and the registers the
  * original keeps.
  *
  * Covered: ChunkyBitmap (new, again with data = free first, a failing
  * allocation with and without old data, the unused word
  * at offset 6 set without data: the free routine without data,
- * BUG(orig)), ChunkyData, ChunkyToPlanar with random chunky data (depth
+ * BUG(orig), #885), ChunkyData, ChunkyToPlanar with random chunky data (depth
  * 8, the depth word $0108 = with bm_Flags, 7 and $8008 = nothing, an
  * object without data = nothing), RaycastSky (random columns, heights
  * 1..256, x and column with marker upper words, negative columns),

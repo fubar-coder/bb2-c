@@ -23,9 +23,9 @@
  *
  * The shapes (Blitz shape objects: width, height, depth, data) are built
  * in memory and the same for both sets.  Covered: WBSpriteX without a
- * sprite (reads the word at 6, BUG(orig)), init, GetWBSprite on a free
+ * sprite (reads the word at 6, BUG(orig), #922), init, GetWBSprite on a free
  * channel, on any channel (-1), on its own channel again (GetExtSpriteA
- * fails, the channel is returned, BUG(orig)), on channel 0 (the mouse
+ * fails, the channel is returned, BUG(orig), #920), on channel 0 (the mouse
  * pointer's: 0), 32 pixels wide (refused on this Workbench screen: 0),
  * with a narrow shape (0), a shape without data (-1), 20 wide
  * (copied as 16); WBSpriteX/Y; MoveWBSprite on two sprites and without

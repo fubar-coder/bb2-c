@@ -9,7 +9,7 @@
  * command sets (the pattern by its words), the kept registers.  Covered:
  * CludgeAcid 1 before anything was saved (a4 = 0), CludgeAcid 0/1 with
  * garbage above the low byte (only d0.b counts); PeekByte inline (same
- * length) and its code called as a subroutine - BUG(orig): it runs into
+ * length) and its code called as a subroutine - BUG(orig) (#907): it runs into
  * CludgeAcid, a byte 1 loads a4, any other byte saves it; bytes 0, 1, $80,
  * $FF; SetWinDrawShapeZ with a window object whose Window/RastPort are
  * memory here, mode 1, $8000 and garbage above the word, mode 0; init and
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
     strcpy(VEC, "inline");
     BOTH("inline", W(ENT(LIB, PEEK, 0)) == 0xa000);
     SAME("inline length", W(ENT(LIB, PEEK, 0) + 2));
-    /* BUG(orig): into CludgeAcid */
+    /* BUG(orig) (#907): into CludgeAcid */
     peek(0, 0x66666666);                /* 0: saves a4 */
     peek(1, 0x77777777);                /* 1: a4 = $66666666 */
     peek(2, 0x88888888);

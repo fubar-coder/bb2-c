@@ -14,11 +14,11 @@
  * registers.  Covered: both Set routines with no FORM, the wrong type
  * and good files; every accessor with the chunk present (twice: the
  * cache) and missing; a chunk id read behind the end of the file
- * (BUG(orig): found); BBShadowValue with word index overflow and a
+ * (BUG(orig) #553: found); BBShadowValue with word index overflow and a
  * negative index; author strings at an odd and an even address;
  * BBGetPalette without a new block, with one (from 0 and from 4
  * colours), low > high, no COLR; a map without MFRM; a failed
- * SetBBMapLoc after a good one (BUG(orig): the info chunk, the cache and
+ * SetBBMapLoc after a good one (BUG(orig) #554: the info chunk, the cache and
  * the end of the old map stay).
  * Not covered: the routines before the first Set (they search from
  * address 12), odd chunk lengths (address errors), BBGetPalette writing
@@ -238,7 +238,7 @@ static void getpal(const char *what)
     SAME("new block", SL(pal[cur], 0) != was[cur]);
     {
         const UBYTE *d[2] = { (UBYTE *)SL(pal[0], 0), (UBYTE *)SL(pal[1], 0) };
-        /* a new block has count+1 colours (BUG(orig)) */
+        /* a new block has count+1 colours (BUG(orig), #548) */
         SAMEBYTES("colours", d, 4 + 12 * ((ULONG)SW(pal[0], 4) + (SL(pal[0], 0) != was[0])));
     }
 }

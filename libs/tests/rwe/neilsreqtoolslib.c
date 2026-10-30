@@ -16,19 +16,19 @@
  * TextAttr and screen mode fields, a multi-load a file list).
  * Covered: everything before init that does not call reqtools; init when
  * OpenLibrary fails and when each of the seven rtAllocRequestA fails (the
- * library stays open, BUG(orig)), then ok; IsReqToolsActive, RTVersion/
+ * library stays open, BUG(orig), #460), then ok; IsReqToolsActive, RTVersion/
  * RTRevision (d0's high word), RTReturnValue after every call; all three
  * forms of RTEZRequest with and without title (the tag list reset
  * afterwards); RTEZFlagsRequest both forms with and without gadgets (the
- * title in the wrong list, BUG(orig)); RTRequest; RTEZLoadFile,
+ * title in the wrong list, BUG(orig), #455); RTRequest; RTEZLoadFile,
  * RTEZSaveFile, RTFileRequest, RTEZPathRequest with ok/cancel and the
  * directory empty, ending in ':' or not; RTEZSetDefaultDirectory and
  * RTEZSetPattern 0-4, RTEZFreePattern 0-3 (their flags seen by the next
  * requester); RTEZMultiLoadFile (a list, cancel, a list at an address
- * ending in $00, BUG(orig)) and RTNextPathEntry to the end;
+ * ending in $00, BUG(orig), #462) and RTNextPathEntry to the end;
  * RTEZFontRequest, RTEZScreenModeRequest both forms (through
- * rtFontRequestA, BUG(orig)), RTEZPaletteRequest; RTEZGetLong both forms
- * (cancel returns the value, BUG(orig)), RTEZGetLongRange both forms;
+ * rtFontRequestA, BUG(orig), #466), RTEZPaletteRequest; RTEZGetLong both forms
+ * (cancel returns the value, BUG(orig), #457), RTEZGetLongRange both forms;
  * RTEZGetString both forms, ok and cancel; RTLockWindow/RTUnlockWindow;
  * the asynchronous requesters (up, not up, check, end); finit (seven
  * rtFreeRequest, rtFreeFileList, the library closed).  Then, with the
@@ -415,7 +415,7 @@ static void inits(void)
         char what[40];
         sprintf(what, "rtAllocRequestA %d fails", k);
         init_case(what, k);
-        /* BUG(orig): the library stays open, finit does nothing */
+        /* BUG(orig) (#460): the library stays open, finit does nothing */
         ROUT = "finit (inactive)";
         DO2(ENT(LIB, E_FINIT, 0), logreset(); opens[cur] = 0);
         logcheck();
@@ -461,7 +461,7 @@ static void ezrequests(void)
         fk_ret = 7;
         DOREQ(E_FLAGS, 0, strargs("Flags title", "Body", t ? "" : "Ok");
               R[cur].d[3] = 0x00000208);
-        BOTH("no title (BUG(orig))", log_[cur][0].tags[0] == 0x80000014UL
+        BOTH("no title (BUG(orig) #455)", log_[cur][0].tags[0] == 0x80000014UL
              && log_[cur][0].tags[1] == 0 && (log_[cur][0].a2 != 0) == !t);
         DOREQ(E_FLAGS, 1, strargs("Flags title", "Body", t ? "" : "Ok");
               R[cur].d[3] = 0x10; R[cur].d[4] = 1);
@@ -572,7 +572,7 @@ static void multiload(void)
         fk_dir = n == 0 ? "Work:dir" : "RAM:";
         DOREQ(E_MULTI, 0, strargs("Multi", NULL, NULL));
         if (n == 1)
-            BOTH("the list, not -1 (BUG(orig))", RES[cur].d[0] == (ULONG)aligned);
+            BOTH("the list, not -1 (BUG(orig) #462)", RES[cur].d[0] == (ULONG)aligned);
         fk_list = NULL;
         for (k = 0; k < 4; k++) {
             ROUT = "RTNextPathEntry";
@@ -607,7 +607,7 @@ static void others(void)
         sprintf(VEC, "form %d %s", k & 1, k & 2 ? "cancel" : "ok");
         fk_ret = !(k & 2);
         DOREQ(E_SM, k & 1, strargs("Screen", NULL, NULL); R[cur].d[1] = 0x12345);
-        BOTH("rtFontRequestA (BUG(orig))", nlog[cur] == 1 && log_[cur][0].lvo == -96);
+        BOTH("rtFontRequestA (BUG(orig) #466)", nlog[cur] == 1 && log_[cur][0].lvo == -96);
         if (!(k & 2)) {
             for (cur = 0; cur < 2; cur++)
                 memcpy(res[cur], (UBYTE *)RES[cur].d[0], 16);
@@ -627,7 +627,7 @@ static void others(void)
         fk_ret = !(k & 2);
         fk_long = 1000 + k;
         DOREQ(E_GETLONG, k & 1, strargs("Number", "Enter it", NULL); R[cur].d[2] = 77 + k);
-        BOTH("the value, also on cancel (BUG(orig))", RES[cur].d[0] == 1000 + (ULONG)k);
+        BOTH("the value, also on cancel (BUG(orig) #457)", RES[cur].d[0] == 1000 + (ULONG)k);
     }
     ROUT = "RTEZGetLongRange";
     for (k = 0; k < 4; k++) {

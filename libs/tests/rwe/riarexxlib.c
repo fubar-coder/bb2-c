@@ -19,19 +19,19 @@
  * Covered: every entry; functions without a port and without a current
  * message (0); the error check portchk with a port; RXCreatePort twice;
  * the tokenizer (spaces, quotes, doubled quotes, the character after a
- * closing quote skipped: BUG(orig), RXQuoteChar), RXTokenise off and
- * BUG(orig) "off" with a word whose upper word is set; RXGetArg 0..17,
+ * closing quote skipped: BUG(orig) #538, RXQuoteChar), RXTokenise off and
+ * BUG(orig) #547 "off" with a word whose upper word is set; RXGetArg 0..17,
  * RXNextArg to the end, RXNumArgs, RXSendersName, RXReplyMsg both forms
  * to our own port, to the test (the Result2 string) and to a sender
- * whose port is gone (BUG(orig): no reply); replies to our messages
+ * whose port is gone (BUG(orig) #540: no reply); replies to our messages
  * (freed); RXRunCommand both forms, to a missing port; RXSendCommand
  * both forms (the result over the arguments), with result code 10 and no
  * string, to a missing port, with a message arriving while it waits;
- * RXReturnCode (BUG(orig): 0 without a current message); RXDefaultPort;
- * RXExecuteScript/RXRunScript (BUG(orig): both RXCOMM|RXFF_STRING; to
+ * RXReturnCode (BUG(orig) #542: 0 without a current message); RXDefaultPort;
+ * RXExecuteScript/RXRunScript (BUG(orig) #544: both RXCOMM|RXFF_STRING; to
  * the responder if there is no REXX port, else to RexxMast with the
  * string program "exit", its reply awaited with RXWaitPort); RXDeletePort with messages queued (replied with
- * 5); finit with a port; init after RXDefaultPort (BUG(orig): the byte
+ * 5); finit with a port; init after RXDefaultPort (BUG(orig) #532: the byte
  * at +4 stays: "REXXE").
  * Not covered: the error check without a port (a runtime error, TRAP
  * #0), a failing AllocVec or AddPort (the exec flags/d0 the original
@@ -272,7 +272,7 @@ static void run(int form, const char *port, const char *cmd)
             R[cur].d[1] = (ULONG)cmd; R[cur].a[3] = (ULONG)sbuf[cur]);
     else
         DO2(ENT(LIB, RUNCOMMAND, 0), R[cur].d[0] = (ULONG)cmd; R[cur].a[3] = (ULONG)sbuf[cur]);
-    /* d0 is PutMsg's (BUG(orig)); 0 if the port is missing */
+    /* d0 is PutMsg's (BUG(orig), #543); 0 if the port is missing */
     SAME("sent", R[cur].d[0] != 0 || port == NULL || FindPort((STRPTR)port) != NULL);
 }
 
@@ -522,7 +522,7 @@ int main(int argc, char **argv)
         readport(READPORT, 0, "the script replies");
     } else {
         /* the real RexxMast: the "script name" is run as a string
-           program (BUG(orig)); tokenised, its first word "exit" */
+           program (BUG(orig), #544); tokenised, its first word "exit" */
         ROUT = "RXExecuteScript";
         strcpy(VEC, "RexxMast");
         call(EXECUTESCRIPT, 0, (ULONG)"exit 0", 0, 0, 0, 0);

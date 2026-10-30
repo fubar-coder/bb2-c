@@ -23,25 +23,25 @@
  *     resources are stand-ins that record their calls (the real ones
  *     with the original's ICR bits would remove the system's ciaa timer
  *     A vector); ciaa's fails, so init takes ciab's timer B.  Compared:
- *     the calls (BUG(orig): the bits are the longs at the addresses 1 and
+ *     the calls (BUG(orig) #450 #448: the bits are the longs at the addresses 1 and
  *     2; RemICRVector with bit 0), the CIA part, the timer started and
  *     stopped, the interrupt server called by hand (the tempo command,
  *     the event), StartTracker (reinstalls), WaitTrackerEvent with a
  *     WaitTOF that runs the server, ChangeTrackerVBlank (the filter).
  *   B (VBlank, both sets call by call): DecodeModule (chip: linked; fast
  *     memory: copied, size + 3), the information functions also on an
- *     empty slot (BUG(orig): StartTracker returns the slot number,
+ *     empty slot (BUG(orig) #451 #430 #437: StartTracker returns the slot number,
  *     CheckTrackerID the long at address 0, GetModuleName$ slot*10),
  *     the error checks (no error), StartTracker (mt_init; a slot length
- *     above the sample addresses clears their first longs, BUG(orig)),
+ *     above the sample addresses clears their first longs, BUG(orig), #438),
  *     then PlayTracker tick by tick with all channels on Paula, with the
  *     masks 5 and 0 (fake_channel), TrackerVolume (0, 1, 32, 63, 64,
- *     65), ModulePositionJump (n + 1, BUG(orig)), GetModulePosition,
+ *     65), ModulePositionJump (n + 1, BUG(orig), #447), GetModulePosition,
  *     PauseModule, Get/CheckTrackerEvent, WaitTrackerEvent (its WaitTOF
  *     plays one tick), StopTracker, LoadTrackerModule (a6 = DOSBase;
- *     a file size with the low byte $FE: the byte add, BUG(orig)),
+ *     a file size with the low byte $FE: the byte add, BUG(orig), #442),
  *     FreeTrackerModule (loaded, copied, linked), ModuleToChip, finit.
- *     F00 on voice 1, 2 and 3 of a small module (BUG(orig): mt_end loads
+ *     F00 on voice 1, 2 and 3 of a small module (BUG(orig) #475: mt_end loads
  *     a0 with $DFF000, the voices behind read their notes from the
  *     custom chip registers): the $DFF000 of mt_end is patched in the
  *     code of both builds to a RAM copy of the registers per set, filled
@@ -470,7 +470,7 @@ static void fakewaittof(void)
 /* ------------------------------------------------------ phase A */
 
 /* AddICRVector/RemICRVector of both CIA resources replaced: the real
-   calls would take the ICR bit from the addresses 1/2 (BUG(orig)) - in
+   calls would take the ICR bit from the addresses 1/2 (BUG(orig), #450) - in
    Amiberry $40 on ciaa, accepted - and RemICRVector with bit 0 removes
    the system's timer A vector of ciaa (later tests hang).  The stand-ins
    record the calls; ciaa's AddICRVector fails, so the library takes the
@@ -914,7 +914,7 @@ int main(int argc, char **argv)
     func("ModuleToChip", TOCHIP, 5);
 
     /* a slot length above the sample addresses: mt_init clears the first
-       long of every sample (BUG(orig)) */
+       long of every sample (BUG(orig), #438) */
     k = region(mod2[0], mod2[1], MODMAX);
     ROUT = "DecodeModule";
     strcpy(VEC, "slot 2, chip");
@@ -998,7 +998,7 @@ int main(int argc, char **argv)
         SAMEBYTES("module bytes", m, reflen);
     }
 
-    /* F00 on voices 1-3 (BUG(orig)) */
+    /* F00 on voices 1-3 (BUG(orig), #475) */
     f00();
 
     /* DecodeModule from fast memory: a copy in chip memory */
