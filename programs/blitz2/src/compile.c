@@ -481,6 +481,7 @@ void expandmax(void)
             do {
                 /* .loop3 */
                 UWORD mch = *text++;
+                UWORD param;            /* parameter number (from 1) */
                 ULONG hiword = 0;       /* upper word of asm d0 (moveq #0) */
                 if (mch != '`') {
                     /* .oky */
@@ -513,7 +514,7 @@ void expandmax(void)
                     srcptr = savea5;
                     if ((LONG)v < 0)
                         ilconsterr();
-                    mch = (UWORD)v;
+                    param = (UWORD)v;
                     hiword = v & 0xffff0000UL;  /* move.l d3,d0 */
                     goto l_itsgot;
                 }
@@ -526,18 +527,18 @@ void expandmax(void)
                     continue;
                 }
                 /* .notnum */
-                mch |= 32;
-                if (mch >= 'z')
+                param = mch | 32;
+                if (param >= 'z')
                     ilconsterr();
-                mch -= 48;
-                if (mch >= 10) {
-                    mch -= 39;
-                    if (mch < 10)
+                param -= 48;
+                if (param >= 10) {
+                    param -= 39;
+                    if (param < 10)
                         ilconsterr();
                 }
             l_itsgot:
-                mch--;
-                if ((WORD)mch < 0) {
+                param--;
+                if ((WORD)param < 0) {
                     /* here, we do a numarg text replace */
                     /* move numarg,d0 / divu #10,d0: only the low word is
                        replaced, so after `{expr} the upper word of the
@@ -556,8 +557,8 @@ void expandmax(void)
                 }
                 /* .ok: ok to do parameter replacement,
                    d0 = number for parameter replacement! */
-                if (mch < (UWORD)numarg) {
-                    struct macparam *mp = (struct macparam *)macrobuff + mch;
+                if (param < (UWORD)numarg) {
+                    struct macparam *mp = (struct macparam *)macrobuff + param;
                     UWORD n = mp->len;  /* len of replacetext */
                     if (n) {
                         UBYTE *s = mp->start;
@@ -1370,8 +1371,7 @@ static void handletoken(UWORD c)
         return;
     }
     /* asm: push handler, bra getchar3 */
-    c = getchar3();
-    atokens[idx >> 2](c);
+    atokens[idx >> 2](getchar3());
 }
 
 /* blitz2.s:3169 handlelib - a token from a library! */
@@ -1403,7 +1403,7 @@ UWORD dolibtoke(UWORD nparams, struct blitzlib *blib, UBYTE *sub)
     WORD s_userp = userp;
     WORD s_stackuse = stackuse;
     UBYTE *form;
-    UWORD fparams;
+    UWORD fparams, pspec;
 
     userp = usertype;
     form = sub + 6;
@@ -1433,10 +1433,10 @@ UWORD dolibtoke(UWORD nparams, struct blitzlib *blib, UBYTE *sub)
         form += 12;
     }
     /* Got it! */
-    nparams |= (UWORD)form[0] << 8;
+    pspec = nparams | (UWORD)form[0] << 8;  /* + repeat info, see fetchlibps */
     stackuse = 0;
-    if (nparams)
-        fetchlibps(nparams, form + 2);
+    if (pspec)
+        fetchlibps(pspec, form + 2);
     else
         getchar3();
     if (stackuse) {
