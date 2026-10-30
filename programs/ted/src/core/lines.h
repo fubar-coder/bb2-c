@@ -17,8 +17,9 @@
 /* ted.s:1041 cursdown - key 29: Shift: page down (gotolined02); no next
    line: beepem; else falls into cursdownok */
 void cursdown(void);
-/* ted.s:1058 cursdownok: thisitem = d0 (a4 stays old), falls into movecdown */
-void cursdownok(struct item *d0);
+/* ted.s:1058 cursdownok: thisitem = next (asm d0; a4 stays old), falls into
+   movecdown */
+void cursdownok(struct item *next);
 /* ted.s:1061 movecdown: godown, or curstop++/scrupall/showbotitem.
    Second entry from return. */
 void movecdown(void);
@@ -53,16 +54,16 @@ void top(void);
 /* ted.s:1456 bottom - menu $12: gotolined0(numlines-1) */
 void bottom(void);
 
-/* ted.s:1490 gotolined0: go to line d0 (0 based, MUST be < numlines - no
+/* ted.s:1490 gotolined0: go to line `line` (asm d0; 0 based, MUST be < numlines - no
    check, survey-02 I.13), a4 = current item (thisitem).  cursx = 0
    (cursoff stays), curstop/cursy from vscmarg rules, calcpos, showall if
    curstop changed, showhprop.  Returns the new a4 (= thisitem). */
-struct item *gotolined0(UWORD d0);
+struct item *gotolined0(UWORD line);
 /* ted.s:1495 gotolined02: same without showhprop (asm pushes flag 0) */
-struct item *gotolined02(UWORD d0);
+struct item *gotolined02(UWORD line);
 /* ted.s:1496 gd03: common part; flag != 0 -> showhprop at the end
    (asm: the word pushed by gotolined0/gotolined02) */
-struct item *gd03(UWORD d0, WORD flag);
+struct item *gd03(UWORD line, WORD flag);
 
 /* ------------------------------------------------------------- blocks */
 
