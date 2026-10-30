@@ -61,6 +61,9 @@
  *   uae=KEY=VALUE     a change of the emulator configuration
  *                     (tools/lib/amiga_emulation/default.uae), e.g. more
  *                     memory; any number
+ *   machine=NAME      the emulated machine (amiga_emulation.h: a1200, the
+ *                     default; a500 = 68000 with Kickstart 1.3; a500-68010);
+ *                     uae= changes its template
  *   expect=PATH       bug-orig test (bugorig.h): exactly one source, no
  *                     serial_same_as (serial=on gives the program the
  *                     remote end; what it sends is not judged); instead
@@ -92,7 +95,7 @@ struct corpus_config {
 
 struct corpus_pass {
     char *work, *report, *ted, *launcher, *gate, *defaultdbug, *serial_same_as;
-    char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs;
+    char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs, *machine;
     int runtime_errors, serial;
     unsigned timeout, parallel, stack;
     struct corpus_config *configs;

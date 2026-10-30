@@ -40,6 +40,7 @@ void corpus_free(struct corpus_pass *p)
     free(p->runwrap);
     free(p->runwrap_args);
     free(p->runargs);
+    free(p->machine);
     for (i = 0; i < p->nfiles; i++) {
         free(p->file_dest[i]);
         free(p->file_src[i]);
@@ -294,6 +295,15 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                 free(val);
                 return fail(p, err, errlen, "line %u: %s=DEST (inside the volume)", no, key);
             }
+            continue;
+        }
+        if (!strcmp(key, "machine")) {
+            if (!*val || !amiga_emulation_machine_known(val)) {
+                free(val);
+                return fail(p, err, errlen, "line %u: machine=NAME (a1200, a500, a500-68010)", no);
+            }
+            free(p->machine);
+            p->machine = val;
             continue;
         }
         if (!strcmp(key, "uae")) {
@@ -600,6 +610,7 @@ static struct amiga_emulation *start(const struct corpus_pass *p, size_t c, cons
             ch[nserial + i].key = keys[i];
             ch[nserial + i].value = eq + 1;
         }
+        ep.machine = p->machine;
         ep.changes = ch;
         ep.nchanges = nserial + i;
         /* CORPUS: the configuration's directory, the read-only volumes */

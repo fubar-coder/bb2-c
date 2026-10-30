@@ -113,6 +113,15 @@ int main(void)
     CHECK(parse(BASE CONFIGS "source=/s\nrunargs=\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\nuae=z3mem_size\n", err, sizeof err) == -1);
     CHECK(parse(BASE CONFIGS "source=/s\nuae==1\n", err, sizeof err) == -1);
+    /* the machine: a known one, the last line wins; none = the default */
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\n", &p, err, sizeof err) == 0 && !p.machine);
+    corpus_free(&p);
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\nmachine=a1200\nmachine=a500\n", &p, err, sizeof err) == 0);
+    CHECK(p.machine && !strcmp(p.machine, "a500"));
+    corpus_free(&p);
+    CHECK(parse(BASE CONFIGS "source=/s\nmachine=a500-68010\n", err, sizeof err) == 0);
+    CHECK(parse(BASE CONFIGS "source=/s\nmachine=a3000\n", err, sizeof err) == -1 && strstr(err, "machine="));
+    CHECK(parse(BASE CONFIGS "source=/s\nmachine=\n", err, sizeof err) == -1);
     /* bug-orig: exactly one source */
     CHECK(parse(BASE CONFIGS "source=/s\nsource=/t\nexpect=/e\n", err, sizeof err) == -1
           && strstr(err, "one source"));

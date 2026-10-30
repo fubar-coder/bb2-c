@@ -16,6 +16,14 @@
 #                                           @VAR@ replaced (see below)
 #                      ; @configs TAG...    the configurations judged
 #                                           (port clib, default both)
+#                      ; @machine NAME      the emulated machine (pass
+#                                           file machine=, corpus.h:
+#                                           a1200 default, a500 = 68000
+#                                           with Kickstart 1.3,
+#                                           a500-68010); the harness
+#                                           does not run on Kickstart
+#                                           1.x yet (amiga-emulation/
+#                                           README.md, "A500")
 #                      ; @rwe NAME...       RWE userlibs (libs/userlibs/
 #                                           rwe/NAME.c) in blitz2:userlibs/
 #                                           rwe/: ref (blitz2 2.10 of the
@@ -100,6 +108,8 @@ function(bug_orig_test bas name)
 		string(STRIP "${h}" h)
 		if(h MATCHES "^<semicolon> @configs (.+)$")
 			separate_arguments(configs UNIX_COMMAND "${CMAKE_MATCH_1}")
+		elseif(h MATCHES "^<semicolon> @machine ([a-z0-9-]+)$")
+			string(APPEND extra "machine=${CMAKE_MATCH_1}\n")
 		elseif(h MATCHES "^<semicolon> @rwe (.+)$")
 			separate_arguments(rwe UNIX_COMMAND "${CMAKE_MATCH_1}")
 		elseif(h MATCHES "^<semicolon> @pass ([a-z_]+=.*)$")
