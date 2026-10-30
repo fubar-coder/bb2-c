@@ -80,18 +80,20 @@ above does not see a difference.
   writes over curstruct and regstruct. UnlockRegistry without a lock
   goes below the stack, into the end of the token table: first the
   libfin's `Dc.l 0` (no structure), then `$0000FFFF`, which the next
-  UnlockRegistry "unlocks" (a0 = $FFFF) and overwrites with 0.
-* **LockRegistry stores its result also when it is 0.** The calls do
-  nothing then, but UnlockRegistry still pops it.
+  UnlockRegistry "unlocks" (a0 = $FFFF) and overwrites with 0 (#781).
 * **GetLibraryValue$ and GetRegistryStringVariable without a structure**
   read the type and the value at 18/24 of address 0 (CallLibrary's 0
-  does not stop them).
+  does not stop them) (#780).
 * **The string results are copied with their 0**, and a3 is left behind
-  it.
+  it (#783).
 * **SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable**
-  pass the caller's d2 as the size.
+  pass the caller's d2 as the size (#782).
 * **finit leaves regstruct and the base set:** after a new init, the
-  calls use the old structure.
+  calls use the old structure (#779).
+
+LockRegistry stores its result also when it is 0: the calls do nothing
+then, but UnlockRegistry still pops it. That is no defect, it keeps
+LockRegistry and UnlockRegistry balanced.
 
 ## DIFF
 

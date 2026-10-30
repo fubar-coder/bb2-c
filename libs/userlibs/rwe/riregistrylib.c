@@ -49,16 +49,18 @@
  *     writes over curstruct and regstruct behind it; UnlockRegistry
  *     without a lock goes below it - into the end of the token table
  *     (the libfin's Dc.l 0, then $0000FFFF: unlocked again, that is
- *     "unlocked" with a0 = $FFFF and written over with 0).
- *   - LockRegistry stores the result also when it is 0 (the following
- *     calls then do nothing, but UnlockRegistry still pops it).
+ *     "unlocked" with a0 = $FFFF and written over with 0) (#781).
  *   - GetLibraryValue$/GetRegistryStringVariable without a structure read
  *     the type and value at 18/24 of address 0 (CallLibrary's 0 does not
- *     stop them).
- *   - The string results are copied with their 0 and leave a3 behind it.
+ *     stop them) (#780).
+ *   - The string results are copied with their 0 and leave a3 behind it
+ *     (#783).
  *   - SetRegistryVariable name,value$ and SetRegistryInt/BoolVariable
- *     pass the caller's d2 as the size.
- *   - finit leaves regstruct (and the base) set.
+ *     pass the caller's d2 as the size (#782).
+ *   - finit leaves regstruct (and the base) set (#779).
+ * LockRegistry stores the result also when it is 0 (the following calls
+ * then do nothing, but UnlockRegistry still pops it): no defect, it keeps
+ * LockRegistry and UnlockRegistry balanced.
  * DIFF:
  *   - NewRegistryLibrary and InsertNewRegistryLibrary restore a3/a4
  *     after the call (the original leaves the file name in a3 and the
@@ -448,7 +450,7 @@ static ULONG retstring(const UBYTE *s)
 }
 
 /* returnstring: the value of the structure if it is a string -
-   BUG(orig): without a structure 18/24 of address 0 */
+   BUG(orig): without a structure 18/24 of address 0 (#780) */
 static ULONG returnstring(void)
 {
     UBYTE *rs = (UBYTE *)st.regstruct;
@@ -514,7 +516,7 @@ static ULONG BLITZ_ROUTINE lockregistry_c(ULONG mode BL_REG(d0))
     return r;
 }
 
-/* UnlockRegistry: pop (BUG(orig): also below the stack) */
+/* UnlockRegistry: pop (BUG(orig): also below the stack, #781) */
 static void BLITZ_ROUTINE unlockregistry_c(void)
 {
     CALL(LVO_UnlockRegistry, 0, 0, 0, 0, 0);
