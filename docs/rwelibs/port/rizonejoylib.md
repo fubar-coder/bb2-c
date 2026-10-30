@@ -34,7 +34,7 @@ All routines are C behind `BLITZ_THUNK`; no other assembler.
   (`BGT` for x1/y1, `BMI` on the word difference for x2/y2).
 * The word arithmetic of the original (`ASL.w`, `ADDQ.w` on a long
   counter, the start zone through `MOVE.b`) is kept with explicit masks,
-  so out-of-range numbers address the same places.
+  so out-of-range numbers address the same places (#878).
 * The data `endzone`, `_zonetable`, `zonetablelist`, `zones020`, `is020`
   are one packed struct in the original's order: the list entry -1 (a
   negative table number) is `_zonetable`, as in the original.
@@ -56,37 +56,44 @@ All routines are C behind `BLITZ_THUNK`; no other assembler.
 ## BUG(orig)
 
 * No routine checks a zone number for < 0 (ZoneInit, SetZone write before
-  the table), nor NewZoneTable/UseZoneTable/FreeZoneTable a negative table
-  number (entry -1 is `_zonetable` itself).
+  the table) (#873), nor NewZoneTable/UseZoneTable/FreeZoneTable a
+  negative table number (entry -1 is `_zonetable` itself) (#872).
 * NewZoneTable initialises the **current** table (`ZoneInit1` on
-  `_zonetable`), not the new one, which keeps AllocMem's garbage. If it
-  replaces a table and the AllocMem fails, the entry keeps the freed
-  block; if the replaced table is the current one, `_zonetable` points to
-  freed memory, which ZoneInit1 then writes.
+  `_zonetable`), not the new one, which keeps AllocMem's garbage (#875).
+  If it replaces a table and the AllocMem fails, the entry keeps the
+  freed block; if the replaced table is the current one, `_zonetable`
+  points to freed memory, which ZoneInit1 then writes (#874).
 * FreeZoneTable leaves the freed block in its entry (finit, or a
-  NewZoneTable of that number, frees it again) and always makes table 0
-  the current one. finit leaves all entries set, init clears only
-  entry 0: a second init/finit frees the other tables again.
+  NewZoneTable of that number, frees it again) (#868) and always makes
+  table 0 the current one (#869). finit leaves all entries set, init
+  clears only entry 0: a second init/finit frees the other tables again
+  (#871).
 * SetZone without a table returns -1 (= done); ZoneTable without a table
-  returns -1, not 0.
+  returns -1, not 0 (#876).
 * ZoneTest(start,end,x,y) finds the start zone through the low **byte**
   of start while the counter is a word: from zone 256 on it tests the
-  wrong zones under the right numbers. A start behind the table is
-  clamped to the last zone.
+  wrong zones under the right numbers (#881).
 * The 68000 test of x2/y2 uses `BMI` (the sign of x2-x), not `BLT`: wrong
-  when the difference exceeds 32767 (e.g. y1 = -32768, y2 = 32767). The
-  circle test squares word differences; the radius squared is stored as a
-  word (radius >= 256 wraps), and the 68020 mode compares radius² and
-  distance² as words (radius >= 182 fails). In the 68020 mode every zone
-  with a negative y2 is a circle, in the 68000 mode only y2 = -1.
+  when the difference exceeds 32767 (e.g. y1 = -32768, y2 = 32767)
+  (#879). The circle test squares word differences; the radius squared
+  is stored as a word (radius >= 256 wraps) (#867), and the 68020 mode
+  compares radius² and distance² as words (radius >= 182 fails) (#880).
+  In the 68020 mode every zone with a negative y2 is a circle, in the
+  68000 mode only y2 = -1 (#866).
 * GetZoneX1/Y1/X2/Y2 compare the zone **count** with the field offset
   (0/2/4/6) instead of the zone number: no range check (a table of up to
   6 zones returns -1 for some fields), the index is a word, and without a
-  table they read from address 0.
-* JHoriz(1) "right" returns d0 unchanged (the port number, upper bits
-  included); ReadJoyPad reads the joystick port for every port number
-  but 2. NewZoneTable, UseZoneTable, FreeZoneTable test the table number
-  with `BPL` on number-16 (signed, no overflow check).
+  table they read from address 0 (#870).
+* ReadJoyPad reads the joystick port for every port number but 2 (#877).
+
+Original behaviour that is no defect:
+
+* JHoriz(1) "right" returns d0 unchanged: the port number 1 (upper bits
+  included), which is also the result for "right".
+* ZoneTest clamps a start behind the table to the last zone.
+* NewZoneTable, UseZoneTable, FreeZoneTable test the table number with
+  `BPL` on number-16 (signed, no overflow check); negative numbers are
+  #872.
 
 ## Test
 

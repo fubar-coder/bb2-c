@@ -27,32 +27,36 @@
  *
  * BUG(orig):
  *   - No routine checks a zone number for < 0 (ZoneInit2, SetZone write
- *     before the table), nor NewZoneTable/UseZoneTable/FreeZoneTable a
- *     negative table number (entry -1 is _zonetable itself).
+ *     before the table) (#873), nor NewZoneTable/UseZoneTable/
+ *     FreeZoneTable a negative table number (entry -1 is _zonetable
+ *     itself) (#872).
  *   - NewZoneTable initialises the CURRENT table (ZoneInit1 on
- *     _zonetable), not the new one, which keeps AllocMem's garbage; if
- *     the old table of that number was freed and the AllocMem fails, the
- *     entry keeps the freed block.
+ *     _zonetable), not the new one, which keeps AllocMem's garbage
+ *     (#875); if the old table of that number was freed and the AllocMem
+ *     fails, the entry keeps the freed block (#874).
  *   - FreeZoneTable leaves the freed block in its entry (finit and a
- *     NewZoneTable of that number free it again) and always makes table
- *     0 the current one.  finit leaves all entries set and init clears
- *     only entry 0: a second init/finit frees the other tables again.
+ *     NewZoneTable of that number free it again) (#868) and always makes
+ *     table 0 the current one (#869).  finit leaves all entries set and
+ *     init clears only entry 0: a second init/finit frees the other
+ *     tables again (#871).
  *   - SetZone without a table returns -1 (= done); ZoneTable without a
- *     table returns -1, not 0.
+ *     table returns -1, not 0 (#876).
  *   - ZoneTest(start,end,x,y) finds the start zone through the low BYTE
  *     of start (the counter is a word): from zone 256 on it tests the
- *     wrong zones under the right numbers.
+ *     wrong zones under the right numbers (#881).
  *   - The 68000 test of x2/y2 uses BMI (the sign of x2-x), not BLT: wrong
- *     for differences beyond 32767.  The circle test squares word
+ *     for differences beyond 32767 (#879).  The circle test squares word
  *     differences; the radius squared is stored as a word (radius >= 256
- *     wraps), and the 68020 mode compares the distance as a word too.
+ *     wraps) (#867), and the 68020 mode compares the distance as a word
+ *     too (#880).
  *   - GetZoneX1/Y1/X2/Y2 compare the zone count with the field offset
  *     (0/2/4/6) instead of the zone number: no range check (a table of up
  *     to 6 zones returns -1 for some fields), the index is a word, and
- *     without a table they read from address 0.
- *   - JHoriz(1) "right" returns d0 unchanged (the port number 1, upper
- *     bits included); ReadJoyPad reads the joystick port for every port
- *     number but 2.
+ *     without a table they read from address 0 (#870).
+ *   - ReadJoyPad reads the joystick port for every port number but 2
+ *     (#877).
+ * Original behaviour that is no defect: JHoriz(1) "right" returns d0
+ * unchanged (the port number 1, which is also the result for "right").
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -228,7 +232,7 @@ BLITZ_LIBFIN();
 
 /* endzone, _zonetable, zonetablelist, zones020, is020 in the original's
    order: the entry -1 of the list is _zonetable (negative table numbers,
-   BUG(orig)) */
+   BUG(orig) #872) */
 static struct BL_PACKED {
     UWORD endzone;                                      /* Dc.w 1, unused */
     ULONG *zonetable;                                   /* _zonetable */
@@ -353,7 +357,7 @@ static ULONG doset(ULONG n, UWORD x1, UWORD y1, UWORD x2, UWORD y2)
     WORD *z;
 
     if (!zt)
-        return (ULONG)-1;                           /* _nozones: BUG(orig) */
+        return (ULONG)-1;                           /* _nozones: BUG(orig) #876 */
     if (MI(zt[0] - 1, n))
         return 0;
     z = zone(zt, ASLW(n, 3));
@@ -409,7 +413,7 @@ static ULONG testrange(ULONG d0, ULONG d1, UWORD x, UWORD y)
     if (MI(last, d1) || MI(d1, d0))
         return (ULONG)-1;
     end = (UWORD)(d1 + 1);
-    z = zone(zt, (UWORD)((UBYTE)d0 << 3));              /* MOVE.b d0,d4: BUG(orig) */
+    z = zone(zt, (UWORD)((UBYTE)d0 << 3));              /* MOVE.b d0,d4: BUG(orig) #881 */
     do {
         WORD x1 = z[0], x2 = z[1], y1 = z[2], y2 = z[3];
 
@@ -420,7 +424,7 @@ static ULONG testrange(ULONG d0, ULONG d1, UWORD x, UWORD y)
                 ULONG d = (ULONG)bl_muls_w(dx, dx) + (ULONG)bl_muls_w(dy, dy);
                 ULONG r = (UWORD)x2;                    /* ANDI.l #$ffff,d6 */
 
-                if (zd.zones020 ? (WORD)r >= (WORD)d    /* CMP.w: BUG(orig) */
+                if (zd.zones020 ? (WORD)r >= (WORD)d    /* CMP.w: BUG(orig) #880 */
                                 : (LONG)r >= (LONG)d)   /* CMP.l:BGE */
                     return d0;
             } else if (zd.zones020) {
@@ -428,7 +432,7 @@ static ULONG testrange(ULONG d0, ULONG d1, UWORD x, UWORD y)
                 if ((WORD)x >= x1 && (WORD)x <= x2 && (WORD)y >= y1 && (WORD)y <= y2)
                     return d0;
             } else {
-                /* x1 > x, y1 > y: BGT; x2 - x, y2 - y < 0: BMI (BUG(orig)) */
+                /* x1 > x, y1 > y: BGT; x2 - x, y2 - y < 0: BMI (BUG(orig) #879) */
                 if (!(x1 > (WORD)x) && !(y1 > (WORD)y) && !MIW(x2, x) && !MIW(y2, y))
                     return d0;
             }
@@ -462,7 +466,7 @@ static ULONG BLITZ_ROUTINE testzonerange_c(ULONG s BL_REG(d0), ULONG e BL_REG(d1
 
 /* --------------------------------------------------------- zone tables */
 
-/* ZoneTable: the current table, -1 if none (BUG(orig)) */
+/* ZoneTable: the current table, -1 if none (BUG(orig) #876) */
 static ULONG BLITZ_ROUTINE zonetable_c(void)
 {
     return zd.zonetable ? (ULONG)zd.zonetable : (ULONG)-1;
@@ -488,7 +492,7 @@ static ULONG BLITZ_ROUTINE newzonetable_c(ULONG n BL_REG(d0), ULONG num BL_REG(d
         return 0;
     *e = mem;
     mem[0] = num;
-    zoneinit1_c();                                      /* BUG(orig): _zonetable */
+    zoneinit1_c();                                      /* BUG(orig): _zonetable (#875) */
     return (ULONG)-1;
 }
 
@@ -516,7 +520,7 @@ static ULONG BLITZ_ROUTINE freezonetable_c(ULONG n BL_REG(d0))
     e = entry(n);
     if (!*e)
         return 0;
-    free_mem(*e);                                       /* BUG(orig): stays */
+    free_mem(*e);                                       /* BUG(orig): stays (#868) */
     zd.zonetable = zd.list[0];
     return (ULONG)-1;
 }
@@ -553,7 +557,7 @@ static ULONG zoneinfo(ULONG d0, UWORD off)
 {
     const ULONG *zt = zd.zonetable;                     /* 0: reads address 0 */
 
-    if (!((LONG)zt[0] > (LONG)off))                     /* BUG(orig): count vs offset */
+    if (!((LONG)zt[0] > (LONG)off))                     /* BUG(orig): count vs offset (#870) */
         return (ULONG)-1;
     return (d0 & 0xffff0000UL)
         | *(const UWORD *)((const UBYTE *)(zt + 1) + (WORD)((UWORD)(d0 << 3) + off));
@@ -644,7 +648,7 @@ static ULONG BLITZ_ROUTINE jvert_c(UWORD port BL_REG(d0))
     return 0;
 }
 
-/* JHoriz(port) (d0.b): port 1 "right" returns d0 unchanged (BUG(orig)) */
+/* JHoriz(port) (d0.b): port 1 "right" returns d0 unchanged (= 1, see above) */
 static ULONG BLITZ_ROUTINE jhoriz_c(ULONG d0 BL_REG(d0))
 {
     UWORD d;
