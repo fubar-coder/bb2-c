@@ -28,29 +28,34 @@
  *   - No command checks the list number or that the list has a current
  *     node (only DelListItem does): AddListItem, SetListItem,
  *     NextListItem, PrevListItem and AddFirstListItem on an empty list
- *     read and write from address 0 on.
- *   - InitList does not free a list that is already there.
+ *     read and write from address 0 on (#732, #733).
+ *   - InitList does not free a list that is already there (#731).
  *   - The size: a word of less than 8 in front of the variable gives a
  *     size of almost 4 GB (the allocation fails), exactly 8 a size of 0,
- *     which CopyByte takes as 2^32 bytes.
+ *     which CopyByte takes as 2^32 bytes (#736).
  *   - AddListItem inserts behind the current node without setting the
- *     prev of the node behind it (it keeps pointing to the current one);
- *     its size field is the size of the last variable any command looked
- *     at (or of the last node DelListItem deleted), its data 0.
+ *     prev of the node behind it (it keeps pointing to the current one)
+ *     (#727); its size field is the size of the last variable any command
+ *     looked at (or of the last node DelListItem deleted), its data 0
+ *     (#735).
  *   - SetListItem gives the node a new copy without freeing the old one
- *     and without setting its size field; GetListItem copies as many
- *     bytes as the variable has, not as the node's data has.
+ *     and without setting its size field (#734, #735); GetListItem copies
+ *     as many bytes as the variable has, not as the node's data has (#730).
  *   - AddFirstListItem writes the new node into the old first node's
- *     next (not prev; the list becomes a loop), leaves prev, pad, data
- *     and size of the new node as the allocation left them (not
- *     cleared), does not touch the last node, and returns list# * 4.
+ *     next (not prev; the list becomes a loop) (#724), leaves prev, pad,
+ *     data and size of the new node as the allocation left them (not
+ *     cleared) (#726), does not touch the last node, and returns list# * 4
+ *     (#725).
  *   - DelListItem still reads the nodes of v0.9 (no pad): data is the
  *     long at offset 8 (the pad word and the upper word of the data
  *     pointer), size the long at 14; so it frees a wrong address (memlib:
- *     "Unable to Free Memory") and the data is lost.  Deleting the first
- *     node clears the next (not prev) of the node behind it, the list
- *     ends there; deleting the only node frees nothing but returns 0.
- *     It sets the size of the last variable to that of the node.
+ *     "Unable to Free Memory") and the data is lost (#729).  Deleting the
+ *     first node clears the next (not prev) of the node behind it, the
+ *     list ends there (#728).  It sets the size of the last variable to
+ *     that of the node (#735).
+ *
+ * DelListItem on the only node frees nothing and returns 0: not a defect,
+ * the command refuses to delete the last node and says so with 0.
  */
 #include "blitzlib.h"
 
@@ -269,7 +274,7 @@ ULONG BLITZ_ROUTINE c_addlistitem(ULONG list BL_REG(d0))
     if (!node)
         return 0;
     nodeptr = node;
-    cur = TAB(CURRENT);                 /* BUG(orig): 0 not checked */
+    cur = TAB(CURRENT);                 /* BUG(orig): 0 not checked (#733) */
     _next = NL(cur, NODENEXT);
     _prev = NL(cur, NODEPREV);
     if (!_next)
@@ -278,13 +283,13 @@ ULONG BLITZ_ROUTINE c_addlistitem(ULONG list BL_REG(d0))
     TAB(CURRENT) = nodeptr;
     _oldnext = NL(cur, NODENEXT);
     NL(cur, NODENEXT) = nodeptr;
-    /* BUG(orig): the prev of the node behind (_oldnext) is not set */
+    /* BUG(orig): the prev of the node behind (_oldnext) is not set (#727) */
     node = nodeptr;
     NL(node, NODENEXT) = _oldnext;
     NL(node, NODEPREV) = cur;
     NW(node, NODEPAD) = 0;
     NL(node, NODEDAT) = 0;
-    NL(node, NODELEN) = _size;          /* BUG(orig): the last size */
+    NL(node, NODELEN) = _size;          /* BUG(orig): the last size (#735) */
     return (ULONG)-1;
 }
 
@@ -297,7 +302,7 @@ ULONG BLITZ_ROUTINE c_setlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
     mem = globalloc(getvarsize(var));
     if (!mem)
         return 0;
-    /* BUG(orig): the old copy is not freed, the size not set */
+    /* BUG(orig): the old copy is not freed, the size not set (#734, #735) */
     NL(TAB(CURRENT), NODEDAT) = mem;
     copybyte(myvar, mem, _size);
     return (ULONG)-1;
@@ -366,7 +371,7 @@ ULONG BLITZ_ROUTINE c_addlastitem(ULONG list BL_REG(d0))
 }
 
 /* AddFirstListItem list#: a new node in front of the first one;
-   BUG(orig): see above, the result is list# * 4 */
+   BUG(orig): see above, the result is list# * 4 (#724, #725, #726) */
 ULONG BLITZ_ROUTINE c_addfirstitem(ULONG list BL_REG(d0))
 {
     ULONG node;
@@ -379,13 +384,13 @@ ULONG BLITZ_ROUTINE c_addfirstitem(ULONG list BL_REG(d0))
     listnum = list << 2;
     _next = TAB(FIRST);
     TAB(FIRST) = nodeptr;
-    NL(_next, NODENEXT) = nodeptr;      /* BUG(orig): next, not prev */
+    NL(_next, NODENEXT) = nodeptr;      /* BUG(orig): next, not prev (#724) */
     TAB(CURRENT) = nodeptr;
     NL(nodeptr, NODENEXT) = _next;
     return listnum;
 }
 
-/* DelListItem list#: free the current node; BUG(orig): see above */
+/* DelListItem list#: free the current node; BUG(orig): see above (#729) */
 ULONG BLITZ_ROUTINE c_dellistitem(ULONG list BL_REG(d0))
 {
     ULONG node;
@@ -408,7 +413,7 @@ ULONG BLITZ_ROUTINE c_dellistitem(ULONG list BL_REG(d0))
     if (!_prev) {
         if (!_next)
             return 0;                   /* the only node */
-        NL(_next, NODENEXT) = 0;        /* BUG(orig): next, not prev */
+        NL(_next, NODENEXT) = 0;        /* BUG(orig): next, not prev (#728) */
         TAB(FIRST) = _next;
         TAB(CURRENT) = _next;
         globfree(nodeptr, NODESIZE);

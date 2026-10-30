@@ -36,29 +36,31 @@ changes d1, d2, a0, a1, InitList also a2).
 * No command checks list# or (except DelListItem) whether the list has a
   current node: on an empty list AddListItem, SetListItem, GetListItem,
   NextListItem, PrevListItem and AddFirstListItem read and write from
-  address 0 on.
-* InitList does not free a list that is already there.
+  address 0 on (#732, #733).
+* InitList does not free a list that is already there (#731).
 * A size word below 8 in front of the variable gives a size of almost
   4 GB (the allocation fails); exactly 8 gives 0, which CopyByte takes
-  as 2^32 bytes.
+  as 2^32 bytes (#736).
 * AddListItem does not set the prev of the node behind the new one (it
-  still points to the current one); the new node's size field is the
-  size of the last variable a command looked at (or of the last node
-  DelListItem read).
+  still points to the current one) (#727); the new node's size field is
+  the size of the last variable a command looked at (or of the last node
+  DelListItem read) (#735).
 * SetListItem does not free the old copy and does not set the size
-  field; GetListItem copies as many bytes as the variable has, not as
-  the copy has.
+  field (#734, #735); GetListItem copies as many bytes as the variable
+  has, not as the copy has (#730).
 * AddFirstListItem writes the new node into the old first node's *next*
-  (not prev: the list becomes a loop), leaves prev, pad, data and size
-  of the new node as the allocation left them (not cleared), does not
-  touch the last node and returns list# * 4.
+  (not prev: the list becomes a loop) (#724), leaves prev, pad, data and
+  size of the new node as the allocation left them (not cleared) (#726),
+  does not touch the last node and returns list# * 4 (#725).
 * DelListItem still reads the v0.9 node (without pad): its data is the
   long at offset 8 (the pad word and the upper word of the data
   pointer), its size the long at 14. So it frees a wrong address (with
   memlib: the runtime error "Unable to Free Memory") and the copy is
-  lost. Deleting the first node clears the *next* (not prev) of the node
-  behind it (the list ends there); deleting the only node frees nothing
-  but returns 0.
+  lost (#729). Deleting the first node clears the *next* (not prev) of
+  the node behind it (the list ends there) (#728).
+
+DelListItem on the only node frees nothing and returns 0; that is not a
+defect (the command refuses to delete the last node and reports it).
 
 **DIFF:** none in the tested range. list# outside 0..4 indexes past the
 tables: into the code behind them in the original, into other data in
