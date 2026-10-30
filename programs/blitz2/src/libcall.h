@@ -118,7 +118,7 @@ struct blitzlib *tokejsr2(UWORD token);
 /* blitz2.s:11466 makelibsub - generate a call of lib sub `off` (entry =
    (UBYTE*)lib + 6 + off): parameter register loads (fetchregs/toreg),
    error-check routines (debugga), blitz/amiga mode checks, then jsr or
-   inline copy.  Saves/restores the current lib (libisat).  Returns lib
+   inline copy.  The lib is passed down (asm: global libisat).  Returns lib
    (asm a2).  Uses uselib (asm a1 clobbered).
    Original: toreg's max-count/used forms (spec low byte 3/4) test bit 7
    of the register byte for "address register" while makeregop tests

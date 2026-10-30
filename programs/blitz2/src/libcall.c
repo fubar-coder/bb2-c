@@ -435,7 +435,7 @@ void pushdo(void)
 /* blitz2.s:11057 pushput - replace pulled out code! */
 void pushput(void)
 {
-    ULONG len = pushclen, putpc, src, dst;
+    ULONG len = pushclen, putpc, src, dst, delta;
     struct offnode *o;
     UWORD n;
 
@@ -459,12 +459,12 @@ void pushput(void)
     } while (n-- != 0);
     /* OK, now all offsets between pushdooff and pushoff must be adjusted
        by putpc-pushpc */
-    putpc -= pushpc;
-    if (putpc) {
+    delta = putpc - pushpc;
+    if (delta) {
         for (o = pushdooff; o != pushoff; o = o->next) {
             /* address in prog.; leave offs >= lib */
             if (o->offset + pcat < libat)
-                o->offset += putpc;
+                o->offset += delta;
         }
         /* Whew! */
     }
@@ -484,32 +484,30 @@ static void muld1once(UWORD n)
 /* blitz2.s:11106 muld1 - generate code for #mul.w*regat */
 void muld1(UWORD mul)
 {
-    UWORD save = mul, bits = 0, shift = 0;
+    UWORD bits = 0, shift = 0;
     WORD bit;
 
     for (bit = 15; bit >= 0; bit--) { /* .shloop (dbf) */
-        if (mul & 0x8000) {
+        if (mul & (1U << bit)) {
             bits++;
             shift = bit;
         }
-        mul <<= 1;
     }
     if (bits != 1) {
         /* .domul */
         pokewd((UWORD)(regat << 9) | 0xc0fc);
-        pokewd(save);
+        pokewd(mul);
         return;
     }
-    mul = shift;
-    if (mul == 0)
+    if (shift == 0)
         return;
-    if (mul < 8) {
-        muld1once(mul);
+    if (shift < 8) {
+        muld1once(shift);
         return;
     }
-    /* BUG(orig) (#15): mul == 8 (x256) emits lsl #8 twice (count field 0 = 8),
-       i.e. x65536.  Kept. */
-    muld1once(mul - 8);
+    /* BUG(orig) (#15): shift == 8 (x256) emits lsl #8 twice (count field
+       0 = 8), i.e. x65536.  Kept. */
+    muld1once(shift - 8);
     muld1once(0);
 }
 
@@ -746,37 +744,30 @@ struct blitzlib *tokejsr(UWORD token)
     return makelibsub(lib, (ULONG)(sub - (UBYTE *)lib));
 }
 
-/* blitz2.s:11464 libisat - lib of the call being generated */
-static struct blitzlib *libisat;
+/* blitz2.s:11464 libisat - lib of the call being generated.  DIFF: not a
+   global any more; makelibsub/userjsr/cutejsr pass it down to doajsr2 as
+   the parameter `lib` (the asm pushed and restored the global around
+   every nested call, so the value seen is the same). */
 
-static void makelsub3(UBYTE *sub);
+static void makelsub3(struct blitzlib *lib, UBYTE *sub);
 
 /* blitz2.s:11444 userjsr - a2 = lib base, a1 = start of #parameters */
 struct blitzlib *userjsr(struct blitzlib *lib, UBYTE *params)
 {
-    struct blitzlib *old = libisat, *r;
     UBYTE *sub;
 
-    libisat = lib;
     sub = params + 2 + (W_(params) & 255);
     sub = (UBYTE *)(((ULONG)sub + 1) & ~1UL);
     /* makelsub2 */
-    makelsub3(sub);
-    r = libisat;
-    libisat = old;
-    return r;
+    makelsub3(lib, sub);
+    return lib;
 }
 
 /* blitz2.s:11459 cutejsr */
 struct blitzlib *cutejsr(struct blitzlib *lib, UBYTE *sub)
 {
-    struct blitzlib *old = libisat, *r;
-
-    libisat = lib;
-    makelsub3(sub);                 /* makelsub2 */
-    r = libisat;
-    libisat = old;
-    return r;
+    makelsub3(lib, sub);            /* makelsub2 */
+    return lib;
 }
 
 /* blitz2.s:11466 makelibsub - lib in a2, sub offset in d1.
@@ -784,45 +775,39 @@ struct blitzlib *cutejsr(struct blitzlib *lib, UBYTE *sub)
    save/restore around makelsub3 here and in userjsr/cutejsr. */
 struct blitzlib *makelibsub(struct blitzlib *lib, ULONG off)
 {
-    struct blitzlib *old = libisat, *r;
-
-    libisat = lib;
-    makelsub3((UBYTE *)lib + 6 + off);
-    r = libisat;
-    libisat = old;
-    return r;
+    makelsub3(lib, (UBYTE *)lib + 6 + off);
+    return lib;
 }
 
 static UBYTE *fetchregs(UBYTE *p);
-static void doajsrrout(ULONG off);
-static void doajsr(ULONG off);
+static void doajsrrout(struct blitzlib *lib, ULONG off);
+static void doajsr(struct blitzlib *lib, ULONG off);
 static void makebtst(UWORD tok);
 
 /* blitz2.s:11474 makelsub3 */
-static void makelsub3(UBYTE *sub)
+static void makelsub3(struct blitzlib *lib, UBYTE *sub)
 {
-    ULONG off;
+    ULONG before, rout, after;
 
     sub = fetchregs(sub);
     if (DEBUGGA_B) {
-        off = L_(sub) | L_(sub + 8);
-        if (off & ~1UL) {
-            off = L_(sub);
+        if ((L_(sub) | L_(sub + 8)) & ~1UL) {
+            before = L_(sub);       /* error check before the routine */
             sub += 4;
-            if (off & 1) {
+            if (before & 1) {
                 if (blitzmode >= 0)
                     blitzerr();
                 if (DEBUGGA_B)
                     makebtst(inblitz);
-                off &= ~1UL;        /* .skiptt2 */
+                before &= ~1UL;     /* .skiptt2 */
             }
             /* .skiptt */
-            doajsr(off);
-            off = L_(sub);
+            doajsr(lib, before);
+            rout = L_(sub);
             sub += 4;
-            doajsrrout(off);
-            off = L_(sub);
-            doajsr(off);
+            doajsrrout(lib, rout);
+            after = L_(sub);        /* error check after the routine */
+            doajsr(lib, after);
             return;                 /* .more */
         }
     }
@@ -833,12 +818,12 @@ static void makelsub3(UBYTE *sub)
             blitzerr();
     }
     /* .penis */
-    doajsrrout(L_(sub + 4));
+    doajsrrout(lib, L_(sub + 4));
 }
 
 /* blitz2.s:11518 doajsrrout - Here, we suss out bit 0 to see if this can
    only happen in Amiga mode. */
-static void doajsrrout(ULONG off)
+static void doajsrrout(struct blitzlib *lib, ULONG off)
 {
     if (off & 1) {
         if (blitzmode < 0)
@@ -847,25 +832,27 @@ static void doajsrrout(ULONG off)
             makebtst(inamiga);
         off &= ~1UL;                /* .doajsr2 */
     }
-    doajsr(off);
+    doajsr(lib, off);
 }
 
-static void doajsr2(ULONG off);
+static void doajsr2(struct blitzlib *lib, ULONG off);
 
 /* blitz2.s:11535 doajsr - asm: Z flag from the caller's tst.l/move.l d1 */
-static void doajsr(ULONG off)
+static void doajsr(struct blitzlib *lib, ULONG off)
 {
     if (off)
-        doajsr2(off);
+        doajsr2(lib, off);
 }
 
-/* blitz2.s:11635 inline - inline code length (asm name: inline) */
+/* blitz2.s:11635 inline - inline code length (asm name: inline).  Kept
+   global on purpose: a nested makebtst (below) recurses into doajsr2 and
+   clears it, as in the original (a local would change the generated
+   code in debug mode). */
 static UWORD inline_;
 
 /* blitz2.s:11541 doajsr2 - d1 is an offset from start of lib (libisat) */
-static void doajsr2(ULONG off)
+static void doajsr2(struct blitzlib *lib, ULONG off)
 {
-    struct blitzlib *lib = libisat;
     UBYTE *p;
     UBYTE b;
 
@@ -978,18 +965,18 @@ static UWORD makeregop(UWORD reg);
 /* blitz2.s:11680 toreg .sendmd - move.w #(maxinfo word + add),reg */
 static void sendmd(struct blitzlib *lib, UWORD regspec, LONG off, UWORD add)
 {
+    UWORD reg = regspec >> 8;
     UWORD op = 0x303c;              /* move.w #x,dn */
 
-    regspec >>= 8;
-    if (regspec & 0x80) {
+    if (reg & 0x80) {
         op = 0x307c;                /* move.w #x,an */
         /* original: bit 7 means An here, bit 4 in makeregop - so this
            a6 test can never be true (no library needs it). */
-        if (regspec == 0x16)
+        if (reg == 0x16)
             lasta6 = -1;
     }
     /* .skipad */
-    op |= (regspec & 7) << 9;
+    op |= (reg & 7) << 9;
     pokewd(op);
     pokewd(W_((UBYTE *)lib + lib->maxinfo + off) + add);
 }
@@ -999,7 +986,7 @@ static void toreg(UWORD libnum, UWORD regspec)
 {
     struct blitzlib *lib;
     UBYTE *e;
-    UWORD spec, dn, op;
+    UWORD reg, maxoff, dn, op;
     WORD sh;
 
     if (regspec < 0xff00) {
@@ -1018,6 +1005,7 @@ static void toreg(UWORD libnum, UWORD regspec)
     }
     /* .yeah */
     lib = uselib(libnum);
+    reg = regspec >> 8;
     switch ((UBYTE)regspec) {
     case 0:
         goto norm;
@@ -1031,21 +1019,19 @@ static void toreg(UWORD libnum, UWORD regspec)
     }
 
     /* .notnmax */
-    spec = regspec;
-    if ((regspec >> 8) == 0x16)
+    if (reg == 0x16)
         lasta6 = -1;
     /* .isnta6 */
-    libnum = (UWORD)LIBMAX_VAROFF(lib);
-    pokewd(makeregop(regspec >> 8));
-    regspec = spec;
+    maxoff = (UWORD)LIBMAX_VAROFF(lib);
+    pokewd(makeregop(reg));
     if ((BYTE)regspec < 0) {
         /* <0 - the rest is a register spec.
            this reg is used to calc a max item (must be dn) */
-        pokewd(libnum);             /* move.l x(a5),dn */
+        pokewd(maxoff);             /* move.l x(a5),dn */
         e = LIBMAX_E(lib);
-        libnum = regspec & 7;
+        dn = regspec & 7;
         if (DEBUGGA_B) {
-            pokewd((UWORD)(libnum << 9) | 0xb07c);  /* cmp #x,dn */
+            pokewd((UWORD)(dn << 9) | 0xb07c);      /* cmp #x,dn */
             pokewd(W_(e - 4));
             pokel(tl(maxchk));                      /* bcs */
             tokejsr(maxerr);
@@ -1053,44 +1039,42 @@ static void toreg(UWORD libnum, UWORD regspec)
         /* .norerr */
         sh = (WORD)W_(e - 2);       /* shift amount */
         while ((UWORD)sh >= 9) {    /* .shloop */
-            pokewd(libnum | lsldn[0]); /* lsl.w #8,dn (count field 0) */
+            pokewd(dn | lsldn[0]);  /* lsl.w #8,dn (count field 0) */
             sh -= 8;
         }
         /* .simp */
-        dn = libnum;
         if (sh)
-            pokewd(libnum | (UWORD)((sh & 7) << 9) | lsldn[0]);
+            pokewd(dn | (UWORD)((sh & 7) << 9) | lsldn[0]);
         /* .simp2: Shifts are done, add'em to the opcode */
         op = (dn & 7) | maxdo[0];
-        op |= (spec << 1) & 0xe00;
+        op |= (regspec << 1) & 0xe00;
         pokewd(op);                 /* adda.w dn,an */
         return;
     }
     /* .skippy1 */
     if ((UBYTE)regspec != 1) {
         /* select used of a max block */
-        libnum += 4;
+        maxoff += 4;
         if (DEBUGGA_B) {
-            pokewd(libnum);
-            pokel(((ULONG)theretest[0] << 16) | libnum);
+            pokewd(maxoff);
+            pokel(((ULONG)theretest[0] << 16) | maxoff);
             pokel(tl(&theretest[2]));
             pokel(tl(&theretest[4]));
             return;
         }
     }
     /* .skippy: select base of a max block */
-    pokewd(libnum);
+    pokewd(maxoff);
     return;
 
 norm:
-    regspec >>= 8;
-    if ((UBYTE)regspec == 0x16) {
+    if ((UBYTE)reg == 0x16) {
         if ((UWORD)lib->varoff == (UWORD)lasta6)
             return;                 /* .sk */
         lasta6 = lib->varoff;
     }
     /* .nota6 */
-    op = makeregop(regspec);
+    op = makeregop(reg);
     if (lib->varkind < 0) {
         if (op == stackop[0])
             stackuse -= 2;
@@ -1292,7 +1276,7 @@ static BOOL closeinc(struct include *inc)
 BOOL readinc(void)
 {
     struct include *inc;
-    UBYTE *line, *end, *p;
+    UBYTE *line, *end, *p, *src, *dst;
     LONG got;
 
     for (;;) {
@@ -1306,11 +1290,11 @@ BOOL readinc(void)
             }
         }
         /* blitz2.s:11988 readpend - o.k., no 0's past where we're at! */
-        p = inc->buf;
-        while (line < end)
-            *p++ = *line++;
-        inc->nbuf = (UWORD)(p - inc->buf);   /* chars in there */
-        got = Read(inc->fh, p, (LONG)(UWORD)((INCLEN - 1) - inc->nbuf));
+        dst = inc->buf;
+        for (src = line; src < end; )
+            *dst++ = *src++;
+        inc->nbuf = (UWORD)(dst - inc->buf); /* chars in there */
+        got = Read(inc->fh, dst, (LONG)(UWORD)((INCLEN - 1) - inc->nbuf));
         if (got < 0)
             readerr();
         inc->nbuf += (UWORD)got;
