@@ -20,15 +20,16 @@
  * BUG(orig):
  *   - The loops count with SUBQ.l #1 before a BPL loop whose first pass
  *     is unconditional: a length of 0 (or one above 2^31) processes one
- *     byte, Decrypt the one at memadr-1.
- *   - Encrypt's random wheels: `ALibJsr Rnd` is the first form of Rnd,
- *     the one without a range (Quick 0..1, the fraction in the low word):
- *     the ranges 256, 65535 and -1 loaded into d0 are ignored; each wheel
- *     is the low byte of the second of two Rnd calls.
+ *     byte, Decrypt the one at memadr-1 (#630).
  *   - Decrypt mode 1 adds the length's bytes to the wheels without the
  *     carries between them: if w1 + (length & $FF) overflows (or w2 + the
  *     next byte), the state is one step off in w2 (w3) and the data is not
- *     decrypted correctly.
+ *     decrypted correctly (#629).
+ * Encrypt's random wheels: `ALibJsr Rnd` is the first form of Rnd, the
+ * one without a range (Quick 0..1, the fraction in the low word): the
+ * ranges 256, 65535 and -1 loaded into d0 are ignored; each wheel is the
+ * low byte of the second of two Rnd calls.  No defect: the wheels are
+ * random bytes either way.
  */
 #include "blitzlib.h"
 
@@ -72,7 +73,7 @@ BLITZ_LIBFIN();
 static UBYTE wheels[3];
 
 /* the loop counter: SUBQ.l #1,d1 first, then the body until SUBQ.l #1,d1
-   makes it negative (BPL) - at least one pass (BUG(orig), see above) */
+   makes it negative (BPL) - at least one pass (BUG(orig) (#630), see above) */
 #define NEG(n) ((n) & 0x80000000UL)
 
 /* Encrypt memadr,length,wheel1,wheel2,wheel3 (d0-d4; ANDI.l #$ff) */
@@ -98,7 +99,7 @@ static ULONG BLITZ_ROUTINE encrypt_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1),
 
 /* two Rnd calls (the second gets the first's result in d0), the low byte
    of the second; `range` is what the original loads into d0 (ignored by
-   the first form of Rnd, BUG(orig)) */
+   the first form of Rnd, no defect: see above) */
 static UBYTE rndwheel(ULONG range)
 {
     struct bl_regs r = { .d0 = range };
@@ -142,7 +143,7 @@ static ULONG BLITZ_ROUTINE decrypt_c(UBYTE *base BL_REG(d0), ULONG len BL_REG(d1
 
 /* Decrypt memadr,length,wheel1,wheel2,wheel3,mode (d0-d5): mode 1 (the
    low byte, CMPI.b) adds the length's bytes 0..2 to the wheels, each
-   without carry (BUG(orig)) */
+   without carry (BUG(orig) (#629)) */
 static ULONG BLITZ_ROUTINE decrypt2_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1),
                                      UWORD w1 BL_REG(d2), UWORD w2 BL_REG(d3),
                                      UWORD w3 BL_REG(d4), UWORD mode BL_REG(d5))

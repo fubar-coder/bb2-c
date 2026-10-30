@@ -30,16 +30,19 @@ original changes in places – more than the original, never less.
 
 * The loops count with `SUBQ.l #1` before a `BPL` loop whose first pass
   is unconditional: a length of 0 processes one byte (Decrypt the byte at
-  memadr-1), and so does a length above 2^31. (The first, byte-identical
-  port said 2^32 bytes; the test shows one byte, in the original too.)
-* `ALibJsr Rnd` calls the first form of `Rnd` (without a range, Quick
-  0..1): the ranges 256, 65535 and -1 that Encrypt loads into d0 have no
-  effect; each wheel is the low byte of the second of two calls.
+  memadr-1), and so does a length above 2^31 (#630). (The first,
+  byte-identical port said 2^32 bytes; the test shows one byte, in the
+  original too.)
 * Decrypt mode 1 adds the length's bytes 0..2 to the wheels separately,
   without the carries between them: whenever wheel 1 + the low byte of the
   length overflows (or wheel 2 + the next byte), the end state is one step
   off and the data is not decrypted correctly. The help text documents
-  `mode` without saying what it does.
+  `mode` without saying what it does (#629).
+
+Not a defect (kept): `ALibJsr Rnd` calls the first form of `Rnd`
+(without a range, Quick 0..1): the ranges 256, 65535 and -1 that Encrypt
+loads into d0 have no effect; each wheel is the low byte of the second of
+two calls - random bytes either way.
 
 ## Test
 

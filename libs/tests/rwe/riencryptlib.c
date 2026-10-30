@@ -7,9 +7,9 @@
  *
  * Covered: every form - Encrypt with wheels and with random wheels,
  * Decrypt with and without mode (0, 1, $101, 2), GetWheel 0..4 and $101;
- * lengths 0 (BUG(orig): one byte), 1, 7, 300 and 700 with wheel values
+ * lengths 0 (BUG(orig) (#630): one byte), 1, 7, 300 and 700 with wheel values
  * that carry into wheel 2 and 3, Decrypt mode 1 with a length whose byte
- * addition overflows (BUG(orig)); buffer with guards, wheels, registers.
+ * addition overflows (BUG(orig) (#629)); buffer with guards, wheels, registers.
  * Encrypt without wheels takes them from vallib's Rnd (hardware timing):
  * not comparable between the sets, so each set's result is checked
  * itself - wheels from GetWheel, Decrypt with them restores the data.
