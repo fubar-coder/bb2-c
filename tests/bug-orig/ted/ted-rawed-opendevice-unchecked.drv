@@ -1,0 +1,10 @@
+; ted-rawed-opendevice-unchecked (#373): the key conversion (rawed.obj)
+; opens console.device without testing the result and converts keys
+; through the device base.  TED alone under inject: OpenDevice of
+; console.device fails.  Correct (the fix of the issue: fail5): TED ends;
+; the original calls RawKeyConvert through a null base and crashes.
+; @source none
+; @command TEDAB:tools/inject opendevfail=console.device blitz2:ted
+; @expect stdout "inject: opendevfail: 1 opens failed"
+timeout 20
+wait exit

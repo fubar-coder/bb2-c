@@ -1,0 +1,13 @@
+; ted-outmem-memstack-zero (#370): outmem continues with the stack of
+; the main loop's dispatch, memstack, which is 0 before the first
+; dispatch.  TED alone under inject (alerts answered), the start file has
+; one line of 36 characters (46 bytes per line item); its AllocMem fails.
+; Correct (the fix of the issue): the out of memory alert, then TED ends
+; with a failure; the original continues with a7 = 0 and crashes.
+; @file bo.bas "abcdefghijklmnopqrstuvwxyz0123456789\n"
+; @source F bo.bas
+; @command TEDAB:tools/inject alerts allocfail=46-46/1 blitz2:ted @FILE@
+; @expect stdout "inject: allocfail: 1 allocations failed"
+; @expect stdout "inject: alert:"
+timeout 20
+wait exit
