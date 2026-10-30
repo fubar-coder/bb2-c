@@ -1,0 +1,20 @@
+; ted-readline-tab-column-tokens (#377): readline expands a TAB from the
+; number of bytes stored so far, a token counting 2 instead of the length
+; of its name.  A tokenised file, line 2: NPrint (token $DD82), TAB, "a";
+; tab size 8 (@opts); SAVE.  Correct: NPrint, 2 blanks, "a" (a at column 9);
+; the original expands the TAB from column 2: NPrint, 6 blanks, "a".
+; @file bo.bb2 "x\x00\xdd\x82\ta\x00"
+; @source F bo.bb2
+; @opts tabstop=8
+; @expect data bo.bb2 "x\x00\xdd\x82  a\x00"
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+dump loaded
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+menu 0 9
+wait exit
