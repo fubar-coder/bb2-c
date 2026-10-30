@@ -287,9 +287,20 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   `libs/acidlibs/dhandlerlib.c`, byte-identical to the CD's library
   (header in C, the rest assembler: process segment template, relocation
   order; `asmcmp_dhandlerlib`); `prebuilt/` removed.
-* **Warnings of `blitzlibcheck`:** 73 warnings (references into the error
-  check area, as with `mkblitzlib.py`) on every rebuild of the affected
-  libraries – if needed, behind an option.
+* **Warnings of `blitzlibcheck`:** 73 warnings per acidlibs set (and
+  three of rigtmenulib): normal library code refers into the error check
+  area – a command that fails at run time (e.g. `Screen`: `OpenScreen`
+  fails, `BEQ err1`) jumps to an error routine there, or raises an error
+  with a text there (screenslib `err12`). Without "Runtime Errors" blitz2
+  leaves the area out, so the jump goes behind the library. Original bugs
+  with their issues (e.g. #70, #185, #192, #251). The fix (once original
+  bugs are fixed, CLAUDE.md): the error routine and its text move into
+  the normal code of the command; the checks the compiler calls before a
+  command (`!subs`, e.g. `prescreen`) stay in the area. Without the
+  debugger the moved routine raises `TRAP #0` as before (decision
+  2026-10-30: a clean crash, no silent error value). Open: whether these
+  fixes go into the default variant (acidlibs no longer equal to the CD)
+  or into a variant of their own. Each fixed site removes its warning.
 * ~~**License header lines**~~ decided (2026-10-28): no SPDX lines in the
   source files; the license applies via `LICENSE` and the README.
 * ~~**CD data**~~ solved (2026-10-28): not in the repository,
