@@ -18,7 +18,6 @@
 /* ------------------------------------------------------------ globals */
 
 extern UBYTE usedpath[128];     /* 3304 UsePath text, terminated by byte 2 */
-extern UWORD srctype;           /* 3333 Exchange: type of 1st var (asm: .b at high byte) */
 extern struct repnode *firstrep;/* 3501 open Repeat list */
 extern UWORD replineat;         /* 3502 line of last Repeat */
 extern UWORD inerr;             /* 3684 in SetErr block (0 / $ffff) */
@@ -40,7 +39,6 @@ extern char restext[];          /* 4098 'Name of Resident File to Create' */
 extern char respath[192];       /* 4100 requester path buffer */
 extern char resname[192];       /* 4102 requester file buffer */
 extern char hello[4];           /* 4212 'ZAP',0 - padding bytes */
-extern UWORD unmove;            /* 4636 movem mask for dounmove */
 
 /* asm data of every asm mnemonic token (fnum..tnum-1), defined at
    blitz2.s 837 as `ds.l tnum-fnum`, owned here; filled by makeasmtab */
@@ -175,8 +173,9 @@ UWORD getan3(UWORD *reg);               /* digit 0-7 */
    *mask = register mask (bit n: d0-d7 = 0-7, a0-a7 = 8-15); asm also set d5=15 */
 UWORD getmovem(UWORD c, UWORD first, UWORD *mask);
 UWORD getmovem2(UWORD c, UWORD first, UWORD *mask);
-void regmovems(UWORD reg);              /* emit movem.l all-but-reg,-(a7) */
-void dounmove(void);                    /* emit movem.l (a7)+,all-but-reg */
+/* emit movem.l all-but-reg,-(a7); returns the mask for dounmove */
+UWORD regmovems(UWORD reg);
+void dounmove(UWORD unmove);            /* emit movem.l (a7)+,unmove */
 
 /* ------------------------------------------------------ direct mode */
 

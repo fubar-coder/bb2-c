@@ -32,16 +32,9 @@ UWORD swapb[] = {
     0x225F,                            /* +18  pulla1 move.l (a7)+,a1 */
 };
 
-/* blitz2.s:3333 srctype - type of Exchange's first var.  asm: dc, used
-   with .b ops (high byte) */
-UWORD srctype;
-
 /* blitz2.s:3501 / 3502 */
 struct repnode *firstrep;
 UWORD replineat;
-
-/* blitz2.s:3520 infochk - endininfo's 6 byte window */
-static UBYTE infochk[6];
 
 /* blitz2.s:3620 fvwait, cgoblitz, cgoamiga (12 bytes) */
 UWORD fvwait[] = {
@@ -91,9 +84,6 @@ char resname[192];
 
 /* blitz2.s:4212 hello - padding bytes for the resident file */
 char hello[4] = "ZAP";
-
-/* blitz2.s:4636 unmove */
-UWORD unmove;
 
 /* blitz2.s:837 asmpnts - ds.l tnum-fnum (defined in chunk 01's range,
    owned here) */
@@ -177,16 +167,17 @@ UWORD excget(UWORD c, UBYTE *type)
 /* blitz2.s:3335 doexchange - 'swap' 2 variables. */
 void doexchange(UWORD c)
 {
-    UBYTE t;
+    UBYTE t, srctype;   /* srctype: asm global srctype (3333), .b at its
+                           high byte */
 
     c = excget(c, &t);
     if (c != ',')
         syntaxerr();
-    srctype = (srctype & 0x00ff) | ((UWORD)t << 8);     /* move.b d2,srctype */
+    srctype = t;                        /* move.b d2,srctype */
     pokewd(*pusha2);
     c = getchar3();
     c = excget(c, &t);
-    if (t != (UBYTE)(srctype >> 8))
+    if (t != srctype)
         excerr2();
     pokewd(*pulla1);
     if (t < 2)
@@ -344,9 +335,9 @@ void dorepeat(UWORD c)
 /* blitz2.s:3522 endininfo - does a0 end in .info? */
 BOOL endininfo(const char *name)
 {
+    UBYTE infochk[6] = { 0 };   /* asm global infochk (3520): 6 byte window */
     int i;
 
-    memset(infochk, 0, sizeof infochk);
     do {
         for (i = 0; i < 5; i++)
             infochk[i] = infochk[i + 1];
@@ -1258,16 +1249,17 @@ UWORD getimm(UWORD *mode)
     return c;
 }
 
-/* blitz2.s:4638 regmovems - d4=reg# */
-void regmovems(UWORD reg)
+/* blitz2.s:4638 regmovems - d4=reg#.  Returns the mask for dounmove (asm:
+   global unmove, 4636) */
+UWORD regmovems(UWORD reg)
 {
     pokewd(0x48e7);                     /* movem.l -(a7) */
     pokewd(0xffff & ~(1 << ((15 - reg) & 15)));
-    unmove = 0xffff & ~(1 << (reg & 15));
+    return 0xffff & ~(1 << (reg & 15));
 }
 
 /* blitz2.s:4651 dounmove */
-void dounmove(void)
+void dounmove(UWORD unmove)
 {
     pokewd(0x4cdf);
     pokewd(unmove);
@@ -1310,12 +1302,12 @@ void doputreg(UWORD c)
 /* blitz2.s:4707 dosetreg */
 void dosetreg(UWORD c)
 {
-    UWORD reg, type;
+    UWORD reg, type, unmove;
 
     c = getreg2(c, &reg);
     if (c != ',')
         syntaxerr();
-    regmovems(reg);
+    unmove = regmovems(reg);
     type = T_LONG;                      /* get a long */
     eval(&type);
     if (reg) {
@@ -1324,7 +1316,7 @@ void dosetreg(UWORD c)
         else
             pokewd((UWORD)((reg - 8) << 9) | 0x2040);
     }
-    dounmove();
+    dounmove(unmove);
 }
 
 /* blitz2.s:4744 getan3 */
