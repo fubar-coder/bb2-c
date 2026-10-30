@@ -229,6 +229,9 @@ gadget structures of the options requester (the flags of the gadgets *are* the
 option storage), the CLI argument, the maximum values per object library,
 reallocates the object buffer (`makeiallox`) and loads the residents
 (`loadres`, 4.5). Format of the file: [formats.md](formats.md).
+The format as one structure with reader and writer, meant for blitz2 and
+TED once they are reworked (not used by them yet): `shared/xtra`
+([formats.md](formats.md) §1.4).
 
 ### 3.5 Source lines: TED passes its line storage on directly [S]
 

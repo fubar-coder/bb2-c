@@ -110,7 +110,80 @@ Consequences for the converter and for AB3:
 * The 12 bytes stack/version/builds are 0 in all CD files. AB3
   then sets the stack to the minimum. This is harmless.
 * For the `.ab3` header lines the converter can take over the values directly:
-  switches, buffers, residents, exe name, CLI argument and maxima.
+  switches, buffers, residents, exe name, CLI argument. Not the maxima:
+  the header names objects (`Max Screen`), the `.xtra` numbers libraries
+  (§7.6).
+
+### 1.4 One structure: `shared/xtra`
+
+`shared/xtra/xtra.h` holds a source's companion settings in one
+structure, `struct xtra`, whatever they came from: a Blitz 2 `.xtra`
+(this chapter), the header of a `BB22` source (`docs/rwelibs/README.md`
+§4.1) or AmiBlitz3's embedded header (§7). Shared code like
+`shared/filereq`: every user compiles `xtra.c` (and `xtra_ab3.c`) itself
+– now the host tools (`tools/lib/xtra`, the tool `tools/xtra`), later
+blitz2 and TED (decision of 2026-10-30). Hence pure C99 on the
+freestanding headers: no libc, no 32-bit multiply or divide (no libgcc on
+the 68000), no writable static data, no allocation; the caller provides
+the structure (about 11 KB) and the file buffers, byte order is handled
+explicitly. The build compiles it for the m68k with the options of
+blitz2 and TED (`-fbaserel`, object library `xtra_m68k`, C99, no
+extensions); no product links it yet.
+
+| Field | Contents | Blitz 2 `.xtra` | `BB22` | AB3 header |
+|---|---|---|---|---|
+| `source` | where it came from (`XTRA_SRC_*`) | `BLITZ2` | – | `AB3_TEXT` |
+| `vers` | 0/1 | offset 0 | – | (1) |
+| `icon` | `XTRA_ON` = on | offset 1 | – | `CreateIcon` |
+| `sw[14]` | switch words, file order (`XTRA_SW_*`) | offset 2 | – | 7 of them (§7.2) |
+| `buf[6]` | buffer sizes (`XTRA_BUF_*`) | offset 30 | – | `StringBuffer` |
+| `res[8]` | 64 bytes path + `ptr` | offset 54 | – | `Residents` |
+| `exe_path`, `exe_name` | 192 bytes each | offset 598, 790 | – | `ExePath`, `ExeFile` |
+| `cli` | 128 bytes | offset 982 (vers 1) | – | `CliArgs` |
+| `max[]`, `nmax` | `{lib, max, name}`, up to `XTRA_MAXMAXIMA` (256) | pairs: `lib` | – | `Max NAME`: `name` |
+| `editor` | cursor line/column, top line (0-based, flags) | – | words +6/+8/+12 | `CursorLine`, `CursorColumn` |
+| `ab3` | AmiBlitz3's own fields, `seen` = keys present | – | – | the rest (§7.2) |
+
+* **Byte-exact round trip.** The reader keeps every byte of a valid file:
+  the text fields as raw arrays (bytes after the 0 included), the
+  switch words and the icon byte as they are (not just on/off), the pairs
+  in file order, and the **pointer field of each resident**: a runtime
+  value (blitz2's `loadxtra` clears it, `savextra` writes whatever is in
+  memory – 104 CD files have garbage there, §1.2), kept in
+  `res[].ptr` so that writing gives the same bytes; a structure built from
+  scratch has 0 there. `xtra_write_blitz2` writes `vers` as it is (0:
+  without CLI block). All 575 `.xtra` of the CD and the 124 of
+  `rwelibsrc/` read without error and give the same bytes again (ctest
+  `xtra_originals`).
+* **Strict reader.** Refused: shorter than the fixed part, size not
+  982/1110 + 4n, `vers` other than 0/1, a text field (residents, paths,
+  CLI argument) without its 0 byte, more than 256 pairs – each with code
+  and offset (`struct xtra_error`, `xtra_strerror`). blitz2's own loader
+  is more tolerant (it reads what is there and stops at end of file or at
+  the first unknown library); the CD has none of these cases.
+* **vers 0.** The reader leaves the file values; `xtra_apply_vers0` does
+  what `loadxtra` does afterwards (Auto Run on, Interrupt/Overflow
+  Checking from their defaults, Assembler Checking off).
+* **Maxima** carry a library number (`XTRA_MAX_LIB`, from the `.xtra`),
+  an object name (`XTRA_MAX_NAME`, from the AB3 header) or both; mapping
+  needs the libraries and is the caller's business. Each writer writes the
+  entries it can name and reports the others as skipped.
+* **`BB22`**: `xtra_read_bb22` reads only the header (14/16 bytes, the
+  rules of `tools/lib/bb22`) into `editor`: line = top + row, column,
+  top. A `BB22` source's `.xtra` is a normal Blitz 2 `.xtra`; reading
+  both gives the merged settings (`xtra dump FILE.xtra --bb22 SRC`).
+* **Defaults** (`xtra_init`): the initial flags of the option gadgets and
+  the `LongInt` of the buffer gadgets (`options.src`, C port
+  `programs/blitz2/src/data.c`): icon, Runtime Errors, Debugger, Long
+  Arrays, Expand Macros, Auto Run, Interrupt Checking, `optreq2ga5` and
+  both defaults on; buffers 16384, 32768, 4096, 4096, 8192, 10240; vers 1;
+  AmiBlitz3's own fields as its `ParseAB3Header` sets them (stack 32768).
+* **Not yet:** AmiBlitz3's binary `.xtra` (15 switch words since
+  `bdae3f9e`, §1.3; stack/version/builds in the last 12 bytes of the CLI
+  block; PED's `XtraExtend` behind the pairs). Its fields fit into
+  `struct xtra_ab3` (stack, version, builds, FuncOptimize, CreateDbgFile)
+  and `sw[]`; a reader would set `source = XTRA_SRC_AB3_BINARY` and map
+  the 15 words to the 14 indices.
 
 ---
 
@@ -355,6 +428,193 @@ for 123–255, no bitmaps – printing them reads past the font, a
 `BUG(orig)` of the library's use, see `docs/rwelibs/port/rifnslib.md`).
 The font built into the library is described in
 [docs/rwelibs/fns-personal.md](rwelibs/fns-personal.md).
+
+---
+
+## 7 AmiBlitz3's "Embedded .xtra Header" (`.ab3`)
+
+AmiBlitz3 keeps the companion settings of a text source (`.ab3`) not in
+a `.xtra` file but in comment lines at the start of the source. Evidence
+**[C]**: AmiBlitz3 on GitHub (<https://github.com/AmiBlitz/AmiBlitz3>,
+Apache License 2.0), commit `b1a9dee150ef` (2026-10-25), file
+`Sourcecodes/Amiblitz3/Compiler/CLIModeSupport.ab3` (last changed in
+`c11b4186fd20`, 2026-06-24): `write_AB3Header` (line 1077, writes it when
+saving an `.ab3`), `ParseAB3Header` (line 576, reads it in `LoadSource`,
+line 437: `.bb`/`.bb2`/`.ab2` get `LoadXtra` instead), `SkipXtraHeader`
+(line 401, skips it for includes, `AmiBlitz3.ab3` line 19473); the
+constants in `Sourcecodes/Amiblitz3/Shared/common.ab3` lines 85–93. Our
+reader and writer are own code after this description
+(`shared/xtra/xtra_ab3.c`, `xtra_ab3.h`).
+
+### 7.1 Layout (as `write_AB3Header` writes it)
+
+```
+; XTRA
+; Embedded .xtra Header
+; 
+; General Info
+; -------------------------------------------------------
+; ExePath         = "RAM:"
+; ExeFile         = "Prog.exe"
+; CreateIcon      = 0
+; Residents       = "all.res"
+; 
+; Compiler
+; -------------------------------------------------------
+; StringBuffer    = 10240
+; MakeSmallest    = 0
+; FuncOptimize    = 0
+; Version         = 0.0.0
+; NumberOfBuilds  = 0
+; 
+; Debugger
+; -------------------------------------------------------
+; CliArgs         = ""
+; StackSize       = 32768
+; RuntimeDebug    = 1
+; DebugInfo       = 0
+; CreateDbgFile   = 0
+; OverflowCheck   = 1
+; AssemblerCheck  = 0
+; InterruptCheck  = 1
+; AutoRun         = 1
+; 
+; Editor
+; -------------------------------------------------------
+; CursorLine      = 1
+; CursorColumn    = 1
+; LabelSearch     = ""
+; LabelRemark     = 0
+; LabelAll        = 0
+; LabelCase       = 0
+; LabelPosition   = 0
+; 
+; Blitz Objects
+; -------------------------------------------------------
+; Max Screen      = 5
+; Max Req-Lib     = 5
+; Max ChunkyBuffer= 2
+; /XTRA
+```
+
+LF line ends; the empty comment lines are `; ` (with a blank). The key is
+padded to 16 characters after `; `, then `= `; strings in `"` without
+escapes; numbers with `Str$` (signed decimal). `Residents`: the 8
+entries joined – a `,` before each further entry unless the text so far
+ends with one, one trailing `,` removed (empty entries vanish, except a
+leading one: `",all.res"`). `Max NAME`: one line per object type of the
+loaded libraries (`getobjectentry`), a blank in NAME written as `-`, the
+key padded to 18 columns (longer names without padding). The program text
+follows directly after `; /XTRA`.
+
+### 7.2 Keys
+
+| Key | Value | AB3 default | `struct xtra` | Blitz 2 `.xtra` |
+|---|---|---|---|---|
+| `ExePath`, `ExeFile` | text | `"RAM:"`, `"Prog.exe"` | `exe_path`, `exe_name` (< 192) | offsets 598, 790 |
+| `CreateIcon` | 0/≠0 | 0 | `icon` | offset 1 |
+| `Residents` | text, `,`-separated | none | `res[].name` (≤ 8 entries, < 64 each) | offset 54 |
+| `StringBuffer` | number | 10240 | `buf[XTRA_BUF_STRING]` | offset 50 |
+| `MakeSmallest` | 0/≠0 | 0 | `sw[XTRA_SW_MAKE_SMALLEST]` | offset 12 |
+| `FuncOptimize` | 0/≠0 | 0 | `ab3.func_optimize` | – (AB3 binary: the former "quoted macros" word) |
+| `Version` | `MAJOR.MINOR.PATCH` | 0.0.0 | `ab3.version[3]` (0..255 each) | – (AB3 binary: CLI block +120, `MAJOR<<24 \| MINOR<<16 \| PATCH<<8`) |
+| `NumberOfBuilds` | number | 0 | `ab3.builds` | – (AB3 binary: CLI block +124) |
+| `CliArgs` | text | `""` | `cli` (< 128; AB3 allows 254) | offset 982 |
+| `StackSize` | number | 32768 | `ab3.stack` | – (AB3 binary: CLI block +116) |
+| `RuntimeDebug` | 0/≠0 | 1 | `sw[XTRA_SW_RUNTIME_ERRORS]` | offset 2 |
+| `DebugInfo` | 0/≠0 | 0 | `sw[XTRA_SW_DEBUG_INFO]` | offset 14 |
+| `CreateDbgFile` | 0/≠0 | 0 | `ab3.create_dbgfile` | – |
+| `OverflowCheck` | 0/≠0 | 1 | `sw[XTRA_SW_OVERFLOW_CHECK]` | offset 22 |
+| `AssemblerCheck` | 0/≠0 | 0 | `sw[XTRA_SW_ASSEMBLER_CHECK]` | offset 20 |
+| `InterruptCheck` | 0/≠0 | 1 | `sw[XTRA_SW_INTERRUPT_CHECK]` | offset 18 |
+| `AutoRun` | 0/≠0 | 1 | `sw[XTRA_SW_AUTO_RUN]` | offset 16 |
+| `CursorLine`, `CursorColumn` | number, 1-based | 0 | `editor.line`, `.column` (0-based) | – |
+| `LabelSearch` | text | `""` | `ab3.label_search` (< 32; AB3 keeps 29) | – |
+| `LabelRemark`, `LabelAll`, `LabelCase` | word | 0 | `ab3.label_*` (words as written) | – |
+| `LabelPosition` | number | 0 | `ab3.label_position` | – |
+| `Max NAME` | number | the library's | `max[]` with `name` | pairs, by library **number** |
+
+The switches the header does not have (Debugger, Long Arrays, Expand and
+Quoted Macros, `optreq2ga5`, the two defaults) and the buffers other than
+the string buffer keep Blitz 2's defaults in `struct xtra` (AmiBlitz3
+itself clears the obsolete words and takes its own buffer defaults:
+object 16384, libs 32768, system/data 4096, macro 40000).
+`x->ab3.seen` has a bit per key found (`XTRA_K_*`).
+
+### 7.3 How AmiBlitz3 reads it (`ParseAB3Header`)
+
+* It reads **all lines from the start of the file** until a line whose
+  key is `/xtra` (or the end of the file); there is no check of the first
+  line, and lines without `;` count too.
+* Key: the text before the first `=`, only letters, `_`, `/` and `-` kept
+  (`-` becomes a blank; blanks and digits are dropped), compared in lower
+  case. Value: the text after the `=` **minus its first character**
+  (the blank `write_AB3Header` puts there), trimmed of characters below
+  33, one pair of `"` removed if both ends have one; numbers with
+  `Vallong` (so `-1` works: `LabelAll = -1` is in AmiBlitz3's own sources).
+* `Residents`: split at `,`; after the 7th entry a warning "could not
+  load all residents" and the rest is dropped.
+* `Max NAME`: NAME is compared with the object names of the loaded
+  libraries (`getobjectentry`); unknown names are ignored.
+* After the loop: `ExePath` empty → the path part of `ExeFile`;
+  `MakeSmallest` ≠ 0 forces `FuncOptimize`; `StringBuffer` below 4096 and
+  `StackSize` below 8191 are raised to these minima; `CursorColumn` is
+  read but not used ("cursorcol is missing").
+* Unknown keys are ignored.
+
+### 7.4 Our reader (`xtra_read_ab3`)
+
+Stricter where AmiBlitz3 guesses, so that broken headers are reported:
+
+* A header exists only if the **first line** is `; XTRA` (blanks and case
+  free); otherwise the source has no header (AmiBlitz3's defaults, `end`
+  0, no error). It ends at the line `; /XTRA`; `end` is the offset of the
+  program text behind it.
+* Inside, every non-empty line must start with `;` (blanks before it
+  allowed, CR before LF ignored); lines without `=` (title, ruler, `; `)
+  are ignored.
+* Key compared case-insensitively as a whole word (`Max` followed by a
+  blank and NAME, `-` in NAME read as a blank; digits in NAME are kept –
+  AmiBlitz3 drops them); the value is trimmed of blanks/tabs (no first
+  character dropped: `Key=1` is 1, AmiBlitz3 would read nothing).
+* **Unknown keys are ignored and counted** (`ab3.unknown`, the first one's
+  line in `ab3.unknown_line`); a key given twice: the last value counts
+  (as in AmiBlitz3).
+* Values are kept as written: booleans as on/off (`≠ 0`), numbers as 32
+  bits (decimal or `$hex`, a leading `-` as two's complement), no minima
+  applied, `ExePath` not derived.
+* Refused, with the line: a line without `;`, no `; /XTRA`, a number that
+  is none or out of range (32 bits; maxima 0..65535), a `"` without its
+  closing `"`, text longer than its field, more than 8 residents,
+  `Version` not `N.N.N` with 0..255, `Max` without NAME, more than 256
+  maxima.
+
+### 7.5 Our writer (`xtra_write_ab3`)
+
+Writes exactly the lines of `write_AB3Header` (7.1): all keys, the
+residents joined as AmiBlitz3 does, the maxima that have a name (the
+others are counted as skipped), `CursorLine`/`CursorColumn` = 0-based
+value + 1 (1 without an editor part), numbers signed like `Str$` (the
+label words sign-extended). A header in the current layout is written
+back byte for byte (ctest `xtra_ab3`, `xtra_ab3_examples`).
+
+### 7.6 Converting and checking
+
+* `.ab3` → Blitz 2 `.xtra` (`xtra convert --to-xtra`): everything in the
+  last column of 7.2; the AB3-only fields and the editor part are lost;
+  the maxima are left out (the `.xtra` needs library numbers – mapping
+  object names to libraries needs the libraries, a later step).
+* Blitz 2 `.xtra` → header lines (`xtra convert --to-ab3`, with
+  `--bb22 SRC` the cursor of a `BB22` source): the AB3-only fields get
+  AmiBlitz3's defaults; the maxima are left out (no names).
+* Survey **[B]** with `xtra check --ab3` over the 1158 `.ab3` files of a
+  clone of the repository (branch `compiler-spec`, `f0414b111696`, master
+  plus specification files): 964 start with `; XTRA`, 194 have no header;
+  1156 read without error; refused are the 2 whose header was cut off
+  without `; /XTRA` (the next line is program text). 477 headers are not
+  written back byte for byte: older layouts (358 without `LabelCase`, 63
+  with only some keys, others without `FuncOptimize`/`CreateDbgFile`) and
+  values like `-1` or `65535` for booleans, which are written as 1.
 
 ---
 

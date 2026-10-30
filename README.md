@@ -465,7 +465,7 @@ reference build (`build/amiga/libs/userlibs/rwe/ted/SOURCE`).
 
 The companion settings of a source – the Blitz 2 `.xtra`, the cursor in
 a `BB22` header, AmiBlitz3's "Embedded .xtra Header" of `.ab3` sources –
-have one structure in `shared/xtra/xtra.h` (`docs/formats.md`),
+have one structure in `shared/xtra/xtra.h` (`docs/formats.md` §1.4, §7),
 shared code that blitz2 and TED are meant to use later. `tools/xtra`
 shows, checks and converts them:
 
@@ -539,6 +539,11 @@ shared/filereq/              file requester of freqlib and TED (one source,
                              compiled by both with their own options)
 shared/edstub/               frame for programs that blitz2 loads as
                              blitz2:ted (entry points, comdata, no screen)
+shared/xtra/                 the companion settings of a source (.xtra)
+                             as one structure: Blitz 2 .xtra, BB22
+                             header, AmiBlitz3 embedded header (C99, no
+                             libc; compiled by each user, for later use
+                             in blitz2 and TED; m68k compile-only now)
 host/                        the host side: everything built with the
                              native compiler (tools, host tests), as
                              ExternalProject (build/<preset>/host)
