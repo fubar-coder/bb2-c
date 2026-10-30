@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+guard kept
+rc=0
