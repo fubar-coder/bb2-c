@@ -17,12 +17,6 @@
 
 /* ============================================================ globals */
 
-extern UWORD pmode;                  /* 5618 push mode.  Byte/word aliasing: the
-                                        asm writes the HIGH byte with move.b
-                                        (handlep: $40 push bit, highadd: 1) and
-                                        the whole word in fetchpees (0/1);
-                                        tested as a word.  In C:
-                                        pmode = (pmode & 0x00ff) | (b << 8). */
 extern struct tokejsrnode *tokeslist;/* 6227 token jsr fixup list */
 extern APTR deflibsat;               /* 6318 deflibs group buffer (deflibs bytes) */
 extern APTR acidlibsat;              /* 6319 acidlibs group buffer */
@@ -90,33 +84,38 @@ UWORD fetchlibps(UWORD spec, const UBYTE *types);
 /* 5620/5623/5624/5626 fetch n parameters of types[] (0 = userp).
    fetchpees4: always push; fetchpees2: push only when told by the type
    byte; fetchpees3: n & 15, pushmode given; fetchpees: n as is.
-   pmode is saved/restored (recursion).  returns char after the last param
-   (notparerr if ',' missing). */
+   returns char after the last param (notparerr if ',' missing). */
 UWORD fetchpees4(UWORD n, const UBYTE *types);
 UWORD fetchpees2(UWORD n, const UBYTE *types);
 UWORD fetchpees3(UWORD n, const UBYTE *types, UWORD pushmode);
 UWORD fetchpees(UWORD n, const UBYTE *types, UWORD pushmode);
+/* pmode (handlep .. highadd): the asm's global push mode (5618), now a
+   parameter.  Byte/word aliasing: the asm writes the whole word in
+   fetchpees (pushmode 0/1) and the HIGH byte with move.b (handlep: $40
+   push bit, highadd: 1); tested as a word.  In C:
+   pmode = (pmode & 0x00ff) | (b << 8). */
 /* 5653 get one parameter: type bit7 address of var (low 3 bits type),
-   bit6 push, bit5 array info (bit4 high end, bit3 type).  returns char */
-UWORD handlep(UWORD type);
+   bit6 push, bit5 array info (bit4 high end, bit3 type); pmode = the push
+   mode of fetchpees.  returns char */
+UWORD handlep(UWORD type, UWORD pmode);
 /* 5675 result in D(regat) of type: push (pmode != 0) or regat++ */
-void putap(UWORD type);
+void putap(UWORD type, UWORD pmode);
 /* 5679 emit move.l/.w Dregat,-(a7), stackuse += 4/2 */
 void pushap(UWORD type);
 /* 5689 regat++ */
 void putapincreg(void);
 /* 5695 putap(T_LONG) */
-void putalp(void);
+void putalp(UWORD pmode);
 /* 5698 address of a var, expected type (0 = any: type word pushed too) */
-UWORD handlevara(UWORD type);
+UWORD handlevara(UWORD type, UWORD pmode);
 /* 5730 array info parameters; returns next char (getchar3) */
-UWORD handlearr(UWORD type);
+UWORD handlearr(UWORD type, UWORD pmode);
 /* 5742 moveq #type,Dregat + push; v/t from baseadd (asm a3/a2) */
 void sendtype(struct var *v, struct type *t);
 /* 5759 array base address: parses "name()", out *v (a3), *t (a2) */
-void baseadd(struct var **v, struct type **t);
+void baseadd(struct var **v, struct type **t, UWORD pmode);
 /* 5781 array high end */
-void highadd(struct var *v);
+void highadd(struct var *v, UWORD pmode);
 /* 5822 evaluate a parameter of type (*type & 7, 0 = any -> evalu2, else
    eval); *type = result type (asm d2).  returns char */
 UWORD getap(UWORD *type);

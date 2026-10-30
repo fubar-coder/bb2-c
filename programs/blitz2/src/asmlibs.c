@@ -14,9 +14,6 @@
 UWORD ptype[] = {
     0x3F3C, 0x0000,                     /* +0 ptype move #0,-(a7) */
 };
-/* blitz2.s:5618 pmode dc 0 (data word right behind ptype) */
-UWORD pmode = 0;
-
 /* blitz2.s:5818-5820 templates */
 UWORD fbase[] = {
     0x202D, 0x0000,                     /* +0 fbase    move.l 0(a5),d0 */
@@ -29,12 +26,6 @@ APTR deflibsat = NULL;                  /* blitz2.s:6318 */
 APTR acidlibsat = NULL;                 /* blitz2.s:6319 */
 struct node *blitzlibsat = NULL;        /* blitz2.s:6320 start of blitzlibs list! */
 struct blitzlib *ffplib = NULL;         /* blitz2.s:6616 */
-
-/* pmode high byte (asm `move.b x,pmode`) */
-static inline void setpmodehi(UWORD b)
-{
-    pmode = (pmode & 0x00ff) | (UWORD)(b << 8);
-}
 
 /* ========================================================== assembler */
 
@@ -537,25 +528,24 @@ done:
     return count;
 }
 
-/* fetchpees with the type pointer advanced (asm a2) */
+/* fetchpees with the type pointer advanced (asm a2).  The asm kept the
+   push mode in the global pmode and saved/restored it around the loop (in
+   case of recursion); C hands it down to handlep. */
 static UWORD fetchpees_p(UWORD n, const UBYTE **tp, UWORD pushmode)
 {
-    UWORD oldpmode = pmode;             /* in case of recursion */
     UWORD cnt = n;
     UWORD c;
 
-    pmode = pushmode;
     for (;;) {
         UWORD t = *(*tp)++;
         if (!t)
             t = userp;                  /* user selected type */
-        c = handlep(t);
+        c = handlep(t, pushmode);
         if (--cnt == 0)
             break;
         if (c != ',')
             notparerr();
     }
-    pmode = oldpmode;
     return c;
 }
 
@@ -624,24 +614,26 @@ UWORD fetchpees(UWORD n, const UBYTE *types, UWORD pushmode)
 /* blitz2.s:5653 handlep - d2=what to get.
    BIT 7 : The Address of a var - d2.b = type of var
    BIT 6 : push results that would normally go into D(regat)
-   BIT 5 : We want array info. */
-UWORD handlep(UWORD type)
+   BIT 5 : We want array info.
+   pmode: the asm's global pmode (5618): the low byte is the push mode of
+   fetchpees, handlep writes the high byte (move.b); tested as a word. */
+UWORD handlep(UWORD type, UWORD pmode)
 {
     UWORD c, t;
 
-    setpmodehi(type & 64);              /* move.b d1,pmode */
+    pmode = (pmode & 0x00ff) | (UWORD)((type & 64) << 8);   /* move.b d1,pmode */
     if (type & 0x80)
-        return handlevara(type);
+        return handlevara(type, pmode);
     if (type & 0x20)
-        return handlearr(type);
+        return handlearr(type, pmode);
     t = type;                           /* normal p get */
     c = getap(&t);
-    putap(t);                           /* falls through into putap */
+    putap(t, pmode);                    /* falls through into putap */
     return c;
 }
 
 /* blitz2.s:5675 putap - push D(regat), type in d2 */
-void putap(UWORD type)
+void putap(UWORD type, UWORD pmode)
 {
     if (pmode)
         pushap(type);
@@ -670,13 +662,13 @@ void putapincreg(void)
 }
 
 /* blitz2.s:5695 putalp */
-void putalp(void)
+void putalp(UWORD pmode)
 {
-    putap(T_LONG);
+    putap(T_LONG, pmode);
 }
 
 /* blitz2.s:5698 handlevara - Here, we want the address of a var type d2 */
-UWORD handlevara(UWORD type)
+UWORD handlevara(UWORD type, UWORD pmode)
 {
     UWORD exp = type & 7;
     UWORD vtype = exp;
@@ -692,24 +684,24 @@ UWORD handlevara(UWORD type)
         stackuse += 2;
         pokewd(ptype[0]);
         pokewd((UBYTE)vtype);
-        putalp();
+        putalp(pmode);
         return c;
     }
     if ((UBYTE)exp != (UBYTE)vtype)
         mismatcherr();
-    putalp();
+    putalp(pmode);
     return c;
 }
 
 /* blitz2.s:5730 handlearr */
-UWORD handlearr(UWORD type)
+UWORD handlearr(UWORD type, UWORD pmode)
 {
     struct var *v;
     struct type *t;
 
-    baseadd(&v, &t);
+    baseadd(&v, &t, pmode);
     if (type & 0x10)
-        highadd(v);
+        highadd(v, pmode);
     if (type & 0x08)
         sendtype(v, t);
     return getchar3();
@@ -732,7 +724,7 @@ void sendtype(struct var *v, struct type *t)
 }
 
 /* blitz2.s:5759 baseadd - send base on stack or in reg */
-void baseadd(struct var **v, struct type **t)
+void baseadd(struct var **v, struct type **t, UWORD pmode)
 {
     UWORD c = getchar3();
 
@@ -747,11 +739,11 @@ void baseadd(struct var **v, struct type **t)
         noarrayerr();
     pokewd((regat << 9) | fbase[0]);
     pokewd((*v)->offset);
-    putalp();                           /* OK, we've got da base reg. */
+    putalp(pmode);                      /* OK, we've got da base reg. */
 }
 
 /* blitz2.s:5781 highadd - send high end of array on stack */
-void highadd(struct var *v)
+void highadd(struct var *v, UWORD pmode)
 {
     WORD off;
     UWORD w;
@@ -772,8 +764,8 @@ void highadd(struct var *v)
         w |= (UWORD)(regat - 1);
     }
     pokewd(w);
-    setpmodehi(1);                      /* move.b #1,pmode */
-    putalp();
+    pmode = (pmode & 0x00ff) | 0x100;   /* move.b #1,pmode */
+    putalp(pmode);
 }
 
 /* blitz2.s:5822 getap */
