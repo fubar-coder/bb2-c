@@ -1132,23 +1132,23 @@ WORD maxtypes = 0;                      /* 15029 */
 /* blitz2.s:15031 makebody - prop body: full if <=12 items, else 12/maxtypes */
 void makebody(void)
 {
-    UWORD d1 = 0xffff;                  /* full bodied */
+    UWORD body = 0xffff;                /* full bodied */
     if ((UWORD)maxtypes > 12)
-        d1 = (UWORD)((12UL << 16) / (UWORD)maxtypes);   /* divu */
-    typereqvp1.VertBody = d1;
+        body = (UWORD)((12UL << 16) / (UWORD)maxtypes); /* divu */
+    typereqvp1.VertBody = body;
     typereqvp1.VertPot = 0;
 }
 
 /* blitz2.s:15043 countlist */
-void countlist(struct node *a2)
+void countlist(struct node *list)
 {
-    WORD d0 = 0;
+    WORD count = 0;
     typeat = 0;
-    while (a2) {
-        d0++;
-        a2 = a2->next;
+    while (list) {
+        count++;
+        list = list->next;
     }
-    maxtypes = d0;
+    maxtypes = count;
 }
 
 struct node *f1 = NULL;                 /* 15054 */
@@ -1163,100 +1163,100 @@ void showlist3(void)
 }
 
 /* blitz2.s:15064 showlist */
-void showlist(struct node *a2, WORD d2, WORD d3)
+void showlist(struct node *list, WORD fields, WORD nameoff)
 {
-    f1 = a2;
-    f2 = d2;
-    f3 = d3;
-    showlist2(a2, d2, d3);              /* falls through into showlist2 */
+    f1 = list;
+    f2 = fields;
+    f3 = nameoff;
+    showlist2(list, fields, nameoff);   /* falls through into showlist2 */
 }
 
-/* blitz2.s:15067 showlist2 - a2=first item, d2=offset for .offset (0 for
-   none) - i.e. field list mode, d3=offset for chars; typeat=pos,
-   maxtypes=max */
-void showlist2(struct node *a2, WORD d2, WORD d3)
+/* blitz2.s:15067 showlist2 - item (a2) = first item, fields (d2) = offset
+   for .offset (0 for none) - i.e. field list mode, nameoff (d3) = offset
+   for chars; typeat=pos, maxtypes=max */
+void showlist2(struct node *item, WORD fields, WORD nameoff)
 {
-    WORD d0, d1;
-    UBYTE *a1, *a4, *a5;
+    WORD pos, rows;
+    UBYTE *src, *dst, *end;
     int line = 0;
 
     zerotypes();
-    d0 = typeat;
-    if ((UWORD)d0 >= (UWORD)maxtypes)
+    pos = typeat;
+    if ((UWORD)pos >= (UWORD)maxtypes)
         return;
-    for (d0 = typeat - 1; d0 >= 0; d0--)    /* skip typeat items */
-        a2 = a2->next;
+    for (pos = typeat - 1; pos >= 0; pos--) /* skip typeat items */
+        item = item->next;
 
-    d0 = typeat;
-    for (d1 = 11; d1 >= 0; d1--) {
-        struct var *fld = (struct var *)a2;     /* field mode only */
+    pos = typeat;
+    for (rows = 11; rows >= 0; rows--) {
+        struct var *fld = (struct var *)item;   /* field mode only */
         UBYTE c;
 
-        a1 = (UBYTE *)a2 + d3;
-        a4 = typelines[line];               /* start */
-        a5 = a4 + 27;                       /* end */
-        if (d2 && (fld->flags & 1)) {
+        src = (UBYTE *)item + nameoff;
+        dst = typelines[line];              /* start */
+        end = dst + 27;                     /* end */
+        if (fields && (fld->flags & 1)) {
             c = '*';
             if (fld->flags & 4)
                 c = '@';
-            *a4++ = c;
+            *dst++ = c;
         }
         for (;;) {                          /* .ok2 */
-            c = *a1++;
-            *a4++ = c;
+            c = *src++;
+            *dst++ = c;
             if (c)  {                       /* .hello */
-                if (a4 < a5)
+                if (dst < end)
                     continue;
                 goto next;
             }
             break;
         }
-        *--a4 = ' ';
-        if (!d2)
+        *--dst = ' ';
+        if (!fields)
             goto next;                      /* no offset */
-        *a4++ = '.';
-        a1 = (UBYTE *)fld->type->name;      /* type stuff */
+        *dst++ = '.';
+        src = (UBYTE *)fld->type->name;     /* type stuff */
         for (;;) {                          /* .ok3 */
-            if (a4 >= a5)
+            if (dst >= end)
                 goto next;
-            c = *a1++;
-            *a4++ = c;
+            c = *src++;
+            *dst++ = c;
             if (!c)
                 break;
         }
-        *--a4 = ' ';
+        *--dst = ' ';
         if (!(fld->flags & 2))
             goto next;
-        *a4++ = '[';
+        *dst++ = '[';
         makelong(fuckoff, (UWORD)fld->ndims);
-        a1 = fuckoff;
+        src = fuckoff;
         for (;;) {                          /* .penis */
-            if (a4 >= a5)
+            if (dst >= end)
                 goto next;
-            c = *a1++;
-            *a4++ = c;
+            c = *src++;
+            *dst++ = c;
             if (!c)
                 break;
         }
-        *--a4 = ']';
+        *--dst = ']';
 next:
-        d0++;
-        if ((UWORD)d0 >= (UWORD)maxtypes)
+        pos++;
+        if ((UWORD)pos >= (UWORD)maxtypes)
             return;
         line++;
-        a2 = a2->next;
+        item = item->next;
     }
 }
 
 /* blitz2.s:15140 typeshow - list position from the prop gadget */
 void typeshow(void)
 {
-    WORD d2 = typeat;
-    WORD d1 = maxtypes - 11;
+    WORD oldat = typeat;
+    WORD range = maxtypes - 11;
 
-    if (d1 >= 0)
-        typeat = (WORD)(((ULONG)(UWORD)d1 * typereqvp1.VertPot) >> 16);  /* mulu/swap */
-    if (typeat == d2)
+    if (range >= 0)
+        typeat = (WORD)(((ULONG)(UWORD)range * typereqvp1.VertPot) >> 16); /* mulu/swap */
+    if (typeat == oldat)
         return;
     showlist3();
     reflist();                          /* falls through into reflist */
@@ -1271,10 +1271,10 @@ void reflist(void)
 /* blitz2.s:15158 allofem */
 void allofem(void)
 {
-    struct node *a2 = (struct node *)firsttype;
-    countlist(a2);
+    struct node *types = (struct node *)firsttype;
+    countlist(types);
     makebody();
-    showlist(a2, 0, 11);
+    showlist(types, 0, 11);
 }
 
 /* beep: DisplayBeep on the editor screen (comdata+40) */
@@ -1286,79 +1286,79 @@ static void typebeep(void)
 /* blitz2.s:15165 menu6 - Flashy Type Information.... */
 void menu6(void)
 {
-    WORD d6;
-    struct type *a2;
+    WORD gadget;
+    struct type *type;
 
     allofem();
     ed_openreq(&typereq);
     for (;;) {                                          /* .loop */
         ed_actgad(&typereqga2);
-        if (!ed_getinput(&d6))
+        if (!ed_getinput(&gadget))
             continue;
-        if (d6 == 1) {
+        if (gadget == 1) {
             /* prop gadget: poll and follow the knob until GADGETUP */
             for (;;) {                                  /* .vloop */
-                LONG d7 = ed_getinput2(&d6);
-                if (d7 != 0 && (WORD)d7 == -1 && d6 == 1)
+                LONG input = ed_getinput2(&gadget);
+                if (input != 0 && (WORD)input == -1 && gadget == 1)
                     break;
                 typeshow();                             /* .vdo */
             }
             typeshow();                                 /* .vdone */
             continue;
         }
-        if (d6 == 2) {
+        if (gadget == 2) {
             /* name typed into TYPE: string gadget */
-            UBYTE *a1 = typereqla21, *a0 = namebuff;
+            UBYTE *src = typereqla21, *dst = namebuff;
             UWORD len;
-            if (!*a1) {
+            if (!*src) {
                 allofem();
                 goto reflist_;
             }
             len = (UWORD)-1;
             do {
                 len++;
-            } while ((*a0++ = *a1++));
-            a2 = findtype((struct node *)&firsttype, len, NULL);
-            if (a2)
+            } while ((*dst++ = *src++));
+            type = findtype((struct node *)&firsttype, len, NULL);
+            if (type)
                 goto all;
             typebeep();
             continue;
         }
-        if (d6 == 3) {
+        if (gadget == 3) {
             typereqla21[0] = 0;
             allofem();
             goto reflist_;
         }
-        if (d6 == 4)
+        if (gadget == 4)
             return;                                     /* FAREWELL */
-        d6 -= 5;
-        if (d6 < 0 || (UWORD)d6 >= 12)
+        gadget -= 5;
+        if (gadget < 0 || (UWORD)gadget >= 12)
             continue;
-        /* d6=0 to 11 */
-        d6 += typeat;
-        if ((UWORD)d6 >= (UWORD)maxtypes)
+        /* gadget = 0 to 11 */
+        gadget += typeat;
+        if ((UWORD)gadget >= (UWORD)maxtypes)
             continue;
-        /* d6 selected */
+        /* gadget selected */
         if (f2 == 0) {
             /* goto type */
-            a2 = firsttype;
-            for (d6--; d6 >= 0; d6--)
-                a2 = a2->next;
+            type = firsttype;
+            for (gadget--; gadget >= 0; gadget--)
+                type = type->next;
         } else {
             /* .intype: field -> its type */
             struct node *n = f1;
-            for (d6--; d6 >= 0; d6--)
+            for (gadget--; gadget >= 0; gadget--)
                 n = n->next;
-            a2 = ((struct var *)n)->type;
-            if (a2->u.code < 256) {
+            type = ((struct var *)n)->type;
+            if (type->u.code < 256) {
                 typebeep();
                 continue;
             }
         }
-        typename(a2->name);                             /* .gotit */
+        typename(type->name);                           /* .gotit */
 all:
         {
-            struct node *fl = (struct node *)a2->u.fields;
+            struct node *fl = (struct node *)type->u.fields;
             countlist(fl);
             makebody();
             showlist(fl, -1, 15);
@@ -1371,13 +1371,13 @@ reflist_:
 
 /* blitz2.s:15281 typename - copy into the TYPE: string buffer.
    A 31 char name ends at buffer byte 31, which stays 0 (MaxChars 32). */
-void typename(const char *a1)
+void typename(const char *name)
 {
-    UBYTE *a0 = typereqla21;
+    UBYTE *dst = typereqla21;
     do {
-        if (!(*a0++ = *a1++))
+        if (!(*dst++ = *name++))
             break;
-    } while (a0 < typereqla21 + 31);
+    } while (dst < typereqla21 + 31);
 }
 
 /* ===================================================================
@@ -1494,15 +1494,15 @@ void savextra_c(struct m68kregs *r)
 /* copy all optspnts items to (save=1) / from (save=0) optssave */
 static void optsnap(int save)
 {
-    UBYTE *a0 = optssave;
+    UBYTE *snap = optssave;
     int g, i;
     for (g = 0; optspnts[g].size; g++)
         for (i = 0; optspnts[g].addrs[i]; i++) {
             if (save)
-                memcpy(a0, optspnts[g].addrs[i], optspnts[g].size);
+                memcpy(snap, optspnts[g].addrs[i], optspnts[g].size);
             else
-                memcpy(optspnts[g].addrs[i], a0, optspnts[g].size);
-            a0 += optspnts[g].size;
+                memcpy(optspnts[g].addrs[i], snap, optspnts[g].size);
+            snap += optspnts[g].size;
         }
 }
 
@@ -1520,10 +1520,10 @@ void menu4(void)
 /* blitz2.s:15483 menu4c */
 void menu4c(void)
 {
-    WORD d6, d5;
+    WORD gadget, maxnum;
     BOOL gad;
     struct blitzlib *l;
-    struct StringInfo *a3;
+    struct StringInfo *sinfo;
 
     reschg = 0;                         /* resident change */
     allchg = 0;                         /* alloc change */
@@ -1532,16 +1532,16 @@ void menu4c(void)
     makeres();
     ed_openreq(&optreq);
     for (;;) {
-        gad = ed_getinput(&d6);
+        gad = ed_getinput(&gadget);
 igot:
         if (!gad)
             continue;
-        if ((UWORD)d6 >= 1 && (UWORD)d6 <= 6) {
-            allchg = d6;
+        if ((UWORD)gadget >= 1 && (UWORD)gadget <= 6) {
+            allchg = gadget;
             continue;
         }
-        if (d6 == 21 || d6 == 22) {
-            if (d6 == 21)
+        if (gadget == 21 || gadget == 22) {
+            if (gadget == 21)
                 maxat--;
             else
                 maxat++;
@@ -1551,65 +1551,65 @@ igot:
             ed_refgads(&optreqga25, 2);
             continue;
         }
-        if (d6 == 7 || d6 == 8) {
-            d5 = maxat;
-            a3 = &optreqsg7;
-            if (d6 == 8) {
-                d5++;
-                a3 = &optreqsg8;
+        if (gadget == 7 || gadget == 8) {
+            maxnum = maxat;
+            sinfo = &optreqsg7;
+            if (gadget == 8) {
+                maxnum++;
+                sinfo = &optreqsg8;
             }
             /* .ugw: next input first (ungadget etc), then store the value
                (low word of LongInt, asm optreqla54-6) and handle that input */
-            gad = ed_getinput(&d6);
+            gad = ed_getinput(&gadget);
             for (l = firstlib; l; l = l->next) {
                 if (!LIBMAX_SHIFT(l))
                     continue;
-                if (--d5 < 0) {
-                    LIBMAX_COUNT(l) = (WORD)a3->LongInt;
+                if (--maxnum < 0) {
+                    LIBMAX_COUNT(l) = (WORD)sinfo->LongInt;
                     break;
                 }
             }
             goto igot;
         }
-        if (d6 == 10) {
+        if (gadget == 10) {
             if (optreqga10.Flags & GFLG_SELECTED)
                 runerropts();
             continue;
         }
-        if (d6 == 23 || d6 == 24) {
-            if (d6 == 23)
+        if (gadget == 23 || gadget == 24) {
+            if (gadget == 23)
                 resat--;                /* sub.l #68,resat */
             else
                 resat++;
             newres();
             continue;
         }
-        if (d6 == 27 || d6 == 28) {
+        if (gadget == 27 || gadget == 28) {
             reschg = -1;
             newres();
             continue;
         }
-        if ((UWORD)d6 < 17 || (UWORD)d6 > 20)
+        if ((UWORD)gadget < 17 || (UWORD)gadget > 20)
             continue;
-        if (d6 == 20) {
+        if (gadget == 20) {
             menu4canc();
             return;
         }
-        optsdone(d6);
+        optsdone(gadget);
         return;
     }
 }
 
 /* blitz2.s:15592 optsdone */
-void optsdone(UWORD d6)
+void optsdone(UWORD gadget)
 {
     if (allchg)
         makeiallox();
     if (reschg)
         loadres();
-    if (d6 == 18)
+    if (gadget == 18)
         menu0();                        /* jmp menu0 */
-    else if (d6 == 19)
+    else if (gadget == 19)
         menu1();                        /* jmp menu1 */
 }
 
@@ -1648,7 +1648,7 @@ void makeres(void)
 /* blitz2.s:15662 makemax - put from maxat into gadgets..... */
 void makemax(void)
 {
-    WORD d1;
+    WORD num;
 
     memset(optreqla54, ' ', 12);
     memset(optreqla55, ' ', 12);
@@ -1658,22 +1658,22 @@ void makemax(void)
     optreqga25.Flags |= GFLG_DISABLED;
     optreqga21.Flags &= ~GFLG_DISABLED;         /* up! */
     optreqga22.Flags &= ~GFLG_DISABLED;         /* down! */
-    d1 = maxat;
-    if (d1 == 0)
+    num = maxat;
+    if (num == 0)
         optreqga21.Flags |= GFLG_DISABLED;      /* no up arrow */
-    if ((UWORD)d1 >= (UWORD)nummaxs)
+    if ((UWORD)num >= (UWORD)nummaxs)
         goto nsec;
     optreqga7.Flags &= ~GFLG_DISABLED;          /* .doit */
     optreqga25.Flags &= ~GFLG_DISABLED;
     maxit(maxat, optreqla108, optreqla54);
-    d1 = maxat + 1;
-    if (d1 == nummaxs)
+    num = maxat + 1;
+    if (num == nummaxs)
         goto nsec;
     optreqga8.Flags &= ~GFLG_DISABLED;
     optreqga26.Flags &= ~GFLG_DISABLED;
     maxit(maxat + 1, optreqla109, optreqla55);
-    d1 = maxat + 2;
-    if ((UWORD)d1 >= (UWORD)nummaxs)
+    num = maxat + 2;
+    if ((UWORD)num >= (UWORD)nummaxs)
         goto ndown;
     return;
 nsec:
@@ -1683,12 +1683,12 @@ ndown:
     optreqga22.Flags |= GFLG_DISABLED;          /* no down */
 }
 
-/* blitz2.s:15713 maxit - d1-th lib with a maximum: object name + 's'
+/* blitz2.s:15713 maxit - which-th lib with a maximum: object name + 's'
    (no NUL) to label, maximum (makelong) to num */
-void maxit(WORD d1, UBYTE *label, UBYTE *num)
+void maxit(WORD which, UBYTE *label, UBYTE *num)
 {
     struct blitzlib *l;
-    const UBYTE *a3;
+    const UBYTE *name;
 
     for (l = firstlib; ; l = l->next) {
         if (!l)
@@ -1696,11 +1696,11 @@ void maxit(WORD d1, UBYTE *label, UBYTE *num)
                            happen, makemax checks nummaxs) */
         if (!LIBMAX_SHIFT(l))
             continue;
-        if (--d1 < 0)
+        if (--which < 0)
             break;
     }
-    a3 = (const UBYTE *)l + L_(LIBMAX_E(l) - 26);   /* token offset */
-    while ((*label++ = *a3++))
+    name = (const UBYTE *)l + L_(LIBMAX_E(l) - 26); /* token offset */
+    while ((*label++ = *name++))
         ;
     label[-1] = 's';
     makelong(num, (UWORD)LIBMAX_COUNT(l));
@@ -1733,7 +1733,7 @@ void menu7(void)
 {
     static struct Gadget *const basegads[3] = {&calcreqga2, &calcreqga3, &calcreqga4};
     jmp_buf jb, *volatile olderr;
-    WORD d6;
+    WORD gadget;
 
     calclibat = libat;
     olderr = errjmp;
@@ -1751,67 +1751,67 @@ loopq:
     for (;;) {                                          /* .loop */
         while (!ed_actgad(&calcreqga1))
             ;
-        if (!ed_getinput(&d6))
+        if (!ed_getinput(&gadget))
             continue;
-        if (d6 == 1) {
+        if (gadget == 1) {
             /* calculate the expression */
-            LONG d3;
+            LONG value;
             ULONG v;
-            UBYTE *a0;
-            WORD d0, d1;
+            UBYTE *dst;
+            WORD bitcount, started;
 
             ed_tokone(calcreqla15);             /* tokenise line..... */
             setcvars();
             setsvars();
             connest = 0;                        /* no idea... */
             srcptr = calcreqla15;
-            d3 = (LONG)evalconst2(NULL);        /* evaluate constant */
-            a0 = calcreqla15;
-            v = (ULONG)d3;
-            if (d3 < 0) {
-                *a0++ = '-';
+            value = (LONG)evalconst2(NULL);     /* evaluate constant */
+            dst = calcreqla15;
+            v = (ULONG)value;
+            if (value < 0) {
+                *dst++ = '-';
                 v = -v;     /* review: neg.l; unsigned so $80000000 stays defined */
             }
             if (calcreqga2.Flags == 128) {
-                makelong(a0, v);                /* .dec: to long... */
+                makelong(dst, v);               /* .dec: to long... */
             } else {
-                d1 = 0;
+                started = 0;
                 if (calcreqga3.Flags == 128) {
                     /* bin Print */
-                    *a0++ = '%';
-                    for (d0 = 31; d0 >= 0; d0--) {
+                    *dst++ = '%';
+                    for (bitcount = 31; bitcount >= 0; bitcount--) {
                         ULONG bit = v & 0x80000000UL;
                         v <<= 1;
                         if (bit) {
-                            *a0++ = '1';
-                            d1 = -1;
-                        } else if (d1)
-                            *a0++ = '0';
+                            *dst++ = '1';
+                            started = -1;
+                        } else if (started)
+                            *dst++ = '0';
                     }
                 } else {
                     /* .hex */
-                    *a0++ = '$';
-                    for (d0 = 7; d0 >= 0; d0--) {
-                        UWORD d2 = (UWORD)(v >> 28) + '0';
-                        if (d2 >= 58)
-                            d2 += 7;
-                        if (d2 != '0') {
-                            *a0++ = (UBYTE)d2;
-                            d1 = -1;
-                        } else if (d1)
-                            *a0++ = (UBYTE)d2;
+                    *dst++ = '$';
+                    for (bitcount = 7; bitcount >= 0; bitcount--) {
+                        UWORD digit = (UWORD)(v >> 28) + '0';
+                        if (digit >= 58)
+                            digit += 7;
+                        if (digit != '0') {
+                            *dst++ = (UBYTE)digit;
+                            started = -1;
+                        } else if (started)
+                            *dst++ = (UBYTE)digit;
                         v <<= 4;
                     }
                 }
-                if (!d1)                        /* .bdone */
-                    *a0++ = '0';
-                *a0 = 0;                        /* .pc1 */
+                if (!started)                   /* .bdone */
+                    *dst++ = '0';
+                *dst = 0;                       /* .pc1 */
             }
             goto pc_;
         }
-        if ((UWORD)d6 < 5) {
+        if ((UWORD)gadget < 5) {
             /* new number base selected */
-            WORD idx = d6 - 2, i;
+            WORD idx = gadget - 2, i;
             basegads[idx]->Flags = 0;
             for (i = 0; i < 3; i++)
                 if (basegads[i]->Flags == 128) {
@@ -1821,7 +1821,7 @@ loopq:
             basegads[idx]->Flags = 128;
             goto loopq;
         }
-        if (d6 == 5)
+        if (gadget == 5)
             break;                              /* BYE BYE */
         continue;
 pc_:
@@ -1839,17 +1839,17 @@ pc_:
 /* blitz2.s:15979 menu9 - CLI ARGUEMENT */
 void menu9(void)
 {
-    WORD d6;
+    WORD gadget;
 
     memcpy(namebuff, argreqla8, 128);
     ed_openreq(&argreq);
     ed_actgad(&argreqga1);
     for (;;) {
-        if (!ed_getinput(&d6))
+        if (!ed_getinput(&gadget))
             continue;
-        if (d6 == 1 || d6 == 2)
+        if (gadget == 1 || gadget == 2)
             return;
-        if (d6 == 3) {
+        if (gadget == 3) {
             /* cancel */
             memcpy(argreqla8, namebuff, 128);
             return;

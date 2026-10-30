@@ -205,17 +205,17 @@ extern WORD f2, f3;                     /* 15055 saved showlist d2 (field mode),
 
 void zerotypes(void);                   /* 15018 blank the 12 list lines */
 void makebody(void);                    /* 15031 prop VertBody/VertPot from maxtypes */
-void countlist(struct node *a2);        /* 15043 maxtypes = length, typeat = 0 */
-/* 15064 a2 = first item, d2 != 0: field list, d3 = name offset (11/15);
-   saves to f1/f2/f3, falls into showlist2 */
-void showlist(struct node *a2, WORD d2, WORD d3);
-void showlist2(struct node *a2, WORD d2, WORD d3);  /* 15067 */
+void countlist(struct node *list);      /* 15043 maxtypes = length, typeat = 0 */
+/* 15064 list = first item, fields != 0: field list, nameoff = name offset
+   (11/15); saves to f1/f2/f3, falls into showlist2 */
+void showlist(struct node *list, WORD fields, WORD nameoff);
+void showlist2(struct node *item, WORD fields, WORD nameoff);  /* 15067 */
 void showlist3(void);                   /* 15059 showlist2(f1,f2,f3) */
 void typeshow(void);                    /* 15140 typeat from VertPot; redisplay if changed */
 void reflist(void);                     /* 15152 refresh the 12 line gadgets */
 void allofem(void);                     /* 15158 show all user types */
 void menu6(void);                       /* 15165 menu: View Type Information */
-void typename(const char *a1);          /* 15281 copy name into TYPE: string (<=31) */
+void typename(const char *name);        /* 15281 copy name into TYPE: string (<=31) */
 
 extern struct Requester typereq;        /* typereq */
 
@@ -268,14 +268,14 @@ extern WORD  allchg;                    /* 15341 buffer gadget 1..6 changed */
    loadxtra_c and savextra_c are declared in glue.h. */
 void menu4(void);                       /* 15456 menu: compiler options */
 void menu4c(void);                      /* 15483 (menu4 fallthrough) */
-void optsdone(UWORD d6);                /* 15592 d6 17 ok / 18 -> menu0 / 19 -> menu1 */
+void optsdone(UWORD gadget);            /* 15592 gadget 17 ok / 18 -> menu0 / 19 -> menu1 */
 void menu4canc(void);                   /* 15612 restore snapshot */
 void newres(void);                      /* 15627 */
 void makeres(void);                     /* 15637 */
 void makemax(void);                     /* 15662 */
-/* 15713 d1 = index among libs with a max; writes name+'s' to label (not
+/* 15713 which = index among libs with a max; writes name+'s' to label (not
    NUL terminated) and the max (makelong) to num */
-void maxit(WORD d1, UBYTE *label, UBYTE *num);
+void maxit(WORD which, UBYTE *label, UBYTE *num);
 
 /* ===================================================================
  * Calculator / CLI argument (15735-16015, calcreq)
