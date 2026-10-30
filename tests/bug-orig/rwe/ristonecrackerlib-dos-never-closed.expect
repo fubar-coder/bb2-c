@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+0
+inject: rc=0
+inject: opencount: dos.library +0
+rc=0
