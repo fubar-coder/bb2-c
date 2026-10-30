@@ -125,17 +125,23 @@ The value count `argc` is a byte compared signed.
 ## BUG(orig), kept
 
 In the C file's head: the `.` at the end of a string (ConvToPostFix
-reads on behind the 0), dropped characters, signs after a space, a3 left
-pointing to the string; `<` is unsigned "less or same", `>` signed; the
-product's high words added into the low word on overflow; `x^0` = `x^1`
-= `x`, `0^n` = 1, the exponent's low word as the loop count; 128 or more
-values make every operator fail; extra values are no error; a string of
-spaces returns the caller's return address with error 4; a register
-operand reads its index character unchecked (also the string's 0, then
-it parses behind the string) and any index; `{register}` checks a stale
-d1, and the `}` behind it is then a value 0; `-$10`/`-%1` read `$`/`%`
-as a digit; digits are not checked; the indirection reads any address
-(an odd one is an address error).
+reads on behind the 0, #631), dropped characters (#632), signs after a
+space (#633); `<` is unsigned "less or same", `>` signed (#638); the
+product's high words added into the low word on overflow (#639); `x^0`
+= `x^1` = `x`, `0^n` = 1, the exponent's low word as the loop count
+(#641); 128 or more values make every operator fail (#645); extra values
+are no error (#635); a string of spaces returns the caller's return
+address with error 4 (#644); a register operand reads its index
+character unchecked (also the string's 0, then it parses behind the
+string) and any index (#642); `{register}` checks a stale d1, and the
+`}` behind it is then a value 0 (#637); `-$10`/`-%1` read `$`/`%` as a
+digit (#643); digits are not checked (#634); the indirection reads any
+address (an odd one is an address error, #636); PFErrorText without an
+error returns the caller's upper word of d0 as the length (#640).
+
+No defects, like the original: ConvToPostFix leaves a3 pointing to the
+string (a statement: nothing uses a3 after it); PFErrorType leaves the
+caller's upper word of d0 (a word result).
 
 ## Test
 

@@ -26,37 +26,45 @@
  *
  * BUG(orig), kept:
  *   - ConvToPostFix: a `.` copies the next character unchecked - at the
- *     end of the string its 0, and the scan goes on behind it.  An
+ *     end of the string its 0, and the scan goes on behind it (#631).  An
  *     operand character that is no digit, a-f, register, `$ % . { }`
- *     ends the operand and is dropped.  A `-` is a sign only at the
+ *     ends the operand and is dropped (#632).  A `-` is a sign only at the
  *     start of the string or right after an operator or `(` - not after
- *     a space ("3 -4" is 3-4).
- *   - ConvToPostFix leaves a3 (the Blitz string pointer) = the string.
+ *     a space ("3 -4" is 3-4) (#633).
  *   - PFEvaluate:
- *     - `<` is "less or same" unsigned (SLS), `>` signed (SGT).
+ *     - `<` is "less or same" unsigned (SLS), `>` signed (SGT) (#638).
  *     - `*` (lmult) adds the high words of the partial products into the
- *       low word (SWAP:ADD) - wrong only when the product overflows.
+ *       low word (SWAP:ADD) - wrong only when the product overflows
+ *       (#639).
  *     - `^`: x^0 and x^1 are x, 0^n is 1; the loop counts with DBRA on
- *       the low word of exponent-2.
+ *       the low word of exponent-2 (#641).
  *     - The value count is a byte compared signed: 128 or more values on
- *       the stack make every operator fail with "Need 2 arguments".
- *     - Only the last value is the result; more values are no error.
+ *       the stack make every operator fail with "Need 2 arguments"
+ *       (#645).
+ *     - Only the last value is the result; more values are no error
+ *       (#635).
  *     - A string of spaces only: "No result value!" (error 4), and the
  *       result is the long above the empty stack, the caller's return
- *       address (MOVE.l (a7)+,d0).
+ *       address (MOVE.l (a7)+,d0) (#644).
  *     - A register operand (`d0`, `a7`, `pc`) takes the next character
  *       unchecked (`a` + 0 skips the string's end), `a`/`d` with any
- *       character index the register block (index byte * 4).  In `{...}`
- *       the close bracket check looks at d1, the last character a number
- *       read - for a register d1 is stale (the caller's d1, or what the
- *       last number, `*`, `/` or `^` left), so `{d0}` mostly fails with
- *       error 5; if it passes, the `}` is then read as a number 0.
+ *       character index the register block (index byte * 4) (#642).  In
+ *       `{...}` the close bracket check looks at d1, the last character a
+ *       number read - for a register d1 is stale (the caller's d1, or what
+ *       the last number, `*`, `/` or `^` left), so `{d0}` mostly fails
+ *       with error 5; if it passes, the `}` is then read as a number 0
+ *       (#637).
  *     - `-$10`, `-%1`: the sign is taken first, then `$`/`%` is read as
- *       a decimal digit.  Digits are not checked (`12x` = 1, 2, 'x'-'0').
+ *       a decimal digit (#643).  Digits are not checked (`12x` = 1, 2,
+ *       'x'-'0') (#634).
  *     - The indirection reads a long at any address (an odd one is an
- *       address error on the 68000).
- *   - PFErrorType/PFErrorText: d0's upper word is the caller's (MOVE.w);
- *     PFErrorText with no error returns no string length.
+ *       address error on the 68000) (#636).
+ *   - PFErrorText with no error returns no string length: d0's upper word
+ *     is the caller's (MOVE.w) (#640).
+ * Like the original, no defects: ConvToPostFix leaves a3 (the Blitz
+ * string pointer) = the string (a statement: nothing uses a3 after it);
+ * PFErrorType leaves the caller's upper word of d0 (MOVE.w; a word
+ * result).
  */
 #include "blitzlib.h"
 
@@ -384,7 +392,7 @@ static ULONG lmult(ULONG d0, ULONG *d1)
     d0 = bl_mulu_w((UWORD)d0, (UWORD)*d1);      /* MULU d1,d0 */
     d3 = BL_SWAP(d3);
     d3 = bl_mulu_w((UWORD)d3, (UWORD)*d1);
-    d3 = BL_SWAP(d3);                           /* BUG(orig): its high word too */
+    d3 = BL_SWAP(d3);                           /* BUG(orig) (#639): its high word too */
     d0 += d3;
     *d1 = BL_SWAP(*d1);
     d4 = bl_mulu_w((UWORD)d4, (UWORD)*d1);
@@ -481,7 +489,7 @@ evloop:
     if (*s->a0 == 0) {                          /* ev_eol */
         if (st_empty(s)) {
             ev_error(err_noresult, 4);
-            return s->ret;                      /* BUG(orig): MOVE.l (a7)+,d0 */
+            return s->ret;                      /* BUG(orig) (#644): MOVE.l (a7)+,d0 */
         }
         return st_pop(s);
     }

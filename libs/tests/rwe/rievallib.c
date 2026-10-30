@@ -14,7 +14,7 @@
  * init/finit; ConvToPostFix with every operator and precedence, brackets
  * (too many either way), signs (start, after an operator or "(", after a
  * space), hex/binary/registers/indirection operands, upper case, dropped
- * characters, "." at the end with the scan behind it (BUG(orig)), 200
+ * characters, "." at the end with the scan behind it (BUG(orig) (#631)), 200
  * nested brackets and 150 nested operators (stack chunks); PFEvaluate
  * with every operator (signed/unsigned compares, overflowing products,
  * the division's signs, division by 0, powers 0, 1, 0^n, a 65538
@@ -24,7 +24,7 @@
  * .w, .l, a bad size, no "}", {register} with a stale d1 and with d1 =
  * "}", too few arguments, 130 values (the byte count), 300 values with
  * operators and pushes across the chunks, an empty string, spaces only
- * (the return address as result, BUG(orig)), two results.
+ * (the return address as result, BUG(orig) (#644)), two results.
  * Not covered: an indirection at an odd address (address error).
  */
 #include "rwecmp.h"
