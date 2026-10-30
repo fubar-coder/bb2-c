@@ -463,6 +463,23 @@ userlibs build converts a `BB22` source of `RWE_LIBS` the same way
 before teddetok (target `rwelibsrc`) and before the staging of the
 reference build (`build/amiga/libs/userlibs/rwe/ted/SOURCE`).
 
+The companion settings of a source – the Blitz 2 `.xtra`, the cursor in
+a `BB22` header, AmiBlitz3's "Embedded .xtra Header" of `.ab3` sources –
+have one structure in `shared/xtra/xtra.h` (`docs/formats.md`),
+shared code that blitz2 and TED are meant to use later. `tools/xtra`
+shows, checks and converts them:
+
+```
+build/amiga/host/tools/xtra/xtra dump FILE.xtra [--bb22 SRC]
+build/amiga/host/tools/xtra/xtra dump --ab3 SRC.ab3
+build/amiga/host/tools/xtra/xtra check [--bb22|--ab3] [--exact] FILE...
+build/amiga/host/tools/xtra/xtra convert --to-ab3 IN.xtra OUT [--bb22 SRC]
+build/amiga/host/tools/xtra/xtra convert --to-xtra IN.ab3 OUT.xtra
+```
+
+ctest `xtra_blitz2`, `xtra_bb22`, `xtra_ab3` check the code with inputs
+in memory (also broken ones), `xtra_tool` the tool on files.
+
 ## Emulator
 
 `tools/lib/amiga_emulation` runs AmigaDOS scripts in Amiberry – without a
@@ -558,7 +575,8 @@ tools/                       host tools:
                              TED's format),
                              blitzres (residents: constants written,
                              contents read; NDK FD files and includes),
-                             bblines (line edits of tokenised sources);
+                             bblines (line edits of tokenised sources),
+                             xtra (shared/xtra compiled for the host);
                              blitzlib also compares declarations
   biglib/, blitzlibcheck/,   the tools: one main.c each around lib/
   blitzlibcompare/,
@@ -567,7 +585,7 @@ tools/                       host tools:
   vasmlisting/, checklabels/,
   checkdata/, asmcmp/,
   mktestdata/, bb22/, blitzres/,
-  bblines/
+  bblines/, xtra/
   tests/                     tests of lib/ with inputs from memory
 ```
 
