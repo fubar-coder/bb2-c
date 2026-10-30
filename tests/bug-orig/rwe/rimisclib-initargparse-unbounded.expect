@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+before
+at most 255
+rc=0
