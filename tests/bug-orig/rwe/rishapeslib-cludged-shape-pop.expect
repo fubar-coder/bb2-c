@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+linked 16
+loaded
+inject: rc=0
+inject: not in use: CORPUS:s.le
+rc=0
