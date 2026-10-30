@@ -72,6 +72,8 @@ set(RWE_LIBS
 	"rishapeslib|shapeslib/RIShapesLib2.bb|refbuild|${bss2}/RIPACKLIB.OBJ"
 	"risortlib|sortlib/RISortlib2.bb|refbuild"
 	"ridisasmlib|Disasmlib/Disasm-library.bb2|refbuild"
+	# the font of its IncBin: rilesdebuglib-font.bin (from AmiBlitz3)
+	"rilesdebuglib|LESDebuglib/LESDEBUGlib.bb|refbuild"
 	# the BSS2 binary newer than the source (3.2), number 121 = the
 	# acidlibs' polylib: variant rwe-1999-eval (RWE_OWN_VARIANTS)
 	"rievallib|EvalLib4.bb|${bss2}/RIEVALLIB.OBJ"

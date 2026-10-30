@@ -160,13 +160,17 @@ if(have_originals)
 	set(sbra ${cd}/BUM10A/BLITZLIBS/ASMMACS.RES)
 	set(optidec ${rwesrc}/optidec.bin)
 	set(fnsfont ${cd}/BSS2/REDBLITZLIBS/EXAMPLES/FNS/FONTS/PERSONAL.FNS)
+	# Font.bin of the LES debug library (in git, from AmiBlitz3;
+	# archive/README.md, ctest rwe_lesfont_cd)
+	set(lesfont ${CMAKE_CURRENT_SOURCE_DIR}/rilesdebuglib-font.bin)
 	string(REPLACE ";" "$<SEMICOLON>" res_arg "${RWE_RESIDENTS}")
 	string(REPLACE ";" "$<SEMICOLON>" src_arg "${ref_sources}")
 	add_custom_command(OUTPUT ${stage_out}
 		COMMAND ${CMAKE_COMMAND} -DSTAGE=${stage} -DBLITZLIBS=${cdlibs} -DLIBNUMS=${libnums}
 			-DSBRA=${sbra} "-DRESIDENTS=${res_arg}" -DOPTIDEC=${optidec} -DFNSFONT=${fnsfont}
+			-DLESFONT=${lesfont}
 			"-DSOURCES=${src_arg}" -P ${CMAKE_CURRENT_SOURCE_DIR}/refbuild-stage.cmake
-		DEPENDS ${stage_in} ${cdfiles} ${sbra} ${optidec} ${fnsfont}
+		DEPENDS ${stage_in} ${cdfiles} ${sbra} ${optidec} ${fnsfont} ${lesfont}
 			${CMAKE_CURRENT_SOURCE_DIR}/refbuild-stage.cmake
 		COMMENT "Reference build: staging the RWE sources"
 		VERBATIM)
@@ -224,6 +228,7 @@ assign=blitzlibs|BLITZLIBS
 assign=libincs|BLITZLIBS
 assign=blitzincs|BLITZLIBS
 assign=FNS|FNS
+assign=Blitz2|BLITZ2
 ${ref_pass}")
 add_test(NAME rwe_refbuild COMMAND ${CDRUN} ${pass})
 math(EXPR limit "${RWE_REFBUILD_TIMEOUT} * 3 + 120")
@@ -266,3 +271,17 @@ add_test(NAME rwe_refbuild_compare_broken COMMAND ${CMAKE_COMMAND}
 	-DORIG=${CMAKE_CURRENT_SOURCE_DIR}/refbuild-stage.cmake
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/refbuild-compare.cmake)
 set_tests_properties(rwe_refbuild_compare_broken PROPERTIES PASS_REGULAR_EXPRESSION "differs from")
+
+# the font of the LES debug library is the one of the CD's binary (BUM
+# RILESDEBUGLIB.OBJ at 3460; skipped without the CD), and the check with
+# broken input: the font against itself one byte further
+set(lesfont_check ${CMAKE_CURRENT_SOURCE_DIR}/lesfont-check.cmake)
+add_test(NAME rwe_lesfont_cd COMMAND ${CMAKE_COMMAND}
+	-DFONT=${CMAKE_CURRENT_SOURCE_DIR}/rilesdebuglib-font.bin
+	-DBIN=${cd}/BUM10A/BLITZLIBS/RILIBS/RILESDEBUGLIB.OBJ -DOFFSET=3460 -P ${lesfont_check})
+set_tests_properties(rwe_lesfont_cd PROPERTIES SKIP_RETURN_CODE 77)
+add_test(NAME rwe_lesfont_broken COMMAND ${CMAKE_COMMAND}
+	-DFONT=${CMAKE_CURRENT_SOURCE_DIR}/rilesdebuglib-font.bin
+	-DBIN=${CMAKE_CURRENT_SOURCE_DIR}/rilesdebuglib-font.bin -DOFFSET=1 -P ${lesfont_check})
+set_tests_properties(rwe_lesfont_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "differs from the 2048 bytes at 1")

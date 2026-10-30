@@ -29,6 +29,9 @@
 #define LIB_ridisasmlib             50   /* AmiBlitz3 RIDisAsm */
 #define LIB_ciatrklib               56   /* = #neilsciatrklib of the CD's libnums */
 #define LIB_ritrackerlib            58   /* RWE's list (docs/rwelibs/README.md 3.3), no binary */
+#define LIB_riLESDEBUGlib           49   /* BUM RILESDEBUGLIB; AmiBlitz3 RILESDEBUGLib
+                                            (the source's case: Blitz constants
+                                            are case-sensitive) */
 /* stage D: no binary; numbers from RWE's list (docs/rwelibs/README.md
    3.3) under the name the source uses, or the literal number of the
    source if it is free in this set, or a slot RWE's list reserved */

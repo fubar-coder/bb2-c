@@ -10,12 +10,16 @@
 #   optidec.bin    INCBIN of stclib (and stcdecrunchlib), whose jobs run
 #                  in the root for libmacs.bb
 #   FNS/           (FNS:) PERSONAL.FNS, INCBIN of fns-library11
+#   BLITZ2/        (added to blitz2:) Debugger/Font.bin = LESFONT
+#                  (rilesdebuglib-font.bin), INCBIN
+#                  "Blitz2:Debugger/Font.bin" of LESDEBUGlib
 #   RWE/REL        the SOURCES (REL|FILE|XTRA: FILE staged as RWE/REL,
 #                  XTRA - the .xtra next to the source - as RWE/REL.xtra
 #                  if not empty)
 #   cmake -DSTAGE=... -DBLITZLIBS=CD/EXTRAS/BLITZLIBS -DLIBNUMS=... -DSBRA=...
-#         -DRESIDENTS=... -DOPTIDEC=... -DFNSFONT=... -DSOURCES=... -P refbuild-stage.cmake
-foreach(v STAGE BLITZLIBS LIBNUMS SBRA RESIDENTS OPTIDEC FNSFONT SOURCES)
+#         -DRESIDENTS=... -DOPTIDEC=... -DFNSFONT=... -DLESFONT=...
+#         -DSOURCES=... -P refbuild-stage.cmake
+foreach(v STAGE BLITZLIBS LIBNUMS SBRA RESIDENTS OPTIDEC FNSFONT LESFONT SOURCES)
 	if("${${v}}" STREQUAL "")
 		message(FATAL_ERROR "refbuild-stage.cmake: -D${v}=... missing")
 	endif()
@@ -54,6 +58,7 @@ endforeach()
 stage(${OPTIDEC} ${STAGE}/optidec.bin)
 get_filename_component(n ${FNSFONT} NAME)
 stage(${FNSFONT} ${STAGE}/FNS/${n})
+stage(${LESFONT} ${STAGE}/BLITZ2/Debugger/Font.bin)
 foreach(s IN LISTS SOURCES)
 	string(REPLACE "|" ";" s "${s}")
 	list(GET s 0 rel)
