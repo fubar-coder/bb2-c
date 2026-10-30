@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+marker kept
+after
+rc=0
