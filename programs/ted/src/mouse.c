@@ -7,10 +7,11 @@
  * help key display, the COMPILER menu (getstuff), the label column
  * (showmice), printmem, outmem/extalloc/doalert, doclean.
  *
- * The asm keeps its state in registers across calls; the C locals carry
- * the same names (d0-d6, a4).  Where a called routine changes a register
- * that the asm uses afterwards, C passes it explicitly (getinput2 writes
- * d6 for gadget/menu messages, orderem returns the ordered d0-d3).
+ * The asm keeps its state in registers across calls; the C locals are
+ * named after what they hold (the register in the comments).  Where a
+ * called routine changes a register that the asm uses afterwards, C passes
+ * it explicitly (getinput2 writes d6 = lastrow for gadget/menu messages,
+ * orderem returns the ordered d0-d3).
  */
 #include <string.h>
 #include <setjmp.h>
@@ -97,31 +98,31 @@ char helpex[] = "blitz2:help 1234";     /* ted.s:2768/2769 */
 /* ------------------------------------------------------------- mouse */
 
 /* ted.s:1981 gomouse */
-void gomouse(WORD d2, UWORD d3)
+void gomouse(WORD col, UWORD row)
 {
-    struct micenode *a0;
-    struct item *a1;
-    UWORD d0, d1;
+    struct micenode *node;
+    struct item *item;
+    UWORD d0, n;
 
     d0 = (UWORD)(edcols + 2);
-    if ((UWORD)d2 < d0)                         /* bcs .skip */
+    if ((UWORD)col < d0)                        /* bcs .skip */
         return;
-    if (d3 >= nummice)                          /* bcc .skip */
+    if (row >= nummice)                         /* bcc .skip */
         return;
-    a0 = mice;                                  /* lea mice,a0 / move.l (a0),a0 */
-    while (d3--)                                /* dbf d3,.loop */
-        a0 = a0->next;
-    a1 = firstitem;
+    node = mice;                                /* lea mice,a0 / move.l (a0),a0 */
+    while (row--)                               /* dbf d3,.loop */
+        node = node->next;
+    item = firstitem;
     d0 = 0;
-    d1 = (UWORD)(numlines - 1);
+    n = (UWORD)(numlines - 1);
     do {                                        /* .loop2 */
-        if (a0->line == a1) {
+        if (node->line == item) {
             gotolined0(d0);                     /* beq gotolined0 */
             return;
         }
-        a1 = a1->nextitem;
+        item = item->nextitem;
         d0++;
-    } while (d1-- != 0);
+    } while (n-- != 0);
     /* .skip */
 }
 
@@ -129,25 +130,25 @@ void gomouse(WORD d2, UWORD d3)
    f***ing mouse. */
 void mousedown(void)
 {
-    struct item *a4 = thisitem, *s_a4;
+    struct item *item = thisitem, *s_item;
     struct mousexy m;
     struct quad q;
-    WORD d0, d1, d2, d3, d5, t;
-    UWORD d6, s_curstop;
+    WORD d0, d1, col, row, lastcol, savedline;
+    UWORD lastrow, s_curstop;
     WORD s_btopx, s_bbotx, s_cursoff;
     UWORD s_btopy, s_bboty;
-    LONG d7;
-    BOOL in;
+    LONG ev;
+    BOOL inside;
 
     if (!getmousexy(&m))
         return;                                 /* bmi .done */
-    d2 = m.col;
-    d3 = m.row;
-    if ((UWORD)d2 >= edcols) {
-        gomouse(d2, (UWORD)d3);                 /* bcc gomouse */
+    col = m.col;
+    row = m.row;
+    if ((UWORD)col >= edcols) {
+        gomouse(col, (UWORD)row);               /* bcc gomouse */
         return;
     }
-    d1 = (WORD)(d3 + curstop);
+    d1 = (WORD)(row + curstop);
     if ((UWORD)d1 >= numlines)
         return;
     /* the stack frame: btop/bbot (as longs) */
@@ -158,113 +159,113 @@ void mousedown(void)
         showall();
     }
     /* .skipsal */
-    d1 = (WORD)(d3 + curstop);
+    d1 = (WORD)(row + curstop);
     bloktopy = d1;
     blokboty = d1;
-    d2 = (WORD)(d2 + cursoff);
-    bloktopx = d2;
-    blokbotx = d2;
-    showprops2(d2, (UWORD)d3);
-    d5 = d2;
-    d6 = (UWORD)d3;
-    d0 = d2;
-    d1 = d3;
+    col = (WORD)(col + cursoff);
+    bloktopx = col;
+    blokbotx = col;
+    showprops2(col, (UWORD)row);
+    lastcol = col;
+    lastrow = (UWORD)row;
+    d0 = col;
+    d1 = row;
     invflag = 0;
     s_curstop = curstop;
     s_cursoff = cursoff;
-    s_a4 = a4;
+    s_item = item;
     /* .loop2 */
-    invertarea(d0, d1, d2, d3);
+    invertarea(d0, d1, col, row);
 loop:
     /* busy poll (survey-03 I.11); handled0 writes d6 for gadget and menu
-       messages - the asm's d6 (end row) as well */
-    d7 = getinput2(&d6);
-    if ((WORD)d7 == -4)
+       messages - the asm's d6 (end row, lastrow) as well */
+    ev = getinput2(&lastrow);
+    if ((WORD)ev == -4)
         goto mouseup;
-    in = getmousexy(&m);
-    d0 = m.x; d1 = m.y; d2 = m.col; d3 = m.row;
-    if (in)
+    inside = getmousexy(&m);
+    d0 = m.x; d1 = m.y; col = m.col; row = m.row;
+    if (inside)
         goto skip0;
     if ((UWORD)d1 < topskip)                    /* bcs .mup */
         goto mup;
     /* mouse drag down */
-    d3 = (WORD)edrows;
-    d0 = (WORD)(d3 + curstop);
+    row = (WORD)edrows;
+    d0 = (WORD)(row + curstop);
     if ((UWORD)d0 >= numlines)
         goto loop;
-    d3--;
-    d2 = (WORD)chcols;
+    row--;
+    col = (WORD)chcols;
     d0 = (WORD)(curstop + edrows);
     if ((UWORD)d0 >= numlines)                  /* never (survey-03 I.11) */
         goto skip2;
     scrupall();                                 /* (d5/d6 saved) */
-    a4 = a4->nextitem;
-    thisitem = a4;
+    item = item->nextitem;
+    thisitem = item;
     curstop++;
     showbotitem();
-    d6--;
+    lastrow--;
     /* .ok (unused label) */
-    d2 = (WORD)chcols;
-    d3 = (WORD)(edrows - 1);
-    d1 = (WORD)(d3 + curstop);
+    col = (WORD)chcols;
+    row = (WORD)(edrows - 1);
+    d1 = (WORD)(row + curstop);
     if ((UWORD)d1 > (UWORD)bloktopy)            /* bhi .skip2 */
         goto skip2;
-    t = d1;                                     /* move d1,-(a7) */
-    invertarea((WORD)chcols, (WORD)(edrows - 2), d5, (WORD)d6);
-    d5 = (WORD)chcols;
-    d6 = (UWORD)(edrows - 1);
-    d3 = (WORD)d6;
-    d2 = -1;
-    d1 = t;
+    savedline = d1;                             /* move d1,-(a7) */
+    invertarea((WORD)chcols, (WORD)(edrows - 2), lastcol, (WORD)lastrow);
+    lastcol = (WORD)chcols;
+    lastrow = (UWORD)(edrows - 1);
+    row = (WORD)lastrow;
+    col = -1;
+    d1 = savedline;
     if (d1 != bloktopy)
         goto skip2;
-    d5 = (WORD)(bloktopx + 1);
+    lastcol = (WORD)(bloktopx + 1);
     goto skip2;
 
 mup:
     /* mouse drag up! - currently FUCKED */
-    d2 = 0;
-    d3 = 0;
+    col = 0;
+    row = 0;
     if (curstop == 0)
         goto skip2;
     scrdownall();
-    a4 = a4->lastitem;
-    thisitem = a4;
+    item = item->lastitem;
+    thisitem = item;
     curstop--;
     showtopitem();
-    d6++;
+    lastrow++;
     /* .ok2 (unused label) */
-    d3 = 0;
-    d2 = 0;
+    row = 0;
+    col = 0;
     d1 = (WORD)curstop;
     if ((UWORD)d1 < (UWORD)bloktopy)            /* bcs .skip2 */
         goto skip2;
-    invertarea(0, 1, d5, (WORD)d6);
-    d2 = (WORD)chcols;
-    d3 = 0;
-    d5 = -1;
-    d6 = 0;
+    invertarea(0, 1, lastcol, (WORD)lastrow);
+    col = (WORD)chcols;
+    row = 0;
+    lastcol = -1;
+    lastrow = 0;
     d1 = (WORD)curstop;
     if (d1 != bloktopy)
         goto skip2;
-    d5 = (WORD)(bloktopx - 1);
+    lastcol = (WORD)(bloktopx - 1);
     goto skip2;
 
 skip0:
-    d2 = (WORD)(d2 + cursoff);
-    d1 = (WORD)(d3 + curstop);
+    col = (WORD)(col + cursoff);
+    d1 = (WORD)(row + curstop);
     if ((UWORD)d1 >= numlines)                  /* bcs .skip0z */
-        d3 = (WORD)(numlines - curstop - 1);
+        row = (WORD)(numlines - curstop - 1);
     /* .skip0z */
     if (d0 == 0) {
         /* go left */
-        d2--;
+        col--;
         if (cursoff == 0)
             goto skip2;
-        d2--;
+        col--;
         /* movem d2-d3/d5-d6 around: locals stay */
-        blokbotx = d5;
-        blokboty = (WORD)(d6 + curstop);
+        blokbotx = lastcol;
+        blokboty = (WORD)(lastrow + curstop);
         btopx = bloktopx; btopy = (UWORD)bloktopy;  /* move.l bloktopx,btopx */
         bbotx = blokbotx; bboty = (UWORD)blokboty;  /* move.l blokbotx,bbotx */
         sortblox(NULL);
@@ -274,15 +275,15 @@ skip0:
         goto skip2;
     }
     /* .skip0y - go rite */
-    d0 = (WORD)(d2 - cursoff);
+    d0 = (WORD)(col - cursoff);
     if ((UWORD)d0 < edcols)                     /* bcs .skip2 */
         goto skip2;
-    d2 = (WORD)(cursoff + edcols);
-    if ((UWORD)d2 >= chcols)                    /* bcc .skip2 */
+    col = (WORD)(cursoff + edcols);
+    if ((UWORD)col >= chcols)                   /* bcc .skip2 */
         goto skip2;
-    d2++;
-    blokbotx = d5;
-    blokboty = (WORD)(d6 + curstop);
+    col++;
+    blokbotx = lastcol;
+    blokboty = (WORD)(lastrow + curstop);
     btopx = bloktopx; btopy = (UWORD)bloktopy;
     bbotx = blokbotx; bboty = (UWORD)blokboty;
     sortblox(NULL);
@@ -292,44 +293,44 @@ skip0:
     goto skip2;
 
 skip2:
-    if (d5 == d2 && d6 == (UWORD)d3)
+    if (lastcol == col && lastrow == (UWORD)row)
         goto loop;
     /* .skip */
-    showprops2(d2, (UWORD)d3);
-    blokbotx = d2;
-    d1 = (WORD)(d3 + curstop);
+    showprops2(col, (UWORD)row);
+    blokbotx = col;
+    d1 = (WORD)(row + curstop);
     blokboty = d1;
     if ((UWORD)d1 < (UWORD)bloktopy)            /* bcs .above */
         goto above;
     if (d1 != bloktopy)                         /* bne .below */
         goto below;
-    if (d2 < bloktopx)                          /* blt .above */
+    if (col < bloktopx)                         /* blt .above */
         goto above;
 below:
     if (invflag)
         goto fix;
-    q.topx = d5; q.topy = (WORD)d6; q.botx = d2; q.boty = d3;
-    d5 = d2;
-    d6 = (UWORD)d3;
+    q.topx = lastcol; q.topy = (WORD)lastrow; q.botx = col; q.boty = row;
+    lastcol = col;
+    lastrow = (UWORD)row;
     orderem(&q);
     invertarea2((WORD)(q.topx + 1), q.topy, q.botx, q.boty);
     goto loop;
 above:
     if (!invflag)
         goto fix;
-    q.topx = d5; q.topy = (WORD)d6; q.botx = d2; q.boty = d3;
-    d5 = d2;
-    d6 = (UWORD)d3;
+    q.topx = lastcol; q.topy = (WORD)lastrow; q.botx = col; q.boty = row;
+    lastcol = col;
+    lastrow = (UWORD)row;
     orderem(&q);
     invertarea2(q.topx, q.topy, (WORD)(q.botx - 1), q.boty);
     goto loop;
 fix:
     invflag = (UWORD)~invflag;
     {
-        WORD sd2 = d2, sd3 = d3;                /* movem d2-d3,-(a7) */
+        WORD scol = col, srow = row;            /* movem d2-d3,-(a7) */
 
-        d2 = d5;
-        d3 = (WORD)d6;
+        col = lastcol;
+        row = (WORD)lastrow;
         d0 = bloktopx;
         d1 = (WORD)(bloktopy - curstop);
         if (d1 < 0) {                           /* bpl .fskip */
@@ -340,12 +341,12 @@ fix:
             d0 = (WORD)(chcols - 1);
         }
         /* .fskip2 */
-        invertarea(d0, d1, d2, d3);
-        d2 = sd2;
-        d3 = sd3;
-        d5 = d2;
-        d6 = (UWORD)d3;
-        invertarea(d0, d1, d2, d3);
+        invertarea(d0, d1, col, row);
+        col = scol;
+        row = srow;
+        lastcol = col;
+        lastrow = (UWORD)row;
+        invertarea(d0, d1, col, row);
     }
     goto loop;
 
@@ -353,7 +354,7 @@ mouseup:
     newctop = curstop;
     newcoff = (UWORD)cursoff;
     /* survey-03 I.11: the scroll position before the drag comes back */
-    thisitem = s_a4;
+    thisitem = s_item;
     cursoff = s_cursoff;
     curstop = s_curstop;
     d0 = blokbotx;
@@ -389,22 +390,22 @@ one:
     btopx = s_btopx; btopy = s_btopy;
     cursx = (UWORD)(bloktopx - cursoff);
     d0 = (WORD)(curstop + cursy);
-    a4 = thisitem;
+    item = thisitem;
     for (;;) {
         /* ted.s:2290 oneloop */
         if ((UWORD)d0 == (UWORD)bloktopy)
             break;                              /* beq .skip */
         if ((UWORD)d0 < (UWORD)bloktopy) {      /* bcs .skip2 */
-            a4 = a4->nextitem;
+            item = item->nextitem;
             d0++;
         } else {
-            a4 = a4->lastitem;
+            item = item->lastitem;
             d0--;
         }
     }
     /* .skip */
     cursy = (UWORD)(d0 - curstop);
-    thisitem = a4;
+    thisitem = item;
     calcpos();
     if (bboty != (UWORD)-1) {
         bloken();
@@ -421,19 +422,19 @@ one:
 
 /* ------------------------------------------- goto / block marks / WB */
 
-/* ted.s:2409 actgad - activate gadget in a0 */
-ULONG actgad(struct Gadget *a0)
+/* ted.s:2409 actgad - activate gadget in a0 (gad) */
+ULONG actgad(struct Gadget *gad)
 {
     Delay(8);
-    return ActivateGadget(a0, req_window, NULL);
+    return ActivateGadget(gad, req_window, NULL);
 }
 
 /* ted.s:2420 gotoline */
 void gotoline(void)
 {
-    UWORD d6 = ev_data;
-    LONG d7;
-    ULONG d0;
+    UWORD id = ev_data;
+    LONG ev;
+    ULONG n;
 
     gotoreqsg1.BufferPos = 0;                   /* clr gotoreqsg1+8 */
     gotoreqsg1.DispPos = 0;                     /* clr gotoreqsg1+12 */
@@ -443,25 +444,25 @@ void gotoline(void)
     actgad(&gotoreqga1);                        /* (lea gotoreq,a2: no effect) */
     for (;;) {
         /* .loop: getinput closes the requester on ENDGADGET */
-        d7 = getinput(&d6);
-        if ((WORD)d7 != -1)
+        ev = getinput(&id);
+        if ((WORD)ev != -1)
             continue;
-        if (d6 == 1 || d6 == 2)
+        if (id == 1 || id == 2)
             break;                              /* .ok */
-        if (d6 == 3)
+        if (id == 3)
             return;
     }
     /* .ok */
-    d0 = (ULONG)gotoint;
-    if (d0 == 0) {
+    n = (ULONG)gotoint;
+    if (n == 0) {
         beepem();
         return;
     }
-    if ((UWORD)d0 > numlines) {                 /* word compare (survey-03 I.10) */
+    if ((UWORD)n > numlines) {                  /* word compare (survey-03 I.10) */
         beepem();
         return;
     }
-    gotolined0((UWORD)(d0 - 1));                /* bra gotolined0 */
+    gotolined0((UWORD)(n - 1));                 /* bra gotolined0 */
 }
 
 /* ted.s:2501 closewb */
@@ -481,32 +482,32 @@ void openwb(void)
 /* --------------------------------------------- console window / CLI */
 
 /* ted.s:2513 findio (no Forbid/LockDosList, survey-03 I.9) */
-BOOL findio(const char *a0, UWORD d0)
+BOOL findio(const char *name, UWORD len)
 {
     struct RootNode *rn = (struct RootNode *)DOSBase->dl_Root;
     struct DosInfo *di = (struct DosInfo *)BADDR(rn->rn_Info);
-    BPTR d1 = di->di_DevInfo;
-    struct DevInfo *a1;
-    const UBYTE *a2, *a3;
+    BPTR dev = di->di_DevInfo;
+    struct DevInfo *dvi;
+    const UBYTE *dname, *p;
     UWORD n;
 
     for (;;) {
         /* .loop */
-        a1 = (struct DevInfo *)BADDR(d1);
-        a2 = (const UBYTE *)BADDR(a1->dvi_Name);
-        if (*a2++ == (UBYTE)d0) {
-            a3 = (const UBYTE *)a0;
-            n = (UWORD)(d0 - 1);
+        dvi = (struct DevInfo *)BADDR(dev);
+        dname = (const UBYTE *)BADDR(dvi->dvi_Name);
+        if (*dname++ == (UBYTE)len) {
+            p = (const UBYTE *)name;
+            n = (UWORD)(len - 1);
             for (;;) {                          /* .comp */
-                if (*a3++ != *a2++)
+                if (*p++ != *dname++)
                     goto next;
                 if (n-- == 0)
                     return TRUE;                /* moveq #0,d0: Z=1 */
             }
         }
 next:
-        d1 = a1->dvi_Next;
-        if (!d1)
+        dev = dvi->dvi_Next;
+        if (!dev)
             return FALSE;                       /* moveq #-1,d0 */
     }
 }
@@ -520,21 +521,21 @@ UWORD calciorows(void)
 /* ted.s:2548 openio - open a default io handle */
 ULONG openio(UWORD *ccr)
 {
-    struct Process *a3;
-    UWORD d0;
+    struct Process *pr;
+    UWORD rows;
 
     hiteasc[0] = ' ';
     hiteasc[1] = ' ';
     hiteasc[2] = ' ';
     /* survey-03 I.8: the editor screen's height, also on the WB screen */
-    d0 = (UWORD)newscreen.Height;               /* newscreen+6 */
+    rows = (UWORD)newscreen.Height;             /* newscreen+6 */
     if (!screensopen)
-        d0 = calciorows();
+        rows = calciorows();
     /* .docon */
-    numtoascii(d0, (UBYTE *)hiteasc);
-    a3 = (struct Process *)FindTask(NULL);
-    oldih = a3->pr_CIS;
-    oldoh = a3->pr_COS;
+    numtoascii(rows, (UBYTE *)hiteasc);
+    pr = (struct Process *)FindTask(NULL);
+    oldih = pr->pr_CIS;
+    oldoh = pr->pr_COS;
     /* see if NEWCON is there... */
     if (findio(ioname, 6))
         myhandle = Open((STRPTR)ioname, MODE_NEWFILE);  /* .usenew */
@@ -545,8 +546,8 @@ ULONG openio(UWORD *ccr)
         return 0;
     }
     /* .isok */
-    a3->pr_CIS = myhandle;
-    a3->pr_COS = myhandle;
+    pr->pr_CIS = myhandle;
+    pr->pr_COS = myhandle;
     /* callint wbenchtofront: the asm returns with d0 and the CCR that
        WBenchToFront left (mycli tests Z, survey-03 I.8) - called through
        callregs (glue.c) to get them: LVO -342, a6 = IntuitionBase */
@@ -562,10 +563,10 @@ ULONG openio(UWORD *ccr)
 /* ted.s:2597 closeio */
 void closeio(void)
 {
-    struct Process *a3 = (struct Process *)FindTask(NULL);
+    struct Process *pr = (struct Process *)FindTask(NULL);
 
-    a3->pr_CIS = oldih;
-    a3->pr_COS = oldoh;
+    pr->pr_CIS = oldih;
+    pr->pr_COS = oldoh;
     Close(myhandle);                            /* also 0 (survey-03 I.9) */
     if (screensopen) {
         ScreenToFront(myscreen);
@@ -586,10 +587,10 @@ void mycli(void)
     closeio();                                  /* bra closeio */
 }
 
-/* ted.s:2629 refgads - refresh gadgets - a0 = gadget, d0 = number */
-void refgads(struct Gadget *a0, LONG d0)
+/* ted.s:2629 refgads - refresh gadgets - a0 = gadget, d0 = number (count) */
+void refgads(struct Gadget *gad, LONG count)
 {
-    RefreshGList(a0, req_window, NULL, d0);
+    RefreshGList(gad, req_window, NULL, count);
 }
 
 /* ------------------------------------------------------------ help */
@@ -597,10 +598,10 @@ void refgads(struct Gadget *a0, LONG d0)
 /* ted.s:2697 help - the help key stuff..... */
 void help(void)
 {
-    struct item *a4 = thisitem;
-    const char *d1, *a2, *a0;
-    char *a1;
-    UWORD n, d0, d2;
+    struct item *item = thisitem;
+    const char *name, *text, *src;
+    char *dst;
+    UWORD n, hex, digit;
     int i;
 
     if (!tokenise) {
@@ -608,35 +609,35 @@ void help(void)
         return;
     }
     n = helptoke;
-    d1 = help_core(a4, (UWORD)(cursoff + cursx), &n);
+    name = help_core(item, (UWORD)(cursoff + cursx), &n);
     helptoke = n;
-    if (!d1) {
+    if (!name) {
         showfname();                            /* beq showfname */
         return;
     }
-    a2 = d1 + strlen(d1) + 1;                   /* help text behind the name */
+    text = name + strlen(name) + 1;             /* help text behind the name */
     /* survey-03 I.13: newsctit (112 bytes) is not checked */
-    a0 = d1;
-    a1 = newsctit;
-    while ((*a1++ = *a0++) != 0)                /* .loop3 */
+    src = name;
+    dst = newsctit;
+    while ((*dst++ = *src++) != 0)              /* .loop3 */
         ;
-    a1--;
-    if (*a2 != '(')
-        *a1++ = ' ';
-    while ((*a1++ = *a2++) != 0)                /* .loop4 */
+    dst--;
+    if (*text != '(')
+        *dst++ = ' ';
+    while ((*dst++ = *text++) != 0)             /* .loop4 */
         ;
     ShowTitle(myscreen, -1);
     if (!(qualifier & 0x80))
         return;
     /* .am: right Amiga - "blitz2:help XXXX" */
-    a1 = helphex;
-    d0 = helptoke;
+    dst = helphex;
+    hex = helptoke;
     for (i = 0; i < 4; i++) {                   /* .looph */
-        d0 = (UWORD)((d0 << 4) | (d0 >> 12));   /* rol.w #4,d0 */
-        d2 = (UWORD)((d0 & 15) + 48);
-        if (d2 >= 58)
-            d2 += 7;
-        *a1++ = (char)d2;
+        hex = (UWORD)((hex << 4) | (hex >> 12)); /* rol.w #4,d0 */
+        digit = (UWORD)((hex & 15) + 48);
+        if (digit >= 58)
+            digit += 7;
+        *dst++ = (char)digit;
     }
     Execute((STRPTR)helpex, 0, 0);              /* jmp execute(a6) */
 }
@@ -651,11 +652,11 @@ void doclean(void)
 /* ted.s:2781 getstuff */
 void getstuff(void)
 {
-    UBYTE *a5;
+    UBYTE *text;
     struct Menu *m;
-    struct mitem *a0;
-    struct MenuItem **a4;
-    UWORD d0, d7;
+    struct mitem *mi;
+    struct MenuItem **link;
+    UWORD len, top;
     UBYTE c;
 
     if (tokens) {
@@ -663,8 +664,8 @@ void getstuff(void)
         defaultreqga8.Flags |= 0x80;            /* or #$80,defaultreqga8+12 */
     }
     /* .skip */
-    a5 = menitems;
-    if (!a5)
+    text = menitems;
+    if (!text)
         return;                                 /* .skip2 */
     ClearMenuStrip(mywindow);
     /* survey-03 I.16: AllocMem unchecked, never freed (escape frees it) */
@@ -672,35 +673,35 @@ void getstuff(void)
     menu2.NextMenu = m;                         /* move.l a0,(a1) - before the copy */
     memcpy(m, &menu2, sizeof(struct Menu));     /* .loop2 */
     m->NextMenu = NULL;
-    m->MenuName = (STRPTR)a5;
-    d0 = 0;
+    m->MenuName = (STRPTR)text;
+    len = 0;
     do                                          /* .loop3 */
-        d0++;
-    while (*a5++);
+        len++;
+    while (*text++);
     m->LeftEdge = 192 + 56;
-    m->Width = (WORD)(d0 << 3);
-    a4 = &m->FirstItem;                         /* lea 18(a0),a4 */
-    d7 = 0;
-    while (*a5) {
+    m->Width = (WORD)(len << 3);
+    link = &m->FirstItem;                       /* lea 18(a0),a4 */
+    top = 0;
+    while (*text) {
         /* .loop4 */
-        a0 = AllocMem(sizeof(struct mitem), MEMF_PUBLIC);   /* m2i1text-menu2item1 */
-        memcpy(a0, &menu2item1, sizeof(struct mitem));      /* .loop5 */
-        a0->item.Width = 200;                   /* !*! */
-        a0->item.NextItem = NULL;
-        a0->item.TopEdge = (WORD)d7;
-        d7 += 12;
-        *a4 = &a0->item;
-        a4 = &a0->item.NextItem;
-        a0->item.ItemFill = &a0->it;
-        a0->it.IText = a5;
-        while (*a5++)                           /* .loop6 */
+        mi = AllocMem(sizeof(struct mitem), MEMF_PUBLIC);   /* m2i1text-menu2item1 */
+        memcpy(mi, &menu2item1, sizeof(struct mitem));      /* .loop5 */
+        mi->item.Width = 200;                   /* !*! */
+        mi->item.NextItem = NULL;
+        mi->item.TopEdge = (WORD)top;
+        top += 12;
+        *link = &mi->item;
+        link = &mi->item.NextItem;
+        mi->item.ItemFill = &mi->it;
+        mi->it.IText = text;
+        while (*text++)                         /* .loop6 */
             ;
-        a0->item.Command = 0;
-        a0->item.Flags &= ~COMMSEQ;
-        c = *a5++;
+        mi->item.Command = 0;
+        mi->item.Flags &= ~COMMSEQ;
+        c = *text++;
         if (c) {
-            a0->item.Command = c;
-            a0->item.Flags |= COMMSEQ;
+            mi->item.Command = c;
+            mi->item.Flags |= COMMSEQ;
         }
     }
     /* .skip3 */
@@ -710,19 +711,19 @@ void getstuff(void)
 /* ted.s:2916 showmice - show all mouseable labels! */
 void showmice(void)
 {
-    UBYTE *a3;
-    const UBYTE *a2;
-    struct micenode *a4;
-    UWORD d3, d4;
-    WORD d5;
-    UBYTE d0;
+    UBYTE *at;
+    const UBYTE *src;
+    struct micenode *node;
+    UWORD count, row;
+    WORD n;
+    UBYTE c;
 
     if (label == 255)
         return;
     freemice();
     makemice();
-    d3 = nummice;
-    if (!d3) {
+    count = nummice;
+    if (!count) {
         if (mousecols) {
             mousecols = 0;
             screenclose();
@@ -735,52 +736,52 @@ void showmice(void)
         mousecols = 12;
         screenclose();
         screenopen2();
-        d3 = nummice;
+        count = nummice;
     }
     /* .miceok1 */
-    a3 = bitmaps[1] + (WORD)edcols + 2;
-    d4 = 0;
-    a4 = mice;
+    at = bitmaps[1] + (WORD)edcols + 2;
+    row = 0;
+    node = mice;
     do {
         /* .loop */
-        d5 = (WORD)(mousecols - 1);
-        if (d4 >= d3)
+        n = (WORD)(mousecols - 1);
+        if (row >= count)
             goto loop3;
-        a2 = a4->line->chars;
+        src = node->line->chars;
         if (tokenise) {
-            detok(a2, charbuff);                /* survey-03 I.17: charbuff */
-            a2 = charbuff;
+            detok(src, charbuff);               /* survey-03 I.17: charbuff */
+            src = charbuff;
         }
-        while (*a2++ == 32)                     /* .loop12: skips the label char too */
+        while (*src++ == 32)                    /* .loop12: skips the label char too */
             ;
         for (;;) {
             /* .loop2 */
-            d0 = *a2++;
-            if (d0 == 0 || d0 == colon || d0 == 32)
+            c = *src++;
+            if (c == 0 || c == colon || c == 32)
                 goto loop3;
-            qprint(d0, a3);
-            a3++;
-            if (d5-- == 0)                      /* dbf d5,.loop2 */
+            qprint(c, at);
+            at++;
+            if (n-- == 0)                       /* dbf d5,.loop2 */
                 goto next;
         }
 loop3:
         do {
-            qprint(32, a3);
-            a3++;
-        } while (d5-- != 0);                    /* dbf d5,.loop3 */
+            qprint(32, at);
+            at++;
+        } while (n-- != 0);                     /* dbf d5,.loop3 */
 next:
-        a3 -= (WORD)mousecols;
-        a3 += (WORD)fontmul;
-        if (a4) {
+        at -= (WORD)mousecols;
+        at += (WORD)fontmul;
+        if (node) {
             /* BUG(orig) (#381) survey-03 I.4: behind the last node this reads the
                uninitialised `next` (and then follows it) */
-            if (d4 + 1 >= nummice)
+            if (row + 1 >= nummice)
                 ORIG_HAZARD("showmice: next of the last label node");
-            a4 = a4->next;
+            node = node->next;
         }
         /* .skip0 */
-        d4++;
-    } while (d4 < edrows);
+        row++;
+    } while (row < edrows);
 }
 
 /* ted.s:3019 printmem */
@@ -797,9 +798,9 @@ void printmem(void)
 /* ----------------------------------------------- memory errors */
 
 /* ted.s:3049 extalloc - external allocmem */
-APTR extalloc(ULONG d0, ULONG d1)
+APTR extalloc(ULONG size, ULONG flags)
 {
-    APTR p = AllocMem(d0, d1);
+    APTR p = AllocMem(size, flags);
 
     if (p)
         return p;
