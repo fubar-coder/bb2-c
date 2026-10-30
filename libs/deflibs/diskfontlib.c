@@ -7,7 +7,7 @@
  * since then this file is the source.  Structure: notes/deflibs.md.
  *
  *   init:  OpenLibrary("diskfont.library", 0) -> d0 = base (return long:
- *          the compiler keeps it for the calls, a6).  BUG(orig):
+ *          the compiler keeps it for the calls, a6).  BUG(orig) (#44):
  *          retries forever if the library cannot be opened
  *          (deflib.h)
  *   finit: CloseLibrary(base), a1 = base (!libs LIB_diskfontlib,#la1)

@@ -7,7 +7,7 @@
  * since then this file is the source.  Structure: notes/deflibs.md.
  *
  *   init:  OpenResource("battmem.resource") -> d0 = base (return long:
- *          the compiler keeps it for the calls, a6).  BUG(orig):
+ *          the compiler keeps it for the calls, a6).  BUG(orig) (#45, #44):
  *          the original opens "m.resource" (LEA points 6 bytes
  *          into the name), which never exists, and retries
  *          forever (deflib.h): the init hangs
@@ -38,7 +38,7 @@ BLITZ_LIBFIN();
 
 static const char libname[] = "battmem.resource";
 
-/* init nullsub: d0 = resource base.  BUG(orig): LEA libname+6(pc),a1 */
+/* init nullsub: d0 = resource base.  BUG(orig) (#45): LEA libname+6(pc),a1 */
 static ULONG BLITZ_ROUTINE libinit(void)
 {
     return deflib_openresource(libname + DEFLIB_RESOURCE_SKEW);
