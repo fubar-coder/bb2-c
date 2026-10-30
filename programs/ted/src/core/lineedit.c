@@ -46,9 +46,9 @@ static UWORD lineno(void)
    (open point O3): tabstop = 0 from l:blitzeditor.opts is a division by
    zero - divu_w is the real DIVU.W on the Amiga (zero divide trap like the
    original); the host aborts. */
-static UWORD tabrem(UWORD d0)
+static UWORD tabrem(UWORD col)
 {
-    return (UWORD)(divu_w(d0, tabstop) >> 16);
+    return (UWORD)(divu_w(col, tabstop) >> 16);
 }
 
 /* ted.s:5360 inbloks */
@@ -92,7 +92,7 @@ void blokfix(void)
 /* ted.s:5393 blokfixb */
 void blokfixb(void)
 {
-    UWORD d2;
+    UWORD endcol;
 
     if (bbotx < 0) {                    /* bpl .ok2 not taken */
         bbotx = (WORD)(chcols - 1);
@@ -103,9 +103,9 @@ void blokfixb(void)
         return;
     }
     /* .ok2 */
-    d2 = btopy;
+    endcol = btopy;
     if (btopy == bboty) {
-        d2 = (UWORD)bbotx;
+        endcol = (UWORD)bbotx;
         if (bbotx < btopx) {            /* blt .zap */
             blokdis();
             return;
@@ -114,44 +114,44 @@ void blokfixb(void)
     /* .ok4  BUG(orig) (#349): for a multi-line block d2 is still btopy (not
        bbotx): bbotx >= chcols stays uncorrected, and a block starting at
        line >= chcols gets bbotx = chcols-1 (survey-06 I.1) */
-    if (d2 < chcols)                    /* bcs .ok3 */
+    if (endcol < chcols)                /* bcs .ok3 */
         return;
     bbotx = (WORD)(chcols - 1);
     /* .ok3 */
 }
 
 /* ted.s:5742 horizpos */
-void horizpos(WORD d1)
+void horizpos(WORD col)
 {
     /* position cursor at d1 */
-    WORD d4 = cursoff;
+    WORD oldoff = cursoff;
     UWORD d2 = (UWORD)(edcols - hscmarg);
-    WORD d0, d3;
+    WORD newoff, maxoff;
 
-    if ((UWORD)d1 < d2) {               /* bcc .skip3 not taken */
+    if ((UWORD)col < d2) {              /* bcc .skip3 not taken */
         cursoff = 0;
-        cursx = (UWORD)d1;
+        cursx = (UWORD)col;
     } else {
         /* .skip3 */
         d2 = (UWORD)(edcols >> 1);      /* lsr #1 */
-        d0 = (WORD)(d1 - d2);
-        d3 = (WORD)(chcols - edcols);
-        if (d0 > d3) {                  /* bgt .skip4 */
+        newoff = (WORD)(col - d2);
+        maxoff = (WORD)(chcols - edcols);
+        if (newoff > maxoff) {          /* bgt .skip4 */
             /* .skip4: may give an odd cursoff (survey-06 I.5) */
-            cursoff = d3;
-            cursx = (UWORD)(d1 - d3);
+            cursoff = maxoff;
+            cursx = (UWORD)(col - maxoff);
         } else {
-            if (d0 & 1) {
-                d0++;
+            if (newoff & 1) {
+                newoff++;
                 d2--;
             }
             /* .skip5: d0 < 0 possible if hscmarg > edcols/2 (I.5) */
-            cursoff = d0;
+            cursoff = newoff;
             cursx = d2;
         }
     }
     /* .moverite */
-    if (cursoff == d4)
+    if (cursoff == oldoff)
         return;                         /* .done */
     refresh();                          /* bra refresh */
 }
@@ -204,8 +204,8 @@ void cursrite(void)
 /* ted.s:5444 (getline3 .isasc, core part) */
 void gl_isasc(UBYTE c)
 {
-    UBYTE *a2 = chrow();
-    UWORD d0, d1;
+    UBYTE *row = chrow();
+    UWORD col, i;
 
     anyalt = c;                         /* move d7,anyalt */
     /* adjust block */
@@ -218,56 +218,56 @@ void gl_isasc(UBYTE c)
     }
     /* .skip0: (bitmap shift: caller)  .skip: chmap row one to the right
        from the abs. column, the byte at chcols-1 is lost (survey-06 I.2) */
-    d0 = abscol();
-    d1 = chcols;
+    col = abscol();
+    i = chcols;
     for (;;) {
-        d1--;                           /* .loop3 */
-        if (d0 >= d1)                   /* bcc .skip2 */
+        i--;                            /* .loop3 */
+        if (col >= i)                   /* bcc .skip2 */
             break;
-        a2[(WORD)d1] = a2[(WORD)d1 - 1];
+        row[(WORD)i] = row[(WORD)i - 1];
     }
     /* .skip2: print d7 (caller; print2 writes chmap[abs. column]) */
 }
 
 /* ted.s:5665 (char127, core part) */
-void gl_char127(UBYTE d7)
+void gl_char127(UBYTE c)
 {
-    UBYTE *a2 = chrow();
-    UWORD d0, d2;
+    UBYTE *row = chrow();
+    UWORD i, next;
 
-    anyalt = d7;                        /* move d7,anyalt */
+    anyalt = c;                         /* move d7,anyalt */
     /* adjust block */
     if (bboty != (UWORD)-1) {
         if (inbloks() && abscol() != (UWORD)btopx)
             btopx--;                    /* .skipz */
         if (inblokf()) {
-            d2 = (UWORD)(bbotx + 1);
-            if (d2 < chcols)            /* bcc .skipmo */
+            next = (UWORD)(bbotx + 1);
+            if (next < chcols)          /* bcc .skipmo */
                 bbotx--;
             blokfixb();                 /* .skipmo; harmless: only
                                            after inblokf (survey-06 I.14) */
         }
     }
     /* .loop: (bitmap shift: caller)  .skip: chmap row one to the left */
-    d0 = abscol();
+    i = abscol();
     for (;;) {
-        d0++;                           /* .loop3 */
-        if (d0 >= chcols)               /* bcc .skip2 */
+        i++;                            /* .loop3 */
+        if (i >= chcols)                /* bcc .skip2 */
             break;
-        a2[(WORD)d0 - 1] = a2[(WORD)d0];
+        row[(WORD)i - 1] = row[(WORD)i];
     }
-    a2[(WORD)d0 - 1] = ' ';             /* .skip2 */
+    row[(WORD)i - 1] = ' ';             /* .skip2 */
     /* last visible cell: print3 by the caller */
 }
 
 /* ted.s:5555 (charnot8, core part) without Shift (".loop", "insert tab") */
 WORD gl_tab(void)
 {
-    UBYTE *a2 = chrow();
-    UWORD d0, d2, d1, target;
-    WORD d3;
+    UBYTE *row = chrow();
+    UWORD d0, col, dst, target;
+    WORD src;
 
-    d0 = d2 = abscol();                 /* add cursoff,d0 / move d0,d2 */
+    d0 = col = abscol();                /* add cursoff,d0 / move d0,d2 */
     do {
         d0++;                           /* .loop */
         if (d0 >= chcols)
@@ -275,7 +275,7 @@ WORD gl_tab(void)
     } while (tabrem(d0) != 0);
     anyalt = 9;                         /* move d7,anyalt */
     target = d0;                        /* move d0,-(a7) */
-    d0 = (UWORD)(d0 - d2);              /* d0=number of chars to insert */
+    d0 = (UWORD)(d0 - col);             /* d0=number of chars to insert */
     /* adjust for block */
     if (bboty != (UWORD)-1) {
         if (inbloks())
@@ -285,22 +285,22 @@ WORD gl_tab(void)
         blokfix();                      /* .zap3 */
     }
     /* .zap: row from the column d0 to the right (overflow is lost) */
-    d1 = chcols;
+    dst = chcols;
     for (;;) {
-        d1--;                           /* .loop2 */
-        d3 = (WORD)(d1 - d0);
-        if (d3 < 0)                     /* bmi .done */
+        dst--;                          /* .loop2 */
+        src = (WORD)(dst - d0);
+        if (src < 0)                    /* bmi .done */
             break;
-        if ((UWORD)d3 < d2)             /* bcs .done */
+        if ((UWORD)src < col)           /* bcs .done */
             break;
-        a2[(WORD)d1] = a2[d3];
+        row[(WORD)dst] = row[src];
     }
     for (;;) {
-        a2[(WORD)d1] = ' ';             /* .done */
-        d1--;
-        if ((WORD)d1 < 0)               /* bmi reline */
+        row[(WORD)dst] = ' ';           /* .done */
+        dst--;
+        if ((WORD)dst < 0)              /* bmi reline */
             break;
-        if (d1 < d2)                    /* bcc .done */
+        if (dst < col)                  /* bcc .done */
             break;
     }
     return (WORD)target;                /* falls into reline */
@@ -309,39 +309,39 @@ WORD gl_tab(void)
 /* ted.s:5555 (charnot8, core part) with Shift ("delete tab") */
 WORD gl_untab(void)
 {
-    UBYTE *a2 = chrow();
-    WORD d0, d2, d4;
+    UBYTE *row = chrow();
+    WORD dst, src, n;
 
-    d0 = d2 = (WORD)abscol();
+    dst = src = (WORD)abscol();
     anyalt = 9;                         /* move d7,anyalt (also when nothing
                                            happens below) */
     do {
-        d0--;                           /* .loop4 */
-        if (d0 < 0)
+        dst--;                          /* .loop4 */
+        if (dst < 0)
             return -1;                  /* bmi getline2 */
-    } while (tabrem((UWORD)d0) != 0);
+    } while (tabrem((UWORD)dst) != 0);
     /* adjust block (no blokfix, survey-06 I.3) */
     if (bboty != (UWORD)-1) {
-        d4 = (WORD)(d2 - d0);
+        n = (WORD)(src - dst);
         if (inbloks())
-            btopx -= d4;
+            btopx -= n;
         if (inblokf())
-            bbotx -= d4;                /* .zip1 */
+            bbotx -= n;                 /* .zip1 */
     }
     /* .zip: move d0,-(a7) = the target column; any characters between
        the target and the cursor are deleted (survey-06 I.3) */
     {
-        WORD target = d0;
+        WORD target = dst;
 
         do {
-            a2[d0] = a2[d2];            /* .loop5 */
-            d2++;
-            d0++;
-        } while ((UWORD)d2 < chcols);
+            row[dst] = row[src];        /* .loop5 */
+            src++;
+            dst++;
+        } while ((UWORD)src < chcols);
         do {
-            a2[d0] = ' ';               /* .loop6 */
-            d0++;
-        } while ((UWORD)d0 < chcols);
+            row[dst] = ' ';             /* .loop6 */
+            dst++;
+        } while ((UWORD)dst < chcols);
         return target;                  /* bra reline */
     }
 }
@@ -350,17 +350,17 @@ WORD gl_untab(void)
    end of line" */
 WORD gl_delright(void)
 {
-    UBYTE *a2 = chrow();
-    UWORD d0;
+    UBYTE *row = chrow();
+    UWORD i;
     WORD col;
 
     anyalt = 0xf8e1;                    /* move d6,anyalt */
-    d0 = abscol();
-    col = (WORD)d0;                     /* move d0,-(a7) */
+    i = abscol();
+    col = (WORD)i;                      /* move d0,-(a7) */
     do {
-        a2[(WORD)d0] = ' ';             /* .loop; no block adjust (I.4) */
-        d0++;
-    } while (d0 < chcols);
+        row[(WORD)i] = ' ';             /* .loop; no block adjust (I.4) */
+        i++;
+    } while (i < chcols);
     return col;                         /* bra reline */
 }
 
@@ -368,38 +368,38 @@ WORD gl_delright(void)
 WORD gl_tababove(void)
 {
     /* tab to line aboves tab pos. */
-    const UBYTE *a0;
-    WORD d1;
+    const UBYTE *p;
+    WORD col;
 
     if (lineno() == 0)
         return -1;                      /* beq getline2 */
-    a0 = thisitem->lastitem->chars;
-    d1 = -1;
+    p = thisitem->lastitem->chars;
+    col = -1;
     for (;;) {
-        if (*a0 == 0)
+        if (*p == 0)
             return -1;                  /* .none -> getline2 */
-        d1++;
-        if (*a0++ != ' ')
-            return d1;                  /* bra curspos */
+        col++;
+        if (*p++ != ' ')
+            return col;                 /* bra curspos */
     }
 }
 
 /* ted.s:5521 (charnot31, core part) with Shift (Shift + cursor right) */
 WORD gl_lastcol(void)
 {
-    const UBYTE *a2 = chrow();
-    WORD d1 = (WORD)chcols;
+    const UBYTE *row = chrow();
+    WORD col = (WORD)chcols;
 
     for (;;) {
-        d1--;                           /* .loop */
-        if (d1 < 0)
+        col--;                          /* .loop */
+        if (col < 0)
             return 0;                   /* bpl .skip not taken */
-        if (a2[d1] != ' ')              /* .skip; token colour spaces ($A0)
+        if (row[col] != ' ')            /* .skip; token colour spaces ($A0)
                                            count as characters */
             break;
     }
-    d1++;
-    if ((UWORD)d1 < chcols)             /* bcs curspos */
-        return d1;
-    return (WORD)(d1 - 1);
+    col++;
+    if ((UWORD)col < chcols)            /* bcs curspos */
+        return col;
+    return (WORD)(col - 1);
 }

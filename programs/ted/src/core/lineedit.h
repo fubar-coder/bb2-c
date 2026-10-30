@@ -29,9 +29,10 @@ void blokfix(void);
    (survey-06 I.1). */
 void blokfixb(void);
 
-/* ted.s:5742 horizpos: abs. target column d1 -> cursoff/cursx (hscmarg,
-   edcols/2 rules); refresh() if cursoff changed.  No cursor drawing. */
-void horizpos(WORD d1);
+/* ted.s:5742 horizpos: abs. target column col (asm d1) -> cursoff/cursx
+   (hscmarg, edcols/2 rules); refresh() if cursoff changed.  No cursor
+   drawing. */
+void horizpos(WORD col);
 /* ted.s:5775 cursleft: one column left (cursoff -= 2 + scrollrite at the
    margin) */
 void cursleft(void);
@@ -46,10 +47,10 @@ void cursrite(void);
    chcols-1 is lost, survey-06 I.2).  The caller shifts the bitmap, prints
    c, cursrite. */
 void gl_isasc(UBYTE c);
-/* char127 (ted.s:5665): delete under the cursor: anyalt = d7, block edges
+/* char127 (ted.s:5665): delete under the cursor: anyalt = c, block edges
    (blokfixb only if inblokf), chmap row left, chmap[chcols-1] = ' '.
-   d7 = 127 (Del) or 8 (Backspace after cursleft). */
-void gl_char127(UBYTE d7);
+   c (asm d7) = 127 (Del) or 8 (Backspace after cursleft). */
+void gl_char127(UBYTE c);
 /* charnot8 without Shift (ted.s:5600ff): insert spaces up to the next
    multiple of tabstop.  Returns the abs. target column for reline, or -1
    if nothing to do (>= chcols).  Pushes nothing: the caller passes the
