@@ -94,14 +94,14 @@ void cursor(void)
 /* ted.s:5254 cursor2 */
 void cursor2(void)
 {
-    UBYTE *a0, *a1;
+    UBYTE *plane0, *plane1;
 
-    calcphys(&a0, &a1);
+    calcphys(&plane0, &plane1);
     DBF(fonthite2, {                    /* .loop */
-        *a0 = (UBYTE)~*a0;
-        *a1 = (UBYTE)~*a1;
-        a0 += (WORD)bmapmul;
-        a1 += (WORD)bmapmul;
+        *plane0 = (UBYTE)~*plane0;
+        *plane1 = (UBYTE)~*plane1;
+        plane0 += (WORD)bmapmul;
+        plane1 += (WORD)bmapmul;
     });
 }
 
@@ -116,45 +116,45 @@ void showrow(void)
 /* ted.s:5275 showvprop */
 void showvprop(void)
 {
-    ULONG d2, d4;
-    UWORD d0, d1;
+    ULONG vpot, vbody;
+    UWORD line, lastline;
 
     showrow();
-    d4 = (ULONG)-1;
+    vbody = (ULONG)-1;
     if (edrows < numlines)              /* bcc .skip */
-        d4 = 0xFFFF0000UL | (UWORD)divu_w((ULONG)edrows << 16, numlines);   /* swap/clr/divu */
+        vbody = 0xFFFF0000UL | (UWORD)divu_w((ULONG)edrows << 16, numlines); /* swap/clr/divu */
     /* .skip */
-    d2 = (ULONG)-1;
-    d0 = (UWORD)(curstop + cursy);
-    d1 = (UWORD)(numlines - 1);
-    if (d0 < d1)                        /* bcc .skip2 */
-        d2 = 0xFFFF0000UL | (UWORD)divu_w((ULONG)d0 << 16, d1);
+    vpot = (ULONG)-1;
+    line = (UWORD)(curstop + cursy);
+    lastline = (UWORD)(numlines - 1);
+    if (line < lastline)                /* bcc .skip2 */
+        vpot = 0xFFFF0000UL | (UWORD)divu_w((ULONG)line << 16, lastline);
     /* .skip2: flags 13 = AUTOKNOB|FREEVERT|PROPBORDERLESS; jmp
        newmodifyprop(a6) */
-    NewModifyProp(&newgads, mywindow, NULL, 13, (ULONG)-1, d2, (ULONG)-1, d4, 1);
+    NewModifyProp(&newgads, mywindow, NULL, 13, (ULONG)-1, vpot, (ULONG)-1, vbody, 1);
 }
 
 /* ted.s:5305 showhprop */
 void showhprop(void)
 {
-    ULONG d1;
-    UWORD d0, d2;
+    ULONG hpot;
+    UWORD col, lastcol;
 
     memcpy(numtext, "   ", 4);          /* move.l #$20202000 */
     numtoascii((UWORD)(cursoff + cursx + 1), (UBYTE *)numtext);
     pstats(numtext, statsloc + 18);
-    d1 = (ULONG)-1;
-    d0 = (UWORD)(cursx + cursoff);
-    d2 = (UWORD)(chcols - 1);
-    if (d0 < d2) {                      /* bcc .skip */
+    hpot = (ULONG)-1;
+    col = (UWORD)(cursx + cursoff);
+    lastcol = (UWORD)(chcols - 1);
+    if (col < lastcol) {                /* bcc .skip */
         /* move d0,d1 / swap / clr / divu d2,d1: remainder in the upper
            word (passed on as in the asm) */
-        d1 = divu_w((ULONG)d0 << 16, d2);
+        hpot = divu_w((ULONG)col << 16, lastcol);
     }
     /* .skip: flags 11 = AUTOKNOB|FREEHORIZ|PROPBORDERLESS, HorizBody
        unchanged (asm: the upper word of d3 is undefined, intuition uses
        the low word) */
-    NewModifyProp(&newgads2, mywindow, NULL, 11, d1, (ULONG)-1,
+    NewModifyProp(&newgads2, mywindow, NULL, 11, hpot, (ULONG)-1,
                   prop2sinfo.HorizBody, (ULONG)-1, 1);
 }
 
@@ -162,7 +162,7 @@ void showhprop(void)
 void refresh(void)
 {
     /* redraw entire screen using cursoff */
-    UBYTE *a5;
+    UBYTE *src;
 
     storepos();
     scloc = 0;
@@ -170,9 +170,9 @@ void refresh(void)
     cursy = 0;
     DBF(edrows - 1, {                   /* .loop */
         cursx = 0;
-        a5 = chmap + (WORD)chloc + cursoff;
+        src = chmap + (WORD)chloc + cursoff;
         DBF(edcols - 1, {               /* .loop2 */
-            print3(*a5++);
+            print3(*src++);
             cursx++;
         });
         godown();
@@ -183,51 +183,51 @@ void refresh(void)
 
 /* bitmap part of .isasc: cells cursx..edcols-2 of the cursor row one to
    the right (both planes, fonthite rows) */
-static void shiftright(UBYTE *a0, UBYTE *a1, UWORD d0)
+static void shiftright(UBYTE *plane0, UBYTE *plane1, UWORD from)
 {
-    UWORD d1 = edcols;
+    UWORD col = edcols;
 
     for (;;) {
-        d1--;                           /* .loop */
-        if (d0 >= d1)                   /* bcc .skip */
+        col--;                          /* .loop */
+        if (from >= col)                /* bcc .skip */
             return;
         DBF(fonthite2, {                /* .loop2 */
-            a0[(WORD)d1] = a0[(WORD)d1 - 1];
-            a1[(WORD)d1] = a1[(WORD)d1 - 1];
-            a0 += (WORD)bmapmul;
-            a1 += (WORD)bmapmul;
+            plane0[(WORD)col] = plane0[(WORD)col - 1];
+            plane1[(WORD)col] = plane1[(WORD)col - 1];
+            plane0 += (WORD)bmapmul;
+            plane1 += (WORD)bmapmul;
         });
-        a0 -= (WORD)fontmul;
-        a1 -= (WORD)fontmul;
+        plane0 -= (WORD)fontmul;
+        plane1 -= (WORD)fontmul;
     }
 }
 
 /* bitmap part of char127: cells cursx+1..edcols-1 one to the left */
-static void shiftleft(UBYTE *a0, UBYTE *a1, UWORD d0)
+static void shiftleft(UBYTE *plane0, UBYTE *plane1, UWORD col)
 {
     for (;;) {
-        d0++;                           /* .loop */
-        if (d0 >= edcols)               /* bcc .skip */
+        col++;                          /* .loop */
+        if (col >= edcols)              /* bcc .skip */
             return;
         DBF(fonthite2, {                /* .loop2 */
-            a0[(WORD)d0 - 1] = a0[(WORD)d0];
-            a1[(WORD)d0 - 1] = a1[(WORD)d0];
-            a0 += (WORD)bmapmul;
-            a1 += (WORD)bmapmul;
+            plane0[(WORD)col - 1] = plane0[(WORD)col];
+            plane1[(WORD)col - 1] = plane1[(WORD)col];
+            plane0 += (WORD)bmapmul;
+            plane1 += (WORD)bmapmul;
         });
-        a0 -= (WORD)fontmul;
-        a1 -= (WORD)fontmul;
+        plane0 -= (WORD)fontmul;
+        plane1 -= (WORD)fontmul;
     }
 }
 
 /* ted.s:5416 getline */
-LONG getline(UWORD *d6)
+LONG getline(UWORD *id)
 {
     /* get a line of input from user */
-    LONG d7;
-    UBYTE *a0, *a1, *a2;
-    UWORD d0;
-    WORD d1;
+    LONG event;
+    UBYTE *plane0, *plane1, *row;
+    UWORD col;
+    WORD newcol;
 
     anyalt = 0;
     cursor();
@@ -238,61 +238,61 @@ getline2:
     showhprop();
     /* ted.s:5422 getline3 */
 getline3:
-    d7 = getinput(d6);
+    event = getinput(id);
     cursor();
-    a0 = bitmaps[0] + scloc;
-    a1 = bitmaps[1] + scloc;
-    a2 = chmap + (WORD)chloc;
-    d0 = cursx;
+    plane0 = bitmaps[0] + scloc;
+    plane1 = bitmaps[1] + scloc;
+    row = chmap + (WORD)chloc;
+    col = cursx;
     /* ***** HELP ***** */
-    if (d7 < 0)
+    if (event < 0)
         goto charhi;
-    if (d7 & (1L << 30)) {              /* bclr #30,d7 / bne .isasc */
-        d7 &= ~(1L << 30);
+    if (event & (1L << 30)) {           /* bclr #30,d7 / bne .isasc */
+        event &= ~(1L << 30);
         goto isasc;
     }
-    if ((UWORD)d7 < 32)                 /* cmp #32,d7 / bcs charlow */
+    if ((UWORD)event < 32)              /* cmp #32,d7 / bcs charlow */
         goto charlow;
-    if ((UWORD)d7 >= 127)               /* bcc charhi */
+    if ((UWORD)event >= 127)            /* bcc charhi */
         goto charhi;
 isasc:
     /* .isasc: anyalt, adjust block, chmap (core) */
-    gl_isasc((UBYTE)d7);
-    shiftright(a0, a1, d0);             /* .skip0 */
-    print((UBYTE)d7);                   /* .skip2 */
+    gl_isasc((UBYTE)event);
+    shiftright(plane0, plane1, col);    /* .skip0 */
+    print((UBYTE)event);                /* .skip2 */
     cursrite();
     goto getline2;
 
     /* ted.s:5484 charlow */
 charlow:
-    if ((UWORD)d7 != 31)                /* curs left */
+    if ((UWORD)event != 31)             /* curs left */
         goto charnot31;
     if ((qualifier & 3) == 0) {
         cursleft();                     /* .skip */
         goto getline2;
     }
     /* shift cursor left. */
-    if ((UWORD)(d0 + cursoff) != 0) {
-        d1 = 0;
+    if ((UWORD)(col + cursoff) != 0) {
+        newcol = 0;
         goto curspos;
     }
-    d1 = gl_tababove();                 /* .tababove */
-    if (d1 < 0)
+    newcol = gl_tababove();             /* .tababove */
+    if (newcol < 0)
         goto getline2;
     goto curspos;
 
     /* ted.s:5521 charnot31 */
 charnot31:
-    if ((UWORD)d7 != 30)
+    if ((UWORD)event != 30)
         goto charnot30;
     if ((qualifier & 3) == 0)
         goto cis30skip;
-    d1 = gl_lastcol();
+    newcol = gl_lastcol();
     /* falls through into curspos */
     /* ted.s:5537 curspos */
 curspos:
     /* d1 holds column to go 4 */
-    horizpos(d1);
+    horizpos(newcol);
     goto getline2;
     /* ted.s:5540 cis30skip */
 cis30skip:
@@ -301,27 +301,27 @@ cis30skip:
 
     /* ted.s:5543 charnot30 */
 charnot30:
-    if ((UWORD)d7 != 8)
+    if ((UWORD)event != 8)
         goto charnot8;
-    if ((d0 | (UWORD)cursoff) == 0)
+    if ((col | (UWORD)cursoff) == 0)
         goto getline2;
     cursleft();                         /* a0-a2 saved: they do not depend
                                            on cursx/cursoff */
-    d0 = cursx;
-    d7 = 8;
+    col = cursx;
+    event = 8;
     goto char127;
 
     /* ted.s:5555 charnot8 */
 charnot8:
-    if ((UWORD)d7 != 9)
+    if ((UWORD)event != 9)
         goto charnot9;
     if (qualifier & 3)
-        d1 = gl_untab();                /* delete tab */
+        newcol = gl_untab();            /* delete tab */
     else
-        d1 = gl_tab();                  /* .loop: insert tab */
-    if (d1 < 0)
+        newcol = gl_tab();              /* .loop: insert tab */
+    if (newcol < 0)
         goto getline2;
-    reline(d1);                         /* bra reline / falls into reline */
+    reline(newcol);                     /* bra reline / falls into reline */
     goto getline2;
 
     /* ted.s:5658 charnot9 */
@@ -330,39 +330,39 @@ charnot9:
 
     /* ted.s:5662 charhi */
 charhi:
-    if ((UWORD)d7 != 127)
+    if ((UWORD)event != 127)
         goto charnot127;
     /* falls through into char127 */
     /* ted.s:5665 char127 */
 char127:
     /* anyalt, adjust block, chmap (core) */
-    gl_char127((UBYTE)d7);
-    shiftleft(a0, a1, d0);              /* .loop */
+    gl_char127((UBYTE)event);
+    shiftleft(plane0, plane1, col);     /* .loop */
     {
         /* .skip2: redraw the last visible cell from chmap */
         UWORD sx = cursx;
 
         cursx = (UWORD)(edcols - 1);
-        print3(a2[(WORD)(edcols + cursoff - 1)]);
+        print3(row[(WORD)(edcols + cursoff - 1)]);
         cursx = sx;
     }
     goto getline2;
 
     /* ted.s:5718 charnot127 */
 charnot127:
-    if ((UWORD)d7 != 0xFFFF)            /* cmp #-1,d7 */
+    if ((UWORD)event != 0xFFFF)         /* cmp #-1,d7 */
         goto charnotgad;
-    if (*d6 != 1)
+    if (*id != 1)
         goto charnotgad;
     /* horizontal prop: (HorizPot * chcols) >> 16 */
-    d1 = (WORD)(((ULONG)prop2sinfo.HorizPot * chcols) >> 16);
+    newcol = (WORD)(((ULONG)prop2sinfo.HorizPot * chcols) >> 16);
     goto curspos;
 
     /* ted.s:5726 charnotgad */
 charnotgad:
-    if ((UWORD)d7 != 0xFFFE)            /* cmp #-2,d7 */
+    if ((UWORD)event != 0xFFFE)         /* cmp #-2,d7 */
         goto charnotmenu;
-    if (*d6 != 0xf8e1)
+    if (*id != 0xf8e1)
         goto charnotmenu;
     reline(gl_delright());              /* bra reline */
     goto getline2;
@@ -371,7 +371,7 @@ charnotgad:
 charnotmenu:
     /* ted.s:5740 glinedone */
 glinedone:
-    return d7;
+    return event;
 }
 
 /* ted.s:5645 reline */
@@ -379,11 +379,11 @@ void reline(WORD col)
 {
     /* redisplay line */
     UWORD sx = cursx;                   /* move cursx,-(a7) */
-    UBYTE *a2 = chmap + (WORD)chloc + cursoff;
+    UBYTE *src = chmap + (WORD)chloc + cursoff;
 
     cursx = 0;
     DBF(edcols - 1, {                   /* .loop3 */
-        print3(*a2++);
+        print3(*src++);
         cursx++;
     });
     cursx = sx;
@@ -392,12 +392,12 @@ void reline(WORD col)
 }
 
 /* ted.s:5810 flash (unused debug code) */
-void flash(UWORD d0)
+void flash(UWORD unused)
 {
     volatile struct Custom *c = (volatile struct Custom *)0xdff000;
     UWORD n = 0xFFFF;                   /* move #-1,d0 */
 
-    (void)d0;                           /* saved and restored */
+    (void)unused;                       /* saved and restored */
     do
         c->color[0] = n;                /* .loop: the counter is written */
     while (n-- != 0);
@@ -412,95 +412,95 @@ struct Window *pickwindow(void)
 }
 
 /* ted.s:5833 getinput2 */
-LONG getinput2(UWORD *d6)
+LONG getinput2(UWORD *id)
 {
     /* get input - or 0 if non available */
     struct IntuiMessage *msg;
 
     msg = (struct IntuiMessage *)GetMsg(pickwindow()->UserPort);
     if (msg)
-        return handled0(msg, d6);       /* bne handled0 */
+        return handled0(msg, id);       /* bne handled0 */
     return 0;
 }
 
 /* ted.s:5845 getinput */
-LONG getinput(UWORD *d6)
+LONG getinput(UWORD *id)
 {
     /* receive user input into d7 */
-    struct MsgPort *a2;
+    struct MsgPort *port;
     struct IntuiMessage *msg;
-    LONG d7;
+    LONG event;
 
     for (;;) {
         /* ted.s:5852 ginp1 */
-        a2 = pickwindow()->UserPort;
+        port = pickwindow()->UserPort;
         do {
-            WaitPort(a2);               /* .loop */
-            msg = (struct IntuiMessage *)GetMsg(a2);
+            WaitPort(port);             /* .loop */
+            msg = (struct IntuiMessage *)GetMsg(port);
         } while (!msg);
-        d7 = handled0(msg, d6);
-        if (d7)                         /* beq ginp1 */
-            return d7;
+        event = handled0(msg, id);
+        if (event)                      /* beq ginp1 */
+            return event;
     }
 }
 
 /* ted.s:5866 handled0 */
-LONG handled0(struct IntuiMessage *d0, UWORD *d6)
+LONG handled0(struct IntuiMessage *im, UWORD *id)
 {
     /* handle message in d0 - return ne if message understood, else eq */
-    struct IntuiMessage *a1 = d0;
-    struct Gadget *a0;
-    ULONG d1 = a1->Class;
-    LONG d7;
+    struct IntuiMessage *msg = im;
+    struct Gadget *gad;
+    ULONG class = msg->Class;
+    LONG event;
     UWORD code, c;
 
-    if (d1 == IDCMP_GADGETDOWN || d1 == IDCMP_GADGETUP) {
-        a0 = (struct Gadget *)a1->IAddress;     /* .yesgad: gadget! */
+    if (class == IDCMP_GADGETDOWN || class == IDCMP_GADGETUP) {
+        gad = (struct Gadget *)msg->IAddress;   /* .yesgad: gadget! */
 yesgad2:
-        *d6 = a0->GadgetID;
-        d7 = -1;
-        if ((UBYTE)a0->GadgetType == GTYP_STRGADGET     /* string gadget? */
-            && a1->Code == 9)                   /* tabbed? */
+        *id = gad->GadgetID;
+        event = -1;
+        if ((UBYTE)gad->GadgetType == GTYP_STRGADGET    /* string gadget? */
+            && msg->Code == 9)                  /* tabbed? */
             goto again;                         /* yes, ignore */
         /* .notst */
-        if (!((UBYTE)a0->Activation & GACT_ENDGADGET))
+        if (!((UBYTE)gad->Activation & GACT_ENDGADGET))
             goto done;
-        if ((UWORD)d1 == IDCMP_GADGETDOWN)
+        if ((UWORD)class == IDCMP_GADGETDOWN)
             goto done;
         /* survey-06 I.8 (ENDGADGET semantics): the requester is closed before
            the caller sees the event */
-        ReplyMsg(&a1->ExecMessage);
+        ReplyMsg(&msg->ExecMessage);
         closereq();
-        return d7;                      /* moveq #-1,d0 */
+        return event;                   /* moveq #-1,d0 */
     }
     /* .notgadget */
-    code = a1->Code;
-    if (d1 == IDCMP_MENUVERIFY)
+    code = msg->Code;
+    if (class == IDCMP_MENUVERIFY)
         goto again;                     /* verify */
-    if (d1 == IDCMP_MENUPICK) {
+    if (class == IDCMP_MENUPICK) {
         if (code == MENUNULL)
             goto again;
-        *d6 = code;                     /* NextSelect ignored (I.16) */
-        d7 = -2;
+        *id = code;                     /* NextSelect ignored (I.16) */
+        event = -2;
         goto done;
     }
     /* .notmenu */
-    if (d1 == IDCMP_MOUSEBUTTONS) {
-        d7 = -3;                        /* mouse down */
+    if (class == IDCMP_MOUSEBUTTONS) {
+        event = -3;                     /* mouse down */
         if (code == SELECTDOWN)
             goto done;
-        d7 = -4;                        /* mouse up */
+        event = -4;                     /* mouse up */
         goto done;
     }
     /* .notmouse */
-    if (d1 == IDCMP_RAWKEY) {
+    if (class == IDCMP_RAWKEY) {
         /* get ascii (0-$bf) */
         if (code & IECODE_UP_PREFIX)
             goto again;                 /* key up! */
-        qualifier = a1->Qualifier;
+        qualifier = msg->Qualifier;
         c = rawed_convert(code, qualifier);     /* bsr rawed+32+4 */
-        d7 = (UBYTE)c;                  /* moveq #0,d7 / move.b d0,d7 */
-        if (d7 == 0)
+        event = (UBYTE)c;               /* moveq #0,d7 / move.b d0,d7 */
+        if (event == 0)
             goto again;
         if (!req_window)
             goto notareq;
@@ -508,25 +508,25 @@ yesgad2:
         if (c != 13)                    /* cmp #13,d0 (word) */
             goto notreturn;
         /* return! - find first closereq gadget! */
-        for (a0 = req_window->FirstGadget; a0; a0 = a0->NextGadget)  /* .retloop */
-            if (((UBYTE)a0->Activation & GACT_ENDGADGET)
-                && (UBYTE)a0->GadgetType == GTYP_BOOLGADGET)
+        for (gad = req_window->FirstGadget; gad; gad = gad->NextGadget) /* .retloop */
+            if (((UBYTE)gad->Activation & GACT_ENDGADGET)
+                && (UBYTE)gad->GadgetType == GTYP_BOOLGADGET)
                 goto khere;
         goto again;
 khere:
-        refme(a0);
-        d1 = IDCMP_GADGETUP;            /* move #$40,d1 */
+        refme(gad);
+        class = IDCMP_GADGETUP;         /* move #$40,d1 */
         goto yesgad2;
 notreturn:
         if (c != 27)                    /* escape? */
             goto again;
         goto doesc;
 notareq:
-        d7 = (LONG)germs_map((UBYTE)d7);        /* .gloop / .gskip: bit 30 */
+        event = (LONG)germs_map((UBYTE)event);  /* .gloop / .gskip: bit 30 */
         goto done;
     }
     /* .notkey */
-    if (d1 != IDCMP_CLOSEWINDOW)
+    if (class != IDCMP_CLOSEWINDOW)
         goto again;
     /* close gadget! - do an escape type thingy. */
 doesc:
@@ -538,33 +538,33 @@ doesc:
 
         if (!req_window)
             ORIG_HAZARD("handled0 .doesc: 62(req_window = 0)");
-        a0 = *(struct Gadget * volatile *)((ULONG)req_window
+        gad = *(struct Gadget * volatile *)((ULONG)req_window
                                             + offsetof(struct Window, FirstGadget));
-        for (; a0; a0 = a0->NextGadget)         /* .escloop */
-            if (((UBYTE)a0->Activation & GACT_ENDGADGET)
-                && (UBYTE)a0->GadgetType == GTYP_BOOLGADGET)
-                last = a0;
+        for (; gad; gad = gad->NextGadget)      /* .escloop */
+            if (((UBYTE)gad->Activation & GACT_ENDGADGET)
+                && (UBYTE)gad->GadgetType == GTYP_BOOLGADGET)
+                last = gad;
         if (!last)                      /* .escdone */
             goto again;
-        a0 = last;
+        gad = last;
         goto khere;
     }
 done:
-    ReplyMsg(&a1->ExecMessage);
-    return d7;                          /* moveq #-1,d0 */
+    ReplyMsg(&msg->ExecMessage);
+    return event;                       /* moveq #-1,d0 */
 again:
-    ReplyMsg(&a1->ExecMessage);
+    ReplyMsg(&msg->ExecMessage);
     return 0;                           /* d7 = 0, d0 = 0 */
 }
 
 /* ted.s:6003 refme */
-void refme(struct Gadget *a0)
+void refme(struct Gadget *gad)
 {
     /* a0=gadget to blink on!  (the "d0.b=pl if select else un-select" of
        the original comment is not used, survey-06 I.11) */
-    a0->Flags |= GFLG_SELECTED;         /* or #$80,12(a0) */
-    RefreshGList(a0, req_window, NULL, 1);
+    gad->Flags |= GFLG_SELECTED;        /* or #$80,12(a0) */
+    RefreshGList(gad, req_window, NULL, 1);
     Delay(4);
-    a0->Flags &= 0xff7f;
-    RefreshGList(a0, req_window, NULL, 1);
+    gad->Flags &= 0xff7f;
+    RefreshGList(gad, req_window, NULL, 1);
 }
