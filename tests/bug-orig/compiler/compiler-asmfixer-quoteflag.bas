@@ -1,4 +1,4 @@
-; compiler-asmfixer-quoteflag - asmfixer evaluates the asm operands at
+; compiler-asmfixer-quoteflag (#343) - asmfixer evaluates the asm operands at
 ; the end of the pass, last line first (insasm prepends), and never resets
 ; quoteflag. getelement2 saves lasta6 with a long move, so also quoteflag,
 ; after getchar3 has read the opening quote of a character constant; eval5

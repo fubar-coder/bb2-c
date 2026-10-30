@@ -213,7 +213,7 @@ from the 1.95 source is present in 2.10 unchanged – except #2. [B]
 | #41 | closed | [compiler/Executable] Symbol names in HUNK_SYMBOL with up to 3 bytes past the label node | unchanged |
 | #42 | open | [compiler/environlib/errtraplib/runerrlib] On the 68010 the VBR is not read | unchanged |
 | #325 | open | [compiler/Include] makeiname: IncDir + file name into namebuff (128 bytes) without a length check | unchanged |
-| – | not filed yet | [compiler/Assembler] A folded operation on a character constant (`#">"*8`) leaves quoteflag set: `#" "` on an earlier line becomes 0 (`eval.c` eval5, test `bug_orig_compiler_asmfixer_quoteflag`) | unchanged (RILESDEBUGLIB on the CD) |
+| #343 | open | [compiler/Assembler] A folded operation on a character constant (`#">"*8`) leaves quoteflag set: `#" "` on an earlier line becomes 0 (`eval.c` eval5, test `bug_orig_compiler_asmfixer_quoteflag`) | unchanged (RILESDEBUGLIB on the CD) |
 
 The `BUG(orig)` comments in `programs/blitz2/src` (75) refer to the same
 code; apart from `asmlibs.c:1255` (#2) all of them apply to 2.10 as well.
