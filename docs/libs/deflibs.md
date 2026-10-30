@@ -40,7 +40,7 @@ to 192, the command lib), 219 `colorwheellib` (there `#cdtvlib`,
 reserved), 2 `xprzmodemlib` (not present there). CMake targets are called `deflib_NAME` (otherwise collision with the
 command lib `mathtranslib`).
 
-## BUG(orig): the init loop
+## BUG(orig): the init loop (#44)
 
 All library/resource inits (except CrM) are
 
@@ -59,7 +59,7 @@ init:  MOVE.l  4,a6
   is its immediate) and calls `OpenLibrary` again with d0 = 0 and the
   a1 left behind by the failed call. C keeps the
   endless loop (`deflib.h`), but each time with the name.
-* **Resources:** they were made from the library template, whose finit
+* **Resources** (#45): they were made from the library template, whose finit
   is 6 bytes longer; the `LEA` was not adjusted and points 6 bytes into
   the name (`"ciab.resource"` → `"esource"`, `"potgo.resource"` →
   `"resource"`). So `OpenResource` always fails, init hangs. A

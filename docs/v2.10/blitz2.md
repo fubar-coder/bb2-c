@@ -172,10 +172,10 @@ from the 1.95 source is present in 2.10 unchanged – except #2. [B]
 | Issue | State | Title | In 2.10 |
 |---|---|---|---|
 | #1 | open | [compiler/Assembler] Inline assembler expression over 239 characters: node size stored as a byte | unchanged |
-| #2 | open | [compiler/Libs] Userlibs path becomes "blitz2:userlibs//dir" (parent directory) | **fixed in 2.10** |
+| #2 | closed | [compiler/Libs] Userlibs path becomes "blitz2:userlibs//dir" (parent directory) | **fixed in 2.10** |
 | #3 | open | [compiler/Libs] Read error (-1) while loading a library is not detected | unchanged |
-| #4 | open | [compiler/Macros] Macro parameters are collected without checking against the end of macrobuff | unchanged |
-| #5 | open | [compiler/Macros] `@` (expansion counter of the macro) is written into the macro line without overflow check | unchanged |
+| #4 | closed | [compiler/Macros] Macro parameters are collected without checking against the end of macrobuff | unchanged |
+| #5 | closed | [compiler/Macros] `@` (expansion counter of the macro) is written into the macro line without overflow check | unchanged |
 | #6 | open | [compiler/rundebuglib] Executables with runtime error checking show an empty requester at program end without `End` | unchanged |
 | #7 | open | [compiler] Constant without a name (`#=…`) is accepted without error | unchanged |
 | #8 | open | [compiler/Options] AllocMem for the arrow images of the options requester unchecked | unchanged |
@@ -188,7 +188,7 @@ from the 1.95 source is present in 2.10 unchanged – except #2. [B]
 | #15 | open | [compiler/Code generation] Multiplication by 256 generates `lsl #8` twice (×65536) | unchanged |
 | #16 | open | [compiler/IncDir] Path without length check (buffer `incdir` 96 bytes) | unchanged |
 | #17 | open | [compiler/IncDir] Rest of the line (also after `:`) is taken into the path | unchanged |
-| #18 | open | [compiler] Failure of AllocSignal for the PANIC signal is not detected | unchanged |
+| #18 | closed | [compiler] Failure of AllocSignal for the PANIC signal is not detected | unchanged |
 | #19 | open | [compiler/WB start] Short-read .info file is not closed | unchanged |
 | #20 | open | [compiler/WB start] Without a readable .info the editor is supposed to load "<name>.info" as the program | unchanged |
 | #21 | open | [compiler/WB start] Old current directory is never restored | unchanged |
@@ -202,7 +202,7 @@ from the 1.95 source is present in 2.10 unchanged – except #2. [B]
 | #29 | open | [compiler/Parser] makename4: identifier copied to namebuff without length check | unchanged |
 | #30 | open | [compiler/Parser] findlab with name length 0 compares 65536 bytes | unchanged |
 | #31 | open | [compiler] UsePath: path without length check (buffer 128 bytes) | unchanged |
-| #32 | open | [compiler/Options] New buffer sizes: fallback to the previous sizes is reported as success | unchanged |
+| #32 | closed | [compiler/Options] New buffer sizes: fallback to the previous sizes is reported as success | unchanged |
 | #34 | open | [compiler/Resident] Last constant of a resident points past the section | unchanged |
 | #35 | open | [compiler/Resident] Type without fields: fixtypes follows the raw next pointer | unchanged |
 | #36 | open | [compiler/Resident] Duplicate constants in several residents are never detected | unchanged |
@@ -213,12 +213,19 @@ from the 1.95 source is present in 2.10 unchanged – except #2. [B]
 | #41 | closed | [compiler/Executable] Symbol names in HUNK_SYMBOL with up to 3 bytes past the label node | unchanged |
 | #42 | open | [compiler/environlib/errtraplib/runerrlib] On the 68010 the VBR is not read | unchanged |
 | #325 | open | [compiler/Include] makeiname: IncDir + file name into namebuff (128 bytes) without a length check | unchanged |
+| #335 | open | [compiler] Object libraries reached only from library code get no array; End frees their objects from address 0 | unchanged |
+| #336 | open | [compiler/Macros] macrobuff is freed with the current Macro Buffer size, not the allocated one | unchanged |
+| #337 | open | [compiler/WB start] wb_exit calls Permit after ReplyMsg, before blitz2 has returned | unchanged |
+| #341 | open | [compiler/Include] makeiname prepends IncDir also to absolute names (with ':'), so Include "dev:file" fails after IncDir | unchanged |
+| #342 | open | [compiler/IncDir] incdir is not reset between compiles (leaks into the next source in the same blitz2 session) | unchanged |
 | #343 | open | [compiler/Assembler] A folded operation on a character constant (`#">"*8`) leaves quoteflag set: `#" "` on an earlier line becomes 0 (`eval.c` eval5, test `bug_orig_compiler_asmfixer_quoteflag`) | unchanged (RILESDEBUGLIB on the CD) |
+| #344 | open | [compiler/Code generation] Amiga library call in an expression: parameter registers d2–d5 holding intermediate values are not saved | unchanged |
 
-The `BUG(orig)` comments in `programs/blitz2/src` (75) refer to the same
-code; apart from `asmlibs.c:1255` (#2) all of them apply to 2.10 as well.
+The `BUG(orig)` comments in `programs/blitz2/src` refer to the same code
+and all of them apply to 2.10 as well; #2, the one bug 2.10 fixed, is a
+`DIFF` in the port (`asmlibs.c:1254`, the path separator as in 2.10).
 Issues of the libraries (`rundebuglib` #6/#43, `deflibs` #44/#45 …) are
-covered in [libs.md](libs.md).
+covered in [libs.md](libs.md); those of TED in [ted.md](ted.md) §1.2.
 
 ## 5 Data and tables
 

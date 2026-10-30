@@ -56,7 +56,7 @@ documented here.
 
 | Library/routine (file:line) | Original | C version | Kind | Reason / observable? |
 |---|---|---|---|---|
-| 2dlib overflows (2dlib.c:44) | Polyf with more than 16 points / BitMapPoly edge lists overwrite the code behind polypts/l1 | overwrite the data behind them | **T** | memory layout; observable only with these overflows (BUG(orig)). FloodFill (yofill) is the original assembler, a3 as in the original |
+| 2dlib overflows (2dlib.c:44) | Polyf with more than 16 points / BitMapPoly edge lists overwrite the code behind polypts/l1 | overwrite the data behind them | **T** | memory layout; observable only with these overflows (BUG(orig), #395). FloodFill (yofill) is the original assembler, a3 as in the original |
 | polylib overflows (polylib.c:34) | more than 16 points / 10 edges per side hit the lib's own code | hit the data behind them | **T** | memory layout; only with overflows |
 | animlib err6/err7 (animlib.c:45) | `BEQ err7` into the error check area or err6 in normal code | reached via JSR (return address and saved registers of the C function on the stack) | **T** | GCC drops code after an inline BRA or merges the paths; target and message as in the original, only the stack at the trap differs; not observable |
 | animlib a2 (animlib.c:45) | a2 decremented | unchanged | **B** | convention |
@@ -117,7 +117,7 @@ documented here.
 |---|---|---|---|---|
 | init of all libraries/resources (libs/deflibs/deflib.h:20) | `BEQ init+6` jumps into the middle of the `LEA`: `ORI.b #0,(a0)+` with arbitrary a0, then OpenLibrary with the a1 left by the failure | endless loop, each time with the correct name | **T** | a0/a1 after a failed OpenLibrary are undefined; observable only if the library is missing (both hang) |
 | init/finit in general ([deflibs.md](deflibs.md)) | destroys a6, `JMP CloseLibrary` | GCC saves a6, `JSR` | **B** (register preservation) | not observable |
-| Resources (deflib.h) | `LEA` points 6 bytes into the name | reproduced (`libname + DEFLIB_RESOURCE_SKEW`) | – | BUG(orig), no deviation |
+| Resources (deflib.h) | `LEA` points 6 bytes into the name | reproduced (`libname + DEFLIB_RESOURCE_SKEW`) | – | BUG(orig) (#45), no deviation |
 
 ## 5. Compiler blitz2-c (`programs/blitz2`)
 
@@ -156,7 +156,7 @@ file requester.
 
 | Place (file:line) | Original | C version | Kind | observable? |
 |---|---|---|---|---|
-| `flink` (ted.s:7953; programs/ted/src/filereq.c) | the embedded requester hunk `filereq` relocates itself at runtime on start (from `outside`) (`add.l basis` on 312 longwords in its own code hunk, without cache flush; a second run would relocate twice – BUG(orig)) | dropped: the requester is C code (`shared/filereq/filereq_core.c`), its pointers are relocated by LoadSeg | **T** | technically unavoidable: no embedded hunk any more, nothing to relocate. No (except the double relocation, which never happens in the original) |
+| `flink` (ted.s:7953; programs/ted/src/filereq.c) | the embedded requester hunk `filereq` relocates itself at runtime on start (from `outside`) (`add.l basis` on 312 longwords in its own code hunk, without cache flush; a second run would relocate twice – BUG(orig), #360) | dropped: the requester is C code (`shared/filereq/filereq_core.c`), its pointers are relocated by LoadSeg | **T** | technically unavoidable: no embedded hunk any more, nothing to relocate. No (except the double relocation, which never happens in the original) |
 | Requester data block (programs/ted/src/filereq.c with `shared/filereq/filereq_core.c`) | TED's copy of `filereq` differs from the one in freqlib in 7 bytes (padding bytes behind gadget texts, e.g. `"OK",0,$06` instead of `$00`, and remainder at the hunk end) | data block of the freqlib version | **T** | one source for both programs (user decision "Variante C"); the bytes are never read. No |
 
 ## 6. Error checks outside the error check area

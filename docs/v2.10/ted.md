@@ -91,10 +91,12 @@ against the CD binary as well.
 
 ### 1.2 Bug-orig status
 
-The port documents 90 `BUG(orig)` places in `programs/ted/src` (surveys in
-`docs/ted/`); there are no separate GitHub issues with a TED prefix among
-the `bug-orig` issues. Since the CD's TED is the same code, **all of them
-are present in the shipped TED unchanged** [B]. Nothing was fixed between
+The port documents the bugs of the original as `BUG(orig)` places in
+`programs/ted/src` (surveys in `docs/ted/`), each with its GitHub issue:
+#340 (`[ted/a0toname]`) and #346–#389 (label `ted`, titles `[ted/…]`;
+#360, the relocation of the embedded file requester, is not ported).
+Since the CD's TED is the same code, **all of them are present in the
+shipped TED unchanged** [B]. Nothing was fixed between
 the archived source and the shipped editor.
 
 ## 2 The other editors on the CD (not TED 1.1)
