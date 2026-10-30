@@ -62,18 +62,24 @@ which the original changes (low word: +26 of a shape).
 ## BUG(orig), kept
 
 * Nothing is checked but the two error checks; shapes or bitmaps of
-  depth 0 loop 65536 times (DBRA). `SpecialBlock`, `TBlock`,
-  `PredatorBlit` assume 16×16 shapes and bitmaps of `SetupMapTwo`'s
-  width; `BlockToShape` copies one word per line (height × depth words).
-* `BPredatorBlit` stores the blit size one line less in the record (so
-  `UnBuffer` restores one line less than the slot holds), and its B
-  channel reads the line `SetupMapTwo`'s width further, not the
-  bitmap's.
-* `BColourBlit` sets the B modulos it does not use; its colour is shifted
-  as a byte (`LSR.b`): planes from the 9th on get colour bit 0 (clear).
+  depth 0 loop 65536 times (DBRA) (#429).
+* `BlockToShape` copies one word per line (height × depth words) (#425).
+* `BPredatorBlit`'s B channel reads the line `SetupMapTwo`'s width
+  further, not the bitmap's (#426).
 * `BTBlockImage` adds image × 224 as a word (from image 147 on before
-  `image_addr`).
-* `CreateShape` with count 0 creates 65536 shapes.
+  `image_addr`) (#427).
+* `CreateShape` with count 0 creates 65536 shapes (#428).
+
+Original behaviour that is not a defect:
+
+* `SpecialBlock`, `TBlock`, `PredatorBlit` assume 16×16 shapes and
+  bitmaps of `SetupMapTwo`'s width: the map format they are written for.
+* `BPredatorBlit` stores the blit size one line less in the record (so
+  `UnBuffer` restores one line less than the slot holds): deliberate
+  (`;!!! BB Cludge!` in the source).
+* `BColourBlit` sets the B modulos it does not use (B is off); its colour
+  is shifted as a byte (`LSR.b`): planes from the 9th on would get colour
+  bit 0, but there are at most 8.
 
 ## Test
 

@@ -43,17 +43,19 @@
  *
  * BUG(orig), kept:
  *   - Nothing is checked but the two error checks; a shape or bitmap of
- *     depth 0 loops 65536 times (DBRA); SpecialBlock, TBlock and
- *     PredatorBlit assume 16x16 shapes and bitmaps of SetupMapTwo's width;
- *     BlockToShape copies one word per line.
- *   - BPredatorBlit stores a blit size one line less in the record
- *     (UnBuffer restores one line less); its B channel reads the line
- *     SetupMapTwo's width below, not the bitmap's.
- *   - BColourBlit sets the blit modulos of the B channel it does not use;
- *     its colour is a byte (LSR.b).
+ *     depth 0 loops 65536 times (DBRA) (#429); BlockToShape copies one
+ *     word per line (#425).
+ *   - BPredatorBlit's B channel reads the line SetupMapTwo's width below,
+ *     not the bitmap's (#426).
  *   - BTBlockImage adds image*224 as a word (images from 147 on are
- *     before image_addr).
- *   - CreateShape with count 0 creates 65536 shapes.
+ *     before image_addr) (#427).
+ *   - CreateShape with count 0 creates 65536 shapes (#428).
+ * Original behaviour, not defects: SpecialBlock, TBlock and PredatorBlit
+ * assume 16x16 shapes and bitmaps of SetupMapTwo's width (the map format
+ * they are written for); BPredatorBlit stores a blit size one line less
+ * in the record (deliberate, ";!!! BB Cludge!" in the source); BColourBlit
+ * sets the modulos of the B channel it does not use (B is off) and shifts
+ * its colour as a byte (LSR.b; at most 8 planes).
  */
 #include "blitzlib.h"
 
