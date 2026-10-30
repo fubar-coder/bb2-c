@@ -329,7 +329,9 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   current directory and whether it unlocked the start lock, paths still in
   use); it also gives a program input while it runs: gadget clicks as
   synthetic IntuiMessages (`click=TITLE/TEXT`, optionally while the DOS
-  list is locked for writing) and several RAWKEY events in one call of
+  list is locked for writing; with `undobuf` it reports whether a click
+  changed the UndoBuffer pointers of the window's string gadgets) and
+  several RAWKEY events in one call of
   the input handlers at controlled times (`keys=`, an input handler with
   a clock of its own); `wbrun` starts the compiler
   (`wrap=@WBRUN@|...`) or a program (`runwrap=@WBRUN@|...`) like the

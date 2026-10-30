@@ -66,6 +66,11 @@
  *                          the clicks behind it are sent without it (a
  *                          program that locks the DOS list waits for it,
  *                          one that walks it without a lock does not)
+ *   undobuf                before every click (after the first) the
+ *                          UndoBuffer pointers of the string gadgets of the
+ *                          window are compared with those before the click
+ *                          ahead of it: did that click change them (e.g.
+ *                          a requester that clears a word of a StringInfo)
  *   keys=TITLE/CODE@SECS[,CODE@SECS]...
  *                          an input handler (priority 100, before
  *                          Intuition and the handlers of the program)
@@ -91,6 +96,8 @@
  *   in use: PATH | not in use: PATH | missing: PATH
  *   click TITLE/TEXT: answered | answered after the DOS list was unlocked
  *                | not answered | no gadget | no window | not sent
+ *   click TITLE/TEXT: UndoBuffer of the string gadgets kept | changed
+ *                (undobuf; not for the last click)
  *   keys: sent | keys: no window | keys: not sent
  */
 #include <exec/types.h>
@@ -531,8 +538,32 @@ static int ninuse;
 static struct {
     char title[40], text[40];
     int result;
+    int undo;                           /* undobuf: UB_... */
 } click[MAXCLICK];
-static int nclick, o_doslocked;
+static int nclick, o_doslocked, o_undobuf;
+enum { UB_NOTCHECKED, UB_KEPT, UB_CHANGED };
+
+static struct Window *findwin(const char *title);
+
+/* undobuf: the UndoBuffer pointers of the string gadgets of a window */
+#define MAXSTR 8
+static APTR undo_before[MAXSTR];
+
+static int undobufs(const char *title, APTR *u)
+{
+    struct Window *w;
+    struct Gadget *g;
+    ULONG ib = LockIBase(0);
+    int n = 0;
+
+    w = findwin(title);
+    if (w)
+        for (g = w->FirstGadget; g && n < MAXSTR; g = g->NextGadget)
+            if ((g->GadgetType & GTYP_GTYPEMASK) == GTYP_STRGADGET && g->SpecialInfo)
+                u[n++] = ((struct StringInfo *)g->SpecialInfo)->UndoBuffer;
+    UnlockIBase(ib);
+    return w ? n : -1;
+}
 enum { CL_NOTSENT, CL_ANSWERED, CL_LATE, CL_NOANSWER, CL_NOGADGET, CL_NOWINDOW };
 static const char *const cl_text[] = {
     "not sent", "answered", "answered after the DOS list was unlocked",
@@ -658,6 +689,14 @@ static void driver_clicks(void)
             break;
         }
         Delay(n ? 10 : 25);
+        if (o_undobuf) {
+            static APTR now[MAXSTR];
+            int m = undobufs(click[n].title, now);
+
+            if (n && m >= 0)
+                click[n - 1].undo = memcmp(now, undo_before, sizeof now) ? UB_CHANGED : UB_KEPT;
+            memcpy(undo_before, now, sizeof now);
+        }
         if (o_doslocked && n == 0) {
             LockDosList(LDF_ALL | LDF_WRITE);
             locked = 1;
@@ -796,6 +835,8 @@ static int option(const char *a)
     }
     if (!strcmp(a, "doslocked"))
         return o_doslocked = 1;
+    if (!strcmp(a, "undobuf"))
+        return o_undobuf = 1;
     if (!strncmp(a, "click=", 6)) {
         const char *slash = strchr(a + 6, '/');
 
@@ -908,7 +949,7 @@ static const char usage[] =
     "  run COMMAND in this process with faults injected (bug-orig tests)\n"
     "  options: signals allocfail=MIN-MAX[/chip][/COUNT] readfail=NAME/N\n"
     "    examinefail=NAME openlibfail=NAME createprocfail track pad\n"
-    "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked\n"
+    "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked undobuf\n"
     "    keys=TITLE/CODE@SECS[,CODE@SECS]...  (described in inject.c)\n";
 
 int main(int argc, char **argv)
@@ -940,7 +981,7 @@ int main(int argc, char **argv)
         put("usage: inject [signals] [allocfail=MIN-MAX[/chip][/COUNT]] [readfail=NAME/N]\n"
             "              [examinefail=NAME] [openlibfail=NAME] [createprocfail] [track] [pad]\n"
             "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
-            "              [click=TITLE/TEXT]... [doslocked]\n"
+            "              [click=TITLE/TEXT]... [doslocked] [undobuf]\n"
             "              [keys=TITLE/CODE@SECS[,CODE@SECS]...] COMMAND [ARGS]\n");
         return 20;
     }
@@ -1082,6 +1123,12 @@ int main(int argc, char **argv)
         sprintf(line, "inject: click %.39s/%.39s: %s\n", click[k].title, click[k].text,
                 cl_text[click[k].result]);
         put(line);
+        if (click[k].undo != UB_NOTCHECKED) {
+            sprintf(line, "inject: click %.39s/%.39s: UndoBuffer of the string gadgets %s\n",
+                    click[k].title, click[k].text,
+                    click[k].undo == UB_KEPT ? "kept" : "changed");
+            put(line);
+        }
     }
     if (nkeys)
         put(k_result == KS_SENT ? "inject: keys: sent\n"
