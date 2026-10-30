@@ -28,13 +28,14 @@
  * BUG(orig), kept:
  *   - IPColour fgpen,bgpen with a negative fgpen calls SetBPen with the
  *     caller's a2 (the compiler's argument stack) as the RastPort: a2 is
- *     set to the Rast only with SetAPen.
+ *     set to the Rast only with SetAPen (#696).
  *   - The single character handler reads the character from the address
- *     d0 (MOVE.l d0,a0:MOVE.b (a0)+,...), i.e. low memory, not d0 itself.
+ *     d0 (MOVE.l d0,a0:MOVE.b (a0)+,...), i.e. low memory, not d0 itself
+ *     (#699).
  *   - The a0/d0 handler copies d0 (a word) bytes without a limit into the
- *     1024 byte buffer (the pens follow it).
+ *     1024 byte buffer (the pens follow it) (#698).
  *   - PrintIText always prints at 0,0 of the Rast (+ the baseline): the
- *     pen position of IPLocate has no effect on IPOutput.
+ *     pen position of IPLocate has no effect on IPOutput (#697).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -151,7 +152,7 @@ static void BLITZ_ROUTINE iplocate_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
     Move(rp, x & 0xffff, y & 0xffff);
 }
 
-/* IPColour fgpen,bgpen: a negative word leaves a pen.  BUG(orig): the
+/* IPColour fgpen,bgpen: a negative word leaves a pen.  BUG(orig) (#696): the
    RastPort of SetBPen is a2, which is set to the Rast only with SetAPen
    (else the caller's a2) */
 static void BLITZ_ROUTINE ipcolour2_c(ULONG fg BL_REG(d0), ULONG bg BL_REG(d1),
@@ -185,7 +186,7 @@ static void doipprint(void)
     PrintIText(usedrast, &pr.it, 0, 0);
 }
 
-/* one character - BUG(orig): read from the address d0 */
+/* one character - BUG(orig) (#699): read from the address d0 */
 static void BLITZ_ROUTINE ipprint_c(ULONG d0 BL_REG(d0))
 {
     pr.cbuf[0] = *(const UBYTE *)d0;
@@ -201,7 +202,7 @@ static void BLITZ_ROUTINE ipprint0_c(UBYTE *s BL_REG(a0))
     doipprint();
 }
 
-/* d0 (a word) characters at a0, copied to cbuf - BUG(orig): no limit */
+/* d0 (a word) characters at a0, copied to cbuf - BUG(orig) (#698): no limit */
 static void BLITZ_ROUTINE ipprint1_c(UWORD n BL_REG(d0), const UBYTE *s BL_REG(a0))
 {
     UBYTE *d = pr.cbuf;

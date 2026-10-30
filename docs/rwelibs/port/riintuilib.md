@@ -46,14 +46,14 @@ so that an overlong string runs into the pens the same way.
 
 * **IPColour fgpen,bgpen with a negative fgpen** calls SetBPen with the
   caller's a2 (the compiler's argument stack) as the RastPort: a2 is
-  set to the Rast only together with SetAPen.
+  set to the Rast only together with SetAPen (#696).
 * **The single character handler** reads the character from the
   address d0 (`MOVE.l d0,a0:MOVE.b (a0)+,(a1)`), i.e. from low memory,
-  not d0 itself.
+  not d0 itself (#699).
 * **The a0/d0 handler** copies without a limit into the 1024 byte
-  buffer; the pens follow it.
+  buffer; the pens follow it (#698).
 * **PrintIText always prints at 0,0** (+ the baseline): IPLocate has no
-  effect on the output of IPOutput.
+  effect on the output of IPOutput (#697).
 
 ## Test
 
