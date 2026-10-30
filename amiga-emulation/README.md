@@ -85,7 +85,11 @@ hardfile read-only. `a500-68010` is the same machine with a 68010
   `rom.key`, repeated) so that a ROM file alone is of no use without the
   product's key - a licence measure, not a protection: the key is the
   same for every copy of the product, not personal. Both files belong to
-  the user's own licence and are, like everything here, not in git.
+  the user's own licence and are, like everything here, not in git: the
+  ROM must not be uploaded, every developer provides their own. The
+  documented way is therefore the one Amiga Forever installs: copy its
+  `amiga-os-130.rom` and `rom.key` (e.g. from `~/Amiberry/ROMs/` or the
+  Amiga Forever `Shared/rom` directory) here unchanged.
 * **The hardfile's startup:** `S:Startup-Sequence` ends with
   `IF EXISTS S:User-Startup` / `Execute S:User-Startup`, and
   `S:User-Startup` executes `TEST:run.script` (same conditions as above,
