@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+before
+0
+after
+rc=0
