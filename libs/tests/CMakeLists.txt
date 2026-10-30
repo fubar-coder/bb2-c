@@ -74,8 +74,9 @@ add_test(NAME libs_emulator COMMAND ${CMAKE_COMMAND}
 	-DUSERLIBS=${rwe_userlibs}
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/emulator -DTIMEOUT=${LIBS_TESTS_TIMEOUT}
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+math(EXPR limit "600 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(libs_emulator PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
-	TIMEOUT 600)
+	TIMEOUT ${limit})
 # a USERLIBS original made by a test (the reference build of an RWE
 # source, libs/userlibs/rwe/refbuild.cmake): its fixture
 get_property(rwe_fixtures GLOBAL PROPERTY RWE_EMULATOR_FIXTURES)
@@ -104,8 +105,9 @@ foreach(t cliargs-parpath-cli crunch-implode-overread crunch-decrunch-corrupt
 		-DILLEGAL_WATCH=${watch} -DFILTER=${t}
 		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DTIMEOUT=${LIBS_TESTS_TIMEOUT}
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
+	math(EXPR limit "300 + ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS "emulator;bug-orig" SKIP_RETURN_CODE 77
-		TIMEOUT 300)
+		TIMEOUT ${limit})
 endforeach()
 
 # the test variants (variants/selftest-*, built by ../CMakeLists.txt to

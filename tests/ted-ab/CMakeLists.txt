@@ -61,5 +61,6 @@ file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 # sources (no emulator); ted_ab: the runs
 add_test(NAME ted_ab_lint COMMAND ${TEDAB} --lint ${work}.pass)
 add_test(NAME ted_ab COMMAND ${TEDAB} ${work}.pass)
+math(EXPR limit "3600 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(ted_ab PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
-	FIXTURES_REQUIRED corpus TIMEOUT 3600)
+	FIXTURES_REQUIRED corpus TIMEOUT ${limit})

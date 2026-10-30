@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.28)
 # components (programs/ted/tests/host).  The top-level CMakeLists.txt adds
 # this directory as ExternalProject (build/<preset>/host).
 project(blitzbasic2_host LANGUAGES C CXX)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/emulation-queue.cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)   # for clangd (host side in .clangd)
 
 option(HOST_SANITIZE "address and undefined behaviour sanitizers for all host code" OFF)

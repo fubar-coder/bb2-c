@@ -237,7 +237,7 @@ assign=FNS|FNS
 assign=Blitz2|BLITZ2
 ${ref_pass}")
 add_test(NAME rwe_refbuild COMMAND ${CDRUN} ${pass})
-math(EXPR limit "${RWE_REFBUILD_TIMEOUT} * 3 + 120")
+math(EXPR limit "${RWE_REFBUILD_TIMEOUT} * 3 + 120 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(rwe_refbuild PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${limit} FIXTURES_SETUP rwe_refbuild)
 

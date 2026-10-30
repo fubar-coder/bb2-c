@@ -203,7 +203,7 @@ function(bug_orig_test bas name)
 		add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
 		set(labels "bug-orig;emulator")
 	endif()
-	math(EXPR limit "${BUG_ORIG_TIMEOUT} * 2 + 60")
+	math(EXPR limit "${BUG_ORIG_TIMEOUT} * 2 + 60 + ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS "${labels}" SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
 	list(REMOVE_DUPLICATES fixtures)

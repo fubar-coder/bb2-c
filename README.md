@@ -241,7 +241,9 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   `AMIGA_EMULATION_MAX` Amiberry sessions run at once (environment,
   default 4, 0 = no limit): a further session waits for a free slot
   (`tools/lib/amiga_emulation`; the wait does not count into the
-  session's timeout, but into ctest's). `corpus_cd`: all 724 sources of the CD
+  session's timeout, and every emulator test has `EMULATION_QUEUE_WAIT`
+  seconds (default 7200, `cmake/emulation-queue.cmake`) more in its
+  ctest TIMEOUT for it). `corpus_cd`: all 724 sources of the CD
   compiled with blitz2-c (like bb2's bb2corpus: `.xtra` of the sources,
   assigns to CD directories, directory of the relative INCLUDEs) and
   compared with `tests/data/blitz2-cd.tsv` (result, error line and

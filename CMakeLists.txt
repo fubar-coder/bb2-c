@@ -23,6 +23,7 @@ if(NOT CMAKE_TOOLCHAIN_FILE)
 endif()
 
 project(blitzbasic2 VERSION 1.95 LANGUAGES C CXX)
+include(cmake/emulation-queue.cmake)
 
 if(NOT AMIGAOS)
 	message(FATAL_ERROR "Wrong toolchain file ${CMAKE_TOOLCHAIN_FILE}: only AmigaOS (cmake/m68k-amigaos.cmake)")
@@ -102,7 +103,8 @@ add_test(NAME host COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}
 	--output-on-failure -LE emulator)
 add_test(NAME host_emulator COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}
 	--output-on-failure -L emulator)
-set_tests_properties(host_emulator PROPERTIES LABELS emulator TIMEOUT 300)
+math(EXPR limit "300 + ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(host_emulator PROPERTIES LABELS emulator TIMEOUT ${limit})
 # the __saveds check of the configure step with a function without it
 add_test(NAME toolchain_saveds_broken COMMAND ${CMAKE_COMMAND} -DCC=${CMAKE_C_COMPILER}
 	-DSRC=${PROJECT_SOURCE_DIR}/cmake/saveds/broken.c -P ${PROJECT_SOURCE_DIR}/cmake/check-saveds.cmake)
@@ -139,4 +141,5 @@ add_test(NAME help_amiga COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
 	-DWORK=${CMAKE_BINARY_DIR}/help-amiga
 	"-DPROGRAMS=$<TARGET_FILE:reqtrap>;$<TARGET_FILE:reqclose>;$<TARGET_FILE:reqclosetest>;$<TARGET_FILE:inject>;$<TARGET_FILE:wbrun>;$<TARGET_FILE:teddrive>;$<TARGET_FILE:teddrivetest>;$<TARGET_FILE:tedprobe>"
 	-P ${PROJECT_SOURCE_DIR}/cmake/check-help-amiga.cmake)
-set_tests_properties(help_amiga PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT 120)
+math(EXPR limit "120 + ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(help_amiga PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})

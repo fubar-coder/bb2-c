@@ -96,7 +96,7 @@ function(corpus_pass name)
 	endforeach()
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 	add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
-	math(EXPR limit "${CORPUS_TIMEOUT} * 3 + 120")
+	math(EXPR limit "${CORPUS_TIMEOUT} * 3 + 120 + ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
 	if(arg_SERIAL_SAME_AS)
@@ -171,4 +171,5 @@ add_custom_target(blitz2-cd-reference
 
 cd_pass(corpus_cd $<TARGET_FILE:blitz2> ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd.tsv ${CD_TABLE})
 add_test(NAME corpus_cd COMMAND ${CDRUN} ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd.pass)
-set_tests_properties(corpus_cd PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT 3600)
+math(EXPR limit "3600 + ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(corpus_cd PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
