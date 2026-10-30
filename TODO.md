@@ -537,8 +537,9 @@ several versions.
       `refbuild`, all compile in `rwe_refbuild` (BB22 sources through
       `tools/bb22`); Anim with the BSS2 binary (its source does not
       compile); LES debug not yet (`Font.bin` is missing). C ports done
-      (2026-10-30) except CIA tracker (open: its play routine is the
-      Protracker 2.3A one, like ptlib's). Next: stage D (§3.3), with
+      (2026-10-30) except CIA tracker; CIA tracker and ptlib (the
+      Protracker 2.3A play routine, released as "Public Domain") are
+      ported (decision 2026-10-30, `archive/README.md`). Next: stage D (§3.3), with
       REFERENCE `refbuild`; Eval
       (121, clashes with polylib) needs a variant of its own. ~~**Reference build in the build**~~ done (2026-10-29,
       `libs/userlibs/rwe/refbuild.cmake`): residents by `tools/blitzres`
@@ -553,6 +554,6 @@ several versions.
       constants (`AHI.res` of risoundlib2), the further includes of the
       sources not yet buildable (README §3.1). The RWE userlibs (their numbers: AmiBlitz3's
       libnums, the matching binaries, `#riarrayslib` = 7 from
-      `defaultdbug50.bb2`; `docs/rwelibs/README.md` §3.1). No
-      Protracker library: neither RI's ptlib nor a replacement around
-      Frank Wille's ptplayer (decision 2026-10-29).
+      `defaultdbug50.bb2`; `docs/rwelibs/README.md` §3.1). ptlib is
+      ported after all (decision 2026-10-30, `archive/README.md`); no
+      replacement around Frank Wille's ptplayer (decision 2026-10-29).

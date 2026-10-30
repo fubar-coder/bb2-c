@@ -98,8 +98,28 @@ As of 2026-10-28, after research:
   cover them as they cover blitz2 and TED. Decision of 2026-10-29: taken
   over on this basis (RWE had taken over Blitz Basic 2 and allowed the
   release). Contained code of others: the Protracker 2.3A play routine in
-  `ptlib/` (its authors are not named in the source), `RTLib.bb` (the
-  ReqTools interface by Neil O'Rourke, 1994).
+  `ptlib/` (see below), `RTLib.bb` (the ReqTools interface by Neil
+  O'Rourke, 1994).
+* **The Protracker 2.3A play routine** (in `ptlib/ptlib*.bb` and
+  `ptlib/CIATrackerLib1.bb` of the RWE release, by way of Neil
+  O'Rourke's library): by Peter "Crayon" Hanning / Mushroom Studios
+  (header of `PT-CIAPlay.s`: "Protracker V2.1A Playroutine, Peter
+  "CRAYON" Hanning / Mushroom Studios 1992"). The ReadMe of the
+  Protracker 2.3A disk (`PT2.3.ReadMe!`, 1993-01-01; copy in
+  https://github.com/cmatsuoka/tracker-history,
+  `reference/amiga/protracker/`): "Protracker V2.3 Release A - (C) 1993
+  Mushroom Studios/Noxious … Protracker is a Public Domain program, and
+  may be copied freely and included in any PD library. You may not
+  charge anything for the program other than the cost of the disk and
+  the PD-service." The disk carries the play routines `PT-Play.s` and
+  `PT-CIAPlay.s` for use in other programs ("You can use this routine
+  to play a module"); the condition on charging names "the program".
+  The routine was shipped in commercial products of the time (Blitz
+  libraries of BUM and the Blitz Support Suite, many games) without
+  objection. Decision of 2026-10-30: the libraries with the routine
+  (ptlib, CIA tracker) are ported on this basis. No code is taken over
+  from later rewrites (ProTracker 2.3F by Olav Sørensen, BSD-3-Clause:
+  its changelog serves only as a list of the routine's known bugs).
 * **The FNS font "Personal"** (`amiblitz3-github/…/PERSONAL.FNS`): not in
   RWE's 1999 release (the source only `IncBin`s it); part of the FNS
   library's binary and its examples on the CD and published by AmiBlitz3
