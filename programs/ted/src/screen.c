@@ -374,10 +374,10 @@ void pstats(const char *text, UBYTE *at)
 /* ted.s:4888 freechmap */
 void freechmap(void)
 {
-    ULONG d0 = (ULONG)chcols * edrows;
+    ULONG size = (ULONG)chcols * edrows;        /* d0 */
 
-    memalt = (UWORD)d0;
-    FreeMem(chmap, d0);
+    memalt = (UWORD)size;
+    FreeMem(chmap, size);
 }
 
 /* ted.s:4895 screenclose.  The UCopList goes with CloseScreen; `coplist`

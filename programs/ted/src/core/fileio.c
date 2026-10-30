@@ -707,11 +707,11 @@ WORD getbchar2(struct bcur *bc)
 {
     bc->col++;
     if (tokenise) {
-        const UBYTE *a3 = charbuff3;
+        const UBYTE *text = charbuff3;          /* a3: [0] = length + 1 */
 
-        if ((UBYTE)bc->col >= a3[0])            /* cmp.b (a3),d5 / bcc .space */
+        if ((UBYTE)bc->col >= text[0])          /* cmp.b (a3),d5 / bcc .space */
             goto space;
-        return a3[bc->col];                     /* tst d0: make plus! */
+        return text[bc->col];                   /* tst d0: make plus! */
     }
     /* .skipz */
     if ((UBYTE)bc->col >= bc->item->numchars)   /* cmp.b numchars(a5),d5 */

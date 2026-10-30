@@ -42,10 +42,11 @@ struct m68kregs {
    the result is the CCR the callee returned with.  (blitz2-c/src/glue.c) */
 UWORD callregs(APTR fn, struct m68kregs *r);
 
-/* `divu.w src,d0` (glue.c): (remainder << 16) | quotient, d0 unchanged on
-   overflow, zero divide trap on src = 0 - the real instruction.  Also
-   declared in core/fileio.h (the host build defines it there in C). */
-ULONG divu_w(ULONG d0, UWORD src);
+/* `divu.w src,d0` (glue.c) with d0 = dividend, src = divisor: (remainder
+   << 16) | quotient, dividend unchanged on overflow, zero divide trap on
+   divisor = 0 - the real instruction.  Also declared in core/fileio.h (the
+   host build defines it there in C). */
+ULONG divu_w(ULONG dividend, UWORD divisor);
 
 /* ted.s:3046 outmem with memstack == 0 (glue.c): `move.l memstack,a7 /
    bra memcont` literally - a7 = 0, then memcont (printmem if memalt,
