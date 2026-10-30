@@ -3,7 +3,7 @@
 ; L/blitzeditor.opts with fonthite 6; start, BOTTOM.  Nothing saved.
 ; Fails in every combination on a 512 row Workbench: calcscreen makes the
 ; font 6 screen 513 rows, OpenWindow fails, screenopen's error path crashes
-; (BUG(orig), programs/ted/src/screen.c calcscreen).
+; (BUG(orig) (#351), programs/ted/src/screen.c calcscreen).
 ; @known KNOWN-BOTH (28.10.2026): 513 row screen on a 512 row Workbench
 ; @source T t01_int
 ; @opts fonthite=6,fonthite2=5,fontmul=960
