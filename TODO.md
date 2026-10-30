@@ -266,7 +266,8 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      `__saveds` on the C function would only replace the one `lea`, save
      a4 a second time and call `___restore_a4`; the thunk stays anyway.
      `directdo` is entered from an exception (rte): the explicit `lea`
-     is the clearer form there. Open for a user decision.
+     is the clearer form there. Decided (2026-10-30): left as they are –
+     the code is assembler anyway and moving it to C is not worth it.
 * ~~**`-h` / `--help` for all callable programs**~~ done (2026-10-29,
   request of 2026-10-28): usage text with a line on what the program
   does, to stdout, return 0. Host (61736be): the tools, tedtok, teddetok,
@@ -289,13 +290,6 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
 * **Warnings of `blitzlibcheck`:** 73 warnings (references into the error
   check area, as with `mkblitzlib.py`) on every rebuild of the affected
   libraries – if needed, behind an option.
-* **LTO for TED** as a separate experiment: small benefit (one call across
-  the boundary to `filereq_core.c`, 12 bytes); risks `glue_start.c` at the
-  start of the hunk (`hunkcheck` checks that), `-fbaserel`, glue with
-  inline assembler. Not for the libraries (`-fno-toplevel-reorder`).
-  ab3c uses LTO for its Amiga build (`AB3C_LTO`) – look at the experience
-  there.
-
 * ~~**License header lines**~~ decided (2026-10-28): no SPDX lines in the
   source files; the license applies via `LICENSE` and the README.
 * ~~**CD data**~~ solved (2026-10-28): not in the repository,
