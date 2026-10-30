@@ -1,0 +1,5 @@
+[run]
+regs 0140 0142 0120 0122
+pointer set -1
+pos and ctl 0 -1
+rc=0
