@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+length 300
+port as before
+rc=0
