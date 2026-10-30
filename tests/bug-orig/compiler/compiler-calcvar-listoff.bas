@@ -1,4 +1,4 @@
-; compiler-calcvar-listoff - suspected: calcvar keeps the element size
+; compiler-calcvar-listoff (#937) - calcvar keeps the element size
 ; addition of a List array (.listoff, 8 bytes for the item header) in one
 ; static word.  It is set before the index is evaluated; an element of a
 ; normal array inside the index runs calcvar again and sets it to 0, so

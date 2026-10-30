@@ -1185,7 +1185,10 @@ UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
     /* .listoff dc 0 (data in code).  Kept static, not a local: it is set
        before arreval, which recurses into calcvar for an array element in
        the index expression and resets it there (as in the asm) - a local
-       would change the element size of a List array indexed that way. */
+       would change the element size of a List array indexed that way.
+       BUG(orig) (#937): a(b(1)) of a List array multiplies the index by
+       the bare element size: the nested calcvar of the normal array b
+       sets listoff to 0 (blitz2.s:8214-8240).  Kept. */
     static UWORD listoff;
     struct var *v = *pv;
     struct type *t = *pt;
