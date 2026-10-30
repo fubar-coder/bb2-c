@@ -30,26 +30,30 @@
  * BUG(orig):
  *   - OpenDisk unit,name$ copies the name into the buffer trackname (58
  *     bytes) without a limit - a longer name overwrites iorequests and
- *     msgport - and keeps it: a later OpenDisk without name uses it too.
+ *     msgport - (#860) and keeps it: a later OpenDisk without name uses
+ *     it too (#859).
  *   - OpenDisk of a unit that is open replaces its request (the old one
- *     stays open, lost); OpenDisk with a negative unit passes the check
- *     (CMP #3: BGT), but putioreq/getioreq ignore it: the request is
- *     lost (OpenDevice ok) or DeleteIORequest gets 0 (OpenDevice failed).
+ *     stays open, lost) (#862); OpenDisk with a negative unit passes the
+ *     check (CMP #3: BGT), but putioreq/getioreq ignore it: the request
+ *     is lost (OpenDevice ok) or DeleteIORequest gets 0 (OpenDevice
+ *     failed) (#861).
  *   - finit closes units 0-2 only, not 3; init clears only the first
- *     three entries of iorequests.
+ *     three entries of iorequests (#863).
  *   - WriteBoot unit,bootdata sets d1 = 0 (sector) over bootdata and
  *     takes the buffer from d2, which is not an argument (whatever the
  *     caller left there; here a register parameter d2 for the same
- *     effect).  WriteBoot unit writes the 8 byte default boot block and
- *     the 1016 bytes behind it (the end of the library).
+ *     effect) (#864).  WriteBoot unit writes the 8 byte default boot
+ *     block and the 1016 bytes behind it (the end of the library) (#865).
  *   - FormatTrack/WriteBoot (TD_FORMAT): length = number * 512 (as for
- *     sectors), not tracks * 11 * 512; WriteBoot formats 2 "sectors".
+ *     sectors), not tracks * 11 * 512; WriteBoot formats 2 "sectors"
+ *     (#858).
  *   - BootProg: the boot block checksum is the plain sum with carry of
  *     the 256 longs incl. the old checksum long (not cleared first, not
- *     complemented), and the root block long (+8) is cleared after it.
+ *     complemented), and the root block long (+8) is cleared after it
+ *     (#856).
  *   - DiskMotor: SNE on bit 7 of CIAB PRB ($BFD100), which is /MTR (active
  *     low): -1 (the byte $FF) means the motor line is high (off), the
- *     help text says "-1 if motor is on".
+ *     help text says "-1 if motor is on" (#857).
  * Registers: the original changes d0/d1/a0/a1, a6 and d4-d7 in most
  * commands, but keeps d1/a0/a1 on some paths (no port or request); the
  * thunks keep d1/a0/a1 everywhere, GCC keeps d2-d7/a2-a6.
@@ -210,7 +214,7 @@ static ULONG doio(struct IOStdReq *req)
 
 void BLITZ_ROUTINE c_libinit(void)
 {
-    td.iorequests[0] = NULL;            /* BUG(orig): not [3] */
+    td.iorequests[0] = NULL;            /* BUG(orig): not [3] (#863) */
     td.iorequests[1] = NULL;
     td.iorequests[2] = NULL;
     td.msgport = CreateMsgPort();
@@ -245,7 +249,7 @@ ULONG BLITZ_ROUTINE c_closedisk(LONG unit BL_REG(d0))
 
 void BLITZ_ROUTINE c_libfinit(void)
 {
-    c_closedisk(0);                     /* BUG(orig): not 3 */
+    c_closedisk(0);                     /* BUG(orig): not 3 (#863) */
     c_closedisk(1);
     c_closedisk(2);
     if (td.msgport) {
@@ -279,7 +283,7 @@ ULONG BLITZ_ROUTINE c_opentrack2(LONG unit BL_REG(d0), const char *name BL_REG(d
 {
     char *p = td.trackname;
 
-    while ((*p++ = *name++) != 0)       /* BUG(orig): no limit */
+    while ((*p++ = *name++) != 0)       /* BUG(orig): no limit (#860) */
         ;
     *p = 0;
     return c_opentrack(unit);
@@ -348,7 +352,7 @@ ULONG BLITZ_ROUTINE c_install1(LONG unit BL_REG(d0))
     return c_formatsector2(unit, 0, td.defaultboot, 2);
 }
 
-/* WriteBoot unit#,bootdata: BUG(orig) the buffer is the caller's d2 */
+/* WriteBoot unit#,bootdata: BUG(orig) the buffer is the caller's d2 (#864) */
 ULONG BLITZ_ROUTINE c_install2(LONG unit BL_REG(d0), APTR d2 BL_REG(d2))
 {
     return c_formatsector2(unit, 0, d2, 2);

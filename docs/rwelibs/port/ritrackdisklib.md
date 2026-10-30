@@ -35,25 +35,27 @@ original's changes of a6 and d4-d7 are not reproduced.
 
 * `OpenDisk unit,name$` copies the name into the 58-byte buffer
   `trackname` without a limit (a longer one overwrites the request table
-  and the port) and keeps it for later `OpenDisk` without a name.
+  and the port) (#860) and keeps it for later `OpenDisk` without a name
+  (#859).
 * `OpenDisk` of an open unit replaces its request (the old one stays
-  open); a negative unit passes the check (`CMP #3: BGT`), but the table
-  routines ignore it: the request is lost, or `DeleteIORequest(0)` if
-  OpenDevice failed.
-* finit closes units 0-2, not 3; init clears only three table entries.
+  open) (#862); a negative unit passes the check (`CMP #3: BGT`), but the
+  table routines ignore it: the request is lost, or `DeleteIORequest(0)`
+  if OpenDevice failed (#861).
+* finit closes units 0-2, not 3; init clears only three table entries
+  (#863).
 * `WriteBoot unit,bootdata` overwrites bootdata (d1 = sector 0) and
   takes the buffer from d2, which is no argument (whatever the caller
   left there; the C routine takes d2 as a register parameter for the same
-  effect). `WriteBoot unit` writes the 8-byte default boot block and the
-  1016 bytes behind it (the end of the library and beyond).
+  effect) (#864). `WriteBoot unit` writes the 8-byte default boot block
+  and the 1016 bytes behind it (the end of the library and beyond) (#865).
 * `FormatTrack`/`WriteBoot` (TD_FORMAT): length = number × 512 as for
-  sectors, not tracks × 11 × 512.
+  sectors, not tracks × 11 × 512 (#858).
 * `BootProg`: the checksum is the plain sum with carry of all 256 longs
   including the old checksum (not cleared, not complemented); the root
-  block long (+8) is cleared afterwards.
+  block long (+8) is cleared afterwards (#856).
 * `DiskMotor` returns -1 (the byte $FF) when CIAB PRB bit 7 (/MTR,
   active low) is set, i.e. motor off; the help text says "-1 if motor is
-  on".
+  on" (#857).
 
 **Test** (`libs/tests/rwe/ritrackdisklib.c`, snitch case "rwe
 ritrackdisklib"): C build and CD original side by side against a device
