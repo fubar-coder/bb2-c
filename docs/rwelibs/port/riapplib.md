@@ -44,7 +44,7 @@ set it to 0 for the tag list. Assembler remains for:
 * the `AddAppIconA` call: its DiskObject and tag list go in a3 and a4,
   which are fixed registers of the Blitz program (`-ffixed-a3/a4`), so
   GCC cannot load them for a call; a small `__asm` sets them – and leaves
-  them set, as the original does (BUG(orig) below).
+  them set, as the original does (BUG(orig) below, #516).
 
 Not ported: `replymsg` and `waitappevent` (dead code without a token in
 the original).
@@ -53,33 +53,35 @@ the original).
 
 * `AddAppIcon` loads the DiskObject into a3 and the tag list (0) into a4
   for `AddAppIconA` and restores neither: after it the string pointer is
-  the DiskObject and the locals base of the Blitz program is 0.
+  the DiskObject and the locals base of the Blitz program is 0 (#516).
 * finit (`delapp`) clears the slot at byte offset `index*4/4` instead of
   `index*4` (`ASR.l #2,d7` before the store) – a long store at an odd
   address for odd indexes (an address error on a 68000), harmless at
-  program end on a 68020.
+  program end on a 68020 (#524).
 * `AddAppMenu` returns the AppMenuItem address instead of -1 (the
-  `MOVEQ #-1,d0` behind the `RTS` is never reached).
+  `MOVEQ #-1,d0` behind the `RTS` is never reached) (#518).
 * `DelAppWindow` calls `RemoveAppWindow` for an empty slot too (NULL);
-  `DelAppIcon` calls `FreeDiskObject` for an empty DiskObject slot.
+  `DelAppIcon` calls `FreeDiskObject` for an empty DiskObject slot
+  (#523).
 * `AddAppIcon` on a used id removes the old AppIcon and frees its
   DiskObject first; if `AddAppIconA` then fails, the removed AppIcon stays
   in the slot (a later `DelAppIcon` removes it again) and the new
-  DiskObject stays in its slot (freed only by finit).
+  DiskObject stays in its slot (freed only by finit) (#517).
 * `NextAppFile`/`AppFile` unlock the lock of the WBArg – Workbench's own
   lock (`ChangeMode` + `UnLock`, "Let us Unlock() it!") – and clear it in
   the message, unless the path ends with `:`. A second `AppFile` of the
   same argument then has lock 0. The `:` test reads the byte before the
-  string if the path is empty. a3 ends **behind** the 0 (d0 = the length
-  is right). `AppFile(n)` with n ≤ 0 reads the WBArg before the list.
-* `AppLock` reads the first WBArg without looking at `am_NumArgs`.
+  string if the path is empty (#521). a3 ends **behind** the 0 (d0 = the
+  length is right) (#519). `AppFile(n)` with n ≤ 0 reads the WBArg
+  before the list (#520).
+* `AppLock` reads the first WBArg without looking at `am_NumArgs` (#522).
 * finit replies to the messages still queued at the port only if a
   message is current (the last `AppEvent`); the flag `msgportflag` for the
   other case is never set. Otherwise they stay unreplied when the port is
-  deleted.
+  deleted (#525).
 * init: if a library does not open, the port is deleted and the memory
   freed, but the libraries already opened stay open; `AppMsgPort` still
-  returns the deleted port.
+  returns the deleted port (#526).
 
 ## Test
 

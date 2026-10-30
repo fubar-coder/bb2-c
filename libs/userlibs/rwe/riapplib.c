@@ -31,32 +31,33 @@
  * BUG(orig), kept:
  *   - AddAppIcon passes the DiskObject in a3 and the tag list (0) in a4
  *     to AddAppIconA and restores neither: after it a3 (string pointer) =
- *     the DiskObject and a4 (locals of the Blitz program) = 0.
+ *     the DiskObject and a4 (locals of the Blitz program) = 0 (#516).
  *   - finit clears the table slot at byte offset index*4/4 instead of
  *     index*4 (ASR.l #2 before the store): a long store at an odd address
- *     for the slots 1, 3 ... (an address error on a 68000).
+ *     for the slots 1, 3 ... (an address error on a 68000) (#524).
  *   - AddAppMenu returns the AppMenuItem address, not -1 (the MOVEQ #-1
- *     behind the RTS is never reached).
+ *     behind the RTS is never reached) (#518).
  *   - DelAppWindow calls RemoveAppWindow also for an empty slot (NULL);
- *     DelAppIcon calls FreeDiskObject also for an empty DiskObject slot.
+ *     DelAppIcon calls FreeDiskObject also for an empty DiskObject slot
+ *     (#523).
  *   - AddAppIcon on a used id removes the old AppIcon and frees its
  *     DiskObject but leaves the old AppIcon in the slot if AddAppIconA
  *     fails (a later DelAppIcon removes it again); the new DiskObject is
- *     stored before AddAppIconA and stays on failure.
+ *     stored before AddAppIconA and stays on failure (#517).
  *   - NextAppFile/AppFile unlock the lock of the WBArg (ChangeMode +
  *     UnLock - Workbench's own lock) and clear it in the message, unless
  *     the path ends with ':'.  The ':' test reads the byte before the
- *     string if NameFromLock gives an empty path.  a3 ends BEHIND the 0
- *     of the result (d0 = the length is right).  AppFile(n) with n <= 0
- *     reads the WBArg before the list; AppLock reads the first WBArg
- *     without looking at am_NumArgs.
+ *     string if NameFromLock gives an empty path (#521).  a3 ends BEHIND
+ *     the 0 of the result (d0 = the length is right) (#519).  AppFile(n)
+ *     with n <= 0 reads the WBArg before the list (#520); AppLock reads
+ *     the first WBArg without looking at am_NumArgs (#522).
  *   - finit replies to the messages queued at the port only if a message
  *     is current (the last AppEvent) - the flag `msgportflag` for the
  *     other case is never set; otherwise they stay unreplied when the
- *     port is deleted.
+ *     port is deleted (#525).
  *   - init: if a library does not open, the port is deleted and the block
  *     freed, but the libraries already opened stay open; AppMsgPort then
- *     still returns the deleted port.
+ *     still returns the deleted port (#526).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -239,7 +240,7 @@ static void BLITZ_ROUTINE libinit_c(void)
     appicons = (ULONG *)(block + 128);
     arglist = block + 192;
     disklist = (struct DiskObject **)(block + 704);
-    /* BUG(orig): the libraries opened before a failing one stay open */
+    /* BUG(orig): the libraries opened before a failing one stay open (#526) */
     if (!(wbbase = OpenLibrary((STRPTR)"workbench.library", 37))
         || !(dosbase = (struct DosLibrary *)OpenLibrary((STRPTR)"dos.library", 37))
         || !(iconbase = OpenLibrary((STRPTR)"icon.library", 37))) {
@@ -252,7 +253,7 @@ static void BLITZ_ROUTINE libinit_c(void)
 }
 BLITZ_THUNK(libinit, libinit_c, "d0-d1/a0-a1");
 
-/* delapp: remove every object of a table of 16; BUG(orig): the slot that
+/* delapp: remove every object of a table of 16; BUG(orig) (#524): the slot that
    is cleared is the long at byte offset index*4/4 (an odd address for
    odd indexes: GCC writes it with one MOVE.l, as the original) */
 static void delapp(ULONG *table, int kind)
@@ -281,7 +282,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
 
     if (!libflag)
         return;
-    /* BUG(orig): the queue is replied only if a message is current */
+    /* BUG(orig): the queue is replied only if a message is current (#525) */
     m = (struct Message *)msg;
     if (m || (msgportflag && (m = GetMsg(msgport)) != NULL)) {
         do
@@ -376,7 +377,7 @@ static ULONG BLITZ_ROUTINE appeventcode_c(void)
 BLITZ_THUNK(appeventcode, appeventcode_c, "d1/a0-a1");
 
 /* NextAppFile: the full path of the next argument at a3; a3 ends behind
-   the 0 (BUG(orig)), d0 = the length */
+   the 0 (BUG(orig), #519), d0 = the length */
 static ULONG BLITZ_ROUTINE appfile_c(void)
 {
     struct WBArg *arg;
@@ -440,7 +441,7 @@ static ULONG BLITZ_ROUTINE delmenu_c(LONG id BL_REG(d0))
 }
 BLITZ_THUNK(delmenu, delmenu_c, "d1/a0-a1");
 
-/* AddAppMenu id,text$ - BUG(orig): returns the AppMenuItem, not -1 */
+/* AddAppMenu id,text$ - BUG(orig): returns the AppMenuItem, not -1 (#518) */
 static ULONG BLITZ_ROUTINE addmenu_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1))
 {
     struct AppMenuItem *item;
@@ -481,7 +482,7 @@ static ULONG BLITZ_ROUTINE addicon_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1),
     disklist[id] = dobj;
     /* AddAppIconA(id,userdata,text,msgport,lock,diskobj,taglist) takes
        the DiskObject in a3 and the tag list in a4, the registers the Blitz
-       program keeps fixed (-ffixed-a3/a4): set in assembler.  BUG(orig):
+       program keeps fixed (-ffixed-a3/a4): set in assembler.  BUG(orig) (#516):
        neither is restored - a3 = the DiskObject, a4 = 0 afterwards. */
     {
         register ULONG d0 __asm("d0") = id;
@@ -537,7 +538,7 @@ static ULONG BLITZ_ROUTINE delicon_c(LONG id BL_REG(d0))
         return 0;
     RemoveAppIcon((struct AppIcon *)*slot);
     *slot = 0;
-    FreeDiskObject(disklist[id]);       /* BUG(orig): also NULL */
+    FreeDiskObject(disklist[id]);       /* BUG(orig): also NULL (#523) */
     disklist[id] = NULL;
     return -1;
 }
@@ -572,7 +573,7 @@ static ULONG BLITZ_ROUTINE delwindow_c(LONG n BL_REG(d0))
 {
     if (!libflag)
         return 0;
-    RemoveAppWindow((struct AppWindow *)appwindows[n]);    /* BUG(orig): also NULL */
+    RemoveAppWindow((struct AppWindow *)appwindows[n]);    /* BUG(orig): also NULL (#523) */
     appwindows[n] = 0;
     return -1;
 }
