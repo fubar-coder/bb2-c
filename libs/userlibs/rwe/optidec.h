@@ -17,7 +17,7 @@
  *
  * BUG(orig): the decruncher does not check the data: corrupt data write
  *   below the buffer (a match or literal run past the start) and read the
- *   packed words below the file.
+ *   packed words below the file (#833).
  * DIFF: the literal run reads its shift count from a table indexed by the
  *   bit count d7 (MOVE.b table(pc,d7.w)); d7 leaves 0..15 only with a
  *   header of more than 16 offset bits, and then the original reads

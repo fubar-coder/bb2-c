@@ -42,8 +42,10 @@ d0–d7/a0/a1 and keeps a2–a6). The decruncher is `dostc` of
 ## BUG(orig), kept
 
 * The decruncher checks nothing: corrupt data write below the
-  destination and read packed words below the file; form 2 does not know
-  the size of `dest`.
+  destination and read packed words below the file (#833).
+
+Form 2 does not know the size of `dest`; that is no defect (the caller
+provides a `dest` for the unpacked length, which the header gives).
 
 ## DIFF
 

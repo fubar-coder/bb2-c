@@ -20,8 +20,10 @@
  * thunks.
  *
  * BUG(orig): the decruncher does not check the data (optidec.h): corrupt
- *   data write below the destination and read below the packed words;
- *   form 2 does not check that dest is large enough.
+ *   data write below the destination and read below the packed words
+ *   (#833).
+ * Form 2 does not check that dest is large enough: no defect, the caller
+ *   gives a dest for the unpacked length (the header has it).
  * DIFF: the decruncher's run table index (optidec.h).
  */
 #include "blitzlib.h"
