@@ -345,9 +345,8 @@ struct item *linka0(struct item *item, struct item *prev)
     /* .end2 */
     item->lastitem = prev;
     prev->nextitem = item;
-    prev = item;
-    thisitem = prev;
-    return prev;
+    thisitem = item;
+    return item;
 }
 
 /* ted.s:3293 bloadadd */
@@ -375,18 +374,17 @@ UBYTE *bloadadd(UBYTE *dst)
 UBYTE *detok(const UBYTE *src, UBYTE *dst)
 {
     for (;;) {
-        UWORD c = *src++;
+        UBYTE c = *src++;
         const char *name;
 
         if (c == 0)
             break;                              /* .done */
         if (!(c & 0x80)) {
-            *dst++ = (UBYTE)c;
+            *dst++ = c;
             continue;
         }
         /* .skip */
-        c = (UWORD)((c << 8) | *src++);
-        name = findtoke(c);
+        name = findtoke((UWORD)((c << 8) | *src++));
         while ((*dst++ = (UBYTE)*name++) != 0)  /* .skip3 */
             ;
         dst--;
@@ -431,7 +429,7 @@ void detoka5(struct item *line)
 
     /* bsr .loop (subroutine in the subroutine) */
     for (;;) {
-        UWORD c = *src++;
+        UBYTE c = *src++;
         const char *name;
 
         if (c == 0)
@@ -439,12 +437,11 @@ void detoka5(struct item *line)
         if (!(c & 0x80)) {
             if (dst >= charbuff4)
                 ORIG_HAZARD("detoka5 writes beyond charbuff3 (allocation end)");
-            *dst++ = (UBYTE)c;
+            *dst++ = c;
             continue;
         }
         /* .skip */
-        c = (UWORD)((c << 8) | *src++);
-        name = findtoke(c);
+        name = findtoke((UWORD)((c << 8) | *src++));
         for (;;) {                              /* .found */
             if (dst >= charbuff4)
                 ORIG_HAZARD("detoka5 writes beyond charbuff3 (allocation end)");
@@ -593,7 +590,7 @@ struct item *makefirst(struct item *line)
    in d5).  survey-04 I.12: freethis frees THISITEM (all callers: a4 == thisitem). */
 struct item *makeline(struct item *line, UWORD len)
 {
-    struct item *item, *link;
+    struct item *item, *prev, *next;
     const UBYTE *src;
     UBYTE *dst;
 
@@ -608,24 +605,23 @@ struct item *makeline(struct item *line, UWORD len)
         enditem = item;
     /* .skip3 */
     item->numchars = (UBYTE)len;
-    link = line->lastitem;
-    if (link)
-        link->nextitem = item;
+    prev = line->lastitem;
+    if (prev)
+        prev->nextitem = item;
     /* .skip4 */
-    item->lastitem = link;
-    link = line->nextitem;
-    if (link)
-        link->lastitem = item;
+    item->lastitem = prev;
+    next = line->nextitem;
+    if (next)
+        next->lastitem = item;
     /* .skip5 */
-    item->nextitem = link;
-    line = item;
+    item->nextitem = next;
     src = charbuff;
     dst = item->chars;
     while ((*dst++ = *src++) != 0)              /* .loop2 */
         ;
     freethis();
-    thisitem = line;
-    return line;
+    thisitem = item;
+    return item;
 }
 
 /* ted.s:4043 afirst2 */

@@ -439,7 +439,7 @@ BOOL replace2(struct item *line, struct item **lineout)
     UBYTE *dst, *src;
     const UBYTE *p;
     WORD col;
-    UWORD pos, len;
+    UWORD pos;
 
     col = isithere(line, &src);
     if (col < 0) {
@@ -476,12 +476,11 @@ BOOL replace2(struct item *line, struct item **lineout)
         while (dst < charbuff3) /* @1001 .loop4 */
             *dst++ = 32;
         /* @1005 .skip3 */
-        len = charstobuff(charbuff2);
-        line = makeline(line, len);
-        len = pos;              /* move (a7)+,d5 */
-        /* searching again from behind the replacement prevents an
-           endless loop when the replacement contains the search text */
-        col = isithere2(line, len, &src);
+        line = makeline(line, charstobuff(charbuff2));
+        /* move (a7)+,d5: searching again from behind the replacement
+           prevents an endless loop when the replacement contains the
+           search text */
+        col = isithere2(line, pos, &src);
     } while (col >= 0);
     if (lineout)
         *lineout = line;
