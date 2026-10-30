@@ -18,6 +18,8 @@ address of the last indirection.
   declarations equal (ctest `rwe_declarations_rievallib`). The reference
   build of the source only has to compile (`RWE_REFBUILD_NEWER`).
 * **Variant:** `rwe-1999-eval` (below).
+* **C file:** `libs/userlibs/rwe/rievallib.c`; test
+  `libs/tests/rwe/rievallib.c` (snitch case "rwe rievallib").
 
 ## The number and the variant
 
@@ -74,3 +76,79 @@ userlib, although only RIEvalLib needs it. Leaving polylib out of the
 variant's acidlibs instead of moving it is not possible with the variant
 mechanism (a variant changes numbers, not the set of libraries) and would
 drop a library the user had.
+
+## The binary's state
+
+The binary is EvalLib4 plus insertions (`.cache` analysis,
+`versions/Eval.md`; checked again in the disassembly):
+
+* ConvToPostFix copies `.`, `{` and `}` into operands; a `.` copies the
+  next character with it, unchecked.
+* PFEvaluate: `{` before an operand sets an indirect flag; the number
+  loops (decimal, `$`, `%`) also end at `}`; after the operand (sign
+  applied) the indirection checks that the last character read was `}`
+  (error 5 "No close bracket on indirect!"), keeps the address for
+  `PFIndirectAddr`, reads the long there and takes `.b` (the byte at the
+  address), `.w` (the word), `.l` or none (the long); another size is
+  error 6 "Invalid size for indirection!".
+* "No result value!" is error 4 (the source sets 1, the V2.5
+  documentation lists 4).
+* `PFIndirectAddr` (new entry 5): the address of the last indirection.
+
+## C and assembler
+
+All C behind `BLITZ_THUNK`s (they keep d1/a0/a1, ConvToPostFix and
+PFRegisters also d0; the original changes more). PFEvaluate's thunk
+passes the caller's return address in a1 (`BLITZ_THUNK_PRE`, `12(sp)`):
+for a string of spaces the original returns the long above its empty
+stack, which is that address. init/finit are empty C functions.
+
+The original keeps its stacks on a7 (ConvToPostFix the operators,
+PFEvaluate the values; `stack` holds a7 at the start, errors restore it).
+The C build keeps them in chunks of 32 longs: the first in the routine's
+frame, a new one in a new frame (`grow()`, which then runs the rest of
+the routine – every push of the original is followed by a jump to the
+main loop) when the ones there are full; pops go down into the chunks
+below, later pushes up again into those above, so the depth has no
+limit but the stack (about 6 bytes per value instead of 4). `grow()`
+is compiled without sibling calls, its chunk must outlive the call.
+
+The registers that carry state from one operand or operator to the next
+are fields of the routine's state, with the original's operand sizes
+(`BL_SETB`/`BL_SETW`): d1 (the last character a number read – what the
+indirection checks, also for a register, whose parse does not set it),
+d7 (the precedence of the last operator), d0's upper bytes. lmult and
+ldivide are the original's algorithms (MULU of the word halves with the
+SWAPs, the bit-by-bit division with its `ROXR`), changing d1 as there.
+The value count `argc` is a byte compared signed.
+
+## BUG(orig), kept
+
+In the C file's head: the `.` at the end of a string (ConvToPostFix
+reads on behind the 0), dropped characters, signs after a space, a3 left
+pointing to the string; `<` is unsigned "less or same", `>` signed; the
+product's high words added into the low word on overflow; `x^0` = `x^1`
+= `x`, `0^n` = 1, the exponent's low word as the loop count; 128 or more
+values make every operator fail; extra values are no error; a string of
+spaces returns the caller's return address with error 4; a register
+operand reads its index character unchecked (also the string's 0, then
+it parses behind the string) and any index; `{register}` checks a stale
+d1, and the `}` behind it is then a value 0; `-$10`/`-%1` read `$`/`%`
+as a digit; digits are not checked; the indirection reads any address
+(an odd one is an address error).
+
+## Test
+
+`libs/tests/rwe/rievallib.c` (snitch case "rwe rievallib"): every
+routine against the original, 2049 checks – ConvToPostFix on 52 strings
+(all operators and precedences, brackets in excess, signs, operands of
+every kind, upper case, the `.` at the end with a tail behind the 0, 200
+nested brackets and 150-deep operators), PFEvaluate on about 120 strings
+(every operator with signs, overflow, division by 0, the power cases,
+numbers and their quirks, registers without and with a block, a register
+at the string end, `{address}` with every size and the errors,
+`{register}` with the marker d1 and with d1 = `}`, 130 values, 300
+values with operators and pushes across chunk borders, empty, spaces
+only, two results), after each PFErrorType, PFErrorText,
+PFIndirectAddr; init/finit and the start state. A run with `CHUNK` 4
+passes too; mutations of the `.` copy and of `<` are caught.

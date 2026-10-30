@@ -82,7 +82,7 @@ latest date in the header comments.
 | LES debug | 49 | `Debuglib/LESDEBUGlib`, `LESDebuglib/LESDEBUGlib` | – | 1996-09-17 / 1996-12-01 | the older **=** AB3 `RILESDEBUGLib` (11216 B); the newer ≈ 94 % | open (newer source than the binary) |
 | Disasm | 50 (bin.) | `Disasmlib/Disasm-library.bb2` | LES | 1994 | **=** AB3 `RIDisAsm` (9228 B) | Disasm-library |
 | Encrypt | 52 | `Encryptlib/Encrypt-Library` | RI (McNamara) | 1996-01-21 | **=** BSS2/AB3 (636 B); BUM/OL (680 B) same declarations | Encrypt-Library |
-| Eval | 121 (bin.; clash with acidlibs) | `EvalLib4` | RI | 1995-11-17 | ≈ 83 % BSS2 `RIEVALLIB` | open |
+| Eval | 121 (bin.; clash with acidlibs: variant `rwe-1999-eval`) | `EvalLib4` | RI | 1995-11-17 | ≈ 83 % BSS2 `RIEVALLIB` | BSS2 binary (ported 2026-10-30, `port/rievallib.md`) |
 | FastSerial | 36 | `FASTSerial/fastseriallib`, `2`, `3` | – | – | 3 **=** BSS2/AB3 (1920 B) | fastseriallib3 |
 | FNS | 93 | `FNSLib/fns-library11`; `FNS2` (lit. 39, 3 entries) | RI | 1995-11-14 | 11: names equal BSS2, 1 help text differs | fns-library11 (check) |
 | FX | 66 | `FXLib/FX-Library13` | RI (McNamara) | 1996-01-21 | **=** BSS2/AB3 (4632 B) | FX-Library13 |
