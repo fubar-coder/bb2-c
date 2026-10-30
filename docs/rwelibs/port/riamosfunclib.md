@@ -85,11 +85,12 @@ Assembler remains in:
 * the two inline forms of `GTTagValue` (`BLITZ_INLINE`, copied by the
   compiler: `MOVE.l #$80080000,d0` / `ADDI.l #$80080000,d0`);
 * the CreateDir call of `MakeDir`: the original unlocks whatever
-  dos.library leaves in **d1**, not the lock in d0 (BUG(orig) below); the
+  dos.library leaves in **d1**, not the lock in d0 (BUG(orig) below,
+  #496); the
   NDK inline gives no access to d1 after the call.
 
 The error check of BLoad (`bloadchk`) is a C function that does nothing:
-the original starts with an RTS (BUG(orig)); the Lock test behind it and
+the original starts with an RTS (BUG(orig), #485); the Lock test behind it and
 its runtime error "Unable to load file!" are never reached and not
 ported.
 
@@ -100,48 +101,58 @@ ported.
 * No range checks: a negative bank number counts as a bank and indexes
   before the tables (Start, Length, Erase, Reserve, BLoad, FillMem,
   SwapBank, NextBank); `Reserve(bank,…)` with bank ≥ maxbanks writes
-  behind the start table. `Reserve(length)` tests the sign of the length,
-  not NextBank's result: with every bank in use it reserves "bank -1"
-  (the entry before the start table is the last length, the one before
-  the length table memlib's block header).
+  behind the start table (#484). `Reserve(length)` tests the sign of the
+  length, not NextBank's result: with every bank in use it reserves
+  "bank -1" (the entry before the start table is the last length, the
+  one before the length table memlib's block header) (#498).
 * `Reserve(length)` returns 0 for a negative length – also a bank
-  number – and -1 if AllocMem fails. A bank in use is erased before the
-  new allocation, also when that fails.
+  number (#500) – and -1 if AllocMem fails. A bank in use is erased
+  before the new allocation, also when that fails (#499).
 * `NextBank` without an argument starts at whatever d0 holds (both forms
-  share the routine).
-* `EraseAll` counts with DBRA on the low word: banks above 65535 are never
-  freed, `BankLimit 0` runs through negative banks.
+  share the routine) (#497).
+* `EraseAll` counts with DBRA on the low word while the bank number is
+  the whole long: with more than 65536 banks it frees only those from
+  maxbanks − 1 down to the next multiple of 65536, the banks below stay
+  allocated; `BankLimit 0` runs through 65536 negative banks (#495).
 * `CopyByte`/`CopyWord`/`CopyLong` and `FillMem` with a count of 0 copy
-  or fill 2^32 units.
+  or fill 2^32 units (#492).
 * `BLoad(name$)` returns the bank also when reading fails (the bank stays
-  reserved), -1 for an empty or missing file and 0 when no bank is free;
-  the other forms leave a bank they reserved for a file that cannot be
-  opened, and treat Read's -1 as success. A bank given to BLoad is erased
-  and reserved anew with the file's length (or the given one). The error
-  check never checks (RTS first).
+  reserved), -1 for an empty or missing file and 0 when no bank is free
+  (#486); the other forms leave a bank they reserved for a file that
+  cannot be opened (#487), and treat Read's -1 as success (#488). A bank
+  given to BLoad is erased and reserved anew with the file's length (or
+  the given one) (#499). The error check never checks (RTS first)
+  (#485).
 * `BSave(name$,bank,length)` writes `length` bytes from the bank's start,
-  whatever the bank's size.
+  whatever the bank's size (#489).
 * `MakeDir` unlocks d1 after CreateDir, not the returned lock. The
   dos.library of OS 3.2 (the emulator's) has the lock in d1 too: the test
   sees the directory unlocked; other versions may leak it or unlock
-  garbage.
+  garbage (#496).
 * `ChangeDir` keeps no copy of the program's own current directory:
   finit and BankLimit unlock the last ChangeDir lock while it is still the
   current directory, and do not clear it (a second finit or BankLimit, or
-  the next ChangeDir, unlocks it again). If CurrentDir returns 0, the new
-  lock is current but not remembered and the result is 0.
-* `BankLimit n` returns the address of the new start table (init's d0).
+  the next ChangeDir, unlocks it again) (#491). If CurrentDir returns 0,
+  the new lock is current but not remembered and the result is 0 (#490).
+* `BankLimit n` returns the address of the new start table (init's d0)
+  (#483).
 * `DeviceName$` takes the name from the string space (a3), not from d0;
-  the task is read through `dol_Task` without a check (a device without
-  a handler task reads near address 0). A ":" in front of an empty
-  argument (the byte before it) is cleared.
+  a ":" in front of an empty argument (the byte before it) is cleared
+  (#493). The task is read through `dol_Task` without a check (a device
+  without a handler task reads near address 0) (#494).
 * `SaveExec`: a file it cannot create returns the file name's address; an
-  empty list (first pointer 0) leaves the file open with only the header;
-  the header gets one size slot (first = last = 0), there is one
+  empty list (first pointer 0) leaves the file open with only the header
+  (#501); the header gets one size slot (first = last = 0), there is one
   HUNK_END behind all hunks, each RELOC32 block names its own hunk's
-  index; the list's last node (the one whose next is 0) is never written;
-  symbol and other hunks are skipped but counted.
-* init and BankLimit do not check globalloc's result.
+  index (#503); symbol and other hunks are skipped but counted (#502).
+
+Original behaviour that is not a defect:
+
+* `SaveExec` stops at the node whose next is 0. The list is Exec-style:
+  that node is the list header's tail (`lh_Tail`), not an item, so every
+  item is written.
+* init and BankLimit do not check globalloc's result: memlib raises
+  "Out of Memory" itself.
 
 ## Test
 

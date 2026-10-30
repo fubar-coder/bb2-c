@@ -43,47 +43,54 @@
  *   - No range checks: a negative bank number counts as a bank and
  *     indexes before the tables (Start, Length, Erase, Reserve, BLoad,
  *     FillMem, SwapBank, NextBank); Reserve(bank,...) with bank >=
- *     maxbanks writes behind the start table.  Reserve(length) checks
- *     the sign of the length, not NextBank's result: with every bank in
- *     use it reserves "bank -1" (the entry before the start table is the
- *     last length, the one before the length table memlib's header).
+ *     maxbanks writes behind the start table (#484).  Reserve(length)
+ *     checks the sign of the length, not NextBank's result: with every
+ *     bank in use it reserves "bank -1" (the entry before the start
+ *     table is the last length, the one before the length table memlib's
+ *     header) (#498).
  *   - Reserve(length) returns 0 for a negative length - also a bank
- *     number; -1 if AllocMem fails.  A bank in use is erased before the
- *     new allocation, also when that fails.
- *   - NextBank without an argument starts at whatever d0 holds.
- *   - EraseAll counts with DBRA on the low word: banks above 65535 are
- *     never freed, BankLimit 0 runs through negative banks.
+ *     number (#500); -1 if AllocMem fails.  A bank in use is erased
+ *     before the new allocation, also when that fails (#499).
+ *   - NextBank without an argument starts at whatever d0 holds (#497).
+ *   - EraseAll counts with DBRA on the low word, the bank number is the
+ *     whole long: with more than 65536 banks only those from maxbanks-1
+ *     down to the next multiple of 65536 are freed (the banks below it
+ *     never), BankLimit 0 runs through 65536 negative banks (#495).
  *   - CopyByte/CopyWord/CopyLong and FillMem with a count of 0 copy or
- *     fill 2^32 units (SUBQ.l/BNE after the first).
+ *     fill 2^32 units (SUBQ.l/BNE after the first) (#492).
  *   - BLoad(name$) returns the bank also when reading fails (the bank
  *     stays reserved), -1 for an empty or missing file and 0 when no
- *     bank is free; the other forms leave a bank they reserved for a
- *     file that cannot be opened, and treat Read's -1 as success.  A
- *     bank given to BLoad is erased and reserved anew with the file's
- *     length (or the given one).  The error check (bloadchk) starts with
- *     an RTS: it never checks.
+ *     bank is free (#486); the other forms leave a bank they reserved
+ *     for a file that cannot be opened (#487), and treat Read's -1 as
+ *     success (#488).  A bank given to BLoad is erased and reserved anew
+ *     with the file's length (or the given one) (#499).  The error check
+ *     (bloadchk) starts with an RTS: it never checks (#485).
  *   - BSave(name$,bank,length) writes that many bytes from the bank's
- *     start, whatever the bank's size.
+ *     start, whatever the bank's size (#489).
  *   - MakeDir unlocks whatever CreateDir leaves in d1, not the lock it
  *     returned in d0 (see makedir_c; with the dos.library of OS 3.2 d1
- *     holds the lock as well, the test sees it given back).
+ *     holds the lock as well, the test sees it given back) (#496).
  *   - ChangeDir keeps no copy of the program's own current directory:
  *     finit (and BankLimit) unlock the last ChangeDir lock while it is
  *     still the current directory, without clearing oldlock (a second
- *     finit or BankLimit, or the next ChangeDir, unlocks it again).  If
- *     CurrentDir returns 0, the new lock is current but not remembered
- *     and the result is 0.
- *   - BankLimit returns the address of the new start table (init's d0).
+ *     finit or BankLimit, or the next ChangeDir, unlocks it again)
+ *     (#491).  If CurrentDir returns 0, the new lock is current but not
+ *     remembered and the result is 0 (#490).
+ *   - BankLimit returns the address of the new start table (init's d0)
+ *     (#483).
  *   - DeviceName$ takes the name from the string space (a3), not from
- *     d0; the task is read through dol_Task without a check (a device
- *     without a handler task reads near address 0).
+ *     d0 (#493); the task is read through dol_Task without a check (a
+ *     device without a handler task reads near address 0) (#494).
  *   - SaveExec: a file it cannot create returns the file name's address;
  *     an empty list (first pointer 0) leaves the file open with only the
- *     header in it; the header gets one size slot (last hunk = 0), one
- *     HUNK_END behind all hunks, and each RELOC32 block names the index
- *     of its own hunk; the list's last node (next of next = 0) is never
- *     written; symbol hunks and other types are skipped but counted.
- *   - init and BankLimit do not check globalloc's result.
+ *     header in it (#501); the header gets one size slot (last hunk = 0),
+ *     one HUNK_END behind all hunks, and each RELOC32 block names the
+ *     index of its own hunk (#503); symbol hunks and other types are
+ *     skipped but counted (#502).
+ * Not defects: SaveExec stops at the node whose next is 0 - the list is
+ * Exec-style, so that is the header's tail (lh_Tail), not an item, and
+ * every item is written; init and BankLimit do not check globalloc's
+ * result, but memlib raises "Out of Memory" itself.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -422,7 +429,7 @@ static void BLITZ_ROUTINE erase_c(LONG bank BL_REG(d0))
         eraseit(bank);
 }
 
-/* EraseAll: from maxbanks-1 down, DBRA on the low word (BUG(orig)) */
+/* EraseAll: from maxbanks-1 down, DBRA on the low word (BUG(orig), #495) */
 static void BLITZ_ROUTINE eraseall_c(void)
 {
     ULONG n = (ULONG)maxbanks - 1;
@@ -460,7 +467,7 @@ static ULONG BLITZ_ROUTINE findfreebank_c(LONG bank BL_REG(d0))
 
 /* Reserve(length): the bank number (NextBank from 0), -1 if AllocMem
    fails, 0 for a negative length (BUG(orig): the sign of the length is
-   tested, not NextBank's -1) */
+   tested, not NextBank's -1; #500 #498) */
 static ULONG BLITZ_ROUTINE allocmem2_c(LONG len BL_REG(d0))
 {
     ULONG bank = findfreebank_c(0);
@@ -500,7 +507,7 @@ static void BLITZ_ROUTINE fillmem_c(ULONG adr BL_REG(d0), ULONG len BL_REG(d1),
             return;
     }
     p = (UBYTE *)adr;
-    do                                          /* BUG(orig): 0 = 2^32 */
+    do                                          /* BUG(orig): 0 = 2^32 (#492) */
         *p++ = v;
     while (--len);
 }
@@ -517,7 +524,7 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
     struct bl_regs r = { .d0 = (ULONG)maxbanks << 3, .d1 = MEMF_CLEAR };
 
     dosbase_ = (struct DosLibrary *)OpenLibrary((CONST_STRPTR)dosname, 0);
-    lenptr = (ULONG *)BLITZ_ALIBJSR(TOK_globalloc, r);  /* BUG(orig): unchecked */
+    lenptr = (ULONG *)BLITZ_ALIBJSR(TOK_globalloc, r);  /* unchecked: memlib raises Out of Memory */
     startptr = (ULONG *)((ULONG)lenptr + ((ULONG)maxbanks << 2));
     return (ULONG)startptr;
 }
@@ -528,7 +535,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
     struct bl_regs r = { 0 };
 
     if (oldlock)
-        UnLock(oldlock);                        /* BUG(orig): still current, kept */
+        UnLock(oldlock);                        /* BUG(orig): still current, kept (#491) */
     eraseall_c();
     r.a1 = (ULONG)lenptr;
     r.d0 = (ULONG)maxbanks << 3;
@@ -598,10 +605,10 @@ static ULONG BLITZ_ROUTINE bload2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_R
     }
     file = Open(name, MODE_OLDFILE);
     if (!file)
-        return 0;                               /* BUG(orig): the bank stays */
+        return 0;                               /* BUG(orig): the bank stays (#487) */
     if (offset)
         Seek(file, offset, OFFSET_BEGINNING);
-    got = Read(file, (APTR)adr, (LONG)len);     /* BUG(orig): -1 counts as read */
+    got = Read(file, (APTR)adr, (LONG)len);     /* BUG(orig): -1 counts as read (#488) */
     Close(file);
     return got ? (ULONG)-1 : 0;
 }
@@ -637,7 +644,7 @@ static ULONG BLITZ_ROUTINE bload4_c(CONST_STRPTR name BL_REG(d0))
     bank = allocmem2_c((LONG)size);
     if ((LONG)bank < 0)
         return 0;
-    bload1_c(name, start_c((LONG)bank));        /* BUG(orig): result ignored */
+    bload1_c(name, start_c((LONG)bank));        /* BUG(orig): result ignored (#486) */
     return bank;
 }
 
@@ -675,7 +682,7 @@ static ULONG BLITZ_ROUTINE bsave2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_R
 
 /* MakeDir(dir$): -1 / 0.  The original unlocks with whatever CreateDir
    leaves in d1 (JSR _CreateDir:TST.l d0:BEQ oops:JSR _UnLock -
-   BUG(orig): not the lock in d0).  The NDK inline of CreateDir gives no
+   BUG(orig): not the lock in d0, #496).  The NDK inline of CreateDir gives no
    access to d1 after the call, so the call is inline assembler. */
 static ULONG BLITZ_ROUTINE makedir_c(CONST_STRPTR name BL_REG(d0))
 {
@@ -713,7 +720,7 @@ static ULONG BLITZ_ROUTINE cd_c(CONST_STRPTR name BL_REG(d0))
     if (!lock)
         return 0;
     if (!CurrentDir(lock))
-        return 0;                               /* BUG(orig), see the head */
+        return 0;                               /* BUG(orig), see the head (#490) */
     if (oldlock)
         UnLock(oldlock);
     oldlock = lock;
@@ -812,7 +819,7 @@ static ULONG docode(const struct hunkitem *h, ULONG num)
         n = (ULONG)((LONG)h->reloclen >> 2);
         hunkbuff[0] = HUNK_RELOC32;
         hunkbuff[1] = n;
-        hunkbuff[2] = num;                      /* BUG(orig): its own index */
+        hunkbuff[2] = num;                      /* BUG(orig): its own index (#502 #503) */
         Write(fh, hunkbuff, 12);
         Write(fh, (APTR)h->reloc, (LONG)(n << 2));
         hunkbuff[0] = 0;
@@ -840,7 +847,7 @@ static void execfinit(ULONG nhunks, ULONG size)
 
 /* SaveExec name$,list(): -1; 0 if list() is no list; the name's address
    if the file cannot be made or the list is empty (BUG(orig): the file
-   stays open) */
+   stays open, #501) */
 static ULONG BLITZ_ROUTINE saveexec_c(CONST_STRPTR name BL_REG(d0), const UBYTE *list BL_REG(d1))
 {
     const struct hunkitem *h;
@@ -936,7 +943,7 @@ static LONG BLITZ_ROUTINE min_c(LONG a BL_REG(d0), LONG b BL_REG(d1))
 
 /* CopyByte/CopyWord/CopyLong src,dest,n: nothing for n < 0 (d0 = 0
    then, the source otherwise, like the original); n = 0 is 2^32 units
-   (BUG(orig)) */
+   (BUG(orig), #492) */
 static ULONG BLITZ_ROUTINE copybyte_c(const UBYTE *src BL_REG(d0), UBYTE *d BL_REG(d1),
                                       LONG n BL_REG(d2))
 {
@@ -981,7 +988,7 @@ static ULONG BLITZ_ROUTINE copylong_c(const ULONG *src BL_REG(d0), ULONG *d BL_R
 BLITZ_INLINE(_gttags, "addi.l #0x80080000,d0");
 BLITZ_INLINE(_gttags2, "move.l #0x80080000,d0");
 
-/* the error check of BLoad: BUG(orig) the original starts with an RTS -
+/* the error check of BLoad: BUG(orig) (#485) the original starts with an RTS -
    its Lock test of the file name and the runtime error "Unable to load
    file!" behind it are never reached (not ported) */
 static void BLITZ_ERRCHK bloadchk(void)
