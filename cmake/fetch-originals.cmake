@@ -17,6 +17,9 @@
 #   archive/amiblitz3/svn-r279/             single files of AmiBlitz3's SVN
 #                                           (SourceForge amiblitz3/code,
 #                                           revision 279), paths as there
+#   archive/amiblitz3/github-b1a9dee/       single files of AmiBlitz3 on
+#                                           GitHub (commit b1a9dee150ef),
+#                                           paths as there
 # None of it is in git (.gitignore); archive/README.md lists the sources.
 # Already unpacked and checked material is not touched again.
 # At the end: archive/sources/ted-1.1 and blitz2-1.95 (in git) must equal
@@ -33,6 +36,22 @@ set(downloads
 	"ubb21.iso|https://archive.org/download/ultimate-blitz-basic-v2_1/Ultimate%20Blitz%20Basic%202.1%20%281997%29%28Acid%20Software%29.iso|205a16fa83403d61a785733cec2518bcc1fe5a6fae5b7da4da6329bd32c99166"
 	"amibl2src.lha|https://aminet.net/dev/blitz/amibl2src.lha|b71e6445d0838b15416f5b55c5be422f07bd4fae5da5c065ce329042067628ff"
 	"ab3-RIAmosFuncLib.obj|https://sourceforge.net/p/amiblitz3/code/279/tree/BlitzLibs/UserLibs/userlibs/RIAmosFuncLib.obj?format=raw|0863e9766957ee548cd7d9393e85d80c28a896a208d183487dbde5fe3aa45ea2")
+# AmiBlitz3 sources with an embedded .xtra header (tools/xtra), GitHub at a
+# fixed commit: download name ab3gh-NAME -> archive/amiblitz3/github-b1a9dee/PATH
+set(ab3gh_commit b1a9dee150ef4d2793d9745a49a958fdb9178124)
+set(ab3gh_files
+	"Sourcecodes/Amiblitz3/Tests/compilersignals.ab3|294459511eaeab48a9fb853ee383627323e58699b84ae528e29c492b87e74374"
+	"Sourcecodes/Amiblitz3/BlitzLibs/Blitzlibs/LotanMemLib.ab3|aea86f40bcc938448b487359807c596c934d9093e0124342c709735d5c635902"
+	"Sourcecodes/Amiblitz3/BlitzLibs/Blitzlibs/ElmoreDosLib.ab3|e431124dbb97010063dfa37c451208cc356f2a54185d466801a0fae4a12a59ce"
+	"Docs/Blitzlibs/examples/RIAppLib3.ab3|8b2ecd015833b4a5d3e64fed7819d909788cc99183c56e568a6120f6afc3d5d7"
+	"Sourcecodes/Amiblitz3/Compiler/CLIModeSupport.ab3|cd2c926d71c4d6beeec5d6993feb20d8039477d2961ca0d669e3efa8746f8c15")
+foreach(f IN LISTS ab3gh_files)
+	string(REPLACE "|" ";" f "${f}")
+	list(GET f 0 path)
+	list(GET f 1 sha)
+	get_filename_component(name ${path} NAME)
+	list(APPEND downloads "ab3gh-${name}|https://raw.githubusercontent.com/AmiBlitz/AmiBlitz3/${ab3gh_commit}/${path}|${sha}")
+endforeach()
 
 file(MAKE_DIRECTORY ${DOWNLOAD_DIR})
 foreach(d IN LISTS downloads)
@@ -168,6 +187,20 @@ foreach(f "ab3-RIAmosFuncLib.obj|BlitzLibs/UserLibs/userlibs/RIAmosFuncLib.obj")
 		get_filename_component(dir ${dest} DIRECTORY)
 		file(MAKE_DIRECTORY ${dir})
 		file(COPY_FILE ${DOWNLOAD_DIR}/${name} ${dest})
+		message(STATUS "${dest}: copied")
+	endif()
+endforeach()
+
+# the AmiBlitz3 sources from GitHub: ab3gh-NAME -> archive/amiblitz3/github-b1a9dee/PATH
+foreach(f IN LISTS ab3gh_files)
+	string(REPLACE "|" ";" f "${f}")
+	list(GET f 0 path)
+	get_filename_component(name ${path} NAME)
+	set(dest ${root}/archive/amiblitz3/github-b1a9dee/${path})
+	if(NOT EXISTS ${dest})
+		get_filename_component(dir ${dest} DIRECTORY)
+		file(MAKE_DIRECTORY ${dir})
+		file(COPY_FILE ${DOWNLOAD_DIR}/ab3gh-${name} ${dest})
 		message(STATUS "${dest}: copied")
 	endif()
 endforeach()

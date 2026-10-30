@@ -478,7 +478,11 @@ build/amiga/host/tools/xtra/xtra convert --to-xtra IN.ab3 OUT.xtra
 ```
 
 ctest `xtra_blitz2`, `xtra_bb22`, `xtra_ab3` check the code with inputs
-in memory (also broken ones), `xtra_tool` the tool on files.
+in memory (also broken ones), `xtra_tool` the tool on files,
+`xtra_originals` all 575 `.xtra` of the CD and those of `rwelibsrc/`
+(read and written again byte for byte) and the 9 `BB22` sources with
+their `.xtra`, `xtra_ab3_examples` five AmiBlitz3 sources from GitHub
+(`fetch-originals`; both skipped without the material).
 
 ## Emulator
 
