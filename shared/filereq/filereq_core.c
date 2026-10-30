@@ -44,17 +44,17 @@
  *
  * Kept from the original (BUG(orig)):
  *   - dos, intuition and graphics are opened (OldOpenLibrary) at every
- *     call and never closed.
+ *     call and never closed (#154).
  *   - The volume list (DRIVES) walks the DOS list without locking it
  *     (the labels are right: dl_Type 1 = DLT_DIRECTORY -> $F9 "<ASN>",
  *     2 = DLT_VOLUME -> $F8 "<VOL>"; late/non-binding assigns are not
- *     listed).
+ *     listed) (#156).
  *   - "CD" (the gadget at $FB6) makes the path the current directory of
- *     the process and unlocks the old current directory.
+ *     the process and unlocks the old current directory (#157).
  *   - Building the path from the current directory leaks the ParentDir
- *     locks.
+ *     locks (#158).
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
- *     than 34 characters overrun them.
+ *     than 34 characters overrun them (#159).
  *   - There are 64 line gadgets (fq.line[], 144 bytes each, $15AA-$39A9;
  *     behind them only the 48 bytes of arrow image data up to the end of
  *     the data block, $39DA), but the window shows (height - 85) / 8 lines
@@ -65,13 +65,13 @@
  *     its data block (layout and fill step a struct fq_line pointer over
  *     the end of the array).  The first window is screen height - 40 high,
  *     so this happens on every screen of 645 lines or more (MaxHeight is
- *     $FFFF, so also after enlarging the window); details in freqlib.c.
+ *     $FFFF, so also after enlarging the window); details in freqlib.c (#160).
  *   - "CD" clears the words at $111A and $111E: the high word of the path
  *     StringInfo's UndoBuffer and its BufferPos (the start of fq_request
  *     clears BufferPos and DispPos, $111E/$1122).  UndoBuffer then points
  *     to $0000xxxx (the low word of fq.result's address), for this and all
  *     later calls: Intuition copies the path there when the gadget is
- *     activated.
+ *     activated (#345).
  * DIFF: if the chip memory or a library or the window cannot be opened,
  *   the original returns the first long of its FileInfoBlock buffer on
  *   the stack (uninitialized); here 0.
@@ -321,7 +321,7 @@ static void fill(void)
         d0++;
         d1++;
         a0 = P(a0, 0);
-        a1++;                           /* BUG(orig): past fq.line[63], */
+        a1++;                           /* BUG(orig) (#160): past fq.line[63], */
     }                                   /* as in layout */
     slot->NextGadget = NULL;
 }
@@ -479,7 +479,7 @@ static void layout(UWORD d1, UWORD d2)
     d3 = d1 - 70;
     d4 = (UWORD)(d3 >> 3) - 1;
     do {                                /* DBF: 0 lines = 65536 */
-        UBYTE *a2 = a1->text;           /* BUG(orig): no limit of 64 lines, */
+        UBYTE *a2 = a1->text;           /* BUG(orig) (#160): no limit of 64 lines, */
         UWORD k = d4;                   /* a1 runs past fq.line[63] */
         a1->gad.Width = d3;
         do
@@ -856,7 +856,7 @@ copyname:
         fibmem[30] = s2;
         fibmem[1] = s1;
         fibmem[0] = s0;
-        /* BUG(orig): $111A/$111E - the high word of UndoBuffer and
+        /* BUG(orig) (#345): $111A/$111E - the high word of UndoBuffer and
            BufferPos, not BufferPos and DispPos (see the top) */
         *(UWORD *)&fq.si_path.UndoBuffer = 0;
         fq.si_path.BufferPos = 0;
