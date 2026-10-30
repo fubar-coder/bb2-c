@@ -46,16 +46,16 @@ ports, `docs/libs/cmdlibs-port.md` "General").
 * AddVarTrace/DelVarTrace copy the name with a loop that tests the byte
   *after* the one copied: an empty name copies its 0 and then whatever
   follows up to the next 0. Nothing limits the copy to the 252
-  characters of `mess1`.
+  characters of `mess1` (#612, #613).
 * AddVarTrace converts the type word with an 8 byte table indexed without
   a check: a type outside 0..7 reads the code behind the table in the
-  original, other bytes in the C build (DIFF, unavoidable).
+  original, other bytes in the C build (DIFF, unavoidable) (#609).
 * DelVarTrace writes the name at +12 instead of +8 (`ADD.l #11` after the
   command byte), its 0 without advancing; +1..+11 keep the previous
-  message's bytes.
+  message's bytes (#610).
 * DisAsmWindow searches backwards from the return address for the word
   `$4E41` (the TRAP #1 the debugger's code has in front of the call)
-  without a limit.
+  without a limit (#611).
 
 ## Test
 

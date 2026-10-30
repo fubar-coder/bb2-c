@@ -29,16 +29,16 @@
  *   - AddVarTrace/DelVarTrace copy the name with a loop that tests the
  *     byte AFTER the one copied: an empty name copies its 0 and then
  *     whatever follows up to the next 0.  Nothing limits the copy to the
- *     252 characters of mess1.
+ *     252 characters of mess1 (#612, #613).
  *   - AddVarTrace converts the type word with an 8 byte table, indexed
  *     without a check (other types read the code behind the table; the C
- *     build reads other bytes there, DIFF).
+ *     build reads other bytes there, DIFF) (#609).
  *   - DelVarTrace writes the name at +12, not at +8 where the characters
  *     start (+1..+11 keep the previous message's bytes), and its 0 without
- *     advancing.
+ *     advancing (#610).
  *   - DisAsmWindow searches backwards from the return address for a word
  *     $4E41 (TRAP #1, which the debugger's code has before the call) with
- *     no limit.
+ *     no limit (#611).
  */
 #include "blitzlib.h"
 
@@ -145,7 +145,7 @@ static void BLITZ_ERRCHK send(void)
 static const UBYTE converttype[8] = { 0, 1, 2, 3, 5, 6, 0, 4 };
 
 /* the name copy of AddVarTrace/DelVarTrace: tests the byte after the one
-   copied (BUG(orig)); returns the end */
+   copied (BUG(orig) (#612)); returns the end */
 static UBYTE *BLITZ_ERRCHK copyname(UBYTE *d, const UBYTE *s)
 {
     do
@@ -159,7 +159,7 @@ static UBYTE *BLITZ_ERRCHK copyname(UBYTE *d, const UBYTE *s)
 static void BLITZ_ERRCHK addvartrace_c(ULONG var BL_REG(d0), const UBYTE *name BL_REG(d1),
                                        UWORD out BL_REG(d2), const UWORD *types BL_REG(a2))
 {
-    UBYTE type = converttype[(WORD)types[-1]];          /* 0(a1,d0.w), BUG(orig) */
+    UBYTE type = converttype[(WORD)types[-1]];          /* 0(a1,d0.w), BUG(orig) (#609) */
     UBYTE *p;
 
     mess1[0] = DC_ADDTRACE;
@@ -172,7 +172,7 @@ static void BLITZ_ERRCHK addvartrace_c(ULONG var BL_REG(d0), const UBYTE *name B
     send();
 }
 
-/* DelVarTrace name$: d0 = name, written at +12 (BUG(orig)) */
+/* DelVarTrace name$: d0 = name, written at +12 (BUG(orig) (#610)) */
 static void BLITZ_ERRCHK delvartrace_c(const UBYTE *name BL_REG(d0))
 {
     mess1[0] = DC_DELTRACE;
@@ -192,7 +192,7 @@ static void BLITZ_ERRCHK vartracewindow_c(void)
    to the TRAP #1 in front of the call */
 static void BLITZ_ERRCHK disasm_c(const UWORD *pc BL_REG(a0))
 {
-    while (*pc != 0x4e41)                               /* BUG(orig): no limit */
+    while (*pc != 0x4e41)                               /* BUG(orig) (#611): no limit */
         pc--;
     mess1[0] = DC_DISWINDOW;
     mess1[1] = 0xff;
