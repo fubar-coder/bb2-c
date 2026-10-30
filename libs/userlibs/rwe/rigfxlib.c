@@ -30,23 +30,25 @@
  * BUG(orig), kept:
  *   - CPUCls on a bitmap without plane 0 pops a4-a6 it never pushed and
  *     returns to a foreign address (the BEQ 'oops before the MOVEM) - in
- *     assembler, see cpucls below.
+ *     assembler, see cpucls below (#680).
  *   - CPUCls clears with blocks of 40 bytes, DBRA on blocks - 1: a plane
- *     of less than 40 bytes clears 65536 blocks (2.6 MB below the plane);
- *     an odd rest byte stays; the depth is the word Flags<<8|Depth, 0
- *     planes = 65536.
- *   - SaveCMAP writes no pad byte behind a CMAP of odd length, the BMHD
- *     chunk is 20 zero bytes; a palette of 0 colours copies 65536.
+ *     of less than 40 bytes clears 65536 blocks (2.6 MB below the plane)
+ *     (#682); an odd rest byte stays (#681); the depth is the word
+ *     Flags<<8|Depth, 0 planes = 65536 (#679).
+ *   - SaveCMAP writes no pad byte behind a CMAP of odd length (#687); a
+ *     palette of 0 colours copies 65536 (#688).
  *   - CopyColour compares the colour numbers signed: negative ones pass
- *     and index far behind the palette (MULU.w).
+ *     and index far behind the palette (MULU.w) (#678).
  *   - PalAdjust/PalRed... use the palette of the last PaletteInfo
- *     unchecked (before one: address 0); PalAdjust without start/end
- *     takes the number of colours of THAT palette, not of the target;
- *     colour numbers from 2731 on index before the palette (12*c as a
- *     signed word); end < start in PalAdjust runs 65536*3 channels
- *     (count 0 after MULU.w/SUBQ.w).
+ *     unchecked (before one: address 0) (#686); PalAdjust without
+ *     start/end takes the number of colours of THAT palette, not of the
+ *     target (#685); colour numbers from 2731 on index before the palette
+ *     (12*c as a signed word) (#677); end < start in PalAdjust runs
+ *     65536*3 channels (count 0 after MULU.w/SUBQ.w) (#684).
  *   - FillPalette tests the whole register of `end` for 0 (= the last
- *     colour), the word for the comparison with start.
+ *     colour), the word for the comparison with start (#683).
+ * SaveCMAP's BMHD chunk is 20 zero bytes, like the original: no defect
+ * (a palette file: what is read of it is the CMAP).
  */
 #include "blitzlib.h"
 
@@ -320,7 +322,7 @@ BLITZ_THUNK(fillpalette, fillpalette_c, "d0-d1/a0-a1");
 /* ----------------------------------------------------------- CopyColour */
 
 /* -1, or 0 if a colour number is not below the palette's number of
-   colours (signed words: BUG(orig), negative numbers pass) */
+   colours (signed words: BUG(orig) (#678), negative numbers pass) */
 static ULONG BLITZ_ROUTINE copycolour_c(UBYTE *src BL_REG(a0), UBYTE *dst BL_REG(a1),
                                         ULONG cs BL_REG(d2), ULONG cd BL_REG(d3))
 {
@@ -381,7 +383,7 @@ static void BLITZ_ROUTINE cpucls_c(UBYTE *bm BL_REG(a0))
     while (planes-- != 0);
 }
 
-/* TST.l 8(a0):BEQ 'oops - BUG(orig): 'oops is the MOVEM.l (a7)+,a4-a6:RTS
+/* TST.l 8(a0):BEQ 'oops - BUG(orig) (#680): 'oops is the MOVEM.l (a7)+,a4-a6:RTS
    meant for after MOVEM.l a4-a6,-(a7), which has not run yet: it pops the
    return address and two more longs into a4-a6 and returns to whatever
    follows on the stack.  A stack imbalance C cannot express, so this

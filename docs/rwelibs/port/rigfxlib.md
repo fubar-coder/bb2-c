@@ -64,24 +64,29 @@ imbalance C cannot express. The clearing itself is C.
 
 * `CPUCls` on a bitmap without plane 0 (`8(a0)` = 0) pops the return
   address and two more longs into a4–a6 and returns to whatever follows
-  on the stack – a crash.
+  on the stack – a crash (#680).
 * `CPUCls` clears with MOVEM blocks of 40 bytes, `DBRA` on blocks − 1: a
   bitplane of less than 40 bytes gives −1, i.e. 65536 blocks – 2.6 MB
-  below the plane are cleared. A rest of an odd number of bytes leaves
-  the first byte of the plane. The depth is the word at +4 (Flags<<8 |
-  Depth); depth 0 clears 65536 planes.
+  below the plane are cleared (#682). A rest of an odd number of bytes
+  leaves the first byte of the plane (#681). The depth is the word at +4
+  (Flags<<8 | Depth); depth 0 clears 65536 planes (#679).
 * `SaveCMAP` writes no pad byte behind a CMAP of odd length (odd number
-  of colours); the BMHD chunk is 20 zero bytes; a palette of 0 colours
-  copies 65536 colours into the 48 byte block.
+  of colours) (#687); a palette of 0 colours copies 65536 colours into
+  the 48 byte block (#688).
 * `CopyColour` checks the colour numbers signed (`BGE`): negative colour
-  numbers pass and index up to 786 KB behind the palette.
+  numbers pass and index up to 786 KB behind the palette (#678).
 * `PalAdjust` and the colour functions use the palette of the last
-  `PaletteInfo` without a check (before it: address 0); `PalAdjust`
-  without start/end takes the number of colours of that palette, not of
-  the target; colour numbers from 2731 on index before the palette (12·c
-  as a signed word); `PalAdjust` with end = start − 1 runs 65536·3 channels.
+  `PaletteInfo` without a check (before it: address 0) (#686);
+  `PalAdjust` without start/end takes the number of colours of that
+  palette, not of the target (#685); colour numbers from 2731 on index
+  before the palette (12·c as a signed word) (#677); `PalAdjust` with
+  end = start − 1 runs 65536·3 channels (#684).
 * `FillPalette … ,start,0` fills up to the last colour (end 0 = all), but
-  an `end` with a zero low word and a non-zero upper word is end 0 itself.
+  an `end` with a zero low word and a non-zero upper word is end 0 itself
+  (#683).
+
+Not a defect (kept): `SaveCMAP`'s BMHD chunk is 20 zero bytes (a palette
+file: what is read of it is the CMAP).
 
 The source's history says "Fixed SaveCMAP … size was set to
 (NUMCOLS*3)-48"; the reference has the fixed version.
