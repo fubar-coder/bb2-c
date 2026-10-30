@@ -610,38 +610,38 @@ void stamigalib(UWORD c, UBYTE *sub)
     struct blitzlib *lib;
     WORD libvar;
     UWORD lvo, type, w;
-    UBYTE *regs, reg;
+    UBYTE *regs, *p, reg;
     WORD npars;
 
     (void)c;
     lib = uselib(W_(sub + 6));          /* get lib for base address */
     libvar = lib->varoff;               /* libbase reg */
     lvo = W_(sub + 8);                  /* get offset for lib */
-    sub += 10;
-    regs = sub;
+    regs = sub + 10;
+    p = regs;
     /* collect longs for lib */
     npars = 0;
     for (;;) {
-        if ((BYTE)*sub++ < 0)
+        if ((BYTE)*p++ < 0)
             break;
         npars++;
         type = T_LONG;
         c = peval(&type);
         if (c == ',')
             continue;
-        if ((BYTE)*sub >= 0)
+        if ((BYTE)*p >= 0)
             syntaxerr();
         break;
     }
-    sub = regs;
+    p = regs;
     if (--npars < 0)
         getchar3();     /* no pars - get : */
     else {
-        while ((BYTE)*sub++ >= 0)       /* go to end of params */
+        while ((BYTE)*p++ >= 0)         /* go to end of params */
             ;
-        sub--;
+        p--;
         do {
-            reg = *--sub;
+            reg = *--p;
             if (reg & 0x10)
                 w = (UWORD)((reg & 7) << 9) | 0x205f;   /* move.l (a7)+,An */
             else
@@ -1028,7 +1028,7 @@ UBYTE *fixmacs(UBYTE *p)
 {
     UWORD count = W_(p);
     struct node *item;
-    UWORD len;
+    UWORD len, textlen;
 
     p += 2;
     if (!count)
@@ -1042,9 +1042,9 @@ UBYTE *fixmacs(UBYTE *p)
     lastresmac = (struct macro *)item;
     p = (UBYTE *)item;
     len = ((UWORD)B_(p + 12) + 1) & ~1;
-    count = (UWORD)(W_(p + 8) + 1) & ~1;
+    textlen = (UWORD)(W_(p + 8) + 1) & ~1;
     p += (WORD)len;
-    p += (WORD)count;           /* add d1,a3: sign extended */
+    p += (WORD)textlen;         /* add d1,a3: sign extended */
     return p;
 }
 
