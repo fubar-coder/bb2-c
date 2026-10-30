@@ -98,7 +98,7 @@ latest date in the header comments.
 | Blitz Bombers | 30 | `blitzbomberslib/blitzbombers86`, `87`, `88` | RI | 1996-10-04 | – | not ported (decision 2026-10-29): needs `bomberman:shapeoffsets.bb` of the game, not in the archive |
 | Blitz Bombers 2 | – (`#blitzbomberslibtwo`) | `blitzbomberslib/blitzbombersTwo00` | RI | – | – | blitzbombersTwo00 (reference build); number 31 (ours: RWE's `RESERVEDLIB_8`, next to `#blitzbomberslib` 30) |
 | BB blit | 19 (lit., = `#bb_blitlib`) | `blitzbomberslib/BB_BlitLib4` | RI (McNamara) | 1996-01-30 | – | BB_BlitLib4 (reference build) |
-| BB map | 34 (`#ribbmaplib`, RWE's list) | `blitzbomberslib/bbmaplib2` | RI | 1995-09-30 | – | bbmaplib2 (reference build) |
+| BB map | 34 (`#ribbmaplib`, RWE's list) | `blitzbomberslib/bbmaplib2` | RI | 1995-09-30 | – | bbmaplib2 (reference build; ported 2026-10-30, `port/ribbmaplib.md`) |
 | (tests) | lit. 5 / – | `blitzbomberslib/TestBlit`, `PredatorBlit` | – | – | – | not a library / test |
 | C2P | lit. 8 | `c2plib`, `c2plibA` | RI | 1995 | – | not ported: a preliminary Chunky (its one command `C2P` is chunkylib's `ChunkyToPlanar` on a 320×256×8 bitmap; chunkylib's history starts with it, 10/8/95), and 8 is MapEd's in RWE's list |
 | Chunky | 24 | `chunkylib`, `chunkylib2` | RI | 1995-08-14 | – | chunkylib (reference build): chunkylib2 replaces the C2P code by `IncBin "c2p"` from `TEMP:`, a file that exists nowhere (and drops chunkylib's checks), so it does not compile |
