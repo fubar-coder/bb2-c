@@ -221,6 +221,11 @@ int amiga_emulation_check_rom(const char *rom, char *err, size_t errlen);
 /* whether params.machine may be name (NULL: the default) */
 int amiga_emulation_machine_known(const char *name);
 
+/* the version of the Kickstart (exec) of machine name (NULL: the
+   default), e.g. 34 = 1.3, 47 = 3.2; 0 = unknown machine.  Below 36 the
+   scripts need AmigaDOS 1.3 syntax (amiga-emulation/README.md, "A500") */
+int amiga_emulation_machine_kickstart(const char *name);
+
 /* the slots (see above): takes a free one of max in dir (created if
    missing); with wait, waits for one.  The locked file descriptor, -1 if
    none was free (without wait; errno EAGAIN) or on error; release with

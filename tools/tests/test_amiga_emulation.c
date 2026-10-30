@@ -368,6 +368,11 @@ int main(void)
     /* refused: an unknown machine */
     CHECK(amiga_emulation_machine_known(NULL) && amiga_emulation_machine_known("a500-68010"));
     CHECK(!amiga_emulation_machine_known("a3000") && !amiga_emulation_machine_known(""));
+    CHECK(amiga_emulation_machine_kickstart(NULL) == 47
+          && amiga_emulation_machine_kickstart("a1200") == 47);
+    CHECK(amiga_emulation_machine_kickstart("a500") == 34
+          && amiga_emulation_machine_kickstart("a500-68010") == 34);
+    CHECK(amiga_emulation_machine_kickstart("a3000") == 0);
     p.machine = "a3000";
     CHECK(amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err) == NULL
           && strstr(err, "unknown machine"));

@@ -51,10 +51,11 @@ static const struct machine {
     const char *template_text;
     const struct amiga_emulation_option *changes;   /* to the template */
     size_t nchanges;
+    int kickstart;                                  /* exec's version */
 } machines[] = {
-    { "a1200", default_uae, NULL, 0 },
-    { "a500", a500_uae, NULL, 0 },
-    { "a500-68010", a500_uae, a500_68010, sizeof a500_68010 / sizeof a500_68010[0] },
+    { "a1200", default_uae, NULL, 0, 47 },
+    { "a500", a500_uae, NULL, 0, 34 },
+    { "a500-68010", a500_uae, a500_68010, sizeof a500_68010 / sizeof a500_68010[0], 34 },
 };
 
 static const struct machine *find_machine(const char *name)
@@ -72,6 +73,13 @@ static const struct machine *find_machine(const char *name)
 int amiga_emulation_machine_known(const char *name)
 {
     return find_machine(name) != NULL;
+}
+
+int amiga_emulation_machine_kickstart(const char *name)
+{
+    const struct machine *m = find_machine(name);
+
+    return m ? m->kickstart : 0;
 }
 
 const struct amiga_emulation_option amiga_emulation_rtg[] = {
