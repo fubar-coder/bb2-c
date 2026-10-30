@@ -1,8 +1,9 @@
 // test_xtra_blitz2 - the Blitz 2 .xtra of shared/xtra (xtra.h) with files
-// built in memory: the defaults, both versions read field by field, the
-// byte-exact round trip (garbage after the 0 bytes and in the resident
-// pointers included), the writer, and broken files (each refused with its
-// code and offset).
+// built in memory: the defaults, both versions loaded field by field (the
+// texts as views into the file), the byte-exact round trip (garbage after
+// the 0 bytes and in the resident pointers included), the writer with
+// texts and maxima of the caller, and broken files and structures (each
+// refused with its code and offset).
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -16,7 +17,8 @@ namespace {
 
 using bytes = std::vector<uint8_t>;
 
-struct xtra x;  // 11 KB: not on the stack
+struct xtra x;
+struct xtra_base base;
 
 void put16(bytes &b, size_t at, unsigned v)
 {
@@ -62,30 +64,59 @@ bytes file(unsigned vers, unsigned npairs)
     return b;
 }
 
-int read(const bytes &b, struct xtra_error *err = nullptr)
+// loads b as the .xtra of a TED source (no source in memory); an empty
+// file is a buffer of 0 bytes (NULL would be no .xtra)
+int load(const bytes &b, struct xtra_error *err = nullptr)
 {
-    return xtra_read_blitz2(&x, b.data(), b.size(), err);
+    static const uint8_t empty[1] = {0};
+
+    base = {b.empty() ? empty : b.data(), nullptr};
+    return xtra_load(&x, XTRA_T_TED, nullptr, 0, base.xtra, b.size(), err);
 }
 
-bytes write()
+std::string text(int f, const struct xtra_base *b = &base)
+{
+    size_t n = 99;
+    const uint8_t *p = xtra_text(&x, b, f, &n);
+
+    REQUIRE(p != nullptr);
+    return std::string(reinterpret_cast<const char *>(p), n);
+}
+
+bytes write(const struct xtra_base *b = &base)
 {
     bytes out(xtra_blitz2_size(&x));
     size_t len = 99;
     unsigned skipped = 99;
 
-    REQUIRE(xtra_write_blitz2(&x, out.data(), out.size(), &len, &skipped, nullptr) == XTRA_OK);
+    REQUIRE(xtra_write_blitz2(&x, b, out.data(), out.size(), &len, &skipped, nullptr) == XTRA_OK);
     REQUIRE(len == out.size());
     return out;
 }
 
-// refused with code at offset
+std::vector<struct xtra_max> maxima(const struct xtra_base *b = &base)
+{
+    std::vector<struct xtra_max> v;
+    struct xtra_iter it;
+    struct xtra_max m;
+
+    xtra_max_begin(&it, &x, b);
+    while (xtra_next_max(&it, &m))
+        v.push_back(m);
+    return v;
+}
+
+// refused with code at offset in the .xtra
 void refused(const bytes &b, int code, size_t offset)
 {
     struct xtra_error err;
 
-    CHECK(read(b, &err) == code);
+    CHECK(load(b, &err) == code);
     CHECK(err.code == code);
+    CHECK(err.in == XTRA_IN_XTRA);
     CHECK(err.offset == offset);
+    CHECK(x.source == XTRA_SRC_NONE);       // the defaults again
+    CHECK(x.max.n == 0);
 }
 
 } // namespace
@@ -102,43 +133,67 @@ TEST_CASE("xtra_init: the defaults of blitz2's options requester", "[xtra]")
     const uint32_t buf[XTRA_NBUFFER] = {16384, 32768, 4096, 4096, 8192, 10240};
     for (unsigned i = 0; i < XTRA_NBUFFER; i++)
         CHECK(x.buf[i] == buf[i]);
-    CHECK(x.nmax == 0);
+    CHECK(x.max.n == 0);
+    CHECK(x.max.in == XTRA_IN_NONE);
     CHECK(x.editor.flags == 0);
     CHECK(x.ab3.stack == 32768);
     CHECK(x.ab3.seen == 0);
-    CHECK(x.res[0].name[0] == 0);
-    CHECK(x.exe_path[0] == 0);
+    CHECK(x.hdr == 0);
+    for (int f = 0; f < XTRA_F_COUNT; f++)
+        CHECK(text(f, nullptr) == "");
 }
 
-TEST_CASE("vers 1: every field, the pairs in file order", "[xtra]")
+TEST_CASE("vers 1: every field, texts as views, the pairs in file order", "[xtra]")
 {
     bytes b = file(1, 3);
 
-    REQUIRE(read(b) == XTRA_OK);
+    REQUIRE(load(b) == XTRA_OK);
     CHECK(x.source == XTRA_SRC_BLITZ2);
+    CHECK(x.type == XTRA_T_TED);
+    CHECK(x.hdr == 0);
     CHECK(x.vers == 1);
     CHECK(x.icon == 0x80);
     for (unsigned i = 0; i < XTRA_NSWITCH; i++)
         CHECK(x.sw[i] == ((i & 1) ? 0x80 : 0));
     for (unsigned i = 0; i < XTRA_NBUFFER; i++)
         CHECK(x.buf[i] == 1000 + i);
-    CHECK(std::string((char *)x.res[0].name) == "blitzlibs:amigalibs.res");
-    CHECK(x.res[0].ptr == 0x0012ABCD);
-    CHECK(std::string((char *)x.res[1].name) == "blitzlibs:libmacs.res");
-    CHECK(x.res[1].ptr == 0);
-    CHECK(x.res[2].name[0] == 0);
-    CHECK(std::string((char *)x.exe_path) == "ram:");
-    CHECK(std::string((char *)x.exe_name) == "ram:test");
-    CHECK(x.exe_name[100] == 0x5A);
-    CHECK(std::string((char *)x.cli) == "setpa c:");
-    REQUIRE(x.nmax == 3);
+    CHECK(text(XTRA_F_RES0) == "blitzlibs:amigalibs.res");
+    CHECK(x.res_ptr[0] == 0x0012ABCD);
+    CHECK(text(XTRA_F_RES0 + 1) == "blitzlibs:libmacs.res");
+    CHECK(x.res_ptr[1] == 0);
+    CHECK(text(XTRA_F_RES0 + 2) == "");
+    CHECK(text(XTRA_F_EXE_PATH) == "ram:");
+    CHECK(text(XTRA_F_EXE_NAME) == "ram:test");
+    CHECK(text(XTRA_F_CLI) == "setpa c:");
+    CHECK(text(XTRA_F_LABEL_SEARCH) == "");
+    // views, no copies: the bytes are the file's
+    size_t n;
+    CHECK(xtra_text(&x, &base, XTRA_F_EXE_NAME, &n) == b.data() + 790);
+    CHECK(x.text[XTRA_F_EXE_NAME].in == XTRA_IN_XTRA);
+    CHECK(x.text[XTRA_F_EXE_NAME].off == 790);
+    auto m = maxima();
+    REQUIRE(m.size() == 3);
     for (unsigned i = 0; i < 3; i++) {
-        CHECK(x.max[i].lib == 4 + i * 7);
-        CHECK(x.max[i].max == 10 + i);
-        CHECK(x.max[i].flags == XTRA_MAX_LIB);
+        CHECK(m[i].lib == 4 + i * 7);
+        CHECK(m[i].max == 10 + i);
+        CHECK(m[i].flags == XTRA_MAX_LIB);
+        CHECK(m[i].name == nullptr);
     }
     CHECK(x.editor.flags == 0);
     CHECK(write() == b);
+}
+
+TEST_CASE("the views follow the base: the file may move", "[xtra]")
+{
+    bytes b = file(1, 2);
+
+    REQUIRE(load(b) == XTRA_OK);
+    bytes moved = b;
+    b.assign(b.size(), 0xEE);               // the old buffer overwritten
+    struct xtra_base mb = {moved.data(), nullptr};
+    CHECK(text(XTRA_F_EXE_NAME, &mb) == "ram:test");
+    CHECK(maxima(&mb).size() == 2);
+    CHECK(write(&mb) == moved);
 }
 
 TEST_CASE("vers 0: no CLI block; xtra_apply_vers0 as loadxtra", "[xtra]")
@@ -146,11 +201,12 @@ TEST_CASE("vers 0: no CLI block; xtra_apply_vers0 as loadxtra", "[xtra]")
     bytes b = file(0, 2);
 
     REQUIRE(b.size() == 982 + 8);
-    REQUIRE(read(b) == XTRA_OK);
+    REQUIRE(load(b) == XTRA_OK);
     CHECK(x.vers == 0);
-    CHECK(x.cli[0] == 0);
-    CHECK(x.nmax == 2);
-    CHECK(x.max[0].lib == 4);
+    CHECK(text(XTRA_F_CLI) == "");
+    CHECK(x.text[XTRA_F_CLI].in == XTRA_IN_NONE);
+    CHECK(x.max.n == 2);
+    CHECK(maxima()[0].lib == 4);
     CHECK(write() == b);
 
     x.sw[XTRA_SW_AUTO_RUN] = 0;
@@ -162,6 +218,12 @@ TEST_CASE("vers 0: no CLI block; xtra_apply_vers0 as loadxtra", "[xtra]")
     CHECK(x.sw[XTRA_SW_INTERRUPT_CHECK] == 0);
     CHECK(x.sw[XTRA_SW_ASSEMBLER_CHECK] == 0);
     CHECK(x.sw[XTRA_SW_OVERFLOW_CHECK] == 0x80);
+
+    // written as vers 1: an empty CLI block
+    x.vers = 1;
+    bytes w = write();
+    CHECK(w.size() == 1110 + 8);
+    CHECK(bytes(w.begin() + 982, w.begin() + 1110) == bytes(128, 0));
 }
 
 TEST_CASE("round trip: odd values stay as they are", "[xtra]")
@@ -174,66 +236,141 @@ TEST_CASE("round trip: odd values stay as they are", "[xtra]")
     for (unsigned i = 0; i < XTRA_NRES; i++)
         put32(b, 54 + 68 * i + 64, 0xDEAD0000 + i);
     b[982 + 120] = 0x11;            // behind the CLI argument's 0
-    REQUIRE(read(b) == XTRA_OK);
+    b[54 + 68 * 3 + 10] = 0x22;     // behind an empty resident's 0
+    REQUIRE(load(b) == XTRA_OK);
     CHECK(x.icon == 0x7F);
     CHECK(x.sw[0] == 0x1234);
-    CHECK(x.res[7].ptr == 0xDEAD0007);
+    CHECK(x.res_ptr[7] == 0xDEAD0007);
     CHECK(write() == b);
 }
 
-TEST_CASE("the most maxima: XTRA_MAXMAXIMA pairs", "[xtra]")
+TEST_CASE("many maxima: no upper limit", "[xtra]")
 {
-    bytes b = file(1, XTRA_MAXMAXIMA);
+    bytes b = file(1, 5000);
 
-    REQUIRE(read(b) == XTRA_OK);
-    CHECK(x.nmax == XTRA_MAXMAXIMA);
+    REQUIRE(load(b) == XTRA_OK);
+    CHECK(x.max.n == 5000);
+    CHECK(maxima().size() == 5000);
     CHECK(write() == b);
 }
 
-TEST_CASE("writer: maxima without a library number are skipped", "[xtra]")
+TEST_CASE("writer: texts and maxima of the caller", "[xtra]")
 {
-    xtra_init(&x);
-    REQUIRE(xtra_add_max(&x, 5, nullptr, 20) == XTRA_OK);
-    REQUIRE(xtra_add_max(&x, -1, "Screen", 7) == XTRA_OK);
-    REQUIRE(xtra_add_max(&x, 9, "Window", 8) == XTRA_OK);
-    CHECK(x.max[1].flags == XTRA_MAX_NAME);
-    CHECK(x.max[2].flags == (XTRA_MAX_LIB | XTRA_MAX_NAME));
+    bytes b = file(1, 2);
+    static const char path[] = "work:new";
+    static const struct xtra_max mine[] = {
+        {nullptr, 0, 5, 20, XTRA_MAX_LIB},
+        {reinterpret_cast<const uint8_t *>("Screen"), 6, 0, 7, XTRA_MAX_NAME},
+        {reinterpret_cast<const uint8_t *>("Window"), 6, 9, 8, XTRA_MAX_LIB | XTRA_MAX_NAME},
+    };
+
+    REQUIRE(load(b) == XTRA_OK);
+    REQUIRE(xtra_set_text(&x, XTRA_F_EXE_NAME, path, 8) == XTRA_OK);
+    REQUIRE(xtra_set_text(&x, XTRA_F_RES0 + 1, "", 0) == XTRA_OK);
+    xtra_set_maxima(&x, mine, 3);
+    CHECK(text(XTRA_F_EXE_NAME) == "work:new");
     CHECK(xtra_blitz2_size(&x) == 1110 + 8);
 
     bytes out(2000, 0xEE);
     size_t len = 0;
     unsigned skipped = 0;
-    REQUIRE(xtra_write_blitz2(&x, out.data(), out.size(), &len, &skipped, nullptr) == XTRA_OK);
+    REQUIRE(xtra_write_blitz2(&x, &base, out.data(), out.size(), &len, &skipped, nullptr) == XTRA_OK);
     CHECK(len == 1118);
     CHECK(skipped == 1);
-    CHECK(out[0] == 1);
-    CHECK(out[1] == 0x80);
-    CHECK(out[1110] == 0);
+    // the set field: 0-terminated, padded with 0 (the garbage is gone)
+    CHECK(std::string(reinterpret_cast<char *>(&out[790])) == "work:new");
+    CHECK(bytes(out.begin() + 790 + 8, out.begin() + 790 + 192) == bytes(184, 0));
+    CHECK(out[54 + 68] == 0);
+    CHECK(bytes(out.begin(), out.begin() + 790) != bytes(b.begin(), b.begin() + 790));
+    CHECK(bytes(out.begin() + 598, out.begin() + 790) == bytes(b.begin() + 598, b.begin() + 790));
     CHECK(out[1111] == 5);
     CHECK(out[1113] == 20);
     CHECK(out[1115] == 9);
     CHECK(out[1117] == 8);
     CHECK(out[1118] == 0xEE);       // nothing behind
     out.resize(len);
-    REQUIRE(read(out) == XTRA_OK);
-    CHECK(x.nmax == 2);
+    REQUIRE(load(out) == XTRA_OK);
+    CHECK(x.max.n == 2);
+    CHECK(text(XTRA_F_EXE_NAME) == "work:new");
+
+    // no maxima at all
+    xtra_set_maxima(&x, nullptr, 0);
+    CHECK(xtra_blitz2_size(&x) == 1110);
 }
 
-TEST_CASE("writer: broken structure, too small buffer", "[xtra][broken]")
+TEST_CASE("from scratch: the defaults as a file", "[xtra]")
+{
+    bytes out(1110);
+    size_t len = 0;
+
+    xtra_init(&x);
+    REQUIRE(xtra_write_blitz2(&x, nullptr, out.data(), out.size(), &len, nullptr, nullptr) == XTRA_OK);
+    CHECK(len == 1110);
+    CHECK(out[0] == 1);
+    CHECK(out[1] == 0x80);
+    CHECK(out[2 + 2 * XTRA_SW_DEBUGGER + 1] == 0x80);
+    CHECK(bytes(out.begin() + 54, out.end()) == bytes(1110 - 54, 0));
+}
+
+TEST_CASE("set_text: refused texts", "[xtra][broken]")
+{
+    xtra_init(&x);
+    CHECK(xtra_set_text(&x, XTRA_F_COUNT, "a", 1) == XTRA_E_FIELD);
+    CHECK(xtra_set_text(&x, -1, "a", 1) == XTRA_E_FIELD);
+    std::string s(192, 'p');
+    CHECK(xtra_set_text(&x, XTRA_F_EXE_PATH, s.data(), 192) == XTRA_E_LONG);
+    CHECK(xtra_set_text(&x, XTRA_F_EXE_PATH, s.data(), 191) == XTRA_OK);
+    CHECK(xtra_set_text(&x, XTRA_F_CLI, s.data(), 128) == XTRA_E_LONG);
+    CHECK(xtra_set_text(&x, XTRA_F_RES0 + 7, s.data(), 64) == XTRA_E_LONG);
+    CHECK(xtra_set_text(&x, XTRA_F_LABEL_SEARCH, s.data(), 32) == XTRA_E_LONG);
+    CHECK(xtra_set_text(&x, XTRA_F_CLI, "a\nb", 3) == XTRA_E_TEXT);
+    CHECK(xtra_set_text(&x, XTRA_F_CLI, "a\rb", 3) == XTRA_E_TEXT);
+    CHECK(xtra_set_text(&x, XTRA_F_CLI, "a\0b", 3) == XTRA_E_TEXT);
+    CHECK(text(XTRA_F_CLI) == "");
+    CHECK(xtra_text_cap(XTRA_F_COUNT) == 0);
+    size_t n = 99;
+    CHECK(xtra_text(&x, nullptr, XTRA_F_COUNT, &n) == nullptr);
+    CHECK(n == 0);
+}
+
+TEST_CASE("writer: broken structure, missing base, too small buffer", "[xtra][broken]")
 {
     struct xtra_error err;
     uint8_t out[1200];
     size_t len = 7;
 
     xtra_init(&x);
-    CHECK(xtra_write_blitz2(&x, out, 1109, &len, nullptr, &err) == XTRA_E_SPACE);
+    CHECK(xtra_write_blitz2(&x, nullptr, out, 1109, &len, nullptr, &err) == XTRA_E_SPACE);
     CHECK(err.code == XTRA_E_SPACE);
     CHECK(len == 0);
     x.vers = 2;
-    CHECK(xtra_write_blitz2(&x, out, sizeof(out), &len, nullptr, &err) == XTRA_E_VERS);
+    CHECK(xtra_write_blitz2(&x, nullptr, out, sizeof(out), &len, nullptr, &err) == XTRA_E_VERS);
     x.vers = 0;
-    CHECK(xtra_write_blitz2(&x, out, 982, &len, nullptr, &err) == XTRA_OK);
+    CHECK(xtra_write_blitz2(&x, nullptr, out, 982, &len, nullptr, &err) == XTRA_OK);
     CHECK(len == 982);
+
+    // views into a .xtra that is not given
+    bytes b = file(1, 0);
+    REQUIRE(load(b) == XTRA_OK);
+    CHECK(xtra_write_blitz2(&x, nullptr, out, sizeof(out), &len, nullptr, &err) == XTRA_E_BASE);
+    struct xtra_base none = {nullptr, nullptr};
+    CHECK(xtra_write_blitz2(&x, &none, out, sizeof(out), &len, nullptr, &err) == XTRA_E_BASE);
+    size_t n = 99;
+    CHECK(xtra_text(&x, &none, XTRA_F_EXE_NAME, &n) == nullptr);
+    CHECK(n == 0);
+    b = file(1, 1);
+    REQUIRE(load(b) == XTRA_OK);
+    CHECK(xtra_write_blitz2(&x, &none, out, sizeof(out), &len, nullptr, &err) == XTRA_E_BASE);
+    CHECK(maxima(&none).empty());
+
+    // a view into the header of a source for a field too long for the .xtra
+    std::string hdr(200, 'h');
+    struct xtra_base hb = {nullptr, reinterpret_cast<const uint8_t *>(hdr.data())};
+    xtra_init(&x);
+    x.text[XTRA_F_EXE_PATH] = {nullptr, 0, 192, XTRA_IN_HEADER};
+    CHECK(xtra_write_blitz2(&x, &hb, out, sizeof(out), &len, nullptr, &err) == XTRA_E_LONG);
+    CHECK(err.offset == 598);
+    CHECK(xtra_write_blitz2(&x, nullptr, out, sizeof(out), &len, nullptr, &err) == XTRA_E_BASE);
 }
 
 TEST_CASE("broken: short files", "[xtra][broken]")
@@ -287,22 +424,7 @@ TEST_CASE("broken: text fields without their 0 byte", "[xtra][broken]")
     // vers 0: the same bytes are the first pairs, not a CLI argument
     b = file(0, 32);
     std::memset(&b[982], 'c', 128);
-    CHECK(read(b) == XTRA_OK);
-}
-
-TEST_CASE("broken: more maxima than XTRA_MAXMAXIMA", "[xtra][broken]")
-{
-    refused(file(1, XTRA_MAXMAXIMA + 1), XTRA_E_TOO_MANY, 1110 + 4 * XTRA_MAXMAXIMA);
-    refused(file(0, XTRA_MAXMAXIMA + 5), XTRA_E_TOO_MANY, 982 + 4 * XTRA_MAXMAXIMA);
-}
-
-TEST_CASE("xtra_add_max: full", "[xtra][broken]")
-{
-    xtra_init(&x);
-    for (unsigned i = 0; i < XTRA_MAXMAXIMA; i++)
-        REQUIRE(xtra_add_max(&x, int(i), nullptr, 1) == XTRA_OK);
-    CHECK(xtra_add_max(&x, 1, nullptr, 1) == XTRA_E_TOO_MANY);
-    CHECK(x.nmax == XTRA_MAXMAXIMA);
+    CHECK(load(b) == XTRA_OK);
 }
 
 TEST_CASE("xtra_strerror: a message for every code", "[xtra]")

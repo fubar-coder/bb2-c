@@ -5,12 +5,19 @@
  *
  *   xtra dump FILE.xtra [--bb22 SRC]   all fields; with the cursor of SRC
  *   xtra dump --ab3 SRC.ab3            the header of an AmiBlitz3 source
+ *   xtra dump --source SRC             the type of SRC detected, its
+ *                                      companion SRC.xtra if it has one
  *   xtra check [--bb22|--ab3] [--exact] FILE...
  *       Blitz 2 .xtra (default): read, written again, the same bytes;
- *       --bb22: the header of BB22 sources; --ab3: the header read,
- *       written, read again, the same fields (--exact: the written header
- *       is byte for byte the one of the file)
- *   xtra convert --to-ab3 IN.xtra OUT [--bb22 SRC]   the header lines
+ *       --bb22: the header of BB22 sources; --ab3: the header written
+ *       again is byte for byte the one of the file, and a new header
+ *       written from it and read again has the same fields (--exact:
+ *       the new header is byte for byte the file's - for headers in
+ *       AmiBlitz3's current layout)
+ *   xtra convert --to-ab3 IN.xtra OUT [--bb22 SRC | --ab3 SRC]
+ *       the header lines (--bb22: with the cursor of SRC); --ab3: OUT is
+ *       the source SRC with its header updated from IN (a new header if
+ *       it has none)
  *   xtra convert --to-xtra IN.ab3 OUT.xtra           a Blitz 2 .xtra
  *
  * Maxima: the Blitz 2 file has library numbers, the AmiBlitz3 header
@@ -21,9 +28,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "xtra_ab3.h"
+#include "xtra.h"
 
-static struct xtra x, y;
+/* a source and/or its .xtra in memory, loaded */
+struct loaded {
+    struct xtra x;
+    uint8_t *src, *xb;
+    size_t slen, xlen;
+    struct xtra_base b;
+};
+
+static struct loaded a, c;
 
 static uint8_t *read_file(const char *path, size_t *len)
 {
@@ -44,14 +59,14 @@ static uint8_t *read_file(const char *path, size_t *len)
     return d;
 }
 
-static int write_file(const char *path, const void *data, size_t len)
+static int write_file(const char *path, const void *data, size_t len, const void *data2, size_t len2)
 {
     FILE *f = fopen(path, "wb");
     int ok;
 
     if (!f)
         return 0;
-    ok = fwrite(data, 1, len, f) == len;
+    ok = fwrite(data, 1, len, f) == len && fwrite(data2, 1, len2, f) == len2;
     ok &= fclose(f) == 0;
     if (!ok)
         remove(path);
@@ -66,54 +81,64 @@ static void report(const char *path, const struct xtra_error *err)
         fprintf(stderr, "%s: offset %zu: %s\n", path, err->offset, xtra_strerror(err->code));
 }
 
-/* reads FILE in the format of mode into *to: 1 if ok (message if not) */
-enum mode { M_BLITZ2, M_BB22, M_AB3 };
+static void unload(struct loaded *l)
+{
+    free(l->src);
+    free(l->xb);
+    l->src = l->xb = NULL;
+}
 
-static int load(const char *path, enum mode mode, struct xtra *to, uint8_t **data, size_t *len,
-                size_t *end)
+/* loads the source src (NULL: none) as type with its .xtra xpath (NULL:
+   none) into *l: 1 if ok (message if not) */
+static int load(struct loaded *l, int type, const char *src, const char *xpath)
 {
     struct xtra_error err;
-    int rc;
 
-    if (!(*data = read_file(path, len))) {
-        fprintf(stderr, "xtra: cannot read %s\n", path);
+    unload(l);
+    l->slen = l->xlen = 0;
+    if (src && !(l->src = read_file(src, &l->slen))) {
+        fprintf(stderr, "xtra: cannot read %s\n", src);
         return 0;
     }
-    if (mode == M_BLITZ2)
-        rc = xtra_read_blitz2(to, *data, *len, &err);
-    else if (mode == M_BB22)
-        rc = xtra_read_bb22(&to->editor, *data, *len, &err);
-    else
-        rc = xtra_read_ab3(to, *data, *len, end, &err);
-    if (rc) {
-        report(path, &err);
-        free(*data);
-        *data = NULL;
+    if (xpath && !(l->xb = read_file(xpath, &l->xlen))) {
+        fprintf(stderr, "xtra: cannot read %s\n", xpath);
+        unload(l);
         return 0;
     }
+    if (xtra_load(&l->x, type, l->src, l->slen, l->xb, l->xlen, &err)) {
+        report(err.in == XTRA_IN_XTRA ? xpath : src, &err);
+        unload(l);
+        return 0;
+    }
+    l->b.xtra = l->xb;
+    l->b.header = l->src;           /* the header is at the start */
     return 1;
 }
 
 /* ------------------------------------------------------------ dump */
 
 /* a text field as "..." with \xNN for other bytes */
-static void text(const char *label, const void *field, size_t size)
+static void text(const char *label, const struct loaded *l, int f)
 {
-    const uint8_t *p = field;
-    size_t i;
+    const uint8_t *p, *raw;
+    size_t n, i, cap = xtra_text_cap(f);
 
+    p = xtra_text(&l->x, &l->b, f, &n);
     printf("%-17s\"", label);
-    for (i = 0; i < size && p[i]; i++)
+    for (i = 0; p && i < n; i++)
         if (p[i] >= 0x20 && p[i] < 0x7F && p[i] != '"' && p[i] != '\\')
             putchar(p[i]);
         else
             printf("\\x%02X", p[i]);
     putchar('"');
-    /* bytes after the 0: kept for the round trip */
-    for (i++; i < size && !p[i]; i++)
-        ;
-    if (i < size)
-        printf("  (bytes after the 0 from offset %zu)", i);
+    /* bytes after the 0 in the .xtra: kept for the round trip */
+    if (l->x.text[f].in == XTRA_IN_XTRA) {
+        raw = l->b.xtra + l->x.text[f].off;
+        for (i = n + 1; i < cap && !raw[i]; i++)
+            ;
+        if (i < cap)
+            printf("  (bytes after the 0 from offset %zu)", i);
+    }
     putchar('\n');
 }
 
@@ -123,18 +148,20 @@ static const char *const switches[XTRA_NSWITCH] = {
     "overflow check", "optreq2ga5", "default interrupt", "default overflow",
 };
 static const char *const buffers[XTRA_NBUFFER] = {"object", "libs", "system", "data", "macro", "string"};
-static const char *const keys[XTRA_K_COUNT] = {
-    "ExePath", "ExeFile", "CreateIcon", "Residents", "StringBuffer", "MakeSmallest",
-    "FuncOptimize", "Version", "NumberOfBuilds", "CliArgs", "StackSize", "RuntimeDebug",
-    "DebugInfo", "CreateDbgFile", "OverflowCheck", "AssemblerCheck", "InterruptCheck",
-    "AutoRun", "CursorLine", "CursorColumn", "LabelSearch", "LabelRemark", "LabelAll",
-    "LabelCase", "LabelPosition", "Max",
+static const char *const types[XTRA_T_COUNT] = {
+    "TED tokenised", "BB22", "AmiBlitz3 text", "text without header"
 };
 
-static void dump(const struct xtra *v)
+static void dump(const struct loaded *l)
 {
+    const struct xtra *v = &l->x;
+    struct xtra_iter it;
+    struct xtra_max m;
     unsigned i, k;
 
+    printf("%-17s%s\n", "type", types[v->type]);
+    if (v->hdr)
+        printf("%-17s%u bytes kept\n", "source header", (unsigned)v->hdr);
     printf("%-17s%s\n", "source",
            v->source == XTRA_SRC_BLITZ2     ? "Blitz 2 .xtra"
            : v->source == XTRA_SRC_AB3_TEXT ? "AmiBlitz3 embedded header"
@@ -148,26 +175,28 @@ static void dump(const struct xtra *v)
         printf("%-17s%u\n", buffers[i], (unsigned)v->buf[i]);
     for (i = 0; i < XTRA_NRES; i++) {
         char label[20];
-        if (!v->res[i].name[0] && !v->res[i].ptr)
+        size_t n;
+        xtra_text(v, &l->b, XTRA_F_RES0 + (int)i, &n);
+        if (!n && !v->res_ptr[i])
             continue;
         snprintf(label, sizeof label, "resident %u", i);
-        text(label, v->res[i].name, XTRA_RESNAME);
-        if (v->res[i].ptr)
-            printf("%-17s$%08X (runtime value)\n", "  pointer", (unsigned)v->res[i].ptr);
+        text(label, l, XTRA_F_RES0 + (int)i);
+        if (v->res_ptr[i])
+            printf("%-17s$%08X (runtime value)\n", "  pointer", (unsigned)v->res_ptr[i]);
     }
-    text("exe path", v->exe_path, XTRA_PATHLEN);
-    text("exe name", v->exe_name, XTRA_PATHLEN);
+    text("exe path", l, XTRA_F_EXE_PATH);
+    text("exe name", l, XTRA_F_EXE_NAME);
     if (v->vers || v->source != XTRA_SRC_BLITZ2)
-        text("cli argument", v->cli, XTRA_CLILEN);
-    printf("%-17s%u\n", "maxima", v->nmax);
-    for (i = 0; i < v->nmax; i++) {
-        const struct xtra_max *m = &v->max[i];
+        text("cli argument", l, XTRA_F_CLI);
+    printf("%-17s%u\n", "maxima", (unsigned)v->max.n);
+    xtra_max_begin(&it, v, &l->b);
+    while (xtra_next_max(&it, &m)) {
         printf("  ");
-        if (m->flags & XTRA_MAX_LIB)
-            printf("lib %u", m->lib);
-        if (m->flags & XTRA_MAX_NAME)
-            printf("%s\"%s\"", m->flags & XTRA_MAX_LIB ? " " : "", m->name);
-        printf(": %u\n", m->max);
+        if (m.flags & XTRA_MAX_LIB)
+            printf("lib %u", m.lib);
+        if (m.flags & XTRA_MAX_NAME)
+            printf("%s\"%.*s\"", m.flags & XTRA_MAX_LIB ? " " : "", (int)m.namelen, (const char *)m.name);
+        printf(": %u\n", m.max);
     }
     if (v->editor.flags & XTRA_ED_CURSOR)
         printf("%-17sline %u, column %u (0-based)\n", "cursor", (unsigned)v->editor.line,
@@ -180,14 +209,14 @@ static void dump(const struct xtra *v)
     printf("  keys:");
     for (k = 0; k < XTRA_K_COUNT; k++)
         if (v->ab3.seen & (1ul << k))
-            printf(" %s", keys[k]);
+            printf(" %s", xtra_ab3_keyname((int)k));
     printf("\n  %-15s%u\n", "StackSize", (unsigned)v->ab3.stack);
     printf("  %-15s%u\n", "FuncOptimize", v->ab3.func_optimize);
     printf("  %-15s%u\n", "CreateDbgFile", v->ab3.create_dbgfile);
     printf("  %-15s%u.%u.%u\n", "Version", v->ab3.version[0], v->ab3.version[1], v->ab3.version[2]);
     printf("  %-15s%u\n", "NumberOfBuilds", (unsigned)v->ab3.builds);
     printf("  ");
-    text("LabelSearch", v->ab3.label_search, XTRA_LABELLEN);
+    text("LabelSearch", l, XTRA_F_LABEL_SEARCH);
     printf("  %-15s%u, all %u, case %u, position %u\n", "LabelRemark", v->ab3.label_remark,
            v->ab3.label_all, v->ab3.label_case, (unsigned)v->ab3.label_position);
     if (v->ab3.unknown)
@@ -197,57 +226,94 @@ static void dump(const struct xtra *v)
 
 /* ------------------------------------------------------------ check */
 
-/* the fields of a and b equal (what the AmiBlitz3 header holds) */
-static int same_ab3(const struct xtra *a, const struct xtra *b)
+/* the fields of p (bases pb) and q (qb) equal (what the AmiBlitz3 header
+   holds); a blank in a maximum's name equals '-' */
+static int same_ab3(const struct xtra *p, const struct xtra_base *pb, const struct xtra *q,
+                    const struct xtra_base *qb)
 {
-    return !memcmp(a->exe_path, b->exe_path, XTRA_PATHLEN) && !memcmp(a->exe_name, b->exe_name, XTRA_PATHLEN)
-        && a->icon == b->icon && !memcmp(a->res, b->res, sizeof(a->res)) && !memcmp(a->sw, b->sw, sizeof(a->sw))
-        && !memcmp(a->buf, b->buf, sizeof(a->buf)) && !memcmp(a->cli, b->cli, XTRA_CLILEN)
-        && a->nmax == b->nmax && !memcmp(a->max, b->max, a->nmax * sizeof(a->max[0]))
-        && a->editor.line == b->editor.line && a->editor.column == b->editor.column
-        && a->ab3.stack == b->ab3.stack && a->ab3.func_optimize == b->ab3.func_optimize
-        && a->ab3.create_dbgfile == b->ab3.create_dbgfile && !memcmp(a->ab3.version, b->ab3.version, 3)
-        && a->ab3.builds == b->ab3.builds && !memcmp(a->ab3.label_search, b->ab3.label_search, XTRA_LABELLEN)
-        && a->ab3.label_remark == b->ab3.label_remark && a->ab3.label_all == b->ab3.label_all
-        && a->ab3.label_case == b->ab3.label_case && a->ab3.label_position == b->ab3.label_position;
+    struct xtra_iter i, j;
+    struct xtra_max m, n;
+    const uint8_t *s, *t;
+    size_t sn, tn, k;
+    int f;
+
+    for (f = 0; f < XTRA_F_COUNT; f++) {
+        s = xtra_text(p, pb, f, &sn);
+        t = xtra_text(q, qb, f, &tn);
+        if (!s || !t || sn != tn || memcmp(s, t, sn))
+            return 0;
+    }
+    if (p->icon != q->icon || memcmp(p->sw, q->sw, sizeof(p->sw)) || memcmp(p->buf, q->buf, sizeof(p->buf))
+        || memcmp(p->res_ptr, q->res_ptr, sizeof(p->res_ptr)) || p->max.n != q->max.n
+        || p->editor.line != q->editor.line || p->editor.column != q->editor.column
+        || p->ab3.stack != q->ab3.stack || p->ab3.func_optimize != q->ab3.func_optimize
+        || p->ab3.create_dbgfile != q->ab3.create_dbgfile || memcmp(p->ab3.version, q->ab3.version, 3)
+        || p->ab3.builds != q->ab3.builds || p->ab3.label_remark != q->ab3.label_remark
+        || p->ab3.label_all != q->ab3.label_all || p->ab3.label_case != q->ab3.label_case
+        || p->ab3.label_position != q->ab3.label_position)
+        return 0;
+    xtra_max_begin(&i, p, pb);
+    xtra_max_begin(&j, q, qb);
+    while (xtra_next_max(&i, &m)) {
+        if (!xtra_next_max(&j, &n) || m.max != n.max || m.flags != n.flags || m.namelen != n.namelen)
+            return 0;
+        for (k = 0; k < m.namelen; k++)
+            if (m.name[k] != n.name[k] && !(strchr(" -", m.name[k]) && strchr(" -", n.name[k])))
+                return 0;
+    }
+    return !xtra_next_max(&j, &n);
 }
 
-static int check(const char *path, enum mode mode, int exact)
+static int check(const char *path, int mode, int exact)
 {
-    static uint8_t out[XTRA_BLITZ2_MAXSIZE];
-    static char text[65536];
+    static uint8_t out[65536];
+    static char hdr[65536];
     struct xtra_error err;
-    uint8_t *data;
-    size_t len, olen, end = 0, e2;
+    struct xtra_base nb = {NULL, (const uint8_t *)hdr};
+    size_t olen;
     int ok = 1;
 
-    if (!load(path, mode, &x, &data, &len, &end))
+    if (!load(&a, mode, mode == XTRA_T_TED ? NULL : path, mode == XTRA_T_TED ? path : NULL))
         return 0;
-    if (mode == M_BLITZ2) {
-        if (xtra_write_blitz2(&x, out, sizeof out, &olen, NULL, &err)) {
+    if (mode == XTRA_T_TED) {
+        if (xtra_blitz2_size(&a.x) > sizeof out) {
+            fprintf(stderr, "%s: too many maxima for this tool\n", path);
+            ok = 0;
+        } else if (xtra_write_blitz2(&a.x, &a.b, out, sizeof out, &olen, NULL, &err)) {
             report(path, &err);
             ok = 0;
-        } else if (olen != len || memcmp(out, data, len)) {
+        } else if (olen != a.xlen || memcmp(out, a.xb, olen)) {
             fprintf(stderr, "%s: written again, the bytes differ\n", path);
             ok = 0;
         }
-    } else if (mode == M_AB3 && x.ab3.header) {
-        if (xtra_write_ab3(&x, text, sizeof text, &olen, NULL)) {
+    } else if (mode == XTRA_T_AB3 && a.x.ab3.header) {
+        if (xtra_write_ab3(&a.x, &a.b, hdr, sizeof hdr, &olen, NULL)) {
             fprintf(stderr, "%s: header too long\n", path);
             ok = 0;
-        } else if (xtra_read_ab3(&y, (uint8_t *)text, olen, &e2, &err)) {
-            fprintf(stderr, "%s: the written header: ", path);
-            report("", &err);
-            ok = 0;
-        } else if (!same_ab3(&x, &y) || e2 != olen) {
-            fprintf(stderr, "%s: written and read again, the fields differ\n", path);
-            ok = 0;
-        } else if (exact && (olen != end || memcmp(text, data, end))) {
+        } else if (olen != a.x.hdr || memcmp(hdr, a.src, olen)) {
             fprintf(stderr, "%s: written again, the header differs\n", path);
             ok = 0;
+        } else {
+            /* a new header from the fields, read again */
+            c.x = a.x;
+            c.x.ab3.header = 0;
+            if (xtra_write_ab3(&c.x, &a.b, hdr, sizeof hdr, &olen, NULL)) {
+                fprintf(stderr, "%s: new header too long\n", path);
+                ok = 0;
+            } else if (xtra_load(&c.x, XTRA_T_AB3, (const uint8_t *)hdr, olen, NULL, 0, &err)) {
+                fprintf(stderr, "%s: the new header: ", path);
+                report("", &err);
+                ok = 0;
+            } else if (!same_ab3(&a.x, &a.b, &c.x, &nb) || c.x.hdr != olen) {
+                fprintf(stderr, "%s: written as new header and read again, the fields differ\n", path);
+                ok = 0;
+            } else if (exact && (olen != a.x.hdr || memcmp(hdr, a.src, olen))) {
+                fprintf(stderr, "%s: written as new header, the header differs\n", path);
+                ok = 0;
+            }
         }
     }
-    free(data);
+    unload(&a);
     return ok;
 }
 
@@ -256,18 +322,22 @@ static int check(const char *path, enum mode mode, int exact)
 static const char usage[] =
     "usage: xtra dump FILE.xtra [--bb22 SRC]\n"
     "       xtra dump --ab3 SRC.ab3\n"
+    "       xtra dump --source SRC\n"
     "       xtra check [--bb22|--ab3] [--exact] FILE...\n"
-    "       xtra convert --to-ab3 IN.xtra OUT [--bb22 SRC]\n"
+    "       xtra convert --to-ab3 IN.xtra OUT [--bb22 SRC | --ab3 SRC]\n"
     "       xtra convert --to-xtra IN.ab3 OUT.xtra\n"
     "The companion settings of a Blitz source: the Blitz 2 .xtra (vers 0\n"
     "and 1), the cursor in the header of a BB22 source, AmiBlitz3's\n"
     "embedded header (docs/formats.md 1 and 7).\n"
-    "dump      all fields (with --bb22: the cursor of the BB22 source SRC)\n"
+    "dump      all fields (with --bb22: the cursor of the BB22 source SRC;\n"
+    "          --source: SRC's type detected, with SRC.xtra if it has one)\n"
     "check     every FILE read and written again: a Blitz 2 .xtra gives the\n"
-    "          same bytes; --bb22: BB22 headers; --ab3: the header gives\n"
-    "          the same fields (--exact: the same bytes)\n"
-    "convert   a Blitz 2 .xtra into header lines, a header into a .xtra;\n"
-    "          maxima the other format cannot name are left out (stderr)\n";
+    "          same bytes; --bb22: BB22 headers; --ab3: the header gives the\n"
+    "          same bytes, and as a new header the same fields (--exact:\n"
+    "          the same bytes)\n"
+    "convert   a Blitz 2 .xtra into header lines (--ab3 SRC: SRC with its\n"
+    "          header updated), a header into a .xtra; maxima the other\n"
+    "          format cannot name are left out (stderr)\n";
 
 static int bad_args(void)
 {
@@ -275,12 +345,44 @@ static int bad_args(void)
     return 2;
 }
 
+/* the source path with its companion: 1 if ok */
+static int load_source(const char *path)
+{
+    char name[4096];
+    uint8_t *buf;
+    size_t len;
+    FILE *f;
+    int type;
+
+    if (!(buf = read_file(path, &len))) {
+        fprintf(stderr, "xtra: cannot read %s\n", path);
+        return 0;
+    }
+    type = xtra_detect(buf, len, path);
+    free(buf);
+    if (!xtra_has_companion(type))
+        return load(&a, type, path, NULL);
+    if (xtra_companion_name(path, name, sizeof name)) {
+        fprintf(stderr, "xtra: %s: name too long\n", path);
+        return 0;
+    }
+    if (!(f = fopen(name, "rb"))) {
+        printf("%-17s%s (missing)\n", "companion", name);
+        return load(&a, type, path, NULL);
+    }
+    fclose(f);
+    printf("%-17s%s\n", "companion", name);
+    return load(&a, type, path, name);
+}
+
 int main(int argc, char **argv)
 {
-    static uint8_t out[XTRA_BLITZ2_MAXSIZE];
-    static char text[65536];
-    uint8_t *data, *src;
-    size_t len, slen, end, olen;
+    static uint8_t out[65536];
+    static char hdr[65536];
+    struct xtra_error err;
+    struct xtra_iter it;
+    struct xtra_max m;
+    size_t olen;
     unsigned skipped;
     int i, rc;
 
@@ -293,35 +395,31 @@ int main(int argc, char **argv)
 
     if (!strcmp(argv[1], "dump")) {
         if (argc == 4 && !strcmp(argv[2], "--ab3")) {
-            if (!load(argv[3], M_AB3, &x, &data, &len, &end))
+            if (!load(&a, XTRA_T_AB3, argv[3], NULL))
+                return 1;
+        } else if (argc == 4 && !strcmp(argv[2], "--source")) {
+            if (!load_source(argv[3]))
                 return 1;
         } else if (argc == 3 || (argc == 5 && !strcmp(argv[3], "--bb22"))) {
-            if (!load(argv[2], M_BLITZ2, &x, &data, &len, &end))
+            if (!load(&a, argc == 5 ? XTRA_T_BB22 : XTRA_T_TED, argc == 5 ? argv[4] : NULL, argv[2]))
                 return 1;
-            if (argc == 5) {
-                if (!load(argv[4], M_BB22, &y, &src, &slen, &end))
-                    return 1;
-                x.editor = y.editor;
-                free(src);
-            }
         } else {
             return bad_args();
         }
-        dump(&x);
-        free(data);
+        dump(&a);
+        unload(&a);
         return 0;
     }
 
     if (!strcmp(argv[1], "check")) {
-        enum mode mode = M_BLITZ2;
-        int exact = 0, files = 0;
+        int mode = XTRA_T_TED, exact = 0, files = 0;
 
         rc = 0;
         for (i = 2; i < argc; i++) {
             if (!strcmp(argv[i], "--bb22") && !files)
-                mode = M_BB22;
+                mode = XTRA_T_BB22;
             else if (!strcmp(argv[i], "--ab3") && !files)
-                mode = M_AB3;
+                mode = XTRA_T_AB3;
             else if (!strcmp(argv[i], "--exact") && !files)
                 exact = 1;
             else {
@@ -338,45 +436,61 @@ int main(int argc, char **argv)
     }
 
     if (!strcmp(argv[1], "convert") && argc >= 5) {
-        if (!strcmp(argv[2], "--to-ab3") && (argc == 5 || (argc == 7 && !strcmp(argv[5], "--bb22")))) {
-            if (!load(argv[3], M_BLITZ2, &x, &data, &len, &end))
+        if (!strcmp(argv[2], "--to-ab3")
+            && (argc == 5 || (argc == 7 && (!strcmp(argv[5], "--bb22") || !strcmp(argv[5], "--ab3"))))) {
+            const uint8_t *rest = NULL;
+            size_t restlen = 0;
+            struct loaded *w = &a;
+            struct xtra_base b;
+
+            if (!load(&a, XTRA_T_TED, NULL, argv[3]))
                 return 1;
-            free(data);
-            if (argc == 7) {
-                if (!load(argv[6], M_BB22, &y, &src, &slen, &end))
+            b = a.b;
+            if (argc == 7 && !strcmp(argv[5], "--bb22")) {
+                if (!load(&c, XTRA_T_BB22, argv[6], NULL))
                     return 1;
-                free(src);
-                x.editor = y.editor;
+                a.x.editor = c.x.editor;
+            } else if (argc == 7) {
+                /* the source's header updated with the .xtra's values */
+                if (!load(&c, XTRA_T_AB3, argv[6], NULL))
+                    return 1;
+                xtra_take_blitz2(&c.x, &a.x);
+                b.header = c.src;
+                w = &c;
+                rest = c.src + c.x.hdr;
+                restlen = c.slen - c.x.hdr;
+                if (a.x.max.n)
+                    fprintf(stderr, "xtra: %u maxima by library number left out (the header names objects)\n",
+                            (unsigned)a.x.max.n);
             }
-            if (xtra_write_ab3(&x, text, sizeof text, &olen, &skipped)) {
+            if (xtra_write_ab3(&w->x, &b, hdr, sizeof hdr, &olen, &skipped)) {
                 fprintf(stderr, "xtra: header too long\n");
                 return 1;
             }
-            if (skipped)
+            if (skipped && w == &a)
                 fprintf(stderr, "xtra: %u maxima by library number left out (the header names objects)\n",
                         skipped);
-            if (!write_file(argv[4], text, olen)) {
+            if (!write_file(argv[4], hdr, olen, rest, restlen)) {
                 fprintf(stderr, "xtra: cannot write %s\n", argv[4]);
                 return 1;
             }
             return 0;
         }
         if (!strcmp(argv[2], "--to-xtra") && argc == 5) {
-            struct xtra_error err;
-            if (!load(argv[3], M_AB3, &x, &data, &len, &end))
+            if (!load(&a, XTRA_T_AB3, argv[3], NULL))
                 return 1;
-            free(data);
-            if (!x.ab3.header)
+            if (!a.x.ab3.header)
                 fprintf(stderr, "xtra: %s has no header: AmiBlitz3's defaults\n", argv[3]);
-            if (xtra_write_blitz2(&x, out, sizeof out, &olen, &skipped, &err)) {
+            if (xtra_write_blitz2(&a.x, &a.b, out, sizeof out, &olen, &skipped, &err)) {
                 report(argv[4], &err);
                 return 1;
             }
-            for (i = 0; i < x.nmax; i++)
-                if (!(x.max[i].flags & XTRA_MAX_LIB))
-                    fprintf(stderr, "xtra: maximum \"%s\" = %u left out (the .xtra needs the library number)\n",
-                            x.max[i].name, x.max[i].max);
-            if (!write_file(argv[4], out, olen)) {
+            xtra_max_begin(&it, &a.x, &a.b);
+            while (xtra_next_max(&it, &m))
+                if (!(m.flags & XTRA_MAX_LIB))
+                    fprintf(stderr, "xtra: maximum \"%.*s\" = %u left out (the .xtra needs the library number)\n",
+                            (int)m.namelen, (const char *)m.name, m.max);
+            if (!write_file(argv[4], out, olen, NULL, 0)) {
                 fprintf(stderr, "xtra: cannot write %s\n", argv[4]);
                 return 1;
             }

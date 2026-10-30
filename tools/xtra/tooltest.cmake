@@ -1,7 +1,8 @@
 # ctest xtra_tool: the tool xtra on files in WORK - an AmiBlitz3 header
 # checked byte-exact, converted to a Blitz 2 .xtra, checked, dumped and
-# converted back; broken inputs refused with their message and exit 1,
-# wrong arguments exit 2.
+# converted back (as new header and into the source's header); sources
+# with their type detected and their companion; broken inputs refused
+# with their message and exit 1, wrong arguments exit 2.
 #   cmake -DXTRA=... -DWORK=... -P tooltest.cmake
 file(REMOVE_RECURSE ${WORK})
 file(MAKE_DIRECTORY ${WORK})
@@ -86,6 +87,40 @@ foreach(line "; ExePath         = \"ram:\"" "; Residents       = \"blitzlibs:ami
 endforeach()
 run(0 "1 file ok" check --ab3 --exact ${WORK}/back.ab3)
 
+# the .xtra into the source's own header: the same file (good.xtra came
+# from it); another ExePath changes that line only; a source without
+# header gets a new one
+run(0 "" convert --to-ab3 ${WORK}/good.xtra ${WORK}/merged.ab3 --ab3 ${WORK}/good.ab3)
+file(READ ${WORK}/good.ab3 good)
+file(READ ${WORK}/merged.ab3 merged)
+if(NOT merged STREQUAL good)
+	message(FATAL_ERROR "merged.ab3 differs from good.ab3:\n${merged}")
+endif()
+string(REPLACE "\"ram:\"" "\"work:bin\"" other "${good}")
+file(WRITE ${WORK}/other.ab3 "${other}")
+run(0 "" convert --to-xtra ${WORK}/other.ab3 ${WORK}/other.xtra)
+run(0 "" convert --to-ab3 ${WORK}/other.xtra ${WORK}/merged.ab3 --ab3 ${WORK}/good.ab3)
+file(READ ${WORK}/merged.ab3 merged)
+if(NOT merged STREQUAL other)
+	message(FATAL_ERROR "merged.ab3 is not good.ab3 with ExePath work:bin:\n${merged}")
+endif()
+file(WRITE ${WORK}/plain.ab3 "NPrint 1\n")
+run(0 "" convert --to-ab3 ${WORK}/good.xtra ${WORK}/merged.ab3 --ab3 ${WORK}/plain.ab3)
+file(READ ${WORK}/merged.ab3 merged)
+if(NOT merged MATCHES "^; XTRA\n.*\n; ExePath         = \"ram:\"\n.*\n; /XTRA\nNPrint 1\n$")
+	message(FATAL_ERROR "merged.ab3: not a new header in front of plain.ab3:\n${merged}")
+endif()
+
+# sources: the type detected, the companion NAME.xtra read if there
+file(COPY_FILE ${WORK}/good.xtra ${WORK}/prog.bb2)    # has $00 bytes: TED's
+run(0 "companion +.*/prog.bb2.xtra \\(missing\\)\ntype +TED tokenised\n" dump --source ${WORK}/prog.bb2)
+file(COPY_FILE ${WORK}/good.xtra ${WORK}/prog.bb2.xtra)
+run(0 "companion +.*/prog.bb2.xtra\ntype +TED tokenised\nsource +Blitz 2 .xtra\n" dump --source ${WORK}/prog.bb2)
+run(0 "type +AmiBlitz3 text\nsource header +[0-9]+ bytes kept\n" dump --source ${WORK}/good.ab3)
+run(0 "type +AmiBlitz3 text\nsource +AmiBlitz3 embedded header\n" dump --source ${WORK}/plain.ab3)
+file(WRITE ${WORK}/plain.bb2 "NPrint 1\n")
+run(0 "\\(missing\\)\ntype +text without header\n" dump --source ${WORK}/plain.bb2)
+
 # broken inputs
 file(WRITE ${WORK}/quote.ab3 "; XTRA\n; ExeFile = \"test\n; /XTRA\n")
 run(1 "quote.ab3: line 2: string without its closing" check --ab3 ${WORK}/quote.ab3)
@@ -102,6 +137,14 @@ file(WRITE ${WORK}/short.xtra "${one}")   # vers 1, 1 byte
 run(1 "short.xtra: offset 1: file too short" check ${WORK}/good.xtra ${WORK}/short.xtra)
 run(1 "short.xtra: offset 1: file too short" dump ${WORK}/good.xtra --bb22 ${WORK}/short.xtra)
 run(1 "cannot read" check ${WORK}/missing.xtra)
+run(1 "cannot read" dump --source ${WORK}/missing.bb2)
+file(COPY_FILE ${WORK}/short.xtra ${WORK}/prog.bb2.xtra)
+run(1 "prog.bb2.xtra: offset 1: file too short" dump --source ${WORK}/prog.bb2)
+run(1 "noend.ab3: line 3: header without" convert --to-ab3 ${WORK}/good.xtra ${WORK}/no.ab3 --ab3 ${WORK}/noend.ab3)
+run(1 "short.xtra: offset 1: file too short" convert --to-ab3 ${WORK}/short.xtra ${WORK}/no.ab3 --ab3 ${WORK}/good.ab3)
+if(EXISTS ${WORK}/no.ab3)
+	message(FATAL_ERROR "no.ab3 written from a broken input")
+endif()
 run(1 "is not a BB22|not a BB22" check --bb22 ${WORK}/good.ab3)
 run(2 "^usage: " check)
 run(2 "^usage: " dump)

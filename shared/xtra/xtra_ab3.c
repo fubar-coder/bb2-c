@@ -15,20 +15,14 @@
  * (ParseAB3Header) it, Sourcecodes/Amiblitz3/Compiler/CLIModeSupport.ab3
  * (AmiBlitz3 on GitHub, commit b1a9dee150ef).  Own code after the format;
  * stricter than AmiBlitz3 where AmiBlitz3 guesses (docs/formats.md 7.4).
+ * The texts and the "Max" lines stay in the header (views); the writer
+ * updates the kept header line by line or writes a new one.
  *
  * No libc, no 32-bit multiply/divide, no writable static data.
  */
-#include "xtra_ab3.h"
+#include "xtra_int.h"
 
 /* ------------------------------------------------------------ helpers */
-
-static void zero(void *p, size_t n)
-{
-    uint8_t *d = (uint8_t *)p;
-
-    while (n--)
-        *d++ = 0;
-}
 
 static int lower(int c)
 {
@@ -65,16 +59,6 @@ static int same(struct span s, const char *w)
         if (!w[i] || lower((unsigned char)s.p[i]) != lower((unsigned char)w[i]))
             return 0;
     return w[i] == 0;
-}
-
-static int fail(struct xtra_error *err, int code, uint32_t line)
-{
-    if (err) {
-        err->code = code;
-        err->offset = 0;
-        err->line = line;
-    }
-    return code;
 }
 
 /* v * 10 + d without multiply; 0 on overflow of 32 bits */
@@ -141,18 +125,18 @@ static int text(struct span *s)
     return 1;
 }
 
-/* s into the field to[0..size): 0-terminated, the rest 0; 1 if it fits */
-static int put(void *to, size_t size, struct span s)
+/* the text field f: a view of s in the header h */
+static int view(struct xtra *x, int f, const uint8_t *h, struct span s)
 {
-    uint8_t *d = (uint8_t *)to;
-    size_t i;
+    struct xtra_text *t = &x->text[f];
 
-    if (s.n >= size)
-        return 0;
-    zero(d, size);
-    for (i = 0; i < s.n; i++)
-        d[i] = (uint8_t)s.p[i];
-    return 1;
+    if (s.n >= xtra_text_cap(f))
+        return XTRA_E_LONG;
+    t->in = XTRA_IN_HEADER;
+    t->set = NULL;
+    t->off = (uint32_t)((const uint8_t *)s.p - h);
+    t->len = (uint16_t)s.n;
+    return XTRA_OK;
 }
 
 static void setsw(struct xtra *x, int sw, uint32_t v)
@@ -160,8 +144,7 @@ static void setsw(struct xtra *x, int sw, uint32_t v)
     x->sw[sw] = v ? XTRA_ON : 0;
 }
 
-/* the key names; index = enum xtra_ab3_key (XTRA_K_MAX is "Max NAME") */
-static const char *keyname(int k)
+const char *xtra_ab3_keyname(int k)
 {
     switch (k) {
     case XTRA_K_EXEPATH: return "ExePath";
@@ -189,8 +172,28 @@ static const char *keyname(int k)
     case XTRA_K_LABELALL: return "LabelAll";
     case XTRA_K_LABELCASE: return "LabelCase";
     case XTRA_K_LABELPOSITION: return "LabelPosition";
+    case XTRA_K_MAX: return "Max";
     }
     return "";
+}
+
+/* the key of a "KEY = VALUE" line: enum xtra_ab3_key, XTRA_K_MAX for
+   "Max NAME" (*name: NAME), XTRA_K_COUNT for an unknown key */
+static int keyof(struct span key, struct span *name)
+{
+    int k;
+
+    trim(&key);
+    if (key.n >= 3 && same((struct span){key.p, 3}, "max") && (key.n == 3 || blank(key.p[3]))) {
+        name->p = key.p + 3;
+        name->n = key.n - 3;
+        trim(name);
+        return XTRA_K_MAX;
+    }
+    for (k = 0; k < XTRA_K_MAX; k++)
+        if (same(key, xtra_ab3_keyname(k)))
+            return k;
+    return XTRA_K_COUNT;
 }
 
 /* Version "MAJOR.MINOR.PATCH", each 0..255 */
@@ -221,13 +224,15 @@ static int version(struct span s, uint8_t v[3])
 }
 
 /* Residents "A,B,...": the parts as given (also empty ones) */
-static int residents(struct xtra *x, struct span s)
+static int residents(struct xtra *x, const uint8_t *h, struct span s)
 {
     struct span part;
-    int i;
+    int i, rc;
 
-    for (i = 0; i < XTRA_NRES; i++)
-        zero(&x->res[i], sizeof(x->res[i]));
+    for (i = 0; i < XTRA_NRES; i++) {
+        x->text[XTRA_F_RES0 + i].in = XTRA_IN_NONE;
+        x->text[XTRA_F_RES0 + i].len = 0;
+    }
     if (!s.n)
         return XTRA_OK;
     for (i = 0;; i++) {
@@ -237,8 +242,8 @@ static int residents(struct xtra *x, struct span s)
         part.n = 0;
         while (part.n < s.n && s.p[part.n] != ',')
             part.n++;
-        if (!put(x->res[i].name, XTRA_RESNAME, part))
-            return XTRA_E_AB3_LONG;
+        if ((rc = view(x, XTRA_F_RES0 + i, h, part)))
+            return rc;
         if (part.n == s.n)
             return XTRA_OK;
         s.p += part.n + 1;
@@ -246,53 +251,41 @@ static int residents(struct xtra *x, struct span s)
     }
 }
 
-/* "Max NAME = N": the object NAME ('-' for ' ', as AmiBlitz3 writes it);
-   a NAME given twice: the last value counts */
-static int maximum(struct xtra *x, struct span name, struct span value)
+/* "Max NAME = N": checked and counted; the line stays in the header */
+static int maximum(struct xtra *x, struct span name, struct span value, size_t lstart)
 {
-    char n[XTRA_MAXNAME];
     uint32_t v;
-    size_t i;
-    unsigned k;
 
-    trim(&name);
     if (!name.n)
         return XTRA_E_AB3_NAME;
-    if (name.n >= XTRA_MAXNAME)
-        return XTRA_E_AB3_LONG;
+    if (name.n > 0xFFFF)
+        return XTRA_E_LONG;
     if (!number(value, &v) || v > 0xFFFF)
         return XTRA_E_AB3_NUMBER;
-    zero(n, sizeof(n));
-    for (i = 0; i < name.n; i++)
-        n[i] = name.p[i] == '-' ? ' ' : name.p[i];
-    for (k = 0; k < x->nmax; k++) {
-        for (i = 0; i < XTRA_MAXNAME && x->max[k].name[i] == n[i]; i++)
-            if (!n[i])
-                break;
-        if ((x->max[k].flags & XTRA_MAX_NAME) && i < XTRA_MAXNAME && x->max[k].name[i] == n[i]) {
-            x->max[k].max = (uint16_t)v;
-            return XTRA_OK;
-        }
+    if (x->max.in != XTRA_IN_HEADER) {
+        x->max.in = XTRA_IN_HEADER;
+        x->max.off = (uint32_t)lstart;
+        x->max.n = 0;
     }
-    return xtra_add_max(x, -1, n, (uint16_t)v);
+    x->max.n++;
+    return XTRA_OK;
 }
 
-/* one "KEY = VALUE" line */
-static int keyvalue(struct xtra *x, struct span key, struct span value, uint32_t line)
+/* one "KEY = VALUE" line of the header h (starting at lstart) into x */
+static int keyvalue(struct xtra *x, const uint8_t *h, struct span key, struct span value, uint32_t line,
+                    size_t lstart)
 {
+    struct span name;
     uint32_t v = 0;
     int k;
 
-    trim(&key);
     trim(&value);
-    if (key.n >= 3 && same((struct span){key.p, 3}, "max") && (key.n == 3 || blank(key.p[3]))) {
-        x->ab3.seen |= 1ul << XTRA_K_MAX;
-        return maximum(x, (struct span){key.p + 3, key.n - 3}, value);
-    }
-    for (k = 0; k < XTRA_K_MAX; k++)
-        if (same(key, keyname(k)))
-            break;
+    k = keyof(key, &name);
     if (k == XTRA_K_MAX) {
+        x->ab3.seen |= 1ul << XTRA_K_MAX;
+        return maximum(x, name, value, lstart);
+    }
+    if (k == XTRA_K_COUNT) {
         if (!x->ab3.unknown++)
             x->ab3.unknown_line = line;
         return XTRA_OK;
@@ -313,16 +306,11 @@ static int keyvalue(struct xtra *x, struct span key, struct span value, uint32_t
     }
     x->ab3.seen |= 1ul << k;
     switch (k) {
-    case XTRA_K_EXEPATH:
-        return put(x->exe_path, XTRA_PATHLEN, value) ? XTRA_OK : XTRA_E_AB3_LONG;
-    case XTRA_K_EXEFILE:
-        return put(x->exe_name, XTRA_PATHLEN, value) ? XTRA_OK : XTRA_E_AB3_LONG;
-    case XTRA_K_RESIDENTS:
-        return residents(x, value);
-    case XTRA_K_CLIARGS:
-        return put(x->cli, XTRA_CLILEN, value) ? XTRA_OK : XTRA_E_AB3_LONG;
-    case XTRA_K_LABELSEARCH:
-        return put(x->ab3.label_search, XTRA_LABELLEN, value) ? XTRA_OK : XTRA_E_AB3_LONG;
+    case XTRA_K_EXEPATH: return view(x, XTRA_F_EXE_PATH, h, value);
+    case XTRA_K_EXEFILE: return view(x, XTRA_F_EXE_NAME, h, value);
+    case XTRA_K_RESIDENTS: return residents(x, h, value);
+    case XTRA_K_CLIARGS: return view(x, XTRA_F_CLI, h, value);
+    case XTRA_K_LABELSEARCH: return view(x, XTRA_F_LABEL_SEARCH, h, value);
     case XTRA_K_CREATEICON: x->icon = v ? XTRA_ON : 0; break;
     case XTRA_K_STRINGBUFFER: x->buf[XTRA_BUF_STRING] = v; break;
     case XTRA_K_MAKESMALLEST: setsw(x, XTRA_SW_MAKE_SMALLEST, v); break;
@@ -377,25 +365,45 @@ static int marker(struct span s, const char *word)
     return same(s, word);
 }
 
-int xtra_read_ab3(struct xtra *x, const uint8_t *buf, size_t size, size_t *end,
-                  struct xtra_error *err)
+/* a trimmed line ";KEY=VALUE": key and value (untrimmed); 0 for other
+   lines */
+static int split(struct span t, struct span *key, struct span *value)
 {
-    static const uint8_t ram[] = "RAM:", prog[] = "Prog.exe";
-    struct span s, key, value;
-    size_t pos = 0, i;
-    uint32_t line = 1;
-    int rc;
+    size_t i;
 
-    xtra_init(x);
-    if (err)
-        zero(err, sizeof(*err));
-    *end = 0;
-    /* ParseAB3Header's defaults for what the header can set */
+    if (!t.n || t.p[0] != ';')
+        return 0;
+    for (i = 1; i < t.n && t.p[i] != '='; i++)
+        ;
+    if (i == t.n)
+        return 0;
+    key->p = t.p + 1;
+    key->n = i - 1;
+    value->p = t.p + i + 1;
+    value->n = t.n - i - 1;
+    return 1;
+}
+
+int xtra_ab3_has_header(const uint8_t *buf, size_t size)
+{
+    struct span s;
+    size_t pos = 0;
+
+    if (!buf)
+        return 0;
+    nextline(buf, size, &pos, &s);
+    return marker(s, "XTRA");
+}
+
+void xtra_ab3_defaults(struct xtra *x)
+{
     x->source = XTRA_SRC_AB3_TEXT;
-    for (i = 0; i < sizeof(ram); i++)
-        x->exe_path[i] = ram[i];
-    for (i = 0; i < sizeof(prog); i++)
-        x->exe_name[i] = prog[i];
+    x->text[XTRA_F_EXE_PATH].in = XTRA_IN_SET;
+    x->text[XTRA_F_EXE_PATH].set = (const uint8_t *)"RAM:";
+    x->text[XTRA_F_EXE_PATH].len = 4;
+    x->text[XTRA_F_EXE_NAME].in = XTRA_IN_SET;
+    x->text[XTRA_F_EXE_NAME].set = (const uint8_t *)"Prog.exe";
+    x->text[XTRA_F_EXE_NAME].len = 8;
     x->icon = 0;
     x->sw[XTRA_SW_MAKE_SMALLEST] = 0;
     x->sw[XTRA_SW_RUNTIME_ERRORS] = XTRA_ON;
@@ -405,37 +413,67 @@ int xtra_read_ab3(struct xtra *x, const uint8_t *buf, size_t size, size_t *end,
     x->sw[XTRA_SW_INTERRUPT_CHECK] = XTRA_ON;
     x->sw[XTRA_SW_AUTO_RUN] = XTRA_ON;
     x->buf[XTRA_BUF_STRING] = 10240;            /* #DEFAULT_STRINGBUFFERSIZE */
+}
 
-    nextline(buf, size, &pos, &s);
-    if (!marker(s, "XTRA"))
+int xtra_ab3_read(struct xtra *x, const uint8_t *buf, size_t size, struct xtra_error *err)
+{
+    struct span s, key, value;
+    size_t pos = 0, lstart;
+    uint32_t line = 1;
+    int rc;
+
+    xtra_ab3_defaults(x);
+    if (!xtra_ab3_has_header(buf, size))
         return XTRA_OK;                         /* no header */
     x->ab3.header = 1;
+    nextline(buf, size, &pos, &s);
     for (;;) {
         if (pos >= size)
-            return fail(err, XTRA_E_AB3_END, line + 1);
+            return xtra_fail(err, XTRA_E_AB3_END, XTRA_IN_HEADER, 0, line + 1);
         line++;
+        lstart = pos;
         nextline(buf, size, &pos, &s);
         trim(&s);
         if (!s.n)
             continue;
         if (s.p[0] != ';')
-            return fail(err, XTRA_E_AB3_LINE, line);
+            return xtra_fail(err, XTRA_E_AB3_LINE, XTRA_IN_HEADER, 0, line);
         if (marker(s, "/XTRA"))
             break;
-        for (i = 1; i < s.n && s.p[i] != '='; i++)
-            ;
-        if (i == s.n)
+        if (!split(s, &key, &value))
             continue;                           /* title, ruler, empty */
-        key.p = s.p + 1;
-        key.n = i - 1;
-        value.p = s.p + i + 1;
-        value.n = s.n - i - 1;
-        rc = keyvalue(x, key, value, line);
+        rc = keyvalue(x, buf, key, value, line, lstart);
         if (rc)
-            return fail(err, rc, line);
+            return xtra_fail(err, rc, XTRA_IN_HEADER, 0, line);
     }
-    *end = pos;
+    x->hdr = (uint32_t)pos;
     return XTRA_OK;
+}
+
+int xtra_ab3_next_max(const uint8_t *h, uint32_t *pos, uint32_t end, struct xtra_max *m)
+{
+    struct span s, key, value, name;
+    size_t p = *pos;
+    uint32_t v;
+
+    while (p < end) {
+        nextline(h, end, &p, &s);
+        trim(&s);
+        if (!split(s, &key, &value) || keyof(key, &name) != XTRA_K_MAX)
+            continue;
+        trim(&value);
+        if (!number(value, &v))
+            v = 0;
+        m->name = (const uint8_t *)name.p;
+        m->namelen = (uint16_t)name.n;
+        m->lib = 0;
+        m->max = (uint16_t)v;
+        m->flags = XTRA_MAX_NAME;
+        *pos = (uint32_t)p;
+        return 1;
+    }
+    *pos = (uint32_t)p;
+    return 0;
 }
 
 /* ------------------------------------------------------------ writing */
@@ -443,6 +481,7 @@ int xtra_read_ab3(struct xtra *x, const uint8_t *buf, size_t size, size_t *end,
 struct out {
     char *p;
     size_t n, cap;
+    const char *nl;             /* line end */
 };
 
 static void ch(struct out *o, char c)
@@ -458,14 +497,12 @@ static void str(struct out *o, const char *s)
         ch(o, *s++);
 }
 
-/* a field: the bytes up to its 0 */
-static void field(struct out *o, const void *f, size_t size)
+static void bytes(struct out *o, const void *p, size_t n)
 {
-    const char *s = (const char *)f;
-    size_t i;
+    const char *s = (const char *)p;
 
-    for (i = 0; i < size && s[i]; i++)
-        ch(o, s[i]);
+    while (n--)
+        ch(o, *s++);
 }
 
 /* decimal, without divide: subtracting powers of ten */
@@ -487,10 +524,26 @@ static void num(struct out *o, uint32_t v)
     }
 }
 
+/* a long as AmiBlitz3's Str$ shows it: signed */
+static void snum(struct out *o, uint32_t v)
+{
+    if (v & 0x80000000u) {
+        ch(o, '-');
+        v = 0u - v;
+    }
+    num(o, v);
+}
+
+/* a word value as a long: sign-extended */
+static uint32_t word(uint16_t v)
+{
+    return (v & 0x8000u) ? 0xFFFF0000u | v : v;
+}
+
 /* "; KEY" padded to 18 columns, "= " (AmiBlitz3's layout) */
 static void key(struct out *o, int k)
 {
-    const char *s = keyname(k);
+    const char *s = xtra_ab3_keyname(k);
     size_t n = 2;
 
     str(o, "; ");
@@ -501,30 +554,182 @@ static void key(struct out *o, int k)
     str(o, "= ");
 }
 
-/* a word value as a long: sign-extended */
-static uint32_t word(uint16_t v)
+static int on(uint16_t v)
 {
-    return (v & 0x8000u) ? 0xFFFF0000u | v : v;
+    return (v & XTRA_ON) != 0;
 }
 
-/* a long value as AmiBlitz3's Str$ shows it: signed */
-static void numline(struct out *o, int k, uint32_t v)
+/* the editor's line/column as the header has it (0-based; 0 without) */
+static uint32_t cursor(const struct xtra *x, int column)
 {
-    key(o, k);
-    if (v & 0x80000000u) {
-        ch(o, '-');
-        v = 0u - v;
+    if (!(x->editor.flags & XTRA_ED_CURSOR))
+        return 0;
+    return column ? x->editor.column : x->editor.line;
+}
+
+/* the value of key k (not XTRA_K_MAX) as AmiBlitz3 writes it */
+static int value(struct out *o, int k, const struct xtra *x, const struct xtra_base *b)
+{
+    const uint8_t *s;
+    size_t n, j;
+    int i, comma;
+
+    switch (k) {
+    case XTRA_K_EXEPATH: case XTRA_K_EXEFILE: case XTRA_K_CLIARGS: case XTRA_K_LABELSEARCH:
+        s = xtra_text(x, b,
+                      k == XTRA_K_EXEPATH ? XTRA_F_EXE_PATH
+                      : k == XTRA_K_EXEFILE ? XTRA_F_EXE_NAME
+                      : k == XTRA_K_CLIARGS ? XTRA_F_CLI : XTRA_F_LABEL_SEARCH, &n);
+        if (!s)
+            return XTRA_E_BASE;
+        ch(o, '"');
+        bytes(o, s, n);
+        ch(o, '"');
+        break;
+    case XTRA_K_RESIDENTS:
+        /* AmiBlitz3's joining: a ',' before each further entry unless the
+           text so far ends with one, one trailing ',' removed */
+        ch(o, '"');
+        comma = 0;                      /* the text so far ends with ',' */
+        for (i = 0; i < XTRA_NRES; i++) {
+            if (!(s = xtra_text(x, b, XTRA_F_RES0 + i, &n)))
+                return XTRA_E_BASE;
+            if (i && !comma) {
+                ch(o, ',');
+                comma = 1;
+            }
+            for (j = 0; j < n; j++) {
+                ch(o, (char)s[j]);
+                comma = s[j] == ',';
+            }
+        }
+        if (comma)
+            o->n--;
+        ch(o, '"');
+        break;
+    case XTRA_K_CREATEICON: num(o, on(x->icon)); break;
+    case XTRA_K_STRINGBUFFER: snum(o, x->buf[XTRA_BUF_STRING]); break;
+    case XTRA_K_MAKESMALLEST: num(o, on(x->sw[XTRA_SW_MAKE_SMALLEST])); break;
+    case XTRA_K_FUNCOPTIMIZE: num(o, x->ab3.func_optimize != 0); break;
+    case XTRA_K_VERSION:
+        num(o, x->ab3.version[0]);
+        ch(o, '.');
+        num(o, x->ab3.version[1]);
+        ch(o, '.');
+        num(o, x->ab3.version[2]);
+        break;
+    case XTRA_K_NUMBEROFBUILDS: snum(o, x->ab3.builds); break;
+    case XTRA_K_STACKSIZE: snum(o, x->ab3.stack); break;
+    case XTRA_K_RUNTIMEDEBUG: num(o, on(x->sw[XTRA_SW_RUNTIME_ERRORS])); break;
+    case XTRA_K_DEBUGINFO: num(o, on(x->sw[XTRA_SW_DEBUG_INFO])); break;
+    case XTRA_K_CREATEDBGFILE: num(o, x->ab3.create_dbgfile != 0); break;
+    case XTRA_K_OVERFLOWCHECK: num(o, on(x->sw[XTRA_SW_OVERFLOW_CHECK])); break;
+    case XTRA_K_ASSEMBLERCHECK: num(o, on(x->sw[XTRA_SW_ASSEMBLER_CHECK])); break;
+    case XTRA_K_INTERRUPTCHECK: num(o, on(x->sw[XTRA_SW_INTERRUPT_CHECK])); break;
+    case XTRA_K_AUTORUN: num(o, on(x->sw[XTRA_SW_AUTO_RUN])); break;
+    case XTRA_K_CURSORLINE: snum(o, cursor(x, 0) + 1); break;
+    case XTRA_K_CURSORCOLUMN: snum(o, cursor(x, 1) + 1); break;
+    case XTRA_K_LABELREMARK: snum(o, word(x->ab3.label_remark)); break;
+    case XTRA_K_LABELALL: snum(o, word(x->ab3.label_all)); break;
+    case XTRA_K_LABELCASE: snum(o, word(x->ab3.label_case)); break;
+    case XTRA_K_LABELPOSITION: snum(o, x->ab3.label_position); break;
     }
-    num(o, v);
-    ch(o, '\n');
+    return XTRA_OK;
 }
 
-static void textline(struct out *o, int k, const void *f, size_t size)
+/* a whole line "; KEY = VALUE" */
+static int keyline(struct out *o, int k, const struct xtra *x, const struct xtra_base *b)
 {
+    int rc;
+
     key(o, k);
-    ch(o, '"');
-    field(o, f, size);
-    str(o, "\"\n");
+    if ((rc = value(o, k, x, b)))
+        return rc;
+    str(o, o->nl);
+    return XTRA_OK;
+}
+
+/* 1 if the texts f of x and y have the same bytes */
+static int same_text(const struct xtra *x, const struct xtra *y, const struct xtra_base *b, int f)
+{
+    const uint8_t *s, *t;
+    size_t n, m, i;
+
+    s = xtra_text(x, b, f, &n);
+    t = xtra_text(y, b, f, &m);
+    if (!s || !t || n != m)
+        return 0;
+    for (i = 0; i < n; i++)
+        if (s[i] != t[i])
+            return 0;
+    return 1;
+}
+
+/* 1 if key k (not XTRA_K_MAX) has the same value in x and y, as the
+   header shows it (booleans as on/off) */
+static int same_value(int k, const struct xtra *x, const struct xtra *y, const struct xtra_base *b)
+{
+    int i;
+
+    switch (k) {
+    case XTRA_K_EXEPATH: return same_text(x, y, b, XTRA_F_EXE_PATH);
+    case XTRA_K_EXEFILE: return same_text(x, y, b, XTRA_F_EXE_NAME);
+    case XTRA_K_CLIARGS: return same_text(x, y, b, XTRA_F_CLI);
+    case XTRA_K_LABELSEARCH: return same_text(x, y, b, XTRA_F_LABEL_SEARCH);
+    case XTRA_K_RESIDENTS:
+        for (i = 0; i < XTRA_NRES; i++)
+            if (!same_text(x, y, b, XTRA_F_RES0 + i))
+                return 0;
+        return 1;
+    case XTRA_K_CREATEICON: return on(x->icon) == on(y->icon);
+    case XTRA_K_STRINGBUFFER: return x->buf[XTRA_BUF_STRING] == y->buf[XTRA_BUF_STRING];
+    case XTRA_K_MAKESMALLEST: return on(x->sw[XTRA_SW_MAKE_SMALLEST]) == on(y->sw[XTRA_SW_MAKE_SMALLEST]);
+    case XTRA_K_FUNCOPTIMIZE: return !x->ab3.func_optimize == !y->ab3.func_optimize;
+    case XTRA_K_VERSION:
+        return x->ab3.version[0] == y->ab3.version[0] && x->ab3.version[1] == y->ab3.version[1]
+            && x->ab3.version[2] == y->ab3.version[2];
+    case XTRA_K_NUMBEROFBUILDS: return x->ab3.builds == y->ab3.builds;
+    case XTRA_K_STACKSIZE: return x->ab3.stack == y->ab3.stack;
+    case XTRA_K_RUNTIMEDEBUG: return on(x->sw[XTRA_SW_RUNTIME_ERRORS]) == on(y->sw[XTRA_SW_RUNTIME_ERRORS]);
+    case XTRA_K_DEBUGINFO: return on(x->sw[XTRA_SW_DEBUG_INFO]) == on(y->sw[XTRA_SW_DEBUG_INFO]);
+    case XTRA_K_CREATEDBGFILE: return !x->ab3.create_dbgfile == !y->ab3.create_dbgfile;
+    case XTRA_K_OVERFLOWCHECK: return on(x->sw[XTRA_SW_OVERFLOW_CHECK]) == on(y->sw[XTRA_SW_OVERFLOW_CHECK]);
+    case XTRA_K_ASSEMBLERCHECK: return on(x->sw[XTRA_SW_ASSEMBLER_CHECK]) == on(y->sw[XTRA_SW_ASSEMBLER_CHECK]);
+    case XTRA_K_INTERRUPTCHECK: return on(x->sw[XTRA_SW_INTERRUPT_CHECK]) == on(y->sw[XTRA_SW_INTERRUPT_CHECK]);
+    case XTRA_K_AUTORUN: return on(x->sw[XTRA_SW_AUTO_RUN]) == on(y->sw[XTRA_SW_AUTO_RUN]);
+    case XTRA_K_CURSORLINE: return cursor(x, 0) == cursor(y, 0);
+    case XTRA_K_CURSORCOLUMN: return cursor(x, 1) == cursor(y, 1);
+    case XTRA_K_LABELREMARK: return x->ab3.label_remark == y->ab3.label_remark;
+    case XTRA_K_LABELALL: return x->ab3.label_all == y->ab3.label_all;
+    case XTRA_K_LABELCASE: return x->ab3.label_case == y->ab3.label_case;
+    case XTRA_K_LABELPOSITION: return x->ab3.label_position == y->ab3.label_position;
+    }
+    return 1;
+}
+
+/* the "Max" lines of the maxima with a name (the others: *skip) */
+static void maxlines(struct out *o, const struct xtra *x, const struct xtra_base *b, unsigned *skip)
+{
+    struct xtra_iter it;
+    struct xtra_max m;
+    size_t n, k;
+
+    xtra_max_begin(&it, x, b);
+    while (xtra_next_max(&it, &m)) {
+        if (!(m.flags & XTRA_MAX_NAME)) {
+            (*skip)++;
+            continue;
+        }
+        str(o, "; Max ");
+        n = 6;
+        for (k = 0; k < m.namelen; k++, n++)
+            ch(o, m.name[k] == ' ' ? '-' : (char)m.name[k]);
+        for (; n < 18; n++)
+            ch(o, ' ');
+        str(o, "= ");
+        num(o, m.max);
+        str(o, o->nl);
+    }
 }
 
 static void section(struct out *o, const char *title)
@@ -534,86 +739,160 @@ static void section(struct out *o, const char *title)
     str(o, "\n; -------------------------------------------------------\n");
 }
 
-int xtra_write_ab3(const struct xtra *x, char *outbuf, size_t cap, size_t *len, unsigned *skipped)
+/* a new header in the layout of write_AB3Header */
+static int fresh(struct out *o, const struct xtra *x, const struct xtra_base *b, unsigned *skip)
 {
-    struct out o = {outbuf, 0, cap};
-    unsigned i, skip = 0;
-    size_t n;
-    int k, comma;
+    static const signed char order[] = {
+        -1, XTRA_K_EXEPATH, XTRA_K_EXEFILE, XTRA_K_CREATEICON, XTRA_K_RESIDENTS,
+        -2, XTRA_K_STRINGBUFFER, XTRA_K_MAKESMALLEST, XTRA_K_FUNCOPTIMIZE, XTRA_K_VERSION,
+        XTRA_K_NUMBEROFBUILDS,
+        -3, XTRA_K_CLIARGS, XTRA_K_STACKSIZE, XTRA_K_RUNTIMEDEBUG, XTRA_K_DEBUGINFO,
+        XTRA_K_CREATEDBGFILE, XTRA_K_OVERFLOWCHECK, XTRA_K_ASSEMBLERCHECK, XTRA_K_INTERRUPTCHECK,
+        XTRA_K_AUTORUN,
+        -4, XTRA_K_CURSORLINE, XTRA_K_CURSORCOLUMN, XTRA_K_LABELSEARCH, XTRA_K_LABELREMARK,
+        XTRA_K_LABELALL, XTRA_K_LABELCASE, XTRA_K_LABELPOSITION,
+        -5
+    };
+    size_t i;
+    int rc;
 
-    str(&o, "; XTRA\n; Embedded .xtra Header\n");
-    section(&o, "General Info");
-    textline(&o, XTRA_K_EXEPATH, x->exe_path, XTRA_PATHLEN);
-    textline(&o, XTRA_K_EXEFILE, x->exe_name, XTRA_PATHLEN);
-    numline(&o, XTRA_K_CREATEICON, (x->icon & XTRA_ON) != 0);
-    /* AmiBlitz3's joining: a ',' before each further entry unless the
-       text so far ends with one, one trailing ',' removed */
-    key(&o, XTRA_K_RESIDENTS);
-    ch(&o, '"');
-    comma = 0;                          /* the text so far ends with ',' */
-    for (i = 0; i < XTRA_NRES; i++) {
-        if (i && !comma) {
-            ch(&o, ',');
-            comma = 1;
-        }
-        for (k = 0; k < XTRA_RESNAME && x->res[i].name[k]; k++) {
-            ch(&o, (char)x->res[i].name[k]);
-            comma = x->res[i].name[k] == ',';
+    str(o, "; XTRA\n; Embedded .xtra Header\n");
+    for (i = 0; i < sizeof(order); i++) {
+        switch (order[i]) {
+        case -1: section(o, "General Info"); break;
+        case -2: section(o, "Compiler"); break;
+        case -3: section(o, "Debugger"); break;
+        case -4: section(o, "Editor"); break;
+        case -5: section(o, "Blitz Objects"); break;
+        default:
+            if ((rc = keyline(o, order[i], x, b)))
+                return rc;
         }
     }
-    if (comma)
-        o.n--;
-    str(&o, "\"\n");
-    section(&o, "Compiler");
-    numline(&o, XTRA_K_STRINGBUFFER, x->buf[XTRA_BUF_STRING]);
-    numline(&o, XTRA_K_MAKESMALLEST, (x->sw[XTRA_SW_MAKE_SMALLEST] & XTRA_ON) != 0);
-    numline(&o, XTRA_K_FUNCOPTIMIZE, x->ab3.func_optimize != 0);
-    key(&o, XTRA_K_VERSION);
-    num(&o, x->ab3.version[0]);
-    ch(&o, '.');
-    num(&o, x->ab3.version[1]);
-    ch(&o, '.');
-    num(&o, x->ab3.version[2]);
-    ch(&o, '\n');
-    numline(&o, XTRA_K_NUMBEROFBUILDS, x->ab3.builds);
-    section(&o, "Debugger");
-    textline(&o, XTRA_K_CLIARGS, x->cli, XTRA_CLILEN);
-    numline(&o, XTRA_K_STACKSIZE, x->ab3.stack);
-    numline(&o, XTRA_K_RUNTIMEDEBUG, (x->sw[XTRA_SW_RUNTIME_ERRORS] & XTRA_ON) != 0);
-    numline(&o, XTRA_K_DEBUGINFO, (x->sw[XTRA_SW_DEBUG_INFO] & XTRA_ON) != 0);
-    numline(&o, XTRA_K_CREATEDBGFILE, x->ab3.create_dbgfile != 0);
-    numline(&o, XTRA_K_OVERFLOWCHECK, (x->sw[XTRA_SW_OVERFLOW_CHECK] & XTRA_ON) != 0);
-    numline(&o, XTRA_K_ASSEMBLERCHECK, (x->sw[XTRA_SW_ASSEMBLER_CHECK] & XTRA_ON) != 0);
-    numline(&o, XTRA_K_INTERRUPTCHECK, (x->sw[XTRA_SW_INTERRUPT_CHECK] & XTRA_ON) != 0);
-    numline(&o, XTRA_K_AUTORUN, (x->sw[XTRA_SW_AUTO_RUN] & XTRA_ON) != 0);
-    section(&o, "Editor");
-    numline(&o, XTRA_K_CURSORLINE, (x->editor.flags & XTRA_ED_CURSOR) ? x->editor.line + 1 : 1);
-    numline(&o, XTRA_K_CURSORCOLUMN, (x->editor.flags & XTRA_ED_CURSOR) ? x->editor.column + 1 : 1);
-    textline(&o, XTRA_K_LABELSEARCH, x->ab3.label_search, XTRA_LABELLEN);
-    numline(&o, XTRA_K_LABELREMARK, word(x->ab3.label_remark));
-    numline(&o, XTRA_K_LABELALL, word(x->ab3.label_all));
-    numline(&o, XTRA_K_LABELCASE, word(x->ab3.label_case));
-    numline(&o, XTRA_K_LABELPOSITION, x->ab3.label_position);
-    section(&o, "Blitz Objects");
-    for (i = 0; i < x->nmax; i++) {
-        if (!(x->max[i].flags & XTRA_MAX_NAME)) {
-            skip++;
+    maxlines(o, x, b, skip);
+    str(o, "; /XTRA\n");
+    return XTRA_OK;
+}
+
+/* the key of a header line (enum xtra_ab3_key, XTRA_K_COUNT unknown), -1
+   for a line without "KEY = VALUE" or the end marker */
+static int linekey(struct span s, struct span *key, struct span *value)
+{
+    struct span name;
+
+    trim(&s);
+    if (marker(s, "/XTRA") || !split(s, key, value))
+        return -1;
+    return keyof(*key, &name);
+}
+
+/* 1 if a line of h[pos..end) has key k */
+static int later(const uint8_t *h, size_t pos, size_t end, int k)
+{
+    struct span s, key, value;
+
+    while (pos < end) {
+        nextline(h, end, &pos, &s);
+        if (linekey(s, &key, &value) == k)
+            return 1;
+    }
+    return 0;
+}
+
+/* the kept header h[0..x->hdr), updated line by line */
+static int update(struct out *o, const struct xtra *x, const struct xtra_base *b, unsigned *skip)
+{
+    const uint8_t *h = b->header;
+    size_t size = x->hdr, pos = 0, lstart, eq, vs, ve, cend;
+    struct span s, t, key, val;
+    struct xtra d;              /* what a line says */
+    int k, rc, maxset = x->max.in != XTRA_IN_HEADER && x->max.in != XTRA_IN_NONE;
+
+    nextline(h, size, &pos, &s);                /* "; XTRA" */
+    bytes(o, h, pos);
+    while (pos < size) {
+        lstart = pos;
+        nextline(h, size, &pos, &s);
+        t = s;
+        trim(&t);
+        if (marker(t, "/XTRA")) {
+            /* the line end of the header's last line for added lines */
+            o->nl = s.n && s.p[s.n - 1] == '\r' ? "\r\n" : "\n";
+            xtra_init(&d);
+            xtra_ab3_defaults(&d);
+            for (k = 0; k < XTRA_K_MAX; k++)
+                if (!(x->ab3.seen & (1ul << k)) && !same_value(k, x, &d, b)
+                    && (rc = keyline(o, k, x, b)))
+                    return rc;
+            if (maxset)
+                maxlines(o, x, b, skip);
+            bytes(o, h + lstart, pos - lstart);
             continue;
         }
-        str(&o, "; Max ");
-        n = 6;
-        for (k = 0; k < XTRA_MAXNAME && x->max[i].name[k]; k++, n++)
-            ch(&o, x->max[i].name[k] == ' ' ? '-' : x->max[i].name[k]);
-        for (; n < 18; n++)
-            ch(&o, ' ');
-        str(&o, "= ");
-        num(&o, x->max[i].max);
-        ch(&o, '\n');
+        k = linekey(s, &key, &val);
+        if (k < 0 || k == XTRA_K_COUNT || (k == XTRA_K_MAX && !maxset)) {
+            bytes(o, h + lstart, pos - lstart);
+            continue;
+        }
+        if (k == XTRA_K_MAX)
+            continue;                           /* replaced */
+        if (later(h, pos, size, k)) {           /* the last one counts */
+            bytes(o, h + lstart, pos - lstart);
+            continue;
+        }
+        xtra_init(&d);
+        xtra_ab3_defaults(&d);
+        if (keyvalue(&d, h, key, val, 0, lstart) || same_value(k, x, &d, b)) {
+            bytes(o, h + lstart, pos - lstart);
+            continue;
+        }
+        /* the new value in place of the old one, the rest kept */
+        eq = (size_t)((const uint8_t *)val.p - h) - 1;
+        cend = lstart + s.n;
+        if (cend > eq + 1 && h[cend - 1] == '\r')
+            cend--;
+        for (vs = eq + 1; vs < cend && (h[vs] == ' ' || h[vs] == '\t'); vs++)
+            ;
+        for (ve = cend; ve > vs && blank(h[ve - 1]); ve--)
+            ;
+        bytes(o, h + lstart, vs - lstart);
+        if (vs == eq + 1)
+            ch(o, ' ');                         /* AmiBlitz3 drops the first character */
+        if ((rc = value(o, k, x, b)))
+            return rc;
+        bytes(o, h + ve, pos - ve);
     }
-    str(&o, "; /XTRA\n");
+    return XTRA_OK;
+}
+
+int xtra_write_ab3(const struct xtra *x, const struct xtra_base *b, char *outbuf, size_t cap,
+                   size_t *len, unsigned *skipped)
+{
+    struct out o;
+    unsigned skip = 0;
+    int rc;
+
+    o.p = outbuf;
+    o.n = 0;
+    o.cap = outbuf ? cap : 0;
+    o.nl = "\n";
+    if (x->ab3.header && x->hdr)
+        rc = b && b->header ? update(&o, x, b, &skip) : XTRA_E_BASE;
+    else
+        rc = fresh(&o, x, b, &skip);
     if (skipped)
         *skipped = skip;
     if (len)
         *len = o.n;
+    if (rc)
+        return rc;
     return o.n <= cap ? XTRA_OK : XTRA_E_SPACE;
+}
+
+size_t xtra_ab3_size(const struct xtra *x, const struct xtra_base *b)
+{
+    size_t len = 0;
+    int rc = xtra_write_ab3(x, b, NULL, 0, &len, NULL);
+
+    return rc == XTRA_OK || rc == XTRA_E_SPACE ? len : 0;
 }

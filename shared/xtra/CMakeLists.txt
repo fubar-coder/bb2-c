@@ -1,5 +1,5 @@
 # xtra - the companion settings of a source as one structure (xtra.h),
-# shared like shared/filereq: every user compiles xtra.c (and xtra_ab3.c)
+# shared like shared/filereq: every user compiles xtra.c and xtra_ab3.c
 # itself with its own options - the host tools (tools/lib/xtra), later
 # blitz2 and TED.  No product uses it yet; this object is the m68k
 # compile with the options of blitz2 and TED (-fbaserel), as C99 without

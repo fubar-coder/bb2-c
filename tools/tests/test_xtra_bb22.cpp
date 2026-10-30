@@ -1,7 +1,7 @@
-// test_xtra_bb22 - the editor part from a BB22 header (xtra_read_bb22 of
-// shared/xtra) with headers built in memory: both versions, the merge
-// with a Blitz 2 .xtra, and broken headers (each refused with its code
-// and offset; the rules of tools/lib/bb22).
+// test_xtra_bb22 - a BB22 source loaded (xtra_load of shared/xtra) with
+// headers built in memory: both versions, the header size to keep, the
+// companion .xtra, and broken headers (each refused with its code and
+// offset; the rules of tools/lib/bb22).
 #include <cstdint>
 #include <vector>
 #include <snitch/snitch.hpp>
@@ -12,6 +12,8 @@ extern "C" {
 namespace {
 
 using bytes = std::vector<uint8_t>;
+
+struct xtra x;
 
 void put16(bytes &b, unsigned v)
 {
@@ -35,59 +37,85 @@ bytes header(unsigned version, unsigned column, unsigned row, unsigned top, unsi
     return b;
 }
 
-void refused(const bytes &b, int code, size_t offset)
+int load(const bytes &b, struct xtra_error *err = nullptr, const bytes *xtra = nullptr)
 {
-    struct xtra_editor ed;
-    struct xtra_error err;
-
-    CHECK(xtra_read_bb22(&ed, b.data(), b.size(), &err) == code);
-    CHECK(err.code == code);
-    CHECK(err.offset == offset);
-    CHECK(ed.flags == 0);
+    return xtra_load(&x, XTRA_T_BB22, b.data(), b.size(), xtra ? xtra->data() : nullptr,
+                     xtra ? xtra->size() : 0, err);
 }
 
-struct xtra x;
+void refused(const bytes &b, int code, size_t offset)
+{
+    struct xtra_error err;
+
+    CHECK(load(b, &err) == code);
+    CHECK(err.code == code);
+    CHECK(err.in == XTRA_IN_HEADER);
+    CHECK(err.offset == offset);
+    CHECK(x.editor.flags == 0);
+    CHECK(x.hdr == 0);
+}
 
 } // namespace
 
-TEST_CASE("version 10: cursor line = top + row (applib3.bb)", "[xtra][bb22]")
+TEST_CASE("version 10: cursor line = top + row (applib3.bb), 16 bytes kept", "[xtra][bb22]")
 {
-    struct xtra_editor ed;
     bytes b = header(10, 13, 25, 441);
 
     b.insert(b.end(), {0, 0, 'A', 0});      // a line: the header is enough
-    REQUIRE(xtra_read_bb22(&ed, b.data(), b.size(), nullptr) == XTRA_OK);
-    CHECK(ed.flags == (XTRA_ED_CURSOR | XTRA_ED_TOP));
-    CHECK(ed.line == 466);
-    CHECK(ed.column == 13);
-    CHECK(ed.top == 441);
+    CHECK(xtra_detect(b.data(), b.size(), nullptr) == XTRA_T_BB22);
+    REQUIRE(load(b) == XTRA_OK);
+    CHECK(x.type == XTRA_T_BB22);
+    CHECK(x.hdr == 16);
+    CHECK(x.source == XTRA_SRC_NONE);       // no .xtra: the defaults
+    CHECK(x.editor.flags == (XTRA_ED_CURSOR | XTRA_ED_TOP));
+    CHECK(x.editor.line == 466);
+    CHECK(x.editor.column == 13);
+    CHECK(x.editor.top == 441);
 }
 
 TEST_CASE("version 8: 14 bytes (Anim-Library3.bb)", "[xtra][bb22]")
 {
-    struct xtra_editor ed;
     bytes b = header(8, 19, 1, 96);
 
     REQUIRE(b.size() == 14);
-    REQUIRE(xtra_read_bb22(&ed, b.data(), b.size(), nullptr) == XTRA_OK);
-    CHECK(ed.line == 97);
-    CHECK(ed.column == 19);
-    CHECK(ed.top == 96);
+    REQUIRE(load(b) == XTRA_OK);
+    CHECK(x.hdr == 14);
+    CHECK(x.editor.line == 97);
+    CHECK(x.editor.column == 19);
+    CHECK(x.editor.top == 96);
 }
 
-TEST_CASE("merge: the .xtra and the editor part of its BB22 source", "[xtra][bb22]")
+TEST_CASE("with its .xtra: the settings and the editor part", "[xtra][bb22]")
 {
-    std::vector<uint8_t> f(1110, 0);
+    bytes f(1110, 0);
     bytes b = header(10, 0, 54, 571);
 
     f[0] = 1;
-    REQUIRE(xtra_read_blitz2(&x, f.data(), f.size(), nullptr) == XTRA_OK);
-    CHECK(x.editor.flags == 0);
-    REQUIRE(xtra_read_bb22(&x.editor, b.data(), b.size(), nullptr) == XTRA_OK);
+    f[1] = 0x80;
+    REQUIRE(load(b, nullptr, &f) == XTRA_OK);
     CHECK(x.editor.line == 625);
     CHECK(x.source == XTRA_SRC_BLITZ2);
+    CHECK(x.icon == 0x80);
+    CHECK(x.hdr == 16);
     // the editor part is not in the Blitz 2 file
     CHECK(xtra_blitz2_size(&x) == 1110);
+    bytes out(1110);
+    struct xtra_base base = {f.data(), b.data()};
+    REQUIRE(xtra_write_blitz2(&x, &base, out.data(), out.size(), nullptr, nullptr, nullptr) == XTRA_OK);
+    CHECK(out == f);
+}
+
+TEST_CASE("broken .xtra of a BB22 source: the error is in the .xtra", "[xtra][bb22][broken]")
+{
+    struct xtra_error err;
+    bytes f(1111, 0);
+
+    f[0] = 1;
+    CHECK(load(header(8, 1, 2, 3), &err, &f) == XTRA_E_SIZE);
+    CHECK(err.in == XTRA_IN_XTRA);
+    CHECK(err.offset == 1111);
+    CHECK(x.hdr == 0);
+    CHECK(x.editor.flags == 0);
 }
 
 TEST_CASE("broken BB22 headers", "[xtra][bb22][broken]")
@@ -110,4 +138,6 @@ TEST_CASE("broken BB22 headers", "[xtra][bb22][broken]")
     refused(header(8, 1, 2, 3, 0x100), XTRA_E_BB22, 10);
     refused(header(10, 1, 2, 3, 0, 0), XTRA_E_BB22, 14);
     refused(header(10, 1, 2, 3, 0, 3), XTRA_E_BB22, 14);
+    struct xtra_error err;
+    CHECK(xtra_load(&x, XTRA_T_BB22, nullptr, 0, nullptr, 0, &err) == XTRA_E_SHORT);
 }

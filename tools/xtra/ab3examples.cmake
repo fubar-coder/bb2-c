@@ -1,9 +1,11 @@
 # ctest xtra_ab3_examples: AmiBlitz3 sources from GitHub (commit b1a9dee150ef,
 # archive/amiblitz3/github-b1a9dee, cmake/fetch-originals.cmake) through
 # xtra - exit 77 (skipped) without them.
-#   * all five: the header read, written, read again: the same fields
-#   * the two in the layout of the current write_AB3Header: written again
-#     byte for byte (the others are older: no LabelCase, CreateDbgFile 65535)
+#   * all five: the header written again byte for byte (also the three in
+#     older layouts: no LabelCase, CreateDbgFile 65535), written as a new
+#     header and read again: the same fields
+#   * the two in the layout of the current write_AB3Header: also the new
+#     header is byte for byte the file's (check --exact)
 #   * a header with residents ",all.res", CLI argument, maxima: the dump
 #   cmake -DXTRA=... -DREPO=... -P ab3examples.cmake
 set(dir ${REPO}/archive/amiblitz3/github-b1a9dee)
@@ -32,6 +34,9 @@ endfunction()
 list(TRANSFORM exact PREPEND ${dir}/)
 list(TRANSFORM others PREPEND ${dir}/)
 xtra(check --ab3 ${exact} ${others})
+if(NOT out MATCHES "^5 files ok")
+	message(FATAL_ERROR "check --ab3: ${out}")
+endif()
 xtra(check --ab3 --exact ${exact})
 xtra(dump --ab3 ${dir}/Sourcecodes/Amiblitz3/Tests/compilersignals.ab3)
 foreach(want "\nresident 1 +\"all.res\"\n" "\ncli argument +\"test this args\"\n"
@@ -40,4 +45,4 @@ foreach(want "\nresident 1 +\"all.res\"\n" "\ncli argument +\"test this args\"\n
 		message(FATAL_ERROR "compilersignals.ab3: no ${want} in\n${out}")
 	endif()
 endforeach()
-message(STATUS "5 AmiBlitz3 headers read and written again, 2 byte for byte")
+message(STATUS "5 AmiBlitz3 headers read and written again byte for byte")

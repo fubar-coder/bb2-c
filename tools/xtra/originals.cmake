@@ -5,7 +5,8 @@
 #   * all .xtra of rwelibsrc (Aminet amibl2src) the same
 #   * the 9 BB22 sources of rwelibsrc (docs/rwelibs/README.md 4.1): their
 #     header read, merged with the .xtra next to them (a .bak with the one
-#     of its source), the cursor as in the README's table
+#     of its source), the cursor as in the README's table; the sources
+#     themselves (not the .bak) detected as BB22 with their companion
 #   cmake -DXTRA=... -DREPO=... -P originals.cmake
 set(cd ${REPO}/archive/cd/ultimate-blitz-basic-2.1)
 set(rwe ${REPO}/archive/aminet/amibl2src/rwelibsrc)
@@ -62,6 +63,13 @@ foreach(f
 	xtra(dump ${rwe}/${base}.xtra --bb22 ${rwe}/${src})
 	if(NOT out MATCHES "\ncursor +line ${line}, column ${column} " OR NOT out MATCHES "\ntop line +${top} ")
 		message(FATAL_ERROR "${src}: not line ${line}, column ${column}, top ${top}:\n${out}")
+	endif()
+	if(src STREQUAL base)
+		xtra(dump --source ${rwe}/${src})
+		if(NOT out MATCHES "^companion +[^\n]*\\.bb\\.xtra\ntype +BB22\nsource header +1[46] bytes kept\nsource +Blitz 2 \\.xtra\n"
+				OR NOT out MATCHES "\ncursor +line ${line}, column ${column} ")
+			message(FATAL_ERROR "${src} as source:\n${out}")
+		endif()
 	endif()
 endforeach()
 message(STATUS "rwelibsrc: 9 BB22 sources with their .xtra, cursor as documented")
