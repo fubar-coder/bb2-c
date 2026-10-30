@@ -35,40 +35,44 @@
  * leftovers the original uses (the flags of AllocVec, d0 of AddPort and
  * PutMsg, a0 of FindPort).  The variables from rexxportname on are one
  * packed struct in the original's order: RXDefaultPort copies without a
- * limit into the 65 bytes of rexxportname and overwrites them.
+ * limit into the 65 bytes of rexxportname and overwrites them (BUG(orig),
+ * #529).
  *
  * BUG(orig), kept:
  *   - init writes "REXX" and a 0 at +5 into the default port name: the
- *     byte at +4 of an earlier RXDefaultPort stays.
+ *     byte at +4 of an earlier RXDefaultPort stays (#532).
  *   - RXExecuteScript/RXRunScript set their message type, but
  *     _rxruncommand overwrites it: both send RXCOMM|RXFF_STRING (the
- *     script name as a string program), without a result.
+ *     script name as a string program), without a result (#544).
  *   - _makemsg tests the flags AllocVec leaves (MOVE.l d0,a1 is a MOVEA):
- *     if they say 0, the message stays the one before (or 0).
- *   - RXRunCommand returns d0 of PutMsg (exec leaves something there).
+ *     if they say 0, the message stays the one before (or 0) (#533).
+ *   - RXRunCommand returns d0 of PutMsg (exec leaves something there)
+ *     (#543).
  *   - Replies to messages sent without waiting are found in the sent
  *     list by _finditem, which always returns 0: they are freed with
  *     FreeVec only (their argument strings stay allocated) and stay in
  *     the sent list, which grows by one per message and overflows the
- *     block after 32.
+ *     block after 32 (#531).
  *   - The result string of a reply is copied (AllocSt, never freed); the
- *     reply's own string is never deleted; Result2 is taken as a string
- *     also when Result1 is not 0.
- *   - RXReturnCode is 0 while no message is current.
- *   - RXReplyMsg does not check that a result was asked for; the current
- *     message stays current after the reply.  If the port of the message's
- *     ln_Name no longer exists, it is not replied, but its Result2 (tested
- *     at the a0 FindPort leaves) is deleted.
+ *     reply's own string is never deleted (#546); Result2 is taken as a
+ *     string also when Result1 is not 0 (#545).
+ *   - RXReturnCode is 0 while no message is current (#542).
+ *   - RXReplyMsg does not check that a result was asked for (#539); the
+ *     current message stays current after the reply (#541).  If the port
+ *     of the message's ln_Name no longer exists, it is not replied, but
+ *     its Result2 (tested at the a0 FindPort leaves) is deleted (#540).
  *   - RXCreatePort tests d0 of AddPort; on 0, or if the lists cannot be
  *     allocated, it deletes the port without RemPort (it stays in the
- *     public list).  RXDeletePort frees neither the lists nor the name.
+ *     public list) (#528).  RXDeletePort frees neither the lists nor the
+ *     name (#530).
  *   - The parser copies the command into 256 bytes and every word into
  *     256 bytes, both without a limit (in the original over its own
- *     code); a quote right after a closing quote is a quote character, any
- *     other character there is skipped; an empty word ("") ends the
- *     arguments; there is no limit of 16 arguments (rm_Args).
- *   - RXNextArg does not advance after an empty argument.
- *   - RXTokenise stores the whole register of its word argument.
+ *     code) (#537); a quote right after a closing quote is a quote
+ *     character, any other character there is skipped (#538, #535); an
+ *     empty word ("") ends the arguments (#536); there is no limit of 16
+ *     arguments (rm_Args) (#527).
+ *   - RXNextArg does not advance after an empty argument (#534).
+ *   - RXTokenise stores the whole register of its word argument (#547).
  */
 #include "blitzlib.h"
 #include <exec/ports.h>
@@ -379,7 +383,7 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
     v.rexxportname[1] = 'E';
     v.rexxportname[2] = 'X';
     v.rexxportname[3] = 'X';
-    v.rexxportname[5] = 0;              /* BUG(orig): +4 stays */
+    v.rexxportname[5] = 0;              /* BUG(orig): +4 stays (#532) */
     msgport = NULL;
     v.rexxbase = NULL;
     v.rexxbase = OpenLibrary((CONST_STRPTR)rexxname, 34);
@@ -411,7 +415,8 @@ static ULONG BLITZ_ROUTINE rxmessagelist_c(void)
 }
 BLITZ_THUNK(_rxmessagelist, rxmessagelist_c, "d1/a0-a1");
 
-/* RXTokenise: MOVE.l d0 - BUG(orig): the upper word of the word too */
+/* RXTokenise: MOVE.l d0 - BUG(orig): the upper word of the word too
+   (#547) */
 static void BLITZ_ROUTINE rxtokenise_c(ULONG on BL_REG(d0))
 {
     tokenise = on;
@@ -426,7 +431,7 @@ static ULONG BLITZ_ROUTINE rxreturncode_c(void)
 }
 BLITZ_THUNK(_rxreturncode, rxreturncode_c, "d1/a0-a1");
 
-/* RXDefaultPort: BUG(orig) without a limit (see the struct) */
+/* RXDefaultPort: BUG(orig) without a limit (see the struct) (#529) */
 static void BLITZ_ROUTINE rxdefportname_c(const UBYTE *s BL_REG(d0))
 {
     UBYTE *d = v.rexxportname;
@@ -509,7 +514,7 @@ static ULONG nextparsearg(UBYTE *out)
         }
         d7++;                           /* 'gotquote */
         if (!(d7 & 1) && *a0 != quote) {
-            a0++;                       /* BUG(orig): skips any character */
+            a0++;                       /* BUG(orig): skips any character (#538 #535) */
             goto endthis;
         }
         if ((*a3++ = *a0++) == 0)       /* 'cantquityet */
@@ -530,7 +535,7 @@ static struct RexxMsg *makemsg(void)
     UBYTE z;
 
     m = allocvec_z(128, MEMF_CLEAR, &z);
-    if (z)                              /* BUG(orig): AllocVec's flags */
+    if (z)                              /* BUG(orig): AllocVec's flags (#533) */
         return v.thismsg;
     m->rm_Node.mn_Node.ln_Type = NT_MESSAGE;
     m->rm_Node.mn_Node.ln_Pri = 1;
@@ -562,7 +567,7 @@ static void makemsgargs(void)
     while ((n = nextparsearg(stringbuffer)) != 0) {
         if (!(a = createargstring(stringbuffer, n)))
             break;
-        *a5++ = a;                      /* BUG(orig): no limit of 16 */
+        *a5++ = a;                      /* BUG(orig): no limit of 16 (#527) */
     }
 }
 
@@ -579,7 +584,7 @@ static ULONG sendmsg(void)
         return 0;
     d0 = putmsg_d0(v.destport, &v.thismsg->rm_Node);
     if (!v.replyreq)
-        return d0;                      /* BUG(orig): PutMsg's d0 */
+        return d0;                      /* BUG(orig): PutMsg's d0 (#543) */
     do {
         oktodelete = 0xffff;
         d0 = waitport_c(d0);
@@ -623,7 +628,8 @@ static ULONG BLITZ_ROUTINE rxruncommand2_c(ULONG cmd BL_REG(d0))
 }
 BLITZ_THUNK(_rxruncommand2, rxruncommand2_c, "d1/a0-a1");
 
-/* BUG(orig): the type of the scripts is overwritten by _rxruncommand */
+/* BUG(orig): the type of the scripts is overwritten by _rxruncommand
+   (#544) */
 static ULONG BLITZ_ROUTINE rxexecutescript_c(ULONG name BL_REG(d0))
 {
     msgtype = RXCOMM | RXFF_RESULT;
@@ -701,7 +707,7 @@ static void handlereply(void)
     struct RexxMsg *m = v.thismsg;
 
     /* _finditem in the sent list: BUG(orig) its result is always 0 (the
-       found case falls into 'notfound), so nothing follows from it */
+       found case falls into 'notfound), so nothing follows from it (#531) */
     if (v.waitreply && v.waitreply == (ULONG)m) {
         v.waitreply = 0;
         storeresult(m);
@@ -778,7 +784,7 @@ static ULONG replymsg(ULONG code, const UBYTE *res, const ULONG *args)
         ReplyMsg(&v.currentmessage->rm_Node);
         return (ULONG)-1;
     }
-    /* 'shit: BUG(orig) the Result2 of the a0 FindPort left */
+    /* 'shit: BUG(orig) the Result2 of the a0 FindPort left (#540) */
     if (!((struct RexxMsg *)a0)->rm_Result2)
         return 0;
     deleteargstring(v.currentmessage->rm_Result2);
@@ -893,7 +899,7 @@ static ULONG BLITZ_ROUTINE rxcreateport_c(ULONG name BL_REG(d0), const ULONG *ar
     if (!msgport)
         return 0;
     msgport->mp_Node.ln_Name = (char *)msgportname;
-    if (addport_d0(msgport)) {          /* BUG(orig): d0 of AddPort */
+    if (addport_d0(msgport)) {          /* BUG(orig): d0 of AddPort (#528) */
         lists = AllocVec(256, MEMF_PUBLIC | MEMF_CLEAR);
         if (lists) {
             v.messagelist = lists;
@@ -901,7 +907,7 @@ static ULONG BLITZ_ROUTINE rxcreateport_c(ULONG name BL_REG(d0), const ULONG *ar
             return (ULONG)msgport;
         }
     }
-    /* 'oops: BUG(orig) the port stays in the public list */
+    /* 'oops: BUG(orig) the port stays in the public list (#528) */
     DeleteMsgPort(msgport);
     msgport = NULL;
     return 0;

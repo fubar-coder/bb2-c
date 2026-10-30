@@ -70,7 +70,7 @@ in all ports: `docs/libs/cmdlibs-port.md` "General").
 The variables from `rexxportname` on are one packed struct in the
 original's order (`_Static_assert` on the offsets of the reference
 build). RXDefaultPort copies without a limit into its 65 bytes and then
-overwrites rexxbase, destport, ….
+overwrites rexxbase, destport, … (BUG(orig), #529).
 
 Small inline assembler for the exec and rexxsyslib calls whose leftovers
 the original uses:
@@ -85,49 +85,54 @@ maxslib AllocSt is called with `BLITZ_ALIBJSR(TOK_allocst)`.
 ## BUG(orig), kept
 
 * **init** writes "REXX" and a 0 at +5: the byte at +4 of an earlier
-  RXDefaultPort stays (after RXDefaultPort "RWERESP" and init: "REXXE").
-  init also clears the port pointer without deleting the port.
+  RXDefaultPort stays (after RXDefaultPort "RWERESP" and init: "REXXE")
+  (#532).
 * **RXExecuteScript/RXRunScript** set their own message type, which
   `_rxruncommand` overwrites. Both send RXCOMM|RXFF_STRING without
-  RXFF_RESULT: the script name is run as a string program, tokenised.
+  RXFF_RESULT: the script name is run as a string program, tokenised
+  (#544).
 * **`_makemsg`** decides on AllocVec's flags (above): if they say 0, the
-  previous message (or 0) is sent again.
-* **RXRunCommand** returns whatever d0 PutMsg leaves.
+  previous message (or 0) is sent again (#533).
+* **RXRunCommand** returns whatever d0 PutMsg leaves (#543).
 * **Replies to messages sent without waiting.** `_finditem` falls from
   the found case into `'notfound` and always returns 0. So these replies
   are only FreeVec'd: their argument strings stay allocated, and the
   message stays in the sent list, which grows with every RXRunCommand
-  and overflows the block after 32.
+  and overflows the block after 32 (#531).
 * **The reply of RXSendCommand:**
-  * its Result2 is copied with AllocSt and never freed;
-  * the reply's own argument string is never deleted;
-  * Result2 is read as a string even when Result1 is not 0;
-  * an empty result gives 0 (AllocSt of length 0).
+  * its Result2 is copied with AllocSt and never freed (#546);
+  * the reply's own argument string is never deleted (#546);
+  * Result2 is read as a string even when Result1 is not 0 (#545).
 * **RXReturnCode** returns 0 while no message is current, e.g. right
-  after an RXSendCommand that found the list empty.
+  after an RXSendCommand that found the list empty (#542).
 * **RXReplyMsg:**
-  * it does not check whether a result was asked for;
-  * the replied message stays the current one;
+  * it does not check whether a result was asked for (#539);
+  * the replied message stays the current one (#541);
   * if no port of the message's ln_Name exists, the message is not
     replied, and its Result2 is deleted, as decided by the Result2 at the
-    a0 that FindPort leaves.
+    a0 that FindPort leaves (#540).
 * **RXCreatePort** tests d0 of AddPort. On 0, or if the lists cannot be
   allocated, it deletes the port without RemPort, so the port stays in
-  the public list.
+  the public list (#528).
 * **RXDeletePort** replies the queued messages with 5 but frees neither
-  the lists nor the name.
+  the lists nor the name (#530).
 * **The tokenizer:**
   * the command (256 bytes) and every word (256 bytes) are copied without
     a limit; the original then overwrites its own code (C: the data
-    behind the buffers);
+    behind the buffers) (#537);
   * a quote right after a closing quote is a quote, and any other
-    character there is skipped (`"g"h` gives `g`);
-  * an empty word (`""`, `''`) ends the arguments;
-  * the 16 rm_Args slots are not checked.
+    character there is skipped (`"g"h` gives `g`) (#538, #535);
+  * an empty word (`""`, `''`) ends the arguments (#536);
+  * the 16 rm_Args slots are not checked (#527).
 * **RXNextArg** does not advance after an empty argument (it returns ""
-  again).
+  again) (#534).
 * **RXTokenise** stores the whole register of its word argument, so
-  "off" with a set upper word stays on.
+  "off" with a set upper word stays on (#547).
+
+Original behaviour that is not a defect: an empty result of
+RXSendCommand gives 0 (AllocSt of length 0), the same as no result;
+init clears the port pointer without deleting a port (it runs before
+any RXCreatePort).
 
 ## Test
 
