@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+bank 1 kept
+rc=0

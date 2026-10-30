@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+-1
+inject: rc=0
+inject: current dir at end: start
+rc=0
