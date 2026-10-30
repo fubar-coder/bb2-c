@@ -16,6 +16,8 @@
  *                   bytes (bytes 50-53 of the .xtra; default 10240)
  *   macrobuf=N      in those defaults the size of the macro buffer N
  *                   bytes (bytes 46-49 of the .xtra; default 8192)
+ *   objbuf=N        in those defaults the size of the object buffer N
+ *                   bytes (bytes 30-33 of the .xtra; default 16384)
  *   max=LIB|N       in those defaults the object maximum of the library
  *                   number LIB is N (at most 8): a pair LIB.w, N.w
  *                   appended behind the maximums savextra wrote;
@@ -91,7 +93,7 @@ extern struct DosLibrary *DOSBase;
 static char srcname[PATHLEN], outname[PATHLEN], xtraname[PATHLEN], defname[PATHLEN];
 static char cur_id[16];
 static int in_menu, runerr_off;
-static ULONG strbuf, macrobuf;
+static ULONG strbuf, macrobuf, objbuf;
 
 /* max=: object maximums appended to the defaults (lib.w, max.w) */
 #define MAXMAX 8
@@ -354,6 +356,10 @@ static void save_defaults(void)
 
         Seek(fh, 2, OFFSET_BEGINNING);  /* options runtime errors, debugger */
         Write(fh, (APTR)off, 4);
+    }
+    if (objbuf) {
+        Seek(fh, 30, OFFSET_BEGINNING); /* buffer sizes: the object buffer */
+        Write(fh, &objbuf, 4);
     }
     if (macrobuf) {
         Seek(fh, 46, OFFSET_BEGINNING); /* buffer sizes: the macro buffer */
@@ -856,6 +862,9 @@ void edstub_main(const char *arg)
         else if ((v = value(p, "macrobuf=")))
             while (*v >= '0' && *v <= '9')
                 macrobuf = macrobuf * 10 + (ULONG)(*v++ - '0');
+        else if ((v = value(p, "objbuf=")))
+            while (*v >= '0' && *v <= '9')
+                objbuf = objbuf * 10 + (ULONG)(*v++ - '0');
         else if ((v = value(p, "max="))) {
             UWORD k;
 

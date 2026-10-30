@@ -352,7 +352,8 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   optionally with !PANIC! hit PANIC ticks after the program started, and
   logs the requesters left open;
   `strbuf=N` sets the string buffer of the default options (strings
-  longer than 10240 bytes), `macrobuf=N` their macro buffer,
+  longer than 10240 bytes), `macrobuf=N` their macro buffer, `objbuf=N`
+  their object buffer,
   `max=LIB|N` the object maximum of the library number LIB (e.g. 160 =
   bitmaplib: more BitMap objects);
   `resident=ID|SOURCE|RESFILE` (up to 8) compiles SOURCE before the first
