@@ -96,7 +96,7 @@ latest date in the header comments.
 | Registry support | – (`#registrysupplib`) | `Registry/regsupplib` | RWE | 1997 | – | not ported: needs `registry.inc` (tags `#SS_ApplicationName`, `#SS_ApplicationParameters`) and `registrysupp.library`, neither of which exists anywhere (REDRegistry was only given out as pre-release) |
 | Snow | lit. 195 | `Snow/SnowLib3` | RI | 1994 | – | SnowLib3 (reference build); number 195 (the literal: free in rwe-1999, Acid's `#systemcallslib` is not in it) |
 | Blitz Bombers | 30 | `blitzbomberslib/blitzbombers86`, `87`, `88` | RI | 1996-10-04 | – | not ported (decision 2026-10-29): needs `bomberman:shapeoffsets.bb` of the game, not in the archive |
-| Blitz Bombers 2 | – (`#blitzbomberslibtwo`) | `blitzbomberslib/blitzbombersTwo00` | RI | – | – | blitzbombersTwo00 (reference build); number 31 (ours: RWE's `RESERVEDLIB_8`, next to `#blitzbomberslib` 30) |
+| Blitz Bombers 2 | – (`#blitzbomberslibtwo`) | `blitzbomberslib/blitzbombersTwo00` | RI | – | – | blitzbombersTwo00 (reference build; ported 2026-10-30, `port/blitzbomberslibtwo.md`); number 31 (ours: RWE's `RESERVEDLIB_8`, next to `#blitzbomberslib` 30) |
 | BB blit | 19 (lit., = `#bb_blitlib`) | `blitzbomberslib/BB_BlitLib4` | RI (McNamara) | 1996-01-30 | – | BB_BlitLib4 (reference build) |
 | BB map | 34 (`#ribbmaplib`, RWE's list) | `blitzbomberslib/bbmaplib2` | RI | 1995-09-30 | – | bbmaplib2 (reference build; ported 2026-10-30, `port/ribbmaplib.md`) |
 | (tests) | lit. 5 / – | `blitzbomberslib/TestBlit`, `PredatorBlit` | – | – | – | not a library / test |
