@@ -102,15 +102,11 @@ void cursdownok(struct item *next)
 /* ted.s:1061 movecdown */
 void movecdown(void)
 {
-    UWORD d0;
-
-    d0 = (UWORD)(curstop + edrows);
-    if (d0 >= numlines) {                       /* bcc godown */
+    if ((UWORD)(curstop + edrows) >= numlines) {    /* bcc godown */
         godown();
         return;
     }
-    d0 = (UWORD)(cursy + 1 + vscmarg);
-    if (d0 < edrows) {                          /* bcs godown */
+    if ((UWORD)(cursy + 1 + vscmarg) < edrows) {    /* bcs godown */
         godown();
         return;
     }
@@ -314,7 +310,7 @@ void join(void)
 {
     struct item *cur = thisitem, *next, *old, *after;
     UBYTE *row, *buf, *p;
-    WORD len, d2, width;
+    WORD len, width;
     UWORD line, size;
 
     if (!cur->nextitem) {
@@ -361,10 +357,8 @@ nextbot:
         goto sskip3;
 nextboth:
         width = (WORD)(bbotx - btopx);
-        d2 = (WORD)(btopx + len);
-        btopx = d2;
-        d2 = (WORD)(d2 + width);
-        bbotx = d2;
+        btopx = (WORD)(btopx + len);
+        bbotx = (WORD)(btopx + width);
 sskip4:
         blokfix();
 sskip2:
@@ -421,30 +415,30 @@ void split(void)
     struct item *cur = thisitem, *newl, *next;
     UBYTE *p, *row;
     const UBYTE *s;
-    UWORD col, d2, width, len;
+    UWORD col, line, width, len;
 
     allalt = (UWORD)-1;
     col = (UWORD)(cursoff + cursx);
     if (bboty != (UWORD)-1) {
         /* block adjust (survey-02 H) */
-        d2 = curline();
-        if (d2 > bboty)                         /* bhi .sskip */
+        line = curline();
+        if (line > bboty)                         /* bhi .sskip */
             goto sskip;
-        if (d2 == bboty)
+        if (line == bboty)
             goto sonbot;
-        if (d2 < btopy)                         /* bcs .sskip2 */
+        if (line < btopy)                         /* bcs .sskip2 */
             goto sskip2;
-        if (d2 != btopy)
+        if (line != btopy)
             goto sinmid;
         /* .sontop */
-        if (d2 == bboty)                        /* dead: d2 < bboty here */
+        if (line == bboty)                        /* dead: line < bboty here */
             goto sonboth;
         if (col > (UWORD)btopx)                 /* bhi .sinmid */
             goto sinmid;
         btopx = (WORD)(btopx - col);
         goto sskip2;
 sonbot:
-        if (d2 == btopy)
+        if (line == btopy)
             goto sonboth;
         if (col > (UWORD)bbotx)                 /* bhi .sskip */
             goto sskip;
@@ -457,10 +451,8 @@ sonboth:
         if (col > (UWORD)btopx)                 /* bhi .sskip3 */
             goto sskip3;
         width = (UWORD)(bbotx - btopx);
-        d2 = (UWORD)(btopx - col);
-        btopx = (WORD)d2;
-        d2 = (UWORD)(d2 + width);
-        bbotx = (WORD)d2;
+        btopx = (WORD)(btopx - col);
+        bbotx = (WORD)(btopx + width);
         blokfix();
 sskip2:
         btopy++;                                /* BUG(orig) (#346) survey-02 I.5: also after blokdis */
@@ -509,7 +501,7 @@ sskip:
 void return_(void)
 {
     struct item *cur = thisitem, *newl, *next;
-    UWORD d0, oldrows, oldpix;
+    UWORD oldrows, oldpix, rows;
 
     if (qualifier & 3) {
         split();                                /* bne split */
@@ -542,16 +534,15 @@ void return_(void)
     }
     /* .skip4 */
     showhprop();
-    d0 = (UWORD)(cursy + 1 + vscmarg);
-    if (d0 >= edrows) {                         /* bcs .skip3 */
+    if ((UWORD)(cursy + 1 + vscmarg) >= edrows) {   /* bcs .skip3 */
         curstop++;
         /* scroll only the rows above the new line: edrows/pixrows
            changed temporarily (asm: saved on the stack) */
         oldrows = edrows;
-        d0 = (UWORD)(cursy + 1);
-        edrows = d0;
+        rows = (UWORD)(cursy + 1);              /* d0 */
+        edrows = rows;
         oldpix = pixrows;
-        pixrows = (UWORD)((ULONG)d0 * fontmul); /* mulu fontmul,d0 */
+        pixrows = (UWORD)((ULONG)rows * fontmul);   /* mulu fontmul,d0 */
         scrupall();
         pixrows = oldpix;
         edrows = oldrows;
@@ -590,20 +581,19 @@ struct item *gotolined02(UWORD line)
 }
 
 /* ted.s:1496 gd03 */
-struct item *gd03(UWORD d0, WORD flag)
+struct item *gd03(UWORD line, WORD flag)
 {
     struct item *it = thisitem;                 /* asm: a4 (= thisitem at all callers) */
-    UWORD d1, d2, d3, oldtop;
+    UWORD oldtop = curstop;                     /* move d1,-(a7) */
+    UWORD at = (UWORD)(curstop + cursy);        /* d1: line of `it` */
+    UWORD newtop, limit, lasttop;
 
-    d1 = curstop;
-    oldtop = d1;                                /* move d1,-(a7) */
-    d1 = (UWORD)(d1 + cursy);
-    if (d0 != d1) {
+    if (line != at) {
         /* survey-02 I.13: no range check - a target >= numlines
            walks over the NULL at the end of the list (no caller passes one) */
-        if (d0 >= d1) {                         /* bcc .skip2 */
+        if (line >= at) {                       /* bcc .skip2 */
             do {                                /* .skip2 */
-                d1++;
+                at++;
 #ifdef TED_HOST
                 if (!it->nextitem) {
                     /* host-only guard: the asm reads on from address 0 */
@@ -612,10 +602,10 @@ struct item *gd03(UWORD d0, WORD flag)
                 }
 #endif
                 it = it->nextitem;
-            } while (d1 != d0);
+            } while (at != line);
         } else {
             do {                                /* .loop */
-                d1--;
+                at--;
 #ifdef TED_HOST
                 if (!it->lastitem) {
                     ORIG_HAZARD("gd03: target line before the start of the list");
@@ -623,34 +613,31 @@ struct item *gd03(UWORD d0, WORD flag)
                 }
 #endif
                 it = it->lastitem;
-            } while (d1 != d0);
+            } while (at != line);
         }
     }
     /* .skip */
     thisitem = it;
-    d1 = vscmarg;
-    d2 = d0;
-    d0 = (UWORD)(d0 - d1);
-    if ((WORD)d0 < 0)                           /* bpl .skip3 */
+    newtop = (UWORD)(line - vscmarg);           /* d0 (d2 = line, d1 = vscmarg) */
+    if ((WORD)newtop < 0)                       /* bpl .skip3 */
         goto skip5;
     /* .skip3 */
-    d3 = numlines;
-    if (d3 <= edrows)                           /* bls .skip5 */
+    if (numlines <= edrows)                     /* bls .skip5 */
         goto skip5;
-    d3 = (UWORD)(d3 - edrows + vscmarg);
-    if (d2 < d3) {                              /* bcs .skip4 */
+    limit = (UWORD)(numlines - edrows + vscmarg);   /* d3 */
+    if (line < limit) {                         /* bcs .skip4 */
         /* .skip4 */
-        cursy = d1;
-        curstop = d0;
+        cursy = vscmarg;
+        curstop = newtop;
         goto done;
     }
-    d3 = (UWORD)(d3 - vscmarg);
-    curstop = d3;
-    cursy = (UWORD)(d2 - d3);
+    lasttop = (UWORD)(limit - vscmarg);         /* d3 */
+    curstop = lasttop;
+    cursy = (UWORD)(line - lasttop);
     goto done;
 skip5:
     curstop = 0;
-    cursy = d2;
+    cursy = line;
 done:
     calcpos();
     if (oldtop != curstop)                      /* move (a7)+,d1 / cmp curstop,d1 */
@@ -956,39 +943,39 @@ void bcopyok(void)
     struct item *cur = thisitem, *newl, *prev;
     UBYTE *row, *dst, *keeprow;
     const UBYTE *s;
-    UWORD d1, d2, len, line, keepcol;
-    WORD d0;
+    UWORD col, curcol, len, line, keepcol, rows, shift;
+    WORD c, x;
 
     bloksetup();
     /* a5 = btopy, d6 = btop line, d5 = btopx; a4 = thisy, d7 = this line */
     row = chmap + chloc;
-    d2 = (UWORD)(cursoff + cursx);
-    d1 = 0;
+    curcol = (UWORD)(cursoff + cursx);          /* d2 */
+    col = 0;                                    /* d1 */
     dst = charbuff2;
-    while (d1 < d2) {                           /* .loop: bcc .skip2 */
+    while (col < curcol) {                      /* .loop: bcc .skip2 */
         *dst++ = *row++ & 127;
-        d1++;
+        col++;
     }
     /* .skip2 */
-    keepcol = d1;                               /* movem.l d1/a1,-(a7) */
+    keepcol = col;                              /* movem.l d1/a1,-(a7) */
     keeprow = row;
     for (;;) {
         /* .skip */
-        d0 = getbchar();
-        if (d0 < 0)                             /* bmi .oneline */
+        c = getbchar();                         /* d0 */
+        if (c < 0)                              /* bmi .oneline */
             break;
-        if (d0 != 0) {
+        if (c != 0) {
             /* .proc */
-            if (d1 < chcols) {
-                *dst++ = (UBYTE)d0;
-                d1++;
+            if (col < chcols) {
+                *dst++ = (UBYTE)c;
+                col++;
             }
             continue;
         }
         /* .newline */
-        while (d1 < chcols) {
+        while (col < chcols) {
             *dst++ = 32;
-            d1++;
+            col++;
         }
         /* .newline2 */
         len = charstobuff(charbuff2);
@@ -1031,16 +1018,16 @@ void bcopyok(void)
         /* .skipx2 */
         dst = charbuff2;
         bc.col = 0;
-        d1 = 0;
+        col = 0;
     }
-    /* .oneline.  survey-02 I.4: d1 = the PREFIX length again,
+    /* .oneline.  survey-02 I.4: col = the PREFIX length again,
        so chcols - prefix characters are appended behind the fragment
        (the line may run into charbuff3; charstobuff cuts it to the same line) */
-    d1 = keepcol;
+    col = keepcol;
     row = keeprow;
-    while (d1 < chcols) {                       /* .oneline3 */
+    while (col < chcols) {                      /* .oneline3 */
         *dst++ = *row++ & 127;
-        d1++;
+        col++;
     }
     if (dst > charbuff3)
         ORIG_HAZARD("blokcopy: line built past charbuff2 into charbuff3");
@@ -1048,42 +1035,41 @@ void bcopyok(void)
         *dst++ = 32;
     /* .line */
     makefirst(cur);
-    d0 = (WORD)(cursoff + cursx);
+    x = (WORD)(cursoff + cursx);                /* d0 */
     line = curline();
     if (line > bboty)                           /* bhi .done2 */
         goto done2;
-    if (line == bboty && (UWORD)d0 > (UWORD)bbotx)  /* bne .shit / bhi .done2 */
+    if (line == bboty && (UWORD)x > (UWORD)bbotx)   /* bne .shit / bhi .done2 */
         goto done2;
     /* .shit - o.k., here we have to adjust the blocks position: first,
        calculate how far down the block has to go into d1 */
-    d1 = (UWORD)(bboty - btopy);
-    d2 = (UWORD)(bbotx + 1);
-    if (d2 >= chcols) {                         /* bcs .shit2 */
-        d1++;
+    rows = (UWORD)(bboty - btopy);              /* d1 */
+    if ((UWORD)(bbotx + 1) >= chcols) {         /* bcs .shit2 */
+        rows++;
         if (line < btopy)                       /* bcs .shit3 */
             goto shit3;
-        btopx = (WORD)(btopx - d0);
+        btopx = (WORD)(btopx - x);
         goto shit3;
     }
     /* .shit2 */
     if (line < btopy)
         goto shit3;
     if (line != bboty) {
-        d2 = (UWORD)(bbotx - d0 + 1);
-        btopx = (WORD)(btopx + d2);
+        shift = (UWORD)(bbotx - x + 1);         /* d2 */
+        btopx = (WORD)(btopx + shift);
         goto shit4;
     }
     /* .shit5 */
-    d2 = (UWORD)(bbotx - btopx + 1);
-    btopx = (WORD)(btopx + d2);
-    bbotx = (WORD)(bbotx + d2);
+    shift = (UWORD)(bbotx - btopx + 1);
+    btopx = (WORD)(btopx + shift);
+    bbotx = (WORD)(bbotx + shift);
     /* .shit4 */
 shit4:
     if (blokfix_dis())
-        d1 = blokdis_d1();                      /* BUG(orig) (#346): d1 clobbered by blokdis */
+        rows = blokdis_d1();                    /* BUG(orig) (#346): d1 clobbered by blokdis */
 shit3:
-    btopy = (UWORD)(btopy + d1);
-    bboty = (UWORD)(bboty + d1);
+    btopy = (UWORD)(btopy + rows);
+    bboty = (UWORD)(bboty + rows);
 done2:
     calcitem();
     showall();                                  /* bra showall */
