@@ -352,6 +352,7 @@ BOOL endininfo(const char *name)
 UWORD gettokeps(UWORD c, UWORD *toke, UWORD *form)
 {
     ULONG value;
+    WORD isfloat;
     UWORD tk, fm = 0;
 
     if (c & 0x8000) {                   /* asm: bpl .evaltoke (N of d0) */
@@ -360,14 +361,14 @@ UWORD gettokeps(UWORD c, UWORD *toke, UWORD *form)
         tk = c & 0x7fff;                /* got toke number */
         c = getchar3();
     } else {
-        value = evalconst(&c);
-        if (value > 65535 || numfloat)
+        value = evalconst(&c, &isfloat);
+        if (value > 65535 || isfloat)
             tokeerr();
         tk = (UWORD)value;
     }
     if (c == ',') {
-        value = evalconst2(&c);
-        if (value > 65535 || numfloat)
+        value = evalconst2(&c, &isfloat);
+        if (value > 65535 || isfloat)
             tokeerr();
         fm = (UWORD)value;
     }
@@ -401,7 +402,7 @@ void doblibjsr(UWORD c)
 /* blitz2.s:3593 dosysjsr */
 void dosysjsr(UWORD c)
 {
-    ULONG toke = evalconst(&c);
+    ULONG toke = evalconst(&c, NULL);
 
     if (toke >= 0x10000)
         tokeerr();
@@ -491,7 +492,7 @@ void doqamiga(UWORD c)
 /* blitz2.s:3674 doclrint */
 void doclrint(UWORD c)
 {
-    ULONG level = evalconst(&c);
+    ULONG level = evalconst(&c, NULL);
 
     if (level >= 14)
         interr4();
@@ -556,7 +557,7 @@ void setint2(WORD strflag)
     errchx();
     intstring = strflag;
     intlineat = linenumat;
-    level = evalconst(NULL);            /* get constant - int level */
+    level = evalconst(NULL, NULL);            /* get constant - int level */
     if (level >= 14)
         interr4();
     intsused = (intsused & 0x00ff) | 0xff00;    /* st intsused */

@@ -306,7 +306,7 @@ void asmfixer(void)
         else
             srcptr = *(UBYTE **)node->text; /* pointer to real text */
         asmtype = 0;
-        val = (LONG)evalconst3(&c);
+        val = (LONG)evalconst3(&c, NULL);
         node = (struct asmnode *)asmbuff;
         if (!eos(c) && c != '(' && c != ',')
             syntaxerr();

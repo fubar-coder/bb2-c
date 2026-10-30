@@ -216,10 +216,10 @@ ophandler bittst, bitset, bitclr, bitchg;
 
 /* blitz2.s:9866 / 9883 '$' hex / '%' binary number (current char is the
    '$'/'%', the digits are read here); tail into fetchnum2 (chunk 07), so
-   the result follows fetchnum2's contract: dfetch != 0 -> the value,
-   else the code is emitted and the next char/token is returned. */
-ULONG fetchhex(UWORD *type);
-ULONG fetchbin(UWORD *type);
+   the result follows fetchnum2's contract: data -> the value, else the
+   code is emitted and the next char/token is returned. */
+ULONG fetchhex(UWORD *type, BOOL data);
+ULONG fetchbin(UWORD *type, BOOL data);
 
 /* blitz2.s:9910 ampersand2 - &var: getchar3, getvname, fetchvar, calcvar
    and emit the address (or string pointer) into D(regat).

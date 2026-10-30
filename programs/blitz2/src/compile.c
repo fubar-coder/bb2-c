@@ -505,7 +505,7 @@ void expandmax(void)
                     ULONG v;
 
                     srcptr = text;
-                    v = evalconst2(&c);
+                    v = evalconst2(&c, NULL);
                     if (c != '}')
                         syntaxerr();
                     left -= (UWORD)(srcptr - text);
@@ -694,7 +694,7 @@ void setcvars(void)
     fuckpos = 0;
     procnum = 0;
     procnum2 = 0;
-    dfetch = 0;
+    /* (asm: dfetch = 0; C passes it as a parameter, libcall.h) */
     titleat = 0;
     usedpath[0] = 0;
     inerr = 0;
@@ -1310,7 +1310,7 @@ static void handleconst(void)
     }
     c = reget();
     if (c == '=')
-        l->pc = evalconst2(NULL);       /* .asscon */
+        l->pc = evalconst2(NULL, NULL);       /* .asscon */
 }
 
 /* blitz2.s:3083 handleproc - a procedure! - eg gameover{score.l,player} */

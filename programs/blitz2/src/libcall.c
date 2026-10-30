@@ -30,13 +30,18 @@ static inline ULONG tl(const UWORD *p)
  * register results
  * =================================================================== */
 
-ULONG numval;       /* asm d3 after a number fetch / evalconst */
-WORD numfloat;      /* asm d6: 0 int, != 0 float */
+/* asm d3/d6 of the number fetch.  They stay globals (file-local): the
+   fetch routines set them at any depth of the recursive evaluator (eval ->
+   getelement -> fetchnum...), and evalconst2 hands them as d3/d6 into the
+   generated code and reads d6 back after it ran (the float flag of the
+   constant), like the asm. */
+static ULONG numval;    /* asm d3: value (int or FFP) */
+static WORD numfloat;   /* asm d6: 0 int, != 0 float */
 
 
-static ULONG fetchnum3(ULONG val, UWORD *type);
+static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data);
 static ULONG consttype2(UWORD *type, ULONG val);
-static ULONG fetchpoint2(UWORD *type);
+static ULONG fetchpoint2(UWORD *type, BOOL data);
 static void dothee(void);
 static UWORD fetchdec(UWORD c, ULONG *divisorp);
 
@@ -48,27 +53,31 @@ static UWORD fetchdec(UWORD c, ULONG *divisorp);
 static ULONG datado(UWORD c, UWORD *type)
 {
     if (c == '$')
-        return fetchhex(type);
+        return fetchhex(type, TRUE);
     if (c == '%')
-        return fetchbin(type);
+        return fetchbin(type, TRUE);
     /* .doit */
     if (c != '.')
-        return fetchnum(c, type);
-    return fetchfrac(c, type);
+        return fetchnum(c, type, TRUE);
+    return fetchfrac(c, type, TRUE);
 }
 
 /* blitz2.s:10686 fetchdata - fetch number and update type if necessary! */
-ULONG fetchdata(UWORD *type)
+ULONG fetchdata(UWORD *type, ULONG *raw)
 {
     UWORD c;
     ULONG val;
 
-    dfetch = -1;
+    /* (asm: dfetch = -1; C passes data = TRUE down the fetch routines) */
     c = getchar3();
-    if (c != '-')
-        return datado(c, type);
+    if (c != '-') {
+        val = datado(c, type);
+        *raw = numval;
+        return val;
+    }
     c = getchar3();
     val = datado(c, type);
+    *raw = numval;
     if (*type < T_FLOAT)
         return (ULONG)-(LONG)val;
     /* .nfp: negate floating point data! */
@@ -76,15 +85,15 @@ ULONG fetchdata(UWORD *type)
 }
 
 /* blitz2.s:10709 fetchfrac */
-ULONG fetchfrac(UWORD c, UWORD *type)
+ULONG fetchfrac(UWORD c, UWORD *type, BOOL data)
 {
     (void)c;
     numval = 0;
-    return fetchpoint2(type);
+    return fetchpoint2(type, data);
 }
 
 /* blitz2.s:10712 fetchnum */
-ULONG fetchnum(UWORD c, UWORD *type)
+ULONG fetchnum(UWORD c, UWORD *type, BOOL data)
 {
     ULONG divisor, val;
 
@@ -94,11 +103,11 @@ ULONG fetchnum(UWORD c, UWORD *type)
         /* blitz2.s:10734 fetchpoint */
         if (numval >= 0x800000)
             overerr();
-        return fetchpoint2(type);
+        return fetchpoint2(type, data);
     }
     c |= 32;
     if (c != 'e')
-        return fetchnum2(numval, type);
+        return fetchnum2(numval, type, data);
     if (numval >= 0x800000)
         overerr();
     numfloat = -1;
@@ -106,11 +115,11 @@ ULONG fetchnum(UWORD c, UWORD *type)
     dothee();
     c = reget();
     val = consttype2(type, c);
-    return fetchnum3(val, type);
+    return fetchnum3(val, type, data);
 }
 
 /* blitz2.s:10737 fetchpoint2 - now a float.  in: numval = whole part */
-static ULONG fetchpoint2(UWORD *type)
+static ULONG fetchpoint2(UWORD *type, BOOL data)
 {
     ULONG whole, divisor, val, t;
     UWORD c;
@@ -141,7 +150,7 @@ static ULONG fetchpoint2(UWORD *type)
     /* .pskip2 */
     c = reget();
     val = consttype2(type, c);
-    return fetchnum3(val, type);
+    return fetchnum3(val, type, data);
 }
 
 /* blitz2.s:10822 facts - FFP 10^0 .. 10^18 */
@@ -219,17 +228,14 @@ static UWORD fetchdec(UWORD c, ULONG *divisorp)
     return c;
 }
 
-/* blitz2.s:10854 dfetch - fetching data? */
-WORD dfetch;
-
 /* blitz2.s:10856 fetchnum3 - return the value (Data) or emit
-   move.w/move.l #val,D(regat) and return the next char */
-static ULONG fetchnum3(ULONG val, UWORD *type)
+   move.w/move.l #val,D(regat) and return the next char.  data: the asm
+   flag dfetch (10854), set by fetchdata and cleared here; C passes it
+   down the fetch routines. */
+static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data)
 {
-    if (dfetch) {
-        dfetch = 0;
+    if (data)
         return val;
-    }
     switch (*type) {
     case T_BYTE:
     case T_WORD:
@@ -268,7 +274,7 @@ static BOOL makeint(ULONG *val)
 }
 
 /* blitz2.s:10902 fetchnum2 - no frac */
-ULONG fetchnum2(ULONG num, UWORD *type)
+ULONG fetchnum2(ULONG num, UWORD *type, BOOL data)
 {
     ULONG val;
 
@@ -276,7 +282,7 @@ ULONG fetchnum2(ULONG num, UWORD *type)
     numfloat = 0;
     /* d0 only matters on consttype2's float paths (numfloat != 0) */
     val = consttype2(type, lastchar);
-    return fetchnum3(val, type);
+    return fetchnum3(val, type, data);
 }
 
 /* blitz2.s:10906 constotype - fetch a constant of type d2, return new
@@ -285,7 +291,7 @@ ULONG constotype(UWORD *type)
 {
     UWORD c;
 
-    evalconst(&c);
+    evalconst(&c, NULL);
     return consttype2(type, c);
 }
 
@@ -1123,15 +1129,15 @@ BOOL ifchar(UWORD *c)
  * =================================================================== */
 
 /* blitz2.s:11871 evalconst */
-ULONG evalconst(UWORD *c)
+ULONG evalconst(UWORD *c, WORD *isfloat)
 {
     bakup();
-    return evalconst2(c);
+    return evalconst2(c, isfloat);
 }
 
 /* blitz2.s:11880 evalconst2 - evaluate a constant at a5...  get long
    into d3 (d6=0) or ffp into d3 (d6<>0) */
-ULONG evalconst2(UWORD *c)
+ULONG evalconst2(UWORD *c, WORD *isfloat)
 {
     UWORD s_regat = regat;
     ULONG s_pc, s_libat, code;
@@ -1185,13 +1191,15 @@ ULONG evalconst2(UWORD *c)
     ch = reget();
     if (c)
         *c = ch;
+    if (isfloat)
+        *isfloat = numfloat;
     return numval;
 }
 
 /* blitz2.s:11881 evalconst3 (same address as evalconst2) */
-ULONG evalconst3(UWORD *c)
+ULONG evalconst3(UWORD *c, WORD *isfloat)
 {
-    return evalconst2(c);
+    return evalconst2(c, isfloat);
 }
 
 ULONG oldlibat;                     /* 11934 */
@@ -1395,11 +1403,11 @@ void getsp(UWORD c, UBYTE *buf)
 }
 
 /* blitz2.s:12118 numcom - tst.l d3 */
-int numcom(void)
+int numcom(ULONG value)
 {
-    if ((LONG)numval < 0)
+    if ((LONG)value < 0)
         return -1;
-    return numval != 0;
+    return value != 0;
 }
 
 /* blitz2.s:12121 strcom - compare strings. set flags accordingly */

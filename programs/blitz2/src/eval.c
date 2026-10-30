@@ -1536,15 +1536,15 @@ static UWORD getelement2(UWORD *type)
 
     /* First, we have stuff which won't fuck constgot */
     if (tstnum(c))
-        return (UWORD)fetchnum(c, type);
+        return (UWORD)fetchnum(c, type, FALSE);
     if (c == '.')
-        return (UWORD)fetchfrac(c, type);
+        return (UWORD)fetchfrac(c, type, FALSE);
     if (c == '#')
         return fetchconst(type);
     if (c == '$')
-        return (UWORD)fetchhex(type);
+        return (UWORD)fetchhex(type, FALSE);
     if (c == '%')
-        return (UWORD)fetchbin(type);
+        return (UWORD)fetchbin(type, FALSE);
     if (c == 0x8000 + 47)
         return fetchsize(type);
     if (c == 0x8007 + tnum)
@@ -1609,7 +1609,7 @@ static UWORD fetchsize(UWORD *type)
         } else
             value = (UWORD)t->size;                 /* .jty */
         *type = saved;                              /* .jty2 */
-        return (UWORD)fetchnum2(value, type);
+        return (UWORD)fetchnum2(value, type, FALSE);
     }
     /* find size of a var! */
     {
@@ -1624,7 +1624,7 @@ static UWORD fetchsize(UWORD *type)
             notypeerr();                            /* ! */
         value = (ULONG)(LONG)v->offset;             /* .found: 4(a2), ext.l */
         *type = saved;
-        return (UWORD)fetchnum2(value, type);
+        return (UWORD)fetchnum2(value, type, FALSE);
     }
 }
 
@@ -1632,14 +1632,14 @@ static UWORD fetchsize(UWORD *type)
 static UWORD fetchon(UWORD *type)
 {
     getchar3();
-    return (UWORD)fetchnum2(0xffffffffUL, type);
+    return (UWORD)fetchnum2(0xffffffffUL, type, FALSE);
 }
 
 /* blitz2.s:9843 fetchoff */
 static UWORD fetchoff(UWORD *type)
 {
     getchar3();
-    return (UWORD)fetchnum2(0, type);
+    return (UWORD)fetchnum2(0, type, FALSE);
 }
 
 /* blitz2.s:9847 chkhex - is d0 a hex number?  asm: Z=1 yes.
@@ -1665,7 +1665,7 @@ static BOOL chkbin(UWORD c)
 }
 
 /* blitz2.s:9866 fetchhex */
-ULONG fetchhex(UWORD *type)
+ULONG fetchhex(UWORD *type, BOOL data)
 {
     UWORD c = getchar3();
     ULONG value;
@@ -1684,11 +1684,11 @@ ULONG fetchhex(UWORD *type)
         value |= digit;             /* or d0,d3 (word) */
         c = getchar3();
     } while (chkhex(&c));
-    return fetchnum2(value, type);
+    return fetchnum2(value, type, data);
 }
 
 /* blitz2.s:9883 fetchbin */
-ULONG fetchbin(UWORD *type)
+ULONG fetchbin(UWORD *type, BOOL data)
 {
     UWORD c = getchar3();
     ULONG value;
@@ -1703,7 +1703,7 @@ ULONG fetchbin(UWORD *type)
         value |= (UWORD)(c - 48);
         c = getchar3();
     } while (chkbin(c));
-    return fetchnum2(value, type);
+    return fetchnum2(value, type, data);
 }
 
 /* blitz2.s:9896 fetchconst - #name */
@@ -1719,7 +1719,7 @@ static UWORD fetchconst(UWORD *type)
     if ((ULONG)l->refs != 1)
         cnferr();
     *type = saved;
-    return (UWORD)fetchnum2(l->pc, type);  /* to right type. */
+    return (UWORD)fetchnum2(l->pc, type, FALSE);  /* to right type. */
 }
 
 /* blitz2.s:9906 ampersand */
@@ -1838,7 +1838,7 @@ static UWORD domaximum(UWORD *type)
     ULONG count = (UWORD)LIBMAX_COUNT(lib);
 
     getchar3();
-    return (UWORD)fetchnum2(count, type);
+    return (UWORD)fetchnum2(count, type, FALSE);
 }
 
 /* blitz2.s:10053 doaddr - address of something, eg a.l=Addr Window(0) */
@@ -2187,7 +2187,7 @@ static UWORD fetchqasm(UWORD *type)
         value = (value << 8) | (UBYTE)c;
     }
     getchar3();                     /* .done */
-    return (UWORD)fetchnum2(value, type);
+    return (UWORD)fetchnum2(value, type, FALSE);
 }
 
 /* blitz2.s:10460 fetchasm - label/constant value in an asm operand */
@@ -2203,7 +2203,7 @@ static UWORD fetchasm(UWORD *type)
     if ((ULONG)l->refs != 1)
         asmtype = ~asmtype;         /* NB(orig): toggles (not asmtype) */
     *type = saved;                  /* .npc */
-    return (UWORD)fetchnum2(l->pc, type);
+    return (UWORD)fetchnum2(l->pc, type, FALSE);
 }
 
 /* ------------------------------------------------------------- variables */

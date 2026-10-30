@@ -280,10 +280,12 @@ void docerr(UWORD c)
 /* blitz2.s:12299 docnif */
 void docnif(UWORD c)
 {
+    ULONG value;
+
     (void)c;
-    evalconst(NULL);
+    value = evalconst(NULL, NULL);
     bakup();
-    compare(numcom(), 5);                       /* asm comment says beq: index 5 = cifne */
+    compare(numcom(value), 5);                  /* asm comment says beq: index 5 = cifne */
 }
 
 /* blitz2.s:12942 collif - collect a comparison thingy.
@@ -476,10 +478,10 @@ void dodcb(UWORD c)
     ULONG cnt, val;
 
     size = getsize2(c);
-    cnt = evalconst2(&c);
+    cnt = evalconst2(&c, NULL);
     if (c != ',')
         syntaxerr();
-    val = evalconst2(&c);                       /* to put in memory */
+    val = evalconst2(&c, NULL);                       /* to put in memory */
     /* BUG(orig) (#37): do-while loops: a count of 0 repeats 2^32 times */
     if (size == 0) {
         do pokebyte((UBYTE)val); while (--cnt);         /* .byte */
@@ -500,7 +502,7 @@ void dodcb(UWORD c)
 void dods(UWORD c)
 {
     UWORD size = getsize2(c);
-    ULONG n = evalconst2(NULL);
+    ULONG n = evalconst2(NULL, NULL);
 
     pc += n << size;
 }
@@ -606,7 +608,7 @@ static void pdt(UWORD datasize)
 void dodata(UWORD c)
 {
     UWORD want, type;
-    ULONG val, lenat, len;
+    ULONG val, raw, lenat, len;
 
     uselib(64535);
     bakup();
@@ -616,13 +618,13 @@ void dodata(UWORD c)
         do {                                    /* .more */
             pdt(want);
             type = want;
-            val = fetchdata(&type);
+            val = fetchdata(&type, &raw);   /* raw: asm d3 */
             if (type != want) {
                 if (want == T_WORD) {
-                    if (type != T_LONG || numval >= 65536)
+                    if (type != T_LONG || raw >= 65536)
                         baddaterr();
                 } else if (want == T_BYTE) {    /* .notw */
-                    if (type != T_WORD || numval >= 256)
+                    if (type != T_WORD || raw >= 256)
                         baddaterr();
                 } else {
                     baddaterr();                /* .notb */

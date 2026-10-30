@@ -421,7 +421,7 @@ UWORD getchar_(void)
             /* asm: movem.l d0-d7/a0-a6 - only srcptr matters in C and it is
                set to cmakebuff below anyway */
             memcpy(cmakebak, namebuff, 128);
-            val = evalconst2(&term);        /* get constant into d3 */
+            val = evalconst2(&term, NULL);        /* get constant into d3 */
             if (term != '~')
                 syntaxerr();                /* cmake stays set (cleared per pass) */
             cmakea5 = srcptr;

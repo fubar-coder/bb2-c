@@ -57,8 +57,8 @@ Each `NAME.c` has a `NAME.h` (contract for the other parts);
 * `DIFF: …` – deliberate deviation, only where C cannot do the same
   (stack tricks, register frames); the comment says what the original did.
 * Registers that permanently carry state in the original are globals:
-  `srcptr` = a5 of the parser, `numval`/`numfloat` = d3/d6 after number
-  fetch. Register results that are only read by the caller became return
+  `srcptr` = a5 of the parser, `numval`/`numfloat` = d3/d6 of the number
+  fetch (file-local in libcall.c). Register results that are only read by the caller became return
   values or out parameters (e.g. the name length d2 of `getvname`),
   condition codes as results return values (the mapping is in the
   respective header).

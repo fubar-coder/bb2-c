@@ -1774,7 +1774,7 @@ loopq:
             setsvars();
             connest = 0;                        /* no idea... */
             srcptr = calcreqla15;
-            value = (LONG)evalconst2(NULL);     /* evaluate constant */
+            value = (LONG)evalconst2(NULL, NULL);     /* evaluate constant */
             dst = calcreqla15;
             v = (ULONG)value;
             if (value < 0) {

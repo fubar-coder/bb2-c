@@ -653,10 +653,11 @@ void typemode(UWORD c)
         size = 4;
     if (c == '[') {
         /* get constant value! */
-        ULONG count = evalconst2(&c);
+        WORD isfloat;
+        ULONG count = evalconst2(&c, &isfloat);
         if (c != ']')
             syntaxerr();
-        if (numfloat)
+        if (isfloat)
             fpconerr();
         getchar3();
         f->ndims = count;
