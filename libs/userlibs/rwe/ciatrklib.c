@@ -29,7 +29,7 @@
  * and the play routine's (mt_FunkTable ... nor_LstEvt) - are structs with
  * the original's layout.  The play routine depends on it: it reads behind
  * mt_PeriodTable into mt_chan1temp and behind mt_SampleStarts (BUG(orig)
- * below), and the test finds the blocks in both builds.
+ * below, #474 #480 #481), and the test finds the blocks in both builds.
  *
  * Everything is C; the entries are thunks, the hardware registers
  * volatile accesses of the original's width.
@@ -38,58 +38,68 @@
  *   - SetCIAInt loads the ICR bit for AddICRVector from the ADDRESSES 1
  *     (timer A of ciaa) and 2 (timer B of ciab): MOVE.l %00000001,D0
  *     without `#` - the long at address 1 / 2 (an address error on a
- *     68000).  ResetCIAInt removes the vector with bit 0 (MOVEQ #1 is
- *     overwritten; in Amiberry the system's timer A vector of ciaa) and
- *     toggles the filter (BCHG #1,$bfe001).
+ *     68000) (#450).  ResetCIAInt removes the vector with bit 0 (MOVEQ #1
+ *     is overwritten; in Amiberry the system's timer A vector of ciaa)
+ *     (#448) and toggles the filter (BCHG #1,$bfe001) (#449).
  *   - LoadTrackerModule (no !libs): the dos calls go through whatever a6
- *     holds; the length is the file size + 3 as a byte add (ADD.b), so
- *     the carry is lost; the chip memory is not checked; a Read error
- *     unlocks the lock OpenFromLock took over.
+ *     holds (#443); the length is the file size + 3 as a byte add
+ *     (ADD.b), so the carry is lost (#442); the chip memory is not
+ *     checked (#440); a Read error unlocks the lock OpenFromLock took over
+ *     (#444); the runtime errors after Lock (no FileInfoBlock, Examine
+ *     failing) leave the lock allocated (#441).
  *   - DecodeModule into chip memory (an address < $200000, signed) keeps
- *     the address; from other memory it copies the module to chip memory
- *     with the size + 3 as a word add (ADD.w); when the memory is missing
- *     the slot keeps the old address with flag 2 and the new length.
- *     The size is computed with mt_init's scan (below).
+ *     the address (#432); from other memory it copies the module to chip
+ *     memory with the size + 3 as a word add (ADD.w) (#434); when the
+ *     memory is missing the slot keeps the old address with flag 2 and
+ *     the new length (#433).  The size is computed with mt_init's scan
+ *     (below).
  *   - StartTracker of an empty slot returns the slot number (the MOVEM
- *     restores d0 over the 0).  ModuleToChip does nothing and returns its
- *     argument.  ModulePatterns returns the song length (byte 950).
+ *     restores d0 over the 0) (#451).  ModuleToChip does nothing and
+ *     returns its argument (#446).  ModulePatterns returns the song length
+ *     (byte 950) (#445).
  *   - CheckTrackerID returns the long at ADDRESS 0 (MOVE.l 0,d0) for
- *     "not a module" and an empty slot.
+ *     "not a module" and an empty slot (#430).
  *   - GetModuleName$ of an empty slot returns slot*10 as the length and
- *     writes nothing (not even the 0).
+ *     writes nothing (not even the 0) (#437).
  *   - WaitTrackerEvent calls WaitTOF through whatever a6 holds (no
- *     !libs); CheckTrackerEvent/GetTrackerEvent change only the low byte
- *     (or word) of d0.
+ *     !libs) (#453); CheckTrackerEvent changes only the low byte of d0
+ *     (#431).
  *   - ModulePositionJump n: the song position becomes n + 1 at the next
- *     tick (mt_NextPosition increments it).
+ *     tick (mt_NextPosition increments it) (#447).
  *   - TrackerVolume 0 or 64 does not change the volumes of the notes that
- *     play (only 0 < volume < 64 calls Change_Volume_Levels).
+ *     play (only 0 < volume < 64 calls Change_Volume_Levels) (#452).
  *   - mt_init compares the module LENGTH with the sample addresses (CMP.l
  *     a2,a4): the first long of a sample is cleared only when the length
- *     is greater than its address.  Its scan of the song positions reads
- *     positions 0-126 (SUBQ for a new maximum, DBRA otherwise; a new
- *     maximum at 126 reads ~64 KB more), patterns >= $80 never count
- *     (BGT, signed).
+ *     is greater than its address (#438).  Its scan of the song positions
+ *     reads positions 0-126 (SUBQ for a new maximum, DBRA otherwise; a
+ *     new maximum at 126 reads ~64 KB more), patterns >= $80 never count
+ *     (BGT, signed) (#477).
  *   - Play routine (Protracker 2.3A): mt_LowMask starts as 0, so the
- *     first 1xx/2xx before an E1x/E2x does not slide; the sample offset
- *     (9xx with a note) is applied twice to n_start/n_length (mt_SetRegs
- *     calls mt_CheckMoreEfx before mt_SetPeriod, which runs it again);
- *     tremolo's ramp-down tests the VIBRATO position; mt_SetPeriod
- *     without a matching period, the arpeggio and a sample number > 31
- *     read behind the tables (mt_chan1temp, mt_SongDataPtr ...); E8x
- *     (Karplus-Strong) with a loop length of 0 rewrites 64 KB; the repeat
- *     offset is repeat * 2 as a word (ASL.w); the sample offset compares
+ *     first 1xx/2xx before an E1x/E2x does not slide (#478); the sample
+ *     offset (9xx with a note) is applied twice to n_start/n_length
+ *     (mt_SetRegs calls mt_CheckMoreEfx before mt_SetPeriod, which runs it
+ *     again) (#473); tremolo's ramp-down tests the VIBRATO position
+ *     (#482); mt_SetPeriod without a matching period (#481), the arpeggio
+ *     (#474) and a sample number > 31 (#480) read behind the tables
+ *     (mt_chan1temp, mt_SongDataPtr ...); E8x (Karplus-Strong) with a
+ *     loop length of 0 rewrites 64 KB (#439); the repeat offset is
+ *     repeat * 2 as a word (ASL.w) (#479); the sample offset compares
  *     signed with n_length (CMP.w, BGE): 9xx on a length of $8000 words
- *     or more sets the length to 1; F00 stops the module (as in every
- *     Protracker), but mt_end loads a0 with $DFF000: after an F00 on
- *     voice 1-3 the voices behind read their notes from the custom chip
- *     registers ($DFF000 + the pattern offset) instead of the pattern;
- *     effect 8 (the event) is seen only on ticks other than 0.
- *   - FreeTrackerModule does not stop a module that plays from the slot.
+ *     or more sets the length to 1 (#472); F00 stops the module (as in
+ *     every Protracker), but mt_end loads a0 with $DFF000: after an F00
+ *     on voice 1-3 the voices behind read their notes from the custom
+ *     chip registers ($DFF000 + the pattern offset) instead of the
+ *     pattern (#475); effect 8 (the event) is seen only on ticks other
+ *     than 0 (#435).
+ *   - FreeTrackerModule does not stop a module that plays from the slot
+ *     (#436).
+ * Not defects: GetTrackerEvent changes only the low byte of d0 (it is
+ * declared #byte).
  *
  * DIFF: none in the results.  Not reproducible: a finetune byte > 15 in a
  * sample header (n_finetune * 72) reads behind the play routine's data,
- * where the original has its own code and the C build other memory.
+ * where the original has its own code and the C build other memory
+ * (#476).
  * The C build keeps a3 in FreeTrackerModule (the original's LEA
  * modtable,a3 changes the string pointer).
  */
@@ -419,7 +429,7 @@ static struct {
     },
     { { .dmabit = 1 }, { .dmabit = 2 }, { .dmabit = 4 }, { .dmabit = 8 } },
     { 0 }, { 0 }, NULL,
-    6, 0, 0, 0, 0, 0, 0,                /* mt_speed 6 ... mt_LowMask 0 (BUG(orig)) */
+    6, 0, 0, 0, 0, 0, 0,                /* mt_speed 6 ... mt_LowMask 0 (BUG(orig), #478) */
     0, 0, 0, 0, 0, 0, 0,
 };
 _Static_assert(__builtin_offsetof(__typeof__(p), chan) == 48 + 1152, "mt_chan1temp");
@@ -491,7 +501,7 @@ static void resetciaint(void);
 
 /* a0 of mt_GetNewNote, the pattern data; mt_end sets a0 to $DFF000, so
    after an F00 (mt_SetSpeed: BEQ mt_end) the voices behind read their
-   notes from the custom chip registers (BUG(orig)) */
+   notes from the custom chip registers (BUG(orig), #475) */
 static const UBYTE *patdata;
 
 /* SetCIAInt: the interrupt on timer A of ciaa, else timer B of ciab */
@@ -521,7 +531,7 @@ static void setciaint(void)
         CloseLibrary(gfx);
         if (d6 != 2) {                  /* 'TryTimerB */
             volatile UBYTE *a5 = (volatile UBYTE *)0xbfd000;
-            /* BUG(orig): the bit is the long at address 2 */
+            /* BUG(orig): the bit is the long at address 2 (#450) */
             struct bl_regs r = { .d0 = peekl(2), .a1 = (ULONG)&c.MusicIntServer };
             ULONG err = BLITZ_BASEJSR(res, -6, r);      /* AddICRVector */
             c.TimerFlag = 1;
@@ -534,7 +544,7 @@ static void setciaint(void)
             }
         } else {                        /* 'TryTimerA */
             volatile UBYTE *a5 = (volatile UBYTE *)0xbfe001;
-            /* BUG(orig): the bit is the long at address 1 */
+            /* BUG(orig): the bit is the long at address 1 (#450) */
             struct bl_regs r = { .d0 = peekl(1), .a1 = (ULONG)&c.MusicIntServer };
             ULONG err = BLITZ_BASEJSR(res, -6, r);      /* AddICRVector */
             c.TimerFlag = 0;
@@ -568,11 +578,11 @@ static void resetciaint(void)
     else
         a5[CIACRA] &= ~1;
     {
-        /* BUG(orig): always bit 0 (MOVEQ #0,d0 after MOVEQ #1,D0) */
+        /* BUG(orig): always bit 0 (MOVEQ #0,d0 after MOVEQ #1,D0) (#448) */
         struct bl_regs r = { .d0 = 0, .a1 = (ULONG)&c.MusicIntServer };
         BLITZ_BASEJSR(res, -12, r);     /* RemICRVector */
     }
-    CIAAPRA ^= 2;                       /* BCHG #1,$bfe001 (BUG(orig)) */
+    CIAAPRA ^= 2;                       /* BCHG #1,$bfe001 (BUG(orig), #449) */
 }
 
 /* SetTempo: d0 = beats per minute (>= 32), the timer TimerValue / d0 */
@@ -612,7 +622,7 @@ static UWORD set_real_mask(UWORD d0)
 }
 
 /* the highest pattern number of the song positions (mt_init, _modtochip):
-   positions 0-126 (BUG(orig), see the head); signed compare */
+   positions 0-126 (BUG(orig), see the head, #477); signed compare */
 static UBYTE maxpattern(const UBYTE *mod)
 {
     const BYTE *a1 = (const BYTE *)mod + 952;
@@ -644,7 +654,7 @@ static void mt_end(void)
     volatile struct Custom *cu = CUSTOM;
 
     p.Enable = 0;
-    patdata = (const UBYTE *)cu;        /* LEA $DFF000,A0 (BUG(orig)) */
+    patdata = (const UBYTE *)cu;        /* LEA $DFF000,A0 (BUG(orig), #475) */
     cu->aud[0].ac_vol = 0;
     cu->aud[1].ac_vol = 0;
     cu->aud[2].ac_vol = 0;
@@ -661,7 +671,7 @@ static void mt_init(ULONG a4)
     p.SongDataPtr = a0;
     a2 = a0 + patternsize(a0);
     for (i = 0; i < 31; i++) {
-        if ((LONG)a4 > (LONG)a2)        /* BUG(orig): the length */
+        if ((LONG)a4 > (LONG)a2)        /* BUG(orig): the length (#438) */
             LONGAT(a2) = 0;
         p.SampleStarts[i] = a2;
         a2 += (ULONG)WORDAT(a0 + 42) << 1;
@@ -928,7 +938,7 @@ static void vibratoplusvolslide(struct chan *ch, aud_t *a5)
     volumeslide(ch, a5);
 }
 
-/* mt_Tremolo: BUG(orig) the ramp down tests n_vibratopos */
+/* mt_Tremolo: BUG(orig) the ramp down tests n_vibratopos (#482) */
 static void tremolo(struct chan *ch, aud_t *a5)
 {
     UWORD d2;
@@ -959,7 +969,7 @@ static void sampleoffset(struct chan *ch)
     if (ch->n.f.cmdlo)
         ch->sampleoffset = ch->n.f.cmdlo;
     d0 = (UWORD)(ch->sampleoffset << 7);
-    if ((WORD)d0 >= (WORD)ch->length) { /* BUG(orig): signed (CMP.w, BGE) */
+    if ((WORD)d0 >= (WORD)ch->length) { /* BUG(orig): signed (CMP.w, BGE) (#472) */
         ch->length = 1;
         return;
     }
@@ -1063,7 +1073,8 @@ static void jumploop(struct chan *ch)
     p.PBreakFlag = 0xff;
 }
 
-/* mt_KarplusStrong: BUG(orig) a loop length 0 is 65536 bytes (DBRA) */
+/* mt_KarplusStrong: BUG(orig) a loop length 0 is 65536 bytes (DBRA)
+   (#439) */
 static void karplusstrong(struct chan *ch)
 {
     BYTE *a0 = (BYTE *)ch->loopstart, *a1 = a0;
@@ -1222,7 +1233,7 @@ static void checkmoreefx(struct chan *ch, aud_t *a5)
     pernop(ch, a5);
 }
 
-/* mt_SetPeriod: BUG(orig) a note below 113 takes entry 37 */
+/* mt_SetPeriod: BUG(orig) a note below 113 takes entry 37 (#481) */
 static void setperiod(struct chan *ch, aud_t *a5)
 {
     const UWORD *a1 = p.PeriodTable;
@@ -1296,7 +1307,7 @@ static void playvoice(struct chan *ch, aud_t *a5, const UBYTE *a3, const UBYTE *
         settoneporta(ch);
         checkmoreefx(ch, a5);
         return;
-    case 9:                             /* BUG(orig): the offset twice */
+    case 9:                             /* BUG(orig): the offset twice (#473) */
         checkmoreefx(ch, a5);
         break;
     }
@@ -1412,7 +1423,7 @@ static void freetrackermodule_c(ULONG d0 BL_REG(d0))
     e->flag = 0;
 }
 
-/* LoadTrackerModule (a6 = whatever the program has: BUG(orig)) */
+/* LoadTrackerModule (a6 = whatever the program has: BUG(orig), #443) */
 static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1),
                                            struct DosLibrary *dos BL_REG(a6))
 {
@@ -1432,7 +1443,7 @@ static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(
     if (!Examine(lock, (struct FileInfoBlock *)fib))
         BLITZ_RUNERR(mess);
     d0 = (ULONG)((struct FileInfoBlock *)fib)->fib_Size;
-    e->len = BL_SETB(d0, d0 + 3);       /* ADD.b (BUG(orig)) */
+    e->len = BL_SETB(d0, d0 + 3);       /* ADD.b (BUG(orig), #442) */
     globfree(fib, 512);
     e->addr = (UBYTE *)globalloc(e->len, MEMF_CHIP);
     hand = OpenFromLock(lock);
@@ -1443,7 +1454,7 @@ static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(
     d0 = readerr;
     readerr = (ULONG)-1;
     if (d0 == (ULONG)-1) {
-        UnLock(lock);                   /* BUG(orig): OpenFromLock's lock */
+        UnLock(lock);                   /* BUG(orig): OpenFromLock's lock (#444) */
         readerr = 0;
         freetrackermodule_c(thismod);
     }
@@ -1467,7 +1478,7 @@ static ULONG modtochip(ULONG d0)
     for (i = 0, a1 = a0; i < 31; i++, a1 += 30)
         size += (ULONG)WORDAT(a1 + 42) << 1;
     e->flag = 2;
-    e->len = BL_SETW(size, size + 3);   /* ADD.w (BUG(orig)) */
+    e->len = BL_SETW(size, size + 3);   /* ADD.w (BUG(orig), #434) */
     a2 = (UBYTE *)globalloc(e->len, MEMF_CHIP);
     if (!a2)
         return 0;
@@ -1511,7 +1522,7 @@ static ULONG BLITZ_ROUTINE checkid_c(ULONG d0 BL_REG(d0))
     ULONG id;
 
     if (!e->len)
-        return peekl(0);                /* BUG(orig): MOVE.l 0,d0 */
+        return peekl(0);                /* BUG(orig): MOVE.l 0,d0 (#430) */
     id = LONGAT(e->addr + 0x438);
     if (id == ID('M', '.', 'K', '.') || id == ID('M', '!', 'K', '!'))
         return (ULONG)-1;
@@ -1532,7 +1543,7 @@ static ULONG BLITZ_ROUTINE getmodulename_c(ULONG d0 BL_REG(d0))
     UWORD d1 = 19;
 
     if (!a1)
-        return off;                     /* BUG(orig): no string, d0 = slot*10 */
+        return off;                     /* BUG(orig): no string, d0 = slot*10 (#437) */
     d0 = 0;
     do {
         if (!*a1)
@@ -1550,7 +1561,7 @@ static ULONG BLITZ_ROUTINE starttrkmodule_c(ULONG d0 BL_REG(d0))
     struct modent *e = slot(d0);
 
     if (!e->addr)
-        return d0;                      /* BUG(orig): the slot number */
+        return d0;                      /* BUG(orig): the slot number (#451) */
     c.mt_data = e->addr;
     resetciaint();                      /* _ResetCIATempo */
     if (g.play_type != 1)
@@ -1591,7 +1602,8 @@ static ULONG BLITZ_ROUTINE checktrackerevent_c(ULONG d0 BL_REG(d0))
     return BL_SETW(d0, 0xffff);
 }
 
-/* WaitTrackerEvent: WaitTOF (-270) through a6 (BUG(orig): no !libs) */
+/* WaitTrackerEvent: WaitTOF (-270) through a6 (BUG(orig): no !libs,
+   #453) */
 static void BLITZ_ROUTINE waittrackerevent_c(const void *a6 BL_REG(a6))
 {
     checktrackerevent_c(0);
@@ -1635,7 +1647,8 @@ static void BLITZ_ROUTINE change_playtype_c(void)
     resetciaint();
 }
 
-/* TrackerVolume: only 0 < new < 64 sets the playing notes (BUG(orig)) */
+/* TrackerVolume: only 0 < new < 64 sets the playing notes (BUG(orig),
+   #452) */
 static void BLITZ_ROUTINE volume_control_c(ULONG d0 BL_REG(d0))
 {
     UWORD d1, d2;

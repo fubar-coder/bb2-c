@@ -67,53 +67,57 @@ bounds. They are kept here (below).
   is overwritten) – in Amiberry the system's timer A vector of ciaa (a
   first version of the test that called the real resources made the
   later tests in the same session hang) – and toggles
-  the filter (`BCHG #1,$bfe001`).
+  the filter (`BCHG #1,$bfe001`) (#450, #448, #449).
 * `LoadTrackerModule` has no `!libs`: the dos calls go through whatever
-  a6 holds. Length = file size + 3 as a **byte** add (a size with the low
-  byte ≥ $FD loses the carry: $10FE gives $1001, and only that much is
-read); the chip memory is not
-  checked; after a Read error it unlocks the lock that `OpenFromLock`
-  took over. The FileInfoBlock is freed only on success (the runtime
-  errors leave it).
+  a6 holds (#443). Length = file size + 3 as a **byte** add (a size with
+  the low byte ≥ $FD loses the carry: $10FE gives $1001, and only that
+  much is read) (#442); the chip memory is not checked (#440); after a
+  Read error it unlocks the lock that `OpenFromLock` took over (#444).
+  The runtime errors after `Lock` leave the lock allocated, and the
+  FileInfoBlock is freed only on success (#441).
 * `DecodeModule` of a module in chip memory (address < $200000, signed)
-  keeps the address (length 1, flag 0); from other memory it copies to
-  chip memory with the size + 3 as a **word** add; without memory the
-  slot keeps the old address with flag 2 and the new length (a later
-  `FreeTrackerModule` frees memory that was never allocated).
-  `FreeTrackerModule` does not stop a module that plays from the slot.
+  keeps the address (length 1, flag 0) (#432); from other memory it
+  copies to chip memory with the size + 3 as a **word** add (#434);
+  without memory the slot keeps the old address with flag 2 and the new
+  length (a later `FreeTrackerModule` frees memory that was never
+  allocated) (#433). `FreeTrackerModule` does not stop a module that
+  plays from the slot (#436).
 * `StartTracker` of an empty slot returns the slot number (the MOVEM
-  restores d0 over the 0). `ModuleToChip` is an RTS: it returns its
-  argument. `ModulePatterns` returns the song length (byte 950).
-  `CheckTrackerID` returns the long at **address 0** (`MOVE.l 0,d0`) for
-  "no M.K./M!K!" and an empty slot. `GetModuleName$` of an empty slot
-  returns slot × 10 as the length and writes nothing (not even the 0).
+  restores d0 over the 0) (#451). `ModuleToChip` is an RTS: it returns
+  its argument (#446). `ModulePatterns` returns the song length (byte
+  950) (#445). `CheckTrackerID` returns the long at **address 0**
+  (`MOVE.l 0,d0`) for "no M.K./M!K!" and an empty slot (#430).
+  `GetModuleName$` of an empty slot returns slot × 10 as the length and
+  writes nothing (not even the 0) (#437).
 * `WaitTrackerEvent` calls WaitTOF (−270) through whatever a6 holds (no
-  `!libs`); `GetTrackerEvent` changes only d0's low byte,
-  `CheckTrackerEvent` its low byte (no event) or word (−1).
+  `!libs`) (#453); `CheckTrackerEvent` changes d0's low byte (no event)
+  or word (−1) (#431). (`GetTrackerEvent` also changes only d0's low
+  byte; it is declared `#byte`, so that is no defect.)
 * `ModulePositionJump n` jumps to position n + 1 (the next tick's
-  `mt_NextPosition` increments it).
+  `mt_NextPosition` increments it) (#447).
 * `TrackerVolume 0` and `64` do not change the volume of the notes that
-  play (only 0 < volume < 64 calls `Change_Volume_Levels`).
+  play (only 0 < volume < 64 calls `Change_Volume_Levels`) (#452).
 * `mt_init` compares the module **length** with the sample addresses
   (`CMP.l a2,a4`): it clears the first long of a sample only when the
   length is greater than its address (for a loaded module practically
-  never). Its scan of the song positions (also `_modtochip`'s) reads
-  positions 0–126 (SUBQ for a new maximum, DBRA otherwise; a new maximum
-  at 126 reads ~64 KB more); pattern numbers ≥ $80 never count (BGT).
+  never) (#438). Its scan of the song positions (also `_modtochip`'s)
+  reads positions 0–126 (SUBQ for a new maximum, DBRA otherwise; a new
+  maximum at 126 reads ~64 KB more); pattern numbers ≥ $80 never count
+  (BGT) (#477).
 * Play routine (Protracker 2.3A): `mt_LowMask` starts as 0 – the first
-  1xx/2xx before any E1x/E2x does not slide; 9xx with a note applies the
-  offset twice to `n_start`/`n_length` (`mt_SetRegs` calls
+  1xx/2xx before any E1x/E2x does not slide (#478); 9xx with a note
+  applies the offset twice to `n_start`/`n_length` (`mt_SetRegs` calls
   `mt_CheckMoreEfx`, then `mt_SetPeriod` runs it again; the hardware got
-  the first one); the tremolo's
-  ramp-down tests the **vibrato** position; `mt_SetPeriod` without a
-  matching period takes entry 37, the arpeggio reads up to 15 words
-  behind the finetune's table (for finetune 15 into `mt_chan1temp`); a
-  sample number above 31 reads behind `mt_SampleStarts`; E8x
-  (Karplus-Strong) with a loop length of 0 rewrites 64 KB; the repeat
-  offset is repeat × 2 as a word; `mt_SampleOffset` compares the offset
+  the first one) (#473); the tremolo's ramp-down tests the **vibrato**
+  position (#482); `mt_SetPeriod` without a matching period takes entry
+  37 (#481), the arpeggio reads up to 15 words behind the finetune's
+  table (for finetune 15 into `mt_chan1temp`) (#474); a sample number
+  above 31 reads behind `mt_SampleStarts` (#480); E8x (Karplus-Strong)
+  with a loop length of 0 rewrites 64 KB (#439); the repeat offset is
+  repeat × 2 as a word (#479); `mt_SampleOffset` compares the offset
   with `n_length` signed (`CMP.W`, `BGE`): 9xx on a sample of $8000 words
-  or more sets the length to 1; effect 8 is seen only on ticks other than
-  0 (never at speed 1).
+  or more sets the length to 1 (#472); effect 8 is seen only on ticks
+  other than 0 (never at speed 1) (#435).
 * F00: that it stops the module (`mt_SetSpeed`: `BEQ mt_end`) is normal
   Protracker behaviour. The defect is that `mt_end` loads a0 with
   `$DFF000` (for its `CLR.W $A8(A0)` …), and in `mt_GetNewNote` a0 is
@@ -123,13 +127,13 @@ read); the chip memory is not
   the moment or are write-only) and play them in the same row. The C
   build keeps that pointer in `patdata`, which `mt_end` sets to `$DFF000`
   (checked against the reference build: `LEA $DFF000,A0` in `mt_end`,
-  nothing else changes a0 between the four `mt_PlayVoice` calls).
+  nothing else changes a0 between the four `mt_PlayVoice` calls) (#475).
 
 ## DIFF and not reproducible
 
 No DIFF in the results. A finetune byte above 15 in a sample header
 (`n_finetune` × 72) reads behind the play routine's data – the
-original's own code there, other memory in the C build. The C build
+original's own code there, other memory in the C build (#476). The C build
 keeps a3 in `FreeTrackerModule` (the original's `LEA modtable,a3`
 changes the string pointer) and generally more registers.
 
