@@ -146,26 +146,26 @@ UWORD calcstatic(ULONG *tab)
 /* blitz2.s:6746 calcstatic2 - same for the var list `list` (asm a2) */
 UWORD calcstatic2(struct var *list, ULONG *tab)
 {
-    struct var *a2;
-    UWORD d4 = 0;
+    struct var *v;
+    UWORD count = 0;
 
     *tab = data1;                           /* asm d3 */
-    for (a2 = list; a2; a2 = a2->next) {
-        struct type *a3;
-        if (a2->flags != 0)                 /* tst 6(a2): pointer/array */
+    for (v = list; v; v = v->next) {
+        struct type *t;
+        if (v->flags != 0)                  /* tst 6(a2): pointer/array */
             continue;
-        a3 = a2->type;
-        if (a3->u.code < 256)               /* not a NewType */
+        t = v->type;
+        if (t->u.code < 256)                /* not a NewType */
             continue;
-        pokedata1(a2->offset);
-        pokedata1(a3->size);
-        d4++;
+        pokedata1(v->offset);
+        pokedata1(t->size);
+        count++;
     }
-    if (d4) {
+    if (count) {
         uselib(65335);                      /* use statics lib */
         uselib(65530);                      /* use memlib (asm: tail bra uselib) */
     }
-    return d4;
+    return count;
 }
 
 /* blitz2.s:6770 datastart - set up a2 (d3.l) and d4 (d4.w) */
@@ -207,9 +207,9 @@ void execerr(void)
 void savefile(void)
 {
     jmp_buf jb, *olderr = errjmp;
-    BPTR d7;
-    struct offnode *a2;
-    ULONG d0;
+    BPTR fh;
+    struct offnode *off;
+    ULONG longs;
 
     errjmp = &jb;
     if (setjmp(jb)) {                       /* asm: errcont = .rts */
@@ -220,83 +220,83 @@ void savefile(void)
     sleepon();
     anyerrs = -1;                           /* forces a recompile before Run */
     if (!nomemleft) {
-        UBYTE *a1 = (UBYTE *)pcat;
-        ULONG d2 = pcat + noinits;
-        for (a2 = firstoff; a2; a2 = a2->next) {
-            if ((WORD)W_(a1 + a2->offset) < 0)  /* tst 0(a1,d0.l) / bmi .noway */
+        UBYTE *code = (UBYTE *)pcat;
+        ULONG base = pcat + noinits;
+        for (off = firstoff; off; off = off->next) {
+            if ((WORD)W_(code + off->offset) < 0) /* tst 0(a1,d0.l) / bmi .noway */
                 continue;
-            L_(a1 + a2->offset) -= d2;
+            L_(code + off->offset) -= base;
         }
     }
     /* @6824 .fixdone */
-    d7 = Open((STRPTR)execname, MODE_NEWFILE);
-    if (!d7)
+    fh = Open((STRPTR)execname, MODE_NEWFILE);
+    if (!fh)
         execerr();
 
-    d0 = (objlen - noinits + 3) >> 2;
-    *tstsize1 = d0;
-    *tstsize2 = d0;
-    mywrite(d7, tsthead, 32);
+    longs = (objlen - noinits + 3) >> 2;
+    *tstsize1 = longs;
+    *tstsize2 = longs;
+    mywrite(fh, tsthead, 32);
 
-    mywrite(d7, (APTR)(pcat + noinits), (objlen - noinits + 3) & 0xfffffffc);
+    mywrite(fh, (APTR)(pcat + noinits), (objlen - noinits + 3) & 0xfffffffc);
 
     *tstsize3 = numoffs;
     if (numoffs) {
-        ULONG d4 = noinits;
-        mywrite(d7, tstend, 12);
-        for (a2 = firstoff; a2; a2 = a2->next) {
-            a2->offset -= d4;
-            mywrite(d7, &a2->offset, 4);
-            a2->offset += d4;
+        ULONG skip = noinits;
+        mywrite(fh, tstend, 12);
+        for (off = firstoff; off; off = off->next) {
+            off->offset -= skip;
+            mywrite(fh, &off->offset, 4);
+            off->offset += skip;
         }
         *tstsize3 = 0;
-        mywrite(d7, tstsize3, 4);
+        mywrite(fh, tstsize3, 4);
     }
 
     /* @6889 .skip: debug info */
     if (optreqga16.Flags & GFLG_SELECTED) {
         struct label *l;
-        mywrite(d7, (APTR)&sysdebug, 4);
+        mywrite(fh, (APTR)&sysdebug, 4);
         for (l = firstlabel; l; l = l->next) {
             if (((ULONG)l->refs & 1) && (ULONG)l->refs != 1)
                 continue;                   /* used as constant, not #const */
             {
-                UWORD d4 = ((UWORD)l->len - 19 + 3) & 0xfffc;   /* long align */
-                UWORD d5 = (d4 >> 2) << 2;                      /* #bytes */
+                UWORD padlen = ((UWORD)l->len - 19 + 3) & 0xfffc; /* long align */
+                UWORD nbytes = (padlen >> 2) << 2;              /* #bytes */
                 UBYTE nb[256 + 4];
-                temp1 = d4 >> 2;
-                mywrite(d7, &temp1, 4);
+                temp1 = padlen >> 2;
+                mywrite(fh, &temp1, 4);
                 /* DIFF: the asm wrote d4 bytes straight from the node (up to
                    3 bytes past the allocation); C pads a copy with zeros */
                 memset(nb, 0, sizeof(nb));
                 memcpy(nb, l->name, l->len - 19);
-                mywrite(d7, nb, d4);
-                if (d5 - d4)                /* never true (as in the asm) */
-                    mywrite(d7, &zero, d5 - d4);
+                mywrite(fh, nb, padlen);
+                if (nbytes - padlen)        /* never true (as in the asm) */
+                    mywrite(fh, &zero, nbytes - padlen);
                 temp1 = l->pc - pcat - noinits;
-                mywrite(d7, &temp1, 4);
+                mywrite(fh, &temp1, 4);
             }
         }
-        mywrite(d7, &zero, 4);
+        mywrite(fh, &zero, 4);
     }
     /* @6950 .nodebug */
-    mywrite(d7, tstdone, 4);
-    Close(d7);
+    mywrite(fh, tstdone, 4);
+    Close(fh);
 
     if (optreqga9.Flags & GFLG_SELECTED) {
         /* OK, create an icon for the object code! */
-        char *a0 = execname + strlen(execname);
-        char *end = a0;                     /* to later null out! */
+        char *ext = execname + strlen(execname);
+        char *end = ext;                    /* to later null out! */
         BPTR lk;
-        strcpy(a0, infoname);
+        strcpy(ext, infoname);
         lk = Lock((STRPTR)execname, ACCESS_READ);
         if (lk)
             UnLock(lk);                     /* exists: don't overwrite */
         else {
-            d7 = Open((STRPTR)execname, MODE_NEWFILE);
-            if (d7) {
-                Write(d7, (APTR)objicon, sizeof(objicon));
-                Close(d7);
+            fh = Open((STRPTR)execname, MODE_NEWFILE);
+            if (fh) {
+                Write(fh, (APTR)objicon, sizeof(objicon));
+                Close(fh);
             }
         }
         *end = 0;
@@ -314,22 +314,22 @@ void addoff(void)
 /* blitz2.s:7006 addoff2 - add d2 to linked list of all offsets */
 void addoff2(ULONG off)
 {
-    struct offnode *a0 = doallocmem(8, 1);
+    struct offnode *n = doallocmem(8, 1);
     numoffs++;
-    a0->next = firstoff;
-    firstoff = a0;
-    a0->offset = off;
+    n->next = firstoff;
+    firstoff = n;
+    n->offset = off;
 }
 
 /* blitz2.s:7022 killoffs - kill all offsets */
 void killoffs(void)
 {
-    struct offnode *a2 = firstoff, *a1;
+    struct offnode *o = firstoff, *dead;
     firstoff = NULL;
-    while (a2) {
-        a1 = a2;
-        a2 = a2->next;
-        FreeMem(a1, 8);
+    while (o) {
+        dead = o;
+        o = o->next;
+        FreeMem(dead, 8);
     }
     numoffs = 0;
 }
@@ -340,21 +340,21 @@ void killoffs(void)
 
 /* blitz2.s:7188 gchar2 - classification tail of getchar3/reget.  Only the
    in-quote mapping changes the value; the Z flag is eos(). */
-static UWORD gchar2(UWORD d0)
+static UWORD gchar2(UWORD c)
 {
-    if (d0 == 0)
+    if (c == 0)
         return 0;
     if (quoteflag) {
-        if ((UBYTE)d0 < 32) {               /* cmp.b #32,d0 (byte compare) */
-            if (d0 < 32)
-                d0 = gs[d0];                /* move.b gs(pc,d0),d0 */
+        if ((UBYTE)c < 32) {                /* cmp.b #32,d0 (byte compare) */
+            if (c < 32)
+                c = gs[c];                  /* move.b gs(pc,d0),d0 */
             /* DIFF: a token with low byte < 32 inside quotes indexed gs with a
                negative word (reads code bytes); cannot happen with tokenised
                source (strings are not tokenised), C leaves it unchanged */
         }
-        return d0;
+        return c;
     }
-    return d0;
+    return c;
 }
 
 /* parse.h eos - asm Z=1 after getchar3/reget */
@@ -370,34 +370,34 @@ BOOL eos(UWORD c)
 /* blitz2.s:7042 getchar */
 UWORD getchar_(void)
 {
-    UWORD d0;
+    UWORD c;
 
     for (;;) {
         prevloc = srcptr;
         oldqflag = quoteflag;
-        d0 = getcharb();
-        lastchar = d0;
-        if (d0 == 0)
+        c = getcharb();
+        lastchar = c;
+        if (c == 0)
             return 0;
-        if (d0 & 0x8000) {
-            if (d0 == 0x801c) {             /* .cnif */
+        if (c & 0x8000) {
+            if (c == 0x801c) {              /* .cnif */
                 ciflineat = linenumat;
                 if (!comflag) { connest++; continue; }     /* .incnest */
                 docnif(getchar3());
                 continue;
             }
-            if (d0 == 0x801d) {             /* .csif */
+            if (c == 0x801d) {              /* .csif */
                 ciflineat = linenumat;
                 if (!comflag) { connest++; continue; }
                 docsif(getchar3());
                 continue;
             }
-            if (d0 == 0x801e) {             /* .celse */
+            if (c == 0x801e) {              /* .celse */
                 if (connest == 0)
                     comflag = ~comflag;
                 continue;
             }
-            if (d0 == 0x801f) {             /* .cend */
+            if (c == 0x801f) {              /* .cend */
                 if (--connest >= 0)
                     continue;
                 connest++;
@@ -411,33 +411,33 @@ UWORD getchar_(void)
         /* .done2 */
         if (!comflag)
             continue;
-        if (d0 == '~') {                    /* .cmake */
-            UWORD c;
-            ULONG d3;
-            char *a0;
+        if (c == '~') {                     /* .cmake */
+            UWORD term;
+            ULONG val;
+            char *end;
             if (cmake)
-                return d0;
+                return c;
             cmake = ~cmake;
             /* asm: movem.l d0-d7/a0-a6 - only srcptr matters in C and it is
                set to cmakebuff below anyway */
             memcpy(cmakebak, namebuff, 128);
-            d3 = evalconst2(&c);            /* get constant into d3 */
-            if (c != '~')
+            val = evalconst2(&term);        /* get constant into d3 */
+            if (term != '~')
                 syntaxerr();                /* cmake stays set (cleared per pass) */
             cmakea5 = srcptr;
-            a0 = makelong((char *)cmakebuff, d3);
-            (*(UBYTE *)a0)++;               /* NUL -> 1 = end of cmake chars */
+            end = makelong((char *)cmakebuff, val);
+            (*(UBYTE *)end)++;              /* NUL -> 1 = end of cmake chars */
             cmake = ~cmake;
             memcpy(namebuff, cmakebak, 128);
             srcptr = cmakebuff;
             continue;
         }
-        if (d0 == 2) {                      /* end of UsePath text */
+        if (c == 2) {                       /* end of UsePath text */
             srcptr = usedfrom;
             continue;
         }
-        if (d0 != 1)
-            return d0;
+        if (c != 1)
+            return c;
         /* End of Cmake chars got */
         srcptr = cmakea5;
     }
@@ -447,34 +447,34 @@ UWORD getchar_(void)
    set hi bit if token, and lo 15 bits to token number (0-32767) */
 UWORD getcharb(void)
 {
-    UWORD d0 = *srcptr++;
-    if (d0 == 0)
+    UWORD c = *srcptr++;
+    if (c == 0)
         return 0;
-    if (d0 & 0x80) {
-        d0 = (d0 << 8) | *srcptr++;
-        return d0;
+    if (c & 0x80) {
+        c = (c << 8) | *srcptr++;
+        return c;
     }
-    if (d0 == 34) {                         /* swapquote */
+    if (c == 34) {                          /* swapquote */
         quoteflag = ~quoteflag;
-        return d0;
+        return c;
     }
-    if (d0 == ';' && !quoteflag) {          /* comment: skip line */
+    if (c == ';' && !quoteflag) {           /* comment: skip line */
         while (*srcptr++)
             ;
         lastchar = 0;
         return 0;
     }
-    return d0;
+    return c;
 }
 
 /* blitz2.s:7172 getchar2 - as above and skip spaces */
 UWORD getchar2(void)
 {
-    UWORD d0;
+    UWORD c;
     do
-        d0 = getchar_();
-    while (!quoteflag && d0 == 32);
-    return d0;
+        c = getchar_();
+    while (!quoteflag && c == 32);
+    return c;
 }
 
 /* blitz2.s:7184 getchar3 - as above. return z=1 if 0 or ':' (eos()) */
@@ -771,19 +771,19 @@ UWORD makename3(char *buf, UWORD *c)
 /* blitz2.s:7723 makename4 */
 UWORD makename4(char *at, UWORD len, UWORD *c)
 {
-    UWORD d0 = getchar3();
-    if (d0 == '_' || tstalpha(d0)) {
+    UWORD ch = getchar3();
+    if (ch == '_' || tstalpha(ch)) {
         do {
-            *at++ = (char)d0;               /* BUG(orig) (#29): no length check */
+            *at++ = (char)ch;               /* BUG(orig) (#29): no length check */
             len++;
-            d0 = getchar_();
-        } while (tstlab(d0));
-        if (d0 == 32)
-            d0 = getchar3();
+            ch = getchar_();
+        } while (tstlab(ch));
+        if (ch == 32)
+            ch = getchar3();
     }
     *at = 0;
     if (c)
-        *c = d0;
+        *c = ch;
     return len;
 }
 
@@ -814,23 +814,23 @@ struct node *addhere2(struct node *link, UWORD nameoff, UWORD len)
 /* blitz2.s:7761 addhere - add namebuff after a2,d7; d2=len of name */
 struct node *addhere(struct node *link, UWORD nameoff, UWORD len)
 {
-    UWORD d2;
-    struct node *a0;
+    UWORD size;
+    struct node *n;
     UBYTE *p;
-    const UBYTE *a1;
+    const UBYTE *src;
 
     if (dirmode)
         illdirerr();
-    d2 = nameoff + len + 1;
-    a0 = doallocmem(d2, 1);
-    link->next = a0;
-    a0->next = NULL;                        /* clear next */
-    p = (UBYTE *)a0 + nameoff - 1;
-    *p++ = (UBYTE)d2;                       /* put in struct length */
-    a1 = namebuff;
-    while ((*p++ = *a1++))
+    size = nameoff + len + 1;
+    n = doallocmem(size, 1);
+    link->next = n;
+    n->next = NULL;                         /* clear next */
+    p = (UBYTE *)n + nameoff - 1;
+    *p++ = (UBYTE)size;                     /* put in struct length */
+    src = namebuff;
+    while ((*p++ = *src++))
         ;
-    return a0;                              /* asm: bra reget */
+    return n;                               /* asm: bra reget */
 }
 
 /* blitz2.s:7822 findlab - see if namebuff is in list at a2, char offset in d7.
@@ -838,30 +838,30 @@ struct node *addhere(struct node *link, UWORD nameoff, UWORD len)
 struct node *findlab(struct node *link, UWORD nameoff, UWORD len,
                      struct node **last)
 {
-    struct node *a2 = link;
+    struct node *n = link;
 
     for (;;) {
-        UWORD d0, cnt;
-        const UBYTE *a1, *a0;
-        if (!a2->next) {
+        UWORD nlen, cnt;
+        const UBYTE *name, *want;
+        if (!n->next) {
             if (last)
-                *last = a2;
+                *last = n;
             return NULL;                    /* asm: reget, d1=-1, Z=0 */
         }
-        a2 = a2->next;
-        d0 = *((UBYTE *)a2 + nameoff - 1) - nameoff - 1;
-        if (d0 != len)
+        n = n->next;
+        nlen = *((UBYTE *)n + nameoff - 1) - nameoff - 1;
+        if (nlen != len)
             continue;
-        a1 = (UBYTE *)a2 + nameoff;
-        a0 = namebuff;
-        cnt = d0 - 1;                       /* dbf: BUG(orig) (#30) len==0 runs on */
+        name = (UBYTE *)n + nameoff;
+        want = namebuff;
+        cnt = nlen - 1;                     /* dbf: BUG(orig) (#30) len==0 runs on */
         for (;;) {
-            if (*a1++ != *a0++)
+            if (*name++ != *want++)
                 goto next;
             if (cnt-- == 0)
                 break;
         }
-        return a2;                          /* asm: reget, Z=1 */
+        return n;                           /* asm: reget, Z=1 */
     next:;
     }
 }
@@ -919,84 +919,84 @@ struct var *findvar(struct node *link, UWORD len, struct node **last)
 /* blitz2.s:7850 freeprocvs */
 void freeprocvs(void)
 {
-    struct alllocal *a4 = alllocals, *a1;
+    struct alllocal *al = alllocals, *dead;
     alllocals = NULL;
-    while (a4) {
-        freevars(a4->locals);
-        freevars(a4->globs);
-        a1 = a4;
-        a4 = a4->next;
-        FreeMem(a1, 12);
+    while (al) {
+        freevars(al->locals);
+        freevars(al->globs);
+        dead = al;
+        al = al->next;
+        FreeMem(dead, 12);
     }
 }
 
 /* blitz2.s:7866 freevars / 7867 freevars2 - free up var structs from a3 on */
-void freevars(struct var *a3)
+void freevars(struct var *v)
 {
-    struct var *a1;
-    while (a3) {
-        a1 = a3;
-        a3 = a3->next;
-        FreeMem(a1, a1->len);
+    struct var *dead;
+    while (v) {
+        dead = v;
+        v = v->next;
+        FreeMem(dead, dead->len);
     }
 }
 
 /* blitz2.s:7878 freelabels - free up label structs from firstlabel on... */
 void freelabels(void)
 {
-    struct label *a0 = lastrescon;
-    struct label *a2 = a0->next, *a1;
-    a0->next = NULL;
-    while (a2) {
-        ULONG d0 = (ULONG)a2->refs;
-        if (!(d0 & 1)) {
-            struct labref *a3 = (struct labref *)d0, *r;
-            while (a3) {
-                r = a3;
-                a3 = a3->next;
-                FreeMem(r, 12);
+    struct label *last = lastrescon;
+    struct label *l = last->next, *dead;
+    last->next = NULL;
+    while (l) {
+        ULONG refs = (ULONG)l->refs;
+        if (!(refs & 1)) {
+            struct labref *ref = (struct labref *)refs, *deadref;
+            while (ref) {
+                deadref = ref;
+                ref = ref->next;
+                FreeMem(deadref, 12);
             }
         }
-        a1 = a2;
-        a2 = a2->next;
-        FreeMem(a1, a1->len);
+        dead = l;
+        l = l->next;
+        FreeMem(dead, dead->len);
     }
 }
 
 /* blitz2.s:7906 freepends / 7909 fpnd2 */
 void freepends(void)
 {
-    struct addrnode *a3 = firstpend, *a1;
+    struct addrnode *p = firstpend, *dead;
     firstpend = NULL;
-    while (a3) {
-        a1 = a3;
-        a3 = a3->next;
-        FreeMem(a1, 8);
+    while (p) {
+        dead = p;
+        p = p->next;
+        FreeMem(dead, 8);
     }
 }
 
 /* blitz2.s:7918 freeprocs - free up all proc structs */
 void freeprocs(void)
 {
-    struct proc *a2 = firstproc, *a1;
+    struct proc *p = firstproc, *dead;
     firstproc = NULL;
-    while (a2) {
-        a1 = a2;
-        a2 = a2->next;
-        FreeMem(a1, a1->len);
+    while (p) {
+        dead = p;
+        p = p->next;
+        FreeMem(dead, dead->len);
     }
 }
 
 /* blitz2.s:7933 freetypes - free up type structs from a2 on */
-void freetypes(struct type *a2)
+void freetypes(struct type *t)
 {
-    struct type *a1;
-    while (a2) {
-        if (a2->u.code != TYPE_FORWARD)     /* cmp #$ff,a3 */
-            freevars(a2->u.fields);         /* free offsets too */
-        a1 = a2;
-        a2 = a2->next;
-        FreeMem(a1, a1->len);
+    struct type *dead;
+    while (t) {
+        if (t->u.code != TYPE_FORWARD)      /* cmp #$ff,a3 */
+            freevars(t->u.fields);          /* free offsets too */
+        dead = t;
+        t = t->next;
+        FreeMem(dead, dead->len);
     }
 }
 
@@ -1008,80 +1008,80 @@ static struct var *fvarback(struct node *head, UWORD len, struct type **type,
                             UWORD *c);
 
 /* blitz2.s:8034 fvarfound - var found, establish if type is correct! */
-static struct var *fvarfound(struct var *a3, struct type **type, UWORD *c)
+static struct var *fvarfound(struct var *v, struct type **type, UWORD *c)
 {
-    UWORD d0 = reget();                     /* d0 left by findlab */
+    UWORD ch = reget();                     /* d0 left by findlab */
 
-    if (d0 == '.') {
-        struct type *a2;
-        UWORD len = makename(&d0);
-        a2 = findtype((struct node *)&alltypes, len, NULL);
-        if (!a2)
+    if (ch == '.') {
+        struct type *t;
+        UWORD len = makename(&ch);
+        t = findtype((struct node *)&alltypes, len, NULL);
+        if (!t)
             notypeerr();
-        d0 = reget();
-        if (a3->type != a2)
+        ch = reget();
+        if (v->type != t)
             rongtypeerr();
-    } else if (d0 == '$') {
-        if (a3->type != &stringtype)
+    } else if (ch == '$') {
+        if (v->type != &stringtype)
             rongtypeerr();
-        d0 = getchar3();
+        ch = getchar3();
     }
     if (flagmask & 1) {
-        if (!(a3->flags & 1))
+        if (!(v->flags & 1))
             pointerr();
     }
-    *type = a3->type;
+    *type = v->type;
     if (c)
-        *c = d0;
-    return a3;
+        *c = ch;
+    return v;
 }
 
 /* blitz2.s:7973 fvaradd - create var after `last` */
 static struct var *fvaradd(struct node *last, UWORD len, struct type **type,
                            UWORD *c)
 {
-    struct var *a3;
-    struct type *a2;
-    UWORD d0, d1;
+    struct var *v;
+    struct type *t;
+    UWORD ch, size;
 
     if (nonew)
         nonewerr();
-    a3 = (struct var *)addhere(last, NAMEOFF_VAR, len);  /* create var */
+    v = (struct var *)addhere(last, NAMEOFF_VAR, len);   /* create var */
     added = ~added;                         /* set added flag */
-    d0 = reget();
-    a2 = defaulttype;
-    if (d0 == '.') {                        /* .clapton */
-        UWORD l2 = makename(&d0);
-        a2 = findtype((struct node *)&alltypes, l2, NULL);
-        if (!a2)
+    ch = reget();
+    t = defaulttype;
+    if (ch == '.') {                        /* .clapton */
+        UWORD l2 = makename(&ch);
+        t = findtype((struct node *)&alltypes, l2, NULL);
+        if (!t)
             notypeerr();
-        d0 = reget();
-    } else if (d0 == '$') {
-        a2 = &stringtype;
-        d0 = getchar3();
+        ch = reget();
+    } else if (ch == '$') {
+        t = &stringtype;
+        ch = getchar3();
     }
     /* .usedef */
-    if (a2 != &bytetype) {
+    if (t != &bytetype) {
         if (!varmode)
             varoff++;
         varoff &= ~1;                       /* .pit: bclr #0,varoff+1 */
     }
-    a3->type = a2;
-    a3->flags = flagmask;
-    d1 = 4;
-    if (!(flagmask & 1) && !(flagmask & 2) && a2->u.code < 256)
-        d1 = a2->size;
+    v->type = t;
+    v->flags = flagmask;
+    size = 4;
+    if (!(flagmask & 1) && !(flagmask & 2) && t->u.code < 256)
+        size = t->size;
     if (varmode) {
-        varoff -= d1;
-        a3->offset = varoff;                /* loc offset */
+        varoff -= size;
+        v->offset = varoff;                 /* loc offset */
     } else {
-        a3->offset = varoff;                /* global */
-        varoff += d1;
+        v->offset = varoff;                 /* global */
+        varoff += size;
     }
-    *type = a2;
+    *type = t;
     if (c)
-        *c = d0;
-    return a3;
+        *c = ch;
+    return v;
 }
 
 /* blitz2.s:7965 fvarback - search list head, flags must match */
@@ -1089,11 +1089,11 @@ static struct var *fvarback(struct node *head, UWORD len, struct type **type,
                             UWORD *c)
 {
     struct node *last;
-    struct var *a2 = findvar(head, len, &last);
-    while (a2) {                            /* .more */
-        if ((UBYTE)flagmask == (UBYTE)a2->flags)
-            return fvarfound(a2, type, c);
-        a2 = (struct var *)findlab((struct node *)a2, NAMEOFF_VAR, len, &last);
+    struct var *v = findvar(head, len, &last);
+    while (v) {                             /* .more */
+        if ((UBYTE)flagmask == (UBYTE)v->flags)
+            return fvarfound(v, type, c);
+        v = (struct var *)findlab((struct node *)v, NAMEOFF_VAR, len, &last);
     }
     return fvaradd(last, len, type, c);
 }
@@ -1101,14 +1101,14 @@ static struct var *fvarback(struct node *head, UWORD len, struct type **type,
 /* blitz2.s:8016 fvarlocal */
 static struct var *fvarlocal(UWORD len, struct type **type, UWORD *c)
 {
-    struct var *a2 = findvar((struct node *)&firstglob, len, NULL);
+    struct var *v = findvar((struct node *)&firstglob, len, NULL);
     struct var *r;
     WORD save;
 
-    while (a2) {
-        if ((UBYTE)flagmask == (UBYTE)a2->flags)
-            return fvarfound(a2, type, c);
-        a2 = (struct var *)findlab((struct node *)a2, NAMEOFF_VAR, len, NULL);
+    while (v) {
+        if ((UBYTE)flagmask == (UBYTE)v->flags)
+            return fvarfound(v, type, c);
+        v = (struct var *)findlab((struct node *)v, NAMEOFF_VAR, len, NULL);
     }
     /* .hendrix */
     varmode = -1;
@@ -1138,19 +1138,19 @@ struct var *fetchvar(UWORD len, struct type **type, UWORD *c)
 
 /* blitz2.s:8061 addd0a0 - emit code adding d3 to a2; returns the (possibly
    clobbered) d3 like the asm */
-static WORD addd0a0(WORD d3)
+static WORD addd0a0(WORD off)
 {
-    if (d3 == 0)
-        return d3;
-    if ((UWORD)d3 < 9) {
-        d3 = (d3 & 7) << 9;
-        *addqa0 = (*addqa0 & 0xf1ff) | d3;
+    if (off == 0)
+        return off;
+    if ((UWORD)off < 9) {
+        off = (off & 7) << 9;
+        *addqa0 = (*addqa0 & 0xf1ff) | off;
         pokewd(*addqa0);
     } else {
-        leaa0a0[1] = d3;
+        leaa0a0[1] = off;
         pokel(TL(leaa0a0));
     }
-    return d3;
+    return off;
 }
 
 /* blitz2.s:8082 makeamul / 8084 makelmul - make long multiply for array
@@ -1159,18 +1159,18 @@ static WORD addd0a0(WORD d3)
    code: do a x(a5).l * d1 + d0.l  with d1 = D(regat), d0 = D(regat-1) */
 static void makelmul(WORD off)
 {
-    UWORD d2 = regat;
+    UWORD r = regat;
 
-    pokewd((arrmul1[0] | d2) - 1);                          /* move.l d(r-1),-(a7) */
-    pokewd((*arrmul2 | d2) | ((d2 - 1) << 9));              /* move dr,d(r-1) */
-    pokewda5s(*arrmul3 | (d2 << 9));                        /* mulu x+2(a5),dr */
+    pokewd((arrmul1[0] | r) - 1);                           /* move.l d(r-1),-(a7) */
+    pokewd((*arrmul2 | r) | ((r - 1) << 9));                /* move dr,d(r-1) */
+    pokewda5s(*arrmul3 | (r << 9));                         /* mulu x+2(a5),dr */
     pokewd(off + 2);
-    pokewda5s(*arrmul4 | ((d2 - 1) << 9));                  /* mulu x(a5),d(r-1) */
+    pokewda5s(*arrmul4 | ((r - 1) << 9));                   /* mulu x(a5),d(r-1) */
     pokewd(off);
-    pokewd((*arrmul5 | d2) - 1);                            /* swap d(r-1) */
-    pokewd((*arrmul6 | d2) - 1);                            /* clr d(r-1) */
-    pokewd(((*arrmul7 | d2) - 1) | (d2 << 9));              /* add.l d(r-1),dr */
-    pokewd(*arrmul8 | ((d2 - 1) << 9));                     /* move.l (a7)+,d(r-1) */
+    pokewd((*arrmul5 | r) - 1);                             /* swap d(r-1) */
+    pokewd((*arrmul6 | r) - 1);                             /* clr d(r-1) */
+    pokewd(((*arrmul7 | r) - 1) | (r << 9));                /* add.l d(r-1),dr */
+    pokewd(*arrmul8 | ((r - 1) << 9));                      /* move.l (a7)+,d(r-1) */
     pokewd(((regat - 1) << 9) | 0xd080 | regat);            /* add.l dr,d(r-1) */
 }
 #define makeamul makelmul
@@ -1183,22 +1183,22 @@ static void makelmul(WORD off)
 UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
 {
     static UWORD listoff;                   /* .listoff dc 0 (data in code) */
-    struct var *a3 = *pv;
-    struct type *a2 = *pt;
-    UWORD d0 = *pc0;
-    UWORD d2;
-    WORD d3;
+    struct var *v = *pv;
+    struct type *t = *pt;
+    UWORD ch = *pc0;
+    UWORD rtype;
+    WORD off;
 
     lastoffset = 0;
-    if (a3->flags & 2) {                    /* btst #1,7(a3): array */
+    if (v->flags & 2) {                     /* btst #1,7(a3): array */
         if (added)
             noarrerr();
-        d0 = getchar3();
-        if (d0 == ')') {
+        ch = getchar3();
+        if (ch == ')') {
             /* list array: current item */
-            if (!(a3->flags & 0x100))       /* btst #0,6(a3) */
+            if (!(v->flags & 0x100))        /* btst #0,6(a3) */
                 nolisterr();
-            listcode1[1] = a3->offset;
+            listcode1[1] = v->offset;
             pokela5s(TL(listcode1));
             pokel(TL(listcode2));
             if (debugga)
@@ -1208,28 +1208,28 @@ UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
             /* .notalist */
             struct type *ftype;
             WORD fvarmode, fndims, foff;
-            UWORD fmask, d1;
+            UWORD fmask, elsize;
 
             listoff = 0;
-            if (a3->flags & 0x100)
+            if (v->flags & 0x100)
                 listoff = 8;                /* adjust size of one element if list. */
             /* .knob: asm stack frame -> locals */
             fvarmode = varmode;
-            fndims = a3->ndims;             /* number of dims */
-            foff = a3->offset;              /* varoff */
-            ftype = a2;
+            fndims = v->ndims;              /* number of dims */
+            foff = v->offset;               /* varoff */
+            ftype = t;
             fmask = flagmask;
             bakup();
-            d0 = arreval();
+            ch = arreval();
             flagmask = fmask;
             varmode = fvarmode;
             if (debugga)
                 arrszchk();
-            a2 = ftype;
-            d1 = 4;
+            t = ftype;
+            elsize = 4;
             if (!(flagmask & 1))            /* pointer? then use 4 byte mul... */
-                d1 = a2->size;
-            muld1(d1 + listoff);
+                elsize = t->size;
+            muld1(elsize + listoff);
             regat++;
             for (;;) {                      /* .arloop */
                 foff += 4;
@@ -1243,146 +1243,146 @@ UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
                 }
                 if (--fndims == 0)
                     break;
-                if (d0 != ',')
+                if (ch != ',')
                     syntaxerr();
-                d0 = arrevalchk();
+                ch = arrevalchk();
                 varmode = fvarmode;
                 makeamul(foff);
             }
             /* .ardone */
-            if (d0 != ')')
+            if (ch != ')')
                 syntaxerr();
             regat--;
-            movea5a0[1] = a3->offset;
+            movea5a0[1] = v->offset;
             pokela5s(TL(movea5a0));
             pokewd(regat | 0xd5c0);         /* add.l Dr,a2 */
-            if (a3->flags & 0x100)
+            if (v->flags & 0x100)
                 pokewd(*listarfix);         /* addq #8,a2 to skip node. */
         }
         /* .normalar */
-        d0 = getchar3();
+        ch = getchar3();
         /* this shit added lately - after the major fucking crash! */
-        if ((a3->flags & 1) && d0 != '\\')
-            d2 = 0xc000;                    /* .pmskip */
+        if ((v->flags & 1) && ch != '\\')
+            rtype = 0xc000;                 /* .pmskip */
         else {
-            if (a3->flags & 1)
+            if (v->flags & 1)
                 pokewd(calcvar_pfix);       /* move.l (a2),a2 */
-            d2 = 0x8000;                    /* .noppnt */
+            rtype = 0x8000;                 /* .noppnt */
         }
     } else {
         /* .notarr */
-        if (d0 == '(')
+        if (ch == '(')
             noarrerr();
-        if (a2->u.code < 256) {
+        if (t->u.code < 256) {
             /* .simpvar */
-            d2 = TYPE_CODE(a2);
+            rtype = TYPE_CODE(t);
             goto simpvar2;
         }
-        if ((a3->flags & 1) && d0 != '\\') {
+        if ((v->flags & 1) && ch != '\\') {
             /* it's a pointer - is it a simple one? */
-            d2 = 0;
+            rtype = 0;
             goto simpvar2;
         }
         /* .notap */
-        d2 = 0x8000;
-        movea5a0[1] = a3->offset;
+        rtype = 0x8000;
+        movea5a0[1] = v->offset;
         pokela5s(TL(movea5a0));             /* move.l x(a5),a2 */
     }
 
     /* .loopm1 */
-    d3 = 0;
+    off = 0;
     for (;;) {
         /* .loop0 */
-        if (d0 != '\\')
+        if (ch != '\\')
             break;
-        if (a2->u.code < 256)
+        if (t->u.code < 256)
             rongtypeerr();
         {
-            UWORD len = makename(&d0);
+            UWORD len = makename(&ch);
             struct var *f;
             if (!len)
                 syntaxerr();
-            f = findvar((struct node *)&a2->u.fields, len, NULL);  /* addq #4,a2 */
+            f = findvar((struct node *)&t->u.fields, len, NULL);   /* addq #4,a2 */
             if (!f)
                 noofferr();
-            d0 = reget();
-            a3 = f;                         /* pointer to offset */
-            a2 = a3->type;                  /* pointer to type */
-            d3 += a3->offset;
-            lastoffset = (ULONG)a3;
+            ch = reget();
+            v = f;                          /* pointer to offset */
+            t = v->type;                    /* pointer to type */
+            off += v->offset;
+            lastoffset = (ULONG)v;
         }
-        if (d0 == '[') {
+        if (ch == '[') {
             struct type *st;
             struct var *sv;
             WORD svm;
             ULONG slo;
-            UWORD ty, d1;
+            UWORD ty, elsize;
 
-            if (!(a3->flags & 2))
+            if (!(v->flags & 2))
                 rongtypeerr();
-            addd0a0(d3);
-            st = a2; sv = a3; svm = varmode; slo = lastoffset;
+            addd0a0(off);
+            st = t; sv = v; svm = varmode; slo = lastoffset;
             pokewd(*pusha2);
             ty = 2;
-            d0 = eval(&ty);
-            if (d0 != ']')
+            ch = eval(&ty);
+            if (ch != ']')
                 syntaxerr();
             pokewd(*pulla2);
-            lastoffset = slo; varmode = svm; a2 = st; a3 = sv;
+            lastoffset = slo; varmode = svm; t = st; v = sv;
             /* [] error checking: 8(a3) = how many we can handle.
                special case for 0! */
-            if (debugga && a3->ndims) {
-                brchkcode[1] = a3->ndims;
+            if (debugga && v->ndims) {
+                brchkcode[1] = v->ndims;
                 brchkcode[0] = brchkcode0[0] | (regat << 9);
                 pokel(TL(brchkcode));
                 pokel(TL(brchkcode + 2));
                 pokewd(brchkcode[4]);
             }
-            d1 = 4;
-            if (!(a3->flags & 1))
-                d1 = a2->size;
-            muld1(d1);
+            elsize = 4;
+            if (!(v->flags & 1))
+                elsize = t->size;
+            muld1(elsize);
             pokewd(*addrega2 | regat);
-            d0 = getchar3();
-            d3 = 0;
-            d2 = 0x8000;
+            ch = getchar3();
+            off = 0;
+            rtype = 0x8000;
         }
         /* .realdone */
-        if (!(a3->flags & 1))
+        if (!(v->flags & 1))
             continue;                       /* bra .loop0 */
         /* .pointer */
-        if (d0 != '\\') {
+        if (ch != '\\') {
             /* .done3 */
-            d2 |= 0x4000;
-            if (!(a3->flags & 4))
-                d2 |= TF_PTRNOAT;
+            rtype |= 0x4000;
+            if (!(v->flags & 4))
+                rtype |= TF_PTRNOAT;
             break;
         }
-        if (d3 == 0)
+        if (off == 0)
             pokewd(*movea0);
         else {
-            movea0a0[1] = d3;
+            movea0a0[1] = off;
             pokel(TL(movea0a0));
         }
-        if (a3->flags & 4)
+        if (v->flags & 4)
             pokel(TL(adda0a0));
-        d3 = 0;                             /* .loopm1 */
+        off = 0;                            /* .loopm1 */
     }
     /* .done */
-    if (a2->u.code < 256)
-        d2 = (d2 & 0xff00) | (UBYTE)TYPE_CODE(a2);    /* move.b 7(a2),d2 */
-    d3 = addd0a0(d3);                       /* .done2: bra addd0a0 */
+    if (t->u.code < 256)
+        rtype = (rtype & 0xff00) | (UBYTE)TYPE_CODE(t); /* move.b 7(a2),d2 */
+    off = addd0a0(off);                     /* .done2: bra addd0a0 */
     goto out;
 
 simpvar2:
-    d3 = a3->offset;
-    if (a3->flags & 1)
-        d2 |= 0x4000;
+    off = v->offset;
+    if (v->flags & 1)
+        rtype |= 0x4000;
 out:
-    *pv = a3;
-    *pt = a2;
-    *pc0 = d0;
+    *pv = v;
+    *pt = t;
+    *pc0 = ch;
     if (offset)
-        *offset = d3;
-    return d2;
+        *offset = off;
+    return rtype;
 }
