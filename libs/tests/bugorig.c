@@ -148,7 +148,7 @@ int bugorig_cliargs_parpath_cli(const char *dir)
             out[r.d[0]] = 0;
         snprintf(buf, sizeof buf,
                  "ParPath$(1,%d) of the CLI argument \"datei.txt\" is empty "
-                 "(BUG(orig): NameFromLock(0) - got length %ld \"%.200s\")",
+                 "(BUG(orig) (#107): NameFromLock(0) - got length %ld \"%.200s\")",
                  type, (LONG)r.d[0], r.d[0] < sizeof out ? (char *)out : "?");
         check(buf, r.d[0] == 0);
     }
@@ -172,7 +172,7 @@ static void fill(UBYTE *p, ULONG n)
 }
 
 /* Implode on IMPLEN bytes that end exactly at the end of the highest
-   memory region.  Correct: no read behind the data.  BUG(orig): the match
+   memory region.  Correct: no read behind the data.  BUG(orig) (#112): the match
    search reads up to 254 bytes behind the data (emulator.cmake counts the
    logged illegal reads in the 256 bytes behind it); here only the round
    trip is checked. */
@@ -305,7 +305,7 @@ static ULONG guards_changed(const UBYTE *dest, ULONG dlen)
    lengths stays - CrMDecrunch's overlap copy with a crunched length < 4
    and its in-place form are issues of their own).  Correct: nothing is
    written outside the destination (GUARD bytes in front of and behind
-   it).  BUG(orig): the decrunchers check nothing and write in front of or
+   it).  BUG(orig) (#119): the decrunchers check nothing and write in front of or
    behind the destination.  The first such variant ends the format: what
    it wrote beyond the guards is not known, the next one could run into
    it (each format reports the number of the variant). */
@@ -403,7 +403,7 @@ int bugorig_crunch_decrunch_corrupt(const char *dir)
             } else if (changed) {
                 bad = v;
                 snprintf(buf, sizeof buf,
-                         "%s writes nothing outside the destination (BUG(orig): corrupt "
+                         "%s writes nothing outside the destination (BUG(orig) (#119): corrupt "
                          "variant %d changed %lu of the %d guard bytes)",
                          fname[f], v, changed, 2 * GUARD);
                 check(buf, FALSE);
@@ -427,7 +427,7 @@ int bugorig_crunch_decrunch_corrupt(const char *dir)
    more (the room a fix that moves the data to the end of the buffer
    needs); GUARD bytes in front of and behind it.  Correct ("works like
    the Deplode command", ROMULUSLIBS.DOC): the original in the buffer,
-   nothing written outside it.  BUG(orig): OverlapDecrunch moves the
+   nothing written outside it.  BUG(orig) (#116): OverlapDecrunch moves the
    crunched data to MinSecDist bytes in front of the buffer and decrunches
    from there. */
 int bugorig_crunchlib_crm_minsecdist(const char *dir)
@@ -465,7 +465,7 @@ int bugorig_crunchlib_crm_minsecdist(const char *dir)
     check("CrMDecrunch buffer decrunches the CrM! data in place",
           !memcmp(buf, text, TEXTLEN));
     snprintf(msg, sizeof msg,
-             "CrMDecrunch buffer writes nothing in front of the buffer (BUG(orig): "
+             "CrMDecrunch buffer writes nothing in front of the buffer (BUG(orig) (#116): "
              "%lu of the %d guard bytes changed, MinSecDist is %d)", front, GUARD, CRMMSD);
     check(msg, front == 0);
     snprintf(msg, sizeof msg, "CrMDecrunch buffer writes nothing behind the buffer "
@@ -485,7 +485,7 @@ int bugorig_crunchlib_crm_minsecdist(const char *dir)
    to longs); what the decruncher then makes of the data is not checked -
    it writes downwards from buffer+OrigLen (up to 16 KB below the buffer,
    LOWABSORB), nothing behind the buffer: the GUARD bytes there stay.
-   BUG(orig): the copy counts (CrLen>>2) longs with SUBQ/BNE - 0 copies
+   BUG(orig) (#115): the copy counts (CrLen>>2) longs with SUBQ/BNE - 0 copies
    2^32 longs over the whole memory, the system crashes (the line below
    is the last output; the run ends in the emulator's time limit). */
 int bugorig_crunchlib_crm_overlap_4gb(const char *dir)
@@ -522,7 +522,7 @@ int bugorig_crunchlib_crm_overlap_4gb(const char *dir)
         back += buf[blen + i] != GUARDVAL;
     snprintf(msg, sizeof msg,
              "CrMDecrunch buffer with CrLen 0 writes nothing behind the buffer "
-             "(BUG(orig): copies 4 GB; %lu of the %d guard bytes changed)", back, GUARD);
+             "(BUG(orig) (#115): copies 4 GB; %lu of the %d guard bytes changed)", back, GUARD);
     check(msg, back == 0);
     FreeMem(arena, alen);
     return failures ? 5 : 0;
@@ -565,7 +565,7 @@ static struct lib *load_crunchlib_guarded(const char *dir, UBYTE **block, ULONG 
    the end) is made 0.  The tables (Tabbs) are static data at the end of
    the library's hunk, as in the original; the library is loaded with
    GUARD bytes behind its hunk.  Correct: corrupt data do not write
-   outside the tables - the guard bytes stay.  BUG(orig): ReadTab counts
+   outside the tables - the guard bytes stay.  BUG(orig) (#117): ReadTab counts
    with SUBQ/DBF, 0 reads 65536 entries and writes 128 KB behind the
    tables. */
 int bugorig_crunchlib_crm2_readtab(const char *dir)
@@ -619,7 +619,7 @@ int bugorig_crunchlib_crm2_readtab(const char *dir)
         } else {
             snprintf(msg, sizeof msg,
                      "CrMDecrunch of CrM2 data with a ReadTab count of 0 writes nothing "
-                     "behind the library's tables (BUG(orig): 65536 entries; %lu of the "
+                     "behind the library's tables (BUG(orig) (#117): 65536 entries; %lu of the "
                      "%d guard bytes behind the hunk changed)", changed, GUARD);
             check(msg, changed == 0);
         }
@@ -637,7 +637,7 @@ int bugorig_crunchlib_crm2_readtab(const char *dir)
    data use) made 0.  Arena: [SRCLOW][source][ABSORB][GUARD][dest][GUARD]
    [ABSORB].  Correct (fix of the issue: efficiency values outside 1-15
    abort before unpacking): the destination and the guard bytes stay
-   unchanged.  BUG(orig): ReadD1_SUB reads efficiency-1 = 65535 bits
+   unchanged.  BUG(orig) (#118): ReadD1_SUB reads efficiency-1 = 65535 bits
    (8 KB below the read pointer), the bit stream is shifted and garbage is
    unpacked into the destination. */
 int bugorig_crunchlib_pp_readd1(const char *dir)
@@ -688,7 +688,7 @@ int bugorig_crunchlib_pp_readd1(const char *dir)
             changed += dest[i] != GUARDVAL;
         snprintf(msg, sizeof msg,
                  "PPDecrunch of PP20 data with an efficiency value of 0 writes nothing "
-                 "(BUG(orig): reads 65536 bits and unpacks garbage; %lu of the %d bytes of "
+                 "(BUG(orig) (#118): reads 65536 bits and unpacks garbage; %lu of the %d bytes of "
                  "the destination and the guard bytes changed)", changed,
                  GUARD + TEXTLEN + GUARD);
         check(msg, changed == 0);
@@ -721,7 +721,7 @@ static const struct stub dbgstubs[] = {
    "A" token "BC".  Without a token list every token reads as "?????"
    (5 characters), the plain text is "A?????BC".  Correct: the position
    right after the token (3) is 6, the position after "B" (4) is 7.
-   BUG(orig): after a token the loop end test sees the flags of the
+   BUG(orig) (#127): after a token the loop end test sees the flags of the
    length count, not of the position; position 3 becomes 0 there and the
    conversion runs to the end of the line (8). */
 int bugorig_debuglib_findoff_flags(const char *dir)
@@ -749,7 +749,7 @@ int bugorig_debuglib_findoff_flags(const char *dir)
         callregs(entry_code(l, 7), &r, 0, 0);                       /* dofindoff */
         got = (UWORD)r.d[0];
         snprintf(msg, sizeof msg, "dofindoff of position %u in \"A\" token \"BC\" is %u "
-                 "(BUG(orig) after a token: got %u)", want[i][0], want[i][1], got);
+                 "(BUG(orig) (#127) after a token: got %u)", want[i][0], want[i][1], got);
         check(msg, got == want[i][1]);
     }
     return failures ? 5 : 0;
