@@ -1,0 +1,6 @@
+[run]
+frames 0 deltas -1
+init current -1
+row 0000AABB
+current is a node -1
+rc=0
