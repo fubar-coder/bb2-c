@@ -453,6 +453,30 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   acidlibs give to polylib: its tests need a ref with other acidlibs,
   not done yet).
 
+  *A bug that only shows on a 68000/68010 or Kickstart 1.x*: the header
+  line `; @machine NAME` (pass key `machine=`) runs every configuration
+  on that machine, `a500` (68000, Kickstart 1.3, Workbench 1.3.5) or
+  `a500-68010` (`amiga-emulation/README.md`, "A500 machine"); compiler
+  and program run there, as on the A1200 (e.g. `libs/multi-68010-vbr`,
+  #42; `rwe/risortlib-finit-closelibrary-unchecked`, #824). On
+  Kickstart 1.x the session script is in AmigaDOS 1.3 syntax (the
+  redirection right behind the command name; no `$RC` and no `>>`:
+  `rcput` - `tests/corpus/amiga/rcput.c` - appends the `rc=N` of the
+  command before), tedstub (with the edstub frame) uses only Kickstart
+  1.2 functions, and `reqtrap` patches only AutoRequest there and calls
+  the program itself (LoadSeg, as the 1.3 CLI calls a command: only
+  machine code programs, not the BCPL commands of `C:`). reqtrap and
+  rcput are linked with libnix13 (libnix20, the toolchain's default,
+  does not start on Kickstart 1.x). The reference blitz2 1.95 is
+  assembled with `-kick1hunks` (HUNK_RELOC32: Kickstart 1.x's LoadSeg
+  knows no HUNK_DREL32). Not there on Kickstart 1.x: `gate=`
+  (reqclosetest, reqclose), `@INJECT@`, `@WBRUN@` (V36 functions), and
+  blitz2-c itself does not start there yet (#936: it opens
+  utility.library) - port and clib show `utility.library failed to
+  load` until then. A crash on Kickstart 1.3 ends in the requester
+  "Software error - task held", which reqtrap answers with Cancel: a
+  Guru that waits for the mouse, the session runs into its timeout.
+
   **bug-orig tests of TED** (`tests/bug-orig/ted/ID.drv`): a TED A/B
   script (`tests/ted-ab`, directives in `runner/tedab.h`) whose
   expectations are the correct behaviour. `tedab` in its bug-orig mode

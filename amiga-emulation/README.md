@@ -194,12 +194,23 @@ hardfile read-only. `a500-68010` is the same machine with a 68010
   text), only `If WARN`/`ERROR`/`FAIL` for the return code. The end mark
   of `amiga_emulation` is written in this form.
 * **What runs there** (checked 2026-10-30): the CD's blitz2 2.10 with
-  TED 1.1 starts; programs compiled elsewhere (e.g. by a bug-orig run on
-  the A1200) run. The port's `blitz2` does not start ("utility.library
-  failed to load": its libnix startup opens utility.library, which
-  Kickstart 1.x lacks). The bug-orig/corpus harness does not run on 1.x
-  yet: its session script uses `$RC`, `>>` and redirection behind the
-  arguments; tedstub (with the edstub frame), reqtrap, inject and wbrun
-  call V36+ functions (`CreateMsgPort`, `CreateIORequest`,
-  `AllocDosObject`, `EasyRequestArgs`, `SystemTags`, `CreateNewProcTags`,
-  `RunCommand`, `CacheClearU`).
+  TED 1.1 starts, and so does the reference blitz2 1.95 (assembled with
+  `-kick1hunks`: Kickstart 1.x's LoadSeg knows no HUNK_DREL32, vasm's
+  default for relocations); programs compiled elsewhere (e.g. by a
+  bug-orig run on the A1200) run. The port's `blitz2` does not start
+  ("utility.library failed to load": its libnix startup opens
+  utility.library, which Kickstart 1.x lacks; #936). Programs linked
+  with libnix20 (the toolchain's default with `-noixemul`) crash at
+  start; libnix13 works.
+* **The bug-orig harness** runs there (machine= / `; @machine`, README,
+  "Tests"): the session script in 1.3 syntax with `rcput` for the
+  `rc=N` lines, tedstub and its edstub frame with Kickstart 1.2
+  functions only, reqtrap linked with libnix13, patching only
+  AutoRequest and calling the program itself (LoadSeg; only machine code
+  programs - the BCPL commands of `C:`, e.g. `C:Version`, crash called
+  that way). Not on 1.x: the gate of corpus_req (reqclosetest,
+  reqclose: V36), inject and wbrun (`CreateMsgPort`, `CreateIORequest`,
+  `CreateNewProcTags`, `RunCommand`, `CacheClearU`, libnix20 with
+  utility.library). A command that cannot be loaded ("file is not an
+  object module") ends the script on 1.3 despite `FailAt`: the session
+  runs into its timeout.
