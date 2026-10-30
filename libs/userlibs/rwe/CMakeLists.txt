@@ -103,7 +103,11 @@ set(RWE_LIBS
 	"blitzbomberslibtwo|blitzbomberslib/blitzbombersTwo00.bb|refbuild"
 	"ribbmaplib|blitzbomberslib/bbmaplib2.bb|refbuild"
 	"rithreadlib|threadlib.bb|refbuild"
-	"risnowlib|Snow/SnowLib3.bb|refbuild")
+	"risnowlib|Snow/SnowLib3.bb|refbuild"
+	# risoundlib's successor (number 45, AHI; resident AHI.res): no
+	# binary; variant rwe-1999-ahi, where it replaces risoundlib
+	# (RWE_OWN_VARIANTS)
+	"risoundlib2|soundlib/risoundlib2.bb|refbuild")
 
 set(variant_dir ${PROJECT_SOURCE_DIR}/libs/variants/${RWE_VARIANT})
 set(out ${BLITZ_VARIANTS_DIR}/${RWE_VARIANT})

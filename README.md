@@ -70,7 +70,11 @@ have is built in a variant of its own (`RWE_OWN_VARIANTS`):
 (`#renderlib`) for RIEvalLib (121,
 `variants/rwe-1999-eval/userlibs/rwe/rievallib.obj`, used with the RWE
 userlibs of `rwe-1999`, whose numbers are the same; ctest
-`variant_rwe_1999_eval`, `rwe_numbers_rwe-1999-eval`). Target
+`variant_rwe_1999_eval`, `rwe_numbers_rwe-1999-eval`); `rwe-1999-ahi`
+has `rwe-1999`'s numbers and risoundlib2 instead of risoundlib (both 45:
+`variants/rwe-1999-ahi/userlibs/rwe/risoundlib2.obj`, used with the RWE
+userlibs of `rwe-1999` but `risoundlib.obj`; ctest
+`variant_rwe_1999_ahi`, `rwe_numbers_rwe-1999-ahi`). Target
 `rwelibsrc`: those Blitz sources as TED shows them, in
 `build/amiga/rwelibsrc/` (like `bblibsrc`), with the tokens of the
 library files of their variant built here (blitz2, the variant's
@@ -563,7 +567,8 @@ libs/include/                blitzlib.h & co. (conventions of the libraries)
 libs/variants/               the variants of the libraries (NAME/libnums.h:
                              the library numbers; bb2-2.10 the default)
 libs/userlibs/               userlibs of a variant (rwe/: Red When Excited,
-                             variant rwe-1999; rievallib: rwe-1999-eval)
+                             variant rwe-1999; rievallib: rwe-1999-eval,
+                             risoundlib2: rwe-1999-ahi)
 libs/blitzlib.ld             linker script: one code hunk, header at offset 0
 libs/acidlibs/               one C file per library
 libs/deflibs/                one C file per AmigaOS library

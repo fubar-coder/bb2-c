@@ -37,7 +37,10 @@
 * **Numbers:** taken from AmiBlitz3's `sorted_libnums.ab3` (it lists
   every RI library); **clash with acidlibs/deflibs only 121** (RIEvalLib
   vs acidlibs' polylib, `docs/v2.10/libs.md` §4; resolved by the variant
-  `rwe-1999-eval`, polylib at 87 = `#renderlib`, `port/rievallib.md`). Several sources carry
+  `rwe-1999-eval`, polylib at 87 = `#renderlib`, `port/rievallib.md`);
+  among the RWE libraries only risoundlib and its successor risoundlib2
+  (both `#risoundlib` = 45: variant `rwe-1999-ahi`,
+  `port/risoundlib2.md`). Several sources carry
   literal test numbers (5, 8, 10, 19, 22, 39, 195, 197, 198), some of
   them used by other libraries [S, AB3].
 * **License:** `ROBNORTHFAST.bb` contains Rob Northen's PRO-PACK unpacker
@@ -121,7 +124,7 @@ latest date in the header comments.
 | Shapes | 46 | `shapeslib/RIShapesLib`, `RIShapesLib2` (+ `Test`, `Comparison`) | RI, Nigel Hughes | – | ≈ 92 % BUM `RISHAPESLIB`; RIShapesLib2 in the `BB22` format | open |
 | Shapez | 21 | `shapezlib` | RI | 1995 | – | shapezlib (reference build), ported 2026-10-30 (`port/rishapezlib.md`) |
 | Sort | 13 | `sortlib/RISortlib2` | RI | 1996-08-30 | ≈ 80 % BUM/BSS2/OL `RISORTLIB` (one file) | open (source newer than the binary) |
-| Sound | 45 | `soundlib/risoundlib`, `risoundlib2` | – | – | risoundlib **=** BSS2/AB3 (496 B); risoundlib2 (8 entries) – | open |
+| Sound | 45 | `soundlib/risoundlib`, `risoundlib2` | – | – | risoundlib **=** BSS2/AB3 (496 B); risoundlib2 (8 entries) – | risoundlib (BSS2 binary); risoundlib2 (`BB22`, AHI, resident `AHI.res`; reference build) ported 2026-10-30 in the variant `rwe-1999-ahi` instead of risoundlib (same number and CludgeSound, `port/risoundlib2.md`) |
 | STC decrunch | 18 | `stcdecrunchlib` | – | – | **=** BSS2/AB3 (576 B) | stcdecrunchlib |
 | StoneCracker | 17 | `stclib` | – | – | **=** BSS2/AB3 (1136 B) | stclib |
 | Thread | 44 (`#rithreadlib`, RWE's list) | `threadlib` | RI | 1995 | – | threadlib (reference build), ported 2026-10-30 (`port/rithreadlib.md`) |
@@ -321,7 +324,10 @@ Also on 2026-10-30: Eval (121, the BSS2 binary, in the variant
 without any binary, with the reference build of their source:
 Registry, MapShapes, Arrays, MapEd, WB sprite, Intuition, PopUp
 window, BB blit, Shapez, Serial, Chunky, Display, Blitz Bombers 2, BB
-map, Thread, Snow. All 52 libraries of `RWE_LIBS` are ported; not
+map, Thread, Snow. Then risoundlib2 (Sound with AHI, the resident
+`AHI.res` from the toolchain's AHI SDK; reference build; in the variant
+`rwe-1999-ahi`, where it replaces risoundlib: both are number 45 with
+the command CludgeSound). All 53 libraries of `RWE_LIBS` are ported; not
 ported: Registry support and Blitz Bombers (includes that exist
 nowhere), PRO-PACK (license), C2P (a preliminary Chunky), the tests
 and templates (section 2).
