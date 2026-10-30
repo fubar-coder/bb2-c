@@ -659,7 +659,7 @@ void typemode(UWORD c)
         ULONG d1 = evalconst2(&c);
         if (c != ']')
             syntaxerr();
-        if (numd6)
+        if (numfloat)
             fpconerr();
         getchar3();
         f->ndims = d1;

@@ -30,8 +30,8 @@ static inline ULONG tl(const UWORD *p)
  * register results
  * =================================================================== */
 
-ULONG numd3;        /* asm d3 after a number fetch / evalconst */
-WORD numd6;         /* asm d6: 0 int, != 0 float */
+ULONG numval;       /* asm d3 after a number fetch / evalconst */
+WORD numfloat;      /* asm d6: 0 int, != 0 float */
 
 
 static ULONG fetchnum3(ULONG d0, UWORD *type);
@@ -79,7 +79,7 @@ ULONG fetchdata(UWORD *type)
 ULONG fetchfrac(UWORD c, UWORD *type)
 {
     (void)c;
-    numd3 = 0;
+    numval = 0;
     return fetchpoint2(type);
 }
 
@@ -88,51 +88,51 @@ ULONG fetchnum(UWORD c, UWORD *type)
 {
     ULONG d5, d0;
 
-    numd3 = 0;
+    numval = 0;
     c = fetchdec(c, &d5);
     if (c == '.') {
         /* blitz2.s:10734 fetchpoint */
-        if (numd3 >= 0x800000)
+        if (numval >= 0x800000)
             overerr();
         return fetchpoint2(type);
     }
     c |= 32;
     if (c != 'e')
-        return fetchnum2(numd3, type);
-    if (numd3 >= 0x800000)
+        return fetchnum2(numval, type);
+    if (numval >= 0x800000)
         overerr();
-    numd6 = -1;
-    numd3 = ffpcall(SPFlt, numd3, 0, NULL);     /* int to ffp */
+    numfloat = -1;
+    numval = ffpcall(SPFlt, numval, 0, NULL);     /* int to ffp */
     dothee();
     c = reget();
     d0 = consttype2(type, c);
     return fetchnum3(d0, type);
 }
 
-/* blitz2.s:10737 fetchpoint2 - now a float.  in: numd3 = whole part */
+/* blitz2.s:10737 fetchpoint2 - now a float.  in: numval = whole part */
 static ULONG fetchpoint2(UWORD *type)
 {
     ULONG whole, d5, d0, t;
     UWORD c;
 
-    numd6 = -1;
-    whole = ffpcall(SPFlt, numd3, 0, NULL);     /* save whole number */
+    numfloat = -1;
+    whole = ffpcall(SPFlt, numval, 0, NULL);     /* save whole number */
     c = getchar3();
     if (!tstnum(c))
         syntaxerr();                /* BUG(orig) (#10): "1." is a syntax error */
-    numd3 = 0;
+    numval = 0;
     c = fetchdec(c, &d5);           /* get int frac */
-    if (numd3 == 0) {
+    if (numval == 0) {
         /* .pskip.  BUG(orig) (#11): no check for an E exponent here
            ("1.0e5" leaves the 'e' unparsed). */
-        numd3 = whole;
+        numval = whole;
     } else {
-        if (numd3 >= 0x800000)
+        if (numval >= 0x800000)
             overerr();
         d5 = ffpcall(SPFlt, d5, 0, NULL);       /* divisor to ffp */
-        t = ffpcall(SPFlt, numd3, 0, NULL);     /* to ffp */
+        t = ffpcall(SPFlt, numval, 0, NULL);     /* to ffp */
         t = ffpcall(SPDiv, t, d5, NULL);        /* num/divisor (eg .25=25/100) */
-        numd3 = ffpcall(SPAdd, t, whole, NULL); /* add 'em */
+        numval = ffpcall(SPAdd, t, whole, NULL); /* add 'em */
         c = reget();
         c |= 32;
         if (c == 'e')
@@ -172,7 +172,7 @@ static ULONG getsign(UWORD c)
     return facts[d4];
 }
 
-/* blitz2.s:10775 dothee - Suss stuff after the E (numd3 = FFP so far) */
+/* blitz2.s:10775 dothee - Suss stuff after the E (numval = FFP so far) */
 static void dothee(void)
 {
     UWORD c = getchar3();
@@ -182,17 +182,17 @@ static void dothee(void)
         c = getchar3();
         d4 = getsign(c);
         /* d3=number, d4=divisor */
-        numd3 = ffpcall(SPDiv, numd3, d4, NULL);
+        numval = ffpcall(SPDiv, numval, d4, NULL);
         return;
     }
     if (c == '+')                   /* .pos */
         c = getchar3();
     /* .pos2: d3=number so far, d4=multiplier */
     d4 = getsign(c);
-    numd3 = ffpcall(SPMul, numd3, d4, NULL);
+    numval = ffpcall(SPMul, numval, d4, NULL);
 }
 
-/* blitz2.s:10833 fetchdec - numd3 = numd3*10 + digits; *d5 = 10^digits
+/* blitz2.s:10833 fetchdec - numval = numval*10 + digits; *d5 = 10^digits
    (divisor for frac convert!).  Returns the next (non digit) char. */
 static UWORD fetchdec(UWORD c, ULONG *d5p)
 {
@@ -201,18 +201,18 @@ static UWORD fetchdec(UWORD c, ULONG *d5p)
     do {
         d5 = d5 * 10;               /* unchecked, as the asm */
         /* only the shifts are overflow checked (bcs overerr) */
-        if (numd3 & 0x80000000)
+        if (numval & 0x80000000)
             overerr();
-        numd3 <<= 1;
-        d1 = numd3;
-        if (numd3 & 0x80000000)
+        numval <<= 1;
+        d1 = numval;
+        if (numval & 0x80000000)
             overerr();
-        numd3 <<= 1;
-        if (numd3 & 0x80000000)
+        numval <<= 1;
+        if (numval & 0x80000000)
             overerr();
-        numd3 <<= 1;
-        numd3 += d1;
-        numd3 += (UWORD)(c - 48);
+        numval <<= 1;
+        numval += d1;
+        numval += (UWORD)(c - 48);
         c = getchar3();
     } while (tstnum(c));
     *d5p = d5;
@@ -250,7 +250,7 @@ static ULONG fetchnum3(ULONG d0, UWORD *type)
     return reget();
 }
 
-/* blitz2.s:10892 makeint - *d0 = numd3 as integer.  asm: on SPFix
+/* blitz2.s:10892 makeint - *d0 = numval as integer.  asm: on SPFix
    overflow it drops its return address (addq #4,a7) and jumps to
    numdofloat, i.e. returns from consttype2 as a float.
    DIFF: returns FALSE instead, consttype2 then does numdofloat. */
@@ -258,10 +258,10 @@ static BOOL makeint(ULONG *d0)
 {
     UWORD ccr;
 
-    *d0 = numd3;
-    if (numd6 == 0)
+    *d0 = numval;
+    if (numfloat == 0)
         return TRUE;                /* already integer */
-    *d0 = ffpcall(SPFix, numd3, 0, &ccr);
+    *d0 = ffpcall(SPFix, numval, 0, &ccr);
     if (ccr & CCR_V)
         return FALSE;
     return TRUE;
@@ -272,9 +272,9 @@ ULONG fetchnum2(ULONG d3, UWORD *type)
 {
     ULONG d0;
 
-    numd3 = d3;
-    numd6 = 0;
-    /* d0 only matters on consttype2's float paths (numd6 != 0) */
+    numval = d3;
+    numfloat = 0;
+    /* d0 only matters on consttype2's float paths (numfloat != 0) */
     d0 = consttype2(type, lastchar);
     return fetchnum3(d0, type);
 }
@@ -289,7 +289,7 @@ ULONG constotype(UWORD *type)
     return consttype2(type, c);
 }
 
-/* blitz2.s:10913 consttype2 - size the constant numd3 (int if numd6 == 0,
+/* blitz2.s:10913 consttype2 - size the constant numval (int if numfloat == 0,
    else FFP) to *type (0 = decide).  Returns the value (asm d0); *type =
    final type.  `d0` = the asm d0 on entry (normally the current char),
    see the BUG at .quick2. */
@@ -301,7 +301,7 @@ static ULONG consttype2(UWORD *type, ULONG d0)
 
     if (d2 == 0) {
         /* Let's set type */
-        if (numd6) {
+        if (numfloat) {
             d2 = T_QUICK;
             goto quick2;
         }
@@ -332,7 +332,7 @@ byte2:
     goto done;
 
 word:
-    if (numd6)
+    if (numfloat)
         goto quick2;    /* BUG(orig) (#12): d0 not loaded (see .quick2) */
     if (!makeint(&d0))
         goto numdofloat;
@@ -341,7 +341,7 @@ word:
 quick:
     if (!makeint(&d0))
         goto numdofloat;
-    if (numd6 == 0)
+    if (numfloat == 0)
         goto qint;
 quick2:
     /* BUG(orig) (#12): expects d0 = int part (from makeint), but the paths
@@ -352,7 +352,7 @@ quick2:
         goto numdofloat;
     whole = (UWORD)d0;                                  /* save whole part */
     t = ffpcall(SPFlt, d0, 0, NULL);                    /* back to ffp */
-    d0 = ffpcall(SPSub, numd3, t, NULL);                /* d0=fraction! */
+    d0 = ffpcall(SPSub, numval, t, NULL);                /* d0=fraction! */
     d0 = ffpcall(SPMul, d0, 0x80000051, NULL);          /* *65536 */
     d0 = ffpcall(SPFix, d0, 0, &ccr);                   /* back to int */
     /* BUG(orig) (#13): a zero fraction (beq) and a negative one (unsigned bcc)
@@ -369,21 +369,21 @@ qint:
     goto done;
 
 long_:
-    if (numd6)
+    if (numfloat)
         goto numdofloat;
-    d0 = numd3;
+    d0 = numval;
     goto done;
 
 float_:
-    if (numd6)
+    if (numfloat)
         goto numdofloat;
-    numd3 = ffpcall(SPFlt, numd3, 0, NULL);             /* int to float */
+    numval = ffpcall(SPFlt, numval, 0, NULL);             /* int to float */
     goto numdofloat;
 
 numdofloat:
     /* blitz2.s:11011 numdofloat */
     d2 = T_FLOAT;
-    d0 = numd3;
+    d0 = numval;
 done:
     *type = d2;
     return d0;
@@ -1184,13 +1184,13 @@ ULONG evalconst2(UWORD *c)
        d3/d6 (results), a5 = source pointer (as the asm), a6 = maths. */
     memset(&r, 0, sizeof r);
     r.d[2] = 3;
-    r.d[3] = numd3;
-    r.d[6] = (ULONG)(LONG)numd6;
+    r.d[3] = numval;
+    r.d[6] = (ULONG)(LONG)numfloat;
     r.a[5] = (ULONG)srcptr;
     r.a[6] = (ULONG)MathBase;
     callregs((APTR)a0, &r);
-    numd3 = r.d[3];
-    numd6 = (WORD)r.d[6];
+    numval = r.d[3];
+    numfloat = (WORD)r.d[6];
 
     cfetchmode = s_cfetchmode;
     lasta6 = s_lasta6;
@@ -1201,7 +1201,7 @@ ULONG evalconst2(UWORD *c)
     ch = reget();
     if (c)
         *c = ch;
-    return numd3;
+    return numval;
 }
 
 /* blitz2.s:11881 evalconst3 (same address as evalconst2) */
@@ -1413,9 +1413,9 @@ void getsp(UWORD c, UBYTE *buf)
 /* blitz2.s:12118 numcom - tst.l d3 */
 int numcom(void)
 {
-    if ((LONG)numd3 < 0)
+    if ((LONG)numval < 0)
         return -1;
-    return numd3 != 0;
+    return numval != 0;
 }
 
 /* blitz2.s:12121 strcom - compare strings. set flags accordingly */

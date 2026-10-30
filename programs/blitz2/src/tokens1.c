@@ -615,10 +615,10 @@ void dodata(UWORD c)
             val = fetchdata(&type);
             if (type != want) {
                 if (want == T_WORD) {
-                    if (type != T_LONG || numd3 >= 65536)
+                    if (type != T_LONG || numval >= 65536)
                         baddaterr();
                 } else if (want == T_BYTE) {    /* .notw */
-                    if (type != T_WORD || numd3 >= 256)
+                    if (type != T_WORD || numval >= 256)
                         baddaterr();
                 } else {
                     baddaterr();                /* .notb */

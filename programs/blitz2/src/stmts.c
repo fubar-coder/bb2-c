@@ -369,13 +369,13 @@ UWORD gettokeps(UWORD c, UWORD *toke, UWORD *form)
         c = getchar3();
     } else {
         d3 = evalconst(&c);
-        if (d3 > 65535 || numd6)
+        if (d3 > 65535 || numfloat)
             tokeerr();
         d4 = (UWORD)d3;
     }
     if (c == ',') {
         d3 = evalconst2(&c);
-        if (d3 > 65535 || numd6)
+        if (d3 > 65535 || numfloat)
             tokeerr();
         d5 = (UWORD)d3;
     }

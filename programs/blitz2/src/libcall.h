@@ -20,14 +20,14 @@
    after a number fetch or evalconst (Data checks d3 < 65536, docnif/numcom
    tests d3, evalconst callers test d6 != 0 = "was a float" -> error).
    C keeps those two registers here:
-     numd3 = asm d3 after the last fetchnum.../fetchdata (value as int/FFP,
-             before the final type conversion into d0 / before Data '-')
-             or after evalconst... (the constant's value)
-     numd6 = asm d6: 0 = integer, != 0 = float (set by fetchnum2 = 0 and
-             fetchpoint/E-exponent = -1; evalconst2 passes it into the
-             generated code in d6 and reads it back, like the asm). */
-extern ULONG numd3;
-extern WORD numd6;
+     numval = asm d3 after the last fetchnum.../fetchdata (value as int/FFP,
+               before the final type conversion into d0 / before Data '-')
+               or after evalconst... (the constant's value)
+     numfloat = asm d6: 0 = integer, != 0 = float (set by fetchnum2 = 0 and
+               fetchpoint/E-exponent = -1; evalconst2 passes it into the
+               generated code in d6 and reads it back, like the asm). */
+extern ULONG numval;
+extern WORD numfloat;
 
 /* ------------------------------------------------------- number fetch */
 
@@ -54,7 +54,7 @@ extern WORD dfetch;
 /* blitz2.s:10686 fetchdata - fetch a (optionally negative) number for Data:
    reads its first char itself (getchar3); dfetch is set internally, so it
    always returns the value.  Negative: int neg.l, FFP sign bit flipped
-   (numd3 stays un-negated).  Hex ($) / binary (%) go to fetchhex/fetchbin
+   (numval stays un-negated).  Hex ($) / binary (%) go to fetchhex/fetchbin
    (chunk 06), which end in fetchnum2. */
 ULONG fetchdata(UWORD *type);
 
@@ -67,7 +67,7 @@ ULONG fetchfrac(UWORD c, UWORD *type);
    and 'e'/'E' exponent (0..18) */
 ULONG fetchnum(UWORD c, UWORD *type);
 
-/* blitz2.s:10902 fetchnum2 - integer constant d3 is ready (numd6 := 0):
+/* blitz2.s:10902 fetchnum2 - integer constant d3 is ready (numfloat := 0):
    size it to *type and emit/return it.  Common tail of fetchhex, fetchbin,
    fetchconst, fetchsize, fetchon/off, domaximum, fetchqasm, fetchasm. */
 ULONG fetchnum2(ULONG d3, UWORD *type);
@@ -194,10 +194,10 @@ BOOL ifchar(UWORD *c);
 /* blitz2.s:11880 evalconst2 / evalconst3 (11881, same address) - evaluate
    a constant expression at srcptr: compiles it (arreval, cfetchmode = -1)
    into the constant buffer at constpcat, appends `move.l d0,d3 / rts`,
-   flushc() and runs it with callregs() (d6 = numd6 in, numd3/numd6 =
+   flushc() and runs it with callregs() (d6 = numfloat in, numval/numfloat =
    d3/d6 out; a5 = srcptr as in the asm).  pc, libat, regat, nomemleft,
    lasta6, cfetchmode are restored afterwards (nested calls continue in the
-   const buffer).  Returns the value (asm d3, also in numd3); *c (may be
+   const buffer).  Returns the value (asm d3, also in numval); *c (may be
    NULL) = next char/token from reget (eos(*c) = asm Z).
    Errors: conmemerr and anything from the evaluator; the error handler
    restores libat from oldlibat. */
@@ -252,7 +252,7 @@ void getsp(UWORD c, UBYTE *buf);
 
 /* compare callbacks for `compare` (chunk 08); asm: return CCR tested by
    signed Bcc (cifeq..cifge).  Return <0 / 0 / >0. */
-/* blitz2.s:12118 numcom - sign of (LONG)numd3 */
+/* blitz2.s:12118 numcom - sign of (LONG)numval */
 int numcom(void);
 /* blitz2.s:12121 strcom - namebuff vs namebuff2, signed byte compare;
    shorter first string = less */
