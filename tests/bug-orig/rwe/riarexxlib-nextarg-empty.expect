@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+3 args
+<a>
+<>
+<c>
+rc=0

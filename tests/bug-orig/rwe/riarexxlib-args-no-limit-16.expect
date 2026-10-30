@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+16 args
+passport set 0
+rc=0

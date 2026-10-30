@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+action 01040000
+result2 set 0
+rc=0
