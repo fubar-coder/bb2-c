@@ -89,7 +89,7 @@ latest date in the header comments.
 | GFX | 65 | `GFXLib/GFX-Library2` | – | 1996-01-21 | **=** BSS2/AB3 (2036 B) | GFX-Library2 |
 | GTMenu | 37 | `GTMenuLib/GTMenuLib`, `2`, `3` | RI | 1996-03-10 | ≈ 92 % BSS2 | open |
 | Linked list | 12 (bin.) | `Listlib/listlib4` | RI | – | ≈ 92 % OL `RILISTLIB` | open |
-| MapEd | 8 | `MapEd/MapEd_Bit`, `MapEd_Bit2` | RI | – | – | MapEd_Bit2 (reference build): file date 1997-01-26 (MapEd_Bit: the copy date 1996-07-26), the 65535-byte map fix and 9 commands more; MapEd_Bit does not compile (3.1) |
+| MapEd | 8 | `MapEd/MapEd_Bit`, `MapEd_Bit2` | RI | – | – | MapEd_Bit2 (reference build): file date 1997-01-26 (MapEd_Bit: the copy date 1996-07-26), the 65535-byte map fix and 9 commands more; MapEd_Bit does not compile (3.1); ported 2026-10-30 (`port/rimapeditorlib.md`) |
 | MapShapes | 6 | `MapEd/MapShape`, `MapShape2` | RI | 1996-12-22 | – | MapShape2 (reference build): its history 1996-07-08/12-22 (FreeMapShapes, the blit fix, the group commands); MapShape is the older subset; ported 2026-10-30 (`port/rimapshapeslib.md`) |
 | ReqTools | 54 (`#neilsreqtoolslib`) | `RTLib` | Neil O'Rourke | 1997-01-29 | ≈ 97 % `BUM10A/BLITZLIBS/OTHERLIBS/NEILSREQTOOLSLIB` | open |
 | Registry | 3 | `Registry`, `Registry/Registry2`, `Registry3` | RWE | 1997 | – | Registry3 (reference build, `BB22`), ported 2026-10-30 (`port/riregistrylib.md`, tested with a mock library): file date 1997-07-10, Registry2's 27 commands + 8; Registry (13) older. Needs `registry.library` at run time, which exists nowhere |
