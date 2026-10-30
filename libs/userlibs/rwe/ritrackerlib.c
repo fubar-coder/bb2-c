@@ -30,7 +30,7 @@
  *
  * State: the original's data block from mt_FunkTable to mt_olddata
  * (struct ptdata, the same layout: the routine reads behind the period
- * table into the voices, see BUG(orig)) and the variables of the glue
+ * table into the voices, see BUG(orig), #481 #474) and the variables of the glue
  * code (struct ptglue, the same layout).  Paula's registers and the CIAs
  * are written as the original writes them (volatile, same width).
  * The routines are C; register contents the original carries from one
@@ -43,43 +43,45 @@
  *     run; the code is kept (ciaplayerinit_unreached) and links intlib
  *     like the original.  deftime stays 0, so a tempo command (Fxx >=
  *     $20) writes 0 to CIA-B timer A's latch ($BFD400/$BFD500) and to
- *     ciatime.
+ *     ciatime (#571).
  *   - Fxx compares signed (CMP.B #32: BGE): F80-FFF set the speed to
- *     $80-$FF instead of the tempo.
+ *     $80-$FF instead of the tempo (#569).
  *   - TrackerChannels: a masked voice does not advance the pattern
  *     offset, so the following voices play the notes of the voice
- *     before; effects (mt_CheckEfx) and the loop pointers of mt_SetDMA
- *     still go to all four voices.
+ *     before (#568); effects (mt_CheckEfx) and the loop pointers of
+ *     mt_SetDMA still go to all four voices (#567).
  *   - Tracker Off clears mt_Enable (mt_end); Tracker On only ANDs it, so
- *     the song stays stopped until TrackInit or TrackerPause 0.
+ *     the song stays stopped until TrackInit or TrackerPause 0 (#572).
  *   - TrackInit while Tracker Off does not initialise the song (mt_init
  *     returns) but enables playing; Tracker On then plays with the old
- *     song pointer.
+ *     song pointer (#573).
  *   - F00 (stop: mt_SetSpeed branches to mt_end, which loads a0 with
  *     $DFF000) on voice 1-3: the voices behind read their notes from the
- *     custom chip registers instead of the pattern.
- *   - Effect 8xx (RI's track event) stores its value in nor_TrkEvt on
- *     the ticks after the first, but no command reads it.
+ *     custom chip registers instead of the pattern (#475).
+ * Not a defect: effect 8xx (RI's track event) stores its value in
+ * nor_TrkEvt on the ticks after the first, which no command reads (an
+ * unused variable).
  * BUG(orig) of the play routine (the known PT2.3A bugs, cf. the changelog
  * of 8bitbubsy's pt23f replayer):
  *   - mt_init: the pattern count scan (signed compare; the scan ends
  *     only through DBRA, a new maximum at order position 126 lets it run
- *     on through the pattern data); the CLR.L of the first longword of
- *     every sample also clears 4 bytes behind the module for empty
- *     samples at its end.
+ *     on through the pattern data) (#477); the CLR.L of the first
+ *     longword of every sample also clears 4 bytes behind the module for
+ *     empty samples at its end (#570).
  *   - mt_LowMask starts at 0: the first 1xx/2xx before any E1x/E2x does
- *     not slide.
+ *     not slide (#478).
  *   - The period lookups (mt_SetPeriod, mt_Arpeggio, mt_SetTonePorta,
  *     glissando) read behind the row of the finetune, and for finetune
- *     -1 behind the table into the voice data, when no entry fits; a
- *     finetune byte above 15 from the sample header reads far behind.
- *   - Tremolo's ramp-down waveform tests the vibrato position.
+ *     -1 behind the table into the voice data, when no entry fits (#481,
+ *     #474); a finetune byte above 15 from the sample header reads far
+ *     behind (#476).
+ *   - Tremolo's ramp-down waveform tests the vibrato position (#482).
  *   - 9xx: compared signed with the length (samples of 64 KB and more
- *     get length 1); with a note it is applied twice (mt_CheckMoreEfx
- *     before and after mt_SetPeriod); loop offsets are shifted as words
- *     (repeat >= 32768 words wraps).
+ *     get length 1) (#472); with a note it is applied twice
+ *     (mt_CheckMoreEfx before and after mt_SetPeriod) (#473); loop
+ *     offsets are shifted as words (repeat >= 32768 words wraps) (#479).
  *   - Sample numbers above 31 read behind mt_SampleStarts and the sample
- *     headers.
+ *     headers (#480).
  */
 #include "blitzlib.h"
 #include <stddef.h>
@@ -288,7 +290,7 @@ static struct ptdata {
     { 0 },
     0,
     6, 0, 0, 0, 0, 0,
-    0,                                  /* mt_LowMask: BUG(orig), see above */
+    0,                                  /* mt_LowMask: BUG(orig), see above (#478) */
     0, 0, 0,
     { 0, 0 },
     0, 0, 0, 0,
@@ -324,14 +326,15 @@ static struct ptglue {
 _Static_assert(offsetof(struct ptglue, mt_data) == 24, "mt_data");
 
 /* a word / longword of the period table at byte offset `off`, also behind
-   the row or the table (BUG(orig): the lookups do not stop there) */
+   the row or the table (BUG(orig): the lookups do not stop there, #481
+   #474) */
 #define PERIOD(off) (*(UWORD *)((UBYTE *)&pt + offsetof(struct ptdata, periods) + (off)))
 #define SAMPLESTART(off) (*(UBYTE **)((UBYTE *)&pt + offsetof(struct ptdata, samplestarts) + (off)))
 #define W(p) (*(UWORD *)(p))
 
 /* a0 of mt_GetNewNote, the pattern data; mt_end sets a0 to $DFF000, so
    after an F00 (mt_SetSpeed: BEQ mt_end) the voices behind read their
-   notes from the custom chip registers (BUG(orig)) */
+   notes from the custom chip registers (BUG(orig), #475) */
 static UBYTE *patdata;
 
 static void mt_end(void);
@@ -356,7 +359,7 @@ static UWORD cmdword(const struct chan *c)
 /* ---------------------------------------------------------------- glue */
 
 /* SetTempo: d0 = the tempo (>= 32 from mt_SetSpeed); the CIA value is
-   deftime / tempo - deftime is 0 (BUG(orig)) */
+   deftime / tempo - deftime is 0 (BUG(orig), #571) */
 static void settempo(UWORD d0)
 {
     ULONG d2;
@@ -379,7 +382,7 @@ static void BLITZ_ROUTINE l6_int(void)
 }
 
 /* the body of _ciaplayerinit behind its first RTS: never reached
-   (BUG(orig)); kept, with its SetInt call that links intlib */
+   (BUG(orig), #571); kept, with its SetInt call that links intlib */
 static void BLITZ_ROUTINE ciaplayerinit_unreached(void)
 {
     UBYTE *eb = *(UBYTE **)4;          /* ExecBase */
@@ -430,14 +433,14 @@ mtloop:
     d0--;
 mtloop2:
     d1 = (d1 & ~0xffUL) | *a1++;
-    if ((BYTE)d1 > (BYTE)d2)            /* BUG(orig): signed, see above */
+    if ((BYTE)d1 > (BYTE)d2)            /* BUG(orig): signed, see above (#477) */
         goto mtloop;
     if (d0-- != 0)
         goto mtloop2;
     d2 = (d2 & ~0xffUL) | (UBYTE)(d2 + 1);
     a2 = (UBYTE *)((d2 << 10) + 1084 + (ULONG)a0);
     for (i = 0; i < 31; i++) {
-        *(ULONG *)a2 = 0;               /* BUG(orig): also behind the module */
+        *(ULONG *)a2 = 0;               /* BUG(orig): also behind the module (#570) */
         pt.samplestarts[i] = a2;
         a2 += (ULONG)W(a0 + 42) << 1;
         a0 += 30;
@@ -508,7 +511,7 @@ static void mt_arpeggio(aud_t *hw, struct chan *c)
     d0 <<= 1;
     a0 = (ULONG)c->finetune * 36 * 2;
     d1 = c->period;
-    for (d3 = 36; d3 >= 0; d3--) {      /* BUG(orig): 37 entries */
+    for (d3 = 36; d3 >= 0; d3--) {      /* BUG(orig): 37 entries (#474) */
         d2 = PERIOD(a0 + d0);
         if (d1 >= PERIOD(a0)) {
             hw->ac_per = d2;
@@ -518,7 +521,8 @@ static void mt_arpeggio(aud_t *hw, struct chan *c)
     }
 }
 
-/* nor_TrackEvent (effect 8xx, RI's): BUG(orig), nothing reads it */
+/* nor_TrackEvent (effect 8xx, RI's): nothing reads nor_TrkEvt (an unused
+   variable, no defect) */
 static void nor_trackevent(struct chan *c)
 {
     pt.trkevt = c->cmdlo;
@@ -711,7 +715,7 @@ static void mt_tremolo(aud_t *hw, struct chan *c)
         break;
     case 1:                             /* ramp down */
         d0 = (UBYTE)(d0 << 3);
-        if ((BYTE)c->vibratopos < 0)    /* BUG(orig): the vibrato position */
+        if ((BYTE)c->vibratopos < 0)    /* BUG(orig): the vibrato position (#482) */
             d2 = (UBYTE)(255 - d0);
         else
             d2 = d0;
@@ -742,7 +746,7 @@ static void mt_sampleoffset(struct chan *c)
     if (c->cmdlo)
         c->sampleoffset = c->cmdlo;
     d0 = (UWORD)(c->sampleoffset << 7);
-    if ((WORD)d0 >= (WORD)c->length) {  /* BUG(orig): signed */
+    if ((WORD)d0 >= (WORD)c->length) {  /* BUG(orig): signed (#472) */
         c->length = 1;
         return;
     }
@@ -814,7 +818,7 @@ static void mt_volumechange(aud_t *hw, struct chan *c)
 }
 
 /* mt_SetSpeed (Fxx): 0 stops (mt_end), >= 32 signed the tempo
-   (BUG(orig): F80-FFF are speeds) */
+   (BUG(orig): F80-FFF are speeds, #569) */
 static void mt_setspeed(struct chan *c)
 {
     UBYTE d0 = c->cmdlo;
@@ -1025,7 +1029,7 @@ static void mt_setperiod(aud_t *hw, struct chan *c)
     UWORD d1 = c->note & 0x0fff, d0 = 0;
     int d2;
 
-    for (d2 = 36; d2 >= 0; d2--) {      /* not found: d0 = 74, BUG(orig) */
+    for (d2 = 36; d2 >= 0; d2--) {      /* not found: d0 = 74, BUG(orig) (#481) */
         if (d1 >= PERIOD(d0))
             break;
         d0 += 2;
@@ -1067,14 +1071,14 @@ static void mt_playvoice(aud_t *hw, struct chan *c, ULONG *d1, UBYTE *a3)
         d4w = (UWORD)d2;
         d2 = (d2 - 1) << 2;
         d4 = (ULONG)d4w * 30;
-        c->start = SAMPLESTART(d2);     /* BUG(orig): sample > 31 */
+        c->start = SAMPLESTART(d2);     /* BUG(orig): sample > 31 (#480) */
         c->length = W(a3 + d4);
         c->reallength = W(a3 + d4);
         c->finetune = a3[d4 + 2];
         c->volume = a3[d4 + 3];
         d3 = W(a3 + d4 + 4);            /* repeat */
         if (d3) {
-            d2 = (ULONG)c->start + (UWORD)(d3 << 1);    /* BUG(orig): word */
+            d2 = (ULONG)c->start + (UWORD)(d3 << 1);    /* BUG(orig): word (#479) */
             c->loopstart = (UBYTE *)d2;
             c->wavestart = (UBYTE *)d2;
             c->length = (UWORD)(W(a3 + d4 + 4) + W(a3 + d4 + 6));
@@ -1103,7 +1107,7 @@ static void mt_playvoice(aud_t *hw, struct chan *c, ULONG *d1, UBYTE *a3)
         checkmoreefx(hw, c);
         return;
     case 9:
-        checkmoreefx(hw, c);            /* BUG(orig): 9xx twice */
+        checkmoreefx(hw, c);            /* BUG(orig): 9xx twice (#473) */
         break;
     }
     mt_setperiod(hw, c);
@@ -1135,7 +1139,7 @@ static void mt_music_c(void)
         d1 = (ULONG)a2[pt.songpos] << 10;
         d1 = (d1 & 0xffff0000UL) | (UWORD)((UWORD)d1 + pt.patternpos);
         pt.dmacontemp = 0;
-        /* BUG(orig): a masked voice does not advance d1 */
+        /* BUG(orig): a masked voice does not advance d1 (#568) */
         for (i = 0; i < 4; i++)
             if (pt.mask & (8 >> i))
                 mt_playvoice(&CUSTOM.aud[i], &pt.chan[i], &d1, a3);
@@ -1195,7 +1199,7 @@ static void BLITZ_ROUTINE tracker_c(UBYTE d0 BL_REG(d0))
 {
     if ((BYTE)d0 == pt.status)
         return;
-    pt.enable &= d0;                    /* BUG(orig): On does not resume */
+    pt.enable &= d0;                    /* BUG(orig): On does not resume (#572) */
     pt.status = (BYTE)d0;
     if (d0)
         ciaplayerinit();
@@ -1209,7 +1213,7 @@ static void BLITZ_ROUTINE initmodule_c(UBYTE *d0 BL_REG(d0))
     glue.mt_data = d0;
     ciaplayerinit();
     pt.playing = 1;
-    mt_init();                          /* BUG(orig): nothing if Tracker Off */
+    mt_init();                          /* BUG(orig): nothing if Tracker Off (#573) */
     pt.enable = 0xff;
 }
 

@@ -89,7 +89,8 @@ four 44-byte voice blocks `n_note` … `n_reallength`, `mt_SampleStarts`,
 `mt_data`. The C build has both as structs with the same layout
 (`struct ptdata`, 1538 bytes, `struct ptglue`, 28 bytes,
 `_Static_assert`s): the period lookups read behind a row and, for
-finetune −1, behind the table into the first voice (BUG(orig)), which
+finetune −1, behind the table into the first voice (BUG(orig), #481,
+#474), which
 gives the same values only with the same layout; and the test compares
 both blocks with the reference build's.
 
@@ -120,24 +121,27 @@ RI's glue:
   interrupt plays the module; `deftime` stays 0, so a tempo command
   (`Fxx` with xx ≥ $20) writes 0 to CIA-B timer A's latch
   (`$BFD400`/`$BFD500`) – a timer the library never allocated – and to
-  `ciatime`.
+  `ciatime` (#571).
 * `Fxx` compares signed (`CMP.B #32: BGE`): F80–FFF set the speed to
-  128–255 instead of the tempo.
+  128–255 instead of the tempo (#569).
 * `F00` (`mt_SetSpeed: BEQ mt_end`) on voice 1–3: `mt_end` loads a0 with
   `$DFF000`, so the following voices of the row read their notes from
   the custom chip registers (`$DFF000` + pattern offset) instead of the
-  pattern.
+  pattern (#475).
 * `TrackerChannels`: a masked voice does not advance the pattern
-  offset, so the following voices play the notes of the voice before;
-  the effects (`mt_CheckEfx`) and the loop registers of `mt_SetDMA` still
-  go to all four voices.
+  offset, so the following voices play the notes of the voice before
+  (#568); the effects (`mt_CheckEfx`) and the loop registers of
+  `mt_SetDMA` still go to all four voices (#567).
 * `Tracker Off` clears `mt_Enable` (`mt_end`), `Tracker On` only ANDs
-  it: the song stays stopped until `TrackInit` or `TrackerPause 0`.
+  it: the song stays stopped until `TrackInit` or `TrackerPause 0`
+  (#572).
 * `TrackInit` while `Tracker Off`: `mt_init` returns at once, but playing
   is enabled; `Tracker On` then plays with the old song pointer and
-  sample starts.
-* Effect 8xx (RI's track event, `nor_TrackEvent`) stores its value in
-  `nor_TrkEvt` on the ticks after the first; no command reads it.
+  sample starts (#573).
+
+Not a defect: effect 8xx (RI's track event, `nor_TrackEvent`) stores its
+value in `nor_TrkEvt` on the ticks after the first, which no command
+reads – an unused variable.
 
 The play routine (the known bugs of the PT2.3A replayer; 8bitbubsy's
 pt23f changelog served as the checklist, no code was taken from it):
@@ -145,22 +149,24 @@ pt23f changelog served as the checklist, no code was taken from it):
 * `mt_init`'s pattern count: signed compare (pattern numbers ≥ 128);
   the scan ends only through `DBRA`, so order position 127 is scanned
   only if 126 is a new maximum, and then the scan runs on through the
-  pattern data (65536 more bytes). The `CLR.L` of every sample's first
-  longword also clears 4 bytes behind the module for empty samples at
-  its end.
+  pattern data (65536 more bytes) (#477). The `CLR.L` of every sample's
+  first longword also clears 4 bytes behind the module for empty
+  samples at its end (#570).
 * `mt_LowMask` starts at 0: the first 1xx/2xx before any E1x/E2x does
-  not slide.
+  not slide (#478).
 * The period lookups (`mt_SetPeriod`, `mt_Arpeggio`, `mt_SetTonePorta`,
   glissando) go on behind the finetune's row when no entry fits (37
-  entries; for finetune −1 into the first voice block); a finetune byte
-  above 15 in a sample header reads far behind the table.
-* Tremolo's ramp-down waveform tests the vibrato position.
+  entries; for finetune −1 into the first voice block) (#481, #474); a
+  finetune byte above 15 in a sample header reads far behind the table
+  (#476).
+* Tremolo's ramp-down waveform tests the vibrato position (#482).
 * 9xx: the offset is compared signed with the length (samples of 64 KB
-  and more get length 1); with a note it is applied twice
-  (`mt_CheckMoreEfx` before and after `mt_SetPeriod`). The loop start is
-  start + repeat shifted as a word (repeats ≥ 32768 words wrap).
+  and more get length 1) (#472); with a note it is applied twice
+  (`mt_CheckMoreEfx` before and after `mt_SetPeriod`) (#473). The loop
+  start is start + repeat shifted as a word (repeats ≥ 32768 words wrap)
+  (#479).
 * Sample numbers above 31 read behind `mt_SampleStarts` and the sample
-  headers.
+  headers (#480).
 
 ## Test
 
