@@ -270,7 +270,19 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   `rwe_refbuild`, about 20 s; `cdrun` with `source=` lines over the
   staging directory, `RWE_REFBUILD_PARALLEL`, `RWE_REFBUILD_TIMEOUT`;
   table `build/<preset>/libs/userlibs/rwe/refbuild.tsv`) compiles the
-  source of every `RWE_LIBS` entry and fails if one does not compile;
+  source of every `RWE_LIBS` entry and fails if one does not compile.
+  It does not start the emulator again while nothing changed: after a
+  successful run, `cdrun` (`cache=` of the pass) writes a record of the
+  digest of its inputs (the staging directory with the sources, the
+  residents and `LIBNUMS.BB`, the CD's `blitz2` and libraries, the pass
+  file, the `cdrun` executable with `amiga_emulation` and its templates)
+  and the hashes of its outputs to
+  `build/<preset>/libs/userlibs/rwe/refwork/inputs.sha256`; the next
+  run with the same digest and all outputs unchanged ends at once
+  ("no emulator run"). Anything missing or different means a full run
+  (host test `cdrun_cache`). `CDRUN_FORCE=1 ctest …` runs it anyway, e.g.
+  after changing the ROM, the hardfiles or Amiberry, which the digest
+  does not cover.
   `rwe_refbuild_NAME`: the result equals the CD binary byte for byte, for
   every entry of stage A (not for those in `RWE_REFBUILD_NEWER`, whose
   reference is a newer binary); `rwe_refbuild_selftest` takes the dry

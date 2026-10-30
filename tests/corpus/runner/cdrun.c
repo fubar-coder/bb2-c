@@ -30,6 +30,17 @@
  *                      is not there is an error, one that does not compile
  *                      gives exit status 1 (the reference build of the RWE
  *                      sources, libs/userlibs/rwe/refbuild.cmake)
+ *   cache=PATH         optional: after a run with exit status 0, a record
+ *                      of the inputs and outputs to PATH (cdcache.h); the
+ *                      next run with the same inputs (the pass file, this
+ *                      cdrun - with amiga_emulation and its templates -,
+ *                      blitz2=, deflibs=, acidlibs=, defaultdbug=, ted=,
+ *                      tokens=, reference=, every file below cd=) whose
+ *                      outputs (output=, report=, the OUTs of source=)
+ *                      are all there unchanged ends at once with 0,
+ *                      without the emulator.  CDRUN_FORCE=1 in the
+ *                      environment runs anyway.  Not covered: the ROM and
+ *                      the hardfiles, Amiberry itself.
  *
  * Sources: sorted by path; text sources (no 0 byte) are not compiled
  * ("skipped").  A job runs with the source's .xtra (next to it) or the
@@ -58,6 +69,7 @@
 #include <strings.h>
 #include <unistd.h>
 #include "amiga_emulation.h"
+#include "cdcache.h"
 #include "corpus.h"
 #include "sha256.h"
 #include "util.h"
@@ -68,7 +80,7 @@
 
 struct pass {
     char *work, *output, *reference, *report, *cd, *tokens;
-    char *blitz2, *deflibs, *acidlibs, *defaultdbug, *ted;
+    char *blitz2, *deflibs, *acidlibs, *defaultdbug, *ted, *cache;
     char **assign_name, **assign_dir;
     size_t nassigns;
     char **source_rel, **source_out;    /* source=REL|OUT */
@@ -152,6 +164,7 @@ static int parse(const char *text, char *err, size_t errlen)
         else if (!strcmp(key, "acidlibs")) dst = &P.acidlibs;
         else if (!strcmp(key, "defaultdbug")) dst = &P.defaultdbug;
         else if (!strcmp(key, "ted")) dst = &P.ted;
+        else if (!strcmp(key, "cache")) dst = &P.cache;
         if (dst) {
             free(*dst);
             *dst = val;
@@ -863,6 +876,52 @@ static int copy_sources(FILE *log)
     return rc;
 }
 
+/* ------------------------------------------------------------- cache */
+
+static const char **cache_outs;
+static size_t ncache_outs;
+
+/* the outputs of the pass (cache=); -1 = out of memory */
+static int cache_outputs(void)
+{
+    size_t i;
+
+    if (!(cache_outs = malloc((P.nsources + 2) * sizeof *cache_outs)))
+        return -1;
+    ncache_outs = 0;
+    cache_outs[ncache_outs++] = P.output;
+    if (P.report)
+        cache_outs[ncache_outs++] = P.report;
+    for (i = 0; i < P.nsources; i++)
+        cache_outs[ncache_outs++] = P.source_out[i];
+    return 0;
+}
+
+/* the digest of the inputs (cache=); -1 if one is missing - then no
+   record is written */
+static int cache_digest(const char *text, char hex[65])
+{
+    char self[4096];
+    ssize_t n = readlink("/proc/self/exe", self, sizeof self - 1);
+    const char *files[8];
+    const char *dirs[] = { P.cd };
+    size_t nfiles = 0;
+
+    if (n <= 0 || (size_t)n >= sizeof self - 1)
+        return -1;
+    self[n] = 0;
+    files[nfiles++] = self;
+    files[nfiles++] = P.blitz2;
+    files[nfiles++] = P.deflibs;
+    files[nfiles++] = P.acidlibs;
+    files[nfiles++] = P.defaultdbug;
+    files[nfiles++] = P.ted;
+    files[nfiles++] = P.tokens;
+    if (P.reference)
+        files[nfiles++] = P.reference;
+    return cdcache_digest(text, files, nfiles, dirs, 1, hex);
+}
+
 static int run(FILE *log)
 {
     const char *files[] = { P.blitz2, P.deflibs, P.acidlibs, P.defaultdbug, P.ted, P.tokens };
@@ -872,7 +931,10 @@ static int run(FILE *log)
     char err[300], *t;
     int rc = 2;
 
-    /* source=: no executable of an earlier run stays */
+    /* source=: no executable of an earlier run stays (nor the record that
+       described it) */
+    if (P.cache)
+        remove(P.cache);
     for (i = 0; i < P.nsources; i++)
         remove(P.source_out[i]);
     for (i = 0; i < sizeof files / sizeof files[0]; i++)
@@ -1032,9 +1094,10 @@ static const char usage[] =
 
 int main(int argc, char **argv)
 {
-    char err[300];
+    char err[300], digest[65];
     size_t len;
     char *text;
+    int rc, cached = 0;
 
     if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
         fputs(usage, stdout);
@@ -1053,6 +1116,26 @@ int main(int argc, char **argv)
         free(text);
         return 2;
     }
+    if (P.cache) {
+        const char *force = getenv("CDRUN_FORCE");
+
+        if (cache_outputs()) {
+            fprintf(stderr, "cdrun: out of memory\n");
+            free(text);
+            return 2;
+        }
+        cached = !cache_digest(text, digest);
+        if (cached && !(force && *force && strcmp(force, "0"))
+            && cdcache_hit(P.cache, digest, cache_outs, ncache_outs)) {
+            printf("cdrun: inputs and outputs unchanged since the last run (%s): "
+                   "no emulator run (CDRUN_FORCE=1 runs anyway)\n", P.cache);
+            free(text);
+            return 0;
+        }
+    }
     free(text);
-    return run(stdout);
+    rc = run(stdout);
+    if (!rc && cached && cdcache_write(P.cache, digest, cache_outs, ncache_outs))
+        printf("cdrun: cannot write %s (the next run will not be skipped)\n", P.cache);
+    return rc;
 }
