@@ -33,17 +33,22 @@
  *
  * BUG(orig):
  *   - No check of the map shape number: before SetNumMapShapes (or after
- *     one that failed or allocated 0) the map shapes are at address 0.
+ *     one that failed or allocated 0) the map shapes are at address 0
+ *     (#906).
  *   - ShapeToMapShape of a shape with depth 0 writes 65536 plane pointers
- *     (DBRA), a depth > 8 runs into the next map shape.
- *   - AddGroupMember before ResetGroup writes at address 0; members are
- *     not counted: the 64th member's end mark is written behind the
- *     512-byte block.
+ *     (DBRA); the depth is not limited to the 8 pointers: depths 9-13
+ *     write into the unused bytes 42-63 of the 64-byte map shape, from
+ *     depth 14 on the pointers run into the next map shape (#903).
+ *   - AddGroupMember before ResetGroup writes at address 0 (#901);
+ *     members are not counted: the 64th member's end mark is written
+ *     behind the 512-byte block (#904).
  *   - BlitGroup does not load graphics.library (no #graphicslib in its
- *     !libs): it calls BltBitMapRastPort with the caller's a6.
- *   - init does not check its AllocVec: ResetGroup then writes at 0.
- *   - RemapMapShape does nothing (the ReMap call is commented out); its
- *     !libs asks for "library 254, $5600" (sic).
+ *     !libs): it calls BltBitMapRastPort with the caller's a6 (#902).
+ *   - init does not check its AllocVec: ResetGroup then writes at 0
+ *     (#905).
+ * Not a defect: RemapMapShape does nothing (the ReMap call is commented
+ * out in the source: a command left unfinished); its !libs asks for
+ * "library 254, $5600" (sic).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -182,7 +187,7 @@ static void BLITZ_ROUTINE shapetomapshape_c(UWORD n BL_REG(d1), const UBYTE *sh 
     MW(ms, 4) = SW(sh, 2);              /* height */
     MW(ms, 6) = depth;
     MW(ms, 2) = SW(sh, 6);              /* ebwidth */
-    /* BUG(orig): depth 0 -> 65536 planes (DBRA) */
+    /* BUG(orig): depth 0 -> 65536 planes (DBRA) (#903) */
     c = depth - 1;
     do {
         *planes++ = p;
@@ -295,7 +300,7 @@ BLITZ_THUNK(_resetgroup, resetgroup_c, "d1/a0-a1");
 
 /* AddGroupMember mapshape#,dx,dy: {map shape, dx*blockwidth,
    dy*blockheight (MULU.w, the low words)}, then the end mark.
-   BUG(orig): no limit, and before ResetGroup at address 0 */
+   BUG(orig): no limit (#904), and before ResetGroup at address 0 (#901) */
 static void BLITZ_ROUTINE addgroupmember_c(UWORD n BL_REG(d0), UWORD dx BL_REG(d1),
                                            UWORD dy BL_REG(d2))
 {
@@ -311,7 +316,7 @@ static void BLITZ_ROUTINE addgroupmember_c(UWORD n BL_REG(d0), UWORD dx BL_REG(d
 BLITZ_THUNK(_addgroupmember, addgroupmember_c, "d0-d1/a0-a1");
 
 /* BlitGroup window#,x,y: every member at x+dx, y+dy (words; the upper
-   words of the caller's d2/d3).  BUG(orig): a6 is the caller's, not
+   words of the caller's d2/d3).  BUG(orig) (#902): a6 is the caller's, not
    graphics.library's.  The original's d5 is the member's address when
    _blitmapshape2 loads the height into its low word. */
 static void BLITZ_ROUTINE blitgroup_c(UWORD x BL_REG(d1), ULONG d2 BL_REG(d2),

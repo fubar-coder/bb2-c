@@ -66,16 +66,22 @@ holds the member's address before, so its upper word is that address's.
 
 * The map shape number is not checked; before `SetNumMapShapes` (or
   after one that failed or allocated 0 shapes) the map shapes lie at
-  address 0.
+  address 0 (#906).
 * `ShapeToMapShape` of a shape of depth 0 writes 65536 plane pointers
-  (`DBRA`); a depth over 8 writes into the next map shape.
-* `AddGroupMember` before `ResetGroup` writes at address 0; the members
-  are not counted: the end mark of the 64th member is written behind the
-  512-byte block.
+  (`DBRA`); the depth is not limited to the 8 pointers: depths 9–13
+  write into the unused bytes 42–63 of the 64-byte map shape, from depth
+  14 on the pointers run into the next map shape (#903).
+* `AddGroupMember` before `ResetGroup` writes at address 0 (#901); the
+  members are not counted: the end mark of the 64th member is written
+  behind the 512-byte block (#904).
 * `BlitGroup` has no `#graphicslib,#la6` in its `!libs`: it calls
-  `BltBitMapRastPort` with the caller's a6.
-* init does not check its `AllocVec`: `ResetGroup` then writes at 0.
-* `RemapMapShape` does nothing (the `ReMap` call is commented out).
+  `BltBitMapRastPort` with the caller's a6 (#902).
+* init does not check its `AllocVec`: `ResetGroup` then writes at 0
+  (#905).
+
+Not a defect: `RemapMapShape` does nothing (the `ReMap` call is
+commented out in the source – a command left unfinished, not a fault in
+what it does).
 
 ## Test
 
