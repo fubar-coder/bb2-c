@@ -80,6 +80,12 @@ hardfile read-only. `a500-68010` is the same machine with a 68010
   halts, the screen stays black). `amiga_emulation` checks this before
   starting and refuses the run (the test is skipped). Instead of the
   key, a decrypted ROM (262144 bytes) under the same name works too.
+  Why at all: Cloanto ships the ROMs of Amiga Forever encrypted (an
+  11-byte header `AMIROMTYPE1`, then the ROM XOR'ed with the bytes of
+  `rom.key`, repeated) so that a ROM file alone is of no use without the
+  product's key - a licence measure, not a protection: the key is the
+  same for every copy of the product, not personal. Both files belong to
+  the user's own licence and are, like everything here, not in git.
 * **The hardfile's startup:** `S:Startup-Sequence` ends with
   `IF EXISTS S:User-Startup` / `Execute S:User-Startup`, and
   `S:User-Startup` executes `TEST:run.script` (same conditions as above,
