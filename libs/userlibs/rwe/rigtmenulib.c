@@ -32,24 +32,28 @@
  *
  * BUG(orig), kept:
  *   - finit closes gadtools.library only if it is NOT open (TST.l:BNE
- *     'ok): never.
+ *     'ok): never (#690).
  *   - GTMenuItem with UserData (form 4) keeps the mutual exclude of the
- *     GTMenuItem/GTSubItem before (it jumps past MOVE.l d6,me).
+ *     GTMenuItem/GTSubItem before (it jumps past MOVE.l d6,me) (#692).
  *   - The shortcut$ is tested by its low word (TST.w d5/d6): a string at
- *     an address with low word 0 counts as none.
- *   - GTMenuTitle allocates the title uncleared (MEMF_PUBLIC).
- *   - +8 counts every entry added and is never decreased: the array of
- *     CreateMenuStrip is (count + 1) * 20 bytes; with no title it reads
- *     the list at address 0; a failed allocation writes it to address 0.
- *     CreateMenuStrip does not check CreateMenusA/GetVisualInfoA.
+ *     an address with low word 0 counts as none (#694).
+ *   - CreateMenuStrip with no title reads the list at address 0; a failed
+ *     allocation writes it to address 0.  CreateMenuStrip does not check
+ *     CreateMenusA/GetVisualInfoA (#689).
  *   - The free routines (the object's free, GTFreeMenu) never free the
- *     title strings; freemenu calls FreeMenus with the gadtools base
- *     unchecked.
+ *     title strings (#695).
  *   - GTFreeMenu tests the item/sub item numbers as longs (TST.l: the
- *     upper word of a word argument decides whether they are given).
+ *     upper word of a word argument decides whether they are given)
+ *     (#691).
  *   - GTMenuState/GTSetMenuChecked change the flags of the menu strip
- *     directly, also while it is attached to a window; GTMenuChecked
- *     returns -1/0 in the low word, the upper word of d0 stays.
+ *     directly, also while it is attached to a window (#693).
+ * Like the original, no defects: GTMenuTitle allocates the title
+ * uncleared (MEMF_PUBLIC; all three fields are written); +8 counts every
+ * entry added and is never decreased (the array of CreateMenuStrip,
+ * (count + 1) * 20 bytes, is only larger than needed); freemenu calls
+ * FreeMenus with the gadtools base unchecked (a menu strip exists only
+ * if it was open); GTMenuChecked returns -1/0 in the low word, the upper
+ * word of d0 stays (a word result).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -280,7 +284,7 @@ static void BLITZ_ROUTINE libinit_c(void)
 }
 BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
 
-/* BUG(orig): closes only if not open */
+/* BUG(orig) (#690): closes only if not open */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (!gtbase) {
@@ -402,7 +406,7 @@ static void BLITZ_ROUTINE gtmenutitle_c(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2)
                 return;
             a0 = P(a0, 0);
         } while (n-- != 0);
-    t = (UBYTE *)galloc(TITLESIZE, MEMF_PUBLIC);        /* BUG(orig): uncleared */
+    t = (UBYTE *)galloc(TITLESIZE, MEMF_PUBLIC);        /* uncleared, all written */
     if (!t)
         return;
     SL(t, 0) = SL(a0, 0);
@@ -441,7 +445,7 @@ static void additem(UBYTE *obj, UBYTE *a0, UWORD n, int sub, ULONG text, ULONG s
         SL(it, 4) = allocst(text, BL_POPL(sp));
     SL(it, 8) = 0;
     SW(it, 12) = flags;
-    if ((UWORD)sc) {                    /* BUG(orig): TST.w */
+    if ((UWORD)sc) {                    /* BUG(orig) (#694): TST.w */
         if (sub) {
             /* MOVE.l -(a2),d1:MOVE.l -(a2),d0: length and the pushed
                address from the stack */
@@ -512,7 +516,7 @@ static void BLITZ_ROUTINE gtmenuitem4_c(ITEMARGS)
 }
 BLITZ_THUNK(_gtmenuitem4, gtmenuitem4_c, "d0-d1/a0-a1");
 
-/* BUG(orig): `me` stays from the call before */
+/* BUG(orig) (#692): `me` stays from the call before */
 static void BLITZ_ROUTINE gtmenuitem5_c(ITEMARGS)
 {
     (void)d6;
@@ -623,8 +627,8 @@ static void freeitemlist(UBYTE *it, ULONG n)
     }
 }
 
-/* the object's free routine; BUG(orig): FreeMenus with gtbase unchecked,
-   the title strings stay */
+/* the object's free routine (FreeMenus with gtbase unchecked, like the
+   original); BUG(orig) (#695): the title strings stay */
 static void BLITZ_ROUTINE freemenu_c(UBYTE *obj BL_REG(a3))
 {
     UBYTE *t, *next, *items;

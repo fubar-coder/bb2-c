@@ -73,29 +73,32 @@ number", the existschk walk of menuslib). No assembler.
 ## BUG(orig), kept
 
 * **finit** closes gadtools.library only if it is NOT open (`TST.l
-  gtbase:BNE 'ok`), so it never closes it.
+  gtbase:BNE 'ok`), so it never closes it (#690).
 * **GTMenuItem form 4** (with UserData) jumps past `MOVE.l d6,me`: the
-  item gets the mutual exclude of the GTMenuItem/GTSubItem before.
+  item gets the mutual exclude of the GTMenuItem/GTSubItem before (#692).
 * **The shortcut$ is tested by the low word of its address** (`TST.w
-  d5`/`d6`): a string at an address with low word 0 counts as no shortcut.
-* **GTMenuTitle** allocates the title uncleared (MEMF_PUBLIC).
-* **The count at +8** grows with every entry added and is never
-  decreased by GTFreeMenu.
-* **CreateMenuStrip:**
-  * the NewMenu array is (count + 1) × 20 bytes;
-  * with no title, the lists are read at address 0; a failed allocation
-    writes the array to address 0;
-  * CreateMenusA and GetVisualInfoA are not checked.
+  d5`/`d6`): a string at an address with low word 0 counts as no shortcut
+  (#694).
+* **CreateMenuStrip:** with no title, the lists are read at address 0; a
+  failed allocation writes the array to address 0; CreateMenusA and
+  GetVisualInfoA are not checked (#689).
 * **The title strings are never freed** (the object's free routine,
-  GTFreeMenu). The free routine calls FreeMenus with the gadtools base
-  unchecked.
+  GTFreeMenu) (#695).
 * **GTFreeMenu** tests the item and sub item numbers as longs (`TST.l`),
-  so the upper word of a word argument decides whether they are given.
+  so the upper word of a word argument decides whether they are given
+  (#691).
 * **GTMenuState and GTSetMenuChecked** change the flags of the strip
   directly, also while it is attached to a window; a strip made again
-  loses them.
-* **GTMenuChecked** returns −1/0 in the low word (`SNE:EXT.w`); the upper
-  word of d0 (the list number's) stays.
+  loses them (#693).
+
+Like the original, and no defects: GTMenuTitle allocates the title
+uncleared (MEMF_PUBLIC; all its fields are written); the count at +8
+grows with every entry added and is never decreased by GTFreeMenu (the
+NewMenu array of CreateMenuStrip, (count + 1) × 20 bytes, is only
+larger than needed); the free routine calls FreeMenus with the gadtools
+base unchecked (a strip exists only if gadtools was open); GTMenuChecked
+returns −1/0 in the low word (`SNE:EXT.w`), the upper word of d0 (the
+list number's) stays (a word result).
 
 ## Test
 

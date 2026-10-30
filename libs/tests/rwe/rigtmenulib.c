@@ -15,14 +15,14 @@
  * functions, the kept registers; memlib's memory back at the end.
  * Covered: every entry and form: GTMenuTitle (at the head, in the
  * middle, at the end, behind a missing one), GTMenuItem forms 0-4
- * (BUG(orig): form 4 keeps the mutual exclude of the call before),
+ * (BUG(orig) (#692): form 4 keeps the mutual exclude of the call before),
  * GTSubItem forms 0-4 (shortcut$ from the stack), missing titles/items,
  * CreateMenuStrip (twice: the old strip freed), GTSetMenu (with and
  * without a strip, a window with a strip), GTUnSetMenu, GTMenuState all
  * forms, GTMenuChecked/GTSetMenuChecked both forms (the upper word of
  * d0), GTGetUserData both forms (sub item -1), GTFreeMenu all forms and
  * missing entries, the error checks with existing entries, the object's
- * free routine, init/finit (BUG(orig): gadtools stays open).
+ * free routine, init/finit (BUG(orig) (#690): gadtools stays open).
  * Not covered: the error checks of missing entries (runtime errors,
  * TRAP #0), a shortcut$ at an address with low word 0, CreateMenuStrip
  * without titles (reads address 0), the walks beyond the lists (write
