@@ -18,16 +18,16 @@
  * found); GetCopIns$ (MOVE to several registers, WAIT/SKIP with odd
  * position digits, with and without BFD); the font printer FLocate,
  * FPrint, FNPrint, FInverse (word 1 and $100), FYOffset, the empty
- * string, the right edge and columns from 208 on (BUG(orig)), compared on
+ * string, the right edge and columns from 208 on (BUG(orig) (#707)), compared on
  * both planes; FPrintDetoke with marker types 0/1, several cio and
  * lineoffset values, tokens drawn into one or two planes, an unknown
  * token, no token list, no plane 1, the inverse word's high byte set
- * (BUG(orig): the second plane's glyph), the right edge inside a token;
+ * (BUG(orig) (#709): the second plane's glyph), the right edge inside a token;
  * GetProgMode; SearchMem with every type (also invalid ones), found at
  * the start, inside, across the end (word/long), start = end, the string
- * search after a partial match (BUG(orig)), the empty string, the space
+ * search after a partial match (BUG(orig) (#723)), the empty string, the space
  * bar test (RawStatus every 127 steps; abort with 1) and SearchMemFound;
- * PeekMax$ (max -1..100, BUG(orig) length); GetHex$/GetHexAdr$ (all
+ * PeekMax$ (max -1..100, BUG(orig) (#718) length); GetHex$/GetHexAdr$ (all
  * modes); GetCustomReg for every register word $000-$1FD, $1FE and above,
  * a negative long; GetCustomRegAdr for every name, prefixes, 8 character
  * names, NOOP, an empty name; SetupLESDebug (%c) and ProcessString with
@@ -499,7 +499,7 @@ static void fprintdetoke(void)
     flocate(79, 2);
     detoke(l1, 2, 0, 0);
     /* the inverse word: 1 (not tested by FPrintDetoke), $100 (all
-       inverted; the second plane gets another glyph, BUG(orig)) */
+       inverted; the second plane gets another glyph, BUG(orig) (#709)) */
     fword(E_FINVERSE, "FInverse", 1);
     flocate(0, 3);
     detoke(l1, 3, 0, 0);

@@ -114,53 +114,61 @@ d5-d7, a0-a3 and a6 in places.
 
 * Counts of 0 (D_HexWord, D_CheckNMove, D_CheckNMoveA, D_CheckNMoveWord;
   D_CheckNMoveWord also $8000) run the DBRA 65536 times; GetDataItem with
-  size 0 or less reads 65536 bytes or more.
+  size 0 or less reads 65536 bytes or more (#701).
 * D_HexWord at an odd source writes "XX YY" per word, without the space
-  the even case writes behind each word.
+  the even case writes behind each word (#715).
 * The "below $420" tests compare signed: addresses from $80000000 show
-  `*` too (GetDataItem: 0).
+  `*` too (GetDataItem: 0) (#717).
 * PeekMax$ copies max+1 characters but returns the length max (a3 one
-  character behind the result).
+  character behind the result) (#718).
 * GetCustomReg of a name of 8 characters copies the first character of
-  the next name too and returns 8.
+  the next name too and returns 8 (#712); a negative register word with
+  a positive long reads in front of the name table (#714).
 * GetCustomRegAdr matches a prefix (`DMACONXYZ` gives $096), never finds
-  a name of 8 characters (the compare runs into the next name), and stops
-  before the last register ($1FE `NOOP`).
+  a name of 8 characters (the compare runs into the next name) (#713),
+  and stops before the last register ($1FE `NOOP`) (#702).
 * GetCopIns$ masks bit 0 of both digits of a horizontal position (WAIT,
-  SKIP and their masks): odd digits never show.
+  SKIP and their masks): odd digits never show (#711).
 * FPrint/FPrintDetoke: the column test is `CMPI.b #80` with `BPL`, so
   columns 80-207 stop, 208-255 print (and go on to 0-79); nothing checks
   the bitmap's size; in FPrintDetoke the marker takes a column without
-  this test. FPrint ignores strings of 32769 characters or more
-  (`SUBQ.w #1`/`BMI`).
+  this test (#707). FPrint ignores strings of 32769 characters or more
+  (`SUBQ.w #1`/`BMI`) (#710).
 * FInverse sets a word; FPrint tests the word, FPrintDetoke its high
   byte (FInverse 1 inverts only FPrint), and FPrintDetoke's marker sets
-  and clears the high byte. With the high byte set and tokens drawn into
-  both planes, plane 1 gets the glyph of another character (the inverse
-  drawing leaves the last glyph byte in d0's low byte).
+  and clears the high byte (#706). With the high byte set and tokens
+  drawn into both planes, plane 1 gets the glyph of another character
+  (the inverse drawing leaves the last glyph byte in d0's low byte)
+  (#709).
 * FPrintDetoke: after the `>` marker an inverse space follows too when
-  the column counter (with the caller's high word of d6) became 0.
-* D_FindStringPtr never compares the long at areg5 itself.
-* ExtractLabel searches the `.` from the 10th character without a limit,
-  and a space does not end the label: blitz2 assembles the source's
-  `CMPI.b #" ",d2` as `CMPI.b #0,d2` (in the reference build, in the
-  CD's and in AmiBlitz3's binaries; `#" "` with a memory destination,
-  e.g. in GetCustomReg, is $20). Found by the test; why blitz2 does this
-  is not investigated.
+  the column counter (with the caller's high word of d6) became 0 (#708).
+* D_FindStringPtr never compares the long at areg5 itself (#705).
+* ExtractLabel searches the `.` from the 10th character without a limit
+  (#703), and a space does not end the label (#704): blitz2 assembles
+  the source's `CMPI.b #" ",d2` as `CMPI.b #0,d2` (in the reference
+  build, in the CD's and in AmiBlitz3's binaries). This is compiler bug
+  #343: the later line `MOVE.w #">"*8,d0` (line 1016 of the source)
+  triggers it; the operands are evaluated last line first, so what
+  matters is the line's position, not the destination register (`#" "`
+  in GetCustomReg, which comes after that line, is $20).
 * SearchMem: the string search does not go back after a partial match
-  (`ab` in `aab` is not found there); the empty string compares the bytes
-  behind its 0; word and long searches compare bytes up to 1 or 3 behind
-  the end. The space bar test reads RawStatus every 127 steps; the abort
-  returns 1 and keeps SearchMemFound.
-* D_InitParse copies without a limit into its 256 byte buffer.
+  (`ab` in `aab` is not found there) (#723); the empty string compares
+  the bytes behind its 0 (#721); word and long searches compare bytes up
+  to 1 or 3 behind the end (#722). The space bar test reads RawStatus
+  every 127 steps; the abort returns 1 and keeps SearchMemFound.
+* D_InitParse copies without a limit into its 256 byte buffer (#716).
   ProcessString works on the parser's current position (its "string" in
-  the help text is no argument; a D_NextArg$ before it leaves less), reads
-  from address 0 when there is none (before D_InitParse, after the last
-  argument), and reads on behind a `%` at the end of the text; an unknown
-  `%x` drops the x.
-* AddProcessPtr has no limit of 20 entries; ClearProcessPtrs clears only
-  the first entry's character (the others stay behind it, unreachable).
-* The `%p`/`%c` entries are set by init; before init they point to 0.
+  the help text is no argument; a D_NextArg$ before it leaves less),
+  reads from address 0 when there is none (before D_InitParse, after the
+  last argument) (#719), and reads on behind a `%` at the end of the
+  text (#720).
+* AddProcessPtr has no limit of 20 entries (#700).
+
+Like the original, and no defects: ClearProcessPtrs clears only the
+first entry's character (the others stay behind it, unreachable: it
+ends the lookup, and the next AddProcessPtr reuses it); the `%p`/`%c`
+entries are set by init and point to 0 before it (init always runs
+first); an unknown `%x` drops the x (intended by the source).
 
 ## Test
 

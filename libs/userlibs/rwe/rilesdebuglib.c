@@ -46,51 +46,59 @@
  * BUG(orig), kept:
  *   - D_HexWord, D_CheckNMove, D_CheckNMoveA, D_CheckNMoveWord with count
  *     0 (D_CheckNMoveWord also $8000) run 65536 times (DBRA); GetDataItem
- *     with size 0 or below reads 65536 bytes or more (DBRA).
+ *     with size 0 or below reads 65536 bytes or more (DBRA) (#701).
  *   - D_HexWord at an odd source writes "XX YY" per word, without the
- *     space behind it that the even case writes.
+ *     space behind it that the even case writes (#715).
  *   - The "address below $420" checks compare signed: addresses from
  *     $80000000 show "*" too (D_HexWord, D_CheckNMoveA/Word) or give 0
- *     (GetDataItem).
+ *     (GetDataItem) (#717).
  *   - PeekMax$ copies max+1 characters but returns the length max (a3 is
- *     one behind the result).
+ *     one behind the result) (#718).
  *   - GetCustomReg of a name of 8 characters copies one more character
- *     (the first of the next name) and returns 8; a negative register
- *     word (d0.l not negative) reads in front of the name table.
+ *     (the first of the next name) and returns 8 (#712); a negative
+ *     register word (d0.l not negative) reads in front of the name table
+ *     (#714).
  *   - GetCustomRegAdr matches a prefix (the name may go on behind the
- *     table's), never finds a name of 8 characters, and never looks at
- *     the last register ($1FE NOOP).
+ *     table's), never finds a name of 8 characters (#713), and never
+ *     looks at the last register ($1FE NOOP) (#702).
  *   - GetCopIns$ clears bit 0 of both nibbles of the horizontal positions
- *     (WAIT/SKIP position and mask), so odd digits never show.
+ *     (WAIT/SKIP position and mask), so odd digits never show (#711).
  *   - FPrint and FPrintDetoke: the column check is a byte compare with
  *     80 tested on N (columns 80-207 stop, 208-255 print); nothing checks
- *     the bitmap's size.  FPrint ignores a string of 32769 characters or
- *     more (SUBQ.w/BMI).
+ *     the bitmap's size (#707).  FPrint ignores a string of 32769
+ *     characters or more (SUBQ.w/BMI) (#710).
  *   - FInverse sets a word that FPrint tests as a word but FPrintDetoke
  *     as its high byte (FInverse 1 inverts FPrint only); FPrintDetoke's
- *     cursor marker sets and clears that high byte.  With the high byte
- *     set and tokens drawn into two planes, the second plane gets the
- *     character of the last glyph byte (the inverse drawing overwrites
- *     d0's low byte).
+ *     cursor marker sets and clears that high byte (#706).  With the high
+ *     byte set and tokens drawn into two planes, the second plane gets
+ *     the character of the last glyph byte (the inverse drawing
+ *     overwrites d0's low byte) (#709).
  *   - FPrintDetoke: after the '>' marker, an inverse space follows if the
- *     column count (d6 with the caller's high word) became 0.
- *   - D_FindStringPtr never compares the long at areg5 itself; ExtractLabel
- *     searches the '.' without a limit, and a space does not end the
- *     label: blitz2 assembles the source's CMPI.b #" ",d2 as CMPI.b #0
- *     (the reference build, the CD's and AmiBlitz3's binaries alike;
- *     #" " with other destinations is $20).
+ *     column count (d6 with the caller's high word) became 0 (#708).
+ *   - D_FindStringPtr never compares the long at areg5 itself (#705);
+ *     ExtractLabel searches the '.' without a limit (#703), and a space
+ *     does not end the label: blitz2 assembles the source's
+ *     CMPI.b #" ",d2 as CMPI.b #0 (the reference build, the CD's and
+ *     AmiBlitz3's binaries alike) - compiler bug #343, triggered by the
+ *     later line MOVE.w #">"*8,d0 (line 1016 of the source; the
+ *     operands are evaluated last line first, so what matters is the
+ *     line's position, not the destination register) (#704).
  *   - SearchMem's string search does not go back after a partial match
- *     ("ab" is not found in "aab"); an empty string compares the bytes
- *     behind its 0.  The word/long searches compare bytes up to 1/3
- *     behind the end.
- *   - D_InitParse copies without a limit into its 256 byte buffer;
+ *     ("ab" is not found in "aab") (#723); an empty string compares the
+ *     bytes behind its 0 (#721).  The word/long searches compare bytes up
+ *     to 1/3 behind the end (#722).
+ *   - D_InitParse copies without a limit into its 256 byte buffer (#716);
  *     ProcessString works on the parser's current position (its "string"
- *     is no argument), reads from 0 when there is none, and goes on behind
- *     a '%' at the end of the string; a %x without an entry drops x.
+ *     is no argument), reads from 0 when there is none (#719), and goes
+ *     on behind a '%' at the end of the string (#720).
  *   - AddProcessPtr does not stop after 20 entries (the original then
  *     overwrites the code of D_InitParse behind the table, the C build
- *     other data); ClearProcessPtrs only clears the first entry.
- *   - The %p and %c entries are set by init; before it they point to 0.
+ *     other data) (#700).
+ * Like the original, no defects: ClearProcessPtrs only clears the first
+ * entry (it ends the lookup, and the next AddProcessPtr reuses it); the
+ * %p and %c entries are set by init and point to 0 before it (init
+ * always runs first); a %x without an entry drops x (as the source
+ * intends).
  *
  * DIFF: a2 and a3 stay unchanged where the original uses them as work
  * registers (FPrint: a2 = the font, a3 = the glyph; SearchMem: a2 = the
@@ -502,7 +510,7 @@ static UBYTE *hexbyte(UBYTE *d, const UBYTE **s)
 }
 
 /* D_HexWord source,address,num (d0, d1, d2.w): num words as hex, "XXXX "
-   each (at an odd source "XX YY", BUG(orig)); "*" below $420 */
+   each (at an odd source "XX YY", BUG(orig) (#715)); "*" below $420 */
 static void BLITZ_ROUTINE hexword_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_REG(d1),
                                     UWORD num BL_REG(d2))
 {
@@ -624,7 +632,7 @@ static ULONG BLITZ_ROUTINE findstringptr_c(const UBYTE *a5 BL_REG(d0), ULONG loo
 }
 
 /* PeekMax$(address,max) (d0, d1.w): the characters up to the 0, at most
-   max+1 written; the length counts one less then (BUG(orig)) */
+   max+1 written; the length counts one less then (BUG(orig) (#718)) */
 static ULONG BLITZ_ROUTINE peekmax_c(const UBYTE *s BL_REG(d0), UWORD max BL_REG(d1))
 {
     ULONG n = 0xffff;
@@ -979,7 +987,8 @@ static ULONG BLITZ_ROUTINE getcopins_c(const UWORD *ins BL_REG(d0))
 }
 
 /* GetCustomReg(address) (d0.w; d0.l tested): the register's name up to
-   its first space, at most 8 (and the next name's first, BUG(orig)) */
+   its first space, at most 8 (and the next name's first, BUG(orig)
+   (#712)) */
 static ULONG BLITZ_ROUTINE getcustomreg_c(ULONG reg BL_REG(d0))
 {
     const UBYTE *p;
@@ -1145,7 +1154,8 @@ static void BLITZ_ROUTINE setuplesdebug_c(ULONG tok BL_REG(d0), UBYTE tokenise B
 
 /* ExtractLabel(label_string) (d0): from 9 characters on, the name behind
    the first '.' up to a 0 or ':' (the source's test for a space is
-   assembled as CMPI.b #0 - BUG(orig), in every build) */
+   assembled as CMPI.b #0 - BUG(orig) (#704), compiler bug #343, in every
+   build) */
 static ULONG BLITZ_ROUTINE extractlabel_c(const UBYTE *s BL_REG(d0))
 {
     const UBYTE *a0 = s + 9;
@@ -1165,7 +1175,7 @@ static ULONG BLITZ_ROUTINE extractlabel_c(const UBYTE *s BL_REG(d0))
     return (UWORD)n;
 }
 
-/* D_InitParse string (d0): copied into the buffer (BUG(orig): no limit) */
+/* D_InitParse string (d0): copied into the buffer (BUG(orig) (#716): no limit) */
 static void BLITZ_ROUTINE initparse_c(const UBYTE *s BL_REG(d0))
 {
     UBYTE *d = parseadr;
@@ -1230,7 +1240,7 @@ static ULONG BLITZ_ROUTINE processstring_c(void)
 }
 
 /* AddProcessPtr character$,string (d0, d1): a new entry behind the last
-   (BUG(orig): no limit) */
+   (BUG(orig) (#700): no limit) */
 static void BLITZ_ROUTINE addprocessptr_c(const UBYTE *ch BL_REG(d0), const UBYTE *s BL_REG(d1))
 {
     struct ptok *e = stringtokens.user;
