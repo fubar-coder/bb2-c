@@ -8,16 +8,32 @@
  * usage: inject [OPTION...] COMMAND [ARGS]
  *   signals                every free signal bit of the process allocated
  *                          before COMMAND starts (AllocSignal(-1) fails)
- *   allocfail=MIN-MAX[/chip][/COUNT]
+ *   allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP]
  *                          AllocMem of MIN..MAX bytes (with /chip: only
- *                          with MEMF_CHIP) returns 0, the first COUNT times
- *                          (default every time)
+ *                          with MEMF_CHIP, with /f=FLAGS: only with exactly
+ *                          these flags, hex) returns 0, the first COUNT
+ *                          times (default every time); with +SKIP only
+ *                          after SKIP such allocations went through
  *   readfail=NAME/N        the N-th Read on a file opened under a name that
  *                          ends in NAME (case ignored) returns -1
+ *   writefail=NAME/N       the same for Write
+ *   alerts                 DisplayAlert returns FALSE at once (as if the
+ *                          right mouse button was pressed: a recoverable
+ *                          alert does not wait), its text is written
+ *   wbfrontfail            WBenchToFront returns FALSE (as with the
+ *                          Workbench closed)
+ *   nullnode=NUM/NAME      while COMMAND runs, the long word at address 0
+ *                          (normally 0) points to a node {next 0, word NUM
+ *                          (hex), NAME}: a list walked through a null
+ *                          pointer (head at address 0) finds it; restored
+ *                          afterwards
  *   examinefail=NAME       Examine of a lock on a name that ends in NAME
  *                          returns DOSFALSE
  *   openlibfail=NAME       OpenLibrary/OldOpenLibrary of a library whose
  *                          name ends in NAME (case ignored) returns 0
+ *   opendevfail=NAME       OpenDevice of a device whose name ends in NAME
+ *                          returns IOERR_OPENFAIL (io_Error set, io_Device
+ *                          0)
  *   createprocfail         CreateProc returns 0 (no process: as without
  *                          memory for it or its stack)
  *   track                  the process's AllocMem/FreeMem are recorded; what
@@ -34,7 +50,9 @@
  *                          (the count could depend on garbage) - e.g. a
  *                          list followed past the end of a hunk.  Other
  *                          memory (allocated before COMMAND, by another
- *                          task, ...) is freed as asked
+ *                          task, ...) is freed as asked.  A FreeMem whose
+ *                          64 bytes behind are no longer zero is reported
+ *                          (written behind the allocation)
  * What COMMAND leaves behind:
  *   opencount=NAME         how often the process opened a library whose
  *                          name ends in NAME (OpenLibrary, OldOpenLibrary)
@@ -47,6 +65,9 @@
  *                          PATH); afterwards: is it still the current
  *                          directory, did COMMAND UnLock it (inject's own
  *                          current directory is restored in any case)
+ *   handles                after COMMAND: are the process's input and
+ *                          output handles (pr_CIS, pr_COS) the ones it
+ *                          started with
  *   inuse=PATH             after COMMAND: is PATH still in use (an
  *                          exclusive Lock fails with ERROR_OBJECT_IN_USE,
  *                          e.g. a lock left over); up to 4 times
@@ -95,7 +116,8 @@
  * patches are system-wide but act only for this process.  Behind COMMAND
  * it writes (lines "inject: ..."): how often each fault was injected,
  * rc=N of COMMAND, with track the allocations left (sorted by size:
- * the addresses differ between runs), then
+ * the addresses differ between runs), with pad the allocations written
+ * behind ("pad: written behind an allocation of N bytes"), then
  *   opencount: NAME +N           opened minus closed
  *   current dir at end: start | other
  *   current dir: the start lock was unlocked   (only if so)
@@ -111,6 +133,7 @@
 #include <exec/types.h>
 #include <exec/memory.h>
 #include <exec/execbase.h>
+#include <exec/errors.h>
 #include <dos/dos.h>
 #include <dos/dosextens.h>
 #include <dos/dostags.h>
@@ -129,6 +152,9 @@
 #define LVO_FREEMEM  (-210)
 #define LVO_OPEN     (-30)
 #define LVO_READ     (-42)
+#define LVO_WRITE    (-48)
+#define LVO_DISPLAYALERT (-90)
+#define LVO_WBENCHTOFRONT (-342)
 #define LVO_LOCK     (-84)
 #define LVO_UNLOCK   (-90)
 #define LVO_EXAMINE  (-102)
@@ -138,6 +164,7 @@
 #define LVO_OPENLIBRARY    (-552)
 #define LVO_CACHECLEARU    (-636)
 #define LVO_CACHECLEARE    (-642)
+#define LVO_OPENDEVICE     (-444)
 
 struct IntuitionBase *IntuitionBase;
 
@@ -149,10 +176,15 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 
 /* -------------------------------------------------------------- options */
 
-static int o_signals, o_track, o_pad, o_allocfail, o_createprocfail;
-static ULONG af_min, af_max, af_chip, af_count, af_done;
-static char rf_name[108], ef_name[108], olf_name[108];
-static ULONG rf_n, rf_done, ef_done, olf_done, cpf_done;
+static int o_signals, o_track, o_pad, o_allocfail, o_createprocfail, o_alerts;
+static int o_wbfrontfail, o_handles;
+static ULONG nn_num;
+static char nn_name[40];
+static ULONG wbf_done;
+static ULONG af_min, af_max, af_chip, af_count, af_done, af_skip, af_seen, af_flags;
+static int af_flags_set;
+static char rf_name[108], wf_name[108], ef_name[108], olf_name[108], odf_name[108];
+static ULONG rf_n, rf_done, wf_n, wf_done, ef_done, olf_done, cpf_done, alerts_done, odf_done;
 
 /* the patches: asm entry, C decision (only for this process while COMMAND
    runs); the original is called with the registers it got */
@@ -160,6 +192,8 @@ APTR old_allocmem, old_freemem, old_open, old_read, old_lock, old_examine;
 APTR old_oldopenlib, old_openlib, old_createproc, old_closelib, old_unlock;
 APTR old_cacheclearu, old_cachecleare;
 void cacheclearu_patch(void), cachecleare_patch(void);
+APTR old_write, old_alert, old_opendev, old_wbfront;
+void write_patch(void), alert_patch(void), opendev_patch(void), wbfront_patch(void);
 void allocmem_patch(void), freemem_patch(void), open_patch(void), read_patch(void);
 void lock_patch(void), examine_patch(void), oldopenlib_patch(void), openlib_patch(void);
 void createproc_patch(void), closelib_patch(void), unlock_patch(void), keys_stub(void);
@@ -243,6 +277,60 @@ __asm__(
 "   move.l  _old_read,-(sp)\n"
 "   rts\n"
 "3: moveq   #-1,d0\n"
+"   rts\n"
+/* Write(d1 file, d2 buffer, d3 length): write_pre != 0 -> -1 */
+"   .even\n"
+"_write_patch:\n"
+"   movem.l d1/a0-a1,-(sp)\n"
+"   move.l  d1,-(sp)\n"
+"   jsr     _write_pre\n"
+"   addq.l  #4,sp\n"
+"   tst.l   d0\n"
+"   movem.l (sp)+,d1/a0-a1\n"
+"   bne.s   3b\n"
+"   move.l  _old_write,-(sp)\n"
+"   rts\n"
+/* OpenDevice(a0 name, d0 unit, a1 ioreq, d1 flags): opendev_pre(name,
+   ioreq) != 0 -> IOERR_OPENFAIL (set there) */
+"   .even\n"
+"_opendev_patch:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  a1,-(sp)\n"
+"   move.l  a0,-(sp)\n"
+"   jsr     _opendev_pre\n"
+"   addq.l  #8,sp\n"
+"   tst.l   d0\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   bne.s   9f\n"
+"   move.l  _old_opendev,-(sp)\n"
+"   rts\n"
+"9: moveq   #-1,d0\n"
+"   rts\n"
+/* WBenchToFront(): wbfront_pre != 0 -> FALSE (Z=1) */
+"   .even\n"
+"_wbfront_patch:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   jsr     _wbfront_pre\n"
+"   tst.l   d0\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   bne.s   10f\n"
+"   move.l  _old_wbfront,-(sp)\n"
+"   rts\n"
+"10: moveq  #0,d0\n"
+"   rts\n"
+/* DisplayAlert(d0 number, a0 string, d1 height): alert_pre != 0 -> FALSE */
+"   .even\n"
+"_alert_patch:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  a0,-(sp)\n"
+"   jsr     _alert_pre\n"
+"   addq.l  #4,sp\n"
+"   tst.l   d0\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   bne.s   8f\n"
+"   move.l  _old_alert,-(sp)\n"
+"   rts\n"
+"8: moveq   #0,d0\n"
 "   rts\n"
 /* Examine(d1 lock, d2 fib): examine_pre != 0 -> DOSFALSE */
 "   .even\n"
@@ -365,6 +453,7 @@ static ULONG nwrong, wrong_alloc[16], wrong_free[16];   /* FreeMem of another si
 #define TOMB 1UL                        /* removed (odd: no allocation) */
 #define PAD 64                          /* pad: the bytes behind */
 static ULONG bad_free;                  /* pad: a FreeMem not done */
+static ULONG npadw, padw_size[16];      /* pad: written behind */
 
 static ULONG hash(ULONG a) { return ((a >> 3) * 2654435761UL) >> 18 & (SLOTS - 1); }
 
@@ -374,8 +463,13 @@ ULONG alloc_pre(ULONG size, ULONG flags)
 {
     cf_alloc();
     if (!o_allocfail || !ours() || size < af_min || size > af_max
-        || (af_chip && !(flags & MEMF_CHIP)) || (af_count && af_done >= af_count))
+        || (af_chip && !(flags & MEMF_CHIP)) || (af_flags_set && flags != af_flags)
+        || (af_count && af_done >= af_count))
         return 0;
+    if (af_seen < af_skip) {
+        af_seen++;
+        return 0;
+    }
     af_done++;
     return 1;
 }
@@ -418,6 +512,14 @@ ULONG free_pre(ULONG mem, ULONG size)
                 wrong_alloc[nwrong] = slot[h].size;
                 wrong_free[nwrong++] = size;
             }
+            if (o_pad) {
+                const UBYTE *p = (const UBYTE *)mem + slot[h].size;
+
+                for (i = 0; i < PAD && !p[i]; i++)
+                    ;
+                if (i < PAD && npadw < 16)
+                    padw_size[npadw++] = slot[h].size;
+            }
             slot[h].addr = TOMB;
             nalloc--;
             return o_pad ? size + PAD : size;
@@ -436,7 +538,7 @@ ULONG free_pre(ULONG mem, ULONG size)
 /* ---------------------------------------------------- dos.library */
 
 #define NAMED 8
-static ULONG rf_fh[NAMED], rf_reads[NAMED], ef_lock[NAMED];
+static ULONG rf_fh[NAMED], rf_reads[NAMED], ef_lock[NAMED], wf_fh[NAMED], wf_writes[NAMED];
 
 static int lower(int c) { return c >= 'A' && c <= 'Z' ? c + 32 : c; }
 
@@ -459,6 +561,13 @@ void named_post(ULONG result, const char *name, ULONG which)
     const char *want = which ? ef_name : rf_name;
     int i;
 
+    if (!which && result && name && wf_name[0] && ours() && ends(name, wf_name))
+        for (i = 0; i < NAMED; i++)
+            if (!wf_fh[i]) {
+                wf_fh[i] = result;
+                wf_writes[i] = 0;
+                break;
+            }
     if (!result || !name || !*want || !ours() || !ends(name, want))
         return;
     for (i = 0; i < NAMED; i++)
@@ -485,6 +594,62 @@ ULONG read_pre(ULONG fh)
             return 1;
         }
     return 0;
+}
+
+ULONG write_pre(ULONG fh)
+{
+    int i;
+
+    if (!wf_name[0] || !ours() || !fh)
+        return 0;
+    for (i = 0; i < NAMED; i++)
+        if (wf_fh[i] == fh) {
+            if (++wf_writes[i] != wf_n)
+                return 0;
+            wf_fh[i] = 0;               /* once per open */
+            wf_done++;
+            return 1;
+        }
+    return 0;
+}
+
+/* DisplayAlert: the text (behind the x position and y byte of each line:
+   lines of 0-terminated text with a continuation byte) */
+ULONG alert_pre(const UBYTE *s)
+{
+    if (!o_alerts || !ours())
+        return 0;
+    alerts_done++;
+    put("inject: alert:");
+    while (s) {
+        s += 3;
+        put(" ");
+        put((const char *)s);
+        s += strlen((const char *)s) + 1;
+        if (!*s)
+            break;
+        s++;
+    }
+    put("\n");
+    return 1;
+}
+
+ULONG wbfront_pre(void)
+{
+    if (!o_wbfrontfail || !ours())
+        return 0;
+    wbf_done++;
+    return 1;
+}
+
+ULONG opendev_pre(const char *name, struct IORequest *io)
+{
+    if (!odf_name[0] || !ours() || !name || !ends(name, odf_name))
+        return 0;
+    odf_done++;
+    io->io_Device = NULL;
+    io->io_Error = IOERR_OPENFAIL;
+    return 1;
 }
 
 ULONG examine_pre(ULONG lock)
@@ -681,6 +846,9 @@ enum { KS_NOTSENT, KS_SENT, KS_NOWINDOW };
 static int k_result;
 
 static volatile int cmd_done, drv_done;
+static BPTR h_cis, h_cos;              /* handles: at the start */
+static ULONG nn_old;                    /* nullnode: the long word at 0 */
+static int h_kept;
 
 /* the input handler (input.device's task) */
 struct InputEvent *keys_handler(struct InputEvent *ev)
@@ -884,8 +1052,21 @@ static int option(const char *a)
         if (!strncmp(s, "/chip", 5)) {
             af_chip = 1;
             s += 5;
+        } else if (!strncmp(s, "/f=", 3)) {
+            int d, n = 0;
+
+            for (s += 3, af_flags = 0; (d = *s >= '0' && *s <= '9' ? *s - '0'
+                                          : *s >= 'a' && *s <= 'f' ? *s - 'a' + 10
+                                          : *s >= 'A' && *s <= 'F' ? *s - 'A' + 10 : -1) >= 0
+                                       && n < 8; s++, n++)
+                af_flags = af_flags * 16 + (ULONG)d;
+            if (!n)
+                return -1;
+            af_flags_set = 1;
         }
         if (*s == '/' && (s++, !number(&s, &af_count) || !af_count))
+            return -1;
+        if (*s == '+' && (s++, !number(&s, &af_skip)))
             return -1;
         return *s ? -1 : (o_allocfail = 1);
     }
@@ -898,6 +1079,46 @@ static int option(const char *a)
         if (!number(&s, &rf_n) || *s || !rf_n)
             return -1;
         memcpy(rf_name, a + 9, (ULONG)(slash - a - 9));
+        return 1;
+    }
+    if (!strncmp(a, "writefail=", 10)) {
+        const char *slash = strrchr(a, '/');
+
+        if (!slash || slash == a + 10 || (ULONG)(slash - a - 10) >= sizeof wf_name)
+            return -1;
+        s = slash + 1;
+        if (!number(&s, &wf_n) || *s || !wf_n)
+            return -1;
+        memcpy(wf_name, a + 10, (ULONG)(slash - a - 10));
+        return 1;
+    }
+    if (!strcmp(a, "alerts"))
+        return o_alerts = 1;
+    if (!strcmp(a, "wbfrontfail"))
+        return o_wbfrontfail = 1;
+    if (!strncmp(a, "nullnode=", 9)) {
+        const char *slash = strchr(a + 9, '/');
+
+        s = a + 9;
+        if (!slash || slash == s || !slash[1] || strlen(slash + 1) >= sizeof nn_name)
+            return -1;
+        for (nn_num = 0; s < slash; s++) {
+            int d = *s >= '0' && *s <= '9' ? *s - '0' : *s >= 'a' && *s <= 'f' ? *s - 'a' + 10
+                    : *s >= 'A' && *s <= 'F' ? *s - 'A' + 10 : -1;
+
+            if (d < 0 || nn_num > 0xfff)
+                return -1;
+            nn_num = nn_num * 16 + d;
+        }
+        strcpy(nn_name, slash + 1);
+        return 1;
+    }
+    if (!strcmp(a, "handles"))
+        return o_handles = 1;
+    if (!strncmp(a, "opendevfail=", 12)) {
+        if (!a[12] || strlen(a + 12) >= sizeof odf_name)
+            return -1;
+        strcpy(odf_name, a + 12);
         return 1;
     }
     if (!strncmp(a, "examinefail=", 12)) {
@@ -1000,9 +1221,23 @@ static void patch(int on)
         old_unlock = SetFunction(dos, LVO_UNLOCK, (APTR)unlock_patch);
         old_cacheclearu = SetFunction(ex, LVO_CACHECLEARU, (APTR)cacheclearu_patch);
         old_cachecleare = SetFunction(ex, LVO_CACHECLEARE, (APTR)cachecleare_patch);
+        old_write = SetFunction(dos, LVO_WRITE, (APTR)write_patch);
+        old_opendev = SetFunction(ex, LVO_OPENDEVICE, (APTR)opendev_patch);
+        if (o_alerts)
+            old_alert = SetFunction((struct Library *)IntuitionBase, LVO_DISPLAYALERT,
+                                    (APTR)alert_patch);
+        if (o_wbfrontfail)
+            old_wbfront = SetFunction((struct Library *)IntuitionBase, LVO_WBENCHTOFRONT,
+                                      (APTR)wbfront_patch);
     } else {
         SetFunction(ex, LVO_CACHECLEARU, old_cacheclearu);
         SetFunction(ex, LVO_CACHECLEARE, old_cachecleare);
+        SetFunction(dos, LVO_WRITE, old_write);
+        SetFunction(ex, LVO_OPENDEVICE, old_opendev);
+        if (o_alerts)
+            SetFunction((struct Library *)IntuitionBase, LVO_DISPLAYALERT, old_alert);
+        if (o_wbfrontfail)
+            SetFunction((struct Library *)IntuitionBase, LVO_WBENCHTOFRONT, old_wbfront);
         SetFunction(ex, LVO_CLOSELIBRARY, old_closelib);
         SetFunction(dos, LVO_UNLOCK, old_unlock);
         SetFunction(ex, LVO_ALLOCMEM, old_allocmem);
@@ -1056,10 +1291,12 @@ static void report_track(void)
 static const char usage[] =
     "usage: inject [OPTION...] COMMAND [ARGS]\n"
     "  run COMMAND in this process with faults injected (bug-orig tests)\n"
-    "  options: signals allocfail=MIN-MAX[/chip][/COUNT] readfail=NAME/N\n"
-    "    examinefail=NAME openlibfail=NAME createprocfail track pad\n"
-    "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked undobuf\n"
-    "    cacheflush=NAME\n"
+    "  options: signals allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP] readfail=NAME/N\n"
+    "    writefail=NAME/N alerts wbfrontfail examinefail=NAME openlibfail=NAME\n"
+    "    opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
+    "    track pad\n"
+    "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked\n"
+    "    undobuf cacheflush=NAME\n"
     "    keys=TITLE/CODE@SECS[,CODE@SECS]...  (described in inject.c)\n";
 
 int main(int argc, char **argv)
@@ -1088,8 +1325,11 @@ int main(int argc, char **argv)
             return 20;
         }
     if (i >= argc) {
-        put("usage: inject [signals] [allocfail=MIN-MAX[/chip][/COUNT]] [readfail=NAME/N]\n"
-            "              [examinefail=NAME] [openlibfail=NAME] [createprocfail] [track] [pad]\n"
+        put("usage: inject [signals] [allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP]]\n"
+            "              [readfail=NAME/N] [writefail=NAME/N] [alerts] [wbfrontfail]\n"
+            "              [handles] [nullnode=NUM/NAME]\n"
+            "              [examinefail=NAME] [openlibfail=NAME] [opendevfail=NAME]\n"
+            "              [createprocfail] [track] [pad]\n"
             "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
             "              [click=TITLE/TEXT]... [doslocked] [undobuf] [cacheflush=NAME]\n"
             "              [keys=TITLE/CODE@SECS[,CODE@SECS]...] COMMAND [ARGS]\n");
@@ -1109,7 +1349,7 @@ int main(int argc, char **argv)
         put("\n");
         return 20;
     }
-    if (nclick || nkeys) {
+    if (nclick || nkeys || o_alerts || o_wbfrontfail) {
         IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library", 36);
         if (!IntuitionBase)
             return 20;
@@ -1154,11 +1394,35 @@ int main(int argc, char **argv)
                 break;
             sigs |= 1UL << s;
         }
+    {
+        struct Process *pr = (struct Process *)me;
+
+        h_cis = pr->pr_CIS;
+        h_cos = pr->pr_COS;
+    }
+    if (nn_name[0]) {
+        /* the node: next (long), number (word), name; address 0 points to it */
+        static UBYTE node[48] __attribute__((aligned(4)));
+
+        memset(node, 0, sizeof node);
+        node[4] = (UBYTE)(nn_num >> 8);
+        node[5] = (UBYTE)nn_num;
+        strcpy((char *)node + 6, nn_name);
+        __asm__ volatile("move.l 0.w,%0" : "=d"(nn_old));
+        __asm__ volatile("move.l %0,0.w" : : "d"((ULONG)node) : "memory");
+    }
     patch(1);
     active = 1;
     rc = RunCommand(seg, stack, args, strlen(args));
     active = 0;
     patch(0);
+    if (nn_name[0])
+        __asm__ volatile("move.l %0,0.w" : : "d"(nn_old) : "memory");
+    {
+        struct Process *pr = (struct Process *)me;
+
+        h_kept = pr->pr_CIS == h_cis && pr->pr_COS == h_cos;
+    }
     cmd_done = 1;
     for (k = 0; k < 32; k++)
         if (sigs & (1UL << k))
@@ -1190,6 +1454,18 @@ int main(int argc, char **argv)
         sprintf(line, "inject: readfail: %lu reads failed\n", rf_done);
         put(line);
     }
+    if (wf_name[0]) {
+        sprintf(line, "inject: writefail: %lu writes failed\n", wf_done);
+        put(line);
+    }
+    if (o_alerts) {
+        sprintf(line, "inject: alerts: %lu alerts answered\n", alerts_done);
+        put(line);
+    }
+    if (o_wbfrontfail) {
+        sprintf(line, "inject: wbfrontfail: %lu calls failed\n", wbf_done);
+        put(line);
+    }
     if (ef_name[0]) {
         sprintf(line, "inject: examinefail: %lu examines failed\n", ef_done);
         put(line);
@@ -1198,16 +1474,26 @@ int main(int argc, char **argv)
         sprintf(line, "inject: openlibfail: %lu opens failed\n", olf_done);
         put(line);
     }
+    if (odf_name[0]) {
+        sprintf(line, "inject: opendevfail: %lu opens failed\n", odf_done);
+        put(line);
+    }
     if (o_createprocfail) {
         sprintf(line, "inject: createprocfail: %lu processes not created\n", cpf_done);
         put(line);
     }
     sprintf(line, "inject: rc=%ld\n", rc);
     put(line);
+    if (o_handles)
+        put(h_kept ? "inject: handles: kept\n" : "inject: handles: changed\n");
     if (o_track)
         report_track();
     if (bad_free)
         put("inject: pad: FreeMem inside an allocation (not done)\n");
+    for (k = 0; k < (int)npadw; k++) {
+        sprintf(line, "inject: pad: written behind an allocation of %lu bytes\n", padw_size[k]);
+        put(line);
+    }
     for (k = 0; k < noc; k++) {
         sprintf(line, "inject: opencount: %s %+ld\n", oc_name[k], (long)oc_count[k]);
         put(line);

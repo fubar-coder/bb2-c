@@ -330,11 +330,13 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   BROKEN. Reports: `build/<preset>/tests/bug-orig/ID.txt`, the
   observation of each configuration in `.../ID/TAG/observation`.
   Helpers (`tests/bug-orig/amiga/`): `inject` runs the compiler with
-  faults (no free signal, failing AllocMem of a size, Read error, failing
-  Examine, failing OpenLibrary of a name, failing CreateProc, recorded
-  allocations and FreeMem of another size than allocated; with `pad` 64
-  zeroed bytes behind every allocation, also a hunk of LoadSeg, and a
-  FreeMem inside an allocation is reported and not done; for the
+  faults (no free signal, failing AllocMem of a size, also only after
+  SKIP of them, Read or Write error, failing Examine, failing OpenLibrary
+  or OpenDevice of a name, failing CreateProc, DisplayAlert answered at
+  once, recorded allocations and FreeMem of another size than allocated;
+  with `pad` 64 zeroed bytes behind every allocation, also a hunk of
+  LoadSeg, a FreeMem inside an allocation is reported and not done, and
+  one whose 64 bytes are no longer zero is reported (written behind); for the
   compiled programs with `runwrap=@INJECT@|...`) and reports what the
   command leaves behind (library opens minus closes of the process, its
   current directory and whether it unlocked the start lock, with
@@ -438,8 +440,8 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   `TEDAB:tools/inject`/`TEDAB:tools/wbrun` in front, or `Execute` of a
   script made with `@file`), `; @expect data NAME "DATA"`, `; @expect
   [no]stdout "TEXT"`, `[no]log` (teddrive's log), `[no]screen DUMP
-  "TEXT"` (the decoded dump). ctest `bug_orig_ID`, report
-  `build/<preset>/tests/bug-orig/ID.txt`, the runs in
+  "TEXT"` (the decoded dump), `[no]file NAME "TEXT"`. ctest `bug_orig_ID`,
+  report `build/<preset>/tests/bug-orig/ID.txt`, the runs in
   `.../ID/sNNN/vol/runs/ID/{R5,C5}`; `bug_orig_ted_lint` (host) checks
   the scripts, `bug_orig_ted_selftest_broken` (label `emulator`) must come
   out BROKEN. Adding a test: one file `ted/ID.drv`, found by a glob.
