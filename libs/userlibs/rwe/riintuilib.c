@@ -178,17 +178,25 @@ static void BLITZ_ROUTINE ipcolour_c(ULONG fg BL_REG(d0), struct RastPort *rp BL
     ipcolour2_c(fg, (ULONG)-1, rp, a2);
 }
 
-/* the output handler: the IntuiText with the pens of IPColour at 0,0 */
-static void doipprint(void)
+/* the pens of IPColour into the IntuiText: every handler takes them first,
+   before it copies a string (so #698's overflow changes only the pens of
+   the next text) */
+static void setpens(void)
 {
     pr.it.FrontPen = (UBYTE)pr.apen;
     pr.it.BackPen = (UBYTE)pr.bpen;
+}
+
+/* the output handler: the IntuiText at 0,0 */
+static void doipprint(void)
+{
     PrintIText(usedrast, &pr.it, 0, 0);
 }
 
 /* one character - BUG(orig) (#699): read from the address d0 */
 static void BLITZ_ROUTINE ipprint_c(ULONG d0 BL_REG(d0))
 {
+    setpens();
     pr.cbuf[0] = *(const UBYTE *)d0;
     pr.cbuf[1] = 0;
     pr.it.IText = pr.cbuf;
@@ -198,6 +206,7 @@ static void BLITZ_ROUTINE ipprint_c(ULONG d0 BL_REG(d0))
 /* a null terminated string */
 static void BLITZ_ROUTINE ipprint0_c(UBYTE *s BL_REG(a0))
 {
+    setpens();
     pr.it.IText = s;
     doipprint();
 }
@@ -207,6 +216,7 @@ static void BLITZ_ROUTINE ipprint1_c(UWORD n BL_REG(d0), const UBYTE *s BL_REG(a
 {
     UBYTE *d = pr.cbuf;
 
+    setpens();
     pr.it.IText = d;
     while (n) {
         *d++ = *s++;

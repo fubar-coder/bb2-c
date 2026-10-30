@@ -40,7 +40,11 @@ entries, then the init/finit nullsubs and a plain `!libfin`.
 All C behind thunks that keep d0/d1/a0/a1. The handler's two `BRA.w`
 in front of its entry are a short assembler block (as in fontlib).
 IntuiText, buffer and pens lie one after the other as in the original,
-so that an overlong string runs into the pens the same way.
+so that an overlong string runs into the pens the same way. Every
+handler puts the pens into the IntuiText first, before it copies a
+string, as the original: the overlong string itself is still drawn with
+the old pens, only the next text with the overwritten ones (#935, the
+bug-orig test of #698).
 
 ## BUG(orig), kept
 
