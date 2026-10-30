@@ -97,7 +97,7 @@ extern void screenclose_stub(void), screenopen2_stub(void), openreq_stub(void),
    d7.w = numlines (a4 = thisitem as in the asm); returns d0.w (-1 nothing,
    -2 showall, else a line).  May not return at all: blitz2's menu can call
    extalloc -> outmem (longjmp over blitz2's frames, BUG(orig) #369). */
-WORD call_menurout(UWORD d6);
+WORD call_menurout(UWORD item);
 /* ted.s:2771 doclean: jsr (cleanup), all registers saved */
 void call_cleanup(void);
 /* call_loadxtra / call_savextra: hooks.h */

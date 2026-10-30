@@ -180,10 +180,10 @@ void openreq_c(struct m68kregs *r)                                        /* 0 *
 void closereq_c(struct m68kregs *r) { (void)r; closereq(); }              /* 4 */
 void getinput_c(struct m68kregs *r)                                       /* 8 */
 {
-    UWORD d6 = r->d[6];
+    UWORD id = r->d[6];
 
-    r->d[7] = getinput(&d6);
-    SETW(r->d[6], d6);
+    r->d[7] = getinput(&id);
+    SETW(r->d[6], id);
     r->d[0] = (ULONG)-1;        /* asm: d0 = -1, Z=0 */
 }
 void error_c(struct m68kregs *r) { error((const char *)r->a[0]); }        /* 12 */
@@ -201,10 +201,10 @@ void refgads_c(struct m68kregs *r)                                        /* 28 
 }
 void getinput2_c(struct m68kregs *r)                                      /* 32 */
 {
-    UWORD d6 = r->d[6];
+    UWORD id = r->d[6];
 
-    r->d[7] = getinput2(&d6);
-    SETW(r->d[6], d6);
+    r->d[7] = getinput2(&id);
+    SETW(r->d[6], id);
     r->d[0] = r->d[7] ? (ULONG)-1 : 0;  /* asm: Z=1 if nothing */
 }
 void colors_c(struct m68kregs *r) { (void)r; colors(); }                  /* 48 */
@@ -258,11 +258,11 @@ REGSTUB(extalloc);
 /* ted.s:1555 extmenu: jsr (a0) with d6.w item, a5 firstitem, d7.w numlines;
    the upper words of d6/d7 are undefined in the asm (0 here); a4 =
    thisitem as in the handler.  Returns d0.w. */
-WORD call_menurout(UWORD d6)
+WORD call_menurout(UWORD item)
 {
     struct m68kregs r = {{0}};
 
-    r.d[6] = d6;
+    r.d[6] = item;
     r.d[7] = numlines;
     r.a[5] = (ULONG)firstitem;
     r.a[4] = (ULONG)thisitem;

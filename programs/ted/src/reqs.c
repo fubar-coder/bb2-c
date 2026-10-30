@@ -27,36 +27,36 @@ struct Window *req_old, *req_old2;      /* ted.s:3577/3578 */
 /* ---------------------------------------------- options requester */
 
 /* ted.s:3092 setdefs - convert options at a5 to defaults */
-void setdefs(struct defblock *a5)
+void setdefs(struct defblock *opts)
 {
-    UWORD old[4], neu[4], d2;
+    UWORD old[4], neu[4], group;
     int i;
 
     if (!tokens)
-        a5->d_tokenise = 0;                     /* clr 6(a5): the SOURCE block */
+        opts->d_tokenise = 0;                   /* clr 6(a5): the SOURCE block */
     /* .skip0 */
     defaultreqga7.Flags &= 0xFFFF - 0x80;
-    if (a5->d_fonthite == 6)
+    if (opts->d_fonthite == 6)
         defaultreqga7.Flags |= 0x80;
     /* .skip - BUG(orig) (#383) survey-04 I.17: lsl #7 of the raw word (values
        other than 0/1 set foreign flag bits) */
     defaultreqga8.Flags &= 0xFFFF - 0x80;
-    defaultreqga8.Flags |= (UWORD)(a5->d_tokenise << 7);
+    defaultreqga8.Flags |= (UWORD)(opts->d_tokenise << 7);
     defaultreqga9.Flags &= 0xFFFF - 0x80;
-    defaultreqga9.Flags |= (UWORD)(a5->d_makeicons << 7);
+    defaultreqga9.Flags |= (UWORD)(opts->d_makeicons << 7);
     /* colour buttons: old one up, new one down (normcol, labcol, tokcol,
        propcol - consecutive words in both blocks) */
     old[0] = normcol; old[1] = labcol; old[2] = tokcol; old[3] = propcol;
-    neu[0] = a5->d_normcol; neu[1] = a5->d_labcol;
-    neu[2] = a5->d_tokcol; neu[3] = a5->d_propcol;
-    for (i = 0, d2 = 0; d2 < 16; i++, d2 += 4) {   /* .loop */
-        swapd0bord((UWORD)(old[i] | d2));
-        swapd0bord((UWORD)(neu[i] | d2));
+    neu[0] = opts->d_normcol; neu[1] = opts->d_labcol;
+    neu[2] = opts->d_tokcol; neu[3] = opts->d_propcol;
+    for (i = 0, group = 0; group < 16; i++, group += 4) { /* .loop */
+        swapd0bord((UWORD)(old[i] | group));
+        swapd0bord((UWORD)(neu[i] | group));
     }
-    numtoascii2(a5->d_hscmarg, defaultreqla47);
-    numtoascii2(a5->d_vscmarg, defaultreqla48);
-    numtoascii2(a5->d_tabstop, defaultreqla49);
-    defstart = *a5;                             /* .loop2: 25 words */
+    numtoascii2(opts->d_hscmarg, defaultreqla47);
+    numtoascii2(opts->d_vscmarg, defaultreqla48);
+    numtoascii2(opts->d_tabstop, defaultreqla49);
+    defstart = *opts;                           /* .loop2: 25 words */
     /* move hscmarg,int1+2: low word of StringInfo.LongInt only */
     int1 = (LONG)(((ULONG)int1 & 0xFFFF0000) | hscmarg);
     int2 = (LONG)(((ULONG)int2 & 0xFFFF0000) | vscmarg);
@@ -65,23 +65,23 @@ void setdefs(struct defblock *a5)
 }
 
 /* ted.s:3167 setprops - set prop settings to colour reg d0 */
-void setprops(UWORD d0)
+void setprops(UWORD pen)
 {
-    const UWORD *a0 = palit + (UWORD)(d0 * 3);  /* lsl #1 / *3 (bytes: *6) */
-    int d1;
+    const UWORD *rgb = palit + (UWORD)(pen * 3); /* lsl #1 / *3 (bytes: *6) */
+    int i;
 
-    for (d1 = 0; d1 < 3; d1++) {                /* .loop, dbf d1 = 2 */
-        UWORD d2 = 0xFFFF;
-        UWORD v = *a0++;
+    for (i = 0; i < 3; i++) {                   /* .loop, dbf d1 = 2 */
+        UWORD pot = 0xFFFF;
+        UWORD v = *rgb++;
 
         if (v != 15) {
             ULONG l = (ULONG)v << 16;           /* swap d0 / clr d0 */
 
             /* divu #15: overflow (v > 15) leaves d0 = v<<16, low word 0 */
-            d2 = (UWORD)divu_w(l, 15);
+            pot = (UWORD)divu_w(l, 15);
         }
         /* .skip */
-        hps[d1]->HorizPot = d2;
+        hps[i]->HorizPot = pot;
     }
 }
 
@@ -94,40 +94,40 @@ void dispprops(void)
 }
 
 /* ted.s:3196 propadj - do setrgb4 if necessary */
-void propadj(UWORD *a5, UWORD d4)
+void propadj(UWORD *rgb, UWORD pen)
 {
-    UWORD d1 = (UWORD)(hps[0]->HorizPot >> 12);
-    UWORD d2 = (UWORD)(hps[1]->HorizPot >> 12);
-    UWORD d3 = (UWORD)(hps[2]->HorizPot >> 12);
+    UWORD red = (UWORD)(hps[0]->HorizPot >> 12);
+    UWORD green = (UWORD)(hps[1]->HorizPot >> 12);
+    UWORD blue = (UWORD)(hps[2]->HorizPot >> 12);
 
-    if (a5[0] == d1 && a5[1] == d2 && a5[2] == d3)
+    if (rgb[0] == red && rgb[1] == green && rgb[2] == blue)
         return;                                 /* .skip */
     /* .doit */
-    a5[0] = d1;
-    a5[1] = d2;
-    a5[2] = d3;
-    SetRGB4(&myscreen->ViewPort, d4, d1, d2, d3);
+    rgb[0] = red;
+    rgb[1] = green;
+    rgb[2] = blue;
+    SetRGB4(&myscreen->ViewPort, pen, red, green, blue);
 }
 
 /* ted.s:3228 dispgadd0 - display gadget d0 */
-void dispgadd0(UWORD d0)
+void dispgadd0(UWORD button)
 {
-    RefreshGList(colgads[d0], req_window, &defaultreq, 1);
+    RefreshGList(colgads[button], req_window, &defaultreq, 1);
 }
 
 /* the two borders of colour button d0 (asm: bo14 + d0*56, +28) */
 static void swappens(struct Border *b)
 {
-    UBYTE d1 = b->FrontPen;                     /* 4(a0,d0) <-> 5(a0,d0) */
+    UBYTE t = b->FrontPen;                      /* 4(a0,d0) <-> 5(a0,d0) */
 
     b->FrontPen = b->BackPen;
-    b->BackPen = d1;
+    b->BackPen = t;
 }
 
 /* ted.s:3238 swapd0bord (bsr .skip + fall through: both borders) */
-void swapd0bord(UWORD d0)
+void swapd0bord(UWORD button)
 {
-    if (d0 >= 16) {
+    if (button >= 16) {
         /* BUG(orig) (#384): a value >= 16 from a damaged options file - the asm
            swaps the bytes 4/5 at bo14 + (d0 * 56).w and at that +
            (la63 - bo14) = +28, i.e. behind the button borders.  Done the
@@ -135,31 +135,31 @@ void swapd0bord(UWORD d0)
            defaultreqbo14.  DIFF (T): the C data is laid out differently
            (other variables lie behind the borders), so other bytes are
            swapped than in the original. */
-        WORD off = (WORD)(UWORD)(d0 * 56);      /* mulu #56 / 4(a0,d0.w) */
-        UBYTE *a0 = (UBYTE *)&defaultreqbo14;
-        UBYTE d1;
+        WORD off = (WORD)(UWORD)(button * 56);  /* mulu #56 / 4(a0,d0.w) */
+        UBYTE *bords = (UBYTE *)&defaultreqbo14;
+        UBYTE t;
 
         ORIG_HAZARD("swapd0bord: button index >= 16");
-        d1 = a0[off + 4];
-        a0[off + 4] = a0[off + 5];
-        a0[off + 5] = d1;
-        a0 += 28;                               /* lea la63-bo14(a0),a0 */
-        d1 = a0[off + 4];
-        a0[off + 4] = a0[off + 5];
-        a0[off + 5] = d1;
+        t = bords[off + 4];
+        bords[off + 4] = bords[off + 5];
+        bords[off + 5] = t;
+        bords += 28;                            /* lea la63-bo14(a0),a0 */
+        t = bords[off + 4];
+        bords[off + 4] = bords[off + 5];
+        bords[off + 5] = t;
         return;
     }
-    swappens(colbords[2 * d0]);
-    swappens(colbords[2 * d0 + 1]);
+    swappens(colbords[2 * button]);
+    swappens(colbords[2 * button + 1]);
 }
 
 /* ted.s:3247 swapbords */
 void swapbords(void)
 {
-    int d0;
+    int i;
 
-    for (d0 = 0; d0 < 32; d0++)
-        swappens(colbords[d0]);
+    for (i = 0; i < 32; i++)
+        swappens(colbords[i]);
 }
 
 /* ------------------------------------------------ erase / error */
@@ -175,14 +175,14 @@ BOOL erase(void)
 BOOL erase2(void)
 {
     if (allalt) {
-        LONG d7;
-        UWORD d6;
+        LONG event;
+        UWORD id;
 
         openreq(&erasereq);
         do                                      /* .loop */
-            d7 = getinput(&d6);
-        while ((WORD)d7 != -1);
-        if (d6 != 1)
+            event = getinput(&id);
+        while ((WORD)event != -1);
+        if (id != 1)
             return FALSE;
     }
     /* .skip */
@@ -193,14 +193,14 @@ BOOL erase2(void)
 /* ted.s:3511 error (comdata+12): waits for gadget 1, always returns */
 void error(const char *msg)
 {
-    LONG d7;
-    UWORD d6;
+    LONG event;
+    UWORD id;
 
     errorpnt = (UBYTE *)msg;
     openreq(&errorreq);
     for (;;) {                                  /* .loop */
-        d7 = getinput(&d6);
-        if ((WORD)d7 == -1 && d6 == 1)
+        event = getinput(&id);
+        if ((WORD)event == -1 && id == 1)
             break;
     }
 }
@@ -220,31 +220,31 @@ UBYTE *getfname(void)
 }
 
 /* ted.s:3490 getfname2 */
-UBYTE *getfname2(const char *a2)
+UBYTE *getfname2(const char *title)
 {
-    return getfname3(filepath, filename, a2);   /* falls through into getfname3 */
+    return getfname3(filepath, filename, title); /* falls through into getfname3 */
 }
 
 /* ted.s:3493 getfname3 */
-UBYTE *getfname3(char *a0, char *a1, const char *a2)
+UBYTE *getfname3(char *path, char *name, const char *title)
 {
-    UBYTE *d0 = ezfreq(a0, a1, a2);
+    UBYTE *full = ezfreq(path, name, title);
 
-    if (d0)
-        return d0;                              /* d7 = d0 */
+    if (full)
+        return full;                            /* d7 = d0 */
     /* .skip: cmp #1,d0 / beq outmem - dead (Z=1 only with d0 = 0,
        survey-07 I.3), kept */
-    if ((ULONG)d0 == 1)
+    if ((ULONG)full == 1)
         outmem();
     return NULL;                                /* addq #4,a7 */
 }
 
 /* ted.s:3502 ezfreq (comdata+24) */
-UBYTE *ezfreq(char *a0, char *a1, const char *a2)
+UBYTE *ezfreq(char *path, char *name, const char *title)
 {
-    reqstruct[0] = (ULONG)a0;
-    reqstruct[1] = (ULONG)a1;
-    reqstruct[2] = (ULONG)a2;
+    reqstruct[0] = (ULONG)path;
+    reqstruct[1] = (ULONG)name;
+    reqstruct[2] = (ULONG)title;
     return filerequest(reqstruct);              /* bra filerequest+36 */
 }
 
@@ -256,37 +256,37 @@ UBYTE *ezfreq(char *a0, char *a1, const char *a2)
    of UserData of the first gadget - permanently, also for blitz2's own
    requesters (decision O6, survey-04 I.15).  A requester
    without gadgets reads address 40 (I.14). */
-void openreq(struct Requester *a0)
+void openreq(struct Requester *rq)
 {
-    struct Gadget *a1;
+    struct Gadget *gad;
     struct RastPort *rp;
-    struct Window *d0;
+    struct Window *win;
 
-    req = a0;
-    reqwindow.Width = (WORD)(a0->Width + 12);   /* move.l 8(a0),reqwindow+4 */
-    reqwindow.Height = (WORD)(a0->Height + 15);
+    req = rq;
+    reqwindow.Width = (WORD)(rq->Width + 12);   /* move.l 8(a0),reqwindow+4 */
+    reqwindow.Height = (WORD)(rq->Height + 15);
     /* lsr: unsigned - a requester wider/higher than the screen gives a
        huge position, OpenWindow fails -> outmem */
     reqwindow.LeftEdge = (WORD)((UWORD)((UWORD)(edcols << 3) - reqwindow.Width) >> 1);
     reqwindow.TopEdge = (WORD)((UWORD)((UWORD)newscreen.Height - reqwindow.Height) >> 1);
-    a1 = a0->ReqGadget;
-    req_gads = a1;
-    if (!((ULONG)a1->UserData >> 16)) {         /* tst 40(a1) */
-        a1->UserData = (APTR)((ULONG)a1->UserData | 0xFFFF0000);
+    gad = rq->ReqGadget;
+    req_gads = gad;
+    if (!((ULONG)gad->UserData >> 16)) {        /* tst 40(a1) */
+        gad->UserData = (APTR)((ULONG)gad->UserData | 0xFFFF0000);
         do {                                    /* .loop */
-            a1->LeftEdge += 6;
-            a1->TopEdge += 12;
-            a1 = a1->NextGadget;
-        } while (a1);
+            gad->LeftEdge += 6;
+            gad->TopEdge += 12;
+            gad = gad->NextGadget;
+        } while (gad);
     }
     /* .skip */
     req_screen = myscreen;
-    d0 = OpenWindow(&reqwindow);
-    if (!d0)
+    win = OpenWindow(&reqwindow);
+    if (!win)
         outmem();
     req_old2 = req_old;
     req_old = req_window;
-    req_window = d0;
+    req_window = win;
     rp = req_window->RPort;
     PrintIText(rp, ((struct Requester *)req)->ReqText, 6, 12);
     DrawBorder(rp, ((struct Requester *)req)->ReqBorder, 6, 12);
@@ -294,12 +294,12 @@ void openreq(struct Requester *a0)
 }
 
 /* drain a message port (closereq/flushmw .loop) */
-static void drainport(struct MsgPort *a2)
+static void drainport(struct MsgPort *port)
 {
-    struct Message *d0;
+    struct Message *msg;
 
-    while ((d0 = GetMsg(a2)) != NULL)
-        ReplyMsg(d0);
+    while ((msg = GetMsg(port)) != NULL)
+        ReplyMsg(msg);
 }
 
 /* ted.s:3643 closereq */
@@ -328,18 +328,18 @@ void flushmw(void)
 /* ------------------------------------------------ mouse marking */
 
 /* ted.s:3929 showprops2 */
-void showprops2(WORD d2, UWORD d3)
+void showprops2(WORD col, UWORD row)
 {
     UWORD sx = cursx, sy = cursy;               /* move.l cursx,-(a7) */
 
-    d2 = (WORD)(d2 - cursoff);
-    if (d2 < 0)                                 /* bpl .hi */
-        d2 = 0;
-    else if ((UWORD)d2 >= chcols)               /* .hi: bcs .hi2 */
-        d2 = (WORD)(chcols - 1);
+    col = (WORD)(col - cursoff);
+    if (col < 0)                                /* bpl .hi */
+        col = 0;
+    else if ((UWORD)col >= chcols)              /* .hi: bcs .hi2 */
+        col = (WORD)(chcols - 1);
     /* .hi2 */
-    cursx = (UWORD)d2;
-    cursy = d3;
+    cursx = (UWORD)col;
+    cursy = row;
     showhprop();
     showvprop();
     cursx = sx;                                 /* move.l (a7)+,cursx */
@@ -347,62 +347,62 @@ void showprops2(WORD d2, UWORD d3)
 }
 
 /* ted.s:3974 invertarea - invert d0,d1 to d2,d3 (chars) */
-void invertarea(WORD d0, WORD d1, WORD d2, WORD d3)
+void invertarea(WORD x1, WORD y1, WORD x2, WORD y2)
 {
     struct quad q;
 
-    q.topx = d0;
-    q.topy = d1;
-    q.botx = d2;
-    q.boty = d3;
+    q.topx = x1;
+    q.topy = y1;
+    q.botx = x2;
+    q.boty = y2;
     orderem(&q);
     invertarea2(q.topx, q.topy, q.botx, q.boty); /* falls through into invertarea2 */
 }
 
 /* ted.s:3977 invertarea2: not.b directly in both planes */
-void invertarea2(WORD d0, WORD d1, WORD d2, WORD d3)
+void invertarea2(WORD col, WORD row, WORD endcol, WORD endrow)
 {
-    UBYTE *a0 = bitmaps[0], *a1 = bitmaps[1];
-    ULONG d4 = (ULONG)(UWORD)d1 * fontmul;      /* mulu */
+    UBYTE *plane0 = bitmaps[0], *plane1 = bitmaps[1];
+    ULONG off = (ULONG)(UWORD)row * fontmul;    /* mulu */
 
-    a0 += d4;
-    a1 += d4;
-    d2 = (WORD)(d2 - cursoff);
-    d0 = (WORD)(d0 - cursoff);
+    plane0 += off;
+    plane1 += off;
+    endcol = (WORD)(endcol - cursoff);
+    col = (WORD)(col - cursoff);
 more2:
     /* .more2 (flags of the sub/addq on d0) */
-    if (d0 < 0)
+    if (col < 0)
         goto nextchar;
-    if ((UWORD)d0 >= edcols)
+    if ((UWORD)col >= edcols)
         goto nextrow;
     {
         UWORD n = fonthite2;
 
         do {                                    /* .loop */
-            a0[d0] = (UBYTE)~a0[d0];
-            a1[d0] = (UBYTE)~a1[d0];
-            a0 += (WORD)bmapmul;
-            a1 += (WORD)bmapmul;
+            plane0[col] = (UBYTE)~plane0[col];
+            plane1[col] = (UBYTE)~plane1[col];
+            plane0 += (WORD)bmapmul;
+            plane1 += (WORD)bmapmul;
         } while (n-- != 0);
-        a0 -= (WORD)fontmul;
-        a1 -= (WORD)fontmul;
+        plane0 -= (WORD)fontmul;
+        plane1 -= (WORD)fontmul;
     }
 nextchar:
-    if (d0 < d2)                                /* blt (signed) */
+    if (col < endcol)                           /* blt (signed) */
         goto more;
-    if ((UWORD)d1 < (UWORD)d3)                  /* bcs (unsigned) */
+    if ((UWORD)row < (UWORD)endrow)             /* bcs (unsigned) */
         goto more;
     return;                                     /* .done */
 more:
-    d0++;
+    col++;
     goto more2;
 nextrow:
-    if ((UWORD)d1 >= (UWORD)d3)
+    if ((UWORD)row >= (UWORD)endrow)
         return;
-    d0 = (WORD)(-cursoff - 1);
-    d1++;
-    a0 += (WORD)fontmul;
-    a1 += (WORD)fontmul;
+    col = (WORD)(-cursoff - 1);
+    row++;
+    plane0 += (WORD)fontmul;
+    plane1 += (WORD)fontmul;
     goto nextchar;
 }
 
@@ -410,23 +410,23 @@ nextrow:
    return mi if too high or low */
 BOOL getmousexy(struct mousexy *r)
 {
-    struct Screen *a0 = myscreen;
-    UWORD d1 = (UWORD)a0->MouseY;               /* 16(a0) */
-    UWORD d2 = topskip;
+    struct Screen *scr = myscreen;
+    UWORD my = (UWORD)scr->MouseY;              /* 16(a0) */
+    UWORD edge = topskip;
 
-    r->y = (WORD)d1;
-    if (d1 < d2)
+    r->y = (WORD)my;
+    if (my < edge)
         goto done;
-    d2 = (UWORD)(d2 + pixrows);
-    if (d1 >= d2)
+    edge = (UWORD)(edge + pixrows);
+    if (my >= edge)
         goto done;
-    r->x = a0->MouseX;                          /* 18(a0) */
+    r->x = scr->MouseX;                         /* 18(a0) */
     r->col = (WORD)((UWORD)r->x >> 3);
     /* divu fonthite: quotient (the remainder is in the high word) */
-    r->row = (WORD)(UWORD)divu_w((UWORD)(d1 - topskip), fonthite);
+    r->row = (WORD)(UWORD)divu_w((UWORD)(my - topskip), fonthite);
     return TRUE;
 done:
-    r->x = a0->MouseX;
+    r->x = scr->MouseX;
     r->col = (WORD)((UWORD)r->x >> 3);
     r->row = -1;
     return FALSE;
@@ -436,9 +436,9 @@ done:
 
 /* the drawing half of `print` for the core: printa0 with print4 (the
    chmap write of print2 is done by chmap_showa2item) */
-static void drawchar(UBYTE d0)
+static void drawchar(UBYTE c)
 {
-    printa0(d0, print4);
+    printa0(c, print4);
 }
 
 /* ted.s:4050 showall */
@@ -467,9 +467,9 @@ void showthisitem(void)
 
 /* ted.s:4104 showa2item: chmap part in the core (chmap_showa2item, with
    endofline/normprint/normprint2/tokprint), drawing via printa0/print4 */
-void showa2item(struct item *a2)
+void showa2item(struct item *item)
 {
-    chmap_showa2item(a2, drawchar);
+    chmap_showa2item(item, drawchar);
 }
 
 /* ted.s:3899 blokprnt2 */
