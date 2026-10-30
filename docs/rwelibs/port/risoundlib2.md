@@ -64,48 +64,46 @@ in finit) is translated although it is never reached.
 
 ## BUG(orig), kept
 
-Bug IDs; the issues are not filed yet.
-
 * `ahidevice` is never set (only tested and cleared): PlaySoundAHI and
   PlayRawAHI always return at once and play nothing, finit/CloseAHI
   never call CloseDevice, and OpenAHI's "already open" check never
   holds – a second OpenAHI opens the open request again
-  (`risoundlib2-ahidevice-never-set`).
+  (#924).
 * CloseAHI is finit: it deletes the request and the port. A later OpenAHI
   writes `ahir_Version` to address 48 and calls OpenDevice with request 0;
   the same if init could not make its request
-  (`risoundlib2-openahi-after-closeahi`).
+  (#927).
 * AHIOutputRequest: the `!subs` of the forms with 1, 2 and 4 arguments
   point to the wrong entries – 4 arguments go to the "AudioID" entry
   (x, y, width, height replaced by -1, the mode id is d4 as it was), 1
   argument to "AudioID, Frequency" (the argument replaced, d4/d5 as they
   were), 2 to "X,Y,WIDTH,HEIGHT" (d2/d3 as they were)
-  (`risoundlib2-outputrequest-forms`). The values go to the offsets 4,
+  (#928). The values go to the offsets 4,
   12, 16, 20, 24, 28 of the tag list: 16 and 24 are the tag ids of
   `AHIR_InitialWidth` and `AHIR_InitialHeight` – width and the mode id
   become tag ids (mode id 0, the default of most forms, is `TAG_DONE` and
   ends the list), height and frequency their data; the tags
   `AHIR_InitialAudioID`/`AHIR_InitialMixFreq` keep -1 and 0
-  (`risoundlib2-outputrequest-tag-offsets`). The current screen of
+  (#931). The current screen of
   `!libs {#screenslib,#ua0}` is not used (`AHIR_Screen` stays 0)
-  (`risoundlib2-outputrequest-no-screen`). Every call allocates a
-  requester; none is ever freed (`risoundlib2-outputrequest-not-freed`).
+  (#929). Every call allocates a
+  requester; none is ever freed (#930).
 * AHIRequestedID and AHIRequestedFreq return the data of the
   requester's initial tags (always -1 and 0), not what the user chose
   (`ahiam_AudioID`, `ahiam_MixFreq` of the requester)
-  (`risoundlib2-requested-initial-tags`).
+  (#934).
 * CludgeSound: risoundlib's bugs (#831, #832, #830, #828, #829); the rate
   goes to +16, behind audiolib's 16 byte sound object – into the next
   object's sample pointer, behind the last into whatever follows the
-  objects (`risoundlib2-cludgesound-rate-behind-object`); +14, audiolib's
+  objects (#926); +14, audiolib's
   "cL" mark of DecodeSound data, is no longer cleared
-  (`risoundlib2-cludgesound-cl-mark-kept`).
+  (#925).
 * Never reached (behind the `ahidevice` check): PlaySoundAHI gives the
   length in words (+6) as `io_Length` in bytes
-  (`risoundlib2-playsoundahi-length-words`), and sends the one request
+  (#932), and sends the one request
   with SendIO again without waiting for the one before or taking its
   reply from the port; finit leaves everything open while the request is
-  in use (`risoundlib2-playsoundahi-request-reuse`).
+  in use (#933).
 
 ## Test
 

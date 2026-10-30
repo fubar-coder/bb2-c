@@ -21,23 +21,23 @@
  * BUG(orig) IDs in brackets (libs/userlibs/rwe/risoundlib2.c).
  * Covered: init; every command without ahi.device; OpenAHI (both forms,
  * OpenDevice failing, again while open: opened again
- * [risoundlib2-ahidevice-never-set]); PlaySoundAHI and PlayRawAHI (all
+ * (#924)); PlaySoundAHI and PlayRawAHI (all
  * forms: they never get to the device, same bug); AHIOutputRequest in
  * all six forms (the tag list it passes, also checked for its values:
- * [risoundlib2-outputrequest-tag-offsets], the mixed-up entries of 1, 2
+ * (#931), the mixed-up entries of 1, 2
  * and 4 arguments with the markers in d2-d5
- * [risoundlib2-outputrequest-forms], no AHI_FreeAudioRequest; the
+ * (#928), no AHI_FreeAudioRequest; the
  * allocation failing, the requester cancelled); AHIRequestedID and
- * AHIRequestedFreq (-1 and 0: [risoundlib2-requested-initial-tags]);
+ * AHIRequestedFreq (-1 and 0: (#934));
  * CloseAHI (no CloseDevice), CloseAHI while the request is in use
  * (CheckIO: nothing freed), finit, init again, init without a message
  * port (CreateMsgPort fails); CludgeSound (the rate at +16 of the object,
- * +14 not cleared: [risoundlib2-cludgesound-rate-behind-object],
- * [risoundlib2-cludgesound-cl-mark-kept]).
+ * +14 not cleared: (#926),
+ * (#925)).
  * Not covered: the real ahi.device (its requester); playing (the code
  * behind the ahidevice check is never reached); OpenAHI after CloseAHI
  * or without a request (writes to address 48, OpenDevice with request
- * 0: [risoundlib2-openahi-after-closeahi]); finit without a request
+ * 0: (#927)); finit without a request
  * (CheckIO of address 0); risoundlib's CludgeSound cases
  * (libs/tests/rwe/risoundlib.c, the same code).
  */

@@ -32,42 +32,42 @@
  * BLITZ_ALIBJSR.  The tag list is the original's (in its code) with the
  * same offsets.
  *
- * BUG(orig) (bug IDs in brackets, issues not filed yet):
+ * BUG(orig):
  *   - ahidevice is never set: PlaySoundAHI and PlayRawAHI always return
  *     at once (they play nothing), finit/CloseAHI never close the device,
  *     and OpenAHI opens the request again while it is open
- *     [risoundlib2-ahidevice-never-set].
+ *     (#924).
  *   - CloseAHI is finit: it deletes the request and the port, and a later
  *     OpenAHI uses request 0 (writes ahir_Version to address 48 and
  *     passes 0 to OpenDevice); the same without a request from init
- *     [risoundlib2-openahi-after-closeahi].
+ *     (#927).
  *   - AHIOutputRequest: the forms with 1, 2 and 4 arguments go to the
  *     wrong entries (4 arguments: x, y, width, height replaced by -1, the
  *     mode id whatever d4 holds; 1 argument: lost, d4/d5 whatever they
- *     hold; 2: d2/d3 whatever they hold) [risoundlib2-outputrequest-forms];
+ *     hold; 2: d2/d3 whatever they hold) (#928);
  *     the values are written at the offsets 16, 20, 24, 28 of the tag
  *     list - over the tag ids of width and height: width and the mode id
  *     become tag ids (mode id 0 = TAG_DONE ends the list), height and
  *     frequency their data, the initial audio id and frequency are never
- *     set [risoundlib2-outputrequest-tag-offsets]; !libs's screen (a0) is
- *     not used, AHIR_Screen stays 0 [risoundlib2-outputrequest-no-screen];
+ *     set (#931); !libs's screen (a0) is
+ *     not used, AHIR_Screen stays 0 (#929);
  *     every call allocates a requester that is never freed
- *     [risoundlib2-outputrequest-not-freed].
+ *     (#930).
  *   - AHIRequestedID and AHIRequestedFreq return the data of the initial
  *     tags (-1 and 0, never written), not the requester's selection
- *     (ahiam_AudioID, ahiam_MixFreq) [risoundlib2-requested-initial-tags].
+ *     (ahiam_AudioID, ahiam_MixFreq) (#934).
  *   - CludgeSound: risoundlib's bugs (#831, #832, #830, #828, #829), and
  *     the rate is written at +16, behind the 16 byte sound object of
  *     audiolib (into the next object, behind the last one into whatever
- *     follows) [risoundlib2-cludgesound-rate-behind-object]; +14
+ *     follows) (#926); +14
  *     (audiolib's "cL" mark of DecodeSound data) is no longer cleared
- *     [risoundlib2-cludgesound-cl-mark-kept].
+ *     (#925).
  *   - Behind the ahidevice check, never reached: PlaySoundAHI takes the
  *     length in words (+6) as the length in bytes
- *     [risoundlib2-playsoundahi-length-words] and sends the one request
+ *     (#932) and sends the one request
  *     again (SendIO) without waiting for the one before or removing its
  *     reply from the port; finit leaves everything open while it is in
- *     use [risoundlib2-playsoundahi-request-reuse].
+ *     use (#933).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -135,7 +135,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_PlayRawAHI2, 0, 0);
 BLITZ_NAME("PlayRawAHI", "address,length,frequency,[volume,[balance]]");
 
-/* BUG(orig) [risoundlib2-outputrequest-forms]: the entries of 1, 2 and 4
+/* BUG(orig) (#928): the entries of 1, 2 and 4
    arguments are mixed up */
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS0();
@@ -271,7 +271,7 @@ ULONG BLITZ_ROUTINE c_openahi2(ULONG unit BL_REG(d0), ULONG id BL_REG(d1))
     ahidevice = 0;
     deviceunit = unit;
     deviceid = id;                      /* not used */
-    /* BUG(orig) [risoundlib2-openahi-after-closeahi]: the request may be 0 */
+    /* BUG(orig) (#927): the request may be 0 */
     WORDAT((UBYTE *)ahiiorequest + AHIR_VERSION) = MIN_AHI_VERSION;
     r = (struct bl_regs){ .d0 = unit, .d1 = 0, .a0 = (ULONG)ahiname,
                           .a1 = (ULONG)ahiiorequest };
@@ -288,7 +288,7 @@ ULONG BLITZ_ROUTINE c_openahi(ULONG unit BL_REG(d0))
 }
 
 /* PlaySoundAHI sound,volume,balance: a0 = the sound object (never gets
-   past the ahidevice check, BUG(orig) [risoundlib2-ahidevice-never-set]) */
+   past the ahidevice check, BUG(orig) (#924)) */
 ULONG BLITZ_ROUTINE c_playsound2(ULONG vol BL_REG(d1), ULONG bal BL_REG(d2),
                                  UBYTE *obj BL_REG(a0))
 {
@@ -320,7 +320,7 @@ ULONG BLITZ_ROUTINE c_playsound(UBYTE *obj BL_REG(a0))
 }
 
 /* PlayRawAHI address,length,frequency,volume,balance (never gets past the
-   ahidevice check, BUG(orig) [risoundlib2-ahidevice-never-set]) */
+   ahidevice check, BUG(orig) (#924)) */
 ULONG BLITZ_ROUTINE c_playraw2(ULONG data BL_REG(d0), ULONG len BL_REG(d1),
                                ULONG freq BL_REG(d2), ULONG vol BL_REG(d3),
                                ULONG bal BL_REG(d4))
@@ -410,7 +410,7 @@ ULONG BLITZ_ROUTINE c_outreq5(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL
     return c_outreq6(x, y, w, h, id, 0);
 }
 
-/* BUG(orig) [risoundlib2-requested-initial-tags]: the initial tags' data */
+/* BUG(orig) (#934): the initial tags' data */
 ULONG BLITZ_ROUTINE c_requestedid(void)
 {
     if (!ahibase)

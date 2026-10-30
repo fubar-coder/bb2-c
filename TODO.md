@@ -592,9 +592,8 @@ several versions.
       52 libraries of `RWE_LIBS` are C (`docs/rwelibs/README.md` 3.1
       "Ported"); then risoundlib2 (Sound with AHI, variant `rwe-1999-ahi`
       instead of risoundlib, 2026-10-30): 53. Every `BUG(orig)` of the
-      RWE libraries has its GitHub issue (#344–#922, 2026-10-30; the
-      numbers in the code, port notes and tests) – open: the 11 of
-      risoundlib2 (bug IDs in `docs/rwelibs/port/risoundlib2.md`). ~~**Reference build in the build**~~ done (2026-10-29,
+      RWE libraries has its GitHub issue (#344–#922, risoundlib2's #924–#934,
+      2026-10-30; the numbers in the code, port notes and tests). ~~**Reference build in the build**~~ done (2026-10-29,
       `libs/userlibs/rwe/refbuild.cmake`): residents by `tools/blitzres`
       from the NDK (contents equal to blitz2's, `rwe_resident_NAME`),
       staging (target `rwe_refstage`; `INCDIR` neutralised on the bytes
