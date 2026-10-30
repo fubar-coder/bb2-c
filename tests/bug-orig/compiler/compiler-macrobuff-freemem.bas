@@ -1,4 +1,4 @@
-; compiler-macrobuff-freemem - blitz2 allocates macrobuff once at its
+; compiler-macrobuff-freemem (#336) - blitz2 allocates macrobuff once at its
 ; start with the macro buffer size of then (8192), but frees it at its end
 ; with the size of then: options loaded later (an .xtra, here the defaults
 ; of tedstub with macrobuf=64) change macrolen, not the buffer. FreeMem of
