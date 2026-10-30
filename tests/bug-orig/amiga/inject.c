@@ -98,7 +98,8 @@
  *                          window are compared with those before the click
  *                          ahead of it: did that click change them (e.g.
  *                          a requester that clears a word of a StringInfo)
- *   keys=TITLE/CODE@SECS[,CODE@SECS]...
+ *   keys=TITLE/CODE@SECS[,CODE@SECS]...   (in TITLE of click= and keys=,
+ *                          '_' also matches a blank)
  *                          an input handler (priority 100, before
  *                          Intuition and the handlers of the program)
  *                          stamps every input event with a clock of its
@@ -876,6 +877,16 @@ struct InputEvent *keys_handler(struct InputEvent *ev)
     return head;
 }
 
+/* window title t = want; a '_' in want also matches a blank (the
+   arguments cannot carry blanks: no quotes in the argument parsing) */
+static int sametitle(const char *t, const char *want)
+{
+    for (; *t && *want; t++, want++)
+        if (*t != *want && !(*want == '_' && *t == ' '))
+            return 0;
+    return *t == *want;
+}
+
 /* the window with that title (IBase locked) */
 static struct Window *findwin(const char *title)
 {
@@ -884,7 +895,7 @@ static struct Window *findwin(const char *title)
 
     for (s = IntuitionBase->FirstScreen; s; s = s->NextScreen)
         for (w = s->FirstWindow; w; w = w->NextWindow)
-            if (w->Title && !strcmp((const char *)w->Title, title))
+            if (w->Title && sametitle((const char *)w->Title, title))
                 return w;
     return NULL;
 }
