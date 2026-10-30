@@ -111,7 +111,7 @@ latest date in the header comments.
 | Pack | 73 | `packlib/Pack-Library8`, `8_Mc`, `9` | RI | 1996-05-09 | 8 **=** BUM (2564 B), 8_Mc **=** OL (2388 B); 9 newer, ≈ 88 % | open (9 newer than the binaries) |
 | PopUp window | – (`#popupwinlib`) | `popuplib/popupwinlib` (+ `test2`) | RI | 1994 | – | open |
 | Protracker | 58 (`#ritrackerlib`, RWE's list) | `ptlib/ptlib` … `ptlib7`, `ptlibmatty` | Protracker 2.3A routine, adapted | 1995-04-08 | – | ptlib6 (reference build), ported 2026-10-30 (`port/ritrackerlib.md`: why ptlib6; decision to port: `archive/README.md`); not the acidlibs `trackerlib` (96: NoiseTracker in the vertical blank, Module objects, `LoadModule`…) but its own library: `TrackInit address`, `TrackPlay` (called by the program: the CIA interrupt code is dead), `TrackStop`, `TrackDMA`, `Tracker`, `TrackerChannels`, `TrackerPause` (`TrackerTimer` only in ptlib4/7/matty); no binary; the number only in RWE's list |
-| CIA tracker | 56 (`#ciatrklib`; clash `xbciatrackerlib`, AB3) | `ptlib/CIATrackerLib1` (+ `SamplePrograms/TrackerTest`) | Neil O'Rourke, Delirium Softdesign | – | ≈ 88 % OL `XBONESCIATRKLIB` | open |
+| CIA tracker | 56 (`#ciatrklib`; clash `xbciatrackerlib`, AB3) | `ptlib/CIATrackerLib1` (+ `SamplePrograms/TrackerTest`) | Neil O'Rourke, Delirium Softdesign | – | ≈ 88 % OL `XBONESCIATRKLIB` | CIATrackerLib1 (ported 2026-10-30, `port/ciatrklib.md`) |
 | Req | 79 | `reqlib/ReqLib`, `2`, `3` | – | – | all three **=** OL/AB3 `RIREQLIB` (964 B) | ReqLib2 (built identically, 3.1) |
 | ARexx | 133 (`#myconst=133`) | `rexxlib/…` (9 versions) | RI; `NEWAREXXLIB`: RWE (Matty) | 1997-02-09 | ≈ 76 % BSS2 `RIAREXXLIB` | open |
 | Intuition | 15 (`#riintuilib`, RWE's list) | `riintuilib`, `riintuilib2` | RI | 1995 | – | open |
@@ -296,9 +296,11 @@ functions, Sound, StoneCracker, FNS) and Anim followed the same day;
 the 12 libraries whose reference is the reference build of their source
 (3.2 "Source": LVCallHook, Misc, STC decrunch, CompactDisk, GTMenu,
 Linked list, ReqTools, DataTypes, ARexx, Shapes, Sort, Disasm) on
-2026-10-30, ptlib (Protracker, ptlib6) the same day. Open: CIA tracker (the Protracker 2.3A play
-routine; ported on the basis of its release as "Public Domain",
-decision 2026-10-30), LES debug (no `Font.bin`, no reference build).
+2026-10-30, ptlib (Protracker, ptlib6) and the CIA tracker
+(CIATrackerLib1; both with the Protracker 2.3A play routine, ported on
+the basis of its release as "Public Domain", decision 2026-10-30;
+reference build) the same day. Open: LES debug (no `Font.bin`, no
+reference build).
 
 **In the build** (2026-10-29; `libs/userlibs/rwe/refbuild.cmake`,
 `residents.cmake`, README "Userlibs", "Tests"): the reference build is
