@@ -118,7 +118,7 @@ void asmit(UWORD c)
     UWORD idx;
     struct asment *e;
     UWORD sz, nib = 0;
-    WORD reg = 0, mode = -1, destreg = 0, destmode = -1;
+    WORD srcreg = 0, srcmode = -1, destreg = 0, destmode = -1;
     UWORD opcode;
     ULONG at, opat;
     WORD f;
@@ -159,7 +159,7 @@ void asmit(UWORD c)
         asmbuff = namebuff;
         bakup();
         c = getea(&m, &r);
-        reg = r; mode = m;              /* to src */
+        srcreg = r; srcmode = m;        /* to src */
         destreg = r;                    /* asm: d4 keeps the src reg */
         asmlen = asmlen2;
         destmode = -1;
@@ -176,7 +176,7 @@ void asmit(UWORD c)
     opat = at;
     at += 2;
     opcode = e->opcode;
-    if (mode < 0) {                     /* .none: no src/dest ea! */
+    if (srcmode < 0) {                  /* .none: no src/dest ea! */
         if (e->srcmask | e->destmask)
             illeaerr();
         goto putit;
@@ -188,9 +188,9 @@ void asmit(UWORD c)
         UWORD ni = 0;
         UWORD t = (UWORD)(temp1 >> 16);
         if ((f & 1) && destmode == 1) {
-            if (mode != 14)
+            if (srcmode != 14)
                 ni = t + 8;
-        } else if ((f & 2) && mode == 11)
+        } else if ((f & 2) && srcmode == 11)
             ni = t + 4;
         if (ni) {
             e = asmpnts[ni >> 2];
@@ -204,10 +204,10 @@ void asmit(UWORD c)
     if (e->chk) {
         struct asmregs r;
         WORD res;
-        r.opcode = opcode; r.srcreg = reg; r.srcmode = mode; r.destreg = destreg; r.destmode = destmode;
+        r.opcode = opcode; r.srcreg = srcreg; r.srcmode = srcmode; r.destreg = destreg; r.destmode = destmode;
         r.size = asmsize;
         res = e->chk(&r);
-        opcode = r.opcode; reg = r.srcreg; mode = r.srcmode; destreg = r.destreg; destmode = r.destmode;
+        opcode = r.opcode; srcreg = r.srcreg; srcmode = r.srcmode; destreg = r.destreg; destmode = r.destmode;
         if (res < 0) {
             if (res == -2)
                 illsizeerr();
@@ -215,8 +215,8 @@ void asmit(UWORD c)
         }
         if (res > 0) {
             WORD t; UWORD w;
-            t = reg; reg = destreg; destreg = t;
-            t = mode; mode = destmode; destmode = t;
+            t = srcreg; srcreg = destreg; destreg = t;
+            t = srcmode; srcmode = destmode; destmode = t;
             w = extraword; extraword = extraword2; extraword2 = w;  /* swap d6 */
             buff1 = namebuff2;
             buff2 = namebuff;
@@ -230,14 +230,14 @@ void asmit(UWORD c)
     if (f <= 0)
         goto nothing;
     if (f == 1) {
-        if (mode != 11)
+        if (srcmode != 11)
             goto nothing;
         goto skipsrc;
     }
     if (f == 2) {                       /* Bcc: label -> d(pc) */
-        if (mode != 8)
+        if (srcmode != 8)
             illeaerr();
-        mode = 9;
+        srcmode = 9;
         goto nothing;
     }
     if (f == 3 || f == 4)               /* moveq / trap */
@@ -245,33 +245,26 @@ void asmit(UWORD c)
     if (f == 5) {                       /* DBcc */
         if (destmode != 8)
             illeaerr();
-        opcode |= reg;
+        opcode |= srcreg;
         destmode = 9;
     }
     goto nothing;
 
 skipsrc:
-    insasm(e, at, mode);
-    reg = destreg;
-    mode = destmode;
+    insasm(e, at, srcmode);
     goto skipsrc2;
 
 nothing:
-    {
-        WORD nextreg = destreg, nextmode = destmode;
-        doea(&opcode, reg, mode, extraword2, e->srcmask, e->srcshift, e, &at); /* do src */
-        reg = nextreg;
-        mode = nextmode;
-    }
+    doea(&opcode, srcreg, srcmode, extraword2, e->srcmask, e->srcshift, e, &at); /* do src */
 skipsrc2:
-    if (mode < 0) {                     /* .one */
+    if (destmode < 0) {                 /* .one */
         if (e->destmask)
             illeaerr();
         goto putit;
     }
     asmbuff = buff2;
     asmlen = asmlen2;
-    doea(&opcode, reg, mode, extraword, e->destmask, e->destshift, e, &at);
+    doea(&opcode, destreg, destmode, extraword, e->destmask, e->destshift, e, &at);
 
 putit:
     /* @5252 put in the opcode */
