@@ -10,8 +10,6 @@
 
 /* ================================================================ data */
 
-UWORD lc = 0;                           /* blitz2.s:5026 */
-
 /* blitz2.s:5617 ptype move #0,-(a7) (template) */
 UWORD ptype[] = {
     0x3F3C, 0x0000,                     /* +0 ptype move #0,-(a7) */
@@ -47,14 +45,14 @@ UWORD asmconst(void)
     UBYTE *buf = asmbuff;
     UWORD flag = numincs | macmask;
     UBYTE *saved;
-    UWORD c;
+    UWORD c, lc;
 
     W_(buf) = flag;                     /* flag! */
     buf += 2;
     if (flag)
-        return copyconst(buf);          /* bne copyconst */
+        return copyconst(buf, &lc);     /* bne copyconst */
     saved = srcptr;                     /* move.l a5,-(a7) */
-    c = copyconst(buf);
+    c = copyconst(buf, &lc);
     buf = asmbuff;
     if ((UWORD)asmlen2 <= 4 || lc) {
         /* .leave: flag becomes $ffff = direct text.  asm `addq #4,a7`
@@ -70,12 +68,12 @@ UWORD asmconst(void)
 }
 
 /* blitz2.s:5028 copyconst */
-UWORD copyconst(UBYTE *dst)
+UWORD copyconst(UBYTE *dst, UWORD *lc)
 {
     UWORD len = 0;
     UWORD c;
 
-    lc = 0;
+    *lc = 0;
     for (;;) {
         len++;
         c = getchar3();
@@ -95,7 +93,7 @@ UWORD copyconst(UBYTE *dst)
                 break;
             if ((UBYTE)c == loclabch) {
                 const char *lab = lastbiglab;
-                lc = c;
+                *lc = c;
                 if (!*lab)
                     nolocerr();
                 do

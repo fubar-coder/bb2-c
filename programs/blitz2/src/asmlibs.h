@@ -17,7 +17,6 @@
 
 /* ============================================================ globals */
 
-extern UWORD lc;                     /* 5026 local label char seen by copyconst */
 extern UWORD pmode;                  /* 5618 push mode.  Byte/word aliasing: the
                                         asm writes the HIGH byte with move.b
                                         (handlep: $40 push bit, highadd: 1) and
@@ -49,9 +48,10 @@ extern UWORD fbase[];                /* 5818 move.l 0(a5),d0   $202D,$0000 */
    +2 source pointer.l), sets asmlen2.  in: srcptr, asmbuff.
    returns the terminating char ('(' ',' or end of statement, test eos()) */
 UWORD asmconst(void);
-/* 5028 copy const text to dst till '(' / ',' / eos; sets asmlen2, lc.
-   returns the terminating char */
-UWORD copyconst(UBYTE *dst);
+/* 5028 copy const text to dst till '(' / ',' / eos; sets asmlen2 and *lc
+   (local label char seen, 0 if none; the asm's global lc, 5026, was only
+   read by asmconst right after the call).  returns the terminating char */
+UWORD copyconst(UBYTE *dst, UWORD *lc);
 /* 5072 assemble one instruction; c = asm token ($8000+fnum..), entered
    from handletoken (asm `bra asmit`).  asm d0 on return is garbage. */
 void asmit(UWORD c);
