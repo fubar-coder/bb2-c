@@ -57,6 +57,7 @@ struct amiga_emulation {
     int joined;
     int exited;                 /* waitpid has reaped the process */
     int slot;                   /* the locked slot file, -1: none */
+    int counted;                /* counted in active_runs */
     double shots;               /* $AMIGA_EMULATION_SHOTS: seconds between screenshots */
     unsigned nshots;
     double next_shot;
@@ -459,7 +460,15 @@ int amiga_emulation_slot(const char *dir, unsigned max, int wait)
     }
 }
 
-/* a slot for this run: $AMIGA_EMULATION_MAX of them (default 4) */
+/* the runs of this process that are started and not freed yet */
+static unsigned active_runs;
+
+/* a slot for this run: $AMIGA_EMULATION_MAX of them (default 4).  Only a
+   process without a run of its own waits: one that already runs sessions
+   (a runner with parallel > 1) takes a free slot if there is one and
+   otherwise runs this session without one - waiting while holding slots
+   could deadlock two runners that wait for each other's slots, and its
+   running sessions' time limits would not be watched meanwhile. */
 static int take_slot(char *err, size_t errlen)
 {
     const char *env = getenv("AMIGA_EMULATION_MAX");
@@ -467,8 +476,12 @@ static int take_slot(char *err, size_t errlen)
     unsigned max = env && *env ? (unsigned)strtoul(env, NULL, 10) : 4;
     char *dir = xdg && *xdg ? str_printf("%s/amiga-emulation-slots", xdg)
                             : str_printf("/tmp/amiga-emulation-slots-%u", (unsigned)getuid());
-    int fd = dir ? amiga_emulation_slot(dir, max, 1) : -1;
+    int fd = dir ? amiga_emulation_slot(dir, max, active_runs == 0) : -1;
 
+    if (fd < 0 && active_runs) {
+        free(dir);
+        return open("/dev/null", O_RDONLY | O_CLOEXEC);
+    }
     if (fd < 0)
         set_err(err, errlen, "cannot take an emulator slot in %s: %s", dir ? dir : "",
                 strerror(errno));
@@ -541,6 +554,8 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
 
     if ((e->slot = take_slot(err, errlen)) < 0)
         goto fail;
+    active_runs++;
+    e->counted = 1;
     parent = getpid();
     e->deadline = now() + (p->timeout ? p->timeout : 60);
     if (getenv("AMIGA_EMULATION_SHOTS"))
@@ -744,6 +759,8 @@ void amiga_emulation_free(struct amiga_emulation *e)
         stop_group(e);
     if (e->slot >= 0)
         close(e->slot);
+    if (e->counted)
+        active_runs--;
     rm_tree(e->runtime_dir);
     if (e->own_work_dir)
         rm_tree(e->work_dir);

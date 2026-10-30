@@ -33,7 +33,10 @@
  * (flock on slot-K.lock in $XDG_RUNTIME_DIR/amiga-emulation-slots, else
  * /tmp/amiga-emulation-slots-UID) and waits for a free one; the slot is
  * held until amiga_emulation_free (the kernel frees it if the runner
- * dies).  The wait does not count into the run's timeout.
+ * dies).  The wait does not count into the run's timeout.  Only a process
+ * without a run of its own waits; a runner that already runs sessions
+ * takes a free slot or runs the further session without one (no deadlock
+ * between runners that each hold slots and wait for more).
  *
  * For debugging, from the environment (for every runner):
  *   AMIGA_EMULATION_VISIBLE=1   as `visible`: the window, host input
