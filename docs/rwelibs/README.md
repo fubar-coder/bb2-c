@@ -117,7 +117,7 @@ latest date in the header comments.
 | ARexx | 133 (`#myconst=133`) | `rexxlib/…` (9 versions) | RI; `NEWAREXXLIB`: RWE (Matty) | 1997-02-09 | ≈ 76 % BSS2 `RIAREXXLIB` | open |
 | Intuition | 15 (`#riintuilib`, RWE's list) | `riintuilib`, `riintuilib2` | RI | 1995 | – | riintuilib2 (reference build), ported 2026-10-30 (`port/riintuilib.md`): Rast objects (`IPBitMap`) and `IPOutput` redirecting Print through inputoutputlib replace riintuilib's own `IPPrint`/`IPRastPort` |
 | PRO-PACK | lit. 197 | `ROBNORTHFAST` | Rob Northen Computing (All Rights Reserved) | 1991/92 | – | **not ported** (license) |
-| Serial | lit. 22 | `seriallib/Serial-Library` | – | – | – | Serial-Library (reference build); number 22 (the literal: RWE's list gives it to `#riblitlib`, of which no source exists, so it is free in rwe-1999) |
+| Serial | lit. 22 | `seriallib/Serial-Library` | – | – | – | Serial-Library (reference build), ported 2026-10-30 (`port/riseriallib.md`); number 22 (the literal: RWE's list gives it to `#riblitlib`, of which no source exists, so it is free in rwe-1999) |
 | Shapes | 46 | `shapeslib/RIShapesLib`, `RIShapesLib2` (+ `Test`, `Comparison`) | RI, Nigel Hughes | – | ≈ 92 % BUM `RISHAPESLIB`; RIShapesLib2 in the `BB22` format | open |
 | Shapez | 21 | `shapezlib` | RI | 1995 | – | shapezlib (reference build) |
 | Sort | 13 | `sortlib/RISortlib2` | RI | 1996-08-30 | ≈ 80 % BUM/BSS2/OL `RISORTLIB` (one file) | open (source newer than the binary) |
