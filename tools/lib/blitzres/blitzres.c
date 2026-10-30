@@ -884,3 +884,38 @@ int blitzres_equ(const char *text, size_t len, struct blitzres_list *syms,
     }
     return 0;
 }
+
+/* ------------------------------------------------------- LVO includes */
+
+int blitzres_lvo(const char *text, size_t len, struct blitzres_list *l, char *err,
+                 size_t errlen)
+{
+    struct blitzres_list syms = { 0 }, all = { 0 };
+    size_t i;
+    int rc = -1, n = 0;
+
+    if (blitzres_equ(text, len, &syms, &all, err, errlen))
+        goto out;
+    for (i = 0; i < all.n; i++) {
+        const char *nm = all.c[i].name;
+
+        if (strncmp(nm, "_LVO", 4) || !nm[4])
+            continue;
+        if (all.c[i].value >= 0) {
+            fail(err, errlen, "%s: offset %ld is not negative", nm, (long)all.c[i].value);
+            goto out;
+        }
+        if (blitzres_add(l, nm + 4, all.c[i].value, err, errlen) < 0)
+            goto out;
+        n++;
+    }
+    if (!n) {
+        fail(err, errlen, "no _LVO name");
+        goto out;
+    }
+    rc = 0;
+out:
+    blitzres_free(&syms);
+    blitzres_free(&all);
+    return rc;
+}

@@ -80,7 +80,7 @@ those sources (`libs/userlibs/rwe/refbuild.cmake`,
 `docs/rwelibs/README.md` §3.1): the build stages them (target
 `rwe_refstage`: `build/amiga/libs/userlibs/rwe/refstage/` with the CD's
 `EXTRAS/BLITZLIBS/`, the residents `lvo.res`, `custom.res`,
-`datatypes.res` that `tools/blitzres` writes from the toolchain's NDK
+`datatypes.res`, `AHI.res` that `tools/blitzres` writes from the toolchain's NDK
 (target `rwe_residents`), a `LIBNUMS.BB` with the numbers of the
 variant's `libnums.h`, the sources with their `INCDIR` lines neutralised
 by `tools/bblines`), ctest `rwe_refbuild` compiles them with the CD's

@@ -10,6 +10,7 @@
  *   --fd FILE          the public functions of an FD file: _NAME=-offset
  *   --fd-varargs FILE  the same, then _NAME for a NAMEA without NAME
  *   --equ FILE         the NAME EQU/SET EXPR of an assembler include
+ *   --lvo FILE         the _LVONAME EQU -offset of an LVO include: NAME=-offset
  *   --const NAME=VALUE a constant (also a symbol for --equ)
  *   --sym NAME=VALUE   only a symbol for the expressions of --equ
  *   --skip NAME        NAME is never a constant (before the items)
@@ -30,6 +31,7 @@ static void usage(FILE *f)
                "  --fd FILE          public functions of an FD file as _NAME=-offset\n"
                "  --fd-varargs FILE  the same, and _NAME for a NAMEA without NAME\n"
                "  --equ FILE         NAME EQU/SET EXPR lines of an assembler include\n"
+               "  --lvo FILE         _LVONAME EQU -offset lines of an LVO include as NAME\n"
                "  --const NAME=VALUE a constant (also a symbol for --equ)\n"
                "  --sym NAME=VALUE   a symbol for the expressions of --equ only\n"
                "  --skip NAME        never NAME as constant\n"
@@ -134,7 +136,8 @@ int main(int argc, char **argv)
             goto done;
         }
         a++;
-        if (!strcmp(opt, "--fd") || !strcmp(opt, "--fd-varargs") || !strcmp(opt, "--equ")) {
+        if (!strcmp(opt, "--fd") || !strcmp(opt, "--fd-varargs") || !strcmp(opt, "--equ")
+            || !strcmp(opt, "--lvo")) {
             size_t len;
             char *text = read_all(arg, &len);
             int r;
@@ -143,7 +146,8 @@ int main(int argc, char **argv)
                 perror(arg);
                 goto done;
             }
-            r = !strcmp(opt, "--equ") ? blitzres_equ(text, len, &syms, &l, err, sizeof err)
+            r = !strcmp(opt, "--equ")   ? blitzres_equ(text, len, &syms, &l, err, sizeof err)
+                : !strcmp(opt, "--lvo") ? blitzres_lvo(text, len, &l, err, sizeof err)
                 : blitzres_fd(text, len, !strcmp(opt, "--fd-varargs"), &l, err, sizeof err);
             free(text);
             if (r) {

@@ -94,4 +94,12 @@ int blitzres_fd(const char *text, size_t len, int varargs, struct blitzres_list 
 int blitzres_equ(const char *text, size_t len, struct blitzres_list *syms,
                  struct blitzres_list *l, char *err, size_t errlen);
 
+/* an LVO include (sfdc: "_LVONAME EQU -offset", for a library without an
+   FD file in the NDK, e.g. lvo/ahi.i): every _LVONAME as NAME = -offset,
+   the name without _LVO (as RWE's AHI.res has them: JSR
+   AHI_AudioRequestA(a6)).  0 = ok, -1 = error (no _LVO name, an offset
+   not below 0, blitzres_add) */
+int blitzres_lvo(const char *text, size_t len, struct blitzres_list *l, char *err,
+                 size_t errlen);
+
 #endif

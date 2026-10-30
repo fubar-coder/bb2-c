@@ -241,6 +241,19 @@ these sources. Four things were needed:
     `datatypes/*.i` (`#PDTA_Remap` …). Not in `lvo.res`: two residents
     with the same name give "Clash in Residents" (`checkclash`), and
     the sources that use datatypes functions all load both.
+  * `AHI.res` (only `soundlib/risoundlib2.bb`; its `.xtra` loads
+    `bb2objtypes.res`, `lvo.res`, `AHI.res`, `amigalibs.res`):
+    ahi.device's functions as `#AHI_Name=-offset` – without the `_` of
+    `lvo.res`, as the source writes them (`JSR AHI_AudioRequestA(a6)`) –
+    from `lvo/ahi.i` (the NDK has no AHI FD file; `blitzres --lvo`), and
+    the constants of `devices/ahi.i` (`#AHIR_InitialAudioID`,
+    `#AHIST_M8S`, `#AHI_DEFAULT_ID` … – 180 names, none of them in
+    `lvo.res`, `amigalibs.res` or `bb2objtypes.res`; `CMD_WRITE` and
+    `TAG_END` come from `amigalibs.res`). From the AHI SDK the
+    toolchain installs (AHI 6, 2005; not checked in, like the NDK) –
+    RWE's was of 1997 (AHI 4), so the V6 names are extra; the 12 names
+    the source uses are older. The structure offsets (`ahir_Type` …) are
+    no EQUs in `ahi.i`; the source defines them itself.
   Left out: `_Date2Amiga`, `bpl1mod`, `bpl2mod` – TED tokenises the
   keyword behind the digit (`AMIGA`, `BPL`), no source uses them. A
   source may define a constant of a resident again (FASTSerial
@@ -250,7 +263,8 @@ these sources. Four things were needed:
   values used by applib2, CopperFX3, ridoslib2, fastseriallib3 and
   nonvolatile are confirmed by their byte-identical binaries. Not yet
   confirmed: `datatypes.res` (no datatypes source equals a binary, the
-  closest is another version), `AHI.res` not made.
+  closest is another version), `AHI.res` (risoundlib2 has no binary:
+  its reference build is its reference).
 * **Library numbers** [B]: the numbers the sources use but no libnums
   defines (`#ricopperfx`, `#ridoslib` …) appended to the staged
   `LIBNUMS.BB` – 28 names, the number from AmiBlitz3's libnums or of the
@@ -611,8 +625,9 @@ repository).
 1. ~~How were these libraries built, can blitz2 do it here?~~ Yes:
    *Create Executable* with libmacs; 16 RWE sources build
    byte-identically with blitz2 2.10 (3.1), with `lvo.res`,
-   `custom.res` and `datatypes.res` reconstructed from the NDK. Open:
-   `AHI.res`, `datatypes.res` unconfirmed, seven library numbers.
+   `custom.res` and `datatypes.res` reconstructed from the NDK, `AHI.res`
+   from the AHI SDK of the toolchain. Open: `datatypes.res` and `AHI.res`
+   unconfirmed, seven library numbers.
 2. Which libraries belong together as one product (e.g. the three Blitz
    Bombers libraries, MapEd/MapShapes, Registry/support)?
 3. The libraries with literal test numbers (5, 8, 10, 19, 22, 39, 195,

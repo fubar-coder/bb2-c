@@ -1,5 +1,5 @@
 # The residents RWE's library sources load that exist nowhere: lvo.res,
-# custom.res, datatypes.res (docs/rwelibs/README.md 3.1).  They hold only
+# custom.res, datatypes.res, AHI.res (docs/rwelibs/README.md 3.1).  They hold only
 # constants, so tools/blitzres writes them directly from the NDK of the
 # toolchain - the same contents blitz2 2.10's Create Resident made of
 # Blitz sources with these constants (ctest rwe_resident_NAME):
@@ -10,6 +10,14 @@
 #   datatypes.res  datatypes.library (with _SetDTAttrs for SetDTAttrsA, as
 #                  the sources write it) and the constants of datatypes/*.i;
 #                  not in lvo.res: two residents with one name clash
+#   AHI.res        (risoundlib2) ahi.device's functions without the _ of
+#                  lvo.res, as the source writes them (JSR
+#                  AHI_AudioRequestA(a6)), from lvo/ahi.i (no FD file in
+#                  the NDK), and the constants of devices/ahi.i (tags,
+#                  AHIST_M8S, AHI_DEFAULT_ID ...; no name of lvo.res,
+#                  amigalibs.res, bb2objtypes.res).  From the AHI SDK the
+#                  toolchain installs (AHI 6; RWE's was of 1997, AHI 4: the
+#                  V6 names are extra); built only if it is there.
 # Left out: names TED tokenises (a keyword behind a digit: _Date2Amiga,
 # bpl1mod, bpl2mod) - no source can use them.
 # Result: RWE_RESIDENTS (the files in build/<preset>/libs/userlibs/rwe/
@@ -62,13 +70,28 @@ foreach(i IN LISTS dt_incs)
 	list(APPEND dt_args --equ ${i})
 endforeach()
 
-foreach(r lvo custom datatypes)
+# AHI.res: the AHI SDK of the toolchain (include/, not the NDK); without
+# it risoundlib2 is not in the reference build
+set(ahi_lvo ${ndk}/include/lvo/ahi.i)
+set(ahi_inc ${ndk}/include/devices/ahi.i)
+set(ahi_args --lvo ${ahi_lvo} --sym TAG_USER=-2147483648 --equ ${ahi_inc})
+set(residents lvo custom datatypes)
+if(EXISTS ${ahi_lvo} AND EXISTS ${ahi_inc})
+	list(APPEND residents AHI)
+else()
+	message(STATUS "rwe residents: no AHI SDK in ${ndk}/include - AHI.res not built")
+endif()
+
+foreach(r IN LISTS residents)
 	if(r STREQUAL "lvo")
 		set(args ${lvo_args})
 		set(deps ${lvo_deps})
 	elseif(r STREQUAL "custom")
 		set(args ${custom_args})
 		set(deps ${ndkinc}/hardware/custom.i)
+	elseif(r STREQUAL "AHI")
+		set(args ${ahi_args})
+		set(deps ${ahi_lvo} ${ahi_inc})
 	else()
 		set(args ${dt_args})
 		set(deps ${fd}/datatypes_lib.fd ${dt_incs})
@@ -79,7 +102,7 @@ foreach(r lvo custom datatypes)
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${RWE_RESIDENTS_DIR}
 		COMMAND ${BLITZRES} -o ${res} ${skip} ${args}
 		DEPENDS ${deps} ${BLITZRES} host_tools
-		COMMENT "Resident ${r}.res from the NDK"
+		COMMENT "Resident ${r}.res"
 		VERBATIM)
 	list(APPEND RWE_RESIDENTS ${res})
 	# the contents equal the resident blitz2 2.10 made in the analysis

@@ -334,6 +334,42 @@ static void test_equ(void)
     blitzres_free(&syms);
 }
 
+static void test_lvo(void)
+{
+    static const char inc[] =
+        "* Automatically generated header (sfdc 1.13)! Do not edit!\n"
+        "     IFND  LVO_AHI_LIB_I\n"
+        "LVO_AHI_LIB_I   SET   1\n"
+        "\n"
+        "_LVOAHI_AllocAudioA     EQU   -42\n"
+        "_LVOAHI_FreeAudio     EQU   -48\n"
+        "OTHER\tEQU\t5\n"
+        "_LVOAHI_AudioRequestA     EQU   -126\n"
+        "     ENDC  * LVO_AHI_LIB_I\n";
+    struct blitzres_list l = { 0 };
+
+    CHECK(blitzres_lvo(inc, strlen(inc), &l, err, sizeof err) == 0);
+    CHECK(l.n == 3);
+    CHECK(!strcmp(l.c[0].name, "AHI_AllocAudioA") && l.c[0].value == -42);
+    CHECK(!strcmp(l.c[1].name, "AHI_FreeAudio") && l.c[1].value == -48);
+    CHECK(!strcmp(l.c[2].name, "AHI_AudioRequestA") && l.c[2].value == -126);
+    blitzres_free(&l);
+    /* skipped names are left out */
+    CHECK(blitzres_skip(&l, "AHI_FreeAudio", err, sizeof err) == 0);
+    CHECK(blitzres_lvo(inc, strlen(inc), &l, err, sizeof err) == 0 && l.n == 2);
+    blitzres_free(&l);
+    /* broken: no _LVO line, an offset not below 0, a name with two offsets */
+    CHECK(blitzres_lvo("A EQU 1\n", 8, &l, err, sizeof err) == -1 && strstr(err, "no _LVO"));
+    blitzres_free(&l);
+    CHECK(blitzres_lvo("_LVOX EQU 6\n", 12, &l, err, sizeof err) == -1
+          && strstr(err, "not negative"));
+    blitzres_free(&l);
+    CHECK(blitzres_add(&l, "AHI_FreeAudio", -6, err, sizeof err) == 0);
+    CHECK(blitzres_lvo(inc, strlen(inc), &l, err, sizeof err) == -1
+          && strstr(err, "AHI_FreeAudio defined as -6"));
+    blitzres_free(&l);
+}
+
 int main(void)
 {
     test_write();
@@ -341,6 +377,7 @@ int main(void)
     test_dump();
     test_fd();
     test_equ();
+    test_lvo();
     if (failures)
         fprintf(stderr, "%d check(s) failed\n", failures);
     return failures != 0;
