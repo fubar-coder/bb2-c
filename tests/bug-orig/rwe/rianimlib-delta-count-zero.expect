@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+row 100 untouched
+rc=0
