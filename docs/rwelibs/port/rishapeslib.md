@@ -79,60 +79,66 @@ Further assembler:
 ## BUG(orig), kept
 
 * **Shape numbers shifted as object offsets (`ASR #5`):**
-  * `SafeToBlit` compares shape/32 with the maximum.
+  * `SafeToBlit` compares shape/32 with the maximum (#822).
   * `LESaveShapes` stores (s2>>5)−(s1>>5) as the count, with the upper
     word of d1 uncleared.
   * The shapes handed on to shapeslib's `LoadShapes` are s>>5.
 
   The loader reads count + 1 shapes (`SUB.l #1:BMI`), limited by the
-  last shape. So a file of shapes below 32 loads one shape.
+  last shape. So a file of shapes below 32 loads one shape (#815).
 * **CludgeShapes:**
   * An empty shape (width or height 0) advances by 32 + the low word of
-    the size of the shape before it, which may come from an earlier call.
-  * A size of 0 copies 65536 bytes.
-  * shape# is divided by 32 and never used.
+    the size of the shape before it, which may come from an earlier call
+    (#809).
+  * A size of 0 copies 65536 bytes (#808).
 * **The cookie of a freed shape is never freed** (LELoadShapes,
   LECludgeShapes, LEInitShape). `MOVE.l 18(a2),a1:BEQ` after
-  `CLR 30(a2)` tests the CLR, so the branch is always taken.
+  `CLR 30(a2)` tests the CLR, so the branch is always taken (#810).
 * **Cludged shapes reloaded:** see the stack imbalances above.
-  LELoadShapes then neither frees its buffers nor closes the file.
+  LELoadShapes then neither frees its buffers nor closes the file (#807;
+  a failing allocation with a0 pushed: #806).
 * **LELoadShapes:**
-  * Form 3 uses the palette of d3.
+  * Form 3 uses the palette of d3 (#812).
   * A non-LE file goes to `LoadShapes` with a3 = the last shape and
-    a2 = the first. One shape is loaded into the last shape.
+    a2 = the first. One shape is loaded into the last shape (#813).
   * A failing chunk allocation runs the caller's cleanup and returns
     there. The caller then frees the header buffer and closes the file a
     second time if packedsize is 0, and otherwise uses packedsize as the
-    chunk.
-  * The result in d0 is `packedsize` of the last packed shape.
+    chunk (#819).
 * **read_palette:**
-  * The allocation is not checked; a failure writes to address 0.
+  * The allocation is not checked; a failure writes to address 0 (#821).
   * The colour count is `DIVU #3` of the chunk size; on overflow the
-    register is unchanged.
-  * 0 colours decode 65536.
+    register is unchanged (#820).
+  * 0 colours decode 65536 (#820).
   * A CMAP size that is not a multiple of 3 makes LECludgeShapes miss
-    SDAT.
+    SDAT (#811).
 * **LESaveShapes:**
   * Whether the CMAP is written depends on Write's Z flag (above). In
-    the emulator (OS 3.2) it is written.
+    the emulator (OS 3.2) it is written (#814).
   * The FORM length is 8 too large and contains the CMAP size of the
-    last save that had a palette.
+    last save that had a palette (#816).
   * The shape header buffer is allocated with the upper word of the d0
-    that `_saveCMAP` leaves, and freed with size 14 instead of 12.
-  * A palette of 0 colours copies 65536.
+    that `_saveCMAP` leaves, and freed with size 14 instead of 12 (#817).
+  * A palette of 0 colours copies 65536 (#823).
   * When the pack buffer is missing, two runtime errors follow (TRAP #0:
     "Not enough memory to pack shapes", "Shape Compression Failed!"),
     then CreateCookie on the shape, whose RTS returns from
-    `_writeshapes`.
+    `_writeshapes` (#818).
   * PackPBM's failure runs UnPackPBM with d3 = 12 (RIPackLib's
-    BUG(orig)).
-* **LECludgeShapes:**
-  * The SHHD chunk is skipped as 20 bytes, whatever its length.
-  * Memory below 2 MB that is not compressed is linked, not copied
-    (`"cL"`), unless copymemflag is negative. The form without
-    copymemflag links.
-* **LEInitShape:** the data and the cookie are cleared chip memory; the
-  cookie is not computed.
+    BUG(orig), #772).
+* **LECludgeShapes:** the SHHD chunk is skipped as 20 bytes, whatever its
+  length (#811).
+
+Original behaviour that is no defect:
+
+* CludgeShapes: shape# is divided by 32 and never used.
+* LELoadShapes, a statement, leaves `packedsize` of the last packed
+  shape in d0 (a statement has no result).
+* LECludgeShapes links memory below 2 MB that is not compressed instead
+  of copying it (`"cL"`), unless copymemflag is negative; the form
+  without copymemflag links. That is intended.
+* LEInitShape: the data and the cookie are cleared chip memory; the
+  cookie is not computed (a shape of cleared data has an empty cookie).
 
 ## Test
 

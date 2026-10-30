@@ -42,46 +42,51 @@
  * BUG(orig), kept:
  *   - SafeToBlit, LELoadShapes and LESaveShapes shift the shape NUMBERS
  *     right by 5 as if they were object offsets: SafeToBlit compares
- *     shape/32 with the maximum, LESaveShapes stores (s2>>5)-(s1>>5) (the
- *     upper word of the register uncleared) as the shape count, and the
- *     shapes passed on to shapeslib's LoadShapes are s>>5.  The loader
- *     reads count+1 shapes, so a saved file of shapes below 32 loads
- *     one shape.
- *   - CludgeShapes shifts shape# as well (unused since the own cookie
- *     code); an empty shape in memory (width or height 0) advances by 32
- *     + the low word of the size of the shape before (also of an earlier
- *     call: the variable stays); a shape with size 0 copies 65536 bytes.
+ *     shape/32 with the maximum (#822), LESaveShapes stores
+ *     (s2>>5)-(s1>>5) (the upper word of the register uncleared) as the
+ *     shape count, and the shapes passed on to shapeslib's LoadShapes are
+ *     s>>5.  The loader reads count+1 shapes, so a saved file of shapes
+ *     below 32 loads one shape (#815).
+ *   - CludgeShapes: an empty shape in memory (width or height 0) advances
+ *     by 32 + the low word of the size of the shape before (also of an
+ *     earlier call: the variable stays) (#809); a shape with size 0
+ *     copies 65536 bytes (#808).
  *   - The cookie of a shape that is freed by LELoadShapes, LECludgeShapes
  *     or LEInitShape is never freed (the BEQ after a MOVEA tests the CLR
- *     before it, always taken).
+ *     before it, always taken) (#810).
  *   - LELoadShapes/LECludgeShapes on a shape that is cludged ("cL") pops
  *     a0 it never pushed: the shape data is then read from the return
  *     address into the library's code, and the routine returns to its
  *     caller's caller (LELoadShapes then neither frees its buffers nor
  *     closes the file); a second such shape returns into the Blitz
- *     program's stack.  An allocation that fails in the shape loop or in
- *     the cookie returns with a0 still pushed: it jumps to the data
- *     address.  Stack imbalances that C cannot express: see rs_pop and
- *     rs_crash.
+ *     program's stack (#807).  An allocation that fails in the shape loop
+ *     or in the cookie returns with a0 still pushed: it jumps to the data
+ *     address (#806).  Stack imbalances that C cannot express: see rs_pop
+ *     and rs_crash.
  *   - LELoadShapes form 3 (shape#,filename$,palette#) takes the palette of
- *     d3, not of the third argument (!libs #pd3).  LELoadShapes hands a
- *     non-LE file to shapeslib's LoadShapes with the shapes exchanged
- *     (a3 = the last shape, a2 = the first).  A failing chunk allocation
- *     frees the header buffer and closes the file twice (readchunk jumps
- *     to the cleanup of its caller and returns there).
- *   - read_palette: no check of the allocation (writes to address 0), the
- *     colour count of DIVU #3 (overflow: unchanged), 0 colours decode
- *     65536; sizes are word additions (ADDQ #8).
+ *     d3, not of the third argument (!libs #pd3) (#812).  LELoadShapes
+ *     hands a non-LE file to shapeslib's LoadShapes with the shapes
+ *     exchanged (a3 = the last shape, a2 = the first) (#813).  A failing
+ *     chunk allocation frees the header buffer and closes the file twice
+ *     (readchunk jumps to the cleanup of its caller and returns there)
+ *     (#819).
+ *   - read_palette: no check of the allocation (writes to address 0)
+ *     (#821), the colour count of DIVU #3 (overflow: unchanged), 0 colours
+ *     decode 65536; sizes are word additions (ADDQ #8) (#820).
  *   - LESaveShapes: whether the palette is written depends on the flags
  *     dos Write leaves (MOVE.l paletteptr,a0 is a MOVEA, the BNE tests
- *     Write's flags); the FORM length is 8 too large and has the CMAP
- *     size of the last save with a palette; the shape header buffer is
- *     allocated with the upper word of d0 of _saveCMAP; a palette of 0
- *     colours copies 65536; a failing pack buffer is a runtime error
- *     (TRAP #0); PackPBM's failure path runs UnPackPBM with d3 = 12.
- *   - LECludgeShapes skips the SHHD chunk as 20 bytes, and links the
- *     shapes into the memory (no copy, "cL") if it is below 2 MB and the
- *     file uncompressed, unless copymemflag is negative.
+ *     Write's flags) (#814); the FORM length is 8 too large and has the
+ *     CMAP size of the last save with a palette (#816); the shape header
+ *     buffer is allocated with the upper word of d0 of _saveCMAP (#817); a
+ *     palette of 0 colours copies 65536 (#823); a failing pack buffer is a
+ *     runtime error (TRAP #0) (#818); PackPBM's failure path runs
+ *     UnPackPBM with d3 = 12 (#772).
+ *   - LECludgeShapes skips the SHHD chunk as 20 bytes (#811).
+ *
+ * Original behaviour that is no defect: CludgeShapes shifts shape# as well
+ * (unused since the own cookie code).  LECludgeShapes links the shapes
+ * into the memory (no copy, "cL") if it is below 2 MB and the file
+ * uncompressed, unless copymemflag is negative (intended).
  */
 #include "blitzlib.h"
 #define __NOLIBBASE__
@@ -363,7 +368,7 @@ BLITZ_THUNK(_lescanshapes, lescanshapes_c, "d0-d1/a0-a1");
 
 /* SafeToBlit(shape,x,y): a3 = the shape, a2 = the used bitmap object
    (+56.w/+58.w its width and height), d6 = the maximum of shapes.
-   BUG(orig): shape/32 is compared with the maximum. */
+   BUG(orig): shape/32 is compared with the maximum (#822). */
 static ULONG BLITZ_ROUTINE safetoblit_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1),
                                         ULONG d2 BL_REG(d2), UBYTE *a2 BL_REG(a2),
                                         UBYTE *a3 BL_REG(a3), ULONG d6 BL_REG(d6))
@@ -386,7 +391,7 @@ BLITZ_THUNK(_safetoblit, safetoblit_c, "d1/a0-a1");
 
 /* CreateCookie: the cookie of shape a2 in chip memory, the planes ORed
    (DBRA on depth - 1 and plane bytes - 1).  a0 = the original's pushed
-   a0 (BUG(orig): returned to if the allocation fails). */
+   a0 (BUG(orig): returned to if the allocation fails, #806). */
 static void createcookie(UBYTE *a2, UBYTE *a0)
 {
     UBYTE *src, *dst;
@@ -505,7 +510,7 @@ static void shapesizes(UBYTE *a2, int init)
 
 /* LEInitShape shape#,width,height,depth: a2 = the shape; new cleared
    chip memory for the data and the cookie (not computed).  BUG(orig):
-   the old cookie is not freed. */
+   the old cookie is not freed (#810). */
 static void BLITZ_ROUTINE leinitshape_c(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2),
                                         ULONG d3 BL_REG(d3), UBYTE *a2 BL_REG(a2))
 {
@@ -540,7 +545,7 @@ static void read_palette(const UBYTE *a0)
     UWORD n;
     int i;
 
-    d1 = bl_divu_w(chunksize, 3);       /* BUG(orig): overflow keeps it */
+    d1 = bl_divu_w(chunksize, 3);       /* BUG(orig): overflow keeps it (#820) */
     colourcount = (UWORD)d1;
     if (!paletteptr)
         return;
@@ -552,7 +557,7 @@ static void read_palette(const UBYTE *a0)
     }
     d0 = bl_mulu_w(colourcount, 12);
     BL_SETW(d0, d0 + 8);
-    SL(a3, 0) = galloc(d0, MEMF_PUBLIC | MEMF_CLEAR);  /* BUG(orig): unchecked */
+    SL(a3, 0) = galloc(d0, MEMF_PUBLIC | MEMF_CLEAR);  /* BUG(orig): unchecked (#821) */
     SW(a3, 4) = colourcount;
     p = (ULONG *)SL(a3, 0);
     *(volatile UWORD *)p = colourcount;
@@ -577,7 +582,7 @@ static int __attribute__((noinline)) readshapes(UBYTE *a0)
         if (SW(a2, 0)) {
             SW(a2, 0) = 0;
             if (SW(a2, 30) == CLUDGED) {
-                /* BUG(orig): nothing pushed, the pop below takes the
+                /* BUG(orig) #807: nothing pushed, the pop below takes the
                    return address (rs_pop) */
                 SW(a2, 30) = 0;
                 a0 = rs_pop(__builtin_return_address(0));
@@ -601,7 +606,7 @@ static int __attribute__((noinline)) readshapes(UBYTE *a0)
         } else {
             SL(a2, 14) = galloc(SW(a2, 26), MEMF_CHIP);
             if (!SL(a2, 14))
-                rs_crash(a0);           /* BUG(orig): RTS with a0 pushed */
+                rs_crash(a0);           /* BUG(orig): RTS with a0 pushed (#806) */
             if ((WORD)compressed < 0 && (LONG)(packedsize = SL(a0, 0)) >= 0) {
                 /* 'unpack_shape */
                 a0 += 4;
@@ -622,7 +627,7 @@ static int __attribute__((noinline)) readshapes(UBYTE *a0)
         /* 'dodacookie */
         SL(a2, 18) = galloc(SW(a2, 22), MEMF_CHIP | MEMF_CLEAR);
         if (!SL(a2, 18))
-            rs_crash(a0);               /* BUG(orig): RTS with a0 pushed */
+            rs_crash(a0);               /* BUG(orig): RTS with a0 pushed (#806) */
         {
             const UBYTE *src = (const UBYTE *)SL(a2, 14);
             planes = SW(a2, 4) - 1;
@@ -669,7 +674,7 @@ static void BLITZ_ROUTINE lecludgeshapes2_c(ULONG d2 BL_REG(d2), ULONG d4 BL_REG
     compressed = SW(p, 4);
     if (compressed)
         inchip = 0;
-    p += 20;                            /* BUG(orig): SHHD as 20 bytes */
+    p += 20;                            /* BUG(orig): SHHD as 20 bytes (#811) */
     if (SL(p, 0) == ID('C', 'M', 'A', 'P')) {
         chunksize = SL(p, 4);
         p += 8;
@@ -697,7 +702,7 @@ BLITZ_THUNK_PRE(_lecludgeshapes, lecludgeshapes_c, "d0-d1/a0-a1", "move.l sp,_rs
 /* -------------------------------------------------------- LELoadShapes */
 
 /* LoadShapes of shapeslib (form 1) with the shapes of a2 (as the last)
-   and a3 (as the first; BUG(orig): exchanged), d2 = the name, a6 = dos */
+   and a3 (as the first; BUG(orig): exchanged, #813), d2 = the name, a6 = dos */
 static void acidloadshapes(UBYTE *a2, UBYTE *a3)
 {
     register ULONG d0 __asm("d0") = aciddata_s1;
@@ -737,7 +742,7 @@ static ULONG cleanup(int from)
 }
 
 /* readchunk: the chunk of the header buffer (id, length) into a new
-   buffer; 0 if the read is short.  BUG(orig): a failing allocation jumps
+   buffer; 0 if the read is short.  BUG(orig) #819: a failing allocation jumps
    to the caller's freeall and returns from there (packedsize), so the
    caller sees packedsize: 0 sends it to freememory again. */
 static ULONG readchunk(BPTR fh)
@@ -809,7 +814,7 @@ static ULONG leloadshapes(ULONG d0, ULONG d1, ULONG d2, UBYTE *a0, UBYTE *a2, UB
     if (!(chunk = readchunk(fh)))
         return cleanup(FREEMEMORY);
     if (readshapes((UBYTE *)chunk))
-        return 0;                       /* BUG(orig): returned past us */
+        return 0;                       /* BUG(orig): returned past us (#807) */
     return cleanup(FREEALL);
 }
 
@@ -857,7 +862,7 @@ BLITZ_THUNK_PRE(_leloadshapesinglenop, leloadshapesinglenop_c, "d0-d1/a0-a1",
 
 /* -------------------------------------------------------- LESaveShapes */
 
-/* dos Write with the Z flag it leaves (BUG(orig): _saveCMAP's BNE) */
+/* dos Write with the Z flag it leaves (BUG(orig): _saveCMAP's BNE, #814) */
 static LONG write_z(BPTR fh, APTR buf, LONG len, UBYTE *z)
 {
     register LONG d0 __asm("d0");
@@ -957,7 +962,7 @@ static ULONG writeshapes(BPTR fh, ULONG d0)
                     createcookie(a2, buf + 12);
                     return d5;
                 }
-                /* d3 = 12 (the last Write): BUG(orig) of PackPBM's failure */
+                /* d3 = 12 (the last Write): BUG(orig) of PackPBM's failure (#772) */
                 packed = BL_JSR_D4_(BL_TOKVAL(TOK_packpbm, 0), SL(a2, 14), (ULONG)pk + 4,
                                     SW(a2, 26), 12);
                 SL(packptr, 0) = packed;
@@ -998,7 +1003,7 @@ static void BLITZ_ROUTINE lesaveshapes_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1
     BL_SETW(d0, (WORD)d0 >> 5);
     BL_SETW(d1, (WORD)d1 >> 5);
     BL_SETW(d1, d1 - d0);
-    shapecount = d1;                    /* BUG(orig): the upper word too */
+    shapecount = d1;                    /* BUG(orig): the upper word too (#815) */
     fh = Open((STRPTR)d2, MODE_NEWFILE);
     if (!fh)
         return;
@@ -1010,7 +1015,7 @@ static void BLITZ_ROUTINE lesaveshapes_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1
     Seek(fh, -(LONG)(d5 - 4), OFFSET_CURRENT);
     tmp = d5 - 8;
     Write(fh, &tmp, 4);
-    d5 += centry + 40;                  /* BUG(orig): 8 too many */
+    d5 += centry + 40;                  /* BUG(orig): 8 too many (#816) */
     Seek(fh, 4, OFFSET_BEGINNING);
     tmp = d5;
     Write(fh, &tmp, 4);
