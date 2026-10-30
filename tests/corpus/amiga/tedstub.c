@@ -16,6 +16,10 @@
  *                   bytes (bytes 50-53 of the .xtra; default 10240)
  *   macrobuf=N      in those defaults the size of the macro buffer N
  *                   bytes (bytes 46-49 of the .xtra; default 8192)
+ *   max=LIB|N       in those defaults the object maximum of the library
+ *                   number LIB is N (at most 8): a pair LIB.w, N.w
+ *                   appended behind the maximums savextra wrote;
+ *                   loadxtra reads the pairs in order, the last one wins
  *   resident=ID|SOURCE|RESFILE
  *                   a resident (at most 8, in this order): before the
  *                   first job SOURCE is compiled like a job, but with
@@ -88,6 +92,11 @@ static char srcname[PATHLEN], outname[PATHLEN], xtraname[PATHLEN], defname[PATHL
 static char cur_id[16];
 static int in_menu, runerr_off;
 static ULONG strbuf, macrobuf;
+
+/* max=: object maximums appended to the defaults (lib.w, max.w) */
+#define MAXMAX 8
+static UWORD maxpair[MAXMAX][2];
+static int nmax;
 
 /* resident=: the lines (ID|SOURCE|RESFILE split in place) */
 #define MAXRES 8                        /* blitz2.s resbuff: 8 entries */
@@ -361,6 +370,10 @@ static void save_defaults(void)
         edstub_strcpy(name, res_file[i], sizeof name);
         Seek(fh, RESBUFF + 68 * i, OFFSET_BEGINNING);
         Write(fh, name, sizeof name);
+    }
+    if (nmax) {                         /* behind the maximums of savextra */
+        Seek(fh, 0, OFFSET_END);
+        Write(fh, maxpair, 4 * nmax);
     }
     Close(fh);
 }
@@ -843,7 +856,23 @@ void edstub_main(const char *arg)
         else if ((v = value(p, "macrobuf=")))
             while (*v >= '0' && *v <= '9')
                 macrobuf = macrobuf * 10 + (ULONG)(*v++ - '0');
-        else if ((v = value(p, "resident="))) {
+        else if ((v = value(p, "max="))) {
+            UWORD k;
+
+            if (nmax == MAXMAX) {
+                edstub_log("FATAL: more than 8 maximums");
+                continue;
+            }
+            for (k = 0; *v >= '0' && *v <= '9'; v++)
+                k = k * 10 + (UWORD)(*v - '0');
+            maxpair[nmax][0] = k;
+            if (*v == '|')
+                v++;
+            for (k = 0; *v >= '0' && *v <= '9'; v++)
+                k = k * 10 + (UWORD)(*v - '0');
+            maxpair[nmax][1] = k;
+            nmax++;
+        } else if ((v = value(p, "resident="))) {
             if (nres == MAXRES) {
                 edstub_log("FATAL: more than 8 residents");
                 continue;
