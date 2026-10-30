@@ -537,9 +537,9 @@ several versions.
       `refbuild`, all compile in `rwe_refbuild` (BB22 sources through
       `tools/bb22`); Anim with the BSS2 binary (its source does not
       compile); LES debug not yet (`Font.bin` is missing). C ports done
-      (2026-10-30) except CIA tracker; CIA tracker and ptlib (the
-      Protracker 2.3A play routine, released as "Public Domain") are
-      ported (decision 2026-10-30, `archive/README.md`). Next: stage D (§3.3), with
+      (2026-10-30), CIA tracker and ptlib (`ritrackerlib`, 58, ptlib6)
+      included (the Protracker 2.3A play routine, released as "Public
+      Domain"; decision 2026-10-30, `archive/README.md`). Next: stage D (§3.3), with
       REFERENCE `refbuild`; Eval
       (121, clashes with polylib) needs a variant of its own. ~~**Reference build in the build**~~ done (2026-10-29,
       `libs/userlibs/rwe/refbuild.cmake`): residents by `tools/blitzres`
