@@ -58,7 +58,7 @@ struct tokennode {
 
 /* label column list ("mice", ted.s:2887 remember2): 8 byte nodes,
    AllocMem(8, MEMF_PUBLIC) not cleared; `next` of the last node stays
-   uninitialised (BUG(orig), survey-03 I.4) - count with nummice. */
+   uninitialised (BUG(orig) #381, survey-03 I.4) - count with nummice. */
 struct micenode {
     struct micenode *next;      /* +0 */
     struct item *line;          /* +4 */
@@ -76,7 +76,7 @@ struct quad {
 
 /* ORIG_HAZARD("text"): marks a place where the original reads/writes
    outside its buffers or uses a NULL pointer and the C version keeps that
-   behaviour (BUG(orig)).  Empty on the Amiga; on the host it counts, so
+   behaviour.  Empty on the Amiga; on the host it counts, so
    tests can expect or detect it (tests/host/stubs.c). */
 #ifdef TED_HOST
 void ted_hazard(const char *what, const char *file, int line);

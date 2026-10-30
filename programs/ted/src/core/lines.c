@@ -33,7 +33,7 @@ static UWORD curline(void)
    text with pstats -> qprint -> fontcalc, which leaves d1 = (char & $f0)
    << 3 (font 8) or the font 6 variant of the last character printed
    (a space): blokcopy uses d1 right after blokfix (ted.s:1970-1972), so
-   the clobbered d1 is observable there (BUG(orig)).  blokfix itself is
+   the clobbered d1 is observable there (BUG(orig) #346).  blokfix itself is
    chunk 06 (lineedit.c); whether it reached blokdis is seen at bstx,
    which blokdis always sets to -1 (bstx is not read by blokfix). */
 static BOOL blokfix_dis(void)
@@ -240,7 +240,7 @@ void deleteline(void)
 
     allalt = (UWORD)-1;
     if (bboty != (UWORD)-1) {
-        /* adjust block (survey-02 H).  BUG(orig) survey-02 I.6: a one
+        /* adjust block (survey-02 H).  BUG(orig) (#353) survey-02 I.6: a one
            line block ends as bboty = -1 without blokdis. */
         d0 = curline();
         if (d0 < btopy)                         /* bcs .skip0z */
@@ -370,7 +370,7 @@ sskip4:
 sskip2:
         btopy--;
 sskip3:
-        bboty--;                                /* BUG(orig) survey-02 I.5: also after blokdis */
+        bboty--;                                /* BUG(orig) (#346) survey-02 I.5: also after blokdis */
     }
 sskip:
     a0 = charbuff2;
@@ -379,7 +379,7 @@ sskip:
         a0[d0] = a2[d0];
     /* .skip2 */
     if (tokenise) {
-        /* .skip2a.  BUG(orig) survey-02 I.3: no length check (detok can
+        /* .skip2a.  BUG(orig) (#355) survey-02 I.3: no length check (detok can
            run past charbuff2/charbuff3) */
         b1 = detok(a5->chars, b1);
     } else {
@@ -404,7 +404,7 @@ sskip:
         enditem = a4;
         a4->nextitem = NULL;
     }
-    /* .done.  BUG(orig) survey-02 I.1: FreeMem size numchars, not
+    /* .done.  BUG(orig) (#364, #365) survey-02 I.1: FreeMem size numchars, not
        numchars + lenitem (`add.b numchars(a1),d0`, "was move.b") - 9
        bytes lost per join; the host reports the size mismatch through
        ORIG_HAZARD (stubs.c).  survey-02 I.2: no mforget2. */
@@ -463,7 +463,7 @@ sonboth:
         bbotx = (WORD)d2;
         blokfix();
 sskip2:
-        btopy++;                                /* BUG(orig) survey-02 I.5: also after blokdis */
+        btopy++;                                /* BUG(orig) (#346) survey-02 I.5: also after blokdis */
 sinmid:
         bboty++;
     }
@@ -599,8 +599,8 @@ struct item *gd03(UWORD d0, WORD flag)
     oldtop = d1;                                /* move d1,-(a7) */
     d1 = (UWORD)(d1 + cursy);
     if (d0 != d1) {
-        /* BUG(orig) survey-02 I.13: no range check - a target >= numlines
-           walks over the NULL at the end of the list */
+        /* survey-02 I.13: no range check - a target >= numlines
+           walks over the NULL at the end of the list (no caller passes one) */
         if (d0 >= d1) {                         /* bcc .skip2 */
             do {                                /* .skip2 */
                 d1++;
@@ -691,7 +691,7 @@ void blokkill(void)
     }
     /* .done0 */
     if (bc.d6 != btopy) {
-        /* BUG(orig) survey-02 I.8: detoka5 also without tokenise (bytes
+        /* BUG(orig) (#354) survey-02 I.8: detoka5 also without tokenise (bytes
            >= $80 then go to findtoke with tokens possibly 0) */
         if (!tokenise)
             ORIG_HAZARD("blokkill: detoka5 without tokenise");
@@ -747,7 +747,7 @@ void blocksave(void)
 }
 
 /* write one byte through the asm's buffer: `move.b d0,bloktopx` writes the
-   HIGH byte of the word bloktopx (BUG(orig): the mouse anchor is the write
+   HIGH byte of the word bloktopx (harmless: the mouse anchor is the write
    buffer, survey-02 G); C writes from a local and keeps the side effect */
 static void bsbyte(tedfh fh, UBYTE c)
 {
@@ -793,7 +793,7 @@ void bloksave(void)
             /* .loop3 */
             if (bc.d6 >= bboty) {               /* bcs .bok */
                 if (tokenise) {
-                    /* BUG(orig) survey-02 G: a block ending behind the
+                    /* BUG(orig) (#350) survey-02 G: a block ending behind the
                        last text line arrives here with a5 = 0 */
                     if (!bc.a5) {
                         ORIG_HAZARD("bloksave: detoka5 on a5 = 0");
@@ -853,7 +853,7 @@ void blokload(void)
     allalt = (UWORD)-1;
     a2 = chmap + chloc;
     endp = a2 + chcols;
-    /* BUG(orig) survey-02 G: the end pointer is kept in bloktopx as a
+    /* survey-02 G (harmless, see bsbyte): the end pointer is kept in bloktopx as a
        LONG (bloktopx/bloktopy get its halves) */
     l = (ULONG)(size_t)endp;
     bloktopx = (WORD)(l >> 16);
@@ -1033,9 +1033,9 @@ void bcopyok(void)
         bc.d5 = 0;
         d1 = 0;
     }
-    /* .oneline.  BUG(orig) survey-02 I.4: d1 = the PREFIX length again,
+    /* .oneline.  survey-02 I.4: d1 = the PREFIX length again,
        so chcols - prefix characters are appended behind the fragment
-       (the line may run into charbuff3; charstobuff cuts it) */
+       (the line may run into charbuff3; charstobuff cuts it to the same line) */
     d1 = keepd1;
     a1 = keepa1;
     while (d1 < chcols) {                       /* .oneline3 */
@@ -1080,7 +1080,7 @@ void bcopyok(void)
     /* .shit4 */
 shit4:
     if (blokfix_dis())
-        d1 = blokdis_d1();                      /* BUG(orig): d1 clobbered by blokdis */
+        d1 = blokdis_d1();                      /* BUG(orig) (#346): d1 clobbered by blokdis */
 shit3:
     btopy = (UWORD)(btopy + d1);
     bboty = (UWORD)(bboty + d1);

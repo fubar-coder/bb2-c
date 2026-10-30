@@ -467,7 +467,7 @@ yesgad2:
             goto done;
         if ((UWORD)d1 == IDCMP_GADGETDOWN)
             goto done;
-        /* BUG(orig)-like (survey-06 I.8): the requester is closed before
+        /* survey-06 I.8 (ENDGADGET semantics): the requester is closed before
            the caller sees the event */
         ReplyMsg(&a1->ExecMessage);
         closereq();
@@ -531,7 +531,7 @@ notareq:
     /* close gadget! - do an escape type thingy. */
 doesc:
     {
-        /* .doesc: last found...  BUG(orig) (survey-06 I.7): without a
+        /* .doesc: last found...  survey-06 I.7: without a
            requester this reads FirstGadget at address 62 (window NULL);
            the main window has no CLOSEWINDOW IDCMP, so unreachable */
         struct Gadget *last = NULL;

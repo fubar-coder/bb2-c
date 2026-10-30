@@ -124,7 +124,7 @@ TEST_CASE("join and split: line contents", "[lines]")
     static const char *const t[] = { "abc", "defg", "hi" };
 
     env();
-    // join: "abc" + "defg", FreeMem with the wrong size (BUG(orig))
+    // join: "abc" + "defg", FreeMem with the wrong size (BUG(orig) #364)
     mklist(3, t);
     cursorto(0, 0);
     bboty = (UWORD)-1;

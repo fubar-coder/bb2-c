@@ -37,7 +37,7 @@ void blockend(void)
         beepem();                               /* bmi beepem */
         return;
     }
-    /* BUG(orig) survey-03 I.2: `move d0,btopx` with the d0 of mainedit's
+    /* survey-03 I.2 (no effect): `move d0,btopx` with the d0 of mainedit's
        dispatch = the jumptable code byte (130); its upper byte is 0 unless
        showthisitem ran before (undefined there) - C: the event code */
     btopx = (WORD)(UBYTE)ev_d7;
@@ -264,7 +264,7 @@ void remember2(struct item *a0)
     a2 = ted_alloc(8, TED_MEMF_PUBLIC);
     if (!a2)
         outmem();                               /* beq outmem */
-    /* BUG(orig) survey-03 I.4: a2->next stays uninitialised (not
+    /* BUG(orig) (#381) survey-03 I.4: a2->next stays uninitialised (not
        MEMF_CLEAR) */
     if (nummice == 0) {
         mice = a2;                              /* .skip */
@@ -291,7 +291,7 @@ void mforget2(void)
 }
 
 /* ted.s:2990 a0toname - convert a0 to a path/filename.
-   BUG(orig) survey-03 I.1: the tests compare d0 (the caller's register),
+   BUG(orig) (#340) survey-03 I.1: the tests compare d0 (the caller's register),
    not the copied character - normally filepath = "" and filename = the
    whole string. */
 void a0toname(const UBYTE *a0, ULONG d0)

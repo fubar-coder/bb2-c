@@ -19,7 +19,7 @@
    Quote/remark characters and the token list come from the globals quote,
    remark, tokens; invflag is the quote flag (global side effect, kept).
    Reads beyond d1 while matching names (chmap: into the next row;
-   BUG(orig) survey-05 A, ORIG_HAZARD). */
+   BUG(orig) #386, survey-05 A, ORIG_HAZARD). */
 UWORD tokit(UBYTE *a1, const UBYTE *a2, WORD d1, UBYTE **a1end);
 /* ted.s:4204 tokit3: d1 = LENGTH (subq #1 first), then tokit.  Entry of
    tokit2 (fileio.h). */
@@ -52,7 +52,7 @@ struct item *allocnull(void);
    free the old lines (caller: freeall).  asm: always d0 = -1 / Z=0. */
 void donew(void);
 /* ted.s:4582 freethis: free THISITEM (not unlinked); label -> mforget2;
-   size lenitem + numchars with add.b (byte overflow from 247, BUG(orig)
+   size lenitem + numchars with add.b (byte overflow from 247, unreachable,
    survey-05 I.5); memalt = size */
 void freethis(void);
 /* ted.s:4602 freeall: free numlines items from firstitem (dbf: numlines 0

@@ -9,7 +9,7 @@
 #include <exec/types.h>
 
 /* rawed+32+0 (called at ted.s:39): open console.device (result unchecked,
-   BUG(orig)), build the two 105 byte tables (never read, BUG(orig)) */
+   BUG(orig) #373), build the two 105 byte tables (never read) */
 void rawed_init(void);
 /* rawed+32+4 (called at ted.s:5928): d0 = raw key (key down), d1 =
    qualifier -> character (0 = none) */

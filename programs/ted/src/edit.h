@@ -18,7 +18,7 @@ void escape(void);
 /* beepem (ted.s:1054): hooks.h */
 /* ted.s:1460 gadget - event 255: drag the vertical prop (busy poll with
    getinput2, the ending message is swallowed, survey-02 I.11); uses
-   bloktopx as scratch (BUG(orig), keep the side effect) */
+   bloktopx as scratch (harmless, keep the side effect) */
 void gadget(void);
 /* ted.s:1542 extmenu: menurout == 0 -> return; call_menurout(item) (glue.h);
    showme; -2 -> showall, -1 -> return, else gotolined0 */

@@ -49,7 +49,7 @@ void blocktab(void)
         if (tokenise) {
             a1 = detok(a0, a1);         /* a1 ON the 0 byte */
         } else {
-            /* BUG(orig): the copy leaves a1 BEHIND the 0 byte, so the 0
+            /* BUG(orig) (#347): the copy leaves a1 BEHIND the 0 byte, so the 0
                stays in the chmap style line and charstobuff keeps it as
                the last "non space": every ASCII line of the block gets an
                extra 0 byte (numchars + 1, written as "text\0\n"). */
@@ -99,7 +99,7 @@ void blockuntab(void)
         a1 = charbuff2;
         a0 = a1;
         d0 = tabstop;
-        /* BUG(orig): removes the first tabstop characters WHATEVER they
+        /* BUG(orig) (#348): removes the first tabstop characters WHATEVER they
            are; tabstop = 0 or a line shorter than tabstop leaves a1 at
            the start: the whole line becomes spaces (survey-01 I.11). */
         if (d0 == 0)
@@ -128,7 +128,7 @@ loop3:  /* @388 .loop3 */
 /* ted.s:570 (prtfile, core part - NEW name): the .ploop body of prtfile
    (ted.s lines 595-624): copy line a4 to buf; a byte with bit 7 starts a
    token -> ESC[1m name ESC[22m; the 0 byte -> LF.  Returns the Write
-   length.  BUG(orig): bytes >= $80 are always tokens (also in ASCII mode
+   length.  BUG(orig) (#371, #372): bytes >= $80 are always tokens (also in ASCII mode
    and standalone, where tokens == 0 makes findtoke read at 0; survey-01
    I.14); no limit for buf (charbuff: chcols+2 bytes, survey-01 I.10). */
 UWORD prtfile_line(struct item *a4, UBYTE *buf)
@@ -234,7 +234,7 @@ void fileopen2(UBYTE *d7)
     allalt = 0;
     doclean();
     if (fillbuff() == 0) {
-        /* BUG(orig): empty file (or read error): donew without freeall -
+        /* BUG(orig) (#358): empty file (or read error): donew without freeall -
            the old lines are lost (not freed) */
         doclose();
         donew();
@@ -314,7 +314,7 @@ void realsave(UBYTE *d7)
         d0 = ted_write(rd.fh, a3, d4);
         a3[d4 - 1] = 0;
         if (d0 < 0) {
-            /* BUG(orig): allalt stays set, but .xtra/.info are still
+            /* BUG(orig) (#380): allalt stays set, but .xtra/.info are still
                written (survey-01 I.15) */
             error(error3);
             goto skip3;

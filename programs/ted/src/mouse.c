@@ -771,7 +771,7 @@ next:
         a3 -= (WORD)mousecols;
         a3 += (WORD)fontmul;
         if (a4) {
-            /* BUG(orig) survey-03 I.4: behind the last node this reads the
+            /* BUG(orig) (#381) survey-03 I.4: behind the last node this reads the
                uninitialised `next` (and then follows it) */
             if (d4 + 1 >= nummice)
                 ORIG_HAZARD("showmice: next of the last label node");
@@ -826,7 +826,7 @@ NORETURN void outmem(void)
     showall();
     /* move.l memstack,a7 / bra memcont: longjmp to the setjmp in
        mainedit (DIFF in docs/ted/deviations.md: outmem/memcont).
-       BUG(orig) (O1, survey-03 I.6): before the first dispatch memstack
+       BUG(orig) (#370) (O1, survey-03 I.6): before the first dispatch memstack
        is 0 - the asm continues memcont with a7 = 0 and crashes; the glue
        does exactly that (memcont_nostack, glue.c). */
     if (!memstack)

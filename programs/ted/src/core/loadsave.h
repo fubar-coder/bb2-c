@@ -16,7 +16,7 @@
    spaces (detok/makefirst per line), calcitem, showall.  No block: beepem. */
 void blocktab(void);
 /* ted.s:361 blockuntab - menu $a1: remove the first tabstop characters of
-   every block line, WHATEVER they are (BUG(orig), survey-01 I.11). */
+   every block line, WHATEVER they are (BUG(orig) #348, survey-01 I.11). */
 void blockuntab(void);
 
 /* ted.s:570 (prtfile, core part - NEW name): format line a4 for the printer

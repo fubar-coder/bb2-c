@@ -72,13 +72,13 @@ WORD doread(void);
 /* ted.s:3375 readline: one line into charbuff2 (token pairs copied
    unchecked, LF -> 0 + "ASCII", TAB expanded with divu tabstop - 0 traps
    in the original, overflow at charbuff3), tokenised via mytoke if ASCII
-   and tokenise.  *d5 = length incl. 0.  BUG(orig) list: survey-04 I.1-7. */
+   and tokenise.  *d5 = length incl. 0.  BUG(orig) list: survey-04 I.1-6, I.22 (#374-#379, #385). */
 int readline(UWORD *d5);
 /* ted.s:3447 mytoke: tokit2 in place on charbuff2 (d1 = d5 = length
    without 0); returns the new d5 (incl. 0) */
 UWORD mytoke(UWORD d5);
 /* ted.s:3349 allocline: new item from charbuff2, length d5 (alloc2: no
-   memory -> outmem); nextitem = 0, lastitem NOT set (BUG(orig) - caller
+   memory -> outmem); nextitem = 0, lastitem NOT set (every caller
    sets it); label line -> remember.  asm: a0 = item. */
 struct item *allocline(UWORD d5);
 /* ted.s:3277 linka0: link a0 after a4, numlines++, enditem if last (does
@@ -99,7 +99,7 @@ UBYTE *detok(const UBYTE *a0, UBYTE *a1);
 const char *findtoke(UWORD d0);
 /* ted.s:3759 detoka5: detok chars(a5) to charbuff3+1 WITHOUT 0 byte,
    charbuff3[0] = length + 1; writes beyond charbuff3 for long lines
-   (allocation end, BUG(orig), ORIG_HAZARD) */
+   (allocation end, BUG(orig) #355, ORIG_HAZARD) */
 void detoka5(struct item *a5);
 
 /* ------------------------------------------------------------- search */
@@ -155,7 +155,7 @@ void bloksetup(void);
 /* ted.s:3849 getbchar: next block character: -1 block end (asm N=1), 0 end
    of line (Z=1; bc already on the next line - caller re-runs detoka5 when
    tokenise), else the character.  Non-token mode returns bytes >= $80 as
-   NEGATIVE (move.b sets N: umlauts end the block, BUG(orig) survey-04
+   NEGATIVE (move.b sets N: umlauts end the block, BUG(orig) (#362) survey-04
    I.9) - keep the sign extension.  `newline` (3884) is a label inside. */
 WORD getbchar(void);
 /* ted.s:3865 getbchar2: second entry without the block end check */

@@ -551,7 +551,7 @@ TEST_CASE("blokfix and blokfixb", "[lineedit][blocks]")
     blokfixb();
     CHECK(bbotx == 127);
     CHECK(bboty == 1);
-    // BUG(orig) I.1: multi-line block, bbotx >= chcols stays
+    // BUG(orig) (#349) I.1: multi-line block, bbotx >= chcols stays
     block(0, 0, 1, 200);
     blokfixb();
     CHECK(bbotx == 200);

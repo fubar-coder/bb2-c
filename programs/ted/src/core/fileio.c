@@ -35,7 +35,7 @@ ULONG divu_w(ULONG d0, UWORD src)
     int i;
 
     if (src == 0) {
-        /* 68000: zero divide trap (guru 5).  BUG(orig) (tabstop = 0,
+        /* 68000: zero divide trap (guru 5).  BUG(orig) (#385) (tabstop = 0,
            decision O3); host-test-only guard: */
         ORIG_HAZARD("divu by 0 (68000 zero divide trap)");
         fprintf(stderr, "ted core: divu by zero (e.g. tabstop = 0) - the "
@@ -213,12 +213,12 @@ WORD doread(void)
    asm: d0 = -1/N=1 no line to read, d0 = 0/Z=1 no eol, d0 = 1 normal;
    length (incl. the 0 byte) in d5.
    BUG(orig) (survey-04 I.1-7, kept): the last line without LF and lines
-   cut at the buffer end are never tokenised (d4 is only set for LF);
+   cut at the buffer end are never tokenised (d4 is only set for LF; #376, #375);
    bytes >= $80 are token pairs even in text files (the next byte is taken
-   unchecked, also LF/0/TAB); a token byte right before EOF leaves a
-   half token in front of the 0; TAB is expanded before the overflow test
-   (may write up to tabstop-1 bytes beyond charbuff3); tabstop = 0 is a
-   zero divide; token pairs count as 2 columns for TAB; CR stays. */
+   unchecked, also LF/0/TAB; #374); a token byte right before EOF leaves a
+   half token in front of the 0 (#379); TAB is expanded before the overflow test
+   (may write up to tabstop-1 bytes beyond charbuff3; #378); tabstop = 0 is a
+   zero divide (#385); TAB counts token pairs as 2 columns (#377); CR stays. */
 int readline(UWORD *d5)
 {
     UBYTE *a0;
@@ -316,7 +316,7 @@ struct item *allocline(UWORD d5)
     /* move.l d5,d0 / add.w #lenitem,d0 */
     a0 = alloc2((UWORD)(d5 + lenitem), TED_MEMF_PUBLIC);
     a0->nextitem = NULL;
-    /* BUG(orig): lastitem stays uninitialised (survey-04 I.13); the
+    /* lastitem stays uninitialised (survey-04 I.13; no defect): the
        callers set it (fileopen explicitly, linka0) */
     a0->numchars = (UBYTE)d5;
     a1 = charbuff2;
@@ -403,7 +403,7 @@ const char *findtoke(UWORD d0)
     d0 &= 0x7FFF;                               /* bclr #15,d0 */
 #ifdef TED_HOST
     if (!a3) {
-        /* host-test-only guard.  BUG(orig): with tokens == 0 (standalone
+        /* host-test-only guard.  BUG(orig) (#359): with tokens == 0 (standalone
            TED loading a tokenised file) the asm walks a "node" at address
            0: compares the word at 4, follows the long at 0 and may return
            the "name" at address 6.  The Amiga build does exactly that (the
@@ -524,7 +524,7 @@ void freeupa5(struct item *a5)
     UWORD d0;
 
     if (numlines == 1) {
-        /* .freeonly: BUG(orig) (survey-04 I.11): if allocnull fails,
+        /* .freeonly: BUG(orig) (#361) (survey-04 I.11): if allocnull fails,
            first/end/thisitem keep pointing at the freed line */
         afirst2();
     } else {
@@ -535,7 +535,7 @@ void freeupa5(struct item *a5)
             /* .first */
             firstitem = d1;
 #ifdef TED_HOST
-            /* host-test-only guard.  BUG(orig): with an inconsistent list
+            /* host-test-only guard (no known path): with an inconsistent list
                (numlines > 1 but a single line) the asm clears the long at
                address 4 (`clr.l lastitem(a0)`, a0 = 0); the Amiga build
                does the same. */
@@ -590,7 +590,7 @@ struct item *makefirst(struct item *a4)
 }
 
 /* ted.s:3803 makeline - make charbuff current line (this item - a4, len
-   in d5).  BUG(orig) (survey-04 I.12): freethis frees THISITEM, not a4. */
+   in d5).  survey-04 I.12: freethis frees THISITEM (all callers: a4 == thisitem). */
 struct item *makeline(struct item *a4, UWORD d5)
 {
     struct item *a0, *d1;
@@ -723,7 +723,7 @@ WORD getbchar2(void)
     if ((UBYTE)bc.d5 >= bc.a5->numchars)        /* cmp.b numchars(a5),d5 */
         goto space;
     /* move.b chars-1(a5,d5),d0 sets N for bytes >= $80: the callers see the
-       end of the block (bmi) - BUG(orig) survey-04 I.9, kept as a negative
+       end of the block (bmi) - BUG(orig) (#362) survey-04 I.9, kept as a negative
        return value */
     return (WORD)(BYTE)bc.a5->chars[bc.d5 - 1];
 

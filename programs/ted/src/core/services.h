@@ -63,7 +63,7 @@ void remember2(struct item *a0);
 void mforget2(void);
 
 /* ted.s:2990 a0toname: split a0 (maybe in "...") into filepath/filename.
-   BUG(orig): compares d0 (the caller's register at .tomain - blitz2: the
+   BUG(orig) (#340): compares d0 (the caller's register at .tomain - blitz2: the
    LoadSeg result) instead of the copied character (survey-03 I.1), so d0
    is a parameter. */
 void a0toname(const UBYTE *a0, ULONG d0);

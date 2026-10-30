@@ -80,7 +80,7 @@ __asm__(
 
 /* -------------------------------------------- outmem, memstack == 0 */
 
-/* NORETURN void memcont_nostack(void) - see glue.h.  BUG(orig) (O1,
+/* NORETURN void memcont_nostack(void) - see glue.h.  BUG(orig) (#370) (O1,
    survey-03 I.6): before the first dispatch of mainedit memstack is 0;
    the asm continues memcont with a7 = 0.  Reproduced instruction by
    instruction; only the called routines are the C versions (their own

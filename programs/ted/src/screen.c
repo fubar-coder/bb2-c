@@ -200,12 +200,12 @@ void calcscreen(void)
     edrows = d0;
     d0 = (UWORD)((ULONG)d0 * fonthite);         /* mulu (low word) */
     pixrows = d0;
-    /* BUG(orig): subtracted were topskip + botskip (20), added back are
+    /* BUG(orig) (#351): subtracted were topskip + botskip (20), added back are
        fonthite + botskip + 1 + topskip (edrows = quotient - 1): if
        Height - 20 is a multiple of fonthite, the screen is one row taller
        than the Workbench.  OS 3.2 opens it with the Workbench height, the
        main window (topskip + newwindow.Height) no longer fits, OpenWindow
-       fails and screenopen's error path crashes (cfail, BUG(orig)
+       fails and screenopen's error path crashes (cfail, BUG(orig) #351, #382,
        survey-05 I.1).  Seen with fonthite 6 on a 512 row Workbench: 513
        rows (TED A/B 23-font6, original and TED-C, confirmed in Amiberry
        28.10.2026). */
@@ -324,7 +324,7 @@ wfail:
     freechmap();
 cfail:
     {
-        /* BUG(orig) (survey-05 I.1, decision O2: reproduced): a6 is
+        /* BUG(orig) (#382) (survey-05 I.1, decision O2: reproduced): a6 is
            ExecBase here (AllocMem / freechmap), so `jsr closescreen(a6)`
            calls exec's LVO -66 (Exception) with a0 = myscreen instead of
            CloseScreen. */
@@ -340,8 +340,8 @@ sfail:
 }
 
 /* ted.s:4823 makecop - make fancy copper list (colour gradient of pen 2
-   in the title bar).  BUG(orig) survey-05 I.3: AllocMem unchecked, the
-   end CWait has no CBump. */
+   in the title bar).  BUG(orig) (#366) survey-05 I.3: AllocMem unchecked; the
+   end CWait has no CBump (harmless, MrgCop ends the list). */
 void makecop(void)
 {
     struct UCopList *d7;

@@ -233,13 +233,13 @@ static struct DosLibrary *dosopen(void)
 
 /* wbheader:88 wb_exit: reply the Workbench message (if any).  Returns
    d0 = wbmess (Z=1 if 0 - which the external caller reads as success,
-   BUG(orig) survey-01 I.1). */
+   BUG(orig) #357, survey-01 I.1). */
 static APTR wb_exit(void)
 {
     if (wbmess) {
         Forbid();
         ReplyMsg((struct Message *)wbmess);
-        Permit();
+        Permit();                   /* BUG(orig) (#387): before TED has returned */
     }
     return wbmess;
 }
@@ -287,14 +287,14 @@ void edstart_c(struct m68kregs *r)
     d7 = Open((CONST_STRPTR)progfile, MODE_OLDFILE);
     if (!d7)
         goto openfailed;
-    /* BUG(orig): a short Read leaves the file open, and progfile keeps
+    /* BUG(orig) (#388, #389): a short Read leaves the file open, and progfile keeps
        the bytes read / the ".info" name (cleared only on success) */
     if (Read(d7, progfile, 0x4e) != 0x4e)
         goto openfailed;
     Close(d7);
     progfile[0] = 0;
     /* +$4A is do_ToolWindow (do_StackSize is at +$4E, behind the 78
-       bytes read) - BUG(orig), without effect: d2 is never used */
+       bytes read) - without effect: d2 is never used */
     memcpy(&d2, progfile + 0x4a, 4);
     if (!d2)
         goto openfailed;
@@ -341,7 +341,7 @@ wb_allgo:
 
 /* outside and outside.tomain share the init/teardown chain (one asm
    routine with two entry points): `tomain` = entered at .tomain with
-   a0 = file name, d0 = the caller's d0 (a0toname reads it, BUG(orig)). */
+   a0 = file name, d0 = the caller's d0 (a0toname reads it, BUG(orig) #340). */
 static void outside_run(struct m68kregs *r, BOOL tomain)
 {
     struct edstruct *a1;
@@ -460,14 +460,14 @@ fail2:
     /* ted.s:131 fail2 */
     CloseLibrary((struct Library *)DOSBase);
     /* ted.s:132 fail1: d0 = ext.l returncode - overwritten by wb_exit
-       (BUG(orig): the return code is never delivered, survey-01 I.1) */
+       (BUG(orig) #357: the return code is never delivered, survey-01 I.1) */
     r->d[0] = (ULONG)(LONG)returncode;
     r->d[0] = (ULONG)wb_exit();
 }
 
 /* ted.s:24 outside, C part: r->a[1] = edstruct or 0.  External: sets
    r->a[0] = tomain_stub, r->a[1] = comdata, r->d[0] = 0 (Z=1 - also
-   after a failure, BUG(orig) survey-01 I.1).  Standalone: runs the whole
+   after a failure, BUG(orig) #357, survey-01 I.1).  Standalone: runs the whole
    editor (.edmain -> .tomain) and returns. */
 void outside_c(struct m68kregs *r)
 {
@@ -545,7 +545,7 @@ void mouseinit(void)
     ULONG *a0, *a1;
     WORD d0;
 
-    /* get chip mem!  BUG(orig): not checked (copy to 0, survey-01 I.5) */
+    /* get chip mem!  BUG(orig) (#367): not checked (copy to 0, survey-01 I.5) */
     a0 = AllocMem(FINISHLEN, MEMF_CHIP);
     pointerat = (UWORD *)a0;
     dumat = (UWORD *)((UBYTE *)a0 + POINTERLEN);        /* dumsleep - pointer */
@@ -745,7 +745,7 @@ void defaults(void)
             defaultreqla48[1] = 0;
             d0 = (UWORD)-1;
         }
-        /* .sskip2 - BUG(orig): no lower bound, tabstop 0 is accepted
+        /* .sskip2 - BUG(orig) (#385): no lower bound, tabstop 0 is accepted
            (divu by 0 in readline, survey-01 I.12) */
         if ((ULONG)int3 >= 80) {
             int3 = 0;
@@ -792,7 +792,7 @@ void defaults(void)
     if (bak->d_fonthite != fonthite) {
         struct item *a0 = thisitem;
 
-        /* BUG(orig): limited with the OLD edrows, before the screen is
+        /* BUG(orig) (#352): limited with the OLD edrows, before the screen is
            reopened with the new font (survey-01 I.13) */
         d0 = cursy;
         while (!(d0 < edrows)) {        /* .loopy, bcs */

@@ -65,7 +65,7 @@ NORETURN void memcont_nostack(void);
 extern void outside_stub(void);
 /* ted.s:24 outside, C part (src/main.c): r->a[1] = edstruct or 0.
    External: sets r->a[0] = tomain_stub, r->a[1] = comdata, r->d[0] = 0
-   (Z=1 - also after a failure, BUG(orig) survey-01 I.1).  Standalone:
+   (Z=1 - also after a failure, BUG(orig) #357, survey-01 I.1).  Standalone:
    runs the whole editor (.edmain -> .tomain) and returns. */
 void outside_c(struct m68kregs *r);
 /* ted.s:87 outside.tomain: blitz2's second call, a0 = file name.  C part:
@@ -96,7 +96,7 @@ extern void screenclose_stub(void), screenopen2_stub(void), openreq_stub(void),
 /* ted.s:1542 extmenu: jsr (menurout) with d6.w = item, a5 = firstitem,
    d7.w = numlines (a4 = thisitem as in the asm); returns d0.w (-1 nothing,
    -2 showall, else a line).  May not return at all: blitz2's menu can call
-   extalloc -> outmem (longjmp over blitz2's frames, BUG(orig)). */
+   extalloc -> outmem (longjmp over blitz2's frames, BUG(orig) #369). */
 WORD call_menurout(UWORD d6);
 /* ted.s:2771 doclean: jsr (cleanup), all registers saved */
 void call_cleanup(void);

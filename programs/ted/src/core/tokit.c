@@ -24,7 +24,7 @@
    both `bra enddo` (ted.s line 4190: clr.b (a1)+, d5 = a1 - start).
    Here: goto enddo.  Reads beyond d1 while matching a token name and for
    the character behind it (no length check; in a chmap row that is the
-   next row - BUG(orig) survey-05 A/I.10). */
+   next row - BUG(orig) #386, survey-05 A/I.10). */
 static UWORD tokskip(UBYTE *a1, const UBYTE *a2, WORD d1, UBYTE **a1end)
 {
     UBYTE *const start = a1;                    /* (a7) for enddo */
@@ -94,7 +94,7 @@ tsttoke:
     a3 = tokens;
 #ifdef TED_HOST
     if (!a3) {
-        /* host-test-only guard.  BUG(orig) (survey-05 I.10): with tokens
+        /* host-test-only guard.  BUG(orig) (#359) (survey-05 I.10): with tokens
            == 0 the asm walks a "node" at address 0 (name at 6, num at 4,
            next at 0); the Amiga build does the same through a3 = 0.  The
            host cannot read address 0: no token matches. */
@@ -272,7 +272,7 @@ struct item *allocnull(void)
 
 /* ted.s:4560 donew - erase all.  The comment "return z=1 (beq) if a
    problem" is wrong: d0 = -1 always, allocnull failing is ignored
-   (BUG(orig) survey-05 I.6). */
+   (BUG(orig) #356, survey-05 I.6). */
 void donew(void)
 {
     color = normcol;
@@ -304,7 +304,7 @@ void freethis(void)
     if (*p == label)
         mforget2();
     /* .skip: moveq #lenitem,d0 / add.b numchars(a1),d0 - BYTE add:
-       wrong FreeMem size for numchars >= 247 (BUG(orig) survey-05 I.5;
+       wrong FreeMem size for numchars >= 247 (survey-05 I.5, unreachable: numchars <= 130;
        the host's ted_free reports it) */
     d0 = (UBYTE)(lenitem + a1->numchars);
     memalt = d0;
@@ -323,7 +323,7 @@ void freeall(void)
         a1 = a2;
 #ifdef TED_HOST
         if (!a1) {
-            /* host-test-only guard.  BUG(orig): with numlines > list
+            /* host-test-only guard (unreachable): with numlines > list
                length (numlines == 0: 65536 rounds) the asm reads the
                "item" at address 0 and calls FreeMem(0, ...) - the Amiga
                build does the same through a1 = 0; the host stops. */
@@ -395,7 +395,7 @@ void chmap_scrollup(UWORD row)
    `row` filled with spaces.  BLTSIZE d6 << 6 | chcols/2 without `and #63`
    copies one row more for even d6 (survey-05 I.4): that extra row lands
    on row `row` (erased right after) and is read from the row before -
-   before chmap for row 0 (BUG(orig), reproduced; the host build stops
+   before chmap for row 0 (reproduced, no visible effect; the host build stops
    there, host-test-only guard). */
 void chmap_scrolldown(UWORD row)
 {
@@ -413,7 +413,7 @@ void chmap_scrolldown(UWORD row)
         while (n--) {
 #ifdef TED_HOST
             /* host-test-only guard: the Amiga build reads the bytes in
-               front of chmap like the blit (BUG(orig), written to row
+               front of chmap like the blit (as the original, written to row
                `row`, which eraseline clears right after) */
             if (s < chmap) {
                 ORIG_HAZARD("scrolldown: blit reads before chmap");

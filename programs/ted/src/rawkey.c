@@ -25,7 +25,7 @@ static UBYTE rawed_buf[2];
    convert writes ie_Code (+6) and ie_Qualifier (+8) only */
 static struct InputEvent rawed_ie = { NULL, IECLASS_RAWKEY };
 /* L5/L6 (+$38/+$A1): rawkeys $00-$68 converted without/with qualifier 1
-   (left shift).  BUG(orig): built by init, never read (neither by rawed
+   (left shift).  Built by init, never read (neither by rawed
    nor by ted.s) - kept for the same side effects (210 RawKeyConvert
    calls, decision O5). */
 static UBYTE rawed_tab1[105], rawed_tab2[105];
@@ -52,10 +52,10 @@ void rawed_init(void)
     a0->lh_Head = (struct Node *)&a0->lh_Tail;
     a3->mp_Node.ln_Type = NT_MSGPORT;                   /* 4 */
     a3->mp_SigTask = FindTask(NULL);
-    /* BUG(orig): the signal is never freed (finit does not) */
+    /* the signal is never freed (finit does not; ends with the process) */
     a3->mp_SigBit = (UBYTE)AllocSignal(-1);
     a2->io_Message.mn_ReplyPort = a3;
-    /* BUG(orig): result not checked - a failure leaves ConsoleDevice = 0
+    /* BUG(orig) (#373): result not checked - a failure leaves ConsoleDevice = 0
        and convert calls through a NULL base */
     OpenDevice((CONST_STRPTR)rawed_devname, (ULONG)-1, (struct IORequest *)a2, 0);
     ConsoleDevice = a2->io_Device;

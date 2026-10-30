@@ -81,7 +81,7 @@ TEST_CASE("block marks: blockstart, blockend", "[services][blocks]")
     CHECK(bbotx == 5);
     CHECK(bboty == 2);
 
-    // start = end: blokdis, btopx keeps the undefined d0 (BUG(orig))
+    // start = end: blokdis, btopx keeps the undefined d0 (no effect)
     blockstart();
     blockend();
     CHECK(bboty == static_cast<UWORD>(-1));

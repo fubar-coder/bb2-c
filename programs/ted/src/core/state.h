@@ -13,7 +13,7 @@
  * both fields explicitly (PLAN.md 1.2).  The asm abuses bloktopx(+y) as a
  * long pointer (blokload 1754/1793) and as a 1 byte write buffer
  * (bloksave 1694): use locals and keep the side effect on bloktopx/bloktopy
- * where it is observable (BUG(orig) comment).
+ * where it is observable (no defect: only read during a drag).
  *
  * Globals that only the Amiga side needs and that have AmigaOS types
  * (mywindow, myrast, myscreen, the comdata table ...) are NOT here: see
@@ -155,8 +155,8 @@ extern UWORD blokop;            /* 6152 block operation running (getbchar) */
 /* 6154 mywindow, 6155 myrast: src/input.h (AmigaOS types) */
 
 /* one AllocMem in outside (ted.s:41): doslen + 3*(chcols+2) bytes,
-   dosbuff first; charbuff4 = END of the allocation (0 bytes, BUG(orig)
-   trap, survey-01 I.9).  The host allocates the same contiguous block. */
+   dosbuff first; charbuff4 = END of the allocation (0 bytes, never
+   used for data, survey-01 I.9).  The host allocates the same contiguous block. */
 extern UBYTE *charbuff;         /* 6157 dosbuff + doslen */
 extern UBYTE *charbuff2;        /* 6158 charbuff + chcols + 2 */
 extern UBYTE *charbuff3;        /* 6159 charbuff2 + chcols + 2 */

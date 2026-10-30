@@ -38,7 +38,7 @@ void setdefs(struct defblock *a5)
     defaultreqga7.Flags &= 0xFFFF - 0x80;
     if (a5->d_fonthite == 6)
         defaultreqga7.Flags |= 0x80;
-    /* .skip - BUG(orig) survey-04 I.17: lsl #7 of the raw word (values
+    /* .skip - BUG(orig) (#383) survey-04 I.17: lsl #7 of the raw word (values
        other than 0/1 set foreign flag bits) */
     defaultreqga8.Flags &= 0xFFFF - 0x80;
     defaultreqga8.Flags |= (UWORD)(a5->d_tokenise << 7);
@@ -88,8 +88,8 @@ void setprops(UWORD d0)
 /* ted.s:3189 dispprops */
 void dispprops(void)
 {
-    /* BUG(orig) survey-04 I.16: defaultreq as requester argument although
-       the gadgets live in a window */
+    /* survey-04 I.16: defaultreq as requester argument although
+       the gadgets live in a window (no misbehaviour known) */
     RefreshGList(&defaultreqga1, req_window, &defaultreq, 3);
 }
 
@@ -128,7 +128,7 @@ static void swappens(struct Border *b)
 void swapd0bord(UWORD d0)
 {
     if (d0 >= 16) {
-        /* BUG(orig): a value >= 16 from a damaged options file - the asm
+        /* BUG(orig) (#384): a value >= 16 from a damaged options file - the asm
            swaps the bytes 4/5 at bo14 + (d0 * 56).w and at that +
            (la63 - bo14) = +28, i.e. behind the button borders.  Done the
            same way here, with the original strides relative to
@@ -254,7 +254,7 @@ UBYTE *ezfreq(char *a0, char *a1, const char *a2)
    couldn't open it" is wrong: OpenWindow failing -> outmem (survey-04
    I.14).  The gadgets are moved by +6/+12 once, marked in the high word
    of UserData of the first gadget - permanently, also for blitz2's own
-   requesters (decision O6, BUG(orig) survey-04 I.15).  A requester
+   requesters (decision O6, survey-04 I.15).  A requester
    without gadgets reads address 40 (I.14). */
 void openreq(struct Requester *a0)
 {

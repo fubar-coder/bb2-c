@@ -21,7 +21,7 @@ void escape(void)
         return;                                 /* asm: addq #4,a7 in erase */
     a1 = menu2.NextMenu;                        /* move.l menu2(pc),d0 */
     if (a1) {
-        /* free up external menus.  BUG(orig) survey-02 I.7: the strip is
+        /* free up external menus.  survey-02 I.7 (no effect): the strip is
            still attached (no ClearMenuStrip), menu2.NextMenu is not
            cleared; a COMPILER menu without items still has FirstItem =
            &menu2item1 (copied by getstuff) - FreeMem on program data. */
@@ -67,7 +67,7 @@ void gadget(void)
 
     if (edrows >= numlines)                     /* bcs .skip */
         return;
-    /* BUG(orig) survey-02 G: bloktopx is the scratch word of the loop */
+    /* survey-02 G: bloktopx is the scratch word of the loop (harmless) */
     bloktopx = (WORD)(curstop + cursy);
     cursor();
     do {
@@ -98,7 +98,7 @@ void extmenu(UWORD d6)
     if (!menurout)
         return;                                 /* .skip */
     /* lsr #4,d6; a5 = firstitem, d7 = numlines (glue.c).  blitz2 may call
-       extalloc -> outmem: longjmp over its frames (BUG(orig)). */
+       extalloc -> outmem: longjmp over its frames (BUG(orig) #369). */
     d0 = call_menurout((UWORD)(d6 >> 4));
     showme();
     /* move.l thisitem,a4: gotolined0 starts from thisitem */
@@ -107,7 +107,7 @@ void extmenu(UWORD d6)
         return;
     }
     if (d0 != -1)
-        gotolined0((UWORD)d0);                  /* BUG(orig) I.13: no range check */
+        gotolined0((UWORD)d0);                  /* I.13: no range check (a text line) */
 }
 
 /* ted.s:1565 menu - menu number in d6 */

@@ -24,7 +24,7 @@ BOOL inblokf(void);
 /* ted.s:5384 blokfix: btopx >= chcols -> next line; may end in blokdis;
    continues in blokfixb */
 void blokfix(void);
-/* ted.s:5393 blokfixb: second entry (blokfix, char127).  BUG(orig): for a
+/* ted.s:5393 blokfixb: second entry (blokfix, char127).  BUG(orig) (#349): for a
    multi-line block compares btopy instead of bbotx with chcols
    (survey-06 I.1). */
 void blokfixb(void);

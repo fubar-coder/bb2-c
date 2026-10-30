@@ -191,7 +191,7 @@ TEST_CASE("blocktab and blockuntab", "[search][blocks]")
     bboty = 2;
     blocktab();
     CHECK(text(nth(0)) == "  a");
-    // BUG(orig): the 0 byte of the copied ASCII line stays in the chmap
+    // BUG(orig) (#347): the 0 byte of the copied ASCII line stays in the chmap
     // style buffer - every tabbed line gets one more 0 byte
     CHECK(nth(0)->numchars == 5);
     CHECK(text(nth(1)) == "      b");
@@ -201,7 +201,7 @@ TEST_CASE("blocktab and blockuntab", "[search][blocks]")
     list(l);
     bboty = 3;
     blockuntab();
-    // line shorter than tabstop: everything becomes spaces (BUG(orig))
+    // line shorter than tabstop: everything becomes spaces (BUG(orig) #348)
     CHECK(text(nth(0)) == "");
     CHECK(nth(0)->numchars == 1);
     CHECK(text(nth(1)) == "  b");

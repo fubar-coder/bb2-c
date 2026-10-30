@@ -42,7 +42,7 @@ static UWORD lineno(void)
 }
 
 /* moveq #0,d1 / move d0,d1 / divu tabstop,d1 / swap d1: remainder of the
-   32/16 division (the quotient always fits: d0 < 32768).  BUG(orig)
+   32/16 division (the quotient always fits: d0 < 32768).  BUG(orig) (#385)
    (open point O3): tabstop = 0 from l:blitzeditor.opts is a division by
    zero - divu_w is the real DIVU.W on the Amiga (zero divide trap like the
    original); the host aborts. */
@@ -111,7 +111,7 @@ void blokfixb(void)
             return;
         }
     }
-    /* .ok4  BUG(orig): for a multi-line block d2 is still btopy (not
+    /* .ok4  BUG(orig) (#349): for a multi-line block d2 is still btopy (not
        bbotx): bbotx >= chcols stays uncorrected, and a block starting at
        line >= chcols gets bbotx = chcols-1 (survey-06 I.1) */
     if (d2 < chcols)                    /* bcs .ok3 */
@@ -244,7 +244,7 @@ void gl_char127(UBYTE d7)
             d2 = (UWORD)(bbotx + 1);
             if (d2 < chcols)            /* bcc .skipmo */
                 bbotx--;
-            blokfixb();                 /* .skipmo; BUG(orig)-like: only
+            blokfixb();                 /* .skipmo; harmless: only
                                            after inblokf (survey-06 I.14) */
         }
     }

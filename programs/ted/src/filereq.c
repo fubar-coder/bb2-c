@@ -20,7 +20,7 @@
 
 /* ted.s:7953 flink - DIFF: not needed.  The original adds the load address
    of the embedded hunk to its 312 RELOC32 longs at every outside (no cache
-   flush; a second run would relocate twice, BUG(orig) survey-07 I.4).  The
+   flush; a second run would relocate twice, original bug #360, survey-07 I.4).  The
    C requester is ordinary code and data: LoadSeg relocates it.  Row in
    docs/ted/deviations.md (category T). */
 
