@@ -145,18 +145,18 @@ void domaxlen(UWORD c)
     struct var *v;
     struct type *t;
     WORD off;
-    UWORD d2, type;
+    UWORD vtype, type;
     WORD vm;
 
     c = getvname(c);
     v = fetchvar(VNAMELEN(), &t, &c);
-    d2 = calcvar(&v, &t, &c, &off);
-    if ((d2 & 0xff) != T_STRING)
+    vtype = calcvar(&v, &t, &c, &off);
+    if ((vtype & 0xff) != T_STRING)
         mismatcherr();
     vm = varmode;
     if (c != '=')
         syntaxerr();
-    if (!(d2 & TF_ADDRINA2)) {
+    if (!(vtype & TF_ADDRINA2)) {
         pokewda5s(maxprep1[0]);                 /* lea d3(a5|a4),a2 */
         pokewd((UWORD)off);
     }
@@ -174,8 +174,8 @@ UBYTE *getmaxel(UWORD c)
 {
     struct blitzlib *lib;
     UBYTE *e;
-    UWORD type, d1;
-    WORD d2;
+    UWORD type, opcode;
+    WORD shifts;
 
     if (!(c & 0x8000))
         syntaxerr();
@@ -193,27 +193,27 @@ UBYTE *getmaxel(UWORD c)
         pokel(tl(maxchk));                      /* bcs */
         tokejsr(maxerr);
     }
-    d2 = *(WORD *)(e - 2);                      /* .pen: # shifts */
+    shifts = *(WORD *)(e - 2);                  /* .pen: # shifts */
     for (;;) {                                  /* .loop */
-        d1 = regat | lslimm[0];
-        if ((UWORD)d2 < 8) {                    /* .under */
-            pokewd(d1 | (d2 << 9));
+        opcode = regat | lslimm[0];
+        if ((UWORD)shifts < 8) {                /* .under */
+            pokewd(opcode | (shifts << 9));
             break;
         }
-        pokewd(d1);
-        d2 -= 8;
-        if (!d2)
+        pokewd(opcode);
+        shifts -= 8;
+        if (!shifts)
             break;
     }
     return e;
 }
 
 /* blitz2.s:12262 maxjsr - asm: Z flag of the caller's move.l d1 */
-static void maxjsr(ULONG d1)
+static void maxjsr(ULONG sub)
 {
-    if (!d1)
+    if (!sub)
         nosuperr();
-    makelibsub(mymaxlib, d1);
+    makelibsub(mymaxlib, sub);
 }
 
 /* blitz2.s:12253 dofree */
@@ -250,17 +250,17 @@ void doelse2(UWORD c)
 /* blitz2.s:12280 doelse */
 void doelse(UWORD c)
 {
-    struct ifnode *a0 = firstif;
+    struct ifnode *ifn = firstif;
 
-    if (!a0)
+    if (!ifn)
         noiferr();
-    if ((a0->kind & 0xff) == IFK_WHILE)
+    if ((ifn->kind & 0xff) == IFK_WHILE)
         illelseerr();
     /* DIFF: the asm poked $6000 in the high word and whatever d1's high
        word was in the low word (a placeholder, patched by EndIf) */
     pokel(0x60000000);
-    doendif2(a0, 0);
-    a0->brapc = pc;
+    doendif2(ifn, 0);
+    ifn->brapc = pc;
     dothen(c);
 }
 
@@ -287,20 +287,20 @@ void docnif(UWORD c)
    *c in: first char, out: next char.  Returns the cifbras index. */
 static UWORD collif(UWORD *c)
 {
-    UWORD c1 = *c, c2, d1;
+    UWORD c1 = *c, c2, cond;
 
     if (!ifchar(&c1))
         syntaxerr();
-    d1 = c1;
+    cond = c1;
     c2 = getchar3();
     *c = c2;
     if (ifchar(&c2)) {
-        d1 += 3 * (c2 + 1);
-        if ((d1 & 3) == 3)
+        cond += 3 * (c2 + 1);
+        if ((cond & 3) == 3)
             syntaxerr();
         *c = getchar3();
     }
-    return d1;
+    return cond;
 }
 
 /* blitz2.s:12306 docsif */
@@ -316,10 +316,10 @@ void docsif(UWORD c)
 }
 
 /* blitz2.s:12339/12340 cifdont / cifdo */
-static void cifdo(WORD d1)
+static void cifdo(WORD flag)
 {
     *concomsp++ = comflag;
-    comflag = d1;
+    comflag = flag;
     if (!eos(getchar3()))
         syntaxerr();
     bakup();
@@ -383,27 +383,27 @@ void doread(UWORD c)
     struct var *v;
     struct type *t;
     WORD off;
-    UWORD d2, t8;
-    UWORD *a0, *a1;
+    UWORD vtype, basetype;
+    UWORD *code, *codef;
 
     uselib(64535);
     for (;;) {                                  /* .loop */
         pokel(tl(dataget));
         c = getvname(c);
         v = fetchvar(VNAMELEN(), &t, &c);
-        d2 = calcvar(&v, &t, &c, &off);
-        if (d2 & TF_POINTER)
-            d2 = (d2 & 0xff00) | T_ADDR;        /* pointer becomes an address! */
-        if (!(d2 & 0xff))
+        vtype = calcvar(&v, &t, &c, &off);
+        if (vtype & TF_POINTER)
+            vtype = (vtype & 0xff00) | T_ADDR;  /* pointer becomes an address! */
+        if (!(vtype & 0xff))
             noleterr();                         /* read in a whole struct....later! */
         if (debugga) {
-            pokewd(0x7000 | (d2 & 15));         /* moveq #type,d0 */
+            pokewd(0x7000 | (vtype & 15));      /* moveq #type,d0 */
             tokejsr(datachk);
         }
-        t8 = d2 & 0xff;                         /* .norerr */
-        if (t8 == T_STRING) {                   /* .string */
+        basetype = vtype & 0xff;                /* .norerr */
+        if (basetype == T_STRING) {             /* .string */
             pokewd(stlenget[0]);                /* move.l (a3)+,-(a7) */
-            if (!(d2 & TF_ADDRINA2)) {
+            if (!(vtype & TF_ADDRINA2)) {
                 if (varmode) {
                     leaampl[1] = (UWORD)off;
                     pokel(tl(leaampl));
@@ -415,30 +415,30 @@ void doread(UWORD c)
             tokejsr(varmode ? astring - 1 : astring);   /* .ok */
             lasta6 = -1;
             pokecode(stalign, stalignf);
-        } else if (t8 == T_BYTE) {
-            if (d2 & TF_ADDRINA2) {
+        } else if (basetype == T_BYTE) {
+            if (vtype & TF_ADDRINA2) {
                 pokecode(dataletb2, dataletb2f);
             } else {                            /* .bimm */
-                a0 = dataletb;
-                a1 = dataletbf;
+                code = dataletb;
+                codef = dataletbf;
                 if (varmode) {
-                    a0 = dataletbl;
-                    a1 = dataletblf;
+                    code = dataletbl;
+                    codef = dataletblf;
                 }
-                a0[2] = (UWORD)off;             /* .byteglobal (patched in place) */
-                pokecode(a0, a1);
+                code[2] = (UWORD)off;           /* .byteglobal (patched in place) */
+                pokecode(code, codef);
             }
         } else {                                /* .notbyte */
-            a0 = dataletw;
-            if (t8 >= T_LONG)
-                a0 = dataletl;
-            if (d2 & TF_ADDRINA2) {             /* .word */
-                pokewd(a0[2]);
+            code = dataletw;
+            if (basetype >= T_LONG)
+                code = dataletl;
+            if (vtype & TF_ADDRINA2) {          /* .word */
+                pokewd(code[2]);
             } else {                            /* .imm */
                 if (varmode)
-                    a0 += 3;
-                a0[1] = (UWORD)off;             /* .wlglobal (patched in place) */
-                pokel(tl(a0));
+                    code += 3;
+                code[1] = (UWORD)off;           /* .wlglobal (patched in place) */
+                pokel(tl(code));
             }
         }
         pokel(tl(dataput));                     /* .next */
@@ -502,10 +502,10 @@ void dods(UWORD c)
 }
 
 /* blitz2.s:12540 insasm2 */
-static void insasm2(UWORD d3)
+static void insasm2(UWORD mode)
 {
     asmlen = asmlen2;
-    insasm(&dummyasm, pc, d3);
+    insasm(&dummyasm, pc, mode);
 }
 
 /* blitz2.s:12548 dodc
@@ -1000,8 +1000,8 @@ void doforever(UWORD c)
 void dountil(UWORD c)
 {
     struct ifnode *n;
-    ULONG a1;
-    LONG d2;
+    ULONG at;
+    LONG disp;
 
     if (!firstrep)
         unterr1();                              /* no repeat! */
@@ -1009,11 +1009,11 @@ void dountil(UWORD c)
     if (!eos(reget()))
         syntaxerr();
     if (!nomemleft) {
-        a1 = pc - 2;
-        d2 = firstrep->pc - a1;                 /* dest pc. */
-        if ((WORD)d2 >= 0)
+        at = pc - 2;
+        disp = firstrep->pc - at;               /* dest pc. */
+        if ((WORD)disp >= 0)
             unterr2();
-        W_(a1) = (UWORD)d2;                     /* put in bra dest. */
+        W_(at) = (UWORD)disp;                   /* put in bra dest. */
     }
     n = firstif;                                /* .skip */
     firstif = n->next;
