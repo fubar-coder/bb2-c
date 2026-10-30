@@ -1,0 +1,4 @@
+[run]
+2 points, at most 2 bytes set -1
+1 point, bytes set 0
+rc=0
