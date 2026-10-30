@@ -1143,13 +1143,13 @@ static WORD addd0a0(WORD off)
     if (off == 0)
         return off;
     if ((UWORD)off < 9) {
-        off = (off & 7) << 9;
-        *addqa0 = (*addqa0 & 0xf1ff) | off;
+        WORD quick = (off & 7) << 9;        /* addq data field (8 -> 0) */
+        *addqa0 = (*addqa0 & 0xf1ff) | quick;
         pokewd(*addqa0);
-    } else {
-        leaa0a0[1] = off;
-        pokel(TL(leaa0a0));
+        return quick;                       /* asm: d3 clobbered */
     }
+    leaa0a0[1] = off;
+    pokel(TL(leaa0a0));
     return off;
 }
 
@@ -1182,7 +1182,11 @@ static void makelmul(WORD off)
    d2 & ff=type. 0=struct address; bit 14 of d2=1 if result is a pointer */
 UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
 {
-    static UWORD listoff;                   /* .listoff dc 0 (data in code) */
+    /* .listoff dc 0 (data in code).  Kept static, not a local: it is set
+       before arreval, which recurses into calcvar for an array element in
+       the index expression and resets it there (as in the asm) - a local
+       would change the element size of a List array indexed that way. */
+    static UWORD listoff;
     struct var *v = *pv;
     struct type *t = *pt;
     UWORD ch = *pc0;
