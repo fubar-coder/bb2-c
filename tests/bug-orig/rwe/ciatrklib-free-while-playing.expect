@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+loaded -1
+playing before -1
+playing 0
+rc=0
