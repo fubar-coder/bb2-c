@@ -1,0 +1,23 @@
+; ted-tokit-reads-past-line (#386): the tokeniser compares keyword names
+; beyond the end of the line, into the next row of the character map.
+; Line 1 "ab", 122 blanks, "Pri" (127 characters), line 2 "nt".  A blank
+; typed at column 2 moves "Pri" to the columns 126-128; leaving the line
+; tokenises it from the character map; SAVE.  Correct: "Pri" stays text;
+; the original reads "nt" of the next row and saves the token Print.
+; @file bo.bas "ab                                                                                                                          Pri\nnt\n"
+; @source F bo.bas
+; @expect data bo.bas "a b                                                                                                                          Pri\x00nt\x00"
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+key 4e
+type " "
+key 4d
+dump after
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+menu 0 9
+wait exit
