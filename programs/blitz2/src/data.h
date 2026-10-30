@@ -42,7 +42,6 @@ extern struct label *lastrescon;        /* = (struct label *)&firstlabel */
 extern struct macro *lastresmac;        /* = (struct macro *)&firstmacro */
 extern struct type  *lastrestype;       /* = (struct type *)&firsttype (= &stringtype) */
 extern WORD  rescnt;                    /* 14679 # residents */
-extern WORD  reschg;                    /* 14680 residents changed (optreq) */
 extern struct resentry *resat;          /* 14681 top visible resident in optreq (=resbuff) */
 extern WORD  linedone;                  /* 14682 */
 extern ULONG dirpcat;                   /* 14683 direct mode pc */
@@ -74,7 +73,6 @@ extern struct type dummytype;           /* 14858 {0,0,0,len 1} */
 
 extern char  incdir[96];                /* 14862 INCDIR path */
 extern WORD  dirmode;                   /* 14865 direct mode flag */
-extern WORD  maxat;                     /* 14867 top row of Object Maximums (optreq) */
 extern ULONG maxsat;                    /* 14868 data1 info pos */
 extern WORD  nummaxs;                   /* 14869 # libs with an object maximum */
 extern WORD  maxsused;                  /* 14871 maximums used in prog */
@@ -250,18 +248,19 @@ void optreqprep(void);                  /* options.src: chip copy of arrow image
 void optreqdone(void);                  /* options.src: free it */
 
 extern UBYTE vers;                      /* 15343 .xtra version (asm word, used as byte) */
-extern WORD  allchg;                    /* 15341 buffer gadget 1..6 changed */
 
 /* 15345/15412: called by the editor through edstruct via loadxtra_stub /
    savextra_stub (glue.h): r->d[7] = file handle, r->a[6] = DOSBase.
    loadxtra_c and savextra_c are declared in glue.h. */
 void menu4(void);                       /* 15456 menu: compiler options */
 void menu4c(void);                      /* 15483 (menu4 fallthrough) */
-void optsdone(UWORD gadget);            /* 15592 gadget 17 ok / 18 -> menu0 / 19 -> menu1 */
+/* 15592 gadget 17 ok / 18 -> menu0 / 19 -> menu1; allchg/reschg: menu4c's
+   change flags (asm globals) */
+void optsdone(UWORD gadget, WORD allchg, WORD reschg);
 void menu4canc(void);                   /* 15612 restore snapshot */
 void newres(void);                      /* 15627 */
 void makeres(void);                     /* 15637 */
-void makemax(void);                     /* 15662 */
+void makemax(WORD maxat);               /* 15662 */
 /* 15713 which = index among libs with a max; writes name+'s' to label (not
    NUL terminated) and the max (makelong) to num */
 void maxit(WORD which, UBYTE *label, UBYTE *num);
@@ -271,7 +270,6 @@ void maxit(WORD which, UBYTE *label, UBYTE *num);
  * =================================================================== */
 
 extern struct Requester calcreq, argreq;
-extern ULONG calclibat;                 /* 15737 libat saved during calculator */
 void menu7(void);                       /* 15739 menu: calculator */
 extern UBYTE argreqla8[128];             /* 15966 CLI argument (saved in .xtra) */
 void menu9(void);                       /* 15979 menu: CLI argument */

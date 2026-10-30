@@ -29,7 +29,7 @@ struct macro *lastresmac  = (struct macro *)&firstmacro;   /* 14677 dc.l firstma
 struct type  *lastrestype = (struct type *)&stringtype;    /* 14678 dc.l firsttype
                                                 (the label sits on stringtype) */
 WORD  rescnt = 0;                       /* 14679 # resident */
-WORD  reschg = 0;                       /* 14680 flag for if res's have changed */
+/* 14680 reschg: local to menu4c */
 struct resentry *resat = resbuff;       /* 14681 */
 WORD  linedone = 0;                     /* 14682 */
 ULONG dirpcat = 0;                      /* 14683 */
@@ -59,7 +59,7 @@ struct type dummytype   = {NULL,         {0}, 0, 1};        /* 14858 */
 char  incdir[96];                       /* 14862 */
 WORD  dirmode = 0;                      /* 14865 direct mode flag */
 /* 14866 int: IntuitionBase, defined in main.c */
-WORD  maxat = 0;                        /* 14867 max at */
+/* 14867 maxat: local to menu4c */
 ULONG maxsat = 0;                       /* 14868 data1 info pos */
 WORD  nummaxs = 0;                      /* 14869 number of maximums in libs */
 WORD  maxsused = 0;                     /* 14871 maximums used in prog */
@@ -1395,7 +1395,7 @@ void typename(const char *name)
  * =================================================================== */
 
 UBYTE vers = 0;                         /* 15343 (asm dc, accessed as byte) */
-WORD  allchg = 0;                       /* 15341 */
+/* 15341 allchg: local to menu4c */
 
 /* 15290 optspnts - pointers to options involved in source dependant stuff.
    groups of {byte size, address list}. */
@@ -1531,14 +1531,14 @@ void menu4(void)
 void menu4c(void)
 {
     WORD gadget, maxnum;
+    WORD reschg = 0;                    /* 14680: resident change */
+    WORD allchg = 0;                    /* 15341: alloc change */
+    WORD maxat = 0;                     /* 14867: top row of the maximums */
     BOOL gad;
     struct blitzlib *l;
     struct StringInfo *sinfo;
 
-    reschg = 0;                         /* resident change */
-    allchg = 0;                         /* alloc change */
-    maxat = 0;
-    makemax();
+    makemax(maxat);
     makeres();
     ed_openreq(&optreq);
     for (;;) {
@@ -1555,7 +1555,7 @@ igot:
                 maxat--;
             else
                 maxat++;
-            makemax();                                  /* .newmax */
+            makemax(maxat);                             /* .newmax */
             ed_refgads(&optreqga7, 2);
             ed_refgads(&optreqga21, 2);
             ed_refgads(&optreqga25, 2);
@@ -1605,13 +1605,13 @@ igot:
             menu4canc();
             return;
         }
-        optsdone(gadget);
+        optsdone(gadget, allchg, reschg);
         return;
     }
 }
 
 /* blitz2.s:15592 optsdone */
-void optsdone(UWORD gadget)
+void optsdone(UWORD gadget, WORD allchg, WORD reschg)
 {
     if (allchg)
         makeiallox();
@@ -1656,7 +1656,7 @@ void makeres(void)
 }
 
 /* blitz2.s:15662 makemax - put from maxat into gadgets..... */
-void makemax(void)
+void makemax(WORD maxat)
 {
     WORD num;
 
@@ -1736,7 +1736,7 @@ void optreqdone(void)
  * Calculator (blitz2.s 15737-15893)
  * =================================================================== */
 
-ULONG calclibat = 0;                    /* 15737 */
+/* 15737 calclibat: local to menu7 */
 
 /* blitz2.s:15739 menu7 - calculator */
 void menu7(void)
@@ -1744,8 +1744,8 @@ void menu7(void)
     static struct Gadget *const basegads[3] = {&calcreqga2, &calcreqga3, &calcreqga4};
     jmp_buf jb, *volatile olderr;
     WORD gadget;
+    ULONG calclibat = libat;            /* 15737: libat before the expression */
 
-    calclibat = libat;
     olderr = errjmp;
     errjmp = &jb;
     calcreqla15[0] = 0;
