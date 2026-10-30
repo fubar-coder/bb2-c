@@ -79,7 +79,7 @@ latest date in the header comments.
 | CopperFX | 11 (bin.) | `Copperlib/CopperFX3` | RI | 1995-03-08 | **=** BSS2/AB3 (1856 B) | CopperFX3 |
 | DOS | 33 | `DOSLib/ridoslib`, `ridoslib2` | – | – | ridoslib2 **=** BSS2/AB3 (2416 B) | ridoslib2 |
 | Debug | 51 | `Debuglib/Debuglib4` | LES | 1995-02-27 | **=** OL `RIDEBUGLIB` (1380 B); BSS2's differs | Debuglib4 (BSS2: check) |
-| LES debug | 49 | `Debuglib/LESDEBUGlib`, `LESDebuglib/LESDEBUGlib` | – | 1996-09-17 / 1996-12-01 | the older **=** AB3 `RILESDEBUGLib` (11216 B); the newer ≈ 94 % | open (newer source than the binary) |
+| LES debug | 49 (`#riLESDEBUGlib`) | `Debuglib/LESDEBUGlib`, `LESDebuglib/LESDEBUGlib` | – | 1996-09-17 / 1996-12-01 | the older **=** AB3 `RILESDEBUGLib` (11216 B; the code is another version); the newer ≈ 94 %; BUM `RILESDEBUGLIB` older (26 commands) | LESDebuglib (reference build with the font cut from AB3's binary, ported 2026-10-30, `port/rilesdebuglib.md`) |
 | Disasm | 50 (bin.) | `Disasmlib/Disasm-library.bb2` | LES | 1994 | **=** AB3 `RIDisAsm` (9228 B) | Disasm-library |
 | Encrypt | 52 | `Encryptlib/Encrypt-Library` | RI (McNamara) | 1996-01-21 | **=** BSS2/AB3 (636 B); BUM/OL (680 B) same declarations | Encrypt-Library |
 | Eval | 121 (bin.; clash with acidlibs: variant `rwe-1999-eval`) | `EvalLib4` | RI | 1995-11-17 | ≈ 83 % BSS2 `RIEVALLIB` | BSS2 binary (ported 2026-10-30, `port/rievallib.md`) |
@@ -281,9 +281,9 @@ other versions (644/1296 bytes against 648/1276).
 **Not yet buildable** (38 sources) [B]: the library numbers above (15
 sources, 8 of them ptlib); the `BB22` files (blitz2 cannot read them,
 6); further includes (`registry.inc`, `bomberman:shapeoffsets.bb`,
-`Blitz2:Debugger/Font.bin`, `c2p`, `dt_table.bin`, `FNS:Personal.FNS`,
-9); programs, not libraries, with
-tokens of other libraries (`defaultdbug50`, `TrackerTest`,
+`Blitz2:Debugger/Font.bin` – since 2026-10-30 the font cut from AB3's
+binary –, `c2p`, `dt_table.bin`, `FNS:Personal.FNS`, 9); programs, not
+libraries, with tokens of other libraries (`defaultdbug50`, `TrackerTest`,
 `Comparison`, `Test`, `test2`, 5); single errors (`func-library4`,
 `MapEd_Bit`, `emptylib`). 68 sources compile but match no binary – as far as
 checked older or newer versions (`func-library7`: the binary has one
@@ -300,8 +300,8 @@ Linked list, ReqTools, DataTypes, ARexx, Shapes, Sort, Disasm) on
 2026-10-30, ptlib (Protracker, ptlib6) and the CIA tracker
 (CIATrackerLib1; both with the Protracker 2.3A play routine, ported on
 the basis of its release as "Public Domain", decision 2026-10-30;
-reference build) the same day. Open: LES debug (no `Font.bin`, no
-reference build).
+reference build) the same day, and LES debug (LESDebuglib; `Font.bin`
+cut from AmiBlitz3's binary, `archive/README.md`; reference build) too.
 
 **In the build** (2026-10-29; `libs/userlibs/rwe/refbuild.cmake`,
 `residents.cmake`, README "Userlibs", "Tests"): the reference build is
@@ -372,10 +372,16 @@ the binary's state first. Anim (changed 2026-10-29): `Anim-Library3`
 does not compile – its unfinished `RIDiskAnimInit` uses `diskanimflag`
 and `animfile`, defined nowhere ("Constant Not Found", line 153) – and
 without that command it is the BSS2 binary but for a padding word, so
-the BSS2 binary is the reference (`RWE_REFBUILD_SKIP`). LES debug has
-no reference build either (`Blitz2:Debugger/Font.bin` exists nowhere);
-not yet in `RWE_LIBS`. Also found: Pack-Library8_Mc is not identical
-to the OL binary (an older build with `$VER`); GTMenuLib3, datatypeslib6
+the BSS2 binary is the reference (`RWE_REFBUILD_SKIP`). LES debug
+(changed 2026-10-30): `Blitz2:Debugger/Font.bin` exists nowhere, but its
+2048 bytes are in the binaries (the same in BUM's and AB3's, at the
+IncBin's place); only these bytes are taken over
+(`libs/userlibs/rwe/rilesdebuglib-font.bin`, cut from AB3's GitHub
+binary, `archive/README.md`), the reference build stages them as
+`Font.bin`, and LESDebuglib's reference build is the reference. Neither source builds to a binary (the older one's build, a
+9524 byte file, equals neither BUM's 8476 nor AB3's 11632 bytes). Also
+found: Pack-Library8_Mc is not identical to the OL binary (an older
+build with `$VER`); GTMenuLib3, datatypeslib6
 and CIATrackerLib1 have the declarations of their binaries; the BB22
 files convert to TED's format and build (`versions/tools/bb22.py`, a
 throw-away converter: a C tool for it is still to do); the constants of
