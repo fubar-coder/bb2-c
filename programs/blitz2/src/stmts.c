@@ -788,41 +788,45 @@ char *makelong(char *buf, ULONG v)
 
 /* ============================================================ residents */
 
-/* writer state: asm d7 = file handle, d6 = offset from start of file */
-static BPTR resfh;
-static ULONG respos;
+/* writer state of one Make Resident (asm: d7 = file handle, d6 = offset
+   from start of file), on menu5's stack */
+struct reswriter {
+    BPTR fh;
+    ULONG pos;
+};
 
 /* blitz2.s:4241 resoff */
-static void resoff(void)
+static void resoff(struct reswriter *w)
 {
-    addoff2(respos);
+    addoff2(w->pos);
 }
 
 /* blitz2.s:4223 writeitem - a2 = item, d5 = offset of its length byte */
-static void writeitem(struct node *item, UWORD off)
+static void writeitem(struct reswriter *w, struct node *item, UWORD off)
 {
     ULONG len = ((ULONG)B_((UBYTE *)item + off) + 1) & ~1UL; /* word align */
     struct node *save = item->next;
 
     if (save) {
-        resoff();
-        item->next = (struct node *)(respos + len);
+        resoff(w);
+        item->next = (struct node *)(w->pos + len);
     }
-    respos += len;
-    Write(resfh, item, len);
+    w->pos += len;
+    Write(w->fh, item, len);
     item->next = save;
 }
 
 /* blitz2.s:4214 writelist - a2=first, d5=.b len offset (unused) */
-static void __attribute__((unused)) writelist(struct node *item, UWORD off)
+static void __attribute__((unused)) writelist(struct reswriter *w,
+                                             struct node *item, UWORD off)
 {
     for (; item; item = item->next)
-        writeitem(item, off);
+        writeitem(w, item, off);
 }
 
 /* blitz2.s:4244 writeoffs - write the offsets (NewType fields); the type
    pointer is replaced by its index in alltypes for the write */
-static void writeoffs(struct var *field, UWORD off)
+static void writeoffs(struct reswriter *w, struct var *field, UWORD off)
 {
     struct type *t;
     UWORD index, save;
@@ -834,80 +838,80 @@ static void writeoffs(struct var *field, UWORD off)
         /* move 10(a2),-(a7) / move d1,10(a2): high word of the pointer */
         save = W_(&field->type);
         W_(&field->type) = index;
-        writeitem((struct node *)field, off);
+        writeitem(w, (struct node *)field, off);
         W_(&field->type) = save;
     }
 }
 
 /* blitz2.s:4265 countem - write the number of items of list a2 (word) */
-static void countem(struct node *item)
+static void countem(struct reswriter *w, struct node *item)
 {
     UWORD count = 0;
 
     for (; item; item = item->next)
         count++;
     W_(&temp1) = count;         /* move d0,temp1: high word of temp1 */
-    respos += 2;
-    Write(resfh, &temp1, 2);
+    w->pos += 2;
+    Write(w->fh, &temp1, 2);
 }
 
 /* blitz2.s:4278 resmacs - put out! macros */
-static void resmacs(void)
+static void resmacs(struct reswriter *w)
 {
     struct macro *m = firstmacro, *savenext;
     UBYTE *savetext;
     ULONG start, len, tlen;
 
-    countem((struct node *)m);
+    countem(w, (struct node *)m);
     for (; m; m = m->next) {
-        start = respos;
+        start = w->pos;
         savenext = m->next;
         savetext = m->text;
         len = ((ULONG)m->len + 1) & ~1UL;
-        respos += len;                  /* add len of struct */
+        w->pos += len;                  /* add len of struct */
         if (m->textlen) {
-            m->text = (UBYTE *)respos;
+            m->text = (UBYTE *)w->pos;
             addoff2(start + 4);
         }
         tlen = (UWORD)(m->textlen + 1) & ~1;
-        respos += tlen;
+        w->pos += tlen;
         if (m->next) {
-            m->next = (struct macro *)respos;
+            m->next = (struct macro *)w->pos;
             addoff2(start);
         }
-        Write(resfh, m, len);
+        Write(w->fh, m, len);
         if (tlen)
-            Write(resfh, savetext, tlen);
+            Write(w->fh, savetext, tlen);
         m->text = savetext;
         m->next = savenext;
     }
 }
 
 /* blitz2.s:4324 restypes */
-static void restypes(void)
+static void restypes(struct reswriter *w)
 {
     struct type *t = firsttype;
     ULONG start, len, save;
 
-    countem((struct node *)t);
+    countem(w, (struct node *)t);
     for (; t; t = t->next) {
-        start = respos;
+        start = w->pos;
         /* no test for TYPE_FORWARD, as in the original: latent, a forward
            type cannot reach here (#33, closed as invalid: every aborted
            compilation frees the non-resident types) */
-        writeoffs(t->u.fields, 14);
+        writeoffs(w, t->u.fields, 14);
         save = t->u.code;
         t->u.code = start;
-        addoff2(respos + 4);
+        addoff2(w->pos + 4);
         len = ((ULONG)t->len + 1) & ~1UL;
-        respos += len;
-        Write(resfh, t, len);
+        w->pos += len;
+        Write(w->fh, t, len);
         t->u.code = save;
     }
 }
 
 /* blitz2.s:4353 resconsts */
-static void resconsts(void)
+static void resconsts(struct reswriter *w)
 {
     struct label *l;
     struct label *save;
@@ -918,24 +922,24 @@ static void resconsts(void)
         if ((ULONG)l->refs == 1)
             count++;
     W_(&temp1) = count;
-    respos += 2;
-    Write(resfh, &temp1, 2);
+    w->pos += 2;
+    Write(w->fh, &temp1, 2);
     for (l = firstlabel; l; l = l->next) {
         if ((ULONG)l->refs != 1)
             continue;
         len = ((ULONG)l->len + 1) & ~1UL;      /* length */
-        start = respos;
-        respos += len;
+        start = w->pos;
+        w->pos += len;
         save = l->next;
         /* next := offset of the following written item (= the next
            constant).  BUG(orig) (#34): for the last constant, if non-constant
            labels follow it, next points past the section (fixconsts
            leaves it as loaded) */
         if (l->next) {
-            l->next = (struct label *)respos;
+            l->next = (struct label *)w->pos;
             addoff2(start);
         }
-        Write(resfh, l, len);
+        Write(w->fh, l, len);
         l->next = save;
     }
 }
@@ -946,6 +950,7 @@ void menu5(void)
     struct label *l;
     struct offnode *o;
     char *name;
+    struct reswriter wr;
     BPTR fh;
     ULONG pad, aligned;
 
@@ -963,16 +968,16 @@ void menu5(void)
     fh = Open((STRPTR)name, 1006);
     if (!fh)
         return;
-    resfh = fh;
+    wr.fh = fh;
     sleepon();
     killoffs();
     Write(fh, tsthead, 32);             /* header */
-    respos = 0;                         /* offset from start of file! */
-    restypes();
-    resmacs();
-    resconsts();
-    aligned = (respos + 3) & ~3UL;      /* long word align */
-    pad = aligned - respos;
+    wr.pos = 0;                         /* offset from start of file! */
+    restypes(&wr);
+    resmacs(&wr);
+    resconsts(&wr);
+    aligned = (wr.pos + 3) & ~3UL;      /* long word align */
+    pad = aligned - wr.pos;
     if (pad)
         Write(fh, hello, pad);
     *tstsize3 = numoffs;
