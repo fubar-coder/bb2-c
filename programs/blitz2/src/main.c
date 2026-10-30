@@ -1700,6 +1700,7 @@ void frlibslist(void)
 WORD movemchk(struct asmregs *r)
 {
     ULONG modebit;
+    UWORD reversed = 0;
     int i;
 
     if (r->srcmode == r->destmode)
@@ -1720,14 +1721,15 @@ WORD movemchk(struct asmregs *r)
         return eaerror;
     if (r->destmode != 4)
         return noerror;
-    /* -(An): reverse the register mask (lsl d2 / roxr d6, 16 times) */
+    /* -(An): reverse the register mask (lsl d2 / roxr d6, 16 times; the
+       asm builds it in d6 = size, which asmit does not read back) */
     for (i = 0; i < 16; i++) {
         UWORD x = r->srcreg >> 15;
 
         r->srcreg <<= 1;
-        r->size = (r->size >> 1) | (x << 15);
+        reversed = (reversed >> 1) | (x << 15);
     }
-    r->srcreg = r->size;
+    r->srcreg = reversed;
     return noerror;
 }
 
