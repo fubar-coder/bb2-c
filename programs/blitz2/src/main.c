@@ -1046,7 +1046,8 @@ static WORD begin(void)
     do {
         ;
     } while (!ed_getinput(&d6) || d6 != 1);
-    /* grab a panic bit (BUG(orig) (#18): failure of AllocSignal not checked) */
+    /* grab a panic bit (failure of AllocSignal not checked, as in the
+       original: not observable, #18 closed) */
     panicbit = (ULONG)(LONG)AllocSignal(-1);
     panicmask = 1UL << (panicbit & 31);
     /* loadseg default debugger (blitz2:defaultdbug) */

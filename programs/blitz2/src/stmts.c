@@ -701,8 +701,9 @@ BOOL newallox(ULONG d2, ULONG d3, ULONG d4, ULONG d5)
 {
     if (makeallox(d2, d3, d4, d5))
         return TRUE;
-    /* BUG(orig) (#32): falls back to the initial sizes and reports their result,
-       so TRUE does not mean the new sizes were allocated */
+    /* falls back to the initial sizes and reports their result, so TRUE
+       does not mean the new sizes were allocated; not reachable (#32,
+       closed: TED's extalloc never returns 0) */
     return makeiallox();
 }
 

@@ -446,7 +446,8 @@ void expandmax(void)
         if (*a4++ == '{') {
             struct macparam *mp = (struct macparam *)macrobuff;
             UWORD t;
-            /* BUG(orig) (#4): no check against the end of macrobuff */
+            /* no check against the end of macrobuff, as in the original: not
+               reachable (#4, closed: >1365 parameters needed) */
             do {
                 d4++;           /* another p */
                 mp->start = a4;
@@ -517,8 +518,10 @@ void expandmax(void)
                     goto l_itsgot;
                 }
                 if (d0 == '@') {
-                    /* macro num parameter.  BUG(orig) (#5): no buffer
-                       overflow check for the digits */
+                    /* macro num parameter.  No buffer overflow check for
+                       the digits, as in the original: not observable (#5,
+                       closed: the rest of the line still ends in "Macro
+                       Buffer Overflow") */
                     a1 = (UBYTE *)makelong((char *)a1, (UWORD)macnum);
                     continue;
                 }

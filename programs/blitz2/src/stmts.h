@@ -119,7 +119,7 @@ char *makelong(char *buf, ULONG v);
 /* ------------------------------------------------------------- allox */
 
 /* All return asm NE: TRUE = buffers allocated (newallox also TRUE if only the
-   fallback to the initial sizes worked - BUG(orig) (#32)). */
+   fallback to the initial sizes worked - not reachable, #32). */
 BOOL alloxinc(void);                    /* max sizes * 1.5 */
 BOOL alloxadj(void);                    /* sizes actually used */
 BOOL newallox(ULONG pcsize, ULONG libsize, ULONG d1size, ULONG d2size);
