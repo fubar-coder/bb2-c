@@ -54,7 +54,12 @@ d0-d2, d4/d5, a0/a1 and a6 in places.
 * RemNotify: no range check either (#626).
 * finit removes the requests from id 63 down only while the counter is
   not 0 (#621).
-* FreeDeviceList does not check that the list is locked (#623), and it
+* FreeDeviceList does not check that the list is locked (#623): a second
+  call makes UnLockDosList release a semaphore once too often (exec's
+  AN_SemCorrupt alert, the semaphore re-initialised) and call Permit once
+  too often, so later Forbid calls of the task have no effect (also
+  without any GetDeviceList; test `bug_orig_ridoslib_freedevicelist_unchecked_unlock`).
+  It also
   leaves the current entry: DeviceEntryType then reads an entry of the
   unlocked list (#622).
 * NextDevice without GetDeviceList returns with d0 unchanged (the result

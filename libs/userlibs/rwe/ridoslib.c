@@ -40,7 +40,10 @@
  *   - RemNotify: no range check either (#626).
  *   - finit removes the requests from id 63 down only while the counter
  *     is not 0 (#621).
- *   - FreeDeviceList does not check that the list is locked (#623), and
+ *   - FreeDeviceList does not check that the list is locked (#623):
+ *     UnLockDosList releases a semaphore once too often (exec's
+ *     AN_SemCorrupt alert) and always calls Permit, so the task's Forbid
+ *     count goes negative (also without GetDeviceList); and it
  *     leaves the current entry: DeviceEntryType then reads the entry of
  *     the unlocked list (#622).
  *   - NextDevice without GetDeviceList returns with d0 unchanged (the
