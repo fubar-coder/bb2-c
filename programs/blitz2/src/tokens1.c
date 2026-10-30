@@ -41,9 +41,6 @@ UWORD free_[] = {
     0xD6C0,                            /* +4   add d0,a3 */
 };
 
-/* blitz2.s:12251 mymaxlib dc.l 0 */
-struct blitzlib *mymaxlib;
-
 /* blitz2.s:12348 rescode / rescode2 (12 bytes); rescode+6 and rescode2+2
    are patched by uselib (chunk 04) with the data pointer's a5 offset */
 UWORD rescode[] = {
@@ -165,8 +162,9 @@ void domaxlen(UWORD c)
 
 /* ================================================================ Free/Use */
 
-/* blitz2.s:12196 getmaxel */
-UBYTE *getmaxel(UWORD c)
+/* blitz2.s:12196 getmaxel, *libp = the lib.  The asm kept the lib in the
+   global mymaxlib (12251) for maxjsr; Free/Use now hand it over. */
+static UBYTE *getmaxlib(UWORD c, struct blitzlib **libp)
 {
     struct blitzlib *lib;
     UBYTE *e;
@@ -180,7 +178,7 @@ UBYTE *getmaxel(UWORD c)
         freeerr();
     type = T_WORD;
     eval(&type);
-    mymaxlib = lib;
+    *libp = lib;
     e = LIBMAX_E(lib);
     if (debugga) {
         /* check maximum overflow */
@@ -204,34 +202,44 @@ UBYTE *getmaxel(UWORD c)
     return e;
 }
 
+/* blitz2.s:12196 getmaxel (for Addr, which does not need the lib) */
+UBYTE *getmaxel(UWORD c)
+{
+    struct blitzlib *lib;
+
+    return getmaxlib(c, &lib);
+}
+
 /* blitz2.s:12262 maxjsr - asm: Z flag of the caller's move.l d1 */
-static void maxjsr(ULONG sub)
+static void maxjsr(struct blitzlib *lib, ULONG sub)
 {
     if (!sub)
         nosuperr();
-    makelibsub(mymaxlib, sub);
+    makelibsub(lib, sub);
 }
 
 /* blitz2.s:12253 dofree */
 void dofree(UWORD c)
 {
-    UBYTE *e = getmaxel(c);
+    struct blitzlib *lib;
+    UBYTE *e = getmaxlib(c, &lib);
 
     free_[1] = *(UWORD *)(e - 6);               /* patched in place */
     pokecode(free_, freef);
-    maxjsr(*(ULONG *)(e - 10));
+    maxjsr(lib, *(ULONG *)(e - 10));
 }
 
 /* blitz2.s:12266 douse */
 void douse(UWORD c)
 {
-    UBYTE *e = getmaxel(c);
+    struct blitzlib *lib;
+    UBYTE *e = getmaxlib(c, &lib);
 
     use[1] = *(UWORD *)(e - 6);                 /* patched in place */
     usef[-1] = *(UWORD *)(e - 6);
     usef[-1] += 4;
     pokecode(use, usef);
-    maxjsr(*(ULONG *)(e - 14));
+    maxjsr(lib, *(ULONG *)(e - 14));
 }
 
 /* ================================================================== Else */

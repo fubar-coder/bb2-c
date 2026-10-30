@@ -68,9 +68,10 @@ void doif2(UWORD kind, WORD negate);
 /* 12196 getmaxel: c = token (must be a token, else syntaxerr); evaluates the
    index (word, into d(regat)) and emits the bounds check (debug) + shifts.
    Returns asm a2 = max-info end pointer E = (UBYTE*)lib + lib->maxinfo
-   (fields at E-2..E-14, see LIBMAX_* in structs.h); sets mymaxlib = lib. */
+   (fields at E-2..E-14, see LIBMAX_* in structs.h).  The asm also set the
+   global mymaxlib (12251) = lib for Free/Use; they get it from a local
+   variant now. */
 UBYTE *getmaxel(UWORD c);
-extern struct blitzlib *mymaxlib;   /* 12251 dc.l 0 */
 
 /* 12611 alignpc: pc = (pc+1) & ~1 */
 void alignpc(void);
