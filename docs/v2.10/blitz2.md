@@ -211,7 +211,7 @@ from the 1.95 source is present in 2.10 unchanged – except #2. [B]
 | #39 | open | [compiler] `For a$=…` with a global string variable passes the type check | unchanged |
 | #40 | closed | [compiler/Expression] Operator stack: overflow is detected only after writing | unchanged |
 | #41 | closed | [compiler/Executable] Symbol names in HUNK_SYMBOL with up to 3 bytes past the label node | unchanged |
-| #42 | open | [compiler/environlib/errtraplib/runerrlib] On the 68010 the VBR is not read | unchanged |
+| #42 | closed (not planned: no 68010 in the emulator) | [compiler/environlib/errtraplib/runerrlib] On the 68010 the VBR is not read | unchanged |
 | #325 | open | [compiler/Include] makeiname: IncDir + file name into namebuff (128 bytes) without a length check | unchanged |
 | #335 | open | [compiler] Object libraries reached only from library code get no array; End frees their objects from address 0 | unchanged |
 | #336 | open | [compiler/Macros] macrobuff is freed with the current Macro Buffer size, not the allocated one | unchanged |
