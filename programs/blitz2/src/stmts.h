@@ -122,9 +122,9 @@ char *makelong(char *buf, ULONG v);
    fallback to the initial sizes worked - not reachable, #32). */
 BOOL alloxinc(void);                    /* max sizes * 1.5 */
 BOOL alloxadj(void);                    /* sizes actually used */
-BOOL newallox(ULONG pcsize, ULONG libsize, ULONG d1size, ULONG d2size);
+BOOL newallox(ULONG pcsize, ULONG libsize, ULONG data1size, ULONG data2size);
 BOOL makeiallox(void);                  /* maxpc/maxlib/maxdata1/maxdata2 */
-BOOL makeallox(ULONG pcsize, ULONG libsize, ULONG d1size, ULONG d2size);
+BOOL makeallox(ULONG pcsize, ULONG libsize, ULONG data1size, ULONG data2size);
 void freeallox(void);
 
 /* ---------------------------------------------------- menus / residents */
