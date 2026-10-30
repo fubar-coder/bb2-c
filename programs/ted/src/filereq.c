@@ -25,11 +25,11 @@
    docs/ted/deviations.md (category T). */
 
 /* ted.s:7967 filerequest (+36 = code+4: movem.l d1-a6,-(sp) / a5 = a0) */
-UBYTE *filerequest(const ULONG *a0)
+UBYTE *filerequest(const ULONG *args)
 {
-    fq_args[0] = a0[0];         /* path buffer */
-    fq_args[1] = a0[1];         /* name buffer */
-    fq_args[2] = a0[2];         /* title */
-    fq_args[3] = a0[3];         /* screen */
+    fq_args[0] = args[0];       /* path buffer */
+    fq_args[1] = args[1];       /* name buffer */
+    fq_args[2] = args[2];       /* title */
+    fq_args[3] = args[3];       /* screen */
     return (UBYTE *)fq_request();
 }

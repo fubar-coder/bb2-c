@@ -251,65 +251,65 @@ static APTR wb_exit(void)
    (docs/ted/deviations.md). */
 void edstart_c(struct m68kregs *r)
 {
-    struct Process *a4;
-    struct WBStartup *a5;
+    struct Process *proc;
+    struct WBStartup *startup;
     struct WBArg *wa;
-    UBYTE *a0, *a1;
+    UBYTE *src, *dst;
     const char *s;
-    BPTR d7;
-    ULONG d0, d2;
+    BPTR fh;
+    ULONG arglen, stack;
 
     /* wb:4 wb_header */
     SysBase = *(struct ExecBase **)4;
-    a4 = (struct Process *)SysBase->ThisTask;   /* 276(a6) */
-    us = (struct Task *)a4;
-    if (a4->pr_CLI)
+    proc = (struct Process *)SysBase->ThisTask; /* 276(a6) */
+    us = (struct Task *)proc;
+    if (proc->pr_CLI)
         goto fromcli;
     /* program was run from workbench - somehow, we have to eventually get
        stacksize into D2! */
-    WaitPort(&a4->pr_MsgPort);
-    wbmess = GetMsg(&a4->pr_MsgPort);
-    a5 = (struct WBStartup *)wbmess;
+    WaitPort(&proc->pr_MsgPort);
+    wbmess = GetMsg(&proc->pr_MsgPort);
+    startup = (struct WBStartup *)wbmess;
     if (!dosopen()) {
         wb_exit();
         return;
     }
     /* Read in the .info file to find stack size! */
-    wa = a5->sm_ArgList;
+    wa = startup->sm_ArgList;
     CurrentDir(wa[0].wa_Lock);          /* dir of BLITZ2! */
-    a0 = (UBYTE *)wa[0].wa_Name;        /* make name+.info */
-    a1 = (UBYTE *)progfile;
-    while ((*a1++ = *a0++) != 0)
+    src = (UBYTE *)wa[0].wa_Name;       /* make name+.info */
+    dst = (UBYTE *)progfile;
+    while ((*dst++ = *src++) != 0)
         ;
-    a1--;
-    for (s = wb_infoname; (*a1++ = *s++) != 0; )
+    dst--;
+    for (s = wb_infoname; (*dst++ = *s++) != 0; )
         ;
-    d7 = Open((CONST_STRPTR)progfile, MODE_OLDFILE);
-    if (!d7)
+    fh = Open((CONST_STRPTR)progfile, MODE_OLDFILE);
+    if (!fh)
         goto openfailed;
     /* BUG(orig) (#388, #389): a short Read leaves the file open, and progfile keeps
        the bytes read / the ".info" name (cleared only on success) */
-    if (Read(d7, progfile, 0x4e) != 0x4e)
+    if (Read(fh, progfile, 0x4e) != 0x4e)
         goto openfailed;
-    Close(d7);
+    Close(fh);
     progfile[0] = 0;
     /* +$4A is do_ToolWindow (do_StackSize is at +$4E, behind the 78
        bytes read) - without effect: d2 is never used */
-    memcpy(&d2, progfile + 0x4a, 4);
-    if (!d2)
+    memcpy(&stack, progfile + 0x4a, 4);
+    if (!stack)
         goto openfailed;
     goto openok;
 openfailed:
-    d2 = 4000;
+    stack = 4000;
 openok:
-    (void)d2;                   /* the stack size is never used by TED */
-    if ((UWORD)a5->sm_NumArgs < 2)      /* cmp #2,$1e(a5): low word */
+    (void)stack;                /* the stack size is never used by TED */
+    if ((UWORD)startup->sm_NumArgs < 2) /* cmp #2,$1e(a5): low word */
         goto wb_allgo;
     /* .allgo */
     CurrentDir(wa[1].wa_Lock);
-    a0 = (UBYTE *)wa[1].wa_Name;
-    a1 = (UBYTE *)progfile;
-    while ((*a1++ = *a0++) != 0)
+    src = (UBYTE *)wa[1].wa_Name;
+    dst = (UBYTE *)progfile;
+    while ((*dst++ = *src++) != 0)
         ;
     goto wb_allgo;
 
@@ -317,16 +317,16 @@ fromcli:
     /* wb:73 - d2 = 4(a7) "stacksize" (in TED the return address of the
        bsr edstart, unused, survey-01 I.3) */
     wbmess = NULL;
-    d0 = r->d[0];
-    a0 = (UBYTE *)r->a[0];
-    if (--d0 != 0) {
+    arglen = r->d[0];
+    src = (UBYTE *)r->a[0];
+    if (--arglen != 0) {
         /* copy the argument up to a space or LF (no quote handling, no
            length check: progfile has 192 bytes) */
-        a1 = (UBYTE *)progfile;
+        dst = (UBYTE *)progfile;
         do
-            *a1++ = *a0++;
-        while (a1[-1] != 32 && a1[-1] != 10);
-        a1[-1] = 0;
+            *dst++ = *src++;
+        while (dst[-1] != 32 && dst[-1] != 10);
+        dst[-1] = 0;
     }
     /* .skip2 */
     if (!dosopen()) {
@@ -344,30 +344,30 @@ wb_allgo:
    a0 = file name, d0 = the caller's d0 (a0toname reads it, BUG(orig) #340). */
 static void outside_run(struct m68kregs *r, BOOL tomain)
 {
-    struct edstruct *a1;
-    UBYTE *a0, *d7;
-    ULONG d0;
+    struct edstruct *eds;
+    UBYTE *name, *fullname;
+    ULONG callerd0;
 
     if (tomain) {
-        a0 = (UBYTE *)r->a[0];
-        d0 = r->d[0];
+        name = (UBYTE *)r->a[0];
+        callerd0 = r->d[0];
         goto tomain;
     }
     returncode = -1;
     external = (APTR)r->a[1];
     if (external) {
         /* the 14 words of edstruct -> tokens..remark */
-        a1 = (struct edstruct *)external;
-        tokens = a1->toklist;
-        menitems = a1->menus;
-        loadxtra = a1->loadxtra;
-        savextra = a1->savextra;
-        menurout = a1->menurout;
-        cleanup = a1->cleanup;
-        colon = a1->colon;
-        quote = a1->quote;
-        label = a1->label;
-        remark = a1->remark;
+        eds = (struct edstruct *)external;
+        tokens = eds->toklist;
+        menitems = eds->menus;
+        loadxtra = eds->loadxtra;
+        savextra = eds->savextra;
+        menurout = eds->menurout;
+        cleanup = eds->cleanup;
+        colon = eds->colon;
+        quote = eds->quote;
+        label = eds->label;
+        remark = eds->remark;
         if (!dosopen()) {
             r->d[0] = (ULONG)wb_exit();
             return;
@@ -412,16 +412,16 @@ static void outside_run(struct m68kregs *r, BOOL tomain)
         return;
     }
     /* .edmain */
-    a0 = (UBYTE *)progfile;
-    d0 = 0;                     /* move.l external,d0 / beq .edmain */
+    name = (UBYTE *)progfile;
+    callerd0 = 0;               /* move.l external,d0 / beq .edmain */
 tomain:
     /* .tomain */
-    a0toname(a0, d0);
+    a0toname(name, callerd0);
     if (filename[0]) {
         UBYTE *src, *dst;
 
         dst = charbuff;
-        d7 = dst;
+        fullname = dst;
         for (src = (UBYTE *)filepath; (*dst++ = *src++) != 0; )
             ;
         dst--;
@@ -433,7 +433,7 @@ tomain:
         /* .fskip */
         for (src = (UBYTE *)filename; (*dst++ = *src++) != 0; )
             ;
-        fileopen2(d7);
+        fileopen2(fullname);
         showvprop();
         showmice();
         printmem();
@@ -488,39 +488,39 @@ void tomain_c(struct m68kregs *r)
 void mainedit(void)
 {
     jmp_buf jb;
-    const struct jtentry *a0;
-    struct item *a4;
-    LONG d7;
-    UWORD d6, d5;
+    const struct jtentry *entry;
+    struct item *item;
+    LONG event;
+    UWORD data, len;
     volatile UBYTE flag = 0;    /* asm: move.b (a0)+,-(a7) */
 
     edquit = FALSE;
     for (;;) {
         mousealt = 0;
         memalt = 0;
-        d7 = getline(&d6);
-        a4 = thisitem;
+        event = getline(&data);
+        item = thisitem;
         if (anyalt) {
             allalt = anyalt;
             /* a2 = the chmap row getline worked on (chmap + chloc) */
-            d5 = charstobuff(chmap + chloc);
-            a4 = makeline(a4, d5);
+            len = charstobuff(chmap + chloc);
+            item = makeline(item, len);
             if (tokenise)
                 showthisitem();
         }
         /* .skip: computed jump through jumptable (cmp.b) */
-        for (a0 = jumptable; a0->code; a0++)
-            if (a0->code == (UBYTE)d7)
+        for (entry = jumptable; entry->code; entry++)
+            if (entry->code == (UBYTE)event)
                 break;
-        if (!a0->code)
+        if (!entry->code)
             continue;           /* beq mainedit */
         /* .found */
-        flag = a0->flag;
-        ev_code = d7;
-        ev_data = d6;
+        flag = entry->flag;
+        ev_code = event;
+        ev_data = data;
         memstack = &jb;         /* move.l a7,memstack */
         if (setjmp(jb) == 0) {
-            a0->routine();      /* jsr (a0), a4 = thisitem */
+            entry->routine();   /* jsr (a0), a4 = thisitem */
             if (edquit)
                 return;         /* escape: lea 12(a7),a7 (DIFF) */
         }
@@ -542,20 +542,20 @@ void mainedit(void)
 /* ted.s:184 mouseinit */
 void mouseinit(void)
 {
-    ULONG *a0, *a1;
-    WORD d0;
+    ULONG *dst, *src;
+    WORD n;
 
     /* get chip mem!  BUG(orig) (#367): not checked (copy to 0, survey-01 I.5) */
-    a0 = AllocMem(FINISHLEN, MEMF_CHIP);
-    pointerat = (UWORD *)a0;
-    dumat = (UWORD *)((UBYTE *)a0 + POINTERLEN);        /* dumsleep - pointer */
+    dst = AllocMem(FINISHLEN, MEMF_CHIP);
+    pointerat = (UWORD *)dst;
+    dumat = (UWORD *)((UBYTE *)dst + POINTERLEN);       /* dumsleep - pointer */
     /* pointer..finish: pointer.bin + dumsleep, 38 longs */
-    a1 = (ULONG *)pointer;
-    for (d0 = POINTERLEN / 4 - 1; d0 >= 0; d0--)
-        *a0++ = *a1++;
-    a1 = (ULONG *)dumsleep;
-    for (d0 = sizeof(dumsleep) / 4 - 1; d0 >= 0; d0--)
-        *a0++ = *a1++;
+    src = (ULONG *)pointer;
+    for (n = POINTERLEN / 4 - 1; n >= 0; n--)
+        *dst++ = *src++;
+    src = (ULONG *)dumsleep;
+    for (n = sizeof(dumsleep) / 4 - 1; n >= 0; n--)
+        *dst++ = *src++;
     sleepcurr = NULL;
 }
 
@@ -595,12 +595,12 @@ void sleepon(void)
 }
 
 /* ted.s:242 setpoint */
-void setpoint(UWORD *a1, WORD d0)
+void setpoint(UWORD *data, WORD height)
 {
     if (req_window)
-        SetPointer(req_window, a1, d0, 16, -1, 0);
+        SetPointer(req_window, data, height, 16, -1, 0);
     /* .skip */
-    SetPointer(mywindow, a1, d0, 16, -1, 0);
+    SetPointer(mywindow, data, height, 16, -1, 0);
     makemenus();                /* falls through into makemenus */
 }
 
@@ -634,30 +634,30 @@ void menusoff(void)
 }
 
 /* ted.s:281 makedum */
-void makedum(const UBYTE *a0)
+void makedum(const UBYTE *frame)
 {
     /* a0 = sleep to make */
-    const ULONG *s = (const ULONG *)(a0 + 4);
+    const ULONG *s = (const ULONG *)(frame + 4);
     ULONG *d = (ULONG *)((UBYTE *)dumat + 4);
-    WORD d0;
+    WORD n;
 
-    for (d0 = FRAMELEN / 4 - 3; d0 >= 0; d0--)  /* 20 longs */
+    for (n = FRAMELEN / 4 - 3; n >= 0; n--)     /* 20 longs */
         *d++ = *s++;
 }
 
 /* ted.s:291 myroutine (VBlank, through myint_stub) */
 void myroutine(void)
 {
-    const UBYTE *a0;
+    const UBYTE *frame;
 
     if (--sleepdelay >= 0)      /* subq / bpl .done */
         return;
     sleepdelay = sleepwait;
-    a0 = sleepcurr + FRAMELEN;
-    if (!(a0 < sleep_ + SLEEPLEN))      /* cmp.l #sleepf,a0 / bcs */
-        a0 = sleep_;
-    sleepcurr = a0;
-    makedum(a0);
+    frame = sleepcurr + FRAMELEN;
+    if (!(frame < sleep_ + SLEEPLEN))   /* cmp.l #sleepf,a0 / bcs */
+        frame = sleep_;
+    sleepcurr = frame;
+    makedum(frame);
 }
 
 /* -------------------------------------------------- menu handlers */
@@ -666,9 +666,9 @@ void myroutine(void)
 void defaults(void)
 {
     struct defblock *bak = (struct defblock *)charbuff;
-    UWORD *s, *d, *a1, *a5;
-    UWORD d0, d1, d4, d6;
-    LONG d7;
+    UWORD *s, *d, *colopt, *rgb;
+    UWORD d0, oldcol, pen, id;
+    LONG event;
     WORD n;
 
     /* the option block as backup into charbuff (word by word) */
@@ -688,48 +688,48 @@ void defaults(void)
     swapbords();
     for (;;) {
         /* @417 .loop */
-        d7 = getinput(&d6);
-        if ((WORD)d7 != -1)
+        event = getinput(&id);
+        if ((WORD)event != -1)
             continue;
-        if (d6 >= 10 && d6 < 26) {
+        if (id >= 10 && id < 26) {
             /* colour buttons: group = ((id-10) >> 1) & 6 */
-            d6 -= 10;
-            d0 = (d6 >> 1) & 6;         /* col hit (0,2,4) */
-            a1 = &normcol + d0 / 2;
-            d1 = *a1;
-            d0 = (d0 << 1) + d1;        /* old gad */
-            if (d0 == d6) {
+            id -= 10;
+            d0 = (id >> 1) & 6;         /* col hit (0,2,4) */
+            colopt = &normcol + d0 / 2;
+            oldcol = *colopt;
+            d0 = (d0 << 1) + oldcol;    /* old gad */
+            if (d0 == id) {
                 /* @451 .skip2 */
                 swapd0bord(d0);
-                dispgadd0(d6);
-                swapd0bord(d6);
+                dispgadd0(id);
+                swapd0bord(id);
                 continue;
             }
             dispgadd0(d0);
             swapd0bord(d0);
-            swapd0bord(d6);
-            d0 = d6 & 3;
-            *a1 = d0;
-            if (d6 < 12)
+            swapd0bord(id);
+            d0 = id & 3;
+            *colopt = d0;
+            if (id < 12)
                 continue;
             setprops(d0);
             dispprops();
             continue;
         }
         /* @457 .skip */
-        if (d6 < 4) {
+        if (id < 4) {
             /* sliders: live SetRGB4 of propcol until something happens */
-            d4 = propcol;
-            a5 = palit + propcol * 3;   /* palit offset */
+            pen = propcol;
+            rgb = palit + propcol * 3;  /* palit offset */
             do {
-                propadj(a5, d4);
-                d7 = getinput2(&d6);
-            } while (d7 == 0);
-            propadj(a5, d4);
+                propadj(rgb, pen);
+                event = getinput2(&id);
+            } while (event == 0);
+            propadj(rgb, pen);
             continue;
         }
         /* @474 .end */
-        if (d6 >= 26)
+        if (id >= 26)
             break;
         d0 = 0;
         if ((ULONG)int1 >= 32) {
@@ -776,7 +776,7 @@ void defaults(void)
         tabstop = (UWORD)int3;
     }
     /* @527 .done */
-    if (d6 != 26) {
+    if (id != 26) {
         /* @560 .skip3 - cancel! */
         setdefs(bak);
         colors();
@@ -787,20 +787,20 @@ void defaults(void)
         return;
     }
     color = normcol;
-    defalt = d6;
+    defalt = id;
     swapbords();
     if (bak->d_fonthite != fonthite) {
-        struct item *a0 = thisitem;
+        struct item *item = thisitem;
 
         /* BUG(orig) (#352): limited with the OLD edrows, before the screen is
            reopened with the new font (survey-01 I.13) */
         d0 = cursy;
         while (!(d0 < edrows)) {        /* .loopy, bcs */
             d0--;
-            a0 = a0->lastitem;
+            item = item->lastitem;
         }
         /* .skip6 */
-        thisitem = a0;
+        thisitem = item;
         cursy = d0;
         calcpos();
     }
@@ -819,8 +819,8 @@ void defaults(void)
 /* ted.s:570 prtfile */
 void prtfile(void)
 {
-    struct item *a4;
-    LONG d7;
+    struct item *item;
+    LONG event;
     UWORD d6;
     BPTR fh;
 
@@ -828,8 +828,8 @@ void prtfile(void)
     actgad(&prtreqga1);         /* (a2 = prtreq, unused) */
     for (;;) {
         /* .loop */
-        d7 = getinput(&d6);
-        if ((WORD)d7 != -1)
+        event = getinput(&d6);
+        if ((WORD)event != -1)
             continue;
         if (d6 == 2)
             break;
@@ -841,11 +841,11 @@ void prtfile(void)
     if (!fh)
         return;
     d6 = numlines;              /* subq / bne: 0 = 65536 lines */
-    a4 = firstitem;
+    item = firstitem;
     do {
         /* .ploop - write errors are ignored */
-        Write(fh, charbuff, prtfile_line(a4, charbuff));
-        a4 = a4->nextitem;
+        Write(fh, charbuff, prtfile_line(item, charbuff));
+        item = item->nextitem;
     } while (--d6 != 0);
     Close(fh);
 }
@@ -853,29 +853,29 @@ void prtfile(void)
 /* ted.s:678 fileopen */
 void fileopen(void)
 {
-    UBYTE *d7;
+    UBYTE *name;
 
     if (!erase())
         return;
-    d7 = getfname();
-    if (!d7)
+    name = getfname();
+    if (!name)
         return;
-    fileopen2(d7);              /* falls through into fileopen2 */
+    fileopen2(name);            /* falls through into fileopen2 */
 }
 
 /* ted.s:731 showfname */
 void showfname(void)
 {
-    const char *a0 = filename;
-    char *a1 = newsctit;
+    const char *src = filename;
+    char *dst = newsctit;
 
-    *a1++ = 'F';
-    *a1++ = 'i';
-    *a1++ = 'l';
-    *a1++ = 'e';
-    *a1++ = ':';
-    *a1++ = ' ';
-    while ((*a1++ = *a0++) != 0)
+    *dst++ = 'F';
+    *dst++ = 'i';
+    *dst++ = 'l';
+    *dst++ = 'e';
+    *dst++ = ':';
+    *dst++ = ' ';
+    while ((*dst++ = *src++) != 0)
         ;
     showme();                   /* falls through into showme */
 }
@@ -890,49 +890,49 @@ void showme(void)
 void filesave(void)
 {
 #if cripple == 0
-    UBYTE *d7, *a1;
-    const UBYTE *a0;
+    UBYTE *name, *dst;
+    const UBYTE *src;
 
-    d7 = getfname2(filetext2);
-    if (!d7)
+    name = getfname2(filetext2);
+    if (!name)
         return;
-    xtraat = d7;
+    xtraat = name;
     /* do the delete/rename bit for .bak files */
-    a1 = dosbuff;
-    for (a0 = d7; (*a1++ = *a0++) != 0; )
+    dst = dosbuff;
+    for (src = name; (*dst++ = *src++) != 0; )
         ;
-    a1--;
-    for (a0 = (const UBYTE *)bakname; (*a1++ = *a0++) != 0; )
+    dst--;
+    for (src = (const UBYTE *)bakname; (*dst++ = *src++) != 0; )
         ;
     DeleteFile((CONST_STRPTR)dosbuff);
-    Rename((CONST_STRPTR)d7, (CONST_STRPTR)dosbuff);
-    realsave(d7);               /* falls through into realsave */
+    Rename((CONST_STRPTR)name, (CONST_STRPTR)dosbuff);
+    realsave(name);             /* falls through into realsave */
 #endif
 }
 
 /* ted.s:834 doabout */
 void doabout(void)
 {
-    LONG d7;
-    UWORD d6;
+    LONG event;
+    UWORD id;
 
     openreq(&aboutreq);
     for (;;) {
-        d7 = getinput(&d6);
-        if ((WORD)d7 != -1)
+        event = getinput(&id);
+        if ((WORD)event != -1)
             continue;
-        if (d6 == 2)
+        if (id == 2)
             break;
-        if (d6 == 1)
+        if (id == 1)
             return;
     }
     /* .special */
     openreq(&specialreq);
     for (;;) {
-        d7 = getinput(&d6);
-        if ((WORD)d7 != -1)
+        event = getinput(&id);
+        if ((WORD)event != -1)
             continue;
-        if (d6 == 1)
+        if (id == 1)
             return;
     }
 }
@@ -940,8 +940,8 @@ void doabout(void)
 /* ted.s:853 find */
 void find(void)
 {
-    LONG d7;
-    UWORD d6;
+    LONG event;
+    UWORD id;
 
     findreqsg1.BufferPos = 0;
     findreqsg1.DispPos = 0;
@@ -954,10 +954,10 @@ loopzz:
     actgad(&findreqga1);
     for (;;) {
         /* .loop */
-        d7 = getinput(&d6);
-        if ((WORD)d7 != -1)
+        event = getinput(&id);
+        if ((WORD)event != -1)
             continue;
-        switch (d6) {
+        switch (id) {
         case 2:
         case 3:
             next();
@@ -988,9 +988,9 @@ loopzz:
 /* ted.s:902 replaceall */
 void replaceall(void)
 {
-    struct item *a4 = thisitem;
-    LONG d7;
-    UWORD d6;
+    struct item *item = thisitem;
+    LONG event;
+    UWORD id;
 
     if (findreqla16[0] == 0) {
         beepem();
@@ -998,20 +998,20 @@ void replaceall(void)
     }
     openreq(&repall);
     do
-        d7 = getinput(&d6);
-    while ((WORD)d7 != -1);
-    if (d6 == 3)
+        event = getinput(&id);
+    while ((WORD)event != -1);
+    if (id == 3)
         return;                 /* .skip */
     sleepon();
-    if (d6 != 1)
-        a4 = firstitem;         /* 2 = from top, 1 = from here */
+    if (id != 1)
+        item = firstitem;       /* 2 = from top, 1 = from here */
     for (;;) {
         /* .here */
-        thisitem = a4;
-        replace2(a4, &a4);
-        if (!a4->nextitem)
+        thisitem = item;
+        replace2(item, &item);
+        if (!item->nextitem)
             break;
-        a4 = a4->nextitem;
+        item = item->nextitem;
     }
     calcitem();
     showall();

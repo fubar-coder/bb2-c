@@ -53,14 +53,14 @@ void mousefinit(void);
    via the glue (registers kept) */
 /* ted.s:242 setpoint: SetPointer(a1 chip data, height d0) on req_window
    (if any) and mywindow, falls into makemenus */
-void setpoint(UWORD *a1, WORD d0);
+void setpoint(UWORD *data, WORD height);
 /* ted.s:258 makemenus: req_window or sleepcurr -> menusoff, else menuson
    (also from closereq) */
 void makemenus(void);
 void menuson(void);             /* ted.s:263 clear WFLG_RMBTRAP (byte +25 bit 0) */
 void menusoff(void);            /* ted.s:271 set WFLG_RMBTRAP */
 /* ted.s:281 makedum: copy sleep frame a0 (20 longs from +4) to dumat+4 */
-void makedum(const UBYTE *a0);
+void makedum(const UBYTE *frame);
 /* ted.s:291 myroutine: VBlank code (called by myint_stub, glue.c):
    animate the busy pointer every sleepwait+1 frames */
 void myroutine(void);

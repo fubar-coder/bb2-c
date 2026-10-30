@@ -14,24 +14,24 @@ const char deftitname[] = "Blitz Basic 2 Editor V1.0";   /* ted.s:1604 */
 /* ted.s:1016 escape */
 void escape(void)
 {
-    struct Menu *a1;
-    struct MenuItem *a2, *it;
+    struct Menu *compmenu;
+    struct MenuItem *next, *item;
 
     if (!erase())
         return;                                 /* asm: addq #4,a7 in erase */
-    a1 = menu2.NextMenu;                        /* move.l menu2(pc),d0 */
-    if (a1) {
+    compmenu = menu2.NextMenu;                  /* move.l menu2(pc),d0 */
+    if (compmenu) {
         /* free up external menus.  survey-02 I.7 (no effect): the strip is
            still attached (no ClearMenuStrip), menu2.NextMenu is not
            cleared; a COMPILER menu without items still has FirstItem =
            &menu2item1 (copied by getstuff) - FreeMem on program data. */
-        a2 = a1->FirstItem;
-        FreeMem(a1, sizeof(struct Menu));       /* menu2name-menu2 = 30 */
+        next = compmenu->FirstItem;
+        FreeMem(compmenu, sizeof(struct Menu)); /* menu2name-menu2 = 30 */
         do {                                    /* .loop */
-            it = a2;
-            a2 = it->NextItem;
-            FreeMem(it, sizeof(struct mitem));  /* m2i1text-menu2item1 = 54 */
-        } while (a2);
+            item = next;
+            next = item->NextItem;
+            FreeMem(item, sizeof(struct mitem)); /* m2i1text-menu2item1 = 54 */
+        } while (next);
     }
     /* .skip */
     doclean();
@@ -62,8 +62,8 @@ static UWORD vpos(void)
 /* ted.s:1460 gadget - some one hit my vprop gadget! */
 void gadget(void)
 {
-    UWORD d0, d6 = ev_data;
-    LONG d7;
+    UWORD pos, data = ev_data;
+    LONG event;
 
     if (edrows >= numlines)                     /* bcs .skip */
         return;
@@ -72,9 +72,9 @@ void gadget(void)
     cursor();
     do {
         /* .loop */
-        d0 = vpos();
-        if (d0 != (UWORD)bloktopx) {
-            bloktopx = (WORD)d0;
+        pos = vpos();
+        if (pos != (UWORD)bloktopx) {
+            bloktopx = (WORD)pos;
             cursor();
             gotolined02((UWORD)bloktopx);
             cursor();
@@ -82,8 +82,8 @@ void gadget(void)
         }
         /* .skip2: busy poll; the ending message is swallowed
            (survey-02 I.11) */
-        d7 = getinput2(&d6);
-    } while (d7 == 0);
+        event = getinput2(&data);
+    } while (event == 0);
     cursor();
     gotolined02(vpos());                        /* bra gotolined02 */
 }
@@ -91,46 +91,46 @@ void gadget(void)
 /* ted.s:1542 extmenu - an external menu item has been found!  do the menu
    sub, and, at return, jump to line d0, unless d0 = -1; d0 = -2 for
    showall */
-void extmenu(UWORD d6)
+void extmenu(UWORD code)
 {
-    WORD d0;
+    WORD line;
 
     if (!menurout)
         return;                                 /* .skip */
     /* lsr #4,d6; a5 = firstitem, d7 = numlines (glue.c).  blitz2 may call
        extalloc -> outmem: longjmp over its frames (BUG(orig) #369). */
-    d0 = call_menurout((UWORD)(d6 >> 4));
+    line = call_menurout((UWORD)(code >> 4));
     showme();
     /* move.l thisitem,a4: gotolined0 starts from thisitem */
-    if (d0 == -2) {
+    if (line == -2) {
         showall();
         return;
     }
-    if (d0 != -1)
-        gotolined0((UWORD)d0);                  /* I.13: no range check (a text line) */
+    if (line != -1)
+        gotolined0((UWORD)line);                /* I.13: no range check (a text line) */
 }
 
 /* ted.s:1565 menu - menu number in d6 */
 void menu(void)
 {
-    UWORD d6 = ev_data, d0;
-    const struct jtentry *a0;
+    UWORD code = ev_data, menunum;
+    const struct jtentry *entry;
     UBYTE flag;
 
-    d0 = d6 & 15;                               /* move.b d6,d0 / and #15,d0 */
-    d6 = (UWORD)((d6 >> 1) & 0xf0);
-    if ((UBYTE)d0 == 4) {
-        extmenu(d6);                            /* beq extmenu */
+    menunum = code & 15;                        /* move.b d6,d0 / and #15,d0 */
+    code = (UWORD)((code >> 1) & 0xf0);
+    if ((UBYTE)menunum == 4) {
+        extmenu(code);                          /* beq extmenu */
         return;
     }
-    d6 |= d0;
+    code |= menunum;
     /* convert menu number to byte (hi nyb = item, lo = menu); survey-02
        I.14: menus/items >= 16 alias */
-    for (a0 = menutable; a0->code != 255; a0++) {
-        if (a0->code == (UBYTE)d6) {
+    for (entry = menutable; entry->code != 255; entry++) {
+        if (entry->code == (UBYTE)code) {
             /* .found: the flag byte on the stack */
-            flag = a0->flag;
-            a0->routine();
+            flag = entry->flag;
+            entry->routine();
             if (flag)
                 showvprop();                    /* bne showvprop */
             return;
@@ -142,14 +142,14 @@ void menu(void)
 /* ted.s:1593 new */
 void new(void)
 {
-    const char *a0 = deftitname;
-    char *a1 = newsctit;
+    const char *src = deftitname;
+    char *dst = newsctit;
 
     if (!erase())
         return;
     doclean();
     freeall();
-    while ((*a1++ = *a0++) != 0)                /* .loop (survey-02 I.15) */
+    while ((*dst++ = *src++) != 0)              /* .loop (survey-02 I.15) */
         ;
     showme();
     donew();                                    /* bra donew */

@@ -12,6 +12,6 @@
    a0 = parameter block {path, name, title, screen} (reqstruct).  Returns
    the full name (inside the requester's data block) or 0 (cancel; asm
    d0 with Z=1). */
-UBYTE *filerequest(const ULONG *a0);
+UBYTE *filerequest(const ULONG *args);
 
 #endif
