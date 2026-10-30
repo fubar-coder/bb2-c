@@ -51,11 +51,7 @@ UWORD rescode[] = {
     0x2B40, 0x0000,                    /* +8   rescode2 move.l d0,0(a5) */
 };
 
-/* blitz2.s:12615 datasize dc 0 */
-static UWORD datasize;
-
-/* blitz2.s:12845 coolnest dc 0 / 12847 macline dc 0 */
-static WORD coolnest;
+/* blitz2.s:12847 macline dc 0 */
 WORD macline;
 
 /* blitz2.s:12962 thetst1..negbr (20 bytes) */
@@ -590,8 +586,9 @@ void doeven(UWORD c)
 
 /* blitz2.s:12617 pdt - insert type of data item into code if runtime error
    checking is on.....  codes for data..... Dn, when 'D' means data, and
-   n = 1 (byte) to 7 (string) */
-static void pdt(void)
+   n = 1 (byte) to 7 (string).  datasize: the asm's global datasize
+   (12615), set by dodata, the only caller */
+static void pdt(UWORD datasize)
 {
     if (debugga)
         pokedata2((UWORD)(('D' << 8) | (datasize & 0xff)));
@@ -606,11 +603,10 @@ void dodata(UWORD c)
     uselib(64535);
     bakup();
     want = sizespec2();                         /* get size of it into d1 */
-    datasize = want;
     /* (eg. Data.w) */
     if (want != T_STRING) {
         do {                                    /* .more */
-            pdt();
+            pdt(want);
             type = want;
             val = fetchdata(&type);
             if (type != want) {
@@ -633,7 +629,7 @@ void dodata(UWORD c)
         return;
     }
     for (;;) {                                  /* .string */
-        pdt();
+        pdt(want);
         lenat = data2;
         pokedata2l(0);  /* DIFF: asm poked d0 (garbage) as length placeholder */
         len = 0;
@@ -789,23 +785,26 @@ void doinc2(UWORD namelen)
 
 /* ================================================================= Macro */
 
-static UBYTE *macat;        /* asm a0 in domacro */
-static WORD macgot;         /* asm d2: 0 = nothing got yet */
+/* text being gathered by domacro, handed to macputb/macputw */
+struct macbuild {
+    UBYTE *at;              /* asm a0: write position in macrobuff */
+    WORD got;               /* asm d2: 0 = nothing got yet */
+};
 
 /* blitz2.s:12936 macputb */
-static void macputb(UWORD c)
+static void macputb(struct macbuild *mb, UWORD c)
 {
-    macgot = -1;
-    *macat++ = (UBYTE)c;
-    if (macat >= macrobufff)
+    mb->got = -1;
+    *mb->at++ = (UBYTE)c;
+    if (mb->at >= macrobufff)
         macbigerr();
 }
 
 /* blitz2.s:12933 macputw - high byte, then falls into macputb */
-static void macputw(UWORD c)
+static void macputw(struct macbuild *mb, UWORD c)
 {
-    *macat++ = (UBYTE)(c >> 8);
-    macputb(c);
+    *mb->at++ = (UBYTE)(c >> 8);
+    macputb(mb, c);
 }
 
 /* blitz2.s:12849 domacro */
@@ -813,6 +812,8 @@ void domacro(UWORD c)
 {
     struct node *last;
     struct macro *m;
+    struct macbuild mb;
+    WORD coolnest;              /* blitz2.s:12845 coolnest dc 0 */
     UWORD len;
     ULONG n;
 
@@ -826,21 +827,21 @@ void domacro(UWORD c)
         dupmacerr();
     m = (struct macro *)addhere(last, NAMEOFF_MACRO, len);
     m->usecnt = 0;
-    macat = macrobuff;
-    macgot = 0;                                 /* flag for nothing got yet! */
+    mb.at = macrobuff;
+    mb.got = 0;                                 /* flag for nothing got yet! */
     coolnest = 0;
     for (;;) {                                  /* .gather */
         c = getcharb();         /* get next character but not conditional stuff */
         if (c == 0) {
             if (!nextline())
                 macenderr();
-            if (!macgot)
+            if (!mb.got)
                 continue;
-            macputb(':');                       /* .notend2 (58) */
+            macputb(&mb, ':');                  /* .notend2 (58) */
             continue;
         }
         if (!(c & 0x8000)) {
-            macputb(c);                         /* .notend2 */
+            macputb(&mb, c);                    /* .notend2 */
             continue;
         }
         if (c == 0x800d) {                      /* Macro */
@@ -851,18 +852,18 @@ void domacro(UWORD c)
                 break;                          /* .macdone */
             /* .notem.  A plain char after End is put as a word
                ($00,char; the 0 ends the statement), spaces/comments after End are lost */
-            macputw(0x8002);
+            macputw(&mb, 0x8002);
         }
-        macputw(c);                             /* .notend */
+        macputw(&mb, c);                        /* .notend */
     }
     /* .macdone: DIFF: asm `addq #4,a7` dropped the return into doline */
     dolineabort = 1;
-    n = macat - macrobuff;
+    n = mb.at - macrobuff;
     /* clean up leading and trailing ':'s (only trailing ones in fact) */
     while (n) {                                 /* .mclean */
-        if (*--macat != ':')
+        if (*--mb.at != ':')
             break;
-        if (n != 1 && (BYTE)macat[-1] < 0)
+        if (n != 1 && (BYTE)mb.at[-1] < 0)
             break;                              /* ':' is a token's low byte */
         n--;                                    /* .cdo */
     }
