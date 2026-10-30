@@ -170,8 +170,7 @@ struct offnode *firstoff = NULL;        /* 15004 amigados type reloc offsets */
 UWORD flagmask = 0;                     /* 15006 mask for flag of variable when searching */
 WORD  added = 0;                        /* 15008 flag for seeing if variable was added! */
 WORD  nonew = 0;                        /* 15009 1 to inhibit new variable creation */
-ULONG temp1 = 0;                        /* 15010 */
-ULONG temp2 = 0;                        /* 15011 */
+/* 15010 temp1, 15011 temp2: scratch, locals of their users in C */
 /* 15012 cnop 0,4 / namebuff 128 / namebuff2 128 / 8 for fileinfoblock */
 UBYTE namebuff[264] __attribute__((aligned(4)));
 UBYTE optstuff[64];                     /* 15016 temp opt make buffer */
@@ -1461,12 +1460,13 @@ void loadxtra_c(struct m68kregs *r)
     if (!setjmp(jb)) {
         for (;;) {                                      /* .dloop */
             struct blitzlib *l;
-            if (Read(fh, &temp1, 4) == 0)
+            ULONG entry;                                /* asm: temp1 */
+            if (Read(fh, &entry, 4) == 0)
                 break;
-            l = findlibnoerr((UWORD)(temp1 >> 16));
+            l = findlibnoerr((UWORD)(entry >> 16));
             if (!l)
                 break;
-            LIBMAX_COUNT(l) = (WORD)temp1;              /* temp1+2 */
+            LIBMAX_COUNT(l) = (WORD)entry;              /* temp1+2 */
         }
     }
     /* DIFF: asm left errstack/errcont pointing at .done2 */

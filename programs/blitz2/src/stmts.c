@@ -850,9 +850,8 @@ static void countem(struct reswriter *w, struct node *item)
 
     for (; item; item = item->next)
         count++;
-    W_(&temp1) = count;         /* move d0,temp1: high word of temp1 */
-    w->pos += 2;
-    Write(w->fh, &temp1, 2);
+    w->pos += 2;                /* asm: written via temp1 */
+    Write(w->fh, &count, 2);
 }
 
 /* blitz2.s:4278 resmacs - put out! macros */
@@ -921,9 +920,8 @@ static void resconsts(struct reswriter *w)
     for (l = firstlabel; l; l = l->next)
         if ((ULONG)l->refs == 1)
             count++;
-    W_(&temp1) = count;
     w->pos += 2;
-    Write(w->fh, &temp1, 2);
+    Write(w->fh, &count, 2);
     for (l = firstlabel; l; l = l->next) {
         if ((ULONG)l->refs != 1)
             continue;
@@ -952,7 +950,7 @@ void menu5(void)
     char *name;
     struct reswriter wr;
     BPTR fh;
-    ULONG pad, aligned;
+    ULONG pad, aligned, hunksize;
 
     if (!firstmacro && !firsttype) {
         for (l = firstlabel; l; l = l->next)
@@ -989,11 +987,11 @@ void menu5(void)
         Write(fh, &zero, 4);
     }
     Write(fh, tstdone, 4);
-    temp1 = aligned >> 2;
+    hunksize = aligned >> 2;    /* asm: temp1 */
     Seek(fh, 20, OFFSET_BEGINNING);
-    Write(fh, &temp1, 4);
+    Write(fh, &hunksize, 4);
     Seek(fh, 28, OFFSET_BEGINNING);
-    Write(fh, &temp1, 4);
+    Write(fh, &hunksize, 4);
     Close(fh);
     pointeron();
 }

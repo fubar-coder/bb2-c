@@ -182,7 +182,6 @@ extern struct offnode *firstoff;        /* 15004 amigados reloc offsets */
 extern UWORD flagmask;                  /* 15006 var flag mask for search */
 extern WORD  added;                     /* 15008 variable was added */
 extern WORD  nonew;                     /* 15009 1 = inhibit new variable */
-extern ULONG temp1, temp2;              /* 15010 scratch (temp1+2 = low word) */
 
 /* 15012-15015: cnop 0,4 / namebuff ds.b 128 / namebuff2 ds.b 128 /
    ds.b 8 "for fileinfoblock".  One long-aligned 264 byte block; Examine /

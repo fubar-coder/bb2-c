@@ -264,8 +264,8 @@ void savefile(void)
                 UWORD padlen = ((UWORD)l->len - 19 + 3) & 0xfffc; /* long align */
                 UWORD nbytes = (padlen >> 2) << 2;              /* #bytes */
                 UBYTE nb[256 + 4];
-                temp1 = padlen >> 2;
-                mywrite(fh, &temp1, 4);
+                ULONG val = padlen >> 2;    /* asm: via temp1 */
+                mywrite(fh, &val, 4);
                 /* DIFF: the asm wrote d4 bytes straight from the node (up to
                    3 bytes past the allocation); C pads a copy with zeros */
                 memset(nb, 0, sizeof(nb));
@@ -273,8 +273,8 @@ void savefile(void)
                 mywrite(fh, nb, padlen);
                 if (nbytes - padlen)        /* never true (as in the asm) */
                     mywrite(fh, &zero, nbytes - padlen);
-                temp1 = l->pc - pcat - noinits;
-                mywrite(fh, &temp1, 4);
+                val = l->pc - pcat - noinits;
+                mywrite(fh, &val, 4);
             }
         }
         mywrite(fh, &zero, 4);

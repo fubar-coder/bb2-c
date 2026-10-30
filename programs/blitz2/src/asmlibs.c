@@ -115,8 +115,7 @@ void asmit(UWORD c)
     alignpc();
     idx = (UWORD)(c - (0x8000 + fnum)) << 2;
     e = asmpnts[idx >> 2];
-    /* move d0,temp1: word write = high half of the long */
-    temp1 = (temp1 & 0xffff) | ((ULONG)idx << 16);
+    /* (move d0,temp1: the asm keeps idx in temp1 for @5141) */
 
     /* @5080 size */
     c = getchar3();
@@ -175,7 +174,7 @@ void asmit(UWORD c)
     f = e->flag;
     if (f < 0) {
         UWORD ni = 0;
-        UWORD t = (UWORD)(temp1 >> 16);
+        UWORD t = idx;                  /* asm: temp1 */
         if ((f & 1) && destmode == 1) {
             if (srcmode != 14)
                 ni = t + 8;
@@ -1327,7 +1326,7 @@ void fixlibs(void)
     for (l = firstlib; l; l = l->next) {
         WORD token = l->libnum;
         UBYTE *p;
-        ULONG link;
+        ULONG link, dummy;
 
         if (token >= 0) {               /* user lib */
             token = (token << 7) + 1;
@@ -1337,7 +1336,7 @@ void fixlibs(void)
            stored in the lib file (e.g. memlib $c000.., see the equates at
            blitz2.s 72-250); only user libs get libnum*128+1 above */
         p = l->subs;
-        link = (ULONG)&temp1;           /* dummy first link */
+        link = (ULONG)&dummy;           /* dummy first link (asm: temp1) */
         for (;;) {
             UWORD kind = W_(p);
             if ((WORD)kind < 0)

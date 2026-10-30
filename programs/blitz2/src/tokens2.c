@@ -86,11 +86,6 @@ static ULONG tl(const UWORD *p)
     return ((ULONG)p[0] << 16) | p[1];
 }
 
-/* temp1/temp2 are dc.l, but dodim/dimwit use them with word moves, i.e.
-   their HIGH word (big endian).  Done with shifts (no type punning). */
-#define HIW(l)        ((UWORD)((l) >> 16))
-#define SETHIW(l, w)  ((l) = ((l) & 0xffff) | ((ULONG)(UWORD)(w) << 16))
-
 static void dofunc2(WORD mode, UWORD c);
 static void linkput(ULONG at);
 static void procfixer(void);
@@ -107,7 +102,8 @@ static void funcret(UWORD c);
 static void dogoto2(UWORD op);
 static void donext2(struct fornode *f);
 static void dodim2(UWORD c);
-static void dimwit(struct var *v, struct type *t, UWORD listadd);
+static void dimwit(struct var *v, struct type *t, UWORD listadd,
+                   UWORD wantdims);
 static void alignletpc(UWORD *pcodd);
 
 /* =============================================================== Then */
@@ -1167,6 +1163,7 @@ static void dodim2(UWORD c)
     struct var *v;
     struct type *t;
     UWORD listadd;          /* asm: global listadd (14510), 8 = Dim List */
+    UWORD wantdims;         /* asm: high word of temp1 (15010) */
 
     for (;;) {
         listadd = 0;
@@ -1182,26 +1179,26 @@ static void dodim2(UWORD c)
         v = fetchvar(getvnamelen, &t, &c);
         if (!added) {
             /* Here, an Array is being Re-Dimmed */
-            SETHIW(temp1, v->ndims);      /* move 8(a3),temp1: high word */
+            wantdims = v->ndims;          /* move 8(a3),temp1: high word */
             if (procmode == 0) {
                 WORD save = varoff;
                 varoff = v->offset + 4;
-                dimwit(v, t, listadd);
+                dimwit(v, t, listadd, wantdims);
                 varoff = save;
             } else {
                 WORD save = locvaroff;
                 locvaroff = v->offset - 4;
-                dimwit(v, t, listadd);
+                dimwit(v, t, listadd, wantdims);
                 locvaroff = save;
             }
         } else {
             /* here, we are doing a brand new dim! */
-            SETHIW(temp1, 0xffff);        /* no care on # dims */
+            wantdims = 0xffff;            /* no care on # dims */
             if (listadd) {
-                SETHIW(temp1, 0x4000);    /* yes, we do care - must be 1 coz it's a list */
+                wantdims = 0x4000;        /* yes, we do care - must be 1 coz it's a list */
                 v->flags |= 0x0100;     /* set to list type of array */
             }
-            dimwit(v, t, listadd);
+            dimwit(v, t, listadd, wantdims);
         }
         c = getchar3();
         if (c != ',')
@@ -1211,9 +1208,10 @@ static void dodim2(UWORD c)
 }
 
 /* blitz2.s:14571 dimwit */
-static void dimwit(struct var *v, struct type *vt, UWORD listadd)
+static void dimwit(struct var *v, struct type *vt, UWORD listadd,
+                   UWORD wantdims)
 {
-    UWORD size, wantdims, tok, t;
+    UWORD size, ndims, tok, t;
     UWORD c;
 
     nonew = -1;
@@ -1224,9 +1222,9 @@ static void dimwit(struct var *v, struct type *vt, UWORD listadd)
         size = vt->size;
     size += listadd;        /* size of one element. */
     pokewd(size);
-    SETHIW(temp2, 0);         /* # dim's got */
+    ndims = 0;              /* # dim's got (asm: temp2) */
     for (;;) {
-        SETHIW(temp2, HIW(temp2) + 1);
+        ndims++;
         t = T_LONG;         /* get word */
         c = eval(&t);
         if (debugga)
@@ -1246,15 +1244,14 @@ static void dimwit(struct var *v, struct type *vt, UWORD listadd)
             syntaxerr();
         break;
     }
-    wantdims = HIW(temp1);
     if ((WORD)wantdims >= 0) {
         if (wantdims & 0x4000) {
             /* is it a list? */
-            if (HIW(temp2) != 1)
+            if (ndims != 1)
                 redimerr();
-            v->ndims = HIW(temp2);
+            v->ndims = ndims;
         } else {
-            if (wantdims != HIW(temp2))
+            if (wantdims != ndims)
                 redimerr();
             /* writes the assembler's extension word into
                varoff/locvaroff (harmless: the caller restores it) */
@@ -1264,7 +1261,7 @@ static void dimwit(struct var *v, struct type *vt, UWORD listadd)
                 varoff = extraword;
         }
     } else
-        v->ndims = HIW(temp2);  /* set # dim's */
+        v->ndims = ndims;       /* set # dim's */
     /* .care */
     doarr[1] = v->offset;
     doarr[3] = putarr[1];
