@@ -165,12 +165,12 @@ void refresh(void) { called(HC_REFRESH); }
 void showhprop(void) { called(HC_SHOWHPROP); }
 void showvprop(void) { called(HC_SHOWVPROP); }
 
-void setdefs(struct defblock *a5)
+void setdefs(struct defblock *defs)
 {
     called(HC_SETDEFS);
     if (!tokens)
-        a5->d_tokenise = 0;
-    defstart = *a5;
+        defs->d_tokenise = 0;
+    defstart = *defs;
 }
 
 BOOL icongad(void) { return host_icongad; }

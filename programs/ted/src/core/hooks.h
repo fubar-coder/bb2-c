@@ -108,9 +108,9 @@ void showvprop(void);           /* ted.s:5275 line + vertical prop */
 
 /* ted.s:3092 setdefs (chunk 04, src/reqs.c): option block -> globals and
    the gadgets of defaultreq.  loaddefs (core) ends with `bra setdefs`.
-   state: copies the 25 words of *a5 to defstart (and clears a5->tokenise
-   first if tokens == 0); host stub does exactly that. */
-void setdefs(struct defblock *a5);
+   state: copies the 25 words of *defs (a5) to defstart (and clears
+   defs->tokenise first if tokens == 0); host stub does exactly that. */
+void setdefs(struct defblock *defs);
 /* NEW: SELECTED of the "Create Icons" gadget (asm: btst #7,defaultreqga9+13,
    realsave ted.s:805 - the gadget, not `makeicons`, survey-01 I.15).
    chunk 07 (src/data.c). */
