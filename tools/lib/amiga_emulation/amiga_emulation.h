@@ -27,6 +27,14 @@
  * On Linux, Amiberry also dies (SIGKILL) when the process that started it
  * ends without amiga_emulation_free, e.g. a crashed test runner.
  *
+ * At most AMIGA_EMULATION_MAX runs (default 4, 0 = no limit) go at the
+ * same time on the machine, over all runners, build directories and
+ * worktrees: amiga_emulation_start first takes one of the slots
+ * (flock on slot-K.lock in $XDG_RUNTIME_DIR/amiga-emulation-slots, else
+ * /tmp/amiga-emulation-slots-UID) and waits for a free one; the slot is
+ * held until amiga_emulation_free (the kernel frees it if the runner
+ * dies).  The wait does not count into the run's timeout.
+ *
  * For debugging, from the environment (for every runner):
  *   AMIGA_EMULATION_VISIBLE=1   as `visible`: the window, host input
  *   AMIGA_EMULATION_SHOTS=N     a screenshot every N seconds (0.2 too) while
@@ -105,5 +113,11 @@ char *amiga_emulation_config(const struct amiga_emulation_params *p, const char 
 char *amiga_emulation_script(const char *script);
 
 const char *amiga_emulation_status_name(enum amiga_emulation_status s);
+
+/* the slots (see above): takes a free one of max in dir (created if
+   missing); with wait, waits for one.  The locked file descriptor, -1 if
+   none was free (without wait) or on error; release with close().  max 0:
+   no limit, returns a descriptor of /dev/null. */
+int amiga_emulation_slot(const char *dir, unsigned max, int wait);
 
 #endif

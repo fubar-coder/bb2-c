@@ -232,7 +232,12 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   concurrent emulators, `CORPUS_TIMEOUT` a session; reports in
   `build/<preset>/tests/corpus/NAME.txt`. Do not start the passes in
   parallel with `ctest -j`: each one itself uses up to
-  `CORPUS_PARALLEL` emulators. `corpus_cd`: all 724 sources of the CD
+  `CORPUS_PARALLEL` emulators. Over everything (all runners, build
+  directories and worktrees of the machine) at most
+  `AMIGA_EMULATION_MAX` Amiberry sessions run at once (environment,
+  default 4, 0 = no limit): a further session waits for a free slot
+  (`tools/lib/amiga_emulation`; the wait does not count into the
+  session's timeout, but into ctest's). `corpus_cd`: all 724 sources of the CD
   compiled with blitz2-c (like bb2's bb2corpus: `.xtra` of the sources,
   assigns to CD directories, directory of the relative INCLUDEs) and
   compared with `tests/data/blitz2-cd.tsv` (result, error line and

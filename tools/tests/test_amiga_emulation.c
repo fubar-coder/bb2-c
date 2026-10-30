@@ -1,7 +1,9 @@
 /*
  * test_amiga_emulation.c - configuration and script of amiga_emulation
- * (no emulator).
+ * (no emulator), the slots that limit the runs.
  */
+#define _XOPEN_SOURCE 700       /* mkdtemp */
+#include <unistd.h>
 #include "testutil.h"
 #include "amiga_emulation.h"
 
@@ -100,6 +102,35 @@ int main(void)
     s = amiga_emulation_script(NULL);
     CHECK(s && strstr(s, "FailAt 1000\nEcho \"done\" >TEST:run.done\n"));
     free(s);
+
+    /* the slots: max of them, the next waits (here: refused), a freed
+       one is taken again; max 0 means no limit */
+    {
+        char dir[] = "/tmp/amiga-emulation-slottest-XXXXXX";
+        int a, b, c;
+
+        CHECK(mkdtemp(dir) != NULL);
+        a = amiga_emulation_slot(dir, 2, 0);
+        b = amiga_emulation_slot(dir, 2, 0);
+        c = amiga_emulation_slot(dir, 2, 0);
+        CHECK(a >= 0 && b >= 0 && c < 0);
+        close(a);
+        c = amiga_emulation_slot(dir, 2, 0);
+        CHECK(c >= 0);
+        close(b);
+        close(c);
+        a = amiga_emulation_slot(dir, 0, 0);
+        CHECK(a >= 0);
+        close(a);
+        CHECK(amiga_emulation_slot("/nonexistent/dir/slots", 2, 0) < 0);
+        for (a = 0; a < 2; a++) {
+            char lock[64];
+
+            snprintf(lock, sizeof lock, "%s/slot-%d.lock", dir, a);
+            remove(lock);
+        }
+        rmdir(dir);
+    }
 
     if (failures)
         fprintf(stderr, "test_amiga_emulation: %d failures\n", failures);

@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/file.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
@@ -55,6 +56,7 @@ struct amiga_emulation {
     int own_work_dir;
     int joined;
     int exited;                 /* waitpid has reaped the process */
+    int slot;                   /* the locked slot file, -1: none */
     double shots;               /* $AMIGA_EMULATION_SHOTS: seconds between screenshots */
     unsigned nshots;
     double next_shot;
@@ -431,6 +433,49 @@ static void child(const char *work_dir, const char *runtime_dir, const char *ami
     _exit(127);
 }
 
+int amiga_emulation_slot(const char *dir, unsigned max, int wait)
+{
+    unsigned k;
+
+    if (!max)
+        return open("/dev/null", O_RDONLY | O_CLOEXEC);
+    if (mkdir(dir, 0700) && errno != EEXIST)
+        return -1;
+    for (;;) {
+        for (k = 0; k < max; k++) {
+            char *path = str_printf("%s/slot-%u.lock", dir, k);
+            int fd = path ? open(path, O_RDWR | O_CREAT | O_CLOEXEC, 0600) : -1;
+
+            free(path);
+            if (fd < 0)
+                return -1;
+            if (!flock(fd, LOCK_EX | LOCK_NB))
+                return fd;
+            close(fd);
+        }
+        if (!wait)
+            return -1;
+        sleep_ms(250);
+    }
+}
+
+/* a slot for this run: $AMIGA_EMULATION_MAX of them (default 4) */
+static int take_slot(char *err, size_t errlen)
+{
+    const char *env = getenv("AMIGA_EMULATION_MAX");
+    const char *xdg = getenv("XDG_RUNTIME_DIR");
+    unsigned max = env && *env ? (unsigned)strtoul(env, NULL, 10) : 4;
+    char *dir = xdg && *xdg ? str_printf("%s/amiga-emulation-slots", xdg)
+                            : str_printf("/tmp/amiga-emulation-slots-%u", (unsigned)getuid());
+    int fd = dir ? amiga_emulation_slot(dir, max, 1) : -1;
+
+    if (fd < 0)
+        set_err(err, errlen, "cannot take an emulator slot in %s: %s", dir ? dir : "",
+                strerror(errno));
+    free(dir);
+    return fd;
+}
+
 struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_params *p,
                                               char *err, size_t errlen)
 {
@@ -449,6 +494,7 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
         return NULL;
     }
     e->status = AMIGA_EMULATION_FAILED;
+    e->slot = -1;
     if (p->work_dir) {
         e->work_dir = strdup(p->work_dir);
     } else {
@@ -493,6 +539,8 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     }
     free(path);
 
+    if ((e->slot = take_slot(err, errlen)) < 0)
+        goto fail;
     parent = getpid();
     e->deadline = now() + (p->timeout ? p->timeout : 60);
     if (getenv("AMIGA_EMULATION_SHOTS"))
@@ -694,6 +742,8 @@ void amiga_emulation_free(struct amiga_emulation *e)
         return;
     if (e->pid > 0 && !e->exited)
         stop_group(e);
+    if (e->slot >= 0)
+        close(e->slot);
     rm_tree(e->runtime_dir);
     if (e->own_work_dir)
         rm_tree(e->work_dir);
