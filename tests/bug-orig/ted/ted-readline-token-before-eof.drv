@@ -1,0 +1,20 @@
+; ted-readline-token-before-eof (#379): a byte >= $80 as the last byte of
+; a file is stored as the first byte of a token pair, the 0 behind it as
+; its second: detok reads on behind the end of the line.  Lines "x" and
+; "a" + $E4 (ä, no LF), loaded under blitz2, SAVE.  Correct (the possible
+; fix: the half token is dropped): line 2 is saved as "a"; the original
+; saves the half token (a, $E4, 0).  (It also shows unknown tokens read
+; from behind the line, "a?????..." - memory contents, not compared.)
+; @file bo.bas "x\na\xe4"
+; @source F bo.bas
+; @expect data bo.bas "x\x00a\x00"
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+menu 0 9
+wait exit
