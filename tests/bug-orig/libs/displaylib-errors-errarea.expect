@@ -1,0 +1,4 @@
+[run]
+before
+runtime error Illegal Number of BitPlanes for Resolution
+rc=0
