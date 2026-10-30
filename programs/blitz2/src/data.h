@@ -199,21 +199,10 @@ extern UBYTE optstuff[64];              /* 15016 temp opt make buffer */
  * Type information requester (15018-15288, typereq)
  * =================================================================== */
 
-extern WORD typeat, maxtypes;           /* 15028 list pos / count */
-extern struct node *f1;                 /* 15054 saved showlist a2 */
-extern WORD f2, f3;                     /* 15055 saved showlist d2 (field mode), d3 (name off) */
-
+/* The list state (asm typeat, maxtypes, f1-f3) and the list routines
+   (makebody, countlist, showlist, showlist2, showlist3, typeshow,
+   reflist, allofem) are local to data.c: struct typelist. */
 void zerotypes(void);                   /* 15018 blank the 12 list lines */
-void makebody(void);                    /* 15031 prop VertBody/VertPot from maxtypes */
-void countlist(struct node *list);      /* 15043 maxtypes = length, typeat = 0 */
-/* 15064 list = first item, fields != 0: field list, nameoff = name offset
-   (11/15); saves to f1/f2/f3, falls into showlist2 */
-void showlist(struct node *list, WORD fields, WORD nameoff);
-void showlist2(struct node *item, WORD fields, WORD nameoff);  /* 15067 */
-void showlist3(void);                   /* 15059 showlist2(f1,f2,f3) */
-void typeshow(void);                    /* 15140 typeat from VertPot; redisplay if changed */
-void reflist(void);                     /* 15152 refresh the 12 line gadgets */
-void allofem(void);                     /* 15158 show all user types */
 void menu6(void);                       /* 15165 menu: View Type Information */
 void typename(const char *name);        /* 15281 copy name into TYPE: string (<=31) */
 

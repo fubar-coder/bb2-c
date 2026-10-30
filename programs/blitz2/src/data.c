@@ -1126,68 +1126,77 @@ void zerotypes(void)
         memset(typelines[i], ' ', 27);
 }
 
-WORD typeat = 0;                        /* 15028 */
-WORD maxtypes = 0;                      /* 15029 */
+/* State of one type requester session, on menu6's stack and handed down.
+   DIFF: the asm keeps it in globals (typeat 15028, maxtypes 15029, f1
+   15054, f2 15055, f3 15056); nothing of it outlives menu6. */
+struct typelist {
+    WORD at;                            /* typeat: first item shown */
+    WORD max;                           /* maxtypes: number of items */
+    struct node *list;                  /* f1: first item (showlist) */
+    WORD fields;                        /* f2: != 0 field list */
+    WORD nameoff;                       /* f3: offset of the name */
+};
+
+static void showlist2(struct typelist *tl, struct node *item, WORD fields,
+                      WORD nameoff);
+static void reflist(void);
 
 /* blitz2.s:15031 makebody - prop body: full if <=12 items, else 12/maxtypes */
-void makebody(void)
+static void makebody(const struct typelist *tl)
 {
     UWORD body = 0xffff;                /* full bodied */
-    if ((UWORD)maxtypes > 12)
-        body = (UWORD)((12UL << 16) / (UWORD)maxtypes); /* divu */
+    if ((UWORD)tl->max > 12)
+        body = (UWORD)((12UL << 16) / (UWORD)tl->max); /* divu */
     typereqvp1.VertBody = body;
     typereqvp1.VertPot = 0;
 }
 
 /* blitz2.s:15043 countlist */
-void countlist(struct node *list)
+static void countlist(struct typelist *tl, struct node *list)
 {
     WORD count = 0;
-    typeat = 0;
+    tl->at = 0;
     while (list) {
         count++;
         list = list->next;
     }
-    maxtypes = count;
+    tl->max = count;
 }
 
-struct node *f1 = NULL;                 /* 15054 */
-WORD f2 = 0;                            /* 15055 */
-WORD f3 = 0;                            /* 15056 */
-static UBYTE fuckoff[8];                /* 15057 */
-
 /* blitz2.s:15059 showlist3 */
-void showlist3(void)
+static void showlist3(struct typelist *tl)
 {
-    showlist2(f1, f2, f3);
+    showlist2(tl, tl->list, tl->fields, tl->nameoff);
 }
 
 /* blitz2.s:15064 showlist */
-void showlist(struct node *list, WORD fields, WORD nameoff)
+static void showlist(struct typelist *tl, struct node *list, WORD fields,
+                     WORD nameoff)
 {
-    f1 = list;
-    f2 = fields;
-    f3 = nameoff;
-    showlist2(list, fields, nameoff);   /* falls through into showlist2 */
+    tl->list = list;
+    tl->fields = fields;
+    tl->nameoff = nameoff;
+    showlist2(tl, list, fields, nameoff);   /* falls through into showlist2 */
 }
 
 /* blitz2.s:15067 showlist2 - item (a2) = first item, fields (d2) = offset
    for .offset (0 for none) - i.e. field list mode, nameoff (d3) = offset
-   for chars; typeat=pos, maxtypes=max */
-void showlist2(struct node *item, WORD fields, WORD nameoff)
+   for chars; tl->at = pos, tl->max = max */
+static void showlist2(struct typelist *tl, struct node *item, WORD fields,
+                      WORD nameoff)
 {
-    WORD pos, rows;
+    WORD skip, pos, rows;
     UBYTE *src, *dst, *end;
+    UBYTE dims[8];                      /* asm: fuckoff 15057 */
     int line = 0;
 
     zerotypes();
-    pos = typeat;
-    if ((UWORD)pos >= (UWORD)maxtypes)
+    if ((UWORD)tl->at >= (UWORD)tl->max)
         return;
-    for (pos = typeat - 1; pos >= 0; pos--) /* skip typeat items */
+    for (skip = tl->at - 1; skip >= 0; skip--)  /* skip typeat items */
         item = item->next;
 
-    pos = typeat;
+    pos = tl->at;
     for (rows = 11; rows >= 0; rows--) {
         struct var *fld = (struct var *)item;   /* field mode only */
         UBYTE c;
@@ -1228,8 +1237,8 @@ void showlist2(struct node *item, WORD fields, WORD nameoff)
         if (!(fld->flags & 2))
             goto next;
         *dst++ = '[';
-        makelong(fuckoff, (UWORD)fld->ndims);
-        src = fuckoff;
+        makelong(dims, (UWORD)fld->ndims);
+        src = dims;
         for (;;) {                          /* .penis */
             if (dst >= end)
                 goto next;
@@ -1241,7 +1250,7 @@ void showlist2(struct node *item, WORD fields, WORD nameoff)
         *--dst = ']';
 next:
         pos++;
-        if ((UWORD)pos >= (UWORD)maxtypes)
+        if ((UWORD)pos >= (UWORD)tl->max)
             return;
         line++;
         item = item->next;
@@ -1249,32 +1258,32 @@ next:
 }
 
 /* blitz2.s:15140 typeshow - list position from the prop gadget */
-void typeshow(void)
+static void typeshow(struct typelist *tl)
 {
-    WORD oldat = typeat;
-    WORD range = maxtypes - 11;
+    WORD oldat = tl->at;
+    WORD range = tl->max - 11;
 
     if (range >= 0)
-        typeat = (WORD)(((ULONG)(UWORD)range * typereqvp1.VertPot) >> 16); /* mulu/swap */
-    if (typeat == oldat)
+        tl->at = (WORD)(((ULONG)(UWORD)range * typereqvp1.VertPot) >> 16); /* mulu/swap */
+    if (tl->at == oldat)
         return;
-    showlist3();
+    showlist3(tl);
     reflist();                          /* falls through into reflist */
 }
 
 /* blitz2.s:15152 reflist */
-void reflist(void)
+static void reflist(void)
 {
     ed_refgads(&typereqga5, 12);
 }
 
 /* blitz2.s:15158 allofem */
-void allofem(void)
+static void allofem(struct typelist *tl)
 {
     struct node *types = (struct node *)firsttype;
-    countlist(types);
-    makebody();
-    showlist(types, 0, 11);
+    countlist(tl, types);
+    makebody(tl);
+    showlist(tl, types, 0, 11);
 }
 
 /* beep: DisplayBeep on the editor screen (comdata+40) */
@@ -1286,10 +1295,11 @@ static void typebeep(void)
 /* blitz2.s:15165 menu6 - Flashy Type Information.... */
 void menu6(void)
 {
-    WORD gadget;
+    struct typelist tl;
+    WORD gadget, idx;
     struct type *type;
 
-    allofem();
+    allofem(&tl);
     ed_openreq(&typereq);
     for (;;) {                                          /* .loop */
         ed_actgad(&typereqga2);
@@ -1301,9 +1311,9 @@ void menu6(void)
                 LONG input = ed_getinput2(&gadget);
                 if (input != 0 && (WORD)input == -1 && gadget == 1)
                     break;
-                typeshow();                             /* .vdo */
+                typeshow(&tl);                          /* .vdo */
             }
-            typeshow();                                 /* .vdone */
+            typeshow(&tl);                              /* .vdone */
             continue;
         }
         if (gadget == 2) {
@@ -1311,7 +1321,7 @@ void menu6(void)
             UBYTE *src = typereqla21, *dst = namebuff;
             UWORD len;
             if (!*src) {
-                allofem();
+                allofem(&tl);
                 goto reflist_;
             }
             len = (UWORD)-1;
@@ -1326,28 +1336,28 @@ void menu6(void)
         }
         if (gadget == 3) {
             typereqla21[0] = 0;
-            allofem();
+            allofem(&tl);
             goto reflist_;
         }
         if (gadget == 4)
             return;                                     /* FAREWELL */
-        gadget -= 5;
-        if (gadget < 0 || (UWORD)gadget >= 12)
+        idx = gadget - 5;
+        if (idx < 0 || (UWORD)idx >= 12)
             continue;
-        /* gadget = 0 to 11 */
-        gadget += typeat;
-        if ((UWORD)gadget >= (UWORD)maxtypes)
+        /* idx = 0 to 11 */
+        idx += tl.at;
+        if ((UWORD)idx >= (UWORD)tl.max)
             continue;
-        /* gadget selected */
-        if (f2 == 0) {
+        /* idx selected */
+        if (tl.fields == 0) {
             /* goto type */
             type = firsttype;
-            for (gadget--; gadget >= 0; gadget--)
+            for (idx--; idx >= 0; idx--)
                 type = type->next;
         } else {
             /* .intype: field -> its type */
-            struct node *n = f1;
-            for (gadget--; gadget >= 0; gadget--)
+            struct node *n = tl.list;
+            for (idx--; idx >= 0; idx--)
                 n = n->next;
             type = ((struct var *)n)->type;
             if (type->u.code < 256) {
@@ -1359,9 +1369,9 @@ void menu6(void)
 all:
         {
             struct node *fl = (struct node *)type->u.fields;
-            countlist(fl);
-            makebody();
-            showlist(fl, -1, 15);
+            countlist(&tl, fl);
+            makebody(&tl);
+            showlist(&tl, fl, -1, 15);
         }
 reflist_:
         reflist();
