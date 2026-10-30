@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+block large enough
+rc=0

@@ -1,0 +1,5 @@
+[compile]
+ok
+[run]
+kill list intact
+rc=0
