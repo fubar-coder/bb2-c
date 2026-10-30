@@ -1,0 +1,4 @@
+[run]
+bitplanes -1 sprites -1 colours -1 bplcon2 -1
+bplcon1 pointer 0 -1
+rc=0
