@@ -13,7 +13,7 @@
  *   SerialSendBlock address,length
  *   SerialReceiveBlock address,length
  *   SerialFlush                  reads until the buffer is empty
- *   SerialSendString a$          (see BUG(orig))
+ *   SerialSendString a$          (see BUG(orig), #793, #801)
  *   SerialReadString             bytes up to a 0
  *   SerialProgress               the remaining length of a block
  *   SerialReadLong / SerialWriteLong longword
@@ -48,46 +48,49 @@
  * Assembler: the interrupt handlers' entries (RTE, or on to the old
  * vector), the thunks, and the ends of SerialReceiveBlock's abort and
  * SerialReadString with an open port (both return to a value on the
- * stack, BUG(orig)).
+ * stack, BUG(orig) #803, #796).
  *
  * BUG(orig):
  *   - The vectors are written at $64/$74 (the VBR of a 68010+ is not
- *     looked at), the old ones into the operands of two JMP instructions
- *     in the code without clearing the instruction cache.  SerialClose
- *     switches all interrupts off (INTENA $7FFF) and then on only those
- *     that were on at SerialOpen.
+ *     looked at) (#804), the old ones into the operands of two JMP
+ *     instructions in the code without clearing the instruction cache
+ *     (#791).  SerialClose switches all interrupts off (INTENA $7FFF) and
+ *     then on only those that were on at SerialOpen (#790).
  *   - The open flag is a word, SerialSendBlock, SerialReceiveBlock,
  *     SerialFlush, SerialReadLong and SerialWriteLong test it as a long
  *     (with the first instruction of SerialClose behind it, $4A79: never
  *     0): the first three never open the port, the other two always call
- *     SerialOpen's code.  SerialSendString and SerialReadString test the
- *     word the other way round: they call it when the port is open (it
- *     then only clears the stop flag).
+ *     SerialOpen's code (#792).  SerialSendString and SerialReadString
+ *     test the word the other way round: they call it when the port is
+ *     open (it then only clears the stop flag) (#793).
  *   - SerialRead/SerialWait return the upper word of d0 at the call with
  *     the byte (#long; -1 if empty); a byte $FF with $FFFF there and a
- *     ring index with $FF in the high byte reads as -1.
- *   - SerialSendBlock with a length of 0 or less sends one byte.
+ *     ring index with $FF in the high byte reads as -1 (#797).
+ *   - SerialSendBlock with a length of 0 or less sends one byte (#800).
  *   - SerialReceiveBlock first throws away what is in the buffer, then
- *     waits; a length of 1 receives without end (the count goes below
- *     0); SerialStop during it ends it by taking its return address into
- *     d7 and returning to the long above it on the stack.
+ *     waits (#798); a length of 1 receives without end (the count goes
+ *     below 0) (#799); SerialStop during it ends it by taking its return
+ *     address into d7 and returning to the long above it on the stack
+ *     (#803).
  *   - SerialSendString sends the low byte of the string's address (with
  *     the stop bit) once for every long it reads from the a2 stack, down
  *     to one with a low byte 0 (DIFF: a2 unchanged, as in all C ports;
- *     the original leaves it below the longs read).
+ *     the original leaves it below the longs read) (#801).
  *   - SerialReadString stores up to and including the 0 and leaves a3
- *     behind it; the count of characters (d0 = count - 1) is reset only
- *     when the port is open, where the routine returns to the d0 of the
- *     call (it pushed it and never takes it back); the loop ends at a 0
- *     only if the upper word of d0 at the call is 0 and no wait for a
- *     byte (-1) came before.
+ *     behind it (#795); the count of characters (d0 = count - 1) is reset
+ *     only when the port is open, where the routine returns to the d0 of
+ *     the call (it pushed it and never takes it back) (#796); the loop
+ *     ends at a 0 only if the upper word of d0 at the call is 0 and no
+ *     wait for a byte (-1) came before (#797).
  *   - SerialReadLong never returns: the counter of its loop is taken
- *     back from the stack every time (it reads bytes without end).
+ *     back from the stack every time (it reads bytes without end) (#794).
  *   - SerialWriteLong sends the low byte of its argument and then three
- *     times $01 (it rotates the register SerialWrite changed).
- *   - SerialGot returns -1/0, not a count; SerialProgress the remaining
- *     count of a send (or of a receive) block.
- *   - SerialBaud 0 divides by 0 (ldivlib).
+ *     times $01 (it rotates the register SerialWrite changed) (#805).
+ *   - SerialGot returns -1/0, not a count (#802).
+ *
+ * No defects: SerialProgress gives the remaining count of the last send
+ * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
+ * through ldivlib, whose division by zero has a defined result.
  */
 #include "blitzlib.h"
 
@@ -370,7 +373,7 @@ ULONG BLITZ_ROUTINE c_showloc(void)
     return (ULONG)rd.buf;
 }
 
-/* SerialSendBlock address,length (never opens the port, BUG(orig)) */
+/* SerialSendBlock address,length (never opens the port, BUG(orig) #792) */
 void BLITZ_ROUTINE c_sersend(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 {
     LONG n = (LONG)(len - 1);
@@ -392,7 +395,7 @@ void BLITZ_ROUTINE c_sersend(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 }
 
 /* SerialReceiveBlock address,length: 1 = stopped (the thunk then returns
-   the original's way, BUG(orig)) */
+   the original's way, BUG(orig) #803) */
 ULONG BLITZ_ROUTINE c_serreceive(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 {
     ULONG d0;
@@ -442,7 +445,7 @@ void BLITZ_ROUTINE c_sendserialstring(ULONG d0 BL_REG(d0), const ULONG *a2 BL_RE
 }
 
 /* SerialReadString: the bytes to a3; riser_rsreturn set when the port
-   is open (the thunk returns to the d0 of the call, BUG(orig)) */
+   is open (the thunk returns to the d0 of the call, BUG(orig) #796) */
 volatile UBYTE riser_rsreturn;
 
 ULONG BLITZ_ROUTINE c_readserialstring(ULONG d0 BL_REG(d0))
@@ -467,7 +470,7 @@ ULONG BLITZ_ROUTINE c_buffpos(void)
     return bufflength;
 }
 
-/* SerialReadLong: never returns (BUG(orig)); `d1` is what the original
+/* SerialReadLong: never returns (BUG(orig) #794); `d1` is what the original
    builds from the bytes */
 void BLITZ_ROUTINE c_readlong(ULONG d1 BL_REG(d1))
 {
@@ -577,7 +580,7 @@ BLITZ_THUNK(_buffcount, c_buffcount, "d1/a0-a1");
 BLITZ_THUNK(_buffcount2, c_buffcount2, "d1/a0-a1");
 
 /* SerialReceiveBlock: stopped, the original takes its return address
-   into d7 and returns to the long above it (BUG(orig)) */
+   into d7 and returns to the long above it (BUG(orig) #803) */
 __asm__(
 "   .text\n"
 "   .even\n"
@@ -593,7 +596,7 @@ __asm__(
 );
 
 /* SerialReadString: with the port open the original pushed the d0 of
-   the call and returns to it (BUG(orig)) */
+   the call and returns to it (BUG(orig) #796) */
 __asm__(
 "   .text\n"
 "   .even\n"

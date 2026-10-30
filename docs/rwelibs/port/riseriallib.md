@@ -56,50 +56,54 @@ Assembler:
   the library's; then `RTE`, else on to the old vector;
 * `SerialReceiveBlock`'s end after `SerialStop`, and `SerialReadString`'s
   end with the port open: both return to a value on the stack
-  (BUG(orig) below), the same way as the original;
+  (BUG(orig) below, #803, #796), the same way as the original;
 * the thunks.
 
 ## BUG(orig), kept
 
 * The vectors are written at `$64`/`$74` whatever the VBR of a 68010+
-  is; the old ones go into the code (two `JMP` operands) without
-  clearing the instruction cache. `SerialClose` switches every interrupt
-  off and then on only those that were on at `SerialOpen`.
+  is (#804); the old ones go into the code (two `JMP` operands) without
+  clearing the instruction cache (#791). `SerialClose` switches every
+  interrupt off and then on only those that were on at `SerialOpen`
+  (#790).
 * The open flag is a word; `SerialSendBlock`, `SerialReceiveBlock`,
   `SerialFlush`, `SerialReadLong` and `SerialWriteLong` test it as a
   long, with the first instruction of `SerialClose` (`$4A79`) behind it:
   never 0. So the first three never open the port, the other two always
-  call `SerialOpen`'s code (opening it if it is closed).
+  call `SerialOpen`'s code (opening it if it is closed) (#792).
   `SerialSendString` and `SerialReadString` test the word the other way
   round: they call that code only when the port is open (it then only
-  clears the stop flag).
+  clears the stop flag) (#793).
 * `SerialRead`/`SerialWait` return the byte with the upper word of d0 at
   the call (`#long`); a byte `$FF` with `$FFFF` there and a ring index
-  with `$FF` in its high byte reads as "empty" (−1).
-* `SerialSendBlock` with a length of 0 or less sends one byte.
+  with `$FF` in its high byte reads as "empty" (−1) (#797).
+* `SerialSendBlock` with a length of 0 or less sends one byte (#800).
 * `SerialReceiveBlock` throws away what is in the ring first, then
-  waits; a length of 1 receives without end (the count goes below 0).
+  waits (#798); a length of 1 receives without end (the count goes below
+  0) (#799).
   `SerialStop` during it ends it through the `abort` code of
   `SerialSendBlock`, which pops the saved d7 – here the return address –
-  into d7, so it returns to the long above it on the stack.
+  into d7, so it returns to the long above it on the stack (#803).
 * `SerialSendString` reads the string length from the a2 stack (`MOVE.l
   -(a2),d1`) for every byte and sends the low byte of the string's
   address (d0) with the stop bit each time, until a long with the low
-  byte 0. DIFF: a2 stays unchanged (as in all C ports, `docs/libs/
+  byte 0 (#801). DIFF: a2 stays unchanged (as in all C ports, `docs/libs/
   cmdlibs-port.md`); the original leaves it below the longs it read.
 * `SerialReadString` stores up to and including the 0 and leaves a3
-  behind it; d0 is the count − 1, and the count is reset only when the
-  port is open – where the routine returns to the d0 of the call (it
-  pushed d0 and never takes it back). The loop ends at a 0 only if the
-  upper word of d0 at the call is 0 and no wait for a byte (−1) came
-  before.
+  behind it (#795); d0 is the count − 1, and the count is reset only when
+  the port is open – where the routine returns to the d0 of the call (it
+  pushed d0 and never takes it back) (#796). The loop ends at a 0 only if
+  the upper word of d0 at the call is 0 and no wait for a byte (−1) came
+  before (#797).
 * `SerialReadLong` never returns: its loop takes the counter back from
-  the stack every time and reads bytes without end.
+  the stack every time and reads bytes without end (#794).
 * `SerialWriteLong` sends the low byte of its argument and then three
-  times `$01` (it rotates the register `SerialWrite` changed).
-* `SerialGot` returns −1/0, not a count; `SerialProgress` is the
-  remaining count of the last send or receive block.
-* `SerialBaud 0` divides by 0 (ldivlib).
+  times `$01` (it rotates the register `SerialWrite` changed) (#805).
+* `SerialGot` returns −1/0, not a count (#802).
+
+No defects: `SerialProgress` gives the remaining count of the last send
+or receive block, what it is meant to give; `SerialBaud 0` divides by 0
+through ldivlib, whose division by zero has a defined result.
 
 ## Test
 
