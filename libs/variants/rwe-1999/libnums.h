@@ -29,6 +29,25 @@
 #define LIB_ridisasmlib             50   /* AmiBlitz3 RIDisAsm */
 #define LIB_ciatrklib               56   /* = #neilsciatrklib of the CD's libnums */
 #define LIB_ritrackerlib            58   /* RWE's list (docs/rwelibs/README.md 3.3), no binary */
+/* stage D: no binary; numbers from RWE's list (docs/rwelibs/README.md
+   3.3) under the name the source uses, or the literal number of the
+   source if it is free in this set, or a slot RWE's list reserved */
+#define LIB_riregistrylib            3   /* RWE's list */
+#define LIB_rimapshapeslib           6   /* RWE's list */
+#define LIB_riarrayslib              7   /* RWE's list */
+#define LIB_rimapeditorlib           8   /* RWE's list; c2plib's literal 8 left out */
+#define LIB_riwbspritelib           10   /* literal in WBSprite-library2 */
+#define LIB_riintuilib              15   /* RWE's list */
+#define LIB_popupwinlib             16   /* none known: RWE's RESERVEDLIB_10 */
+#define LIB_bb_blitlib              19   /* RWE's list = literal in BB_BlitLib4 */
+#define LIB_rishapezlib             21   /* RWE's list */
+#define LIB_riseriallib             22   /* literal in Serial-Library (RWE's list: #riblitlib, no source) */
+#define LIB_richunkylib             24   /* RWE's list */
+#define LIB_ridisplaylib            29   /* RWE's list */
+#define LIB_blitzbomberslibtwo      31   /* none known: RWE's RESERVEDLIB_8, next to #blitzbomberslib 30 */
+#define LIB_ribbmaplib              34   /* RWE's list */
+#define LIB_rithreadlib             44   /* RWE's list */
+#define LIB_risnowlib              195   /* literal in SnowLib3 (Acid's #systemcallslib, not in this set) */
 /* riarexxlib: the source defines its number itself (#myconst=133 in
    NEWAREXXLIB.bb, !libheader {#myconst,...}); BSS2 RIAREXXLIB has 133 */
 #define LIB_riarexxlib             133

@@ -65,7 +65,25 @@ set(RWE_LIBS
 	"riarexxlib|rexxlib/NEWAREXXLIB.bb|refbuild"
 	"rishapeslib|shapeslib/RIShapesLib2.bb|refbuild|${bss2}/RIPACKLIB.OBJ"
 	"risortlib|sortlib/RISortlib2.bb|refbuild"
-	"ridisasmlib|Disasmlib/Disasm-library.bb2|refbuild")
+	"ridisasmlib|Disasmlib/Disasm-library.bb2|refbuild"
+	# stage D (3.3): no binary anywhere; the reference build of the
+	# newest source (docs/rwelibs/README.md 2, column Reference)
+	"riregistrylib|Registry/Registry3.bb|refbuild"
+	"rimapshapeslib|MapEd/MapShape2.bb|refbuild"
+	"riarrayslib|ArraysLib.bb|refbuild"
+	"rimapeditorlib|MapEd/MapEd_Bit2.bb|refbuild"
+	"riwbspritelib|wbspritelib/WBSprite-library2.bb|refbuild"
+	"riintuilib|riintuilib2.bb|refbuild"
+	"popupwinlib|popuplib/popupwinlib.bb|refbuild"
+	"bb_blitlib|blitzbomberslib/BB_BlitLib4.bb|refbuild"
+	"rishapezlib|shapezlib.bb|refbuild"
+	"riseriallib|seriallib/Serial-Library.bb|refbuild"
+	"richunkylib|chunkylib.bb|refbuild"
+	"ridisplaylib|mydisplaylib.bb|refbuild"
+	"blitzbomberslibtwo|blitzbomberslib/blitzbombersTwo00.bb|refbuild"
+	"ribbmaplib|blitzbomberslib/bbmaplib2.bb|refbuild"
+	"rithreadlib|threadlib.bb|refbuild"
+	"risnowlib|Snow/SnowLib3.bb|refbuild")
 
 set(variant_dir ${PROJECT_SOURCE_DIR}/libs/variants/${RWE_VARIANT})
 set(out ${BLITZ_VARIANTS_DIR}/${RWE_VARIANT})
