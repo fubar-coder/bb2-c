@@ -27,7 +27,7 @@
  * Deplode(buffer): -1 = ok, 0 = not "IMP!" / error.
  * CrMDecrunch buffer[,dest]: one argument = in place; then the data are
  * first copied to buffer-MinSecDist (memory BEFORE the buffer is
- * overwritten, as the Crunch-Mania listing requires - BUG(orig), see
+ * overwritten, as the Crunch-Mania listing requires - BUG(orig) (#116), see
  * below).
  * PPDecrunch start,end,dest: end = end of the packed file (the last long
  * holds the original length and the number of empty bits).
@@ -35,25 +35,25 @@
  * Kept from the original (BUG(orig)):
  *   - Implode: the match search reads up to 254 bytes past the end of
  *     the data (im30: up to 15, the length measurement im32/im33: up to
- *     254 - the two do not add up; results do not depend on them).
+ *     254 - the two do not add up; results do not depend on them). (#112)
  *   - CrMDecrunch with one argument (destination = source) and with
  *     overlapping buffers: the crunched data are moved to MinSecDist
  *     bytes BEFORE the destination - up to MinSecDist bytes of foreign
  *     memory in front of the buffer are overwritten (the BB2 docs only
- *     say "works like the Deplode command").
+ *     say "works like the Deplode command"). (#116)
  *   - CrMDecrunch: overlap copy of (CrLen>>2) longs with SUBQ/BNE: a
  *     crunched length below 4 copies 4 GB; the address comparisons are
- *     signed (BLE).
+ *     signed (BLE). (#115)
  *   - CrM2: ReadTab with a count of 0 reads 65536 table entries (DBF);
- *     the tables are static data inside the library, as in the original.
- *   - PPDecrunch: ReadD1_SUB with an efficiency value 0 reads 65536 bits.
+ *     the tables are static data inside the library, as in the original. (#117)
+ *   - PPDecrunch: ReadD1_SUB with an efficiency value 0 reads 65536 bits. (#118)
  *   - Implode crunches in place while it searches: a result of 0 (not
  *     crunchable) after at least 64 bytes leaves the buffer partly
- *     overwritten.
- *   - No checks of the data at all: corrupt data write anywhere.
+ *     overwritten. (#114)
+ *   - No checks of the data at all: corrupt data write anywhere. (#119)
  * Kept from the original, not a bug: after $4012 literal bytes in a row
  * Implode stores the rest of the data uncrunched - a limit of the
- * Imploder format (imtab4); the result decrunches correctly.
+ * Imploder format (imtab4); the result decrunches correctly (#113).
  * DIFF: corrupt CrM2 data can make ReadIt index RealTab with any word
  * (and GetBits2 use masks behind AndData2), i.e. read the library's own
  * code and data; the result then depends on the library's memory layout.
@@ -972,7 +972,7 @@ static void overlapdecrunch(const UBYTE *a0, UBYTE *a1)
     d2 = RL(a0 + 6);                    /* SrcLen */
     a0 += 10;
     a2 = a0 + d0;
-    /* BUG(orig): a1 - MinSecDist lies in front of the destination buffer
+    /* BUG(orig) (#116): a1 - MinSecDist lies in front of the destination buffer
        (always for _crm, destination = source) */
     if ((LONG)a2 > (LONG)a1) {          /* copy below the destination */
         ULONG *s = (ULONG *)a0, *d, n = d2 >> 2;

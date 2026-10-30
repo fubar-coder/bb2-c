@@ -71,8 +71,8 @@ static const char err1[] BLITZ_ERRCHK = "Can't read args!";
 static const char errMsg2[] BLITZ_ERRCHK = "Missing closing quote in argument string.";
 
 /* AddArg - allocate a new argument (text, thisLock) at the end of the
-   list.  DIFF: without memory the original jumps to `err` (runtime error,
-   in the error check area: BUG(orig) dangling without debugger); here the
+   list.  DIFF (#305): without memory the original jumps to `err` (runtime
+   error, in the error check area: dangling without debugger); here the
    runtime error is raised and NULL returned, the caller stops. */
 static struct arg *addarg(UBYTE *text)
 {
@@ -143,7 +143,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(UBYTE *argptr BL_REG(a0), ULONG magic BL_R
             if (!wbMsg)
                 return (ULONG)&argData;
             wb = (struct WBStartup *)wbMsg;
-            /* BUG(orig): dos.library is never closed, the old current
+            /* BUG(orig) (#306, #307): dos.library is never closed, the old current
                directory is not restored */
             dosbase = OldOpenLibrary((STRPTR)"dos.library");
             CurrentDir(wb->sm_ArgList->wa_Lock);
@@ -171,7 +171,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(UBYTE *argptr BL_REG(a0), ULONG magic BL_R
     }
 
     /* was run from CLI: copy the CLI string to our buffer.
-       BUG(orig): no length check (cliString has 256 bytes). */
+       BUG(orig) (#308): no length check (cliString has 256 bytes). */
     {
         UBYTE *d = cliString, *p;
 
@@ -198,7 +198,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(UBYTE *argptr BL_REG(a0), ULONG magic BL_R
                string, the scan goes on behind it - harmless in a program
                (cliString is cleared and written once, the next byte is 0);
                only with old contents (host test) or after the overflow of
-               a full buffer (no length check above) extra arguments. */
+               a full buffer (no length check above) extra arguments (#309). */
             p[-1] = 0;
         }
     }
@@ -206,8 +206,9 @@ static ULONG BLITZ_ROUTINE codeinit_c(UBYTE *argptr BL_REG(a0), ULONG magic BL_R
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d1/a1");
 
-/* codefinit - free the arguments, reply the WB message.  BUG(orig):
-   argData.first is not cleared.  The original changes d0/a1-a3/a6 only
+/* codefinit - free the arguments, reply the WB message.
+   argData.first is not cleared (not a bug: codeinit clears it at every
+   start).  The original changes d0/a1-a3/a6 only
    when there are arguments / a message, the thunk keeps d0-d1/a0-a1. */
 static void BLITZ_ROUTINE codefinit_c(void)
 {

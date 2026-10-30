@@ -399,7 +399,7 @@ static void BLITZ_ROUTINE codeinit_c(UBYTE *sp BL_REG(a0), ULONG stack BL_REG(d2
     for (f = SysBase->AttnFlags & 15; f; f >>= 1)
         n++;
     cpu_ = n;
-    if (n >= 2) {                       /* 68020+ (BUG(orig): 68010 has a VBR too) */
+    if (n >= 2) {                       /* 68020+ (BUG(orig) (#42): 68010 has a VBR too) */
         APTR ssp = SuperState();        /* supervisor state! */
         register ULONG r __asm("d0");
 

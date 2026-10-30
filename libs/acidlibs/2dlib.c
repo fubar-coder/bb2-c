@@ -25,19 +25,20 @@
  * 14 data, 18 cookie (mask).
  *
  * BUG(orig), kept (selection):
- *   - Box adds the origin twice (once itself, once in the line clipper).
+ *   - Box adds the origin twice (once itself, once in the line clipper). (#391)
  *   - Circle/Circlef with points above the top edge: MULU of the negative
  *     y gives a large offset that is not rejected - the CPU plot writes
- *     far outside the bitmap / fill buffer.
- *   - Poly with 1 point loops 65535 times; Polyf with more than 16 points
- *     overflows its 32-long point buffer, more than 10 edges on one side
- *     overflow the edge lists l0/l1.
- *   - AllocFill (statement) takes the bitmap from a3 = the string pointer.
+ *     far outside the bitmap / fill buffer. (#392)
+ *   - Poly with 1 point loops 65535 times (#396); Polyf with more than 16
+ *     points overflows its 32-long point buffer, more than 10 edges on one
+ *     side overflow the edge lists l0/l1 (#395).
+ *   - AllocFill (statement) takes the bitmap from a3 = the string pointer. (#390)
  *   - a depth of 0 makes the plane loops run 65536 (CMP.w) / 256 (CMP.b)
- *     times.
- *   - FreeFill does not clear the buffer pointer.
- *   - the routines leave a3 where the original leaves it (bitmap, plane
- *     pointer, ...), not the string pointer.
+ *     times. (#393)
+ *   - FreeFill does not clear the buffer pointer. (#394)
+ * Not a bug (statements, a3 has no meaning after them): the routines leave
+ * a3 where the original leaves it (bitmap, plane pointer, ...), not the
+ * string pointer.
  * The flood fill proper (yofill) is the original assembler: it keeps the
  * lines still to be filled on the 68000 stack without a limit, which C
  * cannot do between its own frames.
@@ -384,7 +385,7 @@ static void allocfill(void)
 
 static void BLITZ_ROUTINE _allocfill_c(void)
 {
-    a3 = blitz_string;                          /* BUG(orig): no bitmap here */
+    a3 = blitz_string;                          /* BUG(orig) (#390): no bitmap here */
     allocfill();
 }
 BLITZ_THUNK(_allocfill, _allocfill_c, "d0-d1/a0-a1");

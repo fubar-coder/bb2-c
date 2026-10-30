@@ -28,22 +28,24 @@
  *
  * BUG(orig), kept:
  *  - Row/plane steps ADD x(a3),An are word additions (sign extended for
- *    planes of 32K and more); sizes are low words of MULU.
+ *    planes of 32K and more); sizes are low words of MULU. (#263)
  *  - LoadShape: "BODY" is not checked (the decoder reads whatever
- *    follows); ANIM frames go into the following shape objects without a
- *    check against the maximum; only `depth` DLTA pointers are read; the
- *    copied frame shares nothing (its cookie is cleared, made again with
- *    AutoCookie On).
+ *    follows) (#264); ANIM frames go into the following shape objects
+ *    without a check against the maximum (#265).  Not a bug: only `depth`
+ *    DLTA pointers are read (one per plane); the copied frame shares
+ *    nothing (its cookie is cleared, made again with AutoCookie On).
  *  - LoadShapes: the shape block read from the file keeps its +30
- *    ("cL" from a saved DecodeShapes shape: the data is never freed).
+ *    ("cL" from a saved DecodeShapes shape: the data is never freed). (#267)
  *  - CopyShape copies +30 too; freeashape leaves "cL" in +30 (a later
- *    shape in that object is never freed either).
- *  - DecodeShapes stops silently at the first block that does not match;
- *    memory below 2 MB ($FFE00000 clear) is used in place ("cL"), above
- *    it is copied to CHIP memory.
- *  - ShapeWidth/ShapeHeight load only the low word of d0.
+ *    shape in that object is never freed either). (#268, #269)
+ *  - Not a bug (by design): DecodeShapes stops silently at the first block
+ *    that does not match (the end of the sequence); memory below 2 MB
+ *    ($FFE00000 clear, chip RAM) is used in place ("cL"), above it is
+ *    copied to CHIP memory.
+ *  - Not a bug (word results, the compiler uses only d0.w):
+ *    ShapeWidth/ShapeHeight load only the low word of d0.
  *  - DecodeShapes with address 0 jumps (BEQ) into the error check area
- *    (err10): without the debugger behind the library.
+ *    (err10): without the debugger behind the library. (#270)
  * err2/err3/err7/err8
  * (files, ANIM) are in the normal code with their messages in the error
  * check area, as in the original.

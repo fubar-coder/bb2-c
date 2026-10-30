@@ -24,8 +24,9 @@
  * (the width word on the caller's argument stack is changed for that,
  * as in the original); BlockScroll copies whole bytes (x / 8).
  *
- * BUG(orig), kept: a bitmap of depth 0 runs the plane loops 65536 times;
- * Scroll writes the clipped width back to the argument stack.
+ * BUG(orig) (#393), kept: a bitmap of depth 0 runs the plane loops 65536 times;
+ * Not a bug: Scroll writes the clipped width back to the argument stack (it
+ * belongs to this call and is discarded by the compiler afterwards).
  * Error checks (debugger only): Plot/Point/Cls "Uninitialized BitMap";
  * Scroll/BlockScroll area inside both bitmaps ("Illegal Scroll Area"),
  * height <= 1024 ("Scroll area to large").

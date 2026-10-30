@@ -22,15 +22,15 @@
  * RenderToBitmap/RenderToChunky choose what RenderPoly draws.
  *
  * BUG(orig), kept:
- *   - no origin, no orientation test: the points must run clockwise.
+ *   - no origin, no orientation test: the points must run clockwise. (#419)
  *   - RenderPoly after RenderToBitmap b,d draws on d with b as dither
- *     bitmap (the two are swapped); RenderPoly before any RenderTo...
- *     draws on a3 = the string pointer (no !libs).
- *   - RenderToChunky colours > 14 read behind the 15 entry colour table.
+ *     bitmap (the two are swapped, #421); RenderPoly before any RenderTo...
+ *     draws on a3 = the string pointer (no !libs) (#420).
+ *   - RenderToChunky colours > 14 read behind the 15 entry colour table. (#422)
  *   - more than 16 points overflow polypts, more than 10 edges one side
- *     the edge lists l0/l1.
- *   - the dither form assumes evenly spaced bitplanes (plane 1 - plane 0).
- *   - a depth of 0 runs the plane loop 65536 times.
+ *     the edge lists l0/l1. (#395)
+ *   - the dither form assumes evenly spaced bitplanes (plane 1 - plane 0). (#418)
+ *   - a depth of 0 runs the plane loop 65536 times. (#393)
  * DIFF (memory layout, unavoidable): what such an overflow hits.
  */
 #include "blitzlib.h"
@@ -1071,7 +1071,7 @@ static void rpoly0(void)
 
 static void rpoly1(void)
 {
-    a0 = bmap0;                                 /* BUG(orig): swapped */
+    a0 = bmap0;                                 /* BUG(orig) (#421): swapped */
     a3 = bmap1;
     bitmappoly2();
 }

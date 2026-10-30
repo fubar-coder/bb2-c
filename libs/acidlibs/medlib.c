@@ -26,33 +26,33 @@
  * state, hold/decay/finetune tables, the 16 period tables taken from the
  * binary) has the layout of the original.  This is what the original's
  * results depend on - e.g. a Bxx command stores the whole word of d4,
- * whose upper byte is left over from the previous track.
+ * whose upper byte is left over from the previous track (#203).
  * Assembler: only the hardware (Paula registers, DMACON, filter LED,
  * VHPOSR waits) is accessed through volatile pointers - no inline asm.
  *
  * BUG(orig), kept (selection):
  *   - Bxx (position jump) stores the word of d4: upper byte = rest of the
  *     previous track's d4 (0 after a plain note, the soffset or 64 after
- *     _PlayNote) - the jump target may be wrong.
- *   - 7xy with x = 0 jumps into the vibrato code (BEQ nonvib).
+ *     _PlayNote) - the jump target may be wrong. (#203)
+ *   - 7xy with x = 0 jumps into the vibrato code (BEQ nonvib). (#204)
  *   - Fxx 1Fxx: the retrigger nibble is taken from d1 after the delayed
  *     note was played (playfxnote/_PlayNote change d1; only the delay
- *     tick is affected).
- *   - the synth period clamp sets d1 instead of d5 (no clamp at 113).
+ *     tick is affected). (#205)
+ *   - the synth period clamp sets d1 instead of d5 (no clamp at 113). (#206)
  *   - after a MIDI dump in the expansion data the relocation reads the
  *     next module pointer from (expansion address AND $FFFF0000): relocmdd
- *     overwrites the low word of d0.
+ *     overwrites the low word of d0. (#207)
  *   - pushnewvals: for a channel mask with gaps it still takes tracks
  *     0..k-1 with their own bits (no values of a wrong track), so the
- *     higher channels of the mask get no follow-up values.
+ *     higher channels of the mask get no follow-up values. (#208)
  *   - tracks 4-15 (20 byte structures) are handled by _PlayNote like
  *     tracks 0-3 (writes behind their structures, hardware pointer read
- *     from the next structure); only modules with more than 4 tracks.
+ *     from the next structure); only modules with more than 4 tracks. (#209)
  *   - JumpMed without a playing module writes to addresses 44-47
- *     (mmd_pline/mmd_pseqnum of module 0 = exception vector 11).
- *   - finetune values outside -8..7 read pointers outside _periodtable.
+ *     (mmd_pline/mmd_pseqnum of module 0 = exception vector 11). (#210)
+ *   - finetune values outside -8..7 read pointers outside _periodtable. (#211)
  *   - GetMedVolume clears trk_prevvol: the channel is silent until the
- *     next note.
+ *     next note. (#212)
  * DIFF: a3 (string pointer) is not changed by LoadMedModule and
  * SetMedVolume (the original leaves it at object+8 / a track structure;
  * statements, nothing reads it).
@@ -957,7 +957,7 @@ synth_arpeggio:
     }
     SETW(d5, d5 + MW(a5, trk_perchg));          /* synth_rts */
     if (SW(d5) < 113)
-        d1 = 113;                               /* BUG(orig): d1, not d5 */
+        d1 = 113;                               /* BUG(orig) (#206): d1, not d5 */
     a3 = s3;
 }
 
@@ -1316,7 +1316,7 @@ static ULONG IntHandler(void)
 plr_loop0:
     d5 = 0;
     a5 = *tdp++;
-    /* BUG(orig): a masked track is skipped before its note is read, so
+    /* BUG(orig) (#334): a masked track is skipped before its note is read, so
        noteptr stays: the next track reads this track's note */
     if (!(B(ChanMask) & (1 << (d7 & 7))))
         goto plr_endloop0;
@@ -1770,7 +1770,7 @@ nonvib:
             MW(a5, trk_tremsz) = d1;
         SETB(d4, d4 & 0xf0);                    /* plr_chgtrespd */
         if (!B(d4))
-            goto nonvib;                        /* BUG(orig) */
+            goto nonvib;                        /* BUG(orig) (#204) */
         SETB(d4, B(d4) >> 2);
         SETB(d4, d4 & 0x3e);
         MB(a5, trk_tremspd) = d4;

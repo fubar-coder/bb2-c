@@ -34,19 +34,21 @@
  * Kept from the original (BUG(orig)):
  *   - every error is a branch from the normal code into the error check
  *     area (behind the library without the debugger): reproduced as
- *     JSR to the same labels.
+ *     JSR to the same labels. (#412)
  *   - the init writes mysprite's address into the data words of the
- *     SPR0POS/SPR0CTL moves of `spp` (+2/+6), not into SPR0PTH/PTL.
- *   - DisplayBitMap without x,y stores the caller's d2/d3 in x0/x1.
- *   - word arithmetic, DBF counters (a 0/negative count runs 65536 times,
+ *     SPR0POS/SPR0CTL moves of `spp` (+2/+6), not into SPR0PTH/PTL. (#413)
+ *   - DisplayBitMap without x,y stores the caller's d2/d3 in x0/x1. (#411)
+ *   - Not a bug (only with out-of-range arguments that do not occur):
+ *     word arithmetic, DBF counters (a 0/negative count runs 65536 times,
  *     e.g. cpline 4 per line), ADDA.w of colour offsets (palette entries
  *     >= 2731 go backwards), signed CMPA.l in the overrun checks.
- *   - DisplayBitMap / the double form leave a3 on the bp1 table,
- *     CreateDisplay on the last coplist - reproduced.
+ *   - Not a bug (statements: the compiler reloads a3 for every string
+ *     expression): DisplayBitMap / the double form leave a3 on the bp1
+ *     table, CreateDisplay on the last coplist - reproduced.
  *   - CustomSprites is declared with the !libs of DisplaySprite
  *     (#spriteslib,$1181): the compiler treats CCOffset as a sprite
  *     number (maximum check, d1 shifted by 4) and the routine's ASL #2
- *     makes the offset CCOffset * 64 bytes instead of * 4.
+ *     makes the offset CCOffset * 64 bytes instead of * 4. (#324)
  * DIFF: a2 stays unchanged where it is the argument stack (port
  * convention, notes/cmdlibs-port.md); the error branches are JSRs (a
  * return address more on the stack); indexes outside the data tables
@@ -207,7 +209,7 @@ BLITZ_NAME("DisplayScroll", "CopList#,&xpos.q(n),&xpos.q(n)[,Offset]   ;3");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-/* BUG(orig): copied from DisplaySprite - $1181 loads a sprite object for
+/* BUG(orig) (#324): copied from DisplaySprite - $1181 loads a sprite object for
    CCOffset (d1 arrives shifted by 4, checked against the sprite maximum) */
 BLITZ_LIBS(LIB_spriteslib, 0x1181, LIB_displaylib, COP);
 BLITZ_SUBS(_customsprites, _checkcoplist, 0);
@@ -456,7 +458,7 @@ static void BLITZ_ROUTINE _codeinit_c(void)
     ULONG m = globalloc(32, 65538);
 
     d.mysprite = m;
-    ((UWORD *)spp)[3] = (UWORD)m;               /* BUG(orig): spp+6, spp+2 */
+    ((UWORD *)spp)[3] = (UWORD)m;               /* BUG(orig) (#413): spp+6, spp+2 */
     ((UWORD *)spp)[1] = (UWORD)(m >> 16);
     if ((*(volatile UWORD *)0xdff07c & 255) == 248)
         d.agamac = 0xffff;
@@ -904,7 +906,7 @@ static void BLITZ_ROUTINE _displaybmap_c(const UBYTE *a0 BL_REG(a0), ULONG d2 BL
         displaybmap2(a3, a0, 0, 0);
         return;
     }
-    L(a3, M_X0) = d2;                           /* BUG(orig): stale d2/d3 */
+    L(a3, M_X0) = d2;                           /* BUG(orig) (#411): stale d2/d3 */
     L(a3, M_X1) = d3;
     a2 = (UWORD *)L(a3, M_BPLANES);
     d0 = W(a3, M_NUMBP);
@@ -1464,7 +1466,7 @@ static void BLITZ_ROUTINE _displaydblscan_c(UWORD d1 BL_REG(d1), UWORD d2 BL_REG
 BLITZ_THUNK(_displaydblscan0, _displaydblscan0_c, "a0");
 BLITZ_THUNK(_displaydblscan, _displaydblscan_c, "a0");
 
-/* CustomSprites CopList#,CCOffset,YPos,NumSprites.  BUG(orig): d1 is
+/* CustomSprites CopList#,CCOffset,YPos,NumSprites.  BUG(orig) (#324): d1 is
    CCOffset * 16 (see the declaration), the a1 the compiler loaded is not
    used: the offset is CCOffset * 64 bytes */
 static void BLITZ_ROUTINE _customsprites_c(UWORD d1 BL_REG(d1), UWORD d2 BL_REG(d2),

@@ -30,20 +30,20 @@
  *     SUBQ for a new highest pattern number, skipping the DBF), so
  *     positions 0-126 are checked, 127 never; a new maximum at position
  *     126 turns the counter 0 into $FFFF: the search reads ~64 KB more
- *     and mt_lop3 clears longs behind the module.
- *   - the sample's volume word includes the finetune byte (MOVE.w).
- *   - repeat start * 2 as a word (ASL.w): repeats beyond 64K wrap.
+ *     and mt_lop3 clears longs behind the module. (#289)
+ *   - the sample's volume word includes the finetune byte (MOVE.w). (#290)
+ *   - repeat start * 2 as a word (ASL.w): repeats beyond 64K wrap. (#291)
  *   - after a pattern break / position jump (D, B) the end of the song is
  *     compared with the first byte of the pattern data instead of the
- *     song length, unless the row was the last of the pattern.
+ *     song length, unless the row was the last of the pattern. (#292)
  *   - set volume (C) writes the volume as a BYTE to AUDxVOL (both halves
- *     of the register); C and F only clamp positive values (signed
- *     compares).
+ *     of the register) (#293); C and F only clamp positive values (signed
+ *     compares) (#294).
  *   - a sample number above 31 reads the start from behind the table
  *     (the voice data; the C library has them in the same order, beyond
- *     that the original reads its own code).
+ *     that the original reads its own code). (#295)
  *   - LoadModule of a missing file / a directory: runtime error without
- *     FreeMem of the FileInfoBlock (a directory also stays locked).
+ *     FreeMem of the FileInfoBlock (a directory also stays locked). (#296)
  * DIFF: none in the results; the interrupt routine is C (GCC keeps
  * d2-d7/a2-a6, the thunk d0-d1/a0-a1: everything like the original).
  */
@@ -167,7 +167,7 @@ static void mt_init(void)
     BYTE d1 = 0, d2;
     int i;
 
-    /* highest pattern number (see BUG(orig)) */
+    /* highest pattern number (see BUG(orig) (#289)) */
     do {
         d2 = d1;                                /* mt_loop */
         d0--;

@@ -78,11 +78,11 @@ static ULONG BLITZ_ROUTINE dopeek_c(ULONG type BL_REG(d0), ULONG loc BL_REG(d1))
 BLITZ_THUNK(dopeek, dopeek_c, "d1/a1");
 
 /* dopeeks - d0 = address, d1 = number of characters: copied to a3 without
-   a terminating 0 (as in the original, not a bug: the compiler uses d0 =
+   a terminating 0 (as in the original, not a bug, #213: the compiler uses d0 =
    length, and where it passes a string on as an address it appends
    clr.b (a3)+ itself, blitz2.s:8767 sbtolong); d1 = 0 copies nothing;
-   d0 = d1.  The count is unsigned 32 bit (SUBQ.l #1,d1:BNE), a negative
-   length copies ~4 GB. */
+   d0 = d1.  BUG(orig) (#214): the count is unsigned 32 bit
+   (SUBQ.l #1,d1:BNE), a negative length copies ~4 GB. */
 ULONG BLITZ_ROUTINE dopeeks(ULONG loc BL_REG(d0), ULONG n BL_REG(d1))
 {
     const UBYTE *s = (const UBYTE *)loc;

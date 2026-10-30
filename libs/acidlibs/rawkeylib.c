@@ -27,7 +27,7 @@
  * (`AND #$FFDF:SUB #64`: [ \ ] ^ _ ` stay), else CAPS LOCK (bit 2) makes
  * a-z upper case.
  *
- * BUG(orig), kept: qconvertkey indexes the table with the raw code & 255
+ * BUG(orig) (#245), kept: qconvertkey indexes the table with the raw code & 255
  * - codes 105-255 (key-up codes $80+ included) read on behind the table:
  * the shifted table, then the library's own code (qconvertkey and
  * convertkey).  Those 151 code bytes of the original are appended to the
@@ -68,7 +68,7 @@ BLITZ_LIBFIN();
 /* ------------------------------------------------------------ variables */
 
 /* the two tables, followed by the original's code bytes $1CC-$262
-   (qconvertkey reads up to table + 360, see BUG(orig) above) */
+   (qconvertkey reads up to table + 360, see BUG(orig) (#245) above) */
 static struct BL_PACKED {
     UBYTE normmap[105];
     UBYTE shiftmap[105];

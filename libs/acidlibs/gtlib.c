@@ -32,29 +32,31 @@
  *   - GTPalette with a colour writes it to the low word of the TAG_MORE
  *     pointer of its tag list (offset +38 of the source layout, which had
  *     two more tags): the colour is ignored, a GTTags list after it is
- *     reached through a wrong pointer.
+ *     reached through a wrong pointer. (#168)
  *   - The optional values (cycle/mx active, listview top/selected,
  *     scroller top, slider level, string default) stay in the static tag
  *     lists: a later call without them uses the previous values (GTString
- *     a pointer into the old string work area).
+ *     a pointer into the old string work area). (#169)
  *   - GTBevelBox: flags <> 0 gives the tag GTBB_Recessed with value 0, so
- *     the box is never recessed.
+ *     the box is never recessed. (#170)
  *   - GTButton toggle (bit 13) sets TOGGLESELECT even if CreateGadget
- *     failed (writes address 14).
- *   - GTShape: the label of the previous gadget stays in the NewGadget; an
- *     existing GadgetRender of the button is overwritten with the static
- *     Image (20 bytes), else replaced by it.
+ *     failed (writes address 14). (#171)
+ *   - GTShape: the label of the previous gadget stays in the NewGadget
+ *     (#172); an existing GadgetRender of the button is overwritten with
+ *     the static Image (20 bytes), else replaced by it (#173).  The result
+ *     of CreateGadget is not checked (writes to addresses 12-25 if it
+ *     failed). (#327)
  *   - getoptions (cycle/mx labels): memlib globalloc (no MEMF_CLEAR, all
- *     used bytes are written), at most 63 labels + NULL (no check), never freed.
+ *     used bytes are written), at most 63 labels + NULL (no check), never freed. (#174)
  *   - GTSetAttrs/GTChangeList/GTSetHighlight work on the LAST gadget of a
  *     run of gadgets with the same id, GTGetAttrs/GTGadPtr etc. on the
- *     FIRST; GTFreeGadget frees the whole run (first to last).
- *   - Without a used screen handlestd reads the border sizes from 0.
+ *     FIRST; GTFreeGadget frees the whole run (first to last). (#175)
+ *   - Without a used screen handlestd reads the border sizes from 0. (#176)
  *   - GTChangeList, GTSetHighlight, GTSetAttrs, GTSetString,
  *     GTSetInteger and GTGetAttrs pass their tag list in a3 (the string
  *     buffer pointer) and leave a3 there: as a function inside a string
  *     expression the rest of the expression is written over the tag list
- *     and what follows it in the library.
+ *     and what follows it in the library. (#328)
  * DIFF: GTTags/GTSetAttrs do not move a2 (the original pops the pairs);
  * the unused error routine freqchk of the binary is not ported.
  */
@@ -555,7 +557,7 @@ static void BLITZ_ROUTINE gtbutton_c(STDARGS)
     buttags[3] = bit(f, 7);
     gad = create(BUTTON_KIND, f, buttags, 6);
     if (f & (1UL << 13)) {
-        __asm__("" : "+a"(gad));        /* may be 0: BUG(orig) */
+        __asm__("" : "+a"(gad));        /* may be 0: BUG(orig) (#171) */
         B(gad, 14) |= 1;                /* TOGGLESELECT */
     }
 }
@@ -718,7 +720,7 @@ static void BLITZ_ROUTINE gtpalette_c(STDARGS)
     palette(id, x, y, w, h, font, scr, a2);
 }
 
-/* BUG(orig): +38 is the low word of the TAG_MORE pointer */
+/* BUG(orig) (#168): +38 is the low word of the TAG_MORE pointer */
 static void BLITZ_ROUTINE gtpalette2_c(STDARGS)
 {
     UW(palettetags, 38) = UW(a2, -18);
@@ -814,7 +816,7 @@ static void doshape(UWORD id, WORD x, WORD y, ULONG flags,
     shapetags[3] = bit(flags, 7);
     gad = create(BUTTON_KIND, flags, shapetags, 6);
     usertags[0] = 0;
-    __asm__("" : "+a"(gad));
+    __asm__("" : "+a"(gad));    /* may be 0: BUG(orig) (#327) */
     if (gad->GadgetRender) {
         ULONG *d = (ULONG *)gad->GadgetRender, *s = (ULONG *)&image1;
         int i;
@@ -976,7 +978,7 @@ static ULONG setattrs(struct gtcontext *c, UWORD id, ULONG *tags, int last)
         return 0;
     if (last)
         a0 = lastof(a0, id);
-    /* BUG(orig): a3 = tags afterwards */
+    /* BUG(orig) (#328): a3 = tags afterwards */
     GT_SetGadgetAttrsA((struct Gadget *)a0, c->window, NULL, (struct TagItem *)tags);
     return 0;
 }
@@ -1043,7 +1045,7 @@ static ULONG BLITZ_ROUTINE gtsetattrs_c(UWORD id BL_REG(d1), UWORD d7 BL_REG(d7)
         return 0;
     a0 = lastof(a0, id);
     gttags(d7, a2);
-    /* BUG(orig): a3 = usertags afterwards (also as a function) */
+    /* BUG(orig) (#328): a3 = usertags afterwards (also as a function) */
     GT_SetGadgetAttrsA((struct Gadget *)a0, c->window, NULL,
                        (struct TagItem *)usertags);
     return 0;                           /* the original: what d0 holds */
@@ -1059,7 +1061,7 @@ static void setone(struct gtcontext *c, UWORD id, ULONG v, ULONG tstr, ULONG tot
         return;
     onetag[0] = UW(a0, 16) == 0x104 ? tstr : tother;
     onetag[1] = v;
-    /* BUG(orig): a3 = onetag afterwards */
+    /* BUG(orig) (#328): a3 = onetag afterwards */
     GT_SetGadgetAttrsA((struct Gadget *)a0, c->window, NULL, (struct TagItem *)onetag);
 }
 
@@ -1113,7 +1115,7 @@ static ULONG BLITZ_ROUTINE gtgetattrs_c(UWORD id BL_REG(d1), ULONG tag BL_REG(d2
         return 0;
     gettag[0] = tag;
     gettag[1] = (ULONG)&value;
-    /* BUG(orig): a3 = gettag afterwards - in a string expression the rest
+    /* BUG(orig) (#328): a3 = gettag afterwards - in a string expression the rest
        is written over gettag, value and what follows them */
     GT_GetGadgetAttrsA((struct Gadget *)a0, c->window, NULL, (struct TagItem *)gettag);
     return value;

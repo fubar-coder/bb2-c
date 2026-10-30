@@ -33,14 +33,14 @@
  *               newline of a console line, is dropped; d0 = -1 at end of
  *               file, -2 on an error);  0: no single characters - runtime
  *               error "Can't Input Character from Defualt Input" (sic,
- *               BUG(orig): typo kept)
+ *               BUG(orig) (#193): typo kept)
  *
  * Stacks: DefaultInput/DefaultOutput and every dosetin/dosetout push the
  * previous handler (word index & 63: a ring of 16 longs) and count;
  * PopInput/PopOutput go back one entry.  init pushes the initial handler
  * 0 on both stacks, so after one PopOutput at the start the output
  * handler is 0.  Without the debugger nothing is checked (popping more
- * than was pushed takes old ring entries, BUG(orig)).
+ * than was pushed takes old ring entries, BUG(orig) (#194)).
  *
  * DIFF: in the original the single character entry of defin is `BRA err1`
  * into the error check area: with the debugger the runtime error, without
@@ -232,7 +232,7 @@ static LONG BLITZ_ROUTINE defin2_c(ULONG len BL_REG(d0), UBYTE *buf BL_REG(a0))
 
 /* message of defin's single character entry - in the normal code (DIFF,
    see the head comment; the original's text is in the error area).
-   BUG(orig): "Defualt" - the typo of the original, kept */
+   BUG(orig) (#193): "Defualt" - the typo of the original, kept */
 const char mess1[] = "Can't Input Character from Defualt Input";
 
 void defin(void);

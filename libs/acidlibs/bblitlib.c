@@ -17,11 +17,12 @@
  * the buffer; ShowStencil does the same through a stencil (B) without
  * emptying the buffer.  Blitz/Amiga variants as in blitlib.
  *
- * Kept from the original (BUG(orig)): only the error check tests for an
+ * Kept from the original (BUG(orig), #73): only the error check tests for an
  * overflow of the buffer; a shape or bitmap of depth 0 loops 65536 times
- * (DBF); the last word mask of the blit is cleared, the first one stays
- * $FFFF from the save blit; FreeBuffer leaves the write position and the
- * last record pointer stale.
+ * (DBF) (#74); FreeBuffer leaves the write position and the last record
+ * pointer stale (#75).  Not a bug: the last word mask of the blit is
+ * cleared, the first one stays $FFFF from the save blit (exactly the masks
+ * blitlib sets for the shape blit, same result).
  * DIFF: the nullsub-less entries keep a4/a5 (the original saves them too).
  */
 #include "blitzlib.h"

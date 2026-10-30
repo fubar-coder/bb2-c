@@ -31,20 +31,23 @@
  *
  * BUG(orig), kept:
  *  - nPlanes is the byte at BitMap+5, the plane loop compares with the
- *    WORD at +4 (Flags<<8 | Depth); both loops (rows, planes) run at least
- *    once (and 65536 times for 0 colours in SaveScreen without AGA).
- *  - savearow reads one byte behind the row (literal run test); indexes
- *    are signed words (a2 + d4.w).
- *  - CMAP chunks of an odd size are not padded.
+ *    WORD at +4 (Flags<<8 | Depth) (#180); both loops (rows, planes) run
+ *    at least once (#181) (and 65536 times for 0 colours in SaveScreen
+ *    without AGA, #182).
+ *  - savearow reads one byte behind the row (literal run test) (#183);
+ *    indexes are signed words (a2 + d4.w; not a bug: matters only for rows
+ *    of 32 KB or more, which are not usable).
+ *  - CMAP chunks of an odd size are not padded. (#184)
  *  - SaveBitmap with a palette of 0 colours writes 65536 colours (DBF) -
- *    over the end of the buffer (not tested).
+ *    over the end of the buffer (not tested). (#182)
  *  - Can't open the file: runtime error "Can't open File" (err2 in the
  *    normal code, message in the error check area as in the original:
- *    without the debugger d0 points behind the library).
- *  - The ExecVersion check uses CMP.w/BLT (signed).
+ *    without the debugger d0 points behind the library). (#185)
+ *  - Not a bug (exec versions are < 32768): the ExecVersion check uses
+ *    CMP.w/BLT (signed).
  *  - SaveShape does not check the depth: depth 0 writes 65536 plane
  *    pointers (DBF) from tempbm on, depth 15 and more run past its 14
- *    pointers (usewid, tempcols, then whatever follows).
+ *    pointers (usewid, tempcols, then whatever follows). (#326)
  *
  * Error checks (debugger only): uninitialized bitmap (BytesPerRow word 0),
  * palette (colour pointer 0), screen (pointer 0), shape (width 0).
@@ -359,7 +362,7 @@ static void saveshape(const UBYTE *shape, const char *name, const struct palette
     *(UWORD *)(a2 + 4) = *(const UWORD *)(shape + 4);
     a2 += 8;
     a1 = *(UBYTE *const *)(shape + 14);
-    d0 = *(const UWORD *)(shape + 4) - 1;   /* BUG(orig): depth unchecked */
+    d0 = *(const UWORD *)(shape + 4) - 1;   /* BUG(orig) (#326): depth unchecked */
     do {
         *(UBYTE **)a2 = a1;
         a2 += 4;

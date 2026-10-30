@@ -23,14 +23,14 @@
  *   BlitzRepeat: does nothing (RTS); HandleRawKey has no code.
  *
  * Kept from the original (BUG(orig)):
- *   - BlitzKeys Off only clears the flag; the input handler stays.
- *   - ison is toggled with NOT (On: $FFFF).
- *   - the -8 entry of the input handler (string output) is no BRA; an
- *     input handler is never called there.
- *   - RawStatus, BlitzQualifier: word results, the upper word of d0 is
- *     the caller's (thunks).
- *   - BlitzKey writes the read index of keyboard.device for every entry
- *     it passes (also key up codes).
+ *   - BlitzKeys Off only clears the flag; the input handler stays. (#408)
+ * Not a bug (no observable effect): ison is toggled with NOT (On: $FFFF;
+ * only tested for 0); the -8 entry of the input handler (string output) is
+ * no BRA (an input handler is never called there); RawStatus,
+ * BlitzQualifier: word results, the upper word of d0 is the caller's
+ * (thunks; the compiler uses only d0.w); BlitzKey writes the read index of
+ * keyboard.device for every entry it passes, also key up codes (needed to
+ * get past them).
  * Registers: BlitzKey keeps d1/a0-a1 (MOVEM in the original, here the
  * thunk; GCC keeps d2-d7/a2-a6 around the ALibJsr).
  */
@@ -136,7 +136,7 @@ void BLITZ_ROUTINE dobkeys(WORD on BL_REG(d0))
             oldin = (UBYTE *)BLITZ_ALIBJSR(TOK_setin, r);
         }
     } else if (ison)
-        ison = ~ison;                   /* BUG(orig): handler stays */
+        ison = ~ison;                   /* BUG(orig) (#408): handler stays */
 }
 
 /* BlitzKey / input handler: d0, d1 = the caller's registers (their upper

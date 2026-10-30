@@ -14,10 +14,12 @@
  * memory and goes with the program.
  *
  * Kept from the original (BUG(orig)):
- *   - InitBank with size 0 only frees the bank.
- *   - FreeBank frees only if pos and size are both non-zero and does not
- *     clear memtype.
- *   - LoadBank asks fileiolib's Exists (ALibJsr $3E15) for the file size:
+ *   - Not a bug (intended): InitBank with size 0 only frees the bank.
+ *   - Not a bug (no visible effect: an unused bank has size 0 and is
+ *     reallocated anyway): FreeBank frees only if pos and size are both
+ *     non-zero and does not clear memtype.
+ *   - LoadBank (the load rules are a description, not a bug; only the drawer
+ *     case is one) asks fileiolib's Exists (ALibJsr $3E15) for the file size:
  *     0 (no file, or an empty file) = nothing happens.  The bank is
  *     (re)allocated with the file size if the memtype differs or if the
  *     file is not smaller than the bank (CMP.l/BMI: the same size is
@@ -29,16 +31,17 @@
  *     memtype "allocates" $FFFFFFFF bytes: memlib's localloc adds its
  *     8 byte header (ADDQ.l #8 -> 7), AllocMem(7) succeeds, pos points
  *     right behind that 7 byte block and size is -1 (the Open of the
- *     drawer then fails silently).
- *   - SaveBank writes nothing for an unused bank, otherwise size bytes to
- *     a new file; errors of Open/Write are ignored.
- *   - The file handle and name are kept in two longs of the library
- *     (hand, fname) like the original's `Dc.l` variables.
+ *     drawer then fails silently). (#72)
+ *   - Not a bug (no error reporting anywhere in the library): SaveBank
+ *     writes nothing for an unused bank, otherwise size bytes to a new
+ *     file; errors of Open/Write are ignored.
+ *   - Description, not a bug: the file handle and name are kept in two
+ *     longs of the library (hand, fname) like the original's `Dc.l` variables.
  * Kept from the original, not a bug (no visible effect):
  *   - InitBank with a size stores size and memtype BEFORE allocating: a
  *     failed allocation would leave pos = 0 and BankSize = the requested
  *     size, but in the original memlib never returns then (err1, "Out of
- *     Memory!"); only the C memlib returns (K).
+ *     Memory!"); only the C memlib returns (K). (#71)
  */
 #include "blitzlib.h"
 #include <dos/dos.h>

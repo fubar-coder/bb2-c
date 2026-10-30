@@ -19,18 +19,19 @@
  * Kept on purpose (BUG(orig)):
  *   - Date$: the day after the leap day period of a cycle is wrong: day
  *     366 of a cycle (1/1 of the year after a leap year, e.g. 1/1/1981)
- *     is shown as 32/12 of the leap year (CMP #366: BLE instead of BLT).
- *   - WeekDay: SUBQ.w #2 on the day count (no borrow into the high word).
+ *     is shown as 32/12 of the leap year (CMP #366: BLE instead of BLT). (#120)
+ *   - WeekDay: SUBQ.w #2 on the day count (no borrow into the high word). (#121)
  *   - NumDays: ADDQ.w #1 / SUBQ.w #1 on the day count (no carry/borrow),
- *     e.g. NumDays("31/12/1977") = 65535, not -1.
+ *     e.g. NumDays("31/12/1977") = 65535, not -1. (#122)
  *   - NumDays: a 2 digit year reads past the end of the string (the year
- *     ends only at "/" or after 4 characters); a "/" as first character
- *     of a field becomes the value 47; month 0 reads the low word of the
- *     tick count of the last DateStamp (word before the month table),
+ *     ends only at "/" or after 4 characters) (#125); a "/" as first
+ *     character of a field becomes the value 47 (#123); month 0 reads the
+ *     low word of the tick count of the last DateStamp (word before the
+ *     month table),
  *     months 14/15 read the two words after the table (MOVEQ #0,d0:RTS at
- *     the end of the original library, reproduced below).
- *   - Mins/Secs return the values of the last Hours call (no DateStamp
- *     of their own), as documented.
+ *     the end of the original library, reproduced below) (#124).
+ * Not a bug (documented): Mins/Secs return the values of the last Hours
+ * call (no DateStamp of their own).
  */
 #include "blitzlib.h"
 #include <dos/dos.h>
@@ -203,7 +204,7 @@ ULONG BLITZ_ROUTINE datestr_c(LONG days BL_REG(d0))
     d2 = (ULONG)(DAYSINQUADYR * (LONG)(WORD)d1);        /* MULS d1,d2 */
     d0 -= d2;                                           /* day in cycle */
     BL_SETW(d1, (UWORD)d1 << 2);                        /* ASL #2,d1: year */
-    /* BUG(orig): BLE - day 366 stays in the leap year (32/12) */
+    /* BUG(orig) (#120): BLE - day 366 stays in the leap year (32/12) */
     if ((WORD)d0 > 366) {
         BL_SETW(d0, d0 - 366);
         d0 = bl_divs_w(BL_EXTL(d0), 365);
@@ -241,7 +242,7 @@ ULONG BLITZ_ROUTINE datestr_c(LONG days BL_REG(d0))
 }
 
 /* _weekday - of the last Date$ (0 = Sunday).
-   BUG(orig): SUBQ.w #2 - no borrow from the high word. */
+   BUG(orig) (#121): SUBQ.w #2 - no borrow from the high word. */
 ULONG BLITZ_ROUTINE weekday_c(void)
 {
     ULONG d0 = totday;
@@ -297,7 +298,7 @@ getm:
 gety:
     BL_SETW(d4, d1);
     d1 = *a0++;                                         /* year */
-    /* BUG(orig): "/" here jumps back to gety (month = 47) */
+    /* BUG(orig) (#123): "/" here jumps back to gety (month = 47) */
     if ((UWORD)d1 == '/')
         goto gety;
     BL_SETW(d1, d1 - 48);
@@ -325,9 +326,9 @@ gety:
     d1 = BL_SWAP(d1);
     /* not a leap year and before March: one leap day less in the table */
     if ((UWORD)d1 != 0 && (WORD)((UWORD)d4 - 6) < 0)
-        BL_SETW(d0, d0 + 1);                            /* BUG(orig): ADDQ.w */
+        BL_SETW(d0, d0 + 1);                            /* BUG(orig) (#122): ADDQ.w */
     d0 += BL_EXTL(d3);
     d0 -= DAYSP1978;
-    BL_SETW(d0, d0 - 1);                                /* BUG(orig): SUBQ.w */
+    BL_SETW(d0, d0 - 1);                                /* BUG(orig) (#122): SUBQ.w */
     return d0;
 }

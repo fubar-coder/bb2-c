@@ -23,23 +23,25 @@
  *
  * BUG(orig), kept:
  *  - ILBMInfo closes the file also when it could not be opened (dos
- *    Close of 0); the result is ilbminit's -1/0.
+ *    Close of 0); the result is ilbminit's -1/0. (#186)
  *  - ilbmbitmap ignores a failed ilbminit and searches "BODY" in what is
- *    left in iffiolib's buffer (C: iffstuff as after the last ilbminit).
+ *    left in iffiolib's buffer (C: iffstuff as after the last ilbminit). (#187)
  *  - ilbmbitmap compares the plane number with the WORD at BitMap+4
  *    (Flags<<8 | Depth); reads width-in-words*2 bytes per row and plane,
- *    stores only what fits into BytesPerRow/Depth/Rows.
- *  - DecodeILBM (memory): chunk lengths are not padded to even; the end
- *    test is `end <= pointer` after skipping a chunk; it writes ALL planes
- *    of the ILBM through the BitMap's plane pointers (more planes than the
- *    bitmap has: pointers behind Planes[]), ILBM row length per row, the
+ *    stores only what fits into BytesPerRow/Depth/Rows. (#188)
+ *  - DecodeILBM (memory): chunk lengths are not padded to even (#189); the
+ *    end test is `end <= pointer` after skipping a chunk; it writes ALL
+ *    planes of the ILBM through the BitMap's plane pointers (more planes
+ *    than the bitmap has: pointers behind Planes[], #190), ILBM row length
+ *    per row, the
  *    BitMap's BytesPerRow as row step; ByteRun1 runs are not clipped at
  *    the row end (a run over the row end continues in the next plane row
- *    with a smaller count).  Uncompressed rows are copied as words.
+ *    with a smaller count) (#191).  Uncompressed rows are copied as words.
  *  - The error routines are in the normal code, their messages in the
  *    error check area (as in the original: without the debugger d0 points
- *    behind the library).
- *  - ILBMWidth/Height/Depth load only the low word of d0 (thunks keep the
+ *    behind the library). (#192)
+ *  - Not a bug (word functions, the compiler uses only d0.w):
+ *    ILBMWidth/Height/Depth load only the low word of d0 (thunks keep the
  *    caller's upper word); ILBMViewMode is a long (MOVEQ #0 first).
  *
  * Registers: ilbminit keeps d1-d7/a1-a6 (a0 = iffstuff, on failure the

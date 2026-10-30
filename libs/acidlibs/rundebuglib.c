@@ -13,7 +13,7 @@
  *            the program (exitslib endjmp $C800).  In supervisor mode
  *            restore the vectors and give the trap to the old vector.
  *   TRAP #1  skip the 8 bytes after the TRAP (unless ctrlc is set - it
- *            never is: BUG(orig), ctrlc is only cleared)
+ *            never is: BUG(orig) (#43), ctrlc is only cleared)
  *   TRAP #2  skip 6 bytes
  *   TRAP #3  nothing
  *   TRAP #4  skip 8 bytes
@@ -93,13 +93,13 @@ __asm__(
 "   move.l  #more2,2(sp)\n"
 "   rte\n"
 "more2:\n"
-/* BUG(orig): codefinit changes d0 (the message) before the trap */
+/* BUG(orig) (#246): codefinit changes d0 (the message) before the trap */
 "   jsr     _codefinit\n"
 "   trap    #0\n"
 );
 
 /* printerr - user mode...OK to generate error.  Never returns.
-   BUG(orig): d0 is taken as message pointer as it is.  The numeric codes
+   BUG(orig) (#6): d0 is taken as message pointer as it is.  The numeric codes
    that only debuglib translates (1 "No currently used object!",
    2 "Offset out of range", 3 "End of Program") give a requester with an
    empty text - e.g. when an executable compiled with runtime errors on

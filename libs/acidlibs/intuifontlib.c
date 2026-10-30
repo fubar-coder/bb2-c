@@ -21,10 +21,11 @@
  *
  * BUG(orig), kept:
  *   - the style goes to the WORD at +6 (MOVE.w d3,6(a3)): style byte =
- *     upper byte of the argument (0 for 0..255), flags byte = style.
- *   - the name copy of a previous LoadFont is never freed (allocst).
- *   - the routine table has the code addresses +1 (`dosetifont+1`): bit 0
- *     = Amiga mode only (blitz2.s doajsrrout).
+ *     upper byte of the argument (0 for 0..255), flags byte = style. (#197)
+ *   - the name copy of a previous LoadFont is never freed (allocst). (#198)
+ * Not a bug (the documented Blitz mechanism): the routine table has the code
+ * addresses +1 (`dosetifont+1`): bit 0 = Amiga mode only (blitz2.s
+ * doajsrrout).
  * DIFF: a2 stays unchanged (the original pops the name length).
  */
 #include "blitzlib.h"

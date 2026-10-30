@@ -20,7 +20,7 @@ BLITZ_LIBFIN();
    LEA 8+4(a7),a0 after saving d0-d1).  Count = (a4-p)/4 longs, run as
    DBF loop: a4 == p would clear 65536 longs, but the compiler inserts
    clrloc only with a link size of 4..32768 (blitz2.s:13640, 14041), so
-   that case does not occur in compiled code. */
+   that case does not occur in compiled code (#109). */
 static void BLITZ_ROUTINE clrloc_c(ULONG *p BL_REG(a0))
 {
     UWORD n = (UWORD)((((ULONG)blitz_locals - (ULONG)p) >> 2) - 1);

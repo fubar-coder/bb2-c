@@ -11,9 +11,10 @@
  *         stencil at the same position (bltcon0 $BFA).
  * Blitz/Amiga variants as in blitlib; Stencil uses $DFF000 directly.
  *
- * Kept from the original (BUG(orig)): the stencil's bltsize is rows << 6
- * | bpr / 2 (correct only up to 1024 rows / 64 words); FreeStencil leaves
- * the memory pointer.
+ * Kept from the original (BUG(orig), #284): the stencil's bltsize is rows << 6
+ * | bpr / 2 (correct only up to 1024 rows / 64 words).  Not a bug:
+ * FreeStencil leaves the memory pointer (the width is cleared, which is what
+ * the free routine and the SBlit check test).
  */
 #include "blitzlib.h"
 #define __NOLIBBASE__

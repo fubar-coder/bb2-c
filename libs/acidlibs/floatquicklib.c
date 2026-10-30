@@ -47,9 +47,10 @@ static ULONG q2f(const void *ffp, ULONG v)
    'doit:NEG.l d0 ('doit2)
    The sign test is on -d0: negative inputs are converted as their
    magnitude and get the FFP sign bit (bit 7) set.
-   BUG(orig): 0 counts as negative (NEG gives 0, not minus): Quick 0
-   becomes $00000080, an FFP "-0".  $80000000 (-32768.0) gives +32768.0
-   (NEG overflows, the magnitude is $80000000 read as unsigned). */
+   BUG(orig) (#146): 0 counts as negative (NEG gives 0, not minus): Quick 0
+   becomes $00000080, an FFP "-0".  BUG(orig) (#147): $80000000 (-32768.0)
+   gives +32768.0 (NEG overflows, the magnitude is $80000000 read as
+   unsigned). */
 static ULONG BLITZ_ROUTINE quicktofloat_c(ULONG q BL_REG(d0), const void *ffpbase BL_REG(a6))
 {
     ULONG n = -q;

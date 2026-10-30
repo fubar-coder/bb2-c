@@ -344,8 +344,9 @@ BLITZ_THUNK(unleftstring, unleftstring_c, "d1/a0-a1");
 
 /* LSet$(d0$,d1) - left justify a string: pad with spaces from the end of
    the argument (-1(a3)) or cut.  The length is d1 (negative: 0).
-   BUG(orig): for d1 = Len(d0$) a3 is left at its entry value - 1 (the
-   result end is right only if a3 pointed one past the argument). */
+   For d1 = Len(d0$) a3 is left at its entry value - 1 (not a bug: the
+   compiler always leaves a3 one past the argument's 0, so that is the
+   right end). */
 static ULONG BLITZ_ROUTINE lsetstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
                                         const ULONG *lens BL_REG(a2))
 {
@@ -518,7 +519,7 @@ static ULONG BLITZ_ROUTINE striplead_c(UBYTE *s BL_REG(d0), UWORD ch BL_REG(d1),
 BLITZ_THUNK(striplead, striplead_c, "d1/a0-a1");
 
 /* Right$(d0$,d1) - perform right$(d0,d1).
-   BUG(orig): the source address is LEA 0(a3,d0.w),a0 - the offset
+   BUG(orig) (#285): the source address is LEA 0(a3,d0.w),a0 - the offset
    Len-d1 is used as a sign extended WORD, so for Len-d1 >= 32768 the
    characters are taken from before the string. */
 static ULONG right(UBYTE *s, LONG n, const ULONG *sp)
@@ -555,7 +556,7 @@ BLITZ_THUNK(unrightstring, unrightstring_c, "d1/a0-a1");
 
 /* Mid$(d0$,d1,d2) - perform mid$(d0,d1,d2); first position = 0 after
    SUBQ.l #1,d1, then negative start/length count as 0.  Start beyond the
-   end: empty.  BUG(orig): start+length is compared signed after the
+   end: empty.  BUG(orig) (#286): start+length is compared signed after the
    addition, so a huge length (start-1+length > $7FFFFFFF) copies
    `length` bytes. */
 static ULONG mid(UBYTE *s, LONG start, LONG n, const ULONG *sp)
@@ -677,7 +678,7 @@ BLITZ_THUNK(ascii, ascii_c, "d1/a0-a1");
 /* Instr - find f$ in s$ from 0-based position pos+1; result 1-based
    position or 0.  CaseSense Off compares 'a'..'z' as upper case.
    pos is d4: -1 for Instr(s$,f$), Startpos-2 for Instr(s$,f$,Startpos).
-   BUG(orig): Startpos <= 0 is not checked - the compare starts before
+   BUG(orig) (#287): Startpos <= 0 is not checked - the compare starts before
    the string (Instr(s$,"",0) = 0, Instr(s$,"",-5) = -5). */
 static ULONG instr(UBYTE *s, const UBYTE *f, LONG pos, const ULONG *sp)
 {
@@ -725,7 +726,7 @@ BLITZ_THUNK(instrstring2, instrstring2_c, "d1/a0-a1");
 /* Replace$(d0$,d1$,d2$) - the result is built at a3 (behind the
    arguments), then moved to d0$.  End test: a0+Len(f$) > address of f$
    (BHI) - the find string is expected right behind s$ in the work area.
-   BUG(orig): an empty find string returns s$ unchanged with a3 left at
+   BUG(orig) (#424): an empty find string returns s$ unchanged with a3 left at
    its entry value.
    DIFF: in that case the original pops only two lengths (two MOVE.l
    -(a2) before BEQ 'skip), otherwise three (SUBQ #4,a2), so a2 is left
@@ -811,7 +812,7 @@ static ULONG BLITZ_ROUTINE mklstring_c(ULONG v BL_REG(d0))
 BLITZ_THUNK(mklstring, mklstring_c, "d1/a0-a1");
 
 /* Cvi(d0$) - the first 2 bytes as word; Cvl/Cvq(d0$) - first 4 bytes.
-   a3 = d0$.  BUG(orig): the argument's length is not checked (shorter
+   a3 = d0$.  BUG(orig) (#288): the argument's length is not checked (shorter
    strings read the bytes behind them).  DIFF: the original does not pop
    the length (a2 unchanged, unlike the other string functions); the C
    version leaves a2 unchanged as everywhere (same result).  Cvi leaves

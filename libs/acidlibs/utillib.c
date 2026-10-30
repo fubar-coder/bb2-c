@@ -14,23 +14,28 @@
  * The name is copied into its own block {size.l, characters, 0}.
  *
  * Kept from the original (BUG(orig)):
- *   - TaskName$ leaves a3 BEHIND the terminating 0 (no SUBQ #1,a3), d0 =
- *     length; a task without a name reads from address 0.
- *   - CreateMsgPort returns with a3 = the name argument ("Protect BB2
+ *   - TaskName$ leaves a3 BEHIND the terminating 0 (no SUBQ #1,a3; not a
+ *     bug: no visible effect), d0 = length; a task without a name reads
+ *     from address 0. (#297)
+ *   - Description, not a bug (a port name of 64 KB does not occur):
+ *     CreateMsgPort returns with a3 = the name argument ("Protect BB2
  *     String area from corruption") and copies (UWORD)len+1 bytes of the
  *     name (DBRA on the length's low word).  The length is -4(a2) of the
  *     caller (a2 = the compiler's argument pointer, see memacclib.c).
  *   - a failed AllocSignal (-1) is not noticed (TST.l d0:BEQ tests for
- *     signal 0, which AllocSignal(-1) never returns): mp_SigBit = $FF.
- *     The error path behind it would give globfree the port address
- *     (block+8) and $22 instead of the block and $2A, then runtime error
- *     "Failed to allocate signal for Port".  On a failed allocation "Failed to
+ *     signal 0, which AllocSignal(-1) never returns): mp_SigBit = $FF
+ *     (#298).  The error path behind it would give globfree the port
+ *     address (block+8) and $22 instead of the block and $2A, then runtime
+ *     error "Failed to allocate signal for Port" (not a bug: never reached,
+ *     and the program ends there).  On a failed allocation "Failed to
  *     allocate memory for Port" (the port block stays allocated if the
  *     name allocation fails).  After TRAP #0 the original runs into its
- *     message text; not reproduced (DIFF, K: the C version returns 0).
+ *     message text; not reproduced (DIFF, K: the C version returns 0,
+ *     #300).
  *   - DeleteMsgPort accepts anything: pending messages are not replied,
- *     a port that utillib did not create corrupts memory.
- *   - Wait waits for ALL allocated signals of the task (tc_SigAlloc).
+ *     a port that utillib did not create corrupts memory. (#299)
+ *   - Not a bug (the intended semantics, any allocated signal): Wait waits
+ *     for ALL allocated signals of the task (tc_SigAlloc).
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -157,7 +162,7 @@ static ULONG BLITZ_ROUTINE createmsgport_c(const UBYTE *name BL_REG(d0),
     port = &node->port;                                 /* ADDA.l #8,a5 */
     {
         BYTE sig = AllocSignal(-1);
-        if (sig == 0) {                                 /* BUG(orig): TST.l d0 - never */
+        if (sig == 0) {                                 /* BUG(orig) (#298): TST.l d0 - never */
             /* error_NoSig: frees the port address, $22 bytes */
             r = (struct bl_regs){ .d0 = 0x22, .a1 = (ULONG)port };
             BLITZ_ALIBJSR(TOK_globfree, r);

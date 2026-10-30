@@ -24,9 +24,9 @@
  *    the lower channel first; with channel 0/1 as the SECOND argument
  *    (SColl(2,0): bit 10 instead of 9, SColl(4,0): 11 instead of 10,
  *    SColl(6,0): 12 instead of 11) or two channels of the same pair
- *    (SColl(0,1): bit 8) the wrong bit is tested.
+ *    (SColl(0,1): bit 8) the wrong bit is tested. (#110)
  *  - SetColl with 0 planes loops 65536 times (DBF; only the debugger
- *    checks it).
+ *    checks it). (#111)
  */
 #include "blitzlib.h"
 

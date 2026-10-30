@@ -150,7 +150,7 @@ __asm__(
    d6 = graphics.  The result of globalloc is not checked: memlib ends
    the program with "Out of Memory!" itself.  Waits for ever if the
    debugger program never calls l2.
-   BUG(orig): the copied code is started without a cache flush
+   BUG(orig) (#409): the copied code is started without a cache flush
    (CacheClearU): with instruction cache (68020+), and above all with
    the copyback data cache of the 68040/060, the process may execute what
    was in that memory before. */
@@ -215,8 +215,8 @@ __asm__(
 "laststop:   .word   0\n"
 "\n"
 /* codefinit - a6 = dos, d6 = graphics.
-   BUG(orig): the segment is freed as soon as taskdone is set, but the
-   process still has to execute the RTS behind ST taskdone in it (a
+   BUG(orig) (#410): the segment is freed as soon as taskdone is set, but
+   the process still has to execute the RTS behind ST taskdone in it (a
    small window: codefinit only looks again after a WaitTOF). */
 "   .globl  _codefinit\n"
 "_codefinit:\n"

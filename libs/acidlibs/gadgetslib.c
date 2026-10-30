@@ -25,18 +25,20 @@
  * Kept from the original (BUG(orig)):
  *   - freegadget never frees the SpecialInfo (StringInfo + buffer,
  *     PropInfo): the gadget type is loaded and then overwritten by
- *     MOVEQ #22,d0 before the type compares.
+ *     MOVEQ #22,d0 before the type compares. (#163)
  *   - StringGadget with Borders off writes the border offsets to the
- *     addresses 0, 2, 36 and 38 (border pointer 0).
+ *     addresses 0, 2, 36 and 38 (border pointer 0). (#164)
  *   - StringGadget with Maxlen 0 clears 65536 bytes of the (0 byte)
- *     buffer (DBF).
- *   - GadgetStatus of a toggle/non-text gadget: SNE/EXT.w, the upper word
+ *     buffer (DBF). (#165)
+ *   - Not a bug (word functions, the compiler uses only d0.w):
+ *     GadgetStatus of a toggle/non-text gadget: SNE/EXT.w, the upper word
  *     of d0 is that of the GadgetText pointer; ButtonId: the upper word of
  *     d0 is that of the gadget pointer.
  *   - findgadget does not stop at the end of the list (only the error
- *     checks of the debugger do); TextGadget with an empty text has
- *     IText 0 (allocst of length 0).
- *   - makeintuishape: depth 0 gives PlanePick $FF (DBF 65536 times).
+ *     checks of the debugger do) (#166); TextGadget with an empty text has
+ *     IText 0 (allocst of length 0; not a bug: Intuition prints the empty
+ *     string at address 0, no effect seen).
+ *   - makeintuishape: depth 0 gives PlanePick $FF (DBF 65536 times). (#167)
  * Registers: the original changes about everything; plain C functions,
  * the error checks keep d0-d1/a0-a1 (more than the original).
  */
@@ -688,7 +690,7 @@ void BLITZ_ROUTINE dostringgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
     d0 = g.bxxs;
     x += d0;
     d0 = -d0;
-    *(volatile WORD *)(border + 0) = d0;            /* border 0: BUG(orig) */
+    *(volatile WORD *)(border + 0) = d0;            /* border 0: BUG(orig) (#164) */
     *(volatile WORD *)(border + BORDERSIZ) = d0;
     d0 = g.byxs;
     y += d0;
@@ -1080,7 +1082,7 @@ void BLITZ_ROUTINE freegadget(void)
         }
         freerend(a2, P(a2, G_RENDER));
         freerend(a2, P(a2, G_SELECT));
-        /* BUG(orig): MOVEQ #22,d0 overwrites the type, the SpecialInfo
+        /* BUG(orig) (#163): MOVEQ #22,d0 overwrites the type, the SpecialInfo
            is never freed */
         n = P(a2, 0);
         globfree(a2, GADGETSIZE);

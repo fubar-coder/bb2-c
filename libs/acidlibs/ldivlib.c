@@ -22,7 +22,7 @@ BLITZ_LIBFIN();
 /* divide - common part.  `steps` is the dbf counter: 31 for Long (32
    quotient bits), 47 for Quick (16 more bits = 16.16 fixed point).
      d1 = 0           -> $7FFFFFFF ("LARGEST POSITIVE NUMBER", any sign;
-                         BUG(orig): tested before the signs, no error)
+                         BUG(orig) (#200): tested before the signs, no error)
      the signs are removed first and applied to the quotient at the end */
 static LONG divide(ULONG d0, ULONG d1, UWORD steps)
 {

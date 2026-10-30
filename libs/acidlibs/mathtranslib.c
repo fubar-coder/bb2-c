@@ -6,7 +6,7 @@
  * C translation of bblibsrc/mathtranslib (binary checked: same as the
  * source; the second `#mathtranslib=192` of libnums.bb is the one used).
  *   init:   open mathtrans.library (OldOpenLibrary); the base is the init
- *           value.  BUG(orig): if it cannot be opened, init tries again
+ *           value.  BUG(orig) (#202): if it cannot be opened, init tries again
  *           forever (TST.l d0:BEQ initloop).
  *   finit:  close it (a1 = the base, !libs #mathtranslib,#la1).
  *   functions: every one is an inline routine (`Dc $a000,len`): the

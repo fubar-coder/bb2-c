@@ -22,16 +22,17 @@
  *     loop: d0.w at the call is palette# * 128 (the compiler's object
  *     address, lsl.w #7), its bits 8-11 end up in the upper nibble of the
  *     red fraction, bits 12-15 in that of the green fraction of the FIRST
- *     colour only (the shifts empty the upper byte); palette 0/1 unaffected.
+ *     colour only (the shifts empty the upper byte); palette 0/1 unaffected. (#134)
  *   - The checks test the high word of the slice and palette pointers
- *     (TST.w (a1)/(a0)).
+ *     (TST.w (a1)/(a0)). (#135)
  *   - Without high/low colours the range is 0..min(colours of the
- *     palette, colours of the slice)-1; with them nothing is clipped.
- *   - The init clears fadenum and fadetype together (CLR.l fadenum).
+ *     palette, colours of the slice)-1; with them nothing is clipped. (#136)
+ *   - Not a bug (both are meant to start at 0): the init clears fadenum and
+ *     fadetype together (CLR.l fadenum).
  *   - Wrong messages: an uninitialized palette gives "Not enough colours
- *     in Slice" (err2; mess3 "Uninitialized Palette" is never used), a
- *     low/high colour beyond the slice's colours "Uninitialized Slice"
- *     (err1).
+ *     in Slice" (err2; mess3 "Uninitialized Palette" is never used) (#330),
+ *     a low/high colour beyond the slice's colours "Uninitialized Slice"
+ *     (err1) (#331).
  */
 #include "blitzlib.h"
 
@@ -171,7 +172,7 @@ static void calcrange(const UBYTE *pal, const UBYTE *slice, UWORD *lo, UWORD *hi
     *hi = h;
 }
 
-/* calcfade - the fractions; d0's upper byte comes in (BUG(orig)) */
+/* calcfade - the fractions; d0's upper byte comes in (BUG(orig), #134) */
 static void calcfade(ULONG d0, const UBYTE *pal, UBYTE *slice, UWORD rate, UWORD lo, UWORD hi)
 {
     const UBYTE *rgbs = *(UBYTE **)pal + 4;
@@ -195,7 +196,7 @@ static void calcfade(ULONG d0, const UBYTE *pal, UBYTE *slice, UWORD rate, UWORD
     do {
         /* MOVE.b x,d0:LSR #4,d0:MOVE.b d0,f - the word shift moves d0's
          * upper byte on: bits 8-11 reach red, bits 12-15 green of the first
-         * colour, after that the upper byte is 0 (BUG(orig)) */
+         * colour, after that the upper byte is 0 (BUG(orig), #134) */
         w = (UWORD)(((w & 0xff00) | rgbs[(WORD)a]) >> 4);
         f[0] = (UBYTE)w;
         w = (UWORD)(((w & 0xff00) | rgbs[(WORD)a + 4]) >> 4);
@@ -283,7 +284,7 @@ void BLITZ_ROUTINE dofadeout2(ULONG d0 BL_REG(d0), const UBYTE *pal BL_REG(a0),
 
 BLITZ_ERRCHK_MESSAGE(mess1, "Uninitialized Slice");
 BLITZ_ERRCHK_MESSAGE(mess2, "Not enough colours in Slice");
-BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialized Palette");     /* BUG(orig): unused */
+BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialized Palette");     /* BUG(orig) (#330): unused */
 
 /* fadechk0 - slice and palette set up (word tests), slice with colours */
 static int BLITZ_ERRCHK fadechk0_x(const UWORD *pal, const UWORD *slice)
@@ -293,7 +294,7 @@ static int BLITZ_ERRCHK fadechk0_x(const UWORD *pal, const UWORD *slice)
         return 0;
     }
     if (!pal[0] || !slice[4]) {
-        BLITZ_RUNERR(mess2);            /* BUG(orig): also for the palette */
+        BLITZ_RUNERR(mess2);            /* BUG(orig) (#330): also for the palette */
         return 0;
     }
     return 1;
@@ -311,7 +312,7 @@ static void BLITZ_ERRCHK fadechk_c(UWORD lo BL_REG(d2), UWORD hi BL_REG(d3),
     if (!fadechk0_x(pal, slice))
         return;
     if (lo >= slice[4] || hi >= slice[4])
-        BLITZ_RUNERR(mess1);            /* BUG(orig): err1, not err2 */
+        BLITZ_RUNERR(mess1);            /* BUG(orig) (#331): err1, not err2 */
 }
 
 BLITZ_ERRCHK_THUNK(fadechk0, fadechk0_c, "d0-d1/a0-a1");

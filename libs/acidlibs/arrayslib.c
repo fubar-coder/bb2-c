@@ -85,7 +85,7 @@ BLITZ_THUNK(newlocarr, newlocarr_c, "a0-a1");
 /* arrmult - d0 = d0 * (d1.w + 1), with two 16 bit MULUs:
      ADDQ #1,d1:MOVE.l d0,d2:MULU d1,d0
      SWAP d2:MULU d1,d2:SWAP d2:ADD.l d2,d0
-   BUG(orig): the second product is SWAPped, not shifted: its high word
+   BUG(orig) (#58): the second product is SWAPped, not shifted: its high word
    (products >= $10000) is added to the low word of the result.
    DIFF: the original returns d1.w+1 and changes d2; the compiler does not
    use them (the next dimension is evaluated again), the C build keeps d2
@@ -131,7 +131,7 @@ static void new_list(UBYTE *base, WORD ptr, WORD size, WORD itemsize)
     *(ULONG *)(h + 28) = 0x6c497354;            /* "lIsT" */
 
     /* OK, link all things together..... */
-    /* BUG(orig): every linked item gets 8 bytes written (next.l, last.l at
+    /* BUG(orig) (#59): every linked item gets 8 bytes written (next.l, last.l at
        item+0/+4), but the loop only checks that the item STARTS below
        `end`.  The compiler's Dim List passes itemsize = listsize (element
        size + 8, >= 9) and a size that is a multiple of it, so the last

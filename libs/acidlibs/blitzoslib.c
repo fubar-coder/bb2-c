@@ -36,33 +36,33 @@
  *
  * BUG(orig), kept:
  *  - Box numbers: ASL #5 as word, ADDA.w (box >= 1024 gives negative
- *    offsets); SelectBox Box# is not range checked (negative or >= 1024:
- *    deselect only); SpotBox has no page check, with 0 boxes it scans
- *    65536.
+ *    offsets) (#81); SelectBox Box# is not range checked (negative or
+ *    >= 1024: deselect only) (#82); SpotBox has no page check, with 0
+ *    boxes it scans 65536 (#83).
  *  - AddBox with a string box 8..15 pixels wide: tlen 1, the space fill
- *    (DBRA of tlen-2) writes 65536 spaces.
+ *    (DBRA of tlen-2) writes 65536 spaces. (#84)
  *  - BoxString strips trailing spaces backwards without a limit: an
  *    all-space answer runs into the prompt / memory before the text (d0
- *    0: nothing, negative: a huge copy).
+ *    0: nothing, negative: a huge copy). (#85)
  *  - BoxPrint Bank#,Line: skips lines over 0 bytes too, and replaces the
- *    line's LF in the bank by 0.
+ *    line's LF in the bank by 0. (#87)
  *  - oneline: a box with tlen 0 but an old text pointer prints from
- *    address 0 with the pointer as length (fresh boxes have text 0).
+ *    address 0 with the pointer as length (fresh boxes have text 0). (#89)
  *  - BlitzEvent: with cursor up/down it reads btype of `selected` also
- *    when nothing is selected; Backspace at position 0 leaves the cursor
- *    off.
- *  - DeSelectBox does not clear `selected`.
+ *    when nothing is selected (#90); Backspace at position 0 leaves the
+ *    cursor off (#91).
+ *  - DeSelectBox does not clear `selected`. (#94)
  * Kept from the original, not a bug (no visible effect):
  *  - BoxString writes no 0, a3 = the end (the compiler appends
  *    clr.b (a3)+ itself where it passes a string on, blitz2.s:8767
- *    sbtolong).
+ *    sbtolong). (#86)
  *  - BoxPrint overwrites the string length at -4(a2) with Scroll's size
  *    (that argument area belongs to this call only and is dropped by the
- *    compiler unread).
+ *    compiler unread). (#88)
  *  - BlitzEvent: the cursor key character cycle uses BMI after CMP.b (N
- *    flag - for all 256 values the same result as an unsigned compare).
+ *    flag - for all 256 values the same result as an unsigned compare). (#92)
  *  - SelectBox3 redraws the old box also when it is the new one (drawbox
- *    draws completely, so only extra time).
+ *    draws completely, so only extra time). (#93)
  * DIFF: the coordinates passed to Boxf/Line/Locate are computed as words
  * and sign extended; the original leaves the sign of the box field in the
  * upper word (differs only for coordinates around 0/negative).

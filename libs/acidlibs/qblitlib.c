@@ -13,10 +13,11 @@
  * FlushQueue (inline) only empties it.  Blitz/Amiga variants as in
  * blitlib.
  *
- * Kept from the original (BUG(orig)): only the error check tests for an
- * overflow; a shape of depth 0 loops 65536 times (DBF); FreeQueue leaves
- * the write position stale; UnQueue clears all planes of the bitmap,
- * not only those of the shape.
+ * Kept from the original (BUG(orig), #423): only the error check tests for an
+ * overflow; a shape of depth 0 loops 65536 times (DBF) (#243); FreeQueue
+ * leaves the write position stale (#244).  Not a bug: UnQueue clears all
+ * planes of the bitmap, not only those of the shape (QBlit changes them too,
+ * and UnQueue is meant to clear the area to colour 0).
  */
 #include "blitzlib.h"
 #define __NOLIBBASE__

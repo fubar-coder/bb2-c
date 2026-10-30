@@ -402,7 +402,7 @@ static void BLITZ_ROUTINE douthandler_c(UBYTE c BL_REG(d0))
     astring[doutx++] = c;
 }
 
-/* dout2 - output a string of length d0.  BUG(orig): the length is only
+/* dout2 - output a string of length d0.  BUG(orig) (#126): the length is only
    tested for 0, the copy runs until astring is full. */
 static void BLITZ_ROUTINE dout2_c(UWORD len BL_REG(d0), const UBYTE *s BL_REG(a0))
 {
@@ -751,7 +751,7 @@ BLITZ_ASM_ROUTINE(dodetoke,
 
 /* dofindoff - $D507: a0 = tokenised string, d0.w = position in it ->
    d0.w = position in the detokenised text.
-   BUG(orig): the loop end test (BEQ at 'loop) sees the flags of the last
+   BUG(orig) (#127): the loop end test (BEQ at 'loop) sees the flags of the last
    instruction: after a normal character `SUBQ #1,d0`, after a token
    `SUBQ #1,d1` (the result, not the position); the position is lowered
    by 2 for a token without a test, so a position inside a token runs on

@@ -25,10 +25,11 @@
  * Kept from the original (BUG(orig)):
  *   - Mouse On initialises the last X counter from $DFF00A (the Y
  *     counter) and the last Y counter from $DFF00B (the X counter): the
- *     first interrupt moves the mouse by the difference of the two.
- *   - mouseint leaves a5 = the a5 of the init when a Pointer is set.
- *   - Pointer: the sprite number is the object offset >> 4 (d0 = offset,
- *     LSR #4).
+ *     first interrupt moves the mouse by the difference of the two. (#223)
+ * Not a bug: mouseint leaves a5 = the a5 of the init when a Pointer is set
+ * (a5 is a scratch register for interrupt servers); Pointer: the sprite
+ * number is the object offset >> 4 (d0 = offset = number * 16, LSR #4 gives
+ * the number back).
  */
 #include "blitzlib.h"
 
@@ -186,8 +187,8 @@ void BLITZ_ROUTINE domouse(WORD on BL_REG(d0))
     struct bl_regs r = { .d0 = 0x8015 };
 
     if (on) {
-        lx = JOY0DAT_HI;                /* BUG(orig): Y counter */
-        ly = JOY0DAT_LO;                /* BUG(orig): X counter */
+        lx = JOY0DAT_HI;                /* BUG(orig) (#223): Y counter */
+        ly = JOY0DAT_LO;                /* BUG(orig) (#223): X counter */
         r.d1 = (ULONG)mouseint;
         BLITZ_BLIBJSR(TOK_setint, r);
     } else

@@ -36,14 +36,15 @@
  * BUG(orig), kept:
  *  - charsleft is the low word of the Read result: a read error (-1) gives
  *    65535, so the buffer contents are taken as data (up to 2048 bytes per
- *    refill).
+ *    refill). (#177)
  *  - ifffind gives up at a "BODY" id (unless it is looking for BODY) and
- *    otherwise reads ahead byte by byte (the ids need not be aligned).
+ *    otherwise reads ahead byte by byte (the ids need not be aligned). (#178)
  *  - iffskip with d0 = 0 and iffread with d0 = 0 count down from 2^32
- *    (SUBQ.l/BNE).
- *  - iffread: when the buffer position reaches 2048 the rest is read with
- *    one dos Read directly to a0 (d0 = its result, a0 not advanced); the
- *    buffer is refilled by the next iffbyte.  When the data ends inside
+ *    (SUBQ.l/BNE). (#179)
+ *  - Not a bug (all callers ignore d0/a0 after iffread): iffread: when the
+ *    buffer position reaches 2048 the rest is read with one dos Read
+ *    directly to a0 (d0 = its result, a0 not advanced); the buffer is
+ *    refilled by the next iffbyte.  When the data ends inside
  *    the buffer, d0 = the bytes still wanted and a0 = the end.
  */
 #include "blitzlib.h"

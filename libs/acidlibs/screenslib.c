@@ -40,20 +40,21 @@
  *     with a2 = their argument stack instead of the graphics base: if the
  *     object has a DBufInfo (ShowBitMap on V39+ before), Screen /
  *     ScreenTags / WbToScreen / FindScreen on that object call
- *     FreeDBufInfo through garbage (crash).
- *   - the title copy (allocst) of FindScreen/WbToScreen objects is not
- *     involved, but a ScreenTags/Screen title is only freed when the
- *     screen is closed by the library.
- *   - ScreenTags with a taglist copies it without a limit into 32 longs.
+ *     FreeDBufInfo through garbage (crash). (#247)
+ *   - Not a bug (library-opened screens are always closed by the library,
+ *     no leak found): the title copy (allocst) of FindScreen/WbToScreen
+ *     objects is not involved, but a ScreenTags/Screen title is only freed
+ *     when the screen is closed by the library.
+ *   - ScreenTags with a taglist copies it without a limit into 32 longs. (#249)
  *   - SA_DisplayID gets only the low word of the viewmode (MOVE
- *     d1,newmodes+2), the upper word stays 0.
+ *     d1,newmodes+2), the upper word stays 0. (#250)
  *   - Can't open Screen: `BEQ err1` from the normal code into the error
  *     area (without the debugger a jump behind the library); the C
  *     library calls err1 in the error area in the same way, but per JSR
  *     (DIFF, T: one return address more on the stack at the trap, as in
  *     animlib/displaylib).  err8/12/13
  *     (WorkBench / Screen / CopIns not found) are in the normal code with
- *     their texts in the error area, as in the original.
+ *     their texts in the error area, as in the original. (#251)
  * DIFF: a2 stays unchanged (the original pops the arguments).
  */
 #include "blitzlib.h"
@@ -391,7 +392,7 @@ static void openscreen(UBYTE *bitmap, ULONG *ifont, WORD used, ULONG viewmode,
     UWORD w;
 
     *(ULONG **)(blitz_globals + used) = obj;    /* set used screen! */
-    freescreen_(obj, IntuitionBase, (struct GfxBase *)args);   /* BUG(orig): a2 */
+    freescreen_(obj, IntuitionBase, (struct GfxBase *)args);   /* BUG(orig) (#247): a2 */
     sd.ns.font = font;
     sd.ns.left = BL_POPW(sp);
     sd.ns.top = BL_POPW(sp);
@@ -484,7 +485,7 @@ void BLITZ_ROUTINE dowbscreen(WORD used BL_REG(d6), const UBYTE *args BL_REG(a2)
     ULONG *obj = (ULONG *)blitz_string;
     UBYTE *s = (UBYTE *)intui->FirstScreen;
 
-    freescreen_(obj, intui, (struct GfxBase *)args);           /* BUG(orig): a2 */
+    freescreen_(obj, intui, (struct GfxBase *)args);           /* BUG(orig) (#247, #248): a2 */
     for (;; s = *(UBYTE **)s) {
         if (!s) {
             BLITZ_RUNERR(mess8);                /* err8 */
@@ -513,7 +514,7 @@ static void findscreen(const UBYTE *t, WORD used, const UBYTE *args,
     UBYTE *s = (UBYTE *)&intui->FirstScreen;    /* the list starts at +60 */
 
     *(ULONG **)(blitz_globals + used) = obj;
-    freescreen_(obj, intui, (struct GfxBase *)args);           /* BUG(orig): a2 */
+    freescreen_(obj, intui, (struct GfxBase *)args);           /* BUG(orig) (#247, #248): a2 */
     for (;;) {
         s = *(UBYTE **)s;
         if (!s) {
@@ -718,7 +719,7 @@ static const ULONG *tagstart(const UBYTE *title, const ULONG *lens, ULONG *ifont
     *(ULONG **)(blitz_globals + used) = obj;    /* make used */
     tl.title[1] = allocst(title, BL_POPL(sp));
     tl.font[1] = *ifont;
-    freescreen_(obj, intui, (struct GfxBase *)sp);  /* BUG(orig): a2 */
+    freescreen_(obj, intui, (struct GfxBase *)sp);  /* BUG(orig) (#247): a2 */
     return sp;
 }
 

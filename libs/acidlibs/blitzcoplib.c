@@ -46,13 +46,13 @@
  * Kept from the original (BUG(orig)):
  *   - Slice: unused pointers (+10..+26 = 0) are relocated like the
  *     others (0 - maxcop + position, later + list movements); Show into a
- *     slice without BPLCON1 writes to that address.
- *   - inscop2: an empty CustomCop string copies 2^32 longs (SUBQ.l/BNE);
- *     maxslice 0 runs the pointer loop 65536 times; the marker also
- *     changes the source buffer.
- *   - hwait is a word, written and read as its high byte (MOVE.b).
- *   - the slice width checks (Lores/Hires multiple) are in the check
- *     routine only.
+ *     slice without BPLCON1 writes to that address. (#407)
+ *   - inscop2: an empty CustomCop string copies 2^32 longs (SUBQ.l/BNE)
+ *     (#404); maxslice 0 runs the pointer loop 65536 times (#406); the
+ *     marker also changes the source buffer (#405).
+ * Not a bug: hwait is a word, written and read as its high byte (MOVE.b,
+ * consistently); the slice width checks (Lores/Hires multiple) are in the
+ * check routine only (runtime checks are debugger-only by design).
  * DIFF: a2 stays unchanged (CustomCop leaves it decremented by 4; the
  * port's convention, notes/cmdlibs-port.md "Allgemein").
  */

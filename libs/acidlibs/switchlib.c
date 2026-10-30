@@ -247,7 +247,7 @@ static UWORD BLITZ_ROUTINE goqamiga_c(void)
 BLITZ_THUNK_POST(goqamiga, goqamiga_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
 /* doinit - open graphics, find keyboard.device; init value = its base.
-   BUG(orig): the device list walk has no end check (keyboard.device is
+   The device list walk has no end check (not a bug: keyboard.device is
    always there). */
 ULONG BLITZ_ROUTINE doinit(void)
 {

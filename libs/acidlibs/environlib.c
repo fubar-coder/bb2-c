@@ -16,7 +16,7 @@
  *     - Processor = number of shifts until AttnFlags & 15 is 0
  *       (0 = 68000, 1 = 68010, 2 = 68020, 3 = 68030, 4 = 68040).
  *     - cr_vbr = the VBR (MOVEC in supervisor state, SuperState/
- *       UserState), only for Processor >= 2 (BUG(orig): not on a 68010,
+ *       UserState), only for Processor >= 2 (BUG(orig) (#42): not on a 68010,
  *       which has a VBR too); 0 otherwise.
  * The functions only return the stored values.  The word functions load
  * the word into d0 with MOVE.w, the upper word of d0 stays as it was
@@ -95,7 +95,7 @@ static void BLITZ_ROUTINE codeinit_c(const void *intuition BL_REG(a6))
 
     {
         ULONG vbr = 0;                                  /* MOVEQ #0,d2 */
-        /* BUG(orig): a 68010 (cpu == 1) has a VBR too, it is not read */
+        /* BUG(orig) (#42): a 68010 (cpu == 1) has a VBR too, it is not read */
         if (cpu >= 2) {                                 /* CMP #2,d1:BCS 'skip */
             APTR ssp = SuperState();                    /* supervisor state! */
             vbr = getvbr();

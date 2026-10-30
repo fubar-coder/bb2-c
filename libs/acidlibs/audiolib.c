@@ -29,21 +29,21 @@
  * BUG(orig), kept:
  *   - the error check of SetPeriod (sndchk) goes on into dpchk and tests
  *     the PERIOD (d1) as channel mask: SetPeriod with a period > 15 is a
- *     runtime error "Illegal Chanel Mask" with the debugger.
+ *     runtime error "Illegal Chanel Mask" with the debugger. (#66)
  *   - LoadSound: Sound too long (>= 128K) after the file was opened: the
- *     file stays open; DecodeSound of chip data marks the sound "cL",
+ *     file stays open (#67); DecodeSound of chip data marks the sound "cL",
  *     a later DecodeSound into fast memory does not clear that mark (the
- *     copy is then never freed).
+ *     copy is then never freed) (#68).
  *   - DiskPlay: a file whose length is a multiple of the buffer length
- *     never ends (loadbuff returns "more" at length 0).
+ *     never ends (loadbuff returns "more" at length 0). (#69)
  *   - SetPeriod without a sound: `BEQ err5` from the normal code into
  *     the error area (dangling without the debugger) - the C library
  *     calls err5 there in the same way; err1-err4 are in the normal code
- *     with their texts in the error area, as in the original.
+ *     with their texts in the error area, as in the original. (#70)
  *   - PeekSound (like every $1380 object function): the object pointer
  *     comes in a3, which is also the string buffer pointer; inside a
  *     string expression the following string parts are written into the
- *     Sound object.
+ *     Sound object. (#46)
  * DIFF: a2 stays unchanged (the original pops volumes / lengths).
  */
 #include "blitzlib.h"
@@ -433,7 +433,7 @@ void BLITZ_ROUTINE doisound(ULONG len BL_REG(d1), UWORD period BL_REG(d2),
 }
 
 /* SoundData n,offset,byte / PeekSound(n,offset) - inline as in the
-   original.  BUG(orig): a3 = the Sound object (!libs $1380) is left as
+   original.  BUG(orig) (#46): a3 = the Sound object (!libs $1380) is left as
    it is - a PeekSound inside a string expression makes the rest of the
    expression write into the object. */
 BLITZ_INLINE(dosdata,
@@ -536,7 +536,7 @@ static void intwait(UWORD bits)
 }
 
 /* loadbuff - next part of the file into the buffer, 0 = more, -1 = end
-   (a length of exactly 0 also returns 0, BUG(orig)) */
+   (a length of exactly 0 also returns 0, BUG(orig) (#69)) */
 static LONG loadbuff(UBYTE **pp, UWORD dma)
 {
     struct bl_regs r = { 0 };

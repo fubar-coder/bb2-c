@@ -46,30 +46,33 @@
  *   - Menus/MenusOn/MenusOff step through the window objects with 16
  *     bytes (the objects were 16 bytes once: "was 4 (16)"), i.e. object
  *     0, the second half of object 0, object 1 ... and only `maximum`
- *     slots: half of the windows are not reached.
+ *     slots: half of the windows are not reached. (#310)
  *   - A gadget down of a string gadget gives an extra "gadget up" ($40)
  *     on the next Event (kludgegnum), without taking the next message
- *     (which then comes once more).
+ *     (which then comes once more). (#311)
  *   - MENUPICK: one more MENUPICK node is appended for the item's
  *     NextSelect (if not $FFFF), with qualifier and iaddress not set
- *     (memlib memory, not cleared).
- *   - Class comparisons in Event are word compares.
- *   - CLR.l outmouse/MOVE.l #-1,eventgnum/... write the following word
- *     as well (the variables are kept in the original order).
- *   - Qualifier (a #long function) only sets the low word of d0.
- *   - WCls fills from y = 1; WScroll/WPrintScroll set the A pen to 0.
+ *     (memlib memory, not cleared). (#312)
+ *   - Not a bug (same result: IDCMP classes are single bits): class
+ *     comparisons in Event are word compares.
+ *   - Not a bug (those words are cleared or reset before use): CLR.l
+ *     outmouse/MOVE.l #-1,eventgnum/... write the following word as well
+ *     (the variables are kept in the original order).
+ *   - Qualifier (a #long function) only sets the low word of d0. (#313)
+ *   - WCls fills from y = 1 (#314); WScroll/WPrintScroll set the A pen to
+ *     0 (#315).
  *   - WindowTags without tags keeps the user tags of the last
- *     WindowTags (no TAG_DONE written); &TagList is copied without a
- *     limit into 32 longs.  Window titles (Window, WindowTags, WTitle) are
- *     allocated and never freed.
+ *     WindowTags (no TAG_DONE written) (#316); &TagList is copied without
+ *     a limit into 32 longs (#317).  Window titles (Window, WindowTags,
+ *     WTitle) are allocated and never freed (#318).
  *   - Window with flag $80 (super bitmap) uses the bitmap of the last
- *     Window with BitMap#; the NewWindow is static, its BitMap stays.
+ *     Window with BitMap#; the NewWindow is static, its BitMap stays. (#319)
  *   - WMove/WSize wait in a loop until the window has the new position/
  *     size (never ends if Intuition clips it; only the checks prevent
- *     that).
+ *     that). (#320)
  *   - The line editor (Edit$ in a window) and calcwidth: proportional
- *     widths only for characters lo..lo+127 (SUB.b/BMI).
- *   - CloseWindow drops all events of all windows.
+ *     widths only for characters lo..lo+127 (SUB.b/BMI). (#321)
+ *   - CloseWindow drops all events of all windows. (#322)
  * DIFF:
  *   - err6/err7 (invalid input/output window) are jumps from the normal
  *     code into the error check area in the original (cut away without
@@ -904,7 +907,7 @@ static UWORD BLITZ_ROUTINE doqual_c(void)     { return V.kqualifier & 255; }
 WORD_FN(doeditat, doeditat_c);
 WORD_FN(doeditexit, doeditexit_c);
 WORD_FN(dorawkey, dorawkey_c);
-WORD_FN(doqual, doqual_c);              /* BUG(orig): a #long function */
+WORD_FN(doqual, doqual_c);              /* BUG(orig) (#313): a #long function */
 
 static void BLITZ_ROUTINE doeditfrom_c(void)
 {
@@ -1945,7 +1948,7 @@ void BLITZ_ROUTINE dowcircle(WORD x BL_REG(d0), WORD y BL_REG(d1), ULONG r BL_RE
     dowellipse(x, y, r, r, c, w, gfxbase);
 }
 
-/* WScroll x1,y1,x2,y2,dx,dy - BUG(orig): A pen 0 */
+/* WScroll x1,y1,x2,y2,dx,dy - BUG(orig) (#315): A pen 0 */
 void BLITZ_ROUTINE dowscroll(ULONG x0 BL_REG(d0), ULONG y0 BL_REG(d1), ULONG x1 BL_REG(d2),
                                ULONG y1 BL_REG(d3), WORD dx BL_REG(d4), WORD dy BL_REG(d5),
                                struct bwin *w BL_REG(a1), struct Library *gfxbase BL_REG(a6))
@@ -2032,7 +2035,7 @@ void BLITZ_ROUTINE dowsize(ULONG x BL_REG(d0), ULONG y BL_REG(d1), struct bwin *
 }
 
 /* newidcmp - a2 = window objects (base), d2 = maximum; RMBTRAP and
-   MENUVERIFY of every window (BUG(orig): 16 byte steps) */
+   MENUVERIFY of every window (BUG(orig) (#310): 16 byte steps) */
 static void newidcmp(UBYTE *objs, UWORD max, UWORD verify, UWORD rmbtrap,
                      struct Library *intbase)
 {

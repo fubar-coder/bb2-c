@@ -11,16 +11,18 @@
  *   CLI arguments).
  *
  * Kept from the original (BUG(orig)):
- *   - FromCLI loads only the low word of d0 (MOVE.w): the upper word
- *     stays (thunk with "move.w d0,2(sp)").
+ *   - Not a bug (word function, the compiler uses only d0.w): FromCLI
+ *     loads only the low word of d0 (MOVE.w): the upper word stays (thunk
+ *     with "move.w d0,2(sp)").
  *   - FindArg walks the list without a check: argument numbers <= 0 or
  *     > NumPars (only caught by the error checks) run over the end of
- *     the list (argument 0: 2^32 steps).
+ *     the list (argument 0: 2^32 steps). (#106)
  *   - ParPath$ calls NameFromLock(lock, pathBuffer, 255) also for CLI
  *     arguments (lock 0) when the error checks are off; the type is
  *     tested as a word (0 = drawer only, otherwise drawer + "/" + name,
- *     no "/" after a ":"); an empty path compares the byte in front of
- *     the string.
+ *     no "/" after a ":") (#107); an empty path compares the byte in front
+ *     of the string (unreachable: NameFromLock succeeds only with a
+ *     non-empty path).
  * DIFF: the original branches on the CCR that dos.library leaves after
  * NameFromLock (BEQ right after the JSR); here d0 = 0 is tested (the
  * documented failure value).  Either way nothing is written and d0 = 0.

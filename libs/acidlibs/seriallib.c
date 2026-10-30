@@ -26,30 +26,30 @@
  *     those reach the write half of unit (n-1)/2 for an odd n, the read
  *     half of unit n/2 for an even n (CloseSerial 1 closes the
  *     device through unit 0's write request and frees unit 1's read
- *     signal).  Index arithmetic is word sized (ADDA.w: sign extended).
- *   - ReadSerialMem reads through the WRITE request (+128).
+ *     signal).  Index arithmetic is word sized (ADDA.w: sign extended). (#252)
+ *   - ReadSerialMem reads through the WRITE request (+128). (#253)
  *   - WriteSerialString: flags bit 1 (value 2) selects both TrueString
  *     (length from the string instead of -1 = null terminated) and DoIO;
  *     without it the write is started with SendIO and not waited for.
  *     Bit 0 ("1=DoIO" in the help text) is never tested.  The two
- *     argument form takes a #long (an address), flags 0.
+ *     argument form takes a #long (an address), flags 0. (#254)
  *   - ReadSerial: the "wait" flag is bit 1 (value 2), not 1 as the help
- *     says; with it the query is skipped and the read waits for a byte.
+ *     says; with it the query is skipped and the read waits for a byte. (#255)
  *   - ReadSerialString reads io_Actual bytes (unlimited) to a3; d0 =
- *     number of bytes, 0 if nothing is waiting.
+ *     number of bytes, 0 if nothing is waiting. (#256)
  *   - CloseSerial: AbortIO without WaitIO, the write half's request is
- *     neither aborted nor closed (a pending SendIO write stays pending).
+ *     neither aborted nor closed (a pending SendIO write stays pending). (#258)
  *   - OpenSerial: if the write half's AllocSignal fails, the device stays
- *     open and the write half keeps its request pointer; a second
+ *     open and the write half keeps its request pointer (#259); a second
  *     OpenSerial of an open unit that fails (exclusive access) clears the
- *     read half, so the open device is never closed.
+ *     read half, so the open device is never closed (#260).
  *   - A unit that is not open: runtime error "Serial Device Not Open"
  *     (TRAP #0, also without the debugger; the original then runs into
- *     the message text, the C version returns).  SerialEvent checks
- *     nothing.
+ *     the message text, the C version returns) (#262).  SerialEvent checks
+ *     nothing (not a bug: it tests bit 0 of a cleared slot and returns 0).
  * Kept from the original, not a bug: ReadSerialString writes no
  * terminating 0 (the compiler appends clr.b (a3)+ itself where it passes
- * a string on, blitz2.s:8767 sbtolong).
+ * a string on, blitz2.s:8767 sbtolong). (#257)
  * DIFF: ReadSerial does not change a3 (the original leaves it on its
  * one byte buffer rb1 inside the library); a2 is never changed (the
  * original sets it to the unit's slot, WriteSerialString pops the length).
@@ -282,7 +282,7 @@ fail:
     return 0;
 }
 
-/* _closeserial - BUG(orig): unit*128, see the head comment */
+/* _closeserial - BUG(orig) (#252): unit*128, see the head comment */
 void BLITZ_ROUTINE closeserial(UWORD unit BL_REG(d0))
 {
     struct serio *s = slot(unit, 7, 0);
@@ -355,7 +355,7 @@ void BLITZ_ROUTINE writestring3(UWORD unit BL_REG(d0), ULONG data BL_REG(d1),
     if (flags & 2)                      /* trueString */
         s->io.IOSer.io_Length = len;
     s->io.IOSer.io_Data = (APTR)data;
-    if (flags & 2)                      /* BUG(orig): DoIO on bit 1 too */
+    if (flags & 2)                      /* BUG(orig) (#254): DoIO on bit 1 too */
         DoIO((struct IORequest *)s->request);
     else
         SendIO((struct IORequest *)s->request);
@@ -399,7 +399,7 @@ void BLITZ_ROUTINE writemem(UWORD unit BL_REG(d0), ULONG addr BL_REG(d1),
     memio(unit, CMD_WRITE, addr, len);
 }
 
-/* _readmem - BUG(orig): CMD_READ through the write half */
+/* _readmem - BUG(orig) (#253): CMD_READ through the write half */
 void BLITZ_ROUTINE readmem(UWORD unit BL_REG(d0), ULONG addr BL_REG(d1),
                            ULONG len BL_REG(d2))
 {
@@ -458,7 +458,7 @@ ULONG BLITZ_ROUTINE readstring(UWORD unit BL_REG(d0))
     return n;
 }
 
-/* SDCMD_SETPARAMS through the half at unit*128 (BUG(orig), see above) */
+/* SDCMD_SETPARAMS through the half at unit*128 (BUG(orig) (#252), see above) */
 static struct serio *paramslot(UWORD unit)
 {
     struct serio *s = slot(unit, 7, 0);
@@ -512,7 +512,7 @@ void BLITZ_ROUTINE serialsetparams(UWORD unit BL_REG(d0))
 
 /* _checkevent - a0 = utillib's `signals` (result of its Wait); 1 if the
    write port's signal is set, 2 if the read port's (2 wins); no check
-   whether the unit is open.  BUG(orig): unit*128. */
+   whether the unit is open.  BUG(orig) (#252): unit*128. */
 static ULONG BLITZ_ROUTINE checkevent_c(UWORD unit BL_REG(d0),
                                         const ULONG *sigs BL_REG(a0))
 {

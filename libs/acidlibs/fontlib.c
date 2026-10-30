@@ -32,16 +32,16 @@
  *   the previous handler returns -1.
  *
  * BUG(orig), kept:
- *   - Locate: Y is Quick, X a word; CursX/CursY return the cursor / 8 as
- *     Quick (fractions of a character).
+ *   - Not a bug (pixel cursor by design): Locate: Y is Quick, X a word;
+ *     CursX/CursY return the cursor / 8 as Quick (fractions of a character).
  *   - characters with code < tf_LoChar: SUB.b/BMI, so characters 128 or
  *     more above tf_LoChar are dropped as well; with tf_LoChar > 128 codes
- *     more than 128 below it are drawn with index c - LoChar + 256.
- *   - a bitmap of depth 0 runs the plane loops 65536 times.
- *   - LoadBlitzFont of a wrong font: the font is not closed again.
+ *     more than 128 below it are drawn with index c - LoChar + 256. (#148)
+ *   - a bitmap of depth 0 runs the plane loops 65536 times. (#149)
+ *   - LoadBlitzFont of a wrong font: the font is not closed again. (#150)
  *   - BitMapInput edits an existing (Edit$ padded) buffer and waits for
  *     return without end: at end of file (-1 from the previous handler)
- *     it loops forever.
+ *     it loops forever. (#151)
  * DIFF: after a runtime error trap in calcoff (no bitmap / no font, only
  *   reached when the trap returns) the C routine draws nothing; the
  *   original runs into the next trap.  The unreferenced check `bitmapchk`

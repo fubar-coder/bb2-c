@@ -29,30 +29,32 @@
  *   - ReplyRexxMsg creates the result ArgString (rexxsyslib, freed by
  *     ARexx) when Result1 = 0 and `BTST #17,28(a0)` - a memory BTST tests
  *     bit 17 mod 8 = bit 1 of the HIGH byte of rm_Action, i.e. RXFUNC
- *     ($02000000), not RXFF_RESULT ($00020000).
+ *     ($02000000), not RXFF_RESULT ($00020000). (#48)
  *   - ClearRexxMsg (also RexxEvent on a reply) deletes rm_Args[] up to the
  *     first 0 without a limit of 16 (then rm_PassPort, rm_CommAddr ...);
  *     FillRexxMsg has no limit either.  An integer in a slot is "deleted"
- *     if the memory before it looks like an ArgString.
+ *     if the memory before it looks like an ArgString. (#49)
  *   - FillRexxMsg: a value of 0 ends the list (also an integer 0); flag
- *     bit 15 = slot 0 is an integer, bit 14 slot 1, ...
+ *     bit 15 = slot 0 is an integer, bit 14 slot 1, ... (#50)
  *   - GetRexxResult/GetRexxCommand: index (n-1)*4 as word (MULU, d1.w),
- *     n = 0 reads rm_Action / rm_Result2.
+ *     n = 0 reads rm_Action / rm_Result2. (#51)
  *   - GetRexxCommand/GetResultString copy ra_Length+1 bytes (the 0 too):
- *     a3 is left BEHIND the 0.  GetResultString deletes the ArgString but
- *     leaves rm_Result2 pointing to it.
- *   - RexxEvent removes the first message like exec GetMsg (own copy with
- *     INTENA and IDNestCnt), returns replies as well (after ClearRexxMsg).
+ *     a3 is left BEHIND the 0 (#52).  GetResultString deletes the ArgString
+ *     but leaves rm_Result2 pointing to it (#53).
+ *   - Not a bug (by design): RexxEvent removes the first message like exec
+ *     GetMsg (own copy with INTENA and IDNestCnt), returns replies as well
+ *     (after ClearRexxMsg).
  *   - SendRexxCommand: if there is no REXX port, the alert comes with
- *     interrupts still disabled (Disable without Enable).  Only creates
- *     the command ArgString if rm_Args[0] is 0.
- *   - CreateArgString, CreateRexxMsg, SendRexxCommand, ReplyRexxMsg set a3
- *     to the (first) string argument ("preserve the BB2 string work
- *     area"); SendRexxCommand only for a valid RexxMsg.
+ *     interrupts still disabled (Disable without Enable) (#55).  Only
+ *     creates the command ArgString if rm_Args[0] is 0 (not a bug: keeps
+ *     an ArgString the user put into slot 0).
+ *   - Not a bug (intended): CreateArgString, CreateRexxMsg, SendRexxCommand,
+ *     ReplyRexxMsg set a3 to the (first) string argument ("preserve the BB2
+ *     string work area"); SendRexxCommand only for a valid RexxMsg.
  *   - CreateArgString copies (length & $FFFF) characters (DBF) but
- *     allocates length+9 bytes.
+ *     allocates length+9 bytes. (#57)
  *   - Without rexxsyslib the internal RexxMsg check shows the alert and
- *     then treats the message as valid with address 0.
+ *     then treats the message as valid with address 0. (#56)
  * Kept from the original, not a bug (no visible effect):
  *   - RexxError copies the message up to (not including) its 0, at least
  *     one byte (rexxsyslib has no empty messages); no terminating 0 (the
@@ -481,7 +483,7 @@ static void BLITZ_ROUTINE sendrexxcommand_c(ULONG msg BL_REG(d0),
     Disable();
     port = FindPort(REXXName);
     if (!port) {
-        error_routine(ERR_NOPORT);              /* BUG(orig): no Enable */
+        error_routine(ERR_NOPORT);              /* BUG(orig) (#55): no Enable */
         return;
     }
     m->rm_Node.mn_Node.ln_Type = NT_MESSAGE;
@@ -510,7 +512,7 @@ static void BLITZ_ROUTINE replyrexxmsg_c(ULONG msg BL_REG(d0),
         return;
     m->rm_Result1 = res1;
     m->rm_Result2 = res2;
-    /* BUG(orig): BTST #17,28(a0) = bit 1 of the high byte (RXFUNC) */
+    /* BUG(orig) (#48): BTST #17,28(a0) = bit 1 of the high byte (RXFUNC) */
     if ((((const UBYTE *)&m->rm_Action)[0] & 2) && m->rm_Result1 == 0) {
         ULONG a = createargstring_rexx(str, lens[-1]);
         if (!a) {

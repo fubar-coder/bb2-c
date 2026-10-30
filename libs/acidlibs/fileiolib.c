@@ -37,30 +37,32 @@
  *   - OpenFile/ReadFile/WriteFile first close the File#; if that file had
  *     Fields, the original loop leaves a2 = 0, and the name length is read
  *     from -4(0) (on the A1200's 24 bit bus the last long of the ROM),
- *     then name[(WORD)length] is cleared.  Nachgebildet.
+ *     then name[(WORD)length] is cleared.  Nachgebildet. (#138)
  *   - CloseFile frees the record fields but leaves the pointer to them
- *     and the record length; OpenFile clears them.  Fields adds to the
- *     existing fields and record length (no reset); the list is built
- *     backwards, Put/Get transfer the fields in reverse order of Fields.
- *   - Fields: types 1/2/7 have 1/2/(long at address-8)+6 bytes, all
- *     others 4; strings start at address-4.
+ *     and the record length; OpenFile clears them (#140).  Fields adds to
+ *     the existing fields and record length (no reset) (#141); the list is
+ *     built backwards, Put/Get transfer the fields in reverse order of
+ *     Fields (#142).
+ *   - Description, not a bug: Fields types 1/2/7 have 1/2/(long at
+ *     address-8)+6 bytes, all others 4; strings start at address-4.
  *   - Exists: 0 for a missing file AND for an empty file, -1 for a drawer
  *     (fib_DirEntryType = 2; a volume's root (1) gives its fib_Size); the
- *     FileInfoBlock comes from memlib globalloc (not checked, see below).
- *   - myseek/myread/mywrite return d0 unchanged when there is nothing to
- *     do (length 0, position in the buffer): FileSeek/Put/Get compare the
- *     file number resp. the field address with -1 then.
- *   - Lof does not flush: the larger of the dos length and the end of the
- *     buffer.
+ *     FileInfoBlock comes from memlib globalloc (not checked, see below). (#143)
+ *   - Not a bug (that value is never -1): myseek/myread/mywrite return d0
+ *     unchanged when there is nothing to do (length 0, position in the
+ *     buffer): FileSeek/Put/Get compare the file number resp. the field
+ *     address with -1 then.
+ *   - Not a bug (the correct length including buffered data): Lof does not
+ *     flush: the larger of the dos length and the end of the buffer.
  *   - Eof at the end of the file: myseek has already set the buffer's
  *     file position one further when the dos Seek fails, and nothing
  *     resets it - Loc and Lof are 1 too high afterwards (t50: "written
  *     lof 32 loc 32" for a file of 31 bytes; Blitz evaluates the NPrint
- *     arguments from the right, Eof first).
+ *     arguments from the right, Eof first). (#144)
  * Kept from the original, not a bug (no visible effect):
  *   - The dos buffer (memlib globalloc, MEMF_PUBLIC) and the FileInfoBlock
  *     of Exists are not checked: in the original globalloc never returns
- *     0 (memlib err1 ends the program); only the C memlib returns 0 (K).
+ *     0 (memlib err1 ends the program); only the C memlib returns 0 (K). (#139)
  * DIFF:
  *   - The original jumps from the normal code into the error check area
  *     (err1/err2 in the I/O handlers, err3 Put/Get, err6 FileSeek) and
@@ -516,7 +518,7 @@ static const ULONG *freefile(struct bfile *f, const ULONG *a2,
     r = (struct bl_regs){ .d0 = f->buflen, .a1 = (ULONG)f->buf };
     f->buf = NULL;                              /* free mydos buffer */
     BLITZ_ALIBJSR(TOK_globfree, r);
-    p = f->recs;                                /* BUG(orig): 12(a3) stays */
+    p = f->recs;                                /* BUG(orig) (#138): 12(a3) stays */
     if (!p)
         return a2;
     while (p) {

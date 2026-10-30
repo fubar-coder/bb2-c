@@ -20,7 +20,7 @@
  *
  * ShowSprite, InFront, InFrontF, InFrontB are Blitz mode only (odd error
  * check address in !subs).  ShowSprite clips at the top (data pointer
- * advanced 4 bytes per line - also in 32/64 pixel modes, BUG(orig); the
+ * advanced 4 bytes per line - also in 32/64 pixel modes, BUG(orig) (#283); the
  * offset is a long register whose upper word is the caller's y, as in
  * the original) and
  * the bottom of the slice, switches the sprites off when completely
@@ -30,11 +30,11 @@
  * BUG(orig), kept:
  *  - freeasprite (and SaveSprites/LoadSprites) compute the size with the
  *    CURRENT widthshift: after a SpriteMode change a sprite is freed with
- *    a wrong size.
+ *    a wrong size. (#280)
  *  - SpriteMode reads the width from a table of 3 words: modes > 2 read
- *    the variables behind it (same layout here).
+ *    the variables behind it (same layout here). (#281)
  *  - GetaSprite reads 16/32/64 pixels per sprite whatever the shape's
- *    width (beyond the row for narrow shapes).
+ *    width (beyond the row for narrow shapes). (#282)
  */
 #include "blitzlib.h"
 #define __NOLIBBASE__

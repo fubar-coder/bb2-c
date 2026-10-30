@@ -25,9 +25,9 @@
  *   - Gameb on port 0: the DBF of its loop jumps into the loop of port 1
  *     (the code is the same, registers already set), so it also leaves
  *     through the port 1 exit: POTGO = $3000 instead of $0300 (the DDRA
- *     bit cleared is the right one, d3 = 6).
- *   - Joyr: the upper word of d0 is the one of Joyy's MOVEQ (-1 -> $FFFF)
- *     - word function, the compiler uses the low word only.
+ *     bit cleared is the right one, d3 = 6). (#415)
+ *   - Not a bug (word function, the compiler uses the low word only): Joyr:
+ *     the upper word of d0 is the one of Joyy's MOVEQ (-1 -> $FFFF).
  * Registers: the thunks keep what the original keeps (Joyx/Joyy/Joyr
  * change d0-d1 (Joyy d2, Joyr d2-d3), Joyb only d0; Gameb changes
  * d0-d4/a0-a1 in the original, GCC keeps d2-d4).
@@ -189,7 +189,7 @@ ULONG BLITZ_ROUTINE _gameb(UWORD port BL_REG(d0))
         if (!(d2 & d4))
             d0 |= 1UL << d1;
     } while (--d1 >= 0);                /* DBF d1 */
-    POTGO = 0x3000;                     /* BUG(orig): also for port 0 */
+    POTGO = 0x3000;                     /* BUG(orig) (#415): also for port 0 */
     a0[0x200] &= ~bit;
     return d0;
 }

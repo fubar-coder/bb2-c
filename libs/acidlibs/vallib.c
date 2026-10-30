@@ -402,7 +402,7 @@ BLITZ_THUNK(doint, doint_c, "d1/a0-a1");
 
 /* Sgn(any) - Quick -1, 0 or 1: float through SPTst, long and quick
    tested as long, byte (type 1) and word (types 0, 2) sign extended.
-   BUG(orig): mathffp SPTst tests D1, not D0 - and d1 holds the type
+   BUG(orig) (#301): mathffp SPTst tests D1, not D0 - and d1 holds the type
    (MOVE -(a2),d1: 5 in the low word, the caller's upper word), so Sgn of
    a float is 1 whatever the value (Sgn(-1.0) = Sgn(0.0) = 1).  Kept: d1
    is passed as the original has it. */
@@ -554,7 +554,7 @@ static UWORD getdec(struct valstate *s, ULONG *d7, ULONG *d6)
 
 /* 'notneg - integer part, optionally "." and fraction:
    SPFlt(int) [+ SPDiv(SPFlt(frac), SPFlt(10^n))].  No fraction digits
-   give n = 0 (divisor 1, + 0.0); BUG(orig): 32 or more fraction digits
+   give n = 0 (divisor 1, + 0.0); BUG(orig) (#304): 32 or more fraction digits
    make 10^n mod 2^32 = 0 and the fraction is dropped. */
 static ULONG notneg(const void *ffp, struct valstate *s)
 {
@@ -574,7 +574,7 @@ static ULONG notneg(const void *ffp, struct valstate *s)
 
 /* gethex - "$" and hex digits (0-9, A-F, a-f), byte arithmetic as in the
    original; the count still includes the "$" (DBRA starts with it), so
-   one byte behind the string is read: BUG(orig).  In compiled programs
+   one byte behind the string is read: BUG(orig) (#302).  In compiled programs
    that byte is the terminating 0 of the string argument (tested:
    Val(Left$("$123",2)) = 1), so it has no visible effect there. */
 static ULONG gethex(const void *ffp, struct valstate *s)
@@ -603,7 +603,7 @@ static ULONG gethex(const void *ffp, struct valstate *s)
     return BLITZ_BASEJSR1(ffp, LVO_SPFlt, v);   /* dunhx */
 }
 
-/* getbin - "%" and binary digits; count as gethex (BUG(orig): one byte
+/* getbin - "%" and binary digits; count as gethex (BUG(orig) (#302): one byte
    behind the string is read, normally the terminating 0).  ADD.b #255,d1 sets X for "1" and ends the
    number (BGT) for characters above "1". */
 static ULONG getbin(const void *ffp, struct valstate *s)
@@ -623,9 +623,9 @@ static ULONG getbin(const void *ffp, struct valstate *s)
 
 /* doval2 - calc val of string: leading spaces skipped, then "$" hex, "%"
    binary, "-" negative (SPNeg), else decimal.  The count is the low WORD
-   of the length (SUBQ #1,d2:BMI): BUG(orig) lengths 32769..65536 give 0,
+   of the length (SUBQ #1,d2:BMI): BUG(orig) (#303) lengths 32769..65536 give 0,
    longer ones count mod 65536.
-   BUG(orig): after "-" the count is not decremented, so one byte behind
+   BUG(orig) (#302): after "-" the count is not decremented, so one byte behind
    the string is read (normally the terminating 0: Val(Left$("-12",2)) =
    -1 in the tests). */
 static ULONG doval2(const void *ffp, struct valstate *s)

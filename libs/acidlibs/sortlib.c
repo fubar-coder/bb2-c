@@ -17,15 +17,16 @@
  * Kept from the original (BUG(orig)):
  *   - word arrays: the pivot is read with MOVE.l and compared with CMP.w,
  *     so the pivot is the element AFTER the middle one; for a one element
- *     array (Dim a.w(0)) it lies behind the array.
+ *     array (Dim a.w(0)) it lies behind the array. (#275)
  *   - the pivot of a one element array is never in range: the forward
  *     scan stops at the pivot word behind the array, the backward scan
  *     may read words before it; then i > j, nothing is swapped and there
- *     is no recursion (reads only, the result is right).
+ *     is no recursion (reads only, the result is right). (#275)
  *   - string elements that were never assigned (pointer 0) read their
- *     length from -4(0).
- *   - recursion depth is O(n) in the worst case (the C version needs more
- *     stack per level than the original's 12 bytes).
+ *     length from -4(0). (#276)
+ *   - Not a bug (a property of the quicksort algorithm): recursion depth is
+ *     O(n) in the worst case (the C version needs more stack per level
+ *     than the original's 12 bytes).
  * The original leaves a2 decremented by 6; the compiler does not use a2
  * afterwards (see memacclib.c).
  */

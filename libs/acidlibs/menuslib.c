@@ -25,26 +25,29 @@
  * Kept from the original (BUG(orig)):
  *   - MenuState on a whole menu (MenuState l,m,onoff) changes bit 4 of the
  *     Menu flags (changestate2, as for items) instead of MENUENABLED: no
- *     effect.  MenuState l,onoff (whole list) uses MENUENABLED.
+ *     effect.  MenuState l,onoff (whole list) uses MENUENABLED. (#216)
  *   - MenuChecked with a subitem: the item and subitem DBF loops jump back
  *     to the menu loop; only (menu,item,sub) = (m,0,0) ends where it
  *     should, other values walk the lists again with a counter of -1
- *     (65536 steps).  Nachgebildet.
- *   - MenuChecked: SNE/EXT.w, the upper word of d0 stays.
+ *     (65536 steps).  Nachgebildet. (#217)
+ *   - Not a bug (word result, the compiler uses only d0.w): MenuChecked:
+ *     SNE/EXT.w, the upper word of d0 stays.
  *   - ShapeItem/ShapeSub read the flags with MOVE 4(a7),d7, the HIGH word
  *     of the pushed long, through the word `temp` (with the cleared low
  *     word of mexclude in front as upper word): small flag values give
- *     the default flags.  Their item Flags are set (MOVE), not ORed.
+ *     the default flags.  Their item Flags are set (MOVE), not ORed. (#218)
  *   - The flag test is a word compare after a long test: $10000 gives
- *     word 0 < 5 and ends in the "4" branch.
- *   - A shortcut sets the entry's Flags to 4 (COMMSEQ) in findthing, the
- *     item flags are ORed in afterwards.
- *   - MenuTitle width = 8 * length + 8 ("8 wide font, for now").
+ *     word 0 < 5 and ends in the "4" branch. (#219)
+ *   - Not a bug (the intended result for a new entry): a shortcut sets the
+ *     entry's Flags to 4 (COMMSEQ) in findthing, the item flags are ORed
+ *     in afterwards.
+ *   - Not a bug (a limitation acknowledged in the original source): MenuTitle
+ *     width = 8 * length + 8 ("8 wide font, for now").
  *   - SubItem replacing an existing subitem moves the following ones by
  *     (subitem number - old height) instead of the height difference
- *     (d3 is the number again after textcalc).
+ *     (d3 is the number again after textcalc). (#220)
  *   - No checks without the debugger: wrong menu/item numbers walk over
- *     the end of the lists.
+ *     the end of the lists. (#416)
  */
 #include "blitzlib.h"
 #include <intuition/intuition.h>
@@ -302,7 +305,7 @@ static void BLITZ_ROUTINE domenustate_c(UWORD on BL_REG(d1))
     }
 }
 
-/* MenuState l,m,onoff - BUG(orig): bit 4 of a Menu */
+/* MenuState l,m,onoff - BUG(orig) (#216): bit 4 of a Menu */
 static void BLITZ_ROUTINE domenustate2_c(UWORD m BL_REG(d1), UWORD on BL_REG(d2))
 {
     changestate(walk(blitz_string, m), on, 4);
@@ -347,7 +350,7 @@ static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG d0 BL_REG(d0), UBYTE *p BL_REG(
 }
 BLITZ_THUNK(domenuchecked, domenuchecked_c, "d1/a0-a1");
 
-/* MenuChecked(l,m,i,s) - BUG(orig): both inner DBF jump to the menu loop */
+/* MenuChecked(l,m,i,s) - BUG(orig) (#217): both inner DBF jump to the menu loop */
 static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG d0 BL_REG(d0), UBYTE *p BL_REG(a2),
                                             UWORD m BL_REG(d1), UWORD i BL_REG(d2),
                                             UWORD s BL_REG(d3))
@@ -522,7 +525,7 @@ void BLITZ_ROUTINE domenutitle(WORD m BL_REG(d1), const UBYTE *text BL_REG(d2),
 
 /* finditem - findthing for an item (54 bytes, TopEdge, SubItem); sets
    size, ItemFill = the IntuiText/Image behind it, MutualExclude.  `size`
-   = d3 for moving the following entries: the height, but BUG(orig) the
+   = d3 for moving the following entries: the height, but BUG(orig) (#220) the
    subitem number for SubItem (MOVEM restores d3 after textcalc) */
 static UBYTE *finditem(UBYTE *head, WORD n, WORD width, WORD height, WORD size)
 {
@@ -650,7 +653,7 @@ void BLITZ_ROUTINE dosubitem2(WORD m BL_REG(d1), WORD i BL_REG(d2), WORD s BL_RE
     subitem(m, i, s, text, font, lens, intbase);
 }
 
-/* shapecalc - BUG(orig): flags = the high word of the pushed long (MOVE
+/* shapecalc - BUG(orig) (#218): flags = the high word of the pushed long (MOVE
    4(a7),d7 -> temp, read as long from temp-2 behind the cleared low word
    of mexclude); size = shape size + 2 * gap */
 static struct textsize shapecalc(UWORD flagshi, UWORD item, const UWORD *shape)

@@ -24,21 +24,22 @@
  *
  * Kept from the original (BUG(orig)):
  *   - ASLScreenRequest returns the requester AFTER freeing it (asl LVO
- *     -36 = FreeFileRequest, as FREEREQ below): freed memory.
+ *     -36 = FreeFileRequest, as FREEREQ below): freed memory. (#60)
  *   - ASLPathRequest$ copies fr_File into the address in d2 (no such
  *     argument: with the dimensions it is x, else whatever d2 holds) and
- *     writes its length to d2-4.
+ *     writes its length to d2-4. (#61)
  *   - Without asl.library ASLFileRequest$/ASLPathRequest$ return with d0
  *     = the title's address as string length (the "defaults to freqlib"
- *     call is commented out in the source).
- *   - Title and pattern copies (maxslib allocst) are never freed.
- *   - FreeFileRequest(0) when AllocAslRequest fails.
+ *     call is commented out in the source). (#62)
+ *   - Title and pattern copies (maxslib allocst) are never freed. (#63)
+ *   - FreeFileRequest(0) when AllocAslRequest fails. (#403)
  *   - ASLPathRequest$ without dimensions keeps the pattern flag of the
- *     previous ASLFileRequest$ call (flags is not reset).
+ *     previous ASLFileRequest$ call (flags is not reset). (#64)
  *   - ASLFontRequest: a font name of more than 95 characters overruns the
  *     static buffer (strng+4: 96 bytes including the 0; in the binary the
- *     code of doaslscreen follows at $3B8); an empty name counts as
- *     cancel.
+ *     code of doaslscreen follows at $3B8) (#65); an empty name counts as
+ *     cancel (not a bug: the ASL font requester returns no empty name with
+ *     OK).
  * The CD binary differs from the source: an extra font tag ASL_TB+17 =
  * 256 and an initial pattern "" instead of 0 (the binary is followed).
  * DIFF: the original stores maxslib's d1 (-1) into the title's length
@@ -224,7 +225,7 @@ ULONG BLITZ_ROUTINE doaslfont(ULONG flags BL_REG(d0), struct Screen **scr BL_REG
     return (ULONG)&fstruct;
 }
 
-/* ASLScreenRequest(flags) - BUG(orig): returns the freed requester */
+/* ASLScreenRequest(flags) - BUG(orig) (#60): returns the freed requester */
 ULONG BLITZ_ROUTINE doaslscreen(ULONG flags BL_REG(d0), struct Screen **scr BL_REG(a1))
 {
     ULONG d7;
@@ -268,7 +269,7 @@ static ULONG aslreq(ULONG title, ULONG path, ULONG file, struct Screen **scr,
     ULONG d7, d6;
 
     if (!aslbase)
-        return title;                   /* BUG(orig): d0 unchanged */
+        return title;                   /* BUG(orig) (#62): d0 unchanged */
     Tags[T_SCREEN] = (ULONG)*scr;
     blitz_string = (UBYTE *)title;      /* the result goes here */
     Tags[T_NAME] = allocst(title, lens[-1]);
@@ -344,7 +345,7 @@ static ULONG BLITZ_ROUTINE freqd_c(FREQ_ARGS)
     return aslreq(d0, d1, d2, scr, lens);
 }
 
-/* ASLPathRequest$ title, path - d2 is no argument (BUG(orig)) */
+/* ASLPathRequest$ title, path - d2 is no argument (BUG(orig), #61) */
 static ULONG BLITZ_ROUTINE freqe_c(FREQ_ARGS)
 {
     Tags[T_FLAGS2] = FRF_DRAWERSONLY_;

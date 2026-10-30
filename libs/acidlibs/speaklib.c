@@ -22,11 +22,12 @@
  * BUG(orig), kept:
  *   - Translate$ writes the phonemes over its argument (a3 = the
  *     argument's address), returns the length INCLUDING the terminating 0
- *     and leaves a3 behind the 0.
- *   - PhoneticSpeak leaves a3 = its argument.
- *   - finit closes the device and frees the signal even when init failed.
+ *     and leaves a3 behind the 0. (#277)
+ *   - Not a bug (a statement, a3 has no meaning after it): PhoneticSpeak
+ *     leaves a3 = its argument.
+ *   - finit closes the device and frees the signal even when init failed. (#278)
  *   - SetVoice clips with word CMP and BPL/BMI (N flag only, no V): large
- *     negative values whose difference overflows end on the maximum.
+ *     negative values whose difference overflows end on the maximum. (#279)
  * DIFF: a2 stays unchanged (the original pops the string length).
  */
 #include "blitzlib.h"
@@ -221,7 +222,7 @@ void BLITZ_ROUTINE _speak(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2
     say(spkbuff, n);
 }
 
-/* Translate$ - phonemes over the argument (see BUG(orig)) */
+/* Translate$ - phonemes over the argument (see BUG(orig) (#277)) */
 ULONG BLITZ_ROUTINE _translate(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     const ULONG *sp = lens;

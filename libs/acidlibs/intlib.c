@@ -128,7 +128,7 @@ static void intsoff(struct intnode **set)
 }
 
 /* cleanup - at program end: remove the servers, free all nodes of both
-   sets.  BUG(orig): blitzintson is not reset (a program ends in Amiga
+   sets.  blitzintson is not reset (not a bug: a program ends in Amiga
    mode anyway).  The original changes d0-d2/a0-a3/a6. */
 void BLITZ_ROUTINE cleanup(void)
 {
@@ -170,7 +170,7 @@ void BLITZ_ROUTINE oldint(void)
    the front of list `level & 15` of `ints`.
    No check of the allocation: in the original globalloc never returns 0
    (memlib err1: codefinit + TRAP #0 "Out of Memory!", also without the
-   debugger); only the C memlib returns 0 (K). */
+   debugger); only the C memlib returns 0 (K) (#196). */
 static void setint2(UWORD level, ULONG code)
 {
     struct bl_regs r = { .d0 = NODESIZE, .d1 = MEMF_PUBLIC | MEMF_CLEAR };

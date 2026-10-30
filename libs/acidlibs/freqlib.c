@@ -27,21 +27,21 @@
  * is the BlitzLib wrapper around it.  The list below covers both parts.
  *
  * Kept from the original (BUG(orig)):
- *   - path$/file$ get the new contents but not their new lengths.
+ *   - path$/file$ get the new contents but not their new lengths. (#153)
  *   - dos, intuition and graphics are opened (OldOpenLibrary) at every
- *     call and never closed.
+ *     call and never closed. (#154)
  *   - The volume list (DRIVES) walks the DOS list without locking it
  *     (the labels are right: dl_Type 1 = DLT_DIRECTORY -> $F9 "<ASN>",
  *     2 = DLT_VOLUME -> $F8 "<VOL>"; late/non-binding assigns are not
- *     listed).
+ *     listed). (#156)
  *   - "CD" (the gadget at $FB6) makes the path the current directory of
- *     the process and unlocks the old current directory; it also clears
- *     the high word of the path gadget's UndoBuffer pointer ($111A instead
- *     of DispPos, details in filereq_core.c).
+ *     the process and unlocks the old current directory (#157); it also
+ *     clears the high word of the path gadget's UndoBuffer pointer ($111A
+ *     instead of DispPos, details in filereq_core.c) (#345).
  *   - Building the path from the current directory leaks the ParentDir
- *     locks.
+ *     locks. (#158)
  *   - List entries are 40 byte nodes (AllocMem, not checked); names longer
- *     than 34 characters overrun them.
+ *     than 34 characters overrun them. (#159)
  *   - There are 64 line gadgets (144 bytes each, $15AA-$39A9, then 48
  *     bytes $39AA-$39D9 up to the end of the data block), but the window shows
  *     (height - 85) / 8 lines with no limit: from a window height of 605
@@ -55,8 +55,8 @@
  *     1680x1050) right after the requester returned, with cancel and with
  *     OK (t93/t94: reboot, earlier "ILLEGAL Instruction").  Stack, a2-a6,
  *     pr_WindowPtr, locks and memory are all in order on return.  Kept:
- *     the C version writes past fq.line[63] and fq in the same way.
- *   - A result of a3 + length + 1: a3 is left BEHIND the terminating 0.
+ *     the C version writes past fq.line[63] and fq in the same way. (#160)
+ *   - A result of a3 + length + 1: a3 is left BEHIND the terminating 0. (#161)
  * DIFF: if the chip memory or a library or the window cannot be opened,
  *   the original returns the first long of its FileInfoBlock buffer on
  *   the stack (uninitialized); here 0.

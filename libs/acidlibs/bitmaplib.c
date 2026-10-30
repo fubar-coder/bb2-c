@@ -19,17 +19,19 @@
  *
  * Kept from the original (BUG(orig)):
  *   - Sizes are MULU word products: h * depth * bytes per row is
- *     truncated (the second MULU uses the low word of h * depth).
+ *     truncated (the second MULU uses the low word of h * depth). (#76)
  *   - CopyBitMap copies plane by plane with (bytes per row * rows) / 2
- *     words (0 words = 4 billion), into one MEMF_CHIP block (not cleared),
- *     and does not set the used bitmap.
- *   - ShapesBitMap adds the plane size as a word (sign extended).
+ *     words (0 words = 4 billion) (#78), into one MEMF_CHIP block (not
+ *     cleared) and does not set the used bitmap (not a bug: every word is
+ *     overwritten by the copy, and CopyBitMap is not documented to select
+ *     the bitmap).
+ *   - ShapesBitMap adds the plane size as a word (sign extended). (#79)
  *   - The planes beyond the depth are not cleared by BitMap (they are
- *     whatever the object held).
+ *     whatever the object held). (#80)
  * Kept from the original, not a bug (no visible effect):
  *   - CludgeBitMap does not compute the interleave/plane distance fields
  *     (+52 cleared, +54 stays from before; no library of the CD reads +54
- *     of a non-interleaved bitmap, so only the field itself differs).
+ *     of a non-interleaved bitmap, so only the field itself differs). (#77)
  */
 #include "blitzlib.h"
 

@@ -41,26 +41,31 @@
  *
  * BUG(orig), kept (for the comparison with AmiBlitz3):
  *   - Quick: a fraction that rounds to 10000 (x.99995 and more) loses the
- *     carry: Print 2.99999 -> "2." (four digits "0000" stripped to ".");
- *     a fraction that rounds to 0 leaves the point: 1+1/65536 -> "1.",
- *     1/65536 -> "."; numbers below 1 have no leading 0 (".5").
- *   - Float, fixed point: no leading 0 either (".5"); 0 is "0".
+ *     carry: Print 2.99999 -> "2." (four digits "0000" stripped to ".")
+ *     (#233); a fraction that rounds to 0 leaves the point: 1+1/65536 ->
+ *     "1.", 1/65536 -> "." (#234).  Not a bug (the output style of Blitz 2,
+ *     the same for Quick and Float): numbers below 1 have no leading 0
+ *     (".5").
+ *   - Not a bug (as above): Float, fixed point: no leading 0 either
+ *     (".5"); 0 is "0".
  *   - Format: rounding that carries out of the first digit is lost
- *     (999.96 with "###.#" -> "000.0"); numbers without an integer digit
- *     (|x| < 1, d3 = -(integer digits) = 0) are never rounded, whatever
- *     the format (0.567 with ".##" or "###.##" -> ".56"); the
- *     sign is lost when the format has no "-"/"+" (-7 with "###" ->
- *     "  7"); too many integer digits give "?" and then only padding for
- *     the whole integer part (1234.5 with "##" -> "?  ").
+ *     (999.96 with "###.#" -> "000.0") (#235); numbers without an integer
+ *     digit (|x| < 1, d3 = -(integer digits) = 0) are never rounded,
+ *     whatever the format (0.567 with ".##" or "###.##" -> ".56") (#236);
+ *     the sign is lost when the format has no "-"/"+" (-7 with "###" ->
+ *     "  7") (#237); too many integer digits give "?" and then only
+ *     padding for the whole integer part (1234.5 with "##" -> "?  ")
+ *     (#238).
  *   - Format with more than 32 characters (no check without the
  *     debugger): the copy runs over formlen/formlead/formtrail/decpos and
  *     further into the conversion buffers (the layout of the variables
- *     below is that of the original so that this goes the same way).
+ *     below is that of the original so that this goes the same way). (#240)
  *   - ffptoascii, fixed point with FloatMode -1 (or a Format string) and
  *     |x| < 1E-17: the digits are written past the end of the 50 byte
  *     buffer into the first entry (1E19) of the table of powers of ten,
- *     which changes later conversions of numbers >= 1E18.
- *   - Str$ of a string is printed as a byte (the low byte of the address).
+ *     which changes later conversions of numbers >= 1E18. (#241)
+ *   - Str$ of a string is printed as a byte (the low byte of the address). (#242)
+ * Kept from the original, not a bug (no effect):
  *   - strprint, the handler of Str$, has the same code for single
  *     characters (JSR (a6)) as for strings (a0, d0) - inputoutputlib's
  *     dooutsingle would copy d0 characters from a0.  printlib never
@@ -68,10 +73,10 @@
  *   - Str$ installs its handler with dosetout twice (install and
  *     restore), so every Str$ pushes two entries on inputoutputlib's
  *     output stack (a ring of 16, harmless).
- * Kept from the original, not a bug: the Format round-up loop starts at
- * the last copied digit (d1); d1 = 0 ("address -1") would need a rounding
- * without a copied integer digit, which does not occur (rounding needs
- * d3 != 0 = at least one integer digit).
+ *   - the Format round-up loop starts at the last copied digit (d1); d1 = 0
+ *     ("address -1") would need a rounding without a copied integer digit,
+ *     which does not occur (rounding needs d3 != 0 = at least one integer
+ *     digit). (#239)
  *
  * Registers: the original changes d0-d7/a0-a2 (Print), d0-d1/a0-a2/d4-d6
  * (Str$, d2-d3 kept), d1-d5/a0-a1 (Format, d0 kept); C keeps d2-d7/a2/a6,
@@ -140,7 +145,7 @@ BLITZ_LIBFIN();
 
 /* The variables in the order of the original (offsets $1C6-$233 of the
    binary): a Format string longer than 32 characters overwrites the ones
-   behind `form` (BUG(orig), see above), and ezchar reads the byte before
+   behind `form` (BUG(orig) (#240), see above), and ezchar reads the byte before
    `chars` ($20) for a "," at the start.  All accesses that may leave a
    member go through pointers into the whole struct. */
 static struct BL_PACKED {
@@ -165,7 +170,7 @@ static struct BL_PACKED {
 /* ffptoascii's buffers and table, in the order of the binary ($872-$9D3):
    buf1 = sign, digits and exponent form, buf2 = fixed point form (the
    point at buf2[24]), then the 48 powers of ten {binary exponent,
-   mantissa} 1E19 ... 1E-28 - writable, see BUG(orig) above. */
+   mantissa} 1E19 ... 1E-28 - writable, see BUG(orig) (#241) above. */
 static struct BL_PACKED {
     UBYTE buf1[16];
     UBYTE buf2[50];
@@ -582,7 +587,7 @@ static UBYTE *quick3(ULONG d2)
         *--a0 = '.';
         a1 = PL_NUMBUFFF;
         /* 'f0l: the "." test compares the same '0' again, so it never
-           stops at the point (BUG(orig): "x." for .0000) */
+           stops at the point (BUG(orig) (#234): "x." for .0000) */
         while (a1[-1] == '0' && *--a1 != '.')
             ;
         *a1 = 0;                                /* 'skip2 */
@@ -839,7 +844,8 @@ void BLITZ_ROUTINE donprint(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2))
 
 /* strprint - output handler of Str$: entries -8 (null terminated string,
    stprint3), -4 (string a0, d0 = length, stprint2) and 0 (single
-   character - in the original the same code as stprint2, BUG(orig)).
+   character - in the original the same code as stprint2; not a bug, never
+   used for single characters).
    The characters go to a3, d0 = length. */
 static ULONG BLITZ_ROUTINE stprint2_c(ULONG len BL_REG(d0), const UBYTE *s BL_REG(a0))
 {

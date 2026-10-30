@@ -29,19 +29,24 @@
  *   Frames: inline MOVE 8(a0),d0.
  *
  * Kept from the original (BUG(orig)):
- *   - the BODY is decoded as ByteRun1 whatever BMHD's compression says;
- *     DBF counters: height/depth/width 0 run 65536 times.
- *   - freeanim reads the next pointer of a delta node after freeing it.
- *   - LoadAnim: a missing BODY gives length -1 (allocation fails, the
- *     read goes to 0); after the last delta the wrap goes to node 2, a
- *     single delta gives current = 0 (NextFrame would read address 0).
+ *   - the BODY is decoded as ByteRun1 whatever BMHD's compression says
+ *     (#397); DBF counters: height/depth/width 0 run 65536 times (#402).
+ *   - freeanim reads the next pointer of a delta node after freeing it. (#399)
+ *   - LoadAnim: a missing BODY gives length -1 (memlib adds its 8 byte
+ *     header, so AllocMem(7) succeeds, the read copies nothing and InitAnim
+ *     decodes whatever follows the block) (#400); a single delta gives
+ *     current = 0 (NextFrame would read address 0) (#401).  Not a bug:
+ *     after the last delta the wrap goes to node 2 (the ANIM op-5
+ *     double-buffer loop convention, the last two deltas lead back to
+ *     frames 0/1).
  *   - "Can't Open Anim File": BEQ err7 into the error check area, i.e.
  *     behind the library without the debugger (reproduced: JSR to err7
  *     in the check area); "Anim format not supported" (err6, in the
- *     normal code) loads mess6 from the check area and runs on into err1.
- *   - a3: LoadAnim leaves it on the last delta node (or anim+18),
- *     InitAnim behind the BODY data / in the last plane of the second
- *     bitmap, NextFrame on the current (or first) node - reproduced.
+ *     normal code) loads mess6 from the check area and runs on into err1. (#398)
+ * Not a bug (statements, a3 has no meaning after them), reproduced: LoadAnim
+ * leaves a3 on the last delta node (or anim+18), InitAnim behind the BODY
+ * data / in the last plane of the second bitmap, NextFrame on the current
+ * (or first) node.
  * DIFF: a2 stays unchanged (port convention, notes/cmdlibs-port.md); err6/
  * err7 are reached by JSR (return address and the C function's saved
  * registers on the stack - GCC drops code behind an inline BRA).
@@ -204,7 +209,7 @@ static void freeanim_c(UBYTE *a3)
 
         d0 = L(a2, 4);
         a2 = a1;
-        globfree((ULONG)a1, d0);        /* BUG(orig): (a2) read after this */
+        globfree((ULONG)a1, d0);        /* BUG(orig) (#399): (a2) read after this */
     }
 }
 
@@ -237,7 +242,7 @@ void BLITZ_ROUTINE doanimload(UBYTE *a4 BL_REG(a0), ULONG name BL_REG(d1))
     r.a0 = name;
     r.a1 = 0;
     if (!BLITZ_ALIBJSR(TOK_ilbminit, r))
-        GOTO(err7);                     /* BUG(orig): into the check area */
+        GOTO(err7);                     /* BUG(orig) (#398): into the check area */
     info = (UBYTE *)r.a0;
     L(a4, 0) = L(info, 0);
     W(a4, 4) = W(info, 4);

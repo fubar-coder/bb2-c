@@ -13,7 +13,7 @@
  *   quick:     SWAP d0:SWAP d1 first, then the word code on the integer
  *              parts.  The result is quotient<<16 | remainder, but the
  *              compiler types it as a Word (blitz2.s:9459 domodq "now a
- *              word"), so only the remainder is used - not a visible bug
+ *              word"), so only the remainder is used - not a visible bug (#221)
  *              (the fractions of the inputs are ignored).  Kept bit for
  *              bit.
  *   long:      a - (a/b)*b with ldivlib ldivide ($CB01) and lmullib
@@ -21,7 +21,7 @@
  *   float:     SPFix both (mathffp, a6 = ffplib base), then the long code;
  *              The result is a Long, not an FFP number - the compiler
  *              types it as a Long (blitz2.s:9463 domodf "now a long"), so
- *              this is correct (only the fractions are lost).
+ *              this is correct (only the fractions are lost, #222).
  *
  * Registers: byte/word keep d1/a0/a1 (and everything else); long/float
  * keep a0/a1 (ldivlib/lmullib/mathffp do), d1 is changed (the original

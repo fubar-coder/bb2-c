@@ -98,7 +98,7 @@ void BLITZ_ROUTINE codeinit(void)
     UWORD n = 0;
     ULONG vbr = 0;
 
-    /* BUG(orig): this counts the shifts until the CPU flags are 0, so
+    /* BUG(orig) (#42): this counts the shifts until the CPU flags are 0, so
        only 68020+ (2 flags or more) read the VBR; a 68010 uses 0. */
     while (f) {
         n++;
@@ -150,7 +150,7 @@ BLITZ_THUNK(doclrerr, doclrerr_c, "d0-d1/a0-a1");
 /* newtrap - new TRAP #0 routine: exception handler (frame, RTE) and a
    stack switch, asm.  A user mode trap with a SetErr handler returns (RTE)
    to ercont, which continues at the handler with the SetErr stack.
-   BUG(orig): d1 is stored in ernum (Ern) before ercode is checked, but no
+   BUG(orig) (#133): d1 is stored in ernum (Ern) before ercode is checked, but no
    runtime error sets d1 (compiler moveq #n,d0:trap #0, libraries
    MOVE.l #mess,d0:TRAP #0), so Ern returns a random value.  The old
    vector gets the trap with d1 = 0 and a0 changed; the old handlers

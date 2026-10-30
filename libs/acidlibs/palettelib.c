@@ -30,28 +30,32 @@
  * LoadRGB4, LoadRGB32, GetRGB32).
  *
  * Kept from the original (BUG(orig)):
- *   - FadePalette and MixPalette read the source components 2 bytes
- *     early (palette data + 2): the MULU takes the upper word of each
- *     component (equal to the lower one for PalRGB colours).
+ *   - Not a bug (the results are right): FadePalette and MixPalette read
+ *     the source components 2 bytes early (palette data + 2): the MULU
+ *     takes the upper word of each component (equal to the lower one for
+ *     PalRGB colours, the only non-zero part for DecodePalette colours).
  *   - make4bitrgbs (Amiga mode with agamode = 0, i.e. Kickstart < 3.0:
  *     ShowPalette/cycling) uses the low byte of each component:
- *     DecodePalette colours (top byte only) come out black there.
- *   - LoadPalette with an offset first writes colour offset+count with the
- *     offset as red value (overwritten by the loop); CRNG ranges with
- *     low = high only overwrite the low word of the cycle entry.
- *   - DecodePalette walks the chunks without pad bytes, decodes count =
- *     DIVU length/3 (the remainder stays in the upper word), sets var to
- *     the CRNG flag (1) for active cycles and re-initialises (clears) the
- *     palette if it is too small.
- *   - PaletteRange with start = end divides by zero (DIVS).
+ *     DecodePalette colours (top byte only) come out black there. (#224)
+ *   - Not a bug (both are overwritten later): LoadPalette with an offset
+ *     first writes colour offset+count with the offset as red value
+ *     (overwritten by the loop); CRNG ranges with low = high only
+ *     overwrite the low word of the cycle entry.
+ *   - DecodePalette walks the chunks without pad bytes (#225), decodes
+ *     count = DIVU length/3 (the remainder stays in the upper word), sets
+ *     var to the CRNG flag (1) for active cycles (not a bug: only the low
+ *     word is used, a start value of 1 is invisible) and re-initialises
+ *     (clears) the palette if it is too small (#226).
+ *   - PaletteRange with start = end divides by zero (DIVS). (#227)
  *   - StopCycle does not reset `cycon`: a later Cycle does not install
- *     the interrupt again.  The cycle list is freed at the end but not
- *     cleared.  InitPalette writes no end marker for the cycles.
+ *     the interrupt again (#228).  The cycle list is freed at the end but
+ *     not cleared (not a bug: only at program end).  InitPalette writes no
+ *     end marker for the cycles (#229).
  *   - ShowPalette/Use Palette in Amiga mode with an empty palette run
  *     into b_showpal (V39: a0 from somewhere; else make4bitrgbs, a0 = the
- *     palette) and write nothing (count 0) - here both simply return (DIFF).
- *   - Sizes with ADDQ.w #8 (InitPalette), word indices (MULU #12 + LEA
- *     4(a0,d1.w)).
+ *     palette) and write nothing (count 0) - here both simply return (DIFF). (#230)
+ *   - Not a bug (overflows only for palettes of 2731+ colours): sizes with
+ *     ADDQ.w #8 (InitPalette), word indices (MULU #12 + LEA 4(a0,d1.w)).
  * DIFF: the original jumps from the normal code into the error check area
  * (AGARed/Green/Blue err3) and uses messages from there (err0, err1,
  * errd); here these runtime errors and messages are in the normal code.
@@ -1040,7 +1044,7 @@ static void BLITZ_ROUTINE _fadepalette_c(ULONG br BL_REG(d2), struct bpal *s BL_
     if (!n || (WORD)n > (WORD)d->numcols)
         return;
     br >>= 8;
-    src = (const ULONG *)(s->pdata + 2);        /* BUG(orig): +2 */
+    src = (const ULONG *)(s->pdata + 2);        /* +2: not a bug, see top */
     dst = (ULONG *)(d->pdata + 4);
     k = n - 1;
     do {
@@ -1129,7 +1133,7 @@ static void BLITZ_ROUTINE _duplicatepalette_c(struct bpal *s BL_REG(a2))
 }
 BLITZ_THUNK(_duplicatepalette, _duplicatepalette_c, "a2");
 
-/* MixPalette p1,p2,dest,fraction - a0/a2 = sources (+2, BUG(orig)),
+/* MixPalette p1,p2,dest,fraction - a0/a2 = sources (+2, not a bug, see top),
    a3 = dest, d3 = fraction (Quick) */
 static void BLITZ_ROUTINE _mixpalette_c(LONG f BL_REG(d3), struct bpal *p1 BL_REG(a0),
                                         struct bpal *p2 BL_REG(a2))

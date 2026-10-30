@@ -425,7 +425,7 @@ ULONG BLITZ_ROUTINE doprevitem(UBYTE *base BL_REG(d0))
 /* dosortlist - sort the used items ascending by the long at `offset` in
    the element (bubble sort; every pass ends one item earlier).  The
    current item stays the same item.
-   BUG(orig): items are compared with CMP.l: BMI, i.e. the sign of the
+   BUG(orig) (#201): items are compared with CMP.l: BMI, i.e. the sign of the
    difference (wraps for keys more than 2^31 apart), and items with
    equal keys are not swapped. */
 #define KEY(i) (*(ULONG *)((UBYTE *)(i) + 8 + offset))

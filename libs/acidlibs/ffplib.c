@@ -7,7 +7,7 @@
  *
  * C translation of bblibsrc/ffplib (binary checked: same as the source).
  *   init:   open mathffp.library (OldOpenLibrary, no version check);
- *           the base is the init value.  No error check: BUG(orig) a
+ *           the base is the init value.  No error check: BUG(orig) (#137) a
  *           failing open leaves 0 in the global and the first float
  *           operation jumps to a negative offset from 0.
  *   $C900:  no code - loads the init value into a6.

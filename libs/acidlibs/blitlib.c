@@ -24,10 +24,12 @@
  * cookie.  Bitmaps (bitmaplib): +0.w bytes per row, +4.w depth, +8
  * planes, +56/+58.w width/height, +62.w set up.
  *
- * Kept from the original (BUG(orig)): Block works on byte positions (x >>
- * 3, the blitter ignores bit 0 of the address); BlitColl tests all planes
- * of the bitmap, not of the shape; the mode functions are inline MOVE.w
- * (upper word of d0 stays).
+ * Kept from the original, not a bug: Block works on byte positions (x >>
+ * 3, the blitter ignores bit 0 of the address; Block is documented as word
+ * boundary blitting); BlitColl tests all planes of the bitmap, not of the
+ * shape (a collision with any non-zero bitmap pixel needs all planes); the
+ * mode functions are inline MOVE.w (upper word of d0 stays; word results,
+ * the compiler uses only d0.w).
  */
 #include "blitzlib.h"
 #define __NOLIBBASE__

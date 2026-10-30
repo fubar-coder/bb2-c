@@ -38,25 +38,25 @@
  * BUG(orig), kept:
  *  - TapeTrap without a tape number falls through into TapeTrap Tape#:
  *    tapeadd = the caller's a3 (Blitz string work pointer), so events are
- *    appended to whatever a3 points to (not tested).
+ *    appended to whatever a3 points to (not tested). (#95)
  *  - Appending an event to a tape clears `mode` (a running Record or
- *    PlayBack stops working, without restoring the hijacked link).
+ *    PlayBack stops working, without restoring the hijacked link). (#96)
  *  - ClickButton: the second (button up) call gets d0 as left by the
  *    first one's addtape: 0 normally, but the QuietTrap value when the
  *    event went to a tape - ClickButton 0 under TapeTrap with QuietTrap
- *    On records "left down, RIGHT up".
+ *    On records "left down, RIGHT up". (#97)
  *  - AbsMouse and RelMouse both make POINTERPOS events (RelMouse with
- *    qualifier RELATIVEMOUSE).
+ *    qualifier RELATIVEMOUSE). (#98)
  *  - PlayWait restarts the given tape (with signal) when the low byte of
- *    mode is 2 and waits; otherwise it returns at once.
+ *    mode is 2 and waits; otherwise it returns at once. (#99)
  *  - The playback time comparison takes the time of the FIRST event of
- *    the incoming list only.
+ *    the incoming list only. (#100)
  *  - LoadTape reads the start time unchecked and stops at the first
- *    short read (no error for a damaged file).
- *  - Type: a character rawkeylib cannot convert gives code $FFFF.
- *  - XStatus returns mode including bit 15 ($8001 ...).
+ *    short read (no error for a damaged file). (#101)
+ *  - Type: a character rawkeylib cannot convert gives code $FFFF. (#102)
+ *  - XStatus returns mode including bit 15 ($8001 ...). (#103)
  *  - A failed AllocSignal(-1) is not noticed: mybit = $FFFF, mysig = 0
- *    (LSL.l by 63), FreeSignal(255)/(65535).
+ *    (LSL.l by 63), FreeSignal(255)/(65535). (#104)
  * DIFF: "Can't Open File" (SaveTape/LoadTape) is `BEQ err1` into the
  * error check area in the original (without the debugger a jump behind
  * the library); here trap and message are in the normal code.
@@ -346,7 +346,7 @@ static void BLITZ_ROUTINE doqplay_c(ULONG v BL_REG(d0))
 BLITZ_THUNK(doqplay, doqplay_c, "d0-d1/a0-a1");
 
 /* TapeTrap (no tape): CLR.l tapeadd, then falls into TapeTrap Tape# with
-   the caller's a3 (BUG(orig)) */
+   the caller's a3 (BUG(orig), #95) */
 static void BLITZ_ROUTINE dotapeadd2_c(void)
 {
     tapeadd = (struct tape *)blitz_string;
@@ -445,7 +445,7 @@ static void BLITZ_ROUTINE domousebutton_c(ULONG b BL_REG(d0), ULONG on BL_REG(d1
 }
 BLITZ_THUNK(domousebutton, domousebutton_c, "d0-d1/a0-a1");
 
-/* click: down, then up - with the d0 the first call left (BUG(orig)) */
+/* click: down, then up - with the d0 the first call left (BUG(orig), #97) */
 static void BLITZ_ROUTINE doclickbutton_c(ULONG b BL_REG(d0))
 {
     mousebutton(mousebutton(b, 1), 0);
