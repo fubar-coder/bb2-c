@@ -18,7 +18,7 @@
  * BUG(orig):
  *   - PeekByte has no RTS: called as a subroutine (not inline), it runs
  *     on into CludgeAcid with d0 = the byte - a byte 1 loads a4 with the
- *     saved value, any other byte saves a4.  The layout is kept.
+ *     saved value, any other byte saves a4 (#907).  The layout is kept.
  *
  * CludgeAcid 1 before any CludgeAcid 0 sets a4 = 0 (nothing saved yet).
  */
@@ -75,7 +75,7 @@ ULONG rishapez_myold;
    a4 = the saved a4, else the a4 saved).  Assembler: an inline routine,
    and a4 is the Blitz program's locals pointer (fixed for GCC).
    BUG(orig): PeekByte without RTS - as a subroutine it runs into
-   CludgeAcid. */
+   CludgeAcid (#907). */
 __asm__("   .text\n   .even\n   .globl  __peekb\n"
         "__peekb:\n"
         "   .word   0xa000,2f-1f\n"

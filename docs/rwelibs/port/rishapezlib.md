@@ -35,7 +35,7 @@ a4 is the global `rishapez_myold` (the original keeps it in its code).
 
 * `PeekByte` has no RTS behind its inline code: called as a subroutine
   (not inline) it runs on into `CludgeAcid` with d0 = the byte – a byte
-  1 loads a4 with the saved value, any other byte saves a4.
+  1 loads a4 with the saved value, any other byte saves a4 (#907).
 
 ## Test
 
