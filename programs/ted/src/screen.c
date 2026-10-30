@@ -34,24 +34,21 @@ ULONG pixrows22;                        /* ted.s:5017 */
 
 /* ----------------------------------------------- vertical scrolling */
 
-/* ted.s:4407 scup2 - one plane a0: rows up (if the height is not 0),
-   then the last row filled with 0, or $FFFF if that screen row is in the
-   block (whole width, survey-05 I.9) */
-static void scup2(UBYTE *a0, ULONG rowoff, UWORD size, ULONG lastoff, UWORD rowsize)
+/* ted.s:4407 scup2 - one plane (asm a0): rows up (if the height is not
+   0), then the last row filled with 0, or $FFFF if that screen row is in
+   the block (whole width, survey-05 I.9) */
+static void scup2(UBYTE *plane, ULONG rowoff, UWORD size, ULONG lastoff, UWORD rowsize)
 {
-    UBYTE *a1 = a0;
-
     if (size >= 64) {                           /* cmp #64,d4 / bcs .skip0 */
-        a0 += rowoff;
-        hw.bltdpt = a0;
-        a0 += (WORD)fontmul;
-        hw.bltapt = a0;
+        UBYTE *dst = plane + rowoff;
+
+        hw.bltdpt = dst;
+        hw.bltapt = dst + (WORD)fontmul;
         hw.bltsize = size;
         WaitBlit();
     }
     /* .skip0 */
-    a1 += lastoff;
-    hw.bltdpt = a1;
+    hw.bltdpt = plane + lastoff;                /* a1 */
     hw.bltadat = 0;
     if (bboty != (UWORD)-1) {
         UWORD lastline = (UWORD)(curstop + edrows - 1);
@@ -70,7 +67,7 @@ void scrollup(UWORD row)
 {
     WORD rows = (WORD)(edrows - row - 1);       /* rows to scroll */
     ULONG rowoff, lastoff;
-    UWORD size, rowsize, d0;
+    UWORD size, rowsize, words;
 
     getblitter();
     hw.bltcon0 = 0x9F0;
@@ -78,13 +75,12 @@ void scrollup(UWORD row)
     chmap_scrollup(row);
     /* .skip */
     rowoff = (ULONG)row * fontmul;              /* mulu */
-    d0 = blitmod;
-    hw.bltamod = d0;
-    hw.bltdmod = d0;
+    hw.bltamod = blitmod;
+    hw.bltdmod = blitmod;
     size = (UWORD)((UWORD)((ULONG)(UWORD)rows * fonthite) << 6);
-    d0 = (UWORD)(edcols >> 1);
-    size |= d0;
-    rowsize = (UWORD)((UWORD)(fonthite << 6) | d0);
+    words = (UWORD)(edcols >> 1);               /* blit width in words */
+    size |= words;
+    rowsize = (UWORD)((UWORD)(fonthite << 6) | words);
     lastoff = (ULONG)(UWORD)(edrows - 1) * fontmul;
     scup2(bitmaps[0], rowoff, size, lastoff, rowsize);
     hw.bltcon0 = 0x9F0;
@@ -98,13 +94,13 @@ void scrupall(void)
     scrollup(0);                                /* moveq #0,d7, falls through */
 }
 
-/* ted.s:4523 scdown2 - one plane down (descending) */
-static void scdown2(UBYTE *a0, ULONG off, UWORD size)
+/* ted.s:4523 scdown2 - one plane (asm a0) down (descending) */
+static void scdown2(UBYTE *plane, ULONG off, UWORD size)
 {
-    a0 += off;
-    hw.bltdpt = a0;
-    a0 -= (WORD)fontmul;
-    hw.bltapt = a0;
+    UBYTE *dst = plane + off;
+
+    hw.bltdpt = dst;
+    hw.bltapt = dst - (WORD)fontmul;
     hw.bltsize = size;
     WaitBlit();
 }
@@ -178,7 +174,7 @@ void eraseline(UWORD row)
 /* ted.s:4619 calcscreen */
 void calcscreen(void)
 {
-    UWORD d0;
+    UWORD width, columns, height, winheight;
     ULONG q;
 
     GetScreenData(&scdata, 84, WBENCHSCREEN, NULL);
@@ -187,19 +183,16 @@ void calcscreen(void)
     botskip = 8;
     newwindow.TopEdge = topskip;
     viewmode = scdata.ViewPort.Modes;           /* scdata+44+32 */
-    d0 = (UWORD)scdata.Width;
-    newscreen.Width = d0;                       /* use width for screen! */
-    newwindow.Width = d0;                       /* and window! */
-    d0 >>= 3;
-    totsccols = d0;
-    d0 = (UWORD)(d0 - mousecols - 2);
-    edcols = d0;
-    d0 = (UWORD)((UWORD)scdata.Height - topskip - botskip);
-    q = (UWORD)divu_w(d0, fonthite);            /* divu (quotient word) */
-    d0 = (UWORD)(q - 1);                        /* subq.w #1 */
-    edrows = d0;
-    d0 = (UWORD)((ULONG)d0 * fonthite);         /* mulu (low word) */
-    pixrows = d0;
+    width = (UWORD)scdata.Width;
+    newscreen.Width = width;                    /* use width for screen! */
+    newwindow.Width = width;                    /* and window! */
+    columns = (UWORD)(width >> 3);
+    totsccols = columns;
+    edcols = (UWORD)(columns - mousecols - 2);
+    height = (UWORD)((UWORD)scdata.Height - topskip - botskip);
+    q = (UWORD)divu_w(height, fonthite);        /* divu (quotient word) */
+    edrows = (UWORD)(q - 1);                    /* subq.w #1 */
+    pixrows = (UWORD)((ULONG)edrows * fonthite); /* mulu (low word) */
     /* BUG(orig) (#351): subtracted were topskip + botskip (20), added back are
        fonthite + botskip + 1 + topskip (edrows = quotient - 1): if
        Height - 20 is a multiple of fonthite, the screen is one row taller
@@ -209,10 +202,9 @@ void calcscreen(void)
        survey-05 I.1).  Seen with fonthite 6 on a 512 row Workbench: 513
        rows (TED A/B 23-font6, original and TED-C, confirmed in Amiberry
        28.10.2026). */
-    d0 = (UWORD)(d0 + fonthite + botskip + 1);
-    newwindow.Height = d0;
-    d0 = (UWORD)(d0 + topskip);
-    newscreen.Height = d0;
+    winheight = (UWORD)(pixrows + fonthite + botskip + 1);
+    newwindow.Height = winheight;
+    newscreen.Height = (UWORD)(winheight + topskip);
 }
 
 /* ted.s:4661 screenopen2 - error of screenopen ignored (survey-05 I.2) */
@@ -229,9 +221,9 @@ BOOL screenopen(void)
 {
     struct BitMap *bm;
     struct Process *pr;
-    UBYTE *a1;
-    UWORD bpr, d0;
-    ULONG l;
+    UBYTE *plane;
+    UWORD bpr, textwidth, bottom, right;
+    ULONG size, topoff;
 
     calcscreen();
     myscreen = OpenScreen((struct NewScreen *)&newscreen);
@@ -243,18 +235,17 @@ BOOL screenopen(void)
     bpr = bm->BytesPerRow;
     bmapmul = bpr;
     blitmod = (UWORD)(bpr - edcols);
-    l = (ULONG)bpr * pixrows;
-    pixrows2 = (UWORD)l;
-    pixrows22 = l;
+    size = (ULONG)bpr * pixrows;
+    pixrows2 = (UWORD)size;
+    pixrows22 = size;
     fontmul = (UWORD)((ULONG)bpr * fonthite);
-    l = (ULONG)bpr * topskip;
-    a1 = bm->Planes[0];
-    combitmap = a1;
-    bitmaps[0] = a1 + l;
-    a1 = bm->Planes[1] + l;
-    bitmaps[1] = a1;
-    a1 += (ULONG)(UWORD)(pixrows + botskip + 1) * bmapmul;
-    statsloc = a1;
+    topoff = (ULONG)bpr * topskip;
+    plane = bm->Planes[0];
+    combitmap = plane;
+    bitmaps[0] = plane + topoff;
+    plane = bm->Planes[1] + topoff;
+    bitmaps[1] = plane;
+    statsloc = plane + (ULONG)(UWORD)(pixrows + botskip + 1) * bmapmul;
 
     memalt = 2;
     chmap = AllocMem((ULONG)chcols * edrows, MEMF_CHIP);
@@ -273,28 +264,26 @@ BOOL screenopen(void)
     ngc4[3] = 7;
     ngc4[5] = 7;
     newgads2.Height = 4;
-    d0 = (UWORD)(edcols << 3);
-    newgads.LeftEdge = d0;
-    newgads2.Width = d0;
-    d0 = pixrows;
-    newgads.Height = d0;
-    newgads2.TopEdge = d0;
-    l = (ULONG)edcols << 16;                    /* divu chcols: overflow (edcols
-                                                   >= chcols) leaves d0, low word 0 */
-    prop2sinfo.HorizBody = (UWORD)divu_w(l, chcols);
-    d0 = (UWORD)(newgads.Height - 1);
-    ngc1[5] = d0;
-    ngc2[5] = d0;
-    ngc2[3] = d0;
+    textwidth = (UWORD)(edcols << 3);
+    newgads.LeftEdge = textwidth;
+    newgads2.Width = textwidth;
+    newgads.Height = pixrows;
+    newgads2.TopEdge = pixrows;
+    /* divu chcols: overflow (edcols >= chcols) leaves d0, low word 0 */
+    prop2sinfo.HorizBody = (UWORD)divu_w((ULONG)edcols << 16, chcols);
+    bottom = (UWORD)(newgads.Height - 1);
+    ngc1[5] = bottom;
+    ngc2[5] = bottom;
+    ngc2[3] = bottom;
     newgadbord.LeftEdge = newgads.LeftEdge;
     nextngad.LeftEdge = newgads.LeftEdge;
     newgads.LeftEdge += 3;
     newgads.TopEdge += 2;
     newgads.Height -= 4;
-    d0 = (UWORD)(newgads2.Width - 1);
-    ngc3[0] = d0;
-    ngc4[0] = d0;
-    ngc4[2] = d0;
+    right = (UWORD)(newgads2.Width - 1);
+    ngc3[0] = right;
+    ngc4[0] = right;
+    ngc4[2] = right;
     newgadbord2.TopEdge = newgads2.TopEdge;
     nextngad2.TopEdge = newgads2.TopEdge;
     newgads2.LeftEdge += 3;
