@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+result 0
+address 0 kept
+inject: allocfail: 1 allocations failed
+inject: rc=0
+rc=0
