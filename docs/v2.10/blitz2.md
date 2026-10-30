@@ -219,7 +219,7 @@ from the 1.95 source is present in 2.10 unchanged – except #2. [B]
 | #341 | open | [compiler/Include] makeiname prepends IncDir also to absolute names (with ':'), so Include "dev:file" fails after IncDir | unchanged |
 | #342 | open | [compiler/IncDir] incdir is not reset between compiles (leaks into the next source in the same blitz2 session) | unchanged |
 | #343 | open | [compiler/Assembler] A folded operation on a character constant (`#">"*8`) leaves quoteflag set: `#" "` on an earlier line becomes 0 (`eval.c` eval5, test `bug_orig_compiler_asmfixer_quoteflag`) | unchanged (RILESDEBUGLIB on the CD) |
-| #344 | open | [compiler/Code generation] Amiga library call in an expression: parameter registers d2–d5 holding intermediate values are not saved | unchanged |
+| #344 | open | [compiler/Code generation] Amiga library call in an expression: parameter registers d2–d5 holding intermediate values are not saved (test `bug_orig_compiler_amigalib_param_regs`) | unchanged |
 
 The `BUG(orig)` comments in `programs/blitz2/src` refer to the same code
 and all of them apply to 2.10 as well; #2, the one bug 2.10 fixed, is a
