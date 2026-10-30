@@ -336,7 +336,9 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   once, recorded allocations and FreeMem of another size than allocated;
   with `pad` 64 zeroed bytes behind every allocation, also a hunk of
   LoadSeg, a FreeMem inside an allocation is reported and not done, and
-  one whose 64 bytes are no longer zero is reported (written behind); for the
+  one whose 64 bytes are no longer zero is reported (written behind); with
+  `guard` the 64 bytes get an address-dependent pattern instead, checked
+  at FreeMem and at the end: writes behind a block are reported; for the
   compiled programs with `runwrap=@INJECT@|...`) and reports what the
   command leaves behind (library opens minus closes of the process, its
   current directory and whether it unlocked the start lock, with

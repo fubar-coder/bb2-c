@@ -53,6 +53,12 @@
  *                          task, ...) is freed as asked.  A FreeMem whose
  *                          64 bytes behind are no longer zero is reported
  *                          (written behind the allocation)
+ *   guard                  as pad, but the 64 bytes get a pattern that
+ *                          depends on their address instead of zeros; at
+ *                          FreeMem and when COMMAND ends they are checked:
+ *                          the sizes of the allocations written behind are
+ *                          reported (a write past the end of a block, also
+ *                          a copy from one padded block to another)
  * What COMMAND leaves behind:
  *   opencount=NAME         how often the process opened a library whose
  *                          name ends in NAME (OpenLibrary, OldOpenLibrary)
@@ -177,7 +183,7 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 
 /* -------------------------------------------------------------- options */
 
-static int o_signals, o_track, o_pad, o_allocfail, o_createprocfail, o_alerts;
+static int o_signals, o_track, o_pad, o_guard, o_allocfail, o_createprocfail, o_alerts;
 static int o_wbfrontfail, o_handles;
 static ULONG nn_num;
 static char nn_name[40];
@@ -455,6 +461,27 @@ static ULONG nwrong, wrong_alloc[16], wrong_free[16];   /* FreeMem of another si
 #define PAD 64                          /* pad: the bytes behind */
 static ULONG bad_free;                  /* pad: a FreeMem not done */
 static ULONG npadw, padw_size[16];      /* pad: written behind */
+#define GUARDS 8
+static ULONG nguard, guard_size[GUARDS];  /* guard: sizes written behind */
+
+/* guard: the pattern byte at address a (never 0) */
+static UBYTE guard_byte(ULONG a) { return (UBYTE)((a * 2654435761UL) >> 24) | 1; }
+
+/* guard: are the bytes behind the allocation intact; if not, record
+   its size (once per size) */
+static void guard_check(ULONG mem, ULONG size)
+{
+    ULONG a, i;
+
+    for (a = mem + size; a < mem + size + PAD; a++)
+        if (*(UBYTE *)a != guard_byte(a)) {
+            for (i = 0; i < nguard && guard_size[i] != size; i++)
+                ;
+            if (i == nguard && nguard < GUARDS)
+                guard_size[nguard++] = size;
+            return;
+        }
+}
 
 static ULONG hash(ULONG a) { return ((a >> 3) * 2654435761UL) >> 18 & (SLOTS - 1); }
 
@@ -487,7 +514,12 @@ void alloc_post(ULONG mem, ULONG size, ULONG flags)
 
     if ((!o_track && !o_pad) || !mem || !ours())
         return;
-    if (o_pad)
+    if (o_guard) {
+        ULONG a;
+
+        for (a = mem + size; a < mem + size + PAD; a++)
+            *(UBYTE *)a = guard_byte(a);
+    } else if (o_pad)
         memset((UBYTE *)mem + size, 0, PAD);
     for (h = hash(mem), i = 0; i < SLOTS; i++, h = (h + 1) & (SLOTS - 1))
         if (slot[h].addr == 0 || slot[h].addr == TOMB) {
@@ -521,6 +553,8 @@ ULONG free_pre(ULONG mem, ULONG size)
                 if (i < PAD && npadw < 16)
                     padw_size[npadw++] = slot[h].size;
             }
+            if (o_guard)
+                guard_check(mem, slot[h].size);
             slot[h].addr = TOMB;
             nalloc--;
             return o_pad ? size + PAD : size;
@@ -1054,6 +1088,8 @@ static int option(const char *a)
         return o_track = 1;
     if (!strcmp(a, "pad"))
         return o_pad = 1;
+    if (!strcmp(a, "guard"))
+        return o_pad = o_guard = 1;
     if (!strcmp(a, "createprocfail"))
         return o_createprocfail = 1;
     if (!strncmp(a, "allocfail=", 10)) {
@@ -1305,7 +1341,7 @@ static const char usage[] =
     "  options: signals allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP] readfail=NAME/N\n"
     "    writefail=NAME/N alerts wbfrontfail examinefail=NAME openlibfail=NAME\n"
     "    opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
-    "    track pad\n"
+    "    track pad guard\n"
     "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked\n"
     "    undobuf cacheflush=NAME\n"
     "    keys=TITLE/CODE@SECS[,CODE@SECS]...  (described in inject.c)\n";
@@ -1340,7 +1376,7 @@ int main(int argc, char **argv)
             "              [readfail=NAME/N] [writefail=NAME/N] [alerts] [wbfrontfail]\n"
             "              [handles] [nullnode=NUM/NAME]\n"
             "              [examinefail=NAME] [openlibfail=NAME] [opendevfail=NAME]\n"
-            "              [createprocfail] [track] [pad]\n"
+            "              [createprocfail] [track] [pad] [guard]\n"
             "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
             "              [click=TITLE/TEXT]... [doslocked] [undobuf] [cacheflush=NAME]\n"
             "              [keys=TITLE/CODE@SECS[,CODE@SECS]...] COMMAND [ARGS]\n");
@@ -1504,6 +1540,21 @@ int main(int argc, char **argv)
     for (k = 0; k < (int)npadw; k++) {
         sprintf(line, "inject: pad: written behind an allocation of %lu bytes\n", padw_size[k]);
         put(line);
+    }
+    if (o_guard) {
+        ULONG i, j, t;
+
+        for (i = 0; i < SLOTS; i++)
+            if (slot[i].addr > TOMB)
+                guard_check(slot[i].addr, slot[i].size);
+        for (i = 1; i < nguard; i++)
+            for (j = i; j > 0 && guard_size[j - 1] > guard_size[j]; j--)
+                t = guard_size[j], guard_size[j] = guard_size[j - 1], guard_size[j - 1] = t;
+        for (i = 0; i < nguard; i++) {
+            sprintf(line, "inject: guard: written behind an allocation of %lu bytes\n",
+                    guard_size[i]);
+            put(line);
+        }
     }
     for (k = 0; k < noc; k++) {
         sprintf(line, "inject: opencount: %s %+ld\n", oc_name[k], (long)oc_count[k]);
