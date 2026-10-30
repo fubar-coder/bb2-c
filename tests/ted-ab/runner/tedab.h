@@ -40,6 +40,21 @@
  *   ; @known REASON      a known failure (REASON e.g. "KNOWN-BOTH ..."): not
  *                        run, listed in the report as KNOWN with REASON;
  *                        run all the same when the filter names it exactly
+ * Mostly for the bug-orig tests (tests/bug-orig/ted, pass key bugorig=1):
+ *   ; @file NAME "DATA"  a file staged in work/ ("..." with \n \t \xHH,
+ *                        also \x00); repeated lines append
+ *   ; @source F NAME     the @file NAME is the file passed to blitz2
+ *   ; @command ARGS...   the command teddrive runs instead of
+ *                        "blitz2:blitz2 [FILE]" (as it is; @FILE@ = the
+ *                        source in work/), e.g. "blitz2:ted" (TED alone) or
+ *                        "TEDAB:tools/inject ... blitz2:blitz2 @FILE@"
+ *   ; @expect data NAME "DATA"     work/NAME = DATA (repeated lines append)
+ *   ; @expect stdout "TEXT"        the command's output (out/stdout) has
+ *   ; @expect nostdout "TEXT"      / has not TEXT in it
+ *   ; @expect log "TEXT"           teddrive's log has / has not TEXT
+ *   ; @expect nolog "TEXT"
+ *   ; @expect screen DUMP "TEXT"   the decoded dump DUMP (out/DUMP.txt)
+ *   ; @expect noscreen DUMP "TEXT" has / has not TEXT in it
  * Postfix of a command line (a comment, teddrive ignores it, its log has it):
  *   CMD ARGS ; @ignore compilewindow
  *                        blitz2's compile window (no title, one gadget
@@ -77,6 +92,15 @@ int tedab_combo(const char *name);
 struct tedab_expect {
     char kind[12];
     char *a, *b;                /* b: NULL for one-argument kinds */
+    uint8_t *data;              /* data, stdout, log, screen (and no...) */
+    size_t len;
+};
+
+/* a file of @file */
+struct tedab_file {
+    char *name;
+    uint8_t *data;
+    size_t len;
 };
 
 struct tedab_test {
@@ -88,6 +112,9 @@ struct tedab_test {
     int norunerr, roundtrip, nofiles, font, est;
     char *opts;                 /* @opts spec, NULL = none */
     char *known;                /* @known REASON, NULL = none */
+    char *command;              /* @command, NULL = blitz2:blitz2 [FILE] */
+    struct tedab_file *files;   /* @file */
+    size_t nfiles;
     struct tedab_expect *expects;   /* @roundtrip's in front */
     size_t nexpects;
 };
@@ -171,6 +198,19 @@ struct tedab_sources {
    problems (report lines to out) */
 int tedab_check_expects(const struct tedab_test *t, const char *rundir,
                         const struct tedab_sources *src, struct text *out);
+
+/* bug-orig verdict (the exit status of corpusrun, bugorig.h) of a port run
+   against the reference run: each run's observation is its state (state
+   text of the report: OK, FAIL step N ..., TIMEOUT ...) and the problems of
+   its expectations (report lines without the combination name); compare =
+   tedab_compare_runs of the two (only used when both are OK).
+   FIXED: the port is OK without problems; BROKEN: the reference is (the
+   original does not show the bug, or the expectation describes it);
+   REPRODUCED: the port shows what the reference shows; DIFFERS: neither */
+enum { TEDAB_FIXED = 0, TEDAB_REPRODUCED = 1, TEDAB_BROKEN = 3, TEDAB_DIFFERS = 4 };
+int tedab_bugorig_verdict(const char *ref_state, const char *ref_problems,
+                          const char *port_state, const char *port_problems, int compare);
+const char *tedab_verdict_name(int verdict);
 
 /* the hash of save/CDPATH (any case) in the oracle manifest; 0 = found */
 int tedab_oracle_hash(const char *manifest, const char *cdpath, char hex[65]);

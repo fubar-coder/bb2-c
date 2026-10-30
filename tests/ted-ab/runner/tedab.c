@@ -37,7 +37,75 @@ static const struct {
 } expect_kinds[] = {
     { "same", 1 }, { "bak", 1 }, { "exists", 1 }, { "absent", 1 }, { "tok", 2 },
     { "corpus", 2 }, { "tedsave", 2 }, { "cd", 2 }, { "lexists", 1 }, { "opts", 2 },
+    /* with a "..." string (any number of words in it) as the last argument */
+    { "data", 2 }, { "stdout", 1 }, { "nostdout", 1 }, { "log", 1 }, { "nolog", 1 },
+    { "screen", 2 }, { "noscreen", 2 },
 };
+
+/* the kinds whose last argument is a "..." string */
+static int quoted_kind(const char *kind)
+{
+    return !strcmp(kind, "data") || !strcmp(kind, "stdout") || !strcmp(kind, "nostdout")
+           || !strcmp(kind, "log") || !strcmp(kind, "nolog") || !strcmp(kind, "screen")
+           || !strcmp(kind, "noscreen");
+}
+
+/* "..." at s (blanks before it skipped) with \n \t \xHH (also \x00), \ +
+   anything else = that character, into *out (malloc'd, *len bytes, a 0
+   behind them); the rest behind the closing quote in *rest.  0 = ok */
+static int unquote(const char *s, uint8_t **out, size_t *len, const char **rest)
+{
+    uint8_t *d;
+    size_t n = 0;
+
+    while (*s == ' ' || *s == '\t')
+        s++;
+    if (*s++ != '"' || !(d = malloc(strlen(s) + 1)))
+        return -1;
+    while (*s && *s != '"') {
+        if (*s == '\\' && s[1]) {
+            s++;
+            if (*s == 'n')
+                d[n++] = '\n', s++;
+            else if (*s == 't')
+                d[n++] = '\t', s++;
+            else if (*s == 'x' && td_ishex((unsigned char)s[1]) && td_ishex((unsigned char)s[2])) {
+                char h[3] = { s[1], s[2], 0 };
+
+                d[n++] = (uint8_t)td_number(h, 16);
+                s += 3;
+            } else
+                d[n++] = (uint8_t)*s++;
+        } else
+            d[n++] = (uint8_t)*s++;
+    }
+    if (*s != '"') {
+        free(d);
+        return -1;
+    }
+    d[n] = 0;
+    *out = d;
+    *len = n;
+    *rest = s + 1;
+    return 0;
+}
+
+/* *data += more (more is freed); 0 = ok */
+static int append(uint8_t **data, size_t *len, uint8_t *more, size_t n)
+{
+    uint8_t *d = realloc(*data, *len + n + 1);
+
+    if (!d) {
+        free(more);
+        return -1;
+    }
+    memcpy(d + *len, more, n);
+    *len += n;
+    d[*len] = 0;
+    *data = d;
+    free(more);
+    return 0;
+}
 
 /* the words of a directive's value (blanks separate), at most max */
 static int words(char *s, char **w, int max)
@@ -68,6 +136,8 @@ static int add_expect(struct tedab_test *t, const char *kind, const char *a, con
     snprintf(e->kind, sizeof e->kind, "%s", kind);
     e->a = strdup(a);
     e->b = b ? strdup(b) : NULL;
+    e->data = NULL;
+    e->len = 0;
     return e->a && (!b || e->b) ? 0 : -1;
 }
 
@@ -96,7 +166,7 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
         return -1;
     while (*line) {
         const char *eol = strchr(line, '\n'), *p;
-        char buf[400], *w[24], *key;
+        char buf[400], raw[400], *w[24], *key;
         size_t n;
         int nw;
 
@@ -143,15 +213,60 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
             }
             continue;
         }
+        strcpy(raw, *p ? p + 1 : "");
         nw = *p ? words(buf + (p - buf) + 1, w, 24) : 0;
         buf[p - buf] = 0;
-        if (!strcmp(key, "source")) {
+        if (!strcmp(key, "file")) {
+            const char *q = raw, *rest;
+            uint8_t *d;
+            size_t len, k;
+
+            while (*q == ' ' || *q == '\t')
+                q++;
+            q += strcspn(q, " \t");
+            if (nw < 2 || unquote(q, &d, &len, &rest)) {
+                snprintf(err, errlen, "%s line %u: @file NAME \"DATA\"", name, no);
+                return -1;
+            }
+            for (k = 0; k < t->nfiles && strcmp(t->files[k].name, w[0]); k++)
+                ;
+            if (k == t->nfiles) {
+                struct tedab_file *f = realloc(t->files, (k + 1) * sizeof *f);
+
+                if (!f) {
+                    free(d);
+                    return -1;
+                }
+                t->files = f;
+                memset(&f[k], 0, sizeof f[k]);
+                if (!(f[k].name = strdup(w[0]))) {
+                    free(d);
+                    return -1;
+                }
+                t->nfiles++;
+            }
+            if (append(&t->files[k].data, &t->files[k].len, d, len))
+                return -1;
+        } else if (!strcmp(key, "command")) {
+            const char *q = raw;
+
+            while (*q == ' ' || *q == '\t')
+                q++;
+            free(t->command);
+            if (!(t->command = strndup(q, strcspn(q, "\r"))))
+                return -1;
+            if (!*t->command) {
+                snprintf(err, errlen, "%s line %u: @command ARGS", name, no);
+                return -1;
+            }
+        } else if (!strcmp(key, "source")) {
             free(t->src_arg);
             t->src_arg = NULL;
             t->src_kind = 0;
             if (nw && strcmp(w[0], "none")) {
-                if (nw != 2 || strlen(w[0]) != 1 || !strchr("TESK", w[0][0])) {
-                    snprintf(err, errlen, "%s line %u: @source T|E|S|K NAME or none", name, no);
+                if (nw != 2 || strlen(w[0]) != 1 || !strchr("TESKF", w[0][0])) {
+                    snprintf(err, errlen, "%s line %u: @source T|E|S|K|F NAME or none", name,
+                             no);
                     return -1;
                 }
                 t->src_kind = w[0][0];
@@ -209,6 +324,39 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
             for (k = 0; nw && k < sizeof expect_kinds / sizeof expect_kinds[0]; k++)
                 if (!strcmp(w[0], expect_kinds[k].kind))
                     break;
+            if (nw && k < sizeof expect_kinds / sizeof expect_kinds[0] && quoted_kind(w[0])) {
+                /* KIND [NAME] "TEXT": the string from the raw value */
+                const char *q = raw, *rest;
+                int skip = expect_kinds[k].args, j;
+                uint8_t *d;
+                size_t len, e = 0;
+
+                for (j = 0; j < skip; j++) {    /* KIND, NAME */
+                    while (*q == ' ' || *q == '\t')
+                        q++;
+                    q += strcspn(q, " \t");
+                }
+                if (unquote(q, &d, &len, &rest) || rest[strspn(rest, " \t\r")]) {
+                    snprintf(err, errlen, "%s line %u: @expect %s %s\"TEXT\"", name, no, w[0],
+                             skip == 2 ? "NAME " : "");
+                    return -1;
+                }
+                /* data: the lines of the same NAME append */
+                if (!strcmp(w[0], "data"))
+                    for (e = 0; e < t->nexpects; e++)
+                        if (!strcmp(t->expects[e].kind, "data") && !strcmp(t->expects[e].a, w[1]))
+                            break;
+                if (strcmp(w[0], "data") || e == t->nexpects) {
+                    e = t->nexpects;
+                    if (add_expect(t, w[0], skip == 2 ? w[1] : "-", NULL)) {
+                        free(d);
+                        return -1;
+                    }
+                }
+                if (append(&t->expects[e].data, &t->expects[e].len, d, len))
+                    return -1;
+                continue;
+            }
             if (!nw || k == sizeof expect_kinds / sizeof expect_kinds[0]
                 || nw - 1 != expect_kinds[k].args) {
                 snprintf(err, errlen, "%s line %u: bad @expect", name, no);
@@ -239,12 +387,21 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
         return -1;
     }
     if (t->src_kind) {
-        if (t->src_kind == 'K')
+        if (t->src_kind == 'K' || t->src_kind == 'F')
             t->file = strdup(base_name(t->src_arg));
         else
             t->file = str_printf("%s.bb2", t->src_arg);
         if (!t->file)
             return -1;
+    }
+    if (t->src_kind == 'F') {
+        for (i = 0; i < t->nfiles && strcmp(t->files[i].name, t->src_arg); i++)
+            ;
+        if (i == t->nfiles) {
+            snprintf(err, errlen, "%s: @source F %s without @file %s", name, t->src_arg,
+                     t->src_arg);
+            return -1;
+        }
     }
     if (t->roundtrip) {
         char *bak;
@@ -269,6 +426,8 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
         for (i = 0; i < npre; i++) {
             if (add_expect(t, pre[i].kind, pre[i].a, pre[i].b))
                 return -1;
+            t->expects[t->nexpects - 1].data = pre[i].data;
+            t->expects[t->nexpects - 1].len = pre[i].len;
             free(pre[i].a);
             free(pre[i].b);
         }
@@ -290,8 +449,15 @@ void tedab_test_free(struct tedab_test *t)
     for (i = 0; i < t->nexpects; i++) {
         free(t->expects[i].a);
         free(t->expects[i].b);
+        free(t->expects[i].data);
     }
     free(t->expects);
+    for (i = 0; i < t->nfiles; i++) {
+        free(t->files[i].name);
+        free(t->files[i].data);
+    }
+    free(t->files);
+    free(t->command);
     free(t->name);
     free(t->src_arg);
     free(t->file);
@@ -688,15 +854,23 @@ void tedab_free_lines(char **lines)
 static void run_script(struct text *s, const char *ind, const struct tedab_run *r)
 {
     const char *t = r->test->name, *c = tedab_combo_names[r->combo];
-    const char *f = r->test->file;
+    const char *f = r->test->file, *cmd = r->test->command, *at;
 
     text_add(s, "%sEcho \"RUN %s %s start\" >>" TEDAB_VOL ":session.log\n", ind, t, c);
     text_add(s, "%sAssign blitz2: " TEDAB_VOL ":combo/%s/blitz2\n", ind, c);
     text_add(s, "%sAssign TEDRUN: " TEDAB_VOL ":runs/%s/%s\n", ind, t, c);
     text_add(s, "%sAssign L: TEDRUN:L\n%sAssign L: SYS:L ADD\n%sCD TEDRUN:work\n", ind, ind, ind);
     text_add(s, "%s" TEDAB_VOL ":tools/reqtrap " TEDAB_VOL ":tools/teddrive " TEDAB_VOL
-                ":tests/%s.drv TEDRUN:out/ blitz2:blitz2%s%s >TEDRUN:out/stdout\n",
-             ind, t, f ? " TEDRUN:work/" : "", f ? f : "");
+                ":tests/%s.drv TEDRUN:out/ ", ind, t);
+    if (!cmd)
+        text_add(s, "blitz2:blitz2%s%s", f ? " TEDRUN:work/" : "", f ? f : "");
+    else {
+        /* @command, @FILE@ = the source in work/ */
+        for (; (at = strstr(cmd, "@FILE@")); cmd = at + 6)
+            text_add(s, "%.*sTEDRUN:work/%s", (int)(at - cmd), cmd, f ? f : "");
+        text_add(s, "%s", cmd);
+    }
+    text_add(s, " >TEDRUN:out/stdout\n");
     text_add(s, "%sSet tdr $RC\n%sEcho \"rc=$tdr\" >>TEDRUN:out/stdout\n", ind, ind);
     text_add(s, "%sCD " TEDAB_VOL ":\n%sAssign L: SYS:L\n%sAssign TEDRUN:\n%sAssign blitz2:\n",
              ind, ind, ind, ind);
@@ -1334,6 +1508,32 @@ int tedab_check_expects(const struct tedab_test *t, const char *rundir,
     for (i = 0; i < t->nexpects; i++) {
         const struct tedab_expect *e = &t->expects[i];
         int l = !strcmp(e->kind, "lexists") || !strcmp(e->kind, "opts");
+
+        if (quoted_kind(e->kind) && strcmp(e->kind, "data")) {
+            /* [no]stdout, [no]log, [no]screen: TEXT in a file of out/ */
+            int neg = !strncmp(e->kind, "no", 2);
+            const char *k = e->kind + (neg ? 2 : 0);
+            char *p = !strcmp(k, "screen") ? str_printf("%s/out/%s.txt", rundir, e->a)
+                      : str_printf("%s/out/%s", rundir, k);
+            size_t len;
+            char *text = p ? (char *)read_file(p, &len) : NULL;
+            int has = text && strstr(text, (const char *)e->data) != NULL;
+
+            free(p);
+            if (!text && !neg) {
+                text_add(out, "  %s expect: %s%s%s missing\n", src->combo,
+                         strcmp(k, "screen") ? "" : "dump ", strcmp(k, "screen") ? k : e->a,
+                         strcmp(k, "screen") ? "" : ".txt");
+                problems++;
+            } else if (has == neg) {
+                text_add(out, "  %s expect: %s%s%s %s \"%s\"\n", src->combo, k,
+                         strcmp(k, "screen") ? "" : " ", strcmp(k, "screen") ? "" : e->a,
+                         neg ? "has" : "lacks", (const char *)e->data);
+                problems++;
+            }
+            free(text);
+            continue;
+        }
         char *p = str_printf("%s/%s/%s", rundir, l ? "L" : "work", e->a);
         size_t len, wlen = 0;
         uint8_t *data = p ? read_file(p, &len) : NULL, *want = NULL, o[50];
@@ -1354,7 +1554,11 @@ int tedab_check_expects(const struct tedab_test *t, const char *rundir,
             problems++;
             continue;
         }
-        if (!strcmp(e->kind, "same") || !strcmp(e->kind, "bak")) {
+        if (!strcmp(e->kind, "data")) {
+            want = e->data;
+            wlen = e->len;
+            wanted = 1;
+        } else if (!strcmp(e->kind, "same") || !strcmp(e->kind, "bak")) {
             want = orig;
             wlen = olen;
             wanted = 1;
@@ -1413,7 +1617,7 @@ int tedab_check_expects(const struct tedab_test *t, const char *rundir,
                      src->combo, e->a, e->kind);
             problems++;
         }
-        if (want != orig && want != o)
+        if (want != orig && want != o && want != e->data)
             free(want);
         free(data);
     }
@@ -1444,4 +1648,36 @@ int tedab_oracle_hash(const char *manifest, const char *cdpath, char hex[65])
     }
     free(m);
     return r;
+}
+
+/* ------------------------------------------------------------- bug-orig */
+
+int tedab_bugorig_verdict(const char *ref_state, const char *ref_problems,
+                          const char *port_state, const char *port_problems, int compare)
+{
+    int ref_ok = !strcmp(ref_state, "OK"), port_ok = !strcmp(port_state, "OK");
+
+    if (ref_ok && !*ref_problems)
+        return TEDAB_BROKEN;
+    if (port_ok && !*port_problems)
+        return TEDAB_FIXED;
+    if (!strcmp(ref_state, port_state) && !strcmp(ref_problems, port_problems)
+        && (!ref_ok || !compare))
+        return TEDAB_REPRODUCED;
+    return TEDAB_DIFFERS;
+}
+
+const char *tedab_verdict_name(int verdict)
+{
+    switch (verdict) {
+    case TEDAB_FIXED:
+        return "FIXED";
+    case TEDAB_REPRODUCED:
+        return "REPRODUCED";
+    case TEDAB_BROKEN:
+        return "BROKEN";
+    case TEDAB_DIFFERS:
+        return "DIFFERS";
+    }
+    return "?";
 }

@@ -28,6 +28,15 @@
  *                      boot ~15 s and gates ~10 s come on top)
  *   parallel=N         emulator sessions at the same time
  *   stack=N            Stack for teddrive (default 40000)
+ *   gates=DIR          gate-d.drv and gate-d-rescue.drv (default: scripts)
+ *   inject=, wbrun=PATH  optional: tools/inject, tools/wbrun for @command
+ *                      (tests/bug-orig/amiga)
+ *   bugorig=1          the bug-orig mode (tests/bug-orig/ted): every run in
+ *                      a session of its own; the reference (the first
+ *                      combination) and each other one get a verdict
+ *                      (tedab_bugorig_verdict); exit status 0 = all FIXED,
+ *                      1 = REPRODUCED, 3 = BROKEN, 4 = DIFFERS (the worst
+ *                      of them: 3 before 4 before 1), 2 = error
  *
  * The runs are packed into sessions (the combinations of a test stay
  * together).  A session that ends early (hang: time limit) leaves runs
@@ -58,7 +67,8 @@ struct pass {
     char *work, *report, *scripts, *filter, *combos, *src, *corpus_src, *corpus_out;
     char *expect_dir, *cd, *oracle, *fonts;
     char *teddrive, *teddrivetest, *tedprobe, *reqtrap, *ted_ref, *ted_c, *blitz2_ref, *blitz2_c;
-    unsigned timeout, budget, parallel, stack;
+    char *inject, *wbrun, *gates;
+    unsigned timeout, budget, parallel, stack, bugorig;
 };
 
 /* one run over all sessions */
@@ -93,13 +103,14 @@ static int parse(const char *text, char *err, size_t errlen)
         { "fonts", &P.fonts }, { "teddrive", &P.teddrive }, { "teddrivetest", &P.teddrivetest },
         { "tedprobe", &P.tedprobe }, { "reqtrap", &P.reqtrap }, { "ted_ref", &P.ted_ref },
         { "ted_c", &P.ted_c }, { "blitz2_ref", &P.blitz2_ref }, { "blitz2_c", &P.blitz2_c },
+        { "inject", &P.inject }, { "wbrun", &P.wbrun }, { "gates", &P.gates },
     };
     static const struct {
         const char *key;
         unsigned *dst;
     } nums[] = {
         { "timeout", &P.timeout }, { "budget", &P.budget }, { "parallel", &P.parallel },
-        { "stack", &P.stack },
+        { "stack", &P.stack }, { "bugorig", &P.bugorig },
     };
     const char *line = text;
     unsigned no = 0;
@@ -344,6 +355,8 @@ static int stage_test(const struct tedab_test *t, FILE *log)
         src = str_printf("%s/%s.bb2", P.src, t->src_arg);
         xtra = str_printf("%s/%s.bb2.xtra", P.src, t->src_arg);
         break;
+    case 'F':                   /* one of the @file, below */
+        break;
     case 'K':
         src = tedab_resolve(P.cd, t->src_arg);
         {
@@ -361,6 +374,12 @@ static int stage_test(const struct tedab_test *t, FILE *log)
     if (!r && src && copy_to(src, dir, t->file)) {
         fprintf(log, "tedab: %s: cannot copy %s\n", t->name, src);
         r = 77;
+    }
+    for (size_t k = 0; !r && k < t->nfiles; k++) {
+        char *to = str_printf("%s/%s", dir, t->files[k].name);
+
+        r = to && !write_file(to, t->files[k].data, t->files[k].len) ? 0 : 2;
+        free(to);
     }
     if (!r && t->file) {
         char *xname = str_printf("%s.xtra", t->file), *from = NULL;
@@ -443,20 +462,24 @@ static int stage_session(unsigned s, const struct tedab_run *rs, size_t n, FILE 
     static const char *const libs[] = { "deflibs", "acidlibs", "defaultdbug", "help",
                                         "help.dat" };
     char *vol = session_dir(s, "vol"), *dir;
-    const char *tools[4] = { P.tedprobe, P.teddrive, P.teddrivetest, P.reqtrap };
-    static const char *const tnames[4] = { "tedprobe", "teddrive", "teddrivetest", "reqtrap" };
+    const char *tools[6] = { P.tedprobe, P.teddrive, P.teddrivetest, P.reqtrap, P.inject,
+                             P.wbrun };
+    static const char *const tnames[6] = { "tedprobe", "teddrive", "teddrivetest", "reqtrap",
+                                           "inject", "wbrun" };
     int r = vol ? 0 : -1, c;
     size_t i, k;
 
-    for (i = 0; !r && i < 4; i++) {
+    for (i = 0; !r && i < 6; i++) {
+        if (!tools[i])
+            continue;
         dir = str_printf("%s/tools", vol);
         r = dir && !mkdir_p(dir) && !copy_to(tools[i], dir, tnames[i]) ? 0 : -1;
         free(dir);
     }
     if (!r) {
         char *g = str_printf("%s/gate", vol), *go = str_printf("%s/gate/out", vol);
-        char *d1 = str_printf("%s/gate-d.drv", P.scripts);
-        char *d2 = str_printf("%s/gate-d-rescue.drv", P.scripts);
+        char *d1 = str_printf("%s/gate-d.drv", P.gates ? P.gates : P.scripts);
+        char *d2 = str_printf("%s/gate-d-rescue.drv", P.gates ? P.gates : P.scripts);
 
         r = g && go && d1 && d2 && !mkdir_p(go) && !copy_to(d1, g, "gate-d.drv")
             && !copy_to(d2, g, "gate-d-rescue.drv") ? 0 : -1;
@@ -530,6 +553,10 @@ static size_t take(size_t *queue, size_t nq, size_t *pos)
     size_t start = *pos, i = start;
     unsigned used = 0;
 
+    if (P.bugorig) {            /* one run per session */
+        *pos = start + (start < nq);
+        return *pos - start;
+    }
     while (i < nq) {
         const struct tedab_test *t = runs[queue[i]].r.test;
         size_t j = i;
@@ -625,6 +652,73 @@ static const char *state_text(const struct run *r, char *buf, size_t len)
     return buf;
 }
 
+/* bug-orig: the order of the verdicts for the exit status (the worst wins:
+   an error, BROKEN, DIFFERS, REPRODUCED, FIXED) */
+static int verdict_rank(int v)
+{
+    return v == 2 ? 4 : v == TEDAB_BROKEN ? 3 : v == TEDAB_DIFFERS ? 2 : v;
+}
+
+/* the observation of a run: its state and the problems of its
+   expectations (without the combination name) */
+static void observe(const struct tedab_test *t, const struct run *r, char *state, size_t slen,
+                    struct text *problems)
+{
+    char *staged = str_printf("%s/staged/%s/%s", P.work, t->name, t->file ? t->file : "");
+    struct tedab_sources src = { "-", staged, P.expect_dir, P.corpus_out, P.cd, P.oracle };
+
+    state_text(r, state, slen);
+    tedab_check_expects(t, r->dir, &src, problems);
+    free(staged);
+}
+
+/* bug-orig: the verdict of every combination against the reference (the
+   first one of combos) into the report; *worst = the worst exit status */
+static void bugorig_verdicts(const struct tedab_test *t, struct run **tr,
+                             const struct teddump_fonts *f, struct text *rep, int *worst)
+{
+    int ref = combo_order[0], c;
+    char rs[300];
+    struct text rp = { 0 };
+
+    if (!tr[ref]) {
+        text_add(rep, "  bug-orig: no run of the reference %s\n", tedab_combo_names[ref]);
+        *worst = 2;
+        return;
+    }
+    observe(t, tr[ref], rs, sizeof rs, &rp);
+    for (c = 1; c < ncombo_order; c++) {
+        int cc = combo_order[c], v, cmp = -1;
+        char ps[300];
+        struct text pp = { 0 };
+
+        if (!tr[cc])
+            continue;
+        observe(t, tr[cc], ps, sizeof ps, &pp);
+        if (!strcmp(rs, "OK") && !strcmp(ps, "OK")) {
+            struct text d = { 0 };
+
+            cmp = tedab_compare_runs(tr[ref]->dir, tr[cc]->dir, tedab_combo_names[ref],
+                                     tedab_combo_names[cc], f, t->font, &d);
+            free(d.p);
+        }
+        if (!strncmp(rs, "NOTRUN", 6) || !strncmp(rs, "SKIPPED", 7)
+            || !strncmp(ps, "NOTRUN", 6) || !strncmp(ps, "SKIPPED", 7))
+            v = 2;              /* not run: no verdict */
+        else
+            v = tedab_bugorig_verdict(rs, rp.p ? rp.p : "", ps, pp.p ? pp.p : "", cmp);
+        text_add(rep, "  bug-orig %s against %s: %s\n", tedab_combo_names[cc],
+                 tedab_combo_names[ref], v == 2 ? "NOT RUN" : tedab_verdict_name(v));
+        if (v == TEDAB_BROKEN)
+            text_add(rep, "    the reference shows the expected behaviour: the original does "
+                          "not have the bug, or the expectation describes it\n");
+        if (*worst < 0 || verdict_rank(v) > verdict_rank(*worst))
+            *worst = v;
+        free(pp.p);
+    }
+    free(rp.p);
+}
+
 static int run(FILE *log)
 {
     const char *files[] = { P.teddrive, P.teddrivetest, P.tedprobe, P.reqtrap, P.ted_ref, P.ted_c,
@@ -634,7 +728,7 @@ static int run(FILE *log)
     struct teddump_fonts fonts;
     unsigned nsess = 0;
     struct text rep = { 0 };
-    int rc = 2, all_ok = 1, c;
+    int rc = 2, all_ok = 1, c, worst = -1, all_gates = 1;
 
     for (i = 0; i < sizeof files / sizeof files[0]; i++)
         if (access(files[i], R_OK)) {
@@ -676,7 +770,7 @@ static int run(FILE *log)
         for (k = 0; k < nruns; k++)
             if (runs[k].r.test == &tests[i])
                 cost += (unsigned)tests[i].est;
-        if (cost > P.budget) {
+        if (!P.bugorig && cost > P.budget) {
             fprintf(log, "tedab: %s needs ~%u s > budget %u s: shorten the test\n",
                     tests[i].name, cost, P.budget);
             goto out;
@@ -869,6 +963,7 @@ static int run(FILE *log)
                  s->events.p ? s->events.p : "", s->gate.p ? s->gate.p : "",
                  s->gates_ok ? "OK" : "FAILED");
         all_ok &= s->gates_ok;
+        all_gates &= s->gates_ok;
     }
     {
         size_t npairs = 0, nsame = 0, nok = 0;
@@ -926,6 +1021,8 @@ static int run(FILE *log)
                 else
                     nsame++;
             }
+            if (P.bugorig)
+                bugorig_verdicts(&tests[i], tr, &fonts, &rep, &worst);
         }
         for (i = 0; i < nknown; i++)
             text_add(&rep, "%s: KNOWN %s\n", known[i].name, known[i].known);
@@ -938,7 +1035,7 @@ static int run(FILE *log)
         goto out;
     }
     fwrite(rep.p, 1, rep.n, log);
-    rc = all_ok ? 0 : 1;
+    rc = P.bugorig ? (all_gates && worst >= 0 ? worst : 2) : all_ok ? 0 : 1;
 out:
     for (unsigned w = 0; w < nsess; w++) {
         if (ss[w].e) {

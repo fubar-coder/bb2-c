@@ -345,3 +345,128 @@ TEST_CASE("requesters: compile window", "[log]")
     CHECK(v[0] == "requester  1:OKAY");
     CHECK(v[1] == "requester  1:STOP!");
 }
+
+TEST_CASE("bug-orig directives", "[bugorig]")
+{
+    // @file with escapes (also \x00), repeated lines append; @source F,
+    // @command as it is; the quoted @expect kinds
+    Test a("; @file bo.bb2 \"x\\x00\\xdd\\x82\\ta\"\n; @file bo.bb2 \"\\x00\"\n"
+           "; @source F bo.bb2\n; @command TEDAB:tools/inject track blitz2:ted @FILE@\n"
+           "; @expect data bo.bb2 \"x\\x00\"\n; @expect data bo.bb2 \"\\\"q\\\" b\"\n"
+           "; @expect stdout \"inject: rc=0\"\n; @expect noscreen joined \"\\xc2\\xb7loop\"\n"
+           "; @expect nolog \"window new\"\ntimeout 10\n");
+    REQUIRE(a.rc == 0);
+    CHECK(a.t.src_kind == 'F');
+    CHECK(std::string(a.t.file) == "bo.bb2");
+    CHECK(std::string(a.t.command) == "TEDAB:tools/inject track blitz2:ted @FILE@");
+    REQUIRE(a.t.nfiles == 1);
+    CHECK(std::string((const char *)a.t.files[0].data, a.t.files[0].len)
+          == std::string("x\0\xdd\x82\ta\0", 7));
+    REQUIRE(a.t.nexpects == 4);
+    CHECK(std::string(a.t.expects[0].kind) == "data");
+    CHECK(std::string((const char *)a.t.expects[0].data, a.t.expects[0].len)
+          == std::string("x\0\"q\" b", 7));
+    CHECK(std::string(a.t.expects[1].kind) == "stdout");
+    CHECK(std::string((const char *)a.t.expects[1].data) == "inject: rc=0");
+    CHECK(std::string(a.t.expects[2].a) == "joined");
+    CHECK(std::string((const char *)a.t.expects[2].data) == "\xc2\xb7loop");
+    CHECK(std::string(a.t.expects[3].kind) == "nolog");
+
+    // refused: F without its @file, a kind without its string, text behind
+    // the string, an unterminated string, @file without a name, @command
+    // without a command
+    CHECK(Test("; @source F x.bas\n; @nofiles\n").rc == -1);
+    CHECK(Test("; @source none\n; @expect stdout rc=0\n").rc == -1);
+    CHECK(Test("; @source none\n; @expect stdout \"rc=0\" x\n").rc == -1);
+    CHECK(Test("; @source none\n; @expect screen d \"abc\n").rc == -1);
+    CHECK(Test("; @source none\n; @nofiles\n; @file \"abc\"\n").rc == -1);
+    CHECK(Test("; @source none\n; @nofiles\n; @command\n").rc == -1);
+}
+
+TEST_CASE("bug-orig: @command in the session script", "[bugorig]")
+{
+    Test a("; @file bo.bas \"a\\n\"\n; @source F bo.bas\n; @command blitz2:ted @FILE@\n"
+           "; @nofiles\n", "ted-x");
+    REQUIRE(a.rc == 0);
+    tedab_run runs[1] = { { &a.t, TEDAB_R5 } };
+    char *s = tedab_session_script(runs, 1, 40000);
+
+    REQUIRE(s != nullptr);
+    CHECK(std::string(s).find("TEDAB:tests/ted-x.drv TEDRUN:out/ blitz2:ted TEDRUN:work/bo.bas "
+                              ">TEDRUN:out/stdout\n") != std::string::npos);
+    free(s);
+}
+
+TEST_CASE("bug-orig expectations", "[bugorig]")
+{
+    char dir[] = "/tmp/test_tedab_XXXXXX";
+    REQUIRE(mkdtemp(dir) != nullptr);
+    std::string d(dir);
+    mkdir((d + "/work").c_str(), 0755);
+    mkdir((d + "/out").c_str(), 0755);
+    auto put = [&](const std::string &name, const std::string &data) {
+        FILE *f = fopen((d + "/" + name).c_str(), "wb");
+        fwrite(data.data(), 1, data.size(), f);
+        fclose(f);
+    };
+    put("work/blk.txt", std::string("a\0b", 3));
+    put("out/stdout", "inject: rc=0\nrc=0\n");
+    put("out/log", "step 1\n");
+    put("out/joined.txt", "  0 |a=1.loop  \xc2\xb7\xc2\xb7loop\n");
+    tedab_sources src = { "R5", nullptr, nullptr, nullptr, nullptr, nullptr };
+    auto check = [&](const char *script, std::string *rep = nullptr) {
+        Test t(script);
+        REQUIRE(t.rc == 0);
+        text out = {};
+        int n = tedab_check_expects(&t.t, dir, &src, &out);
+        if (rep)
+            *rep = out.p ? out.p : "";
+        free(out.p);
+        return n;
+    };
+    std::string rep;
+
+    CHECK(check("; @source none\n; @expect data blk.txt \"a\\x00b\"\n") == 0);
+    CHECK(check("; @source none\n; @expect data blk.txt \"a\\x00c\"\n", &rep) == 1);
+    CHECK(rep == "  R5 expect: blk.txt differs from the expected contents (data)\n");
+    CHECK(check("; @source none\n; @expect data nosuch \"a\"\n") == 1);
+    CHECK(check("; @source none\n; @expect stdout \"inject: rc=0\"\n") == 0);
+    CHECK(check("; @source none\n; @expect nostdout \"inject: rc=0\"\n", &rep) == 1);
+    CHECK(rep == "  R5 expect: stdout has \"inject: rc=0\"\n");
+    CHECK(check("; @source none\n; @expect log \"step 1\"\n; @expect nolog \"step 2\"\n") == 0);
+    CHECK(check("; @source none\n; @expect screen joined \"a=1.loop\"\n") == 0);
+    CHECK(check("; @source none\n; @expect noscreen joined \"\\xc2\\xb7loop\"\n", &rep) == 1);
+    CHECK(rep == "  R5 expect: screen joined has \"\xc2\xb7loop\"\n");
+    CHECK(check("; @source none\n; @expect screen nosuch \"x\"\n", &rep) == 1);
+    CHECK(rep == "  R5 expect: dump nosuch.txt missing\n");
+    // a missing file has no text in it
+    CHECK(check("; @source none\n; @expect noscreen nosuch \"x\"\n") == 0);
+    for (const char *f : { "work/blk.txt", "out/stdout", "out/log", "out/joined.txt" })
+        remove((d + "/" + f).c_str());
+    rmdir((d + "/work").c_str());
+    rmdir((d + "/out").c_str());
+    rmdir(dir);
+}
+
+TEST_CASE("bug-orig verdict", "[bugorig]")
+{
+    const char *bad = "  - expect: blk.txt differs from the expected contents (data)\n";
+
+    // the reference shows the correct behaviour: the test is broken
+    CHECK(tedab_bugorig_verdict("OK", "", "OK", bad, 0) == TEDAB_BROKEN);
+    CHECK(tedab_bugorig_verdict("OK", "", "OK", "", 0) == TEDAB_BROKEN);
+    // the port is correct
+    CHECK(tedab_bugorig_verdict("OK", bad, "OK", "", 1) == TEDAB_FIXED);
+    CHECK(tedab_bugorig_verdict("TIMEOUT", "", "OK", "", -1) == TEDAB_FIXED);
+    // the port shows what the original shows
+    CHECK(tedab_bugorig_verdict("OK", bad, "OK", bad, 0) == TEDAB_REPRODUCED);
+    CHECK(tedab_bugorig_verdict("TIMEOUT", "", "TIMEOUT", "", -1) == TEDAB_REPRODUCED);
+    CHECK(tedab_bugorig_verdict("FAIL step 3 timeout", bad, "FAIL step 3 timeout", bad, -1)
+          == TEDAB_REPRODUCED);
+    // neither
+    CHECK(tedab_bugorig_verdict("OK", bad, "OK", bad, 1) == TEDAB_DIFFERS);
+    CHECK(tedab_bugorig_verdict("TIMEOUT", "", "FAIL step 3 timeout", "", -1) == TEDAB_DIFFERS);
+    CHECK(tedab_bugorig_verdict("OK", bad, "OK", "  - expect: x missing\n", 0) == TEDAB_DIFFERS);
+    CHECK(std::string(tedab_verdict_name(TEDAB_REPRODUCED)) == "REPRODUCED");
+    CHECK(std::string(tedab_verdict_name(TEDAB_BROKEN)) == "BROKEN");
+}
