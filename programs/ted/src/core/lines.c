@@ -422,16 +422,16 @@ void split(void)
     if (bboty != (UWORD)-1) {
         /* block adjust (survey-02 H) */
         line = curline();
-        if (line > bboty)                         /* bhi .sskip */
+        if (line > bboty)                       /* bhi .sskip */
             goto sskip;
         if (line == bboty)
             goto sonbot;
-        if (line < btopy)                         /* bcs .sskip2 */
+        if (line < btopy)                       /* bcs .sskip2 */
             goto sskip2;
         if (line != btopy)
             goto sinmid;
         /* .sontop */
-        if (line == bboty)                        /* dead: line < bboty here */
+        if (line == bboty)                      /* dead: line < bboty here */
             goto sonboth;
         if (col > (UWORD)btopx)                 /* bhi .sinmid */
             goto sinmid;
