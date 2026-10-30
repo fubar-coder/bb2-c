@@ -55,27 +55,27 @@ UWORD copyconst(UBYTE *dst);
 /* 5072 assemble one instruction; c = asm token ($8000+fnum..), entered
    from handletoken (asm `bra asmit`).  asm d0 on return is garbage. */
 void asmit(UWORD c);
-/* 5278 add a relocation for host address a1 (pc temporarily = a1) */
-void asmoff(ULONG a1);
+/* 5278 add a relocation for host address addr (pc temporarily = addr) */
+void asmoff(ULONG addr);
 /* 5286 end of pass asm filler-inner: resolve all firstasm nodes */
 void asmfixer(void);
-/* 5386 or the ea bits for (reg d2, mode d3) into *d1, write extension
-   words at *a1 (advanced).  d4 = extraword, d6 = allowed mode mask,
-   d7 = shift byte (lo nibble mode shift, hi nibble reg shift, 15 = none).
+/* 5386 or the ea bits for (reg, mode) into *opcode, write extension
+   words at *at (advanced).  extra = extraword, mask = allowed mode mask,
+   shifts = shift byte (lo nibble mode shift, hi nibble reg shift, 15 = none).
    illeaerr if mode not allowed. */
-void doea(UWORD *d1, UWORD d2, UWORD d3, UWORD d4, UWORD d6, UBYTE d7,
-          const struct asment *e, ULONG *a1);
-/* 5474 extension words / asmnodes for mode d3 at *a1.
+void doea(UWORD *opcode, UWORD reg, UWORD mode, UWORD extra, UWORD mask,
+          UBYTE shifts, const struct asment *e, ULONG *at);
+/* 5474 extension words / asmnodes for mode at *at.
    returns TRUE for mode 15 (movem list): DIFF: asm `addq #4,a7` returned
    past doea to doea's caller; doea returns at once when TRUE. */
-BOOL makemode(UWORD d2, UWORD d3, UWORD d4, const struct asment *e, ULONG *a1);
+BOOL makemode(UWORD reg, UWORD mode, UWORD extra, const struct asment *e, ULONG *at);
 /* 5423/5429 range checks on a value (illdiserr) */
-void chkbyte(LONG d3);
-void chkword(LONG d3);
-/* 5435 add (asmbuff, asmlen, linenumat, mode d3, patch address a1, flag
+void chkbyte(LONG val);
+void chkword(LONG val);
+/* 5435 add (asmbuff, asmlen, linenumat, mode, patch address addr, flag
    of entry e: only e->flag is read, e.g. (struct asment *)dummyasm) to
    firstasm.  Preserves everything in the asm. */
-void insasm(const struct asment *e, ULONG a1, UWORD d3);
+void insasm(const struct asment *e, ULONG addr, UWORD mode);
 
 /* ================================================ parameter fetching */
 
@@ -83,10 +83,10 @@ void insasm(const struct asment *e, ULONG a1, UWORD d3);
    char (asm d0, saved by storeloc); srcptr/lastchar restored on return
    (resloc), current char is c again.  returns count (asm d1). */
 UWORD countpees(UWORD c);
-/* 5563 fetch library parameters.  d1: lo byte = # parameters, hi byte
-   bits 0-2 = # repeatable, (d1 >> 12) = position of first repeat.
+/* 5563 fetch library parameters.  spec: lo byte = # parameters, hi byte
+   bits 0-2 = # repeatable, (spec >> 12) = position of first repeat.
    types = type byte table.  Sets numreps.  returns char after params. */
-UWORD fetchlibps(UWORD d1, const UBYTE *types);
+UWORD fetchlibps(UWORD spec, const UBYTE *types);
 /* 5620/5623/5624/5626 fetch n parameters of types[] (0 = userp).
    fetchpees4: always push; fetchpees2: push only when told by the type
    byte; fetchpees3: n & 15, pushmode given; fetchpees: n as is.
@@ -192,8 +192,8 @@ void freeasms(void);
 
 /* ============================================================ data1 */
 /* poke into data1 (limit data2at: nomemleft, data1 still advanced) */
-void pokedata1b(UBYTE d1);
-void pokedata1(UWORD d1);
-void pokedata1l(ULONG d1);           /* high word first */
+void pokedata1b(UBYTE b);
+void pokedata1(UWORD w);
+void pokedata1l(ULONG l);            /* high word first */
 
 #endif
