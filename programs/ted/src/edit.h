@@ -19,14 +19,14 @@ void escape(void);
 /* ted.s:1460 gadget - event 255: drag the vertical prop (busy poll with
    getinput2, the ending message is swallowed, survey-02 I.11); uses
    bloktopx as scratch (harmless, keep the side effect) */
-void gadget(void);
+void gadget(const struct tedevent *ev);
 /* ted.s:1542 extmenu: menurout == 0 -> return; call_menurout(item) (glue.h);
    showme; -2 -> showall, -1 -> return, else gotolined0 */
 void extmenu(UWORD code);
-/* ted.s:1565 menu - event 254: ev_data = Intuition menu code; menu 4 ->
+/* ted.s:1565 menu - event 254: ev->data = Intuition menu code; menu 4 ->
    extmenu, else search menutable (input.h) for item<<4|menu, call, flag ->
-   showvprop */
-void menu(void);
+   showvprop; the menutable handler gets the same event */
+void menu(const struct tedevent *ev);
 /* ted.s:1593 new - menu $00: erase, doclean, freeall, title = deftitname,
    showme, donew */
 void new(void);

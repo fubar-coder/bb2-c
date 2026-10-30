@@ -14,8 +14,8 @@
 void blockstart(void);
 /* ted.s:2468 blockend - key 130 (F2): block = bstx/bsty .. cursor-1;
    no start: beepem.  First writes btopx from an UNDEFINED d0 (the event
-   code byte of mainedit, survey-03 I.2): C uses the event code. */
-void blockend(void);
+   code byte of mainedit, survey-03 I.2): C uses the event code ev->code. */
+void blockend(const struct tedevent *ev);
 
 /* ted.s:2636 tokone (comdata+56): tokenise the 0-terminated line (a0) IN
    PLACE (tokit2 with a1 = a2 = a0, d1 = strlen).  Returns d5 = length incl.

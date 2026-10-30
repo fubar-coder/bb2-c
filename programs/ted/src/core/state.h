@@ -214,12 +214,5 @@ extern UBYTE findreqla17[64];   /* 7072 replace text */
    C: escape sets edquit, mainedit returns right after the handler
    (DIFF: stack trick, survey-02 G). */
 extern BOOL edquit;
-/* asm d7/d6 at the entry of a jumptable/menutable handler (getline's
-   result: event code, gadget id / menu code).  Set by mainedit before the
-   dispatch; handlers that read d7/d6 (menu, blockend's d0 byte) use these.
-   Globals (not parameters) because the jumptable/menutable handlers are
-   `void name(void)` like the asm entries and are also called directly. */
-extern LONG ev_code;
-extern UWORD ev_data;
 
 #endif

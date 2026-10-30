@@ -56,6 +56,15 @@ struct tokennode {
     char name[];                /* +6 name\0 help\0 (help may be empty) */
 };
 
+/* the event a jumptable/menutable handler is dispatched with: asm d7/d6
+   at the entry (getline's result: event code, gadget id / menu code).
+   mainedit builds it on its stack; menu passes it on to the menutable
+   handlers.  Only the handlers that read d7/d6 take it (struct jtentry). */
+struct tedevent {
+    LONG code;                  /* d7 */
+    UWORD data;                 /* d6 */
+};
+
 /* label column list ("mice", ted.s:2887 remember2): 8 byte nodes,
    AllocMem(8, MEMF_PUBLIC) not cleared; `next` of the last node stays
    uninitialised (BUG(orig) #381, survey-03 I.4) - count with nummice. */

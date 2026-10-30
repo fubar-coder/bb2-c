@@ -429,10 +429,10 @@ ULONG actgad(struct Gadget *gad)
 }
 
 /* ted.s:2420 gotoline */
-void gotoline(void)
+void gotoline(const struct tedevent *ev)
 {
-    UWORD id = ev_data;
-    LONG ev;
+    UWORD id = ev->data;
+    LONG event;
     ULONG n;
 
     gotoreqsg1.BufferPos = 0;                   /* clr gotoreqsg1+8 */
@@ -443,8 +443,8 @@ void gotoline(void)
     actgad(&gotoreqga1);                        /* (lea gotoreq,a2: no effect) */
     for (;;) {
         /* .loop: getinput closes the requester on ENDGADGET */
-        ev = getinput(&id);
-        if ((WORD)ev != -1)
+        event = getinput(&id);
+        if ((WORD)event != -1)
             continue;
         if (id == 1 || id == 2)
             break;                              /* .ok */

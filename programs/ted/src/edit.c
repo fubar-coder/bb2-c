@@ -60,9 +60,9 @@ static UWORD vpos(void)
 }
 
 /* ted.s:1460 gadget - some one hit my vprop gadget! */
-void gadget(void)
+void gadget(const struct tedevent *ev)
 {
-    UWORD pos, data = ev_data;
+    UWORD pos, data = ev->data;
     LONG event;
 
     if (edrows >= numlines)                     /* bcs .skip */
@@ -111,9 +111,9 @@ void extmenu(UWORD code)
 }
 
 /* ted.s:1565 menu - menu number in d6 */
-void menu(void)
+void menu(const struct tedevent *ev)
 {
-    UWORD raw = ev_data;                        /* Intuition menu code */
+    UWORD raw = ev->data;                       /* Intuition menu code */
     UWORD menunum = raw & 15;                   /* move.b d6,d0 / and #15,d0 */
     UWORD code = (UWORD)((raw >> 1) & 0xf0);
     const struct jtentry *entry;
@@ -130,7 +130,10 @@ void menu(void)
         if (entry->code == (UBYTE)code) {
             /* .found: the flag byte on the stack */
             flag = entry->flag;
-            entry->routine();
+            if (entry->evroutine)
+                entry->evroutine(ev);           /* d7/d6 of mainedit */
+            else
+                entry->routine();
             if (flag)
                 showvprop();                    /* bne showvprop */
             return;

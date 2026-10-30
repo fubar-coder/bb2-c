@@ -123,11 +123,14 @@ extern struct mydata mydata;            /* ted.s:6027 (input.c) */
    routine.l} in the asm, searched with cmp.b; jumptable ends with code 0,
    menutable with 255.  C: an array of this struct in the same order
    (DIFF: C function pointers instead of the packed bytes; nobody else
-   reads the tables).  flag != 0: showvprop after the routine. */
+   reads the tables).  flag != 0: showvprop after the routine.  A handler
+   that reads the event registers d7/d6 is in evroutine (routine = NULL)
+   and gets the event as a parameter. */
 struct jtentry {
     UBYTE code;
     UBYTE flag;
     void (*routine)(void);
+    void (*evroutine)(const struct tedevent *ev);
 };
 
 #endif

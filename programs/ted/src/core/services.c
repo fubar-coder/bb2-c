@@ -27,7 +27,7 @@ void blockstart(void)
 }
 
 /* ted.s:2468 blockend - f2, genam style */
-void blockend(void)
+void blockend(const struct tedevent *ev)
 {
     WORD endx, startx;
     UWORD endy, starty;
@@ -40,7 +40,7 @@ void blockend(void)
     /* survey-03 I.2 (no effect): `move d0,btopx` with the d0 of mainedit's
        dispatch = the jumptable code byte (130); its upper byte is 0 unless
        showthisitem ran before (undefined there) - C: the event code */
-    btopx = (WORD)(UBYTE)ev_code;
+    btopx = (WORD)(UBYTE)ev->code;
     starty = (UWORD)bsty;                       /* y start */
     endy = (UWORD)(curstop + cursy);            /* y end */
     endx = (WORD)(cursoff + cursx);             /* x end */

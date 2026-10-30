@@ -28,7 +28,7 @@ void mousedown(void);
 ULONG actgad(struct Gadget *gad);
 /* ted.s:2420 gotoline - menu $22: goto requester; 0 or > numlines (word
    compare, survey-03 I.10) -> beepem, else gotolined0(n-1) */
-void gotoline(void);
+void gotoline(const struct tedevent *ev);
 void closewb(void);             /* ted.s:2501 menu $70: CloseWorkBench */
 void openwb(void);              /* ted.s:2507 menu $80: OpenWorkBench, front, activate */
 /* ted.s:2513 findio: device name (asm a0, length len = d0) in the DOS

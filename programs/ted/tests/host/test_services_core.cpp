@@ -36,11 +36,13 @@ TEST_CASE("block marks: blockstart, blockend", "[services][blocks]")
 {
     static const char *const t[] = { "l0", "l1", "l2", "l3", "l4" };
 
+    struct tedevent ev = { 130, 0 };    // F2: event code 130
+
     env();
     list(t);                            // showall needs a list
     bstx = -1;
     host_resetcalls();
-    blockend();
+    blockend(&ev);
     CHECK(host_calls[HC_BEEPEM] == 1);
 
     curstop = 0;
@@ -53,8 +55,7 @@ TEST_CASE("block marks: blockstart, blockend", "[services][blocks]")
     cursy = 2;
     cursx = 5;
     thisitem = firstitem->nextitem->nextitem;
-    ev_code = 130;
-    blockend();
+    blockend(&ev);
     CHECK(btopx == 3);
     CHECK(btopy == 1);
     CHECK(bbotx == 4);
@@ -62,7 +63,7 @@ TEST_CASE("block marks: blockstart, blockend", "[services][blocks]")
 
     // end at column 0: end of the previous line
     cursx = 0;
-    blockend();
+    blockend(&ev);
     CHECK(btopx == 3);
     CHECK(btopy == 1);
     CHECK(bbotx == static_cast<WORD>(chcols - 1));
@@ -75,7 +76,7 @@ TEST_CASE("block marks: blockstart, blockend", "[services][blocks]")
     cursy = 1;
     cursx = 3;
     thisitem = firstitem->nextitem;
-    blockend();
+    blockend(&ev);
     CHECK(btopx == 2);
     CHECK(btopy == 1);
     CHECK(bbotx == 5);
@@ -83,7 +84,7 @@ TEST_CASE("block marks: blockstart, blockend", "[services][blocks]")
 
     // start = end: blokdis, btopx keeps the undefined d0 (no effect)
     blockstart();
-    blockend();
+    blockend(&ev);
     CHECK(bboty == static_cast<UWORD>(-1));
     CHECK(bstx == -1);
     CHECK(btopx == 130);

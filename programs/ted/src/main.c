@@ -490,15 +490,15 @@ void mainedit(void)
     jmp_buf jb;
     const struct jtentry *entry;
     struct item *item;
-    LONG event;
-    UWORD data, len;
+    struct tedevent ev;
+    UWORD len;
     volatile UBYTE flag = 0;    /* asm: move.b (a0)+,-(a7) */
 
     edquit = FALSE;
     for (;;) {
         mousealt = 0;
         memalt = 0;
-        event = getline(&data);
+        ev.code = getline(&ev.data);
         item = thisitem;
         if (anyalt) {
             allalt = anyalt;
@@ -510,17 +510,18 @@ void mainedit(void)
         }
         /* .skip: computed jump through jumptable (cmp.b) */
         for (entry = jumptable; entry->code; entry++)
-            if (entry->code == (UBYTE)event)
+            if (entry->code == (UBYTE)ev.code)
                 break;
         if (!entry->code)
             continue;           /* beq mainedit */
         /* .found */
         flag = entry->flag;
-        ev_code = event;
-        ev_data = data;
         memstack = &jb;         /* move.l a7,memstack */
         if (setjmp(jb) == 0) {
-            entry->routine();   /* jsr (a0), a4 = thisitem */
+            if (entry->evroutine)       /* jsr (a0), a4 = thisitem */
+                entry->evroutine(&ev);
+            else
+                entry->routine();
             if (edquit)
                 return;         /* escape: lea 12(a7),a7 (DIFF) */
         }
