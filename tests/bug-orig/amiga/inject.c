@@ -20,6 +20,18 @@
  *   alerts                 DisplayAlert returns FALSE at once (as if the
  *                          right mouse button was pressed: a recoverable
  *                          alert does not wait), its text is written
+ *   alertlog               exec's Alert, called by the process (not from
+ *                          an interrupt or by another task), is recorded
+ *                          and not shown: a recoverable alert returns at
+ *                          once (exec raises such alerts itself, e.g.
+ *                          AN_SemCorrupt for one ReleaseSemaphore too many,
+ *                          and shows them later at a random moment, when
+ *                          whatever runs then may hang); a dead-end alert
+ *                          (AT_DeadEnd) writes its line at once and the
+ *                          process then waits for ever (the session ends
+ *                          by its time limit: returning from it is
+ *                          undefined, the real one reboots).  Alerts of
+ *                          other tasks go through
  *   wbfrontfail            WBenchToFront returns FALSE (as with the
  *                          Workbench closed)
  *   nullnode=NUM/NAME      while COMMAND runs, the long word at address 0
@@ -125,6 +137,8 @@
  * rc=N of COMMAND, with track the allocations left (sorted by size:
  * the addresses differ between runs), with pad the allocations written
  * behind ("pad: written behind an allocation of N bytes"), then
+ *   alertlog: N alerts           (alertlog) then, in the order raised:
+ *   alert XXXXXXXX               the number (hex; up to 16)
  *   opencount: NAME +N           opened minus closed
  *   current dir at end: start | other
  *   current dir: the start lock was unlocked   (only if so)
@@ -141,6 +155,7 @@
 #include <exec/memory.h>
 #include <exec/execbase.h>
 #include <exec/errors.h>
+#include <exec/alerts.h>
 #include <dos/dos.h>
 #include <dos/dosextens.h>
 #include <dos/dostags.h>
@@ -161,6 +176,7 @@
 #define LVO_READ     (-42)
 #define LVO_WRITE    (-48)
 #define LVO_DISPLAYALERT (-90)
+#define LVO_ALERT    (-108)
 #define LVO_WBENCHTOFRONT (-342)
 #define LVO_LOCK     (-84)
 #define LVO_UNLOCK   (-90)
@@ -184,7 +200,7 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 /* -------------------------------------------------------------- options */
 
 static int o_signals, o_track, o_pad, o_guard, o_allocfail, o_createprocfail, o_alerts;
-static int o_wbfrontfail, o_handles;
+static int o_wbfrontfail, o_handles, o_alertlog;
 static ULONG nn_num;
 static char nn_name[40];
 static ULONG wbf_done;
@@ -201,6 +217,8 @@ APTR old_cacheclearu, old_cachecleare;
 void cacheclearu_patch(void), cachecleare_patch(void);
 APTR old_write, old_alert, old_opendev, old_wbfront;
 void write_patch(void), alert_patch(void), opendev_patch(void), wbfront_patch(void);
+APTR old_execalert;
+void execalert_patch(void);
 void allocmem_patch(void), freemem_patch(void), open_patch(void), read_patch(void);
 void lock_patch(void), examine_patch(void), oldopenlib_patch(void), openlib_patch(void);
 void createproc_patch(void), closelib_patch(void), unlock_patch(void), keys_stub(void);
@@ -339,6 +357,19 @@ __asm__(
 "   rts\n"
 "8: moveq   #0,d0\n"
 "   rts\n"
+/* exec Alert(d7 number): execalert_pre(number) != 0 -> back without the
+   alert */
+"   .even\n"
+"_execalert_patch:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  d7,-(sp)\n"
+"   jsr     _execalert_pre\n"
+"   addq.l  #4,sp\n"
+"   tst.l   d0\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   bne.s   11f\n"
+"   move.l  _old_execalert,-(sp)\n"
+"11: rts\n"
 /* Examine(d1 lock, d2 fib): examine_pre != 0 -> DOSFALSE */
 "   .even\n"
 "_examine_patch:\n"
@@ -666,6 +697,30 @@ ULONG alert_pre(const UBYTE *s)
         s++;
     }
     put("\n");
+    return 1;
+}
+
+/* alertlog: the alerts of the process (exec raises them under Forbid,
+   e.g. in ReleaseSemaphore: only recorded here, written at the end) */
+#define MAXALERT 16
+static ULONG al_num[MAXALERT], al_count;
+
+ULONG execalert_pre(ULONG num)
+{
+    static char line[80];
+
+    /* SetSR(0, 0) reads SR: the S bit is set when an interrupt or a trap
+       handler runs while the process is the current task */
+    if (!o_alertlog || !ours() || (SetSR(0, 0) & 0x2000))
+        return 0;
+    if (al_count < MAXALERT)
+        al_num[al_count] = num;
+    al_count++;
+    if (num & AT_DeadEnd) {
+        sprintf(line, "inject: alert %08lx (dead end: COMMAND stopped)\n", num);
+        put(line);
+        Wait(0);                        /* for ever */
+    }
     return 1;
 }
 
@@ -1141,6 +1196,8 @@ static int option(const char *a)
     }
     if (!strcmp(a, "alerts"))
         return o_alerts = 1;
+    if (!strcmp(a, "alertlog"))
+        return o_alertlog = 1;
     if (!strcmp(a, "wbfrontfail"))
         return o_wbfrontfail = 1;
     if (!strncmp(a, "nullnode=", 9)) {
@@ -1273,6 +1330,8 @@ static void patch(int on)
         if (o_alerts)
             old_alert = SetFunction((struct Library *)IntuitionBase, LVO_DISPLAYALERT,
                                     (APTR)alert_patch);
+        if (o_alertlog)
+            old_execalert = SetFunction(ex, LVO_ALERT, (APTR)execalert_patch);
         if (o_wbfrontfail)
             old_wbfront = SetFunction((struct Library *)IntuitionBase, LVO_WBENCHTOFRONT,
                                       (APTR)wbfront_patch);
@@ -1285,6 +1344,8 @@ static void patch(int on)
             SetFunction((struct Library *)IntuitionBase, LVO_DISPLAYALERT, old_alert);
         if (o_wbfrontfail)
             SetFunction((struct Library *)IntuitionBase, LVO_WBENCHTOFRONT, old_wbfront);
+        if (o_alertlog)
+            SetFunction(ex, LVO_ALERT, old_execalert);
         SetFunction(ex, LVO_CLOSELIBRARY, old_closelib);
         SetFunction(dos, LVO_UNLOCK, old_unlock);
         SetFunction(ex, LVO_ALLOCMEM, old_allocmem);
@@ -1339,7 +1400,7 @@ static const char usage[] =
     "usage: inject [OPTION...] COMMAND [ARGS]\n"
     "  run COMMAND in this process with faults injected (bug-orig tests)\n"
     "  options: signals allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP] readfail=NAME/N\n"
-    "    writefail=NAME/N alerts wbfrontfail examinefail=NAME openlibfail=NAME\n"
+    "    writefail=NAME/N alerts alertlog wbfrontfail examinefail=NAME openlibfail=NAME\n"
     "    opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
     "    track pad guard\n"
     "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked\n"
@@ -1373,8 +1434,8 @@ int main(int argc, char **argv)
         }
     if (i >= argc) {
         put("usage: inject [signals] [allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP]]\n"
-            "              [readfail=NAME/N] [writefail=NAME/N] [alerts] [wbfrontfail]\n"
-            "              [handles] [nullnode=NUM/NAME]\n"
+            "              [readfail=NAME/N] [writefail=NAME/N] [alerts] [alertlog]\n"
+            "              [wbfrontfail] [handles] [nullnode=NUM/NAME]\n"
             "              [examinefail=NAME] [openlibfail=NAME] [opendevfail=NAME]\n"
             "              [createprocfail] [track] [pad] [guard]\n"
             "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
@@ -1508,6 +1569,14 @@ int main(int argc, char **argv)
     if (o_alerts) {
         sprintf(line, "inject: alerts: %lu alerts answered\n", alerts_done);
         put(line);
+    }
+    if (o_alertlog) {
+        sprintf(line, "inject: alertlog: %lu alerts\n", al_count);
+        put(line);
+        for (k = 0; k < (int)al_count && k < MAXALERT; k++) {
+            sprintf(line, "inject: alert %08lx\n", al_num[k]);
+            put(line);
+        }
     }
     if (o_wbfrontfail) {
         sprintf(line, "inject: wbfrontfail: %lu calls failed\n", wbf_done);

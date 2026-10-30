@@ -349,7 +349,11 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   faults (no free signal, failing AllocMem of a size, also only after
   SKIP of them, Read or Write error, failing Examine, failing OpenLibrary
   or OpenDevice of a name, failing CreateProc, DisplayAlert answered at
-  once, recorded allocations and FreeMem of another size than allocated;
+  once, exec's Alert of the process recorded and not shown (`alertlog`:
+  e.g. the AN_SemCorrupt that exec raises for one ReleaseSemaphore too
+  many and would otherwise show later, at a random moment; a dead-end
+  alert stops the process, the session ends by its time limit),
+  recorded allocations and FreeMem of another size than allocated;
   with `pad` 64 zeroed bytes behind every allocation, also a hunk of
   LoadSeg, a FreeMem inside an allocation is reported and not done, and
   one whose 64 bytes are no longer zero is reported (written behind); with
