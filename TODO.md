@@ -419,6 +419,24 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   the CD are the ported state. With this the port is complete: original
   bugs may now be fixed (`CLAUDE.md`, "Do not fix original bugs"); the
   basis are the issues with the label `bug-orig`.
+* **blitz2 and TED on the shared `.xtra` code** (`shared/xtra/`,
+  2026-10-30; `docs/formats.md` §1.4, §7): an intended deviation of
+  blitz2's binary, checked functionally. `loadxtra_c` reads the file
+  into a buffer of up to `XTRA_BLITZ2_MAXSIZE` bytes, `xtra_read_blitz2`,
+  then copies into the gadgets (`icon` → `optreqga9`, `sw[]` →
+  `optreqga10–16`/`optreq2ga1–7`, `buf[]` → `optreqsg1–6`, residents →
+  `resbuff` with `seg = 0`, exe path/name → `xpathname`, `cli` →
+  `argreqla8`, the pairs → `findlibnoerr`/`LIBMAX_COUNT`, vers 0 →
+  `xtra_apply_vers0`; keep the `ezerr` `BUG(orig)`); `savextra_c` the
+  other way round with `res[i].ptr = resbuff[i].seg` and one `Write`.
+  Open: blitz2's loader accepts short files, other sizes and vers > 1,
+  which `xtra_read_blitz2` refuses – a lenient mode in the core or a
+  fallback; the 11 KB of `struct xtra` against blitz2's 64 KB of
+  `-fbaserel` data (or `-DXTRA_MAXMAXIMA=64`); an `XTRA_DIR` like
+  `FILEREQ_DIR`. TED 1.1 only calls blitz2's callbacks; it would use
+  `xtra_read_bb22`/`xtra_read_ab3` for the cursor if it loads BB22 or
+  `.ab3` sources. `xtra convert` drops maxima between AB3 object names
+  and library numbers (needs the libraries' object names).
 
 ## 4 The libraries of Red When Excited
 
