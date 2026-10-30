@@ -284,6 +284,12 @@ endif()
 # labels bug-orig and emulator, skipped (77) without Amiberry or the CD.
 # The scripts without the emulator: ctest bug_orig_ted_lint (host).
 set(ted_scripts ${CMAKE_CURRENT_SOURCE_DIR}/ted)
+# the two runs of a test in parallel, unless CORPUS_PARALLEL says 1
+if(CORPUS_PARALLEL GREATER 1)
+	set(ted_parallel 2)
+else()
+	set(ted_parallel 1)
+endif()
 function(bug_orig_ted_test scripts id name)
 	cmake_parse_arguments(PARSE_ARGV 3 arg "" "WANT" "")
 	set(work ${CMAKE_CURRENT_BINARY_DIR}/${id})
@@ -302,7 +308,7 @@ function(bug_orig_ted_test scripts id name)
 		"inject=${INJECT}\nwbrun=${WBRUN}\n"
 		"ted_ref=${CMAKE_BINARY_DIR}/programs/ted/ref/ted\nted_c=$<TARGET_FILE:ted>\n"
 		"blitz2_ref=${CD_BLITZ2}/BLITZ2\nblitz2_c=$<TARGET_FILE:blitz2>\n"
-		"timeout=${BUG_ORIG_TIMEOUT}\nparallel=2\n")
+		"timeout=${BUG_ORIG_TIMEOUT}\nparallel=${ted_parallel}\n")
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 	if(DEFINED arg_WANT)
 		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${TEDAB}
