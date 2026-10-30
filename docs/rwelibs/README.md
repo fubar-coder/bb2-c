@@ -257,9 +257,9 @@ these sources. Four things were needed:
   binary with the same declarations; the 14 also in the CD's libnums
   agree. Confirmed by the identical binaries (`#ricopperfx`=11,
   `#ridoslib`=33, `#rifastseriallib`=36, `#rinonvolatilelib`=35,
-  `#ridebuglib`=51). Still without a number: `#ritrackerlib`,
-  `#riintuilib`, `#rithreadlib`, `#ribbmaplib`, `#popupwinlib`,
-  `#blitzbomberslibtwo`.
+  `#ridebuglib`=51). The numbers of the libraries without a binary
+  (`#ritrackerlib`, `#riintuilib`, `#rithreadlib`, `#ribbmaplib`,
+  `#popupwinlib`, `#blitzbomberslibtwo` …): 3.3.
 * **`#riarrayslib` = 7** [B, S], from a program that uses the library:
   its only command `FillArray` has index 0, so its token is `$8000 |
   number<<7 | 1`. `Debuglib/defaultdbug50.bb2` (RWE's debugger, in
@@ -302,6 +302,15 @@ Linked list, ReqTools, DataTypes, ARexx, Shapes, Sort, Disasm) on
 the basis of its release as "Public Domain", decision 2026-10-30;
 reference build) the same day, and LES debug (LESDebuglib; `Font.bin`
 cut from AmiBlitz3's binary, `archive/README.md`; reference build) too.
+Also on 2026-10-30: Eval (121, the BSS2 binary, in the variant
+`rwe-1999-eval` with polylib at 87) and stage D (3.3), the 16 libraries
+without any binary, with the reference build of their source:
+Registry, MapShapes, Arrays, MapEd, WB sprite, Intuition, PopUp
+window, BB blit, Shapez, Serial, Chunky, Display, Blitz Bombers 2, BB
+map, Thread, Snow. All 52 libraries of `RWE_LIBS` are ported; not
+ported: Registry support and Blitz Bombers (includes that exist
+nowhere), PRO-PACK (license), C2P (a preliminary Chunky), the tests
+and templates (section 2).
 
 **In the build** (2026-10-29; `libs/userlibs/rwe/refbuild.cmake`,
 `residents.cmake`, README "Userlibs", "Tests"): the reference build is
@@ -320,8 +329,8 @@ to the bytes of the CD's `LIBNUMS.BB` (its text has a line longer than
 TED takes). `FNS:` is staged with `PERSONAL.FNS` of BSS2's examples,
 so `fns-library11` compiles too. ctest `rwe_refbuild` (Amiberry, about
 20 s) compiles the sources of all `RWE_LIBS` entries to
-`build/<preset>/libs/userlibs/rwe/ref/NAME.obj` – all 32 compile
-(the 19 of stages A/B, the 13 of 3.2 "Source"; a `BB22` source is
+`build/<preset>/libs/userlibs/rwe/ref/NAME.obj` – all compile (the
+19 of stages A/B, those of 3.2 "Source" and 3.3; a `BB22` source is
 converted by `tools/bb22` first) – and
 `rwe_refbuild_NAME` checks that the 15 of stage A equal their binaries
 byte for byte. An entry whose reference is the reference build of its

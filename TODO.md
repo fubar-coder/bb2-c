@@ -539,9 +539,13 @@ several versions.
       compile); LES debug not yet (`Font.bin` is missing). C ports done
       (2026-10-30), CIA tracker and ptlib (`ritrackerlib`, 58, ptlib6)
       included (the Protracker 2.3A play routine, released as "Public
-      Domain"; decision 2026-10-30, `archive/README.md`). Next: stage D (§3.3), with
-      REFERENCE `refbuild`; Eval
-      (121, clashes with polylib) needs a variant of its own. ~~**Reference build in the build**~~ done (2026-10-29,
+      Domain"; decision 2026-10-30, `archive/README.md`). LES debug
+      (`Font.bin` cut from AmiBlitz3's binary), Eval (121, variant
+      `rwe-1999-eval`, polylib at 87) and stage D (§3.3, 16 libraries
+      without a binary, REFERENCE `refbuild`) ported (2026-10-30): all
+      52 libraries of `RWE_LIBS` are C (`docs/rwelibs/README.md` 3.1
+      "Ported"). Open: one GitHub issue per `BUG(orig)` of the RWE
+      libraries (being drafted). ~~**Reference build in the build**~~ done (2026-10-29,
       `libs/userlibs/rwe/refbuild.cmake`): residents by `tools/blitzres`
       from the NDK (contents equal to blitz2's, `rwe_resident_NAME`),
       staging (target `rwe_refstage`; `INCDIR` neutralised on the bytes
