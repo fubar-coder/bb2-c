@@ -1,0 +1,25 @@
+; ted-join-no-mforget2 (#365): Join frees the appended line without
+; telling the label column (no mforget2).  Lines "a=1", ".loop:b=2",
+; "c=3": the label column shows "loop".  Join on line 1: no line starts
+; with a label any more.  Correct: the label column is rebuilt (no label:
+; TED reopens its screen without it); the original keeps showing "loop",
+; its node pointing to the freed line.  In the decoded dump the label
+; column follows the cells of the prop gadget ("··", unknown cells):
+; "·loop" is the label column, not the text of line 1.
+; @file bo.bas "a=1\n.loop:b=2\nc=3\n"
+; @source F bo.bas
+; @expect screen before "loop"
+; @expect noscreen joined "\xc2\xb7loop"
+timeout 10
+wait req "OKEE DOKEE"
+gad 1
+wait screen
+dump before
+menu 1 8
+dump joined
+menu 0 2
+wait freq "Name to save file as"
+freq ok
+wait screen
+menu 0 9
+wait exit
