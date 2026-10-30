@@ -34,30 +34,35 @@ d0/d1/a0/a1 that are not the result.
 writes this 68020 instruction as data (`!divul {0,1}` = `Dc.w
 $4c40,$1001`); the library is built for the 68000, where C would divide
 with a libgcc routine that works on every CPU, while the original takes
-an illegal instruction exception on a 68000 (BUG(orig), kept). So it is
-the same `.word` in a small inline asm.
+an illegal instruction exception on a 68000 (BUG(orig) (#647), kept). So
+it is the same `.word` in a small inline asm.
 
 **BUG(orig)** (kept):
 
 * `InitSerialIO`/`SetIOSpeed` use DIVU.L, a 68020 instruction (above);
   `SetIOSpeed` divides by all of d0, also the upper word of its #word
-  argument.
+  argument (#647, #654).
 * `InitSerialIO` stores the immediate `#$dff000+intenar` (the word
   `$F01C`) to `inten` instead of reading INTENAR, and `FinitSerialIO`
   writes to the absolute address `$9A` (`intena` without `custom+`). With
   `$F01C` (bits 11 and 0 clear) `FinitSerialIO` never writes: TBE and
-  RBF stay off.
+  RBF stay off (#651, #648).
 * `InitSerialIO` (#long result) returns its baud argument, also when it
-  does nothing because it was already initialised; a baud rate that
-  gives SERPER 0 (≥ 1773448) leaves the library "not initialised".
+  does nothing because it was already initialised (#650); a baud rate that
+  gives SERPER 0 (≥ 1773448) leaves the library "not initialised"
+  (#653).
 * Only `FinitSerialIO`, `InitSerialIO`, `PutSerial` and `SetIOSpeed`
-  check the initialisation; a block of 0 bytes (`PutSerial`/`GetSerial`
-  address,0, `SyncPut`, `SyncGet`) is 2^32 bytes (`SUBQ.l: BNE`).
-* `GetSerial address,bytes` (#byte result) returns its address argument.
+  check the initialisation (#652); a block of 0 bytes
+  (`PutSerial`/`GetSerial` address,0, `SyncPut`, `SyncGet`) is 2^32
+  bytes (`SUBQ.l: BNE`) (#646).
+* `GetSerial address,bytes` (#byte result) returns its address argument
+  (#649).
 * `SyncSerial`: two machines starting at the same time both become
-  master (each takes the other's sync byte for the echo).
-* `SyncGet` sends the byte in `temp` (whatever was last written there)
-  for every byte received.
+  master (each takes the other's sync byte for the echo) (#655).
+
+Not a defect (kept): `SyncGet` sends the byte in `temp` (whatever was
+last written there) for every byte received; `SyncPut` only waits for
+the answer, its value does not matter.
 
 **Test** (`libs/tests/rwe/rifastseriallib.c`, snitch case "rwe
 rifastseriallib"): C build and CD original side by side. The emulator has

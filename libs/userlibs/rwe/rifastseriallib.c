@@ -24,7 +24,7 @@
  * the 68020 instruction as data (!divul {0,1} = Dc.w $4c40,$1001, DIVU.L
  * d0,d1); a 68000 build of C would divide with a libgcc call that works
  * on every CPU, the original takes an illegal instruction exception on a
- * 68000 (BUG(orig), kept).
+ * 68000 (BUG(orig) (#647), kept).
  *
  * State: mode (SetSerialMode writes the first byte of the word, TST.b
  * reads it), numbytes (DoSerialIO's count - 1), inbuf/outbuf, baud (the
@@ -34,23 +34,26 @@
  * BUG(orig):
  *   - InitSerialIO/SetIOSpeed use DIVU.L, a 68020 instruction (above);
  *     SetIOSpeed divides by all of d0, also the upper word of its #word
- *     argument.
+ *     argument (#647, #654).
  *   - InitSerialIO stores the immediate #$dff000+intenar (the word $F01C)
  *     to inten instead of reading INTENAR, and FinitSerialIO writes to
  *     the absolute address $9A (intena without custom+).  With $F01C
  *     (bits 11 and 0 clear) FinitSerialIO never writes: TBE and RBF stay
- *     off.
+ *     off (#651, #648).
  *   - InitSerialIO (#long result) returns its baud argument, also when it
- *     does nothing because it was already initialised.  A baud rate that
- *     gives SERPER 0 (>= 1773448) leaves the library "not initialised".
+ *     does nothing because it was already initialised (#650).  A baud rate
+ *     that gives SERPER 0 (>= 1773448) leaves the library "not
+ *     initialised" (#653).
  *   - Only FinitSerialIO, InitSerialIO, PutSerial and SetIOSpeed check
- *     the initialisation; a block of 0 bytes (PutSerial/GetSerial
- *     address,0, SyncPut, SyncGet) is 2^32 bytes (SUBQ.l: BNE).
- *   - GetSerial address,bytes (#byte result) returns its address argument.
+ *     the initialisation (#652); a block of 0 bytes (PutSerial/GetSerial
+ *     address,0, SyncPut, SyncGet) is 2^32 bytes (SUBQ.l: BNE) (#646).
+ *   - GetSerial address,bytes (#byte result) returns its address argument
+ *     (#649).
  *   - SyncSerial: two machines starting at the same time both become
- *     master (each takes the other's sync byte for the echo).
- *   - SyncGet sends the byte in temp (whatever was last written there)
- *     for every byte received.
+ *     master (each takes the other's sync byte for the echo) (#655).
+ * SyncGet sends the byte in temp (whatever was last written there) for
+ * every byte received: no defect, like the original (the answer only
+ * paces the sender, its value does not matter).
  * Registers: the original changes d0 in every routine that sends (the
  * word $01xx of !writebyte) and d7, a0, a1 in the block routines; the
  * thunks keep all of d0/d1/a0/a1 that are not the result, GCC keeps
@@ -254,7 +257,7 @@ void BLITZ_ROUTINE c_finitserialio(void)
     if (fs.inten & 0x0001)
         on |= 0x0001;
     if (on) {
-        /* BUG(orig): MOVE.w d1,intena - the absolute address $9A (never
+        /* BUG(orig) (#648): MOVE.w d1,intena - the absolute address $9A (never
            reached, inten is always $F01C); the address goes through an
            asm so that GCC does not take it for a null pointer offset */
         volatile UWORD *intena;
@@ -286,13 +289,13 @@ void BLITZ_ROUTINE c_doserialIO2(void)
     c_doserialIO(fs.numbytes);
 }
 
-/* InitSerialIO baud,numbytes,inbuf,outbuf: d0 = baud (BUG(orig)) */
+/* InitSerialIO baud,numbytes,inbuf,outbuf: d0 = baud (BUG(orig) (#650)) */
 ULONG BLITZ_ROUTINE c_initserialio(ULONG baud BL_REG(d0), UWORD numbytes BL_REG(d1),
                                    UBYTE *inbuf BL_REG(d2), UBYTE *outbuf BL_REG(d3))
 {
     if (fs.baud)
         return baud;
-    fs.inten = (UWORD)(0xdff000 + INTENAR);     /* BUG(orig): the address */
+    fs.inten = (UWORD)(0xdff000 + INTENAR);     /* BUG(orig) (#651): the address */
     INTENA = 0x0801;                    /* TBE and RBF interrupts off */
     fs.numbytes = (UWORD)(numbytes - 1);
     setbaud(baud);
@@ -348,7 +351,7 @@ ULONG BLITZ_ROUTINE c_getserial(void)
     return fs.temp[0];
 }
 
-/* GetSerial address,bytes (0 = 2^32): d0 = address (BUG(orig)) */
+/* GetSerial address,bytes (0 = 2^32): d0 = address (BUG(orig) (#649)) */
 ULONG BLITZ_ROUTINE c_getserial2(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
     UBYTE *a = p;
@@ -373,7 +376,7 @@ void BLITZ_ROUTINE c_syncput(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
     } while (--n != 0);
 }
 
-/* SyncGet address,bytes: receive a byte, answer with temp (BUG(orig)) */
+/* SyncGet address,bytes: receive a byte, answer with temp (like the original) */
 void BLITZ_ROUTINE c_syncget(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
     do {
@@ -422,7 +425,7 @@ ULONG BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
     return (ULONG)-1;
 }
 
-/* SetIOSpeed baudrate: BUG(orig) divides by all of d0 */
+/* SetIOSpeed baudrate: BUG(orig) (#654) divides by all of d0 */
 void BLITZ_ROUTINE c_setiospeed(ULONG baud BL_REG(d0))
 {
     if (!fs.baud)

@@ -13,9 +13,9 @@
  * (other registers = markers): d0 of the functions, every register the
  * original keeps, INTENAR (InitSerialIO switches TBE/RBF off - called
  * with both on inside Disable(); FinitSerialIO must not change it nor the
- * word at $9A, BUG(orig)) and the library's state block: mode, numbytes,
+ * word at $9A, BUG(orig) (#648, #651)) and the library's state block: mode, numbytes,
  * inbuf, outbuf, baud (= the SERPER value written, which cannot be read
- * back), inten ($F01C, BUG(orig)) and temp.  The C build keeps the
+ * back), inten ($F01C, BUG(orig) (#651)) and temp.  The C build keeps the
  * original's layout of these 18 bytes; the test finds them in both
  * libraries after the first InitSerialIO by its inbuf/outbuf values.
  * Covered: CheckSerial (no byte: -1), FlushSerialIO, SetSerialMode,
