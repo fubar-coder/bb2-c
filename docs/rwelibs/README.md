@@ -107,7 +107,7 @@ latest date in the header comments.
 | LVCallHook | 27 (bin.) | `lvcallhook/LVCallHook3` | RWE | 1996 | **=** AB3 `RILVCallHook` (1172 B) | LVCallHook3 |
 | Misc | 47 | `misclib/misclib`, `misclib2` | – | 1996-05-23 | misclib2: names equal AB3 `Rimisclib`, 2 help texts differ; BSS2 ≈ 72 % | open |
 | (argument tests) | lit. 198 | `myaudiolib`, `myctrlclib` | – | – | – | test |
-| Display | 29 | `mydisplaylib` | RI | – | – | mydisplaylib (reference build) |
+| Display | 29 | `mydisplaylib` | RI | – | – | mydisplaylib (reference build), ported 2026-10-30 (`port/ridisplaylib.md`) |
 | NonVolatile | 35 (clash `mazfpulib`, AB3) | `nonvolatile` | RI | 1994 | **=** BSS2/AB3 (640 B) | nonvolatile |
 | Pack | 73 | `packlib/Pack-Library8`, `8_Mc`, `9` | RI | 1996-05-09 | 8 **=** BUM (2564 B), 8_Mc **=** OL (2388 B); 9 newer, ≈ 88 % | open (9 newer than the binaries) |
 | PopUp window | – (`#popupwinlib`) | `popuplib/popupwinlib` (+ `test2`) | RI | 1994 | – | popupwinlib (reference build; = its `.bak` without a debug `ILLEGAL`), ported 2026-10-30 (`port/popupwinlib.md`); number 16 (ours: RWE's `RESERVEDLIB_10`; AmiBlitz3's port took 24, RWE's `#richunkylib`) |
