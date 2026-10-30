@@ -67,10 +67,10 @@ ULONG fetchfrac(UWORD c, UWORD *type);
    and 'e'/'E' exponent (0..18) */
 ULONG fetchnum(UWORD c, UWORD *type);
 
-/* blitz2.s:10902 fetchnum2 - integer constant d3 is ready (numfloat := 0):
+/* blitz2.s:10902 fetchnum2 - integer constant num is ready (numfloat := 0):
    size it to *type and emit/return it.  Common tail of fetchhex, fetchbin,
    fetchconst, fetchsize, fetchon/off, domaximum, fetchqasm, fetchasm. */
-ULONG fetchnum2(ULONG d3, UWORD *type);
+ULONG fetchnum2(ULONG num, UWORD *type);
 
 /* blitz2.s:10906 constotype - evalconst, then size the constant to *type
    (consttype2).  Returns the value (asm d0); no callers in the asm. */
@@ -93,10 +93,10 @@ void pushput(void);
 
 /* ---------------------------------------------------- code generation */
 
-/* blitz2.s:11106 muld1 - emit D(regat) *= #d1: lsl.l for a power of two,
-   else mulu.w #d1.  (asm clobbered d1-d4)
-   BUG(orig) (#15): d1 == 256 emits lsl #8 twice (= *65536).  Kept. */
-void muld1(UWORD d1);
+/* blitz2.s:11106 muld1 - emit D(regat) *= #mul: lsl.l for a power of two,
+   else mulu.w #mul.  (asm clobbered d1-d4)
+   BUG(orig) (#15): mul == 256 emits lsl #8 twice (= *65536).  Kept. */
+void muld1(UWORD mul);
 
 /* blitz2.s:11140 makeinits - emit the init calls of all used libs
    (highest lib# first) as a subroutine; patches a `jsr` to it at pcat and
@@ -240,9 +240,9 @@ void freeincs(void);
 /* blitz2.s:12074 pokedata2l / 12081 pokedata2 / 12094 pokedata2b - append
    a long / word / byte to the Data area (data2); past allat only data2 is
    advanced and nomemleft = -1 */
-void pokedata2l(ULONG d0);
-void pokedata2(UWORD d0);
-void pokedata2b(UBYTE d0);
+void pokedata2l(ULONG l);
+void pokedata2(UWORD w);
+void pokedata2b(UBYTE b);
 
 /* --------------------------------------------------- CNIF / CSIF */
 
