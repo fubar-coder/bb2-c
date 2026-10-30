@@ -326,7 +326,9 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   FreeMem inside an allocation is reported and not done; for the
   compiled programs with `runwrap=@INJECT@|...`) and reports what the
   command leaves behind (library opens minus closes of the process, its
-  current directory and whether it unlocked the start lock, paths still in
+  current directory and whether it unlocked the start lock, with
+  `cacheflush=NAME` whether the task that starts a process NAME flushed
+  the caches after its last AllocMem, paths still in
   use); it also gives a program input while it runs: gadget clicks as
   synthetic IntuiMessages (`click=TITLE/TEXT`, optionally while the DOS
   list is locked for writing; with `undobuf` it reports whether a click

@@ -66,6 +66,12 @@
  *                          the clicks behind it are sent without it (a
  *                          program that locks the DOS list waits for it,
  *                          one that walks it without a lock does not)
+ *   cacheflush=NAME        CreateProc of a process whose name contains
+ *                          NAME: did the calling task call CacheClearU or
+ *                          CacheClearE after its last AllocMem (and since
+ *                          CreateProc made it)?
+ *                          Code written into memory and started without a
+ *                          flush may run stale on a 68020+ with caches
  *   undobuf                before every click (after the first) the
  *                          UndoBuffer pointers of the string gadgets of the
  *                          window are compared with those before the click
@@ -99,6 +105,8 @@
  *   click TITLE/TEXT: UndoBuffer of the string gadgets kept | changed
  *                (undobuf; not for the last click)
  *   keys: sent | keys: no window | keys: not sent
+ *   CreateProc NAME: caches flushed before | caches not flushed before
+ *                | not called          (cacheflush)
  */
 #include <exec/types.h>
 #include <exec/memory.h>
@@ -113,6 +121,7 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <proto/intuition.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -127,6 +136,8 @@
 #define LVO_OLDOPENLIBRARY (-408)
 #define LVO_CLOSELIBRARY   (-414)
 #define LVO_OPENLIBRARY    (-552)
+#define LVO_CACHECLEARU    (-636)
+#define LVO_CACHECLEARE    (-642)
 
 struct IntuitionBase *IntuitionBase;
 
@@ -147,6 +158,8 @@ static ULONG rf_n, rf_done, ef_done, olf_done, cpf_done;
    runs); the original is called with the registers it got */
 APTR old_allocmem, old_freemem, old_open, old_read, old_lock, old_examine;
 APTR old_oldopenlib, old_openlib, old_createproc, old_closelib, old_unlock;
+APTR old_cacheclearu, old_cachecleare;
+void cacheclearu_patch(void), cachecleare_patch(void);
 void allocmem_patch(void), freemem_patch(void), open_patch(void), read_patch(void);
 void lock_patch(void), examine_patch(void), oldopenlib_patch(void), openlib_patch(void);
 void createproc_patch(void), closelib_patch(void), unlock_patch(void), keys_stub(void);
@@ -301,18 +314,43 @@ __asm__(
 "   jsr     _keys_handler\n"
 "   addq.l  #4,sp\n"
 "   rts\n"
-/* CreateProc(d1 name, d2 pri, d3 seglist, d4 stack): createproc_pre != 0
-   -> 0, else the original */
+/* CreateProc(d1 name, d2 pri, d3 seglist, d4 stack): createproc_pre(name)
+   != 0 -> 0, else the original and createproc_post(result) */
 "   .even\n"
 "_createproc_patch:\n"
 "   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  d1,-(sp)\n"
 "   jsr     _createproc_pre\n"
+"   addq.l  #4,sp\n"
 "   tst.l   d0\n"
 "   movem.l (sp)+,d0-d1/a0-a1\n"
 "   bne.s   7f\n"
-"   move.l  _old_createproc,-(sp)\n"
+"   move.l  _old_createproc,a0\n"
+"   jsr     (a0)\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  d0,-(sp)\n"
+"   jsr     _createproc_post\n"
+"   addq.l  #4,sp\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
 "   rts\n"
 "7: moveq   #0,d0\n"
+"   rts\n"
+/* CacheClearU() / CacheClearE(a0, d0, d1): cacheclear_pre(), the
+   original */
+"   .even\n"
+"_cacheclearu_patch:\n"
+"   move.l  _old_cacheclearu,-(sp)\n"
+"   bra.s   8f\n"
+"   .even\n"
+"_cachecleare_patch:\n"
+"   move.l  _old_cachecleare,-(sp)\n"
+"8: tst.l   (sp)\n"                 /* SetFunction flushes the caches */
+"   bne.s   9f\n"                   /* itself, before the old vector */
+"   addq.l  #4,sp\n"                /* is stored: nothing to call */
+"   rts\n"
+"9: movem.l d0-d1/a0-a1,-(sp)\n"
+"   jsr     _cacheclear_pre\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
 "   rts\n"
 );
 
@@ -330,8 +368,11 @@ static ULONG bad_free;                  /* pad: a FreeMem not done */
 
 static ULONG hash(ULONG a) { return ((a >> 3) * 2654435761UL) >> 18 & (SLOTS - 1); }
 
+void cf_alloc(void);
+
 ULONG alloc_pre(ULONG size, ULONG flags)
 {
+    cf_alloc();
     if (!o_allocfail || !ours() || size < af_min || size > af_max
         || (af_chip && !(flags & MEMF_CHIP)) || (af_count && af_done >= af_count))
         return 0;
@@ -482,8 +523,66 @@ ULONG openlib_pre(const char *name)
     return 1;
 }
 
-ULONG createproc_pre(void)
+/* cacheflush=NAME: the tasks that called CacheClearU/CacheClearE since
+   their last AllocMem (any task while COMMAND runs; a task leaves the list
+   with its next AllocMem - new memory, e.g. for code to be written - and
+   when CreateProc makes a new process at its address) */
+#define CF_TASKS 16
+static struct Task *volatile cf_task[CF_TASKS];
+static volatile int cf_next, cf_result;
+static int o_cacheflush;
+static char cf_name[40];
+enum { CF_NOTCALLED, CF_FLUSHED, CF_NOTFLUSHED };
+
+void cacheclear_pre(void)
 {
+    struct Task *t = SysBase->ThisTask;
+    int i;
+
+    if (!o_cacheflush || !active)
+        return;
+    for (i = 0; i < CF_TASKS; i++)
+        if (cf_task[i] == t)
+            return;
+    cf_task[cf_next++ % CF_TASKS] = t;
+}
+
+void cf_alloc(void)
+{
+    struct Task *t = SysBase->ThisTask;
+    int i;
+
+    if (!o_cacheflush || !active)
+        return;
+    for (i = 0; i < CF_TASKS; i++)
+        if (cf_task[i] == t)
+            cf_task[i] = NULL;
+}
+
+void createproc_post(struct MsgPort *port)
+{
+    struct Task *t;
+    int i;
+
+    if (!o_cacheflush || !port)
+        return;
+    t = (struct Task *)((UBYTE *)port - offsetof(struct Process, pr_MsgPort));
+    for (i = 0; i < CF_TASKS; i++)
+        if (cf_task[i] == t)
+            cf_task[i] = NULL;
+}
+
+ULONG createproc_pre(const char *name)
+{
+    if (o_cacheflush && active && name && strstr(name, cf_name)) {
+        struct Task *t = SysBase->ThisTask;
+        int i;
+
+        cf_result = CF_NOTFLUSHED;
+        for (i = 0; i < CF_TASKS; i++)
+            if (cf_task[i] == t)
+                cf_result = CF_FLUSHED;
+    }
     if (!o_createprocfail || !ours())
         return 0;
     cpf_done++;
@@ -837,6 +936,12 @@ static int option(const char *a)
         return o_doslocked = 1;
     if (!strcmp(a, "undobuf"))
         return o_undobuf = 1;
+    if (!strncmp(a, "cacheflush=", 11)) {
+        if (!a[11] || strlen(a + 11) >= sizeof cf_name)
+            return -1;
+        strcpy(cf_name, a + 11);
+        return o_cacheflush = 1;
+    }
     if (!strncmp(a, "click=", 6)) {
         const char *slash = strchr(a + 6, '/');
 
@@ -893,7 +998,11 @@ static void patch(int on)
         old_createproc = SetFunction(dos, LVO_CREATEPROC, (APTR)createproc_patch);
         old_closelib = SetFunction(ex, LVO_CLOSELIBRARY, (APTR)closelib_patch);
         old_unlock = SetFunction(dos, LVO_UNLOCK, (APTR)unlock_patch);
+        old_cacheclearu = SetFunction(ex, LVO_CACHECLEARU, (APTR)cacheclearu_patch);
+        old_cachecleare = SetFunction(ex, LVO_CACHECLEARE, (APTR)cachecleare_patch);
     } else {
+        SetFunction(ex, LVO_CACHECLEARU, old_cacheclearu);
+        SetFunction(ex, LVO_CACHECLEARE, old_cachecleare);
         SetFunction(ex, LVO_CLOSELIBRARY, old_closelib);
         SetFunction(dos, LVO_UNLOCK, old_unlock);
         SetFunction(ex, LVO_ALLOCMEM, old_allocmem);
@@ -950,6 +1059,7 @@ static const char usage[] =
     "  options: signals allocfail=MIN-MAX[/chip][/COUNT] readfail=NAME/N\n"
     "    examinefail=NAME openlibfail=NAME createprocfail track pad\n"
     "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked undobuf\n"
+    "    cacheflush=NAME\n"
     "    keys=TITLE/CODE@SECS[,CODE@SECS]...  (described in inject.c)\n";
 
 int main(int argc, char **argv)
@@ -981,7 +1091,7 @@ int main(int argc, char **argv)
         put("usage: inject [signals] [allocfail=MIN-MAX[/chip][/COUNT]] [readfail=NAME/N]\n"
             "              [examinefail=NAME] [openlibfail=NAME] [createprocfail] [track] [pad]\n"
             "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
-            "              [click=TITLE/TEXT]... [doslocked] [undobuf]\n"
+            "              [click=TITLE/TEXT]... [doslocked] [undobuf] [cacheflush=NAME]\n"
             "              [keys=TITLE/CODE@SECS[,CODE@SECS]...] COMMAND [ARGS]\n");
         return 20;
     }
@@ -1129,6 +1239,14 @@ int main(int argc, char **argv)
                     click[k].undo == UB_KEPT ? "kept" : "changed");
             put(line);
         }
+    }
+    if (o_cacheflush) {
+        static const char *const cf_text[] = {
+            "not called", "caches flushed before", "caches not flushed before"
+        };
+
+        sprintf(line, "inject: CreateProc %.39s: %s\n", cf_name, cf_text[cf_result]);
+        put(line);
     }
     if (nkeys)
         put(k_result == KS_SENT ? "inject: keys: sent\n"
