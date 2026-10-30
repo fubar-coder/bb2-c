@@ -113,12 +113,12 @@ void extmenu(UWORD code)
 /* ted.s:1565 menu - menu number in d6 */
 void menu(void)
 {
-    UWORD code = ev_data, menunum;
+    UWORD raw = ev_data;                        /* Intuition menu code */
+    UWORD menunum = raw & 15;                   /* move.b d6,d0 / and #15,d0 */
+    UWORD code = (UWORD)((raw >> 1) & 0xf0);
     const struct jtentry *entry;
     UBYTE flag;
 
-    menunum = code & 15;                        /* move.b d6,d0 / and #15,d0 */
-    code = (UWORD)((code >> 1) & 0xf0);
     if ((UBYTE)menunum == 4) {
         extmenu(code);                          /* beq extmenu */
         return;

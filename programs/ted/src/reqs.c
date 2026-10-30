@@ -412,13 +412,11 @@ BOOL getmousexy(struct mousexy *r)
 {
     struct Screen *scr = myscreen;
     UWORD my = (UWORD)scr->MouseY;              /* 16(a0) */
-    UWORD edge = topskip;
 
     r->y = (WORD)my;
-    if (my < edge)
+    if (my < topskip)
         goto done;
-    edge = (UWORD)(edge + pixrows);
-    if (my >= edge)
+    if (my >= (UWORD)(topskip + pixrows))
         goto done;
     r->x = scr->MouseX;                         /* 18(a0) */
     r->col = (WORD)((UWORD)r->x >> 3);
