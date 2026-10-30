@@ -28,26 +28,29 @@
  * caller's), 0 when the chunk is missing.
  *
  * BUG(orig), kept:
- *   - The scenario routines before a SetBBScenarioLoc and the map
- *     routines (but BBMapScenarioID, BBMapWidth, BBMapHeight, BBMapInfo)
- *     before a SetBBMapLoc search from address 12.
  *   - SetBBMapLoc stores the address before it checks it: after a failed
  *     call BBMapScenarioID/Width/Height/Info use the MFRM chunk of the
- *     map before (and the chunk searches the new address).  A map
- *     without MFRM sets the info chunk to the address behind the last
- *     chunk id.
+ *     map before (and the chunk searches the new address), and the
+ *     cache (the id alone) returns a chunk of the old map for its id
+ *     (#554).  A map without MFRM sets the info chunk to the address
+ *     behind the last chunk id (#551).
  *   - The search ends only after an id that does not match (the id read
- *     can be behind the end) and compares the addresses signed; an odd
- *     length makes the next id odd (an address error on a 68000).
- *   - The cache is the id alone: after SetBBScenarioLoc failed, or for a
- *     map, a chunk of the old file is returned for its id.
+ *     can be behind the end) and compares the addresses signed (#553);
+ *     an odd length makes the next id odd (an address error on a 68000)
+ *     (#552).
  *   - BBGetPalette: an object with high colour >= its colour count gets
  *     a new block of high+1 colours, but its count is set to high (the
- *     last colour outside); the old block is freed with the size
- *     count*12 (memlib's globfree ignores it); the colours are written
- *     from low to high even if low > high (one colour at low, possibly
- *     behind the block).  BBScenarioLowCol/HighCol extend the byte with
- *     its sign.
+ *     last colour outside) (#548); the colours are written from low to
+ *     high even if low > high (one colour at low, possibly behind the
+ *     block) (#549).  BBScenarioLowCol/HighCol extend the byte with its
+ *     sign (#550).
+ * Original behaviour, not defects: the scenario routines before a
+ * SetBBScenarioLoc and the map routines (but BBMapScenarioID,
+ * BBMapWidth, BBMapHeight, BBMapInfo) before a SetBBMapLoc search from
+ * address 12 (a program sets the location first); a failed
+ * SetBBScenarioLoc keeps the old file and its cache; BBGetPalette frees
+ * the old colour block with the size count*12 (memlib's globfree ignores
+ * the size).
  */
 #include "blitzlib.h"
 
@@ -221,7 +224,7 @@ static ULONG BLITZ_ROUTINE setbbscenarioloc_c(UBYTE *a BL_REG(d0))
 
 static ULONG BLITZ_ROUTINE setbbmaploc_c(UBYTE *a BL_REG(d0))
 {
-    maploc = a;                         /* BUG(orig): before the check */
+    maploc = a;                         /* BUG(orig): before the check (#554) */
     if (LONGAT(a) != ID('F', 'O', 'R', 'M') || LONGAT(a + 8) != ID('B', 'M', 'A', 'P'))
         return 0;
     mapend = a + LONGAT(a + 4) + 8;
@@ -377,7 +380,7 @@ static ULONG BLITZ_ROUTINE bbscenarioauthor_c(void)
 
 /* BBGetPalette: the colours low..high of COLR (bytes r,g,b, each made a
    long $xxxxxxxx) into the palette object at its colour low; a new
-   colour block if high >= the colour count (see BUG(orig) above) */
+   colour block if high >= the colour count (see BUG(orig) above, #548) */
 static void BLITZ_ROUTINE bbgetpalette_c(UBYTE *pal BL_REG(a0))
 {
     const UBYTE *a = findchunk(ID('C', 'O', 'L', 'R'));

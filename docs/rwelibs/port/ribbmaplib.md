@@ -47,27 +47,33 @@ character). `BBGetPalette` calls memlib's globalloc/globfree.
 
 ## BUG(orig), kept
 
-* The scenario routines before a `SetBBScenarioLoc`, and the map chunk
-  routines before a `SetBBMapLoc`, search from address 12.
 * `SetBBMapLoc` stores the address before it checks it: after a failed
   call the info chunk (`BBMapScenarioID`/`Width`/`Height`/`Info`), the
   cache and the end of the old map stay, the searches start at the new
-  address. A map without `MFRM` makes the info chunk the address behind
-  the last id read.
+  address (#554). A map without `MFRM` makes the info chunk the address
+  behind the last id read (#551).
 * The search stops only after an id that does not match: the id behind
   the end of the file is read and found if it matches. The addresses
-  are compared signed. An odd chunk length makes the following ids odd
-  (address error on a 68000).
-* The cache is the id alone: a failed `SetBBScenarioLoc` leaves the
-  file and its cache as they were.
+  are compared signed (#553). An odd chunk length makes the following
+  ids odd (address error on a 68000) (#552).
 * `BBGetPalette`: when the high colour is not below the object's colour
   count it allocates a block of high+1 colours but sets the count (in
-  the object and the block) to high, so the last colour is outside; the
-  old block is freed with the size count*12 (memlib ignores it); the
-  colours are written from low up to high, at least one (low > high
-  writes the colour at low, possibly behind the block).
+  the object and the block) to high, so the last colour is outside
+  (#548); the colours are written from low up to high, at least one
+  (low > high writes the colour at low, possibly behind the block)
+  (#549).
 * `BBScenarioLowCol`/`BBScenarioHighCol` sign-extend the byte;
-  `BBGetPalette` and `BBNumBaddies` do not.
+  `BBGetPalette` and `BBNumBaddies` do not (#550).
+
+## Original behaviour, not defects
+
+* The scenario routines before a `SetBBScenarioLoc`, and the map chunk
+  routines before a `SetBBMapLoc`, search from address 12: a program
+  sets the location first.
+* The cache is the id alone: a failed `SetBBScenarioLoc` leaves the
+  file and its cache as they were (the old file stays usable).
+* `BBGetPalette` frees the old colour block with the size count*12:
+  memlib's globfree ignores the size.
 
 ## Test
 
