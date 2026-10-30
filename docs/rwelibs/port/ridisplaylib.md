@@ -52,8 +52,8 @@ absolute addresses the original reads (below), as volatile words.
 Compared after every call: d0 (InitView: as "is the list the library
 keeps"), `viewsize` and `cop`, the list's eight words (each equal to the
 word at its address, BUG(orig), and equal between the sets for the
-even ones), the change of graphics.library's open count and of the free
-chip memory, kept registers. Cases: init, five InitViews (marker upper
+even ones), the change of graphics.library's open count, the test task's
+memory balance (rwemem.h), kept registers. Cases: init, five InitViews (marker upper
 words, colour counts that change nothing), ViewBitmap, finit with a
 list, finit again (nothing), init and finit without a list. The lists
 InitView leaks are freed by the test. Not covered: InitView without

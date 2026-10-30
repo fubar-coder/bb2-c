@@ -385,6 +385,7 @@ int main(int argc, char **argv)
         grabsrc[k] = (UBYTE)(rnd() % 30);
     memset(longname, 'n', 300);
     avail = AvailMem(MEMF_ANY);
+    rwe_mem_start();
 
     ROUT = "memlib init";
     memlib(7);
@@ -530,9 +531,7 @@ int main(int argc, char **argv)
     DO2(ENT(LIB, FINIT, 0), (void)0);
     ROUT = "memlib finit";
     memlib(8);
-    if (AvailMem(MEMF_ANY) != avail)
-        printf("rimapeditorlib: %ld bytes missing\n", (LONG)(avail - AvailMem(MEMF_ANY)));
-    check("rimapeditorlib: all memory back", AvailMem(MEMF_ANY) == avail);
+    rwe_mem_check(LIB, avail, TRUE);
 
     for (s = 0; s < 2; s++)
         for (p = 0; p < 2; p++)

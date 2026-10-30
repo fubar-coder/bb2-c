@@ -12,9 +12,9 @@
  * list's 8 words (the words at the absolute addresses $8E, $2C81, $90,
  * $2CC1, $92, $38, $94, $D0, BUG(orig): equal to those words, and equal
  * between the sets for the ones in the vector table), the change of
- * graphics.library's open count and of the free chip memory, and the
- * registers the original keeps.  The lists InitView leaks (only the last
- * one is kept, BUG(orig)) are freed by the test.
+ * graphics.library's open count and the test task's memory balance
+ * (rwemem.h), and the registers the original keeps.  The lists InitView
+ * leaks (only the last one is kept, BUG(orig)) are freed by the test.
  *
  * Covered: init, InitView (sizes with marker upper words, the colour
  * count ignored, BUG(orig)), ViewBitmap (no code), finit with a list,
@@ -29,7 +29,7 @@
 enum { INITVIEW, VIEWBITMAP, INIT, FINIT };
 
 static struct Library *gfx;
-static LONG opened[2], chipfree[2];
+static LONG opened[2], membal[2];
 static ULONG *vars[2];                  /* viewsize, cop */
 static ULONG oldcop[2], oldsize[2];     /* the list before (leaked) */
 static ULONG cop[2];
@@ -43,13 +43,14 @@ static ULONG findvars(struct lib *l, ULONG list)
     return 0;
 }
 
-/* one call on both sets: the open count and free chip memory around it */
+/* one call on both sets: the open count and this task's memory balance
+   around it (rwemem.h; AvailMem() would also count other tasks) */
 static void call2(int idx, const char *name, ULONG d0, ULONG d1, ULONG d2, ULONG d3)
 {
     ROUT = name;
     for (cur = 0; cur < 2; cur++) {
         APTR fn = ENT(LIB, idx, 0);
-        LONG cnt = gfx->lib_OpenCnt, mem;
+        LONG cnt = gfx->lib_OpenCnt;
         markregs(&R[cur]);
         R[cur].d[0] = d0;
         R[cur].d[1] = d1;
@@ -57,14 +58,14 @@ static void call2(int idx, const char *name, ULONG d0, ULONG d1, ULONG d2, ULONG
         R[cur].d[3] = d3;
         IN[cur] = R[cur];
         NARGS = 0;
-        mem = (LONG)AvailMem(MEMF_CHIP);
+        rwe_mem_start();
         CCR[cur] = callstk(fn, &R[cur], ARGS[cur], NARGS, &POP[cur]);
-        chipfree[cur] = (LONG)AvailMem(MEMF_CHIP) - mem;
+        membal[cur] = rwe_mem_stop();
         opened[cur] = gfx->lib_OpenCnt - cnt;
     }
     preserve();
     SAME("graphics.library open count", opened[cur]);
-    SAME("free chip memory", chipfree[cur]);
+    SAME("memory balance", membal[cur]);
     if (vars[0] && vars[1]) {
         SAME("viewsize", vars[cur][0]);
         SAME("cop", vars[cur][1] != 0);
