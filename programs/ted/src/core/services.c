@@ -29,11 +29,11 @@ void blockstart(void)
 /* ted.s:2468 blockend - f2, genam style */
 void blockend(void)
 {
-    WORD d0, d2;
-    UWORD d1, d3;
+    WORD endx, startx;
+    UWORD endy, starty;
 
-    d2 = bstx;                                  /* x start */
-    if (d2 < 0) {
+    startx = bstx;                              /* x start */
+    if (startx < 0) {
         beepem();                               /* bmi beepem */
         return;
     }
@@ -41,42 +41,42 @@ void blockend(void)
        dispatch = the jumptable code byte (130); its upper byte is 0 unless
        showthisitem ran before (undefined there) - C: the event code */
     btopx = (WORD)(UBYTE)ev_code;
-    d3 = (UWORD)bsty;                           /* y start */
-    d1 = (UWORD)(curstop + cursy);              /* y end */
-    d0 = (WORD)(cursoff + cursx);               /* x end */
-    if (d0 == d2 && d1 == d3) {
+    starty = (UWORD)bsty;                       /* y start */
+    endy = (UWORD)(curstop + cursy);            /* y end */
+    endx = (WORD)(cursoff + cursx);             /* x end */
+    if (endx == startx && endy == starty) {
         blokdis();
         showall();                              /* bra showall */
         return;
     }
     /* .doit (survey-03 I.3: end (0,0) gives bbotx = -1) */
-    if (d0 == 0 && d1 != 0) {
-        d1--;
-        d0 = (WORD)chcols;
+    if (endx == 0 && endy != 0) {
+        endy--;
+        endx = (WORD)chcols;
     }
     /* .skip */
-    d0--;
-    bbotx = d0;
-    bboty = d1;
-    btopx = d2;
-    btopy = d3;
+    endx--;
+    bbotx = endx;
+    bboty = endy;
+    btopx = startx;
+    btopy = starty;
     sortblox(NULL);
     bloken();
     showall();                                  /* bra showall */
 }
 
 /* ted.s:2636 tokone - tokenise one line - line in a0 (in place) */
-UWORD tokone(UBYTE *a0)
+UWORD tokone(UBYTE *line)
 {
-    const UBYTE *p = a0;
-    WORD d1 = 0;
+    const UBYTE *p = line;
+    WORD last = 0;
 
     do                                          /* .loop */
-        d1++;
+        last++;
     while (*p++);
-    d1--;
-    if (d1 >= 0)                                /* bpl tokit2 */
-        return tokit2(a0, a0, d1, NULL);
+    last--;
+    if (last >= 0)                              /* bpl tokit2 */
+        return tokit2(line, line, last, NULL);
     /* lines >= 32768 bytes: rts with d5 undefined */
     return 0;
 }
@@ -95,21 +95,21 @@ void tokall(void)
 /* ted.s:2653 tokall2 */
 void tokall2(void)
 {
-    struct item *a4 = firstitem;
+    struct item *item = firstitem;
     UWORD cnt = numlines;                       /* move numlines,-(a7) */
-    WORD d1;
-    UWORD d5;
+    WORD last;
+    UWORD len;
 
     do {
         /* .loop */
-        d1 = (WORD)(a4->numchars - 1);
-        if (d1 >= 0) {                          /* bmi .noway */
-            d5 = tokit2(charbuff, a4->chars, d1, NULL);
-            thisitem = a4;
-            a4 = makeline(a4, d5);
+        last = (WORD)(item->numchars - 1);
+        if (last >= 0) {                        /* bmi .noway */
+            len = tokit2(charbuff, item->chars, last, NULL);
+            thisitem = item;
+            item = makeline(item, len);
         }
         /* .noway */
-        a4 = a4->nextitem;
+        item = item->nextitem;
     } while (--cnt != 0);                       /* subq #1,(a7) / bne .loop */
     detokallc();                                /* bra detokallc */
 }
@@ -130,16 +130,16 @@ void detokallz(void)
    last line, no redraw. */
 void detokallz2(void)
 {
-    struct item *a4 = firstitem;
+    struct item *item = firstitem;
     UWORD cnt = numlines;
-    UBYTE *a1;
+    UBYTE *end;
 
     do {
         /* .loop */
-        a1 = detok(a4->chars, charbuff);
-        thisitem = a4;
-        a4 = makeline(a4, (UWORD)(a1 - charbuff + 1));
-        a4 = a4->nextitem;
+        end = detok(item->chars, charbuff);
+        thisitem = item;
+        item = makeline(item, (UWORD)(end - charbuff + 1));
+        item = item->nextitem;
     } while (--cnt != 0);
 }
 
@@ -168,37 +168,37 @@ void detokallc(void)
     showall();                                  /* bra showall */
 }
 
-/* ted.s:2697 (help, core part): walk the tokenised line a4 up to column
+/* ted.s:2697 (help, core part): walk the tokenised line (a4) up to column
    col (d3) counting screen columns (token = length of its name); the
    last token seen is the result (survey-03 I.13).  *num = helptoke. */
-const char *help_core(struct item *a4, UWORD col, UWORD *num)
+const char *help_core(struct item *line, UWORD col, UWORD *num)
 {
-    const UBYTE *p = a4->chars;                 /* a4 = start of line */
-    const char *d1 = NULL;                      /* no token found yet */
-    const char *a3;
-    UWORD d0, d2 = 0;                           /* chk x */
+    const UBYTE *p = line->chars;               /* a4 = start of line */
+    const char *result = NULL;                  /* no token found yet */
+    const char *name;
+    UWORD c, x = 0;                             /* chk x */
 
     for (;;) {
         /* .loop */
-        d0 = *p++;
-        if (d0 == 0)
+        c = *p++;
+        if (c == 0)
             break;                              /* .done */
-        if (d0 & 0x80) {
-            d0 = (UWORD)((d0 << 8) | *p++);
-            *num = d0;                          /* move d0,helptoke */
-            a3 = findtoke(d0);
-            d1 = a3;
+        if (c & 0x80) {
+            c = (UWORD)((c << 8) | *p++);
+            *num = c;                           /* move d0,helptoke */
+            name = findtoke(c);
+            result = name;
             do                                  /* .loop2 */
-                d2++;
-            while (*a3++);
-            d2 -= 2;
+                x++;
+            while (*name++);
+            x -= 2;
         }
         /* .next */
-        d2++;
-        if (d2 > col)                           /* cmp d3,d2 / bls .loop */
+        x++;
+        if (x > col)                            /* cmp d3,d2 / bls .loop */
             break;
     }
-    return d1;
+    return result;
 }
 
 /* ------------------------------------------------- label column (mice) */
@@ -206,81 +206,81 @@ const char *help_core(struct item *a4, UWORD col, UWORD *num)
 /* ted.s:2850 makemice - scan entire program for mousables! */
 void makemice(void)
 {
-    struct item *a0 = firstitem;
-    UWORD d0 = (UWORD)(numlines - 1);
-    UBYTE d1 = label;
-    const UBYTE *a1;
+    struct item *item = firstitem;
+    UWORD count = (UWORD)(numlines - 1);
+    UBYTE labelc = label;
+    const UBYTE *p;
 
     do {
         /* .loop */
-        a1 = a0->chars;
-        while (*a1 == 32)                       /* .loop2 */
-            a1++;
-        if (*a1 == d1) {
+        p = item->chars;
+        while (*p == 32)                        /* .loop2 */
+            p++;
+        if (*p == labelc) {
             /* move d1,mousealt: the upper byte of d1 is undefined in the
                asm (survey-03 I.19) - only != 0 counts */
-            mousealt = d1;
-            remember2(a0);
+            mousealt = labelc;
+            remember2(item);
         }
         /* .skip */
-        a0 = a0->nextitem;
-    } while (d0-- != 0);                        /* dbf d0,.loop */
+        item = item->nextitem;
+    } while (count-- != 0);                     /* dbf d0,.loop */
 }
 
 /* ted.s:2869 freemice */
 void freemice(void)
 {
-    UWORD d2 = nummice;
-    struct micenode *a1, *a2;
+    UWORD count = nummice;
+    struct micenode *node, *next;
 
-    if (!d2)
+    if (!count)
         return;
-    mousealt = d2;
-    d2--;
-    a2 = mice;
+    mousealt = count;
+    count--;
+    next = mice;
     do {
         /* .loop - reads `next` of the last node too (uninitialised,
            survey-03 I.4), but does not use it */
-        a1 = a2;
-        a2 = a2->next;
-        ted_free(a1, 8);
-    } while (d2-- != 0);                        /* dbf d2,.loop */
+        node = next;
+        next = next->next;
+        ted_free(node, 8);
+    } while (count-- != 0);                     /* dbf d2,.loop */
     nummice = 0;                                /* mice stays dangling */
 }
 
 /* ted.s:2883 remember - remember a0 line for mousables */
-void remember(struct item *a0)
+void remember(struct item *line)
 {
-    (void)a0;
+    (void)line;
     mousealt = (UWORD)-1;
 }
 
 /* ted.s:2887 remember2 */
-void remember2(struct item *a0)
+void remember2(struct item *line)
 {
-    struct micenode *a1, *a2;
-    WORD d1;
+    struct micenode *node, *newnode;
+    WORD count;
 
-    a2 = ted_alloc(8, TED_MEMF_PUBLIC);
-    if (!a2)
+    newnode = ted_alloc(8, TED_MEMF_PUBLIC);
+    if (!newnode)
         outmem();                               /* beq outmem */
     /* BUG(orig) (#381) survey-03 I.4: a2->next stays uninitialised (not
        MEMF_CLEAR) */
     if (nummice == 0) {
-        mice = a2;                              /* .skip */
+        mice = newnode;                         /* .skip */
     } else {
-        a1 = mice;
-        d1 = (WORD)(nummice - 2);
-        if (d1 >= 0) {                          /* bmi .skip3 */
+        node = mice;
+        count = (WORD)(nummice - 2);
+        if (count >= 0) {                       /* bmi .skip3 */
             do                                  /* .loop */
-                a1 = a1->next;
-            while (d1-- != 0);
+                node = node->next;
+            while (count-- != 0);
         }
         /* .skip3 */
-        a1->next = a2;
+        node->next = newnode;
     }
     /* .skip2 */
-    a2->line = a0;
+    newnode->line = line;
     nummice++;
 }
 
@@ -291,66 +291,66 @@ void mforget2(void)
 }
 
 /* ted.s:2990 a0toname - convert a0 to a path/filename.
-   BUG(orig) (#340) survey-03 I.1: the tests compare d0 (the caller's register),
+   BUG(orig) (#340) survey-03 I.1: the tests compare stale_d0 (the caller's d0),
    not the copied character - normally filepath = "" and filename = the
    whole string. */
-void a0toname(const UBYTE *a0, ULONG d0)
+void a0toname(const UBYTE *src, ULONG stale_d0)
 {
-    UBYTE *a1 = (UBYTE *)filepath, *a2 = a1, *z, c, last;
-    const UBYTE c0 = (UBYTE)d0;
+    UBYTE *dst = (UBYTE *)filepath, *namestart = dst, *pathend, c, last;
+    const UBYTE stalec = (UBYTE)stale_d0;
 
-    if (*a0 == '"')
-        a0++;
+    if (*src == '"')
+        src++;
     for (;;) {
         /* .loop */
-        c = *a1++ = *a0++;
+        c = *dst++ = *src++;
         if (!c)
             break;                              /* .done */
-        if (c0 == ':')
-            a2 = a1;                            /* .skip2 */
-        else if (c0 == '/')
-            a2 = a1 - 1;
+        if (stalec == ':')
+            namestart = dst;                    /* .skip2 */
+        else if (stalec == '/')
+            namestart = dst - 1;
     }
     /* .done */
-    a1 = (UBYTE *)filename;
-    z = a2;                                     /* move.l a2,a0 */
-    if (*a2 == '/')
-        a2++;
+    dst = (UBYTE *)filename;
+    pathend = namestart;                        /* move.l a2,a0 */
+    if (*namestart == '/')
+        namestart++;
     do {                                        /* .loop2 */
-        c = *a1++ = *a2++;
+        c = *dst++ = *namestart++;
 #ifdef TED_HOST
-        if (c && a1 == (UBYTE *)filename + sizeof(filename)) {
+        if (c && dst == (UBYTE *)filename + sizeof(filename)) {
             /* host-only guard: the asm runs on into filetext */
             ORIG_HAZARD("a0toname: name longer than filename");
-            a1[-1] = 0;
+            dst[-1] = 0;
             break;
         }
 #endif
     } while (c);
-    if (a1 - 2 >= (UBYTE *)filename) {
-        last = a1[-2];
+    if (dst - 2 >= (UBYTE *)filename) {
+        last = dst[-2];
     } else {
         /* empty name: -2(a1) is the last byte of filepath */
         ORIG_HAZARD("a0toname: reads the byte in front of filename");
         last = (UBYTE)filepath[sizeof(filepath) - 1];
     }
     if (last == '"') {
-        if (a1 - 2 >= (UBYTE *)filename)
-            a1[-2] = 0;
+        if (dst - 2 >= (UBYTE *)filename)
+            dst[-2] = 0;
         else
             filepath[sizeof(filepath) - 1] = 0;
     }
     /* .sskip */
-    *z = 0;
+    *pathend = 0;
 }
 
 /* ted.s:3033 alloc2 (a6 = ExecBase) */
-APTR alloc2(ULONG d0, ULONG d1)
+APTR alloc2(ULONG size, ULONG flags)
 {
     APTR p;
 
     memalt = (UWORD)-1;
-    p = ted_alloc(d0, d1);
+    p = ted_alloc(size, flags);
     if (!p)
         outmem();                               /* beq outmem */
     return p;

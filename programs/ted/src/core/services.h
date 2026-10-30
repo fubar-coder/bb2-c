@@ -17,10 +17,10 @@ void blockstart(void);
    code byte of mainedit, survey-03 I.2): C uses the event code. */
 void blockend(void);
 
-/* ted.s:2636 tokone (comdata+56): tokenise the 0-terminated line a0 IN
+/* ted.s:2636 tokone (comdata+56): tokenise the 0-terminated line (a0) IN
    PLACE (tokit2 with a1 = a2 = a0, d1 = strlen).  Returns d5 = length incl.
    0. */
-UWORD tokone(UBYTE *a0);
+UWORD tokone(UBYTE *line);
 /* ted.s:2648 tokall (comdata+20): tokenise != 0 -> beepem; else
    tokenise = $FFFF (not) and fall into tokall2 */
 void tokall(void);
@@ -39,11 +39,11 @@ void detokall2(void);
 void detokallc(void);
 
 /* ted.s:2697 (help, core part - NEW name): the LAST token that starts at or
-   before column `col` of line a4 (tokenised).  Returns its name (asm: a3
+   before column `col` of `line` (a4, tokenised).  Returns its name (asm: a3
    after findtoke; the help text follows the name's 0 byte) or NULL if none; *num = token number
    (asm: helptoke).  Unknown token: findtoke's tokeerr (survey-03 I.13).
    The title/Execute part is help() in mouse.h. */
-const char *help_core(struct item *a4, UWORD col, UWORD *num);
+const char *help_core(struct item *line, UWORD col, UWORD *num);
 
 /* ------------------------------------------------- label column (mice) */
 
@@ -53,23 +53,23 @@ void makemice(void);
 /* ted.s:2869 freemice: free nummice nodes, mousealt = old count,
    nummice = 0 (mice stays dangling) */
 void freemice(void);
-/* ted.s:2883 remember: only mousealt = -1 (a0 = line, ignored) */
-void remember(struct item *a0);
-/* ted.s:2887 remember2: append a node for line a0 (AllocMem(8) not
+/* ted.s:2883 remember: only mousealt = -1 (line (a0) ignored) */
+void remember(struct item *line);
+/* ted.s:2887 remember2: append a node for `line` (a0) (AllocMem(8) not
    cleared, failure -> outmem; `next` of the new node stays
    uninitialised, survey-03 I.4) */
-void remember2(struct item *a0);
+void remember2(struct item *line);
 /* ted.s:2912 mforget2: only mousealt = -1 */
 void mforget2(void);
 
-/* ted.s:2990 a0toname: split a0 (maybe in "...") into filepath/filename.
-   BUG(orig) (#340): compares d0 (the caller's register at .tomain - blitz2: the
-   LoadSeg result) instead of the copied character (survey-03 I.1), so d0
-   is a parameter. */
-void a0toname(const UBYTE *a0, ULONG d0);
+/* ted.s:2990 a0toname: split src (a0, maybe in "...") into
+   filepath/filename.  BUG(orig) (#340): compares d0 (the caller's register
+   at .tomain - blitz2: the LoadSeg result) instead of the copied character
+   (survey-03 I.1), so d0 is a parameter (stale_d0). */
+void a0toname(const UBYTE *src, ULONG stale_d0);
 
-/* ted.s:3033 alloc2: memalt = -1, AllocMem(d0, d1); failure -> outmem
+/* ted.s:3033 alloc2: memalt = -1, AllocMem(size, flags); failure -> outmem
    (never returns NULL) */
-APTR alloc2(ULONG d0, ULONG d1);
+APTR alloc2(ULONG size, ULONG flags);
 
 #endif
