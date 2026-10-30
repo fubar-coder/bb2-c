@@ -25,11 +25,14 @@
 # behaviour is compared with REFERENCE in Amiberry (libs_emulator:
 # libs/tests/rwe/NAME.c, the property RWE_EMULATOR_LIBS lists obj|orig).
 set(RWE_VARIANT rwe-1999)
-# RWE_OWN_VARIANTS: NAME|VARIANT for a library whose number another
-# library of RWE_VARIANT has: built with the numbers of VARIANT (which
-# includes RWE_VARIANT's libnums.h and frees the number), checked against
-# VARIANT's acidlibs and deflibs (ctest rwe_numbers_VARIANT)
-set(RWE_OWN_VARIANTS "rievallib|rwe-1999-eval")
+# RWE_OWN_VARIANTS: NAME|VARIANT[|REPLACES] for a library whose number
+# another library of RWE_VARIANT has: built with the numbers of VARIANT
+# (which includes RWE_VARIANT's libnums.h and frees the number), checked
+# against VARIANT's acidlibs and deflibs (ctest rwe_numbers_VARIANT).
+# REPLACES: an RWE library of RWE_VARIANT with the same number that
+# VARIANT's set has instead of NAME's (VARIANT's numbers can stay
+# RWE_VARIANT's)
+set(RWE_OWN_VARIANTS "rievallib|rwe-1999-eval" "risoundlib2|rwe-1999-ahi|risoundlib")
 set(bss2 cd/ultimate-blitz-basic-2.1/BSS2/REDBLITZLIBS/LIBRARIES/USERLIBS)
 set(ol cd/ultimate-blitz-basic-2.1/EXTRAS/BLITZLIBS/OTHERLIBS)
 set(bum cd/ultimate-blitz-basic-2.1/BUM10A/BLITZLIBS/RILIBS)
@@ -201,18 +204,42 @@ foreach(l IN LISTS RWE_LIBS)
 		set_property(GLOBAL APPEND PROPERTY RWE_EMULATOR_FIXTURES ${fixture})
 	endif()
 endforeach()
+# the RWE userlibs of an own variant: RWE_VARIANT's without those it
+# replaces (REPLACES of RWE_OWN_VARIANTS, in replaced_VARIANT)
+list(REMOVE_DUPLICATES own_variants)
+foreach(v IN LISTS own_variants)
+	set(objs_${v} ${objs})
+	set(replaced_${v})
+endforeach()
+foreach(o IN LISTS RWE_OWN_VARIANTS)
+	string(REPLACE "|" ";" o "${o}")
+	list(LENGTH o n)
+	if(n LESS 3)
+		continue()
+	endif()
+	list(GET o 1 v)
+	list(GET o 2 r)
+	set(robj ${out}/userlibs/rwe/${r}.obj)
+	if(NOT robj IN_LIST objs)
+		message(FATAL_ERROR "RWE_OWN_VARIANTS: ${r} is no library of ${RWE_VARIANT}")
+	endif()
+	list(REMOVE_ITEM objs_${v} ${robj})
+	list(APPEND replaced_${v} ${robj})
+endforeach()
+
 # the readable sources (target rwelibsrc, see above): the libraries of
 # the source's variant, those of RWE_VARIANT for an own variant as well
-# (its numbers include RWE_VARIANT's)
+# (its numbers include RWE_VARIANT's) but those it replaces
 set(readable)
 foreach(e IN LISTS readable_entries)
 	string(REPLACE "|" ";" e "${e}")
 	list(GET e 0 source)
 	list(GET e 1 v)
 	set(vout ${BLITZ_VARIANTS_DIR}/${v})
-	set(libs ${vout}/acidlibs ${vout}/deflibs ${objs})
-	if(NOT v STREQUAL RWE_VARIANT)
-		list(APPEND libs ${own_${v}})
+	if(v STREQUAL RWE_VARIANT)
+		set(libs ${vout}/acidlibs ${vout}/deflibs ${objs})
+	else()
+		set(libs ${vout}/acidlibs ${vout}/deflibs ${objs_${v}} ${own_${v}})
 	endif()
 	set(args)
 	foreach(lib IN LISTS libs)
@@ -236,15 +263,15 @@ endif()
 if(objs)
 	add_test(NAME rwe_numbers COMMAND ${BIGLIB} check ${out}/acidlibs ${out}/deflibs ${objs})
 endif()
-# a variant of its own: its acidlibs, deflibs, all RWE userlibs and its
-# libraries (its numbers include RWE_VARIANT's); and the reason for it,
-# its libraries clash with RWE_VARIANT's acidlibs/deflibs (must fail)
-list(REMOVE_DUPLICATES own_variants)
+# a variant of its own: its acidlibs, deflibs, the RWE userlibs (but the
+# replaced ones) and its libraries (its numbers include RWE_VARIANT's);
+# and the reason for it, its libraries clash with RWE_VARIANT's
+# acidlibs/deflibs or the libraries they replace (must fail)
 foreach(v IN LISTS own_variants)
 	set(vout ${BLITZ_VARIANTS_DIR}/${v})
 	add_test(NAME rwe_numbers_${v} COMMAND ${BIGLIB} check ${vout}/acidlibs ${vout}/deflibs
-		${objs} ${own_${v}})
+		${objs_${v}} ${own_${v}})
 	add_test(NAME rwe_numbers_${v}_clash COMMAND ${BIGLIB} check ${out}/acidlibs
-		${out}/deflibs ${own_${v}})
+		${out}/deflibs ${replaced_${v}} ${own_${v}})
 	set_tests_properties(rwe_numbers_${v}_clash PROPERTIES WILL_FAIL TRUE)
 endforeach()

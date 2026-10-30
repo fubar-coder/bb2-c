@@ -133,4 +133,9 @@ if(BLITZ_DEFAULT_VARIANT STREQUAL "bb2-2.10")
 		-DBLITZTOKENS=${BLITZTOKENS} -DBLITZ2=$<TARGET_FILE:blitz2>
 		-DTOKENS=${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt -DMAP=121:87
 		-DOUT=${CMAKE_CURRENT_BINARY_DIR}/variant_rwe_1999_eval_tokens.txt -P ${vcheck})
+	# rwe-1999-ahi: rwe-1999's numbers (only risoundlib2 instead of
+	# risoundlib), so rwe-1999's acidlibs and deflibs
+	add_test(NAME variant_rwe_1999_ahi COMMAND ${CMAKE_COMMAND} -DMODE=same
+		-DVARIANT=${BLITZ_VARIANTS_DIR}/rwe-1999-ahi -DDEFAULT=${BLITZ_VARIANTS_DIR}/rwe-1999
+		-P ${vcheck})
 endif()
