@@ -1,0 +1,9 @@
+[compile]
+ok
+[run]
+new 10 zones -1
+new 20 zones 0
+use 0
+inject: allocfail: 1 allocations failed
+inject: rc=0
+rc=0
