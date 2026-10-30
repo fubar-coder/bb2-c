@@ -818,6 +818,14 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
             pokewd(0x2000 | regat);
             pokewd(0x4e75);                         /* rts */
             lasta6 = fs[-2].lasta6w;
+            /* BUG(orig): the long move (blitz2.s:9025) also restores
+               quoteflag as getelement2 saved it - after getchar3 had read
+               the left operand's first char.  For a character constant
+               ("x"*8, only in asmfixer: constmode) that is the opening
+               quote, so quoteflag stays set after the expression;
+               asmfixer never resets it, and the operands evaluated next
+               (earlier lines, insasm prepends) lose their spaces inside
+               quotes: #" " gives 0.  Kept. */
             L_(lasta6qf) = fs[-2].lasta6q;          /* also quoteflag (asm) */
             pc = fs[-2].pc;
             /* DIFF: asm saved d2/a5 and did jsr (a0) with the compiler's
