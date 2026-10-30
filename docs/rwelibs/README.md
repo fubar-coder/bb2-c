@@ -101,7 +101,7 @@ latest date in the header comments.
 | BB map | 34 (`#ribbmaplib`, RWE's list) | `blitzbomberslib/bbmaplib2` | RI | 1995-09-30 | – | bbmaplib2 (reference build; ported 2026-10-30, `port/ribbmaplib.md`) |
 | (tests) | lit. 5 / – | `blitzbomberslib/TestBlit`, `PredatorBlit` | – | – | – | not a library / test |
 | C2P | lit. 8 | `c2plib`, `c2plibA` | RI | 1995 | – | not ported: a preliminary Chunky (its one command `C2P` is chunkylib's `ChunkyToPlanar` on a 320×256×8 bitmap; chunkylib's history starts with it, 10/8/95), and 8 is MapEd's in RWE's list |
-| Chunky | 24 | `chunkylib`, `chunkylib2` | RI | 1995-08-14 | – | chunkylib (reference build): chunkylib2 replaces the C2P code by `IncBin "c2p"` from `TEMP:`, a file that exists nowhere (and drops chunkylib's checks), so it does not compile |
+| Chunky | 24 | `chunkylib`, `chunkylib2` | RI | 1995-08-14 | – | chunkylib (reference build), ported 2026-10-30 (`port/richunkylib.md`): chunkylib2 replaces the C2P code by `IncBin "c2p"` from `TEMP:`, a file that exists nowhere (and drops chunkylib's checks), so it does not compile |
 | DataTypes | 25 | `datatypeslib` … `datatypeslib6` | RI / LES (Matty) | 1995 | 6 ≈ 95 % BSS2 | open |
 | (template) | – | `emptylib` | RI | 1995 | – | not a library |
 | LVCallHook | 27 (bin.) | `lvcallhook/LVCallHook3` | RWE | 1996 | **=** AB3 `RILVCallHook` (1172 B) | LVCallHook3 |
