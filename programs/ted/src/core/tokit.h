@@ -11,27 +11,28 @@
 
 /* ---------------------------------------------------------- tokeniser */
 
-/* ted.s:4198 tokit (= tokit4, ted.s:4202, same address): tokenise a2 into
-   a1; d1 = index of the LAST character (charstobuff: chcols-1).  The asm
-   keeps the start of a1 on the stack for enddo; here the start is a1.
-   Returns d5 = output length incl. 0; *a1end (may be NULL) = a1 after the
-   asm: behind the 0 - but ON the 0 for an all-space line (survey-05 I.16).
+/* ted.s:4198 tokit (= tokit4, ted.s:4202, same address): tokenise src (a2)
+   into out (a1); last (d1) = index of the LAST character (charstobuff:
+   chcols-1).  The asm keeps the start of a1 on the stack for enddo; here
+   the start is out.  Returns d5 = output length incl. 0; *outend (may be
+   NULL) = a1 after the asm: behind the 0 - but ON the 0 for an all-space
+   line (survey-05 I.16).
    Quote/remark characters and the token list come from the globals quote,
    remark, tokens; invflag is the quote flag (global side effect, kept).
-   Reads beyond d1 while matching names (chmap: into the next row;
+   Reads beyond `last` while matching names (chmap: into the next row;
    BUG(orig) #386, survey-05 A, ORIG_HAZARD). */
-UWORD tokit(UBYTE *a1, const UBYTE *a2, WORD d1, UBYTE **a1end);
-/* ted.s:4204 tokit3: d1 = LENGTH (subq #1 first), then tokit.  Entry of
+UWORD tokit(UBYTE *out, const UBYTE *src, WORD last, UBYTE **outend);
+/* ted.s:4204 tokit3: len (d1) = LENGTH (subq #1 first), then tokit.  Entry of
    tokit2 (fileio.h). */
-UWORD tokit3(UBYTE *a1, const UBYTE *a2, WORD d1, UBYTE **a1end);
+UWORD tokit3(UBYTE *out, const UBYTE *src, WORD len, UBYTE **outend);
 /* The internal labels tokskip (4210), putchar (4319), pchover (4324) and
    pchover2 (4325) are static in tokit.c (putchar -> putchar_: libc name).
    pchover leaves two levels at once (addq #4,a7): goto/return in C. */
 
-/* ted.s:4328 alpha: d2 is 'A'-'Z' or 'a'-'z' (asm: Z=1) */
-BOOL alpha(UBYTE d2);
+/* ted.s:4328 alpha: c (d2) is 'A'-'Z' or 'a'-'z' (asm: Z=1) */
+BOOL alpha(UBYTE c);
 /* ted.s:4340 alphad0: the same for d0 */
-BOOL alphad0(UBYTE d0);
+BOOL alphad0(UBYTE c);
 
 /* ------------------------------------------------------ cursor rows */
 
