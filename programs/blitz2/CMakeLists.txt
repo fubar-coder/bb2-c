@@ -35,6 +35,10 @@ set_target_properties(blitz2 PROPERTIES OUTPUT_NAME blitz2 SUFFIX ""
 #   blitz2.map     TSV address -> file:line, bytes, source
 #   blitz2.labels  TSV address, label, file:line
 # The same step checks that listing and binary agree (vasmlisting verify).
+# -kick1hunks: the relocations as HUNK_RELOC32 like Devpac, not vasm's
+# short form (HUNK_DREL32), which LoadSeg only knows from Kickstart 2.0
+# on - the reference runs on the A500 with Kickstart 1.3 as well
+# (amiga-emulation/README.md, "A500").
 if(NOT VASM)
 	find_program(VASM vasmm68k_mot REQUIRED)
 endif()
@@ -47,7 +51,7 @@ set(ref ${BLITZ2_REF_DIR}/blitz2)
 add_custom_command(
 	OUTPUT ${ref} ${ref}.lst ${ref}.map ${ref}.labels
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${BLITZ2_REF_DIR}
-	COMMAND ${VASM} -quiet -devpac -nocase -m68000 -Fhunkexe
+	COMMAND ${VASM} -quiet -devpac -nocase -m68000 -Fhunkexe -kick1hunks
 		-nowarn=62 -nowarn=40 -nowarn=41 -nowarn=51
 		-o ${ref} -L ${ref}.lst -Lall blitz2.s > /dev/null
 	COMMAND ${VASMLISTING} ${ref}.lst map > ${ref}.map
