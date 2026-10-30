@@ -538,9 +538,9 @@ several versions.
       Test variants (`libs/tests/variants/`): `selftest-same`
       (byte-identical to bb2-2.10), `selftest-renumbered` (fadelib 157→3, inputoutputlib
       164→4: the tokens move, debuglib's call of inputoutputlib with
-      them; `variant_selftest_renumbered`). Open: userlibs of a variant
-      (with 4.5.5); further switches besides the numbers when a library
-      needs them.
+      them; `variant_selftest_renumbered`). Userlibs of a variant: done with 4.5.5
+      (`RWE_OWN_VARIANTS`). Further switches besides the numbers: none
+      needed (decision 2026-10-30), added only when a library needs one.
    5. **First users**: variant `rwe-1999`, userlib build
       `libs/userlibs/rwe/` with the list `RWE_LIBS`, target `rwelibsrc`.
       ~~Stage A~~ done (2026-10-29): the 15 libraries with a byte-identical
@@ -563,8 +563,9 @@ several versions.
       `rwe-1999-eval`, polylib at 87) and stage D (§3.3, 16 libraries
       without a binary, REFERENCE `refbuild`) ported (2026-10-30): all
       52 libraries of `RWE_LIBS` are C (`docs/rwelibs/README.md` 3.1
-      "Ported"). Open: one GitHub issue per `BUG(orig)` of the RWE
-      libraries (being drafted). ~~**Reference build in the build**~~ done (2026-10-29,
+      "Ported"). Every `BUG(orig)` of the RWE libraries
+      has its GitHub issue (#344–#922, 2026-10-30; the numbers in the code,
+      port notes and tests). ~~**Reference build in the build**~~ done (2026-10-29,
       `libs/userlibs/rwe/refbuild.cmake`): residents by `tools/blitzres`
       from the NDK (contents equal to blitz2's, `rwe_resident_NAME`),
       staging (target `rwe_refstage`; `INCDIR` neutralised on the bytes
