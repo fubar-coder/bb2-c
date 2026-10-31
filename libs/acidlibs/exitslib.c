@@ -32,12 +32,27 @@ __asm__(
 "stack:   .long 0\n"
 );
 
+/**
+ * @brief init: remember the cleanup code and the stack pointer.
+ *
+ * Called from the program start code.  Assembler (it saves sp).
+ *
+ * @param d0  the address of the cleanup code
+ * @return d0: the address of quit, the init value used by `End`
+ */
 BLITZ_ASM_ROUTINE(codeinit,
 "   move.l  d0,cleanup\n"
 "   move.l  sp,stack\n"
 "   move.l  #_quit,d0\n"
 "   rts");
 
+/**
+ * @brief End ($C800 endjmp): leave the program from anywhere.
+ *
+ * Assembler (a non-local exit like longjmp): restores the stack pointer
+ * saved by init (+8: the start code's return address and the init call's
+ * own) and jumps to the cleanup code.  Does not return.
+ */
 BLITZ_ASM_ROUTINE(quit,
 "   move.l  stack(pc),sp\n"
 "   addq.w  #8,sp\n"

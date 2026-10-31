@@ -32,14 +32,29 @@ BLITZ_LIBFIN();
 
 static const char ffpname[] = "mathffp.library";
 
-/* codeinit - LEA ffpname(pc),a1:MOVE.l 4,a6:JMP _OldOpenLibrary(a6).
-   The original changes d0/d1/a0/a1 (exec) and a6; this keeps a6. */
+/**
+ * @brief init: open mathffp.library.
+ *
+ * LEA ffpname(pc),a1:MOVE.l 4,a6:JMP _OldOpenLibrary(a6), no version
+ * check.  The original changes d0/d1/a0/a1 (exec) and a6; this keeps a6.
+ * BUG(orig) (#137): the result is not checked; with 0 the first float
+ * operation jumps to a negative offset from 0.
+ *
+ * @return d0: the library base (the init value, $C900 getffpbase loads
+ *         it into a6), 0 if it could not be opened
+ */
 ULONG BLITZ_ROUTINE codeinit(void)
 {
     return (ULONG)OldOpenLibrary((CONST_STRPTR)ffpname);
 }
 
-/* codefinit - MOVE.l 4,a6:JMP _CloseLibrary(a6); a1 = the base */
+/**
+ * @brief finit: close mathffp.library again.
+ *
+ * MOVE.l 4,a6:JMP _CloseLibrary(a6).
+ *
+ * @param lib  a1: the init value, the library base (!libs 64935,#la1)
+ */
 void BLITZ_ROUTINE codefinit(struct Library *lib BL_REG(a1))
 {
     CloseLibrary(lib);

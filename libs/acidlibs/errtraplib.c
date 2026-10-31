@@ -60,9 +60,17 @@ extern ULONG *vbr_;
 
 #define TRAP0 (128 / 4)                 /* vector 32 */
 
-/* dofail - ErrFail: if an error happened, give it to the old TRAP #0
-   (the debugger / runtime error handler) after all.  Keeps d1/a0-a1
-   (a0 only if there was no error; the trap normally ends the program). */
+/**
+ * @brief ErrFail ($D205 errfail): report the trapped error after all.
+ *
+ * If an error happened (a message was stored by newtrap), the old TRAP #0
+ * vector is put back and the error is given to it with TRAP #0 (the
+ * debugger / runtime error handler), which normally ends the program.
+ * Keeps d1/a0-a1 (a0 only if there was no error).
+ *
+ * @param num  d1: passed on in d1 to the trap
+ * @return d0: the stored error message, 0 if there was no error
+ */
 static ULONG BLITZ_ROUTINE dofail_c(ULONG num BL_REG(d1))
 {
     ULONG text = ertext;
@@ -79,13 +87,27 @@ static ULONG BLITZ_ROUTINE dofail_c(ULONG num BL_REG(d1))
 }
 BLITZ_THUNK(dofail, dofail_c, "d1/a0-a1");
 
-/* dogetsp - return stack pointer as a long in d0 (a0 too) */
+/**
+ * @brief $D203 (getsp, commented out in blitz2.s): the caller's stack
+ * pointer.
+ *
+ * Assembler (it reads sp): the stack pointer after the return.
+ *
+ * @return d0: the stack pointer (a0 too)
+ */
 BLITZ_ASM_ROUTINE(dogetsp,
 "   lea     4(sp),a0\n"
 "   move.l  a0,d0\n"
 "   rts");
 
-/* doputsp - set stack pointer to d0 */
+/**
+ * @brief $D204 (putsp, commented out in blitz2.s): set the stack pointer.
+ *
+ * Assembler: sets sp to d0 and returns through the return address taken
+ * from the old stack.
+ *
+ * @param d0  the new stack pointer
+ */
 BLITZ_ASM_ROUTINE(doputsp,
 "   move.l  (sp),a0\n"                  /* return address */
 "   move.l  d0,sp\n"
@@ -125,22 +147,41 @@ static void BLITZ_ROUTINE codefinit_c(void)
 }
 BLITZ_THUNK(codefinit, codefinit_c, "d0-d1/a0-a1");
 
-/* dosettrap - d0 = code to jump to on error; the stack pointer of the
-   caller (after the return) is remembered: asm, it reads sp */
+/**
+ * @brief SetErr ($D201 seterr): install an error handler.
+ *
+ * Assembler (it reads sp): remembers the handler code and the stack
+ * pointer of the caller (after the return).  A later runtime error
+ * (TRAP #0 in user mode) continues at the handler with that stack.
+ *
+ * @param d0  the code to jump to on an error
+ */
 BLITZ_ASM_ROUTINE(dosettrap,
 "   move.l  d0,_ercode\n"
 "   lea     4(sp),a0\n"
 "   move.l  a0,_erstack\n"
 "   rts");
 
-/* doreadern - read last generated ern into d0 */
+/**
+ * @brief Ern ($D200 ern): the number of the last trapped error.
+ *
+ * BUG(orig) (#133): newtrap stores d1 of the trap, but no runtime error
+ * sets d1, so the value is random.
+ *
+ * @return d0: the stored word (d1 at the last trap)
+ */
 static ULONG BLITZ_ROUTINE doreadern_c(void)
 {
     return ernum;
 }
 BLITZ_THUNK(doreadern, doreadern_c, "d1/a0-a1");
 
-/* doclrerr - no SetErr handler any more; keeps all registers */
+/**
+ * @brief ClrErr ($D202 clrerr): remove the SetErr handler.
+ *
+ * Runtime errors go to the old TRAP #0 vector again.  Keeps all
+ * registers.
+ */
 static void BLITZ_ROUTINE doclrerr_c(void)
 {
     ercode = 0;
