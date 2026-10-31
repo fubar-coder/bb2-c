@@ -86,6 +86,7 @@
 #include "blitzlib.h"
 #include <stddef.h>
 #include <hardware/custom.h>
+#include <exec/execbase.h>
 
 #define CUSTOM  (*(volatile struct Custom *)0xdff000)
 #define CIAAPRA (*(volatile UBYTE *)0xbfe001)
@@ -385,10 +386,10 @@ static void BLITZ_ROUTINE l6_int(void)
    (BUG(orig), #571); kept, with its SetInt call that links intlib */
 static void BLITZ_ROUTINE ciaplayerinit_unreached(void)
 {
-    UBYTE *eb = *(UBYTE **)4;          /* ExecBase */
+    struct ExecBase *eb = *(struct ExecBase **)4;
     ULONG clock = 1773447;              /* PAL CIA time */
 
-    if (eb[530] != 50)       /* VBlankFrequency */
+    if (eb->VBlankFrequency != 50)      /* 530(a6) */
         clock = 1789773;                /* NTSC */
     glue.deftime = clock;
     glue.ciatime = (UWORD)bl_divu_w(clock, 125);   /* the 50 Hz timer */
