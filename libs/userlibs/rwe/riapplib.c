@@ -226,11 +226,22 @@ static struct AppMessage *msg;          /* current message */
 static LONG argnum;                     /* next argument of NextAppFile */
 static ULONG iconx, icony;              /* position of the next App icon */
 
-/* AppEventIDCMP: MOVE.l #$800000,d0 (inline) */
+/**
+ * @brief AppEventIDCMP: the value AppEvent returns for a message,
+ * $800000 (inline: MOVE.l #$800000,d0; also in Blitz mode).
+ */
 BLITZ_INLINE(appeventidcmp, "move.l #0x800000,d0");
 
 /* ---------------------------------------------------------------- init */
 
+/**
+ * @brief init: the message port, the block (768 bytes, MEMF_CLEAR) and
+ * workbench, dos and icon.library V37.
+ *
+ * Sets libflag -1 when all is there, 0 otherwise (the commands then do
+ * nothing).  BUG(orig) (#526): the libraries opened before a failing one
+ * stay open, and AppMsgPort still returns the deleted port.
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     struct appblock *block;
@@ -288,6 +299,14 @@ static void delapp(ULONG *table, int kind)
     }
 }
 
+/**
+ * @brief finit: replies the messages, removes every App object, deletes
+ * the port, frees the block and closes the libraries.
+ *
+ * BUG(orig) (#525): the queue is replied only if a message is current;
+ * BUG(orig) (#524): the table slot cleared is the long at byte offset
+ * index*4/4.
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     struct Message *m;
@@ -315,12 +334,20 @@ BLITZ_THUNK(libfinit, libfinit_c, "d0-d1/a0-a1");
 
 /* ----------------------------------------------------- message functions */
 
+/**
+ * @brief AppMsgPort: the library's message port.
+ * @return d0: the MsgPort (also after a failed init, BUG(orig) (#526))
+ */
 static ULONG BLITZ_ROUTINE appmsgport_c(void)
 {
     return (ULONG)msgport;
 }
 BLITZ_THUNK(appmsgport, appmsgport_c, "d1/a0-a1");
 
+/**
+ * @brief AppMessage: the current AppMessage (of the last AppEvent).
+ * @return d0: the message, 0 if none
+ */
 static ULONG BLITZ_ROUTINE appmessage_c(void)
 {
     if (!libflag || !msg)
@@ -329,7 +356,12 @@ static ULONG BLITZ_ROUTINE appmessage_c(void)
 }
 BLITZ_THUNK(appmessage, appmessage_c, "d1/a0-a1");
 
-/* AppLock: the lock of the first argument */
+/**
+ * @brief AppLock: the lock of the current message's first argument.
+ *
+ * BUG(orig) (#522): reads the first WBArg without looking at am_NumArgs.
+ * @return d0: the lock, 0 if there is no message
+ */
 static ULONG BLITZ_ROUTINE applock_c(void)
 {
     if (!libflag || !msg)
@@ -338,7 +370,14 @@ static ULONG BLITZ_ROUTINE applock_c(void)
 }
 BLITZ_THUNK(applock, applock_c, "d1/a0-a1");
 
-/* AppEvent: reply to the current message, get the next one */
+/**
+ * @brief AppEvent: replies to the current message and gets the next one.
+ *
+ * Its id, number of arguments and type are kept for AppEventID,
+ * AppNumFiles and AppEventType; NextAppFile starts again at the first
+ * argument.
+ * @return d0: $800000 (AppEventIDCMP) if there is a message, else 0
+ */
 static ULONG BLITZ_ROUTINE appevent_c(void)
 {
     argnum = 0;
@@ -358,6 +397,11 @@ static ULONG BLITZ_ROUTINE appevent_c(void)
 }
 BLITZ_THUNK(appevent, appevent_c, "d1/a0-a1");
 
+/**
+ * @brief AppNumFiles: the number of arguments (am_NumArgs) of the current
+ * message.
+ * @return d0: the number, 0 if there is no message
+ */
 static ULONG BLITZ_ROUTINE appfiles_c(void)
 {
     if (!libflag || !msg)
@@ -366,6 +410,10 @@ static ULONG BLITZ_ROUTINE appfiles_c(void)
 }
 BLITZ_THUNK(appfiles, appfiles_c, "d1/a0-a1");
 
+/**
+ * @brief AppEventID: the id (am_ID) of the current message.
+ * @return d0: the id, 0 if there is no message
+ */
 static ULONG BLITZ_ROUTINE appeventid_c(void)
 {
     if (!libflag || !msg)
@@ -374,7 +422,11 @@ static ULONG BLITZ_ROUTINE appeventid_c(void)
 }
 BLITZ_THUNK(appeventid, appeventid_c, "d1/a0-a1");
 
-/* AppEventType: 1 AppWindow (am_Type 7), 2 AppIcon (8), 3 AppMenuItem (9) */
+/**
+ * @brief AppEventType: the kind of the current message.
+ * @return d0: 1 AppWindow (am_Type 7), 2 AppIcon (8), 3 AppMenuItem (9),
+ *         0 otherwise or if there is no message
+ */
 static ULONG BLITZ_ROUTINE appeventcode_c(void)
 {
     if (!libflag || !msg)
@@ -388,8 +440,18 @@ static ULONG BLITZ_ROUTINE appeventcode_c(void)
 }
 BLITZ_THUNK(appeventcode, appeventcode_c, "d1/a0-a1");
 
-/* NextAppFile: the full path of the next argument at a3; a3 ends behind
-   the 0 (BUG(orig), #519), d0 = the length */
+/**
+ * @brief NextAppFile: the full path of the current message's next
+ * argument, at a3.
+ *
+ * NameFromLock of the argument's lock, '/' unless the path ends with
+ * ':', then the name.  BUG(orig) (#521): the lock (Workbench's) is
+ * unlocked and cleared in the message unless the path ends with ':', and
+ * that test reads the byte before the string for an empty path;
+ * BUG(orig) (#519): a3 ends behind the 0.
+ * @return d0: the length, 0 if there is no message, no argument left or
+ *         NameFromLock fails
+ */
 static ULONG BLITZ_ROUTINE appfile_c(void)
 {
     struct WBArg *arg;
@@ -423,7 +485,14 @@ static ULONG BLITZ_ROUTINE appfile_c(void)
 }
 BLITZ_THUNK(appfile, appfile_c, "d1/a0-a1");
 
-/* AppFile(num): argument num (1 = the first), argnum stays */
+/**
+ * @brief AppFile(num): the full path of argument num (1 = the first), as
+ * NextAppFile; NextAppFile's position stays.
+ *
+ * BUG(orig) (#520): num <= 0 reads the WBArg before the list.
+ * @param num  d0: the argument number
+ * @return d0: the length, as NextAppFile
+ */
 static ULONG BLITZ_ROUTINE appfilemine_c(LONG num BL_REG(d0))
 {
     LONG keep = argnum;
@@ -438,6 +507,13 @@ BLITZ_THUNK(appfilemine, appfilemine_c, "d1/a0-a1");
 
 /* ----------------------------------------------------------- App menus */
 
+/**
+ * @brief DelAppMenu(id): removes the App menu item with this id.
+ *
+ * The id indexes the table unchecked.
+ * @param id  d0: the id
+ * @return d0: BB_TRUE, BB_FALSE if there is none (or init failed)
+ */
 static BB_BOOL BLITZ_ROUTINE delmenu_c(LONG id BL_REG(d0))
 {
     ULONG *slot;
@@ -453,7 +529,15 @@ static BB_BOOL BLITZ_ROUTINE delmenu_c(LONG id BL_REG(d0))
 }
 BLITZ_THUNK(delmenu, delmenu_c, "d1/a0-a1");
 
-/* AddAppMenu id,text$ - BUG(orig): returns the AppMenuItem, not -1 (#518) */
+/**
+ * @brief AddAppMenu(id,text$): adds an item to Workbench's Tools menu.
+ *
+ * An item with the same id is removed first.  The id indexes the table
+ * unchecked.
+ * @param id    d0: the id
+ * @param text  d1: the item's text
+ * @return d0: BUG(orig) (#518): the AppMenuItem, not -1; 0 on failure
+ */
 static ULONG BLITZ_ROUTINE addmenu_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1))
 {
     struct AppMenuItem *item;
@@ -472,8 +556,19 @@ BLITZ_THUNK(addmenu, addmenu_c, "d1/a0-a1");
 
 /* ----------------------------------------------------------- App icons */
 
-/* AddAppIcon id,text$,filename$[,x,y] (after the libflag test) - the
-   icon from GetDiskObject */
+/**
+ * @brief AddAppIcon (after the libflag test): the icon from
+ * GetDiskObject(filename$) at iconx/icony, added as an App icon.
+ *
+ * BUG(orig) (#517): on a used id the old AppIcon is removed and its
+ * DiskObject freed, but the old AppIcon stays in the slot if AddAppIconA
+ * fails; the new DiskObject is stored before and stays on failure.
+ * BUG(orig) (#516): a3 = the DiskObject and a4 = 0 afterwards.
+ * @param id    d0: the id
+ * @param text  d1: the icon's text
+ * @param name  d2: the file name of the icon (without .info)
+ * @return d0: BB_TRUE, BB_FALSE on failure
+ */
 static BB_BOOL BLITZ_ROUTINE addicon_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1),
                                        STRPTR name BL_REG(d2))
 {
@@ -517,6 +612,14 @@ static BB_BOOL BLITZ_ROUTINE addicon_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1
     return BB_TRUE;
 }
 
+/**
+ * @brief AddAppIcon(id,text$,filename$): an App icon at a position of
+ * Workbench's choice (NO_ICON_POSITION).
+ * @param id    d0: the id
+ * @param text  d1: the icon's text
+ * @param name  d2: the file name of the icon
+ * @return d0: BB_TRUE, BB_FALSE on failure
+ */
 static BB_BOOL BLITZ_ROUTINE addicon2_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1),
                                         STRPTR name BL_REG(d2))
 {
@@ -527,6 +630,15 @@ static BB_BOOL BLITZ_ROUTINE addicon2_c(LONG id BL_REG(d0), STRPTR text BL_REG(d
 }
 BLITZ_THUNK(addicon, addicon2_c, "d1/a0-a1");
 
+/**
+ * @brief AddAppIcon(id,text$,filename$,x,y): an App icon at x,y.
+ * @param id    d0: the id
+ * @param text  d1: the icon's text
+ * @param name  d2: the file name of the icon
+ * @param x     d3: x
+ * @param y     d4: y
+ * @return d0: BB_TRUE, BB_FALSE on failure
+ */
 static BB_BOOL BLITZ_ROUTINE addicon3_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1),
                                         STRPTR name BL_REG(d2), ULONG x BL_REG(d3),
                                         ULONG y BL_REG(d4))
@@ -539,6 +651,13 @@ static BB_BOOL BLITZ_ROUTINE addicon3_c(LONG id BL_REG(d0), STRPTR text BL_REG(d
 }
 BLITZ_THUNK(addicon3, addicon3_c, "d1/a0-a1");
 
+/**
+ * @brief DelAppIcon(id): removes the App icon and frees its DiskObject.
+ *
+ * BUG(orig) (#523): FreeDiskObject also for an empty DiskObject slot.
+ * @param id  d0: the id
+ * @return d0: BB_TRUE, BB_FALSE if there is none (or init failed)
+ */
 static BB_BOOL BLITZ_ROUTINE delicon_c(LONG id BL_REG(d0))
 {
     ULONG *slot;
@@ -558,8 +677,17 @@ BLITZ_THUNK(delicon, delicon_c, "d1/a0-a1");
 
 /* --------------------------------------------------------- App windows */
 
-/* AddAppWindow window# - a0 = the windowslib object (first long = the
-   Intuition window), the number on the compiler's stack (#push) */
+/**
+ * @brief AddAppWindow(windownumber): makes a window an App window (id =
+ * the window number).
+ *
+ * An App window with the same number is removed first.  DIFF: a2 stays
+ * unchanged.
+ * @param wobj  a0: the windowslib object (first long = the Intuition
+ *              window)
+ * @param args  a2: the argument stack, -4(a2) = the number (#push)
+ * @return d0: BB_TRUE, BB_FALSE on failure
+ */
 static BB_BOOL BLITZ_ROUTINE addwindow_c(struct Window **wobj BL_REG(a0),
                                          const ULONG *args BL_REG(a2))
 {
@@ -581,6 +709,13 @@ static BB_BOOL BLITZ_ROUTINE addwindow_c(struct Window **wobj BL_REG(a0),
 }
 BLITZ_THUNK(addwindow, addwindow_c, "d1/a0-a1");
 
+/**
+ * @brief DelAppWindow(windownumber): removes the App window.
+ *
+ * BUG(orig) (#523): RemoveAppWindow also for an empty slot (NULL).
+ * @param n  d0: the window number
+ * @return d0: BB_TRUE, BB_FALSE only if init failed
+ */
 static BB_BOOL BLITZ_ROUTINE delwindow_c(LONG n BL_REG(d0))
 {
     if (!libflag)
