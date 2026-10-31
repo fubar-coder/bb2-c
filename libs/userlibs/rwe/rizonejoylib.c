@@ -263,9 +263,9 @@ static WORD *zone(ULONG *zt, ULONG off)
 }
 
 /* _free_mem: a table of count*8+4 bytes */
-static void free_mem(ULONG *t)
+static void free_mem(ULONG *table)
 {
-    FreeMem(t, (t[0] << 3) + 4);
+    FreeMem(table, (table[0] << 3) + 4);
 }
 
 /* ------------------------------------------------------- init, finit */
@@ -284,7 +284,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
 /* ------------------------------------------------------------ ZoneInit */
 
 /* ZoneInit start,end (d0, d1): -1 without table or for a bad range */
-static ULONG BLITZ_ROUTINE zoneinit_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1))
+static ULONG BLITZ_ROUTINE zoneinit_c(ULONG zonenum BL_REG(d0), ULONG lastnum BL_REG(d1))
 {
     ULONG *zt = zd.zonetable, last;
     LONG *z;
@@ -293,20 +293,20 @@ static ULONG BLITZ_ROUTINE zoneinit_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1))
     if (!zt)
         return (ULONG)-1;                               /* _nozones */
     last = zt[0] - 1;
-    if (MI(last, d0) || MI(last, d1) || MI(d1, d0))
+    if (MI(last, zonenum) || MI(last, lastnum) || MI(lastnum, zonenum))
         return (ULONG)-1;
-    end = (UWORD)(d1 + 1);                              /* ADDQ.w #1,d1 */
-    z = (LONG *)zone(zt, ASLW(d0, 3));
+    end = (UWORD)(lastnum + 1);                         /* ADDQ.w #1,d1 */
+    z = (LONG *)zone(zt, ASLW(zonenum, 3));
     do {
         *z++ = -1;
         *z++ = -1;
-        d0 = INCW(d0);
-    } while ((UWORD)d0 != end);
-    return d0;
+        zonenum = INCW(zonenum);
+    } while ((UWORD)zonenum != end);
+    return zonenum;
 }
 
 /* ZoneInit: all zones of the current table (without one, the original
-   reads the count from address 0 first - not observable, left out) */
+   reads the count from address 0 zonenum - not observable, left out) */
 static ULONG BLITZ_ROUTINE zoneinit1_c(void)
 {
     if (!zd.zonetable)
@@ -315,18 +315,18 @@ static ULONG BLITZ_ROUTINE zoneinit1_c(void)
 }
 
 /* ZoneInit zone (d0): only the upper bound is checked */
-static ULONG BLITZ_ROUTINE zoneinit2_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE zoneinit2_c(ULONG zoneval BL_REG(d0))
 {
     ULONG *zt = zd.zonetable;
     LONG *z;
 
-    if (!zt || MI(zt[0] - 1, d0))
+    if (!zt || MI(zt[0] - 1, zoneval))
         return (ULONG)-1;
-    d0 = ASLW(d0, 3);
-    z = (LONG *)zone(zt, d0);
+    zoneval = ASLW(zoneval, 3);
+    z = (LONG *)zone(zt, zoneval);
     z[0] = -1;
     z[1] = -1;
-    return d0;
+    return zoneval;
 }
 
 /* init: is020 (AttnFlags bit AFB_68020), table 0 with 256 zones */
@@ -373,17 +373,17 @@ static ULONG BLITZ_ROUTINE setzone_c(ULONG n BL_REG(d0), UWORD x1 BL_REG(d1),
                                      UWORD y1 BL_REG(d2), UWORD x2 BL_REG(d3),
                                      UWORD y2 BL_REG(d4))
 {
-    UWORD t;
+    UWORD swap;
 
     if (!((WORD)x2 > (WORD)x1)) {                       /* CMP.w d1,d3:BGT */
-        t = x1;
+        swap = x1;
         x1 = x2;
-        x2 = t;
+        x2 = swap;
     }
     if (!((WORD)y2 > (WORD)y1)) {
-        t = y1;
+        swap = y1;
         y1 = y2;
-        y2 = t;
+        y2 = swap;
     }
     return doset(n, x1, y1, x2, y2);
 }
@@ -397,9 +397,9 @@ static ULONG BLITZ_ROUTINE setzone2_c(ULONG n BL_REG(d0), UWORD x BL_REG(d1),
 
 /* ---------------------------------------------------------- zone tests */
 
-/* _TestZoneRange: start d0, end d1, x, y - the number of the first zone
+/* _TestZoneRange: start d0, end d1, x, y - the number of the zonenum zone
    that contains (x,y), -1 if none */
-static ULONG testrange(ULONG d0, ULONG d1, UWORD x, UWORD y)
+static ULONG testrange(ULONG zonenum, ULONG lastnum, UWORD x, UWORD y)
 {
     ULONG *zt = zd.zonetable, last;
     const WORD *z;
@@ -408,12 +408,12 @@ static ULONG testrange(ULONG d0, ULONG d1, UWORD x, UWORD y)
     if (!zt)
         return (ULONG)-1;
     last = zt[0] - 1;
-    if (MI(last, d0))
-        d0 = last;
-    if (MI(last, d1) || MI(d1, d0))
+    if (MI(last, zonenum))
+        zonenum = last;
+    if (MI(last, lastnum) || MI(lastnum, zonenum))
         return (ULONG)-1;
-    end = (UWORD)(d1 + 1);
-    z = zone(zt, (UWORD)((UBYTE)d0 << 3));              /* MOVE.b d0,d4: BUG(orig) #881 */
+    end = (UWORD)(lastnum + 1);
+    z = zone(zt, (UWORD)((UBYTE)zonenum << 3));         /* MOVE.b d0,d4: BUG(orig) #881 */
     do {
         WORD x1 = z[0], x2 = z[1], y1 = z[2], y2 = z[3];
 
@@ -426,19 +426,19 @@ static ULONG testrange(ULONG d0, ULONG d1, UWORD x, UWORD y)
 
                 if (zd.zones020 ? (WORD)r >= (WORD)d    /* CMP.w: BUG(orig) #880 */
                                 : (LONG)r >= (LONG)d)   /* CMP.l:BGE */
-                    return d0;
+                    return zonenum;
             } else if (zd.zones020) {
                 /* CMP2.w (a0),d2 / CMP2.w 4(a0),d3: signed bounds */
                 if ((WORD)x >= x1 && (WORD)x <= x2 && (WORD)y >= y1 && (WORD)y <= y2)
-                    return d0;
+                    return zonenum;
             } else {
                 /* x1 > x, y1 > y: BGT; x2 - x, y2 - y < 0: BMI (BUG(orig) #879) */
                 if (!(x1 > (WORD)x) && !(y1 > (WORD)y) && !MIW(x2, x) && !MIW(y2, y))
-                    return d0;
+                    return zonenum;
             }
         }
-        d0 = INCW(d0);
-    } while ((UWORD)d0 != end);
+        zonenum = INCW(zonenum);
+    } while ((UWORD)zonenum != end);
     return (ULONG)-1;
 }
 
@@ -553,20 +553,20 @@ static void BLITZ_ROUTINE setzonemode_c(ULONG mode BL_REG(d0))
 
 /* GetZoneX1/X2/Y1/Y2(zone) (d0.w): field off of the zone; the low word
    of d0 replaced (MOVE.w 0(a0,d0.w),d0) */
-static ULONG zoneinfo(ULONG d0, UWORD off)
+static ULONG zoneinfo(ULONG zonenum, UWORD off)
 {
     const ULONG *zt = zd.zonetable;                     /* 0: reads address 0 */
 
     if (!((LONG)zt[0] > (LONG)off))                     /* BUG(orig): count vs offset (#870) */
         return (ULONG)-1;
-    return (d0 & 0xffff0000UL)
-        | *(const UWORD *)((const UBYTE *)(zt + 1) + (WORD)((UWORD)(d0 << 3) + off));
+    return (zonenum & 0xffff0000UL)
+        | *(const UWORD *)((const UBYTE *)(zt + 1) + (WORD)((UWORD)(zonenum << 3) + off));
 }
 
-static ULONG BLITZ_ROUTINE zoneinfox1_c(ULONG d0 BL_REG(d0)) { return zoneinfo(d0, 0); }
-static ULONG BLITZ_ROUTINE zoneinfox2_c(ULONG d0 BL_REG(d0)) { return zoneinfo(d0, 2); }
-static ULONG BLITZ_ROUTINE zoneinfoy1_c(ULONG d0 BL_REG(d0)) { return zoneinfo(d0, 4); }
-static ULONG BLITZ_ROUTINE zoneinfoy2_c(ULONG d0 BL_REG(d0)) { return zoneinfo(d0, 6); }
+static ULONG BLITZ_ROUTINE zoneinfox1_c(ULONG zonenum BL_REG(d0)) { return zoneinfo(zonenum, 0); }
+static ULONG BLITZ_ROUTINE zoneinfox2_c(ULONG zonenum BL_REG(d0)) { return zoneinfo(zonenum, 2); }
+static ULONG BLITZ_ROUTINE zoneinfoy1_c(ULONG zonenum BL_REG(d0)) { return zoneinfo(zonenum, 4); }
+static ULONG BLITZ_ROUTINE zoneinfoy2_c(ULONG zonenum BL_REG(d0)) { return zoneinfo(zonenum, 6); }
 
 /* ----------------------------------------------------------- joysticks */
 
@@ -649,15 +649,15 @@ static ULONG BLITZ_ROUTINE jvert_c(UWORD port BL_REG(d0))
 }
 
 /* JHoriz(port) (d0.b): port 1 "right" returns d0 unchanged (= 1, see above) */
-static ULONG BLITZ_ROUTINE jhoriz_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE jhoriz_c(ULONG port BL_REG(d0))
 {
     UWORD d;
 
-    switch ((UBYTE)d0) {
+    switch ((UBYTE)port) {
     case 1:
         d = JOY1DAT;
         if (d & 0x0002)
-            return d0;
+            return port;
         return d & 0x0200 ? (ULONG)-1 : 0;
     case 2:
         d = JOY0DAT;
@@ -696,12 +696,12 @@ static ULONG BLITZ_ROUTINE allfire_c(void)
 }
 
 /* JAdaptorStatus on (d0.b): the old status in d0.b */
-static ULONG BLITZ_ROUTINE fouradaptor_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE fouradaptor_c(ULONG status BL_REG(d0))
 {
     UBYTE old = fourplayer;
 
-    fourplayer = (UBYTE)d0;
-    return (d0 & 0xffffff00UL) | old;
+    fourplayer = (UBYTE)status;
+    return (status & 0xffffff00UL) | old;
 }
 
 /* ReadJoyPad(port) (d0.w): the 8 bits of a CD32 pad, clocked through the
