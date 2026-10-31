@@ -37,14 +37,22 @@ BLITZ_LIBFIN();
 /* membase table of memlib (blitzhelp.h MEMBASE_xxx): JSR (a6) alloc,
    JSR 4(a6) free; the global versions are at +8 */
 
+/* the memory of a string variable; the variable points to `chars` */
+struct strmem {
+    ULONG alloced;                              /* -8: alloc'd len */
+    ULONG len;                                  /* -4: string len */
+    UBYTE chars[];                              /* characters, 0 */
+};
+static_assert(sizeof(struct strmem) == 8);
+
 static ULONG maxlen(UBYTE **var, ULONG n, const UBYTE *mem)
 {
-    ULONG *h;
+    struct strmem *h;
 
     if (*var) {
-        h = (ULONG *)*var - 2;                  /* SUBQ.l #8,d0 */
+        h = (struct strmem *)(*var - 8);        /* SUBQ.l #8,d0 */
         {
-            struct bl_regs r = { .d0 = h[0] + 9, .a1 = (ULONG)h };
+            struct bl_regs r = { .d0 = h->alloced + 9, .a1 = (ULONG)h };
             BLITZ_BASEJSR(mem, MEMBASE_locfree, r);
         }
         *var = 0;                               /* CLR.l (a2) */
@@ -53,13 +61,13 @@ static ULONG maxlen(UBYTE **var, ULONG n, const UBYTE *mem)
         return 0;
     {
         struct bl_regs r = { .d0 = n + 9, .d1 = MEMF_PUBLIC };
-        h = (ULONG *)BLITZ_BASEJSR(mem, MEMBASE_localloc, r);
+        h = (struct strmem *)BLITZ_BASEJSR(mem, MEMBASE_localloc, r);
     }
-    *var = (UBYTE *)(h + 2);
-    h[0] = n;                                   /* MOVE.l d2,(a0)+ */
-    h[1] = 0;                                   /* CLR.l (a0)+ */
-    *(UBYTE *)(h + 2) = 0;                      /* CLR.b (a0) */
-    return (ULONG)(h + 2);
+    *var = h->chars;
+    h->alloced = n;                             /* MOVE.l d2,(a0)+ */
+    h->len = 0;                                 /* CLR.l (a0)+ */
+    h->chars[0] = 0;                            /* CLR.b (a0) */
+    return (ULONG)h->chars;
 }
 
 /* domaxlenl - local string; domaxlen: global string, ADDQ #8,a6 first
