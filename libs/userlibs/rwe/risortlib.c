@@ -108,15 +108,23 @@ BLITZ_LIBFIN();
 #define FIRSTITEM (-28)
 #define CURRITEM (-32)
 
+/* an item of a Blitz list: the links, then the data of sizeof.type bytes */
+struct listitem {
+    struct listitem *next;              /* 0: 0 in the item that ends the list */
+    struct listitem *prev;              /* 4 */
+    UBYTE data[];                       /* 8 */
+};
+static_assert(sizeof(struct listitem) == 8);
+
 static struct Library *utillibbase;
 static const char utillibname[] = "utility.library";
 static UWORD sortdir;
 static LONG priority;
 static WORD priorityoffset = -1;
-static UBYTE *lpntr;
+static struct listitem *lpntr;
 
-#define NEXT(item) (*(UBYTE **)(item))
-#define FIELD(item, off, type) (*(type *)((item) + 8 + (off)))
+/* a field at `off` of an item's data (as 8+off(item), like the original) */
+#define FIELD(item, off, type) (*(type *)((UBYTE *)(item) + 8 + (off)))
 
 /* init: utility.library, any version */
 static void BLITZ_ROUTINE libinit_c(void)
@@ -156,7 +164,7 @@ static ULONG dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *cmp
     struct Library *util = utillibbase;
     UWORD dbsize = (UWORD)(size - 1);   /* d7: DBRA count */
     const char *curstr;                 /* a0 */
-    UBYTE *item;                        /* a3 */
+    struct listitem *item;              /* a3 */
     WORD prioff;                        /* d4: priorityoffset */
 
     if (!util)
@@ -166,9 +174,9 @@ static ULONG dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *cmp
     if (!*(ULONG *)(list + hdr))
         return 0;
     prioff = priorityoffset;
-    item = *(UBYTE **)(list + hdr);
+    item = *(struct listitem **)(list + hdr);
     for (;;) {                          /* 'outerloop */
-        if (!NEXT(item))
+        if (!item->next)
             return (ULONG)-1;
         lpntr = item;
         curstr = FIELD(item, off, const char *);
@@ -180,8 +188,8 @@ static ULONG dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *cmp
             ULONG n;
             LONG r;
 
-            item = NEXT(item);
-            if (!NEXT(item))
+            item = item->next;
+            if (!item->next)
                 break;
             if (prioff >= 0) {
                 LONG v = FIELD(item, prioff, LONG);
@@ -198,8 +206,8 @@ static ULONG dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *cmp
                 continue;
 doswap:
             curstr = cmpstr;
-            p = lpntr + 8;
-            q = item + 8;
+            p = lpntr->data;
+            q = item->data;
             n = (ULONG)dbsize + 1;      /* BUG(orig): size 0 = 65536 (#827) */
             do {
                 UBYTE b = *p;
@@ -207,8 +215,8 @@ doswap:
                 *q++ = b;
             } while (--n);
         }
-        item = NEXT(lpntr);           /* 'exitcheck */
-        if (!NEXT(item))
+        item = lpntr->next;           /* 'exitcheck */
+        if (!item->next)
             return (ULONG)-1;
     }
 }
