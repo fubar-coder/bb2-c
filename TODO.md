@@ -306,6 +306,25 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   offsets stay, now visible as the wrong member (example: risoundlib2's
   `ahireqtags`, #931/#934); a bug that shows up this way gets an issue
   and a `BUG(orig)` note, and is fixed later like the others.
+* **A type for Blitz booleans** (user decision 2026-10-31, with the
+  readable names): `typedef enum : ULONG { BB_FALSE = 0, BB_TRUE =
+  (ULONG)-1 } BB_BOOL;` (C23, fixed underlying type) in a shared header
+  (`libs/include/blitzlib.h`). It is exactly a ULONG: d0, `BL_REG` and
+  the outputs stay the same (byte-identical). Functions that give or take
+  a Blitz truth value use `BB_BOOL`, `BB_TRUE`/`BB_FALSE`. Error values,
+  counts and pointers stay as they are: of the ~190 places with
+  `(ULONG)-1`/`-1` in the libraries, each is checked on its own. exec's
+  `TRUE` is 1, not Blitz's -1: it stays for the internal BOOLs only.
+  Checked 2026-10-31: the 7 uses of `TRUE` are comments (arexxlib,
+  crunchlib) or internal (memlib `freelast_c` tested as Z, rifxlib
+  `zoomstart`, rianimlib `unpackanim`'s parameter); none reaches a
+  Blitz program. Checks: gcc's `-Wc++-compat` warns about int → BB_BOOL
+  (`return x`, `return 1`), clang's `-Wassign-enum` /
+  `-Wimplicit-int-enum-cast` too (clangd); `b == 1` and `return BB_TRUE`
+  in a function returning ULONG are not caught in C (enum → integer is
+  always allowed). In C++ an `enum class BB_BOOL : ULONG` would refuse
+  both directions and still be a plain integer in d0 (no struct
+  needed) - an option only if the libraries move to C++.
 * **Function documentation** (user decision 2026-10-31, after stage 2
   of the readable names, before the error check area fixes): Doxygen
   comments (`/** @brief … @param … @return … */`), which clangd shows on
