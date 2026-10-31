@@ -314,10 +314,7 @@ void BLITZ_ROUTINE dokillitem(UBYTE *base BL_REG(d0))
     prev = item->prev;                          /* old previous of current */
     unlinkitem(item);                           /* remove from used... */
     linkitem(item, FREE(base));                 /* add to free */
-    item = prev;
-    if (!item->prev)
-        item = 0;
-    CURRENT(base) = item;
+    CURRENT(base) = prev->prev ? prev : 0;      /* the head node: none */
     BL_INTS_ON();
 }
 
@@ -327,60 +324,57 @@ void BLITZ_ROUTINE dokillitem(UBYTE *base BL_REG(d0))
 ULONG BLITZ_ROUTINE doadditem(UBYTE *base BL_REG(d0))
 {
     struct item *item, *after;
-    ULONG result;                               /* d0: the link, then -1 */
+    struct item *link;                          /* d0, then -1 */
 
     BL_INTS_OFF();
     item = FREE(base)->next;                    /* next of head node */
-    result = (ULONG)item->next;
-    if (result) {
+    link = item->next;
+    if (link) {
         unlinkitem(item);
         after = CURRENT(base);
         if (!after)
             after = USED(base);
         linkitem(item, after);
         CURRENT(base) = item;                   /* now current */
-        result = -1;
     }
     BL_INTS_ON();
-    return result;
+    return link ? (ULONG)-1 : 0;
 }
 
 /* doaddfirst - add an item at the beginning of the list */
 ULONG BLITZ_ROUTINE doaddfirst(UBYTE *base BL_REG(d0))
 {
     struct item *item;
-    ULONG result;                               /* d0: the link, then -1 */
+    struct item *link;                          /* d0, then -1 */
 
     BL_INTS_OFF();
     item = FREE(base)->next;                    /* next of head of free */
-    result = (ULONG)item->next;
-    if (result) {                               /* else none free */
+    link = item->next;
+    if (link) {                                 /* else none free */
         CURRENT(base) = item;                   /* now current */
         unlinkitem(item);
         linkitem(item, USED(base));
-        result = -1;
     }
     BL_INTS_ON();
-    return result;
+    return link ? (ULONG)-1 : 0;
 }
 
 /* doaddlast - add item at the end of the list */
 ULONG BLITZ_ROUTINE doaddlast(UBYTE *base BL_REG(d0))
 {
     struct item *item;
-    ULONG result;                               /* d0: the link, then -1 */
+    struct item *link;                          /* d0, then -1 */
 
     BL_INTS_OFF();
     item = FREE(base)->next;                    /* next of free */
-    result = (ULONG)item->next;
-    if (result) {
+    link = item->next;
+    if (link) {
         CURRENT(base) = item;
         unlinkitem(item);
         linkitem(item, TAILPRED(base));         /* prev of tail of used */
-        result = -1;
     }
     BL_INTS_ON();
-    return result;
+    return link ? (ULONG)-1 : 0;
 }
 
 /* donextitem - if no current, do first item.  At the end the current
@@ -388,38 +382,34 @@ ULONG BLITZ_ROUTINE doaddlast(UBYTE *base BL_REG(d0))
 ULONG BLITZ_ROUTINE donextitem(UBYTE *base BL_REG(d0))
 {
     struct item *item;
-    ULONG result;                               /* d0: the link, then -1 */
+    struct item *link;                          /* d0, then -1 */
 
     BL_INTS_OFF();
     if (!CURRENT(base))
         return firstitem2(base);
     item = CURRENT(base)->next;                 /* next of current */
-    result = (ULONG)item->next;
-    if (result) {
+    link = item->next;
+    if (link)
         CURRENT(base) = item;
-        result = -1;
-    }
     BL_INTS_ON();
-    return result;
+    return link ? (ULONG)-1 : 0;
 }
 
 /* doprevitem - if no current, do last item */
 ULONG BLITZ_ROUTINE doprevitem(UBYTE *base BL_REG(d0))
 {
     struct item *item;
-    ULONG result;                               /* d0: the link, then -1 */
+    struct item *link;                          /* d0, then -1 */
 
     BL_INTS_OFF();
     if (!CURRENT(base))
         return lastitem2(base);
     item = CURRENT(base)->prev;                 /* previous of current */
-    result = (ULONG)item->prev;
-    if (result) {
+    link = item->prev;
+    if (link)
         CURRENT(base) = item;
-        result = -1;
-    }
     BL_INTS_ON();
-    return result;
+    return link ? (ULONG)-1 : 0;
 }
 
 /* dosortlist - sort the used items ascending by the long at `offset` in
