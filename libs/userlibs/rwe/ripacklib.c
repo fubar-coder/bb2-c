@@ -355,23 +355,24 @@ static void ice_normal(struct ice *s)
             return;
         {                                       /* strings */
             WORD lenidx = 3, entry, offidx;
-            UWORD value = 0, len, n;
+            UWORD extra = 0, len, n;            /* d1: the extra length bits */
+            UWORD offset;                       /* d1: the string offset */
             const UBYTE *from;
 
             while (ice_bit(s) && lenidx-- != 0) /* DBCC */
                 ;
             entry = length_tab[1 + lenidx];
             if (entry >= 0)
-                value = ice_bits(s, (UWORD)entry);
-            len = (UWORD)((UBYTE)length_tab[6 + lenidx] + value);
+                extra = ice_bits(s, (UWORD)entry);
+            len = (UWORD)((UBYTE)length_tab[6 + lenidx] + extra);
             if (len) {
                 offidx = 1;
                 while (ice_bit(s) && offidx-- != 0)
                     ;
-                value = ice_bits(s, (UWORD)more_offset[1 + offidx]);
-                value = (UWORD)(value + more_add[1 + offidx]);
-                if ((WORD)value < 0)            /* BPL / SUB.w d4,d1 */
-                    value = (UWORD)(value - len);
+                offset = ice_bits(s, (UWORD)more_offset[1 + offidx]);
+                offset = (UWORD)(offset + more_add[1 + offidx]);
+                if ((WORD)offset < 0)           /* BPL / SUB.w d4,d1 */
+                    offset = (UWORD)(offset - len);
             } else {                            /* get_offset_2 */
                 WORD add = -1;
                 UWORD bits = 5;
@@ -379,9 +380,9 @@ static void ice_normal(struct ice *s)
                     bits = 8;
                     add = 0x3f;
                 }
-                value = (UWORD)(ice_bits(s, bits) + add);
+                offset = (UWORD)(ice_bits(s, bits) + add);
             }
-            from = s->dst + 2 + (WORD)len + (WORD)value;  /* depack_bytes */
+            from = s->dst + 2 + (WORD)len + (WORD)offset; /* depack_bytes */
             *--s->dst = *--from;
             n = len;
             do
@@ -462,7 +463,9 @@ static ULONG BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0), UBYTE *bm BL
     const UBYTE *chunk = src, *body;
     const UBYTE *hd;
     ULONG left = 5120;
-    UWORD count, line;
+    UWORD rowbytes;                             /* d7: the BMHD byte width */
+    UWORD bodyleft;                             /* d7: the BODY search countdown */
+    UWORD line;
     UBYTE planes, code;
 
     while (LG(chunk) != ID('B', 'M', 'H', 'D')) {
@@ -494,16 +497,16 @@ static ULONG BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0), UBYTE *bm BL
             *to++ = (UBYTE *)(*pl++ + xy);
         while (n-- != 0);
     }
-    count = (UWORD)((WORD)W(hd) >> 3);          /* ASR.w #3 */
-    if (count > v.bitmapwidth)                  /* BHI */
+    rowbytes = (UWORD)((WORD)W(hd) >> 3);       /* ASR.w #3 */
+    if (rowbytes > v.bitmapwidth)               /* BHI */
         return 0;
-    v.bytewidth = (UWORD)(count - 1);
+    v.bytewidth = (UWORD)(rowbytes - 1);
     body = hd;
-    count = 5120;
+    bodyleft = 5120;
     while (LG(body) != ID('B', 'O', 'D', 'Y')) {
         body += 2;
-        count -= 2;                             /* SUBQ.w #2:BMI */
-        if ((WORD)count < 0)
+        bodyleft -= 2;                          /* SUBQ.w #2:BMI */
+        if ((WORD)bodyleft < 0)
             return 0;
     }
     body += 8;
