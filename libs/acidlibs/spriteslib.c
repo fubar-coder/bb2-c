@@ -39,6 +39,7 @@
  *    word: from a maximum of 2049 on it lies before the table. (#939)
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #define __NOLIBBASE__
 #include <proto/dos.h>
 #undef __NOLIBBASE__
@@ -127,26 +128,9 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 20, 4);
 
 /* ------------------------------------------------------------ variables */
 
-#define SW(s, o) (*(UWORD *)((UBYTE *)(s) + (o)))
-#define SL(s, o) (*(ULONG *)((UBYTE *)(s) + (o)))
-#define SP(s, o) (*(UBYTE **)((UBYTE *)(s) + (o)))
-
-/* a Sprite object (16 bytes, the !libfin item size) */
-struct sprite {
-    UBYTE *data;                /* +0: the images (CHIP), 0 = none */
-    UWORD height;               /* +4: height + 1 (for the final zeros) */
-    UWORD count;                /* +6: number of hardware sprites used */
-    union {
-        UWORD flags;            /* +8: bit 15 = 16 colours (attached pairs) */
-        struct {
-            UBYTE attach;       /* +8: bit 7 = 16 colours */
-            UBYTE width;        /* +9: pixel width */
-        };
-    };
-    UWORD imgsize;              /* +10: bytes per image */
-    UWORD handlex, handley;     /* +12/+14: handle */
-};
-static_assert(sizeof(struct sprite) == 16);
+/* the objects: the Sprite (16 bytes, the !libfin item size), the shape
+   (shapeslib) and the slice (blitzcoplib) - struct bb_sprite, struct
+   bb_shape, struct bb_slice (blitzobj.h) */
 
 /* a hardware sprite's part of the slice's copper list (at +14 of the
    slice, 16 bytes per sprite channel): four copper moves, ShowSprite
@@ -188,7 +172,7 @@ static UWORD lslw(UWORD v, UWORD n)
     return n < 16 ? (UWORD)(v << n) : 0;
 }
 
-static ULONG spsize(const struct sprite *sp)
+static ULONG spsize(const struct bb_sprite *sp)
 {
     return (ULONG)lslw(sp->height, sv.shift) * sp->count;
 }
@@ -223,7 +207,7 @@ static void BLITZ_ROUTINE dospritemode_c(ULONG m BL_REG(d0))
 }
 BLITZ_THUNK(dospritemode, dospritemode_c, "d0-d1/a0-a1");
 
-static void freeasprite_(struct sprite *sp)
+static void freeasprite_(struct bb_sprite *sp)
 {
     void *d = sp->data;
 
@@ -235,7 +219,7 @@ static void freeasprite_(struct sprite *sp)
 
 static void BLITZ_ROUTINE freeasprite_c(void)
 {
-    freeasprite_((struct sprite *)blitz_string);
+    freeasprite_((struct bb_sprite *)blitz_string);
 }
 BLITZ_THUNK(freeasprite, freeasprite_c, "d0-d1/a0-a1");
 
@@ -243,10 +227,10 @@ BLITZ_THUNK(freeasprite, freeasprite_c, "d0-d1/a0-a1");
 
 /* one sprite image: two planes from a0 (row step = the shape's byte
    width) to a1, then a 0 line; returns the new a1 */
-static UBYTE *onesprite(const UBYTE *src, UBYTE *dst, UWORD height, const UBYTE *shape)
+static UBYTE *onesprite(const UBYTE *src, UBYTE *dst, UWORD height, const struct bb_shape *shape)
 {
     UWORD n = height - 2;
-    WORD ps = (WORD)SW(shape, 22), bw = (WORD)SW(shape, 6);
+    WORD ps = (WORD)shape->planesize, bw = (WORD)shape->ebwidth;
 
     if (sv.mode == 0) {
         do {
@@ -303,39 +287,39 @@ static UBYTE *onesprite(const UBYTE *src, UBYTE *dst, UWORD height, const UBYTE 
  *
  * @param shape a2: the shape object; a3: the sprite object
  */
-static void BLITZ_ROUTINE dogetsprite_c(UBYTE *shape BL_REG(a2))
+static void BLITZ_ROUTINE dogetsprite_c(struct bb_shape *shape BL_REG(a2))
 {
-    struct sprite *sp = (struct sprite *)blitz_string;
+    struct bb_sprite *sp = (struct bb_sprite *)blitz_string;
     UBYTE *dst;
     const UBYTE *src;
     UWORD height, count, imgsize;
 
     freeasprite_(sp);
-    sp->handlex = SW(shape, 10);
-    sp->handley = SW(shape, 12);
-    height = SW(shape, 2) + 1;                  /* hite */
+    sp->handlex = (UWORD)shape->handlex;
+    sp->handley = (UWORD)shape->handley;
+    height = shape->height + 1;                 /* hite */
     sp->height = height;
     {
         UWORD n = (sv.shift + 2) & 63;          /* LSR.w: count mod 64 */
-        count = (UWORD)(n < 16 ? (UWORD)(SW(shape, 0) - 1) >> n : 0) + 1;
+        count = (UWORD)(n < 16 ? (UWORD)(shape->width - 1) >> n : 0) + 1;
     }
     sp->flags = 0;
-    if (SW(shape, 4) == 4) {
+    if (shape->depth == 4) {
         sp->attach |= 0x80;
         count += count;
     }
     sp->count = count;
-    sp->width = *(UBYTE *)(shape + 1);
+    sp->width = (UBYTE)shape->width;
     imgsize = lslw(height, sv.shift);
     sp->imgsize = imgsize;
     dst = globalloc((ULONG)imgsize * count, MEMF_CHIP);
     sp->data = dst;
-    src = SP(shape, 14);
+    src = shape->data;
     count--;                                    /* number of sprites to do */
     do {
         dst = onesprite(src, dst, height, shape);
         if ((WORD)sp->flags < 0) {
-            dst = onesprite(src + 2 * (WORD)SW(shape, 22), dst, height, shape);
+            dst = onesprite(src + 2 * (WORD)shape->planesize, dst, height, shape);
             count--;
         }
         src += (WORD)sv.wid;
@@ -368,14 +352,14 @@ BLITZ_THUNK(dogetsprite, dogetsprite_c, "d0-d1/a0-a1");
  * @param slice a2: the used slice; a3: the sprite object
  */
 static void BLITZ_ROUTINE doshowsprite_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
-                                         ULONG ch BL_REG(d3), UBYTE *slice BL_REG(a2))
+                                         ULONG ch BL_REG(d3), struct bb_slice *slice BL_REG(a2))
 {
-    struct sprite *sp = (struct sprite *)blitz_string;
+    struct bb_sprite *sp = (struct bb_sprite *)blitz_string;
     struct spritecop *cop;
     WORD hpos = (WORD)x - (WORD)sp->handlex + 128;
     WORD vpos = (WORD)y - (WORD)sp->handley;     /* d2: the start line */
     WORD vstop;                                 /* d2: the stop line */
-    WORD maxh = (WORD)SW(slice, 32) + 1 - vpos; /* max sprite height */
+    WORD maxh = (WORD)slice->height + 1 - vpos; /* max sprite height */
     ULONG skip = 0;
     WORD height;
     UWORD pos, ctl, n;
@@ -395,8 +379,8 @@ static void BLITZ_ROUTINE doshowsprite_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
     }
     if ((WORD)(maxh - height) < 0)              /* CMP d5,d0:BPL */
         height = maxh;
-    vpos += (WORD)SW(slice, 0);                 /* y offset */
-    if (*(UBYTE *)(slice + 3) & 0x10)
+    vpos += (WORD)slice->y;                 /* y offset */
+    if (slice->flagslo & 0x10)
         vpos += 2;
     /* pos in d6, ctrl in d7 */
     ctl = 0;
@@ -413,7 +397,7 @@ static void BLITZ_ROUTINE doshowsprite_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
     ctl |= (UWORD)((UWORD)vstop << 8);
     if ((WORD)sp->flags < 0)
         ctl |= 0x80;
-    cop = (struct spritecop *)(SP(slice, 14) + (WORD)(UWORD)((UWORD)ch << 4));
+    cop = (struct spritecop *)((UBYTE *)slice->sprmoves + (WORD)(UWORD)((UWORD)ch << 4));
     data = (ULONG)sp->data + skip;
     diff = (ULONG)(LONG)(WORD)sp->imgsize;
     n = sp->count - 1;
@@ -439,7 +423,7 @@ static void BLITZ_ROUTINE doshowsprite_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
 
 spriteoff:
     n = sp->count - 1;
-    cop = (struct spritecop *)(SP(slice, 14) + (WORD)(UWORD)((UWORD)ch << 4));
+    cop = (struct spritecop *)((UBYTE *)slice->sprmoves + (WORD)(UWORD)((UWORD)ch << 4));
     do {
         cop->pos.val = 0;
         cop->ctl.val = 0;
@@ -467,9 +451,9 @@ BLITZ_THUNK(doshowsprite, doshowsprite_c, "d0-d1/a0-a1");
  * @param ch    d0.w: the sprite channel (even, 0-8)
  * @param slice a2: the used slice
  */
-static void BLITZ_ROUTINE doinfront1_c(ULONG ch BL_REG(d0), UBYTE *slice BL_REG(a2))
+static void BLITZ_ROUTINE doinfront1_c(ULONG ch BL_REG(d0), struct bb_slice *slice BL_REG(a2))
 {
-    UWORD *bplcon2 = (UWORD *)SP(slice, 26);
+    UWORD *bplcon2 = (UWORD *)slice->con2;
 
     *bplcon2 = (UWORD)((((UWORD)ch >> 1) & 7) << 3) | (*bplcon2 & 7);
 }
@@ -487,9 +471,9 @@ BLITZ_THUNK(doinfront1, doinfront1_c, "d0-d1/a0-a1");
  * @param ch    d0.w: the sprite channel (even, 0-8)
  * @param slice a2: the used slice
  */
-static void BLITZ_ROUTINE doinfront2_c(ULONG ch BL_REG(d0), UBYTE *slice BL_REG(a2))
+static void BLITZ_ROUTINE doinfront2_c(ULONG ch BL_REG(d0), struct bb_slice *slice BL_REG(a2))
 {
-    UWORD *bplcon2 = (UWORD *)SP(slice, 26);
+    UWORD *bplcon2 = (UWORD *)slice->con2;
 
     *bplcon2 = (UWORD)(((UWORD)ch >> 1) & 7) | (*bplcon2 & 0x38);
 }
@@ -522,7 +506,7 @@ BLITZ_ERRCHK_MESSAGE(mess11, "Error reading/writing Sprites file");
 static void BLITZ_ROUTINE dosavesprites_c(UBYTE *last BL_REG(a2), const char *name BL_REG(d2),
                                           struct DosLibrary *dos BL_REG(a6))
 {
-    struct sprite *sp = (struct sprite *)blitz_string;
+    struct bb_sprite *sp = (struct bb_sprite *)blitz_string;
     BPTR fh;
 
     dosbase = dos;
@@ -544,7 +528,7 @@ static void BLITZ_ROUTINE dosavesprites_c(UBYTE *last BL_REG(a2), const char *na
 }
 BLITZ_THUNK(dosavesprites, dosavesprites_c, "d0-d1/a0-a1");
 
-static void loadsprites(struct sprite *sp, const UBYTE *last, const char *name, struct DosLibrary *dos)
+static void loadsprites(struct bb_sprite *sp, const UBYTE *last, const char *name, struct DosLibrary *dos)
 {
     BPTR fh;
 
@@ -591,7 +575,7 @@ static void loadsprites(struct sprite *sp, const UBYTE *last, const char *name, 
 static void BLITZ_ROUTINE doloadsprites_c(UBYTE *last BL_REG(a2), const char *name BL_REG(d2),
                                           struct DosLibrary *dos BL_REG(a6))
 {
-    loadsprites((struct sprite *)blitz_string, last, name, dos);
+    loadsprites((struct bb_sprite *)blitz_string, last, name, dos);
 }
 BLITZ_THUNK(doloadsprites, doloadsprites_c, "d0-d1/a0-a1");
 
@@ -614,7 +598,7 @@ static void BLITZ_ROUTINE doloadsprites2_c(UBYTE *base BL_REG(a2), ULONG max BL_
                                            struct DosLibrary *dos BL_REG(a6))
 {
     /* BUG(orig) (#939): the last sprite as a word offset */
-    loadsprites((struct sprite *)blitz_string, base + (WORD)(UWORD)((UWORD)(max - 1) << 4), name, dos);
+    loadsprites((struct bb_sprite *)blitz_string, base + (WORD)(UWORD)((UWORD)(max - 1) << 4), name, dos);
 }
 BLITZ_THUNK(doloadsprites2, doloadsprites2_c, "d0-d1/a0-a1");
 
@@ -631,40 +615,40 @@ BLITZ_ERRCHK_MESSAGE(mess8, "Sprite Channel not in range");
 BLITZ_ERRCHK_MESSAGE(mess9, "First Sprite must be lower than second");
 
 /* GetaSprite: shape there, 4 or 16 colours, not too wide */
-static void BLITZ_ERRCHK gspchk_c(UBYTE *shape BL_REG(a2))
+static void BLITZ_ERRCHK gspchk_c(struct bb_shape *shape BL_REG(a2))
 {
     WORD maxw = (WORD)(sv.wid << 5);
 
-    if (!SW(shape, 0))
+    if (!shape->width)
         BLITZ_RUNERR(mess1);
-    if (SW(shape, 4) != 2) {
-        if (SW(shape, 4) != 4)
+    if (shape->depth != 2) {
+        if (shape->depth != 4)
             BLITZ_RUNERR(mess2);
         maxw <<= 1;
     }
-    if ((WORD)(maxw - (WORD)SW(shape, 0)) < 0)  /* CMP (a2),d2:BMI */
+    if ((WORD)(maxw - (WORD)shape->width) < 0)  /* CMP (a2),d2:BMI */
         BLITZ_RUNERR(mess3);
 }
 
-static void BLITZ_ERRCHK sspchk_c(ULONG ch BL_REG(d3), UBYTE *slice BL_REG(a2))
+static void BLITZ_ERRCHK sspchk_c(ULONG ch BL_REG(d3), struct bb_slice *slice BL_REG(a2))
 {
-    struct sprite *sp = (struct sprite *)blitz_string;
+    struct bb_sprite *sp = (struct bb_sprite *)blitz_string;
 
     if (!sp->data)
         BLITZ_RUNERR(mess4);
-    if (!SW(slice, 0))
+    if (!slice->y)
         BLITZ_RUNERR(mess5);
-    if ((UWORD)((UWORD)ch + sp->count) > SW(slice, 6))
+    if ((UWORD)((UWORD)ch + sp->count) > slice->sprites)
         BLITZ_RUNERR(mess6);
 }
 
-static void BLITZ_ERRCHK infchk_c(ULONG ch BL_REG(d0), UBYTE *slice BL_REG(a2))
+static void BLITZ_ERRCHK infchk_c(ULONG ch BL_REG(d0), struct bb_slice *slice BL_REG(a2))
 {
     if ((ch & 1) || (UWORD)ch > 8)
         BLITZ_RUNERR(mess8);
-    if (!SW(slice, 0))
+    if (!slice->y)
         BLITZ_RUNERR(mess5);
-    if (!SL(slice, 26))
+    if (!slice->con2)
         BLITZ_RUNERR(mess7);
 }
 
