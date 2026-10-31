@@ -67,11 +67,22 @@ BLITZ_LIBFIN();
 /* sdir: Dc 0 - 0 = low to high, -1 (SortDown) = high to low */
 static UWORD sdir;
 
+/**
+ * @brief SortUp - the following Sort commands sort ascending.
+ *
+ * CLR sdir.  Also the library's init (BLITZ_NULLSUB_AT): ascending is the
+ * default.
+ */
 void BLITZ_ROUTINE dosortup(void)
 {
     sdir = 0;                                           /* CLR sdir */
 }
 
+/**
+ * @brief SortDown - the following Sort commands sort descending.
+ *
+ * MOVE #-1,sdir.
+ */
 void BLITZ_ROUTINE dosortdown(void)
 {
     sdir = 0xffff;                                      /* MOVE #-1,sdir */
@@ -184,7 +195,32 @@ static void recurs(const struct sorter *s, UBYTE *lo, UBYTE *hi)
     }
 }
 
-/* dosort - d0 = base (low), -(a2) = high end (long), -(a2) = type (word) */
+/**
+ * @brief Sort Arrayname() - sort the whole array in place.
+ *
+ * "The Blitz 1 Sort algorithm": a recursive Hoare quicksort, ascending or
+ * descending as set by SortUp/SortDown.  !args{$38} (#array|#arrayend|
+ * #unknown): the compiler passes the base of the array data in d0 and
+ * pushes the end address (long) and the element type (word); the routine
+ * reads them with MOVE.l -(a2),a1 / MOVE -(a2),d1.  Types: 1 byte, 2 word,
+ * 5 float (mathffp SPCmp), 7 string (strcomplib $CE02 on the string
+ * pointers), everything else (3 long, 4 quick) as signed longs.  The
+ * original leaves a2 decremented by 6; the compiler does not use a2
+ * afterwards.
+ *
+ * BUG(orig) (#275): for word arrays the pivot is read with MOVE.l and
+ * compared with CMP.w, so it is the element after the middle one; for a
+ * one element array it lies behind the array (reads only, the result is
+ * right).
+ *
+ * BUG(orig) (#276): string elements that were never assigned (pointer 0)
+ * read their length from -4(0).
+ *
+ * @param base d0: the base (lowest element) of the array data
+ * @param args a2: the stack pointer before the pushes: -4 = the end
+ *             address (long), -6 = the element type (word)
+ * @param ffp  a6: the mathffp base (ffplib), for float arrays
+ */
 void BLITZ_ROUTINE dosort(ULONG base BL_REG(d0), const UBYTE *args BL_REG(a2),
                           const void *ffp BL_REG(a6))
 {
