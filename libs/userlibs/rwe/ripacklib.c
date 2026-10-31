@@ -53,6 +53,8 @@
  *     8 bytes converted below the end of the data) (#767).
  */
 #include "blitzlib.h"
+#include <graphics/gfx.h>
+#include <datatypes/pictureclass.h>
 
 /* RIAmosFuncLib (75): index n-1 of the token list of the CD's BSS2
    RIAMOSFUNCLIB.OBJ */
@@ -144,6 +146,16 @@ BLITZ_LIBFIN();
 #define W(p) (*(UWORD *)(p))
 #define LG(p) (*(ULONG *)(p))
 #define ID(a, b, c, d) ((ULONG)(a) << 24 | (ULONG)(b) << 16 | (c) << 8 | (d))
+
+/* a palette object of palettelib, as far as ILBMPalette writes it: the
+   colour block (count.w, 0.w, then the components as longs), the number
+   of colours, the low and high words of the first colour cycle */
+struct ppal {
+    ULONG pdata;                /* +0 */
+    UWORD numcols;              /* +4 */
+    ULONG cycle0;               /* +6 */
+} BL_PACKED;
+static_assert(sizeof(struct ppal) == 10);
 
 /* init and finit: RTS */
 void BLITZ_ROUTINE libinit(void)
@@ -457,11 +469,11 @@ static struct {
 /* UnpackIFF(source,bitmap#,numlines,xy_offset): -1, or 0 without
    BMHD/BODY or if the bitmap is too small (a1 = the bitmap object; lines
    < 0: all) */
-static ULONG BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0), UBYTE *bm BL_REG(a1),
+static ULONG BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0), struct BitMap *bm BL_REG(a1),
                                        ULONG lines BL_REG(d2), ULONG xy BL_REG(d3))
 {
     const UBYTE *chunk = src, *body;
-    const UBYTE *hd;
+    const struct BitMapHeader *hd;
     ULONG left = 5120;
     UWORD rowbytes;                             /* d7: the BMHD byte width */
     UWORD bodyleft;                             /* d7: the BODY search countdown */
@@ -473,35 +485,35 @@ static ULONG BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0), UBYTE *bm BL
         if ((left -= 2) == 0)
             return 0;
     }
-    hd = chunk + 8;
+    hd = (const struct BitMapHeader *)(chunk + 8);
     if ((WORD)lines < 0)
-        BL_SETW(lines, W(hd + 2));              /* the height of the BMHD */
-    if ((WORD)((UWORD)lines - W(bm + 2)) >= 0)  /* CMP.w 2(a1),d2:BMI */
-        BL_SETW(lines, W(bm + 2));
+        BL_SETW(lines, hd->bmh_Height);        /* the height of the BMHD */
+    if ((WORD)((UWORD)lines - bm->Rows) >= 0)  /* CMP.w 2(a1),d2:BMI */
+        BL_SETW(lines, bm->Rows);
     BL_SETW(lines, lines - 1);
     if ((WORD)lines < 0)
         return 0;
     v.iffheight = (UWORD)lines;
-    planes = hd[8];
-    if (planes > bm[5])                         /* BHI: unsigned bytes */
+    planes = hd->bmh_Depth;
+    if (planes > bm->Depth)                     /* BHI: unsigned bytes */
         return 0;
     v.iffdepth = (UBYTE)(planes - 1);
-    v.bitmapwidth = W(bm);
-    if (!LG(bm + 8))
+    v.bitmapwidth = bm->BytesPerRow;
+    if (!LG(bm->Planes))                        /* MOVE.l 8(a1),d0 */
         return 0;
     {
-        const ULONG *pl = (const ULONG *)(bm + 8);
+        const ULONG *pl = (const ULONG *)bm->Planes;
         UBYTE **to = v.bitplanes;
         UWORD n = v.iffdepth;
         do
             *to++ = (UBYTE *)(*pl++ + xy);
         while (n-- != 0);
     }
-    rowbytes = (UWORD)((WORD)W(hd) >> 3);       /* ASR.w #3 */
+    rowbytes = (UWORD)((WORD)hd->bmh_Width >> 3); /* ASR.w #3 */
     if (rowbytes > v.bitmapwidth)               /* BHI */
         return 0;
     v.bytewidth = (UWORD)(rowbytes - 1);
-    body = hd;
+    body = (const UBYTE *)hd;
     bodyleft = 5120;
     while (LG(body) != ID('B', 'O', 'D', 'Y')) {
         body += 2;
@@ -546,7 +558,7 @@ static ULONG BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0), UBYTE *bm BL
 BLITZ_THUNK(unpackiff, unpackiff_c, "d1/a0-a1");
 
 /* UnpackIFF(source,bitmap#): MOVE.w #-1,d2:MOVEQ #0,d3 */
-static ULONG BLITZ_ROUTINE iff1_c(const UBYTE *src BL_REG(d0), UBYTE *bm BL_REG(a1),
+static ULONG BLITZ_ROUTINE iff1_c(const UBYTE *src BL_REG(d0), struct BitMap *bm BL_REG(a1),
                                   ULONG lines BL_REG(d2))
 {
     BL_SETW(lines, 0xffff);
@@ -559,7 +571,7 @@ BLITZ_THUNK(iff1, iff1_c, "d1/a0-a1");
 /* ILBMPalette(source,palette#,offset): the CMAP into the palette object
    (a1) from colour `offset` on (< 0: a new block, see the BUG(orig) at
    the top, #768, #769); -1, or 0 without CMAP or memory */
-static ULONG BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0), UBYTE *obj BL_REG(a1),
+static ULONG BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0), struct ppal *obj BL_REG(a1),
                                           LONG offset BL_REG(d2))
 {
     const UBYTE *cmap = src;
@@ -574,18 +586,18 @@ static ULONG BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0), UBYTE *ob
             return 0;
     }
     cmap += 4;                                  /* the chunk size */
-    if (LG(obj)) {
-        ULONG oldcols = ((ULONG)src & 0xffff0000UL) | W(obj + 4);  /* MOVE.w 4(a1),d0 */
+    if (obj->pdata) {
+        ULONG oldcols = ((ULONG)src & 0xffff0000UL) | obj->numcols;  /* MOVE.w 4(a1),d0 */
         int kill = offset < 0;
         if (!kill) {
             ULONG need = (bl_divu_w(LG(cmap), 3) & 0xffff) + offset;
             kill = (WORD)oldcols < (WORD)need;  /* CMP.w d7,d0:BLT */
         }
         if (!kill)
-            to = *(UBYTE **)obj + 4;
+            to = (UBYTE *)obj->pdata + 4;
         else {                                  /* killmem */
             offset = -1;
-            r = (struct bl_regs){ .d0 = bl_mulu_w((UWORD)oldcols, 12) + 16, .a1 = LG(obj) };
+            r = (struct bl_regs){ .d0 = bl_mulu_w((UWORD)oldcols, 12) + 16, .a1 = obj->pdata };
             BLITZ_ALIBJSR(TOK_globfree, r);
             goto reserve;
         }
@@ -598,10 +610,10 @@ static ULONG BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0), UBYTE *ob
             block = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
             if (!block)
                 return 0;
-            LG(obj) = (ULONG)block;
+            obj->pdata = (ULONG)block;
             cols = bl_divu_w(LG(cmap), 3);
-            W(obj + 4) = (UWORD)cols;
-            LG(obj + 6) = 0;
+            obj->numcols = (UWORD)cols;
+            obj->cycle0 = 0;
             LG(block) = 0;
             W(block) = (UWORD)cols;
             to = block + 4;
@@ -623,15 +635,15 @@ static ULONG BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0), UBYTE *ob
 }
 BLITZ_THUNK(ilbmpalette2, ilbmpalette2_c, "d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE ilbmpalette_c(const UBYTE *src BL_REG(d0), UBYTE *obj BL_REG(a1))
+static ULONG BLITZ_ROUTINE ilbmpalette_c(const UBYTE *src BL_REG(d0), struct ppal *obj BL_REG(a1))
 {
     return ilbmpalette2_c(src, obj, -1);
 }
 BLITZ_THUNK(ilbmpalette, ilbmpalette_c, "d1/a0-a1");
 
 /* ILBMGrab source,bitmap#,palette#: UnpackIFF and ILBMPalette */
-static void BLITZ_ROUTINE ilbmgrab_c(const UBYTE *src BL_REG(d0), UBYTE *bm BL_REG(a0),
-                                     UBYTE *pal BL_REG(a1), ULONG lines BL_REG(d2))
+static void BLITZ_ROUTINE ilbmgrab_c(const UBYTE *src BL_REG(d0), struct BitMap *bm BL_REG(a0),
+                                     struct ppal *pal BL_REG(a1), ULONG lines BL_REG(d2))
 {
     iff1_c(src, bm, lines);
     ilbmpalette_c(src, pal);
@@ -644,8 +656,8 @@ BLITZ_THUNK(ilbmgrab, ilbmgrab_c, "d0-d1/a0-a1");
    RIAmosFuncLib (from 51 on), UnpackIFF and ILBMPalette from there, the
    bank erased; -1 (BUG(orig): also if UnpackIFF failed, #771), 0 if there is
    no bank or the file does not load */
-static ULONG BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), UBYTE *bm BL_REG(a0),
-                                      UBYTE *pal BL_REG(a1))
+static ULONG BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), struct BitMap *bm BL_REG(a0),
+                                      struct ppal *pal BL_REG(a1))
 {
     struct bl_regs r = { .d0 = 51 };
     ULONG bank, start;
@@ -672,7 +684,7 @@ static ULONG BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), UBYTE *bm BL_REG(a0
 }
 BLITZ_THUNK(ilbmload, ilbmload_c, "d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE ilbmloadnopal_c(ULONG name BL_REG(d0), UBYTE *bm BL_REG(a0))
+static ULONG BLITZ_ROUTINE ilbmloadnopal_c(ULONG name BL_REG(d0), struct BitMap *bm BL_REG(a0))
 {
     return ilbmload_c(name, bm, NULL);
 }
