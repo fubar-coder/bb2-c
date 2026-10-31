@@ -31,6 +31,7 @@
  * a5, so the result is the same.
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <exec/lists.h>
 
 /* entry points (thunks / C, defined below) */
@@ -49,16 +50,10 @@ BLITZ_NULLSUB(newlist, 0, 0);                   /* $C403 (newarr+3) */
 BLITZ_NULLSUB(newloclist, 0, 0);                /* $C404 (newlocarr+3) */
 BLITZ_LIBFIN();
 
-/* a list's header (32 bytes in front of the first item): the current
-   item, the exec style list headers of the items in use and of the free
-   items, the ID "lIsT"; an item starts with its node (next.l, last.l) */
-struct listhead {
-    UBYTE *current;             /* 00 */
-    struct MinList used;        /* 04 */
-    struct MinList free;        /* 16 */
-    ULONG id;                   /* 28 */
-};
-static_assert(sizeof(struct listhead) == 32);
+/* a list's header (32 bytes in front of the first item): struct
+   bb_listhead (blitzobj.h) - the current item, the exec style list headers
+   of the items in use and of the free items, the ID "lIsT"; an item starts
+   with its node (next.l, last.l) */
 
 #define AT(base, off) (*(ULONG *)((base) + (WORD)(off)))  /* 0(a5,dN.w) */
 
@@ -148,7 +143,7 @@ BLITZ_THUNK(arrmult, arrmult_c, "a0-a1");
 static void new_list(UBYTE *base, WORD ptr, WORD size, WORD itemsize)
 {
     struct bl_regs r = { 0, 0, 0, 0 };
-    struct listhead *h;
+    struct bb_listhead *h;
     UBYTE *item, *end;
     struct MinNode *tail, *last;
 
@@ -160,7 +155,7 @@ static void new_list(UBYTE *base, WORD ptr, WORD size, WORD itemsize)
     r.d0 = 32 + AT(base, size);
     r.d1 = MEMF_PUBLIC | MEMF_CLEAR;
     BLITZ_ALIBJSR(TOK_localloc, r);
-    h = (struct listhead *)r.d0;                /* a2 */
+    h = (struct bb_listhead *)r.d0;                /* a2 */
     item = (UBYTE *)(h + 1);                    /* a0 */
     AT(base, ptr) = (ULONG)item;
     end = item + AT(base, size);                /* a1 */
@@ -170,7 +165,7 @@ static void new_list(UBYTE *base, WORD ptr, WORD size, WORD itemsize)
     h->used.mlh_Head = (struct MinNode *)&h->used.mlh_Tail;
     h->free.mlh_TailPred = (struct MinNode *)&h->free.mlh_Head;
     h->free.mlh_Head = (struct MinNode *)&h->free.mlh_Tail;
-    h->id = 0x6c497354;                         /* "lIsT" */
+    h->id = BB_LISTID;                          /* "lIsT" */
 
     /* OK, link all things together..... */
     /* BUG(orig) (#59): every linked item gets 8 bytes written (next.l, last.l at

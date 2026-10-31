@@ -37,6 +37,7 @@
  * statement, so nothing observable).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <exec/lists.h>
 
 /* entry points (defined below) */
@@ -154,31 +155,22 @@ BLITZ_NULLSUB_AT(init, doinit, 0, 0);
 
 BLITZ_LIBFIN();
 
-struct item {
-    struct item *next, *prev;                   /* element follows */
-};
-
-/* the list header in front of the array base (arrayslib newlist) */
-struct listhead {
-    struct item *current;                       /* -32 */
-    struct MinList used;                        /* -28 */
-    struct MinList free;                        /* -16 */
-    ULONG id;                                   /* -4 "lIsT" */
-};
-static_assert(sizeof(struct listhead) == 32);
-#define HEAD(b)     ((struct listhead *)((b) - sizeof(struct listhead)))
+/* a list item's node (the element follows) and the list header in front of
+   the array base (arrayslib newlist): struct bb_listitem, struct
+   bb_listhead (blitzobj.h) */
+#define HEAD(b)     ((struct bb_listhead *)((b) - sizeof(struct bb_listhead)))
 
 #define CURRENT(b)  (HEAD(b)->current)
-#define USED(b)     ((struct item *)&HEAD(b)->used.mlh_Head)  /* &lh_Head as node */
-#define USEDTAIL(b) ((struct item *)&HEAD(b)->used.mlh_Tail)  /* &lh_Tail as node */
-#define TAILPRED(b) (*(struct item **)&HEAD(b)->used.mlh_TailPred)
-#define FREE(b)     ((struct item *)&HEAD(b)->free.mlh_Head)  /* &lh_Head of free */
+#define USED(b)     ((struct bb_listitem *)&HEAD(b)->used.mlh_Head)  /* &lh_Head as node */
+#define USEDTAIL(b) ((struct bb_listitem *)&HEAD(b)->used.mlh_Tail)  /* &lh_Tail as node */
+#define TAILPRED(b) (*(struct bb_listitem **)&HEAD(b)->used.mlh_TailPred)
+#define FREE(b)     ((struct bb_listitem *)&HEAD(b)->free.mlh_Head)  /* &lh_Head of free */
 #define LISTID(b)   (HEAD(b)->id)
 
 /* an entry of the item stack */
 struct stackentry {
     UBYTE *base;                                /* the array */
-    struct item *current;                       /* its current item */
+    struct bb_listitem *current;                       /* its current item */
 };
 static_assert(sizeof(struct stackentry) == 8);
 
@@ -187,18 +179,18 @@ static struct stackentry *currstack;
 static struct stackentry *currsp;
 
 /* unlinkitem - item (a1) to unlink */
-static void unlinkitem(struct item *item)
+static void unlinkitem(struct bb_listitem *item)
 {
-    struct item *prev = item->prev, *next = item->next;
+    struct bb_listitem *prev = item->prev, *next = item->next;
 
     next->prev = prev;
     prev->next = next;
 }
 
 /* linkitem - link item (a1) after `after` (a2) */
-static void linkitem(struct item *item, struct item *after)
+static void linkitem(struct bb_listitem *item, struct bb_listitem *after)
 {
-    struct item *next = after->next;
+    struct bb_listitem *next = after->next;
 
     after->next = item;
     next->prev = item;
@@ -289,7 +281,7 @@ void BLITZ_ROUTINE dopopcurrent(UBYTE *base BL_REG(d0))
  */
 void BLITZ_ROUTINE doclearlist(UBYTE *base BL_REG(d0))
 {
-    struct item *item;
+    struct bb_listitem *item;
 
     BL_INTS_OFF();
     while ((item = USED(base)->next)->next) {
@@ -315,7 +307,7 @@ void BLITZ_ROUTINE doreslist(UBYTE *base BL_REG(d0))
    there is one, else 0.  Called with interrupts disabled. */
 static BB_BOOL firstitem2(UBYTE *base)
 {
-    struct item *item = USED(base)->next;       /* next of head node */
+    struct bb_listitem *item = USED(base)->next;       /* next of head node */
     ULONG link = (ULONG)item->next;             /* d0 */
 
     if (!link)
@@ -328,7 +320,7 @@ static BB_BOOL firstitem2(UBYTE *base)
 /* dolastitem2 - make current = last, the same backwards */
 static BB_BOOL lastitem2(UBYTE *base)
 {
-    struct item *item = TAILPRED(base);         /* prev of tail node */
+    struct bb_listitem *item = TAILPRED(base);         /* prev of tail node */
     ULONG link = (ULONG)item->prev;             /* d0 */
 
     if (!link)
@@ -377,7 +369,7 @@ BB_BOOL BLITZ_ROUTINE dolastitem(UBYTE *base BL_REG(d0))
  */
 void BLITZ_ROUTINE dokillitem(UBYTE *base BL_REG(d0))
 {
-    struct item *item, *prev;
+    struct bb_listitem *item, *prev;
 
     BL_INTS_OFF();
     item = CURRENT(base);                       /* current item */
@@ -401,8 +393,8 @@ void BLITZ_ROUTINE dokillitem(UBYTE *base BL_REG(d0))
  */
 BB_BOOL BLITZ_ROUTINE doadditem(UBYTE *base BL_REG(d0))
 {
-    struct item *item, *after;
-    struct item *link;                          /* d0, then -1 */
+    struct bb_listitem *item, *after;
+    struct bb_listitem *link;                          /* d0, then -1 */
 
     BL_INTS_OFF();
     item = FREE(base)->next;                    /* next of head node */
@@ -428,8 +420,8 @@ BB_BOOL BLITZ_ROUTINE doadditem(UBYTE *base BL_REG(d0))
  */
 BB_BOOL BLITZ_ROUTINE doaddfirst(UBYTE *base BL_REG(d0))
 {
-    struct item *item;
-    struct item *link;                          /* d0, then -1 */
+    struct bb_listitem *item;
+    struct bb_listitem *link;                          /* d0, then -1 */
 
     BL_INTS_OFF();
     item = FREE(base)->next;                    /* next of head of free */
@@ -452,8 +444,8 @@ BB_BOOL BLITZ_ROUTINE doaddfirst(UBYTE *base BL_REG(d0))
  */
 BB_BOOL BLITZ_ROUTINE doaddlast(UBYTE *base BL_REG(d0))
 {
-    struct item *item;
-    struct item *link;                          /* d0, then -1 */
+    struct bb_listitem *item;
+    struct bb_listitem *link;                          /* d0, then -1 */
 
     BL_INTS_OFF();
     item = FREE(base)->next;                    /* next of free */
@@ -478,8 +470,8 @@ BB_BOOL BLITZ_ROUTINE doaddlast(UBYTE *base BL_REG(d0))
  */
 BB_BOOL BLITZ_ROUTINE donextitem(UBYTE *base BL_REG(d0))
 {
-    struct item *item;
-    struct item *link;                          /* d0, then -1 */
+    struct bb_listitem *item;
+    struct bb_listitem *link;                          /* d0, then -1 */
 
     BL_INTS_OFF();
     if (!CURRENT(base))
@@ -502,8 +494,8 @@ BB_BOOL BLITZ_ROUTINE donextitem(UBYTE *base BL_REG(d0))
  */
 BB_BOOL BLITZ_ROUTINE doprevitem(UBYTE *base BL_REG(d0))
 {
-    struct item *item;
-    struct item *link;                          /* d0, then -1 */
+    struct bb_listitem *item;
+    struct bb_listitem *link;                          /* d0, then -1 */
 
     BL_INTS_OFF();
     if (!CURRENT(base))
@@ -536,8 +528,8 @@ BB_BOOL BLITZ_ROUTINE doprevitem(UBYTE *base BL_REG(d0))
  */
 void BLITZ_ROUTINE dosortlist(UBYTE *base BL_REG(d0), WORD offset BL_REG(d1))
 {
-    struct item *end = USEDTAIL(base);          /* d0 */
-    struct item *item, *next, *prev, *after;    /* a1, a2, a3, a4 */
+    struct bb_listitem *end = USEDTAIL(base);          /* d0 */
+    struct bb_listitem *item, *next, *prev, *after;    /* a1, a2, a3, a4 */
     ULONG itemkey, nextkey;                     /* d1, d2 */
     UWORD swapped;                              /* d3: swapped flag */
 
@@ -584,7 +576,7 @@ doswap:                                         /* next (a2) before item (a1) */
     item->next = after;
     after->prev = item;
     {                                           /* EXG a1,a2 */
-        struct item *other = item;
+        struct bb_listitem *other = item;
         item = next;
         next = other;
     }
@@ -605,7 +597,7 @@ BLITZ_ERRCHK_MESSAGE(mess5, "Wrong Array on Stack");
 /* lchk - the array must be a list */
 static void BLITZ_ERRCHK lchk_c(UBYTE *base BL_REG(d0))
 {
-    if (LISTID(base) != 0x6c497354)             /* "lIsT" */
+    if (LISTID(base) != BB_LISTID)              /* "lIsT" */
         BLITZ_RUNERR(mess1);
 }
 
