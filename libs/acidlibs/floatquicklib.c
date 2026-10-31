@@ -43,14 +43,22 @@ static ULONG q2f(const void *ffp, ULONG v)
     return BLITZ_BASEJSR2(ffp, LVO_SPAdd, i, frac);
 }
 
-/* quicktofloat - NEG.l d0:BMI 'doit:BSR 'doit2:BSET #7,d0:RTS
-   'doit:NEG.l d0 ('doit2)
-   The sign test is on -d0: negative inputs are converted as their
-   magnitude and get the FFP sign bit (bit 7) set.
-   BUG(orig) (#146): 0 counts as negative (NEG gives 0, not minus): Quick 0
-   becomes $00000080, an FFP "-0".  BUG(orig) (#147): $80000000 (-32768.0)
-   gives +32768.0 (NEG overflows, the magnitude is $80000000 read as
-   unsigned). */
+/**
+ * @brief $D300 qutofl: convert a Quick (16.16 fixed point) to a Float (FFP).
+ *
+ * NEG.l d0:BMI 'doit:BSR 'doit2:BSET #7,d0:RTS / 'doit:NEG.l d0 ('doit2):
+ * the sign test is on -d0; negative inputs are converted as their
+ * magnitude (float(int part) + float(frac) / 65536.0, by mathffp) and get
+ * the FFP sign bit (bit 7) set.
+ * BUG(orig) (#146): 0 counts as negative (NEG gives 0, not minus): Quick 0
+ * becomes $00000080, an FFP "-0".
+ * BUG(orig) (#147): $80000000 (-32768.0) gives +32768.0 (NEG overflows,
+ * the magnitude is $80000000 read as unsigned).
+ *
+ * @param q  d0: the Quick
+ * @param ffpbase  a6: mathffp.library (ffplib)
+ * @return d0: the Float; d1/a0/a1 kept
+ */
 static ULONG BLITZ_ROUTINE quicktofloat_c(ULONG q BL_REG(d0), const void *ffpbase BL_REG(a6))
 {
     ULONG n = -q;
@@ -75,9 +83,17 @@ static ULONG f2q(const void *ffp, ULONG x)
     return intpart | (UWORD)x;                      /* MOVE d0,d2:MOVE.l d2,d0 */
 }
 
-/* floattoquick - BCHG #7,d0:BEQ 'doit:BSR 'doit2:NEG.l d0:RTS
-   'doit:BCHG #7,d0 ('doit2) - convert the magnitude, negate if the sign
-   bit was set */
+/**
+ * @brief $D301 fltoqu: convert a Float (FFP) to a Quick (16.16 fixed point).
+ *
+ * BCHG #7,d0:BEQ 'doit:BSR 'doit2:NEG.l d0:RTS / 'doit:BCHG #7,d0
+ * ('doit2): converts the magnitude (SPFix(x) << 16 | SPFix((x - int) *
+ * 65536.0), by mathffp) and negates it if the sign bit was set.
+ *
+ * @param f  d0: the Float
+ * @param ffpbase  a6: mathffp.library (ffplib)
+ * @return d0: the Quick; d1/a0/a1 kept
+ */
 static ULONG BLITZ_ROUTINE floattoquick_c(ULONG f BL_REG(d0), const void *ffpbase BL_REG(a6))
 {
     if (!(f & 0x80))                            /* BEQ 'doit */

@@ -108,11 +108,29 @@ static LONG joyy(UWORD dat)
     return 0;
 }
 
+/**
+ * @brief Joyx(Port): the horizontal direction of the joystick.
+ *
+ * From JOY0DAT (port 0) or JOY1DAT (any other port, TST.w d0): bit 9 =
+ * left, bit 1 = right.  Errors (debugger): Port must be 0 or 1.
+ *
+ * @param port  d0: the port
+ * @return d0: -1 left, 1 right, 0 neither
+ */
 static LONG BLITZ_ROUTINE _joyx_c(UWORD port BL_REG(d0))
 {
     return joyx(joydat(port));
 }
 
+/**
+ * @brief Joyy(Port): the vertical direction of the joystick.
+ *
+ * From JOY0DAT/JOY1DAT: bit 8 ^ bit 9 = up, bit 0 ^ bit 1 = down.
+ * Errors (debugger): Port must be 0 or 1.
+ *
+ * @param port  d0: the port
+ * @return d0: -1 up, 1 down, 0 neither
+ */
 static LONG BLITZ_ROUTINE _joyy_c(UWORD port BL_REG(d0))
 {
     return joyy(joydat(port));
@@ -121,6 +139,17 @@ static LONG BLITZ_ROUTINE _joyy_c(UWORD port BL_REG(d0))
 /* rots: index (x & 3) * 2 + (y & 3) * 8 (words) */
 static const UWORD rots[16] = { 8, 2, 8, 6, 4, 3, 8, 5, 8, 8, 8, 8, 0, 1, 8, 7 };
 
+/**
+ * @brief Joyr(Port): the direction of the joystick as 0..8.
+ *
+ * 0..7 clockwise from up, 8 = centre/invalid, from the table rots indexed
+ * by (x & 3) * 2 + (y & 3) * 8 of Joyx/Joyy.  Not a bug (word function):
+ * the upper word of d0 is the one of Joyy's MOVEQ.  Errors (debugger):
+ * Port must be 0 or 1.
+ *
+ * @param port  d0: the port
+ * @return d0.w: the direction
+ */
 static ULONG BLITZ_ROUTINE _joyr_c(UWORD port BL_REG(d0))
 {
     UWORD dat = joydat(port);
@@ -131,6 +160,16 @@ static ULONG BLITZ_ROUTINE _joyr_c(UWORD port BL_REG(d0))
     return (y & 0xffff0000UL) | rots[i >> 1];
 }
 
+/**
+ * @brief Joyb(Port): the joystick/mouse buttons.
+ *
+ * Left button: CIAA PRA bit 6 (port 0) / 7 (port 1); right button: bit 2
+ * / 6 of the byte $DFF016 (POTGOR bits 10/14; port 1 first writes POTGO =
+ * $C000).  Errors (debugger): Port must be 0 or 1.
+ *
+ * @param port  d0: the port (0 or anything else = 1)
+ * @return d0: bit 0 = left, bit 1 = right button; only d0 changed
+ */
 static ULONG BLITZ_ROUTINE _joyb_c(UWORD port BL_REG(d0))
 {
     ULONG buttons = 0;                          /* d0 */
@@ -155,7 +194,20 @@ BLITZ_THUNK(_joyy, _joyy_c, "a0-a1");
 BLITZ_THUNK(_joyr, _joyr_c, "a0-a1");
 BLITZ_THUNK(_joyb, _joyb_c, "d1/a0-a1");
 
-/* _gameb - CD32 pad (see the head comment) */
+/**
+ * @brief Gameb(Port): the buttons of a CD32 pad.
+ *
+ * The fire line is switched to output (CIAA DDRA), POTGO set, then 7 bits
+ * are clocked out with the fire line (each after 8 CIA reads as delay)
+ * and read from POTGOR.
+ * BUG(orig) (#415): POTGO = $3000 at the end also for port 0 (the DBF of
+ * the port 0 loop jumps into the loop of port 1).
+ * Errors (debugger): Port must be 0 or 1.
+ *
+ * @param port  d0: the port (0 or anything else = 1)
+ * @return d0: 1 play/pause, 2 reverse, 4 forward, 8 green, 16 yellow,
+ *         32 red, 64 blue (a bit is set when the line is low)
+ */
 ULONG BLITZ_ROUTINE _gameb(UWORD port BL_REG(d0))
 {
     volatile UBYTE *ciapra = CIAAPRA;           /* a0 */

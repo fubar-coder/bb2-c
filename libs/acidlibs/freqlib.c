@@ -83,8 +83,29 @@ BLITZ_LIBFIN();
 /* the requester core: fq_args[4], fq_request() */
 #include "filereq_core.h"
 
-/* dofreq - d0 = title, d1 = path$ buffer, d2 = file$ buffer, a1 = the
-   used screen; result at a3 (= the title's place) */
+/**
+ * @brief FileRequest$(Title$,Pathname$,Filename$): the file requester.
+ *
+ * Opens the requester (shared/filereq/filereq_core.c) on the used screen.
+ * OK (button, double click on a file, Return in the file gadget) copies
+ * the path and the file name into path$ and file$ and returns path + "/"
+ * (unless it ends in ":" or "/") + file; CANCEL and the close gadget
+ * return "".  The result is copied to a3, the place of the title.
+ * BUG(orig) (#153): path$/file$ get the new contents but not their new
+ * lengths.  BUG(orig) (#161): a3 is left behind the terminating 0.
+ * The other BUG(orig) of the requester (#154, #156-#160, #345): see the
+ * head comment.  DIFF: if chip memory, a library or the window cannot be
+ * opened, the result is "" (the original returns an uninitialized long).
+ * Errors (debugger, freqchk): path$ or file$ buffer 0 (error 1), "Not
+ * enough space in PATH string" (less than 160 bytes), "Not enough space
+ * in NAME string" (less than 64 bytes).
+ *
+ * @param title  d0: Title$ (a3 points at it, the result goes there)
+ * @param path  d1: the buffer of the variable Pathname$ (160 bytes)
+ * @param file  d2: the buffer of the variable Filename$ (64 bytes)
+ * @param scr  a1: the used screen (!libs #screenslib,$1102)
+ * @return d0: the length of the result; d1/a1 kept
+ */
 static ULONG BLITZ_ROUTINE dofreq_c(ULONG title BL_REG(d0), ULONG path BL_REG(d1),
                                     ULONG file BL_REG(d2), ULONG *scr BL_REG(a1))
 {
