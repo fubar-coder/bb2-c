@@ -23,6 +23,7 @@ structure of the files is mostly that of bb2.
 | `blitz2/` | `blitz2-c/notes/`; `CONVENTIONS.md` from `blitz2-c/`, `bb2-readme.md` = `blitz2-c/README.md` |
 | `ted/` | `ted-c/notes/`; `deviations.md` = `abweichungen.md`, `bb2-readme.md` = `ted-c/README.md` |
 | `libs/` | `libs-c/notes/`; `deviations.md` = `abweichungen.md`, `bb2-readme.md` = `libs-c/README.md` |
+| `ab3/` | – (new here, 2026-10-31: what AmiBlitz3 changed relative to BB2 2.10) |
 
 Not taken over: the work orders (`*BRIEF*.md`), the detokenised library
 sources (`libs-c/bb2src/*.bb`, from material without a clear licence;
