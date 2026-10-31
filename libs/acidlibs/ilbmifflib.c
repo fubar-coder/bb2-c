@@ -50,6 +50,7 @@
  */
 #include "blitzlib.h"
 #include <graphics/gfx.h>
+#include <datatypes/pictureclass.h>    /* struct BitMapHeader */
 
 /* entry points (thunks / C, defined below) */
 void ilbminit(void), ilbmgetbyte(void), ilbmbitmap(void), doilbminfo(void);
@@ -111,10 +112,19 @@ BLITZ_LIBFIN();
 
 /* ------------------------------------------------------------- variables */
 
-/* iffstuff: words 0 width, 2 height, 4 planes, 6 width in words,
-   8 compression, 10 repeat, 12 copy */
-UBYTE iffstuff[14] __attribute__((aligned(2)));
-#define ST_W(st, off) (*(UWORD *)((st) + (off)))
+/* iffstuff (the original's 14 bytes; other libraries read it through a0) */
+struct iffstuff {
+    UWORD width;                /* 0 pixels */
+    UWORD height;               /* 2 */
+    UWORD planes;               /* 4 */
+    UWORD wwidth;               /* 6 width in words */
+    UWORD comp;                 /* 8 compression */
+    UWORD repeat;               /* 10 repeat count */
+    UWORD copy;                 /* 12 copy count */
+} iffstuff;
+static_assert(sizeof iffstuff == 14);
+/* the low byte of a word (MOVE.b to the label+1) */
+#define LOBYTE(w) (((UBYTE *)&(w))[1])
 
 static UWORD ilbmvmode;
 
@@ -127,15 +137,12 @@ BLITZ_ERRCHK_MESSAGE(mess4, "Can't Find IFF 'BMHD'");
 
 /* -------------------------------------------------------------- ilbminit */
 
-#define ID_BMHD 0x424d4844
-#define ID_BODY 0x424f4459
-#define ID_FORM 0x464f524d
-#define ID_ILBM 0x494c424d
+/* ID_BMHD, ID_BODY, ID_FORM, ID_ILBM: <datatypes/pictureclass.h> */
 
 /* -1 = ok (iffstuff filled), 0 = no file / no BMHD */
 static LONG ilbminit_(const char *name)
 {
-    UBYTE *st = iffstuff;
+    struct iffstuff *st = &iffstuff;
     ULONG value = 0;
     UWORD vmode = 0;
 
@@ -145,16 +152,16 @@ static LONG ilbminit_(const char *name)
     if (!IFFJSR(TOK_ifffind, &value, st))               /* find BMHD */
         return 0;
     IFFJSR(TOK_iffword, &value, st);                    /* read word */
-    ST_W(st, 0) = (UWORD)value;
-    ST_W(st, 6) = (UWORD)((UWORD)value + 15) >> 4;
+    st->width = (UWORD)value;
+    st->wwidth = (UWORD)((UWORD)value + 15) >> 4;
     IFFJSR(TOK_iffword, &value, st);                    /* another word! */
-    ST_W(st, 2) = (UWORD)value;
+    st->height = (UWORD)value;
     IFFJSR(TOK_ifflong, &value, st);
     IFFJSR(TOK_iffbyte, &value, st);
-    st[5] = (UBYTE)value;
+    LOBYTE(st->planes) = (UBYTE)value;
     IFFJSR(TOK_iffbyte, &value, st);
     IFFJSR(TOK_iffbyte, &value, st);
-    st[9] = (UBYTE)value;
+    LOBYTE(st->comp) = (UBYTE)value;
     value = 5;
     IFFJSR(TOK_iffskip, &value, st);
     IFFJSR(TOK_iffword, &value, st);
@@ -164,7 +171,7 @@ static LONG ilbminit_(const char *name)
     if ((UWORD)value >= 300)
         vmode |= 4;
     ilbmvmode = vmode;
-    *(ULONG *)(st + 10) = 0;
+    *(ULONG *)&st->repeat = 0;                        /* repeat and copy */
     return -1;
 }
 
@@ -175,7 +182,7 @@ static LONG BLITZ_ROUTINE ilbminit_c(const char *name BL_REG(a0))
 {
     LONG r = ilbminit_(name);
 
-    ilbm_a0 = r ? iffstuff : (UBYTE *)name;
+    ilbm_a0 = r ? (UBYTE *)&iffstuff : (UBYTE *)name;
     return r;
 }
 BLITZ_THUNK_POST(ilbminit, ilbminit_c, "d1/a1", "move.l _ilbm_a0,a0\n   tst.l d0");
@@ -183,7 +190,7 @@ BLITZ_THUNK_POST(ilbminit, ilbminit_c, "d1/a1", "move.l _ilbm_a0,a0\n   tst.l d0
 /* ----------------------------------------------------------- ilbmgetbyte */
 
 /* iffbyte, runtime error "Can't Read File" at the end of the data */
-static ULONG getme(ULONG byte, UBYTE *st)
+static ULONG getme(ULONG byte, struct iffstuff *st)
 {
     if (!IFFJSR(TOK_iffbyte, &byte, st))
         BLITZ_RUNERR(mess2);                            /* BNE err2 */
@@ -191,29 +198,29 @@ static ULONG getme(ULONG byte, UBYTE *st)
 }
 
 /* next byte of the BODY; d0 = the previous byte (kept for repeats) */
-static ULONG getbyte(ULONG byte, UBYTE *st)
+static ULONG getbyte(ULONG byte, struct iffstuff *st)
 {
-    if (ST_W(st, 8) == 0)                               /* not compressed */
+    if (st->comp == 0)                                   /* not compressed */
         return getme(byte, st);
-    if (ST_W(st, 12) != 0) {                            /* copying */
-        ST_W(st, 12)--;
+    if (st->copy != 0) {                                /* copying */
+        st->copy--;
         return getme(byte, st);
     }
-    if (ST_W(st, 10) != 0) {                            /* repeating */
-        ST_W(st, 10)--;
+    if (st->repeat != 0) {                              /* repeating */
+        st->repeat--;
         return byte;
     }
     do                                                  /* control byte */
         byte = getme(byte, st);
     while ((UBYTE)byte == 0x80);
     if ((BYTE)byte < 0)
-        st[11] = (UBYTE)-(BYTE)byte;                    /* NEG.b: repeat */
+        LOBYTE(st->repeat) = (UBYTE)-(BYTE)byte;        /* NEG.b: repeat */
     else
-        st[13] = (UBYTE)byte;                           /* copy */
+        LOBYTE(st->copy) = (UBYTE)byte;                 /* copy */
     return getme(byte, st);
 }
 
-static ULONG BLITZ_ROUTINE ilbmgetbyte_c(ULONG byte BL_REG(d0), UBYTE *st BL_REG(a0))
+static ULONG BLITZ_ROUTINE ilbmgetbyte_c(ULONG byte BL_REG(d0), struct iffstuff *st BL_REG(a0))
 {
     return getbyte(byte, st);
 }
@@ -224,7 +231,7 @@ BLITZ_THUNK(ilbmgetbyte, ilbmgetbyte_c, "d1/a0-a1");
 static void BLITZ_ROUTINE ilbmbitmap_c(ULONG value BL_REG(d0), const char *name BL_REG(a0),
                                        struct BitMap *bm BL_REG(a1))
 {
-    UBYTE *st = iffstuff;
+    struct iffstuff *st = &iffstuff;
     ULONG rowoff = 0;                                   /* row offset */
     UWORD row = 0;                                      /* rows */
 
@@ -237,20 +244,21 @@ static void BLITZ_ROUTINE ilbmbitmap_c(ULONG value BL_REG(d0), const char *name 
         UWORD plane = 0;                                /* bitplanes */
 
         do {
-            UWORD count = (UWORD)(ST_W(st, 6) << 1) - 1; /* width */
+            UWORD count = (UWORD)(st->wwidth << 1) - 1; /* width */
             UWORD col = 0;
             UBYTE *dst = *planes++;
 
             do {
                 value = getbyte(value, st);
-                if (col < *(UWORD *)bm && plane < *(UWORD *)((UBYTE *)bm + 4))
+                /* BUG(orig) (#188): the word over Flags and Depth */
+                if (col < bm->BytesPerRow && plane < *(UWORD *)&bm->Flags)
                     *(dst++ + rowoff) = (UBYTE)value;
                 col++;
             } while (count-- != 0);                     /* DBF d3 */
             plane++;
-        } while (plane < ST_W(st, 4));
+        } while (plane < st->planes);
         row++;
-        if (row >= bm->Rows || row >= ST_W(st, 2))
+        if (row >= bm->Rows || row >= st->height)
             break;
         rowoff += (LONG)(WORD)bm->BytesPerRow;          /* EXT.l: ADD.l */
     }
@@ -268,14 +276,14 @@ static LONG BLITZ_ROUTINE doilbminfo_c(const char *name BL_REG(d0))
     LONG r = ilbminit_(name);
     ULONG value = r;
 
-    IFFJSR(TOK_iffclose, &value, iffstuff);             /* close ? */
+    IFFJSR(TOK_iffclose, &value, &iffstuff);            /* close ? */
     return r;
 }
 BLITZ_THUNK(doilbminfo, doilbminfo_c, "d1/a0-a1");
 
-static UWORD BLITZ_ROUTINE ilbmwidth_c(void) { return ST_W(iffstuff, 0); }
-static UWORD BLITZ_ROUTINE ilbmheight_c(void) { return ST_W(iffstuff, 2); }
-static UWORD BLITZ_ROUTINE ilbmdepth_c(void) { return ST_W(iffstuff, 4); }
+static UWORD BLITZ_ROUTINE ilbmwidth_c(void) { return iffstuff.width; }
+static UWORD BLITZ_ROUTINE ilbmheight_c(void) { return iffstuff.height; }
+static UWORD BLITZ_ROUTINE ilbmdepth_c(void) { return iffstuff.planes; }
 
 /* MOVE x(pc),d0: the upper word of d0 stays */
 BLITZ_THUNK_POST(doilbmwidth, ilbmwidth_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
@@ -320,12 +328,12 @@ static void BLITZ_ROUTINE decodeilbm_c(const ULONG *mem BL_REG(d1))
         if ((LONG)end <= (LONG)src)                     /* CMP.l a0,a1:BLE */
             BLITZ_RUNERR(mess4);
     }
-    rowsize = *(const UWORD *)src;                      /* fc */
-    rows = *(const UWORD *)(src + 2);
+    rowsize = ((const struct BitMapHeader *)src)->bmh_Width; /* fc */
+    rows = ((const struct BitMapHeader *)src)->bmh_Height;
     rowsize = (UWORD)((UWORD)(rowsize + 15) >> 4);
     rowsize = (UWORD)(rowsize + rowsize);               /* bytes per row */
-    depth = src[8];                                     /* planes */
-    comp = src[10];
+    depth = ((const struct BitMapHeader *)src)->bmh_Depth;  /* planes */
+    comp = ((const struct BitMapHeader *)src)->bmh_Compression;
     src += len;
     for (;;) {                                          /* cb */
         id = *(const ULONG *)src;
