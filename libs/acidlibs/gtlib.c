@@ -29,10 +29,6 @@
  * via TAG_MORE (then cleared).
  *
  * Kept from the original (BUG(orig)):
- *   - GTPalette with a colour writes it to the low word of the TAG_MORE
- *     pointer of its tag list (offset +38 of the source layout, which had
- *     two more tags): the colour is ignored, a GTTags list after it is
- *     reached through a wrong pointer. (#168)
  *   - The optional values (cycle/mx active, listview top/selected,
  *     scroller top, slider level, string default) stay in the static tag
  *     lists: a later call without them uses the previous values (GTString
@@ -55,6 +51,12 @@
  *     buffer pointer) and leave a3 there: as a function inside a string
  *     expression the rest of the expression is written over the tag list
  *     and what follows it in the library. (#328)
+ * Fixed (intended deviation, #168): GTPalette with a colour wrote it to
+ *   the low word of the TAG_MORE pointer of its tag list (offset +38 of
+ *   the source layout, which had two more tags): the colour was ignored,
+ *   a GTTags list after it was reached through a wrong pointer.  Here the
+ *   colour goes to GTPA_Color; the form without it sets GTPA_Color 0 (the
+ *   value it always had).
  * Fixed (intended deviation, #174): getoptions (cycle/mx labels) sized
  *   its block as option length + 258 with the pointer array at +0 and the
  *   texts at +256: at most 63 labels + NULL without a check (more
@@ -1012,8 +1014,9 @@ static void palette(STDARGS)
  * @brief GTPalette GTList#,id,x,y,w,h,Text$,flags,depth: add a
  * PALETTE_KIND gadget.
  *
- * As GTButton, with GTPA_Depth = depth.  Flag bit 6 GA_Disabled.  Amiga
- * mode only.
+ * As GTButton, with GTPA_Depth = depth and GTPA_Color 0 (fixed, #168:
+ * not the colour of an earlier GTPalette with it).  Flag bit 6
+ * GA_Disabled.  Amiga mode only.
  *
  * @param id,x,y,w,h  d1-d5: gadget id, position and size
  * @param font  a0: the current IntuiFont (intuifontlib's textattr)
@@ -1022,6 +1025,7 @@ static void palette(STDARGS)
  */
 static void BLITZ_ROUTINE gtpalette_c(STDARGS)
 {
+    palettetags.color.ti_Data = 0;
     palette(id, x, y, w, h, font, scr, args);
 }
 
@@ -1029,10 +1033,10 @@ static void BLITZ_ROUTINE gtpalette_c(STDARGS)
  * @brief GTPalette GTList#,id,x,y,w,h,Text$,flags,depth,Color: GTPalette
  * with a colour (the word at a2-18).
  *
- * BUG(orig) (#168): the colour goes to +38 of the tag list, the low word
- * of the TAG_MORE pointer (the usertags address), not GTPA_Color's value
- * (the source layout had two more tags): the colour is ignored, a GTTags
- * list after it is reached through a wrong pointer.
+ * Fixed (#168): the colour goes to GTPA_Color's value; the original wrote
+ * it to +38 of the tag list, the low word of the TAG_MORE pointer (the
+ * usertags address; the source layout had two more tags): the colour was
+ * ignored, a GTTags list after it was reached through a wrong pointer.
  *
  * @param id,x,y,w,h  d1-d5: gadget id, position and size
  * @param font  a0: the current IntuiFont (intuifontlib's textattr)
@@ -1041,7 +1045,8 @@ static void BLITZ_ROUTINE gtpalette_c(STDARGS)
  */
 static void BLITZ_ROUTINE gtpalette2_c(STDARGS)
 {
-    LOWORD(palettetags.more) = UW(args, -18);   /* not .color */
+    /* fixed (#168): the original's +38 is the low word of .more */
+    LOWORD(palettetags.color) = UW(args, -18);
     palette(id, x, y, w, h, font, scr, args);
 }
 
