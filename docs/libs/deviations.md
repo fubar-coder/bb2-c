@@ -56,8 +56,8 @@ documented here.
 
 | Library/routine (file:line) | Original | C version | Kind | Reason / observable? |
 |---|---|---|---|---|
-| 2dlib overflows (2dlib.c:44) | Polyf with more than 16 points / BitMapPoly edge lists overwrite the code behind polypts/l1 | overwrite the data behind them | **T** | memory layout; observable only with these overflows (BUG(orig), #395). FloodFill (yofill) is the original assembler, a3 as in the original |
-| polylib overflows (polylib.c:34) | more than 16 points / 10 edges per side hit the lib's own code | hit the data behind them | **T** | memory layout; only with overflows |
+| 2dlib overflows (2dlib.c:47) | Polyf with more than 16 points / BitMapPoly edge lists overwrite the code behind polypts/l1 | overwrite the data behind them | **T** | memory layout; observable only with these overflows (BUG(orig), #395). FloodFill (yofill) is the original assembler, a3 as in the original |
+| polylib overflows (polylib.c:40) | more than 16 points / 10 edges per side hit the lib's own code | hit the data behind them | **T** | memory layout; only with overflows |
 | animlib err6/err7 (animlib.c:45) | `BEQ err7` into the error check area or err6 in normal code | reached via JSR (return address and saved registers of the C function on the stack) | **T** | GCC drops code after an inline BRA or merges the paths; target and message as in the original, only the stack at the trap differs; not observable |
 | animlib a2 (animlib.c:45) | a2 decremented | unchanged | **B** | convention |
 | arexxlib ReplyRexxMsg (arexxlib.c:62, :505) | with a non-RexxMsg: pops 15 never-saved registers (crash) | returns | **K** | observable only in this error case (crash vs. nothing) |
@@ -88,7 +88,7 @@ documented here.
 | ilbmifflib ilbminit (ilbmifflib.c:46) | a0 after failure = leftover from dos.library | a0 = file name | **T** | register leftover; described in the header |
 | intuifontlib (intuifontlib.c:28) | a2 decremented | unchanged | **B** | convention |
 | maxlenlib/maxslib/modlib | see system libs | | | |
-| medlib (medlib.c:56) | LoadMedModule/SetMedVolume leave a3 on object+8 or track | a3 unchanged | **K** | statements; not observable |
+| medlib (medlib.c:59) | LoadMedModule/SetMedVolume leave a3 on object+8 or track | a3 unchanged | **K** | statements; not observable |
 | palettelib errors (palettelib.c:55, :288) | AGARed/Green/Blue `err3` and messages err0/err1/errd in the error check area | trap and messages in normal code | **K** | only in error cases without debugger |
 | palettelib empty palette (palettelib.c:52, :726, :732) | ShowPalette/Use Palette Amiga mode with an empty palette runs into the Blitz code `b_showpal`, in both branches: from ExecVersion 39 on (`agamode`, a0 arbitrary) and below via `make4bitrgbs` (a0 = palette object); writes nothing | returns in both branches | **K** | result the same (nothing written); only with `agamode` and odd a0 on the 68000 an address error in the original |
 | printlib (printlib.c:23) | a2 decremented | unchanged | **B** | convention |
