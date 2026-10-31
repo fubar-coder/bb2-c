@@ -123,12 +123,22 @@ static struct BL_PACKED {
 
 /* ------------------------------------------------------- init / finit */
 
+/**
+ * @brief init: opens graphics.library and intuition.library.
+ *
+ * Any version; the results are not checked.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     gfxbase = OpenLibrary((CONST_STRPTR)"graphics.library", 0);
     intuibase = OpenLibrary((CONST_STRPTR)"intuition.library", 0);
 }
 
+/**
+ * @brief finit: closes intuition.library and graphics.library.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     CloseLibrary(intuibase);
@@ -137,7 +147,14 @@ static void BLITZ_ROUTINE libfinit_c(void)
 
 /* ------------------------------------------------------------ commands */
 
-/* IPBitMap rast,bitmap: a0 = the Rast object, a1 = the bitmap object */
+/**
+ * @brief IPBitMap rast,bitmap: initialises a Rast object and gives it a bitmap.
+ *
+ * InitRastPort on the Rast, then its BitMap = the Blitz bitmap object.
+ * @param rp  a0: the Rast object (#ia0|#pd0)
+ * @param bm  a1: the bitmap object (bitmaplib, #ia1|#pd1)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE ipbitmap_c(struct RastPort *rp BL_REG(a0),
                                      struct BitMap *bm BL_REG(a1))
 {
@@ -145,16 +162,35 @@ static void BLITZ_ROUTINE ipbitmap_c(struct RastPort *rp BL_REG(a0),
     rp->BitMap = bm;
 }
 
-/* IPLocate x,y (the used Rast) */
+/**
+ * @brief IPLocate x,y: moves the pen of the used Rast.
+ *
+ * Move with the low words of x and y.  BUG(orig) (#697): IPOutput always
+ * prints at 0,0, so this has no effect on its output.
+ * @param x   d0: x (a word)
+ * @param y   d1: y (a word)
+ * @param rp  a0: the used Rast (#ua0)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE iplocate_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
                                      struct RastPort *rp BL_REG(a0))
 {
     Move(rp, x & 0xffff, y & 0xffff);
 }
 
-/* IPColour fgpen,bgpen: a negative word leaves a pen.  BUG(orig) (#696): the
-   RastPort of SetBPen is a2, which is set to the Rast only with SetAPen
-   (else the caller's a2) */
+/**
+ * @brief IPColour fgpen,bgpen: sets the pens of the used Rast and of IPOutput.
+ *
+ * SetAPen/SetBPen; a negative word leaves that pen unchanged.  The pens
+ * are also kept for the IntuiText of IPOutput (their low bytes).
+ * BUG(orig) (#696): the RastPort of SetBPen is a2, which is set to the
+ * Rast only with SetAPen (else the caller's a2, the argument stack).
+ * @param fg      d0: the foreground pen (a word)
+ * @param bg      d1: the background pen (a word)
+ * @param rp      a0: the used Rast (#ua0)
+ * @param bpenrp  a2: the caller's a2 (SetBPen's RastPort with fg < 0)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE ipcolour2_c(ULONG fg BL_REG(d0), ULONG bg BL_REG(d1),
                                       struct RastPort *rp BL_REG(a0),
                                       struct RastPort *bpenrp BL_REG(a2))
@@ -171,7 +207,15 @@ static void BLITZ_ROUTINE ipcolour2_c(ULONG fg BL_REG(d0), ULONG bg BL_REG(d1),
     }
 }
 
-/* IPColour fgpen: bgpen -1 */
+/**
+ * @brief IPColour fgpen: sets the foreground pen only.
+ *
+ * As IPColour fgpen,bgpen with bgpen -1 (unchanged).
+ * @param fg      d0: the foreground pen (a word)
+ * @param rp      a0: the used Rast (#ua0)
+ * @param bpenrp  a2: the caller's a2
+ * @return nothing
+ */
 static void BLITZ_ROUTINE ipcolour_c(ULONG fg BL_REG(d0), struct RastPort *rp BL_REG(a0),
                                      struct RastPort *bpenrp BL_REG(a2))
 {
@@ -193,7 +237,15 @@ static void doipprint(void)
     PrintIText(usedrast, &pr.it, 0, 0);
 }
 
-/* one character - BUG(orig) (#699): read from the address d0 */
+/**
+ * @brief The output handler, entry 0: one character.
+ *
+ * Copied to the buffer with a 0, then printed.  BUG(orig) (#699): the
+ * character is read from the address d0 (MOVE.l d0,a0:MOVE.b (a0)+,...),
+ * i.e. low memory, not d0 itself.
+ * @param chaddr  d0: the character (used as an address)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE ipprint_c(ULONG chaddr BL_REG(d0))
 {
     setpens();
@@ -203,7 +255,13 @@ static void BLITZ_ROUTINE ipprint_c(ULONG chaddr BL_REG(d0))
     doipprint();
 }
 
-/* a null terminated string */
+/**
+ * @brief The output handler, entry -8: a null terminated string.
+ *
+ * Printed directly (the IntuiText points to it).
+ * @param s  a0: the string
+ * @return nothing
+ */
 static void BLITZ_ROUTINE ipprint0_c(UBYTE *s BL_REG(a0))
 {
     setpens();
@@ -211,7 +269,16 @@ static void BLITZ_ROUTINE ipprint0_c(UBYTE *s BL_REG(a0))
     doipprint();
 }
 
-/* d0 (a word) characters at a0, copied to cbuf - BUG(orig) (#698): no limit */
+/**
+ * @brief The output handler, entry -4: d0 characters at a0.
+ *
+ * Copied to cbuf with a 0, then printed.  BUG(orig) (#698): no limit -
+ * more than 1024 characters run into the pens behind the buffer (they
+ * change the pens of the next text only).
+ * @param n  d0: the number of characters (a word)
+ * @param s  a0: the characters
+ * @return nothing
+ */
 static void BLITZ_ROUTINE ipprint1_c(UWORD n BL_REG(d0), const UBYTE *s BL_REG(a0))
 {
     UBYTE *d = pr.cbuf;
@@ -226,7 +293,15 @@ static void BLITZ_ROUTINE ipprint1_c(UWORD n BL_REG(d0), const UBYTE *s BL_REG(a
     doipprint();
 }
 
-/* IPOutput rast: the output channel to ipprint */
+/**
+ * @brief IPOutput rast: makes the Rast the output channel (Print draws on it).
+ *
+ * Keeps the Rast and installs the handler ipprint with inputoutputlib's
+ * dosetout (TOK_setout).  The text is printed by PrintIText at 0,0 of
+ * the Rast (BUG(orig) #697), JAM1, with the pens of the last IPColour.
+ * @param rp  a0: the Rast object (#ia0|#pd0)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE ipoutput_c(struct RastPort *rp BL_REG(a0))
 {
     struct bl_regs r = { 0 };
