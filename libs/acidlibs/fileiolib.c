@@ -111,15 +111,15 @@ void dofileoutput(void), dofileinput(void), doloc(void), doeof(void);
 void dodbufflen(void), codeinit(void), racchk(void), fchk(void), dbchk(void);
 ULONG BLITZ_ROUTINE doexists(const UBYTE *name BL_REG(d0),
                              struct Library *dosbase BL_REG(a6));
-void BLITZ_ROUTINE dowritemem(ULONG d0 BL_REG(d0), struct bfile *f BL_REG(a2),
+void BLITZ_ROUTINE dowritemem(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
                               const UBYTE *mem BL_REG(d1), ULONG len BL_REG(d2),
                               struct Library *dosbase BL_REG(a6));
-void BLITZ_ROUTINE doreadmem(ULONG d0 BL_REG(d0), struct bfile *f BL_REG(a2),
+void BLITZ_ROUTINE doreadmem(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
                              UBYTE *mem BL_REG(d1), ULONG len BL_REG(d2),
                              struct Library *dosbase BL_REG(a6));
 ULONG BLITZ_ROUTINE dolof(struct bfile *f BL_REG(a2),
                           struct Library *dosbase BL_REG(a6));
-void BLITZ_ROUTINE dofileseek(ULONG d0 BL_REG(d0), struct bfile *f BL_REG(a2),
+void BLITZ_ROUTINE dofileseek(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
                               ULONG where BL_REG(d1),
                               struct Library *dosbase BL_REG(a6));
 void BLITZ_ROUTINE dofreefile(struct Library *dosbase BL_REG(a6));
@@ -133,9 +133,9 @@ ULONG BLITZ_ROUTINE dowritefile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d
                                 const ULONG *lens BL_REG(a2),
                                 struct Library *dosbase BL_REG(a6));
 void BLITZ_ROUTINE dorecord(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2));
-void BLITZ_ROUTINE doput(ULONG d0 BL_REG(d0), UWORD record BL_REG(d1),
+void BLITZ_ROUTINE doput(ULONG fileno BL_REG(d0), UWORD record BL_REG(d1),
                          struct Library *dosbase BL_REG(a6));
-void BLITZ_ROUTINE doget(ULONG d0 BL_REG(d0), UWORD record BL_REG(d1),
+void BLITZ_ROUTINE doget(ULONG fileno BL_REG(d0), UWORD record BL_REG(d1),
                          struct Library *dosbase BL_REG(a6));
 void BLITZ_ROUTINE dokillfile(const UBYTE *name BL_REG(d0),
                               struct Library *dosbase BL_REG(a6));
@@ -274,7 +274,7 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 5);
 /* ********************** CODE BELOW ************************ */
 
 static struct Library *dosbase_g;               /* dosbase: Dc.l 0 */
-static UBYTE temp;                              /* temp: Dc 0 */
+static UBYTE charbuf;                           /* temp: Dc 0 */
 static struct bfile *infile, *outfile;          /* Dc.l 0 */
 static ULONG doslen = 2048;                     /* size of mydos buffer */
 
@@ -303,22 +303,22 @@ static void myflush(struct bfile *f, struct Library *dosbase)
     f->pos = 0;
 }
 
-/* mywrite - d1 = file, d2 = buffer, d3 = len; d0 comes back unchanged
-   for len 0 */
-static ULONG mywrite(ULONG d0, struct bfile *f, const UBYTE *src, ULONG len,
+/* mywrite - d1 = file, d2 = buffer, d3 = len; d0 (result) comes back
+   unchanged for len 0 */
+static ULONG mywrite(ULONG result, struct bfile *f, const UBYTE *src, ULONG len,
                      struct Library *dosbase)
 {
     UBYTE *dst;
     ULONG n;
 
     if (!len)
-        return d0;
+        return result;
     if (len > f->buflen) {                      /* too big for our buffer! */
         myflush(f, dosbase);
-        d0 = Write(f->fh, (APTR)src, len);
-        if (d0 != (ULONG)-1)
-            f->bufstart += d0;
-        return d0;
+        result = Write(f->fh, (APTR)src, len);
+        if (result != (ULONG)-1)
+            f->bufstart += result;
+        return result;
     }
     if ((UWORD)(f->pos + (UWORD)len) > f->buflen)   /* ADD/CMP .w */
         myflush(f, dosbase);
@@ -326,42 +326,42 @@ static ULONG mywrite(ULONG d0, struct bfile *f, const UBYTE *src, ULONG len,
     dst = f->buf + (WORD)f->pos;                /* ADD 26(a3),a0 (adda.w) */
     f->pos += (UWORD)len;
     /* MOVE.l d3,d0:MOVE 26(a3),d0 - len <= buflen, the upper word is 0 */
-    d0 = (len & 0xffff0000UL) | f->pos;
+    result = (len & 0xffff0000UL) | f->pos;
     if (f->pos > f->valid)
         f->valid = f->pos;
     n = len;
     do
         *dst++ = *src++;
     while (--n);
-    return d0;
+    return result;
 }
 
-/* myread - d1 = file, d2 = buffer, d3 = len; d0 comes back unchanged
-   for len 0 */
-static ULONG myread(ULONG d0, struct bfile *f, UBYTE *dst, ULONG len,
+/* myread - d1 = file, d2 = buffer, d3 = len; d0 (result) comes back
+   unchanged for len 0 */
+static ULONG myread(ULONG result, struct bfile *f, UBYTE *dst, ULONG len,
                     struct Library *dosbase)
 {
     const UBYTE *src;
     UWORD n;
 
     if (!len)
-        return d0;
+        return result;
     if (len > f->buflen) {                      /* too big for our buffer */
         myflush(f, dosbase);
-        d0 = Read(f->fh, dst, len);
-        if (d0 != (ULONG)-1)
-            f->bufstart += d0;
-        return d0;
+        result = Read(f->fh, dst, len);
+        if (result != (ULONG)-1)
+            f->bufstart += result;
+        return result;
     }
     if ((UWORD)len > (UWORD)(f->valid - f->pos)) {
         /* not enough valid bytes in buffer, but enough room */
         myflush(f, dosbase);
-        d0 = Read(f->fh, f->buf, f->buflen);
-        if (d0 == (ULONG)-1)
-            return d0;
-        f->valid = (UWORD)d0;                   /* bytes read! */
-        if ((UWORD)len > (UWORD)d0)             /* CMP d0,d3:BLS */
-            len = (len & 0xffff0000UL) | (UWORD)d0;     /* MOVE d0,d3 */
+        result = Read(f->fh, f->buf, f->buflen);
+        if (result == (ULONG)-1)
+            return result;
+        f->valid = (UWORD)result;               /* bytes read! */
+        if ((UWORD)len > (UWORD)result)         /* CMP d0,d3:BLS */
+            len = (len & 0xffff0000UL) | (UWORD)result; /* MOVE d0,d3 */
     }
     src = f->buf + (WORD)f->pos;                /* readit */
     f->pos += (UWORD)len;
@@ -375,9 +375,9 @@ static ULONG myread(ULONG d0, struct bfile *f, UBYTE *dst, ULONG len,
 }
 
 /* myseek - d1 = file, d2 = position, d3 = -1 from the beginning, >= 0
-   from the current position; d0 comes back unchanged if the position is
-   in the buffer, otherwise the result of dos Seek */
-static ULONG myseek(ULONG d0, struct bfile *f, ULONG where, LONG mode,
+   from the current position; d0 (result) comes back unchanged if the
+   position is in the buffer, otherwise the result of dos Seek */
+static ULONG myseek(ULONG result, struct bfile *f, ULONG where, LONG mode,
                     struct Library *dosbase)
 {
     ULONG start;
@@ -389,7 +389,7 @@ static ULONG myseek(ULONG d0, struct bfile *f, ULONG where, LONG mode,
     start = f->bufstart;                        /* somewhere in buffer? */
     if (where >= start && where < start + (WORD)f->valid) {
         f->pos = (UWORD)(where - start);
-        return d0;
+        return result;
     }
     myflush(f, dosbase);                        /* nocando */
     if ((WORD)mode >= 0) {
@@ -435,29 +435,29 @@ static void BLITZ_ROUTINE dodbufflen_c(ULONG n BL_REG(d0))
 BLITZ_THUNK(dodbufflen, dodbufflen_c, "d0-d1/a0-a1");
 
 /* WriteMem / ReadMem - a2 = file, d1 = buffer, d2 = len */
-void BLITZ_ROUTINE dowritemem(ULONG d0 BL_REG(d0), struct bfile *f BL_REG(a2),
+void BLITZ_ROUTINE dowritemem(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
                                        const UBYTE *mem BL_REG(d1), ULONG len BL_REG(d2),
                                        struct Library *dosbase BL_REG(a6))
 {
-    mywrite(d0, f, mem, len, dosbase);
+    mywrite(fileno, f, mem, len, dosbase);
 }
 
-void BLITZ_ROUTINE doreadmem(ULONG d0 BL_REG(d0), struct bfile *f BL_REG(a2),
+void BLITZ_ROUTINE doreadmem(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
                                       UBYTE *mem BL_REG(d1), ULONG len BL_REG(d2),
                                       struct Library *dosbase BL_REG(a6))
 {
-    myread(d0, f, mem, len, dosbase);
+    myread(fileno, f, mem, len, dosbase);
 }
 
 /* Eof - a2 = file: 0, or -1 if a dos seek one byte further fails */
-static ULONG BLITZ_ROUTINE doeof_c(ULONG d0 BL_REG(d0), struct bfile *f BL_REG(a2),
+static ULONG BLITZ_ROUTINE doeof_c(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
                                    struct Library *dosbase BL_REG(a6))
 {
     if (f->pos < f->valid)                      /* CMP .w: BCC slow */
         return 0;
-    if (myseek(d0, f, 1, 0, dosbase) + 1 == 0)
+    if (myseek(fileno, f, 1, 0, dosbase) + 1 == 0)
         return (ULONG)-1;                       /* atend */
-    myseek(d0, f, (ULONG)-1, 0, dosbase);
+    myseek(fileno, f, (ULONG)-1, 0, dosbase);
     return 0;
 }
 /* the original keeps a0/a1 when the position is in the buffer */
@@ -486,11 +486,11 @@ static ULONG BLITZ_ROUTINE doloc_c(const struct bfile *f BL_REG(a2))
 BLITZ_THUNK(doloc, doloc_c, "d1/a0-a1");
 
 /* FileSeek - a2 = file, d1 = position (from the beginning) */
-void BLITZ_ROUTINE dofileseek(ULONG d0 BL_REG(d0), struct bfile *f BL_REG(a2),
+void BLITZ_ROUTINE dofileseek(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
                                        ULONG where BL_REG(d1),
                                        struct Library *dosbase BL_REG(a6))
 {
-    if (myseek(d0, f, where, -1, dosbase) + 1 == 0)
+    if (myseek(fileno, f, where, -1, dosbase) + 1 == 0)
         BLITZ_RUNERR(mess6);                    /* err6 */
 }
 
@@ -502,16 +502,16 @@ static void BLITZ_ROUTINE codeinit_c(struct Library *dos BL_REG(d0))
 BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /* dofreefile - close the file (a3), free the buffer and the record
-   fields.  Returns a2 as the original leaves it: unchanged, or 0 after
-   freeing record fields (see realopen). */
-static const ULONG *freefile(struct bfile *f, const ULONG *a2,
+   fields.  Returns a2 (cursor) as the original leaves it: unchanged, or
+   0 after freeing record fields (see realopen). */
+static const ULONG *freefile(struct bfile *f, const ULONG *cursor,
                              struct Library *dosbase)
 {
     struct bl_regs r;
     struct rec *p;
 
     if (!f->fh)
-        return a2;
+        return cursor;
     myflush(f, dosbase);
     Close(f->fh);
     f->fh = 0;
@@ -520,7 +520,7 @@ static const ULONG *freefile(struct bfile *f, const ULONG *a2,
     BLITZ_ALIBJSR(TOK_globfree, r);
     p = f->recs;                                /* BUG(orig) (#138): 12(a3) stays */
     if (!p)
-        return a2;
+        return cursor;
     while (p) {
         r = (struct bl_regs){ .d0 = 12, .a1 = (ULONG)p };
         p = p->next;
@@ -631,39 +631,40 @@ void BLITZ_ROUTINE dorecord(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2))
 }
 
 /* transdata - a3 = file, d1 = record#: seek to record * (word) record
-   length, then write (Put) or read (Get) every field */
-static void transdata(int put, ULONG d0, UWORD record, struct Library *dosbase)
+   length, then write (Put) or read (Get) every field; result = d0: the
+   file number, then what myread/mywrite return */
+static void transdata(int put, ULONG result, UWORD record, struct Library *dosbase)
 {
     struct bfile *f = (struct bfile *)blitz_string;
     struct rec *p;
 
     /* seekrec: MULU 6(a3),d1 */
-    if (myseek(d0, f, (ULONG)record * (UWORD)f->reclen, -1, dosbase) + 1 == 0) {
+    if (myseek(result, f, (ULONG)record * (UWORD)f->reclen, -1, dosbase) + 1 == 0) {
         BLITZ_RUNERR(mess3);                    /* err3 */
         return;
     }
     for (p = f->recs; p; p = p->next) {
         if (put)
-            d0 = mywrite((ULONG)p, f, p->data, p->len, dosbase);
+            result = mywrite((ULONG)p, f, p->data, p->len, dosbase);
         else
-            d0 = myread((ULONG)p, f, p->data, p->len, dosbase);
-        if ((LONG)d0 < 0) {                     /* TST.l d0:BMI err7 */
+            result = myread((ULONG)p, f, p->data, p->len, dosbase);
+        if ((LONG)result < 0) {                 /* TST.l d0:BMI err7 */
             BLITZ_RUNERR(mess7);
             return;
         }
     }
 }
 
-void BLITZ_ROUTINE doput(ULONG d0 BL_REG(d0), UWORD record BL_REG(d1),
+void BLITZ_ROUTINE doput(ULONG fileno BL_REG(d0), UWORD record BL_REG(d1),
                                   struct Library *dosbase BL_REG(a6))
 {
-    transdata(1, d0, record, dosbase);
+    transdata(1, fileno, record, dosbase);
 }
 
-void BLITZ_ROUTINE doget(ULONG d0 BL_REG(d0), UWORD record BL_REG(d1),
+void BLITZ_ROUTINE doget(ULONG fileno BL_REG(d0), UWORD record BL_REG(d1),
                                   struct Library *dosbase BL_REG(a6))
 {
-    transdata(0, d0, record, dosbase);
+    transdata(0, fileno, record, dosbase);
 }
 
 /* KillFile - JMP _DeleteFile(a6) */
@@ -701,18 +702,18 @@ BLITZ_THUNK(dofileoutput, dofileoutput_c, "d1/a1");
 static ULONG BLITZ_ROUTINE inchar_c(void)
 {
     struct bfile *f = infile;
-    ULONG d0;
+    ULONG got;                                  /* d0 */
 
     if (!f->fh) {
         BLITZ_RUNERR(mess1);                    /* err1 */
         return 0;
     }
-    d0 = myread(0, f, &temp, 1, dosbase_g);
-    if (d0 == (ULONG)-1) {
+    got = myread(0, f, &charbuf, 1, dosbase_g);
+    if (got == (ULONG)-1) {
         BLITZ_RUNERR(mess7);                    /* err7 */
         return 0;
     }
-    return d0 ? temp : (ULONG)-1;
+    return got ? charbuf : (ULONG)-1;
 }
 
 /* inhandle2 - a0 = buffer, d0 = bytes max: read, cut behind the first
@@ -749,33 +750,33 @@ static ULONG BLITZ_ROUTINE instring_c(UBYTE *buf BL_REG(a0), ULONG max BL_REG(d0
 static ULONG BLITZ_ROUTINE outchar_c(UBYTE c BL_REG(d0))
 {
     struct bfile *f = outfile;
-    ULONG d0;
+    ULONG written;                              /* d0 */
 
     if (!f->fh) {
         BLITZ_RUNERR(mess2);                    /* err2 */
         return 0;
     }
-    temp = c;
-    d0 = mywrite(c, f, &temp, 1, dosbase_g);
-    if (d0 + 1 == 0)
+    charbuf = c;
+    written = mywrite(c, f, &charbuf, 1, dosbase_g);
+    if (written + 1 == 0)
         BLITZ_RUNERR(mess7);                    /* err7 */
-    return d0;
+    return written;
 }
 
 /* outhandle2 - a0 = string, d0 = length */
 static ULONG BLITZ_ROUTINE outstring_c(const UBYTE *s BL_REG(a0), ULONG len BL_REG(d0))
 {
     struct bfile *f = outfile;
-    ULONG d0;
+    ULONG written;                              /* d0 */
 
     if (!f->fh) {
         BLITZ_RUNERR(mess2);                    /* err2 */
         return 0;
     }
-    d0 = mywrite(len, f, s, len, dosbase_g);
-    if (d0 + 1 == 0)
+    written = mywrite(len, f, s, len, dosbase_g);
+    if (written + 1 == 0)
         BLITZ_RUNERR(mess7);                    /* err7 */
-    return d0;
+    return written;
 }
 
 /* outhandle3 - a0 = 0-terminated string; keeps d0 */
