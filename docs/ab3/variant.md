@@ -275,22 +275,18 @@ Rough total: G1–G5 about 20–40 commits, G6–G7 about 15–25, G8 open
   license questions of the third-party parts apply (McMinn's gtlib,
   Elmore/Lotan/wzlib commands, ZX0 under zlib, …).
 
-## Decisions for the user
+## Decisions (2026-10-31)
 
-1. Pinned state: v3.14.0 (recommended), or another release.
-2. Form: `blitz2-ab3` with BB2 + AB3 mode beside an unchanged `blitz2`
-   (recommended), or a run-time mode in the one `blitz2` (then the
-   default is no longer byte-identical), or an AB3-only build.
-3. Detection of the open cases: text without header and without
-   `.ab3` (default BB2 text, AB3, or only by option); tokenised AB3 only
-   by option, or also by an AB3 `.xtra`.
+1. Pinned state: AmiBlitz3 v3.14.0 (`58a11658`).
+2. Form: `blitz2-ab3` with BB2 and AB3 mode beside an unchanged
+   `blitz2`.
+3. Detection: AB3 by the `; XTRA` header, the name `*.ab3`, an AB3
+   `.xtra` of a tokenised source, or an option; anything else is BB2.
 4. Entry point: AB3-compatible CLI options (`-s`, `-e`, `-r`, `-d`) for
-   blitz2-ab3; TED stays BB2-only.
-5. Target equality: functional (same compile result and output, G1–G7)
-   or byte-equal executables (G8).
-6. Whether AB3 mode needs the runtime debugger at all (AB3's debuglib
-   needs AB3's debugger; proposal: no).
-7. Mixed includes: decided 2026-10-31, a tokenised include of the
-   other mode is rejected; conversion by name only when needed (§1).
-8. Order and depth of G6/G7 (FPU, 68020) – needed by 4 % and 14 % of the
-   examples respectively.
+   `blitz2-ab3`; TED stays BB2-only.
+5. Target: functional equality (same compile result and output,
+   G1–G7); byte-equal executables (G8) only if needed.
+6. No runtime debugger in AB3 mode for now.
+7. Mixed includes: a tokenised include of the other mode is rejected;
+   conversion by name only when needed (§1).
+8. Order: spike, G1–G5, then G7 (68020), then G6 (FPU).
