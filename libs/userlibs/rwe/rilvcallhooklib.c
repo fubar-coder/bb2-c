@@ -118,9 +118,9 @@ static void BLITZ_ROUTINE libinit_c(void)
 void hookfunc(void);
 
 /* RetrieveCallHook: a6 = graphics base */
-static void *BLITZ_ROUTINE retrievecallhook_c(struct Library *a6 BL_REG(a6))
+static void *BLITZ_ROUTINE retrievecallhook_c(struct Library *gfx BL_REG(a6))
 {
-    gfxbase = a6;
+    gfxbase = gfx;
     return (void *)hookfunc;
 }
 
@@ -144,14 +144,14 @@ static void filloldextent(struct Library *gfx, struct RastPort *rp, const struct
    position, the extent being relative to it) */
 static void place(WORD *px, WORD *py)
 {
-    WORD d5, x, y;
+    WORD slack, x, y;                   /* d5: the field height - the extent height */
 
-    d5 = (WORD)(ob.MaxY - ob.MinY - (extent.te_Extent.MaxY - extent.te_Extent.MinY));
+    slack = (WORD)(ob.MaxY - ob.MinY - (extent.te_Extent.MaxY - extent.te_Extent.MinY));
     if (alignment == RIGHTALIGN)
         x = (WORD)(ob.MaxX - (WORD)extent.te_Width);
     else
         x = (WORD)(2 + ob.MinX - extent.te_Extent.MinX);
-    y = (WORD)(((WORD)(d5 + 1) >> 1) + ob.MinY - extent.te_Extent.MinY);
+    y = (WORD)(((WORD)(slack + 1) >> 1) + ob.MinY - extent.te_Extent.MinY);
     extent.te_Extent.MinX += x;
     extent.te_Extent.MaxX += x;
     extent.te_Extent.MinY += y;
@@ -195,18 +195,18 @@ static void displayfield(struct Library *gfx)
         extent.te_Extent.MaxY = (WORD)(ob.MinY - 1);
     } else {
         const struct BitMap *bm = (const struct BitMap *)text;
-        WORD d0, d1;
+        WORD size, limit;               /* d0, d1 */
 
-        d1 = (WORD)(ob.MaxX - ob.MinX + 1);
-        d0 = (WORD)(bm->BytesPerRow << 3);
-        if (d1 < d0)
-            d0 = d1;
-        extent.te_Width = (UWORD)d0;
-        d1 = (WORD)(ob.MaxY - ob.MinY + 1);
-        d0 = (WORD)bm->Rows;
-        if (d1 < d0)
-            d0 = d1;
-        extent.te_Height = (UWORD)d0;
+        limit = (WORD)(ob.MaxX - ob.MinX + 1);
+        size = (WORD)(bm->BytesPerRow << 3);
+        if (limit < size)
+            size = limit;
+        extent.te_Width = (UWORD)size;
+        limit = (WORD)(ob.MaxY - ob.MinY + 1);
+        size = (WORD)bm->Rows;
+        if (limit < size)
+            size = limit;
+        extent.te_Height = (UWORD)size;
         extent.te_Extent.MinX = ob.MinX;
         extent.te_Extent.MinY = ob.MinY;
         extent.te_Extent.MaxX = (WORD)(ob.MinX + extent.te_Width - 1);
@@ -220,9 +220,10 @@ static void displayfield(struct Library *gfx)
     filloldextent(gfx, rp, &ob, &extent.te_Extent);
 }
 
-/* ClearIndent: the indent in pen 0, the tree lines in pen 1; d7 = the
-   caller's d7 (its upper word, BUG(orig) #737) */
-static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *node, ULONG d7)
+/* ClearIndent: the indent in pen 0, the tree lines in pen 1; levels (d7)
+   = the caller's d7 with the level count in the low word (its upper
+   word, BUG(orig) #737) */
+static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *node, ULONG levels)
 {
     WORD x, y;
     UWORD k;
@@ -232,11 +233,11 @@ static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *n
     SetAPen(rp, 1);
     rp->LinePtrn = 0xaaaa;              /* BUG(orig): not SetDrPt (#738) */
     x = (WORD)(ob.MinX + 8);
-    d7 = (d7 & 0xffff0000UL) | (UWORD)(indent >> 4);
-    d7--;                               /* SUBQ.l #1,d7:BMI */
-    if ((LONG)d7 < 0)
+    levels = (levels & 0xffff0000UL) | (UWORD)(indent >> 4);
+    levels--;                           /* SUBQ.l #1,d7:BMI */
+    if ((LONG)levels < 0)
         return;
-    k = (UWORD)d7;
+    k = (UWORD)levels;
     for (;;) {
         Move(rp, x, ob.MinY);
         y = ob.MaxY;
@@ -270,14 +271,14 @@ static void drawdisabled(struct Library *gfx, const struct Rectangle *b, struct 
     rp->AreaPtSz = 0;
 }
 
-/* the hook: a0 = hook, a1 = message, a2 = node, d7 = the caller's d7 */
+/* the hook: a0 = hook, a1 = message, a2 = node, callerd7 = the caller's d7 */
 static ULONG BLITZ_ROUTINE hookfunc_c(struct Hook *hook BL_REG(a0), struct LVDrawMsg *msg BL_REG(a1),
-                                      const UBYTE *node BL_REG(a2), ULONG d7 BL_REG(d7))
+                                      const UBYTE *node BL_REG(a2), ULONG callerd7 BL_REG(d7))
 {
     struct Library *gfx;
-    const UWORD *a2;
+    const UWORD *entry;                 /* a2: the field entries */
     const UWORD *col;
-    UWORD d0, d1;
+    UWORD value, backpen;               /* d0: the indent, then the front pen; d1 */
     ULONG state;
 
     if (msg->lvdm_MethodID != LV_DRAW)
@@ -288,43 +289,43 @@ static ULONG BLITZ_ROUTINE hookfunc_c(struct Hook *hook BL_REG(a0), struct LVDra
     msgrastport = msg->lvdm_RastPort;
     state = msg->lvdm_State;
     /* (the original loads lvdm_DrawInfo->dri_Pens and does not use it) */
-    d0 = dispaddress[0];                /* the offset of the indent */
-    if (d0)
-        d0 = (UWORD)WAT(node, d0);
-    indent = (WORD)d0;
+    value = dispaddress[0];             /* the offset of the indent */
+    if (value)
+        value = (UWORD)WAT(node, value);
+    indent = (WORD)value;
     col = (const UWORD *)LAT(node, dispaddress[1]);     /* the colour table */
     dispaddress = (const UWORD *)((const UBYTE *)dispaddress + ENTRYBYTESIZE);
-    d0 = col[2];
-    d1 = col[3];
+    value = col[2];
+    backpen = col[3];
     if (state == LVR_NORMAL || state == LVR_NORMALDISABLED_) {
-        d0 = col[0];
-        d1 = col[1];
+        value = col[0];
+        backpen = col[1];
     }
-    apen = d0;
-    bpen = d1;
-    SetABPenDrMd(msgrastport, d0, d1, JAM2);
+    apen = value;
+    bpen = backpen;
+    SetABPenDrMd(msgrastport, value, backpen, JAM2);
 
     maxXboundary = msg->lvdm_Bounds.MaxX;
     ob = msg->lvdm_Bounds;
     if (indent)
-        clearindent(gfx, msgrastport, node, d7);
+        clearindent(gfx, msgrastport, node, callerd7);
     ob.MinX += indent;
 
-    a2 = dispaddress;
+    entry = dispaddress;
     for (;;) {                          /* 'renderfields */
-        WORD w = (WORD)*a2++;
+        WORD w = (WORD)*entry++;
         WORD off;
 
         if (!w)
             break;
-        off = (WORD)*a2++;
-        alignment = (WORD)*a2++;
-        isbitmap = (WORD)*a2++;
-        a2 += 3;                        /* ADDQ.l #6,a2 */
+        off = (WORD)*entry++;
+        alignment = (WORD)*entry++;
+        isbitmap = (WORD)*entry++;
+        entry += 3;                     /* ADDQ.l #6,a2 */
         w = (WORD)(w + ob.MinX);
         if (w >= maxXboundary) {        /* the last field */
             w = (WORD)(maxXboundary + 1);
-            a2 = &dispend;
+            entry = &dispend;
         }
         ob.MaxX = (WORD)(w - 1);
         text = LAT(node, off);
