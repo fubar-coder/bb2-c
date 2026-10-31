@@ -369,49 +369,86 @@ static void rs_return(void)
 
 /* ------------------------------------------------------- init / finit */
 
+/**
+ * @brief init: LECompressShapes off.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     compress = 0;
 }
 BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
 
-/* _libfinit: RTS */
+/**
+ * @brief finit (_libfinit): nothing, an RTS.
+ */
 BLITZ_ASM_ROUTINE(_libfinit, "   rts");
 
 /* ----------------------------------------------------- small commands */
 
+/**
+ * @brief LEAutoCookie on|off: whether CludgeShapes makes the cookies of
+ * its shapes (on at the start).
+ * @param on  d0: any nonzero value is on
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE leautocookie_c(BB_BOOL on BL_REG(d0))
 {
     cookeeemode = on;
 }
 BLITZ_THUNK(_leautocookie, leautocookie_c, "d0-d1/a0-a1");
 
+/**
+ * @brief LECompressShapes True|False: whether LESaveShapes packs the shape
+ * data (PackPBM of RIPackLib).
+ * @param on  d0.w: negative (True) packs, else stored
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE setcompress_c(BB_BOOL on BL_REG(d0))
 {
     compress = (UWORD)on;
 }
 BLITZ_THUNK(_setcompress, setcompress_c, "d0-d1/a0-a1");
 
+/**
+ * @brief LEMaxShapeWidth: the largest width of the last LEScanShapes.
+ * @return d0.w: the width
+ */
 static ULONG BLITZ_ROUTINE maxwidth_c(void)
 {
     return maxw;
 }
 BLITZ_THUNK(_leMaxShapeWidth, maxwidth_c, "d1/a0-a1");
 
+/**
+ * @brief LEMaxShapeHeight: the largest height of the last LEScanShapes.
+ * @return d0.w: the height
+ */
 static ULONG BLITZ_ROUTINE maxheight_c(void)
 {
     return maxh;
 }
 BLITZ_THUNK(_leMaxShapeHeight, maxheight_c, "d1/a0-a1");
 
+/**
+ * @brief LEMaxShapeDepth: the largest depth of the last LEScanShapes.
+ * @return d0.w: the depth
+ */
 static ULONG BLITZ_ROUTINE maxdepth_c(void)
 {
     return maxd;
 }
 BLITZ_THUNK(_leMaxShapeDepth, maxdepth_c, "d1/a0-a1");
 
-/* LEScanShapes start,end: the largest width, height and depth of the
-   used shapes (signed word compares) */
+/**
+ * @brief LEScanShapes startshape#,endshape#: the largest width, height
+ * and depth of the used shapes in the range (for LEMaxShape...).
+ *
+ * Signed word compares; empty shapes (width 0) are skipped.
+ * @param shape  a2: the first shape object
+ * @param last   a3: the last shape object
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE lescanshapes_c(UBYTE *shape BL_REG(a2), UBYTE *last BL_REG(a3))
 {
     WORD w = 0, h = 0, d = 0;
@@ -433,9 +470,22 @@ static void BLITZ_ROUTINE lescanshapes_c(UBYTE *shape BL_REG(a2), UBYTE *last BL
 }
 BLITZ_THUNK(_lescanshapes, lescanshapes_c, "d0-d1/a0-a1");
 
-/* SafeToBlit(shape,x,y): a3 = the shape, a2 = the used bitmap object
-   (+56.w/+58.w its width and height), d6 = the maximum of shapes.
-   BUG(orig): shape/32 is compared with the maximum (#822). */
+/**
+ * @brief SafeToBlit(shape,x,y): whether the shape can be blitted at x,y
+ * into the used bitmap.
+ *
+ * True if the shape exists (in range, has a cookie), x and y are not
+ * negative, and it fits into the bitmap's width and height (+56.w/+58.w
+ * of the bitmap object).  BUG(orig) (#822): shape/32 is compared with the
+ * maximum, not the shape number.
+ * @param shapenum   d0.w: shape
+ * @param x          d1.w: x
+ * @param y          d2.w: y
+ * @param bitmap     a2: the used bitmap object
+ * @param shape      a3: the shape object
+ * @param maxshapes  d6: the maximum of shapes
+ * @return d0.w: -1 if safe, else 0
+ */
 static BB_BOOL BLITZ_ROUTINE safetoblit_c(ULONG shapenum BL_REG(d0), ULONG x BL_REG(d1),
                                           ULONG y BL_REG(d2), UBYTE *bitmap BL_REG(a2),
                                           UBYTE *shape BL_REG(a3), ULONG maxshapes BL_REG(d6))
@@ -494,9 +544,23 @@ static void freeshapesm(UBYTE *shape)
     }
 }
 
-/* CludgeShapes shape#,numshapes,address: d0 = shape#, a0 = its object,
-   d1 = the number, d2 = the shapes in memory (32 bytes header + data
-   each).  -1, or 0 for no shapes or missing memory. */
+/**
+ * @brief CludgeShapes shape#,numshapes,address: makes shapes of shapes in
+ * memory (a 32-byte shape header + the data each), copied into chip
+ * memory.
+ *
+ * Shapes that are in use are freed first; a cookie is made if
+ * LEAutoCookie is on.  BUG(orig): an empty shape in memory (width or
+ * height 0) advances by 32 + the low word of the size of the shape before
+ * - also of an earlier call, the variable stays (#809); a shape with size
+ * 0 copies 65536 bytes (#808); a failing cookie allocation would jump to
+ * the data address (#806, never in practice).
+ * @param shapenum   d0: shape# (unused: shifted by 5, as the original)
+ * @param numshapes  d1: the number of shapes
+ * @param address    d2: the shapes in memory
+ * @param objects    a0: the shape object of shape#
+ * @return d0: -1, or 0 for no shapes or missing chip memory
+ */
 static BB_BOOL BLITZ_ROUTINE loadshapes_c(ULONG shapenum BL_REG(d0), ULONG numshapes BL_REG(d1),
                                           ULONG address BL_REG(d2), UBYTE *objects BL_REG(a0))
 {
@@ -543,8 +607,16 @@ static BB_BOOL BLITZ_ROUTINE loadshapes_c(ULONG shapenum BL_REG(d0), ULONG numsh
 }
 BLITZ_THUNK(_loadshapes, loadshapes_c, "d1/a0-a1");
 
-/* CludgeShapesToAddress address,numshapes,address: the shape objects at
-   d0 (MOVE.l d0,a0:MOVEQ #0,d0) */
+/**
+ * @brief CludgeShapesToAddress Address,numshapes,address: CludgeShapes
+ * into shape objects at an address of the program's own.
+ *
+ * MOVE.l d0,a0:MOVEQ #0,d0, then as CludgeShapes (#808, #809).
+ * @param objects    d0: the first of numshapes shape objects (32 bytes each)
+ * @param numshapes  d1: the number of shapes
+ * @param address    d2: the shapes in memory
+ * @return d0: -1, or 0 for no shapes or missing chip memory
+ */
 static BB_BOOL BLITZ_ROUTINE loadshapestoaddress_c(ULONG objects BL_REG(d0),
                                                    ULONG numshapes BL_REG(d1),
                                                    ULONG address BL_REG(d2))
@@ -578,9 +650,19 @@ static void shapesizes(UBYTE *shape, int init)
     SHW(shape, allbpmemx) = (UWORD)(bl_mulu_w(height2, SHW(shape, depth)) + SHW(shape, allbpmem));
 }
 
-/* LEInitShape shape#,width,height,depth: a2 = the shape; new cleared
-   chip memory for the data and the cookie (not computed).  BUG(orig):
-   the old cookie is not freed (#810). */
+/**
+ * @brief LEInitShape shape#,width,height,depth: makes an empty shape.
+ *
+ * A shape in use is freed first; the sizes are computed, the data and
+ * the cookie get new cleared chip memory (the cookie is not computed),
+ * the handles are 0.  Without memory for the data no cookie is
+ * allocated.  BUG(orig) (#810): the old cookie is not freed.
+ * @param width   d1.w: the width
+ * @param height  d2.w: the height
+ * @param depth   d3.w: the depth
+ * @param shape   a2: the shape object of shape# (d0)
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE leinitshape_c(ULONG width BL_REG(d1), ULONG height BL_REG(d2),
                                         ULONG depth BL_REG(d3), UBYTE *shape BL_REG(a2))
 {
@@ -722,8 +804,26 @@ static int __attribute__((noinline)) readshapes(UBYTE *data)
 
 /* ------------------------------------------------------ LECludgeShapes */
 
-/* LECludgeShapes shape#,shape#,address,palette#[,copymemflag]: a2/a3 the
-   first and last shape, a0 the palette, d2 the LE file in memory */
+/**
+ * @brief LECludgeShapes shape#,shape#,address,palette#,copymemflag: the
+ * shapes (and the palette) of an LE file in memory.
+ *
+ * Nothing if the file is no FORM LESH with SHHD first or has no SDAT.
+ * The shapes are linked into the memory ("cL", no copy) if the file is
+ * uncompressed and below 2 MB, unless copymemflag is negative; otherwise
+ * copied (unpacked) into chip memory.  Every shape gets a cookie.  At
+ * most count + 1 shapes of the file are read.  BUG(orig): the SHHD chunk
+ * is skipped as 20 bytes whatever its length (#811); a CMAP size that is
+ * no multiple of 3 misses SDAT (#811); the palette as in LELoadShapes
+ * (#820); a shape in use that is cludged pops a0 it never pushed and
+ * returns past the caller (#807); the old cookies are not freed (#810).
+ * @param file     d2: the LE file in memory (address)
+ * @param copymem  d4.w: copymemflag (negative: always copy)
+ * @param palette  a0: the palette object of palette# (d3)
+ * @param first    a2: the first shape object
+ * @param last     a3: the last shape object
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE lecludgeshapes2_c(ULONG file BL_REG(d2), ULONG copymem BL_REG(d4),
                                             UBYTE *palette BL_REG(a0), UBYTE *first BL_REG(a2),
                                             UBYTE *last BL_REG(a3))
@@ -764,6 +864,15 @@ static void BLITZ_ROUTINE lecludgeshapes2_c(ULONG file BL_REG(d2), ULONG copymem
 }
 BLITZ_THUNK_PRE(_lecludgeshapes2, lecludgeshapes2_c, "d0-d1/a0-a1", "move.l sp,_rs_sp");
 
+/**
+ * @brief LECludgeShapes shape#,shape#,address,palette#: as above with
+ * copymemflag 0 (CLR.l d4).
+ * @param file     d2: the LE file in memory
+ * @param palette  a0: the palette object of palette# (d3)
+ * @param first    a2: the first shape object
+ * @param last     a3: the last shape object
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE lecludgeshapes_c(ULONG file BL_REG(d2), UBYTE *palette BL_REG(a0),
                                            UBYTE *first BL_REG(a2), UBYTE *last BL_REG(a3))
 {
@@ -890,8 +999,29 @@ static ULONG leloadshapes(ULONG shape1, ULONG shape2, ULONG name, UBYTE *palette
     return cleanup(FREEALL);
 }
 
-/* LELoadShapes shape#,shape#,filename$,palette# (d0, d1, d2; a0 the
-   palette, a2/a3 the shapes) */
+/**
+ * @brief LELoadShapes shape#,shape#,filename$,palette#: loads the shapes
+ * (and the palette) of an LE file into the range of shapes.
+ *
+ * At most count + 1 shapes of the file, unpacked if compressed, each with
+ * a cookie; the CMAP into the palette object.  A file that is no FORM goes
+ * to shapeslib's LoadShapes (form 1).  BUG(orig): the shape numbers given
+ * on to LoadShapes are shifted right by 5 (#815), and the first and last
+ * shape are exchanged (#813); a failing chunk allocation frees the header
+ * buffer and closes the file twice (#819, never in practice); the
+ * palette: no check of the allocation (#821), DIVU #3 overflow, 0 colours
+ * = 65536 (#820); a shape in use that is cludged pops a0 it never pushed
+ * and returns past the caller without freeing the buffers or closing the
+ * file (#807); the old cookies are not freed (#810).
+ * @param shape1   d0.w: the first shape#
+ * @param shape2   d1.w: the last shape#
+ * @param name     d2: filename$
+ * @param palette  a0: the palette object of palette# (d3)
+ * @param first    a2: the first shape object
+ * @param last     a3: the last shape object
+ * @param dos      a6: dos.library
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE leloadshapesp_c(ULONG shape1 BL_REG(d0), ULONG shape2 BL_REG(d1),
                                           ULONG name BL_REG(d2), UBYTE *palette BL_REG(a0),
                                           UBYTE *first BL_REG(a2), UBYTE *last BL_REG(a3),
@@ -901,6 +1031,17 @@ static void BLITZ_ROUTINE leloadshapesp_c(ULONG shape1 BL_REG(d0), ULONG shape2 
 }
 BLITZ_THUNK_PRE(_leloadshapes, leloadshapesp_c, "d0-d1/a0-a1", "move.l sp,_rs_sp");
 
+/**
+ * @brief LELoadShapes shape#,shape#,filename$: as above without a palette
+ * (the CMAP is skipped).
+ * @param shape1  d0.w: the first shape#
+ * @param shape2  d1.w: the last shape#
+ * @param name    d2: filename$
+ * @param first   a2: the first shape object
+ * @param last    a3: the last shape object
+ * @param dos     a6: dos.library
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE leloadshapesnop_c(ULONG shape1 BL_REG(d0), ULONG shape2 BL_REG(d1),
                                             ULONG name BL_REG(d2), UBYTE *first BL_REG(a2),
                                             UBYTE *last BL_REG(a3),
@@ -912,6 +1053,22 @@ BLITZ_THUNK_PRE(_leloadshapesnop, leloadshapesnop_c, "d0-d1/a0-a1", "move.l sp,_
 
 /* the one-shape forms: the last shape = the maximum - 1 (SUBQ/LSL/ADD
    on words: a3 + (WORD)((max - 1) << 5)); d1 = d4 (the name in d1) */
+
+/**
+ * @brief LELoadShapes shape#,filename$,palette#: as above from shape# up
+ * to the last shape (the maximum - 1), as many as the file has.
+ *
+ * BUG(orig) (#812): the palette is that of d3, not of the third argument
+ * (!libs #pd3).
+ * @param shapenum   d0.w: shape#
+ * @param name       d1: filename$
+ * @param maxshapes  d4: the maximum of shapes
+ * @param palette    a0: the palette object of the number in d3 (#812)
+ * @param first      a2: the shape object of shape#
+ * @param objects    a3: the first shape object (item 0)
+ * @param dos        a6: dos.library
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE leloadshapesingle_c(ULONG shapenum BL_REG(d0), ULONG name BL_REG(d1),
                                               ULONG maxshapes BL_REG(d4),
                                               UBYTE *palette BL_REG(a0), UBYTE *first BL_REG(a2),
@@ -925,6 +1082,16 @@ static void BLITZ_ROUTINE leloadshapesingle_c(ULONG shapenum BL_REG(d0), ULONG n
 }
 BLITZ_THUNK_PRE(_leloadshapesingle, leloadshapesingle_c, "d0-d1/a0-a1", "move.l sp,_rs_sp");
 
+/**
+ * @brief LELoadShapes shape#,filename$: as above without a palette.
+ * @param shapenum   d0.w: shape#
+ * @param name       d1: filename$
+ * @param maxshapes  d4: the maximum of shapes
+ * @param first      a2: the shape object of shape#
+ * @param objects    a3: the first shape object (item 0)
+ * @param dos        a6: dos.library
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE leloadshapesinglenop_c(ULONG shapenum BL_REG(d0), ULONG name BL_REG(d1),
                                                  ULONG maxshapes BL_REG(d4),
                                                  UBYTE *first BL_REG(a2), UBYTE *objects BL_REG(a3),
@@ -1061,7 +1228,31 @@ static ULONG writeshapes(BPTR fh, ULONG bufsize)
     return written;
 }
 
-/* LESaveShapes shape#,shape#,filename$[,palette#] */
+/**
+ * @brief LESaveShapes shape#,shape#,filename$,palette#: saves the range of
+ * shapes (and the palette) as an LE file.
+ *
+ * FORM LESH, SHHD (count, compression), CMAP if there is a palette, SDAT
+ * with the shapes (packed with PackPBM if LECompressShapes is on, -1 =
+ * stored when packing fails).  Nothing if the file cannot be opened.
+ * BUG(orig): the count is (shape2>>5)-(shape1>>5) with the upper word of
+ * the register uncleared, so a file of shapes below 32 loads one shape
+ * (#815); whether the CMAP is written depends on dos Write's Z flag
+ * (#814); the FORM length is 8 too large and has the CMAP size of the
+ * last save with a palette (#816); the shape header buffer is allocated
+ * with the upper word of d0 of _saveCMAP and freed as 14 bytes (#817); a
+ * palette of 0 colours copies 65536 (#823); a missing pack buffer is two
+ * runtime errors (#818); PackPBM's failure runs UnPackPBM with d3 = 12
+ * (#772).
+ * @param shape1   d0.w: the first shape#
+ * @param shape2   d1.w: the last shape#
+ * @param name     d2: filename$
+ * @param palette  a0: the palette object of palette# (d3)
+ * @param first    a2: the first shape object
+ * @param last     a3: the last shape object
+ * @param dos      a6: dos.library
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE lesaveshapes_c(ULONG shape1 BL_REG(d0), ULONG shape2 BL_REG(d1),
                                          ULONG name BL_REG(d2), UBYTE *palette BL_REG(a0),
                                          UBYTE *first BL_REG(a2), UBYTE *last BL_REG(a3),
@@ -1102,6 +1293,17 @@ static void BLITZ_ROUTINE lesaveshapes_c(ULONG shape1 BL_REG(d0), ULONG shape2 B
 }
 BLITZ_THUNK(_lesaveshapes, lesaveshapes_c, "d0-d1/a0-a1");
 
+/**
+ * @brief LESaveShapes shape#,shape#,filename$: as above without a palette
+ * (the Write's flags decide as above, #814).
+ * @param shape1  d0.w: the first shape#
+ * @param shape2  d1.w: the last shape#
+ * @param name    d2: filename$
+ * @param first   a2: the first shape object
+ * @param last    a3: the last shape object
+ * @param dos     a6: dos.library
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE lesaveshapesnop_c(ULONG shape1 BL_REG(d0), ULONG shape2 BL_REG(d1),
                                             ULONG name BL_REG(d2), UBYTE *first BL_REG(a2),
                                             UBYTE *last BL_REG(a3),
