@@ -158,26 +158,26 @@ BLITZ_THUNK(dopcoll, dopcoll_c, "d1/a0-a1");
 /* ----------------------------------------------------- rectangle tests */
 
 /* x1,y1,w1,h1 against x2,y2,w2,h2 (signed words) */
-static ULONG chkifhit(WORD x1, WORD y1, WORD w1, WORD h1,
-                      WORD x2, WORD y2, WORD w2, WORD h2)
+static BB_BOOL chkifhit(WORD x1, WORD y1, WORD w1, WORD h1,
+                        WORD x2, WORD y2, WORD w2, WORD h2)
 {
     if ((WORD)(x1 + w1) <= x2)
-        return 0;
+        return BB_FALSE;
     if ((WORD)(y1 + h1) <= y2)
-        return 0;
+        return BB_FALSE;
     if ((WORD)(x2 + w2) < x1)
-        return 0;
+        return BB_FALSE;
     if ((WORD)(y2 + h2) < y1)
-        return 0;
-    return (ULONG)-1;
+        return BB_FALSE;
+    return BB_TRUE;
 }
 
 #define SW(s, o) (*(UWORD *)((UBYTE *)(s) + (o)))
 
 /* a0 = shape 1, a1 = shape 2, d1/d2 = x1/y1, d4/d5 = x2/y2 */
-static ULONG BLITZ_ROUTINE doshapeshit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
-                                         ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
-                                         UBYTE *a BL_REG(a0), UBYTE *b BL_REG(a1))
+static BB_BOOL BLITZ_ROUTINE doshapeshit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
+                                           ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
+                                           UBYTE *a BL_REG(a0), UBYTE *b BL_REG(a1))
 {
     return chkifhit((WORD)x1 - SW(a, 10), (WORD)y1 - SW(a, 12), SW(a, 0), SW(a, 2),
                     (WORD)x2 - SW(b, 10), (WORD)y2 - SW(b, 12), SW(b, 0), SW(b, 2));
@@ -185,9 +185,9 @@ static ULONG BLITZ_ROUTINE doshapeshit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2
 BLITZ_THUNK(doshapeshit, doshapeshit_c, "d1/a0-a1");
 
 /* a0 = shape, a1 = sprite */
-static ULONG BLITZ_ROUTINE doshsphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
-                                       ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
-                                       UBYTE *a BL_REG(a0), UBYTE *b BL_REG(a1))
+static BB_BOOL BLITZ_ROUTINE doshsphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
+                                         ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
+                                         UBYTE *a BL_REG(a0), UBYTE *b BL_REG(a1))
 {
     return chkifhit((WORD)x1 - SW(a, 10), (WORD)y1 - SW(a, 12), SW(a, 0), SW(a, 2),
                     (WORD)x2 - SW(b, 12), (WORD)y2 - SW(b, 14),
@@ -196,9 +196,9 @@ static ULONG BLITZ_ROUTINE doshsphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
 BLITZ_THUNK(doshsphit, doshsphit_c, "d1/a0-a1");
 
 /* a0 = sprite 1, a1 = sprite 2 */
-static ULONG BLITZ_ROUTINE dosphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
-                                     ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
-                                     UBYTE *a BL_REG(a0), UBYTE *b BL_REG(a1))
+static BB_BOOL BLITZ_ROUTINE dosphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
+                                       ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
+                                       UBYTE *a BL_REG(a0), UBYTE *b BL_REG(a1))
 {
     return chkifhit((WORD)x1 - SW(a, 12), (WORD)y1 - SW(a, 14),
                     *(UBYTE *)(a + 9), SW(a, 4) - 1,
@@ -208,10 +208,10 @@ static ULONG BLITZ_ROUTINE dosphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
 BLITZ_THUNK(dosphit, dosphit_c, "d1/a0-a1");
 
 /* RectsHit: d0-d5 = x1,y1,w1,h1,x2,y2; w2, h2 from the a2 stack */
-static ULONG BLITZ_ROUTINE dorectshit_c(ULONG x1 BL_REG(d0), ULONG y1 BL_REG(d1),
-                                        ULONG w1 BL_REG(d2), ULONG h1 BL_REG(d3),
-                                        ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
-                                        const UWORD *args BL_REG(a2))
+static BB_BOOL BLITZ_ROUTINE dorectshit_c(ULONG x1 BL_REG(d0), ULONG y1 BL_REG(d1),
+                                          ULONG w1 BL_REG(d2), ULONG h1 BL_REG(d3),
+                                          ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
+                                          const UWORD *args BL_REG(a2))
 {
     const UWORD *sp = args;
     WORD w2 = (WORD)BL_POPW(sp);
