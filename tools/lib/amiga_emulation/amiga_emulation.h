@@ -134,8 +134,12 @@ struct amiga_emulation_params {
  * clock (SetClock LOAD, on the A500 machines a DATE line with the host's
  * time) and runs the test's script.  The first session of a configuration
  * in a slot boots cold, saves the state at SNAP:ready into
- * slot-K/snap-OWNER-KEY.uss (amiga_emulation_snapshot_name) and goes on;
- * later ones of the same owner restore it.  The owner is the build
+ * slot-K/snap-OWNER-ID-KEY.uss (amiga_emulation_snapshot_name: ID the
+ * configuration as the session asks for it, KEY a hash of everything the
+ * booted state is made from, amiga_emulation_snapshot_key) and goes on;
+ * later ones of the same owner and key restore it.  The save removes the
+ * owner's snapshot of the same ID with another key: its inputs (ROM,
+ * hardfile, template, Amiberry, waiter) have changed.  The owner is the build
  * directory: $AMIGA_EMULATION_OWNER, which CMake sets for every emulator
  * test (without it, e.g. amiga_run by hand: "no owner", hash 0).  A ctest
  * run first removes the snapshots of its build directory
@@ -243,11 +247,27 @@ const char *amiga_emulation_status_name(enum amiga_emulation_status s);
 char *amiga_emulation_snapshot_config(const struct amiga_emulation_params *p,
                                       const char *emulation_dir, const char *slot_dir, char *err,
                                       size_t errlen);
-/* the key of a snapshot: a hash of that configuration, the prologue, the
-   waiter and the identity (device, inode, size, modification time) of the
-   Kickstart ROM, the hardfile DH0 and the Amiberry program (amiberry: NULL
-   for "amiberry" from PATH) */
-unsigned long long amiga_emulation_snapshot_key(const char *cfg, const char *amiberry);
+/* the key of a snapshot: a hash of what the booted state is made from -
+   the version of the library's way of making it, the machine (NULL:
+   "a1200"), that configuration with the slot's paths normalised away
+   (slot_dir/ in it stands for any slot, so neither the slot nor the
+   session's TEST: and mounts change the key, but every other line does:
+   CPU, memory, chipset, ROM, ...), the prologue, the waiter, and the
+   identity (real path, device, inode, size, modification time) of every
+   medium of the configuration (Kickstart ROM and the other files of
+   kickstart_ext_rom_file, cart_file, flash_file, floppyN, cdimageN, the
+   image of every hardfile2 line), of rom.key beside the ROM and of the
+   Amiberry program (amiberry: NULL for "amiberry" from PATH).  A missing
+   file is an identity of its own. */
+unsigned long long amiga_emulation_snapshot_key(const char *cfg, const char *slot_dir,
+                                                const char *machine, const char *amiberry);
+/* what the snapshot is a state of, as the session asks for it: the
+   machine, the changes and the mounts' volumes and access (not their
+   directories).  Of one owner, a slot keeps one snapshot per id: a save
+   removes the owner's snapshots of the same id with another key
+   (amiga_emulation_snapshot_drop_stale), the states of inputs that have
+   changed since. */
+unsigned long long amiga_emulation_snapshot_config_id(const struct amiga_emulation_params *p);
 /* keeps the keep most recently used snap-*.uss of slot_dir (by
    modification time; a restore touches its file) and removes the rest and
    left-over save-*.uss; the number removed, -1 without the directory */
@@ -255,10 +275,18 @@ int amiga_emulation_snapshot_prune(const char *slot_dir, unsigned keep);
 /* the hash of a snapshot owner (a build directory, by its real path if it
    exists); 0 for NULL or "" (no owner), never 0 otherwise */
 unsigned long long amiga_emulation_snapshot_owner(const char *owner);
-/* the file name of the snapshot with key of owner (NULL: no owner):
-   "snap-OWNERHASH-KEY.uss", 16 hex digits each; malloc'd, NULL without
-   memory */
-char *amiga_emulation_snapshot_name(const char *owner, unsigned long long key);
+/* the file name of the snapshot with configuration id and key of owner
+   (NULL: no owner): "snap-OWNERHASH-ID-KEY.uss", 16 hex digits each;
+   malloc'd, NULL without memory */
+char *amiga_emulation_snapshot_name(const char *owner, unsigned long long id,
+                                    unsigned long long key);
+/* removes from slot_dir the snapshots of owner with configuration id and
+   another key than key, and the owner's snapshots of the older names
+   without id (snap-OWNERHASH-KEY.uss); other owners' files, other ids
+   and the snapshot with key stay.  The number removed, -1 without the
+   directory. */
+int amiga_emulation_snapshot_drop_stale(const char *slot_dir, const char *owner,
+                                        unsigned long long id, unsigned long long key);
 /* removes the snapshots of owner (snap-OWNERHASH-*.uss and left-over
    save-OWNERHASH-*.uss) from every slot-K of the slot directory
    ($XDG_RUNTIME_DIR/amiga-emulation-slots, see above) and touches nothing

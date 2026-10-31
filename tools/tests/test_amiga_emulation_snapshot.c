@@ -2,15 +2,20 @@
  * test_amiga_emulation_snapshot.c - the snapshot mode with the emulator
  * (A1200), in a slot directory of its own while it holds one of the
  * shared slots: the first session boots cold and saves the state, the
- * second restores it (TEST:, a writable and a read-only mount through the
- * slot's links), a corrupted state is dropped and the session boots cold,
- * `cold` boots without snapshot.  After every session the slot has no
- * links or SNAP: left.  Exit 77 (skipped) without Amiberry or the data.
+ * second, in a new process, restores it (TEST:, a writable and a
+ * read-only mount through the slot's links); a copy of the hardfile, then
+ * the same copy with another modification time, each boot and save anew
+ * and remove the stale snapshot; a corrupted state is dropped and the
+ * session boots cold, `cold` boots without snapshot.  After every session
+ * the slot has no links or SNAP: left.  Exit 77 (skipped) without
+ * Amiberry or the data.
  */
 #define _XOPEN_SOURCE 700       /* mkdtemp, setenv */
 #include <dirent.h>
+#include <fcntl.h>
 #include <ftw.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 #include "testutil.h"
@@ -100,11 +105,11 @@ static int slot_clean(void)
     return clean;
 }
 
-/* one session in base/NAME; the snapshot.log into *log; 1 = the results
-   are right (amiga_emulation_stats too: snapshot use `use`), -1 = cannot
-   start */
-static int session(const char *name, int cold, enum amiga_emulation_snapshot_use use, char **log,
-                   double *secs)
+/* one session in base/NAME (emu: the emulation directory, NULL: the
+   default); the snapshot.log into *log; 1 = the results are right
+   (amiga_emulation_stats too: snapshot use `use`), -1 = cannot start */
+static int session(const char *name, const char *emu, int cold, enum amiga_emulation_snapshot_use use,
+                   char **log, double *secs)
 {
     static const char script[] =
         "Type TEST:in.txt >TEST:out.txt\n"
@@ -134,6 +139,7 @@ static int session(const char *name, int cold, enum amiga_emulation_snapshot_use
     p.timeout = 90;
     p.work_dir = work;
     p.cold = cold;
+    p.emulation_dir = emu;
     *secs = now();
     if (!(e = amiga_emulation_start(&p, err, sizeof err))) {
         fprintf(stderr, "test_amiga_emulation_snapshot: %s: %s\n", name, err);
@@ -176,13 +182,101 @@ static int session(const char *name, int cold, enum amiga_emulation_snapshot_use
     return ok;
 }
 
-int main(void)
+/* the name of the slot's only snapshot ("" if there is not exactly one) */
+static void only_snapshot(char *name, size_t len)
+{
+    char path[600];
+
+    if (snapshots(path, sizeof path) == 1)
+        snprintf(name, len, "%s", strrchr(path, '/') + 1);
+    else
+        snprintf(name, len, "%s", "");
+}
+
+/* the second session, restored: run in a new process (this program again
+   with --restored BASE), as the first session of a later ctest run */
+static int restored_child(void)
+{
+    char *log = NULL;
+    double secs;
+
+    CHECK(session("second", NULL, 0, AMIGA_EMULATION_SNAP_RESTORED, &log, &secs) == 1);
+    CHECK(log && strstr(log, "restore ") && strstr(log, "job started") && !strstr(log, "cold")
+          && !strstr(log, "failed"));
+    CHECK(secs < 10);
+    free(log);
+    fprintf(stderr, "test_amiga_emulation_snapshot: restored session (new process) %.1f s\n", secs);
+    return failures != 0;
+}
+
+static int run_restored_child(const char *self)
+{
+    pid_t pid = fork();
+    int st;
+
+    if (pid == 0) {
+        execl(self, self, "--restored", base, (char *)NULL);
+        _exit(127);
+    }
+    return pid > 0 && waitpid(pid, &st, 0) == pid && WIFEXITED(st) ? WEXITSTATUS(st) : -1;
+}
+
+/* copies src to dst (another file: its own inode and time) */
+static int copy_file(const char *src, const char *dst)
+{
+    FILE *in = fopen(src, "rb"), *out = in ? fopen(dst, "wb") : NULL;
+    static char buf[65536];
+    size_t n;
+    int bad = !in || !out;
+
+    while (!bad && (n = fread(buf, 1, sizeof buf, in)) > 0)
+        bad = fwrite(buf, 1, n, out) != n;
+    if (in)
+        fclose(in);
+    if (out && fclose(out))
+        bad = 1;
+    return bad ? -1 : 0;
+}
+
+/* base/emu: the default emulation directory's ROM and rom.key as links,
+   a copy of the hardfile (another identity, the same content) */
+static int changed_emulation_dir(char *emu, size_t len)
+{
+    static const char *const links[] = { "A1200.47.115.rom", "rom.key" };
+    const char *src = getenv("AMIGA_EMULATION_DIR");
+    char from[600], to[600];
+    size_t i;
+
+    if (!src || !*src)
+        src = TEST_EMULATION_DIR;
+    snprintf(emu, len, "%s/emu", base);
+    if (mkdir(emu, 0700))
+        return -1;
+    for (i = 0; i < 2; i++) {
+        snprintf(from, sizeof from, "%s/%s", src, links[i]);
+        snprintf(to, sizeof to, "%s/%s", emu, links[i]);
+        if (!access(from, F_OK) && symlink(from, to))
+            return -1;
+    }
+    snprintf(from, sizeof from, "%s/Workbench_OS3.2-AB3-AGA.vhd", src);
+    snprintf(to, sizeof to, "%s/Workbench_OS3.2-AB3-AGA.vhd", emu);
+    return copy_file(from, to);
+}
+
+int main(int argc, char **argv)
 {
     const char *xdg = getenv("XDG_RUNTIME_DIR");
-    char shared[256], runtime[200], path[600], *log = NULL;
+    char shared[256], runtime[200], path[600], emu[300], name[128], before[128], *log = NULL;
+    struct timespec old[2] = { { 1000000000, 0 }, { 1000000000, 0 } };
     double secs;
     int held, r;
     FILE *f;
+
+    if (argc == 3 && !strcmp(argv[1], "--restored") && strlen(argv[2]) == strlen(base)) {
+        memcpy(base, argv[2], sizeof base);
+        snprintf(slot, sizeof slot, "%s/run/amiga-emulation-slots/slot-0", base);
+        return restored_child();
+    }
 
     /* one of the shared slots for the whole test, then a slot directory
        of its own with one slot */
@@ -201,26 +295,45 @@ int main(void)
     unsetenv("AMIGA_EMULATION_SNAPSHOT");
 
     /* the first session: boots cold, saves, restores */
-    r = session("first", 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs);
+    r = session("first", NULL, 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs);
     if (r < 0)
         return 77;
     CHECK(r == 1);
     CHECK(log && strstr(log, "boot cold, save") && strstr(log, " saved ")
-          && strstr(log, "job started") && !strstr(log, "failed"));
+          && strstr(log, "job started") && !strstr(log, "failed") && !strstr(log, "stale"));
     CHECK(snapshots(path, sizeof path) == 1);
     CHECK(slot_clean());
     free(log);
     fprintf(stderr, "test_amiga_emulation_snapshot: first session %.1f s\n", secs);
 
-    /* the second: restored */
-    CHECK(session("second", 0, AMIGA_EMULATION_SNAP_RESTORED, &log, &secs) == 1);
-    CHECK(log && strstr(log, "restore ") && strstr(log, "job started") && !strstr(log, "cold")
+    /* the second, in a new process: restored, the snapshot stays */
+    only_snapshot(before, sizeof before);
+    CHECK(run_restored_child(argv[0]) == 0);
+    only_snapshot(name, sizeof name);
+    CHECK(*name && !strcmp(name, before));
+    CHECK(slot_clean());
+
+    /* a changed input (a copy of the hardfile): a new snapshot, the
+       stale one of the same configuration removed when it is saved */
+    CHECK(changed_emulation_dir(emu, sizeof emu) == 0);
+    CHECK(session("copy", emu, 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs) == 1);
+    CHECK(log && strstr(log, "boot cold, save") && strstr(log, "removed 1 stale snapshot")
           && !strstr(log, "failed"));
-    CHECK(secs < 10);
-    CHECK(snapshots(path, sizeof path) == 1);
+    only_snapshot(name, sizeof name);
+    CHECK(*name && strcmp(name, before));
     CHECK(slot_clean());
     free(log);
-    fprintf(stderr, "test_amiga_emulation_snapshot: restored session %.1f s\n", secs);
+    /* the copy's modification time changed: again */
+    snprintf(path, sizeof path, "%s/Workbench_OS3.2-AB3-AGA.vhd", emu);
+    CHECK(utimensat(AT_FDCWD, path, old, 0) == 0);
+    snprintf(before, sizeof before, "%s", name);
+    CHECK(session("mtime", emu, 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs) == 1);
+    CHECK(log && strstr(log, "boot cold, save") && strstr(log, "removed 1 stale snapshot")
+          && !strstr(log, "failed"));
+    only_snapshot(name, sizeof name);
+    CHECK(*name && strcmp(name, before));
+    CHECK(slot_clean());
+    free(log);
 
     /* broken: a corrupted state is dropped, the session boots cold */
     CHECK(snapshots(path, sizeof path) == 1);
@@ -230,14 +343,14 @@ int main(void)
         fputs("not a savestate", f);
         fclose(f);
     }
-    CHECK(session("corrupted", 0, AMIGA_EMULATION_SNAP_FALLBACK, &log, &secs) == 1);
+    CHECK(session("corrupted", emu, 0, AMIGA_EMULATION_SNAP_FALLBACK, &log, &secs) == 1);
     CHECK(log && strstr(log, "restore failed") && strstr(log, "boot cold"));
     CHECK(snapshots(path, sizeof path) == 0);
     CHECK(slot_clean());
     free(log);
 
     /* cold: no snapshot at all */
-    CHECK(session("cold", 1, AMIGA_EMULATION_SNAP_COLD, &log, &secs) == 1);
+    CHECK(session("cold", NULL, 1, AMIGA_EMULATION_SNAP_COLD, &log, &secs) == 1);
     CHECK(log && !*log);
     CHECK(snapshots(path, sizeof path) == 0);
     free(log);

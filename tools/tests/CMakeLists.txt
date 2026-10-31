@@ -36,13 +36,17 @@ add_test(NAME amiga_emulation_a500 COMMAND test_amiga_emulation_a500)
 math(EXPR limit "200 + 2 * ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(amiga_emulation_a500 PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
-# the snapshot mode (save, restore, a corrupted state, cold), in a slot
-# directory of its own while it holds one of the shared slots
+# the snapshot mode (save, restore in a new process, a changed hardfile, a
+# corrupted state, cold), in a slot directory of its own while it holds
+# one of the shared slots
 add_executable(test_amiga_emulation_snapshot test_amiga_emulation_snapshot.c)
 target_link_libraries(test_amiga_emulation_snapshot PRIVATE lib_amiga_emulation lib_hunk)
 target_compile_options(test_amiga_emulation_snapshot PRIVATE -Wno-unused-function)
+get_filename_component(emulation_dir ${AMIGA_EMULATION_DIR} ABSOLUTE)
+target_compile_definitions(test_amiga_emulation_snapshot PRIVATE
+	TEST_EMULATION_DIR="${emulation_dir}")
 add_test(NAME amiga_emulation_snapshot COMMAND test_amiga_emulation_snapshot)
-math(EXPR limit "240 + ${EMULATION_QUEUE_WAIT}")
+math(EXPR limit "360 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(amiga_emulation_snapshot PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 # two sessions joined in start order: the first hangs until its limit, the

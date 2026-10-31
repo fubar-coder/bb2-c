@@ -78,7 +78,7 @@ of the booted system, taken when the system waits for its job (about
   `slot-K/test` to its `TEST:`, `slot-K/mnt-I` to its mount I (also the
   read-only ones). An extra volume `SNAP:` (`slot-K/ctl`) holds the waiter
   and the job. At the end of the session the links and `SNAP:` are
-  removed; only the snapshots `slot-K/snap-OWNER-KEY.uss` stay (about
+  removed; only the snapshots `slot-K/snap-OWNER-ID-KEY.uss` stay (about
   0.6 MB on the A1200, 80 KB on the A500), the 24 most recently used per
   slot over all owners (the tests use about a dozen configurations; 5
   slots × 24 × 0.6 MB is at most about 70 MB). The pruning also removes
@@ -98,16 +98,44 @@ of the booted system, taken when the system waits for its job (about
   time, `SetClock LOAD` takes 1.8 s there) and executes the test's
   script. During the session `TEST:run.script` is the prologue; at the
   end it is the test's script again, as without snapshot.
-* **The key** of a snapshot is a hash of the configuration (with the
-  slot's paths, so it does not depend on the session's directories), the
-  prologue, the waiter and the identity (device, inode, size,
-  modification time) of the Kickstart ROM, the hardfile and the Amiberry
-  program: a new hardfile or Amiberry gets new snapshots by itself.
+* **The key** of a snapshot (`amiga_emulation_snapshot_key`) is a hash
+  of everything the booted state is made from:
+  * the effective configuration: the machine's template with the
+    machine's and the test's changes, without comments, the media by
+    their real paths, and the slot's own paths (`TEST:`, the mounts,
+    `SNAP:`) replaced by a placeholder, so neither the slot nor the
+    session's directories change the key, but every other line does
+    (CPU, memory, chipset, ROM, a mount's volume or access);
+  * the machine's name;
+  * the identity of every medium of the configuration – the Kickstart
+    ROM, `kickstart_ext_rom_file`, `cart_file`, `flash_file`,
+    `floppyN`, `cdimageN`, the image of every `hardfile2` line – and of
+    `rom.key` beside the ROM and of the Amiberry program: real path,
+    device, inode, size, modification time. Not a hash of the content:
+    the hardfiles have 64 MB each, which would cost every session more
+    time than the restore; a change through the file system changes the
+    time, a copy the inode;
+  * the prologue, the waiter and a version of the library's way of
+    making a state (`SNAP_FORMAT` in `amiga_emulation.c`, counted up when
+    a change there makes older states unfit and the rest of the key does
+    not show it).
+
+  A new hardfile, ROM, template or Amiberry thus gets new snapshots by
+  itself.
+* **The configuration id** (`amiga_emulation_snapshot_config_id`) is
+  what the session asks for: the machine, the test's changes and the
+  mounts' volumes and access (not their directories). The file name has
+  both, `snap-OWNERHASH-ID-KEY.uss`; when a session saves a new state, the
+  owner's snapshot of the same id with another key in that slot is
+  removed (`amiga_emulation_snapshot_drop_stale`, "removed 1 stale
+  snapshot" in `snapshot.log`): it was made from inputs that have changed
+  since and would never be restored again. So is a snapshot of the
+  owner with the older name without id (`snap-OWNERHASH-KEY.uss`).
 * **The owner** of a snapshot is the build directory whose tests saved
   it: `AMIGA_EMULATION_OWNER` in the environment, which CMake sets for
   every emulator test (the top-level build directory, also for the host
-  side's emulator tests). The file name has a hash of it and the key,
-  `snap-OWNERHASH-KEY.uss` (16 hex digits each); a session restores only
+  side's emulator tests). The file name has a hash of it, the id and
+  the key, `snap-OWNERHASH-ID-KEY.uss` (16 hex digits each); a session restores only
   snapshots of its own owner. Without the variable (e.g. `amiga_run` by
   hand) the owner is "none" (hash `0000000000000000`). The key alone does
   not catch every change (a snapshot saved by an older state of this

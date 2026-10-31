@@ -144,8 +144,8 @@ struct amiga_emulation {
     enum { SNAP_OFF, SNAP_CREATING, SNAP_RESTORING, SNAP_RUNNING } snap;
     char *slot_dir;             /* slot-K */
     char *ctl_dir;              /* slot-K/ctl, SNAP: */
-    char *snap_path;            /* slot-K/snap-OWNER-KEY.uss */
-    unsigned long long snap_key, snap_owner;
+    char *snap_path;            /* slot-K/snap-OWNER-ID-KEY.uss */
+    unsigned long long snap_key, snap_owner, snap_id;
     char *real_test_dir;        /* the real paths of TEST: and the mounts */
     char **mount_dirs;
     size_t nmounts;
@@ -791,6 +791,12 @@ static void set_use(struct amiga_emulation *e, enum amiga_emulation_snapshot_use
 #define SNAP_LOG            "snapshot.log"  /* in the work directory */
 #define SNAP_SAVE_DELAY     0.5     /* seconds between SNAP:ready and SAVESTATE */
 #define SNAP_RESTORE_GRACE  6       /* seconds from the start to SNAP:started */
+/* The version of how a state is made, in every key: count it up when a
+   change here makes the states saved before unfit for a restore and the
+   key does not see it otherwise (the configuration, the prologue, the
+   waiter and the media are in the key already), e.g. a change of the
+   moment of the save or of what the slot's directories hold then. */
+#define SNAP_FORMAT         2
 
 /* TEST:run.script of every session in snapshot mode (AmigaDOS 1.3 syntax:
    it also runs under Kickstart 1.3); the state is saved in the waiter */
@@ -838,18 +844,42 @@ static unsigned long long fnv(unsigned long long h, const void *p, size_t n)
     return h;
 }
 
-/* the identity of a file (device, inode, size, mtime) into the hash */
+/* the identity of a file into the hash: its real path, device, inode,
+   size and modification time (not its content: a hash of the hardfiles,
+   64 MB each, would cost every session more than a restore takes; a
+   change through the file system changes the time, a copy the inode) */
 static unsigned long long fnv_file(unsigned long long h, const char *path)
 {
     struct stat st;
+    char *real;
 
     if (path && !stat(path, &st)) {
         long long v[5] = { (long long)st.st_dev, (long long)st.st_ino, (long long)st.st_size,
                            (long long)st.st_mtim.tv_sec, (long long)st.st_mtim.tv_nsec };
 
+        real = realpath(path, NULL);
+        if (real)
+            h = fnv(h, real, strlen(real) + 1);
+        free(real);
         return fnv(h, v, sizeof v);
     }
     return fnv(h, "?", 1);
+}
+
+/* the identity of rom.key beside the Kickstart ROM's real path (Amiberry
+   decrypts an encrypted ROM with it, amiga_emulation_check_rom) */
+static unsigned long long fnv_rom_key(unsigned long long h, const char *cfg)
+{
+    char *rom = config_value(cfg, "kickstart_rom_file");
+    char *real = rom && *rom ? realpath(rom, NULL) : NULL;
+    char *slash = real ? strrchr(real, '/') : NULL;
+    char *key = slash ? str_printf("%.*s/rom.key", (int)(slash - real), real) : NULL;
+
+    h = fnv_file(h, key);
+    free(key);
+    free(real);
+    free(rom);
+    return h;
 }
 
 /* the program's path as execvp finds it (malloc'd), NULL if not found */
@@ -910,19 +940,71 @@ static char *slot_path(const char *slot_dir, const char *name, size_t i)
                            : str_printf("%s/%s-%zu", slot_dir, name, i);
 }
 
-/* the Kickstart ROM and the hardfile DH0 of a configuration (malloc'd,
-   NULL if missing) */
-static void config_files(const char *cfg, char **rom, char **hdf)
-{
-    char *v = config_value(cfg, "hardfile2");
-    char *path = v ? strstr(v, "DH0:") : NULL;
+/* the keys whose whole value is a medium the boot reads (empty: none) */
+static const char *const media_keys[] = {
+    "kickstart_rom_file", "kickstart_ext_rom_file", "cart_file", "flash_file",
+    "floppy0", "floppy1", "floppy2", "floppy3",
+    "cdimage0", "cdimage1", "cdimage2", "cdimage3",
+};
 
-    *rom = config_value(cfg, "kickstart_rom_file");
-    *hdf = NULL;
-    if (path) {
-        path += 4;
-        *hdf = strndup(path, strcspn(path, ","));
+/* the media of a configuration: the files of media_keys and the image of
+   every hardfile2 line (ACCESS,DEVICE:PATH,...), in the order of the text;
+   a NULL-terminated array of malloc'd paths, NULL without memory.  The
+   directory mounts (filesystem2) are not media: they are the session's. */
+static char **config_media(const char *cfg)
+{
+    char **v = calloc(1, sizeof *v);
+    size_t n = 0;
+    const char *p = cfg;
+
+    while (v && *p) {
+        const char *e = strchr(p, '\n');
+        size_t len = e ? (size_t)(e - p) : strlen(p), i;
+        const char *eq = memchr(p, '=', len), *s = NULL, *c;
+        size_t sn = 0;
+
+        for (i = 0; eq && i < sizeof media_keys / sizeof media_keys[0]; i++)
+            if ((size_t)(eq - p) == strlen(media_keys[i]) && !strncmp(p, media_keys[i], (size_t)(eq - p))) {
+                s = eq + 1;
+                sn = len - (size_t)(s - p);
+                /* cdimageN=PATH,OPTIONS */
+                if (!strncmp(p, "cdimage", 7) && (c = memchr(s, ',', sn)) != NULL)
+                    sn = (size_t)(c - s);
+            }
+        if (eq && (size_t)(eq - p) == 9 && !strncmp(p, "hardfile2", 9)
+            && (c = memchr(eq, ',', len - (size_t)(eq - p))) != NULL
+            && (s = memchr(c, ':', len - (size_t)(c - p))) != NULL) {
+            s++;
+            sn = strcspn(s, ",\n");
+        }
+        if (s && sn) {
+            char **nv = realloc(v, (n + 2) * sizeof *v);
+
+            if (!nv || !(nv[n] = strndup(s, sn))) {
+                v = nv ? nv : v;
+                break;
+            }
+            v = nv;
+            v[++n] = NULL;
+        }
+        p += len + (e != NULL);
     }
+    if (v && *p) {
+        /* out of memory */
+        for (n = 0; v[n]; n++)
+            free(v[n]);
+        free(v);
+        v = NULL;
+    }
+    return v;
+}
+
+static void free_media(char **v)
+{
+    size_t i;
+
+    for (i = 0; v && v[i]; i++)
+        free(v[i]);
     free(v);
 }
 
@@ -972,27 +1054,30 @@ static char *drop_comments(char *cfg)
     return b.p;
 }
 
-/* the ROM and the hardfile by their real paths, without the comments
-   (they name the emulation directory): the same files reached through
-   other links (amiga-emulation/ of another worktree) give the same
-   configuration, so the same key (the state stores the real path of
+/* the media (ROM, hardfiles, ...) by their real paths, without the
+   comments (they name the emulation directory): the same files reached
+   through other links (amiga-emulation/ of another worktree) give the
+   same configuration, so the same key (the state stores the real path of
    the hardfile anyway); the owner in the file name keeps the snapshots of
    different build directories apart */
 static char *resolve_files(char *cfg)
 {
-    char *file[2], *real;
-    int i;
+    char **media, *real;
+    size_t i;
 
     if (!(cfg = drop_comments(cfg)))
         return NULL;
-    config_files(cfg, &file[0], &file[1]);
-    for (i = 0; i < 2; i++) {
-        real = file[i] ? realpath(file[i], NULL) : NULL;
-        if (cfg && real && strcmp(real, file[i]) && !has_char(real, ",\n"))
-            cfg = replace_all(cfg, file[i], real);
-        free(real);
-        free(file[i]);
+    if (!(media = config_media(cfg))) {
+        free(cfg);
+        return NULL;
     }
+    for (i = 0; media[i]; i++) {
+        real = realpath(media[i], NULL);
+        if (cfg && real && strcmp(real, media[i]) && !has_char(real, ",\n"))
+            cfg = replace_all(cfg, media[i], real);
+        free(real);
+    }
+    free_media(media);
     return cfg;
 }
 
@@ -1040,19 +1125,61 @@ out:
     return cfg;
 }
 
-unsigned long long amiga_emulation_snapshot_key(const char *cfg, const char *amiberry)
+/* a string with its length (so that "ab","c" and "a","bc" differ) */
+static unsigned long long fnv_str(unsigned long long h, const char *s)
+{
+    size_t n = s ? strlen(s) : (size_t)-1;
+
+    h = fnv(h, &n, sizeof n);
+    return s ? fnv(h, s, n) : h;
+}
+
+unsigned long long amiga_emulation_snapshot_key(const char *cfg, const char *slot_dir,
+                                                const char *machine, const char *amiberry)
 {
     unsigned long long h = 0xcbf29ce484222325ULL;
-    char *rom, *hdf, *prog = find_program(amiberry ? amiberry : "amiberry");
+    char *prog = find_program(amiberry ? amiberry : "amiberry"), *slot, *norm, **media;
+    size_t i;
 
-    config_files(cfg, &rom, &hdf);
-    h = fnv(h, cfg, strlen(cfg));
+    /* the slot's paths (TEST:, the mounts, SNAP:) do not matter: the same
+       configuration has the same key in every slot */
+    slot = slot_dir && *slot_dir ? str_printf("%s/", slot_dir) : NULL;
+    norm = strdup(cfg);
+    if (norm && slot)
+        norm = replace_all(norm, slot, "@SLOT@/");
+    media = config_media(cfg);
+    h = fnv(h, &(unsigned){ SNAP_FORMAT }, sizeof(unsigned));
+    h = fnv_str(h, machine ? machine : "a1200");
+    h = fnv_str(h, norm ? norm : cfg);
     h = fnv(h, snap_prologue, sizeof snap_prologue);
     h = fnv(h, snap_waiter, sizeof snap_waiter);
-    h = fnv_file(fnv_file(fnv_file(h, rom), hdf), prog);
-    free(rom);
-    free(hdf);
+    for (i = 0; media && media[i]; i++)
+        h = fnv_file(h, media[i]);
+    if (!media)
+        h = fnv(h, "!", 1);
+    h = fnv_rom_key(h, cfg);
+    h = fnv_file(h, prog);
+    free_media(media);
+    free(norm);
+    free(slot);
     free(prog);
+    return h;
+}
+
+unsigned long long amiga_emulation_snapshot_config_id(const struct amiga_emulation_params *p)
+{
+    unsigned long long h = 0xcbf29ce484222325ULL;
+    size_t i;
+
+    h = fnv_str(h, p->machine ? p->machine : "a1200");
+    h = fnv(h, &p->nchanges, sizeof p->nchanges);
+    for (i = 0; i < p->nchanges; i++)
+        h = fnv_str(fnv_str(h, p->changes[i].key), p->changes[i].value);
+    h = fnv(h, &p->nmounts, sizeof p->nmounts);
+    for (i = 0; i < p->nmounts; i++) {
+        h = fnv_str(h, p->mounts[i].volume);
+        h = fnv(h, p->mounts[i].writable ? "w" : "r", 1);
+    }
     return h;
 }
 
@@ -1147,9 +1274,46 @@ unsigned long long amiga_emulation_snapshot_owner(const char *owner)
     return h ? h : 1;   /* 0 is "no owner" */
 }
 
-char *amiga_emulation_snapshot_name(const char *owner, unsigned long long key)
+char *amiga_emulation_snapshot_name(const char *owner, unsigned long long id,
+                                    unsigned long long key)
 {
-    return str_printf("snap-%016llx-%016llx.uss", amiga_emulation_snapshot_owner(owner), key);
+    return str_printf("snap-%016llx-%016llx-%016llx.uss", amiga_emulation_snapshot_owner(owner), id,
+                      key);
+}
+
+int amiga_emulation_snapshot_drop_stale(const char *slot_dir, const char *owner,
+                                        unsigned long long id, unsigned long long key)
+{
+    DIR *d = opendir(slot_dir);
+    struct dirent *de;
+    unsigned long long o = amiga_emulation_snapshot_owner(owner);
+    char same[64], current[80], old[32];
+    int removed = 0;
+
+    if (!d)
+        return -1;
+    snprintf(same, sizeof same, "snap-%016llx-%016llx-", o, id);
+    snprintf(current, sizeof current, "snap-%016llx-%016llx-%016llx.uss", o, id, key);
+    snprintf(old, sizeof old, "snap-%016llx-", o);
+    while ((de = readdir(d)) != NULL) {
+        size_t n = strlen(de->d_name);
+        char *path;
+        struct stat st;
+
+        /* this configuration with another key, or the owner's snapshots
+           of the names before the configuration id (snap-OWNER-KEY.uss:
+           no configuration tells whether they are still current) */
+        if (!strcmp(de->d_name, current)
+            || !(has_affixes(de->d_name, same, ".uss")
+                 || (has_affixes(de->d_name, old, ".uss") && n == strlen(old) + 16 + 4)))
+            continue;
+        path = str_printf("%s/%s", slot_dir, de->d_name);
+        if (path && !lstat(path, &st) && S_ISREG(st.st_mode) && !unlink(path))
+            removed++;
+        free(path);
+    }
+    closedir(d);
+    return removed;
 }
 
 /* the snapshots of the owner with hash o (snap-O-*.uss, left-over
@@ -1272,7 +1436,8 @@ static int snap_write_job(struct amiga_emulation *e)
    snapshots of the slot beyond AMIGA_EMULATION_SNAP_KEEP removed */
 static int snap_save(struct amiga_emulation *e)
 {
-    char *tmp = str_printf("%s/save-%016llx-%016llx.uss", e->slot_dir, e->snap_owner, e->snap_key);
+    char *tmp = str_printf("%s/save-%016llx-%016llx-%016llx.uss", e->slot_dir, e->snap_owner,
+                           e->snap_id, e->snap_key);
     char *cfg = str_printf("%s/snapshot.uae", e->work_dir);
     const char *cmd[] = { "SAVESTATE", tmp, cfg, NULL };
     char reply[256];
@@ -1301,8 +1466,16 @@ static int snap_save(struct amiga_emulation *e)
         unlink(cfg);
     free(tmp);
     free(cfg);
-    if (saved)
+    if (saved) {
+        /* the state this one replaces: the same configuration of the same
+           owner from inputs that have changed since */
+        int stale = amiga_emulation_snapshot_drop_stale(e->slot_dir, getenv("AMIGA_EMULATION_OWNER"),
+                                                        e->snap_id, e->snap_key);
+
+        if (stale > 0)
+            snap_log(e, "removed %d stale snapshot%s", stale, stale == 1 ? "" : "s");
         amiga_emulation_snapshot_prune(e->slot_dir, AMIGA_EMULATION_SNAP_KEEP);
+    }
     return saved;
 }
 
@@ -1399,9 +1572,10 @@ static int snap_setup(struct amiga_emulation *e, const struct amiga_emulation_pa
         snap_log(e, "cold: %s", err);
         return -1;
     }
-    e->snap_key = amiga_emulation_snapshot_key(*cfg, e->amiberry);
+    e->snap_key = amiga_emulation_snapshot_key(*cfg, e->slot_dir, p->machine, e->amiberry);
+    e->snap_id = amiga_emulation_snapshot_config_id(p);
     e->snap_owner = amiga_emulation_snapshot_owner(getenv("AMIGA_EMULATION_OWNER"));
-    name = amiga_emulation_snapshot_name(getenv("AMIGA_EMULATION_OWNER"), e->snap_key);
+    name = amiga_emulation_snapshot_name(getenv("AMIGA_EMULATION_OWNER"), e->snap_id, e->snap_key);
     e->snap_path = name ? str_printf("%s/%s", e->slot_dir, name) : NULL;
     free(name);
     e->real_test_dir = realpath(e->test_dir, NULL);

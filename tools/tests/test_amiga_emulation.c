@@ -179,64 +179,244 @@ static void snapshot_config(void)
     }
 }
 
-/* the key: changes with the configuration and with each file's identity
-   (ROM, hardfile, Amiberry); a missing file is a key of its own */
-static void snapshot_key(void)
+/* the key of params p with the emulation directory emu in slot slot_dir */
+static unsigned long long key_of(const struct amiga_emulation_params *p, const char *emu,
+                                 const char *slot_dir, const char *prog)
 {
-    char dir[] = "/tmp/amiga-emulation-snapkey-XXXXXX", rom[96], hdf[96], prog[96], *cfg;
-    unsigned long long k0, k;
-    struct timespec old[2] = { { 1000000000, 0 }, { 1000000000, 0 } };
+    char err[200], *cfg = amiga_emulation_snapshot_config(p, emu, slot_dir, err, sizeof err);
+    unsigned long long k;
 
-    CHECK(mkdtemp(dir) != NULL);
-    snprintf(rom, sizeof rom, "%s/kick.rom", dir);
-    snprintf(hdf, sizeof hdf, "%s/wb.vhd", dir);
-    snprintf(prog, sizeof prog, "%s/amiberry", dir);
-    put_file(rom, 16);
-    put_file(hdf, 16);
-    put_file(prog, 16);
-    cfg = malloc(512);
     CHECK(cfg != NULL);
     if (!cfg)
-        return;
-    snprintf(cfg, 512, "kickstart_rom_file=%s\nhardfile2=ro,DH0:%s,32,1,2,512,0,,uae0\ncpu_type=68020\n",
-             rom, hdf);
-    k0 = amiga_emulation_snapshot_key(cfg, prog);
-    CHECK(amiga_emulation_snapshot_key(cfg, prog) == k0);
-    /* the configuration */
-    cfg[strlen(cfg) - 2] = '1';
-    CHECK(amiga_emulation_snapshot_key(cfg, prog) != k0);
-    cfg[strlen(cfg) - 2] = '0';
-    CHECK(amiga_emulation_snapshot_key(cfg, prog) == k0);
-    /* the ROM's size, the hardfile's time, the program's size */
-    put_file(rom, 17);
-    k = amiga_emulation_snapshot_key(cfg, prog);
-    CHECK(k != k0);
-    k0 = k;
-    CHECK(utimensat(AT_FDCWD, hdf, old, 0) == 0);
-    k = amiga_emulation_snapshot_key(cfg, prog);
-    CHECK(k != k0);
-    k0 = k;
-    put_file(prog, 17);
-    k = amiga_emulation_snapshot_key(cfg, prog);
-    CHECK(k != k0);
-    k0 = k;
-    /* another file at the same path (another inode) */
-    remove(rom);
-    put_file(rom, 17);
-    CHECK(utimensat(AT_FDCWD, rom, old, 0) == 0);
-    k = amiga_emulation_snapshot_key(cfg, prog);
-    CHECK(k != k0);
-    k0 = k;
-    /* broken: files missing, no hardfile line */
-    remove(prog);
-    k = amiga_emulation_snapshot_key(cfg, prog);
-    CHECK(k != k0);
-    remove(rom);
-    remove(hdf);
-    CHECK(amiga_emulation_snapshot_key(cfg, prog) != k);
-    CHECK(amiga_emulation_snapshot_key("cpu_type=68020\n", prog) != k);
+        return 0;
+    k = amiga_emulation_snapshot_key(cfg, slot_dir, p->machine, prog);
     free(cfg);
+    return k;
+}
+
+/* the key: the same for the same inputs, whatever the slot and the
+   session's directories; another one when an input of the booted state
+   changes (the configuration: CPU, memory, a medium; each medium's
+   identity: the ROM, the hardfile, rom.key; the machine; Amiberry); a
+   missing file is a key of its own */
+static void snapshot_key(void)
+{
+    static const char *const files[] = { "A1200.47.115.rom", "Workbench_OS3.2-AB3-AGA.vhd",
+                                         "rom.key", "amiberry", "cd.iso" };
+    char dir[] = "/tmp/amiga-emulation-snapkey-XXXXXX", path[5][96], tmp[110], err[200], *cfg;
+    struct amiga_emulation_mount mounts[] = { { "CD", "/data/cd", 0 }, { "W", "/data/w", 1 } };
+    struct amiga_emulation_option ch[2];
+    struct amiga_emulation_params p = { 0 };
+    struct timespec old[2] = { { 1000000000, 0 }, { 1000000000, 0 } };
+    unsigned long long k0, k;
+    const char *prog = path[3];
+    size_t i;
+
+    CHECK(mkdtemp(dir) != NULL);
+    for (i = 0; i < 5; i++) {
+        snprintf(path[i], sizeof path[i], "%s/%s", dir, files[i]);
+        if (i < 4)
+            put_file(path[i], 16);
+    }
+    p.mounts = mounts;
+    p.nmounts = 2;
+    p.changes = ch;
+    k0 = key_of(&p, dir, "/slots/slot-3", prog);
+    /* stable: the same inputs again, another slot, other mount
+       directories, another TEST: (the slot's), the explicit default
+       machine is the default */
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) == k0);
+    CHECK(key_of(&p, dir, "/slots/slot-4", prog) == k0);
+    CHECK(key_of(&p, dir, "/elsewhere/run/amiga-emulation-slots/slot-0", prog) == k0);
+    mounts[0].host_dir = "/other/cd";
+    mounts[1].host_dir = "/other/w";
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) == k0);
+    p.machine = "a1200";
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) == k0);
+    /* broken: the slot's paths are normalised, not every path - a mount's
+       volume, its access, the number of mounts change the key */
+    mounts[1].writable = 0;
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) != k0);
+    mounts[1].writable = 1;
+    mounts[0].volume = "CD2";
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) != k0);
+    mounts[0].volume = "CD";
+    p.nmounts = 1;
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) != k0);
+    p.nmounts = 2;
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) == k0);
+
+    /* the configuration: CPU, memory, a CD image (missing, then there) */
+    ch[0] = (struct amiga_emulation_option){ "cpu_type", "68030" };
+    p.nchanges = 1;
+    CHECK((k = key_of(&p, dir, "/slots/slot-3", prog)) != k0);
+    ch[0] = (struct amiga_emulation_option){ "chipmem_size", "4" };
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) != k0 && key_of(&p, dir, "/slots/slot-3", prog) != k);
+    ch[0] = (struct amiga_emulation_option){ "z3mem_size", "64" };
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) != k0);
+    ch[0] = (struct amiga_emulation_option){ "cdimage0", "@EMULATION_DIR@/cd.iso,image" };
+    k = key_of(&p, dir, "/slots/slot-3", prog);
+    CHECK(k != k0);
+    put_file(path[4], 16);
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) != k);
+    p.nchanges = 0;
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) == k0);
+
+    /* the machine: the same configuration text under another name */
+    cfg = amiga_emulation_snapshot_config(&p, dir, "/slots/slot-3", err, sizeof err);
+    CHECK(cfg && amiga_emulation_snapshot_key(cfg, "/slots/slot-3", "a1200", prog) == k0);
+    CHECK(cfg && amiga_emulation_snapshot_key(cfg, "/slots/slot-3", NULL, prog) == k0);
+    CHECK(cfg && amiga_emulation_snapshot_key(cfg, "/slots/slot-3", "a500", prog) != k0);
+    free(cfg);
+    p.machine = "a500";
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) != k0);
+    p.machine = NULL;
+
+    /* each file's identity: the ROM's size, the hardfile's time, its
+       size, rom.key, the program; another file at the same path */
+    put_file(path[0], 17);
+    CHECK(utimensat(AT_FDCWD, path[0], old, 0) == 0);
+    CHECK((k = key_of(&p, dir, "/slots/slot-3", prog)) != k0);
+    k0 = k;
+    CHECK(utimensat(AT_FDCWD, path[1], old, 0) == 0);
+    CHECK((k = key_of(&p, dir, "/slots/slot-3", prog)) != k0);
+    k0 = k;
+    CHECK(key_of(&p, dir, "/slots/slot-4", prog) == k0);
+    put_file(path[1], 17);
+    CHECK(utimensat(AT_FDCWD, path[1], old, 0) == 0);
+    CHECK((k = key_of(&p, dir, "/slots/slot-3", prog)) != k0);
+    k0 = k;
+    CHECK(utimensat(AT_FDCWD, path[2], old, 0) == 0);
+    CHECK((k = key_of(&p, dir, "/slots/slot-3", prog)) != k0);
+    k0 = k;
+    put_file(path[3], 17);
+    CHECK((k = key_of(&p, dir, "/slots/slot-3", prog)) != k0);
+    k0 = k;
+    /* the same size and time, another inode (made before the old one goes) */
+    snprintf(tmp, sizeof tmp, "%s.new", path[0]);
+    put_file(tmp, 17);
+    CHECK(utimensat(AT_FDCWD, tmp, old, 0) == 0);
+    CHECK(rename(tmp, path[0]) == 0);
+    CHECK((k = key_of(&p, dir, "/slots/slot-3", prog)) != k0);
+    k0 = k;
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) == k0);
+
+    /* broken: files missing, a configuration without media */
+    remove(path[2]);
+    CHECK((k = key_of(&p, dir, "/slots/slot-3", prog)) != k0);
+    remove(path[3]);
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) != k);
+    remove(path[0]);
+    remove(path[1]);
+    CHECK(key_of(&p, dir, "/slots/slot-3", prog) != k);
+    CHECK(amiga_emulation_snapshot_key("cpu_type=68020\n", NULL, NULL, prog)
+          != amiga_emulation_snapshot_key("cpu_type=68030\n", NULL, NULL, prog));
+    remove(path[4]);
     rmdir(dir);
+}
+
+/* the configuration id: what the session asks for (machine, changes, the
+   mounts' volumes and access), not the mounts' directories */
+static void snapshot_config_id(void)
+{
+    struct amiga_emulation_mount mounts[] = { { "CD", "/data/cd", 0 }, { "W", "/data/w", 1 } };
+    struct amiga_emulation_option ch[] = { { "cpu_type", "68030" }, { "chipmem_size", NULL } };
+    struct amiga_emulation_params p = { 0 };
+    unsigned long long id0;
+
+    p.mounts = mounts;
+    p.nmounts = 2;
+    id0 = amiga_emulation_snapshot_config_id(&p);
+    CHECK(amiga_emulation_snapshot_config_id(&p) == id0);
+    mounts[0].host_dir = "/other/cd";
+    CHECK(amiga_emulation_snapshot_config_id(&p) == id0);
+    p.machine = "a1200";
+    CHECK(amiga_emulation_snapshot_config_id(&p) == id0);
+    /* broken: everything else is another configuration */
+    p.machine = "a500";
+    CHECK(amiga_emulation_snapshot_config_id(&p) != id0);
+    p.machine = NULL;
+    mounts[1].writable = 0;
+    CHECK(amiga_emulation_snapshot_config_id(&p) != id0);
+    mounts[1].writable = 1;
+    mounts[1].volume = "X";
+    CHECK(amiga_emulation_snapshot_config_id(&p) != id0);
+    mounts[1].volume = "W";
+    p.nmounts = 1;
+    CHECK(amiga_emulation_snapshot_config_id(&p) != id0);
+    p.nmounts = 2;
+    p.changes = ch;
+    p.nchanges = 1;
+    CHECK(amiga_emulation_snapshot_config_id(&p) != id0);
+    ch[0].value = "68040";
+    CHECK(amiga_emulation_snapshot_config_id(&p) != id0);
+    p.nchanges = 2;
+    CHECK(amiga_emulation_snapshot_config_id(&p) != id0);
+    p.nchanges = 0;
+    CHECK(amiga_emulation_snapshot_config_id(&p) == id0);
+}
+
+/* a save drops the owner's snapshots of the same configuration id with
+   another key and the owner's older names; nothing else */
+static void snapshot_drop_stale(void)
+{
+    char dir[] = "/tmp/amiga-emulation-snapstale-XXXXXX", path[256], *n;
+    const char *own = "/build/one", *other = "/build/two";
+    struct {
+        const char *owner;
+        unsigned long long id, key;
+        int gone;
+    } snaps[] = {
+        { "/build/one", 1, 0x10, 0 },   /* the current one */
+        { "/build/one", 1, 0x11, 1 },   /* stale: another key */
+        { "/build/one", 1, 0x12, 1 },
+        { "/build/one", 2, 0x11, 0 },   /* another configuration */
+        { "/build/two", 1, 0x11, 0 },   /* another owner */
+        { NULL, 1, 0x11, 0 },           /* no owner */
+    };
+    size_t i;
+
+    CHECK(mkdtemp(dir) != NULL);
+    for (i = 0; i < sizeof snaps / sizeof snaps[0]; i++) {
+        n = amiga_emulation_snapshot_name(snaps[i].owner, snaps[i].id, snaps[i].key);
+        CHECK(n && strlen(n) == strlen("snap---.uss") + 48);
+        snprintf(path, sizeof path, "%s/%s", dir, n ? n : "x");
+        put_file(path, 4);
+        free(n);
+    }
+    /* the owner's old name (no id), another owner's, a save in progress */
+    snprintf(path, sizeof path, "%s/snap-%016llx-%016llx.uss", dir,
+             amiga_emulation_snapshot_owner(own), 0x11ULL);
+    put_file(path, 4);
+    snprintf(path, sizeof path, "%s/snap-%016llx-%016llx.uss", dir,
+             amiga_emulation_snapshot_owner(other), 0x11ULL);
+    put_file(path, 4);
+    snprintf(path, sizeof path, "%s/save-%016llx-%016llx-%016llx.uss", dir,
+             amiga_emulation_snapshot_owner(own), 1ULL, 0x13ULL);
+    put_file(path, 4);
+    CHECK(amiga_emulation_snapshot_drop_stale(dir, own, 1, 0x10) == 3);
+    for (i = 0; i < sizeof snaps / sizeof snaps[0]; i++) {
+        n = amiga_emulation_snapshot_name(snaps[i].owner, snaps[i].id, snaps[i].key);
+        snprintf(path, sizeof path, "%s/%s", dir, n ? n : "x");
+        CHECK(!access(path, F_OK) == !snaps[i].gone);
+        remove(path);
+        free(n);
+    }
+    snprintf(path, sizeof path, "%s/snap-%016llx-%016llx.uss", dir,
+             amiga_emulation_snapshot_owner(own), 0x11ULL);
+    CHECK(access(path, F_OK) && errno == ENOENT);
+    snprintf(path, sizeof path, "%s/snap-%016llx-%016llx.uss", dir,
+             amiga_emulation_snapshot_owner(other), 0x11ULL);
+    CHECK(!access(path, F_OK));
+    remove(path);
+    snprintf(path, sizeof path, "%s/save-%016llx-%016llx-%016llx.uss", dir,
+             amiga_emulation_snapshot_owner(own), 1ULL, 0x13ULL);
+    CHECK(!access(path, F_OK));
+    remove(path);
+    CHECK(amiga_emulation_snapshot_drop_stale(dir, own, 1, 0x10) == 0);
+    CHECK(rmdir(dir) == 0);
+    /* broken: no directory */
+    CHECK(amiga_emulation_snapshot_drop_stale(dir, own, 1, 0x10) == -1);
 }
 
 /* pruning: the newest keep snap-*.uss stay, left-over save-*.uss and the
@@ -309,12 +489,12 @@ static void snapshot_purge(void)
     CHECK(amiga_emulation_snapshot_owner(own) != 0);
     CHECK(amiga_emulation_snapshot_owner(own) == amiga_emulation_snapshot_owner(own));
     CHECK(amiga_emulation_snapshot_owner(own) != amiga_emulation_snapshot_owner(other));
-    n = amiga_emulation_snapshot_name(NULL, 0x1234);
-    CHECK(n && !strcmp(n, "snap-0000000000000000-0000000000001234.uss"));
+    n = amiga_emulation_snapshot_name(NULL, 0x56, 0x1234);
+    CHECK(n && !strcmp(n, "snap-0000000000000000-0000000000000056-0000000000001234.uss"));
     free(n);
-    a = amiga_emulation_snapshot_name(own, 1);
-    b = amiga_emulation_snapshot_name(other, 1);
-    CHECK(a && b && strcmp(a, b) && strlen(a) == strlen("snap--.uss") + 32);
+    a = amiga_emulation_snapshot_name(own, 1, 1);
+    b = amiga_emulation_snapshot_name(other, 1, 1);
+    CHECK(a && b && strcmp(a, b) && strlen(a) == strlen("snap---.uss") + 48);
     free(a);
     free(b);
 
@@ -340,9 +520,9 @@ static void snapshot_purge(void)
         snprintf(path, sizeof path, "%s/amiga-emulation-slots/slot-%d", rt, s);
         CHECK(mkdir(path, 0700) == 0);
         for (i = 0; i < 2; i++) {
-            char *mine = amiga_emulation_snapshot_name(own, 0x10 + i);
-            char *theirs = amiga_emulation_snapshot_name(other, 0x10 + i);
-            char *none = amiga_emulation_snapshot_name(NULL, 0x10 + i);
+            char *mine = amiga_emulation_snapshot_name(own, 7, 0x10 + i);
+            char *theirs = amiga_emulation_snapshot_name(other, 7, 0x10 + i);
+            char *none = amiga_emulation_snapshot_name(NULL, 7, 0x10 + i);
 
             gone[ng] = mine ? str_cat3(path, "/", mine) : NULL;
             put_file(gone[ng++], 4);
@@ -372,7 +552,7 @@ static void snapshot_purge(void)
     put_file(keep[nk++], 0);
     snprintf(path, sizeof path, "%s/amiga-emulation-slots/slot-x", rt);
     CHECK(mkdir(path, 0700) == 0);
-    n = amiga_emulation_snapshot_name(own, 0x10);
+    n = amiga_emulation_snapshot_name(own, 7, 0x10);
     keep[nk] = n ? str_cat3(path, "/", n) : NULL;
     put_file(keep[nk++], 4);
     free(n);
@@ -751,6 +931,8 @@ int main(void)
 
     snapshot_config();
     snapshot_key();
+    snapshot_config_id();
+    snapshot_drop_stale();
     snapshot_prune();
     snapshot_purge();
 
