@@ -20,6 +20,11 @@
 #   archive/amiblitz3/github-b1a9dee/       single files of AmiBlitz3 on
 #                                           GitHub (commit b1a9dee150ef),
 #                                           paths as there
+#   archive/amiblitz3/github-58a11658/      single files of AmiBlitz3
+#                                           v3.14.0 on GitHub (commit
+#                                           58a1165840a7), paths as there:
+#                                           BigLibs, residents, compiler,
+#                                           test sources of the AB3 mode
 # None of it is in git (.gitignore); archive/README.md lists the sources.
 # Already unpacked and checked material is not touched again.
 # At the end: archive/sources/ted-1.1 and blitz2-1.95 (in git) must equal
@@ -51,6 +56,35 @@ foreach(f IN LISTS ab3gh_files)
 	list(GET f 1 sha)
 	get_filename_component(name ${path} NAME)
 	list(APPEND downloads "ab3gh-${name}|https://raw.githubusercontent.com/AmiBlitz/AmiBlitz3/${ab3gh_commit}/${path}|${sha}")
+endforeach()
+# AmiBlitz3 v3.14.0 (the state the AB3 mode of blitz2-ab3 is built against,
+# docs/ab3/variant.md): its binary BigLibs, a resident, its compiler (the
+# reference of the tests) and test programs, GitHub at the release commit:
+# download name ab3v314-NAME -> archive/amiblitz3/github-58a11658/PATH
+set(ab3v314_commit 58a1165840a7be19d408e727d2fe444c29da91b3)
+set(ab3v314_files
+	"BlitzLibs/baseLibs|23ac17b06b60916076586cb56a4c391b8137ef107a1ee3a9bfca6680a4030e87"
+	"BlitzLibs/utilLibs|9b0f6d2c8cc95785b1cbc2e1d590f4bbf52a15d6d71bb0e2581c963268a2c04f"
+	"BlitzLibs/OsLibs|e7eab41bebfb456ecd88464948e5273c66b1e79dcd5a9740868120506fa83a4e"
+	"BlitzLibs/csLibs|940ea4fc66656df12f73c0566d68e7f463e5521ba455eeb4ef94806eb63fd037"
+	"BlitzLibs/Residents/all.res|87ce951e1fd25984f110c9f6158084b1685d4eaf1dae6619efcc4b854655dc70"
+	"Amiblitz3|4120e8ecae94d2489899175d0758e6f1481e24196ee6c7e922d88e7b2bb51787"
+	"Sourcecodes/Amiblitz3/Tests/atoi.ab3|cb0c4f3df66d6b12ca679c0f90a72d212292f54ddc72ee7b6336c48e0e39d121"
+	"Sourcecodes/Amiblitz3/Tests/compilersignals.ab3|294459511eaeab48a9fb853ee383627323e58699b84ae528e29c492b87e74374"
+	"Sourcecodes/Amiblitz3/Tests/data_restore_in_function.ab3|a6c2575ccc664efd904b016e1deb30d0d047aacc831129eb956cf661d299a824"
+	"Sourcecodes/Amiblitz3/Tests/exec_data.ab3|e059325a2fe72346f1bc51610acab238950231e5509c5c9bc9ac1d2b33bae802"
+	"Sourcecodes/Amiblitz3/Tests/localization.ab3|680c91ea170ff0aa3c888cf55fdfddf1c94cb488ecbe71b4cfce19eecfb0eca4"
+	"Sourcecodes/Amiblitz3/Tests/fabrizio_speedquestion.ab3|7b310c6a88d28f10cc67485b2f038026b6c8428ce2aea6d2dc46dd5fdd1d7f7d"
+	"Sourcecodes/Amiblitz3/Tests/memoryleak_test.ab3|55575c695af83140801dc609ecd136a20645efba467893ce05f53a087ecc08a9"
+	"Sourcecodes/Amiblitz3/Tests/setint.ab3|bf120eaad18b23b4e0b8f450826d460e22dfdac9d1a1ef64bb04b364d8f2205a"
+	"Sourcecodes/Amiblitz3/Tests/test_newtypes.ab3|a40aafb02addd7534e64506329f066f021f65dc88d9d4ab3af444b737ae66873"
+	"Sourcecodes/Amiblitz3/Tests/trim.ab3|f71b479bca8a0a3ec613d17fa549d71076ca3bd04bf4de5274c96784d1cf3ecd")
+foreach(f IN LISTS ab3v314_files)
+	string(REPLACE "|" ";" f "${f}")
+	list(GET f 0 path)
+	list(GET f 1 sha)
+	get_filename_component(name ${path} NAME)
+	list(APPEND downloads "ab3v314-${name}|https://raw.githubusercontent.com/AmiBlitz/AmiBlitz3/${ab3v314_commit}/${path}|${sha}")
 endforeach()
 
 file(MAKE_DIRECTORY ${DOWNLOAD_DIR})
@@ -203,6 +237,25 @@ foreach(f IN LISTS ab3gh_files)
 		file(COPY_FILE ${DOWNLOAD_DIR}/ab3gh-${name} ${dest})
 		message(STATUS "${dest}: copied")
 	endif()
+endforeach()
+
+# AmiBlitz3 v3.14.0 from GitHub: ab3v314-NAME -> archive/amiblitz3/github-58a11658/PATH
+foreach(f IN LISTS ab3v314_files)
+	string(REPLACE "|" ";" f "${f}")
+	list(GET f 0 path)
+	list(GET f 1 sha)
+	get_filename_component(name ${path} NAME)
+	set(dest ${root}/archive/amiblitz3/github-58a11658/${path})
+	if(EXISTS ${dest})
+		file(SHA256 ${dest} have)
+		if(have STREQUAL sha)
+			continue()
+		endif()
+	endif()
+	get_filename_component(dir ${dest} DIRECTORY)
+	file(MAKE_DIRECTORY ${dir})
+	file(COPY_FILE ${DOWNLOAD_DIR}/ab3v314-${name} ${dest})
+	message(STATUS "${dest}: copied")
 endforeach()
 
 # the sources in git must be the ones of the archive
