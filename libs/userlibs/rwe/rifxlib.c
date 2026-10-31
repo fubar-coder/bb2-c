@@ -68,6 +68,8 @@
  * ScreenCopy) only for lores bitmaps (40 bytes per line).
  */
 #include "blitzlib.h"
+#include <stddef.h>
+#include <graphics/gfx.h>
 
 /* entry points (C functions and thunks, defined below) */
 static void BLITZ_ROUTINE clearbitmap2(ULONG delay BL_REG(d1), ULONG bm BL_REG(a0));
@@ -189,12 +191,18 @@ BLITZ_LIBFIN();
 #define B_(a) (*(UBYTE *)(a))
 #define W_(a) (*(UWORD *)(a))
 #define L_(a) (*(ULONG *)(a))
-/* struct BitMap: bm_BytesPerRow +0, bm_Rows +2, bm_Depth +5, planes +8 */
-#define BM_BPR(bm)    W_((bm) + 0)
-#define BM_ROWS(bm)   W_((bm) + 2)
-#define BM_FLDEPTH(bm) W_((bm) + 4)    /* bm_Flags:bm_Depth as a word */
-#define BM_DEPTH(bm)  B_((bm) + 5)
-#define BM_PLANES(bm) ((bm) + 8)
+/* the bitmap (a0/a1, an address): struct BitMap - BytesPerRow +0, Rows
+   +2, Flags +4, Depth +5, Planes +8 */
+#define BM(bm)        ((struct BitMap *)(bm))
+#define BM_BPR(bm)    (BM(bm)->BytesPerRow)
+#define BM_ROWS(bm)   (BM(bm)->Rows)
+/* BUG(orig) (#670): Flags and Depth read as one word (MOVE.w 4(a0)) */
+#define BM_FLDEPTH(bm) (*(UWORD *)&BM(bm)->Flags)
+/* Depth as a byte at its offset: as a member access GCC orders the loads
+   of Derez/ZoomXY differently (the code must stay the same) */
+#define BM_DEPTH(bm)  B_((bm) + offsetof(struct BitMap, Depth))
+#define BM_PLANES(bm) ((ULONG)BM(bm)->Planes)
+static_assert(sizeof(struct BitMap) == 40);
 
 /* ------------------------------------------------------------ variables */
 
@@ -207,13 +215,12 @@ static UWORD bytesperline, bytesperline2;
 static UWORD xzoom = 1, yzoom = 1;
 
 static ULONG tableaddress;
-/* reducex2table, zoomx2table, zoomx4table, zoomx8table: GetZoomTables
-   returns the address of this array */
-static ULONG tables[4];
-#define reducex2table tables[0]
-#define zoomx2table   tables[1]
-#define zoomx4table   tables[2]
-#define zoomx8table   tables[3]
+/* the original's longs reducex2table, zoomx2table, zoomx4table,
+   zoomx8table: GetZoomTables returns the address of the four */
+static struct {
+    ULONG reducex2, zoomx2, zoomx4, zoomx8;
+} tables;
+static_assert(sizeof tables == 4 * 4);
 
 static ULONG add_value = 1;
 static UWORD res_value, res_value2, res_value3;
@@ -229,15 +236,23 @@ static UWORD yzoom_value = 1, yzoom_value2 = 1, xzoom_value = 1;
 static UWORD sbitdepth, yvalue, height;
 
 /* bit_add (16 longs), dest_add (16 longs), source_address, dest_address,
-   add_source, add_dest - one array: the stores of the plane pointers do
-   not check the depth and run from one into the next */
-static ULONG pa[36];
-#define bit_add        (&pa[0])
-#define dest_add       (&pa[16])
-#define source_address pa[32]
-#define dest_address   pa[33]
-#define add_source     pa[34]
-#define add_dest       pa[35]
+   add_source, add_dest - one block: the stores of the plane pointers do
+   not check the depth and run from one into the next (BUG(orig) (#674),
+   (#947)), so they go through `all`, the block as one array */
+static union {
+    ULONG all[36];
+    struct {
+        ULONG bit_add[16], dest_add[16];
+        ULONG source_address, dest_address, add_source, add_dest;
+    } v;
+} pa;
+static_assert(sizeof pa == 36 * 4);
+#define bit_add        (&pa.all[0])
+#define dest_add       (&pa.all[16])
+#define source_address pa.v.source_address
+#define dest_address   pa.v.dest_address
+#define add_source     pa.v.add_source
+#define add_dest       pa.v.add_dest
 
 /* ------------------------------------------------------------ init/finit */
 
@@ -266,7 +281,7 @@ static void BLITZ_ROUTINE libinit_c(void)
     tableaddress = table;
 
     /* CreateReduceX2: bits 7,5,3,1 -> bits 3,2,1,0 */
-    reducex2table = table;
+    tables.reducex2 = table;
     for (index = 0; index != 256; index++) {
         bits = 0;
         if (index & 0x80) bits |= 8;
@@ -277,7 +292,7 @@ static void BLITZ_ROUTINE libinit_c(void)
         table += 1;
     }
     /* CreateZoomX2: every bit twice */
-    zoomx2table = table;
+    tables.zoomx2 = table;
     for (index = 0; index != 256; index++) {
         UWORD v = 0;
         int b;
@@ -288,7 +303,7 @@ static void BLITZ_ROUTINE libinit_c(void)
         table += 2;
     }
     /* CreateZoomX4: every bit four times */
-    zoomx4table = table;
+    tables.zoomx4 = table;
     for (index = 0; index != 256; index++) {
         ULONG v = 0;
         int b;
@@ -299,7 +314,7 @@ static void BLITZ_ROUTINE libinit_c(void)
         table += 4;
     }
     /* CreateZoomX8: four bits, every bit eight times */
-    zoomx8table = table;
+    tables.zoomx8 = table;
     for (index = 0; index != 16; index++) {
         ULONG v = 0;
         int b;
@@ -315,7 +330,7 @@ BLITZ_THUNK(libinit, libinit_c, "d1/a0-a1");
 /* GetZoomTables */
 static ULONG BLITZ_ROUTINE zoomtables_c(void)
 {
-    return (ULONG)tables;
+    return (ULONG)&tables;
 }
 BLITZ_THUNK(zoomtables, zoomtables_c, "d1/a0-a1");
 
@@ -521,7 +536,7 @@ static void zoomx4_c(UBYTE sel, ULONG srcadd, ULONG dstadd, UWORD width, UWORD h
                      ULONG src, ULONG dst)
 {
     ULONG srcplane = BM_PLANES(src), dstplane = BM_PLANES(dst);
-    ULONG smod, dmod, from, line0, line1, line2, line3, tab = zoomx4table;
+    ULONG smod, dmod, from, line0, line1, line2, line3, tab = tables.zoomx4;
     UWORD planes, x, y, dbpr = BM_BPR(dst);
     WORD wbytes;
 
@@ -597,7 +612,7 @@ static void BLITZ_ROUTINE zoomx4_6_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_RE
                                      ULONG width BL_REG(d4), ULONG h BL_REG(d5),
                                      ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
 {
-    if (!zoomx4table)
+    if (!tables.zoomx4)
         return;
     zoomx4_c(0, srcadd, dstadd, (UWORD)width, (UWORD)h, src, dst);   /* CLR.b d7 */
 }
@@ -606,7 +621,7 @@ static void BLITZ_ROUTINE zoomx4_7_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_RE
                                      ULONG src BL_REG(a0), ULONG dst BL_REG(a1),
                                      const UBYTE *args BL_REG(a2))
 {
-    if (!zoomx4table)
+    if (!tables.zoomx4)
         return;
     zoomx4_c(args[-1], srcadd, dstadd, (UWORD)width, (UWORD)h, src, dst);  /* -1(a2) */
 }
@@ -620,7 +635,7 @@ static void BLITZ_ROUTINE zoomx2_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(
                                    ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
 {
     ULONG srcplane = BM_PLANES(src), dstplane = BM_PLANES(dst);
-    ULONG smod, dmod, from, line0, line1, tab = zoomx2table;
+    ULONG smod, dmod, from, line0, line1, tab = tables.zoomx2;
     UWORD planes, x, y, dbpr = BM_BPR(dst);
     WORD wbytes;
 
@@ -662,7 +677,7 @@ static void BLITZ_ROUTINE zoomx8_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(
                                    ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
 {
     ULONG srcplane = BM_PLANES(src), dstplane = BM_PLANES(dst);
-    ULONG smod, dmod, from, line0, line1, line2, line3, save, tab = zoomx8table;
+    ULONG smod, dmod, from, line0, line1, line2, line3, save, tab = tables.zoomx8;
     UWORD planes, x, y, dbpr = BM_BPR(dst);
     WORD wbytes;
     int pass;
@@ -719,7 +734,7 @@ BLITZ_THUNK(zoomx8, zoomx8_c, "d0-d1/a0-a1");
    read after it is written) */
 static void BLITZ_ROUTINE dozoomy_c(ULONG bm BL_REG(a0))
 {
-    ULONG planes = BM_PLANES(bm), line, tab = zoomx2table;
+    ULONG planes = BM_PLANES(bm), line, tab = tables.zoomx2;
     UWORD plane, y;
     WORD srcx, dstx;
 
@@ -748,7 +763,7 @@ static void BLITZ_ROUTINE reducex2_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_RE
                                      ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
 {
     ULONG srcplane = BM_PLANES(src), dstplane = BM_PLANES(dst);
-    ULONG from, to, tab = reducex2table;
+    ULONG from, to, tab = tables.reducex2;
     UWORD planes, x, y;
     WORD w, xz, yz;
 
