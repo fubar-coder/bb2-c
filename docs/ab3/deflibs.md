@@ -3,7 +3,8 @@
 What AmiBlitz 2.x/3 changed in the AmigaOS call libraries of Blitz Basic 2
 (`blitz2:deflibs`; our port: `libs/deflibs/*.c`, notes
 `docs/libs/deflibs.md`), as the basis for deciding which changes we take
-over. Documentation only; nothing here is taken over yet.
+over. Documentation only; taken over so far (as fixed original bugs,
+`docs/libs/deviations.md`): #959.
 
 ## Sources and method
 
@@ -82,7 +83,7 @@ in AB3.
 
 | Change | Class | Our issue | AB3 |
 |---|---|---|---|
-| `CachePreDMA_`, `CachePostDMA_`: `flags` in **d0** instead of d1 (BB2 passes it in d1; `exec_lib.fd`: `(a0/a1,d0)`) | fix | none (new finding, no `BUG(orig)` yet) | `AmiBlitz/AmiBlitz3@ea8c25c7` (pre-git) |
+| `CachePreDMA_`, `CachePostDMA_`: `flags` in **d0** instead of d1 (BB2 passes it in d1; `exec_lib.fd`: `(a0/a1,d0)`) | fix | #959 (taken over: fixed in our deflibs) | `AmiBlitz/AmiBlitz3@ea8c25c7` (pre-git) |
 | `ObtainQuickVector_` (-786) added | extension | – | `AmiBlitz/AmiBlitz3@ea8c25c7` |
 | `NewMinList_` (-828, V45) added | extension | – | `AmiBlitz/AmiBlitz3@5153d097` |
 | `ChildFree_`, `ChildOrphan_`, `ChildStatus_`, `ChildWait_` (-738…-756, never implemented) removed; tokens from index 109 shift | incompatible | – | `AmiBlitz/AmiBlitz3@5153d097` |
@@ -179,7 +180,8 @@ Mapping of our issues:
 * **#45** (resource name shifted): **not fixed** in AB3; the 6 rebuilt
   resources point further off (`$001D`), ciaa/ciab keep the BB2 code.
 * **#959**: **`CachePreDMA_`/`CachePostDMA_` pass `flags` in d1**
-  instead of d0 (`libs/deflibs/execlib.c`), fixed in AB3 before 2009.
+  instead of d0 (`libs/deflibs/execlib.c`), fixed in AB3 before 2009;
+  taken over (d0, `docs/libs/deviations.md`).
 
 Candidates to take over, once fixing original bugs is allowed: the
 library init/finit without loop (#44), the `CachePreDMA_`/`CachePostDMA_`
