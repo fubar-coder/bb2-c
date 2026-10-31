@@ -351,8 +351,8 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   #953, spriteslib #954), each with a bug-orig test that comes out FIXED
   (wbstartuplib: not testable, the error is in the library's init);
   rigtmenulib's three were a port defect (check functions in front of
-  the thunks). A clean rebuild has no blitzlibcheck warning left; the
-  fixes are kind F in `docs/libs/deviations.md`. Was: 73 warnings per
+  the thunks). A clean rebuild has no blitzlibcheck warning left, and
+  such a reference is now an error of the check; the fixes are kind F in `docs/libs/deviations.md`. Was: 73 warnings per
   acidlibs set (and three of rigtmenulib): normal library code refers into the error check
   area – a command that fails at run time (e.g. `Screen`: `OpenScreen`
   fails, `BEQ err1`) jumps to an error routine there, or raises an error

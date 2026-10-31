@@ -222,6 +222,7 @@ int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out)
     struct blitzlib lib;
     char err[200];
     uint32_t i;
+    int bad;
 
     if (lf->table_size != 1 || lf->nhunks != 1) {
         fprintf(out, "%s: %u hunks, a library needs exactly one (check the linker script)\n",
@@ -254,6 +255,7 @@ int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out)
         return 1;
     }
 
+    bad = 0;
     if (lib.error) {
         for (i = 0; i < h->nrelocs; i++) {
             uint32_t r = h->reloc_offset[i];
@@ -261,12 +263,14 @@ int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out)
 
             if (target & 0x80000000)
                 continue;               /* ALibJsr placeholder, not an address */
-            if (lib.codestart <= r && r < lib.error && target >= lib.error)
-                fprintf(out, "%s: warning: code at $%X refers to $%X in the error check area "
+            if (lib.codestart <= r && r < lib.error && target >= lib.error) {
+                fprintf(out, "%s: code at $%X refers to $%X in the error check area "
                         "(from $%X), dangling without debugger\n",
                         name, (unsigned)r, (unsigned)target, (unsigned)lib.error);
+                bad = 1;
+            }
         }
     }
     blitzlib_free(&lib);
-    return 0;
+    return bad;
 }

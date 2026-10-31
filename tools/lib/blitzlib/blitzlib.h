@@ -61,13 +61,13 @@ void blitzlib_free(struct blitzlib *lib);
  *   - starts with the library header: MOVEQ #0,d0:RTS (libmacs) or 4 zero
  *     bytes (AmigaOS call libraries of deflibs)
  *   - header and token table read (blitzlib_read)
- *   - warning (no error): a relocation from the normal code into the error
- *     check area (that area is cut away when the debugger is off; the
- *     originals do it too, e.g. memlib err1 -> mess1)
+ *   - no relocation from the normal code into the error check area (that
+ *     area is cut away when the debugger is off; the originals do it, e.g.
+ *     memlib err1 -> mess1, the port has them fixed since 2026-10-31)
  *
  * @param lf    the library file
  * @param name  the prefix of the messages
- * @param out   the errors and warnings
+ * @param out   the errors
  * @return 0 = ok, 1 = error
  */
 int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out);

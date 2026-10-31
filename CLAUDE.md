@@ -32,9 +32,9 @@ ctest --preset emulator                                # tests in Amiberry
   otherwise `AMIGA_TOOLCHAIN_PREFIX`. Ninja.
 * The shell is **fish**: wrap loops, `$(...)`, heredocs in `bash -c '…'`
   or `bash <<'EOF'`.
-* A clean rebuild has **no warnings**, also none of `blitzlibcheck`: the
-  references from normal code into the error check area that the
-  originals have are fixed (2026-10-31, TODO.md); a new one is a bug.
+* A clean rebuild has **no warnings**. A reference from normal code into
+  the error check area is a `blitzlibcheck` error (the ones the
+  originals have are fixed, 2026-10-31, TODO.md).
 * CMake generates `.clangd` on the first configure (not in git).
 * Emulator: the Kickstart ROM and hardfiles are local in
   `amiga-emulation/` (not in git, see the README there); default

@@ -123,7 +123,7 @@ int main(void)
     CHECK(check(&b, 1, HUNK_CODE, NULL, 0, 0, msg, sizeof msg) == 1 && strstr(msg, "does not parse"));
     free(b.p);
 
-    /* reference from the code into the error check area: only a warning */
+    /* reference from the code into the error check area */
     b = (struct buf){ 0 };
     header(&b, 0x50);
     put16(&b, 0xFFFF);
@@ -133,7 +133,7 @@ int main(void)
     while (b.n < 0x54)
         put8(&b, 0);
     reloc[0] = 0x38;
-    CHECK(check(&b, 1, HUNK_CODE, reloc, 1, 0, msg, sizeof msg) == 0 && strstr(msg, "warning")
+    CHECK(check(&b, 1, HUNK_CODE, reloc, 1, 0, msg, sizeof msg) == 1
           && strstr(msg, "$38 refers to $52"));
     free(b.p);
 

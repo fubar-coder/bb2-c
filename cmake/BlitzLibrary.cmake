@@ -18,8 +18,8 @@
 #                 in ld's order, a library without relocs has no
 #                 HUNK_RELOC32 - both fine for blitz2.s loadalib.
 #                 The same build step checks it (tools/blitzlibcheck: one
-#                 hunk, header, token table; warnings for references into
-#                 the error check area): if the check fails, NAME.obj does
+#                 hunk, header, token table, no reference from the normal
+#                 code into the error check area): if the check fails, NAME.obj does
 #                 not count as built and nothing that uses it is built.
 # The compiler options are the Blitz library conventions (include/blitzlib.h):
 # a3 string pointer, a4 locals, a5 globals of the Blitz program.

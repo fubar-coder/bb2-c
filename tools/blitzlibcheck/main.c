@@ -3,8 +3,8 @@
  *
  *   blitzlibcheck LIB.obj...
  *
- * Silent if everything is right (warnings are printed); exit status 1 if
- * a file is not a valid library file.
+ * Silent if everything is right; exit status 1 if a file is not a valid
+ * library file.
  */
 #include <stdio.h>
 #include <string.h>

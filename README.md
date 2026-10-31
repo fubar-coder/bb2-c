@@ -131,9 +131,10 @@ again):
 
 * every library file (`tools/blitzlibcheck`, in the same step as link and
   strip): one code hunk, relocs only into it, library header, token table
-  readable up to the end. References from the normal code into the error
-  check area are only a warning (without the debugger they point behind
-  the end of the code; the originals do that too). `acidlibs`/`deflibs`
+  readable up to the end, no reference from the normal code into the error
+  check area (without the debugger it would point behind the end of the
+  code; the originals have such references, the port has them fixed).
+  `acidlibs`/`deflibs`
   are made only from checked libraries.
 * `acidlibs`, `deflibs` (also of every variant), in the same step as the
   join, and every userlib in its build step (against the acidlibs and
