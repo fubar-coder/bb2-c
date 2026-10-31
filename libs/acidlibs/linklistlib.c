@@ -206,7 +206,7 @@ static void linkitem(struct item *item, struct item *after)
     item->next = next;
 }
 
-/* doinit - empty item stack of 8 entries */
+/** @brief The library's init: an empty item stack of 8 entries. */
 void BLITZ_ROUTINE doinit(void)
 {
     currstack = 0;
@@ -214,9 +214,14 @@ void BLITZ_ROUTINE doinit(void)
     setstack(8);
 }
 
-/* setstack - ItemStackSize n: free the old stack (memlib globfree),
-   allocate n*8 bytes (globalloc, MEMF_PUBLIC); the stack is empty
-   afterwards */
+/**
+ * @brief ItemStackSize Max Items: a new item stack.
+ *
+ * Frees the old stack (memlib globfree), allocates n*8 bytes (globalloc,
+ * MEMF_PUBLIC); the stack is empty afterwards.
+ *
+ * @param n  d0: the number of entries
+ */
 void BLITZ_ROUTINE setstack(ULONG n BL_REG(d0))
 {
     struct bl_regs r = { 0, 0, 0, 0 };
@@ -235,7 +240,15 @@ void BLITZ_ROUTINE setstack(ULONG n BL_REG(d0))
     currsp = (struct stackentry *)r.d0;
 }
 
-/* dopushcurrent - push {array, current item} */
+/**
+ * @brief PushItem Arrayname(): push the list and its current item on the
+ * item stack.
+ *
+ * Errors (debugger only): "Current Stack overflow", "Array is not a List"
+ * (pushchk).  Without the debugger there is no check.
+ *
+ * @param base  d0: the list array
+ */
 void BLITZ_ROUTINE dopushcurrent(UBYTE *base BL_REG(d0))
 {
     struct stackentry *sp = currsp;
@@ -246,8 +259,16 @@ void BLITZ_ROUTINE dopushcurrent(UBYTE *base BL_REG(d0))
     currsp = sp;
 }
 
-/* dopopcurrent - pop the current item into the given array (the array
-   on the stack is only checked with the debugger) */
+/**
+ * @brief PopItem Arrayname(): pop the current item from the item stack
+ * into the given list.
+ *
+ * Errors (debugger only): "Current Stack Empty", "Wrong Array on Stack"
+ * (the array on the stack is only checked then), "Array is not a List"
+ * (popchk).
+ *
+ * @param base  d0: the list array
+ */
 void BLITZ_ROUTINE dopopcurrent(UBYTE *base BL_REG(d0))
 {
     struct stackentry *sp = currsp;
@@ -257,8 +278,15 @@ void BLITZ_ROUTINE dopopcurrent(UBYTE *base BL_REG(d0))
     currsp = sp;
 }
 
-/* doclearlist - move all used items to the front of the free list (one
-   by one, so their order is reversed), no current item */
+/**
+ * @brief ClearList Arrayname(): empty a list.
+ *
+ * Moves all used items to the front of the free list (one by one, so
+ * their order is reversed); no current item.  Interrupts disabled
+ * meanwhile.  Errors (debugger only): "Array is not a List" (lchk).
+ *
+ * @param base  d0: the list array
+ */
 void BLITZ_ROUTINE doclearlist(UBYTE *base BL_REG(d0))
 {
     struct item *item;
@@ -272,7 +300,12 @@ void BLITZ_ROUTINE doclearlist(UBYTE *base BL_REG(d0))
     BL_INTS_ON();
 }
 
-/* doreslist - reset a list: no current item */
+/**
+ * @brief ResetList Arrayname(): no current item (the next NextItem gives
+ * the first).  Errors (debugger only): "Array is not a List" (lchk).
+ *
+ * @param base  d0: the list array
+ */
 void BLITZ_ROUTINE doreslist(UBYTE *base BL_REG(d0))
 {
     CURRENT(base) = 0;
@@ -305,23 +338,43 @@ static BB_BOOL lastitem2(UBYTE *base)
     return link ? BB_TRUE : BB_FALSE;
 }
 
-/* dofirstitem - d0 = array base. make current=first */
+/**
+ * @brief FirstItem(Arrayname()): make the first item the current one.
+ *
+ * No current item if the list is empty.  Errors (debugger only): "Array
+ * is not a List" (lchk).
+ *
+ * @param base  d0: the list array
+ * @return d0: BB_TRUE if there is an item, BB_FALSE if the list is empty
+ */
 BB_BOOL BLITZ_ROUTINE dofirstitem(UBYTE *base BL_REG(d0))
 {
     BL_INTS_OFF();
     return firstitem2(base);
 }
 
-/* dolastitem - make current=last */
+/**
+ * @brief LastItem(Arrayname()): make the last item the current one, as
+ * FirstItem.
+ *
+ * @param base  d0: the list array
+ * @return d0: BB_TRUE if there is an item, BB_FALSE if the list is empty
+ */
 BB_BOOL BLITZ_ROUTINE dolastitem(UBYTE *base BL_REG(d0))
 {
     BL_INTS_OFF();
     return lastitem2(base);
 }
 
-/* dokillitem - must be a current item to kill!  Move it to the front of
-   the free list; the new current is its previous item (0 if it was the
-   first) */
+/**
+ * @brief KillItem Arrayname(): remove the current item.
+ *
+ * There must be a current item to kill (checked only with the debugger:
+ * "No Current Item", lchk2).  It moves to the front of the free list; the
+ * new current item is its previous one (none if it was the first).
+ *
+ * @param base  d0: the list array
+ */
 void BLITZ_ROUTINE dokillitem(UBYTE *base BL_REG(d0))
 {
     struct item *item, *prev;
@@ -335,9 +388,17 @@ void BLITZ_ROUTINE dokillitem(UBYTE *base BL_REG(d0))
     BL_INTS_ON();
 }
 
-/* doadditem - take the first free item and insert it after the current
-   one (no current: at the beginning); it becomes current.  0 if there is
-   no free item. */
+/**
+ * @brief AddItem(Arrayname()): insert an item after the current one.
+ *
+ * Takes the first free item and inserts it after the current one (no
+ * current: at the beginning); it becomes current.  Errors (debugger only):
+ * "Array is not a List" (lchk).
+ *
+ * @param base  d0: the list array
+ * @return d0: BB_TRUE if an item was added, BB_FALSE if there is no free
+ *         item
+ */
 BB_BOOL BLITZ_ROUTINE doadditem(UBYTE *base BL_REG(d0))
 {
     struct item *item, *after;
@@ -358,7 +419,13 @@ BB_BOOL BLITZ_ROUTINE doadditem(UBYTE *base BL_REG(d0))
     return link ? BB_TRUE : BB_FALSE;
 }
 
-/* doaddfirst - add an item at the beginning of the list */
+/**
+ * @brief AddFirst(Arrayname()): add an item at the beginning of the list,
+ * as AddItem; it becomes current.
+ *
+ * @param base  d0: the list array
+ * @return d0: BB_TRUE if an item was added, BB_FALSE if none is free
+ */
 BB_BOOL BLITZ_ROUTINE doaddfirst(UBYTE *base BL_REG(d0))
 {
     struct item *item;
@@ -376,7 +443,13 @@ BB_BOOL BLITZ_ROUTINE doaddfirst(UBYTE *base BL_REG(d0))
     return link ? BB_TRUE : BB_FALSE;
 }
 
-/* doaddlast - add item at the end of the list */
+/**
+ * @brief AddLast(Arrayname()): add an item at the end of the list, as
+ * AddItem; it becomes current.
+ *
+ * @param base  d0: the list array
+ * @return d0: BB_TRUE if an item was added, BB_FALSE if none is free
+ */
 BB_BOOL BLITZ_ROUTINE doaddlast(UBYTE *base BL_REG(d0))
 {
     struct item *item;
@@ -394,8 +467,15 @@ BB_BOOL BLITZ_ROUTINE doaddlast(UBYTE *base BL_REG(d0))
     return link ? BB_TRUE : BB_FALSE;
 }
 
-/* donextitem - if no current, do first item.  At the end the current
-   item stays and the result is 0. */
+/**
+ * @brief NextItem(Arrayname()): make the next item the current one.
+ *
+ * Without a current item it does FirstItem.  At the end the current item
+ * stays.  Errors (debugger only): "Array is not a List" (lchk).
+ *
+ * @param base  d0: the list array
+ * @return d0: BB_TRUE if there is a next item, BB_FALSE at the end
+ */
 BB_BOOL BLITZ_ROUTINE donextitem(UBYTE *base BL_REG(d0))
 {
     struct item *item;
@@ -412,7 +492,14 @@ BB_BOOL BLITZ_ROUTINE donextitem(UBYTE *base BL_REG(d0))
     return link ? BB_TRUE : BB_FALSE;
 }
 
-/* doprevitem - if no current, do last item */
+/**
+ * @brief PrevItem Arrayname(): make the previous item the current one, as
+ * NextItem backwards (without a current item it does LastItem).
+ *
+ * @param base  d0: the list array
+ * @return d0: BB_TRUE if there is a previous item, BB_FALSE at the
+ *         beginning
+ */
 BB_BOOL BLITZ_ROUTINE doprevitem(UBYTE *base BL_REG(d0))
 {
     struct item *item;
@@ -429,14 +516,24 @@ BB_BOOL BLITZ_ROUTINE doprevitem(UBYTE *base BL_REG(d0))
     return link ? BB_TRUE : BB_FALSE;
 }
 
-/* dosortlist - sort the used items ascending by the long at `offset` in
-   the element (bubble sort; every pass ends one item earlier).  The
-   current item stays the same item.
-   BUG(orig) (#201): items are compared with CMP.l: BMI, i.e. the sign of the
-   difference (wraps for keys more than 2^31 apart), and items with
-   equal keys are not swapped. */
 #define KEY(i) (*(ULONG *)((UBYTE *)((i) + 1) + offset))  /* the element: behind the node */
 
+/**
+ * @brief SortList Arrayname(),sizeof .type\\offset: sort a list by a long
+ * of its elements.
+ *
+ * Sorts the used items ascending by the long at `offset` in the element
+ * (bubble sort; every pass ends one item earlier).  The current item
+ * stays the same item.  Interrupts disabled meanwhile.  Errors (debugger
+ * only): "Array is not a List" (lchk).  DIFF: a3 is not changed (the
+ * original destroys a3 and d6).
+ * BUG(orig) (#201): items are compared with CMP.l: BMI, i.e. the sign of
+ * the difference (wraps for keys more than 2^31 apart), and items with
+ * equal keys are not swapped.
+ *
+ * @param base    d0: the list array
+ * @param offset  d1: the offset of the key in the element
+ */
 void BLITZ_ROUTINE dosortlist(UBYTE *base BL_REG(d0), WORD offset BL_REG(d1))
 {
     struct item *end = USEDTAIL(base);          /* d0 */
