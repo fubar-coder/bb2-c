@@ -488,6 +488,23 @@ cmake --build --preset amiga --target ted-oracle     # about 40 s
 cmake -DORACLE_LIMIT=5 build/amiga                   # trial run, tests/data stays
 ```
 
+### Test statistics
+
+Every test preset writes a JUnit file of its run into the build
+directory: `build/amiga/junit-PRESET.xml` (`build/native/junit-native.xml`),
+replaced by the next run of the preset. To keep several runs, name the
+file on the command line (relative to the build directory; it overrides
+the preset's):
+
+```
+ctest --preset bug-orig --output-junit junit-bug-orig-1.xml
+ctest --preset bug-orig --output-junit junit-bug-orig-2.xml
+```
+
+The presets keep the whole output of passing tests as well (up to 1 MiB
+per test, cut at the front if longer: `maxPassedTestOutputSize`,
+`testOutputTruncation`), so it is in the file (`<system-out>`).
+
 ## Readable library sources
 
 The Blitz sources of the libraries (`bblibsrc.lha` in the Aminet archive,
