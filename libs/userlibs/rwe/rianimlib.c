@@ -157,29 +157,29 @@ static UBYTE doanimloop = 0xff, bitmapnumber, palettenumber, animtype;
 
 /* InitFindChunk(a0, id): a FORM of type id (its chunks), or a chunk
    with id at +8 */
-static LONG initfindchunk(UBYTE *a0, ULONG id)
+static LONG initfindchunk(UBYTE *chunk, ULONG id)
 {
-    if (LG(a0) == ID_FORM) {
-        if (LG(a0 + 8) != id)
+    if (LG(chunk) == ID_FORM) {
+        if (LG(chunk + 8) != id)
             return 0;
-        firstchunk = lastfoundchunk = a0 + 12;
-        endoffile = a0 + 12 + LG(a0 + 4) - 4;
+        firstchunk = lastfoundchunk = chunk + 12;
+        endoffile = chunk + 12 + LG(chunk + 4) - 4;
         return -1;
     }
-    if (LG(a0 + 8) != id)
+    if (LG(chunk + 8) != id)
         return 0;
     /* DIFF: the original returns to the caller's a1 here (BUG(orig), #513) */
-    firstchunk = lastfoundchunk = a0;
-    endoffile = a0 + LG(a0 + 4) + 8;
+    firstchunk = lastfoundchunk = chunk;
+    endoffile = chunk + LG(chunk + 4) + 8;
     return -1;
 }
 
 /* fcloop: the chunk id from p on up to endoffile; *a2 = its data */
-static LONG fcloop(UBYTE *p, ULONG id, UBYTE **a2)
+static LONG fcloop(UBYTE *p, ULONG id, UBYTE **data)
 {
     for (;;) {
         if ((LONG)p >= (LONG)endoffile) {
-            *a2 = p;
+            *data = p;
             return 0;
         }
         if (LG(p) == id)
@@ -187,56 +187,56 @@ static LONG fcloop(UBYTE *p, ULONG id, UBYTE **a2)
         p += LG(p + 4) + 8;             /* BUG(orig): no pad byte (#505) */
     }
     lastfoundchunk = p;
-    *a2 = p + 8;
+    *data = p + 8;
     return -1;
 }
 
-static LONG findchunk(ULONG id, UBYTE **a2)
+static LONG findchunk(ULONG id, UBYTE **data)
 {
-    return fcloop(firstchunk, id, a2);
+    return fcloop(firstchunk, id, data);
 }
 
-static LONG findnextchunk(ULONG id, UBYTE **a2)
+static LONG findnextchunk(ULONG id, UBYTE **data)
 {
-    return fcloop(lastfoundchunk + LG(lastfoundchunk + 4) + 8, id, a2);
+    return fcloop(lastfoundchunk + LG(lastfoundchunk + 4) + 8, id, data);
 }
 
 /* findbmhd: the BMHD of the first frame of the ANIM at address */
-static LONG findbmhd(ULONG address, UBYTE **a2)
+static LONG findbmhd(ULONG address, UBYTE **data)
 {
     if (!initfindchunk((UBYTE *)address, ID_ANIM))
         return 0;
     if (!initfindchunk(firstchunk, ID_ILBM))
         return 0;
-    return findchunk(ID_BMHD, a2);
+    return findchunk(ID_BMHD, data);
 }
 
 /* RIAnimDepth / RIAnimWidth / RIAnimHeight (address) */
 ULONG BLITZ_ROUTINE c_AnimDepth(ULONG address BL_REG(d0))
 {
-    UBYTE *a2;
+    UBYTE *bmhd;
 
-    if (!findbmhd(address, &a2))
+    if (!findbmhd(address, &bmhd))
         return 0;
-    return a2[8];
+    return bmhd[8];
 }
 
 ULONG BLITZ_ROUTINE c_AnimWidth(ULONG address BL_REG(d0))
 {
-    UBYTE *a2;
+    UBYTE *bmhd;
 
-    if (!findbmhd(address, &a2))
+    if (!findbmhd(address, &bmhd))
         return 0;
-    return 0xffff0000UL | WD(a2);       /* MOVE.w into d0 = -1 */
+    return 0xffff0000UL | WD(bmhd);     /* MOVE.w into d0 = -1 */
 }
 
 ULONG BLITZ_ROUTINE c_AnimHeight(ULONG address BL_REG(d0))
 {
-    UBYTE *a2;
+    UBYTE *bmhd;
 
-    if (!findbmhd(address, &a2))
+    if (!findbmhd(address, &bmhd))
         return 0;
-    return 0xffff0000UL | WD(a2 + 2);
+    return 0xffff0000UL | WD(bmhd + 2);
 }
 
 /* AnimLoop On|Off */
@@ -250,7 +250,7 @@ void BLITZ_ROUTINE c_AnimLoop(UBYTE on BL_REG(d0))
 ULONG BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
                                ULONG pal BL_REG(d2), ULONG offset BL_REG(d3))
 {
-    UBYTE *a2;
+    UBYTE *chunk;
     struct bl_regs r;
 
     bitmapnumber = (UBYTE)bm;
@@ -264,21 +264,21 @@ ULONG BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     if (!initfindchunk(firstchunk, ID_ILBM))
         return 0;
     endoffile = animend;                /* BUG(orig): the whole ANIM (#511) */
-    if (!findchunk(ID_BMHD, &a2))
+    if (!findchunk(ID_BMHD, &chunk))
         return 0;
-    animwidth = WD(a2);
-    animheight = WD(a2 + 2);
-    animdepth = a2[8];
+    animwidth = WD(chunk);
+    animheight = WD(chunk + 2);
+    animdepth = chunk[8];
     BL_JSR_D4_(BL_TOKVAL(TOK_unpackiff, 1), (ULONG)firstframe, bitmapnumber, (ULONG)-1,
                bitplaneoffset);
     r = (struct bl_regs){ .d0 = (ULONG)firstframe, .d1 = palettenumber };
     BLITZ_ALIBJSR(TOK_ilbmpalette, r);
     /* safety nets for short anims :) */
     nextanimframe = thirdframe = lastfoundchunk = firstframe;
-    if (findnextchunk(ID_FORM, &a2)) {  /* the second frame */
-        nextanimframe = a2 - 8;
-        if (findnextchunk(ID_FORM, &a2))        /* the third frame */
-            thirdframe = a2 - 8;
+    if (findnextchunk(ID_FORM, &chunk)) {  /* the second frame */
+        nextanimframe = chunk - 8;
+        if (findnextchunk(ID_FORM, &chunk))     /* the third frame */
+            thirdframe = chunk - 8;
     }
     return (ULONG)-1;
 }
@@ -319,73 +319,73 @@ ULONG BLITZ_ROUTINE c_CountFrames(void)
 #define COUNT(c) ((UWORD)(UBYTE)((c) - 1))
 
 /* ANIM5: one plane, columns of bytes */
-static void plane5(const UBYTE *a0, UBYTE *a1, ULONG mod)
+static void plane5(const UBYTE *ops, UBYTE *column, ULONG mod)
 {
     UWORD col = animwidthtemp, c;
-    UBYTE *a2;
+    UBYTE *dst;
     UBYTE n, op, v;
 
     do {
-        a2 = a1++;
-        n = *a0++;
+        dst = column++;
+        n = *ops++;
         if (!n)
             continue;
         do {
-            op = *a0++;
+            op = *ops++;
             if (!op) {                  /* run */
-                c = COUNT(*a0++);
-                v = *a0++;
+                c = COUNT(*ops++);
+                v = *ops++;
                 do {
-                    *a2 = v;
-                    a2 += mod;
-                    __asm__("" : "+a"(a2));     /* no __mulsi3 */
+                    *dst = v;
+                    dst += mod;
+                    __asm__("" : "+a"(dst));    /* no __mulsi3 */
                 } while (c-- != 0);
             } else if (op & 0x80) {     /* copy */
                 c = COUNT(op & 0x7f);
                 do {
-                    *a2 = *a0++;
-                    a2 += mod;
-                    __asm__("" : "+a"(a2));     /* no __mulsi3 */
+                    *dst = *ops++;
+                    dst += mod;
+                    __asm__("" : "+a"(dst));    /* no __mulsi3 */
                 } while (c-- != 0);
             } else                      /* skip */
-                a2 += bl_mulu_w(op, (UWORD)mod);
+                dst += bl_mulu_w(op, (UWORD)mod);
         } while (--n);
     } while (col-- != 0);
 }
 
 /* ANIM7 (long form): one plane, columns of longs; the data from a3 */
-static void plane7(const UBYTE *a0, UBYTE *a1, const ULONG *a3, ULONG mod)
+static void plane7(const UBYTE *ops, UBYTE *column, const ULONG *data, ULONG mod)
 {
     UWORD col = animwidthtemp, c;
-    UBYTE *a2;
+    UBYTE *dst;
     UBYTE n, op;
     ULONG v;
 
     do {
-        a2 = a1;
-        a1 += 4;
-        n = *a0++;
+        dst = column;
+        column += 4;
+        n = *ops++;
         if (!n)
             continue;
         do {
-            op = *a0++;
+            op = *ops++;
             if (!op) {                  /* run */
-                c = COUNT(*a0++);
-                v = *a3++;
+                c = COUNT(*ops++);
+                v = *data++;
                 do {
-                    LG(a2) = v;
-                    a2 += mod;
-                    __asm__("" : "+a"(a2));     /* no __mulsi3 */
+                    LG(dst) = v;
+                    dst += mod;
+                    __asm__("" : "+a"(dst));    /* no __mulsi3 */
                 } while (c-- != 0);
             } else if (op & 0x80) {     /* copy */
                 c = COUNT(op & 0x7f);
                 do {
-                    LG(a2) = *a3++;
-                    a2 += mod;
-                    __asm__("" : "+a"(a2));     /* no __mulsi3 */
+                    LG(dst) = *data++;
+                    dst += mod;
+                    __asm__("" : "+a"(dst));    /* no __mulsi3 */
                 } while (c-- != 0);
             } else                      /* skip */
-                a2 += bl_mulu_w(op, (UWORD)mod);
+                dst += bl_mulu_w(op, (UWORD)mod);
         } while (--n);
     } while (col-- != 0);
 }
@@ -393,25 +393,25 @@ static void plane7(const UBYTE *a0, UBYTE *a1, const ULONG *a3, ULONG mod)
 /* the DLTA (header at dlta) into the planes of the bitmap */
 static void unpackanim(UBYTE *dlta, BOOL seven)
 {
-    UBYTE *a4 = dlta + 8;
-    const ULONG *a5 = (const ULONG *)a4;
-    ULONG *a6 = bitmapaddress;
-    ULONG mod = WD((UBYTE *)a6 - 8);    /* the bitmap's ebwidth */
-    UBYTE d4 = 0;
+    UBYTE *body = dlta + 8;
+    const ULONG *offsets = (const ULONG *)body;
+    ULONG *planes = bitmapaddress;
+    ULONG mod = WD((UBYTE *)planes - 8);  /* the bitmap's ebwidth */
+    UBYTE plane = 0;
 
     animwidthtemp = (UWORD)(((WORD)animwidth >> (seven ? 5 : 3)) - 1);
     do {                                /* BUG(orig): up to the byte (#509) */
-        UBYTE *a1 = (UBYTE *)*a6++ + bitplaneoffset;
-        ULONG op = a5[0], data = a5[8];
+        UBYTE *column = (UBYTE *)*planes++ + bitplaneoffset;
+        ULONG op = offsets[0], data = offsets[8];
 
-        a5++;
+        offsets++;
         if (op) {
             if (seven)
-                plane7(a4 + op, a1, (const ULONG *)(a4 + data), mod);
+                plane7(body + op, column, (const ULONG *)(body + data), mod);
             else
-                plane5(a4 + op, a1, mod);
+                plane5(body + op, column, mod);
         }
-    } while (++d4 != animdepth);
+    } while (++plane != animdepth);
 }
 
 /* RINextAnimFrame (bitmap#) with a0 = the bitmap object: -1 if a delta
@@ -419,40 +419,40 @@ static void unpackanim(UBYTE *dlta, BOOL seven)
    original returns without restoring its registers (no DLTA). */
 unsigned long long BLITZ_ROUTINE c_NextAnimFrame(ULONG *bitmap BL_REG(a0))
 {
-    UBYTE *a0 = nextanimframe;
+    UBYTE *chunk = nextanimframe;
     struct bl_regs r;
     ULONG len;
 
-    if (!a0)
+    if (!chunk)
         return 0;
     bitmapaddress = bitmap + 2;
-    if ((LONG)a0 >= (LONG)animend || LG(a0) != ID_FORM) {
+    if ((LONG)chunk >= (LONG)animend || LG(chunk) != ID_FORM) {
         if (!doanimloop)
             return 0;
-        a0 = thirdframe;
+        chunk = thirdframe;
     }
-    len = LG(a0 + 4);
-    a0 += 8;
-    nextanimframe = a0 + len;
-    a0 += 4;                            /* skip ILBM */
-    if (LG(a0) != ID_ANHD)
+    len = LG(chunk + 4);
+    chunk += 8;
+    nextanimframe = chunk + len;
+    chunk += 4;                         /* skip ILBM */
+    if (LG(chunk) != ID_ANHD)
         return 0;
-    animtype = a0[8];
-    animtype7 = LG(a0 + 28);
-    a0 += LG(a0 + 4) + 8;
-    if (LG(a0) == ID_CMAP) {
-        mytemp = a0;
-        r = (struct bl_regs){ .d0 = (ULONG)a0, .d1 = palettenumber };
+    animtype = chunk[8];
+    animtype7 = LG(chunk + 28);
+    chunk += LG(chunk + 4) + 8;
+    if (LG(chunk) == ID_CMAP) {
+        mytemp = chunk;
+        r = (struct bl_regs){ .d0 = (ULONG)chunk, .d1 = palettenumber };
         BLITZ_ALIBJSR(TOK_ilbmpalette, r);
-        a0 = mytemp;
-        a0 += LG(a0 + 4) + 8;
+        chunk = mytemp;
+        chunk += LG(chunk + 4) + 8;
     }
-    if (LG(a0) != ID_DLTA)
+    if (LG(chunk) != ID_DLTA)
         return 1;                       /* BUG(orig): RTS without MOVEM (#515) */
     if (animtype == 5 || animtype == 65)
-        unpackanim(a0, FALSE);
+        unpackanim(chunk, FALSE);
     else if (animtype == 7)
-        unpackanim(a0, TRUE);           /* BUG(orig): never the short form (#504) */
+        unpackanim(chunk, TRUE);        /* BUG(orig): never the short form (#504) */
     else
         return 0;
     return 0xffffffffULL << 32;
