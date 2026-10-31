@@ -296,7 +296,7 @@ static struct {
     UWORD old_volume, master_volume, volume_flag;
     UBYTE master_mask, master_mask_lo;  /* Dc.w; BSET/BTST/BCLR address its first byte */
     struct modent modtable[10];         /* Dc.l x25: 10 slots */
-} g;
+} libvars;
 
 /* the CIA part (RealTempo ... musintname) */
 static struct {
@@ -309,9 +309,9 @@ static struct {
     char GfxName[18];
     struct Interrupt MusicIntServer;
     char musintname[20];
-} c = {
+} ciapart = {
     125, NULL, "ciaa.resource", "ciab.resource", NULL, 0, 0, NULL, "graphics.library",
-    { { NULL, NULL, NT_INTERRUPT, 5, c.musintname }, NULL, (VOID (*)())mt_music },
+    { { NULL, NULL, NT_INTERRUPT, 5, ciapart.musintname }, NULL, (VOID (*)())mt_music },
     "Protracker MusicInt",
 };
 
@@ -357,7 +357,7 @@ static struct {
     UBYTE PattDelTime, PattDelTime2, Enable;
     UWORD PatternPos, DMACONtemp;
     UBYTE TrkEvt, LstEvt;
-} p = {
+} playdata = {
     { 0, 5, 6, 7, 8, 10, 11, 13, 16, 19, 22, 26, 32, 43, 64, 128 },
     {   0,  24,  49,  74,  97, 120, 141, 161, 180, 197, 212, 224, 235, 244, 250, 253,
       255, 253, 250, 244, 235, 224, 212, 197, 180, 161, 141, 120,  97,  74,  49,  24 },
@@ -432,10 +432,10 @@ static struct {
     6, 0, 0, 0, 0, 0, 0,                /* mt_speed 6 ... mt_LowMask 0 (BUG(orig), #478) */
     0, 0, 0, 0, 0, 0, 0,
 };
-_Static_assert(__builtin_offsetof(__typeof__(p), chan) == 48 + 1152, "mt_chan1temp");
-_Static_assert(sizeof(p) == 1584, "mt_FunkTable ... nor_LstEvt");
-_Static_assert(sizeof(g) == 110, "pause_status ... modtable");
-_Static_assert(sizeof(c) == 110, "RealTempo ... musintname");
+_Static_assert(__builtin_offsetof(__typeof__(playdata), chan) == 48 + 1152, "mt_chan1temp");
+_Static_assert(sizeof(playdata) == 1584, "mt_FunkTable ... nor_LstEvt");
+_Static_assert(sizeof(libvars) == 110, "pause_status ... modtable");
+_Static_assert(sizeof(ciapart) == 110, "RealTempo ... musintname");
 
 /* LoadTrackerModule's variables */
 static BPTR hand, lock;
@@ -459,7 +459,7 @@ static ULONG peekl(ULONG addr)
 /* LEA modtable,a3: MULU #10,d0: ADDA d0,a3 (word, sign extended) */
 static struct modent *slot(ULONG num)
 {
-    UBYTE *table = (UBYTE *)g.modtable;
+    UBYTE *table = (UBYTE *)libvars.modtable;
     LAUNDER(table);
     return (struct modent *)(table + (WORD)bl_mulu_w((UWORD)num, 10));
 }
@@ -467,7 +467,7 @@ static struct modent *slot(ULONG num)
 /* the period table of finetune `ft` (MULU #36*2: also > 15) */
 static const UWORD *periods(UBYTE ft)
 {
-    const UWORD *table = p.PeriodTable;
+    const UWORD *table = playdata.PeriodTable;
     LAUNDER(table);
     return (const UWORD *)((const UBYTE *)table + bl_mulu_w(ft, 36 * 2));
 }
@@ -475,9 +475,9 @@ static const UWORD *periods(UBYTE ft)
 /* the registers of voice `ch`: Paula's, or fake_channel if masked */
 static aud_t *voice(int ch)
 {
-    if (g.master_mask & (1 << ch))
+    if (libvars.master_mask & (1 << ch))
         return &CUSTOM->aud[ch];
-    return (aud_t *)p.fake_channel;
+    return (aud_t *)playdata.fake_channel;
 }
 
 /* ------------------------------------------------------- memlib calls */
@@ -507,36 +507,37 @@ static const UBYTE *patdata;
 /* SetCIAInt: the interrupt on timer A of ciaa, else timer B of ciab */
 static void setciaint(void)
 {
-    const char *name = c.CIAAname;
+    const char *name = ciapart.CIAAname;
     struct Library *res, *gfx;
     UWORD tries = 2;
-    ULONG timerval;
+    ULONG clock;                        /* d7: the PAL/NTSC clock */
+    ULONG timerval;                     /* d7: clock/125 */
 
     for (;;) {
         res = OpenResource((STRPTR)name);
-        c.CIAAbase = res;
+        ciapart.CIAAbase = res;
         if (!res)
             return;
-        gfx = OpenLibrary((STRPTR)c.GfxName, 0);
+        gfx = OpenLibrary((STRPTR)ciapart.GfxName, 0);
         if (!gfx) {
             resetciaint();              /* BEQ ResetCIAInt */
             return;
         }
         if (((struct GfxBase *)gfx)->DisplayFlags & PAL)
-            timerval = 1773447;         /* PAL */
+            clock = 1773447;            /* PAL */
         else
-            timerval = 1789773;         /* NTSC */
-        c.TimerValue = timerval;
-        timerval = bl_divu_w(timerval, 125); /* default: 50 Hz */
+            clock = 1789773;            /* NTSC */
+        ciapart.TimerValue = clock;
+        timerval = bl_divu_w(clock, 125);   /* default: 50 Hz */
         CloseLibrary(gfx);
         if (tries != 2) {               /* 'TryTimerB */
             volatile UBYTE *cia = (volatile UBYTE *)0xbfd000;
             /* BUG(orig): the bit is the long at address 2 (#450) */
-            struct bl_regs r = { .d0 = peekl(2), .a1 = (ULONG)&c.MusicIntServer };
+            struct bl_regs r = { .d0 = peekl(2), .a1 = (ULONG)&ciapart.MusicIntServer };
             ULONG err = BLITZ_BASEJSR(res, -6, r);      /* AddICRVector */
-            c.TimerFlag = 1;
+            ciapart.TimerFlag = 1;
             if (!err) {
-                c.CIAAaddr = cia;
+                ciapart.CIAAaddr = cia;
                 cia[CIATBLO] = (UBYTE)timerval;
                 cia[CIATBHI] = (UBYTE)((UWORD)timerval >> 8);
                 cia[CIACRB] |= 1;
@@ -545,41 +546,41 @@ static void setciaint(void)
         } else {                        /* 'TryTimerA */
             volatile UBYTE *cia = (volatile UBYTE *)0xbfe001;
             /* BUG(orig): the bit is the long at address 1 (#450) */
-            struct bl_regs r = { .d0 = peekl(1), .a1 = (ULONG)&c.MusicIntServer };
+            struct bl_regs r = { .d0 = peekl(1), .a1 = (ULONG)&ciapart.MusicIntServer };
             ULONG err = BLITZ_BASEJSR(res, -6, r);      /* AddICRVector */
-            c.TimerFlag = 0;
+            ciapart.TimerFlag = 0;
             if (!err) {
-                c.CIAAaddr = cia;
+                ciapart.CIAAaddr = cia;
                 cia[CIATALO] = (UBYTE)timerval;
                 cia[CIATAHI] = (UBYTE)((UWORD)timerval >> 8);
                 cia[CIACRA] |= 1;
                 return;
             }
         }
-        name = c.CIABname;              /* 'CIAError */
+        name = ciapart.CIABname;              /* 'CIAError */
         if (--tries == 0)
             break;
     }
-    c.CIAAbase = NULL;
+    ciapart.CIAAbase = NULL;
 }
 
 /* ResetCIAInt */
 static void resetciaint(void)
 {
-    struct Library *res = c.CIAAbase;
+    struct Library *res = ciapart.CIAAbase;
     volatile UBYTE *cia;
 
     if (!res)
         return;
-    c.CIAAbase = NULL;
-    cia = c.CIAAaddr;
-    if (c.TimerFlag)
+    ciapart.CIAAbase = NULL;
+    cia = ciapart.CIAAaddr;
+    if (ciapart.TimerFlag)
         cia[CIACRB] &= ~1;
     else
         cia[CIACRA] &= ~1;
     {
         /* BUG(orig): always bit 0 (MOVEQ #0,d0 after MOVEQ #1,D0) (#448) */
-        struct bl_regs r = { .d0 = 0, .a1 = (ULONG)&c.MusicIntServer };
+        struct bl_regs r = { .d0 = 0, .a1 = (ULONG)&ciapart.MusicIntServer };
         BLITZ_BASEJSR(res, -12, r);     /* RemICRVector */
     }
     CIAAPRA ^= 2;                       /* BCHG #1,$bfe001 (BUG(orig), #449) */
@@ -591,14 +592,14 @@ static void settempo(UWORD bpm)
     volatile UBYTE *cia;
     ULONG count;
 
-    if (!c.CIAAbase)
+    if (!ciapart.CIAAbase)
         return;
     if (bpm < 32)
         bpm = 32;
-    c.RealTempo = bpm;
-    count = bl_divu_w(c.TimerValue, bpm);
-    cia = c.CIAAaddr;
-    if (c.TimerFlag) {
+    ciapart.RealTempo = bpm;
+    count = bl_divu_w(ciapart.TimerValue, bpm);
+    cia = ciapart.CIAAaddr;
+    if (ciapart.TimerFlag) {
         cia[CIATBLO] = (UBYTE)count;
         cia[CIATBHI] = (UBYTE)((UWORD)count >> 8);
     } else {
@@ -612,13 +613,13 @@ static void settempo(UWORD bpm)
 /* Set_Volume: volume * master_volume / 64 (MULU, DIVU #$40) */
 static UWORD set_volume(UWORD v)
 {
-    return (UWORD)bl_divu_w(bl_mulu_w(v, g.master_volume), 0x40);
+    return (UWORD)bl_divu_w(bl_mulu_w(v, libvars.master_volume), 0x40);
 }
 
 /* Set_Real_Mask: the DMA bits of masked channels off */
 static UWORD set_real_mask(UWORD bits)
 {
-    return bits & (0xfff0 | g.master_mask);
+    return bits & (0xfff0 | libvars.master_mask);
 }
 
 /* the highest pattern number of the song positions (mt_init, _modtochip):
@@ -653,7 +654,7 @@ static void mt_end(void)
 {
     volatile struct Custom *cu = CUSTOM;
 
-    p.Enable = 0;
+    playdata.Enable = 0;
     patdata = (const UBYTE *)cu;        /* LEA $DFF000,A0 (BUG(orig), #475) */
     cu->aud[0].ac_vol = 0;
     cu->aud[1].ac_vol = 0;
@@ -665,23 +666,23 @@ static void mt_end(void)
 /* mt_init: a4 = the module length (4(a3) of the slot) */
 static void mt_init(ULONG modlen)
 {
-    UBYTE *hdr = c.mt_data, *sampdata;
+    UBYTE *hdr = ciapart.mt_data, *sampdata;
     int i;
 
-    p.SongDataPtr = hdr;
+    playdata.SongDataPtr = hdr;
     sampdata = hdr + patternsize(hdr);
     for (i = 0; i < 31; i++) {
         if ((LONG)modlen > (LONG)sampdata) /* BUG(orig): the length (#438) */
             LONGAT(sampdata) = 0;
-        p.SampleStarts[i] = sampdata;
+        playdata.SampleStarts[i] = sampdata;
         sampdata += (ULONG)WORDAT(hdr + 42) << 1;
         hdr += 30;
     }
     CIAAPRA |= 2;                       /* filter off */
-    p.speed = 6;
-    p.counter = 0;
-    p.SongPos = 0;
-    p.PatternPos = 0;
+    playdata.speed = 6;
+    playdata.counter = 0;
+    playdata.SongPos = 0;
+    playdata.PatternPos = 0;
     mt_end();
 }
 
@@ -699,31 +700,30 @@ static void waitline(void)
 static void playsamples(UWORD chans)
 {
     volatile struct Custom *cu = CUSTOM;
-    UWORD bits, dmabits;
+    UWORD active, activeint;            /* the playing channels, their INTREQ bits */
+    UWORD start, startint;              /* the channels to start, their INTREQ bits */
     int i;
 
     waitline();
     for (i = 0; i < 4; i++)
         if (chans & (1 << i))
             cu->aud[i].ac_per = 1;      /* max. speed */
-    bits = cu->dmaconr & chans;         /* active channels */
-    dmabits = bits;
-    bits <<= 7;
-    cu->intreq = bits;                  /* stop channels */
-    cu->dmacon = dmabits;
-    while ((cu->intreqr & bits) != bits) /* mt_Wait2 */
+    active = cu->dmaconr & chans;       /* active channels */
+    activeint = (UWORD)(active << 7);
+    cu->intreq = activeint;             /* stop channels */
+    cu->dmacon = active;
+    while ((cu->intreqr & activeint) != activeint) /* mt_Wait2 */
         ;
-    bits = ~cu->dmaconr & chans;
-    dmabits = bits;
-    bits <<= 7;
-    cu->intreq = bits;
-    cu->dmacon = dmabits | 0x8000;      /* start channels */
-    while ((cu->intreqr & bits) != bits) /* mt_Wait3 */
+    start = ~cu->dmaconr & chans;
+    startint = (UWORD)(start << 7);
+    cu->intreq = startint;
+    cu->dmacon = start | 0x8000;        /* start channels */
+    while ((cu->intreqr & startint) != startint) /* mt_Wait3 */
         ;
     waitline();
     for (i = 0; i < 4; i++)
         if (chans & (1 << i))
-            cu->aud[i].ac_per = p.chan[i].period;
+            cu->aud[i].ac_per = playdata.chan[i].period;
 }
 
 static void pernop(struct chan *ch, aud_t *aud)
@@ -738,7 +738,7 @@ static void updatefunk(struct chan *ch)
 
     if (!speed)
         return;
-    ch->funkoffset += p.FunkTable[speed];
+    ch->funkoffset += playdata.FunkTable[speed];
     if (!(ch->funkoffset & 0x80))
         return;
     ch->funkoffset = 0;
@@ -753,7 +753,7 @@ static void updatefunk(struct chan *ch)
 /* mt_Arpeggio */
 static void arpeggio(struct chan *ch, aud_t *aud)
 {
-    UWORD step = (UWORD)(bl_divs_w(p.counter, 3) >> 16), halftones; /* DIVS: SWAP */
+    UWORD step = (UWORD)(bl_divs_w(playdata.counter, 3) >> 16), halftones; /* DIVS: SWAP */
     const UWORD *table;
     int i;
 
@@ -775,9 +775,9 @@ static void arpeggio(struct chan *ch, aud_t *aud)
 /* mt_PortaUp (mt_LowMask: $0F for E1x, else $FF after the first use) */
 static void portaup(struct chan *ch, aud_t *aud)
 {
-    UBYTE delta = ch->n.f.cmdlo & p.LowMask;
+    UBYTE delta = ch->n.f.cmdlo & playdata.LowMask;
 
-    p.LowMask = 0xff;
+    playdata.LowMask = 0xff;
     ch->period -= delta;
     if ((WORD)((ch->period & 0x0fff) - 113) < 0)
         ch->period = (ch->period & 0xf000) | 113;
@@ -786,9 +786,9 @@ static void portaup(struct chan *ch, aud_t *aud)
 
 static void portadown(struct chan *ch, aud_t *aud)
 {
-    UBYTE delta = ch->n.f.cmdlo & p.LowMask;
+    UBYTE delta = ch->n.f.cmdlo & playdata.LowMask;
 
-    p.LowMask = 0xff;
+    playdata.LowMask = 0xff;
     ch->period += delta;
     if ((WORD)((ch->period & 0x0fff) - 856) >= 0)
         ch->period = (ch->period & 0xf000) | 856;
@@ -797,17 +797,17 @@ static void portadown(struct chan *ch, aud_t *aud)
 
 static void fineportaup(struct chan *ch, aud_t *aud)
 {
-    if (p.counter)
+    if (playdata.counter)
         return;
-    p.LowMask = 0x0f;
+    playdata.LowMask = 0x0f;
     portaup(ch, aud);
 }
 
 static void fineportadown(struct chan *ch, aud_t *aud)
 {
-    if (p.counter)
+    if (playdata.counter)
         return;
-    p.LowMask = 0x0f;
+    playdata.LowMask = 0x0f;
     portadown(ch, aud);
 }
 
@@ -883,7 +883,7 @@ static UBYTE wave(UBYTE pos, UBYTE form, UBYTE rpos)
     UBYTE val = (pos >> 2) & 0x1f;
 
     if (form == 0)
-        return p.VibratoTable[val];
+        return playdata.VibratoTable[val];
     val <<= 3;
     if (form != 1)
         return 255;
@@ -1005,9 +1005,9 @@ static void volumeslide(struct chan *ch, aud_t *aud)
 
 static void positionjump(struct chan *ch)
 {
-    p.SongPos = ch->n.f.cmdlo - 1;
-    p.PBreakPos = 0;
-    p.PosJumpFlag = 0xff;
+    playdata.SongPos = ch->n.f.cmdlo - 1;
+    playdata.PBreakPos = 0;
+    playdata.PosJumpFlag = 0xff;
 }
 
 static void volumechange(struct chan *ch, aud_t *aud)
@@ -1025,8 +1025,8 @@ static void patternbreak(struct chan *ch)
 {
     UBYTE row = (UBYTE)(bl_mulu_w(ch->n.f.cmdlo >> 4, 10) + (ch->n.f.cmdlo & 0x0f));
 
-    p.PBreakPos = row > 63 ? 0 : row;
-    p.PosJumpFlag = 0xff;
+    playdata.PBreakPos = row > 63 ? 0 : row;
+    playdata.PosJumpFlag = 0xff;
 }
 
 /* mt_SetSpeed: 0 stops (mt_end), >= 32 is the tempo */
@@ -1042,8 +1042,8 @@ static void setspeed(struct chan *ch)
         settempo(speed);
         return;
     }
-    p.counter = 0;
-    p.speed = speed;
+    playdata.counter = 0;
+    playdata.speed = speed;
 }
 
 static void filteronoff(struct chan *ch)
@@ -1056,11 +1056,11 @@ static void jumploop(struct chan *ch)
 {
     UBYTE count;
 
-    if (p.counter)
+    if (playdata.counter)
         return;
     count = ch->n.f.cmdlo & 0x0f;
     if (!count) {                       /* mt_SetLoop */
-        ch->pattpos = (UBYTE)(p.PatternPos >> 4);
+        ch->pattpos = (UBYTE)(playdata.PatternPos >> 4);
         return;
     }
     if (ch->loopcount) {
@@ -1069,8 +1069,8 @@ static void jumploop(struct chan *ch)
     } else {
         ch->loopcount = count;
     }
-    p.PBreakPos = ch->pattpos;
-    p.PBreakFlag = 0xff;
+    playdata.PBreakPos = ch->pattpos;
+    playdata.PBreakFlag = 0xff;
 }
 
 /* mt_KarplusStrong: BUG(orig) a loop length 0 is 65536 bytes (DBRA)
@@ -1104,7 +1104,7 @@ static void retrignote(struct chan *ch, aud_t *aud)
 
     if (!rate)
         return;
-    tick = p.counter;
+    tick = playdata.counter;
     if (!tick && (ch->n.f.note & 0x0fff))
         return;
     if (bl_divu_w(tick, rate) >> 16)    /* DIVU: the remainder */
@@ -1114,21 +1114,21 @@ static void retrignote(struct chan *ch, aud_t *aud)
 
 static void volumefineup(struct chan *ch, aud_t *aud)
 {
-    if (p.counter)
+    if (playdata.counter)
         return;
     volslideup(ch, aud, ch->n.f.cmdlo & 0x0f);
 }
 
 static void volumefinedown(struct chan *ch, aud_t *aud)
 {
-    if (p.counter)
+    if (playdata.counter)
         return;
     volslidedown2(ch, aud, ch->n.f.cmdlo & 0x0f);
 }
 
 static void notecut(struct chan *ch, aud_t *aud)
 {
-    if ((ch->n.f.cmdlo & 0x0f) != p.counter)
+    if ((ch->n.f.cmdlo & 0x0f) != playdata.counter)
         return;
     ch->volume = 0;
     aud->ac_vol = 0;
@@ -1137,7 +1137,7 @@ static void notecut(struct chan *ch, aud_t *aud)
 /* mt_NoteDelay: the whole note word (sample number too) must be set */
 static void notedelay(struct chan *ch, aud_t *aud)
 {
-    if ((ch->n.f.cmdlo & 0x0f) != p.counter)
+    if ((ch->n.f.cmdlo & 0x0f) != playdata.counter)
         return;
     if (!ch->n.f.note)
         return;
@@ -1146,16 +1146,16 @@ static void notedelay(struct chan *ch, aud_t *aud)
 
 static void patterndelay(struct chan *ch)
 {
-    if (p.counter || p.PattDelTime2)
+    if (playdata.counter || playdata.PattDelTime2)
         return;
-    p.PattDelTime = (ch->n.f.cmdlo & 0x0f) + 1;
+    playdata.PattDelTime = (ch->n.f.cmdlo & 0x0f) + 1;
 }
 
 static void funkit(struct chan *ch)
 {
     UBYTE speed;
 
-    if (p.counter)
+    if (playdata.counter)
         return;
     speed = (UBYTE)((ch->n.f.cmdlo & 0x0f) << 4);
     ch->glissfunk = (ch->glissfunk & 0x0f) | speed;
@@ -1215,7 +1215,7 @@ static void checkefx(struct chan *ch, aud_t *aud)
     else if (cmd == 0xa)
         volumeslide(ch, aud);
     else if (cmd == 8)
-        p.TrkEvt = ch->n.f.cmdlo;       /* nor_TrackEvent */
+        playdata.TrkEvt = ch->n.f.cmdlo;       /* nor_TrackEvent */
 }
 
 /* mt_CheckMoreEfx: the effects of the row's tick */
@@ -1236,7 +1236,7 @@ static void checkmoreefx(struct chan *ch, aud_t *aud)
 /* mt_SetPeriod: BUG(orig) a note below 113 takes entry 37 (#481) */
 static void setperiod(struct chan *ch, aud_t *aud)
 {
-    const UWORD *table = p.PeriodTable;
+    const UWORD *table = playdata.PeriodTable;
     UWORD note = ch->n.f.note & 0x0fff, idx;
 
     LAUNDER(table);
@@ -1254,7 +1254,7 @@ static void setperiod(struct chan *ch, aud_t *aud)
         ch->tremolopos = 0;
     aud->ac_ptr = (UWORD *)ch->start;           /* mt_trenoc */
     aud->ac_len = ch->length;
-    p.DMACONtemp |= ch->dmabit;
+    playdata.DMACONtemp |= ch->dmabit;
     checkmoreefx(ch, aud);
 }
 
@@ -1268,7 +1268,7 @@ static void playvoice(struct chan *ch, aud_t *aud, const UBYTE *samples, const U
     ch->n.l = LONGAT(note);
     sample = ((ch->n.f.cmd & 0xf0) >> 4) | ((ch->n.f.note >> 8) & 0xf0);
     if (sample) {
-        UBYTE *const *starts = p.SampleStarts;
+        UBYTE *const *starts = playdata.SampleStarts;
         const UBYTE *h;
         UWORD repeat;
 
@@ -1317,32 +1317,32 @@ static void playvoice(struct chan *ch, aud_t *aud, const UBYTE *samples, const U
 /* mt_NextPosition */
 static void nextposition(void)
 {
-    p.PatternPos = (UWORD)(p.PBreakPos << 4);
-    p.PBreakPos = 0;
-    p.PosJumpFlag = 0;
-    p.SongPos = (p.SongPos + 1) & 0x7f;
-    if (p.SongPos >= p.SongDataPtr[950])
-        p.SongPos = 0;
+    playdata.PatternPos = (UWORD)(playdata.PBreakPos << 4);
+    playdata.PBreakPos = 0;
+    playdata.PosJumpFlag = 0;
+    playdata.SongPos = (playdata.SongPos + 1) & 0x7f;
+    if (playdata.SongPos >= playdata.SongDataPtr[950])
+        playdata.SongPos = 0;
 }
 
 /* mt_dskip ... mt_NoNewPosYet */
 static void dskip(void)
 {
-    p.PatternPos += 16;
-    if (p.PattDelTime) {
-        p.PattDelTime2 = p.PattDelTime;
-        p.PattDelTime = 0;
+    playdata.PatternPos += 16;
+    if (playdata.PattDelTime) {
+        playdata.PattDelTime2 = playdata.PattDelTime;
+        playdata.PattDelTime = 0;
     }
-    if (p.PattDelTime2 && --p.PattDelTime2)
-        p.PatternPos -= 16;
-    if (p.PBreakFlag) {
-        p.PBreakFlag = 0;
-        p.PatternPos = (UWORD)(p.PBreakPos << 4);
-        p.PBreakPos = 0;
+    if (playdata.PattDelTime2 && --playdata.PattDelTime2)
+        playdata.PatternPos -= 16;
+    if (playdata.PBreakFlag) {
+        playdata.PBreakFlag = 0;
+        playdata.PatternPos = (UWORD)(playdata.PBreakPos << 4);
+        playdata.PBreakPos = 0;
     }
-    if (p.PatternPos >= 1024)
+    if (playdata.PatternPos >= 1024)
         nextposition();
-    if (p.PosJumpFlag)
+    if (playdata.PosJumpFlag)
         nextposition();
 }
 
@@ -1351,28 +1351,28 @@ static void nonewallchannels(void)
     int i;
 
     for (i = 0; i < 4; i++)
-        checkefx(&p.chan[i], voice(i));
+        checkefx(&playdata.chan[i], voice(i));
 }
 
 /* mt_GetNewNote, mt_SetDMA */
 static void getnewnote(void)
 {
-    const UBYTE *mod = p.SongDataPtr;
+    const UBYTE *mod = playdata.SongDataPtr;
     const UBYTE *samples = mod + 12;
-    ULONG off = (ULONG)mod[952 + p.SongPos] << 10;
+    ULONG off = (ULONG)mod[952 + playdata.SongPos] << 10;
     volatile struct Custom *cu = CUSTOM;
     int i;
 
-    off = (off & 0xffff0000UL) | (UWORD)(off + p.PatternPos);  /* ADD.W */
+    off = (off & 0xffff0000UL) | (UWORD)(off + playdata.PatternPos);  /* ADD.W */
     patdata = mod + 1084;
-    p.DMACONtemp = 0;
+    playdata.DMACONtemp = 0;
     for (i = 0; i < 4; i++, off += 4)
-        playvoice(&p.chan[i], voice(i), samples, patdata + off); /* 0(A0,D1.L) */
-    playsamples(set_real_mask(p.DMACONtemp));   /* mt_SetDMA */
+        playvoice(&playdata.chan[i], voice(i), samples, patdata + off); /* 0(A0,D1.L) */
+    playsamples(set_real_mask(playdata.DMACONtemp));   /* mt_SetDMA */
     for (i = 0; i < 4; i++)
-        if (g.master_mask & (1 << i)) {
-            cu->aud[i].ac_ptr = (UWORD *)p.chan[i].loopstart;
-            cu->aud[i].ac_len = p.chan[i].replen;
+        if (libvars.master_mask & (1 << i)) {
+            cu->aud[i].ac_ptr = (UWORD *)playdata.chan[i].loopstart;
+            cu->aud[i].ac_len = playdata.chan[i].replen;
         }
     dskip();
 }
@@ -1380,17 +1380,17 @@ static void getnewnote(void)
 /* mt_music: one tick (the CIA interrupt, PlayTracker) */
 static void BLITZ_ROUTINE mt_music_c(void)
 {
-    if (!p.Enable)
+    if (!playdata.Enable)
         return;
-    p.counter++;
-    if (p.counter < p.speed) {          /* mt_NoNewNote */
+    playdata.counter++;
+    if (playdata.counter < playdata.speed) {          /* mt_NoNewNote */
         nonewallchannels();
-        if (p.PosJumpFlag)
+        if (playdata.PosJumpFlag)
             nextposition();
         return;
     }
-    p.counter = 0;
-    if (p.PattDelTime2) {
+    playdata.counter = 0;
+    if (playdata.PattDelTime2) {
         nonewallchannels();
         dskip();
         return;
@@ -1404,8 +1404,8 @@ static void change_volume_levels(void)
     int i;
 
     for (i = 0; i < 4; i++)
-        if (g.master_mask & (1 << i))
-            CUSTOM->aud[i].ac_vol = set_volume(p.chan[i].volume);
+        if (libvars.master_mask & (1 << i))
+            CUSTOM->aud[i].ac_vol = set_volume(playdata.chan[i].volume);
 }
 
 /* ---------------------------------------------------------- the module */
@@ -1424,15 +1424,17 @@ static void freetrackermodule_c(ULONG num BL_REG(d0))
 }
 
 /* LoadTrackerModule (a6 = whatever the program has: BUG(orig), #443) */
-static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG val BL_REG(d0), ULONG name BL_REG(d1),
+static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG num BL_REG(d0), ULONG name BL_REG(d1),
                                            struct DosLibrary *dos BL_REG(a6))
 {
     struct modent *e;
     LONG readlen;
+    ULONG size;                         /* d0: the file size */
+    ULONG result;                       /* d0: the Read result */
 
-    thismod = val;
+    thismod = num;
     fname = name;
-    freetrackermodule_c(val);
+    freetrackermodule_c(num);
     e = slot(thismod);
     lock = Lock((STRPTR)fname, -2);
     if (!lock)
@@ -1442,8 +1444,8 @@ static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG val BL_REG(d0), ULONG name BL_R
         BLITZ_RUNERR(mess2);
     if (!Examine(lock, (struct FileInfoBlock *)fib))
         BLITZ_RUNERR(mess);
-    val = (ULONG)((struct FileInfoBlock *)fib)->fib_Size;
-    e->len = BL_SETB(val, val + 3);     /* ADD.b (BUG(orig), #442) */
+    size = (ULONG)((struct FileInfoBlock *)fib)->fib_Size;
+    e->len = BL_SETB(size, size + 3);   /* ADD.b (BUG(orig), #442) */
     globfree(fib, 512);
     e->addr = (UBYTE *)globalloc(e->len, MEMF_CHIP);
     hand = OpenFromLock(lock);
@@ -1451,9 +1453,9 @@ static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG val BL_REG(d0), ULONG name BL_R
     e->flag = 1;
     readerr = (ULONG)readlen;
     Close(hand);
-    val = readerr;
+    result = readerr;
     readerr = (ULONG)-1;
-    if (val == (ULONG)-1) {
+    if (result == (ULONG)-1) {
         UnLock(lock);                   /* BUG(orig): OpenFromLock's lock (#444) */
         readerr = 0;
         freetrackermodule_c(thismod);
@@ -1536,23 +1538,24 @@ static ULONG BLITZ_ROUTINE modtochip2_c(ULONG arg BL_REG(d0))
 }
 
 /* GetModuleName$: up to 20 characters of the module's name at a3 */
-static ULONG BLITZ_ROUTINE getmodulename_c(ULONG val BL_REG(d0))
+static ULONG BLITZ_ROUTINE getmodulename_c(ULONG num BL_REG(d0))
 {
-    ULONG off = bl_mulu_w((UWORD)val, 10);
-    const UBYTE *name = slot(val)->addr;
+    ULONG off = bl_mulu_w((UWORD)num, 10);
+    const UBYTE *name = slot(num)->addr;
     UWORD left = 19;
+    ULONG len;                          /* d0: the name length */
 
     if (!name)
         return off;                     /* BUG(orig): no string, d0 = slot*10 (#437) */
-    val = 0;
+    len = 0;
     do {
         if (!*name)
             break;
-        BL_SETW(val, val + 1);          /* ADDQ #1,d0 */
+        BL_SETW(len, len + 1);          /* ADDQ #1,d0 */
         *blitz_string++ = *name++;
     } while (left-- != 0);
     *blitz_string = 0;
-    return val;
+    return len;
 }
 
 /* StartTracker */
@@ -1562,19 +1565,19 @@ static ULONG BLITZ_ROUTINE starttrkmodule_c(ULONG num BL_REG(d0))
 
     if (!e->addr)
         return num;                     /* BUG(orig): the slot number (#451) */
-    c.mt_data = e->addr;
+    ciapart.mt_data = e->addr;
     resetciaint();                      /* _ResetCIATempo */
-    if (g.play_type != 1)
+    if (libvars.play_type != 1)
         setciaint();
     mt_init(e->len);
-    p.Enable = 0xff;
+    playdata.Enable = 0xff;
     return (ULONG)-1;
 }
 
 static void BLITZ_ROUTINE stoptracker_c(void)
 {
     mt_end();
-    p.Enable = 0;
+    playdata.Enable = 0;
 }
 
 static ULONG BLITZ_ROUTINE maxpatterns_c(ULONG num BL_REG(d0))
@@ -1590,15 +1593,15 @@ static ULONG BLITZ_ROUTINE maxpatterns_c(ULONG num BL_REG(d0))
 
 static ULONG BLITZ_ROUTINE gettrackerevent_c(ULONG old BL_REG(d0))
 {
-    return BL_SETB(old, p.TrkEvt);
+    return BL_SETB(old, playdata.TrkEvt);
 }
 
 /* CheckTrackerEvent: d0.w -1 for a new event, else d0.b the last one */
 static ULONG BLITZ_ROUTINE checktrackerevent_c(ULONG old BL_REG(d0))
 {
-    if (p.LstEvt == p.TrkEvt)
-        return BL_SETB(old, p.LstEvt);
-    p.LstEvt = p.TrkEvt;
+    if (playdata.LstEvt == playdata.TrkEvt)
+        return BL_SETB(old, playdata.LstEvt);
+    playdata.LstEvt = playdata.TrkEvt;
     return BL_SETW(old, 0xffff);
 }
 
@@ -1610,8 +1613,8 @@ static void BLITZ_ROUTINE waittrackerevent_c(const void *caller_a6 BL_REG(a6))
     for (;;) {
         struct bl_regs r = { 0 };
         BLITZ_BASEJSR(caller_a6, -270, r);
-        if (p.LstEvt != p.TrkEvt) {
-            p.LstEvt = p.TrkEvt;
+        if (playdata.LstEvt != playdata.TrkEvt) {
+            playdata.LstEvt = playdata.TrkEvt;
             return;
         }
     }
@@ -1619,30 +1622,30 @@ static void BLITZ_ROUTINE waittrackerevent_c(const void *caller_a6 BL_REG(a6))
 
 static void BLITZ_ROUTINE modulepositionjump_c(ULONG pos BL_REG(d0))
 {
-    p.SongPos = (UBYTE)pos;
-    p.PBreakPos = 0;
-    p.PosJumpFlag = 0xff;
+    playdata.SongPos = (UBYTE)pos;
+    playdata.PBreakPos = 0;
+    playdata.PosJumpFlag = 0xff;
 }
 
 static ULONG BLITZ_ROUTINE getmoduleposition_c(ULONG old BL_REG(d0))
 {
-    return BL_SETB(old, p.SongPos);
+    return BL_SETB(old, playdata.SongPos);
 }
 
 static void BLITZ_ROUTINE pausemodule_c(void)
 {
-    if (g.pause_status == 0) {
-        g.pause_status = 1;
+    if (libvars.pause_status == 0) {
+        libvars.pause_status = 1;
         mt_end();
-    } else if (g.pause_status == 1) {
-        g.pause_status = 0;
-        p.Enable = 0xff;
+    } else if (libvars.pause_status == 1) {
+        libvars.pause_status = 0;
+        playdata.Enable = 0xff;
     }
 }
 
 static void BLITZ_ROUTINE change_playtype_c(void)
 {
-    g.play_type = 1;
+    libvars.play_type = 1;
     mt_end();
     resetciaint();
 }
@@ -1655,16 +1658,16 @@ static void BLITZ_ROUTINE volume_control_c(ULONG vol BL_REG(d0))
 
     if ((UWORD)vol > 0x40)
         return;
-    g.old_volume = g.master_volume;
-    level = g.old_volume;
-    g.master_volume = (UWORD)vol;
-    diff = (UWORD)(g.master_volume - g.old_volume);
+    libvars.old_volume = libvars.master_volume;
+    level = libvars.old_volume;
+    libvars.master_volume = (UWORD)vol;
+    diff = (UWORD)(libvars.master_volume - libvars.old_volume);
     level += diff;
     if ((WORD)(level - 0x40) >= 0)      /* CMP.W #$40,d1: BMI */
         return;
     if ((WORD)level <= 0)               /* CMP.w #0,d1: BGT */
         return;
-    g.volume_flag = diff;
+    libvars.volume_flag = diff;
     change_volume_levels();
 }
 
@@ -1674,9 +1677,9 @@ static void BLITZ_ROUTINE changetrackermask_c(ULONG mask BL_REG(d0))
 
     for (i = 0; i < 4; i++) {
         if (mask & (1 << i)) {
-            g.master_mask |= 1 << i;
+            libvars.master_mask |= 1 << i;
         } else {
-            g.master_mask &= ~(1 << i);
+            libvars.master_mask &= ~(1 << i);
             CUSTOM->aud[i].ac_vol = 0;
         }
     }
@@ -1686,22 +1689,22 @@ static void BLITZ_ROUTINE inittrackerlib_c(void)
 {
     int i;
 
-    if (g.play_type != 1)
+    if (libvars.play_type != 1)
         setciaint();                    /* the CIA interrupt */
     for (i = 0; i < 8; i++) {           /* DBNE d0 from 7: slots 0-7 */
-        g.modtable[i].addr = NULL;
-        g.modtable[i].len = 0;
-        g.modtable[i].flag = 0;
+        libvars.modtable[i].addr = NULL;
+        libvars.modtable[i].len = 0;
+        libvars.modtable[i].flag = 0;
     }
-    g.master_volume = 0x40;
-    g.master_mask |= 0x0f;
-    g.volume_flag = 0;
+    libvars.master_volume = 0x40;
+    libvars.master_mask |= 0x0f;
+    libvars.volume_flag = 0;
 }
 
 static void BLITZ_ROUTINE finittrackerlib_c(void)
 {
     stoptracker_c();
-    if (g.play_type != 1)
+    if (libvars.play_type != 1)
         resetciaint();
 }
 
