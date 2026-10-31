@@ -121,30 +121,31 @@ static ULONG offset(const UBYTE *bm, WORD x, WORD y)
     return (ULONG)((LONG)y * (WORD)SW(bm, 0)) + (LONG)(WORD)(x >> 3);
 }
 
-/* the modulos: C = D = bpr - ebwidth - 2, A = B = -2 */
+/* the modulos: C = D = bpr - ebwidth - 2, A = B = -2 (mods_cb = d6 for
+   BLTCMOD/BLTBMOD, mods_ad = d7 for BLTAMOD/BLTDMOD) */
 static void setmods(const UBYTE *shape, const UBYTE *bm, UBYTE *cb)
 {
-    ULONG d7 = 0xfffe0000UL | (UWORD)(SW(bm, 0) - SW(shape, 6) - 2);
-    ULONG d6 = d7 << 16 | d7 >> 16;
+    ULONG mods_ad = 0xfffe0000UL | (UWORD)(SW(bm, 0) - SW(shape, 6) - 2);
+    ULONG mods_cb = mods_ad << 16 | mods_ad >> 16;
 
     BL_BLITWAIT(cb);
-    BL_CUSTOML(cb, 0x60) = d6;                          /* MOVEM.l d6-d7,$060 */
-    BL_CUSTOML(cb, 0x64) = d7;
+    BL_CUSTOML(cb, 0x60) = mods_cb;                     /* MOVEM.l d6-d7,$060 */
+    BL_CUSTOML(cb, 0x64) = mods_ad;
 }
 
 /* b_doblit - a3 = shape, a2 = used bitmap, a1 = chip base, d1/d2 = x/y */
 static void blit(const UBYTE *shape, const UBYTE *bm, UBYTE *cb, WORD x, WORD y,
                  struct blitstate *st)
 {
-    UWORD d0, n;
+    UWORD shiftbits, n;
 
     x -= SW(shape, 10);
     y -= SW(shape, 12);
     setmods(shape, bm, cb);
-    d0 = (UWORD)((x & 15) << 12);               /* AND #15:ROR #4 */
-    st->shift = d0;
-    BL_CUSTOMW(cb, 0x42) = d0;
-    BL_CUSTOMW(cb, 0x40) = d0 | bcon0;
+    shiftbits = (UWORD)((x & 15) << 12);        /* AND #15:ROR #4 */
+    st->shift = shiftbits;
+    BL_CUSTOMW(cb, 0x42) = shiftbits;
+    BL_CUSTOMW(cb, 0x40) = shiftbits | bcon0;
     BL_CUSTOML(cb, 0x44) = 0xffff0000UL;
     BL_CUSTOML(cb, 0x4c) = SL(shape, 14);
     st->cookie = SL(shape, 18);
@@ -227,16 +228,16 @@ doblit:
 /* b_doblitcoll - A = cookie, C = every bitmap plane, no D: BZERO */
 static UWORD blitcoll(const UBYTE *shape, const UBYTE *bm, UBYTE *cb, WORD x, WORD y)
 {
-    UWORD d0, n, size;
+    UWORD shiftbits, n, size;
     UBYTE **plane = (UBYTE **)(bm + 8);
     ULONG cookie, off;
 
     x -= SW(shape, 10);
     y -= SW(shape, 12);
     setmods(shape, bm, cb);
-    d0 = (UWORD)((x & 15) << 12);
-    BL_CUSTOMW(cb, 0x42) = d0;
-    BL_CUSTOMW(cb, 0x40) = d0 | 0xaa0;
+    shiftbits = (UWORD)((x & 15) << 12);
+    BL_CUSTOMW(cb, 0x42) = shiftbits;
+    BL_CUSTOMW(cb, 0x40) = shiftbits | 0xaa0;
     BL_CUSTOML(cb, 0x44) = 0xffff0000UL;
     cookie = SL(shape, 18);
     off = offset(bm, x, y);
@@ -343,10 +344,10 @@ static void BLITZ_ROUTINE doblitmode_c(UWORD m BL_REG(d0))
 BLITZ_THUNK(doblitmode, doblitmode_c, "d0-d1/a0-a1");
 
 /* codeinit: MOVE #$fca,d0 and on into doblitmode */
-static ULONG BLITZ_ROUTINE codeinit_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE codeinit_c(ULONG caller_d0 BL_REG(d0))
 {
     bcon0 = 0xfca;
-    return (d0 & 0xffff0000UL) | 0xfca;
+    return (caller_d0 & 0xffff0000UL) | 0xfca;
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
 
