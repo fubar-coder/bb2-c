@@ -256,13 +256,25 @@ static void freeanim_c(struct anim *anim)
     }
 }
 
-/* _free nullsub: a3 = object */
+/**
+ * @brief Free Anim (the object's _free nullsub): free BODY and the delta
+ *        nodes of the anim in a3.
+ *
+ * Only a loaded anim (width not 0); width is cleared.  BUG(orig) (#399):
+ * the next pointer of a delta node is read after the node was freed.
+ */
 void BLITZ_ROUTINE freeanim(void)
 {
     freeanim_c((struct anim *)blitz_string);
 }
 
-/* Frames: MOVE 8(a0),d0 */
+/**
+ * @brief Frames(Anim#): the number of frames (inline MOVE 8(a0),d0).
+ *
+ * a0 = the anim (!libs {#animlib,$1080}); d0.w = the number of DLTA
+ * chunks - 1 (1 without ANHD).  Error (debugger, animchk4): "Uninitialized
+ * Anim".
+ */
 BLITZ_INLINE(doframes, "move.w 8(a0),d0");
 
 /* err6 (normal code, its message in the error check area) and err7 (in
@@ -270,7 +282,24 @@ BLITZ_INLINE(doframes, "move.w 8(a0),d0");
 void err6(void) __attribute__((noreturn)), err7(void) __attribute__((noreturn));
 #define GOTO(label) label()     /* JSR to the noreturn label, see displaylib.c */
 
-/* LoadAnim - a0 = anim, d1 = file name */
+/**
+ * @brief LoadAnim Anim#,Filename$: load an IFF ANIM (op 5) into the anim.
+ *
+ * Amiga mode only (code+1).  Frees the anim, opens the file with
+ * ilbmifflib ilbminit (BMHD -> width, height, depth, byte width), reads
+ * BODY, then ANHD (the operation byte must be 5; 19 bytes skipped, bit 1
+ * of `bits` = EOR) and every following DLTA chunk into a delta node;
+ * frames = number of DLTAs - 1 (1 without ANHD).  The file is read through
+ * iffiolib.  a3 is left on the last delta node (or anim+18; not a bug).
+ * Errors: "Can't Open Anim File" (err7) - BUG(orig) (#398): a BEQ into
+ * the error check area, behind the library without the debugger
+ * (reproduced: JSR to err7); "Anim format not supported" (err6, its text
+ * in the check area, runs on into err1, #398).  BUG(orig): a missing BODY
+ * gives length -1 (#400); a single delta gives current = 0 (#401).
+ *
+ * @param anim  a0: the anim (!libs {#animlib,$1080}, from Anim# in d0)
+ * @param name  d1: the file name
+ */
 void BLITZ_ROUTINE doanimload(struct anim *anim BL_REG(a0), ULONG name BL_REG(d1))
 {
     struct bl_regs r;
@@ -335,7 +364,16 @@ void BLITZ_ROUTINE doanimload(struct anim *anim BL_REG(a0), ULONG name BL_REG(d1
     iffclose();
 }
 
-/* LoadAnim with palette - d2 = palette (a1) */
+/**
+ * @brief LoadAnim Anim#,Filename$,Palette#: LoadAnim, first the palette.
+ *
+ * Calls palettelib +3 (a0 = file name, a1 = palette), then LoadAnim.
+ *
+ * @param anim  a0: the anim (!libs {#animlib,$1080}, from Anim# in d0)
+ * @param name  d1: the file name
+ * @param pal   a1: the palette (!libs {#palettelib,$1182}, from Palette#
+ *              in d2)
+ */
 void BLITZ_ROUTINE doanimload2(struct anim *anim BL_REG(a0), ULONG name BL_REG(d1),
                                ULONG pal BL_REG(a1))
 {
@@ -390,6 +428,18 @@ static void initanim(struct anim *anim, struct bmap *bm)
     blitz_string = src;                 /* a3 stays behind the BODY data */
 }
 
+/**
+ * @brief InitAnim Anim#: decode BODY into the used bitmap.
+ *
+ * BODY is decoded as ByteRun1 whatever BMHD's compression says (BUG(orig),
+ * #397; DBF counters: height/depth/width 0 run 65536 times, #402); the
+ * current delta becomes the first one.  a3 is left behind the BODY data
+ * (not a bug).  Errors (debugger, animchk): "Uninitialized Anim",
+ * "Uninitialized BitMap", "BitMap not large enough for ANIM".
+ *
+ * @param anim  a0: the anim (!libs {#animlib,$1080}, from Anim# in d0)
+ * @param bm    a1: the used bitmap (!libs {#bitmaplib,$1102})
+ */
 static void BLITZ_ROUTINE doinitanim_c(struct anim *anim BL_REG(a0),
                                        struct bmap *bm BL_REG(a1))
 {
@@ -397,7 +447,18 @@ static void BLITZ_ROUTINE doinitanim_c(struct anim *anim BL_REG(a0),
 }
 BLITZ_THUNK(doinitanim, doinitanim_c, "d0-d1/a0-a1");
 
-/* InitAnim with second bitmap: a1 = used bitmap, a2 = second bitmap */
+/**
+ * @brief InitAnim Anim#,BitMap#: InitAnim, then the planes copied to the
+ *        second bitmap (double buffering).
+ *
+ * a3 is left in the last plane of the second bitmap (not a bug).  Errors
+ * (debugger, animchk2): as InitAnim, checked for the second bitmap.
+ *
+ * @param anim  a0: the anim (!libs {#animlib,$1080}, from Anim# in d0)
+ * @param bm    a1: the used bitmap (!libs {#bitmaplib,$1102})
+ * @param bm2   a2: the second bitmap (!libs {#bitmaplib,$1281}, from
+ *              BitMap# in d1)
+ */
 static void BLITZ_ROUTINE doinitanim2_c(struct anim *anim BL_REG(a0),
                                         struct bmap *bm BL_REG(a1),
                                         struct bmap *bm2 BL_REG(a2))
@@ -433,7 +494,19 @@ static void BLITZ_ROUTINE doinitanim2_c(struct anim *anim BL_REG(a0),
 }
 BLITZ_THUNK(doinitanim2, doinitanim2_c, "d0-d1/a0-a1");
 
-/* NextFrame - a0 = anim, a1 = bitmap */
+/**
+ * @brief NextFrame Anim#: apply the current delta to the used bitmap.
+ *
+ * Per plane the column ops skip/uniq/same, written (MOVE) or EORed; then
+ * the next node, after the last one the SECOND node (not a bug: the ANIM
+ * op-5 double-buffer loop, the last two deltas lead back to frames 0/1).
+ * a3 is left on the current (or first) node (not a bug).  Errors
+ * (debugger, animchk3): "Anim has only 1 frame", "Anim not Initialized",
+ * then as InitAnim.
+ *
+ * @param anim  a0: the anim (!libs {#animlib,$1080}, from Anim# in d0)
+ * @param bm    a1: the used bitmap (!libs {#bitmaplib,$1102})
+ */
 static void BLITZ_ROUTINE donextframe_c(struct anim *anim BL_REG(a0),
                                         struct bmap *bm BL_REG(a1))
 {
