@@ -4,11 +4,7 @@
  * include with IncBin), in C for ristonecrackerlib.c and
  * ristcdecrunchlib.c (included by both; everything static).
  *
- * dostc(file, dest): file = the S404 file (a1), dest = the destination
- * (a0); the data unpack backwards from dest + unpacked length down to
- * dest.  Returns a0 at the end: dest for good data (the loop ends as soon
- * as a0 <= dest).  The original leaves d0 = 1 (MOVEQ #1,d0, the 1 of its
- * ADDX); the other registers are working registers.
+ * The entry point is dostc() (see there).
  *
  * Translated register by register: d6 is the 32 bit bit buffer, the
  * counts are words, shifts are taken modulo 64 as by the 68000, DBF loops
@@ -31,8 +27,11 @@
 #define LONGAT(p) (*(const ULONG *)(p))
 #define WORDAT(p) (*(const UWORD *)(p))
 
-/* the 68000 registers optidec works with (d1 is dostc's nbits, value and
-   shift) */
+/**
+ * @brief The 68000 registers the decruncher works with.
+ *
+ * d1 is not here: it is dostc()'s nbits, value and shift.
+ */
 struct stc {
     ULONG bitbuf;                       /* d6: bit buffer: bits at the top of the low word */
     UWORD bitsleft;                     /* d7: bits left in it */
@@ -111,7 +110,20 @@ static const UBYTE runtab[16] = {
     0x88, 0x87, 0x86, 0x85, 0x84, 0x83, 0x82, 0x81,
 };
 
-/* dostc: a1 = the file, a0 = the destination; a0 at the end */
+/**
+ * @brief Unpack a StoneCracker 4.04 ("S404") file.
+ *
+ * The data unpack backwards from dest + the unpacked length (the long at
+ * file + 8) down to dest.  The data are not checked: corrupt data write
+ * below dest and read below the file (BUG(orig) #833).  The original
+ * leaves d0 = 1 (MOVEQ #1,d0, the 1 of its ADDX); its other registers are
+ * working registers.
+ *
+ * @param file  a1: the S404 file
+ * @param dest  a0: the destination buffer
+ * @return a0 at the end: dest for good data (the loop ends as soon as
+ *         a0 <= dest)
+ */
 static UBYTE *dostc(const UBYTE *file, UBYTE *dest)
 {
     struct stc st, *s = &st;
