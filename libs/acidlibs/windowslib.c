@@ -726,7 +726,7 @@ static struct NewWindow anewwindow = {
 
 /* wintags + usertags: one list; WindowTags copies the user tags behind
    the four fixed ones (&TagList: at most 15 pairs, then TAG_MORE to the
-   rest, fixed #317; the tag pairs BUG(orig) (#317) without a limit), and
+   rest, fixed #317; the tag pairs BUG(orig) (#961) without a limit), and
    without tags writes no TAG_DONE: the last user tags stay (#316) */
 static struct {
     struct TagItem flags, title, screen, newlook;   /* wintags */
@@ -3229,7 +3229,7 @@ void BLITZ_ROUTINE dowindowtags3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1)
  * As WindowTags Window#,Flags,Title$; the pairs come from the argument
  * stack, then TAG_DONE (its data not set).
  *
- * BUG(orig) (#317): no limit for the 16 user tags (fixed only for the
+ * BUG(orig) (#961): no limit for the 16 user tags (#317 fixed only the
  * &TagList form: these pairs come from the argument stack in reverse
  * order and cannot be linked with TAG_MORE).
  *
