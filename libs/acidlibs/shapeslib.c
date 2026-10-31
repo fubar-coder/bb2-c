@@ -299,6 +299,7 @@ __asm__("   .section .blitzlib.errchk,\"ax\"\n"
 /* TST.l d2:BEQ err10 */
 #define JMP_ERR10() __asm__ volatile("jmp _err10")
 
+/** @brief Library init: AutoCookie on. */
 static void BLITZ_ROUTINE codeinit_c(void)
 {
     autocook = 0xffff;
@@ -324,6 +325,15 @@ static void freeashape_(struct shape *s)
     }
 }
 
+/**
+ * @brief Object free routine (_free) of a Shape: free its data and cookie.
+ *
+ * a3 = the shape.  The width is cleared; the data is freed unless +30 is
+ * "cL" (DecodeShapes data in place), the cookie if there is one.
+ *
+ * BUG(orig) (#269): "cL" stays in +30, so a later shape in this object
+ * is never freed either.
+ */
 static void BLITZ_ROUTINE freeashape_c(void)
 {
     freeashape_((struct shape *)blitz_string);
@@ -368,6 +378,15 @@ static void cookie_(struct shape *s)
     } while (rows-- != 0);
 }
 
+/**
+ * @brief MakeCookie Shape# - make the shape's cookie, also nullsub +11
+ * docookie for other libraries (shapetrixlib).
+ *
+ * a3 = the shape.  An old cookie is freed; the new one (bytes per plane,
+ * CHIP, cleared, not checked) is the OR of all planes.
+ *
+ * Errors: "Uninitialized Shape" (cookiechk, debugger only).
+ */
 static void BLITZ_ROUTINE docookie_c(void)
 {
     cookie_((struct shape *)blitz_string);
@@ -376,18 +395,49 @@ BLITZ_THUNK(docookie, docookie_c, "d0-d1/a0-a1");
 
 /* ------------------------------------------------- small statements */
 
+/**
+ * @brief AutoCookie On|Off - make cookies automatically for the shapes of
+ * LoadShape(s), GetaShape, InitShape and DecodeShapes.
+ *
+ * @param v d0.w: <> 0 = on
+ */
 static void BLITZ_ROUTINE doautocookie_c(ULONG v BL_REG(d0))
 {
     autocook = (UWORD)v;
 }
 BLITZ_THUNK(doautocookie, doautocookie_c, "d0-d1/a0-a1");
 
-/* ShapeWidth/ShapeHeight: MOVE (a0),d0 - only the low word */
+/**
+ * @brief ShapeWidth(Shape#) - the shape's pixel width.
+ *
+ * MOVE (a0),d0 - only the low word (not a bug: a word function, the
+ * compiler uses only d0.w).
+ *
+ * Errors: "Uninitialized Shape" (funcchk, debugger only).
+ *
+ * @param s a0: the shape
+ * @return d0.w: the width
+ */
 static UWORD BLITZ_ROUTINE shapew_c(struct shape *s BL_REG(a0)) { return s->width; }
+/**
+ * @brief ShapeHeight(Shape#) - the shape's pixel height (only the low word
+ * of d0, as ShapeWidth).
+ *
+ * Errors: "Uninitialized Shape" (funcchk, debugger only).
+ *
+ * @param s a0: the shape
+ * @return d0.w: the height
+ */
 static UWORD BLITZ_ROUTINE shapeh_c(struct shape *s BL_REG(a0)) { return s->height; }
 BLITZ_THUNK_POST(doshapew, shapew_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 BLITZ_THUNK_POST(doshapeh, shapeh_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
+/**
+ * @brief MidHandle Shape# - put the handle in the middle (width/2,
+ * height/2); a3 = the shape.
+ *
+ * Errors: "Uninitialized Shape" (cookiechk, debugger only).
+ */
 static void BLITZ_ROUTINE domidhandle_c(void)
 {
     struct shape *s = (struct shape *)blitz_string;
@@ -397,6 +447,14 @@ static void BLITZ_ROUTINE domidhandle_c(void)
 }
 BLITZ_THUNK(domidhandle, domidhandle_c, "d0-d1/a0-a1");
 
+/**
+ * @brief Handle Shape#,X,Y - set the shape's handle; a3 = the shape.
+ *
+ * Errors: "Uninitialized Shape" (cookiechk, debugger only).
+ *
+ * @param x d1.w: the handle x
+ * @param y d2.w: the handle y
+ */
 static void BLITZ_ROUTINE dohandle_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2))
 {
     struct shape *s = (struct shape *)blitz_string;
@@ -435,6 +493,19 @@ static void copyshape2(struct shape *from, struct shape *to)
     nall(from, to, offsetof(struct shape, data), offsetof(struct shape, size));
 }
 
+/**
+ * @brief CopyShape Shape#,Shape# - copy the first shape (a3) into the
+ * second.
+ *
+ * The destination is freed, the 32 byte block copied, then the data and
+ * the cookie are copied into new CHIP memory (not checked).
+ *
+ * BUG(orig) (#268): +30 is copied too ("cL" of a DecodeShapes shape: the
+ * copy is never freed).  Errors: "Uninitialized Shape" (cookiechk,
+ * debugger only).
+ *
+ * @param dst a2: the destination shape
+ */
 static void BLITZ_ROUTINE docopyshape_c(struct shape *dst BL_REG(a2))
 {
     copyshape2((struct shape *)blitz_string, dst);
@@ -445,6 +516,18 @@ BLITZ_THUNK(docopyshape, docopyshape_c, "d0-d1/a0-a1");
 
 /* ------------------------------------------------------------ InitShape */
 
+/**
+ * @brief InitShape Shape#,Width,Height,Depth - create an empty shape.
+ *
+ * a3 = the shape; the old one is freed.  Data cleared (CHIP, not
+ * checked), handle 0, a cleared cookie with AutoCookie on.
+ *
+ * BUG(orig) (#263): the sizes are the low words of MULU.
+ *
+ * @param w d1.w: the width in pixels
+ * @param h d2.w: the height
+ * @param d d3.w: the depth
+ */
 static void BLITZ_ROUTINE initshape_c(ULONG w BL_REG(d1), ULONG h BL_REG(d2), ULONG d BL_REG(d3))
 {
     struct shape *s = (struct shape *)blitz_string;
@@ -524,6 +607,25 @@ static void getashape(struct shape *shape, UBYTE *bm, UWORD x, UWORD y, UWORD w,
         cookie_(shape);
 }
 
+/**
+ * @brief GetaShape Shape#,X,Y,Width,Height - make a shape from an area of
+ * the used bitmap (Blitz mode; also nullsub +14 b_getashape).
+ *
+ * a3 = the shape; the old one is freed.  bitmaplib +4 (extbitmap) creates
+ * a bitmap of the area's size in tbmap, scrolllib Scroll copies the area
+ * into it, and its planes become the shape's data; then a blitter wait
+ * ("20/8/93 waitblit after getashape b4 makecookie") and the cookie with
+ * AutoCookie on.
+ *
+ * Errors (gschk, debugger only): "Uninitialized BitMap", "Cannot GetaShape
+ * from an interleaved Bitmap", "Illegal area for GetaShape".
+ *
+ * @param x  d1.w: x
+ * @param y  d2.w: y
+ * @param w  d3.w: the width
+ * @param h  d4.w: the height
+ * @param bm a2: the used bitmap
+ */
 void BLITZ_ROUTINE b_getashape_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w BL_REG(d3),
                                  ULONG h BL_REG(d4), UBYTE *bm BL_REG(a2));
 void BLITZ_ROUTINE b_getashape_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w BL_REG(d3),
@@ -533,7 +635,12 @@ void BLITZ_ROUTINE b_getashape_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w
 }
 BLITZ_THUNK(b_getashape, b_getashape_c, "d0-d1/a0-a1");
 
-/* Amiga mode: OwnBlitter, the Blitz mode routine, wait, DisownBlitter */
+/**
+ * @brief GetaShape in Amiga mode: OwnBlitter, the Blitz mode routine,
+ * wait, DisownBlitter.
+ *
+ * @param gfx a6: graphics.library
+ */
 void BLITZ_ROUTINE a_getashape_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w BL_REG(d3),
                                  ULONG h BL_REG(d4), UBYTE *bm BL_REG(a2),
                                  struct GfxBase *gfx BL_REG(a6));
@@ -562,7 +669,20 @@ BLITZ_AB_ROUTINE(dogetashape, b_getashape,
 static struct DosLibrary *dosbase;
 #define DOSBase dosbase                         /* for proto/dos.h */
 
-/* SaveShapes: shapes a3..a2 */
+/**
+ * @brief SaveShapes Shape#,Shape#,Filename$ - save the shapes a3..a2.
+ *
+ * Every shape's 32 byte block, followed by its data (+26 bytes) for a
+ * used shape.
+ *
+ * Errors: "Can't open Shapes File", "Can't Read/Write Shapes File" (in
+ * the normal code, their texts in the error area); "First shape must be
+ * lower than second" (schkz, debugger only).
+ *
+ * @param last a2: the last shape
+ * @param name d2: the file name
+ * @param dos  a6: dos.library
+ */
 static void BLITZ_ROUTINE dosaveshapes_c(struct shape *last BL_REG(a2), const char *name BL_REG(d2),
                                          struct DosLibrary *dos BL_REG(a6))
 {
@@ -625,6 +745,23 @@ static void loadshapes(struct shape *s, struct shape *last, const char *name,
     Close(fh);
 }
 
+/**
+ * @brief LoadShapes Shape#,Shape#,Filename$ - load the shapes a3..a2 from
+ * a SaveShapes file.
+ *
+ * Every block is checked (planesize, size), the data loaded into CHIP
+ * memory (not checked), the cookie made with AutoCookie on; the end of
+ * the file ends the loading.
+ *
+ * BUG(orig) (#267): the block keeps its +30 ("cL" of a saved DecodeShapes
+ * shape: the data is never freed).  Errors: "Can't open Shapes File",
+ * "Can't Read/Write Shapes File" (in the normal code); "First shape must
+ * be lower than second" (schkz, debugger only).
+ *
+ * @param last a2: the last shape
+ * @param name d2: the file name
+ * @param dos  a6: dos.library
+ */
 static void BLITZ_ROUTINE doloadshapes_c(struct shape *last BL_REG(a2),
                                          const char *name BL_REG(d2),
                                          struct DosLibrary *dos BL_REG(a6))
@@ -633,8 +770,18 @@ static void BLITZ_ROUTINE doloadshapes_c(struct shape *last BL_REG(a2),
 }
 BLITZ_THUNK(doloadshapes, doloadshapes_c, "d0-d1/a0-a1");
 
-/* LoadShapes Shape#,Filename$: a2 = shape 0, d2 = maximum.
-   BUG(orig) (#939): the last shape is a2 + (WORD)((max-1) << 5) */
+/**
+ * @brief LoadShapes Shape#,Filename$ - load shapes from a3 on up to the
+ * last shape object (as doloadshapes_c).
+ *
+ * BUG(orig) (#939): the last shape is a2 + (WORD)((max-1) << 5): from a
+ * maximum of 1025 on it lies before the table.
+ *
+ * @param base a2: shape 0
+ * @param max  d2: the maximum
+ * @param name d1: the file name
+ * @param dos  a6: dos.library
+ */
 static void BLITZ_ROUTINE doloadshapes2_c(UBYTE *base BL_REG(a2), ULONG max BL_REG(d2),
                                           const char *name BL_REG(d1),
                                           struct DosLibrary *dos BL_REG(a6))
@@ -690,6 +837,22 @@ static void cludge(struct shape *shape, struct shape *last, UBYTE *mem)
     } while ((ULONG)shape <= (ULONG)last);
 }
 
+/**
+ * @brief DecodeShapes Shape#,Shape#,MemoryLocation - the shapes a3..a2
+ * from a SaveShapes file in memory.
+ *
+ * Stops silently at the first block that does not match (not a bug: the
+ * end of the sequence).  Memory below 2 MB ($FFE00000 clear, chip RAM) is
+ * used in place and marked "cL" (never freed), above it is copied to CHIP
+ * memory.  Cookie with AutoCookie on.
+ *
+ * BUG(orig) (#270): address 0 jumps (BEQ) into the error check area
+ * (err10, "Shapes file at memory location 0? NOWAY!"): without the
+ * debugger behind the library.
+ *
+ * @param last a2: the last shape
+ * @param mem  d2: the address of the data
+ */
 static void BLITZ_ROUTINE cludgeshapes_c(struct shape *last BL_REG(a2), UBYTE *mem BL_REG(d2))
 {
     if (!mem)
@@ -698,6 +861,17 @@ static void BLITZ_ROUTINE cludgeshapes_c(struct shape *last BL_REG(a2), UBYTE *m
 }
 BLITZ_THUNK(_cludgeshapes, cludgeshapes_c, "d0-d1/a0-a1");
 
+/**
+ * @brief DecodeShapes Shape#,MemoryLocation - as cludgeshapes_c from a3 on
+ * up to the last shape object.
+ *
+ * BUG(orig) (#939): the last shape is a2 + (WORD)((max-1) << 5).
+ * BUG(orig) (#270): address 0, as cludgeshapes_c.
+ *
+ * @param base a2: shape 0
+ * @param max  d2: the maximum
+ * @param mem  d1: the address of the data
+ */
 static void BLITZ_ROUTINE cludgeshapes2_c(UBYTE *base BL_REG(a2), ULONG max BL_REG(d2),
                                           UBYTE *mem BL_REG(d1))
 {
@@ -903,13 +1077,39 @@ skipanim:
     IJSR(TOK_iffclose, res, st);             /* close the IFF */
 }
 
+/**
+ * @brief LoadShape Shape#,Filename$ - load an ILBM (or ANIM) as a shape.
+ *
+ * Through ilbmifflib (ilbminit, ilbmgetbyte) and iffiolib; data in CHIP
+ * memory (not checked), cookie with AutoCookie on.  After the first frame
+ * every "ANHD" (ANIM op 5, interleave 1) gives a delta frame in the NEXT
+ * shape object (a copy of the previous frame with the DLTA applied, XOR
+ * or set per the ANHD bits).
+ *
+ * BUG(orig): "BODY" is not checked, the decoder reads whatever follows
+ * (#264); ANIM frames go into the following shape objects without a check
+ * against the maximum (#265); sizes are MULU low words (#263).
+ * Errors (in the normal code, their texts in the error area): "Can't open
+ * Shapes File", "ANIM format not supported" (op <> 5), "Illegal ANIM
+ * interleave value" (<> 1).
+ *
+ * @param shape a0: the shape (a3 for the IFF calls)
+ * @param name  d1: the file name
+ */
 static void BLITZ_ROUTINE doshload_c(struct shape *shape BL_REG(a0), const char *name BL_REG(d1))
 {
     doshload_(shape, name);
 }
 BLITZ_THUNK(doshload, doshload_c, "d0-d1/a0-a1");
 
-/* LoadShape with a palette: palettelib +3 (a0 = file name, a1 = palette) */
+/**
+ * @brief LoadShape Shape#,Filename$,Palette# - load the file's palette
+ * (palettelib +3: a0 = file name, a1 = palette), then as doshload_c.
+ *
+ * @param shape a0: the shape
+ * @param name  d1: the file name
+ * @param pal   a1: the palette object
+ */
 static void BLITZ_ROUTINE doshload2_c(struct shape *shape BL_REG(a0), const char *name BL_REG(d1),
                                       void *pal BL_REG(a1))
 {
