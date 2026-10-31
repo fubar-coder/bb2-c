@@ -250,7 +250,7 @@ ULONG BLITZ_ROUTINE c_addrlistitem(ULONG list BL_REG(d0))
 }
 
 /* InitList list#,var: a list with one node, a copy of var */
-ULONG BLITZ_ROUTINE c_initlist(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
+BB_BOOL BLITZ_ROUTINE c_initlist(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
 {
     ULONG node;
 
@@ -258,7 +258,7 @@ ULONG BLITZ_ROUTINE c_initlist(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
     getvarsize(var);
     node = globalloc(NODESIZE);
     if (!node)
-        return 0;
+        return BB_FALSE;
     nodeptr = node;
     TAB(first) = node;
     TAB(last) = node;
@@ -269,7 +269,7 @@ ULONG BLITZ_ROUTINE c_initlist(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
         TAB(first) = 0;
         TAB(last) = 0;
         TAB(current) = 0;
-        return 0;
+        return BB_FALSE;
     }
     copybyte(myvar, _data, _size);
     node = nodeptr;
@@ -278,19 +278,19 @@ ULONG BLITZ_ROUTINE c_initlist(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
     NODE(node)->pad = 0;
     NODE(node)->data = _data;
     NODE(node)->size = _size;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* AddListItem list#: a new empty node behind the current one, now the
    current one */
-ULONG BLITZ_ROUTINE c_addlistitem(ULONG list BL_REG(d0))
+BB_BOOL BLITZ_ROUTINE c_addlistitem(ULONG list BL_REG(d0))
 {
     ULONG node, cur;
 
     listnum = list << 2;
     node = globalloc(NODESIZE);
     if (!node)
-        return 0;
+        return BB_FALSE;
     nodeptr = node;
     cur = TAB(current);                 /* BUG(orig): 0 not checked (#733) */
     _next = NODE(cur)->next;
@@ -308,27 +308,27 @@ ULONG BLITZ_ROUTINE c_addlistitem(ULONG list BL_REG(d0))
     NODE(node)->pad = 0;
     NODE(node)->data = 0;
     NODE(node)->size = _size;           /* BUG(orig): the last size (#735) */
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* SetListItem list#,var: a new copy of var for the current node */
-ULONG BLITZ_ROUTINE c_setlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
+BB_BOOL BLITZ_ROUTINE c_setlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
 {
     ULONG mem;
 
     listnum = list << 2;
     mem = globalloc(getvarsize(var));
     if (!mem)
-        return 0;
+        return BB_FALSE;
     /* BUG(orig): the old copy is not freed, the size not set (#734, #735) */
     NODE(TAB(current))->data = mem;
     copybyte(myvar, mem, _size);
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* GetListItem list#,var: the current node's data into var (the size of
    var) */
-ULONG BLITZ_ROUTINE c_getlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
+BB_BOOL BLITZ_ROUTINE c_getlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
 {
     ULONG data;
 
@@ -336,53 +336,53 @@ ULONG BLITZ_ROUTINE c_getlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
     getvarsize(var);
     data = NODE(TAB(current))->data;
     if (!data)
-        return 0;
+        return BB_FALSE;
     copybyte(data, myvar, _size);
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* NextListItem / PrevListItem list#: 0 at the end */
-ULONG BLITZ_ROUTINE c_nextlistitem(ULONG list BL_REG(d0))
+BB_BOOL BLITZ_ROUTINE c_nextlistitem(ULONG list BL_REG(d0))
 {
     ULONG n;
 
     listnum = list << 2;
     n = NODE(TAB(current))->next;
     if (!n)
-        return 0;
+        return BB_FALSE;
     TAB(current) = n;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
-ULONG BLITZ_ROUTINE c_prevlistitem(ULONG list BL_REG(d0))
+BB_BOOL BLITZ_ROUTINE c_prevlistitem(ULONG list BL_REG(d0))
 {
     ULONG n;
 
     listnum = list << 2;
     n = NODE(TAB(current))->prev;
     if (!n)
-        return 0;
+        return BB_FALSE;
     TAB(current) = n;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* FirstListItem / LastListItem list# */
-ULONG BLITZ_ROUTINE c_firstlistitem(ULONG list BL_REG(d0))
+BB_BOOL BLITZ_ROUTINE c_firstlistitem(ULONG list BL_REG(d0))
 {
     listnum = list << 2;
     TAB(current) = TAB(first);
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
-ULONG BLITZ_ROUTINE c_lastlistitem(ULONG list BL_REG(d0))
+BB_BOOL BLITZ_ROUTINE c_lastlistitem(ULONG list BL_REG(d0))
 {
     listnum = list << 2;
     TAB(current) = TAB(last);
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* AddLastListItem list#: LastListItem, then AddListItem */
-ULONG BLITZ_ROUTINE c_addlastitem(ULONG list BL_REG(d0))
+BB_BOOL BLITZ_ROUTINE c_addlastitem(ULONG list BL_REG(d0))
 {
     c_lastlistitem(list);
     return c_addlistitem(list);
@@ -409,14 +409,14 @@ ULONG BLITZ_ROUTINE c_addfirstitem(ULONG list BL_REG(d0))
 }
 
 /* DelListItem list#: free the current node; BUG(orig): see above (#729) */
-ULONG BLITZ_ROUTINE c_dellistitem(ULONG list BL_REG(d0))
+BB_BOOL BLITZ_ROUTINE c_dellistitem(ULONG list BL_REG(d0))
 {
     ULONG node;
 
     listnum = list << 2;
     node = nodeptr = TAB(current);
     if (!node)
-        return 0;
+        return BB_FALSE;
     /* the v0.9 node: next, prev, data, size (no pad) */
     _next = ((struct node09 *)node)->next;
     _prev = ((struct node09 *)node)->prev;
@@ -430,25 +430,25 @@ ULONG BLITZ_ROUTINE c_dellistitem(ULONG list BL_REG(d0))
     }
     if (!_prev) {
         if (!_next)
-            return 0;                   /* the only node */
+            return BB_FALSE;                   /* the only node */
         NODE(_next)->next = 0;        /* BUG(orig): next, not prev (#728) */
         TAB(first) = _next;
         TAB(current) = _next;
         globfree(nodeptr, NODESIZE);
-        return (ULONG)-1;
+        return BB_TRUE;
     }
     if (!_next) {
         NODE(_prev)->next = 0;
         TAB(last) = _prev;
         TAB(current) = _prev;
         globfree(nodeptr, NODESIZE);
-        return (ULONG)-1;
+        return BB_TRUE;
     }
     NODE(_prev)->next = _next;
     NODE(_next)->prev = _prev;
     TAB(current) = _next;
     globfree(nodeptr, NODESIZE);
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* entries: keep every one of d0/d1/a0/a1 that is not the result */
