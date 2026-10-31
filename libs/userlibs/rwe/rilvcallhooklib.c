@@ -85,7 +85,30 @@ BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
-#define ENTRYBYTESIZE 14                /* size of the field entries */
+/* the field table at h_Data: a first entry, then the field entries
+   (ENTRYBYTESIZE 14 each), ended by width 0 */
+struct field {
+    UWORD width;                        /* +0: 0 = the end */
+    UWORD offset;                       /* +2: of the text / BitMap pointer in the node */
+    UWORD alignment;                    /* +4: RIGHTALIGN, else left */
+    UWORD isbitmap;                     /* +6 */
+    UWORD unused[3];                    /* +8 */
+};
+static_assert(sizeof(struct field) == 14);
+
+struct fieldtable {
+    UWORD indentoff;                    /* +0: of the indent word in the node, 0 none */
+    UWORD coloff;                       /* +2: of the colour table pointer in the node */
+    UWORD unused[5];                    /* +4 */
+    struct field fields[];              /* +14 */
+};
+static_assert(sizeof(struct fieldtable) == 14);
+
+/* the colour table: the pens of the normal state, then of the others */
+struct pens {
+    UWORD apen, bpen;
+};
+
 #define LVR_NORMALDISABLED_ 2
 #define LVR_SELECTEDDISABLED_ 8
 #define RIGHTALIGN 1
@@ -106,7 +129,7 @@ static struct Rectangle ob;             /* oldbounds: the field */
 static struct TextExtent extent;
 static WORD indent;
 static WORD isbitmap;
-static const UWORD *dispaddress;
+static const struct field *dispaddress; /* the field entries */
 static const UWORD dispend = 0;         /* an empty field entry: the end */
 
 /* init, finit: RTS */
@@ -244,7 +267,7 @@ static void clearindent(struct Library *gfx, struct RastPort *rp, const UBYTE *n
         if (k == 0) {                   /* the last level: short if the last node */
             const UBYTE *next = *(const UBYTE *const *)node;
             if (!*(const ULONG *)next
-                || WAT(next, *dispaddress) < indent)   /* BUG(orig): width offset (#739) */
+                || WAT(next, dispaddress->width) < indent) /* BUG(orig): not indentoff (#739) */
                 y = (WORD)((WORD)(y + ob.MinY) >> 1);
         }
         Draw(rp, x, y);
@@ -276,32 +299,32 @@ static ULONG BLITZ_ROUTINE hookfunc_c(struct Hook *hook BL_REG(a0), struct LVDra
                                       const UBYTE *node BL_REG(a2), ULONG callerd7 BL_REG(d7))
 {
     struct Library *gfx;
-    const UWORD *entry;                 /* a2: the field entries */
-    const UWORD *col;
+    const struct fieldtable *tab = hook->h_Data;
+    const struct field *entry;          /* a2: the field entries */
+    const struct pens *col;
     UWORD indentoff, indentval;         /* d0: the indent's offset, the indent */
     UWORD frontpen, backpen;            /* d0, d1 */
     ULONG state;
 
     if (msg->lvdm_MethodID != LV_DRAW)
         return LVCB_UNKNOWN;
-    dispaddress = hook->h_Data;
     gfx = gfxbase;
     lvdrawmsg = msg;
     msgrastport = msg->lvdm_RastPort;
     state = msg->lvdm_State;
     /* (the original loads lvdm_DrawInfo->dri_Pens and does not use it) */
-    indentoff = dispaddress[0];         /* the offset of the indent */
+    indentoff = tab->indentoff;         /* the offset of the indent */
     indentval = indentoff;
     if (indentoff)
         indentval = (UWORD)WAT(node, indentoff);
     indent = (WORD)indentval;
-    col = (const UWORD *)LAT(node, dispaddress[1]);     /* the colour table */
-    dispaddress = (const UWORD *)((const UBYTE *)dispaddress + ENTRYBYTESIZE);
-    frontpen = col[2];
-    backpen = col[3];
+    col = (const struct pens *)LAT(node, tab->coloff);  /* the colour table */
+    dispaddress = tab->fields;          /* + ENTRYBYTESIZE */
+    frontpen = col[1].apen;
+    backpen = col[1].bpen;
     if (state == LVR_NORMAL || state == LVR_NORMALDISABLED_) {
-        frontpen = col[0];
-        backpen = col[1];
+        frontpen = col[0].apen;
+        backpen = col[0].bpen;
     }
     apen = frontpen;
     bpen = backpen;
@@ -315,19 +338,19 @@ static ULONG BLITZ_ROUTINE hookfunc_c(struct Hook *hook BL_REG(a0), struct LVDra
 
     entry = dispaddress;
     for (;;) {                          /* 'renderfields */
-        WORD w = (WORD)*entry++;
+        WORD w = (WORD)entry->width;
         WORD off;
 
         if (!w)
             break;
-        off = (WORD)*entry++;
-        alignment = (WORD)*entry++;
-        isbitmap = (WORD)*entry++;
-        entry += 3;                     /* ADDQ.l #6,a2 */
+        off = (WORD)entry->offset;
+        alignment = (WORD)entry->alignment;
+        isbitmap = (WORD)entry->isbitmap;
+        entry++;                        /* (the unused words: ADDQ.l #6,a2) */
         w = (WORD)(w + ob.MinX);
         if (w >= maxXboundary) {        /* the last field */
             w = (WORD)(maxXboundary + 1);
-            entry = &dispend;
+            entry = (const struct field *)&dispend;     /* only its width is read */
         }
         ob.MaxX = (WORD)(w - 1);
         text = LAT(node, off);
