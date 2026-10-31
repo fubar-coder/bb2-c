@@ -311,39 +311,39 @@ BLITZ_THUNK(freeashape, freeashape_c, "d0-d1/a0-a1");
 /* make the cookie: OR of all planes */
 static void cookie_(UBYTE *s)
 {
-    UBYTE *a1, *a2;
-    UWORD d0, d1;
+    UBYTE *plane, *ck;
+    UWORD psize, rows;
 
     if (SL(s, 18)) {
         void *c = SP(s, 18);
         SL(s, 18) = 0;
         globfree(c, SW(s, 22));
     }
-    a2 = globalloc(SW(s, 22), MEMF_CHIP | MEMF_CLEAR);
-    SP(s, 18) = a2;
-    d0 = SW(s, 22);                             /* offset plane to plane */
-    a1 = SP(s, 14);
-    d1 = SW(s, 2) - 1;                          /* hite */
+    ck = globalloc(SW(s, 22), MEMF_CHIP | MEMF_CLEAR);
+    SP(s, 18) = ck;
+    psize = SW(s, 22);                          /* offset plane to plane */
+    plane = SP(s, 14);
+    rows = SW(s, 2) - 1;                        /* hite */
     do {
-        UWORD d2 = SW(s, 4) - 1;                /* depth */
-        UBYTE *a4 = a1, *a5 = a2;
+        UWORD planes = SW(s, 4) - 1;            /* depth */
+        UBYTE *src = plane, *dst = ck;
 
         do {
-            UWORD d3 = (UWORD)(SW(s, 6) >> 1) - 1;
+            UWORD words = (UWORD)(SW(s, 6) >> 1) - 1;
 
             do {
-                *(UWORD *)a5 |= *(UWORD *)a4;
-                a4 += 2;
-                a5 += 2;
-            } while (d3-- != 0);
-            a4 -= (WORD)SW(s, 6);
-            a4 += (WORD)d0;
-            a5 -= (WORD)SW(s, 6);
-            __asm__("" : "+a"(a4));             /* no __mulsi3 */
-        } while (d2-- != 0);
-        a1 += (WORD)SW(s, 6);
-        a2 += (WORD)SW(s, 6);
-    } while (d1-- != 0);
+                *(UWORD *)dst |= *(UWORD *)src;
+                src += 2;
+                dst += 2;
+            } while (words-- != 0);
+            src -= (WORD)SW(s, 6);
+            src += (WORD)psize;
+            dst -= (WORD)SW(s, 6);
+            __asm__("" : "+a"(src));            /* no __mulsi3 */
+        } while (planes-- != 0);
+        plane += (WORD)SW(s, 6);
+        ck += (WORD)SW(s, 6);
+    } while (rows-- != 0);
 }
 
 static void BLITZ_ROUTINE docookie_c(void)
@@ -385,17 +385,17 @@ static void BLITZ_ROUTINE dohandle_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2))
 BLITZ_THUNK(dohandle, dohandle_c, "d0-d1/a0-a1");
 
 /* CopyShape: a3 = source, a2 = destination (docopyshape2 + cookie) */
-static void nall(UBYTE *a3, UBYTE *a2, UWORD d7, UWORD d6)
+static void nall(UBYTE *from, UBYTE *to, UWORD ptroff, UWORD sizeoff)
 {
     UBYTE *src, *dst;
     UWORD n;
 
-    if (!SL(a3, d7))
+    if (!SL(from, ptroff))
         return;
-    dst = globalloc(SW(a3, d6), MEMF_CHIP);
-    SP(a2, d7) = dst;
-    src = SP(a3, d7);
-    n = (UWORD)(SW(a3, d6) >> 1) - 1;
+    dst = globalloc(SW(from, sizeoff), MEMF_CHIP);
+    SP(to, ptroff) = dst;
+    src = SP(from, ptroff);
+    n = (UWORD)(SW(from, sizeoff) >> 1) - 1;
     do {
         *(UWORD *)dst = *(UWORD *)src;
         dst += 2;
@@ -403,14 +403,14 @@ static void nall(UBYTE *a3, UBYTE *a2, UWORD d7, UWORD d6)
     } while (n-- != 0);
 }
 
-static void copyshape2(UBYTE *a3, UBYTE *a2)
+static void copyshape2(UBYTE *from, UBYTE *to)
 {
     int i;
 
-    freeashape_(a2);
+    freeashape_(to);
     for (i = 0; i < 8; i++)
-        ((ULONG *)a2)[i] = ((ULONG *)a3)[i];
-    nall(a3, a2, 14, 26);
+        ((ULONG *)to)[i] = ((ULONG *)from)[i];
+    nall(from, to, 14, 26);
 }
 
 static void BLITZ_ROUTINE docopyshape_c(UBYTE *dst BL_REG(a2))
@@ -425,31 +425,31 @@ BLITZ_THUNK(docopyshape, docopyshape_c, "d0-d1/a0-a1");
 static void BLITZ_ROUTINE initshape_c(ULONG w BL_REG(d1), ULONG h BL_REG(d2), ULONG d BL_REG(d3))
 {
     UBYTE *s = blitz_string;
-    UWORD d4, d5;
-    ULONG l4, l5;
+    UWORD bpr, size;
+    ULONG len, xlen;
 
     freeashape_(s);
-    d5 = (UWORD)((UWORD)h << 6);
-    d4 = (UWORD)((UWORD)(w + 15) >> 4);
-    d5 |= d4;
-    d4 += d4;
-    d5 += 1;
+    size = (UWORD)((UWORD)h << 6);
+    bpr = (UWORD)((UWORD)(w + 15) >> 4);
+    size |= bpr;
+    bpr += bpr;
+    size += 1;
     SW(s, 0) = (UWORD)w;
     SW(s, 2) = (UWORD)h;
     SW(s, 4) = (UWORD)d;
-    SW(s, 6) = d4;
-    SW(s, 8) = d5;
+    SW(s, 6) = bpr;
+    SW(s, 8) = size;
     SL(s, 10) = 0;
-    d5 = d4 + 2;
-    l4 = (ULONG)d4 * (UWORD)h;                  /* MULU */
-    l5 = (ULONG)d5 * (UWORD)h;
-    SW(s, 22) = (UWORD)l4;
-    SW(s, 24) = (UWORD)l5;
-    l4 = (ULONG)(UWORD)l4 * (UWORD)d;
-    l5 = (ULONG)(UWORD)l5 * (UWORD)d;
-    SW(s, 26) = (UWORD)l4;
-    SW(s, 28) = (UWORD)l5;
-    SP(s, 14) = globalloc(l4, MEMF_CHIP | MEMF_CLEAR);
+    size = bpr + 2;
+    len = (ULONG)bpr * (UWORD)h;                /* MULU */
+    xlen = (ULONG)size * (UWORD)h;
+    SW(s, 22) = (UWORD)len;
+    SW(s, 24) = (UWORD)xlen;
+    len = (ULONG)(UWORD)len * (UWORD)d;
+    xlen = (ULONG)(UWORD)xlen * (UWORD)d;
+    SW(s, 26) = (UWORD)len;
+    SW(s, 28) = (UWORD)xlen;
+    SP(s, 14) = globalloc(len, MEMF_CHIP | MEMF_CLEAR);
     if (autocook)
         SP(s, 18) = globalloc(SW(s, 22), MEMF_CHIP | MEMF_CLEAR);
 }
@@ -460,33 +460,33 @@ BLITZ_THUNK(_initshape, initshape_c, "d0-d1/a0-a1");
 /* a3 = shape, a2 = used bitmap, d1 = x, d2 = y, d3 = w, d4 = h */
 static void getashape(UBYTE *shape, UBYTE *bm, UWORD x, UWORD y, UWORD w, UWORD h)
 {
-    UBYTE *t = tb.bm;
+    UBYTE *tbm = tb.bm;
     ULONG p;
 
     freeashape_(shape);
     {
-        struct xregs r = { .d1 = w, .d2 = h, .d3 = SW(bm, 4), .a3 = (ULONG)t };
+        struct xregs r = { .d1 = w, .d2 = h, .d3 = SW(bm, 4), .a3 = (ULONG)tbm };
         XJSR(TOK_extbitmap, r);                 /* create bitmap! */
     }
-    SL(shape, 2) = SL(t, 2);                    /* height, depth */
-    SW(shape, 6) = SW(t, 0);
+    SL(shape, 2) = SL(tbm, 2);                  /* height, depth */
+    SW(shape, 6) = SW(tbm, 0);
     SL(shape, 10) = 0;
-    SL(shape, 14) = SL(t, 8);
-    p = (ULONG)SW(t, 0) * SW(t, 2);
+    SL(shape, 14) = SL(tbm, 8);
+    p = (ULONG)SW(tbm, 0) * SW(tbm, 2);
     SW(shape, 22) = (UWORD)p;
-    p = (ULONG)(UWORD)p * SW(t, 4);
+    p = (ULONG)(UWORD)p * SW(tbm, 4);
     SW(shape, 26) = (UWORD)p;
-    p = (ULONG)(UWORD)(SW(t, 0) + 2) * SW(t, 2);
+    p = (ULONG)(UWORD)(SW(tbm, 0) + 2) * SW(tbm, 2);
     SW(shape, 24) = (UWORD)p;
-    p = (ULONG)(UWORD)p * SW(t, 4);
+    p = (ULONG)(UWORD)p * SW(tbm, 4);
     SW(shape, 28) = (UWORD)p;
-    SW(shape, 8) = (UWORD)(SW(t, 2) << 6) | (UWORD)((SW(t, 0) >> 1) + 1);
+    SW(shape, 8) = (UWORD)(SW(tbm, 2) << 6) | (UWORD)((SW(tbm, 0) >> 1) + 1);
     SW(shape, 0) = w;
     tb.w = w;
     tb.h = h;
     {
         struct xregs r = { .d0 = x, .d1 = y, .d2 = 0, .d3 = 0, .a0 = (ULONG)bm,
-                           .a1 = 0xdff000, .a2 = (ULONG)(&tb.w + 1), .a3 = (ULONG)t };
+                           .a1 = 0xdff000, .a2 = (ULONG)(&tb.w + 1), .a3 = (ULONG)tbm };
         XJSR(TOK_scroll, r);                    /* scroll in shape! */
     }
     {
@@ -618,47 +618,47 @@ BLITZ_THUNK(doloadshapes2, doloadshapes2_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------- DecodeShapes */
 
-static void cludge(UBYTE *a3, UBYTE *a2, UBYTE *mem)
+static void cludge(UBYTE *shape, UBYTE *last, UBYTE *mem)
 {
-    UBYTE *a4 = mem;
-    ULONG d7 = (ULONG)mem & 0xffe00000UL;
+    UBYTE *src = mem;
+    ULONG fastmem = (ULONG)mem & 0xffe00000UL;
 
     do {
-        ULONG p = (ULONG)SW(a4, 6) * SW(a4, 2);
+        ULONG p = (ULONG)SW(src, 6) * SW(src, 2);
         int i;
 
-        if ((UWORD)p != SW(a4, 22))
+        if ((UWORD)p != SW(src, 22))
             return;
-        p = (ULONG)(UWORD)p * SW(a4, 4);
-        if ((UWORD)p != SW(a4, 26))
+        p = (ULONG)(UWORD)p * SW(src, 4);
+        if ((UWORD)p != SW(src, 26))
             return;
-        freeashape_(a3);
+        freeashape_(shape);
         for (i = 0; i < 8; i++)                 /* copy header */
-            ((ULONG *)a3)[i] = ((ULONG *)a4)[i];
-        a4 += 32;
-        SL(a3, 18) = 0;
-        SL(a3, 14) = 0;
-        if (SW(a3, 0)) {
-            if (d7) {
-                UBYTE *d = globalloc(SW(a3, 26), MEMF_CHIP);
-                UWORD n = (UWORD)(SW(a3, 26) >> 1) - 1;
+            ((ULONG *)shape)[i] = ((ULONG *)src)[i];
+        src += 32;
+        SL(shape, 18) = 0;
+        SL(shape, 14) = 0;
+        if (SW(shape, 0)) {
+            if (fastmem) {
+                UBYTE *d = globalloc(SW(shape, 26), MEMF_CHIP);
+                UWORD n = (UWORD)(SW(shape, 26) >> 1) - 1;
 
-                SP(a3, 14) = d;
+                SP(shape, 14) = d;
                 do {
-                    *(UWORD *)d = *(UWORD *)a4;
+                    *(UWORD *)d = *(UWORD *)src;
                     d += 2;
-                    a4 += 2;
+                    src += 2;
                 } while (n-- != 0);
             } else {
-                SP(a3, 14) = a4;                /* in chip: use in place */
-                a4 += SW(a3, 26);
-                SW(a3, 30) = CLUDGE;            /* don't free me freeshape! */
+                SP(shape, 14) = src;            /* in chip: use in place */
+                src += SW(shape, 26);
+                SW(shape, 30) = CLUDGE;         /* don't free me freeshape! */
             }
             if (autocook)
-                cookie_(a3);
+                cookie_(shape);
         }
-        a3 += 32;
-    } while ((ULONG)a3 <= (ULONG)a2);
+        shape += 32;
+    } while ((ULONG)shape <= (ULONG)last);
 }
 
 static void BLITZ_ROUTINE cludgeshapes_c(UBYTE *last BL_REG(a2), UBYTE *mem BL_REG(d2))
@@ -693,9 +693,9 @@ static ULONG offs[8];
 
 static void doshload_(UBYTE *shape, const char *name)
 {
-    UBYTE *a4 = shape, *a3, *a2, *st;
-    UWORD d2, d3, d4, d7;
-    ULONG d0, p;
+    UBYTE *first = shape, *frame, *dst, *st;
+    UWORD bpr, rows, depth, pstep;
+    ULONG res, p;
     UBYTE z;
 
     freeashape_(shape);
@@ -706,164 +706,164 @@ static void doshload_(UBYTE *shape, const char *name)
             BLITZ_RUNERR(mess2);
         st = (UBYTE *)r.a0;
     }
-    SW(a4, 0) = SW(st, 0);
-    d0 = SW(st, 2);
-    SW(a4, 2) = (UWORD)d0;
-    d3 = (UWORD)d0;
-    d0 = (UWORD)(d0 << 6);
-    d4 = SW(st, 4);
-    SW(a4, 4) = d4;
-    d2 = (UWORD)(SW(st, 6) << 1);
-    SW(a4, 6) = d2;
-    SW(a4, 8) = (UWORD)d0 | (UWORD)((d2 >> 1) + 1);
-    SL(a4, 10) = 0;
-    p = (ULONG)(UWORD)(d2 + 2) * d3;
-    SW(a4, 24) = (UWORD)p;
-    p = (ULONG)(UWORD)p * d4;
-    SW(a4, 28) = (UWORD)p;
-    p = (ULONG)d2 * d3;
-    SW(a4, 22) = (UWORD)p;
-    d7 = (UWORD)p;
-    p = (ULONG)(UWORD)p * d4;
-    SW(a4, 26) = (UWORD)p;
-    a2 = globalloc(p, MEMF_CHIP);               /* global alloc for data! */
-    SP(a4, 14) = a2;
-    d0 = IJSR(TOK_ifffind, 0x424f4459, st);  /* "BODY" (not checked) */
-    d7 -= d2;
-    d3--;
-    d4--;
+    SW(first, 0) = SW(st, 0);
+    res = SW(st, 2);
+    SW(first, 2) = (UWORD)res;
+    rows = (UWORD)res;
+    res = (UWORD)(res << 6);
+    depth = SW(st, 4);
+    SW(first, 4) = depth;
+    bpr = (UWORD)(SW(st, 6) << 1);
+    SW(first, 6) = bpr;
+    SW(first, 8) = (UWORD)res | (UWORD)((bpr >> 1) + 1);
+    SL(first, 10) = 0;
+    p = (ULONG)(UWORD)(bpr + 2) * rows;
+    SW(first, 24) = (UWORD)p;
+    p = (ULONG)(UWORD)p * depth;
+    SW(first, 28) = (UWORD)p;
+    p = (ULONG)bpr * rows;
+    SW(first, 22) = (UWORD)p;
+    pstep = (UWORD)p;
+    p = (ULONG)(UWORD)p * depth;
+    SW(first, 26) = (UWORD)p;
+    dst = globalloc(p, MEMF_CHIP);              /* global alloc for data! */
+    SP(first, 14) = dst;
+    res = IJSR(TOK_ifffind, 0x424f4459, st); /* "BODY" (not checked) */
+    pstep -= bpr;
+    rows--;
+    depth--;
     do {
-        UBYTE *row = a2;
-        UWORD d5 = d4;
+        UBYTE *row = dst;
+        UWORD count = depth;
 
         do {
-            UWORD d6 = d2 - 1;
+            UWORD n = bpr - 1;
 
             do {
-                d0 = IJSR(TOK_ilbmgetbyte, d0, st);  /* get byte */
-                *a2++ = (UBYTE)d0;
-            } while (d6-- != 0);
-            a2 += (WORD)d7;
-        } while (d5-- != 0);
-        a2 = row + (WORD)d2;
-    } while (d3-- != 0);
-    a3 = shape;
+                res = IJSR(TOK_ilbmgetbyte, res, st); /* get byte */
+                *dst++ = (UBYTE)res;
+            } while (n-- != 0);
+            dst += (WORD)pstep;
+        } while (count-- != 0);
+        dst = row + (WORD)bpr;
+    } while (rows-- != 0);
+    frame = shape;
     if (autocook)
-        cookie_(a3);
+        cookie_(frame);
 
     /* first frame decoded...see if it's an anim! */
-    d0 = IJSRZ(TOK_ifffind, 0x414e4844, st, &z); /* "ANHD" */
+    res = IJSRZ(TOK_ifffind, 0x414e4844, st, &z); /* "ANHD" */
     if (!z)
         goto skipanim;
-    d0 = IJSR(TOK_iffbyte, d0, st);
-    if ((UBYTE)d0 != 5)
+    res = IJSR(TOK_iffbyte, res, st);
+    if ((UBYTE)res != 5)
         BLITZ_RUNERR(mess7);
-    d0 = IJSR(TOK_iffskip, 17, st);
-    d0 = IJSR(TOK_iffbyte, d0, st);
-    if ((UBYTE)d0 != 1)
+    res = IJSR(TOK_iffskip, 17, st);
+    res = IJSR(TOK_iffbyte, res, st);
+    if ((UBYTE)res != 1)
         BLITZ_RUNERR(mess8);
-    d0 = IJSR(TOK_iffbyte, d0, st);
-    d0 = IJSR(TOK_ifflong, d0, st);
-    bmode = (UWORD)d0 & 2;
+    res = IJSR(TOK_iffbyte, res, st);
+    res = IJSR(TOK_ifflong, res, st);
+    bmode = (UWORD)res & 2;
     do {                                        /* create next frame... */
-        UWORD d1;
-        ULONG d2l = 0, *a1;
-        ULONG *a0;
+        UWORD planes;
+        ULONG dpos = 0, *off;
+        ULONG *optr;
 
-        a2 = a3 + 32;
-        copyshape2(a3, a2);
-        a3 = a2;
-        SL(a3, 18) = 0;
-        d0 = IJSR(TOK_ifffind, 0x444c5441, st);  /* "DLTA" */
-        d1 = SW(a3, 4) - 1;
-        a0 = offs;
+        dst = frame + 32;
+        copyshape2(frame, dst);
+        frame = dst;
+        SL(frame, 18) = 0;
+        res = IJSR(TOK_ifffind, 0x444c5441, st); /* "DLTA" */
+        planes = SW(frame, 4) - 1;
+        optr = offs;
         do {
-            d2l += 4;
-            d0 = IJSR(TOK_ifflong, d0, st);
-            *a0++ = d0;
-        } while (d1-- != 0);
+            dpos += 4;
+            res = IJSR(TOK_ifflong, res, st);
+            *optr++ = res;
+        } while (planes-- != 0);
         /* do planes... */
-        d1 = SW(a3, 4) - 1;
-        a1 = offs;
-        a2 = SP(a3, 14);
+        planes = SW(frame, 4) - 1;
+        off = offs;
+        dst = SP(frame, 14);
         do {
-            ULONG o = *a1++;
+            ULONG o = *off++;
 
             if (o) {
-                o -= d2l;
+                o -= dpos;
                 if (o) {
-                    d0 = IJSR(TOK_iffskip, o, st);
-                    d2l = a1[-1];
+                    res = IJSR(TOK_iffskip, o, st);
+                    dpos = off[-1];
                 }
                 {
-                    UWORD d3c = SW(a3, 6) - 1;
-                    UBYTE *col = a2;
+                    UWORD cols = SW(frame, 6) - 1;
+                    UBYTE *col = dst;
 
                     do {                        /* columns */
-                        UWORD d4c;
+                        UWORD nops;
 
-                        d2l++;
-                        d0 = IJSR(TOK_iffbyte, d0, st);
-                        d4c = (UBYTE)d0;
-                        if (d4c) {
-                            UBYTE *ops = a2;
+                        dpos++;
+                        res = IJSR(TOK_iffbyte, res, st);
+                        nops = (UBYTE)res;
+                        if (nops) {
+                            UBYTE *ops = dst;
 
-                            d4c--;
+                            nops--;
                             do {                /* handleops */
                                 UBYTE op;
 
-                                d2l++;
-                                d0 = IJSR(TOK_iffbyte, d0, st);   /* opcode */
-                                op = (UBYTE)d0;
+                                dpos++;
+                                res = IJSR(TOK_iffbyte, res, st); /* opcode */
+                                op = (UBYTE)res;
                                 if (op == 0) {
-                                    UWORD d5;
+                                    UWORD count;
                                     UBYTE v;
 
-                                    d2l++;
-                                    d0 = IJSR(TOK_iffbyte, d0, st);
-                                    d5 = (UWORD)(UBYTE)d0 - 1;
-                                    d2l++;
-                                    d0 = IJSR(TOK_iffbyte, d0, st);
-                                    v = (UBYTE)d0;
+                                    dpos++;
+                                    res = IJSR(TOK_iffbyte, res, st);
+                                    count = (UWORD)(UBYTE)res - 1;
+                                    dpos++;
+                                    res = IJSR(TOK_iffbyte, res, st);
+                                    v = (UBYTE)res;
                                     do {
                                         if (bmode)
-                                            *a2 ^= v;
+                                            *dst ^= v;
                                         else
-                                            *a2 = v;
-                                        a2 += (WORD)SW(a3, 6);
-                                    } while (d5-- != 0);
+                                            *dst = v;
+                                        dst += (WORD)SW(frame, 6);
+                                    } while (count-- != 0);
                                 } else if ((BYTE)op < 0) {
-                                    UWORD d5 = (UWORD)((UWORD)d0 & 127) - 1;
+                                    UWORD count = (UWORD)((UWORD)res & 127) - 1;
 
                                     do {
-                                        d2l++;
-                                        d0 = IJSR(TOK_iffbyte, d0, st);
+                                        dpos++;
+                                        res = IJSR(TOK_iffbyte, res, st);
                                         if (bmode)
-                                            *a2 ^= (UBYTE)d0;
+                                            *dst ^= (UBYTE)res;
                                         else
-                                            *a2 = (UBYTE)d0;
-                                        a2 += (WORD)SW(a3, 6);
-                                    } while (d5-- != 0);
+                                            *dst = (UBYTE)res;
+                                        dst += (WORD)SW(frame, 6);
+                                    } while (count-- != 0);
                                 } else {
                                     /* EXT d0:MULU 6(a3),d0:ADD.l d0,a2 */
-                                    a2 += (ULONG)(UWORD)(WORD)(BYTE)op * SW(a3, 6);
+                                    dst += (ULONG)(UWORD)(WORD)(BYTE)op * SW(frame, 6);
                                 }
-                            } while (d4c-- != 0);
-                            a2 = ops;
+                            } while (nops-- != 0);
+                            dst = ops;
                         }
-                        a2++;                   /* skipops */
-                    } while (d3c-- != 0);
-                    a2 = col;
+                        dst++;                  /* skipops */
+                    } while (cols-- != 0);
+                    dst = col;
                 }
             }
-            a2 += (WORD)SW(a3, 22);             /* pskip */
-        } while (d1-- != 0);
+            dst += (WORD)SW(frame, 22);         /* pskip */
+        } while (planes-- != 0);
         if (autocook)
-            cookie_(a3);
-        d0 = IJSRZ(TOK_ifffind, 0x414e4844, st, &z);  /* "ANHD" */
+            cookie_(frame);
+        res = IJSRZ(TOK_ifffind, 0x414e4844, st, &z); /* "ANHD" */
     } while (z);
 skipanim:
-    IJSR(TOK_iffclose, d0, st);              /* close the IFF */
+    IJSR(TOK_iffclose, res, st);             /* close the IFF */
 }
 
 static void BLITZ_ROUTINE doshload_c(UBYTE *shape BL_REG(a0), const char *name BL_REG(d1))
@@ -908,7 +908,7 @@ static void BLITZ_ERRCHK cookiechk_c(void)
 static void BLITZ_ERRCHK gschk_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w BL_REG(d3),
                                  ULONG h BL_REG(d4), UBYTE *bm BL_REG(a2))
 {
-    UWORD d7;
+    UWORD limit;
 
     if (!SW(bm, 62))
         BLITZ_RUNERR(mess6);
@@ -916,11 +916,11 @@ static void BLITZ_ERRCHK gschk_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w
         BLITZ_RUNERR(mess9);
     if ((WORD)w < 0 || (WORD)h < 0)
         BLITZ_RUNERR(mess5);
-    d7 = SW(bm, 56);
-    if ((UWORD)x >= d7 || (UWORD)((UWORD)x + (UWORD)w) > d7)
+    limit = SW(bm, 56);
+    if ((UWORD)x >= limit || (UWORD)((UWORD)x + (UWORD)w) > limit)
         BLITZ_RUNERR(mess5);
-    d7 = SW(bm, 58);
-    if ((UWORD)y >= d7 || (UWORD)((UWORD)y + (UWORD)h) > d7)
+    limit = SW(bm, 58);
+    if ((UWORD)y >= limit || (UWORD)((UWORD)y + (UWORD)h) > limit)
         BLITZ_RUNERR(mess5);
 }
 
