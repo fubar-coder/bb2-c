@@ -22,6 +22,7 @@ documented here.
 | **B** | user decision | project convention, fixed for all ports |
 | **T** | technically unavoidable | the original is undefined here (register leftovers, stack contents, timing, memory layout) or cannot be expressed in C |
 | **K** | silent correction | the original could be reproduced, the C version behaves "more safely" (trap instead of jump into nowhere, return instead of crash, register preserved). No longer permitted under the new rule; existing cases remain, but are listed here |
+| **F** | fixed original bug | intended deviation: an original bug fixed deliberately once the port was complete (CLAUDE.md, "Rules"), one issue per bug, with a bug-orig test that now comes out FIXED |
 
 "observable?": whether a Basic program can see the difference
 (result, output, crash) or only a register/memory comparison.
@@ -69,9 +70,10 @@ documented here.
 | blitzcoplib CustomCop (blitzcoplib.c:56) | a2 decremented by 4 | unchanged | **B** | convention |
 | blitzkeyslib | – | no deviation (DIFF-free; binary has 6 more unused bytes) | – | – |
 | dhandlerlib | – | no deviation (byte-identical to the CD's library, relocation table included) | – | – |
-| displaylib a2 (displaylib.c:50) | a2 decremented as argument stack | unchanged | **B** | convention |
-| displaylib error jumps (displaylib.c:50) | all errors: Bcc from normal code into the error check area | via JSR (one more return address on the stack) | **T** | like animlib; same target, only stack contents at the trap |
-| displaylib table indices (displaylib.c:50) | sprite mode > 5, mode table beyond resolution 2 / fetch 3, doublescan > 6 read the lib's own code | read other data | **T** | memory layout; only with invalid values |
+| displaylib a2 (displaylib.c:64) | a2 decremented as argument stack | unchanged | **B** | convention |
+| displaylib error jumps (displaylib.c:64) | all errors: Bcc from normal code to the error routines | via JSR (one more return address on the stack) | **T** | like animlib; only stack contents at the trap |
+| displaylib error routines (displaylib.c:34, #412) | the ten error routines (`MOVE.l #message,d0:TRAP #0`) and their messages lie in the error check area; without the debugger every error (bitplanes for the resolution, uninitialised CopList/palette/sprite, sprite channels, custom copper space, CustomString length, AGA palette mode, CustomChunky ypos, custom cops overrun) branches behind the library | routines and messages in the normal code: with the debugger the same runtime error, without it a TRAP #0 with the message (no handler: a clean crash); the !subs check `_checkcoplist` stays in the error check area | **F** | fixed (#412); observable only in these error cases without the debugger. Tests: bug-orig `displaylib-errors-errarea` (FIXED), with the debugger corpus t167, t169 |
+| displaylib table indices (displaylib.c:64) | sprite mode > 5, mode table beyond resolution 2 / fetch 3, doublescan > 6 read the lib's own code | read other data | **T** | memory layout; only with invalid values |
 | blitzoslib coordinates (blitzoslib.c:66) | upper word of the coordinates passed to Boxf/Line/Locate = sign of the box field | word value sign-extended | **K** | reproducible; differs only for coordinates around 0/negative and only if the called lib uses the upper word |
 | blitzoslib BCALL (blitzoslib.c:308) | Blitz calls from BoxShow (dobs) leave a3 = bitmap of the page | BCALL restores a3/a4 (and a6) after every call | **K** | **not yet marked as DIFF**; statements, a3 is not read afterwards |
 | brexxlib SaveTape/LoadTape (brexxlib.c:60, :594) | `BEQ err1` into the error check area | trap and message in normal code | **K** | observable only for "Can't Open File" without debugger |
@@ -207,3 +209,5 @@ binary in acidlibs, followed on 2026-10-29.
   returning trap; visible in a normal run are seriallib
   ReadSerial in string expressions and WindowTags &TagList (memory behind
   the tag list).
+* **F – fixed original bugs (intended):** displaylib's error routines in
+  the normal code (#412).

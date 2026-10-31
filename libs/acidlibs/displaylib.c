@@ -31,10 +31,15 @@
  * allocates a blank sprite (`mysprite`, chip) and reads LISAID ($DFF07C)
  * for agamac.
  *
+ * Fixed (intended deviation, docs/libs/deviations.md): the original's
+ * error routines (MOVE.l #message,d0:TRAP #0) and their messages lie in
+ * the error check area, and every error branches there from the normal
+ * code - without the debugger behind the library.  Here they are in the
+ * normal code: with the debugger the same runtime error, without it a
+ * TRAP #0 with the message. (#412)  The !subs check _checkcoplist stays
+ * in the error check area.
+ *
  * Kept from the original (BUG(orig)):
- *   - every error is a branch from the normal code into the error check
- *     area (behind the library without the debugger): reproduced as
- *     JSR to the same labels. (#412)
  *   - the init writes mysprite's address into the data words of the
  *     SPR0POS/SPR0CTL moves of `spp` (+2/+6), not into SPR0PTH/PTL. (#413)
  *   - DisplayBitMap without x,y stores the caller's d2/d3 in x0/x1. (#411)
@@ -306,7 +311,7 @@ static inline ULONG mulu16(UWORD a, UWORD b)
    (__mulsi3, no libgcc in libraries) */
 #define OPAQUE(x) __asm__("" : "+r"(x))
 
-/* a branch into the error check area (never returns): a call of the
+/* a branch to an error routine (never returns): a call of the
    noreturn label - JSR instead of the original's Bcc, only the stack
    differs (an inline BRA followed by __builtin_unreachable lets GCC
    drop the path) */
@@ -795,7 +800,7 @@ static void initcoplist(ULONG ypos, ULONG height, ULONG type, ULONG sprites, ULO
  * cpline/4-1 NOPs), a wait + DMA off.  The coplist becomes the used one.
  * a3 = the coplist (!libs {#displaylib,$1380}).
  * Errors: more bitplanes than the resolution allows ("Illegal Number of
- * BitPlanes for Resolution"); the branches go into the error check area, BUG(orig) (#412).
+ * BitPlanes for Resolution"); fixed: in the normal code (#412).
  *
  * @param ypos     d1: the first line of the display
  * @param height   d2: the number of lines
@@ -859,7 +864,7 @@ BLITZ_THUNK(_initcoplist2, _initcoplist2_c, "a2");
  * last with a wait for the end, waits for the blitter and puts the first
  * list on COP1LC (and switchlib's coplist, $C205).  a3 is left on the
  * last coplist (not a bug: the compiler reloads it).
- * Errors: an uninitialised coplist ("Uninitialised CopList"); the branches go into the error check area, BUG(orig) (#412).
+ * Errors: an uninitialised coplist ("Uninitialised CopList"); fixed: in the normal code (#412).
  *
  * @param count     d7: the number of coplists
  * @param args      a2: the argument stack, the coplist numbers below it
@@ -1224,7 +1229,7 @@ static void spriteoff(UBYTE *cop, const struct bb_sprite *spr, UWORD chan)
  * CustomSprites bank overwrites the BPLCON moves.  BUG(orig) (#949):
  * after CustomChunky's split form spri is 0.
  * Errors: an uninitialised sprite ("Uninitialised Sprite"), not enough
- * channels ("Not Enough Sprite Channels"); the branches go into the error check area, BUG(orig) (#412).
+ * channels ("Not Enough Sprite Channels"); fixed: in the normal code (#412).
  *
  * @param spr      a1: the sprite (!libs {#spriteslib,$1181})
  * @param x        d2: the x position (quick)
@@ -1446,7 +1451,7 @@ static const UBYTE *paldata(const UBYTE *palobj)
  * (aga bit 15): per bank of 32 colours a bank move and the high and low
  * nibbles (complex2).
  * Errors: an uninitialised palette ("Uninitialised Palette"), a list
- * overrun ("Not Enough Custom Cops"); the branches go into the error check area, BUG(orig) (#412).
+ * overrun ("Not Enough Custom Cops"); fixed: in the normal code (#412).
  *
  * @param pal     a0: the palette (!libs {#palettelib,$1081})
  * @param palnum  d1: the palette number (not used)
@@ -1568,7 +1573,7 @@ static void customcols(UWORD ccoffset, UWORD ypos, const UBYTE *pal, UWORD start
  * startcol (ECS 1 per colour, AGA with bank moves and both nibbles).
  * Space: ECS 2+n, AGA 2+n+n+n/16 copper instructions.
  * Errors: an uninitialised palette, an overrun ("Not Enough Custom
- * Cops"); the branches go into the error check area, BUG(orig) (#412).
+ * Cops"); fixed: in the normal code (#412).
  *
  * @param ccoffset  d1: the offset in the custom area (longs)
  * @param ypos      d2: the line (from the display's ypos)
@@ -1616,7 +1621,7 @@ BLITZ_THUNK(_customcols2, _customcols2_c, "a2");
  * A wait for the line, then the string's longs.  Space: 2+n (n =
  * Len(Copper$)/4).
  * Errors: a length that is 0 or not a multiple of 4 ("Custom Copper
- * String Must Be Multiple Of 4 Bytes Silly!"), an overrun; the branches go into the error check area, BUG(orig) (#412).
+ * String Must Be Multiple Of 4 Bytes Silly!"), an overrun; fixed: in the normal code (#412).
  *
  * @param ccoffset  d1: the offset in the custom area (longs)
  * @param ypos      d2: the line
@@ -1730,7 +1735,7 @@ static void dblscan(UWORD mode, UWORD off)
  * doubling modulos (-fetchwid) and the normal ones every line, modes 2-5
  * after runs set by the dloop table (1, 5, 13, 29 lines).
  * Errors: not enough space per line ("Not Enough Custom Copper Space");
- * the branches go into the error check area, BUG(orig) (#412).
+ * fixed: in the normal code (#412).
  *
  * @param mode  d1: the mode
  */
@@ -1759,7 +1764,7 @@ BLITZ_THUNK(_displaydblscan, _displaydblscan_c, "a0");
  * DisplaySprite's !libs), the a1 the compiler loaded is not used: the
  * offset is CCOffset * 64 bytes.  BUG(orig) (#413): the moves carry the
  * template's wrong data.
- * Errors: an overrun ("Not Enough Custom Cops"); the branches go into the error check area, BUG(orig) (#412).
+ * Errors: an overrun ("Not Enough Custom Cops"); fixed: in the normal code (#412).
  *
  * @param ccoffset  d1: CCOffset * 16
  * @param ypos      d2: the line
@@ -1870,7 +1875,7 @@ static void rainbow(UWORD reg, const UBYTE *pal, UWORD off)
  *
  * Colour register Register gets palette entry n on line n.  ECS 1, AGA 4
  * moves per line (bank moves and both nibbles).
- * Errors: not enough space per line, an overrun; the branches go into the error check area, BUG(orig) (#412).
+ * Errors: not enough space per line, an overrun; fixed: in the normal code (#412).
  *
  * @param reg  d1: the colour register
  * @param pal  a2: the palette (!libs {#palettelib,$1282})
@@ -1953,7 +1958,7 @@ static void rgb(UWORD reg, UWORD line, UWORD red, UWORD green, UWORD blue, UWORD
  *        line, in the per line custom area.
  *
  * ECS 1 move, AGA 4 (bank moves, high and low nibbles).
- * Errors: not enough space per line, an overrun; the branches go into the error check area, BUG(orig) (#412).
+ * Errors: not enough space per line, an overrun; fixed: in the normal code (#412).
  *
  * @param reg    d1: the colour register
  * @param line   d2: the line
@@ -2016,7 +2021,7 @@ static void user(UWORD line, const ULONG *s, UWORD off, ULONG len)
  *        string into a line's custom area.
  *
  * Errors: not enough space per line, a length that is not a multiple of
- * 4, an overrun; the branches go into the error check area, BUG(orig) (#412).
+ * 4, an overrun; fixed: in the normal code (#412).
  *
  * @param line  d1: the line
  * @param text  d2: the string
@@ -2132,7 +2137,7 @@ static void scroll(const LONG *xpos1, const LONG *xpos2, UWORD off, ULONG caller
  * positions x0/x1 of the last DisplayBitMap, each line adds the next
  * value of the two arrays.
  * Errors: not enough space per line ("Not Enough Custom Copper Space");
- * the branches go into the error check area, BUG(orig) (#412).
+ * fixed: in the normal code (#412).
  *
  * @param callerd0  d0: the caller's d0 (its upper bytes go into the
  *                  resolution bits, as in the original)
@@ -2247,7 +2252,7 @@ static void customchunky(UWORD ccoffset, UWORD ypos, UWORD width, UWORD height, 
  * (res lines on) and a BPLCON4 move; position, size and modulo are remembered in the coplist
  * (cchunky, chy, chw, chh, chr, chc).  Space: CustomChunkySize.
  * Errors: YPos lower than res ("CustomChunky must start at ypos greater
- * than res"), an overrun; the branches go into the error check area, BUG(orig) (#412).
+ * than res"), an overrun; fixed: in the normal code (#412).
  *
  * @param ccoffset  d1: the offset in the custom area (longs)
  * @param ypos      d2: the first line
@@ -2306,7 +2311,16 @@ BLITZ_THUNK(_customchunky2, _customchunky2_c, "a2");
 
 /* ---------------------------------------------------------- error handling */
 
-__asm__("   .section .blitzlib.errchk,\"ax\"\n   .even\n"
+/* The error routines and their messages are in the normal code (fixed,
+   #412): the original has them in the error check area, so without the
+   debugger every error branched behind the library.  With the debugger
+   the same runtime error; without it the TRAP #0 with the message (no
+   handler: a clean crash, not a silent error value). */
+#define MESSAGE(label, text)                                                \
+    extern const char label[];                                              \
+    __asm__("   .text\n_" #label ":\n   .asciz \"" text "\"\n   .even\n")
+
+__asm__("   .text\n   .even\n"
         "   .globl  _maxbperr, _uniniterr, _nopalerr, _nosprierr, _freakerr\n"
         "   .globl  _linerr, _agapalerr, _toolowerr, _overrunerr, _spriterr\n"
         "_maxbperr:   move.l  #_mess1,d0\n   trap    #0\n"
@@ -2318,19 +2332,18 @@ __asm__("   .section .blitzlib.errchk,\"ax\"\n   .even\n"
         "_agapalerr:  move.l  #_mess7,d0\n   trap    #0\n"
         "_toolowerr:  move.l  #_mess8,d0\n   trap    #0\n"
         "_overrunerr: move.l  #_mess9,d0\n   trap    #0\n"
-        "_spriterr:   move.l  #_mess10,d0\n   trap    #0\n"
-        "   .text\n");
+        "_spriterr:   move.l  #_mess10,d0\n   trap    #0\n");
 
-BLITZ_ERRCHK_MESSAGE(mess1, "Illegal Number of BitPlanes for Resolution");
-BLITZ_ERRCHK_MESSAGE(mess2, "Uninitialised CopList");
-BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialised Palette");
-BLITZ_ERRCHK_MESSAGE(mess4, "Uninitialised Sprite");
-BLITZ_ERRCHK_MESSAGE(mess5, "Custom Copper String Must Be Multiple Of 4 Bytes Silly!");
-BLITZ_ERRCHK_MESSAGE(mess6, "Not Enough Custom Copper Space");
-BLITZ_ERRCHK_MESSAGE(mess7, "Need AGA palette mode ($10000) for this many colors");
-BLITZ_ERRCHK_MESSAGE(mess8, "CustomChunky must start at ypos greater than res");
-BLITZ_ERRCHK_MESSAGE(mess9, "Not Enough Custom Cops");
-BLITZ_ERRCHK_MESSAGE(mess10, "Not Enough Sprite Channels");
+MESSAGE(mess1, "Illegal Number of BitPlanes for Resolution");
+MESSAGE(mess2, "Uninitialised CopList");
+MESSAGE(mess3, "Uninitialised Palette");
+MESSAGE(mess4, "Uninitialised Sprite");
+MESSAGE(mess5, "Custom Copper String Must Be Multiple Of 4 Bytes Silly!");
+MESSAGE(mess6, "Not Enough Custom Copper Space");
+MESSAGE(mess7, "Need AGA palette mode ($10000) for this many colors");
+MESSAGE(mess8, "CustomChunky must start at ypos greater than res");
+MESSAGE(mess9, "Not Enough Custom Cops");
+MESSAGE(mess10, "Not Enough Sprite Channels");
 
 /* _checkcoplist: TST.l !m{size}:BEQ uniniterr */
 __asm__("   .section .blitzlib.errchk,\"ax\"\n   .even\n"
