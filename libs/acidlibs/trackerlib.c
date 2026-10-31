@@ -282,20 +282,23 @@ static void mt_myport(UBYTE *v, ULONG aud)
 
 static void mt_vib(UBYTE *v, ULONG aud)
 {
-    UWORD val, delta;
+    UWORD sinpos;                               /* d0: the sine index */
+    UWORD depth;                                /* d0 */
+    UWORD period;                               /* d0 */
+    UWORD delta;
 
     if (VB(v, 3))
         VB(v, 0x1a) = VB(v, 3);
-    val = (VUB(v, 0x1b) >> 2) & 0x1f;           /* mt_vi */
-    delta = mt_sin[val];
-    val = VUB(v, 0x1a) & 0xf;
-    delta = (UWORD)(delta * val) >> 6;          /* MULU:LSR.w #6 */
-    val = VW(v, 0x10);
+    sinpos = (VUB(v, 0x1b) >> 2) & 0x1f;        /* mt_vi */
+    delta = mt_sin[sinpos];
+    depth = VUB(v, 0x1a) & 0xf;
+    delta = (UWORD)(delta * depth) >> 6;        /* MULU:LSR.w #6 */
+    period = VW(v, 0x10);
     if (VB(v, 0x1b) < 0)
-        val -= delta;
+        period -= delta;
     else
-        val += delta;
-    RW(aud, 6) = val;
+        period += delta;
+    RW(aud, 6) = period;
     VUB(v, 0x1b) += (VUB(v, 0x1a) >> 2) & 0x3c;
 }
 
@@ -443,7 +446,10 @@ static void mt_playvoice(UBYTE *v, ULONG aud, const UBYTE *pat, ULONG *pos,
 
 static void mt_music(void)
 {
-    const UBYTE *mod = mt_data;
+    const UBYTE *mod = mt_data;                 /* a0: the module */
+    /* a0 at mt_endr: the song length and restart bytes; after a break
+       still the patterns or the module (BUG(orig) (#292), see above) */
+    const UBYTE *songend = mod;
     int i;
 
     mt_counter++;
@@ -452,17 +458,19 @@ static void mt_music(void)
             mt_checkcom((UBYTE *)mt_voices[i], 0xdff0a0 + 16 * i);
     } else {
         const UBYTE *sinfo, *order;
+        const UBYTE *patterns;                  /* a0 */
         ULONG pos;
 
         mt_counter = 0;
         sinfo = mod + 0xc;                      /* mt_getnew */
         order = mod + 0x3b8;
-        mod += 0x43c;
+        patterns = mod + 0x43c;
+        songend = patterns;
         pos = (ULONG)order[mt_songpos] << 10;
         BL_SETW(pos, pos + mt_pattpos);         /* ADD.w mt_pattpos,d1 */
         mt_dmacon = 0;
         for (i = 0; i < 4; i++)
-            mt_playvoice((UBYTE *)mt_voices[i], 0xdff0a0 + 16 * i, mod, &pos, sinfo);
+            mt_playvoice((UBYTE *)mt_voices[i], 0xdff0a0 + 16 * i, patterns, &pos, sinfo);
 
         mt_delay();                             /* mt_setdma */
         BL_CUSTOMW(BL_CUSTOM, 0x96) = mt_dmacon | 0x8000;
@@ -475,7 +483,7 @@ static void mt_music(void)
         }
         mt_pattpos += 0x10;
         if (mt_pattpos == 0x400) {
-            mod = mt_data + 0x3b6;
+            songend = mt_data + 0x3b6;
             goto nex;
         }
     }
@@ -484,8 +492,8 @@ nex:
         mt_pattpos = 0;
         mt_break = 0;
         mt_songpos = (mt_songpos + 1) & 0x7f;
-        if (mt_songpos == mod[0])               /* CMP.b (a0),d1 */
-            mt_songpos = mod[1];
+        if (mt_songpos == songend[0])           /* CMP.b (a0),d1 */
+            mt_songpos = songend[1];
     }
 }
 
