@@ -136,7 +136,14 @@ static_assert(sizeof(struct chunky) == 16);
 
 #define CIAA_PRA (*(volatile UBYTE *)0xbfe001)
 
-/* init, finit, PlanarToChunky, ChunkyLoadBitMap: RTS */
+/**
+ * @brief init, finit, PlanarToChunky bitmap#,chunky# and ChunkyLoadBitMap
+ * filename$,chunky#: no code (RTS).
+ *
+ * The two commands are declared but do nothing (their arguments are
+ * ignored).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE nothing_c(void)
 {
 }
@@ -164,13 +171,36 @@ static void freechunky(struct chunky *o, ULONG callerd1)
     CIAA_PRA ^= 2;                              /* BCHG #1,$bfe001: BUG(orig) (#886) */
 }
 
-/* the object manager's free routine: a3 = the object */
+/**
+ * @brief The object manager's free routine (_free): frees a chunky
+ * object's data.
+ *
+ * As freechunky: nothing without data, else globfree, the fields
+ * cleared and BUG(orig) (#886) the CIA-A PRA bit 1 toggled.
+ * @param callerd1  d1: the caller's d1 (its upper word goes to lmullib)
+ * @param o         a3: the object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE dofreechunkybitmap_c(ULONG callerd1 BL_REG(d1), struct chunky *o BL_REG(a3))
 {
     freechunky(o, callerd1);
 }
 
-/* ChunkyBitmap n,width,height (d1, d2; a0 = the object) */
+/**
+ * @brief ChunkyBitmap chunky#,width,height: a chunky object of
+ * width*height bytes (memlib globalloc, MEMF_CLEAR), depth 8.
+ *
+ * Amiga mode only.  An object with data is freed first, decided by
+ * TST.l 6(a0): BUG(orig) (#885) the unused word and the pointer's upper
+ * word - data below $10000 is never freed, and then width and height
+ * are overwritten and, if the allocation fails, cleared with the old
+ * data pointer kept.  On failure ('cantalloc) width, height and depth
+ * are 0.
+ * @param w  d1: the width (a word)
+ * @param h  d2: the height (a word)
+ * @param o  a0: the object (!libs #richunkylib,#ia0|#pd0)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE chunkybitmap_c(ULONG w BL_REG(d1), ULONG h BL_REG(d2),
                                          struct chunky *o BL_REG(a0))
 {
@@ -197,14 +227,29 @@ static void BLITZ_ROUTINE chunkybitmap_c(ULONG w BL_REG(d1), ULONG h BL_REG(d2),
     o->data = r.d0;
 }
 
-/* ChunkyData(n) (a0 = the object) */
+/**
+ * @brief ChunkyData(chunky#): the address of the chunky data.
+ * @param o  a0: the object
+ * @return d0: the data, 0 if the object has none
+ */
 static ULONG BLITZ_ROUTINE chunkydata_c(struct chunky *o BL_REG(a0))
 {
     return o->data;
 }
 
-/* RaycastSky n,x,height,column,&texture (d1-d4; a0 = the object):
-   height bytes of the texture column to the chunky column, 320 apart */
+/**
+ * @brief RaycastSky chunky#,x,height,column,&texture: height bytes of a
+ * texture column to a chunky column, both 320 bytes apart.
+ *
+ * BUG(orig) (#887): no checks; x and column are added as signed words,
+ * the height is a DBRA count (height 0 copies 65536 bytes).
+ * @param x    d1: the column in the chunky data (a signed word)
+ * @param h    d2: the number of bytes
+ * @param col  d3: the column in the texture (a signed word)
+ * @param tex  d4: the texture
+ * @param o    a0: the object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE raycastsky_c(ULONG x BL_REG(d1), ULONG h BL_REG(d2),
                                        ULONG col BL_REG(d3), ULONG tex BL_REG(d4),
                                        struct chunky *o BL_REG(a0))
@@ -234,8 +279,17 @@ static ULONG merge2(ULONG x)
     return (hi | lo) | sw;
 }
 
-/* ChunkyToPlanar chunky,bitmap (a0 = the chunky object, a1 = the
-   bitmap): 81920 pixels to the 8 planes from the bitmap's first plane */
+/**
+ * @brief ChunkyToPlanar chunky#,bitmap#: chunky to planar (C2P), 81920
+ * pixels to the 8 planes from the bitmap's first plane.
+ *
+ * The planes must be contiguous (plane n = plane 0 + n*10240); nothing
+ * without chunky data.  BUG(orig): the sizes are ignored (#884), and the
+ * depth test compares Flags and Depth as one signed word (#883).
+ * @param o   a0: the chunky object
+ * @param bm  a1: the bitmap (a struct BitMap)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE c2p_c(struct chunky *o BL_REG(a0), struct BitMap *bm BL_REG(a1))
 {
     const ULONG *src;
