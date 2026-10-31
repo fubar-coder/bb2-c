@@ -290,7 +290,8 @@ static void BLITZ_ROUTINE doshowsprite_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
 {
     UBYTE *sp = blitz_string, *cop;
     WORD hpos = (WORD)x - (WORD)SW(sp, 12) + 128;
-    WORD vpos = (WORD)y - (WORD)SW(sp, 14);
+    WORD vpos = (WORD)y - (WORD)SW(sp, 14);     /* d2: the start line */
+    WORD vstop;                                 /* d2: the stop line */
     WORD maxh = (WORD)SW(slice, 32) + 1 - vpos; /* max sprite height */
     ULONG skip = 0;
     WORD height;
@@ -323,10 +324,10 @@ static void BLITZ_ROUTINE doshowsprite_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
         ctl++;
     hpos = (WORD)((UWORD)hpos >> 1);
     pos = (pos & 0xff00) | (UBYTE)hpos;
-    vpos += height - 1;                         /* add height! */
-    if ((UWORD)vpos & 0x100)
+    vstop = vpos + height - 1;                  /* add height! */
+    if ((UWORD)vstop & 0x100)
         ctl += 2;
-    ctl |= (UWORD)((UWORD)vpos << 8);
+    ctl |= (UWORD)((UWORD)vstop << 8);
     if ((WORD)SW(sp, 8) < 0)
         ctl |= 0x80;
     cop = SP(slice, 14) + (WORD)(UWORD)((UWORD)ch << 4);
