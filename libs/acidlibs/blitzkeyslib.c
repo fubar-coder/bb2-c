@@ -139,31 +139,33 @@ void BLITZ_ROUTINE dobkeys(WORD on BL_REG(d0))
         ison = ~ison;                   /* BUG(orig) (#408): handler stays */
 }
 
-/* BlitzKey / input handler: code = d0, posqual = d1 (the buffer position,
-   then the qualifier) = the caller's registers (their upper words survive
+/* BlitzKey / input handler: code = d0, d1 = the buffer position, then the
+   qualifier; both are the caller's registers (their upper words survive
    the word loads of the original) */
-static ULONG BLITZ_ROUTINE binkey_c(ULONG code BL_REG(d0), ULONG posqual BL_REG(d1))
+static ULONG BLITZ_ROUTINE binkey_c(ULONG code BL_REG(d0), ULONG callerd1 BL_REG(d1))
 {
     UBYTE *keydata = key;
     struct bl_regs r;
+    UWORD pos;                          /* d1.w: the buffer position */
+    ULONG qual = callerd1;              /* d1: the qualifier */
 
-    BL_SETW(posqual, *(UWORD *)(keydata + 0x70));
+    pos = *(UWORD *)(keydata + 0x70);
     for (;;) {
-        BL_SETW(posqual, ((UWORD)posqual + 4) & 127);
-        if ((UWORD)posqual == *(UWORD *)(keydata + 0x72))
+        pos = (pos + 4) & 127;
+        if (pos == *(UWORD *)(keydata + 0x72))
             return (ULONG)-1;           /* nokey */
-        *(UWORD *)(keydata + 0x70) = (UWORD)posqual;
-        BL_SETW(code, *(UWORD *)(keydata + 0x74 + (WORD)posqual));
+        *(UWORD *)(keydata + 0x70) = pos;
+        BL_SETW(code, *(UWORD *)(keydata + 0x74 + (WORD)pos));
         if (code & 0x80)
             continue;                   /* key up: retry */
         if ((UWORD)code == 0x7d)
             return (ULONG)-1;
         break;
     }
-    BL_SETW(posqual, *(UWORD *)(keydata + 0x76 + (WORD)posqual));
-    bqual = (UWORD)posqual;
+    BL_SETW(qual, *(UWORD *)(keydata + 0x76 + (WORD)pos));
+    bqual = (UWORD)qual;
     r.d0 = code;
-    r.d1 = posqual;
+    r.d1 = qual;
     r.a0 = (ULONG)keydata;
     r.a1 = 0;
     return BLITZ_ALIBJSR(TOK_qconvertkey, r);
