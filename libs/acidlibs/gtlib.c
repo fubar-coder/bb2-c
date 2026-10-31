@@ -46,8 +46,6 @@
  *     the static Image (20 bytes), else replaced by it (#173).  The result
  *     of CreateGadget is not checked (writes to addresses 12-25 if it
  *     failed). (#327)
- *   - getoptions (cycle/mx labels): memlib globalloc (no MEMF_CLEAR, all
- *     used bytes are written), at most 63 labels + NULL (no check), never freed. (#174)
  *   - GTSetAttrs/GTChangeList/GTSetHighlight work on the LAST gadget of a
  *     run of gadgets with the same id, GTGetAttrs/GTGadPtr etc. on the
  *     FIRST; GTFreeGadget frees the whole run (first to last). (#175)
@@ -57,6 +55,14 @@
  *     buffer pointer) and leave a3 there: as a function inside a string
  *     expression the rest of the expression is written over the tag list
  *     and what follows it in the library. (#328)
+ * Fixed (intended deviation, #174): getoptions (cycle/mx labels) sized
+ *   its block as option length + 258 with the pointer array at +0 and the
+ *   texts at +256: at most 63 labels + NULL without a check (more
+ *   overwrote the texts and, with many short labels, memory behind the
+ *   block), and the block was never freed.  Here the block holds the
+ *   counted pointers and then the texts; it is remembered with its GTList
+ *   and gadget (a list of the library, the GTList object stays 16 bytes)
+ *   and freed with the gadget (GTFreeGadget) or the GTList (_freecontext).
  * DIFF: GTTags/GTSetAttrs do not move a2 (the original pops the pairs);
  * the unused error routine freqchk of the binary is not ported.
  */
@@ -487,11 +493,54 @@ static struct TextAttr *ufont;
 static struct Screen *uscreen;
 static struct NewGadget wrkgadget;
 
+/* memory of the gadgets (fixed, #174: the labels of cycle/mx), memlib
+   globalloc with this header in front: the GTList (the object, a3) and
+   the gadget it belongs to (0 until CreateGadget returned, or if it
+   failed); freed with the gadget or the GTList */
+struct gtblock {
+    struct gtblock *next;
+    struct gtcontext *owner;
+    struct Gadget *gad;
+    ULONG size;                 /* with the header */
+};
+static struct gtblock *gtblocks;
+
 static ULONG allocst(ULONG str, ULONG len)
 {
     struct bl_regs r = { .d0 = str, .d1 = len };
 
     return BLITZ_ALIBJSR(TOK_allocst, r);
+}
+
+/* a block of `size` bytes for the GTList in a3 (MEMF_ANY, as the
+   original's getoptions), in the list of blocks */
+static struct gtblock *gtalloc(ULONG size)
+{
+    struct bl_regs r = { .d0 = sizeof(struct gtblock) + size, .d1 = 0 };
+    struct gtblock *b = (struct gtblock *)BLITZ_ALIBJSR(TOK_globalloc, r);
+
+    b->next = gtblocks;
+    b->owner = (struct gtcontext *)blitz_string;
+    b->gad = NULL;
+    b->size = sizeof(struct gtblock) + size;
+    gtblocks = b;
+    return b;
+}
+
+/* free the blocks of GTList c: all (gad 0) or those of gadget gad */
+static void gtfreeblocks(struct gtcontext *c, struct Gadget *gad)
+{
+    struct gtblock **link = &gtblocks, *b;
+
+    while ((b = *link) != NULL) {
+        if (b->owner == c && (!gad || b->gad == gad)) {
+            struct bl_regs r = { .d0 = b->size, .a1 = (ULONG)b };
+
+            *link = b->next;
+            BLITZ_ALIBJSR(TOK_globfree, r);
+        } else
+            link = &b->next;
+    }
 }
 
 /* SNE d1:EXT.w d1:EXT.l d1 */
@@ -540,7 +589,8 @@ void BLITZ_ROUTINE _codefinit(void)
  *
  * Frees the VisualInfo and all gadgets of the GTList (a3) and clears the
  * context and the window; nothing for a GTList without gadgets.  It does
- * not detach the gadgets from a window.
+ * not detach the gadgets from a window.  Fixed (#174): also the label
+ * blocks of its cycle/mx gadgets.
  */
 void BLITZ_ROUTINE _freecontext(void)
 {
@@ -550,6 +600,7 @@ void BLITZ_ROUTINE _freecontext(void)
         return;
     FreeVisualInfo(c->vinfo);
     FreeGadgets(c->context);
+    gtfreeblocks(c, NULL);
     c->context = NULL;
     c->window = NULL;
 }
@@ -693,19 +744,25 @@ static void BLITZ_ROUTINE gtcheckbox_c(STDARGS)
 }
 
 /* getoptions - "a|b|c" (length, string from the a2 stack) -> NULL
-   terminated array of labels at +0, the texts at +256 */
-static ULONG getoptions(const ULONG **sp)
+   terminated array of labels, the texts behind it.  Fixed (#174): the
+   original's block was length + 258 bytes with the texts at +256 (room
+   for 63 labels, not checked) and never freed; here the labels are
+   counted, the block is a gtblock (*blk, its gadget set by the caller) */
+static ULONG getoptions(const ULONG **sp, struct gtblock **blk)
 {
     ULONG len = BL_POPL(*sp);
     const UBYTE *s = (const UBYTE *)BL_POPL(*sp);
-    struct bl_regs r = { .d0 = len + 258, .d1 = 0 };    /* MEMF_ANY */
-    UWORD n = (UWORD)len;
-    UBYTE *blk, *text;
-    UBYTE **labels;
+    UWORD n = (UWORD)len, k;
+    ULONG count = 1;                    /* labels */
+    UBYTE *text;
+    UBYTE **labels, **first;
 
-    blk = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
-    labels = (UBYTE **)blk;
-    text = blk + 256;
+    for (k = 0; k < n; k++)
+        if (s[k] == '|')
+            count++;
+    *blk = gtalloc((count + 1) * sizeof(UBYTE *) + n + 1);
+    first = labels = (UBYTE **)(*blk + 1);
+    text = (UBYTE *)(labels + count + 1);
     *labels++ = text;
     while (n-- != 0) {                  /* DBF d2 */
         UBYTE c = *s++;
@@ -717,17 +774,18 @@ static ULONG getoptions(const ULONG **sp)
     }
     *text = 0;
     *labels = NULL;
-    return (ULONG)blk;
+    return (ULONG)first;
 }
 
 static void cycle(STDARGS)
 {
     const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp);
+    struct gtblock *blk;
 
-    cycletags.labels.ti_Data = getoptions(&sp);
+    cycletags.labels.ti_Data = getoptions(&sp, &blk);
     cycletags.disabled.ti_Data = bit(f, 6);
-    CREATE(CYCLE_KIND, f, cycletags);
+    blk->gad = CREATE(CYCLE_KIND, f, cycletags);
 }
 
 /**
@@ -735,8 +793,9 @@ static void cycle(STDARGS)
  * CYCLE_KIND gadget.
  *
  * As GTButton.  Options$ ("a|b|c") becomes the GTCY_Labels array
- * (getoptions: memlib globalloc, at most 63 labels + NULL without a check,
- * never freed, BUG(orig) (#174)).  Flag bit 6 GA_Disabled.  Without
+ * (getoptions: memlib globalloc, freed with the gadget or the GTList;
+ * fixed, #174: the original had room for 63 labels without a check and
+ * never freed it).  Flag bit 6 GA_Disabled.  Without
  * `active` GTCY_Active keeps the value of an earlier GTCycle with it,
  * BUG(orig) (#169).  Amiga mode only.
  *
@@ -769,18 +828,19 @@ static void mx(STDARGS)
 {
     const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp);
+    struct gtblock *blk;
 
-    mxtags.labels.ti_Data = getoptions(&sp);
+    mxtags.labels.ti_Data = getoptions(&sp, &blk);
     mxtags.disabled.ti_Data = bit(f, 6);
     mxtags.scaled.ti_Data = bit(f, 9);
-    CREATE(MX_KIND, f, mxtags);
+    blk->gad = CREATE(MX_KIND, f, mxtags);
 }
 
 /**
  * @brief GTMX GTList#,id,x,y,w,h,Text$,flags,Options$: add an MX_KIND
  * gadget.
  *
- * As GTCycle (Options$ -> GTMX_Labels, BUG(orig) (#174)).  Flag bits: 6
+ * As GTCycle (Options$ -> GTMX_Labels, fixed #174).  Flag bits: 6
  * GA_Disabled, 9 GTMX_Scaled.  Without `active` GTMX_Active keeps an
  * earlier value, BUG(orig) (#169).  Amiga mode only.
  *
@@ -1310,7 +1370,8 @@ static struct Gadget *lastof(struct Gadget *gad, UWORD id)
  * and free them.
  *
  * The whole run from the first to the last gadget with the id
- * (FreeGadgets), BUG(orig) (#175).  Amiga mode only.
+ * (FreeGadgets), BUG(orig) (#175); fixed (#174): with the label blocks of
+ * the freed cycle/mx gadgets.  Amiga mode only.
  * Errors (debugger only): "GTList must be detached from window first!"
  * (freegadchk).
  *
@@ -1338,6 +1399,8 @@ static ULONG BLITZ_ROUTINE gtfreegadget_c(UWORD id BL_REG(d1),
     } while (gad && gad->GadgetID == id);
     prev->NextGadget = last->NextGadget;
     last->NextGadget = NULL;
+    for (gad = first; gad; gad = gad->NextGadget)
+        gtfreeblocks(c, gad);
     FreeGadgets(first);
     return n;
 }
