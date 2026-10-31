@@ -222,14 +222,24 @@ static LONG changeextsprite(ULONG vp, ULONG old, ULONG new, ULONG tags)
     return (LONG)d0;
 }
 
-/* init: graphics.library, any version */
+/**
+ * @brief init: opens graphics.library, any version (the sprite functions
+ * need 39).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     wd.graphicslibbase = OpenLibrary((CONST_STRPTR)wd.graphicslibrary, 0);
 }
 
-/* finit: every sprite freed, the library closed (the base kept,
-   BUG(orig), #919) */
+/**
+ * @brief finit: every sprite freed (FreeSprite, FreeSpriteData), the
+ * library closed.
+ *
+ * BUG(orig) (#919): the base is kept, a second finit closes
+ * graphics.library again.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     int i;
@@ -308,7 +318,25 @@ static ULONG newsprite(void)
     return spr;
 }
 
-/* GetWBSprite(x,y,shape,channel) (d0, d1, d3; a0 = the shape) */
+/**
+ * @brief GetWBSprite(x,y,shape[,spritechannel]): a Workbench sprite from
+ * a Blitz shape.
+ *
+ * Amiga mode only.  The shape is copied into a bitmap of AllocBitMap,
+ * converted with AllocSpriteDataA (x, y set) and got with GetExtSpriteA
+ * (channel -1: any); the sprite goes into the table.  BUG(orig): the
+ * channel is not checked (#916); the copy ignores BytesPerRow and
+ * ebwidth (#918) and has DBRA counts (#917); the results are mixed
+ * (#920): a shape without data gives -1, a narrow shape (< 16) or no
+ * graphics.library 0, a failing AllocBitMap -1; a failing
+ * AllocSpriteDataA or GetExtSpriteA gives the channel if the table has
+ * a sprite there, else 0.
+ * @param x      d0: x (a word)
+ * @param y      d1: y (a word)
+ * @param ch     d3: the channel, -1 for any
+ * @param shape  a0: the shape (!libs #shapeslib,#ia0|#pd2)
+ * @return d0: the channel, or the values above
+ */
 static ULONG BLITZ_ROUTINE getwbsprite_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
                                          LONG ch BL_REG(d3), ULONG shape BL_REG(a0))
 {
@@ -345,9 +373,17 @@ static ULONG BLITZ_ROUTINE getwbsprite_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
     return (ULONG)wd.sprchannel;
 }
 
-/* FreeWBSprite channel (d0.b): the table entry of channel & 15; d0 = 0
-   without a sprite (failed: MOVEQ #0), else as FreeSpriteData leaves it
-   (a statement: the value is not used) */
+/**
+ * @brief FreeWBSprite sprite_channel: frees a sprite (FreeSprite,
+ * FreeSpriteData) and clears its table entry.
+ *
+ * Amiga mode only.  The table entry of channel & 15.  BUG(orig) (#916):
+ * entries 8-15 are the library name and base, and FreeSprite gets the
+ * whole register.
+ * @param ch  d0.b: the channel
+ * @return d0: 0 without a sprite (failed: MOVEQ #0), else as
+ *         FreeSpriteData leaves it (a statement: the value is not used)
+ */
 static ULONG BLITZ_ROUTINE freesprite_c(ULONG ch BL_REG(d0))
 {
     ULONG *e = (ULONG *)((UBYTE *)wd.spritepointers + ((ch & 15) << 2));
@@ -362,7 +398,19 @@ static ULONG BLITZ_ROUTINE freesprite_c(ULONG ch BL_REG(d0))
     return freespritedata(spr);
 }
 
-/* MoveWBSprite(viewport,x,y,channel) (d0-d3) */
+/**
+ * @brief MoveWBSprite(viewport,x,y,sprite_channel): MoveSprite of the
+ * channel's sprite.
+ *
+ * Amiga mode only; nothing without a sprite.  BUG(orig): the channel is
+ * not checked (#916); the result is the d0 MoveSprite leaves, declared
+ * as a byte (#921).
+ * @param vp  d0: the ViewPort
+ * @param x   d1: x
+ * @param y   d2: y
+ * @param ch  d3: the channel
+ * @return d0: 0 without a sprite, else MoveSprite's d0
+ */
 static ULONG BLITZ_ROUTINE movewbsprite_c(ULONG vp BL_REG(d0), ULONG x BL_REG(d1),
                                           ULONG y BL_REG(d2), ULONG ch BL_REG(d3))
 {
@@ -373,7 +421,21 @@ static ULONG BLITZ_ROUTINE movewbsprite_c(ULONG vp BL_REG(d0), ULONG x BL_REG(d1
     return movesprite(vp, spr, x, y);
 }
 
-/* ChangeWBSprite(viewport,channel,shape) (d0, d1; a0 = the shape) */
+/**
+ * @brief ChangeWBSprite(viewport,sprite_channel,shape#): a new image for
+ * a sprite (ChangeExtSpriteA).
+ *
+ * Amiga mode only.  The shape is converted as in GetWBSprite, at the
+ * sprite's position; on success the old sprite data are freed and the
+ * new ones replace them in the table.  BUG(orig): the channel is not
+ * checked (#916); if ChangeExtSpriteA fails, the new sprite data are not
+ * freed (#915).
+ * @param vp     d0: the ViewPort
+ * @param ch     d1: the channel
+ * @param shape  a0: the shape (!libs #shapeslib,#ia0|#pd2)
+ * @return d0: BB_TRUE, BB_FALSE without graphics.library, shape data or
+ *         sprite, or if a step fails
+ */
 static BB_BOOL BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_REG(d1),
                                               ULONG shape BL_REG(a0))
 {
@@ -407,7 +469,14 @@ static BB_BOOL BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_R
     return (BB_BOOL)r;                  /* 0 or -1 */
 }
 
-/* WBSpriteX/Y(channel) (d0.w): the low word of d0 replaced */
+/**
+ * @brief WBSpriteX(sprite_channel): the x of the channel's sprite.
+ *
+ * Amiga mode only.  BUG(orig): the channel is not checked (#916); without
+ * a sprite the word at 6 is read (address 6, #922).
+ * @param ch  d0.w: the channel
+ * @return d0: the low word replaced by es_SimpleSprite.x
+ */
 static ULONG BLITZ_ROUTINE wbspritex_c(ULONG ch BL_REG(d0))
 {
     ULONG spr = *ENTRYW(ch);
@@ -415,6 +484,13 @@ static ULONG BLITZ_ROUTINE wbspritex_c(ULONG ch BL_REG(d0))
     return (ch & 0xffff0000UL) | ((struct ExtSprite *)spr)->es_SimpleSprite.x;
 }
 
+/**
+ * @brief WBSpriteY(sprite_channel): the y of the channel's sprite.
+ *
+ * As WBSpriteX, the word at 8 (#916, #922).
+ * @param ch  d0.w: the channel
+ * @return d0: the low word replaced by es_SimpleSprite.y
+ */
 static ULONG BLITZ_ROUTINE wbspritey_c(ULONG ch BL_REG(d0))
 {
     ULONG spr = *ENTRYW(ch);
