@@ -427,12 +427,12 @@ ULONG BLITZ_ROUTINE c_datatypecreate(struct TagItem *tags BL_REG(d0))
 }
 
 /* doattach: the window of the window object, AddDTObject */
-static ULONG doattach(const ULONG *winobj)
+static BB_BOOL doattach(const ULONG *winobj)
 {
     attachtobitmap = 0;
     attached = *winobj;
     AddDTObject((struct Window *)attached, NULL, object, -1);
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* the tags every form ends with */
@@ -452,12 +452,12 @@ static struct TagItem *tailtags(struct TagItem *t)
 #define TAG(t, tag, data) ((t)->ti_Tag = (tag), (t)->ti_Data = (data), (t)++)
 
 /* AttachDataType window,id: at 0,0 with the size of the BitMapHeader */
-ULONG BLITZ_ROUTINE c_attachdatatype(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a0))
+BB_BOOL BLITZ_ROUTINE c_attachdatatype(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a0))
 {
     struct TagItem *t = storage->tags;
 
     if (!lock || attached)
-        return 0;
+        return BB_FALSE;
     attached = (ULONG)winobj;
     TAG(t, GA_Left, 0);
     TAG(t, GA_Top, 0);
@@ -471,14 +471,14 @@ ULONG BLITZ_ROUTINE c_attachdatatype(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a
 
 /* AttachDataType window,id,x,y,width,height (BUG(orig) (#597): the words as
    longs) */
-ULONG BLITZ_ROUTINE c_attachdatatype2(ULONG id BL_REG(d1), ULONG x BL_REG(d2),
-                                      ULONG y BL_REG(d3), ULONG w BL_REG(d4),
-                                      ULONG h BL_REG(d5), ULONG *winobj BL_REG(a0))
+BB_BOOL BLITZ_ROUTINE c_attachdatatype2(ULONG id BL_REG(d1), ULONG x BL_REG(d2),
+                                        ULONG y BL_REG(d3), ULONG w BL_REG(d4),
+                                        ULONG h BL_REG(d5), ULONG *winobj BL_REG(a0))
 {
     struct TagItem *t = storage->tags;
 
     if (!database || !lock || attached)
-        return 0;
+        return BB_FALSE;
     attached = (ULONG)winobj;
     TAG(t, GA_ID, id);
     TAG(t, GA_Left, x);
@@ -492,12 +492,12 @@ ULONG BLITZ_ROUTINE c_attachdatatype2(ULONG id BL_REG(d1), ULONG x BL_REG(d2),
 
 /* AttachDataType window,id,&taglist (BUG(orig) (#596): the id is the tag list
    of the second SetAttrsA) */
-ULONG BLITZ_ROUTINE c_attachdatatype3(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a0))
+BB_BOOL BLITZ_ROUTINE c_attachdatatype3(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a0))
 {
     struct TagItem *t = storage->tags;
 
     if (!lock || attached)
-        return 0;
+        return BB_FALSE;
     attached = (ULONG)winobj;
     TAG(t, GA_ID, id);
     tailtags(t);
@@ -507,15 +507,15 @@ ULONG BLITZ_ROUTINE c_attachdatatype3(ULONG id BL_REG(d1), ULONG *winobj BL_REG(
 }
 
 /* DataTypeReady: -1 when the layout is done */
-ULONG BLITZ_ROUTINE c_datatypeready(void)
+BB_BOOL BLITZ_ROUTINE c_datatypeready(void)
 {
     if (!database || !attached)
-        return 0;
+        return BB_FALSE;
     storage->value = 0;
     GetAttr(DTA_LayoutProc, object, &storage->value);
     if (storage->value)
-        return 0;
-    return (ULONG)-1;
+        return BB_FALSE;
+    return BB_TRUE;
 }
 
 /* DataTypeSuper: the ID of the object's class */
