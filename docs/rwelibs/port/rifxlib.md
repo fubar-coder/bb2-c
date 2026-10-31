@@ -49,6 +49,10 @@ counts a `volatile` variable (the compiler would drop an empty loop).
 * `Derez` and `ZoomXY` set only the low byte of `sbitdepth` (`MOVE.b`
   into `sbitdepth+1`): after a depth-0 bitmap the upper byte is $FF and
   stays (#675);
+* `Derez` and `ZoomXY` do not check the depth: with a depth-0 source
+  bitmap `SUBQ.w #1,sbitdepth` gives $FFFF, and the DBRA loops run 65536
+  times - `store_bitplanes` writes 65536 plane pointers over
+  `bit_add`/`dest_add` and what follows (#947);
 * `Derez` with a value ≥ 3 builds its mask table `myline` with 20 words
   (21 for values > 31) into the 18 words the source reserves: the 19th
   goes over `myflag` and the pad byte, the 20th (and 21st) over the first

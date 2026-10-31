@@ -41,6 +41,10 @@
  *     reproduced, it is what a Blitz program gets (#672);
  *   - Derez and ZoomXY keep the upper byte of sbitdepth from the previous
  *     call (MOVE.b into its low byte; after a depth 0 it is $FF) (#675);
+ *   - Derez and ZoomXY do not check the depth: a depth-0 source bitmap
+ *     gives SUBQ.w #1 = $FFFF and 65536 rounds of the DBRA loops -
+ *     store_bitplanes writes 65536 plane pointers over bit_add/dest_add
+ *     and what follows them (#947);
  *   - Derez with a value >= 3 builds its mask table myline with 20 words
  *     (21 for values > 31) into the 18 words the source reserves: the
  *     19th goes over myflag and the pad byte, the 20th (21st) over the
@@ -890,7 +894,7 @@ static ULONG BLITZ_ROUTINE asmderez_c(ULONG callerd0 BL_REG(d0), ULONG sadd BL_R
     res_value3 = (UWORD)(rez - 2);
     height = (UWORD)(h - 1);
     sbitdepth = (UWORD)((sbitdepth & 0xff00) | BM_DEPTH(src));  /* BUG(orig) (#675) */
-    sbitdepth--;
+    sbitdepth--;                        /* BUG(orig): depth 0 = $FFFF (#947) */
     store_bitplanes(src, dst, sadd, dadd);
     leftover = (callerd0 & 0xffff0000UL) | 0xffff; /* DBRA d0 of store_bitplanes */
 
@@ -1077,7 +1081,7 @@ static void BLITZ_ROUTINE asmzoom_c(ULONG xz BL_REG(d0), ULONG yz BL_REG(d1), UL
     yzoom_value = (UWORD)(yz - 1);
     height = (UWORD)(h - 1);
     sbitdepth = (UWORD)((sbitdepth & 0xff00) | BM_DEPTH(source_address));
-    sbitdepth--;
+    sbitdepth--;                        /* BUG(orig): depth 0 = $FFFF (#947) */
     store_bitplanes(source_address, dest_address, add_source, add_dest);
     if (!xzoom_value && !yzoom_value) {
         screencopy();
