@@ -103,8 +103,36 @@ static UWORD bcon0 = 0xfca;
 /* custom chip registers relative to the chip base */
 /* BTST #6,$002(a1):'w:BTST #6,$002(a1):BNE 'w */
 
-#define SW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
-#define SL(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
+/* a shape object of shapeslib (32 bytes; the part read here, every
+   field as the word or long the original reads) */
+struct shape {
+    UWORD width;                /* +0 pixel width, 0 = none */
+    UWORD height;               /* +2 */
+    UWORD depth;                /* +4 */
+    UWORD ebwidth;              /* +6 even byte width */
+    UWORD bltsize;              /* +8 */
+    UWORD xhandle, yhandle;     /* +10, +12 */
+    UBYTE *data;                /* +14 the planes, one after the other */
+    UBYTE *cookie;              /* +18 0 = none */
+    UWORD planesize;            /* +22 bytes per plane */
+    UWORD savesize;             /* +24 per plane + one word per row */
+};
+
+/* a bitmap object of bitmaplib (64 bytes; the part read here): +4 is
+   flags.b/depth.b, read as one word as in the original */
+struct bmap {
+    UWORD bpr;                  /* +0 bytes per row */
+    UWORD rows;                 /* +2 */
+    UWORD depth;                /* +4 flags << 8 | depth */
+    UWORD pad6;
+    UBYTE *planes[8];           /* +8 */
+    UBYTE pad40[16];
+    UWORD width;                /* +56 */
+    UWORD height;               /* +58 */
+    UWORD colours;              /* +60 */
+    UWORD isreal;               /* +62 0 = not set up */
+};
+static_assert(sizeof(struct bmap) == 64);
 
 /* registers b_doblit leaves for b_doblitex */
 struct blitstate {
@@ -116,16 +144,16 @@ struct blitstate {
 };
 
 /* the destination offset: MULS bpr,y + x ASR 3 */
-static ULONG offset(const UBYTE *bm, WORD x, WORD y)
+static ULONG offset(const struct bmap *bm, WORD x, WORD y)
 {
-    return (ULONG)((LONG)y * (WORD)SW(bm, 0)) + (LONG)(WORD)(x >> 3);
+    return (ULONG)((LONG)y * (WORD)bm->bpr) + (LONG)(WORD)(x >> 3);
 }
 
 /* the modulos: C = D = bpr - ebwidth - 2, A = B = -2 (mods_cb = d6 for
    BLTCMOD/BLTBMOD, mods_ad = d7 for BLTAMOD/BLTDMOD) */
-static void setmods(const UBYTE *shape, const UBYTE *bm, UBYTE *cb)
+static void setmods(const struct shape *shape, const struct bmap *bm, UBYTE *cb)
 {
-    ULONG mods_ad = 0xfffe0000UL | (UWORD)(SW(bm, 0) - SW(shape, 6) - 2);
+    ULONG mods_ad = 0xfffe0000UL | (UWORD)(bm->bpr - shape->ebwidth - 2);
     ULONG mods_cb = mods_ad << 16 | mods_ad >> 16;
 
     BL_BLITWAIT(cb);
@@ -134,25 +162,25 @@ static void setmods(const UBYTE *shape, const UBYTE *bm, UBYTE *cb)
 }
 
 /* b_doblit - a3 = shape, a2 = used bitmap, a1 = chip base, d1/d2 = x/y */
-static void blit(const UBYTE *shape, const UBYTE *bm, UBYTE *cb, WORD x, WORD y,
+static void blit(const struct shape *shape, const struct bmap *bm, UBYTE *cb, WORD x, WORD y,
                  struct blitstate *st)
 {
     UWORD shiftbits, n;
 
-    x -= SW(shape, 10);
-    y -= SW(shape, 12);
+    x -= shape->xhandle;
+    y -= shape->yhandle;
     setmods(shape, bm, cb);
     shiftbits = (UWORD)((x & 15) << 12);        /* AND #15:ROR #4 */
     st->shift = shiftbits;
     BL_CUSTOMW(cb, 0x42) = shiftbits;
     BL_CUSTOMW(cb, 0x40) = shiftbits | bcon0;
     BL_CUSTOML(cb, 0x44) = 0xffff0000UL;
-    BL_CUSTOML(cb, 0x4c) = SL(shape, 14);
-    st->cookie = SL(shape, 18);
+    BL_CUSTOML(cb, 0x4c) = (ULONG)shape->data;
+    st->cookie = (ULONG)shape->cookie;
     st->off = offset(bm, x, y);
-    st->plane = (UBYTE **)(bm + 8);
-    st->size = SW(shape, 8);
-    n = SW(shape, 4);
+    st->plane = (UBYTE **)bm->planes;
+    st->size = shape->bltsize;
+    n = shape->depth;
     if (!n)
         return;
     n--;
@@ -173,14 +201,14 @@ doblit:
 
 /* b_doblitex - and the excess planes: d3 = one bit per plane, set =
    minterm $FA, clear = $0A */
-static void blitex(const UBYTE *shape, const UBYTE *bm, UBYTE *cb, WORD x, WORD y,
+static void blitex(const struct shape *shape, const struct bmap *bm, UBYTE *cb, WORD x, WORD y,
                    UWORD bits)
 {
     struct blitstate st;
     UWORD p;
 
     blit(shape, bm, cb, x, y, &st);
-    for (p = SW(shape, 4); p < SW(bm, 4); p++) {
+    for (p = shape->depth; p < bm->depth; p++) {
         UWORD con = (bits & 1) ? 0xbfa : 0xb0a;
         ULONG d;
 
@@ -197,25 +225,25 @@ static void blitex(const UBYTE *shape, const UBYTE *bm, UBYTE *cb, WORD x, WORD 
 }
 
 /* b_doblock - A -> D copy, without the extra word */
-static void block(const UBYTE *shape, const UBYTE *bm, UBYTE *cb, WORD x, WORD y)
+static void block(const struct shape *shape, const struct bmap *bm, UBYTE *cb, WORD x, WORD y)
 {
-    UWORD n = SW(shape, 4), size;
-    UBYTE **plane = (UBYTE **)(bm + 8);
+    UWORD n = shape->depth, size;
+    UBYTE **plane = (UBYTE **)bm->planes;
     ULONG off;
 
     if (!n)
         return;
     n--;
-    x -= SW(shape, 10);
-    y -= SW(shape, 12);
+    x -= shape->xhandle;
+    y -= shape->yhandle;
     off = offset(bm, x, y);
-    size = SW(shape, 8) - 1;
+    size = shape->bltsize - 1;
     BL_BLITWAIT(cb);
     BL_CUSTOML(cb, 0x40) = 0x09f00000;
-    BL_CUSTOMW(cb, 0x66) = SW(bm, 0) - SW(shape, 6);
+    BL_CUSTOMW(cb, 0x66) = bm->bpr - shape->ebwidth;
     BL_CUSTOML(cb, 0x44) = 0xffffffff;
     BL_CUSTOMW(cb, 0x64) = 0;
-    BL_CUSTOML(cb, 0x50) = SL(shape, 14);
+    BL_CUSTOML(cb, 0x50) = (ULONG)shape->data;
     goto doblit;
     do {
         BL_BLITWAIT(cb);
@@ -226,23 +254,23 @@ doblit:
 }
 
 /* b_doblitcoll - A = cookie, C = every bitmap plane, no D: BZERO */
-static UWORD blitcoll(const UBYTE *shape, const UBYTE *bm, UBYTE *cb, WORD x, WORD y)
+static UWORD blitcoll(const struct shape *shape, const struct bmap *bm, UBYTE *cb, WORD x, WORD y)
 {
     UWORD shiftbits, n, size;
-    UBYTE **plane = (UBYTE **)(bm + 8);
+    UBYTE **plane = (UBYTE **)bm->planes;
     ULONG cookie, off;
 
-    x -= SW(shape, 10);
-    y -= SW(shape, 12);
+    x -= shape->xhandle;
+    y -= shape->yhandle;
     setmods(shape, bm, cb);
     shiftbits = (UWORD)((x & 15) << 12);
     BL_CUSTOMW(cb, 0x42) = shiftbits;
     BL_CUSTOMW(cb, 0x40) = shiftbits | 0xaa0;
     BL_CUSTOML(cb, 0x44) = 0xffff0000UL;
-    cookie = SL(shape, 18);
+    cookie = (ULONG)shape->cookie;
     off = offset(bm, x, y);
-    size = SW(shape, 8);
-    n = SW(bm, 4) - 1;
+    size = shape->bltsize;
+    n = bm->depth - 1;
     do {
         BL_CUSTOML(cb, 0x50) = cookie;
         BL_CUSTOML(cb, 0x48) = (ULONG)*plane++ + off;
@@ -257,14 +285,14 @@ static UWORD blitcoll(const UBYTE *shape, const UBYTE *bm, UBYTE *cb, WORD x, WO
 /* ---------------------------------------------------- the entries */
 
 #define REG_ARGS WORD x BL_REG(d1), WORD y BL_REG(d2), UBYTE *cb BL_REG(a1), \
-                 const UBYTE *bm BL_REG(a2)
+                 const struct bmap *bm BL_REG(a2)
 
 void BLITZ_ROUTINE b_doblit_c(REG_ARGS);
 void BLITZ_ROUTINE b_doblit_c(REG_ARGS)
 {
     struct blitstate st;
 
-    blit(blitz_string, bm, cb, x, y, &st);
+    blit((const struct shape *)blitz_string, bm, cb, x, y, &st);
 }
 
 void BLITZ_ROUTINE a_doblit_c(REG_ARGS, struct Library *gfx BL_REG(a6));
@@ -273,7 +301,7 @@ void BLITZ_ROUTINE a_doblit_c(REG_ARGS, struct Library *gfx BL_REG(a6))
     struct blitstate st;
 
     OwnBlitter();
-    blit(blitz_string, bm, cb, x, y, &st);
+    blit((const struct shape *)blitz_string, bm, cb, x, y, &st);
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
@@ -282,7 +310,7 @@ BLITZ_AB_ROUTINE(doblit, b_doblit_c, "   jmp     _a_doblit_c");
 void BLITZ_ROUTINE b_doblitex_c(REG_ARGS, UWORD bits BL_REG(d3));
 void BLITZ_ROUTINE b_doblitex_c(REG_ARGS, UWORD bits BL_REG(d3))
 {
-    blitex(blitz_string, bm, cb, x, y, bits);
+    blitex((const struct shape *)blitz_string, bm, cb, x, y, bits);
 }
 BLITZ_THUNK(b_doblitex, b_doblitex_c, "a2");
 
@@ -292,7 +320,7 @@ void BLITZ_ROUTINE a_doblitex_c(REG_ARGS, UWORD bits BL_REG(d3),
                                 struct Library *gfx BL_REG(a6))
 {
     OwnBlitter();
-    blitex(blitz_string, bm, cb, x, y, bits);
+    blitex((const struct shape *)blitz_string, bm, cb, x, y, bits);
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
@@ -301,14 +329,14 @@ BLITZ_AB_ROUTINE(doblitex, b_doblitex_c, "   jmp     _a_doblitex_c");
 void BLITZ_ROUTINE b_doblock_c(REG_ARGS);
 void BLITZ_ROUTINE b_doblock_c(REG_ARGS)
 {
-    block(blitz_string, bm, cb, x, y);
+    block((const struct shape *)blitz_string, bm, cb, x, y);
 }
 
 void BLITZ_ROUTINE a_doblock_c(REG_ARGS, struct Library *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_doblock_c(REG_ARGS, struct Library *gfx BL_REG(a6))
 {
     OwnBlitter();
-    block(blitz_string, bm, cb, x, y);
+    block((const struct shape *)blitz_string, bm, cb, x, y);
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
@@ -318,7 +346,7 @@ BLITZ_AB_ROUTINE(doblock, b_doblock_c, "   jmp     _a_doblock_c");
 ULONG BLITZ_ROUTINE b_doblitcoll_c(REG_ARGS);
 ULONG BLITZ_ROUTINE b_doblitcoll_c(REG_ARGS)
 {
-    return (ULONG)(LONG)(WORD)blitcoll(blitz_string, bm, cb, x, y);
+    return (ULONG)(LONG)(WORD)blitcoll((const struct shape *)blitz_string, bm, cb, x, y);
 }
 
 /* Amiga mode: MOVE d0,-(a7):DisownBlitter:MOVE (a7)+,d0 - only the low
@@ -330,7 +358,7 @@ ULONG BLITZ_ROUTINE a_doblitcoll_c(REG_ARGS, struct Library *gfx BL_REG(a6))
     UWORD r;
 
     OwnBlitter();
-    r = blitcoll(blitz_string, bm, cb, x, y);
+    r = blitcoll((const struct shape *)blitz_string, bm, cb, x, y);
     DisownBlitter();
     return r;
 }
@@ -366,22 +394,22 @@ BLITZ_ERRCHK_MESSAGE(mess3, "Shape does not have a cookie cut");
 BLITZ_ERRCHK_MESSAGE(mess4, "Coords outside of BitMap");
 
 /* maxchk2 - bitmap set up, shape there; maxchk - and with cookie */
-static int BLITZ_ERRCHK maxchk2(const UBYTE *shape, const UBYTE *bm)
+static int BLITZ_ERRCHK maxchk2(const struct shape *shape, const struct bmap *bm)
 {
-    if (!SW(bm, 62)) {
+    if (!bm->isreal) {
         BLITZ_RUNERR(mess1);
         return 0;
     }
-    if (!SW(shape, 0)) {
+    if (!shape->width) {
         BLITZ_RUNERR(mess2);
         return 0;
     }
     return 1;
 }
 
-static int BLITZ_ERRCHK maxchk(const UBYTE *shape, const UBYTE *bm)
+static int BLITZ_ERRCHK maxchk(const struct shape *shape, const struct bmap *bm)
 {
-    if (!SL(shape, 18)) {
+    if (!(ULONG)shape->cookie) {
         BLITZ_RUNERR(mess3);
         return 0;
     }
@@ -390,45 +418,45 @@ static int BLITZ_ERRCHK maxchk(const UBYTE *shape, const UBYTE *bm)
 
 /* poschk2 - the shape (minus handle) inside the bitmap; poschk - and
    not more planes than the bitmap */
-static void BLITZ_ERRCHK poschk2(const UBYTE *shape, const UBYTE *bm, WORD x, WORD y)
+static void BLITZ_ERRCHK poschk2(const struct shape *shape, const struct bmap *bm, WORD x, WORD y)
 {
-    x -= SW(shape, 10);
-    y -= SW(shape, 12);
+    x -= shape->xhandle;
+    y -= shape->yhandle;
     if (x < 0 || y < 0)
         BLITZ_RUNERR(mess4);
-    else if ((UWORD)(x + SW(shape, 0)) > SW(bm, 56) || (UWORD)(y + SW(shape, 2)) > SW(bm, 58))
+    else if ((UWORD)(x + shape->width) > bm->width || (UWORD)(y + shape->height) > bm->height)
         BLITZ_RUNERR(mess4);
 }
 
-static void BLITZ_ERRCHK poschk(const UBYTE *shape, const UBYTE *bm, WORD x, WORD y)
+static void BLITZ_ERRCHK poschk(const struct shape *shape, const struct bmap *bm, WORD x, WORD y)
 {
-    if (SW(shape, 4) > SW(bm, 4))
+    if (shape->depth > bm->depth)
         BLITZ_RUNERR(mess0);
     else
         poschk2(shape, bm, x, y);
 }
 
 /* blitchk (Blit) - x/y in d1/d2 */
-static void BLITZ_ERRCHK blitchk_c(WORD x BL_REG(d1), WORD y BL_REG(d2), const UBYTE *bm BL_REG(a2))
+static void BLITZ_ERRCHK blitchk_c(WORD x BL_REG(d1), WORD y BL_REG(d2), const struct bmap *bm BL_REG(a2))
 {
-    if (maxchk(blitz_string, bm))
-        poschk(blitz_string, bm, x, y);
+    if (maxchk((const struct shape *)blitz_string, bm))
+        poschk((const struct shape *)blitz_string, bm, x, y);
 }
 
 /* blitchknc (Block) - no cookie needed */
 static void BLITZ_ERRCHK blitchknc_c(WORD x BL_REG(d1), WORD y BL_REG(d2),
-                                     const UBYTE *bm BL_REG(a2))
+                                     const struct bmap *bm BL_REG(a2))
 {
-    if (maxchk2(blitz_string, bm))
-        poschk(blitz_string, bm, x, y);
+    if (maxchk2((const struct shape *)blitz_string, bm))
+        poschk((const struct shape *)blitz_string, bm, x, y);
 }
 
 /* blitchk3 (BlitColl) - no depth check */
 static void BLITZ_ERRCHK blitchk3_c(WORD x BL_REG(d1), WORD y BL_REG(d2),
-                                    const UBYTE *bm BL_REG(a2))
+                                    const struct bmap *bm BL_REG(a2))
 {
-    if (maxchk(blitz_string, bm))
-        poschk2(blitz_string, bm, x, y);
+    if (maxchk((const struct shape *)blitz_string, bm))
+        poschk2((const struct shape *)blitz_string, bm, x, y);
 }
 
 /* the original checks change d5-d7 */
