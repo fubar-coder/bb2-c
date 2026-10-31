@@ -20,6 +20,8 @@
 #   bblines    edits of the lines of a tokenised Blitz 2 source (bytes)
 #   xtra       the .xtra model of shared/xtra (Blitz 2 .xtra, BB22 header,
 #              AmiBlitz3 embedded header), compiled for the host
+#   teststats  the @stat line of the test runners' emulator sessions
+#              (lib_statline)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -36,3 +38,4 @@ add_subdirectory(bb22)
 add_subdirectory(blitzres)
 add_subdirectory(bblines)
 add_subdirectory(xtra)
+add_subdirectory(teststats)
