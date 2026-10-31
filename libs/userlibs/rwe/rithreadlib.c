@@ -94,14 +94,17 @@ struct thstate {
     ULONG stringbuffersize;
     volatile ULONG threadcount;
     struct Task *parenttask;
-    ULONG threadtaglist[8];
+    struct {                            /* CreateNewProc's tags */
+        struct TagItem entry, name, exitcode, end;
+    } threadtaglist;
     struct Library *dbase;
 };
+static_assert(sizeof(((struct thstate *)0)->threadtaglist) == 8 * 4);
 
 struct thstate th = {
     .stringbuffersize = STRINGBUFFERSIZE,
-    .threadtaglist = { NP_Entry, (ULONG)startupcode, NP_Name, 0,
-                       NP_ExitCode, (ULONG)cleanup, TAG_END, TAG_END },
+    .threadtaglist = { { NP_Entry, (ULONG)startupcode }, { NP_Name, 0 },
+                       { NP_ExitCode, (ULONG)cleanup }, { TAG_END, TAG_END } },
 };
 
 static const char dosname[] = "dos.library";
@@ -151,7 +154,7 @@ void BLITZ_ROUTINE c_createthread(const ULONG *r BL_REG(a0))
     if (!th.dbase)
         return;
     __asm__ volatile("addq.l #1,%0" : "+m"(th.threadcount) : : "cc");
-    th.threadtaglist[3] = r[0];         /* NP_Name */
+    th.threadtaglist.name.ti_Data = r[0];
     th.entrypoint = r[1];
     {
         /* ALibJsr globalloc: d0 = size, d1 = flags; the registers after
@@ -180,7 +183,7 @@ void BLITZ_ROUTINE c_createthread(const ULONG *r BL_REG(a0))
     }
     th.regptr = &th.regs[2];
     {
-        struct bl_regs cr = { .d1 = (ULONG)th.threadtaglist };
+        struct bl_regs cr = { .d1 = (ULONG)&th.threadtaglist };
         BLITZ_BASEJSR(th.dbase, LVO_CreateNewProc, cr);
     }
 }
