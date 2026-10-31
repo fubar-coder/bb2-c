@@ -18,8 +18,8 @@
  * number of colours, +2.w, then 12 bytes per colour (r.l g.l b.l, the
  * value in the top byte).  Bitmap objects (bitmaplib): a struct BitMap
  * (+0.w BytesPerRow, +2.w Rows, +4.w Flags<<8|Depth, +8 the planes), +52,
- * +56, +62.w "the planes are allocated here" (struct palobj, paldata and
- * bmobj below).
+ * +56, +62.w "the planes are allocated here" (struct bb_palette and struct
+ * bb_bitmap of blitzobj.h, paldata below).
  *
  * The routines are C behind thunks that keep d1/a0/a1 (the original
  * changes several of them).  The word arithmetic of the original
@@ -52,6 +52,7 @@
  * (a palette file: what is read of it is the CMAP).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <datatypes/pictureclass.h>
 #include <stddef.h>
 
@@ -186,36 +187,14 @@ static_assert(sizeof(struct palcol) == 12 && offsetof(struct paldata, col) == 4)
 #define COLBYTES(d) ((UBYTE *)(d) + offsetof(struct paldata, col))
 #define PALOF(c) ((struct paldata *)((UBYTE *)(c) - offsetof(struct paldata, col)))
 
-/* a palette object (palettelib's struct bpal, 2^7 bytes) */
-struct palobj {
-    struct paldata *data;               /* +0 */
-    UWORD numcols;                      /* +4 */
-    WORD cycle[14][4];                  /* +6: the colour cycles */
-    UBYTE pad[10];
-};
-static_assert(sizeof(struct palobj) == 128);
+/* a palette object (palettelib, 2^7 bytes): struct bb_palette (blitzobj.h),
+   its colour block a struct paldata */
+#define PALDATA(o) ((struct paldata *)(o)->pdata)
 
-/* a bitmap object (bitmaplib's struct bbitmap, 2^6 bytes) as this library
-   reads it: a struct BitMap, whose Flags/Depth it takes as one word
-   (BUG(orig) (#679)), and the fields MergeBitplanes copies as longs */
-struct bmobj {
-    union {
-        struct {
-            UWORD bpr;                  /* +0 BytesPerRow */
-            UWORD rows;                 /* +2 Rows */
-        };
-        ULONG bprrows;                  /* +0 both, copied as a long */
-    };
-    UWORD flagsdepth;                   /* +4 Flags<<8|Depth */
-    UWORD pad6;
-    ULONG planes[8];                    /* +8 */
-    UBYTE pad40[12];
-    ULONG ilplanedist;                  /* +52 ilflag, pad, planedist */
-    ULONG widthheight;                  /* +56 width, height */
-    UWORD colours;                      /* +60 */
-    UWORD isreal;                       /* +62 "the planes are allocated here" */
-};
-static_assert(sizeof(struct bmobj) == 64);
+/* a bitmap object (bitmaplib, 2^6 bytes): struct bb_bitmap (blitzobj.h); this
+   library takes Flags/Depth as one word (BUG(orig) (#679)), the planes as
+   longs, and MergeBitplanes copies two words at a time as a long (PAIR) */
+#define PAIR(b, m) (*(ULONG *)&(b)->m)
 
 /* the file SaveCMAP writes: FORM ILBM with an empty BMHD, then the CMAP
    (3 bytes per colour) */
@@ -247,9 +226,9 @@ static LONG colindex(ULONG c)
  * @param obj  a0: the palette object (!libs #palettelib,#ia0|#pd0)
  * @return nothing
  */
-static void BLITZ_ROUTINE paletteinfo_c(struct palobj *obj BL_REG(a0))
+static void BLITZ_ROUTINE paletteinfo_c(struct bb_palette *obj BL_REG(a0))
 {
-    paladdr = COLBYTES(obj->data);
+    paladdr = COLBYTES(PALDATA(obj));
 }
 BLITZ_THUNK(paletteinfo, paletteinfo_c, "d0-d1/a0-a1");
 
@@ -341,13 +320,13 @@ BLITZ_THUNK(agapalblue, agapalblue_c, "d1/a0-a1");
  * @param end    d3: the last colour
  * @return nothing
  */
-static void BLITZ_ROUTINE paladjust2_c(struct palobj *obj BL_REG(a0), ULONG ratio BL_REG(d1),
+static void BLITZ_ROUTINE paladjust2_c(struct bb_palette *obj BL_REG(a0), ULONG ratio BL_REG(d1),
                                         ULONG start BL_REG(d2), ULONG end BL_REG(d3))
 {
     UWORD r = (UWORD)(((UWORD)(ratio >> 16) << 8) + ((UWORD)ratio >> 8));
     LONG off = colindex(start);         /* ADD.w d5,a0 / a1 */
     const UBYTE *s = paladdr + off;
-    UBYTE *d = COLBYTES(obj->data) + off;
+    UBYTE *d = COLBYTES(PALDATA(obj)) + off;
     UWORD count = (UWORD)((UWORD)end - (UWORD)start + 1);
     UWORD n = (UWORD)(bl_mulu_w(count, 3) - 1);    /* DBRA */
 
@@ -371,7 +350,7 @@ BLITZ_THUNK(paladjust2, paladjust2_c, "d0-d1/a0-a1");
  * @param end    d3: the caller's d3 (its low word is replaced)
  * @return nothing
  */
-static void BLITZ_ROUTINE paladjust_c(struct palobj *obj BL_REG(a0), ULONG ratio BL_REG(d1),
+static void BLITZ_ROUTINE paladjust_c(struct bb_palette *obj BL_REG(a0), ULONG ratio BL_REG(d1),
                                        ULONG end BL_REG(d3))
 {
     BL_SETW(end, PALOF(paladdr)->numcols - 1);
@@ -383,9 +362,9 @@ BLITZ_THUNK(paladjust, paladjust_c, "d0-d1/a0-a1");
 
 /* r, g, b = the top bytes (AGA: the low bytes of the arguments);
    end = 0 (the whole register): the last colour */
-static void fill(struct palobj *obj, ULONG r, ULONG g, ULONG b, ULONG start, ULONG end)
+static void fill(struct bb_palette *obj, ULONG r, ULONG g, ULONG b, ULONG start, ULONG end)
 {
-    struct paldata *data = obj->data;
+    struct paldata *data = PALDATA(obj);
     struct palcol *p;
     UWORD n;
 
@@ -427,7 +406,7 @@ static ULONG nib(ULONG v)
  * @param end    d5: the last colour (0: the palette's last)
  * @return nothing
  */
-static void BLITZ_ROUTINE agafillpalette2_c(struct palobj *obj BL_REG(a0), ULONG r BL_REG(d1),
+static void BLITZ_ROUTINE agafillpalette2_c(struct bb_palette *obj BL_REG(a0), ULONG r BL_REG(d1),
     ULONG g BL_REG(d2), ULONG b BL_REG(d3), ULONG start BL_REG(d4), ULONG end BL_REG(d5))
 {
     fill(obj, r, g, b, start, end);
@@ -442,7 +421,7 @@ BLITZ_THUNK(agafillpalette2, agafillpalette2_c, "d0-d1/a0-a1");
  * @param b    d3: blue
  * @return nothing
  */
-static void BLITZ_ROUTINE agafillpalette_c(struct palobj *obj BL_REG(a0), ULONG r BL_REG(d1),
+static void BLITZ_ROUTINE agafillpalette_c(struct bb_palette *obj BL_REG(a0), ULONG r BL_REG(d1),
     ULONG g BL_REG(d2), ULONG b BL_REG(d3))
 {
     fill(obj, r, g, b, 0, 0);
@@ -462,7 +441,7 @@ BLITZ_THUNK(agafillpalette, agafillpalette_c, "d0-d1/a0-a1");
  * @param end    d5: the last colour (0: the palette's last)
  * @return nothing
  */
-static void BLITZ_ROUTINE fillpalette2_c(struct palobj *obj BL_REG(a0), ULONG r BL_REG(d1),
+static void BLITZ_ROUTINE fillpalette2_c(struct bb_palette *obj BL_REG(a0), ULONG r BL_REG(d1),
     ULONG g BL_REG(d2), ULONG b BL_REG(d3), ULONG start BL_REG(d4), ULONG end BL_REG(d5))
 {
     fill(obj, nib(r), nib(g), nib(b), start, end);
@@ -477,7 +456,7 @@ BLITZ_THUNK(fillpalette2, fillpalette2_c, "d0-d1/a0-a1");
  * @param b    d3: blue
  * @return nothing
  */
-static void BLITZ_ROUTINE fillpalette_c(struct palobj *obj BL_REG(a0), ULONG r BL_REG(d1),
+static void BLITZ_ROUTINE fillpalette_c(struct bb_palette *obj BL_REG(a0), ULONG r BL_REG(d1),
     ULONG g BL_REG(d2), ULONG b BL_REG(d3))
 {
     fill(obj, nib(r), nib(g), nib(b), 0, 0);
@@ -500,8 +479,8 @@ BLITZ_THUNK(fillpalette, fillpalette_c, "d0-d1/a0-a1");
  * @return d0: BB_TRUE, BB_FALSE if a colour number is not below its
  *         palette's number of colours
  */
-static BB_BOOL BLITZ_ROUTINE copycolour_c(struct palobj *src BL_REG(a0),
-                                          struct palobj *dst BL_REG(a1),
+static BB_BOOL BLITZ_ROUTINE copycolour_c(struct bb_palette *src BL_REG(a0),
+                                          struct bb_palette *dst BL_REG(a1),
                                           ULONG cs BL_REG(d2), ULONG cd BL_REG(d3))
 {
     struct palcol *s, *d;
@@ -510,8 +489,8 @@ static BB_BOOL BLITZ_ROUTINE copycolour_c(struct palobj *src BL_REG(a0),
         return BB_FALSE;
     if ((WORD)cd >= (WORD)dst->numcols)
         return BB_FALSE;
-    s = (struct palcol *)(COLBYTES(src->data) + bl_mulu_w((UWORD)cs, 12));
-    d = (struct palcol *)(COLBYTES(dst->data) + bl_mulu_w((UWORD)cd, 12));
+    s = (struct palcol *)(COLBYTES(PALDATA(src)) + bl_mulu_w((UWORD)cs, 12));
+    d = (struct palcol *)(COLBYTES(PALDATA(dst)) + bl_mulu_w((UWORD)cd, 12));
     d->r = s->r;
     d->g = s->g;
     d->b = s->b;
@@ -554,12 +533,12 @@ static void clearplane(UBYTE *end, ULONG moves)
  * @param bm  a0: the bitmap object (!libs #bitmaplib,#ia0|#pd0)
  * @return nothing
  */
-static void BLITZ_ROUTINE cpucls_c(struct bmobj *bm BL_REG(a0))
+static void BLITZ_ROUTINE cpucls_c(struct bb_bitmap *bm BL_REG(a0))
 {
     ULONG size = bl_mulu_w(bm->bpr, bm->rows);
     ULONG moves = bl_divu_w(size, 40);
     UWORD planes = (UWORD)(bm->flagsdepth - 1);    /* BUG(orig) (#679) */
-    const ULONG *pl = bm->planes;
+    const ULONG *pl = (const ULONG *)bm->planes;
 
     BL_SETW(moves, moves - 1);          /* blocks - 1 */
     moves = BL_SWAP(moves);
@@ -608,10 +587,10 @@ BLITZ_ASM_ROUTINE(cpucls,
  * @return d0: BSave's result, 0 if the palette has no data or there is
  *         no memory
  */
-static ULONG BLITZ_ROUTINE savecmap_c(struct palobj *obj BL_REG(a0), ULONG name BL_REG(d1))
+static ULONG BLITZ_ROUTINE savecmap_c(struct bb_palette *obj BL_REG(a0), ULONG name BL_REG(d1))
 {
     struct bl_regs r;
-    const struct paldata *data = obj->data;
+    const struct paldata *data = PALDATA(obj);
     const UBYTE *s;
     ULONG colsize, size, res;
     struct cmapfile *h;
@@ -666,9 +645,9 @@ BLITZ_THUNK(savecmap, savecmap_c, "d1/a0-a1");
  * @param planes  d3: numplanes
  * @return nothing
  */
-static void BLITZ_ROUTINE mergebitplanes_c(struct bmobj *src1 BL_REG(a0),
-                                            struct bmobj *src2 BL_REG(a1),
-                                            struct bmobj *dst BL_REG(a2), ULONG planes BL_REG(d3))
+static void BLITZ_ROUTINE mergebitplanes_c(struct bb_bitmap *src1 BL_REG(a0),
+                                            struct bb_bitmap *src2 BL_REG(a1),
+                                            struct bb_bitmap *dst BL_REG(a2), ULONG planes BL_REG(d3))
 {
     UWORD left1, left2, n;
     const ULONG *planes1, *planes2;
@@ -679,16 +658,16 @@ static void BLITZ_ROUTINE mergebitplanes_c(struct bmobj *src1 BL_REG(a0),
     if ((WORD)planes > (WORD)(UWORD)(src1->flagsdepth + src2->flagsdepth))
         return;
     dst->flagsdepth = (UWORD)planes;
-    dst->bprrows = src1->bprrows;
-    dst->ilplanedist = 0;
-    dst->widthheight = src1->widthheight;
+    PAIR(dst, bpr) = PAIR(src1, bpr);
+    PAIR(dst, ilword) = 0;
+    PAIR(dst, width) = PAIR(src1, width);
     dst->isreal = 1;
     n = (UWORD)(planes - 1);
     left1 = src1->flagsdepth;
     left2 = src2->flagsdepth;
-    planes1 = src1->planes;
-    planes2 = src2->planes;
-    pd = dst->planes;
+    planes1 = (ULONG *)src1->planes;
+    planes2 = (ULONG *)src2->planes;
+    pd = (ULONG *)dst->planes;
     while ((WORD)--left1 >= 0) {        /* SUBQ.w #1:BMI */
         *pd++ = *planes1++;
         if (n-- == 0)                   /* DBRA */
