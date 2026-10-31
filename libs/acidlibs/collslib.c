@@ -29,6 +29,7 @@
  *    checks it). (#111)
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 
 /* entry points (thunks, defined below) */
 void dosetcolodd(void), dosetcol(void), dosetcol2(void), dosetcolhi(void);
@@ -205,7 +206,8 @@ static BB_BOOL chkifhit(WORD x1, WORD y1, WORD w1, WORD h1,
     return BB_TRUE;
 }
 
-#define SW(s, o) (*(UWORD *)((UBYTE *)(s) + (o)))
+/* the shape (shapeslib) and the sprite (spriteslib) objects: struct bb_shape,
+   struct bb_sprite (blitzobj.h) */
 
 /**
  * @brief ShapesHit(Shape#,X,Y,Shape#,X,Y): whether two shapes overlap.
@@ -224,10 +226,12 @@ static BB_BOOL chkifhit(WORD x1, WORD y1, WORD w1, WORD h1,
  */
 static BB_BOOL BLITZ_ROUTINE doshapeshit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
                                            ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
-                                           UBYTE *a BL_REG(a0), UBYTE *b BL_REG(a1))
+                                           const struct bb_shape *a BL_REG(a0),
+                                           const struct bb_shape *b BL_REG(a1))
 {
-    return chkifhit((WORD)x1 - SW(a, 10), (WORD)y1 - SW(a, 12), SW(a, 0), SW(a, 2),
-                    (WORD)x2 - SW(b, 10), (WORD)y2 - SW(b, 12), SW(b, 0), SW(b, 2));
+    return chkifhit((WORD)x1 - (UWORD)a->handlex, (WORD)y1 - (UWORD)a->handley, a->width, a->height,
+                    (WORD)x2 - (UWORD)b->handlex, (WORD)y2 - (UWORD)b->handley,
+                    b->width, b->height);
 }
 BLITZ_THUNK(doshapeshit, doshapeshit_c, "d1/a0-a1");
 
@@ -249,11 +253,12 @@ BLITZ_THUNK(doshapeshit, doshapeshit_c, "d1/a0-a1");
  */
 static BB_BOOL BLITZ_ROUTINE doshsphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
                                          ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
-                                         UBYTE *a BL_REG(a0), UBYTE *b BL_REG(a1))
+                                         const struct bb_shape *a BL_REG(a0),
+                                         const struct bb_sprite *b BL_REG(a1))
 {
-    return chkifhit((WORD)x1 - SW(a, 10), (WORD)y1 - SW(a, 12), SW(a, 0), SW(a, 2),
-                    (WORD)x2 - SW(b, 12), (WORD)y2 - SW(b, 14),
-                    *(UBYTE *)(b + 9), SW(b, 4) - 1);
+    return chkifhit((WORD)x1 - (UWORD)a->handlex, (WORD)y1 - (UWORD)a->handley, a->width, a->height,
+                    (WORD)x2 - b->handlex, (WORD)y2 - b->handley,
+                    b->width, b->height - 1);
 }
 BLITZ_THUNK(doshsphit, doshsphit_c, "d1/a0-a1");
 
@@ -273,12 +278,13 @@ BLITZ_THUNK(doshsphit, doshsphit_c, "d1/a0-a1");
  */
 static BB_BOOL BLITZ_ROUTINE dosphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
                                        ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
-                                       UBYTE *a BL_REG(a0), UBYTE *b BL_REG(a1))
+                                       const struct bb_sprite *a BL_REG(a0),
+                                       const struct bb_sprite *b BL_REG(a1))
 {
-    return chkifhit((WORD)x1 - SW(a, 12), (WORD)y1 - SW(a, 14),
-                    *(UBYTE *)(a + 9), SW(a, 4) - 1,
-                    (WORD)x2 - SW(b, 12), (WORD)y2 - SW(b, 14),
-                    *(UBYTE *)(b + 9), SW(b, 4) - 1);
+    return chkifhit((WORD)x1 - a->handlex, (WORD)y1 - a->handley,
+                    a->width, a->height - 1,
+                    (WORD)x2 - b->handlex, (WORD)y2 - b->handley,
+                    b->width, b->height - 1);
 }
 BLITZ_THUNK(dosphit, dosphit_c, "d1/a0-a1");
 
@@ -448,23 +454,26 @@ static void BLITZ_ERRCHK colbpchk_c(ULONG planes BL_REG(d0))
         BLITZ_RUNERR(mess1);
 }
 
-static void BLITZ_ERRCHK shitchk_c(UWORD *a BL_REG(a0), UWORD *b BL_REG(a1))
+static void BLITZ_ERRCHK shitchk_c(const struct bb_shape *a BL_REG(a0),
+                                   const struct bb_shape *b BL_REG(a1))
 {
-    if (!*a || !*b)
+    if (!a->width || !b->width)
         BLITZ_RUNERR(mess4);
 }
 
-static void BLITZ_ERRCHK shspchk_c(UWORD *a BL_REG(a0), ULONG *b BL_REG(a1))
+static void BLITZ_ERRCHK shspchk_c(const struct bb_shape *a BL_REG(a0),
+                                   const struct bb_sprite *b BL_REG(a1))
 {
-    if (!*a)
+    if (!a->width)
         BLITZ_RUNERR(mess4);
-    if (!*b)
+    if (!b->data)
         BLITZ_RUNERR(mess5);
 }
 
-static void BLITZ_ERRCHK spspchk_c(ULONG *a BL_REG(a0), ULONG *b BL_REG(a1))
+static void BLITZ_ERRCHK spspchk_c(const struct bb_sprite *a BL_REG(a0),
+                                   const struct bb_sprite *b BL_REG(a1))
 {
-    if (!*a || !*b)
+    if (!a->data || !b->data)
         BLITZ_RUNERR(mess5);
 }
 
