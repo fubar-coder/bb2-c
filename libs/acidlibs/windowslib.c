@@ -205,8 +205,8 @@ void BLITZ_ROUTINE domenusoff(UBYTE *objs BL_REG(a2), UWORD max BL_REG(d2),
                               struct Library *intbase BL_REG(a6));
 void BLITZ_ROUTINE domenusok(UWORD on BL_REG(d0), UBYTE *objs BL_REG(a2),
                              UWORD max BL_REG(d2), struct Library *intbase BL_REG(a6));
-void BLITZ_ROUTINE dowpointer(const UBYTE *shape BL_REG(a2), ULONG d2 BL_REG(d2),
-                              ULONG d3 BL_REG(d3), struct Library *intbase BL_REG(a6));
+void BLITZ_ROUTINE dowpointer(const UBYTE *shape BL_REG(a2), ULONG xoff_reg BL_REG(d2),
+                              ULONG yoff_reg BL_REG(d3), struct Library *intbase BL_REG(a6));
 void BLITZ_ROUTINE dowfont(const UBYTE *font BL_REG(a0), struct bwin *w BL_REG(a1),
                            struct Library *gfxbase BL_REG(a6));
 void BLITZ_ROUTINE dowfont2(ULONG style BL_REG(d1), const UBYTE *font BL_REG(a0),
@@ -214,14 +214,14 @@ void BLITZ_ROUTINE dowfont2(ULONG style BL_REG(d1), const UBYTE *font BL_REG(a0)
                             struct Library *gfxbase BL_REG(a6));
 void BLITZ_ROUTINE dobtow1(struct bwin *w BL_REG(a0), struct BitMap *bm BL_REG(a1),
                            struct Library *gfxbase BL_REG(a6));
-void BLITZ_ROUTINE dobtow2(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1),
+void BLITZ_ROUTINE dobtow2(ULONG sx_reg BL_REG(d0), ULONG sy_reg BL_REG(d1),
                            ULONG sx BL_REG(d2), ULONG sy BL_REG(d3),
                            ULONG dx BL_REG(d4), ULONG dy BL_REG(d5),
                            const UWORD *args BL_REG(a2), struct bwin *w BL_REG(a0),
                            struct BitMap *bm BL_REG(a1),
                            struct Library *gfxbase BL_REG(a6));
-void BLITZ_ROUTINE dowblit(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2),
-                           ULONG d3 BL_REG(d3), struct bwin *w BL_REG(a0),
+void BLITZ_ROUTINE dowblit(ULONG xpos BL_REG(d1), ULONG ypos BL_REG(d2),
+                           ULONG y_reg BL_REG(d3), struct bwin *w BL_REG(a0),
                            const UBYTE *shape BL_REG(a2),
                            struct Library *gfxbase BL_REG(a6));
 void BLITZ_ROUTINE _showsuper(WORD x BL_REG(d0), WORD y BL_REG(d1),
@@ -232,33 +232,33 @@ void BLITZ_ROUTINE _windowtobitmap(struct bwin *w BL_REG(a0),
 void BLITZ_ROUTINE _bitmaptowindow(struct bwin *w BL_REG(a0),
                                    struct Library *gfxbase BL_REG(a6));
 void BLITZ_ROUTINE freewindow(struct Library *intbase BL_REG(a6));
-void BLITZ_ROUTINE dowindow(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
+void BLITZ_ROUTINE dowindow(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                             const UBYTE *title BL_REG(d2), UBYTE dpen BL_REG(d3),
                             UBYTE bpen BL_REG(d4), ULONG *glist BL_REG(a0),
                             struct Screen **scr BL_REG(a1), WORD usedoff BL_REG(d6),
                             const ULONG *lens BL_REG(a2),
                             struct Library *intbase BL_REG(a6));
-void BLITZ_ROUTINE dowindow2(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
+void BLITZ_ROUTINE dowindow2(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                              const UBYTE *title BL_REG(d2), UBYTE dpen BL_REG(d3),
                              UBYTE bpen BL_REG(d4), struct Screen **scr BL_REG(a1),
                              WORD usedoff BL_REG(d6), const ULONG *lens BL_REG(a2),
                              struct Library *intbase BL_REG(a6));
-void BLITZ_ROUTINE dowindow3(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
+void BLITZ_ROUTINE dowindow3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                              const UBYTE *title BL_REG(d2), ULONG *glist BL_REG(a0),
                              struct Screen **scr BL_REG(a1), WORD usedoff BL_REG(d6),
                              const ULONG *lens BL_REG(a2),
                              struct Library *intbase BL_REG(a6));
-void BLITZ_ROUTINE dowindowtags1(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
+void BLITZ_ROUTINE dowindowtags1(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                  const UBYTE *title BL_REG(d2),
                                  struct Screen **scr BL_REG(a1),
                                  WORD usedoff BL_REG(d6), const ULONG *lens BL_REG(a2),
                                  struct Library *intbase BL_REG(a6));
-void BLITZ_ROUTINE dowindowtags2(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
+void BLITZ_ROUTINE dowindowtags2(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                  const UBYTE *title BL_REG(d2), UWORD n BL_REG(d7),
                                  struct Screen **scr BL_REG(a1),
                                  WORD usedoff BL_REG(d6), const ULONG *lens BL_REG(a2),
                                  struct Library *intbase BL_REG(a6));
-void BLITZ_ROUTINE dowindowtags3(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
+void BLITZ_ROUTINE dowindowtags3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                  const UBYTE *title BL_REG(d2),
                                  const ULONG *tl BL_REG(d3),
                                  struct Screen **scr BL_REG(a1),
@@ -642,7 +642,7 @@ static struct BL_PACKED {
     WORD eventgnum;             /* event gadget number */
     struct Window *eventwin;    /* window the event came from */
     WORD menunum, itemnum, subnum;
-    UWORD temp;
+    UWORD charbuf;              /* temp: one character for printtext */
     struct Library *gfxbase;
     struct bwin *prwindow;
     UWORD outkey;               /* outstanding keystroke */
@@ -1043,8 +1043,8 @@ static ULONG windowprint(ULONG c)
     if (pw) {
         struct RastPort *rp = setpcursor(pw);
 
-        *(UBYTE *)&V.temp = (UBYTE)c;       /* MOVE.b d0,(a0): high byte */
-        printtext(pw, rp, (const UBYTE *)&V.temp, 1);
+        *(UBYTE *)&V.charbuf = (UBYTE)c;    /* MOVE.b d0,(a0): high byte */
+        printtext(pw, rp, (const UBYTE *)&V.charbuf, 1);
     }
     return 0;
 }
@@ -1111,18 +1111,18 @@ static int readevent(void)
     struct IntuiMessage *mymess, *m;
 
     for (;;) {
-        ULONG d0;
+        ULONG msg;
 
         mymess = (struct IntuiMessage *)GetMsg(&myport);
         if (!mymess)
             return 0;
-        d0 = (ULONG)mymess;
+        msg = (ULONG)mymess;
         if (prefilter) {
-            d0 = callfilter(prefilter, d0);
-            if (!d0)
+            msg = callfilter(prefilter, msg);
+            if (!msg)
                 goto dunmess;
         }
-        m = (struct IntuiMessage *)d0;          /* yuck: MOVE.l d0,a2 */
+        m = (struct IntuiMessage *)msg;         /* yuck: MOVE.l d0,a2 */
         if ((UWORD)m->Class == 0x2000) {        /* MENUVERIFY */
             m->Code = 2;                        /* MENUCANCEL */
             goto dunmess;
@@ -1150,7 +1150,7 @@ static int readevent(void)
         }
 dunmess:
         if (postfilter)
-            callfilter(postfilter, d0);
+            callfilter(postfilter, msg);
         ReplyMsg((struct Message *)mymess);
     }
 }
@@ -1220,26 +1220,26 @@ static void redrawgad(struct Gadget *g, struct evnode *e)
    imagery and SELECTED */
 static void refgada3(struct Gadget *g, struct evnode *e)
 {
-    APTR r, s, t;
+    APTR render, select, text;
     UWORD f;
 
     if ((g->Flags & 3) > 1) {
         redrawgad(g, e);
         return;
     }
-    r = g->GadgetRender;
+    render = g->GadgetRender;
     g->GadgetRender = NULL;
-    s = g->SelectRender;
+    select = g->SelectRender;
     g->SelectRender = NULL;
-    t = g->GadgetText;
+    text = g->GadgetText;
     g->GadgetText = NULL;
     f = g->Flags;
     g->Flags |= GFLG_SELECTED;
     redrawgad(g, e);
     g->Flags = f;
-    g->GadgetText = t;
-    g->SelectRender = s;
-    g->GadgetRender = r;
+    g->GadgetText = text;
+    g->SelectRender = select;
+    g->GadgetRender = render;
 }
 
 #define USERDATA_HI(g) (*(UWORD *)&(g)->UserData)
@@ -1304,34 +1304,34 @@ static void gadgetevent(struct evnode *e)
 /* findmenuitem - the item (or subitem) of a menu code */
 static struct MenuItem *findmenuitem(struct Menu *m, UWORD code)
 {
-    UBYTE *a3 = (UBYTE *)m;
+    UBYTE *node = (UBYTE *)m;
     WORD n;
 
     n = code & 31;
     if (n) {
         n--;
         do
-            a3 = *(UBYTE **)a3;
+            node = *(UBYTE **)node;
         while (n-- != 0);
     }
-    a3 = *(UBYTE **)(a3 + 18);
+    node = *(UBYTE **)(node + 18);
     n = (code >> 5) & 63;
     if (n) {
         n--;
         do
-            a3 = *(UBYTE **)a3;
+            node = *(UBYTE **)node;
         while (n-- != 0);
     }
     n = (UWORD)(code << 5 | code >> 11) & 31;   /* ROL #5 */
     if (n != 31) {
-        a3 = *(UBYTE **)(a3 + 28);
+        node = *(UBYTE **)(node + 28);
         if (--n >= 0) {
             do
-                a3 = *(UBYTE **)a3;
+                node = *(UBYTE **)node;
             while (n-- != 0);
         }
     }
-    return (struct MenuItem *)a3;
+    return (struct MenuItem *)node;
 }
 
 /* the number of a menu code part: 31/63 (NOMENU ...) -> -1 */
@@ -2003,11 +2003,11 @@ void BLITZ_ROUTINE dowtitle(const UBYTE *wt BL_REG(d0), const UBYTE *st BL_REG(d
 {
     struct Window *win = w->win;
     const ULONG *sp = lens;
-    UBYTE *t1, *t2;
+    UBYTE *wtitle, *stitle;
 
-    t1 = allocst(wt, BL_POPL(sp));
-    t2 = allocst(st, BL_POPL(sp));
-    SetWindowTitles(win, (STRPTR)t1, (STRPTR)t2);
+    wtitle = allocst(wt, BL_POPL(sp));
+    stitle = allocst(st, BL_POPL(sp));
+    SetWindowTitles(win, (STRPTR)wtitle, (STRPTR)stitle);
 }
 
 /* WMove x,y - a0 = used window; waits until Intuition has moved it */
@@ -2080,8 +2080,8 @@ void BLITZ_ROUTINE domenusok(UWORD on BL_REG(d0), UBYTE *objs BL_REG(a2), UWORD 
 
 /* WPointer shape# - a2 = the shape, a3 = the used window: a sprite
    pointer from the first two planes (one word wide) */
-void BLITZ_ROUTINE dowpointer(const UBYTE *shape BL_REG(a2), ULONG d2 BL_REG(d2),
-                                ULONG d3 BL_REG(d3), struct Library *intbase BL_REG(a6))
+void BLITZ_ROUTINE dowpointer(const UBYTE *shape BL_REG(a2), ULONG xoff_reg BL_REG(d2),
+                                ULONG yoff_reg BL_REG(d3), struct Library *intbase BL_REG(a6))
 {
     struct bwin *w = (struct bwin *)blitz_string;
     const UWORD *src;
@@ -2108,8 +2108,8 @@ void BLITZ_ROUTINE dowpointer(const UBYTE *shape BL_REG(a2), ULONG d2 BL_REG(d2)
     } while (n-- != 0);
     *(ULONG *)dst = 0;
     SetPointer(w->win, w->ptrdata, *(UWORD *)(shape + 2), *(UWORD *)shape,
-               (d2 & 0xffff0000UL) | *(UWORD *)(shape + 10),
-               (d3 & 0xffff0000UL) | *(UWORD *)(shape + 12));
+               (xoff_reg & 0xffff0000UL) | *(UWORD *)(shape + 10),
+               (yoff_reg & 0xffff0000UL) | *(UWORD *)(shape + 12));
 }
 
 /* WindowFont font#[,style] - a0 = the IntuiFont object (+8 = TextFont) */
@@ -2136,7 +2136,7 @@ void BLITZ_ROUTINE dobtow1(struct bwin *w BL_REG(a0), struct BitMap *bm BL_REG(a
                       (WORD)bm->Rows, 0xc0);
 }
 
-void BLITZ_ROUTINE dobtow2(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1), ULONG sx BL_REG(d2),
+void BLITZ_ROUTINE dobtow2(ULONG sx_reg BL_REG(d0), ULONG sy_reg BL_REG(d1), ULONG sx BL_REG(d2),
                              ULONG sy BL_REG(d3), ULONG dx BL_REG(d4), ULONG dy BL_REG(d5),
                              const UWORD *args BL_REG(a2), struct bwin *w BL_REG(a0),
                              struct BitMap *bm BL_REG(a1), struct Library *gfxbase BL_REG(a6))
@@ -2145,7 +2145,7 @@ void BLITZ_ROUTINE dobtow2(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1), ULONG sx BL
     UWORD wd = BL_POPW(sp), ht = BL_POPW(sp);
 
     /* MOVE.w: the upper words of the registers stay */
-    BltBitMapRastPort(bm, (d0 & 0xffff0000UL) | (UWORD)sx, (d1 & 0xffff0000UL) | (UWORD)sy,
+    BltBitMapRastPort(bm, (sx_reg & 0xffff0000UL) | (UWORD)sx, (sy_reg & 0xffff0000UL) | (UWORD)sy,
                       w->win->RPort, (sx & 0xffff0000UL) | (UWORD)dx,
                       (sy & 0xffff0000UL) | (UWORD)dy, (dx & 0xffff0000UL) | wd,
                       (dy & 0xffff0000UL) | ht, 0xc0);
@@ -2153,7 +2153,7 @@ void BLITZ_ROUTINE dobtow2(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1), ULONG sx BL
 
 /* WBlit shape#,x,y - a0 = used window, a2 = the shape: its planes as a
    BitMap (mybmap), with the cookie as mask if there is one */
-void BLITZ_ROUTINE dowblit(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2), ULONG d3 BL_REG(d3),
+void BLITZ_ROUTINE dowblit(ULONG xpos BL_REG(d1), ULONG ypos BL_REG(d2), ULONG y_reg BL_REG(d3),
                              struct bwin *w BL_REG(a0), const UBYTE *shape BL_REG(a2),
                              struct Library *gfxbase BL_REG(a6))
 {
@@ -2170,8 +2170,8 @@ void BLITZ_ROUTINE dowblit(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2), ULONG d3 BL
         mybmap.Planes[i] = plane;
         plane += psize;
     }
-    y = (d3 & 0xffff0000UL) | (UWORD)(d2 - *(UWORD *)(shape + 12));
-    x = (d2 & 0xffff0000UL) | (UWORD)(d1 - *(UWORD *)(shape + 10));
+    y = (y_reg & 0xffff0000UL) | (UWORD)(ypos - *(UWORD *)(shape + 12));
+    x = (ypos & 0xffff0000UL) | (UWORD)(xpos - *(UWORD *)(shape + 10));
     cookie = *(ULONG *)(shape + 18);
     if (cookie)
         BltMaskBitMapRastPort(&mybmap, 0, 0, rp, x, y, *(WORD *)shape, *(WORD *)(shape + 2),
@@ -2247,7 +2247,7 @@ static void windowopened(struct bwin *w, struct Window *win, UWORD num,
 
 /* Window - a3 = the object, a1 = used screen, a0 = gadget list, d6 =
    offset of the used window, d0 = object offset (number << 5) */
-static void openwindow(struct bwin *w, UWORD d0, ULONG flags, const UBYTE *title,
+static void openwindow(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *title,
                        UBYTE dpen, UBYTE bpen, ULONG *glist, struct Screen **scr,
                        WORD usedoff, const ULONG *lens, struct Library *intbase)
 {
@@ -2257,7 +2257,7 @@ static void openwindow(struct bwin *w, UWORD d0, ULONG flags, const UBYTE *title
     UWORD num;
 
     *(struct bwin **)(blitz_globals + usedoff) = w;     /* set used window! */
-    num = d0 >> 5;
+    num = objoff >> 5;
     freewindow(intbase);
     nw->MinWidth = nw->MinHeight = 0;
     nw->MaxWidth = nw->MaxHeight = 0;
@@ -2296,28 +2296,28 @@ static void openwindow(struct bwin *w, UWORD d0, ULONG flags, const UBYTE *title
 }
 
 /* the three forms: d1 = flags, d2 = title, d3/d4 = pens */
-void BLITZ_ROUTINE dowindow(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
+void BLITZ_ROUTINE dowindow(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                               const UBYTE *title BL_REG(d2), UBYTE dpen BL_REG(d3),
                               UBYTE bpen BL_REG(d4), ULONG *glist BL_REG(a0),
                               struct Screen **scr BL_REG(a1), WORD usedoff BL_REG(d6),
                               const ULONG *lens BL_REG(a2), struct Library *intbase BL_REG(a6))
 {
-    openwindow((struct bwin *)blitz_string, d0, flags, title, dpen, bpen, glist, scr,
+    openwindow((struct bwin *)blitz_string, objoff, flags, title, dpen, bpen, glist, scr,
                usedoff, lens, intbase);
 }
 
-void BLITZ_ROUTINE dowindow2(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
+void BLITZ_ROUTINE dowindow2(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                const UBYTE *title BL_REG(d2), UBYTE dpen BL_REG(d3),
                                UBYTE bpen BL_REG(d4),
                                struct Screen **scr BL_REG(a1), WORD usedoff BL_REG(d6),
                                const ULONG *lens BL_REG(a2), struct Library *intbase BL_REG(a6))
 {
-    openwindow((struct bwin *)blitz_string, d0, flags, title, dpen, bpen, &V.zero, scr,
+    openwindow((struct bwin *)blitz_string, objoff, flags, title, dpen, bpen, &V.zero, scr,
                usedoff, lens, intbase);
 }
 
 /* dowindow3 - pens from the stack (-10/-12(a2)), a4 = the bitmap */
-void BLITZ_ROUTINE dowindow3(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
+void BLITZ_ROUTINE dowindow3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                const UBYTE *title BL_REG(d2), ULONG *glist BL_REG(a0),
                                struct Screen **scr BL_REG(a1), WORD usedoff BL_REG(d6),
                                const ULONG *lens BL_REG(a2), struct Library *intbase BL_REG(a6))
@@ -2325,24 +2325,24 @@ void BLITZ_ROUTINE dowindow3(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
     const UWORD *sp = (const UWORD *)lens;
 
     bmapbase = (struct bwin *)blitz_locals;     /* MOVE.l a4,bmapbase */
-    openwindow((struct bwin *)blitz_string, d0, flags, title, (UBYTE)sp[-5], (UBYTE)sp[-6],
+    openwindow((struct bwin *)blitz_string, objoff, flags, title, (UBYTE)sp[-5], (UBYTE)sp[-6],
                glist, scr, usedoff, lens, intbase);
 }
 
 /* WindowTags - d1 = flags, d2 = title (copied), screen, then the user
    tags behind the four fixed ones */
-static void opentags(struct bwin *w, UWORD d0, ULONG flags, const UBYTE *title, ULONG len,
+static void opentags(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *title, ULONG len,
                      struct Screen **scr, WORD usedoff, struct Library *intbase)
 {
-    UBYTE *t = allocst(title, len);
+    UBYTE *wtitle = allocst(title, len);
     struct Window *win;
     UWORD num;
 
     *(struct bwin **)(blitz_globals + usedoff) = w;     /* set used window! */
-    num = d0 >> 5;
+    num = objoff >> 5;
     freewindow(intbase);
     tags.wintags[1] = flags;
-    tags.wintags[3] = (ULONG)t;
+    tags.wintags[3] = (ULONG)wtitle;
     tags.wintags[5] = (ULONG)*scr;
     win = OpenWindowTagList(NULL, (struct TagItem *)tags.wintags);
     w->win = win;
@@ -2355,39 +2355,39 @@ static void opentags(struct bwin *w, UWORD d0, ULONG flags, const UBYTE *title, 
     dousewindow2();
 }
 
-void BLITZ_ROUTINE dowindowtags1(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
+void BLITZ_ROUTINE dowindowtags1(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                    const UBYTE *title BL_REG(d2),
                                    struct Screen **scr BL_REG(a1), WORD usedoff BL_REG(d6),
                                    const ULONG *lens BL_REG(a2),
                                    struct Library *intbase BL_REG(a6))
 {
-    opentags((struct bwin *)blitz_string, d0, flags, title, lens[-1], scr, usedoff, intbase);
+    opentags((struct bwin *)blitz_string, objoff, flags, title, lens[-1], scr, usedoff, intbase);
 }
 
 /* &TagList: copied up to and including TAG_DONE */
-void BLITZ_ROUTINE dowindowtags3(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
+void BLITZ_ROUTINE dowindowtags3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                    const UBYTE *title BL_REG(d2), const ULONG *tl BL_REG(d3),
                                    struct Screen **scr BL_REG(a1), WORD usedoff BL_REG(d6),
                                    const ULONG *lens BL_REG(a2),
                                    struct Library *intbase BL_REG(a6))
 {
-    ULONG *d = tags.usertags, t;
+    ULONG *d = tags.usertags, tag;
 
     do {
-        t = *tl++;
-        d[0] = t;
+        tag = *tl++;
+        d[0] = tag;
         d[1] = *tl++;
         d += 2;
-    } while (t);
+    } while (tag);
     /* DIFF (K): the original keeps the title length with MOVE.l -(a2),
        -(a7) / MOVE.l (a7)+,(a2)+ in the 4 bytes behind the TAG_DONE pair
        of the caller's list (a2 = the list) and reads it back there; the C
        version takes it from the argument stack and writes nothing */
-    opentags((struct bwin *)blitz_string, d0, flags, title, lens[-1], scr, usedoff, intbase);
+    opentags((struct bwin *)blitz_string, objoff, flags, title, lens[-1], scr, usedoff, intbase);
 }
 
 /* tag pairs on the argument stack, d7 = their number */
-void BLITZ_ROUTINE dowindowtags2(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
+void BLITZ_ROUTINE dowindowtags2(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                    const UBYTE *title BL_REG(d2), UWORD n BL_REG(d7),
                                    struct Screen **scr BL_REG(a1), WORD usedoff BL_REG(d6),
                                    const ULONG *lens BL_REG(a2),
@@ -2402,7 +2402,7 @@ void BLITZ_ROUTINE dowindowtags2(UWORD d0 BL_REG(d0), ULONG flags BL_REG(d1),
         d += 2;
     }
     d[0] = 0;                                   /* TAG_DONE (data not set) */
-    opentags((struct bwin *)blitz_string, d0, flags, title, len, scr, usedoff, intbase);
+    opentags((struct bwin *)blitz_string, objoff, flags, title, len, scr, usedoff, intbase);
 }
 
 /* ------------------------------------------------------ init, finit */
