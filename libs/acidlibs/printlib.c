@@ -428,9 +428,28 @@ static ULONG prtype2(const UBYTE *buf)
     return prtype1(buf, n);
 }
 
-/* doformat - Format FormatString: copy the string to form, count the
-   digit places before and after the point.  Length from the a2 stack
-   (MOVE.l -(a2),d1), only its low word is used. */
+/**
+ * @brief Format FormatString - the format of numbers for Print, NPrint and
+ * Str$ ("" = none).
+ *
+ * doformat - copy the string to form, count the digit places before and
+ * after the point.  "#" = digit or space, "0" = digit or zero, "."
+ * decimal point, "-" = "-" if negative else space, "+" = "+"/"-", "," =
+ * "," (space in the leading pad), other characters literally.  With a
+ * Format string floats are always fixed point.  The original keeps d0
+ * (MOVE.l d0,a0).
+ *
+ * BUG(orig) (#240): a Format string longer than 32 characters (no check
+ * without the debugger) runs over formlen/formlead/formtrail/decpos and
+ * further into the conversion buffers.  The bugs of the formatting
+ * itself: #235-#238.
+ *
+ * Errors (debugger only, formatchk): "Format String too long" (> 32).
+ *
+ * @param s d0: the characters.
+ * @param args a2: the argument stack: the length is popped with
+ *        MOVE.l -(a2),d1, only its low word is used.
+ */
 static void BLITZ_ROUTINE doformat_c(const UBYTE *s BL_REG(d0),
                                      const UBYTE *args BL_REG(a2))
 {
@@ -469,12 +488,26 @@ static void BLITZ_ROUTINE doformat_c(const UBYTE *s BL_REG(d0),
 /* the original keeps d0 (MOVE.l d0,a0) */
 BLITZ_THUNK(doformat, doformat_c, "d0");
 
+/**
+ * @brief FloatMode Mode - how floats are printed: -1 = always fixed point
+ * ("standard"), 0 = guess (fixed point for 1E-9 <= |x| < 1E+7, else
+ * exponent form), 1 = always exponent form.
+ *
+ * Keeps all registers like the original.
+ *
+ * BUG(orig) (#241): fixed point with FloatMode -1 (or a Format string)
+ * and |x| < 1E-17 writes past the 50 byte buffer into the table of powers
+ * of ten.
+ *
+ * @param m d0: the mode.
+ */
 static void BLITZ_ROUTINE dofloatmode_c(UWORD m BL_REG(d0))
 {
     pl.floatmode = m;                           /* MOVE d0,floatmode */
 }
 BLITZ_THUNK(dofloatmode, dofloatmode_c, "d0-d1/a0-a1");
 
+/** @brief Library init - no Format, FloatMode 0.  Keeps all registers. */
 static void BLITZ_ROUTINE codeinit_c(void)
 {
     pl.formlen = 0;
@@ -831,6 +864,25 @@ static ULONG ptype(UWORD type, const UBYTE **sp)
     }
 }
 
+/**
+ * @brief Print Expression[,Expression...] - output the values to the
+ * current output (inputoutputlib, dooutstring1 $5208).
+ *
+ * The arguments are of #unknown type: for each the type word and then
+ * the value are popped from the a2 stack (MOVE.l for long/quick/float,
+ * MOVE for byte/word, length then address for a string).  Number formats
+ * (see the top): byte/word/long decimal, quick with up to 4 decimals,
+ * float as FloatMode says; with a Format string all numbers formatted.
+ * DIFF: a2 is left unchanged (the original returns it decremented by
+ * everything it popped).
+ *
+ * BUG(orig): quick fractions that round to 10000 or 0 (#233, #234), the
+ * Format bugs (#235-#238) and the float buffer overrun (#241), see the
+ * top.
+ *
+ * @param n d7: the number of arguments (move.w #numreps,d7).
+ * @param args a2: the argument stack.
+ */
 void BLITZ_ROUTINE doprint(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2))
 {
     const UBYTE *sp = args;
@@ -843,6 +895,13 @@ void BLITZ_ROUTINE doprint(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2))
     } while (--n != 0xffff);                    /* DBF d7,'loop */
 }
 
+/**
+ * @brief NPrint Expression[,Expression...] - Print, then a newline
+ * (dooutsingle $5207 with 10).
+ *
+ * @param n d7: the number of arguments.
+ * @param args a2: the argument stack.
+ */
 void BLITZ_ROUTINE donprint(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2))
 {
     struct bl_regs r = { .d0 = 10 };
@@ -915,7 +974,23 @@ static ULONG wstr(ULONG value, const UBYTE *args)
     }
 }
 
-/* Str$(any) - redirect the output to strprint, print, restore */
+/**
+ * @brief Str$(Expression) - the value as Print would output it, as a
+ * string.
+ *
+ * Redirects the output to strprint (inputoutputlib dosetout), prints,
+ * restores: with Format active, Str$ formats like Print.  The characters
+ * go to a3.  Not a bug (no effect): dosetout is called twice, so every
+ * Str$ pushes two entries on inputoutputlib's output stack (a ring of
+ * 16).
+ *
+ * BUG(orig) (#242): Str$ of a string is printed as a byte (the low byte
+ * of the address).
+ *
+ * @param v d0: the value.
+ * @param args a2: the argument stack: only the type word is popped.
+ * @return d0: the length of the string.
+ */
 ULONG BLITZ_ROUTINE dostrstr(ULONG v BL_REG(d0), const UBYTE *args BL_REG(a2))
 {
     struct bl_regs r = { .a0 = (ULONG)strprint };
@@ -928,7 +1003,16 @@ ULONG BLITZ_ROUTINE dostrstr(ULONG v BL_REG(d0), const UBYTE *args BL_REG(a2))
     return len;
 }
 
-/* UStr$(any) - Str$ without Format */
+/**
+ * @brief UStr$(Expression) - Str$ without Format (the Format string is
+ * switched off meanwhile).
+ *
+ * BUG(orig) (#242) as Str$.
+ *
+ * @param v d0: the value.
+ * @param args a2: the argument stack: only the type word is popped.
+ * @return d0: the length of the string.
+ */
 ULONG BLITZ_ROUTINE doustrstr(ULONG v BL_REG(d0), const UBYTE *args BL_REG(a2))
 {
     UWORD save = pl.formlen;
