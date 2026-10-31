@@ -39,12 +39,15 @@
 		  "filter": { "exclude": { "label": "emulator|bug-orig" } } },
 		{ "name": "emulator", "displayName": "Tests in Amiberry",
 		  "configurePreset": "amiga", "output": { "outputOnFailure": true },
+		  "execution": { "jobs": 4 },
 		  "filter": { "include": { "label": "emulator" }, "exclude": { "label": "bug-orig" } } },
 		{ "name": "all", "displayName": "All tests",
 		  "configurePreset": "amiga", "output": { "outputOnFailure": true },
+		  "execution": { "jobs": 4 },
 		  "filter": { "exclude": { "label": "bug-orig" } } },
 		{ "name": "bug-orig", "displayName": "Reproduced original bugs (fail on purpose)",
 		  "configurePreset": "amiga", "output": { "outputOnFailure": true },
+		  "execution": { "jobs": 4 },
 		  "filter": { "include": { "label": "bug-orig" } } }
 	]
 }

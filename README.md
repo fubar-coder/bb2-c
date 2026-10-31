@@ -234,9 +234,13 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   (blitz2-c with the C libraries: output equal). Skipped without the CD.
   `CORPUS_PARALLEL` (default 3 under Linux, otherwise 1) limits the
   concurrent emulators, `CORPUS_TIMEOUT` a session; reports in
-  `build/<preset>/tests/corpus/NAME.txt`. Do not start the passes in
-  parallel with `ctest -j`: each one itself uses up to
-  `CORPUS_PARALLEL` emulators. Over everything (all runners, build
+  `build/<preset>/tests/corpus/NAME.txt`. The presets `emulator`, `all`
+  and `bug-orig` run 4 tests at once (`execution.jobs`; ctest starts the
+  tests that took longest in the last run first, from
+  `Testing/Temporary/CTestCostData.txt`); each one uses up to
+  `CORPUS_PARALLEL` emulators, as far as there are free slots (a runner
+  that holds a slot does not wait for more, it runs its sessions one
+  after another). Over everything (all runners, build
   directories and worktrees of the machine) at most
   `AMIGA_EMULATION_MAX` Amiberry sessions run at once (environment,
   0 = no limit; without it the number in the file `max` of the slot
