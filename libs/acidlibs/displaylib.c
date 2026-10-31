@@ -538,18 +538,29 @@ static void initcoplist(ULONG ypos, ULONG height, ULONG type, ULONG sprites, ULO
                         const UWORD *args, const UWORD *sprmode, WORD used)
 {
     UBYTE *cop = blitz_string;
-    ULONG val, customs, aux, *ins;
+    ULONG customs, *ins;
+    UWORD spmode;                               /* d0: the sprite mode */
+    UWORD spoff;                                /* d0: its table offset */
+    ULONG aga;                                  /* d0: the AGA flags */
+    UWORD banks;                                /* d7: the AGA bank moves */
+    UWORD nbp;                                  /* d3: the bitplanes */
+    UWORD bpmoves;                              /* d3: their moves */
+    ULONG size;                                 /* d0: the list size */
+    UWORD res;                                  /* d0: the resolution */
+    ULONG bpmove;                               /* d0: MOVE BPLxPT */
+    ULONG dotoff;                               /* d0: the dot offset */
+    ULONG nop;                                  /* d7: COPNOP */
     const UWORD *mode;
     UWORD i;
 
     *(UBYTE **)(blitz_globals + used) = cop;    /* make used */
-    val = *sprmode;
-    W(cop, M_SPIF) = (UWORD)val;
+    spmode = *sprmode;
+    W(cop, M_SPIF) = spmode;
     W(cop, M_SPIF) += 2;
-    val = (UWORD)(val + val);
-    W(cop, M_SFETCH) = *(const UWORD *)((const UBYTE *)d.slup + (WORD)val);
-    W(cop, M_SPRES) = *(const UWORD *)((const UBYTE *)d.shup + (WORD)val);
-    W(cop, M_SPWID) = *(const UWORD *)((const UBYTE *)d.swup + (WORD)val);
+    spoff = (UWORD)(spmode + spmode);
+    W(cop, M_SFETCH) = *(const UWORD *)((const UBYTE *)d.slup + (WORD)spoff);
+    W(cop, M_SPRES) = *(const UWORD *)((const UBYTE *)d.shup + (WORD)spoff);
+    W(cop, M_SPWID) = *(const UWORD *)((const UBYTE *)d.swup + (WORD)spoff);
     W(cop, M_HAM8) = 0;
     if ((UBYTE)(type & 0x8f) == 0x88)
         W(cop, M_HAM8) = 0xffff;
@@ -573,43 +584,41 @@ static void initcoplist(ULONG ypos, ULONG height, ULONG type, ULONG sprites, ULO
         W(cop, M_NUMCUSTOMS) = (UWORD)customs;
     }
     /* checkaga */
-    val = type;
-    val = lsr_w(val, 5);
-    val >>= 1;
-    BL_SETW(val, (UWORD)val & 0x80c0);
-    W(cop, M_AGA) = (UWORD)val;
-    if ((WORD)val < 0 && (UWORD)colours) {
-        aux = (UWORD)((UWORD)((UWORD)colours - 1) >> 5) + 1;
-        aux = (UWORD)(aux + aux);
-        BL_SETW(colours, (UWORD)colours + (UWORD)colours + (UWORD)aux);
+    aga = type;
+    aga = lsr_w(aga, 5);
+    aga >>= 1;
+    BL_SETW(aga, (UWORD)aga & 0x80c0);
+    W(cop, M_AGA) = (UWORD)aga;
+    if ((WORD)aga < 0 && (UWORD)colours) {
+        banks = (UWORD)((UWORD)((UWORD)colours - 1) >> 5) + 1;
+        banks = (UWORD)(banks + banks);
+        BL_SETW(colours, (UWORD)colours + (UWORD)colours + banks);
     }
     /* calcsize */
     W(cop, M_COLPOKES) = (UWORD)colours;
-    BL_SETW(type, (UWORD)type & 15);
-    W(cop, M_NUMBP) = (UWORD)type;
-    BL_SETW(type, (UWORD)type + (UWORD)type);
-    val = (UWORD)type;
+    nbp = (UWORD)type & 15;
+    W(cop, M_NUMBP) = nbp;
+    bpmoves = nbp + nbp;
     BL_SETW(sprites, (UWORD)sprites << 2);
-    val = (UWORD)(val + (UWORD)sprites + (UWORD)colours + (UWORD)customs + 44);
-    val <<= 2;
-    L(cop, M_SIZE) = val;
-    val = globalloc(val, 65538);
-    L(cop, M_COPPOS) = val;
-    ins = (ULONG *)val;
-    val = W(cop, M_RES);
+    size = (UWORD)(bpmoves + (UWORD)sprites + (UWORD)colours + (UWORD)customs + 44);
+    size <<= 2;
+    L(cop, M_SIZE) = size;
+    ins = (ULONG *)globalloc(size, 65538);
+    L(cop, M_COPPOS) = (ULONG)ins;
+    res = W(cop, M_RES);
     /* firstwait */
-    aux = COPNOP;
-    *ins++ = aux;
-    *ins++ = aux;
+    nop = COPNOP;
+    *ins++ = nop;
+    *ins++ = nop;
     /* ctrl1 */
     {
-        UWORD modeoff = ((UWORD)val & 0x300) | B(cop, M_AGA + 1);
+        UWORD modeoff = (res & 0x300) | B(cop, M_AGA + 1); /* d1w */
+        UWORD resindex = modeoff >> 8;          /* d1w */
         ULONG ctrl[6];
         int k;
 
         mode = (const UWORD *)((const UBYTE *)table + (WORD)modeoff);
-        modeoff >>= 8;
-        W(cop, M_RESSHIFT) = (UWORD)(2 - modeoff);
+        W(cop, M_RESSHIFT) = (UWORD)(2 - resindex);
         for (k = 0; k < 6; k++)
             ctrl[k] = ((const ULONG *)(mode + 6))[k];
         BL_SETW(ctrl[0], (UWORD)ctrl[0] | W(cop, M_SFETCH));
@@ -619,28 +628,28 @@ static void initcoplist(ULONG ypos, ULONG height, ULONG type, ULONG sprites, ULO
         W(cop, M_FETCHWID) = mode[1];
         W(cop, M_FETCHWID + 2) = mode[2];
         W(cop, M_FETCHWID + 4) = mode[3];
-        if (val & (1 << 4)) {
+        if (res & (1 << 4)) {
             W(cop, M_FETCHWID) += mode[4];
             W((UBYTE *)ins, 14) -= mode[5];
         }
         if ((WORD)W(cop, M_NUMBP) > (WORD)mode[0])
             GOTO(maxbperr);
         i = bpb[W(cop, M_NUMBP)];
-        if (val & (1 << 7))
+        if (res & (1 << 7))
             i |= 1 << 11;
-        if (val & (1 << 5))
+        if (res & (1 << 5))
             i |= 1 << 10;
         W((UBYTE *)ins, 22) |= i;
     }
     ins += 6;
-    aux = COPNOP;
+    nop = COPNOP;
     /* cols */
     L(cop, M_COLORS) = (ULONG)ins;
     i = W(cop, M_COLPOKES);
     if (i) {
         i--;
         do
-            *ins++ = aux;
+            *ins++ = nop;
         while ((WORD)--i != -1);
     }
     /* sprites */
@@ -668,9 +677,9 @@ static void initcoplist(ULONG ypos, ULONG height, ULONG type, ULONG sprites, ULO
         ULONG mvcon2 = bcp[0], mvcon3 = bcp[1];
         UWORD sprbits;
 
-        if (val & (1 << 6))
+        if (res & (1 << 6))
             mvcon2 &= ~(1UL << 9);
-        sprbits = ((UWORD)val & 0xc00) >> 4;
+        sprbits = (res & 0xc00) >> 4;
         BL_SETW(mvcon3, (UWORD)mvcon3 | sprbits);
         sprbits >>= 6;
         if (sprbits)
@@ -688,22 +697,21 @@ static void initcoplist(ULONG ypos, ULONG height, ULONG type, ULONG sprites, ULO
     }
     /* bps */
     L(cop, M_BPLANES) = (ULONG)ins;
-    val = 0x00e00000;
+    bpmove = 0x00e00000;
     i = W(cop, M_NUMBP);
     if (i) {
         i = i + i - 1;
         do {
-            *ins++ = val;
-            val += 0x20000;
+            *ins++ = bpmove;
+            bpmove += 0x20000;
         } while ((WORD)--i != -1);
     }
     /* dot */
-    val = (ULONG)ins - L(cop, M_COPPOS);
-    val = bl_divu_w(val, 222);
-    W(cop, M_SETUP) = (UWORD)((UWORD)val + 3);
+    dotoff = (ULONG)ins - L(cop, M_COPPOS);
+    W(cop, M_SETUP) = (UWORD)((UWORD)bl_divu_w(dotoff, 222) + 3);
     L(cop, M_DOT) = (ULONG)ins;
-    *ins++ = aux;
-    *ins++ = aux;
+    *ins++ = nop;
+    *ins++ = nop;
     *ins++ = DMAON;
     /* customs */
     L(cop, M_CUSTOMS) = (ULONG)ins;
@@ -714,7 +722,7 @@ static void initcoplist(ULONG ypos, ULONG height, ULONG type, ULONG sprites, ULO
         if (n) {
             n--;
             do
-                *ins++ = aux;
+                *ins++ = nop;
             while ((WORD)--n != -1);
         }
     } else {
@@ -730,7 +738,7 @@ static void initcoplist(ULONG ypos, ULONG height, ULONG type, ULONG sprites, ULO
             ((UWORD *)ins)[1] = 0xfffe;
             ins++;
             do
-                *ins++ = aux;
+                *ins++ = nop;
             while ((WORD)--k != -1);
             y++;
         } while ((WORD)--n != -1);
@@ -738,8 +746,8 @@ static void initcoplist(ULONG ypos, ULONG height, ULONG type, ULONG sprites, ULO
     }
     /* dob */
     L(cop, M_DOB) = (ULONG)ins;
-    *ins++ = aux;
-    *ins++ = aux;
+    *ins++ = nop;
+    *ins++ = nop;
     *ins++ = DMAOFF;
 }
 
@@ -753,11 +761,12 @@ static void BLITZ_ROUTINE _initcoplist_c(ULONG ypos BL_REG(d1), ULONG height BL_
     initcoplist(ypos, height, type, sprites, colours, args, sprmode, (WORD)used);
 }
 
-/* InitCopList CopList#,type (quick version): ypos (d1) arrives as the type */
-static void BLITZ_ROUTINE _initcoplist2_c(ULONG ypos BL_REG(d1), ULONG height BL_REG(d2),
+/* InitCopList CopList#,type (quick version): d1 arrives as the type and
+   becomes the ypos */
+static void BLITZ_ROUTINE _initcoplist2_c(ULONG type BL_REG(d1), ULONG height BL_REG(d2),
                                           ULONG used BL_REG(d6), const UWORD *sprmode BL_REG(a0))
 {
-    ULONG type = ypos, colours;
+    ULONG ypos = type, colours;
 
     BL_SETW(ypos, 44);
     BL_SETW(height, 256);
@@ -849,7 +858,9 @@ static UWORD *setptr(UWORD *a2, ULONG v)
 static void displaybmap2(UBYTE *cop, const UBYTE *bm, ULONG xoff, ULONG yoff)
 {
     UWORD *bplptr;
-    ULONG planes, modulo, fine, setting, xmask, shift;
+    ULONG planes, modulo, fine, xmask, shift;
+    ULONG fetchwid;                             /* d5 */
+    ULONG ham8;                                 /* d5: the HAM8 flag */
 
     L(cop, M_X0) = xoff;
     L(cop, M_X1) = xoff;
@@ -860,14 +871,14 @@ static void displaybmap2(UBYTE *cop, const UBYTE *bm, ULONG xoff, ULONG yoff)
     if (!planes)
         return;
     planes--;
-    setting = BL_EXTL(W(cop, M_FETCHWID));
+    fetchwid = BL_EXTL(W(cop, M_FETCHWID));
     xmask = BL_EXTL(W(cop, M_FETCHWID + 2));
     shift = BL_EXTL(W(cop, M_FETCHWID + 4));
-    modulo = (UWORD)(W(bm, 0) - (UWORD)setting);
+    modulo = (UWORD)(W(bm, 0) - (UWORD)fetchwid);
     bplptr[-3] = (UWORD)modulo;
     bplptr[-1] = (UWORD)modulo;
     fine = (UWORD)((UWORD)xoff & (UWORD)xmask);
-    setting = W(cop, M_HAM8);
+    ham8 = W(cop, M_HAM8);
     fine = (UWORD)(fine + fine);
     blitz_string = (UBYTE *)bp1;                /* LEA bp1(pc),a3 */
     bplptr[-5] = BP1(fine);
@@ -879,7 +890,7 @@ static void displaybmap2(UBYTE *cop, const UBYTE *bm, ULONG xoff, ULONG yoff)
     xoff += yoff;
     bm += 8;
     bplptr += 1;
-    if ((UWORD)setting) {
+    if ((UWORD)ham8) {
         bplptr = setptr(bplptr, L(bm, 24) + xoff);
         bplptr = setptr(bplptr, L(bm, 28) + xoff);
         BL_SETW(planes, (UWORD)planes - 2);
@@ -1062,38 +1073,51 @@ static void spriteoff(UBYTE *cop, const UBYTE *spr, UWORD chan)
 }
 
 /* DisplaySprite CopList#,Sprite#,X,Y,Channel: a1 = sprite, d2 = x
-   (quick), d3 = y, d4 = channel.  The registers are reused and named by
-   their later values: vpos (d2) gets y, chan (d3) the channel, handle
-   (d4) the x handle and then the data skip, height (d5) the y handle and
-   then the height */
-static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG vpos BL_REG(d2),
-                                           ULONG chan BL_REG(d3), ULONG handle BL_REG(d4))
+   (quick), d3 = y, d4 = channel.  Every register is reused; the word
+   loads into d2/d3 keep the upper word of the caller's register (BL_SETW
+   below) */
+static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG x BL_REG(d2),
+                                           ULONG y BL_REG(d3), ULONG channel BL_REG(d4))
 {
     UBYTE *cop = blitz_string, *sprmove;
-    ULONG lines, hpos, height, posword, ctlword;
+    ULONG vpos;                                 /* d2: y, then the start line */
+    ULONG vstop;                                /* d2: the stop line */
+    ULONG count;                                /* d2: the sprite count */
+    ULONG chan;                                 /* d3: the channel */
+    ULONG xhandle;                              /* d4 */
+    ULONG skip;                                 /* d4: the data skip */
+    ULONG chanend;                              /* d5: channel + sprite width */
+    ULONG yhandle;                              /* d5 */
+    ULONG height;                               /* d5 */
+    ULONG lines;                                /* d0: the visible lines */
+    ULONG data;                                 /* d0: the data address */
+    ULONG hpos;                                 /* d1: the x position */
+    ULONG step;                                 /* d1: the data step */
+    ULONG nspr;                                 /* d6: the sprite channels */
+    ULONG posword, ctlword;                     /* d6 d7: SPRxPOS, SPRxCTL */
 
     if (!L(spr, 0))
         GOTO(nosprierr);
-    height = (UWORD)handle;
-    posword = W(cop, M_NUMSPRITES);
+    chanend = (UWORD)channel;
+    nspr = W(cop, M_NUMSPRITES);
     if (L(cop, M_CSPRITES))
-        posword = (UWORD)(posword + posword);
-    height = (UWORD)(height + W(spr, 6));
-    if ((WORD)((UWORD)posword - (UWORD)height) < 0) /* CMP d5,d6:BMI */
+        nspr = (UWORD)(nspr + nspr);
+    chanend = (UWORD)(chanend + W(spr, 6));
+    if ((WORD)((UWORD)nspr - (UWORD)chanend) < 0) /* CMP d5,d6:BMI */
         GOTO(spriterr);
-    hpos = vpos;
-    BL_SETW(vpos, (UWORD)chan);
-    BL_SETW(chan, (UWORD)handle);
-    handle = BL_EXTL(W(spr, 12));
-    height = BL_EXTL(W(spr, 14));
-    posword = W(cop, M_SPRI);
-    handle = asr_w(asl_w(handle, 2), posword);
+    hpos = x;
+    vpos = x;
+    BL_SETW(vpos, (UWORD)y);
+    chan = y;
+    BL_SETW(chan, (UWORD)channel);
+    xhandle = BL_EXTL(W(spr, 12));
+    yhandle = BL_EXTL(W(spr, 14));
+    xhandle = asr_w(asl_w(xhandle, 2), W(cop, M_SPRI));
     hpos = BL_SWAP(hpos);
-    posword = W(cop, M_RESSHIFT);
-    hpos = rol_l(hpos, posword);
+    hpos = rol_l(hpos, W(cop, M_RESSHIFT));
     BL_SETW(hpos, (UWORD)hpos + 512);
-    BL_SETW(hpos, (UWORD)hpos - (UWORD)handle);
-    BL_SETW(vpos, (UWORD)vpos - (UWORD)height);
+    BL_SETW(hpos, (UWORD)hpos - (UWORD)xhandle);
+    BL_SETW(vpos, (UWORD)vpos - (UWORD)yhandle);
     {
         WORD bottom = (WORD)(W(cop, M_HEIGHT) + 1);
 
@@ -1103,7 +1127,7 @@ static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG vp
         }
         lines = (UWORD)(bottom - (WORD)vpos);
     }
-    handle = 0;
+    skip = 0;
     height = W(spr, 4);
     if ((WORD)vpos < 0) {                       /* off the top */
         if ((LONG)(WORD)height + (WORD)vpos <= 0) { /* ADD d2,d5:BLE */
@@ -1111,15 +1135,10 @@ static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG vp
             return;
         }
         height = (UWORD)((UWORD)height + (UWORD)vpos);
-        {
-            ULONG swap = vpos;                  /* EXG d2,d4 */
-
-            vpos = handle;
-            handle = swap;
-        }
-        BL_SETW(handle, -(WORD)handle);
-        ctlword = W(cop, M_SPIF);
-        handle = asl_l(BL_EXTL(handle), ctlword);
+        skip = vpos;                            /* EXG d2,d4 */
+        vpos = 0;
+        BL_SETW(skip, -(WORD)skip);
+        skip = asl_l(BL_EXTL(skip), W(cop, M_SPIF));
     }
     if ((WORD)((UWORD)lines - (UWORD)height) < 0) /* CMP d5,d0:BPL */
         height = (UWORD)lines;
@@ -1145,11 +1164,12 @@ static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG vp
     if ((WORD)((UWORD)hpos - 256) >= 0)         /* CMP #256,d1:BMI */
         BL_SETW(hpos, 255);
     posword = (posword & 0xff00) | (UBYTE)hpos;
-    BL_SETW(vpos, (UWORD)vpos + (UWORD)height - 1);
-    if (vpos & 0x100)                           /* LSL #8,d2: carry */
+    vstop = vpos;
+    BL_SETW(vstop, (UWORD)vpos + (UWORD)height - 1);
+    if (vstop & 0x100)                          /* LSL #8,d2: carry */
         ctlword |= 1 << 1;
-    BL_SETW(vpos, (UWORD)vpos << 8);
-    ctlword |= (UWORD)vpos;
+    BL_SETW(vstop, (UWORD)vstop << 8);
+    ctlword |= (UWORD)vstop;
     if ((WORD)W(spr, 8) < 0)
         ctlword |= 1 << 7;
     sprmove = (UBYTE *)L(cop, M_SPRITES);
@@ -1158,27 +1178,27 @@ static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG vp
         sprmove = (UBYTE *)L(cop, M_CSPRITES);
     }
     sprmove += (WORD)(UWORD)((UWORD)chan << 4);
-    lines = L(spr, 0) + handle;
-    hpos = BL_EXTL(W(spr, 10));
-    vpos = (UWORD)(W(spr, 6) - 1);
+    data = L(spr, 0) + skip;
+    step = BL_EXTL(W(spr, 10));
+    count = (UWORD)(W(spr, 6) - 1);
     do {
         W(sprmove, 2) = (UWORD)posword;
         W(sprmove, 6) = (UWORD)ctlword;
-        W(sprmove, 14) = (UWORD)lines;
-        W(sprmove, 10) = (UWORD)(lines >> 16);
-        lines += hpos;
+        W(sprmove, 14) = (UWORD)data;
+        W(sprmove, 10) = (UWORD)(data >> 16);
+        data += step;
         sprmove += 16;
         if ((WORD)W(spr, 8) < 0) {              /* attached */
             W(sprmove, 2) = (UWORD)posword;
             W(sprmove, 6) = (UWORD)ctlword;
-            W(sprmove, 14) = (UWORD)lines;
-            W(sprmove, 10) = (UWORD)(lines >> 16);
-            lines += hpos;
+            W(sprmove, 14) = (UWORD)data;
+            W(sprmove, 10) = (UWORD)(data >> 16);
+            data += step;
             sprmove += 16;
-            vpos = (UWORD)(vpos - 1);
+            count = (UWORD)(count - 1);
         }
         posword = (UWORD)(posword + W(cop, M_SSPWID));
-    } while ((WORD)(vpos = (UWORD)(vpos - 1)) != -1);
+    } while ((WORD)(count = (UWORD)(count - 1)) != -1);
 }
 BLITZ_THUNK(_displaysprite, _displaysprite_c, "a1");
 
@@ -1702,19 +1722,25 @@ BLITZ_THUNK(_displayuser, _displayuser_c, "a2");
 static void scroll(const LONG *xpos1, const LONG *xpos2, UWORD off, ULONG callerd0)
 {
     UBYTE *cop = blitz_string, *ins;
-    ULONG pos1, pos2, con1, mod1, mod2, shifts, rot, fine2;
+    ULONG pos1, pos2, con1, mod1, mod2, shifts, fine2;
+    ULONG resbits;                      /* d0: the resolution bits */
+    ULONG mask;                         /* d4 */
+    UWORD resw;                         /* d6: the resolution */
+    ULONG flup;                         /* d6 */
+    ULONG rot;                          /* d6: the rotate count */
     UWORD idx;
 
-    pos1 = (callerd0 & 0xffffff00) | B(cop, M_RES);
-    rot = (UWORD)pos1;
-    BL_SETW(pos1, (UWORD)pos1 & 3);
-    mod2 = 0xfffff;
-    idx = ((UWORD)rot & 0x30) >> 2;
+    resbits = (callerd0 & 0xffffff00) | B(cop, M_RES);
+    resw = (UWORD)resbits;
+    BL_SETW(resbits, (UWORD)resbits & 3);
+    mask = 0xfffff;
+    idx = (resw & 0x30) >> 2;
     shifts = *(const ULONG *)((const UBYTE *)shifs + idx);
     idx >>= 2;
-    rot = flups[idx];                   /* MOVE.b flups(pc,d6),d6 (d6.w = idx) */
-    mod2 = asl_l(mod2, rot);
-    BL_SETW(rot, (UWORD)rot + 6 - (UWORD)pos1);
+    flup = flups[idx];                  /* MOVE.b flups(pc,d6),d6 (d6.w = idx) */
+    mask = asl_l(mask, flup);
+    rot = flup;
+    BL_SETW(rot, (UWORD)flup + 6 - (UWORD)resbits);
     {
         UWORD end = (UWORD)((off + 1) << 2);
 
@@ -1724,8 +1750,8 @@ static void scroll(const LONG *xpos1, const LONG *xpos2, UWORD off, ULONG caller
             GOTO(linerr);
     }
     sc.ycont = W(cop, M_HEIGHT) - 2;
-    pos1 = L(cop, M_X0) & mod2;
-    pos2 = L(cop, M_X1) & mod2;
+    pos1 = L(cop, M_X0) & mask;
+    pos2 = L(cop, M_X1) & mask;
     {
         const ULONG *a2 = (const ULONG *)L(cop, M_BPLANES);
 
@@ -1787,12 +1813,12 @@ BLITZ_THUNK(_displayscroll, _displayscroll_c, "a2");
 /* ------------------------------------------- chunky copper routines (AGA) */
 
 /* CustomChunkySize(width,height) */
-static ULONG BLITZ_ROUTINE _customchunkysize_c(ULONG size BL_REG(d0), UWORD height BL_REG(d1))
+static ULONG BLITZ_ROUTINE _customchunkysize_c(ULONG width BL_REG(d0), UWORD height BL_REG(d1))
 {
-    UWORD banks = (UWORD)((UWORD)((UWORD)size + 31) >> 5);
+    UWORD banks = (UWORD)((UWORD)((UWORD)width + 31) >> 5);
+    ULONG size;                         /* d0 */
 
-    BL_SETW(size, (UWORD)size + banks + 3);
-    size = mulu16((UWORD)size, height);
+    size = mulu16((UWORD)((UWORD)width + banks + 3), height);
     BL_SETW(size, (UWORD)size + 2);
     return size;
 }
@@ -1804,6 +1830,7 @@ static void customchunky(UWORD ccoffset, UWORD ypos, UWORD width, UWORD height, 
     UBYTE *cop = blitz_string;
     ULONG *ins, waitmove, waitstep, con4move, bankmove;
     UWORD y, lines;
+    UWORD linebytes;                    /* d3: the bytes per line */
 
     W(cop, M_CHY) = ypos;
     W(cop, M_CHW) = width;
@@ -1818,9 +1845,9 @@ static void customchunky(UWORD ccoffset, UWORD ypos, UWORD width, UWORD height, 
     ins = putwait(ins, y, W(cop, M_BOT), 0xe1);
     L(cop, M_CCHUNKY) = (ULONG)ins + 6;
     W(cop, M_BOT) = (UWORD)(mulu16(res, height) + ypos);
-    width = (UWORD)(width + (width >> 5) + 3);
-    width = (UWORD)(width << 2);
-    W(cop, M_CHC) = width;
+    linebytes = (UWORD)(width + (width >> 5) + 3);
+    linebytes = (UWORD)(linebytes << 2);
+    W(cop, M_CHC) = linebytes;
     waitmove = BL_SWAP(BL_EXTL((UWORD)(y + res)));
     waitmove <<= 8;
     waitmove |= 0xe1fffe;
