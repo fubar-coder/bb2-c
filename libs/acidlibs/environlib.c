@@ -24,6 +24,7 @@
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
+#include <intuition/screens.h>
 
 /* entry points (thunks, defined below) */
 void codeinit(void);
@@ -58,7 +59,9 @@ BLITZ_LIBFIN();
 #define SCDATA_SIZE 346                                 /* new screen size */
 #define GetScreenData (-426)                            /* intuition */
 
-static UBYTE scdata[SCDATA_SIZE] __attribute__((aligned(2)));
+/* scdata: GetScreenData's copy of the Workbench screen */
+static struct Screen scdata;
+static_assert(sizeof scdata == SCDATA_SIZE);
 static ULONG wbwidth_, wbhite_, wbview_, vbr_;
 static UWORD wbdepth_, cpu_, execver_;
 
@@ -79,12 +82,13 @@ static void BLITZ_ROUTINE codeinit_c(const void *intuition BL_REG(a6))
 
     execver_ = SysBase->LibNode.lib_Version;            /* MOVE 20(a0),execver_ */
     r = (struct bl_regs){ .d0 = SCDATA_SIZE, .d1 = 1 /* WBENCHSCREEN */,
-                          .a0 = (ULONG)scdata, .a1 = 0 };
+                          .a0 = (ULONG)&scdata, .a1 = 0 };
     BLITZ_BASEJSR(intuition, GetScreenData, r);
-    wbwidth_ = (wbwidth_ & 0xffff0000) | *(UWORD *)(scdata + 12);  /* MOVE 12(a0),wbwidth_+2 */
-    wbhite_ = (wbhite_ & 0xffff0000) | *(UWORD *)(scdata + 14);
-    wbdepth_ = (wbdepth_ & 0xff00) | (*(UBYTE **)(scdata + 88))[5];  /* MOVE.b 5(a1),wbdepth_+1 */
-    wbview_ = *(ULONG *)(scdata + 44 + 32);
+    wbwidth_ = (wbwidth_ & 0xffff0000) | (UWORD)scdata.Width;      /* MOVE 12(a0),wbwidth_+2 */
+    wbhite_ = (wbhite_ & 0xffff0000) | (UWORD)scdata.Height;       /* MOVE 14(a0),wbhite_+2 */
+    wbdepth_ = (wbdepth_ & 0xff00) | scdata.RastPort.BitMap->Depth; /* MOVE.b 5(a1),wbdepth_+1 */
+    /* MOVE.l 76(a0): ViewPort.Modes and SpritePriority/ExtendedModes */
+    wbview_ = *(ULONG *)&scdata.ViewPort.Modes;
 
     flags = SysBase->AttnFlags & 15;                    /* AND #15,d0 */
     while (flags) {                                     /* 'loop */
