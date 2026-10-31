@@ -162,31 +162,31 @@ static inline void mt_delay(void)
 
 static void mt_init(void)
 {
-    UBYTE *a0 = mt_data, *a1 = a0 + 0x3b8, *a2;
-    WORD d0 = 0x7f;
-    BYTE d1 = 0, d2;
+    UBYTE *info = mt_data, *order = info + 0x3b8, *sdata;
+    WORD n = 0x7f;
+    BYTE pat = 0, maxpat;
     int i;
 
     /* highest pattern number (see BUG(orig) (#289)) */
     do {
-        d2 = d1;                                /* mt_loop */
-        d0--;
+        maxpat = pat;                           /* mt_loop */
+        n--;
         for (;;) {                              /* mt_lop2 */
-            d1 = *a1++;
-            if (d1 > d2)                        /* CMP.b d2,d1:BGT mt_loop */
+            pat = *order++;
+            if (pat > maxpat)                   /* CMP.b d2,d1:BGT mt_loop */
                 break;
-            if (--d0 == -1)                     /* DBF d0,mt_lop2 */
+            if (--n == -1)                      /* DBF d0,mt_lop2 */
                 goto found;
         }
     } while (1);
 found:
-    d2++;
-    a2 = a0 + 0x43c + ((ULONG)(UBYTE)d2 << 10);
+    maxpat++;
+    sdata = info + 0x43c + ((ULONG)(UBYTE)maxpat << 10);
     for (i = 0; i < 31; i++) {                  /* mt_lop3 */
-        *(ULONG *)a2 = 0;
-        mt_samplestarts[i] = a2;
-        a2 += (ULONG)*(UWORD *)(a0 + 42) << 1;
-        a0 += 0x1e;
+        *(ULONG *)sdata = 0;
+        mt_samplestarts[i] = sdata;
+        sdata += (ULONG)*(UWORD *)(info + 42) << 1;
+        info += 0x1e;
     }
     CIAAPRA |= 2;
     mt_speed = 6;
@@ -210,49 +210,49 @@ static void mt_end(void)
 
 /* ------------------------------------------------------------ effects */
 
-static void mt_arpeggio(UBYTE *v, ULONG a5)
+static void mt_arpeggio(UBYTE *v, ULONG aud)
 {
     WORD rem = (WORD)(UBYTE)mt_counter % 3;     /* DIVS #3:SWAP */
-    UWORD d0, d1, d2;
-    const UWORD *a0;
+    UWORD step, period, newper;
+    const UWORD *tab;
     int n;
 
     if (rem == 0) {
-        d2 = VW(v, 0x10);                       /* mt_arp2 */
-        RW(a5, 6) = d2;
+        newper = VW(v, 0x10);                   /* mt_arp2 */
+        RW(aud, 6) = newper;
         return;
     }
     if (rem == 2)
-        d0 = VUB(v, 3) & 0xf;                   /* mt_arp1 */
+        step = VUB(v, 3) & 0xf;                 /* mt_arp1 */
     else
-        d0 = VUB(v, 3) >> 4;
-    d1 = VW(v, 0x10);
-    a0 = mt_periods;
+        step = VUB(v, 3) >> 4;
+    period = VW(v, 0x10);
+    tab = mt_periods;
     for (n = 0; n < 0x25; n++) {                /* MOVEQ #$24,d7:DBF */
-        d2 = a0[d0];                            /* MOVE.w 0(a0,d0.w),d2 */
-        if ((WORD)d1 >= (WORD)*a0) {            /* CMP.w (a0),d1:BGE */
-            RW(a5, 6) = d2;
+        newper = tab[step];                     /* MOVE.w 0(a0,d0.w),d2 */
+        if ((WORD)period >= (WORD)*tab) {       /* CMP.w (a0),d1:BGE */
+            RW(aud, 6) = newper;
             return;
         }
-        a0++;
+        tab++;
     }
 }
 
 static void mt_setmyport(UBYTE *v)
 {
-    UWORD d2 = VW(v, 0) & 0xfff, d0 = VW(v, 0x10);
+    UWORD target = VW(v, 0) & 0xfff, period = VW(v, 0x10);
 
-    VW(v, 0x18) = d2;
+    VW(v, 0x18) = target;
     VB(v, 0x16) = 0;
-    if (d2 == d0)
+    if (target == period)
         VW(v, 0x18) = 0;                        /* mt_clrport */
-    else if ((WORD)d2 < (WORD)d0)               /* BGE mt_rt */
+    else if ((WORD)target < (WORD)period)       /* BGE mt_rt */
         VB(v, 0x16) = 1;
 }
 
-static void mt_myport(UBYTE *v, ULONG a5)
+static void mt_myport(UBYTE *v, ULONG aud)
 {
-    UWORD d0;
+    UWORD speed;
 
     if (VB(v, 3)) {
         VB(v, 0x17) = VB(v, 3);
@@ -260,111 +260,111 @@ static void mt_myport(UBYTE *v, ULONG a5)
     }
     if (!VW(v, 0x18))                           /* mt_myslide */
         return;
-    d0 = VUB(v, 0x17);
+    speed = VUB(v, 0x17);
     if (VB(v, 0x16)) {                          /* mt_mysub */
-        VW(v, 0x10) -= d0;
+        VW(v, 0x10) -= speed;
         if ((WORD)VW(v, 0x18) < (WORD)VW(v, 0x10)) {
-            RW(a5, 6) = VW(v, 0x10);
+            RW(aud, 6) = VW(v, 0x10);
             return;
         }
         VW(v, 0x10) = VW(v, 0x18);
         VW(v, 0x18) = 0;
-        RW(a5, 6) = VW(v, 0x10);
+        RW(aud, 6) = VW(v, 0x10);
         return;
     }
-    VW(v, 0x10) += d0;
+    VW(v, 0x10) += speed;
     if (!((WORD)VW(v, 0x18) > (WORD)VW(v, 0x10))) {
         VW(v, 0x10) = VW(v, 0x18);
         VW(v, 0x18) = 0;
     }
-    RW(a5, 6) = VW(v, 0x10);                    /* mt_myok */
+    RW(aud, 6) = VW(v, 0x10);                   /* mt_myok */
 }
 
-static void mt_vib(UBYTE *v, ULONG a5)
+static void mt_vib(UBYTE *v, ULONG aud)
 {
-    UWORD d0, d2;
+    UWORD val, delta;
 
     if (VB(v, 3))
         VB(v, 0x1a) = VB(v, 3);
-    d0 = (VUB(v, 0x1b) >> 2) & 0x1f;            /* mt_vi */
-    d2 = mt_sin[d0];
-    d0 = VUB(v, 0x1a) & 0xf;
-    d2 = (UWORD)(d2 * d0) >> 6;                 /* MULU:LSR.w #6 */
-    d0 = VW(v, 0x10);
+    val = (VUB(v, 0x1b) >> 2) & 0x1f;           /* mt_vi */
+    delta = mt_sin[val];
+    val = VUB(v, 0x1a) & 0xf;
+    delta = (UWORD)(delta * val) >> 6;          /* MULU:LSR.w #6 */
+    val = VW(v, 0x10);
     if (VB(v, 0x1b) < 0)
-        d0 -= d2;
+        val -= delta;
     else
-        d0 += d2;
-    RW(a5, 6) = d0;
+        val += delta;
+    RW(aud, 6) = val;
     VUB(v, 0x1b) += (VUB(v, 0x1a) >> 2) & 0x3c;
 }
 
-static void mt_volslide(UBYTE *v, ULONG a5)
+static void mt_volslide(UBYTE *v, ULONG aud)
 {
-    UWORD d0 = VUB(v, 3) >> 4;
+    UWORD step = VUB(v, 3) >> 4;
 
-    if (d0) {
-        VW(v, 0x12) += d0;
+    if (step) {
+        VW(v, 0x12) += step;
         if ((WORD)(VW(v, 0x12) - 0x40) >= 0)    /* CMP.w #$40:BMI */
             VW(v, 0x12) = 0x40;
-        RW(a5, 8) = VW(v, 0x12);
+        RW(aud, 8) = VW(v, 0x12);
         return;
     }
-    d0 = VUB(v, 3) & 0xf;                       /* mt_voldown */
-    VW(v, 0x12) -= d0;
+    step = VUB(v, 3) & 0xf;                     /* mt_voldown */
+    VW(v, 0x12) -= step;
     if ((WORD)VW(v, 0x12) < 0)
         VW(v, 0x12) = 0;
-    RW(a5, 8) = VW(v, 0x12);
+    RW(aud, 8) = VW(v, 0x12);
 }
 
-static void mt_portup(UBYTE *v, ULONG a5)
+static void mt_portup(UBYTE *v, ULONG aud)
 {
     VW(v, 0x10) -= VUB(v, 3);
     if ((WORD)((VW(v, 0x10) & 0xfff) - 0x71) < 0)
         VW(v, 0x10) = (VW(v, 0x10) & 0xf000) | 0x71;
-    RW(a5, 6) = VW(v, 0x10) & 0xfff;
+    RW(aud, 6) = VW(v, 0x10) & 0xfff;
 }
 
-static void mt_portdown(UBYTE *v, ULONG a5)
+static void mt_portdown(UBYTE *v, ULONG aud)
 {
     VW(v, 0x10) += VUB(v, 3);
     if ((WORD)((VW(v, 0x10) & 0xfff) - 0x358) >= 0)
         VW(v, 0x10) = (VW(v, 0x10) & 0xf000) | 0x358;
-    RW(a5, 6) = VW(v, 0x10) & 0xfff;
+    RW(aud, 6) = VW(v, 0x10) & 0xfff;
 }
 
-static void mt_checkcom(UBYTE *v, ULONG a5)
+static void mt_checkcom(UBYTE *v, ULONG aud)
 {
-    UBYTE d0;
+    UBYTE cmd;
 
     if (!(VW(v, 2) & 0xfff)) {
-        RW(a5, 6) = VW(v, 0x10);                /* mt_nop */
+        RW(aud, 6) = VW(v, 0x10);               /* mt_nop */
         return;
     }
-    d0 = VUB(v, 2) & 0xf;
-    switch (d0) {
+    cmd = VUB(v, 2) & 0xf;
+    switch (cmd) {
     case 0:
-        mt_arpeggio(v, a5);
+        mt_arpeggio(v, aud);
         return;
     case 1:
-        mt_portup(v, a5);
+        mt_portup(v, aud);
         return;
     case 2:
-        mt_portdown(v, a5);
+        mt_portdown(v, aud);
         return;
     case 3:
-        mt_myport(v, a5);
+        mt_myport(v, aud);
         return;
     case 4:
-        mt_vib(v, a5);
+        mt_vib(v, aud);
         return;
     }
-    RW(a5, 6) = VW(v, 0x10);
-    if (d0 == 0xa)
-        mt_volslide(v, a5);
+    RW(aud, 6) = VW(v, 0x10);
+    if (cmd == 0xa)
+        mt_volslide(v, aud);
 }
 
-static void mt_checkcom2(UBYTE *v, ULONG a5)
+static void mt_checkcom2(UBYTE *v, ULONG aud)
 {
     switch (VUB(v, 2) & 0xf) {
     case 0xe:                                   /* mt_setfilt */
@@ -380,7 +380,7 @@ static void mt_checkcom2(UBYTE *v, ULONG a5)
     case 0xc:                                   /* mt_setvol */
         if (VB(v, 3) > 0x40)
             VB(v, 3) = 0x40;
-        *(volatile UBYTE *)(a5 + 8) = VUB(v, 3);    /* MOVE.b */
+        *(volatile UBYTE *)(aud + 8) = VUB(v, 3);   /* MOVE.b */
         return;
     case 0xf:                                   /* mt_setspeed */
         if (VB(v, 3) > 0x1f)
@@ -395,32 +395,32 @@ static void mt_checkcom2(UBYTE *v, ULONG a5)
 
 /* ------------------------------------------------------------- new row */
 
-static void mt_playvoice(UBYTE *v, ULONG a5, const UBYTE *pat, ULONG *d1,
-                         const UBYTE *a3)
+static void mt_playvoice(UBYTE *v, ULONG aud, const UBYTE *pat, ULONG *pos,
+                         const UBYTE *sinfo)
 {
-    ULONG d2;
-    UWORD d3, d0;
+    ULONG sample;
+    UWORD repeat, len;
 
-    VL(v, 0) = *(const ULONG *)(pat + *d1);
-    *d1 += 4;
-    d2 = (UBYTE)((VUB(v, 2) & 0xf0) >> 4) | (VUB(v, 0) & 0xf0);
-    if (d2) {
-        ULONG d4 = (UWORD)((UWORD)d2 * 0x1e);   /* MULU #$1e,d4 */
+    VL(v, 0) = *(const ULONG *)(pat + *pos);
+    *pos += 4;
+    sample = (UBYTE)((VUB(v, 2) & 0xf0) >> 4) | (VUB(v, 0) & 0xf0);
+    if (sample) {
+        ULONG off = (UWORD)((UWORD)sample * 0x1e); /* MULU #$1e,d4 */
 
-        VL(v, 4) = *(ULONG *)((UBYTE *)mt_samplestarts + ((d2 - 1) << 2));
-        VW(v, 8) = *(const UWORD *)(a3 + d4);
-        VW(v, 0x12) = *(const UWORD *)(a3 + d4 + 2);
-        d3 = *(const UWORD *)(a3 + d4 + 4);
-        if (d3) {
-            VL(v, 0xa) = VL(v, 4) + (UWORD)(d3 << 1);
-            d0 = d3 + *(const UWORD *)(a3 + d4 + 6);
-            VW(v, 8) = d0;
-            VW(v, 0xe) = *(const UWORD *)(a3 + d4 + 6);
-            RW(a5, 8) = VW(v, 0x12);
+        VL(v, 4) = *(ULONG *)((UBYTE *)mt_samplestarts + ((sample - 1) << 2));
+        VW(v, 8) = *(const UWORD *)(sinfo + off);
+        VW(v, 0x12) = *(const UWORD *)(sinfo + off + 2);
+        repeat = *(const UWORD *)(sinfo + off + 4);
+        if (repeat) {
+            VL(v, 0xa) = VL(v, 4) + (UWORD)(repeat << 1);
+            len = repeat + *(const UWORD *)(sinfo + off + 6);
+            VW(v, 8) = len;
+            VW(v, 0xe) = *(const UWORD *)(sinfo + off + 6);
+            RW(aud, 8) = VW(v, 0x12);
         } else {                                /* mt_noloop */
             VL(v, 0xa) = VL(v, 4);
-            VW(v, 0xe) = *(const UWORD *)(a3 + d4 + 6);
-            RW(a5, 8) = VW(v, 0x12);
+            VW(v, 0xe) = *(const UWORD *)(sinfo + off + 6);
+            RW(aud, 8) = VW(v, 0x12);
         }
     }
     if (VW(v, 0) & 0xfff) {                     /* mt_setregs */
@@ -430,20 +430,20 @@ static void mt_playvoice(UBYTE *v, ULONG a5, const UBYTE *pat, ULONG *d1,
             VW(v, 0x10) = VW(v, 0) & 0xfff;
             BL_CUSTOMW(BL_CUSTOM, 0x96) = VW(v, 0x14);
             VB(v, 0x1b) = 0;
-            RL(a5, 0) = VL(v, 4);
-            RW(a5, 4) = VW(v, 8);
-            RW(a5, 6) = VW(v, 0x10) & 0xfff;
+            RL(aud, 0) = VL(v, 4);
+            RW(aud, 4) = VW(v, 8);
+            RW(aud, 6) = VW(v, 0x10) & 0xfff;
             mt_dmacon |= VW(v, 0x14);
         }
     }
-    mt_checkcom2(v, a5);
+    mt_checkcom2(v, aud);
 }
 
 /* ------------------------------------------------------------ mt_music */
 
 static void mt_music(void)
 {
-    const UBYTE *a0 = mt_data;
+    const UBYTE *mod = mt_data;
     int i;
 
     mt_counter++;
@@ -451,18 +451,18 @@ static void mt_music(void)
         for (i = 0; i < 4; i++)                 /* mt_nonew */
             mt_checkcom((UBYTE *)mt_voices[i], 0xdff0a0 + 16 * i);
     } else {
-        const UBYTE *a3, *a2;
-        ULONG d1;
+        const UBYTE *sinfo, *order;
+        ULONG pos;
 
         mt_counter = 0;
-        a3 = a0 + 0xc;                          /* mt_getnew */
-        a2 = a0 + 0x3b8;
-        a0 += 0x43c;
-        d1 = (ULONG)a2[mt_songpos] << 10;
-        BL_SETW(d1, d1 + mt_pattpos);           /* ADD.w mt_pattpos,d1 */
+        sinfo = mod + 0xc;                      /* mt_getnew */
+        order = mod + 0x3b8;
+        mod += 0x43c;
+        pos = (ULONG)order[mt_songpos] << 10;
+        BL_SETW(pos, pos + mt_pattpos);         /* ADD.w mt_pattpos,d1 */
         mt_dmacon = 0;
         for (i = 0; i < 4; i++)
-            mt_playvoice((UBYTE *)mt_voices[i], 0xdff0a0 + 16 * i, a0, &d1, a3);
+            mt_playvoice((UBYTE *)mt_voices[i], 0xdff0a0 + 16 * i, mod, &pos, sinfo);
 
         mt_delay();                             /* mt_setdma */
         BL_CUSTOMW(BL_CUSTOM, 0x96) = mt_dmacon | 0x8000;
@@ -475,7 +475,7 @@ static void mt_music(void)
         }
         mt_pattpos += 0x10;
         if (mt_pattpos == 0x400) {
-            a0 = mt_data + 0x3b6;
+            mod = mt_data + 0x3b6;
             goto nex;
         }
     }
@@ -484,8 +484,8 @@ nex:
         mt_pattpos = 0;
         mt_break = 0;
         mt_songpos = (mt_songpos + 1) & 0x7f;
-        if (mt_songpos == a0[0])                /* CMP.b (a0),d1 */
-            mt_songpos = a0[1];
+        if (mt_songpos == mod[0])               /* CMP.b (a0),d1 */
+            mt_songpos = mod[1];
     }
 }
 
