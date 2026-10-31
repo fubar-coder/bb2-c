@@ -354,13 +354,15 @@ void BLITZ_ROUTINE freeslice(void)
 
 /* inscop2 - insert the list at a0 (d0 bytes) at line y into the main list;
    returns where the new instructions start */
-static ULONG inscop2(ULONG *list, ULONG size, UWORD y)
+static ULONG inscop2(ULONG *list, ULONG len, UWORD y)
 {
     ULONG *src = list, *at = (ULONG *)mycop, *dst, *old;
-    const ULONG len = size;                     /* MOVE.l d0,-(a7) */
     WORD past256 = 0;
-    UWORD wline, yline;
+    UWORD wline;                                /* the wait line */
+    UWORD addblwait;                            /* insert the line-256 wait */
+    UWORD yline;
     ULONG cop, newlen, newlist, inslen, pos, move;
+    ULONG count;                                /* d0: the longs to copy */
     UWORD *p;
     UBYTE *wait;
 
@@ -383,28 +385,26 @@ static ULONG inscop2(ULONG *list, ULONG size, UWORD y)
         }
         at++;
     }
-    size += 4;                                  /* 'here */
-    wline = 0;
+    inslen = len + 4;                           /* 'here */
+    addblwait = 0;
     if (y >= 256 && !past256) {
-        size += 4;
-        wline = 1;
+        inslen += 4;
+        addblwait = 1;
         past256 = -1;
     }
-    inslen = size;                              /* 'lower */
-    size += mycoplen;
-    newlen = size;
-    newlist = alloc(size, MEMF_CHIP);
+    newlen = inslen + mycoplen;                 /* 'lower */
+    newlist = alloc(newlen, MEMF_CHIP);
     dst = (ULONG *)newlist;
     for (old = (ULONG *)mycop; old < at; )      /* CMP.l a1,a0:BCC */
         *dst++ = *old++;
-    if (wline)
+    if (addblwait)
         *dst++ = blwait;
     wait = (UBYTE *)dst;
     *wait++ = (UBYTE)y;
     *wait++ = hwait[0];
     *(UWORD *)wait = 0xfffe;
     dst++;
-    size = len >> 2;                            /* MOVE.l (a7)+,d0:LSR.l #2 */
+    count = len >> 2;                           /* MOVE.l (a7)+,d0:LSR.l #2 */
     pos = (ULONG)dst;
     do {                                        /* 'cloop2 */
         move = *src++;
@@ -420,7 +420,7 @@ static ULONG inscop2(ULONG *list, ULONG size, UWORD y)
                 past256 = -1;
             }
         }
-    } while (--size);
+    } while (--count);
     for (;;) {                                  /* 'cloop3 */
         ULONG c = *at++;
 
@@ -484,7 +484,14 @@ static void doslice2(const UWORD *args, UWORD flags, UWORD planes, UWORD sprites
 {
     UBYTE *slice = blitz_string;
     UWORD *cop;
-    UWORD val, width, step, y;
+    UWORD width, step, y;
+    UWORD ddfstrt;                              /* hstart */
+    UWORD con0;                                 /* BPLCON0 */
+    UWORD diw;                                  /* DIWSTRT/DIWSTOP */
+    UWORD ddf;                                  /* DDFSTRT/DDFSTOP */
+    UWORD modbase;                              /* the modulo base */
+    UWORD nplanes;                              /* the plane count */
+    UWORD endline;                              /* the end wait line */
     ULONG pos;
     int i;
 
@@ -492,32 +499,32 @@ static void doslice2(const UWORD *args, UWORD flags, UWORD planes, UWORD sprites
     W(slice, 2) = flags;
     W(slice, 32) = args[-3];
     if ((flags & 1) && !(flags & 8) && (width = args[-2]) > 640) {
-        val = width - 640;                      /* hires overscan */
-        val = (WORD)val >> 2;
-        val = -val + 0x3c;
+        ddfstrt = width - 640;                  /* hires overscan */
+        ddfstrt = (WORD)ddfstrt >> 2;
+        ddfstrt = -ddfstrt + 0x3c;
     } else {
-        val = args[-2];
+        ddfstrt = args[-2];
         if (flags & 1)
-            val >>= 1;
+            ddfstrt >>= 1;
         if (flags & 8) {                        /* smooth scrolling */
-            if (val <= 320)
+            if (ddfstrt <= 320)
                 goto notsmooth2;
-            val -= 320;
+            ddfstrt -= 320;
 issosmooth:
-            val = (WORD)val >> 1;
-            val = -val + 0x38;
-        } else if (val >= 352) {
-            val -= 336;
+            ddfstrt = (WORD)ddfstrt >> 1;
+            ddfstrt = -ddfstrt + 0x38;
+        } else if (ddfstrt >= 352) {
+            ddfstrt -= 336;
             goto issosmooth;
         } else {
 notsmooth2:
-            val -= 320;
-            val &= 0xffe0;
-            val = (WORD)val >> 2;
-            val = -val + 0x38;
+            ddfstrt -= 320;
+            ddfstrt &= 0xffe0;
+            ddfstrt = (WORD)ddfstrt >> 2;
+            ddfstrt = -ddfstrt + 0x38;
         }
     }
-    hstart = val;                               /* 'gotddf */
+    hstart = ddfstrt;                           /* 'gotddf */
     hwait[0] = 1;
 
     cop = maxcop;
@@ -527,16 +534,16 @@ notsmooth2:
     }
     if (flags & (1 << 15)) {                    /* BPLCON0 */
         *cop++ = 0x100;
-        val = 0;
+        con0 = 0;
         if (flags & 1)
-            val |= 1 << 15;
-        val |= (UWORD)(planes << 12);
+            con0 |= 1 << 15;
+        con0 |= (UWORD)(planes << 12);
         if (flags & 4)
-            val |= 1 << 11;
+            con0 |= 1 << 11;
         if (flags & 2)
-            val |= 1 << 10;
-        val |= bplcon0;
-        *cop++ = val;
+            con0 |= 1 << 10;
+        con0 |= bplcon0;
+        *cop++ = con0;
     }
     L(slice, 22) = 0;
     if (flags & (1 << 14)) {                    /* BPLCON1 */
@@ -551,22 +558,22 @@ notsmooth2:
         *cop++ = 0x24;
     }
     if (flags & (1 << 12)) {                    /* DIWSTRT/STOP */
-        val = hstart + 8;
-        val += val;
-        val += 1;
+        diw = hstart + 8;
+        diw += diw;
+        diw += 1;
         *cop++ = 0x08e;
-        *cop++ = (UWORD)(args[-1] << 8) | (UBYTE)val;
+        *cop++ = (UWORD)(args[-1] << 8) | (UBYTE)diw;
         *cop++ = 0x090;
         width = args[-2];
         if (flags & 1)
             width >>= 1;
-        val += width;
-        *cop++ = (UWORD)((UWORD)(args[-1] + args[-3]) << 8) | (UBYTE)val;
+        diw += width;
+        *cop++ = (UWORD)((UWORD)(args[-1] + args[-3]) << 8) | (UBYTE)diw;
     }
     if (flags & (1 << 10)) {                    /* DDFSTRT/STOP */
-        val = hstart;
+        ddf = hstart;
         *cop++ = 0x092;
-        *cop++ = val;
+        *cop++ = ddf;
         width = args[-2] >> 4;
         if (flags & 8)
             cop[-1] -= 8;
@@ -577,37 +584,37 @@ notsmooth2:
             width -= 2;
             width <<= 2;
         }
-        val += width;
+        ddf += width;
         *cop++ = 0x094;
-        val &= 0xfc;
-        *cop++ = val;
+        ddf &= 0xfc;
+        *cop++ = ddf;
         if (flags & 1) {
             cop[-3] += 4;
             cop[-1] += 4;
         }
     }
-    val = args[-2] >> 3;                        /* 'skip6 */
+    modbase = args[-2] >> 3;                    /* 'skip6 */
     if (flags & 8) {
-        val += 2;
+        modbase += 2;
         if (flags & 1)
-            val += 2;
+            modbase += 2;
     }
     if (flags & (1 << 8)) {                     /* BPL1MOD */
         *cop++ = 0x108;
-        *cop++ = (UWORD)((args[-4] >> 3) - val);
+        *cop++ = (UWORD)((args[-4] >> 3) - modbase);
     }
     if (flags & (1 << 7)) {                     /* BPL2MOD */
         *cop++ = 0x10a;
-        *cop++ = (UWORD)((args[-5] >> 3) - val);
+        *cop++ = (UWORD)((args[-5] >> 3) - modbase);
     }
     L(slice, 10) = 0;                           /* bitplane pointers */
     W(slice, 4) = planes;
-    val = planes & 15;
-    if (val) {
+    nplanes = planes & 15;
+    if (nplanes) {
         UWORD reg = 0xe0;
 
         L(slice, 10) = (ULONG)cop;
-        val -= 1;
+        nplanes -= 1;
         step = 2;
         planes &= 0xc000;
         if (planes) {
@@ -622,7 +629,7 @@ notsmooth2:
             *cop++ = reg;
             *cop++ = 0;
             reg += step;
-        } while ((WORD)--val != -1);
+        } while ((WORD)--nplanes != -1);
     }
     L(slice, 14) = 0;                           /* sprite pointers */
     W(slice, 6) = sprites;
@@ -661,7 +668,7 @@ notsmooth2:
         } while ((WORD)--colours != -1);
     }
     y = args[-1];                               /* 'skip11 */
-    val = y + args[-3];
+    endline = y + args[-3];
     if (flags & (1 << 4)) {
         UBYTE *wait = (UBYTE *)cop;
 
@@ -674,7 +681,7 @@ notsmooth2:
         y -= 2;
         *cop++ = 0x01fe;                        /* blwait if necessary */
         *cop++ = 0x1234;
-        *cop++ = val;                           /* wait... */
+        *cop++ = endline;                       /* wait... */
         *cop++ = 0xfffe;
         *cop++ = 0x0096;                        /* sprites off */
         *cop++ = 0x0020;
@@ -843,11 +850,12 @@ static void setplanes(const UBYTE *bitmap, UWORD *moves, LONG offset, WORD step)
 static void show(const UBYTE *bitmap, UBYTE *slice, UWORD x, WORD y)
 {
     LONG offset = calcoff(&x, y, bitmap, slice);
+    UWORD scroll;                               /* in x: the BPLCON1 scroll */
     UWORD con1;
 
     setplanes(bitmap, (UWORD *)L(slice, 10), offset, 8);
-    x = (x & 15) ^ 15;
-    con1 = x | (UWORD)(x << 4);
+    scroll = (x & 15) ^ 15;
+    con1 = scroll | (UWORD)(scroll << 4);
     *(UWORD *)L(slice, 22) = con1;
     W(slice, 30) = con1;
 }
@@ -855,13 +863,14 @@ static void show(const UBYTE *bitmap, UBYTE *slice, UWORD x, WORD y)
 static void showf(const UBYTE *bitmap, UBYTE *slice, UWORD x, WORD y, UWORD x2)
 {
     LONG offset = calcoff(&x, y, bitmap, slice);
+    UWORD scroll, scroll2;                      /* in x, x2: the BPLCON1 scrolls */
 
     setplanes(bitmap, (UWORD *)L(slice, 10), offset, B(slice, 4) ? 8 : 16);
-    x = (x & 15) ^ 15;
-    x2 = (UWORD)((((x2 - 1) & 15) ^ 15) << 4);
-    x |= x2;
-    *(UWORD *)L(slice, 22) = x;
-    W(slice, 30) = x;
+    scroll = (x & 15) ^ 15;
+    scroll2 = (UWORD)((((x2 - 1) & 15) ^ 15) << 4);
+    scroll |= scroll2;
+    *(UWORD *)L(slice, 22) = scroll;
+    W(slice, 30) = scroll;
 }
 
 static void showb(const UBYTE *bitmap, UBYTE *slice, UWORD x, WORD y, UWORD x2)
@@ -869,17 +878,18 @@ static void showb(const UBYTE *bitmap, UBYTE *slice, UWORD x, WORD y, UWORD x2)
     LONG offset = calcoff(&x, y, bitmap, slice);
     UBYTE *moves = (UBYTE *)L(slice, 10) + 8;   /* start at even */
     WORD step = 16;
+    UWORD scroll, scroll2;                      /* in x, x2: the BPLCON1 scrolls */
 
     if (B(slice, 4)) {
         step = 8;
         moves -= step;
     }
     setplanes(bitmap, (UWORD *)moves, offset, step);
-    x = (UWORD)(((x & 15) ^ 15) << 4);
-    x2 = ((x2 - 1) & 15) ^ 15;
-    x |= x2;
-    *(UWORD *)L(slice, 22) = x;
-    W(slice, 30) = x;
+    scroll = (UWORD)(((x & 15) ^ 15) << 4);
+    scroll2 = ((x2 - 1) & 15) ^ 15;
+    scroll |= scroll2;
+    *(UWORD *)L(slice, 22) = scroll;
+    W(slice, 30) = scroll;
 }
 
 #define SHOWARGS const UBYTE *bitmap BL_REG(a0), UBYTE *slice BL_REG(a1)
