@@ -157,14 +157,7 @@ BLITZ_LIBFIN();
    cxfilter/cxsends without a range check, so an out-of-range number hits
    the same neighbours as in the original */
 static struct BL_PACKED {
-    struct BL_PACKED {
-        UBYTE version, pad0;
-        STRPTR name, title, descr;
-        WORD unique, flags;
-        BYTE pri, pad1;
-        struct MsgPort *port;
-        WORD reservedchannel;
-    } newbroker;                        /* = struct NewBroker */
+    struct NewBroker newbroker;         /* 26 bytes */
     UBYTE inputevent[18];               /* unused (struct InputEvent head) */
     struct MsgPort *msgport;
     CxObj *cobject;
@@ -178,6 +171,7 @@ static struct BL_PACKED {
     STRPTR hotkeystring;
     CxObj *currentfilter;
 } st;
+static_assert(sizeof(struct NewBroker) == 26);
 static struct Library *st_cbase;        /* cbase */
 static const char cname[] = "commodities.library";
 
@@ -410,15 +404,15 @@ static BB_BOOL BLITZ_ROUTINE makecommodity_c(STRPTR name BL_REG(d0), STRPTR titl
             return BB_FALSE;
         st.msgport = p;
     }
-    st.newbroker.name = name;
-    st.newbroker.title = title;
-    st.newbroker.descr = descr;
-    st.newbroker.unique = NBU_UNIQUE | NBU_NOTIFY;
-    st.newbroker.version = NB_VERSION;
-    st.newbroker.flags = COF_SHOW_HIDE;
-    st.newbroker.pri = 0;
-    st.newbroker.port = st.msgport;
-    co = CxBroker((struct NewBroker *)&st.newbroker, NULL);
+    st.newbroker.nb_Name = name;
+    st.newbroker.nb_Title = title;
+    st.newbroker.nb_Descr = descr;
+    st.newbroker.nb_Unique = NBU_UNIQUE | NBU_NOTIFY;
+    st.newbroker.nb_Version = NB_VERSION;
+    st.newbroker.nb_Flags = COF_SHOW_HIDE;
+    st.newbroker.nb_Pri = 0;
+    st.newbroker.nb_Port = st.msgport;
+    co = CxBroker(&st.newbroker, NULL);
     if (!co)
         return BB_FALSE;
     st.cobject = co;
