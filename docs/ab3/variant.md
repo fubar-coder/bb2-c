@@ -105,8 +105,19 @@ token list (AB3's rules, `LoadSource`/preprocessor in
 `shared/` is to be checked, guess: mostly). Includes (`INCLUDE`,
 `XINCLUDE`, extension fallback `.ab3`/`.ab2`/`.bb2`, search order:
 include directory, source directory, executable directory) are read and
-tokenised the same way. The mode is the main source's; includes follow
-it (guess: AB3 does the same).
+tokenised the same way. The mode is the main source's and holds for the
+whole compile (one program); includes follow it (guess: AB3 does the
+same). The library set is chosen per compiled program: it is reloaded
+only when a compile has another mode than the one before (a CLI run
+loads once anyway).
+
+**Mixed includes** (decided 2026-10-31): an include in *text* form is
+tokenised in the program's mode. A *tokenised* include of the other
+mode (an AB3 program including a tokenised BB2 file, or the other way
+round) is **rejected** with a clear error: its token numbers belong to
+the other library set. Converting it by name (detokenise with its own
+token list, tokenise with the program's) is added only when real
+sources need it.
 
 ### One blitz2 with a run-time mode, or a separate build?
 
@@ -279,5 +290,7 @@ Rough total: G1–G5 about 20–40 commits, G6–G7 about 15–25, G8 open
    or byte-equal executables (G8).
 6. Whether AB3 mode needs the runtime debugger at all (AB3's debuglib
    needs AB3's debugger; proposal: no).
-7. Order and depth of G6/G7 (FPU, 68020) – needed by 4 % and 14 % of the
+7. Mixed includes: decided 2026-10-31, a tokenised include of the
+   other mode is rejected; conversion by name only when needed (§1).
+8. Order and depth of G6/G7 (FPU, 68020) – needed by 4 % and 14 % of the
    examples respectively.
