@@ -382,7 +382,14 @@ static ULONG hunkbuff[8];
 
 /* ------------------------------------------------------------- banks */
 
-/* Start(bank): 0 for bank >= maxbanks */
+/**
+ * @brief Start(bank): the address of a bank.
+ *
+ * BUG(orig) (#484): a negative bank counts as a bank and reads before
+ * the table.
+ * @param bank  d0: the bank (signed)
+ * @return d0: its address, 0 if free or bank >= maxbanks
+ */
 static ULONG BLITZ_ROUTINE start_c(LONG bank BL_REG(d0))
 {
     if (bank >= maxbanks)
@@ -390,7 +397,13 @@ static ULONG BLITZ_ROUTINE start_c(LONG bank BL_REG(d0))
     return ENTRY(startptr, bank);
 }
 
-/* Length(bank) */
+/**
+ * @brief Length(bank): the length of a bank.
+ *
+ * BUG(orig) (#484): a negative bank reads before the table.
+ * @param bank  d0: the bank (signed)
+ * @return d0: its length, 0 if free or bank >= maxbanks
+ */
 static ULONG BLITZ_ROUTINE length_c(LONG bank BL_REG(d0))
 {
     if (bank >= maxbanks)
@@ -422,14 +435,27 @@ static BB_BOOL newbank(LONG bank, ULONG len, ULONG flags)
     return BB_TRUE;
 }
 
-/* Erase bank */
+/**
+ * @brief Erase bank: frees a bank (FreeMem) if it is in use.
+ *
+ * BUG(orig) (#484): no range check for negative banks.
+ * @param bank  d0: the bank
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE erase_c(LONG bank BL_REG(d0))
 {
     if (start_c(bank))
         eraseit(bank);
 }
 
-/* EraseAll: from maxbanks-1 down, DBRA on the low word (BUG(orig), #495) */
+/**
+ * @brief EraseAll: frees every bank in use, from maxbanks-1 down.
+ *
+ * BUG(orig) (#495): DBRA on the low word, the bank number is the whole
+ * long - with more than 65536 banks only those down to the next multiple
+ * of 65536 are freed, BankLimit 0 runs through 65536 negative banks.
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE eraseall_c(void)
 {
     ULONG n = (ULONG)maxbanks - 1;
@@ -441,7 +467,18 @@ static void BLITZ_ROUTINE eraseall_c(void)
     } while ((UWORD)n != 0xffff);
 }
 
-/* Reserve(bank,length,requirements): the bank erased first if in use */
+/**
+ * @brief Reserve(bank,length,requirements): allocates a bank (exec
+ * AllocMem).
+ *
+ * A bank in use is erased first, also when the new allocation fails
+ * (#499).  BUG(orig) (#484): no range check - bank >= maxbanks writes
+ * behind the start table, a negative bank before the tables.
+ * @param bank   d0: the bank
+ * @param len    d1: the length
+ * @param flags  d2: the memory requirements (MEMF_...)
+ * @return d0: -1 if allocated, 0 if not
+ */
 static BB_BOOL BLITZ_ROUTINE allocmem_c(LONG bank BL_REG(d0), ULONG len BL_REG(d1),
                                         ULONG flags BL_REG(d2))
 {
@@ -450,13 +487,25 @@ static BB_BOOL BLITZ_ROUTINE allocmem_c(LONG bank BL_REG(d0), ULONG len BL_REG(d
     return newbank(bank, len, flags);
 }
 
-/* Reserve(bank,length): MEMF_PUBLIC */
+/**
+ * @brief Reserve(bank,length): as above with MEMF_PUBLIC.
+ * @param bank  d0: the bank
+ * @param len   d1: the length
+ * @return d0: -1 if allocated, 0 if not
+ */
 static BB_BOOL BLITZ_ROUTINE allocmem1_c(LONG bank BL_REG(d0), ULONG len BL_REG(d1))
 {
     return allocmem_c(bank, len, MEMF_PUBLIC);
 }
 
-/* NextBank [start]: the first free bank from start on, -1 if none */
+/**
+ * @brief NextBank [startbank]: the first free bank from startbank on.
+ *
+ * BUG(orig): without an argument it starts at whatever d0 holds (#497);
+ * a negative start counts as a bank (#484).
+ * @param bank  d0: startbank
+ * @return d0: the bank, -1 if none is free
+ */
 static ULONG BLITZ_ROUTINE findfreebank_c(LONG bank BL_REG(d0))
 {
     for (; bank < maxbanks; bank++)
@@ -465,9 +514,17 @@ static ULONG BLITZ_ROUTINE findfreebank_c(LONG bank BL_REG(d0))
     return (ULONG)-1;
 }
 
-/* Reserve(length): the bank number (NextBank from 0), -1 if AllocMem
-   fails, 0 for a negative length (BUG(orig): the sign of the length is
-   tested, not NextBank's -1; #500 #498) */
+/**
+ * @brief Reserve(length): allocates the next free bank (NextBank from 0,
+ * MEMF_PUBLIC).
+ *
+ * BUG(orig): the sign of the length is tested, not NextBank's -1 - with
+ * every bank in use it reserves "bank -1" (#498); 0 for a negative length
+ * is also a bank number (#500).
+ * @param len  d0: the length
+ * @return d0: the bank number, -1 if AllocMem fails, 0 for a negative
+ *         length
+ */
 static ULONG BLITZ_ROUTINE allocmem2_c(LONG len BL_REG(d0))
 {
     ULONG bank = findfreebank_c(0);
@@ -479,7 +536,16 @@ static ULONG BLITZ_ROUTINE allocmem2_c(LONG len BL_REG(d0))
     return bank;
 }
 
-/* SwapBank(a,b): both must have a length; -1 / 0 */
+/**
+ * @brief SwapBank(sourcebank,destbank): exchanges two banks (address and
+ * length).
+ *
+ * Both must have a length.  BUG(orig) (#484): negative banks index before
+ * the tables.
+ * @param a  d0: sourcebank
+ * @param b  d1: destbank
+ * @return d0: -1 if swapped, 0 if not
+ */
 static BB_BOOL BLITZ_ROUTINE swapbank_c(LONG a BL_REG(d0), LONG b BL_REG(d1))
 {
     ULONG t;
@@ -495,7 +561,17 @@ static BB_BOOL BLITZ_ROUTINE swapbank_c(LONG a BL_REG(d0), LONG b BL_REG(d1))
     return BB_TRUE;
 }
 
-/* FillMem address/bank,length[,value]: nothing for a free bank */
+/**
+ * @brief FillMem address,length,value: fills memory (or a bank) with a
+ * byte.
+ *
+ * A number below maxbanks (signed) is a bank: nothing for a free bank.
+ * BUG(orig) (#492): length 0 fills 2^32 bytes.
+ * @param adr  d0: the address or bank
+ * @param len  d1: the number of bytes
+ * @param v    d2.b: the value
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE fillmem_c(ULONG adr BL_REG(d0), ULONG len BL_REG(d1),
                                     UBYTE v BL_REG(d2))
 {
@@ -512,6 +588,12 @@ static void BLITZ_ROUTINE fillmem_c(ULONG adr BL_REG(d0), ULONG len BL_REG(d1),
     while (--len);
 }
 
+/**
+ * @brief FillMem address,length: as above with 0.
+ * @param adr  d0: the address or bank
+ * @param len  d1: the number of bytes
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE fillmemzeros_c(ULONG adr BL_REG(d0), ULONG len BL_REG(d1))
 {
     fillmem_c(adr, len, 0);
@@ -519,6 +601,14 @@ static void BLITZ_ROUTINE fillmemzeros_c(ULONG adr BL_REG(d0), ULONG len BL_REG(
 
 /* ---------------------------------------------------------- init/finit */
 
+/**
+ * @brief init: opens dos.library and allocates the bank tables.
+ *
+ * One memlib globalloc block (MEMF_CLEAR) of 2 * maxbanks longs: the
+ * lengths, then the start addresses.  The result is not checked (memlib
+ * raises "Out of Memory" itself).
+ * @return d0: the start table
+ */
 static ULONG BLITZ_ROUTINE libinit_c(void)
 {
     struct bl_regs r = { .d0 = (ULONG)maxbanks << 3, .d1 = MEMF_CLEAR };
@@ -529,6 +619,14 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
     return (ULONG)startptr;
 }
 
+/**
+ * @brief finit: unlocks ChangeDir's lock, frees every bank and the
+ * tables, closes dos.library.
+ *
+ * BUG(orig) (#491): the lock is unlocked while it is still the current
+ * directory, and oldlock is not cleared (a second finit unlocks again).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     struct DosLibrary *dos = dosbase_;
@@ -543,7 +641,15 @@ static void BLITZ_ROUTINE libfinit_c(void)
     CloseLibrary(&dosbase_->dl_lib);
 }
 
-/* BankLimit numbanks: finit, the new number, init - d0 = init's */
+/**
+ * @brief BankLimit numbanks: a new number of banks - finit (every bank
+ * freed), the new number, init.
+ *
+ * BUG(orig): returns the address of the new start table (init's d0)
+ * (#483); unlocks ChangeDir's lock as finit does (#491).
+ * @param n  d0: numbanks
+ * @return d0: the new start table
+ */
 static ULONG BLITZ_ROUTINE banklimit_c(LONG n BL_REG(d0))
 {
     libfinit_c();
@@ -551,6 +657,10 @@ static ULONG BLITZ_ROUTINE banklimit_c(LONG n BL_REG(d0))
     return libinit_c();
 }
 
+/**
+ * @brief BankLimit: the number of banks (50 at the start).
+ * @return d0: maxbanks
+ */
 static ULONG BLITZ_ROUTINE getbanklimit_c(void)
 {
     return (ULONG)maxbanks;
@@ -558,7 +668,14 @@ static ULONG BLITZ_ROUTINE getbanklimit_c(void)
 
 /* -------------------------------------------------------------- files */
 
-/* FileSize(name$): fib_Size of Examine (unchecked), 0 without a lock */
+/**
+ * @brief FileSize(filename$): the size of a file.
+ *
+ * fib_Size of Examine (its result unchecked) into an AllocMem'd
+ * FileInfoBlock.
+ * @param name  d0: filename$
+ * @return d0: the size, 0 without a lock or memory
+ */
 static ULONG BLITZ_ROUTINE filesize_c(CONST_STRPTR name BL_REG(d0))
 {
     struct DosLibrary *dos = dosbase_;
@@ -578,8 +695,22 @@ static ULONG BLITZ_ROUTINE filesize_c(CONST_STRPTR name BL_REG(d0))
     return size;
 }
 
-/* BLoad(name$,address/bank,length,offset,memtype): length 0 = the file's
-   size; a bank is (re)reserved with that length; -1 / 0 */
+/**
+ * @brief BLoad(filename$,address,length,offset,memtype): loads a file (or
+ * a part of it) to an address or into a bank.
+ *
+ * Length 0 = the file's size (0 for an empty or missing file).  A number
+ * below maxbanks is a bank: erased and reserved anew with that length and
+ * memtype (#499).  BUG(orig): a bank reserved for a file that cannot be
+ * opened stays (#487); Read's -1 counts as success (#488); the error
+ * check never checks (#485).
+ * @param name     d0: filename$
+ * @param adr      d1: the address or bank
+ * @param len      d2: the number of bytes
+ * @param offset   d3: the start in the file (0 = from the start)
+ * @param memtype  d4: the memory type of a bank
+ * @return d0: -1 if something was read, 0 if not
+ */
 static BB_BOOL BLITZ_ROUTINE bload2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1),
                                       ULONG len BL_REG(d2), LONG offset BL_REG(d3),
                                       ULONG memtype BL_REG(d4))
@@ -613,28 +744,55 @@ static BB_BOOL BLITZ_ROUTINE bload2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL
     return got ? BB_TRUE : BB_FALSE;
 }
 
-/* BLoad(name$,address/bank,length,offset) */
+/**
+ * @brief BLoad(filename$,address,length,offset): as above, memtype 0.
+ * @param name    d0: filename$
+ * @param adr     d1: the address or bank
+ * @param len     d2: the number of bytes (0 = the file's size)
+ * @param offset  d3: the start in the file
+ * @return d0: -1 if something was read, 0 if not
+ */
 static BB_BOOL BLITZ_ROUTINE bload_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1),
                                      ULONG len BL_REG(d2), LONG offset BL_REG(d3))
 {
     return bload2_c(name, adr, len, offset, 0);
 }
 
-/* BLoad(name$,address/bank,length) */
+/**
+ * @brief BLoad(filename$,address,length): as above from the start of the
+ * file, memtype 0.
+ * @param name  d0: filename$
+ * @param adr   d1: the address or bank
+ * @param len   d2: the number of bytes (0 = the file's size)
+ * @return d0: -1 if something was read, 0 if not
+ */
 static BB_BOOL BLITZ_ROUTINE bload0_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1),
                                       ULONG len BL_REG(d2))
 {
     return bload2_c(name, adr, len, 0, 0);
 }
 
-/* BLoad(name$,address/bank) */
+/**
+ * @brief BLoad(filename$,address): the whole file to an address or into a
+ * bank (memtype 0).
+ * @param name  d0: filename$
+ * @param adr   d1: the address or bank
+ * @return d0: -1 if something was read, 0 if not
+ */
 static BB_BOOL BLITZ_ROUTINE bload1_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1))
 {
     return bload2_c(name, adr, 0, 0, 0);
 }
 
-/* BLoad(name$): into a new bank (Reserve(length)), its number; -1 for an
-   empty or missing file, 0 if Reserve gives a negative number */
+/**
+ * @brief BLoad(filename$): loads a file into a new bank (Reserve(length)).
+ *
+ * BUG(orig) (#486): the bank is returned also when reading fails (it
+ * stays reserved).
+ * @param name  d0: filename$
+ * @return d0: the bank, -1 for an empty or missing file, 0 if Reserve
+ *         gives a negative number (no bank free)
+ */
 static ULONG BLITZ_ROUTINE bload4_c(CONST_STRPTR name BL_REG(d0))
 {
     ULONG size = filesize_c(name), bank;
@@ -648,8 +806,18 @@ static ULONG BLITZ_ROUTINE bload4_c(CONST_STRPTR name BL_REG(d0))
     return bank;
 }
 
-/* BSave(name$,address/bank,length): length 0 = the bank's length (an
-   address without a length: 0); -1 / 0 */
+/**
+ * @brief BSave(filename$,address/bank,length): writes memory (or a bank)
+ * to a file.
+ *
+ * Length 0 = the bank's length (an address without a length: 0).
+ * BUG(orig) (#489): a length with a bank writes that many bytes from the
+ * bank's start, whatever the bank's size.
+ * @param name  d0: filename$
+ * @param adr   d1: the address or bank
+ * @param len   d2: the number of bytes
+ * @return d0: -1 if written, 0 if not
+ */
 static BB_BOOL BLITZ_ROUTINE bsave_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1),
                                      ULONG len BL_REG(d2))
 {
@@ -675,15 +843,28 @@ static BB_BOOL BLITZ_ROUTINE bsave_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_
     return put < 0 ? BB_FALSE : BB_TRUE;
 }
 
+/**
+ * @brief BSave(filename$,bank): writes a whole bank (an address: nothing).
+ * @param name  d0: filename$
+ * @param adr   d1: the bank
+ * @return d0: -1 if written, 0 if not
+ */
 static BB_BOOL BLITZ_ROUTINE bsave2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1))
 {
     return bsave_c(name, adr, 0);
 }
 
-/* MakeDir(dir$): -1 / 0.  The original unlocks with whatever CreateDir
-   leaves in d1 (JSR _CreateDir:TST.l d0:BEQ oops:JSR _UnLock -
-   BUG(orig): not the lock in d0, #496).  The NDK inline of CreateDir gives no
-   access to d1 after the call, so the call is inline assembler. */
+/**
+ * @brief MakeDir(dirname$): creates a directory (dos CreateDir).
+ *
+ * The original unlocks with whatever CreateDir leaves in d1 (JSR
+ * _CreateDir:TST.l d0:BEQ oops:JSR _UnLock - BUG(orig): not the lock in
+ * d0, #496; OS 3.2 leaves the lock in d1 as well).  The NDK inline of
+ * CreateDir gives no access to d1 after the call, so the call is inline
+ * assembler.
+ * @param name  d0: dirname$
+ * @return d0: -1 if created, 0 if not
+ */
 static BB_BOOL BLITZ_ROUTINE makedir_c(CONST_STRPTR name BL_REG(d0))
 {
     struct DosLibrary *dos = dosbase_;
@@ -701,7 +882,12 @@ static BB_BOOL BLITZ_ROUTINE makedir_c(CONST_STRPTR name BL_REG(d0))
     return BB_TRUE;
 }
 
-/* Rename(old$,new$): dos.library's result */
+/**
+ * @brief Rename(oldfilename$,newfilename$): renames a file (dos Rename).
+ * @param from  d0: oldfilename$
+ * @param to    d1: newfilename$
+ * @return d0: dos.library's result (DOSTRUE / 0)
+ */
 static ULONG BLITZ_ROUTINE rename_c(CONST_STRPTR from BL_REG(d0), CONST_STRPTR to BL_REG(d1))
 {
     struct DosLibrary *dos = dosbase_;
@@ -709,9 +895,18 @@ static ULONG BLITZ_ROUTINE rename_c(CONST_STRPTR from BL_REG(d0), CONST_STRPTR t
     return (ULONG)Rename(from, to);
 }
 
-/* ChangeDir dir$: CurrentDir(Lock(dir$)), the previous ChangeDir lock
-   unlocked (AmiBlitz3: MOVE.L oldlock - func-library7 and BSS2 tested
-   and unlocked the word MOVE oldlock,d1 left in d1); -1 / 0 */
+/**
+ * @brief ChangeDir dir$: makes a directory the current one
+ * (CurrentDir(Lock(dir$))).
+ *
+ * The previous ChangeDir lock is unlocked (AmiBlitz3: MOVE.L oldlock -
+ * func-library7 and BSS2 tested and unlocked the word MOVE oldlock,d1
+ * left in d1).  BUG(orig): the program's own current directory is not
+ * kept (#491); if CurrentDir returns 0 the new lock is current but not
+ * remembered, the result 0 (#490).
+ * @param name  d0: dir$
+ * @return d0: -1 if changed, 0 if not
+ */
 static BB_BOOL BLITZ_ROUTINE cd_c(CONST_STRPTR name BL_REG(d0))
 {
     struct DosLibrary *dos = dosbase_;
@@ -729,7 +924,12 @@ static BB_BOOL BLITZ_ROUTINE cd_c(CONST_STRPTR name BL_REG(d0))
 
 #define LDF_FINDVOLUME (LDF_READ | LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS | LDF_ENTRY)
 
-/* FindVolume(name): the DosList entry (devices, volumes, assigns), 0 */
+/**
+ * @brief FindVolume(volumename): the DosList entry of a device, volume or
+ * assign (FindDosEntry).
+ * @param name  d0: the name (without ":")
+ * @return d0: the struct DosList, 0 if not found
+ */
 static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0))
 {
     struct DosLibrary *dos = dosbase_;
@@ -742,10 +942,17 @@ static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0))
     return (ULONG)dl;
 }
 
-/* DeviceName$(volumename$): the name of the handler task of a device or
-   volume, with ":" (AmiBlitz3's version).  A ":" at the end of the
-   argument is cut; the result is written over the argument (a3 = its
-   start, the length below a2); "" if the name is not found. */
+/**
+ * @brief DeviceName$(volumename$): the name of the handler task of a
+ * device or volume, with ":" (AmiBlitz3's version).
+ *
+ * A ":" at the end of the argument is cut; the result is written over the
+ * argument (a3 = its start, the length below a2), with a terminating 0.
+ * BUG(orig): the name is taken from the string space (a3), not from d0
+ * (#493); the task is read through dol_Task without a check (#494).
+ * @param lens  a2: the argument stack, the argument's length at -4(a2)
+ * @return d0: the length of the name, 0 ("") if not found
+ */
 static ULONG BLITZ_ROUTINE getdevname_c(const ULONG *lens BL_REG(a2))
 {
     struct DosLibrary *dos = dosbase_;
@@ -855,9 +1062,20 @@ static void execfinit(ULONG nhunks, ULONG size)
     Close(fh);
 }
 
-/* SaveExec name$,list(): -1; 0 if list() is no list; the name's address
-   if the file cannot be made or the list is empty (BUG(orig): the file
-   stays open, #501) */
+/**
+ * @brief SaveExec filename$,list(): writes an executable from a Blitz list
+ * of NEWTYPE .hunk (code hunks with RELOC32).
+ *
+ * BUG(orig): a file it cannot create returns the name's address; an empty
+ * list leaves the file open with only the header (#501); the header gets
+ * one size slot, one HUNK_END behind all hunks, and each RELOC32 block
+ * names its own hunk (#503); other hunk types are skipped but counted
+ * (#502).
+ * @param name  d0: filename$
+ * @param list  d1: the list array (its header in front of it)
+ * @return d0: -1; 0 if list() is no list; the name's address if the file
+ *         cannot be made or the list is empty
+ */
 static ULONG BLITZ_ROUTINE saveexec_c(CONST_STRPTR name BL_REG(d0), const UBYTE *list BL_REG(d1))
 {
     const struct listhead *lh = (const struct listhead *)(list - sizeof(struct listhead));
@@ -883,37 +1101,63 @@ static ULONG BLITZ_ROUTINE saveexec_c(CONST_STRPTR name BL_REG(d0), const UBYTE 
 
 /* ------------------------------------------------- exec and hardware */
 
-/* CachesOn bitmask: CacheControl(bitmask,bitmask) - the old bits */
+/**
+ * @brief CachesOn bitmask: switches caches on (exec
+ * CacheControl(bitmask,bitmask)).
+ * @param mask  d0: the CACRF_ bits
+ * @return d0: the old cache bits
+ */
 static ULONG BLITZ_ROUTINE cacheon_c(ULONG mask BL_REG(d0))
 {
     return CacheControl(mask, mask);
 }
 
-/* CachesOff bitmask: CacheControl(0,bitmask) */
+/**
+ * @brief CachesOff bitmask: switches caches off (exec
+ * CacheControl(0,bitmask)).
+ * @param mask  d0: the CACRF_ bits
+ * @return d0: the old cache bits
+ */
 static ULONG BLITZ_ROUTINE cacheoff_c(ULONG mask BL_REG(d0))
 {
     return CacheControl(0, mask);
 }
 
+/**
+ * @brief Reboot: a cold reboot (exec ColdReboot).
+ * @return does not return
+ */
 static void BLITZ_ROUTINE reboot_c(void)
 {
     ColdReboot();
 }
 
-/* MemFree: AvailMem(MEMF_PUBLIC) */
+/**
+ * @brief MemFree: the free public memory (AvailMem(MEMF_PUBLIC)).
+ * @return d0: the bytes
+ */
 static ULONG BLITZ_ROUTINE memfree_c(void)
 {
     return AvailMem(MEMF_PUBLIC);
 }
 
-/* Lisa: DENISEID ($DFF07C) into the low word of d0 (MOVE.w) */
+/**
+ * @brief Lisa: the Lisa (Denise) chip version, DENISEID ($DFF07C).
+ * @param result  d0: the caller's d0 (its high word stays, MOVE.w)
+ * @return d0.w: DENISEID
+ */
 static ULONG BLITZ_ROUTINE lisa_c(ULONG result BL_REG(d0))
 {
     BL_SETW(result, *(volatile UWORD *)0xdff07c);
     return result;
 }
 
-/* Timer: CIA-A TOD high, mid, low (the read of high latches it) */
+/**
+ * @brief Timer: the CIA-A TOD counter (vertical blanks).
+ *
+ * High, mid, low byte (the read of high latches it).
+ * @return d0: the 24-bit count (a word function: its low word)
+ */
 static ULONG BLITZ_ROUTINE timer_c(void)
 {
     ULONG t = *(volatile UBYTE *)0xbfea01;
@@ -922,18 +1166,29 @@ static ULONG BLITZ_ROUTINE timer_c(void)
     return t << 8 | *(volatile UBYTE *)0xbfe801;
 }
 
-/* KeyCode: CIA-A SDR, the raw keyboard byte */
+/**
+ * @brief KeyCode: the raw keyboard byte of CIA-A SDR ($BFEC01).
+ * @return d0: the byte (not decoded)
+ */
 static ULONG BLITZ_ROUTINE keycode_c(void)
 {
     return *(volatile UBYTE *)0xbfec01;
 }
 
-/* BlitterDone: -1 if the blitter is idle (one BTST, no Agnus wait) */
+/**
+ * @brief BlitterDone: whether the blitter is idle (one BTST of DMACONR's
+ * BBUSY, no Agnus wait).
+ * @return d0: -1 if idle, 0 if busy
+ */
 static BB_BOOL BLITZ_ROUTINE blitdone_c(void)
 {
     return BL_BLITBUSY(BL_CUSTOM) ? BB_FALSE : BB_TRUE;
 }
 
+/**
+ * @brief WaitBlitter: waits until the blitter is idle (DMACONR's BBUSY).
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE blitwait_c(void)
 {
     while (BL_BLITBUSY(BL_CUSTOM))
@@ -942,11 +1197,23 @@ static void BLITZ_ROUTINE blitwait_c(void)
 
 /* ------------------------------------------------------ small helpers */
 
+/**
+ * @brief Max(a,b): the larger of two signed longs.
+ * @param a  d0: a
+ * @param b  d1: b
+ * @return d0: the larger
+ */
 static LONG BLITZ_ROUTINE max_c(LONG a BL_REG(d0), LONG b BL_REG(d1))
 {
     return b < a ? a : b;
 }
 
+/**
+ * @brief Min(a,b): the smaller of two signed longs.
+ * @param a  d0: a
+ * @param b  d1: b
+ * @return d0: the smaller
+ */
 static LONG BLITZ_ROUTINE min_c(LONG a BL_REG(d0), LONG b BL_REG(d1))
 {
     return b > a ? a : b;
@@ -955,6 +1222,16 @@ static LONG BLITZ_ROUTINE min_c(LONG a BL_REG(d0), LONG b BL_REG(d1))
 /* CopyByte/CopyWord/CopyLong src,dest,n: nothing for n < 0 (d0 = 0
    then, the source otherwise, like the original); n = 0 is 2^32 units
    (BUG(orig), #492) */
+
+/**
+ * @brief CopyByte sourceaddr,destaddr,bytes: copies bytes, ascending.
+ *
+ * Nothing for a negative count.  BUG(orig) (#492): 0 copies 2^32 bytes.
+ * @param src  d0: sourceaddr
+ * @param d    d1: destaddr
+ * @param n    d2: the number of bytes
+ * @return d0: 0 for n < 0, else the source (as the original leaves it)
+ */
 static ULONG BLITZ_ROUTINE copybyte_c(const UBYTE *src BL_REG(d0), UBYTE *d BL_REG(d1),
                                       LONG n BL_REG(d2))
 {
@@ -968,6 +1245,15 @@ static ULONG BLITZ_ROUTINE copybyte_c(const UBYTE *src BL_REG(d0), UBYTE *d BL_R
     return (ULONG)src;
 }
 
+/**
+ * @brief CopyWord sourceaddr,destaddr,words: copies words, ascending.
+ *
+ * Nothing for a negative count.  BUG(orig) (#492): 0 copies 2^32 words.
+ * @param src  d0: sourceaddr
+ * @param d    d1: destaddr
+ * @param n    d2: the number of words
+ * @return d0: 0 for n < 0, else the source
+ */
 static ULONG BLITZ_ROUTINE copyword_c(const UWORD *src BL_REG(d0), UWORD *d BL_REG(d1),
                                       LONG n BL_REG(d2))
 {
@@ -981,6 +1267,15 @@ static ULONG BLITZ_ROUTINE copyword_c(const UWORD *src BL_REG(d0), UWORD *d BL_R
     return (ULONG)src;
 }
 
+/**
+ * @brief CopyLong sourceaddr,destaddr,longs: copies longs, ascending.
+ *
+ * Nothing for a negative count.  BUG(orig) (#492): 0 copies 2^32 longs.
+ * @param src  d0: sourceaddr
+ * @param d    d1: destaddr
+ * @param n    d2: the number of longs
+ * @return d0: 0 for n < 0, else the source
+ */
 static ULONG BLITZ_ROUTINE copylong_c(const ULONG *src BL_REG(d0), ULONG *d BL_REG(d1),
                                       LONG n BL_REG(d2))
 {
@@ -994,8 +1289,13 @@ static ULONG BLITZ_ROUTINE copylong_c(const ULONG *src BL_REG(d0), ULONG *d BL_R
     return (ULONG)src;
 }
 
-/* GTTagValue([tag]): TAG_USER|$80000 (+ tag) - inline, copied by the
-   compiler */
+/**
+ * @brief GTTagValue([tagvalue]): GadTools' tag base TAG_USER|$80000 (+
+ * tagvalue in d0) - inline code, copied by the compiler.
+ *
+ * _gttags: the form with an argument (ADDI.l to d0), _gttags2: without.
+ * @return d0: the tag
+ */
 BLITZ_INLINE(_gttags, "addi.l #0x80080000,d0");
 BLITZ_INLINE(_gttags2, "move.l #0x80080000,d0");
 
