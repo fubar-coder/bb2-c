@@ -297,6 +297,20 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   named in the commit. The list is in `docs/libs/variable-split.md`.
   The register-level translations (2dlib, medlib, polylib: static
   `d0`-`d7`/`a0`-`a6`) are a rewrite of their own after stage 2.
+* **Function documentation** (user decision 2026-10-31, after stage 2
+  of the readable names, before the error check area fixes): Doxygen
+  comments (`/** @brief … @param … @return … */`), which clangd shows on
+  hover. They cover:
+  - the public library functions, i.e. the Blitz commands: what the
+    command does, the parameters with their registers (d0, d1, …), the
+    result, error cases and `BUG(orig)` notes with their issues. The
+    Blitz syntax stays in `BLITZ_NAME`;
+  - the quasi-libraries with the same form: `libs/userlibs/rwe/optidec.h`,
+    the code in `shared/` (xtra, filereq, …) and `tools/lib/`.
+  Comments only, every output byte-identical. Possible later: a check
+  with clang's `-Wdocumentation` in the host build (an `@param` that does
+  not match the parameters), and an optional `doxygen` target outside
+  the build.
 * **Warnings of `blitzlibcheck`:** 73 warnings per acidlibs set (and
   three of rigtmenulib): normal library code refers into the error check
   area – a command that fails at run time (e.g. `Screen`: `OpenScreen`
