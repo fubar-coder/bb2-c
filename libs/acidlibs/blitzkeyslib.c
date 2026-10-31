@@ -139,31 +139,32 @@ void BLITZ_ROUTINE dobkeys(WORD on BL_REG(d0))
         ison = ~ison;                   /* BUG(orig) (#408): handler stays */
 }
 
-/* BlitzKey / input handler: d0, d1 = the caller's registers (their upper
-   words survive the word loads of the original) */
-static ULONG BLITZ_ROUTINE binkey_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1))
+/* BlitzKey / input handler: code = d0, posqual = d1 (the buffer position,
+   then the qualifier) = the caller's registers (their upper words survive
+   the word loads of the original) */
+static ULONG BLITZ_ROUTINE binkey_c(ULONG code BL_REG(d0), ULONG posqual BL_REG(d1))
 {
-    UBYTE *a0 = key;
+    UBYTE *keydata = key;
     struct bl_regs r;
 
-    BL_SETW(d1, *(UWORD *)(a0 + 0x70));
+    BL_SETW(posqual, *(UWORD *)(keydata + 0x70));
     for (;;) {
-        BL_SETW(d1, ((UWORD)d1 + 4) & 127);
-        if ((UWORD)d1 == *(UWORD *)(a0 + 0x72))
+        BL_SETW(posqual, ((UWORD)posqual + 4) & 127);
+        if ((UWORD)posqual == *(UWORD *)(keydata + 0x72))
             return (ULONG)-1;           /* nokey */
-        *(UWORD *)(a0 + 0x70) = (UWORD)d1;
-        BL_SETW(d0, *(UWORD *)(a0 + 0x74 + (WORD)d1));
-        if (d0 & 0x80)
+        *(UWORD *)(keydata + 0x70) = (UWORD)posqual;
+        BL_SETW(code, *(UWORD *)(keydata + 0x74 + (WORD)posqual));
+        if (code & 0x80)
             continue;                   /* key up: retry */
-        if ((UWORD)d0 == 0x7d)
+        if ((UWORD)code == 0x7d)
             return (ULONG)-1;
         break;
     }
-    BL_SETW(d1, *(UWORD *)(a0 + 0x76 + (WORD)d1));
-    bqual = (UWORD)d1;
-    r.d0 = d0;
-    r.d1 = d1;
-    r.a0 = (ULONG)a0;
+    BL_SETW(posqual, *(UWORD *)(keydata + 0x76 + (WORD)posqual));
+    bqual = (UWORD)posqual;
+    r.d0 = code;
+    r.d1 = posqual;
+    r.a0 = (ULONG)keydata;
     r.a1 = 0;
     return BLITZ_ALIBJSR(TOK_qconvertkey, r);
 }
@@ -185,8 +186,8 @@ __asm__("   .text\n   .even\n"
 /* RawStatus(code): BTST d1,0(a0,d0.w):SNE d0:EXT d0 */
 static UWORD BLITZ_ROUTINE dorstat_c(UWORD code BL_REG(d0))
 {
-    UBYTE *a0 = key + matoff;           /* ADD matoff(pc),a0 (ADDA.w) */
+    UBYTE *matrix = key + matoff;       /* ADD matoff(pc),a0 (ADDA.w) */
 
-    return (a0[(WORD)(code >> 3)] & (1 << (code & 7))) ? 0xffff : 0;
+    return (matrix[(WORD)(code >> 3)] & (1 << (code & 7))) ? 0xffff : 0;
 }
 BLITZ_THUNK_POST(dorstat, dorstat_c, "d0/a1", "move.w d0,2(sp)");
