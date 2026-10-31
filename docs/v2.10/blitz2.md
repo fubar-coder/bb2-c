@@ -224,7 +224,7 @@ from the 1.95 source is present in 2.10 unchanged – except #2. [B]
 | #939 | open | [compiler/Objects] Object addresses are table + (WORD)(n << shift) (`lsl.w` + `add.w`/`adda.w`): objects with n × size ≥ 32 KB are addressed before the object table (`tokens1.c` getmaxlib/dofree/douse, `eval.c` addrcode/doaddr, `libcall.c` toreg; the range forms of shapeslib LoadShapes/DecodeShapes and spriteslib LoadSprites likewise) | unchanged |
 | #940 | open | [compiler/Procedures] End Statement / End Function and Statement Return / Function Return are not checked against the kind of procedure: a string Function ended with End Statement pops its return address (`tokens2.c` doend, stateret/funcret, endstate) | unchanged |
 | #942 | open | [compiler/Macros] A `:` right after the macro name stays in the macro text: `Macro a:1:End Macro` expands to `:1` (`tokens1.c` domacro) | unchanged |
-| #943 | open | [compiler/Executable] All relocations go into one HUNK_RELOC32 block: an executable with more than 65535 relocations may not load on AmigaOS 2.0+ (`parse.c` executable writer) | unchanged |
+| #943 | open | [compiler/Executable] All relocations go into one HUNK_RELOC32 block: an executable with more than 65535 relocations may not load on AmigaOS 2.0+ (`parse.c` executable writer, test `bug_orig_compiler_reloc32_one_block`) | unchanged |
 
 The `BUG(orig)` comments in `programs/blitz2/src` refer to the same code
 and all of them apply to 2.10 as well; #2, the one bug 2.10 fixed, is a
