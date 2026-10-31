@@ -177,12 +177,21 @@ static UBYTE *dbuffend;                 /* end of buffer */
 static UWORD *chzero;                   /* a zero word in chipmem */
 
 struct sound {
-    UBYTE *data;
-    UWORD period, len;
-    UBYTE *rep;
-    UWORD replen, mark;
+    UBYTE *data;                        /* +0 */
+    UWORD period, len;                  /* +4, +6 (words) */
+    UBYTE *rep;                         /* +8 */
+    UWORD replen, mark;                 /* +12 (words), +14 */
 };
+static_assert(sizeof(struct sound) == 16);
 #define MARK_CL 0x634c                  /* "cL" */
+
+/* the start of an 8SVX VHDR chunk (IFF Voice8Header) */
+struct vhdr {
+    ULONG oneshot;                      /* +0 oneShotHiSamples */
+    ULONG repeat;                       /* +4 repeatHiSamples */
+    ULONG cycle;                        /* +8 samplesPerHiCycle */
+    UWORD rate;                         /* +12 samplesPerSec */
+};
 
 /* messages / error routines: err1-err4 in the normal code (texts in the
    error area), err5 in the error area */
@@ -347,9 +356,9 @@ void BLITZ_ROUTINE _cludgesound(ULONG *p BL_REG(d1))
         if ((LONG)end <= (LONG)p)               /* CMP.l a0,a1:BLE */
             goto err1;
     }
-    oneshot = p[0];                             /* MOVEM.l (a0),d5-d6 */
-    rep = p[1];
-    period = bl_divu_w(3579440, *(UWORD *)((UBYTE *)p + 12));
+    oneshot = ((const struct vhdr *)p)->oneshot; /* MOVEM.l (a0),d5-d6 */
+    rep = ((const struct vhdr *)p)->repeat;
+    period = bl_divu_w(3579440, ((const struct vhdr *)p)->rate);
     p = (ULONG *)((UBYTE *)p + size);
     for (;;) {                                  /* wb */
         id = *p++;
