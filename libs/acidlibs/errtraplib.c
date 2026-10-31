@@ -70,9 +70,9 @@ static ULONG BLITZ_ROUTINE dofail_c(ULONG num BL_REG(d1))
     if (text) {
         vbr_[TRAP0] = oldtrap;
         {
-            register ULONG d0 __asm("d0") = text;
-            register ULONG d1 __asm("d1") = num;
-            __asm volatile("trap #0" : "+d"(d0), "+d"(d1) : : "memory");
+            register ULONG text_reg __asm("d0") = text;
+            register ULONG num_reg __asm("d1") = num;
+            __asm volatile("trap #0" : "+d"(text_reg), "+d"(num_reg) : : "memory");
         }
     }
     return text;

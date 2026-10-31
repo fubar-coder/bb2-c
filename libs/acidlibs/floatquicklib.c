@@ -64,15 +64,15 @@ BLITZ_THUNK(quicktofloat, quicktofloat_c, "d1/a0-a1");
 /* 'doit2 of floattoquick: d0 = FFP number with the sign bit clear */
 static ULONG f2q(const void *ffp, ULONG x)
 {
-    ULONG i, d2;
+    ULONG i, intpart;
 
     i = BLITZ_BASEJSR1(ffp, LVO_SPFix, x);          /* JSR -30(a6) */
-    d2 = (ULONG)(UWORD)i << 16;                     /* MOVE d0,d2:SWAP d2:CLR d2 ;integer part */
+    intpart = (ULONG)(UWORD)i << 16;                /* MOVE d0,d2:SWAP d2:CLR d2 ;integer part */
     i = BLITZ_BASEJSR1(ffp, LVO_SPFlt, i);          /* d0=float of INT PART */
     x = BLITZ_BASEJSR2(ffp, LVO_SPSub, x, i);       /* num-int -> d0=float of fraction */
     x = BLITZ_BASEJSR2(ffp, LVO_SPMul, x, f65536);  /* frac * 65536 */
     x = BLITZ_BASEJSR1(ffp, LVO_SPFix, x);          /* back to int. */
-    return d2 | (UWORD)x;                           /* MOVE d0,d2:MOVE.l d2,d0 */
+    return intpart | (UWORD)x;                      /* MOVE d0,d2:MOVE.l d2,d0 */
 }
 
 /* floattoquick - BCHG #7,d0:BEQ 'doit:BSR 'doit2:NEG.l d0:RTS
