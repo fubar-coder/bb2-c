@@ -1,9 +1,9 @@
-; waitjob.s - TEST:waitjob of the snapshot mode of amiga_emulation
+; waitjob.s - SNAP:waitjob of the snapshot mode of amiga_emulation
 ; (amiga_emulation.c, amiga-emulation/README.md "Snapshot mode").
 ;
-; Returns as soon as TEST:job.script exists: polls it with Lock every
+; Returns as soon as SNAP:job.script exists: polls it with Lock every
 ; 2 ticks (40 ms).  The prologue TEST:run.script runs it after it has
-; written TEST:ready; the library saves the state while the waiter
+; written SNAP:ready; the library saves the state while the waiter
 ; loops, and every restored session continues in this loop.
 ;
 ; 68000 code and dos.library calls of V0 only (OpenLibrary version 0):
@@ -45,5 +45,5 @@ found:	move.l	d0,d1
 	rts
 
 dosname:	dc.b	"dos.library",0
-fname:		dc.b	"TEST:job.script",0
+fname:		dc.b	"SNAP:job.script",0
 	even

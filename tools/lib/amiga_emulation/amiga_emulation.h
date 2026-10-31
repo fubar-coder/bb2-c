@@ -86,32 +86,35 @@ struct amiga_emulation_params {
     const char *emulation_dir;  /* NULL: $AMIGA_EMULATION_DIR, else built in */
     const char *work_dir;       /* NULL: new directory under $TMPDIR, removed by free */
     const char *amiberry;       /* NULL: "amiberry" from PATH */
-    int snapshot;               /* EXPERIMENT: start from a savestate (below) */
+    int cold;                   /* always boot, no snapshot (below) */
 };
 
 /*
- * EXPERIMENT (not used by the tests): snapshot mode, `snapshot` or
- * AMIGA_EMULATION_SNAPSHOT=1.  A session with a slot runs with fixed
- * directories in the slot (slot-K/test for TEST:, slot-K/mnt-I for each
- * writable mount; read-only mounts keep their host path): the library
- * copies the work directory's TEST: and the writable mounts in at the
- * start and back at the end of amiga_emulation_join (Amiberry stores the
- * real host paths of the mounts in the savestate and uses those, not the
- * configuration's, when it restores).  TEST:run.script is then a fixed
- * prologue that writes TEST:ready and waits (a 96-byte 68000/Kickstart 1.x
- * waiter, polling every 2 ticks) for TEST:job.script, the test's script.
- * The first session of a configuration boots cold, saves the state at
- * TEST:ready into slot-K/snap-HASH.uss (HASH over the configuration, the
- * prologue, the waiter and the identity of the ROM, the hardfile and the
- * Amiberry binary) and continues; later sessions start Amiberry with
- * --statefile.  A restore that does not reach the job within
- * SNAP_RESTORE_GRACE seconds is dropped (the state file too) and the
- * session boots cold.  The job begins with SetClock LOAD (the restored
- * system clock is the snapshot's; on the A500 machines a DATE line with
- * the host's time instead: SetClock LOAD takes 1.8 s there).  Without a
- * slot: cold boot as usual.  The slot's directories are emptied after the
- * results are copied back; the snapshots stay (0.6 MB A1200, 76 KB A500).
+ * Snapshot mode (the default; off with `cold` or AMIGA_EMULATION_SNAPSHOT=0):
+ * a session with a slot starts Amiberry from a savestate of the booted
+ * system instead of booting it (about 0.5 s instead of 14 s).  Amiberry
+ * keeps the host paths of the directory mounts in the savestate and uses
+ * those on a restore, not the configuration's; the session therefore
+ * mounts fixed paths of its slot, which are links to the real
+ * directories: slot-K/test to TEST:, slot-K/mnt-I to mount I.  An extra
+ * volume SNAP: (slot-K/ctl) holds the waiter and the job; a mount of the
+ * test must not be called SNAP (the session then boots cold).
+ * TEST:run.script is a fixed prologue (1.3 syntax) that writes
+ * SNAP:ready and runs SNAP:waitjob (waitjob.s, 68000, dos.library V0)
+ * until SNAP:job.script exists; the job writes SNAP:started, sets the
+ * clock (SetClock LOAD, on the A500 machines a DATE line with the host's
+ * time) and runs the test's script.  The first session of a configuration
+ * in a slot boots cold, saves the state at SNAP:ready into
+ * slot-K/snap-KEY.uss (amiga_emulation_snapshot_key) and goes on; later
+ * ones restore it.  A restore that does not reach SNAP:started within 3 s
+ * (or whose Amiberry ends) is dropped, the state file too, and the session
+ * boots cold.  A slot keeps its AMIGA_EMULATION_SNAP_KEEP most recently
+ * used snapshots.  Sessions end with SIGTERM right after run.done; at the
+ * end TEST:run.script is the test's script again and the links are
+ * removed.  The work directory's snapshot.log tells what the session did.
+ * Without a slot (a runner over the limit): cold boot.
  */
+#define AMIGA_EMULATION_SNAP_KEEP 8u
 
 /* the RTG variant: Workbench on uaegfx (the other hardfile) */
 extern const struct amiga_emulation_option amiga_emulation_rtg[];
@@ -162,6 +165,22 @@ char *amiga_emulation_config(const struct amiga_emulation_params *p, const char 
 char *amiga_emulation_script(const char *script);
 
 const char *amiga_emulation_status_name(enum amiga_emulation_status s);
+
+/* for tests: the configuration of the snapshot mode for slot directory
+   slot_dir (TEST: slot_dir/test, mount I slot_dir/mnt-I, SNAP: slot_dir/
+   ctl); NULL with a message in err, also if a mount is SNAP */
+char *amiga_emulation_snapshot_config(const struct amiga_emulation_params *p,
+                                      const char *emulation_dir, const char *slot_dir, char *err,
+                                      size_t errlen);
+/* the key of a snapshot: a hash of that configuration, the prologue, the
+   waiter and the identity (device, inode, size, modification time) of the
+   Kickstart ROM, the hardfile DH0 and the Amiberry program (amiberry: NULL
+   for "amiberry" from PATH) */
+unsigned long long amiga_emulation_snapshot_key(const char *cfg, const char *amiberry);
+/* keeps the keep most recently used snap-*.uss of slot_dir (by
+   modification time; a restore touches its file) and removes the rest and
+   left-over save-*.uss; the number removed, -1 without the directory */
+int amiga_emulation_snapshot_prune(const char *slot_dir, unsigned keep);
 
 /* checks the Kickstart ROM file before a run: it exists, and an encrypted
    one (Cloanto, "AMIROMTYPE1") has rom.key in the directory of its real

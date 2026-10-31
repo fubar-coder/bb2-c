@@ -30,6 +30,15 @@ add_test(NAME amiga_emulation_a500 COMMAND test_amiga_emulation_a500)
 math(EXPR limit "200 + 2 * ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(amiga_emulation_a500 PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+# the snapshot mode (save, restore, a corrupted state, cold), in a slot
+# directory of its own while it holds one of the shared slots
+add_executable(test_amiga_emulation_snapshot test_amiga_emulation_snapshot.c)
+target_link_libraries(test_amiga_emulation_snapshot PRIVATE lib_amiga_emulation lib_hunk)
+target_compile_options(test_amiga_emulation_snapshot PRIVATE -Wno-unused-function)
+add_test(NAME amiga_emulation_snapshot COMMAND test_amiga_emulation_snapshot)
+math(EXPR limit "240 + ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(amiga_emulation_snapshot PROPERTIES
+	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 
 # the .xtra model of shared/xtra (lib_xtra): snitch programs, one per file
 foreach(t xtra_load xtra_blitz2 xtra_bb22 xtra_ab3 xtra_ab3_update)
@@ -40,7 +49,7 @@ foreach(t xtra_load xtra_blitz2 xtra_bb22 xtra_ab3 xtra_ab3_update)
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
 
-# the check of TEST:waitjob (static_assert in amiga_emulation.c) with
+# the check of SNAP:waitjob (static_assert in amiga_emulation.c) with
 # waiters assembled the wrong way
 add_test(NAME amiga_emulation_waiter_broken COMMAND ${CMAKE_COMMAND} -DCC=${CMAKE_C_COMPILER}
 	-DVASM=${AMIGA_EMULATION_VASM} -DSRC=${CMAKE_CURRENT_SOURCE_DIR}/../lib/amiga_emulation

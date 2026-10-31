@@ -4,7 +4,7 @@ set(AMIGA_EMULATION_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../amiga-emulation
 	CACHE PATH "directory with the Kickstart ROM and the hardfiles")
 get_filename_component(emulation_dir ${AMIGA_EMULATION_DIR} ABSOLUTE)
 
-# TEST:waitjob of the snapshot mode, an AmigaDOS executable: assembled by
+# SNAP:waitjob of the snapshot mode, an AmigaDOS executable: assembled by
 # the vasm of the m68k toolchain (the m68k build passes its VASM, the
 # native profile finds it like the toolchain file does) and embedded
 # into the library (#embed; its hunk header is checked by static_assert)
@@ -19,7 +19,7 @@ add_custom_command(OUTPUT ${waiter}
 	COMMAND ${AMIGA_EMULATION_VASM} -quiet -m68000 -Fhunkexe -nosym -o ${waiter}
 		${CMAKE_CURRENT_SOURCE_DIR}/waitjob.s
 	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/waitjob.s
-	COMMENT "Assembling TEST:waitjob")
+	COMMENT "Assembling SNAP:waitjob")
 add_custom_target(amiga_emulation_waiter DEPENDS ${waiter})
 
 add_library(lib_amiga_emulation STATIC amiga_emulation.c)
