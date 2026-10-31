@@ -285,6 +285,15 @@ static struct BL_PACKED {
 _Static_assert(__builtin_offsetof(__typeof__(v), rexxbase) == 66, "layout");
 _Static_assert(__builtin_offsetof(__typeof__(v), currentarg) == 0xeca - 0xe62, "layout");
 
+/* RXCreatePort's block: the received messages not yet current
+   (messagelist) and the messages sent without waiting (sentlist), each
+   a 0 ended list of 32 longs */
+struct msglists {
+    ULONG messages[32];
+    ULONG sent[32];
+};
+static_assert(sizeof(struct msglists) == 256);
+
 /* rexxsyslib CreateArgString(a0 = string, d0 = length) / DeleteArgString */
 static ULONG createargstring(const UBYTE *s, ULONG len)
 {
@@ -553,7 +562,7 @@ static struct RexxMsg *makemsg(void)
 
 static void makemsgargs(void)
 {
-    ULONG *arg = (ULONG *)((UBYTE *)v.thismsg + 0x28);  /* rm_Args */
+    ULONG *arg = (ULONG *)v.thismsg->rm_Args;
     const UBYTE *s = (const UBYTE *)msgstring;
     ULONG n, argstr;
 
@@ -679,7 +688,7 @@ BLITZ_THUNK(_rxsendcommand, rxsendcommand_c, "d1/a0-a1");
 
 static void freemsg(ULONG *item)
 {
-    ULONG *args = (ULONG *)((UBYTE *)v.thismsg + 0x28);
+    ULONG *args = (ULONG *)v.thismsg->rm_Args;
     int n;
 
     for (n = 0; n < 16 && args[n]; n++)         /* DBRA d3 = 15 */
@@ -894,7 +903,7 @@ BLITZ_THUNK(_rxdeleteport, rxdeleteport_c, "d0-d1/a0-a1");
 /* RXCreatePort(name$): the name's length on the a2 stack */
 static ULONG BLITZ_ROUTINE rxcreateport_c(ULONG name BL_REG(d0), const ULONG *args BL_REG(a2))
 {
-    ULONG *lists;
+    struct msglists *lists;
 
     if (msgport)
         return 0;
@@ -904,10 +913,10 @@ static ULONG BLITZ_ROUTINE rxcreateport_c(ULONG name BL_REG(d0), const ULONG *ar
         return 0;
     msgport->mp_Node.ln_Name = (char *)msgportname;
     if (addport_d0(msgport)) {          /* BUG(orig): d0 of AddPort (#528) */
-        lists = AllocVec(256, MEMF_PUBLIC | MEMF_CLEAR);
+        lists = AllocVec(sizeof(struct msglists), MEMF_PUBLIC | MEMF_CLEAR);
         if (lists) {
-            v.messagelist = lists;
-            v.sentlist = lists + 32;
+            v.messagelist = lists->messages;
+            v.sentlist = lists->sent;
             return (ULONG)msgport;
         }
     }
