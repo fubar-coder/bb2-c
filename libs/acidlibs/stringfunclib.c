@@ -737,7 +737,9 @@ static ULONG BLITZ_ROUTINE replace_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(
     const ULONG *sp = lens;
     ULONG slen, flen, newlen, left, n;
     UBYTE *out;
-    const UBYTE *at, *other, *scan, *src;
+    const UBYTE *at, *scan, *src;
+    const UBYTE *find;                          /* a1: the find string */
+    const UBYTE *repl;                          /* a1: the replacement string */
 
     slen = BL_POPL(sp);                         /* len 1 */
     flen = BL_POPL(sp);                         /* len 2 */
@@ -757,16 +759,16 @@ static ULONG BLITZ_ROUTINE replace_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(
             break;
         }
         scan = at;                              /* MOVE.l a0,-(a7) */
-        other = f;
+        find = f;
         n = flen;
         if (csense) {
             do {
-                if (*scan++ != *other++)        /* 'norm: CMPM.b */
+                if (*scan++ != *find++)         /* 'norm: CMPM.b */
                     break;
             } while (--n);
         } else {
             do {
-                UBYTE sc = upcase(*scan++), fc = upcase(*other++);
+                UBYTE sc = upcase(*scan++), fc = upcase(*find++);
                 if (sc != fc)                   /* BNE '_next2 */
                     break;
             } while (--n);
@@ -777,9 +779,9 @@ static ULONG BLITZ_ROUTINE replace_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(
             left--;
             continue;
         }
-        other = r;                              /* 'match */
+        repl = r;                               /* 'match */
         for (n = *sp; n; n--)                   /* 'loop3 */
-            *blitz_string++ = *other++;
+            *blitz_string++ = *repl++;
         newlen += *sp;                          /* 'more: ADD.l (a2),d5 */
         at += flen;
         left -= flen;
