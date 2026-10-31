@@ -207,6 +207,9 @@ static const char *const Error_Table[] = {      /* indexed by code = 0,4,8.. */
 #define ERR_NOMEM   4
 #define ERR_NOPORT  8
 
+/* the RexxArg in front of an ArgString's characters (ra_Buff) */
+#define ARGHEAD(s) ((struct RexxArg *)((UBYTE *)(s) - 8))
+
 /* the length used by FRMCallArgString (Dc.l 0 before FRMCStorage) */
 static ULONG frmcstorage;
 
@@ -243,7 +246,7 @@ static int tstargstring(ULONG arg)
 
     if (!arg)
         return 0;
-    len = *(const UWORD *)(s - 4);
+    len = ARGHEAD(s)->ra_Length;
     while (*s++)
         n++;
     return n == len;
@@ -255,25 +258,26 @@ static ULONG createargstring(const UBYTE *s, ULONG len)
 {
     struct bl_regs r = { .d0 = len + 9, .d1 = MEMF_PUBLIC | MEMF_CLEAR };
     ULONG size = len + 9;
-    UBYTE *mem, *d;
+    struct RexxArg *mem;
+    UBYTE *d;
     UBYTE hash = 0;
     UWORD n;
 
-    mem = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
+    mem = (struct RexxArg *)BLITZ_ALIBJSR(TOK_globalloc, r);
     if (!mem)
         return 0;                               /* CASError */
-    *(ULONG *)mem = size;
-    mem[0] |= 0x80;                             /* BSET #31,-4(a0) */
-    *(UWORD *)(mem + 4) = (UWORD)len;           /* ra_Length */
-    *(UWORD *)(mem + 6) = 0x4600;               /* ra_Flags, ra_Hash */
+    mem->ra_Size = size;
+    *(UBYTE *)&mem->ra_Size |= 0x80;            /* BSET #31,-4(a0) */
+    mem->ra_Length = (UWORD)len;
+    *(UWORD *)&mem->ra_Flags = 0x4600;          /* ra_Flags $46, ra_Hash 0 */
     /* CopyString: DBF on the length's low word, hash = byte sum */
-    d = mem + 8;
+    d = (UBYTE *)mem->ra_Buff;
     for (n = (UWORD)len; n != 0; n--) {
         *d = *s++;
         hash += *d++;
     }
-    mem[7] = hash;
-    return (ULONG)(mem + 8);
+    mem->ra_Hash = hash;
+    return (ULONG)mem->ra_Buff;
 }
 
 /* DeleteArgString_rexx - rexxsyslib DeleteArgstring */
@@ -298,15 +302,15 @@ static ULONG createargstring_rexx(ULONG str, ULONG len)
    anything that does not look like an ArgString is left alone */
 static void deleteargstring(ULONG arg)
 {
-    UBYTE *h;
+    struct RexxArg *h;
 
     if (!tstargstring(arg))
         return;
-    h = (UBYTE *)arg - 8;
-    if (h[0] & 0x80) {                          /* BTST #31,(a1) */
+    h = ARGHEAD(arg);
+    if (*(UBYTE *)&h->ra_Size & 0x80) {         /* BTST #31,(a1) */
         struct bl_regs r;
-        h[0] &= 0x7f;                           /* BCLR #31,(a1) */
-        r = (struct bl_regs){ .d0 = *(ULONG *)h, .a1 = (ULONG)h };
+        *(UBYTE *)&h->ra_Size &= 0x7f;          /* BCLR #31,(a1) */
+        r = (struct bl_regs){ .d0 = h->ra_Size, .a1 = (ULONG)h };
         BLITZ_ALIBJSR(TOK_globfree, r);
     } else
         deleteargstring_rexx(arg);
@@ -319,7 +323,7 @@ static void clearrexxmsg(ULONG msg)
 
     if (!tstrexxmsg(&msg))
         return;
-    slot = (ULONG *)(msg + 0x28);
+    slot = (ULONG *)((struct RexxMsg *)msg)->rm_Args;
     while (*slot) {
         deleteargstring(*slot);
         *slot++ = 0;
@@ -436,7 +440,8 @@ static void BLITZ_ROUTINE fillrexxmsg_c(ULONG msg BL_REG(d0),
                 return;
             }
         }
-        *(ULONG *)(msg + 0x24 + (WORD)off) = v;
+        /* off = 4, 8, ...: rm_Args[0], [1], ... (no limit, #49) */
+        *(ULONG *)((UBYTE *)&((struct RexxMsg *)msg)->rm_Result2 + (WORD)off) = v;
     }
 }
 BLITZ_THUNK(_FillRexxMsg, fillrexxmsg_c, "d0-d1/a0-a1");
@@ -532,7 +537,9 @@ static ULONG BLITZ_ROUTINE getrexxresult_c(ULONG msg BL_REG(d0),
 {
     if (!tstrexxmsg(&msg))
         return 0;                               /* GRRError */
-    return *(const ULONG *)(msg + 0x20 + argindex(n));
+    /* BUG(orig) (#51): n = 0 reads rm_Action */
+    return *(const ULONG *)((const UBYTE *)&((struct RexxMsg *)msg)->rm_Result1
+                            + argindex(n));
 }
 BLITZ_THUNK(_GetRexxResult, getrexxresult_c, "d1/a0-a1");
 
@@ -540,7 +547,7 @@ BLITZ_THUNK(_GetRexxResult, getrexxresult_c, "d1/a0-a1");
    bytes, a3 behind the 0); d0 = length */
 static ULONG copyarg(const UBYTE *s)
 {
-    UWORD len = *(const UWORD *)(s - 4), n = len;
+    UWORD len = ARGHEAD(s)->ra_Length, n = len;
 
     do
         *blitz_string++ = *s++;
@@ -556,7 +563,9 @@ static ULONG BLITZ_ROUTINE getrexxcommand_c(ULONG msg BL_REG(d0),
 
     if (!tstrexxmsg(&msg))
         return 0;                               /* GRAError */
-    arg = *(const ULONG *)(msg + 0x28 + argindex(n));
+    /* BUG(orig) (#51): n = 0 reads rm_Result2 */
+    arg = *(const ULONG *)((const UBYTE *)((struct RexxMsg *)msg)->rm_Args
+                           + argindex(n));
     if (!tstargstring(arg))
         return 0;
     return copyarg((const UBYTE *)arg);
@@ -589,6 +598,8 @@ static ULONG BLITZ_ROUTINE rexxevent_c(struct MsgPort *port BL_REG(d0))
     if (!port)
         return 0;
     /* _GetMsg: exec GetMsg with "some error checking" (list at 0) */
+    /* &port->mp_MsgList (+$14) as an integer sum: the original tests it
+       for 0, GCC would drop the test for a member address */
     l = (struct List *)((ULONG)port + 0x14);
     if (!l)
         return 0;
@@ -630,7 +641,7 @@ static ULONG BLITZ_ROUTINE rexxerror_c(ULONG code BL_REG(d0))
     if (!RexxSysBase)
         return error_routine(ERR_REXXSYS);
     BLITZ_BASEJSR(RexxSysBase, -96, r);
-    s = (const UBYTE *)r.a0 + 8;                /* ns_Buff */
+    s = (const UBYTE *)((struct NexxStr *)r.a0)->ns_Buff;
     if (!r.d0)
         s = (const UBYTE *)RENoError;
     do {
