@@ -126,13 +126,13 @@ void BLITZ_ROUTINE dofileseek(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2
                               ULONG where BL_REG(d1),
                               struct Library *dosbase BL_REG(a6));
 void BLITZ_ROUTINE dofreefile(struct Library *dosbase BL_REG(a6));
-ULONG BLITZ_ROUTINE doopenfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
+BB_BOOL BLITZ_ROUTINE doopenfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
                                const ULONG *lens BL_REG(a2),
                                struct Library *dosbase BL_REG(a6));
-ULONG BLITZ_ROUTINE doreadfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
+BB_BOOL BLITZ_ROUTINE doreadfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
                                const ULONG *lens BL_REG(a2),
                                struct Library *dosbase BL_REG(a6));
-ULONG BLITZ_ROUTINE dowritefile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
+BB_BOOL BLITZ_ROUTINE dowritefile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
                                 const ULONG *lens BL_REG(a2),
                                 struct Library *dosbase BL_REG(a6));
 void BLITZ_ROUTINE dorecord(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2));
@@ -453,15 +453,15 @@ void BLITZ_ROUTINE doreadmem(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2)
 }
 
 /* Eof - a2 = file: 0, or -1 if a dos seek one byte further fails */
-static ULONG BLITZ_ROUTINE doeof_c(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
+static BB_BOOL BLITZ_ROUTINE doeof_c(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
                                    struct Library *dosbase BL_REG(a6))
 {
     if (f->pos < f->valid)                      /* CMP .w: BCC slow */
-        return 0;
+        return BB_FALSE;
     if (myseek(fileno, f, 1, 0, dosbase) + 1 == 0)
-        return (ULONG)-1;                       /* atend */
+        return BB_TRUE;                         /* atend */
     myseek(fileno, f, (ULONG)-1, 0, dosbase);
-    return 0;
+    return BB_FALSE;
 }
 /* the original keeps a0/a1 when the position is in the buffer */
 BLITZ_THUNK(doeof, doeof_c, "a0-a1");
@@ -540,7 +540,7 @@ void BLITZ_ROUTINE dofreefile(struct Library *dosbase BL_REG(a6))
 /* realopen - a1 = file, d1 = name, -4(a2) = its length; mode < 0 old
    file only (ReadFile), > 0 new file only (WriteFile), 0 either
    (OpenFile: old, or new if "object not found") */
-static ULONG realopen(WORD mode, struct bfile *f, UBYTE *name, const ULONG *lens,
+static BB_BOOL realopen(WORD mode, struct bfile *f, UBYTE *name, const ULONG *lens,
                       struct Library *dosbase)
 {
     struct bl_regs r;
@@ -554,12 +554,12 @@ static ULONG realopen(WORD mode, struct bfile *f, UBYTE *name, const ULONG *lens
     if (mode <= 0) {
         fh = Open((STRPTR)name, MODE_OLDFILE);
         if (!fh && (mode < 0 || IoErr() != ERROR_OBJECT_NOT_FOUND))
-            return 0;                           /* openerr */
+            return BB_FALSE;                    /* openerr */
     }
     if (!fh) {                                  /* newonly */
         fh = Open((STRPTR)name, MODE_NEWFILE);
         if (!fh)
-            return 0;
+            return BB_FALSE;
     }
     f->fh = fh;                                 /* file has been opened */
     f->reclen = 0;
@@ -571,24 +571,24 @@ static ULONG realopen(WORD mode, struct bfile *f, UBYTE *name, const ULONG *lens
     FLAGSVALID(f) = 0;
     f->pos = 0;
     f->bufstart = 0;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
-ULONG BLITZ_ROUTINE doopenfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
+BB_BOOL BLITZ_ROUTINE doopenfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
                                         const ULONG *lens BL_REG(a2),
                                         struct Library *dosbase BL_REG(a6))
 {
     return realopen(0, f, name, lens, dosbase);
 }
 
-ULONG BLITZ_ROUTINE doreadfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
+BB_BOOL BLITZ_ROUTINE doreadfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
                                         const ULONG *lens BL_REG(a2),
                                         struct Library *dosbase BL_REG(a6))
 {
     return realopen(-1, f, name, lens, dosbase);
 }
 
-ULONG BLITZ_ROUTINE dowritefile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
+BB_BOOL BLITZ_ROUTINE dowritefile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
                                          const ULONG *lens BL_REG(a2),
                                          struct Library *dosbase BL_REG(a6))
 {
