@@ -293,8 +293,8 @@ static ULONG BLITZ_ROUTINE remnotify_c(LONG id BL_REG(d0))
 }
 
 /* AddNotify id,file$ (d0, d1; the length at -4(a2)) */
-static ULONG BLITZ_ROUTINE addnotify_c(ULONG id BL_REG(d0), STRPTR file BL_REG(d1),
-                                       const ULONG *lens BL_REG(a2))
+static BB_BOOL BLITZ_ROUTINE addnotify_c(ULONG id BL_REG(d0), STRPTR file BL_REG(d1),
+                                         const ULONG *lens BL_REG(a2))
 {
     struct DosLibrary *dos = dosbase_;
     const UBYTE *s;
@@ -304,7 +304,7 @@ static ULONG BLITZ_ROUTINE addnotify_c(ULONG id BL_REG(d0), STRPTR file BL_REG(d
     fileptr = file;
     notifynum = id;
     if (!dosbase_ || !msgport)
-        return 0;                                       /* whoops */
+        return BB_FALSE;                                /* whoops */
     filelen = lens[-1] + 1;
     filecop = AllocMem(filelen, MEMF_CLEAR);            /* BUG(orig) (#619): unchecked */
     s = fileptr;
@@ -321,9 +321,9 @@ static ULONG BLITZ_ROUTINE addnotify_c(ULONG id BL_REG(d0), STRPTR file BL_REG(d
     notify->nr_Flags = NRF_SEND_MESSAGE;
     notify->nr_stuff.nr_Msg.nr_Port = msgport;
     if (!StartNotify(notify))
-        return 0;
+        return BB_FALSE;
     notifycnt++;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* ---------------------------------------------------------- init/finit */
@@ -357,15 +357,15 @@ static void BLITZ_ROUTINE libfinit_c(void)
 /* ------------------------------------------------------ the device list */
 
 /* GetDeviceList flags (d0.w, a6 = the program's dos base) */
-static ULONG BLITZ_ROUTINE lockdoslist_c(UWORD flags BL_REG(d0),
-                                         struct DosLibrary *dos BL_REG(a6))
+static BB_BOOL BLITZ_ROUTINE lockdoslist_c(UWORD flags BL_REG(d0),
+                                           struct DosLibrary *dos BL_REG(a6))
 {
     doslistflags = flags | LDF_READ;                    /* BSET #0 */
     mydoslist = LockDosList(doslistflags);
     if (!mydoslist)
-        return 0;
+        return BB_FALSE;
     mydosentry = mydoslist;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* NextDevice: d0 unchanged without a list (BUG(orig) (#625)), else the
