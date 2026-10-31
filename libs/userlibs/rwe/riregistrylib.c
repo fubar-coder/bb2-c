@@ -473,12 +473,25 @@ static ULONG returnstring(void)
 
 /* ------------------------------------------------------- init / finit */
 
+/**
+ * @brief init: opens registry.library (any version).
+ *
+ * Without it IsRegistryOpen is 0 and every command returns 0.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     st.regbase = OpenLibrary((CONST_STRPTR)"registry.library", 0);
 }
 
-/* unlock structs[curstruct] ... structs[4] */
+/**
+ * @brief finit: unlocks every structure still locked, closes the library.
+ *
+ * UnlockRegistry on structs[curstruct] ... structs[4] (those not 0, with
+ * d0 = the index, a1 = the stack), then CloseLibrary.  BUG(orig) (#779):
+ * regstruct and the base stay set.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     WORD i;
@@ -503,12 +516,26 @@ static void BLITZ_ROUTINE libfinit_c(void)
 
 /* ------------------------------------------------------------ commands */
 
+/**
+ * @brief IsRegistryOpen: whether registry.library is open.
+ * @return d0: the library base, 0 if not opened
+ */
 static ULONG BLITZ_ROUTINE isregistryopen_c(void)
 {
     return (ULONG)st.regbase;
 }
 
-/* LockRegistry: the result pushed (also 0) */
+/**
+ * @brief LockRegistry AccessMode: locks the registry, the structure becomes current.
+ *
+ * LockRegistry (-30, d0 = the mode); the result is pushed on the
+ * structure stack and is the current structure - also 0 (the following
+ * calls then do nothing, UnlockRegistry still pops it: no defect).
+ * BUG(orig) (#781): no limit - beyond 15 levels the stack runs into
+ * curstruct and regstruct.
+ * @param mode  d0: the access mode
+ * @return d0: the registry structure, 0 without the library
+ */
 static ULONG BLITZ_ROUTINE lockregistry_c(ULONG mode BL_REG(d0))
 {
     ULONG r;
@@ -523,7 +550,15 @@ static ULONG BLITZ_ROUTINE lockregistry_c(ULONG mode BL_REG(d0))
     return r;
 }
 
-/* UnlockRegistry: pop (BUG(orig): also below the stack, #781) */
+/**
+ * @brief UnlockRegistry: unlocks the current structure and pops it.
+ *
+ * UnlockRegistry (-36) on the current structure (nothing without one),
+ * then the stack slot is cleared and the structure below becomes current.
+ * BUG(orig) (#781): also without a lock - it goes below the stack (the end
+ * of the token table, DIFF further below).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE unlockregistry_c(void)
 {
     CALL(LVO_UnlockRegistry, 0, 0, 0, 0, 0);
@@ -533,11 +568,21 @@ static void BLITZ_ROUTINE unlockregistry_c(void)
     st.regstruct = SLOT();
 }
 
+/**
+ * @brief SetRegistryBaseLibrary LibraryName: SetRegistryBaseLibrary (-42).
+ * @param name  d0: the library name (also in d0 for the call, a1)
+ * @return d0: registry.library's result, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE setregistrybaselibrary_c(ULONG name BL_REG(d0))
 {
     return CALL(LVO_SetRegistryBaseLibrary, name, 0, 0, name, 0);
 }
 
+/**
+ * @brief ExistsRegistryLibrary LibraryName: ExistsLibrary (-48).
+ * @param name  d0: the library name (a1, d0 = 0 for the call)
+ * @return d0: registry.library's result, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE existsregistrylibrary_c(ULONG name BL_REG(d0))
 {
     return CALL(LVO_ExistsLibrary, 0, 0, 0, name, 0);
@@ -552,18 +597,44 @@ static ULONG getstring(WORD off, ULONG name, const ULONG *lens)
     return returnstring();
 }
 
+/**
+ * @brief GetLibraryValue$(LibraryName): the library's value as a string.
+ *
+ * GetLibraryValue (-54); the result is the structure's value at +24 if its
+ * type (+18) is 1 (a string), else "".  The result goes where the
+ * argument was (a3 back by its length + 1).  BUG(orig): without a
+ * structure the type and value are read at 18/24 of address 0 (#780);
+ * the string is copied with its 0 and a3 stays behind it (#783).
+ * @param name  d0: the library name
+ * @param lens  a2: the argument stack (lens[-1] = the length of name)
+ * @return d0: the length of the string at a3
+ */
 static ULONG BLITZ_ROUTINE getlibraryvalue_c(ULONG name BL_REG(d0),
                                              const ULONG *lens BL_REG(a2))
 {
     return getstring(LVO_GetLibraryValue, name, lens);
 }
 
+/**
+ * @brief GetRegistryStringVariable(VariableName): a string variable's value.
+ *
+ * GetRegistryVariable (-60), then as GetLibraryValue$: the structure's
+ * value if it is a string, else "" (BUG(orig) #780, #783).
+ * @param name  d0: the variable name
+ * @param lens  a2: the argument stack (lens[-1] = the length of name)
+ * @return d0: the length of the string at a3
+ */
 static ULONG BLITZ_ROUTINE getregistrystringvariable_c(ULONG name BL_REG(d0),
                                                        const ULONG *lens BL_REG(a2))
 {
     return getstring(LVO_GetRegistryVariable, name, lens);
 }
 
+/**
+ * @brief GetRegistryVariable(VariableName): GetRegistryVariable (-60).
+ * @param name  d0: the variable name (a1, d0 = 0 for the call)
+ * @return d0.w: registry.library's result (the type), 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE getregistryvariable_c(ULONG name BL_REG(d0))
 {
     return CALL(LVO_GetRegistryVariable, 0, 0, 0, name, 0);
@@ -575,87 +646,178 @@ static ULONG doset(ULONG type, ULONG name, ULONG value, ULONG size)
     return CALL(LVO_SetRegistryVariable, type, size, 0, name, value);
 }
 
+/**
+ * @brief SetRegistryIntVariable VariableName,#: sets an integer variable (type 4).
+ *
+ * SetRegistryVariable (-66).  BUG(orig) (#782): the size is the caller's d2.
+ * @param name  d0: the variable name (a1)
+ * @param v     d1: the value (a2)
+ * @param size  d2: the caller's d2 (d1 for the call)
+ * @return d0: registry.library's result, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE setregistryintvariable_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1),
                                                     ULONG size BL_REG(d2))
 {
     return doset(VAR_INTEGER, name, v, size);
 }
 
+/**
+ * @brief SetRegistryBoolVariable VariableName,True/False: sets a boolean variable (type 3).
+ *
+ * SetRegistryVariable (-66).  BUG(orig) (#782): the size is the caller's d2.
+ * @param name  d0: the variable name (a1)
+ * @param v     d1: the truth value (a2)
+ * @param size  d2: the caller's d2 (d1 for the call)
+ * @return d0: registry.library's result, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE setregistryboolvariable_c(ULONG name BL_REG(d0), BB_BOOL v BL_REG(d1),
                                                      ULONG size BL_REG(d2))
 {
     return doset(VAR_BOOLEAN, name, v, size);
 }
 
+/**
+ * @brief SetRegistryVariable VariableName,Value$: sets a string variable (type 1).
+ *
+ * SetRegistryVariable (-66).  BUG(orig) (#782): the size is the caller's d2.
+ * @param name  d0: the variable name (a1)
+ * @param v     d1: the string (a2)
+ * @param size  d2: the caller's d2 (d1 for the call)
+ * @return d0: registry.library's result, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE setregistryvariable_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1),
                                                  ULONG size BL_REG(d2))
 {
     return doset(VAR_STRING, name, v, size);
 }
 
+/**
+ * @brief SetRegistryVariable VariableName,Address,ByteSize: sets a data variable (type 2).
+ *
+ * SetRegistryVariable (-66).
+ * @param name  d0: the variable name (a1)
+ * @param v     d1: the address of the data (a2)
+ * @param size  d2: the byte size (d1 for the call)
+ * @return d0: registry.library's result, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE setregistryvariable2_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1),
                                                   ULONG size BL_REG(d2))
 {
     return doset(VAR_DATA, name, v, size);
 }
 
+/**
+ * @brief ChangeRegistryVariable VariableName,Data,Type,ByteSize: ChangeRegistryVariable (-72).
+ * @param name  d0: the variable name (a1)
+ * @param v     d1: the data (a2)
+ * @param type  d2: the type (d0 for the call)
+ * @param size  d3: the byte size (d1 for the call)
+ * @return d0: registry.library's result, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE changeregistryvariable_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1),
                                                     ULONG type BL_REG(d2), ULONG size BL_REG(d3))
 {
     return CALL(LVO_ChangeRegistryVariable, type, size, 0, name, v);
 }
 
-/* NewRegistryLibrary: a3 = the variable file name (form 1: 0) */
+/**
+ * @brief NewRegistryLibrary LibraryName,LibraryValue,VariableFilename: NewRegistryLibrary (-78).
+ *
+ * a1 = the name, a2 = the value, a3 = the variable file name.  DIFF: a3/a4
+ * are restored after the call (the original leaves the file name in a3).
+ * @param name  d0: the library name
+ * @param v     d1: the library value
+ * @param file  d2: the variable file name
+ * @return d0: registry.library's result, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE newregistrylibrary2_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1),
                                                  ULONG file BL_REG(d2))
 {
     return calllib(LVO_NewRegistryLibrary, name, v, file, name, v, file, (ULONG)blitz_locals);
 }
 
+/**
+ * @brief NewRegistryLibrary LibraryName,LibraryValue: as above with no variable file (a3 = 0).
+ * @param name  d0: the library name
+ * @param v     d1: the library value
+ * @return d0: registry.library's result, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE newregistrylibrary_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1))
 {
     return newregistrylibrary2_c(name, v, 0);
 }
 
-/* the calls with a1 = d0 (the name) */
+/* the calls with a1 = d0 (the name); each: d0 = the name (also d0 and a1
+   for the call), d0 = registry.library's result, 0 without a structure */
 #define NAMECALL(f, off)                                                    \
     static ULONG BLITZ_ROUTINE f(ULONG name BL_REG(d0))                     \
     {                                                                       \
         return CALL(off, name, 0, 0, name, 0);                              \
     }
+/** @brief ParseRegistryLibrary LibraryName: ParseRegistryLibrary (-84). */
 NAMECALL(parseregistrylibrary_c, LVO_ParseRegistryLibrary)
+/** @brief DeleteRegistryLibrary LibraryName: DeleteRegistryLibrary (-108). */
 NAMECALL(deleteregistrylibrary_c, LVO_DeleteRegistryLibrary)
+/** @brief DeleteRegistryVariable VariableName: DeleteRegistryVariable (-114). */
 NAMECALL(deleteregistryvariable_c, LVO_DeleteRegistryVariable)
+/** @brief NumRegistryLibraryVariables VariableName: NumRegistryLibraryVariables (-120). */
 NAMECALL(numregistrylibraryvariables_c, LVO_NumRegistryLibraryVariables)
+/** @brief DeleteRegistryLibraryVariables LibraryName: DeleteRegistryLibraryVariables (-138). */
 NAMECALL(deleteregistrylibraryvariables_c, LVO_DeleteRegistryLibraryVariables)
 
-/* the calls with a1 = d0, a2 = d1 */
+/* the calls with a1 = d0, a2 = d1; each: d0, d1 = the two arguments (also
+   d0/d1 for the call), d0 = registry.library's result, 0 without a
+   structure */
 #define NAME2CALL(f, off)                                                   \
     static ULONG BLITZ_ROUTINE f(ULONG a BL_REG(d0), ULONG b BL_REG(d1))    \
     {                                                                       \
         return CALL(off, a, b, 0, a, b);                                    \
     }
+/** @brief SaveRegistryLibrary LibraryName,FileName: SaveRegistryLibrary (-126). */
 NAME2CALL(saveregistrylibrary_c, LVO_SaveRegistryLibrary)
+/** @brief LoadRegistryLibrary LibraryName,FileName: LoadRegistryLibrary (-132). */
 NAME2CALL(loadregistrylibrary_c, LVO_LoadRegistryLibrary)
+/** @brief SetLibraryValue LibraryName,Value: SetLibraryValue (-144). */
 NAME2CALL(setlibraryvalue_c, LVO_SetLibraryValue)
+/** @brief RenameRegistryVariable VariableName,NewVariableName: RenameRegistryVariable (-156). */
 NAME2CALL(renameregistryvariable_c, LVO_RenameRegistryVariable)
+/** @brief SaveLibraryVariables LibraryName,Filename: SaveLibraryVariables (-162). */
 NAME2CALL(savelibraryvariables_c, LVO_SaveLibraryVariables)
+/** @brief RenameRegistryLibrary LibraryName,NewLibraryName: RenameRegistryLibrary (-174). */
 NAME2CALL(renameregistrylibrary_c, LVO_RenameRegistryLibrary)
+/** @brief GetStructureVariables Description,Structure: GetStructureVariables (-186). */
 NAME2CALL(getstructurevariables_c, LVO_GetStructureVariables)
+/** @brief FreeStructureVariables Description,Structure: FreeStructureVariables (-192). */
 NAME2CALL(freestructurevariables_c, LVO_FreeStructureVariables)
+/** @brief LoadLibraryVariables LibraryName,Filename: LoadLibraryVariables (-198). */
 NAME2CALL(loadlibraryvariables_c, LVO_LoadLibraryVariables)
 
+/**
+ * @brief NextParseItem: NextParseItem (-96), the next item of a parse.
+ * @return d0.w: registry.library's result, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE nextparseitem_c(void)
 {
     return CALL(LVO_NextParseItem, 0, 0, 0, 0, 0);
 }
 
+/**
+ * @brief ChangeRegistryAccess: ChangeRegistryAccess (-102), to read access.
+ * @return nothing (a statement; the thunk keeps d0)
+ */
 static ULONG BLITZ_ROUTINE changeregistryaccess_c(void)
 {
     return CALL(LVO_ChangeRegistryAccess, 0, 0, 0, 0, 0);
 }
 
-/* GetRegistryInt/BoolVariable: the value of a boolean or integer */
+/**
+ * @brief GetRegistryIntVariable(VariableName) / GetRegistryBoolVariable(VariableName).
+ *
+ * GetRegistryVariable (-60); if its result (the type, a word) is 3
+ * (boolean) or 4 (integer), the structure's value at +24, else 0.
+ * @param name  d0: the variable name
+ * @return d0: the value, 0 for another type or without a structure
+ */
 static ULONG BLITZ_ROUTINE getregistryintvariable_c(ULONG name BL_REG(d0))
 {
     UWORD type = (UWORD)CALL(LVO_GetRegistryVariable, 0, 0, 0, name, 0);
@@ -665,6 +827,15 @@ static ULONG BLITZ_ROUTINE getregistryintvariable_c(ULONG name BL_REG(d0))
     return ((const struct regstructure *)st.regstruct)->data;
 }
 
+/**
+ * @brief SetRegistryVariableIndex VariableName,Data,Type,ByteSize,Index: SetRegistryVariableIndex (-150).
+ * @param name   d0: the variable name (a1)
+ * @param v      d1: the data (a2)
+ * @param type   d2: the type (d0 for the call)
+ * @param size   d3: the byte size (d1 for the call)
+ * @param index  d4: the index (d2 for the call)
+ * @return d0: registry.library's result, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE setregistryvariableindex_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1),
                                                       ULONG type BL_REG(d2),
                                                       ULONG size BL_REG(d3),
@@ -673,8 +844,19 @@ static ULONG BLITZ_ROUTINE setregistryvariableindex_c(ULONG name BL_REG(d0), ULO
     return CALL(LVO_SetRegistryVariableIndex, type, size, index, name, v);
 }
 
-/* InsertNewRegistryLibrary: a3 = the variable file name (form 1: 0), a4
-   = insert before */
+/**
+ * @brief InsertNewRegistryLibrary LibraryName,LibraryValue,InsertBefore,VariableFilename.
+ *
+ * InsertNewRegistryLibrary (-180): a1 = the name, a2 = the value, a3 =
+ * the variable file name, a4 = the library to insert before.  DIFF: a3/a4
+ * are restored after the call (the original leaves them set - the
+ * program's string pointer and locals).
+ * @param name    d0: the library name
+ * @param v       d1: the library value
+ * @param before  d2: the name to insert before
+ * @param file    d3: the variable file name
+ * @return d0: registry.library's result, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE insertnewregistrylibrary2_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1),
                                                        ULONG before BL_REG(d2),
                                                        ULONG file BL_REG(d3))
@@ -682,13 +864,25 @@ static ULONG BLITZ_ROUTINE insertnewregistrylibrary2_c(ULONG name BL_REG(d0), UL
     return calllib(LVO_InsertNewRegistryLibrary, name, v, before, name, v, file, before);
 }
 
+/**
+ * @brief InsertNewRegistryLibrary LibraryName,LibraryValue,InsertBefore: as above, no file (a3 = 0).
+ * @param name    d0: the library name
+ * @param v       d1: the library value
+ * @param before  d2: the name to insert before
+ * @return d0: registry.library's result, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE insertnewregistrylibrary_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1),
                                                       ULONG before BL_REG(d2))
 {
     return insertnewregistrylibrary2_c(name, v, before, 0);
 }
 
-/* ParseItemName$: the structure's name */
+/**
+ * @brief ParseItemName$: the name of the last parsed item (the structure's +14).
+ *
+ * BUG(orig) (#783): copied with its 0, a3 stays behind it.
+ * @return d0: the length of the string at a3, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE parseitemname_c(void)
 {
     if (!st.regstruct)
@@ -696,7 +890,13 @@ static ULONG BLITZ_ROUTINE parseitemname_c(void)
     return retstring(((const struct regstructure *)st.regstruct)->name);
 }
 
-/* ParseItemValue$: the structure's string value */
+/**
+ * @brief ParseItemValue$: the string value of the last parsed item.
+ *
+ * The structure's value at +24 if its type is 1 (a string), else "".
+ * BUG(orig) (#783): copied with its 0, a3 stays behind it.
+ * @return d0: the length of the string at a3, 0 without a structure
+ */
 static ULONG BLITZ_ROUTINE parseitemvalue_c(void)
 {
     if (!st.regstruct)
