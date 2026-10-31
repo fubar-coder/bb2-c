@@ -335,20 +335,45 @@ static ULONG addtape(void)
 
 /* ---------------------------------------------------- simple settings */
 
+/**
+ * @brief XStatus: what BREXX is doing.
+ *
+ * BUG(orig) (#103): returns mode including bit 15 ($8001 ...).
+ *
+ * @return d0: mode - 0 nothing, 1 record, 2 playback (MOVEQ #0:MOVE)
+ */
 static ULONG BLITZ_ROUTINE doxstatus_c(void)
 {
     return mode;                                /* MOVEQ #0:MOVE */
 }
 BLITZ_THUNK(doxstatus, doxstatus_c, "d1/a0-a1");
 
+/**
+ * @brief QuickPlay On|Off: play tapes without their timing.
+ *
+ * On: the handler plays all events of the tape at once.
+ *
+ * @param v  d0.w: 0 = Off, otherwise On
+ */
 static void BLITZ_ROUTINE doqplay_c(ULONG v BL_REG(d0))
 {
     qplay = (UWORD)v;
 }
 BLITZ_THUNK(doqplay, doqplay_c, "d0-d1/a0-a1");
 
-/* TapeTrap (no tape): CLR.l tapeadd, then falls into TapeTrap Tape# with
-   the caller's a3 (BUG(orig), #95) */
+/**
+ * @brief TapeTrap [Tape#]: append the simple events to a tape.
+ *
+ * Type, AbsMouse, RelMouse, MouseButton and ClickButton then append their
+ * events to this tape (with QuietTrap On only appended, otherwise also
+ * executed).
+ * BUG(orig) (#95): TapeTrap without a tape number (CLR.l tapeadd) falls
+ * through into TapeTrap Tape#: tapeadd = the caller's a3 (Blitz string
+ * work pointer); both forms are this routine.
+ * BUG(orig) (#96): appending an event to a tape clears `mode`.
+ *
+ * Reads a3: the tape object (!libs{#brexxlib,$1380} from Tape# in d0).
+ */
 static void BLITZ_ROUTINE dotapeadd2_c(void)
 {
     tapeadd = (struct tape *)blitz_string;
@@ -356,6 +381,14 @@ static void BLITZ_ROUTINE dotapeadd2_c(void)
 BLITZ_THUNK(dotapeadd, dotapeadd2_c, "d0-d1/a0-a1");
 BLITZ_THUNK(dotapeadd2, dotapeadd2_c, "d0-d1/a0-a1");
 
+/**
+ * @brief QuietTrap On|Off: whether trapped events are only appended.
+ *
+ * On (the default, 1 after init): an event under TapeTrap goes to the
+ * tape only; Off: it is also executed.
+ *
+ * @param v  d0.w: 0 = Off, otherwise On
+ */
 static void BLITZ_ROUTINE dotapemode_c(ULONG v BL_REG(d0))
 {
     trap_mode = (UWORD)v;
@@ -381,13 +414,33 @@ static void freemacrokey(UBYTE key, UBYTE qual)
     globfree(cur, 10);                          /* free it! */
 }
 
+/**
+ * @brief FreeMacroKey Rawkey,Qualifier: remove a macro key.
+ *
+ * Frees the first macro key with this raw key and qualifier (bytes);
+ * nothing if there is none.
+ *
+ * @param key  d0: the raw key code (low byte)
+ * @param qual  d1: the qualifier (low byte)
+ */
 static void BLITZ_ROUTINE dofreemacrokey_c(ULONG key BL_REG(d0), ULONG qual BL_REG(d1))
 {
     freemacrokey((UBYTE)key, (UBYTE)qual);
 }
 BLITZ_THUNK(dofreemacrokey, dofreemacrokey_c, "d0-d1/a0-a1");
 
-/* MacroKey: a3 = tape, d1 = rawkey, d2 = qualifier */
+/**
+ * @brief MacroKey Tape#,Rawkey,Qualifier: a key that plays a tape.
+ *
+ * Replaces a macro key with the same key and qualifier and puts the new
+ * one first in the list (10 bytes, memlib globalloc).  The input handler
+ * checks RAWKEY events against the list while nothing is recorded or
+ * played and starts the tape.
+ *
+ * Reads a3: the tape object (!libs{#brexxlib,$1380} from Tape# in d0).
+ * @param key  d1: the raw key code (low byte)
+ * @param qual  d2: the qualifier (low byte)
+ */
 static void BLITZ_ROUTINE domacrokey_c(ULONG key BL_REG(d1), ULONG qual BL_REG(d2))
 {
     struct mkey *m;
@@ -414,12 +467,29 @@ static ULONG movemouse(ULONG x, ULONG y, UWORD qual)
     return addtape();
 }
 
+/**
+ * @brief AbsMouse X,Y: a POINTERPOS event to X,Y.
+ *
+ * Built in dumevent and executed, or appended to the TapeTrap tape.
+ *
+ * @param x  d0.w: x
+ * @param y  d1.w: y
+ */
 static void BLITZ_ROUTINE doabsmouse_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1))
 {
     movemouse(x, y, 0);
 }
 BLITZ_THUNK(doabsmouse, doabsmouse_c, "d0-d1/a0-a1");
 
+/**
+ * @brief RelMouse X Offset,Y Offset: a relative mouse move.
+ *
+ * As AbsMouse, with the qualifier RELATIVEMOUSE.
+ * BUG(orig) (#98): a POINTERPOS event too (not RAWMOUSE).
+ *
+ * @param x  d0.w: the x offset
+ * @param y  d1.w: the y offset
+ */
 static void BLITZ_ROUTINE dorelmouse_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1))
 {
     movemouse(x, y, IEQUALIFIER_RELATIVEMOUSE);
@@ -441,21 +511,49 @@ static ULONG mousebutton(ULONG b, ULONG on)
     return addtape();
 }
 
+/**
+ * @brief MouseButton Button,On|Off: a mouse button event.
+ *
+ * A RAWMOUSE event (LBUTTON, or RBUTTON for Button <> 0; UP_PREFIX for
+ * Off), executed or appended to the TapeTrap tape.
+ *
+ * @param b  d0.w: the button, 0 = left, otherwise right
+ * @param on  d1.w: 0 = released, otherwise pressed
+ */
 static void BLITZ_ROUTINE domousebutton_c(ULONG b BL_REG(d0), ULONG on BL_REG(d1))
 {
     mousebutton(b, on);
 }
 BLITZ_THUNK(domousebutton, domousebutton_c, "d0-d1/a0-a1");
 
-/* click: down, then up - with the d0 the first call left (BUG(orig), #97) */
+/**
+ * @brief ClickButton Button: a mouse button press and release.
+ *
+ * Two MouseButton events: down, then up.
+ * BUG(orig) (#97): the up event gets the d0 the first call left: 0
+ * normally, but the QuietTrap value when the event went to a tape -
+ * ClickButton 0 under TapeTrap with QuietTrap On records "left down,
+ * RIGHT up".
+ *
+ * @param b  d0.w: the button, 0 = left, otherwise right
+ */
 static void BLITZ_ROUTINE doclickbutton_c(ULONG b BL_REG(d0))
 {
     mousebutton(mousebutton(b, 1), 0);
 }
 BLITZ_THUNK(doclickbutton, doclickbutton_c, "d0-d1/a0-a1");
 
-/* Type: d0 = string, -4(a2) = length; every character as RAWKEY event
-   (rawkeylib unconvert: d0 = raw key, d1 = qualifier) */
+/**
+ * @brief Type String$: the characters of a string as key events.
+ *
+ * Every character as RAWKEY event (rawkeylib unconvert: d0 = raw key,
+ * d1 = qualifier), executed or appended to the TapeTrap tape.
+ * BUG(orig) (#102): a character rawkeylib cannot convert gives code
+ * $FFFF.
+ *
+ * @param s  d0: the string
+ * @param lens  a2: the argument stack, -4(a2) = the string's length
+ */
 static void BLITZ_ROUTINE dotype_c(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     const ULONG *sp = lens;
@@ -529,19 +627,40 @@ static void freetape_(struct tape *tape)
     }
 }
 
+/**
+ * @brief The object's free routine: free the events of a tape.
+ *
+ * Stops a playback and a recording first (just in case), then frees the
+ * tape's events.
+ *
+ * Reads a3: the tape object.
+ */
 static void BLITZ_ROUTINE freetape_c(void)
 {
     freetape_((struct tape *)blitz_string);
 }
 BLITZ_THUNK(freetape, freetape_c, "d0-d1/a0-a1");
 
+/**
+ * @brief Record: stop recording.
+ *
+ * The start time goes into the tape being recorded (if mode is 1).
+ */
 static void BLITZ_ROUTINE dorecord_c(void)
 {
     recordoff();
 }
 BLITZ_THUNK(dorecord, dorecord_c, "d0-d1/a0-a1");
 
-/* Record Tape#: a3 = tape */
+/**
+ * @brief Record Tape#: record the input events into a tape.
+ *
+ * Stops any other recording, frees the tape's events and lets the input
+ * handler record RAWKEY, RAWMOUSE and POINTERPOS events (mode $8001: the
+ * handler first takes the time of the first event, firstval).
+ *
+ * Reads a3: the tape object (!libs{#brexxlib,$1380} from Tape# in d0).
+ */
 static void BLITZ_ROUTINE dorecord2_c(void)
 {
     struct tape *tape = (struct tape *)blitz_string;
@@ -555,6 +674,11 @@ static void BLITZ_ROUTINE dorecord2_c(void)
 }
 BLITZ_THUNK(dorecord2, dorecord2_c, "d0-d1/a0-a1");
 
+/**
+ * @brief PlayBack: stop a playback.
+ *
+ * Restores the link the handler hijacked (if mode is 2).
+ */
 static void BLITZ_ROUTINE doplayback_c(void)
 {
     playbackoff();
@@ -571,14 +695,33 @@ static void dopb(struct tape *tape, UWORD sig)
     playback3(tape);
 }
 
+/**
+ * @brief PlayBack Tape#: play a tape.
+ *
+ * Nothing for an empty tape; otherwise stops a playback and starts this
+ * one (no signal at the end).  The handler links the tape's events in
+ * front of the incoming list when they are due.
+ * BUG(orig) (#100): the time comparison takes the time of the FIRST
+ * event of the incoming list only.
+ *
+ * Reads a3: the tape object (!libs{#brexxlib,$1380} from Tape# in d0).
+ */
 static void BLITZ_ROUTINE doplayback2_c(void)
 {
     dopb((struct tape *)blitz_string, 0);
 }
 BLITZ_THUNK(doplayback2, doplayback2_c, "d0-d1/a0-a1");
 
-/* PlayWait: only while playing (low byte of mode = 2): play tape a3 again
-   with signal and wait for it */
+/**
+ * @brief PlayWait: wait for the end of a playback.
+ *
+ * BUG(orig) (#99): only while playing (low byte of mode = 2), and then
+ * it plays the given tape again (with the end signal) and waits for it
+ * (Wait(mysig)); otherwise it returns at once.
+ *
+ * Reads a3: the tape object (!libs{#brexxlib,$1380} from the word
+ * argument in d0).
+ */
 static void BLITZ_ROUTINE doplaywait_c(void)
 {
     if ((UBYTE)mode != 2)
@@ -596,7 +739,18 @@ static struct DosLibrary *dosbase;
 /* "Can't Open File" - in the normal code (DIFF, see the head comment) */
 const char mess1[] = "Can't Open File";
 
-/* SaveTape: a3 = tape, d1 = file name, a6 = dos */
+/**
+ * @brief SaveTape Tape#,Filename$: save a tape to a file.
+ *
+ * Nothing for an empty tape; otherwise the 8 byte start time, then 18
+ * bytes per event (the event without its link).  Write errors are not
+ * checked.  Errors: "Can't Open File" (in the normal code; DIFF: `BEQ
+ * err1` into the error check area in the original).
+ *
+ * Reads a3: the tape object (!libs{#brexxlib,$1380} from Tape# in d0).
+ * @param name  d1: the file name
+ * @param dos  a6: dos.library
+ */
 static void BLITZ_ROUTINE dosavetape_c(const char *name BL_REG(d1), struct DosLibrary *dos BL_REG(a6))
 {
     struct tape *tape = (struct tape *)blitz_string;
@@ -616,7 +770,18 @@ static void BLITZ_ROUTINE dosavetape_c(const char *name BL_REG(d1), struct DosLi
 }
 BLITZ_THUNK(dosavetape, dosavetape_c, "d0-d1/a0-a1");
 
-/* LoadTape: a3 = tape, d1 = file name, a6 = dos */
+/**
+ * @brief LoadTape Tape#,filename$: load a tape from a file.
+ *
+ * Frees the tape's events, then reads the format of SaveTape.  Errors:
+ * "Can't Open File" (in the normal code; DIFF as SaveTape).
+ * BUG(orig) (#101): reads the start time unchecked and stops at the
+ * first short read (no error for a damaged file).
+ *
+ * Reads a3: the tape object (!libs{#brexxlib,$1380} from Tape# in d0).
+ * @param name  d1: the file name
+ * @param dos  a6: dos.library
+ */
 static void BLITZ_ROUTINE doloadtape_c(const char *name BL_REG(d1), struct DosLibrary *dos BL_REG(a6))
 {
     struct tape *tape = (struct tape *)blitz_string;
@@ -673,6 +838,16 @@ static void handlercmd(UWORD cmd)
     DoIO((struct IORequest *)&io_request.io);
 }
 
+/**
+ * @brief The init routine: open input.device and add the input handler.
+ *
+ * Own IOStdReq + MsgPort (the result of OpenDevice is not checked), the
+ * handler with priority 51 ("one more than intuition"); clears the macro
+ * keys, QuietTrap On, QuickPlay Off; allocates the "playback finished"
+ * signal and remembers the task.
+ * BUG(orig) (#104): a failed AllocSignal(-1) is not noticed: mybit =
+ * $FFFF, mysig = 0 (LSL.l by 63).
+ */
 static void BLITZ_ROUTINE codeinit_c(void)
 {
     BYTE sig;
@@ -689,6 +864,12 @@ static void BLITZ_ROUTINE codeinit_c(void)
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
 
+/**
+ * @brief The finit routine: stop a playback, remove the handler.
+ *
+ * Removes the input handler, closes input.device and frees both signals.
+ * BUG(orig) (#104): after a failed AllocSignal FreeSignal(255)/(65535).
+ */
 static void BLITZ_ROUTINE codefinit_c(void)
 {
     playbackoff();                              /* turn off any tape... */
