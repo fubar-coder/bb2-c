@@ -344,8 +344,16 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   with clang's `-Wdocumentation` in the host build (an `@param` that does
   not match the parameters), and an optional `doxygen` target outside
   the build.
-- [ ] **Warnings of `blitzlibcheck`:** 73 warnings per acidlibs set (and
-  three of rigtmenulib): normal library code refers into the error check
+- [x] **Warnings of `blitzlibcheck`** done (2026-10-31): all 73 sites per
+  acidlibs set fixed (displaylib #412; screenslib #251, animlib #398,
+  iffmakelib #185, fontlib #955, memlib #956, trackerlib #957,
+  wbstartuplib #305; ilbmifflib #192, audiolib #70, shapeslib #270 and
+  #953, spriteslib #954), each with a bug-orig test that comes out FIXED
+  (wbstartuplib: not testable, the error is in the library's init);
+  rigtmenulib's three were a port defect (check functions in front of
+  the thunks). A clean rebuild has no blitzlibcheck warning left; the
+  fixes are kind F in `docs/libs/deviations.md`. Was: 73 warnings per
+  acidlibs set (and three of rigtmenulib): normal library code refers into the error check
   area – a command that fails at run time (e.g. `Screen`: `OpenScreen`
   fails, `BEQ err1`) jumps to an error routine there, or raises an error
   with a text there (screenslib `err12`). Without "Runtime Errors" blitz2
