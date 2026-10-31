@@ -32,9 +32,11 @@
  * no writable static data, no allocation.  The file formats are
  * big-endian; the code assembles the bytes itself.
  *
- * Later (not here): AmiBlitz3's binary .xtra (15 switch words, the CLI
- * block's last 12 bytes as stack/version/builds, PED's XtraExtend after
- * the pairs) - its fields fit into struct xtra_ab3.
+ * AmiBlitz3's binary .xtra (15 switch words, the CLI block's last 12
+ * bytes as stack/version/builds, PED's XtraExtend after the pairs) is
+ * only recognised (xtra_is_ab3_xtra: the mode of a tokenised source in
+ * blitz2-ab3); loading it is for later - its fields fit into struct
+ * xtra_ab3.
  */
 #ifndef XTRA_H
 #define XTRA_H
@@ -57,6 +59,8 @@ extern "C" {
 #define XTRA_LABELLEN  32       /* bytes of AmiBlitz3's LabelSearch */
 #define XTRA_FIXED_V0  982      /* fixed part of a vers 0 file */
 #define XTRA_FIXED_V1  1110     /* fixed part of a vers 1 file */
+#define XTRA_AB3_NSWITCH 15     /* switch words of AmiBlitz3's binary .xtra */
+#define XTRA_AB3_FIXED 1112     /* its fixed part (always with CLI block) */
 
 /* ------------------------------------------------------------ fields */
 
@@ -322,6 +326,28 @@ int xtra_has_companion(int type);
  * @return 0 or XTRA_E_SPACE
  */
 int xtra_companion_name(const char *path, char *out, size_t cap);
+
+/**
+ * @brief Whether a companion .xtra has AmiBlitz3's binary format with 15
+ *        switch words (since AmiBlitz/AmiBlitz3@bdae3f9e, docs/formats.md
+ *        1.3) - not Blitz 2's 14.
+ *
+ * The layout as AmiBlitz3's write_xtrafile writes it: vers 1, icon, 15
+ * switch words, 6 buffer sizes at 32, 8 residents at 56, path and name of
+ * the executable at 600 and 792, CLI argument (116 bytes) and stack,
+ * version, builds at 984 (fixed part XTRA_AB3_FIXED), the {lib, max}
+ * pairs, 4 more bytes, maybe PED's XtraExtend.  Recognised by: at least
+ * the fixed part + 4 bytes, a multiple of 4 (a Blitz 2 .xtra is 982/1110
+ * + 4n), vers 1, icon and switch words 0 or XTRA_ON, every buffer size
+ * below 16 MB (in the 14-word layout's place a buffer's low word would be
+ * the next one's high word), the text fields 0-terminated.  An older
+ * AmiBlitz3 .xtra with 14 switch words is not recognised.
+ *
+ * @param xtra  the file, xtra[0..len) (NULL: none)
+ * @param len   its length
+ * @return 1 or 0
+ */
+int xtra_is_ab3_xtra(const uint8_t *xtra, size_t len);
 
 /**
  * @brief Load the settings of a source.

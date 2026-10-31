@@ -349,6 +349,42 @@ int xtra_companion_name(const char *path, char *out, size_t cap)
     return XTRA_OK;
 }
 
+/* AmiBlitz3's binary .xtra since @bdae3f9e (docs/formats.md 1.3; AmiBlitz3.ab3
+   ptr_xtradata, write_xtrafile at @58a11658): the 15 switch words move
+   everything behind them by 2 bytes */
+#define AB3_OFF_BUF   32
+#define AB3_OFF_RES   56
+#define AB3_OFF_PATH  600
+#define AB3_OFF_NAME  792
+#define AB3_OFF_CLI   984
+#define AB3_CLITEXT   116
+
+int xtra_is_ab3_xtra(const uint8_t *xtra, size_t len)
+{
+    size_t i;
+
+    /* the fixed part and the 4 bytes write_xtrafile always appends; a
+       multiple of 4 (a Blitz 2 file is 982/1110 + 4n: 2 more) */
+    if (!xtra || len < XTRA_AB3_FIXED + 4 || (len & 3))
+        return 0;
+    if (xtra[0] != 1 || (xtra[OFF_ICON] & 0x7f))
+        return 0;
+    for (i = 0; i < XTRA_AB3_NSWITCH; i++)
+        if (get16(xtra + OFF_SW + 2 * i) & ~(unsigned)XTRA_ON)
+            return 0;
+    /* the buffer sizes: read in the 14-word layout's place, a buffer's
+       low word becomes the next one's high word ($4000 -> $40000000) */
+    for (i = 0; i < XTRA_NBUFFER; i++)
+        if (xtra[AB3_OFF_BUF + 4 * i])
+            return 0;
+    for (i = 0; i < XTRA_NRES; i++)
+        if (fieldlen(xtra + AB3_OFF_RES + RES_SIZE * i, XTRA_RESNAME) == XTRA_RESNAME)
+            return 0;
+    return fieldlen(xtra + AB3_OFF_PATH, XTRA_PATHLEN) < XTRA_PATHLEN
+        && fieldlen(xtra + AB3_OFF_NAME, XTRA_PATHLEN) < XTRA_PATHLEN
+        && fieldlen(xtra + AB3_OFF_CLI, AB3_CLITEXT) < AB3_CLITEXT;
+}
+
 /* the Blitz 2 .xtra buf[0..size) into x */
 static int read_blitz2(struct xtra *x, const uint8_t *buf, size_t size, struct xtra_error *err)
 {

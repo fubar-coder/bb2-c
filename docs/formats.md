@@ -216,11 +216,25 @@ extensions); no product links it yet. Design of 2026-10-30 (rework):
   Arrays, Expand Macros, Auto Run, Interrupt Checking, `optreq2ga5` and
   both defaults on; buffers 16384, 32768, 4096, 4096, 8192, 10240; vers 1;
   AmiBlitz3's own numbers as its `ParseAB3Header` sets them (stack 32768).
-* **Not yet:** AmiBlitz3's binary `.xtra` (15 switch words since
-  `bdae3f9e`, §1.3; stack/version/builds in the last 12 bytes of the CLI
-  block; PED's `XtraExtend` behind the pairs). Its fields fit into
-  `struct xtra_ab3` (stack, version, builds, FuncOptimize, CreateDbgFile)
-  and `sw[]`; a loader would map the 15 words to the 14 indices.
+* **AmiBlitz3's binary `.xtra`** (15 switch words since `bdae3f9e`,
+  §1.3) is only **recognised**: `xtra_is_ab3_xtra` (for the mode of a
+  tokenised source in `blitz2-ab3`, `docs/ab3/variant.md`). The layout as
+  `write_xtrafile` of v3.14.0 (`58a11658`) writes it: vers 1 (always),
+  icon, 15 words at 2, buffers at 32, residents at 56, executable path
+  and name at 600 and 792, CLI argument (116 bytes) at 984, stack,
+  version, builds at 1100/1104/1108, the pairs from 1112, then 4 more
+  bytes (the long behind `XTRAEndPadBytes`, `maxerrorcount` – not
+  necessarily 0) and, if PED saved the file, its `XtraExtend` (44
+  bytes). Recognised by: at least 1116 bytes, a multiple of 4 (Blitz 2:
+  982/1110 + 4n, i.e. 2 more), vers 1, icon and the 15 words `$0000` or
+  `$0080`, every buffer below 16 MB (in the 14-word layout's place the
+  low word of a buffer would be the high word of the next, 16384 →
+  `$40000000`), the text fields 0-terminated. An older AmiBlitz3 `.xtra`
+  with 14 words (e.g. the 1296 bytes of `68k_crash_newtype.xtra`) is not
+  recognised (host test `xtra_ab3_binary`). Not loaded yet: its fields
+  fit into `struct xtra_ab3` (stack, version, builds, FuncOptimize,
+  CreateDbgFile) and `sw[]`; a loader would map the 15 words to the 14
+  indices.
 
 ---
 
