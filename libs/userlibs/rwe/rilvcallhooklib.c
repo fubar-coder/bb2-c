@@ -132,7 +132,7 @@ static WORD isbitmap;
 static const struct field *dispaddress; /* the field entries */
 static const UWORD dispend = 0;         /* an empty field entry: the end */
 
-/* init, finit: RTS */
+/** @brief init and finit: RTS (nothing to do). */
 static void BLITZ_ROUTINE libinit_c(void)
 {
 }
@@ -140,7 +140,16 @@ static void BLITZ_ROUTINE libinit_c(void)
 /* the hook function, below */
 void hookfunc(void);
 
-/* RetrieveCallHook: a6 = graphics base */
+/**
+ * @brief RetrieveCallHook: the address of the listview render hook (for
+ * h_Entry).
+ *
+ * Keeps graphics.library's base for the hook; it must be called before
+ * the hook is used (the base is 0 before: documented usage, not a
+ * defect).
+ * @param gfx  a6: graphics.library (!libs #graphicslib,#la6)
+ * @return d0: the hook function
+ */
 static void *BLITZ_ROUTINE retrievecallhook_c(struct Library *gfx BL_REG(a6))
 {
     gfxbase = gfx;
@@ -294,7 +303,26 @@ static void drawdisabled(struct Library *gfx, const struct Rectangle *b, struct 
     rp->AreaPtSz = 0;
 }
 
-/* the hook: a0 = hook, a1 = message, a2 = node, callerd7 = the caller's d7 */
+/**
+ * @brief The render hook (GTLV_CallBack): draws a listview item as fields
+ * of text or bitmaps, with an optional tree indent.
+ *
+ * Only LV_DRAW: the pens from the colour table (normal / normal disabled
+ * or the other states), the indent cleared with dotted tree lines, the
+ * fields drawn left to right (the last one cut at the right edge), a
+ * disabled item ghosted in apen.  Not reentrant (static state, as the
+ * original's).  BUG(orig): the last tree line tests the next node at the
+ * first field's width, not the indent offset (#739); the line count
+ * takes the caller's d7 upper word (#737); TextFit's width has $FFFF in
+ * the upper word (#741); a right aligned BitMap is ob_MinX too far right
+ * (#740); the line pattern without SetDrPt (#738); a text pointer 0 is
+ * read as a string (#742).
+ * @param hook      a0: the Hook, h_Data = the field table
+ * @param msg       a1: the LVDrawMsg
+ * @param node      a2: the node
+ * @param callerd7  d7: the caller's d7 (the tree line count's upper word)
+ * @return d0: LVCB_OK after drawing, LVCB_UNKNOWN for other messages
+ */
 static ULONG BLITZ_ROUTINE hookfunc_c(struct Hook *hook BL_REG(a0), struct LVDrawMsg *msg BL_REG(a1),
                                       const UBYTE *node BL_REG(a2), ULONG callerd7 BL_REG(d7))
 {
