@@ -751,12 +751,12 @@ static ULONG BLITZ_ROUTINE getdevname_c(const ULONG *lens BL_REG(a2))
     struct DosLibrary *dos = dosbase_;
     struct DosList *dl;
     const UBYTE *s;
-    UBYTE *a3 = blitz_string - 2;
+    UBYTE *end = blitz_string - 2;      /* a3 */
     ULONG n = 0;
 
-    if (*a3++ == ':')
-        a3[-1] = 0;
-    blitz_string = a3 - lens[-1];
+    if (*end++ == ':')
+        end[-1] = 0;
+    blitz_string = end - lens[-1];
     dl = LockDosList(LDF_READ | LDF_DEVICES | LDF_VOLUMES);
     if (!dl)
         return 0;
@@ -896,10 +896,10 @@ static ULONG BLITZ_ROUTINE memfree_c(void)
 }
 
 /* Lisa: DENISEID ($DFF07C) into the low word of d0 (MOVE.w) */
-static ULONG BLITZ_ROUTINE lisa_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE lisa_c(ULONG result BL_REG(d0))
 {
-    BL_SETW(d0, *(volatile UWORD *)0xdff07c);
-    return d0;
+    BL_SETW(result, *(volatile UWORD *)0xdff07c);
+    return result;
 }
 
 /* Timer: CIA-A TOD high, mid, low (the read of high latches it) */
