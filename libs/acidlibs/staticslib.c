@@ -40,16 +40,32 @@ static void alloc_statics(const struct staticent *tab, UWORD n, UBYTE *base)
     } while (n-- != 0);
 }
 
-/* allocst - globals: offsets from a5.  a0/a1 are preserved (memlib's
-   localloc keeps them, so the original does too) */
+/**
+ * @brief $C500 (alstat) - allocate the NEWTYPE memory of global statics.
+ *
+ * For every table entry a cleared block of `size` bytes (memlib localloc)
+ * is allocated and its address stored at `offset` from a5.  a0/a1 are
+ * preserved (memlib's localloc keeps them, so the original does too).
+ *
+ * @param tab a2: the compiler's table (calcstatic, blitz2.s 6740)
+ * @param n   d4: the number of entries - 1
+ */
 static void BLITZ_ROUTINE allocst_c(const struct staticent *tab BL_REG(a2), UWORD n BL_REG(d4))
 {
     alloc_statics(tab, n, blitz_globals);
 }
 BLITZ_THUNK(allocst, allocst_c, "a0-a1");
 
-/* locallocst - locals: offsets from a4 (the original swaps a4/a5 around a
-   call of allocst); d0/d1 (procedure parameters) and a0/a1 are preserved */
+/**
+ * @brief $C501 (localstat) - allocate the NEWTYPE memory of local
+ * statics.
+ *
+ * As alstat, with the offsets from a4 (the original swaps a4/a5 around a
+ * call of allocst); d0/d1 (procedure parameters) and a0/a1 are preserved.
+ *
+ * @param tab a2: the compiler's table (calcstatic, blitz2.s 6740)
+ * @param n   d4: the number of entries - 1
+ */
 static void BLITZ_ROUTINE locallocst_c(const struct staticent *tab BL_REG(a2), UWORD n BL_REG(d4))
 {
     alloc_statics(tab, n, blitz_locals);
