@@ -1,0 +1,6 @@
+[run]
+before
+runtime error Uninitialized Sound
+runtime error Illegal Sound file
+after
+rc=0

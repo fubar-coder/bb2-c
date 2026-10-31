@@ -41,14 +41,16 @@
  *     that catches the runtime error (SetErr) and goes on has lost
  *     2 * DiskBuffer bytes of chip memory until its end (memlib frees
  *     them then). (#950)
- *   - SetPeriod without a sound: `BEQ err5` from the normal code into
- *     the error area (dangling without the debugger) - the C library
- *     calls err5 there in the same way; err1-err4 are in the normal code
- *     with their texts in the error area, as in the original. (#70)
  *   - PeekSound (like every $1380 object function): the object pointer
  *     comes in a3, which is also the string buffer pointer; inside a
  *     string expression the following string parts are written into the
  *     Sound object. (#46)
+ * Fixed (intended deviation, docs/libs/deviations.md): in the original
+ * SetPeriod without a sound branches (`BEQ err5`) from the normal code
+ * into the error area (dangling without the debugger), and err1-err4 are
+ * in the normal code with their texts in the error area.  Here err5 and
+ * the texts of err1-err5 are in the normal code; without the debugger the
+ * runtime error is a TRAP #0 with the right message. (#70)
  * DIFF: a2 stays unchanged (the original pops volumes / lengths).
  */
 #include "blitzlib.h"
@@ -192,11 +194,15 @@ struct vhdr {
     UWORD rate;                         /* +12 samplesPerSec */
 };
 
-/* messages / error routines: err1-err4 in the normal code (texts in the
-   error area), err5 in the error area */
-extern const char mess1[], mess2[], mess3[], mess4[], mess5[], mess6[];
-extern const char mess7[], mess8[], mess9[], messa[];
-static void err5(void);
+/* messages / error routines: err1-err5 and their texts in the normal code
+   (the original has err5 and the texts in the error area; fixed, #70),
+   the texts of the checks in the error area */
+static const char mess1[] = "Illegal Sound file";
+static const char mess2[] = "Can't Find VHDR";
+static const char mess3[] = "Error Reading File";
+static const char mess4[] = "Sound too long";
+static const char mess5[] = "Uninitialized Sound";
+extern const char mess6[], mess7[], mess8[], mess9[], messa[];
 
 static UBYTE *alloc(ULONG size, ULONG flags)
 {
@@ -451,9 +457,9 @@ err1:
 /**
  * @brief SetPeriod Sound#,Period: set the sound's period.
  *
- * BUG(orig) (#70): without a sound `BEQ err5` from the normal code into
- * the error check area ("Uninitialized Sound"; dangling without the
- * debugger).  BUG(orig) (#66): the error check (sndchk) goes on into
+ * Without a sound: runtime error "Uninitialized Sound" (err5, in the
+ * normal code; the original branches into the error check area, fixed:
+ * #70).  BUG(orig) (#66): the error check (sndchk) goes on into
  * dpchk and tests the period as channel mask: a period > 15 is "Illegal
  * Chanel Mask" with the debugger.
  * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
@@ -466,7 +472,7 @@ void BLITZ_ROUTINE _setperiod(UWORD period BL_REG(d1))
     struct bb_sound *s = (struct bb_sound *)blitz_string;
 
     if (!s->data) {
-        err5();                                 /* BEQ err5 (error area) */
+        BLITZ_RUNERR(mess5);                    /* BEQ err5 */
         return;
     }
     s->period = period;
@@ -862,11 +868,6 @@ BLITZ_THUNK(codefinit, codefinit_c, "d1/a0-a1");
 
 /* ------------------------------------------- error checks (debugger only) */
 
-static void BLITZ_ERRCHK err5(void)
-{
-    BLITZ_RUNERR(mess5);
-}
-
 /* dpchk - CMP #15,d1:BHI err6 */
 static void BLITZ_ERRCHK dpchk_c(UWORD mask BL_REG(d1))
 {
@@ -925,11 +926,6 @@ BLITZ_ERRCHK_THUNK(vchk, vchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(ischk1, ischk1_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(ischk2, ischk2_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(sdatachk, sdatachk_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_MESSAGE(mess1, "Illegal Sound file");
-BLITZ_ERRCHK_MESSAGE(mess2, "Can't Find VHDR");
-BLITZ_ERRCHK_MESSAGE(mess3, "Error Reading File");
-BLITZ_ERRCHK_MESSAGE(mess4, "Sound too long");
-BLITZ_ERRCHK_MESSAGE(mess5, "Uninitialized Sound");
 BLITZ_ERRCHK_MESSAGE(mess6, "Illegal Chanel Mask");
 BLITZ_ERRCHK_MESSAGE(mess7, "Sound Length MUST be even");
 BLITZ_ERRCHK_MESSAGE(mess8, "Repeat MUST be less than Length");

@@ -70,6 +70,7 @@ intended deviations (kind **F**), each with its issue.
 | arexxlib CreateRexxMsg (arexxlib.c:62) | copies -8(a2) to -4(a2) on the compiler stack | does not copy, a2 unchanged | **B** | convention; the compiler does not read the value |
 | asllib title (asllib.c:44) | writes maxslib's d1 (-1) into the length cell of the title on the compiler stack | stack and a2 stay | **B** | convention; not observable |
 | audiolib (audiolib.c:47) | a2 decremented (volumes/lengths) | unchanged | **B** | convention |
+| audiolib err5 and messages (audiolib.c, header) | SetPeriod without a sound: `BEQ err5` into the error check area; the messages of err1-err4 (normal code) there too: without debugger a jump behind the library, d0 behind the library | err5 and the messages `mess1`-`mess5` in the normal code: a TRAP #0 with the right message | **F** | #70; observable without debugger (SetPeriod: trap instead of a jump into nowhere; messages: only by a handler that reads d0); test `bug_orig_audiolib_setperiod_err5` |
 | bblitlib (bblitlib.c:25) | entries without nullsub save a4/a5 | likewise (note: no deviation in behaviour) | – | – |
 | blitlib BlitColl Amiga (blitlib.c:323) | upper word of d0 = leftover from DisownBlitter | 0 | **T** | register leftover of the OS (undefined); #word function, not observable |
 | blitzcoplib CustomCop (blitzcoplib.c:56) | a2 decremented by 4 | unchanged | **B** | convention |
