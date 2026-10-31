@@ -314,11 +314,11 @@ static UBYTE *fontpos, *fontloc;
 static BPTR fontfh;
 static const char fontname[] = "ENV:SYS/Font.Prefs";
 
-/* ProgPath$: the 0 in front of tempprogname ends the backward search */
+/* ProgPath$: the 0 in front of rawprogname ends the backward search */
 static struct {
-    UBYTE z0[2], tempprogname[256];
-    UBYTE z1[2], progname[256];
-    UBYTE z2[2], progdir[256];
+    UBYTE guard0[2], rawprogname[256];
+    UBYTE guard1[2], progname[256];
+    UBYTE guard2[2], progdir[256];
 } pd;
 
 /* the argument parser */
@@ -520,13 +520,13 @@ static ULONG BLITZ_ROUTINE rawasc_c(const UBYTE *s BL_REG(d0))
 static ULONG BLITZ_ROUTINE doflip_c(const ULONG *lens BL_REG(a2))
 {
     ULONG len = lens[-1];
-    UBYTE *a = blitz_string - len - 1, *e = blitz_string - 2;
+    UBYTE *front = blitz_string - len - 1, *e = blitz_string - 2;
     UWORD n = (UWORD)((len >> 1) - 1);                  /* BUG(orig): len < 2 (#751) */
 
     do {
-        UBYTE c = *a;
+        UBYTE c = *front;
 
-        *a++ = *e;
+        *front++ = *e;
         *e-- = c;
     } while (n-- != 0);
     return len;
@@ -537,13 +537,13 @@ static ULONG BLITZ_ROUTINE doflip_c(const ULONG *lens BL_REG(a2))
 static ULONG BLITZ_ROUTINE binstr_c(const UBYTE *src BL_REG(d0), const UBYTE *find BL_REG(d1),
                                     const ULONG *lens BL_REG(a2))
 {
-    const UBYTE *a = src + lens[-1], *p, *q;
+    const UBYTE *pos = src + lens[-1], *p, *q;
 
     for (;;) {
-        a--;                                            /* 'check */
-        if ((LONG)src > (LONG)a)
+        pos--;                                          /* 'check */
+        if ((LONG)src > (LONG)pos)
             return 0;
-        p = a;
+        p = pos;
         q = find;
         for (;;) {                                      /* 'checkpos */
             if (!*p)
@@ -551,7 +551,7 @@ static ULONG BLITZ_ROUTINE binstr_c(const UBYTE *src BL_REG(d0), const UBYTE *fi
             if (*p++ != *q++)
                 break;
             if (!*q)
-                return (ULONG)(a - src) + 1;
+                return (ULONG)(pos - src) + 1;
         }
     }
 }
@@ -561,14 +561,14 @@ static ULONG BLITZ_ROUTINE binstr_c(const UBYTE *src BL_REG(d0), const UBYTE *fi
 /* InitArgParse s (d0): the copy and four more 0 (BUG(orig): no limit, #752) */
 static void BLITZ_ROUTINE parseinit_c(const UBYTE *s BL_REG(d0))
 {
-    UBYTE *t = tempstorage;
+    UBYTE *dst = tempstorage;
 
-    while ((*t++ = *s++) != 0)
+    while ((*dst++ = *s++) != 0)
         ;
-    t[0] = 0;
-    t[1] = 0;
-    t[2] = 0;
-    t[3] = 0;
+    dst[0] = 0;
+    dst[1] = 0;
+    dst[2] = 0;
+    dst[3] = 0;
     parseadr = tempstorage;
     curadr = tempstorage;
 }
@@ -576,23 +576,23 @@ static void BLITZ_ROUTINE parseinit_c(const UBYTE *s BL_REG(d0))
 /* NextArg$: the next word to a3 (no 0), its length; 0 at the end */
 static ULONG BLITZ_ROUTINE nextparsearg_c(void)
 {
-    UBYTE *a = curadr, *start = blitz_string, c;
+    UBYTE *pos = curadr, *start = blitz_string, c;
     ULONG quotes = 0;                                   /* d7 */
 
     if (!curadr)
         return 0;
     for (;;) {                                          /* 'strip */
-        c = *a;
+        c = *pos;
         if (!c) {
             curadr = NULL;                              /* 'lastarg */
             return 0;
         }
         if (c != ' ')
             break;
-        a++;
+        pos++;
     }
     for (;;) {                                          /* 'cmploop */
-        c = *a++;
+        c = *pos++;
         if (!c || c == ' ')
             goto endthis;
         if (c == '"')
@@ -601,7 +601,7 @@ static ULONG BLITZ_ROUTINE nextparsearg_c(void)
     }
     quotes++;                                           /* 'insidequotedloop */
     for (;;) {                                          /* 'quoteloop */
-        c = *a++;
+        c = *pos++;
         if (!c)
             break;
         if (c != '"') {
@@ -609,12 +609,12 @@ static ULONG BLITZ_ROUTINE nextparsearg_c(void)
             continue;
         }
         quotes++;                                       /* 'gotquote */
-        if (!(quotes & 1) && *a != '"')
+        if (!(quotes & 1) && *pos != '"')
             break;
-        *blitz_string++ = *a++;                         /* 'cantquityet */
+        *blitz_string++ = *pos++;                       /* 'cantquityet */
     }
 endthis:
-    curadr = a;
+    curadr = pos;
     return (ULONG)(blitz_string - start);
 }
 
@@ -622,13 +622,13 @@ endthis:
    BUG(orig): curadr unchecked (#754) */
 static ULONG BLITZ_ROUTINE nextparseuntilchar_c(UBYTE ch BL_REG(d0))
 {
-    UBYTE *a = curadr, c;
+    UBYTE *pos = curadr, c;
     ULONG n = 0;
 
     for (;;) {
-        c = *a++;
+        c = *pos++;
         if (!c) {
-            a--;                                        /* 'eol */
+            pos--;                                      /* 'eol */
             break;
         }
         if (c == ch)
@@ -636,7 +636,7 @@ static ULONG BLITZ_ROUTINE nextparseuntilchar_c(UBYTE ch BL_REG(d0))
         *blitz_string++ = c;
         n++;
     }
-    curadr = a;
+    curadr = pos;
     return n;
 }
 
@@ -657,9 +657,9 @@ static ULONG doeasybegin(void)
    #unknown|#push arguments below sp: per argument the type word, below
    it the value (a string: its length, below that the address); `cnt`
    arguments (DBRA: 0 = 65536).  a6 is passed to fltoqu. */
-static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *a6)
+static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *caller_a6)
 {
-    UBYTE *a = (UBYTE *)ez.args2;
+    UBYTE *out = (UBYTE *)ez.args2;
     UWORD n = (UWORD)(cnt - 1);
 
     flag = 0;
@@ -675,23 +675,23 @@ static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *a6)
         type = BL_POPW(sp);
         if (type == BL_STRING) {
             (void)BL_POPL(sp);                          /* the length */
-            *(ULONG *)a = BL_POPL(sp);
-            a += 4;
+            *(ULONG *)out = BL_POPL(sp);
+            out += 4;
             if (fmt) {
                 *fmt++ = '%';
                 *fmt++ = 's';
             }
         } else if (type == BL_LONG) {
-            *(ULONG *)a = BL_POPL(sp);
-            a += 4;
+            *(ULONG *)out = BL_POPL(sp);
+            out += 4;
             if (fmt) {
                 *fmt++ = '%';
                 *fmt++ = 'l';
                 *fmt++ = 'd';
             }
         } else if (type == BL_WORD || type == BL_BYTE) {
-            *(UWORD *)a = BL_POPW(sp);
-            a += 2;
+            *(UWORD *)out = BL_POPW(sp);
+            out += 2;
             if (fmt) {
                 *fmt++ = '%';
                 *fmt++ = 'd';
@@ -700,12 +700,12 @@ static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *a6)
             if (type != BL_QUICK) {
                 /* MOVE.l -(a2),d0:ALibJsr $d301:MOVE.l d0,(a2)+ */
                 v = BL_POPL(sp);
-                *(ULONG *)(UBYTE *)sp = BLITZ_ALIBJSR_A6(TOK_fltoqu, a6, v);
+                *(ULONG *)(UBYTE *)sp = BLITZ_ALIBJSR_A6(TOK_fltoqu, caller_a6, v);
                 sp += 4;
             }
             v = BL_POPL(sp);
-            *(ULONG *)a = v >> 16;                      /* SWAP:ANDI.l #$ffff */
-            a += 4;
+            *(ULONG *)out = v >> 16;                    /* SWAP:ANDI.l #$ffff */
+            out += 4;
             if (fmt) {
                 *fmt++ = '%';
                 *fmt++ = 'l';
@@ -746,24 +746,24 @@ static ULONG BLITZ_ROUTINE doeasy3_c(STRPTR body BL_REG(d0))
    below them the arguments; d7.w their number) */
 static ULONG BLITZ_ROUTINE doeasy4_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                      STRPTR gadget BL_REG(d2), UBYTE *args BL_REG(a2),
-                                     UWORD reps BL_REG(d7), const void *a6 BL_REG(a6))
+                                     UWORD reps BL_REG(d7), const void *caller_a6 BL_REG(a6))
 {
     ez.es.es_Title = title;
     ez.es.es_TextFormat = body;
     ez.es.es_GadgetFormat = gadget;
     ez.args = ez.args2;
-    doargs(args - 12, reps, NULL, a6);
+    doargs(args - 12, reps, NULL, caller_a6);
     return doeasybegin();
 }
 
 /* EZRequestArgs var.. (a2, d7.w as above): the body from the arguments */
 static ULONG BLITZ_ROUTINE doeasy6_c(UBYTE *args BL_REG(a2), ULONG reps BL_REG(d7),
-                                     const void *a6 BL_REG(a6))
+                                     const void *caller_a6 BL_REG(a6))
 {
     numargs = reps & 0xffff;
     ez.es.es_TextFormat = ezargsbuf;
     ez.args = ez.args2;
-    doargs(args, (UWORD)reps, ezargsbuf, a6);           /* BUG(orig): no 0 (#747) */
+    doargs(args, (UWORD)reps, ezargsbuf, caller_a6);    /* BUG(orig): no 0 (#747) */
     ez.es.es_GadgetFormat = (STRPTR)okgad;
     ez.es.es_Title = NULL;
     return doeasybegin();
@@ -794,22 +794,22 @@ static ULONG BLITZ_ROUTINE doprogpath_c(void)
 {
     BPTR lock = GetProgramDir();
     const UBYTE *s;
-    UBYTE *t, c;
+    UBYTE *dst, c;
     ULONG n;
 
     if (!lock)
         GetCurrentDirName(pd.progdir, 255);
     else
         NameFromLock(lock, pd.progdir, 255);
-    pd.tempprogname[0] = 0;
-    GetProgramName(pd.tempprogname, 255);
-    if (!pd.tempprogname[0]) {
+    pd.rawprogname[0] = 0;
+    GetProgramName(pd.rawprogname, 255);
+    if (!pd.rawprogname[0]) {
         s = (const UBYTE *)SysBase->ThisTask->tc_Node.ln_Name;
-        t = pd.progname;
-        while ((*t++ = *s++) != 0)
+        dst = pd.progname;
+        while ((*dst++ = *s++) != 0)
             ;
     } else {
-        s = pd.tempprogname;
+        s = pd.rawprogname;
         while (*s++)
             ;
         s--;
@@ -817,8 +817,8 @@ static ULONG BLITZ_ROUTINE doprogpath_c(void)
             c = *--s;
         while (c && c != ':' && c != '/');
         s++;
-        t = pd.progname;
-        while ((*t++ = *s++) != 0)
+        dst = pd.progname;
+        while ((*dst++ = *s++) != 0)
             ;
     }
     n = copyout(pd.progdir);
