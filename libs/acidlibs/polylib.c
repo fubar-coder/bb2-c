@@ -6,8 +6,13 @@
  * C translation of bblibsrc/polylib (the same file with #chunkylib=87 is
  * renderlib); the CD binary matches the source.
  *
- * Translated at register level like 2dlib/medlib: d0-d7 and a0-a6 are
- * static variables, every instruction keeps its operand size.
+ * Plain C with the integer semantics of the original: word arithmetic
+ * that wraps, MULS/DIVS as instructions (DIVS keeps the dividend on
+ * overflow), CMP/BMI (sign of the 16 bit difference) where the original
+ * tests that, and the edge positions as its swapped fixed point numbers
+ * (edge_step).  Where the original leaves a3 (bitmap, edge list, plane
+ * line ...), the routines leave it too: AllocFill and RenderPoly read it
+ * (#390, #420).
  *
  * Chunky commands work on the copper chunky area of the used CopList
  * (displaylib CustomChunky): cchunky (96) = first MOVE of the area,
@@ -28,7 +33,8 @@
  *     draws on a3 = the string pointer (no !libs) (#420).
  *   - RenderToChunky colours > 14 read behind the 15 entry colour table. (#422)
  *   - more than 16 points overflow polypts, more than 10 edges one side
- *     the edge lists l0/l1. (#395)
+ *     the edge lists l0/l1 (here ledges/redges). (#395)
+ *   - ChunkyVlin without CLIP does not swap y1 > y2: about 65536 words. (#417)
  *   - the dither form assumes evenly spaced bitplanes (plane 1 - plane 0). (#418)
  *   - a depth of 0 runs the plane loop 65536 times. (#393)
  * DIFF (memory layout, unavoidable): what such an overflow hits.
@@ -112,409 +118,20 @@ BLITZ_NAME("RenderPoly", "numpts,*coords.w,color");
 
 BLITZ_LIBFIN();
 
-/* ------------------------------------------------- register emulation */
+/* -------------------------------------------------------------- objects */
 
-static ULONG d0, d1, d2, d3, d4, d5, d6, d7;
-static UBYTE *a0, *a1, *a2, *a3, *a4, *a5, *a6;
-
-#define B(r)       ((UBYTE)(r))
-#define W(r)       ((UWORD)(r))
-#define SW(r)      ((WORD)(r))
-#define SETW(r, v) ((r) = ((r) & 0xffff0000UL) | (UWORD)(v))
-#define EXTL(r)    ((ULONG)(LONG)(WORD)(r))
-#define MULU(a, b) bl_mulu_w((UWORD)(a), (UWORD)(b))
-#define MULS(a, b) ((ULONG)bl_muls_w((WORD)(a), (WORD)(b)))
-#define SWAP(r)    ((ULONG)(r) << 16 | (ULONG)(r) >> 16)
-#define MW(p, o)   (*(UWORD *)((UBYTE *)(p) + (o)))
-#define ML(p, o)   (*(ULONG *)((UBYTE *)(p) + (o)))
-#define MP(p, o)   (*(UBYTE **)((UBYTE *)(p) + (o)))
-#define MOVEMW(p, o) EXTL(MW(p, o))        /* MOVEM.w to a data register */
-#define DIVS(r, s) ((r) = bl_divs_w((r), (WORD)(s)))
-#define EXG(x, y)  do { ULONG t_ = (x); (x) = (y); (y) = t_; } while (0)
-#define EXGA(x, y) do { UBYTE *t_ = (x); (x) = (y); (y) = t_; } while (0)
-
-/* ADD.l src,dst:BCC:ADDQ #2,dst (ADDQ.w) */
-#define ADDC2(r, s) do { ULONG o_ = (r); (r) += (s); if ((r) < o_) SETW(r, (r) + 2); } while (0)
-/* MOVEQ #0,d7:ADD.l s,r:ADDX d7,r (word ADDX) */
-#define ADDX1(r, s) do { ULONG o_ = (r); (r) += (s); if ((r) < o_) SETW(r, (r) + 1); } while (0)
-
-#define CW(cb, o) (*(volatile UWORD *)((UBYTE *)(cb) + (o)))
-#define CL(cb, o) (*(volatile ULONG *)((UBYTE *)(cb) + (o)))
-#define BUSY(cb)  (*(volatile UBYTE *)((UBYTE *)(cb) + 2) & 0x40)
-#define BLITWAIT(cb) do { (void)BUSY(cb); while (BUSY(cb)) ; } while (0)
-
-/* CopList fields (SizeOf.mycop\x) */
-#define M_cchunky 96
-#define M_chw     102
-#define M_chh     104
-#define M_chc     108
-
-/* ------------------------------------------------------------ variables */
-
-static const UWORD cols[15] = {
-    0, 0xf00, 0x0f0, 0x00f, 0xa40, 0x028, 0xfff, 0xf80,
-    0x840, 0x8f4, 0x84f, 0x248, 0x488, 0x888, 0xf88,
-};
-
-static void rpoly0(void), rpoly1(void), rpoly2(void), bitmappoly(void);
-static void (*polyvector)(void) = bitmappoly;
-static UBYTE *bmap0, *bmap1, *chunk0;
-static ULONG loflo;
-static UWORD pcol, chc;
-static UWORD srcmod, negmod, bltsize;
-static ULONG bmwid, bmoff;
-static UWORD rtclip;
-static ULONG polypts[32];
-/* in the order of the original: an overflow of l0 runs into l1 */
-static struct {
-    UWORD width, height;
-    UWORD xyx[3];
-    UWORD l0[32], l1[32];
-} pv;
-#define width  pv.width
-#define height pv.height
-#define xyx    pv.xyx
-#define l0     pv.l0
-#define l1     pv.l1
-
-static const UWORD lup1[16] = {
-    0xffff, 0x7fff, 0x3fff, 0x1fff, 0x0fff, 0x07ff, 0x03ff, 0x01ff,
-    0x00ff, 0x007f, 0x003f, 0x001f, 0x000f, 0x0007, 0x0003, 0x0001,
-};
-static const UWORD lup2[16] = {
-    0x8000, 0xc000, 0xe000, 0xf000, 0xf800, 0xfc00, 0xfe00, 0xff00,
-    0xff80, 0xffc0, 0xffe0, 0xfff0, 0xfff8, 0xfffc, 0xfffe, 0xffff,
-};
-#define dup1 lup1
-#define dup2 lup2
-
-/* ---------------------------------------------------- outline lists */
-
-/* tops..rside: d7 = number of points in polypts (twice); returns with
-   d0 = 0 if nothing is visible (Z set in the original), else -1 */
-static void tops(void)
-{
-    a0 = (UBYTE *)polypts;
-    SETW(d6, d7);
-    SETW(d7, d7 - 1);
-    goto fud;
-fhi:
-    if (SW(d1 - MW(a0, 2)) < 0)
-        goto flo;
-    if (W(d1) != MW(a0, 2))
-        goto fud;
-    if (SW(d0 - MW(a0, 0)) >= 0) {
-        SETW(d0, MW(a0, 0));
-        a1 = a0;
-        goto flo;
-    }
-    if (SW(d2 - MW(a0, 0)) >= 0)                /* fox */
-        goto flo;
-    SETW(d2, MW(a0, 0));
-    a2 = a0;
-    goto flo;
-fud:
-    d0 = MOVEMW(a0, 0);
-    d1 = MOVEMW(a0, 2);
-    SETW(d2, d0);
-    a1 = a0;
-    a2 = a0;
-flo:
-    a0 += 4;
-    SETW(d7, d7 - 1);
-    if (W(d7) != 0xffff)
-        goto fhi;
-    SETW(d6, d6 << 2);
-    a1 += SW(d6);
-    a1 -= 4;
-    a2 += 4;
-
-    /* starts */
-    if (SW(d1) < 0) {                           /* cliptop */
-        d5 = 0;
-        for (;;) {
-            if (SW(d5) < SW(MW(a1, 2)))
-                break;
-            d0 = MOVEMW(a1, 0); d1 = MOVEMW(a1, 2);
-            a1 -= 4;
-            if (!((LONG)(a1 - a2) >= 0))
-                goto dun;
-        }
-        d3 = MOVEMW(a1, 0); d4 = MOVEMW(a1, 2);     /* clipl */
-        SETW(d5, d5 - d1);
-        SETW(d3, d3 - d0);
-        SETW(d4, d4 - d1);
-        d3 = MULS(d5, d3);
-        DIVS(d3, d4);
-        SETW(d0, d0 + d3);
-        d5 = 0;
-        SETW(d1, MW(a2, -2));
-        for (;;) {
-            if (SW(d5) < SW(MW(a2, 2)))
-                break;
-            d1 = MOVEMW(a2, 0); d2 = MOVEMW(a2, 2);
-            a2 += 4;
-            EXG(d1, d2);
-            if (!((LONG)(a1 - a2) >= 0))
-                goto dun;
-        }
-        d3 = MOVEMW(a2, 0); d4 = MOVEMW(a2, 2);     /* clipr */
-        SETW(d5, d5 - d1);
-        SETW(d3, d3 - d2);
-        SETW(d4, d4 - d1);
-        d3 = MULS(d5, d3);
-        DIVS(d3, d4);
-        SETW(d2, d2 + d3);
-        d1 = 0;
-    }
-    /* duntop */
-    if (!(SW(d0 - width) < 0)) {                /* cliprstart */
-        SETW(d6, d1);
-        SETW(d5, width);
-        SETW(d5, d5 - 1);
-        for (;;) {
-            if (SW(d5) > SW(MW(a1, 0)))
-                break;
-            d0 = MOVEMW(a1, 0); d1 = MOVEMW(a1, 2);
-            a1 -= 4;
-            if (!((LONG)(a1 - a2) >= 0))
-                goto dun;
-        }
-        d3 = MOVEMW(a1, 0); d4 = MOVEMW(a1, 2);     /* clipm */
-        SETW(d5, d5 - d0);
-        SETW(d3, d3 - d0);
-        SETW(d4, d4 - d1);
-        d4 = MULS(d5, d4);
-        DIVS(d4, d3);
-        SETW(d1, d1 + d4);
-        EXG(d1, d6);
-        SETW(d0, width);
-        SETW(d0, d0 - 1);
-        for (;;) {
-            if (SW(d6 - MW(a2, 2)) < 0)
-                break;
-            d1 = MOVEMW(a2, 0); d2 = MOVEMW(a2, 2);
-            a2 += 4;
-            EXG(d1, d2);
-            if (!((LONG)(a1 - a2) >= 0))
-                goto dun;
-        }
-        d3 = MOVEMW(a2, 0); d4 = MOVEMW(a2, 2);     /* mom */
-        SETW(d4, d4 - d1);
-        SETW(d3, d3 - d2);
-        EXG(d1, d6);
-        SETW(d6, d6 - d1);
-        d6 = MULS(d3, d6);
-        DIVS(d6, d4);
-        SETW(d2, d2 - d6);
-    } else if (SW(d2) < 0) {                    /* cliplstart */
-        SETW(d6, d1);
-        d5 = 0;
-        for (;;) {
-            if (SW(d5) < SW(MW(a2, 0)))
-                break;
-            d1 = MOVEMW(a2, 0); d2 = MOVEMW(a2, 2);
-            a2 += 4;
-            EXG(d1, d2);
-            if (!((LONG)(a1 - a2) >= 0))
-                goto dun;
-        }
-        d3 = MOVEMW(a2, 0); d4 = MOVEMW(a2, 2);     /* clipn */
-        SETW(d5, d5 - d2);
-        SETW(d3, d3 - d2);
-        SETW(d4, d4 - d1);
-        d4 = MULS(d5, d4);
-        DIVS(d4, d3);
-        SETW(d1, d1 + d4);
-        d2 = 0;
-        EXG(d1, d6);
-        for (;;) {
-            if (SW(d6 - MW(a1, 2)) < 0)
-                break;
-            d0 = MOVEMW(a1, 0); d1 = MOVEMW(a1, 2);
-            a1 -= 4;
-            if (!((LONG)(a1 - a2) >= 0))
-                goto dun;
-        }
-        d3 = MOVEMW(a1, 0); d4 = MOVEMW(a1, 2);     /* mon */
-        SETW(d4, d4 - d1);
-        SETW(d3, d3 - d0);
-        EXG(d1, d6);
-        SETW(d6, d6 - d1);
-        d6 = MULS(d3, d6);
-        DIVS(d6, d4);
-        SETW(d0, d0 - d6);
-    }
-    /* dunstart: still inside window? */
-    if (SW(d1 - height) >= 0)
-        goto dun;
-    xyx[0] = d0;
-    xyx[1] = d1;
-    xyx[2] = d2;
-    SETW(d5, height);
-    SETW(d6, width);
-    SETW(d6, d6 - 1);
-    d7 = 0;
-
-    /* lside */
-    a3 = (UBYTE *)l0;
-    d2 = MOVEMW(a1, 0); d3 = MOVEMW(a1, 2);
-    for (;;) {                                  /* lline */
-        if (SW(d3) <= SW(d1)) {                 /* SUB d1,d3:BLE dunl */
-            SETW(d3, d3 - d1);
-            break;
-        }
-        SETW(d3, d3 - d1);
-        SETW(d1, d3);
-        SETW(d3, d3 - 1);
-        MW(a3, 0) = d3;
-        a3 += 2;
-        SETW(d2, d2 - d0);
-        d2 = EXTL(d2);
-        d4 = 15;
-        SETW(d3, d3 + 1);
-        do {                                    /* lls */
-            SETW(d4, d4 - 3);
-            d2 <<= 3;
-            SETW(d3, W(d3) >> 3);
-        } while (W(d3));
-        DIVS(d2, d1);
-        d2 = EXTL(d2);
-        d2 = (d4 & 63) >= 32 ? 0 : d2 << (d4 & 63);
-        d2 = SWAP(d2);
-        SETW(d2, d2 + d2);
-        ML(a3, 0) = d2;
-        a3 += 4;
-        d0 = MOVEMW(a1, 0); d1 = MOVEMW(a1, 2);
-        if (SW(d1 - d5) >= 0) {                 /* lbot */
-            SETW(d1, d1 - d5);
-            MW(a3, -6) -= W(d1);
-            break;
-        }
-        if (SW(d0) > SW(d6)) {                  /* loff */
-            d2 = MOVEMW(a1, 4); d3 = MOVEMW(a1, 6);
-            SETW(d2, d2 - d0);
-            SETW(d3, d3 - d1);
-            SETW(d0, d0 - d6);
-            d3 = MULS(d0, d3);
-            DIVS(d3, d2);
-            MW(a3, -6) -= W(d3);
-            break;
-        }
-        a1 -= 4;
-        d2 = MOVEMW(a1, 0); d3 = MOVEMW(a1, 2);
-    }
-    d0 = 0xffffffff;                            /* dunl */
-    ML(a3, 0) = d0;
-
-    /* rside */
-    d0 = MOVEMW(xyx, 2); d1 = MOVEMW(xyx, 4);
-    EXG(d0, d1);
-    a3 = (UBYTE *)l1;
-    d2 = MOVEMW(a2, 0); d3 = MOVEMW(a2, 2);
-    for (;;) {                                  /* rline */
-        if (SW(d3) <= SW(d1)) {
-            SETW(d3, d3 - d1);
-            break;
-        }
-        SETW(d3, d3 - d1);
-        SETW(d1, d3);
-        SETW(d3, d3 - 1);
-        MW(a3, 0) = d3;
-        a3 += 2;
-        SETW(d2, d2 - d0);
-        d2 = EXTL(d2);
-        d4 = 15;
-        SETW(d3, d3 + 1);
-        do {                                    /* rls */
-            SETW(d4, d4 - 3);
-            d2 <<= 3;
-            SETW(d3, W(d3) >> 3);
-        } while (W(d3));
-        DIVS(d2, d1);
-        d2 = EXTL(d2);
-        d2 = (d4 & 63) >= 32 ? 0 : d2 << (d4 & 63);
-        d2 = SWAP(d2);
-        SETW(d2, d2 + d2);
-        ML(a3, 0) = d2;
-        a3 += 4;
-        d0 = MOVEMW(a2, 0); d1 = MOVEMW(a2, 2); d2 = MOVEMW(a2, 4); d3 = MOVEMW(a2, 6);
-        if (SW(d1 - d5) >= 0) {                 /* rbot */
-            SETW(d1, d1 - d5);
-            MW(a3, -6) -= W(d1);
-            break;
-        }
-        if (SW(d0 - d7) < 0) {                  /* roff */
-            d2 = MOVEMW(a2, -4); d3 = MOVEMW(a2, -2);
-            SETW(d2, d2 - d0);
-            SETW(d3, d3 - d1);
-            SETW(d0, d0 - d7);
-            d3 = MULS(d0, d3);
-            DIVS(d3, d2);
-            MW(a3, -6) -= W(d3);
-            break;
-        }
-        a2 += 4;
-    }
-    d0 = 0xffffffff;                            /* dunr */
-    ML(a3, 0) = d0;
-    return;
-dun:
-    d0 = 0;
-}
-
-/* _calcpoly (chunky: x/y swapped) / _calcpoly2; a0 = points, d0 = number
-   (negative: backwards) */
-static void calcpoly(int swap)
-{
-    UWORD k;
-
-    if (SW(d0) >= 0) {
-        SETW(d7, d0);
-        SETW(d7, d7 << 2);
-        a1 = (UBYTE *)polypts;
-        a2 = a1 + SW(d7);
-        SETW(d7, d0);
-        SETW(d0, d0 - 1);
-        k = d0;
-        do {
-            d1 = ML(a0, 0);
-            a0 += 4;
-            if (swap)
-                d1 = SWAP(d1);
-            ML(a1, 0) = d1;
-            a1 += 4;
-            ML(a2, 0) = d1;
-            a2 += 4;
-        } while (k-- != 0);
-    } else {                                    /* anti */
-        SETW(d0, -SW(d0));
-        SETW(d7, d0);
-        SETW(d7, d7 << 2);
-        a1 = (UBYTE *)polypts + SW(d7);
-        a2 = a1 + SW(d7);
-        SETW(d7, d0);
-        SETW(d0, d0 - 1);
-        k = d0;
-        do {
-            d1 = ML(a0, 0);
-            a0 += 4;
-            if (swap)
-                d1 = SWAP(d1);
-            a1 -= 4;
-            ML(a1, 0) = d1;
-            a2 -= 4;
-            ML(a2, 0) = d1;
-        } while (k-- != 0);
-    }
-    SETW(d0, 0xffff);                           /* DBRA end */
-    tops();
-}
-
-/* -------------------------------------------------------------- chunky */
-
-#undef width
-#undef height
+/* a Blitz bitmap (bitmaplib), the fields polylib reads */
+struct bitmap {
+    UWORD bpr;                  /* +0 bytes per row */
+    UWORD rows;                 /* +2 */
+    UWORD depth;                /* +4 read as a word (flags byte, depth byte) */
+    UWORD pad6;
+    UBYTE *planes[8];           /* +8 */
+    UBYTE pad40[16];
+    UWORD width, height;        /* +56/+58 clip size */
+    UWORD colours;              /* +60 */
+    WORD isreal;                /* +62 */
+} BL_PACKED;
 
 /* the chunky area of a CopList (displaylib CustomChunky, SizeOf.mycop) */
 struct coplist {
@@ -526,9 +143,297 @@ struct coplist {
     UWORD modulo;               /* +108 chc: bytes per chunky line */
 } BL_PACKED;
 
+/* blitter registers (a long write sets two of them) */
+#define BLTCON0 0x40
+#define BLTCON1 0x42
+#define BLTAFWM 0x44
+#define BLTALWM 0x46
+#define BLTCPT  0x48
+#define BLTBPT  0x4c
+#define BLTDPT  0x54
+#define BLTSIZE 0x58
+#define BLTSIZV 0x5c
+#define BLTSIZH 0x5e
+#define BLTCMOD 0x60
+#define BLTBMOD 0x62
+#define BLTDMOD 0x66
+#define BLTADAT 0x74
+#define CHIPW(o)   BL_CUSTOMW(BL_CUSTOM, o)
+#define CHIPL(o)   BL_CUSTOML(BL_CUSTOM, o)
+#define BLITWAIT() BL_BLITWAIT(BL_CUSTOM)
+
+/* a polygon point as the caller gives it (words x, y) */
+struct point {
+    WORD x, y;
+};
+
+/* an edge of one side of the outline: the lines it covers - 1 and the x
+   step per half line (edge_step); the long -1 ends a list */
+struct edge {
+    WORD lines;
+    ULONG step;
+} BL_PACKED;
+
 /* (WORD)(a - b) < 0: the original's CMP/SUB with BMI - the sign of the 16
    bit difference, which wraps on overflow (unlike a signed compare) */
 #define BMI_W(a, b) ((WORD)((a) - (b)) < 0)
+
+/* ------------------------------------------------------------ variables */
+
+static const UWORD cols[15] = {
+    0, 0xf00, 0x0f0, 0x00f, 0xa40, 0x028, 0xfff, 0xf80,
+    0x840, 0x8f4, 0x84f, 0x248, 0x488, 0x888, 0xf88,
+};
+
+/* what RenderPoly draws (polyvector): the routine gets the a3 of the call
+   and returns the a3 it leaves */
+typedef UBYTE *(*renderfn)(WORD n, const struct point *pts, UWORD colour, UBYTE *a3);
+static UBYTE *render_a3(WORD n, const struct point *pts, UWORD colour, UBYTE *a3);
+static renderfn polyvector = render_a3;
+static struct bitmap *bmap0, *bmap1;
+static struct coplist *chunk0;
+static struct point polypts[32];        /* the n points twice in a row */
+/* in the order of the original: an overflow of ledges runs into redges */
+static struct {
+    UWORD width, height;                /* clip size (chunky: swapped) */
+    struct {
+        WORD left, y, right;            /* the first line of the outline */
+    } top;
+    UWORD ledges[32], redges[32];       /* struct edge lists (l0, l1) */
+} pv;
+
+static const UWORD lup1[16] = {
+    0xffff, 0x7fff, 0x3fff, 0x1fff, 0x0fff, 0x07ff, 0x03ff, 0x01ff,
+    0x00ff, 0x007f, 0x003f, 0x001f, 0x000f, 0x0007, 0x0003, 0x0001,
+};
+static const UWORD lup2[16] = {
+    0x8000, 0xc000, 0xe000, 0xf000, 0xf800, 0xfc00, 0xfe00, 0xff00,
+    0xff80, 0xffc0, 0xffe0, 0xfff0, 0xfff8, 0xfffc, 0xfffe, 0xffff,
+};
+
+/* ---------------------------------------------------------- arithmetic */
+
+/* MULS a,b : DIVS c - the quotient word (on overflow DIVS leaves the
+   product, then its low word) */
+static WORD muldiv(WORD a, WORD b, WORD c)
+{
+    return (WORD)bl_divs_w((ULONG)bl_muls_w(a, b), c);
+}
+
+/* An x position along an edge is a fixed point number with the fraction
+   in the upper word and the integer, times `unit`, in the lower word (the
+   integer can be used as a word directly).  ADD.l adds a step; its carry
+   (out of the fraction) adds `unit` to the lower word (ADDQ / ADDX.w). */
+static ULONG edge_step(ULONG pos, ULONG step, UWORD unit)
+{
+    ULONG sum = pos + step;
+
+    if (sum < pos)
+        sum = (sum & 0xffff0000UL) | (UWORD)(sum + unit);
+    return sum;
+}
+
+/* the start: x (sign extended) with the lower word x * unit, the fraction
+   word EORed with $8000 (one half; $7FFF for a negative x) */
+static ULONG edge_start(WORD x, UWORD unit)
+{
+    return (((ULONG)(LONG)x & 0xffff0000UL) | (UWORD)(x * unit)) ^ 0x80000000UL;
+}
+
+/* the next edge of a list: its lines - 1 and its step; 0 at the end mark */
+static int next_edge(const struct edge **list, UWORD *lines, ULONG *step)
+{
+    const struct edge *e = (*list)++;
+
+    *lines = e->lines;
+    if (e->lines < 0)
+        return 0;
+    *step = e->step;
+    return 1;
+}
+
+/* ---------------------------------------------------- outline lists */
+
+/* lside/rside: the edges of one side from (x, y) over the points p, p +
+   dir, ... down to the bottom; cut where the side leaves the clip width
+   (the left side at x > width - 1, the right side at x < 0).  Returns the
+   address of the end mark. */
+static UWORD *side(UWORD *list, WORD x, WORD y, const struct point *p, int dir, int right)
+{
+    struct edge *e = (struct edge *)list;
+    WORD last = pv.width - 1, tx = p->x, ty = p->y;
+
+    while (ty > y) {                            /* SUB y,ty:BLE: done */
+        WORD dy = ty - y;
+        UWORD rest = dy, shift = 15;
+        ULONG dx = (ULONG)(LONG)(WORD)(tx - x), step;
+
+        e->lines = dy - 1;
+        do {                                    /* dx * 8^k with dy < 8^k */
+            shift -= 3;
+            dx <<= 3;
+            rest >>= 3;
+        } while (rest);
+        step = (ULONG)(LONG)(WORD)bl_divs_w(dx, dy);
+        step = (shift & 63) >= 32 ? 0 : step << (shift & 63);     /* LSL.l */
+        step = BL_SWAP(step);
+        BL_SETW(step, step + step);
+        e->step = step;
+        e++;
+        x = p->x;
+        y = p->y;
+        if (!BMI_W(y, pv.height)) {            /* lbot/rbot */
+            e[-1].lines -= (WORD)(y - pv.height);
+            break;
+        }
+        if (right ? x < 0 : x > last) {         /* roff/loff */
+            const struct point *from = p - dir;
+
+            e[-1].lines -= muldiv(right ? x : x - last, from->y - y, from->x - x);
+            break;
+        }
+        p += dir;
+        tx = p->x;
+        ty = p->y;
+    }
+    *(ULONG *)e = 0xffffffffUL;
+    return (UWORD *)e;
+}
+
+/* tops..rside: the outline of the polygon in polypts (n points, twice in a
+   row): the top line, clipped at the top edge and at the sides, and the
+   edge lists of the left side (backwards through the points) and the
+   right side.  NULL if nothing is visible, else the address of the right
+   list's end mark (where the original leaves a3). */
+static UWORD *outline(UWORD n)
+{
+    const struct point *p = polypts, *lp, *rp;
+    WORD lx, rx, y, ly, ry;
+    UWORD k = n - 1;
+
+    /* the top point; for several, lp = the leftmost, rp = the rightmost */
+    lx = rx = p->x;
+    y = p->y;
+    lp = rp = p;
+    while (p++, --k != 0xffff) {
+        if (BMI_W(y, p->y))                     /* below */
+            continue;
+        if (y != p->y) {                        /* above: the new top */
+            lx = rx = p->x;
+            y = p->y;
+            lp = rp = p;
+        } else if (!BMI_W(lx, p->x)) {
+            lx = p->x;
+            lp = p;
+        } else if (BMI_W(rx, p->x)) {
+            rx = p->x;
+            rp = p;
+        }
+    }
+    /* the left side starts at the point before lp's copy (ADDA.w n*4),
+       the right side at the point after rp */
+    lp = (const struct point *)((const UBYTE *)lp + (WORD)(n << 2)) - 1;
+    rp++;
+
+    if (y < 0) {                                /* cliptop */
+        ly = y;
+        while (!(0 < lp->y)) {
+            lx = lp->x;
+            ly = lp->y;
+            if (--lp < rp)
+                return NULL;
+        }
+        lx += muldiv(-ly, lp->x - lx, lp->y - ly);
+        ry = rp[-1].y;
+        while (!(0 < rp->y)) {
+            rx = rp->x;
+            ry = rp->y;
+            if (lp < ++rp)
+                return NULL;
+        }
+        rx += muldiv(-ry, rp->x - rx, rp->y - ry);
+        y = 0;
+    }
+    if (!BMI_W(lx, pv.width)) {                /* cliprstart */
+        WORD last = pv.width - 1;
+
+        ly = y;
+        while (!(last > lp->x)) {
+            lx = lp->x;
+            ly = lp->y;
+            if (--lp < rp)
+                return NULL;
+        }
+        ly += muldiv(last - lx, lp->y - ly, lp->x - lx);
+        lx = last;
+        ry = y;
+        while (!BMI_W(ly, rp->y)) {
+            rx = rp->x;
+            ry = rp->y;
+            if (lp < ++rp)
+                return NULL;
+        }
+        rx -= muldiv(rp->x - rx, ry - ly, rp->y - ry);
+        y = ly;
+    } else if (rx < 0) {                        /* cliplstart */
+        ry = y;
+        while (!(0 < rp->x)) {
+            rx = rp->x;
+            ry = rp->y;
+            if (lp < ++rp)
+                return NULL;
+        }
+        ry += muldiv(-rx, rp->y - ry, rp->x - rx);
+        rx = 0;
+        ly = y;
+        while (!BMI_W(ry, lp->y)) {
+            lx = lp->x;
+            ly = lp->y;
+            if (--lp < rp)
+                return NULL;
+        }
+        lx -= muldiv(lp->x - lx, ly - ry, lp->y - ly);
+        y = ry;
+    }
+    if (!BMI_W(y, pv.height))                  /* dunstart */
+        return NULL;
+    pv.top.left = lx;
+    pv.top.y = y;
+    pv.top.right = rx;
+    side(pv.ledges, lx, y, lp, -1, 0);
+    return side(pv.redges, rx, y, rp, 1, 1);
+}
+
+/* _calcpoly: the n points (backwards for n < 0; x and y swapped for the
+   chunky routines) twice into polypts (#395: more than 16 overflow it),
+   then the outline */
+static UWORD *polygon(WORD n, const struct point *pts, int swap)
+{
+    int back = n < 0;
+    UWORD count = back ? -n : n, k = count - 1;
+    struct point *a = back ? polypts + count : polypts, *b = a + count;
+
+    do {
+        struct point q = *pts++;
+
+        if (swap) {
+            WORD t = q.x;
+
+            q.x = q.y;
+            q.y = t;
+        }
+        if (back) {
+            *--a = q;
+            *--b = q;
+        } else {
+            *a++ = q;
+            *b++ = q;
+        }
+    } while (k-- != 0);
+    return outline(count);
+}
+
+/* -------------------------------------------------------------- chunky */
 
 static void BLITZ_ROUTINE _chunkycls_c(UWORD c BL_REG(d0))
 {
@@ -621,509 +526,337 @@ static void BLITZ_ROUTINE _chunkyvlinclip_c(WORD x BL_REG(d0), WORD y1 BL_REG(d1
 }
 BLITZ_THUNK(_chunkyvlinclip, _chunkyvlinclip_c, "d1/a0-a1");
 
-#define width  pv.width
-#define height pv.height
-
-#define CREGS ULONG r0 BL_REG(d0), ULONG r1 BL_REG(d1), ULONG r2 BL_REG(d2), \
-              ULONG r3 BL_REG(d3)
-#define CLOAD() (d0 = r0, d1 = r1, d2 = r2, d3 = r3, a3 = blitz_string)
-
-
-/* ChunkyPoly - with the blitter (vertical lines, one blit each) or with
-   the CPU (noblitter form); a3 = CopList */
-static void chunkypoly(int cpu)
+/* ChunkyPoly: the polygon with x and y swapped, so that a line of the
+   outline is a chunky column, filled from its top row down by one blit
+   (BLTSIZV/H, D = the colour) or by the CPU (cpu).  The point list runs
+   the other way round (count negated).  Returns the a3 the original
+   leaves: the CopList, or the top row of the last column (MOVE d7,a3). */
+static UBYTE *chunkypoly(WORD n, const struct point *pts, UWORD colour,
+                         struct coplist *cl, int cpu)
 {
-    UBYTE *sa4 = a4, *sa5 = a5, *sa6 = a6, *sa3;
+    const struct edge *le = (const struct edge *)pv.ledges;
+    const struct edge *re = (const struct edge *)pv.redges;
+    UBYTE *a3 = (UBYTE *)cl, *column, *colend, *pixel;
+    ULONG top, bottom, tstep, bstep;
+    UWORD tlines, blines, bankleft, x, rows = cl->height, mod = cl->modulo;
 
-    sa3 = a3;
-    pcol = d2;
-    a0 = (UBYTE *)d1;
-    height = MW(a3, M_chw);
-    width = MW(a3, M_chh);
-    SETW(d0, -SW(d0));
-    calcpoly(1);
-    a3 = sa3;                                   /* MOVE.l (a7)+,a3:BEQ */
-    if (!d0)
-        goto pdun;
-    a0 = MP(a3, M_cchunky);
-    a1 = (UBYTE *)xyx;
-    d0 = MOVEMW(a1, 0); d1 = MOVEMW(a1, 2); d2 = MOVEMW(a1, 4);
-    a1 += 6;
-    d0 ^= 0x80000000;
-    d2 ^= 0x80000000;
-    a2 = a1 + 64;
-    a4 = a0 + SW(MW(a3, M_chc));
-    a4 -= 8;
-    loflo = (ULONG)a4;
-    SETW(d7, d1);
-    SETW(d7, W(d7) >> 5);
-    d7 = MULU(d7, 132);
-    a0 += SW(d7);
-    d3 = 31;
-    SETW(d7, d1);
-    SETW(d7, d7 & d3);
-    SETW(d7, d7 << 2);
-    a0 += SW(d7);
-    SETW(d1, ~d1);
-    SETW(d1, d1 & d3);
-    SETW(d3, MW(a1, 0));
-    a1 += 2;
-    if (SW(d3) < 0)
-        goto pdun;
-    d5 = ML(a1, 0);
-    a1 += 4;
-    SETW(d5, SW(d5) >> 1);                 /* ASR #1 (.w) */
-    SETW(d4, MW(a2, 0));
-    a2 += 2;
-    if (SW(d4) < 0)
-        goto pdun;
-    d6 = ML(a2, 0);
-    a2 += 4;
-    SETW(d6, SW(d6) >> 1);                 /* ASR #1 (.w) */
+    pv.height = cl->width;
+    pv.width = cl->height;
+    if (!polygon(-n, pts, 1))
+        return a3;
+    top = edge_start(pv.top.left, 1);
+    x = pv.top.y;
+    bottom = edge_start(pv.top.right, 1);
+    column = cl->chunky;
+    colend = column + (WORD)cl->modulo - 8;     /* behind the last column */
+    column += (WORD)bl_mulu_w(x >> 5, 132);
+    column += (x & 31) << 2;
+    bankleft = ~x & 31;
+    if (!next_edge(&le, &tlines, &tstep))
+        return a3;
+    BL_SETW(tstep, (WORD)tstep >> 1);           /* ASR #1 (.w): integer */
+    if (!next_edge(&re, &blines, &bstep))
+        return a3;
+    BL_SETW(bstep, (WORD)bstep >> 1);
     if (!cpu) {
-        a5 = (UBYTE *)0xdff000;
-        BLITWAIT(a5);
-        CW(a5, 0x74) = pcol;
-        CL(a5, 0x44) = 0xffffffff;
-        SETW(d7, MW(a3, M_chc));
-        SETW(d7, d7 - 2);
-        CW(a5, 0x66) = d7;
-        CL(a5, 0x40) = 0x01f00000;
-        a6 = (UBYTE *)EXTL(MW(a3, M_chh));
-        chc = MW(a3, M_chc);
-    } else {
-        a5 = (UBYTE *)EXTL(MW(a3, M_chh));
-        a6 = (UBYTE *)EXTL(MW(a3, M_chc));
-        chc = (UWORD)(ULONG)a6;
+        BLITWAIT();
+        CHIPW(BLTADAT) = colour;
+        CHIPL(BLTAFWM) = 0xffffffff;
+        CHIPW(BLTDMOD) = mod - 2;
+        CHIPL(BLTCON0) = 0x01f00000;            /* D = A */
     }
     for (;;) {                                  /* ploop */
-        UBYTE *lim = cpu ? a5 : a6;
+        UWORD row, last;
 
-        ADDX1(d0, d5);
-        ADDX1(d2, d6);
-        if (SW(d0 - (UWORD)(ULONG)lim) >= 0)
-            goto pdun;
-        SETW(d7, d0);
-        if (SW(d7) < 0)
-            d7 = 0;
-        a3 = (UBYTE *)EXTL(d7);                 /* MOVE d7,a3 */
-        d7 = MULU(d7, chc);
-        a4 = a0 + d7;
-        SETW(d7, d2);
-        if (!(SW(d7 - (UWORD)(ULONG)lim) < 0)) {
-            SETW(d7, (UWORD)(ULONG)lim);
-            SETW(d7, d7 - 1);
-        }
-        SETW(d7, d7 - (UWORD)(ULONG)a3);
-        if (SW(d7) < 0)
-            goto pdun;
+        top = edge_step(top, tstep, 1);
+        bottom = edge_step(bottom, bstep, 1);
+        if (!BMI_W(top, rows))
+            break;
+        row = (WORD)top < 0 ? 0 : (UWORD)top;
+        a3 = (UBYTE *)(LONG)(WORD)row;
+        pixel = column + bl_mulu_w(row, mod);
+        last = bottom;
+        if (!BMI_W(last, rows))
+            last = rows - 1;
+        last -= row;
+        if ((WORD)last < 0)
+            break;
         if (!cpu) {
-            SETW(d7, d7 + 1);
-            BLITWAIT(a5);
-            CL(a5, 0x54) = (ULONG)a4;
-            CW(a5, 0x5c) = d7;
-            CW(a5, 0x5e) = 1;
+            BLITWAIT();
+            CHIPL(BLTDPT) = (ULONG)pixel;
+            CHIPW(BLTSIZV) = last + 1;
+            CHIPW(BLTSIZH) = 1;
         } else {
             do {                                /* vloop */
-                *(UWORD *)a4 = pcol;
-                a4 += SW((UWORD)(ULONG)a6);
-                SETW(d7, d7 - 1);
-            } while (W(d7) != 0xffff);
+                *(UWORD *)pixel = colour;
+                pixel += (WORD)mod;
+            } while (last-- != 0);
         }
-        a0 += 4;
-        SETW(d1, d1 - 1);
-        if (W(d1) == 0xffff) {
-            a0 += 4;
-            d1 = 31;
+        column += 4;
+        if (bankleft-- == 0) {
+            column += 4;
+            bankleft = 31;
         }
-        if ((ULONG)a0 == loflo)
-            goto pdun;
-        ADDX1(d0, d5);
-        ADDX1(d2, d6);
-        SETW(d3, d3 - 1);
-        if (W(d3) == 0xffff) {
-            SETW(d3, MW(a1, 0));
-            a1 += 2;
-            if (SW(d3) < 0)
-                goto pdun;
-            d5 = ML(a1, 0);
-            a1 += 4;
-            SETW(d5, SW(d5) >> 1);                 /* ASR #1 (.w) */
+        if (column == colend)
+            break;
+        top = edge_step(top, tstep, 1);
+        bottom = edge_step(bottom, bstep, 1);
+        if (tlines-- == 0) {
+            if (!next_edge(&le, &tlines, &tstep))
+                break;
+            BL_SETW(tstep, (WORD)tstep >> 1);
         }
-        SETW(d4, d4 - 1);
-        if (W(d4) == 0xffff) {
-            SETW(d4, MW(a2, 0));
-            a2 += 2;
-            if (SW(d4) < 0)
-                goto pdun;
-            d6 = ML(a2, 0);
-            a2 += 4;
-            SETW(d6, SW(d6) >> 1);                 /* ASR #1 (.w) */
+        if (blines-- == 0) {
+            if (!next_edge(&re, &blines, &bstep))
+                break;
+            BL_SETW(bstep, (WORD)bstep >> 1);
         }
     }
-pdun:
-    a4 = sa4;
-    a5 = sa5;
-    a6 = sa6;
+    return a3;
 }
 
-/* ChunkyPoly: d0 = n, d1 = points, d2 = colour (d3 = noblitter, ignored:
-   the 4 argument form is always the CPU version) */
-static void BLITZ_ROUTINE _chunkypoly_c(CREGS)
+/* ChunkyPoly n,points,colour (blitter) / n,points,colour,noblitter (the 4
+   argument form is always the CPU version, the argument is ignored) */
+static void BLITZ_ROUTINE _chunkypoly_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
+                                        UWORD colour BL_REG(d2))
 {
-    CLOAD();
-    chunkypoly(0);
-    blitz_string = a3;
+    blitz_string = chunkypoly(n, (const struct point *)pts, colour,
+                              (struct coplist *)blitz_string, 0);
 }
 BLITZ_THUNK(_chunkypoly, _chunkypoly_c, "d1/a0-a1");
 
-static void BLITZ_ROUTINE _chunkypoly2_c(CREGS)
+static void BLITZ_ROUTINE _chunkypoly2_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
+                                         UWORD colour BL_REG(d2))
 {
-    CLOAD();
-    chunkypoly(1);
-    blitz_string = a3;
+    blitz_string = chunkypoly(n, (const struct point *)pts, colour,
+                              (struct coplist *)blitz_string, 1);
 }
 BLITZ_THUNK(_chunkypoly2, _chunkypoly2_c, "d1/a0-a1");
 
 /* ---------------------------------------------------------- BitMapPoly */
 
-static void bitmappoly(void)
+/* the span of a line from the edge positions (twice the x; rtclip = twice
+   the last x of the clip): the masks to the blitter, the byte offset of
+   its first word and the number of words - 1; 0 if the polygon ends here */
+static int span(ULONG left, ULONG right, UWORD rtclip, UWORD *first, UWORD *words)
 {
-    UBYTE *sa4 = a4, *sa5 = a5, *sa6 = a6, *sa3;
+    UWORD xs, xe;
 
-    pcol = d2;
-    sa3 = a3;
-    a0 = (UBYTE *)d1;
-    width = MW(a3, 56);
-    height = MW(a3, 58);
-    calcpoly(0);
-    a6 = sa3;
-    if (!d0)
-        goto bdun;
-    a5 = (UBYTE *)0xdff000;
-    d0 = MOVEMW(xyx, 0); d1 = MOVEMW(xyx, 2); d2 = MOVEMW(xyx, 4);
-    d1 = MULU(d1, MW(a6, 0));
-    bmoff = d1;
-    SETW(bmwid, MW(a6, 0));
-    SETW(d1, MW(a6, 56));
-    SETW(d1, d1 - 1);
-    SETW(d1, d1 + d1);
-    rtclip = d1;
-    d1 = d2;
-    SETW(d0, d0 + d0);
-    SETW(d1, d1 + d1);
-    d0 ^= 0x80000000;
-    d1 ^= 0x80000000;
-    a0 = (UBYTE *)l0;
-    SETW(d2, MW(a0, 0));
-    a0 += 2;
-    if (SW(d2) < 0)
-        goto bdun;
-    d4 = ML(a0, 0);
-    a0 += 4;
-    a1 = (UBYTE *)l1;
-    SETW(d3, MW(a1, 0));
-    a1 += 2;
-    if (SW(d3) < 0)
-        goto bdun;
-    d5 = ML(a1, 0);
-    a1 += 4;
-    ADDC2(d0, d4);
-    ADDC2(d1, d5);
-    BLITWAIT(a5);
-    CW(a5, 0x74) = 0xffff;
-    CW(a5, 0x42) = 0;
-    for (;;) {                                  /* pploop */
-        SETW(d6, d0);
-        if (SW(d6) > SW(rtclip))
-            goto bdun;
-        d6 = SWAP(d6);
-        SETW(d6, d0);
-        if (SW(d6) < 0)
-            d6 = 0;
-        if (SW(d1) < 0)
-            goto bdun;
-        SETW(d7, rtclip);
-        if (!(SW(d7 - d1) < 0))
-            SETW(d7, d1);
-        BLITWAIT(a5);
-        SETW(d6, d6 & 30);
-        CW(a5, 0x44) = lup1[W(d6) >> 1];
-        SETW(d6, d7);
-        SETW(d6, d6 & 30);
-        CW(a5, 0x46) = lup2[W(d6) >> 1];
-        d6 = SWAP(d6);
-        SETW(d6, W(d6) >> 5);
-        SETW(d7, W(d7) >> 5);
-        SETW(d7, d7 - d6);
-        if (SW(d7) < 0)
-            goto bdun;
-        SETW(d7, d7 + 65);
-        SETW(d6, d6 + d6);
-        a2 = (UBYTE *)bmoff + SW(d6);
-        d6 = 0;
-        a4 = a6 + 8;
+    if ((WORD)left > (WORD)rtclip)
+        return 0;
+    xs = (WORD)left < 0 ? 0 : (UWORD)left;
+    if ((WORD)right < 0)
+        return 0;
+    xe = rtclip;
+    if (!BMI_W(xe, right))
+        xe = right;
+    BLITWAIT();
+    CHIPW(BLTAFWM) = lup1[(xs & 30) >> 1];
+    CHIPW(BLTALWM) = lup2[(xe & 30) >> 1];
+    xs >>= 5;
+    *words = (xe >> 5) - xs;
+    *first = xs + xs;
+    return (WORD)*words >= 0;
+}
+
+/* BitMapPoly (RenderPoly on a bitmap): one blit per line and plane, A =
+   $FFFF in the span's masks, D = C = the plane, set or cleared by the
+   plane's colour bit.  Returns the a3 the original leaves: the bitmap, the
+   end mark of the right edge list, or the last plane line blitted. */
+static UBYTE *bitmappoly(WORD n, const struct point *pts, UWORD colour, struct bitmap *bm)
+{
+    const struct edge *le = (const struct edge *)pv.ledges;
+    const struct edge *re = (const struct edge *)pv.redges;
+    UBYTE *a3;
+    ULONG left, right, lstep, rstep, rowoff;
+    UWORD llines, rlines, rtclip, first, words, plane;
+
+    pv.width = bm->width;
+    pv.height = bm->height;
+    a3 = (UBYTE *)polygon(n, pts, 0);
+    if (!a3)
+        return (UBYTE *)bm;
+    rowoff = bl_mulu_w(pv.top.y, bm->bpr);
+    rtclip = (bm->width - 1) * 2;
+    left = edge_start(pv.top.left, 2);
+    right = edge_start(pv.top.right, 2);
+    if (!next_edge(&le, &llines, &lstep) || !next_edge(&re, &rlines, &rstep))
+        return a3;
+    left = edge_step(left, lstep, 2);
+    right = edge_step(right, rstep, 2);
+    BLITWAIT();
+    CHIPW(BLTADAT) = 0xffff;
+    CHIPW(BLTCON1) = 0;
+    while (span(left, right, rtclip, &first, &words)) {     /* pploop */
+        plane = 0;
         do {                                    /* nxpolyplane */
-            BLITWAIT(a5);
-            CW(a5, 0x40) = 0x3fa;
-            if (!((UBYTE)pcol & (1 << (d6 & 7))))   /* BTST d6,pcol+1 */
-                CW(a5, 0x40) = 0x30a;
-            a3 = MP(a4, 0) + (ULONG)a2;
-            a4 += 4;
-            CL(a5, 0x48) = (ULONG)a3;
-            CL(a5, 0x54) = (ULONG)a3;
-            CW(a5, 0x58) = d7;
-            SETW(d6, d6 + 1);
-        } while (W(d6) != MW(a6, 4));
-        d7 = bmwid;
-        bmoff += d7;
-        ADDC2(d0, d4);
-        ADDC2(d1, d5);
-        SETW(d2, d2 - 1);
-        if (W(d2) == 0xffff) {
-            SETW(d2, MW(a0, 0));
-            a0 += 2;
-            if (SW(d2) < 0)
-                goto bdun;
-            d4 = ML(a0, 0);
-            a0 += 4;
-        }
-        SETW(d3, d3 - 1);
-        if (W(d3) == 0xffff) {
-            SETW(d3, MW(a1, 0));
-            a1 += 2;
-            if (SW(d3) < 0)
-                goto bdun;
-            d5 = ML(a1, 0);
-            a1 += 4;
-        }
-        ADDC2(d0, d4);
-        ADDC2(d1, d5);
+            BLITWAIT();
+            CHIPW(BLTCON0) = 0x3fa;
+            if (!((UBYTE)colour & (1 << (plane & 7))))
+                CHIPW(BLTCON0) = 0x30a;
+            a3 = bm->planes[plane] + rowoff + (WORD)first;
+            CHIPL(BLTCPT) = (ULONG)a3;
+            CHIPL(BLTDPT) = (ULONG)a3;
+            CHIPW(BLTSIZE) = words + 65;
+        } while (++plane != bm->depth);         /* depth 0: 65536 (#393) */
+        rowoff += bm->bpr;
+        left = edge_step(left, lstep, 2);
+        right = edge_step(right, rstep, 2);
+        if (llines-- == 0 && !next_edge(&le, &llines, &lstep))
+            break;
+        if (rlines-- == 0 && !next_edge(&re, &rlines, &rstep))
+            break;
+        left = edge_step(left, lstep, 2);
+        right = edge_step(right, rstep, 2);
     }
-bdun:
-    a4 = sa4;
-    a5 = sa5;
-    a6 = sa6;
+    return a3;
 }
 
-/* dither form: a0 = dither bitmap, a3 = bitmap */
-static void bitmappoly2(void)
+/* the dither form (also RenderPoly after RenderToBitmap b,d): one blit per
+   line over all planes (BLTSIZE height = depth, the modulos step from plane
+   to plane: they assume evenly spaced planes, #418), B = two alternating
+   lines of the dither bitmap at colour * 2.  Returns the a3 the original
+   leaves: the bitmap, the end mark of the right edge list, or the dither
+   line for the next line. */
+static UBYTE *bitmappoly_dither(WORD n, const struct point *pts, UWORD colour,
+                                struct bitmap *bm, struct bitmap *dither)
 {
-    UBYTE *sa4 = a4, *sa5 = a5, *sa6 = a6, *sa0 = a0, *sa3 = a3;
+    const struct edge *le = (const struct edge *)pv.ledges;
+    const struct edge *re = (const struct edge *)pv.redges;
+    UBYTE *a3, *row, *other, *t;
+    ULONG left, right, lstep, rstep;
+    UWORD llines, rlines, rtclip, first, words, srcmod, negmod, height, mod;
 
-    pcol = d2;
-    a0 = (UBYTE *)d1;
-    width = MW(a3, 56);
-    height = MW(a3, 58);
-    calcpoly(0);
-    a4 = sa0;
-    a6 = sa3;
-    if (!d0)
-        goto ddun;
-    a5 = (UBYTE *)0xdff000;
-    d3 = ML(a6, 12);
-    d3 -= ML(a6, 8);
-    d3 -= 2;
-    srcmod = d3;
-    d3 -= ML(a4, 12);
-    d3 += ML(a4, 8);
-    d3 += 2;
-    negmod = d3;
-    SETW(d3, MW(a6, 4));
-    SETW(d3, d3 << 6);
-    SETW(d3, d3 + 1);
-    bltsize = d3;
-    SETW(d2, pcol);
-    SETW(d2, d2 + d2);
-    SETW(d3, MW(a4, 0));
-    d2 = MULU(d2, d3);
-    d2 += ML(a4, 8);
-    a3 = (UBYTE *)d2;
-    a4 = a3 + SW(d3);
-    d0 = MOVEMW(xyx, 0); d1 = MOVEMW(xyx, 2); d2 = MOVEMW(xyx, 4);
-    if (d1 & 1)
-        EXGA(a3, a4);
-    SETW(bmwid, MW(a6, 0));
-    SETW(d3, MW(a6, 56));
-    SETW(d3, d3 - 1);
-    SETW(d3, d3 + d3);
-    rtclip = d3;
-    d1 = MULU(d1, MW(a6, 0));
-    a6 = MP(a6, 8);
-    a6 += d1;
-    d1 = d2;
-    SETW(d0, d0 + d0);
-    SETW(d1, d1 + d1);
-    d0 ^= 0x80000000;
-    d1 ^= 0x80000000;
-    a0 = (UBYTE *)l0;
-    SETW(d2, MW(a0, 0));
-    a0 += 2;
-    if (SW(d2) < 0)
-        goto ddun;
-    d4 = ML(a0, 0);
-    a0 += 4;
-    a1 = (UBYTE *)l1;
-    SETW(d3, MW(a1, 0));
-    a1 += 2;
-    if (SW(d3) < 0)
-        goto ddun;
-    d5 = ML(a1, 0);
-    a1 += 4;
-    ADDC2(d0, d4);
-    ADDC2(d1, d5);
-    BLITWAIT(a5);
-    CL(a5, 0x40) = 0x07ca0000;
-    CW(a5, 0x74) = 0xffff;
-    for (;;) {                                  /* dploop */
-        SETW(d6, d0);
-        if (SW(d6) > SW(rtclip))
-            goto ddun;
-        d6 = SWAP(d6);
-        SETW(d6, d0);
-        if (SW(d6) < 0)
-            d6 = 0;
-        if (SW(d1) < 0)
-            goto ddun;
-        SETW(d7, rtclip);
-        if (!(SW(d7 - d1) < 0))
-            SETW(d7, d1);
-        BLITWAIT(a5);
-        SETW(d6, d6 & 30);
-        CW(a5, 0x44) = dup1[W(d6) >> 1];
-        SETW(d6, d7);
-        SETW(d6, d6 & 30);
-        CW(a5, 0x46) = dup2[W(d6) >> 1];
-        d6 = SWAP(d6);
-        SETW(d6, W(d6) >> 5);
-        SETW(d7, W(d7) >> 5);
-        SETW(d7, d7 - d6);
-        if (SW(d7) < 0)
-            goto ddun;
-        SETW(d6, d6 + d6);
-        a2 = a6 + SW(d6);
-        SETW(d6, srcmod);
-        SETW(d6, d6 - d7);
-        SETW(d6, d6 - d7);
-        SETW(d7, d7 + bltsize);
-        CW(a5, 0x60) = d6;
-        CW(a5, 0x66) = d6;
-        SETW(d6, d6 + negmod);
-        CW(a5, 0x62) = d6;
-        CL(a5, 0x48) = (ULONG)a2;               /* MOVEM.l a2-a3,$48 */
-        CL(a5, 0x4c) = (ULONG)a3;
-        CL(a5, 0x54) = (ULONG)a2;
-        CW(a5, 0x58) = d7;
-        a6 += SW(W(bmwid));
-        EXGA(a3, a4);
-        ADDC2(d0, d4);
-        ADDC2(d1, d5);
-        SETW(d2, d2 - 1);
-        if (W(d2) == 0xffff) {
-            SETW(d2, MW(a0, 0));
-            a0 += 2;
-            if (SW(d2) < 0)
-                goto ddun;
-            d4 = ML(a0, 0);
-            a0 += 4;
-        }
-        SETW(d3, d3 - 1);
-        if (W(d3) == 0xffff) {
-            SETW(d3, MW(a1, 0));
-            a1 += 2;
-            if (SW(d3) < 0)
-                goto ddun;
-            d5 = ML(a1, 0);
-            a1 += 4;
-        }
-        ADDC2(d0, d4);
-        ADDC2(d1, d5);
+    pv.width = bm->width;
+    pv.height = bm->height;
+    a3 = (UBYTE *)polygon(n, pts, 0);
+    if (!a3)
+        return (UBYTE *)bm;
+    srcmod = bm->planes[1] - bm->planes[0] - 2;
+    negmod = (bm->planes[1] - bm->planes[0]) - (dither->planes[1] - dither->planes[0]);
+    height = (bm->depth << 6) + 1;
+    a3 = dither->planes[0] + bl_mulu_w(colour * 2, dither->bpr);
+    other = a3 + (WORD)dither->bpr;
+    if (pv.top.y & 1) {
+        t = a3;
+        a3 = other;
+        other = t;
     }
-ddun:
-    a4 = sa4;
-    a5 = sa5;
-    a6 = sa6;
+    rtclip = (bm->width - 1) * 2;
+    row = bm->planes[0] + bl_mulu_w(pv.top.y, bm->bpr);
+    left = edge_start(pv.top.left, 2);
+    right = edge_start(pv.top.right, 2);
+    if (!next_edge(&le, &llines, &lstep) || !next_edge(&re, &rlines, &rstep))
+        return a3;
+    left = edge_step(left, lstep, 2);
+    right = edge_step(right, rstep, 2);
+    BLITWAIT();
+    CHIPL(BLTCON0) = 0x07ca0000;                /* D = B in A, C outside */
+    CHIPW(BLTADAT) = 0xffff;
+    while (span(left, right, rtclip, &first, &words)) {     /* dploop */
+        mod = srcmod - words - words;
+        CHIPW(BLTCMOD) = mod;
+        CHIPW(BLTDMOD) = mod;
+        CHIPW(BLTBMOD) = mod + negmod;
+        CHIPL(BLTCPT) = (ULONG)(row + (WORD)first);
+        CHIPL(BLTBPT) = (ULONG)a3;
+        CHIPL(BLTDPT) = (ULONG)(row + (WORD)first);
+        CHIPW(BLTSIZE) = words + height;
+        row += (WORD)bm->bpr;
+        t = a3;
+        a3 = other;
+        other = t;
+        left = edge_step(left, lstep, 2);
+        right = edge_step(right, rstep, 2);
+        if (llines-- == 0 && !next_edge(&le, &llines, &lstep))
+            break;
+        if (rlines-- == 0 && !next_edge(&re, &rlines, &rstep))
+            break;
+        left = edge_step(left, lstep, 2);
+        right = edge_step(right, rstep, 2);
+    }
+    return a3;
 }
 
-#define PREGS ULONG r0 BL_REG(d0), ULONG r1 BL_REG(d1), ULONG r2 BL_REG(d2)
-
-static void BLITZ_ROUTINE _bitmappoly_c(PREGS)
+static void BLITZ_ROUTINE _bitmappoly_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
+                                        UWORD colour BL_REG(d2))
 {
-    d0 = r0; d1 = r1; d2 = r2;
-    a3 = blitz_string;
-    bitmappoly();
-    blitz_string = a3;
+    blitz_string = bitmappoly(n, (const struct point *)pts, colour,
+                              (struct bitmap *)blitz_string);
 }
 BLITZ_THUNK(_bitmappoly, _bitmappoly_c, "d1/a0-a1");
 
-static void BLITZ_ROUTINE _bitmappoly2_c(PREGS, UBYTE *dither BL_REG(a0))
+static void BLITZ_ROUTINE _bitmappoly2_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
+                                         UWORD colour BL_REG(d2),
+                                         struct bitmap *dither BL_REG(a0))
 {
-    d0 = r0; d1 = r1; d2 = r2;
-    a0 = dither;
-    a3 = blitz_string;
-    bitmappoly2();
-    blitz_string = a3;
+    blitz_string = bitmappoly_dither(n, (const struct point *)pts, colour,
+                                     (struct bitmap *)blitz_string, dither);
 }
 BLITZ_THUNK(_bitmappoly2, _bitmappoly2_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------- Render */
 
-static void rpoly0(void)
+/* before any RenderTo...: _bitmappoly on a3 = the string pointer (#420) */
+static UBYTE *render_a3(WORD n, const struct point *pts, UWORD colour, UBYTE *a3)
 {
-    a3 = bmap0;
-    bitmappoly();
+    return bitmappoly(n, pts, colour, (struct bitmap *)a3);
 }
 
-static void rpoly1(void)
+static UBYTE *render_bitmap(WORD n, const struct point *pts, UWORD colour, UBYTE *a3)
 {
-    a0 = bmap0;                                 /* BUG(orig) (#421): swapped */
-    a3 = bmap1;
-    bitmappoly2();
+    (void)a3;
+    return bitmappoly(n, pts, colour, bmap0);
 }
 
-static void rpoly2(void)
+/* BUG(orig) (#421): the bitmaps are swapped - draws on the dither bitmap */
+static UBYTE *render_dither(WORD n, const struct point *pts, UWORD colour, UBYTE *a3)
 {
-    a3 = chunk0;
-    SETW(d2, d2 + d2);
-    SETW(d2, cols[SW(d2) >> 1]);
-    chunkypoly(0);
+    (void)a3;
+    return bitmappoly_dither(n, pts, colour, bmap1, bmap0);
 }
 
-static void BLITZ_ROUTINE _rendertobitmap_c(UBYTE *bm BL_REG(a0))
+/* the colour through the table, index as a word (ADD d2,d2; #422) */
+static UBYTE *render_chunky(WORD n, const struct point *pts, UWORD colour, UBYTE *a3)
+{
+    (void)a3;
+    return chunkypoly(n, pts, cols[(WORD)(colour << 1) >> 1], chunk0, 0);
+}
+
+static void BLITZ_ROUTINE _rendertobitmap_c(struct bitmap *bm BL_REG(a0))
 {
     bmap0 = bm;
-    polyvector = rpoly0;
+    polyvector = render_bitmap;
 }
 BLITZ_THUNK(_rendertobitmap, _rendertobitmap_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE _rendertobitmap2_c(UBYTE *bm BL_REG(a0), UBYTE *dither BL_REG(a1))
+static void BLITZ_ROUTINE _rendertobitmap2_c(struct bitmap *bm BL_REG(a0),
+                                             struct bitmap *dither BL_REG(a1))
 {
     bmap0 = bm;
     bmap1 = dither;
-    polyvector = rpoly1;
+    polyvector = render_dither;
 }
 BLITZ_THUNK(_rendertobitmap2, _rendertobitmap2_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE _rendertochunky_c(UBYTE *cl BL_REG(a0))
+static void BLITZ_ROUTINE _rendertochunky_c(struct coplist *cl BL_REG(a0))
 {
     chunk0 = cl;
-    polyvector = rpoly2;
+    polyvector = render_chunky;
 }
 BLITZ_THUNK(_rendertochunky, _rendertochunky_c, "d0-d1/a0-a1");
 
 /* split: ASL #4,d1:ADD d1,a0 - the CopList 16 bytes per split further */
 static void BLITZ_ROUTINE _rendertochunky2_c(UWORD split BL_REG(d1), UBYTE *cl BL_REG(a0))
 {
-    chunk0 = cl + (WORD)(split << 4);
-    polyvector = rpoly2;
+    chunk0 = (struct coplist *)(cl + (WORD)(split << 4));
+    polyvector = render_chunky;
 }
 BLITZ_THUNK(_rendertochunky2, _rendertochunky2_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE _renderpoly_c(PREGS)
+static void BLITZ_ROUTINE _renderpoly_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
+                                        UWORD colour BL_REG(d2))
 {
-    d0 = r0; d1 = r1; d2 = r2;
-    a3 = blitz_string;                          /* default: _bitmappoly on a3 */
-    polyvector();
-    blitz_string = a3;
+    blitz_string = polyvector(n, (const struct point *)pts, colour, blitz_string);
 }
 BLITZ_THUNK(_renderpoly, _renderpoly_c, "d1/a0-a1");
