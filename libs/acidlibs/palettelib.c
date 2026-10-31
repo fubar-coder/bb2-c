@@ -61,6 +61,7 @@
  * errd); here these runtime errors and messages are in the normal code.
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <stddef.h>
 #include <graphics/view.h>
 #include <intuition/screens.h>
@@ -74,16 +75,8 @@
 /* environlib ExecVersion */
 /* intlib SetInt/ClrInt (Amiga mode): d0 = level, d1 = code */
 
-/* a palette object, 2^7 bytes */
-struct cycle {
-    WORD lo, hi, speed, var;
-};
-struct bpal {
-    UBYTE *pdata;               /* +0 */
-    UWORD numcols;              /* +4 */
-    struct cycle cyc[14];       /* +6 */
-    UBYTE pad[10];
-} BL_PACKED;
+/* a palette object, 2^7 bytes: struct bb_palette, its colour cycles struct
+   bb_cycle (blitzobj.h) */
 
 /* entry points (thunks / C / asm, defined below) */
 void dopalload(void), dopalload2(void), getpal(void), getpal2(void);
@@ -280,7 +273,7 @@ static WORD cycon;
 /* the cycle list: {next, palette, viewport} (12 bytes) */
 struct cnode {
     struct cnode *next;
-    struct bpal *pal;
+    struct bb_palette *pal;
     struct ViewPort *vp;
 };
 static struct cnode *cyclelist;
@@ -335,7 +328,7 @@ static ULONG rep(UWORD v)
 
 /* dopalrgb - a0 = palette, d1 = colour, d2/d3/d4 = red/green/blue (8
    bit); the palette grows if needed.  Keeps d0-d5/a0-a2. */
-static void palrgb(struct bpal *p, UWORD c, UWORD r, UWORD g, UWORD b)
+static void palrgb(struct bb_palette *p, UWORD c, UWORD r, UWORD g, UWORD b)
 {
     UBYTE *d = p->pdata;
     ULONG *e;
@@ -381,7 +374,7 @@ static void palrgb(struct bpal *p, UWORD c, UWORD r, UWORD g, UWORD b)
  * @param p a0: the palette (!libs #palettelib,$1080).
  */
 static void BLITZ_ROUTINE dopalrgb_c(UWORD c BL_REG(d1), UWORD r BL_REG(d2), UWORD g BL_REG(d3),
-                                     UWORD b BL_REG(d4), struct bpal *p BL_REG(a0))
+                                     UWORD b BL_REG(d4), struct bb_palette *p BL_REG(a0))
 {
     palrgb(p, c, r, g, b);
 }
@@ -405,7 +398,7 @@ BLITZ_THUNK(dopalrgb, dopalrgb_c, "d0-d1/a0-a1");
  */
 static void BLITZ_ROUTINE do4bitpalrgb_c(UWORD c BL_REG(d1), UWORD r BL_REG(d2),
                                          UWORD g BL_REG(d3), UWORD b BL_REG(d4),
-                                         struct bpal *p BL_REG(a0))
+                                         struct bb_palette *p BL_REG(a0))
 {
     palrgb(p, c, (UWORD)(r << 4) | r, (UWORD)(g << 4) | g, (UWORD)(b << 4) | b);
 }
@@ -413,7 +406,7 @@ BLITZ_THUNK(do4bitpalrgb, do4bitpalrgb_c, "d0-d1/a0-a1");
 
 /* make4bitrgbs - a0 = palette: up to 32 4 bit RGB words in rgbs4bit
    (from the LOW byte of each component, see above); d0 = count */
-static UWORD make4(const struct bpal *p)
+static UWORD make4(const struct bb_palette *p)
 {
     UWORD n = p->numcols, k;
     const ULONG *s;
@@ -448,7 +441,7 @@ static UWORD make4(const struct bpal *p)
  * @return d0.w: the count (MOVE.w: the caller's upper word stays), a1 =
  *         the table (rgbs4bit); keeps a0/a2.
  */
-static UWORD BLITZ_ROUTINE make4bitrgbs_c(const struct bpal *p BL_REG(a0))
+static UWORD BLITZ_ROUTINE make4bitrgbs_c(const struct bb_palette *p BL_REG(a0))
 {
     return make4(p);
 }
@@ -521,13 +514,13 @@ BLITZ_THUNK(codefinit, codefinit_c, "a3");
     (z) = _z; _d0; })
 
 /* loadthepal - a0 = file name, a1 = palette, d2 = offset */
-static void loadthepal(const UBYTE *name, struct bpal *p, UWORD off)
+static void loadthepal(const UBYTE *name, struct bb_palette *p, UWORD off)
 {
     UBYTE z;
     ULONG cmaplen;
     WORD n;
     UWORD c;
-    struct cycle *cy;
+    struct bb_cycle *cy;
 
     IFFCALL(TOK_iffopen, 0, (ULONG)name, z);
     if (!z) {
@@ -591,7 +584,7 @@ none:
  * @param name a0: the file name.
  * @param p a1: the palette.
  */
-static void BLITZ_ROUTINE getpal_c(const UBYTE *name BL_REG(a0), struct bpal *p BL_REG(a1))
+static void BLITZ_ROUTINE getpal_c(const UBYTE *name BL_REG(a0), struct bb_palette *p BL_REG(a1))
 {
     loadthepal(name, p, 0);
 }
@@ -606,7 +599,7 @@ BLITZ_THUNK(getpal, getpal_c, "d0-d1");
  * @param p a1: the palette.
  */
 static void BLITZ_ROUTINE getpal2_c(UWORD off BL_REG(d0), const UBYTE *name BL_REG(a0),
-                                    struct bpal *p BL_REG(a1))
+                                    struct bb_palette *p BL_REG(a1))
 {
     loadthepal(name, p, off);
 }
@@ -629,7 +622,7 @@ BLITZ_THUNK(getpal2, getpal2_c, "d0-d1");
  * @param name d1: the file name.
  * @param p a1: the palette (!libs #palettelib,$1180).
  */
-static void BLITZ_ROUTINE dopalload_c(const UBYTE *name BL_REG(d1), struct bpal *p BL_REG(a1))
+static void BLITZ_ROUTINE dopalload_c(const UBYTE *name BL_REG(d1), struct bb_palette *p BL_REG(a1))
 {
     loadthepal(name, p, 0);
 }
@@ -644,14 +637,14 @@ BLITZ_THUNK(dopalload, dopalload_c, "d0-d1");
  * @param p a1: the palette.
  */
 static void BLITZ_ROUTINE dopalload2_c(const UBYTE *name BL_REG(d1), UWORD off BL_REG(d2),
-                                       struct bpal *p BL_REG(a1))
+                                       struct bb_palette *p BL_REG(a1))
 {
     loadthepal(name, p, off);
 }
 BLITZ_THUNK(dopalload2, dopalload2_c, "d0-d1");
 
 /* InitPalette n,cols - a3 = palette: new (cleared) data */
-static void initpalette(struct bpal *p, UWORD n)
+static void initpalette(struct bb_palette *p, UWORD n)
 {
     ULONG s;
 
@@ -678,7 +671,7 @@ static void initpalette(struct bpal *p, UWORD n)
  */
 static void BLITZ_ROUTINE _initpalette_c(UWORD n BL_REG(d1))
 {
-    initpalette((struct bpal *)blitz_string, n);
+    initpalette((struct bb_palette *)blitz_string, n);
 }
 BLITZ_THUNK(_initpalette, _initpalette_c, "a2");
 
@@ -686,10 +679,10 @@ BLITZ_THUNK(_initpalette, _initpalette_c, "a2");
    of each component) and CRNG chunks */
 static void cludgepalette(UBYTE *chunk, UWORD off)
 {
-    struct bpal *p = (struct bpal *)blitz_string;
+    struct bb_palette *p = (struct bb_palette *)blitz_string;
     UBYTE *end, *cend, *entry;
     ULONG id, len, ncols;
-    struct cycle *cy;
+    struct bb_cycle *cy;
     UWORD n;
 
     myoff = off;
@@ -809,7 +802,7 @@ BLITZ_THUNK(_cludgepalette2, _cludgepalette2_c, "a2");
  */
 static void BLITZ_ROUTINE freepal_c(void)
 {
-    struct bpal *p = (struct bpal *)blitz_string;
+    struct bb_palette *p = (struct bb_palette *)blitz_string;
     UWORD n = p->numcols;
     UBYTE *d;
 
@@ -844,15 +837,15 @@ BLITZ_THUNK(freepal, freepal_c, "a2");
  */
 static void BLITZ_ROUTINE dosetcycle2_c(UWORD cyc BL_REG(d1), UWORD lo BL_REG(d2),
                                         UWORD hi BL_REG(d3), ULONG speed BL_REG(d4),
-                                        struct bpal *p BL_REG(a0))
+                                        struct bb_palette *p BL_REG(a0))
 {
-    struct cycle *e = p->cyc, *c;
+    struct bb_cycle *e = p->cyc, *c;
     WORD app = 0;
 
     if (p->numcols)                             /* find the last cycle */
         while (e->lo >= 0)
             e++;
-    c = (struct cycle *)((UBYTE *)p + 6 + (WORD)(UWORD)(cyc << 3));
+    c = (struct bb_cycle *)((UBYTE *)p + 6 + (WORD)(UWORD)(cyc << 3));
     if (c >= e) {
         if (c != e) {
             BLITZ_RUNERR(messd);                /* errd */
@@ -886,7 +879,7 @@ BLITZ_THUNK(dosetcycle2, dosetcycle2_c, "d0-d1/a1");
  * @param p a0: the palette.
  */
 static void BLITZ_ROUTINE dosetcycle1_c(UWORD cyc BL_REG(d1), UWORD lo BL_REG(d2),
-                                        UWORD hi BL_REG(d3), struct bpal *p BL_REG(a0))
+                                        UWORD hi BL_REG(d3), struct bb_palette *p BL_REG(a0))
 {
     dosetcycle2_c(cyc, lo, hi, 0x10000, p);
 }
@@ -907,7 +900,7 @@ BLITZ_THUNK(newpalmode, newpalmode_c, "d0-d1/a0-a1");
 /* ------------------------------------------- showing, cycling */
 
 /* showpal (Amiga) - a3 = palette, a2 = used screen, a6 = graphics */
-static void showpal_amiga(struct bpal *p, APTR *scr, struct Library *gfx)
+static void showpal_amiga(struct bb_palette *p, APTR *scr, struct Library *gfx)
 {
     if (agamode) {
         if (!p->numcols)
@@ -923,7 +916,7 @@ static void showpal_amiga(struct bpal *p, APTR *scr, struct Library *gfx)
 }
 
 /* b_showpal (Blitz) - a0 = used slice: its colour moves */
-static void showpal_blitz(struct bpal *p, UBYTE *slice)
+static void showpal_blitz(struct bb_palette *p, UBYTE *slice)
 {
     UWORD *poke = *(UWORD **)(slice + 18);
     UWORD n = W(slice, 8);
@@ -964,7 +957,7 @@ void BLITZ_ROUTINE showpal_a(APTR *scr BL_REG(a2), struct Library *gfx BL_REG(a6
  */
 void BLITZ_ROUTINE showpal_a(APTR *scr BL_REG(a2), struct Library *gfx BL_REG(a6))
 {
-    showpal_amiga((struct bpal *)blitz_string, scr, gfx);
+    showpal_amiga((struct bb_palette *)blitz_string, scr, gfx);
 }
 
 void BLITZ_ROUTINE showpal_b(UBYTE *slice BL_REG(a0));
@@ -982,7 +975,7 @@ void BLITZ_ROUTINE showpal_b(UBYTE *slice BL_REG(a0));
  */
 void BLITZ_ROUTINE showpal_b(UBYTE *slice BL_REG(a0))
 {
-    showpal_blitz((struct bpal *)blitz_string, slice);
+    showpal_blitz((struct bb_palette *)blitz_string, slice);
 }
 BLITZ_AB_ROUTINE(showpal, showpal_b, "   jmp     _showpal_a");
 
@@ -1019,7 +1012,7 @@ void BLITZ_ROUTINE usepal_b(UBYTE *slice BL_REG(a0))
 BLITZ_AB_ROUTINE(usepal, usepal_b, "   jmp     _usepal_a");
 
 /* cycle - one palette's cycles one step; returns <>0 if colours moved */
-static int cyclepal(struct bpal *p)
+static int cyclepal(struct bb_palette *p)
 {
     UBYTE *field = (UBYTE *)p + 4;
     int moved = 0;
@@ -1094,7 +1087,7 @@ static int cyclepal(struct bpal *p)
  *
  * @param p a2: the palette (!libs #palettelib,$1280).
  */
-static void BLITZ_ROUTINE _cyclepalette_c(struct bpal *p BL_REG(a2))
+static void BLITZ_ROUTINE _cyclepalette_c(struct bb_palette *p BL_REG(a2))
 {
     if (p->numcols)
         cyclepal(p);
@@ -1141,7 +1134,7 @@ static void BLITZ_ROUTINE docycle_c(APTR *scr BL_REG(a2))
 {
     struct cnode *n = globalloc(12, MEMF_PUBLIC);
 
-    n->pal = (struct bpal *)blitz_string;
+    n->pal = (struct bb_palette *)blitz_string;
     n->vp = SL(scr);
     n->next = cyclelist;
     cyclelist = n;
@@ -1391,8 +1384,8 @@ BLITZ_THUNK(doaargb, doaargb_c, "a2");
  * @param s a0: the source palette.
  * @param d a1: the destination palette.
  */
-static void BLITZ_ROUTINE _fadepalette_c(ULONG br BL_REG(d2), struct bpal *s BL_REG(a0),
-                                         struct bpal *d BL_REG(a1))
+static void BLITZ_ROUTINE _fadepalette_c(ULONG br BL_REG(d2), struct bb_palette *s BL_REG(a0),
+                                         struct bb_palette *d BL_REG(a1))
 {
     UWORD n = s->numcols;
     const ULONG *src;
@@ -1459,7 +1452,7 @@ static void BLITZ_ROUTINE _paletterange_c(UWORD start BL_REG(d1), UWORD stop BL_
                                           WORD r0 BL_REG(d3), WORD g0 BL_REG(d4),
                                           WORD b0 BL_REG(d5), const WORD *args BL_REG(a2))
 {
-    struct bpal *p = (struct bpal *)blitz_string;
+    struct bb_palette *p = (struct bb_palette *)blitz_string;
     WORD n = stop - start;
     ULONG *e, dr, dg, db, r, g, b;
 
@@ -1497,9 +1490,9 @@ BLITZ_THUNK(_paletterange, _paletterange_c, "d0-d1/a0-a1");
  *
  * @param s a2: the source palette (!libs #palettelib,$1280).
  */
-static void BLITZ_ROUTINE _duplicatepalette_c(struct bpal *s BL_REG(a2))
+static void BLITZ_ROUTINE _duplicatepalette_c(struct bb_palette *s BL_REG(a2))
 {
-    struct bpal *d = (struct bpal *)blitz_string;
+    struct bb_palette *d = (struct bb_palette *)blitz_string;
     const ULONG *a;
     ULONG *b;
     UWORD k;
@@ -1528,10 +1521,10 @@ BLITZ_THUNK(_duplicatepalette, _duplicatepalette_c, "a2");
  * @param p1 a0: the first palette.
  * @param p2 a2: the second palette.
  */
-static void BLITZ_ROUTINE _mixpalette_c(LONG f BL_REG(d3), struct bpal *p1 BL_REG(a0),
-                                        struct bpal *p2 BL_REG(a2))
+static void BLITZ_ROUTINE _mixpalette_c(LONG f BL_REG(d3), struct bb_palette *p1 BL_REG(a0),
+                                        struct bb_palette *p2 BL_REG(a2))
 {
-    struct bpal *d = (struct bpal *)blitz_string;
+    struct bb_palette *d = (struct bb_palette *)blitz_string;
     UWORD k = (UWORD)(p1->numcols * 3) - 1;
     const ULONG *a = (const ULONG *)(p1->pdata + 2);
     const ULONG *b = (const ULONG *)(p2->pdata + 2);
@@ -1640,7 +1633,7 @@ static void BLITZ_ERRCHK usepalchk_b_c(const UWORD *slice BL_REG(a0))
 
 static void BLITZ_ERRCHK docyclechk_c(void)
 {
-    if (!((struct bpal *)blitz_string)->numcols)
+    if (!((struct bb_palette *)blitz_string)->numcols)
         BLITZ_RUNERR(messc);
 }
 
