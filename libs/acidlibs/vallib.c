@@ -259,11 +259,21 @@ static ULONG divu(ULONG dividend, UWORD y)
     return rem << 16 | q;
 }
 
-/* QAngle(Src X,Src Y,Dest X,Dest Y) - angle of the line dest -> src as
-   Quick fraction of a full turn (0..$FFFF in the low word).  Word
-   arithmetic as in the original: NEG of -32768 stays negative, CMP/BMI is
-   the sign of the 16 bit difference (not a signed compare), DIVU with
-   overflow leaves the dividend unchanged. */
+/**
+ * @brief QAngle(Src X,Src Y,Dest X,Dest Y) - the angle of the line dest -> src.
+ *
+ * Octant from the signs and the steepness, arctan from the table arc
+ * (arc.bin of the original), mirrored and offset per octant (oct).  Word
+ * arithmetic as in the original: NEG of -32768 stays negative, CMP/BMI is
+ * the sign of the 16 bit difference (not a signed compare), DIVU with
+ * overflow leaves the dividend unchanged.
+ *
+ * @param sx d0: source x
+ * @param sy d1: source y
+ * @param dx d2: destination x
+ * @param dy d3: destination y
+ * @return d0: Quick, the fraction of a full turn (0..$FFFF in the low word)
+ */
 static ULONG BLITZ_ROUTINE doqangle_c(UWORD sx BL_REG(d0), UWORD sy BL_REG(d1),
                                       UWORD dx BL_REG(d2), UWORD dy BL_REG(d3))
 {
@@ -307,11 +317,26 @@ BLITZ_THUNK(doqangle, doqangle_c, "d1/a0-a1");
 
 /* ------------------------------------------------ True, False, VPos */
 
+/**
+ * @brief True - the constant -1 (inline: MOVEQ #-1,d0).
+ * @return d0: -1 (a word function: Blitz's true)
+ */
 BLITZ_INLINE(dotrue, "   moveq   #-1,d0");
+
+/**
+ * @brief False - the constant 0 (inline: MOVEQ #0,d0).
+ * @return d0: 0
+ */
 BLITZ_INLINE(dofalse, "   moveq   #0,d0");
 
-/* VPos - MOVE.l $dff004,d0 (pick up whole long word...):LSR.l #8,d0:
-   AND #$1ff,d0 (the AND is word sized: the upper word keeps VPOSR>>8) */
+/**
+ * @brief VPos - the vertical beam position (inline).
+ *
+ * MOVE.l $dff004,d0 (pick up whole long word...):LSR.l #8,d0:AND #$1ff,d0
+ * (the AND is word sized: the upper word keeps VPOSR>>8).
+ *
+ * @return d0: the beam line 0..511 in the low word
+ */
 BLITZ_INLINE(dobeamy,
     "   move.l  0xdff004,d0\n"
     "   lsr.l   #8,d0\n"
@@ -322,9 +347,16 @@ BLITZ_INLINE(dobeamy,
 /* the original tests the low byte of DisplayFlags: BTST #0,207(a0) */
 static_assert(offsetof(struct GfxBase, DisplayFlags) == 206);
 
-/* DispHeight - 200 for NTSC or 256 for PAL: bit 0 of the low byte of
-   GfxBase->DisplayFlags (207(a0), a0 = graphics base).  MOVE.w: the
-   upper word of d0 is kept. */
+/**
+ * @brief DispHeight - the display height: 200 for NTSC or 256 for PAL.
+ *
+ * Bit 0 of the low byte of GfxBase->DisplayFlags (207(a0)).  MOVE.w: the
+ * upper word of d0 is kept.
+ *
+ * @param hiword d0: the caller's d0 (its upper word is kept)
+ * @param gfx a0: the graphics base
+ * @return d0: 200 or 256 in the low word
+ */
 static ULONG BLITZ_ROUTINE dodispheight_c(ULONG hiword BL_REG(d0),
                                           const struct GfxBase *gfx BL_REG(a0))
 {
@@ -332,8 +364,15 @@ static ULONG BLITZ_ROUTINE dodispheight_c(ULONG hiword BL_REG(d0),
 }
 BLITZ_THUNK(dodispheight, dodispheight_c, "d1/a0-a1");
 
-/* NTSC - -1 if in ntsc mode: BTST #0,207(a0):SNE d0:EXT d0 (upper word
-   of d0 kept) */
+/**
+ * @brief NTSC - whether the display is NTSC.
+ *
+ * BTST #0,207(a0):SNE d0:EXT d0 (upper word of d0 kept).
+ *
+ * @param hiword d0: the caller's d0 (its upper word is kept)
+ * @param gfx a0: the graphics base
+ * @return d0: -1 ($FFFF in the low word) for NTSC, 0 for PAL
+ */
 static ULONG BLITZ_ROUTINE dontsc_c(ULONG hiword BL_REG(d0),
                                     const struct GfxBase *gfx BL_REG(a0))
 {
@@ -343,8 +382,16 @@ BLITZ_THUNK(dontsc, dontsc_c, "d1/a0-a1");
 
 /* ---------------------------------------------------------- Frac, Abs */
 
-/* Frac(f) - f - Floor(f) for positive, f - Ceil(f) for negative f (FFP
-   sign = bit 7): SPSub with d0 = f, d1 = Floor/Ceil */
+/**
+ * @brief Frac(Expression) - the fractional part of a float.
+ *
+ * f - Floor(f) for positive, f - Ceil(f) for negative f (FFP sign = bit
+ * 7): SPSub with d0 = f, d1 = Floor/Ceil.
+ *
+ * @param f d0: the float (FFP)
+ * @param ffp a6: the mathffp base
+ * @return d0: the fraction (FFP)
+ */
 static ULONG BLITZ_ROUTINE doffrac_c(ULONG f BL_REG(d0), const void *ffp BL_REG(a6))
 {
     ULONG i;
@@ -357,9 +404,19 @@ static ULONG BLITZ_ROUTINE doffrac_c(ULONG f BL_REG(d0), const void *ffp BL_REG(
 }
 BLITZ_THUNK(doffrac, doffrac_c, "d1/a0-a1");
 
-/* Abs(any) - the value as Float with the sign bit (bit 7) cleared: float
-   as is, quick via floatquicklib ($D300, Quick 0 -> $80 -> 0), byte/word
-   sign extended, everything else (long, and types >= 6) with SPFlt. */
+/**
+ * @brief Abs(Expression) - the absolute value, as a float.
+ *
+ * The value as Float with the sign bit (bit 7) cleared: float as is,
+ * quick via floatquicklib ($D300, Quick 0 -> $80 -> 0), byte/word sign
+ * extended, everything else (long, and types >= 6) with SPFlt.
+ *
+ * @param v d0: the value
+ * @param ffp a6: the mathffp base
+ * @param args a2: the argument stack, -2 = the type word (1 byte, 2 word,
+ *        3 long, 4 quick, 5 float)
+ * @return d0: |v| (FFP)
+ */
 static ULONG BLITZ_ROUTINE dofabs_c(ULONG v BL_REG(d0), const void *ffp BL_REG(a6),
                                     const UBYTE *args BL_REG(a2))
 {
@@ -383,8 +440,19 @@ BLITZ_THUNK(dofabs, dofabs_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------ Int, Sgn */
 
-/* Int(any) - Long: float with SPFix (truncates), quick truncated towards
-   0 (negative: NEG.l, integer part, NEG), byte/word sign extended. */
+/**
+ * @brief Int(Expression) - the integer part as a long.
+ *
+ * Float with SPFix (truncates), quick truncated towards 0 (negative:
+ * NEG.l, integer part, NEG), byte/word sign extended, long as is.
+ *
+ * Errors (debugger only, intchk): a string -> "Illegal Type".
+ *
+ * @param v d0: the value
+ * @param ffp a6: the mathffp base
+ * @param args a2: the argument stack, -2 = the type word
+ * @return d0: the long
+ */
 static ULONG BLITZ_ROUTINE doint_c(ULONG v BL_REG(d0), const void *ffp BL_REG(a6),
                                    const UBYTE *args BL_REG(a2))
 {
@@ -407,12 +475,25 @@ static ULONG BLITZ_ROUTINE doint_c(ULONG v BL_REG(d0), const void *ffp BL_REG(a6
 }
 BLITZ_THUNK(doint, doint_c, "d1/a0-a1");
 
-/* Sgn(any) - Quick -1, 0 or 1: float through SPTst, long and quick
-   tested as long, byte (type 1) and word (types 0, 2) sign extended.
-   BUG(orig) (#301): mathffp SPTst tests D1, not D0 - and d1 holds the type
-   (MOVE -(a2),d1: 5 in the low word, the caller's upper word), so Sgn of
-   a float is 1 whatever the value (Sgn(-1.0) = Sgn(0.0) = 1).  Kept: d1
-   is passed as the original has it. */
+/**
+ * @brief Sgn(Expression) - the sign: -1, 0 or 1.
+ *
+ * Float through SPTst, long and quick tested as long, byte (type 1) and
+ * word (types 0, 2) sign extended.
+ *
+ * Errors (debugger only, intchk): a string -> "Illegal Type".
+ *
+ * BUG(orig) (#301): mathffp SPTst tests D1, not D0 - and d1 holds the type
+ * (MOVE -(a2),d1: 5 in the low word, the caller's upper word), so Sgn of
+ * a float is 1 whatever the value (Sgn(-1.0) = Sgn(0.0) = 1).  Kept: d1
+ * is passed as the original has it.
+ *
+ * @param v d0: the value
+ * @param caller_d1 d1: the caller's d1 (its upper word goes to SPTst)
+ * @param ffp a6: the mathffp base
+ * @param args a2: the argument stack, -2 = the type word
+ * @return d0: Quick -1, 0 or 1 ($FFFF0000, 0, $00010000)
+ */
 static ULONG BLITZ_ROUTINE dosgn_c(ULONG v BL_REG(d0), ULONG caller_d1 BL_REG(d1),
                                    const void *ffp BL_REG(a6), const UBYTE *args BL_REG(a2))
 {
@@ -434,8 +515,16 @@ static ULONG BLITZ_ROUTINE dosgn_c(ULONG v BL_REG(d0), ULONG caller_d1 BL_REG(d1
 }
 BLITZ_THUNK(dosgn, dosgn_c, "d1/a0-a1");
 
-/* intchk (debugger only) - CMP #6,-2(a2):BCC err1:RTS - the type word on
-   the a2 stack (not popped) must be numeric; keeps all registers. */
+/**
+ * @brief intchk - error check of Int and Sgn (debugger only).
+ *
+ * CMP #6,-2(a2):BCC err1:RTS - the type word on the a2 stack (not popped)
+ * must be numeric; keeps all registers.
+ *
+ * Errors: type >= 6 (a string) -> runtime error "Illegal Type".
+ *
+ * @param args a2: the argument stack, -2 = the type word
+ */
 static void BLITZ_ERRCHK intchk_c(const UBYTE *args BL_REG(a2))
 {
     if (((const UWORD *)args)[-1] >= 6)
@@ -445,7 +534,14 @@ BLITZ_ERRCHK_THUNK(intchk, intchk_c, "d0-d1/a0-a1");
 
 /* ------------------------------------------------ QFrac, QWrap, QAbs */
 
-/* QFrac(q) - fraction of |q|: TST.l d0:BPL:NEG.l d0, SWAP:CLR:SWAP */
+/**
+ * @brief QFrac(Quick) - the fraction of |q| (inline).
+ *
+ * TST.l d0:BPL:NEG.l d0, SWAP:CLR:SWAP.
+ *
+ * @param q d0: the Quick value
+ * @return d0: Quick, the fraction of |q| (the low word)
+ */
 BLITZ_INLINE(doqfrac,
     "   tst.l   d0\n"
     "   bpl.s   3f\n"
@@ -454,7 +550,17 @@ BLITZ_INLINE(doqfrac,
     "   clr.w   d0\n"
     "   swap    d0");
 
-/* QWrap(q,low,high) - below low: +high-low, at or above high: -high+low */
+/**
+ * @brief QWrap(Quick,Low,High) - wrap q into low..high (inline).
+ *
+ * Below low: +high-low, at or above high: -high+low (once, signed long
+ * compares).
+ *
+ * @param q d0: the Quick value
+ * @param low d1: the lower limit
+ * @param high d2: the upper limit (exclusive)
+ * @return d0: the wrapped value
+ */
 BLITZ_INLINE(doqwrap,
     "   cmp.l   d1,d0\n"
     "   bge.s   3f\n"
@@ -466,15 +572,30 @@ BLITZ_INLINE(doqwrap,
     "   sub.l   d2,d0\n"
     "   add.l   d1,d0");
 
-/* QAbs(q) - NEG.l d0:BPL 'skip:NEG.l d0 ($80000000 stays) */
+/**
+ * @brief QAbs(Quick) - the absolute value (inline).
+ *
+ * NEG.l d0:BPL 'skip:NEG.l d0 ($80000000 stays).
+ *
+ * @param q d0: the Quick value
+ * @return d0: |q|
+ */
 BLITZ_INLINE(doqabs,
     "   neg.l   d0\n"
     "   bpl.s   2f\n"
     "   neg.l   d0");
 
-/* QLimit(q,low,high) - signed: below low -> low, at or above high -> high
-   (CMP.l d2,d0:BLT - q = high also gives high, low wins if low > high
-   only below low) */
+/**
+ * @brief QLimit(Quick,Low,High) - limit q to low..high.
+ *
+ * Signed: below low -> low, at or above high -> high (CMP.l d2,d0:BLT -
+ * q = high also gives high, low wins if low > high only below low).
+ *
+ * @param q d0: the Quick value
+ * @param lo d1: the lower limit
+ * @param hi d2: the upper limit
+ * @return d0: the limited value
+ */
 static LONG BLITZ_ROUTINE doqlimit_c(LONG q BL_REG(d0), LONG lo BL_REG(d1), LONG hi BL_REG(d2))
 {
     if (q < lo)                                 /* CMP.l d1,d0:BGE 'skip */
@@ -515,15 +636,27 @@ static UWORD genrnd(void)
     return r;
 }
 
-/* Rnd - MOVEQ #0,d0 + genrnd: Quick 0..$FFFF/$10000 */
+/**
+ * @brief Rnd - a random fraction.
+ *
+ * MOVEQ #0,d0 + genrnd (hardware noise, see genrnd).
+ *
+ * @return d0: Quick 0..$FFFF/$10000 (16 random bits in the low word)
+ */
 static ULONG BLITZ_ROUTINE dornd1_c(void)
 {
     return genrnd();
 }
 BLITZ_THUNK(dornd1, dornd1_c, "d1/a0-a1");
 
-/* Rnd(range) - MULU range.w,genrnd: Quick 0..range (range as unsigned
-   word: Rnd(-1) = Rnd(65535)) */
+/**
+ * @brief Rnd(Range) - a random value 0..range.
+ *
+ * MULU range.w,genrnd (range as unsigned word: Rnd(-1) = Rnd(65535)).
+ *
+ * @param range d0: the range (unsigned word)
+ * @return d0: Quick 0..range (exclusive)
+ */
 static ULONG BLITZ_ROUTINE dornd2_c(UWORD range BL_REG(d0))
 {
     return (ULONG)genrnd() * range;
@@ -659,7 +792,23 @@ static ULONG doval2(const void *ffp, struct valstate *s)
     return notneg(ffp, s);
 }
 
-/* Val(s$) - MOVE.l d0,a3: a3 = the string afterwards */
+/**
+ * @brief Val(String$) - the numeric value of a string, as a float.
+ *
+ * Leading spaces skipped, then "$" hex, "%" binary, "-" negative, else
+ * decimal with an optional fraction (doval2).  MOVE.l d0,a3: a3 = the
+ * string afterwards (frees the work area).
+ *
+ * BUG(orig) (#302): hex, binary and negative numbers read one byte behind
+ * the string (normally its terminating 0).  BUG(orig) (#303): the length
+ * is used as a word (lengths 32769..65536 give 0).  BUG(orig) (#304): 32
+ * or more fraction digits drop the fraction.
+ *
+ * @param str d0: the string
+ * @param ffp a6: the mathffp base
+ * @param args a2: the argument stack, -4 = the string length (long)
+ * @return d0: the value (FFP), 0 for an empty string
+ */
 static ULONG BLITZ_ROUTINE doval_c(UBYTE *str BL_REG(d0), const void *ffp BL_REG(a6),
                                    const UBYTE *args BL_REG(a2))
 {
