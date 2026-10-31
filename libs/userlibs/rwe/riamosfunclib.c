@@ -784,6 +784,16 @@ struct hunkitem {
 
 #define LISTMAGIC 0x6c497354                    /* "lIsT" */
 
+/* the 32 bytes in front of a Blitz list array (linklistlib): the
+   current item, the lists of the used and the free items, "lIsT" */
+struct listhead {
+    struct hunkitem *current;                   /* -32 */
+    struct MinList used;                        /* -28 */
+    struct MinList free;                        /* -16 */
+    ULONG magic;                                /* -4: LISTMAGIC */
+};
+static_assert(sizeof(struct listhead) == 32);
+
 /* execinit: the file and a HUNK_HEADER of 6 longs; -1 / 0 */
 static ULONG execinit(CONST_STRPTR name)
 {
@@ -850,14 +860,15 @@ static void execfinit(ULONG nhunks, ULONG size)
    stays open, #501) */
 static ULONG BLITZ_ROUTINE saveexec_c(CONST_STRPTR name BL_REG(d0), const UBYTE *list BL_REG(d1))
 {
+    const struct listhead *lh = (const struct listhead *)(list - sizeof(struct listhead));
     const struct hunkitem *h;
     ULONG num = 0, size = 0;
 
-    if (*(const ULONG *)(list - 4) != LISTMAGIC)
+    if (lh->magic != LISTMAGIC)
         return 0;
     if (!execinit(name))
         return (ULONG)name;
-    h = *(const struct hunkitem *const *)(list - 28);
+    h = (const struct hunkitem *)lh->used.mlh_Head;
     if (!h)
         return (ULONG)name;
     do {
