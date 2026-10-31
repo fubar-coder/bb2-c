@@ -4,7 +4,9 @@ C translation of Blitz Basic 2: compiler `blitz2` (v2.10: `blitz2.s` 1.95
 with the changes of the CD's compiler, `docs/v2.10/`),
 editor `ted` (TED 1.1, `ted.s`) and the libraries `acidlibs`/`deflibs`,
 built for AmigaOS (68000) with m68k-amigaos-gcc. Structure, building and
-the checks in the build: `README.md`. Open items: `TODO.md`.
+the checks in the build: `README.md`. Open items: `TODO.md`, as task
+lists: `- [ ] **Title** …` open, `- [x] **Title** done (date): …` done or
+decided (also for numbered steps, `1. [x] …`); no strikethrough.
 
 **This repository is the reference** for the code (decision of
 2026-10-27, takeover from bb2 `7b5df74`); bb2 no longer builds the
