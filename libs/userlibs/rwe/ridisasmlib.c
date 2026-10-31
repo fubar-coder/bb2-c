@@ -376,8 +376,8 @@ static const char *a5;                  /* the operand string / list */
 static char hexbuff2[11] = "$00000000"; /* "$" HexBuff "00000000",0,0 */
 static const char hexchrtab[] = "0123456789ABCDEF";
 static struct {
-    char l6[2] __attribute__((nonstring));      /* "#","-" */
-    char l7[16];
+    char prefix[2] __attribute__((nonstring));  /* 'l6: "#","-" */
+    char digits[16];                    /* 'l7 */
 } dec = { "#-", "" };
 /* DecPrint's "0": LEA .l8,a0 - the label is 'l8, blitz2 2.10 assembles
    the absolute address 8 (no relocation): the bus error vector */
@@ -437,7 +437,7 @@ static char *decprint(ULONG n)
 {
     static const ULONG pow[10] = { 1000000000, 100000000, 10000000, 1000000, 100000,
                                    10000, 1000, 100, 10, 1 };
-    char *p = dec.l7;
+    char *p = dec.digits;
     int i, started = 0;
 
     if (!n)
@@ -456,10 +456,10 @@ static char *decprint(ULONG n)
         *++p = '0';
     }
     *p = 0;
-    return dec.l7;
+    return dec.digits;
 }
 
-/* SDecPrint: signed decimal, the "-" in front of l7 */
+/* SDecPrint: signed decimal, the "-" in front of digits ('l7) */
 static char *sdecprint(ULONG n)
 {
     char *p;
@@ -917,13 +917,13 @@ static int decode(const struct disdata *e, UWORD op)
         v.linebuff[i] = ' ';
     while ((c = *n++) != 0) {
         if (c == '*') {                 /* the condition of bits 8-11 */
-            const char *t = v.condtable;
+            const char *cond = v.condtable;
 
             if (a2[-1] == 'b' && a2[-2] != 'd')
-                t = v.bcondtable;       /* Bcc: ra, sr ... */
-            t += ((op & 0xf00) >> 8) * 2;
-            put(t[0]);
-            put(t[1]);
+                cond = v.bcondtable;    /* Bcc: ra, sr ... */
+            cond += ((op & 0xf00) >> 8) * 2;
+            put(cond[0]);
+            put(cond[1]);
             break;
         }
         put(c);
