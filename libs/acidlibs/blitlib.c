@@ -343,10 +343,12 @@ void BLITZ_ROUTINE a_doblock_c(REG_ARGS, struct Library *gfx BL_REG(a6))
 BLITZ_AB_ROUTINE(doblock, b_doblock_c, "   jmp     _a_doblock_c");
 
 /* BlitColl: result word (MOVEQ: full long) */
-ULONG BLITZ_ROUTINE b_doblitcoll_c(REG_ARGS);
-ULONG BLITZ_ROUTINE b_doblitcoll_c(REG_ARGS)
+BB_BOOL BLITZ_ROUTINE b_doblitcoll_c(REG_ARGS);
+BB_BOOL BLITZ_ROUTINE b_doblitcoll_c(REG_ARGS)
 {
-    return (ULONG)(LONG)(WORD)blitcoll((const struct shape *)blitz_string, bm, cb, x, y);
+    /* EXT.l of the word -1/0: BB_TRUE/BB_FALSE */
+    return (BB_BOOL)(LONG)(WORD)blitcoll((const struct shape *)blitz_string,
+                                         bm, cb, x, y);
 }
 
 /* Amiga mode: MOVE d0,-(a7):DisownBlitter:MOVE (a7)+,d0 - only the low
