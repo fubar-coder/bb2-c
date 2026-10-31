@@ -151,40 +151,40 @@ static UWORD numcols;                           /* dbf */
 
 /* allocshape: width, height, depth of newshape set; the rest and the
    memory */
-static void allocshape(UBYTE *a5)
+static void allocshape(UBYTE *ns)
 {
-    UWORD d0 = (UWORD)(SW(a5, 0) + 15) >> 4;   /* word width */
+    UWORD words = (UWORD)(SW(ns, 0) + 15) >> 4; /* word width */
     ULONG p;
 
-    SW(a5, 8) = (UWORD)((UWORD)(SW(a5, 2) << 6) | d0) + 1;    /* bltsize */
-    SW(a5, 6) = d0 + d0;                        /* even byte width */
-    p = (ULONG)(UWORD)(SW(a5, 6) + 2) * SW(a5, 2);
-    SW(a5, 24) = (UWORD)p;
-    p = (ULONG)(UWORD)p * SW(a5, 4);
-    SW(a5, 28) = (UWORD)p;
-    p = (ULONG)SW(a5, 6) * SW(a5, 2);
-    SW(a5, 22) = (UWORD)p;
-    p = (ULONG)(UWORD)p * SW(a5, 4);
-    SW(a5, 26) = (UWORD)p;
-    SP(a5, 14) = globalloc(p, MEMF_CHIP | MEMF_CLEAR);
-    SL(a5, 10) = 0;                             /* handle */
-    SL(a5, 18) = 0;                             /* cookie */
+    SW(ns, 8) = (UWORD)((UWORD)(SW(ns, 2) << 6) | words) + 1; /* bltsize */
+    SW(ns, 6) = words + words;                  /* even byte width */
+    p = (ULONG)(UWORD)(SW(ns, 6) + 2) * SW(ns, 2);
+    SW(ns, 24) = (UWORD)p;
+    p = (ULONG)(UWORD)p * SW(ns, 4);
+    SW(ns, 28) = (UWORD)p;
+    p = (ULONG)SW(ns, 6) * SW(ns, 2);
+    SW(ns, 22) = (UWORD)p;
+    p = (ULONG)(UWORD)p * SW(ns, 4);
+    SW(ns, 26) = (UWORD)p;
+    SP(ns, 14) = globalloc(p, MEMF_CHIP | MEMF_CLEAR);
+    SL(ns, 10) = 0;                             /* handle */
+    SL(ns, 18) = 0;                             /* cookie */
 }
 
 /* makeshape: newshape into shape a3 */
-static void makeshape(UBYTE *a3)
+static void makeshape(UBYTE *shape)
 {
     ULONG cookie;
     int i;
 
-    globfree(SP(a3, 14), SW(a3, 26));
-    cookie = SL(a3, 18);
+    globfree(SP(shape, 14), SW(shape, 26));
+    cookie = SL(shape, 18);
     if (cookie)
-        globfree((void *)cookie, SW(a3, 22));
+        globfree((void *)cookie, SW(shape, 22));
     for (i = 0; i < 8; i++)
-        ((ULONG *)a3)[i] = ((ULONG *)newshape)[i];
+        ((ULONG *)shape)[i] = ((ULONG *)newshape)[i];
     if (cookie)
-        docookie(a3);
+        docookie(shape);
 }
 
 /* -------------------------------------------------------------- XFlip */
@@ -212,48 +212,48 @@ static void blitwait(volatile UBYTE *chip)
 /* a3 = shape, a1 = chip base */
 static void xflip(UBYTE *s, volatile UBYTE *chip)
 {
-    UWORD d0 = (UWORD)(SW(s, 6) << 3) - SW(s, 0);
-    UWORD d7;
-    UBYTE *a0;
+    UWORD val = (UWORD)(SW(s, 6) << 3) - SW(s, 0);
+    UWORD rows;
+    UBYTE *row;
 
-    if (d0) {
+    if (val) {
         /* scroll across to the right, 'hard left' justified after the flip */
-        UWORD d1;
+        UWORD planes;
 
         blitwait(chip);
-        d0 &= 15;
-        d0 = (UWORD)((d0 >> 4) | (d0 << 12));   /* ROR #4 */
-        *(volatile UWORD *)(chip + 0x040) = d0 | 0x9f0;
+        val &= 15;
+        val = (UWORD)((val >> 4) | (val << 12)); /* ROR #4 */
+        *(volatile UWORD *)(chip + 0x040) = val | 0x9f0;
         *(volatile UWORD *)(chip + 0x042) = 0;
         *(volatile ULONG *)(chip + 0x044) = 0xffffffffUL;
         *(volatile ULONG *)(chip + 0x064) = 0;
         *(volatile ULONG *)(chip + 0x050) = SL(s, 14);
         *(volatile ULONG *)(chip + 0x054) = SL(s, 14);
-        d1 = SW(s, 4) - 1;
-        d0 = SW(s, 8) - 1;
+        planes = SW(s, 4) - 1;
+        val = SW(s, 8) - 1;
         do {
             blitwait(chip);
-            *(volatile UWORD *)(chip + 0x058) = d0;
-        } while (d1-- != 0);
+            *(volatile UWORD *)(chip + 0x058) = val;
+        } while (planes-- != 0);
     }
     /* now, to do the flipping! */
-    d7 = (UWORD)((ULONG)SW(s, 4) * SW(s, 2)) - 1;
-    a0 = SP(s, 14);
+    rows = (UWORD)((ULONG)SW(s, 4) * SW(s, 2)) - 1;
+    row = SP(s, 14);
     do {
         UWORD l = 0, r = SW(s, 6) - 1;          /* left, right bytes */
 
         do {
-            UBYTE b5 = flipbyte(a0[(WORD)l]);
-            UBYTE b2 = flipbyte(a0[(WORD)r]);
+            UBYTE lbits = flipbyte(row[(WORD)l]);
+            UBYTE rbits = flipbyte(row[(WORD)r]);
 
-            a0[(WORD)r] = b5;
-            a0[(WORD)l] = b2;
+            row[(WORD)r] = lbits;
+            row[(WORD)l] = rbits;
             l++;
             r--;
         } while (r > l);
-        a0 += (WORD)SW(s, 6);
-        __asm__("" : "+a"(a0));
-    } while (d7-- != 0);
+        row += (WORD)SW(s, 6);
+        __asm__("" : "+a"(row));
+    } while (rows-- != 0);
     cookieit(s);
 }
 
@@ -288,30 +288,30 @@ BLITZ_AB_ROUTINE(doxflip, b_doxflip,
 static void BLITZ_ROUTINE doyflip_c(void)
 {
     UBYTE *s = blitz_string;
-    UWORD d7 = SW(s, 4) - 1;                    /* bitplanes */
-    UBYTE *a2 = SP(s, 14);
+    UWORD planes = SW(s, 4) - 1;                /* bitplanes */
+    UBYTE *plane = SP(s, 14);
 
     do {
-        UBYTE *a0 = a2, *a1 = a2 + (WORD)SW(s, 22);   /* top, bottom */
+        UBYTE *top = plane, *bot = plane + (WORD)SW(s, 22); /* top, bottom */
 
         for (;;) {
-            WORD d0;
+            WORD off;
 
-            a1 -= (WORD)SW(s, 6);
-            if ((ULONG)a1 <= (ULONG)a0)
+            bot -= (WORD)SW(s, 6);
+            if ((ULONG)bot <= (ULONG)top)
                 break;
-            d0 = (WORD)(SW(s, 6) - 2);
+            off = (WORD)(SW(s, 6) - 2);
             do {
-                UWORD t = *(UWORD *)(a0 + d0);
+                UWORD topword = *(UWORD *)(top + off);
 
-                *(UWORD *)(a0 + d0) = *(UWORD *)(a1 + d0);
-                *(UWORD *)(a1 + d0) = t;
-                d0 -= 2;
-            } while (d0 >= 0);
-            a0 += (WORD)SW(s, 6);
+                *(UWORD *)(top + off) = *(UWORD *)(bot + off);
+                *(UWORD *)(bot + off) = topword;
+                off -= 2;
+            } while (off >= 0);
+            top += (WORD)SW(s, 6);
         }
-        a2 += (WORD)SW(s, 22);
-    } while (d7-- != 0);
+        plane += (WORD)SW(s, 22);
+    } while (planes-- != 0);
     cookieit(s);
 }
 BLITZ_THUNK(doyflip, doyflip_c, "d0-d1/a0-a1");
@@ -335,7 +335,7 @@ static const UWORD qrots[65] = {
 /* d2.q = sin(d7) * d2.w */
 static ULONG mulsin(WORD val, UWORD angle)
 {
-    UWORD idx, t;
+    UWORD idx, sinv;
     int neg = 0;
     ULONG r;
 
@@ -350,13 +350,13 @@ static ULONG mulsin(WORD val, UWORD angle)
         idx = 256 - angle;
         neg = 1;
     }
-    t = qrots[idx];
-    if (t == 0xffff)
+    sinv = qrots[idx];
+    if (sinv == 0xffff)
         r = (ULONG)(UWORD)val << 16;            /* SWAP:CLR */
     else if (val < 0)
-        r = -((ULONG)(UWORD)-val * t);          /* NEG:MULU:NEG.l */
+        r = -((ULONG)(UWORD)-val * sinv);       /* NEG:MULU:NEG.l */
     else
-        r = (ULONG)(UWORD)val * t;
+        r = (ULONG)(UWORD)val * sinv;
     return neg ? -r : r;
 }
 
@@ -397,52 +397,52 @@ static void rotit2(WORD x, WORD y, UWORD angle)
 /* a3 = shape, d1 = angle (Quick, 0..1) */
 static void BLITZ_ROUTINE dorotate_c(ULONG q BL_REG(d1))
 {
-    UBYTE *s = blitz_string, *a5 = newshape, *a0;
-    UWORD d7 = 256 - (UWORD)(((q << 8) >> 16) & 255);
+    UBYTE *s = blitz_string, *ns = newshape, *row;
+    UWORD angle = 256 - (UWORD)(((q << 8) >> 16) & 255);
     WORD y;
 
     xl = yl = xh = yh = 0;                      /* initial low/high vals */
-    rotit2(SW(s, 0) - 1, 0, d7);
-    rotit2(SW(s, 0) - 1, SW(s, 2) - 1, d7);
-    rotit2(0, SW(s, 2) - 1, d7);
-    SW(a5, 0) = xh - xl + 1;
-    SW(a5, 2) = yh - yl + 1;
-    SW(a5, 4) = SW(s, 4);
-    allocshape(a5);
-    d7 = 256 - d7;
+    rotit2(SW(s, 0) - 1, 0, angle);
+    rotit2(SW(s, 0) - 1, SW(s, 2) - 1, angle);
+    rotit2(0, SW(s, 2) - 1, angle);
+    SW(ns, 0) = xh - xl + 1;
+    SW(ns, 2) = yh - yl + 1;
+    SW(ns, 4) = SW(s, 4);
+    allocshape(ns);
+    angle = 256 - angle;
     y = yl;
-    a0 = SP(a5, 14);
+    row = SP(ns, 14);
     do {
-        UBYTE *a1 = a0;
+        UBYTE *dst = row;
         WORD x = xl;
-        WORD d6 = 7;
+        WORD dbit = 7;
 
         do {
             WORD nx, ny;
 
-            rotit(x, y, d7, &nx, &ny);
+            rotit(x, y, angle, &nx, &ny);
             if ((UWORD)nx < SW(s, 0) && (UWORD)ny < SW(s, 2)) {
                 /* transfer pixel from src to dest */
-                UBYTE *a4 = SP(s, 14) + (WORD)((UWORD)nx >> 3)
+                UBYTE *src = SP(s, 14) + (WORD)((UWORD)nx >> 3)
                             + (ULONG)(UWORD)ny * SW(s, 6);
                 UWORD bit = ~(UWORD)nx & 7;
-                UWORD d1 = SW(s, 4) - 1;
-                UBYTE *a2 = a1;
+                UWORD planes = SW(s, 4) - 1;
+                UBYTE *dplane = dst;
 
                 do {
-                    if (*a4 & (1 << bit))
-                        *a2 |= (UBYTE)(1 << d6);
-                    a4 += (WORD)SW(s, 22);
-                    a2 += (WORD)SW(a5, 22);
-                } while (d1-- != 0);
+                    if (*src & (1 << bit))
+                        *dplane |= (UBYTE)(1 << dbit);
+                    src += (WORD)SW(s, 22);
+                    dplane += (WORD)SW(ns, 22);
+                } while (planes-- != 0);
             }
-            if (--d6 < 0) {                     /* across an X... */
-                d6 = 7;
-                a1++;
+            if (--dbit < 0) {                   /* across an X... */
+                dbit = 7;
+                dst++;
             }
             x++;
         } while (x <= xh);
-        a0 += (WORD)SW(a5, 6);                  /* down a Y... */
+        row += (WORD)SW(ns, 6);                 /* down a Y... */
         y++;
     } while (y <= yh);
     makeshape(s);
@@ -451,50 +451,50 @@ BLITZ_THUNK(dorotate, dorotate_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------------- Scale */
 
-static void scale(UBYTE *a3, ULONG d6, ULONG d7)
+static void scale(UBYTE *shape, ULONG xr, ULONG yr)
 {
-    UBYTE *a5 = newshape, *a1;
-    ULONG d0, d1, w;
-    UWORD d2, d3;
+    UBYTE *ns = newshape, *drow;
+    ULONG sxq, syq, w;
+    UWORD dx, dy;
 
-    w = qcall(TOK_qmultiply, (ULONG)SW(a3, 0) << 16, d6);
+    w = qcall(TOK_qmultiply, (ULONG)SW(shape, 0) << 16, xr);
     if ((WORD)(w >> 16) < 1)
         w = 1UL << 16;
-    SW(a5, 0) = (UWORD)(w >> 16);
-    w = qcall(TOK_qmultiply, (ULONG)SW(a3, 2) << 16, d7);
+    SW(ns, 0) = (UWORD)(w >> 16);
+    w = qcall(TOK_qmultiply, (ULONG)SW(shape, 2) << 16, yr);
     if ((WORD)(w >> 16) < 1)
         w = 1UL << 16;
-    SW(a5, 2) = (UWORD)(w >> 16);
-    SW(a5, 4) = SW(a3, 4);
-    allocshape(a5);
-    xadd = qcall(TOK_qdivide, 1UL << 16, d6);   /* 1/ratio */
-    yadd = qcall(TOK_qdivide, 1UL << 16, d7);
-    d1 = 0;
-    d3 = 0;
-    a1 = SP(a5, 14);
+    SW(ns, 2) = (UWORD)(w >> 16);
+    SW(ns, 4) = SW(shape, 4);
+    allocshape(ns);
+    xadd = qcall(TOK_qdivide, 1UL << 16, xr);   /* 1/ratio */
+    yadd = qcall(TOK_qdivide, 1UL << 16, yr);
+    syq = 0;
+    dy = 0;
+    drow = SP(ns, 14);
     do {                                        /* yloop */
-        ULONG ny = d1 + yadd;
-        WORD d5 = (WORD)((ny >> 16) - (d1 >> 16)) - 1;
-        UBYTE *a0;
+        ULONG ny = syq + yadd;
+        WORD ycount = (WORD)((ny >> 16) - (syq >> 16)) - 1;
+        UBYTE *srow;
 
-        if (d5 < 0)
-            d5 = 0;
-        d0 = 0;
-        d2 = 0;
-        a0 = SP(a3, 14) + (ULONG)(UWORD)(d1 >> 16) * SW(a3, 6);
+        if (ycount < 0)
+            ycount = 0;
+        sxq = 0;
+        dx = 0;
+        srow = SP(shape, 14) + (ULONG)(UWORD)(syq >> 16) * SW(shape, 6);
         do {                                    /* xloop */
-            ULONG nx = d0 + xadd;
-            WORD d4 = (WORD)((nx >> 16) - (d0 >> 16)) - 1;
-            UWORD d6c = 0;
+            ULONG nx = sxq + xadd;
+            WORD xcount = (WORD)((nx >> 16) - (sxq >> 16)) - 1;
+            UWORD col = 0;
 
-            if (d4 < 0)
-                d4 = 0;
+            if (xcount < 0)
+                xcount = 0;
             {
-                UWORD i, sx = (UWORD)(d0 >> 16);
-                UBYTE *p = a0 + (WORD)(sx >> 3);
+                UWORD i, sx = (UWORD)(sxq >> 16);
+                UBYTE *p = srow + (WORD)(sx >> 3);
                 UWORD bit = ~sx & 7;
                 WORD best;
-                WORD rows = d5;
+                WORD rows = ycount;
 
                 for (i = 0; ; i++) {            /* clear usevals */
                     usevals[i] = 0;
@@ -504,7 +504,7 @@ static void scale(UBYTE *a3, ULONG d6, ULONG d7)
                 do {                            /* yl */
                     UBYTE *q = p;
                     UWORD b = bit;
-                    WORD cols = d4;
+                    WORD cols = xcount;
 
                     do {                        /* xl */
                         UWORD pl = 0;
@@ -513,26 +513,26 @@ static void scale(UBYTE *a3, ULONG d6, ULONG d7)
                         do {
                             if (*q & (1 << (b & 7)))
                                 c |= 1UL << (pl & 31);  /* BSET d2,d6 */
-                            q += (WORD)SW(a3, 22);
+                            q += (WORD)SW(shape, 22);
                             __asm__("" : "+a"(q));      /* no __mulsi3 */
                             pl++;
-                        } while (pl < SW(a3, 4));
+                        } while (pl < SW(shape, 4));
                         usevals[(UWORD)c] += colvals[(UWORD)c];
-                        q -= (WORD)SW(a3, 26);
+                        q -= (WORD)SW(shape, 26);
                         if ((WORD)--b < 0) {
                             b = 7;
                             q++;
                         }
                         __asm__("" : "+a"(q));
                     } while (cols-- != 0);
-                    p += (WORD)SW(a3, 6);
+                    p += (WORD)SW(shape, 6);
                 } while (rows-- != 0);
                 /* brightest */
                 best = -1;
                 for (i = 0; ; i++) {
                     if ((WORD)usevals[i] >= best) {
                         best = (WORD)usevals[i];
-                        d6c = i;
+                        col = i;
                     }
                     if (i == numcols)
                         break;
@@ -540,24 +540,24 @@ static void scale(UBYTE *a3, ULONG d6, ULONG d7)
             }
             {
                 /* plot the destination pixel in colour d6c */
-                UBYTE *q = a1 + (WORD)(d2 >> 3);
-                UWORD bit = ~d2 & 7, n = SW(a3, 4) - 1;
+                UBYTE *q = drow + (WORD)(dx >> 3);
+                UWORD bit = ~dx & 7, n = SW(shape, 4) - 1;
 
                 do {
-                    if (d6c & 1)
+                    if (col & 1)
                         *q |= (UBYTE)(1 << bit);
-                    d6c >>= 1;
-                    q += (WORD)SW(a5, 22);
+                    col >>= 1;
+                    q += (WORD)SW(ns, 22);
                 } while (n-- != 0);
             }
-            d0 = nx;
-            d2++;
-        } while (d2 < SW(a5, 0));
-        d1 = ny;
-        a1 += (WORD)SW(a5, 6);
-        d3++;
-    } while (d3 < SW(a5, 2));
-    makeshape(a3);
+            sxq = nx;
+            dx++;
+        } while (dx < SW(ns, 0));
+        syq = ny;
+        drow += (WORD)SW(ns, 6);
+        dy++;
+    } while (dy < SW(ns, 2));
+    makeshape(shape);
 }
 
 /* Scale without a palette: every colour counts 1 */
@@ -577,7 +577,7 @@ static void BLITZ_ROUTINE doscale_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2), UB
 {
     UWORD n = SW(pal, 4) - 1;
     const ULONG *c = (const ULONG *)SP(pal, 0) + 1;
-    UWORD *a0 = colvals;
+    UWORD *val = colvals;
 
     numcols = n;
     do {
@@ -586,7 +586,7 @@ static void BLITZ_ROUTINE doscale_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2), UB
         v += (UWORD)((c[1] >> 24) + 1);
         v += (UWORD)((c[2] >> 24) + 1);
         c += 3;
-        *a0++ = v;
+        *val++ = v;
     } while (n-- != 0);
     scale(blitz_string, xr, yr);
 }
