@@ -537,6 +537,10 @@ static void inittemprast(void)
 
 /* ------------------------------------------------------------ commands */
 
+/**
+ * @brief init: opens intuition.library and graphics.library (any version,
+ * not checked) and creates the message port.
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     intuibase = OpenLibrary((CONST_STRPTR)"intuition.library", 0);
@@ -544,6 +548,10 @@ static void BLITZ_ROUTINE libinit_c(void)
     windowinit();
 }
 
+/**
+ * @brief finit: replies what is still in the port, deletes it and closes
+ * the libraries.
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     windowfinit();
@@ -551,14 +559,33 @@ static void BLITZ_ROUTINE libfinit_c(void)
     CloseLibrary(gfxbase);
 }
 
-/* PopUpInit: BUG(orig): the old port is not deleted (#470) */
+/**
+ * @brief PopUpInit: a new message port for the menu windows.
+ *
+ * BUG(orig) (#470): the old port is not deleted.  (The word argument is
+ * not used.)
+ */
 static void BLITZ_ROUTINE popupinit_c(void)
 {
     windowinit();
 }
 
-/* PopUpWindow screen#,*items: a0 = the screen object.  BUG(orig): the
-   result is selecteditem, always 0 (#471) */
+/**
+ * @brief PopUpWindow Screen#,*items: shows the menu `items` at 0,0 of the
+ * screen and waits until a mouse button is pressed.
+ *
+ * Each level is a borderless window with the screen's font; moving over
+ * an item highlights it, an item with a sub menu opens it to the right.
+ * BUG(orig) (#471): the result is selecteditem, which is only cleared:
+ * always 0.  BUG(orig) (#467): a failed AllocVec is not checked;
+ * BUG(orig) (#468): sizing a menu with sub menus toggles bit 1 of CIA-A
+ * PRA; BUG(orig) (#469): closing a level replies every message of the
+ * shared port.
+ * @param scr    a0: the screen object (screenslib; first long = the
+ *               Screen)
+ * @param items  d1: the first item of the menu
+ * @return d0: 0
+ */
 static ULONG BLITZ_ROUTINE dopopup_c(struct Screen **scr BL_REG(a0), struct pitem *items BL_REG(d1))
 {
     myscreen = *scr;
