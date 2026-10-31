@@ -81,6 +81,8 @@
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
+#include <stddef.h>
+#include <libraries/reqtools.h>
 
 /* entry points (thunks, below) */
 void _rtrequest(void), _rtrequestPos(void), _rtrequestXtra(void);
@@ -327,43 +329,13 @@ static const char version[] __attribute__((used)) =
 #define LVO_rtLockWindow         (-156)
 #define LVO_rtUnlockWindow       (-162)
 
-#define RT_TagBase           0x80000000UL
-#define RT_IDCMPFlags        (RT_TagBase + 2)
-#define RT_ReqPos            (RT_TagBase + 3)
-#define RT_ReqHandler        (RT_TagBase + 8)
-#define RT_Underscore        (RT_TagBase + 11)
-#define RT_LockWindow        (RT_TagBase + 13)
-#define RTEZ_ReqTitle        (RT_TagBase + 20)
-#define RTEZ_Flags           (RT_TagBase + 22)
-#define RTEZ_DefaultResponse (RT_TagBase + 23)
-#define RTGL_Min             (RT_TagBase + 30)
-#define RTGL_Max             (RT_TagBase + 31)
-#define RTGL_TextFmt         (RT_TagBase + 38)
-#define RTGL_Flags           RTEZ_Flags
-#define RTFI_Flags           (RT_TagBase + 40)
-#define RTFI_OkText          (RT_TagBase + 42)
-#define RTFI_Dir             (RT_TagBase + 50)
-#define RTFI_MatchPat        (RT_TagBase + 51)
-#define RTFO_Flags           RTFI_Flags
-#define RTSC_Flags           RTFI_Flags
-#define RTPA_Color           (RT_TagBase + 70)
-#define RTRH_EndRequest      (RT_TagBase + 60)
-
-#define REQPOS_CENTERSCR     2
-#define RT_FILEREQ           0
-#define RT_FONTREQ           2
-#define RT_SCREENMODEREQ     3
-#define FREQF_MULTISELECT    1
-#define FREQF_SAVE           2
-#define FREQF_NOFILES        8
-#define FREQF_PATGAD         16
-#define FREQF_STYLE          (1 << 10)
-#define SCREQF_SIZEGADS      (1 << 13)
-#define SCREQF_DEPTHGAD      (1 << 14)
-#define GLREQF_CENTERTEXT    4
-#define CALL_HANDLER         0x80000000UL
-
-#define RTFR_DIR 16                     /* rtFileRequester.Dir */
+/* the tags, flags and requester structures: libraries/reqtools.h */
+static_assert(offsetof(struct rtFileRequester, Dir) == 16);
+static_assert(offsetof(struct rtFontRequester, Attr) == 16);
+static_assert(offsetof(struct rtScreenModeRequester, DisplayID) == 16);
+static_assert(offsetof(struct rtScreenModeRequester, DisplayDepth) == 52);
+static_assert(offsetof(struct rtScreenModeRequester, AutoScroll) == 56);
+static_assert(sizeof(struct rtFileList) == 12);
 
 /* RTJSR(lvo, d0, a0, a1, a2, a3) / RTJSR4(..., a3, a4): a reqtools call
    that takes a2/a3 (and a4).  a3/a4 are the fixed registers of the Blitz
@@ -408,29 +380,58 @@ static const char version[] __attribute__((used)) =
 
 static struct Library *rtbase;
 static ULONG ReqToolsActive, returnvalue;
-static UBYTE *filereq, *fontreq, *smreq, *Sfilereq, *preq, *Tfilereq, *Mfilereq;
+/* the requesters, in the original's order */
+static struct rtFileRequester *filereq;
+static struct rtFontRequester *fontreq;
+static struct rtScreenModeRequester *smreq;
+static struct rtFileRequester *Sfilereq, *preq, *Tfilereq, *Mfilereq;
 static const char rtName[] = "reqtools.library";
 static UBYTE fname[108];
 
-/* RTEZRequest */
-static ULONG RequestTagList[] = {
-    RT_ReqPos, REQPOS_CENTERSCR, RT_LockWindow, (ULONG)-1, RT_Underscore, '_',
-    RTEZ_Flags, 0, RTEZ_DefaultResponse, 1, 0, 0, 0, 0
+#define TAG_LOCKWINDOW { RT_LockWindow, (ULONG)-1 }
+#define TAG_CENTERSCR  { RT_ReqPos, REQPOS_CENTERSCR }
+
+/* the tag lists of the original, each with a TAG_END pair at its end */
+
+/* RT_LockWindow, one flags tag (load, font, screen mode, multi-load) */
+struct lockflagstags {
+    struct TagItem lockwin, flags, end;
 };
-#define RequestPos    RequestTagList[1]
-#define RequestFlags  RequestTagList[7]
-#define RequestDefRes RequestTagList[9]
-#define reqTTag       RequestTagList[10]
-#define RequestTitle  RequestTagList[11]
+static_assert(sizeof(struct lockflagstags) == 6 * 4);
+
+/* one tag */
+struct onetag {
+    struct TagItem tag, end;
+};
+static_assert(sizeof(struct onetag) == 4 * 4);
+
+/* rtGetLongA/rtGetStringA: window lock, body text, position, flags */
+struct gltags {
+    struct TagItem lockwin, textfmt, pos, flags, end;
+};
+static_assert(sizeof(struct gltags) == 10 * 4);
+
+/* RTEZRequest: the title tag's id is 0 (TAG_END: the list ends there)
+   until a call with a title sets RTEZ_ReqTitle */
+static struct {
+    struct TagItem pos, lockwin, underscore, flags, defres, title, end;
+} RequestTagList = {
+    TAG_CENTERSCR, TAG_LOCKWINDOW, { RT_Underscore, '_' },
+    { RTEZ_Flags, 0 }, { RTEZ_DefaultResponse, 1 }, { 0, 0 }, { TAG_END, 0 }
+};
+static_assert(sizeof RequestTagList == 14 * 4);
 
 /* RTEZLoadFile */
 static STRPTR swsFreq;
 static UBYTE *filenamestr;
-static ULONG freqTagList[] = { RT_LockWindow, (ULONG)-1, RTFI_Flags, 0, 0, 0 };
-#define freqFlags freqTagList[3]
+static struct lockflagstags freqTagList = {
+    TAG_LOCKWINDOW, { RTFI_Flags, 0 }, { TAG_END, 0 }
+};
 
 /* RTEZFontRequest: a TextAttr */
-static ULONG fontTagList[] = { RT_LockWindow, (ULONG)-1, RTFO_Flags, FREQF_STYLE, 0, 0 };
+static struct lockflagstags fontTagList = {
+    TAG_LOCKWINDOW, { RTFO_Flags, FREQF_STYLE }, { TAG_END, 0 }
+};
 static struct BL_PACKED {
     APTR name;
     UWORD ysize;
@@ -438,10 +439,9 @@ static struct BL_PACKED {
 } myfont;
 
 /* RTEZScreenModeRequest */
-static ULONG smTagList[] = {
-    RT_LockWindow, (ULONG)-1, RTSC_Flags, SCREQF_SIZEGADS | SCREQF_DEPTHGAD, 0, 0
+static struct lockflagstags smTagList = {
+    TAG_LOCKWINDOW, { RTSC_Flags, SCREQF_SIZEGADS | SCREQF_DEPTHGAD }, { TAG_END, 0 }
 };
-#define smFlags smTagList[3]
 static struct BL_PACKED {
     ULONG DisplayID;
     UWORD DisplayWidth, DisplayHeight, DisplayDepth, OverscanType;
@@ -449,85 +449,96 @@ static struct BL_PACKED {
 } smRetType;
 
 /* RTEZPaletteRequest */
-static ULONG palreqTagList[] = { RTPA_Color, 0, RT_LockWindow, (ULONG)-1, 0, 0 };
-#define FirstCol palreqTagList[1]
+static struct {
+    struct TagItem color, lockwin, end;
+} palreqTagList = { { RTPA_Color, 0 }, TAG_LOCKWINDOW, { TAG_END, 0 } };
+static_assert(sizeof palreqTagList == 6 * 4);
 
 /* RTEZGetLong, RTEZGetLongRange */
 static ULONG glValue;
-static ULONG glTagList[] = {
-    RT_LockWindow, (ULONG)-1, RTGL_TextFmt, 0, RT_ReqPos, REQPOS_CENTERSCR,
-    RTGL_Flags, GLREQF_CENTERTEXT, 0, 0
+static struct gltags glTagList = {
+    TAG_LOCKWINDOW, { RTGL_TextFmt, 0 }, TAG_CENTERSCR,
+    { RTGL_Flags, GLREQF_CENTERTEXT }, { TAG_END, 0 }
 };
-#define gltxt glTagList[3]
 static ULONG glrValue;
-static ULONG glrTagList[] = {
-    RT_LockWindow, (ULONG)-1, RTGL_TextFmt, 0, RT_ReqPos, REQPOS_CENTERSCR,
-    RTGL_Flags, GLREQF_CENTERTEXT, RTGL_Min, 0, RTGL_Max, 0, 0, 0
+static struct {
+    struct TagItem lockwin, textfmt, pos, flags, min, max, end;
+} glrTagList = {
+    TAG_LOCKWINDOW, { RTGL_TextFmt, 0 }, TAG_CENTERSCR,
+    { RTGL_Flags, GLREQF_CENTERTEXT }, { RTGL_Min, 0 }, { RTGL_Max, 0 }, { TAG_END, 0 }
 };
-#define glrtxt glrTagList[3]
-#define glrMin glrTagList[9]
-#define glrMax glrTagList[11]
+static_assert(sizeof glrTagList == 14 * 4);
 
 /* RTEZGetString */
 static UBYTE *callerstring;             /* the caller's a3 */
 static UBYTE *swsPtr, *gsBuffer;
 static ULONG gsTxtSize, gsActual;
-static ULONG gsTagList[] = {
-    RT_LockWindow, (ULONG)-1, RTGL_TextFmt, 0, RT_ReqPos, REQPOS_CENTERSCR,
-    RTGL_Flags, GLREQF_CENTERTEXT, 0, 0
+static struct gltags gsTagList = {
+    TAG_LOCKWINDOW, { RTGL_TextFmt, 0 }, TAG_CENTERSCR,
+    { RTGL_Flags, GLREQF_CENTERTEXT }, { TAG_END, 0 }
 };
-#define gstxt gsTagList[3]
 
 /* RTEZSaveFile */
 static const char SaveTxt[] = "Save";
 static STRPTR swsSFreq;
 static UBYTE *Sfilenamestr;
-static ULONG SfreqTagList[] = {
-    RT_LockWindow, (ULONG)-1, RTFI_OkText, (ULONG)SaveTxt, RTFI_Flags, FREQF_SAVE, 0, 0
+static struct {
+    struct TagItem lockwin, oktext, flags, end;
+} SfreqTagList = {
+    TAG_LOCKWINDOW, { RTFI_OkText, (ULONG)SaveTxt }, { RTFI_Flags, FREQF_SAVE }, { TAG_END, 0 }
 };
-#define SfreqFlags SfreqTagList[5]
+static_assert(sizeof SfreqTagList == 8 * 4);
 
 /* RTEZSetDefaultDirectory, RTEZSetPattern */
-static ULONG sddTagList[] = { RTFI_Dir, 0, 0, 0 };
-static ULONG spTagList[] = { RTFI_MatchPat, 0, 0, 0 };
+static struct onetag sddTagList = { { RTFI_Dir, 0 }, { TAG_END, 0 } };
+static struct onetag spTagList = { { RTFI_MatchPat, 0 }, { TAG_END, 0 } };
 
 /* RTEZPathRequest */
 static STRPTR swsPreq;
-static ULONG preqTagList[] = { RTFI_Flags, FREQF_NOFILES, RT_LockWindow, (ULONG)-1, 0, 0 };
+static struct {
+    struct TagItem flags, lockwin, end;
+} preqTagList = { { RTFI_Flags, FREQF_NOFILES }, TAG_LOCKWINDOW, { TAG_END, 0 } };
+static_assert(sizeof preqTagList == 6 * 4);
 
-/* RTEZFlagsRequest: RequestFTitle is never set (BUG(orig), #455) */
-static ULONG RequestFTagList[] = {
-    RTEZ_ReqTitle, 0, RT_ReqPos, REQPOS_CENTERSCR, RT_LockWindow, (ULONG)-1,
-    RT_Underscore, '_', RT_IDCMPFlags, 0, 0, 0
+/* RTEZFlagsRequest: its title is never set (BUG(orig), #455) */
+static struct {
+    struct TagItem title, pos, lockwin, underscore, idcmp, end;
+} RequestFTagList = {
+    { RTEZ_ReqTitle, 0 }, TAG_CENTERSCR, TAG_LOCKWINDOW,
+    { RT_Underscore, '_' }, { RT_IDCMPFlags, 0 }, { TAG_END, 0 }
 };
-#define reqFPos RequestFTagList[3]
-#define rfflags RequestFTagList[9]
+static_assert(sizeof RequestFTagList == 12 * 4);
 
 /* RTFileRequest */
 static STRPTR swsTFreq;
 static UBYTE *Tfilenamestr;
 
-/* RTEZMultiLoadFile, RTNextPathEntry: an rtFileList (Next, StrLen,
-   Name) */
-static ULONG *Mfilelist, *CurEntry;
-static ULONG MfreqTagList[] = { RT_LockWindow, (ULONG)-1, RTFI_Flags, FREQF_MULTISELECT, 0, 0 };
-#define MfreqFlags MfreqTagList[3]
+/* RTEZMultiLoadFile, RTNextPathEntry */
+static struct rtFileList *Mfilelist, *CurEntry;
+static struct lockflagstags MfreqTagList = {
+    TAG_LOCKWINDOW, { RTFI_Flags, FREQF_MULTISELECT }, { TAG_END, 0 }
+};
 
 /* the asynchronous requesters */
 static UBYTE mymask, myPmask;
 static APTR myhandler, myPhandler;
 static ULONG sigs, Psigs;
-static ULONG asRequestTagList[] = {
-    RT_ReqPos, REQPOS_CENTERSCR, RT_LockWindow, (ULONG)-1, RTEZ_ReqTitle, 0,
-    RT_ReqHandler, (ULONG)&myhandler, 0, 0
+static struct {
+    struct TagItem pos, lockwin, title, handler, end;
+} asRequestTagList = {
+    TAG_CENTERSCR, TAG_LOCKWINDOW, { RTEZ_ReqTitle, 0 },
+    { RT_ReqHandler, (ULONG)&myhandler }, { TAG_END, 0 }
 };
-#define asRequestTitle asRequestTagList[5]
-static ULONG asPRequestTagList[] = {
-    RTEZ_ReqTitle, 0, RTPA_Color, 0, RT_ReqHandler, (ULONG)&myPhandler, 0, 0
+static_assert(sizeof asRequestTagList == 10 * 4);
+static struct {
+    struct TagItem title, color, handler, end;
+} asPRequestTagList = {
+    { RTEZ_ReqTitle, 0 }, { RTPA_Color, 0 }, { RT_ReqHandler, (ULONG)&myPhandler },
+    { TAG_END, 0 }
 };
-#define FirstPCol asPRequestTagList[3]
-static const ULONG endreqTL[] = { RTRH_EndRequest, 0, 0, 0 };
-static const ULONG endPreqTL[] = { RTRH_EndRequest, 0, 0, 0 };
+static_assert(sizeof asPRequestTagList == 8 * 4);
+static const struct onetag endreqTL = { { RTRH_EndRequest, 0 }, { TAG_END, 0 } };
+static const struct onetag endPreqTL = { { RTRH_EndRequest, 0 }, { TAG_END, 0 } };
 
 /* ------------------------------------------------------------- helpers */
 
@@ -545,9 +556,9 @@ static ULONG copystring(const UBYTE *s, ULONG n)
 
 /* the directory of a file requester to a3 with a "/" unless it ends in
    ':' (or is empty); n + the characters written */
-static ULONG copydir(const UBYTE *req, ULONG n)
+static ULONG copydir(const struct rtFileRequester *req, ULONG n)
 {
-    n = copystring(*(const UBYTE *const *)(req + RTFR_DIR), n);
+    n = copystring((const UBYTE *)req->Dir, n);
     if (n && blitz_string[-1] != ':') {
         *blitz_string++ = '/';
         n++;
@@ -583,7 +594,7 @@ static ULONG allocreq(ULONG type)
         ULONG r_ = allocreq(type);                                          \
         if (!r_)                                                            \
             goto failed;                                                    \
-        var = (UBYTE *)r_;                                                  \
+        var = (void *)r_;                                                   \
     } while (0)
 
 static ULONG BLITZ_ROUTINE initreqlib_c(void)
@@ -657,16 +668,16 @@ static ULONG BLITZ_ROUTINE rtrequest_c(STRPTR title BL_REG(d0), APTR body BL_REG
     ULONG r;
 
     if (lens[-1]) {
-        RequestTitle = (ULONG)title;
-        reqTTag = RTEZ_ReqTitle;
+        RequestTagList.title.ti_Data = (ULONG)title;
+        RequestTagList.title.ti_Tag = RTEZ_ReqTitle;
     }
-    r = RTJSR4(LVO_rtEZRequestA, 0, RequestTagList, body, gadget, 0, 0);
+    r = RTJSR4(LVO_rtEZRequestA, 0, &RequestTagList, body, gadget, 0, 0);
     returnvalue = r;
-    RequestPos = REQPOS_CENTERSCR;
-    RequestFlags = 0;
-    RequestDefRes = 1;
-    RequestTitle = 0;
-    reqTTag = 0;
+    RequestTagList.pos.ti_Data = REQPOS_CENTERSCR;
+    RequestTagList.flags.ti_Data = 0;
+    RequestTagList.defres.ti_Data = 1;
+    RequestTagList.title.ti_Data = 0;
+    RequestTagList.title.ti_Tag = 0;
     return r;
 }
 
@@ -675,7 +686,7 @@ static ULONG BLITZ_ROUTINE rtrequestPos_c(STRPTR title BL_REG(d0), APTR body BL_
                                           STRPTR gadget BL_REG(d2), ULONG pos BL_REG(d3),
                                           const ULONG *lens BL_REG(a2))
 {
-    RequestPos = pos;
+    RequestTagList.pos.ti_Data = pos;
     return rtrequest_c(title, body, gadget, lens);
 }
 
@@ -685,8 +696,8 @@ static ULONG BLITZ_ROUTINE rtrequestXtra_c(STRPTR title BL_REG(d0), APTR body BL
                                            ULONG def BL_REG(d4), ULONG flags BL_REG(d5),
                                            const ULONG *lens BL_REG(a2))
 {
-    RequestDefRes = def;
-    RequestFlags = flags;
+    RequestTagList.defres.ti_Data = def;
+    RequestTagList.flags.ti_Data = flags;
     return rtrequestPos_c(title, body, gadget, pos, lens);
 }
 
@@ -711,11 +722,12 @@ static ULONG BLITZ_ROUTINE rtflagsrequest_c(STRPTR title BL_REG(d0), STRPTR body
 
     if (!lens[-3])
         gadget = NULL;
-    rfflags = idcmp;
-    RequestTitle = (ULONG)title;
-    r = RTJSR4(LVO_rtEZRequestA, 0, RequestFTagList, body, gadget, 0, 0);
+    RequestFTagList.idcmp.ti_Data = idcmp;
+    /* BUG(orig) (#455): RTEZRequest's title, not RequestFTagList.title */
+    RequestTagList.title.ti_Data = (ULONG)title;
+    r = RTJSR4(LVO_rtEZRequestA, 0, &RequestFTagList, body, gadget, 0, 0);
     returnvalue = r;
-    reqFPos = REQPOS_CENTERSCR;
+    RequestFTagList.pos.ti_Data = REQPOS_CENTERSCR;
     return r;
 }
 
@@ -725,7 +737,7 @@ static ULONG BLITZ_ROUTINE rtflagsrequestPos_c(STRPTR title BL_REG(d0), STRPTR b
                                                ULONG pos BL_REG(d4),
                                                const ULONG *lens BL_REG(a2))
 {
-    reqFPos = pos;
+    RequestFTagList.pos.ti_Data = pos;
     return rtflagsrequest_c(title, body, gadget, idcmp, lens);
 }
 
@@ -733,7 +745,7 @@ static ULONG BLITZ_ROUTINE rtflagsrequestPos_c(STRPTR title BL_REG(d0), STRPTR b
 
 /* load/RTFileRequest: the path from the title on, a3 behind its 0; a3 =
    the title on cancel */
-static ULONG filerequest(UBYTE *req, STRPTR title, UBYTE *name, APTR tags)
+static ULONG filerequest(struct rtFileRequester *req, STRPTR title, UBYTE *name, APTR tags)
 {
     ULONG r = RTJSR(LVO_rtFileRequestA, 0, tags, req, name, title);
 
@@ -754,7 +766,7 @@ static ULONG BLITZ_ROUTINE rtfreq_c(STRPTR title BL_REG(d0), const UBYTE *file B
 
     filenamestr = allocst(file, 108);
     swsFreq = title;
-    r = filerequest(filereq, title, filenamestr, freqTagList);
+    r = filerequest(filereq, title, filenamestr, &freqTagList);
     freest(filenamestr);
     return r;
 }
@@ -781,7 +793,7 @@ static ULONG BLITZ_ROUTINE rtsfreq_c(STRPTR title BL_REG(d0), const UBYTE *file 
 
     Sfilenamestr = allocst(file, 108);
     swsSFreq = title;
-    r = filerequest(Sfilereq, title, Sfilenamestr, SfreqTagList);
+    r = filerequest(Sfilereq, title, Sfilenamestr, &SfreqTagList);
     freest(Sfilenamestr);
     blitz_string = savedstr;
     return r;
@@ -794,7 +806,7 @@ static ULONG BLITZ_ROUTINE rtpreq_c(STRPTR title BL_REG(d0))
     ULONG r;
 
     swsPreq = title;
-    r = RTJSR(LVO_rtFileRequestA, 0, preqTagList, preq, 0, title);
+    r = RTJSR(LVO_rtFileRequestA, 0, &preqTagList, preq, 0, title);
     returnvalue = r;
     blitz_string = (UBYTE *)title;
     if (r)
@@ -806,9 +818,9 @@ static ULONG BLITZ_ROUTINE rtpreq_c(STRPTR title BL_REG(d0))
    3 multi-load */
 static ULONG BLITZ_ROUTINE rtsetdefdir_c(ULONG n BL_REG(d0), STRPTR dir BL_REG(d1))
 {
-    UBYTE *req;
+    struct rtFileRequester *req;
 
-    sddTagList[1] = (ULONG)dir;
+    sddTagList.tag.ti_Data = (ULONG)dir;
     if (n == 0)
         req = filereq;
     else if (n == 1)
@@ -819,7 +831,7 @@ static ULONG BLITZ_ROUTINE rtsetdefdir_c(ULONG n BL_REG(d0), STRPTR dir BL_REG(d
         req = Mfilereq;
     else
         return 0;
-    RTJSR0(LVO_rtChangeReqAttrA, 0, sddTagList, req);
+    RTJSR0(LVO_rtChangeReqAttrA, 0, &sddTagList, req);
     return 0;
 }
 
@@ -827,21 +839,21 @@ static ULONG BLITZ_ROUTINE rtsetdefdir_c(ULONG n BL_REG(d0), STRPTR dir BL_REG(d
    the pattern gadget */
 static ULONG BLITZ_ROUTINE rtsetpat_c(ULONG n BL_REG(d0), STRPTR pat BL_REG(d1))
 {
-    UBYTE *req;
+    struct rtFileRequester *req;
 
-    spTagList[1] = (ULONG)pat;
+    spTagList.tag.ti_Data = (ULONG)pat;
     if (n == 0) {
         req = filereq;
-        freqFlags = FREQF_PATGAD;
+        freqTagList.flags.ti_Data = FREQF_PATGAD;
     } else if (n == 1) {
         req = Sfilereq;
-        SfreqFlags = FREQF_PATGAD | FREQF_SAVE;
+        SfreqTagList.flags.ti_Data = FREQF_PATGAD | FREQF_SAVE;
     } else if (n == 3) {
-        MfreqFlags = FREQF_MULTISELECT | FREQF_PATGAD;
+        MfreqTagList.flags.ti_Data = FREQF_MULTISELECT | FREQF_PATGAD;
         req = Mfilereq;
     } else
         return 0;
-    RTJSR0(LVO_rtChangeReqAttrA, 0, spTagList, req);
+    RTJSR0(LVO_rtChangeReqAttrA, 0, &spTagList, req);
     return 0;
 }
 
@@ -849,11 +861,11 @@ static ULONG BLITZ_ROUTINE rtsetpat_c(ULONG n BL_REG(d0), STRPTR pat BL_REG(d1))
 static ULONG BLITZ_ROUTINE rtfreepat_c(ULONG n BL_REG(d0))
 {
     if (n == 0)
-        freqFlags = 0;
+        freqTagList.flags.ti_Data = 0;
     else if (n == 1)
-        SfreqFlags = FREQF_SAVE;
+        SfreqTagList.flags.ti_Data = FREQF_SAVE;
     else if (n == 2)
-        MfreqFlags = FREQF_MULTISELECT;
+        MfreqTagList.flags.ti_Data = FREQF_MULTISELECT;
     return 0;
 }
 
@@ -864,10 +876,10 @@ static ULONG BLITZ_ROUTINE rtMfreq_c(STRPTR title BL_REG(d0))
     ULONG r;
 
     RTJSR0(LVO_rtFreeFileList, 0, Mfilelist, 0);
-    r = RTJSR(LVO_rtFileRequestA, 0, MfreqTagList, Mfilereq, fname, title);
+    r = RTJSR(LVO_rtFileRequestA, 0, &MfreqTagList, Mfilereq, fname, title);
     returnvalue = r;
-    Mfilelist = (ULONG *)r;
-    CurEntry = (ULONG *)r;
+    Mfilelist = (struct rtFileList *)r;
+    CurEntry = (struct rtFileList *)r;
     if ((UBYTE)r == 0)                                  /* CMP.b #0,d0 */
         return r;
     return (ULONG)-1;
@@ -878,14 +890,14 @@ static ULONG BLITZ_ROUTINE rtMfreq_c(STRPTR title BL_REG(d0))
 static ULONG BLITZ_ROUTINE rtnxtentry_c(void)
 {
     ULONG n;
-    const ULONG *e;
+    const struct rtFileList *e;
 
     if (!CurEntry)
         return 0;
     n = copydir(Mfilereq, 0);
     e = CurEntry;
-    CurEntry = (ULONG *)e[0];
-    n = copystring((const UBYTE *)e[2], n);
+    CurEntry = e->Next;
+    n = copystring((const UBYTE *)e->Name, n);
     *blitz_string++ = 0;
     return n;
 }
@@ -896,49 +908,49 @@ static ULONG BLITZ_ROUTINE rtnxtentry_c(void)
    of the requester), 0 */
 static ULONG BLITZ_ROUTINE rtfontreq_c(STRPTR title BL_REG(d0))
 {
-    ULONG r = RTJSR(LVO_rtFontRequestA, 0, fontTagList, fontreq, 0, title);
-    const UBYTE *ta;
+    ULONG r = RTJSR(LVO_rtFontRequestA, 0, &fontTagList, fontreq, 0, title);
+    const struct TextAttr *ta;
 
     returnvalue = r;
     if (!r)
         return 0;
-    ta = fontreq + 16;
-    myfont.ysize = *(const UWORD *)(ta + 4);
-    myfont.styleflags = *(const UWORD *)(ta + 6);
-    myfont.name = *(const APTR *)ta;
+    ta = &fontreq->Attr;
+    myfont.ysize = ta->ta_YSize;
+    myfont.styleflags = *(const UWORD *)&ta->ta_Style;  /* ta_Style, ta_Flags */
+    myfont.name = ta->ta_Name;
     return (ULONG)&myfont;
 }
 
 /* RTEZScreenModeRequest(title$) (d0): BUG(orig): rtFontRequestA (#466) */
 static ULONG BLITZ_ROUTINE rtsmreq_c(STRPTR title BL_REG(d0))
 {
-    ULONG r = RTJSR(LVO_rtFontRequestA, 0, smTagList, smreq, 0, title);
+    ULONG r = RTJSR(LVO_rtFontRequestA, 0, &smTagList, smreq, 0, title);
 
     returnvalue = r;
     if (!r)
         return 0;
-    smRetType.DisplayID = *(const ULONG *)(smreq + 16);
-    smRetType.DisplayWidth = *(const UWORD *)(smreq + 20);
-    smRetType.DisplayHeight = *(const UWORD *)(smreq + 22);
-    smRetType.DisplayDepth = *(const UWORD *)(smreq + 52);
-    smRetType.OverscanType = *(const UWORD *)(smreq + 54);
-    smRetType.Autoscroll = *(const ULONG *)(smreq + 56);
-    smFlags = SCREQF_SIZEGADS | SCREQF_DEPTHGAD;
+    smRetType.DisplayID = smreq->DisplayID;
+    smRetType.DisplayWidth = smreq->DisplayWidth;
+    smRetType.DisplayHeight = smreq->DisplayHeight;
+    smRetType.DisplayDepth = smreq->DisplayDepth;
+    smRetType.OverscanType = smreq->OverscanType;
+    smRetType.Autoscroll = smreq->AutoScroll;
+    smTagList.flags.ti_Data = SCREQF_SIZEGADS | SCREQF_DEPTHGAD;
     return (ULONG)&smRetType;
 }
 
 /* RTEZScreenModeRequest(title$,flags) (d0, d1) */
 static ULONG BLITZ_ROUTINE rtsmreqf_c(STRPTR title BL_REG(d0), ULONG flags BL_REG(d1))
 {
-    smFlags = flags;
+    smTagList.flags.ti_Data = flags;
     return rtsmreq_c(title);
 }
 
 /* RTEZPaletteRequest(title$,first) (d0, d1) */
 static ULONG BLITZ_ROUTINE rtpalreq_c(STRPTR title BL_REG(d0), ULONG first BL_REG(d1))
 {
-    FirstCol = first;
-    return RTJSR(LVO_rtPaletteRequestA, 0, palreqTagList, 0, title, 0);
+    palreqTagList.color.ti_Data = first;
+    return RTJSR(LVO_rtPaletteRequestA, 0, &palreqTagList, 0, title, 0);
 }
 
 /* ------------------------------------------------------------ numbers */
@@ -946,8 +958,8 @@ static ULONG BLITZ_ROUTINE rtpalreq_c(STRPTR title BL_REG(d0), ULONG first BL_RE
 /* RTEZGetLong(title$,body$) (d0, d1): the value, also on cancel */
 static ULONG BLITZ_ROUTINE rtgetlong_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1))
 {
-    gltxt = (ULONG)body;
-    returnvalue = RTJSR(LVO_rtGetLongA, 0, glTagList, &glValue, title, 0);
+    glTagList.textfmt.ti_Data = (ULONG)body;
+    returnvalue = RTJSR(LVO_rtGetLongA, 0, &glTagList, &glValue, title, 0);
     return glValue;
 }
 
@@ -965,10 +977,10 @@ static ULONG BLITZ_ROUTINE rtgetlongrng_c(STRPTR title BL_REG(d0), STRPTR body B
 {
     ULONG r;
 
-    glrtxt = (ULONG)body;
-    glrMin = min;
-    glrMax = max;
-    r = RTJSR(LVO_rtGetLongA, 0, glrTagList, &glrValue, title, 0);
+    glrTagList.textfmt.ti_Data = (ULONG)body;
+    glrTagList.min.ti_Data = min;
+    glrTagList.max.ti_Data = max;
+    r = RTJSR(LVO_rtGetLongA, 0, &glrTagList, &glrValue, title, 0);
     returnvalue = r;
     if (r)
         r = glrValue;
@@ -1002,9 +1014,9 @@ static ULONG getstring(STRPTR title, STRPTR body, ULONG max)
     ULONG r;
 
     swsPtr = (UBYTE *)title;
-    gstxt = (ULONG)body;
+    gsTagList.textfmt.ti_Data = (ULONG)body;
     gsTxtSize = max;
-    r = RTJSR(LVO_rtGetStringA, max, gsTagList, gsBuffer, title, 0);
+    r = RTJSR(LVO_rtGetStringA, max, &gsTagList, gsBuffer, title, 0);
     returnvalue = r;
     blitz_string = callerstring;
     if (!r)
@@ -1077,8 +1089,8 @@ static ULONG BLITZ_ROUTINE rtasrequest_c(STRPTR title BL_REG(d0), STRPTR body BL
     ULONG r;
 
     mymask = portmask(obj);
-    asRequestTitle = (ULONG)title;
-    r = RTJSR4(LVO_rtEZRequestA, 0, asRequestTagList, body, gadget, 0, 0);
+    asRequestTagList.title.ti_Data = (ULONG)title;
+    r = RTJSR4(LVO_rtEZRequestA, 0, &asRequestTagList, body, gadget, 0, 0);
     returnvalue = r;
     if (r == CALL_HANDLER)
         return (ULONG)-1;
@@ -1098,7 +1110,7 @@ static ULONG BLITZ_ROUTINE rtcheckasreq_c(void)
 /* RTEndASyncRequest */
 static ULONG BLITZ_ROUTINE rtendasreq_c(void)
 {
-    return RTJSR0(LVO_rtReqHandlerA, sigs, endreqTL, myhandler);
+    return RTJSR0(LVO_rtReqHandlerA, sigs, &endreqTL, myhandler);
 }
 
 /* RTASyncPaletteRequest(title$,first) (d0, d1, a1 as above) */
@@ -1108,8 +1120,8 @@ static ULONG BLITZ_ROUTINE rtasPrequest_c(STRPTR title BL_REG(d0), ULONG first B
     ULONG r;
 
     myPmask = portmask(obj);
-    FirstPCol = first;
-    r = RTJSR(LVO_rtPaletteRequestA, 0, asPRequestTagList, 0, title, 0);
+    asPRequestTagList.color.ti_Data = first;
+    r = RTJSR(LVO_rtPaletteRequestA, 0, &asPRequestTagList, 0, title, 0);
     if (r == CALL_HANDLER)
         return (ULONG)-1;
     return r;
@@ -1126,7 +1138,7 @@ static ULONG BLITZ_ROUTINE rtcheckasPreq_c(void)
 /* RTEndASyncPaletteRequest */
 static ULONG BLITZ_ROUTINE rtendasPreq_c(void)
 {
-    return RTJSR0(LVO_rtReqHandlerA, Psigs, endPreqTL, myPhandler);
+    return RTJSR0(LVO_rtReqHandlerA, Psigs, &endPreqTL, myPhandler);
 }
 
 /* Registers: the original keeps a3-a6 with MOVEM in most routines (a4-a6
