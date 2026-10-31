@@ -362,6 +362,24 @@ static void palrgb(struct bpal *p, UWORD c, UWORD r, UWORD g, UWORD b)
     e[2] = rep(b);
 }
 
+/**
+ * @brief AGAPalRGB Palette#,Colour Register,Red,Green,Blue - set a colour
+ * of a palette, 8 bit components.
+ *
+ * The value is repeated in every byte of the component's long; the
+ * palette grows if needed (new data, the old colours copied).  Keeps
+ * d0-d5/a0-a2.
+ *
+ * Errors (debugger only, aaprgbchk): "Not an AGA machine!", "Colour must
+ * be in the range 0-31" (colour > 255), "RGB component out of range"
+ * (> 255).
+ *
+ * @param c d1: the colour register.
+ * @param r d2: red (0-255).
+ * @param g d3: green.
+ * @param b d4: blue.
+ * @param p a0: the palette (!libs #palettelib,$1080).
+ */
 static void BLITZ_ROUTINE dopalrgb_c(UWORD c BL_REG(d1), UWORD r BL_REG(d2), UWORD g BL_REG(d3),
                                      UWORD b BL_REG(d4), struct bpal *p BL_REG(a0))
 {
@@ -369,7 +387,22 @@ static void BLITZ_ROUTINE dopalrgb_c(UWORD c BL_REG(d1), UWORD r BL_REG(d2), UWO
 }
 BLITZ_THUNK(dopalrgb, dopalrgb_c, "d0-d1/a0-a1");
 
-/* do4bitpalrgb - 4 bit components: n<<4|n (word) */
+/**
+ * @brief PalRGB Palette#,Colour Register,Red,Green,Blue - set a colour of
+ * a palette, 4 bit components.
+ *
+ * do4bitpalrgb - 4 bit components: n<<4|n (word), then as AGAPalRGB.
+ *
+ * Errors (debugger only, prgbchk): "Colour must be in the range 0-31"
+ * (colour > 255, or > 31 without AGA), "RGB component out of range"
+ * (> 15).
+ *
+ * @param c d1: the colour register.
+ * @param r d2: red (0-15).
+ * @param g d3: green.
+ * @param b d4: blue.
+ * @param p a0: the palette (!libs #palettelib,$1080).
+ */
 static void BLITZ_ROUTINE do4bitpalrgb_c(UWORD c BL_REG(d1), UWORD r BL_REG(d2),
                                          UWORD g BL_REG(d3), UWORD b BL_REG(d4),
                                          struct bpal *p BL_REG(a0))
@@ -402,6 +435,19 @@ static UWORD make4(const struct bpal *p)
     return n;
 }
 
+/**
+ * @brief make4bitrgbs (a nullsub for other libraries) - the 4 bit RGB
+ * words of a palette, for LoadRGB4.
+ *
+ * Up to 32 colours, from the LOW byte of each component.
+ *
+ * BUG(orig) (#224): colours of DecodePalette (top byte only) come out
+ * black.
+ *
+ * @param p a0: the palette.
+ * @return d0.w: the count (MOVE.w: the caller's upper word stays), a1 =
+ *         the table (rgbs4bit); keeps a0/a2.
+ */
 static UWORD BLITZ_ROUTINE make4bitrgbs_c(const struct bpal *p BL_REG(a0))
 {
     return make4(p);
@@ -413,8 +459,15 @@ BLITZ_THUNK_POST(make4bitrgbs, make4bitrgbs_c, "d0/a0",
 
 /* ---------------------------------------------------------- init, finit */
 
-/* init - a0 = graphics; returns agamode (EXT.w: upper word from
-   ExecVersion's d0) */
+/**
+ * @brief Library init - agamode = ExecVersion >= 39 (environlib), no
+ * cycling.
+ *
+ * @param callerd0 d0: the caller's d0 (passed to ExecVersion).
+ * @param gfx a0: graphics.library (!libs #graphicslib,#la0).
+ * @return d0: agamode, the init value (-1 or 0; EXT.w: upper word from
+ *         ExecVersion's d0).
+ */
 static ULONG BLITZ_ROUTINE codeinit_c(ULONG callerd0 BL_REG(d0), struct Library *gfx BL_REG(a0))
 {
     struct bl_regs r = { .d0 = callerd0 };
@@ -429,7 +482,11 @@ static ULONG BLITZ_ROUTINE codeinit_c(ULONG callerd0 BL_REG(d0), struct Library 
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d1");
 
-/* finit (cycoff) - interrupt off, cycle list freed (not cleared) */
+/**
+ * @brief Library finit (cycoff) - cycling interrupt off, cycle list freed.
+ *
+ * The list is freed but not cleared (not a bug: only at program end).
+ */
 static void BLITZ_ROUTINE codefinit_c(void)
 {
     struct cnode *n = cyclelist;
@@ -524,12 +581,30 @@ none:
 
 /* getpal - a0 = name, a1 = palette; getpal2 - and d0 = offset.  Keep
    d0-d5. */
+
+/**
+ * @brief getpal (a nullsub for other libraries) - load the CMAP and CRNG
+ * chunks of an IFF file into a palette, as LoadPalette.
+ *
+ * Keeps d0-d5.
+ *
+ * @param name a0: the file name.
+ * @param p a1: the palette.
+ */
 static void BLITZ_ROUTINE getpal_c(const UBYTE *name BL_REG(a0), struct bpal *p BL_REG(a1))
 {
     loadthepal(name, p, 0);
 }
 BLITZ_THUNK(getpal, getpal_c, "d0-d1");
 
+/**
+ * @brief getpal2 (a nullsub for other libraries) - getpal with a palette
+ * offset.
+ *
+ * @param off d0: the first colour register to load into.
+ * @param name a0: the file name.
+ * @param p a1: the palette.
+ */
 static void BLITZ_ROUTINE getpal2_c(UWORD off BL_REG(d0), const UBYTE *name BL_REG(a0),
                                     struct bpal *p BL_REG(a1))
 {
@@ -537,13 +612,37 @@ static void BLITZ_ROUTINE getpal2_c(UWORD off BL_REG(d0), const UBYTE *name BL_R
 }
 BLITZ_THUNK(getpal2, getpal2_c, "d0-d1");
 
-/* LoadPalette n,file$[,offset] - d1 = name, a1 = palette */
+/**
+ * @brief LoadPalette Palette#,Filename$ - load the colours (CMAP) and
+ * colour cycles (CRNG) of an IFF file into a palette (Amiga mode only).
+ *
+ * iffiolib opens the file; the palette grows to the CMAP's colours, every
+ * component an 8 bit value repeated in each byte.  The cycles end with
+ * low = -1.  Not a bug (both are overwritten later): with an offset,
+ * colour offset+count is first written with the offset as red value
+ * (overwritten by the loop); CRNG ranges with low = high only overwrite
+ * the low word of the cycle entry.
+ *
+ * Errors: "Can't Open IFF", "Can't find IFF 'CMAP'" (runtime errors of
+ * the normal code; DIFF: their messages are in the normal code too).
+ *
+ * @param name d1: the file name.
+ * @param p a1: the palette (!libs #palettelib,$1180).
+ */
 static void BLITZ_ROUTINE dopalload_c(const UBYTE *name BL_REG(d1), struct bpal *p BL_REG(a1))
 {
     loadthepal(name, p, 0);
 }
 BLITZ_THUNK(dopalload, dopalload_c, "d0-d1");
 
+/**
+ * @brief LoadPalette Palette#,Filename$,Palette Offset - as LoadPalette,
+ * the colours from the given colour register on (Amiga mode only).
+ *
+ * @param name d1: the file name.
+ * @param off d2: the palette offset.
+ * @param p a1: the palette.
+ */
 static void BLITZ_ROUTINE dopalload2_c(const UBYTE *name BL_REG(d1), UWORD off BL_REG(d2),
                                        struct bpal *p BL_REG(a1))
 {
@@ -566,6 +665,17 @@ static void initpalette(struct bpal *p, UWORD n)
     W(p->pdata, 0) = n;
 }
 
+/**
+ * @brief InitPalette Palette#,NumColors - give a palette new, cleared
+ * colour data for NumColors colours.
+ *
+ * The old data is freed.  The palette is in a3.  Not a bug (overflows
+ * only for palettes of 2731+ colours): the size with ADDQ.w #8.
+ *
+ * BUG(orig) (#229): no end marker is written for the cycles.
+ *
+ * @param n d1: the number of colours.
+ */
 static void BLITZ_ROUTINE _initpalette_c(UWORD n BL_REG(d1))
 {
     initpalette((struct bpal *)blitz_string, n);
@@ -654,11 +764,36 @@ static void cludgepalette(UBYTE *chunk, UWORD off)
     cy->lo = -1;                                /* duncp */
 }
 
+/**
+ * @brief DecodePalette Palette#,MemoryLocation,Palette Offset - take the
+ * colours (CMAP) and cycles (CRNG) of an IFF ILBM in memory.
+ *
+ * The components go into the top byte of each long; count = DIVU
+ * length/3 (the remainder stays in the upper word).  Active cycles get
+ * var = the CRNG flag (1; not a bug: only the low word is used, a start
+ * value of 1 is invisible).  The palette is in a3.
+ *
+ * BUG(orig) (#225): the chunks are walked without pad bytes.
+ * BUG(orig) (#226): a palette too small for offset + count is
+ * re-initialised (cleared).
+ *
+ * Errors: no FORM ILBM - "Can't Open IFF"; no CMAP - "Can't find IFF
+ * 'CMAP'".
+ *
+ * @param mem d1: the IFF file in memory.
+ * @param off d2: the palette offset.
+ */
 static void BLITZ_ROUTINE _cludgepalette_c(UBYTE *mem BL_REG(d1), UWORD off BL_REG(d2))
 {
     cludgepalette(mem, off);
 }
 
+/**
+ * @brief DecodePalette Palette#,MemoryLocation - as DecodePalette with
+ * offset 0.
+ *
+ * @param mem d1: the IFF file in memory.
+ */
 static void BLITZ_ROUTINE _cludgepalette2_c(UBYTE *mem BL_REG(d1))
 {
     cludgepalette(mem, 0);
@@ -666,7 +801,12 @@ static void BLITZ_ROUTINE _cludgepalette2_c(UBYTE *mem BL_REG(d1))
 BLITZ_THUNK(_cludgepalette, _cludgepalette_c, "a2");
 BLITZ_THUNK(_cludgepalette2, _cludgepalette2_c, "a2");
 
-/* FreePalette (_free) - a3 = palette */
+/**
+ * @brief _free of the Palette object (Free Palette, program end) - free
+ * the colour data, no cycles.
+ *
+ * The palette is in a3; nothing happens for 0 colours.
+ */
 static void BLITZ_ROUTINE freepal_c(void)
 {
     struct bpal *p = (struct bpal *)blitz_string;
@@ -683,7 +823,25 @@ static void BLITZ_ROUTINE freepal_c(void)
 }
 BLITZ_THUNK(freepal, freepal_c, "a2");
 
-/* SetCycle pal,cycle,lo,hi[,speed] - a0 = palette, d4 = speed (Quick) */
+/**
+ * @brief SetCycle Palette#,Cycle,Low Colour,High Colour,Speed - set a
+ * colour cycle of a palette.
+ *
+ * Low and High are swapped if needed; speed = the Quick >> 2 (16384 = one
+ * step per frame, the sign is the direction).  A cycle behind the last
+ * one is appended (with a new end mark).
+ *
+ * Errors: a cycle more than one behind the last - "Cycles must be added
+ * in order, you silly sausage!" (a runtime error of the normal code).
+ * Debugger only (setcyclechk2): "Cycle speed MUST be >=-1 AND <=1",
+ * "Cycle MUST be >=0 AND <=6", "Cycle colours out of range" (>= 32).
+ *
+ * @param cyc d1: the cycle number.
+ * @param lo d2: the low colour.
+ * @param hi d3: the high colour.
+ * @param speed d4: the speed (Quick).
+ * @param p a0: the palette (!libs #palettelib,$1080).
+ */
 static void BLITZ_ROUTINE dosetcycle2_c(UWORD cyc BL_REG(d1), UWORD lo BL_REG(d2),
                                         UWORD hi BL_REG(d3), ULONG speed BL_REG(d4),
                                         struct bpal *p BL_REG(a0))
@@ -716,6 +874,17 @@ static void BLITZ_ROUTINE dosetcycle2_c(UWORD cyc BL_REG(d1), UWORD lo BL_REG(d2
 }
 BLITZ_THUNK(dosetcycle2, dosetcycle2_c, "d0-d1/a1");
 
+/**
+ * @brief SetCycle Palette#,Cycle,Low Colour,High Colour - as SetCycle
+ * with speed 1 (one step per frame).
+ *
+ * Errors as SetCycle (debugger only: setcyclechk, without the speed).
+ *
+ * @param cyc d1: the cycle number.
+ * @param lo d2: the low colour.
+ * @param hi d3: the high colour.
+ * @param p a0: the palette.
+ */
 static void BLITZ_ROUTINE dosetcycle1_c(UWORD cyc BL_REG(d1), UWORD lo BL_REG(d2),
                                         UWORD hi BL_REG(d3), struct bpal *p BL_REG(a0))
 {
@@ -723,7 +892,12 @@ static void BLITZ_ROUTINE dosetcycle1_c(UWORD cyc BL_REG(d1), UWORD lo BL_REG(d2
 }
 BLITZ_THUNK(dosetcycle1, dosetcycle1_c, "d0-d1/a1");
 
-/* NewPaletteMode on|off */
+/**
+ * @brief NewPaletteMode On|Off - whether Use Palette shows the palette
+ * (Off, the default) or only makes it the used one (On).
+ *
+ * @param m d0: On (<> 0) or Off (0).
+ */
 static void BLITZ_ROUTINE newpalmode_c(UWORD m BL_REG(d0))
 {
     palmode = m;
@@ -772,12 +946,40 @@ static void showpal_blitz(struct bpal *p, UBYTE *slice)
 }
 
 void BLITZ_ROUTINE showpal_a(APTR *scr BL_REG(a2), struct Library *gfx BL_REG(a6));
+/**
+ * @brief ShowPalette Palette#, Amiga mode - load the palette into the used
+ * screen's ViewPort.
+ *
+ * With agamode LoadRGB32 of the palette data, else LoadRGB4 of up to 32
+ * colours (make4bitrgbs, BUG(orig) (#224) for DecodePalette colours).
+ * The palette is in a3.
+ *
+ * BUG(orig) (#230): with an empty palette the original runs into
+ * b_showpal and writes nothing (count 0); here it simply returns (DIFF).
+ *
+ * Errors (debugger only, showpalchk): "Uninitialized Screen".
+ *
+ * @param scr a2: the used screen (object).
+ * @param gfx a6: graphics.library.
+ */
 void BLITZ_ROUTINE showpal_a(APTR *scr BL_REG(a2), struct Library *gfx BL_REG(a6))
 {
     showpal_amiga((struct bpal *)blitz_string, scr, gfx);
 }
 
 void BLITZ_ROUTINE showpal_b(UBYTE *slice BL_REG(a0));
+/**
+ * @brief ShowPalette Palette#, Blitz mode - write the palette into the
+ * colour moves of the used slice.
+ *
+ * As many colours as the slice has (and the palette), 4 bit each from
+ * the top byte of the components.  The palette is in a3.
+ *
+ * Errors (debugger only, showpalchk): "Uninitialized Slice", "Not enough
+ * colours in Slice" (a slice without colours).
+ *
+ * @param slice a0: the used slice (!libs #blitzcoplib,$9002).
+ */
 void BLITZ_ROUTINE showpal_b(UBYTE *slice BL_REG(a0))
 {
     showpal_blitz((struct bpal *)blitz_string, slice);
@@ -786,6 +988,16 @@ BLITZ_AB_ROUTINE(showpal, showpal_b, "   jmp     _showpal_a");
 
 /* usepal - ShowPalette unless NewPaletteMode On */
 void BLITZ_ROUTINE usepal_a(APTR *scr BL_REG(a2), struct Library *gfx BL_REG(a6));
+/**
+ * @brief _use of the Palette object (Use Palette), Amiga mode -
+ * ShowPalette unless NewPaletteMode On.
+ *
+ * Errors (debugger only, usepalchk): as ShowPalette, also only without
+ * NewPaletteMode.
+ *
+ * @param scr a2: the used screen (object).
+ * @param gfx a6: graphics.library.
+ */
 void BLITZ_ROUTINE usepal_a(APTR *scr BL_REG(a2), struct Library *gfx BL_REG(a6))
 {
     if (!palmode)
@@ -793,6 +1005,12 @@ void BLITZ_ROUTINE usepal_a(APTR *scr BL_REG(a2), struct Library *gfx BL_REG(a6)
 }
 
 void BLITZ_ROUTINE usepal_b(UBYTE *slice BL_REG(a0));
+/**
+ * @brief _use of the Palette object (Use Palette), Blitz mode -
+ * ShowPalette unless NewPaletteMode On.
+ *
+ * @param slice a0: the used slice.
+ */
 void BLITZ_ROUTINE usepal_b(UBYTE *slice BL_REG(a0))
 {
     if (!palmode)
@@ -867,7 +1085,15 @@ static int cyclepal(struct bpal *p)
     }
 }
 
-/* CyclePalette n - a2 = palette */
+/**
+ * @brief CyclePalette Palette# - move the colours of every cycle of the
+ * palette that is due by one step (in the palette only, nothing shown).
+ *
+ * Each cycle adds its speed to its var; at 16384 the colours low..high
+ * rotate by one (the sign of the speed is the direction).
+ *
+ * @param p a2: the palette (!libs #palettelib,$1280).
+ */
 static void BLITZ_ROUTINE _cyclepalette_c(struct bpal *p BL_REG(a2))
 {
     if (p->numcols)
@@ -897,7 +1123,20 @@ static ULONG BLITZ_ROUTINE cycleem_c(void)
 }
 BLITZ_THUNK_Z(cycleem, cycleem_c, "d1/a0-a1");
 
-/* Cycle n - a3 = palette, a2 = used screen */
+/**
+ * @brief Cycle Palette# - cycle the palette's colours on the used screen
+ * (Amiga mode only).
+ *
+ * The palette and the screen's ViewPort go into the cycle list (12 bytes,
+ * globalloc); the first Cycle installs cycleem in the vertical blank
+ * (intlib SetInt, level $8005), which cycles every palette of the list
+ * and reloads the ViewPort when colours moved.  The palette is in a3.
+ *
+ * Errors (debugger only, docyclechk): "Uninitialized cycle information"
+ * (a palette without colours).
+ *
+ * @param scr a2: the used screen (object; !libs #screenslib,$1202).
+ */
 static void BLITZ_ROUTINE docycle_c(APTR *scr BL_REG(a2))
 {
     struct cnode *n = globalloc(12, MEMF_PUBLIC);
@@ -915,7 +1154,14 @@ static void BLITZ_ROUTINE docycle_c(APTR *scr BL_REG(a2))
 }
 BLITZ_THUNK(docycle, docycle_c, "a0");
 
-/* StopCycle - ClrInt only (cycon stays) */
+/**
+ * @brief StopCycle - stop the colour cycling.
+ *
+ * ClrInt only (cycon stays).
+ *
+ * BUG(orig) (#228): StopCycle does not reset `cycon`: a later Cycle does
+ * not install the interrupt again.
+ */
 static void BLITZ_ROUTINE dostopcycle_c(void)
 {
     struct bl_regs r = { .d0 = 0x8005 };
@@ -958,6 +1204,24 @@ static ULONG getcol_b(ULONG c, UBYTE *slice, int shift)
     }                                                                       \
     BLITZ_AB_ROUTINE(name, name##_b, "   jmp     _" #name "_a")
 
+/**
+ * @brief Red(Colour Register), Green(...), Blue(...) - the 4 bit component
+ * of a colour of the used screen (Amiga mode) or slice (Blitz mode).
+ *
+ * dored_a/_b, dogreen_a/_b, doblue_a/_b: Amiga - GetRGB4 of the used
+ * screen's ColorMap (the upper word of d0 is GetRGB4's); Blitz - the
+ * colour move of the used slice (the upper word of d0 stays).  The binary
+ * takes the colour as a #long.
+ *
+ * Errors (debugger only, colchk): "Uninitialized Screen", "Uninitialized
+ * Slice".
+ *
+ * @param c d0: the colour register.
+ * @param scr a0: Amiga mode: the used screen (object).
+ * @param gfx a6: Amiga mode: graphics.library.
+ * @param slice a0: Blitz mode: the used slice.
+ * @return d0.w: the component (0-15).
+ */
 COLFN(dored, 8);
 COLFN(dogreen, 4);
 COLFN(doblue, 0);
@@ -978,18 +1242,52 @@ static ULONG agacol(ULONG c, APTR *scr, struct Library *gfx, int i)
     return (v & 0xffff0000UL) | (v & 0xff);
 }
 
+/**
+ * @brief AGARed(Colour Register) - the 8 bit red component of a colour of
+ * the used screen.
+ *
+ * GetRGB32 of one colour (d0 & 255); the top byte of the component
+ * (ROL.l #8:AND.w #255).  The binary checks the screen and masks the
+ * colour number.
+ *
+ * Errors: "Uninitialized Screen" (err3; DIFF: the original jumps into the
+ * error check area for it, here it is in the normal code).  Debugger only
+ * (agacolchk): "Not an AGA machine!".
+ *
+ * @param c d0: the colour register.
+ * @param scr a0: the used screen (object; !libs #screenslib,$1002).
+ * @param gfx a6: graphics.library.
+ * @return d0.w: the component (0-255); the upper word is ROL's.
+ */
 static ULONG BLITZ_ROUTINE doagared_c(ULONG c BL_REG(d0), APTR *scr BL_REG(a0),
                                       struct Library *gfx BL_REG(a6))
 {
     return agacol(c, scr, gfx, 0);
 }
 
+/**
+ * @brief AGAGreen(Colour Register) - the 8 bit green component, as
+ * AGARed.
+ *
+ * @param c d0: the colour register.
+ * @param scr a0: the used screen (object).
+ * @param gfx a6: graphics.library.
+ * @return d0.w: the component (0-255).
+ */
 static ULONG BLITZ_ROUTINE doagagreen_c(ULONG c BL_REG(d0), APTR *scr BL_REG(a0),
                                         struct Library *gfx BL_REG(a6))
 {
     return agacol(c, scr, gfx, 1);
 }
 
+/**
+ * @brief AGABlue(Colour Register) - the 8 bit blue component, as AGARed.
+ *
+ * @param c d0: the colour register.
+ * @param scr a0: the used screen (object).
+ * @param gfx a6: graphics.library.
+ * @return d0.w: the component (0-255).
+ */
 static ULONG BLITZ_ROUTINE doagablue_c(ULONG c BL_REG(d0), APTR *scr BL_REG(a0),
                                        struct Library *gfx BL_REG(a6))
 {
@@ -1008,6 +1306,26 @@ BLITZ_THUNK(doagablue, doagablue_c, "a2");
    graphics.library stored green $8C instead of $88 for 8 - t122) */
 void BLITZ_ROUTINE dorgb_b(UWORD c BL_REG(d0), UWORD r BL_REG(d1), UWORD g BL_REG(d2),
                            UWORD b BL_REG(d3), UBYTE *slice BL_REG(a0));
+/**
+ * @brief RGB Colour Register,Red,Green,Blue - set a colour of the used
+ * screen (Amiga mode) or slice (Blitz mode), 4 bit components.
+ *
+ * Blitz mode (dorgb_b): the colour move r<<8|g<<4|b of the used slice.
+ * Amiga mode: SetRGB4 of the used screen's ViewPort, in assembler (see
+ * above; d0-d3 and a6 as SetRGB4 takes them).
+ *
+ * Errors (debugger only, rgbchk): Amiga - "Uninitialized Screen", "Colour
+ * must be in the range 0-31" (> 255, or > 31 without AGA); Blitz -
+ * "Uninitialized Slice", "Colour must be in the range 0-31", "Not enough
+ * colours in Slice"; both "RGB component out of range" (> 15).
+ *
+ * @param c d0: the colour register.
+ * @param r d1: red (0-15).
+ * @param g d2: green.
+ * @param b d3: blue.
+ * @param slice a0: Blitz mode: the used slice; Amiga mode: the used
+ *        screen (object), a6 = graphics.library.
+ */
 void BLITZ_ROUTINE dorgb_b(UWORD c BL_REG(d0), UWORD r BL_REG(d1), UWORD g BL_REG(d2),
                            UWORD b BL_REG(d3), UBYTE *slice BL_REG(a0))
 {
@@ -1028,6 +1346,24 @@ static ULONG rep8(UWORD v)
     return (ULONG)w << 16 | w;
 }
 
+/**
+ * @brief AGARGB Colour Register,Red,Green,Blue - set a colour of the used
+ * screen, 8 bit components (Amiga mode only).
+ *
+ * LoadRGB32 with one colour; each component's word r<<8|r.b in both
+ * halves.
+ *
+ * Errors (debugger only, aargbchk): "Not an AGA machine!", "Uninitialized
+ * Screen", "Colour must be in the range 0-31" (> 255), "RGB component out
+ * of range" (> 255).
+ *
+ * @param c d0: the colour register.
+ * @param r d1: red (0-255).
+ * @param g d2: green.
+ * @param b d3: blue.
+ * @param scr a0: the used screen (object; !libs #screenslib,$1002).
+ * @param gfx a6: graphics.library.
+ */
 static void BLITZ_ROUTINE doaargb_c(UBYTE c BL_REG(d0), UWORD r BL_REG(d1), UWORD g BL_REG(d2),
                                     UWORD b BL_REG(d3), APTR *scr BL_REG(a0),
                                     struct Library *gfx BL_REG(a6))
@@ -1042,7 +1378,19 @@ BLITZ_THUNK(doaargb, doaargb_c, "a2");
 
 /* -------------------------------------------- palette calculations */
 
-/* FadePalette src,dest,brightness - a0 = src, a1 = dest, d2 = Quick */
+/**
+ * @brief FadePalette SrcPalette#,DestPalette#,Brightness.q - the source
+ * colours times the brightness into the destination.
+ *
+ * Every component: MULU of its upper word (not a bug: the source is read
+ * 2 bytes early, see the top) with brightness >> 8, limited to $FF0000,
+ * << 8.  Nothing happens for an empty source or a destination with fewer
+ * colours.
+ *
+ * @param br d2: the brightness (Quick, 1.0 = full brightness).
+ * @param s a0: the source palette.
+ * @param d a1: the destination palette.
+ */
 static void BLITZ_ROUTINE _fadepalette_c(ULONG br BL_REG(d2), struct bpal *s BL_REG(a0),
                                          struct bpal *d BL_REG(a1))
 {
@@ -1090,6 +1438,23 @@ static ULONG startval(WORD v)
     return (s << 16 | s >> 16) << 8;            /* EXT.l:SWAP:ASL.l #8 */
 }
 
+/**
+ * @brief PaletteRange Palette#,StartCol,EndCol,r0,g0,b0,r1,g1,b1 - a
+ * colour gradient from r0,g0,b0 at StartCol to r1,g1,b1 at EndCol.
+ *
+ * The step of each component is DIVS (delta << 8)/(EndCol-StartCol).
+ * Nothing happens for EndCol < StartCol or a range larger than the
+ * palette.  The palette is in a3.
+ *
+ * BUG(orig) (#227): StartCol = EndCol divides by zero (DIVS).
+ *
+ * @param start d1: StartCol.
+ * @param stop d2: EndCol.
+ * @param r0 d3: the start red.
+ * @param g0 d4: the start green.
+ * @param b0 d5: the start blue.
+ * @param args a2: the argument stack: r1, g1, b1 at -2, -4, -6.
+ */
 static void BLITZ_ROUTINE _paletterange_c(UWORD start BL_REG(d1), UWORD stop BL_REG(d2),
                                           WORD r0 BL_REG(d3), WORD g0 BL_REG(d4),
                                           WORD b0 BL_REG(d5), const WORD *args BL_REG(a2))
@@ -1123,7 +1488,15 @@ static void BLITZ_ROUTINE _paletterange_c(UWORD start BL_REG(d1), UWORD stop BL_
 }
 BLITZ_THUNK(_paletterange, _paletterange_c, "d0-d1/a0-a1");
 
-/* DuplicatePalette src,dest - a2 = src, a3 = dest (colours only) */
+/**
+ * @brief DuplicatePalette SrcPalette#,DestPalette# - copy the colours (not
+ * the cycles) of a palette.
+ *
+ * The destination (a3) is initialised to the source's number of colours
+ * first (InitPalette); nothing happens for an empty source.
+ *
+ * @param s a2: the source palette (!libs #palettelib,$1280).
+ */
 static void BLITZ_ROUTINE _duplicatepalette_c(struct bpal *s BL_REG(a2))
 {
     struct bpal *d = (struct bpal *)blitz_string;
@@ -1143,8 +1516,18 @@ static void BLITZ_ROUTINE _duplicatepalette_c(struct bpal *s BL_REG(a2))
 }
 BLITZ_THUNK(_duplicatepalette, _duplicatepalette_c, "a2");
 
-/* MixPalette p1,p2,dest,fraction - a0/a2 = sources (+2, not a bug, see top),
-   a3 = dest, d3 = fraction (Quick) */
+/**
+ * @brief MixPalette Palette#,Palette#,DestPalette#,fraction - mix two
+ * palettes into the destination.
+ *
+ * Every component = first * fraction + second * (1 - fraction), with the
+ * upper words of the sources (+2, not a bug, see top); as many colours as
+ * the first palette has, the destination (a3) is not checked.
+ *
+ * @param f d3: the fraction (Quick, 0..1).
+ * @param p1 a0: the first palette.
+ * @param p2 a2: the second palette.
+ */
 static void BLITZ_ROUTINE _mixpalette_c(LONG f BL_REG(d3), struct bpal *p1 BL_REG(a0),
                                         struct bpal *p2 BL_REG(a2))
 {
