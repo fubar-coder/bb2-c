@@ -48,13 +48,14 @@
  *   - ScreenTags with a taglist copies it without a limit into 32 longs. (#249)
  *   - SA_DisplayID gets only the low word of the viewmode (MOVE
  *     d1,newmodes+2), the upper word stays 0. (#250)
- *   - Can't open Screen: `BEQ err1` from the normal code into the error
- *     area (without the debugger a jump behind the library); the C
- *     library calls err1 in the error area in the same way, but per JSR
- *     (DIFF, T: one return address more on the stack at the trap, as in
- *     animlib/displaylib).  err8/12/13
- *     (WorkBench / Screen / CopIns not found) are in the normal code with
- *     their texts in the error area, as in the original. (#251)
+ * Fixed (intended deviation, #251): the original's "Can't open Screen" is
+ *   `BEQ err1` from the normal code into the error area (without the
+ *   debugger a jump behind the library), and err8/12/13 (WorkBench /
+ *   Screen / CopIns not found) are in the normal code with their texts in
+ *   the error area (without the debugger d0 points behind the library).
+ *   Here all four traps and their texts are in the normal code: the same
+ *   runtime errors with the debugger, TRAP #0 with the right text without
+ *   it.
  * DIFF: a2 stays unchanged (the original pops the arguments).
  */
 #include "blitzlib.h"
@@ -278,10 +279,16 @@ static struct {
 };
 static_assert(sizeof tl == 3 * 8 + 32 * 4, "tl layout");
 
+/* messages of the runtime errors in the normal code (fixed, #251: in the
+   original they lie in the error area) */
+static const char mess1[] = "Can't open Screen";
+static const char mess8[] = "Can't find WorkBench";
+static const char mess12[] = "Can't find Screen";
+static const char mess13[] = "Can't find CopIns!";
+
 /* messages in the error area (BLITZ_ERRCHK_MESSAGE at the end) */
-extern const char mess1[], mess2[], mess3[], mess5[], mess6[], mess7[], mess8[];
-extern const char mess9[], mess10[], mess11[], mess12[], mess13[], mess14[];
-static void err1(void);                         /* in the error area */
+extern const char mess2[], mess3[], mess5[], mess6[], mess7[];
+extern const char mess9[], mess10[], mess11[], mess14[];
 
 static UWORD execversion(void)
 {
@@ -498,7 +505,7 @@ static void openscreen(UBYTE *bitmap, ULONG *ifont, WORD used, ULONG viewmode,
     scr = OpenScreen((struct NewScreen *)&sd.ns);
     obj->screen = scr;
     if (!scr) {
-        err1();                                 /* BEQ err1 (error area) */
+        BLITZ_RUNERR(mess1);                    /* err1, fixed (#251) */
         return;
     }
     scr->UserData = (APTR)BLTZ;
@@ -517,8 +524,8 @@ static void openscreen(UBYTE *bitmap, ULONG *ifont, WORD used, ULONG viewmode,
  * BUG(orig) (#247): the old screen is freed with a2 = the argument stack
  * as graphics base (FreeDBufInfo through garbage if it had a DBufInfo).
  * BUG(orig) (#250): SA_DisplayID gets only the low word of the viewmode.
- * BUG(orig) (#251): "Can't open Screen" is `BEQ err1` into the error area
- * (without the debugger a jump behind the library); DIFF: called per JSR.
+ * Fixed (#251): "Can't open Screen" is raised in the normal code (the
+ * original's `BEQ err1` goes into the error area).
  * Errors (prescreen, debugger only): "Uninitialized IntuiFont", width < 320,
  * height < 10, "Illegal number of BitPlanes".
  *
@@ -637,7 +644,8 @@ void BLITZ_ROUTINE domode2(UWORD mode BL_REG(d1), const UBYTE *title BL_REG(d2),
  * BUG(orig) (#248): the object's old screen is freed (closed if the
  * library opened it), (#247) with a2 = the argument stack as graphics
  * base.  Errors: "Can't find WorkBench" (err8, in the
- * normal code, its text in the error area).
+ * normal code with its text; fixed, #251: the original's text is in the
+ * error area).
  *
  * @param used  d6.w: the offset of the used screen in the globals
  * @param args  a2: the argument stack (passed as graphics base, see above)
@@ -726,7 +734,8 @@ void BLITZ_ROUTINE dofstoscreen(WORD used BL_REG(d6), const UBYTE *args BL_REG(a
  * BUG(orig) (#248): the object's old screen is freed (closed if the
  * library opened it), (#247) with a2 = the argument stack as graphics
  * base.  Errors: "Can't find Screen" (err12, in the
- * normal code, its text in the error area).
+ * normal code with its text; fixed, #251: the original's text is in the
+ * error area).
  *
  * @param title d1: the title prefix
  * @param used  d6.w: the offset of the used screen in the globals
@@ -920,7 +929,8 @@ void BLITZ_ROUTINE doshowbitmap0(struct scrobj *obj BL_REG(a1), struct GfxBase *
  * the screen's copper list or, for interlace, into the screen's BitMap +
  * MakeVPort, then MrgCop/LoadView with interrupts off.  a3 = intuition.
  *
- * Errors: "Can't find CopIns!" (err13, in the normal code, before V39);
+ * Errors: "Can't find CopIns!" (err13, in the normal code with its text,
+ * before V39; fixed, #251);
  * debugger only (showbmchk): "Uninitialized Screen", "Uninitialized
  * BitMap", "Screen and BitMap MUST be same size".
  *
@@ -1048,12 +1058,6 @@ ULONG BLITZ_ROUTINE doscreentags2(const UBYTE *title BL_REG(d1), ULONG *ifont BL
 
 /* ------------------------------------------- error checks (debugger only) */
 
-/* err1 - called from the normal code (Can't open Screen) */
-static void BLITZ_ERRCHK err1(void)
-{
-    BLITZ_RUNERR(mess1);
-}
-
 /* prescreen - IntuiFont, width >= 320, height >= 10, depth */
 static void BLITZ_ERRCHK prescreen_c(ULONG vm BL_REG(d1), const UBYTE *ifont BL_REG(a1),
                                      const UBYTE *args BL_REG(a2))
@@ -1140,16 +1144,12 @@ BLITZ_ERRCHK_THUNK(loadscreenchk, loadscreenchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(modechk, modechk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(showbmchk0, showbmchk0_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(showbmchk, showbmchk_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_MESSAGE(mess1, "Can't open Screen");
 BLITZ_ERRCHK_MESSAGE(mess2, "Uninitialized BitMap");
 BLITZ_ERRCHK_MESSAGE(mess3, "Can't use specified BitMap");
 BLITZ_ERRCHK_MESSAGE(mess5, "Screen width MUST be at least 320");
 BLITZ_ERRCHK_MESSAGE(mess6, "Screen Height MUST be at least 10");
 BLITZ_ERRCHK_MESSAGE(mess7, "Uninitialized Screen");
-BLITZ_ERRCHK_MESSAGE(mess8, "Can't find WorkBench");
 BLITZ_ERRCHK_MESSAGE(mess9, "Illegal number of BitPlanes");
 BLITZ_ERRCHK_MESSAGE(mess10, "Uninitialized IntuiFont");
 BLITZ_ERRCHK_MESSAGE(mess11, "Illegal Mode");
-BLITZ_ERRCHK_MESSAGE(mess12, "Can't find Screen");
-BLITZ_ERRCHK_MESSAGE(mess13, "Can't find CopIns!");
 BLITZ_ERRCHK_MESSAGE(mess14, "Screen and BitMap MUST be same size");

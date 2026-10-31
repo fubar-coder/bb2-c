@@ -1,0 +1,5 @@
+[run]
+before
+runtime error Can't find Screen
+runtime error Can't open Screen
+rc=0

@@ -14,6 +14,9 @@ documented, not fixed. Deviations only where they are technically
 unavoidable, with a reason. The deviations already present
 remain (not reverted), but must be fully
 documented here.
+Since the port is complete, original bugs may be fixed deliberately
+(CLAUDE.md "Rules", decision 2026-10-30): such fixes are listed here as
+intended deviations (kind **F**), each with its issue.
 
 ## Categories
 
@@ -22,7 +25,7 @@ documented here.
 | **B** | user decision | project convention, fixed for all ports |
 | **T** | technically unavoidable | the original is undefined here (register leftovers, stack contents, timing, memory layout) or cannot be expressed in C |
 | **K** | silent correction | the original could be reproduced, the C version behaves "more safely" (trap instead of jump into nowhere, return instead of crash, register preserved). No longer permitted under the new rule; existing cases remain, but are listed here |
-| **F** | fixed original bug | intended deviation: an original bug fixed deliberately once the port was complete (CLAUDE.md, "Rules"), one issue per bug, with a bug-orig test that now comes out FIXED |
+| **F** | fixed original bug | intended deviation after the port (CLAUDE.md "Rules": once the port is complete, original bugs may be fixed deliberately, one issue per bug, in the default variant); the issue is named, and its bug-orig test now comes out FIXED where one is possible |
 
 "observable?": whether a Basic program can see the difference
 (result, output, crash) or only a register/memory comparison.
@@ -94,8 +97,8 @@ documented here.
 | palettelib errors (palettelib.c:55, :288) | AGARed/Green/Blue `err3` and messages err0/err1/errd in the error check area | trap and messages in normal code | **K** | only in error cases without debugger |
 | palettelib empty palette (palettelib.c:52, :726, :732) | ShowPalette/Use Palette Amiga mode with an empty palette runs into the Blitz code `b_showpal`, in both branches: from ExecVersion 39 on (`agamode`, a0 arbitrary) and below via `make4bitrgbs` (a0 = palette object); writes nothing | returns in both branches | **K** | result the same (nothing written); only with `agamode` and odd a0 on the 68000 an address error in the original |
 | printlib (printlib.c:23) | a2 decremented | unchanged | **B** | convention |
-| screenslib (screenslib.c:57) | a2 popped | unchanged | **B** | convention |
-| screenslib err1 (screenslib.c:53, :412) | Can't open Screen: `BEQ err1` from normal code into the error check area | reached via JSR (one more return address on the stack) | **T** | like animlib/displaylib; same target (without debugger likewise jump behind the lib), only the stack at the trap differs; not observable |
+| screenslib (screenslib.c:59) | a2 popped | unchanged | **B** | convention |
+| screenslib err1/err8/err12/err13 (screenslib.c:51) | Can't open Screen: `BEQ err1` from normal code into the error check area; err8/err12/err13 trap in normal code with their messages in the error check area (without debugger a jump behind the lib, d0 behind the lib) | traps and messages in normal code | **F** | #251: the same runtime errors with the debugger; without it TRAP #0 with the right message (test `screenslib-err1-errorarea`) |
 | scrolllib | – | no deviation (DIFF-free; clsnotint after the binary) | – | – |
 | seriallib ReadSerial (seriallib.c:53, :424) | a3 stays on the 1-byte buffer rb1 in the lib; a2 = unit slot | a3/a2 unchanged | **K**/**B** | a3: **observable** when `ReadSerial` is in a string expression – the rest of the expression is then built from rb1 on, two `ReadSerial` in one statement give "97b98" in the original, "97 98" in C (t64 therefore reads in separate statements, bb2 `compilerlauf/README.md` "Serielle Tests", not taken over); a2: convention |
 | seriallib noser (seriallib.c:203) | "Serial Device Not Open": `TRAP #0` in normal code; if the trap returns, the code runs into the message text (saved a6 still on the stack) | runtime error, after which the routine returns without input/output | **K** | only with a returning trap (otherwise the program ends with the message) |
@@ -192,7 +195,7 @@ binary in acidlibs, followed on 2026-10-29.
   OS returns (blitlib BlitColl, freqlib, cliargslib CCR, windowslib
   zcursor, ilbmifflib a0, deflibs retry), memory layout with overflows and
   invalid indices (2dlib, polylib, displaylib, crunchlib), stack contents
-  with error jumps via JSR (animlib, displaylib, screenslib) and other stack questions
+  with error jumps via JSR (animlib, displaylib) and other stack questions
   (crunchlib, arrayslib a4/a5), timing (shapetrixlib XFlip) and in the
   compiler all stack tricks and placeholders. Observable at most in
   error cases, with overflows or corrupted data.
