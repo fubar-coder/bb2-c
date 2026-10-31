@@ -223,9 +223,12 @@ void compile(void)
     intstring = 0;
     smallpass = 0;
 #if BLITZ2_AB3
-    /* AB3 mode: a library file that could not be loaded stops the compile */
+    /* AB3 mode: a library file or a resident that could not be loaded
+       stops the compile */
     if (progmode == XTRA_MODE_AB3 && ab3liberr)
         err(ab3liberr);
+    if (progmode == XTRA_MODE_AB3 && ab3reserr)
+        err(ab3reserr);
 #endif
 
 l_retry:

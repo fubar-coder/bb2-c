@@ -138,7 +138,13 @@
 #define mostres     MOSTRES    /* 8, structs.h */
 #endif
 #define userand     0x7f80
+#if BLITZ2_AB3
+/* the library of the float power (eval.c dopow): AmiBlitz3's math library
+   is number 44 (AmiBlitz3.ab3 14565, token $1601), its 192 an OsLibs one */
+#define mathq       (progmode == XTRA_MODE_AB3 ? 44 : 247-55)
+#else
 #define mathq       (247-55)
+#endif
 
 /* token numbering: 1..59 built-ins, fnum..tnum-1 asm mnemonics (118 + EndAsm),
    tnum..tnum+32 the second built-in block (tnum+3 "Ern" removed) */
@@ -502,6 +508,12 @@ extern ULONG ab3libs[AB3LIBS];        /* their sizes (makelibs, 0 = missing) */
    if none: makelibs finds it at start-up, where there is no compile to
    stop yet; compile reports it */
 extern const char *ab3liberr;
+
+/* AB3 mode's residents: a name without device or directory is loaded from
+   AB3RESIDENTS (loadres); the error of one that cannot be loaded ("Can't
+   Load Resident: NAME"), NULL if none: compile reports it */
+#define AB3RESIDENTS "Blitz3:BlitzLibs/Residents/"
+extern const char *ab3reserr;         /* stmts.c */
 #endif
 
 #endif
