@@ -40,6 +40,7 @@
  * DIFF (memory layout, unavoidable): what such an overflow hits.
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 
 void _chunkycls(void), _chunkyplot(void), _chunkyplotclip(void);
 void _chunkyvlin(void), _chunkyvlinclip(void), _chunkypoly(void), _chunkypoly2(void);
@@ -120,28 +121,11 @@ BLITZ_LIBFIN();
 
 /* -------------------------------------------------------------- objects */
 
-/* a Blitz bitmap (bitmaplib), the fields polylib reads */
-struct bitmap {
-    UWORD bpr;                  /* +0 bytes per row */
-    UWORD rows;                 /* +2 */
-    UWORD depth;                /* +4 read as a word (flags byte, depth byte) */
-    UWORD pad6;
-    UBYTE *planes[8];           /* +8 */
-    UBYTE pad40[16];
-    UWORD width, height;        /* +56/+58 clip size */
-    UWORD colours;              /* +60 */
-    WORD isreal;                /* +62 */
-} BL_PACKED;
-
-/* the chunky area of a CopList (displaylib CustomChunky, SizeOf.mycop) */
-struct coplist {
-    UBYTE pad[96];
-    UBYTE *chunky;              /* +96 cchunky: the first colour MOVE */
-    UWORD chy;                  /* +100 */
-    UWORD width, height;        /* +102/+104 chw/chh */
-    UWORD res;                  /* +106 chr */
-    UWORD modulo;               /* +108 chc: bytes per chunky line */
-} BL_PACKED;
+/* the bitmap (bitmaplib) and the chunky area of a CopList (displaylib
+   CustomChunky): struct bb_bitmap, struct bb_coplist (blitzobj.h) */
+/* cchunky (a long in displaylib) read as the pointer it is: as a cast
+   value GCC would order the address arithmetic differently */
+#define CHUNKY(cl) (*(UBYTE *const *)&(cl)->cchunky)
 
 /* blitter registers (a long write sets two of them) */
 #define BLTCON0 0x40
@@ -190,8 +174,8 @@ static const UWORD cols[15] = {
 typedef UBYTE *(*renderfn)(WORD n, const struct point *pts, UWORD colour, UBYTE *a3);
 static UBYTE *render_a3(WORD n, const struct point *pts, UWORD colour, UBYTE *a3);
 static renderfn polyvector = render_a3;
-static struct bitmap *bmap0, *bmap1;
-static struct coplist *chunk0;
+static struct bb_bitmap *bmap0, *bmap1;
+static struct bb_coplist *chunk0;
 static struct point polypts[32];        /* the n points twice in a row */
 /* in the order of the original: an overflow of ledges runs into redges */
 static struct {
@@ -437,10 +421,10 @@ static UWORD *polygon(WORD n, const struct point *pts, int swap)
 
 static void BLITZ_ROUTINE _chunkycls_c(UWORD c BL_REG(d0))
 {
-    struct coplist *cl = (struct coplist *)blitz_string;
-    UBYTE *p = cl->chunky, *q;
-    UWORD x = cl->width - 1, h = cl->height - 1, n = 31, y;
-    WORD mod = cl->modulo;
+    struct bb_coplist *cl = (struct bb_coplist *)blitz_string;
+    UBYTE *p = CHUNKY(cl), *q;
+    UWORD x = cl->chw - 1, h = cl->chh - 1, n = 31, y;
+    WORD mod = cl->chc;
 
     do {                                        /* nxx */
         q = p;
@@ -460,53 +444,53 @@ BLITZ_THUNK(_chunkycls, _chunkycls_c, "d1/a0-a1");
 
 /* the word of chunky pixel x, y: 32 colour MOVEs (4 bytes) and a bank
    switch per 132 bytes, y * bytes per line */
-static UWORD *chunkypixel(const struct coplist *cl, UWORD x, UWORD y)
+static UWORD *chunkypixel(const struct bb_coplist *cl, UWORD x, UWORD y)
 {
-    return (UWORD *)(cl->chunky + ((x & 31) << 2) + bl_mulu_w(x >> 5, 132)
-                     + bl_mulu_w(y, cl->modulo));
+    return (UWORD *)(CHUNKY(cl) + ((x & 31) << 2) + bl_mulu_w(x >> 5, 132)
+                     + bl_mulu_w(y, cl->chc));
 }
 
 static void BLITZ_ROUTINE _chunkyplot_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
                                         UWORD colour BL_REG(d2))
 {
-    *chunkypixel((struct coplist *)blitz_string, x, y) = colour;
+    *chunkypixel((struct bb_coplist *)blitz_string, x, y) = colour;
 }
 BLITZ_THUNK(_chunkyplot, _chunkyplot_c, "d1/a0-a1");
 
 static void BLITZ_ROUTINE _chunkyplotclip_c(WORD x BL_REG(d0), WORD y BL_REG(d1),
                                             UWORD colour BL_REG(d2))
 {
-    struct coplist *cl = (struct coplist *)blitz_string;
+    struct bb_coplist *cl = (struct bb_coplist *)blitz_string;
 
-    if (x < 0 || y < 0 || !BMI_W(x, cl->width) || !BMI_W(y, cl->height))
+    if (x < 0 || y < 0 || !BMI_W(x, cl->chw) || !BMI_W(y, cl->chh))
         return;
     *chunkypixel(cl, x, y) = colour;
 }
 BLITZ_THUNK(_chunkyplotclip, _chunkyplotclip_c, "d1/a0-a1");
 
 /* y2 - y1 + 1 words down from x, y1 (DBRA: y1 > y2 gives about 65536, #417) */
-static void chunkyvlin(const struct coplist *cl, UWORD x, UWORD y1, UWORD y2, UWORD colour)
+static void chunkyvlin(const struct bb_coplist *cl, UWORD x, UWORD y1, UWORD y2, UWORD colour)
 {
     UWORD *p = chunkypixel(cl, x, y1), n = y2 - y1;
 
     do {
         *p = colour;
-        p = (UWORD *)((UBYTE *)p + (WORD)cl->modulo);
+        p = (UWORD *)((UBYTE *)p + (WORD)cl->chc);
     } while (n-- != 0);
 }
 
 static void BLITZ_ROUTINE _chunkyvlin_c(UWORD x BL_REG(d0), UWORD y1 BL_REG(d1),
                                         UWORD y2 BL_REG(d2), UWORD colour BL_REG(d3))
 {
-    chunkyvlin((struct coplist *)blitz_string, x, y1, y2, colour);
+    chunkyvlin((struct bb_coplist *)blitz_string, x, y1, y2, colour);
 }
 BLITZ_THUNK(_chunkyvlin, _chunkyvlin_c, "d1/a0-a1");
 
 static void BLITZ_ROUTINE _chunkyvlinclip_c(WORD x BL_REG(d0), WORD y1 BL_REG(d1),
                                             WORD y2 BL_REG(d2), UWORD colour BL_REG(d3))
 {
-    struct coplist *cl = (struct coplist *)blitz_string;
-    WORD h = cl->height;
+    struct bb_coplist *cl = (struct bb_coplist *)blitz_string;
+    WORD h = cl->chh;
 
     if (x < 0)
         return;
@@ -532,23 +516,23 @@ BLITZ_THUNK(_chunkyvlinclip, _chunkyvlinclip_c, "d1/a0-a1");
    the other way round (count negated).  Returns the a3 the original
    leaves: the CopList, or the top row of the last column (MOVE d7,a3). */
 static UBYTE *chunkypoly(WORD n, const struct point *pts, UWORD colour,
-                         struct coplist *cl, int cpu)
+                         struct bb_coplist *cl, int cpu)
 {
     const struct edge *le = (const struct edge *)pv.ledges;
     const struct edge *re = (const struct edge *)pv.redges;
     UBYTE *a3 = (UBYTE *)cl, *column, *colend, *pixel;
     ULONG top, bottom, tstep, bstep;
-    UWORD tlines, blines, bankleft, x, rows = cl->height, mod = cl->modulo;
+    UWORD tlines, blines, bankleft, x, rows = cl->chh, mod = cl->chc;
 
-    pv.height = cl->width;
-    pv.width = cl->height;
+    pv.height = cl->chw;
+    pv.width = cl->chh;
     if (!polygon(-n, pts, 1))
         return a3;
     top = edge_start(pv.top.left, 1);
     x = pv.top.y;
     bottom = edge_start(pv.top.right, 1);
-    column = cl->chunky;
-    colend = column + (WORD)cl->modulo - 8;     /* behind the last column */
+    column = CHUNKY(cl);
+    colend = column + (WORD)cl->chc - 8;     /* behind the last column */
     column += (WORD)bl_mulu_w(x >> 5, 132);
     column += (x & 31) << 2;
     bankleft = ~x & 31;
@@ -621,7 +605,7 @@ static void BLITZ_ROUTINE _chunkypoly_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
                                         UWORD colour BL_REG(d2))
 {
     blitz_string = chunkypoly(n, (const struct point *)pts, colour,
-                              (struct coplist *)blitz_string, 0);
+                              (struct bb_coplist *)blitz_string, 0);
 }
 BLITZ_THUNK(_chunkypoly, _chunkypoly_c, "d1/a0-a1");
 
@@ -629,7 +613,7 @@ static void BLITZ_ROUTINE _chunkypoly2_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1)
                                          UWORD colour BL_REG(d2))
 {
     blitz_string = chunkypoly(n, (const struct point *)pts, colour,
-                              (struct coplist *)blitz_string, 1);
+                              (struct bb_coplist *)blitz_string, 1);
 }
 BLITZ_THUNK(_chunkypoly2, _chunkypoly2_c, "d1/a0-a1");
 
@@ -663,7 +647,7 @@ static int span(ULONG left, ULONG right, UWORD rtclip, UWORD *first, UWORD *word
    $FFFF in the span's masks, D = C = the plane, set or cleared by the
    plane's colour bit.  Returns the a3 the original leaves: the bitmap, the
    end mark of the right edge list, or the last plane line blitted. */
-static UBYTE *bitmappoly(WORD n, const struct point *pts, UWORD colour, struct bitmap *bm)
+static UBYTE *bitmappoly(WORD n, const struct point *pts, UWORD colour, struct bb_bitmap *bm)
 {
     const struct edge *le = (const struct edge *)pv.ledges;
     const struct edge *re = (const struct edge *)pv.redges;
@@ -698,7 +682,7 @@ static UBYTE *bitmappoly(WORD n, const struct point *pts, UWORD colour, struct b
             CHIPL(BLTCPT) = (ULONG)a3;
             CHIPL(BLTDPT) = (ULONG)a3;
             CHIPW(BLTSIZE) = words + 65;
-        } while (++plane != bm->depth);         /* depth 0: 65536 (#393) */
+        } while (++plane != bm->flagsdepth);         /* depth 0: 65536 (#393) */
         rowoff += bm->bpr;
         left = edge_step(left, lstep, 2);
         right = edge_step(right, rstep, 2);
@@ -719,7 +703,7 @@ static UBYTE *bitmappoly(WORD n, const struct point *pts, UWORD colour, struct b
    leaves: the bitmap, the end mark of the right edge list, or the dither
    line for the next line. */
 static UBYTE *bitmappoly_dither(WORD n, const struct point *pts, UWORD colour,
-                                struct bitmap *bm, struct bitmap *dither)
+                                struct bb_bitmap *bm, struct bb_bitmap *dither)
 {
     const struct edge *le = (const struct edge *)pv.ledges;
     const struct edge *re = (const struct edge *)pv.redges;
@@ -734,7 +718,7 @@ static UBYTE *bitmappoly_dither(WORD n, const struct point *pts, UWORD colour,
         return (UBYTE *)bm;
     srcmod = bm->planes[1] - bm->planes[0] - 2;
     negmod = (bm->planes[1] - bm->planes[0]) - (dither->planes[1] - dither->planes[0]);
-    height = (bm->depth << 6) + 1;
+    height = (bm->flagsdepth << 6) + 1;
     a3 = dither->planes[0] + bl_mulu_w(colour * 2, dither->bpr);
     other = a3 + (WORD)dither->bpr;
     if (pv.top.y & 1) {
@@ -782,16 +766,16 @@ static void BLITZ_ROUTINE _bitmappoly_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
                                         UWORD colour BL_REG(d2))
 {
     blitz_string = bitmappoly(n, (const struct point *)pts, colour,
-                              (struct bitmap *)blitz_string);
+                              (struct bb_bitmap *)blitz_string);
 }
 BLITZ_THUNK(_bitmappoly, _bitmappoly_c, "d1/a0-a1");
 
 static void BLITZ_ROUTINE _bitmappoly2_c(WORD n BL_REG(d0), ULONG pts BL_REG(d1),
                                          UWORD colour BL_REG(d2),
-                                         struct bitmap *dither BL_REG(a0))
+                                         struct bb_bitmap *dither BL_REG(a0))
 {
     blitz_string = bitmappoly_dither(n, (const struct point *)pts, colour,
-                                     (struct bitmap *)blitz_string, dither);
+                                     (struct bb_bitmap *)blitz_string, dither);
 }
 BLITZ_THUNK(_bitmappoly2, _bitmappoly2_c, "d1/a0-a1");
 
@@ -800,7 +784,7 @@ BLITZ_THUNK(_bitmappoly2, _bitmappoly2_c, "d1/a0-a1");
 /* before any RenderTo...: _bitmappoly on a3 = the string pointer (#420) */
 static UBYTE *render_a3(WORD n, const struct point *pts, UWORD colour, UBYTE *a3)
 {
-    return bitmappoly(n, pts, colour, (struct bitmap *)a3);
+    return bitmappoly(n, pts, colour, (struct bb_bitmap *)a3);
 }
 
 static UBYTE *render_bitmap(WORD n, const struct point *pts, UWORD colour, UBYTE *a3)
@@ -823,15 +807,15 @@ static UBYTE *render_chunky(WORD n, const struct point *pts, UWORD colour, UBYTE
     return chunkypoly(n, pts, cols[(WORD)(colour << 1) >> 1], chunk0, 0);
 }
 
-static void BLITZ_ROUTINE _rendertobitmap_c(struct bitmap *bm BL_REG(a0))
+static void BLITZ_ROUTINE _rendertobitmap_c(struct bb_bitmap *bm BL_REG(a0))
 {
     bmap0 = bm;
     polyvector = render_bitmap;
 }
 BLITZ_THUNK(_rendertobitmap, _rendertobitmap_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE _rendertobitmap2_c(struct bitmap *bm BL_REG(a0),
-                                             struct bitmap *dither BL_REG(a1))
+static void BLITZ_ROUTINE _rendertobitmap2_c(struct bb_bitmap *bm BL_REG(a0),
+                                             struct bb_bitmap *dither BL_REG(a1))
 {
     bmap0 = bm;
     bmap1 = dither;
@@ -839,7 +823,7 @@ static void BLITZ_ROUTINE _rendertobitmap2_c(struct bitmap *bm BL_REG(a0),
 }
 BLITZ_THUNK(_rendertobitmap2, _rendertobitmap2_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE _rendertochunky_c(struct coplist *cl BL_REG(a0))
+static void BLITZ_ROUTINE _rendertochunky_c(struct bb_coplist *cl BL_REG(a0))
 {
     chunk0 = cl;
     polyvector = render_chunky;
@@ -849,7 +833,7 @@ BLITZ_THUNK(_rendertochunky, _rendertochunky_c, "d0-d1/a0-a1");
 /* split: ASL #4,d1:ADD d1,a0 - the CopList 16 bytes per split further */
 static void BLITZ_ROUTINE _rendertochunky2_c(UWORD split BL_REG(d1), UBYTE *cl BL_REG(a0))
 {
-    chunk0 = (struct coplist *)(cl + (WORD)(split << 4));
+    chunk0 = (struct bb_coplist *)(cl + (WORD)(split << 4));
     polyvector = render_chunky;
 }
 BLITZ_THUNK(_rendertochunky2, _rendertochunky2_c, "d0-d1/a0-a1");
