@@ -76,6 +76,7 @@
 #include <exec/io.h>
 #include <exec/memory.h>
 #include <utility/tagitem.h>
+#include <devices/ahi.h>
 
 /* entry points (thunks, below) */
 void _loadsounds(void), _libinit(void), _libfinit(void), _OpenAHI(void), _OpenAHI2(void);
@@ -182,6 +183,19 @@ BLITZ_LIBFIN();
 #define LONGAT(p) (*(ULONG *)(p))
 #define WORDAT(p) (*(UWORD *)(p))
 
+/* audiolib's sound object (16 bytes; audiolib.c's struct sound) */
+struct sound {
+    UBYTE *data;                        /* +0 */
+    UWORD period, len;                  /* +4 +6: len in words */
+    UBYTE *rep;                         /* +8 */
+    UWORD replen, mark;                 /* +12 +14: mark "cL" of DecodeSound */
+};
+static_assert(sizeof(struct sound) == 16);
+
+/* the word +16 of a sound object: the first word of the next object
+   (BUG(orig) (#926): CludgeSound's rate, read by PlaySoundAHI) */
+#define SOUNDRATE(s) (*(UWORD *)((s) + 1))
+
 /* exec and ahi.device (AHI.res, lvo/ahi.i) */
 #define LVO_OpenDevice              (-444)
 #define LVO_DoIO                    (-456)
@@ -189,16 +203,11 @@ BLITZ_LIBFIN();
 #define LVO_AHI_AllocAudioRequestA  (-120)
 #define LVO_AHI_AudioRequestA       (-126)
 
-/* the source's constants (#MIN_AHI_VERSION, #ahir_...) and AHI.res's */
+/* the source's constants (#MIN_AHI_VERSION) and AHI.res's; the request
+   is a struct AHIRequest (#ahir_... = its offsets, AHIRequest_SIZEOF = 80)
+   and AHIST_M8S, AHI_DEFAULT_ID come from devices/ahi.h */
 #define MIN_AHI_VERSION     4
-#define AHIREQUEST_SIZEOF   80
-#define AHIR_TYPE           60
-#define AHIR_FREQUENCY      64
-#define AHIR_VOLUME         68
-#define AHIR_POSITION       72
-#define AHIR_VERSION        48
-#define AHIST_M8S           0
-#define AHI_DEFAULT_ID      0
+static_assert(sizeof(struct AHIRequest) == 80);
 #define AHI_TAGBASE         0x80000000UL
 #define AHIR_SCREEN         (AHI_TAGBASE + 201)
 #define AHIR_INITIALLEFTEDGE (AHI_TAGBASE + 240)
@@ -227,7 +236,7 @@ static APTR ahirequest;
 
 static ULONG deviceunit, deviceid;
 static struct MsgPort *ahimsgport;
-static struct IORequest *ahiiorequest;
+static struct AHIRequest *ahiiorequest;
 static ULONG ahidevice;                 /* BUG(orig): never set */
 static struct Device *ahibase;
 static char ahiname[] = "ahi.device";
@@ -243,7 +252,8 @@ ULONG BLITZ_ROUTINE c_libinit(void)
     ahimsgport = CreateMsgPort();
     if (!ahimsgport)
         return 0;
-    ahiiorequest = CreateIORequest(ahimsgport, AHIREQUEST_SIZEOF);
+    ahiiorequest = (struct AHIRequest *)CreateIORequest(ahimsgport,
+                                                        sizeof(struct AHIRequest));
     if (!ahiiorequest)
         return 0;
     return (ULONG)ahiiorequest;
@@ -254,14 +264,14 @@ void BLITZ_ROUTINE c_libfinit(void)
 {
     if (!ahimsgport)
         return;
-    if (!CheckIO(ahiiorequest))         /* in use: everything stays */
+    if (!CheckIO((struct IORequest *)ahiiorequest))     /* in use: everything stays */
         return;
     if (ahidevice) {                    /* never (BUG(orig)) */
-        CloseDevice(ahiiorequest);
+        CloseDevice((struct IORequest *)ahiiorequest);
         ahidevice = 0;
     }
     if (ahiiorequest) {
-        DeleteIORequest(ahiiorequest);
+        DeleteIORequest((struct IORequest *)ahiiorequest);
         ahiiorequest = NULL;
     }
     DeleteMsgPort(ahimsgport);
@@ -280,12 +290,12 @@ ULONG BLITZ_ROUTINE c_openahi2(ULONG unit BL_REG(d0), ULONG id BL_REG(d1))
     deviceunit = unit;
     deviceid = id;                      /* not used */
     /* BUG(orig) (#927): the request may be 0 */
-    WORDAT((UBYTE *)ahiiorequest + AHIR_VERSION) = MIN_AHI_VERSION;
+    ahiiorequest->ahir_Version = MIN_AHI_VERSION;
     r = (struct bl_regs){ .d0 = unit, .d1 = 0, .a0 = (ULONG)ahiname,
                           .a1 = (ULONG)ahiiorequest };
     if (BLITZ_BASEJSR(SysBase, LVO_OpenDevice, r))
         return 0;
-    ahibase = ahiiorequest->io_Device;
+    ahibase = ahiiorequest->ahir_Std.io_Device;
     return (ULONG)-1;
 }
 
@@ -298,31 +308,31 @@ ULONG BLITZ_ROUTINE c_openahi(ULONG unit BL_REG(d0))
 /* PlaySoundAHI sound,volume,balance: a0 = the sound object (never gets
    past the ahidevice check, BUG(orig) (#924)) */
 ULONG BLITZ_ROUTINE c_playsound2(ULONG vol BL_REG(d1), ULONG bal BL_REG(d2),
-                                 UBYTE *obj BL_REG(a0))
+                                 struct sound *obj BL_REG(a0))
 {
-    UBYTE *req = (UBYTE *)ahiiorequest;
-    struct IOStdReq *io = (struct IOStdReq *)req;
+    struct AHIRequest *req = ahiiorequest;
+    struct IOStdReq *io = &req->ahir_Std;
 
     if (!ahidevice)
         return 0;
     io->io_Command = CMD_WRITE;
     io->io_Flags = 0;
-    io->io_Data = (APTR)LONGAT(obj);
-    io->io_Length = WORDAT(obj + 6);    /* words as bytes */
+    io->io_Data = obj->data;
+    io->io_Length = obj->len;           /* words as bytes */
     io->io_Offset = 0;
-    LONGAT(req + AHIR_TYPE) = AHIST_M8S;
-    LONGAT(req + AHIR_VOLUME) = vol;
-    LONGAT(req + AHIR_POSITION) = bal;
-    LONGAT(req + AHIR_FREQUENCY) = WORDAT(obj + 16);
+    req->ahir_Type = AHIST_M8S;
+    req->ahir_Volume = vol;
+    req->ahir_Position = bal;
+    req->ahir_Frequency = SOUNDRATE(obj);
     return reqcall(LVO_SendIO, req);    /* no wait, the reply never removed */
 }
 
-ULONG BLITZ_ROUTINE c_playsound1(ULONG vol BL_REG(d1), UBYTE *obj BL_REG(a0))
+ULONG BLITZ_ROUTINE c_playsound1(ULONG vol BL_REG(d1), struct sound *obj BL_REG(a0))
 {
     return c_playsound2(vol, 0x8000, obj);
 }
 
-ULONG BLITZ_ROUTINE c_playsound(UBYTE *obj BL_REG(a0))
+ULONG BLITZ_ROUTINE c_playsound(struct sound *obj BL_REG(a0))
 {
     return c_playsound2(0x10000, 0x8000, obj);
 }
@@ -333,8 +343,8 @@ ULONG BLITZ_ROUTINE c_playraw2(ULONG data BL_REG(d0), ULONG len BL_REG(d1),
                                ULONG freq BL_REG(d2), ULONG vol BL_REG(d3),
                                ULONG bal BL_REG(d4))
 {
-    UBYTE *req = (UBYTE *)ahiiorequest;
-    struct IOStdReq *io = (struct IOStdReq *)req;
+    struct AHIRequest *req = ahiiorequest;
+    struct IOStdReq *io = &req->ahir_Std;
 
     if (!ahidevice)
         return 0;
@@ -343,10 +353,10 @@ ULONG BLITZ_ROUTINE c_playraw2(ULONG data BL_REG(d0), ULONG len BL_REG(d1),
     io->io_Data = (APTR)data;
     io->io_Length = len;
     io->io_Offset = 0;
-    LONGAT(req + AHIR_TYPE) = AHIST_M8S;
-    LONGAT(req + AHIR_VOLUME) = vol;
-    LONGAT(req + AHIR_POSITION) = bal;
-    LONGAT(req + AHIR_FREQUENCY) = freq;
+    req->ahir_Type = AHIST_M8S;
+    req->ahir_Volume = vol;
+    req->ahir_Position = bal;
+    req->ahir_Frequency = freq;
     return reqcall(LVO_DoIO, req);
 }
 
@@ -438,17 +448,17 @@ ULONG BLITZ_ROUTINE c_requestedfreq(void)
 /* CludgeSound sound#,address: d0 = sound#, d1 = the 8SVX file, a0 = the
    sound object; risoundlib's routine, the rate also at +16 */
 static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
-                                        UBYTE *saddr BL_REG(a0))
+                                        struct sound *saddr BL_REG(a0))
 {
     UBYTE *iff, *src, *dst, *mem;       /* a0: the current IFF chunk */
     ULONG rate, clock, slen;
     UWORD sper, n;
     int chunk;
 
-    if (LONGAT(saddr)) {                /* free the old sample (BUG(orig) #831),
+    if (saddr->data) {                  /* free the old sample (BUG(orig) #831),
                                            also "cL" data (BUG(orig) #945) */
-        struct bl_regs r = { .a1 = LONGAT(saddr) };
-        r.d0 = BL_SETW(sound, WORDAT(saddr + 6));
+        struct bl_regs r = { .a1 = (ULONG)saddr->data };
+        r.d0 = BL_SETW(sound, saddr->len);
         BLITZ_ALIBJSR(TOK_globfree, r);
     }
     if (LONGAT(sram + 8) != ID('8', 'S', 'V', 'X') || LONGAT(sram + 12) != ID('V', 'H', 'D', 'R'))
@@ -481,13 +491,13 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_R
     do
         *dst++ = *src++;
     while (n-- != 0);
-    LONGAT(saddr) = (ULONG)mem;
-    WORDAT(saddr + 4) = sper;
-    WORDAT(saddr + 6) = (UWORD)((slen & 0xffff) >> 1);
-    LONGAT(saddr + 8) = 0;              /* no loop */
-    WORDAT(saddr + 12) = 0;
-    WORDAT(saddr + 16) = (UWORD)rate;   /* BUG(orig): behind the object,
-                                           +14 not cleared (see the header) */
+    saddr->data = mem;
+    saddr->period = sper;
+    saddr->len = (UWORD)((slen & 0xffff) >> 1);
+    saddr->rep = NULL;                  /* no loop */
+    saddr->replen = 0;
+    SOUNDRATE(saddr) = (UWORD)rate;     /* BUG(orig): behind the object (#926),
+                                           mark (+14) not cleared (#925) */
     return (ULONG)-1;
 }
 
