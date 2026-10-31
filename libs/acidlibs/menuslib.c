@@ -50,6 +50,7 @@
  *     the end of the lists. (#416)
  */
 #include "blitzlib.h"
+#include <stddef.h>
 #include <intuition/intuition.h>
 #define __NOLIBBASE__
 #define INTUITION_BASE_NAME intbase
@@ -199,23 +200,35 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 2);
 
 /* ***************** Code Below ******************* */
 
-/* struct Menu (30) / struct MenuItem (34) + IntuiText/Image (20) as the
-   original sees them: offsets */
-#define M_NEXT      0
-#define M_LEFT      4
-#define M_WIDTH     8
-#define M_HEIGHT    10
-#define M_FLAGS     12
-#define M_NAME      14          /* Menu: MenuName */
-#define M_FIRST     18          /* Menu: FirstItem / Item: ItemFill */
-#define I_MUTEX     14
-#define I_FILL      18
-#define I_COMMAND   26
-#define I_SUB       28
-#define I_NEXTSEL   32
-#define I_TEXT      34          /* the IntuiText / Image behind the item */
-#define MENUSIZE    30
-#define ITEMSIZE    54
+/* The blocks of a MenuList: a struct Menu (30 bytes) per menu, and per
+   item or subitem a struct MenuItem (34) with the IntuiText or Image it
+   shows right behind it (20, ItemFill points there). */
+struct item {
+    struct MenuItem item;
+    union {
+        struct IntuiText text;  /* MenuItem, SubItem */
+        struct Image image;     /* ShapeItem, ShapeSub */
+    } fill;
+};
+static_assert(sizeof(struct Menu) == 30);
+static_assert(sizeof(struct item) == 54);
+#define MENUSIZE    sizeof(struct Menu)
+#define ITEMSIZE    sizeof(struct item)
+
+/* The list code (findthing, walk, setmax, the checks) works on menus and
+   items alike, with byte offsets: the next pointer is at 0 in both, and
+   the address of a list head (the object, FirstItem, SubItem) is used as
+   an entry whose next pointer is the head. */
+#define M_LEFT      offsetof(struct Menu, LeftEdge)
+#define M_WIDTH     offsetof(struct Menu, Width)        /* also MenuItem */
+#define M_FLAGS     offsetof(struct Menu, Flags)        /* also MenuItem */
+#define M_FIRST     offsetof(struct Menu, FirstItem)
+#define I_TOP       offsetof(struct MenuItem, TopEdge)
+#define I_SUB       offsetof(struct MenuItem, SubItem)
+#define FLAGS_HI    M_FLAGS                 /* the bytes of Flags: CHECKED */
+#define FLAGS_LO    (M_FLAGS + 1)           /* ITEMTEXT, ITEMENABLED, MENUENABLED */
+static_assert(offsetof(struct MenuItem, Width) == M_WIDTH);
+static_assert(offsetof(struct MenuItem, Flags) == M_FLAGS);
 
 #define W(p, o)  (*(WORD *)((UBYTE *)(p) + (o)))
 #define UW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
@@ -280,9 +293,9 @@ BLITZ_THUNK(domenupens, domenupens_c, "d0-d1/a0-a1");
 static void changestate(UBYTE *p, UWORD on, int bit)
 {
     if (on)
-        B(p, 13) |= 1 << bit;
+        B(p, FLAGS_LO) |= 1 << bit;
     else
-        B(p, 13) &= ~(1 << bit);
+        B(p, FLAGS_LO) &= ~(1 << bit);
 }
 
 /* walk n (DBF: n+1 times) next pointers */
@@ -338,7 +351,7 @@ BLITZ_THUNK(domenustate4, domenustate4_c, "d0-d1/a0-a1");
 /* checked: BTST #0,12(a2):SNE d0:EXT d0 - upper word of d0 stays */
 static ULONG checked(ULONG hiword, const UBYTE *p)
 {
-    return (hiword & 0xffff0000UL) | ((B(p, 12) & 1) ? 0xffff : 0);
+    return (hiword & 0xffff0000UL) | ((B(p, FLAGS_HI) & 1) ? 0xffff : 0);
 }
 
 /* MenuChecked(l,m,i) - a2 = the list */
@@ -479,9 +492,9 @@ static UBYTE *findthing(UBYTE *link, WORD n, ULONG memlen, int pos, WORD size, i
 
         size -= W(old, pos + 4);
         if (sub != I_SUB)
-            freest(L(old, M_NAME));
-        else if (B(old, 13) & 2)                /* ITEMTEXT */
-            freest(L(old, I_TEXT + 12));
+            freest((ULONG)((struct Menu *)old)->MenuName);
+        else if (B(old, FLAGS_LO) & 2)          /* ITEMTEXT */
+            freest((ULONG)((struct item *)old)->fill.text.IText);
         globfree(old, memlen);
         e = globalloc(memlen);
         P(e, sub) = sublist;
@@ -498,9 +511,9 @@ static UBYTE *findthing(UBYTE *link, WORD n, ULONG memlen, int pos, WORD size, i
         L(e, sub) = 0;
     }
     W(e, pos) = at;
-    if (shortcut) {
-        B(e, I_COMMAND) = shortcut;
-        UW(e, M_FLAGS) = 4;
+    if (shortcut) {                             /* items only */
+        ((struct MenuItem *)e)->Command = shortcut;
+        ((struct MenuItem *)e)->Flags = COMMSEQ;
     }
     return e;
 }
@@ -512,29 +525,29 @@ void BLITZ_ROUTINE domenutitle(WORD m BL_REG(d1), const UBYTE *text BL_REG(d2),
     ULONG len = lens[-1];                       /* MOVE.l -(a2),d1 */
     WORD w = ((UWORD)len << 3) + 8;             /* 8 wide font, for now */
     UBYTE *title = allocst(text, len);
-    UBYTE *e;
+    struct Menu *e;
 
     shortcut = 0;
-    e = findthing(blitz_string, m, MENUSIZE, M_LEFT, w, M_FIRST);
-    W(e, M_LEFT) += 2;
-    P(e, M_NAME) = title;
-    W(e, M_WIDTH) = w;
-    W(e, M_HEIGHT) = 10;
-    W(e, M_FLAGS) = 1;
+    e = (struct Menu *)findthing(blitz_string, m, MENUSIZE, M_LEFT, w, M_FIRST);
+    e->LeftEdge += 2;
+    e->MenuName = (CONST_STRPTR)title;
+    e->Width = w;
+    e->Height = 10;
+    e->Flags = MENUENABLED;
 }
 
 /* finditem - findthing for an item (54 bytes, TopEdge, SubItem); sets
    size, ItemFill = the IntuiText/Image behind it, MutualExclude.  `size`
    = d3 for moving the following entries: the height, but BUG(orig) (#220) the
    subitem number for SubItem (MOVEM restores d3 after textcalc) */
-static UBYTE *finditem(UBYTE *head, WORD n, WORD width, WORD height, WORD size)
+static struct item *finditem(UBYTE *head, WORD n, WORD width, WORD height, WORD size)
 {
-    UBYTE *e = findthing(head, n, ITEMSIZE, 6, size, I_SUB);
+    struct item *e = (struct item *)findthing(head, n, ITEMSIZE, I_TOP, size, I_SUB);
 
-    W(e, M_WIDTH) = width;
-    W(e, M_HEIGHT) = height;
-    P(e, I_FILL) = e + I_TEXT;
-    L(e, I_MUTEX) = mexclude;
+    e->item.Width = width;
+    e->item.Height = height;
+    e->item.ItemFill = &e->fill;
+    e->item.MutualExclude = mexclude;
     return e;
 }
 
@@ -565,18 +578,18 @@ static struct textsize textcalc(const ULONG **sp, const UBYTE *s, UWORD item,
 }
 
 /* menucont - the item with its IntuiText */
-static UBYTE *menucont(UBYTE *head, WORD n, struct textsize extent, WORD size)
+static struct item *menucont(UBYTE *head, WORD n, struct textsize extent, WORD size)
 {
-    UBYTE *e = finditem(head, n, extent.width, extent.height, size);
-    UBYTE *it = e + I_TEXT;
+    struct item *e = finditem(head, n, extent.width, extent.height, size);
+    struct IntuiText *it = &e->fill.text;
 
-    L(it, 8) = (ULONG)fontattr;                 /* ITextFont */
-    P(it, 12) = extent.text;                    /* IText */
-    UW(it, 0) = *(UWORD *)menupens;             /* FrontPen, BackPen */
-    B(it, 2) = menumode;                        /* DrawMode */
-    W(it, 4) = menuxxs;
-    W(it, 6) = menuyxs;
-    UW(e, M_FLAGS) |= menflags | 2;             /* ITEMTEXT */
+    it->ITextFont = fontattr;
+    it->IText = extent.text;
+    *(UWORD *)&it->FrontPen = *(UWORD *)menupens;   /* FrontPen, BackPen */
+    it->DrawMode = menumode;
+    it->LeftEdge = menuxxs;
+    it->TopEdge = menuyxs;
+    e->item.Flags |= menflags | ITEMTEXT;
     return e;
 }
 
@@ -613,10 +626,10 @@ void BLITZ_ROUTINE domenuitem2(WORD m BL_REG(d1), WORD i BL_REG(d2),
 }
 
 /* subcont - subitems are moved by SubItemOff */
-static void subcont(UBYTE *e)
+static void subcont(struct item *e)
 {
-    W(e, 4) += subxoff;
-    W(e, 6) += subyoff;
+    e->item.LeftEdge += subxoff;
+    e->item.TopEdge += subyoff;
 }
 
 /* SubItem l,flags,m,i,s,text$[,shortcut$] */
@@ -671,22 +684,22 @@ static struct textsize shapecalc(UWORD flagshi, UWORD item, const UWORD *shape)
 }
 
 /* shapecont - the item with an Image of the shape */
-static UBYTE *shapecont(UBYTE *head, WORD n, struct textsize extent, const UBYTE *shape)
+static struct item *shapecont(UBYTE *head, WORD n, struct textsize extent, const UBYTE *shape)
 {
-    UBYTE *e = finditem(head, n, extent.width, extent.height, extent.height);
-    UBYTE *im = e + I_TEXT;
+    struct item *e = finditem(head, n, extent.width, extent.height, extent.height);
+    struct Image *im = &e->fill.image;
 
-    W(im, 0) = menuxxs;
-    W(im, 2) = menuyxs;
-    UW(im, 4) = UW(shape, 0);                   /* width */
-    UW(im, 6) = UW(shape, 2);                   /* height */
-    UW(im, 8) = UW(shape, 4);                   /* depth */
-    L(im, 10) = L(shape, 14);                   /* data */
-    W(im, 14) = -1;                             /* PlanePick, PlaneOnOff */
-    P(e, I_FILL) = im;
-    W(e, M_WIDTH) = extent.width;
-    W(e, M_HEIGHT) = extent.height;
-    UW(e, M_FLAGS) = menflags & ~2;             /* MOVE, not OR */
+    im->LeftEdge = menuxxs;
+    im->TopEdge = menuyxs;
+    im->Width = W(shape, 0);                    /* the shape's width */
+    im->Height = W(shape, 2);                   /* height */
+    im->Depth = W(shape, 4);                    /* depth */
+    im->ImageData = (UWORD *)L(shape, 14);      /* data */
+    *(UWORD *)&im->PlanePick = 0xffff;          /* PlanePick, PlaneOnOff */
+    e->item.ItemFill = im;
+    e->item.Width = extent.width;
+    e->item.Height = extent.height;
+    e->item.Flags = menflags & ~ITEMTEXT;       /* MOVE, not OR */
     return e;
 }
 
@@ -715,36 +728,37 @@ BLITZ_THUNK_PRE(doshapeitem, doshapeitem_c, "d0", "move.w 8(sp),d7");
 BLITZ_THUNK_PRE(doshapesub, doshapesub_c, "d0", "move.w 8(sp),d7");
 
 /* freeitem - an item (54 bytes) and its text */
-static void freeitem(UBYTE *e)
+static void freeitem(struct MenuItem *e)
 {
-    if (B(e, 13) & 2)
-        freest(L(e, I_TEXT + 12));
+    if (B(e, FLAGS_LO) & 2)                     /* ITEMTEXT */
+        freest((ULONG)((struct item *)e)->fill.text.IText);
     globfree(e, ITEMSIZE);
 }
 
 /* freemenu - the list in a3: every menu, item, subitem */
 void BLITZ_ROUTINE freemenu(void)
 {
-    UBYTE *m = P(blitz_string, 0), *it, *sub, *n;
+    struct Menu *m = *(struct Menu **)blitz_string, *nm;
+    struct MenuItem *it, *sub, *n;
 
-    L(blitz_string, 0) = 0;
+    *(struct Menu **)blitz_string = NULL;
     while (m) {
-        it = P(m, M_FIRST);
+        it = m->FirstItem;
         while (it) {
-            sub = P(it, I_SUB);
+            sub = it->SubItem;
             while (sub) {
-                n = P(sub, 0);
+                n = sub->NextItem;
                 freeitem(sub);
                 sub = n;
             }
-            n = P(it, 0);
+            n = it->NextItem;
             freeitem(it);
             it = n;
         }
-        freest(L(m, M_NAME));
-        n = P(m, 0);
+        freest((ULONG)m->MenuName);
+        nm = m->NextMenu;
         globfree(m, MENUSIZE);
-        m = n;
+        m = nm;
     }
 }
 
