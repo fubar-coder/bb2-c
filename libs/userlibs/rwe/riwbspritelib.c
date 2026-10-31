@@ -56,6 +56,7 @@
 #include <graphics/gfx.h>
 #include <graphics/sprite.h>
 #include <graphics/view.h>
+#include <utility/tagitem.h>
 
 /* entry points (thunks, below) */
 void _GetWBSprite(void), _freesprite(void), _movewbsprite(void), _changewbsprite(void);
@@ -120,36 +121,50 @@ static struct BL_PACKED wbs {
     UWORD sprx, spry;
     ULONG temppointer;
     UWORD sprwidth, sprheight;
-    ULONG allocspritetaglist[12];
-    ULONG getspritetaglist[6];
-    ULONG dudtaglist[2];
+    struct TagItem allocspritetaglist[6];
+    struct TagItem getspritetaglist[3];
+    struct TagItem dudtaglist[1];       /* TAG_DONE; ends getspritetaglist too */
     ULONG spritepointers[8];
     char graphicslibrary[18];
     struct Library *graphicslibbase;
 } wd = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    { 0x81000000UL, 16,                 /* SPRITEA_Width */
-      0x81000006UL, 16,                 /* SPRITEA_OutputHeight */
-      0x81000002UL, 0,                  /* SPRITEA_XReplication */
-      0x81000004UL, 0,                  /* SPRITEA_YReplication */
-      0x81000008UL, 0,                  /* SPRITEA_Attached */
-      0, 0 },
-    { 0x82000020UL, 1,                  /* GSTAG_SPRITE_NUM */
-      0x82000022UL, 0,                  /* GSTAG_ATTACHED */
-      0x82000024UL, 0 },                /* GSTAG_SOFTSPRITE (no TAG_DONE: */
-    { 0, 0 },                           /* dudtaglist ends it) */
+    { { 0x81000000UL, 16 },             /* SPRITEA_Width */
+      { 0x81000006UL, 16 },             /* SPRITEA_OutputHeight */
+      { 0x81000002UL, 0 },              /* SPRITEA_XReplication */
+      { 0x81000004UL, 0 },              /* SPRITEA_YReplication */
+      { 0x81000008UL, 0 },              /* SPRITEA_Attached */
+      { TAG_DONE, 0 } },
+    { { 0x82000020UL, 1 },              /* GSTAG_SPRITE_NUM */
+      { 0x82000022UL, 0 },              /* GSTAG_ATTACHED */
+      { 0x82000024UL, 0 } },            /* GSTAG_SOFTSPRITE (no TAG_DONE: */
+    { { TAG_DONE, 0 } },                /* dudtaglist ends it) */
     { 0 },
     "graphics.library",
     NULL,
 };
+static_assert(sizeof wd == 166);
 
 #define __NOLIBBASE__
 #define GRAPHICS_BASE_NAME wd.graphicslibbase
 #include <proto/graphics.h>
 #undef __NOLIBBASE__
 
-#define SW(p, off) (*(UWORD *)((UBYTE *)(p) + (off)))
-#define SL(p, off) (*(ULONG *)((UBYTE *)(p) + (off)))
+/* the low word of a long (MOVE.w to its address + 2) */
+#define LOWORD(l) (((UWORD *)&(l))[1])
+
+/* a Blitz shape (shapeslib) */
+struct shape {
+    UWORD pixwidth, pixheight, depth;   /* +0, +2, +4 */
+    UWORD ebwidth, bltsize;             /* +6, +8 */
+    WORD xhandle, yhandle;              /* +10, +12 */
+    ULONG data, cookie;                 /* +14, +18: addresses */
+    UWORD onebpmem, onebpmemx;          /* +22, +24 */
+    UWORD allbpmem, allbpmemx;          /* +26, +28 */
+    UWORD pad;                          /* +30 */
+};
+static_assert(sizeof(struct shape) == 32);
+
 /* ASL.w #2,d: the low word shifted, the upper word kept */
 #define ASLW2(d) (((ULONG)(d) & 0xffff0000UL) | (UWORD)((ULONG)(d) << 2))
 /* the sprite table entry of a channel indexed as a word, d(a0,d1.w) */
@@ -235,11 +250,11 @@ static void BLITZ_ROUTINE libfinit_c(void)
    row, height rows, depth planes (DBRA counts) */
 static void copyshape(struct BitMap *bm)
 {
-    const UBYTE *shape = (const UBYTE *)wd.shapeaddr;
-    UWORD wcount = (UWORD)(((WORD)SW(shape, 0) >> 4) - 1);
-    UWORD hcount = (UWORD)(SW(shape, 2) - 1);
-    UWORD pcount = (UWORD)(SW(shape, 4) - 1);
-    const UWORD *src = (const UWORD *)SL(shape, 14);
+    const struct shape *shape = (const struct shape *)wd.shapeaddr;
+    UWORD wcount = (UWORD)(((WORD)shape->pixwidth >> 4) - 1);
+    UWORD hcount = (UWORD)(shape->pixheight - 1);
+    UWORD pcount = (UWORD)(shape->depth - 1);
+    const UWORD *src = (const UWORD *)shape->data;
     PLANEPTR *planes = bm->Planes;
 
     do {
@@ -261,21 +276,21 @@ static void copyshape(struct BitMap *bm)
    tag list: 1, 0 if narrower than 16, -1 if AllocBitMap fails */
 static int shapebitmap(void)
 {
-    const UBYTE *shape = (const UBYTE *)wd.shapeaddr;
-    UWORD w = SW(shape, 0) & 0xfff0;
+    const struct shape *shape = (const struct shape *)wd.shapeaddr;
+    UWORD w = shape->pixwidth & 0xfff0;
     struct BitMap *bm;
 
     if (!w)
         return 0;
     wd.sprwidth = w;
-    wd.sprheight = SW(shape, 2);
-    bm = AllocBitMap(w, wd.sprheight, SW(shape, 4), 0, NULL);
+    wd.sprheight = shape->pixheight;
+    bm = AllocBitMap(w, wd.sprheight, shape->depth, 0, NULL);
     if (!bm)
         return -1;
     wd.mybitmap = (ULONG)bm;
     copyshape(bm);
-    SW(wd.allocspritetaglist, 6) = wd.sprwidth;
-    SW(wd.allocspritetaglist, 14) = wd.sprheight;
+    LOWORD(wd.allocspritetaglist[0].ti_Data) = wd.sprwidth;    /* SPRITEA_Width */
+    LOWORD(wd.allocspritetaglist[1].ti_Data) = wd.sprheight;   /* SPRITEA_OutputHeight */
     return 1;
 }
 
@@ -283,13 +298,13 @@ static int shapebitmap(void)
 static ULONG newsprite(void)
 {
     ULONG spr = (ULONG)AllocSpriteDataA((struct BitMap *)wd.mybitmap,
-                                        (struct TagItem *)wd.allocspritetaglist);
+                                        wd.allocspritetaglist);
 
     if (!spr)
         return 0;
     wd.temppointer = spr;
-    SW(spr, 6) = wd.sprx;
-    SW(spr, 8) = wd.spry;
+    ((struct ExtSprite *)spr)->es_SimpleSprite.x = wd.sprx;
+    ((struct ExtSprite *)spr)->es_SimpleSprite.y = wd.spry;
     return spr;
 }
 
@@ -301,7 +316,7 @@ static ULONG BLITZ_ROUTINE getwbsprite_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
 
     if (!wd.graphicslibbase)
         return 0;
-    if (!SL(shape, 14))
+    if (!((const struct shape *)shape)->data)
         return (ULONG)-1;
     wd.shapeaddr = shape;
     wd.sprx = x;
@@ -313,9 +328,9 @@ static ULONG BLITZ_ROUTINE getwbsprite_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
     if (newsprite()) {
         LONG got;
 
-        wd.getspritetaglist[1] = (ULONG)wd.sprchannel;
+        wd.getspritetaglist[0].ti_Data = (ULONG)wd.sprchannel;    /* GSTAG_SPRITE_NUM */
         got = GetExtSpriteA((struct ExtSprite *)wd.temppointer,
-                            (struct TagItem *)wd.getspritetaglist);
+                            wd.getspritetaglist);
         if (got == -1) {
             FreeSpriteData((struct ExtSprite *)wd.temppointer);
         } else {
@@ -365,7 +380,7 @@ static ULONG BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_REG
     ULONG *e;
     LONG r;
 
-    if (!wd.graphicslibbase || !SL(shape, 14))
+    if (!wd.graphicslibbase || !((const struct shape *)shape)->data)
         return 0;
     wd.myviewport = vp;
     wd.sprchannel = (LONG)ch;
@@ -373,8 +388,8 @@ static ULONG BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_REG
     if (!*e)
         return 0;
     wd.oldpointer = (ULONG)e;
-    wd.sprx = SW(*e, 6);
-    wd.spry = SW(*e, 8);
+    wd.sprx = ((struct ExtSprite *)*e)->es_SimpleSprite.x;
+    wd.spry = ((struct ExtSprite *)*e)->es_SimpleSprite.y;
     wd.shapeaddr = shape;
     if (shapebitmap() <= 0)
         return 0;
@@ -397,14 +412,14 @@ static ULONG BLITZ_ROUTINE wbspritex_c(ULONG ch BL_REG(d0))
 {
     ULONG spr = *ENTRYW(ch);
 
-    return (ch & 0xffff0000UL) | SW(spr, 6);
+    return (ch & 0xffff0000UL) | ((struct ExtSprite *)spr)->es_SimpleSprite.x;
 }
 
 static ULONG BLITZ_ROUTINE wbspritey_c(ULONG ch BL_REG(d0))
 {
     ULONG spr = *ENTRYW(ch);
 
-    return (ch & 0xffff0000UL) | SW(spr, 8);
+    return (ch & 0xffff0000UL) | ((struct ExtSprite *)spr)->es_SimpleSprite.y;
 }
 
 /* Registers: the original changes d0-d7/a0-a2/a6 (keeps a3-a5); the
