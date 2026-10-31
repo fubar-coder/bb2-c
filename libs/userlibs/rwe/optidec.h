@@ -31,12 +31,12 @@
 #define LONGAT(p) (*(const ULONG *)(p))
 #define WORDAT(p) (*(const UWORD *)(p))
 
-/* the 68000 registers optidec works with */
+/* the 68000 registers optidec works with (d1 is dostc's nbits, value and
+   shift) */
 struct stc {
     ULONG bitbuf;                       /* d6: bit buffer: bits at the top of the low word */
     UWORD bitsleft;                     /* d7: bits left in it */
-    UWORD bits;                         /* d1: getbits' count and result, a run's shift */
-    UWORD count;                        /* d3: bytes to copy */
+    UWORD count;                       /* d3: bytes to copy */
     const UBYTE *in;                    /* a1: packed words, read backwards */
     UBYTE *out;                         /* a0: output, written backwards */
 };
@@ -88,10 +88,8 @@ static void upperbyte(struct stc *s)
 }
 
 /* the getbits routine ($404): d1 bits -> d1 */
-static void getbits(struct stc *s)
+static UWORD getbits(struct stc *s, UWORD n)
 {
-    UWORD n = s->bits;
-
     s->bitbuf &= 0xffff;                /* AND.l d4,d6 */
     s->bitsleft = (UWORD)(s->bitsleft - n);
     if ((WORD)s->bitsleft < 0) {        /* BPL not taken */
@@ -103,7 +101,7 @@ static void getbits(struct stc *s)
         s->bitsleft = (UWORD)(s->bitsleft + 16);  /* ADD.w d5,d7 */
     }
     s->bitbuf = lsl(s->bitbuf, n);
-    s->bits = (UWORD)(s->bitbuf >> 16); /* MOVE.l d6,d1:SWAP d1 */
+    return (UWORD)(s->bitbuf >> 16);    /* MOVE.l d6,d1:SWAP d1 */
 }
 
 /* the table behind the decruncher ($44C): the shift count of a literal
@@ -121,6 +119,9 @@ static UBYTE *dostc(const UBYTE *file, UBYTE *dest)
     UBYTE *start = dest, *match;
     WORD farbits;
     UWORD n;
+    UWORD nbits;                        /* d1: getbits' count */
+    UWORD value;                        /* d1: getbits' result */
+    UWORD shift;                        /* d1: a literal run's shift count */
 
     s->out = dest + LONGAT(packed);     /* ADDA.l (a1)+,a0 */
     packed += 4;
@@ -129,7 +130,7 @@ static UBYTE *dostc(const UBYTE *file, UBYTE *dest)
     farbits = (WORD)WORDAT(packed);     /* MOVEM.w (a1),d2/d6/d7 */
     s->bitbuf = (ULONG)(LONG)(WORD)WORDAT(packed + 2);
     s->bitsleft = WORDAT(packed + 4);
-    s->bits = 0;
+    nbits = 0;
     s->count = 0xffff;                  /* MOVEQ #-1,d3 */
     goto check;
 
@@ -161,7 +162,7 @@ check:                                  /* $350: CMPA.l a0,a5:DBCC d7,$35C */
         goto offset;
     }
     next(s);
-    s->bits = 2;
+    nbits = 2;
     s->count = 2;
     if (bit(s))                         /* 101xx: 4..7 bytes */
         goto length;
@@ -170,18 +171,17 @@ check:                                  /* $350: CMPA.l a0,a5:DBCC d7,$35C */
         s->count = 21;
         goto length8;
     }
-    s->bits = 4;                        /* 1001xxxx: 8..22 bytes */
-    s->count = 6;
-    getbits(s);
-    s->count = (UWORD)(s->count + s->bits);
-    if (s->bits < 15)                   /* CMP.w #15,d1:BCS */
+    s->count = 6;                       /* 1001xxxx: 8..22 bytes */
+    value = getbits(s, 4);
+    s->count = (UWORD)(s->count + value);
+    if (value < 15)                     /* CMP.w #15,d1:BCS */
         goto offset;
-    s->bits = 5;                        /* 10011111xxxxx: 14..45 literals */
-    s->count = 14;
-    getbits(s);
-    s->count = (UWORD)(s->count + s->bits);
-    s->bits = (UWORD)((s->bits & 0xff00) | runtab[s->bitsleft & 15]);  /* DIFF: & 15 */
-    if (s->bits & 0x80) {               /* a whole byte left in the word */
+    s->count = 14;                      /* 10011111xxxxx: 14..45 literals */
+    value = getbits(s, 5);
+    s->count = (UWORD)(s->count + value);
+    /* MOVE.b: the upper byte of d1 stays, LSL.l uses only bits 0-5 */
+    shift = (UWORD)((value & 0xff00) | runtab[s->bitsleft & 15]);  /* DIFF: & 15 */
+    if (shift & 0x80) {                 /* a whole byte left in the word */
         s->bitsleft = (UWORD)(s->bitsleft - 8);
         /* DBF d3 with d3 = 14..45 always branches (else: into the table) */
         s->count--;
@@ -194,7 +194,7 @@ run2:                                   /* $424 */
 run1:                                   /* $428 */
     s->bitbuf = lsl(s->bitbuf, s->bitsleft);
     loadword(s);
-    s->bitbuf = lsl(s->bitbuf, s->bits);
+    s->bitbuf = lsl(s->bitbuf, shift);
     upperbyte(s);
     if ((LONG)(WORD)s->count - 2 > 0) { /* SUBQ.w #2,d3:BGT */
         s->count = (UWORD)(s->count - 2);
@@ -210,28 +210,28 @@ run1:                                   /* $428 */
     goto check;                         /* $3C2: the same as $350 */
 
 length8:                                /* $3A6 */
-    s->bits = 8;
+    nbits = 8;
 length:                                 /* $3A8, back at $3AC */
-    getbits(s);
-    s->count = (UWORD)(s->count + s->bits);
-    if ((UBYTE)~s->bits == 0)           /* NOT.b d1: 255 - one more byte */
+    value = getbits(s, nbits);
+    s->count = (UWORD)(s->count + value);
+    if ((UBYTE)~value == 0)             /* NOT.b d1: 255 - one more byte */
         goto length8;
 offset:                                 /* $3D8 / $3E0 */
     next(s);
     if (bit(s)) {                       /* 1: far, d2 bits + 544 */
         match = s->out + 544;
-        s->bits = (UWORD)farbits;
+        nbits = (UWORD)farbits;
     } else {
         next(s);
-        s->bits = 9;                    /* 00: 9 bits + 32 */
+        nbits = 9;                      /* 00: 9 bits + 32 */
         match = s->out + 32;
         if (bit(s)) {                   /* 01: 5 bits */
-            s->bits = 5;
+            nbits = 5;
             match = s->out;
         }
     }
-    getbits(s);
-    match += (WORD)s->bits;             /* $3B8: ADDA.w d1,a2 */
+    value = getbits(s, nbits);
+    match += (WORD)value;               /* $3B8: ADDA.w d1,a2 */
     *--s->out = *match;
     do
         *--s->out = *--match;
