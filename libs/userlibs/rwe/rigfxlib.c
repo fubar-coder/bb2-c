@@ -381,22 +381,22 @@ BLITZ_THUNK(fillpalette, fillpalette_c, "d0-d1/a0-a1");
 
 /* -1, or 0 if a colour number is not below the palette's number of
    colours (signed words: BUG(orig) (#678), negative numbers pass) */
-static ULONG BLITZ_ROUTINE copycolour_c(struct palobj *src BL_REG(a0),
-                                        struct palobj *dst BL_REG(a1),
-                                        ULONG cs BL_REG(d2), ULONG cd BL_REG(d3))
+static BB_BOOL BLITZ_ROUTINE copycolour_c(struct palobj *src BL_REG(a0),
+                                          struct palobj *dst BL_REG(a1),
+                                          ULONG cs BL_REG(d2), ULONG cd BL_REG(d3))
 {
     struct palcol *s, *d;
 
     if ((WORD)cs >= (WORD)src->numcols)
-        return 0;
+        return BB_FALSE;
     if ((WORD)cd >= (WORD)dst->numcols)
-        return 0;
+        return BB_FALSE;
     s = (struct palcol *)(COLBYTES(src->data) + bl_mulu_w((UWORD)cs, 12));
     d = (struct palcol *)(COLBYTES(dst->data) + bl_mulu_w((UWORD)cd, 12));
     d->r = s->r;
     d->g = s->g;
     d->b = s->b;
-    return -1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(copycolour, copycolour_c, "d1/a0-a1");
 
