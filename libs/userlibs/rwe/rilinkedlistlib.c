@@ -227,29 +227,63 @@ static ULONG getvarsize(ULONG var)
     return _size;
 }
 
+/**
+ * @brief init: nothing.
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_libinit(void)
 {
 }
 
+/**
+ * @brief finit: nothing (the lists are not freed).
+ * @return d0: 0
+ */
 ULONG BLITZ_ROUTINE c_libfinit(void)
 {
     return 0;
 }
 
-/* SizeOfListItem(var) */
+/**
+ * @brief SizeOfListItem(var): the size of a variable as the list commands copy it.
+ *
+ * The word in front of the variable minus 8 (getvarsize); also sets the
+ * "last size" the other commands use.  BUG(orig) (#736): a word of less
+ * than 8 gives almost 4 GB, exactly 8 a size of 0, which CopyByte takes
+ * as 2^32 bytes.
+ * @param var  d0: the variable (BL_VARPTR)
+ * @return d0: the size
+ */
 ULONG BLITZ_ROUTINE c_sizeoflistitem(ULONG var BL_REG(d0))
 {
     return getvarsize(var);
 }
 
-/* AddrListItem(list#): the current node */
+/**
+ * @brief AddrListItem(list#): the address of the current node of a list.
+ *
+ * list# is not checked (#732).
+ * @param list  d0: list# (0-4)
+ * @return d0: the current node (struct node), 0 if there is none
+ */
 ULONG BLITZ_ROUTINE c_addrlistitem(ULONG list BL_REG(d0))
 {
     listnum = list << 2;
     return TAB(current);
 }
 
-/* InitList list#,var: a list with one node, a copy of var */
+/**
+ * @brief InitList list#,var: start a list with one node holding a copy of var.
+ *
+ * The node and the copy are memlib globalloc'ed (flags 0), the copy is
+ * made by RIAmosFuncLib's CopyByte.  BUG(orig): a list that is already
+ * there is not freed (#731); list# is not checked (#732); the size as
+ * in SizeOfListItem (#736).
+ * @param list  d0: list# (0-4)
+ * @param var   d1: the variable (BL_VARPTR)
+ * @return d0: BB_TRUE, BB_FALSE if there is no memory (the node is freed
+ *         again, the list cleared)
+ */
 BB_BOOL BLITZ_ROUTINE c_initlist(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
 {
     ULONG node;
@@ -281,8 +315,17 @@ BB_BOOL BLITZ_ROUTINE c_initlist(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
     return BB_TRUE;
 }
 
-/* AddListItem list#: a new empty node behind the current one, now the
-   current one */
+/**
+ * @brief AddListItem list#: a new empty node behind the current one, then the current one.
+ *
+ * BUG(orig): the current node is not checked (an empty list reads and
+ * writes from address 0 on) (#733), list# neither (#732); the prev of
+ * the node behind is not set (it keeps pointing to the current one)
+ * (#727); the new node's size field is the last size any command looked
+ * at, its data 0 (#735).
+ * @param list  d0: list# (0-4)
+ * @return d0: BB_TRUE, BB_FALSE if there is no memory
+ */
 BB_BOOL BLITZ_ROUTINE c_addlistitem(ULONG list BL_REG(d0))
 {
     ULONG node, cur;
@@ -311,7 +354,15 @@ BB_BOOL BLITZ_ROUTINE c_addlistitem(ULONG list BL_REG(d0))
     return BB_TRUE;
 }
 
-/* SetListItem list#,var: a new copy of var for the current node */
+/**
+ * @brief SetListItem list#,var: a new copy of var for the current node.
+ *
+ * BUG(orig): the old copy is not freed (#734), the size field not set
+ * (#735); the current node is not checked (#733).
+ * @param list  d0: list# (0-4)
+ * @param var   d1: the variable (BL_VARPTR)
+ * @return d0: BB_TRUE, BB_FALSE if there is no memory
+ */
 BB_BOOL BLITZ_ROUTINE c_setlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
 {
     ULONG mem;
@@ -326,8 +377,15 @@ BB_BOOL BLITZ_ROUTINE c_setlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
     return BB_TRUE;
 }
 
-/* GetListItem list#,var: the current node's data into var (the size of
-   var) */
+/**
+ * @brief GetListItem list#,var: copy the current node's data into var.
+ *
+ * BUG(orig) (#730): copies as many bytes as the variable has, not as
+ * the node's data has; the current node is not checked (#733).
+ * @param list  d0: list# (0-4)
+ * @param var   d1: the variable (BL_VARPTR)
+ * @return d0: BB_TRUE, BB_FALSE if the node has no data
+ */
 BB_BOOL BLITZ_ROUTINE c_getlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
 {
     ULONG data;
@@ -341,7 +399,13 @@ BB_BOOL BLITZ_ROUTINE c_getlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
     return BB_TRUE;
 }
 
-/* NextListItem / PrevListItem list#: 0 at the end */
+/**
+ * @brief NextListItem list#: make the next node the current one.
+ *
+ * The current node is not checked (BUG(orig) (#733)).
+ * @param list  d0: list# (0-4)
+ * @return d0: BB_TRUE, BB_FALSE at the end (the current node stays)
+ */
 BB_BOOL BLITZ_ROUTINE c_nextlistitem(ULONG list BL_REG(d0))
 {
     ULONG n;
@@ -354,6 +418,13 @@ BB_BOOL BLITZ_ROUTINE c_nextlistitem(ULONG list BL_REG(d0))
     return BB_TRUE;
 }
 
+/**
+ * @brief PrevListItem list#: make the previous node the current one.
+ *
+ * The current node is not checked (BUG(orig) (#733)).
+ * @param list  d0: list# (0-4)
+ * @return d0: BB_TRUE, BB_FALSE at the start (the current node stays)
+ */
 BB_BOOL BLITZ_ROUTINE c_prevlistitem(ULONG list BL_REG(d0))
 {
     ULONG n;
@@ -366,7 +437,11 @@ BB_BOOL BLITZ_ROUTINE c_prevlistitem(ULONG list BL_REG(d0))
     return BB_TRUE;
 }
 
-/* FirstListItem / LastListItem list# */
+/**
+ * @brief FirstListItem list#: make the first node the current one.
+ * @param list  d0: list# (0-4)
+ * @return d0: BB_TRUE
+ */
 BB_BOOL BLITZ_ROUTINE c_firstlistitem(ULONG list BL_REG(d0))
 {
     listnum = list << 2;
@@ -374,6 +449,11 @@ BB_BOOL BLITZ_ROUTINE c_firstlistitem(ULONG list BL_REG(d0))
     return BB_TRUE;
 }
 
+/**
+ * @brief LastListItem list#: make the last node the current one.
+ * @param list  d0: list# (0-4)
+ * @return d0: BB_TRUE
+ */
 BB_BOOL BLITZ_ROUTINE c_lastlistitem(ULONG list BL_REG(d0))
 {
     listnum = list << 2;
@@ -381,15 +461,27 @@ BB_BOOL BLITZ_ROUTINE c_lastlistitem(ULONG list BL_REG(d0))
     return BB_TRUE;
 }
 
-/* AddLastListItem list#: LastListItem, then AddListItem */
+/**
+ * @brief AddLastListItem list#: a new empty node at the end (LastListItem, then AddListItem).
+ * @param list  d0: list# (0-4)
+ * @return d0: as AddListItem
+ */
 BB_BOOL BLITZ_ROUTINE c_addlastitem(ULONG list BL_REG(d0))
 {
     c_lastlistitem(list);
     return c_addlistitem(list);
 }
 
-/* AddFirstListItem list#: a new node in front of the first one;
-   BUG(orig): see above, the result is list# * 4 (#724, #725, #726) */
+/**
+ * @brief AddFirstListItem list#: a new node in front of the first one, then the current one.
+ *
+ * BUG(orig): the new node goes into the old first node's next, not prev:
+ * the list becomes a loop (#724); prev, pad, data and size of the new
+ * node stay as the allocation left them (#726); the last node is not
+ * touched; an empty list writes to address 0 on (#733).
+ * @param list  d0: list# (0-4)
+ * @return d0: list# * 4 (BUG(orig) (#725)), 0 if there is no memory
+ */
 ULONG BLITZ_ROUTINE c_addfirstitem(ULONG list BL_REG(d0))
 {
     ULONG node;
@@ -408,7 +500,19 @@ ULONG BLITZ_ROUTINE c_addfirstitem(ULONG list BL_REG(d0))
     return listnum;
 }
 
-/* DelListItem list#: free the current node; BUG(orig): see above (#729) */
+/**
+ * @brief DelListItem list#: delete the current node; the next (or previous) becomes the current one.
+ *
+ * BUG(orig) (#729): reads the node of v0.9 (struct node09): data is the
+ * long at +8, size the long at +14, so it frees a wrong address (memlib:
+ * "Unable to Free Memory") and the data is lost; it sets the last size
+ * to that of the node (#735).  Deleting the first node clears the next
+ * (not prev) of the node behind it: the list ends there (#728).  The
+ * only node is not deleted: 0 (no defect).
+ * @param list  d0: list# (0-4)
+ * @return d0: BB_TRUE, BB_FALSE without a current node or for the only
+ *         node
+ */
 BB_BOOL BLITZ_ROUTINE c_dellistitem(ULONG list BL_REG(d0))
 {
     ULONG node;
