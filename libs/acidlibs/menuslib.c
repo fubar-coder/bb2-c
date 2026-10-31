@@ -281,7 +281,14 @@ static void globfree(void *mem, ULONG size)
     BLITZ_ALIBJSR(TOK_globfree, r);
 }
 
-/* MenuColour - MOVE.b d0,menufpen */
+/**
+ * @brief MenuColour Colour - the front pen of the texts of items and
+ * subitems created from now on.
+ *
+ * MOVE.b d0,menufpen.
+ *
+ * @param c d0: the pen.
+ */
 static void BLITZ_ROUTINE domenupens_c(UBYTE c BL_REG(d0))
 {
     menupens[0] = c;
@@ -307,7 +314,15 @@ static UBYTE *walk(UBYTE *p, UWORD n)
     return p;
 }
 
-/* MenuState l,onoff - every menu of the list (a3) */
+/**
+ * @brief MenuState MenuList#,On|Off - enable or disable every menu of the
+ * list.
+ *
+ * Sets or clears MENUENABLED of each menu; the list is in a3.  The
+ * original changes d7, a3 and keeps d0-d1/a0-a1.
+ *
+ * @param on d1: On (<> 0) or Off (0).
+ */
 static void BLITZ_ROUTINE domenustate_c(UWORD on BL_REG(d1))
 {
     UBYTE *p = blitz_string;
@@ -318,13 +333,35 @@ static void BLITZ_ROUTINE domenustate_c(UWORD on BL_REG(d1))
     }
 }
 
-/* MenuState l,m,onoff - BUG(orig) (#216): bit 4 of a Menu */
+/**
+ * @brief MenuState MenuList#,Menu,On|Off - enable or disable a menu.
+ *
+ * BUG(orig) (#216): changes bit 4 of the Menu flags (changestate2, as for
+ * items) instead of MENUENABLED: no effect.
+ *
+ * Errors (debugger only, statechk2): "Illegal Menu number".
+ *
+ * @param m d1: the menu number.
+ * @param on d2: On (<> 0) or Off (0).
+ */
 static void BLITZ_ROUTINE domenustate2_c(UWORD m BL_REG(d1), UWORD on BL_REG(d2))
 {
     changestate(walk(blitz_string, m), on, 4);
 }
 
-/* MenuState l,m,i,onoff */
+/**
+ * @brief MenuState MenuList#,Menu,Item,On|Off - enable or disable an item.
+ *
+ * Sets or clears ITEMENABLED.
+ *
+ * Errors (debugger only, statechk3): "Illegal Menu number", "Illegal Menu
+ * Item number".  Without the debugger wrong numbers walk over the end of
+ * the lists (#416).
+ *
+ * @param m d1: the menu number.
+ * @param i d2: the item number.
+ * @param on d3: On (<> 0) or Off (0).
+ */
 static void BLITZ_ROUTINE domenustate3_c(UWORD m BL_REG(d1), UWORD i BL_REG(d2),
                                          UWORD on BL_REG(d3))
 {
@@ -333,7 +370,20 @@ static void BLITZ_ROUTINE domenustate3_c(UWORD m BL_REG(d1), UWORD i BL_REG(d2),
     changestate(walk(p, i), on, 4);
 }
 
-/* MenuState l,m,i,s,onoff */
+/**
+ * @brief MenuState MenuList#,Menu,Item,Subitem,On|Off - enable or disable
+ * a subitem.
+ *
+ * Sets or clears ITEMENABLED.
+ *
+ * Errors (debugger only, statechk4): "Illegal Menu number", "Illegal Menu
+ * Item number", "Illegal Menu Sub Item number".
+ *
+ * @param m d1: the menu number.
+ * @param i d2: the item number.
+ * @param s d3: the subitem number.
+ * @param on d4: On (<> 0) or Off (0).
+ */
 static void BLITZ_ROUTINE domenustate4_c(UWORD m BL_REG(d1), UWORD i BL_REG(d2),
                                          UWORD s BL_REG(d3), UWORD on BL_REG(d4))
 {
@@ -354,7 +404,22 @@ static ULONG checked(ULONG hiword, const UBYTE *p)
     return (hiword & 0xffff0000UL) | ((B(p, FLAGS_HI) & 1) ? 0xffff : 0);
 }
 
-/* MenuChecked(l,m,i) - a2 = the list */
+/**
+ * @brief MenuChecked(MenuList#,Menu,Item) - whether a toggle item is
+ * checked.
+ *
+ * checked: BTST #0,12(a2):SNE d0:EXT d0 (CHECKED).  Not a bug (word
+ * result, the compiler uses only d0.w): the upper word of d0 stays.
+ *
+ * Errors (debugger only, chkchk3): "Illegal Menu number", "Illegal Menu
+ * Item number".
+ *
+ * @param hiword d0: the caller's d0 (its upper word stays).
+ * @param p a2: the list.
+ * @param m d1: the menu number.
+ * @param i d2: the item number.
+ * @return d0.w: -1 if checked, else 0.
+ */
 static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG hiword BL_REG(d0), UBYTE *p BL_REG(a2),
                                            UWORD m BL_REG(d1), UWORD i BL_REG(d2))
 {
@@ -363,7 +428,24 @@ static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG hiword BL_REG(d0), UBYTE *p BL_
 }
 BLITZ_THUNK(domenuchecked, domenuchecked_c, "d1/a0-a1");
 
-/* MenuChecked(l,m,i,s) - BUG(orig) (#217): both inner DBF jump to the menu loop */
+/**
+ * @brief MenuChecked(MenuList#,Menu,Item,Subitem) - whether a toggle
+ * subitem is checked.
+ *
+ * BUG(orig) (#217): both inner DBF jump to the menu loop: only
+ * (menu,item,sub) = (m,0,0) ends where it should, other values walk the
+ * lists again with a counter of -1 (65536 steps).
+ *
+ * Errors (debugger only, chkchk4): "Illegal Menu number", "Illegal Menu
+ * Item number", "Illegal Menu Sub Item number".
+ *
+ * @param hiword d0: the caller's d0 (its upper word stays).
+ * @param p a2: the list.
+ * @param m d1: the menu number.
+ * @param i d2: the item number.
+ * @param s d3: the subitem number.
+ * @return d0.w: -1 if checked, else 0.
+ */
 static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG hiword BL_REG(d0), UBYTE *p BL_REG(a2),
                                             UWORD m BL_REG(d1), UWORD i BL_REG(d2),
                                             UWORD s BL_REG(d3))
@@ -412,6 +494,17 @@ static void sussflags(ULONG flags, UWORD item)
 }
 
 /* MenuGap / SubItemOff */
+
+/**
+ * @brief MenuGap X Gap,Y Gap - the space around the text or shape of items
+ * and subitems created from now on.
+ *
+ * The item size is the text/shape size + 2 * gap; the text/image is
+ * placed at (X Gap, Y Gap) in the item.
+ *
+ * @param x d0: the horizontal gap.
+ * @param y d1: the vertical gap.
+ */
 static void BLITZ_ROUTINE domenugap_c(WORD x BL_REG(d0), WORD y BL_REG(d1))
 {
     menuxxs = x;
@@ -419,6 +512,13 @@ static void BLITZ_ROUTINE domenugap_c(WORD x BL_REG(d0), WORD y BL_REG(d1))
 }
 BLITZ_THUNK(domenugap, domenugap_c, "d0-d1/a0-a1");
 
+/**
+ * @brief SubItemOff X Offset,Y Offset - the offset of subitems created
+ * from now on, added to their position.
+ *
+ * @param x d0: the horizontal offset.
+ * @param y d1: the vertical offset.
+ */
 static void BLITZ_ROUTINE dosubitemoff_c(WORD x BL_REG(d0), WORD y BL_REG(d1))
 {
     subxoff = x;
@@ -446,7 +546,20 @@ static void setmax(UBYTE *head)
     }
 }
 
-/* SetMenu - a2 = used window (object), a3 = the list, a6 = intuition */
+/**
+ * @brief SetMenu Menulist# - attach the menu list to the used window
+ * (Amiga mode only).
+ *
+ * All items of a list (and of every sublist) first get the width of the
+ * widest one; an old menu strip of the window is cleared.  The list is in
+ * a3.
+ *
+ * Errors (debugger only, setmenuchk): "Uninitialized Window",
+ * "Uninitialized Menu List".
+ *
+ * @param win a2: the used window (object; !libs #windowslib,$1202).
+ * @param intbase a6: intuition.library.
+ */
 void BLITZ_ROUTINE dosetmenu(struct Window **win BL_REG(a2),
                                       struct Library *intbase BL_REG(a6))
 {
@@ -518,7 +631,23 @@ static UBYTE *findthing(UBYTE *link, WORD n, ULONG memlen, int pos, WORD size, i
     return e;
 }
 
-/* MenuTitle l,m,title$ - a3 = list, d1 = menu, d2 = text */
+/**
+ * @brief MenuTitle MenuList#,Menu,Title$ - create or replace a menu.
+ *
+ * The title is copied (maxslib allocst).  Not a bug (a limitation
+ * acknowledged in the original source): width = 8 * length + 8 ("8 wide
+ * font, for now"); the menu is placed behind the ones before it (+2), a
+ * replaced menu moves the following ones by the width difference.  The
+ * list is in a3.
+ *
+ * Errors (debugger only, menutitlechk): "Illegal Menu number" (the menu
+ * may be one behind the last).
+ *
+ * @param m d1: the menu number.
+ * @param text d2: the title's characters.
+ * @param lens a2: the stack pointer of the arguments; the title's length
+ *        is the long at -4(a2) (MOVE.l -(a2),d1).
+ */
 void BLITZ_ROUTINE domenutitle(WORD m BL_REG(d1), const UBYTE *text BL_REG(d2),
                                         const ULONG *lens BL_REG(a2))
 {
@@ -604,6 +733,35 @@ static void menuitem(WORD m, WORD i, const UBYTE *text, struct TextAttr **font,
     menucont(getthing(blitz_string, m) + M_FIRST, i, extent, extent.height);
 }
 
+/**
+ * @brief MenuItem MenuList#,Flags,Menu,Item,Itemtext$ - create or replace
+ * a text item.
+ *
+ * The text is copied (allocst); the item gets the size of the text in the
+ * current IntuiFont (IntuiTextLength) + 2 * MenuGap, the pens of
+ * MenuColour, and is placed below the items before it; a replaced item
+ * moves the following ones by the height difference.  Flags: 0 = default
+ * ($52), 1 = toggle ($5B), 2 = toggle + exclude the others, 3 = checked
+ * toggle ($15B), 4 = 3 + exclude, >= 5 = the flags themselves.  The list
+ * is in a3.
+ *
+ * BUG(orig) (#219): the flag test is a word compare after a long test:
+ * $10000 gives word 0 < 5 and ends in the "4" branch.
+ *
+ * Errors (debugger only, itemchk2): "Uninitialized IntuiFont", "Illegal
+ * Menu number", "Illegal Menu Item number" (the item may be one behind
+ * the last).  Without the debugger wrong numbers walk over the end of the
+ * lists (#416).
+ *
+ * @param m d1: the menu number.
+ * @param i d2: the item number.
+ * @param text d3: the text's characters.
+ * @param font a1: intuifontlib's value, the used IntuiFont (*a1 = the
+ *        TextAttr).
+ * @param lens a2: the stack pointer of the arguments: the pushed Flags
+ *        long and the text length are read with -(a2).
+ * @param intbase a6: intuition.library.
+ */
 void BLITZ_ROUTINE domenuitem(WORD m BL_REG(d1), WORD i BL_REG(d2),
                                        const UBYTE *text BL_REG(d3),
                                        struct TextAttr **font BL_REG(a1),
@@ -614,6 +772,23 @@ void BLITZ_ROUTINE domenuitem(WORD m BL_REG(d1), WORD i BL_REG(d2),
     menuitem(m, i, text, font, lens, intbase);
 }
 
+/**
+ * @brief MenuItem MenuList#,Flags,Menu,Item,Itemtext$,Shortcut$ - a text
+ * item with a keyboard shortcut.
+ *
+ * As MenuItem without a shortcut; the first character of Shortcut$
+ * becomes the Command key.  Not a bug (the intended result for a new
+ * entry): the shortcut sets the item's Flags to COMMSEQ in findthing, the
+ * item flags are ORed in afterwards.
+ *
+ * @param m d1: the menu number.
+ * @param i d2: the item number.
+ * @param text d3: the text's characters.
+ * @param key d4: the shortcut's characters.
+ * @param font a1: intuifontlib's value, the used IntuiFont.
+ * @param lens a2: the stack pointer of the arguments (Flags, text length).
+ * @param intbase a6: intuition.library.
+ */
 void BLITZ_ROUTINE domenuitem2(WORD m BL_REG(d1), WORD i BL_REG(d2),
                                         const UBYTE *text BL_REG(d3),
                                         const UBYTE *key BL_REG(d4),
@@ -646,6 +821,28 @@ static void subitem(WORD m, WORD i, WORD s, const UBYTE *text, struct TextAttr *
     subcont(menucont(p, s, extent, s));
 }
 
+/**
+ * @brief SubItem MenuList#,Flags,Menu,Item,Subitem,Subitemtext$ - create
+ * or replace a text subitem.
+ *
+ * As MenuItem, in the item's sublist, and moved by SubItemOff.
+ *
+ * BUG(orig) (#220): replacing an existing subitem moves the following
+ * ones by (subitem number - old height) instead of the height difference
+ * (d3 is the number again after textcalc).  BUG(orig) (#219) as MenuItem.
+ *
+ * Errors (debugger only, subchk2): "Uninitialized IntuiFont", "Illegal
+ * Menu number", "Illegal Menu Item number", "Illegal Menu Sub Item
+ * number" (the subitem may be one behind the last).
+ *
+ * @param m d1: the menu number.
+ * @param i d2: the item number.
+ * @param s d3: the subitem number.
+ * @param text d4: the text's characters.
+ * @param font a1: intuifontlib's value, the used IntuiFont.
+ * @param lens a2: the stack pointer of the arguments (Flags, text length).
+ * @param intbase a6: intuition.library.
+ */
 void BLITZ_ROUTINE dosubitem(WORD m BL_REG(d1), WORD i BL_REG(d2), WORD s BL_REG(d3),
                                       const UBYTE *text BL_REG(d4),
                                       struct TextAttr **font BL_REG(a1),
@@ -656,6 +853,21 @@ void BLITZ_ROUTINE dosubitem(WORD m BL_REG(d1), WORD i BL_REG(d2), WORD s BL_REG
     subitem(m, i, s, text, font, lens, intbase);
 }
 
+/**
+ * @brief SubItem MenuList#,Flags,Menu,Item,Subitem,Subitemtext$,Shortcut$ -
+ * a text subitem with a keyboard shortcut.
+ *
+ * As SubItem without a shortcut, the shortcut as for MenuItem.
+ *
+ * @param m d1: the menu number.
+ * @param i d2: the item number.
+ * @param s d3: the subitem number.
+ * @param text d4: the text's characters.
+ * @param key d5: the shortcut's characters.
+ * @param font a1: intuifontlib's value, the used IntuiFont.
+ * @param lens a2: the stack pointer of the arguments (Flags, text length).
+ * @param intbase a6: intuition.library.
+ */
 void BLITZ_ROUTINE dosubitem2(WORD m BL_REG(d1), WORD i BL_REG(d2), WORD s BL_REG(d3),
                                        const UBYTE *text BL_REG(d4), const UBYTE *key BL_REG(d5),
                                        struct TextAttr **font BL_REG(a1),
@@ -703,7 +915,27 @@ static struct item *shapecont(UBYTE *head, WORD n, struct textsize extent, const
     return e;
 }
 
-/* ShapeItem l,flags,m,i,shape# - a2 = the shape; flags on the stack */
+/**
+ * @brief ShapeItem MenuList#,Flags,Menu,Item,Shape# - create or replace an
+ * item showing a shape.
+ *
+ * The item is an Image of the shape (its planes, PlanePick/PlaneOnOff
+ * -1), size = shape size + 2 * MenuGap.
+ *
+ * BUG(orig) (#218): the flags are the high word of the pushed long (MOVE
+ * 4(a7),d7, read as a long behind the cleared low word of mexclude):
+ * small flag values give the default flags; the item Flags are set
+ * (MOVE), not ORed.
+ *
+ * Errors (debugger only, shapeitemchk): "Uninitialized Shape", "Illegal
+ * Menu number", "Illegal Menu Item number".
+ *
+ * @param m d1: the menu number.
+ * @param i d2: the item number.
+ * @param shape a2: the shape (!libs #shapeslib,$1283).
+ * @param flagshi d7: the high word of the Flags long (loaded by the thunk
+ *        from 8(sp)).
+ */
 static void BLITZ_ROUTINE doshapeitem_c(WORD m BL_REG(d1), WORD i BL_REG(d2),
                                         const UBYTE *shape BL_REG(a2), UWORD flagshi BL_REG(d7))
 {
@@ -712,7 +944,23 @@ static void BLITZ_ROUTINE doshapeitem_c(WORD m BL_REG(d1), WORD i BL_REG(d2),
     shapecont(getthing(blitz_string, m) + M_FIRST, i, extent, shape);
 }
 
-/* ShapeSub l,flags,m,i,s,shape# */
+/**
+ * @brief ShapeSub MenuList#,Flags,Menu,Item,Subitem,Shape# - create or
+ * replace a subitem showing a shape.
+ *
+ * As ShapeItem, in the item's sublist, and moved by SubItemOff.
+ * BUG(orig) (#218) as ShapeItem.
+ *
+ * Errors (debugger only, shapesubchk): "Uninitialized Shape", "Illegal
+ * Menu number", "Illegal Menu Item number", "Illegal Menu Sub Item
+ * number".
+ *
+ * @param m d1: the menu number.
+ * @param i d2: the item number.
+ * @param s d3: the subitem number.
+ * @param shape a2: the shape (!libs #shapeslib,$1284).
+ * @param flagshi d7: the high word of the Flags long.
+ */
 static void BLITZ_ROUTINE doshapesub_c(WORD m BL_REG(d1), WORD i BL_REG(d2), WORD s BL_REG(d3),
                                        const UBYTE *shape BL_REG(a2), UWORD flagshi BL_REG(d7))
 {
@@ -735,7 +983,12 @@ static void freeitem(struct MenuItem *e)
     globfree(e, ITEMSIZE);
 }
 
-/* freemenu - the list in a3: every menu, item, subitem */
+/**
+ * @brief _free of the MenuList object (Free MenuList, program end) - free
+ * every menu, item and subitem with their texts.
+ *
+ * The list is in a3; it is cleared first.
+ */
 void BLITZ_ROUTINE freemenu(void)
 {
     struct Menu *m = *(struct Menu **)blitz_string, *nm;
