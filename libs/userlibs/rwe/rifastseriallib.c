@@ -389,7 +389,7 @@ void BLITZ_ROUTINE c_syncget(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
    makes this side the slave: it waits for the sync byte, echoes it and
    reads until a 0 arrives.  Otherwise it is the master: it sends the
    sync byte until it comes back, then sends 0. */
-ULONG BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
+BB_BOOL BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
 {
     UBYTE b;
 
@@ -407,7 +407,7 @@ ULONG BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
         do
             fs.bytebuf[0] = readbyte();
         while (fs.bytebuf[0] != 0);
-        return 0;
+        return BB_FALSE;
     }
     for (;;) {
         writebyte(fs.bytebuf[0]);
@@ -422,7 +422,7 @@ ULONG BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
     fs.bytebuf[1] = 0;
     writebyte(fs.bytebuf[0]);
     c_flushserialio();
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* SetIOSpeed baudrate: BUG(orig) (#654) divides by all of d0 */
