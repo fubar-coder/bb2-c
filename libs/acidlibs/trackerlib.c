@@ -48,6 +48,7 @@
  * d2-d7/a2-a6, the thunk d0-d1/a0-a1: everything like the original).
  */
 #include "blitzlib.h"
+#include <stddef.h>
 #define __NOLIBBASE__
 #include <proto/dos.h>
 #undef __NOLIBBASE__
@@ -113,24 +114,77 @@ static BYTE mt_counter;
 static UBYTE mt_break;
 static UWORD mt_dmacon;
 
-/* voice: 0.l note (period/sample, command, parameter), 4.l sample start,
-   8.w length, $a.l loop start, $e.w loop length, $10.w period, $12.w
-   volume, $14.w DMA bit, $16.b portamento direction, $17.b portamento
-   speed, $18.w portamento target, $1a.b vibrato command, $1b.b vibrato
-   position (28 bytes) */
+/* a voice of the player (28 bytes, mt_voice1..4) */
+struct voice {
+    union {
+        ULONG note;             /* 0.l: the note of the pattern */
+        struct {
+            UWORD noteword;     /* 0.w: sample high nibble, period */
+            UWORD cmdword;      /* 2.w: sample low nibble, command, parameter */
+        };
+        struct {
+            UBYTE notehi;       /* 0.b: sample high nibble */
+            UBYTE notelo;
+            UBYTE cmd;          /* 2.b: sample low nibble, command */
+            union {             /* 3.b: command parameter, */
+                UBYTE param;    /*      read unsigned (VUB) */
+                BYTE sparam;    /*      or signed (VB) */
+            };
+        };
+    };
+    ULONG start;                /* 4.l: sample start */
+    UWORD length;               /* 8.w */
+    ULONG loopstart;            /* $a.l */
+    UWORD looplen;              /* $e.w */
+    UWORD period;               /* $10.w */
+    UWORD volume;               /* $12.w */
+    UWORD dmabit;               /* $14.w */
+    BYTE portdir;               /* $16.b: portamento direction */
+    UBYTE portspeed;            /* $17.b: portamento speed */
+    UWORD porttarget;           /* $18.w: portamento target */
+    UBYTE vibcmd;               /* $1a.b: vibrato command */
+    UBYTE vibpos;               /* $1b.b: vibrato position */
+};
+static_assert(sizeof(struct voice) == 28);
+
 /* mt_samplestarts and the voices in one block as in the original: a
    sample number > 31 (bad module) reads the voices behind the table */
 static struct {
     UBYTE *samplestarts[31];
-    UWORD voices[4][14];
-} mt = { .voices = { { [10] = 1 }, { [10] = 2 }, { [10] = 4 }, { [10] = 8 } } };
+    struct voice voices[4];
+} mt = { .voices = { { .dmabit = 1 }, { .dmabit = 2 }, { .dmabit = 4 }, { .dmabit = 8 } } };
+static_assert(sizeof mt == 31 * 4 + 4 * 28);
 #define mt_samplestarts mt.samplestarts
 #define mt_voices mt.voices
 
-#define VB(v, o) (*(BYTE *)((v) + (o)))
-#define VUB(v, o) (*(UBYTE *)((v) + (o)))
-#define VW(v, o) (*(UWORD *)((v) + (o)))
-#define VL(v, o) (*(ULONG *)((v) + (o)))
+/* a sample of the module (30 bytes): the name, then the info the player
+   reads (mt_playvoice addresses it as sinfo + sample * 30) */
+struct modsampinfo {
+    UWORD length;               /* in words */
+    UWORD finevol;              /* finetune byte, volume byte: read as one
+                                   word, BUG(orig) (#290) */
+    UWORD repeat;               /* repeat start in words */
+    UWORD replen;               /* repeat length in words */
+};
+struct modsample {
+    UBYTE name[22];
+    struct modsampinfo info;
+};
+static_assert(sizeof(struct modsample) == 30);
+
+/* the module (M.K., 31 samples): the header, then the patterns (1024
+   bytes each), then the samples */
+struct modhead {
+    UBYTE title[20];
+    struct modsample samples[31];
+    UBYTE songlen;              /* $3B6 */
+    UBYTE restart;              /* $3B7 */
+    UBYTE order[128];           /* $3B8: the song positions */
+    UBYTE id[4];                /* $438: "M.K." */
+    UBYTE patterns[];           /* $43C */
+};
+static_assert(sizeof(struct modhead) == 0x43c);
+
 #define RW(r, o) (*(volatile UWORD *)((r) + (o)))      /* AUDx register */
 #define RL(r, o) (*(volatile ULONG *)((r) + (o)))
 
@@ -162,7 +216,10 @@ static inline void mt_delay(void)
 
 static void mt_init(void)
 {
-    UBYTE *info = mt_data, *order = info + 0x3b8, *sdata;
+    /* info: the module, moved by one sample per mt_lop3 step, so that
+       info->samples[0] is the current sample (as 42(a0) in the original) */
+    struct modhead *info = (struct modhead *)mt_data;
+    UBYTE *order = info->order, *sdata;
     WORD n = 0x7f;
     BYTE pat = 0, maxpat;
     int i;
@@ -181,12 +238,13 @@ static void mt_init(void)
     } while (1);
 found:
     maxpat++;
-    sdata = info + 0x43c + ((ULONG)(UBYTE)maxpat << 10);
+    sdata = (UBYTE *)info + offsetof(struct modhead, patterns)
+            + ((ULONG)(UBYTE)maxpat << 10);
     for (i = 0; i < 31; i++) {                  /* mt_lop3 */
         *(ULONG *)sdata = 0;
         mt_samplestarts[i] = sdata;
-        sdata += (ULONG)*(UWORD *)(info + 42) << 1;
-        info += 0x1e;
+        sdata += (ULONG)info->samples[0].info.length << 1;
+        info = (struct modhead *)((UBYTE *)info + sizeof(struct modsample));
     }
     CIAAPRA |= 2;
     mt_speed = 6;
@@ -210,7 +268,7 @@ static void mt_end(void)
 
 /* ------------------------------------------------------------ effects */
 
-static void mt_arpeggio(UBYTE *v, ULONG aud)
+static void mt_arpeggio(struct voice *v, ULONG aud)
 {
     WORD rem = (WORD)(UBYTE)mt_counter % 3;     /* DIVS #3:SWAP */
     UWORD step, period, newper;
@@ -218,15 +276,15 @@ static void mt_arpeggio(UBYTE *v, ULONG aud)
     int n;
 
     if (rem == 0) {
-        newper = VW(v, 0x10);                   /* mt_arp2 */
+        newper = v->period;                   /* mt_arp2 */
         RW(aud, 6) = newper;
         return;
     }
     if (rem == 2)
-        step = VUB(v, 3) & 0xf;                 /* mt_arp1 */
+        step = v->param & 0xf;                 /* mt_arp1 */
     else
-        step = VUB(v, 3) >> 4;
-    period = VW(v, 0x10);
+        step = v->param >> 4;
+    period = v->period;
     tab = mt_periods;
     for (n = 0; n < 0x25; n++) {                /* MOVEQ #$24,d7:DBF */
         newper = tab[step];                     /* MOVE.w 0(a0,d0.w),d2 */
@@ -238,113 +296,113 @@ static void mt_arpeggio(UBYTE *v, ULONG aud)
     }
 }
 
-static void mt_setmyport(UBYTE *v)
+static void mt_setmyport(struct voice *v)
 {
-    UWORD target = VW(v, 0) & 0xfff, period = VW(v, 0x10);
+    UWORD target = v->noteword & 0xfff, period = v->period;
 
-    VW(v, 0x18) = target;
-    VB(v, 0x16) = 0;
+    v->porttarget = target;
+    v->portdir = 0;
     if (target == period)
-        VW(v, 0x18) = 0;                        /* mt_clrport */
+        v->porttarget = 0;                        /* mt_clrport */
     else if ((WORD)target < (WORD)period)       /* BGE mt_rt */
-        VB(v, 0x16) = 1;
+        v->portdir = 1;
 }
 
-static void mt_myport(UBYTE *v, ULONG aud)
+static void mt_myport(struct voice *v, ULONG aud)
 {
     UWORD speed;
 
-    if (VB(v, 3)) {
-        VB(v, 0x17) = VB(v, 3);
-        VB(v, 3) = 0;
+    if (v->sparam) {
+        v->portspeed = v->sparam;
+        v->sparam = 0;
     }
-    if (!VW(v, 0x18))                           /* mt_myslide */
+    if (!v->porttarget)                           /* mt_myslide */
         return;
-    speed = VUB(v, 0x17);
-    if (VB(v, 0x16)) {                          /* mt_mysub */
-        VW(v, 0x10) -= speed;
-        if ((WORD)VW(v, 0x18) < (WORD)VW(v, 0x10)) {
-            RW(aud, 6) = VW(v, 0x10);
+    speed = v->portspeed;
+    if (v->portdir) {                          /* mt_mysub */
+        v->period -= speed;
+        if ((WORD)v->porttarget < (WORD)v->period) {
+            RW(aud, 6) = v->period;
             return;
         }
-        VW(v, 0x10) = VW(v, 0x18);
-        VW(v, 0x18) = 0;
-        RW(aud, 6) = VW(v, 0x10);
+        v->period = v->porttarget;
+        v->porttarget = 0;
+        RW(aud, 6) = v->period;
         return;
     }
-    VW(v, 0x10) += speed;
-    if (!((WORD)VW(v, 0x18) > (WORD)VW(v, 0x10))) {
-        VW(v, 0x10) = VW(v, 0x18);
-        VW(v, 0x18) = 0;
+    v->period += speed;
+    if (!((WORD)v->porttarget > (WORD)v->period)) {
+        v->period = v->porttarget;
+        v->porttarget = 0;
     }
-    RW(aud, 6) = VW(v, 0x10);                   /* mt_myok */
+    RW(aud, 6) = v->period;                   /* mt_myok */
 }
 
-static void mt_vib(UBYTE *v, ULONG aud)
+static void mt_vib(struct voice *v, ULONG aud)
 {
     UWORD sinpos;                               /* d0: the sine index */
     UWORD depth;                                /* d0 */
     UWORD period;                               /* d0 */
     UWORD delta;
 
-    if (VB(v, 3))
-        VB(v, 0x1a) = VB(v, 3);
-    sinpos = (VUB(v, 0x1b) >> 2) & 0x1f;        /* mt_vi */
+    if (v->sparam)
+        v->vibcmd = v->sparam;
+    sinpos = (v->vibpos >> 2) & 0x1f;        /* mt_vi */
     delta = mt_sin[sinpos];
-    depth = VUB(v, 0x1a) & 0xf;
+    depth = v->vibcmd & 0xf;
     delta = (UWORD)(delta * depth) >> 6;        /* MULU:LSR.w #6 */
-    period = VW(v, 0x10);
-    if (VB(v, 0x1b) < 0)
+    period = v->period;
+    if ((BYTE)v->vibpos < 0)
         period -= delta;
     else
         period += delta;
     RW(aud, 6) = period;
-    VUB(v, 0x1b) += (VUB(v, 0x1a) >> 2) & 0x3c;
+    v->vibpos += (v->vibcmd >> 2) & 0x3c;
 }
 
-static void mt_volslide(UBYTE *v, ULONG aud)
+static void mt_volslide(struct voice *v, ULONG aud)
 {
-    UWORD step = VUB(v, 3) >> 4;
+    UWORD step = v->param >> 4;
 
     if (step) {
-        VW(v, 0x12) += step;
-        if ((WORD)(VW(v, 0x12) - 0x40) >= 0)    /* CMP.w #$40:BMI */
-            VW(v, 0x12) = 0x40;
-        RW(aud, 8) = VW(v, 0x12);
+        v->volume += step;
+        if ((WORD)(v->volume - 0x40) >= 0)    /* CMP.w #$40:BMI */
+            v->volume = 0x40;
+        RW(aud, 8) = v->volume;
         return;
     }
-    step = VUB(v, 3) & 0xf;                     /* mt_voldown */
-    VW(v, 0x12) -= step;
-    if ((WORD)VW(v, 0x12) < 0)
-        VW(v, 0x12) = 0;
-    RW(aud, 8) = VW(v, 0x12);
+    step = v->param & 0xf;                     /* mt_voldown */
+    v->volume -= step;
+    if ((WORD)v->volume < 0)
+        v->volume = 0;
+    RW(aud, 8) = v->volume;
 }
 
-static void mt_portup(UBYTE *v, ULONG aud)
+static void mt_portup(struct voice *v, ULONG aud)
 {
-    VW(v, 0x10) -= VUB(v, 3);
-    if ((WORD)((VW(v, 0x10) & 0xfff) - 0x71) < 0)
-        VW(v, 0x10) = (VW(v, 0x10) & 0xf000) | 0x71;
-    RW(aud, 6) = VW(v, 0x10) & 0xfff;
+    v->period -= v->param;
+    if ((WORD)((v->period & 0xfff) - 0x71) < 0)
+        v->period = (v->period & 0xf000) | 0x71;
+    RW(aud, 6) = v->period & 0xfff;
 }
 
-static void mt_portdown(UBYTE *v, ULONG aud)
+static void mt_portdown(struct voice *v, ULONG aud)
 {
-    VW(v, 0x10) += VUB(v, 3);
-    if ((WORD)((VW(v, 0x10) & 0xfff) - 0x358) >= 0)
-        VW(v, 0x10) = (VW(v, 0x10) & 0xf000) | 0x358;
-    RW(aud, 6) = VW(v, 0x10) & 0xfff;
+    v->period += v->param;
+    if ((WORD)((v->period & 0xfff) - 0x358) >= 0)
+        v->period = (v->period & 0xf000) | 0x358;
+    RW(aud, 6) = v->period & 0xfff;
 }
 
-static void mt_checkcom(UBYTE *v, ULONG aud)
+static void mt_checkcom(struct voice *v, ULONG aud)
 {
     UBYTE cmd;
 
-    if (!(VW(v, 2) & 0xfff)) {
-        RW(aud, 6) = VW(v, 0x10);               /* mt_nop */
+    if (!(v->cmdword & 0xfff)) {
+        RW(aud, 6) = v->period;               /* mt_nop */
         return;
     }
-    cmd = VUB(v, 2) & 0xf;
+    cmd = v->cmd & 0xf;
     switch (cmd) {
     case 0:
         mt_arpeggio(v, aud);
@@ -362,81 +420,86 @@ static void mt_checkcom(UBYTE *v, ULONG aud)
         mt_vib(v, aud);
         return;
     }
-    RW(aud, 6) = VW(v, 0x10);
+    RW(aud, 6) = v->period;
     if (cmd == 0xa)
         mt_volslide(v, aud);
 }
 
-static void mt_checkcom2(UBYTE *v, ULONG aud)
+static void mt_checkcom2(struct voice *v, ULONG aud)
 {
-    switch (VUB(v, 2) & 0xf) {
+    switch (v->cmd & 0xf) {
     case 0xe:                                   /* mt_setfilt */
-        CIAAPRA = (CIAAPRA & 0xfd) | ((VUB(v, 3) & 1) << 1);
+        CIAAPRA = (CIAAPRA & 0xfd) | ((v->param & 1) << 1);
         return;
     case 0xd:                                   /* mt_pattbreak */
         mt_break = ~mt_break;
         return;
     case 0xb:                                   /* mt_posjmp */
-        mt_songpos = VUB(v, 3) - 1;
+        mt_songpos = v->param - 1;
         mt_break = ~mt_break;
         return;
     case 0xc:                                   /* mt_setvol */
-        if (VB(v, 3) > 0x40)
-            VB(v, 3) = 0x40;
-        *(volatile UBYTE *)(aud + 8) = VUB(v, 3);   /* MOVE.b */
+        if (v->sparam > 0x40)
+            v->sparam = 0x40;
+        *(volatile UBYTE *)(aud + 8) = v->param;   /* MOVE.b */
         return;
     case 0xf:                                   /* mt_setspeed */
-        if (VB(v, 3) > 0x1f)
-            VB(v, 3) = 0x1f;
-        if (VB(v, 3)) {
-            mt_speed = VB(v, 3);
+        if (v->sparam > 0x1f)
+            v->sparam = 0x1f;
+        if (v->sparam) {
+            mt_speed = v->sparam;
             mt_counter = 0;
         }
         return;
     }
 }
-
 /* ------------------------------------------------------------- new row */
 
-static void mt_playvoice(UBYTE *v, ULONG aud, const UBYTE *pat, ULONG *pos,
+/* the info of the sample at sinfo + sample * 30 */
+/* a field of the info of the sample at sinfo + sample * 30 (read as a
+   UWORD at its offset: a struct access compiles differently) */
+#define SINFO(off, f) (*(const UWORD *)(sinfo + (off) + offsetof(struct modsampinfo, f)))
+/* ------------------------------------------------------------- new row */
+
+static void mt_playvoice(struct voice *v, ULONG aud, const UBYTE *pat, ULONG *pos,
                          const UBYTE *sinfo)
 {
     ULONG sample;
     UWORD repeat, len;
 
-    VL(v, 0) = *(const ULONG *)(pat + *pos);
+    v->note = *(const ULONG *)(pat + *pos);
     *pos += 4;
-    sample = (UBYTE)((VUB(v, 2) & 0xf0) >> 4) | (VUB(v, 0) & 0xf0);
+    sample = (UBYTE)((v->cmd & 0xf0) >> 4) | (v->notehi & 0xf0);
     if (sample) {
         ULONG off = (UWORD)((UWORD)sample * 0x1e); /* MULU #$1e,d4 */
 
-        VL(v, 4) = *(ULONG *)((UBYTE *)mt_samplestarts + ((sample - 1) << 2));
-        VW(v, 8) = *(const UWORD *)(sinfo + off);
-        VW(v, 0x12) = *(const UWORD *)(sinfo + off + 2);
-        repeat = *(const UWORD *)(sinfo + off + 4);
+        v->start = *(ULONG *)((UBYTE *)mt_samplestarts + ((sample - 1) << 2));
+        v->length = SINFO(off, length);
+        v->volume = SINFO(off, finevol);     /* BUG(orig) (#290) */
+        repeat = SINFO(off, repeat);
         if (repeat) {
-            VL(v, 0xa) = VL(v, 4) + (UWORD)(repeat << 1);
-            len = repeat + *(const UWORD *)(sinfo + off + 6);
-            VW(v, 8) = len;
-            VW(v, 0xe) = *(const UWORD *)(sinfo + off + 6);
-            RW(aud, 8) = VW(v, 0x12);
+            v->loopstart = v->start + (UWORD)(repeat << 1);
+            len = repeat + SINFO(off, replen);
+            v->length = len;
+            v->looplen = SINFO(off, replen);
+            RW(aud, 8) = v->volume;
         } else {                                /* mt_noloop */
-            VL(v, 0xa) = VL(v, 4);
-            VW(v, 0xe) = *(const UWORD *)(sinfo + off + 6);
-            RW(aud, 8) = VW(v, 0x12);
+            v->loopstart = v->start;
+            v->looplen = SINFO(off, replen);
+            RW(aud, 8) = v->volume;
         }
     }
-    if (VW(v, 0) & 0xfff) {                     /* mt_setregs */
-        if ((VUB(v, 2) & 0xf) == 3)
+    if (v->noteword & 0xfff) {                     /* mt_setregs */
+        if ((v->cmd & 0xf) == 3)
             mt_setmyport(v);
         else {                                  /* mt_setperiod */
-            VW(v, 0x10) = VW(v, 0) & 0xfff;
-            BL_CUSTOMW(BL_CUSTOM, 0x96) = VW(v, 0x14);
-            VB(v, 0x1b) = 0;
-            RL(aud, 0) = VL(v, 4);
-            RW(aud, 4) = VW(v, 8);
-            RW(aud, 6) = VW(v, 0x10) & 0xfff;
-            mt_dmacon |= VW(v, 0x14);
+            v->period = v->noteword & 0xfff;
+            BL_CUSTOMW(BL_CUSTOM, 0x96) = v->dmabit;
+            v->vibpos = 0;
+            RL(aud, 0) = v->start;
+            RW(aud, 4) = v->length;
+            RW(aud, 6) = v->period & 0xfff;
+            mt_dmacon |= v->dmabit;
         }
     }
     mt_checkcom2(v, aud);
@@ -455,35 +518,36 @@ static void mt_music(void)
     mt_counter++;
     if (mt_counter < mt_speed) {                /* CMP.b mt_speed,d0:BLT */
         for (i = 0; i < 4; i++)                 /* mt_nonew */
-            mt_checkcom((UBYTE *)mt_voices[i], 0xdff0a0 + 16 * i);
+            mt_checkcom(&mt_voices[i], 0xdff0a0 + 16 * i);
     } else {
         const UBYTE *sinfo, *order;
         const UBYTE *patterns;                  /* a0 */
         ULONG pos;
 
         mt_counter = 0;
-        sinfo = mod + 0xc;                      /* mt_getnew */
-        order = mod + 0x3b8;
-        patterns = mod + 0x43c;
+        /* mt_getnew: sinfo + sample * 30 = the info of sample (1-31) */
+        sinfo = mod + 0xc;              /* = &samples[-1].info: 20 + 22 - 30 */
+        order = mod + offsetof(struct modhead, order);
+        patterns = mod + offsetof(struct modhead, patterns);
         songend = patterns;
         pos = (ULONG)order[mt_songpos] << 10;
         BL_SETW(pos, pos + mt_pattpos);         /* ADD.w mt_pattpos,d1 */
         mt_dmacon = 0;
         for (i = 0; i < 4; i++)
-            mt_playvoice((UBYTE *)mt_voices[i], 0xdff0a0 + 16 * i, patterns, &pos, sinfo);
+            mt_playvoice(&mt_voices[i], 0xdff0a0 + 16 * i, patterns, &pos, sinfo);
 
         mt_delay();                             /* mt_setdma */
         BL_CUSTOMW(BL_CUSTOM, 0x96) = mt_dmacon | 0x8000;
         mt_delay();
         for (i = 3; i >= 0; i--) {
-            const UBYTE *v = (const UBYTE *)mt_voices[i];
+            const struct voice *v = &mt_voices[i];
 
-            RL(0xdff0a0 + 16 * i, 0) = VL(v, 0xa);
-            RW(0xdff0a0 + 16 * i, 4) = VW(v, 0xe);
+            RL(0xdff0a0 + 16 * i, 0) = v->loopstart;
+            RW(0xdff0a0 + 16 * i, 4) = v->looplen;
         }
         mt_pattpos += 0x10;
         if (mt_pattpos == 0x400) {
-            songend = mt_data + 0x3b6;
+            songend = mt_data + offsetof(struct modhead, songlen);
             goto nex;
         }
     }
