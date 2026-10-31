@@ -78,11 +78,12 @@ static UBYTE wheels[3];
 
 /* Encrypt memadr,length,wheel1,wheel2,wheel3 (d0-d4; ANDI.l #$ff) */
 static ULONG BLITZ_ROUTINE encrypt_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1),
-                                    UWORD w1 BL_REG(d2), UWORD w2 BL_REG(d3),
-                                    UWORD w3 BL_REG(d4))
+                                    UWORD wheel1 BL_REG(d2),
+                                    UWORD wheel2 BL_REG(d3),
+                                    UWORD wheel3 BL_REG(d4))
 {
-    UBYTE a = (UBYTE)w1, b = (UBYTE)w2, c = (UBYTE)w3, x;
-    ULONG n = len - 1, d0 = (ULONG)p;
+    UBYTE a = (UBYTE)wheel1, b = (UBYTE)wheel2, c = (UBYTE)wheel3, x;
+    ULONG n = len - 1, result = (ULONG)p;           /* d0 */
 
     do {
         if (++a == 0)                                   /* ADDQ.b #1:BCC */
@@ -94,7 +95,7 @@ static ULONG BLITZ_ROUTINE encrypt_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1),
     wheels[0] = a;
     wheels[1] = b;
     wheels[2] = c;
-    return BL_SETB(d0, x);                             /* d0.b = the last byte */
+    return BL_SETB(result, x);                          /* d0.b = the last byte */
 }
 
 /* two Rnd calls (the second gets the first's result in d0), the low byte
@@ -121,11 +122,12 @@ static ULONG BLITZ_ROUTINE encrypt2_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1))
 
 /* Decrypt memadr,length,wheel1,wheel2,wheel3 (d0-d4), from the end */
 static ULONG BLITZ_ROUTINE decrypt_c(UBYTE *base BL_REG(d0), ULONG len BL_REG(d1),
-                                    UWORD w1 BL_REG(d2), UWORD w2 BL_REG(d3),
-                                    UWORD w3 BL_REG(d4))
+                                    UWORD wheel1 BL_REG(d2),
+                                    UWORD wheel2 BL_REG(d3),
+                                    UWORD wheel3 BL_REG(d4))
 {
-    UBYTE a = (UBYTE)w1, b = (UBYTE)w2, c = (UBYTE)w3, x;
-    ULONG n = len - 1, d0 = (ULONG)base;
+    UBYTE a = (UBYTE)wheel1, b = (UBYTE)wheel2, c = (UBYTE)wheel3, x;
+    ULONG n = len - 1, result = (ULONG)base;        /* d0 */
     UBYTE *p = base + n;                                /* ADD.l d1,a0 */
 
     do {
@@ -138,22 +140,23 @@ static ULONG BLITZ_ROUTINE decrypt_c(UBYTE *base BL_REG(d0), ULONG len BL_REG(d1
     wheels[0] = a;
     wheels[1] = b;
     wheels[2] = c;
-    return BL_SETB(d0, x);                             /* d0.b = the last byte */
+    return BL_SETB(result, x);                          /* d0.b = the last byte */
 }
 
 /* Decrypt memadr,length,wheel1,wheel2,wheel3,mode (d0-d5): mode 1 (the
    low byte, CMPI.b) adds the length's bytes 0..2 to the wheels, each
    without carry (BUG(orig) (#629)) */
 static ULONG BLITZ_ROUTINE decrypt2_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1),
-                                     UWORD w1 BL_REG(d2), UWORD w2 BL_REG(d3),
-                                     UWORD w3 BL_REG(d4), UWORD mode BL_REG(d5))
+                                     UWORD wheel1 BL_REG(d2),
+                                     UWORD wheel2 BL_REG(d3),
+                                     UWORD wheel3 BL_REG(d4), UWORD mode BL_REG(d5))
 {
     if ((UBYTE)mode == 1) {
-        w1 += len & 0xff;
-        w2 += (len >> 8) & 0xff;
-        w3 += (len >> 16) & 0xff;
+        wheel1 += len & 0xff;
+        wheel2 += (len >> 8) & 0xff;
+        wheel3 += (len >> 16) & 0xff;
     }
-    return decrypt_c(p, len, w1, w2, w3);
+    return decrypt_c(p, len, wheel1, wheel2, wheel3);
 }
 
 /* GetWheel(n) (d0.b): wheel 1..3 zero extended, otherwise -1 */
