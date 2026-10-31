@@ -375,6 +375,9 @@ extern ULONG tsthead[12];
 #define tstend   (&tsthead[8])        /* $3ec */
 #define tstsize3 (&tsthead[9])        /* reloc count (patched), then hunk 0 */
 #define tstdone  (&tsthead[11])       /* $3f2 */
+/* fixed (#943): offsets per group of the executable's HUNK_RELOC32 block
+   (V36+ LoadSeg loads no group of more) */
+#define RELOC32_GROUP 65535UL
 
 /* ======================================================= requesters */
 

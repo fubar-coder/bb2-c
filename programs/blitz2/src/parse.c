@@ -240,17 +240,29 @@ void savefile(void)
 
     mywrite(fh, (APTR)(pcat + noinits), (objlen - noinits + 3) & 0xfffffffc);
 
-    /* BUG(orig) (#943): all relocations in one HUNK_RELOC32 block; with
-       more than 65535 AmigaOS 3.2's LoadSeg refuses the executable
-       (Kickstart 1.3 loads it) */
+    /* Fixed (intended deviation, #943): the original writes all
+       relocations as one group of the HUNK_RELOC32 block; with more than
+       65535 AmigaOS 3.2's LoadSeg refuses the executable (Kickstart 1.3
+       loads it).  Here groups of at most 65535 offsets (count, hunk 0,
+       offsets), as AmiBlitz3 does; up to 65535 relocations the block is
+       the same as before. */
     *tstsize3 = numoffs;
     if (numoffs) {
-        ULONG skip = noinits;
+        ULONG skip = noinits, left = numoffs, n = 0;
+        if (left > RELOC32_GROUP)
+            *tstsize3 = RELOC32_GROUP;
         mywrite(fh, tstend, 12);
         for (off = firstoff; off; off = off->next) {
+            if (n == *tstsize3) {           /* group full: the next one */
+                left -= n;
+                n = 0;
+                *tstsize3 = left > RELOC32_GROUP ? RELOC32_GROUP : left;
+                mywrite(fh, tstsize3, 8);   /* count, hunk 0 */
+            }
             off->offset -= skip;
             mywrite(fh, &off->offset, 4);
             off->offset += skip;
+            n++;
         }
         *tstsize3 = 0;
         mywrite(fh, tstsize3, 4);
