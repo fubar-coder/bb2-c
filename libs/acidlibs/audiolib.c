@@ -52,6 +52,7 @@
  * DIFF: a2 stays unchanged (the original pops volumes / lengths).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 
 #define TOK_iffchunk  TOK_ifffind      /* "iffchunk" in audiolib */
 
@@ -181,14 +182,7 @@ static UBYTE *dbuffat;                  /* buffer */
 static UBYTE *dbuffend;                 /* end of buffer */
 static UWORD *chzero;                   /* a zero word in chipmem */
 
-struct sound {
-    UBYTE *data;                        /* +0 */
-    UWORD period, len;                  /* +4, +6 (words) */
-    UBYTE *rep;                         /* +8 */
-    UWORD replen, mark;                 /* +12 (words), +14 */
-};
-static_assert(sizeof(struct sound) == 16);
-#define MARK_CL 0x634c                  /* "cL" */
+/* the sound object: struct bb_sound (blitzobj.h), "cL" in mark = BB_CLUDGE */
 
 /* the start of an 8SVX VHDR chunk (IFF Voice8Header) */
 struct vhdr {
@@ -274,14 +268,14 @@ BLITZ_THUNK(dovolume, dovolume_c, "d0-d1/a1");
 /* ------------------------------------------------------------- sounds */
 
 /* dofreesound - a3 = sound */
-static void freesound(struct sound *s)
+static void freesound(struct bb_sound *s)
 {
     UBYTE *d = s->data;
 
     if (!d)
         return;
     s->data = 0;
-    if (s->mark == MARK_CL)
+    if (s->mark == BB_CLUDGE)
         return;
     dealloc(d, (ULONG)s->len << 1);
 }
@@ -292,7 +286,7 @@ static void freesound(struct sound *s)
  */
 static void BLITZ_ROUTINE dofreesound_c(void)
 {
-    freesound((struct sound *)blitz_string);
+    freesound((struct bb_sound *)blitz_string);
 }
 BLITZ_THUNK(dofreesound, dofreesound_c, "d1/a0-a1");
 
@@ -352,7 +346,7 @@ err3:
  */
 void BLITZ_ROUTINE doloadsound(const UBYTE *name BL_REG(d1))
 {
-    struct sound *s = (struct sound *)blitz_string;
+    struct bb_sound *s = (struct bb_sound *)blitz_string;
     struct opened o;
     struct bl_regs r = { 0 };
 
@@ -391,7 +385,7 @@ void BLITZ_ROUTINE doloadsound(const UBYTE *name BL_REG(d1))
  */
 void BLITZ_ROUTINE _cludgesound(ULONG *p BL_REG(d1))
 {
-    struct sound *s = (struct sound *)blitz_string;
+    struct bb_sound *s = (struct bb_sound *)blitz_string;
     ULONG *end, id, size, oneshot, rep, period, len;
     UBYTE *mem;
 
@@ -435,7 +429,7 @@ void BLITZ_ROUTINE _cludgesound(ULONG *p BL_REG(d1))
     if (((ULONG)p & 0x1fffff) == (ULONG)p) {    /* inchip */
         s->data = (UBYTE *)p;
         s->rep = (UBYTE *)p + oneshot;
-        s->mark = MARK_CL;
+        s->mark = BB_CLUDGE;
         return;
     }
     mem = alloc(size, MEMF_CHIP);               /* infast */
@@ -469,7 +463,7 @@ err1:
  */
 void BLITZ_ROUTINE _setperiod(UWORD period BL_REG(d1))
 {
-    struct sound *s = (struct sound *)blitz_string;
+    struct bb_sound *s = (struct bb_sound *)blitz_string;
 
     if (!s->data) {
         err5();                                 /* BEQ err5 (error area) */
@@ -481,7 +475,7 @@ void BLITZ_ROUTINE _setperiod(UWORD period BL_REG(d1))
 /* InitSound n,len[,period[,repeat]] - empty chip memory */
 static void initsound(ULONG len, UWORD period, ULONG rep)
 {
-    struct sound *s = (struct sound *)blitz_string;
+    struct bb_sound *s = (struct bb_sound *)blitz_string;
 
     freesound(s);
     s->period = period;
@@ -593,7 +587,7 @@ static UWORD chansoff(UWORD mask)
 
 static void playsound(UWORD mask, WORD nvol, int loop, const UBYTE *args)
 {
-    struct sound *s = (struct sound *)blitz_string;
+    struct bb_sound *s = (struct bb_sound *)blitz_string;
     const UBYTE *sp = args;
     UWORD m = mask, len;
     ULONG ptr;
@@ -883,7 +877,7 @@ static void BLITZ_ERRCHK dpchk_c(UWORD mask BL_REG(d1))
 /* sndchk - TST.l (a3):BEQ err5, then dpchk (also for SetPeriod's period) */
 static void BLITZ_ERRCHK sndchk_c(UWORD value BL_REG(d1))
 {
-    if (!((struct sound *)blitz_string)->data)
+    if (!((struct bb_sound *)blitz_string)->data)
         BLITZ_RUNERR(mess5);
     dpchk_c(value);
 }
@@ -915,7 +909,7 @@ static void BLITZ_ERRCHK ischk2_c(ULONG len BL_REG(d1), ULONG rep BL_REG(d3))
 /* sdatachk - sound there, offset < length in bytes */
 static void BLITZ_ERRCHK sdatachk_c(ULONG off BL_REG(d1))
 {
-    struct sound *s = (struct sound *)blitz_string;
+    struct bb_sound *s = (struct bb_sound *)blitz_string;
 
     if (!s->data)
         BLITZ_RUNERR(mess5);
