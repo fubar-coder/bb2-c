@@ -166,16 +166,16 @@ struct blitstate {
 static void sblit(const struct stencil *s, const UBYTE *shape, const UBYTE *bm, UBYTE *cb,
                   WORD x, WORD y, struct blitstate *st)
 {
-    ULONG smem = (ULONG)s->mem, d7, d6;
+    ULONG smem = (ULONG)s->mem, mods, mods_swapped;
     UWORD n;
 
     x -= SW(shape, 10);
     y -= SW(shape, 12);
-    d7 = 0xfffe0000UL | (UWORD)(SW(bm, 0) - SW(shape, 6) - 2);
-    d6 = d7 << 16 | d7 >> 16;
+    mods = 0xfffe0000UL | (UWORD)(SW(bm, 0) - SW(shape, 6) - 2);
+    mods_swapped = mods << 16 | mods >> 16;
     BL_BLITWAIT(cb);
-    BL_CUSTOML(cb, 0x60) = d6;
-    BL_CUSTOML(cb, 0x64) = d7;
+    BL_CUSTOML(cb, 0x60) = mods_swapped;
+    BL_CUSTOML(cb, 0x64) = mods;
     st->shift = (UWORD)((x & 15) << 12);
     BL_CUSTOMW(cb, 0x42) = st->shift;
     BL_CUSTOMW(cb, 0x40) = st->shift | bcon0;

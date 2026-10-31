@@ -201,84 +201,84 @@ BLITZ_THUNK(freeasprite, freeasprite_c, "d0-d1/a0-a1");
 
 /* one sprite image: two planes from a0 (row step = the shape's byte
    width) to a1, then a 0 line; returns the new a1 */
-static UBYTE *onesprite(const UBYTE *a0, UBYTE *a1, UWORD d7, const UBYTE *shape)
+static UBYTE *onesprite(const UBYTE *src, UBYTE *dst, UWORD height, const UBYTE *shape)
 {
-    UWORD d5 = d7 - 2;
+    UWORD n = height - 2;
     WORD ps = (WORD)SW(shape, 22), bw = (WORD)SW(shape, 6);
 
     if (sv.mode == 0) {
         do {
-            *(UWORD *)a1 = *(const UWORD *)a0;
-            *(UWORD *)(a1 + 2) = *(const UWORD *)(a0 + ps);
-            a1 += 4;
-            a0 += bw;
-        } while (d5-- != 0);
-        *(ULONG *)a1 = 0;
-        return a1 + 4;
+            *(UWORD *)dst = *(const UWORD *)src;
+            *(UWORD *)(dst + 2) = *(const UWORD *)(src + ps);
+            dst += 4;
+            src += bw;
+        } while (n-- != 0);
+        *(ULONG *)dst = 0;
+        return dst + 4;
     }
     if (sv.mode == 1) {
         do {
-            *(ULONG *)a1 = *(const ULONG *)a0;
-            *(ULONG *)(a1 + 4) = *(const ULONG *)(a0 + ps);
-            a1 += 8;
-            a0 += bw;
-        } while (d5-- != 0);
-        ((ULONG *)a1)[0] = 0;
-        ((ULONG *)a1)[1] = 0;
-        return a1 + 8;
+            *(ULONG *)dst = *(const ULONG *)src;
+            *(ULONG *)(dst + 4) = *(const ULONG *)(src + ps);
+            dst += 8;
+            src += bw;
+        } while (n-- != 0);
+        ((ULONG *)dst)[0] = 0;
+        ((ULONG *)dst)[1] = 0;
+        return dst + 8;
     }
     do {
-        ((ULONG *)a1)[0] = ((const ULONG *)a0)[0];
-        ((ULONG *)a1)[1] = ((const ULONG *)a0)[1];
-        ((ULONG *)a1)[2] = ((const ULONG *)(a0 + ps))[0];
-        ((ULONG *)a1)[3] = ((const ULONG *)(a0 + ps))[1];
-        a1 += 16;
-        a0 += bw;
-    } while (d5-- != 0);
-    ((ULONG *)a1)[0] = 0;
-    ((ULONG *)a1)[1] = 0;
-    ((ULONG *)a1)[2] = 0;
-    ((ULONG *)a1)[3] = 0;
-    return a1 + 16;
+        ((ULONG *)dst)[0] = ((const ULONG *)src)[0];
+        ((ULONG *)dst)[1] = ((const ULONG *)src)[1];
+        ((ULONG *)dst)[2] = ((const ULONG *)(src + ps))[0];
+        ((ULONG *)dst)[3] = ((const ULONG *)(src + ps))[1];
+        dst += 16;
+        src += bw;
+    } while (n-- != 0);
+    ((ULONG *)dst)[0] = 0;
+    ((ULONG *)dst)[1] = 0;
+    ((ULONG *)dst)[2] = 0;
+    ((ULONG *)dst)[3] = 0;
+    return dst + 16;
 }
 
 /* a3 = sprite, a2 = shape */
 static void BLITZ_ROUTINE dogetsprite_c(UBYTE *shape BL_REG(a2))
 {
-    UBYTE *sp = blitz_string, *a1;
-    const UBYTE *a0;
-    UWORD d7, d6, d0;
+    UBYTE *sp = blitz_string, *dst;
+    const UBYTE *src;
+    UWORD height, count, imgsize;
 
     freeasprite_(sp);
     SW(sp, 12) = SW(shape, 10);
     SW(sp, 14) = SW(shape, 12);
-    d7 = SW(shape, 2) + 1;                      /* hite */
-    SW(sp, 4) = d7;
+    height = SW(shape, 2) + 1;                  /* hite */
+    SW(sp, 4) = height;
     {
         UWORD n = (sv.shift + 2) & 63;          /* LSR.w: count mod 64 */
-        d6 = (UWORD)(n < 16 ? (UWORD)(SW(shape, 0) - 1) >> n : 0) + 1;
+        count = (UWORD)(n < 16 ? (UWORD)(SW(shape, 0) - 1) >> n : 0) + 1;
     }
     SW(sp, 8) = 0;
     if (SW(shape, 4) == 4) {
         *(UBYTE *)(sp + 8) |= 0x80;
-        d6 += d6;
+        count += count;
     }
-    SW(sp, 6) = d6;
+    SW(sp, 6) = count;
     *(UBYTE *)(sp + 9) = *(UBYTE *)(shape + 1);
-    d0 = lslw(d7, sv.shift);
-    SW(sp, 10) = d0;
-    a1 = globalloc((ULONG)d0 * d6, MEMF_CHIP);
-    SP(sp, 0) = a1;
-    a0 = SP(shape, 14);
-    d6--;                                       /* number of sprites to do */
+    imgsize = lslw(height, sv.shift);
+    SW(sp, 10) = imgsize;
+    dst = globalloc((ULONG)imgsize * count, MEMF_CHIP);
+    SP(sp, 0) = dst;
+    src = SP(shape, 14);
+    count--;                                    /* number of sprites to do */
     do {
-        a1 = onesprite(a0, a1, d7, shape);
+        dst = onesprite(src, dst, height, shape);
         if ((WORD)SW(sp, 8) < 0) {
-            a1 = onesprite(a0 + 2 * (WORD)SW(shape, 22), a1, d7, shape);
-            d6--;
+            dst = onesprite(src + 2 * (WORD)SW(shape, 22), dst, height, shape);
+            count--;
         }
-        a0 += (WORD)sv.wid;
-    } while (d6-- != 0);
+        src += (WORD)sv.wid;
+    } while (count-- != 0);
 }
 BLITZ_THUNK(dogetsprite, dogetsprite_c, "d0-d1/a0-a1");
 
@@ -288,82 +288,82 @@ BLITZ_THUNK(dogetsprite, dogetsprite_c, "d0-d1/a0-a1");
 static void BLITZ_ROUTINE doshowsprite_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
                                          ULONG ch BL_REG(d3), UBYTE *slice BL_REG(a2))
 {
-    UBYTE *sp = blitz_string, *a0;
-    WORD d1 = (WORD)x - (WORD)SW(sp, 12) + 128;
-    WORD d2 = (WORD)y - (WORD)SW(sp, 14);
-    WORD d0 = (WORD)SW(slice, 32) + 1 - d2;     /* max sprite height */
-    ULONG d4 = 0;
-    WORD d5;
-    UWORD d6, d7, n;
+    UBYTE *sp = blitz_string, *cop;
+    WORD hpos = (WORD)x - (WORD)SW(sp, 12) + 128;
+    WORD vpos = (WORD)y - (WORD)SW(sp, 14);
+    WORD maxh = (WORD)SW(slice, 32) + 1 - vpos; /* max sprite height */
+    ULONG skip = 0;
+    WORD height;
+    UWORD pos, ctl, n;
     ULONG data, diff;
 
-    if (d0 <= 0)
+    if (maxh <= 0)
         goto spriteoff;                         /* off bottom */
-    d5 = (WORD)SW(sp, 4);
-    if (d2 < 0) {
-        d5 += d2;
-        if (d5 <= 0)
+    height = (WORD)SW(sp, 4);
+    if (vpos < 0) {
+        height += vpos;
+        if (height <= 0)
             goto spriteoff;                     /* completely off top */
         /* EXG d2,d4:NEG d4:ASL #2,d4 - word operations on the long
            that was d2 (upper word from the caller's y), added as long */
-        d4 = (y & 0xffff0000UL) | (UWORD)((UWORD)-d2 << 2);
-        d2 = 0;
+        skip = (y & 0xffff0000UL) | (UWORD)((UWORD)-vpos << 2);
+        vpos = 0;
     }
-    if ((WORD)(d0 - d5) < 0)                    /* CMP d5,d0:BPL */
-        d5 = d0;
-    d2 += (WORD)SW(slice, 0);                   /* y offset */
+    if ((WORD)(maxh - height) < 0)              /* CMP d5,d0:BPL */
+        height = maxh;
+    vpos += (WORD)SW(slice, 0);                 /* y offset */
     if (*(UBYTE *)(slice + 3) & 0x10)
-        d2 += 2;
+        vpos += 2;
     /* pos in d6, ctrl in d7 */
-    d7 = 0;
-    d6 = (UWORD)((UWORD)d2 << 8);
-    if ((UWORD)d2 & 0x100)                      /* LSL #8: carry = bit 8 */
-        d7 = 4;
-    if (d1 & 1)
-        d7++;
-    d1 = (WORD)((UWORD)d1 >> 1);
-    d6 = (d6 & 0xff00) | (UBYTE)d1;
-    d2 += d5 - 1;                               /* add height! */
-    if ((UWORD)d2 & 0x100)
-        d7 += 2;
-    d7 |= (UWORD)((UWORD)d2 << 8);
+    ctl = 0;
+    pos = (UWORD)((UWORD)vpos << 8);
+    if ((UWORD)vpos & 0x100)                    /* LSL #8: carry = bit 8 */
+        ctl = 4;
+    if (hpos & 1)
+        ctl++;
+    hpos = (WORD)((UWORD)hpos >> 1);
+    pos = (pos & 0xff00) | (UBYTE)hpos;
+    vpos += height - 1;                         /* add height! */
+    if ((UWORD)vpos & 0x100)
+        ctl += 2;
+    ctl |= (UWORD)((UWORD)vpos << 8);
     if ((WORD)SW(sp, 8) < 0)
-        d7 |= 0x80;
-    a0 = SP(slice, 14) + (WORD)(UWORD)((UWORD)ch << 4);
-    data = SL(sp, 0) + d4;
+        ctl |= 0x80;
+    cop = SP(slice, 14) + (WORD)(UWORD)((UWORD)ch << 4);
+    data = SL(sp, 0) + skip;
     diff = (ULONG)(LONG)(WORD)SW(sp, 10);
     n = SW(sp, 6) - 1;
     do {
-        SW(a0, 2) = d6;
-        SW(a0, 6) = d7;
-        SW(a0, 14) = (UWORD)data;
-        SW(a0, 10) = (UWORD)(data >> 16);
+        SW(cop, 2) = pos;
+        SW(cop, 6) = ctl;
+        SW(cop, 14) = (UWORD)data;
+        SW(cop, 10) = (UWORD)(data >> 16);
         data += diff;
-        a0 += 16;
+        cop += 16;
         if ((WORD)SW(sp, 8) < 0) {
-            SW(a0, 2) = d6;
-            SW(a0, 6) = d7;
-            SW(a0, 14) = (UWORD)data;
-            SW(a0, 10) = (UWORD)(data >> 16);
+            SW(cop, 2) = pos;
+            SW(cop, 6) = ctl;
+            SW(cop, 14) = (UWORD)data;
+            SW(cop, 10) = (UWORD)(data >> 16);
             data += diff;
-            a0 += 16;
+            cop += 16;
             n--;
         }
-        d6 += 8;
+        pos += 8;
     } while (n-- != 0);
     return;
 
 spriteoff:
     n = SW(sp, 6) - 1;
-    a0 = SP(slice, 14) + (WORD)(UWORD)((UWORD)ch << 4);
+    cop = SP(slice, 14) + (WORD)(UWORD)((UWORD)ch << 4);
     do {
-        SW(a0, 2) = 0;
-        SW(a0, 6) = 0;
-        a0 += 16;
+        SW(cop, 2) = 0;
+        SW(cop, 6) = 0;
+        cop += 16;
         if ((WORD)SW(sp, 8) < 0) {
-            SW(a0, 2) = 0;
-            SW(a0, 6) = 0;
-            a0 += 16;
+            SW(cop, 2) = 0;
+            SW(cop, 6) = 0;
+            cop += 16;
             n--;
         }
     } while (n-- != 0);
@@ -373,18 +373,18 @@ BLITZ_THUNK(doshowsprite, doshowsprite_c, "d0-d1/a0-a1");
 /* InFront/InFrontB: last sprite in front of playfield 2 (BPLCON2 3-5) */
 static void BLITZ_ROUTINE doinfront1_c(ULONG ch BL_REG(d0), UBYTE *slice BL_REG(a2))
 {
-    UWORD *a1 = (UWORD *)SP(slice, 26);
+    UWORD *bplcon2 = (UWORD *)SP(slice, 26);
 
-    *a1 = (UWORD)((((UWORD)ch >> 1) & 7) << 3) | (*a1 & 7);
+    *bplcon2 = (UWORD)((((UWORD)ch >> 1) & 7) << 3) | (*bplcon2 & 7);
 }
 BLITZ_THUNK(doinfront1, doinfront1_c, "d0-d1/a0-a1");
 
 /* InFrontF: last sprite in front of playfield 1 (BPLCON2 0-2) */
 static void BLITZ_ROUTINE doinfront2_c(ULONG ch BL_REG(d0), UBYTE *slice BL_REG(a2))
 {
-    UWORD *a1 = (UWORD *)SP(slice, 26);
+    UWORD *bplcon2 = (UWORD *)SP(slice, 26);
 
-    *a1 = (UWORD)(((UWORD)ch >> 1) & 7) | (*a1 & 0x38);
+    *bplcon2 = (UWORD)(((UWORD)ch >> 1) & 7) | (*bplcon2 & 0x38);
 }
 BLITZ_THUNK(doinfront2, doinfront2_c, "d0-d1/a0-a1");
 
@@ -481,16 +481,16 @@ BLITZ_ERRCHK_MESSAGE(mess9, "First Sprite must be lower than second");
 /* GetaSprite: shape there, 4 or 16 colours, not too wide */
 static void BLITZ_ERRCHK gspchk_c(UBYTE *shape BL_REG(a2))
 {
-    WORD d2 = (WORD)(sv.wid << 5);
+    WORD maxw = (WORD)(sv.wid << 5);
 
     if (!SW(shape, 0))
         BLITZ_RUNERR(mess1);
     if (SW(shape, 4) != 2) {
         if (SW(shape, 4) != 4)
             BLITZ_RUNERR(mess2);
-        d2 <<= 1;
+        maxw <<= 1;
     }
-    if ((WORD)(d2 - (WORD)SW(shape, 0)) < 0)    /* CMP (a2),d2:BMI */
+    if ((WORD)(maxw - (WORD)SW(shape, 0)) < 0)  /* CMP (a2),d2:BMI */
         BLITZ_RUNERR(mess3);
 }
 
