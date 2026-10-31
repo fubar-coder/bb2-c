@@ -1,0 +1,4 @@
+[run]
+first 01FE0000
+second FFE1FFFE
+rc=0
