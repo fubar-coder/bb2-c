@@ -359,13 +359,22 @@ static inline ULONG rol1(ULONG v)
 
 /* ---------------------------------------------------------------- init */
 
+/**
+ * @brief init: opens graphics.library (any version).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     gfxbase = OpenLibrary((CONST_STRPTR)"graphics.library", 0);
 }
 BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
 
-/* BUG(orig): CloseLibrary also of a base 0 (#896) */
+/**
+ * @brief finit: closes graphics.library.
+ *
+ * BUG(orig) (#896): CloseLibrary also of a base 0.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     CloseLibrary(gfxbase);
@@ -375,16 +384,37 @@ BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
 
 /* ------------------------------------------------------- inline readers */
 
-/* RubThroughMap(map#): a0 = that map, a3 = the used one */
+/**
+ * @brief RubThroughMap(mapobject#): sets the rub-through map of the used map.
+ *
+ * Inline: a0 = that map (#ia0|#pd0), a3 = the used one (#ua3); the map's
+ * rubthrough (+28) = a0.  MapCanDraw then tests that map too.
+ * @return nothing (d0 unchanged)
+ */
 BLITZ_INLINE(_rubthroughmap2, "move.l a0,28(a3)");
-/* RubThroughMap */
+/**
+ * @brief RubThroughMap: the rub-through map of the used map (+28).
+ * @return d0: the rub-through map, 0 if none
+ */
 BLITZ_INLINE(_rubthroughmap1, "move.l 28(a3),d0");
-/* ClearRubThroughMap */
+/**
+ * @brief ClearRubThroughMap: removes the rub-through map of the used map.
+ * @return nothing
+ */
 BLITZ_INLINE(_clearrubthroughmap, "clr.l 28(a3)");
-/* MapCanDrawAddr */
+/**
+ * @brief MapCanDrawAddr: the address of the map word of the last MapCanDraw (+24).
+ * @return d0: the address
+ */
 BLITZ_INLINE(_lastcandrawaddress, "move.l 24(a3),d0");
 
-/* SetStencil array */
+/**
+ * @brief SetStencil array: the stencil of MapCanDraw.
+ *
+ * A byte per map value; a set byte makes MapCanDraw fail for that value.
+ * @param a  d0: the byte array
+ * @return nothing
+ */
 static void BLITZ_ROUTINE setstencil_c(const UBYTE *a BL_REG(d0))
 {
     mapstencil = a;
@@ -393,11 +423,23 @@ BLITZ_THUNK(_setstencil, setstencil_c, "d0-d1/a0-a1");
 
 /* ----------------------------------------------------------- MapCanDraw */
 
-/* MapCanDraw(shape#,x,y): -1 if x/y lie outside the map (or the rub-through
-   map), the map's word there is shape# + 1 (with a rub-through map: that
-   map's word), or the stencil byte of the map's word is set; else
-   shape# + 1 (resp. the rub-through map's word).  The address of the
-   map's word is kept at 24.  d0's upper word stays (ADDQ.w). */
+/**
+ * @brief MapCanDraw(shape#,mapx,mapy): whether a shape can be drawn at a map position.
+ *
+ * -1 if x/y lie outside the map (or the rub-through map), the map's word
+ * there is shape# + 1 (with a rub-through map: that map's word), or the
+ * stencil byte of the map's word is set; else shape# + 1 (resp. the
+ * rub-through map's word).  The address of the map's word is kept at 24
+ * (MapCanDrawAddr).  d0's upper word stays (ADDQ.w).  BUG(orig): x/y are
+ * compared signed - negative values pass and index far behind the data
+ * (#892); the stencil index is the map value as a signed word, and
+ * without SetStencil the stencil is at address 0 (#893).
+ * @param shapenum  d0: the shape number
+ * @param x         d1: the map x
+ * @param y         d2: the map y
+ * @param map       a3: the used map (#ua3)
+ * @return d0.w: shape# + 1 (or the rub-through word) if it can, -1 if not
+ */
 static ULONG BLITZ_ROUTINE candraw_c(ULONG shapenum BL_REG(d0), UWORD x BL_REG(d1),
                                      UWORD y BL_REG(d2), struct mapobject *map BL_REG(a3))
 {
@@ -430,9 +472,16 @@ BLITZ_THUNK(_candraw, candraw_c, "d1/a0-a1");
 
 /* --------------------------------------------------------------- shapes */
 
-/* ScanShapes startnum,highest: a0 = shape startnum, d0 = its offset
-   (shape# << 5); from it to the first empty shape or `highest` the
-   largest width/height/depth (signed).  -> d0 = the last number. */
+/**
+ * @brief ScanShapes(startnum,highest): the largest width/height/depth of a run of shapes.
+ *
+ * From shape startnum to the first empty shape or `highest`, the largest
+ * width, height and depth (signed) for ScanMaxWidth/height/depth.
+ * @param shapenum  d0: the offset of shape startnum (shape# << 5)
+ * @param highest   d1: the last shape number to scan
+ * @param sh        a0: shape startnum (#ia0|#pd0)
+ * @return d0.w: the last number scanned (the empty shape, or highest)
+ */
 static ULONG BLITZ_ROUTINE scanshapes_c(ULONG shapenum BL_REG(d0), UWORD highest BL_REG(d1),
                                         const struct shape *sh BL_REG(a0))
 {
@@ -458,29 +507,52 @@ static ULONG BLITZ_ROUTINE scanshapes_c(ULONG shapenum BL_REG(d0), UWORD highest
 }
 BLITZ_THUNK(_scanshapes, scanshapes_c, "d1/a0-a1");
 
-/* ScanMaxWidth / ScanMaxheight / ScanMaxdepth (MOVE.w: d0's upper word
-   stays) */
+/**
+ * @brief ScanMaxWidth: the largest width of the last ScanShapes.
+ *
+ * MOVE.w: d0's upper word stays (also for ScanMaxheight/ScanMaxdepth).
+ * @param incoming  d0: the caller's d0
+ * @return d0.w: the width
+ */
 static ULONG BLITZ_ROUTINE scanmaxwidth_c(ULONG incoming BL_REG(d0))
 {
     return BL_SETW(incoming, maxwidth);
 }
 BLITZ_THUNK(_scanmaxwidth, scanmaxwidth_c, "d1/a0-a1");
 
+/**
+ * @brief ScanMaxheight: the largest height of the last ScanShapes.
+ * @param incoming  d0: the caller's d0
+ * @return d0.w: the height
+ */
 static ULONG BLITZ_ROUTINE scanmaxheight_c(ULONG incoming BL_REG(d0))
 {
     return BL_SETW(incoming, maxheight);
 }
 BLITZ_THUNK(_scanmaxheight, scanmaxheight_c, "d1/a0-a1");
 
+/**
+ * @brief ScanMaxdepth: the largest depth of the last ScanShapes.
+ * @param incoming  d0: the caller's d0
+ * @return d0.w: the depth
+ */
 static ULONG BLITZ_ROUTINE scanmaxdepth_c(ULONG incoming BL_REG(d0))
 {
     return BL_SETW(incoming, maxdepth);
 }
 BLITZ_THUNK(_scanmaxdepth, scanmaxdepth_c, "d1/a0-a1");
 
-/* ShapeTo1616 src,dest: the first word of every row of every plane of
-   src into dest's data, 16 rows per plane (missing rows 0, more rows
-   skipped).  BUG(orig): height or depth 0 -> 65536 (DBRA) (#895) */
+/**
+ * @brief ShapeTo1616 source shape,dest shape: the left 16 pixels of a shape, 16 rows.
+ *
+ * The first word of every row of every plane of src into dest's data,
+ * 16 rows per plane (missing rows 0, more rows skipped).  BUG(orig):
+ * height or depth 0 -> 65536 (DBRA) (#895); a word of every row is copied
+ * regardless of the destination's size (#900).
+ * @param src  a0: the source shape (#ia0|#pd0)
+ * @param dst  a1: the destination shape (#ia1|#pd1)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE shapetosquare_c(const struct shape *src BL_REG(a0),
                                           struct shape *dst BL_REG(a1))
 {
@@ -526,7 +598,11 @@ static void BLITZ_ROUTINE shapetosquare_c(const struct shape *src BL_REG(a0),
 }
 BLITZ_THUNK(_shapetosquare, shapetosquare_c, "d0-d1/a0-a1");
 
-/* ShapeMaskFill shape#: 8 longs of the cookie = -1 */
+/**
+ * @brief ShapeMaskFill shape#: sets the first 32 bytes (8 longs) of the shape's cookie.
+ * @param sh  a0: the shape (#ia0|#pd0)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE shapemaskfill_c(const struct shape *sh BL_REG(a0))
 {
     ULONG *c = sh->cookie;
@@ -537,9 +613,18 @@ static void BLITZ_ROUTINE shapemaskfill_c(const struct shape *sh BL_REG(a0))
 }
 BLITZ_THUNK(_shapemaskfill, shapemaskfill_c, "d0-d1/a0-a1");
 
-/* FillBitplane bitmap#,width,height: plane 0 of the bitmap object (a
-   struct BitMap: its ebwidth at 0, planes at 8) gets width/16 words per
-   row (at least one: DBRA) of $5555/$AAAA, alternating per row */
+/**
+ * @brief FillBitplane bitmap#,width,height: a mesh in plane 0 of a bitmap.
+ *
+ * Plane 0 of the bitmap object (a struct BitMap: its ebwidth at 0,
+ * planes at 8) gets width/16 words per row (at least one: DBRA) of
+ * $5555/$AAAA, alternating per row.  BUG(orig) (#895): height 0 -> 65536
+ * rows.  DIFF: a2 unchanged (the original uses it as its pointer).
+ * @param w   d1: the width in pixels
+ * @param h   d2: the height in rows
+ * @param bm  a0: the bitmap object (#ia0|#pd0)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE fillbitplane_c(UWORD w BL_REG(d1), UWORD h BL_REG(d2),
                                          const struct BitMap *bm BL_REG(a0))
 {
@@ -578,16 +663,41 @@ static void freemap(struct mapobject *map)
         p[i] = 0;
 }
 
+/**
+ * @brief The MapObject's free routine (!libfin _free): frees a map.
+ *
+ * The data (FreeMem, width*2*height), the name (maxslib freest), the 32
+ * bytes cleared.
+ * @param map  a3: the map object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE freemap_c(struct mapobject *map BL_REG(a3))
 {
     freemap(map);
 }
 BLITZ_THUNK(_freemap, freemap_c, "d0-d1/a0-a1");
 
-/* CreateMap map#,width,height,bwidth,bheight,name$: a3 = the map, d6 =
-   the offset of the used map in the globals; the length of name$ on a2.
-   Data: width*height words (MEMF_CLEAR).  a3 ends behind the last field
-   written (24, or 10 if the data could not be allocated). */
+/**
+ * @brief CreateMap map#,width,height,bwidth,bheight,name$: creates a map and uses it.
+ *
+ * The map becomes the used one; an old map is freed; data: width*height
+ * words (MEMF_PUBLIC|MEMF_CLEAR), datasize 1, mapnull 0, view 0,0, the
+ * name a maxslib string.  Without memory (also width or height 0) width,
+ * height, bwidth, bheight are cleared (datasize stays 1: not a defect).
+ * a3 ends behind the last field written (24, or 10 if the data could not
+ * be allocated).  BUG(orig) (#894): the old map is freed only if the long
+ * at 12 is set (data's low word and viewx), else it is lost and 24/28 are
+ * not cleared.  DIFF: a2 unchanged (the original pops the length).
+ * @param w     d1: the width
+ * @param h     d2: the height
+ * @param bw    d3: the block width
+ * @param bh    d4: the block height
+ * @param name  d5: name$
+ * @param used  d6: the offset of the used map in the globals
+ * @param lens  a2: the argument stack (the length of name$ below it)
+ * @param map   a3: the map object (#ia3|#pd0)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE newmap_c(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD bw BL_REG(d3),
                                    UWORD bh BL_REG(d4), ULONG name BL_REG(d5),
                                    UWORD used BL_REG(d6), const ULONG *lens BL_REG(a2),
@@ -627,10 +737,18 @@ static void BLITZ_ROUTINE newmap_c(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD
 }
 BLITZ_THUNK(_newmap, newmap_c, "d0-d1/a0-a1");
 
-/* MapDataAdr: the data */
+/**
+ * @brief MapDataAdr: the address of the used map's data (+10).
+ * @return d0: the address
+ */
 BLITZ_INLINE(_mapdataadr, "move.l 10(a3),d0");
 
-/* MapDataAdr(x,y): the data + (y*width)*2 + (x*2 as a word) */
+/**
+ * @brief MapDataAdr(x,y): the address of a map word.
+ *
+ * Inline: the data + (y*width)*2 + (x*2 as a word); no range check.
+ * @return d0: the address (d1 changed)
+ */
 BLITZ_INLINE(_mapdataadr2,
              "asl.w   #1,d0\n"
              "   mulu.w  (a3),d1\n"
@@ -640,18 +758,44 @@ BLITZ_INLINE(_mapdataadr2,
              "   move.l  10(a3),d0\n"
              "   add.l   d1,d0");
 
-/* MapDataSize: (width*2 as a word) * height */
+/**
+ * @brief MapDataSize: the byte size of the used map's data.
+ *
+ * Inline: (width*2 as a word) * height (MULU.w).
+ * @return d0: the size
+ */
 BLITZ_INLINE(_mapdatasize,
              "move.w  (a3),d0\n"
              "   asl.w   #1,d0\n"
              "   mulu.w  2(a3),d0");
 
-/* MapObjWidth, MapObjheight, MapObjViewX, MapObjViewY, MapDataChanged */
+/* MapObjWidth, MapObjheight, MapObjViewX, MapObjViewY, MapDataChanged:
+   inline MOVE.w of the field (d0's upper word stays) */
+/**
+ * @brief MapObjWidth: the width of the used map.
+ * @return d0.w: the width
+ */
 BLITZ_INLINE(_mapobjwidth, "move.w (a3),d0");
+/**
+ * @brief MapObjheight: the height of the used map.
+ * @return d0.w: the height
+ */
 BLITZ_INLINE(_mapobjheight, "move.w 2(a3),d0");
 
-/* MapDataGrab address,datasize,mapnull: width*height values from address
-   (datasize 0: bytes, else words) + mapnull into the data */
+/**
+ * @brief MapDataGrab address,datasize,mapnull: fills the used map from memory.
+ *
+ * width*height values from address (datasize 0: bytes, else words) +
+ * mapnull into the data.  BUG(orig): for bytes the upper byte of the
+ * previous value stays in the register (MOVE.b): a byte + mapnull beyond
+ * 255 carries into the following values (#898); width or height 0 ->
+ * 65536 (DBRA, #895).
+ * @param src   d0: the address
+ * @param type  d1: the data size (0 = bytes)
+ * @param null  d2: mapnull, added to every value
+ * @param map   a3: the used map (#ua3)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE mapgrab_c(const UBYTE *src BL_REG(d0), UWORD type BL_REG(d1),
                                     UWORD null BL_REG(d2), struct mapobject *map BL_REG(a3))
 {
@@ -680,8 +824,14 @@ static void BLITZ_ROUTINE mapgrab_c(const UBYTE *src BL_REG(d0), UWORD type BL_R
 }
 BLITZ_THUNK(_mapgrab, mapgrab_c, "d0-d1/a0-a1");
 
-/* MapObjName$: a1 = the used map; the name's characters at a3 (no 0),
-   d0 = their number as a byte; d0 = 0 without a name */
+/**
+ * @brief MapObjName$: the name of the used map.
+ *
+ * The name's characters at a3 (no 0).  BUG(orig) (#899): the length is
+ * counted as a byte (ADDQ.b).
+ * @param map  a1: the used map (#ua1)
+ * @return d0: the number of characters (the low byte), 0 without a name
+ */
 static ULONG BLITZ_ROUTINE mapobjname_c(const struct mapobject *map BL_REG(a1))
 {
     const UBYTE *s = (const UBYTE *)map->name;
@@ -698,7 +848,16 @@ static ULONG BLITZ_ROUTINE mapobjname_c(const struct mapobject *map BL_REG(a1))
 }
 BLITZ_THUNK(_mapobjname, mapobjname_c, "d1/a0-a1");
 
-/* SetMapObjName$ name$: the old name freed, the new one copied */
+/**
+ * @brief SetMapObjName$ name$: the name of the used map.
+ *
+ * The old name is freed (maxslib freest), the new one copied (allocst).
+ * DIFF: a2 unchanged (the original pops the length).
+ * @param name  d0: name$
+ * @param lens  a2: the argument stack (lens[-1] = the length of name$)
+ * @param map   a3: the used map (#ua3)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE setmapobjname_c(ULONG name BL_REG(d0), const ULONG *lens BL_REG(a2),
                                           struct mapobject *map BL_REG(a3))
 {
@@ -714,11 +873,28 @@ static void BLITZ_ROUTINE setmapobjname_c(ULONG name BL_REG(d0), const ULONG *le
 }
 BLITZ_THUNK(_setmapobjname, setmapobjname_c, "d0-d1/a0-a1");
 
+/**
+ * @brief MapObjViewX: the view x of the used map.
+ * @return d0.w: viewx
+ */
 BLITZ_INLINE(_mapobjviewx, "move.w 14(a3),d0");
+/**
+ * @brief MapObjViewY: the view y of the used map.
+ * @return d0.w: viewy
+ */
 BLITZ_INLINE(_mapobjviewy, "move.w 16(a3),d0");
+/**
+ * @brief MapDataChanged: whether the used map has changed since the last load.
+ * @return d0.w: the changed state
+ */
 BLITZ_INLINE(_mapdatachanged, "move.w 22(a3),d0");
 
-/* MapDataChanged(newstate): the old state, the new one stored */
+/**
+ * @brief MapDataChanged(newstate): sets the changed state of the used map.
+ * @param newstate  d0: the new state (a word)
+ * @param map       a3: the used map (#ua3)
+ * @return d0.w: the old state (d0's upper word stays)
+ */
 static ULONG BLITZ_ROUTINE mapdatachanged2_c(ULONG newstate BL_REG(d0),
                                              struct mapobject *map BL_REG(a3))
 {
@@ -757,7 +933,17 @@ static UWORD textlength(struct Library *gfx, struct RastPort *rp, const UBYTE *s
     return (UWORD)TextLength(rp, (CONST_STRPTR)s, n);
 }
 
-/* MapOutText x,y,rastport,string */
+/**
+ * @brief MapOutText x,y,rastport,address/string: prints a text into a RastPort.
+ *
+ * Move to x, y + the font's baseline (words), Text of the string (its
+ * length as a word).
+ * @param x   d0: x
+ * @param y   d1: y
+ * @param rp  d2: the RastPort
+ * @param s   d3: the string (or its address)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE outtext_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
                                     struct RastPort *rp BL_REG(d2), const UBYTE *s BL_REG(d3))
 {
@@ -765,7 +951,16 @@ static void BLITZ_ROUTINE outtext_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
 }
 BLITZ_THUNK(_OutText, outtext_c, "d0-d1/a0-a1");
 
-/* MapOutTextCenter: x - length/2 (LSR.w) */
+/**
+ * @brief MapOutTextCenter x,y,rastport,address/string: as MapOutText, centred on x.
+ *
+ * x - TextLength/2 (LSR.w), as a word.
+ * @param x   d0: x
+ * @param y   d1: y
+ * @param rp  d2: the RastPort
+ * @param s   d3: the string
+ * @return nothing
+ */
 static void BLITZ_ROUTINE outtextcenter_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
                                           struct RastPort *rp BL_REG(d2),
                                           const UBYTE *s BL_REG(d3))
@@ -777,7 +972,16 @@ static void BLITZ_ROUTINE outtextcenter_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1)
 }
 BLITZ_THUNK(_OutTextCenter, outtextcenter_c, "d0-d1/a0-a1");
 
-/* MapOutTextRight: x - (length - 1) */
+/**
+ * @brief MapOutTextRight x,y,rastport,address/string: as MapOutText, ending at x.
+ *
+ * x - (TextLength - 1), as a word.
+ * @param x   d0: x
+ * @param y   d1: y
+ * @param rp  d2: the RastPort
+ * @param s   d3: the string
+ * @return nothing
+ */
 static void BLITZ_ROUTINE outtextright_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
                                          struct RastPort *rp BL_REG(d2),
                                          const UBYTE *s BL_REG(d3))
@@ -789,8 +993,14 @@ static void BLITZ_ROUTINE outtextright_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
 }
 BLITZ_THUNK(_OutTextRight, outtextright_c, "d0-d1/a0-a1");
 
-/* MapOutTextPen rastport,pen: SetAPen with d0 = the rastport's upper word
-   and the pen (MOVE.w d1,d0) */
+/**
+ * @brief MapOutTextPen rastport,pen: the pen of MapOutText.
+ *
+ * SetAPen with d0 = the rastport's upper word and the pen (MOVE.w d1,d0).
+ * @param rp   d0: the RastPort
+ * @param pen  d1: the pen (a word)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE outtextpen_c(ULONG rp BL_REG(d0), UWORD pen BL_REG(d1))
 {
     struct Library *gfx = gfxbase;
@@ -801,8 +1011,15 @@ static void BLITZ_ROUTINE outtextpen_c(ULONG rp BL_REG(d0), UWORD pen BL_REG(d1)
 }
 BLITZ_THUNK(_OutTextPen, outtextpen_c, "d0-d1/a0-a1");
 
-/* SetWindowDraw window#,mode: a0 = the used window object (its first
-   long the Window); its RastPort's area pattern */
+/**
+ * @brief SetWindowDraw window#,mode: the area pattern of the used window (0 normal, 1 meshed).
+ *
+ * The window's RastPort gets the pattern $AAAA/$5555 (AreaPtSz 1) for a
+ * mode other than 0, none for 0.
+ * @param mode  d1: the mode
+ * @param win   a0: the used window object (#ua0, its first long the Window)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE setwindowdraw_c(UWORD mode BL_REG(d1),
                                           struct Window **win BL_REG(a0))
 {
@@ -820,8 +1037,14 @@ BLITZ_THUNK(_SetWindowDraw, setwindowdraw_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------------- parsing */
 
-/* M_InitParse string: copied (with its 0) into the buffer.  BUG(orig): no
-   limit (#897) */
+/**
+ * @brief M_InitParse string: the string for M_NextArg$.
+ *
+ * Copied (with its 0) into the 256 byte buffer.  BUG(orig) (#897): no
+ * limit - a longer string overwrites the pointer behind the buffer.
+ * @param s  d0: the string
+ * @return nothing
+ */
 static void BLITZ_ROUTINE initparse_c(const UBYTE *s BL_REG(d0))
 {
     UBYTE *d = parse.parseadr;
@@ -832,9 +1055,14 @@ static void BLITZ_ROUTINE initparse_c(const UBYTE *s BL_REG(d0))
 }
 BLITZ_THUNK(_InitParse, initparse_c, "d0-d1/a0-a1");
 
-/* M_NextArg$: the characters up to the next ',' (skipped) or the end at
-   a3, d0 = their number; after the last one (and before M_InitParse)
-   "" */
+/**
+ * @brief M_NextArg$: the next comma separated argument of M_InitParse's string.
+ *
+ * The characters up to the next ',' (skipped) or the end at a3; after
+ * the last one (and before M_InitParse) "".  Leading spaces are not
+ * stripped (the source's comment says so; not a defect).
+ * @return d0: the number of characters
+ */
 static ULONG BLITZ_ROUTINE nextparsearg_c(void)
 {
     const UBYTE *p = parse.curadr;
