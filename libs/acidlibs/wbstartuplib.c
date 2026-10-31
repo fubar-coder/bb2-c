@@ -121,8 +121,27 @@ static UBYTE *getcliarg(UBYTE **pp, UWORD *len)
     return start;
 }
 
-/* codeinit - a0 = CLI argument string, d7 = "bLtZ" when started from
-   Blitz; keeps d1-d7/a1-a6 */
+/**
+ * @brief init - read the program's arguments (CLI or Workbench).
+ *
+ * Started from the editor (d7 = "bLtZ") or from a CLI: the CLI string is
+ * copied to cliString and split into arguments in place (spaces separate,
+ * "..." quotes).  From Workbench: waits for the WBStartup message,
+ * CurrentDir to the program's lock, the arguments are the WBArgs after
+ * the program itself.  Keeps d1-d7/a1-a6.
+ *
+ * Errors: no memory for an argument node raises "Can't read args!" (see
+ * addarg, DIFF (#305)).
+ *
+ * BUG(orig) (#306, #307): dos.library is never closed, the old current
+ * directory is not restored.  BUG(orig) (#308): no length check of the CLI
+ * string (cliString has 256 bytes); see also #309.
+ *
+ * @param argptr a0: the CLI argument string
+ * @param magic d7: "bLtZ" when started from Blitz
+ * @return d0: &argData (the init value: from CLI, number of arguments,
+ *         first argument)
+ */
 static ULONG BLITZ_ROUTINE codeinit_c(UBYTE *argptr BL_REG(a0), ULONG magic BL_REG(d7))
 {
     argData.numargs = 0;
@@ -208,10 +227,15 @@ static ULONG BLITZ_ROUTINE codeinit_c(UBYTE *argptr BL_REG(a0), ULONG magic BL_R
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d1/a1");
 
-/* codefinit - free the arguments, reply the WB message.
-   argData.first is not cleared (not a bug: codeinit clears it at every
-   start).  The original changes d0/a1-a3/a6 only
-   when there are arguments / a message, the thunk keeps d0-d1/a0-a1. */
+/**
+ * @brief finit - free the arguments, reply the Workbench message.
+ *
+ * The WBStartup message is replied under Forbid (no Permit: the program
+ * ends, Workbench cannot unload it before).  argData.first is not cleared
+ * (not a bug: codeinit clears it at every start).  The original changes
+ * d0/a1-a3/a6 only when there are arguments / a message, the thunk keeps
+ * d0-d1/a0-a1.
+ */
 static void BLITZ_ROUTINE codefinit_c(void)
 {
     struct arg *a = argData.first, *next;
