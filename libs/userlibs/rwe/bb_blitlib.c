@@ -58,6 +58,7 @@
  * its colour as a byte (LSR.b; at most 8 planes).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 
 /* entry points (thunks, below) */
 void _specialblock(void), _specialblock2(void), _specialblockbitmap(void);
@@ -176,34 +177,10 @@ void BLITZ_ROUTINE _libfinit(void)
 {
 }
 
-/* a shape object of shapeslib (32 bytes) */
-struct shape {
-    UWORD width;                /* +0 pixel width */
-    UWORD height;               /* +2 */
-    UWORD depth;                /* +4 */
-    UWORD ebwidth;              /* +6 even byte width */
-    UWORD blitsize;             /* +8 height<<6 | words+1 */
-    UWORD xhandle, yhandle;     /* +10, +12 */
-    ULONG data;                 /* +14 plane after plane, chip memory */
-    ULONG cookie;               /* +18 OR of all planes, or 0 */
-    UWORD onebpmem;             /* +22 bytes per plane */
-    UWORD onebpmemx;            /* +24 per plane + one word per row */
-    UWORD allbpmem;             /* +26 the whole shape */
-    UWORD allbpmemx;            /* +28 whole + one word per row */
-    UWORD cl;                   /* +30 "cL": the data is not the shape's */
-} BL_PACKED;
-static_assert(sizeof(struct shape) == 32);
-
-/* a bitmap object of bitmaplib, as far as these routines read it: the
-   original reads flags and depth (+4, +5) as one word */
-struct bmap {
-    UWORD bpr;                  /* +0 bytes per row */
-    UWORD rows;                 /* +2 */
-    UWORD depth;                /* +4.w */
-    UWORD pad;                  /* +6 */
-    UBYTE *planes[8];           /* +8 */
-} BL_PACKED;
-static_assert(sizeof(struct bmap) == 40);
+/* the shape (shapeslib) and the bitmap (bitmaplib) objects: struct bb_shape,
+   struct bb_bitmap (blitzobj.h); the original reads the bitmap's flags and
+   depth (+4, +5) as one word (flagsdepth); the shape's data and cookie
+   addresses are taken as the longs the blitter registers get */
 
 /* a buffer object of bblitlib, as far as the buffered blits use it */
 struct buffer {
@@ -281,9 +258,9 @@ static UWORD xyoff(UWORD x, UWORD y, UWORD width)
  * @param top  a1: the top shape object (parameter 0)
  * @param bot  a2: the bottom shape object (parameter 1)
  */
-static void BLITZ_ROUTINE specialblock2_c(UWORD off BL_REG(d2), struct bmap *bm BL_REG(a0),
-                                          struct shape *top BL_REG(a1),
-                                          struct shape *bot BL_REG(a2))
+static void BLITZ_ROUTINE specialblock2_c(UWORD off BL_REG(d2), struct bb_bitmap *bm BL_REG(a0),
+                                          struct bb_shape *top BL_REG(a1),
+                                          struct bb_shape *bot BL_REG(a2))
 {
     UWORD n = top->depth - 1;
     UBYTE **plane = bm->planes;
@@ -296,9 +273,9 @@ static void BLITZ_ROUTINE specialblock2_c(UWORD off BL_REG(d2), struct bmap *bm 
     W(BLTCMOD) = 0;
     W(BLTDMOD) = modwidth;
     L(BLTAFWM) = 0xffffffff;
-    L(BLTBPT) = top->data;
-    L(BLTCPT) = bot->data;
-    cookie = top->cookie;
+    L(BLTBPT) = (ULONG)top->data;
+    L(BLTCPT) = (ULONG)bot->data;
+    cookie = (ULONG)top->cookie;
     goto first;
     do {
         BLITWAIT();
@@ -322,8 +299,8 @@ first:
  * @param bot  a2: the bottom shape object
  */
 static void BLITZ_ROUTINE specialblock_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
-                                         struct bmap *bm BL_REG(a0), struct shape *top BL_REG(a1),
-                                         struct shape *bot BL_REG(a2))
+                                         struct bb_bitmap *bm BL_REG(a0), struct bb_shape *top BL_REG(a1),
+                                         struct bb_shape *bot BL_REG(a2))
 {
     specialblock2_c(xyoff(x, y, ebwidth), bm, top, bot);
 }
@@ -343,9 +320,9 @@ static void BLITZ_ROUTINE specialblock_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
  * @param src    a2: the source bitmap object (parameter 1)
  */
 static void BLITZ_ROUTINE specialblockbitmap2_c(UWORD off BL_REG(d2),
-                                                struct bmap *bm BL_REG(a0),
-                                                struct shape *shape BL_REG(a1),
-                                                struct bmap *src BL_REG(a2))
+                                                struct bb_bitmap *bm BL_REG(a0),
+                                                struct bb_shape *shape BL_REG(a1),
+                                                struct bb_bitmap *src BL_REG(a2))
 {
     UWORD n = shape->depth - 1;
     UWORD mod = bm->bpr - shape->ebwidth;
@@ -360,8 +337,8 @@ static void BLITZ_ROUTINE specialblockbitmap2_c(UWORD off BL_REG(d2),
     W(BLTCMOD) = mod;
     W(BLTDMOD) = mod;
     L(BLTAFWM) = 0xffffffff;
-    L(BLTBPT) = shape->data;
-    cookie = shape->cookie;
+    L(BLTBPT) = (ULONG)shape->data;
+    cookie = (ULONG)shape->cookie;
     goto first;
     do {
         BLITWAIT();
@@ -383,9 +360,9 @@ first:
  * @param src    a2: the source bitmap object
  */
 static void BLITZ_ROUTINE specialblockbitmap_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
-                                               struct bmap *bm BL_REG(a0),
-                                               struct shape *shape BL_REG(a1),
-                                               struct bmap *src BL_REG(a2))
+                                               struct bb_bitmap *bm BL_REG(a0),
+                                               struct bb_shape *shape BL_REG(a1),
+                                               struct bb_bitmap *src BL_REG(a2))
 {
     specialblockbitmap2_c(xyoff(x, y, bm->bpr), bm, shape, src);
 }
@@ -405,7 +382,7 @@ static void BLITZ_ROUTINE specialblockbitmap_c(UWORD x BL_REG(d2), UWORD y BL_RE
  * @param shape  a1: the shape object
  */
 static void BLITZ_ROUTINE tblock_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2),
-                                   struct bmap *bm BL_REG(a0), struct shape *shape BL_REG(a1))
+                                   struct bb_bitmap *bm BL_REG(a0), struct bb_shape *shape BL_REG(a1))
 {
     ULONG off = xyoff(x, y, ebwidth);
     UWORD n = shape->depth - 1;
@@ -419,8 +396,8 @@ static void BLITZ_ROUTINE tblock_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2),
     W(BLTCMOD) = modwidth;
     W(BLTDMOD) = modwidth;
     L(BLTAFWM) = 0xffffffff;
-    L(BLTBPT) = shape->data;
-    cookie = shape->cookie;
+    L(BLTBPT) = (ULONG)shape->data;
+    cookie = (ULONG)shape->cookie;
     goto first;
     do {
         BLITWAIT();
@@ -452,8 +429,8 @@ first:
  * @return d0: the address of the shape's cookie
  */
 static ULONG BLITZ_ROUTINE predatorblit_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2),
-                                          struct bmap *bm BL_REG(a0),
-                                          struct shape *shape BL_REG(a1))
+                                          struct bb_bitmap *bm BL_REG(a0),
+                                          struct bb_shape *shape BL_REG(a1))
 {
     ULONG con = 0x0fca1000UL | (ULONG)(x & 15) << 28;
     ULONG off = (UWORD)((UWORD)((ULONG)y * ebwidth) + (UWORD)(((WORD)x >> 3) & 0xfffe));
@@ -468,7 +445,7 @@ static ULONG BLITZ_ROUTINE predatorblit_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2)
     W(BLTCMOD) = modwidth2;
     W(BLTDMOD) = modwidth2;
     L(BLTAFWM) = 0xffff0000;
-    cookie = shape->cookie;
+    cookie = (ULONG)shape->cookie;
     goto first;
     do {
         BLITWAIT();
@@ -497,7 +474,7 @@ struct bsave {
     UWORD size;
 };
 
-static void bsave(struct bsave *s, struct buffer *buf, struct bmap *bm, UBYTE *cb, WORD x, WORD y,
+static void bsave(struct bsave *s, struct buffer *buf, struct bb_bitmap *bm, UBYTE *cb, WORD x, WORD y,
                   UWORD mod, UWORD size, UWORD save)
 {
     UBYTE *rec = buf->pos;
@@ -515,7 +492,7 @@ static void bsave(struct bsave *s, struct buffer *buf, struct bmap *bm, UBYTE *c
     s->size = size;
     *(UWORD *)rec = size;
     rec += 2;
-    n = bm->depth - 1;
+    n = bm->flagsdepth - 1;
     *(UWORD *)rec = n;
     rec += 2;
     *(UWORD *)rec = save;
@@ -564,18 +541,18 @@ first:
  */
 static void BLITZ_ROUTINE bpredatorblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
                                           struct buffer *buf BL_REG(a0), UBYTE *cb BL_REG(a1),
-                                          struct bmap *bm BL_REG(a2),
-                                          struct shape *shape BL_REG(a3))
+                                          struct bb_bitmap *bm BL_REG(a2),
+                                          struct bb_shape *shape BL_REG(a3))
 {
     struct bsave s;
     UWORD shift, n;
     UBYTE **plane;
     ULONG cookie;
 
-    x -= shape->xhandle;
-    y -= shape->yhandle;
+    x -= shape->handlex;
+    y -= shape->handley;
     bsave(&s, buf, bm, cb, x, y, (UWORD)(bm->bpr - shape->ebwidth - 2),
-          (UWORD)(shape->blitsize - 64), shape->onebpmemx);
+          (UWORD)(shape->bltsize - 64), shape->xplanesize);
     shift = (UWORD)((x & 15) << 12);
     n = shape->depth - 1;
     plane = bm->planes;
@@ -586,7 +563,7 @@ static void BLITZ_ROUTINE bpredatorblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3)
     W(BLTCON1) = 0x1000;
     W(BLTCON0) = shift | 0xfca;
     CW(BLTALWM) = 0;
-    cookie = shape->cookie;
+    cookie = (ULONG)shape->cookie;
     goto first;
     do {
         BL_BLITWAIT(cb);
@@ -620,8 +597,8 @@ first:
  */
 static void BLITZ_ROUTINE docolblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
                                       UWORD colour BL_REG(d4), struct buffer *buf BL_REG(a0),
-                                      UBYTE *cb BL_REG(a1), struct bmap *bm BL_REG(a2),
-                                      struct shape *shape BL_REG(a3))
+                                      UBYTE *cb BL_REG(a1), struct bb_bitmap *bm BL_REG(a2),
+                                      struct bb_shape *shape BL_REG(a3))
 {
     struct bsave s;
     UWORD con, n;
@@ -630,10 +607,10 @@ static void BLITZ_ROUTINE docolblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
     ULONG cookie;
 
     coltoblit = colour;
-    x -= shape->xhandle;
-    y -= shape->yhandle;
-    bsave(&s, buf, bm, cb, x, y, (UWORD)(bm->bpr - shape->ebwidth - 2), shape->blitsize,
-          shape->onebpmemx);
+    x -= shape->handlex;
+    y -= shape->handley;
+    bsave(&s, buf, bm, cb, x, y, (UWORD)(bm->bpr - shape->ebwidth - 2), shape->bltsize,
+          shape->xplanesize);
     con = (UWORD)((x & 15) << 12) | 0xb00;      /* A, C, D */
     n = shape->depth - 1;
     plane = bm->planes;
@@ -642,7 +619,7 @@ static void BLITZ_ROUTINE docolblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
     L(BLTAMOD) = s.admod;
     W(BLTCON1) = 0;
     CW(BLTALWM) = 0;
-    cookie = shape->cookie;
+    cookie = (ULONG)shape->cookie;
     bits = (UBYTE)coltoblit;
     goto first;
     do {
@@ -677,7 +654,7 @@ first:
  */
 static void BLITZ_ROUTINE tblockimage_c(ULONG addr BL_REG(d0), UWORD image BL_REG(d1),
                                         UWORD x BL_REG(d2), UWORD y BL_REG(d3),
-                                        struct bmap *bm BL_REG(a0))
+                                        struct bb_bitmap *bm BL_REG(a0))
 {
     UWORD width = bm->bpr;
     ULONG off = xyoff(x, y, width);
@@ -725,7 +702,7 @@ first:
 static void BLITZ_ROUTINE btblockimage_c(ULONG addr BL_REG(d1), UWORD x BL_REG(d2),
                                          UWORD y BL_REG(d3), UWORD image BL_REG(d4),
                                          struct buffer *buf BL_REG(a0), UBYTE *cb BL_REG(a1),
-                                         struct bmap *bm BL_REG(a2))
+                                         struct bb_bitmap *bm BL_REG(a2))
 {
     struct bsave s;
     UWORD shift, n = SHAPE_DEPTH - 1;
@@ -766,7 +743,7 @@ first:
  * objects whose data lie in a given block.
  *
  * count shape objects from start_shape on like like_shape, their data at
- * chipmemblock one after another (allbpmem, +26, of the like shape
+ * chipmemblock one after another (size, +26, of the like shape
  * each), no cookie, "cL" (the data is not the shapes').
  * BUG(orig) (#428): count 0 creates 65536 shapes.
  * @param count  d1: the number of shapes
@@ -775,22 +752,22 @@ first:
  * @param like   a3: the shape to copy the sizes from
  */
 static void BLITZ_ROUTINE createshape_c(UWORD count BL_REG(d1), ULONG mem BL_REG(d2),
-                                        struct shape *shape BL_REG(a2),
-                                        struct shape *like BL_REG(a3))
+                                        struct bb_shape *shape BL_REG(a2),
+                                        struct bb_shape *like BL_REG(a3))
 {
     UWORD n = count - 1;
-    ULONG all = like->allbpmem;
+    ULONG all = like->size;
 
     do {
         LONGS(shape, like, width);         /* MOVE.l: width, height */
         LONGS(shape, like, depth);         /* depth, ebwidth */
-        LONGS(shape, like, blitsize);      /* blitsize, xhandle */
-        shape->yhandle = like->yhandle;
-        shape->data = mem;
+        LONGS(shape, like, bltsize);       /* bltsize, handlex */
+        shape->handley = like->handley;
+        shape->data = (UBYTE *)mem;
         shape->cookie = 0;
-        LONGS(shape, like, onebpmem);      /* onebpmem, onebpmemx */
-        LONGS(shape, like, allbpmem);      /* allbpmem, allbpmemx */
-        shape->cl = 0x634c;                 /* "cL" */
+        LONGS(shape, like, planesize);     /* planesize, xplanesize */
+        LONGS(shape, like, size);          /* size, xsize */
+        shape->cludge = BB_CLUDGE;          /* "cL" */
         shape++;
         mem += all;
     } while (n-- != 0);
@@ -807,9 +784,9 @@ static void BLITZ_ROUTINE createshape_c(UWORD count BL_REG(d1), ULONG mem BL_REG
  * @param top   a1: the top shape object
  * @param bot   a2: the bottom shape object
  */
-static void BLITZ_ROUTINE specialblocktoshape_c(struct shape *dest BL_REG(a0),
-                                                struct shape *top BL_REG(a1),
-                                                struct shape *bot BL_REG(a2))
+static void BLITZ_ROUTINE specialblocktoshape_c(struct bb_shape *dest BL_REG(a0),
+                                                struct bb_shape *top BL_REG(a1),
+                                                struct bb_shape *bot BL_REG(a2))
 {
     UWORD n = top->depth - 1;
     ULONG cookie;
@@ -821,10 +798,10 @@ static void BLITZ_ROUTINE specialblocktoshape_c(struct shape *dest BL_REG(a0),
     W(BLTCMOD) = 0;
     W(BLTDMOD) = 0;
     L(BLTAFWM) = 0xffffffff;
-    L(BLTBPT) = top->data;
-    L(BLTCPT) = bot->data;
-    L(BLTDPT) = dest->data;
-    cookie = top->cookie;
+    L(BLTBPT) = (ULONG)top->data;
+    L(BLTCPT) = (ULONG)bot->data;
+    L(BLTDPT) = (ULONG)dest->data;
+    cookie = (ULONG)top->cookie;
     goto first;
     do {
         BLITWAIT();
@@ -842,16 +819,16 @@ first:
  * @param shape  a1: the source shape object
  * @param dest   a2: the destination shape object
  */
-static void BLITZ_ROUTINE blocktoshape_c(struct shape *shape BL_REG(a1),
-                                         struct shape *dest BL_REG(a2))
+static void BLITZ_ROUTINE blocktoshape_c(struct bb_shape *shape BL_REG(a1),
+                                         struct bb_shape *dest BL_REG(a2))
 {
     BLITWAIT();
     L(BLTCON0) = 0x09f00000;                    /* D = A */
     W(BLTAMOD) = 0;
     W(BLTDMOD) = 0;
     L(BLTAFWM) = 0xffffffff;
-    L(BLTAPT) = shape->data;
-    L(BLTDPT) = dest->data;
+    L(BLTAPT) = (ULONG)shape->data;
+    L(BLTDPT) = (ULONG)dest->data;
     W(BLTSIZE) = (UWORD)((UWORD)(shape->height * shape->depth) << 6) + 1;
 }
 
@@ -880,19 +857,19 @@ BLITZ_ERRCHK_MESSAGE(noshape, "Destination shape MUST be pre-reserved!");
 
 /**
  * @brief BlockToShape's error check: dest has data, both shapes the same
- * size (allbpmem, +26).
+ * size (size, +26).
  *
  * Runtime errors "Destination shape MUST be pre-reserved!" and "Shapes
  * must be the same size!".
  * @param shape  a1: the source shape object
  * @param dest   a2: the destination shape object
  */
-static void BLITZ_ERRCHK errblocktoshape_c(struct shape *shape BL_REG(a1),
-                                           struct shape *dest BL_REG(a2))
+static void BLITZ_ERRCHK errblocktoshape_c(struct bb_shape *shape BL_REG(a1),
+                                           struct bb_shape *dest BL_REG(a2))
 {
     if (!dest->data)
         BLITZ_RUNERR(noshape);
-    if (shape->allbpmem != dest->allbpmem)
+    if (shape->size != dest->size)
         BLITZ_RUNERR(diffsizes);
 }
 
@@ -902,12 +879,12 @@ static void BLITZ_ERRCHK errblocktoshape_c(struct shape *shape BL_REG(a1),
  * @param dest  a0: the destination shape object
  * @param top   a1: the top shape object
  */
-static void BLITZ_ERRCHK errsblocktoshape_c(struct shape *dest BL_REG(a0),
-                                            struct shape *top BL_REG(a1))
+static void BLITZ_ERRCHK errsblocktoshape_c(struct bb_shape *dest BL_REG(a0),
+                                            struct bb_shape *top BL_REG(a1))
 {
     if (!dest->data)
         BLITZ_RUNERR(noshape);
-    if (top->allbpmem != dest->allbpmem)
+    if (top->size != dest->size)
         BLITZ_RUNERR(diffsizes);
 }
 
