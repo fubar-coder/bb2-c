@@ -196,7 +196,8 @@ void BLITZ_ROUTINE codefinit(void)
 /* ASLFontRequest(flags) */
 ULONG BLITZ_ROUTINE doaslfont(ULONG flags BL_REG(d0), struct Screen **scr BL_REG(a1))
 {
-    ULONG result;                       /* d7: AslRequest, then the name length */
+    ULONG ok;                           /* d7: AslRequest's result */
+    ULONG len = 0;                      /* d7: the font name length */
 
     fscreen = (ULONG)*scr;
     fflags = flags;
@@ -205,22 +206,24 @@ ULONG BLITZ_ROUTINE doaslfont(ULONG flags BL_REG(d0), struct Screen **scr BL_REG
     aslstruct = AllocAslRequest(ASL_FontRequest, (struct TagItem *)ftags);
     if (!aslstruct)
         return 0;
-    result = AslRequest(aslstruct, (struct TagItem *)ftags);
-    if (result) {
+    ok = AslRequest(aslstruct, (struct TagItem *)ftags);
+    if (ok) {
         const UBYTE *attr = (const UBYTE *)aslstruct + 8, *name;
         char *dst = fstruct.str;
 
         name = *(const UBYTE **)attr;                   /* ta_Name */
         *(ULONG *)&fstruct.size = *(const ULONG *)(attr + 4);
         *(ULONG *)&fstruct.style[2] = *(const ULONG *)(attr + 8);
-        result = (ULONG)-1;
+        len = (ULONG)-1;
         do
-            result++;
+            len++;
         while ((*dst++ = *name++) != 0);
-        fstruct.len = result;
+        fstruct.len = len;
     }
     FREEREQ(aslstruct);
-    if (!result)
+    /* the test is on d7, the name length after a request: an empty font
+       name returns 0 as well */
+    if (!ok || !len)
         return 0;
     return (ULONG)&fstruct;
 }
