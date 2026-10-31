@@ -39,6 +39,9 @@
  *     IText 0 (allocst of length 0; not a bug: Intuition prints the empty
  *     string at address 0, no effect seen).
  *   - makeintuishape: depth 0 gives PlanePick $FF (DBF 65536 times). (#167)
+ *   - SelectMode only stores the mode (selmode), which nothing reads; the
+ *     gadgets get defflags (never set, 0 = GADGHCOMP): SelectMode 1 (box)
+ *     has no effect. (#952)
  * Registers: the original changes about everything; plain C functions,
  * the error checks keep d0-d1/a0-a1 (more than the original).
  */
@@ -473,8 +476,8 @@ BLITZ_THUNK(dobgroup, dobgroup_c, "d0-d1/a0-a1");
 /**
  * @brief SelectMode 1=Box, 0=Inverse: the highlight mode of new gadgets.
  *
- * Stores 1 for any non-zero value, 0 otherwise (g.selmode; not used by
- * the gadget routines of this library).
+ * Stores 1 for any non-zero value, 0 otherwise (g.selmode).  BUG(orig)
+ * (#952): nothing reads selmode - the command has no effect.
  *
  * @param on  d0: the mode
  */
@@ -644,6 +647,8 @@ static struct Gadget *allocgadget(WORD x, WORD y, UWORD id, WORD w, WORD h)
     gad->TopEdge = y;
     gad->Width = w;
     gad->Height = h;
+    /* BUG(orig) (#952): defflags is never set; SelectMode (selmode) is not
+       taken into account */
     gad->Flags = g.defflags;
     gad->GadgetID = id;
     gad->Activation = 3;                /* RELVERIFY|GADGIMMEDIATE */

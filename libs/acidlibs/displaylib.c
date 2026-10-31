@@ -38,6 +38,9 @@
  *   - the init writes mysprite's address into the data words of the
  *     SPR0POS/SPR0CTL moves of `spp` (+2/+6), not into SPR0PTH/PTL. (#413)
  *   - DisplayBitMap without x,y stores the caller's d2/d3 in x0/x1. (#411)
+ *   - CustomColors with thru256flag sets bot = 257 without reading the
+ *     flag: 0 acts as 1, a later custom command below line 256 gets no
+ *     wait for line 255. (#951)
  *   - Not a bug (only with out-of-range arguments that do not occur):
  *     word arithmetic, DBF counters (a 0/negative count runs 65536 times,
  *     e.g. cpline 4 per line), ADDA.w of colour offsets (palette entries
@@ -1627,8 +1630,8 @@ static void BLITZ_ROUTINE _customcols_c(UWORD ccoffset BL_REG(d1), UWORD ypos BL
  * @brief CustomColors CopList#,CCOffset,YPos,Palette,startcol,numcols,
  *        thru256flag: as CustomColors, then bot = 257.
  *
- * The flag's value is not read: bot = 257 means that the next wait does
- * not add the line 256 wait.
+ * BUG(orig) (#951): the flag's value is not read (thru256flag 0 acts as
+ * 1): bot = 257 means that the next wait does not add the line 256 wait.
  *
  * @param ccoffset  d1: the offset in the custom area (longs)
  * @param ypos      d2: the line
@@ -1641,6 +1644,7 @@ static void BLITZ_ROUTINE _customcols2_c(UWORD ccoffset BL_REG(d1), UWORD ypos B
                                          UWORD numcols BL_REG(d5))
 {
     customcols(ccoffset, ypos, pal, startcol, numcols);
+    /* BUG(orig) (#951): the flag (d6) is not read */
     CM(blitz_string, bot) = 257;
 }
 BLITZ_THUNK(_customcols, _customcols_c, "a2");

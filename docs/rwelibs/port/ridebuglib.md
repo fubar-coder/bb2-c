@@ -56,6 +56,10 @@ ports, `docs/libs/cmdlibs-port.md` "General").
 * DisAsmWindow searches backwards from the return address for the word
   `$4E41` (the TRAP #1 the debugger's code has in front of the call)
   without a limit (#611).
+* Not a bug: ProcControl clears the top byte of `size` (`MOVE.b #0,4(a0)`)
+  where the other commands clear `chars[0]` at +8; the debugger
+  (`rwelibsrc/Debuglib/defaultdbug50.bb2`, `_CheckTrace`) uses only data1
+  and data2 for `_proccontrol` (250).
 
 ## Test
 

@@ -36,6 +36,11 @@
  *     copy is then never freed) (#68).
  *   - DiskPlay: a file whose length is a multiple of the buffer length
  *     never ends (loadbuff returns "more" at length 0). (#69)
+ *   - DiskPlay allocates its chip buffer before it opens the file and does
+ *     not free it when the open or a read fails (err1-err3): a program
+ *     that catches the runtime error (SetErr) and goes on has lost
+ *     2 * DiskBuffer bytes of chip memory until its end (memlib frees
+ *     them then). (#950)
  *   - SetPeriod without a sound: `BEQ err5` from the normal code into
  *     the error area (dangling without the debugger) - the C library
  *     calls err5 there in the same way; err1-err4 are in the normal code
@@ -751,6 +756,8 @@ static void diskplay(const UBYTE *name, UWORD mask, WORD nvol, const UBYTE *args
     UWORD dma, ints, m;
     int ch;
 
+    /* BUG(orig) (#950): allocated before the open, not freed when opensound
+       goes into its runtime error */
     dbuffat = alloc(dbufflen << 1, MEMF_CHIP);
     p = dbuffat;
     dbuffend = dbuffat + dbufflen + dbufflen;
@@ -798,6 +805,7 @@ static void diskplay(const UBYTE *name, UWORD mask, WORD nvol, const UBYTE *args
  * in the original).  BUG(orig) (#69): a file whose length is a multiple
  * of the buffer length never ends.  Errors: as LoadSound (no file, no
  * VHDR, read error); (debugger, dpchk) "Illegal Chanel Mask".
+ * BUG(orig) (#950): on those errors the chip buffer stays allocated.
  *
  * @param name  d0: the file name
  * @param mask  d1.w: the channel mask

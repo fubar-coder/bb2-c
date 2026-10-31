@@ -279,7 +279,10 @@ static void BLITZ_ERRCHK coptrace2_c(const UBYTE *adr BL_REG(d0), UWORD off BL_R
 }
 
 /* ProcControl's message: data1 = on (toggle: 0), data2 = 0 (toggle) /
-   $FF (explicit) */
+   $FF (explicit).  MOVE.b #0,4(a0) clears the top byte of size, where the
+   other commands clear chars[0] at +8: harmless, the debugger
+   (rwelibsrc/Debuglib/defaultdbug50.bb2, _CheckTrace) uses only data1 and
+   data2 for _proccontrol (250) - not a bug */
 static void BLITZ_ERRCHK procstatus_c(UBYTE on, UBYTE explicit)
 {
     mess1.data2 = explicit;
