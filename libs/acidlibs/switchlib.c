@@ -25,6 +25,7 @@
 #include "blitzlib.h"
 #include "blitzexec.h"
 #include <graphics/gfxbase.h>
+#include <graphics/monitor.h>
 #define __NOLIBBASE__
 #define GRAPHICS_BASE_NAME gr
 #include <proto/graphics.h>
@@ -253,7 +254,6 @@ ULONG BLITZ_ROUTINE doinit(void)
 {
     static const char kbd[] = "keyboard.";
     struct Node *n;
-    UBYTE *g;
     int i;
 
     forbiden = 0;
@@ -262,11 +262,11 @@ ULONG BLITZ_ROUTINE doinit(void)
     oldcoplist = 0;
     agamode = SysBase->LibNode.lib_Version >= 39 ? 0xffff : 0;  /* SGE, EXT */
     gr = (struct GfxBase *)OldOpenLibrary((STRPTR)"graphics.library");
-    g = (UBYTE *)gr;
-    /* SEQ d0:AND #$20,d0 - bit 0 of byte 207 */
-    monpoke = oldpoke = (g[207] & 1) ? 0 : 0x20;
-    if (agamode)
-        oldpoke = *(UWORD *)(*(UBYTE **)(g + 0x17c) + 0x28);
+    /* SEQ d0:AND #$20,d0 - bit 0 of byte 207, the low byte of DisplayFlags
+       (NTSC), read as a byte as in the original */
+    monpoke = oldpoke = (((UBYTE *)&gr->DisplayFlags)[1] & NTSC) ? 0 : 0x20;
+    if (agamode)                        /* $17C(a6) = current_monitor, $28 = BeamCon0 */
+        oldpoke = gr->current_monitor->BeamCon0;
     cia = OpenResource((STRPTR)"ciaa.resource");
     n = SysBase->DeviceList.lh_Head;
     for (;;) {
