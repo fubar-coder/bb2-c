@@ -152,11 +152,16 @@ BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
 
 BLITZ_LIBFIN();
 
-/* init, finit: RTS */
+/**
+ * @brief init: does nothing (RTS).
+ */
 void BLITZ_ROUTINE codeinit(void)
 {
 }
 
+/**
+ * @brief finit: does nothing (RTS).
+ */
 void BLITZ_ROUTINE codefinit(void)
 {
 }
@@ -232,6 +237,14 @@ static UBYTE *findmapchunk(ULONG id)
 
 /* ------------------------------------------------------------- the files */
 
+/**
+ * @brief SetBBScenarioLoc address: the scenario file ("FORM" .. "SCEN") in
+ * memory for the BBScenario.../BBNum.../BBTunnel... functions.
+ *
+ * A failed call keeps the old file and its cache (original behaviour).
+ * @param form  d0: the address of the file
+ * @return d0: BB_TRUE, BB_FALSE if it is no FORM of type SCEN
+ */
 static BB_BOOL BLITZ_ROUTINE setbbscenarioloc_c(struct form *form BL_REG(d0))
 {
     if (form->id != ID('F', 'O', 'R', 'M') || form->type != ID('S', 'C', 'E', 'N'))
@@ -242,6 +255,17 @@ static BB_BOOL BLITZ_ROUTINE setbbscenarioloc_c(struct form *form BL_REG(d0))
     return BB_TRUE;
 }
 
+/**
+ * @brief SetBBMapLoc address: the map file ("FORM" .. "BMAP") in memory for
+ * the BBMap... functions; finds its MFRM chunk.
+ *
+ * BUG(orig) (#554): the address is stored before it is checked (after a
+ * failed call the chunk searches use the new address, the MFRM chunk
+ * and the cache the old map's).  BUG(orig) (#551): without MFRM the info
+ * chunk is the address behind the last chunk id.
+ * @param form  d0: the address of the file
+ * @return d0: BB_TRUE, BB_FALSE if it is no FORM of type BMAP
+ */
 static BB_BOOL BLITZ_ROUTINE setbbmaploc_c(struct form *form BL_REG(d0))
 {
     maploc = (UBYTE *)form;             /* BUG(orig): before the check (#554) */
@@ -269,99 +293,178 @@ static ULONG chunkaddr(ULONG id, int off)
     return chunk ? (ULONG)chunk + off : 0;
 }
 
+/**
+ * @brief BBScenarioLevel: the word of the LEVL chunk.
+ * @return d0: $FFFF:word, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbscenariolevel_c(void)
 {
     return chunkword(ID('L', 'E', 'V', 'L'), 0);
 }
 
+/**
+ * @brief BBScenarioDepth: the word of the DEPF chunk.
+ * @return d0: $FFFF:word, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbscenariodepth_c(void)
 {
     return chunkword(ID('D', 'E', 'P', 'F'), 0);
 }
 
+/**
+ * @brief BBScenarioPrefix: the long of the PRFX chunk.
+ * @return d0: the long, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbscenarioprefix_c(void)
 {
     UBYTE *chunk = findchunk(ID('P', 'R', 'F', 'X'));
     return chunk ? LONGAT(chunk) : 0;
 }
 
+/**
+ * @brief BBScenarioPalette: the colours of the COLR chunk (behind its low
+ * and high byte).
+ * @return d0: their address, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbscenariopalette_c(void)
 {
     return chunkaddr(ID('C', 'O', 'L', 'R'), 2);
 }
 
-/* the byte with its sign (EXT.w) */
+/**
+ * @brief BBScenarioLowCol: the first colour of the COLR chunk (its byte
+ * 0).
+ *
+ * BUG(orig) (#550): the byte is extended with its sign (EXT.w).
+ * @return d0: $FFFF:word, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbscenariolowcol_c(void)
 {
     UBYTE *chunk = findchunk(ID('C', 'O', 'L', 'R'));
     return chunk ? HI | (UWORD)(WORD)(BYTE)chunk[0] : 0;
 }
 
+/**
+ * @brief BBScenarioHighCol: the last colour of the COLR chunk (its byte
+ * 1).
+ *
+ * BUG(orig) (#550): the byte is extended with its sign (EXT.w).
+ * @return d0: $FFFF:word, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbscenariohighcol_c(void)
 {
     UBYTE *chunk = findchunk(ID('C', 'O', 'L', 'R'));
     return chunk ? HI | (UWORD)(WORD)(BYTE)chunk[1] : 0;
 }
 
+/**
+ * @brief BBNumBackGround: the word at +0 of the SHAP chunk.
+ * @return d0: $FFFF:word, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbnumbackground_c(void)
 {
     return chunkword(ID('S', 'H', 'A', 'P'), 0);
 }
 
+/**
+ * @brief BBNumDestruct: the word at +2 of the SHAP chunk.
+ * @return d0: $FFFF:word, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbnumdestruct_c(void)
 {
     return chunkword(ID('S', 'H', 'A', 'P'), 2);
 }
 
+/**
+ * @brief BBNumIndestruct: the word at +4 of the SHAP chunk.
+ * @return d0: $FFFF:word, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbnumindestruct_c(void)
 {
     return chunkword(ID('S', 'H', 'A', 'P'), 4);
 }
 
+/**
+ * @brief BBNumTunnels: the word at +0 of the TUNL chunk.
+ * @return d0: $FFFF:word, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbnumtunnels_c(void)
 {
     return chunkword(ID('T', 'U', 'N', 'L'), 0);
 }
 
+/**
+ * @brief BBNumBaddies: the byte at +0 of the BAD! chunk.
+ * @return d0: the byte, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbnumbaddies_c(void)
 {
     UBYTE *chunk = findchunk(ID('B', 'A', 'D', '!'));
     return chunk ? chunk[0] : 0;
 }
 
-/* the long number `set` of SHDW (ASL.w #2: a word index) */
+/**
+ * @brief BBShadowValue shadowset: the long number `set` of the SHDW chunk
+ * (ASL.w #2: a word index).
+ * @param set  d0: the shadow set
+ * @return d0: the long, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbshadowvalue_c(ULONG set BL_REG(d0))
 {
     UBYTE *chunk = findchunk(ID('S', 'H', 'D', 'W'));
     return chunk ? LONGAT(chunk + (WORD)(set << 2)) : 0;
 }
 
+/**
+ * @brief BBTunnelsLoc: the data of the TUNL chunk from +8 on.
+ * @return d0: the address, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbtunnelsloc_c(void)
 {
     return chunkaddr(ID('T', 'U', 'N', 'L'), 8);
 }
 
+/**
+ * @brief BBTunnelHoles: the long at +2 of the TUNL chunk.
+ * @return d0: the long, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbtunnelholes_c(void)
 {
     UBYTE *chunk = findchunk(ID('T', 'U', 'N', 'L'));
     return chunk ? LONGAT(chunk + 2) : 0;
 }
 
+/**
+ * @brief BBScenarioShapeLoc: the data of the GFX! chunk.
+ * @return d0: the address, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbscenarioshapes_c(void)
 {
     return chunkaddr(ID('G', 'F', 'X', '!'), 0);
 }
 
+/**
+ * @brief BBScenarioSounds: the data of the SFX! chunk.
+ * @return d0: the address, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbscenariosounds_c(void)
 {
     return chunkaddr(ID('S', 'F', 'X', '!'), 0);
 }
 
+/**
+ * @brief BBScenarioBaddiesLoc: the data of the BAD! chunk from +2 on.
+ * @return d0: the address, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbscenariobaddies_c(void)
 {
     return chunkaddr(ID('B', 'A', 'D', '!'), 2);
 }
 
+/**
+ * @brief BBDestructLoc: the data of the DEST chunk.
+ * @return d0: the address, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbdestructloc_c(void)
 {
     return chunkaddr(ID('D', 'E', 'S', 'T'), 0);
@@ -381,12 +484,21 @@ static ULONG copystring(const UBYTE *text)
     return n;
 }
 
+/**
+ * @brief BBScenarioName: the name in the ANNO chunk, at a3 (without its
+ * 0, a3 behind the last character).
+ * @return d0: its length, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbscenarioname_c(void)
 {
     return copystring(findchunk(ID('A', 'N', 'N', 'O')));
 }
 
-/* returnauthor: the string behind the name's 0, at an even address */
+/**
+ * @brief BBScenarioAuthor: the author in the ANNO chunk (the string behind
+ * the name's 0, at an even address), at a3 like BBScenarioName.
+ * @return d0: its length, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbscenarioauthor_c(void)
 {
     const UBYTE *text = findchunk(ID('A', 'N', 'N', 'O'));
@@ -399,9 +511,18 @@ static ULONG BLITZ_ROUTINE bbscenarioauthor_c(void)
     return copystring(text);
 }
 
-/* BBGetPalette: the colours low..high of COLR (bytes r,g,b, each made a
-   long $xxxxxxxx) into the palette object at its colour low; a new
-   colour block if high >= the colour count (see BUG(orig) above, #548) */
+/**
+ * @brief BBGetPalette palette#: the colours of the COLR chunk into a
+ * palette object.
+ *
+ * The colours low..high (bytes r,g,b, each made a long $xxxxxxxx) at the
+ * object's colour low; a new colour block (the old colours copied, the
+ * old block freed with the size count*12) if high >= the colour count.
+ * BUG(orig) (#548): the new block has high+1 colours, the count is set
+ * to high; BUG(orig) (#549): the colours are written from low on even if
+ * low > high (one colour).  Nothing without the chunk.
+ * @param pal  a0: the palette object (palettelib)
+ */
 static void BLITZ_ROUTINE bbgetpalette_c(struct bpal *pal BL_REG(a0))
 {
     const UBYTE *chunk = findchunk(ID('C', 'O', 'L', 'R'));
@@ -453,63 +574,114 @@ static ULONG mapchunkaddr(ULONG id)
     return (ULONG)findmapchunk(id);
 }
 
+/**
+ * @brief BBMapScenarioID: the scenario id of the map (+0 of its MFRM
+ * chunk).
+ * @return d0: the id, 0 before a SetBBMapLoc
+ */
 static ULONG BLITZ_ROUTINE bbmapscenarioid_c(void)
 {
     return maploc ? mfrmchunk->scenarioid : 0;
 }
 
-/* the word functions on the info chunk: the upper word of d0 stays
-   (prev = d0 on entry) */
+/**
+ * @brief BBMapWidth: the width of the map (+4 of its MFRM chunk).
+ * @param prev  d0: d0 at the call (its upper word stays)
+ * @return d0: the width in the low word, 0 before a SetBBMapLoc
+ */
 static ULONG BLITZ_ROUTINE bbmapwidth_c(ULONG prev BL_REG(d0))
 {
     return maploc ? (prev & HI) | mfrmchunk->width : 0;
 }
 
+/**
+ * @brief BBMapHeight: the height of the map (+6 of its MFRM chunk).
+ * @param prev  d0: d0 at the call (its upper word stays)
+ * @return d0: the height in the low word, 0 before a SetBBMapLoc
+ */
 static ULONG BLITZ_ROUTINE bbmapheight_c(ULONG prev BL_REG(d0))
 {
     return maploc ? (prev & HI) | mfrmchunk->height : 0;
 }
 
+/**
+ * @brief BBMapInfo: the map's information chunk (the data of MFRM).
+ * @return d0: its address, 0 before a SetBBMapLoc
+ */
 static ULONG BLITZ_ROUTINE bbmapinfo_c(void)
 {
     return maploc ? (ULONG)mfrmchunk : 0;
 }
 
+/**
+ * @brief BBMapPowerUps: the map's custom power-ups (PWUP chunk).
+ * @return d0: the address, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbmappowerups_c(void)
 {
     return mapchunkaddr(ID('P', 'W', 'U', 'P'));
 }
 
+/**
+ * @brief BBMapStartPos: the map's start positions (STRT chunk).
+ * @return d0: the address, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbmapstartpos_c(void)
 {
     return mapchunkaddr(ID('S', 'T', 'R', 'T'));
 }
 
+/**
+ * @brief BBMapData: the map data (MDAT chunk).
+ * @return d0: the address, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbmapdata_c(void)
 {
     return mapchunkaddr(ID('M', 'D', 'A', 'T'));
 }
 
+/**
+ * @brief BBMapName$: the name of the map (NAME chunk), at a3 like
+ * BBScenarioName.
+ * @return d0: its length, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbmapname_c(void)
 {
     return copystring(findmapchunk(ID('N', 'A', 'M', 'E')));
 }
 
+/**
+ * @brief BBMapPUMask: the map's power-up mask (PWMK chunk).
+ * @return d0: the address, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbmappumask_c(void)
 {
     return mapchunkaddr(ID('P', 'W', 'M', 'K'));
 }
 
+/**
+ * @brief BBMapDBOverLay: the map's destructible block overlay (DBOL
+ * chunk).
+ * @return d0: the address, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbmapdboverlay_c(void)
 {
     return mapchunkaddr(ID('D', 'B', 'O', 'L'));
 }
 
+/**
+ * @brief BBMapOnePlayerInfo: the map's one player data (1PLY chunk).
+ * @return d0: the address, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbmaponeplayerinfo_c(void)
 {
     return mapchunkaddr(ID('1', 'P', 'L', 'Y'));
 }
 
+/**
+ * @brief BBMapObjects: the map's one player objects (OBJS chunk).
+ * @return d0: the address, 0 without the chunk
+ */
 static ULONG BLITZ_ROUTINE bbmapobjects_c(void)
 {
     return mapchunkaddr(ID('O', 'B', 'J', 'S'));
