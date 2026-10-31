@@ -88,6 +88,7 @@
  *     upper word (zcursor), the word is sign extended.
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include "blitzexec.h"
 #include <intuition/intuition.h>
 #include <intuition/screens.h>
@@ -140,15 +141,8 @@ struct evnode {
 };
 static_assert(sizeof(struct evnode) == 24);
 
-/* an IntuiFont object of intuifontlib (16 bytes): the TextAttr, +8 the
-   opened font */
-struct ifont {
-    struct TextAttr ta;
-    struct TextFont *font;
-    ULONG pad;
-};
-static_assert(sizeof(struct ifont) == 16);
-
+/* the shape and the IntuiFont (intuifontlib, +8 the opened font) objects:
+   struct bb_shape, struct bb_intuifont (blitzobj.h) */
 
 /* entry points (thunks / C / asm, defined below) */
 void dogadgethit(void), doeventwindow(void);
@@ -222,12 +216,12 @@ void BLITZ_ROUTINE domenusoff(UBYTE *objs BL_REG(a2), UWORD max BL_REG(d2),
                               struct Library *intbase BL_REG(a6));
 void BLITZ_ROUTINE domenusok(UWORD on BL_REG(d0), UBYTE *objs BL_REG(a2),
                              UWORD max BL_REG(d2), struct Library *intbase BL_REG(a6));
-void BLITZ_ROUTINE dowpointer(const UBYTE *shape BL_REG(a2), ULONG xoff_reg BL_REG(d2),
+void BLITZ_ROUTINE dowpointer(const struct bb_shape *shape BL_REG(a2), ULONG xoff_reg BL_REG(d2),
                               ULONG yoff_reg BL_REG(d3), struct Library *intbase BL_REG(a6));
-void BLITZ_ROUTINE dowfont(const struct ifont *font BL_REG(a0),
+void BLITZ_ROUTINE dowfont(const struct bb_intuifont *font BL_REG(a0),
                            struct bwin *w BL_REG(a1),
                            struct Library *gfxbase BL_REG(a6));
-void BLITZ_ROUTINE dowfont2(ULONG style BL_REG(d1), const struct ifont *font BL_REG(a0),
+void BLITZ_ROUTINE dowfont2(ULONG style BL_REG(d1), const struct bb_intuifont *font BL_REG(a0),
                             struct bwin *w BL_REG(a1),
                             struct Library *gfxbase BL_REG(a6));
 void BLITZ_ROUTINE dobtow1(struct bwin *w BL_REG(a0), struct BitMap *bm BL_REG(a1),
@@ -240,7 +234,7 @@ void BLITZ_ROUTINE dobtow2(ULONG sx_reg BL_REG(d0), ULONG sy_reg BL_REG(d1),
                            struct Library *gfxbase BL_REG(a6));
 void BLITZ_ROUTINE dowblit(ULONG xpos BL_REG(d1), ULONG ypos BL_REG(d2),
                            ULONG y_reg BL_REG(d3), struct bwin *w BL_REG(a0),
-                           const UBYTE *shape BL_REG(a2),
+                           const struct bb_shape *shape BL_REG(a2),
                            struct Library *gfxbase BL_REG(a6));
 void BLITZ_ROUTINE _showsuper(WORD x BL_REG(d0), WORD y BL_REG(d1),
                               struct bwin *w BL_REG(a1),
@@ -2623,7 +2617,7 @@ void BLITZ_ROUTINE domenusok(UWORD on BL_REG(d0), UBYTE *objs BL_REG(a2), UWORD 
  * @param yoff_reg d3: the caller's d3 (its upper word goes to SetPointer)
  * @param intbase a6: the intuition base
  */
-void BLITZ_ROUTINE dowpointer(const UBYTE *shape BL_REG(a2), ULONG xoff_reg BL_REG(d2),
+void BLITZ_ROUTINE dowpointer(const struct bb_shape *shape BL_REG(a2), ULONG xoff_reg BL_REG(d2),
                                 ULONG yoff_reg BL_REG(d3), struct Library *intbase BL_REG(a6))
 {
     struct bwin *w = (struct bwin *)blitz_string;
@@ -2636,23 +2630,23 @@ void BLITZ_ROUTINE dowpointer(const UBYTE *shape BL_REG(a2), ULONG xoff_reg BL_R
         globfree(w->ptrdata, w->ptrsize);
         w->ptrdata = NULL;
     }
-    size = (UWORD)((UWORD)(*(UWORD *)(shape + 2) + 2) << 2);
+    size = (UWORD)((UWORD)(shape->height + 2) << 2);
     w->ptrsize = size;
     dst = globalloc(size, MEMF_CHIP);
     w->ptrdata = dst;
     *(ULONG *)dst = 0;
     dst += 2;
-    src = *(const UWORD **)(shape + 14);
-    pl = *(UWORD *)(shape + 22);
-    n = *(UWORD *)(shape + 2) - 1;
+    src = (const UWORD *)shape->data;
+    pl = shape->planesize;
+    n = shape->height - 1;
     do {
         *dst++ = *src++;
         *dst++ = *(const UWORD *)((const UBYTE *)src - 2 + (WORD)pl);
     } while (n-- != 0);
     *(ULONG *)dst = 0;
-    SetPointer(w->win, w->ptrdata, *(UWORD *)(shape + 2), *(UWORD *)shape,
-               (xoff_reg & 0xffff0000UL) | *(UWORD *)(shape + 10),
-               (yoff_reg & 0xffff0000UL) | *(UWORD *)(shape + 12));
+    SetPointer(w->win, w->ptrdata, shape->height, shape->width,
+               (xoff_reg & 0xffff0000UL) | (UWORD)shape->handlex,
+               (yoff_reg & 0xffff0000UL) | (UWORD)shape->handley);
 }
 
 /**
@@ -2665,7 +2659,7 @@ void BLITZ_ROUTINE dowpointer(const UBYTE *shape BL_REG(a2), ULONG xoff_reg BL_R
  * @param w a1: the used window object
  * @param gfxbase a6: the graphics base
  */
-void BLITZ_ROUTINE dowfont(const struct ifont *font BL_REG(a0), struct bwin *w BL_REG(a1),
+void BLITZ_ROUTINE dowfont(const struct bb_intuifont *font BL_REG(a0), struct bwin *w BL_REG(a1),
                              struct Library *gfxbase BL_REG(a6))
 {
     SetFont(w->win->RPort, font->font);
@@ -2682,7 +2676,7 @@ void BLITZ_ROUTINE dowfont(const struct ifont *font BL_REG(a0), struct bwin *w B
  * @param w a1: the used window object
  * @param gfxbase a6: the graphics base
  */
-void BLITZ_ROUTINE dowfont2(ULONG style BL_REG(d1), const struct ifont *font BL_REG(a0),
+void BLITZ_ROUTINE dowfont2(ULONG style BL_REG(d1), const struct bb_intuifont *font BL_REG(a0),
                               struct bwin *w BL_REG(a1), struct Library *gfxbase BL_REG(a6))
 {
     struct RastPort *rp = w->win->RPort;
@@ -2762,30 +2756,30 @@ void BLITZ_ROUTINE dobtow2(ULONG sx_reg BL_REG(d0), ULONG sy_reg BL_REG(d1), ULO
  * @param gfxbase a6: the graphics base
  */
 void BLITZ_ROUTINE dowblit(ULONG xpos BL_REG(d1), ULONG ypos BL_REG(d2), ULONG y_reg BL_REG(d3),
-                             struct bwin *w BL_REG(a0), const UBYTE *shape BL_REG(a2),
+                             struct bwin *w BL_REG(a0), const struct bb_shape *shape BL_REG(a2),
                              struct Library *gfxbase BL_REG(a6))
 {
     struct RastPort *rp = w->win->RPort;
-    UBYTE *plane = *(UBYTE **)(shape + 14);
-    WORD psize = *(WORD *)(shape + 22);
+    UBYTE *plane = shape->data;
+    WORD psize = (WORD)shape->planesize;
     ULONG x, y, cookie;
     int i;
 
-    *(UWORD *)&mybmap.BytesPerRow = *(UWORD *)(shape + 6);
-    *(UWORD *)&mybmap.Rows = *(UWORD *)(shape + 2);
-    *(UWORD *)&mybmap.Flags = *(UWORD *)(shape + 4);
+    *(UWORD *)&mybmap.BytesPerRow = shape->ebwidth;
+    *(UWORD *)&mybmap.Rows = shape->height;
+    *(UWORD *)&mybmap.Flags = shape->depth;
     for (i = 0; i < 8; i++) {
         mybmap.Planes[i] = plane;
         plane += psize;
     }
-    y = (y_reg & 0xffff0000UL) | (UWORD)(ypos - *(UWORD *)(shape + 12));
-    x = (ypos & 0xffff0000UL) | (UWORD)(xpos - *(UWORD *)(shape + 10));
-    cookie = *(ULONG *)(shape + 18);
+    y = (y_reg & 0xffff0000UL) | (UWORD)(ypos - (UWORD)shape->handley);
+    x = (ypos & 0xffff0000UL) | (UWORD)(xpos - (UWORD)shape->handlex);
+    cookie = (ULONG)shape->cookie;
     if (cookie)
-        BltMaskBitMapRastPort(&mybmap, 0, 0, rp, x, y, *(WORD *)shape, *(WORD *)(shape + 2),
+        BltMaskBitMapRastPort(&mybmap, 0, 0, rp, x, y, (WORD)shape->width, (WORD)shape->height,
                               0xe0, (PLANEPTR)cookie);
     else
-        BltBitMapRastPort(&mybmap, 0, 0, rp, x, y, *(WORD *)shape, *(WORD *)(shape + 2), 0xc0);
+        BltBitMapRastPort(&mybmap, 0, 0, rp, x, y, (WORD)shape->width, (WORD)shape->height, 0xc0);
 }
 
 /**
@@ -3251,7 +3245,7 @@ static void BLITZ_ERRCHK wchk_c(const ULONG *w BL_REG(a1))
 
 /* wfontchk - and a0 = an IntuiFont with font */
 static void BLITZ_ERRCHK wfontchk_c(const ULONG *w BL_REG(a1),
-                                    const struct ifont *font BL_REG(a0))
+                                    const struct bb_intuifont *font BL_REG(a0))
 {
     if (!*w)
         BLITZ_RUNERR(mess3);
@@ -3268,10 +3262,10 @@ static void BLITZ_ERRCHK wlinechk_c(UWORD n BL_REG(d7), const ULONG *w BL_REG(a1
         BLITZ_RUNERR(mess3);
 }
 
-/* wpointerchk - a2 = shape (word), a3 = window */
-static void BLITZ_ERRCHK wpointerchk_c(const UWORD *shape BL_REG(a2))
+/* wpointerchk - a2 = shape, a3 = window */
+static void BLITZ_ERRCHK wpointerchk_c(const struct bb_shape *shape BL_REG(a2))
 {
-    if (!*shape)
+    if (!shape->width)
         BLITZ_RUNERR(mess8);
     else if (!*(const ULONG *)blitz_string)
         BLITZ_RUNERR(mess3);
@@ -3323,11 +3317,12 @@ static void BLITZ_ERRCHK idcmpchk_c(ULONG f BL_REG(d0))
 }
 
 /* wblitchk - a0 = window, a2 = shape */
-static void BLITZ_ERRCHK wblitchk_c(const ULONG *w BL_REG(a0), const UWORD *shape BL_REG(a2))
+static void BLITZ_ERRCHK wblitchk_c(const ULONG *w BL_REG(a0),
+                                   const struct bb_shape *shape BL_REG(a2))
 {
     if (!*w)
         BLITZ_RUNERR(mess3);
-    else if (!*shape)
+    else if (!shape->width)
         BLITZ_RUNERR(mess12);
 }
 
