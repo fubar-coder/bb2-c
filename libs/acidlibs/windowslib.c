@@ -62,13 +62,21 @@
  *   - WCls fills from y = 1 (#314); WScroll/WPrintScroll set the A pen to
  *     0 (#315).
  *   - WindowTags without tags keeps the user tags of the last
- *     WindowTags (no TAG_DONE written) (#316); &TagList is copied without
- *     a limit into 32 longs (#317).  Window titles (Window, WindowTags,
- *     WTitle) are allocated and never freed (#318).
+ *     WindowTags (no TAG_DONE written) (#316); the tag pairs of
+ *     WindowTags ...,Tag,Data... are copied without a limit into 32 longs
+ *     (#317, only the &TagList form is fixed, see below).  Window titles
+ *     (Window, WindowTags, WTitle) are allocated and never freed (#318).
  *   - Window with flag $80 (super bitmap) uses the bitmap of the last
  *     Window with BitMap#; the NewWindow is static, its BitMap stays. (#319)
  *   - The line editor (Edit$ in a window) and calcwidth: proportional
  *     widths only for characters lo..lo+127 (SUB.b/BMI). (#321)
+ * Fixed (intended deviation, #317): WindowTags ...,&TagList copied the
+ *   program's list without a limit into usertags (32 longs = 16 pairs),
+ *   a longer list overwrote bmapbase and the code behind it.  Here at
+ *   most 15 pairs are copied; if the list goes on, the 16th entry is
+ *   TAG_MORE to the rest of it (AmiBlitz3 links the whole list with
+ *   TAG_MORE; copying the short lists keeps them as before, also for
+ *   #316).
  * Fixed (intended deviation, #320): WMove/WSize waited in a loop until
  *   the window had exactly the new position/size, without an end if
  *   Intuition limits the values (size limits, screen edge; the checks
@@ -707,8 +715,9 @@ static ULONG origxy;
 static struct NewWindow anewwindow = {
     .MinWidth = 0x20, .MinHeight = 0x40, .MaxWidth = 0xffff, .MaxHeight = 0xffff };
 
-/* wintags + usertags: one list (no TAG_MORE); WindowTags copies the user
-   tags behind the four fixed ones, BUG(orig) (#317) without a limit, and
+/* wintags + usertags: one list; WindowTags copies the user tags behind
+   the four fixed ones (&TagList: at most 15 pairs, then TAG_MORE to the
+   rest, fixed #317; the tag pairs BUG(orig) (#317) without a limit), and
    without tags writes no TAG_DONE: the last user tags stay (#316) */
 static struct {
     struct TagItem flags, title, screen, newlook;   /* wintags */
@@ -3137,9 +3146,11 @@ void BLITZ_ROUTINE dowindowtags1(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1)
  * tag list of the program.
  *
  * As WindowTags Window#,Flags,Title$; the list is copied up to and
- * including TAG_DONE behind the fixed tags.
+ * including TAG_DONE behind the fixed tags, at most 16 entries: a longer
+ * list gets TAG_MORE to its 16th pair as the 16th entry.
  *
- * BUG(orig) (#317): copied without a limit into 32 longs.
+ * Fixed (intended deviation, #317): the original copies without a limit
+ * into the 32 longs of usertags.
  *
  * @param objoff d0: the object offset (window number << 5)
  * @param flags d1: the window flags
@@ -3156,13 +3167,20 @@ void BLITZ_ROUTINE dowindowtags3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1)
                                    const ULONG *lens BL_REG(a2),
                                    struct Library *intbase BL_REG(a6))
 {
-    struct TagItem *d = tags.user;     /* BUG(orig) (#317): no limit */
+    struct TagItem *d = tags.user;
     ULONG tag;
 
     do {
-        tag = *tl++;
+        tag = tl[0];
+        if (d == &tags.user[15] && tag != TAG_DONE) {
+            /* the last entry: the rest of the list (fixed, #317) */
+            d->ti_Tag = TAG_MORE;
+            d->ti_Data = (ULONG)tl;
+            break;
+        }
         d->ti_Tag = tag;
-        d->ti_Data = *tl++;
+        d->ti_Data = tl[1];
+        tl += 2;
         d++;
     } while (tag);
     /* DIFF (K): the original keeps the title length with MOVE.l -(a2),
@@ -3179,7 +3197,9 @@ void BLITZ_ROUTINE dowindowtags3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1)
  * As WindowTags Window#,Flags,Title$; the pairs come from the argument
  * stack, then TAG_DONE (its data not set).
  *
- * BUG(orig) (#317): no limit for the 16 user tags.
+ * BUG(orig) (#317): no limit for the 16 user tags (fixed only for the
+ * &TagList form: these pairs come from the argument stack in reverse
+ * order and cannot be linked with TAG_MORE).
  *
  * @param objoff d0: the object offset (window number << 5)
  * @param flags d1: the window flags
