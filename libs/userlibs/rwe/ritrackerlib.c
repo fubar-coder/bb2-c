@@ -494,25 +494,25 @@ static void mt_updatefunk(struct chan *c)
 /* mt_Arpeggio (effect 0xy) */
 static void mt_arpeggio(aud_t *hw, struct chan *c)
 {
-    UWORD arp, arpperiod;               /* d0: counter % 3, then the note step; d2 */
+    UWORD tick, step, arpperiod;        /* d0: counter % 3; d0: the note step; d2 */
     ULONG row;
     UWORD period;
     int left;
 
-    arp = (UWORD)(pt.counter % 3);      /* DIVS #3: SWAP */
-    if (arp == 0) {
+    tick = (UWORD)(pt.counter % 3);     /* DIVS #3: SWAP */
+    if (tick == 0) {
         hw->ac_per = c->period;
         return;
     }
-    if (arp == 2)
-        arp = c->cmdlo & 15;
+    if (tick == 2)
+        step = c->cmdlo & 15;
     else
-        arp = c->cmdlo >> 4;
-    arp <<= 1;
+        step = c->cmdlo >> 4;
+    step <<= 1;
     row = (ULONG)c->finetune * 36 * 2;
     period = c->period;
     for (left = 36; left >= 0; left--) {  /* BUG(orig): 37 entries (#474) */
-        arpperiod = PERIOD(row + arp);
+        arpperiod = PERIOD(row + step);
         if (period >= PERIOD(row)) {
             hw->ac_per = arpperiod;
             return;
@@ -571,29 +571,30 @@ static void mt_fineportadown(aud_t *hw, struct chan *c)
 /* mt_SetTonePorta: the wanted period of the note (3xx/5xx with a note) */
 static void mt_settoneporta(struct chan *c)
 {
-    UWORD target = c->note & 0x0fff, work;  /* d2; d0: table offset, then period */
+    UWORD target = c->note & 0x0fff;    /* d2 */
+    UWORD off, period;                  /* d0: the table offset; d0: the current period */
     ULONG row = (ULONG)c->finetune * 36 * 2;
 
-    for (work = 0; ; ) {
-        if (target >= PERIOD(row + work))
+    for (off = 0; ; ) {
+        if (target >= PERIOD(row + off))
             break;
-        work += 2;
-        if (work >= 36 * 2) {
-            work = 35 * 2;
+        off += 2;
+        if (off >= 36 * 2) {
+            off = 35 * 2;
             break;
         }
     }
-    if ((c->finetune & 8) && work != 0)
-        work -= 2;
-    target = PERIOD(row + work);
+    if ((c->finetune & 8) && off != 0)
+        off -= 2;
+    target = PERIOD(row + off);
     c->wantedperiod = target;
-    work = c->period;
+    period = c->period;
     c->toneportdirec = 0;
-    if (target == work) {
+    if (target == period) {
         c->wantedperiod = 0;
         return;
     }
-    if ((WORD)target >= (WORD)work)
+    if ((WORD)target >= (WORD)period)
         return;
     c->toneportdirec = 1;
 }
@@ -602,19 +603,19 @@ static void mt_settoneporta(struct chan *c)
    the table) */
 static void mt_toneportnochange(aud_t *hw, struct chan *c)
 {
-    UWORD work, per;                    /* d0: speed, then table offset; d2 */
+    UWORD speed, off, per;              /* d0: the speed; d0: the table offset; d2 */
 
     if (!c->wantedperiod)
         return;
-    work = c->toneportspeed;
+    speed = c->toneportspeed;
     if (!c->toneportdirec) {
-        c->period += work;
+        c->period += speed;
         if ((WORD)c->wantedperiod <= (WORD)c->period) {
             c->period = c->wantedperiod;
             c->wantedperiod = 0;
         }
     } else {
-        c->period -= work;
+        c->period -= speed;
         if ((WORD)c->wantedperiod >= (WORD)c->period) {
             c->period = c->wantedperiod;
             c->wantedperiod = 0;
@@ -623,16 +624,16 @@ static void mt_toneportnochange(aud_t *hw, struct chan *c)
     per = c->period;
     if (c->glissfunk & 0x0f) {
         ULONG row = (ULONG)c->finetune * 36 * 2;
-        for (work = 0; ; ) {
-            if (per >= PERIOD(row + work))
+        for (off = 0; ; ) {
+            if (per >= PERIOD(row + off))
                 break;
-            work += 2;
-            if (work >= 36 * 2) {
-                work = 35 * 2;
+            off += 2;
+            if (off >= 36 * 2) {
+                off = 35 * 2;
                 break;
             }
         }
-        per = PERIOD(row + work);
+        per = PERIOD(row + off);
     }
     hw->ac_per = per;
 }
@@ -697,28 +698,29 @@ static void mt_vibrato(aud_t *hw, struct chan *c)
 /* mt_Tremolo (7xy) */
 static void mt_tremolo(aud_t *hw, struct chan *c)
 {
-    UBYTE work = c->cmdlo, b;           /* d0: argument, then table position */
+    UBYTE arg = c->cmdlo, b;            /* d0: the argument */
+    UBYTE pos;                          /* d0: the table position */
     UWORD delta, vol;
 
-    if (work) {
+    if (arg) {
         b = c->tremolocmd;
-        if (work & 0x0f)
-            b = (b & 0xf0) | (work & 0x0f);
+        if (arg & 0x0f)
+            b = (b & 0xf0) | (arg & 0x0f);
         if (c->cmdlo & 0xf0)
             b = (b & 0x0f) | (c->cmdlo & 0xf0);
         c->tremolocmd = b;
     }
-    work = (c->tremolopos >> 2) & 0x1f;
+    pos = (c->tremolopos >> 2) & 0x1f;
     switch ((c->wavecontrol >> 4) & 3) {
     case 0:
-        delta = pt.vibtable[work];
+        delta = pt.vibtable[pos];
         break;
     case 1:                             /* ramp down */
-        work = (UBYTE)(work << 3);
+        pos = (UBYTE)(pos << 3);
         if ((BYTE)c->vibratopos < 0)    /* BUG(orig): the vibrato position (#482) */
-            delta = (UBYTE)(255 - work);
+            delta = (UBYTE)(255 - pos);
         else
-            delta = work;
+            delta = pos;
         break;
     default:
         delta = 255;
@@ -852,13 +854,14 @@ static void mt_doretrig(aud_t *hw, struct chan *c)
 /* the E commands (Exy) */
 static void mt_e_commands(aud_t *hw, struct chan *c)
 {
-    UBYTE x = c->cmdlo & 0x0f, value;   /* d0: filter bit or funk speed */
+    UBYTE x = c->cmdlo & 0x0f;
+    UBYTE filterbit, funkspeed;         /* d0 (E0x); d0 (EFx) */
 
     switch (c->cmdlo >> 4) {
     case 0x0:                           /* mt_FilterOnOff */
-        value = (UBYTE)((c->cmdlo & 1) << 1);
+        filterbit = (UBYTE)((c->cmdlo & 1) << 1);
         CIAAPRA &= 0xfd;
-        CIAAPRA |= value;
+        CIAAPRA |= filterbit;
         break;
     case 0x1:
         mt_fineportaup(hw, c);
@@ -933,9 +936,9 @@ static void mt_e_commands(aud_t *hw, struct chan *c)
     case 0xf:                           /* mt_FunkIt */
         if (pt.counter)
             break;
-        value = (UBYTE)(x << 4);
-        c->glissfunk = (c->glissfunk & 0x0f) | value;
-        if (value)
+        funkspeed = (UBYTE)(x << 4);
+        c->glissfunk = (c->glissfunk & 0x0f) | funkspeed;
+        if (funkspeed)
             mt_updatefunk(c);
         break;
     default:                            /* E8x: nothing */
@@ -1055,8 +1058,10 @@ static void mt_setperiod(aud_t *hw, struct chan *c)
 static void mt_playvoice(aud_t *hw, struct chan *c, ULONG *patpos, UBYTE *sampleinfo)
 {
     ULONG v;
-    ULONG work;                         /* d2: sample, start offset, loop start */
-    UWORD repeat, sample;
+    UWORD sample;                       /* d2: the sample number */
+    ULONG startoff;                     /* d2: its offset in the start table */
+    ULONG loop;                         /* d2: the loop start */
+    UWORD repeat;
     ULONG infooff;
 
     if (!c->note && !c->cmd && !c->cmdlo)
@@ -1066,21 +1071,20 @@ static void mt_playvoice(aud_t *hw, struct chan *c, ULONG *patpos, UBYTE *sample
     c->cmd = (UBYTE)(v >> 8);
     c->cmdlo = (UBYTE)v;
     *patpos += 4;
-    work = (UBYTE)((c->cmd & 0xf0) >> 4 | (UBYTE)(c->note >> 8 & 0xf0));
-    if (work) {
-        sample = (UWORD)work;
-        work = (work - 1) << 2;
+    sample = (UBYTE)((c->cmd & 0xf0) >> 4 | (UBYTE)(c->note >> 8 & 0xf0));
+    if (sample) {
+        startoff = ((ULONG)sample - 1) << 2;
         infooff = (ULONG)sample * 30;
-        c->start = SAMPLESTART(work);   /* BUG(orig): sample > 31 (#480) */
+        c->start = SAMPLESTART(startoff);   /* BUG(orig): sample > 31 (#480) */
         c->length = W(sampleinfo + infooff);
         c->reallength = W(sampleinfo + infooff);
         c->finetune = sampleinfo[infooff + 2];
         c->volume = sampleinfo[infooff + 3];
         repeat = W(sampleinfo + infooff + 4);    /* repeat */
         if (repeat) {
-            work = (ULONG)c->start + (UWORD)(repeat << 1);  /* BUG(orig): word (#479) */
-            c->loopstart = (UBYTE *)work;
-            c->wavestart = (UBYTE *)work;
+            loop = (ULONG)c->start + (UWORD)(repeat << 1);  /* BUG(orig): word (#479) */
+            c->loopstart = (UBYTE *)loop;
+            c->wavestart = (UBYTE *)loop;
             c->length = (UWORD)(W(sampleinfo + infooff + 4) + W(sampleinfo + infooff + 6));
             c->replen = W(sampleinfo + infooff + 6);
         } else {
