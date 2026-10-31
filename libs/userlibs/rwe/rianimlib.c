@@ -64,6 +64,9 @@
  * (an RTS no header refers to), the short ANIM7 code.
  */
 #include "blitzlib.h"
+#include <graphics/gfx.h>
+#include <datatypes/pictureclass.h>
+#include <stddef.h>
 
 /* RIPackLib (73): the token list of the CD's BSS2 RIPACKLIB.OBJ */
 #define TOK_unpackiff   ((LIB_ripacklib << 7) + 3)   /* form 1 */
@@ -134,15 +137,27 @@ BLITZ_LIBFIN();
 #define LG(p) (*(ULONG *)(p))
 #define WD(p) (*(UWORD *)(p))
 
-#define ID_FORM 0x464f524dUL
 #define ID_ANIM 0x414e494dUL
-#define ID_ILBM 0x494c424dUL
-#define ID_BMHD 0x424d4844UL
 #define ID_ANHD 0x414e4844UL
-#define ID_CMAP 0x434d4150UL
 #define ID_DLTA 0x444c5441UL
 
 #define SIZEOF_BITMAP 64
+
+static_assert(sizeof(struct BitMapHeader) == 20);
+
+/* the data of an ANHD chunk (the ANIM's AnimHeader; the original reads
+   the operation and the bits) */
+struct BL_PACKED anhd {
+    UBYTE operation;                    /* +0: 5, 65 (byte delta), 7 */
+    UBYTE mask;
+    UWORD w, h;
+    WORD x, y;
+    ULONG abstime, reltime;             /* +10, +14 */
+    UBYTE interleave, pad0;
+    ULONG bits;                         /* +20: ANIM7 options */
+    UBYTE pad[16];
+};
+static_assert(sizeof(struct anhd) == 40);
 
 /* InitFindChunk / FindChunk */
 static UBYTE *firstchunk, *lastfoundchunk, *endoffile;
@@ -151,7 +166,7 @@ static UBYTE *firstframe, *animaddress, *animend, *nextanimframe;
 static UWORD animheight, animwidth;
 static UWORD deltacolumns;              /* a delta's columns per plane - 1 (DBRA) */
 static UBYTE animdepth;
-static ULONG *bitmapaddress;            /* the bitmap object's planes */
+static PLANEPTR *bitmapaddress;         /* the Planes of the bitmap object */
 static ULONG animtype7, bitplaneoffset;
 static UBYTE *thirdframe;
 static UBYTE *cmapchunk;                /* the CMAP chunk over the ILBMPalette call */
@@ -204,41 +219,41 @@ static LONG findnextchunk(ULONG id, UBYTE **data)
 }
 
 /* findbmhd: the BMHD of the first frame of the ANIM at address */
-static LONG findbmhd(ULONG address, UBYTE **data)
+static LONG findbmhd(ULONG address, struct BitMapHeader **data)
 {
     if (!initfindchunk((UBYTE *)address, ID_ANIM))
         return 0;
     if (!initfindchunk(firstchunk, ID_ILBM))
         return 0;
-    return findchunk(ID_BMHD, data);
+    return findchunk(ID_BMHD, (UBYTE **)data);
 }
 
 /* RIAnimDepth / RIAnimWidth / RIAnimHeight (address) */
 ULONG BLITZ_ROUTINE c_AnimDepth(ULONG address BL_REG(d0))
 {
-    UBYTE *bmhd;
+    struct BitMapHeader *bmhd;
 
     if (!findbmhd(address, &bmhd))
         return 0;
-    return bmhd[8];
+    return bmhd->bmh_Depth;
 }
 
 ULONG BLITZ_ROUTINE c_AnimWidth(ULONG address BL_REG(d0))
 {
-    UBYTE *bmhd;
+    struct BitMapHeader *bmhd;
 
     if (!findbmhd(address, &bmhd))
         return 0;
-    return 0xffff0000UL | WD(bmhd);     /* MOVE.w into d0 = -1 */
+    return 0xffff0000UL | bmhd->bmh_Width;      /* MOVE.w into d0 = -1 */
 }
 
 ULONG BLITZ_ROUTINE c_AnimHeight(ULONG address BL_REG(d0))
 {
-    UBYTE *bmhd;
+    struct BitMapHeader *bmhd;
 
     if (!findbmhd(address, &bmhd))
         return 0;
-    return 0xffff0000UL | WD(bmhd + 2);
+    return 0xffff0000UL | bmhd->bmh_Height;
 }
 
 /* AnimLoop On|Off */
@@ -253,6 +268,7 @@ ULONG BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
                                ULONG pal BL_REG(d2), ULONG offset BL_REG(d3))
 {
     UBYTE *chunk;
+    struct BitMapHeader *bmhd;
     struct bl_regs r;
 
     bitmapnumber = (UBYTE)bm;
@@ -268,9 +284,10 @@ ULONG BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     endoffile = animend;                /* BUG(orig): the whole ANIM (#511) */
     if (!findchunk(ID_BMHD, &chunk))
         return 0;
-    animwidth = WD(chunk);
-    animheight = WD(chunk + 2);
-    animdepth = chunk[8];
+    bmhd = (struct BitMapHeader *)chunk;
+    animwidth = bmhd->bmh_Width;
+    animheight = bmhd->bmh_Height;
+    animdepth = bmhd->bmh_Depth;
     BL_JSR_D4_(BL_TOKVAL(TOK_unpackiff, 1), (ULONG)firstframe, bitmapnumber, (ULONG)-1,
                bitplaneoffset);
     r = (struct bl_regs){ .d0 = (ULONG)firstframe, .d1 = palettenumber };
@@ -295,9 +312,9 @@ ULONG BLITZ_ROUTINE c_InitAnim2(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
    = bitmap# * 64 (#pd1) */
 ULONG BLITZ_ROUTINE c_InitAnim3(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
                                 ULONG pal BL_REG(d2), ULONG x BL_REG(d3), ULONG y BL_REG(d4),
-                                const UWORD *bitmap BL_REG(a0))
+                                const struct BitMap *bitmap BL_REG(a0))
 {
-    ULONG off = bl_mulu_w(*bitmap, (UWORD)y) + (ULONG)((LONG)x >> 3);
+    ULONG off = bl_mulu_w(bitmap->BytesPerRow, (UWORD)y) + (ULONG)((LONG)x >> 3);
 
     return c_InitAnim(address, bl_divu_w(bm, SIZEOF_BITMAP), pal, off);
 }
@@ -397,13 +414,14 @@ static void unpackanim(UBYTE *dlta, BOOL seven)
 {
     UBYTE *body = dlta + 8;
     const ULONG *offsets = (const ULONG *)body;
-    ULONG *planes = bitmapaddress;
-    ULONG mod = WD((UBYTE *)planes - 8);  /* the bitmap's ebwidth */
+    PLANEPTR *planes = bitmapaddress;
+    /* the bitmap's ebwidth: BytesPerRow, 8 bytes in front of Planes */
+    ULONG mod = WD((UBYTE *)planes - offsetof(struct BitMap, Planes));
     UBYTE plane = 0;
 
     deltacolumns = (UWORD)(((WORD)animwidth >> (seven ? 5 : 3)) - 1);
     do {                                /* BUG(orig): up to the byte (#509) */
-        UBYTE *column = (UBYTE *)*planes++ + bitplaneoffset;
+        UBYTE *column = *planes++ + bitplaneoffset;
         ULONG op = offsets[0], data = offsets[8];
 
         offsets++;
@@ -419,15 +437,16 @@ static void unpackanim(UBYTE *dlta, BOOL seven)
 /* RINextAnimFrame (bitmap#) with a0 = the bitmap object: -1 if a delta
    was applied.  The result in the upper half, the lower 1 if the
    original returns without restoring its registers (no DLTA). */
-unsigned long long BLITZ_ROUTINE c_NextAnimFrame(ULONG *bitmap BL_REG(a0))
+unsigned long long BLITZ_ROUTINE c_NextAnimFrame(struct BitMap *bitmap BL_REG(a0))
 {
     UBYTE *chunk = nextanimframe;
+    const struct anhd *anhd;
     struct bl_regs r;
     ULONG len;
 
     if (!chunk)
         return 0;
-    bitmapaddress = bitmap + 2;
+    bitmapaddress = bitmap->Planes;
     if ((LONG)chunk >= (LONG)animend || LG(chunk) != ID_FORM) {
         if (!doanimloop)
             return 0;
@@ -439,8 +458,9 @@ unsigned long long BLITZ_ROUTINE c_NextAnimFrame(ULONG *bitmap BL_REG(a0))
     chunk += 4;                         /* skip ILBM */
     if (LG(chunk) != ID_ANHD)
         return 0;
-    animtype = chunk[8];
-    animtype7 = LG(chunk + 28);
+    anhd = (const struct anhd *)(chunk + 8);
+    animtype = anhd->operation;
+    animtype7 = anhd->bits;
     chunk += LG(chunk + 4) + 8;
     if (LG(chunk) == ID_CMAP) {
         cmapchunk = chunk;
