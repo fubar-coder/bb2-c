@@ -992,7 +992,22 @@ static int decode(const struct disdata *e, UWORD op)
     return 1;
 }
 
-/* DisAssemble$(address): 34 columns to a3; InstrSize the bytes */
+/**
+ * @brief DisAssemble$(address.l): the instruction at address as a line of
+ * 34 columns.
+ *
+ * The first word is matched against DisData; the line (name and size in
+ * columns 0-8, the operands from column 9, spaces behind) is written to
+ * a3 with 17 word writes.  InstrSize becomes the bytes the instruction
+ * took.  BUG(orig): a decimal 0 is the bytes at address 8 (#614); a
+ * source that only moves the operand pointer gets a comma (#615); longer
+ * operands are cut after 34 columns, a line can overwrite the variables
+ * behind LineBuff (#616); an odd a3 or address is an address error on a
+ * 68000 (#617).
+ * @param addr  d0: the address of the instruction
+ * @return d0: 34, the length; 5 for an instruction not in the table
+ *         ("?????", InstrSize 2)
+ */
 ULONG BLITZ_ROUTINE c_disoneline(ULONG addr BL_REG(d0))
 {
     const struct disdata *e;
@@ -1022,17 +1037,25 @@ ULONG BLITZ_ROUTINE c_disoneline(ULONG addr BL_REG(d0))
     return 34;
 }
 
-/* InstrSize: the size of the last instruction (0 before the first) */
+/**
+ * @brief InstrSize: the size of the last instruction disassembled.
+ * @return d0: its bytes (0 before the first DisAssemble$)
+ */
 ULONG BLITZ_ROUTINE c_instrsize(void)
 {
     return disasm_add;
 }
 
-/* init and finit: RTS */
+/**
+ * @brief init: nothing (RTS), the library needs no system library.
+ */
 void BLITZ_ROUTINE libinit(void)
 {
 }
 
+/**
+ * @brief finit: nothing (RTS).
+ */
 void BLITZ_ROUTINE libfinit(void)
 {
 }
