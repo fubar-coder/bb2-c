@@ -370,27 +370,27 @@ static void BLITZ_ROUTINE initmem_c(void)
 /* ------------------------------------------------------------- SetZone */
 
 /* doset: zone d0 = x1, x2, y1, y2 */
-static ULONG doset(ULONG n, UWORD x1, UWORD y1, UWORD x2, UWORD y2)
+static BB_BOOL doset(ULONG n, UWORD x1, UWORD y1, UWORD x2, UWORD y2)
 {
     struct zonetable *zt = zd.zonetable;
     struct zone *z;
 
     if (!zt)
-        return (ULONG)-1;                           /* _nozones: BUG(orig) #876 */
+        return BB_TRUE;                             /* _nozones: BUG(orig) #876 */
     if (MI(zt->count - 1, n))
-        return 0;
+        return BB_FALSE;
     z = zone(zt, ASLW(n, 3));
     z->x1 = x1;
     z->x2 = x2;
     z->y1 = y1;
     z->y2 = y2;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* SetZone num,x1,y1,x2,y2 (d0-d4): x1 < x2 and y1 < y2 by EXG */
-static ULONG BLITZ_ROUTINE setzone_c(ULONG n BL_REG(d0), UWORD x1 BL_REG(d1),
-                                     UWORD y1 BL_REG(d2), UWORD x2 BL_REG(d3),
-                                     UWORD y2 BL_REG(d4))
+static BB_BOOL BLITZ_ROUTINE setzone_c(ULONG n BL_REG(d0), UWORD x1 BL_REG(d1),
+                                       UWORD y1 BL_REG(d2), UWORD x2 BL_REG(d3),
+                                       UWORD y2 BL_REG(d4))
 {
     UWORD swap;
 
@@ -408,8 +408,8 @@ static ULONG BLITZ_ROUTINE setzone_c(ULONG n BL_REG(d0), UWORD x1 BL_REG(d1),
 }
 
 /* SetZone num,x,y,radius (d0-d3): a circle, x2 = radius^2 (a word) */
-static ULONG BLITZ_ROUTINE setzone2_c(ULONG n BL_REG(d0), UWORD x BL_REG(d1),
-                                      UWORD y BL_REG(d2), UWORD r BL_REG(d3))
+static BB_BOOL BLITZ_ROUTINE setzone2_c(ULONG n BL_REG(d0), UWORD x BL_REG(d1),
+                                        UWORD y BL_REG(d2), UWORD r BL_REG(d3))
 {
     return doset(n, x, y, (UWORD)bl_muls_w(r, r), 0xffff);
 }
@@ -498,51 +498,51 @@ static ULONG BLITZ_ROUTINE zonetablesize_c(void)
 }
 
 /* NewZoneTable(n,zones) (d0, d1): n 1..15, zones 2..65535 */
-static ULONG BLITZ_ROUTINE newzonetable_c(ULONG n BL_REG(d0), ULONG num BL_REG(d1))
+static BB_BOOL BLITZ_ROUTINE newzonetable_c(ULONG n BL_REG(d0), ULONG num BL_REG(d1))
 {
     struct zonetable **e, *mem;
 
     if (!n || !MI(n, 16) || MI(num, 2) || !MI(num, 65536))
-        return 0;                                       /* _return0 */
+        return BB_FALSE;                                /* _return0 */
     e = entry(n);
     if (*e)
         free_mem(*e);
     mem = AllocMem((num << 3) + 4, MEMF_PUBLIC);
     if (!mem)
-        return 0;
+        return BB_FALSE;
     *e = mem;
     mem->count = num;
     zoneinit1_c();                                      /* BUG(orig): _zonetable (#875) */
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* UseZoneTable n (d0): n < 16 with a table */
-static ULONG BLITZ_ROUTINE usezonetable_c(ULONG n BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE usezonetable_c(ULONG n BL_REG(d0))
 {
     struct zonetable **e;
 
     if (!MI(n, 16))
-        return 0;
+        return BB_FALSE;
     e = entry(n);
     if (!*e)
-        return 0;
+        return BB_FALSE;
     zd.zonetable = *e;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* FreeZoneTable(n) (d0): n 1..15; the entry stays, table 0 current */
-static ULONG BLITZ_ROUTINE freezonetable_c(ULONG n BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE freezonetable_c(ULONG n BL_REG(d0))
 {
     struct zonetable **e;
 
     if (!n || !MI(n, 16))
-        return 0;
+        return BB_FALSE;
     e = entry(n);
     if (!*e)
-        return 0;
+        return BB_FALSE;
     free_mem(*e);                                       /* BUG(orig): stays (#868) */
     zd.zonetable = zd.list[0];
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* ZoneTableNumber: the list index of the current table, -1 */
