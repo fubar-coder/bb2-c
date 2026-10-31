@@ -35,7 +35,7 @@ UWORD maxprep1[] = {
 /* blitz2.s:12247 free..freef (6 bytes); free+2 patched by dofree */
 UWORD free_[] = {
     0x266D, 0x0000,                    /* +0   free move.l 0(a5),a3 */
-    0xD6C0,                            /* +4   add d0,a3 */
+    0xD6C0,                            /* +4   add d0,a3 - word: BUG(orig) (#939) */
 };
 
 /* blitz2.s:12348 rescode / rescode2 (12 bytes); rescode+6 and rescode2+2
@@ -162,7 +162,11 @@ void domaxlen(UWORD c)
 /* ================================================================ Free/Use */
 
 /* blitz2.s:12196 getmaxel, *libp = the lib.  The asm kept the lib in the
-   global mymaxlib (12251) for maxjsr; Free/Use now hand it over. */
+   global mymaxlib (12251) for maxjsr; Free/Use now hand it over.
+   BUG(orig) (#939): the object number is a word, shifted with lsl.w and
+   added as a word (free/use `add d0,a3`, addrcode `add d0,a0`): from
+   n << shift = $8000 on the object is addressed before the object table
+   (the debugger's maximum check lets it through).  Kept. */
 static UBYTE *getmaxlib(UWORD c, struct blitzlib **libp)
 {
     struct blitzlib *lib;
@@ -217,7 +221,7 @@ static void maxjsr(struct blitzlib *lib, ULONG sub)
     makelibsub(lib, sub);
 }
 
-/* blitz2.s:12253 dofree */
+/* blitz2.s:12253 dofree - BUG(orig) (#939): word object offset, see getmaxlib */
 void dofree(UWORD c)
 {
     struct blitzlib *lib;
@@ -228,7 +232,7 @@ void dofree(UWORD c)
     maxjsr(lib, *(ULONG *)(e - 10));
 }
 
-/* blitz2.s:12266 douse */
+/* blitz2.s:12266 douse - BUG(orig) (#939): word object offset, see getmaxlib */
 void douse(UWORD c)
 {
     struct blitzlib *lib;
@@ -868,7 +872,10 @@ void domacro(UWORD c)
     /* .macdone: DIFF: asm `addq #4,a7` dropped the return into doline */
     dolineabort = 1;
     n = mb.at - macrobuff;
-    /* clean up leading and trailing ':'s (only trailing ones in fact) */
+    /* clean up leading and trailing ':'s (only trailing ones in fact).
+       BUG(orig) (#942): a ':' right after the name stays in the text
+       (Macro a:1:End Macro gives ":1"; mb.got suppresses only the ':' of
+       a line end) (blitz2.s:12904-12915).  Kept. */
     while (n) {                                 /* .mclean */
         if (*--mb.at != ':')
             break;

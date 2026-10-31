@@ -213,14 +213,18 @@ void eos_(UWORD c)
     pokel(0);               /* asm: d1 left by doallocmem - patched later */
 }
 
-/* blitz2.s:13466 stateret - Statement Return */
+/* blitz2.s:13466 stateret - Statement Return.  BUG(orig) (#940): neither
+   stateret nor funcret checks the kind of the open procedure (in a string
+   Function, Statement Return skips the pushed length endstate pops; in a
+   Statement, Function Return evaluates with type $FF).  Kept. */
 static void stateret(UWORD c)
 {
     eos_(c);
     getchar3();
 }
 
-/* blitz2.s:13469 funcret - Function Return expr */
+/* blitz2.s:13469 funcret - Function Return expr (BUG(orig) (#940), see
+   stateret) */
 static void funcret(UWORD c)
 {
     UWORD t = (UBYTE)thisproc->rettype;     /* type returning! */
@@ -466,7 +470,8 @@ static void endstate(void)
     save = p->pc;
     p->linksize = locvaroff & ~3;
     if (p->rettype == T_STRING)
-        pokewd(getstlen[0]);
+        pokewd(getstlen[0]);    /* BUG(orig) (#940): expects the length of
+                                   End Function / Function Return */
     if (p->linksize) {
         uselib(64635);
         pokewd(unlinka4[0]);
@@ -791,6 +796,9 @@ static void doend3(UWORD c)
         dowend2();
         return;
     }
+    /* BUG(orig) (#940): End Statement / End Function are not checked
+       against the open procedure (procmode): a string Function ended with
+       End Statement pops its return address as the length.  Kept. */
     if (c == 0x8008) {                  /* End Statement */
         endstate();
         return;

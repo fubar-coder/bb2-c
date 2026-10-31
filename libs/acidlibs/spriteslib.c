@@ -35,6 +35,8 @@
  *    the variables behind it (same layout here). (#281)
  *  - GetaSprite reads 16/32/64 pixels per sprite whatever the shape's
  *    width (beyond the row for narrow shapes). (#282)
+ *  - LoadSprites s,file$: the last sprite is base + (max - 1) << 4 as a
+ *    word: from a maximum of 2049 on it lies before the table. (#939)
  */
 #include "blitzlib.h"
 #define __NOLIBBASE__
@@ -459,6 +461,7 @@ static void BLITZ_ROUTINE doloadsprites2_c(UBYTE *base BL_REG(a2), ULONG max BL_
                                            const char *name BL_REG(d1),
                                            struct DosLibrary *dos BL_REG(a6))
 {
+    /* BUG(orig) (#939): the last sprite as a word offset */
     loadsprites(blitz_string, base + (WORD)(UWORD)((UWORD)(max - 1) << 4), name, dos);
 }
 BLITZ_THUNK(doloadsprites2, doloadsprites2_c, "d0-d1/a0-a1");

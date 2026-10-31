@@ -46,6 +46,9 @@
  *    ShapeWidth/ShapeHeight load only the low word of d0.
  *  - DecodeShapes with address 0 jumps (BEQ) into the error check area
  *    (err10): without the debugger behind the library. (#270)
+ *  - LoadShapes s,file$ / DecodeShapes s,mem: the last shape is base +
+ *    (max - 1) << 5 as a word (SUBQ/LSL/ADD d2,a2): from a maximum of
+ *    1025 on it lies before the table. (#939)
  * err2/err3/err7/err8
  * (files, ANIM) are in the normal code with their messages in the error
  * check area, as in the original.
@@ -603,7 +606,8 @@ static void BLITZ_ROUTINE doloadshapes_c(UBYTE *last BL_REG(a2), const char *nam
 }
 BLITZ_THUNK(doloadshapes, doloadshapes_c, "d0-d1/a0-a1");
 
-/* LoadShapes Shape#,Filename$: a2 = shape 0, d2 = maximum */
+/* LoadShapes Shape#,Filename$: a2 = shape 0, d2 = maximum.
+   BUG(orig) (#939): the last shape is a2 + (WORD)((max-1) << 5) */
 static void BLITZ_ROUTINE doloadshapes2_c(UBYTE *base BL_REG(a2), ULONG max BL_REG(d2),
                                           const char *name BL_REG(d1),
                                           struct DosLibrary *dos BL_REG(a6))
@@ -668,7 +672,7 @@ BLITZ_THUNK(_cludgeshapes, cludgeshapes_c, "d0-d1/a0-a1");
 static void BLITZ_ROUTINE cludgeshapes2_c(UBYTE *base BL_REG(a2), ULONG max BL_REG(d2),
                                           UBYTE *mem BL_REG(d1))
 {
-    UBYTE *last = base + (WORD)(UWORD)((UWORD)(max - 1) << 5);
+    UBYTE *last = base + (WORD)(UWORD)((UWORD)(max - 1) << 5); /* BUG(orig) (#939) */
 
     if (!mem)
         JMP_ERR10();

@@ -54,6 +54,10 @@
  *   - DiskMotor: SNE on bit 7 of CIAB PRB ($BFD100), which is /MTR (active
  *     low): -1 (the byte $FF) means the motor line is high (off), the
  *     help text says "-1 if motor is on" (#857).
+ *   - init calls CreateMsgPort, the commands CreateIORequest/
+ *     DeleteIORequest, finit DeleteMsgPort - exec V36 - without a version
+ *     check: on Kickstart 1.x every program using the library crashes at
+ *     start-up (#941).
  * Registers: the original changes d0/d1/a0/a1, a6 and d4-d7 in most
  * commands, but keeps d1/a0/a1 on some paths (no port or request); the
  * thunks keep d1/a0/a1 everywhere, GCC keeps d2-d7/a2-a6.
@@ -217,7 +221,7 @@ void BLITZ_ROUTINE c_libinit(void)
     td.iorequests[0] = NULL;            /* BUG(orig): not [3] (#863) */
     td.iorequests[1] = NULL;
     td.iorequests[2] = NULL;
-    td.msgport = CreateMsgPort();
+    td.msgport = CreateMsgPort();       /* BUG(orig): V36, unchecked (#941) */
 }
 
 /* MotorOff unit# (TD_MOTOR, length 0) */
@@ -242,7 +246,7 @@ ULONG BLITZ_ROUTINE c_closedisk(LONG unit BL_REG(d0))
         return 0;
     c_motoroff(unit);
     CloseDevice((struct IORequest *)req);
-    DeleteIORequest((struct IORequest *)req);
+    DeleteIORequest((struct IORequest *)req);   /* V36 (#941) */
     putioreq(unit, NULL);
     return (ULONG)-1;
 }
@@ -253,7 +257,7 @@ void BLITZ_ROUTINE c_libfinit(void)
     c_closedisk(1);
     c_closedisk(2);
     if (td.msgport) {
-        DeleteMsgPort(td.msgport);
+        DeleteMsgPort(td.msgport);      /* V36 (#941) */
         td.msgport = NULL;
     }
 }
@@ -265,14 +269,14 @@ ULONG BLITZ_ROUTINE c_opentrack(LONG unit BL_REG(d0))
 
     if (unit > 3 || !td.msgport)
         return 0;
-    req = (struct IOStdReq *)CreateIORequest(td.msgport, 200);
+    req = (struct IOStdReq *)CreateIORequest(td.msgport, 200); /* V36 (#941) */
     if (!req)
         return 0;
     putioreq(unit, req);
     if (OpenDevice((CONST_STRPTR)td.trackname, unit, (struct IORequest *)req, 0)) {
         req = getioreq(unit);           /* 0 for a negative unit */
         putioreq(unit, NULL);
-        DeleteIORequest((struct IORequest *)req);
+        DeleteIORequest((struct IORequest *)req);   /* V36 (#941) */
         return 0;
     }
     return (ULONG)-1;

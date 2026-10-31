@@ -1051,7 +1051,9 @@ static void toreg(UWORD libnum, UWORD regspec)
         /* .simp */
         if (sh)
             pokewd(dn | (UWORD)((sh & 7) << 9) | lsldn[0]);
-        /* .simp2: Shifts are done, add'em to the opcode */
+        /* .simp2: Shifts are done, add'em to the opcode.
+           BUG(orig) (#939): lsl.w and adda.w - a word object offset, from
+           n << shift = $8000 on before the object table.  Kept. */
         op = (dn & 7) | maxdo[0];
         op |= (regspec << 1) & 0xe00;
         pokewd(op);                 /* adda.w dn,an */

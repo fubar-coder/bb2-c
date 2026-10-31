@@ -765,7 +765,7 @@ struct Requester verreq = { NULL, 108,58,280,60, 0,0,
 UWORD objects[] = {
     0xE148,                            /* +0   lslimm lsl #8,d0 */
     0x266D, 0x0000,                    /* +2   use move.l 0(a5),a3 */
-    0xD6C0,                            /* +6   add d0,a3 */
+    0xD6C0,                            /* +6   add d0,a3 - word: BUG(orig) (#939) */
     0x2B4B, 0x0000,                    /* +8   move.l a3,0(a5) */
     0x203C, 0x0000, 0x0000,            /* +12  beginarr move.l #0,d0 */
     0xC0C1,                            /* +18  mularr mulu d1,d0 */

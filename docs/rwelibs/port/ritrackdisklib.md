@@ -56,6 +56,10 @@ original's changes of a6 and d4-d7 are not reproduced.
 * `DiskMotor` returns -1 (the byte $FF) when CIAB PRB bit 7 (/MTR,
   active low) is set, i.e. motor off; the help text says "-1 if motor is
   on" (#857).
+* init calls `CreateMsgPort`, the commands `CreateIORequest`/
+  `DeleteIORequest`, finit `DeleteMsgPort` – exec V36 functions – without
+  checking exec's version: on Kickstart 1.x every program that uses the
+  library crashes at start-up (#941).
 
 **Test** (`libs/tests/rwe/ritrackdisklib.c`, snitch case "rwe
 ritrackdisklib"): C build and CD original side by side against a device
