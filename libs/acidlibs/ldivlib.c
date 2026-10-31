@@ -58,13 +58,32 @@ static LONG divide(ULONG dividend, ULONG divisor, UWORD steps)
     return (LONG)quotient;
 }
 
-/* qdivide - d0.q = d0.q / d1.q */
+/**
+ * @brief quickdiv ($CB00): Quick division (16.16 fixed point), d0.q =
+ * d0.q / d1.q.
+ *
+ * Restoring shift/subtract division with 48 steps (divide).
+ * BUG(orig) (#200): a divisor 0 gives $7FFFFFFF for any sign, no error.
+ *
+ * @param a  d0: the dividend
+ * @param b  d1: the divisor
+ * @return d0: the quotient
+ */
 LONG qdivide(LONG a BL_REG(d0), LONG b BL_REG(d1))
 {
     return divide(a, b, 47);
 }
 
-/* ldivide - d0.l = d0.l / d1.l */
+/**
+ * @brief longdiv ($CB01): Long division, d0.l = d0.l / d1.l.
+ *
+ * As quickdiv with 32 steps.  BUG(orig) (#200): a divisor 0 gives
+ * $7FFFFFFF.
+ *
+ * @param a  d0: the dividend
+ * @param b  d1: the divisor
+ * @return d0: the quotient
+ */
 LONG ldivide(LONG a BL_REG(d0), LONG b BL_REG(d1))
 {
     return divide(a, b, 31);

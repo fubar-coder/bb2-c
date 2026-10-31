@@ -31,10 +31,19 @@ static inline ULONG swap(ULONG a)
     return (a << 16) | (a >> 16);
 }
 
-/* lmultiply - d0.l = d0.l * d1.l, on the magnitudes, sign applied last.
-   BUG(orig) (#199): the cross products are added SWAPped, not shifted: their
-   high word also lands in the low word of the result.  That only happens when a cross product is
-   >= $10000, i.e. when the true product does not fit in 32 bits anyway. */
+/**
+ * @brief longmult ($CA01): Long multiplication, d0.l = d0.l * d1.l.
+ *
+ * On the magnitudes, the sign applied last.
+ * BUG(orig) (#199): the cross products are added SWAPped, not shifted:
+ * their high word also lands in the low word of the result.  That only
+ * happens when a cross product is >= $10000, i.e. when the true product
+ * does not fit in 32 bits anyway.
+ *
+ * @param a  d0: the first factor
+ * @param b  d1: the second factor
+ * @return d0: the product
+ */
 LONG lmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
 {
     ULONG mag_a = a, mag_b = b;         /* d0 d1 */
@@ -60,11 +69,20 @@ LONG lmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
     return (LONG)acc;
 }
 
-/* qmultiply - d0.q = d0.q * d1.q (16.16 fixed point): the four partial
-   products shifted to keep bits 16..47 of the 64 bit product.  The low
-   product contributes only its high word (CLR/SWAP: truncation, no
-   rounding); BUG(orig) (#199): the high product is added SWAPped like in
-   lmultiply (its high word lands in the low word when hi*hi >= $10000). */
+/**
+ * @brief quickmult ($CA00): Quick multiplication (16.16 fixed point),
+ * d0.q = d0.q * d1.q.
+ *
+ * The four partial products shifted to keep bits 16..47 of the 64 bit
+ * product.  The low product contributes only its high word (CLR/SWAP:
+ * truncation, no rounding).
+ * BUG(orig) (#199): the high product is added SWAPped like in longmult
+ * (its high word lands in the low word when hi*hi >= $10000).
+ *
+ * @param a  d0: the first factor
+ * @param b  d1: the second factor
+ * @return d0: the product
+ */
 LONG qmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
 {
     ULONG mag_a = a, mag_b = b;         /* d0 d1 (d3 d4: copies of |a|) */
