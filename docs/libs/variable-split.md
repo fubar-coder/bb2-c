@@ -14,6 +14,19 @@ with its issue and a test (CLAUDE.md).
 Line numbers are as of the end of stage 1 (`77847c9`). In the lists,
 "x, then y" means the variable first holds x and later y.
 
+State: the acidlibs part is done (2026-10-31, one commit per library,
+"acidlibs: split the multi-use variables of X.c"; the new names are in
+those commits). Most of the libraries came out byte-identical (GCC
+allocated the same registers); the code changed in animlib, asllib,
+blitzcoplib, blitzkeyslib, crunchlib, datelib, displaylib,
+linklistlib, lmullib, printlib and vallib, checked with libs_emulator,
+the corpus and the libraries' bug-orig tests. No split changed a
+behaviour; where the original depends on a reused register (asllib's
+empty font name returns 0, trackerlib's song end after a break
+BUG(orig) (#292), the upper words kept by word loads), the split keeps
+it and says so in a comment. Open: the userlibs/rwe part and the rwe
+statics below.
+
 ## Kept in stage 1, renamed in stage 2
 
 - **File-scope statics:** their name is in the symbol table of the

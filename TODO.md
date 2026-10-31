@@ -294,7 +294,8 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   Stage 2 splits the variables that hold several unrelated values (one
   variable per value) and renames the file-scope statics kept in stage
   1. It is not byte-identical, so it is checked with the tests and
-  named in the commit. The list is in `docs/libs/variable-split.md`.
+  named in the commit. The list is in `docs/libs/variable-split.md`;
+  its acidlibs part is done (2026-10-31), the userlibs/rwe part is open.
   The register-level translations (2dlib, medlib, polylib: static
   `d0`-`d7`/`a0`-`a6`) are a rewrite of their own after stage 2.
 - [ ] **Data blocks as structs** (user decision 2026-10-31, after stage 2
