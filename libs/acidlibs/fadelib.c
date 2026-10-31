@@ -41,18 +41,18 @@
 /* entry points (thunks / C, defined below) */
 void fadechk0(void), fadechk(void), dosetfade(void), dofadestatus(void);
 void codeinit(void);
-void BLITZ_ROUTINE dofadein2(ULONG d0 BL_REG(d0), const UBYTE *pal BL_REG(a0),
+void BLITZ_ROUTINE dofadein2(ULONG palofs BL_REG(d0), const UBYTE *pal BL_REG(a0),
                              UBYTE *slice BL_REG(a1));
-void BLITZ_ROUTINE dofadein3(ULONG d0 BL_REG(d0), UWORD rate BL_REG(d1),
+void BLITZ_ROUTINE dofadein3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
                              const UBYTE *pal BL_REG(a0), UBYTE *slice BL_REG(a1));
-void BLITZ_ROUTINE dofadein(ULONG d0 BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
+void BLITZ_ROUTINE dofadein(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
                             UWORD hi BL_REG(d3), const UBYTE *pal BL_REG(a0),
                             UBYTE *slice BL_REG(a1));
-void BLITZ_ROUTINE dofadeout2(ULONG d0 BL_REG(d0), const UBYTE *pal BL_REG(a0),
+void BLITZ_ROUTINE dofadeout2(ULONG palofs BL_REG(d0), const UBYTE *pal BL_REG(a0),
                               UBYTE *slice BL_REG(a1));
-void BLITZ_ROUTINE dofadeout3(ULONG d0 BL_REG(d0), UWORD rate BL_REG(d1),
+void BLITZ_ROUTINE dofadeout3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
                               const UBYTE *pal BL_REG(a0), UBYTE *slice BL_REG(a1));
-void BLITZ_ROUTINE dofadeout(ULONG d0 BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
+void BLITZ_ROUTINE dofadeout(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
                              UWORD hi BL_REG(d3), const UBYTE *pal BL_REG(a0),
                              UBYTE *slice BL_REG(a1));
 void BLITZ_ROUTINE doasyncfade(void);
@@ -123,9 +123,9 @@ static void BLITZ_ROUTINE codeinit_c(void)
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE dosetfade_c(UWORD t BL_REG(d0))
+static void BLITZ_ROUTINE dosetfade_c(UWORD type BL_REG(d0))
 {
-    F.fadetype = t;
+    F.fadetype = type;
 }
 BLITZ_THUNK(dosetfade, dosetfade_c, "d0-d1/a0-a1");
 
@@ -172,40 +172,42 @@ static void calcrange(const UBYTE *pal, const UBYTE *slice, UWORD *lo, UWORD *hi
     *hi = h;
 }
 
-/* calcfade - the fractions; d0's upper byte comes in (BUG(orig), #134) */
-static void calcfade(ULONG d0, const UBYTE *pal, UBYTE *slice, UWORD rate, UWORD lo, UWORD hi)
+/* calcfade - the fractions; palofs = d0 (.w = palette# * 128 from the
+   caller), its upper byte comes in (BUG(orig), #134) */
+static void calcfade(ULONG palofs, const UBYTE *pal, UBYTE *slice, UWORD rate, UWORD lo,
+                     UWORD hi)
 {
     const UBYTE *rgbs = *(UBYTE **)pal + 4;
-    UBYTE *f;
-    UWORD a, b;
-    UWORD w = (UWORD)d0;                        /* d0.w, upper byte kept */
+    UBYTE *frac;
+    UWORD ofs, endofs;
+    UWORD shifted = (UWORD)palofs;              /* d0.w, upper byte kept */
 
     if (lo > hi) {
-        UWORD t = lo;
+        UWORD oldlo = lo;
         lo = hi;
-        hi = t;
+        hi = oldlo;
     }
     F.fadesl = slice;
     F.fadelow = lo;
     F.fadehi = hi;
     F.faderate = rate;
     F.fadenum = 16;
-    f = fadef + lo;
-    a = (UWORD)(lo * 12);
-    b = (UWORD)(hi * 12);
+    frac = fadef + lo;
+    ofs = (UWORD)(lo * 12);
+    endofs = (UWORD)(hi * 12);
     do {
         /* MOVE.b x,d0:LSR #4,d0:MOVE.b d0,f - the word shift moves d0's
          * upper byte on: bits 8-11 reach red, bits 12-15 green of the first
          * colour, after that the upper byte is 0 (BUG(orig), #134) */
-        w = (UWORD)(((w & 0xff00) | rgbs[(WORD)a]) >> 4);
-        f[0] = (UBYTE)w;
-        w = (UWORD)(((w & 0xff00) | rgbs[(WORD)a + 4]) >> 4);
-        f[32] = (UBYTE)w;
-        w = (UWORD)(((w & 0xff00) | rgbs[(WORD)a + 8]) >> 4);
-        f[64] = (UBYTE)w;
-        f++;
-        a += 12;
-    } while (a <= b);
+        shifted = (UWORD)(((shifted & 0xff00) | rgbs[(WORD)ofs]) >> 4);
+        frac[0] = (UBYTE)shifted;
+        shifted = (UWORD)(((shifted & 0xff00) | rgbs[(WORD)ofs + 4]) >> 4);
+        frac[32] = (UBYTE)shifted;
+        shifted = (UWORD)(((shifted & 0xff00) | rgbs[(WORD)ofs + 8]) >> 4);
+        frac[64] = (UBYTE)shifted;
+        frac++;
+        ofs += 12;
+    } while (ofs <= endofs);
 }
 
 static void dosyncfade(void)
@@ -223,41 +225,41 @@ static void dosyncfade(void)
 }
 
 /* FadeIn pal[,rate[,lo,hi]] - a0 = palette, a1 = used slice */
-void BLITZ_ROUTINE dofadein(ULONG d0 BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
+void BLITZ_ROUTINE dofadein(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
                             UWORD hi BL_REG(d3), const UBYTE *pal BL_REG(a0),
                             UBYTE *slice BL_REG(a1))
 {
     int i;
 
-    calcfade(d0, pal, slice, rate, lo, hi);     /* setfadein */
+    calcfade(palofs, pal, slice, rate, lo, hi); /* setfadein */
     for (i = 0; i < 96; i++)
         fade[i] = 0;
     dosyncfade();
 }
 
-void BLITZ_ROUTINE dofadein3(ULONG d0 BL_REG(d0), UWORD rate BL_REG(d1),
+void BLITZ_ROUTINE dofadein3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
                              const UBYTE *pal BL_REG(a0), UBYTE *slice BL_REG(a1))
 {
     UWORD lo, hi;
 
     calcrange(pal, slice, &lo, &hi);
-    dofadein(d0, rate, lo, hi, pal, slice);
+    dofadein(palofs, rate, lo, hi, pal, slice);
 }
 
-void BLITZ_ROUTINE dofadein2(ULONG d0 BL_REG(d0), const UBYTE *pal BL_REG(a0),
+void BLITZ_ROUTINE dofadein2(ULONG palofs BL_REG(d0), const UBYTE *pal BL_REG(a0),
                              UBYTE *slice BL_REG(a1))
 {
-    dofadein3(d0, 0, pal, slice);
+    dofadein3(palofs, 0, pal, slice);
 }
 
 /* FadeOut - start at the full colours, fractions negated */
-void BLITZ_ROUTINE dofadeout(ULONG d0 BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
+void BLITZ_ROUTINE dofadeout(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
                              UWORD hi BL_REG(d3), const UBYTE *pal BL_REG(a0),
                              UBYTE *slice BL_REG(a1))
 {
     int i;
 
-    calcfade(d0, pal, slice, rate, lo, hi);     /* setfadeout */
+    calcfade(palofs, pal, slice, rate, lo, hi); /* setfadeout */
     for (i = 0; i < 96; i++) {
         fade[i] = fadef[i] << 4;
         fadef[i] = -fadef[i];
@@ -265,19 +267,19 @@ void BLITZ_ROUTINE dofadeout(ULONG d0 BL_REG(d0), UWORD rate BL_REG(d1), UWORD l
     dosyncfade();
 }
 
-void BLITZ_ROUTINE dofadeout3(ULONG d0 BL_REG(d0), UWORD rate BL_REG(d1),
+void BLITZ_ROUTINE dofadeout3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
                               const UBYTE *pal BL_REG(a0), UBYTE *slice BL_REG(a1))
 {
     UWORD lo, hi;
 
     calcrange(pal, slice, &lo, &hi);
-    dofadeout(d0, rate, lo, hi, pal, slice);
+    dofadeout(palofs, rate, lo, hi, pal, slice);
 }
 
-void BLITZ_ROUTINE dofadeout2(ULONG d0 BL_REG(d0), const UBYTE *pal BL_REG(a0),
+void BLITZ_ROUTINE dofadeout2(ULONG palofs BL_REG(d0), const UBYTE *pal BL_REG(a0),
                               UBYTE *slice BL_REG(a1))
 {
-    dofadeout3(d0, 0, pal, slice);
+    dofadeout3(palofs, 0, pal, slice);
 }
 
 /* ------------------------------------------- error checks (debugger only) */
