@@ -8,37 +8,49 @@ list(TRANSFORM BLITZ2_CHUNKS PREPEND src/ OUTPUT_VARIABLE chunk_sources)
 list(TRANSFORM chunk_sources APPEND .c)
 file(GLOB glue_sources CONFIGURE_DEPENDS src/glue*.c)
 
-add_executable(blitz2 ${chunk_sources} ${glue_sources})
-target_include_directories(blitz2 PRIVATE src)
-target_compile_options(blitz2 PRIVATE
-	-fomit-frame-pointer
-	-fno-strict-aliasing                # raw W_()/L_() accesses to patched templates and loaded images
-	-Wall -Wno-pointer-sign -Wno-parentheses)
+# blitz2_program(TARGET [DEFINES...]): one compiler from the chunk sources.
+# blitz2 is the translation; blitz2-ab3 (BLITZ2_AB3, the AB3 mode of
+# docs/ab3/variant.md) is built from the same sources with
+# the additions of the AB3 mode, which sit under #if BLITZ2_AB3 - blitz2
+# itself stays byte-identical by construction.
 # globals relative to a4: shorter and faster accesses, fewer relocations
-# (data + bss must stay below 64 KB; entry stubs in glue*.c load a4)
+# (data + bss must stay below 64 KB - the linker refuses a 16-bit a4
+# offset beyond it; entry stubs in glue*.c load a4)
 option(BLITZ2_BASEREL "address globals relative to a4 (-fbaserel)" ON)
-if(BLITZ2_BASEREL)
-	target_compile_options(blitz2 PRIVATE -fbaserel)
-	target_link_options(blitz2 PRIVATE -fbaserel)
-endif()
-# no symbol table in release builds
-target_link_options(blitz2 PRIVATE $<$<CONFIG:Release,MinSizeRel>:-s>
-	-Wl,-Map,${CMAKE_CURRENT_BINARY_DIR}/blitz2.map)
-# Kickstart 1.x like the original (#936): libnix13 in front of the driver's
-# libnix20, whose helpers need Kickstart 2.0 (__udivsi3/__umodsi3 call
-# utility.library, which the startup code then opens; __nocommandline calls
-# AllocVec ...).  libnix13 has the same helpers with 1.x calls only.
-target_link_libraries(blitz2 PRIVATE nix13)
-set_target_properties(blitz2 PROPERTIES OUTPUT_NAME blitz2 SUFFIX ""
-	RUNTIME_OUTPUT_DIRECTORY ${BLITZ2_DIR})
+function(blitz2_program target)
+	add_executable(${target} ${chunk_sources} ${glue_sources})
+	target_include_directories(${target} PRIVATE src)
+	target_compile_definitions(${target} PRIVATE ${ARGN})
+	target_compile_options(${target} PRIVATE
+		-fomit-frame-pointer
+		-fno-strict-aliasing                # raw W_()/L_() accesses to patched templates and loaded images
+		-Wall -Wno-pointer-sign -Wno-parentheses)
+	if(BLITZ2_BASEREL)
+		target_compile_options(${target} PRIVATE -fbaserel)
+		target_link_options(${target} PRIVATE -fbaserel)
+	endif()
+	# no symbol table in release builds
+	target_link_options(${target} PRIVATE $<$<CONFIG:Release,MinSizeRel>:-s>
+		-Wl,-Map,${CMAKE_CURRENT_BINARY_DIR}/${target}.map)
+	# Kickstart 1.x like the original (#936): libnix13 in front of the driver's
+	# libnix20, whose helpers need Kickstart 2.0 (__udivsi3/__umodsi3 call
+	# utility.library, which the startup code then opens; __nocommandline calls
+	# AllocVec ...).  libnix13 has the same helpers with 1.x calls only.
+	target_link_libraries(${target} PRIVATE nix13)
+	set_target_properties(${target} PROPERTIES OUTPUT_NAME ${target} SUFFIX ""
+		RUNTIME_OUTPUT_DIRECTORY ${BLITZ2_DIR})
 
-# check after every link; if it fails, blitz2 does not count as built:
-# no libnix20 member, no base of a library Kickstart 1.3 does not have
-# (UtilityBase) - checklink.cmake
-add_custom_command(TARGET blitz2 POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/checklink.cmake
-		${CMAKE_CURRENT_BINARY_DIR}/blitz2.map
-	VERBATIM)
+	# check after every link; if it fails, the program does not count as
+	# built: no libnix20 member, no base of a library Kickstart 1.3 does not
+	# have (UtilityBase) - checklink.cmake
+	add_custom_command(TARGET ${target} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/checklink.cmake
+			${CMAKE_CURRENT_BINARY_DIR}/${target}.map
+		VERBATIM)
+endfunction()
+blitz2_program(blitz2)
+blitz2_program(blitz2-ab3 BLITZ2_AB3=1)
+
 # the check itself: the map of blitz2 linked without libnix13 (before #936)
 # must fail it, once for each rule
 set(checklink_broken ${CMAKE_CURRENT_SOURCE_DIR}/tests/checklink/libnix20.map)
