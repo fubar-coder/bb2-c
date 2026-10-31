@@ -161,6 +161,7 @@ BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
 BLITZ_LIBFIN();
 
 #define NOTIFYSIZE 48                   /* sizeof(struct NotifyRequest) */
+static_assert(sizeof(struct NotifyRequest) == NOTIFYSIZE);
 #define NNOTIFY 64
 
 static UBYTE tbuf[256];                                 /* Dcb.b 256,0 */
