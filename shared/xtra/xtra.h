@@ -349,6 +349,35 @@ int xtra_companion_name(const char *path, char *out, size_t cap);
  */
 int xtra_is_ab3_xtra(const uint8_t *xtra, size_t len);
 
+/** @brief The mode a program is compiled in by blitz2-ab3 (xtra_mode). */
+enum xtra_mode {
+    XTRA_MODE_DETECT,           /* force: no mode given, detect it */
+    XTRA_MODE_BB2,              /* Blitz Basic 2: its tokens and libraries */
+    XTRA_MODE_AB3               /* AmiBlitz3 v3.14.0's tokens and libraries */
+};
+
+/**
+ * @brief The mode of a source (xtra_mode.c; docs/ab3/variant.md).
+ *
+ * force XTRA_MODE_BB2 or XTRA_MODE_AB3 (the command line's -mode): that
+ * mode.  Otherwise by xtra_detect: XTRA_T_AB3 (a text with the embedded
+ * header, or a text named *.ab3) is AB3; XTRA_T_TED (tokenised) is AB3 if
+ * its companion .xtra has AmiBlitz3's format (xtra_is_ab3_xtra), else
+ * BB2; everything else (BB22, text without header) is BB2.  The same rule
+ * gives the mode of a tokenised include.
+ *
+ * @param force  an enum xtra_mode; XTRA_MODE_DETECT (or another value):
+ *               detect
+ * @param src    the source, src[0..len)
+ * @param len    its length
+ * @param path   its file name (may be NULL)
+ * @param xtra   its companion .xtra, xtra[0..xlen) (NULL: none)
+ * @param xlen   its length
+ * @return XTRA_MODE_BB2 or XTRA_MODE_AB3
+ */
+int xtra_mode(int force, const uint8_t *src, size_t len, const char *path, const uint8_t *xtra,
+              size_t xlen);
+
 /**
  * @brief Load the settings of a source.
  *
