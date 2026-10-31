@@ -35,9 +35,7 @@
  *     failed (writes address 14). (#171)
  *   - GTShape: the label of the previous gadget stays in the NewGadget
  *     (#172); an existing GadgetRender of the button is overwritten with
- *     the static Image (20 bytes), else replaced by it (#173).  The result
- *     of CreateGadget is not checked (writes to addresses 12-25 if it
- *     failed). (#327)
+ *     the static Image (20 bytes), else replaced by it (#173).
  *   - GTSetAttrs/GTChangeList/GTSetHighlight work on the LAST gadget of a
  *     run of gadgets with the same id, GTGetAttrs/GTGadPtr etc. on the
  *     FIRST; GTFreeGadget frees the whole run (first to last). (#175)
@@ -59,6 +57,12 @@
  *   used the previous values (GTString a pointer into the old string work
  *   area).  Here the forms without them set the initial values of the
  *   lists (0, GTLV_Selected -1, GTST_String NULL).
+ * Fixed (intended deviation, #327): GTShape did not check the result of
+ *   CreateGadget: if it failed, the images and flags went to addresses
+ *   12-25 (the exception vectors), with a GadgetRender read from address
+ *   18 even 20 bytes to where that long pointed.  Here a failed gadget is
+ *   left alone (as with the other creators the GTList's last gadget is 0
+ *   then).
  * Fixed (intended deviation, #174): getoptions (cycle/mx labels) sized
  *   its block as option length + 258 with the pointer array at +0 and the
  *   texts at +256: at most 63 labels + NULL without a check (more
@@ -1220,7 +1224,10 @@ static void doshape(UWORD id, WORD x, WORD y, ULONG flags,
     shapetags.immediate.ti_Data = bit(flags, 7);
     gad = CREATE(BUTTON_KIND, flags, shapetags);
     usertags[0].ti_Tag = TAG_END;
-    __asm__("" : "+a"(gad));    /* may be 0: BUG(orig) (#327) */
+    if (!gad) {                 /* fixed (#327): the original went on with 0 */
+        gflags = 0;
+        return;
+    }
     if (gad->GadgetRender) {
         ULONG *dst = (ULONG *)gad->GadgetRender, *src = (ULONG *)&image1;
         int i;
@@ -1255,7 +1262,8 @@ static void shape1(const struct bb_shape *shape)
  * Errors (debugger only): "Uninitialized Shape" (sgchk).
  * BUG(orig): the label of the previous gadget stays in the NewGadget
  * (#172); an existing GadgetRender is overwritten with Image 1 (20 bytes)
- * (#173); the result of CreateGadget is not checked (#327).
+ * (#173).  Fixed (#327): if CreateGadget fails, nothing is written (the
+ * original wrote to addresses 12-25).
  *
  * @param id,x,y  d1-d3: gadget id and position
  * @param flags   d4: the flags
