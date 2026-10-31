@@ -503,15 +503,15 @@ static inline BOOL flagclr(int bit)
    Returns d0, *arg receives a0. */
 static inline ULONG callhandler(APTR fn, ULONG *arg)
 {
-    register ULONG argreg __asm("a0") = *arg;
-    register APTR fnreg __asm("a1") = fn;
-    register ULONG result __asm("d0");
+    register ULONG ra0 __asm("a0") = *arg;
+    register APTR ra1 __asm("a1") = fn;
+    register ULONG rd0 __asm("d0");
     __asm volatile("jsr (%2)"
-                   : "+a"(argreg), "=d"(result), "+a"(fnreg) :
+                   : "+a"(ra0), "=d"(rd0), "+a"(ra1) :
                    : "d1", "d2", "d3", "d4", "d5", "d6", "d7", "a2", "a6",
                      "cc", "memory");
-    *arg = argreg;
-    return result;
+    *arg = ra0;
+    return rd0;
 }
 
 /* handleflags - the debugger's state machine.  Reached in USER mode: a

@@ -274,7 +274,7 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 5);
 /* ********************** CODE BELOW ************************ */
 
 static struct Library *dosbase_g;               /* dosbase: Dc.l 0 */
-static UBYTE charbuf;                           /* temp: Dc 0 */
+static UBYTE temp;                              /* temp: Dc 0 */
 static struct bfile *infile, *outfile;          /* Dc.l 0 */
 static ULONG doslen = 2048;                     /* size of mydos buffer */
 
@@ -708,12 +708,12 @@ static ULONG BLITZ_ROUTINE inchar_c(void)
         BLITZ_RUNERR(mess1);                    /* err1 */
         return 0;
     }
-    got = myread(0, f, &charbuf, 1, dosbase_g);
+    got = myread(0, f, &temp, 1, dosbase_g);
     if (got == (ULONG)-1) {
         BLITZ_RUNERR(mess7);                    /* err7 */
         return 0;
     }
-    return got ? charbuf : (ULONG)-1;
+    return got ? temp : (ULONG)-1;
 }
 
 /* inhandle2 - a0 = buffer, d0 = bytes max: read, cut behind the first
@@ -756,8 +756,8 @@ static ULONG BLITZ_ROUTINE outchar_c(UBYTE c BL_REG(d0))
         BLITZ_RUNERR(mess2);                    /* err2 */
         return 0;
     }
-    charbuf = c;
-    written = mywrite(c, f, &charbuf, 1, dosbase_g);
+    temp = c;
+    written = mywrite(c, f, &temp, 1, dosbase_g);
     if (written + 1 == 0)
         BLITZ_RUNERR(mess7);                    /* err7 */
     return written;
