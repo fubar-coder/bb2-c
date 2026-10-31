@@ -406,7 +406,18 @@ static ULONG myseek(ULONG result, struct bfile *f, ULONG where, LONG mode,
 
 /* ------------------------------------------------------------ routines */
 
-/* Exists - d0 = name: size, -1 for a drawer, 0 if not there */
+/**
+ * @brief Exists(Filename$): the size of a file.
+ *
+ * Lock, Examine into a FileInfoBlock from memlib globalloc (not checked,
+ * #139), UnLock.  BUG(orig) (#143): an empty file gives 0 like a missing
+ * one; a volume's root gives its fib_Size.
+ *
+ * @param name  d0: the file name
+ * @param dosbase  a6: dos.library
+ * @return d0: the size, -1 for a drawer (fib_DirEntryType 2), 0 if the
+ *         file is not there
+ */
 ULONG BLITZ_ROUTINE doexists(const UBYTE *name BL_REG(d0),
                                       struct Library *dosbase BL_REG(a6))
 {
@@ -430,14 +441,33 @@ ULONG BLITZ_ROUTINE doexists(const UBYTE *name BL_REG(d0),
     return size;
 }
 
-/* DosBuffLen - MOVE.l d0,doslen */
+/**
+ * @brief DosBuffLen Bytes: the size of the buffer of files opened later.
+ *
+ * MOVE.l d0,doslen (default 2048).  Errors (debugger, dbchk): "Illegal
+ * Dos Buffer Length" above 32767.
+ *
+ * @param n  d0: the size in bytes
+ */
 static void BLITZ_ROUTINE dodbufflen_c(ULONG n BL_REG(d0))
 {
     doslen = n;
 }
 BLITZ_THUNK(dodbufflen, dodbufflen_c, "d0-d1/a0-a1");
 
-/* WriteMem / ReadMem - a2 = file, d1 = buffer, d2 = len */
+/**
+ * @brief WriteMem File#,Address,Length: write memory to a file.
+ *
+ * Through the file's buffer (mywrite; more than the buffer length is
+ * written directly).  Errors of Write are ignored.  Errors (debugger,
+ * fchk): "Non-Existant File".
+ *
+ * @param fileno  d0: File#
+ * @param f  a2: the file (!libs #fileiolib,$1280)
+ * @param mem  d1: the address
+ * @param len  d2: the length
+ * @param dosbase  a6: dos.library
+ */
 void BLITZ_ROUTINE dowritemem(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
                                        const UBYTE *mem BL_REG(d1), ULONG len BL_REG(d2),
                                        struct Library *dosbase BL_REG(a6))
@@ -445,6 +475,19 @@ void BLITZ_ROUTINE dowritemem(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2
     mywrite(fileno, f, mem, len, dosbase);
 }
 
+/**
+ * @brief ReadMem File#,Address,Length: read from a file into memory.
+ *
+ * Through the file's buffer (myread; more than the buffer length is read
+ * directly).  Errors of Read are ignored.  Errors (debugger, fchk):
+ * "Non-Existant File".
+ *
+ * @param fileno  d0: File#
+ * @param f  a2: the file (!libs #fileiolib,$1280)
+ * @param mem  d1: the address
+ * @param len  d2: the length
+ * @param dosbase  a6: dos.library
+ */
 void BLITZ_ROUTINE doreadmem(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
                                       UBYTE *mem BL_REG(d1), ULONG len BL_REG(d2),
                                       struct Library *dosbase BL_REG(a6))
@@ -452,7 +495,21 @@ void BLITZ_ROUTINE doreadmem(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2)
     myread(fileno, f, mem, len, dosbase);
 }
 
-/* Eof - a2 = file: 0, or -1 if a dos seek one byte further fails */
+/**
+ * @brief Eof(File#): at the end of the file?
+ *
+ * False while the position is in the buffer's valid bytes; otherwise
+ * true if a dos seek one byte further fails (else it seeks back).
+ * BUG(orig) (#144): after the failed seek the buffer's file position is
+ * one too far, Loc and Lof are 1 too high afterwards.  The original keeps
+ * a0/a1 when the position is in the buffer.  Errors (debugger, fchk):
+ * "Non-Existant File".
+ *
+ * @param fileno  d0: File#
+ * @param f  a2: the file (!libs #fileiolib,$1280)
+ * @param dosbase  a6: dos.library
+ * @return d0: BB_TRUE at the end of the file, BB_FALSE before it
+ */
 static BB_BOOL BLITZ_ROUTINE doeof_c(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
                                    struct Library *dosbase BL_REG(a6))
 {
@@ -466,8 +523,17 @@ static BB_BOOL BLITZ_ROUTINE doeof_c(ULONG fileno BL_REG(d0), struct bfile *f BL
 /* the original keeps a0/a1 when the position is in the buffer */
 BLITZ_THUNK(doeof, doeof_c, "a0-a1");
 
-/* Lof - a2 = file: dos length (seek to the end and back), at least the
-   end of the buffer */
+/**
+ * @brief Lof(File#): the length of the file.
+ *
+ * The dos length (seek to the end and back), at least the end of the
+ * buffer: not a bug, it does not flush and counts the buffered data.
+ * Errors (debugger, fchk): "Non-Existant File".
+ *
+ * @param f  a2: the file (!libs #fileiolib,$1280)
+ * @param dosbase  a6: dos.library
+ * @return d0: the length
+ */
 ULONG BLITZ_ROUTINE dolof(struct bfile *f BL_REG(a2),
                                    struct Library *dosbase BL_REG(a6))
 {
@@ -481,14 +547,34 @@ ULONG BLITZ_ROUTINE dolof(struct bfile *f BL_REG(a2),
     return len;
 }
 
-/* Loc - a2 = file: file position of the buffer + position in it */
+/**
+ * @brief Loc(File#): the position in the file.
+ *
+ * The file position of the buffer + the position in it.  Errors
+ * (debugger, fchk): "Non-Existant File".
+ *
+ * @param f  a2: the file (!libs #fileiolib,$1280)
+ * @return d0: the position
+ */
 static ULONG BLITZ_ROUTINE doloc_c(const struct bfile *f BL_REG(a2))
 {
     return f->pos + f->bufstart;
 }
 BLITZ_THUNK(doloc, doloc_c, "d1/a0-a1");
 
-/* FileSeek - a2 = file, d1 = position (from the beginning) */
+/**
+ * @brief FileSeek File#,Position: set the position in the file.
+ *
+ * Inside the buffer only the position in it changes, otherwise the buffer
+ * is flushed and dos Seek called.  Errors: "Can't FileSeek Position" if
+ * Seek fails (in the normal code, DIFF: the original jumps into the error
+ * check area); debugger (fchk): "Non-Existant File".
+ *
+ * @param fileno  d0: File#
+ * @param f  a2: the file (!libs #fileiolib,$1280)
+ * @param where  d1: the position from the beginning
+ * @param dosbase  a6: dos.library
+ */
 void BLITZ_ROUTINE dofileseek(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
                                        ULONG where BL_REG(d1),
                                        struct Library *dosbase BL_REG(a6))
@@ -532,6 +618,15 @@ static const ULONG *freefile(struct bfile *f, const ULONG *cursor,
     return NULL;                                /* the loop ends with a2 = 0 */
 }
 
+/**
+ * @brief CloseFile File#, and _free of a File object: close the file.
+ *
+ * a3 = the file.  If it is open: flush the buffer, Close, free the buffer
+ * and the record fields.  BUG(orig) (#140): the pointer to the record
+ * fields and the record length stay.
+ *
+ * @param dosbase  a6: dos.library
+ */
 void BLITZ_ROUTINE dofreefile(struct Library *dosbase BL_REG(a6))
 {
     freefile((struct bfile *)blitz_string, NULL, dosbase);
@@ -574,6 +669,21 @@ static BB_BOOL realopen(WORD mode, struct bfile *f, UBYTE *name, const ULONG *le
     return BB_TRUE;
 }
 
+/**
+ * @brief OpenFile(File#,Filename$): open a file for reading and writing.
+ *
+ * Closes the File# first, then opens an existing file, or a new one if it
+ * is not found (realopen, mode 0).  The record fields and the buffer
+ * (DosBuffLen bytes, memlib globalloc, not checked: #139) are set up.
+ * BUG(orig) (#138): if the old file had Fields, the name length is read
+ * from -4(0) and name[length] cleared.
+ *
+ * @param f  a1: the file (!libs #fileiolib,$1180)
+ * @param name  d1: the file name
+ * @param lens  a2: the argument stack, its length at -4
+ * @param dosbase  a6: dos.library
+ * @return d0: BB_TRUE if the file was opened, BB_FALSE if not
+ */
 BB_BOOL BLITZ_ROUTINE doopenfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
                                         const ULONG *lens BL_REG(a2),
                                         struct Library *dosbase BL_REG(a6))
@@ -581,6 +691,18 @@ BB_BOOL BLITZ_ROUTINE doopenfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(
     return realopen(0, f, name, lens, dosbase);
 }
 
+/**
+ * @brief ReadFile(File#,Filename$): open an existing file.
+ *
+ * As OpenFile, but only an existing file (MODE_OLDFILE).  BUG(orig)
+ * (#138) as OpenFile.
+ *
+ * @param f  a1: the file (!libs #fileiolib,$1180)
+ * @param name  d1: the file name
+ * @param lens  a2: the argument stack, its length at -4
+ * @param dosbase  a6: dos.library
+ * @return d0: BB_TRUE if the file was opened, BB_FALSE if not
+ */
 BB_BOOL BLITZ_ROUTINE doreadfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
                                         const ULONG *lens BL_REG(a2),
                                         struct Library *dosbase BL_REG(a6))
@@ -588,6 +710,18 @@ BB_BOOL BLITZ_ROUTINE doreadfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(
     return realopen(-1, f, name, lens, dosbase);
 }
 
+/**
+ * @brief WriteFile(File#,Filename$): create a new file.
+ *
+ * As OpenFile, but always a new file (MODE_NEWFILE).  BUG(orig) (#138) as
+ * OpenFile.
+ *
+ * @param f  a1: the file (!libs #fileiolib,$1180)
+ * @param name  d1: the file name
+ * @param lens  a2: the argument stack, its length at -4
+ * @param dosbase  a6: dos.library
+ * @return d0: BB_TRUE if the file was opened, BB_FALSE if not
+ */
 BB_BOOL BLITZ_ROUTINE dowritefile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
                                          const ULONG *lens BL_REG(a2),
                                          struct Library *dosbase BL_REG(a6))
@@ -595,9 +729,20 @@ BB_BOOL BLITZ_ROUTINE dowritefile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG
     return realopen(1, f, name, lens, dosbase);
 }
 
-/* Fields - a3 = file, d7 = number of variables; per variable on the
-   argument stack (read downwards from a2): the type (word), then the
-   address (long) */
+/**
+ * @brief Fields File#,Var1[,Var2...]: the variables of a record.
+ *
+ * a3 = the file.  Per variable on the argument stack (read downwards
+ * from a2): the type (word), then the address (long).  Types 1/2/7 have
+ * 1/2/(long at address-8)+6 bytes (strings start at address-4), all
+ * others 4.  The list is built backwards: Put/Get transfer the fields in
+ * the reverse order (#142, not a bug).  BUG(orig) (#141): adds to the
+ * existing fields and record length.  The field nodes come from memlib
+ * globalloc (not checked).
+ *
+ * @param n  d7: the number of variables
+ * @param args  a2: the argument stack
+ */
 void BLITZ_ROUTINE dorecord(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2))
 {
     struct bfile *f = (struct bfile *)blitz_string;
@@ -659,19 +804,47 @@ static void transdata(int put, ULONG fileno, UWORD record, struct Library *dosba
     }
 }
 
+/**
+ * @brief Put File#,Record: write the fields of a record.
+ *
+ * a3 = the file.  Seeks to record * record length (word multiply), then
+ * writes every field.  Errors: "Can't Find Record" if the seek fails,
+ * "Error Reading/Writing File" (in the normal code, DIFF); debugger
+ * (racchk): "Non-Existant File", "No Record Set".
+ *
+ * @param fileno  d0: File#
+ * @param record  d1: the record number
+ * @param dosbase  a6: dos.library
+ */
 void BLITZ_ROUTINE doput(ULONG fileno BL_REG(d0), UWORD record BL_REG(d1),
                                   struct Library *dosbase BL_REG(a6))
 {
     transdata(1, fileno, record, dosbase);
 }
 
+/**
+ * @brief Get File#,Record: read the fields of a record.
+ *
+ * As Put, reading every field.  Errors as Put.
+ *
+ * @param fileno  d0: File#
+ * @param record  d1: the record number
+ * @param dosbase  a6: dos.library
+ */
 void BLITZ_ROUTINE doget(ULONG fileno BL_REG(d0), UWORD record BL_REG(d1),
                                   struct Library *dosbase BL_REG(a6))
 {
     transdata(0, fileno, record, dosbase);
 }
 
-/* KillFile - JMP _DeleteFile(a6) */
+/**
+ * @brief KillFile Filename$: delete a file.
+ *
+ * JMP _DeleteFile(a6); the result is ignored.
+ *
+ * @param name  d0: the file name
+ * @param dosbase  a6: dos.library
+ */
 void BLITZ_ROUTINE dokillfile(const UBYTE *name BL_REG(d0),
                                        struct Library *dosbase BL_REG(a6))
 {
@@ -682,8 +855,15 @@ void BLITZ_ROUTINE dokillfile(const UBYTE *name BL_REG(d0),
 
 void inputhandler(void), outputhandler(void);
 
-/* FileInput / FileOutput - a3 = file; set inputoutputlib's handler,
-   which keeps d1/a1 */
+/**
+ * @brief FileInput File#: read the input from a file.
+ *
+ * a3 = the file; it becomes the input file and inputhandler the input
+ * handler of inputoutputlib (setin, keeps d1/a1).  The handler reads one
+ * character (-1 at the end) or a line up to CR/LF.  Errors (handler, in
+ * the normal code, DIFF): "Invalid Input File", "Error Reading/Writing
+ * File".
+ */
 static void BLITZ_ROUTINE dofileinput_c(void)
 {
     struct bl_regs r = { .a0 = (ULONG)inputhandler };
@@ -693,6 +873,14 @@ static void BLITZ_ROUTINE dofileinput_c(void)
 }
 BLITZ_THUNK(dofileinput, dofileinput_c, "d1/a1");
 
+/**
+ * @brief FileOutput File#: send the output to a file.
+ *
+ * a3 = the file; it becomes the output file and outputhandler the output
+ * handler of inputoutputlib (setout, keeps d1/a1).  Errors (handler, in
+ * the normal code, DIFF): "Invalid Output File", "Error Reading/Writing
+ * File".
+ */
 static void BLITZ_ROUTINE dofileoutput_c(void)
 {
     struct bl_regs r = { .a0 = (ULONG)outputhandler };
