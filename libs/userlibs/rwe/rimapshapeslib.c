@@ -318,18 +318,19 @@ BLITZ_THUNK(_addgroupmember, addgroupmember_c, "d0-d1/a0-a1");
 /* BlitGroup window#,x,y: every member at x+dx, y+dy (words; the upper
    words of the caller's d2/d3).  BUG(orig) (#902): a6 is the caller's, not
    graphics.library's.  The original's d5 is the member's address when
-   _blitmapshape2 loads the height into its low word.  xbase (d2) comes
-   in with y in its low word. */
-static void BLITZ_ROUTINE blitgroup_c(UWORD x BL_REG(d1), ULONG xbase BL_REG(d2),
+   _blitmapshape2 loads the height into its low word.  d2 comes in with y
+   in its low word and becomes xbase. */
+static void BLITZ_ROUTINE blitgroup_c(UWORD x BL_REG(d1), ULONG yin BL_REG(d2),
                                       ULONG ybase BL_REG(d3), ULONG width BL_REG(d4),
                                       ULONG minterm BL_REG(d6), struct Window **win BL_REG(a1),
                                       struct Library *gfx BL_REG(a6))
 {
     struct RastPort *rp = (*win)->RPort;
     const ULONG *p = groupaddr;
+    ULONG xbase = yin;                  /* d2 */
     ULONG ms;
 
-    BL_SETW(ybase, xbase);              /* MOVE.w d2,d3 */
+    BL_SETW(ybase, yin);                /* MOVE.w d2,d3 */
     BL_SETW(xbase, x);                  /* MOVE.w d1,d2 */
     while ((ms = *p++) != 0) {
         ULONG mx = xbase, my = ybase;

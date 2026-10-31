@@ -387,6 +387,7 @@ static ULONG BLITZ_ROUTINE candraw_c(ULONG shapenum BL_REG(d0), UWORD x BL_REG(d
     UBYTE *rub;
     UWORD *cell;
     UWORD v;
+    ULONG result = shapenum;            /* d0: the shape number or the rub-through word, + 1 */
 
     if ((WORD)x >= (WORD)MW(map, M_WIDTH) || (WORD)y >= (WORD)MW(map, M_HEIGHT))
         return 0xffffffffUL;
@@ -396,17 +397,17 @@ static ULONG BLITZ_ROUTINE candraw_c(ULONG shapenum BL_REG(d0), UWORD x BL_REG(d
         if ((WORD)x >= (WORD)MW(rub, M_WIDTH) || (WORD)y >= (WORD)MW(rub, M_HEIGHT))
             return 0xffffffffUL;
         off = rol1(bl_mulu_w(y, MW(rub, M_WIDTH)) + x);
-        BL_SETW(shapenum, *(UWORD *)(MP(rub, M_MEMPOINTER) + off) - 1);
+        BL_SETW(result, *(UWORD *)(MP(rub, M_MEMPOINTER) + off) - 1);
     }
     cell = (UWORD *)(MP(map, M_MEMPOINTER) + rol1(bl_mulu_w(y, MW(map, M_WIDTH)) + x));
     MP(map, M_LASTADDRESS) = (UBYTE *)cell;
-    BL_SETW(shapenum, shapenum + 1);
+    BL_SETW(result, result + 1);
     v = *cell;
-    if ((UWORD)shapenum == v)
+    if ((UWORD)result == v)
         return 0xffffffffUL;
     if (mapstencil[(WORD)v])
         return 0xffffffffUL;
-    return shapenum;
+    return result;
 }
 BLITZ_THUNK(_candraw, candraw_c, "d1/a0-a1");
 
