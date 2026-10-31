@@ -1,0 +1,6 @@
+[run]
+before
+runtime error Can't Open Font
+runtime error Uninitialized BitMap
+runtime error Uninitialized Font
+rc=0

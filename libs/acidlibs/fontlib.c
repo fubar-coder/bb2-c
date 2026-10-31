@@ -42,6 +42,11 @@
  *   - BitMapInput edits an existing (Edit$ padded) buffer and waits for
  *     return without end: at end of file (-1 from the previous handler)
  *     it loops forever. (#151)
+ * Fixed (intended deviation, #955): err1-err3 (Can't Open Font,
+ *   Uninitialized BitMap / Font of the drawing) trap in the normal code,
+ *   but the original has their messages in the error check area (without
+ *   the debugger d0 points behind the library); here the messages are in
+ *   the normal code.
  * DIFF: after a runtime error trap in calcoff (no bitmap / no font, only
  *   reached when the trap returns) the C routine draws nothing; the
  *   original runs into the next trap.  The unreferenced check `bitmapchk`
@@ -149,9 +154,12 @@ static ULONG *fontout;                          /* used font object */
 static UBYTE pcolour = 1;                       /* colour for font (plane pick) */
 static UBYTE pback = 0;                         /* colour for background */
 
-/* messages in the error area (BLITZ_ERRCHK_MESSAGE at the end), used by
-   the normal code like in the original */
-extern const char mess1[], mess2[], mess3[];
+/* the messages of err1-err3 in the normal code (fixed, #955: in the
+   original they lie in the error check area); mess2 is also the text of
+   locatechk */
+static const char mess1[] = "Can't Open Font";
+static const char mess2[] = "Uninitialized BitMap";
+static const char mess3[] = "Uninitialized Font";
 
 
 /* -------------------------------------------------------- fonts */
@@ -631,9 +639,6 @@ static void BLITZ_ERRCHK locatechk_c(void)
         BLITZ_RUNERR(mess2);
 }
 
-/* the thunk and the messages last: they leave the assembler in .text
-   while GCC still assumes the error check section */
+/* the thunk last: it leaves the assembler in .text while GCC still
+   assumes the error check section */
 BLITZ_ERRCHK_THUNK(locatechk, locatechk_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_MESSAGE(mess1, "Can't Open Font");
-BLITZ_ERRCHK_MESSAGE(mess2, "Uninitialized BitMap");
-BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialized Font");

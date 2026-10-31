@@ -51,7 +51,8 @@ intended deviations (kind **F**), each with its issue.
 | maxslib dofreest (maxslib.c:55) | d0 = memlib's d0 | d0 preserved | **B** | not a result |
 | modlib domodquick (modlib.c:29) | d1 returned swapped | d1 preserved | **B** | not a result |
 | runerrlib check chains (runerrlib.c:238) | continues through the error chain after a returning trap | C check returns | **K** | only with a returning trap (the debugger terminates). Practically not observable |
-| fontlib calcoff (fontlib.c:45) | after a trap (no bitmap/font) it runs into the next trap | draws nothing; unreferenced check `bitmapchk` missing | **K** | only with a returning trap |
+| fontlib messages (fontlib.c:45) | err1-err3 (Can't Open Font, Uninitialized BitMap/Font) trap in normal code, their messages are in the error check area (without debugger d0 behind the lib) | messages in normal code | **F** | #955: the same runtime errors with the debugger; without it TRAP #0 with the right message (test `fontlib-messages-errarea`) |
+| fontlib calcoff (fontlib.c:50) | after a trap (no bitmap/font) it runs into the next trap | draws nothing; unreferenced check `bitmapchk` missing | **K** | only with a returning trap |
 | inputoutputlib defin single character (inputoutputlib.c:45, :233) | `BRA err1` into the error check area (without debugger: jump behind the lib) | trap and message in normal code | **K** | without debugger: runtime error instead of jump into nowhere (observable only in this error case). The jump would be technically possible (cf. audiolib, screenslib, shapeslib) |
 | wbstartuplib AddArg (wbstartuplib.c:74) | without memory, jump to `err` in the error check area | runtime error, NULL, caller aborts | **K** | only without memory |
 | linklistlib SortList (linklistlib.c:35) | destroys a3 and d6 | a3 unchanged | **K** | statement, a3 is not read afterwards. Not observable |
