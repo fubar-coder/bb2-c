@@ -367,9 +367,11 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   observation of each configuration in `.../ID/TAG/observation`.
   Helpers (`tests/bug-orig/amiga/`): `inject` runs the compiler with
   faults (no free signal, failing AllocMem of a size, also only after
-  SKIP of them, Read or Write error, failing Examine, failing OpenLibrary
-  or OpenDevice of a name, failing CreateProc, DisplayAlert answered at
-  once, exec's Alert of the process recorded and not shown (`alertlog`:
+  SKIP of them, Read or Write error (a Read also of a file that
+  OpenFromLock opened from a Lock of the name), failing Examine, failing
+  OpenLibrary or OpenDevice of a name, failing CreateProc, an UnLock of a
+  lock that a file owns after OpenFromLock counted and not done
+  (`ownedunlock`), DisplayAlert answered at once, exec's Alert of the process recorded and not shown (`alertlog`:
   e.g. the AN_SemCorrupt that exec raises for one ReleaseSemaphore too
   many and would otherwise show later, at a random moment; a dead-end
   alert stops the process, the session ends by its time limit),

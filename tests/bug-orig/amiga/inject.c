@@ -15,7 +15,9 @@
  *                          times (default every time); with +SKIP only
  *                          after SKIP such allocations went through
  *   readfail=NAME/N        the N-th Read on a file opened under a name that
- *                          ends in NAME (case ignored) returns -1
+ *                          ends in NAME (case ignored) returns -1; a file
+ *                          opened by OpenFromLock of a lock that Lock gave
+ *                          for such a name counts too
  *   writefail=NAME/N       the same for Write
  *   alerts                 DisplayAlert returns FALSE at once (as if the
  *                          right mouse button was pressed: a recoverable
@@ -41,6 +43,10 @@
  *                          afterwards
  *   examinefail=NAME       Examine of a lock on a name that ends in NAME
  *                          returns DOSFALSE
+ *   ownedunlock            UnLock of a lock that an OpenFromLock of the
+ *                          process took over (the file handle owns it, its
+ *                          Close frees it) is counted and not done (a
+ *                          second free of the lock would corrupt memory)
  *   openlibfail=NAME       OpenLibrary/OldOpenLibrary of a library whose
  *                          name ends in NAME (case ignored) returns 0
  *   opendevfail=NAME       OpenDevice of a device whose name ends in NAME
@@ -188,6 +194,7 @@
 #define LVO_CACHECLEARU    (-636)
 #define LVO_CACHECLEARE    (-642)
 #define LVO_OPENDEVICE     (-444)
+#define LVO_OPENFROMLOCK   (-378)
 
 struct IntuitionBase *IntuitionBase;
 
@@ -200,7 +207,7 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 /* -------------------------------------------------------------- options */
 
 static int o_signals, o_track, o_pad, o_guard, o_allocfail, o_createprocfail, o_alerts;
-static int o_wbfrontfail, o_handles, o_alertlog;
+static int o_wbfrontfail, o_handles, o_alertlog, o_ownedunlock;
 static ULONG nn_num;
 static char nn_name[40];
 static ULONG wbf_done;
@@ -217,8 +224,8 @@ APTR old_cacheclearu, old_cachecleare;
 void cacheclearu_patch(void), cachecleare_patch(void);
 APTR old_write, old_alert, old_opendev, old_wbfront;
 void write_patch(void), alert_patch(void), opendev_patch(void), wbfront_patch(void);
-APTR old_execalert;
-void execalert_patch(void);
+APTR old_execalert, old_openfromlock;
+void execalert_patch(void), openfromlock_patch(void);
 void allocmem_patch(void), freemem_patch(void), open_patch(void), read_patch(void);
 void lock_patch(void), examine_patch(void), oldopenlib_patch(void), openlib_patch(void);
 void createproc_patch(void), closelib_patch(void), unlock_patch(void), keys_stub(void);
@@ -423,15 +430,32 @@ __asm__(
 "   movem.l (sp)+,d0-d1/a0-a1\n"
 "   move.l  _old_closelib,-(sp)\n"
 "   rts\n"
-/* UnLock(d1 lock): unlock_pre(lock), the original */
+/* UnLock(d1 lock): unlock_pre(lock) != 0 -> not done, else the original */
 "   .even\n"
 "_unlock_patch:\n"
 "   movem.l d0-d1/a0-a1,-(sp)\n"
 "   move.l  d1,-(sp)\n"
 "   jsr     _unlock_pre\n"
 "   addq.l  #4,sp\n"
+"   tst.l   d0\n"
 "   movem.l (sp)+,d0-d1/a0-a1\n"
+"   bne.s   12f\n"
 "   move.l  _old_unlock,-(sp)\n"
+"12: rts\n"
+/* OpenFromLock(d1 lock): the original, then openfromlock_post(result,
+   lock) */
+"   .even\n"
+"_openfromlock_patch:\n"
+"   move.l  d1,-(sp)\n"
+"   move.l  _old_openfromlock,a0\n"
+"   jsr     (a0)\n"
+"   move.l  (sp)+,d1\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  d1,-(sp)\n"
+"   move.l  d0,-(sp)\n"
+"   jsr     _openfromlock_post\n"
+"   addq.l  #8,sp\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
 "   rts\n"
 /* the input handler of keys=: a0 events -> d0 events */
 "   .even\n"
@@ -605,6 +629,9 @@ ULONG free_pre(ULONG mem, ULONG size)
 
 #define NAMED 8
 static ULONG rf_fh[NAMED], rf_reads[NAMED], ef_lock[NAMED], wf_fh[NAMED], wf_writes[NAMED];
+/* readfail: the locks Lock gave for the name (for OpenFromLock);
+   ownedunlock: the locks an OpenFromLock took over */
+static ULONG rf_lock[NAMED], owned_lock[NAMED], ou_done;
 
 static int lower(int c) { return c >= 'A' && c <= 'Z' ? c + 32 : c; }
 
@@ -627,6 +654,17 @@ void named_post(ULONG result, const char *name, ULONG which)
     const char *want = which ? ef_name : rf_name;
     int i;
 
+    /* a new lock: an owned one of the same value was freed by Close */
+    if (which && result)
+        for (i = 0; i < NAMED; i++)
+            if (owned_lock[i] == result)
+                owned_lock[i] = 0;
+    if (which && result && name && rf_name[0] && ours() && ends(name, rf_name))
+        for (i = 0; i < NAMED; i++)
+            if (!rf_lock[i]) {
+                rf_lock[i] = result;
+                break;
+            }
     if (!which && result && name && wf_name[0] && ours() && ends(name, wf_name))
         for (i = 0; i < NAMED; i++)
             if (!wf_fh[i]) {
@@ -641,6 +679,32 @@ void named_post(ULONG result, const char *name, ULONG which)
             list[i] = result;
             if (!which)
                 rf_reads[i] = 0;
+            return;
+        }
+}
+
+/* OpenFromLock: the file handle owns the lock now */
+void openfromlock_post(ULONG fh, ULONG lock)
+{
+    int i;
+
+    if (!fh || !lock || !ours())
+        return;
+    if (o_ownedunlock)
+        for (i = 0; i < NAMED; i++)
+            if (!owned_lock[i]) {
+                owned_lock[i] = lock;
+                break;
+            }
+    for (i = 0; i < NAMED; i++)
+        if (rf_lock[i] == lock) {
+            rf_lock[i] = 0;
+            for (i = 0; i < NAMED; i++)
+                if (!rf_fh[i]) {
+                    rf_fh[i] = fh;
+                    rf_reads[i] = 0;
+                    break;
+                }
             return;
         }
 }
@@ -876,10 +940,23 @@ static BPTR cd_lock;                    /* COMMAND's current dir at its start */
 static volatile int cd_unlocked;
 static int cd_end_start;                /* still the current dir at the end */
 
-void unlock_pre(ULONG lock)
+/* != 0: not done (ownedunlock) */
+ULONG unlock_pre(ULONG lock)
 {
-    if (ours() && cd_lock && lock == (ULONG)cd_lock)
+    int i;
+
+    if (!ours() || !lock)
+        return 0;
+    if (cd_lock && lock == (ULONG)cd_lock)
         cd_unlocked = 1;
+    if (o_ownedunlock)
+        for (i = 0; i < NAMED; i++)
+            if (owned_lock[i] == lock) {
+                owned_lock[i] = 0;      /* once */
+                ou_done++;
+                return 1;
+            }
+    return 0;
 }
 
 #define MAXINUSE 4
@@ -1198,6 +1275,8 @@ static int option(const char *a)
         return o_alerts = 1;
     if (!strcmp(a, "alertlog"))
         return o_alertlog = 1;
+    if (!strcmp(a, "ownedunlock"))
+        return o_ownedunlock = 1;
     if (!strcmp(a, "wbfrontfail"))
         return o_wbfrontfail = 1;
     if (!strncmp(a, "nullnode=", 9)) {
@@ -1327,6 +1406,7 @@ static void patch(int on)
         old_cachecleare = SetFunction(ex, LVO_CACHECLEARE, (APTR)cachecleare_patch);
         old_write = SetFunction(dos, LVO_WRITE, (APTR)write_patch);
         old_opendev = SetFunction(ex, LVO_OPENDEVICE, (APTR)opendev_patch);
+        old_openfromlock = SetFunction(dos, LVO_OPENFROMLOCK, (APTR)openfromlock_patch);
         if (o_alerts)
             old_alert = SetFunction((struct Library *)IntuitionBase, LVO_DISPLAYALERT,
                                     (APTR)alert_patch);
@@ -1340,6 +1420,7 @@ static void patch(int on)
         SetFunction(ex, LVO_CACHECLEARE, old_cachecleare);
         SetFunction(dos, LVO_WRITE, old_write);
         SetFunction(ex, LVO_OPENDEVICE, old_opendev);
+        SetFunction(dos, LVO_OPENFROMLOCK, old_openfromlock);
         if (o_alerts)
             SetFunction((struct Library *)IntuitionBase, LVO_DISPLAYALERT, old_alert);
         if (o_wbfrontfail)
@@ -1400,8 +1481,8 @@ static const char usage[] =
     "usage: inject [OPTION...] COMMAND [ARGS]\n"
     "  run COMMAND in this process with faults injected (bug-orig tests)\n"
     "  options: signals allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP] readfail=NAME/N\n"
-    "    writefail=NAME/N alerts alertlog wbfrontfail examinefail=NAME openlibfail=NAME\n"
-    "    opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
+    "    writefail=NAME/N alerts alertlog wbfrontfail examinefail=NAME ownedunlock\n"
+    "    openlibfail=NAME opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
     "    track pad guard\n"
     "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked\n"
     "    undobuf cacheflush=NAME\n"
@@ -1436,7 +1517,7 @@ int main(int argc, char **argv)
         put("usage: inject [signals] [allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP]]\n"
             "              [readfail=NAME/N] [writefail=NAME/N] [alerts] [alertlog]\n"
             "              [wbfrontfail] [handles] [nullnode=NUM/NAME]\n"
-            "              [examinefail=NAME] [openlibfail=NAME] [opendevfail=NAME]\n"
+            "              [examinefail=NAME] [ownedunlock] [openlibfail=NAME] [opendevfail=NAME]\n"
             "              [createprocfail] [track] [pad] [guard]\n"
             "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
             "              [click=TITLE/TEXT]... [doslocked] [undobuf] [cacheflush=NAME]\n"
@@ -1564,6 +1645,10 @@ int main(int argc, char **argv)
     }
     if (wf_name[0]) {
         sprintf(line, "inject: writefail: %lu writes failed\n", wf_done);
+        put(line);
+    }
+    if (o_ownedunlock) {
+        sprintf(line, "inject: ownedunlock: %lu UnLocks of a lock a file owns\n", ou_done);
         put(line);
     }
     if (o_alerts) {
