@@ -37,6 +37,8 @@
  * type >= 6 (a string) -> runtime error "Illegal Type".
  */
 #include "blitzlib.h"
+#include <graphics/gfxbase.h>
+#include <stddef.h>
 
 /* a2 = the compiler's stack of string lengths (longs) / types (words),
    read through a local cursor `sp` (a copy of a2; a2 is not changed):
@@ -317,20 +319,25 @@ BLITZ_INLINE(dobeamy,
 
 /* ------------------------------------------------- NTSC, DispHeight */
 
+/* the original tests the low byte of DisplayFlags: BTST #0,207(a0) */
+static_assert(offsetof(struct GfxBase, DisplayFlags) == 206);
+
 /* DispHeight - 200 for NTSC or 256 for PAL: bit 0 of the low byte of
    GfxBase->DisplayFlags (207(a0), a0 = graphics base).  MOVE.w: the
    upper word of d0 is kept. */
-static ULONG BLITZ_ROUTINE dodispheight_c(ULONG hiword BL_REG(d0), const UBYTE *gfx BL_REG(a0))
+static ULONG BLITZ_ROUTINE dodispheight_c(ULONG hiword BL_REG(d0),
+                                          const struct GfxBase *gfx BL_REG(a0))
 {
-    return (hiword & 0xffff0000) | ((gfx[207] & 1) ? 200 : 256);
+    return (hiword & 0xffff0000) | ((gfx->DisplayFlags & NTSC) ? 200 : 256);
 }
 BLITZ_THUNK(dodispheight, dodispheight_c, "d1/a0-a1");
 
 /* NTSC - -1 if in ntsc mode: BTST #0,207(a0):SNE d0:EXT d0 (upper word
    of d0 kept) */
-static ULONG BLITZ_ROUTINE dontsc_c(ULONG hiword BL_REG(d0), const UBYTE *gfx BL_REG(a0))
+static ULONG BLITZ_ROUTINE dontsc_c(ULONG hiword BL_REG(d0),
+                                    const struct GfxBase *gfx BL_REG(a0))
 {
-    return (hiword & 0xffff0000) | ((gfx[207] & 1) ? 0xffff : 0);
+    return (hiword & 0xffff0000) | ((gfx->DisplayFlags & NTSC) ? 0xffff : 0);
 }
 BLITZ_THUNK(dontsc, dontsc_c, "d1/a0-a1");
 
