@@ -246,7 +246,14 @@ static char ahiname[] = "ahi.device";
     struct bl_regs r_ = { .a1 = (ULONG)(req) };                             \
     BLITZ_BASEJSR(SysBase, lvo, r_); })
 
-/* init: the port and the request (d0: the request, or 0) */
+/**
+ * @brief init: create the message port and the AHI request.
+ *
+ * CreateMsgPort, then CreateIORequest of a struct AHIRequest (80 bytes)
+ * on that port.  Both are exec V36 calls.
+ * @return d0: the request, 0 if the port or the request could not be
+ *         made (a port made stays)
+ */
 ULONG BLITZ_ROUTINE c_libinit(void)
 {
     ahimsgport = CreateMsgPort();
@@ -259,7 +266,16 @@ ULONG BLITZ_ROUTINE c_libinit(void)
     return (ULONG)ahiiorequest;
 }
 
-/* finit and CloseAHI */
+/**
+ * @brief finit and CloseAHI: close the device, delete the request and the port.
+ *
+ * Nothing without the port, or while CheckIO says the request is in use
+ * (everything stays open, BUG(orig) (#933)).  CloseDevice only if
+ * ahidevice is set, which never happens (BUG(orig) (#924)); then
+ * DeleteIORequest, DeleteMsgPort, ahibase = 0.  CloseAHI is this
+ * routine: a later OpenAHI uses request 0 (BUG(orig) (#927)).
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_libfinit(void)
 {
     if (!ahimsgport)
@@ -279,7 +295,20 @@ void BLITZ_ROUTINE c_libfinit(void)
     ahibase = NULL;
 }
 
-/* OpenAHI unit,deviceID: -1 if ahi.device opened */
+/**
+ * @brief OpenAHI unit,deviceID: open ahi.device with the library's request.
+ *
+ * Sets ahir_Version to 4 (MIN_AHI_VERSION) and calls OpenDevice
+ * ("ahi.device", unit, request, 0); on success io_Device becomes the
+ * library base for the requester calls.  The device ID is stored but
+ * not used.  BUG(orig): the "already open" test of ahidevice never holds,
+ * a second OpenAHI opens the open request again (#924); after CloseAHI
+ * (or without a request from init) the request is 0: ahir_Version goes
+ * to address 48 and OpenDevice gets request 0 (#927).
+ * @param unit  d0: the AHI unit
+ * @param id    d1: the device (audio mode) ID, unused
+ * @return d0: BB_TRUE if ahi.device opened, else BB_FALSE
+ */
 BB_BOOL BLITZ_ROUTINE c_openahi2(ULONG unit BL_REG(d0), ULONG id BL_REG(d1))
 {
     struct bl_regs r;
@@ -299,14 +328,30 @@ BB_BOOL BLITZ_ROUTINE c_openahi2(ULONG unit BL_REG(d0), ULONG id BL_REG(d1))
     return BB_TRUE;
 }
 
-/* OpenAHI unit: deviceID AHI_DEFAULT_ID */
+/**
+ * @brief OpenAHI unit: c_openahi2() with the device ID AHI_DEFAULT_ID.
+ * @param unit  d0: the AHI unit
+ * @return d0: BB_TRUE if ahi.device opened, else BB_FALSE
+ */
 BB_BOOL BLITZ_ROUTINE c_openahi(ULONG unit BL_REG(d0))
 {
     return c_openahi2(unit, AHI_DEFAULT_ID);
 }
 
-/* PlaySoundAHI sound,volume,balance: a0 = the sound object (never gets
-   past the ahidevice check, BUG(orig) (#924)) */
+/**
+ * @brief PlaySoundAHI sound,volume,balance: play a sound object through ahi.device.
+ *
+ * Never gets past the ahidevice check, which is never set: returns 0 at
+ * once and plays nothing (BUG(orig) (#924)).  Behind it: CMD_WRITE of
+ * the sample as 8 bit mono (AHIST_M8S), the length in words (+6) taken
+ * as bytes (BUG(orig) (#932)), the frequency the word +16 CludgeSound
+ * writes behind the object (#926); SendIO without waiting for the
+ * request before or removing its reply (BUG(orig) (#933)).
+ * @param vol  d1: the volume (Fixed 16.16, 0x10000 = full)
+ * @param bal  d2: the stereo position (Fixed, 0x8000 = centre)
+ * @param obj  a0: audiolib's sound object (!libs #audiolib,#ia0|#pd0)
+ * @return d0: 0, or SendIO's d0
+ */
 ULONG BLITZ_ROUTINE c_playsound2(ULONG vol BL_REG(d1), ULONG bal BL_REG(d2),
                                  struct sound *obj BL_REG(a0))
 {
@@ -327,18 +372,39 @@ ULONG BLITZ_ROUTINE c_playsound2(ULONG vol BL_REG(d1), ULONG bal BL_REG(d2),
     return reqcall(LVO_SendIO, req);    /* no wait, the reply never removed */
 }
 
+/**
+ * @brief PlaySoundAHI sound,volume: c_playsound2() with the balance centred (0x8000).
+ * @param vol  d1: the volume (Fixed 16.16)
+ * @param obj  a0: audiolib's sound object
+ * @return d0: as c_playsound2()
+ */
 ULONG BLITZ_ROUTINE c_playsound1(ULONG vol BL_REG(d1), struct sound *obj BL_REG(a0))
 {
     return c_playsound2(vol, 0x8000, obj);
 }
 
+/**
+ * @brief PlaySoundAHI sound: c_playsound2() with full volume (0x10000), centred.
+ * @param obj  a0: audiolib's sound object
+ * @return d0: as c_playsound2()
+ */
 ULONG BLITZ_ROUTINE c_playsound(struct sound *obj BL_REG(a0))
 {
     return c_playsound2(0x10000, 0x8000, obj);
 }
 
-/* PlayRawAHI address,length,frequency,volume,balance (never gets past the
-   ahidevice check, BUG(orig) (#924)) */
+/**
+ * @brief PlayRawAHI address,length,frequency,volume,balance: play raw 8 bit data through ahi.device.
+ *
+ * Never gets past the ahidevice check (BUG(orig) (#924)): returns 0 and
+ * plays nothing.  Behind it: CMD_WRITE as AHIST_M8S through DoIO.
+ * @param data  d0: the sample data
+ * @param len   d1: its length in bytes
+ * @param freq  d2: the frequency
+ * @param vol   d3: the volume (Fixed 16.16)
+ * @param bal   d4: the stereo position (Fixed)
+ * @return d0: 0, or DoIO's d0
+ */
 ULONG BLITZ_ROUTINE c_playraw2(ULONG data BL_REG(d0), ULONG len BL_REG(d1),
                                ULONG freq BL_REG(d2), ULONG vol BL_REG(d3),
                                ULONG bal BL_REG(d4))
@@ -360,21 +426,53 @@ ULONG BLITZ_ROUTINE c_playraw2(ULONG data BL_REG(d0), ULONG len BL_REG(d1),
     return reqcall(LVO_DoIO, req);
 }
 
+/**
+ * @brief PlayRawAHI address,length,frequency,volume: c_playraw2() centred (0x8000).
+ * @param data  d0: the sample data
+ * @param len   d1: its length in bytes
+ * @param freq  d2: the frequency
+ * @param vol   d3: the volume (Fixed 16.16)
+ * @return d0: as c_playraw2()
+ */
 ULONG BLITZ_ROUTINE c_playraw1(ULONG data BL_REG(d0), ULONG len BL_REG(d1),
                                ULONG freq BL_REG(d2), ULONG vol BL_REG(d3))
 {
     return c_playraw2(data, len, freq, vol, 0x8000);
 }
 
+/**
+ * @brief PlayRawAHI address,length,frequency: c_playraw2() at full volume, centred.
+ * @param data  d0: the sample data
+ * @param len   d1: its length in bytes
+ * @param freq  d2: the frequency
+ * @return d0: as c_playraw2()
+ */
 ULONG BLITZ_ROUTINE c_playraw(ULONG data BL_REG(d0), ULONG len BL_REG(d1),
                               ULONG freq BL_REG(d2))
 {
     return c_playraw2(data, len, freq, 0x10000, 0x8000);
 }
 
-/* AHIOutputRequest x,y,width,height,audioid,frequency (d0-d5): the
-   requester's result, 0 without ahi.device or requester.  BUG(orig)
-   (see the header): the tag offsets, the screen, the requester not freed */
+/**
+ * @brief AHIOutputRequest x,y,width,height,modeid,frequency: AHI's audio mode requester.
+ *
+ * Writes the arguments into the tag list, then AHI_AllocAudioRequestA
+ * and AHI_AudioRequestA (no tags).  BUG(orig): the values go to the
+ * offsets 16, 20, 24, 28 of the tag list, over the tag ids of width and
+ * height - width and the mode id become tag ids (mode id 0 = TAG_DONE
+ * ends the list), height and frequency their data; the initial audio id
+ * and frequency are never set (#931).  !libs's screen (a0) is not used,
+ * AHIR_Screen stays 0 (#929).  Every call allocates a requester that is
+ * never freed (#930).
+ * @param x     d0: the initial left edge
+ * @param y     d1: the initial top edge
+ * @param w     d2: the width (written as a tag id, #931)
+ * @param h     d3: the height (written as width's data, #931)
+ * @param id    d4: the mode id (written as a tag id, #931)
+ * @param freq  d5: the frequency (written as height's data, #931)
+ * @return d0: AHI_AudioRequestA's result (0 when cancelled), 0 without
+ *         ahi.device or when the requester could not be allocated
+ */
 ULONG BLITZ_ROUTINE c_outreq6(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL_REG(d2),
                               ULONG h BL_REG(d3), ULONG id BL_REG(d4), ULONG freq BL_REG(d5))
 {
@@ -396,39 +494,84 @@ ULONG BLITZ_ROUTINE c_outreq6(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL
     return BLITZ_BASEJSR(ahibase, LVO_AHI_AudioRequestA, r);
 }
 
-/* no arguments */
+/**
+ * @brief AHIOutputRequest: c_outreq6() with x, y, width, height -1 and mode id, frequency 0.
+ * @return d0: as c_outreq6()
+ */
 ULONG BLITZ_ROUTINE c_outreq1(void)
 {
     return c_outreq6((ULONG)-1, (ULONG)-1, (ULONG)-1, (ULONG)-1, 0, 0);
 }
 
-/* "AudioID" - the entry of 4 arguments: d0-d3 replaced, d4 as it is */
+/**
+ * @brief The entry "AudioID": c_outreq6() with x, y, width, height -1.
+ *
+ * BUG(orig) (#928): !subs gives it to the form with 4 arguments
+ * (x,y,width,height): those are replaced by -1, the mode id is whatever
+ * d4 holds.
+ * @param id  d4: the mode id (the caller's d4)
+ * @return d0: as c_outreq6()
+ */
 ULONG BLITZ_ROUTINE c_outreq2(ULONG id BL_REG(d4))
 {
     return c_outreq6((ULONG)-1, (ULONG)-1, (ULONG)-1, (ULONG)-1, id, 0);
 }
 
-/* "AudioID, Frequency" - the entry of 1 argument: d0 replaced, d4/d5 as
-   they are */
+/**
+ * @brief The entry "AudioID, Frequency": c_outreq6() with x, y, width, height -1.
+ *
+ * BUG(orig) (#928): !subs gives it to the form with 1 argument: the
+ * argument (d0) is replaced, mode id and frequency are whatever d4/d5
+ * hold.
+ * @param id    d4: the mode id (the caller's d4)
+ * @param freq  d5: the frequency (the caller's d5)
+ * @return d0: as c_outreq6()
+ */
 ULONG BLITZ_ROUTINE c_outreq3(ULONG id BL_REG(d4), ULONG freq BL_REG(d5))
 {
     return c_outreq6((ULONG)-1, (ULONG)-1, (ULONG)-1, (ULONG)-1, id, freq);
 }
 
-/* "X,Y,WIDTH,HEIGHT" - the entry of 2 arguments: d2/d3 as they are */
+/**
+ * @brief The entry "X,Y,WIDTH,HEIGHT": c_outreq6() with mode id and frequency 0.
+ *
+ * BUG(orig) (#928): !subs gives it to the form with 2 arguments: width
+ * and height are whatever d2/d3 hold.
+ * @param x  d0: the left edge
+ * @param y  d1: the top edge
+ * @param w  d2: the width (the caller's d2)
+ * @param h  d3: the height (the caller's d3)
+ * @return d0: as c_outreq6()
+ */
 ULONG BLITZ_ROUTINE c_outreq4(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL_REG(d2),
                               ULONG h BL_REG(d3))
 {
     return c_outreq6(x, y, w, h, 0, 0);
 }
 
+/**
+ * @brief AHIOutputRequest x,y,width,height,modeid: c_outreq6() with frequency 0.
+ * @param x   d0: the left edge
+ * @param y   d1: the top edge
+ * @param w   d2: the width
+ * @param h   d3: the height
+ * @param id  d4: the mode id
+ * @return d0: as c_outreq6()
+ */
 ULONG BLITZ_ROUTINE c_outreq5(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL_REG(d2),
                               ULONG h BL_REG(d3), ULONG id BL_REG(d4))
 {
     return c_outreq6(x, y, w, h, id, 0);
 }
 
-/* BUG(orig) (#934): the initial tags' data */
+/**
+ * @brief AHIRequestedID: the audio mode id chosen in AHIOutputRequest.
+ *
+ * BUG(orig) (#934): returns the data of the initial tag
+ * AHIR_InitialAudioID (-1, never written), not the requester's
+ * ahiam_AudioID.
+ * @return d0: the tag's data, 0 without ahi.device
+ */
 ULONG BLITZ_ROUTINE c_requestedid(void)
 {
     if (!ahibase)
@@ -437,6 +580,14 @@ ULONG BLITZ_ROUTINE c_requestedid(void)
                                            the requester's ahiam_AudioID */
 }
 
+/**
+ * @brief AHIRequestedFreq: the mixing frequency chosen in AHIOutputRequest.
+ *
+ * BUG(orig) (#934): returns the data of the initial tag
+ * AHIR_InitialMixFreq (0, never written), not the requester's
+ * ahiam_MixFreq.
+ * @return d0: the tag's data, 0 without ahi.device
+ */
 ULONG BLITZ_ROUTINE c_requestedfreq(void)
 {
     if (!ahibase)
@@ -445,8 +596,27 @@ ULONG BLITZ_ROUTINE c_requestedfreq(void)
                                            not the requester's ahiam_MixFreq */
 }
 
-/* CludgeSound sound#,address: d0 = sound#, d1 = the 8SVX file, a0 = the
-   sound object; risoundlib's routine, the rate also at +16 */
+/**
+ * @brief CludgeSound sound#,address: make a sound object of an 8SVX file in memory.
+ *
+ * risoundlib's routine: frees the object's old sample (memlib
+ * globfree), checks "8SVX" at +8 and "VHDR" at +12, takes the rate from
+ * the VHDR, the period 3579545 / rate, finds the BODY among the first
+ * seven chunks and copies it to chip memory (memlib globalloc); the
+ * rate also goes to +16.  BUG(orig): the old sample is freed before the
+ * checks, a failure leaves the freed pointer (#831), also DecodeSound's
+ * "cL" data (#945); the VHDR is assumed to be 20 bytes (#832); rate 0
+ * never ends the period loop (#830); no pad byte in the chunk walk
+ * (#828); it copies ((length - 1) & $FFFF) + 1 bytes (DBRA, #829); the rate is
+ * written at +16, behind the 16 byte object (#926), and mark (+14) is no
+ * longer cleared (#925).
+ * @param sound  d0: sound# (its upper word goes into globfree's d0)
+ * @param sram   d1: the 8SVX file in memory
+ * @param saddr  a0: audiolib's sound object
+ * @return d0: BB_TRUE if the sound was made, BB_FALSE if the file is no
+ *         8SVX with a VHDR, has no BODY among the first seven chunks, or
+ *         no chip memory
+ */
 static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
                                           struct sound *saddr BL_REG(a0))
 {
