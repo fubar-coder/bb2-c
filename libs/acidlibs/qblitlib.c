@@ -20,6 +20,7 @@
  * and UnQueue is meant to clear the area to colour 0).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #define __NOLIBBASE__
 #define GRAPHICS_BASE_NAME gfx
 #include <proto/graphics.h>
@@ -94,15 +95,15 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 10, 4);
 
 static UWORD bcon0 = 0xfca;
 
-#define SW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
-#define SL(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
+/* the shape (shapeslib) and the bitmap (bitmaplib) objects: struct bb_shape,
+   struct bb_bitmap (blitzobj.h) */
 
 /* a queue item, 14 bytes (QBlit appends, UnQueue reads) */
 struct qitem {
     UWORD mod;                  /* +0  destination modulo */
     UWORD size;                 /* +2  BLTSIZE */
     UWORD planes;               /* +4  bitmap depth - 1 */
-    const UBYTE *bm;            /* +6  the bitmap object */
+    const struct bb_bitmap *bm; /* +6  the bitmap object */
     ULONG off;                  /* +10 byte offset in each plane */
 };
 static_assert(sizeof(struct qitem) == 14, "qitem size");
@@ -207,16 +208,17 @@ struct blitstate {
 };
 
 /* b_doblit - a0 = queue, a3 = shape, a2 = bitmap, a1 = chip base, d2/d3 */
-static void qblit(struct queue *q, const UBYTE *shape, const UBYTE *bm, UBYTE *cb,
+static void qblit(struct queue *q, const struct bb_shape *shape, const struct bb_bitmap *bm,
+                  UBYTE *cb,
                   WORD x, WORD y, struct blitstate *st)
 {
     struct qitem *item = q->pos;
     ULONG mods, mods_swapped;
     UWORD n;
 
-    x -= SW(shape, 10);
-    y -= SW(shape, 12);
-    mods = 0xfffe0000UL | (UWORD)(SW(bm, 0) - SW(shape, 6) - 2);
+    x -= (UWORD)shape->handlex;
+    y -= (UWORD)shape->handley;
+    mods = 0xfffe0000UL | (UWORD)(bm->bpr - shape->ebwidth - 2);
     item->mod = (UWORD)mods;
     mods_swapped = mods << 16 | mods >> 16;
     BL_BLITWAIT(cb);
@@ -226,17 +228,17 @@ static void qblit(struct queue *q, const UBYTE *shape, const UBYTE *bm, UBYTE *c
     BL_CUSTOMW(cb, 0x42) = st->shift;
     BL_CUSTOMW(cb, 0x40) = st->shift | bcon0;
     BL_CUSTOML(cb, 0x44) = 0xffff0000UL;
-    BL_CUSTOML(cb, 0x4c) = SL(shape, 14);
-    st->cookie = SL(shape, 18);
-    st->off = (ULONG)((LONG)y * (WORD)SW(bm, 0)) + (LONG)(WORD)(x >> 3);
-    n = SW(shape, 4) - 1;
-    st->size = SW(shape, 8);
+    BL_CUSTOML(cb, 0x4c) = (ULONG)shape->data;
+    st->cookie = (ULONG)shape->cookie;
+    st->off = (ULONG)((LONG)y * (WORD)bm->bpr) + (LONG)(WORD)(x >> 3);
+    n = shape->depth - 1;
+    st->size = shape->bltsize;
     item->size = st->size;
-    item->planes = SW(bm, 4) - 1;
+    item->planes = bm->flagsdepth - 1;
     item->bm = bm;
     item->off = st->off;
     q->pos = item + 1;
-    st->plane = (UBYTE **)(bm + 8);
+    st->plane = (UBYTE **)bm->planes;
     goto doblit;
     do {
         BL_BLITWAIT(cb);
@@ -252,14 +254,15 @@ doblit:
     } while (n-- != 0);
 }
 
-static void qblitex(struct queue *q, const UBYTE *shape, const UBYTE *bm, UBYTE *cb,
+static void qblitex(struct queue *q, const struct bb_shape *shape, const struct bb_bitmap *bm,
+                    UBYTE *cb,
                     WORD x, WORD y, UWORD bits)
 {
     struct blitstate st;
     UWORD p;
 
     qblit(q, shape, bm, cb, x, y, &st);
-    for (p = SW(shape, 4); p < SW(bm, 4); p++) {
+    for (p = shape->depth; p < bm->flagsdepth; p++) {
         UWORD con = (bits & 1) ? 0xbfa : 0xb0a;
         ULONG d;
 
@@ -299,7 +302,7 @@ start:
         BL_CUSTOMW(cb, 0x66) = it->mod;
         size = it->size;
         n = it->planes;
-        plane = (UBYTE **)(it->bm + 8);
+        plane = (UBYTE **)it->bm->planes;
         off = it->off;
         it++;
         do {
@@ -311,7 +314,7 @@ start:
 }
 
 /* b_dounqueue2 - copy the queued areas from the bitmap a2 */
-static void unqueue2(struct queue *q, UBYTE *cb, const UBYTE *src)
+static void unqueue2(struct queue *q, UBYTE *cb, const struct bb_bitmap *src)
 {
     struct qitem *end = q->pos, *it = q->mem;
 
@@ -335,10 +338,10 @@ start:
         BL_CUSTOMW(cb, 0x64) = it->mod;
         size = it->size;
         n = it->planes;
-        plane = (UBYTE **)(it->bm + 8);
+        plane = (UBYTE **)it->bm->planes;
         off = it->off;
         it++;
-        from = (UBYTE **)(src + 8);
+        from = (UBYTE **)src->planes;
         do {
             BL_BLITWAIT(cb);
             BL_CUSTOML(cb, 0x54) = (ULONG)*plane++ + off;
@@ -351,7 +354,7 @@ start:
 /* ---------------------------------------------------- the entries */
 
 #define QBLIT_REGS WORD x BL_REG(d2), WORD y BL_REG(d3), struct queue *q BL_REG(a0), \
-                   UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2)
+                   UBYTE *cb BL_REG(a1), const struct bb_bitmap *bm BL_REG(a2)
 
 /**
  * @brief QBlit Queue#,Shape#,X,Y - blit a shape and remember the area (Blitz mode).
@@ -378,7 +381,7 @@ void BLITZ_ROUTINE b_doblit_c(QBLIT_REGS)
 {
     struct blitstate st;
 
-    qblit(q, blitz_string, bm, cb, x, y, &st);
+    qblit(q, (const struct bb_shape *)blitz_string, bm, cb, x, y, &st);
 }
 
 /**
@@ -393,7 +396,7 @@ void BLITZ_ROUTINE a_doblit_c(QBLIT_REGS, struct Library *gfx BL_REG(a6))
     struct blitstate st;
 
     OwnBlitter();
-    qblit(q, blitz_string, bm, cb, x, y, &st);
+    qblit(q, (const struct bb_shape *)blitz_string, bm, cb, x, y, &st);
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
@@ -415,7 +418,7 @@ BLITZ_AB_ROUTINE(doblit, b_doblit_c, "   jmp     _a_doblit_c");
 void BLITZ_ROUTINE b_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4));
 void BLITZ_ROUTINE b_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4))
 {
-    qblitex(q, blitz_string, bm, cb, x, y, bits);
+    qblitex(q, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
 }
 
 /**
@@ -431,7 +434,7 @@ void BLITZ_ROUTINE a_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4),
                                 struct Library *gfx BL_REG(a6))
 {
     OwnBlitter();
-    qblitex(q, blitz_string, bm, cb, x, y, bits);
+    qblitex(q, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
@@ -486,8 +489,8 @@ BLITZ_AB_ROUTINE(dounqueue, b_dounqueue_c, "   jmp     _a_dounqueue_c");
  * @param cb a1: the chip base ($DFF000)
  * @param bm a2: the bitmap to copy from
  */
-void BLITZ_ROUTINE b_dounqueue2_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2));
-void BLITZ_ROUTINE b_dounqueue2_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2))
+void BLITZ_ROUTINE b_dounqueue2_c(UBYTE *cb BL_REG(a1), const struct bb_bitmap *bm BL_REG(a2));
+void BLITZ_ROUTINE b_dounqueue2_c(UBYTE *cb BL_REG(a1), const struct bb_bitmap *bm BL_REG(a2))
 {
     unqueue2((struct queue *)blitz_string, cb, bm);
 }
@@ -500,9 +503,9 @@ void BLITZ_ROUTINE b_dounqueue2_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a
  * @param bm  a2: the bitmap to copy from
  * @param gfx a6: graphics.library
  */
-void BLITZ_ROUTINE a_dounqueue2_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2),
+void BLITZ_ROUTINE a_dounqueue2_c(UBYTE *cb BL_REG(a1), const struct bb_bitmap *bm BL_REG(a2),
                                   struct Library *gfx BL_REG(a6));
-void BLITZ_ROUTINE a_dounqueue2_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2),
+void BLITZ_ROUTINE a_dounqueue2_c(UBYTE *cb BL_REG(a1), const struct bb_bitmap *bm BL_REG(a2),
                                   struct Library *gfx BL_REG(a6))
 {
     OwnBlitter();
@@ -523,29 +526,30 @@ BLITZ_ERRCHK_MESSAGE(mess5, "Uninitialized Queue");
 BLITZ_ERRCHK_MESSAGE(mess6, "Uninitialized BitMap");
 BLITZ_ERRCHK_MESSAGE(mess7, "Queue Overflow");
 
-static int BLITZ_ERRCHK maxchk(const UBYTE *shape, const UBYTE *bm)
+static int BLITZ_ERRCHK maxchk(const struct bb_shape *shape, const struct bb_bitmap *bm)
 {
-    if (!SL(shape, 18))
+    if (!shape->cookie)
         BLITZ_RUNERR(mess3);
-    else if (!SW(bm, 62))
+    else if (!bm->isreal)
         BLITZ_RUNERR(mess1);
-    else if (!SW(shape, 0))
+    else if (!shape->width)
         BLITZ_RUNERR(mess2);
     else
         return 1;
     return 0;
 }
 
-static int BLITZ_ERRCHK poschk(const UBYTE *shape, const UBYTE *bm, WORD x, WORD y)
+static int BLITZ_ERRCHK poschk(const struct bb_shape *shape, const struct bb_bitmap *bm,
+                               WORD x, WORD y)
 {
-    if (SW(shape, 4) > SW(bm, 4)) {
+    if (shape->depth > bm->flagsdepth) {
         BLITZ_RUNERR(mess0);
         return 0;
     }
-    x -= SW(shape, 10);
-    y -= SW(shape, 12);
+    x -= (UWORD)shape->handlex;
+    y -= (UWORD)shape->handley;
     if (x < 0 || y < 0
-        || (UWORD)(x + SW(shape, 0)) > SW(bm, 56) || (UWORD)(y + SW(shape, 2)) > SW(bm, 58)) {
+        || (UWORD)(x + shape->width) > bm->width || (UWORD)(y + shape->height) > bm->height) {
         BLITZ_RUNERR(mess4);
         return 0;
     }
@@ -555,13 +559,14 @@ static int BLITZ_ERRCHK poschk(const UBYTE *shape, const UBYTE *bm, WORD x, WORD
 /* qblitchk - queue set up, blitchk2, room for one more item */
 static void BLITZ_ERRCHK qblitchk_c(WORD x BL_REG(d2), WORD y BL_REG(d3),
                                     const struct queue *q BL_REG(a0),
-                                    const UBYTE *bm BL_REG(a2))
+                                    const struct bb_bitmap *bm BL_REG(a2))
 {
     if (!q->mem) {
         BLITZ_RUNERR(mess5);
         return;
     }
-    if (!maxchk(blitz_string, bm) || !poschk(blitz_string, bm, x, y))
+    if (!maxchk((const struct bb_shape *)blitz_string, bm)
+        || !poschk((const struct bb_shape *)blitz_string, bm, x, y))
         return;
     if ((ULONG)(q->pos + 1) > (ULONG)q->mem + q->len)
         BLITZ_RUNERR(mess7);
@@ -573,11 +578,11 @@ static void BLITZ_ERRCHK unqueuechk_c(void)
         BLITZ_RUNERR(mess5);
 }
 
-static void BLITZ_ERRCHK unqueuechk2_c(const UBYTE *bm BL_REG(a2))
+static void BLITZ_ERRCHK unqueuechk2_c(const struct bb_bitmap *bm BL_REG(a2))
 {
     if (!((const struct queue *)blitz_string)->mem)
         BLITZ_RUNERR(mess5);
-    else if (!SW(bm, 62))
+    else if (!bm->isreal)
         BLITZ_RUNERR(mess6);
 }
 
