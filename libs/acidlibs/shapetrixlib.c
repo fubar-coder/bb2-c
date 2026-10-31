@@ -43,6 +43,7 @@
  * usevals[0..numcols]). (#272)
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #define __NOLIBBASE__
 #include <proto/graphics.h>
 #undef __NOLIBBASE__
@@ -85,27 +86,7 @@ BLITZ_LIBFIN();
 
 /* ------------------------------------------------------------- helpers */
 
-/* a shape object of shapeslib, 32 bytes (the same struct as there) */
-struct shape {
-    UWORD width;                /* +0  pixel width, 0 = no shape */
-    UWORD height;               /* +2 */
-    UWORD depth;                /* +4 */
-    UWORD ebwidth;              /* +6  even byte width */
-    UWORD bltsize;              /* +8  height << 6 | words + 1 */
-    WORD handlex, handley;      /* +10/+12 */
-    UBYTE *data;                /* +14 plane after plane, CHIP */
-    UBYTE *cookie;              /* +18 OR of all planes, CHIP, or 0 */
-    UWORD planesize;            /* +22 bytes per plane */
-    UWORD xplanesize;           /* +24 per plane + one word per row */
-    UWORD size;                 /* +26 the whole shape */
-    UWORD xsize;                /* +28 whole + one word per row */
-    UWORD cludge;               /* +30 "cL": the data is not shapeslib's */
-};
-static_assert(sizeof(struct shape) == 32, "shape size");
-
-/* the palette object (palettelib's) */
-#define SW(s, o) (*(UWORD *)((UBYTE *)(s) + (o)))
-#define SP(s, o) (*(UBYTE **)((UBYTE *)(s) + (o)))
+/* the objects: struct bb_shape, struct bb_palette (blitzobj.h) */
 /* the two handles as one long (CLR.l 10(a0)) */
 #define HANDLES(s) (*(ULONG *)&(s)->handlex)
 
@@ -128,10 +109,10 @@ static void globfree(void *mem, ULONG size)
 }
 
 /* shapeslib docookie with a3 = shape (a3/a4 kept around the call) */
-static void docookie(struct shape *shape)
+static void docookie(struct bb_shape *shape)
 {
 #ifndef BL_CODE_MODEL
-    register struct shape *_s __asm("a0") = shape;
+    register struct bb_shape *_s __asm("a0") = shape;
 
     __asm volatile("movem.l a3-a4,-(sp)\n\t"
                    "move.l %0,a3\n\t"
@@ -155,7 +136,7 @@ static ULONG qcall(ULONG val, ULONG a, ULONG b)
 }
 
 /* re-cookie if the shape has a cookie */
-static void cookieit(struct shape *s)
+static void cookieit(struct bb_shape *s)
 {
     if (s->cookie)
         docookie(s);
@@ -163,7 +144,7 @@ static void cookieit(struct shape *s)
 
 /* --------------------------------------------------------- newshape */
 
-static struct shape newshape __attribute__((aligned(4)));
+static struct bb_shape newshape __attribute__((aligned(4)));
 static UWORD colvals[256];                      /* table of brightness's */
 static UWORD usevals[256];                      /* currently collected pixels */
 static ULONG xadd, yadd;
@@ -171,7 +152,7 @@ static UWORD numcols;                           /* dbf */
 
 /* allocshape: width, height, depth of newshape set; the rest and the
    memory */
-static void allocshape(struct shape *ns)
+static void allocshape(struct bb_shape *ns)
 {
     UWORD words = (UWORD)(ns->width + 15) >> 4; /* word width */
     ULONG p;
@@ -192,7 +173,7 @@ static void allocshape(struct shape *ns)
 }
 
 /* makeshape: newshape into shape a3 */
-static void makeshape(struct shape *shape)
+static void makeshape(struct bb_shape *shape)
 {
     ULONG cookie;
     int i;
@@ -230,7 +211,7 @@ static void blitwait(volatile UBYTE *chip)
 }
 
 /* a3 = shape, a1 = chip base */
-static void xflip(struct shape *s, volatile UBYTE *chip)
+static void xflip(struct bb_shape *s, volatile UBYTE *chip)
 {
     UWORD pad = (UWORD)(s->ebwidth << 3) - s->width; /* d0: the pad bits */
     UWORD rows;
@@ -299,7 +280,7 @@ static void xflip(struct shape *s, volatile UBYTE *chip)
 void BLITZ_ROUTINE b_doxflip_c(volatile UBYTE *chip BL_REG(a1));
 void BLITZ_ROUTINE b_doxflip_c(volatile UBYTE *chip BL_REG(a1))
 {
-    xflip((struct shape *)blitz_string, chip);
+    xflip((struct bb_shape *)blitz_string, chip);
 }
 BLITZ_THUNK(b_doxflip, b_doxflip_c, "d0-d1/a0-a1");
 
@@ -317,7 +298,7 @@ void BLITZ_ROUTINE a_doxflip_c(volatile UBYTE *chip BL_REG(a1), struct GfxBase *
     volatile UBYTE *dmaconr = (volatile UBYTE *)0xdff002;
 
     OwnBlitter();
-    xflip((struct shape *)blitz_string, chip);
+    xflip((struct bb_shape *)blitz_string, chip);
     (void)*dmaconr;                             /* BTST twice, no loop */
     (void)*dmaconr;
     DisownBlitter();
@@ -340,7 +321,7 @@ BLITZ_AB_ROUTINE(doxflip, b_doxflip,
  */
 static void BLITZ_ROUTINE doyflip_c(void)
 {
-    struct shape *s = (struct shape *)blitz_string;
+    struct bb_shape *s = (struct bb_shape *)blitz_string;
     UWORD planes = s->depth - 1;                /* bitplanes */
     UBYTE *plane = s->data;
 
@@ -464,7 +445,7 @@ static void rotit2(WORD x, WORD y, UWORD angle)
  */
 static void BLITZ_ROUTINE dorotate_c(ULONG q BL_REG(d1))
 {
-    struct shape *s = (struct shape *)blitz_string, *ns = &newshape;
+    struct bb_shape *s = (struct bb_shape *)blitz_string, *ns = &newshape;
     UBYTE *row;
     UWORD angle = 256 - (UWORD)(((q << 8) >> 16) & 255);
     WORD y;
@@ -519,9 +500,9 @@ BLITZ_THUNK(dorotate, dorotate_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------------- Scale */
 
-static void scale(struct shape *shape, ULONG xr, ULONG yr)
+static void scale(struct bb_shape *shape, ULONG xr, ULONG yr)
 {
-    struct shape *ns = &newshape;
+    struct bb_shape *ns = &newshape;
     UBYTE *drow;
     ULONG sxq, syq, w;
     UWORD dx, dy;
@@ -652,7 +633,7 @@ static void BLITZ_ROUTINE doscale2_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2))
     numcols = 255;
     for (i = 0; i < 256; i++)
         colvals[i] = 1;
-    scale((struct shape *)blitz_string, xr, yr);
+    scale((struct bb_shape *)blitz_string, xr, yr);
 }
 BLITZ_THUNK(doscale2, doscale2_c, "d0-d1/a0-a1");
 
@@ -672,10 +653,11 @@ BLITZ_THUNK(doscale2, doscale2_c, "d0-d1/a0-a1");
  * @param yr  d2: the y ratio (Quick)
  * @param pal a2: the palette object
  */
-static void BLITZ_ROUTINE doscale_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2), UBYTE *pal BL_REG(a2))
+static void BLITZ_ROUTINE doscale_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2),
+                                    struct bb_palette *pal BL_REG(a2))
 {
-    UWORD n = SW(pal, 4) - 1;
-    const ULONG *c = (const ULONG *)SP(pal, 0) + 1;
+    UWORD n = pal->numcols - 1;
+    const ULONG *c = (const ULONG *)pal->pdata + 1;
     UWORD *val = colvals;
 
     numcols = n;
@@ -687,7 +669,7 @@ static void BLITZ_ROUTINE doscale_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2), UB
         c += 3;
         *val++ = v;
     } while (n-- != 0);
-    scale((struct shape *)blitz_string, xr, yr);
+    scale((struct bb_shape *)blitz_string, xr, yr);
 }
 BLITZ_THUNK(doscale, doscale_c, "d0-d1/a0-a1");
 
@@ -698,13 +680,13 @@ BLITZ_ERRCHK_MESSAGE(mess2, "Uninitialized Palette");
 
 static void BLITZ_ERRCHK scalechk2_c(void)
 {
-    if (!((const struct shape *)blitz_string)->width)
+    if (!((const struct bb_shape *)blitz_string)->width)
         BLITZ_RUNERR(mess1);
 }
 
-static void BLITZ_ERRCHK scalechk_c(ULONG *pal BL_REG(a2))
+static void BLITZ_ERRCHK scalechk_c(struct bb_palette *pal BL_REG(a2))
 {
-    if (!*pal)
+    if (!pal->pdata)
         BLITZ_RUNERR(mess2);
     scalechk2_c();
 }
