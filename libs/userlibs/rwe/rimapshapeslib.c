@@ -199,26 +199,26 @@ BLITZ_THUNK(_shapetomapshape, shapetomapshape_c, "d0-d1/a0-a1");
 /* _blitmapshape2: a map shape that is not empty (width) is blitted to
    x,y; d4/d5/d6 get width/height/minterm in their low words */
 static void blit(struct Library *gfx, UBYTE *ms, struct RastPort *rp, ULONG x, ULONG y,
-                 ULONG d4, ULONG d5, ULONG d6)
+                 ULONG width, ULONG height, ULONG minterm)
 {
     if (!MW(ms, 0))
         return;
-    BL_SETW(d4, MW(ms, 0));
-    BL_SETW(d5, MW(ms, 4));
-    BL_SETW(d6, 0xc0);
-    BltBitMapRastPort((struct BitMap *)(ms + 2), 0, 0, rp, (LONG)x, (LONG)y, (LONG)d4,
-                      (LONG)d5, d6);
+    BL_SETW(width, MW(ms, 0));
+    BL_SETW(height, MW(ms, 4));
+    BL_SETW(minterm, 0xc0);
+    BltBitMapRastPort((struct BitMap *)(ms + 2), 0, 0, rp, (LONG)x, (LONG)y, (LONG)width,
+                      (LONG)height, minterm);
 }
 
 /* BlitMapShape window#,mapshape#,x,y: a1 = the window object, a6 =
    graphics.library */
 static void BLITZ_ROUTINE blitmapshape_c(UWORD n BL_REG(d1), ULONG x BL_REG(d2),
-                                         ULONG y BL_REG(d3), ULONG d4 BL_REG(d4),
-                                         ULONG d5 BL_REG(d5), ULONG d6 BL_REG(d6),
+                                         ULONG y BL_REG(d3), ULONG width BL_REG(d4),
+                                         ULONG height BL_REG(d5), ULONG minterm BL_REG(d6),
                                          struct Window **win BL_REG(a1),
                                          struct Library *gfx BL_REG(a6))
 {
-    blit(gfx, MAPSHAPE(n), (*win)->RPort, x, y, d4, d5, d6);
+    blit(gfx, MAPSHAPE(n), (*win)->RPort, x, y, width, height, minterm);
 }
 BLITZ_THUNK(_blitmapshape, blitmapshape_c, "d0-d1/a0-a1");
 
@@ -226,7 +226,7 @@ BLITZ_THUNK(_blitmapshape, blitmapshape_c, "d0-d1/a0-a1");
    the map shape's (signed) */
 static void BLITZ_ROUTINE blitmapshapesize_c(UWORD n BL_REG(d1), ULONG x BL_REG(d2),
                                              ULONG y BL_REG(d3), ULONG w BL_REG(d4),
-                                             ULONG h BL_REG(d5), ULONG d6 BL_REG(d6),
+                                             ULONG h BL_REG(d5), ULONG minterm BL_REG(d6),
                                              struct Window **win BL_REG(a1),
                                              struct Library *gfx BL_REG(a6))
 {
@@ -236,9 +236,9 @@ static void BLITZ_ROUTINE blitmapshapesize_c(UWORD n BL_REG(d1), ULONG x BL_REG(
         return;
     if ((WORD)h > (WORD)MW(ms, 4))
         BL_SETW(h, MW(ms, 4));
-    BL_SETW(d6, 0xc0);
+    BL_SETW(minterm, 0xc0);
     BltBitMapRastPort((struct BitMap *)(ms + 2), 0, 0, (*win)->RPort, (LONG)x, (LONG)y,
-                      (LONG)w, (LONG)h, d6);
+                      (LONG)w, (LONG)h, minterm);
 }
 BLITZ_THUNK(_blitmapshapesize, blitmapshapesize_c, "d0-d1/a0-a1");
 
@@ -318,23 +318,24 @@ BLITZ_THUNK(_addgroupmember, addgroupmember_c, "d0-d1/a0-a1");
 /* BlitGroup window#,x,y: every member at x+dx, y+dy (words; the upper
    words of the caller's d2/d3).  BUG(orig) (#902): a6 is the caller's, not
    graphics.library's.  The original's d5 is the member's address when
-   _blitmapshape2 loads the height into its low word. */
-static void BLITZ_ROUTINE blitgroup_c(UWORD x BL_REG(d1), ULONG d2 BL_REG(d2),
-                                      ULONG d3 BL_REG(d3), ULONG d4 BL_REG(d4),
-                                      ULONG d6 BL_REG(d6), struct Window **win BL_REG(a1),
+   _blitmapshape2 loads the height into its low word.  xbase (d2) comes
+   in with y in its low word. */
+static void BLITZ_ROUTINE blitgroup_c(UWORD x BL_REG(d1), ULONG xbase BL_REG(d2),
+                                      ULONG ybase BL_REG(d3), ULONG width BL_REG(d4),
+                                      ULONG minterm BL_REG(d6), struct Window **win BL_REG(a1),
                                       struct Library *gfx BL_REG(a6))
 {
     struct RastPort *rp = (*win)->RPort;
     const ULONG *p = groupaddr;
     ULONG ms;
 
-    BL_SETW(d3, d2);                    /* MOVE.w d2,d3 */
-    BL_SETW(d2, x);                     /* MOVE.w d1,d2 */
+    BL_SETW(ybase, xbase);              /* MOVE.w d2,d3 */
+    BL_SETW(xbase, x);                  /* MOVE.w d1,d2 */
     while ((ms = *p++) != 0) {
-        ULONG mx = d2, my = d3;
-        BL_SETW(mx, d2 + ((const UWORD *)p)[0]);
-        BL_SETW(my, d3 + ((const UWORD *)p)[1]);
-        blit(gfx, (UBYTE *)ms, rp, mx, my, d4, ms, d6);
+        ULONG mx = xbase, my = ybase;
+        BL_SETW(mx, xbase + ((const UWORD *)p)[0]);
+        BL_SETW(my, ybase + ((const UWORD *)p)[1]);
+        blit(gfx, (UBYTE *)ms, rp, mx, my, width, ms, minterm);
         p++;
     }
 }
