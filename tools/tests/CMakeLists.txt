@@ -39,3 +39,9 @@ foreach(t xtra_load xtra_blitz2 xtra_bb22 xtra_ab3 xtra_ab3_update)
 	set_target_properties(test_${t} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
+
+# the check of TEST:waitjob (static_assert in amiga_emulation.c) with
+# waiters assembled the wrong way
+add_test(NAME amiga_emulation_waiter_broken COMMAND ${CMAKE_COMMAND} -DCC=${CMAKE_C_COMPILER}
+	-DVASM=${AMIGA_EMULATION_VASM} -DSRC=${CMAKE_CURRENT_SOURCE_DIR}/../lib/amiga_emulation
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/waiter-broken -P ${CMAKE_CURRENT_SOURCE_DIR}/waiter_broken.cmake)

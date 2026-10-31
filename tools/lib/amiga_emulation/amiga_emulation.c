@@ -713,47 +713,32 @@ static const char snap_prologue[] =
     "TEST:" SNAP_WAITER "\n"
     "EXECUTE TEST:" SNAP_JOB "\n";
 
-/* TEST:waitjob, a hunk file: returns when TEST:job.script exists
-   (68000, dos.library V0 calls only):
-        movem.l d2/a6,-(sp)
-        move.l  4.w,a6
-        lea     dosname(pc),a1
-        moveq   #0,d0
-        jsr     -552(a6)        ; OpenLibrary
-        move.l  d0,a6
-   loop lea     fname(pc),a0
-        move.l  a0,d1
-        moveq   #-2,d2          ; ACCESS_READ
-        jsr     -84(a6)         ; Lock
-        tst.l   d0
-        bne.s   found
-        moveq   #2,d1
-        jsr     -198(a6)        ; Delay 2 ticks
-        bra.s   loop
-   found move.l d0,d1
-        jsr     -90(a6)         ; UnLock
-        move.l  a6,a1
-        move.l  4.w,a6
-        jsr     -414(a6)        ; CloseLibrary
-        moveq   #0,d0
-        movem.l (sp)+,d2/a6
-        rts
-   dosname dc.b "dos.library",0
-   fname   dc.b "TEST:job.script",0 */
-static const unsigned char snap_waiter[] = {
-    0x00, 0x00, 0x03, 0xf3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,    /* HUNK_HEADER */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18,
-    0x00, 0x00, 0x03, 0xe9, 0x00, 0x00, 0x00, 0x18,                            /* HUNK_CODE */
-    0x48, 0xe7, 0x20, 0x02, 0x2c, 0x78, 0x00, 0x04, 0x43, 0xfa, 0x00, 0x3a,
-    0x70, 0x00, 0x4e, 0xae, 0xfd, 0xd8, 0x2c, 0x40, 0x41, 0xfa, 0x00, 0x3a,
-    0x22, 0x08, 0x74, 0xfe, 0x4e, 0xae, 0xff, 0xac, 0x4a, 0x80, 0x66, 0x08,
-    0x72, 0x02, 0x4e, 0xae, 0xff, 0x3a, 0x60, 0xe8, 0x22, 0x00, 0x4e, 0xae,
-    0xff, 0xa6, 0x22, 0x4e, 0x2c, 0x78, 0x00, 0x04, 0x4e, 0xae, 0xfe, 0x62,
-    0x70, 0x00, 0x4c, 0xdf, 0x40, 0x04, 0x4e, 0x75, 0x64, 0x6f, 0x73, 0x2e,
-    0x6c, 0x69, 0x62, 0x72, 0x61, 0x72, 0x79, 0x00, 0x54, 0x45, 0x53, 0x54,
-    0x3a, 0x6a, 0x6f, 0x62, 0x2e, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x00,
-    0x00, 0x00, 0x03, 0xf2,                                                    /* HUNK_END */
+/* TEST:waitjob (waitjob.s, assembled by vasm in the build) */
+static constexpr unsigned char snap_waiter[] = {
+#embed "waitjob"
 };
+
+/* its start: the hunk header of one hunk and the code hunk's type */
+struct hunk_start {
+    unsigned char type0, type1, type2, type3;       /* HUNK_HEADER */
+    unsigned char res0, res1, res2, res3;           /* no resident libraries */
+    unsigned char num0, num1, num2, num3;           /* hunks */
+    unsigned char first0, first1, first2, first3;
+    unsigned char last0, last1, last2, last3;
+    unsigned char size0, size1, size2, size3;       /* of hunk 0 in longs */
+    unsigned char code0, code1, code2, code3;       /* HUNK_CODE */
+};
+static constexpr struct hunk_start snap_waiter_start = {
+#embed "waitjob" limit(28)
+};
+#define SNAP_BE32(f) ((unsigned long)snap_waiter_start.f##0 << 24 | (unsigned long)snap_waiter_start.f##1 << 16 \
+                      | (unsigned long)snap_waiter_start.f##2 << 8 | snap_waiter_start.f##3)
+static_assert(SNAP_BE32(type) == 0x3f3, "waitjob: no HUNK_HEADER (not an AmigaDOS executable)");
+static_assert(SNAP_BE32(res) == 0 && SNAP_BE32(num) == 1 && SNAP_BE32(first) == 0
+              && SNAP_BE32(last) == 0, "waitjob: not exactly one hunk");
+static_assert(SNAP_BE32(code) == 0x3e9, "waitjob: the hunk is not HUNK_CODE");
+static_assert(SNAP_BE32(size) > 0 && sizeof snap_waiter == 32 + 4 * SNAP_BE32(size) + 4,
+              "waitjob: not one code hunk with HUNK_END only (size, relocations, symbols)");
 
 /* the files of the prologue in the slot's TEST:, not copied back */
 static const char *const snap_private[] = {
