@@ -124,13 +124,36 @@ static ULONG setclx(ULONG result, UWORD v)
     return (result & 0xffff0000UL) | CLXDAT;
 }
 
+/**
+ * @brief DoColl: latch the hardware collision bits (Blitz mode only).
+ *
+ * Reads CLXDAT (which clears it) into colval, which SColl and PColl test.
+ * Errors: Blitz mode only (err1 = 1).
+ */
 static void BLITZ_ROUTINE dodocoll_c(void)
 {
     colval = CLXDAT;
 }
 BLITZ_THUNK(dodocoll, dodocoll_c, "d0-d1/a0-a1");
 
-/* SColl: d0, d1 = sprite channels */
+/**
+ * @brief SColl(Sprite Channel,Sprite Channel): whether two sprites collided.
+ *
+ * Tests the bit of the pair in the CLXDAT value latched by DoColl (bits
+ * 9-14 = sprite pairs) - with BTST Dn,<memory>: a bit of the HIGH byte
+ * of the latched word, bit number mod 8.  Blitz mode only.  A word
+ * function: the upper word of d0 is the caller's.
+ * Errors (debugger only): "Illegal Sprite channel" (>= 8), "Sprite
+ * channels must be different".
+ * BUG(orig) (#110): right only with the lower channel first; with channel
+ * 0/1 as the SECOND argument (SColl(2,0): bit 10 instead of 9, SColl(4,0):
+ * 11 instead of 10, SColl(6,0): 12 instead of 11) or two channels of the
+ * same pair (SColl(0,1): bit 8) the wrong bit is tested.
+ *
+ * @param c0  d0.w: the first sprite channel (0..7)
+ * @param c1  d1.w: the second sprite channel (0..7)
+ * @return d0.w: -1 = collision, 0 = none
+ */
 static ULONG BLITZ_ROUTINE doscoll_c(ULONG c0 BL_REG(d0), ULONG c1 BL_REG(d1))
 {
     UWORD a = (UWORD)c0 >> 1, b = (UWORD)c1 >> 1;
@@ -144,7 +167,17 @@ static ULONG BLITZ_ROUTINE doscoll_c(ULONG c0 BL_REG(d0), ULONG c1 BL_REG(d1))
 }
 BLITZ_THUNK(doscoll, doscoll_c, "d1/a0-a1");
 
-/* PColl: d0 = sprite channel */
+/**
+ * @brief PColl(Sprite Channel): whether a sprite collided with the playfield.
+ *
+ * Tests two bits of the CLXDAT value latched by DoColl (pair + 1 and
+ * pair + 5, SNE:AND:EXT).  Blitz mode only.  A word function: the upper
+ * word of d0 is the caller's.  Errors (debugger only): "Illegal Sprite
+ * channel" (>= 8).
+ *
+ * @param c  d0.w: the sprite channel (0..7)
+ * @return d0.w: -1 = both bits set, 0 otherwise
+ */
 static ULONG BLITZ_ROUTINE dopcoll_c(ULONG c BL_REG(d0))
 {
     UWORD a = ((UWORD)c >> 1) + 1, b = a + 4;
@@ -174,7 +207,21 @@ static BB_BOOL chkifhit(WORD x1, WORD y1, WORD w1, WORD h1,
 
 #define SW(s, o) (*(UWORD *)((UBYTE *)(s) + (o)))
 
-/* a0 = shape 1, a1 = shape 2, d1/d2 = x1/y1, d4/d5 = x2/y2 */
+/**
+ * @brief ShapesHit(Shape#,X,Y,Shape#,X,Y): whether two shapes overlap.
+ *
+ * Rectangle test (chkifhit): the position minus the shape's handle
+ * (+10/+12), the size width/height (+0/+2); signed word compares.
+ * Errors (debugger only): "Uninitialized Shape".
+ *
+ * @param x1  d1.w: x of the first shape
+ * @param y1  d2.w: y of the first shape
+ * @param x2  d4.w: x of the second shape
+ * @param y2  d5.w: y of the second shape
+ * @param a  a0: the first shape object (from Shape# in d0)
+ * @param b  a1: the second shape object (from Shape# in d3)
+ * @return d0: BB_TRUE if the rectangles overlap, else BB_FALSE
+ */
 static BB_BOOL BLITZ_ROUTINE doshapeshit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
                                            ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
                                            UBYTE *a BL_REG(a0), UBYTE *b BL_REG(a1))
@@ -184,7 +231,22 @@ static BB_BOOL BLITZ_ROUTINE doshapeshit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(
 }
 BLITZ_THUNK(doshapeshit, doshapeshit_c, "d1/a0-a1");
 
-/* a0 = shape, a1 = sprite */
+/**
+ * @brief ShapeSpriteHit(Shape#,X,Y,Sprite#,X,Y): whether a shape and a
+ * sprite overlap.
+ *
+ * Rectangle test (chkifhit) as ShapesHit; the sprite: position minus its
+ * handle (+12/+14), width the low byte of +8, height +4 - 1.  Errors
+ * (debugger only): "Uninitialized Shape", "Uninitialized Sprite".
+ *
+ * @param x1  d1.w: x of the shape
+ * @param y1  d2.w: y of the shape
+ * @param x2  d4.w: x of the sprite
+ * @param y2  d5.w: y of the sprite
+ * @param a  a0: the shape object (from Shape# in d0)
+ * @param b  a1: the sprite object (from Sprite# in d3)
+ * @return d0: BB_TRUE if the rectangles overlap, else BB_FALSE
+ */
 static BB_BOOL BLITZ_ROUTINE doshsphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
                                          ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
                                          UBYTE *a BL_REG(a0), UBYTE *b BL_REG(a1))
@@ -195,7 +257,20 @@ static BB_BOOL BLITZ_ROUTINE doshsphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2
 }
 BLITZ_THUNK(doshsphit, doshsphit_c, "d1/a0-a1");
 
-/* a0 = sprite 1, a1 = sprite 2 */
+/**
+ * @brief SpritesHit(Sprite#,X,Y,Sprite#,X,Y): whether two sprites overlap.
+ *
+ * Rectangle test (chkifhit) with the sprites' handles and pixel sizes
+ * (see ShapeSpriteHit).  Errors (debugger only): "Uninitialized Sprite".
+ *
+ * @param x1  d1.w: x of the first sprite
+ * @param y1  d2.w: y of the first sprite
+ * @param x2  d4.w: x of the second sprite
+ * @param y2  d5.w: y of the second sprite
+ * @param a  a0: the first sprite object (from Sprite# in d0)
+ * @param b  a1: the second sprite object (from Sprite# in d3)
+ * @return d0: BB_TRUE if the rectangles overlap, else BB_FALSE
+ */
 static BB_BOOL BLITZ_ROUTINE dosphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
                                        ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
                                        UBYTE *a BL_REG(a0), UBYTE *b BL_REG(a1))
@@ -207,7 +282,21 @@ static BB_BOOL BLITZ_ROUTINE dosphit_c(ULONG x1 BL_REG(d1), ULONG y1 BL_REG(d2),
 }
 BLITZ_THUNK(dosphit, dosphit_c, "d1/a0-a1");
 
-/* RectsHit: d0-d5 = x1,y1,w1,h1,x2,y2; w2, h2 from the a2 stack */
+/**
+ * @brief RectsHit(X1,Y1,Width1,Height1,X2,Y2,Width2,Height2): whether two
+ * rectangles overlap.
+ *
+ * Hit when the rectangles overlap (chkifhit, signed word compares).
+ *
+ * @param x1  d0.w: x of the first rectangle
+ * @param y1  d1.w: y of the first rectangle
+ * @param w1  d2.w: its width
+ * @param h1  d3.w: its height
+ * @param x2  d4.w: x of the second rectangle
+ * @param y2  d5.w: y of the second rectangle
+ * @param args  a2: the argument stack with Width2 and Height2 (words)
+ * @return d0: BB_TRUE if the rectangles overlap, else BB_FALSE
+ */
 static BB_BOOL BLITZ_ROUTINE dorectshit_c(ULONG x1 BL_REG(d0), ULONG y1 BL_REG(d1),
                                           ULONG w1 BL_REG(d2), ULONG h1 BL_REG(d3),
                                           ULONG x2 BL_REG(d4), ULONG y2 BL_REG(d5),
@@ -223,6 +312,12 @@ BLITZ_THUNK(dorectshit, dorectshit_c, "d1/a0-a1");
 
 /* ------------------------------------------------------- SetColl ... */
 
+/**
+ * @brief SetCollOdd: collisions with the odd bitplanes (CLXCON = $F041).
+ *
+ * @param result  d0: the caller's register (its upper word stays)
+ * @return d0.w: CLXDAT (a statement: the value is not used)
+ */
 static ULONG BLITZ_ROUTINE dosetcolodd_c(ULONG result BL_REG(d0))
 {
     return setclx(result, 64 + 1 + 0xf000);
@@ -240,6 +335,19 @@ static ULONG setcol(ULONG colour, UWORD planes)
     return setclx(colour, enable | (UWORD)colour | 0xf000);
 }
 
+/**
+ * @brief SetColl Colour,Bitplanes: collisions with a colour.
+ *
+ * CLXCON = $F000 | enable bits for the planes | colour.  Errors (debugger
+ * only): "Illegal number of BitPlanes" (not 1..6), "Illegal Colour for
+ * Collision" (>= 2^planes).
+ * BUG(orig) (#111): 0 planes loop 65536 times (DBF).
+ *
+ * @param col  d0.w: the colour
+ * @param planes  d1.w: the number of bitplanes
+ * @return d0.w: CLXDAT (a statement: the value is not used); the upper
+ *         word is the colour's
+ */
 static ULONG BLITZ_ROUTINE dosetcol_c(ULONG col BL_REG(d0), ULONG planes BL_REG(d1))
 {
     return setcol(col, (UWORD)planes);
@@ -261,7 +369,20 @@ static UWORD spreadit(UWORD bits)
     return spread;
 }
 
-/* d2 = playfield (1 = front, otherwise back: one bit up) */
+/**
+ * @brief SetColl Colour,Bitplanes,Playfield: collisions with a colour of
+ * one playfield.
+ *
+ * The colour bits are spread to the odd planes (spreadit), playfield 2
+ * (anything but 1) one bit up; then as SetColl Colour,Bitplanes.  Errors
+ * (debugger only): "PlayField must be 1 or 2", then those of SetColl.
+ * BUG(orig) (#111): 0 planes loop 65536 times (DBF).
+ *
+ * @param col  d0.w: the colour
+ * @param planes  d1.w: the number of bitplanes
+ * @param pf  d2.w: the playfield, 1 = front, 2 = back
+ * @return d0.w: CLXDAT (a statement: the value is not used)
+ */
 static ULONG BLITZ_ROUTINE dosetcol2_c(ULONG col BL_REG(d0), ULONG planes BL_REG(d1),
                                        ULONG pf BL_REG(d2))
 {
@@ -273,6 +394,15 @@ static ULONG BLITZ_ROUTINE dosetcol2_c(ULONG col BL_REG(d0), ULONG planes BL_REG
 }
 BLITZ_THUNK(dosetcol2, dosetcol2_c, "d1/a0-a1");
 
+/**
+ * @brief SetCollHi Bitplanes: collisions with the highest bitplane only.
+ *
+ * CLXCON = $F000 | the enable and match bit of plane `planes`.  Errors
+ * (debugger only): "Illegal number of BitPlanes" (not 1..6).
+ *
+ * @param planes  d0.w: the number of bitplanes
+ * @return d0.w: CLXDAT (a statement: the value is not used)
+ */
 static ULONG BLITZ_ROUTINE dosetcolhi_c(ULONG planes BL_REG(d0))
 {
     UWORD n = (UWORD)(planes - 1) & 63;
