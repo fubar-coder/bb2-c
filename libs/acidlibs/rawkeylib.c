@@ -106,45 +106,45 @@ ULONG rawkey_d1;
 
 /* ---------------------------------------------------------- convertkey */
 
-static ULONG BLITZ_ROUTINE convertkey_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1))
+static ULONG BLITZ_ROUTINE convertkey_c(ULONG key BL_REG(d0), ULONG qual BL_REG(d1))
 {
-    UWORD c = d0;
+    UWORD c = key;
     LONG r;
 
-    rawkey_d1 = d1;
+    rawkey_d1 = qual;
     if (c <= 89) {                              /* CMP #89,d0:BHI */
         if (c >= 80)                            /* F1-F10 */
-            return (d0 & 0xffff0000) | (UWORD)(c + 49);
+            return (key & 0xffff0000) | (UWORD)(c + 49);
         if (c >= 76)                            /* cursor keys */
-            return (d0 & 0xffff0000) | (UWORD)(c - 48);
+            return (key & 0xffff0000) | (UWORD)(c - 48);
     } else if (c == 95)                         /* Help */
-        return (d0 & 0xffff0000) | 139;
+        return (key & 0xffff0000) | 139;
     event.ie_Code = c;
-    event.ie_Qualifier = d1;
+    event.ie_Qualifier = qual;
     buf = 0;
     r = RawKeyConvert(&event, (STRPTR)&buf, 1, NULL);
-    d1 = 0;
+    qual = 0;
     if ((UWORD)r != 0xffff)                     /* CMP #-1,d0 (word) */
-        d1 = *(UBYTE *)&buf;
-    rawkey_d1 = d1;
-    return ((ULONG)r & 0xffff0000) | (UWORD)d1; /* MOVE d1,d0 */
+        qual = *(UBYTE *)&buf;
+    rawkey_d1 = qual;
+    return ((ULONG)r & 0xffff0000) | (UWORD)qual; /* MOVE d1,d0 */
 }
 BLITZ_THUNK_POST(convertkey, convertkey_c, "a0-a1", "move.l  _rawkey_d1,d1");
 
 /* ----------------------------------------------------------- unconvert */
 
-static ULONG BLITZ_ROUTINE unconvert_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE unconvert_c(ULONG ch BL_REG(d0))
 {
     const UBYTE *p = maps.normmap;
     UWORD i;
 
     for (i = 0; i < 105; i++)                   /* CMP.b (a0)+,d0:DBEQ */
-        if (*p++ == (UBYTE)d0) {
+        if (*p++ == (UBYTE)ch) {
             rawkey_d1 = 0;
             return i;                           /* MOVEQ #104,d0:SUB d2,d0 */
         }
     for (i = 0; i < 105; i++)                   /* goes on into shiftmap */
-        if (*p++ == (UBYTE)d0) {
+        if (*p++ == (UBYTE)ch) {
             rawkey_d1 = 1;
             return i;
         }
@@ -155,29 +155,29 @@ BLITZ_THUNK_POST(unconvert, unconvert_c, "a0-a1", "move.l  _rawkey_d1,d1");
 
 /* --------------------------------------------------------- qconvertkey */
 
-static ULONG BLITZ_ROUTINE qconvertkey_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1))
+static ULONG BLITZ_ROUTINE qconvertkey_c(ULONG key BL_REG(d0), ULONG qual BL_REG(d1))
 {
-    const UBYTE *map = (d1 & 3) ? maps.shiftmap : maps.normmap;
+    const UBYTE *map = (qual & 3) ? maps.shiftmap : maps.normmap;
     UWORD w;
 
-    BL_SETW(d0, d0 & 255);                      /* AND #255,d0 */
-    BL_SETB(d0, map[(UWORD)d0]);                /* MOVE.b 0(a0,d0),d0 */
-    w = d0;
+    BL_SETW(key, key & 255);                    /* AND #255,d0 */
+    BL_SETB(key, map[(UWORD)key]);              /* MOVE.b 0(a0,d0),d0 */
+    w = key;
     if (!(UBYTE)w)
-        return d0;
-    if (d1 & 8) {                               /* CTRL */
+        return key;
+    if (qual & 8) {                             /* CTRL */
         if (w < 65 || w > 122)
-            return d0;
+            return key;
         if (w > 90 && w < 97)
-            return d0;
-        BL_SETW(d0, (w & 0xffdf) - 64);
-        return d0;
+            return key;
+        BL_SETW(key, (w & 0xffdf) - 64);
+        return key;
     }
     if ((UBYTE)w < 97 || (UBYTE)w > 122)
-        return d0;
-    if (d1 & 4)                                 /* CAPS LOCK */
-        BL_SETW(d0, w - 32);
-    return d0;
+        return key;
+    if (qual & 4)                               /* CAPS LOCK */
+        BL_SETW(key, w - 32);
+    return key;
 }
 BLITZ_THUNK(qconvertkey, qconvertkey_c, "d1/a0-a1");
 
@@ -187,7 +187,7 @@ ULONG BLITZ_ROUTINE codeinit(void)
 {
     UBYTE *p = (UBYTE *)&con;
     struct List *l = &con.port.mp_MsgList;
-    ULONG d0;
+    ULONG result;
     UWORD i;
 
     for (i = 0; i < sizeof(con); i++)           /* 41 words cleared */
@@ -200,17 +200,17 @@ ULONG BLITZ_ROUTINE codeinit(void)
     con.port.mp_SigTask = FindTask(NULL);
     con.port.mp_SigBit = AllocSignal(-1);
     con.io.io_Message.mn_ReplyPort = &con.port;
-    d0 = OpenDevice("console.device", -1, (struct IORequest *)&con.io, 0);
+    result = OpenDevice("console.device", -1, (struct IORequest *)&con.io, 0);
     ConsoleDevice = (struct Library *)con.io.io_Device;
     for (i = 0; i < 105; i++) {
-        d0 = (d0 & 0xffff0000) | i;             /* MOVE d2,d0 */
-        d0 = convertkey_c(d0, 0);
-        maps.normmap[i] = d0;
-        d0 = (d0 & 0xffff0000) | i;
-        d0 = convertkey_c(d0, 1);
-        maps.shiftmap[i] = d0;
+        result = (result & 0xffff0000) | i;     /* MOVE d2,d0 */
+        result = convertkey_c(result, 0);
+        maps.normmap[i] = result;
+        result = (result & 0xffff0000) | i;
+        result = convertkey_c(result, 1);
+        maps.shiftmap[i] = result;
     }
-    return d0;
+    return result;
 }
 
 void BLITZ_ROUTINE codefinit(void)
