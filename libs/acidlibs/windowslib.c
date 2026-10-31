@@ -72,7 +72,10 @@
  *     that). (#320)
  *   - The line editor (Edit$ in a window) and calcwidth: proportional
  *     widths only for characters lo..lo+127 (SUB.b/BMI). (#321)
- *   - CloseWindow drops all events of all windows. (#322)
+ * Fixed (intended deviation, #322): CloseWindow replied every message of
+ *   the shared port and dropped the whole event list in the original: the
+ *   events of the other windows were lost too.  Here only the messages
+ *   and events of the closed window go (as AmiBlitz3's windowslib does).
  * DIFF:
  *   - err6/err7 (invalid input/output window) are jumps from the normal
  *     code into the error check area in the original (cut away without
@@ -1432,6 +1435,22 @@ static void unlinkmess(struct evnode **prev, struct evnode *e)
     if (V.nextmess == &e->next)
         V.nextmess = prev;
     globfree(e, 24);
+}
+
+/* unlinkwin - free the nodes of one window (fixed, #322: the original's
+   CloseWindow frees all of them) */
+static void unlinkwin(struct Window *win)
+{
+    struct evnode **prev = &V.firstmess;
+
+    while (*prev) {
+        struct evnode *e = *prev;
+
+        if (e->win == win)
+            unlinkmess(prev, e);
+        else
+            prev = &e->next;
+    }
 }
 
 /* unlinkall - free ALL nodes */
@@ -2832,12 +2851,15 @@ void BLITZ_ROUTINE _bitmaptowindow(struct bwin *w BL_REG(a0),
 /**
  * @brief CloseWindow Window# (and _free) - close a window.
  *
- * Under Forbid: replies all messages of the port, clears pr_WindowPtr if
- * it is this window, ClearMenuStrip, UserPort = 0 (the port is shared),
- * CloseWindow; then frees the event list.  a3 = the window object
- * (blitz_string); nothing happens if it is not open.
+ * Under Forbid: replies the messages of this window at the port, clears
+ * pr_WindowPtr if it is this window, ClearMenuStrip, UserPort = 0 (the
+ * port is shared), CloseWindow; then frees the events of this window.
+ * a3 = the window object (blitz_string); nothing happens if it is not
+ * open.
  *
- * BUG(orig) (#322): drops all events of all windows.
+ * Fixed (intended deviation, #322): the original replies all messages of
+ * the port and frees the whole event list (unlinkall): the events of the
+ * other windows were lost.
  *
  * @param intbase a6: the intuition base
  */
@@ -2845,13 +2867,17 @@ void BLITZ_ROUTINE freewindow(struct Library *intbase BL_REG(a6))
 {
     struct bwin *w = (struct bwin *)blitz_string;
     struct Window *win = w->win;
-    struct Message *m;
+    struct Node *n, *next;
 
     if (!win)
         return;
     Forbid();
-    while ((m = GetMsg(&myport)) != NULL)       /* try flushing messages! */
-        ReplyMsg(m);
+    /* only the messages of this window (fixed, #322) */
+    for (n = myport.mp_MsgList.lh_Head; (next = n->ln_Succ) != NULL; n = next)
+        if (((struct IntuiMessage *)n)->IDCMPWindow == win) {
+            Remove(n);
+            ReplyMsg((struct Message *)n);
+        }
     if (THISPROC->pr_WindowPtr == win)
         THISPROC->pr_WindowPtr = NULL;
     if (win->MenuStrip)
@@ -2860,7 +2886,7 @@ void BLITZ_ROUTINE freewindow(struct Library *intbase BL_REG(a6))
     win->UserPort = NULL;
     CloseWindow(win);
     Permit();
-    unlinkall();
+    unlinkwin(win);
 }
 
 /* the end of Window/WindowTags: our port, window number, cursor origin */
