@@ -55,6 +55,7 @@
 #include "blitzlib.h"
 #include <graphics/gfx.h>
 #include <graphics/view.h>
+#include <intuition/screens.h>
 #define __NOLIBBASE__
 #include <proto/dos.h>
 #include <proto/graphics.h>
@@ -115,11 +116,32 @@ struct palette {
     UWORD num;
 };
 
+/* a shape object (shapeslib), the fields SaveShape reads */
+struct shape {
+    UWORD width;                /* +0 pixel width (0 = none) */
+    UWORD height;               /* +2 */
+    UWORD depth;                /* +4 */
+    UWORD ebwidth;              /* +6 even byte width */
+    UWORD bltsize;              /* +8 */
+    WORD xhandle, yhandle;      /* +10, +12 */
+    UBYTE *data;                /* +14 plane after plane */
+    UBYTE *cookie;              /* +18 */
+    WORD planesize;             /* +22 bytes per plane */
+    UWORD rest[4];              /* +24 .. +31 */
+} BL_PACKED;
+static_assert(sizeof(struct shape) == 32);
+
 static UBYTE iffbuff[BUFSIZE] __attribute__((aligned(4)));
 static ULONG ifflen, bodylen, bodyseek;
 static ULONG scrcols[3 * 256 + 2];              /* tempcols: SaveScreen's colours */
 static struct palette scrpal = { scrcols, 0 };  /* temppal */
-static ULONG bmcopy[64 / 4];                    /* tempbm: BitMap (+ 24 bytes) */
+/* tempbm: a BitMap (+ 24 bytes, SaveShape's plane pointers may run into
+   them, #326) */
+static struct {
+    struct BitMap bm;
+    ULONG more[6];
+} bmcopy;
+static_assert(sizeof bmcopy == 64);
 static UWORD usewid;
 
 static const UBYTE jeeze[4] = { 0x80, 0, 0, 0 };
@@ -129,10 +151,6 @@ static struct DosLibrary *dosbase;
 #define DOSBase dosbase                         /* for proto/dos.h */
 
 /* BitMap fields as the original reads them */
-#define BM_BPR(bm)    (*(UWORD *)(bm))
-#define BM_ROWS(bm)   (*(UWORD *)((UBYTE *)(bm) + 2))
-#define BM_DEPTHW(bm) (*(UWORD *)((UBYTE *)(bm) + 4))
-#define BM_DEPTH(bm)  (*((UBYTE *)(bm) + 5))
 
 #define ID_FORM 0x464f524d
 #define ID_ILBM 0x494c424d
@@ -161,7 +179,7 @@ static void put_w(UBYTE **p, UWORD v)
 }
 
 /* FORM/ILBM/BMHD, 40 bytes */
-static void makehead(const UBYTE *bm)
+static void makehead(const struct BitMap *bm)
 {
     UBYTE *out = iffbuff;
     UWORD width = usewid, height;
@@ -172,12 +190,12 @@ static void makehead(const UBYTE *bm)
     put_l(&out, ID_BMHD);
     put_l(&out, 0x14);
     if (!width)
-        width = (UWORD)(BM_BPR(bm) << 3);
+        width = (UWORD)(bm->BytesPerRow << 3);
     put_w(&out, width);
-    height = BM_ROWS(bm);
+    height = bm->Rows;
     put_w(&out, height);
     put_l(&out, 0);                             /* x, y */
-    *out++ = BM_DEPTH(bm);                      /* nPlanes */
+    *out++ = bm->Depth;                          /* nPlanes */
     *out++ = 0;                                 /* masking */
     *out++ = 1;                                 /* compression */
     *out++ = 0;
@@ -211,10 +229,10 @@ static void makecolor(const struct palette *pal)
 }
 
 /* one row (BytesPerRow bytes at row) ByteRun1-packed and written */
-static void savearow(const UBYTE *row, const UBYTE *bm)
+static void savearow(const UBYTE *row, const struct BitMap *bm)
 {
     UBYTE *out = iffbuff;
-    UWORD bpr = BM_BPR(bm);
+    UWORD bpr = bm->BytesPerRow;
     UWORD pos = 0, scan, runlen;
     UBYTE byte;
     LONG len;
@@ -274,7 +292,7 @@ static void savearow(const UBYTE *row, const UBYTE *bm)
     }
 }
 
-static void makebody(const UBYTE *bm)
+static void makebody(const struct BitMap *bm)
 {
     UWORD row = 0;
 
@@ -288,12 +306,15 @@ static void makebody(const UBYTE *bm)
         UWORD plane = 0;
 
         do {                                    /* bitplane counter */
-            ULONG offset = (ULONG)row * BM_BPR(bm); /* MULU */
-            savearow(*(UBYTE **)(bm + 8 + (WORD)(UWORD)(plane << 2)) + offset, bm);
+            ULONG offset = (ULONG)row * bm->BytesPerRow; /* MULU */
+            /* Planes[plane], the offset a signed word: 8(a2,d1.w) */
+            savearow(*(PLANEPTR *)((const UBYTE *)bm + __builtin_offsetof(struct BitMap, Planes)
+                                  + (WORD)(UWORD)(plane << 2)) + offset,
+                     bm);
             plane++;
-        } while (plane < BM_DEPTHW(bm));
+        } while (plane < *(UWORD *)&bm->Flags);  /* BUG(orig) (#180): Flags and Depth */
         row++;
-    } while (row < BM_ROWS(bm));
+    } while (row < bm->Rows);
     if (bodylen & 1) {
         ifflen++;
         bodylen++;
@@ -317,7 +338,7 @@ static void fixbody(void)
 /* ---------------------------------------------------------- statements */
 
 /* dosavebm2 - a0 = BitMap, d1 = file name, a1 = palette or 0 */
-static void savebm(const UBYTE *bm, const char *name, const struct palette *pal,
+static void savebm(const struct BitMap *bm, const char *name, const struct palette *pal,
                    struct DosLibrary *dos)
 {
     dosbase = dos;
@@ -333,7 +354,7 @@ static void savebm(const UBYTE *bm, const char *name, const struct palette *pal,
     Close(fh);
 }
 
-static void BLITZ_ROUTINE dosavebitmap2_c(const UBYTE *bm BL_REG(a0), const char *name BL_REG(d1),
+static void BLITZ_ROUTINE dosavebitmap2_c(const struct BitMap *bm BL_REG(a0), const char *name BL_REG(d1),
                                           struct DosLibrary *dos BL_REG(a6))
 {
     usewid = 0;
@@ -341,7 +362,7 @@ static void BLITZ_ROUTINE dosavebitmap2_c(const UBYTE *bm BL_REG(a0), const char
 }
 BLITZ_THUNK(dosavebitmap2, dosavebitmap2_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE dosavebitmap_c(const UBYTE *bm BL_REG(a0), const char *name BL_REG(d1),
+static void BLITZ_ROUTINE dosavebitmap_c(const struct BitMap *bm BL_REG(a0), const char *name BL_REG(d1),
                                          const struct palette *pal BL_REG(a1),
                                          struct DosLibrary *dos BL_REG(a6))
 {
@@ -351,36 +372,34 @@ static void BLITZ_ROUTINE dosavebitmap_c(const UBYTE *bm BL_REG(a0), const char 
 BLITZ_THUNK(dosavebitmap, dosavebitmap_c, "d0-d1/a0-a1");
 
 /* SaveShape: the shape as BitMap in bmcopy */
-static void saveshape(const UBYTE *shape, const char *name, const struct palette *pal,
+static void saveshape(const struct shape *shape, const char *name, const struct palette *pal,
                       struct DosLibrary *dos)
 {
-    UBYTE *dst = (UBYTE *)bmcopy;
+    PLANEPTR *dst = bmcopy.bm.Planes;
     UBYTE *plane;
     UWORD count;
 
-    usewid = *(const UWORD *)shape;
-    *(UWORD *)dst = *(const UWORD *)(shape + 6);
-    *(UWORD *)(dst + 2) = *(const UWORD *)(shape + 2);
-    *(UWORD *)(dst + 4) = *(const UWORD *)(shape + 4);
-    dst += 8;
-    plane = *(UBYTE *const *)(shape + 14);
-    count = *(const UWORD *)(shape + 4) - 1; /* BUG(orig) (#326): depth unchecked */
+    usewid = shape->width;
+    bmcopy.bm.BytesPerRow = shape->ebwidth;
+    bmcopy.bm.Rows = shape->height;
+    *(UWORD *)&bmcopy.bm.Flags = shape->depth;  /* the word: Flags = 0, Depth */
+    plane = shape->data;
+    count = shape->depth - 1;                   /* BUG(orig) (#326): depth unchecked */
     do {
-        *(UBYTE **)dst = plane;
-        dst += 4;
-        plane += *(const WORD *)(shape + 22);   /* ADD 22(a0),a1 */
+        *dst++ = plane;
+        plane += shape->planesize;              /* ADD 22(a0),a1 */
     } while (count-- != 0);
-    savebm((UBYTE *)bmcopy, name, pal, dos);
+    savebm(&bmcopy.bm, name, pal, dos);
 }
 
-static void BLITZ_ROUTINE dosaveshape1_c(const UBYTE *shape BL_REG(a0), const char *name BL_REG(d1),
+static void BLITZ_ROUTINE dosaveshape1_c(const struct shape *shape BL_REG(a0), const char *name BL_REG(d1),
                                          struct DosLibrary *dos BL_REG(a6))
 {
     saveshape(shape, name, 0, dos);
 }
 BLITZ_THUNK(dosaveshape1, dosaveshape1_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE dosaveshape2_c(const UBYTE *shape BL_REG(a0), const char *name BL_REG(d1),
+static void BLITZ_ROUTINE dosaveshape2_c(const struct shape *shape BL_REG(a0), const char *name BL_REG(d1),
                                          const struct palette *pal BL_REG(a1),
                                          struct DosLibrary *dos BL_REG(a6))
 {
@@ -415,16 +434,16 @@ static ULONG makelong(UWORD v)
 
 
 /* SaveScreen - a0 = screen object, a1 = graphics base */
-static void BLITZ_ROUTINE dosavescreen_c(void **scr BL_REG(a0), const char *name BL_REG(d1),
+static void BLITZ_ROUTINE dosavescreen_c(struct Screen **scr BL_REG(a0), const char *name BL_REG(d1),
                                          struct GfxBase *gfx BL_REG(a1),
                                          struct DosLibrary *dos BL_REG(a6))
 {
-    UBYTE *s = (UBYTE *)*scr;
-    struct ColorMap *cm = *(struct ColorMap **)(s + 48);   /* ViewPort.ColorMap */
+    struct Screen *s = *scr;
+    struct ColorMap *cm = s->ViewPort.ColorMap;
     UWORD ncols = cm->Count;
     struct bl_regs r = { 0 };
     ULONG *rgb;
-    UBYTE *bm;
+    const ULONG *bm;
     UWORD i;
 
     if (ncols > 256)
@@ -453,12 +472,12 @@ static void BLITZ_ROUTINE dosavescreen_c(void **scr BL_REG(a0), const char *name
             *rgb++ = makelong(*ctab++);
         } while (ncols-- != 0);
     }
-    bm = *(UBYTE **)(s + 88);                   /* RastPort.BitMap */
+    bm = (const ULONG *)s->RastPort.BitMap;     /* 64 bytes from it */
     for (i = 0; i < 16; i++)
-        bmcopy[i] = ((ULONG *)bm)[i];
-    ((UBYTE *)bmcopy)[4] = 0;                   /* Flags */
+        ((ULONG *)&bmcopy)[i] = bm[i];
+    bmcopy.bm.Flags = 0;
     usewid = 0;
-    savebm((UBYTE *)bmcopy, name, &scrpal, dos);
+    savebm(&bmcopy.bm, name, &scrpal, dos);
 }
 BLITZ_THUNK(dosavescreen, dosavescreen_c, "d0-d1/a0-a1");
 
