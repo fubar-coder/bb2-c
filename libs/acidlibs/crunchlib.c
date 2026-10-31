@@ -166,13 +166,14 @@ static LONG own(ULONG gain)
 /* im26 - call the info routine; TRUE = break */
 static int im26(UBYTE *st)
 {
-    ULONG infores = SL(6);
+    infofunc *info = (infofunc *)SL(6); /* d0 */
+    ULONG res;                          /* d0: the inverted result */
 
-    if (infores) {
-        infores = ((infofunc *)infores)(SL(0x22) - SL(0x26));
-        infores = ~infores;
-    }
-    return infores != 0;
+    if (!info)
+        return 0;
+    res = info(SL(0x22) - SL(0x26));
+    res = ~res;
+    return res != 0;
 }
 
 /* im37 - put the low nbits (d0) bits of value (d1) into the bit stream
@@ -280,40 +281,42 @@ static int im40(UBYTE *st, ULONG len, ULONG offset)
     UWORD litcnt, litbase;
     UBYTE nbits, codebits, shift;
     ULONG prefix, offbase;
+    UBYTE mlen = (UBYTE)len;            /* d0: the match length */
+    UBYTE clen;                         /* d0: 5 for the long ones */
+    ULONG idx;                          /* d0: the length - 2 table index */
 
-    len &= 0xff;
-    if ((UBYTE)len > 13) {              /* im42 */
+    if (mlen > 13) {                    /* im42 */
         SB(0x70) = 0x1f;
-        SB(0x71) = (UBYTE)len;
+        SB(0x71) = mlen;
         SB(0x69) = 13;
-        len = 5;
-    } else if ((UBYTE)len > 5) {        /* im41 */
-        len = (len & ~0xffUL) | (UBYTE)(((UBYTE)len - 6) | 0xf0);
-        SB(0x71) = (UBYTE)len;
+        clen = 5;
+    } else if (mlen > 5) {              /* im41 */
+        SB(0x71) = (UBYTE)((mlen - 6) | 0xf0);
         SB(0x69) = 8;
-        len = 5;
+        clen = 5;
     } else {
-        SB(0x71) = t2[(WORD)len - 2];
-        SB(0x69) = t2[(WORD)len + 2];
+        SB(0x71) = t2[(WORD)mlen - 2];
+        SB(0x69) = t2[(WORD)mlen + 2];
+        clen = mlen;
     }
     /* im44 */
-    len = (len & ~0xffUL) | (UBYTE)((UBYTE)len - 2);
+    idx = (UBYTE)(clen - 2);
     litcnt = (UWORD)SL(0x30);
-    tab = (const UBYTE *)imtab4 + len + len;
+    tab = (const UBYTE *)imtab4 + idx + idx;
     if (litcnt < RW(tab)) {
-        nbits = t3[(WORD)len];
+        nbits = t3[(WORD)idx];
         codebits = nbits + 1;
         SB(0x73) = 0;
         litbase = 0;
     } else if (litcnt < RW(tab + 8)) {  /* im45 */
-        nbits = t3[(WORD)len + 4];
+        nbits = t3[(WORD)idx + 4];
         codebits = nbits + 2;
         SB(0x73) = 2;
         litbase = RW(tab);
     } else if (litcnt >= RW(tab + 0x10)) { /* im46 */
         return 0;
     } else {                            /* im47 */
-        nbits = t3[(WORD)len + 8];
+        nbits = t3[(WORD)idx + 8];
         codebits = nbits + 2;
         SB(0x73) = 3;
         litbase = RW(tab + 8);
@@ -329,21 +332,21 @@ static int im40(UBYTE *st, ULONG len, ULONG offset)
         SW(0x72) = (UWORD)((SW(0x72) << 1) | carry);    /* ROXL $72(a6) */
     } while (--nbits);
 
-    tab = st + 0x74 + 4 * (WORD)(UWORD)len;
+    tab = st + 0x74 + 4 * (WORD)(UWORD)idx;
     if (offset < RL(tab)) {
-        nbits = SB(0xa4 + (WORD)len);
+        nbits = SB(0xa4 + (WORD)idx);
         codebits = nbits + 1;
         prefix = 0;
         offbase = 0;
     } else if (offset < RL(tab + 0x10)) { /* im50 */
-        nbits = SB(0xa4 + 4 + (WORD)len);
+        nbits = SB(0xa4 + 4 + (WORD)idx);
         codebits = nbits + 2;
         prefix = 2;
         offbase = RL(tab);
     } else if (offset >= RL(tab + 0x20)) { /* im51 */
         return 0;
     } else {                            /* im52 */
-        nbits = SB(0xa4 + 8 + (WORD)len);
+        nbits = SB(0xa4 + 8 + (WORD)idx);
         codebits = nbits + 2;
         prefix = 3;
         offbase = RL(tab + 0x10);
@@ -415,7 +418,13 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
     ULONG work[WS / 4];
     UBYTE *st = (UBYTE *)work;
     const ULONG *tab;
-    ULONG num, val;
+    ULONG tabno;                        /* the table number */
+    ULONG window;
+    ULONG idx;                          /* the table index */
+    ULONG bits;                         /* the bit values (upper word carried) */
+    UBYTE nbits;                        /* the length code bits */
+    ULONG clen;                         /* the crunched length */
+    ULONG gain;
     int i;
 
     for (i = 0; i < WS / 4; i++)
@@ -424,27 +433,27 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
     if (len < 0x40)
         goto im23;
     SB(0) = (mode & 0x80) ? 0xff : 0;   /* LSR.l #8,d1:SCS (a6) */
-    val = mode >> 16;
-    if ((UBYTE)val >= 12)
-        val = 0;
+    tabno = mode >> 16;
+    if ((UBYTE)tabno >= 12)
+        tabno = 0;
     SL(6) = (ULONG)info;
     SL(0x0a) = (ULONG)buf;
     SL(0x22) = (ULONG)buf;
     SL(0x26) = (ULONG)buf;
     SL(0x12) = len;
     SL(0x0e) = (ULONG)buf + len;
-    val = imtab0[(UWORD)(val << 2) >> 2] + 1;
-    if (val > len)
-        val = len - 1;
-    SL(0x1a) = val;
-    val--;
-    num = 0;
+    window = imtab0[(UWORD)(tabno << 2) >> 2] + 1;
+    if (window > len)
+        window = len - 1;
+    SL(0x1a) = window;
+    window--;
+    idx = 0;
     tab = imtab0;
-    while (val > *tab++)                /* im04 */
-        num = (num & ~0xffUL) | (UBYTE)(num + 1);
-    SB(1) = (UBYTE)num;
+    while (window > *tab++)             /* im04 */
+        idx = (idx & ~0xffUL) | (UBYTE)(idx + 1);
+    SB(1) = (UBYTE)idx;
     {
-        const UBYTE *s = (const UBYTE *)imtab1 + (UWORD)num * 12;
+        const UBYTE *s = (const UBYTE *)imtab1 + (UWORD)idx * 12;
         for (i = 0; i < 12; i++)
             SB(0xa4 + i) = s[i];
     }
@@ -474,19 +483,19 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
             break;
         }
         /* im13 */
-        val = im37(st, SB(0x5c), SL(0x60));
-        val = (val & 0xffff0000UL) | SW(0x66);
-        val = im37(st, SB(0x5e), val);
-        num = SB(0x5d);
-        val = (val & 0xffff0000UL) | SW(0x64);
-        if ((UBYTE)num == 13) {
+        bits = im37(st, SB(0x5c), SL(0x60));
+        bits = (bits & 0xffff0000UL) | SW(0x66);
+        bits = im37(st, SB(0x5e), bits);
+        nbits = SB(0x5d);
+        bits = (bits & 0xffff0000UL) | SW(0x64);
+        if (nbits == 13) {
             UBYTE *dest = (UBYTE *)SL(0x26);
-            *dest++ = (UBYTE)val;
+            *dest++ = (UBYTE)bits;
             SL(0x26) = (ULONG)dest;
-            num = 5;
-            val = 0x1f;
+            nbits = 5;
+            bits = 0x1f;
         }
-        im37(st, (UBYTE)num, val);      /* im14 */
+        im37(st, nbits, bits);          /* im14 */
         SL(0x22) += SB(0x2e);
         SL(0x30) = 0;
     }
@@ -503,18 +512,18 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
         ULONG oddflag;
         UWORD last;
 
-        num = SL(0x26) - SL(0x0a);
-        if (num < 12)
+        clen = SL(0x26) - SL(0x0a);
+        if (clen < 12)
             goto im23;
-        val = SL(0x12) - num;
-        if (val <= 0x36)
+        gain = SL(0x12) - clen;
+        if (gain <= 0x36)
             goto im23;
         head = (UBYTE *)SL(0x0a);
         out = (UBYTE *)SL(0x26);
         oddflag = 0xff00;
-        if (num & 1) {
+        if (clen & 1) {
             oddflag = 0;
-            num++;
+            clen++;
             *out++ = 0;
         }
         /* im16: the first 12 bytes go to the end, header in front */
@@ -523,9 +532,9 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
         RL(out + 4) = RL(head + 4);
         RL(head + 4) = SL(0x12);
         RL(out) = RL(head + 8);
-        RL(head + 8) = num;
-        num += 0x2e;
-        SL(0x16) = num;
+        RL(head + 8) = clen;
+        clen += 0x2e;
+        SL(0x16) = clen;
         RL(out + 12) = SL(0x30);
         last = SB(0x2c) & 0xfe;         /* MOVE.b:AND.w #$FE */
         last |= (UWORD)(1U << (SB(0x2d) & 31)); /* BSET d0,d1 */
@@ -541,13 +550,13 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
     } else {                            /* im19, never with mode 8 */
         UBYTE lastbyte, *out;
 
-        num = SL(0x26) - SL(0x0a);
-        val = SL(0x12) - num;
-        if (val <= 6)
+        clen = SL(0x26) - SL(0x0a);
+        gain = SL(0x12) - clen;
+        if (gain <= 6)
             goto im23;
         lastbyte = (UBYTE)((SB(0x2c) & 0xfe) | (1U << (SB(0x2d) & 7)));
         out = (UBYTE *)SL(0x26);
-        if (num & 1) {
+        if (clen & 1) {
             *out++ = lastbyte;
             RL(out) = SL(0x30);
         } else {
@@ -555,8 +564,8 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
             out += 4;
             *out = lastbyte;
         }
-        num += 5;
-        SL(0x16) = num;
+        clen += 5;
+        SL(0x16) = clen;
     }
 im23:
     return SL(0x16);
@@ -621,7 +630,9 @@ static ULONG deplode(UBYTE *buf)
 
     for (;;) {
         UWORD len, idx, lenidx, cnt;
-        ULONG extra, src;
+        ULONG litextra;                 /* the literal count base */
+        ULONG offbits;                  /* the offset bits value */
+        ULONG src;
         UBYTE n;
 
         /* I1E70: literal run */
@@ -654,14 +665,14 @@ static ULONG deplode(UBYTE *buf)
             idx = 3;
         }
         /* I1F08: next literal count */
-        extra = 0;
+        litextra = 0;
         lenidx = idx;
         if (imbit(&bitbuf, &packed)) {
             if (imbit(&bitbuf, &packed)) {
-                extra = I1F8C[idx];
+                litextra = I1F8C[idx];
                 idx = (UBYTE)(idx + 8);
             } else {
-                extra = 2;
+                litextra = 2;
                 idx = (UBYTE)(idx + 4);
             }
         }
@@ -671,11 +682,11 @@ static ULONG deplode(UBYTE *buf)
             do
                 w = (UWORD)(w + w + imbit(&bitbuf, &packed));
             while (--n);
-            w += (UWORD)extra;
+            w += (UWORD)litextra;
             litcnt = (litcnt & 0xffff0000UL) | w;
         }
         /* offset */
-        extra = 0;
+        offbits = 0;
         src = 0;
         idx = lenidx;
         if (imbit(&bitbuf, &packed)) {
@@ -690,9 +701,9 @@ static ULONG deplode(UBYTE *buf)
         }
         n = tab[0x10 + idx];
         do
-            extra = extra + extra + imbit(&bitbuf, &packed);
+            offbits = offbits + offbits + imbit(&bitbuf, &packed);
         while (--n);
-        src += 1 + extra + (ULONG)dst;
+        src += 1 + offbits + (ULONG)dst;
         {
             const UBYTE *s = (const UBYTE *)src;
             cnt = len;
@@ -931,18 +942,20 @@ static void lzhdecruncher(UBYTE *dst, const UBYTE *src, ULONG dstlen, ULONG srcl
             UBYTE c = (UBYTE)sym;
             if (!(sym & 0x100)) {
                 UWORD len = sym, bits, topbit;
+                UWORD dbits;            /* the distance bit count */
+                UWORD dist;
                 const UBYTE *from;
-                sym = readit(&b, tabs + OCMPTAB + 32, realdist);
-                bits = sym;
-                topbit = sym;
-                if (!sym) {
+                dbits = readit(&b, tabs + OCMPTAB + 32, realdist);
+                bits = dbits;
+                topbit = dbits;
+                if (!dbits) {
                     bits = 1;
                     topbit = 16;
                 }
-                sym = crmgetbits(&b, bits);
+                dist = crmgetbits(&b, bits);
                 if ((topbit & 31) < 16) /* BSET d2,d0: bits 16-31 */
-                    sym |= (UWORD)(1U << (topbit & 31)); /* are not used */
-                from = dst + 1 + (WORD)sym;
+                    dist |= (UWORD)(1U << (topbit & 31)); /* are not used */
+                from = dst + 1 + (WORD)dist;
                 do
                     *--dst = *--from;
                 while (len-- != 0);
