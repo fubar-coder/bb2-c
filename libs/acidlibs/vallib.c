@@ -320,17 +320,17 @@ BLITZ_INLINE(dobeamy,
 /* DispHeight - 200 for NTSC or 256 for PAL: bit 0 of the low byte of
    GfxBase->DisplayFlags (207(a0), a0 = graphics base).  MOVE.w: the
    upper word of d0 is kept. */
-static ULONG BLITZ_ROUTINE dodispheight_c(ULONG prev BL_REG(d0), const UBYTE *gfx BL_REG(a0))
+static ULONG BLITZ_ROUTINE dodispheight_c(ULONG hiword BL_REG(d0), const UBYTE *gfx BL_REG(a0))
 {
-    return (prev & 0xffff0000) | ((gfx[207] & 1) ? 200 : 256);
+    return (hiword & 0xffff0000) | ((gfx[207] & 1) ? 200 : 256);
 }
 BLITZ_THUNK(dodispheight, dodispheight_c, "d1/a0-a1");
 
 /* NTSC - -1 if in ntsc mode: BTST #0,207(a0):SNE d0:EXT d0 (upper word
    of d0 kept) */
-static ULONG BLITZ_ROUTINE dontsc_c(ULONG prev BL_REG(d0), const UBYTE *gfx BL_REG(a0))
+static ULONG BLITZ_ROUTINE dontsc_c(ULONG hiword BL_REG(d0), const UBYTE *gfx BL_REG(a0))
 {
-    return (prev & 0xffff0000) | ((gfx[207] & 1) ? 0xffff : 0);
+    return (hiword & 0xffff0000) | ((gfx[207] & 1) ? 0xffff : 0);
 }
 BLITZ_THUNK(dontsc, dontsc_c, "d1/a0-a1");
 
@@ -558,17 +558,20 @@ static UWORD getdec(struct valstate *s, ULONG *num, ULONG *scale)
    make 10^n mod 2^32 = 0 and the fraction is dropped. */
 static ULONG notneg(const void *ffp, struct valstate *s)
 {
-    ULONG num, scale, ipart, x;
+    ULONG scale, ipart, x;
+    ULONG inum;                                 /* d7: the integer part */
+    ULONG frac;                                 /* d7: the fraction digits */
+    ULONG fracflt;                              /* d7: the fraction as float */
 
-    if (getdec(s, &num, &scale) != '.')
-        return BLITZ_BASEJSR1(ffp, LVO_SPFlt, num); /* that's it! */
-    ipart = BLITZ_BASEJSR1(ffp, LVO_SPFlt, num);
-    getdec(s, &num, &scale);
+    if (getdec(s, &inum, &scale) != '.')
+        return BLITZ_BASEJSR1(ffp, LVO_SPFlt, inum); /* that's it! */
+    ipart = BLITZ_BASEJSR1(ffp, LVO_SPFlt, inum);
+    getdec(s, &frac, &scale);
     if (!scale)
         return ipart;
     x = BLITZ_BASEJSR1(ffp, LVO_SPFlt, scale);  /* divisor to float */
-    num = BLITZ_BASEJSR1(ffp, LVO_SPFlt, num);  /* fraction to float */
-    x = BLITZ_BASEJSR2(ffp, LVO_SPDiv, num, x);
+    fracflt = BLITZ_BASEJSR1(ffp, LVO_SPFlt, frac); /* fraction to float */
+    x = BLITZ_BASEJSR2(ffp, LVO_SPDiv, fracflt, x);
     return BLITZ_BASEJSR2(ffp, LVO_SPAdd, x, ipart);
 }
 
