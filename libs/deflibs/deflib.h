@@ -20,19 +20,18 @@
  * an endless loop.  The C version keeps the endless retry, with the name
  * each time.
  *
- * BUG(orig) (#45) of the resources (ciaa, ciab, disk, misc, potgo, battclock,
- * battmem, card): they were made from the library template, whose finit
- * (MOVE.l 4,a6:JMP CloseLibrary(a6)) is 6 bytes longer than theirs (RTS),
- * without adjusting the LEA: it points 6 bytes into the name
- * ("ciab.resource" -> "esource"), so OpenResource always fails and the
- * init hangs.  Kept: the resource files pass libname + DEFLIB_RESOURCE_SKEW.
+ * Fixed (intended deviation, #45) for the resources (ciaa, ciab, disk,
+ * misc, potgo, battclock, battmem, card): they were made from the library
+ * template, whose finit (MOVE.l 4,a6:JMP CloseLibrary(a6)) is 6 bytes
+ * longer than theirs (RTS), without adjusting the LEA: in the original it
+ * points 6 bytes into the name ("ciab.resource" -> "esource"), so
+ * OpenResource always fails and the init hangs.  Here the resource files
+ * pass the name itself.
  */
 #ifndef DEFLIB_H
 #define DEFLIB_H
 
 #include "blitzexec.h"
-
-#define DEFLIB_RESOURCE_SKEW 6
 
 /* OpenLibrary(name, 0), retried until it succeeds (BUG(orig) (#44), see above) */
 static inline ULONG deflib_openlibrary(const char *name)

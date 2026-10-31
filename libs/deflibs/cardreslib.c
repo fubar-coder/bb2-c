@@ -7,10 +7,11 @@
  * since then this file is the source.  Structure: notes/deflibs.md.
  *
  *   init:  OpenResource("card.resource") -> d0 = base (return long:
- *          the compiler keeps it for the calls, a6).  BUG(orig) (#45, #44):
- *          the original opens "esource" (LEA points 6 bytes
- *          into the name), which never exists, and retries
- *          forever (deflib.h): the init hangs
+ *          the compiler keeps it for the calls, a6).  Fixed (intended
+ *          deviation, #45): the original opens "esource" (LEA
+ *          points 6 bytes into the name), which never exists; here
+ *          the name.  BUG(orig) (#44): retries forever if the resource
+ *          cannot be opened (deflib.h)
  *   finit: nothing (resources are not closed; !libs
  *          LIB_cardreslib,#la1 as with the libraries)
  *
@@ -51,10 +52,11 @@ BLITZ_LIBFIN();
 
 static const char libname[] = "card.resource";
 
-/* init nullsub: d0 = resource base.  BUG(orig) (#45): LEA libname+6(pc),a1 */
+/* init nullsub: d0 = resource base (fixed, #45: the original has
+   LEA libname+6(pc),a1) */
 static ULONG BLITZ_ROUTINE libinit(void)
 {
-    return deflib_openresource(libname + DEFLIB_RESOURCE_SKEW);
+    return deflib_openresource(libname);
 }
 
 /* finit nullsub: a1 = resource base, nothing to do (RTS) */

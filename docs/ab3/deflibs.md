@@ -4,7 +4,7 @@ What AmiBlitz 2.x/3 changed in the AmigaOS call libraries of Blitz Basic 2
 (`blitz2:deflibs`; our port: `libs/deflibs/*.c`, notes
 `docs/libs/deflibs.md`), as the basis for deciding which changes we take
 over. Documentation only; taken over so far (as fixed original bugs,
-`docs/libs/deviations.md`): #959.
+`docs/libs/deviations.md`): #959; #45 (our own fix, not in AB3).
 
 ## Sources and method
 
@@ -179,6 +179,7 @@ Mapping of our issues:
   then depends on the compiler (?).
 * **#45** (resource name shifted): **not fixed** in AB3; the 6 rebuilt
   resources point further off (`$001D`), ciaa/ciab keep the BB2 code.
+  Fixed by us (the name itself, `docs/libs/deviations.md`).
 * **#959**: **`CachePreDMA_`/`CachePostDMA_` pass `flags` in d1**
   instead of d0 (`libs/deflibs/execlib.c`), fixed in AB3 before 2009;
   taken over (d0, `docs/libs/deviations.md`).

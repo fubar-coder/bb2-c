@@ -59,13 +59,14 @@ init:  MOVE.l  4,a6
   is its immediate) and calls `OpenLibrary` again with d0 = 0 and the
   a1 left behind by the failed call. C keeps the
   endless loop (`deflib.h`), but each time with the name.
-* **Resources** (#45): they were made from the library template, whose finit
-  is 6 bytes longer; the `LEA` was not adjusted and points 6 bytes into
-  the name (`"ciab.resource"` → `"esource"`, `"potgo.resource"` →
-  `"resource"`). So `OpenResource` always fails, init hangs. A
-  program that uses a call of ciaa/ciab/disk/misc/potgo/battclock/
-  battmem/card stops at startup. Kept in C:
-  `deflib_openresource(libname + DEFLIB_RESOURCE_SKEW)`.
+* **Resources** (#45, fixed: intended deviation): they were made from the
+  library template, whose finit is 6 bytes longer; the `LEA` was not
+  adjusted and points 6 bytes into the name (`"ciab.resource"` →
+  `"esource"`, `"potgo.resource"` → `"resource"`). So in the original
+  `OpenResource` always fails, init hangs: a program that uses a call of
+  ciaa/ciab/disk/misc/potgo/battclock/battmem/card stops at startup. The
+  C version opens the name itself (`deflib_openresource(libname)`; bug-orig
+  test `deflibs-resource-name-skew`).
 
 The rest of the code differs only in form: GCC saves a6 (the
 original destroys it), calls `CloseLibrary` via `JSR` instead of `JMP`, the

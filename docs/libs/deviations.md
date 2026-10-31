@@ -130,7 +130,7 @@ intended deviations (kind **F**), each with its issue.
 |---|---|---|---|---|
 | init of all libraries/resources (libs/deflibs/deflib.h:20) | `BEQ init+6` jumps into the middle of the `LEA`: `ORI.b #0,(a0)+` with arbitrary a0, then OpenLibrary with the a1 left by the failure | endless loop, each time with the correct name | **T** | a0/a1 after a failed OpenLibrary are undefined; observable only if the library is missing (both hang) |
 | init/finit in general ([deflibs.md](deflibs.md)) | destroys a6, `JMP CloseLibrary` | GCC saves a6, `JSR` | **B** (register preservation) | not observable |
-| Resources (deflib.h) | `LEA` points 6 bytes into the name | reproduced (`libname + DEFLIB_RESOURCE_SKEW`) | – | BUG(orig) (#45), no deviation |
+| Resources (deflib.h, e.g. battclocklib.c:42) | `LEA` points 6 bytes into the name: `OpenResource` always fails, the init hangs (#44) | opens the name itself | **F** | #45: a program using a call of ciaa, ciab, disk, misc, potgo, battclock, battmem or card no longer hangs at startup (test `deflibs-resource-name-skew`) |
 | exec `CachePreDMA_`, `CachePostDMA_` (execlib.c:141) | `flags` declared in d1, exec reads d0 | d0 (`exec_lib.fd`); a declaration difference, listed in `libs/deflibs/declarations-intended.txt` | **F** | #959: exec gets the given flags; before, only by chance at the statement level (the flags evaluated last into d0), inside an expression d0 held another value (test `deflibs-cachedma-flags-d1`) |
 
 ## 5. Compiler blitz2-c (`programs/blitz2`)
