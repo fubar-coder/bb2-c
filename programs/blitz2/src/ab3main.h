@@ -27,6 +27,31 @@ extern const char ab3cliname[];
  */
 int ab3_cmdline(int argc, char **argv);
 
+struct include;
+
+/**
+ * @brief A text include in a command line run (task 3.5): blitz2 reads an
+ *        include raw (readinc), so ab3cli tokenises it first, as TED loads
+ *        a source, with the program's token list (job tokfile); readinc
+ *        then reads those lines (ab3_incread) instead of the file.
+ *
+ * An error stops the compile (err).
+ *
+ * @param inc   the include, just opened (doinc2)
+ * @param name  its name
+ */
+void ab3_textinc(struct include *inc, const char *name);
+
+/**
+ * @brief readinc's Read() of an include: the tokenised lines of a text
+ *        include, else the file.
+ * @return the bytes read, -1 on an error
+ */
+LONG ab3_incread(struct include *inc, UBYTE *dst, LONG len);
+
+/** @brief The include is closed: its tokenised lines go. */
+void ab3_incdone(struct include *inc);
+
 /**
  * @brief The return code of a command line run, after the compiler ran
  *        (ab3cli left it in the job).

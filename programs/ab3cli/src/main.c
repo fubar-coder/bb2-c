@@ -13,7 +13,9 @@
  *     .xtra image), else from the companion SOURCE.xtra, else the
  *     compiler's own; with -r without runtime error checking, debugger and
  *     debug information,
- *   - compiles with CREATE EXECUTABLE into EXE,
+ *   - compiles with CREATE EXECUTABLE into EXE; an include of text is
+ *     handed to us by blitz2-ab3 (job tokfile) and tokenised as TED loads
+ *     a source, with the program's token list,
  *   - prints what went wrong on the console - a compile error as
  *     "FILE:LINE: MESSAGE" - and leaves the return code in the job: 0
  *     compiled, 10 compile error, 20 set-up error (design D6).
@@ -374,6 +376,85 @@ out:
 }
 
 /* ---------------------------------------------------------------------
+ * text includes (task 3.5): blitz2-ab3 reads an include raw and takes its
+ * 0-terminated pieces as tokenised lines (readinc); a text include is
+ * therefore handed to us first and comes back as the editor would load
+ * it - TED's readline, tokenised with the program's token list
+ * ------------------------------------------------------------------- */
+/* the lines of the file, each with its 0; *len their bytes; NULL if the
+   file cannot be read (reported) */
+static UBYTE *tokenise_file(const char *name, ULONG *len)
+{
+    struct rdstate rd;
+    UBYTE *mem = 0, *p = 0;
+    ULONG total = 0;
+    UWORD n;
+    int pass;
+
+    for (pass = 0; pass < 2; pass++) {
+        if (!doopen(&rd, (const UBYTE *)name, TED_MODE_OLDFILE))
+            goto fail;          /* error() reported it */
+        if (fillbuff(&rd) > 0)
+            while (readline(&rd, &n) != RL_EOF) {
+                if (pass)
+                    memcpy(p + total, charbuff2, n);
+                total += n;
+            }
+        doclose(&rd);
+        if (loaderr)
+            goto fail;
+        if (!pass) {
+            if (!(p = mem = AllocMem(total + 1, MEMF_PUBLIC))) {
+                report("out of memory");
+                return 0;
+            }
+            *len = total;
+            total = 0;
+        }
+    }
+    return mem;
+fail:
+    if (mem)
+        FreeMem(mem, *len + 1);
+    return 0;
+}
+
+/* the service (ab3job.h tokfile): a0 = name -> d0 = lines, d1 = length */
+void ab3cli_tokfile_c(struct regs *r)
+{
+    const char *name = (const char *)r->a[0];
+    ULONG len = 0;
+
+    curfile = name;
+    loaderr = 0;
+    r->d[0] = (ULONG)tokenise_file(name, &len);
+    r->d[1] = len;
+    curfile = job->source;
+}
+
+/* its entry: the register frame of the edstub services, with our a4 */
+#ifdef __baserel__
+#define LOAD_A4 "   lea     ___a4_init,a4\n"
+#else
+#define LOAD_A4 ""
+#endif
+void ab3cli_tokfile(void);
+__asm__(
+"   .text\n"
+"   .even\n"
+"   .globl  _ab3cli_tokfile\n"
+"_ab3cli_tokfile:\n"
+"   movem.l d0-d7/a0-a6,-(sp)\n"
+LOAD_A4
+"   move.l  sp,-(sp)\n"
+"   jsr     _ab3cli_tokfile_c\n"
+"   addq.l  #4,sp\n"
+"   movem.l (sp)+,d0-d7/a0-a6\n"
+"   tst.l   d0\n"
+"   rts\n"
+);
+
+/* ---------------------------------------------------------------------
  * the job
  * ------------------------------------------------------------------- */
 #define BUFFLEN (doslen + 3 * 128 + 6)  /* ted.s outside: dosbuff + charbuff1..3 */
@@ -430,6 +511,7 @@ static int run(void)
     else
         report("no executable written");
 out:
+    job->tokfile = 0;                   /* the buffers go now */
     freeall();
     firstitem = 0;
     numlines = 0;
@@ -446,6 +528,7 @@ void edstub_main(const char *arg)
         return;
     }
     job->started = 1;
+    job->tokfile = (void *)ab3cli_tokfile;
     job->result = AB3JOB_RC_FAIL;
     if (setuperr)                       /* the compiler's set-up (printed) */
         return;

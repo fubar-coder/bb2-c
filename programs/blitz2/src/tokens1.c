@@ -15,6 +15,9 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include "blitz2.h"
+#if BLITZ2_AB3
+#include "ab3main.h"
+#endif
 
 /* a template long (two UWORDs, high first) - avoids type-punned L_() reads
    of UWORD arrays */
@@ -791,8 +794,8 @@ void doinclude(UWORD c)
    another mode: NAME" (docs/ab3/variant.md, "Mixed includes").  An include
    as text is not judged: it gets the program's mode.  fh is the open
    include, buf INCLEN bytes; the file position is the start again
-   afterwards. */
-static void checkincmode(BPTR fh, UBYTE *buf)
+   afterwards.  Returns 1 for an include of text. */
+static int checkincmode(BPTR fh, UBYTE *buf)
 {
     static char msg[25 + 128] = "Include of another mode: ";
     char compname[sizeof namebuff + 5];
@@ -807,7 +810,7 @@ static void checkincmode(BPTR fh, UBYTE *buf)
     Seek(fh, 0, OFFSET_BEGINNING);
     type = xtra_detect(buf, (size_t)got, (const char *)namebuff);
     if (type != XTRA_T_TED && type != XTRA_T_BB22)
-        return;
+        return 1;
     if (xtra_companion_name((const char *)namebuff, compname, sizeof compname) == XTRA_OK
         && (xf = Open((CONST_STRPTR)compname, MODE_OLDFILE))) {
         Seek(xf, 0, OFFSET_END);
@@ -823,11 +826,12 @@ static void checkincmode(BPTR fh, UBYTE *buf)
     if (x)
         FreeMem(x, (ULONG)xlen);
     if (mode == progmode)
-        return;
+        return 0;
     for (i = 0; i < 127 && namebuff[i]; i++)
         msg[25 + i] = (char)namebuff[i];
     msg[25 + i] = 0;
     err(msg);
+    return 0;
 }
 #endif
 
@@ -849,7 +853,11 @@ void doinc2(UWORD namelen)
         noincerr();
     numincs++;
 #if BLITZ2_AB3
-    checkincmode(n->fh, n->buf);
+    /* an include of text in a command line run: tokenised by ab3cli
+       (readinc takes only tokenised lines); the editor session reads it
+       as blitz2 does */
+    if (checkincmode(n->fh, n->buf) && ab3job && ab3job->tokfile)
+        ab3_textinc(n, (const char *)namebuff);
 #endif
     /* DIFF: asm `move.l passstack,a7 / jmp passnxt` */
     longjmp(*passjmp, 1);

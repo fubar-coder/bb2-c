@@ -5,6 +5,9 @@
  * CNIF/CSIF compare helpers.  See notes/survey-07.md and libcall.h.
  */
 #include "blitz2.h"
+#if BLITZ2_AB3
+#include "ab3main.h"
+#endif
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <string.h>
@@ -1275,6 +1278,9 @@ static void imakeend(struct include *inc, UBYTE *line)
    there are more includes (asm: bne readinc) */
 static BOOL closeinc(struct include *inc)
 {
+#if BLITZ2_AB3
+    ab3_incdone(inc);
+#endif
     Close(inc->fh);
     FreeMem(inc->buf, INCLEN);
     firstinc = inc->next;
@@ -1304,7 +1310,12 @@ BOOL readinc(void)
         for (src = line; src < end; )
             *dst++ = *src++;
         inc->nbuf = (UWORD)(dst - inc->buf); /* chars in there */
+#if BLITZ2_AB3
+        /* a text include of a command line run: its tokenised lines */
+        got = ab3_incread(inc, dst, (LONG)(UWORD)((INCLEN - 1) - inc->nbuf));
+#else
         got = Read(inc->fh, dst, (LONG)(UWORD)((INCLEN - 1) - inc->nbuf));
+#endif
         if (got < 0)
             readerr();
         inc->nbuf += (UWORD)got;
@@ -1340,6 +1351,9 @@ void freeincs(void)
 
     firstinc = NULL;
     while (cur) {
+#if BLITZ2_AB3
+        ab3_incdone(cur);
+#endif
         if (cur->fh)
             Close(cur->fh);
         /* .noclose */

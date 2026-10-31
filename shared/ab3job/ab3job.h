@@ -43,7 +43,7 @@ enum ab3job_rc {
  * @brief The job of a command line run.
  *
  * Filled by ab3args_parse (force, release_exe, source, exe), by blitz2-ab3
- * (mode) and by ab3cli (started, result).
+ * (mode) and by ab3cli (started, result, tokfile).
  */
 struct ab3job {
     char magic[8];              /* AB3JOB_MAGIC with its 0 */
@@ -56,6 +56,13 @@ struct ab3job {
     uint8_t started;            /* ab3cli ran the job */
     uint8_t result;             /* enum ab3job_rc, set by ab3cli */
     uint8_t pad;
+    /* ab3cli's service for a text include, set by ab3cli: an entry with
+       the registers of an editor service (blitz2 callregs) - a0 = the
+       include's name; out d0 = its lines as the editor loads them (TED's
+       readline: tokenised with the program's token list), each ending in
+       its 0, in AllocMem(d1 + 1, MEMF_PUBLIC) memory the caller frees;
+       d1 = their length; d0 = 0: the file cannot be read (reported) */
+    void *tokfile;
     char source[AB3JOB_PATHLEN];        /* -s */
     char exe[AB3JOB_PATHLEN];           /* -e */
 };

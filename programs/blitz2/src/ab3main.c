@@ -17,7 +17,7 @@
 #include <dos/dos.h>
 #include <proto/exec.h>
 #include <proto/dos.h>
-#include "main.h"
+#include "blitz2.h"
 #include "ab3main.h"
 
 struct ab3job *ab3job;
@@ -102,6 +102,64 @@ int ab3_cmdline(int argc, char **argv)
     progmode = job.mode;
     ab3job = &job;
     return -1;
+}
+
+/* ------------------------------------------------- text includes (3.5) */
+
+#define MAXTEXTINC 16                   /* open at the same time (nested) */
+static struct {
+    struct include *inc;
+    UBYTE *mem;                         /* AllocMem(len + 1) by ab3cli */
+    ULONG len, pos;
+} textinc[MAXTEXTINC];
+
+void ab3_textinc(struct include *inc, const char *name)
+{
+    static char msg[] = "Can't read include";
+    struct m68kregs r;
+    int i;
+
+    for (i = 0; i < MAXTEXTINC && textinc[i].inc; i++)
+        ;
+    if (i == MAXTEXTINC)
+        err("Too many includes of text");
+    memset(&r, 0, sizeof r);
+    r.a[0] = (ULONG)name;
+    callregs(ab3job->tokfile, &r);
+    if (!r.d[0])
+        err(msg);                       /* ab3cli printed why */
+    textinc[i].inc = inc;
+    textinc[i].mem = (UBYTE *)r.d[0];
+    textinc[i].len = r.d[1];
+    textinc[i].pos = 0;
+}
+
+LONG ab3_incread(struct include *inc, UBYTE *dst, LONG len)
+{
+    ULONG n;
+    int i;
+
+    for (i = 0; i < MAXTEXTINC && textinc[i].inc != inc; i++)
+        ;
+    if (i == MAXTEXTINC)
+        return Read(inc->fh, dst, len);
+    n = textinc[i].len - textinc[i].pos;
+    if (n > (ULONG)len)
+        n = (ULONG)len;
+    memcpy(dst, textinc[i].mem + textinc[i].pos, n);
+    textinc[i].pos += n;
+    return (LONG)n;
+}
+
+void ab3_incdone(struct include *inc)
+{
+    int i;
+
+    for (i = 0; i < MAXTEXTINC; i++)
+        if (inc && textinc[i].inc == inc) {
+            FreeMem(textinc[i].mem, textinc[i].len + 1);
+            textinc[i].inc = NULL;
+        }
 }
 
 int ab3_result(void)
