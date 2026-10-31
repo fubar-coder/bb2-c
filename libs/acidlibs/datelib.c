@@ -16,10 +16,10 @@
  * (SETW/SETB), DIVU/DIVS are the instructions (overflow leaves the
  * register unchanged).
  *
+ * Fixed (intended deviation, #120): Date$ of day 366 of a cycle (1/1 of
+ *   the year after a leap year, e.g. 1/1/1981): the original showed it as
+ *   32/12 of the leap year (CMP #366: BLE instead of BLT); here BLT.
  * Kept on purpose (BUG(orig)):
- *   - Date$: the day after the leap day period of a cycle is wrong: day
- *     366 of a cycle (1/1 of the year after a leap year, e.g. 1/1/1981)
- *     is shown as 32/12 of the leap year (CMP #366: BLE instead of BLT). (#120)
  *   - WeekDay: SUBQ.w #2 on the day count (no borrow into the high word). (#121)
  *   - NumDays: ADDQ.w #1 / SUBQ.w #1 on the day count (no carry/borrow),
  *     e.g. NumDays("31/12/1977") = 65535, not -1. (#122)
@@ -240,9 +240,9 @@ static void put2(ULONG r)
  * 1461 days.  d1 holds the 4 year cycles first, d2 the days of the
  * cycles; for mm/dd/yyyy day and month are exchanged (EXG) before the
  * output.  Values outside 0..99 per two digits give other characters.
- * BUG(orig) (#120): day 366 of a cycle (1/1 of the year after a leap
- * year, e.g. 1/1/1981) is shown as 32/12 of the leap year (CMP #366: BLE
- * instead of BLT).
+ * Fixed (#120): day 366 of a cycle (1/1 of the year after a leap year,
+ * e.g. 1/1/1981) is the first day of the next year; the original showed
+ * it as 32/12 of the leap year (CMP #366: BLE instead of BLT).
  *
  * @param days  d0: the days since 1/1/1978
  * @return d0: the length of the string, 10
@@ -263,8 +263,9 @@ ULONG BLITZ_ROUTINE datestr_c(LONG days BL_REG(d0))
     day -= cycdays;                                     /* day in cycle */
     year = cycles;
     BL_SETW(year, (UWORD)cycles << 2);                  /* ASL #2,d1: year */
-    /* BUG(orig) (#120): BLE - day 366 stays in the leap year (32/12) */
-    if ((WORD)day > 366) {
+    /* fixed (#120): BLT - the original's BLE kept day 366 in the leap
+       year (32/12) */
+    if ((WORD)day >= 366) {
         BL_SETW(day, day - 366);
         day = bl_divs_w(BL_EXTL(day), 365);
         BL_SETW(year, year + day);

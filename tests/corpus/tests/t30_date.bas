@@ -46,10 +46,13 @@ NPrint "time ",h>=0 AND h<24," ",mi>=0 AND mi<60," ",se>=0 AND se<60
 NPrint "same ",Mins=mi," ",Secs=se
 End
 
+; day 366 of a 4 year cycle (1096 = 1/1/1981, -365 = 1/1/1977) only in
+; the bug-orig test datelib-day366: the original gives 32/12 of the leap
+; year, the C library the right date (fixed, #120)
 dlist:
-Data 34
-Data.l 0,1,30,31,58,59,60,364,365,366,729,730,731,790,1095,1096,1097,1460
-Data.l 1461,-1,-2,-365,-366,-1569,-1570,63967,65535,65536,100000
+Data 32
+Data.l 0,1,30,31,58,59,60,364,365,366,729,730,731,790,1095,1097,1460
+Data.l 1461,-1,-2,-366,-1569,-1570,63967,65535,65536,100000
 Data.l -722465,-722466,-800000,2000000,40000000
 
 slist:
