@@ -178,6 +178,16 @@ static BB_BOOL ilbminit_(const char *name)
 /* the address left in a0 by the ilbminit thunk */
 UBYTE *ilbm_a0;
 
+/**
+ * @brief ilbminit (+1): open an ILBM file and read its BMHD into iffstuff.
+ *
+ * For animlib and lib 154.  The file stays open.  CCR: tst.l d0 (Z =
+ * failed).
+ *
+ * @param name  a0: the file name
+ * @return d0: BB_TRUE ok, BB_FALSE no file / no BMHD; a0 = iffstuff, on
+ *         failure the file name (the original leaves dos.library's a0)
+ */
 static BB_BOOL BLITZ_ROUTINE ilbminit_c(const char *name BL_REG(a0))
 {
     BB_BOOL r = ilbminit_(name);
@@ -220,6 +230,17 @@ static ULONG getbyte(ULONG byte, struct iffstuff *st)
     return getme(byte, st);
 }
 
+/**
+ * @brief ilbmgetbyte (+2): the next byte of the BODY, ByteRun1 decoded
+ * (for lib 154).
+ *
+ * Errors: "Can't Read File" at the end of the data - the message is in
+ * the error check area, BUG(orig) (#192).
+ *
+ * @param byte  d0: the previous byte (returned again inside a repeat run)
+ * @param st    a0: iffstuff (from ilbminit)
+ * @return d0: the byte in the low byte
+ */
 static ULONG BLITZ_ROUTINE ilbmgetbyte_c(ULONG byte BL_REG(d0), struct iffstuff *st BL_REG(a0))
 {
     return getbyte(byte, st);
@@ -228,6 +249,22 @@ BLITZ_THUNK(ilbmgetbyte, ilbmgetbyte_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------ ilbmbitmap */
 
+/**
+ * @brief ilbmbitmap (+3): load an ILBM file into a BitMap (for libs 158,
+ * 160).
+ *
+ * Reads row after row, plane after plane, width-in-words*2 bytes each,
+ * and stores what fits into BytesPerRow/Depth/Rows; closes the file.
+ * Errors: "Can't Find IFF 'BODY'" - the message is in the error check
+ * area, BUG(orig) (#192); "Can't Read File" from ilbmgetbyte.
+ * BUG(orig): a failed ilbminit is ignored and "BODY" is searched in what is
+ * left in iffiolib's buffer (#187); the depth test is on the word over
+ * Flags and Depth (#188).
+ *
+ * @param value  d0: the start value of the byte reader
+ * @param name   a0: the file name
+ * @param bm     a1: the BitMap; a0 = iffstuff afterwards
+ */
 static void BLITZ_ROUTINE ilbmbitmap_c(ULONG value BL_REG(d0), const char *name BL_REG(a0),
                                        struct BitMap *bm BL_REG(a1))
 {
@@ -271,6 +308,19 @@ BLITZ_THUNK_POST(ilbmbitmap, ilbmbitmap_c, "d0-d1/a1", "lea _iffstuff,a0");
 
 /* ------------------------------------------------------------- functions */
 
+/**
+ * @brief ILBMInfo Filename$: read the size, depth and view mode of an ILBM
+ * file (for ILBMWidth, ILBMHeight, ILBMDepth, ILBMViewMode); also a
+ * function.
+ *
+ * View mode: pageWidth >= 480 gives $8000 (HIRES), pageHeight >= 300 |4
+ * (LACE).
+ * BUG(orig) (#186): the file is closed also when it could not be opened
+ * (dos Close of 0).
+ *
+ * @param name  d0: the file name
+ * @return d0: BB_TRUE ok, BB_FALSE no file / no BMHD
+ */
 static BB_BOOL BLITZ_ROUTINE doilbminfo_c(const char *name BL_REG(d0))
 {
     BB_BOOL r = ilbminit_(name);
@@ -281,8 +331,21 @@ static BB_BOOL BLITZ_ROUTINE doilbminfo_c(const char *name BL_REG(d0))
 }
 BLITZ_THUNK(doilbminfo, doilbminfo_c, "d1/a0-a1");
 
+/**
+ * @brief ILBMWidth: the width in pixels of the last ILBMInfo (ilbminit).
+ * @return d0.w: the width (the upper word of d0 stays, not a bug: a word
+ *         function)
+ */
 static UWORD BLITZ_ROUTINE ilbmwidth_c(void) { return iffstuff.width; }
+/**
+ * @brief ILBMHeight: the height of the last ILBMInfo (ilbminit).
+ * @return d0.w: the height (the upper word of d0 stays)
+ */
 static UWORD BLITZ_ROUTINE ilbmheight_c(void) { return iffstuff.height; }
+/**
+ * @brief ILBMDepth: the number of planes of the last ILBMInfo (ilbminit).
+ * @return d0.w: the depth (the upper word of d0 stays)
+ */
 static UWORD BLITZ_ROUTINE ilbmdepth_c(void) { return iffstuff.planes; }
 
 /* MOVE x(pc),d0: the upper word of d0 stays */
@@ -290,6 +353,11 @@ BLITZ_THUNK_POST(doilbmwidth, ilbmwidth_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 BLITZ_THUNK_POST(doilbmheight, ilbmheight_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 BLITZ_THUNK_POST(doilbmdepth, ilbmdepth_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
+/**
+ * @brief ILBMViewMode: the view mode of the last ILBMInfo (ilbminit):
+ * $8000 HIRES, 4 LACE.
+ * @return d0: the view mode (a long)
+ */
 static ULONG BLITZ_ROUTINE ilbmviewmode_c(void)
 {
     return ilbmvmode;                                   /* MOVEQ #0:MOVE */
@@ -298,7 +366,22 @@ BLITZ_THUNK(doilbmviewmode, ilbmviewmode_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------ DecodeILBM */
 
-/* d1 = memory location (FORM ILBM), a3 = the BitMap object */
+/**
+ * @brief DecodeILBM Bitmap#,MemoryLocation: decode an ILBM file in memory
+ * into a bitmap.
+ *
+ * Finds BMHD and BODY in the FORM ILBM; ByteRun1 or uncompressed rows
+ * (copied as words).  The bitmap object comes in a3 (!libs
+ * {#bitmaplib,$1380}).
+ * Errors: "Can't Find IFF 'BMHD'" (no FORM/ILBM/BMHD), "Can't Find IFF
+ * 'BODY'" - the messages are in the error check area, BUG(orig) (#192).
+ * BUG(orig): chunk lengths are not padded to even (#189); all planes of
+ * the ILBM are written through the BitMap's plane pointers (#190); the
+ * ILBM's row length per row, the BitMap's BytesPerRow as the row step,
+ * runs are not clipped at the row end (#191).
+ *
+ * @param mem  d1: the address of the FORM ILBM
+ */
 static void BLITZ_ROUTINE decodeilbm_c(const ULONG *mem BL_REG(d1))
 {
     struct BitMap *bm = (struct BitMap *)blitz_string;
