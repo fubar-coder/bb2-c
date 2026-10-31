@@ -425,24 +425,26 @@ BLITZ_THUNK(docopyshape, docopyshape_c, "d0-d1/a0-a1");
 static void BLITZ_ROUTINE initshape_c(ULONG w BL_REG(d1), ULONG h BL_REG(d2), ULONG d BL_REG(d3))
 {
     UBYTE *s = blitz_string;
-    UWORD bpr, size;
+    UWORD bpr;
+    UWORD bltsize;                              /* d5 */
+    UWORD xbpr;                                 /* d5: bpr + the extra word */
     ULONG len, xlen;
 
     freeashape_(s);
-    size = (UWORD)((UWORD)h << 6);
+    bltsize = (UWORD)((UWORD)h << 6);
     bpr = (UWORD)((UWORD)(w + 15) >> 4);
-    size |= bpr;
+    bltsize |= bpr;
     bpr += bpr;
-    size += 1;
+    bltsize += 1;
     SW(s, 0) = (UWORD)w;
     SW(s, 2) = (UWORD)h;
     SW(s, 4) = (UWORD)d;
     SW(s, 6) = bpr;
-    SW(s, 8) = size;
+    SW(s, 8) = bltsize;
     SL(s, 10) = 0;
-    size = bpr + 2;
+    xbpr = bpr + 2;
     len = (ULONG)bpr * (UWORD)h;                /* MULU */
-    xlen = (ULONG)size * (UWORD)h;
+    xlen = (ULONG)xbpr * (UWORD)h;
     SW(s, 22) = (UWORD)len;
     SW(s, 24) = (UWORD)xlen;
     len = (ULONG)(UWORD)len * (UWORD)d;
@@ -688,14 +690,20 @@ BLITZ_THUNK(_cludgeshapes2, cludgeshapes2_c, "d0-d1/a0-a1");
 #define IJSR(tok, d0v, a0v) ({ struct xregs r_ = { .d0 = (d0v), .a0 = (ULONG)(a0v), \
     .a3 = (ULONG)blitz_string }; XJSR(tok, r_); r_.d0; })
 
-static UWORD bmode;                             /* 2 = xor, 0 = set */
-static ULONG offs[8];
+static UWORD xordelta;                          /* bmode: 2 = xor, 0 = set */
+static ULONG planeoffs[8];                      /* offs: the DLTA plane offsets */
 
 static void doshload_(UBYTE *shape, const char *name)
 {
-    UBYTE *first = shape, *frame, *dst, *st;
-    UWORD bpr, rows, depth, pstep;
-    ULONG res, p;
+    UBYTE *first = shape, *frame, *st;
+    UBYTE *dst;                                 /* a2: the shape data write pointer */
+    UBYTE *next;                                /* a2: the next frame's shape */
+    UWORD bpr, rows, depth;
+    UWORD planesize;                            /* d7 */
+    UWORD pstep;                                /* d7: row end to the next plane */
+    UWORD bltsize;                              /* d0 */
+    ULONG res;                                  /* d0: chained through the IFF calls */
+    ULONG p;
     UBYTE z;
 
     freeashape_(shape);
@@ -707,15 +715,15 @@ static void doshload_(UBYTE *shape, const char *name)
         st = (UBYTE *)r.a0;
     }
     SW(first, 0) = SW(st, 0);
-    res = SW(st, 2);
-    SW(first, 2) = (UWORD)res;
-    rows = (UWORD)res;
-    res = (UWORD)(res << 6);
+    bltsize = SW(st, 2);
+    SW(first, 2) = bltsize;
+    rows = bltsize;
+    bltsize = (UWORD)(bltsize << 6);
     depth = SW(st, 4);
     SW(first, 4) = depth;
     bpr = (UWORD)(SW(st, 6) << 1);
     SW(first, 6) = bpr;
-    SW(first, 8) = (UWORD)res | (UWORD)((bpr >> 1) + 1);
+    SW(first, 8) = bltsize | (UWORD)((bpr >> 1) + 1);
     SL(first, 10) = 0;
     p = (ULONG)(UWORD)(bpr + 2) * rows;
     SW(first, 24) = (UWORD)p;
@@ -723,13 +731,13 @@ static void doshload_(UBYTE *shape, const char *name)
     SW(first, 28) = (UWORD)p;
     p = (ULONG)bpr * rows;
     SW(first, 22) = (UWORD)p;
-    pstep = (UWORD)p;
+    planesize = (UWORD)p;
     p = (ULONG)(UWORD)p * depth;
     SW(first, 26) = (UWORD)p;
     dst = globalloc(p, MEMF_CHIP);              /* global alloc for data! */
     SP(first, 14) = dst;
     res = IJSR(TOK_ifffind, 0x424f4459, st); /* "BODY" (not checked) */
-    pstep -= bpr;
+    pstep = planesize - bpr;
     rows--;
     depth--;
     do {
@@ -764,19 +772,19 @@ static void doshload_(UBYTE *shape, const char *name)
         BLITZ_RUNERR(mess8);
     res = IJSR(TOK_iffbyte, res, st);
     res = IJSR(TOK_ifflong, res, st);
-    bmode = (UWORD)res & 2;
+    xordelta = (UWORD)res & 2;
     do {                                        /* create next frame... */
         UWORD planes;
         ULONG dpos = 0, *off;
         ULONG *optr;
 
-        dst = frame + 32;
-        copyshape2(frame, dst);
-        frame = dst;
+        next = frame + 32;
+        copyshape2(frame, next);
+        frame = next;
         SL(frame, 18) = 0;
         res = IJSR(TOK_ifffind, 0x444c5441, st); /* "DLTA" */
         planes = SW(frame, 4) - 1;
-        optr = offs;
+        optr = planeoffs;
         do {
             dpos += 4;
             res = IJSR(TOK_ifflong, res, st);
@@ -784,7 +792,7 @@ static void doshload_(UBYTE *shape, const char *name)
         } while (planes-- != 0);
         /* do planes... */
         planes = SW(frame, 4) - 1;
-        off = offs;
+        off = planeoffs;
         dst = SP(frame, 14);
         do {
             ULONG o = *off++;
@@ -826,7 +834,7 @@ static void doshload_(UBYTE *shape, const char *name)
                                     res = IJSR(TOK_iffbyte, res, st);
                                     v = (UBYTE)res;
                                     do {
-                                        if (bmode)
+                                        if (xordelta)
                                             *dst ^= v;
                                         else
                                             *dst = v;
@@ -838,7 +846,7 @@ static void doshload_(UBYTE *shape, const char *name)
                                     do {
                                         dpos++;
                                         res = IJSR(TOK_iffbyte, res, st);
-                                        if (bmode)
+                                        if (xordelta)
                                             *dst ^= (UBYTE)res;
                                         else
                                             *dst = (UBYTE)res;
