@@ -334,11 +334,11 @@ static void palrgb(struct bpal *p, UWORD c, UWORD r, UWORD g, UWORD b)
         UBYTE *n = globalloc((ULONG)(UWORD)(c + 1) * 12 + 8, MEMF_PUBLIC | MEMF_CLEAR);
 
         if (p->pdata) {
-            ULONG *s = (ULONG *)p->pdata, *t = (ULONG *)n;
+            ULONG *s = (ULONG *)p->pdata, *dst = (ULONG *)n;
             UWORD k = (UWORD)(p->numcols * 3) + 1;
 
             do
-                *t++ = *s++;
+                *dst++ = *s++;
             while (k-- != 0);
             globfree(p->pdata, (ULONG)p->numcols * 12 + 8);
         }
@@ -405,9 +405,9 @@ BLITZ_THUNK_POST(make4bitrgbs, make4bitrgbs_c, "d0/a0",
 
 /* init - a0 = graphics; returns agamode (EXT.w: upper word from
    ExecVersion's d0) */
-static ULONG BLITZ_ROUTINE codeinit_c(ULONG d0 BL_REG(d0), struct Library *gfx BL_REG(a0))
+static ULONG BLITZ_ROUTINE codeinit_c(ULONG prev BL_REG(d0), struct Library *gfx BL_REG(a0))
 {
-    struct bl_regs r = { .d0 = d0 };
+    struct bl_regs r = { .d0 = prev };
     ULONG v;
 
     gfxbase = gfx;
@@ -457,7 +457,7 @@ BLITZ_THUNK(codefinit, codefinit_c, "a3");
 static void loadthepal(const UBYTE *name, struct bpal *p, UWORD off)
 {
     UBYTE z;
-    ULONG d0;
+    ULONG cmaplen;
     WORD n;
     UWORD c;
     struct cycle *cy;
@@ -467,12 +467,12 @@ static void loadthepal(const UBYTE *name, struct bpal *p, UWORD off)
         BLITZ_RUNERR(mess0);                    /* err0 */
         return;
     }
-    d0 = IFFCALL(TOK_ifffind, 0x434d4150, 0, z);    /* "CMAP" */
+    cmaplen = IFFCALL(TOK_ifffind, 0x434d4150, 0, z); /* "CMAP" */
     if (!z) {
         BLITZ_RUNERR(mess1);                    /* err1 */
         return;
     }
-    n = (WORD)(UWORD)bl_divu_w((ULONG)(LONG)(WORD)d0, 3) - 1;
+    n = (WORD)(UWORD)bl_divu_w((ULONG)(LONG)(WORD)cmaplen, 3) - 1;
     if (n < 0)
         goto none;
     palrgb(p, off + n, off, 0, 0);              /* grow first (dummy colour) */
@@ -564,75 +564,75 @@ BLITZ_THUNK(_initpalette, _initpalette_c, "a2");
 
 /* DecodePalette n,mem[,offset] - an IFF ILBM in memory: CMAP (top byte
    of each component) and CRNG chunks */
-static void cludgepalette(UBYTE *a0, UWORD off)
+static void cludgepalette(UBYTE *chunk, UWORD off)
 {
     struct bpal *p = (struct bpal *)blitz_string;
-    UBYTE *end, *cend, *a2;
-    ULONG id, len, d1;
+    UBYTE *end, *cend, *entry;
+    ULONG id, len, ncols;
     struct cycle *cy;
     UWORD n;
 
     myoff = off;
-    id = L(a0, 0);
-    len = L(a0, 4);
-    a0 += 8;
+    id = L(chunk, 0);
+    len = L(chunk, 4);
+    chunk += 8;
     if (id != 0x464f524d) {                     /* "FORM" */
         BLITZ_RUNERR(mess0);
         return;
     }
-    end = a0 + len;
-    if (L(a0, 0) != 0x494c424d) {               /* "ILBM" */
+    end = chunk + len;
+    if (L(chunk, 0) != 0x494c424d) {            /* "ILBM" */
         BLITZ_RUNERR(mess0);
         return;
     }
-    a0 += 4;
+    chunk += 4;
     for (;;) {                                  /* cv */
-        id = L(a0, 0);
-        len = L(a0, 4);
-        a0 += 8;
+        id = L(chunk, 0);
+        len = L(chunk, 4);
+        chunk += 8;
         if (id == 0x434d4150)                   /* "CMAP" */
             break;
-        a0 += len;
-        if ((LONG)(end - a0) <= 0) {
+        chunk += len;
+        if ((LONG)(end - chunk) <= 0) {
             BLITZ_RUNERR(mess1);
             return;
         }
     }
-    cend = a0 + len;                            /* fc */
-    d1 = bl_divu_w(len, 3);
-    if (!p->pdata || (WORD)(UWORD)(d1 + myoff) > (WORD)p->numcols)
-        initpalette(p, (UWORD)(d1 + myoff));
-    a2 = p->pdata + 4 + (WORD)(UWORD)(myoff * 12);
-    n = (UWORD)d1 - 1;
+    cend = chunk + len;                         /* fc */
+    ncols = bl_divu_w(len, 3);
+    if (!p->pdata || (WORD)(UWORD)(ncols + myoff) > (WORD)p->numcols)
+        initpalette(p, (UWORD)(ncols + myoff));
+    entry = p->pdata + 4 + (WORD)(UWORD)(myoff * 12);
+    n = (UWORD)ncols - 1;
     do {
-        a2[0] = *a0++;
-        a2[4] = *a0++;
-        a2[8] = *a0++;
-        a2 += 12;
+        entry[0] = *chunk++;
+        entry[4] = *chunk++;
+        entry[8] = *chunk++;
+        entry += 12;
     } while (n-- != 0);
     cy = p->cyc;
-    a0 = cend;
+    chunk = cend;
     for (;;) {                                  /* yv */
         WORD rate, flags, lo, hi;
 
-        id = L(a0, 0);
-        len = L(a0, 4);
-        a0 += 8;
+        id = L(chunk, 0);
+        len = L(chunk, 4);
+        chunk += 8;
         if (id != 0x43524e47) {                 /* "CRNG" */
-            a0 += len;
-            if ((LONG)(end - a0) <= 0)
+            chunk += len;
+            if ((LONG)(end - chunk) <= 0)
                 break;
             continue;
         }
-        rate = W(a0, 2);                        /* yc */
-        flags = W(a0, 4);
+        rate = W(chunk, 2);                     /* yc */
+        flags = W(chunk, 4);
         if (flags != 1) {
             rate = -rate;
             flags = 0;
         }
-        lo = (BYTE)a0[6];
-        hi = (BYTE)a0[7];
-        a0 += 8;
+        lo = (BYTE)chunk[6];
+        hi = (BYTE)chunk[7];
+        chunk += 8;
         if (hi == lo)
             continue;
         cy->lo = lo;
@@ -693,9 +693,9 @@ static void BLITZ_ROUTINE dosetcycle2_c(UWORD cyc BL_REG(d1), UWORD lo BL_REG(d2
         app = -1;
     }
     if (hi < lo) {
-        UWORD t = lo;
+        UWORD old_lo = lo;
         lo = hi;
-        hi = t;
+        hi = old_lo;
     }
     c->lo = lo;
     c->hi = hi;
@@ -793,7 +793,7 @@ BLITZ_AB_ROUTINE(usepal, usepal_b, "   jmp     _usepal_a");
 /* cycle - one palette's cycles one step; returns <>0 if colours moved */
 static int cyclepal(struct bpal *p)
 {
-    UBYTE *a0 = (UBYTE *)p + 4;
+    UBYTE *field = (UBYTE *)p + 4;
     int moved = 0;
 
     for (;;) {
@@ -801,58 +801,58 @@ static int cyclepal(struct bpal *p)
         UWORD v;
         int up = 0;
         UBYTE *c;
-        UWORD d0, d1;
-        ULONG s0, s1, s2;
+        UWORD lo_off, hi_off;
+        ULONG save_r, save_g, save_b;
 
-        a0 += 2;
-        lo = W(a0, 0);
-        a0 += 2;
+        field += 2;
+        lo = W(field, 0);
+        field += 2;
         if (lo < 0)
             return moved;
-        hi = W(a0, 0);
-        a0 += 2;
-        sp = W(a0, 0);
-        a0 += 2;
+        hi = W(field, 0);
+        field += 2;
+        sp = W(field, 0);
+        field += 2;
         if (sp < 0) {
             sp = -sp;
             up = 1;
         }
-        v = sp + W(a0, 0);
-        W(a0, 0) = v;
+        v = sp + W(field, 0);
+        W(field, 0) = v;
         if (v < 16384)
             continue;
         v -= 16384;
-        W(a0, 0) = v;
+        W(field, 0) = v;
         moved = 1;
-        d0 = (UWORD)(lo * 12);
-        d1 = (UWORD)(hi * 12);
+        lo_off = (UWORD)(lo * 12);
+        hi_off = (UWORD)(hi * 12);
         c = p->pdata + 4;
         if (up) {
-            s0 = L(c, (WORD)d0);
-            s1 = L(c, (WORD)d0 + 4);
-            s2 = L(c, (WORD)d0 + 8);
-            while (d0 < d1) {
-                L(c, (WORD)d0) = L(c, (WORD)d0 + 12);
-                L(c, (WORD)d0 + 4) = L(c, (WORD)d0 + 16);
-                L(c, (WORD)d0 + 8) = L(c, (WORD)d0 + 20);
-                d0 += 12;
+            save_r = L(c, (WORD)lo_off);
+            save_g = L(c, (WORD)lo_off + 4);
+            save_b = L(c, (WORD)lo_off + 8);
+            while (lo_off < hi_off) {
+                L(c, (WORD)lo_off) = L(c, (WORD)lo_off + 12);
+                L(c, (WORD)lo_off + 4) = L(c, (WORD)lo_off + 16);
+                L(c, (WORD)lo_off + 8) = L(c, (WORD)lo_off + 20);
+                lo_off += 12;
             }
-            L(c, (WORD)d0 + 8) = s2;
-            L(c, (WORD)d0 + 4) = s1;
-            L(c, (WORD)d0) = s0;
+            L(c, (WORD)lo_off + 8) = save_b;
+            L(c, (WORD)lo_off + 4) = save_g;
+            L(c, (WORD)lo_off) = save_r;
         } else {
-            s0 = L(c, (WORD)d1);
-            s1 = L(c, (WORD)d1 + 4);
-            s2 = L(c, (WORD)d1 + 8);
-            while (d1 > d0) {
-                d1 -= 12;
-                L(c, (WORD)d1 + 12) = L(c, (WORD)d1);
-                L(c, (WORD)d1 + 16) = L(c, (WORD)d1 + 4);
-                L(c, (WORD)d1 + 20) = L(c, (WORD)d1 + 8);
+            save_r = L(c, (WORD)hi_off);
+            save_g = L(c, (WORD)hi_off + 4);
+            save_b = L(c, (WORD)hi_off + 8);
+            while (hi_off > lo_off) {
+                hi_off -= 12;
+                L(c, (WORD)hi_off + 12) = L(c, (WORD)hi_off);
+                L(c, (WORD)hi_off + 16) = L(c, (WORD)hi_off + 4);
+                L(c, (WORD)hi_off + 20) = L(c, (WORD)hi_off + 8);
             }
-            L(c, (WORD)d1 + 8) = s2;
-            L(c, (WORD)d1 + 4) = s1;
-            L(c, (WORD)d1) = s0;
+            L(c, (WORD)hi_off + 8) = save_b;
+            L(c, (WORD)hi_off + 4) = save_g;
+            L(c, (WORD)hi_off) = save_r;
         }
     }
 }
