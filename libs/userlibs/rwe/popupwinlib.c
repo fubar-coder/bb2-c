@@ -322,11 +322,11 @@ static UBYTE *findmouseitem(struct popup *p, UWORD *ypos)
 {
     WORD my = p->windowptr->MouseY;
     UBYTE *it = p->items;
-    WORD y = 2, y2;
+    WORD y = 2, bottom;
 
     for (;;) {
-        y2 = y + (*(UBYTE **)(it + IT_NAME) ? (WORD)p->itemheight : 4);
-        if (my <= y2) {
+        bottom = y + (*(UBYTE **)(it + IT_NAME) ? (WORD)p->itemheight : 4);
+        if (my <= bottom) {
             if (!*(UBYTE **)(it + IT_NAME))
                 return NULL;
             *ypos = y;
@@ -334,7 +334,7 @@ static UBYTE *findmouseitem(struct popup *p, UWORD *ypos)
         }
         if (!*(UBYTE **)(it + IT_SUCC))
             return NULL;
-        y = y2;
+        y = bottom;
         it = *(UBYTE **)(it + IT_SUCC);
     }
 }
@@ -467,14 +467,14 @@ static ULONG dopop(UBYTE *items, struct popup *parent, UWORD x, UWORD y)
     struct popup *p = allocstruct(items, parent);
     struct Window *win;
     UWORD w, h;
-    ULONG d0;
+    ULONG result;                       /* d0: an event class, then the result */
 
     w = calcwinsize(p, &h);
     p->winx = x;
     p->winy = y;
     win = newpopupwin(x, y, w, h);
     if (!win) {
-        d0 = 0;
+        result = 0;
         goto theend;
     }
     p->windowptr = win;
@@ -482,34 +482,34 @@ static ULONG dopop(UBYTE *items, struct popup *parent, UWORD x, UWORD y)
     drawitems(p, win);
     for (;;) {
         if (p->popupdelay)
-            d0 = waitwinevent();
+            result = waitwinevent();
         else {
             /* the active item's sub menu, to the right of it */
-            d0 = dopop(*(UBYTE **)(p->activeitem + IT_SUBS), p, p->winx + p->winwidth,
-                       p->winy + p->activeypos - 2);
+            result = dopop(*(UBYTE **)(p->activeitem + IT_SUBS), p,
+                           p->winx + p->winwidth, p->winy + p->activeypos - 2);
             p->popupdelay = 1;
-            if (!d0)
+            if (!result)
                 break;
-            if (d0 != (ULONG)p && d0 != (ULONG)p->parent)
+            if (result != (ULONG)p && result != (ULONG)p->parent)
                 break;
-            d0 = IDCMP_MOUSEMOVE;
+            result = IDCMP_MOUSEMOVE;
         }
-        if (d0 == IDCMP_MOUSEMOVE) {
+        if (result == IDCMP_MOUSEMOVE) {
             mousemove(p);
-            d0 = p->exitval;
-            if ((LONG)d0 < 0)
+            result = p->exitval;
+            if ((LONG)result < 0)
                 continue;
             break;
         }
-        if (d0 == IDCMP_MOUSEBUTTONS) {
-            d0 = (ULONG)p->activeitem;
+        if (result == IDCMP_MOUSEBUTTONS) {
+            result = (ULONG)p->activeitem;
             break;
         }
     }
     closewin(p->windowptr);
 theend:
     FreeVec(p);
-    return d0;
+    return result;
 }
 
 /* inittemprast: a RastPort with the screen's font, for TextLength */
