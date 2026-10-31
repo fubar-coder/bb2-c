@@ -89,6 +89,7 @@
  * uncompressed, unless copymemflag is negative (intended).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <stddef.h>
 #define __NOLIBBASE__
 #define DOS_BASE_NAME dosbase
@@ -231,7 +232,6 @@ BLITZ_LIBFIN();
 #define SW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
 #define SL(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
 #define ID(a, b, c, d) ((ULONG)(a) << 24 | (ULONG)(b) << 16 | (ULONG)(c) << 8 | (ULONG)(d))
-#define CLUDGED 0x634c                  /* "cL" at +30: the data is not ours */
 
 /* the layouts below are read and written through SW/SL at the member's
    offset (the code stays that of the offsets): FW/FL a word/long member,
@@ -241,31 +241,14 @@ BLITZ_LIBFIN();
 #define FPAIR(p, T, f) SL(p, offsetof(struct T, f))
 
 /* a shape object of shapeslib (32 bytes; also the header of a shape in
-   memory for CludgeShapes) */
-struct shapeobj {
-    UWORD width, height, depth;         /* 0 2 4 (pixwidth, pixheight) */
-    UWORD ebwidth;                      /* 6: bytes per row, even */
-    UWORD bltsize;                      /* 8 */
-    WORD xhandle, yhandle;              /* 10 12 */
-    ULONG data;                         /* 14 */
-    ULONG cookie;                       /* 18 */
-    UWORD onebpmem;                     /* 22: bytes of one plane */
-    UWORD onebpmemx;                    /* 24: the same + 2 * height */
-    UWORD allbpmem;                     /* 26: bytes of all planes */
-    UWORD allbpmemx;                    /* 28 */
-    UWORD cludged;                      /* 30: CLUDGED = not our data */
-};
-static_assert(sizeof(struct shapeobj) == 32);
-#define SHW(p, f)    FW(p, shapeobj, f)
-#define SHL(p, f)    FL(p, shapeobj, f)
-#define SHPAIR(p, f) FPAIR(p, shapeobj, f)
+   memory for CludgeShapes): struct bb_shape (blitzobj.h), BB_CLUDGE in
+   cludge = not our data */
+#define SHW(p, f)    FW(p, bb_shape, f)
+#define SHL(p, f)    FL(p, bb_shape, f)
+#define SHPAIR(p, f) FPAIR(p, bb_shape, f)
 
-/* a palette object of palettelib (its start) and its data */
-struct paletteobj {
-    ULONG data;                         /* 0: struct paldata */
-    UWORD colours;                      /* 4 */
-};
-static_assert(offsetof(struct paletteobj, colours) == 4);
+/* a palette object of palettelib: struct bb_palette (blitzobj.h); its
+   colour block */
 struct paldata {
     UWORD colours, pad;                 /* 0 */
     ULONG rgb[];                        /* 4: r, g, b longs per colour */
@@ -514,13 +497,13 @@ static void createcookie(UBYTE *shape, UBYTE *pushed)
     UBYTE *src, *dst;
     UWORD planes, n;
 
-    SHL(shape, cookie) = galloc(SHW(shape, onebpmem), MEMF_CHIP | MEMF_CLEAR);
+    SHL(shape, cookie) = galloc(SHW(shape, planesize), MEMF_CHIP | MEMF_CLEAR);
     if (!SHL(shape, cookie))
         rs_crash(pushed);
     src = (UBYTE *)SHL(shape, data);
     planes = SHW(shape, depth) - 1;
     do {
-        n = SHW(shape, onebpmem) - 1;
+        n = SHW(shape, planesize) - 1;
         dst = (UBYTE *)SHL(shape, cookie);
         do
             *dst++ |= *src++;
@@ -534,13 +517,13 @@ static void freeshapesm(UBYTE *shape)
     ULONG cookie;
 
     SHW(shape, width) = 0;
-    if (SHW(shape, cludged) != CLUDGED) {
-        SHW(shape, cludged) = 0;
-        gfree(SHL(shape, data), SHW(shape, allbpmem));
+    if (SHW(shape, cludge) != BB_CLUDGE) {
+        SHW(shape, cludge) = 0;
+        gfree(SHL(shape, data), SHW(shape, size));
     }
     if ((cookie = SHL(shape, cookie)) != 0) {
         SHL(shape, cookie) = 0;
-        gfree(cookie, SHW(shape, onebpmem));
+        gfree(cookie, SHW(shape, planesize));
     }
 }
 
@@ -577,7 +560,7 @@ static BB_BOOL BLITZ_ROUTINE loadshapes_c(ULONG shapenum BL_REG(d0), ULONG numsh
         bytespershape &= 0xffff;        /* MOVE.w #0,bytespershape */
         if (SHW(shaperam, width) && SHW(shaperam, height)) {
             /* calcsize, _allocshapemem */
-            bytespershape = bl_mulu_w(SHW(shaperam, onebpmem), SHW(shaperam, depth));
+            bytespershape = bl_mulu_w(SHW(shaperam, planesize), SHW(shaperam, depth));
             SHL(shapeptr, data) = galloc(bytespershape, MEMF_CHIP);
             if (!SHL(shapeptr, data))
                 return BB_FALSE;
@@ -585,10 +568,10 @@ static BB_BOOL BLITZ_ROUTINE loadshapes_c(ULONG shapenum BL_REG(d0), ULONG numsh
             SHPAIR(shapeptr, width) = SHPAIR(shaperam, width);
             SHPAIR(shapeptr, depth) = SHPAIR(shaperam, depth);
             SHPAIR(shapeptr, bltsize) = SHPAIR(shaperam, bltsize);
-            SHW(shapeptr, yhandle) = SHW(shaperam, yhandle);
-            SHW(shapeptr, onebpmem) = SHW(shaperam, onebpmem);
-            SHPAIR(shapeptr, onebpmemx) = SHPAIR(shaperam, onebpmemx);
-            SHPAIR(shapeptr, allbpmemx) = SHPAIR(shaperam, allbpmemx);
+            SHW(shapeptr, handley) = SHW(shaperam, handley);
+            SHW(shapeptr, planesize) = SHW(shaperam, planesize);
+            SHPAIR(shapeptr, xplanesize) = SHPAIR(shaperam, xplanesize);
+            SHPAIR(shapeptr, xsize) = SHPAIR(shaperam, xsize);
             src = shaperam + 32;
             dst = (UBYTE *)SHL(shapeptr, data);
             n = (UWORD)(bytespershape - 1);
@@ -642,12 +625,12 @@ static void shapesizes(UBYTE *shape, int init)
     SHW(shape, bltsize) = (UWORD)(rowwords + (UWORD)bl_mulu_w(SHW(shape, height), 64) + 1);
     height = SHW(shape, height);
     planebytes = (UWORD)bl_mulu_w(SHW(shape, ebwidth), height);
-    SHW(shape, onebpmem) = planebytes;
+    SHW(shape, planesize) = planebytes;
     if (init)
-        SHW(shape, allbpmem) = (UWORD)bl_mulu_w(planebytes, SHW(shape, depth));
+        SHW(shape, size) = (UWORD)bl_mulu_w(planebytes, SHW(shape, depth));
     height2 = (UWORD)(height << 1);
-    SHW(shape, onebpmemx) = (UWORD)(planebytes + height2);
-    SHW(shape, allbpmemx) = (UWORD)(bl_mulu_w(height2, SHW(shape, depth)) + SHW(shape, allbpmem));
+    SHW(shape, xplanesize) = (UWORD)(planebytes + height2);
+    SHW(shape, xsize) = (UWORD)(bl_mulu_w(height2, SHW(shape, depth)) + SHW(shape, size));
 }
 
 /**
@@ -668,20 +651,20 @@ static void BLITZ_ROUTINE leinitshape_c(ULONG width BL_REG(d1), ULONG height BL_
 {
     if (SHW(shape, width)) {
         SHW(shape, width) = 0;
-        if (SHW(shape, cludged) != CLUDGED)
-            gfree(SHL(shape, data), SHW(shape, allbpmem));
-        SHW(shape, cludged) = 0;
+        if (SHW(shape, cludge) != BB_CLUDGE)
+            gfree(SHL(shape, data), SHW(shape, size));
+        SHW(shape, cludge) = 0;
         /* MOVE.l 18(a2),a1:BEQ - the Z of the CLR: never freed */
     }
     SHW(shape, width) = (UWORD)width;
     SHW(shape, height) = (UWORD)height;
     SHW(shape, depth) = (UWORD)depth;
-    SHPAIR(shape, xhandle) = 0;
+    SHPAIR(shape, handlex) = 0;
     shapesizes(shape, 1);
-    SHL(shape, data) = galloc(SHW(shape, allbpmem), MEMF_CHIP | MEMF_CLEAR);
+    SHL(shape, data) = galloc(SHW(shape, size), MEMF_CHIP | MEMF_CLEAR);
     if (!SHL(shape, data))
         return;
-    SHL(shape, cookie) = galloc(SHW(shape, onebpmem), MEMF_CHIP | MEMF_CLEAR);
+    SHL(shape, cookie) = galloc(SHW(shape, planesize), MEMF_CHIP | MEMF_CLEAR);
 }
 BLITZ_THUNK(_leinitshape, leinitshape_c, "d0-d1/a0-a1");
 
@@ -702,17 +685,17 @@ static void read_palette(const UBYTE *cmap)
     if (!paletteptr)
         return;
     palette = paletteptr;
-    if (FL(palette, paletteobj, data)) {
-        size = bl_mulu_w(FW(palette, paletteobj, colours), 12);
+    if (FL(palette, bb_palette, pdata)) {
+        size = bl_mulu_w(FW(palette, bb_palette, numcols), 12);
         BL_SETW(size, size + 8);        /* ADDQ #8,d0: a word addition */
-        gfree(FL(palette, paletteobj, data), size);
+        gfree(FL(palette, bb_palette, pdata), size);
     }
     size = bl_mulu_w(colourcount, 12);
     BL_SETW(size, size + 8);
     /* unchecked: harmless (#821) */
-    FL(palette, paletteobj, data) = galloc(size, MEMF_PUBLIC | MEMF_CLEAR);
-    FW(palette, paletteobj, colours) = colourcount;
-    p = (ULONG *)FL(palette, paletteobj, data);
+    FL(palette, bb_palette, pdata) = galloc(size, MEMF_PUBLIC | MEMF_CLEAR);
+    FW(palette, bb_palette, numcols) = colourcount;
+    p = (ULONG *)FL(palette, bb_palette, pdata);
     *(volatile UWORD *)p = colourcount;
     p++;
     n = colourcount - 1;
@@ -734,30 +717,30 @@ static int __attribute__((noinline)) readshapes(UBYTE *data)
     for (;;) {
         if (SHW(shape, width)) {
             SHW(shape, width) = 0;
-            if (SHW(shape, cludged) == CLUDGED) {
+            if (SHW(shape, cludge) == BB_CLUDGE) {
                 /* BUG(orig) #807: nothing pushed, the pop below takes the
                    return address (rs_pop) */
-                SHW(shape, cludged) = 0;
+                SHW(shape, cludge) = 0;
                 data = rs_pop(__builtin_return_address(0));
             } else {
-                gfree(SHL(shape, data), SHW(shape, allbpmem));
-                SHW(shape, cludged) = 0;
+                gfree(SHL(shape, data), SHW(shape, size));
+                SHW(shape, cludge) = 0;
                 /* the cookie: MOVE.l 18(a2),a1:BEQ after the CLR, never freed */
             }
         }
         SHPAIR(shape, width) = FPAIR(data, leshape, width);
         SHW(shape, depth) = FW(data, leshape, depth);     /* depth */
-        SHPAIR(shape, xhandle) = FPAIR(data, leshape, xhandle);    /* handles */
-        SHW(shape, allbpmem) = FW(data, leshape, size);   /* bytes of the shape */
+        SHPAIR(shape, handlex) = FPAIR(data, leshape, xhandle);    /* handles */
+        SHW(shape, size) = FW(data, leshape, size);   /* bytes of the shape */
         data += 12;
         shapesizes(shape, 0);
         if (inchip < 0) {
             /* 'decludgeshape: the data stays where it is */
             SHL(shape, data) = (ULONG)data;
-            data += SHW(shape, allbpmem);
-            SHW(shape, cludged) = CLUDGED;
+            data += SHW(shape, size);
+            SHW(shape, cludge) = BB_CLUDGE;
         } else {
-            SHL(shape, data) = galloc(SHW(shape, allbpmem), MEMF_CHIP);
+            SHL(shape, data) = galloc(SHW(shape, size), MEMF_CHIP);
             if (!SHL(shape, data))
                 rs_crash(data);         /* never reached (#806) */
             if ((WORD)compressed < 0 && (LONG)(packedsize = SL(data, 0)) >= 0) {
@@ -765,12 +748,12 @@ static int __attribute__((noinline)) readshapes(UBYTE *data)
                 data += 4;
                 packptr = (ULONG)data;
                 BL_JSR_D4_(BL_TOKVAL(TOK_unpackpbm, 0), (ULONG)data, SHL(shape, data), packedsize,
-                           SHW(shape, allbpmem));
+                           SHW(shape, size));
                 data = (UBYTE *)(packptr + packedsize);
             } else {
                 if ((WORD)compressed < 0)
                     data += 4;          /* -1: stored ('changedmind') */
-                n = SHW(shape, allbpmem) - 1;
+                n = SHW(shape, size) - 1;
                 dst = (UBYTE *)SHL(shape, data);
                 do
                     *dst++ = *data++;
@@ -778,14 +761,14 @@ static int __attribute__((noinline)) readshapes(UBYTE *data)
             }
         }
         /* 'dodacookie */
-        SHL(shape, cookie) = galloc(SHW(shape, onebpmem), MEMF_CHIP | MEMF_CLEAR);
+        SHL(shape, cookie) = galloc(SHW(shape, planesize), MEMF_CHIP | MEMF_CLEAR);
         if (!SHL(shape, cookie))
             rs_crash(data);             /* never reached (#806) */
         {
             const UBYTE *src = (const UBYTE *)SHL(shape, data);
             planes = SHW(shape, depth) - 1;
             do {
-                n = SHW(shape, onebpmem) - 1;
+                n = SHW(shape, planesize) - 1;
                 dst = (UBYTE *)SHL(shape, cookie);
                 do
                     *dst++ |= *src++;
@@ -1134,7 +1117,7 @@ static ULONG savecmap(BPTR fh, ULONG result, UBYTE z)
     pal = *(UBYTE *volatile *)&paletteptr;
     if (!*(volatile ULONG *)pal)        /* address 0 without a palette */
         return result;
-    pal = (const UBYTE *)FL(pal, paletteobj, data);
+    pal = (const UBYTE *)FL(pal, bb_palette, pdata);
     centry = bl_mulu_w(FW(pal, paldata, colours), 3);
     chunksize = centry + 8;
     mem = galloc(chunksize, 0);
@@ -1179,20 +1162,20 @@ static ULONG writeshapes(BPTR fh, ULONG bufsize)
         FW(buf, leshape, width) = SHW(shape, width);
         FW(buf, leshape, height) = SHW(shape, height);
         FW(buf, leshape, depth) = SHW(shape, depth);
-        FW(buf, leshape, xhandle) = SHW(shape, xhandle);
-        FW(buf, leshape, yhandle) = SHW(shape, yhandle);
-        FW(buf, leshape, size) = SHW(shape, allbpmem);
+        FW(buf, leshape, xhandle) = SHW(shape, handlex);
+        FW(buf, leshape, yhandle) = SHW(shape, handley);
+        FW(buf, leshape, size) = SHW(shape, size);
         Write(fh, buf, 12);
         written += 12;
         if (SHW(shape, width)) {
             if ((WORD)compress >= 0) {
-                len = SHW(shape, allbpmem);
+                len = SHW(shape, size);
                 written += len;
                 Write(fh, (APTR)SHL(shape, data), len);
             } else {
                 /* 'packshape: packed size.l + the data of PackPBM */
-                pk = (UBYTE *)galloc(SHW(shape, allbpmem) + 4, 0);
-                packsize = SHW(shape, allbpmem);
+                pk = (UBYTE *)galloc(SHW(shape, size) + 4, 0);
+                packsize = SHW(shape, size);
                 packptr = (ULONG)pk;
                 if (!pk) {
                     /* packmemerr: TRAP #0, falls into comperr (TRAP #0)
@@ -1206,7 +1189,7 @@ static ULONG writeshapes(BPTR fh, ULONG bufsize)
                 }
                 /* d3 = 12 (the last Write): BUG(orig) of PackPBM's failure (#772) */
                 packed = BL_JSR_D4_(BL_TOKVAL(TOK_packpbm, 0), SHL(shape, data), (ULONG)pk + 4,
-                                    SHW(shape, allbpmem), 12);
+                                    SHW(shape, size), 12);
                 SL(packptr, 0) = packed;
                 if (packed >= 0) {
                     written += packed + 4;
@@ -1214,7 +1197,7 @@ static ULONG writeshapes(BPTR fh, ULONG bufsize)
                 } else {
                     /* 'compfail: -1 and the data as it is */
                     Write(fh, (APTR)packptr, 4);
-                    len = SHW(shape, allbpmem);
+                    len = SHW(shape, size);
                     written += len + 4;
                     Write(fh, (APTR)SHL(shape, data), len);
                 }
