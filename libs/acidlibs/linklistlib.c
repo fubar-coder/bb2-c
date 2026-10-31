@@ -37,6 +37,7 @@
  * statement, so nothing observable).
  */
 #include "blitzlib.h"
+#include <exec/lists.h>
 
 /* entry points (defined below) */
 ULONG BLITZ_ROUTINE dofirstitem(UBYTE *base BL_REG(d0));
@@ -157,18 +158,33 @@ struct item {
     struct item *next, *prev;                   /* element follows */
 };
 
-/* list header fields as offsets from the array base */
-#define CURRENT(b)  (*(struct item **)((b) - 32))
-#define USED(b)     ((struct item *)((b) - 28))  /* &lh_Head as node */
-#define USEDTAIL(b) ((struct item *)((b) - 24))  /* &lh_Tail as node */
-#define TAILPRED(b) (*(struct item **)((b) - 20))
-#define FREE(b)     ((struct item *)((b) - 16))  /* &lh_Head of free */
-#define LISTID(b)   (*(ULONG *)((b) - 4))
+/* the list header in front of the array base (arrayslib newlist) */
+struct listhead {
+    struct item *current;                       /* -32 */
+    struct MinList used;                        /* -28 */
+    struct MinList free;                        /* -16 */
+    ULONG id;                                   /* -4 "lIsT" */
+};
+static_assert(sizeof(struct listhead) == 32);
+#define HEAD(b)     ((struct listhead *)((b) - sizeof(struct listhead)))
 
+#define CURRENT(b)  (HEAD(b)->current)
+#define USED(b)     ((struct item *)&HEAD(b)->used.mlh_Head)  /* &lh_Head as node */
+#define USEDTAIL(b) ((struct item *)&HEAD(b)->used.mlh_Tail)  /* &lh_Tail as node */
+#define TAILPRED(b) (*(struct item **)&HEAD(b)->used.mlh_TailPred)
+#define FREE(b)     ((struct item *)&HEAD(b)->free.mlh_Head)  /* &lh_Head of free */
+#define LISTID(b)   (HEAD(b)->id)
+
+/* an entry of the item stack */
+struct stackentry {
+    UBYTE *base;                                /* the array */
+    struct item *current;                       /* its current item */
+};
+static_assert(sizeof(struct stackentry) == 8);
 
 static ULONG maxstack;                          /* size in bytes */
-static ULONG *currstack;
-static ULONG *currsp;
+static struct stackentry *currstack;
+static struct stackentry *currsp;
 
 /* unlinkitem - item (a1) to unlink */
 static void unlinkitem(struct item *item)
@@ -215,17 +231,18 @@ void BLITZ_ROUTINE setstack(ULONG n BL_REG(d0))
     r.d0 = maxstack;
     r.d1 = MEMF_PUBLIC;
     BLITZ_ALIBJSR(TOK_globalloc, r);
-    currstack = (ULONG *)r.d0;
-    currsp = (ULONG *)r.d0;
+    currstack = (struct stackentry *)r.d0;
+    currsp = (struct stackentry *)r.d0;
 }
 
 /* dopushcurrent - push {array, current item} */
 void BLITZ_ROUTINE dopushcurrent(UBYTE *base BL_REG(d0))
 {
-    ULONG *sp = currsp;
+    struct stackentry *sp = currsp;
 
-    *sp++ = (ULONG)base;
-    *sp++ = (ULONG)CURRENT(base);
+    sp->base = base;
+    sp->current = CURRENT(base);
+    sp++;
     currsp = sp;
 }
 
@@ -233,10 +250,10 @@ void BLITZ_ROUTINE dopushcurrent(UBYTE *base BL_REG(d0))
    on the stack is only checked with the debugger) */
 void BLITZ_ROUTINE dopopcurrent(UBYTE *base BL_REG(d0))
 {
-    ULONG *sp = currsp;
+    struct stackentry *sp = currsp;
 
-    CURRENT(base) = (struct item *)*--sp;
     sp--;
+    CURRENT(base) = sp->current;
     currsp = sp;
 }
 
@@ -418,7 +435,7 @@ ULONG BLITZ_ROUTINE doprevitem(UBYTE *base BL_REG(d0))
    BUG(orig) (#201): items are compared with CMP.l: BMI, i.e. the sign of the
    difference (wraps for keys more than 2^31 apart), and items with
    equal keys are not swapped. */
-#define KEY(i) (*(ULONG *)((UBYTE *)(i) + 8 + offset))
+#define KEY(i) (*(ULONG *)((UBYTE *)((i) + 1) + offset))  /* the element: behind the node */
 
 void BLITZ_ROUTINE dosortlist(UBYTE *base BL_REG(d0), WORD offset BL_REG(d1))
 {
@@ -516,7 +533,7 @@ static void BLITZ_ERRCHK popchk_c(UBYTE *base BL_REG(d0))
 {
     if ((ULONG)currsp <= (ULONG)currstack)
         BLITZ_RUNERR(mess4);
-    if (currsp[-2] != (ULONG)base)
+    if (currsp[-1].base != base)
         BLITZ_RUNERR(mess5);
     lchk_c(base);
 }
