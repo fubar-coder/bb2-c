@@ -434,7 +434,7 @@ static ULONG BLITZ_ROUTINE getsigbit_c(const struct MsgPort *port BL_REG(d0))
 }
 
 /* WorkbenchHere: d0 = IntuitionBase (BUG(orig): d0 is no argument, #759) */
-static ULONG BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0))
 {
     const struct Screen *scr = ib->FirstScreen;
     const UBYTE *t, *s;
@@ -454,7 +454,7 @@ static ULONG BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0))
             t++;
             for (;;) {                                  /* 'innerloop */
                 if (!*t)
-                    return (ULONG)-1;
+                    return BB_TRUE;
                 if (!*s)
                     goto restart;                       /* BUG(orig): same screen (#762) */
                 c = *t++;
@@ -468,15 +468,15 @@ static ULONG BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0))
 }
 
 /* FromBlitz: the task name starts with "Blitz ][ Program Proc" */
-static ULONG BLITZ_ROUTINE fromblitz_c(void)
+static BB_BOOL BLITZ_ROUTINE fromblitz_c(void)
 {
     const UBYTE *n = (const UBYTE *)SysBase->ThisTask->tc_Node.ln_Name;
     int i;
 
     for (i = 0; i < 20; i++)                            /* 5 x CMPM.l */
         if (n[i] != (UBYTE)procname[i])
-            return 0;
-    return n[20] == 'c' ? (ULONG)-1 : 0;
+            return BB_FALSE;
+    return n[20] == 'c' ? BB_TRUE : BB_FALSE;
 }
 
 /* LtoS(l) (d0): the 4 bytes, highest first, no 0; 0-31 and 128-255 as
@@ -877,32 +877,33 @@ static ULONG BLITZ_ROUTINE closefontprefs_c(void)
 }
 
 /* OpenFontPrefs: ENV:SYS/Font.Prefs into the buffer; -1 if it is a FORM
-   PREF with PRHD and a FONT chunk behind it, else 0 (buffer freed) */
-static ULONG BLITZ_ROUTINE openfontprefs_c(void)
+   PREF with PRHD and a FONT chunk behind it, else 0 (buffer freed: the
+   tail call of CloseFontPrefs, which returns 0) */
+static BB_BOOL BLITZ_ROUTINE openfontprefs_c(void)
 {
     const ULONG *p;
 
     fontloc = AllocMem(FONTBUF, 0);                     /* BUG(orig): unchecked (#756) */
     fontfh = Open((CONST_STRPTR)fontname, MODE_OLDFILE);
     if (!fontfh)
-        return closefontprefs_c();
+        return closefontprefs_c(), BB_FALSE;
     Read(fontfh, fontloc, FONTBUF);
     Close(fontfh);
     p = (const ULONG *)fontloc;
     if (*p++ != BL_ID4('F', 'O', 'R', 'M'))
-        return closefontprefs_c();
+        return closefontprefs_c(), BB_FALSE;
     p++;
     if (*p++ != BL_ID4('P', 'R', 'E', 'F'))
-        return closefontprefs_c();
+        return closefontprefs_c(), BB_FALSE;
     if (*p++ != BL_ID4('P', 'R', 'H', 'D'))
-        return closefontprefs_c();
+        return closefontprefs_c(), BB_FALSE;
     p = (const ULONG *)((const UBYTE *)p + *p);         /* ADD.l (a0),a0 */
     p++;
     if (*p++ != BL_ID4('F', 'O', 'N', 'T'))
-        return closefontprefs_c();
+        return closefontprefs_c(), BB_FALSE;
     p++;
     fontpos = (UBYTE *)p;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* the FONT chunk with fp_Type = type, stepping by 164 bytes to the end of
