@@ -106,7 +106,14 @@ static ULONG getsingle(void)
     return BLITZ_ALIBJSR(TOK_iogetsingle, r);
 }
 
-/* Inkey$ - one character to a3, or "" if there is none */
+/**
+ * @brief Inkey$: one character from the current input, "" if none came.
+ *
+ * Reads one character with inputoutputlib's dogetsingle (d0 negative =
+ * none) and appends it to the string at a3.
+ *
+ * @return d0: the string length, 1 or 0
+ */
 ULONG BLITZ_ROUTINE doinkey(void)
 {
     ULONG c = getsingle();
@@ -117,7 +124,19 @@ ULONG BLITZ_ROUTINE doinkey(void)
     return 1;
 }
 
-/* Inkey$(n) - n attempts, the characters that came */
+/**
+ * @brief Inkey$(Characters): n attempts to read a character, the
+ *        characters that came.
+ *
+ * Calls dogetsingle n times and appends every character it returns to
+ * the string at a3.  n counts as an unsigned long.
+ * BUG(orig) (#128): Inkey$(0) skips MOVEQ #0,d6 and returns the caller's
+ * d6 as the length (a random length).
+ *
+ * @param n      d0: the number of attempts
+ * @param count  d6: the caller's d6, returned for n = 0
+ * @return d0: the string length (the characters that came)
+ */
 ULONG BLITZ_ROUTINE doinkey2(ULONG n BL_REG(d0), ULONG count BL_REG(d6))
 {
     if (!n)                                     /* BEQ 'none: d6 not set */
@@ -160,13 +179,43 @@ static ULONG editstr(UBYTE *def, ULONG max, ULONG deflen)
     return n;
 }
 
-/* Edit$(n) - no default string (it would be at a3) */
+/**
+ * @brief Edit$(Characters): reads a line of up to n characters, without
+ *        a default.
+ *
+ * The buffer at a3 is padded with n spaces (for input handlers that edit
+ * the buffer), then the line is read over it with inputoutputlib's
+ * dogetstring (see editstr).
+ * BUG(orig) (#132): at end of file DefaultInput returns -1 characters,
+ * a3 moves back by one and the length is -1.
+ * Errors (debugger only): n = 0 -> "Can't Edit 0 Characters!".
+ *
+ * @param n  d0: the maximum number of characters
+ * @return d0: the number of characters read (the string length)
+ */
 ULONG BLITZ_ROUTINE doeditstr2(ULONG n BL_REG(d0))
 {
     return editstr(blitz_string, n, 0);
 }
 
-/* Edit$(Default$,n) - length of the default from the a2 stack */
+/**
+ * @brief Edit$(DefaultString$,Characters): reads a line of up to n
+ *        characters over a default string.
+ *
+ * The default is padded with spaces to n characters in the string
+ * buffer, then the line is read over it (see editstr).  The padding
+ * starts one byte before a3 when the default is not at a3 (a3 points
+ * behind the string argument's terminating 0).
+ * BUG(orig) (#132): at end of file DefaultInput returns -1 characters.
+ * Errors (debugger only): n = 0 -> "Can't Edit 0 Characters!".
+ * DIFF: a2 is a register parameter here (the length is popped through a
+ * local cursor; the original returns with a2 decremented).
+ *
+ * @param def   d0: the default string
+ * @param n     d1: the maximum number of characters
+ * @param args  a2: the argument stack, the default's length below it
+ * @return d0: the number of characters read (the string length)
+ */
 ULONG BLITZ_ROUTINE doeditstr(UBYTE *def BL_REG(d0), ULONG n BL_REG(d1),
                               const UBYTE *args BL_REG(a2))
 {
@@ -203,7 +252,23 @@ static ULONG doeditz(ULONG n, const void *caller_a6, UBYTE *saved_string)
     return v;
 }
 
-/* Edit(n) - no default: "0" */
+/**
+ * @brief Edit(Characters): reads a number of up to n characters, the
+ *        default is "0".
+ *
+ * The line is read over "0" in the library's 80 byte buffer and
+ * converted with vallib's Val (see doeditz).
+ * BUG(orig) (#130): Val is called with the caller's a6 (Edit has no
+ * !libs), it needs the ffplib base there.
+ * BUG(orig) (#131): n = 80 reads up to 81 characters into the 80 byte
+ * buffer.
+ * Errors (debugger only): n = 0 -> "Can't Edit 0 Characters!", n > 80 ->
+ * "Can only Edit up to 80 characters".
+ *
+ * @param n          d0: the maximum number of characters
+ * @param caller_a6  a6: the caller's a6, passed on to Val
+ * @return d0: the value (FFP float)
+ */
 ULONG BLITZ_ROUTINE doedit2(ULONG n BL_REG(d0), const void *caller_a6 BL_REG(a6))
 {
     UBYTE *saved_string = blitz_string;
@@ -214,7 +279,25 @@ ULONG BLITZ_ROUTINE doedit2(ULONG n BL_REG(d0), const void *caller_a6 BL_REG(a6)
     return doeditz(n, caller_a6, saved_string);
 }
 
-/* Edit(Default,n) - default with UStr$ to editbuff */
+/**
+ * @brief Edit(DefaultValue,Characters): reads a number of up to n
+ *        characters over a default value.
+ *
+ * The default is converted with printlib's UStr$ into the library's 80
+ * byte buffer, the line is read over it and converted with Val (see
+ * doeditz).
+ * BUG(orig) (#129): UStr$ leaves a3 right behind the last digit, so the
+ * first padding space overwrites the default's last digit.
+ * BUG(orig) (#130): UStr$ and Val get the caller's a6.
+ * BUG(orig) (#131): n = 80 reads up to 81 characters into the buffer.
+ * Errors (debugger only): n = 0 -> "Can't Edit 0 Characters!", n > 80 ->
+ * "Can only Edit up to 80 characters".
+ *
+ * @param def        d0: the default value (FFP float)
+ * @param n          d1: the maximum number of characters
+ * @param caller_a6  a6: the caller's a6, passed on to UStr$ and Val
+ * @return d0: the value (FFP float)
+ */
 ULONG BLITZ_ROUTINE doedit(ULONG def BL_REG(d0), ULONG n BL_REG(d1),
                            const void *caller_a6 BL_REG(a6))
 {

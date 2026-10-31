@@ -613,7 +613,27 @@ im22:
     return (ULONG)-1;
 }
 
-/* _startcrunch - d0 = buffer, d1 = length */
+/**
+ * @brief Implode(Bufferadr,DataLen): crunches the data in place with the
+ *        Imploder algorithm.
+ *
+ * _startcrunch: Imploder "mode" 8, i.e. table 0 (window 128 bytes), no
+ * explode table.  The first 12 bytes of the buffer become "IMP!", the
+ * length and the crunched length.  The info routine (own) runs before
+ * every step: it writes the low word of (source - destination) to COLOR00
+ * (the background flickers) and breaks on the left mouse button.
+ * BUG(orig) (#112): the match search reads up to 254 bytes behind the
+ * data.  BUG(orig) (#114): a result of 0 after at least 64 bytes leaves
+ * the buffer partly crunched.  Not a bug (#113): after $4012 literal bytes
+ * in a row the rest is stored uncrunched.
+ *
+ * @param buf  d0: the buffer with the data
+ * @param len  d1: the data length
+ * @return d0: -1 = break (left mouse button), 0 = error or not
+ *         crunchable (< 64 bytes, crunched < 12 bytes or not at least 55
+ *         bytes shorter), else the crunched length (data + $2E bytes of
+ *         tables)
+ */
 ULONG BLITZ_ROUTINE _startcrunch(UBYTE *buf BL_REG(d0), ULONG len BL_REG(d1))
 {
     return implode(buf, len, own, 8, NULL);
@@ -754,7 +774,16 @@ static BB_BOOL deplode(UBYTE *buf)
     }
 }
 
-/* _decrunch - d0 = crunched data */
+/**
+ * @brief Deplode(Startadr): decrunches Imploder data in place.
+ *
+ * BUG(orig) (#119): the data are not checked: corrupt data write
+ * anywhere.
+ *
+ * @param buf  d0: the crunched data ("IMP!" header)
+ * @return d0: BB_TRUE = ok, BB_FALSE = no "IMP!" header or the data did
+ *         not end at the buffer start
+ */
 BB_BOOL BLITZ_ROUTINE _decrunch(UBYTE *buf BL_REG(d0))
 {
     return deplode(buf);
@@ -1048,14 +1077,42 @@ static void overlapdecrunch(const UBYTE *src, UBYTE *dst)
     dec(dst, src, dstlen, srclen);
 }
 
-/* _crm - d0 = buffer (in place); _crm2 - d0 = source, d1 = destination;
-   all registers kept */
+/**
+ * @brief CrMDecrunch Bufferadr: decrunches Crunch-Mania data ("CrM!" or
+ *        "CrM2") in place.
+ *
+ * _crm: OverlapDecrunch with destination = source: the crunched data are
+ * first copied to MinSecDist bytes before the buffer.  Other data than
+ * "CrM!"/"CrM2" are left alone.  All registers kept.
+ * BUG(orig) (#116): up to MinSecDist bytes of memory in front of the
+ * buffer are overwritten.  BUG(orig) (#115): the copy of (CrLen>>2) longs
+ * runs 4 GB for a crunched length below 4.  BUG(orig) (#117): CrM2 tables
+ * with a count of 0 read 65536 entries.  BUG(orig) (#119): no checks of
+ * the data.
+ *
+ * @param src  d0: the crunched data (with header), also the destination
+ */
 static void BLITZ_ROUTINE crm_c(const UBYTE *src BL_REG(d0))
 {
     overlapdecrunch(src, (UBYTE *)src);
 }
 BLITZ_THUNK(_crm, crm_c, "d0-d1/a0-a1");
 
+/**
+ * @brief CrMDecrunch Bufferadr,Destinationadr: decrunches Crunch-Mania
+ *        data ("CrM!" or "CrM2") to a destination.
+ *
+ * _crm2: OverlapDecrunch; if the crunched data plus MinSecDist reach
+ * behind the start of the destination (signed comparison) they are first
+ * copied to MinSecDist bytes before the destination.  All registers
+ * kept.
+ * BUG(orig) (#116): that copy overwrites memory in front of the
+ * destination.  BUG(orig) (#115), (#117), (#119): see the one argument
+ * form.
+ *
+ * @param src  d0: the crunched data (with header)
+ * @param dst  d1: the destination
+ */
 static void BLITZ_ROUTINE crm2_c(const UBYTE *src BL_REG(d0),
                                  UBYTE *dst BL_REG(d1))
 {
@@ -1163,8 +1220,20 @@ static void ppdecrunch(const UBYTE *file, const UBYTE *end, UBYTE *dest)
     }
 }
 
-/* _ppdecrunch - d0 = packed file, d1 = its end, d2 = destination; all
-   registers kept */
+/**
+ * @brief PPDecrunch Bufferadr,Bufferend,Destinationadr: decrunches a
+ *        PowerPacker file ("PP20").
+ *
+ * _ppdecrunch: the last long of the packed file holds the original length
+ * and the number of empty bits; other files than "PP20" are left alone.
+ * All registers kept.
+ * BUG(orig) (#118): an efficiency value 0 reads 65536 bits.
+ * BUG(orig) (#119): no checks of the data.
+ *
+ * @param start  d0: the packed file
+ * @param end    d1: the end of the packed file
+ * @param dest   d2: the destination
+ */
 static void BLITZ_ROUTINE ppdecrunch_c(const UBYTE *start BL_REG(d0),
                                        const UBYTE *end BL_REG(d1),
                                        UBYTE *dest BL_REG(d2))
