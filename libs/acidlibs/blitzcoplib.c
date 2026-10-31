@@ -287,11 +287,24 @@ static ULONG setcoplist(ULONG list)
     return r.a0;
 }
 
+/**
+ * @brief SetBPLCON0 BPLCON0 Default: the bits every later Slice ORs into
+ * BPLCON0.
+ *
+ * @param v  d0: the default (the low word is used; initially $300)
+ */
 static void BLITZ_ROUTINE dosetbplcon0_c(ULONG v BL_REG(d0))
 {
     bplcon0 = (UWORD)v;
 }
 
+/**
+ * @brief SetBLWait: the wait the copper list uses for line 256.
+ *
+ * Initially (and after every init) $FFE1FFFE.
+ *
+ * @param v  d0: the copper wait instruction
+ */
 static void BLITZ_ROUTINE dosetblwait_c(ULONG v BL_REG(d0))
 {
     blwait = v;
@@ -308,7 +321,19 @@ static void display(UWORD dmacon)
     custom_w(0x096, dmacon);
 }
 
+/**
+ * @brief DisplayOff: switch off bitplane and copper DMA (Blitz mode only).
+ *
+ * intlib $C104 with d0 = 0, then DMACON = $0180.  Errors: Blitz mode only
+ * (err1 = 1).
+ */
 void BLITZ_ROUTINE dodisplayoff_c(void) { display(0x0180); }
+/**
+ * @brief DisplayOn: switch bitplane and copper DMA on (Blitz mode only).
+ *
+ * intlib $C104 with d0 = 0, then DMACON = $8180.  Errors: Blitz mode only
+ * (err1 = 1).
+ */
 void BLITZ_ROUTINE dodisplayon_c(void)  { display(0x8180); }
 BLITZ_THUNK(dodisplayoff, dodisplayoff_c, "a0-a1");
 BLITZ_THUNK(dodisplayon, dodisplayon_c, "a0-a1");
@@ -327,7 +352,17 @@ static void makedumcop(void)
     while (src < dumcop + 2);
 }
 
-/* FreeSlices - a0 = slice 0, d0 = maximum, a1 = GfxBase */
+/**
+ * @brief FreeSlices: free all slices and the copper list.
+ *
+ * Marks every slice unused, puts GfxBase->copinit back on COP1LC (through
+ * switchlib $C205) and strobes COPJMP1 (also in Amiga mode), frees the
+ * copper list and starts a new dummy list.
+ *
+ * @param slice  a0: slice 0 (!libs{#blitzcoplib,$1001})
+ * @param n  d0: the maximum number of slices (!libs{#blitzcoplib,$0003})
+ * @param gfx  a1: GfxBase
+ */
 static void BLITZ_ROUTINE dokillslices_c(struct slice *slice BL_REG(a0), UWORD n BL_REG(d0),
                                          struct GfxBase *gfx BL_REG(a1))
 {
@@ -347,7 +382,14 @@ static void BLITZ_ROUTINE dokillslices_c(struct slice *slice BL_REG(a0), UWORD n
 }
 BLITZ_THUNK(dokillslices, dokillslices_c, "a2");
 
-/* ShowBlitz (Blitz mode only) */
+/**
+ * @brief ShowBlitz: put the slices' copper list on the hardware (Blitz
+ * mode only).
+ *
+ * COP1LC = the list (switchlib $C205 is told), strobe COPJMP1, FMODE = 0
+ * and BPLCON3 = $C00 ("hires sprite kludge").  Errors (debugger only): "No
+ * Blitz Display Set up"; Blitz mode only.
+ */
 static void BLITZ_ROUTINE doshowblitz_c(void)
 {
     ULONG list = setcoplist(mycop);
@@ -359,7 +401,16 @@ static void BLITZ_ROUTINE doshowblitz_c(void)
 }
 BLITZ_THUNK(doshowblitz, doshowblitz_c, "a2");
 
-/* init - a0 = slice 0, d0 = maximum */
+/**
+ * @brief The init routine: remember the slice objects, start the dummy
+ * copper list.
+ *
+ * The list starts as {DMACON $0020, end}; SetBLWait's value is reset to
+ * $FFE1FFFE.
+ *
+ * @param base  a0: slice 0 (!libs{#blitzcoplib,$1001})
+ * @param max  d0: the maximum number of slices (!libs{#blitzcoplib,$0003})
+ */
 static void BLITZ_ROUTINE doinit_c(struct slice *base BL_REG(a0), UWORD max BL_REG(d0))
 {
     slicebase = base;
@@ -369,13 +420,22 @@ static void BLITZ_ROUTINE doinit_c(struct slice *base BL_REG(a0), UWORD max BL_R
 }
 BLITZ_THUNK(doinit, doinit_c, "a2");
 
-/* CopLoc / CopLen */
+/**
+ * @brief CopLoc: the address of the slices' copper list (chip memory).
+ * @return d0: the address
+ */
 static ULONG BLITZ_ROUTINE docoploc_c(void) { return mycop; }
+/**
+ * @brief CopLen: the length of the slices' copper list in bytes.
+ * @return d0: the length
+ */
 static ULONG BLITZ_ROUTINE docoplen_c(void) { return mycoplen; }
 BLITZ_THUNK(docoploc, docoploc_c, "d1/a0-a1");
 BLITZ_THUNK(docoplen, docoplen_c, "d1/a0-a1");
 
-/* Free: RTS */
+/**
+ * @brief The slice object's free routine: does nothing (RTS).
+ */
 void BLITZ_ROUTINE freeslice(void)
 {
 }
@@ -722,8 +782,32 @@ notsmooth2:
         slice->moves[i] = slice->moves[i] - (ULONG)maxcop + pos;
 }
 
-/* long form: d1 = flags, d2 = bitplanes, d3 = sprites, d4 = colours,
-   d6 = used offset, a2 = stacked arguments, a3 = slice */
+/**
+ * @brief Slice Slice#,Y,Width,Hite,Flgs,Bitplns,Sprts,Colrs,Fscrnw,Bscrnw
+ * (Amiga mode).
+ *
+ * Builds the slice's copper instructions in maxcop from the flags (bit 0
+ * hires, 1 dual playfield, 2 HAM, 3 smooth scrolling, 4 DMA off/on + end
+ * wait, 7 BPL2MOD, 8 BPL1MOD, 10 DDFSTRT/STOP, 12 DIWSTRT/STOP, 13
+ * BPLCON2, 14 BPLCON1, 15 BPLCON0) and inserts them into the copper list
+ * at line Y (inscop3); the slice becomes the used one.  The width checks
+ * (Lores/Hires multiple) are in the check routine only.  Errors (debugger
+ * only, slicechk2): "Lores slice width MUST be multiple of 16", "Hires
+ * slice width MUST be multiple of 32", "Slice already in use".
+ * BUG(orig) (#407): unused copper list pointers (0) are relocated like
+ * the others; Show into a slice without BPLCON1 writes to that address.
+ * BUG(orig) (#405): the $01FE1234 marker also changes maxcop.
+ *
+ * Reads a3: the slice (!libs{#blitzcoplib,$1380} from Slice# in d0).
+ * @param args  a2: the argument stack: -2 Y, -4 Width, -6 Hite, -8 Fscrnw,
+ *              -10 Bscrnw (words)
+ * @param flags  d1: Flgs
+ * @param planes  d2: Bitplns (bits 14/15: dual playfield half)
+ * @param sprites  d3: Sprts
+ * @param colours  d4: Colrs
+ * @param used  d6: the offset of the used slice variable
+ *              (!libs{#blitzcoplib,$0604})
+ */
 static void BLITZ_ROUTINE doslice2_c(const UWORD *args BL_REG(a2), ULONG flags BL_REG(d1),
                                      ULONG planes BL_REG(d2), ULONG sprites BL_REG(d3),
                                      ULONG colours BL_REG(d4), ULONG used BL_REG(d6))
@@ -731,6 +815,12 @@ static void BLITZ_ROUTINE doslice2_c(const UWORD *args BL_REG(a2), ULONG flags B
     doslice2(args, (UWORD)flags, (UWORD)planes, (UWORD)sprites, (UWORD)colours, (WORD)used);
 }
 
+/**
+ * @brief Slice Slice#,Y,Width,... in Blitz mode: as in Amiga mode, then
+ * ShowBlitz.
+ *
+ * The $A001 entry for Blitz mode; the parameters are those of doslice2_c.
+ */
 static void BLITZ_ROUTINE bdoslice_c(const UWORD *args BL_REG(a2), ULONG flags BL_REG(d1),
                                      ULONG planes BL_REG(d2), ULONG sprites BL_REG(d3),
                                      ULONG colours BL_REG(d4), ULONG used BL_REG(d6))
@@ -763,6 +853,22 @@ static void doqslice2(UWORD y, UWORD fl, WORD used, const struct GfxBase *gfx)
     doslice2(aqslice + 5, flags, fl & 7, 8, 32, used);
 }
 
+/**
+ * @brief Slice Slice#,Y,Flags: a full screen slice (Amiga mode).
+ *
+ * The long form with flags $FFF0 + hires/dual playfield/HAM from Flags, 8
+ * sprites, 32 colours, width 320/640, height 256 (200 on NTSC: GfxBase
+ * DisplayFlags bit 0); its arguments go into aqslice.  Errors (debugger
+ * only, slicechk): "Slice already in use".
+ *
+ * Reads a3: the slice (!libs{#blitzcoplib,$1380} from Slice# in d0).
+ * @param y  d1.w: Y
+ * @param fl  d2.w: Flags - bits 0-2 bitplanes, 3 hires, 4 dual playfield,
+ *            5 HAM
+ * @param used  d6: the offset of the used slice variable
+ *              (!libs{#blitzcoplib,$0604})
+ * @param gfx  a0: GfxBase
+ */
 static void BLITZ_ROUTINE doqslice2_c(UWORD y BL_REG(d1), UWORD fl BL_REG(d2),
                                       ULONG used BL_REG(d6),
                                       const struct GfxBase *gfx BL_REG(a0))
@@ -770,6 +876,13 @@ static void BLITZ_ROUTINE doqslice2_c(UWORD y BL_REG(d1), UWORD fl BL_REG(d2),
     doqslice2(y, fl, (WORD)used, gfx);
 }
 
+/**
+ * @brief Slice Slice#,Y,Flags in Blitz mode: as in Amiga mode, then
+ * ShowBlitz.
+ *
+ * The $A001 entry for Blitz mode; the parameters are those of
+ * doqslice2_c.
+ */
 static void BLITZ_ROUTINE b_doqslice_c(UWORD y BL_REG(d1), UWORD fl BL_REG(d2),
                                        ULONG used BL_REG(d6),
                                        const struct GfxBase *gfx BL_REG(a0))
@@ -786,13 +899,35 @@ BLITZ_THUNK(bdoslice, bdoslice_c, "a2");
 
 /* ---------------------------------------------- CustomCop / ColSplit */
 
-/* CustomCop Copins$,Y: d0 = string, -4(a2) = its length, d1 = y */
+/**
+ * @brief CustomCop Copins$,Y: insert copper instructions at line Y (Amiga
+ * mode).
+ *
+ * Inserted with inscop (the wait's horizontal position 7).  The original
+ * returns d0 = position, d1 = mycop and keeps d2-d7/a1-a3 (inscop3's
+ * MOVEM).  DIFF: a2 stays unchanged (the original leaves it decremented
+ * by 4).
+ * BUG(orig) (#404): an empty string copies 2^32 longs (SUBQ.l/BNE).
+ * BUG(orig) (#406): maxslice 0 runs the pointer loop 65536 times.
+ *
+ * @param str  d0: the copper instructions
+ * @param y  d1.w: the line
+ * @param lens  a2: the argument stack, -4(a2) = the string's length
+ * @return d0: where the instructions start in the copper list
+ */
 static ULONG BLITZ_ROUTINE customcop_c(ULONG str BL_REG(d0), UWORD y BL_REG(d1),
                                        const ULONG *lens BL_REG(a2))
 {
     return inscop((ULONG *)str, lens[-1], y);
 }
 
+/**
+ * @brief CustomCop Copins$,Y in Blitz mode: as in Amiga mode, then the
+ * new list on COP1LC and switchlib $C205.
+ *
+ * The $A001 entry for Blitz mode; the parameters are those of
+ * customcop_c.  Returns what $C205 leaves.
+ */
 static ULONG BLITZ_ROUTINE bdocustomcop_c(ULONG str BL_REG(d0), UWORD y BL_REG(d1),
                                           const ULONG *lens BL_REG(a2))
 {
@@ -816,6 +951,23 @@ static ULONG a_colsplit(UWORD reg, UWORD r, UWORD g, UWORD b, UWORD y, const str
     return inscop((ULONG *)cs, 4, y);
 }
 
+/**
+ * @brief ColSplit Colour Register,Red,Green,Blue,Y: a colour change at
+ * line Y of the used slice (Amiga mode).
+ *
+ * One colour move inserted with inscop at the slice's line + Y (+ 2 with
+ * flag bit 4, DMA off/on).  Errors (debugger only, cspltst):
+ * "Unintialized Slice", "Colour Register out of range" (> 31), "RGB
+ * Components out of range" (> 15).
+ *
+ * @param reg  d0.w: the colour register
+ * @param r  d1.w: red
+ * @param g  d2.w: green
+ * @param b  d3.w: blue
+ * @param y  d4.w: the line in the slice
+ * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
+ * @return d0: where the move is in the copper list (d1 = mycop)
+ */
 static ULONG BLITZ_ROUTINE a_colsplit_c(UWORD reg BL_REG(d0), UWORD r BL_REG(d1),
                                         UWORD g BL_REG(d2), UWORD b BL_REG(d3),
                                         UWORD y BL_REG(d4), const struct slice *slice BL_REG(a1))
@@ -823,6 +975,13 @@ static ULONG BLITZ_ROUTINE a_colsplit_c(UWORD reg BL_REG(d0), UWORD r BL_REG(d1)
     return a_colsplit(reg, r, g, b, y, slice);
 }
 
+/**
+ * @brief ColSplit ... in Blitz mode: as in Amiga mode, then the new list
+ * on COP1LC and switchlib $C205.
+ *
+ * The $A001 entry for Blitz mode; the parameters are those of
+ * a_colsplit_c.  Returns what $C205 leaves.
+ */
 static ULONG BLITZ_ROUTINE b_colsplit_c(UWORD reg BL_REG(d0), UWORD r BL_REG(d1),
                                         UWORD g BL_REG(d2), UWORD b BL_REG(d3),
                                         UWORD y BL_REG(d4), const struct slice *slice BL_REG(a1))
@@ -923,26 +1082,118 @@ static void showb(const UBYTE *bitmap, struct slice *slice, UWORD x, WORD y, UWO
 }
 
 #define SHOWARGS const UBYTE *bitmap BL_REG(a0), struct slice *slice BL_REG(a1)
+/**
+ * @brief Show Bitmap#: show a bitmap in the used slice at 0,0.
+ *
+ * Writes the bitplane pointers and BPLCON1 of the slice (see doshow_c).
+ *
+ * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
+ * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
+ */
 static void BLITZ_ROUTINE doshow2_c(SHOWARGS) { show(bitmap, slice, 0, 0); }
+/**
+ * @brief Show Bitmap#,X,Y: show a bitmap in the used slice from X,Y.
+ *
+ * Writes the bitplane pointers (+ the offset of x,y) and BPLCON1 (the
+ * scroll value for both playfields) of the slice.  The originals change
+ * d0-d7/a0/a2.  Errors (debugger only, nshowchk): "Unintialized Slice",
+ * "Can't Show in Slice" (a dual playfield slice), "Uninitialized BitMap",
+ * "Too many Bit planes to Show".
+ * BUG(orig) (#407): a slice without BPLCON1 gets the value written at
+ * its relocated 0 pointer.
+ *
+ * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
+ * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
+ * @param x  d1.w: X
+ * @param y  d2.w: Y
+ */
 static void BLITZ_ROUTINE doshow_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2))
 {
     show(bitmap, slice, x, y);
 }
+/**
+ * @brief ShowF Bitmap#: show a bitmap as the front playfield at 0,0.
+ *
+ * See doshowf_c.
+ *
+ * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
+ * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
+ */
 static void BLITZ_ROUTINE doshowf2_c(SHOWARGS) { showf(bitmap, slice, 0, 0, 0); }
+/**
+ * @brief ShowF Bitmap#,X,Y: show a bitmap as the front playfield from X,Y.
+ *
+ * See doshowf_c; ShowB X = 0.
+ *
+ * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
+ * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
+ * @param x  d1.w: X
+ * @param y  d2.w: Y
+ */
 static void BLITZ_ROUTINE doshowf3_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2))
 {
     showf(bitmap, slice, x, y, 0);
 }
+/**
+ * @brief ShowF Bitmap#,X,Y,ShowB X: show a bitmap as the front playfield.
+ *
+ * Writes the bitplane pointers of the front playfield (every second move
+ * of a dual playfield slice) and BPLCON1 with the scroll values of both
+ * playfields.  Errors (debugger only, showfchk): "Unintialized Slice",
+ * "Uninitialized BitMap", "Too many Bit planes to Show", "Can't Show in
+ * Slice" (a dual playfield slice without bit 15 in its bitplanes).
+ * BUG(orig) (#407): see Show.
+ *
+ * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
+ * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
+ * @param x  d1.w: X
+ * @param y  d2.w: Y
+ * @param x2  d3.w: the X of the back playfield (for BPLCON1)
+ */
 static void BLITZ_ROUTINE doshowf_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2),
                                     UWORD x2 BL_REG(d3))
 {
     showf(bitmap, slice, x, y, x2);
 }
+/**
+ * @brief ShowB Bitmap#: show a bitmap as the back playfield at 0,0.
+ *
+ * See doshowb_c.
+ *
+ * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
+ * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
+ */
 static void BLITZ_ROUTINE doshowb2_c(SHOWARGS) { showb(bitmap, slice, 0, 0, 0); }
+/**
+ * @brief ShowB Bitmap#,X,Y: show a bitmap as the back playfield from X,Y.
+ *
+ * See doshowb_c; ShowF X = 0.
+ *
+ * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
+ * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
+ * @param x  d1.w: X
+ * @param y  d2.w: Y
+ */
 static void BLITZ_ROUTINE doshowb3_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2))
 {
     showb(bitmap, slice, x, y, 0);
 }
+/**
+ * @brief ShowB Bitmap#,X,Y,ShowF X: show a bitmap as the back playfield.
+ *
+ * Writes the bitplane pointers of the back playfield and BPLCON1 with the
+ * scroll values of both playfields.  Errors (debugger only, showbchk):
+ * "Unintialized Slice", "Uninitialized BitMap", "Too many Bit planes to
+ * Show", "Can't Show in Slice" (a dual playfield slice without bit 14 in
+ * its bitplanes).
+ * BUG(orig) (#407): see Show.
+ *
+ * @param bitmap  a0: the bitmap (!libs{#bitmaplib,$1080} from Bitmap#)
+ * @param slice  a1: the used slice (!libs{#blitzcoplib,$1102})
+ * @param x  d1.w: X
+ * @param y  d2.w: Y
+ * @param x2  d3.w: the X of the front playfield (for BPLCON1)
+ */
 static void BLITZ_ROUTINE doshowb_c(SHOWARGS, UWORD x BL_REG(d1), UWORD y BL_REG(d2),
                                     UWORD x2 BL_REG(d3))
 {
