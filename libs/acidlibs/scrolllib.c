@@ -153,10 +153,10 @@ static void BLITZ_ROUTINE doplot_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
 }
 BLITZ_THUNK(doplot, doplot_c, "d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE dopoint_c(ULONG d0 BL_REG(d0), UWORD y BL_REG(d1),
+static ULONG BLITZ_ROUTINE dopoint_c(ULONG xarg BL_REG(d0), UWORD y BL_REG(d1),
                                      const UBYTE *bm BL_REG(a2))
 {
-    UWORD x = d0 + MW(bm, 48), d2 = 0, i = 0;
+    UWORD x = xarg + MW(bm, 48), col = 0, i = 0;
     UBYTE **pl = (UBYTE **)(bm + 8);
     ULONG off;
     UBYTE bit;
@@ -168,10 +168,10 @@ static ULONG BLITZ_ROUTINE dopoint_c(ULONG d0 BL_REG(d0), UWORD y BL_REG(d1),
     bit = ~x & 7;
     do {
         if ((*pl++)[off] & (1 << bit))
-            d2 |= 1 << (i & 31);                /* BSET d3,d2 */
+            col |= 1 << (i & 31);               /* BSET d3,d2 */
         i++;
     } while (i < MW(bm, 4));
-    return (d0 & 0xffff0000) | d2;              /* MOVE d2,d0 (upper word of ~x) */
+    return (xarg & 0xffff0000) | col;           /* MOVE d2,d0 (upper word of ~x) */
 }
 BLITZ_THUNK(dopoint, dopoint_c, "d1/a0-a1");
 
@@ -244,34 +244,34 @@ static void b_cls(UBYTE *cb, const UBYTE *bm, UWORD col)
         CW(cb, 0x66) = 0;
         do {
             UWORD fill = (col & 1) ? 0xffff : 0;
-            ULONG d4 = size, d3;
+            ULONG left = size, part;
 
             col >>= 1;
             BLITWAIT(cb);
             CW(cb, 0x74) = fill;
             CL(cb, 0x54) = *pl++;
-            while ((LONG)d4 >= 131072) {
+            while ((LONG)left >= 131072) {
                 BLITWAIT(cb);
                 CW(cb, 0x58) = 0;
-                d4 -= 131072;
+                left -= 131072;
             }
-            d3 = d4;
-            if (!d3)
+            part = left;
+            if (!part)
                 continue;
-            d3 >>= 1;
-            BL_SETW(d3, d3 & 0xffc0);
-            if ((UWORD)d3) {
+            part >>= 1;
+            BL_SETW(part, part & 0xffc0);
+            if ((UWORD)part) {
                 BLITWAIT(cb);
-                CW(cb, 0x58) = d3;
-                d3 += d3;
-                d4 -= d3;
-                if (!d4)
+                CW(cb, 0x58) = part;
+                part += part;
+                left -= part;
+                if (!left)
                     continue;
             }
-            d4 >>= 1;                           /* skip2 */
-            BL_SETW(d4, d4 | 64);
+            left >>= 1;                         /* skip2 */
+            BL_SETW(left, left | 64);
             BLITWAIT(cb);
-            CW(cb, 0x58) = d4;
+            CW(cb, 0x58) = left;
         } while (n-- != 0);                     /* DBF d2 */
     }
 }
@@ -331,19 +331,19 @@ BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
 /* cookwait - wait, restore the cookie words of the last scroll to $FFFF */
 static UWORD *cookwait(UBYTE *cb)
 {
-    UWORD *a5 = cookie;
+    UWORD *cook = cookie;
 
     BLITWAIT(cb);
-    a5[0] = 0xffff;
-    MW(a5, CWIDTH - 2) = 0xffff;
-    ML(a5, (WORD)offset) = 0xffffffff;
-    MW(a5, (WORD)offset + 4) = 0xffff;
-    return a5;
+    cook[0] = 0xffff;
+    MW(cook, CWIDTH - 2) = 0xffff;
+    ML(cook, (WORD)offset) = 0xffffffff;
+    MW(cook, (WORD)offset + 4) = 0xffff;
+    return cook;
 }
 
 /* doit - the blit for all planes (d6 src / d7 dest offset, d5 words) */
 static UBYTE *doit(UBYTE *cb, const UBYTE *src, const UBYTE *dst, const UWORD *args,
-                   ULONG d6, ULONG d7, UWORD d5)
+                   ULONG srcoff, ULONG dstoff, UWORD words)
 {
     UWORD n, bw, size;
     const ULONG *ps = (const ULONG *)(src + 8), *pd = (const ULONG *)(dst + 8);
@@ -353,17 +353,17 @@ static UBYTE *doit(UBYTE *cb, const UBYTE *src, const UBYTE *dst, const UWORD *a
     if (n > MW(dst, 4))
         n = MW(dst, 4);
     n--;
-    bw = d5 + d5;
+    bw = words + words;
     CW(cb, 0x64) = MW(src, 0) - bw;
     CW(cb, 0x60) = MW(dst, 0) - bw;
     CW(cb, 0x66) = MW(dst, 0) - bw;
     CW(cb, 0x62) = -bw;
-    size = (args[-2] << 6) | d5;
+    size = (args[-2] << 6) | words;
     for (;;) {
         ULONG d;
 
-        CL(cb, 0x50) = *ps++ + d6;
-        d = *pd++ + d7;
+        CL(cb, 0x50) = *ps++ + srcoff;
+        d = *pd++ + dstoff;
         CL(cb, 0x48) = d;
         CL(cb, 0x54) = d;
         CW(cb, 0x58) = size;
@@ -377,58 +377,58 @@ static UBYTE *doit(UBYTE *cb, const UBYTE *src, const UBYTE *dst, const UWORD *a
 static UBYTE *doasc(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
                     const UBYTE *dst, UBYTE *cb, const UWORD *args)
 {
-    ULONG d6 = (ULONG)y1 * MW(src, 0) + (LONG)((WORD)x1 >> 3);
-    ULONG d7 = (ULONG)y2 * MW(dst, 0) + (LONG)((WORD)x2 >> 3);
-    UWORD *a5 = cookwait(cb), d4, d5, d3, w = args[-1];
+    ULONG srcoff = (ULONG)y1 * MW(src, 0) + (LONG)((WORD)x1 >> 3);
+    ULONG dstoff = (ULONG)y2 * MW(dst, 0) + (LONG)((WORD)x2 >> 3);
+    UWORD *cook = cookwait(cb), bits, words, pos, w = args[-1];
 
-    d5 = (UWORD)(((x1 + w) & 0xfff0) - (x1 & 0xfff0));
-    d5 = (d5 >> 4) + 3;
-    d4 = (x2 & 15) - (x1 & 15);
-    if ((WORD)d4 < 0) {
-        d4 &= 15;
-        d7 -= 2;
+    words = (UWORD)(((x1 + w) & 0xfff0) - (x1 & 0xfff0));
+    words = (words >> 4) + 3;
+    bits = (x2 & 15) - (x1 & 15);
+    if ((WORD)bits < 0) {
+        bits &= 15;
+        dstoff -= 2;
     }
-    d4 = (UWORD)(d4 >> 4 | d4 << 12);           /* ROR #4 */
-    CW(cb, 0x42) = d4;
-    CW(cb, 0x40) = d4 | scminiterm;
-    a5[0] = masks[x1 & 15];
-    d3 = d5 + d5 - 6;
-    offset = d3;
-    d4 = ~masks[(x1 + w) & 15];
-    MW(a5, (WORD)d3) &= d4;
-    ML(a5, (WORD)d3 + 2) = 0;
-    CL(cb, 0x4c) = (ULONG)a5;
-    return doit(cb, src, dst, args, d6, d7, d5);
+    bits = (UWORD)(bits >> 4 | bits << 12);     /* ROR #4 */
+    CW(cb, 0x42) = bits;
+    CW(cb, 0x40) = bits | scminiterm;
+    cook[0] = masks[x1 & 15];
+    pos = words + words - 6;
+    offset = pos;
+    bits = ~masks[(x1 + w) & 15];
+    MW(cook, (WORD)pos) &= bits;
+    ML(cook, (WORD)pos + 2) = 0;
+    CL(cb, 0x4c) = (ULONG)cook;
+    return doit(cb, src, dst, args, srcoff, dstoff, words);
 }
 
 static UBYTE *dodesc(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
                      const UBYTE *dst, UBYTE *cb, const UWORD *args)
 {
-    UWORD w = args[-1], h = args[-2], d4, d5, d3;
-    ULONG d6 = (ULONG)(UWORD)(y1 + h - 1) * MW(src, 0)
+    UWORD w = args[-1], h = args[-2], bits, words, pos;
+    ULONG srcoff = (ULONG)(UWORD)(y1 + h - 1) * MW(src, 0)
              + (LONG)((WORD)(UWORD)(x1 + w - 1) >> 3);
-    ULONG d7 = (ULONG)(UWORD)(y2 + h - 1) * MW(dst, 0)
+    ULONG dstoff = (ULONG)(UWORD)(y2 + h - 1) * MW(dst, 0)
              + (LONG)((WORD)(UWORD)(x2 + w - 1) >> 3);
-    UWORD *a5 = cookwait(cb);
+    UWORD *cook = cookwait(cb);
 
-    d5 = (UWORD)(((x1 + w - 1) & 0xfff0) - ((x1 - 1) & 0xfff0));
-    d5 = (d5 >> 4) + 3;
-    d3 = (x2 + w - 1) & 15;
-    d4 = ((x1 + w - 1) & 15) - d3;
-    if ((WORD)d4 < 0) {
-        d4 &= 15;
-        d7 += 2;
+    words = (UWORD)(((x1 + w - 1) & 0xfff0) - ((x1 - 1) & 0xfff0));
+    words = (words >> 4) + 3;
+    pos = (x2 + w - 1) & 15;
+    bits = ((x1 + w - 1) & 15) - pos;
+    if ((WORD)bits < 0) {
+        bits &= 15;
+        dstoff += 2;
     }
-    d4 = (UWORD)(d4 >> 4 | d4 << 12);
-    CW(cb, 0x42) = d4 | 2;
-    CW(cb, 0x40) = d4 | scminiterm;
-    MW(a5, CWIDTH - 2) = ~masks[((x1 + w - 1) & 15) + 1];
-    d3 = CWIDTH - (d5 + d5);
-    offset = d3;
-    ML(a5, (WORD)d3) = 0;
-    MW(a5, (WORD)d3 + 4) &= masks[((x1 - 1) & 15) + 1];
-    CL(cb, 0x4c) = (ULONG)((UBYTE *)a5 + CWIDTH - 2);
-    return doit(cb, src, dst, args, d6, d7, d5);
+    bits = (UWORD)(bits >> 4 | bits << 12);
+    CW(cb, 0x42) = bits | 2;
+    CW(cb, 0x40) = bits | scminiterm;
+    MW(cook, CWIDTH - 2) = ~masks[((x1 + w - 1) & 15) + 1];
+    pos = CWIDTH - (words + words);
+    offset = pos;
+    ML(cook, (WORD)pos) = 0;
+    MW(cook, (WORD)pos + 4) &= masks[((x1 - 1) & 15) + 1];
+    CL(cb, 0x4c) = (ULONG)((UBYTE *)cook + CWIDTH - 2);
+    return doit(cb, src, dst, args, srcoff, dstoff, words);
 }
 
 /* returns a3 as the original leaves it (dest bitmap planes + 4 * planes;
@@ -463,13 +463,13 @@ static void BLITZ_ROUTINE b_doscroll_c(SCROLL_REGS)
 
 static void BLITZ_ROUTINE a_doscroll_c(SCROLL_REGS, struct GfxBase *gfx BL_REG(d6))
 {
-    UBYTE *a3;
+    UBYTE *end;
 
     OwnBlitter();
-    a3 = scroll(x1, y1, x2, y2, src, cb, args);
+    end = scroll(x1, y1, x2, y2, src, cb, args);
     BLITWAIT(cb);
     DisownBlitter();
-    blitz_string = a3;
+    blitz_string = end;
 }
 BLITZ_THUNK(b_doscroll, b_doscroll_c, "d1/a0-a1");
 BLITZ_AB_ROUTINE(doscroll, b_doscroll, "   jmp     _a_doscroll_c");
@@ -480,29 +480,29 @@ static UBYTE *blockscroll(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *s
                         UBYTE *cb, const UWORD *args)
 {
     const UBYTE *dst = blitz_string;
-    UWORD d4 = MW(src, 0), d5 = MW(dst, 0), n, d2;
-    ULONG d1 = (ULONG)y1 * d4 + (LONG)((WORD)x1 >> 3);
-    ULONG d3 = (ULONG)y2 * d5 + (LONG)((WORD)x2 >> 3);
+    UWORD srcmod = MW(src, 0), dstmod = MW(dst, 0), n, size;
+    ULONG srcoff = (ULONG)y1 * srcmod + (LONG)((WORD)x1 >> 3);
+    ULONG dstoff = (ULONG)y2 * dstmod + (LONG)((WORD)x2 >> 3);
     const ULONG *ps = (const ULONG *)(src + 8), *pd = (const ULONG *)(dst + 8);
     UWORD h = args[-2], w = args[-1];           /* MOVEM -4(a2),d0/d2 */
 
-    d2 = w >> 3;
-    d4 -= d2;
-    d5 -= d2;
-    d2 = ((WORD)d2 >> 1) | (UWORD)(h << 6);
+    size = w >> 3;
+    srcmod -= size;
+    dstmod -= size;
+    size = ((WORD)size >> 1) | (UWORD)(h << 6);
     BLITWAIT(cb);
     CL(cb, 0x40) = 0x09f00000;
     CL(cb, 0x44) = 0xffffffff;
-    CW(cb, 0x64) = d4;
-    CW(cb, 0x66) = d5;
+    CW(cb, 0x64) = srcmod;
+    CW(cb, 0x66) = dstmod;
     n = MW(src, 4);
     if (n > MW(dst, 4))
         n = MW(dst, 4);
     n--;
     for (;;) {
-        CL(cb, 0x50) = *ps++ + d1;
-        CL(cb, 0x54) = *pd++ + d3;
-        CW(cb, 0x58) = d2;
+        CL(cb, 0x50) = *ps++ + srcoff;
+        CL(cb, 0x54) = *pd++ + dstoff;
+        CW(cb, 0x58) = size;
         if (n-- == 0)
             break;
         BLITWAIT(cb);
@@ -517,13 +517,13 @@ static void BLITZ_ROUTINE b_doblockscroll_c(SCROLL_REGS)
 
 static void BLITZ_ROUTINE a_doblockscroll_c(SCROLL_REGS, struct GfxBase *gfx BL_REG(d6))
 {
-    UBYTE *a3;
+    UBYTE *end;
 
     OwnBlitter();
-    a3 = blockscroll(x1, y1, x2, y2, src, cb, args);
+    end = blockscroll(x1, y1, x2, y2, src, cb, args);
     BLITWAIT(cb);
     DisownBlitter();
-    blitz_string = a3;
+    blitz_string = end;
 }
 void b_doblockscroll(void);
 BLITZ_THUNK(b_doblockscroll, b_doblockscroll_c, "d1/a0-a1");
