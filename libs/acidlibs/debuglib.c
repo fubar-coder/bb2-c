@@ -406,29 +406,29 @@ static void BLITZ_ROUTINE douthandler_c(UBYTE c BL_REG(d0))
    tested for 0, the copy runs until astring is full. */
 static void BLITZ_ROUTINE dout2_c(UWORD len BL_REG(d0), const UBYTE *s BL_REG(a0))
 {
-    UWORD d;
+    UWORD pos;
 
     if (!len)
         return;
-    for (d = doutx; d < 256; d++)
-        astring[d] = *s++;
-    doutx = d;
+    for (pos = doutx; pos < 256; pos++)
+        astring[pos] = *s++;
+    doutx = pos;
 }
 BLITZ_THUNK(dout2, dout2_c, "d0-d1/a0-a1");
 
 /* dout3 - output string until 0 */
 static void BLITZ_ROUTINE dout3_c(const UBYTE *s BL_REG(a0))
 {
-    UWORD d = doutx;
+    UWORD pos = doutx;
 
-    while (d < 256) {
-        d++;
-        if (!(astring[d - 1] = *s++)) {
-            d--;
+    while (pos < 256) {
+        pos++;
+        if (!(astring[pos - 1] = *s++)) {
+            pos--;
             break;
         }
     }
-    doutx = d;
+    doutx = pos;
 }
 BLITZ_THUNK(dout3, dout3_c, "d0-d1/a0-a1");
 
@@ -499,19 +499,19 @@ static inline BOOL flagclr(int bit)
 }
 
 /* JSR (a1) into a handler of the debugger front end (or evaluate/execute)
-   with a0 = arg; such code may change every register except a4/a5/a7.
-   Returns d0, *a0 receives a0. */
-static inline ULONG callhandler(APTR fn, ULONG *a0)
+   with a0 = *arg; such code may change every register except a4/a5/a7.
+   Returns d0, *arg receives a0. */
+static inline ULONG callhandler(APTR fn, ULONG *arg)
 {
-    register ULONG ra0 __asm("a0") = *a0;
-    register APTR ra1 __asm("a1") = fn;
-    register ULONG rd0 __asm("d0");
+    register ULONG argreg __asm("a0") = *arg;
+    register APTR fnreg __asm("a1") = fn;
+    register ULONG result __asm("d0");
     __asm volatile("jsr (%2)"
-                   : "+a"(ra0), "=d"(rd0), "+a"(ra1) :
+                   : "+a"(argreg), "=d"(result), "+a"(fnreg) :
                    : "d1", "d2", "d3", "d4", "d5", "d6", "d7", "a2", "a6",
                      "cc", "memory");
-    *a0 = ra0;
-    return rd0;
+    *arg = argreg;
+    return result;
 }
 
 /* handleflags - the debugger's state machine.  Reached in USER mode: a
@@ -531,7 +531,7 @@ static inline ULONG callhandler(APTR fn, ULONG *a0)
    sequence in C, entered by `jmp _handleflags` from the trap code. */
 void BLITZ_ROUTINE __attribute__((noreturn)) handleflags(void)
 {
-    ULONG a0;
+    ULONG arg;                                  /* a0 */
 
     amigamode_c();
     do {                                        /* handleflags: */
@@ -541,27 +541,27 @@ void BLITZ_ROUTINE __attribute__((noreturn)) handleflags(void)
             BLITZ_ALIBJSR(TOK_endjmp, r);       /* does not return */
         }
         if (flagclr(6)) {
-            a0 = (ULONG)supertext;
-            callhandler(superhandler, &a0);
+            arg = (ULONG)supertext;
+            callhandler(superhandler, &arg);
         }
         if (flagclr(5)) {
-            a0 = (ULONG)usertext;
-            callhandler(userhandler, &a0);
+            arg = (ULONG)usertext;
+            callhandler(userhandler, &arg);
         }
         if (flagclr(4)) {
             blitz_locals = (UBYTE *)trapregs[TRAP_A4];  /* MOVEM.l a4_,a4-a5 */
             blitz_globals = (UBYTE *)trapregs[TRAP_A5];
-            a0 = (ULONG)evaltext;
-            callhandler(evaluate_, &a0);
-            callhandler(evalhandler, &a0);
+            arg = (ULONG)evaltext;
+            callhandler(evaluate_, &arg);
+            callhandler(evalhandler, &arg);
         }
         if (flagclr(3)) {
             blitz_locals = (UBYTE *)trapregs[TRAP_A4];
             blitz_globals = (UBYTE *)trapregs[TRAP_A5];
-            a0 = (ULONG)exectext;
-            callhandler(execute_, &a0);
-            if (*(UBYTE *)a0)                   /* any output? */
-                callhandler(evalhandler, &a0);
+            arg = (ULONG)exectext;
+            callhandler(execute_, &arg);
+            if (*(UBYTE *)arg)                  /* any output? */
+                callhandler(evalhandler, &arg);
         }
         if (flagclr(2)) {
             WORD dist = *(WORD *)(trappc + 6);
@@ -570,8 +570,8 @@ void BLITZ_ROUTINE __attribute__((noreturn)) handleflags(void)
                 break;                          /* -> tofix */
             }
         }
-        a0 = (ULONG)waithandler;                /* MOVE.l _waithandler,a0 */
-        waitres = (UWORD)callhandler(waithandler, &a0);
+        arg = (ULONG)waithandler;               /* MOVE.l _waithandler,a0 */
+        waitres = (UWORD)callhandler(waithandler, &arg);
     } while (flags[0]);                         /* TST.b _flags */
     fixmode_c();                                /* tofix */
     executestate();
@@ -636,17 +636,17 @@ static void BLITZ_ROUTINE dostop_c(void)
 BLITZ_THUNK(dostop, dostop_c, "d0-d1/a0-a1");
 
 /* doevaluate - $D504: a0 = expression */
-static void BLITZ_ROUTINE doevaluate_c(const char *t BL_REG(a0))
+static void BLITZ_ROUTINE doevaluate_c(const char *text BL_REG(a0))
 {
-    evaltext = t;
+    evaltext = text;
     flags[0] |= 0x10;
 }
 BLITZ_THUNK(doevaluate, doevaluate_c, "d0-d1/a0-a1");
 
 /* doexecute - $D505: a0 = text to execute */
-static void BLITZ_ROUTINE doexecute_c(const char *t BL_REG(a0))
+static void BLITZ_ROUTINE doexecute_c(const char *text BL_REG(a0))
 {
-    exectext = t;
+    exectext = text;
     flags[0] |= 0x08;
 }
 BLITZ_THUNK(doexecute, doexecute_c, "d0-d1/a0-a1");
@@ -705,13 +705,13 @@ BLITZ_ASM_ROUTINE(dosethandler,
 "   move.l  _tokens,a2\n"
 "   rts");
 
-/* name of token `t` in the editor's list, "?????" if unknown */
-static const char *tokename(UWORD t)
+/* name of token `token` in the editor's list, "?????" if unknown */
+static const char *tokename(UWORD token)
 {
     struct toke *k;
 
     for (k = tokens; k; k = k->next)
-        if (k->num == t)
+        if (k->num == token)
             return k->name;
     return "?????";
 }
@@ -721,24 +721,24 @@ static const char *tokename(UWORD t)
    terminating 0 (the wrapper passes them in memory: p[0] = a0, p[1] = a1) */
 static void BLITZ_ROUTINE dodetoke_c(UBYTE **p BL_REG(a0))
 {
-    UBYTE *s = p[0], *d = p[1], c;
-    const char *n;
+    UBYTE *s = p[0], *dst = p[1], c;
+    const char *name;
 
     for (;;) {
         c = *s++;
-        *d++ = c;
+        *dst++ = c;
         if (!c)
             break;
         if (!(c & 0x80))
             continue;
-        d--;                            /* MOVE.b -(a1),d0 */
-        n = tokename((UWORD)(((c << 8) | *s++) & 0x7fff));
-        while ((*d++ = *n++) != 0)
+        dst--;                          /* MOVE.b -(a1),d0 */
+        name = tokename((UWORD)(((c << 8) | *s++) & 0x7fff));
+        while ((*dst++ = *name++) != 0)
             ;
-        d--;
+        dst--;
     }
     p[0] = s;
-    p[1] = d;
+    p[1] = dst;
 }
 BLITZ_ASM_ROUTINE(dodetoke,
 "   move.l  a1,-(sp)\n"
@@ -759,24 +759,24 @@ BLITZ_ASM_ROUTINE(dodetoke,
 static UWORD BLITZ_ROUTINE dofindoff_c(const UBYTE *s BL_REG(a0), UWORD pos BL_REG(d0))
 {
     UWORD off = 0;
-    int z = (pos == 0);                 /* TST d0 */
+    int zflag = (pos == 0);             /* TST d0 */
     UBYTE c;
-    const char *n;
+    const char *name;
 
-    while (!z) {
+    while (!zflag) {
         c = *s++;
         if (!c)
             break;
         if (!(c & 0x80)) {
             off++;
-            z = (--pos == 0);
+            zflag = (--pos == 0);
             continue;
         }
         pos -= 2;
-        n = tokename((UWORD)(((c << 8) | *s++) & 0x7fff));
-        while (*n++)
+        name = tokename((UWORD)(((c << 8) | *s++) & 0x7fff));
+        while (*name++)
             off++;
-        z = (off == 0);                 /* ADDQ ... SUBQ #1,d1 */
+        zflag = (off == 0);                 /* ADDQ ... SUBQ #1,d1 */
     }
     return off;
 }
