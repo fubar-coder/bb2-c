@@ -42,7 +42,10 @@ extern struct WBStartup *_WBenchMsg;
  * is the one of the asm (struct token: next.l, num.w, name\0, help\0,
  * even).  The asm mnemonic tokens (asmmac, fnum..fnum+117) are followed by
  * their struct asment data at the next even address (makeasmtab relies on
- * that).  `tokens` is an alias of the first node. */
+ * that).  `tokens` is an alias of the first node.  The nodes are listed
+ * in toklist.h; blitz2-ab3 has a second image of them with AmiBlitz3's
+ * names and new tokens (tokimg_ab3), `tokens` is then the one of the
+ * program's mode. */
 
 /* asmmac equates (EA masks / size codes).  Renamed with a trailing `_`
    because `long`, `word`, `byte` ... clash with C / NDK names. */
@@ -88,547 +91,83 @@ extern struct WBStartup *_WBenchMsg;
 #define byteword_ 0xf10
 #define wordlong_ 0x10f
 
+/* the nodes (toklist.h): a struct member per node, then its initialiser;
+   IMG is the image being defined, the names are blitz2's (M picks b2) */
+#define TKMEMBER(id, name, help) \
+    struct { struct token *next; UWORD num; char s[sizeof(name "\0" help)]; } id;
+#define TK(id, next, num, name, help)       TKMEMBER(id, name, help)
+#define TA(id, nx, n, name, ...) \
+    struct { struct token *next; UWORD num; char s[sizeof(name "\0" "")]; struct asment d; } id;
+#define TKLAST(id, num, name, help)         TKMEMBER(id, name, help)
+#define TK3(id, next, num, name, help)
+#define TK3LAST(id, num, name, help)
+#define M(b2, b3) b2
+
 struct tokimage {
-    struct { struct token *next; UWORD num; char s[sizeof("NEWTYPE" "\0" ".Typename")]; } tok1;  /* asm label: tokens */
-    struct { struct token *next; UWORD num; char s[sizeof("End" "\0" "[If|While|Select|Statement|Function|SetInt|SetErr|NEWTYPE|MACRO]")]; } tok2;
-    struct { struct token *next; UWORD num; char s[sizeof("Let" "\0" "Var=|Operator Expression")]; } tok3;
-    struct { struct token *next; UWORD num; char s[sizeof("Dim" "\0" "Arrayname [List] (Dimension1[,Dimension2..])")]; } tok4;
-    struct { struct token *next; UWORD num; char s[sizeof("Goto" "\0" "Program Label")]; } tok5;
-    struct { struct token *next; UWORD num; char s[sizeof("Gosub" "\0" "Program Label")]; } tok6;
-    struct { struct token *next; UWORD num; char s[sizeof("Return" "\0" "")]; } tok7;
-    struct { struct token *next; UWORD num; char s[sizeof("Statement" "\0" "Procedurename{[Parameter1[,Parameter2...]]}")]; } tok8;
-    struct { struct token *next; UWORD num; char s[sizeof("Function" "\0" "[.Type] Procedurename{[Parameter1[,Parameter2...]]}")]; } tok9;
-    struct { struct token *next; UWORD num; char s[sizeof("MouseWait" "\0" "")]; } tok10;
-    struct { struct token *next; UWORD num; char s[sizeof("If" "\0" "Expression [Then...]")]; } tok11;
-    struct { struct token *next; UWORD num; char s[sizeof("While" "\0" "Expression")]; } tok12;
-    struct { struct token *next; UWORD num; char s[sizeof("Macro" "\0" "Macroname")]; } tok13;
-    struct { struct token *next; UWORD num; char s[sizeof("Select" "\0" "Expression")]; } tok14;
-    struct { struct token *next; UWORD num; char s[sizeof("Case" "\0" "Expression")]; } tok15;
-    struct { struct token *next; UWORD num; char s[sizeof("Default" "\0" "")]; } tok16;
-    struct { struct token *next; UWORD num; char s[sizeof("AsmExit" "\0" "")]; } tok17;
-    struct { struct token *next; UWORD num; char s[sizeof("XINCLUDE" "\0" "Filename")]; } tok18;
-    struct { struct token *next; UWORD num; char s[sizeof("INCLUDE" "\0" "Filename")]; } tok19;
-    struct { struct token *next; UWORD num; char s[sizeof("Jimi" "\0" "")]; } tok20;
-    struct { struct token *next; UWORD num; char s[sizeof("SHARED" "\0" "Var[,Var...]")]; } tok21;
-    struct { struct token *next; UWORD num; char s[sizeof("For" "\0" "Var=Expression1 To Expression2 [Step Expression3]")]; } tok22;
-    struct { struct token *next; UWORD num; char s[sizeof("Next" "\0" "[Var[,Var...]]")]; } tok23;
-    struct { struct token *next; UWORD num; char s[sizeof("To" "\0" "Expression2 [Step Expression3]")]; } tok24;
-    struct { struct token *next; UWORD num; char s[sizeof("Step" "\0" "increment")]; } tok25;
-    struct { struct token *next; UWORD num; char s[sizeof("Data" "\0" "[.Type] Item[,Item...]")]; } tok26;
-    struct { struct token *next; UWORD num; char s[sizeof("Read" "\0" "Var[,Var...]")]; } tok27;
-    struct { struct token *next; UWORD num; char s[sizeof("CNIF" "\0" "Constant Comparison Constant")]; } tok28;
-    struct { struct token *next; UWORD num; char s[sizeof("CSIF" "\0" "\"String\" Comparison \"String\"")]; } tok29;
-    struct { struct token *next; UWORD num; char s[sizeof("CELSE" "\0" "")]; } tok30;
-    struct { struct token *next; UWORD num; char s[sizeof("CEND" "\0" "")]; } tok31;
-    struct { struct token *next; UWORD num; char s[sizeof("CERR" "\0" "Errormessage")]; } tok32;
-    struct { struct token *next; UWORD num; char s[sizeof("Then" "\0" "statement...")]; } tok33;
-    struct { struct token *next; UWORD num; char s[sizeof("Else" "\0" "[Statement...]")]; } tok34;
-    struct { struct token *next; UWORD num; char s[sizeof("Even4" "\0" "; align to 4 byte boundary")]; } tok35;
-    struct { struct token *next; UWORD num; char s[sizeof("Even8" "\0" "; align to 8 byte boundary")]; } tok36;
-    struct { struct token *next; UWORD num; char s[sizeof("Dc" "\0" "[.Size] Data[,Data...]")]; } tok37;
-    struct { struct token *next; UWORD num; char s[sizeof("Ds" "\0" "[.Size] Length")]; } tok38;
-    struct { struct token *next; UWORD num; char s[sizeof("Even" "\0" "")]; } tok39;
-    struct { struct token *next; UWORD num; char s[sizeof("Dcb" "\0" "[.Size] Repeats,Data")]; } tok40;
-    struct { struct token *next; UWORD num; char s[sizeof("GetReg" "\0" "68000 Reg,Expression")]; } tok41;
-    struct { struct token *next; UWORD num; char s[sizeof("IncBin" "\0" "Filename")]; } tok42;
-    struct { struct token *next; UWORD num; char s[sizeof("Free" "\0" "Objectname Object#")]; } tok43;
-    struct { struct token *next; UWORD num; char s[sizeof("Use" "\0" "Objectname Object#")]; } tok44;
-    struct { struct token *next; UWORD num; char s[sizeof("Stop" "\0" "")]; } tok45;
-    struct { struct token *next; UWORD num; char s[sizeof("Cont" "\0" "[N]")]; } tok46;
-    struct { struct token *next; UWORD num; char s[sizeof("SizeOf" "\0" ".Typename[,Entrypath]")]; } tok47;
-    struct { struct token *next; UWORD num; char s[sizeof("SetInt" "\0" "Type")]; } tok48;
-    struct { struct token *next; UWORD num; char s[sizeof("ClrInt" "\0" "Type")]; } tok49;
-    struct { struct token *next; UWORD num; char s[sizeof("MaxLen" "\0" "StringVar=Expression")]; } tok50;
-    struct { struct token *next; UWORD num; char s[sizeof("DEFTYPE" "\0" ".Typename [Var[,Var...]]")]; } tok51;
-    struct { struct token *next; UWORD num; char s[sizeof("BLITZ" "\0" "")]; } tok52;
-    struct { struct token *next; UWORD num; char s[sizeof("AMIGA" "\0" "")]; } tok53;
-    struct { struct token *next; UWORD num; char s[sizeof("QAMIGA" "\0" "")]; } tok54;
-    struct { struct token *next; UWORD num; char s[sizeof("VWait" "\0" "[Frames]")]; } tok55;
-    struct { struct token *next; UWORD num; char s[sizeof("ALibJsr" "\0" "Token[,Form]")]; } tok56;
-    struct { struct token *next; UWORD num; char s[sizeof("TokeJsr" "\0" "Token[,Form]")]; } tok57;
-    struct { struct token *next; UWORD num; char s[sizeof("BLibJsr" "\0" "Token[,Form]")]; } tok58;
-    struct { struct token *next; UWORD num; char s[sizeof("Jimi" "\0" "")]; } tok59;
-    struct { struct token *next; UWORD num; char s[sizeof("ABCD" "\0" "")]; struct asment d; } opabcd;
-    struct { struct token *next; UWORD num; char s[sizeof("ADD" "\0" "")]; struct asment d; } opadd;
-    struct { struct token *next; UWORD num; char s[sizeof("ADDI" "\0" "")]; struct asment d; } opaddi;
-    struct { struct token *next; UWORD num; char s[sizeof("ADDA" "\0" "")]; struct asment d; } opadda;
-    struct { struct token *next; UWORD num; char s[sizeof("ADDQ" "\0" "")]; struct asment d; } opaddq;
-    struct { struct token *next; UWORD num; char s[sizeof("ADDX" "\0" "")]; struct asment d; } opaddx;
-    struct { struct token *next; UWORD num; char s[sizeof("AND" "\0" "")]; struct asment d; } opand;
-    struct { struct token *next; UWORD num; char s[sizeof("ANDI" "\0" "")]; struct asment d; } opandi;
-    struct { struct token *next; UWORD num; char s[sizeof("ASL" "\0" "")]; struct asment d; } opasl;
-    struct { struct token *next; UWORD num; char s[sizeof("ASR" "\0" "")]; struct asment d; } opasr;
-    struct { struct token *next; UWORD num; char s[sizeof("BCC" "\0" "")]; struct asment d; } opbcc;
-    struct { struct token *next; UWORD num; char s[sizeof("BCS" "\0" "")]; struct asment d; } opbcs;
-    struct { struct token *next; UWORD num; char s[sizeof("BEQ" "\0" "")]; struct asment d; } opbeq;
-    struct { struct token *next; UWORD num; char s[sizeof("BGE" "\0" "")]; struct asment d; } opbge;
-    struct { struct token *next; UWORD num; char s[sizeof("BGT" "\0" "")]; struct asment d; } opbgt;
-    struct { struct token *next; UWORD num; char s[sizeof("BHI" "\0" "")]; struct asment d; } opbhi;
-    struct { struct token *next; UWORD num; char s[sizeof("BLE" "\0" "")]; struct asment d; } opble;
-    struct { struct token *next; UWORD num; char s[sizeof("BLS" "\0" "")]; struct asment d; } opbls;
-    struct { struct token *next; UWORD num; char s[sizeof("BLT" "\0" "")]; struct asment d; } opblt;
-    struct { struct token *next; UWORD num; char s[sizeof("BMI" "\0" "")]; struct asment d; } opbmi;
-    struct { struct token *next; UWORD num; char s[sizeof("BNE" "\0" "")]; struct asment d; } opbne;
-    struct { struct token *next; UWORD num; char s[sizeof("BPL" "\0" "")]; struct asment d; } opbpl;
-    struct { struct token *next; UWORD num; char s[sizeof("BVC" "\0" "")]; struct asment d; } opbvc;
-    struct { struct token *next; UWORD num; char s[sizeof("BVS" "\0" "")]; struct asment d; } opbvs;
-    struct { struct token *next; UWORD num; char s[sizeof("BCHG" "\0" "")]; struct asment d; } opbchg;
-    struct { struct token *next; UWORD num; char s[sizeof("BCLR" "\0" "")]; struct asment d; } opbclr;
-    struct { struct token *next; UWORD num; char s[sizeof("BSET" "\0" "")]; struct asment d; } opbset;
-    struct { struct token *next; UWORD num; char s[sizeof("BTST" "\0" "")]; struct asment d; } opbtst;
-    struct { struct token *next; UWORD num; char s[sizeof("BRA" "\0" "")]; struct asment d; } opbra;
-    struct { struct token *next; UWORD num; char s[sizeof("BSR" "\0" "")]; struct asment d; } opbsr;
-    struct { struct token *next; UWORD num; char s[sizeof("CHK" "\0" "")]; struct asment d; } opchk;
-    struct { struct token *next; UWORD num; char s[sizeof("CLR" "\0" "")]; struct asment d; } opclr;
-    struct { struct token *next; UWORD num; char s[sizeof("CMP" "\0" "")]; struct asment d; } opcmp;
-    struct { struct token *next; UWORD num; char s[sizeof("CMPI" "\0" "")]; struct asment d; } opcmpi;
-    struct { struct token *next; UWORD num; char s[sizeof("CMPA" "\0" "")]; struct asment d; } opcmpa;
-    struct { struct token *next; UWORD num; char s[sizeof("CMPM" "\0" "")]; struct asment d; } opcmpm;
-    struct { struct token *next; UWORD num; char s[sizeof("DBCC" "\0" "")]; struct asment d; } opdbcc;
-    struct { struct token *next; UWORD num; char s[sizeof("DBCS" "\0" "")]; struct asment d; } opdbcs;
-    struct { struct token *next; UWORD num; char s[sizeof("DBEQ" "\0" "")]; struct asment d; } opdbeq;
-    struct { struct token *next; UWORD num; char s[sizeof("DBGE" "\0" "")]; struct asment d; } opdbge;
-    struct { struct token *next; UWORD num; char s[sizeof("DBGT" "\0" "")]; struct asment d; } opdbgt;
-    struct { struct token *next; UWORD num; char s[sizeof("DBHI" "\0" "")]; struct asment d; } opdbhi;
-    struct { struct token *next; UWORD num; char s[sizeof("DBLE" "\0" "")]; struct asment d; } opdble;
-    struct { struct token *next; UWORD num; char s[sizeof("DBLS" "\0" "")]; struct asment d; } opdbls;
-    struct { struct token *next; UWORD num; char s[sizeof("DBLT" "\0" "")]; struct asment d; } opdblt;
-    struct { struct token *next; UWORD num; char s[sizeof("DBMI" "\0" "")]; struct asment d; } opdbmi;
-    struct { struct token *next; UWORD num; char s[sizeof("DBNE" "\0" "")]; struct asment d; } opdbne;
-    struct { struct token *next; UWORD num; char s[sizeof("DBPL" "\0" "")]; struct asment d; } opdbpl;
-    struct { struct token *next; UWORD num; char s[sizeof("DBVC" "\0" "")]; struct asment d; } opdbvc;
-    struct { struct token *next; UWORD num; char s[sizeof("DBVS" "\0" "")]; struct asment d; } opdbvs;
-    struct { struct token *next; UWORD num; char s[sizeof("DBF" "\0" "")]; struct asment d; } opdbf;
-    struct { struct token *next; UWORD num; char s[sizeof("DBRA" "\0" "")]; struct asment d; } opdra;
-    struct { struct token *next; UWORD num; char s[sizeof("DBT" "\0" "")]; struct asment d; } opdbt;
-    struct { struct token *next; UWORD num; char s[sizeof("DIVS" "\0" "")]; struct asment d; } opdivs;
-    struct { struct token *next; UWORD num; char s[sizeof("DIVU" "\0" "")]; struct asment d; } opdivu;
-    struct { struct token *next; UWORD num; char s[sizeof("EOR" "\0" "")]; struct asment d; } opeor;
-    struct { struct token *next; UWORD num; char s[sizeof("EORI" "\0" "")]; struct asment d; } opeori;
-    struct { struct token *next; UWORD num; char s[sizeof("EXG" "\0" "")]; struct asment d; } opexg;
-    struct { struct token *next; UWORD num; char s[sizeof("EXT" "\0" "")]; struct asment d; } opext;
-    struct { struct token *next; UWORD num; char s[sizeof("ILLEGAL" "\0" "")]; struct asment d; } opillegal;
-    struct { struct token *next; UWORD num; char s[sizeof("JMP" "\0" "")]; struct asment d; } opjmp;
-    struct { struct token *next; UWORD num; char s[sizeof("JSR" "\0" "")]; struct asment d; } opjsr;
-    struct { struct token *next; UWORD num; char s[sizeof("LEA" "\0" "")]; struct asment d; } oplea;
-    struct { struct token *next; UWORD num; char s[sizeof("LINK" "\0" "")]; struct asment d; } oplink;
-    struct { struct token *next; UWORD num; char s[sizeof("LSL" "\0" "")]; struct asment d; } oplsl;
-    struct { struct token *next; UWORD num; char s[sizeof("LSR" "\0" "")]; struct asment d; } oplsr;
-    struct { struct token *next; UWORD num; char s[sizeof("MOVE" "\0" "")]; struct asment d; } opmove;
-    struct { struct token *next; UWORD num; char s[sizeof("MOVEP" "\0" "")]; struct asment d; } opmovep;
-    struct { struct token *next; UWORD num; char s[sizeof("MOVEA" "\0" "")]; struct asment d; } opmovea;
-    struct { struct token *next; UWORD num; char s[sizeof("MOVEQ" "\0" "")]; struct asment d; } opmoveq;
-    struct { struct token *next; UWORD num; char s[sizeof("MOVEM" "\0" "")]; struct asment d; } opmovem;
-    struct { struct token *next; UWORD num; char s[sizeof("MULS" "\0" "")]; struct asment d; } opmuls;
-    struct { struct token *next; UWORD num; char s[sizeof("MULU" "\0" "")]; struct asment d; } opmulu;
-    struct { struct token *next; UWORD num; char s[sizeof("NBCD" "\0" "")]; struct asment d; } opnbcd;
-    struct { struct token *next; UWORD num; char s[sizeof("NEG" "\0" "")]; struct asment d; } opneg;
-    struct { struct token *next; UWORD num; char s[sizeof("NEGX" "\0" "")]; struct asment d; } opnegx;
-    struct { struct token *next; UWORD num; char s[sizeof("NOP" "\0" "")]; struct asment d; } opnop;
-    struct { struct token *next; UWORD num; char s[sizeof("NOT" "\0" "")]; struct asment d; } opnot;
-    struct { struct token *next; UWORD num; char s[sizeof("OR" "\0" "")]; struct asment d; } opor;
-    struct { struct token *next; UWORD num; char s[sizeof("ORI" "\0" "")]; struct asment d; } opori;
-    struct { struct token *next; UWORD num; char s[sizeof("PEA" "\0" "")]; struct asment d; } oppea;
-    struct { struct token *next; UWORD num; char s[sizeof("RESET" "\0" "")]; struct asment d; } opreset;
-    struct { struct token *next; UWORD num; char s[sizeof("ROL" "\0" "")]; struct asment d; } oprol;
-    struct { struct token *next; UWORD num; char s[sizeof("ROR" "\0" "")]; struct asment d; } opror;
-    struct { struct token *next; UWORD num; char s[sizeof("ROXL" "\0" "")]; struct asment d; } oproxl;
-    struct { struct token *next; UWORD num; char s[sizeof("ROXR" "\0" "")]; struct asment d; } oproxr;
-    struct { struct token *next; UWORD num; char s[sizeof("RTE" "\0" "")]; struct asment d; } oprte;
-    struct { struct token *next; UWORD num; char s[sizeof("RTR" "\0" "")]; struct asment d; } oprtr;
-    struct { struct token *next; UWORD num; char s[sizeof("RTS" "\0" "")]; struct asment d; } oprts;
-    struct { struct token *next; UWORD num; char s[sizeof("SBCD" "\0" "")]; struct asment d; } opsbcd;
-    struct { struct token *next; UWORD num; char s[sizeof("SCC" "\0" "")]; struct asment d; } opscc;
-    struct { struct token *next; UWORD num; char s[sizeof("SCS" "\0" "")]; struct asment d; } opscs;
-    struct { struct token *next; UWORD num; char s[sizeof("SEQ" "\0" "")]; struct asment d; } opseq;
-    struct { struct token *next; UWORD num; char s[sizeof("SGE" "\0" "")]; struct asment d; } opsge;
-    struct { struct token *next; UWORD num; char s[sizeof("SGT" "\0" "")]; struct asment d; } opsgt;
-    struct { struct token *next; UWORD num; char s[sizeof("SHI" "\0" "")]; struct asment d; } opshi;
-    struct { struct token *next; UWORD num; char s[sizeof("SLE" "\0" "")]; struct asment d; } opsle;
-    struct { struct token *next; UWORD num; char s[sizeof("SLS" "\0" "")]; struct asment d; } opsls;
-    struct { struct token *next; UWORD num; char s[sizeof("SLT" "\0" "")]; struct asment d; } opslt;
-    struct { struct token *next; UWORD num; char s[sizeof("SMI" "\0" "")]; struct asment d; } opsmi;
-    struct { struct token *next; UWORD num; char s[sizeof("SNE" "\0" "")]; struct asment d; } opsne;
-    struct { struct token *next; UWORD num; char s[sizeof("SPL" "\0" "")]; struct asment d; } opspl;
-    struct { struct token *next; UWORD num; char s[sizeof("SVC" "\0" "")]; struct asment d; } opsvc;
-    struct { struct token *next; UWORD num; char s[sizeof("SVS" "\0" "")]; struct asment d; } opsvs;
-    struct { struct token *next; UWORD num; char s[sizeof("ST" "\0" "")]; struct asment d; } opst;
-    struct { struct token *next; UWORD num; char s[sizeof("SF" "\0" "")]; struct asment d; } opsf;
-    struct { struct token *next; UWORD num; char s[sizeof("STOP" "\0" "")]; struct asment d; } opstop;
-    struct { struct token *next; UWORD num; char s[sizeof("SUB" "\0" "")]; struct asment d; } opsub;
-    struct { struct token *next; UWORD num; char s[sizeof("SUBI" "\0" "")]; struct asment d; } opsubi;
-    struct { struct token *next; UWORD num; char s[sizeof("SUBA" "\0" "")]; struct asment d; } opsuba;
-    struct { struct token *next; UWORD num; char s[sizeof("SUBQ" "\0" "")]; struct asment d; } opsubq;
-    struct { struct token *next; UWORD num; char s[sizeof("SUBX" "\0" "")]; struct asment d; } opsubx;
-    struct { struct token *next; UWORD num; char s[sizeof("SWAP" "\0" "")]; struct asment d; } opswap;
-    struct { struct token *next; UWORD num; char s[sizeof("TAS" "\0" "")]; struct asment d; } optas;
-    struct { struct token *next; UWORD num; char s[sizeof("TRAP" "\0" "")]; struct asment d; } optrap;
-    struct { struct token *next; UWORD num; char s[sizeof("TRAPV" "\0" "")]; struct asment d; } optrapv;
-    struct { struct token *next; UWORD num; char s[sizeof("TST" "\0" "")]; struct asment d; } optst;
-    struct { struct token *next; UWORD num; char s[sizeof("UNLK" "\0" "")]; struct asment d; } opunlk;
-    struct { struct token *next; UWORD num; char s[sizeof("EndAsm" "\0" "")]; } endasm;
-    struct { struct token *next; UWORD num; char s[sizeof("List" "\0" "")]; } toktnum;
-    struct { struct token *next; UWORD num; char s[sizeof("SetErr" "\0" "")]; } toktnum2;
-    struct { struct token *next; UWORD num; char s[sizeof("ClrErr" "\0" "")]; } toktnum3;
-    struct { struct token *next; UWORD num; char s[sizeof("ErrFail" "\0" "")]; } toktnum5;
-    struct { struct token *next; UWORD num; char s[sizeof("Addr" "\0" "Objectname(Object#)")]; } toktnum6;
-    struct { struct token *next; UWORD num; char s[sizeof("MOD" "\0" "")]; } toktnum7;
-    struct { struct token *next; UWORD num; char s[sizeof("Pi" "\0" "")]; } toktnum8;
-    struct { struct token *next; UWORD num; char s[sizeof("Repeat" "\0" "")]; } toktnum9;
-    struct { struct token *next; UWORD num; char s[sizeof("Until" "\0" "Expression")]; } toktnum10;
-    struct { struct token *next; UWORD num; char s[sizeof("PutReg" "\0" "68000 Reg,Variable")]; } toktnum11;
-    struct { struct token *next; UWORD num; char s[sizeof("Pop" "\0" "Gosub|For|Select|If|While|Repeat")]; } toktnum12;
-    struct { struct token *next; UWORD num; char s[sizeof("INCDIR" "\0" "Pathname")]; } toktnum13;
-    struct { struct token *next; UWORD num; char s[sizeof("EndIf" "\0" "")]; } toktnum14;
-    struct { struct token *next; UWORD num; char s[sizeof("Wend" "\0" "")]; } toktnum15;
-    struct { struct token *next; UWORD num; char s[sizeof("SysJsr" "\0" "Routine")]; } toktnum16;
-    struct { struct token *next; UWORD num; char s[sizeof("WBStartup" "\0" "")]; } toktnum17;
-    struct { struct token *next; UWORD num; char s[sizeof("Maximum" "\0" "Objectname")]; } toktnum18;
-    struct { struct token *next; UWORD num; char s[sizeof("On" "\0" "Expression Goto|Gosub Program Label[,Program Label...]")]; } toktnum19;
-    struct { struct token *next; UWORD num; char s[sizeof("Off" "\0" "")]; } toktnum20;
-    struct { struct token *next; UWORD num; char s[sizeof("Forever" "\0" "")]; } toktnum21;
-    struct { struct token *next; UWORD num; char s[sizeof("Restore" "\0" "[Program Label]")]; } toktnum22;
-    struct { struct token *next; UWORD num; char s[sizeof("Exchange" "\0" "Var,Var")]; } toktnum23;
-    struct { struct token *next; UWORD num; char s[sizeof("USEPATH" "\0" "Pathtext")]; } toktnum24;
-    struct { struct token *next; UWORD num; char s[sizeof("CloseEd" "\0" "")]; } toktnum25;
-    struct { struct token *next; UWORD num; char s[sizeof("NoCli" "\0" "")]; } toktnum26;
-    struct { struct token *next; UWORD num; char s[sizeof("BitTst" "\0" "")]; } toktnum27;
-    struct { struct token *next; UWORD num; char s[sizeof("BitSet" "\0" "")]; } toktnum28;
-    struct { struct token *next; UWORD num; char s[sizeof("BitClr" "\0" "")]; } toktnum29;
-    struct { struct token *next; UWORD num; char s[sizeof("BitChg" "\0" "")]; } toktnum30;
-    struct { struct token *next; UWORD num; char s[sizeof("Used" "\0" "Objectname(Object#)")]; } toktnum31;
-    struct { struct token *next; UWORD num; char s[sizeof("Runerrson" "\0" "")]; } toktnum32;
-    struct { struct token *next; UWORD num; char s[sizeof("Runerrsoff" "\0" "")]; } toktnum33;
-} tokimg = {
-    { (struct token *)&tokimg.tok2, 1, "NEWTYPE" "\0" ".Typename" },
-    { (struct token *)&tokimg.tok3, 2, "End" "\0" "[If|While|Select|Statement|Function|SetInt|SetErr|NEWTYPE|MACRO]" },
-    { (struct token *)&tokimg.tok4, 3, "Let" "\0" "Var=|Operator Expression" },
-    { (struct token *)&tokimg.tok5, 4, "Dim" "\0" "Arrayname [List] (Dimension1[,Dimension2..])" },
-    { (struct token *)&tokimg.tok6, 5, "Goto" "\0" "Program Label" },
-    { (struct token *)&tokimg.tok7, 6, "Gosub" "\0" "Program Label" },
-    { (struct token *)&tokimg.tok8, 7, "Return" "\0" "" },
-    { (struct token *)&tokimg.tok9, 8, "Statement" "\0" "Procedurename{[Parameter1[,Parameter2...]]}" },
-    { (struct token *)&tokimg.tok10, 9, "Function" "\0" "[.Type] Procedurename{[Parameter1[,Parameter2...]]}" },
-    { (struct token *)&tokimg.tok11, 10, "MouseWait" "\0" "" },
-    { (struct token *)&tokimg.tok12, 11, "If" "\0" "Expression [Then...]" },
-    { (struct token *)&tokimg.tok13, 12, "While" "\0" "Expression" },
-    { (struct token *)&tokimg.tok14, 13, "Macro" "\0" "Macroname" },
-    { (struct token *)&tokimg.tok15, 14, "Select" "\0" "Expression" },
-    { (struct token *)&tokimg.tok16, 15, "Case" "\0" "Expression" },
-    { (struct token *)&tokimg.tok17, 16, "Default" "\0" "" },
-    { (struct token *)&tokimg.tok18, 17, "AsmExit" "\0" "" },
-    { (struct token *)&tokimg.tok19, 18, "XINCLUDE" "\0" "Filename" },
-    { (struct token *)&tokimg.tok20, 19, "INCLUDE" "\0" "Filename" },
-    { (struct token *)&tokimg.tok21, 20, "Jimi" "\0" "" },
-    { (struct token *)&tokimg.tok22, 21, "SHARED" "\0" "Var[,Var...]" },
-    { (struct token *)&tokimg.tok23, 22, "For" "\0" "Var=Expression1 To Expression2 [Step Expression3]" },
-    { (struct token *)&tokimg.tok24, 23, "Next" "\0" "[Var[,Var...]]" },
-    { (struct token *)&tokimg.tok25, 24, "To" "\0" "Expression2 [Step Expression3]" },
-    { (struct token *)&tokimg.tok26, 25, "Step" "\0" "increment" },
-    { (struct token *)&tokimg.tok27, 26, "Data" "\0" "[.Type] Item[,Item...]" },
-    { (struct token *)&tokimg.tok28, 27, "Read" "\0" "Var[,Var...]" },
-    { (struct token *)&tokimg.tok29, 28, "CNIF" "\0" "Constant Comparison Constant" },
-    { (struct token *)&tokimg.tok30, 29, "CSIF" "\0" "\"String\" Comparison \"String\"" },
-    { (struct token *)&tokimg.tok31, 30, "CELSE" "\0" "" },
-    { (struct token *)&tokimg.tok32, 31, "CEND" "\0" "" },
-    { (struct token *)&tokimg.tok33, 32, "CERR" "\0" "Errormessage" },
-    { (struct token *)&tokimg.tok34, 33, "Then" "\0" "statement..." },
-    { (struct token *)&tokimg.tok35, 34, "Else" "\0" "[Statement...]" },
-    { (struct token *)&tokimg.tok36, 35, "Even4" "\0" "; align to 4 byte boundary" },
-    { (struct token *)&tokimg.tok37, 36, "Even8" "\0" "; align to 8 byte boundary" },
-    { (struct token *)&tokimg.tok38, 37, "Dc" "\0" "[.Size] Data[,Data...]" },
-    { (struct token *)&tokimg.tok39, 38, "Ds" "\0" "[.Size] Length" },
-    { (struct token *)&tokimg.tok40, 39, "Even" "\0" "" },
-    { (struct token *)&tokimg.tok41, 40, "Dcb" "\0" "[.Size] Repeats,Data" },
-    { (struct token *)&tokimg.tok42, 41, "GetReg" "\0" "68000 Reg,Expression" },
-    { (struct token *)&tokimg.tok43, 42, "IncBin" "\0" "Filename" },
-    { (struct token *)&tokimg.tok44, 43, "Free" "\0" "Objectname Object#" },
-    { (struct token *)&tokimg.tok45, 44, "Use" "\0" "Objectname Object#" },
-    { (struct token *)&tokimg.tok46, 45, "Stop" "\0" "" },
-    { (struct token *)&tokimg.tok47, 46, "Cont" "\0" "[N]" },
-    { (struct token *)&tokimg.tok48, 47, "SizeOf" "\0" ".Typename[,Entrypath]" },
-    { (struct token *)&tokimg.tok49, 48, "SetInt" "\0" "Type" },
-    { (struct token *)&tokimg.tok50, 49, "ClrInt" "\0" "Type" },
-    { (struct token *)&tokimg.tok51, 50, "MaxLen" "\0" "StringVar=Expression" },
-    { (struct token *)&tokimg.tok52, 51, "DEFTYPE" "\0" ".Typename [Var[,Var...]]" },
-    { (struct token *)&tokimg.tok53, 52, "BLITZ" "\0" "" },
-    { (struct token *)&tokimg.tok54, 53, "AMIGA" "\0" "" },
-    { (struct token *)&tokimg.tok55, 54, "QAMIGA" "\0" "" },
-    { (struct token *)&tokimg.tok56, 55, "VWait" "\0" "[Frames]" },
-    { (struct token *)&tokimg.tok57, 56, "ALibJsr" "\0" "Token[,Form]" },
-    { (struct token *)&tokimg.tok58, 57, "TokeJsr" "\0" "Token[,Form]" },
-    { (struct token *)&tokimg.tok59, 58, "BLibJsr" "\0" "Token[,Form]" },
-    { (struct token *)&tokimg.opabcd, 59, "Jimi" "\0" "" },
-    { (struct token *)&tokimg.opadd, fnum+0, "ABCD" "\0" "",
-      { 0xc100, dn_^pan_, dn_^pan_, (9<<4)+0, (0<<4)+0, (UWORD)((15<<12)+byte_), abcdchk, (WORD)0 } },
-    { (struct token *)&tokimg.opaddi, fnum+1, "ADD" "\0" "",
-      { 0xd000, all_, 0x1fd, (0<<4)+3, (9<<4)+15, (UWORD)((6<<12)+sall_), addchk, (WORD)0x8003 } },
-    { (struct token *)&tokimg.opadda, fnum+2, "ADDI" "\0" "",
-      { 0x600, imm_, 0x1fd, (15<<4)+15, (0<<4)+3, (UWORD)((6<<12)+sall_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opaddq, fnum+3, "ADDA" "\0" "",
-      { 0xd0c0, all_, 2, (0<<4)+3, (9<<4)+15, (UWORD)((8<<12)+wordlong_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opaddx, fnum+4, "ADDQ" "\0" "",
-      { 0x5000, imm_, 0x1ff, (15<<4)+15, (0<<4)+3, (UWORD)((6<<12)+sall_), NULL, (WORD)1 } },
-    { (struct token *)&tokimg.opand, fnum+5, "ADDX" "\0" "",
-      { 0xd100, dn_^pan_, dn_^pan_, (0<<4)+15, (9<<4)+15, (UWORD)((6<<12)+sall_), abcdchk, (WORD)0 } },
-    { (struct token *)&tokimg.opandi, fnum+6, "AND" "\0" "",
-      { 0xc000, all_&nan_, 0x1fd, (0<<4)+3, (9<<4)+15, (UWORD)((6<<12)+sall_), addchk, (WORD)0 } },
-    { (struct token *)&tokimg.opasl, fnum+7, "ANDI" "\0" "",
-      { 0x200, imm_, 0x1fd^ccr_^sr_^imm_, (15<<4)+15, (0<<4)+3, (UWORD)((6<<12)+sall_), andichk, (WORD)0 } },
-    { (struct token *)&tokimg.opasr, fnum+8, "ASL" "\0" "",
-      { 0xe100, imm_^0x1fd, 1, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+sall_), aslchk, (WORD)1 } },
-    { (struct token *)&tokimg.opbcc, fnum+9, "ASR" "\0" "",
-      { 0xe000, imm_^0x1fd, 1, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+sall_), aslchk, (WORD)1 } },
-    { (struct token *)&tokimg.opbcs, fnum+10, "BCC" "\0" "",
-      { 0x6400, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opbeq, fnum+11, "BCS" "\0" "",
-      { 0x6500, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opbge, fnum+12, "BEQ" "\0" "",
-      { 0x6700, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opbgt, fnum+13, "BGE" "\0" "",
-      { 0x6C00, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opbhi, fnum+14, "BGT" "\0" "",
-      { 0x6E00, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opble, fnum+15, "BHI" "\0" "",
-      { 0x6200, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opbls, fnum+16, "BLE" "\0" "",
-      { 0x6F00, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opblt, fnum+17, "BLS" "\0" "",
-      { 0x6300, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opbmi, fnum+18, "BLT" "\0" "",
-      { 0x6D00, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opbne, fnum+19, "BMI" "\0" "",
-      { 0x6B00, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opbpl, fnum+20, "BNE" "\0" "",
-      { 0x6600, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opbvc, fnum+21, "BPL" "\0" "",
-      { 0x6A00, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opbvs, fnum+22, "BVC" "\0" "",
-      { 0x6800, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opbchg, fnum+23, "BVS" "\0" "",
-      { 0x6900, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+0), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opbclr, fnum+24, "BCHG" "\0" "",
-      { 0x140, imm_^dn_, 0x1fd, (15<<4)+15, (0<<4)+3, (UWORD)((15<<12)+sall_), bitchk, (WORD)0 } },
-    { (struct token *)&tokimg.opbset, fnum+25, "BCLR" "\0" "",
-      { 0x180, imm_^dn_, 0x1fd, (15<<4)+15, (0<<4)+3, (UWORD)((15<<12)+sall_), bitchk, (WORD)0 } },
-    { (struct token *)&tokimg.opbtst, fnum+26, "BSET" "\0" "",
-      { 0x1c0, imm_^dn_, 0x1fd, (15<<4)+15, (0<<4)+3, (UWORD)((15<<12)+sall_), bitchk, (WORD)0 } },
-    { (struct token *)&tokimg.opbra, fnum+27, "BTST" "\0" "",
-      { 0x100, imm_^dn_, 0x1fd, (15<<4)+15, (0<<4)+3, (UWORD)((15<<12)+sall_), bitchk, (WORD)0 } },
-    { (struct token *)&tokimg.opbsr, fnum+28, "BRA" "\0" "",
-      { 0x6000, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opchk, fnum+29, "BSR" "\0" "",
-      { 0x6100, dpc_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)2 } },
-    { (struct token *)&tokimg.opclr, fnum+30, "CHK" "\0" "",
-      { 0x4180, 0xffd, dn_, (0<<4)+3, (9<<4)+15, (UWORD)((15<<12)+word_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opcmp, fnum+31, "CLR" "\0" "",
-      { 0x4200, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((6<<12)+sall_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opcmpi, fnum+32, "CMP" "\0" "",
-      { 0xb000, all_, dn_, (0<<4)+3, (9<<4)+15, (UWORD)((6<<12)+sall_), NULL, (WORD)0x8003 } },
-    { (struct token *)&tokimg.opcmpa, fnum+33, "CMPI" "\0" "",
-      { 0xc00, imm_, 0x1fd, (15<<4)+15, (0<<4)+3, (UWORD)((6<<12)+sall_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opcmpm, fnum+34, "CMPA" "\0" "",
-      { 0xb0c0, all_, an_, (0<<4)+3, (9<<4)+15, (UWORD)((8<<12)+wordlong_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opdbcc, fnum+35, "CMPM" "\0" "",
-      { 0xb108, anp_, anp_, (0<<4)+15, (9<<4)+15, (UWORD)((6<<12)+sall_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opdbcs, fnum+36, "DBCC" "\0" "",
-      { 0x54C8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdbeq, fnum+37, "DBCS" "\0" "",
-      { 0x55C8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdbge, fnum+38, "DBEQ" "\0" "",
-      { 0x57C8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdbgt, fnum+39, "DBGE" "\0" "",
-      { 0x5CC8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdbhi, fnum+40, "DBGT" "\0" "",
-      { 0x5EC8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdble, fnum+41, "DBHI" "\0" "",
-      { 0x52C8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdbls, fnum+42, "DBLE" "\0" "",
-      { 0x5FC8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdblt, fnum+43, "DBLS" "\0" "",
-      { 0x53C8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdbmi, fnum+44, "DBLT" "\0" "",
-      { 0x5DC8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdbne, fnum+45, "DBMI" "\0" "",
-      { 0x5BC8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdbpl, fnum+46, "DBNE" "\0" "",
-      { 0x56C8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdbvc, fnum+47, "DBPL" "\0" "",
-      { 0x5AC8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdbvs, fnum+48, "DBVC" "\0" "",
-      { 0x58C8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdbf, fnum+49, "DBVS" "\0" "",
-      { 0x59C8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdra, fnum+50, "DBF" "\0" "",
-      { 0x51c8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdbt, fnum+51, "DBRA" "\0" "",
-      { 0x51c8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdivs, fnum+52, "DBT" "\0" "",
-      { 0x50c8, dn_, dpc_, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)5 } },
-    { (struct token *)&tokimg.opdivu, fnum+53, "DIVS" "\0" "",
-      { 0x81c0, 0xffd, dn_, (0<<4)+3, (9<<4)+15, (UWORD)((15<<12)+word_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opeor, fnum+54, "DIVU" "\0" "",
-      { 0x80c0, 0xffd, dn_, (0<<4)+3, (9<<4)+15, (UWORD)((15<<12)+word_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opeori, fnum+55, "EOR" "\0" "",
-      { 0xb100, dn_, 0x1fd, (9<<4)+15, (0<<4)+3, (UWORD)((6<<12)+sall_), NULL, (WORD)0x8002 } },
-    { (struct token *)&tokimg.opexg, fnum+56, "EORI" "\0" "",
-      { 0xa00, imm_, 0x1fd^ccr_^sr_^imm_, (15<<4)+15, (0<<4)+3, (UWORD)((6<<12)+sall_), andichk, (WORD)0 } },
-    { (struct token *)&tokimg.opext, fnum+57, "EXG" "\0" "",
-      { 0xc100, dn_^an_, dn_^an_, (9<<4)+15, (0<<4)+15, (UWORD)((15<<12)+long_), exgchk, (WORD)0 } },
-    { (struct token *)&tokimg.opillegal, fnum+58, "EXT" "\0" "",
-      { 0x4800, dn_, 0, (0<<4)+15, (15<<4)+15, (UWORD)((6<<12)+0x32f), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opjmp, fnum+59, "ILLEGAL" "\0" "",
-      { 0x4afc, 0, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opjsr, fnum+60, "JMP" "\0" "",
-      { 0x4ec0, 0x7e4, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.oplea, fnum+61, "JSR" "\0" "",
-      { 0x4e80, 0x7e4, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.oplink, fnum+62, "LEA" "\0" "",
-      { 0x41c0, 0x7e4, an_, (0<<4)+3, (9<<4)+15, (UWORD)((15<<12)+long_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.oplsl, fnum+63, "LINK" "\0" "",
-      { 0x4e50, an_, imm_, (0<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.oplsr, fnum+64, "LSL" "\0" "",
-      { 0xe108, imm_^0x1fd, 1, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+sall_), lslchk, (WORD)1 } },
-    { (struct token *)&tokimg.opmove, fnum+65, "LSR" "\0" "",
-      { 0xe008, imm_^0x1fd, 1, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+sall_), lslchk, (WORD)1 } },
-    { (struct token *)&tokimg.opmovep, fnum+66, "MOVE" "\0" "",
-      { 0, all_^ccr_^sr_^usp_, 0x1fd^ccr_^sr_^usp_, (0<<4)+3, (9<<4)+6, (UWORD)((15<<12)+sall_), movechk, (WORD)0x8001 } },
-    { (struct token *)&tokimg.opmovea, fnum+67, "MOVEP" "\0" "",
-      { 0x108, dn_^dan_, dn_^dan_, (9<<4)+15, (0<<4)+15, (UWORD)((6<<12)+0x10f), movepchk, (WORD)0 } },
-    { (struct token *)&tokimg.opmoveq, fnum+68, "MOVEA" "\0" "",
-      { 0x40, all_, an_, (0<<4)+3, (9<<4)+15, (UWORD)((12<<12)+0x23f), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opmovem, fnum+69, "MOVEQ" "\0" "",
-      { 0x7000, imm_, dn_, (15<<4)+15, (9<<4)+15, (UWORD)((15<<12)+long_), NULL, (WORD)3 } },
-    { (struct token *)&tokimg.opmuls, fnum+70, "MOVEM" "\0" "",
-      { 0x4880, mem_^0x7fc, mem_^0x7fc, (0<<4)+3, (0<<4)+3, (UWORD)((6<<12)+0x10f), movemchk, (WORD)0 } },
-    { (struct token *)&tokimg.opmulu, fnum+71, "MULS" "\0" "",
-      { 0xc1c0, 0xffd, dn_, (0<<4)+3, (9<<4)+15, (UWORD)((15<<12)+word_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opnbcd, fnum+72, "MULU" "\0" "",
-      { 0xc0c0, 0xffd, dn_, (0<<4)+3, (9<<4)+15, (UWORD)((15<<12)+word_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opneg, fnum+73, "NBCD" "\0" "",
-      { 0x4800, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opnegx, fnum+74, "NEG" "\0" "",
-      { 0x4400, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((6<<12)+sall_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opnop, fnum+75, "NEGX" "\0" "",
-      { 0x4000, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((6<<12)+sall_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opnot, fnum+76, "NOP" "\0" "",
-      { 0x4e71, 0, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opor, fnum+77, "NOT" "\0" "",
-      { 0x4600, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((6<<12)+sall_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opori, fnum+78, "OR" "\0" "",
-      { 0x8000, all_&nan_, 0x1fd, (0<<4)+3, (9<<4)+15, (UWORD)((6<<12)+sall_), addchk, (WORD)0x8002 } },
-    { (struct token *)&tokimg.oppea, fnum+79, "ORI" "\0" "",
-      { 0, imm_, 0x1fd^ccr_^sr_^imm_, (15<<4)+15, (0<<4)+3, (UWORD)((6<<12)+sall_), andichk, (WORD)0 } },
-    { (struct token *)&tokimg.opreset, fnum+80, "PEA" "\0" "",
-      { 0x4840, 0x7e4, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+long_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.oprol, fnum+81, "RESET" "\0" "",
-      { 0x4e70, 0, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opror, fnum+82, "ROL" "\0" "",
-      { 0xe118, imm_^0x1fd, 1, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+sall_), rolchk, (WORD)1 } },
-    { (struct token *)&tokimg.oproxl, fnum+83, "ROR" "\0" "",
-      { 0xe018, imm_^0x1fd, 1, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+sall_), rolchk, (WORD)1 } },
-    { (struct token *)&tokimg.oproxr, fnum+84, "ROXL" "\0" "",
-      { 0xe110, imm_^0x1fd, 1, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+sall_), roxlchk, (WORD)1 } },
-    { (struct token *)&tokimg.oprte, fnum+85, "ROXR" "\0" "",
-      { 0xe010, imm_^0x1fd, 1, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+sall_), roxlchk, (WORD)1 } },
-    { (struct token *)&tokimg.oprtr, fnum+86, "RTE" "\0" "",
-      { 0x4e73, 0, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.oprts, fnum+87, "RTR" "\0" "",
-      { 0x4e77, 0, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsbcd, fnum+88, "RTS" "\0" "",
-      { 0x4e75, 0, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opscc, fnum+89, "SBCD" "\0" "",
-      { 0x8100, dn_^pan_, dn_^pan_, (9<<4)+0, (0<<4)+0, (UWORD)((15<<12)+byte_), abcdchk, (WORD)0 } },
-    { (struct token *)&tokimg.opscs, fnum+90, "SCC" "\0" "",
-      { 0x54c0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opseq, fnum+91, "SCS" "\0" "",
-      { 0x55c0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsge, fnum+92, "SEQ" "\0" "",
-      { 0x57c0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsgt, fnum+93, "SGE" "\0" "",
-      { 0x5Cc0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opshi, fnum+94, "SGT" "\0" "",
-      { 0x5Ec0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsle, fnum+95, "SHI" "\0" "",
-      { 0x52c0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsls, fnum+96, "SLE" "\0" "",
-      { 0x5Fc0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opslt, fnum+97, "SLS" "\0" "",
-      { 0x53c0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsmi, fnum+98, "SLT" "\0" "",
-      { 0x5Dc0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsne, fnum+99, "SMI" "\0" "",
-      { 0x5Bc0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opspl, fnum+100, "SNE" "\0" "",
-      { 0x56c0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsvc, fnum+101, "SPL" "\0" "",
-      { 0x5Ac0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsvs, fnum+102, "SVC" "\0" "",
-      { 0x58c0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opst, fnum+103, "SVS" "\0" "",
-      { 0x59c0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsf, fnum+104, "ST" "\0" "",
-      { 0x50c0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opstop, fnum+105, "SF" "\0" "",
-      { 0x51c0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsub, fnum+106, "STOP" "\0" "",
-      { 0x4e72, imm_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsubi, fnum+107, "SUB" "\0" "",
-      { 0x9000, all_, 0x1fd, (0<<4)+3, (9<<4)+15, (UWORD)((6<<12)+sall_), addchk, (WORD)0x8003 } },
-    { (struct token *)&tokimg.opsuba, fnum+108, "SUBI" "\0" "",
-      { 0x400, imm_, 0x1fd, (15<<4)+15, (0<<4)+3, (UWORD)((6<<12)+sall_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsubq, fnum+109, "SUBA" "\0" "",
-      { 0x90c0, all_, 2, (0<<4)+3, (9<<4)+15, (UWORD)((8<<12)+wordlong_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opsubx, fnum+110, "SUBQ" "\0" "",
-      { 0x5100, imm_, 0x1ff, (15<<4)+15, (0<<4)+3, (UWORD)((6<<12)+sall_), NULL, (WORD)1 } },
-    { (struct token *)&tokimg.opswap, fnum+111, "SUBX" "\0" "",
-      { 0x9100, dn_^pan_, dn_^pan_, (0<<4)+15, (9<<4)+15, (UWORD)((6<<12)+sall_), abcdchk, (WORD)0 } },
-    { (struct token *)&tokimg.optas, fnum+112, "SWAP" "\0" "",
-      { 0x4840, dn_, 0, (0<<4)+15, (15<<4)+15, (UWORD)((15<<12)+word_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.optrap, fnum+113, "TAS" "\0" "",
-      { 0x4ac0, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((15<<12)+byte_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.optrapv, fnum+114, "TRAP" "\0" "",
-      { 0x4e40, imm_, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)4 } },
-    { (struct token *)&tokimg.optst, fnum+115, "TRAPV" "\0" "",
-      { 0x4e76, 0, 0, (15<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.opunlk, fnum+116, "TST" "\0" "",
-      { 0x4a00, 0x1fd, 0, (0<<4)+3, (15<<4)+15, (UWORD)((6<<12)+sall_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.endasm, fnum+117, "UNLK" "\0" "",
-      { 0x4e58, an_, 0, (0<<4)+15, (15<<4)+15, (UWORD)((15<<12)+nosz_), NULL, (WORD)0 } },
-    { (struct token *)&tokimg.toktnum, fnum+118, "EndAsm" "\0" "" },
-    { (struct token *)&tokimg.toktnum2, tnum, "List" "\0" "" },
-    { (struct token *)&tokimg.toktnum3, tnum+1, "SetErr" "\0" "" },
-    { (struct token *)&tokimg.toktnum5, tnum+2, "ClrErr" "\0" "" },
-    { (struct token *)&tokimg.toktnum6, tnum+4, "ErrFail" "\0" "" },
-    { (struct token *)&tokimg.toktnum7, tnum+5, "Addr" "\0" "Objectname(Object#)" },
-    { (struct token *)&tokimg.toktnum8, tnum+6, "MOD" "\0" "" },
-    { (struct token *)&tokimg.toktnum9, tnum+7, "Pi" "\0" "" },
-    { (struct token *)&tokimg.toktnum10, tnum+8, "Repeat" "\0" "" },
-    { (struct token *)&tokimg.toktnum11, tnum+9, "Until" "\0" "Expression" },
-    { (struct token *)&tokimg.toktnum12, tnum+10, "PutReg" "\0" "68000 Reg,Variable" },
-    { (struct token *)&tokimg.toktnum13, tnum+11, "Pop" "\0" "Gosub|For|Select|If|While|Repeat" },
-    { (struct token *)&tokimg.toktnum14, tnum+12, "INCDIR" "\0" "Pathname" },
-    { (struct token *)&tokimg.toktnum15, tnum+13, "EndIf" "\0" "" },
-    { (struct token *)&tokimg.toktnum16, tnum+14, "Wend" "\0" "" },
-    { (struct token *)&tokimg.toktnum17, tnum+15, "SysJsr" "\0" "Routine" },
-    { (struct token *)&tokimg.toktnum18, tnum+16, "WBStartup" "\0" "" },
-    { (struct token *)&tokimg.toktnum19, tnum+17, "Maximum" "\0" "Objectname" },
-    { (struct token *)&tokimg.toktnum20, tnum+18, "On" "\0" "Expression Goto|Gosub Program Label[,Program Label...]" },
-    { (struct token *)&tokimg.toktnum21, tnum+19, "Off" "\0" "" },
-    { (struct token *)&tokimg.toktnum22, tnum+20, "Forever" "\0" "" },
-    { (struct token *)&tokimg.toktnum23, tnum+21, "Restore" "\0" "[Program Label]" },
-    { (struct token *)&tokimg.toktnum24, tnum+22, "Exchange" "\0" "Var,Var" },
-    { (struct token *)&tokimg.toktnum25, tnum+23, "USEPATH" "\0" "Pathtext" },
-    { (struct token *)&tokimg.toktnum26, tnum+24, "CloseEd" "\0" "" },
-    { (struct token *)&tokimg.toktnum27, tnum+25, "NoCli" "\0" "" },
-    { (struct token *)&tokimg.toktnum28, tnum+26, "BitTst" "\0" "" },
-    { (struct token *)&tokimg.toktnum29, tnum+27, "BitSet" "\0" "" },
-    { (struct token *)&tokimg.toktnum30, tnum+28, "BitClr" "\0" "" },
-    { (struct token *)&tokimg.toktnum31, tnum+29, "BitChg" "\0" "" },
-    { (struct token *)&tokimg.toktnum32, tnum+30, "Used" "\0" "Objectname(Object#)" },
-    { (struct token *)&tokimg.toktnum33, tnum+31, "Runerrson" "\0" "" },
-    { NULL, tnum+32, "Runerrsoff" "\0" "" },
+#include "toklist.h"
 };
+
+#undef TK
+#undef TA
+#undef TKLAST
+#define NX(id) (struct token *)&IMG.id
+#define TK(id, next, num, name, help)       { NX(next), num, name "\0" help },
+#define TA(id, next, num, name, ...)        { NX(next), num, name "\0" "", { __VA_ARGS__ } },
+#define TKLAST(id, num, name, help)         { NULL, num, name "\0" help },
+#define IMG tokimg
+
+struct tokimage tokimg = {              /* asm label: tokens = first node */
+#include "toklist.h"
+};
+
+#if BLITZ2_AB3
+/* AmiBlitz3's list (toklist.h): the same nodes with AmiBlitz3's names
+   (M picks b3), blitz2's last one followed by AmiBlitz3's new ones */
+#undef TK
+#undef TA
+#undef TKLAST
+#undef TK3
+#undef TK3LAST
+#undef M
+#define TK(id, next, num, name, help)       TKMEMBER(id, name, help)
+#define TA(id, nx, n, name, ...) \
+    struct { struct token *next; UWORD num; char s[sizeof(name "\0" "")]; struct asment d; } id;
+#define TKLAST(id, num, name, help)         TKMEMBER(id, name, help)
+#define TK3(id, next, num, name, help)      TKMEMBER(id, name, help)
+#define TK3LAST(id, num, name, help)        TKMEMBER(id, name, help)
+#define M(b2, b3) b3
+
+struct tokimage_ab3 {
+#include "toklist.h"
+};
+
+#undef TK
+#undef TA
+#undef TKLAST
+#undef TK3
+#undef TK3LAST
+#undef IMG
+#define TK(id, next, num, name, help)       { NX(next), num, name "\0" help },
+#define TA(id, next, num, name, ...)        { NX(next), num, name "\0" "", { __VA_ARGS__ } },
+#define TKLAST(id, num, name, help)         { NX(toktnum34), num, name "\0" help },
+#define TK3(id, next, num, name, help)      { NX(next), num, name "\0" help },
+#define TK3LAST(id, num, name, help)        { NULL, num, name "\0" help },
+#define IMG tokimg_ab3
+
+struct tokimage_ab3 tokimg_ab3 = {
+#include "toklist.h"
+};
+#endif
+
+#undef TKMEMBER
+#undef TK
+#undef TA
+#undef TKLAST
+#undef TK3
+#undef TK3LAST
+#undef M
+#undef NX
+#undef IMG
 
 /* asm label `tokens` = first node: macro in main.h */
 
@@ -1003,6 +542,11 @@ static WORD begin(void)
     }
     (void)count;
     lasttoken = (ULONG)tok;
+#if BLITZ2_AB3
+    /* the editor gets the list of the program's mode (progmode is decided
+       before begin, docs/ab3 D4) */
+    edstruct.toklist = &tokens;
+#endif
     makeasmtab();
     optreqprep();
     /* @1369 */

@@ -204,7 +204,14 @@ void  sleepon(void);                        /* 1494 comdata+76 busy pointer */
 /* 283 first token; list ends at toktnum33.  The nodes are members of one
    object (struct tokimage, defined in main.c), `tokens` is its first node */
 extern struct tokimage tokimg;
+#if BLITZ2_AB3
+/* blitz2-ab3: AmiBlitz3's list (toklist.h) in AB3 mode */
+extern struct tokimage_ab3 tokimg_ab3;
+#define tokens (*(progmode == XTRA_MODE_AB3 ? (struct token *)&tokimg_ab3 \
+                                            : (struct token *)&tokimg))
+#else
 #define tokens (*(struct token *)&tokimg)
+#endif
 extern struct edstruct edstruct;      /* 274 */
 extern const char menus[];            /* 724 "COMPILER\0" + items "TEXT\0" key, 0 */
 

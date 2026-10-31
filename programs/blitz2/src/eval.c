@@ -2030,6 +2030,9 @@ static UWORD function(UWORD c, UWORD *type)
         return domaximum(type);
     if (c == 0x801e + tnum)
         return doused(type);
+#if BLITZ2_AB3
+    ab3newtoken(c & 0x7fff);
+#endif
     old = *type;                    /* remember old type! */
     sub = findtoke(c & 0x7fff, &lib);
     fl = W_(sub);
