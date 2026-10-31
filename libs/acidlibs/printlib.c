@@ -88,6 +88,7 @@
  * characters -> "Format String too long".
  */
 #include "blitzlib.h"
+#include <stddef.h>
 
 /* entry points (thunks / C routines, defined below) */
 void doformat(void), dofloatmode(void), codeinit(void), formatchk(void);
@@ -148,7 +149,7 @@ BLITZ_LIBFIN();
    behind `form` (BUG(orig) (#240), see above), and ezchar reads the byte before
    `chars` ($20) for a "," at the start.  All accesses that may leave a
    member go through pointers into the whole struct. */
-static struct BL_PACKED {
+static struct BL_PACKED printvars {
     UBYTE form[32];         /* the Format string */
     UWORD formlen;          /* its length (0 = no Format) */
     UWORD formlead;         /* number of digit places before the point */
@@ -160,18 +161,19 @@ static struct BL_PACKED {
     UWORD numbufff;         /*   from here (and the 0 here ends them) */
     UWORD floatmode;        /* 0 = guess, + = never kludge, - = always kludge */
 } pl = { .space2 = 0x2020 };
+static_assert(sizeof pl == 0x234 - 0x1c6);
 
 #define PL_BASE   ((UBYTE *)&pl)
-#define PL_FORM   (PL_BASE + 0)
-#define PL_CHARS  (PL_BASE + 42)
-#define PL_NUMBUFF (PL_BASE + 74)
-#define PL_NUMBUFFF (PL_BASE + 106)
+#define PL_FORM   (PL_BASE + offsetof(struct printvars, form))
+#define PL_CHARS  (PL_BASE + offsetof(struct printvars, chars))
+#define PL_NUMBUFF (PL_BASE + offsetof(struct printvars, numbuff))
+#define PL_NUMBUFFF (PL_BASE + offsetof(struct printvars, numbufff))
 
 /* ffptoascii's buffers and table, in the order of the binary ($872-$9D3):
    buf1 = sign, digits and exponent form, buf2 = fixed point form (the
    point at buf2[24]), then the 48 powers of ten {binary exponent,
    mantissa} 1E19 ... 1E-28 - writable, see BUG(orig) (#241) above. */
-static struct BL_PACKED {
+static struct BL_PACKED ffpvars {
     UBYTE buf1[16];
     UBYTE buf2[50];
     UWORD tab[48][3];
@@ -198,10 +200,12 @@ static struct BL_PACKED {
     },
 };
 
+static_assert(sizeof fa == 0x9d4 - 0x872);
+
 #define FA_BASE  ((UBYTE *)&fa)
-#define FA_BUF1  (FA_BASE + 0)
-#define FA_BUF2  (FA_BASE + 16)
-#define FA_ONE   (FA_BASE + 66 + 19 * 6)    /* table entry 1E0 */
+#define FA_BUF1  (FA_BASE + offsetof(struct ffpvars, buf1))
+#define FA_BUF2  (FA_BASE + offsetof(struct ffpvars, buf2))
+#define FA_ONE   (FA_BASE + offsetof(struct ffpvars, tab[19]))  /* table entry 1E0 */
 
 /* word / long at a (word aligned) address */
 #define RDW(p) (*(const UWORD *)(p))
