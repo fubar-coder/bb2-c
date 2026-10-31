@@ -333,9 +333,10 @@ static UWORD countwidth(const UBYTE *font, const UBYTE *p, UBYTE bold)
     }
 }
 
-/* the glyph rows of one character: rows `rows` + 1 from y, d7 = x offset
-   in bytes, s = x & 15, the font width `fw` */
-static void drawchar(const UWORD *g, UWORD y, ULONG d7, UWORD s, UWORD rows, UWORD fw)
+/* the glyph rows of one character: rows `rows` + 1 from y, rowoff (d7) =
+   the x offset in bytes (+ scr_width per row), s = x & 15, the font
+   width `fw` */
+static void drawchar(const UWORD *g, UWORD y, ULONG rowoff, UWORD s, UWORD rows, UWORD fw)
 {
     ULONG *bs;
     UBYTE *p;
@@ -355,7 +356,7 @@ static void drawchar(const UWORD *g, UWORD y, ULONG d7, UWORD s, UWORD rows, UWO
             bs = BITSTACK;
             pl = 0;
             do {
-                p = (UBYTE *)*bs++ + d7;
+                p = (UBYTE *)*bs++ + rowoff;
                 if (fns.tcolour & (1 << (pl & 7))) {
                     LONGAT(p) |= b1;
                     LONGAT(p + 2) |= b2;
@@ -374,7 +375,7 @@ static void drawchar(const UWORD *g, UWORD y, ULONG d7, UWORD s, UWORD rows, UWO
                 bs = BITSTACK;
                 pl = 0;
                 do {
-                    p = (UBYTE *)*bs++ + d7 + 4;
+                    p = (UBYTE *)*bs++ + rowoff + 4;
                     if (fns.tcolour & (1 << (pl & 7))) {
                         LONGAT(p) |= b3;
                         if (fw == 64)
@@ -386,7 +387,7 @@ static void drawchar(const UWORD *g, UWORD y, ULONG d7, UWORD s, UWORD rows, UWO
                     }
                 } while (++pl != fns.bitdepth);
             }
-            d7 += fns.scr_width;
+            rowoff += fns.scr_width;
         } else {                        /* 16 pixels */
             ULONG b, m;
             UWORD col, n;
@@ -398,14 +399,14 @@ static void drawchar(const UWORD *g, UWORD y, ULONG d7, UWORD s, UWORD rows, UWO
             col = fns.tcolour;
             n = fns.bitdepthminusone;
             do {
-                p = (UBYTE *)*bs++ + d7;
+                p = (UBYTE *)*bs++ + rowoff;
                 if (col & 1)
                     LONGAT(p) |= b;
                 else
                     LONGAT(p) &= m;
                 col >>= 1;
             } while (n-- != 0);
-            d7 += fns.scr_width;
+            rowoff += fns.scr_width;
         }
 next:
         y++;
@@ -413,9 +414,10 @@ next:
 }
 
 /* _FNSPrint2 (behind the bitmap check of the entry): fontnum, x, y,
-   string, prefs, colour; the result a0 */
+   string, prefs, colour; the result a0 (`result`, the caller's a0
+   without a font) */
 static UBYTE *print(UWORD fontnum, UWORD x0, UWORD y0, const UBYTE *str, UBYTE prefs,
-                    UBYTE colour, UBYTE *a0)
+                    UBYTE colour, UBYTE *result)
 {
     const UBYTE *font, *s;
     UBYTE *planes;
@@ -428,7 +430,7 @@ restart:
     fns.tcolour = colour;
     font = (const UBYTE *)fns.font_add[fontnum & 15];
     if (LONGAT(font) != FNSID)
-        return a0;
+        return result;
     x = (UWORD)(x0 + fns.originx);
     y = (UWORD)(y0 + fns.originy);
     s = str;
@@ -516,7 +518,7 @@ draw:
 static void underline(UWORD x)
 {
     UWORD *planes = (UWORD *)((UBYTE *)fns.bit_address + 8), *p;
-    UWORD x5, y, cnt, d2, d5;
+    UWORD xend, y, cnt, left, word;
     ULONG off;
     UBYTE pl, bit, b;
 
@@ -524,8 +526,8 @@ static void underline(UWORD x)
         fns.linewidth = (UWORD)(fns.linewidth + x);
         x = 0;
     }
-    x5 = (UWORD)(x + fns.linewidth);
-    if ((WORD)x5 > (WORD)fns.xmax)
+    xend = (UWORD)(x + fns.linewidth);
+    if ((WORD)xend > (WORD)fns.xmax)
         fns.linewidth = (UWORD)(fns.xmax - x);
     y = (UWORD)(fns.ycord + fns.underpos);
     if ((WORD)y < (WORD)fns.ymin || y > fns.ymax)
@@ -537,43 +539,44 @@ static void underline(UWORD x)
     do {
         int set = fns.tcolour & (1 << (pl & 7));
         p = (UWORD *)(LONGAT((UBYTE *)planes + 4 * pl) + off);
-        d2 = cnt;
+        left = cnt;
         b = bit;
-        d5 = *p;
+        word = *p;
         for (;;) {
             if (set)
-                d5 |= (UWORD)(1 << (b & 15));
+                word |= (UWORD)(1 << (b & 15));
             else
-                d5 &= (UWORD)~(1 << (b & 15));
-            d2--;
-            if (d2 & 0x8000)            /* SUBQ.w #1,d2:BMI */
+                word &= (UWORD)~(1 << (b & 15));
+            left--;
+            if (left & 0x8000)          /* SUBQ.w #1,d2:BMI */
                 break;
             if ((BYTE)--b >= 0)
                 continue;
-            *p++ = d5;
-            d5 = *p;
+            *p++ = word;
+            word = *p;
             b = 15;
         }
-        *p = d5;
+        *p = word;
     } while (++pl != fns.bitdepth);
 }
 
 static UBYTE *BLITZ_ROUTINE print_c(UWORD fontnum BL_REG(d0), UWORD x BL_REG(d1),
                                     UWORD y BL_REG(d2), const UBYTE *str BL_REG(d3),
                                     UWORD prefs BL_REG(d4), UWORD colour BL_REG(d5),
-                                    UBYTE *a0 BL_REG(a0))
+                                    UBYTE *result BL_REG(a0))
 {
-    return print(fontnum, x, y, str, (UBYTE)prefs, (UBYTE)colour, a0);
+    return print(fontnum, x, y, str, (UBYTE)prefs, (UBYTE)colour, result);
 }
 
 /* FNSShadowPrint: the shadow at x+1,y+1 in colour `shadow`, then the text */
 static UBYTE *BLITZ_ROUTINE shadow_c(UWORD fontnum BL_REG(d0), UWORD x BL_REG(d1),
                                      UWORD y BL_REG(d2), const UBYTE *str BL_REG(d3),
                                      UWORD prefs BL_REG(d4), UWORD colour BL_REG(d5),
-                                     UWORD shadow BL_REG(d6), UBYTE *a0 BL_REG(a0))
+                                     UWORD shadow BL_REG(d6), UBYTE *result BL_REG(a0))
 {
-    a0 = print(fontnum, (UWORD)(x + 1), (UWORD)(y + 1), str, (UBYTE)prefs, (UBYTE)shadow, a0);
-    return print(fontnum, x, y, str, (UBYTE)prefs, (UBYTE)colour, a0);
+    result = print(fontnum, (UWORD)(x + 1), (UWORD)(y + 1), str, (UBYTE)prefs, (UBYTE)shadow,
+                   result);
+    return print(fontnum, x, y, str, (UBYTE)prefs, (UBYTE)colour, result);
 }
 
 /* The FNSPrint entries.  _FNSPrint2 pushes d0-d6/a1-a6 and then, without
