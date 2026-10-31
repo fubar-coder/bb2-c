@@ -21,6 +21,7 @@
  * a0 are kept (memlib keeps a0), d0/a1 changed; gstringass leaves a6+8.
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 
 /* entry points (thunks, defined below) */
 void stringass(void), gstringass(void);
@@ -34,34 +35,30 @@ BLITZ_LIBFIN();
 /* membase table of memlib (blitzhelp.h MEMBASE_xxx): JSR (a6) alloc,
    JSR 4(a6) free; the global versions are at +8 */
 
-/* the header in front of a string's characters */
-struct strhead {
-    ULONG alloclen;             /* -8: alloc'd len */
-    ULONG len;                  /* -4: string len */
-};
-static_assert(sizeof(struct strhead) == 8);
+/* the header in front of a string's characters: struct bb_strmem
+   (blitzobj.h) */
 
 static void assign(ULONG len, UBYTE **var, const UBYTE *mem)
 {
     UBYTE *s = *var;
-    struct strhead *h;
+    struct bb_strmem *h;
 
     if (s) {
-        h = (struct strhead *)s - 1;
-        if (len <= h->alloclen) {               /* CMP.l -8(a1),d0:BHI 'lengthen */
+        h = (struct bb_strmem *)s - 1;
+        if (len <= h->alloced) {               /* CMP.l -8(a1),d0:BHI 'lengthen */
             h->len = len;                       /* MOVE.l d0,-4(a1) */
             goto copy;                          /* (BEQ 'endass: copies nothing) */
         }
         {                                       /* 'lengthen */
-            struct bl_regs r = { .d0 = h->alloclen + 9, .a1 = (ULONG)h };
+            struct bl_regs r = { .d0 = h->alloced + 9, .a1 = (ULONG)h };
             BLITZ_BASEJSR(mem, MEMBASE_locfree, r);
         }
     }
     {                                           /* 'allocnews */
         struct bl_regs r = { .d0 = len + 9, .d1 = MEMF_PUBLIC };
-        h = (struct strhead *)BLITZ_BASEJSR(mem, MEMBASE_localloc, r);
+        h = (struct bb_strmem *)BLITZ_BASEJSR(mem, MEMBASE_localloc, r);
     }
-    h->alloclen = len;
+    h->alloced = len;
     h->len = len;
     s = (UBYTE *)(h + 1);
     *var = s;                                   /* MOVE.l a1,(a2) */

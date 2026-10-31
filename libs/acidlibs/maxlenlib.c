@@ -24,6 +24,7 @@
  * area), so echk1 is ordinary code here as well.
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 
 /* entry points (defined below) */
 void domaxlen(void), domaxlenl(void), echk1(void);
@@ -37,20 +38,15 @@ BLITZ_LIBFIN();
 /* membase table of memlib (blitzhelp.h MEMBASE_xxx): JSR (a6) alloc,
    JSR 4(a6) free; the global versions are at +8 */
 
-/* the memory of a string variable; the variable points to `chars` */
-struct strmem {
-    ULONG alloced;                              /* -8: alloc'd len */
-    ULONG len;                                  /* -4: string len */
-    UBYTE chars[];                              /* characters, 0 */
-};
-static_assert(sizeof(struct strmem) == 8);
+/* the memory of a string variable: struct bb_strmem (blitzobj.h); the
+   variable points to `chars` */
 
 static ULONG maxlen(UBYTE **var, ULONG n, const UBYTE *mem)
 {
-    struct strmem *h;
+    struct bb_strmem *h;
 
     if (*var) {
-        h = (struct strmem *)(*var - 8);        /* SUBQ.l #8,d0 */
+        h = (struct bb_strmem *)(*var - 8);        /* SUBQ.l #8,d0 */
         {
             struct bl_regs r = { .d0 = h->alloced + 9, .a1 = (ULONG)h };
             BLITZ_BASEJSR(mem, MEMBASE_locfree, r);
@@ -61,7 +57,7 @@ static ULONG maxlen(UBYTE **var, ULONG n, const UBYTE *mem)
         return 0;
     {
         struct bl_regs r = { .d0 = n + 9, .d1 = MEMF_PUBLIC };
-        h = (struct strmem *)BLITZ_BASEJSR(mem, MEMBASE_localloc, r);
+        h = (struct bb_strmem *)BLITZ_BASEJSR(mem, MEMBASE_localloc, r);
     }
     *var = h->chars;
     h->alloced = n;                             /* MOVE.l d2,(a0)+ */
