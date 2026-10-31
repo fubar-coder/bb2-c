@@ -61,6 +61,7 @@
  * the unused error routine freqchk of the binary is not ported.
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include "blitzexec.h"
 #include <intuition/intuition.h>
 #include <intuition/screens.h>
@@ -1158,12 +1159,12 @@ static void doshape(UWORD id, WORD x, WORD y, ULONG flags,
     gflags = 0;
 }
 
-static void shape1(const UWORD *shape)
+static void shape1(const struct bb_shape *shape)
 {
-    image1.Width = shape[0];
-    image1.Height = shape[1];
-    image1.Depth = shape[2];
-    image1.ImageData = *(UWORD **)(shape + 7);
+    image1.Width = shape->width;
+    image1.Height = shape->height;
+    image1.Depth = shape->depth;
+    image1.ImageData = (UWORD *)shape->data;
     gflags += GFLG_GADGIMAGE;
 }
 
@@ -1186,7 +1187,7 @@ static void shape1(const UWORD *shape)
  * @param scr     a1: the used screen (screenslib)
  * @param shape   a6: the shape (!libs {#shapeslib,$1685}); the GTList in a3
  */
-static void BLITZ_ROUTINE gtshape_c(SHAPEARGS, const UWORD *shape BL_REG(a6))
+static void BLITZ_ROUTINE gtshape_c(SHAPEARGS, const struct bb_shape *shape BL_REG(a6))
 {
     shape1(shape);
     doshape(id, x, y, flags, font, scr);
@@ -1205,13 +1206,13 @@ static void BLITZ_ROUTINE gtshape_c(SHAPEARGS, const UWORD *shape BL_REG(a6))
  * @param shape2  a2: the second shape (!libs {#shapeslib,$1286})
  * @param shape   a6: the shape (!libs {#shapeslib,$1685}); the GTList in a3
  */
-static void BLITZ_ROUTINE gtshape2_c(SHAPEARGS, const UWORD *shape2 BL_REG(a2),
-                                     const UWORD *shape BL_REG(a6))
+static void BLITZ_ROUTINE gtshape2_c(SHAPEARGS, const struct bb_shape *shape2 BL_REG(a2),
+                                     const struct bb_shape *shape BL_REG(a6))
 {
-    image2.Width = shape2[0];
-    image2.Height = shape2[1];
-    image2.Depth = shape2[2];
-    image2.ImageData = *(UWORD **)(shape2 + 7);
+    image2.Width = shape2->width;
+    image2.Height = shape2->height;
+    image2.Depth = shape2->depth;
+    image2.ImageData = (UWORD *)shape2->data;
     gflags += GFLG_GADGHIMAGE;
     shape1(shape);
     doshape(id, x, y, flags, font, scr);
@@ -1825,15 +1826,16 @@ BLITZ_ERRCHK_MESSAGE(mess6, "GTList already attached to window!");
 BLITZ_ERRCHK_MESSAGE(mess7, "GTList must be detached from window first!");
 
 /* sgchk2 - TST (a2):  sgchk - TST (a6) */
-static void BLITZ_ERRCHK sgchk2_c(const UWORD *shape2 BL_REG(a2), const UWORD *shape BL_REG(a6))
+static void BLITZ_ERRCHK sgchk2_c(const struct bb_shape *shape2 BL_REG(a2),
+                                  const struct bb_shape *shape BL_REG(a6))
 {
-    if (!*shape2 || !*shape)
+    if (!shape2->width || !shape->width)
         BLITZ_RUNERR(mess4);
 }
 
-static void BLITZ_ERRCHK sgchk_c(const UWORD *shape BL_REG(a6))
+static void BLITZ_ERRCHK sgchk_c(const struct bb_shape *shape BL_REG(a6))
 {
-    if (!*shape)
+    if (!shape->width)
         BLITZ_RUNERR(mess4);
 }
 
