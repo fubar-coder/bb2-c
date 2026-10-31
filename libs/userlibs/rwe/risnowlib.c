@@ -388,8 +388,8 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
 
 /* KillPoint(listnum,x,y) (d0-d2): a pixel of plane 2 cleared in all
    three planes and added to the kill list; -1, or 0 if it was clear */
-static ULONG BLITZ_ROUTINE killpoint_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1),
-                                       ULONG y BL_REG(d2))
+static BB_BOOL BLITZ_ROUTINE killpoint_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1),
+                                         ULONG y BL_REG(d2))
 {
     struct snowfield *e = entry(n);
     UBYTE *kill = (UBYTE *)e->kill[0];
@@ -400,7 +400,7 @@ static ULONG BLITZ_ROUTINE killpoint_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1),
     UWORD bit = (UWORD)(~x & 7);
 
     if (!btst(plane2, at, bit))
-        return 0;
+        return BB_FALSE;
     bclr(plane2, at, bit);
     bclr(plane1, at, bit);
     bclr(plane0, at, bit);
@@ -408,7 +408,7 @@ static ULONG BLITZ_ROUTINE killpoint_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1),
     *dst++ = bit;
     *dst = END;
     KILL(kill)->last = (ULONG)dst;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* Registers: the original changes d0-d7/a0-a3 (keeps a4-a6); the thunks
