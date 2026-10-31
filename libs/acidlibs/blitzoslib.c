@@ -436,33 +436,61 @@ static void globfree(void *mem, ULONG size)
 
 /* ------------------------------------------------------- page and box */
 
+/* a box (32 bytes; the fields from +12 overlap, depending on the type) */
+struct box {
+    WORD x, y, w, h;            /* +0 */
+    WORD btype;                 /* +8: negative = disabled */
+    WORD color;                 /* +10: NOT = inverted bevel */
+    union {                     /* +12 */
+        struct {
+            WORD value;         /* button/list: the selected string */
+            WORD range;         /* the number of strings */
+        };
+        struct {
+            WORD propx, propy;  /* bval: prop knob 0..16383, -1 = fixed */
+        };
+        struct {
+            WORD dx, dy;        /* drag: the mouse delta */
+        };
+        UBYTE *showbp;          /* view: the source bitmap */
+    };
+    union {                     /* +16 */
+        struct {
+            WORD isshape;       /* shape button: -1 */
+            WORD shapeoff;      /* the first shape */
+        };
+        struct {
+            WORD posx, posy;    /* posbp: view: the position in showbp */
+        };
+    };
+    ULONG tlen;                 /* +20: the size of text's memory */
+    UBYTE *text;                /* +24: strings separated by 0 (string box:
+                                   prompt and answer, padded with spaces) */
+    union {                     /* +28 */
+        struct {
+            WORD prompt;        /* string box: the length of the prompt */
+            WORD anslen;
+        };
+        struct {
+            WORD knobw, knobh;  /* bsize: the size of the prop knob */
+        };
+    };
+} BL_PACKED;
+static_assert(sizeof(struct box) == 32);
+
+/* the page object (the first 26 of its 32 bytes) */
 struct page {
     ULONG memsize;
-    UBYTE *memloc;
+    struct box *memloc;         /* numboxes boxes */
     UBYTE *mybitmap;
     UWORD numboxes;
     WORD c0, c1, c2, c3;        /* drk light mid text */
-    UBYTE *selected;            /* pointer to currently selected box */
+    struct box *selected;       /* pointer to currently selected box */
 } BL_PACKED;
+static_assert(sizeof(struct page) == 26);
 
-/* box fields (byte offsets; several overlap) */
-#define B_X       0
-#define B_Y       2
-#define B_W       4
-#define B_H       6
-#define B_BTYPE   8
-#define B_COLOR   10
-#define B_VALUE   12            /* = bval x, showbp */
-#define B_RANGE   14            /* = bval y */
-#define B_ISSHAPE 16            /* = posbp x */
-#define B_SHAPEOFF 18           /* = posbp y */
-#define B_TLEN    20
-#define B_TEXT    24
-#define B_PROMPT  28            /* = bsize w */
-#define B_ANSLEN  30            /* = bsize h */
-#define BW(b, off) (*(WORD *)((b) + (off)))
-#define BL(b, off) (*(ULONG *)((b) + (off)))
-#define BP(b, off) (*(UBYTE **)((b) + (off)))
+/* box n: memloc + n << 5 as a word (ASL #5:ADDA.w, BUG(orig) (#81)) */
+#define BOXAT(p, off) ((struct box *)((UBYTE *)(p)->memloc + (off)))
 
 static const char mess1[] = "UnInitialised Page";
 static const char mess2[] = "Illegal Box# For Page";
@@ -476,13 +504,13 @@ static const char mess8[] = "Unitialised BitMap";
 #define PG ((struct page *)blitz_string)
 
 /* TST.l (a3):BEQ err1:CMP numboxes,d0:BCC err2; box address */
-static UBYTE *getbox(struct page *p, ULONG n)
+static struct box *getbox(struct page *p, ULONG n)
 {
     if (!p->memsize)
         BLITZ_RUNERR(mess1);
     if ((UWORD)n >= p->numboxes)
         BLITZ_RUNERR(mess2);
-    return p->memloc + (WORD)(UWORD)(n << 5);   /* ASL #5:ADD d0,a0 */
+    return BOXAT(p, (WORD)(UWORD)(n << 5));   /* ASL #5:ADD d0,a0 */
 }
 
 static void chkpage(struct page *p)
@@ -512,7 +540,7 @@ static ULONG locrow(WORD y)
     return BL_SWAP(v) >> 3;
 }
 
-static void drawbox(struct page *p, UBYTE *box)
+static void drawbox(struct page *p, struct box *box)
 {
     ULONG disabled;                             /* d0: 0 or -1 */
     ULONG darklight;                            /* d0: the c0:c1 pens */
@@ -520,7 +548,7 @@ static void drawbox(struct page *p, UBYTE *box)
     WORD x, y, x2, y2;
 
     disabled = 0;
-    btype = BW(box, B_BTYPE);
+    btype = box->btype;
     if (btype < 0) {
         btype = -btype;
         disabled = (ULONG)-1;
@@ -535,11 +563,11 @@ static void drawbox(struct page *p, UBYTE *box)
     } else if (btype == 4)
         BL_SETW(darklight, midtext);            /* MOVE d1,d0 */
     midtext = BL_SWAP(midtext);
-    BL_SETW(midtext, BW(box, B_COLOR));
+    BL_SETW(midtext, box->color);
     if ((WORD)midtext < 0) {
         darklight = BL_SWAP(darklight);
         BL_SETW(midtext, ~midtext);
-        if (btype == 0 && BL(box, B_TLEN))
+        if (btype == 0 && box->tlen)
             darklight = 0;
     }
     midtext = BL_SWAP(midtext);
@@ -548,10 +576,10 @@ static void drawbox(struct page *p, UBYTE *box)
     c2 = (WORD)(midtext >> 16);
     c3 = (WORD)midtext;
 
-    x = BW(box, B_X);
-    y = BW(box, B_Y);
-    x2 = x + BW(box, B_W) - 1;
-    y2 = y + BW(box, B_H) - 1;
+    x = box->x;
+    y = box->y;
+    x2 = x + box->w - 1;
+    y2 = y + box->h - 1;
     xyxy[0] = x;
     xyxy[1] = y;
     xyxy[2] = x2;
@@ -562,13 +590,13 @@ static void drawbox(struct page *p, UBYTE *box)
     }
     if (btype == 4)
         goto notext;
-    if (btype == 6 && !BL(box, B_TLEN))
+    if (btype == 6 && !box->tlen)
         goto notext;
-    if (btype == 1 && BW(box, B_ISSHAPE)) {
+    if (btype == 1 && box->isshape) {
         /* shape button */
         boxf(x + 2, y + 1, x2 - 2, y2 - 1, (LONG)(sel ? c2 : c0));
         {
-            struct bregs r = { .d0 = (LONG)(WORD)(BW(box, B_SHAPEOFF) + BW(box, B_VALUE)),
+            struct bregs r = { .d0 = (LONG)(WORD)(box->shapeoff + box->value),
                                .d1 = (LONG)(WORD)(xyxy[0] + 2),
                                .d2 = (LONG)(WORD)(xyxy[1] + 1) };
             BCALL(T_BLIT, 0, r);
@@ -579,10 +607,10 @@ static void drawbox(struct page *p, UBYTE *box)
     if (btype == 3) {
         /* prop: the knob */
         WORD px = x + 2, py = y + 1;
-        WORD pw = BW(box, B_W) - 3 - BW(box, B_PROMPT);
-        WORD ph = BW(box, B_H) - 1 - BW(box, B_ANSLEN);
-        WORD valx = BW(box, B_VALUE), valy = BW(box, B_RANGE);
-        WORD kx2 = BW(box, B_PROMPT), ky2 = BW(box, B_ANSLEN);  /* bsize, then
+        WORD pw = box->w - 3 - box->knobw;
+        WORD ph = box->h - 1 - box->knobh;
+        WORD valx = box->propx, valy = box->propy;
+        WORD kx2 = box->knobw, ky2 = box->knobh;  /* bsize, then
                                                                    the knob's x2/y2 */
 
         if (valx >= 0)
@@ -607,25 +635,25 @@ static void drawbox(struct page *p, UBYTE *box)
     /* dotext */
     if (btype == 5) {
         /* list */
-        WORD visible = (UWORD)(BW(box, B_H) - 3) >> 3, first;
+        WORD visible = (UWORD)(box->h - 3) >> 3, first;
         WORD half;                              /* d0w: half the lines */
         WORD maxfirst;                          /* d0w: the highest first entry */
         UBYTE *entry;
 
         lines = visible;
         half = (UWORD)visible >> 1;
-        first = BW(box, B_VALUE) - half;
+        first = box->value - half;
         if (first < 0)
             first = 0;
-        maxfirst = BW(box, B_RANGE) - lines;
+        maxfirst = box->range - lines;
         if (maxfirst < 0) {
             maxfirst = 0;
-            lines = BW(box, B_RANGE);
+            lines = box->range;
         }
         if (first - maxfirst >= 0)              /* CMP d0,d2:BMI noj */
             first = maxfirst;
-        count = BW(box, B_VALUE) - first;
-        entry = BP(box, B_TEXT);
+        count = box->value - first;
+        entry = box->text;
         while (first-- != 0)                    /* BRA inig: DBRA d2 */
             while (*entry++)
                 ;
@@ -661,10 +689,12 @@ static void drawbox(struct page *p, UBYTE *box)
     }
     /* oneline */
     {
-        ULONG tlen = BL(box, B_TLEN), tptr = BL(box, B_TEXT); /* d0 d1 */
+        /* d0 d1; text is read as a long (as a pointer GCC allocates the
+           registers differently) */
+        ULONG tlen = box->tlen, tptr = *(ULONG *)&box->text;
         ULONG ptr, len;                         /* d0 d1 after the EXG */
 
-        ptr = tlen;                             /* no text: d0 = 0, d1 = B_TEXT (#89) */
+        ptr = tlen;                             /* no text: d0 = 0, d1 = text (#89) */
         len = tptr;
         if (tlen) {
             ptr = tptr;                         /* EXG d0,d1 */
@@ -679,7 +709,7 @@ static void drawbox(struct page *p, UBYTE *box)
                 BL_SETW(cx, (UWORD)(xyxy[0] + 11) >> 3);
                 row = (ULONG)(LONG)xyxy[1];
                 BL_SETW(row, row - 8);
-                if (BW(box, B_PROMPT) >= 0) {
+                if (box->knobw >= 0) {
                     BL_SETW(row, row + 8);
                     BL_SETW(cx, cx - (UWORD)len);
                 }
@@ -687,9 +717,9 @@ static void drawbox(struct page *p, UBYTE *box)
                 locate(cx, BL_SWAP(row) >> 3);
                 goto pme;
             }
-            if (btype != 6 && BW(box, B_RANGE)) {
+            if (btype != 6 && box->range) {
                 /* the value-th of the strings */
-                UWORD index = BW(box, B_VALUE);
+                UWORD index = box->value;
                 UBYTE *str = (UBYTE *)ptr;
                 ULONG n;
 
@@ -794,68 +824,68 @@ BLITZ_THUNK(_setpagepens, setpagepens_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE togglebox_c(ULONG n BL_REG(d0))
 {
-    UBYTE *b = getbox(PG, n);
+    struct box *b = getbox(PG, n);
 
-    BW(b, B_COLOR) = ~BW(b, B_COLOR);
+    b->color = ~b->color;
 }
 BLITZ_THUNK(_togglebox, togglebox_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE enablebox_c(ULONG n BL_REG(d0))
 {
-    UBYTE *b = getbox(PG, n);
+    struct box *b = getbox(PG, n);
 
-    if (BW(b, B_BTYPE) < 0)
-        BW(b, B_BTYPE) = -BW(b, B_BTYPE);
+    if (b->btype < 0)
+        b->btype = -b->btype;
 }
 BLITZ_THUNK(_enablebox, enablebox_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE disablebox_c(ULONG n BL_REG(d0))
 {
-    UBYTE *b = getbox(PG, n);
+    struct box *b = getbox(PG, n);
 
-    if (BW(b, B_BTYPE) > 0)
-        BW(b, B_BTYPE) = -BW(b, B_BTYPE);
+    if (b->btype > 0)
+        b->btype = -b->btype;
 }
 BLITZ_THUNK(_disablebox, disablebox_c, "d0-d1/a0-a1");
 
 /* BoxPropX/Y: the knob position as Quick (word * 2) */
 static ULONG BLITZ_ROUTINE boxpropx_c(ULONG n BL_REG(d0))
 {
-    return (ULONG)(LONG)BW(getbox(PG, n), B_VALUE) << 1;
+    return (ULONG)(LONG)getbox(PG, n)->propx << 1;
 }
 BLITZ_THUNK(_boxpropx, boxpropx_c, "d1/a1");
 
 static ULONG BLITZ_ROUTINE boxpropy_c(ULONG n BL_REG(d0))
 {
-    return (ULONG)(LONG)BW(getbox(PG, n), B_RANGE) << 1;
+    return (ULONG)(LONG)getbox(PG, n)->propy << 1;
 }
 BLITZ_THUNK(_boxpropy, boxpropy_c, "d1/a1");
 
 /* ----------------------------------------------------------- AddBox */
 
-static UBYTE *addbox(struct page *p, ULONG n, ULONG x, ULONG y, ULONG w, ULONG h, WORD type)
+static struct box *addbox(struct page *p, ULONG n, ULONG x, ULONG y, ULONG w, ULONG h, WORD type)
 {
-    UBYTE *b;
+    struct box *b;
     WORD color;
 
     chkpage(p);
     if ((UWORD)n >= p->numboxes)
         BLITZ_RUNERR(mess2);
-    b = p->memloc + (WORD)(UWORD)(n << 5);
-    if (BL(b, B_TLEN)) {
-        globfree(BP(b, B_TEXT), BL(b, B_TLEN));
-        BL(b, B_TLEN) = 0;
+    b = BOXAT(p, (WORD)(UWORD)(n << 5));
+    if (b->tlen) {
+        globfree(b->text, b->tlen);
+        b->tlen = 0;
     }
-    BW(b, B_X) = (WORD)x;
-    BW(b, B_Y) = (WORD)y;
-    BW(b, B_W) = (WORD)w;
-    BW(b, B_H) = (WORD)h;
+    b->x = (WORD)x;
+    b->y = (WORD)y;
+    b->w = (WORD)w;
+    b->h = (WORD)h;
     color = p->c2;
     if (type & 1)                               /* ASR #1: carry */
         color = ~color;
     type >>= 1;
-    BW(b, B_BTYPE) = type;
-    BW(b, B_COLOR) = color;
+    b->btype = type;
+    b->color = color;
     if (type == 2) {
         /* a string box: spaces */
         UWORD len = (UWORD)w >> 3;
@@ -864,9 +894,9 @@ static UBYTE *addbox(struct page *p, ULONG n, ULONG x, ULONG y, ULONG w, ULONG h
 
         if (!len)                               /* EXT.l:BLE err4 */
             BLITZ_RUNERR(mess4);
-        BL(b, B_TLEN) = len;
+        b->tlen = len;
         fill = globalloc(len, 0);
-        BP(b, B_TEXT) = fill;
+        b->text = fill;
         c = (UWORD)(len - 2);
         do
             *fill++ = ' ';
@@ -885,10 +915,10 @@ static UBYTE *addbox(struct page *p, ULONG n, ULONG x, ULONG y, ULONG w, ULONG h
             valy = 16384;
             knobh = 6;
         }
-        BW(b, B_VALUE) = valx;
-        BW(b, B_RANGE) = valy;
-        BW(b, B_PROMPT) = knobw;
-        BW(b, B_ANSLEN) = knobh;
+        b->propx = valx;
+        b->propy = valy;
+        b->knobw = knobw;
+        b->knobh = knobh;
     }
     return b;
 }
@@ -904,35 +934,35 @@ BLITZ_THUNK(_addbox, addbox_c, "d0-d1/a0-a1");
 static void BLITZ_ROUTINE addbox2_c(ULONG n BL_REG(d1), ULONG x BL_REG(d2), ULONG y BL_REG(d3),
                                     ULONG w BL_REG(d4), ULONG h BL_REG(d5), const UWORD *args BL_REG(a2))
 {
-    UBYTE *b = addbox(PG, n, x, y, w, h, (WORD)args[-1]);
+    struct box *b = addbox(PG, n, x, y, w, h, (WORD)args[-1]);
     WORD s1 = (WORD)args[-2], s2 = (WORD)args[-3];
 
-    BW(b, B_RANGE) = s2 - s1 + 1;
-    BW(b, B_SHAPEOFF) = s1;
-    BW(b, B_ISSHAPE) = -1;
+    b->range = s2 - s1 + 1;
+    b->shapeoff = s1;
+    b->isshape = -1;
 }
 BLITZ_THUNK(_addbox2, addbox2_c, "d0-d1/a0-a1");
 
 /* the text of a box: d0 = length, a1 = string (nostrya / strya) */
-static void boxtext(UBYTE *b, ULONG len, const UBYTE *s)
+static void boxtext(struct box *b, ULONG len, const UBYTE *s)
 {
     UBYTE *dst;
     UWORD strings;
 
-    if (BW(b, B_BTYPE) == 2) {
+    if (b->btype == 2) {
         /* strya: the prompt of a string box */
-        BW(b, B_PROMPT) = (WORD)len;
-        if ((WORD)BL(b, B_TLEN) <= (WORD)len)   /* CMP d0,d1:BLE err4 */
+        b->prompt = (WORD)len;
+        if ((WORD)b->tlen <= (WORD)len)   /* CMP d0,d1:BLE err4 */
             BLITZ_RUNERR(mess4);
-        dst = BP(b, B_TEXT);
+        dst = b->text;
         while (*s)
             *dst++ = *s++;
         return;
     }
     len++;
-    BL(b, B_TLEN) = len;
+    b->tlen = len;
     dst = globalloc(len, 0);
-    BP(b, B_TEXT) = dst;
+    b->text = dst;
     strings = 1;
     if (*s == '|') {
         while (*s)                              /* verbatim */
@@ -949,9 +979,9 @@ static void boxtext(UBYTE *b, ULONG len, const UBYTE *s)
         }
     }
     *dst = 0;
-    if (BW(b, B_BTYPE) - 2 < 0) {               /* CMP #2:BPL stdun */
-        BW(b, B_RANGE) = strings;
-        BW(b, B_VALUE) = 0;
+    if (b->btype - 2 < 0) {               /* CMP #2:BPL stdun */
+        b->range = strings;
+        b->value = 0;
     }
 }
 
@@ -960,7 +990,7 @@ static void boxtext(UBYTE *b, ULONG len, const UBYTE *s)
 static void BLITZ_ROUTINE addbox1_c(ULONG n BL_REG(d1), ULONG x BL_REG(d2), ULONG y BL_REG(d3),
                                     ULONG w BL_REG(d4), ULONG h BL_REG(d5), const UBYTE *args BL_REG(a2))
 {
-    UBYTE *b = addbox(PG, n, x, y, w, h, *(const WORD *)(args - 2));
+    struct box *b = addbox(PG, n, x, y, w, h, *(const WORD *)(args - 2));
 
     boxtext(b, *(const ULONG *)(args - 6), *(const UBYTE *const *)(args - 10));
 }
@@ -970,11 +1000,11 @@ BLITZ_THUNK(_addbox1, addbox1_c, "d0-d1/a0-a1");
 static void BLITZ_ROUTINE setboxtitle_c(ULONG n BL_REG(d0), const UBYTE *s BL_REG(d1),
                                         const ULONG *lens BL_REG(a2))
 {
-    UBYTE *b = getbox(PG, n);
+    struct box *b = getbox(PG, n);
     ULONG len = lens[-1];
 
-    if (BW(b, B_BTYPE) != 2 && BL(b, B_TLEN))
-        globfree(BP(b, B_TEXT), BL(b, B_TLEN));
+    if (b->btype != 2 && b->tlen)
+        globfree(b->text, b->tlen);
     boxtext(b, len, s);
 }
 BLITZ_THUNK(_setboxtitle, setboxtitle_c, "d0-d1/a0-a1");
@@ -983,14 +1013,14 @@ BLITZ_THUNK(_setboxtitle, setboxtitle_c, "d0-d1/a0-a1");
 
 static void setbox(ULONG n, ULONG v)
 {
-    UBYTE *b = getbox(PG, n);
+    struct box *b = getbox(PG, n);
     WORD value = (WORD)v;
 
     if (value < 0)
-        value += BW(b, B_RANGE);
-    if ((UWORD)value >= (UWORD)BW(b, B_RANGE))
+        value += b->range;
+    if ((UWORD)value >= (UWORD)b->range)
         BLITZ_RUNERR(mess3);
-    BW(b, B_VALUE) = value;
+    b->value = value;
 }
 
 static void BLITZ_ROUTINE setbox_c(ULONG n BL_REG(d0), ULONG v BL_REG(d1))
@@ -1009,29 +1039,29 @@ BLITZ_THUNK(_changebox, changebox_c, "d0-d1/a0-a1");
 /* SetBox Box#,xprop,yprop (Quick: (q-1 if q<>0).w >> 1) */
 static void BLITZ_ROUTINE setbox2_c(ULONG n BL_REG(d0), ULONG qx BL_REG(d1), ULONG qy BL_REG(d2))
 {
-    UBYTE *b = getbox(PG, n);
+    struct box *b = getbox(PG, n);
 
-    if (BW(b, B_BTYPE) != 3)
+    if (b->btype != 3)
         BLITZ_RUNERR(mess7);
     if (qx)
         qx--;
     if (qy)
         qy--;
-    if (BW(b, B_VALUE) >= 0)
-        BW(b, B_VALUE) = (UWORD)qx >> 1;
-    if (BW(b, B_RANGE) >= 0)
-        BW(b, B_RANGE) = (UWORD)qy >> 1;
+    if (b->propx >= 0)
+        b->propx = (UWORD)qx >> 1;
+    if (b->propy >= 0)
+        b->propy = (UWORD)qy >> 1;
 }
 BLITZ_THUNK(_setbox2, setbox2_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE setboxcolor_c(ULONG n BL_REG(d0), ULONG c BL_REG(d1))
 {
     struct page *p = PG;
-    UBYTE *b = getbox(p, n);
+    struct box *b = getbox(p, n);
 
-    if (BW(b, B_COLOR) < 0)
+    if (b->color < 0)
         c = ~c;
-    BW(b, B_COLOR) = (WORD)c;
+    b->color = (WORD)c;
     drawbox(p, b);
 }
 BLITZ_THUNK(_setboxcolor, setboxcolor_c, "d0-d1/a0-a1");
@@ -1041,16 +1071,16 @@ BLITZ_THUNK(_setboxcolor, setboxcolor_c, "d0-d1/a0-a1");
 static void BLITZ_ROUTINE setboxstring_c(ULONG n BL_REG(d0), const UBYTE *s BL_REG(d1),
                                          const ULONG *lens BL_REG(a2))
 {
-    UBYTE *b = getbox(PG, n);
+    struct box *b = getbox(PG, n);
     ULONG len = lens[-1];
-    ULONG pad = BL(b, B_TLEN);
-    UBYTE *dst = BP(b, B_TEXT);
+    ULONG pad = b->tlen;
+    UBYTE *dst = b->text;
 
-    BL_SETW(pad, pad - BW(b, B_PROMPT));
+    BL_SETW(pad, pad - b->prompt);
     BL_SETW(pad, pad - len);
     if ((WORD)pad <= 0)
         BLITZ_RUNERR(mess4);
-    dst += BW(b, B_PROMPT);
+    dst += b->prompt;
     BL_SETW(len, len - 1);
     if ((WORD)len >= 0) {
         UWORD c = (UWORD)len;
@@ -1074,24 +1104,24 @@ BLITZ_THUNK(_setboxstring, setboxstring_c, "d0-d1/a0-a1");
 /* BoxValue: MOVE value,d0 (low word) */
 static ULONG BLITZ_ROUTINE boxvalue_c(ULONG n BL_REG(d0))
 {
-    return (n & 0xffff0000UL) | (UWORD)BW(getbox(PG, n), B_VALUE);
+    return (n & 0xffff0000UL) | (UWORD)getbox(PG, n)->value;
 }
 BLITZ_THUNK(_boxvalue, boxvalue_c, "d1/a1");
 
 static ULONG BLITZ_ROUTINE boxvalue2_c(ULONG callerd0 BL_REG(d0), ULONG n BL_REG(d1))
 {
     BL_SETW(callerd0, n);                       /* MOVE d1,d0 */
-    return (callerd0 & 0xffff0000UL) | (UWORD)BW(getbox(PG, callerd0), B_VALUE);
+    return (callerd0 & 0xffff0000UL) | (UWORD)getbox(PG, callerd0)->value;
 }
 BLITZ_THUNK(_boxvalue2, boxvalue2_c, "d1/a1");
 
 /* BoxString: page in a1, result at a3 (no 0 written; a3 = the end) */
 static ULONG boxstring(struct page *p, ULONG n)
 {
-    UBYTE *b = getbox(p, n);
-    WORD prompt = BW(b, B_PROMPT);
-    ULONG len = BL(b, B_TLEN);
-    const UBYTE *answer = BP(b, B_TEXT) + prompt;
+    struct box *b = getbox(p, n);
+    WORD prompt = b->prompt;
+    ULONG len = b->tlen;
+    const UBYTE *answer = b->text + prompt;
     const UBYTE *end;
     UBYTE *dst = blitz_string;
 
@@ -1147,7 +1177,7 @@ BLITZ_THUNK(_boxselected, boxselected_c, "d1/a0-a1");
 static void BLITZ_ROUTINE redrawpage_c(void)
 {
     struct page *p = PG;
-    UBYTE *b;
+    struct box *b;
     WORD n;
 
     chkpage(p);
@@ -1156,9 +1186,9 @@ static void BLITZ_ROUTINE redrawpage_c(void)
     if (n < 0)
         return;
     do {
-        if (BW(b, B_W))
+        if (b->w)
             drawbox(p, b);
-        b += 32;
+        b++;
     } while (n-- != 0);
 }
 BLITZ_THUNK(_redrawpage, redrawpage_c, "d0-d1/a0-a1");
@@ -1172,12 +1202,12 @@ static void BLITZ_ROUTINE redrawbox_c(ULONG n BL_REG(d0))
 BLITZ_THUNK(_redrawbox, redrawbox_c, "d0-d1/a0-a1");
 
 /* BoxShow: a view box shows part of a bitmap (Scroll) */
-static void dobs(struct page *p, UBYTE *b)
+static void dobs(struct page *p, struct box *b)
 {
-    WORD px = BW(b, B_ISSHAPE), py = BW(b, B_SHAPEOFF);
-    WORD dx = BW(b, B_X) + 4, dy = BW(b, B_Y) + 2;
-    WORD w = BW(b, B_W) - 8, h = BW(b, B_H) - 4;
-    UBYTE *src = BP(b, B_VALUE);
+    WORD px = b->posx, py = b->posy;
+    WORD dx = b->x + 4, dy = b->y + 2;
+    WORD w = b->w - 8, h = b->h - 4;
+    UBYTE *src = b->showbp;
     WORD mw, mh;
 
     if (px < 0)
@@ -1190,8 +1220,8 @@ static void dobs(struct page *p, UBYTE *b)
         px = mw;
     if ((UWORD)mh < (UWORD)py)
         py = mh;
-    BW(b, B_ISSHAPE) = px;
-    BW(b, B_SHAPEOFF) = py;
+    b->posx = px;
+    b->posy = py;
     xyxy[0] = h;                                /* EXG d4,d5:MOVEM d4-d5,xyxy */
     xyxy[1] = w;
     scroll((LONG)px, (LONG)py, (LONG)dx, (LONG)dy, w, h, src, p->mybitmap);
@@ -1201,13 +1231,13 @@ static void BLITZ_ROUTINE boxshow_c(ULONG n BL_REG(d0), UBYTE *bm BL_REG(a2),
                                     ULONG x BL_REG(d2), ULONG y BL_REG(d3))
 {
     struct page *p = PG;
-    UBYTE *b = getbox(p, n);
+    struct box *b = getbox(p, n);
 
-    if (BW(b, B_BTYPE))
+    if (b->btype)
         BLITZ_RUNERR(mess5);
-    BP(b, B_VALUE) = bm;
-    BW(b, B_ISSHAPE) = (WORD)x;
-    BW(b, B_SHAPEOFF) = (WORD)y;
+    b->showbp = bm;
+    b->posx = (WORD)x;
+    b->posy = (WORD)y;
     dobs(p, b);
 }
 BLITZ_THUNK(_boxshow, boxshow_c, "d0-d1/a0-a1");
@@ -1215,12 +1245,12 @@ BLITZ_THUNK(_boxshow, boxshow_c, "d0-d1/a0-a1");
 static void BLITZ_ROUTINE boxshow2_c(ULONG n BL_REG(d0), ULONG dx BL_REG(d1), ULONG dy BL_REG(d2))
 {
     struct page *p = PG;
-    UBYTE *b = getbox(p, n);
+    struct box *b = getbox(p, n);
 
-    if (BW(b, B_BTYPE))
+    if (b->btype)
         BLITZ_RUNERR(mess5);
-    BW(b, B_ISSHAPE) += (WORD)dx;
-    BW(b, B_SHAPEOFF) += (WORD)dy;
+    b->posx += (WORD)dx;
+    b->posy += (WORD)dy;
     dobs(p, b);
 }
 BLITZ_THUNK(_boxshow2, boxshow2_c, "d0-d1/a0-a1");
@@ -1230,19 +1260,19 @@ static UWORD cx, cy;
 /* BoxPrint: d1 = string, -4(a2) = length (overwritten with Scroll's size) */
 static void boxprint(struct page *p, ULONG n, const UBYTE *s, ULONG *lens)
 {
-    UBYTE *b;
+    struct box *b;
     ULONG len;
 
     chkpage(p);
     if ((UWORD)n >= p->numboxes)
         BLITZ_RUNERR(mess2);
-    b = p->memloc + (WORD)(UWORD)(n << 5);
-    if (BW(b, B_BTYPE))
+    b = BOXAT(p, (WORD)(UWORD)(n << 5));
+    if (b->btype)
         BLITZ_RUNERR(mess5);
     len = lens[-1];
-    if ((UWORD)BW(b, B_H) < 16) {
+    if ((UWORD)b->h < 16) {
         /* doleft: scroll the line left, print at the right */
-        WORD x = BW(b, B_X), y = BW(b, B_Y), w = BW(b, B_W);
+        WORD x = b->x, y = b->y, w = b->w;
         UWORD col = (UWORD)(x + 11) >> 3;
         UWORD width, lenpix = (UWORD)(len << 3);
         UWORD *wh = (UWORD *)lens - 2;
@@ -1266,7 +1296,7 @@ static void boxprint(struct page *p, ULONG n, const UBYTE *s, ULONG *lens)
     }
     {
         /* doup: scroll the box up 8 pixels, print in the last line */
-        WORD x = BW(b, B_X), y = BW(b, B_Y), w = BW(b, B_W), h = BW(b, B_H);
+        WORD x = b->x, y = b->y, w = b->w, h = b->h;
         UWORD *wh = (UWORD *)lens - 2;
 
         wh[0] = h - 12;
@@ -1338,7 +1368,7 @@ static constexpr WORD pspd = 1024;              /* prop speed */
 static void BLITZ_ROUTINE selectbox_c(ULONG n BL_REG(d0))
 {
     struct page *p = PG;
-    UBYTE *old;
+    struct box *old;
     WORD off;
 
     chkpage(p);
@@ -1346,7 +1376,7 @@ static void BLITZ_ROUTINE selectbox_c(ULONG n BL_REG(d0))
     p->selected = 0;
     off = (WORD)(UWORD)(n << 5);
     if (off >= 0) {
-        p->selected = p->memloc + off;
+        p->selected = BOXAT(p, off);
         drawbox(p, p->selected);
     }
     if (old)
@@ -1355,29 +1385,29 @@ static void BLITZ_ROUTINE selectbox_c(ULONG n BL_REG(d0))
 BLITZ_THUNK(_selectbox, selectbox_c, "d0-d1/a0-a1");
 
 /* find the box at (x, y): enabled, x <= px < x+w, y <= py < y+h */
-static int inbox(UBYTE *b, WORD px, WORD py)
+static int inbox(struct box *b, WORD px, WORD py)
 {
     WORD dx, dy;
 
-    if (BW(b, B_BTYPE) <= 0)
+    if (b->btype <= 0)
         return 0;
-    dx = BW(b, B_X) - px;
+    dx = b->x - px;
     if (dx > 0)
         return 0;
-    dy = BW(b, B_Y) - py;
+    dy = b->y - py;
     if (dy > 0)
         return 0;
     dx = -dx;
     dy = -dy;
-    if (BW(b, B_W) <= dx)
+    if (b->w <= dx)
         return 0;
-    return BW(b, B_H) > dy;
+    return b->h > dy;
 }
 
 /* SelectBox 0,x,y: -1 = found (selected), 0 = none */
 static LONG selectbox3(struct page *p, WORD x, WORD y)
 {
-    UBYTE *old, *b;
+    struct box *old, *b;
     UWORD n;
 
     chkpage(p);
@@ -1392,7 +1422,7 @@ static LONG selectbox3(struct page *p, WORD x, WORD y)
                 drawbox(p, old);
             return -1;
         }
-        b += 32;
+        b++;
     } while (n-- != 0);
     return 0;
 }
@@ -1406,7 +1436,7 @@ BLITZ_THUNK(_selectbox3, selectbox3_c, "d1/a0-a1");
 /* SelectBox dx,dy: the nearest box in that direction */
 static void selectbox2(struct page *p, WORD dx, WORD dy)
 {
-    UBYTE *cur, *b, *best;
+    struct box *cur, *b, *best;
     WORD edgex, edgey;
     UWORD bestdist, n;
 
@@ -1416,20 +1446,20 @@ static void selectbox2(struct page *p, WORD dx, WORD dy)
         return;
     best = cur;
     b = p->memloc;
-    edgex = BW(cur, B_X);
-    edgey = BW(cur, B_Y);
+    edgex = cur->x;
+    edgey = cur->y;
     if (dx > 0)
-        edgex += BW(cur, B_W);
+        edgex += cur->w;
     if (dy > 0)
-        edgey += BW(cur, B_H) - 1;
+        edgey += cur->h - 1;
     bestdist = 8192;
     n = p->numboxes - 1;
     do {
         WORD distx, disty;
 
-        if (b == cur || BW(b, B_BTYPE) <= 0)
+        if (b == cur || b->btype <= 0)
             goto mis;
-        distx = BW(b, B_X) - edgex;
+        distx = b->x - edgex;
         if (dx < 0)
             distx = -distx;
         if (distx < 0) {
@@ -1437,7 +1467,7 @@ static void selectbox2(struct page *p, WORD dx, WORD dy)
                 goto mis;
             distx = -distx;
         }
-        disty = BW(b, B_Y) - edgey;
+        disty = b->y - edgey;
         if (dy < 0)
             disty = -disty;
         if (disty < 0) {
@@ -1461,7 +1491,7 @@ static void selectbox2(struct page *p, WORD dx, WORD dy)
         bestdist = (UWORD)disty;
         best = b;
 mis:
-        b += 32;
+        b++;
     } while (n-- != 0);
     if (best == cur)
         return;
@@ -1479,14 +1509,14 @@ BLITZ_THUNK(_selectbox2, selectbox2_c, "d0-d1/a0-a1");
 static void BLITZ_ROUTINE deselectbox_c(void)
 {
     struct page *p = PG;
-    UBYTE *b;
+    struct box *b;
 
     chkpage(p);
     b = p->selected;
     if (!b)
         return;
-    if (BW(b, B_COLOR) < 0)
-        BW(b, B_COLOR) = ~BW(b, B_COLOR);
+    if (b->color < 0)
+        b->color = ~b->color;
     drawbox(p, b);
     inprop = 0;
     inedit = 0;
@@ -1513,35 +1543,35 @@ static void docursor(struct page *p)
 }
 
 /* show the text from the prompt on, at edxyc (the bitmap's cursor) */
-static void edstring(struct page *p, UBYTE *b)
+static void edstring(struct page *p, struct box *b)
 {
     UBYTE *bm = p->mybitmap;
     ULONG old = *(ULONG *)(bm + 40);
-    WORD prompt = BW(b, B_PROMPT);
-    ULONG len = BL(b, B_TLEN);
+    WORD prompt = b->prompt;
+    ULONG len = b->tlen;
 
     *(ULONG *)(bm + 40) = *(ULONG *)edxyc;
     BL_SETW(len, len - prompt);
     BL_SETW(len, len - 1);
-    printn(BP(b, B_TEXT) + prompt, len);
+    printn(b->text + prompt, len);
     *(ULONG *)(bm + 40) = old;
 }
 
 static void activateselected(struct page *p)
 {
-    UBYTE *b;
+    struct box *b;
     WORD type;
 
     chkpage(p);
     b = p->selected;
     if (!b)
         return;
-    type = BW(b, B_BTYPE);
+    type = b->btype;
     if (type == 1 || type == 5) {
         drawbox(p, b);                          /* button up now cycles */
     } else if (type == 2) {
-        edxyc[0] = (WORD)((((UWORD)(BW(b, B_X) + 11) >> 3) + BW(b, B_PROMPT)) << 3);
-        edxyc[1] = BW(b, B_Y) + 2;
+        edxyc[0] = (WORD)((((UWORD)(b->x + 11) >> 3) + b->prompt) << 3);
+        edxyc[1] = b->y + 2;
         edxyc[2] = 0;
         inedit = -1;
         drawbox(p, b);
@@ -1565,7 +1595,7 @@ BLITZ_THUNK(_activateselected, activateselected_c, "d0-d1/a0-a1");
 static ULONG BLITZ_ROUTINE spotbox_c(void)
 {
     struct page *p = PG;
-    UBYTE *b = p->memloc;
+    struct box *b = p->memloc;
     UWORD n = p->numboxes - 1;
     ULONG index = 0;
 
@@ -1573,7 +1603,7 @@ static ULONG BLITZ_ROUTINE spotbox_c(void)
         if (inbox(b, mx, my))
             return ((ULONG)(LONG)mx & 0xffff0000UL) | (UWORD)index; /* MOVE d6,d0 */
         index++;
-        b += 32;
+        b++;
     } while (n-- != 0);
     return (ULONG)-1;
 }
@@ -1597,7 +1627,7 @@ static const WORD delt[] = { 0, 0, 0, -1, -1, 0, 0, 1, 1, 0 };
 static LONG blitzevent(struct page *p)
 {
     WORD dir;
-    UBYTE *box;
+    struct box *box;
 
     jx = (WORD)BCALL0(T_JOYX, 1);
     jy = (WORD)BCALL0(T_JOYY, 1);
@@ -1658,7 +1688,7 @@ checkdir:
         goto dobutton;
     if (status & 1) {
         box = p->selected;
-        if (BW(box, B_BTYPE) == 5)
+        if (box->btype == 5)
             goto movelist;
     }
     {
@@ -1669,13 +1699,13 @@ checkdir:
 
 movelist:
     {
-        WORD v = BW(box, B_VALUE) + status - 2, r = BW(box, B_RANGE);
+        WORD v = box->value + status - 2, r = box->range;
 
         if (v < 0)
             v = 0;
         if (v - r >= 0)                         /* CMP d1,d0:BMI fop */
             v = r - 1;
-        BW(box, B_VALUE) = v;
+        box->value = v;
         drawbox(p, box);
         return 0;
     }
@@ -1688,7 +1718,7 @@ movecursor:
         docursor(p);
         cursor = edxyc[2];
         box = p->selected;
-        last = (WORD)BL(box, B_TLEN) - BW(box, B_PROMPT) - 1;
+        last = (WORD)box->tlen - box->prompt - 1;
         if (status == 2 && --cursor < 0)
             cursor = 0;
         if (status == 4) {
@@ -1698,7 +1728,7 @@ movecursor:
         }
         edxyc[2] = cursor;
         if (status == 1 || status == 3) {
-            UBYTE *chr = BP(box, B_TEXT) + BW(box, B_PROMPT) + cursor;
+            UBYTE *chr = box->text + box->prompt + cursor;
 
             c = (UBYTE)((status == 1 ? 1 : -1) + *chr);
             if (c == 31)
@@ -1730,15 +1760,15 @@ dobutton:
         inprop = 0;
         indrag = 0;
         box = p->selected;
-        if (!box || BW(box, B_COLOR) >= 0)
+        if (!box || box->color >= 0)
             goto noselect;
-        BW(box, B_COLOR) = ~BW(box, B_COLOR);
-        if (BW(box, B_BTYPE) == 1) {
-            UWORD v = BW(box, B_VALUE) + 1;
+        box->color = ~box->color;
+        if (box->btype == 1) {
+            UWORD v = box->value + 1;
 
-            if (v >= (UWORD)BW(box, B_RANGE))
+            if (v >= (UWORD)box->range)
                 v = 0;
-            BW(box, B_VALUE) = v;
+            box->value = v;
         }
         drawbox(p, box);
         return -1;
@@ -1760,7 +1790,7 @@ down:
         box = p->selected;
         if (!box)
             goto noselect;
-        BW(box, B_COLOR) = ~BW(box, B_COLOR);
+        box->color = ~box->color;
         activateselected(p);
         return 1;
     }
@@ -1777,8 +1807,8 @@ noselect:
             return 0;
         docursor(p);
         box = p->selected;
-        answer = BP(box, B_TEXT) + BW(box, B_PROMPT);
-        last = (WORD)BL(box, B_TLEN) - BW(box, B_PROMPT) - 1;
+        answer = box->text + box->prompt;
+        last = (WORD)box->tlen - box->prompt - 1;
         cursor = edxyc[2];
         if ((UWORD)key >= 32 && (UWORD)key <= 126) {
             if ((UWORD)key >= 97)
@@ -1808,8 +1838,8 @@ noselect:
 
 movedrag:
     box = p->selected;
-    BW(box, B_VALUE) = mx - ox;
-    BW(box, B_RANGE) = my - oy;
+    box->dx = mx - ox;
+    box->dy = my - oy;
     mx = ox;
     my = oy;
     {
@@ -1823,16 +1853,16 @@ moveprop:
         WORD valx, valy;
 
         box = p->selected;
-        valx = BW(box, B_VALUE);
-        valy = BW(box, B_RANGE);
+        valx = box->propx;
+        valy = box->propy;
         if (mo) {
-            WORD trackw = BW(box, B_W), trackh = BW(box, B_H);
-            WORD knobw = BW(box, B_PROMPT), knobh = BW(box, B_ANSLEN);
+            WORD trackw = box->w, trackh = box->h;
+            WORD knobw = box->knobw, knobh = box->knobh;
 
             if (valx >= 0) {
                 valx = mx;
                 trackw = trackw - 4 - knobw;
-                valx = valx - BW(box, B_X) - 2;
+                valx = valx - box->x - 2;
                 knobw = (UWORD)knobw >> 1;
                 valx -= knobw;
                 if (valx < 0)
@@ -1843,7 +1873,7 @@ moveprop:
             if (valy >= 0) {
                 valy = my;
                 trackh = trackh - 2 - knobh;
-                valy = valy - BW(box, B_Y) - 2;
+                valy = valy - box->y - 2;
                 knobh = (UWORD)knobh >> 1;
                 valy -= knobh;
                 if (valy < 0)
@@ -1867,8 +1897,8 @@ moveprop:
                     valy = 32767;
             }
         }
-        BW(box, B_VALUE) = valx;
-        BW(box, B_RANGE) = valy;
+        box->propx = valx;
+        box->propy = valy;
         drawbox(p, box);
         return 2;
     }
