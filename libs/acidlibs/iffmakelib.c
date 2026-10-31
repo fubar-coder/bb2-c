@@ -163,27 +163,27 @@ static void put_w(UBYTE **p, UWORD v)
 /* FORM/ILBM/BMHD, 40 bytes */
 static void makehead(const UBYTE *bm)
 {
-    UBYTE *a1 = iffbuff;
-    UWORD d0 = usewid, d1;
+    UBYTE *out = iffbuff;
+    UWORD width = usewid, height;
 
-    put_l(&a1, ID_FORM);
-    put_l(&a1, 0);
-    put_l(&a1, ID_ILBM);
-    put_l(&a1, ID_BMHD);
-    put_l(&a1, 0x14);
-    if (!d0)
-        d0 = (UWORD)(BM_BPR(bm) << 3);
-    put_w(&a1, d0);
-    d1 = BM_ROWS(bm);
-    put_w(&a1, d1);
-    put_l(&a1, 0);                              /* x, y */
-    *a1++ = BM_DEPTH(bm);                       /* nPlanes */
-    *a1++ = 0;                                  /* masking */
-    *a1++ = 1;                                  /* compression */
-    *a1++ = 0;
-    put_l(&a1, 0xa0b);                          /* transparent, aspect */
-    put_w(&a1, d0);
-    put_w(&a1, d1);
+    put_l(&out, ID_FORM);
+    put_l(&out, 0);
+    put_l(&out, ID_ILBM);
+    put_l(&out, ID_BMHD);
+    put_l(&out, 0x14);
+    if (!width)
+        width = (UWORD)(BM_BPR(bm) << 3);
+    put_w(&out, width);
+    height = BM_ROWS(bm);
+    put_w(&out, height);
+    put_l(&out, 0);                             /* x, y */
+    *out++ = BM_DEPTH(bm);                      /* nPlanes */
+    *out++ = 0;                                 /* masking */
+    *out++ = 1;                                 /* compression */
+    *out++ = 0;
+    put_l(&out, 0xa0b);                         /* transparent, aspect */
+    put_w(&out, width);
+    put_w(&out, height);
     ifflen = 40;
     Write(fh, iffbuff, 40);
 }
@@ -191,90 +191,90 @@ static void makehead(const UBYTE *bm)
 /* CMAP of the palette a2 */
 static void makecolor(const struct palette *pal)
 {
-    UBYTE *a1 = iffbuff;
-    const ULONG *a0 = pal->cols + 1;
-    UWORD d2 = pal->num;
-    ULONG d0 = (UWORD)(d2 + (UWORD)(d2 << 1));  /* LSL #1:ADD (words) */
+    UBYTE *out = iffbuff;
+    const ULONG *rgb = pal->cols + 1;
+    UWORD count = pal->num;
+    ULONG size = (UWORD)(count + (UWORD)(count << 1)); /* LSL #1:ADD (words) */
 
-    put_l(&a1, ID_CMAP);
-    put_l(&a1, d0);
-    ifflen += d0;
-    d2--;
+    put_l(&out, ID_CMAP);
+    put_l(&out, size);
+    ifflen += size;
+    count--;
     do {                                        /* DBF d2 */
-        *a1++ = (UBYTE)(*a0++ >> 24);
-        *a1++ = (UBYTE)(*a0++ >> 24);
-        *a1++ = (UBYTE)(*a0++ >> 24);
-    } while (d2-- != 0);
+        *out++ = (UBYTE)(*rgb++ >> 24);
+        *out++ = (UBYTE)(*rgb++ >> 24);
+        *out++ = (UBYTE)(*rgb++ >> 24);
+    } while (count-- != 0);
     ifflen += 8;
-    Write(fh, iffbuff, a1 - iffbuff);
+    Write(fh, iffbuff, out - iffbuff);
 }
 
 /* one row (BytesPerRow bytes at row) ByteRun1-packed and written */
 static void savearow(const UBYTE *row, const UBYTE *bm)
 {
-    UBYTE *a1 = iffbuff;
-    UWORD w = BM_BPR(bm);
-    UWORD d4 = 0, d0, d1;
-    UBYTE d2;
-    LONG d3;
+    UBYTE *out = iffbuff;
+    UWORD bpr = BM_BPR(bm);
+    UWORD pos = 0, scan, runlen;
+    UBYTE byte;
+    LONG len;
 
     for (;;) {                                  /* main */
-        if (d4 >= w)
+        if (pos >= bpr)
             break;
-        d2 = row[(WORD)d4];
-        d4 += 2;
-        if (d4 == w) {                          /* one lone word at the edge */
-            *a1++ = 1;
-            *a1++ = d2;
-            *a1++ = row[(WORD)d4 - 1];
-            break;
-        }
-        d4--;
-        if (d4 >= w) {                          /* one lone byte at the edge */
-            *a1++ = 0;
-            *a1++ = d2;
+        byte = row[(WORD)pos];
+        pos += 2;
+        if (pos == bpr) {                       /* one lone word at the edge */
+            *out++ = 1;
+            *out++ = byte;
+            *out++ = row[(WORD)pos - 1];
             break;
         }
-        d4--;                                   /* skip */
-        d1 = 1;
-        d0 = d4 + 2;
-        if (row[(WORD)d4 + 1] == d2 && row[(WORD)d4 + 2] == d2) {
+        pos--;
+        if (pos >= bpr) {                       /* one lone byte at the edge */
+            *out++ = 0;
+            *out++ = byte;
+            break;
+        }
+        pos--;                                  /* skip */
+        runlen = 1;
+        scan = pos + 2;
+        if (row[(WORD)pos + 1] == byte && row[(WORD)pos + 2] == byte) {
             /* a repeating lot */
-            while (d1 < 127 && d0 != w && row[(WORD)d0] == d2) {
-                d1++;
-                d0++;
+            while (runlen < 127 && scan != bpr && row[(WORD)scan] == byte) {
+                runlen++;
+                scan++;
             }
-            d4 = d0;
-            *a1++ = (UBYTE)-d1;
-            *a1++ = d2;
+            pos = scan;
+            *out++ = (UBYTE)-runlen;
+            *out++ = byte;
         } else {
             /* a literal lot */
-            d2 = row[(WORD)d4 + 1];             /* last byte */
-            while (d1 < 128 && d0 < w) {
-                if (row[(WORD)d0 + 1] == d2 && row[(WORD)d0] == d2)
+            byte = row[(WORD)pos + 1];          /* last byte */
+            while (runlen < 128 && scan < bpr) {
+                if (row[(WORD)scan + 1] == byte && row[(WORD)scan] == byte)
                     break;
-                d2 = row[(WORD)d0];
-                d1++;
-                d0++;
+                byte = row[(WORD)scan];
+                runlen++;
+                scan++;
             }
-            d1--;
-            *a1++ = (UBYTE)d1;
+            runlen--;
+            *out++ = (UBYTE)runlen;
             do                                  /* DBF d1 */
-                *a1++ = row[(WORD)d4++];
-            while (d1-- != 0);
+                *out++ = row[(WORD)pos++];
+            while (runlen-- != 0);
         }
     }
-    d3 = a1 - iffbuff;
-    if (d3) {
-        ifflen += d3;
-        bodylen += d3;
-        Write(fh, iffbuff, d3);
+    len = out - iffbuff;
+    if (len) {
+        ifflen += len;
+        bodylen += len;
+        Write(fh, iffbuff, len);
     }
 }
 
 static void makebody(const UBYTE *bm)
 {
-    UWORD d6 = 0;
+    UWORD row = 0;
 
     *(ULONG *)iffbuff = ID_BODY;
     Write(fh, iffbuff, 4);
@@ -283,15 +283,15 @@ static void makebody(const UBYTE *bm)
     ifflen += 8;
     bodylen = 0;
     do {                                        /* y counter */
-        UWORD d5 = 0;
+        UWORD plane = 0;
 
         do {                                    /* bitplane counter */
-            ULONG d3 = (ULONG)d6 * BM_BPR(bm);  /* MULU */
-            savearow(*(UBYTE **)(bm + 8 + (WORD)(UWORD)(d5 << 2)) + d3, bm);
-            d5++;
-        } while (d5 < BM_DEPTHW(bm));
-        d6++;
-    } while (d6 < BM_ROWS(bm));
+            ULONG offset = (ULONG)row * BM_BPR(bm); /* MULU */
+            savearow(*(UBYTE **)(bm + 8 + (WORD)(UWORD)(plane << 2)) + offset, bm);
+            plane++;
+        } while (plane < BM_DEPTHW(bm));
+        row++;
+    } while (row < BM_ROWS(bm));
     if (bodylen & 1) {
         ifflen++;
         bodylen++;
@@ -352,22 +352,22 @@ BLITZ_THUNK(dosavebitmap, dosavebitmap_c, "d0-d1/a0-a1");
 static void saveshape(const UBYTE *shape, const char *name, const struct palette *pal,
                       struct DosLibrary *dos)
 {
-    UBYTE *a2 = (UBYTE *)tempbm;
-    UBYTE *a1;
-    UWORD d0;
+    UBYTE *dst = (UBYTE *)tempbm;
+    UBYTE *plane;
+    UWORD count;
 
     usewid = *(const UWORD *)shape;
-    *(UWORD *)a2 = *(const UWORD *)(shape + 6);
-    *(UWORD *)(a2 + 2) = *(const UWORD *)(shape + 2);
-    *(UWORD *)(a2 + 4) = *(const UWORD *)(shape + 4);
-    a2 += 8;
-    a1 = *(UBYTE *const *)(shape + 14);
-    d0 = *(const UWORD *)(shape + 4) - 1;   /* BUG(orig) (#326): depth unchecked */
+    *(UWORD *)dst = *(const UWORD *)(shape + 6);
+    *(UWORD *)(dst + 2) = *(const UWORD *)(shape + 2);
+    *(UWORD *)(dst + 4) = *(const UWORD *)(shape + 4);
+    dst += 8;
+    plane = *(UBYTE *const *)(shape + 14);
+    count = *(const UWORD *)(shape + 4) - 1; /* BUG(orig) (#326): depth unchecked */
     do {
-        *(UBYTE **)a2 = a1;
-        a2 += 4;
-        a1 += *(const WORD *)(shape + 22);      /* ADD 22(a0),a1 */
-    } while (d0-- != 0);
+        *(UBYTE **)dst = plane;
+        dst += 4;
+        plane += *(const WORD *)(shape + 22);   /* ADD 22(a0),a1 */
+    } while (count-- != 0);
     savebm((UBYTE *)tempbm, name, pal, dos);
 }
 
@@ -419,37 +419,37 @@ static void BLITZ_ROUTINE dosavescreen_c(void **scr BL_REG(a0), const char *name
 {
     UBYTE *s = (UBYTE *)*scr;
     struct ColorMap *cm = *(struct ColorMap **)(s + 48);   /* ViewPort.ColorMap */
-    UWORD d7 = cm->Count;
+    UWORD ncols = cm->Count;
     struct bl_regs r = { 0 };
-    ULONG *a1;
+    ULONG *rgb;
     UBYTE *bm;
     UWORD i;
 
-    if (d7 > 256)
-        d7 = 256;
-    temppal.num = d7;
+    if (ncols > 256)
+        ncols = 256;
+    temppal.num = ncols;
     BLITZ_ALIBJSR(TOK_execversion, r);              /* find aga flag */
     if ((WORD)r.d0 >= 39) {
         /* it's A G A */
-        UWORD d6 = 0;
+        UWORD col = 0;
         struct GfxBase *GfxBase = gfx;
 
-        a1 = tempcols + 1;
+        rgb = tempcols + 1;
         do {
-            GetRGB32(cm, d6, 1, a1);
-            a1 += 3;
-            d6++;
-        } while (d6 < d7);
+            GetRGB32(cm, col, 1, rgb);
+            rgb += 3;
+            col++;
+        } while (col < ncols);
     } else {
-        const UWORD *a2 = (const UWORD *)cm->ColorTable;
+        const UWORD *ctab = (const UWORD *)cm->ColorTable;
 
-        a1 = tempcols + 1;
-        d7--;
+        rgb = tempcols + 1;
+        ncols--;
         do {
-            *a1++ = makelong(*a2 >> 8);
-            *a1++ = makelong(*a2 >> 4);
-            *a1++ = makelong(*a2++);
-        } while (d7-- != 0);
+            *rgb++ = makelong(*ctab >> 8);
+            *rgb++ = makelong(*ctab >> 4);
+            *rgb++ = makelong(*ctab++);
+        } while (ncols-- != 0);
     }
     bm = *(UBYTE **)(s + 88);                   /* RastPort.BitMap */
     for (i = 0; i < 16; i++)
