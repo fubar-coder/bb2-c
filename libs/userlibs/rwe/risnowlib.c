@@ -204,7 +204,7 @@ static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d
 static void BLITZ_ROUTINE asmdosnow_c(ULONG n BL_REG(d0), UBYTE *rt BL_REG(d1))
 {
     ULONG *e;
-    UBYTE *in, *out, *p0, *p1;
+    UBYTE *in, *out, *plane0, *plane1;
     const UBYTE *bm;
     UWORD bpsize, i;
     UBYTE flip = 0;                     /* d6: left or right first */
@@ -217,55 +217,55 @@ static void BLITZ_ROUTINE asmdosnow_c(ULONG n BL_REG(d0), UBYTE *rt BL_REG(d1))
     e[1] = (ULONG)in;
     bm = (const UBYTE *)LONGAT(in, 4);
     bpsize = (UWORD)LONGAT(in, 8);      /* compared as a word */
-    p1 = PLANE(bm, 1);
-    p0 = PLANE(bm, 0);
+    plane1 = PLANE(bm, 1);
+    plane0 = PLANE(bm, 0);
     {
         UWORD *src = (UWORD *)(in + 16), *dst = (UWORD *)(out + 16);
 
         while (*src != END) {
             UWORD at = *src++, bit = *src++, below = (UWORD)(at + 40);
-            const UWORD *t;
+            const UWORD *look;
             UWORD side, sbit;
 
             if (!((WORD)bpsize > (WORD)below)) {
-                bclr(p0, at, bit);                      /* out of the plane */
+                bclr(plane0, at, bit);                  /* out of the plane */
                 continue;
             }
-            if (!btst(p0, below, bit)) {                /* 'drawit */
-                bclr(p0, at, bit);
-                bset(p0, below, bit);
+            if (!btst(plane0, below, bit)) {            /* 'drawit */
+                bclr(plane0, at, bit);
+                bset(plane0, below, bit);
                 *dst++ = below;
                 *dst++ = bit;
                 continue;
             }
             /* 'look: left or right first, alternating */
-            t = (const UWORD *)lookup[flip];
+            look = (const UWORD *)lookup[flip];
             flip = !flip;
-            t = (const UWORD *)((const UBYTE *)t + (UWORD)(bit << 3));
-            side = (UWORD)(at + t[0]);                  /* 'doleft */
-            sbit = t[1];
-            if (!btst(p0, side, sbit) && !btst(p0 + 40, side, sbit)) {
-                bclr(p0, at, bit);
-                bset(p0, side, sbit);
+            look = (const UWORD *)((const UBYTE *)look + (UWORD)(bit << 3));
+            side = (UWORD)(at + look[0]);               /* 'doleft */
+            sbit = look[1];
+            if (!btst(plane0, side, sbit) && !btst(plane0 + 40, side, sbit)) {
+                bclr(plane0, at, bit);
+                bset(plane0, side, sbit);
                 *dst++ = side;
                 *dst++ = sbit;
                 continue;
             }
-            side = (UWORD)(at + t[2]);                  /* 'doright */
-            sbit = t[3];
-            if (!btst(p0, side, sbit) && !btst(p0 + 40, side, sbit)) {
-                bclr(p0, at, bit);
-                bset(p0, side, sbit);
+            side = (UWORD)(at + look[2]);               /* 'doright */
+            sbit = look[3];
+            if (!btst(plane0, side, sbit) && !btst(plane0 + 40, side, sbit)) {
+                bclr(plane0, at, bit);
+                bset(plane0, side, sbit);
                 *dst++ = side;
                 *dst++ = sbit;
                 continue;
             }
-            if (!btst(p1 + 40, at, bit)) {              /* 'skipitstore */
+            if (!btst(plane1 + 40, at, bit)) {          /* 'skipitstore */
                 *dst++ = at;
                 *dst++ = bit;
                 continue;
             }
-            bset(p1, at, bit);                          /* 'okpause */
+            bset(plane1, at, bit);                      /* 'okpause */
         }
         /* 'addone: a new flake from the random table */
         i = *(UWORD *)rt;
@@ -282,11 +282,11 @@ static void BLITZ_ROUTINE asmdosnow_c(ULONG n BL_REG(d0), UBYTE *rt BL_REG(d1))
 
 /* stopped snow (plane 1 set, plane 2 clear) at the pixel `at`/`bit`:
    cleared and added to the drop list */
-static int unpause(UBYTE *p1, const UBYTE *p2, UWORD at, UWORD bit, UWORD **drop)
+static int unpause(UBYTE *plane1, const UBYTE *plane2, UWORD at, UWORD bit, UWORD **drop)
 {
-    if (btst(p2, at, bit) || !btst(p1, at, bit))
+    if (btst(plane2, at, bit) || !btst(plane1, at, bit))
         return 0;
-    bclr(p1, at, bit);
+    bclr(plane1, at, bit);
     *(*drop)++ = at;
     *(*drop)++ = bit;
     return 1;
@@ -297,20 +297,20 @@ static int unpause(UBYTE *p1, const UBYTE *p2, UWORD at, UWORD bit, UWORD **drop
 static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
 {
     ULONG *e = entry(n);
-    UBYTE *drops = (UBYTE *)e[0], *k1, *k2, *p1, *p2;
+    UBYTE *drops = (UBYTE *)e[0], *killin, *killout, *plane1, *plane2;
     const UBYTE *bm = (const UBYTE *)LONGAT(drops, 4);
-    const UBYTE *t = (const UBYTE *)lookup[0];
+    const UBYTE *look = (const UBYTE *)lookup[0];
     UWORD *drop = (UWORD *)LONGAT(drops, 12), *src, *dst;
     ULONG count = 0;
 
-    p1 = PLANE(bm, 1);
-    p2 = PLANE(bm, 2);
-    k1 = (UBYTE *)e[2];
-    k2 = (UBYTE *)e[3];
-    e[2] = (ULONG)k2;
-    e[3] = (ULONG)k1;
-    src = (UWORD *)(k1 + 4);
-    dst = (UWORD *)(k2 + 4);
+    plane1 = PLANE(bm, 1);
+    plane2 = PLANE(bm, 2);
+    killin = (UBYTE *)e[2];
+    killout = (UBYTE *)e[3];
+    e[2] = (ULONG)killout;
+    e[3] = (ULONG)killin;
+    src = (UWORD *)(killin + 4);
+    dst = (UWORD *)(killout + 4);
     for (;;) {
         UWORD at, bit, idx;
         int found = 0;
@@ -320,15 +320,15 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
             break;
         at = *src++;
         bit = *src++;
-        if (btst(p2, at, bit))
+        if (btst(plane2, at, bit))
             continue;
         idx = (UWORD)(bit << 3);
         /* the two sides below (left-first table), then the pixel */
-        found |= unpause(p1, p2, (UWORD)(at + 40 + *(const WORD *)(t + (WORD)idx)),
-                         *(const UWORD *)(t + (WORD)idx + 2), &drop);
-        found |= unpause(p1, p2, (UWORD)(at + 40 + *(const WORD *)(t + (WORD)idx + 4)),
-                         *(const UWORD *)(t + (WORD)idx + 6), &drop);
-        found |= unpause(p1, p2, at, bit, &drop);
+        found |= unpause(plane1, plane2, (UWORD)(at + 40 + *(const WORD *)(look + (WORD)idx)),
+                         *(const UWORD *)(look + (WORD)idx + 2), &drop);
+        found |= unpause(plane1, plane2, (UWORD)(at + 40 + *(const WORD *)(look + (WORD)idx + 4)),
+                         *(const UWORD *)(look + (WORD)idx + 6), &drop);
+        found |= unpause(plane1, plane2, at, bit, &drop);
         if (found) {
             *dst++ = (UWORD)(at - 40);
             *dst++ = bit;
@@ -336,7 +336,7 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
     }
     *dst = END;
     *drop = END;
-    LONGAT(k2, 0) = (ULONG)dst;
+    LONGAT(killout, 0) = (ULONG)dst;
     return count;
 }
 
@@ -351,15 +351,15 @@ static ULONG BLITZ_ROUTINE killpoint_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1),
     UBYTE *kill = (UBYTE *)e[2];
     UWORD *dst = (UWORD *)LONGAT(kill, 0);
     const UBYTE *bm = (const UBYTE *)LONGAT(e[0], 4);
-    UBYTE *p0 = PLANE(bm, 0), *p1 = PLANE(bm, 1), *p2 = PLANE(bm, 2);
+    UBYTE *plane0 = PLANE(bm, 0), *plane1 = PLANE(bm, 1), *plane2 = PLANE(bm, 2);
     UWORD at = (UWORD)((UWORD)y * 40UL + (UWORD)((WORD)x >> 3));
     UWORD bit = (UWORD)(~x & 7);
 
-    if (!btst(p2, at, bit))
+    if (!btst(plane2, at, bit))
         return 0;
-    bclr(p2, at, bit);
-    bclr(p1, at, bit);
-    bclr(p0, at, bit);
+    bclr(plane2, at, bit);
+    bclr(plane1, at, bit);
+    bclr(plane0, at, bit);
     *dst++ = (UWORD)(at - 40);
     *dst++ = bit;
     *dst = END;
