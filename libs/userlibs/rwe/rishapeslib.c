@@ -380,13 +380,13 @@ BLITZ_ASM_ROUTINE(_libfinit, "   rts");
 
 /* ----------------------------------------------------- small commands */
 
-static void BLITZ_ROUTINE leautocookie_c(ULONG on BL_REG(d0))
+static void BLITZ_ROUTINE leautocookie_c(BB_BOOL on BL_REG(d0))
 {
     cookeeemode = on;
 }
 BLITZ_THUNK(_leautocookie, leautocookie_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE setcompress_c(ULONG on BL_REG(d0))
+static void BLITZ_ROUTINE setcompress_c(BB_BOOL on BL_REG(d0))
 {
     compress = (UWORD)on;
 }
@@ -436,21 +436,21 @@ BLITZ_THUNK(_lescanshapes, lescanshapes_c, "d0-d1/a0-a1");
 /* SafeToBlit(shape,x,y): a3 = the shape, a2 = the used bitmap object
    (+56.w/+58.w its width and height), d6 = the maximum of shapes.
    BUG(orig): shape/32 is compared with the maximum (#822). */
-static ULONG BLITZ_ROUTINE safetoblit_c(ULONG shapenum BL_REG(d0), ULONG x BL_REG(d1),
-                                        ULONG y BL_REG(d2), UBYTE *bitmap BL_REG(a2),
-                                        UBYTE *shape BL_REG(a3), ULONG maxshapes BL_REG(d6))
+static BB_BOOL BLITZ_ROUTINE safetoblit_c(ULONG shapenum BL_REG(d0), ULONG x BL_REG(d1),
+                                          ULONG y BL_REG(d2), UBYTE *bitmap BL_REG(a2),
+                                          UBYTE *shape BL_REG(a3), ULONG maxshapes BL_REG(d6))
 {
     if ((WORD)maxshapes <= (WORD)((WORD)shapenum >> 5))
-        return 0;
+        return BB_FALSE;
     if (!SHL(shape, cookie))
-        return 0;
+        return BB_FALSE;
     if ((WORD)x < 0 || (WORD)y < 0)
-        return 0;
+        return BB_FALSE;
     if ((UWORD)(x + SHW(shape, width)) > SW(bitmap, 56))
-        return 0;
+        return BB_FALSE;
     if ((UWORD)(y + SHW(shape, height)) > SW(bitmap, 58))
-        return 0;
-    return (ULONG)-1;
+        return BB_FALSE;
+    return BB_TRUE;
 }
 BLITZ_THUNK(_safetoblit, safetoblit_c, "d1/a0-a1");
 
@@ -497,8 +497,8 @@ static void freeshapesm(UBYTE *shape)
 /* CludgeShapes shape#,numshapes,address: d0 = shape#, a0 = its object,
    d1 = the number, d2 = the shapes in memory (32 bytes header + data
    each).  -1, or 0 for no shapes or missing memory. */
-static ULONG BLITZ_ROUTINE loadshapes_c(ULONG shapenum BL_REG(d0), ULONG numshapes BL_REG(d1),
-                                        ULONG address BL_REG(d2), UBYTE *objects BL_REG(a0))
+static BB_BOOL BLITZ_ROUTINE loadshapes_c(ULONG shapenum BL_REG(d0), ULONG numshapes BL_REG(d1),
+                                          ULONG address BL_REG(d2), UBYTE *objects BL_REG(a0))
 {
     UBYTE *shapeptr = objects, *shaperam = (UBYTE *)address, *src, *dst;
     LONG numbershapes = numshapes, shapenumber = 0;
@@ -506,7 +506,7 @@ static ULONG BLITZ_ROUTINE loadshapes_c(ULONG shapenum BL_REG(d0), ULONG numshap
 
     (void)shapenum;                     /* shapestart: d0/32, never used */
     if (!numshapes)
-        return 0;
+        return BB_FALSE;
     do {
         if (SHW(shapeptr, width))
             freeshapesm(shapeptr);
@@ -516,7 +516,7 @@ static ULONG BLITZ_ROUTINE loadshapes_c(ULONG shapenum BL_REG(d0), ULONG numshap
             bytespershape = bl_mulu_w(SHW(shaperam, onebpmem), SHW(shaperam, depth));
             SHL(shapeptr, data) = galloc(bytespershape, MEMF_CHIP);
             if (!SHL(shapeptr, data))
-                return 0;
+                return BB_FALSE;
             /* the object without +14 (data) and +18 (cookie) */
             SHPAIR(shapeptr, width) = SHPAIR(shaperam, width);
             SHPAIR(shapeptr, depth) = SHPAIR(shaperam, depth);
@@ -539,15 +539,15 @@ static ULONG BLITZ_ROUTINE loadshapes_c(ULONG shapenum BL_REG(d0), ULONG numshap
         shaperam += 32 + bytespershape;
         shapenumber++;
     } while (numbershapes > shapenumber);
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(_loadshapes, loadshapes_c, "d1/a0-a1");
 
 /* CludgeShapesToAddress address,numshapes,address: the shape objects at
    d0 (MOVE.l d0,a0:MOVEQ #0,d0) */
-static ULONG BLITZ_ROUTINE loadshapestoaddress_c(ULONG objects BL_REG(d0),
-                                                 ULONG numshapes BL_REG(d1),
-                                                 ULONG address BL_REG(d2))
+static BB_BOOL BLITZ_ROUTINE loadshapestoaddress_c(ULONG objects BL_REG(d0),
+                                                   ULONG numshapes BL_REG(d1),
+                                                   ULONG address BL_REG(d2))
 {
     return loadshapes_c(0, numshapes, address, (UBYTE *)objects);
 }
