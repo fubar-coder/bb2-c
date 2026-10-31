@@ -157,25 +157,25 @@ static void BLITZ_ROUTINE iplocate_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
    (else the caller's a2) */
 static void BLITZ_ROUTINE ipcolour2_c(ULONG fg BL_REG(d0), ULONG bg BL_REG(d1),
                                       struct RastPort *rp BL_REG(a0),
-                                      struct RastPort *a2 BL_REG(a2))
+                                      struct RastPort *bpenrp BL_REG(a2))
 {
     if ((WORD)fg >= 0) {
-        a2 = rp;
+        bpenrp = rp;
         pr.apen = (UWORD)fg;
         SetAPen(rp, fg);
     }
     bg &= 0xffff;
     if ((WORD)bg >= 0) {
         pr.bpen = (UWORD)bg;
-        SetBPen(a2, bg);
+        SetBPen(bpenrp, bg);
     }
 }
 
 /* IPColour fgpen: bgpen -1 */
 static void BLITZ_ROUTINE ipcolour_c(ULONG fg BL_REG(d0), struct RastPort *rp BL_REG(a0),
-                                     struct RastPort *a2 BL_REG(a2))
+                                     struct RastPort *bpenrp BL_REG(a2))
 {
-    ipcolour2_c(fg, (ULONG)-1, rp, a2);
+    ipcolour2_c(fg, (ULONG)-1, rp, bpenrp);
 }
 
 /* the pens of IPColour into the IntuiText: every handler takes them first,
@@ -194,10 +194,10 @@ static void doipprint(void)
 }
 
 /* one character - BUG(orig) (#699): read from the address d0 */
-static void BLITZ_ROUTINE ipprint_c(ULONG d0 BL_REG(d0))
+static void BLITZ_ROUTINE ipprint_c(ULONG chaddr BL_REG(d0))
 {
     setpens();
-    pr.cbuf[0] = *(const UBYTE *)d0;
+    pr.cbuf[0] = *(const UBYTE *)chaddr;
     pr.cbuf[1] = 0;
     pr.it.IText = pr.cbuf;
     doipprint();
