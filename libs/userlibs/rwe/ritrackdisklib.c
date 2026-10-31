@@ -217,6 +217,14 @@ static ULONG doio(struct IOStdReq *req)
     return result;
 }
 
+/**
+ * @brief init: clear the request table and create the reply port.
+ *
+ * BUG(orig): clears only entries 0-2, not 3 (#863); CreateMsgPort is
+ * exec V36, called without a version check (#941).  Without a port
+ * (msgport 0) every command returns 0.
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_libinit(void)
 {
     td.iorequests[0] = NULL;            /* BUG(orig): not [3] (#863) */
@@ -225,7 +233,12 @@ void BLITZ_ROUTINE c_libinit(void)
     td.msgport = CreateMsgPort();       /* BUG(orig): V36, unchecked (#941) */
 }
 
-/* MotorOff unit# (TD_MOTOR, length 0) */
+/**
+ * @brief MotorOff unit#: switch the drive motor off (TD_MOTOR, length 0).
+ * @param unit  d0: unit# (0-3)
+ * @return d0: DoIO's d0 with io_Error as its low byte, 0 without port or
+ *         request
+ */
 ULONG BLITZ_ROUTINE c_motoroff(LONG unit BL_REG(d0))
 {
     struct IOStdReq *req;
@@ -238,7 +251,13 @@ ULONG BLITZ_ROUTINE c_motoroff(LONG unit BL_REG(d0))
     return doio(req);
 }
 
-/* CloseDisk unit#: -1 if it was open */
+/**
+ * @brief CloseDisk unit#: switch the motor off, close the device, delete the request.
+ *
+ * DeleteIORequest is exec V36 (#941).
+ * @param unit  d0: unit# (0-3)
+ * @return d0: BB_TRUE if the unit was open, else BB_FALSE
+ */
 BB_BOOL BLITZ_ROUTINE c_closedisk(LONG unit BL_REG(d0))
 {
     struct IOStdReq *req;
@@ -252,6 +271,12 @@ BB_BOOL BLITZ_ROUTINE c_closedisk(LONG unit BL_REG(d0))
     return BB_TRUE;
 }
 
+/**
+ * @brief finit: CloseDisk 0, 1, 2 and DeleteMsgPort.
+ *
+ * BUG(orig): unit 3 is not closed (#863); DeleteMsgPort is V36 (#941).
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_libfinit(void)
 {
     c_closedisk(0);                     /* BUG(orig): not 3 (#863) */
@@ -263,7 +288,18 @@ void BLITZ_ROUTINE c_libfinit(void)
     }
 }
 
-/* OpenDisk unit#: -1 if the device opened */
+/**
+ * @brief OpenDisk unit#: open the device (trackname) for a unit with a new request.
+ *
+ * CreateIORequest (200 bytes, exec V36: #941) on the reply port, then
+ * OpenDevice of the name in trackname ("trackdisk.device", or the last
+ * name given, #859).  BUG(orig): a unit that is open gets a new request,
+ * the old one stays open and is lost (#862); a negative unit passes the
+ * check (CMP #3: BGT), but the table ignores it: the request is lost
+ * (OpenDevice ok) or DeleteIORequest gets 0 (OpenDevice failed) (#861).
+ * @param unit  d0: unit# (0-3)
+ * @return d0: BB_TRUE if the device opened, else BB_FALSE
+ */
 BB_BOOL BLITZ_ROUTINE c_opentrack(LONG unit BL_REG(d0))
 {
     struct IOStdReq *req;
@@ -283,7 +319,16 @@ BB_BOOL BLITZ_ROUTINE c_opentrack(LONG unit BL_REG(d0))
     return BB_TRUE;
 }
 
-/* OpenDisk unit#,devicename$: the name stays for later OpenDisks */
+/**
+ * @brief OpenDisk unit#,devicename$: c_opentrack() with another device name.
+ *
+ * BUG(orig): the name is copied into trackname (58 bytes) without a
+ * limit - a longer name overwrites iorequests and msgport (#860) - and
+ * stays for later OpenDisks without a name (#859).
+ * @param unit  d0: unit# (0-3)
+ * @param name  d1: the device name
+ * @return d0: as c_opentrack()
+ */
 BB_BOOL BLITZ_ROUTINE c_opentrack2(LONG unit BL_REG(d0), const char *name BL_REG(d1))
 {
     char *p = td.trackname;
@@ -314,56 +359,136 @@ static ULONG sectorio(LONG unit, ULONG offset, APTR buffer, ULONG num, UWORD cmd
     return doio(req);
 }
 
+/**
+ * @brief ReadSector unit#,sector#,buffer,numsectors: read sectors (CMD_READ).
+ *
+ * Offset sector# * 512, length numsectors * 512.
+ * @param unit    d0: unit# (0-3)
+ * @param sector  d1: the first sector
+ * @param buffer  d2: the buffer
+ * @param num     d3: the number of sectors
+ * @return d0: DoIO's d0 with io_Error as its low byte, 0 without port or
+ *         request
+ */
 ULONG BLITZ_ROUTINE c_readsector2(LONG unit BL_REG(d0), ULONG sector BL_REG(d1),
                                   APTR buffer BL_REG(d2), ULONG num BL_REG(d3))
 {
     return sectorio(unit, sector, buffer, num, CMD_READ);
 }
 
+/**
+ * @brief ReadSector unit#,sector#,buffer: read one sector.
+ * @param unit    d0: unit# (0-3)
+ * @param sector  d1: the sector
+ * @param buffer  d2: the buffer
+ * @return d0: as c_readsector2()
+ */
 ULONG BLITZ_ROUTINE c_readsector1(LONG unit BL_REG(d0), ULONG sector BL_REG(d1),
                                   APTR buffer BL_REG(d2))
 {
     return sectorio(unit, sector, buffer, 1, CMD_READ);
 }
 
+/**
+ * @brief WriteSector unit#,sector#,buffer,numsectors: write sectors (CMD_WRITE).
+ * @param unit    d0: unit# (0-3)
+ * @param sector  d1: the first sector
+ * @param buffer  d2: the data
+ * @param num     d3: the number of sectors
+ * @return d0: DoIO's d0 with io_Error as its low byte, 0 without port or
+ *         request
+ */
 ULONG BLITZ_ROUTINE c_writesector2(LONG unit BL_REG(d0), ULONG sector BL_REG(d1),
                                    APTR buffer BL_REG(d2), ULONG num BL_REG(d3))
 {
     return sectorio(unit, sector, buffer, num, CMD_WRITE);
 }
 
+/**
+ * @brief WriteSector unit#,sector#,buffer: write one sector.
+ * @param unit    d0: unit# (0-3)
+ * @param sector  d1: the sector
+ * @param buffer  d2: the data
+ * @return d0: as c_writesector2()
+ */
 ULONG BLITZ_ROUTINE c_writesector1(LONG unit BL_REG(d0), ULONG sector BL_REG(d1),
                                    APTR buffer BL_REG(d2))
 {
     return sectorio(unit, sector, buffer, 1, CMD_WRITE);
 }
 
-/* FormatTrack: track * 11 (MULU.w: the low word of the track) */
+/**
+ * @brief FormatTrack unit#,track#,buffer,numtracks: format tracks (TD_FORMAT).
+ *
+ * The first sector is track * 11 (MULU.w: the low word of the track).
+ * BUG(orig) (#858): the length is numtracks * 512 (as for sectors), not
+ * numtracks * 11 * 512.
+ * @param unit    d0: unit# (0-3)
+ * @param track   d1: the first track
+ * @param buffer  d2: the data
+ * @param num     d3: the number of tracks
+ * @return d0: DoIO's d0 with io_Error as its low byte, 0 without port or
+ *         request
+ */
 ULONG BLITZ_ROUTINE c_formatsector2(LONG unit BL_REG(d0), ULONG track BL_REG(d1),
                                     APTR buffer BL_REG(d2), ULONG num BL_REG(d3))
 {
     return sectorio(unit, bl_mulu_w((UWORD)track, 11), buffer, num, TD_FORMAT);
 }
 
+/**
+ * @brief FormatTrack unit#,track#,buffer: format one track (length 512, #858).
+ * @param unit    d0: unit# (0-3)
+ * @param track   d1: the track
+ * @param buffer  d2: the data
+ * @return d0: as c_formatsector2()
+ */
 ULONG BLITZ_ROUTINE c_formatsector1(LONG unit BL_REG(d0), ULONG track BL_REG(d1),
                                     APTR buffer BL_REG(d2))
 {
     return c_formatsector2(unit, track, buffer, 1);
 }
 
-/* WriteBoot unit#: the default boot block (and what follows it) */
+/**
+ * @brief WriteBoot unit#: write the default boot block with TD_FORMAT.
+ *
+ * BUG(orig): writes the 8 byte default block ("DOS",0, -1) and the 1016
+ * bytes behind it (the end of the library) (#865), as 2 "sectors" of
+ * TD_FORMAT (#858).
+ * @param unit  d0: unit# (0-3)
+ * @return d0: as c_formatsector2()
+ */
 ULONG BLITZ_ROUTINE c_install1(LONG unit BL_REG(d0))
 {
     return c_formatsector2(unit, 0, td.defaultboot, 2);
 }
 
-/* WriteBoot unit#,bootdata: BUG(orig) the buffer is the caller's d2 (#864) */
+/**
+ * @brief WriteBoot unit#,bootdata: write a boot block with TD_FORMAT.
+ *
+ * BUG(orig) (#864): d1 = 0 (the sector) is written over bootdata, the
+ * buffer is the caller's d2, which is not an argument (here a register
+ * parameter for the same effect); 2 "sectors" of TD_FORMAT (#858).
+ * @param unit    d0: unit# (0-3)
+ * @param buffer  d2: whatever the caller left in d2
+ * @return d0: as c_formatsector2()
+ */
 ULONG BLITZ_ROUTINE c_install2(LONG unit BL_REG(d0), APTR buffer BL_REG(d2))
 {
     return c_formatsector2(unit, 0, buffer, 2);
 }
 
-/* BootProg unit#,memoryaddress: "DOS",0, checksum, write sectors 0-1 */
+/**
+ * @brief BootProg unit#,memoryaddress: make a boot block of 1024 bytes in memory bootable and write it.
+ *
+ * Writes "DOS",0 and the checksum, then sectors 0-1 (WriteSector).
+ * BUG(orig) (#856): the checksum is the plain sum with carry of the 256
+ * longs including the old checksum long (not cleared first, not
+ * complemented), and the root block long (+8) is cleared after it.
+ * @param unit  d0: unit# (0-3)
+ * @param mem   d1: the boot block (1024 bytes)
+ * @return d0: as c_writesector2(), 0 without port
+ */
 ULONG BLITZ_ROUTINE c_bootprog(LONG unit BL_REG(d0), UBYTE *mem BL_REG(d1))
 {
     struct BootBlock *bb = (struct BootBlock *)mem;
@@ -387,7 +512,12 @@ ULONG BLITZ_ROUTINE c_bootprog(LONG unit BL_REG(d0), UBYTE *mem BL_REG(d1))
     return c_writesector2(unit, 0, mem, 2);
 }
 
-/* DiskStatus unit#: CheckIO */
+/**
+ * @brief DiskStatus unit#: CheckIO of the unit's request.
+ * @param unit  d0: unit# (0-3)
+ * @return d0: CheckIO's result (the request if it is done, else 0), 0
+ *         without port or request
+ */
 ULONG BLITZ_ROUTINE c_iostatus(LONG unit BL_REG(d0))
 {
     struct IOStdReq *req;
@@ -397,7 +527,11 @@ ULONG BLITZ_ROUTINE c_iostatus(LONG unit BL_REG(d0))
     return (ULONG)CheckIO((struct IORequest *)req);
 }
 
-/* DiskIO unit#: the IOStdReq */
+/**
+ * @brief DiskIO unit#: the unit's IOStdReq.
+ * @param unit  d0: unit# (0-3)
+ * @return d0: the request, 0 without port or request
+ */
 ULONG BLITZ_ROUTINE c_ioreq(LONG unit BL_REG(d0))
 {
     if (!td.msgport)
@@ -405,7 +539,12 @@ ULONG BLITZ_ROUTINE c_ioreq(LONG unit BL_REG(d0))
     return (ULONG)getioreq(unit);
 }
 
-/* MotorOn unit# (TD_MOTOR, length 1) */
+/**
+ * @brief MotorOn unit#: switch the drive motor on (TD_MOTOR, length 1).
+ * @param unit  d0: unit# (0-3)
+ * @return d0: DoIO's d0 with io_Error as its low byte (a #byte result), 0
+ *         without port or request
+ */
 ULONG BLITZ_ROUTINE c_motoron(LONG unit BL_REG(d0))
 {
     struct IOStdReq *req;
@@ -419,7 +558,14 @@ ULONG BLITZ_ROUTINE c_motoron(LONG unit BL_REG(d0))
     return doio(req);
 }
 
-/* DiskMotor: MOVEQ #0,d0:BTST #7,$bfd100:SNE d0 */
+/**
+ * @brief DiskMotor: the state of the motor line (CIAB PRB bit 7).
+ *
+ * MOVEQ #0,d0:BTST #7,$bfd100:SNE d0.  BUG(orig) (#857): bit 7 is /MTR
+ * (active low): $FF means the line is high (motor off), the help text
+ * says "-1 if motor is on".
+ * @return d0: $FF if bit 7 is set, else 0 (a #byte result)
+ */
 ULONG BLITZ_ROUTINE c_diskmotor(void)
 {
     return (CIABPRB & 0x80) ? 0xff : 0;
