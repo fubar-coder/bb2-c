@@ -784,6 +784,53 @@ void doinclude(UWORD c)
     doinc2(makeiname());
 }
 
+#if BLITZ2_AB3
+/* blitz2-ab3: a tokenised include (TED's or BB22) has the mode of its own
+   (xtra_mode: by its companion .xtra, as a main source); if that is not
+   the program's, its tokens belong to the other token list - "Include of
+   another mode: NAME" (docs/ab3/variant.md, "Mixed includes").  An include
+   as text is not judged: it gets the program's mode.  fh is the open
+   include, buf INCLEN bytes; the file position is the start again
+   afterwards. */
+static void checkincmode(BPTR fh, UBYTE *buf)
+{
+    static char msg[25 + 128] = "Include of another mode: ";
+    char compname[sizeof namebuff + 5];
+    UBYTE *x = NULL;
+    LONG got, xlen = 0, i;
+    BPTR xf;
+    int type, mode;
+
+    got = Read(fh, buf, INCLEN);
+    if (got < 0)
+        readerr();
+    Seek(fh, 0, OFFSET_BEGINNING);
+    type = xtra_detect(buf, (size_t)got, (const char *)namebuff);
+    if (type != XTRA_T_TED && type != XTRA_T_BB22)
+        return;
+    if (xtra_companion_name((const char *)namebuff, compname, sizeof compname) == XTRA_OK
+        && (xf = Open((CONST_STRPTR)compname, MODE_OLDFILE))) {
+        Seek(xf, 0, OFFSET_END);
+        xlen = Seek(xf, 0, OFFSET_BEGINNING);
+        if (xlen > 0 && (x = AllocMem((ULONG)xlen, MEMF_PUBLIC)) && Read(xf, x, xlen) != xlen) {
+            FreeMem(x, (ULONG)xlen);
+            x = NULL;
+        }
+        Close(xf);
+    }
+    mode = xtra_mode(XTRA_MODE_DETECT, buf, (size_t)got, (const char *)namebuff, x,
+                     x ? (size_t)xlen : 0);
+    if (x)
+        FreeMem(x, (ULONG)xlen);
+    if (mode == progmode)
+        return;
+    for (i = 0; i < 127 && namebuff[i]; i++)
+        msg[25 + i] = (char)namebuff[i];
+    msg[25 + i] = 0;
+    err(msg);
+}
+#endif
+
 /* blitz2.s:12818 doinc2 */
 void doinc2(UWORD namelen)
 {
@@ -801,6 +848,9 @@ void doinc2(UWORD namelen)
     if (!n->fh)
         noincerr();
     numincs++;
+#if BLITZ2_AB3
+    checkincmode(n->fh, n->buf);
+#endif
     /* DIFF: asm `move.l passstack,a7 / jmp passnxt` */
     longjmp(*passjmp, 1);
 }

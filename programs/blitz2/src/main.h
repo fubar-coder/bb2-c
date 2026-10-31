@@ -473,4 +473,15 @@ extern asmchkfn movemchk, movepchk, movechk, exgchk, bitchk,
 /* asm alias */
 #define maths MathBase
 
+#if BLITZ2_AB3
+/* =============================================== AB3 mode (blitz2-ab3) */
+
+#include "xtra.h"
+
+/* the mode of the program being compiled (enum xtra_mode, shared/xtra):
+   XTRA_MODE_BB2 or XTRA_MODE_AB3 (docs/ab3/variant.md).  One mode per
+   compile; an editor session is always BB2 */
+extern int progmode;
+#endif
+
 #endif

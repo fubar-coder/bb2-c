@@ -50,6 +50,11 @@ function(blitz2_program target)
 endfunction()
 blitz2_program(blitz2)
 blitz2_program(blitz2-ab3 BLITZ2_AB3=1)
+# blitz2-ab3 decides the mode of a source with shared/xtra, compiled with
+# its own options (like shared/filereq)
+set(xtra_dir ${PROJECT_SOURCE_DIR}/shared/xtra)
+target_sources(blitz2-ab3 PRIVATE ${xtra_dir}/xtra.c ${xtra_dir}/xtra_ab3.c ${xtra_dir}/xtra_mode.c)
+target_include_directories(blitz2-ab3 PRIVATE ${xtra_dir})
 
 # the check itself: the map of blitz2 linked without libnix13 (before #936)
 # must fail it, once for each rule
