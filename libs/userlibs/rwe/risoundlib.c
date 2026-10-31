@@ -88,8 +88,8 @@ void BLITZ_ROUTINE _libfinit(void)
 
 /* CludgeSound sound#,address: d0 = sound#, d1 = the 8SVX file, a0 = the
    sound object */
-static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
-                                        struct sound *saddr BL_REG(a0))
+static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
+                                          struct sound *saddr BL_REG(a0))
 {
     UBYTE *iff, *src, *dst, *mem;       /* a0: the current IFF chunk */
     ULONG rate, clock, slen;
@@ -103,7 +103,7 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_R
         BLITZ_ALIBJSR(TOK_globfree, r);
     }
     if (LONGAT(sram + 8) != ID('8', 'S', 'V', 'X') || LONGAT(sram + 12) != ID('V', 'H', 'D', 'R'))
-        return 0;
+        return BB_FALSE;
     iff = sram + 12;
     iff += LONGAT(iff + 4);             /* BUG(orig): VHDR length 20 only (#832) */
     rate = WORDAT(iff);
@@ -118,7 +118,7 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_R
         iff += LONGAT(iff + 4);         /* BUG(orig): no pad byte (#828) */
         iff += 8;
         if (++chunk > 6)
-            return 0;
+            return BB_FALSE;
     }
     src = iff + 8;
     slen = LONGAT(iff + 4);
@@ -127,7 +127,7 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_R
         mem = dst = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
     }
     if (!mem)
-        return 0;
+        return BB_FALSE;
     n = (UWORD)(slen - 1);              /* DBRA: BUG(orig) #829, see above */
     do
         *dst++ = *src++;
@@ -138,7 +138,7 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_R
     saddr->rep = NULL;                  /* no loop */
     saddr->replen = 0;
     saddr->mark = 0;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* Registers: the original changes d0-d2/a0-a1 (on success a0 = the
