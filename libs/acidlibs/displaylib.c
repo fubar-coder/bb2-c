@@ -64,6 +64,7 @@
  * code there).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <stddef.h>
 
 /* entry points (thunks / C routines, defined below) */
@@ -259,58 +260,13 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 10, 7);
 #define L(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
 #define B(p, o) (*(UBYTE *)((UBYTE *)(p) + (o)))
 
-/* the CopList object, NEWTYPE .mycop (128 bytes, 2^7) */
-struct mycop {
-    ULONG size;                 /* +0 0 = not initialised */
-    ULONG coppos;               /* +4 the list (chip memory) */
-    ULONG colors;               /* +8 pointers into the list */
-    ULONG sprites;              /* +12 */
-    ULONG bpcons;               /* +16 */
-    ULONG bplanes;              /* +20 */
-    ULONG dot;                  /* +24 */
-    ULONG customs;              /* +28 */
-    ULONG dob;                  /* +32 */
-    UWORD bot;                  /* +36 */
-    UWORD numbp;                /* +38 */
-    UWORD colpokes;             /* +40 */
-    UWORD fetchwid;             /* +42 */
-    UWORD xand;                 /* +44 */
-    UWORD xshift;               /* +46 */
-    UWORD ypos;                 /* +48 */
-    UWORD height;               /* +50 */
-    UWORD res;                  /* +52 */
-    UWORD numsprites;           /* +54 */
-    UWORD numcols;              /* +56 */
-    UWORD numcustoms;           /* +58 */
-    UWORD cpline;               /* +60 */
-    ULONG x0;                   /* +62 .q */
-    ULONG x1;                   /* +66 .q */
-    UWORD bplcon3;              /* +70 */
-    UWORD aga;                  /* +72 $8000 24 bit, fetch $00-$c0 in the low byte */
-    UWORD resshift;             /* +74 */
-    UWORD setup;                /* +76 */
-    UWORD cblow;                /* +78 */
-    UWORD sfetch;               /* +80 */
-    UWORD spres;                /* +82 */
-    UWORD spif;                 /* +84 */
-    UWORD spwid;                /* +86 */
-    UWORD sspwid;               /* +88 */
-    UWORD ham8;                 /* +90 */
-    ULONG csprites;             /* +92 */
-    ULONG cchunky;              /* +96 location of the copper chunky */
-    UWORD chy, chw, chh, chr, chc, pad0;        /* +100 ypos width height res mod */
-    ULONG cchunky2;             /* +112 the same for the split part */
-    UWORD chy2, chw2, chh2, chr2, chc2;         /* +116 */
-    UWORD spri;                 /* +126 the sprite resolution shift (#949) */
-} BL_PACKED;
-static_assert(sizeof(struct mycop) == 128);
-static_assert(offsetof(struct mycop, x0) == 62 && offsetof(struct mycop, cchunky) == 96);
-static_assert(offsetof(struct mycop, chy2) == 116 && offsetof(struct mycop, spri) == 126);
+/* the CopList object, NEWTYPE .mycop (128 bytes, 2^7): struct bb_coplist
+   (blitzobj.h) */
 
 /* member m of the coplist at the UBYTE pointer p (the original's
    !m{m}(a3): the code keeps the address arithmetic of the pointer) */
-#define CMOFF(m) ((int)offsetof(struct mycop, m))
-#define CM(p, m) (*(__typeof__(((struct mycop *)0)->m) *)((UBYTE *)(p) + CMOFF(m)))
+#define CMOFF(m) ((int)offsetof(struct bb_coplist, m))
+#define CM(p, m) (*(__typeof__(((struct bb_coplist *)0)->m) *)((UBYTE *)(p) + CMOFF(m)))
 
 #define DMAOFF  0x00960120
 #define DMAON   0x00968120
