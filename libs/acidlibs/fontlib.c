@@ -14,7 +14,7 @@
  * also without the debugger: err1-err3 are in the normal code, their
  * texts in the error area as in the original).
  *
- * Blitz bitmap object: +0 BytesPerRow.w, +2 Rows.w, +4 Depth.w,
+ * Blitz bitmap object (struct fbitmap): +0 BytesPerRow.w, +2 Rows.w, +4 Depth.w,
  * +8 Planes[8], +40 cursor x (pixels), +42 cursor y (pixels).
  *
  * BitMapOutput n: output handler (inputoutputlib dosetout) bitout:
@@ -48,6 +48,8 @@
  *   of the original is left out.
  */
 #include "blitzlib.h"
+#include <graphics/text.h>
+#include <stddef.h>
 
 #define LVO_OpenDiskFont (-30)  /* diskfont: a0 = TextAttr */
 #define LVO_CloseFont    (-78)  /* graphics: a1 = font */
@@ -131,16 +133,27 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 4, 2);
 
 /* ------------------------------------------------------------ variables */
 
+/* the part of a Blitz bitmap object (bitmaplib) that fontlib uses */
+struct fbitmap {
+    UWORD bpr;                  /* +0 BytesPerRow */
+    UWORD rows;                 /* +2 Rows */
+    UWORD depth;                /* +4 read as a word (MOVE 4(a0)): bitmaplib's
+                                   flags byte and depth byte */
+    UWORD pad6;
+    UBYTE *planes[8];           /* +8 */
+    UWORD cursx;                /* +40 cursor x (pixels) */
+    UWORD cursy;                /* +42 cursor y (pixels) */
+} BL_PACKED;
+static_assert(offsetof(struct fbitmap, planes) == 8);
+static_assert(offsetof(struct fbitmap, cursx) == 40);
+
 /* TextAttr for OpenDiskFont: {name, ysize 8, style 0, flags 0} */
-static struct BL_PACKED {
-    const UBYTE *name;
-    UWORD ysize;
-    UBYTE style, flags;
-} textattr = { 0, 8, 0, 0 };
+static struct TextAttr textattr = { 0, 8, 0, 0 };
+static_assert(sizeof textattr == 8);
 
 static const char deffont[] = "topaz.font";
 void *fontlib_oldin;                            /* input handler before BitMapInput */
-static UBYTE *bitmapout;                        /* output bitmap object */
+static struct fbitmap *bitmapout;               /* output bitmap object */
 static ULONG *fontout;                          /* used font object */
 static UBYTE pcolour = 1;                       /* colour for font (plane pick) */
 static UBYTE pback = 0;                         /* colour for background */
@@ -149,23 +162,6 @@ static UBYTE pback = 0;                         /* colour for background */
    the normal code like in the original */
 extern const char mess1[], mess2[], mess3[];
 
-/* Blitz bitmap object */
-#define BM_BPR(b)    (*(UWORD *)((b) + 0))
-#define BM_ROWS(b)   (*(UWORD *)((b) + 2))
-#define BM_DEPTH(b)  (*(UWORD *)((b) + 4))
-#define BM_PLANE(b, i) (((UBYTE **)((b) + 8))[i])
-#define BM_CURSX(b)  (*(UWORD *)((b) + 40))
-#define BM_CURSY(b)  (*(UWORD *)((b) + 42))
-
-/* TextFont fields */
-#define TF_YSIZE(f)    (*(UWORD *)((f) + 20))
-#define TF_FLAGS(f)    (*(UBYTE *)((f) + 23))
-#define TF_XSIZE(f)    (*(UWORD *)((f) + 24))
-#define TF_LOCHAR(f)   (*(UBYTE *)((f) + 32))
-#define TF_HICHAR(f)   (*(UBYTE *)((f) + 33))
-#define TF_CHARDATA(f) (*(UBYTE **)((f) + 34))
-#define TF_MODULO(f)   (*(UWORD *)((f) + 38))
-#define TF_CHARLOC(f)  (*(UBYTE **)((f) + 40))
 
 /* -------------------------------------------------------- fonts */
 
@@ -200,15 +196,15 @@ void BLITZ_ROUTINE doloadfont(const UBYTE *name BL_REG(d1), WORD used BL_REG(d5)
 {
     ULONG *obj = (ULONG *)blitz_string;
     struct bl_regs r = { 0 };
-    UBYTE *f;
+    struct TextFont *f;
 
     *(ULONG **)(blitz_globals + used) = obj;    /* set used font... */
     fontout = obj;                              /* and output font. */
     freefont(obj, gfx);
-    textattr.name = name;
+    textattr.ta_Name = (STRPTR)name;
     r.a0 = (ULONG)&textattr;
-    f = (UBYTE *)BLITZ_BASEJSR(diskfont, LVO_OpenDiskFont, r);
-    if (!f || TF_XSIZE(f) != 8 || TF_YSIZE(f) != 8 || (TF_FLAGS(f) & 0x20)) {
+    f = (struct TextFont *)BLITZ_BASEJSR(diskfont, LVO_OpenDiskFont, r);
+    if (!f || f->tf_XSize != 8 || f->tf_YSize != 8 || (f->tf_Flags & 0x20)) {
         BLITZ_RUNERR(mess1);                    /* err1 */
         return;
     }
@@ -246,21 +242,21 @@ BLITZ_THUNK(docolour2, docolour2_c, "d0-d1/a0-a1");
    (y is Quick: the integer part of y*8) */
 static void BLITZ_ROUTINE dolocate_c(UWORD x BL_REG(d0), ULONG y BL_REG(d1))
 {
-    BM_CURSX(bitmapout) = x << 3;
-    BM_CURSY(bitmapout) = (y << 3) >> 16;
+    bitmapout->cursx = x << 3;
+    bitmapout->cursy = (y << 3) >> 16;
 }
 BLITZ_THUNK(dolocate, dolocate_c, "d1/a0-a1");
 
 /* CursX/CursY - (cursor << 16) >> 3 as Quick */
 static ULONG BLITZ_ROUTINE docursx_c(void)
 {
-    return ((ULONG)BM_CURSX(bitmapout) << 16) >> 3;
+    return ((ULONG)bitmapout->cursx << 16) >> 3;
 }
 BLITZ_THUNK(docursx, docursx_c, "d1/a0-a1");
 
 static ULONG BLITZ_ROUTINE docursy_c(void)
 {
-    return ((ULONG)BM_CURSY(bitmapout) << 16) >> 3;
+    return ((ULONG)bitmapout->cursy << 16) >> 3;
 }
 BLITZ_THUNK(docursy, docursy_c, "d1/a0-a1");
 
@@ -268,9 +264,9 @@ BLITZ_THUNK(docursy, docursy_c, "d1/a0-a1");
 
 /* calcoff - check bitmap and font: bitmap, font, lineoff (d7) = line
    offset */
-static int calcoff(UBYTE **bm, UBYTE **font, LONG *lineoff)
+static int calcoff(struct fbitmap **bm, struct TextFont **font, LONG *lineoff)
 {
-    if (!bitmapout || !BM_BPR(bitmapout)) {
+    if (!bitmapout || !bitmapout->bpr) {
         BLITZ_RUNERR(mess2);                    /* err2 */
         return 0;
     }
@@ -279,62 +275,62 @@ static int calcoff(UBYTE **bm, UBYTE **font, LONG *lineoff)
         return 0;
     }
     *bm = bitmapout;
-    *font = (UBYTE *)*fontout;
-    *lineoff = (LONG)(WORD)BM_CURSY(*bm) * (WORD)BM_BPR(*bm); /* MULS */
+    *font = (struct TextFont *)*fontout;
+    *lineoff = (LONG)(WORD)(*bm)->cursy * (WORD)(*bm)->bpr; /* MULS */
     return 1;
 }
 
 /* docr - new line: col (d1) = 0, row (d2) += 8, lineoff (d7) += bytes
    per row * 8 */
-static void docr(UBYTE *bm, UWORD *col, UWORD *row, LONG *lineoff)
+static void docr(struct fbitmap *bm, UWORD *col, UWORD *row, LONG *lineoff)
 {
     *col = 0;
     *row += 8;
-    *lineoff += (WORD)(BM_BPR(bm) << 3);        /* LSL #3:EXT.l */
+    *lineoff += (WORD)(bm->bpr << 3);           /* LSL #3:EXT.l */
 }
 
 /* bitchar - d0 = character, a0 = bitmap, a1 = font, lineoff (d7) = offset
    of the line's left edge in the bitmap (changed by a new line);
    col/row = d1/d2, backbits/forebits = d4/d5 (background/foreground
    colour bits) */
-static void bitchar(UBYTE c, UBYTE *bm, UBYTE *font, LONG *lineoff)
+static void bitchar(UBYTE c, struct fbitmap *bm, struct TextFont *font, LONG *lineoff)
 {
-    UWORD col, row = BM_CURSY(bm), backbits, forebits, depth, bpr, modulo;
+    UWORD col, row = bm->cursy, backbits, forebits, depth, bpr, modulo;
     const UBYTE *src;
     LONG off;
     UWORD i, k;
 
     if (c == 10) {
         docr(bm, &col, &row, lineoff);
-        BM_CURSX(bm) = col;
-        BM_CURSY(bm) = row;
+        bm->cursx = col;
+        bm->cursy = row;
         return;
     }
-    if (c > TF_HICHAR(font))                    /* CMP.b 33(a1),d0:BHI */
+    if (c > font->tf_HiChar)                    /* CMP.b 33(a1),d0:BHI */
         return;
-    c -= TF_LOCHAR(font);                       /* SUB.b 32(a1),d0:BMI */
+    c -= font->tf_LoChar;                       /* SUB.b 32(a1),d0:BMI */
     if ((BYTE)c < 0)
         return;
-    col = BM_CURSX(bm) >> 3;
-    if (col >= BM_BPR(bm)) {                    /* CMP (a0),d1:BCS 'skip */
+    col = bm->cursx >> 3;
+    if (col >= bm->bpr) {                       /* CMP (a0),d1:BCS 'skip */
         docr(bm, &col, &row, lineoff);
-        BM_CURSY(bm) = row;
+        bm->cursy = row;
     }
-    BM_CURSX(bm) = (col + 1) << 3;
-    if ((UWORD)(row + 8) > BM_ROWS(bm))         /* CMP 2(a0),d3:BHI 'done */
+    bm->cursx = (col + 1) << 3;
+    if ((UWORD)(row + 8) > bm->rows)            /* CMP 2(a0),d3:BHI 'done */
         return;
 
     off = *lineoff + (WORD)col;                 /* EXT.l d1:ADD.l d1,d7 */
-    src = TF_CHARDATA(font)
-        + (WORD)(*(UWORD *)(TF_CHARLOC(font) + ((UWORD)c << 2)) >> 3);
-    modulo = TF_MODULO(font);
-    depth = BM_DEPTH(bm);
-    bpr = BM_BPR(bm);
+    src = (const UBYTE *)font->tf_CharData
+        + (WORD)(*(UWORD *)((const UBYTE *)font->tf_CharLoc + ((UWORD)c << 2)) >> 3);
+    modulo = font->tf_Modulo;
+    depth = bm->depth;
+    bpr = bm->bpr;
     forebits = pcolour;
     backbits = pback;
     i = 0;
     do {                                        /* 'loop: one bitplane */
-        UBYTE *dst = BM_PLANE(bm, i) + off;
+        UBYTE *dst = bm->planes[i] + off;
         const UBYTE *s = src;
         UBYTE bg = (backbits & 1) ? 0xff : 0;   /* LSR #1,d4:SCS d3 */
         UBYTE fg = (forebits & 1) ? 0xff : 0;   /* LSR #1,d5:SCS d2 */
@@ -354,7 +350,8 @@ static void bitchar(UBYTE c, UBYTE *bm, UBYTE *font, LONG *lineoff)
 /* bitout - one character d0 */
 static void BLITZ_ROUTINE bitout_c(UBYTE c BL_REG(d0))
 {
-    UBYTE *bm, *font;
+    struct fbitmap *bm;
+    struct TextFont *font;
     LONG lineoff;
 
     if (calcoff(&bm, &font, &lineoff))
@@ -364,7 +361,8 @@ static void BLITZ_ROUTINE bitout_c(UBYTE c BL_REG(d0))
 /* bitout2 - string a0, length d0 */
 static void bitout2_(const UBYTE *s, ULONG len)
 {
-    UBYTE *bm, *font;
+    struct fbitmap *bm;
+    struct TextFont *font;
     LONG lineoff;
 
     if (!len)
@@ -408,7 +406,7 @@ BLITZ_THUNK(bitout2, bitout2_c, "d1/a0-a1");
 BLITZ_THUNK(bitout3, bitout3_c, "d0-d1/a0-a1");
 
 /* BitMapOutput n - a0 = bitmap object; the output goes to bitout */
-static void BLITZ_ROUTINE dobitmapoutput_c(UBYTE *bm BL_REG(a0))
+static void BLITZ_ROUTINE dobitmapoutput_c(struct fbitmap *bm BL_REG(a0))
 {
     struct bl_regs r = { 0 };
 
@@ -429,36 +427,36 @@ static ULONG getchar_old(void)
 }
 
 /* docursor - EOR the cursor cell (8 lines, all planes) at x */
-static void docursor(UBYTE *bm, UWORD x)
+static void docursor(struct fbitmap *bm, UWORD x)
 {
-    ULONG off = (ULONG)BM_CURSY(bm) * BM_BPR(bm)                /* MULU */
-              + (LONG)(WORD)((BM_CURSX(bm) >> 3) + x);          /* EXT.l */
+    ULONG off = (ULONG)bm->cursy * bm->bpr      /* MULU */
+              + (LONG)(WORD)((bm->cursx >> 3) + x); /* EXT.l */
     UWORD line, planes, i;
 
     for (line = 0; line < 8; line++) {
-        planes = BM_DEPTH(bm) - 1;
+        planes = bm->depth - 1;
         i = 0;
         do
-            BM_PLANE(bm, i++)[off] ^= 0xff;     /* NOT.b (a1) */
+            bm->planes[i++][off] ^= 0xff;       /* NOT.b (a1) */
         while (planes-- != 0);                  /* DBF d2 */
-        off += (WORD)BM_BPR(bm);                /* ADD (a4),a1 (ADDA.w) */
+        off += (WORD)bm->bpr;                /* ADD (a4),a1 (ADDA.w) */
     }
 }
 
 /* edstring - show the text from x on */
-static void edstring(UBYTE *bm, UBYTE *buf, UWORD max, UWORD x)
+static void edstring(struct fbitmap *bm, UBYTE *buf, UWORD max, UWORD x)
 {
-    ULONG save = *(ULONG *)(bm + 40);
+    ULONG save = *(ULONG *)&bm->cursx;
 
-    BM_CURSX(bm) += x << 3;
+    bm->cursx += x << 3;
     bitout2_(buf + (WORD)x, (UWORD)(max - x));
-    *(ULONG *)(bm + 40) = save;
+    *(ULONG *)&bm->cursx = save;
 }
 
 /* doinput2 - edit a line: a0 = buffer, d0 = length */
 static ULONG BLITZ_ROUTINE doinput2_c(ULONG len BL_REG(d0), UBYTE *buf BL_REG(a0))
 {
-    UBYTE *bm = bitmapout;
+    struct fbitmap *bm = bitmapout;
     UWORD max = len, x = 0, c, i;
 
     for (;;) {
@@ -538,7 +536,7 @@ BLITZ_THUNK(dobitmapinput, dobitmapinput_c, "d1/a0-a1");
 /* locatechk - MOVE.l bitmapout(pc),a0:TST (a0):BEQ err2 */
 static void BLITZ_ERRCHK locatechk_c(void)
 {
-    if (!BM_BPR(bitmapout))
+    if (!bitmapout->bpr)
         BLITZ_RUNERR(mess2);
 }
 
