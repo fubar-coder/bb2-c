@@ -181,13 +181,14 @@ ULONG BLITZ_ROUTINE doeditstr(UBYTE *def BL_REG(d0), ULONG n BL_REG(d1),
    pars: Dc.l 0 (length for Val / doeditstr), Dc 5 (type float for
    UStr$), parsf: */
 static struct BL_PACKED {
-    UBYTE buff[80];
-    ULONG len;
-    UWORD type;
+    UBYTE buff[80];             /* editbuff */
+    ULONG len;                  /* pars */
+    UWORD type;                 /* pars+4 */
 } ed = { .type = 5 };
+static_assert(sizeof ed == 86);
 
-#define ED_PARS4 ((const UBYTE *)&ed + 84)      /* pars+4: a2 for len */
-#define ED_PARSF ((const UBYTE *)&ed + 86)      /* parsf: a2 for type */
+#define ED_PARS4 ((const UBYTE *)&ed.type)      /* pars+4: a2 for len */
+#define ED_PARSF ((const UBYTE *)(&ed + 1))     /* parsf: a2 for type */
 
 /* doeditz - read the line over the default (length in pars), then Val */
 static ULONG doeditz(ULONG n, const void *caller_a6, UBYTE *saved_string)
