@@ -581,7 +581,7 @@ static ULONG BLITZ_ROUTINE setregistryintvariable_c(ULONG name BL_REG(d0), ULONG
     return doset(VAR_INTEGER, name, v, size);
 }
 
-static ULONG BLITZ_ROUTINE setregistryboolvariable_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1),
+static ULONG BLITZ_ROUTINE setregistryboolvariable_c(ULONG name BL_REG(d0), BB_BOOL v BL_REG(d1),
                                                      ULONG size BL_REG(d2))
 {
     return doset(VAR_BOOLEAN, name, v, size);
