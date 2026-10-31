@@ -14,6 +14,7 @@
 #include "bugorig.h"
 #include "corpus.h"
 #include "serial.h"
+#include "statline_emulation.h"
 #include "util.h"
 
 #define VOLUME "CORPUS"                 /* the configuration's directory */
@@ -738,7 +739,7 @@ static int observe(const struct corpus_pass *p, size_t c, enum amiga_emulation_s
 /* bug-orig mode (expect=): every configuration judged against the
    expectation and the reference; exit status in corpus.h */
 static int judge(const struct corpus_pass *p, const enum amiga_emulation_status *st, char **slog,
-                 FILE *log)
+                 struct statline *stl, FILE *log)
 {
     struct bugorig_obs e, *o = calloc(p->nconfigs, sizeof *o);
     struct text rep = { 0 };
@@ -783,7 +784,9 @@ static int judge(const struct corpus_pass *p, const enum amiga_emulation_status 
     }
     text_add(&rep, "== bug-orig %s: runtime error checking %s, expectation %s\n", name,
         p->runtime_errors ? "on" : "off", p->expect);
+    statline_set(stl[0].verdict, sizeof stl[0].verdict, "reference");
     if (bugorig_matches(&e, &o[0])) {
+        statline_set(stl[0].verdict, sizeof stl[0].verdict, "BROKEN");
         text_add(&rep, "BROKEN TEST: the original shows the expected (correct) behaviour - it does "
             "not have the bug, or the expectation describes the bug\n");
         worst = 3;
@@ -794,6 +797,7 @@ static int judge(const struct corpus_pass *p, const enum amiga_emulation_status 
         static const int order[] = { [BUGORIG_FIXED] = 0, [BUGORIG_REPRODUCED] = 1,
                                      [BUGORIG_DIFFERS] = 2, [BUGORIG_BROKEN] = 3 };
 
+        statline_set(stl[c].verdict, sizeof stl[c].verdict, bugorig_verdict_name(v));
         text_add(&rep, "%s: %s%s\n", p->configs[c].tag, bugorig_verdict_name(v),
             v == BUGORIG_FIXED ? " - the configuration behaves correctly"
             : v == BUGORIG_REPRODUCED ? " - the bug of the original, reproduced on purpose"
@@ -832,6 +836,8 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
     struct responder **resp = calloc(p->nconfigs, sizeof *resp);
     int *nsessions = calloc(p->nconfigs, sizeof *nsessions);
     char **slog = calloc(p->nconfigs, sizeof *slog);
+    struct statline *stl = calloc(p->nconfigs, sizeof *stl);   /* test[0]: joined */
+    int *vbad = calloc(p->nconfigs, sizeof *vbad);             /* the verdict "differs" */
     char *text = script(p), err[300];
     struct text rep = { 0 };
     size_t c, i, next = 0, done = 0;
@@ -839,7 +845,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
     long bad = 0;
     int rc = 2;
 
-    if (!e || !st || !resp || !nsessions || !slog || !text)
+    if (!e || !st || !resp || !nsessions || !slog || !stl || !vbad || !text)
         goto out;
     /* without the files of the pass (the CD's libraries...) or the emulator:
        skipped */
@@ -912,6 +918,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
             next++;
         }
         st[done] = amiga_emulation_join(e[done]);
+        statline_session(&stl[done], p->work, p->configs[done].tag, e[done]);
         amiga_emulation_free(e[done]);
         e[done] = NULL;
         if (resp[done]) {
@@ -932,7 +939,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
         free(path);
     }
     if (p->expect) {
-        rc = judge(p, st, slog, log);
+        rc = judge(p, st, slog, stl, log);
         goto out;
     }
     text_add(&rep, "== runtime error checking %s, %zu sources:", p->runtime_errors ? "on" : "off",
@@ -943,14 +950,17 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
     if (p->serial)
         for (c = 0; c < p->nconfigs; c++) {
             text_add(&rep, "serial port %s: %d sessions\n", p->configs[c].tag, nsessions[c]);
-            if (nsessions[c] < 0)
+            if (nsessions[c] < 0) {
                 bad++;
+                vbad[c] = 1;
+            }
         }
     for (c = 0; c < p->nconfigs; c++)
         if (st[c] != AMIGA_EMULATION_DONE) {
             text_add(&rep, "session %s: %s (%s/%s/emu)\n", p->configs[c].tag,
                 amiga_emulation_status_name(st[c]), p->work, p->configs[c].tag);
             bad++;
+            vbad[c] = 1;
         }
     if (p->gate)
         for (c = 0; c < p->nconfigs; c++)
@@ -958,6 +968,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
                 text_add(&rep, "gate %s: rc %d - the programs did not run (%s/%s/vol/out/gate.run)\n",
                     p->configs[c].tag, gate_rc(p, c), p->work, p->configs[c].tag);
                 bad++;
+                vbad[c] = 1;
             }
     for (i = 0; i < p->nsources; i++) {
         struct outcome ref, o;
@@ -969,6 +980,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
         if (!ref.exe) {
             text_add(&rep, " reference did not compile: %s\n", ref.result);
             bad++;
+            vbad[0] = 1;
             free_outcome(&ref);
             free(name);
             continue;
@@ -984,6 +996,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
                 text_add(&rep, ok ? " exe identical," : o.exe ? " EXE DIFFERS," : " NO EXE (%s),",
                     o.result);
                 diff |= !ok;
+                vbad[c] |= !ok;
             }
             if (!o.run)
                 text_add(&rep, " NO OUTPUT");
@@ -992,15 +1005,18 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
             else
                 text_add(&rep, " OUTPUT DIFFERS");
             diff |= !same(ref.run, ref.runlen, o.run, o.runlen);
+            vbad[c] |= !same(ref.run, ref.runlen, o.run, o.runlen);
             if (p->serial) {
                 int ok = same(ref.serial, ref.seriallen, o.serial, o.seriallen);
 
                 text_add(&rep, !ref.serial ? ", NO REFERENCE SERIAL DATA" : ok ? ", serial data same"
                                : ", SERIAL DATA DIFFERS");
                 diff |= !ok;
+                vbad[c] |= !ok;
                 if (o.run && strstr((const char *)o.run, "TIMEOUT")) {
                     text_add(&rep, ", TIMEOUT");
                     diff = 1;
+                    vbad[c] = 1;
                 }
             }
             free_outcome(&o);
@@ -1008,6 +1024,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
         if (p->serial && ref.run && strstr((const char *)ref.run, "TIMEOUT")) {
             text_add(&rep, "; reference: TIMEOUT");
             diff = 1;
+            vbad[0] = 1;
         }
         /* the reference's serial data also as in the other pass (runtime error
            checking off/on); not there: that pass has not run */
@@ -1023,6 +1040,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
             else {
                 text_add(&rep, "; SERIAL DATA DIFFERS FROM THE OTHER PASS");
                 diff = 1;
+                vbad[0] = 1;
             }
             free(od);
             free(other);
@@ -1039,7 +1057,13 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
     }
     fwrite(rep.p, 1, rep.n, log);
     rc = bad ? 1 : 0;
+    for (c = 0; c < p->nconfigs; c++)
+        statline_set(stl[c].verdict, sizeof stl[c].verdict, vbad[c] ? "differs" : "same");
 out:
+    /* the sessions' @stat lines (statline.h), after the report */
+    for (c = 0; stl && c < p->nconfigs; c++)
+        if (stl[c].test[0])
+            statline_write(log, &stl[c]);
     for (c = 0; e && c < p->nconfigs; c++)
         if (e[c]) {
             amiga_emulation_join(e[c]);
@@ -1055,6 +1079,8 @@ out:
     for (c = 0; slog && c < p->nconfigs; c++)
         free(slog[c]);
     free(slog);
+    free(stl);
+    free(vbad);
     free(resp);
     free(nsessions);
     free(e);

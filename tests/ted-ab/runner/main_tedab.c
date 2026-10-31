@@ -58,6 +58,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "amiga_emulation.h"
+#include "statline_emulation.h"
 #include "tedab.h"
 #include "util.h"
 
@@ -77,6 +78,7 @@ struct run {
     int state, attempts, done, gates_ok;  /* gates_ok: of its last session */
     unsigned session;           /* the last one it was in */
     char *dir;                  /* its run directory (work/sNNN/vol/runs/T/XX) */
+    const char *verdict;        /* bug-orig: its verdict ("reference" for the reference) */
 };
 
 static struct pass P;
@@ -545,6 +547,8 @@ struct session {
     struct amiga_emulation *e;
     int gates_ok;
     struct text gate, events;
+    struct statline stat;       /* its @stat line (statline.h); test[0]: joined */
+    size_t run;                 /* its first run (runs[]) */
 };
 
 /* the next session from the queue: whole tests up to the budget */
@@ -695,6 +699,7 @@ static void bugorig_verdicts(const struct tedab_test *t, struct run **tr,
         if (!tr[cc])
             continue;
         observe(t, tr[cc], ps, sizeof ps, &pp);
+        tr[ref]->verdict = "reference";
         if (!strcmp(rs, "OK") && !strcmp(ps, "OK")) {
             struct text d = { 0 };
 
@@ -708,6 +713,7 @@ static void bugorig_verdicts(const struct tedab_test *t, struct run **tr,
             v = 2;              /* not run (or the tools failed): no verdict */
         else
             v = tedab_bugorig_verdict(rs, rp.p ? rp.p : "", ps, pp.p ? pp.p : "", cmp);
+        tr[cc]->verdict = v == 2 ? "NOTRUN" : tedab_verdict_name(v);
         text_add(rep, "  bug-orig %s against %s: %s\n", tedab_combo_names[cc],
                  tedab_combo_names[ref], v == 2 ? "NOT RUN" : tedab_verdict_name(v));
         if (v == TEDAB_BROKEN)
@@ -886,7 +892,15 @@ static int run(FILE *log)
             char *text = lp ? (char *)read_file(lp, &len) : NULL;
             struct tedab_run *rs = calloc(s->n, sizeof *rs);
             int *state = calloc(s->n, sizeof *state);
+            char sname[16];
 
+            /* the session's @stat line: the combination of its run in the
+               bug-orig mode, else the session */
+            snprintf(sname, sizeof sname, "s%03u", s->no);
+            s->run = list[s->first];
+            statline_session(&s->stat, P.work,
+                             P.bugorig ? tedab_combo_names[runs[s->run].r.combo] : sname, s->e);
+            s->stat.runs = (int)s->n;
             amiga_emulation_free(s->e);
             s->e = NULL;
             for (k = 0; rs && k < s->n; k++)
@@ -939,6 +953,15 @@ static int run(FILE *log)
                     again++;
                 } else
                     r->done = 1;
+            }
+            /* outside bug-orig: ok if the gates and every run are */
+            if (!P.bugorig) {
+                int ok = s->gates_ok && rs && state;
+                char buf[300];
+
+                for (k = 0; ok && k < s->n; k++)
+                    ok = !strcmp(state_text(&runs[list[s->first + k]], buf, sizeof buf), "OK");
+                statline_set(s->stat.verdict, sizeof s->stat.verdict, ok ? "ok" : "fail");
             }
             fprintf(log, "tedab: session %03u: %s, gates %s, %zu runs again\n", s->no,
                     amiga_emulation_status_name(st), s->gates_ok ? "OK" : "FAILED", again);
@@ -1054,6 +1077,17 @@ static int run(FILE *log)
     fwrite(rep.p, 1, rep.n, log);
     rc = P.bugorig ? (worst >= 0 ? worst : 2) : all_ok ? 0 : 1;
 out:
+    /* the sessions' @stat lines, after the report; bug-orig: the verdict of
+       the run in the session that decided it (its last one) */
+    for (unsigned w = 0; w < nsess; w++) {
+        struct session *s = &ss[w];
+
+        if (!s->stat.test[0])
+            continue;
+        if (P.bugorig && runs && runs[s->run].session == s->no && runs[s->run].verdict)
+            statline_set(s->stat.verdict, sizeof s->stat.verdict, runs[s->run].verdict);
+        statline_write(log, &s->stat);
+    }
     for (unsigned w = 0; w < nsess; w++) {
         if (ss[w].e) {
             amiga_emulation_join(ss[w].e);

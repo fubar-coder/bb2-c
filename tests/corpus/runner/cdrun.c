@@ -72,6 +72,7 @@
 #include "cdcache.h"
 #include "corpus.h"
 #include "sha256.h"
+#include "statline_emulation.h"
 #include "util.h"
 
 #define VOLUME "CORPUS"         /* the worker's directory */
@@ -929,8 +930,14 @@ static void finish_session(unsigned w, unsigned s, struct amiga_emulation **e, s
 {
     size_t nunf, started, k;
     int exited;
+    struct statline st;
+    char config[16];
 
     amiga_emulation_join(e[w]);
+    /* its @stat line (statline.h): the worker, no verdict */
+    snprintf(config, sizeof config, "w%u", w);
+    statline_session(&st, P.work, config, e[w]);
+    statline_write(log, &st);
     amiga_emulation_free(e[w]);
     e[w] = NULL;
     started = read_session(w, s, unf, &nunf, &exited);

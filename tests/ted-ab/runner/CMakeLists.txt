@@ -26,5 +26,5 @@ target_compile_options(lib_tedab PRIVATE -Wall -Wextra -Wno-unused-function)
 set_target_properties(lib_tedab PROPERTIES C_STANDARD 23)
 
 add_executable(tedab main_tedab.c)
-target_link_libraries(tedab PRIVATE lib_tedab lib_amiga_emulation)
+target_link_libraries(tedab PRIVATE lib_tedab lib_amiga_emulation lib_statline)
 target_compile_options(tedab PRIVATE -Wall -Wextra)
