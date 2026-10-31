@@ -13,7 +13,8 @@
  * Notes: docs/rwelibs/port/rilinkedlistlib.md.
  *
  * A node (18 bytes, memlib globalloc with flags 0): next.l, prev.l,
- * pad.w, data.l (a copy of the variable, globalloc), size.l.  Per list
+ * pad.w, data.l (a copy of the variable, globalloc), size.l (struct
+ * node; DelListItem reads a struct node09).  Per list
  * the first, last and current node in tables of five longs (list# * 4
  * indexes them without a check; the tables first, last, an unused one
  * and current follow each other as in the original).  The size of a
@@ -160,24 +161,41 @@ BLITZ_LIBFIN();
 
 /* ---------------------------------------------------------------- data */
 
-#define NODENEXT 0
-#define NODEPREV 4
-#define NODEPAD  8
-#define NODEDAT  10
-#define NODELEN  14
-#define NODESIZE 18
+/* a node of v0.91 (the addresses as longs, like the original's
+   variables) */
+struct node {
+    ULONG next;                         /* +0 */
+    ULONG prev;                         /* +4 */
+    UWORD pad;                          /* +8 */
+    ULONG data;                         /* +10: the copy of the variable */
+    ULONG size;                         /* +14 */
+};
+static_assert(sizeof(struct node) == 18);
+#define NODESIZE sizeof(struct node)
+#define NODE(a) ((struct node *)(a))
 
-/* a long/word at an address + offset (nodes are word aligned) */
-#define NL(a, o) (*(ULONG *)((a) + (o)))
-#define NW(a, o) (*(UWORD *)((a) + (o)))
+/* the node of v0.9 (no pad), as DelListItem still reads it: data and
+   size at the wrong offsets (BUG(orig) (#729)) */
+struct node09 {
+    ULONG next;                         /* +0 */
+    ULONG prev;                         /* +4 */
+    ULONG data;                         /* +8: pad and the upper word of data */
+    UWORD pad;                          /* +12: the lower word of data */
+    ULONG size;                         /* +14 */
+};
+static_assert(sizeof(struct node09) == 18);
+
+/* the word in front of a variable: its size + 8 */
+#define VARSIZEW(var) (*(UWORD *)((var) - 2))
 
 /* _first, _last, _sizes (unused), _current: five longs each, one after
-   the other; a table entry is the table's address + list# * 4 */
-static ULONG tables[20];
-#define FIRST   0
-#define LAST    20
-#define CURRENT 60
-#define TAB(t) (*(ULONG *)((UBYTE *)tables + (t) + listnum))
+   the other; a table entry is the table's address + list# * 4 (not
+   checked: a list# out of 0-4 reaches into the next table) */
+static struct {
+    ULONG first[5], last[5], sizes[5], current[5];
+} tables;
+static_assert(sizeof tables == 20 * 4);
+#define TAB(t) (*(ULONG *)((UBYTE *)tables.t + listnum))
 
 static ULONG nodeptr, _oldnext, _next, _prev, _data, myvar, _size, listnum;
 static UWORD pad;
@@ -205,7 +223,7 @@ static void copybyte(ULONG src, ULONG dest, ULONG n)
 static ULONG getvarsize(ULONG var)
 {
     myvar = var;
-    _size = (ULONG)NW(var, -2) - 8;
+    _size = (ULONG)VARSIZEW(var) - 8;
     return _size;
 }
 
@@ -228,7 +246,7 @@ ULONG BLITZ_ROUTINE c_sizeoflistitem(ULONG var BL_REG(d0))
 ULONG BLITZ_ROUTINE c_addrlistitem(ULONG list BL_REG(d0))
 {
     listnum = list << 2;
-    return TAB(CURRENT);
+    return TAB(current);
 }
 
 /* InitList list#,var: a list with one node, a copy of var */
@@ -242,24 +260,24 @@ ULONG BLITZ_ROUTINE c_initlist(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
     if (!node)
         return 0;
     nodeptr = node;
-    TAB(FIRST) = node;
-    TAB(LAST) = node;
-    TAB(CURRENT) = node;
+    TAB(first) = node;
+    TAB(last) = node;
+    TAB(current) = node;
     _data = globalloc(_size);
     if (!_data) {
         globfree(nodeptr, NODESIZE);
-        TAB(FIRST) = 0;
-        TAB(LAST) = 0;
-        TAB(CURRENT) = 0;
+        TAB(first) = 0;
+        TAB(last) = 0;
+        TAB(current) = 0;
         return 0;
     }
     copybyte(myvar, _data, _size);
     node = nodeptr;
-    NL(node, NODENEXT) = 0;
-    NL(node, NODEPREV) = 0;
-    NW(node, NODEPAD) = 0;
-    NL(node, NODEDAT) = _data;
-    NL(node, NODELEN) = _size;
+    NODE(node)->next = 0;
+    NODE(node)->prev = 0;
+    NODE(node)->pad = 0;
+    NODE(node)->data = _data;
+    NODE(node)->size = _size;
     return (ULONG)-1;
 }
 
@@ -274,22 +292,22 @@ ULONG BLITZ_ROUTINE c_addlistitem(ULONG list BL_REG(d0))
     if (!node)
         return 0;
     nodeptr = node;
-    cur = TAB(CURRENT);                 /* BUG(orig): 0 not checked (#733) */
-    _next = NL(cur, NODENEXT);
-    _prev = NL(cur, NODEPREV);
+    cur = TAB(current);                 /* BUG(orig): 0 not checked (#733) */
+    _next = NODE(cur)->next;
+    _prev = NODE(cur)->prev;
     if (!_next)
-        TAB(LAST) = nodeptr;
-    cur = TAB(CURRENT);
-    TAB(CURRENT) = nodeptr;
-    _oldnext = NL(cur, NODENEXT);
-    NL(cur, NODENEXT) = nodeptr;
+        TAB(last) = nodeptr;
+    cur = TAB(current);
+    TAB(current) = nodeptr;
+    _oldnext = NODE(cur)->next;
+    NODE(cur)->next = nodeptr;
     /* BUG(orig): the prev of the node behind (_oldnext) is not set (#727) */
     node = nodeptr;
-    NL(node, NODENEXT) = _oldnext;
-    NL(node, NODEPREV) = cur;
-    NW(node, NODEPAD) = 0;
-    NL(node, NODEDAT) = 0;
-    NL(node, NODELEN) = _size;          /* BUG(orig): the last size (#735) */
+    NODE(node)->next = _oldnext;
+    NODE(node)->prev = cur;
+    NODE(node)->pad = 0;
+    NODE(node)->data = 0;
+    NODE(node)->size = _size;           /* BUG(orig): the last size (#735) */
     return (ULONG)-1;
 }
 
@@ -303,7 +321,7 @@ ULONG BLITZ_ROUTINE c_setlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
     if (!mem)
         return 0;
     /* BUG(orig): the old copy is not freed, the size not set (#734, #735) */
-    NL(TAB(CURRENT), NODEDAT) = mem;
+    NODE(TAB(current))->data = mem;
     copybyte(myvar, mem, _size);
     return (ULONG)-1;
 }
@@ -316,7 +334,7 @@ ULONG BLITZ_ROUTINE c_getlistitem(ULONG list BL_REG(d0), ULONG var BL_REG(d1))
 
     listnum = list << 2;
     getvarsize(var);
-    data = NL(TAB(CURRENT), NODEDAT);
+    data = NODE(TAB(current))->data;
     if (!data)
         return 0;
     copybyte(data, myvar, _size);
@@ -329,10 +347,10 @@ ULONG BLITZ_ROUTINE c_nextlistitem(ULONG list BL_REG(d0))
     ULONG n;
 
     listnum = list << 2;
-    n = NL(TAB(CURRENT), NODENEXT);
+    n = NODE(TAB(current))->next;
     if (!n)
         return 0;
-    TAB(CURRENT) = n;
+    TAB(current) = n;
     return (ULONG)-1;
 }
 
@@ -341,10 +359,10 @@ ULONG BLITZ_ROUTINE c_prevlistitem(ULONG list BL_REG(d0))
     ULONG n;
 
     listnum = list << 2;
-    n = NL(TAB(CURRENT), NODEPREV);
+    n = NODE(TAB(current))->prev;
     if (!n)
         return 0;
-    TAB(CURRENT) = n;
+    TAB(current) = n;
     return (ULONG)-1;
 }
 
@@ -352,14 +370,14 @@ ULONG BLITZ_ROUTINE c_prevlistitem(ULONG list BL_REG(d0))
 ULONG BLITZ_ROUTINE c_firstlistitem(ULONG list BL_REG(d0))
 {
     listnum = list << 2;
-    TAB(CURRENT) = TAB(FIRST);
+    TAB(current) = TAB(first);
     return (ULONG)-1;
 }
 
 ULONG BLITZ_ROUTINE c_lastlistitem(ULONG list BL_REG(d0))
 {
     listnum = list << 2;
-    TAB(CURRENT) = TAB(LAST);
+    TAB(current) = TAB(last);
     return (ULONG)-1;
 }
 
@@ -382,11 +400,11 @@ ULONG BLITZ_ROUTINE c_addfirstitem(ULONG list BL_REG(d0))
         return 0;
     nodeptr = node;
     listnum = list << 2;
-    _next = TAB(FIRST);
-    TAB(FIRST) = nodeptr;
-    NL(_next, NODENEXT) = nodeptr;      /* BUG(orig): next, not prev (#724) */
-    TAB(CURRENT) = nodeptr;
-    NL(nodeptr, NODENEXT) = _next;
+    _next = TAB(first);
+    TAB(first) = nodeptr;
+    NODE(_next)->next = nodeptr;        /* BUG(orig): next, not prev (#724) */
+    TAB(current) = nodeptr;
+    NODE(nodeptr)->next = _next;
     return listnum;
 }
 
@@ -396,39 +414,39 @@ ULONG BLITZ_ROUTINE c_dellistitem(ULONG list BL_REG(d0))
     ULONG node;
 
     listnum = list << 2;
-    node = nodeptr = TAB(CURRENT);
+    node = nodeptr = TAB(current);
     if (!node)
         return 0;
     /* the v0.9 node: next, prev, data, size (no pad) */
-    _next = NL(node, 0);
-    _prev = NL(node, 4);
-    _data = NL(node, 8);
-    pad = NW(node, 12);
-    _size = NL(node, 14);
+    _next = ((struct node09 *)node)->next;
+    _prev = ((struct node09 *)node)->prev;
+    _data = ((struct node09 *)node)->data; /* BUG(orig) (#729) */
+    pad = ((struct node09 *)node)->pad;
+    _size = ((struct node09 *)node)->size;
     if (_data) {
         globfree(_data, _size);
-        NL(nodeptr, NODEDAT) = 0;
-        NL(nodeptr, NODELEN) = 0;
+        NODE(nodeptr)->data = 0;
+        NODE(nodeptr)->size = 0;
     }
     if (!_prev) {
         if (!_next)
             return 0;                   /* the only node */
-        NL(_next, NODENEXT) = 0;        /* BUG(orig): next, not prev (#728) */
-        TAB(FIRST) = _next;
-        TAB(CURRENT) = _next;
+        NODE(_next)->next = 0;        /* BUG(orig): next, not prev (#728) */
+        TAB(first) = _next;
+        TAB(current) = _next;
         globfree(nodeptr, NODESIZE);
         return (ULONG)-1;
     }
     if (!_next) {
-        NL(_prev, NODENEXT) = 0;
-        TAB(LAST) = _prev;
-        TAB(CURRENT) = _prev;
+        NODE(_prev)->next = 0;
+        TAB(last) = _prev;
+        TAB(current) = _prev;
         globfree(nodeptr, NODESIZE);
         return (ULONG)-1;
     }
-    NL(_prev, NODENEXT) = _next;
-    NL(_next, NODEPREV) = _prev;
-    TAB(CURRENT) = _next;
+    NODE(_prev)->next = _next;
+    NODE(_next)->prev = _prev;
+    TAB(current) = _next;
     globfree(nodeptr, NODESIZE);
     return (ULONG)-1;
 }
