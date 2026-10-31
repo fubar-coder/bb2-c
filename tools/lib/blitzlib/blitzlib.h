@@ -89,4 +89,36 @@ int blitzlib_check(const struct loadfile *lf, const char *name, FILE *out);
  */
 int blitzlib_compare(const struct hunk *orig, const struct hunk *new, const char *name, FILE *out);
 
+/**
+ * @brief Split a list of intended differences into its lines (in place).
+ *
+ * One message line of blitzlib_compare per line, exactly as printed
+ * (without the newline); empty lines and lines beginning with `#` are
+ * skipped.
+ *
+ * @param text   the list, 0-terminated; its newlines become 0
+ * @param lines  the lines found (pointers into text)
+ * @param max    room in lines
+ * @return the number of lines, -1 if there are more than max
+ */
+long blitzlib_intended_list(char *text, const char **lines, size_t max);
+
+/**
+ * @brief Take the intended differences out of the messages of
+ * blitzlib_compare.
+ *
+ * A message line equal to one of the intended differences is printed as
+ * "intended: LINE" and not counted; the other lines are copied as they
+ * are.
+ *
+ * @param msgs      the messages of blitzlib_compare (lines, 0-terminated)
+ * @param intended  the intended differences (blitzlib_intended_list)
+ * @param n         their number
+ * @param seen      per intended difference: set to 1 when found
+ * @param out       the other lines and the intended ones found
+ * @return the number of the other lines (differences not intended)
+ */
+int blitzlib_intended(const char *msgs, const char *const *intended, size_t n,
+                      unsigned char *seen, FILE *out);
+
 #endif

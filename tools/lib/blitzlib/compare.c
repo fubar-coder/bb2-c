@@ -114,3 +114,51 @@ int blitzlib_compare(const struct hunk *orig, const struct hunk *new, const char
     blitzlib_free(&b);
     return diffs;
 }
+
+long blitzlib_intended_list(char *text, const char **lines, size_t max)
+{
+    size_t n = 0;
+    char *p = text, *e;
+
+    while (*p) {
+        e = strchr(p, '\n');
+        if (e)
+            *e = 0;
+        if (*p && *p != '#') {
+            if (n == max)
+                return -1;
+            lines[n++] = p;
+        }
+        if (!e)
+            break;
+        p = e + 1;
+    }
+    return (long)n;
+}
+
+int blitzlib_intended(const char *msgs, const char *const *intended, size_t n,
+                      unsigned char *seen, FILE *out)
+{
+    const char *p = msgs, *e;
+    size_t len, k;
+    int other = 0;
+
+    while (*p) {
+        e = strchr(p, '\n');
+        len = e ? (size_t)(e - p) : strlen(p);
+        for (k = 0; k < n; k++)
+            if (strlen(intended[k]) == len && !memcmp(intended[k], p, len))
+                break;
+        if (k < n) {
+            seen[k] = 1;
+            fprintf(out, "intended: %.*s\n", (int)len, p);
+        } else {
+            other++;
+            fprintf(out, "%.*s\n", (int)len, p);
+        }
+        if (!e)
+            break;
+        p = e + 1;
+    }
+    return other;
+}

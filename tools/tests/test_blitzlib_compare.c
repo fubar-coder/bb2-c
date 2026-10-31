@@ -117,5 +117,47 @@ int main(void)
         fclose(out);
         free(a.p);
     }
+
+    /* the list of intended differences: comments and empty lines skipped */
+    {
+        char text[] = "# fixed (#1)\nlib: header +$05: $64 != $65\n\n#\nlib: x\n";
+        char text2[] = "a\nb\nc";
+        const char *lines[2];
+
+        CHECK(blitzlib_intended_list(text, lines, 2) == 2);
+        CHECK(!strcmp(lines[0], "lib: header +$05: $64 != $65") && !strcmp(lines[1], "lib: x"));
+        CHECK(blitzlib_intended_list(text2, lines, 2) == -1);       /* too many */
+    }
+    /* intended differences: not counted, marked as seen */
+    {
+        static const char *const intended[2] = {
+            "lib: header +$05: $64 != $65", "lib: entry 0 Test +$1F: $65 != $61" };
+        unsigned char seen[2] = { 0 };
+        FILE *out = tmpfile();
+
+        v = base;
+        v.libnum = 101;
+        CHECK(cmp(&v, 0, msg, sizeof msg) == 1);
+        CHECK(blitzlib_intended(msg, intended, 2, seen, out) == 0);
+        CHECK(seen[0] == 1 && seen[1] == 0);            /* the second one is stale */
+        rewind(out);
+        msg[fread(msg, 1, sizeof msg - 1, out)] = 0;
+        CHECK(!strcmp(msg, "intended: lib: header +$05: $64 != $65\n"));
+        fclose(out);
+        /* broken: a difference that is not in the list is counted */
+        v.name = "Tast";
+        CHECK(cmp(&v, 0, msg, sizeof msg) == 2);
+        seen[0] = seen[1] = 0;
+        out = tmpfile();
+        CHECK(blitzlib_intended(msg, intended + 1, 1, seen, out) == 1);
+        CHECK(seen[0] == 1);
+        fclose(out);
+        /* a line must match as a whole, not as a prefix */
+        seen[0] = 0;
+        out = tmpfile();
+        CHECK(blitzlib_intended("lib: header +$05: $64 != $650\n", intended, 1, seen, out) == 1);
+        CHECK(seen[0] == 0);
+        fclose(out);
+    }
     return failures != 0;
 }

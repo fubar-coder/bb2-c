@@ -203,7 +203,9 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
 * **host:** the tools with deliberately broken inputs, the host tests of
   the TED core (compiled natively, snitch), the declaration comparison (`declarations_*`: header,
   entries, `!libfin` of every built library against the original of the
-  CD, same libraries in the same order; `tools/blitzlibcompare`) and the
+  CD, same libraries in the same order; `tools/blitzlibcompare`; the
+  intended differences of fixed original bugs are listed in
+  `libs/GROUP/declarations-intended.txt`, each of them must occur) and the
   instruction comparison (`asmcmp_*`: the routines of runerrlib, debuglib,
   dhandlerlib, memacclib that remained in assembler against the originals of the CD,
   with `objdump` of the toolchain; `tools/asmcmp`). Both comparisons are

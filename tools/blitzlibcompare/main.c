@@ -2,10 +2,15 @@
  * blitzlibcompare - the declarations of every library of a BigLib file
  * against the original (blitzlib_compare, see blitzlib.h).
  *
- *   blitzlibcompare ORIGINAL NEW          e.g. CD BLITZ2/DEFLIBS and deflibs
+ *   blitzlibcompare ORIGINAL NEW [INTENDED]
+ *                              e.g. CD BLITZ2/DEFLIBS and deflibs
  *
  * ORIGINAL and NEW may also be single library files (a userlib against
  * its original).
+ *
+ * INTENDED: a text file of the intended differences (fixed original
+ * bugs), one message line per line as printed, `#` comments; they are not
+ * counted, and each of them must occur (a stale entry is a difference).
  *
  * Both must hold the same libraries in the same order (the order of the
  * compiler's token list).  Prints the differences and a summary; exit
@@ -83,21 +88,66 @@ static void free_biglib(struct biglibfile *b)
 }
 
 static const char usage[] =
-    "usage: blitzlibcompare ORIGINAL NEW\n"
+    "usage: blitzlibcompare ORIGINAL NEW [INTENDED]\n"
     "  the declarations of every library of a BigLib file (or of a library\n"
-    "  file) against the original\n";
+    "  file) against the original; INTENDED: the intended differences, one\n"
+    "  message line per line (# comments), each of them must occur\n";
+
+#define MAXINTENDED 100
+
+/* the list of intended differences; the text stays allocated (the lines
+   point into it) */
+static long read_intended(const char *path, const char **lines, char **text)
+{
+    FILE *f = fopen(path, "rb");
+    long size, n;
+
+    *text = NULL;
+    if (!f || fseek(f, 0, SEEK_END) || (size = ftell(f)) < 0 || fseek(f, 0, SEEK_SET)
+        || !(*text = malloc((size_t)size + 1)) || fread(*text, 1, (size_t)size, f) != (size_t)size) {
+        fprintf(stderr, "blitzlibcompare: cannot read %s\n", path);
+        if (f)
+            fclose(f);
+        return -1;
+    }
+    fclose(f);
+    (*text)[size] = 0;
+    n = blitzlib_intended_list(*text, lines, MAXINTENDED);
+    if (n < 0)
+        fprintf(stderr, "blitzlibcompare: %s: more than %d lines\n", path, MAXINTENDED);
+    return n;
+}
+
+/* what was written to f, 0-terminated */
+static char *read_back(FILE *f)
+{
+    long size = ftell(f);
+    char *t;
+
+    if (size < 0 || fseek(f, 0, SEEK_SET) || !(t = malloc((size_t)size + 1)))
+        return NULL;
+    if (fread(t, 1, (size_t)size, f) != (size_t)size) {
+        free(t);
+        return NULL;
+    }
+    t[size] = 0;
+    return t;
+}
 
 int main(int argc, char **argv)
 {
     struct biglibfile a, b;
     size_t i, n;
-    long diffs = 0;
+    long diffs = 0, nintended = 0;
+    const char *intended[MAXINTENDED];
+    unsigned char seen[MAXINTENDED] = { 0 };
+    char *intendedtext = NULL;
 
     if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
         fputs(usage, stdout);
         return 0;
     }
-    if (argc != 3) {
+    if (argc != 3 && argc != 4) {
         fputs(usage, stderr);
         return 2;
     }
@@ -105,6 +155,8 @@ int main(int argc, char **argv)
         printf("blitzlibcompare: no %s - skipped (fetch-originals)\n", argv[1]);
         return 77;
     }
+    if (argc == 4 && (nintended = read_intended(argv[3], intended, &intendedtext)) < 0)
+        return 1;
     if (read_biglib(argv[1], &a) || read_biglib(argv[2], &b))
         return 1;
     if (a.n != b.n) {
@@ -113,7 +165,8 @@ int main(int argc, char **argv)
     }
     n = a.n < b.n ? a.n : b.n;
     for (i = 0; i < n; i++) {
-        char name[32];
+        char name[32], *msgs;
+        FILE *f;
         int d;
 
         if (libnum(&a.lf[i]) != libnum(&b.lf[i])) {
@@ -123,11 +176,32 @@ int main(int argc, char **argv)
             continue;
         }
         snprintf(name, sizeof name, "lib %u", libnum(&a.lf[i]));
-        d = blitzlib_compare(&a.lf[i].hunks[0], &b.lf[i].hunks[0], name, stdout);
-        diffs += d < 0 ? 1 : d;
+        if (!(f = tmpfile())) {
+            fprintf(stderr, "blitzlibcompare: no temporary file\n");
+            return 1;
+        }
+        d = blitzlib_compare(&a.lf[i].hunks[0], &b.lf[i].hunks[0], name, f);
+        msgs = read_back(f);
+        fclose(f);
+        if (!msgs) {
+            fprintf(stderr, "blitzlibcompare: cannot read the messages back\n");
+            return 1;
+        }
+        if (d < 0) {
+            fputs(msgs, stdout);
+            diffs++;
+        } else
+            diffs += blitzlib_intended(msgs, intended, (size_t)nintended, seen, stdout);
+        free(msgs);
     }
+    for (i = 0; i < (size_t)nintended; i++)
+        if (!seen[i]) {
+            printf("intended difference not found: %s\n", intended[i]);
+            diffs++;
+        }
     printf("blitzlibcompare: %zu libraries, %ld differences in the declarations\n", n, diffs);
     free_biglib(&a);
     free_biglib(&b);
+    free(intendedtext);
     return diffs != 0;
 }

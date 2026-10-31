@@ -32,12 +32,18 @@ add_subdirectory(userlibs)
 # the declarations of every library (header, entries, !libfin; code
 # offsets only set or not) against the originals of the CD, same libraries
 # in the same order (the compiler's token list order); skipped without the
-# CD (archive/cd, cmake --build --preset amiga --target fetch-originals)
+# CD (archive/cd, cmake --build --preset amiga --target fetch-originals).
+# GROUP/declarations-intended.txt, if there: the intended differences
+# (fixed original bugs), each of them must occur
 foreach(group acidlibs deflibs)
 	string(TOUPPER ${group} orig)
+	set(intended)
+	if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${group}/declarations-intended.txt)
+		set(intended ${CMAKE_CURRENT_SOURCE_DIR}/${group}/declarations-intended.txt)
+	endif()
 	add_test(NAME declarations_${group} COMMAND ${BLITZLIBCOMPARE}
 		${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1/BLITZ2/${orig}
-		${BLITZ2_DIR}/${group})
+		${BLITZ2_DIR}/${group} ${intended})
 	set_tests_properties(declarations_${group} PROPERTIES SKIP_RETURN_CODE 77)
 endforeach()
 # the token list of compiler and libraries (blitztokens) against the one
