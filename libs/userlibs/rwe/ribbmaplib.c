@@ -53,6 +53,7 @@
  * the size).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 
 /* entry points (thunks, below) */
 void _setbbmaploc(void), _setbbscenarioloc(void), _bbscenarioname(void);
@@ -184,11 +185,10 @@ struct mfrm {
     UWORD width, height;                /* +4, +6 */
 };
 
-/* a palette object of palettelib, as far as BBGetPalette uses it */
-struct bpal {
-    ULONG pdata;                        /* +0 the colour block */
-    UWORD numcols;                      /* +4 */
-} BL_PACKED;
+/* a palette object of palettelib: struct bb_palette (blitzobj.h); the
+   colour block address used as a long, as the original does (as a
+   pointer GCC would order the code of BBGetPalette differently) */
+#define PDATA(p) (*(ULONG *)&(p)->pdata)
 
 static UBYTE *maploc, *mapend;
 static struct mfrm *mfrmchunk;
@@ -523,7 +523,7 @@ static ULONG BLITZ_ROUTINE bbscenarioauthor_c(void)
  * low > high (one colour).  Nothing without the chunk.
  * @param pal  a0: the palette object (palettelib)
  */
-static void BLITZ_ROUTINE bbgetpalette_c(struct bpal *pal BL_REG(a0))
+static void BLITZ_ROUTINE bbgetpalette_c(struct bb_palette *pal BL_REG(a0))
 {
     const UBYTE *chunk = findchunk(ID('C', 'O', 'L', 'R'));
     UWORD low, high, num;
@@ -538,7 +538,7 @@ static void BLITZ_ROUTINE bbgetpalette_c(struct bpal *pal BL_REG(a0))
     if (!((WORD)high < (WORD)num)) {
         struct bl_regs r = { .d0 = (ULONG)(UWORD)(high + 1) * 12 + 4, .d1 = 0x10001 };
         UBYTE *new = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
-        UBYTE *old = (UBYTE *)pal->pdata;
+        UBYTE *old = (UBYTE *)PDATA(pal);
         if (num) {
             ULONG *src = (ULONG *)(old + 4), *dst = (ULONG *)(new + 4);
             UWORD i = num - 1;
@@ -548,7 +548,7 @@ static void BLITZ_ROUTINE bbgetpalette_c(struct bpal *pal BL_REG(a0))
                 *dst++ = *src++;
             } while (i--);
         }
-        pal->pdata = (ULONG)new;
+        PDATA(pal) = (ULONG)new;
         WORDAT(new) = high;
         pal->numcols = high;
         if (num) {
@@ -556,7 +556,7 @@ static void BLITZ_ROUTINE bbgetpalette_c(struct bpal *pal BL_REG(a0))
             BLITZ_ALIBJSR(TOK_globfree, f);
         }
     }
-    colour = (ULONG *)(pal->pdata + 4 + (WORD)(low * 12));
+    colour = (ULONG *)(PDATA(pal) + 4 + (WORD)(low * 12));
     do {
         int k;
         for (k = 0; k < 3; k++) {
