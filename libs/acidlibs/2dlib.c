@@ -303,21 +303,21 @@ static void BLITZ_ROUTINE _bitplanesbitmap_c(ULONG pick BL_REG(d2), UBYTE *src B
                                              UBYTE *dst BL_REG(a1))
 {
     UWORD n = 0, i = 0;
-    ULONG *s = (ULONG *)(src + 8), *t = (ULONG *)(dst + 8);
+    ULONG *srcplane = (ULONG *)(src + 8), *dstplane = (ULONG *)(dst + 8);
 
     if (!MW(src, 62) || MW(dst, 62))
         return;
     ML(dst, 0) = ML(src, 0);
     do {
-        ULONG p = *s++;
+        ULONG p = *srcplane++;
 
         if (pick & (1UL << (i & 31))) {
             n++;
-            *t++ = p;
+            *dstplane++ = p;
         }
         i++;
     } while (i != MW(src, 4));
-    blitz_string = (UBYTE *)t;                  /* a3 left behind as LEA 8(a1),a3 */
+    blitz_string = (UBYTE *)dstplane;           /* a3 left behind as LEA 8(a1),a3 */
     MW(dst, 4) = n;
     if (!n)
         return;
@@ -333,7 +333,7 @@ static void BLITZ_ROUTINE _bitmapwindow_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3)
 {
     UWORD bpr, dep, n;
     ULONG off;
-    ULONG *s = (ULONG *)(src + 8), *t = (ULONG *)(dst + 8);
+    ULONG *srcplane = (ULONG *)(src + 8), *dstplane = (ULONG *)(dst + 8);
 
     if (!MW(src, 62) || MW(dst, 62))
         return;
@@ -347,9 +347,9 @@ static void BLITZ_ROUTINE _bitmapwindow_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3)
     MW(dst, 4) = dep;
     n = dep - 1;
     do
-        *t++ = *s++ + off;
+        *dstplane++ = *srcplane++ + off;
     while (n-- != 0);
-    blitz_string = (UBYTE *)t;                  /* a3 left behind */
+    blitz_string = (UBYTE *)dstplane;           /* a3 left behind */
     MW(dst, 52) = MW(src, 52);
     MB(dst, 53) |= 1;
     MW(dst, 54) = w;
@@ -614,17 +614,18 @@ static void blineto(void)
 
 static void blinew(void)
 {
-    UWORD s[6];
+    UWORD saved[6];                             /* d0-d5 */
     int i;
 
     do {
-        s[0] = d0; s[1] = d1; s[2] = d2; s[3] = d3; s[4] = d4; s[5] = d5;
+        saved[0] = d0; saved[1] = d1; saved[2] = d2;
+        saved[3] = d3; saved[4] = d4; saved[5] = d5;
         for (i = 0; i < 4; i++) {
             UBYTE *sa3 = a3;
 
             if (i)
-                d0 = EXTL(s[0]), d1 = EXTL(s[1]), d2 = EXTL(s[2]),
-                d3 = EXTL(s[3]), d4 = EXTL(s[4]), d5 = EXTL(s[5]);
+                d0 = EXTL(saved[0]), d1 = EXTL(saved[1]), d2 = EXTL(saved[2]),
+                d3 = EXTL(saved[3]), d4 = EXTL(saved[4]), d5 = EXTL(saved[5]);
             switch (i) {
             case 0: SETW(d0, d0 + d5); break;
             case 1: SETW(d1, d1 + d5); break;
@@ -634,8 +635,8 @@ static void blinew(void)
             bline();
             a3 = sa3;
         }
-        d0 = EXTL(s[0]); d1 = EXTL(s[1]); d2 = EXTL(s[2]);
-        d3 = EXTL(s[3]); d4 = EXTL(s[4]); d5 = EXTL(s[5]);
+        d0 = EXTL(saved[0]); d1 = EXTL(saved[1]); d2 = EXTL(saved[2]);
+        d3 = EXTL(saved[3]); d4 = EXTL(saved[4]); d5 = EXTL(saved[5]);
         SETW(d5, d5 - 1);
     } while (W(d5) != 0xffff);                  /* DBRA d5,_blinew */
 }
@@ -1942,15 +1943,15 @@ dunr:
     CW(a4, 0x74) = 0xffff;
     CW(a4, 0x42) = 0;
     for (;;) {                                  /* ploop */
-        ULONG t;
+        ULONG before;                           /* for the carry of ADD.l */
 
-        t = d0;
+        before = d0;
         d0 += d4;
-        if (d0 < t)
+        if (d0 < before)
             SETW(d0, d0 + 2);
-        t = d1;
+        before = d1;
         d1 += d5;
-        if (d1 < t)
+        if (d1 < before)
             SETW(d1, d1 + 2);
         SETW(d6, d0);
         if (SW(d6) > SW(rtclip))
@@ -1995,13 +1996,13 @@ dunr:
         } while (W(d6) != MW(a6, 4));
         d7 = bmwid;
         bmoff += d7;
-        t = d0;
+        before = d0;
         d0 += d4;
-        if (d0 < t)
+        if (d0 < before)
             SETW(d0, d0 + 2);
-        t = d1;
+        before = d1;
         d1 += d5;
-        if (d1 < t)
+        if (d1 < before)
             SETW(d1, d1 + 2);
         SETW(d2, d2 - 1);
         if (W(d2) == 0xffff) {
