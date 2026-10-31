@@ -122,10 +122,15 @@ BLITZ_LIBFIN();
 /* ------------------------------------------------------------ the data */
 
 /* operators: the character and its precedence; "(" first (ConvToPostFix
-   only - PFEvaluate searches from operators+2), Dc.b 0,0 at the end */
-static const UBYTE operators[] = {
-    '(', 0, '=', 1, '&', 1, '|', 1, '<', 2, '>', 2,
-    '+', 3, '-', 3, '*', 4, '/', 4, '^', 5, 0, 0,
+   only - PFEvaluate searches from operators+2, the entry after it), Dc.b
+   0,0 at the end */
+struct op {
+    UBYTE ch, prec;
+};
+static_assert(sizeof(struct op) == 2);
+static const struct op operators[] = {
+    { '(', 0 }, { '=', 1 }, { '&', 1 }, { '|', 1 }, { '<', 2 }, { '>', 2 },
+    { '+', 3 }, { '-', 3 }, { '*', 4 }, { '/', 4 }, { '^', 5 }, { 0, 0 },
 };
 
 static const char err_arg[] = "Need 2 arguments for expression!";
@@ -233,10 +238,10 @@ grow(struct state *s, ULONG x)
 /* is c (a byte) an operator of the table, "(" included */
 static int is_operator(UBYTE c)
 {
-    const UBYTE *p;
+    const struct op *p;
 
-    for (p = operators; *p; p += 2)
-        if (*p == c)
+    for (p = operators; p->ch; p++)
+        if (p->ch == c)
             return 1;
     return 0;
 }
@@ -245,7 +250,7 @@ static int is_operator(UBYTE c)
    the operator stack holds d0 with the character in its low byte */
 static ULONG ctp_loop(struct state *s)
 {
-    const UBYTE *op;                    /* a2: the table entry */
+    const struct op *op;                /* a2: the table entry */
     UBYTE opprec;                       /* d2: its precedence */
     UBYTE prevch;                       /* d1.b: the character before a "-" */
     UBYTE top;                          /* d1.b: the operator on the stack top */
@@ -287,10 +292,10 @@ loop:
     }
 
 checkoperator:
-    for (op = operators; *op; op += 2)
-        if (*op == (UBYTE)s->acc) {
+    for (op = operators; op->ch; op++)
+        if (op->ch == (UBYTE)s->acc) {
             s->pos++;
-            BL_SETB(s->prec, op[1]);
+            BL_SETB(s->prec, op->prec);
             goto operator;
         }
 
@@ -327,9 +332,9 @@ operator:
     /* unstack the operators of higher or equal precedence */
     while (!st_empty(s)) {
         top = (UBYTE)*st_top(s);
-        for (op = operators; *op++ != top; op++)
+        for (op = operators; op->ch != top; op++)
             ;
-        opprec = *op;
+        opprec = op->prec;
         if ((BYTE)s->prec > (BYTE)opprec)
             break;
         st_pop(s);
@@ -482,7 +487,7 @@ static int ev_indirect(struct state *s)
 /* the loop of PFEvaluate from evloop */
 static ULONG ev_loop(struct state *s)
 {
-    const UBYTE *op_at;                 /* a2 */
+    const struct op *op_at;             /* a2 */
     ULONG rhs;                          /* the popped value */
     UBYTE ch;                           /* d0.b: the character */
     UWORD regoff;                       /* d0.w: the register's offset in regs */
@@ -503,8 +508,8 @@ evloop:
     ch = *s->pos;
     if (ch == '-' && s->pos[1] != ' ' && s->pos[1] != 0)
         goto evall;
-    for (op_at = operators + 2, op = 0; *op_at; op_at += 2, op++)
-        if (*op_at == ch)
+    for (op_at = operators + 1, op = 0; op_at->ch; op_at++, op++)
+        if (op_at->ch == ch)
             goto gotop;
     goto evall;
 
