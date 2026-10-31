@@ -1,0 +1,21 @@
+; ted-donew-allocnull-ignored (#356): donew never reports a failed
+; allocation: allocnull failing is ignored, firstitem, enditem and
+; thisitem keep pointing at the freed lines of the old text.  TED alone
+; under inject (alerts answered): a text of one line "abc", menu NEW
+; (unchanged text: no requester); the 6th AllocMem of 10 bytes
+; (MEMF_PUBLIC) of TED's process, NEW's allocnull, fails (the first
+; five are made at the start, the fifth by the allocnull of the start's
+; donew).  QUIT.
+; Correct (the fix of the issue: outmem): the alert "Not enough memory
+; for operation!"; the original goes on with the freed lines.
+; @file bo.bas "abc\n"
+; @source F bo.bas
+; @command TEDAB:tools/inject alerts allocfail=10-10/f=1/1+5 blitz2:ted @FILE@
+; @expect stdout "inject: allocfail: 1 allocations failed"
+; @expect stdout "inject: alert: Not enough memory for operation!"
+timeout 20
+wait screen
+menu 0 0
+wait screen
+menu 0 9
+wait exit
