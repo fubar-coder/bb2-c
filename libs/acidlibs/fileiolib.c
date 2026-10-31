@@ -40,11 +40,14 @@
  *     then name[(WORD)length] is cleared.  Nachgebildet. (#138)
  *   - CloseFile frees the record fields but leaves the pointer to them
  *     and the record length; OpenFile clears them (#140).  Fields adds to
- *     the existing fields and record length (no reset) (#141); the list is
- *     built backwards, Put/Get transfer the fields in reverse order of
- *     Fields (#142).
+ *     the existing fields and record length (no reset) (#141).
  *   - Description, not a bug: Fields types 1/2/7 have 1/2/(long at
  *     address-8)+6 bytes, all others 4; strings start at address-4.
+ *   - Description, not a bug (decision 2026-10-31, #142): the list is
+ *     built backwards, so Put/Get transfer the fields in the reverse
+ *     order of Fields (last field first in the file).  It is consistent
+ *     with itself, and existing data files depend on it; a program that
+ *     needs another order in the file lists the fields reversed.
  *   - Exists: 0 for a missing file AND for an empty file, -1 for a drawer
  *     (fib_DirEntryType = 2; a volume's root (1) gives its fib_Size); the
  *     FileInfoBlock comes from memlib globalloc (not checked, see below). (#143)
