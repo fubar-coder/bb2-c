@@ -91,10 +91,14 @@ BLITZ_LIBFIN();
 
 /* ---------------------------------------------------------------- data */
 
-/* an item */
-#define IT_SUCC 0
-#define IT_NAME 4
-#define IT_SUBS 12
+/* an item of the program's (the fields the library reads) */
+struct pitem {
+    struct pitem *succ;         /* +0 the next item */
+    const UBYTE *name;          /* +4 the text, 0: a separator line */
+    UWORD unused8, unused10;    /* +8, +10 */
+    struct pitem *subs;         /* +12 the sub menu's first item, 0: none */
+};
+static_assert(__builtin_offsetof(struct pitem, subs) == 12);
 
 /* the structure of a menu level (STRUCT_SIZEOF 64) */
 struct popup {
@@ -102,10 +106,10 @@ struct popup {
     UWORD imagewidth;           /* 4 */
     UWORD itemheight;           /* 6 */
     UWORD numitems;             /* 8 */
-    UBYTE *items;               /* 10 */
+    struct pitem *items;        /* 10 */
     UWORD textyoffset;          /* 14 */
     UWORD winwidth;             /* 16 */
-    UBYTE *activeitem;          /* 18: the highlighted item */
+    struct pitem *activeitem;   /* 18: the highlighted item */
     UWORD activeypos;           /* 22 */
     struct Window *windowptr;   /* 24 */
     UWORD winx, winy;           /* 28, 30 */
@@ -128,14 +132,19 @@ static UBYTE hassubs[2];        /* Dc.b 0,0: SF/ST the first, TST.w both */
 /* the event of WaitWinEvent: the IntuiMessage from Class on, 8 longs */
 static ULONG e_msg[8];
 
-/* OpenWindow's tag list (static, filled for every window) */
-static struct TagItem wwtags[] = {
+/* OpenWindow's tag list (static, filled for every window); `extra`:
+   TAG_MORE (2) to extra tags, cleared (TAG_DONE) by openwindow */
+static struct {
+    struct TagItem left, top, width, height, title, screen, flags, detailpen, blockpen;
+    struct TagItem minwidth, minheight, maxwidth, maxheight, newlookmenus, idcmp, gadgets;
+    struct TagItem extra, end;
+} wwtags = {
     { WA_Left, 0 }, { WA_Top, 0 }, { WA_Width, 0 }, { WA_Height, 0 }, { WA_Title, 0 },
     { WA_CustomScreen, 0 }, { WA_Flags, 0 }, { WA_DetailPen, (ULONG)-1 },
     { WA_BlockPen, (ULONG)-1 }, { WA_MinWidth, 32 }, { WA_MinHeight, 11 },
     { WA_MaxWidth, 640 }, { WA_MaxHeight, 512 }, { WA_NewLookMenus, (ULONG)-1 },
     { WA_IDCMP, 0 }, { WA_Gadgets, 0 }, { 2, 0 }, { 0, 0 } };
-#define WW_EXTAGS 16
+static_assert(sizeof wwtags == 18 * sizeof(struct TagItem));
 
 static ULONG strlen0(const UBYTE *s)
 {
@@ -184,16 +193,16 @@ static struct Window *openwindow(struct Screen *scr, ULONG x, ULONG y, ULONG w, 
 {
     struct Window *win;
 
-    wwtags[WW_EXTAGS].ti_Tag = 0;                   /* no extra tags */
-    wwtags[0].ti_Data = x;
-    wwtags[1].ti_Data = y;
-    wwtags[2].ti_Data = w;
-    wwtags[3].ti_Data = h;
-    wwtags[4].ti_Data = 0;                          /* no title */
-    wwtags[5].ti_Data = (ULONG)scr;
-    wwtags[6].ti_Data = flags;
-    wwtags[15].ti_Data = 0;                         /* no gadgets */
-    win = OpenWindowTagList(NULL, wwtags);
+    wwtags.extra.ti_Tag = 0;                        /* no extra tags */
+    wwtags.left.ti_Data = x;
+    wwtags.top.ti_Data = y;
+    wwtags.width.ti_Data = w;
+    wwtags.height.ti_Data = h;
+    wwtags.title.ti_Data = 0;                       /* no title */
+    wwtags.screen.ti_Data = (ULONG)scr;
+    wwtags.flags.ti_Data = flags;
+    wwtags.gadgets.ti_Data = 0;                     /* no gadgets */
+    win = OpenWindowTagList(NULL, &wwtags.left);
     if (win) {
         win->UserPort = msgport;
         ModifyIDCMP(win, idcmp | IDCMP_CLOSEWINDOW | IDCMP_MOUSEBUTTONS);
@@ -258,10 +267,10 @@ static void bevelwindow(struct Window *win)
 }
 
 /* DrawTextItem: the item's text at x, y + the text offset */
-static void drawtextitem(struct popup *p, const UBYTE *item, struct RastPort *rp, WORD x,
+static void drawtextitem(struct popup *p, const struct pitem *item, struct RastPort *rp, WORD x,
                          WORD y)
 {
-    const UBYTE *s = *(const UBYTE **)(item + IT_NAME);
+    const UBYTE *s = item->name;
 
     Move(rp, x, (WORD)(y + p->textyoffset));
     Text(rp, (CONST_STRPTR)s, strlen0(s));
@@ -270,20 +279,20 @@ static void drawtextitem(struct popup *p, const UBYTE *item, struct RastPort *rp
 static void drawitems(struct popup *p, struct Window *win)
 {
     struct RastPort *rp = win->RPort;
-    UBYTE *it = p->items;
+    struct pitem *it = p->items;
     WORD y = 2;
 
     for (;;) {
-        if (!*(UBYTE **)(it + IT_NAME)) {
+        if (!it->name) {
             bevelbox(rp, 2, y + 1, p->winwidth - 4, y + 2);
             y += 4;
         } else {
             drawtextitem(p, it, rp, 2, y);
             y += p->itemheight;
         }
-        if (!*(UBYTE **)(it + IT_SUCC))
+        if (!it->succ)
             break;
-        it = *(UBYTE **)(it + IT_SUCC);
+        it = it->succ;
     }
 }
 
@@ -318,24 +327,24 @@ static struct popup *findmousewindow(struct popup *p)
 }
 
 /* the item under the mouse (NULL: none or a separator), *ypos its y */
-static UBYTE *findmouseitem(struct popup *p, UWORD *ypos)
+static struct pitem *findmouseitem(struct popup *p, UWORD *ypos)
 {
     WORD my = p->windowptr->MouseY;
-    UBYTE *it = p->items;
+    struct pitem *it = p->items;
     WORD y = 2, bottom;
 
     for (;;) {
-        bottom = y + (*(UBYTE **)(it + IT_NAME) ? (WORD)p->itemheight : 4);
+        bottom = y + (it->name ? (WORD)p->itemheight : 4);
         if (my <= bottom) {
-            if (!*(UBYTE **)(it + IT_NAME))
+            if (!it->name)
                 return NULL;
             *ypos = y;
             return it;
         }
-        if (!*(UBYTE **)(it + IT_SUCC))
+        if (!it->succ)
             return NULL;
         y = bottom;
-        it = *(UBYTE **)(it + IT_SUCC);
+        it = it->succ;
     }
 }
 
@@ -351,7 +360,7 @@ static void clearactive(struct popup *p)
 static void mousemove(struct popup *p)
 {
     struct popup *m = findmousewindow(p);
-    UBYTE *it;
+    struct pitem *it;
     UWORD y = 0;
 
     if (!m) {
@@ -380,7 +389,7 @@ static void mousemove(struct popup *p)
         return;
     if (p->activeitem)
         drawactiveitem(p, 0);
-    if (*(UBYTE **)(it + IT_SUBS))
+    if (it->subs)
         p->popupdelay = 0;
     p->activeitem = it;
     p->activeypos = y;
@@ -390,7 +399,7 @@ static void mousemove(struct popup *p)
 /* ------------------------------------------------------------ a level */
 
 /* AllocStruct - BUG(orig): not checked (#467) */
-static struct popup *allocstruct(UBYTE *items, struct popup *parent)
+static struct popup *allocstruct(struct pitem *items, struct popup *parent)
 {
     struct popup *p = AllocVec(STRUCT_SIZEOF, MEMF_PUBLIC | MEMF_CLEAR);
     UWORD n;
@@ -403,9 +412,9 @@ static struct popup *allocstruct(UBYTE *items, struct popup *parent)
     n = (UWORD)-1;
     for (;;) {
         n++;
-        if (!*(UBYTE **)(items + IT_SUCC))
+        if (!items->succ)
             break;
-        items = *(UBYTE **)(items + IT_SUCC);
+        items = items->succ;
     }
     p->numitems = n;
     p->popupdelay = 1;
@@ -416,12 +425,12 @@ static struct popup *allocstruct(UBYTE *items, struct popup *parent)
 /* CalcWinSize: width (result) and height (*h) of the window */
 static UWORD calcwinsize(struct popup *p, UWORD *h)
 {
-    UBYTE *it = p->items;
+    struct pitem *it = p->items;
     WORD w = 8, y = 2;
 
     hassubs[0] = 0;
     while (it) {
-        const UBYTE *s = *(const UBYTE **)(it + IT_NAME);
+        const UBYTE *s = it->name;
         if (!s) {
             y += 4;
         } else {
@@ -429,10 +438,10 @@ static UWORD calcwinsize(struct popup *p, UWORD *h)
             if (w < l)
                 w = l;
             y += p->itemheight;
-            if (*(UBYTE **)(it + IT_SUBS))
+            if (it->subs)
                 hassubs[0] = 0xff;
         }
-        it = *(UBYTE **)(it + IT_SUCC);
+        it = it->succ;
     }
     p->winheight = y;
     w += 4;
@@ -462,7 +471,7 @@ static struct Window *newpopupwin(WORD x, WORD y, UWORD w, UWORD h)
 
 /* DoPop: the menu `items` at x,y; the result is the level that should be
    active now, an item (a mouse button) or 0 (close everything) */
-static ULONG dopop(UBYTE *items, struct popup *parent, UWORD x, UWORD y)
+static ULONG dopop(struct pitem *items, struct popup *parent, UWORD x, UWORD y)
 {
     struct popup *p = allocstruct(items, parent);
     struct Window *win;
@@ -486,7 +495,7 @@ static ULONG dopop(UBYTE *items, struct popup *parent, UWORD x, UWORD y)
             event = waitwinevent();
         else {
             /* the active item's sub menu, to the right of it */
-            event = dopop(*(UBYTE **)(p->activeitem + IT_SUBS), p,
+            event = dopop(p->activeitem->subs, p,
                           p->winx + p->winwidth, p->winy + p->activeypos - 2);
             p->popupdelay = 1;
             if (!event || (event != (ULONG)p && event != (ULONG)p->parent)) {
@@ -550,7 +559,7 @@ static void BLITZ_ROUTINE popupinit_c(void)
 
 /* PopUpWindow screen#,*items: a0 = the screen object.  BUG(orig): the
    result is selecteditem, always 0 (#471) */
-static ULONG BLITZ_ROUTINE dopopup_c(struct Screen **scr BL_REG(a0), UBYTE *items BL_REG(d1))
+static ULONG BLITZ_ROUTINE dopopup_c(struct Screen **scr BL_REG(a0), struct pitem *items BL_REG(d1))
 {
     myscreen = *scr;
     inittemprast();
