@@ -354,6 +354,23 @@ static void savebm(const struct BitMap *bm, const char *name, const struct palet
     Close(fh);
 }
 
+/**
+ * @brief SaveBitmap BitMap#,Filename$: save a bitmap as an ILBM file
+ * without a CMAP.
+ *
+ * FORM/ILBM/BMHD, the ByteRun1 packed BODY (see the head comment).  Amiga
+ * mode only.
+ * Errors: "Can't open File" if the file cannot be created - the message is
+ * in the error check area, BUG(orig) (#185); debugger only: "Uninitialized
+ * Bitmap" (bitchk).
+ * BUG(orig): the plane loop compares with the word over Flags and Depth
+ * (#180), the row and plane loops run at least once (#181), savearow reads
+ * one byte behind the row (#183).
+ *
+ * @param bm    a0: the BitMap (!libs {#bitmaplib,$1080})
+ * @param name  d1: the file name
+ * @param dos   a6: dos.library
+ */
 static void BLITZ_ROUTINE dosavebitmap2_c(const struct BitMap *bm BL_REG(a0), const char *name BL_REG(d1),
                                           struct DosLibrary *dos BL_REG(a6))
 {
@@ -362,6 +379,22 @@ static void BLITZ_ROUTINE dosavebitmap2_c(const struct BitMap *bm BL_REG(a0), co
 }
 BLITZ_THUNK(dosavebitmap2, dosavebitmap2_c, "d0-d1/a0-a1");
 
+/**
+ * @brief SaveBitmap BitMap#,Filename$,Palette#: save a bitmap as an ILBM
+ * file with a CMAP; also the nullsub `dosavebitmap` for other libraries.
+ *
+ * As SaveBitmap without a palette, plus the CMAP chunk (3 bytes per
+ * colour, the top bytes of the palette's longs) when a palette is given.
+ * Errors (debugger only): also "Uninitialized Palette" (bitchk2).
+ * BUG(orig): CMAP chunks of an odd size are not padded (#184); a palette of
+ * 0 colours writes 65536 colours over the end of the buffer (#182).
+ *
+ * @param bm    a0: the BitMap (!libs {#bitmaplib,$1080})
+ * @param name  d1: the file name
+ * @param pal   a1: the palette (!libs {#palettelib,$1182}), for other
+ *              libraries 0 = none
+ * @param dos   a6: dos.library
+ */
 static void BLITZ_ROUTINE dosavebitmap_c(const struct BitMap *bm BL_REG(a0), const char *name BL_REG(d1),
                                          const struct palette *pal BL_REG(a1),
                                          struct DosLibrary *dos BL_REG(a6))
@@ -392,6 +425,21 @@ static void saveshape(const struct shape *shape, const char *name, const struct 
     savebm(&bmcopy.bm, name, pal, dos);
 }
 
+/**
+ * @brief SaveShape Shape#,Filename$: save a shape as an ILBM file.
+ *
+ * The shape is described as a BitMap (BytesPerRow = its even byte width,
+ * Rows = its height, the depth word, plane pointers from its data in steps
+ * of its plane size); the BMHD width is the shape's pixel width.  Amiga
+ * mode only.  Errors as SaveBitmap; debugger only: "Uninitialized Shape"
+ * (sschk1).
+ * BUG(orig) (#326): the depth is not checked: depth 0 writes 65536 plane
+ * pointers, depth 15 and more run past the 14 pointers of tempbm.
+ *
+ * @param shape  a0: the shape (!libs {#shapeslib,$1080})
+ * @param name   d1: the file name
+ * @param dos    a6: dos.library
+ */
 static void BLITZ_ROUTINE dosaveshape1_c(const struct shape *shape BL_REG(a0), const char *name BL_REG(d1),
                                          struct DosLibrary *dos BL_REG(a6))
 {
@@ -399,6 +447,17 @@ static void BLITZ_ROUTINE dosaveshape1_c(const struct shape *shape BL_REG(a0), c
 }
 BLITZ_THUNK(dosaveshape1, dosaveshape1_c, "d0-d1/a0-a1");
 
+/**
+ * @brief SaveShape Shape#,Filename$,Palette#: SaveShape with a CMAP of the
+ * palette (as SaveBitmap with a palette).
+ *
+ * Errors (debugger only): also "Uninitialized Palette" (sschk2).
+ *
+ * @param shape  a0: the shape (!libs {#shapeslib,$1080})
+ * @param name   d1: the file name
+ * @param pal    a1: the palette (!libs {#palettelib,$1182})
+ * @param dos    a6: dos.library
+ */
 static void BLITZ_ROUTINE dosaveshape2_c(const struct shape *shape BL_REG(a0), const char *name BL_REG(d1),
                                          const struct palette *pal BL_REG(a1),
                                          struct DosLibrary *dos BL_REG(a6))
@@ -407,7 +466,18 @@ static void BLITZ_ROUTINE dosaveshape2_c(const struct shape *shape BL_REG(a0), c
 }
 BLITZ_THUNK(dosaveshape2, dosaveshape2_c, "d0-d1/a0-a1");
 
-/* SavePalette - nothing for a palette without colours */
+/**
+ * @brief SavePalette Palette#,Filename$: save a palette as a file with
+ * only the CMAP chunk (no FORM).
+ *
+ * Nothing for a palette without colours.  Amiga mode only.
+ * Errors: "Can't open File", BUG(orig) (#185) as SaveBitmap; the CMAP is
+ * not padded (#184).
+ *
+ * @param pal   a2: the palette (!libs {#palettelib,$1280})
+ * @param name  d1: the file name
+ * @param dos   a6: dos.library
+ */
 static void BLITZ_ROUTINE dosavepalette_c(const struct palette *pal BL_REG(a2),
                                           const char *name BL_REG(d1),
                                           struct DosLibrary *dos BL_REG(a6))
@@ -433,7 +503,24 @@ static ULONG makelong(UWORD v)
 }
 
 
-/* SaveScreen - a0 = screen object, a1 = graphics base */
+/**
+ * @brief SaveScreen Screen#,Filename$: save a screen as an ILBM file with
+ * its colours.
+ *
+ * The palette from the screen's ColorMap (at most 256 colours): with Exec
+ * 39+ (environlib ExecVersion; a signed word compare, not a bug) GetRGB32
+ * one colour at a time, before that the 4 bit values of the ColorTable
+ * spread to 32 bits.  The BitMap is copied (64 bytes from the RastPort's
+ * BitMap, Flags cleared), then saved as SaveBitmap with a palette.  Amiga
+ * mode only.  Errors: as SaveBitmap; debugger only: "Uninitialized
+ * Screen" (scrchk).
+ * BUG(orig) (#182): 0 colours without AGA run the colour loop 65536 times.
+ *
+ * @param scr   a0: the screen object (!libs {#screenslib,$1080})
+ * @param name  d1: the file name
+ * @param gfx   a1: graphics.library
+ * @param dos   a6: dos.library
+ */
 static void BLITZ_ROUTINE dosavescreen_c(struct Screen **scr BL_REG(a0), const char *name BL_REG(d1),
                                          struct GfxBase *gfx BL_REG(a1),
                                          struct DosLibrary *dos BL_REG(a6))
