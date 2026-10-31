@@ -107,6 +107,7 @@
 #include "blitzexec.h"
 #include <exec/interrupts.h>
 #include <hardware/custom.h>
+#include <hardware/cia.h>
 #include <graphics/gfxbase.h>
 #include <dos/dos.h>
 #define __NOLIBBASE__
@@ -275,13 +276,10 @@ BLITZ_LIBFIN();
 
 typedef volatile struct AudChannel aud_t;
 
-/* CIA register offsets from the base of the chip ($BFD000 / $BFE001) */
-#define CIATALO 0x400
-#define CIATAHI 0x500
-#define CIATBLO 0x600
-#define CIATBHI 0x700
-#define CIACRA  0xe00
-#define CIACRB  0xf00
+/* the CIAs: struct CIA at the base of the chip ($BFD000 ciab / $BFE001
+   ciaa), its registers $100 apart */
+static_assert(__builtin_offsetof(struct CIA, ciatalo) == 0x400);
+static_assert(__builtin_offsetof(struct CIA, ciacrb) == 0xf00);
 
 /* a module slot: Dc.l address, length, Dc.w flag (10 bytes) */
 struct modent {
@@ -301,7 +299,7 @@ static struct {
 /* the CIA part (RealTempo ... musintname) */
 static struct {
     UWORD RealTempo;
-    volatile UBYTE *CIAAaddr;
+    volatile struct CIA *CIAAaddr;
     char CIAAname[14], CIABname[14];
     struct Library *CIAAbase;
     ULONG TimerFlag, TimerValue;
@@ -350,7 +348,8 @@ static struct {
     UBYTE VibratoTable[32];
     UWORD PeriodTable[16 * 36];
     struct chan chan[4];
-    UBYTE fake_channel[60];
+    struct AudChannel fake_channel;     /* the registers of a masked voice */
+    UBYTE fake_rest[60 - sizeof(struct AudChannel)];    /* (Dc.l x15) */
     UBYTE *SampleStarts[32];
     UBYTE *SongDataPtr;
     UBYTE speed, counter, SongPos, PBreakPos, PosJumpFlag, PBreakFlag, LowMask;
@@ -428,7 +427,7 @@ static struct {
         216, 203, 192, 181, 171, 161, 152, 144, 136, 128, 121, 114,
     },
     { { .dmabit = 1 }, { .dmabit = 2 }, { .dmabit = 4 }, { .dmabit = 8 } },
-    { 0 }, { 0 }, NULL,
+    { 0 }, { 0 }, { 0 }, NULL,
     6, 0, 0, 0, 0, 0, 0,                /* mt_speed 6 ... mt_LowMask 0 (BUG(orig), #478) */
     0, 0, 0, 0, 0, 0, 0,
 };
@@ -477,7 +476,7 @@ static aud_t *voice(int ch)
 {
     if (libvars.master_mask & (1 << ch))
         return &CUSTOM->aud[ch];
-    return (aud_t *)playdata.fake_channel;
+    return &playdata.fake_channel;
 }
 
 /* ------------------------------------------------------- memlib calls */
@@ -531,29 +530,29 @@ static void setciaint(void)
         timerval = bl_divu_w(clock, 125);   /* default: 50 Hz */
         CloseLibrary(gfx);
         if (tries != 2) {               /* 'TryTimerB */
-            volatile UBYTE *cia = (volatile UBYTE *)0xbfd000;
+            volatile struct CIA *cia = (volatile struct CIA *)0xbfd000;
             /* BUG(orig): the bit is the long at address 2 (#450) */
             struct bl_regs r = { .d0 = peekl(2), .a1 = (ULONG)&ciapart.MusicIntServer };
             ULONG err = BLITZ_BASEJSR(res, -6, r);      /* AddICRVector */
             ciapart.TimerFlag = 1;
             if (!err) {
                 ciapart.CIAAaddr = cia;
-                cia[CIATBLO] = (UBYTE)timerval;
-                cia[CIATBHI] = (UBYTE)((UWORD)timerval >> 8);
-                cia[CIACRB] |= 1;
+                cia->ciatblo = (UBYTE)timerval;
+                cia->ciatbhi = (UBYTE)((UWORD)timerval >> 8);
+                cia->ciacrb |= 1;
                 return;
             }
         } else {                        /* 'TryTimerA */
-            volatile UBYTE *cia = (volatile UBYTE *)0xbfe001;
+            volatile struct CIA *cia = (volatile struct CIA *)0xbfe001;
             /* BUG(orig): the bit is the long at address 1 (#450) */
             struct bl_regs r = { .d0 = peekl(1), .a1 = (ULONG)&ciapart.MusicIntServer };
             ULONG err = BLITZ_BASEJSR(res, -6, r);      /* AddICRVector */
             ciapart.TimerFlag = 0;
             if (!err) {
                 ciapart.CIAAaddr = cia;
-                cia[CIATALO] = (UBYTE)timerval;
-                cia[CIATAHI] = (UBYTE)((UWORD)timerval >> 8);
-                cia[CIACRA] |= 1;
+                cia->ciatalo = (UBYTE)timerval;
+                cia->ciatahi = (UBYTE)((UWORD)timerval >> 8);
+                cia->ciacra |= 1;
                 return;
             }
         }
@@ -568,16 +567,16 @@ static void setciaint(void)
 static void resetciaint(void)
 {
     struct Library *res = ciapart.CIAAbase;
-    volatile UBYTE *cia;
+    volatile struct CIA *cia;
 
     if (!res)
         return;
     ciapart.CIAAbase = NULL;
     cia = ciapart.CIAAaddr;
     if (ciapart.TimerFlag)
-        cia[CIACRB] &= ~1;
+        cia->ciacrb &= ~1;
     else
-        cia[CIACRA] &= ~1;
+        cia->ciacra &= ~1;
     {
         /* BUG(orig): always bit 0 (MOVEQ #0,d0 after MOVEQ #1,D0) (#448) */
         struct bl_regs r = { .d0 = 0, .a1 = (ULONG)&ciapart.MusicIntServer };
@@ -589,7 +588,7 @@ static void resetciaint(void)
 /* SetTempo: d0 = beats per minute (>= 32), the timer TimerValue / d0 */
 static void settempo(UWORD bpm)
 {
-    volatile UBYTE *cia;
+    volatile struct CIA *cia;
     ULONG count;
 
     if (!ciapart.CIAAbase)
@@ -600,11 +599,11 @@ static void settempo(UWORD bpm)
     count = bl_divu_w(ciapart.TimerValue, bpm);
     cia = ciapart.CIAAaddr;
     if (ciapart.TimerFlag) {
-        cia[CIATBLO] = (UBYTE)count;
-        cia[CIATBHI] = (UBYTE)((UWORD)count >> 8);
+        cia->ciatblo = (UBYTE)count;
+        cia->ciatbhi = (UBYTE)((UWORD)count >> 8);
     } else {
-        cia[CIATALO] = (UBYTE)count;
-        cia[CIATAHI] = (UBYTE)((UWORD)count >> 8);
+        cia->ciatalo = (UBYTE)count;
+        cia->ciatahi = (UBYTE)((UWORD)count >> 8);
     }
 }
 
