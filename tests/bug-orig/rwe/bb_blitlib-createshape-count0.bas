@@ -8,6 +8,7 @@
 ; Correct: a count of 0 creates nothing, shape 2 stays undefined (width
 ; 0) and the program ends.
 ; @rwe bb_blitlib
+; @pass timeout=30
 DEFTYPE .l
 BitMap 0,320,64,1
 Boxf 0,0,15,15,1

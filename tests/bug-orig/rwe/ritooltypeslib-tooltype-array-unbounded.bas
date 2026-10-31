@@ -8,6 +8,7 @@
 ; Correct: the array keeps a terminating 0 - the 100th NewToolType fails
 ; (returns 0).
 ; @rwe ritooltypeslib
+; @pass timeout=30
 If GetIconObject("SYS:Prefs")
   ClearToolTypes
   n=0

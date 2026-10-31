@@ -9,7 +9,7 @@
 ; checked).
 ; @configs clib
 ; @pass runwrap=@INJECT@|openlibfail=mathffp.library
-; @pass timeout=45
+; @pass timeout=30
 a.f=2.5
 b.f=a*3
 NPrint b

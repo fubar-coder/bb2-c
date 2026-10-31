@@ -7,6 +7,7 @@
 ; Correct: an ILBM without planes is refused, the program goes on.
 ; ripacklib needs RIAmosFuncLib (LoadIFF calls its NextBank, BLoad, ...).
 ; @rwe ripacklib riamosfunclib
+; @pass timeout=30
 DEFTYPE .l
 m=AllocMem_(6000,$10001)
 If m=0 Then NPrint "no memory" : End

@@ -10,6 +10,7 @@
 ; with GetReg.
 ; Correct: no screen title contains "Workbench", WorkbenchHere returns 0.
 ; @rwe rimisclib
+; @pass timeout=30
 DEFTYPE .l
 Dim t.l(20),sc.l(20)
 Screen 0,0,0,320,200,2,0,"Other",1,2

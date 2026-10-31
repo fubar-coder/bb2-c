@@ -6,6 +6,7 @@
 ; Correct: the depth is the byte at 5, one plane is cleared, the program
 ; goes on.
 ; @rwe rifxlib
+; @pass timeout=30
 BitMap 0,320,16,1
 Poke.b Addr BitMap(0)+4,1
 NPrint "before"

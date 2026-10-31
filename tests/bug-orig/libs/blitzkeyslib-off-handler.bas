@@ -9,6 +9,7 @@
 ; Correct: Off puts the old input back, the second On keeps the file as
 ; the old handler, Edit$ reads the line of the file.
 ; @configs clib
+; @pass timeout=30
 DEFTYPE .l
 If WriteFile(0,"RAM:bo408.txt") Then FileOutput 0 : NPrint "hello" : CloseFile 0
 DefaultOutput

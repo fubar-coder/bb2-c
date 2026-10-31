@@ -8,6 +8,7 @@
 ; Correct: the long name does not touch the requests; the device does not
 ; open (0) and the program ends normally.
 ; @rwe ritrackdisklib
+; @pass timeout=30
 NPrint "before"
 r.l=OpenDisk(3,String$("x",61))
 NPrint r

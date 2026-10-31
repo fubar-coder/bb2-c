@@ -6,6 +6,7 @@
 ; Correct: without its buffer OpenFontPrefs reads nothing and returns 0.
 ; @rwe rimisclib
 ; @pass runwrap=@INJECT@|allocfail=16384-16384/1
+; @pass timeout=30
 NPrint "before"
 x.w=OpenFontPrefs
 NPrint x

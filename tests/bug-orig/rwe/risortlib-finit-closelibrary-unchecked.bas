@@ -7,6 +7,7 @@
 ; Correct: the program ends normally, also on Kickstart 1.3.
 ; @rwe risortlib
 ; @machine a500
+; @pass timeout=30
 StringSortDir 0
 NPrint "done"
 End

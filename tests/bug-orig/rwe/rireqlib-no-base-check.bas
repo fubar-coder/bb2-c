@@ -8,6 +8,7 @@
 ; returns 0), the program goes on.
 ; @rwe rireqlib
 ; @pass runwrap=@INJECT@|openlibfail=req.library
+; @pass timeout=30
 NPrint ReqFileLoc
 f$=ReqFileRequest
 NPrint "result ",Len(f$)

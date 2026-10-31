@@ -9,6 +9,7 @@
 ; IntuitionBase from d0 (#759): the program loads it with GetReg.
 ; Correct: the arguments beyond 16 are not stored, WorkbenchHere returns.
 ; @rwe rimisclib
+; @pass timeout=30
 DEFTYPE .l
 q=$4AFC4AFC
 Screen 0,0,0,320,200,2,0,"Workbench",1,2

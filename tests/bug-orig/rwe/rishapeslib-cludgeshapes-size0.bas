@@ -8,6 +8,7 @@
 ; rishapeslib needs RIPackLib (PackPBM, UnPackPBM), which needs
 ; RIAmosFuncLib (banks).
 ; @rwe rishapeslib ripacklib riamosfunclib
+; @pass timeout=30
 DEFTYPE .l
 b=AllocMem_(70000,$10001)
 If b=0 Then NPrint "no memory" : End

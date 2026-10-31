@@ -6,7 +6,7 @@
 ; DiskPlay (the audio DMA plays the last buffer again and again).
 ; Correct: DiskPlay returns after the 2048 bytes.
 ; @configs clib
-; @pass timeout=45
+; @pass timeout=30
 ; @pass file=t.8svx|@TESTDATA@/audiolib-diskplay-endless.8svx
 DiskBuffer 1024
 DiskPlay "CORPUS:t.8svx",1

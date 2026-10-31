@@ -5,6 +5,7 @@
 ; of the usual length 20 with samplesPerSec 0, a BODY of 4 bytes.
 ; Correct: CludgeSound returns, the program goes on.
 ; @rwe risoundlib
+; @pass timeout=30
 DEFTYPE .l
 m=AllocMem_(64,$10001)
 If m=0 Then NPrint "no memory" : End

@@ -10,6 +10,7 @@
 ; goes on.
 ; @rwe popupwinlib
 ; @pass runwrap=@INJECT@|allocfail=68-68/1
+; @pass timeout=30
 DEFTYPE .l
 it=AllocMem_(64,$10001)
 If it=0 Then NPrint "no memory" : End

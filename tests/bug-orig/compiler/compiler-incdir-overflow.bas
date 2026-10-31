@@ -5,7 +5,7 @@
 ; behind incdir (BSS: comdata, the editor's table) and the compiler itself
 ; crashes - the verdict is DIFFERS until the data layout matches.
 ; Correct (fix of the issue): an error at the IncDir line.
-; @pass timeout=45
+; @pass timeout=30
 IncDir "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp"
 x=5
 NPrint x

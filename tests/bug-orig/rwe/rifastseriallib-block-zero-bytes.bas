@@ -6,6 +6,7 @@
 ; Correct: a block of 0 bytes sends nothing, the program goes on.
 ; @rwe rifastseriallib
 ; @pass serial=on
+; @pass timeout=30
 DEFTYPE .l
 b=AllocMem_(16,$10001)
 If b=0 Then NPrint "no memory" : End

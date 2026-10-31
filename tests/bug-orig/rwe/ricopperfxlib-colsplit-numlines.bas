@@ -8,6 +8,7 @@
 ; the program calls DoColSplit with 0 lines.
 ; Correct: numlines -1 and 0 are refused (nothing written, no exception).
 ; @rwe ricopperfxlib
+; @pass timeout=30
 DEFTYPE .l
 Dim c.l(5)
 For i=0 To 5 : c(i)=i*40 : Next

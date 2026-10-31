@@ -7,6 +7,7 @@
 ; session times out).
 ; Correct: an empty string inserts no instruction, the program goes on.
 ; @configs clib
+; @pass timeout=30
 DEFTYPE .l
 NPrint "before"
 c$=""

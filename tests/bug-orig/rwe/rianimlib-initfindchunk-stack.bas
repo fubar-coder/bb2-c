@@ -9,6 +9,7 @@
 ; RIPackLib calls RIAmosFuncLib.
 ; @rwe rianimlib ripacklib riamosfunclib
 ; @pass file=anim|@TESTDATA@/rianimlib-initfindchunk-stack.anim
+; @pass timeout=30
 DEFTYPE .l
 a=AllocMem_(4096,$10005)
 f=Open_("CORPUS:anim",1005)

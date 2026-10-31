@@ -9,6 +9,7 @@
 ; Correct: FillArray on an array without elements writes nothing (the
 ; element at the start stays 0), the program goes on.
 ; @rwe riarrayslib
+; @pass timeout=30
 DEFTYPE .l
 z=0
 Dim a.l(99)

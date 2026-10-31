@@ -10,6 +10,7 @@
 ; Correct: E8x does nothing without a loop; the program goes on.
 ; @rwe ciatrklib
 ; @pass file=k.mod|@TESTDATA@/ciatrklib-karplus-loop0.mod
+; @pass timeout=30
 DEFTYPE .l
 r=LoadTrackerModule(0,"CORPUS:k.mod")
 NPrint "loaded ",r

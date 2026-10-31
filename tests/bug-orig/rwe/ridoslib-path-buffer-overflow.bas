@@ -7,6 +7,7 @@
 ; Correct: tbuf is not overrun, NotifyPort returns the same port as
 ; before.
 ; @rwe ridoslib
+; @pass timeout=30
 DEFTYPE .l
 p=NotifyPort
 a$=String$("Nu",150)

@@ -6,6 +6,7 @@
 ; in a timeout).
 ; Correct: the name is refused or cut, the message is sent and arrives.
 ; @rwe riarexxlib
+; @pass timeout=30
 DEFTYPE .l
 p=RXCreatePort("BUGORIG")
 RXTokenise On

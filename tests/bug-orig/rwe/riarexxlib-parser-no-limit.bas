@@ -7,6 +7,7 @@
 ; Correct: the message arrives (its argument is the word, or its first
 ; 255 characters).
 ; @rwe riarexxlib
+; @pass timeout=30
 DEFTYPE .l
 p=RXCreatePort("BUGORIG")
 RXTokenise On

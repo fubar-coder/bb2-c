@@ -4,6 +4,7 @@
 ; session ends in a timeout).
 ; Correct: a delay of 0 does not wait, the program goes on.
 ; @rwe rifxlib
+; @pass timeout=30
 BitMap 0,320,16,1
 NPrint "before"
 ClearBitmap 0,0,1,0

@@ -6,6 +6,7 @@
 ; crash, the session ends in a timeout).
 ; Correct: InitArgParse copies at most 255 characters.
 ; @rwe rimisclib
+; @pass timeout=30
 DEFTYPE .l
 b=AllocMem_(512,$10001)
 If b=0 Then NPrint "no memory" : End

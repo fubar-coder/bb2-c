@@ -8,6 +8,7 @@
 ; Correct: WorkbenchHere goes on with the next screen, finds "Workbench"
 ; and returns -1.
 ; @rwe rimisclib
+; @pass timeout=30
 DEFTYPE .l
 Screen 1,0,0,320,200,2,0,"Workbench",1,2
 Screen 0,0,0,320,200,2,0,"My Work",1,2

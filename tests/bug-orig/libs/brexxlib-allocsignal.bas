@@ -9,7 +9,7 @@
 ; PlayWait returns, the program ends.  The original hangs in PlayWait.
 ; @configs clib
 ; @pass runwrap=@INJECT@|signals
-; @pass timeout=45
+; @pass timeout=30
 QuietTrap On
 TapeTrap 0
 MouseButton 0,1

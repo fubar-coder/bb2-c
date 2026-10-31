@@ -10,6 +10,7 @@
 ; Correct: with no slice objects no pointer is moved, the program goes on.
 ; @configs clib
 ; @pass jobline=max=144|0
+; @pass timeout=30
 DEFTYPE .l
 NPrint "before"
 CustomCop Mki$($180)+Mki$($123),100

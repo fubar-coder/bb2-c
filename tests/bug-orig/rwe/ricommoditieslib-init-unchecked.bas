@@ -7,6 +7,7 @@
 ; Correct: MakeCommodity fails (0), the program goes on.
 ; @rwe ricommoditieslib
 ; @pass runwrap=@INJECT@|openlibfail=commodities.library
+; @pass timeout=30
 NPrint "before"
 If MakeCommodity("BugOrig","BugOrig","no library") Then NPrint "ok" Else NPrint "failed"
 End

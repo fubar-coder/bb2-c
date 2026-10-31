@@ -8,6 +8,7 @@
 ; Correct: RTEZRequest returns 0 without reqtools, the program goes on.
 ; @rwe neilsreqtoolslib
 ; @pass runwrap=@INJECT@|openlibfail=reqtools.library
+; @pass timeout=30
 NPrint IsReqToolsActive
 r.l=RTEZRequest("BugOrig","Hello","Ok")
 NPrint r

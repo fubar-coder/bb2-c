@@ -6,6 +6,6 @@
 ; Correct: blitz2 gives up at once (like the other failed allocations at
 ; start), compiles nothing and the system goes on.
 ; @pass wrap=@INJECT@|allocfail=64-64/chip/1
-; @pass timeout=45
+; @pass timeout=30
 NPrint "hello"
 End
