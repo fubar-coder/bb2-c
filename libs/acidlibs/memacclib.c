@@ -56,13 +56,13 @@ BLITZ_LIBFIN();
    type's upper bits (0 for the compiler's types). */
 static ULONG BLITZ_ROUTINE dopeek_c(ULONG type BL_REG(d0), ULONG loc BL_REG(d1))
 {
-    UWORD t = (UWORD)type;
+    UWORD type_word = (UWORD)type;
 
-    if (t < 2)                                  /* byte (also type 0) */
+    if (type_word < 2)                          /* byte (also type 0) */
         return (type & 0xffffff00) | *(const UBYTE *)loc;
-    if (t == 2)                                 /* 'word */
+    if (type_word == 2)                         /* 'word */
         return (type & 0xffff0000) | *(const UWORD *)loc;
-    if (t != 7)                                 /* 'long: long, quick, float */
+    if (type_word != 7)                         /* 'long: long, quick, float */
         return *(const ULONG *)loc;
     {                                           /* 'string: copy up to the 0 */
         const UBYTE *s = (const UBYTE *)loc;
@@ -101,13 +101,13 @@ ULONG BLITZ_ROUTINE dopeeks(ULONG loc BL_REG(d0), ULONG n BL_REG(d1))
 static void BLITZ_ROUTINE dopoke_c(ULONG type BL_REG(d0), ULONG loc BL_REG(d1),
                                    ULONG data BL_REG(d2), const ULONG *lens BL_REG(a2))
 {
-    UWORD t = (UWORD)type;
+    UWORD type_word = (UWORD)type;
 
-    if (t < 2)
+    if (type_word < 2)
         *(UBYTE *)loc = (UBYTE)data;
-    else if (t == 2)
+    else if (type_word == 2)
         *(UWORD *)loc = (UWORD)data;
-    else if (t != 7)
+    else if (type_word != 7)
         *(ULONG *)loc = data;
     else {
         const UBYTE *s = (const UBYTE *)data;
