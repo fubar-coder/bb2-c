@@ -21,11 +21,20 @@ BLITZ_NULLSUB(allocst, 0, 0);                   /* $C500 alstat */
 BLITZ_NULLSUB(locallocst, 0, 0);                /* $C501 localstat */
 BLITZ_LIBFIN();
 
-static void alloc_statics(const UWORD *tab, UWORD n, UBYTE *base)
+/* an entry of the compiler's table (calcstatic): DC.w offset, size */
+struct staticent {
+    WORD offset;                /* of the variable from a5/a4 */
+    UWORD size;                 /* of the NEWTYPE */
+};
+static_assert(sizeof(struct staticent) == 4);
+
+static void alloc_statics(const struct staticent *tab, UWORD n, UBYTE *base)
 {
     do {                                        /* 'loop ... DBF d4,'loop */
-        WORD off = (WORD)*tab++;
-        struct bl_regs r = { .d0 = *tab++, .d1 = MEMF_PUBLIC | MEMF_CLEAR };
+        WORD off = tab->offset;
+        struct bl_regs r;
+        tab++;
+        r = (struct bl_regs){ .d0 = tab[-1].size, .d1 = MEMF_PUBLIC | MEMF_CLEAR };
         BLITZ_ALIBJSR(TOK_localloc, r);         /* local allocate */
         *(ULONG *)(base + off) = r.d0;          /* MOVE.l d0,0(a5,d2.w) */
     } while (n-- != 0);
@@ -33,7 +42,7 @@ static void alloc_statics(const UWORD *tab, UWORD n, UBYTE *base)
 
 /* allocst - globals: offsets from a5.  a0/a1 are preserved (memlib's
    localloc keeps them, so the original does too) */
-static void BLITZ_ROUTINE allocst_c(const UWORD *tab BL_REG(a2), UWORD n BL_REG(d4))
+static void BLITZ_ROUTINE allocst_c(const struct staticent *tab BL_REG(a2), UWORD n BL_REG(d4))
 {
     alloc_statics(tab, n, blitz_globals);
 }
@@ -41,7 +50,7 @@ BLITZ_THUNK(allocst, allocst_c, "a0-a1");
 
 /* locallocst - locals: offsets from a4 (the original swaps a4/a5 around a
    call of allocst); d0/d1 (procedure parameters) and a0/a1 are preserved */
-static void BLITZ_ROUTINE locallocst_c(const UWORD *tab BL_REG(a2), UWORD n BL_REG(d4))
+static void BLITZ_ROUTINE locallocst_c(const struct staticent *tab BL_REG(a2), UWORD n BL_REG(d4))
 {
     alloc_statics(tab, n, blitz_locals);
 }
