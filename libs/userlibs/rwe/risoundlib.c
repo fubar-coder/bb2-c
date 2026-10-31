@@ -73,39 +73,39 @@ void BLITZ_ROUTINE _libfinit(void)
 
 /* CludgeSound sound#,address: d0 = sound#, d1 = the 8SVX file, a0 = the
    sound object */
-static ULONG BLITZ_ROUTINE loadsounds_c(ULONG d0 BL_REG(d0), UBYTE *sram BL_REG(d1),
+static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
                                         UBYTE *saddr BL_REG(a0))
 {
-    UBYTE *a0, *src, *dst, *mem;
+    UBYTE *iff, *src, *dst, *mem;       /* a0: the current IFF chunk */
     ULONG rate, clock, slen;
     UWORD sper, n;
     int chunk;
 
     if (LONGAT(saddr)) {                /* free the old sample (BUG(orig) #831) */
         struct bl_regs r = { .a1 = LONGAT(saddr) };
-        r.d0 = BL_SETW(d0, WORDAT(saddr + 6));
+        r.d0 = BL_SETW(sound, WORDAT(saddr + 6));
         BLITZ_ALIBJSR(TOK_globfree, r);
     }
     if (LONGAT(sram + 8) != ID('8', 'S', 'V', 'X') || LONGAT(sram + 12) != ID('V', 'H', 'D', 'R'))
         return 0;
-    a0 = sram + 12;
-    a0 += LONGAT(a0 + 4);               /* BUG(orig): VHDR length 20 only (#832) */
-    rate = WORDAT(a0);
+    iff = sram + 12;
+    iff += LONGAT(iff + 4);             /* BUG(orig): VHDR length 20 only (#832) */
+    rate = WORDAT(iff);
     clock = 3579545;                    /* CMP.l d1,d0:BLT: signed */
     sper = 0;
     while ((LONG)clock >= (LONG)rate) { /* BUG(orig): rate 0 never ends (#830) */
         sper++;
         clock -= rate;
     }
-    a0 = sram + 12;
-    for (chunk = 0; LONGAT(a0) != ID('B', 'O', 'D', 'Y'); ) {
-        a0 += LONGAT(a0 + 4);           /* BUG(orig): no pad byte (#828) */
-        a0 += 8;
+    iff = sram + 12;
+    for (chunk = 0; LONGAT(iff) != ID('B', 'O', 'D', 'Y'); ) {
+        iff += LONGAT(iff + 4);         /* BUG(orig): no pad byte (#828) */
+        iff += 8;
         if (++chunk > 6)
             return 0;
     }
-    src = a0 + 8;
-    slen = LONGAT(a0 + 4);
+    src = iff + 8;
+    slen = LONGAT(iff + 4);
     {
         struct bl_regs r = { .d0 = slen, .d1 = MEMF_CHIP };
         mem = dst = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
