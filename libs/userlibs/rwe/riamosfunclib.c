@@ -411,15 +411,15 @@ static void eraseit(LONG bank)
 }
 
 /* empty: AllocMem(len, flags) into the bank, -1 / 0 */
-static ULONG newbank(LONG bank, ULONG len, ULONG flags)
+static BB_BOOL newbank(LONG bank, ULONG len, ULONG flags)
 {
     APTR mem = AllocMem(len, flags);
 
     if (!mem)
-        return 0;
+        return BB_FALSE;
     ENTRY(startptr, bank) = (ULONG)mem;
     ENTRY(lenptr, bank) = len;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* Erase bank */
@@ -442,8 +442,8 @@ static void BLITZ_ROUTINE eraseall_c(void)
 }
 
 /* Reserve(bank,length,requirements): the bank erased first if in use */
-static ULONG BLITZ_ROUTINE allocmem_c(LONG bank BL_REG(d0), ULONG len BL_REG(d1),
-                                      ULONG flags BL_REG(d2))
+static BB_BOOL BLITZ_ROUTINE allocmem_c(LONG bank BL_REG(d0), ULONG len BL_REG(d1),
+                                        ULONG flags BL_REG(d2))
 {
     if (start_c(bank))
         eraseit(bank);
@@ -451,7 +451,7 @@ static ULONG BLITZ_ROUTINE allocmem_c(LONG bank BL_REG(d0), ULONG len BL_REG(d1)
 }
 
 /* Reserve(bank,length): MEMF_PUBLIC */
-static ULONG BLITZ_ROUTINE allocmem1_c(LONG bank BL_REG(d0), ULONG len BL_REG(d1))
+static BB_BOOL BLITZ_ROUTINE allocmem1_c(LONG bank BL_REG(d0), ULONG len BL_REG(d1))
 {
     return allocmem_c(bank, len, MEMF_PUBLIC);
 }
@@ -480,19 +480,19 @@ static ULONG BLITZ_ROUTINE allocmem2_c(LONG len BL_REG(d0))
 }
 
 /* SwapBank(a,b): both must have a length; -1 / 0 */
-static ULONG BLITZ_ROUTINE swapbank_c(LONG a BL_REG(d0), LONG b BL_REG(d1))
+static BB_BOOL BLITZ_ROUTINE swapbank_c(LONG a BL_REG(d0), LONG b BL_REG(d1))
 {
     ULONG t;
 
     if (!length_c(a) || !length_c(b))
-        return 0;
+        return BB_FALSE;
     t = ENTRY(lenptr, a);
     ENTRY(lenptr, a) = ENTRY(lenptr, b);
     ENTRY(lenptr, b) = t;
     t = ENTRY(startptr, a);
     ENTRY(startptr, a) = ENTRY(startptr, b);
     ENTRY(startptr, b) = t;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* FillMem address/bank,length[,value]: nothing for a free bank */
@@ -580,9 +580,9 @@ static ULONG BLITZ_ROUTINE filesize_c(CONST_STRPTR name BL_REG(d0))
 
 /* BLoad(name$,address/bank,length,offset,memtype): length 0 = the file's
    size; a bank is (re)reserved with that length; -1 / 0 */
-static ULONG BLITZ_ROUTINE bload2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1),
-                                    ULONG len BL_REG(d2), LONG offset BL_REG(d3),
-                                    ULONG memtype BL_REG(d4))
+static BB_BOOL BLITZ_ROUTINE bload2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1),
+                                      ULONG len BL_REG(d2), LONG offset BL_REG(d3),
+                                      ULONG memtype BL_REG(d4))
 {
     struct DosLibrary *dos = dosbase_;
     BPTR file;
@@ -591,44 +591,44 @@ static ULONG BLITZ_ROUTINE bload2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_R
     if (!len) {
         len = filesize_c(name);
         if (!len)
-            return 0;
+            return BB_FALSE;
     }
     if ((LONG)adr < maxbanks) {
         LONG bank = (LONG)adr;
         if (length_c(bank))
             eraseit(bank);
         if (!newbank(bank, len, memtype))
-            return 0;
+            return BB_FALSE;
         adr = start_c(bank);
         if (!adr)
-            return 0;
+            return BB_FALSE;
     }
     file = Open(name, MODE_OLDFILE);
     if (!file)
-        return 0;                               /* BUG(orig): the bank stays (#487) */
+        return BB_FALSE;                        /* BUG(orig): the bank stays (#487) */
     if (offset)
         Seek(file, offset, OFFSET_BEGINNING);
     got = Read(file, (APTR)adr, (LONG)len);     /* BUG(orig): -1 counts as read (#488) */
     Close(file);
-    return got ? (ULONG)-1 : 0;
+    return got ? BB_TRUE : BB_FALSE;
 }
 
 /* BLoad(name$,address/bank,length,offset) */
-static ULONG BLITZ_ROUTINE bload_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1),
-                                   ULONG len BL_REG(d2), LONG offset BL_REG(d3))
+static BB_BOOL BLITZ_ROUTINE bload_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1),
+                                     ULONG len BL_REG(d2), LONG offset BL_REG(d3))
 {
     return bload2_c(name, adr, len, offset, 0);
 }
 
 /* BLoad(name$,address/bank,length) */
-static ULONG BLITZ_ROUTINE bload0_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1),
-                                    ULONG len BL_REG(d2))
+static BB_BOOL BLITZ_ROUTINE bload0_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1),
+                                      ULONG len BL_REG(d2))
 {
     return bload2_c(name, adr, len, 0, 0);
 }
 
 /* BLoad(name$,address/bank) */
-static ULONG BLITZ_ROUTINE bload1_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1))
+static BB_BOOL BLITZ_ROUTINE bload1_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1))
 {
     return bload2_c(name, adr, 0, 0, 0);
 }
@@ -650,8 +650,8 @@ static ULONG BLITZ_ROUTINE bload4_c(CONST_STRPTR name BL_REG(d0))
 
 /* BSave(name$,address/bank,length): length 0 = the bank's length (an
    address without a length: 0); -1 / 0 */
-static ULONG BLITZ_ROUTINE bsave_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1),
-                                   ULONG len BL_REG(d2))
+static BB_BOOL BLITZ_ROUTINE bsave_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1),
+                                     ULONG len BL_REG(d2))
 {
     struct DosLibrary *dos = dosbase_;
     BPTR file;
@@ -659,23 +659,23 @@ static ULONG BLITZ_ROUTINE bsave_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_RE
 
     if (!len) {
         if ((LONG)adr >= maxbanks)
-            return 0;
+            return BB_FALSE;
         len = length_c((LONG)adr);
     }
     if ((LONG)adr < maxbanks) {
         adr = start_c((LONG)adr);
         if (!adr)
-            return 0;
+            return BB_FALSE;
     }
     file = Open(name, MODE_NEWFILE);
     if (!file)
-        return 0;
+        return BB_FALSE;
     put = Write(file, (APTR)adr, (LONG)len);
     Close(file);
-    return put < 0 ? 0 : (ULONG)-1;
+    return put < 0 ? BB_FALSE : BB_TRUE;
 }
 
-static ULONG BLITZ_ROUTINE bsave2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1))
+static BB_BOOL BLITZ_ROUTINE bsave2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_REG(d1))
 {
     return bsave_c(name, adr, 0);
 }
@@ -684,7 +684,7 @@ static ULONG BLITZ_ROUTINE bsave2_c(CONST_STRPTR name BL_REG(d0), ULONG adr BL_R
    leaves in d1 (JSR _CreateDir:TST.l d0:BEQ oops:JSR _UnLock -
    BUG(orig): not the lock in d0, #496).  The NDK inline of CreateDir gives no
    access to d1 after the call, so the call is inline assembler. */
-static ULONG BLITZ_ROUTINE makedir_c(CONST_STRPTR name BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE makedir_c(CONST_STRPTR name BL_REG(d0))
 {
     struct DosLibrary *dos = dosbase_;
     register ULONG d0 __asm("d0");
@@ -696,9 +696,9 @@ static ULONG BLITZ_ROUTINE makedir_c(CONST_STRPTR name BL_REG(d0))
                    : "a"(a6)
                    : "a0", "a1", "cc", "memory");
     if (!d0)
-        return 0;
+        return BB_FALSE;
     UnLock((BPTR)d1);
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* Rename(old$,new$): dos.library's result */
@@ -712,19 +712,19 @@ static ULONG BLITZ_ROUTINE rename_c(CONST_STRPTR from BL_REG(d0), CONST_STRPTR t
 /* ChangeDir dir$: CurrentDir(Lock(dir$)), the previous ChangeDir lock
    unlocked (AmiBlitz3: MOVE.L oldlock - func-library7 and BSS2 tested
    and unlocked the word MOVE oldlock,d1 left in d1); -1 / 0 */
-static ULONG BLITZ_ROUTINE cd_c(CONST_STRPTR name BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE cd_c(CONST_STRPTR name BL_REG(d0))
 {
     struct DosLibrary *dos = dosbase_;
     BPTR lock = Lock(name, ACCESS_READ);
 
     if (!lock)
-        return 0;
+        return BB_FALSE;
     if (!CurrentDir(lock))
-        return 0;                               /* BUG(orig), see the head (#490) */
+        return BB_FALSE;                        /* BUG(orig), see the head (#490) */
     if (oldlock)
         UnLock(oldlock);
     oldlock = lock;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 #define LDF_FINDVOLUME (LDF_READ | LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS | LDF_ENTRY)
@@ -929,9 +929,9 @@ static ULONG BLITZ_ROUTINE keycode_c(void)
 }
 
 /* BlitterDone: -1 if the blitter is idle (one BTST, no Agnus wait) */
-static ULONG BLITZ_ROUTINE blitdone_c(void)
+static BB_BOOL BLITZ_ROUTINE blitdone_c(void)
 {
-    return BL_BLITBUSY(BL_CUSTOM) ? 0 : (ULONG)-1;
+    return BL_BLITBUSY(BL_CUSTOM) ? BB_FALSE : BB_TRUE;
 }
 
 static void BLITZ_ROUTINE blitwait_c(void)
