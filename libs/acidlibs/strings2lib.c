@@ -34,29 +34,36 @@ BLITZ_LIBFIN();
 /* membase table of memlib (blitzhelp.h MEMBASE_xxx): JSR (a6) alloc,
    JSR 4(a6) free; the global versions are at +8 */
 
+/* the header in front of a string's characters */
+struct strhead {
+    ULONG alloclen;             /* -8: alloc'd len */
+    ULONG len;                  /* -4: string len */
+};
+static_assert(sizeof(struct strhead) == 8);
+
 static void assign(ULONG len, UBYTE **var, const UBYTE *mem)
 {
     UBYTE *s = *var;
-    ULONG *h;
+    struct strhead *h;
 
     if (s) {
-        h = (ULONG *)s - 2;
-        if (len <= h[0]) {                      /* CMP.l -8(a1),d0:BHI 'lengthen */
-            h[1] = len;                         /* MOVE.l d0,-4(a1) */
+        h = (struct strhead *)s - 1;
+        if (len <= h->alloclen) {               /* CMP.l -8(a1),d0:BHI 'lengthen */
+            h->len = len;                       /* MOVE.l d0,-4(a1) */
             goto copy;                          /* (BEQ 'endass: copies nothing) */
         }
         {                                       /* 'lengthen */
-            struct bl_regs r = { .d0 = h[0] + 9, .a1 = (ULONG)h };
+            struct bl_regs r = { .d0 = h->alloclen + 9, .a1 = (ULONG)h };
             BLITZ_BASEJSR(mem, MEMBASE_locfree, r);
         }
     }
     {                                           /* 'allocnews */
         struct bl_regs r = { .d0 = len + 9, .d1 = MEMF_PUBLIC };
-        h = (ULONG *)BLITZ_BASEJSR(mem, MEMBASE_localloc, r);
+        h = (struct strhead *)BLITZ_BASEJSR(mem, MEMBASE_localloc, r);
     }
-    h[0] = len;                                 /* alloc'd len */
-    h[1] = len;                                 /* string len */
-    s = (UBYTE *)(h + 2);
+    h->alloclen = len;
+    h->len = len;
+    s = (UBYTE *)(h + 1);
     *var = s;                                   /* MOVE.l a1,(a2) */
 copy:
     /* 'nofree: the original copies 8 bytes per loop plus the rest; the
