@@ -77,17 +77,42 @@ struct sound {
 };
 static_assert(sizeof(struct sound) == 16);
 
-/* _libinit, _libfinit: RTS (nothing to set up or free) */
+/** @brief init: RTS (nothing to set up). */
 void BLITZ_ROUTINE _libinit(void)
 {
 }
 
+/** @brief finit: RTS (nothing to free). */
 void BLITZ_ROUTINE _libfinit(void)
 {
 }
 
-/* CludgeSound sound#,address: d0 = sound#, d1 = the 8SVX file, a0 = the
-   sound object */
+/**
+ * @brief CludgeSound sound#,address: an IFF 8SVX sample in memory as an
+ * audiolib sound object.
+ *
+ * Frees the object's old sample (memlib globfree), checks "8SVX"/"VHDR"
+ * at address+8/+12, takes the sample rate, finds the BODY chunk among
+ * the first seven chunks, copies it into chip memory (memlib globalloc)
+ * and fills the object: sample, period 3579545 / rate, length in words,
+ * no loop, the "cL" mark cleared.
+ * BUG(orig):
+ *   - the old sample is freed before the file is checked and the object
+ *     keeps the pointer: a failing call leaves it pointing to freed
+ *     memory (#831);
+ *   - the old sample is freed without looking at the "cL" mark (#945);
+ *   - the rate is the word at VHDR + its chunk length (right for length
+ *     20 only, #832); rate 0 never ends the period loop (#830);
+ *   - the chunk walk has no IFF pad byte (#828);
+ *   - the copy is a DBRA loop on length - 1, the length in words
+ *     (length & $FFFF) / 2 (#829).
+ * @param sound  d0: the sound number (globfree gets d0 with the old
+ *               length in its low word)
+ * @param sram   d1: the 8SVX file
+ * @param saddr  a0: the sound object (!libs #audiolib,#ia0|#pd0)
+ * @return d0: BB_TRUE, BB_FALSE if it is no 8SVX/VHDR file, has no BODY
+ *         or the chip memory is missing
+ */
 static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
                                           struct sound *saddr BL_REG(a0))
 {
