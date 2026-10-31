@@ -282,7 +282,14 @@ static ULONG BLITZ_ROUTINE codeinit_c(void)
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
 
-/* CaseSense On|Off - MOVE d0,csense:RTS */
+/**
+ * @brief CaseSense On|Off - case sensitive or insensitive Instr and
+ * Replace$.
+ *
+ * MOVE d0,csense:RTS.  The init sets On (-1).  Keeps all registers.
+ *
+ * @param on d0.w: 0 (Off) = 'a'..'z' compare as upper case, else On
+ */
 static void BLITZ_ROUTINE casesensestring_c(UWORD on BL_REG(d0))
 {
     csense = on;
@@ -291,7 +298,17 @@ BLITZ_THUNK(casesensestring, casesensestring_c, "d0-d1/a0-a1");
 
 /* ------------------------------------------------------ string results */
 
-/* StripTrail$(d0$,d1) - strip trailing characters d1.b */
+/**
+ * @brief StripTrail$(String$,Ascii) - the string without the trailing
+ * characters Ascii.
+ *
+ * In place: a3 is moved back over the trailing characters d1.b.
+ *
+ * @param s    d0: the string
+ * @param ch   d1.w: the character to strip (low byte)
+ * @param lens a2: the length stack (the string's length)
+ * @return d0: the length of the result; a3 = its end
+ */
 static ULONG BLITZ_ROUTINE striptrail_c(UBYTE *s BL_REG(d0), UWORD ch BL_REG(d1),
                                         const ULONG *lens BL_REG(a2))
 {
@@ -327,6 +344,17 @@ static ULONG left(UBYTE *s, LONG n, const ULONG *sp)
     return n;
 }
 
+/**
+ * @brief Left$(String$,Length) - the first Length characters.
+ *
+ * In place.  A negative length counts as 0 ("simon was here"); a length
+ * beyond the string gives the whole string.
+ *
+ * @param s    d0: the string
+ * @param n    d1: the length
+ * @param lens a2: the length stack (the string's length)
+ * @return d0: the length of the result; a3 = its end
+ */
 static ULONG BLITZ_ROUTINE leftstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
                                         const ULONG *lens BL_REG(a2))
 {
@@ -334,7 +362,17 @@ static ULONG BLITZ_ROUTINE leftstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
 }
 BLITZ_THUNK(leftstring, leftstring_c, "d1/a0-a1");
 
-/* UnLeft$(d0$,d1) - Left$(d0$,Len(d0$)-d1); length read with -4(a2) */
+/**
+ * @brief UnLeft$(String$,Length) - the string without its last Length
+ * characters.
+ *
+ * Left$(d0$,Len(d0$)-d1); the length is read with -4(a2).
+ *
+ * @param s    d0: the string
+ * @param n    d1: the number of characters to remove
+ * @param lens a2: the length stack (the string's length)
+ * @return d0: the length of the result; a3 = its end
+ */
 static ULONG BLITZ_ROUTINE unleftstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
                                           const ULONG *lens BL_REG(a2))
 {
@@ -342,11 +380,20 @@ static ULONG BLITZ_ROUTINE unleftstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1)
 }
 BLITZ_THUNK(unleftstring, unleftstring_c, "d1/a0-a1");
 
-/* LSet$(d0$,d1) - left justify a string: pad with spaces from the end of
-   the argument (-1(a3)) or cut.  The length is d1 (negative: 0).
-   For d1 = Len(d0$) a3 is left at its entry value - 1 (not a bug: the
-   compiler always leaves a3 one past the argument's 0, so that is the
-   right end). */
+/**
+ * @brief LSet$(String$,Characters) - the string left justified in
+ * Characters characters.
+ *
+ * Pads with spaces from the end of the argument (-1(a3)) or cuts.  The
+ * length is d1 (negative: 0).  For d1 = Len(d0$) a3 is left at its entry
+ * value - 1 (not a bug: the compiler always leaves a3 one past the
+ * argument's 0, so that is the right end).
+ *
+ * @param s    d0: the string
+ * @param n    d1: the width
+ * @param lens a2: the length stack (the string's length)
+ * @return d0: the width; a3 = the end of the result
+ */
 static ULONG BLITZ_ROUTINE lsetstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
                                         const ULONG *lens BL_REG(a2))
 {
@@ -369,9 +416,19 @@ static ULONG BLITZ_ROUTINE lsetstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
 }
 BLITZ_THUNK(lsetstring, lsetstring_c, "d1/a0-a1");
 
-/* RSet$(d0$,d1) - right justify a string: the characters are moved to
-   the end of d1 characters (backwards from -1(a3)), spaces in front; a
-   longer string keeps its last d1 characters (movestring). */
+/**
+ * @brief RSet$(String$,Characters) - the string right justified in
+ * Characters characters.
+ *
+ * The characters are moved to the end of d1 characters (backwards from
+ * -1(a3)), spaces in front; a longer string keeps its last d1 characters
+ * (movestring).  A negative width counts as 0.
+ *
+ * @param s    d0: the string
+ * @param n    d1: the width
+ * @param lens a2: the length stack (the string's length)
+ * @return d0: the width; a3 = the end of the result
+ */
 static ULONG BLITZ_ROUTINE rsetstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
                                         const ULONG *lens BL_REG(a2))
 {
@@ -407,11 +464,21 @@ static ULONG BLITZ_ROUTINE rsetstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
 }
 BLITZ_THUNK(rsetstring, rsetstring_c, "d1/a0-a1");
 
-/* Centre$(d0$,d1) - centre a string in d1 characters.  Start of the moved
-   characters: s + d1/2 + len/2 (+1 if both d1 and len are odd: the
-   LSR #1 of d1&len sets the carry, SCS/EXT/SUBA); spaces: (d1-len)/2 in
-   front (written backwards), the rest behind.  A longer string keeps the
-   middle d1 characters: s + len/2 - d1/2 (LSR.l). */
+/**
+ * @brief Centre$(String$,Characters) - the string centred in Characters
+ * characters.
+ *
+ * End of the moved characters: s + d1/2 + len/2 (+1 if both d1 and len
+ * are odd: the LSR #1 of d1&len sets the carry, SCS/EXT/SUBA); spaces:
+ * (d1-len)/2 in front (written backwards), the rest behind.  A longer
+ * string keeps the middle d1 characters: s + len/2 - d1/2 (LSR.l).  A
+ * negative width counts as 0.
+ *
+ * @param s    d0: the string
+ * @param n    d1: the width
+ * @param lens a2: the length stack (the string's length)
+ * @return d0: the width; a3 = the end of the result
+ */
 static ULONG BLITZ_ROUTINE centrestring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
                                           const ULONG *lens BL_REG(a2))
 {
@@ -458,8 +525,16 @@ static ULONG BLITZ_ROUTINE centrestring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1)
 }
 BLITZ_THUNK(centrestring, centrestring_c, "d1/a0-a1");
 
-/* LCase$(d0$) / UCase$(d0$) - in place.  An empty string leaves a3 at
-   its entry value (MOVE.l -(a2),d1:BEQ 'done before MOVE.l d0,a3). */
+/**
+ * @brief LCase$(String$) - the string in lower case ('A'..'Z' only).
+ *
+ * In place.  An empty string leaves a3 at its entry value (MOVE.l
+ * -(a2),d1:BEQ 'done before MOVE.l d0,a3).
+ *
+ * @param s    d0: the string
+ * @param lens a2: the length stack (the string's length)
+ * @return d0: the length; a3 = the end of the result
+ */
 static ULONG BLITZ_ROUTINE lcasestring_c(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     const ULONG *sp = lens;
@@ -478,6 +553,15 @@ static ULONG BLITZ_ROUTINE lcasestring_c(UBYTE *s BL_REG(d0), const ULONG *lens 
 }
 BLITZ_THUNK(lcasestring, lcasestring_c, "d1/a0-a1");
 
+/**
+ * @brief UCase$(String$) - the string in upper case ('a'..'z' only).
+ *
+ * In place.  An empty string leaves a3 at its entry value, as LCase$.
+ *
+ * @param s    d0: the string
+ * @param lens a2: the length stack (the string's length)
+ * @return d0: the length; a3 = the end of the result
+ */
 static ULONG BLITZ_ROUTINE ucasestring_c(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     const ULONG *sp = lens;
@@ -496,8 +580,18 @@ static ULONG BLITZ_ROUTINE ucasestring_c(UBYTE *s BL_REG(d0), const ULONG *lens 
 }
 BLITZ_THUNK(ucasestring, ucasestring_c, "d1/a0-a1");
 
-/* StripLead$(d0$,d1) - strip leading characters d1.b; the rest is moved
-   to the start (movestring); all stripped: d0 = 0, a3 = d0$. */
+/**
+ * @brief StripLead$(String$,Ascii) - the string without the leading
+ * characters Ascii.
+ *
+ * Strips the leading characters d1.b; the rest is moved to the start
+ * (movestring); all stripped: d0 = 0, a3 = d0$.
+ *
+ * @param s    d0: the string
+ * @param ch   d1.w: the character to strip (low byte)
+ * @param lens a2: the length stack (the string's length)
+ * @return d0: the length of the result; a3 = its end
+ */
 static ULONG BLITZ_ROUTINE striplead_c(UBYTE *s BL_REG(d0), UWORD ch BL_REG(d1),
                                        const ULONG *lens BL_REG(a2))
 {
@@ -539,6 +633,20 @@ static ULONG right(UBYTE *s, LONG n, const ULONG *sp)
     return movestr(&src, n);
 }
 
+/**
+ * @brief Right$(String$,Length) - the last Length characters.
+ *
+ * Moved to the start of the argument (movestring).  A negative length
+ * counts as 0; a length beyond the string gives the whole string.
+ *
+ * BUG(orig) (#285): the source address is LEA 0(a3,d0.w),a0 - for
+ * Len-Length >= 32768 the characters are taken from before the string.
+ *
+ * @param s    d0: the string
+ * @param n    d1: the length
+ * @param lens a2: the length stack (the string's length)
+ * @return d0: the length of the result; a3 = its end
+ */
 static ULONG BLITZ_ROUTINE rightstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
                                          const ULONG *lens BL_REG(a2))
 {
@@ -546,7 +654,19 @@ static ULONG BLITZ_ROUTINE rightstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
 }
 BLITZ_THUNK(rightstring, rightstring_c, "d1/a0-a1");
 
-/* UnRight$(d0$,d1) - Right$(d0$,Len(d0$)-d1) */
+/**
+ * @brief UnRight$(String$,Length) - the string without its first Length
+ * characters.
+ *
+ * Right$(d0$,Len(d0$)-d1); the length is read with -4(a2).
+ *
+ * BUG(orig) (#285): as Right$, a word offset into the string.
+ *
+ * @param s    d0: the string
+ * @param n    d1: the number of characters to remove
+ * @param lens a2: the length stack (the string's length)
+ * @return d0: the length of the result; a3 = its end
+ */
 static ULONG BLITZ_ROUTINE unrightstring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1),
                                            const ULONG *lens BL_REG(a2))
 {
@@ -580,6 +700,22 @@ static ULONG mid(UBYTE *s, LONG start, LONG n, const ULONG *sp)
     return movestr(&src, n);
 }
 
+/**
+ * @brief Mid$(String$,Startchar,Length) - Length characters from
+ * Startchar (1 = the first).
+ *
+ * First position = 0 after SUBQ.l #1,d1, then negative start/length count
+ * as 0.  Start beyond the end: empty; the length is cut at the end.
+ *
+ * BUG(orig) (#286): start+length is compared signed after the addition,
+ * so a huge length (start-1+length > $7FFFFFFF) copies `length` bytes.
+ *
+ * @param s     d0: the string
+ * @param start d1: the first character (1-based)
+ * @param n     d2: the length
+ * @param lens  a2: the length stack (the string's length)
+ * @return d0: the length of the result; a3 = its end
+ */
 static ULONG BLITZ_ROUTINE midstring_c(UBYTE *s BL_REG(d0), LONG start BL_REG(d1),
                                        LONG n BL_REG(d2), const ULONG *lens BL_REG(a2))
 {
@@ -587,7 +723,18 @@ static ULONG BLITZ_ROUTINE midstring_c(UBYTE *s BL_REG(d0), LONG start BL_REG(d1
 }
 BLITZ_THUNK(midstring, midstring_c, "d1/a0-a1");
 
-/* Mid$(d0$,d1) - length = Len(d0$)-d1+1 (from -4(a2)) */
+/**
+ * @brief Mid$(String$,Startchar) - the rest of the string from Startchar.
+ *
+ * Mid$ with the length Len(d0$)-d1+1 (read from -4(a2)).
+ *
+ * BUG(orig) (#286): see Mid$ with three arguments.
+ *
+ * @param s     d0: the string
+ * @param start d1: the first character (1-based)
+ * @param lens  a2: the length stack (the string's length)
+ * @return d0: the length of the result; a3 = its end
+ */
 static ULONG BLITZ_ROUTINE midstring2_c(UBYTE *s BL_REG(d0), LONG start BL_REG(d1),
                                         const ULONG *lens BL_REG(a2))
 {
@@ -595,12 +742,25 @@ static ULONG BLITZ_ROUTINE midstring2_c(UBYTE *s BL_REG(d0), LONG start BL_REG(d
 }
 BLITZ_THUNK(midstring2, midstring2_c, "d1/a0-a1");
 
-/* Chr$(d0.w) - inline: MOVE.b d0,(a3)+:MOVEQ #1,d0 */
+/**
+ * @brief Chr$(Expression) - a string of one character.
+ *
+ * Inline code (copied into the program): MOVE.b d0,(a3)+:MOVEQ #1,d0.
+ * Parameter d0.w: the character code (low byte).
+ * Result d0: 1, the length; a3 behind the character.
+ */
 BLITZ_INLINE(chrstring,
     "   move.b  d0,(a3)+\n"
     "   moveq   #1,d0");
 
-/* Bin$(d0.l) - 32 digits, from bit 31 down */
+/**
+ * @brief Bin$(Expression) - the value as 32 binary digits.
+ *
+ * From bit 31 down, written at a3.
+ *
+ * @param v d0: the value
+ * @return d0: 32, the length; a3 = the end of the result
+ */
 static ULONG BLITZ_ROUTINE binstring_c(ULONG v BL_REG(d0))
 {
     UWORD i;
@@ -613,7 +773,14 @@ static ULONG BLITZ_ROUTINE binstring_c(ULONG v BL_REG(d0))
 }
 BLITZ_THUNK(binstring, binstring_c, "d1/a0-a1");
 
-/* Hex$(d0.l) - 8 digits, upper case */
+/**
+ * @brief Hex$(Expression) - the value as 8 hexadecimal digits.
+ *
+ * Upper case, written at a3.
+ *
+ * @param v d0: the value
+ * @return d0: 8, the length; a3 = the end of the result
+ */
 static ULONG BLITZ_ROUTINE hexstring_c(ULONG v BL_REG(d0))
 {
     UWORD i, c;
@@ -629,13 +796,22 @@ static ULONG BLITZ_ROUTINE hexstring_c(ULONG v BL_REG(d0))
 }
 BLITZ_THUNK(hexstring, hexstring_c, "d1/a0-a1");
 
-/* String$(d0$,d1) - d1 copies of d0$.  movestring copies the argument
-   behind itself (from -1(a3) on) with a0 trailing by one length, then the
-   whole block is moved to the start.
-   DIFF: for a count <= 0 the original returns the empty string without
-   popping the argument's length (MOVE.l d1,d3:BLE 'skip comes first), so
-   a2 is left at another position than for count > 0; the C version
-   leaves a2 unchanged in both cases (same results). */
+/**
+ * @brief String$(String$,Repeats) - Repeats copies of the string.
+ *
+ * movestring copies the argument behind itself (from -1(a3) on) with a0
+ * trailing by one length, then the whole block is moved to the start.  A
+ * count <= 0 gives the empty string.
+ * DIFF: for a count <= 0 the original returns the empty string without
+ * popping the argument's length (MOVE.l d1,d3:BLE 'skip comes first), so
+ * a2 is left at another position than for count > 0; the C version
+ * leaves a2 unchanged in both cases (same results).
+ *
+ * @param s     d0: the string
+ * @param count d1: the number of copies
+ * @param lens  a2: the length stack (the string's length)
+ * @return d0: the length of the result; a3 = its end
+ */
 static ULONG BLITZ_ROUTINE stringstr_c(UBYTE *s BL_REG(d0), LONG count BL_REG(d1),
                                        const ULONG *lens BL_REG(a2))
 {
@@ -663,7 +839,15 @@ static ULONG BLITZ_ROUTINE stringstr_c(UBYTE *s BL_REG(d0), LONG count BL_REG(d1
 }
 BLITZ_THUNK(stringstr, stringstr_c, "d1/a0-a1");
 
-/* Asc(d0$) - first character; -1 for the empty string (a3 not changed) */
+/**
+ * @brief Asc(String$) - the code of the first character.
+ *
+ * a3 = d0$; the empty string leaves a3 unchanged.
+ *
+ * @param s    d0: the string
+ * @param lens a2: the length stack (the string's length)
+ * @return d0: the first character (0-255), -1 for the empty string
+ */
 static ULONG BLITZ_ROUTINE ascii_c(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     const ULONG *sp = lens;
@@ -709,6 +893,19 @@ static ULONG instr(UBYTE *s, const UBYTE *f, LONG pos, const ULONG *sp)
     }
 }
 
+/**
+ * @brief Instr(String$,Findstring$) - the position of Findstring$ in
+ * String$.
+ *
+ * Searches from the first character (d4 = -1 in the original);
+ * CaseSense Off compares 'a'..'z' as upper case.  a3 = String$.
+ *
+ * @param s    d0: the string to search in
+ * @param f    d1: the string to find
+ * @param lens a2: the length stack (String$'s length on top, then
+ *             Findstring$'s)
+ * @return d0: the 1-based position, 0 if not found
+ */
 static ULONG BLITZ_ROUTINE instrstring_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(d1),
                                          const ULONG *lens BL_REG(a2))
 {
@@ -716,6 +913,23 @@ static ULONG BLITZ_ROUTINE instrstring_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_
 }
 BLITZ_THUNK(instrstring, instrstring_c, "d1/a0-a1");
 
+/**
+ * @brief Instr(String$,Findstring$,Startpos) - the position of
+ * Findstring$ in String$, searching from Startpos.
+ *
+ * d4 = Startpos-2 in the original; CaseSense Off compares 'a'..'z' as
+ * upper case.  a3 = String$.
+ *
+ * BUG(orig) (#287): Startpos <= 0 is not checked - the compare starts
+ * before the string (Instr(s$,"",0) = 0, Instr(s$,"",-5) = -5).
+ *
+ * @param s     d0: the string to search in
+ * @param f     d1: the string to find
+ * @param start d2: the 1-based start position
+ * @param lens  a2: the length stack (String$'s length on top, then
+ *              Findstring$'s)
+ * @return d0: the 1-based position, 0 if not found
+ */
 static ULONG BLITZ_ROUTINE instrstring2_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(d1),
                                           LONG start BL_REG(d2), const ULONG *lens BL_REG(a2))
 {
@@ -723,14 +937,27 @@ static ULONG BLITZ_ROUTINE instrstring2_c(UBYTE *s BL_REG(d0), const UBYTE *f BL
 }
 BLITZ_THUNK(instrstring2, instrstring2_c, "d1/a0-a1");
 
-/* Replace$(d0$,d1$,d2$) - the result is built at a3 (behind the
-   arguments), then moved to d0$.  End test: a0+Len(f$) > address of f$
-   (BHI) - the find string is expected right behind s$ in the work area.
-   BUG(orig) (#424): an empty find string returns s$ unchanged with a3 left at
-   its entry value.
-   DIFF: in that case the original pops only two lengths (two MOVE.l
-   -(a2) before BEQ 'skip), otherwise three (SUBQ #4,a2), so a2 is left
-   at different positions; the C version leaves a2 unchanged. */
+/**
+ * @brief Replace$(String$,Findstring$,Replacestring$) - String$ with
+ * every Findstring$ replaced by Replacestring$.
+ *
+ * The result is built at a3 (behind the arguments), then moved to d0$.
+ * End test: a0+Len(f$) > address of f$ (BHI) - the find string is
+ * expected right behind s$ in the work area.  CaseSense Off compares
+ * 'a'..'z' as upper case.
+ * DIFF: with an empty find string the original pops only two lengths
+ * (two MOVE.l -(a2) before BEQ 'skip), otherwise three (SUBQ #4,a2), so
+ * a2 is left at different positions; the C version leaves a2 unchanged.
+ *
+ * BUG(orig) (#424): an empty find string returns s$ unchanged with a3
+ * left at its entry value.
+ *
+ * @param s    d0: the string
+ * @param f    d1: the string to find
+ * @param r    d2: the replacement
+ * @param lens a2: the length stack (the three lengths, String$'s on top)
+ * @return d0: the length of the result; a3 = its end
+ */
 static ULONG BLITZ_ROUTINE replace_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(d1),
                                      const UBYTE *r BL_REG(d2), const ULONG *lens BL_REG(a2))
 {
@@ -792,7 +1019,12 @@ static ULONG BLITZ_ROUTINE replace_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(
 }
 BLITZ_THUNK(replace, replace_c, "d1/a0-a1");
 
-/* Mki$(d0) - 2 bytes big endian; Mkl$/Mkq$(d0) - 4 bytes */
+/**
+ * @brief Mki$(Integer) - the low word as a 2 byte string (big endian).
+ *
+ * @param v d0: the value
+ * @return d0: 2, the length; a3 = the end of the result
+ */
 static ULONG BLITZ_ROUTINE mkistring_c(ULONG v BL_REG(d0))
 {
     blitz_string[1] = (UBYTE)v;
@@ -802,6 +1034,13 @@ static ULONG BLITZ_ROUTINE mkistring_c(ULONG v BL_REG(d0))
 }
 BLITZ_THUNK(mkistring, mkistring_c, "d1/a0-a1");
 
+/**
+ * @brief Mkl$(Long), Mkq$(Quick) - the value as a 4 byte string (big
+ * endian).
+ *
+ * @param v d0: the value
+ * @return d0: 4, the length; a3 = the end of the result
+ */
 static ULONG BLITZ_ROUTINE mklstring_c(ULONG v BL_REG(d0))
 {
     blitz_string[3] = (UBYTE)v;
@@ -813,13 +1052,21 @@ static ULONG BLITZ_ROUTINE mklstring_c(ULONG v BL_REG(d0))
 }
 BLITZ_THUNK(mklstring, mklstring_c, "d1/a0-a1");
 
-/* Cvi(d0$) - the first 2 bytes as word; Cvl/Cvq(d0$) - first 4 bytes.
-   a3 = d0$.  BUG(orig) (#288): the argument's length is not checked (shorter
-   strings read the bytes behind them).  DIFF: the original does not pop
-   the length (a2 unchanged, unlike the other string functions); the C
-   version leaves a2 unchanged as everywhere (same result).  Cvi leaves
-   the upper word of the string address in the upper word of d0 (MOVE.b/
-   LSL #8 on the low word only; Cvi is a word function). */
+/**
+ * @brief Cvi(String$) - the first 2 bytes of the string as a word.
+ *
+ * a3 = d0$.  Cvi leaves the upper word of the string address in the
+ * upper word of d0 (MOVE.b/LSL #8 on the low word only; Cvi is a word
+ * function).  DIFF: the original does not pop the length (a2 unchanged,
+ * unlike the other string functions); the C version leaves a2 unchanged
+ * as everywhere (same result).
+ *
+ * BUG(orig) (#288): the argument's length is not checked (shorter strings
+ * read the bytes behind them).
+ *
+ * @param s d0: the string
+ * @return d0.w: the word (big endian)
+ */
 static ULONG BLITZ_ROUTINE cvistring_c(const UBYTE *s BL_REG(d0))
 {
     blitz_string = (UBYTE *)s;
@@ -827,6 +1074,17 @@ static ULONG BLITZ_ROUTINE cvistring_c(const UBYTE *s BL_REG(d0))
 }
 BLITZ_THUNK(cvistring, cvistring_c, "d1/a0-a1");
 
+/**
+ * @brief Cvl(String$), Cvq(String$) - the first 4 bytes of the string as
+ * a long (Cvq: as a Quick).
+ *
+ * a3 = d0$.  DIFF: the length is not popped, as in Cvi.
+ *
+ * BUG(orig) (#288): the argument's length is not checked.
+ *
+ * @param s d0: the string
+ * @return d0: the long (big endian)
+ */
 static ULONG BLITZ_ROUTINE cvlstring_c(const UBYTE *s BL_REG(d0))
 {
     blitz_string = (UBYTE *)s;
@@ -834,7 +1092,14 @@ static ULONG BLITZ_ROUTINE cvlstring_c(const UBYTE *s BL_REG(d0))
 }
 BLITZ_THUNK(cvlstring, cvlstring_c, "d1/a0-a1");
 
-/* Len(d0$) - inline: MOVE.l d0,a3:MOVE.l -(a2),d0 */
+/**
+ * @brief Len(String$) - the length of the string.
+ *
+ * Inline code (copied into the program): MOVE.l d0,a3:MOVE.l -(a2),d0 -
+ * pops the length (a2 changes, unlike the C routines).
+ * Parameter d0: the string; a2: the length stack.
+ * Result d0: the length; a3 = the string.
+ */
 BLITZ_INLINE(lenstring,
     "   move.l  d0,a3\n"
     "   move.l  -(a2),d0");
