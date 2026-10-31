@@ -327,7 +327,7 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
             if (nw && k < sizeof expect_kinds / sizeof expect_kinds[0] && quoted_kind(w[0])) {
                 /* KIND [NAME] "TEXT": the string from the raw value */
                 const char *q = raw, *rest;
-                int skip = expect_kinds[k].args, j;
+                int skip = expect_kinds[k].args, j, bad;
                 uint8_t *d;
                 size_t len, e = 0;
 
@@ -336,7 +336,12 @@ int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, c
                         q++;
                     q += strcspn(q, " \t");
                 }
-                if (unquote(q, &d, &len, &rest) || rest[strspn(rest, " \t\r")]) {
+                bad = unquote(q, &d, &len, &rest);
+                if (!bad && rest[strspn(rest, " \t\r")]) {
+                    free(d);
+                    bad = -1;
+                }
+                if (bad) {
                     snprintf(err, errlen, "%s line %u: @expect %s %s\"TEXT\"", name, no, w[0],
                              skip == 2 ? "NAME " : "");
                     return -1;
