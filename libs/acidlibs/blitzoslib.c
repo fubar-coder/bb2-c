@@ -514,16 +514,18 @@ static ULONG locrow(WORD y)
 
 static void drawbox(struct page *p, UBYTE *box)
 {
-    ULONG darklight, midtext;
+    ULONG disabled;                             /* d0: 0 or -1 */
+    ULONG darklight;                            /* d0: the c0:c1 pens */
+    ULONG midtext;
     WORD x, y, x2, y2;
 
-    darklight = 0;
+    disabled = 0;
     btype = BW(box, B_BTYPE);
     if (btype < 0) {
         btype = -btype;
-        darklight = (ULONG)-1;
+        disabled = (ULONG)-1;
     }
-    nable = (WORD)darklight;
+    nable = (WORD)disabled;
     darklight = (ULONG)(UWORD)p->c0 << 16 | (UWORD)p->c1;
     midtext = (ULONG)(UWORD)p->c2 << 16 | (UWORD)p->c3;
     sel = 0;
@@ -605,21 +607,23 @@ static void drawbox(struct page *p, UBYTE *box)
     /* dotext */
     if (btype == 5) {
         /* list */
-        WORD limit = (UWORD)(BW(box, B_H) - 3) >> 3, first;
+        WORD visible = (UWORD)(BW(box, B_H) - 3) >> 3, first;
+        WORD half;                              /* d0w: half the lines */
+        WORD maxfirst;                          /* d0w: the highest first entry */
         UBYTE *entry;
 
-        lines = limit;
-        limit = (UWORD)limit >> 1;
-        first = BW(box, B_VALUE) - limit;
+        lines = visible;
+        half = (UWORD)visible >> 1;
+        first = BW(box, B_VALUE) - half;
         if (first < 0)
             first = 0;
-        limit = BW(box, B_RANGE) - lines;
-        if (limit < 0) {
-            limit = 0;
+        maxfirst = BW(box, B_RANGE) - lines;
+        if (maxfirst < 0) {
+            maxfirst = 0;
             lines = BW(box, B_RANGE);
         }
-        if (first - limit >= 0)                 /* CMP d0,d2:BMI noj */
-            first = limit;
+        if (first - maxfirst >= 0)              /* CMP d0,d2:BMI noj */
+            first = maxfirst;
         count = BW(box, B_VALUE) - first;
         entry = BP(box, B_TEXT);
         while (first-- != 0)                    /* BRA inig: DBRA d2 */
@@ -657,12 +661,14 @@ static void drawbox(struct page *p, UBYTE *box)
     }
     /* oneline */
     {
-        ULONG ptr = BL(box, B_TLEN), len = BL(box, B_TEXT);    /* swapped below */
+        ULONG tlen = BL(box, B_TLEN), tptr = BL(box, B_TEXT); /* d0 d1 */
+        ULONG ptr, len;                         /* d0 d1 after the EXG */
 
-        if (ptr) {
-            ULONG swap = ptr;                   /* EXG d0,d1 */
-            ptr = len;
-            len = swap;
+        ptr = tlen;                             /* no text: d0 = 0, d1 = B_TEXT */
+        len = tptr;
+        if (tlen) {
+            ptr = tptr;                         /* EXG d0,d1 */
+            len = tlen;
             if (btype == 3) {
                 ULONG cx;
                 ULONG row;
@@ -703,14 +709,15 @@ static void drawbox(struct page *p, UBYTE *box)
         text[1] = len;
     }
     {
-        ULONG col = text[1];
+        ULONG tl = text[1];                     /* d0: the text length */
+        ULONG col = tl;                         /* d0.w: the column */
 
-        if (!col)
+        if (!tl)
             goto notext;
         if (btype == 2) {
             BL_SETW(col, (UWORD)(xyxy[0] + 11) >> 3);
         } else {
-            BL_SETW(col, (UWORD)(((UWORD)(-(WORD)col << 3) + xyxy[0] + xyxy[2] + 7)) >> 4);
+            BL_SETW(col, (UWORD)(((UWORD)(-(WORD)tl << 3) + xyxy[0] + xyxy[2] + 7)) >> 4);
         }
         locate(col, locrow(xyxy[1]));
     }
