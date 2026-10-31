@@ -151,13 +151,13 @@ static ULONG BLITZ_ROUTINE listbase_c(ULONG list BL_REG(d0))
 /* dosort: hdr = the list header field of the start item (d6), off = the
    string field (d5), size (d1), a1 = the caller's a1 (BUG(orig) #826: the
    compare string after a swap by priority before any string compare) */
-static ULONG dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *a1)
+static ULONG dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *cmpstr)
 {
     struct Library *util = utillibbase;
-    UWORD d7 = (UWORD)(size - 1);
-    const char *a0;
-    UBYTE *a3;
-    WORD d4;
+    UWORD dbsize = (UWORD)(size - 1);   /* d7: DBRA count */
+    const char *curstr;                 /* a0 */
+    UBYTE *item;                        /* a3 */
+    WORD prioff;                        /* d4: priorityoffset */
 
     if (!util)
         return 0;
@@ -165,78 +165,78 @@ static ULONG dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *a1)
         return 0;
     if (!*(ULONG *)(list + hdr))
         return 0;
-    d4 = priorityoffset;
-    a3 = *(UBYTE **)(list + hdr);
+    prioff = priorityoffset;
+    item = *(UBYTE **)(list + hdr);
     for (;;) {                          /* 'outerloop */
-        if (!NEXT(a3))
+        if (!NEXT(item))
             return (ULONG)-1;
-        lpntr = a3;
-        a0 = FIELD(a3, off, const char *);
-        if (!a0)
+        lpntr = item;
+        curstr = FIELD(item, off, const char *);
+        if (!curstr)
             return 0;
-        priority = FIELD(a3, d4, LONG); /* BUG(orig): also with d4 = -1 (#825) */
+        priority = FIELD(item, prioff, LONG); /* BUG(orig): also with d4 = -1 (#825) */
         for (;;) {                      /* '_nitem */
             UBYTE *p, *q;
             ULONG n;
             LONG r;
 
-            a3 = NEXT(a3);
-            if (!NEXT(a3))
+            item = NEXT(item);
+            if (!NEXT(item))
                 break;
-            if (d4 >= 0) {
-                LONG v = FIELD(a3, d4, LONG);
+            if (prioff >= 0) {
+                LONG v = FIELD(item, prioff, LONG);
                 if (v < priority)
                     continue;
                 if (v > priority)
                     goto doswap;        /* BUG(orig): a1 not loaded (#826) */
             }
-            a1 = FIELD(a3, off, const char *);
-            if (!a1)
+            cmpstr = FIELD(item, off, const char *);
+            if (!cmpstr)
                 return 0;
-            r = Stricmp((CONST_STRPTR)a0, (CONST_STRPTR)a1);
+            r = Stricmp((CONST_STRPTR)curstr, (CONST_STRPTR)cmpstr);
             if (sortdir == 0 ? r <= 0 : r >= 0)
                 continue;
 doswap:
-            a0 = a1;
+            curstr = cmpstr;
             p = lpntr + 8;
-            q = a3 + 8;
-            n = (ULONG)d7 + 1;          /* BUG(orig): size 0 = 65536 (#827) */
+            q = item + 8;
+            n = (ULONG)dbsize + 1;      /* BUG(orig): size 0 = 65536 (#827) */
             do {
                 UBYTE b = *p;
                 *p++ = *q;
                 *q++ = b;
             } while (--n);
         }
-        a3 = NEXT(lpntr);               /* 'exitcheck */
-        if (!NEXT(a3))
+        item = NEXT(lpntr);           /* 'exitcheck */
+        if (!NEXT(item))
             return (ULONG)-1;
     }
 }
 
 /* StringSort list,size[,offset] (d0, d1, d2) */
 static ULONG BLITZ_ROUTINE stringlistsort2_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
-                                             const char *a1 BL_REG(a1))
+                                             const char *cmpstr BL_REG(a1))
 {
-    return dosort(list, size, 0, FIRSTITEM, a1);
+    return dosort(list, size, 0, FIRSTITEM, cmpstr);
 }
 
 static ULONG BLITZ_ROUTINE stringlistsort_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
-                                            UWORD off BL_REG(d2), const char *a1 BL_REG(a1))
+                                            UWORD off BL_REG(d2), const char *cmpstr BL_REG(a1))
 {
-    return dosort(list, size, (WORD)off, FIRSTITEM, a1);
+    return dosort(list, size, (WORD)off, FIRSTITEM, cmpstr);
 }
 
 /* StringSortItem list,size[,offset] */
 static ULONG BLITZ_ROUTINE stringlistsortitem2_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
-                                                 const char *a1 BL_REG(a1))
+                                                 const char *cmpstr BL_REG(a1))
 {
-    return dosort(list, size, 0, CURRITEM, a1);
+    return dosort(list, size, 0, CURRITEM, cmpstr);
 }
 
 static ULONG BLITZ_ROUTINE stringlistsortitem_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
-                                                UWORD off BL_REG(d2), const char *a1 BL_REG(a1))
+                                                UWORD off BL_REG(d2), const char *cmpstr BL_REG(a1))
 {
-    return dosort(list, size, (WORD)off, CURRITEM, a1);
+    return dosort(list, size, (WORD)off, CURRITEM, cmpstr);
 }
 
 /* Registers: the original keeps everything in StringSortDir,
