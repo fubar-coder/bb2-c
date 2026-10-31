@@ -416,7 +416,7 @@ static ULONG BLITZ_ROUTINE centrestring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1)
                                           const ULONG *lens BL_REG(a2))
 {
     const ULONG *sp = lens;
-    ULONG len, d4;
+    ULONG len, front;
     LONG pad;
     UBYTE *d, *mid;
     const UBYTE *src;
@@ -442,12 +442,12 @@ static ULONG BLITZ_ROUTINE centrestring_c(UBYTE *s BL_REG(d0), LONG n BL_REG(d1)
             *--d = *--blitz_string;
         while (--len);
     }
-    d4 = (ULONG)pad >> 1;
-    if (d4) {
+    front = (ULONG)pad >> 1;
+    if (front) {
         do {
             *--d = ' ';
             pad--;
-        } while (--d4);
+        } while (--front);
     }
     d = mid;
     do
@@ -683,7 +683,7 @@ BLITZ_THUNK(ascii, ascii_c, "d1/a0-a1");
 static ULONG instr(UBYTE *s, const UBYTE *f, LONG pos, const ULONG *sp)
 {
     LONG slen, flen, n;
-    const UBYTE *a0, *a1;
+    const UBYTE *scan, *fp;
 
     blitz_string = s;                           /* fix string pointer */
     slen = BL_POPL(sp);                         /* length of string 1 */
@@ -692,15 +692,15 @@ static ULONG instr(UBYTE *s, const UBYTE *f, LONG pos, const ULONG *sp)
         pos++;
         if ((LONG)((ULONG)pos + (ULONG)flen) > slen)    /* CMP.l d2,d5:BGT 'done */
             return 0;                           /* not there */
-        a0 = s + pos;
-        a1 = f;
+        scan = s + pos;
+        fp = f;
         for (n = flen; n; n--) {                /* 'loop2: BEQ 'found */
             if (csense) {                       /* 'norm: CMPM.b (a0)+,(a1)+ */
-                if (*a0++ != *a1++)
+                if (*scan++ != *fp++)
                     break;
             } else {
-                UBYTE c7 = upcase(*a0++), c6 = upcase(*a1++);
-                if (c7 != c6)
+                UBYTE sc = upcase(*scan++), fc = upcase(*fp++);
+                if (sc != fc)
                     break;
             }
         }
@@ -737,7 +737,7 @@ static ULONG BLITZ_ROUTINE replace_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(
     const ULONG *sp = lens;
     ULONG slen, flen, newlen, left, n;
     UBYTE *out;
-    const UBYTE *a0, *a1, *b0, *src;
+    const UBYTE *at, *other, *scan, *src;
 
     slen = BL_POPL(sp);                         /* len 1 */
     flen = BL_POPL(sp);                         /* len 2 */
@@ -745,43 +745,43 @@ static ULONG BLITZ_ROUTINE replace_c(UBYTE *s BL_REG(d0), const UBYTE *f BL_REG(
         return slen;
     sp--;                                       /* SUBQ #4,a2: (a2) = len 3 */
     out = blitz_string;                         /* MOVE.l a3,-(a7) */
-    a0 = s;
+    at = s;
     newlen = 0;
     left = slen;
     while (left) {                              /* 'loop: BEQ 'done */
-        if ((ULONG)a0 + flen > (ULONG)f) {      /* CMP.l d1,d7:BHI 'done2 */
+        if ((ULONG)at + flen > (ULONG)f) {      /* CMP.l d1,d7:BHI 'done2 */
             do {
-                *blitz_string++ = *a0++;
+                *blitz_string++ = *at++;
                 newlen++;
             } while (--left);
             break;
         }
-        b0 = a0;                                /* MOVE.l a0,-(a7) */
-        a1 = f;
+        scan = at;                              /* MOVE.l a0,-(a7) */
+        other = f;
         n = flen;
         if (csense) {
             do {
-                if (*b0++ != *a1++)             /* 'norm: CMPM.b */
+                if (*scan++ != *other++)        /* 'norm: CMPM.b */
                     break;
             } while (--n);
         } else {
             do {
-                UBYTE c0 = upcase(*b0++), c1 = upcase(*a1++);
-                if (c0 != c1)                   /* BNE '_next2 */
+                UBYTE sc = upcase(*scan++), fc = upcase(*other++);
+                if (sc != fc)                   /* BNE '_next2 */
                     break;
             } while (--n);
         }
         if (n) {                                /* '_next: copy one character */
-            *blitz_string++ = *a0++;
+            *blitz_string++ = *at++;
             newlen++;
             left--;
             continue;
         }
-        a1 = r;                                 /* 'match */
+        other = r;                              /* 'match */
         for (n = *sp; n; n--)                   /* 'loop3 */
-            *blitz_string++ = *a1++;
+            *blitz_string++ = *other++;
         newlen += *sp;                          /* 'more: ADD.l (a2),d5 */
-        a0 += flen;
+        at += flen;
         left -= flen;
     }
     src = out;                                  /* 'done: MOVE.l (a7)+,a3 */
