@@ -225,45 +225,45 @@ static ULONG output(const UBYTE *s, ULONG len)
    digit place, 1 (NE) when the format string is used up (d6 < 0).
    d2 = minus flag (0 = number negative, -1 = not). */
 struct ez {
-    UBYTE *a1;          /* output (chars) */
-    UBYTE *a2;          /* format string */
-    UWORD d6;           /* characters left - 1 */
-    UWORD d2;
+    UBYTE *out;         /* a1: output (chars) */
+    UBYTE *form;        /* a2: format string */
+    UWORD left;         /* d6: characters left - 1 */
+    UWORD minus;        /* d2 */
 };
 
 static int ezchar(struct ez *z)
 {
     for (;;) {
-        if ((WORD)--z->d6 < 0)                  /* SUBQ #1,d6:BMI 'noch */
+        if ((WORD)--z->left < 0)                /* SUBQ #1,d6:BMI 'noch */
             return 1;
-        switch (*z->a2) {
+        switch (*z->form) {
         case '#':
         case '0':
             return 0;
         case '-':                               /* 'dominus */
-            *z->a1++ = (WORD)z->d2 >= 0 ? '-' : ' ';
-            z->a2++;                            /* ezchar2 */
+            *z->out++ = (WORD)z->minus >= 0 ? '-' : ' ';
+            z->form++;                          /* ezchar2 */
             break;
         case '+':                               /* 'doplus */
-            *z->a1 = '+';
-            if ((WORD)z->d2 >= 0)
-                *z->a1 = '-';
-            z->a1++;                            /* ezchar3 / MOVE.b (a1)+ */
-            z->a2++;
+            *z->out = '+';
+            if ((WORD)z->minus >= 0)
+                *z->out = '-';
+            z->out++;                           /* ezchar3 / MOVE.b (a1)+ */
+            z->form++;
             break;
         case '.':                               /* 'dopoint */
-            *z->a1++ = '.';
-            z->a2++;
+            *z->out++ = '.';
+            z->form++;
             break;
         case ',':                               /* 'docomma */
-            if (z->a1[-1] == ' ') {             /* 'ezspc */
-                *z->a1++ = ' ';
-                z->a2++;
+            if (z->out[-1] == ' ') {            /* 'ezspc */
+                *z->out++ = ' ';
+                z->form++;
                 break;
             }
             /* fall through */
         default:
-            *z->a1++ = *z->a2++;
+            *z->out++ = *z->form++;
             break;
         }
     }
@@ -271,126 +271,126 @@ static int ezchar(struct ez *z)
 
 /* prtype1 - output the number a0 (d0 characters), formatted with the
    Format string if there is one.  Word arithmetic as in the original. */
-static ULONG prtype1(const UBYTE *a0, ULONG len)
+static ULONG prtype1(const UBYTE *numtext, ULONG len)
 {
     struct ez z;
-    UWORD d0, d1w, d3, d4, d5, d6;
-    ULONG d1 = 0;                               /* after the last copied digit */
-    UBYTE *a1;
+    UWORD nchars, point, lead, trail, count, n;
+    ULONG last = 0;                             /* after the last copied digit */
+    UBYTE *out;
     const UBYTE *p;
 
     if (!pl.formlen)                            /* MOVE formlen(pc),d1:BEQ 'done */
-        return output(a0, len);
+        return output(numtext, len);
 
-    d0 = len;
-    d1w = 0xffff;                               /* pos of point */
-    z.d2 = 0xffff;                              /* pos of minus */
-    if (*a0 == '-') {
-        z.d2 = 0;
-        a0++;
-        d0--;
+    nchars = len;
+    point = 0xffff;                             /* pos of point */
+    z.minus = 0xffff;                           /* pos of minus */
+    if (*numtext == '-') {
+        z.minus = 0;
+        numtext++;
+        nchars--;
     }
-    d3 = 0;                                     /* leading digits */
-    d4 = 0;                                     /* trailing digits */
-    d5 = 0;                                     /* pos counter */
-    d6 = d0 - 1;
-    p = a0;
+    lead = 0;                                   /* leading digits */
+    trail = 0;                                  /* trailing digits */
+    count = 0;                                  /* pos counter */
+    n = nchars - 1;
+    p = numtext;
     do {
         if (*p == '.')
-            d1w = d5;
+            point = count;
         else {
-            d3++;
-            if ((WORD)d1w >= 0) {
-                d3--;
-                d4++;
+            lead++;
+            if ((WORD)point >= 0) {
+                lead--;
+                trail++;
             }
         }
         p++;
-        d5++;
-    } while (--d6 != 0xffff);                   /* DBF d6,'loop */
+        count++;
+    } while (--n != 0xffff);                    /* DBF d6,'loop */
 
     /* OK, now we copy to 'chars' buffer. */
-    a1 = PL_CHARS;
-    z.a2 = PL_FORM;
-    z.d6 = pl.formlen;
+    out = PL_CHARS;
+    z.form = PL_FORM;
+    z.left = pl.formlen;
 
     /* Leading chars first.... */
-    d5 = pl.formlead - d3;
-    if ((WORD)d5 < 0) {                         /* Overflow! */
-        *a1++ = '?';
-        d5 = -d5;
-        a0 += (WORD)d5;                         /* ADD d5,a0 (sign extended) */
-        d0 -= d5;
-        d5 = pl.formlead;
+    count = pl.formlead - lead;
+    if ((WORD)count < 0) {                      /* Overflow! */
+        *out++ = '?';
+        count = -count;
+        numtext += (WORD)count;                 /* ADD d5,a0 (sign extended) */
+        nchars -= count;
+        count = pl.formlead;
     }
-    d3 = d5;
-    d5 = pl.formlead;
-    if (d5) {
-        d5--;
+    lead = count;
+    count = pl.formlead;
+    if (count) {
+        count--;
         do {                                    /* 'leadloop */
-            z.a1 = a1;
+            z.out = out;
             if (ezchar(&z))
                 goto alldone_z;
-            a1 = z.a1;
-            if (*z.a2++ == '#') {
-                if ((WORD)--d3 >= 0 || (WORD)--d0 < 0)
-                    *a1++ = ' ';                /* 'putspc */
+            out = z.out;
+            if (*z.form++ == '#') {
+                if ((WORD)--lead >= 0 || (WORD)--nchars < 0)
+                    *out++ = ' ';               /* 'putspc */
                 else {
-                    *a1++ = *a0++;
-                    d1 = (ULONG)a1;
+                    *out++ = *numtext++;
+                    last = (ULONG)out;
                 }
             } else {                            /* 'iszero */
-                if ((WORD)--d3 >= 0)
-                    *a1++ = '0';                /* 'putzero */
-                else if ((WORD)--d0 < 0)
-                    *a1++ = ' ';                /* -> 'putspc */
+                if ((WORD)--lead >= 0)
+                    *out++ = '0';               /* 'putzero */
+                else if ((WORD)--nchars < 0)
+                    *out++ = ' ';               /* -> 'putspc */
                 else {
-                    *a1++ = *a0++;
-                    d1 = (ULONG)a1;
+                    *out++ = *numtext++;
+                    last = (ULONG)out;
                 }
             }
-        } while (--d5 != 0xffff);               /* DBF d5,'leadloop */
+        } while (--count != 0xffff);            /* DBF d5,'leadloop */
     }
 
     /* 'dotrail */
-    if ((WORD)--d0 >= 0) {
-        if (*a0++ == '.')
+    if ((WORD)--nchars >= 0) {
+        if (*numtext++ == '.')
             goto askip;
-        a0--;
+        numtext--;
     }
-    d0++;                                       /* 'askip2 */
+    nchars++;                                   /* 'askip2 */
 askip:
-    d5 = pl.formtrail;
-    z.a1 = a1;
-    if (d5) {
-        d5--;
+    count = pl.formtrail;
+    z.out = out;
+    if (count) {
+        count--;
         do {                                    /* 'trailloop */
             if (ezchar(&z))
                 goto alldone2;
-            if (*z.a2++ == '#') {
-                if ((WORD)--d4 < 0 || (WORD)--d0 < 0)
-                    *z.a1++ = ' ';              /* 'putspc2 */
+            if (*z.form++ == '#') {
+                if ((WORD)--trail < 0 || (WORD)--nchars < 0)
+                    *z.out++ = ' ';             /* 'putspc2 */
                 else {
-                    *z.a1++ = *a0++;
-                    d1 = (ULONG)z.a1;
+                    *z.out++ = *numtext++;
+                    last = (ULONG)z.out;
                 }
             } else {
-                if ((WORD)--d4 < 0 || (WORD)--d0 < 0)
-                    *z.a1++ = '0';              /* 'putzero2 */
+                if ((WORD)--trail < 0 || (WORD)--nchars < 0)
+                    *z.out++ = '0';             /* 'putzero2 */
                 else {
-                    *z.a1++ = *a0++;
-                    d1 = (ULONG)z.a1;
+                    *z.out++ = *numtext++;
+                    last = (ULONG)z.out;
                 }
             }
-        } while (--d5 != 0xffff);
+        } while (--count != 0xffff);
     }
     while (!ezchar(&z))                         /* 'doexcess: BSR ezchar:BEQ */
         ;
 alldone2:
     /* round up if the next digit is >= 5 (TST.l d3: the upper word of d3
        is always 0) */
-    if ((WORD)--d0 >= 0 && d3 && *a0 >= '5') {
-        UBYTE *q = (UBYTE *)d1;                 /* 0 if no digit was copied */
+    if ((WORD)--nchars >= 0 && lead && *numtext >= '5') {
+        UBYTE *q = (UBYTE *)last;               /* 0 if no digit was copied */
 
         for (;;) {                              /* 'sssl */
             q = (UBYTE *)((ULONG)q - 1);
@@ -404,20 +404,20 @@ alldone2:
         }
     }
 alldone_z:
-    a1 = z.a1;
-    return output(PL_CHARS, a1 - PL_CHARS);     /* SUB.l a0,a1:MOVE.l a1,d0 */
+    out = z.out;
+    return output(PL_CHARS, out - PL_CHARS);    /* SUB.l a0,a1:MOVE.l a1,d0 */
 }
 
 /* prtype2 - a0 = buffer, null terminated */
-static ULONG prtype2(const UBYTE *a0)
+static ULONG prtype2(const UBYTE *buf)
 {
-    const UBYTE *a1 = a0;
+    const UBYTE *p = buf;
     ULONG n = (ULONG)-1;
 
     do
         n++;
-    while (*a1++);
-    return prtype1(a0, n);
+    while (*p++);
+    return prtype1(buf, n);
 }
 
 /* doformat - Format FormatString: copy the string to form, count the
@@ -427,36 +427,36 @@ static void BLITZ_ROUTINE doformat_c(const UBYTE *s BL_REG(d0),
                                      const UBYTE *args BL_REG(a2))
 {
     const UBYTE *sp = args;
-    UBYTE *a1 = PL_FORM;
-    UWORD d1 = BL_POPL(sp), d2, d3, d4, d5;
+    UBYTE *out = PL_FORM;
+    UWORD n = BL_POPL(sp), point, lead, trail, count;
 
-    pl.formlen = d1;
-    if (!d1)
+    pl.formlen = n;
+    if (!n)
         return;
-    d1--;
-    d2 = 0xffff;                                /* pos of decimal point */
-    d3 = 0;                                     /* number of leading chars */
-    d4 = 0;                                     /* number of trailing... */
-    d5 = 0;                                     /* counter (never counted) */
+    n--;
+    point = 0xffff;                             /* pos of decimal point */
+    lead = 0;                                   /* number of leading chars */
+    trail = 0;                                  /* number of trailing... */
+    count = 0;                                  /* counter (never counted) */
     do {
         UBYTE c = *s++;
 
-        *a1++ = c;                              /* may run over formlen ... */
+        *out++ = c;                             /* may run over formlen ... */
         if (c == '.')
-            d2 = d5;
+            point = count;
         else if (c == '#' || c == '0') {
-            d3++;
-            if ((WORD)d2 >= 0) {
-                d3--;
-                d4++;
+            lead++;
+            if ((WORD)point >= 0) {
+                lead--;
+                trail++;
             }
         }
-    } while (--d1 != 0xffff);
+    } while (--n != 0xffff);
     /* MOVE d2,decpos:MOVE d3,formlead:MOVE d4,formtrail (through the
        struct: the loop may have written over them) */
-    *(volatile UWORD *)&pl.decpos = d2;
-    *(volatile UWORD *)&pl.formlead = d3;
-    *(volatile UWORD *)&pl.formtrail = d4;
+    *(volatile UWORD *)&pl.decpos = point;
+    *(volatile UWORD *)&pl.formlead = lead;
+    *(volatile UWORD *)&pl.formtrail = trail;
 }
 /* the original keeps d0 (MOVE.l d0,a0) */
 BLITZ_THUNK(doformat, doformat_c, "d0");
@@ -478,44 +478,44 @@ BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /* makeval3 - d1+1 digits of d0 backwards before a0 (DIVU #10 per digit;
    d0 keeps the quotient) */
-static UBYTE *makeval3(UBYTE *a0, ULONG *d0, UWORD d1)
+static UBYTE *makeval3(UBYTE *dst, ULONG *value, UWORD n)
 {
-    ULONG v = *d0;
+    ULONG v = *value;
 
     do {
         v = bl_divu_w(v, 10);                   /* DIVU #10,d0 */
         v = BL_SWAP(v);
         BL_SETW(v, (UWORD)v | 48);              /* OR #48,d0 */
-        *--a0 = (UBYTE)v;
+        *--dst = (UBYTE)v;
         v = BL_SWAP(v & 0xffff0000);            /* CLR d0:SWAP d0 */
-    } while (--d1 != 0xffff);
-    *d0 = v;
-    return a0;
+    } while (--n != 0xffff);
+    *value = v;
+    return dst;
 }
 
 /* makeval2 - makeval3 without leading zeros ("0" if all are zero; the
    string behind the digits ends the scan) */
-static UBYTE *makeval2(UBYTE *a0, ULONG d0, UWORD d1)
+static UBYTE *makeval2(UBYTE *dst, ULONG value, UWORD n)
 {
-    a0 = makeval3(a0, &d0, d1);
-    while (*a0++ == '0')
+    dst = makeval3(dst, &value, n);
+    while (*dst++ == '0')
         ;
-    if (!*--a0)
-        *--a0 = '0';
-    return a0;
+    if (!*--dst)
+        *--dst = '0';
+    return dst;
 }
 
 /* makeval - signed d0 with at most d1+1 digits, then output */
-static ULONG makeval(ULONG d0, UWORD d1)
+static ULONG makeval(ULONG value, UWORD n)
 {
-    UBYTE *a0 = PL_NUMBUFFF;
+    UBYTE *dst = PL_NUMBUFFF;
 
-    if ((LONG)d0 < 0) {
-        a0 = makeval2(a0, -d0, d1);
-        *--a0 = '-';
-        return prtype2(a0);
+    if ((LONG)value < 0) {
+        dst = makeval2(dst, -value, n);
+        *--dst = '-';
+        return prtype2(dst);
     }
-    return prtype2(makeval2(a0, d0, d1));
+    return prtype2(makeval2(dst, value, n));
 }
 
 static const ULONG divisors[10] = {
@@ -525,87 +525,87 @@ static const ULONG divisors[10] = {
 
 /* makelong - decimal of a long to numbuff (-$80000000 stays negative
    after NEG and is printed unsigned: "-2147483648") */
-static void makelong(ULONG d0)
+static void makelong(ULONG value)
 {
-    UBYTE *a0 = PL_NUMBUFF;
-    int d1 = 0;
+    UBYTE *dst = PL_NUMBUFF;
+    int started = 0;
     WORD i;
 
-    if ((LONG)d0 < 0) {
-        *a0++ = '-';
-        d0 = -d0;
+    if ((LONG)value < 0) {
+        *dst++ = '-';
+        value = -value;
     }
     for (i = 9; i >= 0; i--) {
-        UBYTE d3 = '0';
+        UBYTE ch = '0';
 
-        while (d0 >= divisors[i]) {             /* CMP.l:BCS (unsigned) */
-            d0 -= divisors[i];
-            d3++;
+        while (value >= divisors[i]) {          /* CMP.l:BCS (unsigned) */
+            value -= divisors[i];
+            ch++;
         }
-        if (d3 != '0' || d1) {
-            *a0++ = d3;
-            d1 = 1;
+        if (ch != '0' || started) {
+            *dst++ = ch;
+            started = 1;
         }
     }
-    if (!d1)
-        *a0++ = '0';
-    *a0 = 0;
+    if (!started)
+        *dst++ = '0';
+    *dst = 0;
 }
 
-static ULONG plong2(ULONG d0)
+static ULONG plong2(ULONG value)
 {
-    makelong(d0);
+    makelong(value);
     return prtype2(PL_NUMBUFF);
 }
 
-static ULONG pbyte2(ULONG d0)
+static ULONG pbyte2(ULONG value)
 {
-    return makeval((LONG)(BYTE)d0, 2);          /* EXT d0:EXT.l d0 */
+    return makeval((LONG)(BYTE)value, 2);       /* EXT d0:EXT.l d0 */
 }
 
-static ULONG pword2(ULONG d0)
+static ULONG pword2(ULONG value)
 {
-    return makeval((LONG)(WORD)d0, 4);          /* EXT.l d0 */
+    return makeval((LONG)(WORD)value, 4);       /* EXT.l d0 */
 }
 
 /* 'quick3 - d2 = what to print (not negative, except $80000000): fraction
    "." + 4 digits with trailing zeros removed, then the integer part */
-static UBYTE *quick3(ULONG d2)
+static UBYTE *quick3(ULONG value)
 {
-    UBYTE *a0 = PL_NUMBUFFF;
-    ULONG d0 = (UWORD)d2;
+    UBYTE *dst = PL_NUMBUFFF;
+    ULONG frac = (UWORD)value;
 
-    if (d0) {
-        UBYTE *a1;
+    if (frac) {
+        UBYTE *p;
 
-        d0 = (ULONG)(UWORD)d0 * 10000;          /* MULU #10000,d0 */
-        if ((UWORD)d0 >= 0x8000)                /* CMP #$8000,d1:BCS */
-            d0 = (d0 >> 16) + 1;
+        frac = (ULONG)(UWORD)frac * 10000;      /* MULU #10000,d0 */
+        if ((UWORD)frac >= 0x8000)              /* CMP #$8000,d1:BCS */
+            frac = (frac >> 16) + 1;
         else
-            d0 >>= 16;
-        a0 = makeval3(PL_NUMBUFFF, &d0, 3);
-        *--a0 = '.';
-        a1 = PL_NUMBUFFF;
+            frac >>= 16;
+        dst = makeval3(PL_NUMBUFFF, &frac, 3);
+        *--dst = '.';
+        p = PL_NUMBUFFF;
         /* 'f0l: the "." test compares the same '0' again, so it never
            stops at the point (BUG(orig) (#234): "x." for .0000) */
-        while (a1[-1] == '0' && *--a1 != '.')
+        while (p[-1] == '0' && *--p != '.')
             ;
-        *a1 = 0;                                /* 'skip2 */
+        *p = 0;                                 /* 'skip2 */
     }
-    return makeval2(a0, d2 >> 16, 4);           /* 'skip3 */
+    return makeval2(dst, value >> 16, 4);       /* 'skip3 */
 }
 
-static ULONG pquick2(ULONG d0)
+static ULONG pquick2(ULONG value)
 {
-    ULONG d2 = d0;
-    UBYTE *a0;
+    ULONG quick = value;
+    UBYTE *str;
 
-    if ((LONG)d2 < 0) {
-        a0 = quick3(-d2);
-        *--a0 = '-';
+    if ((LONG)quick < 0) {
+        str = quick3(-quick);
+        *--str = '-';
     } else
-        a0 = quick3(d2);
-    return prtype2(a0);
+        str = quick3(quick);
+    return prtype2(str);
 }
 
 /* ------------------------------------------------------- ffptoascii */
@@ -614,192 +614,192 @@ static ULONG pquick2(ULONG d0)
    null terminated string; mode = FloatMode (<0 fixed point, 0 guess, >0
    exponent form).  Integer arithmetic only (no mathffp): 7 digits from
    the table of powers of ten, rounding with $80 below the mantissa. */
-static UBYTE *ffptoascii(ULONG d0, UWORD mode)
+static UBYTE *ffptoascii(ULONG num, UWORD mode)
 {
-    UBYTE *a0 = FA_BUF1, *a1, *start;
-    UBYTE *a3;
+    UBYTE *buf = FA_BUF1, *out, *start;
+    UBYTE *ten;
     UBYTE b;
-    WORD d1;
-    UWORD d2, d3;
+    WORD bexp;
+    UWORD edig, dexp;
     int i;
 
-    if (!(UBYTE)d0)                             /* TST.b d0:BNE */
-        d0 = 65;                                /* MOVEQ #65,d0 */
-    a0[0] = '+';                                /* MOVE #$2b2e,0(a0) */
-    a0[1] = '.';
-    b = (UBYTE)d0;
+    if (!(UBYTE)num)                            /* TST.b d0:BNE */
+        num = 65;                               /* MOVEQ #65,d0 */
+    buf[0] = '+';                               /* MOVE #$2b2e,0(a0) */
+    buf[1] = '.';
+    b = (UBYTE)num;
     if (b & 0x80)
-        a0[0] += 2;                             /* '-' */
+        buf[0] += 2;                            /* '-' */
     b = (UBYTE)(b + b) ^ 0x80;                  /* ADD.b d1,d1:EOR.b #$80 */
-    d0 = (d0 & ~0xffUL) | 0x80;                 /* MOVE.b #$80,d0 */
-    d1 = (WORD)(BYTE)b >> 1;                    /* EXT d1:ASR #1,d1 */
+    num = (num & ~0xffUL) | 0x80;               /* MOVE.b #$80,d0 */
+    bexp = (WORD)(BYTE)b >> 1;                  /* EXT d1:ASR #1,d1 */
 
     /* find the power of ten <= the number: a3 -> entry, d3 = exponent+1 */
-    d3 = 1;
-    a3 = FA_ONE;
-    if (d1 < (WORD)RDW(a3)) {
+    dexp = 1;
+    ten = FA_ONE;
+    if (bexp < (WORD)RDW(ten)) {
         do {
-            a3 += 6;
-            d3--;
-        } while (d1 < (WORD)RDW(a3));
-        if (d1 != (WORD)RDW(a3))
+            ten += 6;
+            dexp--;
+        } while (bexp < (WORD)RDW(ten));
+        if (bexp != (WORD)RDW(ten))
             goto found;
-    } else if (d1 > (WORD)RDW(a3)) {
+    } else if (bexp > (WORD)RDW(ten)) {
         do {
-            a3 -= 6;
-            d3++;
-        } while (d1 > (WORD)RDW(a3));
-        if (d1 != (WORD)RDW(a3))
+            ten -= 6;
+            dexp++;
+        } while (bexp > (WORD)RDW(ten));
+        if (bexp != (WORD)RDW(ten))
             goto next;
     }
-    if (d0 >= RDL(a3 + 2))                      /* CMP.l 2(a3),d0:BCC */
+    if (num >= RDL(ten + 2))                    /* CMP.l 2(a3),d0:BCC */
         goto found;
 next:
-    a3 += 6;
-    d3--;
+    ten += 6;
+    dexp--;
 found:
     /* "E+00" (computed, never used) */
-    a0[10] = 'E';
-    a0[11] = '+';
-    a0[12] = '0';
-    a0[13] = '0';
-    d2 = d3;
-    if ((WORD)d2 < 0) {
-        d2 = -d2;
-        a0[11] += 2;
+    buf[10] = 'E';
+    buf[11] = '+';
+    buf[12] = '0';
+    buf[13] = '0';
+    edig = dexp;
+    if ((WORD)edig < 0) {
+        edig = -edig;
+        buf[11] += 2;
     }
-    if (d2 >= 10) {
-        a0[12] += 1;
-        d2 -= 10;
+    if (edig >= 10) {
+        buf[12] += 1;
+        edig -= 10;
     }
-    a0[13] |= (UBYTE)d2;
+    buf[13] |= (UBYTE)edig;
 
     /* 7 digits: subtract the power of ten, shifted to the number's
        exponent, until it borrows */
-    a1 = a0 + 2;
-    if ((LONG)d0 >= 0 || !a3[5])                /* exact power: no rounding */
-        d0 &= ~0xffUL;
+    out = buf + 2;
+    if ((LONG)num >= 0 || !ten[5])              /* exact power: no rounding */
+        num &= ~0xffUL;
     for (i = 0; i < 7; i++) {
-        UWORD sh = d1 - RDW(a3);
-        ULONG d5 = RDL(a3 + 2);
-        UWORD d4 = 9;
+        UWORD sh = bexp - RDW(ten);
+        ULONG power = RDL(ten + 2);
+        UWORD count = 9;
         int borrow;
 
-        a3 += 6;
+        ten += 6;
         sh &= 63;                               /* LSR.l d4,d5: count mod 64 */
-        d5 = sh >= 32 ? 0 : d5 >> sh;
+        power = sh >= 32 ? 0 : power >> sh;
         for (;;) {                              /* SUB.l d5,d0:DBCS d4 */
-            borrow = d0 < d5;
-            d0 -= d5;
-            if (borrow || --d4 == 0xffff)
+            borrow = num < power;
+            num -= power;
+            if (borrow || --count == 0xffff)
                 break;
         }
         if (!borrow)
-            d4 &= 0xff00;                       /* CLR.b d4 */
-        d0 += d5;
-        *a1++ = (UBYTE)-(UBYTE)((UBYTE)d4 - 9) | '0';
+            count &= 0xff00;                    /* CLR.b d4 */
+        num += power;
+        *out++ = (UBYTE)-(UBYTE)((UBYTE)count - 9) | '0';
     }
-    *a1++ = '0';
+    *out++ = '0';
 
     if ((WORD)mode < 0
-        || (mode == 0 && (d3 < 8 || d3 >= 0xfff8))) {
+        || (mode == 0 && (dexp < 8 || dexp >= 0xfff8))) {
         /* fixed point */
-        UBYTE *b2 = FA_BUF2;
+        UBYTE *fixbuf = FA_BUF2;
 
-        b2[25] = '0';
+        fixbuf[25] = '0';
         for (i = 0; i < 24; i++) {
-            b2[i] = '0';
-            b2[26 + i] = '0';
+            fixbuf[i] = '0';
+            fixbuf[26 + i] = '0';
         }
-        b2[24] = '.';
-        a0 = b2 + 24;
-        if ((WORD)d3 < 0)
-            a0++;
-        a0 -= (WORD)d3;                         /* SUBA.w d3,a0 */
-        a1 = FA_BUF1 + 2;
-        start = a0;
+        fixbuf[24] = '.';
+        buf = fixbuf + 24;
+        if ((WORD)dexp < 0)
+            buf++;
+        buf -= (WORD)dexp;                      /* SUBA.w d3,a0 */
+        out = FA_BUF1 + 2;
+        start = buf;
         for (i = 0; i < 8; i++) {
-            if (*a0 == '.')
-                a0++;
-            *a0++ = *a1++;
+            if (*buf == '.')
+                buf++;
+            *buf++ = *out++;
         }
-        if (a0 >= b2 + 25) {                    /* CMPA.l #$89b,a0:BCS */
+        if (buf >= fixbuf + 25) {               /* CMPA.l #$89b,a0:BCS */
             for (;;) {                          /* strip trailing zeros */
-                if (*--a0 != '0')
+                if (*--buf != '0')
                     break;
-                *a0 = 0;
+                *buf = 0;
             }
-            if (*a0 != '.') {
-                *++a0 = 0;
+            if (*buf != '.') {
+                *++buf = 0;
                 goto sign;
             }
-            if (!(a0 > start)) {                /* 0: "0" without sign */
-                a0[0] = '0';
-                a0[1] = 0;
-                return a0;
+            if (!(buf > start)) {               /* 0: "0" without sign */
+                buf[0] = '0';
+                buf[1] = 0;
+                return buf;
             }
         }
-        b2[24] = 0;                             /* integer only */
+        fixbuf[24] = 0;                         /* integer only */
 sign:
-        a0 = start;
-        if (a0 >= b2 + 24)                      /* nothing before the point */
-            a0 = b2 + 24;
-        *--a0 = FA_BUF1[0];
-        if (*a0 != '-')
-            a0++;
-        return a0;
+        buf = start;
+        if (buf >= fixbuf + 24)                 /* nothing before the point */
+            buf = fixbuf + 24;
+        *--buf = FA_BUF1[0];
+        if (*buf != '-')
+            buf++;
+        return buf;
     }
 
     /* exponent form: d.dddddd without trailing zeros, E+-n */
-    a0 = FA_BUF1;
-    a0[1] = a0[2];
-    a0[2] = '.';
-    while (*--a1 == '0')
+    buf = FA_BUF1;
+    buf[1] = buf[2];
+    buf[2] = '.';
+    while (*--out == '0')
         ;
-    if (*a1++ == '.') {
-        a1--;
-        if (a0[1] == '0')
+    if (*out++ == '.') {
+        out--;
+        if (buf[1] == '0')
             goto term;
     }
-    d3--;
-    *a1++ = 'E';
-    *a1++ = '+';
-    if ((WORD)d3 < 0) {
-        a1[-1] = '-';
-        d3 = -d3;
+    dexp--;
+    *out++ = 'E';
+    *out++ = '+';
+    if ((WORD)dexp < 0) {
+        out[-1] = '-';
+        dexp = -dexp;
     }
     {
-        ULONG q = bl_divu_w(d3, 10);            /* MOVEQ #0,d2:MOVE d3,d2:DIVU */
+        ULONG q = bl_divu_w(dexp, 10);          /* MOVEQ #0,d2:MOVE d3,d2:DIVU */
 
-        d2 = (UWORD)q;
-        if (d2)
-            *a1++ = d2 + '0';
-        d3 -= d2 * 10;
-        *a1++ = d3 + '0';
+        edig = (UWORD)q;
+        if (edig)
+            *out++ = edig + '0';
+        dexp -= edig * 10;
+        *out++ = dexp + '0';
     }
 term:
-    *a1 = 0;
-    if (*a0 != '-')
-        a0++;
-    return a0;
+    *out = 0;
+    if (*buf != '-')
+        buf++;
+    return buf;
 }
 
 /* pfloat2 - FloatMode, or always fixed point with a Format string */
-static ULONG pfloat2(ULONG d0)
+static ULONG pfloat2(ULONG value)
 {
     UWORD mode = pl.floatmode;
 
     if (pl.formlen)
         mode = 0xffff;
-    return prtype2(ffptoascii(d0, mode));
+    return prtype2(ffptoascii(value, mode));
 }
 
 /* ------------------------------------------------------- Print, NPrint */
 
 /* ptype - one argument of type t, value(s) from the a2 stack */
-static ULONG ptype(UWORD t, const UBYTE **sp)
+static ULONG ptype(UWORD type, const UBYTE **sp)
 {
-    switch (t) {
+    switch (type) {
     case 4:
         return pquick2(BL_POPL(*sp));
     case 3:
@@ -826,9 +826,9 @@ void BLITZ_ROUTINE doprint(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2))
 
     n--;                                        /* SUBQ #1,d7 */
     do {
-        UWORD t = BL_POPW(sp);
+        UWORD type = BL_POPW(sp);
 
-        ptype(t, &sp);
+        ptype(type, &sp);
     } while (--n != 0xffff);                    /* DBF d7,'loop */
 }
 
@@ -885,22 +885,22 @@ __asm__("   .text\n   .even\n"
         "   rts\n");
 
 /* wstr - the value d2 of type (popped) as Print would output it */
-static ULONG wstr(ULONG d2, const UBYTE *args)
+static ULONG wstr(ULONG value, const UBYTE *args)
 {
     const UBYTE *sp = args;
 
     switch (BL_POPW(sp)) {
     case 4:
-        return pquick2(d2);
+        return pquick2(value);
     case 3:
     case 6:
-        return plong2(d2);
+        return plong2(value);
     case 2:
-        return pword2(d2);
+        return pword2(value);
     case 5:
-        return pfloat2(d2);
+        return pfloat2(value);
     default:                                    /* also strings */
-        return pbyte2(d2);
+        return pbyte2(value);
     }
 }
 
