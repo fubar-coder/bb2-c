@@ -48,6 +48,7 @@
  * upper word of d1 - but the size is unused (globfree needs none).
  */
 #include "blitzlib.h"
+#include <graphics/gfx.h>
 
 /* entry points (thunks, below) */
 void _chunkybitmap(void), _c2p(void), _p2c(void), _chunkyloadbitmap(void);
@@ -115,12 +116,23 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 8, 4);
 
 /* ------------------------------------------------------------ the object */
 
-#define OW(o, off) (*(WORD *)((UBYTE *)(o) + (off)))
-#define OL(o, off) (*(ULONG *)((UBYTE *)(o) + (off)))
-#define CW 0                                    /* width.w */
-#define CH 2                                    /* height.w */
-#define CD 4                                    /* depth.w */
-#define CDATA 8                                 /* the data */
+/* the chunky object (!libfin: 16 bytes) */
+struct chunky {
+    WORD width;                                 /* +0 */
+    WORD height;                                /* +2 */
+    WORD depth;                                 /* +4: always 8 */
+    UWORD unused6;                              /* +6 */
+    ULONG data;                                 /* +8: the data (globalloc, MEMF_CLEAR);
+                                                   an address as a long: as a
+                                                   pointer GCC builds other loops */
+    ULONG unused12;                             /* +12 */
+};
+static_assert(sizeof(struct chunky) == 16);
+
+/* the longs the original addresses across members: at +0 (width and
+   height) and at +6 (the unused word and the data pointer's upper word) */
+#define WIDTHHEIGHT(o) (*(ULONG *)&(o)->width)
+#define AT6(o) (*(ULONG *)&(o)->unused6)
 
 #define CIAA_PRA (*(volatile UBYTE *)0xbfe001)
 
@@ -133,44 +145,44 @@ static void BLITZ_ROUTINE nothing_c(void)
    lmullib (the width extended twice, d1's upper word the caller's - no
    defect, the product is unused), globfree, the fields cleared, the LED
    toggled; callerd1 = the caller's d1 */
-static void freechunky(UBYTE *o, ULONG callerd1)
+static void freechunky(struct chunky *o, ULONG callerd1)
 {
     struct bl_regs r;
 
-    if (!OL(o, CDATA))
+    if (!o->data)
         return;
-    r.d0 = (ULONG)(LONG)OW(o, CW);
-    r.d1 = (callerd1 & 0xffff0000UL) | (UWORD)OW(o, CH);
+    r.d0 = (ULONG)(LONG)o->width;
+    r.d1 = (callerd1 & 0xffff0000UL) | (UWORD)o->height;
     r.a0 = (ULONG)o;
     r.a1 = 0;
     BLITZ_ALIBJSR(TOK_lmultiply, r);
-    r.a1 = OL(o, CDATA);
+    r.a1 = o->data;
     BLITZ_ALIBJSR(TOK_globfree, r);
-    OL(o, CW) = 0;
-    OW(o, CD) = 0;
-    OL(o, CDATA) = 0;
+    WIDTHHEIGHT(o) = 0;
+    o->depth = 0;
+    o->data = 0;
     CIAA_PRA ^= 2;                              /* BCHG #1,$bfe001: BUG(orig) (#886) */
 }
 
 /* the object manager's free routine: a3 = the object */
-static void BLITZ_ROUTINE dofreechunkybitmap_c(ULONG callerd1 BL_REG(d1), UBYTE *o BL_REG(a3))
+static void BLITZ_ROUTINE dofreechunkybitmap_c(ULONG callerd1 BL_REG(d1), struct chunky *o BL_REG(a3))
 {
     freechunky(o, callerd1);
 }
 
 /* ChunkyBitmap n,width,height (d1, d2; a0 = the object) */
 static void BLITZ_ROUTINE chunkybitmap_c(ULONG w BL_REG(d1), ULONG h BL_REG(d2),
-                                         UBYTE *o BL_REG(a0))
+                                         struct chunky *o BL_REG(a0))
 {
     struct bl_regs r;
 
     /* TST.l 6(a0): the unused word and the pointer's upper word,
        BUG(orig) (#885) */
-    if (*(ULONG *)(o + 6))
+    if (AT6(o))
         freechunky(o, w);
-    OW(o, CW) = (WORD)w;
-    OW(o, CH) = (WORD)h;
-    OW(o, CD) = 8;                              /* depth: fixed to 8 */
+    o->width = (WORD)w;
+    o->height = (WORD)h;
+    o->depth = 8;                               /* depth: fixed to 8 */
     r.d0 = (ULONG)(LONG)(WORD)w;
     r.d1 = (ULONG)(LONG)(WORD)h;
     r.a0 = (ULONG)o;
@@ -178,26 +190,26 @@ static void BLITZ_ROUTINE chunkybitmap_c(ULONG w BL_REG(d1), ULONG h BL_REG(d2),
     BLITZ_ALIBJSR(TOK_lmultiply, r);
     r.d1 = 0x10000;                             /* MEMF_CLEAR */
     if (!BLITZ_ALIBJSR(TOK_globalloc, r)) {
-        OL(o, CW) = 0;                          /* 'cantalloc */
-        OW(o, CD) = 0;
+        WIDTHHEIGHT(o) = 0;                     /* 'cantalloc */
+        o->depth = 0;
         return;
     }
-    OL(o, CDATA) = r.d0;
+    o->data = r.d0;
 }
 
 /* ChunkyData(n) (a0 = the object) */
-static ULONG BLITZ_ROUTINE chunkydata_c(UBYTE *o BL_REG(a0))
+static ULONG BLITZ_ROUTINE chunkydata_c(struct chunky *o BL_REG(a0))
 {
-    return OL(o, CDATA);
+    return o->data;
 }
 
 /* RaycastSky n,x,height,column,&texture (d1-d4; a0 = the object):
    height bytes of the texture column to the chunky column, 320 apart */
 static void BLITZ_ROUTINE raycastsky_c(ULONG x BL_REG(d1), ULONG h BL_REG(d2),
                                        ULONG col BL_REG(d3), ULONG tex BL_REG(d4),
-                                       UBYTE *o BL_REG(a0))
+                                       struct chunky *o BL_REG(a0))
 {
-    UBYTE *dst = (UBYTE *)OL(o, CDATA) + (WORD)x;       /* ADD.w d1,a0 */
+    UBYTE *dst = (UBYTE *)o->data + (WORD)x;           /* ADD.w d1,a0 */
     const UBYTE *src = (const UBYTE *)tex + (WORD)col;  /* ADD.w d3,a1 */
     UWORD n = (UWORD)(h - 1);                           /* SUBQ.w #1: DBRA */
 
@@ -224,19 +236,21 @@ static ULONG merge2(ULONG x)
 
 /* ChunkyToPlanar chunky,bitmap (a0 = the chunky object, a1 = the
    bitmap): 81920 pixels to the 8 planes from the bitmap's first plane */
-static void BLITZ_ROUTINE c2p_c(UBYTE *o BL_REG(a0), UBYTE *bm BL_REG(a1))
+static void BLITZ_ROUTINE c2p_c(struct chunky *o BL_REG(a0), struct BitMap *bm BL_REG(a1))
 {
     const ULONG *src;
     ULONG *pl;
     UBYTE buf[8][4];                            /* 4 bytes per plane */
     UWORD outer;
 
-    if (OW(bm, 4) < 8)                          /* CMPI.w #8,4(a1): BLT */
+    /* CMPI.w #8,4(a1): BLT - Flags and Depth as one signed word,
+       BUG(orig) (#883) */
+    if (*(WORD *)&bm->Flags < 8)
         return;
-    pl = (ULONG *)OL(bm, 8);
-    if (!OL(o, CDATA))
+    pl = (ULONG *)*(ULONG *)&bm->Planes[0];     /* read as a long, as the data */
+    if (!o->data)
         return;
-    src = (const ULONG *)OL(o, CDATA);
+    src = (const ULONG *)o->data;
     for (outer = PLSIZ / 4; outer; outer--) {
         int k;
 
