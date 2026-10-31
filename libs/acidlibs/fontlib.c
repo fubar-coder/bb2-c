@@ -14,7 +14,7 @@
  * also without the debugger: err1-err3 are in the normal code, their
  * texts in the error area as in the original).
  *
- * Blitz bitmap object (struct fbitmap): +0 BytesPerRow.w, +2 Rows.w, +4 Depth.w,
+ * Blitz bitmap object (struct bb_bitmap): +0 BytesPerRow.w, +2 Rows.w, +4 Depth.w,
  * +8 Planes[8], +40 cursor x (pixels), +42 cursor y (pixels).
  *
  * BitMapOutput n: output handler (inputoutputlib dosetout) bitout:
@@ -48,6 +48,7 @@
  *   of the original is left out.
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <graphics/text.h>
 #include <stddef.h>
 
@@ -133,19 +134,9 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 4, 2);
 
 /* ------------------------------------------------------------ variables */
 
-/* the part of a Blitz bitmap object (bitmaplib) that fontlib uses */
-struct fbitmap {
-    UWORD bpr;                  /* +0 BytesPerRow */
-    UWORD rows;                 /* +2 Rows */
-    UWORD depth;                /* +4 read as a word (MOVE 4(a0)): bitmaplib's
-                                   flags byte and depth byte */
-    UWORD pad6;
-    UBYTE *planes[8];           /* +8 */
-    UWORD cursx;                /* +40 cursor x (pixels) */
-    UWORD cursy;                /* +42 cursor y (pixels) */
-} BL_PACKED;
-static_assert(offsetof(struct fbitmap, planes) == 8);
-static_assert(offsetof(struct fbitmap, cursx) == 40);
+/* the Blitz bitmap object (bitmaplib): struct bb_bitmap (blitzobj.h); fontlib
+   reads Flags/Depth as a word (MOVE 4(a0): flagsdepth) and keeps the text
+   cursor at +40/+42 (cursx, cursy) */
 
 /* TextAttr for OpenDiskFont: {name, ysize 8, style 0, flags 0} */
 static struct TextAttr textattr = { 0, 8, 0, 0 };
@@ -153,7 +144,7 @@ static_assert(sizeof textattr == 8);
 
 static const char deffont[] = "topaz.font";
 void *fontlib_oldin;                            /* input handler before BitMapInput */
-static struct fbitmap *bitmapout;               /* output bitmap object */
+static struct bb_bitmap *bitmapout;               /* output bitmap object */
 static ULONG *fontout;                          /* used font object */
 static UBYTE pcolour = 1;                       /* colour for font (plane pick) */
 static UBYTE pback = 0;                         /* colour for background */
@@ -329,7 +320,7 @@ BLITZ_THUNK(docursy, docursy_c, "d1/a0-a1");
 
 /* calcoff - check bitmap and font: bitmap, font, lineoff (d7) = line
    offset */
-static int calcoff(struct fbitmap **bm, struct TextFont **font, LONG *lineoff)
+static int calcoff(struct bb_bitmap **bm, struct TextFont **font, LONG *lineoff)
 {
     if (!bitmapout || !bitmapout->bpr) {
         BLITZ_RUNERR(mess2);                    /* err2 */
@@ -347,7 +338,7 @@ static int calcoff(struct fbitmap **bm, struct TextFont **font, LONG *lineoff)
 
 /* docr - new line: col (d1) = 0, row (d2) += 8, lineoff (d7) += bytes
    per row * 8 */
-static void docr(struct fbitmap *bm, UWORD *col, UWORD *row, LONG *lineoff)
+static void docr(struct bb_bitmap *bm, UWORD *col, UWORD *row, LONG *lineoff)
 {
     *col = 0;
     *row += 8;
@@ -358,7 +349,7 @@ static void docr(struct fbitmap *bm, UWORD *col, UWORD *row, LONG *lineoff)
    of the line's left edge in the bitmap (changed by a new line);
    col/row = d1/d2, backbits/forebits = d4/d5 (background/foreground
    colour bits) */
-static void bitchar(UBYTE c, struct fbitmap *bm, struct TextFont *font, LONG *lineoff)
+static void bitchar(UBYTE c, struct bb_bitmap *bm, struct TextFont *font, LONG *lineoff)
 {
     UWORD col, row = bm->cursy, backbits, forebits, depth, bpr, modulo;
     const UBYTE *src;
@@ -389,7 +380,7 @@ static void bitchar(UBYTE c, struct fbitmap *bm, struct TextFont *font, LONG *li
     src = (const UBYTE *)font->tf_CharData
         + (WORD)(*(UWORD *)((const UBYTE *)font->tf_CharLoc + ((UWORD)c << 2)) >> 3);
     modulo = font->tf_Modulo;
-    depth = bm->depth;
+    depth = bm->flagsdepth;
     bpr = bm->bpr;
     forebits = pcolour;
     backbits = pback;
@@ -415,7 +406,7 @@ static void bitchar(UBYTE c, struct fbitmap *bm, struct TextFont *font, LONG *li
 /* bitout - one character d0 */
 static void BLITZ_ROUTINE bitout_c(UBYTE c BL_REG(d0))
 {
-    struct fbitmap *bm;
+    struct bb_bitmap *bm;
     struct TextFont *font;
     LONG lineoff;
 
@@ -426,7 +417,7 @@ static void BLITZ_ROUTINE bitout_c(UBYTE c BL_REG(d0))
 /* bitout2 - string a0, length d0 */
 static void bitout2_(const UBYTE *s, ULONG len)
 {
-    struct fbitmap *bm;
+    struct bb_bitmap *bm;
     struct TextFont *font;
     LONG lineoff;
 
@@ -496,7 +487,7 @@ BLITZ_THUNK(bitout3, bitout3_c, "d0-d1/a0-a1");
  *
  * @param bm  a0: the bitmap (!libs #bitmaplib,$1080)
  */
-static void BLITZ_ROUTINE dobitmapoutput_c(struct fbitmap *bm BL_REG(a0))
+static void BLITZ_ROUTINE dobitmapoutput_c(struct bb_bitmap *bm BL_REG(a0))
 {
     struct bl_regs r = { 0 };
 
@@ -517,14 +508,14 @@ static ULONG getchar_old(void)
 }
 
 /* docursor - EOR the cursor cell (8 lines, all planes) at x */
-static void docursor(struct fbitmap *bm, UWORD x)
+static void docursor(struct bb_bitmap *bm, UWORD x)
 {
     ULONG off = (ULONG)bm->cursy * bm->bpr      /* MULU */
               + (LONG)(WORD)((bm->cursx >> 3) + x); /* EXT.l */
     UWORD line, planes, i;
 
     for (line = 0; line < 8; line++) {
-        planes = bm->depth - 1;
+        planes = bm->flagsdepth - 1;
         i = 0;
         do
             bm->planes[i++][off] ^= 0xff;       /* NOT.b (a1) */
@@ -534,7 +525,7 @@ static void docursor(struct fbitmap *bm, UWORD x)
 }
 
 /* edstring - show the text from x on */
-static void edstring(struct fbitmap *bm, UBYTE *buf, UWORD max, UWORD x)
+static void edstring(struct bb_bitmap *bm, UBYTE *buf, UWORD max, UWORD x)
 {
     ULONG save = *(ULONG *)&bm->cursx;
 
@@ -546,7 +537,7 @@ static void edstring(struct fbitmap *bm, UBYTE *buf, UWORD max, UWORD x)
 /* doinput2 - edit a line: a0 = buffer, d0 = length */
 static ULONG BLITZ_ROUTINE doinput2_c(ULONG len BL_REG(d0), UBYTE *buf BL_REG(a0))
 {
-    struct fbitmap *bm = bitmapout;
+    struct bb_bitmap *bm = bitmapout;
     UWORD max = len, x = 0, c, i;
 
     for (;;) {
