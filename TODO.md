@@ -367,20 +367,44 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   repository; history of bb2 (plans, logs, reviews) unchanged in content,
   remaining bb2 mentions explained in `docs/README.md`.
 - [ ] **Tests for the issues labelled `needs-test`** (99 open issues at the
-  start, 3 open on 2026-10-29: #14, #26, #42). State 2026-10-31: #42 done
-  (a500-68010); a batch with the new tools (`inject allocfail`, the
-  machines `a500`/`a600`, CD image with `uaescsi.device`) gave tests for
-  #939–#942, #825, #647, #636, #524, #927, #666, #840, #579 (#824 had
-  one); label `untestable` (reason in the issue): #896, #675, #607, #469,
-  #581, #384, #352; #655 deferred. Still `needs-test`: #848, #821, #806,
-  #819, #440, #433 (a failing globalloc never returns: memlib's
-  "Out of Memory!" - no bug in practice, closing to be decided), #366
-  (not reproducible on the reference), #356, #444 (needs inject for
-  `OpenFromLock`), #361, #369, #917, #14, #26. Found: #946 (bug-port,
-  ricompactdisclib's SCSI CDReadTOC hangs after a session without
-  scsiflag). A failing test is added with label
+  start, 3 open on 2026-10-29: #14, #26, #42). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,
   and `needs-test` is removed (allowed for these issues, 2026-10-28).
+  State 2026-10-31 (open with `needs-test`: #361, #366, #369, #655):
+  - [x] #42 (a500-68010); a batch with the new tools (`inject
+    allocfail`, the machines `a500`/`a600`, CD image with
+    `uaescsi.device`): tests for #939–#942, #825, #647, #636, #524,
+    #927, #666, #840, #579 (#824 had one).
+  - [x] Second batch: #444 (`ciatrklib-load-readerror-unlock`, inject's
+    `readfail` follows `OpenFromLock`, new `ownedunlock`), #356
+    (`ted-donew-allocnull-ignored`: the 6th 10-byte allocation is NEW's
+    `allocnull`); #14 and #26 had tests (3 of 3 runs REPRODUCED, the
+    section "Test" of the issues updated).
+  - [x] Label `untestable` (reason in the issue): #896, #675, #607, #469,
+    #581, #384, #352, #917 (AllocBitMap of OS 3.2 fails for height 0
+    and does not return for depth 0: the copy is never reached).
+  - [x] Closed as `not-a-bug`: #848, #821, #806, #819, #440, #433 (a
+    failing globalloc never returns: memlib's "Out of Memory!").
+  - [x] #946 (bug-port: ricompactdisclib's SCSI CDReadTOC hung after a
+    session without scsiflag): fixed, port regression test
+    `tests/bug-orig/regression/ricompactdisclib-scsi-after-plain`
+    (the new regression mode of the runner); the original's 26-byte
+    CD_INFO is #948 (`untestable`).
+  - [x] Flaky tests made deterministic: #28, #429, #873,
+    #823 (`rishapeslib-savecmap-zero-colours`: the overwrite lands in a
+    region of the program's own), #492 (`riamosfunclib-count-zero`: real
+    A1200 speed without the JIT, the blocks at the top of memory, under
+    Disable - at JIT speed the copy reached the hardware and Amiberry
+    sometimes ended).
+  - [ ] #361: the only-line path of `freeupa5` is not reached with the
+    keyboard (a block covers a line to its end only with a line behind
+    it); needs a mouse block to column 127 in teddrive.
+  - [ ] #369: a blitz2 allocation through `extalloc` that fails only
+    during Compile (size and count of the start-up allocations to be
+    found), with a temporary fix on both sides.
+  - [ ] #366: not reproducible on the reference (re-checked 2026-10-31
+    with `alertlog`: no alert, no crash).
+  - [ ] #655: deferred (needs two machines).
   - Done (2026-10-28), every test REPRODUCED and, except where noted in
     the issue, checked with a temporary fix (FIXED, fix reverted):
     - compiler, Blitz programs in `tests/bug-orig/compiler/`: #2, #3, #8,
@@ -411,9 +435,11 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     looks like a planned feature that was never carried out), #4
     (`macrobuff` always has 8192 bytes, more than 1365 parameters do not
     fit in a line, nested macros add none).
-  - *Still open, test programs:*
+  - *Formerly open, test programs* (both have tests now:
+    `compiler-pushput-leak` with tedstub `objbuf=`,
+    `compiler-flushlibs-leak` with 512 MB Z3 RAM):
     #14 (the "Not Enough Object Memory" path was not reached in the
-    batch run, even with a 128 KB executable: to be found out how;
+    batch run, even with a 128 KB executable;
     a leak of 14 bytes once seen with `inject track` is not
     reproducible (2026-10-28, no issue): no allocation is left in the
     original or the port after small programs of every construct,
