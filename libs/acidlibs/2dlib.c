@@ -220,6 +220,67 @@ static UBYTE *a0, *a1, *a2, *a3, *a4, *a5, *a6;
 #define BUSY(cb)  (*(volatile UBYTE *)((UBYTE *)(cb) + 2) & 0x40)
 #define BLITWAIT(cb) do { (void)BUSY(cb); while (BUSY(cb)) ; } while (0)
 
+/* -------------------------------------------------------------- objects */
+
+/* a Blitz bitmap (bitmaplib) */
+struct bitmap {
+    UWORD bpr;                  /* +0 bytes per row */
+    UWORD rows;                 /* +2 */
+    UWORD depth;                /* +4 read as a word (flags byte, depth byte) */
+    UWORD pad6;
+    UBYTE *planes[8];           /* +8 */
+    UBYTE pad40[8];
+    WORD xorigin, yorigin;      /* +48/+50 BitMapOrigin */
+    UWORD flags;                /* +52 */
+    UWORD winbpr;               /* +54 bytes per row of the window */
+    UWORD width, height;        /* +56/+58 clip size */
+    UWORD colours;              /* +60 */
+    WORD isreal;                /* +62 */
+} BL_PACKED;
+
+/* a shape (shapeslib), for ClipBlit */
+struct shape {
+    UWORD width, height, depth;
+    UWORD bpr;                  /* +6 bytes per row */
+    UWORD bltsize;              /* +8 */
+    WORD xhandle, yhandle;      /* +10/+12 */
+    UBYTE *data;                /* +14 */
+    UBYTE *cookie;              /* +18 the mask */
+} BL_PACKED;
+
+/* blitter registers (a long write sets two of them) */
+#define BLTCON0 0x40
+#define BLTCON1 0x42
+#define BLTAFWM 0x44
+#define BLTALWM 0x46
+#define BLTCPT  0x48
+#define BLTBPT  0x4c
+#define BLTAPT  0x50
+#define BLTDPT  0x54
+#define BLTSIZE 0x58
+#define BLTSIZV 0x5c
+#define BLTCMOD 0x60
+#define BLTBMOD 0x62
+#define BLTAMOD 0x64
+#define BLTDMOD 0x66
+#define BLTADAT 0x74
+
+/* a polygon point as the caller gives it (words x, y) */
+struct point {
+    WORD x, y;
+};
+
+/* an edge of one side of a filled polygon: the lines it covers - 1 and
+   the x step per half line (edge_step); the long -1 ends a list */
+struct edge {
+    WORD lines;
+    ULONG step;
+} BL_PACKED;
+
+/* (WORD)(a - b) < 0: the original's CMP/SUB with BMI - the sign of the 16
+   bit difference, which wraps on overflow (unlike a signed compare) */
+#define BMI_W(a, b) ((WORD)((a) - (b)) < 0)
+
 /* ------------------------------------------------------------ variables */
 
 static UWORD pfc;
@@ -290,73 +351,73 @@ static void memfree(ULONG mem, ULONG size)
 /* ------------------------------------------------- BitMapOrigin & co */
 
 static void BLITZ_ROUTINE _bitmaporigin_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2),
-                                          UBYTE *bm BL_REG(a0))
+                                          struct bitmap *bm BL_REG(a0))
 {
-    if (!MW(bm, 62))
+    if (!bm->isreal)
         return;
-    MW(bm, 48) = x;
-    MW(bm, 50) = y;
+    bm->xorigin = x;
+    bm->yorigin = y;
 }
 BLITZ_THUNK(_bitmaporigin, _bitmaporigin_c, "d1/a0-a1");
 
-static void BLITZ_ROUTINE _bitplanesbitmap_c(ULONG pick BL_REG(d2), UBYTE *src BL_REG(a0),
-                                             UBYTE *dst BL_REG(a1))
+static void BLITZ_ROUTINE _bitplanesbitmap_c(ULONG pick BL_REG(d2), struct bitmap *src BL_REG(a0),
+                                             struct bitmap *dst BL_REG(a1))
 {
     UWORD n = 0, i = 0;
-    ULONG *srcplane = (ULONG *)(src + 8), *dstplane = (ULONG *)(dst + 8);
+    UBYTE **srcplane = src->planes, **dstplane = dst->planes;
 
-    if (!MW(src, 62) || MW(dst, 62))
+    if (!src->isreal || dst->isreal)
         return;
-    ML(dst, 0) = ML(src, 0);
+    dst->bpr = src->bpr;
+    dst->rows = src->rows;
     do {
-        ULONG p = *srcplane++;
+        UBYTE *p = *srcplane++;
 
         if (pick & (1UL << (i & 31))) {
             n++;
             *dstplane++ = p;
         }
         i++;
-    } while (i != MW(src, 4));
+    } while (i != src->depth);
     blitz_string = (UBYTE *)dstplane;           /* a3 left behind as LEA 8(a1),a3 */
-    MW(dst, 4) = n;
+    dst->depth = n;
     if (!n)
         return;
-    MW(dst, 52) = 0;
-    ML(dst, 56) = ML(src, 56);
-    MW(dst, 62) = 1;
+    dst->flags = 0;
+    dst->width = src->width;
+    dst->height = src->height;
+    dst->isreal = 1;
 }
 BLITZ_THUNK(_bitplanesbitmap, _bitplanesbitmap_c, "d1/a0-a1");
 
 static void BLITZ_ROUTINE _bitmapwindow_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
                                           UWORD w BL_REG(d4), UWORD h BL_REG(d5),
-                                          UBYTE *src BL_REG(a0), UBYTE *dst BL_REG(a1))
+                                          struct bitmap *src BL_REG(a0),
+                                          struct bitmap *dst BL_REG(a1))
 {
-    UWORD bpr, dep, n;
+    UWORD n;
     ULONG off;
-    ULONG *srcplane = (ULONG *)(src + 8), *dstplane = (ULONG *)(dst + 8);
+    UBYTE **srcplane = src->planes, **dstplane = dst->planes;
 
-    if (!MW(src, 62) || MW(dst, 62))
+    if (!src->isreal || dst->isreal)
         return;
-    bpr = MW(src, 0);
-    dep = MW(src, 4);
     x = (x >> 4) * 2;                           /* round to nearest word */
     w = (w >> 4) * 2;
-    off = (ULONG)y * bpr + (LONG)(WORD)x;
-    MW(dst, 0) = bpr;
-    MW(dst, 2) = h;
-    MW(dst, 4) = dep;
-    n = dep - 1;
+    off = (ULONG)y * src->bpr + (LONG)(WORD)x;
+    dst->bpr = src->bpr;
+    dst->rows = h;
+    dst->depth = src->depth;
+    n = src->depth - 1;
     do
         *dstplane++ = *srcplane++ + off;
     while (n-- != 0);
     blitz_string = (UBYTE *)dstplane;           /* a3 left behind */
-    MW(dst, 52) = MW(src, 52);
-    MB(dst, 53) |= 1;
-    MW(dst, 54) = w;
-    MW(dst, 56) = w << 3;
-    MW(dst, 58) = h;
-    MW(dst, 60) = MW(src, 60);
-    MW(dst, 62) = 1;
+    dst->flags = src->flags | 1;
+    dst->winbpr = w;
+    dst->width = w << 3;
+    dst->height = h;
+    dst->colours = src->colours;
+    dst->isreal = 1;
 }
 BLITZ_THUNK(_bitmapwindow, _bitmapwindow_c, "d1/a0-a1");
 
@@ -2090,165 +2151,135 @@ static void BLITZ_ROUTINE _doclipblitmode_c(UWORD m BL_REG(d0))
 }
 BLITZ_THUNK(_doclipblitmode, _doclipblitmode_c, "d0-d1/a0-a1");
 
-/* b_docblit - a3 = shape, a2 = bitmap, a1 = chip, d1/d2 = x/y;
-   d7 = 0 if nothing was blitted */
-static void docblit(void)
-{
-    SETW(d1, d1 - MW(a3, 10));
-    SETW(d2, d2 - MW(a3, 12));
-    if (SW(d1 - MW(a2, 56)) >= 0 || SW(d2 - MW(a2, 58)) >= 0)
-        goto flopme;
-    BLITWAIT(a1);
-    CL(a1, 0x60) = d6;                          /* MOVEM.l d6-d7,$060(a1) */
-    CL(a1, 0x64) = d7;
-    SETW(d6, MW(a3, 8));
-    d3 = 0;
-    SETW(d4, d2);
-    if (SW(d2) < 0) {
-        SETW(d2, -SW(d2));
-        if (SW(d2 - MW(a3, 2)) >= 0)
-            goto flopme;
-        SETW(d3, d2);
-        d3 = MULU(d3, MW(a3, 6));
-        SETW(d2, d2 << 6);
-        if (W(d6) < W(d2))                      /* SUB.w d2,d6:BCS */
-            goto flopme;
-        SETW(d6, d6 - d2);
-        SETW(d2, 0);
-    }
-    SETW(d4, d4 + MW(a3, 2));                   /* bolo */
-    if (SW(d4) < 0)
-        goto flopme;
-    SETW(d4, d4 - MW(a2, 58));
-    if (SW(d4) >= 0) {
-        SETW(d4, d4 << 6);
-        if (W(d6) < W(d4))
-            goto flopme;
-        SETW(d6, d6 - d4);
-    }
-    CL(a1, 0x44) = 0xffff0000;                  /* abuv */
-    d5 = 0xfffffffe;
-    SETW(d7, MW(a2, 0));
-    SETW(d7, d7 - MW(a3, 6));
-    SETW(d7, d7 + d5);
-    if (SW(d1) < 0) {
-        SETW(d1, -SW(d1));
-        if (SW(d1 - MW(a3, 0)) >= 0)
-            goto flopme;
-        SETW(d1, -SW(d1));
-        for (;;) {                              /* g1 */
-            SETW(d1, d1 + 16);
-            if (SW(d1) >= 0)
-                break;
-            SETW(d5, d5 + 2);
-            SETW(d7, d7 + 2);
-            SETW(d6, d6 - 1);
-            SETW(d3, d3 + 2);
-        }
-        d0 = 0xffffffff;                        /* g2 */
-        SETW(d0, (d1 & 63) >= 16 ? 0 : (UWORD)(W(d0) << (d1 & 63)));
-        SETW(d0, ~d0);
-        CW(a1, 0x44) = d0;
-        SETW(d1, d1 - 16);
-    }
-    SETW(d0, d1);                               /* nolo */
-    SETW(d0, SW(d0) >> 4);
-    SETW(d0, d0 + d0);
-    SETW(d0, d0 + MW(a3, 6));
-    SETW(d0, d0 + 2);
-    SETW(d4, MW(a2, 56));
-    SETW(d4, W(d4) >> 3);
-    {
-        int le = SW(d0) <= SW(d4);              /* SUB.w d4,d0:BLE noro */
+/* what b_docblit leaves for the excess planes (b_docblitx) */
+struct cblit {
+    ULONG mask;                 /* A: the cookie */
+    ULONG dest;                 /* the offset in the planes */
+    UBYTE **plane;              /* the next plane */
+    UWORD shift;                /* BLTCON1 (and the shift of BLTCON0) */
+    UWORD size;
+};
 
-        SETW(d0, d0 - d4);
-        if (le)
-            goto noro;
+/* b_docblit: the shape at x, y (minus its handle) through its cookie
+   onto the planes of bm (cookie cut, BLTCON0 = shift | ClipBlitMode),
+   clipped at all edges.  r6/r7: the caller's d6/d7 (MOVEM.l d6-d7,$60
+   (a1), overwritten before the blit).  Returns 0 if nothing was blitted. */
+static int docblit(UBYTE *chip, struct shape *sh, struct bitmap *bm, WORD x, WORD y,
+                   ULONG r6, ULONG r7, struct cblit *cb)
+{
+    ULONG src = 0, planesize, p;
+    WORD bottom, amod, dmod, over, rowbytes;
+    UWORD size, k;
+
+    x -= sh->xhandle;
+    y -= sh->yhandle;
+    if (!BMI_W(x, bm->width) || !BMI_W(y, bm->height))
+        return 0;
+    BLITWAIT(chip);
+    CL(chip, BLTCMOD) = r6;
+    CL(chip, BLTAMOD) = r7;
+    size = sh->bltsize;
+    bottom = y;
+    if (y < 0) {                                /* clip top */
+        y = -y;
+        if (!BMI_W(y, sh->height))
+            return 0;
+        src = bl_mulu_w(y, sh->bpr);
+        y <<= 6;
+        if (size < (UWORD)y)                    /* SUB.w d2,d6:BCS */
+            return 0;
+        size -= y;
+        y = 0;
     }
-    {
-        SETW(d5, d5 + d0);
-        SETW(d7, d7 + d0);
-        SETW(d0, W(d0) >> 1);
-        SETW(d6, d6 - d0);
-        SETW(d4, d1);
-        SETW(d4, d4 & 15);
-        SETW(d0, 0xffff);
-        SETW(d0, (d4 & 63) >= 16 ? 0 : (UWORD)(W(d0) << (d4 & 63)));
-        CW(a1, 0x46) = d0;
+    bottom += sh->height;                       /* bolo */
+    if (bottom < 0)
+        return 0;
+    bottom -= bm->height;
+    if (bottom >= 0) {                          /* clip bottom */
+        bottom <<= 6;
+        if (size < (UWORD)bottom)
+            return 0;
+        size -= bottom;
     }
-noro:
-    CW(a1, 0x62) = d5;
-    CW(a1, 0x64) = d5;
-    CW(a1, 0x60) = d7;
-    CW(a1, 0x66) = d7;
-    SETW(d0, d1);
-    SETW(d0, d0 & 15);
-    SETW(d0, (UWORD)(W(d0) >> 4 | W(d0) << 12));    /* ROR #4 */
-    SETW(d4, d0);
-    CW(a1, 0x42) = d0;
-    SETW(d0, d0 | bcon0);
-    CW(a1, 0x40) = d0;
-    d0 = d3;
-    d0 += ML(a3, 18);
-    d3 += ML(a3, 14);
-    d2 = MULS(d2, MW(a2, 0));
-    SETW(d1, SW(d1) >> 4);
-    d1 = EXTL(d1);
-    d2 += d1;
-    d2 += d1;
-    a0 = a2 + 8;
-    d5 = MULU(MW(a3, 2), MW(a3, 6));
-    SETW(d7, MW(a3, 4));
-    if (!W(d7))
-        goto flopme;
-    SETW(d7, d7 - 1);
+    CL(chip, BLTAFWM) = 0xffff0000;             /* abuv */
+    amod = -2;
+    dmod = bm->bpr - sh->bpr - 2;
+    if (x < 0) {                                /* clip left: whole words */
+        if (!BMI_W(-x, sh->width))
+            return 0;
+        for (;;) {                              /* g1 */
+            x += 16;
+            if (x >= 0)
+                break;
+            amod += 2;
+            dmod += 2;
+            size -= 1;
+            BL_SETW(src, src + 2);
+        }
+        CW(chip, BLTAFWM) = ~(UWORD)((x & 63) >= 16 ? 0 : 0xffff << (x & 63));      /* g2 */
+        x -= 16;
+    }
+    over = (WORD)(((WORD)x >> 4) * 2 + sh->bpr + 2);    /* nolo */
+    rowbytes = bm->width >> 3;
+    if (!(over <= rowbytes)) {                  /* clip right */
+        over -= rowbytes;
+        amod += over;
+        dmod += over;
+        size -= (UWORD)over >> 1;
+        CW(chip, BLTALWM) = (UWORD)(0xffff << (x & 15));
+    }
+    CW(chip, BLTBMOD) = amod;                   /* noro */
+    CW(chip, BLTAMOD) = amod;
+    CW(chip, BLTCMOD) = dmod;
+    CW(chip, BLTDMOD) = dmod;
+    cb->shift = (UWORD)((x & 15) << 12);        /* ROR #4 */
+    CW(chip, BLTCON1) = cb->shift;
+    CW(chip, BLTCON0) = cb->shift | bcon0;
+    cb->mask = src + (ULONG)sh->cookie;
+    src += (ULONG)sh->data;
+    cb->dest = (ULONG)bl_muls_w(y, bm->bpr) + 2 * (LONG)((WORD)x >> 4);
+    cb->plane = bm->planes;
+    cb->size = size;
+    planesize = bl_mulu_w(sh->height, sh->bpr);
+    k = sh->depth;
+    if (!k)
+        return 0;
+    k--;
     for (;;) {                                  /* doblit */
-        CL(a1, 0x50) = d0;
-        CL(a1, 0x4c) = d3;
-        d3 += d5;
-        d1 = ML(a0, 0) + d2;
-        a0 += 4;
-        CL(a1, 0x48) = d1;
-        CL(a1, 0x54) = d1;
-        CW(a1, 0x58) = d6;
-        SETW(d7, d7 - 1);
-        if (W(d7) == 0xffff)
-            return;
-        BLITWAIT(a1);
+        CL(chip, BLTAPT) = cb->mask;
+        CL(chip, BLTBPT) = src;
+        src += planesize;
+        p = (ULONG)*cb->plane++ + cb->dest;
+        CL(chip, BLTCPT) = p;
+        CL(chip, BLTDPT) = p;
+        CW(chip, BLTSIZE) = size;
+        if (k-- == 0)
+            return 1;
+        BLITWAIT(chip);
     }
-flopme:
-    d7 = 0;
 }
 
-static void docblitx(void)
+/* b_docblitx: and the planes of bm beyond the shape's depth through the
+   cookie: bit set in excess = set, else cleared */
+static void docblitx(UBYTE *chip, struct shape *sh, struct bitmap *bm, WORD x, WORD y,
+                     UWORD excess, ULONG r6, ULONG r7)
 {
-    UWORD s3 = d3;
+    struct cblit cb;
+    UWORD i;
 
-    docblit();
-    SETW(d3, s3);
-    if (!W(d7))
+    if (!docblit(chip, sh, bm, x, y, r6, r7, &cb))
         return;
-    SETW(d7, MW(a3, 4));
-    for (;;) {
-        int c;
+    for (i = sh->depth; i < bm->depth; i++) {
+        UWORD con = (excess & 1) ? 0xbfa : 0xb0a;
+        ULONG p = (ULONG)*cb.plane++ + cb.dest;
 
-        if (W(d7) >= MW(a2, 4))
-            return;
-        SETW(d5, 0xb0a);
-        c = d3 & 1;
-        SETW(d3, W(d3) >> 1);
-        if (c)
-            SETW(d5, 0xbfa);
-        SETW(d5, d5 | W(d4));
-        d1 = ML(a0, 0) + d2;
-        a0 += 4;
-        BLITWAIT(a1);
-        CW(a1, 0x40) = d5;
-        CL(a1, 0x50) = d0;
-        CL(a1, 0x48) = d1;
-        CL(a1, 0x54) = d1;
-        CW(a1, 0x58) = d6;
-        SETW(d7, d7 + 1);
+        excess >>= 1;
+        BLITWAIT(chip);
+        CW(chip, BLTCON0) = con | cb.shift;
+        CL(chip, BLTAPT) = cb.mask;
+        CL(chip, BLTCPT) = p;
+        CL(chip, BLTDPT) = p;
+        CW(chip, BLTSIZE) = cb.size;
     }
 }
 
@@ -2348,39 +2379,40 @@ ABENTRY(_polyf, polyf);
 ABENTRY(_polyf2, polyf2);
 
 /* ClipBlit: a3 = shape, a2 = bitmap, a1 = chip, d1/d2 = x/y, d3 = planes */
-#define CBREGS ULONG r1 BL_REG(d1), ULONG r2 BL_REG(d2), ULONG r3 BL_REG(d3), \
-               ULONG r6 BL_REG(d6), ULONG r7 BL_REG(d7), UBYTE *cb BL_REG(a1), \
-               UBYTE *bm BL_REG(a2)
-#define CBLOAD() (d1 = r1, d2 = r2, d3 = r3, d6 = r6, d7 = r7, a1 = cb, a2 = bm, \
-                  a3 = blitz_string)
+#define CBREGS WORD x BL_REG(d1), WORD y BL_REG(d2), UWORD excess BL_REG(d3), \
+               ULONG r6 BL_REG(d6), ULONG r7 BL_REG(d7), UBYTE *chip BL_REG(a1), \
+               struct bitmap *bm BL_REG(a2)
+#define SHAPE ((struct shape *)blitz_string)
 
 static void BLITZ_ROUTINE b_docblit_c(CBREGS)
 {
-    CBLOAD();
-    docblit();
+    struct cblit cb;
+
+    (void)excess;
+    docblit(chip, SHAPE, bm, x, y, r6, r7, &cb);
 }
 
 static void BLITZ_ROUTINE a_docblit_c(CBREGS, struct GfxBase *gfx BL_REG(a6))
 {
+    struct cblit cb;
+
+    (void)excess;
     OwnBlitter();
-    CBLOAD();
-    docblit();
-    BLITWAIT(a1);
+    docblit(chip, SHAPE, bm, x, y, r6, r7, &cb);
+    BLITWAIT(chip);
     DisownBlitter();
 }
 
 static void BLITZ_ROUTINE b_docblitx_c(CBREGS)
 {
-    CBLOAD();
-    docblitx();
+    docblitx(chip, SHAPE, bm, x, y, excess, r6, r7);
 }
 
 static void BLITZ_ROUTINE a_docblitx_c(CBREGS, struct GfxBase *gfx BL_REG(a6))
 {
     OwnBlitter();
-    CBLOAD();
-    docblitx();
-    BLITWAIT(a1);
+    docblitx(chip, SHAPE, bm, x, y, excess, r6, r7);
+    BLITWAIT(chip);
     DisownBlitter();
 }
 
@@ -2394,7 +2426,7 @@ BLITZ_AB_ROUTINE(_doclipblitx, b_docblitx, "   jmp     _a_docblitx_c");
    code (the library has no error area) */
 static void BLITZ_ROUTINE _cbchk_c(void)
 {
-    if (!MW(blitz_string, 0))
+    if (!SHAPE->width)
         BLITZ_RUNERR(mess1);
 }
 BLITZ_THUNK(_cbchk, _cbchk_c, "d0-d1/a0-a1");
