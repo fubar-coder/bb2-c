@@ -168,7 +168,8 @@ const char *amiga_emulation_status_name(enum amiga_emulation_status s);
 
 /* for tests: the configuration of the snapshot mode for slot directory
    slot_dir (TEST: slot_dir/test, mount I slot_dir/mnt-I, SNAP: slot_dir/
-   ctl); NULL with a message in err, also if a mount is SNAP */
+   ctl; the Kickstart ROM and the hardfile by their real paths if they
+   exist); NULL with a message in err, also if a mount is SNAP */
 char *amiga_emulation_snapshot_config(const struct amiga_emulation_params *p,
                                       const char *emulation_dir, const char *slot_dir, char *err,
                                       size_t errlen);

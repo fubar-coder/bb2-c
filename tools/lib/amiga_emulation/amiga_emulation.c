@@ -841,6 +841,91 @@ static char *slot_path(const char *slot_dir, const char *name, size_t i)
                            : str_printf("%s/%s-%zu", slot_dir, name, i);
 }
 
+/* the Kickstart ROM and the hardfile DH0 of a configuration (malloc'd,
+   NULL if missing) */
+static void config_files(const char *cfg, char **rom, char **hdf)
+{
+    char *v = config_value(cfg, "hardfile2");
+    char *path = v ? strstr(v, "DH0:") : NULL;
+
+    *rom = config_value(cfg, "kickstart_rom_file");
+    *hdf = NULL;
+    if (path) {
+        path += 4;
+        *hdf = strndup(path, strcspn(path, ","));
+    }
+    free(v);
+}
+
+/* cfg with every from replaced by to (cfg freed); NULL: out of memory */
+static char *replace_all(char *cfg, const char *from, const char *to)
+{
+    struct sb b = { 0 };
+    const char *s = cfg, *f;
+    size_t n = strlen(from);
+
+    if (!n)
+        return cfg;
+    while ((f = strstr(s, from)) != NULL) {
+        sb_add(&b, s, (size_t)(f - s));
+        sb_str(&b, to);
+        s = f + n;
+    }
+    sb_str(&b, s);
+    free(cfg);
+    if (b.bad) {
+        free(b.p);
+        return NULL;
+    }
+    return b.p;
+}
+
+/* cfg without its comment lines (cfg freed); NULL: out of memory */
+static char *drop_comments(char *cfg)
+{
+    struct sb b = { 0 };
+    const char *s = cfg;
+
+    while (*s) {
+        const char *e = strchr(s, '\n');
+        size_t n = e ? (size_t)(e - s) + 1 : strlen(s);
+
+        if (*s != ';')
+            sb_add(&b, s, n);
+        s += n;
+    }
+    sb_str(&b, "");
+    free(cfg);
+    if (b.bad) {
+        free(b.p);
+        return NULL;
+    }
+    return b.p;
+}
+
+/* the ROM and the hardfile by their real paths, without the comments
+   (they name the emulation directory): the same files reached through
+   other links (amiga-emulation/ of another worktree) give the same
+   configuration, so the same snapshot (the state stores the real path of
+   the hardfile anyway) */
+static char *resolve_files(char *cfg)
+{
+    char *file[2], *real;
+    int i;
+
+    if (!(cfg = drop_comments(cfg)))
+        return NULL;
+    config_files(cfg, &file[0], &file[1]);
+    for (i = 0; i < 2; i++) {
+        real = file[i] ? realpath(file[i], NULL) : NULL;
+        if (cfg && real && strcmp(real, file[i]) && !has_char(real, ",\n"))
+            cfg = replace_all(cfg, file[i], real);
+        free(real);
+        free(file[i]);
+    }
+    return cfg;
+}
+
 char *amiga_emulation_snapshot_config(const struct amiga_emulation_params *p,
                                       const char *emulation_dir, const char *slot_dir, char *err,
                                       size_t errlen)
@@ -875,6 +960,8 @@ char *amiga_emulation_snapshot_config(const struct amiga_emulation_params *p,
     q.mounts = m;
     q.nmounts = p->nmounts + 1;
     cfg = amiga_emulation_config(&q, emulation_dir, dirs[p->nmounts + 1], err, errlen);
+    if (cfg && !(cfg = resolve_files(cfg)))
+        set_err(err, errlen, "out of memory");
 out:
     for (i = 0; dirs && i < p->nmounts + 2; i++)
         free(dirs[i]);
@@ -886,19 +973,13 @@ out:
 unsigned long long amiga_emulation_snapshot_key(const char *cfg, const char *amiberry)
 {
     unsigned long long h = 0xcbf29ce484222325ULL;
-    char *rom = config_value(cfg, "kickstart_rom_file");
-    char *hdf = config_value(cfg, "hardfile2");
-    char *path = hdf ? strstr(hdf, "DH0:") : NULL;
-    char *prog = find_program(amiberry ? amiberry : "amiberry");
+    char *rom, *hdf, *prog = find_program(amiberry ? amiberry : "amiberry");
 
-    if (path) {
-        path += 4;
-        path[strcspn(path, ",")] = 0;
-    }
+    config_files(cfg, &rom, &hdf);
     h = fnv(h, cfg, strlen(cfg));
     h = fnv(h, snap_prologue, sizeof snap_prologue);
     h = fnv(h, snap_waiter, sizeof snap_waiter);
-    h = fnv_file(fnv_file(fnv_file(h, rom), path), prog);
+    h = fnv_file(fnv_file(fnv_file(h, rom), hdf), prog);
     free(rom);
     free(hdf);
     free(prog);

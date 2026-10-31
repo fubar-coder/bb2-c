@@ -126,6 +126,57 @@ static void snapshot_config(void)
     cfg = amiga_emulation_snapshot_config(&p, "/emu", "/slots,x/slot-3", err, sizeof err);
     CHECK(cfg == NULL);
     free(cfg);
+
+    /* the ROM and the hardfile by their real paths: two emulation
+       directories with links to the same files give the same text */
+    {
+        static const char *const files[] = { "A1200.47.115.rom", "Workbench_OS3.2-AB3-AGA.vhd" };
+        char dir[] = "/tmp/amiga-emulation-snapreal-XXXXXX", path[160], link[160], real[160];
+        char *a, *b;
+        size_t i;
+        int k;
+
+        CHECK(mkdtemp(dir) != NULL);
+        for (k = 0; k < 3; k++) {
+            snprintf(path, sizeof path, "%s/%c", dir, "rab"[k]);
+            CHECK(mkdir(path, 0700) == 0);
+        }
+        for (i = 0; i < 2; i++) {
+            snprintf(real, sizeof real, "%s/r/%s", dir, files[i]);
+            put_file(real, 4);
+            for (k = 1; k < 3; k++) {
+                snprintf(link, sizeof link, "%s/%c/%s", dir, "rab"[k], files[i]);
+                CHECK(symlink(real, link) == 0);
+            }
+        }
+        snprintf(path, sizeof path, "%s/a", dir);
+        a = amiga_emulation_snapshot_config(&p, path, "/slots/slot-3", err, sizeof err);
+        snprintf(path, sizeof path, "%s/b", dir);
+        b = amiga_emulation_snapshot_config(&p, path, "/slots/slot-3", err, sizeof err);
+        CHECK(a && b && !strcmp(a, b));
+        snprintf(real, sizeof real, "kickstart_rom_file=%s/r/%s", dir, files[0]);
+        CHECK(a && lines_equal(a, real) == 1);
+        snprintf(real, sizeof real, "hardfile2=ro,DH0:%s/r/%s,32,1,2,512,0,,uae0", dir, files[1]);
+        CHECK(a && lines_equal(a, real) == 1);
+        snprintf(real, sizeof real, "%s/a/", dir);
+        CHECK(a && !strstr(a, real));
+        free(a);
+        free(b);
+        /* broken: missing files stay as they are */
+        a = amiga_emulation_snapshot_config(&p, "/emu", "/slots/slot-3", err, sizeof err);
+        CHECK(a && lines_equal(a, "kickstart_rom_file=/emu/A1200.47.115.rom") == 1);
+        free(a);
+        for (i = 0; i < 2; i++)
+            for (k = 0; k < 3; k++) {
+                snprintf(path, sizeof path, "%s/%c/%s", dir, "rab"[k], files[i]);
+                remove(path);
+            }
+        for (k = 0; k < 3; k++) {
+            snprintf(path, sizeof path, "%s/%c", dir, "rab"[k]);
+            rmdir(path);
+        }
+        CHECK(rmdir(dir) == 0);
+    }
 }
 
 /* the key: changes with the configuration and with each file's identity
