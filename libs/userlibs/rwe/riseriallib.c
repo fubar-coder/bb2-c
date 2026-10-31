@@ -270,40 +270,40 @@ static const char version[] __attribute__((used)) = "$VER: Serial-Library v1.0 (
 #define BUMP(w, n) (((volatile UBYTE *)&(w))[1] += (n))
 
 /* SerialRead (_readser): d0's upper word stays (MOVE.w rbig,d0) */
-static ULONG readser(ULONG d0)
+static ULONG readser(ULONG value)
 {
     UWORD b = rd.big;
 
     if (b == rd.end)
         return (ULONG)-1;
-    d0 = (d0 & 0xffff0000UL) | b;
-    d0 = (d0 & 0xffffff00UL) | rd.buf[(WORD)b];
+    value = (value & 0xffff0000UL) | b;
+    value = (value & 0xffffff00UL) | rd.buf[(WORD)b];
     BUMP(rd.big, 1);
-    return d0;
+    return value;
 }
 
 /* SerialWrite (_writeser): the word $01xx into the ring; TBE requested
    when the ring was empty.  Returns d0 as the original leaves it. */
-static ULONG writeser(ULONG d0)
+static ULONG writeser(ULONG value)
 {
     UWORD e = wr.end;
 
-    d0 = (d0 & 0xffff0000UL) | 0x0100 | (d0 & 0xff);
-    *(UWORD *)(wr.buf + (WORD)e) = (UWORD)d0;
+    value = (value & 0xffff0000UL) | 0x0100 | (value & 0xff);
+    *(UWORD *)(wr.buf + (WORD)e) = (UWORD)value;
     BUMP(wr.end, 2);
     if (e == wr.big)
         INTREQ = 0x8001;
-    return d0;
+    return value;
 }
 
 /* _openserial: the stop flag cleared; if not open: the vectors, the
    rings cleared, RTS/DTR, the interrupts on.  Returns d0 (0 when it
    opened, else unchanged). */
-static ULONG openserial(ULONG d0)
+static ULONG openserial(ULONG value)
 {
     quitflag = 0;
     if (openflag)
-        return d0;
+        return value;
     riser_oldint5 = *VEC_RBF;
     riser_oldint1 = *VEC_TBE;
     *VEC_RBF = (ULONG)readint;
@@ -353,14 +353,14 @@ void BLITZ_ROUTINE c_closeserial(void)
     openflag = 0;
 }
 
-ULONG BLITZ_ROUTINE c_readser(ULONG d0 BL_REG(d0))
+ULONG BLITZ_ROUTINE c_readser(ULONG value BL_REG(d0))
 {
-    return readser(d0);
+    return readser(value);
 }
 
-void BLITZ_ROUTINE c_writeser(ULONG d0 BL_REG(d0))
+void BLITZ_ROUTINE c_writeser(ULONG value BL_REG(d0))
 {
-    writeser(d0);
+    writeser(value);
 }
 
 ULONG BLITZ_ROUTINE c_info(void)
@@ -398,20 +398,20 @@ void BLITZ_ROUTINE c_sersend(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
    the original's way, BUG(orig) #803) */
 ULONG BLITZ_ROUTINE c_serreceive(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 {
-    ULONG d0;
+    ULONG value;
 
     buffstart = addr;
     bufflength = len - 1;
     while (readser(0) != (ULONG)-1)     /* throw away what is there */
         ;
-    while ((d0 = readser(0)) == (ULONG)-1)
+    while ((value = readser(0)) == (ULONG)-1)
         ;
-    *(UBYTE *)buffstart = (UBYTE)d0;
+    *(UBYTE *)buffstart = (UBYTE)value;
     buffstart++;
     for (;;) {
-        while ((d0 = readser(0)) == (ULONG)-1)
+        while ((value = readser(0)) == (ULONG)-1)
             ;
-        *(UBYTE *)buffstart = (UBYTE)d0;
+        *(UBYTE *)buffstart = (UBYTE)value;
         buffstart++;
         bufflength--;
         if (quitflag) {
@@ -424,23 +424,23 @@ ULONG BLITZ_ROUTINE c_serreceive(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 }
 
 /* SerialFlush: read until empty (d0 of the call goes through) */
-void BLITZ_ROUTINE c_flushser(ULONG d0 BL_REG(d0))
+void BLITZ_ROUTINE c_flushser(ULONG value BL_REG(d0))
 {
     do
-        d0 = readser(d0);
-    while (d0 != (ULONG)-1);
+        value = readser(value);
+    while (value != (ULONG)-1);
 }
 
 /* SerialSendString a$: d0 = the string, a2 = the argument stack */
-void BLITZ_ROUTINE c_sendserialstring(ULONG d0 BL_REG(d0), const ULONG *a2 BL_REG(a2))
+void BLITZ_ROUTINE c_sendserialstring(ULONG value BL_REG(d0), const ULONG *argstack BL_REG(a2))
 {
     ULONG l;
 
     if (openflag)
-        d0 = openserial(d0);
+        value = openserial(value);
     do {
-        l = *--a2;
-        d0 = writeser(d0);
+        l = *--argstack;
+        value = writeser(value);
     } while (l & 0xff);
 }
 
@@ -448,20 +448,20 @@ void BLITZ_ROUTINE c_sendserialstring(ULONG d0 BL_REG(d0), const ULONG *a2 BL_RE
    is open (the thunk returns to the d0 of the call, BUG(orig) #796) */
 volatile UBYTE riser_rsreturn;
 
-ULONG BLITZ_ROUTINE c_readserialstring(ULONG d0 BL_REG(d0))
+ULONG BLITZ_ROUTINE c_readserialstring(ULONG value BL_REG(d0))
 {
     riser_rsreturn = 0;
     if (openflag) {
         riser_rsreturn = 1;
-        d0 = openserial(0);
+        value = openserial(0);
         numchars = 0;
     }
     do {
-        while ((d0 = readser(d0)) == (ULONG)-1)
+        while ((value = readser(value)) == (ULONG)-1)
             ;
         numchars++;
-        *blitz_string++ = (UBYTE)d0;
-    } while (d0);
+        *blitz_string++ = (UBYTE)value;
+    } while (value);
     return numchars - 1;
 }
 
@@ -470,29 +470,29 @@ ULONG BLITZ_ROUTINE c_buffpos(void)
     return bufflength;
 }
 
-/* SerialReadLong: never returns (BUG(orig) #794); `d1` is what the original
-   builds from the bytes */
-void BLITZ_ROUTINE c_readlong(ULONG d1 BL_REG(d1))
+/* SerialReadLong: never returns (BUG(orig) #794); `longword` (d1) is what the
+   original builds from the bytes */
+void BLITZ_ROUTINE c_readlong(ULONG longword BL_REG(d1))
 {
-    ULONG d0 = openserial(0);
+    ULONG value = openserial(0);
 
     for (;;) {
-        while ((d0 = readser(d0)) == (ULONG)-1)
+        while ((value = readser(value)) == (ULONG)-1)
             ;
-        d1 = (d1 & 0xffffff00UL) | (d0 & 0xff);
-        d1 = d1 << 8 | d1 >> 24;
+        longword = (longword & 0xffffff00UL) | (value & 0xff);
+        longword = longword << 8 | longword >> 24;
     }
 }
 
 /* SerialWriteLong longword: the low byte, then three times $01 */
-void BLITZ_ROUTINE c_writelong(ULONG d0 BL_REG(d0))
+void BLITZ_ROUTINE c_writelong(ULONG longword BL_REG(d0))
 {
     int i;
 
-    openserial(d0);                     /* d0 saved around it */
+    openserial(longword);               /* d0 saved around it */
     for (i = 0; i < 4; i++) {
-        d0 = writeser(d0);
-        d0 = d0 >> 8 | d0 << 24;        /* ROR.l #8 */
+        longword = writeser(longword);
+        longword = longword >> 8 | longword << 24; /* ROR.l #8 */
     }
 }
 
@@ -508,11 +508,11 @@ ULONG BLITZ_ROUTINE c_buffcount(void)
 }
 
 /* SerialWait: wait for a byte, then SerialRead */
-ULONG BLITZ_ROUTINE c_buffcount2(ULONG d0 BL_REG(d0))
+ULONG BLITZ_ROUTINE c_buffcount2(ULONG value BL_REG(d0))
 {
     while (rd.big == rd.end)
         ;
-    return readser(d0);
+    return readser(value);
 }
 
 /* the receive interrupt (level 5): 1 = RBF handled, 0 = not ours */
