@@ -297,6 +297,15 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   named in the commit. The list is in `docs/libs/variable-split.md`.
   The register-level translations (2dlib, medlib, polylib: static
   `d0`-`d7`/`a0`-`a6`) are a rewrite of their own after stage 2.
+* **Data blocks as structs** (user decision 2026-10-31, after stage 2
+  of the readable names): data blocks of the originals that the port
+  addresses as arrays or with offsets (tag lists, NewScreen/NewWindow
+  blocks, requester data, the libraries' own variable blocks) become
+  structs with named members (the system's structs where they exist,
+  `static_assert` on the size). Byte-identical: the original's wrong
+  offsets stay, now visible as the wrong member (example: risoundlib2's
+  `ahireqtags`, #931/#934); a bug that shows up this way gets an issue
+  and a `BUG(orig)` note, and is fixed later like the others.
 * **Function documentation** (user decision 2026-10-31, after stage 2
   of the readable names, before the error check area fixes): Doxygen
   comments (`/** @brief … @param … @return … */`), which clangd shows on
