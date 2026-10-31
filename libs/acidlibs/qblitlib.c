@@ -111,10 +111,10 @@ static void BLITZ_ROUTINE doqblitmode_c(UWORD m BL_REG(d0))
 }
 BLITZ_THUNK(doqblitmode, doqblitmode_c, "d0-d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE codeinit_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE codeinit_c(ULONG prev BL_REG(d0))
 {
     bcon0 = 0xfca;
-    return (d0 & 0xffff0000UL) | 0xfca;
+    return (prev & 0xffff0000UL) | 0xfca;
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
 
@@ -164,18 +164,18 @@ static void qblit(struct queue *q, const UBYTE *shape, const UBYTE *bm, UBYTE *c
                   WORD x, WORD y, struct blitstate *st)
 {
     UBYTE *item = q->pos;
-    ULONG d7, d6;
+    ULONG mods, mods_swapped;
     UWORD n;
 
     x -= SW(shape, 10);
     y -= SW(shape, 12);
-    d7 = 0xfffe0000UL | (UWORD)(SW(bm, 0) - SW(shape, 6) - 2);
-    *(UWORD *)item = (UWORD)d7;
+    mods = 0xfffe0000UL | (UWORD)(SW(bm, 0) - SW(shape, 6) - 2);
+    *(UWORD *)item = (UWORD)mods;
     item += 2;
-    d6 = d7 << 16 | d7 >> 16;
+    mods_swapped = mods << 16 | mods >> 16;
     BL_BLITWAIT(cb);
-    BL_CUSTOML(cb, 0x60) = d6;
-    BL_CUSTOML(cb, 0x64) = d7;
+    BL_CUSTOML(cb, 0x60) = mods_swapped;
+    BL_CUSTOML(cb, 0x64) = mods;
     st->shift = (UWORD)((x & 15) << 12);
     BL_CUSTOMW(cb, 0x42) = st->shift;
     BL_CUSTOMW(cb, 0x40) = st->shift | bcon0;
