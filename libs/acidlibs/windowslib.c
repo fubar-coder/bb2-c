@@ -67,11 +67,15 @@
  *     WTitle) are allocated and never freed (#318).
  *   - Window with flag $80 (super bitmap) uses the bitmap of the last
  *     Window with BitMap#; the NewWindow is static, its BitMap stays. (#319)
- *   - WMove/WSize wait in a loop until the window has the new position/
- *     size (never ends if Intuition clips it; only the checks prevent
- *     that). (#320)
  *   - The line editor (Edit$ in a window) and calcwidth: proportional
  *     widths only for characters lo..lo+127 (SUB.b/BMI). (#321)
+ * Fixed (intended deviation, #320): WMove/WSize waited in a loop until
+ *   the window had exactly the new position/size, without an end if
+ *   Intuition limits the values (size limits, screen edge; the checks
+ *   catch only the screen edge).  Here the wait also ends once Intuition
+ *   has changed the window at all, and after 50 frames (WaitTOF) without
+ *   a change.  AmiBlitz3 drops the wait; it is kept here, so WindowX etc.
+ *   still give the new values right after WMove/WSize.
  * Fixed (intended deviation, #322): CloseWindow replied every message of
  *   the shared port and dropped the whole event list in the original: the
  *   events of the other windows were lost too.  Here only the messages
@@ -2488,15 +2492,32 @@ void BLITZ_ROUTINE dowtitle(const UBYTE *wt BL_REG(d0), const UBYTE *st BL_REG(d
     SetWindowTitles(win, (STRPTR)wtitle, (STRPTR)stitle);
 }
 
+/* the most frames WMove/WSize wait for Intuition (fixed, #320) */
+#define MAXWAIT 50
+
+/* waitwin - wait until the pair a/b of the window is x/y or no longer
+   ox/oy (Intuition did the deferred MoveWindow/SizeWindow, perhaps with
+   limited values), at most MAXWAIT frames (fixed, #320: the original
+   waits for x/y only, without an end) */
+static void waitwin(volatile WORD *a, volatile WORD *b, ULONG x, ULONG y, WORD ox, WORD oy)
+{
+    struct Library *gfxbase = V.gfxbase;
+    UWORD n = MAXWAIT;
+
+    while ((*a != (WORD)x || *b != (WORD)y) && *a == ox && *b == oy && n-- != 0)
+        WaitTOF();
+}
+
 /**
  * @brief WMove X,Y - move the used window (MoveWindow by the difference).
  *
  * Errors (debugger only, wmovechk): "Uninitialized Window"; a negative
  * position or the window outside its screen -> "Can't move Window".
  *
- * BUG(orig) (#320): waits in a loop until the window has the new
- * position; never ends if Intuition clips it (only the checks prevent
- * that).
+ * Waits until Intuition has moved the window: until it has the new
+ * position or another one than before (Intuition limits the move), at most
+ * MAXWAIT frames.  Fixed (#320): the original waits only for the new
+ * position, without an end if Intuition limits it.
  *
  * @param x d0: the new x (the upper word goes to MoveWindow)
  * @param y d1: the new y
@@ -2507,11 +2528,11 @@ void BLITZ_ROUTINE dowmove(ULONG x BL_REG(d0), ULONG y BL_REG(d1), struct bwin *
                              struct Library *intbase BL_REG(a6))
 {
     volatile struct Window *win = w->win;
+    WORD ox = win->LeftEdge, oy = win->TopEdge;
 
-    MoveWindow((struct Window *)win, (x & 0xffff0000UL) | (UWORD)(x - win->LeftEdge),
-               (y & 0xffff0000UL) | (UWORD)(y - win->TopEdge));
-    while (win->LeftEdge != (WORD)x || win->TopEdge != (WORD)y)
-        ;
+    MoveWindow((struct Window *)win, (x & 0xffff0000UL) | (UWORD)(x - ox),
+               (y & 0xffff0000UL) | (UWORD)(y - oy));
+    waitwin(&win->LeftEdge, &win->TopEdge, x, y, ox, oy);
 }
 
 /**
@@ -2521,8 +2542,10 @@ void BLITZ_ROUTINE dowmove(ULONG x BL_REG(d0), ULONG y BL_REG(d1), struct bwin *
  * Errors (debugger only, wsizechk): "Uninitialized Window"; a size <= 0 or
  * the window outside its screen -> "Can't Size Window".
  *
- * BUG(orig) (#320): waits in a loop until the window has the new size;
- * never ends if Intuition clips it (only the checks prevent that).
+ * Waits until Intuition has sized the window: until it has the new size
+ * or another one than before (Intuition limits the size), at most MAXWAIT
+ * frames.  Fixed (#320): the original waits only for the new size,
+ * without an end if Intuition limits it.
  *
  * @param x d0: the new width (the upper word goes to SizeWindow)
  * @param y d1: the new height
@@ -2533,11 +2556,11 @@ void BLITZ_ROUTINE dowsize(ULONG x BL_REG(d0), ULONG y BL_REG(d1), struct bwin *
                              struct Library *intbase BL_REG(a6))
 {
     volatile struct Window *win = w->win;
+    WORD ow = win->Width, oh = win->Height;
 
-    SizeWindow((struct Window *)win, (x & 0xffff0000UL) | (UWORD)(x - win->Width),
-               (y & 0xffff0000UL) | (UWORD)(y - win->Height));
-    while (win->Width != (WORD)x || win->Height != (WORD)y)
-        ;
+    SizeWindow((struct Window *)win, (x & 0xffff0000UL) | (UWORD)(x - ow),
+               (y & 0xffff0000UL) | (UWORD)(y - oh));
+    waitwin(&win->Width, &win->Height, x, y, ow, oh);
 }
 
 /* newidcmp - a2 = window objects (base), d2 = maximum; RMBTRAP and

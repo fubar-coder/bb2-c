@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+size 250 100
+moved -1 20
+rc=0
