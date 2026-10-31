@@ -170,24 +170,24 @@ static ULONG maxstack;                          /* size in bytes */
 static ULONG *currstack;
 static ULONG *currsp;
 
-/* unlinkitem - item to unlink in a1 */
-static void unlinkitem(struct item *a1)
+/* unlinkitem - item (a1) to unlink */
+static void unlinkitem(struct item *item)
 {
-    struct item *a2 = a1->prev, *a3 = a1->next;
+    struct item *prev = item->prev, *next = item->next;
 
-    a3->prev = a2;
-    a2->next = a3;
+    next->prev = prev;
+    prev->next = next;
 }
 
-/* linkitem - link item a1 after a2 */
-static void linkitem(struct item *a1, struct item *a2)
+/* linkitem - link item (a1) after `after` (a2) */
+static void linkitem(struct item *item, struct item *after)
 {
-    struct item *a3 = a2->next;
+    struct item *next = after->next;
 
-    a2->next = a1;
-    a3->prev = a1;
-    a1->prev = a2;
-    a1->next = a3;
+    after->next = item;
+    next->prev = item;
+    item->prev = after;
+    item->next = next;
 }
 
 /* doinit - empty item stack of 8 entries */
@@ -222,34 +222,34 @@ void BLITZ_ROUTINE setstack(ULONG n BL_REG(d0))
 /* dopushcurrent - push {array, current item} */
 void BLITZ_ROUTINE dopushcurrent(UBYTE *base BL_REG(d0))
 {
-    ULONG *a1 = currsp;
+    ULONG *sp = currsp;
 
-    *a1++ = (ULONG)base;
-    *a1++ = (ULONG)CURRENT(base);
-    currsp = a1;
+    *sp++ = (ULONG)base;
+    *sp++ = (ULONG)CURRENT(base);
+    currsp = sp;
 }
 
 /* dopopcurrent - pop the current item into the given array (the array
    on the stack is only checked with the debugger) */
 void BLITZ_ROUTINE dopopcurrent(UBYTE *base BL_REG(d0))
 {
-    ULONG *a1 = currsp;
+    ULONG *sp = currsp;
 
-    CURRENT(base) = (struct item *)*--a1;
-    a1--;
-    currsp = a1;
+    CURRENT(base) = (struct item *)*--sp;
+    sp--;
+    currsp = sp;
 }
 
 /* doclearlist - move all used items to the front of the free list (one
    by one, so their order is reversed), no current item */
 void BLITZ_ROUTINE doclearlist(UBYTE *base BL_REG(d0))
 {
-    struct item *a1;
+    struct item *item;
 
     BL_INTS_OFF();
-    while ((a1 = USED(base)->next)->next) {
-        unlinkitem(a1);
-        linkitem(a1, FREE(base));
+    while ((item = USED(base)->next)->next) {
+        unlinkitem(item);
+        linkitem(item, FREE(base));
     }
     CURRENT(base) = 0;
     BL_INTS_ON();
@@ -265,27 +265,27 @@ void BLITZ_ROUTINE doreslist(UBYTE *base BL_REG(d0))
    there is one, else 0.  Called with interrupts disabled. */
 static ULONG firstitem2(UBYTE *base)
 {
-    struct item *a1 = USED(base)->next;         /* next of head node */
-    ULONG d0 = (ULONG)a1->next;
+    struct item *item = USED(base)->next;       /* next of head node */
+    ULONG link = (ULONG)item->next;             /* d0 */
 
-    if (!d0)
-        a1 = 0;
-    CURRENT(base) = a1;
+    if (!link)
+        item = 0;
+    CURRENT(base) = item;
     BL_INTS_ON();
-    return d0 ? -1 : 0;
+    return link ? -1 : 0;
 }
 
 /* dolastitem2 - make current = last, the same backwards */
 static ULONG lastitem2(UBYTE *base)
 {
-    struct item *a1 = TAILPRED(base);           /* prev of tail node */
-    ULONG d0 = (ULONG)a1->prev;
+    struct item *item = TAILPRED(base);         /* prev of tail node */
+    ULONG link = (ULONG)item->prev;             /* d0 */
 
-    if (!d0)
-        a1 = 0;
-    CURRENT(base) = a1;
+    if (!link)
+        item = 0;
+    CURRENT(base) = item;
     BL_INTS_ON();
-    return d0 ? -1 : 0;
+    return link ? -1 : 0;
 }
 
 /* dofirstitem - d0 = array base. make current=first */
@@ -307,17 +307,17 @@ ULONG BLITZ_ROUTINE dolastitem(UBYTE *base BL_REG(d0))
    first) */
 void BLITZ_ROUTINE dokillitem(UBYTE *base BL_REG(d0))
 {
-    struct item *a1, *prev;
+    struct item *item, *prev;
 
     BL_INTS_OFF();
-    a1 = CURRENT(base);                         /* current item */
-    prev = a1->prev;                            /* old previous of current */
-    unlinkitem(a1);                             /* remove from used... */
-    linkitem(a1, FREE(base));                   /* add to free */
-    a1 = prev;
-    if (!a1->prev)
-        a1 = 0;
-    CURRENT(base) = a1;
+    item = CURRENT(base);                       /* current item */
+    prev = item->prev;                          /* old previous of current */
+    unlinkitem(item);                           /* remove from used... */
+    linkitem(item, FREE(base));                 /* add to free */
+    item = prev;
+    if (!item->prev)
+        item = 0;
+    CURRENT(base) = item;
     BL_INTS_ON();
 }
 
@@ -326,100 +326,100 @@ void BLITZ_ROUTINE dokillitem(UBYTE *base BL_REG(d0))
    no free item. */
 ULONG BLITZ_ROUTINE doadditem(UBYTE *base BL_REG(d0))
 {
-    struct item *a1, *a2;
-    ULONG d0;
+    struct item *item, *after;
+    ULONG result;                               /* d0: the link, then -1 */
 
     BL_INTS_OFF();
-    a1 = FREE(base)->next;                      /* next of head node */
-    d0 = (ULONG)a1->next;
-    if (d0) {
-        unlinkitem(a1);
-        a2 = CURRENT(base);
-        if (!a2)
-            a2 = USED(base);
-        linkitem(a1, a2);
-        CURRENT(base) = a1;                     /* now current */
-        d0 = -1;
+    item = FREE(base)->next;                    /* next of head node */
+    result = (ULONG)item->next;
+    if (result) {
+        unlinkitem(item);
+        after = CURRENT(base);
+        if (!after)
+            after = USED(base);
+        linkitem(item, after);
+        CURRENT(base) = item;                   /* now current */
+        result = -1;
     }
     BL_INTS_ON();
-    return d0;
+    return result;
 }
 
 /* doaddfirst - add an item at the beginning of the list */
 ULONG BLITZ_ROUTINE doaddfirst(UBYTE *base BL_REG(d0))
 {
-    struct item *a1;
-    ULONG d0;
+    struct item *item;
+    ULONG result;                               /* d0: the link, then -1 */
 
     BL_INTS_OFF();
-    a1 = FREE(base)->next;                      /* next of head of free */
-    d0 = (ULONG)a1->next;
-    if (d0) {                                   /* else none free */
-        CURRENT(base) = a1;                     /* now current */
-        unlinkitem(a1);
-        linkitem(a1, USED(base));
-        d0 = -1;
+    item = FREE(base)->next;                    /* next of head of free */
+    result = (ULONG)item->next;
+    if (result) {                               /* else none free */
+        CURRENT(base) = item;                   /* now current */
+        unlinkitem(item);
+        linkitem(item, USED(base));
+        result = -1;
     }
     BL_INTS_ON();
-    return d0;
+    return result;
 }
 
 /* doaddlast - add item at the end of the list */
 ULONG BLITZ_ROUTINE doaddlast(UBYTE *base BL_REG(d0))
 {
-    struct item *a1;
-    ULONG d0;
+    struct item *item;
+    ULONG result;                               /* d0: the link, then -1 */
 
     BL_INTS_OFF();
-    a1 = FREE(base)->next;                      /* next of free */
-    d0 = (ULONG)a1->next;
-    if (d0) {
-        CURRENT(base) = a1;
-        unlinkitem(a1);
-        linkitem(a1, TAILPRED(base));           /* prev of tail of used */
-        d0 = -1;
+    item = FREE(base)->next;                    /* next of free */
+    result = (ULONG)item->next;
+    if (result) {
+        CURRENT(base) = item;
+        unlinkitem(item);
+        linkitem(item, TAILPRED(base));         /* prev of tail of used */
+        result = -1;
     }
     BL_INTS_ON();
-    return d0;
+    return result;
 }
 
 /* donextitem - if no current, do first item.  At the end the current
    item stays and the result is 0. */
 ULONG BLITZ_ROUTINE donextitem(UBYTE *base BL_REG(d0))
 {
-    struct item *a1;
-    ULONG d0;
+    struct item *item;
+    ULONG result;                               /* d0: the link, then -1 */
 
     BL_INTS_OFF();
     if (!CURRENT(base))
         return firstitem2(base);
-    a1 = CURRENT(base)->next;                   /* next of current */
-    d0 = (ULONG)a1->next;
-    if (d0) {
-        CURRENT(base) = a1;
-        d0 = -1;
+    item = CURRENT(base)->next;                 /* next of current */
+    result = (ULONG)item->next;
+    if (result) {
+        CURRENT(base) = item;
+        result = -1;
     }
     BL_INTS_ON();
-    return d0;
+    return result;
 }
 
 /* doprevitem - if no current, do last item */
 ULONG BLITZ_ROUTINE doprevitem(UBYTE *base BL_REG(d0))
 {
-    struct item *a1;
-    ULONG d0;
+    struct item *item;
+    ULONG result;                               /* d0: the link, then -1 */
 
     BL_INTS_OFF();
     if (!CURRENT(base))
         return lastitem2(base);
-    a1 = CURRENT(base)->prev;                   /* previous of current */
-    d0 = (ULONG)a1->prev;
-    if (d0) {
-        CURRENT(base) = a1;
-        d0 = -1;
+    item = CURRENT(base)->prev;                 /* previous of current */
+    result = (ULONG)item->prev;
+    if (result) {
+        CURRENT(base) = item;
+        result = -1;
     }
     BL_INTS_ON();
-    return d0;
+    return result;
 }
 
 /* dosortlist - sort the used items ascending by the long at `offset` in
@@ -433,58 +433,58 @@ ULONG BLITZ_ROUTINE doprevitem(UBYTE *base BL_REG(d0))
 void BLITZ_ROUTINE dosortlist(UBYTE *base BL_REG(d0), WORD offset BL_REG(d1))
 {
     struct item *end = USEDTAIL(base);          /* d0 */
-    struct item *a1, *a2, *a3, *a4;
-    ULONG d1, d2;
-    UWORD d3;                                   /* swapped flag */
+    struct item *item, *next, *prev, *after;    /* a1, a2, a3, a4 */
+    ULONG itemkey, nextkey;                     /* d1, d2 */
+    UWORD swapped;                              /* d3: swapped flag */
 
     BL_INTS_OFF();
     if (USED(base)->next == end)
         goto dun;                               /* empty */
 dopass:
-    a1 = USED(base)->next;
-    a2 = a1->next;
-    a3 = a1->prev;
-    if (a2 == end)
+    item = USED(base)->next;
+    next = item->next;
+    prev = item->prev;
+    if (next == end)
         goto dun;
-    a4 = a2->next;
-    d1 = KEY(a1);
-    d3 = 0;
-    if (!a3)                                    /* never true: a3 = head */
+    after = next->next;
+    itemkey = KEY(item);
+    swapped = 0;
+    if (!prev)                                  /* never true: prev = head */
         BLITZ_RUNERR((const char *)end);        /* TRAP #0, d0 = end */
 nxpass:
-    d2 = KEY(a2);
-    if ((LONG)(d2 - d1) < 0)
+    nextkey = KEY(next);
+    if ((LONG)(nextkey - itemkey) < 0)
         goto doswap;
-    d1 = d2;
+    itemkey = nextkey;
 nxitem:
-    if (a4 == end)
+    if (after == end)
         goto dunpass;
-    a3 = a1;
-    a1 = a2;
-    a2 = a4;
-    a4 = a2->next;
+    prev = item;
+    item = next;
+    next = after;
+    after = next->next;
     goto nxpass;
 dunpass:
-    end = a2;
-    if (d3)
+    end = next;
+    if (swapped)
         goto dopass;
 dun:
     BL_INTS_ON();
     return;
 
-doswap:                                         /* a2 before a1 */
-    a3->next = a2;
-    a2->next = a1;
-    a2->prev = a3;
-    a1->prev = a2;
-    a1->next = a4;
-    a4->prev = a1;
+doswap:                                         /* next (a2) before item (a1) */
+    prev->next = next;
+    next->next = item;
+    next->prev = prev;
+    item->prev = next;
+    item->next = after;
+    after->prev = item;
     {                                           /* EXG a1,a2 */
-        struct item *t = a1;
-        a1 = a2;
-        a2 = t;
+        struct item *other = item;
+        item = next;
+        next = other;
     }
-    d3 = 1;
+    swapped = 1;
     goto nxitem;
 }
 
