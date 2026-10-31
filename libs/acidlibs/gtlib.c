@@ -416,17 +416,17 @@ static struct TextAttr *ufont;
 static struct Screen *uscreen;
 static struct NewGadget wrkgadget;
 
-static ULONG allocst(ULONG s, ULONG len)
+static ULONG allocst(ULONG str, ULONG len)
 {
-    struct bl_regs r = { .d0 = s, .d1 = len };
+    struct bl_regs r = { .d0 = str, .d1 = len };
 
     return BLITZ_ALIBJSR(TOK_allocst, r);
 }
 
 /* SNE d1:EXT.w d1:EXT.l d1 */
-static ULONG bit(ULONG d0, int n)
+static ULONG bit(ULONG flags, int n)
 {
-    return (d0 & (1UL << n)) ? (ULONG)-1 : 0;
+    return (flags & (1UL << n)) ? (ULONG)-1 : 0;
 }
 
 /* -------------------------------------------------------- init/finit */
@@ -493,18 +493,18 @@ static void getcontext(struct gtcontext *c)
 /* _handlestd - the NewGadget; returns the a2 cursor behind the label */
 static const ULONG *handlestd(UWORD id, WORD x, WORD y, WORD w, WORD h,
                               struct TextAttr **font, struct Screen **scr,
-                              const ULONG *a2, int shape)
+                              const ULONG *args, int shape)
 {
     struct gtcontext *c = (struct gtcontext *)blitz_string;
-    struct Screen *s;
+    struct Screen *screen;
 
     wrkgadget.ng_GadgetID = id;
     ufont = *font;
-    uscreen = s = *scr;
+    uscreen = screen = *scr;
     if (cludge) {
-        x += B(s, 36);                  /* WBorLeft */
-        y += B(s, 35);                  /* WBorTop */
-        y += W(s, 142);                 /* RastPort.TxHeight */
+        x += B(screen, 36);             /* WBorLeft */
+        y += B(screen, 35);             /* WBorTop */
+        y += W(screen, 142);            /* RastPort.TxHeight */
         y += 1;
     }
     getcontext(c);
@@ -519,12 +519,12 @@ static const ULONG *handlestd(UWORD id, WORD x, WORD y, WORD w, WORD h,
         wrkgadget.ng_Width = w;
         wrkgadget.ng_Height = h;
         wrkgadget.ng_TextAttr = ufont;
-        len = BL_POPL(a2);
-        str = BL_POPL(a2);
+        len = BL_POPL(args);
+        str = BL_POPL(args);
         wrkgadget.ng_GadgetText = (UBYTE *)allocst(str, len);
     }
     wrkgadget.ng_VisualInfo = c->vinfo;
-    return a2;
+    return args;
 }
 
 /* ng_Flags = flags & $3F (low word); TAG_MORE if GTTags were given;
@@ -544,12 +544,12 @@ static struct Gadget *create(ULONG kind, ULONG flags, ULONG *tags, int bt)
 
 #define STDARGS UWORD id BL_REG(d1), WORD x BL_REG(d2), WORD y BL_REG(d3), \
     WORD w BL_REG(d4), WORD h BL_REG(d5), struct TextAttr **font BL_REG(a0), \
-    struct Screen **scr BL_REG(a1), const ULONG *a2 BL_REG(a2)
+    struct Screen **scr BL_REG(a1), const ULONG *args BL_REG(a2)
 #define HANDLESTD(a) handlestd(id, x, y, w, h, font, scr, a, 0)
 
 static void BLITZ_ROUTINE gtbutton_c(STDARGS)
 {
-    const ULONG *sp = HANDLESTD(a2);
+    const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp);
     struct Gadget *gad;
 
@@ -564,7 +564,7 @@ static void BLITZ_ROUTINE gtbutton_c(STDARGS)
 
 static void BLITZ_ROUTINE gtcheckbox_c(STDARGS)
 {
-    const ULONG *sp = HANDLESTD(a2);
+    const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp);
 
     boxtags[1] = bit(f, 6);
@@ -581,29 +581,29 @@ static ULONG getoptions(const ULONG **sp)
     const UBYTE *s = (const UBYTE *)BL_POPL(*sp);
     struct bl_regs r = { .d0 = len + 258, .d1 = 0 };    /* MEMF_ANY */
     UWORD n = (UWORD)len;
-    UBYTE *blk, *a4;
-    UBYTE **a2;
+    UBYTE *blk, *text;
+    UBYTE **labels;
 
     blk = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
-    a2 = (UBYTE **)blk;
-    a4 = blk + 256;
-    *a2++ = a4;
+    labels = (UBYTE **)blk;
+    text = blk + 256;
+    *labels++ = text;
     while (n-- != 0) {                  /* DBF d2 */
         UBYTE c = *s++;
         if (c == '|') {
-            *a4++ = 0;
-            *a2++ = a4;
+            *text++ = 0;
+            *labels++ = text;
         } else
-            *a4++ = c;
+            *text++ = c;
     }
-    *a4 = 0;
-    *a2 = NULL;
+    *text = 0;
+    *labels = NULL;
     return (ULONG)blk;
 }
 
 static void cycle(STDARGS)
 {
-    const ULONG *sp = HANDLESTD(a2);
+    const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp);
 
     L(cycletags, 12) = getoptions(&sp);
@@ -613,18 +613,18 @@ static void cycle(STDARGS)
 
 static void BLITZ_ROUTINE gtcycle_c(STDARGS)
 {
-    cycle(id, x, y, w, h, font, scr, a2);
+    cycle(id, x, y, w, h, font, scr, args);
 }
 
 static void BLITZ_ROUTINE gtcycle2_c(STDARGS)
 {
-    UW(cycletags, 22) = UW(a2, -22);
-    cycle(id, x, y, w, h, font, scr, a2);
+    UW(cycletags, 22) = UW(args, -22);
+    cycle(id, x, y, w, h, font, scr, args);
 }
 
 static void mx(STDARGS)
 {
-    const ULONG *sp = HANDLESTD(a2);
+    const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp);
 
     L(mxtags, 12) = getoptions(&sp);
@@ -635,18 +635,18 @@ static void mx(STDARGS)
 
 static void BLITZ_ROUTINE gtmx_c(STDARGS)
 {
-    mx(id, x, y, w, h, font, scr, a2);
+    mx(id, x, y, w, h, font, scr, args);
 }
 
 static void BLITZ_ROUTINE gtmx2_c(STDARGS)
 {
-    UW(mxtags, 30) = UW(a2, -22);
-    mx(id, x, y, w, h, font, scr, a2);
+    UW(mxtags, 30) = UW(args, -22);
+    mx(id, x, y, w, h, font, scr, args);
 }
 
 static void BLITZ_ROUTINE gttext_c(STDARGS)
 {
-    const ULONG *sp = HANDLESTD(a2);
+    const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp), len, str;
 
     len = BL_POPL(sp);
@@ -657,7 +657,7 @@ static void BLITZ_ROUTINE gttext_c(STDARGS)
 
 static void BLITZ_ROUTINE gtinteger_c(STDARGS)
 {
-    const ULONG *sp = HANDLESTD(a2);
+    const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp);
 
     inttags[5] = BL_POPL(sp);
@@ -668,7 +668,7 @@ static void BLITZ_ROUTINE gtinteger_c(STDARGS)
 
 static void listview(STDARGS)
 {
-    const ULONG *sp = HANDLESTD(a2);
+    const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp);
 
     listtags[3] = BL_POPL(sp) - 28;     /* the List header of the array */
@@ -679,26 +679,26 @@ static void listview(STDARGS)
 
 static void BLITZ_ROUTINE gtlistview_c(STDARGS)
 {
-    listview(id, x, y, w, h, font, scr, a2);
+    listview(id, x, y, w, h, font, scr, args);
 }
 
 static void BLITZ_ROUTINE gtlistview1_c(STDARGS)
 {
-    UW(listtags, 22) = UW(a2, -18);     /* top = selected */
-    UW(listtags, 30) = UW(a2, -18);
-    listview(id, x, y, w, h, font, scr, a2);
+    UW(listtags, 22) = UW(args, -18);   /* top = selected */
+    UW(listtags, 30) = UW(args, -18);
+    listview(id, x, y, w, h, font, scr, args);
 }
 
 static void BLITZ_ROUTINE gtlistview2_c(STDARGS)
 {
-    UW(listtags, 30) = UW(a2, -18);     /* selected */
-    UW(listtags, 22) = UW(a2, -22);     /* top */
-    listview(id, x, y, w, h, font, scr, a2);
+    UW(listtags, 30) = UW(args, -18);   /* selected */
+    UW(listtags, 22) = UW(args, -22);   /* top */
+    listview(id, x, y, w, h, font, scr, args);
 }
 
 static void BLITZ_ROUTINE gtnumber_c(STDARGS)
 {
-    const ULONG *sp = HANDLESTD(a2);
+    const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp);
 
     numbertags[1] = BL_POPL(sp);
@@ -707,7 +707,7 @@ static void BLITZ_ROUTINE gtnumber_c(STDARGS)
 
 static void palette(STDARGS)
 {
-    const ULONG *sp = HANDLESTD(a2);
+    const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp);
 
     palettetags[3] = BL_POPL(sp);
@@ -717,19 +717,19 @@ static void palette(STDARGS)
 
 static void BLITZ_ROUTINE gtpalette_c(STDARGS)
 {
-    palette(id, x, y, w, h, font, scr, a2);
+    palette(id, x, y, w, h, font, scr, args);
 }
 
 /* BUG(orig) (#168): +38 is the low word of the TAG_MORE pointer */
 static void BLITZ_ROUTINE gtpalette2_c(STDARGS)
 {
-    UW(palettetags, 38) = UW(a2, -18);
-    palette(id, x, y, w, h, font, scr, a2);
+    UW(palettetags, 38) = UW(args, -18);
+    palette(id, x, y, w, h, font, scr, args);
 }
 
 static void scroller(STDARGS)
 {
-    const ULONG *sp = HANDLESTD(a2);
+    const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp);
     const UWORD *wp = (const UWORD *)sp;
 
@@ -744,18 +744,18 @@ static void scroller(STDARGS)
 
 static void BLITZ_ROUTINE gtscroller_c(STDARGS)
 {
-    scroller(id, x, y, w, h, font, scr, a2);
+    scroller(id, x, y, w, h, font, scr, args);
 }
 
 static void BLITZ_ROUTINE gtscroller2_c(STDARGS)
 {
-    UW(scrollertags, 54) = UW(a2, -18);         /* top */
-    scroller(id, x, y, w, h, font, scr, a2);
+    UW(scrollertags, 54) = UW(args, -18);       /* top */
+    scroller(id, x, y, w, h, font, scr, args);
 }
 
 static void slider(STDARGS)
 {
-    const ULONG *sp = HANDLESTD(a2);
+    const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp);
     const UWORD *wp = (const UWORD *)sp;
 
@@ -769,18 +769,18 @@ static void slider(STDARGS)
 
 static void BLITZ_ROUTINE gtslider_c(STDARGS)
 {
-    slider(id, x, y, w, h, font, scr, a2);
+    slider(id, x, y, w, h, font, scr, args);
 }
 
 static void BLITZ_ROUTINE gtslider2_c(STDARGS)
 {
-    UW(slidertags, 46) = UW(a2, -18);           /* level */
-    slider(id, x, y, w, h, font, scr, a2);
+    UW(slidertags, 46) = UW(args, -18);         /* level */
+    slider(id, x, y, w, h, font, scr, args);
 }
 
 static void string(STDARGS)
 {
-    const ULONG *sp = HANDLESTD(a2);
+    const ULONG *sp = HANDLESTD(args);
     ULONG f = BL_POPL(sp);
     const UWORD *wp = (const UWORD *)sp;
 
@@ -792,13 +792,13 @@ static void string(STDARGS)
 
 static void BLITZ_ROUTINE gtstring_c(STDARGS)
 {
-    string(id, x, y, w, h, font, scr, a2);
+    string(id, x, y, w, h, font, scr, args);
 }
 
 static void BLITZ_ROUTINE gtstring2_c(STDARGS)
 {
-    L(stringtags, 28) = L(a2, -22);             /* default$ */
-    string(id, x, y, w, h, font, scr, a2);
+    L(stringtags, 28) = L(args, -22);           /* default$ */
+    string(id, x, y, w, h, font, scr, args);
 }
 
 /* GTShape l,id,x,y,flags,shape[,shape2]: a6 = shape, a2 = shape 2 */
@@ -818,10 +818,10 @@ static void doshape(UWORD id, WORD x, WORD y, ULONG flags,
     usertags[0] = 0;
     __asm__("" : "+a"(gad));    /* may be 0: BUG(orig) (#327) */
     if (gad->GadgetRender) {
-        ULONG *d = (ULONG *)gad->GadgetRender, *s = (ULONG *)&image1;
+        ULONG *dst = (ULONG *)gad->GadgetRender, *src = (ULONG *)&image1;
         int i;
         for (i = 0; i < 5; i++)
-            *d++ = *s++;
+            *dst++ = *src++;
     } else
         gad->GadgetRender = &image1;
     gad->SelectRender = &image2;
@@ -864,16 +864,16 @@ static void BLITZ_ROUTINE gtshape2_c(SHAPEARGS, const UWORD *shape2 BL_REG(a2),
    passes the UWORD $FFFF) */
 static void addglist(struct Library *ib, struct Window *w, struct Gadget *g)
 {
-    register struct Library *a6 __asm("a6") = ib;
-    register struct Window *a0 __asm("a0") = w;
-    register struct Gadget *a1 __asm("a1") = g;
-    register LONG d0 __asm("d0") = -1;
-    register LONG d1 __asm("d1") = -1;
-    register APTR a2 __asm("a2") = NULL;
+    register struct Library *libreg __asm("a6") = ib;
+    register struct Window *winreg __asm("a0") = w;
+    register struct Gadget *gadreg __asm("a1") = g;
+    register LONG position __asm("d0") = -1;
+    register LONG numgad __asm("d1") = -1;
+    register APTR requester __asm("a2") = NULL;
 
     __asm volatile("jsr -438(a6)"
-        : "+a"(a0), "+a"(a1), "+d"(d0), "+d"(d1), "+a"(a2)
-        : "a"(a6) : "cc", "memory");
+        : "+a"(winreg), "+a"(gadreg), "+d"(position), "+d"(numgad), "+a"(requester)
+        : "a"(libreg) : "cc", "memory");
 }
 
 /* AttachGTList l,w: a1 = list, a0 = window object, a6 = intuition */
@@ -904,24 +904,24 @@ static void BLITZ_ROUTINE detachgtlist_c(struct gtcontext *c BL_REG(a1),
 }
 
 /* first gadget with the id after the head (0 = none) */
-static UBYTE *find(UBYTE *a0, UWORD id)
+static UBYTE *find(UBYTE *gad, UWORD id)
 {
     do {
-        a0 = P(a0, 0);
-        if (!a0)
+        gad = P(gad, 0);
+        if (!gad)
             return NULL;
-    } while (UW(a0, 38) != id);
-    return a0;
+    } while (UW(gad, 38) != id);
+    return gad;
 }
 
 /* the last of a run of gadgets with the id */
-static UBYTE *lastof(UBYTE *a0, UWORD id)
+static UBYTE *lastof(UBYTE *gad, UWORD id)
 {
     UBYTE *n;
 
-    while ((n = P(a0, 0)) != NULL && UW(n, 38) == id)
-        a0 = n;
-    return a0;
+    while ((n = P(gad, 0)) != NULL && UW(n, 38) == id)
+        gad = n;
+    return gad;
 }
 
 /* GTFreeGadget l,id - unlink the run of gadgets with the id and free
@@ -929,21 +929,21 @@ static UBYTE *lastof(UBYTE *a0, UWORD id)
 static ULONG BLITZ_ROUTINE gtfreegadget_c(UWORD id BL_REG(d1),
                                           struct gtcontext *c BL_REG(a1))
 {
-    UBYTE *a0 = (UBYTE *)c, *prev, *first, *last;
+    UBYTE *gad = (UBYTE *)c, *prev, *first, *last;
     UWORD n = 0;
 
     do {
-        prev = a0;
-        a0 = P(a0, 0);
-        if (!a0)
+        prev = gad;
+        gad = P(gad, 0);
+        if (!gad)
             return 0;
-    } while (UW(a0, 38) != id);
-    first = a0;
+    } while (UW(gad, 38) != id);
+    first = gad;
     do {
         n++;
-        last = a0;
-        a0 = P(a0, 0);
-    } while (a0 && UW(a0, 38) == id);
+        last = gad;
+        gad = P(gad, 0);
+    } while (gad && UW(gad, 38) == id);
     P(prev, 0) = P(last, 0);
     P(last, 0) = NULL;
     FreeGadgets((struct Gadget *)first);
@@ -972,23 +972,23 @@ static ULONG BLITZ_ROUTINE gtptr_c(UWORD id BL_REG(d1), struct gtcontext *c BL_R
 /* set tags on the last gadget of the run with the id */
 static ULONG setattrs(struct gtcontext *c, UWORD id, ULONG *tags, int last)
 {
-    UBYTE *a0 = find((UBYTE *)c->context, id);
+    UBYTE *gad = find((UBYTE *)c->context, id);
 
-    if (!a0)
+    if (!gad)
         return 0;
     if (last)
-        a0 = lastof(a0, id);
+        gad = lastof(gad, id);
     /* BUG(orig) (#328): a3 = tags afterwards */
-    GT_SetGadgetAttrsA((struct Gadget *)a0, c->window, NULL, (struct TagItem *)tags);
+    GT_SetGadgetAttrsA((struct Gadget *)gad, c->window, NULL, (struct TagItem *)tags);
     return 0;
 }
 
 /* GTChangeList l,id[,list()] - GTLV_Labels (-1: detach the labels) */
 static void BLITZ_ROUTINE gtchnglist1_c(UWORD id BL_REG(d1),
                                         struct gtcontext *c BL_REG(a1),
-                                        const ULONG *a2 BL_REG(a2))
+                                        const ULONG *args BL_REG(a2))
 {
-    gatchtags[1] = a2[-1] - 28;
+    gatchtags[1] = args[-1] - 28;
     if (!c->context)
         return;
     setattrs(c, id, gatchtags, 1);
@@ -1013,40 +1013,40 @@ static void BLITZ_ROUTINE gtsethighlight_c(UWORD id BL_REG(d1), ULONG v BL_REG(d
 }
 
 /* _gttags - d7 pairs from the a2 stack into usertags */
-static const ULONG *gttags(UWORD d7, const ULONG *sp)
+static const ULONG *gttags(UWORD pairs, const ULONG *sp)
 {
-    ULONG *a0 = usertags;
+    ULONG *tag = usertags;
 
-    while (d7-- != 0) {
-        a0[0] = BL_POPL(sp);
-        a0[1] = BL_POPL(sp);
-        a0 += 2;
+    while (pairs-- != 0) {
+        tag[0] = BL_POPL(sp);
+        tag[1] = BL_POPL(sp);
+        tag += 2;
     }
-    a0[0] = 0;
+    tag[0] = 0;
     return sp;
 }
 
-static void BLITZ_ROUTINE gttags_c(UWORD d7 BL_REG(d7), const ULONG *a2 BL_REG(a2))
+static void BLITZ_ROUTINE gttags_c(UWORD pairs BL_REG(d7), const ULONG *args BL_REG(a2))
 {
-    gttags(d7, a2);
+    gttags(pairs, args);
 }
 
 /* GTSetAttrs l,id,tag,value... (also a function: 0 if no gadget) */
-static ULONG BLITZ_ROUTINE gtsetattrs_c(UWORD id BL_REG(d1), UWORD d7 BL_REG(d7),
+static ULONG BLITZ_ROUTINE gtsetattrs_c(UWORD id BL_REG(d1), UWORD pairs BL_REG(d7),
                                         struct gtcontext *c BL_REG(a1),
-                                        const ULONG *a2 BL_REG(a2))
+                                        const ULONG *args BL_REG(a2))
 {
-    UBYTE *a0;
+    UBYTE *gad;
 
     if (!c->context)
         return 0;
-    a0 = find((UBYTE *)c->context, id);
-    if (!a0)
+    gad = find((UBYTE *)c->context, id);
+    if (!gad)
         return 0;
-    a0 = lastof(a0, id);
-    gttags(d7, a2);
+    gad = lastof(gad, id);
+    gttags(pairs, args);
     /* BUG(orig) (#328): a3 = usertags afterwards (also as a function) */
-    GT_SetGadgetAttrsA((struct Gadget *)a0, c->window, NULL,
+    GT_SetGadgetAttrsA((struct Gadget *)gad, c->window, NULL,
                        (struct TagItem *)usertags);
     return 0;                           /* the original: what d0 holds */
 }
@@ -1055,20 +1055,20 @@ static ULONG BLITZ_ROUTINE gtsetattrs_c(UWORD id BL_REG(d1), UWORD d7 BL_REG(d7)
    TEXT_KIND/NUMBER_KIND */
 static void setone(struct gtcontext *c, UWORD id, ULONG v, ULONG tstr, ULONG tother)
 {
-    UBYTE *a0 = find((UBYTE *)c, id);
+    UBYTE *gad = find((UBYTE *)c, id);
 
-    if (!a0)
+    if (!gad)
         return;
-    onetag[0] = UW(a0, 16) == 0x104 ? tstr : tother;
+    onetag[0] = UW(gad, 16) == 0x104 ? tstr : tother;
     onetag[1] = v;
     /* BUG(orig) (#328): a3 = onetag afterwards */
-    GT_SetGadgetAttrsA((struct Gadget *)a0, c->window, NULL, (struct TagItem *)onetag);
+    GT_SetGadgetAttrsA((struct Gadget *)gad, c->window, NULL, (struct TagItem *)onetag);
 }
 
-static void BLITZ_ROUTINE gtsetstring_c(UWORD id BL_REG(d1), ULONG s BL_REG(d2),
+static void BLITZ_ROUTINE gtsetstring_c(UWORD id BL_REG(d1), ULONG str BL_REG(d2),
                                         struct gtcontext *c BL_REG(a1))
 {
-    setone(c, id, s, TAG + 45, TAG + 11);
+    setone(c, id, str, TAG + 45, TAG + 11);
 }
 
 static void BLITZ_ROUTINE gtsetint_c(UWORD id BL_REG(d1), ULONG v BL_REG(d2),
@@ -1081,16 +1081,16 @@ static void BLITZ_ROUTINE gtsetint_c(UWORD id BL_REG(d1), ULONG v BL_REG(d2),
 static ULONG BLITZ_ROUTINE gtgetstring_c(UWORD id BL_REG(d1),
                                          struct gtcontext *c BL_REG(a1))
 {
-    UBYTE *a0 = find((UBYTE *)c, id);
-    const UBYTE *s;
+    UBYTE *gad = find((UBYTE *)c, id);
+    const UBYTE *text;
     ULONG n = (ULONG)-1;
 
-    if (!a0)
+    if (!gad)
         return 0;
-    s = P(P(a0, 34), 0);
+    text = P(P(gad, 34), 0);
     do
         n++;
-    while ((*blitz_string++ = *s++) != 0);
+    while ((*blitz_string++ = *text++) != 0);
     blitz_string--;
     return n;
 }
@@ -1098,26 +1098,26 @@ static ULONG BLITZ_ROUTINE gtgetstring_c(UWORD id BL_REG(d1),
 /* GTGetInteger(l,id) - StringInfo LongInt */
 static ULONG BLITZ_ROUTINE gtgetint_c(UWORD id BL_REG(d1), struct gtcontext *c BL_REG(a1))
 {
-    UBYTE *a0 = find((UBYTE *)c, id);
+    UBYTE *gad = find((UBYTE *)c, id);
 
-    if (!a0)
+    if (!gad)
         return 0;
-    return L(P(a0, 34), 28);
+    return L(P(gad, 34), 28);
 }
 
 /* GTGetAttrs(l,id,tag) - GT_GetGadgetAttrs into `value` */
 static ULONG BLITZ_ROUTINE gtgetattrs_c(UWORD id BL_REG(d1), ULONG tag BL_REG(d2),
                                         struct gtcontext *c BL_REG(a1))
 {
-    UBYTE *a0 = find((UBYTE *)c, id);
+    UBYTE *gad = find((UBYTE *)c, id);
 
-    if (!a0)
+    if (!gad)
         return 0;
     gettag[0] = tag;
     gettag[1] = (ULONG)&value;
     /* BUG(orig) (#328): a3 = gettag afterwards - in a string expression the rest
        is written over gettag, value and what follows them */
-    GT_GetGadgetAttrsA((struct Gadget *)a0, c->window, NULL, (struct TagItem *)gettag);
+    GT_GetGadgetAttrsA((struct Gadget *)gad, c->window, NULL, (struct TagItem *)gettag);
     return value;
 }
 
@@ -1125,17 +1125,17 @@ static ULONG BLITZ_ROUTINE gtgetattrs_c(UWORD id BL_REG(d1), ULONG tag BL_REG(d2
 static ULONG BLITZ_ROUTINE gtgetstatus_c(UWORD id BL_REG(d1),
                                          struct gtcontext *c BL_REG(a1))
 {
-    UBYTE *a0 = find((UBYTE *)c, id);
+    UBYTE *gad = find((UBYTE *)c, id);
 
-    if (!a0)
+    if (!gad)
         return 0;
-    return (UWORD)((WORD)(UW(a0, 12) & 0x80) >> 7);
+    return (UWORD)((WORD)(UW(gad, 12) & 0x80) >> 7);
 }
 
 /* GTArrowSize size */
-static void BLITZ_ROUTINE gtarrowsize_c(ULONG s BL_REG(d0))
+static void BLITZ_ROUTINE gtarrowsize_c(ULONG size BL_REG(d0))
 {
-    arrowsize = s;
+    arrowsize = size;
 }
 
 /* GTGimmeCludge on/off - on: no border offsets (cludge = 0) */
@@ -1147,52 +1147,52 @@ static void BLITZ_ROUTINE gtcludge_c(UWORD on BL_REG(d0))
 /* findgadget (binary: stops at the end, then the caller returns too) */
 static UBYTE *findgadget(UBYTE *list, UWORD id)
 {
-    UBYTE *a0 = list;
+    UBYTE *gad = list;
 
     for (;;) {
-        a0 = P(a0, 0);
-        if (!a0)
+        gad = P(gad, 0);
+        if (!gad)
             return NULL;
-        if (UW(a0, 38) == id && W(a0, 16) >= 0)
-            return a0;
+        if (UW(gad, 38) == id && W(gad, 16) >= 0)
+            return gad;
     }
 }
 
 static void BLITZ_ROUTINE doenable_c(UWORD id BL_REG(d1), UBYTE *list BL_REG(a1))
 {
-    UBYTE *a0 = findgadget(list, id);
+    UBYTE *gad = findgadget(list, id);
 
-    if (a0)
-        B(a0, 12) &= ~1;
+    if (gad)
+        B(gad, 12) &= ~1;
 }
 
 static void BLITZ_ROUTINE dodisable_c(UWORD id BL_REG(d1), UBYTE *list BL_REG(a1))
 {
-    UBYTE *a0 = findgadget(list, id);
+    UBYTE *gad = findgadget(list, id);
 
-    if (a0)
-        B(a0, 12) |= 1;
+    if (gad)
+        B(gad, 12) |= 1;
 }
 
 static void BLITZ_ROUTINE doselect_c(UWORD id BL_REG(d1), UWORD on BL_REG(d2),
                                      UBYTE *list BL_REG(a1))
 {
-    UBYTE *a0 = findgadget(list, id);
+    UBYTE *gad = findgadget(list, id);
 
-    if (!a0)
+    if (!gad)
         return;
     if (on)
-        B(a0, 13) |= 0x80;
+        B(gad, 13) |= 0x80;
     else
-        B(a0, 13) &= ~0x80;
+        B(gad, 13) &= ~0x80;
 }
 
 static void BLITZ_ROUTINE doselect2_c(UWORD id BL_REG(d1), UBYTE *list BL_REG(a1))
 {
-    UBYTE *a0 = findgadget(list, id);
+    UBYTE *gad = findgadget(list, id);
 
-    if (a0)
-        B(a0, 13) ^= 0x80;
+    if (gad)
+        B(gad, 13) ^= 0x80;
 }
 
 /* entry labels */
@@ -1251,15 +1251,15 @@ BLITZ_ERRCHK_MESSAGE(mess6, "GTList already attached to window!");
 BLITZ_ERRCHK_MESSAGE(mess7, "GTList must be detached from window first!");
 
 /* sgchk2 - TST (a2):  sgchk - TST (a6) */
-static void BLITZ_ERRCHK sgchk2_c(const UWORD *s2 BL_REG(a2), const UWORD *s BL_REG(a6))
+static void BLITZ_ERRCHK sgchk2_c(const UWORD *shape2 BL_REG(a2), const UWORD *shape BL_REG(a6))
 {
-    if (!*s2 || !*s)
+    if (!*shape2 || !*shape)
         BLITZ_RUNERR(mess4);
 }
 
-static void BLITZ_ERRCHK sgchk_c(const UWORD *s BL_REG(a6))
+static void BLITZ_ERRCHK sgchk_c(const UWORD *shape BL_REG(a6))
 {
-    if (!*s)
+    if (!*shape)
         BLITZ_RUNERR(mess4);
 }
 
