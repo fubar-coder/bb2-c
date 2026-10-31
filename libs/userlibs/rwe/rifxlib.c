@@ -864,21 +864,27 @@ static ULONG unrezx2(void)
    their first pixel (1 = ScreenCopy, 2 = UnrezX2, up to 17 through the
    mask table myline, above that bit by bit).  BUG(orig) (#672): no result is
    set - the d0 returned here is what the original leaves in d0. */
-static ULONG BLITZ_ROUTINE asmderez_c(ULONG value BL_REG(d0), ULONG sadd BL_REG(d2),
+static ULONG BLITZ_ROUTINE asmderez_c(ULONG callerd0 BL_REG(d0), ULONG sadd BL_REG(d2),
                                       ULONG dadd BL_REG(d3), ULONG rez BL_REG(d4),
                                       ULONG h BL_REG(d5), ULONG src BL_REG(a0),
                                       ULONG dst BL_REG(a1))
 {
-    /* bitptr a0, destptr a6, copysrc a1, pos a2, dstline a3, carry d1,
-       bits d2, maskptr a5, count d4, plane d6, lines d7, bitno d3.b,
-       cols d5.b, value d0 */
-    ULONG *bitptr, *destptr, copysrc, pos, dstline, carry, bits;
+    /* bitptr a0, destptr a6, copysrc a1, pos a2 (the source line),
+       nextline a2, dstline a3, carry d1, mask/rot/dstword d2, maskptr a5,
+       count d4, plane d6, lines d7, bitno d3.b, cols d5.b, leftover/value
+       d0 */
+    ULONG *bitptr, *destptr, copysrc, pos, nextline, dstline, carry;
+    ULONG mask;                                 /* d2: a myline word being built */
+    ULONG rot;                                  /* d2: the rotated copy of value */
+    ULONG dstword;                              /* d2: the destination word */
+    ULONG leftover;                             /* d0: the DBRA leftover */
+    ULONG value;                                /* d0: the source word, the result */
     UWORD *maskptr, count, plane, rv;
     WORD c, b, lines;
     BYTE bitno, cols;
 
     if (!(UWORD)rez)
-        return value;
+        return callerd0;
     res_value = (UWORD)rez;
     res_value2 = (UWORD)(rez - 1);
     res_value3 = (UWORD)(rez - 2);
@@ -886,11 +892,11 @@ static ULONG BLITZ_ROUTINE asmderez_c(ULONG value BL_REG(d0), ULONG sadd BL_REG(
     sbitdepth = (UWORD)((sbitdepth & 0xff00) | BM_DEPTH(src));  /* BUG(orig) (#675) */
     sbitdepth--;
     store_bitplanes(src, dst, sadd, dadd);
-    value = (value & 0xffff0000UL) | 0xffff;    /* DBRA d0 of store_bitplanes */
+    leftover = (callerd0 & 0xffff0000UL) | 0xffff; /* DBRA d0 of store_bitplanes */
 
     if (!res_value2) {
         screencopy();
-        return value;
+        return leftover;
     }
     if (res_value == 2)
         return unrezx2();
@@ -904,14 +910,14 @@ static ULONG BLITZ_ROUTINE asmderez_c(ULONG value BL_REG(d0), ULONG sadd BL_REG(
     c = 19;
     b = 15;
     rv = res_value;
-    bits = 0;
+    mask = 0;
 widthloop:
-    bits |= 1UL << (b & 31);                    /* BSET d1,d2 */
+    mask |= 1UL << (b & 31);                    /* BSET d1,d2 */
     b = (WORD)(b - rv);
     if (b >= 0)
         goto widthloop;
-    *maskptr++ = (UWORD)bits;
-    bits = 0;
+    *maskptr++ = (UWORD)mask;
+    mask = 0;
     b = (WORD)(b + 16);
     if (b < 0)
         goto moretodo;
@@ -946,11 +952,11 @@ yloop:
                 do {                            /* xloop */
                     value = W_(pos) & *maskptr++;
                     pos += 2;
-                    bits = value;
+                    rot = value;
                     count = res_value3;
                     do {
-                        bits = (bits >> 1) | (bits << 31); /* ROR.l #1 */
-                        value |= bits;
+                        rot = (rot >> 1) | (rot << 31); /* ROR.l #1 */
+                        value |= rot;
                     } while (count-- != 0);
                     value = (value & 0xffff0000UL) | (UWORD)(value | carry);
                     W_(dstline) = (UWORD)value;
@@ -968,9 +974,9 @@ yloop:
             value = (value & 0xffff0000UL) | W_(pos);
             if (!(value & (1UL << (bitno & 31))))
                 goto clearbits;
-            bits = W_(dstline);
+            dstword = W_(dstline);
         setbits_loop:
-            bits |= 1UL << (bitno & 31);
+            dstword |= 1UL << (bitno & 31);
             bitno = (BYTE)(bitno - 1);
             if (bitno < 0)
                 goto setbits_word;
@@ -979,9 +985,9 @@ yloop:
             goto next_bit;
         setbits_word:
             pos += 2;
-            W_(dstline) = (UWORD)bits;
+            W_(dstline) = (UWORD)dstword;
             dstline += 2;
-            bits = W_(dstline);
+            dstword = W_(dstline);
             bitno = 15;
             cols = (BYTE)(cols - 1);
             if (cols < 0)
@@ -990,9 +996,9 @@ yloop:
                 goto setbits_loop;
             goto next_bit;
         clearbits:
-            bits = W_(dstline);
+            dstword = W_(dstline);
         clearbits_loop:
-            bits &= ~(1UL << (bitno & 31));
+            dstword &= ~(1UL << (bitno & 31));
             bitno = (BYTE)(bitno - 1);
             if (bitno < 0)
                 goto clearbits_word;
@@ -1001,9 +1007,9 @@ yloop:
             goto next_bit;
         clearbits_word:
             pos += 2;
-            W_(dstline) = (UWORD)bits;
+            W_(dstline) = (UWORD)dstword;
             dstline += 2;
-            bits = W_(dstline);
+            dstword = W_(dstline);
             bitno = 15;
             cols = (BYTE)(cols - 1);
             if (cols < 0)
@@ -1011,25 +1017,25 @@ yloop:
             if (count-- != 0)
                 goto clearbits_loop;
         next_bit:
-            W_(dstline) = (UWORD)bits;
+            W_(dstline) = (UWORD)dstword;
             goto bitxloop;
 
         done_line:                              /* the line downwards */
             count = res_value3;
             copysrc = *destptr;
-            pos = copysrc + 40;
+            nextline = copysrc + 40;
             for (;;) {
                 lines = (WORD)(lines - 1);
                 if (lines < 0)
                     goto out_of_screen;
-                COPY40(copysrc, pos);
+                COPY40(copysrc, nextline);
                 if (count-- == 0)
                     break;
             }
             *bitptr += add_value;
         out_of_screen:
             bitptr++;
-            *destptr++ = pos;
+            *destptr++ = nextline;
         } while (plane-- != 0);
         yvalue = (UWORD)(yvalue - res_value);
         if ((WORD)yvalue < 0)
@@ -1056,10 +1062,10 @@ BLITZ_THUNK(InitZoomxy, initzoomxy_c, "d0-d1/a0-a1");
    ScreenCopy */
 static void BLITZ_ROUTINE asmzoom_c(ULONG xz BL_REG(d0), ULONG yz BL_REG(d1), ULONG h BL_REG(d2))
 {
-    /* bitptr a0, destptr a6, copysrc a1, pos a2, dstline a3, srcbits d0,
-       dstbits d2, count d4, plane d6, lines d7, srcbit d1.b, dstbit d3.b,
-       cols d5.b */
-    ULONG *bitptr, *destptr, copysrc, pos, dstline, srcbits, dstbits;
+    /* bitptr a0, destptr a6, copysrc a1, pos a2 (the source), nextline
+       a2, dstline a3, srcbits d0, dstbits d2, count d4, plane d6, lines
+       d7, srcbit d1.b, dstbit d3.b, cols d5.b */
+    ULONG *bitptr, *destptr, copysrc, pos, nextline, dstline, srcbits, dstbits;
     UWORD count, plane;
     WORD lines;
     BYTE srcbit, dstbit, cols;
@@ -1144,22 +1150,22 @@ static void BLITZ_ROUTINE asmzoom_c(ULONG xz BL_REG(d0), ULONG yz BL_REG(d1), UL
         done_line:                              /* the line downwards */
             count = yzoom_value;
             if (!count) {
-                pos = *destptr + 40;            /* yzoom1 */
+                nextline = *destptr + 40;       /* yzoom1 */
             } else {
                 count--;
                 copysrc = *destptr;
-                pos = copysrc + 40;
+                nextline = copysrc + 40;
                 for (;;) {
                     lines = (WORD)(lines - 1);
                     if (lines < 0)
                         break;
-                    COPY40(copysrc, pos);
+                    COPY40(copysrc, nextline);
                     if (count-- == 0)
                         break;
                 }
             }
             *bitptr++ += 40;                    /* out_of_screen */
-            *destptr++ = pos;
+            *destptr++ = nextline;
         } while (plane-- != 0);
         yvalue = (UWORD)(yvalue - yzoom_value2);
         if ((WORD)yvalue < 0)
