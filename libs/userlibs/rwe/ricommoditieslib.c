@@ -181,8 +181,13 @@ static const char cname[] = "commodities.library";
 
 /* ------------------------------------------------------------- routines */
 
-/* init: OpenLibrary("commodities.library",37).  BUG(orig): not checked
-   (#559). */
+/**
+ * @brief init: OpenLibrary("commodities.library",37).
+ *
+ * BUG(orig) (#559): not checked - without the library every command
+ * calls through a base of 0.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     st_cbase = OpenLibrary((CONST_STRPTR)cname, 37);
@@ -196,8 +201,15 @@ static void delmsgport(struct MsgPort *p)
         DeleteMsgPort(p);
 }
 
-/* finit.  BUG(orig): CloseLibrary first, then DeleteCxObj through the
-   closed base; only the broker is deleted (#556, #557). */
+/**
+ * @brief finit: closes commodities.library, deletes the broker and the
+ * message port.
+ *
+ * BUG(orig): CloseLibrary first, then DeleteCxObj through the closed base
+ * (#556); only the broker is deleted, not its filters and senders
+ * (#557); the port is deleted with the messages still queued (#561).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (!st_cbase)
@@ -230,8 +242,15 @@ static struct Message *getmsg_cc(struct MsgPort *port, UBYTE *ne)
     return d0;
 }
 
-/* WaitCommodity.  BUG(orig): see the head of the file - the CCR of
-   GetMsg decides, and inverted: "ne" waits for the next message (#566). */
+/**
+ * @brief WaitCommodity: fetches a message into msg, waiting for one.
+ *
+ * Amiga mode only.  BUG(orig) (#566): the CCR of GetMsg decides, and
+ * inverted: "ne" (in practice: the port was empty) -> WaitPort, msg =
+ * the next message, which stays queued; "eq" -> msg = GetMsg's result (a
+ * message removed by GetMsg with "ne" is lost).
+ * @return d0: BB_TRUE either way, BB_FALSE without a broker
+ */
 static BB_BOOL BLITZ_ROUTINE waitevent_c(void)
 {
     struct Message *m;
@@ -247,7 +266,13 @@ static BB_BOOL BLITZ_ROUTINE waitevent_c(void)
 }
 BLITZ_THUNK(waitevent, waitevent_c, "d1/a0-a1");
 
-/* CommodityEvent: GetMsg -> msg, -1 if there was one */
+/**
+ * @brief CommodityEvent: fetches the next message (GetMsg) into msg.
+ *
+ * Amiga mode only.  BUG(orig) (#561): messages are never replied.
+ * @return d0: BB_TRUE if there was one, BB_FALSE if not or without a
+ *         broker
+ */
 static BB_BOOL BLITZ_ROUTINE event_c(void)
 {
     if (!st.cobject)
@@ -265,7 +290,14 @@ static void getmessage(void)
     st.cxmsgevent = (ULONG)CxMsgData(st.msg);
 }
 
-/* HotKeyHit: the id of a CXM_IEVENT message, else -1 */
+/**
+ * @brief HotKeyHit: the hotkey id of the fetched message.
+ *
+ * Amiga mode only.  Reads id, type and data of msg (they stay for the
+ * Exchange* functions).  BUG(orig) (#561): no ReplyMsg.
+ * @return d0: the id of a CXM_IEVENT message, else -1 (also without a
+ *         broker or message)
+ */
 static LONG BLITZ_ROUTINE hotkeyhit_c(void)
 {
     if (!st.cobject || !st.msg)
@@ -277,7 +309,13 @@ static LONG BLITZ_ROUTINE hotkeyhit_c(void)
 }
 BLITZ_THUNK(hotkeyhit, hotkeyhit_c, "d1/a0-a1");
 
-/* ExchangeMessage: the command of a CXM_COMMAND message, else 0 */
+/**
+ * @brief ExchangeMessage: the Exchange command of the fetched message.
+ *
+ * Amiga mode only.  Reads id, type and data of msg as HotKeyHit.
+ * @return d0: the CXCMD_ code of a CXM_COMMAND message, else 0 (also
+ *         without a broker or message)
+ */
 static LONG BLITZ_ROUTINE exchangemessage_c(void)
 {
     if (!st.cobject || !st.msg)
@@ -289,7 +327,13 @@ static LONG BLITZ_ROUTINE exchangemessage_c(void)
 }
 BLITZ_THUNK(exchangemessage, exchangemessage_c, "d1/a0-a1");
 
-/* the inline constants: MOVE.l #CXCMD_...,d0 */
+/**
+ * @brief CxDisable, CxEnable, CxAppear, CxDisAppear, CxKill,
+ * CxListChange, CxUnique: the CXCMD_ codes.
+ *
+ * Inline constants (MOVE.l #CXCMD_...,d0, copied by the compiler).
+ * Result: d0 = the code (15, 17, 19, 21, 23, 27, 25).
+ */
 BLITZ_INLINE(cxdisable, "move.l #15,d0");
 BLITZ_INLINE(cxenable, "move.l #17,d0");
 BLITZ_INLINE(cxappear, "move.l #19,d0");
@@ -305,6 +349,15 @@ static BB_BOOL is_cmd(ULONG cmd)
         return BB_FALSE;
     return BB_TRUE;
 }
+/**
+ * @brief ExchangeDisable, ExchangeEnable, ExchangeAppear,
+ * ExchangeDisAppear, ExchangeKill, ExchangeListChange, ExchangeUnique:
+ * whether the last message was that Exchange command.
+ *
+ * Amiga mode only.  BUG(orig) (#555): the id of the last message is
+ * compared whatever its type (a hotkey id 15 counts as ExchangeDisable).
+ * @return d0: BB_TRUE if the last id is the CXCMD_ code, else BB_FALSE
+ */
 static BB_BOOL BLITZ_ROUTINE disabled_c(void) { return is_cmd(CMD_DISABLE); }
 static BB_BOOL BLITZ_ROUTINE enable_c(void) { return is_cmd(CMD_ENABLE); }
 static BB_BOOL BLITZ_ROUTINE appear_c(void) { return is_cmd(CMD_APPEAR); }
@@ -328,8 +381,20 @@ static LONG attach(CxObj *head, CxObj *co)
     return BLITZ_BASEJSR(st_cbase, -84, r);
 }
 
-/* SetHotKey n,hotkey$.  BUG(orig): see the head of the file (#564, #563,
-   #565). */
+/**
+ * @brief SetHotKey(hotkeynum,hotkey$): a hotkey filter with a sender (id
+ * hotkeynum) attached to the broker.
+ *
+ * Amiga mode only; the broker is activated afterwards.  BUG(orig): the
+ * number is not checked, slots outside 0-15 hit the variables around
+ * cxfilter/cxsends (#564); a replaced filter/sender is removed but not
+ * deleted, the sender only if the filter existed, and objects made
+ * before a failure stay (#563); AttachCxObj (void) is tested through the
+ * d0 it leaves, CxObjError is not looked at (#565).
+ * @param n     d0: the hotkey number
+ * @param desc  d1: the hotkey description (CX_FILTER)
+ * @return d0: BB_TRUE, BB_FALSE without a broker or if a step fails
+ */
 static BB_BOOL BLITZ_ROUTINE addhotkey_c(LONG n BL_REG(d0), STRPTR desc BL_REG(d1))
 {
     ULONG *slot, o;
@@ -369,15 +434,27 @@ static BB_BOOL BLITZ_ROUTINE addhotkey_c(LONG n BL_REG(d0), STRPTR desc BL_REG(d
 }
 BLITZ_THUNK(addhotkey, addhotkey_c, "d1/a0-a1");
 
-/* CommodityMsgPort */
+/**
+ * @brief CommodityMsgPort: the message port address.
+ *
+ * The only entry callable in Blitz mode too.
+ * @return d0: the port, 0 before MakeCommodity
+ */
 static ULONG BLITZ_ROUTINE port_c(void)
 {
     return (ULONG)st.msgport;
 }
 BLITZ_THUNK(port, port_c, "d1/a0-a1");
 
-/* SetCxStatus on|off: -1 activates, 0 deactivates the broker.
-   BUG(orig): tests the message port, not the broker (#562). */
+/**
+ * @brief SetCxStatus on|off: -1 activates, 0 deactivates the broker.
+ *
+ * Amiga mode only.  BUG(orig) (#562): tests the message port, not the
+ * broker; any other value does nothing.
+ * @param on  d0: -1 or 0 (other values are tested, so a LONG)
+ * @return d0: BB_TRUE, BB_FALSE without a port or for another value (a
+ *         statement: the value is not used)
+ */
 static BB_BOOL BLITZ_ROUTINE status_c(LONG on BL_REG(d0))
 {
     if (!st.msgport)
@@ -391,8 +468,18 @@ static BB_BOOL BLITZ_ROUTINE status_c(LONG on BL_REG(d0))
 }
 BLITZ_THUNK(status, status_c, "d1/a0-a1");
 
-/* MakeCommodity name$,title$,description$.  BUG(orig): a new broker on
-   every call, the previous one is not deleted (#560). */
+/**
+ * @brief MakeCommodity(name$,title$,description$): the commodity's broker
+ * (NBU_UNIQUE|NBU_NOTIFY, COF_SHOW_HIDE), activated.
+ *
+ * Amiga mode only.  The message port is created on the first call.
+ * BUG(orig): a new broker on every call, the previous one is not deleted
+ * (#560); the help text lacks the closing parenthesis (#558).
+ * @param name   d0: the name
+ * @param title  d1: the title
+ * @param descr  d2: the description
+ * @return d0: BB_TRUE, BB_FALSE if the port or the broker fails
+ */
 static BB_BOOL BLITZ_ROUTINE makecommodity_c(STRPTR name BL_REG(d0), STRPTR title BL_REG(d1),
                                              STRPTR descr BL_REG(d2))
 {
