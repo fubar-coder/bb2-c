@@ -70,7 +70,7 @@
 
 /* entry points (defined below) */
 ULONG BLITZ_ROUTINE _startcrunch(UBYTE *buf BL_REG(d0), ULONG len BL_REG(d1));
-ULONG BLITZ_ROUTINE _decrunch(UBYTE *buf BL_REG(d0));
+BB_BOOL BLITZ_ROUTINE _decrunch(UBYTE *buf BL_REG(d0));
 void _crm(void), _crm2(void), _ppdecrunch(void);
 
 /* !libheader {#romuluscrunchlib,0,0,0,0} */
@@ -642,8 +642,8 @@ static int imbit(UBYTE *bitbuf, const UBYTE **src)
     return c;
 }
 
-/* deplode - a0 = crunched data; -1 = ok, 0 = error */
-static ULONG deplode(UBYTE *buf)
+/* deplode - a0 = crunched data; BB_TRUE = ok, BB_FALSE = error */
+static BB_BOOL deplode(UBYTE *buf)
 {
     UBYTE *dst;
     const UBYTE *packed, *hdr;
@@ -653,7 +653,7 @@ static ULONG deplode(UBYTE *buf)
     int i;
 
     if (RL(buf) != ID_IMP)
-        return 0;
+        return BB_FALSE;
     dst = buf + RL(buf + 4);
     packed = buf + RL(buf + 8);
     hdr = packed;
@@ -680,7 +680,7 @@ static ULONG deplode(UBYTE *buf)
             *--dst = *--packed;
         /* I1E7A */
         if (buf >= dst)
-            return packed == buf ? (ULONG)-1 : 0;
+            return packed == buf ? BB_TRUE : BB_FALSE;
         /* I1E92: match length */
         if (!imbit(&bitbuf, &packed)) {
             len = 1; idx = 0;
@@ -755,7 +755,7 @@ static ULONG deplode(UBYTE *buf)
 }
 
 /* _decrunch - d0 = crunched data */
-ULONG BLITZ_ROUTINE _decrunch(UBYTE *buf BL_REG(d0))
+BB_BOOL BLITZ_ROUTINE _decrunch(UBYTE *buf BL_REG(d0))
 {
     return deplode(buf);
 }
