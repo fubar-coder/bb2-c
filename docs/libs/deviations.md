@@ -128,7 +128,7 @@ intended deviations (kind **F**), each with its issue.
 
 | Library/routine (file:line) | Original | C version | Kind | Reason / observable? |
 |---|---|---|---|---|
-| init of all libraries/resources (libs/deflibs/deflib.h:20) | `BEQ init+6` jumps into the middle of the `LEA`: `ORI.b #0,(a0)+` with arbitrary a0, then OpenLibrary with the a1 left by the failure | endless loop, each time with the correct name | **T** | a0/a1 after a failed OpenLibrary are undefined; observable only if the library is missing (both hang) |
+| init of all libraries/resources (libs/deflibs/deflib.h:16) | `BEQ init+6` jumps into the middle of the `LEA`: `ORI.b #0,(a0)+` with arbitrary a0, then OpenLibrary with the a1 left by the failure, forever | the base or 0 (no retry); the finit of a library closes it only if the base is not 0 | **F** | #44: a program using a call of a missing library no longer hangs at startup; it runs with base 0, a call of that library crashes (test `deflibs-init-endless-retry`, Kickstart 1.3 without gadtools.library) |
 | init/finit in general ([deflibs.md](deflibs.md)) | destroys a6, `JMP CloseLibrary` | GCC saves a6, `JSR` | **B** (register preservation) | not observable |
 | Resources (deflib.h, e.g. battclocklib.c:42) | `LEA` points 6 bytes into the name: `OpenResource` always fails, the init hangs (#44) | opens the name itself | **F** | #45: a program using a call of ciaa, ciab, disk, misc, potgo, battclock, battmem or card no longer hangs at startup (test `deflibs-resource-name-skew`) |
 | exec `CachePreDMA_`, `CachePostDMA_` (execlib.c:141) | `flags` declared in d1, exec reads d0 | d0 (`exec_lib.fd`); a declaration difference, listed in `libs/deflibs/declarations-intended.txt` | **F** | #959: exec gets the given flags; before, only by chance at the statement level (the flags evaluated last into d0), inside an expression d0 held another value (test `deflibs-cachedma-flags-d1`) |
@@ -207,7 +207,7 @@ binary in acidlibs, followed on 2026-10-29.
   (additionally preserved registers are never results).
 * **T – technically unavoidable:** undefined register leftovers and
   OS returns (blitlib BlitColl, freqlib, cliargslib CCR, windowslib
-  zcursor, ilbmifflib a0, deflibs retry), memory layout with overflows and
+  zcursor, ilbmifflib a0), memory layout with overflows and
   invalid indices (2dlib, polylib, displaylib, crunchlib), stack contents
   with error jumps via JSR (displaylib) and other stack questions
   (crunchlib, arrayslib a4/a5), timing (shapetrixlib XFlip) and in the

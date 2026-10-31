@@ -7,10 +7,10 @@
  * since then this file is the source.  Structure: notes/deflibs.md.
  *
  *   init:  OpenLibrary("mathtrans.library", 0) -> d0 = base (return long:
- *          the compiler keeps it for the calls, a6).  BUG(orig) (#44):
- *          retries forever if the library cannot be opened
- *          (deflib.h)
- *   finit: CloseLibrary(base), a1 = base (!libs LIB_mathtransoslib,#la1)
+ *          the compiler keeps it for the calls, a6), 0 if the
+ *          library cannot be opened.  Fixed (intended deviation, #44):
+ *          the original retries forever (deflib.h)
+ *   finit: CloseLibrary(base) if base != 0, a1 = base (!libs LIB_mathtransoslib,#la1)
  *
  * Every call: BLITZ_OSCALL(base lib, LVO, name, help, argument
  * registers); the compiler generates the call (blitz2.s stamigalib).
@@ -49,14 +49,15 @@ BLITZ_LIBFIN();
 
 static const char libname[] = "mathtrans.library";
 
-/* init nullsub: d0 = library base */
+/* init nullsub: d0 = library base, 0 if it cannot be opened (fixed,
+   #44: the original retries forever) */
 static ULONG BLITZ_ROUTINE libinit(void)
 {
     return deflib_openlibrary(libname);
 }
 
-/* finit nullsub: a1 = library base */
+/* finit nullsub: a1 = library base (0 if it was not opened) */
 static void BLITZ_ROUTINE libfinit(struct Library *base BL_REG(a1))
 {
-    CloseLibrary(base);                 /* MOVE.l 4,a6:JMP CloseLibrary(a6) */
+    deflib_closelibrary(base);
 }

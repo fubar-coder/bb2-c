@@ -4,7 +4,7 @@ What AmiBlitz 2.x/3 changed in the AmigaOS call libraries of Blitz Basic 2
 (`blitz2:deflibs`; our port: `libs/deflibs/*.c`, notes
 `docs/libs/deflibs.md`), as the basis for deciding which changes we take
 over. Documentation only; taken over so far (as fixed original bugs,
-`docs/libs/deviations.md`): #959; #45 (our own fix, not in AB3).
+`docs/libs/deviations.md`): #959, #44; #45 (our own fix, not in AB3).
 
 ## Sources and method
 
@@ -69,7 +69,7 @@ skip:  RTS
 
 | Library | Change | Class | Our issue | AB3 |
 |---|---|---|---|---|
-| the other 25 OpenLibrary libraries of BB2 that AB3 kept | init returns the base or 0 instead of looping; finit skips `CloseLibrary` for base 0 | fix (behaviour: a missing library no longer hangs at startup; the program now runs with base 0 and crashes at the first call unless it checks (?)) | #44 | `AmiBlitz/AmiBlitz3@ea8c25c7` (SVN r1, pre-git) |
+| the other 25 OpenLibrary libraries of BB2 that AB3 kept | init returns the base or 0 instead of looping; finit skips `CloseLibrary` for base 0 | fix (behaviour: a missing library no longer hangs at startup; the program now runs with base 0 and crashes at the first call unless it checks; BB2's compiler (makeinits) stores the init result unchecked as the base, a call is `JSR lvo(a6)` with a6 = 0) | #44 | `AmiBlitz/AmiBlitz3@ea8c25c7` (SVN r1, pre-git) |
 | datatypes.library (239) | same, the 2009 state still had the BB2 code | fix | #44 | `AmiBlitz/AmiBlitz3@5153d097` (2021-09-03) |
 | battclock, battmem, card, disk, misc, potgo resources | loop removed, but the LEA displacement is the fixed `$001D` of `AB3FDConvert` ("Right, now create Resource fixed"): it points 21 bytes behind the start of the name (behind its end or to an odd address in the padding), so `OpenResource` gets a wrong/empty name and always fails | partial fix of #44 (no hang); #45 **not** fixed (base is always 0) | #44, #45 | `AmiBlitz/AmiBlitz3@ea8c25c7` (pre-git), unchanged to HEAD |
 | ciaa, ciab resources | unchanged BB2 code: loop and name `"esource"` | not fixed | #44, #45 | – |
@@ -176,7 +176,9 @@ Mapping of our issues:
   (`AmiBlitz/AmiBlitz3@ea8c25c7`, datatypes
   `AmiBlitz/AmiBlitz3@5153d097`) and for 6 of the 8 resources; ciaa/ciab
   unchanged. AB3's fix replaces the hang by base 0; what a program does
-  then depends on the compiler (?).
+  then depends on the compiler (?). Taken over for all 36 (base or 0;
+  with BB2's compiler a call of the missing library is `JSR lvo(a6)`
+  with a6 = 0, `docs/libs/deflibs.md`).
 * **#45** (resource name shifted): **not fixed** in AB3; the 6 rebuilt
   resources point further off (`$001D`), ciaa/ciab keep the BB2 code.
   Fixed by us (the name itself, `docs/libs/deviations.md`).

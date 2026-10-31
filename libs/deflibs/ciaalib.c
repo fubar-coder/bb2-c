@@ -10,8 +10,9 @@
  *          the compiler keeps it for the calls, a6).  Fixed (intended
  *          deviation, #45): the original opens "esource" (LEA
  *          points 6 bytes into the name), which never exists; here
- *          the name.  BUG(orig) (#44): retries forever if the resource
- *          cannot be opened (deflib.h)
+ *          the name.  Fixed (intended deviation, #44): 0 if the
+ *          resource cannot be opened; the original retries forever
+ *          (deflib.h)
  *   finit: nothing (resources are not closed; !libs
  *          LIB_ciaalib,#la1 as with the libraries)
  *
@@ -39,8 +40,9 @@ BLITZ_LIBFIN();
 
 static const char libname[] = "ciaa.resource";
 
-/* init nullsub: d0 = resource base (fixed, #45: the original has
-   LEA libname+6(pc),a1) */
+/* init nullsub: d0 = resource base, 0 if it cannot be opened (fixed,
+   #44 and #45: the original has LEA libname+6(pc),a1 and retries
+   forever) */
 static ULONG BLITZ_ROUTINE libinit(void)
 {
     return deflib_openresource(libname);

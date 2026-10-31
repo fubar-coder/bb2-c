@@ -25,9 +25,11 @@ and kept by the compiler, `JSR lvo(a6)`).
 Variants (recognised by the generator from the code, otherwise abort):
 
 * **Library** (28×): `OpenLibrary(name, 0)` with endless loop, finit
-  `CloseLibrary(a1)`.
+  `CloseLibrary(a1)` (in C, fixed #44: base or 0, finit closes only if
+  base ≠ 0, as CrM).
 * **Resource** (8×: ciaa, ciab, disk, misc, potgo, battclock, battmem,
-  card): `OpenResource(name)` with endless loop, finit only `RTS`.
+  card): `OpenResource(name)` with endless loop, finit only `RTS` (in C,
+  fixed #44: base or 0).
 * **CrM.library** (200): `OpenLibrary` once, base or 0; finit closes
   only if base ≠ 0. The only one not present as a single file on the CD.
 * **Without init/finit** (`doslib2` 249, `graphicslib2` 250): only further
@@ -40,7 +42,7 @@ to 192, the command lib), 219 `colorwheellib` (there `#cdtvlib`,
 reserved), 2 `xprzmodemlib` (not present there). CMake targets are called `deflib_NAME` (otherwise collision with the
 command lib `mathtranslib`).
 
-## BUG(orig): the init loop (#44)
+## The init loop (#44, fixed)
 
 All library/resource inits (except CrM) are
 
@@ -57,8 +59,18 @@ init:  MOVE.l  4,a6
 * If opening fails, `init` never returns. The jump target is the
   displacement word of the `LEA`; it runs as `ORI.b #0,(a0)+` (the `MOVEQ`
   is its immediate) and calls `OpenLibrary` again with d0 = 0 and the
-  a1 left behind by the failed call. C keeps the
-  endless loop (`deflib.h`), but each time with the name.
+  a1 left behind by the failed call: a program that uses a call of a
+  missing library hangs at startup. Fixed in C (intended deviation,
+  `deflib.h`; bug-orig test `deflibs-init-endless-retry`): the init
+  returns the base or 0 like the CrM init and AmiBlitz3's deflibs, the
+  finit of a library closes it only if the base is not 0 (CloseLibrary(0)
+  crashes on Kickstart 1.x). The program runs; a call of the missing
+  library crashes (JSR to a negative offset from 0), so a program that
+  can do without it checks for the library itself first (e.g. with its
+  own `OpenLibrary_`). Not chosen: ending the program from the init (the
+  deflibs are initialised before the command libraries, whose finits
+  would run without their inits; it would need another `!libs` in the
+  init's declaration and rule out optional libraries).
 * **Resources** (#45, fixed: intended deviation): they were made from the
   library template, whose finit is 6 bytes longer; the `LEA` was not
   adjusted and points 6 bytes into the name (`"ciab.resource"` →
