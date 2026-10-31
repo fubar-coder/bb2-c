@@ -85,9 +85,29 @@ BLITZ_LIBFIN();
 
 /* ------------------------------------------------------------- helpers */
 
+/* a shape object of shapeslib, 32 bytes (the same struct as there) */
+struct shape {
+    UWORD width;                /* +0  pixel width, 0 = no shape */
+    UWORD height;               /* +2 */
+    UWORD depth;                /* +4 */
+    UWORD ebwidth;              /* +6  even byte width */
+    UWORD bltsize;              /* +8  height << 6 | words + 1 */
+    WORD handlex, handley;      /* +10/+12 */
+    UBYTE *data;                /* +14 plane after plane, CHIP */
+    UBYTE *cookie;              /* +18 OR of all planes, CHIP, or 0 */
+    UWORD planesize;            /* +22 bytes per plane */
+    UWORD xplanesize;           /* +24 per plane + one word per row */
+    UWORD size;                 /* +26 the whole shape */
+    UWORD xsize;                /* +28 whole + one word per row */
+    UWORD cludge;               /* +30 "cL": the data is not shapeslib's */
+};
+static_assert(sizeof(struct shape) == 32, "shape size");
+
+/* the palette object (palettelib's) */
 #define SW(s, o) (*(UWORD *)((UBYTE *)(s) + (o)))
-#define SL(s, o) (*(ULONG *)((UBYTE *)(s) + (o)))
 #define SP(s, o) (*(UBYTE **)((UBYTE *)(s) + (o)))
+/* the two handles as one long (CLR.l 10(a0)) */
+#define HANDLES(s) (*(ULONG *)&(s)->handlex)
 
 #define TOK_docookie  ((LIB_shapeslib << 7) + 11)
 #define TOK_qmultiply 0xca00                    /* lmullib: d0.q * d1.q */
@@ -108,10 +128,10 @@ static void globfree(void *mem, ULONG size)
 }
 
 /* shapeslib docookie with a3 = shape (a3/a4 kept around the call) */
-static void docookie(UBYTE *shape)
+static void docookie(struct shape *shape)
 {
 #ifndef BL_CODE_MODEL
-    register UBYTE *_s __asm("a0") = shape;
+    register struct shape *_s __asm("a0") = shape;
 
     __asm volatile("movem.l a3-a4,-(sp)\n\t"
                    "move.l %0,a3\n\t"
@@ -135,15 +155,15 @@ static ULONG qcall(ULONG val, ULONG a, ULONG b)
 }
 
 /* re-cookie if the shape has a cookie */
-static void cookieit(UBYTE *s)
+static void cookieit(struct shape *s)
 {
-    if (SL(s, 18))
+    if (s->cookie)
         docookie(s);
 }
 
 /* --------------------------------------------------------- newshape */
 
-static UBYTE newshape[32] __attribute__((aligned(4)));
+static struct shape newshape __attribute__((aligned(4)));
 static UWORD colvals[256];                      /* table of brightness's */
 static UWORD usevals[256];                      /* currently collected pixels */
 static ULONG xadd, yadd;
@@ -151,38 +171,38 @@ static UWORD numcols;                           /* dbf */
 
 /* allocshape: width, height, depth of newshape set; the rest and the
    memory */
-static void allocshape(UBYTE *ns)
+static void allocshape(struct shape *ns)
 {
-    UWORD words = (UWORD)(SW(ns, 0) + 15) >> 4; /* word width */
+    UWORD words = (UWORD)(ns->width + 15) >> 4; /* word width */
     ULONG p;
 
-    SW(ns, 8) = (UWORD)((UWORD)(SW(ns, 2) << 6) | words) + 1; /* bltsize */
-    SW(ns, 6) = words + words;                  /* even byte width */
-    p = (ULONG)(UWORD)(SW(ns, 6) + 2) * SW(ns, 2);
-    SW(ns, 24) = (UWORD)p;
-    p = (ULONG)(UWORD)p * SW(ns, 4);
-    SW(ns, 28) = (UWORD)p;
-    p = (ULONG)SW(ns, 6) * SW(ns, 2);
-    SW(ns, 22) = (UWORD)p;
-    p = (ULONG)(UWORD)p * SW(ns, 4);
-    SW(ns, 26) = (UWORD)p;
-    SP(ns, 14) = globalloc(p, MEMF_CHIP | MEMF_CLEAR);
-    SL(ns, 10) = 0;                             /* handle */
-    SL(ns, 18) = 0;                             /* cookie */
+    ns->bltsize = (UWORD)((UWORD)(ns->height << 6) | words) + 1; /* bltsize */
+    ns->ebwidth = words + words;                  /* even byte width */
+    p = (ULONG)(UWORD)(ns->ebwidth + 2) * ns->height;
+    ns->xplanesize = (UWORD)p;
+    p = (ULONG)(UWORD)p * ns->depth;
+    ns->xsize = (UWORD)p;
+    p = (ULONG)ns->ebwidth * ns->height;
+    ns->planesize = (UWORD)p;
+    p = (ULONG)(UWORD)p * ns->depth;
+    ns->size = (UWORD)p;
+    ns->data = globalloc(p, MEMF_CHIP | MEMF_CLEAR);
+    HANDLES(ns) = 0;                            /* handle */
+    ns->cookie = NULL;                          /* cookie */
 }
 
 /* makeshape: newshape into shape a3 */
-static void makeshape(UBYTE *shape)
+static void makeshape(struct shape *shape)
 {
     ULONG cookie;
     int i;
 
-    globfree(SP(shape, 14), SW(shape, 26));
-    cookie = SL(shape, 18);
+    globfree(shape->data, shape->size);
+    cookie = (ULONG)shape->cookie;
     if (cookie)
-        globfree((void *)cookie, SW(shape, 22));
+        globfree((void *)cookie, shape->planesize);
     for (i = 0; i < 8; i++)
-        ((ULONG *)shape)[i] = ((ULONG *)newshape)[i];
+        ((ULONG *)shape)[i] = ((ULONG *)&newshape)[i];
     if (cookie)
         docookie(shape);
 }
@@ -210,9 +230,9 @@ static void blitwait(volatile UBYTE *chip)
 }
 
 /* a3 = shape, a1 = chip base */
-static void xflip(UBYTE *s, volatile UBYTE *chip)
+static void xflip(struct shape *s, volatile UBYTE *chip)
 {
-    UWORD pad = (UWORD)(SW(s, 6) << 3) - SW(s, 0); /* d0: the pad bits */
+    UWORD pad = (UWORD)(s->ebwidth << 3) - s->width; /* d0: the pad bits */
     UWORD rows;
     UBYTE *row;
 
@@ -229,20 +249,20 @@ static void xflip(UBYTE *s, volatile UBYTE *chip)
         *(volatile UWORD *)(chip + 0x042) = 0;
         *(volatile ULONG *)(chip + 0x044) = 0xffffffffUL;
         *(volatile ULONG *)(chip + 0x064) = 0;
-        *(volatile ULONG *)(chip + 0x050) = SL(s, 14);
-        *(volatile ULONG *)(chip + 0x054) = SL(s, 14);
-        planes = SW(s, 4) - 1;
-        bltsize = SW(s, 8) - 1;
+        *(volatile ULONG *)(chip + 0x050) = (ULONG)s->data;
+        *(volatile ULONG *)(chip + 0x054) = (ULONG)s->data;
+        planes = s->depth - 1;
+        bltsize = s->bltsize - 1;
         do {
             blitwait(chip);
             *(volatile UWORD *)(chip + 0x058) = bltsize;
         } while (planes-- != 0);
     }
     /* now, to do the flipping! */
-    rows = (UWORD)((ULONG)SW(s, 4) * SW(s, 2)) - 1;
-    row = SP(s, 14);
+    rows = (UWORD)((ULONG)s->depth * s->height) - 1;
+    row = s->data;
     do {
-        UWORD l = 0, r = SW(s, 6) - 1;          /* left, right bytes */
+        UWORD l = 0, r = s->ebwidth - 1;          /* left, right bytes */
 
         do {
             UBYTE lbits = flipbyte(row[(WORD)l]);
@@ -253,7 +273,7 @@ static void xflip(UBYTE *s, volatile UBYTE *chip)
             l++;
             r--;
         } while (r > l);
-        row += (WORD)SW(s, 6);
+        row += (WORD)s->ebwidth;
         __asm__("" : "+a"(row));
     } while (rows-- != 0);
     cookieit(s);
@@ -262,7 +282,7 @@ static void xflip(UBYTE *s, volatile UBYTE *chip)
 void BLITZ_ROUTINE b_doxflip_c(volatile UBYTE *chip BL_REG(a1));
 void BLITZ_ROUTINE b_doxflip_c(volatile UBYTE *chip BL_REG(a1))
 {
-    xflip(blitz_string, chip);
+    xflip((struct shape *)blitz_string, chip);
 }
 BLITZ_THUNK(b_doxflip, b_doxflip_c, "d0-d1/a0-a1");
 
@@ -274,7 +294,7 @@ void BLITZ_ROUTINE a_doxflip_c(volatile UBYTE *chip BL_REG(a1), struct GfxBase *
     volatile UBYTE *dmaconr = (volatile UBYTE *)0xdff002;
 
     OwnBlitter();
-    xflip(blitz_string, chip);
+    xflip((struct shape *)blitz_string, chip);
     (void)*dmaconr;                             /* BTST twice, no loop */
     (void)*dmaconr;
     DisownBlitter();
@@ -289,20 +309,20 @@ BLITZ_AB_ROUTINE(doxflip, b_doxflip,
 
 static void BLITZ_ROUTINE doyflip_c(void)
 {
-    UBYTE *s = blitz_string;
-    UWORD planes = SW(s, 4) - 1;                /* bitplanes */
-    UBYTE *plane = SP(s, 14);
+    struct shape *s = (struct shape *)blitz_string;
+    UWORD planes = s->depth - 1;                /* bitplanes */
+    UBYTE *plane = s->data;
 
     do {
-        UBYTE *top = plane, *bot = plane + (WORD)SW(s, 22); /* top, bottom */
+        UBYTE *top = plane, *bot = plane + (WORD)s->planesize; /* top, bottom */
 
         for (;;) {
             WORD off;
 
-            bot -= (WORD)SW(s, 6);
+            bot -= (WORD)s->ebwidth;
             if ((ULONG)bot <= (ULONG)top)
                 break;
-            off = (WORD)(SW(s, 6) - 2);
+            off = (WORD)(s->ebwidth - 2);
             do {
                 UWORD topword = *(UWORD *)(top + off);
 
@@ -310,9 +330,9 @@ static void BLITZ_ROUTINE doyflip_c(void)
                 *(UWORD *)(bot + off) = topword;
                 off -= 2;
             } while (off >= 0);
-            top += (WORD)SW(s, 6);
+            top += (WORD)s->ebwidth;
         }
-        plane += (WORD)SW(s, 22);
+        plane += (WORD)s->planesize;
     } while (planes-- != 0);
     cookieit(s);
 }
@@ -399,21 +419,22 @@ static void rotit2(WORD x, WORD y, UWORD angle)
 /* a3 = shape, d1 = angle (Quick, 0..1) */
 static void BLITZ_ROUTINE dorotate_c(ULONG q BL_REG(d1))
 {
-    UBYTE *s = blitz_string, *ns = newshape, *row;
+    struct shape *s = (struct shape *)blitz_string, *ns = &newshape;
+    UBYTE *row;
     UWORD angle = 256 - (UWORD)(((q << 8) >> 16) & 255);
     WORD y;
 
     xl = yl = xh = yh = 0;                      /* initial low/high vals */
-    rotit2(SW(s, 0) - 1, 0, angle);
-    rotit2(SW(s, 0) - 1, SW(s, 2) - 1, angle);
-    rotit2(0, SW(s, 2) - 1, angle);
-    SW(ns, 0) = xh - xl + 1;
-    SW(ns, 2) = yh - yl + 1;
-    SW(ns, 4) = SW(s, 4);
+    rotit2(s->width - 1, 0, angle);
+    rotit2(s->width - 1, s->height - 1, angle);
+    rotit2(0, s->height - 1, angle);
+    ns->width = xh - xl + 1;
+    ns->height = yh - yl + 1;
+    ns->depth = s->depth;
     allocshape(ns);
     angle = 256 - angle;
     y = yl;
-    row = SP(ns, 14);
+    row = ns->data;
     do {
         UBYTE *dst = row;
         WORD x = xl;
@@ -423,19 +444,19 @@ static void BLITZ_ROUTINE dorotate_c(ULONG q BL_REG(d1))
             WORD nx, ny;
 
             rotit(x, y, angle, &nx, &ny);
-            if ((UWORD)nx < SW(s, 0) && (UWORD)ny < SW(s, 2)) {
+            if ((UWORD)nx < s->width && (UWORD)ny < s->height) {
                 /* transfer pixel from src to dest */
-                UBYTE *src = SP(s, 14) + (WORD)((UWORD)nx >> 3)
-                            + (ULONG)(UWORD)ny * SW(s, 6);
+                UBYTE *src = s->data + (WORD)((UWORD)nx >> 3)
+                            + (ULONG)(UWORD)ny * s->ebwidth;
                 UWORD bit = ~(UWORD)nx & 7;
-                UWORD planes = SW(s, 4) - 1;
+                UWORD planes = s->depth - 1;
                 UBYTE *dplane = dst;
 
                 do {
                     if (*src & (1 << bit))
                         *dplane |= (UBYTE)(1 << dbit);
-                    src += (WORD)SW(s, 22);
-                    dplane += (WORD)SW(ns, 22);
+                    src += (WORD)s->planesize;
+                    dplane += (WORD)ns->planesize;
                 } while (planes-- != 0);
             }
             if (--dbit < 0) {                   /* across an X... */
@@ -444,7 +465,7 @@ static void BLITZ_ROUTINE dorotate_c(ULONG q BL_REG(d1))
             }
             x++;
         } while (x <= xh);
-        row += (WORD)SW(ns, 6);                 /* down a Y... */
+        row += (WORD)ns->ebwidth;                 /* down a Y... */
         y++;
     } while (y <= yh);
     makeshape(s);
@@ -453,27 +474,28 @@ BLITZ_THUNK(dorotate, dorotate_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------------- Scale */
 
-static void scale(UBYTE *shape, ULONG xr, ULONG yr)
+static void scale(struct shape *shape, ULONG xr, ULONG yr)
 {
-    UBYTE *ns = newshape, *drow;
+    struct shape *ns = &newshape;
+    UBYTE *drow;
     ULONG sxq, syq, w;
     UWORD dx, dy;
 
-    w = qcall(TOK_qmultiply, (ULONG)SW(shape, 0) << 16, xr);
+    w = qcall(TOK_qmultiply, (ULONG)shape->width << 16, xr);
     if ((WORD)(w >> 16) < 1)
         w = 1UL << 16;
-    SW(ns, 0) = (UWORD)(w >> 16);
-    w = qcall(TOK_qmultiply, (ULONG)SW(shape, 2) << 16, yr);
+    ns->width = (UWORD)(w >> 16);
+    w = qcall(TOK_qmultiply, (ULONG)shape->height << 16, yr);
     if ((WORD)(w >> 16) < 1)
         w = 1UL << 16;
-    SW(ns, 2) = (UWORD)(w >> 16);
-    SW(ns, 4) = SW(shape, 4);
+    ns->height = (UWORD)(w >> 16);
+    ns->depth = shape->depth;
     allocshape(ns);
     xadd = qcall(TOK_qdivide, 1UL << 16, xr);   /* 1/ratio */
     yadd = qcall(TOK_qdivide, 1UL << 16, yr);
     syq = 0;
     dy = 0;
-    drow = SP(ns, 14);
+    drow = ns->data;
     do {                                        /* yloop */
         ULONG ny = syq + yadd;
         WORD ycount = (WORD)((ny >> 16) - (syq >> 16)) - 1;
@@ -483,7 +505,7 @@ static void scale(UBYTE *shape, ULONG xr, ULONG yr)
             ycount = 0;
         sxq = 0;
         dx = 0;
-        srow = SP(shape, 14) + (ULONG)(UWORD)(syq >> 16) * SW(shape, 6);
+        srow = shape->data + (ULONG)(UWORD)(syq >> 16) * shape->ebwidth;
         do {                                    /* xloop */
             ULONG nx = sxq + xadd;
             WORD xcount = (WORD)((nx >> 16) - (sxq >> 16)) - 1;
@@ -515,19 +537,19 @@ static void scale(UBYTE *shape, ULONG xr, ULONG yr)
                         do {
                             if (*q & (1 << (b & 7)))
                                 c |= 1UL << (pl & 31);  /* BSET d2,d6 */
-                            q += (WORD)SW(shape, 22);
+                            q += (WORD)shape->planesize;
                             __asm__("" : "+a"(q));      /* no __mulsi3 */
                             pl++;
-                        } while (pl < SW(shape, 4));
+                        } while (pl < shape->depth);
                         usevals[(UWORD)c] += colvals[(UWORD)c];
-                        q -= (WORD)SW(shape, 26);
+                        q -= (WORD)shape->size;
                         if ((WORD)--b < 0) {
                             b = 7;
                             q++;
                         }
                         __asm__("" : "+a"(q));
                     } while (cols-- != 0);
-                    p += (WORD)SW(shape, 6);
+                    p += (WORD)shape->ebwidth;
                 } while (rows-- != 0);
                 /* brightest */
                 best = -1;
@@ -543,22 +565,22 @@ static void scale(UBYTE *shape, ULONG xr, ULONG yr)
             {
                 /* plot the destination pixel in colour d6c */
                 UBYTE *q = drow + (WORD)(dx >> 3);
-                UWORD bit = ~dx & 7, n = SW(shape, 4) - 1;
+                UWORD bit = ~dx & 7, n = shape->depth - 1;
 
                 do {
                     if (col & 1)
                         *q |= (UBYTE)(1 << bit);
                     col >>= 1;
-                    q += (WORD)SW(ns, 22);
+                    q += (WORD)ns->planesize;
                 } while (n-- != 0);
             }
             sxq = nx;
             dx++;
-        } while (dx < SW(ns, 0));
+        } while (dx < ns->width);
         syq = ny;
-        drow += (WORD)SW(ns, 6);
+        drow += (WORD)ns->ebwidth;
         dy++;
-    } while (dy < SW(ns, 2));
+    } while (dy < ns->height);
     makeshape(shape);
 }
 
@@ -570,7 +592,7 @@ static void BLITZ_ROUTINE doscale2_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2))
     numcols = 255;
     for (i = 0; i < 256; i++)
         colvals[i] = 1;
-    scale(blitz_string, xr, yr);
+    scale((struct shape *)blitz_string, xr, yr);
 }
 BLITZ_THUNK(doscale2, doscale2_c, "d0-d1/a0-a1");
 
@@ -590,7 +612,7 @@ static void BLITZ_ROUTINE doscale_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2), UB
         c += 3;
         *val++ = v;
     } while (n-- != 0);
-    scale(blitz_string, xr, yr);
+    scale((struct shape *)blitz_string, xr, yr);
 }
 BLITZ_THUNK(doscale, doscale_c, "d0-d1/a0-a1");
 
@@ -601,7 +623,7 @@ BLITZ_ERRCHK_MESSAGE(mess2, "Uninitialized Palette");
 
 static void BLITZ_ERRCHK scalechk2_c(void)
 {
-    if (!*(UWORD *)blitz_string)
+    if (!((const struct shape *)blitz_string)->width)
         BLITZ_RUNERR(mess1);
 }
 
