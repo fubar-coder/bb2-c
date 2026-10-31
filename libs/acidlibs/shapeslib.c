@@ -54,6 +54,7 @@
  * check area, as in the original.
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <stddef.h>
 #define __NOLIBBASE__
 #include <proto/dos.h>
@@ -240,39 +241,20 @@ static void globfree(void *mem, ULONG size)
 
 /* ------------------------------------------------------------ shapes */
 
-/* a shape object, 32 bytes (also the block SaveShapes writes) */
-struct shape {
-    UWORD width;                /* +0  pixel width, 0 = no shape */
-    UWORD height;               /* +2 */
-    UWORD depth;                /* +4 */
-    UWORD ebwidth;              /* +6  even byte width */
-    UWORD bltsize;              /* +8  height << 6 | words + 1 */
-    WORD handlex, handley;      /* +10/+12 */
-    UBYTE *data;                /* +14 plane after plane, CHIP */
-    UBYTE *cookie;              /* +18 OR of all planes, CHIP, or 0 */
-    UWORD planesize;            /* +22 bytes per plane */
-    UWORD xplanesize;           /* +24 per plane + one word per row */
-    UWORD size;                 /* +26 the whole shape */
-    UWORD xsize;                /* +28 whole + one word per row */
-    UWORD cludge;               /* +30 "cL": the data is not ours */
-};
-static_assert(sizeof(struct shape) == 32, "shape size");
-
-/* other objects (the bitmap, ilbmifflib's state) and nall's fields */
+/* the objects: struct bb_shape, struct bb_bitmap (blitzobj.h); ilbmifflib's
+   state and nall's fields by offset */
 #define SW(s, o) (*(UWORD *)((UBYTE *)(s) + (o)))
 #define SL(s, o) (*(ULONG *)((UBYTE *)(s) + (o)))
 #define SP(s, o) (*(UBYTE **)((UBYTE *)(s) + (o)))
 /* the two handles as one long (CLR.l 10(a3)) */
 #define HANDLES(s) (*(ULONG *)&(s)->handlex)
 
-#define CLUDGE 0x634c                           /* "cL" */
-
 static UWORD autocook = 0xffff;                 /* AutoCookie (default on) */
 
 /* tbmap: a bitmap object (64 bytes) for GetaShape, then the 2 words
    Scroll reads below a2 (tdata) */
 static struct {
-    UBYTE bm[64];
+    struct bb_bitmap bm;
     UWORD h, w;                                 /* -4(a2), -2(a2) */
 } BL_PACKED tb __attribute__((aligned(4)));
 
@@ -307,14 +289,14 @@ static void BLITZ_ROUTINE codeinit_c(void)
 BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /* free a shape's data and cookie (a3) */
-static void freeashape_(struct shape *s)
+static void freeashape_(struct bb_shape *s)
 {
     ULONG c;
 
     if (!s->width)
         return;
     s->width = 0;
-    if (s->cludge != CLUDGE) {
+    if (s->cludge != BB_CLUDGE) {
         s->cludge = 0;
         globfree(s->data, s->size);
     }
@@ -336,12 +318,12 @@ static void freeashape_(struct shape *s)
  */
 static void BLITZ_ROUTINE freeashape_c(void)
 {
-    freeashape_((struct shape *)blitz_string);
+    freeashape_((struct bb_shape *)blitz_string);
 }
 BLITZ_THUNK(freeashape, freeashape_c, "d0-d1/a0-a1");
 
 /* make the cookie: OR of all planes */
-static void cookie_(struct shape *s)
+static void cookie_(struct bb_shape *s)
 {
     UBYTE *plane, *ck;
     UWORD psize, rows;
@@ -389,7 +371,7 @@ static void cookie_(struct shape *s)
  */
 static void BLITZ_ROUTINE docookie_c(void)
 {
-    cookie_((struct shape *)blitz_string);
+    cookie_((struct bb_shape *)blitz_string);
 }
 BLITZ_THUNK(docookie, docookie_c, "d0-d1/a0-a1");
 
@@ -418,7 +400,7 @@ BLITZ_THUNK(doautocookie, doautocookie_c, "d0-d1/a0-a1");
  * @param s a0: the shape
  * @return d0.w: the width
  */
-static UWORD BLITZ_ROUTINE shapew_c(struct shape *s BL_REG(a0)) { return s->width; }
+static UWORD BLITZ_ROUTINE shapew_c(struct bb_shape *s BL_REG(a0)) { return s->width; }
 /**
  * @brief ShapeHeight(Shape#) - the shape's pixel height (only the low word
  * of d0, as ShapeWidth).
@@ -428,7 +410,7 @@ static UWORD BLITZ_ROUTINE shapew_c(struct shape *s BL_REG(a0)) { return s->widt
  * @param s a0: the shape
  * @return d0.w: the height
  */
-static UWORD BLITZ_ROUTINE shapeh_c(struct shape *s BL_REG(a0)) { return s->height; }
+static UWORD BLITZ_ROUTINE shapeh_c(struct bb_shape *s BL_REG(a0)) { return s->height; }
 BLITZ_THUNK_POST(doshapew, shapew_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 BLITZ_THUNK_POST(doshapeh, shapeh_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
@@ -440,7 +422,7 @@ BLITZ_THUNK_POST(doshapeh, shapeh_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
  */
 static void BLITZ_ROUTINE domidhandle_c(void)
 {
-    struct shape *s = (struct shape *)blitz_string;
+    struct bb_shape *s = (struct bb_shape *)blitz_string;
 
     s->handlex = s->width >> 1;
     s->handley = s->height >> 1;
@@ -457,7 +439,7 @@ BLITZ_THUNK(domidhandle, domidhandle_c, "d0-d1/a0-a1");
  */
 static void BLITZ_ROUTINE dohandle_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2))
 {
-    struct shape *s = (struct shape *)blitz_string;
+    struct bb_shape *s = (struct bb_shape *)blitz_string;
 
     s->handlex = (UWORD)x;
     s->handley = (UWORD)y;
@@ -465,7 +447,7 @@ static void BLITZ_ROUTINE dohandle_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2))
 BLITZ_THUNK(dohandle, dohandle_c, "d0-d1/a0-a1");
 
 /* CopyShape: a3 = source, a2 = destination (docopyshape2 + cookie) */
-static void nall(struct shape *from, struct shape *to, UWORD ptroff, UWORD sizeoff)
+static void nall(struct bb_shape *from, struct bb_shape *to, UWORD ptroff, UWORD sizeoff)
 {
     UBYTE *src, *dst;
     UWORD n;
@@ -483,14 +465,14 @@ static void nall(struct shape *from, struct shape *to, UWORD ptroff, UWORD sizeo
     } while (n-- != 0);
 }
 
-static void copyshape2(struct shape *from, struct shape *to)
+static void copyshape2(struct bb_shape *from, struct bb_shape *to)
 {
     int i;
 
     freeashape_(to);
     for (i = 0; i < 8; i++)
         ((ULONG *)to)[i] = ((ULONG *)from)[i];
-    nall(from, to, offsetof(struct shape, data), offsetof(struct shape, size));
+    nall(from, to, offsetof(struct bb_shape, data), offsetof(struct bb_shape, size));
 }
 
 /**
@@ -506,11 +488,11 @@ static void copyshape2(struct shape *from, struct shape *to)
  *
  * @param dst a2: the destination shape
  */
-static void BLITZ_ROUTINE docopyshape_c(struct shape *dst BL_REG(a2))
+static void BLITZ_ROUTINE docopyshape_c(struct bb_shape *dst BL_REG(a2))
 {
-    copyshape2((struct shape *)blitz_string, dst);
-    nall((struct shape *)blitz_string, dst, offsetof(struct shape, cookie),
-         offsetof(struct shape, planesize));
+    copyshape2((struct bb_shape *)blitz_string, dst);
+    nall((struct bb_shape *)blitz_string, dst, offsetof(struct bb_shape, cookie),
+         offsetof(struct bb_shape, planesize));
 }
 BLITZ_THUNK(docopyshape, docopyshape_c, "d0-d1/a0-a1");
 
@@ -530,7 +512,7 @@ BLITZ_THUNK(docopyshape, docopyshape_c, "d0-d1/a0-a1");
  */
 static void BLITZ_ROUTINE initshape_c(ULONG w BL_REG(d1), ULONG h BL_REG(d2), ULONG d BL_REG(d3))
 {
-    struct shape *s = (struct shape *)blitz_string;
+    struct bb_shape *s = (struct bb_shape *)blitz_string;
     UWORD bpr;
     UWORD bltsize;                              /* d5 */
     UWORD xbpr;                                 /* d5: bpr + the extra word */
@@ -566,29 +548,30 @@ BLITZ_THUNK(_initshape, initshape_c, "d0-d1/a0-a1");
 /* ------------------------------------------------------------ GetaShape */
 
 /* a3 = shape, a2 = used bitmap, d1 = x, d2 = y, d3 = w, d4 = h */
-static void getashape(struct shape *shape, UBYTE *bm, UWORD x, UWORD y, UWORD w, UWORD h)
+static void getashape(struct bb_shape *shape, struct bb_bitmap *bm,
+                      UWORD x, UWORD y, UWORD w, UWORD h)
 {
-    UBYTE *tbm = tb.bm;
+    struct bb_bitmap *tbm = &tb.bm;
     ULONG p;
 
     freeashape_(shape);
     {
-        struct xregs r = { .d1 = w, .d2 = h, .d3 = SW(bm, 4), .a3 = (ULONG)tbm };
+        struct xregs r = { .d1 = w, .d2 = h, .d3 = bm->flagsdepth, .a3 = (ULONG)tbm };
         XJSR(TOK_extbitmap, r);                 /* create bitmap! */
     }
-    *(ULONG *)&shape->height = SL(tbm, 2);      /* height, depth (rows, depth) */
-    shape->ebwidth = SW(tbm, 0);
+    *(ULONG *)&shape->height = *(ULONG *)&tbm->rows; /* height, depth (rows, depth) */
+    shape->ebwidth = tbm->bpr;
     HANDLES(shape) = 0;
-    shape->data = SP(tbm, 8);                   /* the bitmap's planes */
-    p = (ULONG)SW(tbm, 0) * SW(tbm, 2);
+    shape->data = tbm->planes[0];               /* the bitmap's planes */
+    p = (ULONG)tbm->bpr * tbm->rows;
     shape->planesize = (UWORD)p;
-    p = (ULONG)(UWORD)p * SW(tbm, 4);
+    p = (ULONG)(UWORD)p * tbm->flagsdepth;
     shape->size = (UWORD)p;
-    p = (ULONG)(UWORD)(SW(tbm, 0) + 2) * SW(tbm, 2);
+    p = (ULONG)(UWORD)(tbm->bpr + 2) * tbm->rows;
     shape->xplanesize = (UWORD)p;
-    p = (ULONG)(UWORD)p * SW(tbm, 4);
+    p = (ULONG)(UWORD)p * tbm->flagsdepth;
     shape->xsize = (UWORD)p;
-    shape->bltsize = (UWORD)(SW(tbm, 2) << 6) | (UWORD)((SW(tbm, 0) >> 1) + 1);
+    shape->bltsize = (UWORD)(tbm->rows << 6) | (UWORD)((tbm->bpr >> 1) + 1);
     shape->width = w;
     tb.w = w;
     tb.h = h;
@@ -627,11 +610,11 @@ static void getashape(struct shape *shape, UBYTE *bm, UWORD x, UWORD y, UWORD w,
  * @param bm a2: the used bitmap
  */
 void BLITZ_ROUTINE b_getashape_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w BL_REG(d3),
-                                 ULONG h BL_REG(d4), UBYTE *bm BL_REG(a2));
+                                 ULONG h BL_REG(d4), struct bb_bitmap *bm BL_REG(a2));
 void BLITZ_ROUTINE b_getashape_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w BL_REG(d3),
-                                 ULONG h BL_REG(d4), UBYTE *bm BL_REG(a2))
+                                 ULONG h BL_REG(d4), struct bb_bitmap *bm BL_REG(a2))
 {
-    getashape((struct shape *)blitz_string, bm, x, y, w, h);
+    getashape((struct bb_shape *)blitz_string, bm, x, y, w, h);
 }
 BLITZ_THUNK(b_getashape, b_getashape_c, "d0-d1/a0-a1");
 
@@ -642,17 +625,17 @@ BLITZ_THUNK(b_getashape, b_getashape_c, "d0-d1/a0-a1");
  * @param gfx a6: graphics.library
  */
 void BLITZ_ROUTINE a_getashape_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w BL_REG(d3),
-                                 ULONG h BL_REG(d4), UBYTE *bm BL_REG(a2),
+                                 ULONG h BL_REG(d4), struct bb_bitmap *bm BL_REG(a2),
                                  struct GfxBase *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_getashape_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w BL_REG(d3),
-                                 ULONG h BL_REG(d4), UBYTE *bm BL_REG(a2),
+                                 ULONG h BL_REG(d4), struct bb_bitmap *bm BL_REG(a2),
                                  struct GfxBase *gfx BL_REG(a6))
 {
     struct GfxBase *GfxBase = gfx;
     volatile UBYTE *dmaconr = (volatile UBYTE *)0xdff002;
 
     OwnBlitter();
-    getashape((struct shape *)blitz_string, bm, x, y, w, h);
+    getashape((struct bb_shape *)blitz_string, bm, x, y, w, h);
     (void)*dmaconr;
     while (*dmaconr & 0x40)
         ;
@@ -683,10 +666,10 @@ static struct DosLibrary *dosbase;
  * @param name d2: the file name
  * @param dos  a6: dos.library
  */
-static void BLITZ_ROUTINE dosaveshapes_c(struct shape *last BL_REG(a2), const char *name BL_REG(d2),
+static void BLITZ_ROUTINE dosaveshapes_c(struct bb_shape *last BL_REG(a2), const char *name BL_REG(d2),
                                          struct DosLibrary *dos BL_REG(a6))
 {
-    struct shape *s = (struct shape *)blitz_string;
+    struct bb_shape *s = (struct bb_shape *)blitz_string;
     BPTR fh;
 
     dosbase = dos;
@@ -706,7 +689,7 @@ static void BLITZ_ROUTINE dosaveshapes_c(struct shape *last BL_REG(a2), const ch
 }
 BLITZ_THUNK(dosaveshapes, dosaveshapes_c, "d0-d1/a0-a1");
 
-static void loadshapes(struct shape *s, struct shape *last, const char *name,
+static void loadshapes(struct bb_shape *s, struct bb_shape *last, const char *name,
                        struct DosLibrary *dos)
 {
     BPTR fh;
@@ -762,11 +745,11 @@ static void loadshapes(struct shape *s, struct shape *last, const char *name,
  * @param name d2: the file name
  * @param dos  a6: dos.library
  */
-static void BLITZ_ROUTINE doloadshapes_c(struct shape *last BL_REG(a2),
+static void BLITZ_ROUTINE doloadshapes_c(struct bb_shape *last BL_REG(a2),
                                          const char *name BL_REG(d2),
                                          struct DosLibrary *dos BL_REG(a6))
 {
-    loadshapes((struct shape *)blitz_string, last, name, dos);
+    loadshapes((struct bb_shape *)blitz_string, last, name, dos);
 }
 BLITZ_THUNK(doloadshapes, doloadshapes_c, "d0-d1/a0-a1");
 
@@ -786,20 +769,20 @@ static void BLITZ_ROUTINE doloadshapes2_c(UBYTE *base BL_REG(a2), ULONG max BL_R
                                           const char *name BL_REG(d1),
                                           struct DosLibrary *dos BL_REG(a6))
 {
-    loadshapes((struct shape *)blitz_string,
-               (struct shape *)(base + (WORD)(UWORD)((UWORD)(max - 1) << 5)), name, dos);
+    loadshapes((struct bb_shape *)blitz_string,
+               (struct bb_shape *)(base + (WORD)(UWORD)((UWORD)(max - 1) << 5)), name, dos);
 }
 BLITZ_THUNK(doloadshapes2, doloadshapes2_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------- DecodeShapes */
 
-static void cludge(struct shape *shape, struct shape *last, UBYTE *mem)
+static void cludge(struct bb_shape *shape, struct bb_shape *last, UBYTE *mem)
 {
     UBYTE *src = mem;
     ULONG fastmem = (ULONG)mem & 0xffe00000UL;
 
     do {
-        const struct shape *hd = (const struct shape *)src;    /* the block */
+        const struct bb_shape *hd = (const struct bb_shape *)src;    /* the block */
         ULONG p = (ULONG)hd->ebwidth * hd->height;
         int i;
 
@@ -811,7 +794,7 @@ static void cludge(struct shape *shape, struct shape *last, UBYTE *mem)
         freeashape_(shape);
         for (i = 0; i < 8; i++)                 /* copy header */
             ((ULONG *)shape)[i] = ((ULONG *)src)[i];
-        src += sizeof(struct shape);
+        src += sizeof(struct bb_shape);
         shape->cookie = NULL;
         shape->data = NULL;
         if (shape->width) {
@@ -828,7 +811,7 @@ static void cludge(struct shape *shape, struct shape *last, UBYTE *mem)
             } else {
                 shape->data = src;            /* in chip: use in place */
                 src += shape->size;
-                shape->cludge = CLUDGE;         /* don't free me freeshape! */
+                shape->cludge = BB_CLUDGE;         /* don't free me freeshape! */
             }
             if (autocook)
                 cookie_(shape);
@@ -853,11 +836,11 @@ static void cludge(struct shape *shape, struct shape *last, UBYTE *mem)
  * @param last a2: the last shape
  * @param mem  d2: the address of the data
  */
-static void BLITZ_ROUTINE cludgeshapes_c(struct shape *last BL_REG(a2), UBYTE *mem BL_REG(d2))
+static void BLITZ_ROUTINE cludgeshapes_c(struct bb_shape *last BL_REG(a2), UBYTE *mem BL_REG(d2))
 {
     if (!mem)
         JMP_ERR10();
-    cludge((struct shape *)blitz_string, last, mem);
+    cludge((struct bb_shape *)blitz_string, last, mem);
 }
 BLITZ_THUNK(_cludgeshapes, cludgeshapes_c, "d0-d1/a0-a1");
 
@@ -876,11 +859,11 @@ static void BLITZ_ROUTINE cludgeshapes2_c(UBYTE *base BL_REG(a2), ULONG max BL_R
                                           UBYTE *mem BL_REG(d1))
 {
     /* BUG(orig) (#939) */
-    struct shape *last = (struct shape *)(base + (WORD)(UWORD)((UWORD)(max - 1) << 5));
+    struct bb_shape *last = (struct bb_shape *)(base + (WORD)(UWORD)((UWORD)(max - 1) << 5));
 
     if (!mem)
         JMP_ERR10();
-    cludge((struct shape *)blitz_string, last, mem);
+    cludge((struct bb_shape *)blitz_string, last, mem);
 }
 BLITZ_THUNK(_cludgeshapes2, cludgeshapes2_c, "d0-d1/a0-a1");
 
@@ -895,12 +878,12 @@ BLITZ_THUNK(_cludgeshapes2, cludgeshapes2_c, "d0-d1/a0-a1");
 static UWORD xordelta;                          /* bmode: 2 = xor, 0 = set */
 static ULONG planeoffs[8];                      /* offs: the DLTA plane offsets */
 
-static void doshload_(struct shape *shape, const char *name)
+static void doshload_(struct bb_shape *shape, const char *name)
 {
-    struct shape *first = shape, *frame;
+    struct bb_shape *first = shape, *frame;
     UBYTE *st;
     UBYTE *dst;                                 /* a2: the shape data write pointer */
-    struct shape *next;                         /* a2: the next frame's shape */
+    struct bb_shape *next;                         /* a2: the next frame's shape */
     UWORD bpr, rows, depth;
     UWORD planesize;                            /* d7 */
     UWORD pstep;                                /* d7: row end to the next plane */
@@ -1096,7 +1079,7 @@ skipanim:
  * @param shape a0: the shape (a3 for the IFF calls)
  * @param name  d1: the file name
  */
-static void BLITZ_ROUTINE doshload_c(struct shape *shape BL_REG(a0), const char *name BL_REG(d1))
+static void BLITZ_ROUTINE doshload_c(struct bb_shape *shape BL_REG(a0), const char *name BL_REG(d1))
 {
     doshload_(shape, name);
 }
@@ -1110,7 +1093,7 @@ BLITZ_THUNK(doshload, doshload_c, "d0-d1/a0-a1");
  * @param name  d1: the file name
  * @param pal   a1: the palette object
  */
-static void BLITZ_ROUTINE doshload2_c(struct shape *shape BL_REG(a0), const char *name BL_REG(d1),
+static void BLITZ_ROUTINE doshload2_c(struct bb_shape *shape BL_REG(a0), const char *name BL_REG(d1),
                                       void *pal BL_REG(a1))
 {
     struct xregs r = { .d1 = (ULONG)name, .a0 = (ULONG)name, .a1 = (ULONG)pal,
@@ -1123,13 +1106,13 @@ BLITZ_THUNK(doshload2, doshload2_c, "d0-d1/a0-a1");
 
 /* *************************** ERROR CHECKING *************************** */
 
-static void BLITZ_ERRCHK schkz_c(struct shape *last BL_REG(a2))
+static void BLITZ_ERRCHK schkz_c(struct bb_shape *last BL_REG(a2))
 {
     if ((ULONG)blitz_string > (ULONG)last)
         BLITZ_RUNERR(mess4);
 }
 
-static void BLITZ_ERRCHK funcchk_c(const struct shape *s BL_REG(a0))
+static void BLITZ_ERRCHK funcchk_c(const struct bb_shape *s BL_REG(a0))
 {
     if (!s->width)
         BLITZ_RUNERR(mess1);
@@ -1137,26 +1120,26 @@ static void BLITZ_ERRCHK funcchk_c(const struct shape *s BL_REG(a0))
 
 static void BLITZ_ERRCHK cookiechk_c(void)
 {
-    if (!((const struct shape *)blitz_string)->width)
+    if (!((const struct bb_shape *)blitz_string)->width)
         BLITZ_RUNERR(mess1);
 }
 
 /* GetaShape: bitmap present, not interleaved, area inside */
 static void BLITZ_ERRCHK gschk_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2), ULONG w BL_REG(d3),
-                                 ULONG h BL_REG(d4), UBYTE *bm BL_REG(a2))
+                                 ULONG h BL_REG(d4), struct bb_bitmap *bm BL_REG(a2))
 {
     UWORD limit;
 
-    if (!SW(bm, 62))
+    if (!bm->isreal)
         BLITZ_RUNERR(mess6);
-    if ((WORD)SW(bm, 52) < 0)
+    if ((WORD)bm->ilword < 0)
         BLITZ_RUNERR(mess9);
     if ((WORD)w < 0 || (WORD)h < 0)
         BLITZ_RUNERR(mess5);
-    limit = SW(bm, 56);
+    limit = bm->width;
     if ((UWORD)x >= limit || (UWORD)((UWORD)x + (UWORD)w) > limit)
         BLITZ_RUNERR(mess5);
-    limit = SW(bm, 58);
+    limit = bm->height;
     if ((UWORD)y >= limit || (UWORD)((UWORD)y + (UWORD)h) > limit)
         BLITZ_RUNERR(mess5);
 }
