@@ -654,18 +654,19 @@ void BLITZ_ROUTINE dotextgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
 {
     UBYTE *it, *border, *gad;
     WORD w, boxw, boxh;
+    WORD xs, ys;                        /* the border excess */
 
     /* fontcalc */
     g.fontattr = (ULONG)*font;
     g.fhit = W(*font, 4);
     it = allocintui(text, lens[-1]);
     w = findmaxlen(it, intbase);
-    boxw = g.bxxs;
-    boxh = g.byxs;
-    W(it, 4) = boxw;
-    W(it, 6) = boxh;
-    boxw = boxw + boxw + w;
-    boxh = boxh + boxh + g.fhit;
+    xs = g.bxxs;
+    ys = g.byxs;
+    W(it, 4) = xs;
+    W(it, 6) = ys;
+    boxw = xs + xs + w;
+    boxh = ys + ys + g.fhit;
     border = allocborder(boxw, boxh);
     gad = allocgadget(x, y, id, boxw, boxh);
     P(gad, G_RENDER) = border;
@@ -947,23 +948,23 @@ BLITZ_THUNK(setdogstatus, setdogstatus_c, "d1");
 static ULONG BLITZ_ROUTINE dogstatus_c(UWORD id BL_REG(d1), UBYTE **list BL_REG(a1))
 {
     UBYTE *gad = findgadget(list, id), *it, *cur, *p;
-    ULONG result;
+    ULONG part;                         /* d0: the part number */
 
-    it = P(gad, G_TEXT);
-    result = (ULONG)it;
+    it = P(gad, G_TEXT);                /* d0 */
     if (it && !(B(gad, G_ACT) & 1)) {
         cur = P(it, 12);
         p = P(it, 20);
-        result = 1;
+        part = 1;
         while (p < cur) {
-            result = (result & 0xffff0000UL) | (UWORD)(result + 1);
+            part = (part & 0xffff0000UL) | (UWORD)(part + 1);
             while (*p++)
                 ;
         }
-        return result;
+        return part;
     }
-    /* 'skip: BTST #7,13(a0):SNE d0:EXT.w d0 */
-    return (result & 0xffff0000UL) | ((B(gad, G_FLAGS + 1) & 0x80) ? 0xffff : 0);
+    /* 'skip: BTST #7,13(a0):SNE d0:EXT.w d0 (the upper word of the
+       GadgetText pointer stays) */
+    return ((ULONG)it & 0xffff0000UL) | ((B(gad, G_FLAGS + 1) & 0x80) ? 0xffff : 0);
 }
 BLITZ_THUNK(dogstatus, dogstatus_c, "d1");
 
