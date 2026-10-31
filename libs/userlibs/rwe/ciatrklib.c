@@ -1465,8 +1465,8 @@ static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG num BL_REG(d0), ULONG name BL_R
 }
 
 /* _modtochip: a module outside chip memory (address >= $200000) to chip
-   memory; d0 -1 or 0 */
-static ULONG modtochip(ULONG num)
+   memory; d0 -1 (copied) or 0 (in chip memory already, no memory) */
+static BB_BOOL modtochip(ULONG num)
 {
     struct modent *e = slot(num);
     UBYTE *src = e->addr, *hdr, *dst;
@@ -1474,7 +1474,7 @@ static ULONG modtochip(ULONG num)
     int i;
 
     if ((LONG)src < 0x200000)
-        return 0;
+        return BB_FALSE;
     size = patternsize(src);
     for (i = 0, hdr = src; i < 31; i++, hdr += 30)
         size += (ULONG)WORDAT(hdr + 42) << 1;
@@ -1482,13 +1482,13 @@ static ULONG modtochip(ULONG num)
     e->len = BL_SETW(size, size + 3);   /* ADD.w (BUG(orig), #434) */
     dst = (UBYTE *)globalloc(e->len, MEMF_CHIP);
     if (!dst)
-        return 0;
+        return BB_FALSE;
     e->addr = dst;
     n = e->len;
     do
         *dst++ = *src++;
     while (--n);
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 static void BLITZ_ROUTINE decodemod_c(ULONG num BL_REG(d0), ULONG addr BL_REG(d1))
@@ -1526,7 +1526,7 @@ static ULONG BLITZ_ROUTINE checkid_c(ULONG num BL_REG(d0))
         return peekl(0);                /* BUG(orig): MOVE.l 0,d0 (#430) */
     id = LONGAT(e->addr + 0x438);
     if (id == ID('M', '.', 'K', '.') || id == ID('M', '!', 'K', '!'))
-        return (ULONG)-1;
+        return BB_TRUE;            /* not BB_BOOL: else the long at 0 (#430) */
     return peekl(0);
 }
 
@@ -1570,7 +1570,7 @@ static ULONG BLITZ_ROUTINE starttrkmodule_c(ULONG num BL_REG(d0))
         setciaint();
     mt_init(e->len);
     playdata.Enable = 0xff;
-    return (ULONG)-1;
+    return BB_TRUE;                     /* not BB_BOOL: or the slot (#451) */
 }
 
 static void BLITZ_ROUTINE stoptracker_c(void)
