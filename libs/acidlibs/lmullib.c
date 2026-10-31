@@ -37,22 +37,23 @@ static inline ULONG swap(ULONG a)
    >= $10000, i.e. when the true product does not fit in 32 bits anyway. */
 LONG lmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
 {
-    ULONG acc = a, mag_b = b, cross_hilo, cross_lohi;  /* d0 d1 d3 d4 */
+    ULONG mag_a = a, mag_b = b;         /* d0 d1 */
+    ULONG acc;                          /* d0: the product */
+    ULONG cross_hilo, cross_lohi;       /* d3 d4 */
     UWORD neg = 0;                      /* d2.w */
 
-    if ((LONG)acc < 0) {
-        acc = -acc;
+    if ((LONG)mag_a < 0) {
+        mag_a = -mag_a;
         neg = 0xffff;
     }
     if ((LONG)mag_b < 0) {              /* 'skip */
         mag_b = -mag_b;
         neg = ~neg;
     }
-    cross_hilo = cross_lohi = acc;      /* 'skip2 */
-    acc = mulu(acc, mag_b);             /* lo(a) * lo(b) */
-    cross_hilo = mulu(swap(cross_hilo), mag_b); /* hi(a) * lo(b) */
+    acc = mulu(mag_a, mag_b);           /* 'skip2: lo(a) * lo(b) */
+    cross_hilo = mulu(swap(mag_a), mag_b); /* hi(a) * lo(b) */
     acc += swap(cross_hilo);
-    cross_lohi = mulu(cross_lohi, swap(mag_b)); /* lo(a) * hi(b) */
+    cross_lohi = mulu(mag_a, swap(mag_b)); /* lo(a) * hi(b) */
     acc += swap(cross_lohi);
     if (neg)
         acc = -acc;                     /* 'skip3 */
@@ -66,24 +67,24 @@ LONG lmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
    lmultiply (its high word lands in the low word when hi*hi >= $10000). */
 LONG qmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
 {
-    ULONG acc = a, mag_b = b, a_hi, a_lo;   /* d0 d1 d3 d4 */
+    ULONG mag_a = a, mag_b = b;         /* d0 d1 (d3 d4: copies of |a|) */
+    ULONG acc;                          /* d0: the product */
+    ULONG swap_b;                       /* d1: |b| SWAPped */
     UWORD neg = 0;                      /* d2.w */
 
-    if ((LONG)acc < 0) {
-        acc = -acc;
+    if ((LONG)mag_a < 0) {
+        mag_a = -mag_a;
         neg = 0xffff;
     }
     if ((LONG)mag_b < 0) {              /* 'skip */
         mag_b = -mag_b;
         neg = ~neg;
     }
-    a_hi = a_lo = acc;                  /* 'skip2 */
-    acc = mulu(acc, mag_b) >> 16;       /* lo*lo: CLR d0:SWAP d0 */
-    acc += mulu(swap(a_hi), mag_b);     /* + hi(a) * lo(b) */
-    mag_b = swap(mag_b);
-    a_hi = a_lo;
-    acc += mulu(a_lo, mag_b);           /* + lo(a) * hi(b) */
-    acc += swap(mulu(swap(a_hi), mag_b)); /* + hi(a) * hi(b) << 16 */
+    acc = mulu(mag_a, mag_b) >> 16;     /* 'skip2: lo*lo: CLR d0:SWAP d0 */
+    acc += mulu(swap(mag_a), mag_b);    /* + hi(a) * lo(b) */
+    swap_b = swap(mag_b);
+    acc += mulu(mag_a, swap_b);         /* + lo(a) * hi(b) */
+    acc += swap(mulu(swap(mag_a), swap_b)); /* + hi(a) * hi(b) << 16 */
     if (neg)
         acc = -acc;                     /* 'skip3 */
     return (LONG)acc;
