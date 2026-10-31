@@ -182,6 +182,11 @@ Checked by compiling all `libs/acidlibs/*.c` with `-S` and evaluating the
 effective section of each `BLITZ_ERRCHK` function (as of c4a736d):
 **no** check function is in normal code. (iffmakelib had four –
 `bitchk_c`, `bitchk2_c`, `sschk1_c`, `sschk2_c` –, fixed in c4a736d.)
+The RWE userlib rigtmenulib had seven (`existschk`, `statechk`,
+`statechk2_c`–`statechk4_c`, `chkchk3_c`–`chkchk5_c`, behind the thunks
+of createchk/setchk): their references to the messages were the three
+`blitzlibcheck` warnings of rigtmenulib; the thunks now follow all check
+functions.
 
 ## 7. State
 

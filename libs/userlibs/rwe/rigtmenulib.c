@@ -1249,8 +1249,6 @@ static void BLITZ_ERRCHK listchk_c(struct gtmenulist *obj BL_REG(a3))
     if (!obj->titles)
         BLITZ_RUNERR(mess8);
 }
-BLITZ_ERRCHK_THUNK(createchk, listchk_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(setchk, listchk_c, "d0-d1/a0-a1");
 
 /* existschk: entries 0..n of the list at the link **slot exist (DBF);
    *slot moves to entry n, or stays at the last one there is.  0 if one
@@ -1301,19 +1299,16 @@ static void BLITZ_ERRCHK statechk2_c(CHKARGS, struct gtmenulist *obj BL_REG(a3))
 {
     statechk(obj, 2, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
-BLITZ_ERRCHK_THUNK(statechk2, statechk2_c, "d0-d1/a0-a1");
 
 static void BLITZ_ERRCHK statechk3_c(CHKARGS, struct gtmenulist *obj BL_REG(a3))
 {
     statechk(obj, 3, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
-BLITZ_ERRCHK_THUNK(statechk3, statechk3_c, "d0-d1/a0-a1");
 
 static void BLITZ_ERRCHK statechk4_c(CHKARGS, struct gtmenulist *obj BL_REG(a3))
 {
     statechk(obj, 4, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
-BLITZ_ERRCHK_THUNK(statechk4, statechk4_c, "d0-d1/a0-a1");
 
 /* chkchk3/4: the same with the object in a2 (EXG a2,a3); chkchk5: chkchk3
    if the sub item is -1 (CMP.w), else chkchk4 */
@@ -1321,16 +1316,26 @@ static void BLITZ_ERRCHK chkchk3_c(CHKARGS, struct gtmenulist *obj BL_REG(a2))
 {
     statechk(obj, 3, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
-BLITZ_ERRCHK_THUNK(chkchk3, chkchk3_c, "d0-d1/a0-a1");
 
 static void BLITZ_ERRCHK chkchk4_c(CHKARGS, struct gtmenulist *obj BL_REG(a2))
 {
     statechk(obj, 4, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
-BLITZ_ERRCHK_THUNK(chkchk4, chkchk4_c, "d0-d1/a0-a1");
 
 static void BLITZ_ERRCHK chkchk5_c(CHKARGS, struct gtmenulist *obj BL_REG(a2))
 {
     statechk(obj, (UWORD)subno == 0xffff ? 3 : 4, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
+
+/* the thunks after all check functions: BLITZ_ERRCHK_THUNK ends with
+   `.text` while GCC still assumes the error check section, so a check
+   function behind a thunk would land in the normal code
+   (docs/libs/deviations.md, section 6) */
+BLITZ_ERRCHK_THUNK(createchk, listchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(setchk, listchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(statechk2, statechk2_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(statechk3, statechk3_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(statechk4, statechk4_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(chkchk3, chkchk3_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(chkchk4, chkchk4_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(chkchk5, chkchk5_c, "d0-d1/a0-a1");

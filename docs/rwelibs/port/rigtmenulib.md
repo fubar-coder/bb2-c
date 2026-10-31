@@ -68,7 +68,10 @@ without moving a2 (DIFF, as in all ports: `docs/libs/cmdlibs-port.md`
 The error checks are C in the error check area (BLITZ_ERRCHK):
 createchk/setchk ("GTMenu has no data to build GTMenuList from!"),
 statechk2–4 and chkchk3–5 ("Illegal Menu / Menu Item / Menu Sub Item
-number", the existschk walk of menuslib). No assembler.
+number", the existschk walk of menuslib). No assembler. The thunks
+follow all check functions: before, the check functions behind the
+first thunk landed in the normal code (`docs/libs/deviations.md`,
+section 6; the three `blitzlibcheck` warnings of rigtmenulib).
 
 ## BUG(orig), kept
 
