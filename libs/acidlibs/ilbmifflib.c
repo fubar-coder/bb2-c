@@ -297,7 +297,7 @@ static void BLITZ_ROUTINE decodeilbm_c(const ULONG *mem BL_REG(d1))
     const UBYTE *src = (const UBYTE *)mem;
     const UBYTE *end;
     ULONG id, len;
-    UWORD rowsize, rows, depth;         /* d5: bytes, then words - 1; d6 d7 */
+    UWORD rowsize, rows, depth;         /* d5: the bytes per row; d6 d7 */
     UBYTE comp;
     LONG rowoff;                        /* a4 */
 
@@ -377,14 +377,14 @@ static void BLITZ_ROUTINE decodeilbm_c(const ULONG *mem BL_REG(d1))
             rowoff += (WORD)bm->BytesPerRow;            /* ADD (a3),a4 */
         } while (rows-- != 0);                          /* DBRA d6 */
     } else {
-        rowsize = (UWORD)(rowsize >> 1) - 1;
+        UWORD rowwords = (UWORD)(rowsize >> 1) - 1; /* d5: words - 1 */
         do {                                            /* cod */
             UWORD plane = depth;
             PLANEPTR *planes = bm->Planes;
 
             do {                                        /* cow */
                 UWORD *dst = (UWORD *)(*planes++ + rowoff);
-                UWORD left = rowsize;
+                UWORD left = rowwords;
 
                 do
                     *dst++ = *(const UWORD *)src, src += 2;
