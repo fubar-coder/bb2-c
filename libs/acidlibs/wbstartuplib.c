@@ -53,12 +53,14 @@ struct arg {
     UWORD length;                               /* 8.w */
     BPTR lock;                                  /* 10.l */
 } BL_PACKED;
+static_assert(sizeof(struct arg) == DATSIZE);
 
 static struct {
     UWORD fromcli;                              /* 0.w Was it run from CLI? */
     ULONG numargs;                              /* 2.l */
     struct arg *first;                          /* 6.l */
 } BL_PACKED argData;
+static_assert(sizeof argData == 10);
 
 static BPTR thisLock;                           /* lock for the next AddArg */
 static struct arg *prevArg;
