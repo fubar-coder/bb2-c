@@ -16,8 +16,9 @@
  *     - Processor = number of shifts until AttnFlags & 15 is 0
  *       (0 = 68000, 1 = 68010, 2 = 68020, 3 = 68030, 4 = 68040).
  *     - cr_vbr = the VBR (MOVEC in supervisor state, SuperState/
- *       UserState), only for Processor >= 2 (BUG(orig) (#42): not on a 68010,
- *       which has a VBR too); 0 otherwise.
+ *       UserState), from Processor >= 1 on (68010+); 0 on the 68000.
+ *       Fixed (intended deviation, #42): the original reads it only for
+ *       Processor >= 2, so a 68010, which has a VBR too, gets 0.
  * The functions only return the stored values.  The word functions load
  * the word into d0 with MOVE.w, the upper word of d0 stays as it was
  * (thunks with "move.w d0,2(sp)").
@@ -99,8 +100,9 @@ static void BLITZ_ROUTINE codeinit_c(const void *intuition BL_REG(a6))
 
     {
         ULONG vbr = 0;                                  /* MOVEQ #0,d2 */
-        /* BUG(orig) (#42): a 68010 (cpu == 1) has a VBR too, it is not read */
-        if (cpu >= 2) {                                 /* CMP #2,d1:BCS 'skip */
+        /* fixed (#42): from the 68010 on; the original's CMP #2,d1:BCS
+           'skip leaves a 68010 (cpu == 1) at 0 */
+        if (cpu >= 1) {
             APTR ssp = SuperState();                    /* supervisor state! */
             vbr = getvbr();
             UserState(ssp);
@@ -132,9 +134,9 @@ static ULONG BLITZ_ROUTINE wbhite_c(void) { return wbhite_; }
 /**
  * @brief cr_vbr: the vector base register.
  *
- * Read at program start in supervisor state, only on a 68020 or higher;
- * 0 otherwise.  BUG(orig) (#42): a 68010 has a VBR too, it is not read
- * (0).
+ * Read at program start in supervisor state, on a 68010 or higher; 0 on
+ * the 68000.  Fixed (#42): the original reads it only from the 68020 on
+ * (0 on a 68010).
  *
  * @return d0: the VBR (long); every other register kept
  */

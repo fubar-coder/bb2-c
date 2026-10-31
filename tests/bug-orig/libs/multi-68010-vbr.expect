@@ -1,3 +1,4 @@
 [run]
 cr_vbr is the moved table -1
+SetErr handler reached
 rc=0

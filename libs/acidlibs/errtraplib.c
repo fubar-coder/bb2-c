@@ -113,20 +113,21 @@ BLITZ_ASM_ROUTINE(doputsp,
 "   move.l  d0,sp\n"
 "   jmp     (a0)");
 
-/* codeinit - find the VBR (68020+), install newtrap */
+/* codeinit - find the VBR (68010+), install newtrap */
 void BLITZ_ROUTINE codeinit(void)
 {
     UWORD f = SysBase->AttnFlags & 15;
     UWORD n = 0;
     ULONG vbr = 0;
 
-    /* BUG(orig) (#42): this counts the shifts until the CPU flags are 0, so
-       only 68020+ (2 flags or more) read the VBR; a 68010 uses 0. */
+    /* Fixed (intended deviation, #42): this counts the shifts until the
+       CPU flags are 0; the original reads the VBR only for 2 or more (68020+),
+       so a 68010, which has a VBR too, uses 0.  Here from 1 on. */
     while (f) {
         n++;
         f >>= 1;
     }
-    if (n >= 2) {
+    if (n >= 1) {
         APTR ssp = SuperState();                /* supervisor state! */
         register ULONG v __asm("d2");
         __asm volatile(".short 0x4e7a,0x2801" : "=d"(v));  /* MOVEC vbr,d2 */

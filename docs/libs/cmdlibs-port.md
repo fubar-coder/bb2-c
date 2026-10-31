@@ -141,9 +141,12 @@ Binary = source. Everything is determined once in the init (a6 = intuition):
 * The long at +76 is `ViewPort.Modes` (upper word, WBViewMode) and
   SpritePriority/ExtendedModes (lower word, WBExtViewMode).
 * `Processor` = number of shifts until `AttnFlags & 15` is zero (68020 → 2).
-* **BUG(orig) (#42):** `cr_vbr` is only read from Processor ≥ 2 on (`MOVEC VBR`
-  in supervisor mode via SuperState/UserState), on the 68010 it stays
-  0, although it has a VBR. `MOVEC` as `.word` (68000 assembler).
+* `cr_vbr` is read from Processor ≥ 1 on (`MOVEC VBR` in supervisor mode
+  via SuperState/UserState), 0 on the 68000. Fixed (intended deviation,
+  #42): the original reads it only from Processor ≥ 2 on, on the 68010 it
+  stays 0, although it has a VBR (likewise errtraplib, runerrlib and the
+  compiler's calcvbr; bug-orig test `multi-68010-vbr`). `MOVEC` as
+  `.word` (68000 assembler).
 * The word functions load with `MOVE.w`, the upper word of d0 stays -
   reproduced in C via `BLITZ_THUNK_POST(... "move.w d0,2(sp)")`.
 * Values depend on the environment, but are the same in every run of the same Amiberry

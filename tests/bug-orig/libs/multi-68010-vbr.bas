@@ -6,9 +6,15 @@
 ; Supervisor, MOVEC d7,VBR as words: the Blitz assembler is 68000 only)
 ; and runs itself a second time (dos Execute, output to the same file):
 ; the child prints whether cr_vbr (environlib, read at its start) is the
-; moved table.  Then the VBR goes back to 0.
-; Correct: on the 68010 cr_vbr is the moved table.
+; moved table, then sets a SetErr handler and raises TRAP #0 (errtraplib
+; puts its TRAP #0 handler into the table at its VBR: with 0 the moved
+; table keeps exec's vector and the handler is never reached).  Then the
+; VBR goes back to 0.
+; Correct: on the 68010 cr_vbr is the moved table and the handler runs.
+; Only clib is judged: port has the CD's libraries (the compiler's calcvbr
+; is used only by a program run from the editor).
 ; @machine a500-68010
+; @configs clib
 DEFTYPE .l
 If NumPars=0
   t=AllocMem_(1024,1)
@@ -23,6 +29,13 @@ EndIf
 a$=Par$(1) : p=0
 For i=1 To Len(a$) : p=p*10+Asc(Mid$(a$,i,1))-48 : Next
 NPrint "cr_vbr is the moved table ",cr_vbr=p
+SetErr
+  NPrint "SetErr handler reached"
+  End
+End SetErr
+MOVEQ #0,d0
+TRAP #0
+NPrint "no SetErr handler"
 End
 
 setvbr:

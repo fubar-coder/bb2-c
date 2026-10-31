@@ -486,7 +486,8 @@ BLITZ_THUNK(gouser, gouser_c, "d0-d1/a0-a1");
  *
  * Keeps d0-d1/a1 (the thunk moves the result to a0).
  *
- * BUG(orig) (#42): 0 on a 68010 too, which has a VBR.
+ * Fixed (intended deviation, #42): also on a 68010 (the original gives 0
+ * there, though a 68010 has a VBR).
  *
  * @return a0: the VBR (0 on a 68000)
  */
@@ -509,12 +510,12 @@ BLITZ_THUNK_POST(getcpu, getcpu_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
  * maxstack = the lowest allowed stack pointer (with 1K reserve), ostack =
  * the stack pointer expected at the end; `trapper` becomes the task's
  * tc_TrapCode (CPU exceptions become runtime errors "GURU! - ..."); the
- * CPU type from AttnFlags and, from a 68020 on, the VBR (MOVEC in
+ * CPU type from AttnFlags and, from a 68010 on, the VBR (MOVEC in
  * supervisor state).  The original returns d2 = VBR (and changes
  * d0-d1/a0/a6); the thunk keeps everything.
  *
- * BUG(orig) (#42): the VBR is read only from a 68020 on, though a 68010
- * has one too.
+ * Fixed (intended deviation, #42): the original reads the VBR only from a
+ * 68020 on, though a 68010 has one too.
  *
  * @param sp    a0: the stack pointer at entry (pointing to the return
  *              address; the thunk computes it)
@@ -533,7 +534,7 @@ static void BLITZ_ROUTINE codeinit_c(UBYTE *sp BL_REG(a0), ULONG stack BL_REG(d2
     for (f = SysBase->AttnFlags & 15; f; f >>= 1)
         n++;
     cpu_ = n;
-    if (n >= 2) {                       /* 68020+ (BUG(orig) (#42): 68010 has a VBR too) */
+    if (n >= 1) {                       /* 68010+ (fixed, #42: the original 68020+) */
         APTR ssp = SuperState();        /* supervisor state! */
         register ULONG r __asm("d0");
 

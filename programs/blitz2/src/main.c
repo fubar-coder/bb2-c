@@ -1533,8 +1533,9 @@ ULONG calcvbr(void)
         cpu++;
         cpubits >>= 1;
     }
-    /* BUG(orig) (#42): a 68010 (cpu == 1) is treated as having no VBR */
-    if (cpu >= 2)
+    /* fixed (intended deviation, #42): from the 68010 on (cpu >= 1); the
+       original reads the VBR only for cpu >= 2, a 68010 got 0 */
+    if (cpu >= 1)
         base = getvbr();                /* DIFF: Supervisor() instead of
                                            SuperState/movec/UserState */
     vbr = base;
