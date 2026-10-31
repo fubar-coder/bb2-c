@@ -1127,7 +1127,7 @@ static ULONG BLITZ_ROUTINE searchmem_c(UBYTE type BL_REG(d0), ULONG value BL_REG
 #undef CHECKEND
 found:
     findaddress = (ULONG)p;
-    return (ULONG)-1;
+    return BB_TRUE;                     /* not BB_BOOL: 1 = space bar down */
 notfound:
     findaddress = 0;
     return 0;
