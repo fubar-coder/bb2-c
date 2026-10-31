@@ -66,6 +66,17 @@ BLITZ_LIBFIN();
 #define LONGAT(p) (*(ULONG *)(p))
 #define WORDAT(p) (*(UWORD *)(p))
 
+/* the sound object of audiolib (struct sound in audiolib.c) */
+struct sound {
+    UBYTE *data;                        /* +0: the sample */
+    UWORD period;                       /* +4 */
+    UWORD len;                          /* +6: in words */
+    UBYTE *rep;                         /* +8: the loop */
+    UWORD replen;                       /* +12 */
+    UWORD mark;                         /* +14: "cL" = DecodeSound data */
+};
+static_assert(sizeof(struct sound) == 16);
+
 /* _libinit, _libfinit: RTS (nothing to set up or free) */
 void BLITZ_ROUTINE _libinit(void)
 {
@@ -78,17 +89,17 @@ void BLITZ_ROUTINE _libfinit(void)
 /* CludgeSound sound#,address: d0 = sound#, d1 = the 8SVX file, a0 = the
    sound object */
 static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
-                                        UBYTE *saddr BL_REG(a0))
+                                        struct sound *saddr BL_REG(a0))
 {
     UBYTE *iff, *src, *dst, *mem;       /* a0: the current IFF chunk */
     ULONG rate, clock, slen;
     UWORD sper, n;
     int chunk;
 
-    if (LONGAT(saddr)) {                /* free the old sample (BUG(orig) #831),
+    if (saddr->data) {                  /* free the old sample (BUG(orig) #831),
                                            also "cL" data (BUG(orig) #945) */
-        struct bl_regs r = { .a1 = LONGAT(saddr) };
-        r.d0 = BL_SETW(sound, WORDAT(saddr + 6));
+        struct bl_regs r = { .a1 = (ULONG)saddr->data };
+        r.d0 = BL_SETW(sound, saddr->len);
         BLITZ_ALIBJSR(TOK_globfree, r);
     }
     if (LONGAT(sram + 8) != ID('8', 'S', 'V', 'X') || LONGAT(sram + 12) != ID('V', 'H', 'D', 'R'))
@@ -121,12 +132,12 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_R
     do
         *dst++ = *src++;
     while (n-- != 0);
-    LONGAT(saddr) = (ULONG)mem;
-    WORDAT(saddr + 4) = sper;
-    WORDAT(saddr + 6) = (UWORD)((slen & 0xffff) >> 1);
-    LONGAT(saddr + 8) = 0;              /* no loop */
-    WORDAT(saddr + 12) = 0;
-    WORDAT(saddr + 14) = 0;
+    saddr->data = mem;
+    saddr->period = sper;
+    saddr->len = (UWORD)((slen & 0xffff) >> 1);
+    saddr->rep = NULL;                  /* no loop */
+    saddr->replen = 0;
+    saddr->mark = 0;
     return (ULONG)-1;
 }
 
