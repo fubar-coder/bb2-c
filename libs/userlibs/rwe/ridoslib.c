@@ -367,22 +367,23 @@ static ULONG BLITZ_ROUTINE lockdoslist_c(UWORD flags BL_REG(d0),
     return (ULONG)-1;
 }
 
-/* NextDevice: d0 unchanged without a list (BUG(orig) (#625)) */
-static ULONG BLITZ_ROUTINE nextlistitem_c(ULONG d0 BL_REG(d0),
+/* NextDevice: d0 unchanged without a list (BUG(orig) (#625)), else the
+   length byte of the name */
+static ULONG BLITZ_ROUTINE nextlistitem_c(ULONG result BL_REG(d0),
                                           struct DosLibrary *dos BL_REG(a6))
 {
     const UBYTE *name;
 
     if (!mydoslist)
-        return d0;
+        return result;
     mydosentry = NextDosEntry(mydosentry, doslistflags);
     if (!mydosentry)
         return 0;
     name = (const UBYTE *)BADDR(mydosentry->dol_Name);
-    d0 = *name++;
+    result = *name++;
     while ((*blitz_string++ = *name++) != 0)
         ;
-    return d0;
+    return result;
 }
 
 /* DeviceEntryType */
@@ -395,11 +396,11 @@ static ULONG BLITZ_ROUTINE dosentrytype_c(void)
 
 /* FreeDeviceList (a6 = the program's dos base): d0 unchanged without
    _dosbase */
-static ULONG BLITZ_ROUTINE unlockdoslist_c(ULONG d0 BL_REG(d0),
+static ULONG BLITZ_ROUTINE unlockdoslist_c(ULONG incoming BL_REG(d0),
                                            struct DosLibrary *dos BL_REG(a6))
 {
     if (!dosbase_)
-        return d0;
+        return incoming;
     UnLockDosList(doslistflags);
     mydoslist = NULL;
     return (ULONG)-1;
