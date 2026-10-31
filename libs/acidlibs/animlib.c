@@ -54,10 +54,11 @@
 #include "blitzlib.h"
 
 /* entry points (thunks / C routines, defined below) */
+struct anim;
 void doframes(void);
 void BLITZ_ROUTINE freeanim(void);
-void BLITZ_ROUTINE doanimload(UBYTE *anim BL_REG(a0), ULONG name BL_REG(d1));
-void BLITZ_ROUTINE doanimload2(UBYTE *anim BL_REG(a0), ULONG name BL_REG(d1),
+void BLITZ_ROUTINE doanimload(struct anim *anim BL_REG(a0), ULONG name BL_REG(d1));
+void BLITZ_ROUTINE doanimload2(struct anim *anim BL_REG(a0), ULONG name BL_REG(d1),
                                ULONG pal BL_REG(a1));
 void doinitanim(void), doinitanim2(void), donextframe(void);
 void animchk(void), animchk2(void), animchk3(void), animchk4(void);
@@ -113,8 +114,51 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 10, 5);
 
 /* ******************* CODE BELOW **************** */
 
-#define W(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
-#define L(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
+/* a delta node: {next.l, length of the NEXT node.l, DLTA chunk} */
+struct delta {
+    struct delta *next;         /* +0 */
+    ULONG nextlen;              /* +4: the length of the next node */
+    UBYTE dlta[];               /* +8: the DLTA chunk (16 plane offsets.l,
+                                   then the ops) */
+};
+
+/* an anim object (2^5 bytes); first/firstlen are laid out like a delta
+   node (the head of the list) */
+struct anim {
+    UWORD width;                /* +0: 0 = not loaded */
+    UWORD height;               /* +2 */
+    UWORD depth;                /* +4 */
+    UWORD ebwidth;              /* +6: even byte width (ILBM words * 2) */
+    UWORD frames;               /* +8 */
+    UBYTE *body;                /* +10: BODY (memlib globalloc) */
+    ULONG bodylen;              /* +14 */
+    struct delta *first;        /* +18: the first delta node */
+    ULONG firstlen;             /* +22: its length */
+    struct delta *current;      /* +26 */
+    UWORD eor;                  /* +30: 2 = EOR deltas, 0 = MOVE */
+};
+static_assert(sizeof(struct anim) == 32);
+
+/* the head of the delta list: the anim's +18 as a node */
+#define HEADNODE(a) ((struct delta *)&(a)->first)
+
+/* ilbmifflib's iffstuff (the part read here) */
+struct iffstuff {
+    UWORD width;                /* +0 */
+    UWORD height;               /* +2 */
+    UWORD planes;               /* +4 */
+    UWORD words;                /* +6: width in words */
+};
+
+/* a bitmap object (the part read here; bitmaplib's struct bbitmap):
+   +4 is flags.b/depth.b, read as one word as in the original */
+struct bmap {
+    UWORD bpr;                  /* +0 */
+    UWORD rows;                 /* +2 */
+    UWORD depth;                /* +4: flags << 8 | depth */
+    UWORD pad;                  /* +6 */
+    ULONG planes[8];            /* +8 */
+};
 
 #define TOK_ilbminit   ((LIB_ilbmifflib << 7) + 1)  /* a0 = name -> a0 = info, d0 = 0: failed */
 #define TOK_getpal     ((LIB_palettelib << 7) + 3)  /* a0 = name, a1 = palette */
@@ -194,18 +238,18 @@ static void globfree(ULONG mem, ULONG size)
 }
 
 /* freeanim with a3 = the anim */
-static void freeanim_c(UBYTE *anim)
+static void freeanim_c(struct anim *anim)
 {
-    UBYTE *link;
-    UBYTE *next;                        /* d0: the next pointer */
+    struct delta *link;
+    struct delta *next;                 /* d0: the next pointer */
 
-    if (!W(anim, 0))
+    if (!anim->width)
         return;
-    W(anim, 0) = 0;
-    globfree(L(anim, 10), L(anim, 14));
-    link = anim + 18;
-    while ((next = (UBYTE *)L(link, 0)) != 0) {
-        ULONG len = L(link, 4);         /* d0: the node length */
+    anim->width = 0;
+    globfree((ULONG)anim->body, anim->bodylen);
+    link = HEADNODE(anim);
+    while ((next = link->next) != 0) {
+        ULONG len = link->nextlen;      /* d0: the node length */
 
         link = next;
         globfree((ULONG)next, len);     /* BUG(orig) (#399): (a2) read after */
@@ -215,7 +259,7 @@ static void freeanim_c(UBYTE *anim)
 /* _free nullsub: a3 = object */
 void BLITZ_ROUTINE freeanim(void)
 {
-    freeanim_c(blitz_string);
+    freeanim_c((struct anim *)blitz_string);
 }
 
 /* Frames: MOVE 8(a0),d0 */
@@ -227,19 +271,20 @@ void err6(void) __attribute__((noreturn)), err7(void) __attribute__((noreturn));
 #define GOTO(label) label()     /* JSR to the noreturn label, see displaylib.c */
 
 /* LoadAnim - a0 = anim, d1 = file name */
-void BLITZ_ROUTINE doanimload(UBYTE *anim BL_REG(a0), ULONG name BL_REG(d1))
+void BLITZ_ROUTINE doanimload(struct anim *anim BL_REG(a0), ULONG name BL_REG(d1))
 {
     struct bl_regs r;
-    UBYTE *info, *node;
+    const struct iffstuff *info;
+    struct delta *node;
     ULONG bodylen;                      /* d0 */
     ULONG bodymem;                      /* d0 */
     ULONG dltalen;                      /* d0 */
     ULONG nodelen;                      /* d0: the DLTA length + 8 */
-    UBYTE *next;                        /* d0: the new node */
+    struct delta *next;                 /* d0: the new node */
     ULONG len;                          /* d2 */
     int found;
 
-    blitz_string = anim;                /* MOVE.l a0,a3:BSR freeanim */
+    blitz_string = (UBYTE *)anim;       /* MOVE.l a0,a3:BSR freeanim */
     freeanim_c(anim);
     r.d0 = 0;
     r.d1 = name;
@@ -247,50 +292,51 @@ void BLITZ_ROUTINE doanimload(UBYTE *anim BL_REG(a0), ULONG name BL_REG(d1))
     r.a1 = 0;
     if (!BLITZ_ALIBJSR(TOK_ilbminit, r))
         GOTO(err7);                     /* BUG(orig) (#398): into the check area */
-    info = (UBYTE *)r.a0;
-    L(anim, 0) = L(info, 0);
-    W(anim, 4) = W(info, 4);
-    W(anim, 6) = (UWORD)(W(info, 6) << 1);
-    W(anim, 8) = 1;
+    info = (const struct iffstuff *)r.a0;
+    /* width and height with one MOVE.l */
+    *(ULONG *)&anim->width = *(const ULONG *)&info->width;
+    anim->depth = info->planes;
+    anim->ebwidth = (UWORD)(info->words << 1);
+    anim->frames = 1;
     bodylen = ifffind(0x424f4459, &found); /* "BODY" */
-    L(anim, 14) = bodylen;
+    anim->bodylen = bodylen;
     len = bodylen;
     bodymem = globalloc(bodylen, 1);
-    L(anim, 10) = bodymem;
+    anim->body = (UBYTE *)bodymem;
     iffread(bodymem, len);
-    L(anim, 26) = 0;
-    W(anim, 30) = 0;
-    node = anim + 18;
-    blitz_string = node;
-    L(node, 0) = 0;
+    anim->current = 0;
+    anim->eor = 0;
+    node = HEADNODE(anim);
+    blitz_string = (UBYTE *)node;
+    node->next = 0;
     ifffind(0x414e4844, &found);        /* "ANHD" */
     if (found) {
         if ((UBYTE)iffbyte() != 5)
             GOTO(err6);
         iffskip(19);
-        W(anim, 30) = (UWORD)(ifflong() & 2);
-        W(anim, 8) = 0xffff;
+        anim->eor = (UWORD)(ifflong() & 2);
+        anim->frames = 0xffff;
         for (;;) {
             dltalen = ifffind(0x444c5441, &found); /* "DLTA" */
             if (!found)
                 break;
             len = dltalen;
-            W(anim, 8)++;
+            anim->frames++;
             nodelen = dltalen + 8;
-            L(node, 4) = nodelen;
-            next = (UBYTE *)globalloc(nodelen, 1);
-            L(node, 0) = (ULONG)next;
+            node->nextlen = nodelen;
+            next = (struct delta *)globalloc(nodelen, 1);
+            node->next = next;
             node = next;
-            blitz_string = node;        /* a3 stays on the last node */
-            L(node, 0) = 0;
-            iffread(node + 8, len);
+            blitz_string = (UBYTE *)node; /* a3 stays on the last node */
+            node->next = 0;
+            iffread(node->dlta, len);
         }
     }
     iffclose();
 }
 
 /* LoadAnim with palette - d2 = palette (a1) */
-void BLITZ_ROUTINE doanimload2(UBYTE *anim BL_REG(a0), ULONG name BL_REG(d1),
+void BLITZ_ROUTINE doanimload2(struct anim *anim BL_REG(a0), ULONG name BL_REG(d1),
                                ULONG pal BL_REG(a1))
 {
     struct bl_regs r = { .d1 = name, .a0 = name, .a1 = pal };
@@ -300,18 +346,18 @@ void BLITZ_ROUTINE doanimload2(UBYTE *anim BL_REG(a0), ULONG name BL_REG(d1),
 }
 
 /* InitAnim - a0 = anim, a1 = bitmap: BODY (ByteRun1) into the bitmap */
-static void initanim(UBYTE *anim, UBYTE *bm)
+static void initanim(struct anim *anim, struct bmap *bm)
 {
-    UBYTE *src = (UBYTE *)L(anim, 10);
+    UBYTE *src = anim->body;
     ULONG rowoff = 0;
-    UWORD rows = W(anim, 2) - 1;
+    UWORD rows = anim->height - 1;
 
     do {                                            /* 'loop2: rows */
-        UWORD planes = W(anim, 4) - 1;
-        ULONG *planep = (ULONG *)(bm + 8);
+        UWORD planes = anim->depth - 1;
+        ULONG *planep = bm->planes;
 
         do {                                        /* 'loop3: planes */
-            WORD left = W(anim, 6) - 1;
+            WORD left = anim->ebwidth - 1;
             UBYTE *dst = (UBYTE *)(*planep++ + rowoff);
 
             do {                                    /* 'loop4 */
@@ -338,40 +384,40 @@ static void initanim(UBYTE *anim, UBYTE *bm)
                 }
             } while (left >= 0);                    /* 'more: TST d5:BPL */
         } while ((WORD)--planes != -1);
-        rowoff += (LONG)(WORD)W(bm, 0);             /* ADD (a1),a6 */
+        rowoff += (LONG)(WORD)bm->bpr;              /* ADD (a1),a6 */
     } while ((WORD)--rows != -1);
-    L(anim, 26) = L(anim, 18);
+    anim->current = anim->first;
     blitz_string = src;                 /* a3 stays behind the BODY data */
 }
 
-static void BLITZ_ROUTINE doinitanim_c(UBYTE *anim BL_REG(a0),
-                                       UBYTE *bm BL_REG(a1))
+static void BLITZ_ROUTINE doinitanim_c(struct anim *anim BL_REG(a0),
+                                       struct bmap *bm BL_REG(a1))
 {
     initanim(anim, bm);
 }
 BLITZ_THUNK(doinitanim, doinitanim_c, "d0-d1/a0-a1");
 
 /* InitAnim with second bitmap: a1 = used bitmap, a2 = second bitmap */
-static void BLITZ_ROUTINE doinitanim2_c(UBYTE *anim BL_REG(a0),
-                                        UBYTE *bm BL_REG(a1),
-                                        UBYTE *bm2 BL_REG(a2))
+static void BLITZ_ROUTINE doinitanim2_c(struct anim *anim BL_REG(a0),
+                                        struct bmap *bm BL_REG(a1),
+                                        struct bmap *bm2 BL_REG(a2))
 {
     WORD bpr, bpr2, width;
     UWORD words, planes;
     ULONG *p1, *p2;
 
     initanim(anim, bm);
-    bpr = W(bm, 0);
-    p1 = (ULONG *)(bm + 8);
-    bpr2 = W(bm2, 0);
-    p2 = (ULONG *)(bm2 + 8);
-    width = W(anim, 6);
+    bpr = bm->bpr;
+    p1 = bm->planes;
+    bpr2 = bm2->bpr;
+    p2 = bm2->planes;
+    width = anim->ebwidth;
     words = (UWORD)((UWORD)width >> 1) - 1;
-    planes = W(anim, 4) - 1;
+    planes = anim->depth - 1;
     do {
         UWORD *src = (UWORD *)*p1++;
         UWORD *dst = (UWORD *)*p2++;
-        UWORD rows = W(anim, 2) - 1;
+        UWORD rows = anim->height - 1;
 
         do {
             UWORD n = words;
@@ -388,17 +434,19 @@ static void BLITZ_ROUTINE doinitanim2_c(UBYTE *anim BL_REG(a0),
 BLITZ_THUNK(doinitanim2, doinitanim2_c, "d0-d1/a0-a1");
 
 /* NextFrame - a0 = anim, a1 = bitmap */
-static void BLITZ_ROUTINE donextframe_c(UBYTE *anim BL_REG(a0),
-                                        UBYTE *bm BL_REG(a1))
+static void BLITZ_ROUTINE donextframe_c(struct anim *anim BL_REG(a0),
+                                        struct bmap *bm BL_REG(a1))
 {
-    ULONG *planep = (ULONG *)(bm + 8);
-    UWORD planes = W(anim, 4) - 1;
-    UBYTE *node = (UBYTE *)L(anim, 26);
-    ULONG *offs = (ULONG *)(node + 8);
-    WORD bpr = W(bm, 0);
-    UWORD cols = W(anim, 6) - 1;
+    ULONG *planep = bm->planes;
+    UWORD planes = anim->depth - 1;
+    /* the current node read as a long: as a pointer member GCC gives
+       other code */
+    struct delta *node = (struct delta *)*(ULONG *)&anim->current;
+    ULONG *offs = (ULONG *)node->dlta;
+    WORD bpr = bm->bpr;
+    UWORD cols = anim->ebwidth - 1;
     ULONG delta;                        /* d0: the delta offset */
-    ULONG next;                         /* d0: the next node */
+    struct delta *next;                 /* d0: the next node */
 
     do {                                            /* 'loop: planes */
         UBYTE *column = (UBYTE *)*planep++;
@@ -408,7 +456,7 @@ static void BLITZ_ROUTINE donextframe_c(UBYTE *anim BL_REG(a0),
         delta = *offs++;
         if (!delta)
             continue;                               /* 'more */
-        ops = node + 8 + delta;
+        ops = node->dlta + delta;
         colsleft = cols;
         do {                                        /* 'loop2: columns */
             UWORD nops = *ops++;                    /* number of ops */
@@ -425,7 +473,7 @@ static void BLITZ_ROUTINE donextframe_c(UBYTE *anim BL_REG(a0),
                         UBYTE value = *ops++;
 
                         do {
-                            if (W(anim, 30))
+                            if (anim->eor)
                                 *col ^= value;
                             else
                                 *col = value;
@@ -438,7 +486,7 @@ static void BLITZ_ROUTINE donextframe_c(UBYTE *anim BL_REG(a0),
                         do {
                             UBYTE value = *ops++;
 
-                            if (W(anim, 30))
+                            if (anim->eor)
                                 *col ^= value;
                             else
                                 *col = value;
@@ -452,13 +500,13 @@ static void BLITZ_ROUTINE donextframe_c(UBYTE *anim BL_REG(a0),
             column += 1;                            /* 'more2 */
         } while ((WORD)--colsleft != -1);
     } while ((WORD)--planes != -1);
-    next = L(node, 0);
+    next = node->next;
     if (!next) {
-        node = (UBYTE *)L(anim, 18);
-        next = L(node, 0);
+        node = anim->first;
+        next = node->next;
     }
-    L(anim, 26) = next;
-    blitz_string = node;                /* a3 stays on the (first) node */
+    anim->current = next;
+    blitz_string = (UBYTE *)node;       /* a3 stays on the (first) node */
 }
 BLITZ_THUNK(donextframe, donextframe_c, "d0-d1/a0-a1");
 
@@ -494,40 +542,40 @@ BLITZ_ERRCHK_MESSAGE(mess6, "Anim format not supported");
 BLITZ_ERRCHK_MESSAGE(mess7, "Can't Open Anim File");
 
 /* animchk: the anim at a0 fits into the bitmap at a1 (signed words) */
-static void BLITZ_ERRCHK animchk_c(UBYTE *anim BL_REG(a0),
-                                   UBYTE *bm BL_REG(a1))
+static void BLITZ_ERRCHK animchk_c(struct anim *anim BL_REG(a0),
+                                   struct bmap *bm BL_REG(a1))
 {
-    if (!W(anim, 0))
+    if (!anim->width)
         BLITZ_RUNERR(mess3);
-    else if (!W(bm, 0))
+    else if (!bm->bpr)
         BLITZ_RUNERR(mess2);
-    else if ((WORD)W(anim, 6) > (WORD)W(bm, 0)
-             || (WORD)W(anim, 2) > (WORD)W(bm, 2)
-             || (WORD)W(anim, 4) > (WORD)W(bm, 4))
+    else if ((WORD)anim->ebwidth > (WORD)bm->bpr
+             || (WORD)anim->height > (WORD)bm->rows
+             || (WORD)anim->depth > (WORD)bm->depth)
         BLITZ_RUNERR(mess1);
 }
 
 /* animchk2: EXG a1,a2:BSR animchk:EXG a1,a2 */
-static void BLITZ_ERRCHK animchk2_c(UBYTE *anim BL_REG(a0),
-                                    UBYTE *bm2 BL_REG(a2))
+static void BLITZ_ERRCHK animchk2_c(struct anim *anim BL_REG(a0),
+                                    struct bmap *bm2 BL_REG(a2))
 {
     animchk_c(anim, bm2);
 }
 
-static void BLITZ_ERRCHK animchk3_c(UBYTE *anim BL_REG(a0),
-                                    UBYTE *bm BL_REG(a1))
+static void BLITZ_ERRCHK animchk3_c(struct anim *anim BL_REG(a0),
+                                    struct bmap *bm BL_REG(a1))
 {
-    if ((WORD)W(anim, 8) < 2)
+    if ((WORD)anim->frames < 2)
         BLITZ_RUNERR(mess5);
-    else if (!L(anim, 26))
+    else if (!anim->current)
         BLITZ_RUNERR(mess4);
     else
         animchk_c(anim, bm);
 }
 
-static void BLITZ_ERRCHK animchk4_c(UBYTE *anim BL_REG(a0))
+static void BLITZ_ERRCHK animchk4_c(struct anim *anim BL_REG(a0))
 {
-    if (!W(anim, 0))
+    if (!anim->width)
         BLITZ_RUNERR(mess3);
 }
 
