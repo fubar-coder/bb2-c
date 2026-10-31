@@ -1,0 +1,6 @@
+[run]
+before
+runtime error Can't open Sprites file
+runtime error Can't open Sprites file
+after
+rc=0

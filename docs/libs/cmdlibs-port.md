@@ -310,7 +310,7 @@ C, declarations identical, binary = source; `libincs:qrot` is missing on the CD,
 
 ## 112 spriteslib
 
-C, declarations identical, binary = source. Sprite block 16 bytes; SpriteMode 0/1/2 = 16/32/64 pixels. ShowSprite/InFront/InFrontF/InFrontB Blitz mode only (odd error check address), not tested. BUG(orig): sizes when freeing/saving with the CURRENT SpriteMode (harmless, memlib takes the stored length) (#280); SpriteMode > 2 reads behind the width table (#281); GetaSprite reads whole sprite widths (#282); ShowSprite clips at the top with 4 bytes per line and adds the whole long register (#283); LoadSprites computes the last sprite as a word offset (`(max-1) << 4`, before the table from a maximum of 2049 on) (#939). Tests: t142, t147.
+C, declarations identical, binary = source. Sprite block 16 bytes; SpriteMode 0/1/2 = 16/32/64 pixels. ShowSprite/InFront/InFrontF/InFrontB Blitz mode only (odd error check address), not tested. BUG(orig): sizes when freeing/saving with the CURRENT SpriteMode (harmless, memlib takes the stored length) (#280); SpriteMode > 2 reads behind the width table (#281); GetaSprite reads whole sprite widths (#282); ShowSprite clips at the top with 4 bytes per line and adds the whole long register (#283); LoadSprites computes the last sprite as a word offset (`(max-1) << 4`, before the table from a maximum of 2049 on) (#939). Fixed (intended deviation): the messages of err10/err11 (normal code: SaveSprites, LoadSprites) lie in the original in the error check area; here in normal code (#954, test `bug_orig_spriteslib_messages_errarea`). Tests: t142, t147.
 
 ## 104 collslib
 

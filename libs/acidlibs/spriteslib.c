@@ -37,6 +37,12 @@
  *    width (beyond the row for narrow shapes). (#282)
  *  - LoadSprites s,file$: the last sprite is base + (max - 1) << 4 as a
  *    word: from a maximum of 2049 on it lies before the table. (#939)
+ *
+ * Fixed (intended deviation, docs/libs/deviations.md): the original has the
+ * error routines of SaveSprites/LoadSprites (err10, err11) in the normal
+ * code but their messages in the error check area (without the debugger
+ * d0 points behind the library); here the messages are in the normal code
+ * too. (#954)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -484,8 +490,10 @@ BLITZ_THUNK(doinfront2, doinfront2_c, "d0-d1/a0-a1");
 static struct DosLibrary *dosbase;
 #define DOSBase dosbase                         /* for proto/dos.h */
 
-BLITZ_ERRCHK_MESSAGE(mess10, "Can't open Sprites file");
-BLITZ_ERRCHK_MESSAGE(mess11, "Error reading/writing Sprites file");
+/* err10/err11 and their messages in the normal code (the original has the
+   messages in the error check area; fixed, #954) */
+static const char mess10[] = "Can't open Sprites file";
+static const char mess11[] = "Error reading/writing Sprites file";
 
 /**
  * @brief SaveSprites Sprite#,Sprite#,Filename$ - save a range of sprites
@@ -494,7 +502,8 @@ BLITZ_ERRCHK_MESSAGE(mess11, "Error reading/writing Sprites file");
  * Per sprite the 16 byte object, then its data if it has any.
  *
  * Errors: "Can't open Sprites file", "Error reading/writing Sprites file"
- * (runtime errors also without the debugger); debugger (ssz): "First
+ * (runtime errors also without the debugger, their messages in the normal
+ * code: #954); debugger (ssz): "First
  * Sprite must be lower than second".
  *
  * BUG(orig) (#280): the data size uses the current SpriteMode.
