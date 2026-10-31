@@ -1,0 +1,4 @@
+[run]
+before
+init 9600
+rc=0
