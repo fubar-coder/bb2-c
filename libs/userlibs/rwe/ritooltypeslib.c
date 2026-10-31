@@ -242,7 +242,7 @@ static struct Library *iconlibbase;
 static struct DiskObject *diskobject;
 static STRPTR *tooltype;                /* = tooltypearray when an icon is open */
 static ULONG toolbuffersize;
-static LONG status_tool;
+static BB_BOOL status_tool;           /* BB_FALSE: "(name=value)", switched off */
 static STRPTR *array_address;
 static const char *tooltype_address;
 static const char *string_address;
@@ -299,14 +299,14 @@ void BLITZ_ROUTINE c_libinit(void)
 }
 
 /* FreeIconObject: -1 if an icon was open */
-ULONG BLITZ_ROUTINE c_Close_icon(void)
+BB_BOOL BLITZ_ROUTINE c_Close_icon(void)
 {
     if (!iconlibbase || !diskobject)
-        return 0;
+        return BB_FALSE;
     FreeDiskObject(diskobject);
     diskobject = NULL;
     tooltype = NULL;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 void BLITZ_ROUTINE c_libfinit(void)
@@ -429,34 +429,34 @@ ULONG BLITZ_ROUTINE c_gettooltype(CONST_STRPTR name BL_REG(d0), const ULONG *len
 }
 
 /* MatchToolValue(tt$,value$): -1 if the tool type has the value */
-ULONG BLITZ_ROUTINE c_Matchtoolvalue(CONST_STRPTR name BL_REG(d0),
-                                     CONST_STRPTR value BL_REG(d1))
+BB_BOOL BLITZ_ROUTINE c_Matchtoolvalue(CONST_STRPTR name BL_REG(d0),
+                                       CONST_STRPTR value BL_REG(d1))
 {
     STRPTR v;
 
     string_address = (const char *)value;
     if (!tooltype)
-        return 0;
+        return BB_FALSE;
     v = FindToolType((CONST_STRPTR *)tooltype, name);
     if (!v)
-        return 0;
-    return MatchToolValue(v, (CONST_STRPTR)string_address) ? (ULONG)-1 : 0;
+        return BB_FALSE;
+    return MatchToolValue(v, (CONST_STRPTR)string_address) ? BB_TRUE : BB_FALSE;
 }
 
 /* PutIconObject filename$[,icontype] */
-ULONG BLITZ_ROUTINE c_Put_icon(CONST_STRPTR name BL_REG(d0), ULONG type BL_REG(d1))
+BB_BOOL BLITZ_ROUTINE c_Put_icon(CONST_STRPTR name BL_REG(d0), ULONG type BL_REG(d1))
 {
     if (!iconlibbase || !diskobject)
-        return 0;
+        return BB_FALSE;
     if ((UBYTE)type)
         diskobject->do_Type = (UBYTE)type;
     PutDiskObject(name, diskobject);    /* BUG(orig): result ignored (#851) */
     diskobject = NULL;                  /* BUG(orig): not freed (#850) */
     tooltype = NULL;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
-ULONG BLITZ_ROUTINE c_Put_icon2(CONST_STRPTR name BL_REG(d0))
+BB_BOOL BLITZ_ROUTINE c_Put_icon2(CONST_STRPTR name BL_REG(d0))
 {
     return c_Put_icon(name, 0);
 }
@@ -483,7 +483,7 @@ static int stringcompare(const UBYTE *name, const UBYTE *entry)
 
 /* gotit: the new string "name=value" ("(name=value)" for status 0) into
    *array_address, on the icon's FreeList */
-static ULONG gotit(STRPTR *entry)
+static BB_BOOL gotit(STRPTR *entry)
 {
     UBYTE *mem, *d;
     const char *s;
@@ -491,13 +491,13 @@ static ULONG gotit(STRPTR *entry)
     array_address = entry;
     mem = AllocMem(toolbuffersize, MEMF_CLEAR | MEMF_PUBLIC);
     if (!mem)
-        return 0;
+        return BB_FALSE;
     if (!AddFreeList(DO_FREELIST(diskobject), mem,
                      toolbuffersize)) {
         /* BUG(orig) #840: MOVE.l d0,a1 with d0 = AddFreeList's 0 - frees
            address 0, the block is lost */
         FreeMem(nofree(), toolbuffersize);
-        return 0;
+        return BB_FALSE;
     }
     *array_address = (STRPTR)mem;
     d = mem;
@@ -516,11 +516,11 @@ static ULONG gotit(STRPTR *entry)
     }
     if (!status_tool)
         *d = ')';
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* the arguments of SetToolValue/NewToolType */
-static void toolargs(const char *name, const char *value, LONG status, const ULONG *lens)
+static void toolargs(const char *name, const char *value, BB_BOOL status, const ULONG *lens)
 {
     tooltype_address = name;
     string_address = value;
@@ -530,45 +530,45 @@ static void toolargs(const char *name, const char *value, LONG status, const ULO
 
 /* SetToolValue(tt$,value$[,status]): replace the entry that starts with
    tt$; 0 if there is none */
-ULONG BLITZ_ROUTINE c_PutTool(const char *name BL_REG(d0), const char *value BL_REG(d1),
-                              LONG status BL_REG(d2), const ULONG *lens BL_REG(a2))
+BB_BOOL BLITZ_ROUTINE c_PutTool(const char *name BL_REG(d0), const char *value BL_REG(d1),
+                                BB_BOOL status BL_REG(d2), const ULONG *lens BL_REG(a2))
 {
     STRPTR *p;
 
     toolargs(name, value, status, lens);
     if (!(p = tooltype))
-        return 0;
+        return BB_FALSE;
     for (; *p; p++)
         if (stringcompare((const UBYTE *)tooltype_address, (const UBYTE *)*p))
             return gotit(p);
-    return 0;
+    return BB_FALSE;
 }
 
-ULONG BLITZ_ROUTINE c_PutTool2(const char *name BL_REG(d0), const char *value BL_REG(d1),
-                               const ULONG *lens BL_REG(a2))
+BB_BOOL BLITZ_ROUTINE c_PutTool2(const char *name BL_REG(d0), const char *value BL_REG(d1),
+                                 const ULONG *lens BL_REG(a2))
 {
-    return c_PutTool(name, value, -1, lens);
+    return c_PutTool(name, value, BB_TRUE, lens);
 }
 
 /* NewToolType(tt$,value$[,status]): a new entry at the end */
-ULONG BLITZ_ROUTINE c_NewTool(const char *name BL_REG(d0), const char *value BL_REG(d1),
-                              LONG status BL_REG(d2), const ULONG *lens BL_REG(a2))
+BB_BOOL BLITZ_ROUTINE c_NewTool(const char *name BL_REG(d0), const char *value BL_REG(d1),
+                                BB_BOOL status BL_REG(d2), const ULONG *lens BL_REG(a2))
 {
     STRPTR *p;
 
     toolargs(name, value, status, lens);
     if (!(p = tooltype))
-        return 0;
+        return BB_FALSE;
     while (*p)                          /* BUG(orig): no limit (#855) */
         p++;
     p[1] = NULL;
     return gotit(p);
 }
 
-ULONG BLITZ_ROUTINE c_NewTool2(const char *name BL_REG(d0), const char *value BL_REG(d1),
-                               const ULONG *lens BL_REG(a2))
+BB_BOOL BLITZ_ROUTINE c_NewTool2(const char *name BL_REG(d0), const char *value BL_REG(d1),
+                                 const ULONG *lens BL_REG(a2))
 {
-    return c_NewTool(name, value, -1, lens);
+    return c_NewTool(name, value, BB_TRUE, lens);
 }
 
 /* SetIconHit width,height: the gadget's size */
@@ -631,29 +631,29 @@ void BLITZ_ROUTINE c_selectrender(UWORD flags BL_REG(d0))
 }
 
 /* IconDefTool tool$: the default tool (a copy on the FreeList) */
-ULONG BLITZ_ROUTINE c_defaulttool(const char *tool BL_REG(d0), const ULONG *lens BL_REG(a2))
+BB_BOOL BLITZ_ROUTINE c_defaulttool(const char *tool BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     UBYTE *mem, *d;
     const char *s;
     ULONG len;
 
     if (!diskobject)
-        return 0;
+        return BB_FALSE;
     string_address = tool;
     len = lens[-1];
     if (!len)
-        return 0;
+        return BB_FALSE;
     toolbuffersize = len + 1;
     blitz_string -= toolbuffersize;     /* BUG(orig): a3 rewound (#846) */
     mem = AllocMem(toolbuffersize, MEMF_CLEAR | MEMF_PUBLIC);
     if (!mem)
-        return 0;
+        return BB_FALSE;
     if (!AddFreeList(DO_FREELIST(diskobject), mem,
                      toolbuffersize)) {
         /* BUG(orig) #840: MOVE.l d0,a1 with d0 = AddFreeList's 0 - frees
            address 0, the block is lost */
         FreeMem(nofree(), toolbuffersize);
-        return 0;
+        return BB_FALSE;
     }
     d = mem;
     s = string_address;
@@ -661,7 +661,7 @@ ULONG BLITZ_ROUTINE c_defaulttool(const char *tool BL_REG(d0), const ULONG *lens
         *d++ = *s++;
     while (*s);
     diskobject->do_DefaultTool = (STRPTR)mem;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* freeashape (a3 = shape): free data and cookie of a shape in use */
