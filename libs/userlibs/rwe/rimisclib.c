@@ -108,6 +108,7 @@
 #include <exec/execbase.h>
 #include <dos/dos.h>
 #include <intuition/intuition.h>
+#include <prefs/font.h>
 #define __NOLIBBASE__
 #define DOS_BASE_NAME dosbase_
 #define INTUITION_BASE_NAME intuibase
@@ -303,6 +304,7 @@ BLITZ_LIBFIN();
 #define BL_ID4(a, b, c, d) ((ULONG)(a) << 24 | (ULONG)(b) << 16 | (ULONG)(c) << 8 | (ULONG)(d))
 #define FONTBUF 16384
 #define FONTCHUNK 164                   /* "FONT", size, struct FontPrefs */
+static_assert(FONTCHUNK == 8 + sizeof(struct FontPrefs));
 
 static struct DosLibrary *dosbase_;                     /* _dosbase */
 static struct IntuitionBase *intuibase;
@@ -905,7 +907,7 @@ static ULONG BLITZ_ROUTINE openfontprefs_c(void)
 
 /* the FONT chunk with fp_Type = type, stepping by 164 bytes to the end of
    the buffer; NULL if none */
-static const UBYTE *findfont(UWORD type)
+static const struct FontPrefs *findfont(UWORD type)
 {
     const UBYTE *end, *p;
 
@@ -913,29 +915,29 @@ static const UBYTE *findfont(UWORD type)
         return NULL;
     end = fontloc + FONTBUF;
     for (p = fontpos; (LONG)end >= (LONG)p; p += FONTCHUNK)
-        if (*(const UWORD *)(p + 14) == type)
-            return p;
+        if (((const struct FontPrefs *)p)->fp_Type == type)
+            return (const struct FontPrefs *)p;
     return NULL;
 }
 
 /* DefaultFontHeight(type) (d0.w): ta_YSize (d0's high word kept), 0 */
 static ULONG BLITZ_ROUTINE defaultfontheight_c(ULONG type BL_REG(d0))
 {
-    const UBYTE *p = findfont((UWORD)type);
+    const struct FontPrefs *p = findfont((UWORD)type);
 
     if (!p)
         return 0;
-    return (type & 0xffff0000UL) | *(const UWORD *)(p + 24);
+    return (type & 0xffff0000UL) | p->fp_TextAttr.ta_YSize;
 }
 
 /* DefaultFontName(type) (d0.w): fp_Name (a3 behind the 0), "" */
 static ULONG BLITZ_ROUTINE defaultfontname_c(UWORD type BL_REG(d0))
 {
-    const UBYTE *p = findfont(type);
+    const struct FontPrefs *p = findfont(type);
 
     if (!p)
         return 0;
-    return copyout(p + 28);
+    return copyout((const UBYTE *)p->fp_Name);
 }
 
 /* Registers: the original changes d0, a0/a1 (most), d1-d3/a6 (the system
