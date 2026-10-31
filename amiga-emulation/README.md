@@ -299,3 +299,24 @@ hardfile read-only. `a500-68010` is the same machine with a 68010
   utility.library). A command that cannot be loaded ("file is not an
   object module") ends the script on 1.3 despite `FailAt`: the session
   runs into its timeout.
+
+## A600 machine (68000, Kickstart 3.2)
+
+The machine `a600` (`--machine a600`, pass file `machine=a600`, bug-orig
+header `; @machine a600`) is for bugs that only show on a 68000 (address
+errors on odd addresses, 68020 instructions) in libraries that need
+Kickstart 2.0 or newer, which the `a500` (Kickstart 1.3) cannot start.
+Its configuration is `tools/lib/amiga_emulation/a600.uae` (taken from the
+user's "A600.uae", Amiberry 8.5.0): A600 (Gayle, IDE, PCMCIA), ECS, 68000
+with 24-bit addressing, not cycle-exact, `chipmem_size=4` (2 MB chip),
+`bogomem_size=4` (1 MB slow memory), no fast memory and no RTG card.
+Amiberry 8.5.0 crashes at the start with 8 MB of Zorro II fast memory
+together with a Zorro II RTG card, in `clear_bank()`
+(`src/expansion.cpp`). It boots the a1200's Workbench 3.2 hardfile
+read-only.
+
+| File | Contents | Size | SHA-256 (as of 2026-10-31) |
+|---|---|---|---|
+| `CDTVA500A600A2000.47.115.bin` | Kickstart 3.2 (47.115), A500/A600/A2000/CDTV | 524288 | `2f48c3991748f4d812f1c0d13a99581cc17a058261d73856aee9bafda2d07fee` |
+
+Without the ROM the a600 part of `amiga_emulation_a500` is skipped.

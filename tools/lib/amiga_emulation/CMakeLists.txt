@@ -31,4 +31,4 @@ target_compile_options(lib_amiga_emulation PRIVATE --embed-dir=${CMAKE_CURRENT_B
 add_dependencies(lib_amiga_emulation amiga_emulation_waiter)
 # the templates and the waiter are embedded (#embed)
 set_source_files_properties(amiga_emulation.c PROPERTIES
-	OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/default.uae;${CMAKE_CURRENT_SOURCE_DIR}/a500.uae;${waiter}")
+	OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/default.uae;${CMAKE_CURRENT_SOURCE_DIR}/a500.uae;${CMAKE_CURRENT_SOURCE_DIR}/a600.uae;${waiter}")

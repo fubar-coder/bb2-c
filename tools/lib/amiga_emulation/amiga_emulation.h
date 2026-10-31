@@ -101,7 +101,8 @@ struct amiga_emulation_mount {
 struct amiga_emulation_params {
     const char *machine;        /* NULL or "a1200": default.uae; "a500":
                                    a500.uae (68000, Kickstart 1.3);
-                                   "a500-68010": a500.uae with a 68010 */
+                                   "a500-68010": a500.uae with a 68010;
+                                   "a600": a600.uae (68000, Kickstart 3.2) */
     const struct amiga_emulation_option *changes;   /* to the machine's template */
     size_t nchanges;
     const struct amiga_emulation_mount *mounts;     /* besides TEST: */

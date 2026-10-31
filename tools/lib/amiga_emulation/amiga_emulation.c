@@ -43,6 +43,10 @@ static const char a500_uae[] = {
 #embed "a500.uae"
     , 0
 };
+static const char a600_uae[] = {
+#embed "a600.uae"
+    , 0
+};
 
 static const struct amiga_emulation_option a500_68010[] = {
     { "cpu_type", "68010" },
@@ -60,6 +64,7 @@ static const struct machine {
     { "a1200", default_uae, NULL, 0, 47 },
     { "a500", a500_uae, NULL, 0, 34 },
     { "a500-68010", a500_uae, a500_68010, sizeof a500_68010 / sizeof a500_68010[0], 34 },
+    { "a600", a600_uae, NULL, 0, 47 },
 };
 
 static const struct machine *find_machine(const char *name)
