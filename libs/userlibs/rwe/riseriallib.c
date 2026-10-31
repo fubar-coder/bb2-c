@@ -317,7 +317,13 @@ static ULONG openserial(ULONG value)
     return 0;
 }
 
-/* SerialBaud rate */
+/**
+ * @brief SerialBaud rate: sets the baud rate (SERPER = 3546895 / rate - 1,
+ * bit 15 cleared).
+ *
+ * Rate 0 divides by 0 through ldivlib (a defined result, no defect).
+ * @param rate  d0: the baud rate (also kept for SerialOpen)
+ */
 void BLITZ_ROUTINE c_setbaud(ULONG rate BL_REG(d0))
 {
     struct bl_regs r = { .d0 = SERCLOCK, .d1 = rate };
@@ -327,12 +333,23 @@ void BLITZ_ROUTINE c_setbaud(ULONG rate BL_REG(d0))
     SERPER = (UWORD)(r.d0 - 1) & 0x7fff;        /* SUBQ.w, BCLR #15 */
 }
 
+/**
+ * @brief SerialOpen: installs the library's receive and transmit
+ * interrupts (see openserial).
+ *
+ * BUG(orig) (#804): the vectors at $64/$74 (the VBR is not looked at);
+ * BUG(orig) (#791): the old ones go into the operands of two JMPs
+ * without clearing the instruction cache.
+ */
 void BLITZ_ROUTINE c_openserial(void)
 {
     openserial(0);
 }
 
-/* SerialOpen baudrate */
+/**
+ * @brief SerialOpen baudrate: SerialBaud baudrate, then SerialOpen.
+ * @param rate  d0: the baud rate
+ */
 void BLITZ_ROUTINE c_openserial2(ULONG rate BL_REG(d0))
 {
     baudrate = rate;
@@ -340,7 +357,13 @@ void BLITZ_ROUTINE c_openserial2(ULONG rate BL_REG(d0))
     openserial(0);
 }
 
-/* SerialClose, finit */
+/**
+ * @brief SerialClose (and finit): restores the vectors, CIA-B PRA $FF and
+ * the interrupts.
+ *
+ * BUG(orig) (#790): switches all interrupts off (INTENA $7FFF) and then
+ * on only those that were on at SerialOpen.  Nothing if not open.
+ */
 void BLITZ_ROUTINE c_closeserial(void)
 {
     if (!openflag)
@@ -353,27 +376,58 @@ void BLITZ_ROUTINE c_closeserial(void)
     openflag = 0;
 }
 
+/**
+ * @brief SerialRead: the next received byte.
+ *
+ * BUG(orig) (#797): the upper word of d0 at the call stays in the result;
+ * a byte $FF with $FFFF there reads as -1.
+ * @param value  d0: d0 at the call
+ * @return d0: the byte (with the upper word and the ring index's high
+ *         byte of d0), -1 if the buffer is empty
+ */
 ULONG BLITZ_ROUTINE c_readser(ULONG value BL_REG(d0))
 {
     return readser(value);
 }
 
+/**
+ * @brief SerialWrite byte: puts the byte (with a stop bit) into the
+ * transmit ring; TBE is requested when the ring was empty.
+ * @param value  d0: the byte (low byte)
+ */
 void BLITZ_ROUTINE c_writeser(ULONG value BL_REG(d0))
 {
     writeser(value);
 }
 
+/**
+ * @brief SerialVersion: the version of the library.
+ * @return d0: 1
+ */
 ULONG BLITZ_ROUTINE c_info(void)
 {
     return server;
 }
 
+/**
+ * @brief SerialBuffer: the address of the receive ring (256 bytes; its
+ * two index words lie in front of it).
+ * @return d0: the address
+ */
 ULONG BLITZ_ROUTINE c_showloc(void)
 {
     return (ULONG)rd.buf;
 }
 
-/* SerialSendBlock address,length (never opens the port, BUG(orig) #792) */
+/**
+ * @brief SerialSendBlock address,length: sends a block byte by byte.
+ *
+ * SerialStop ends it; SerialProgress gives the remaining count.
+ * BUG(orig) (#792): never opens the port; BUG(orig) (#800): a length of
+ * 0 or less sends one byte.
+ * @param addr  d0: the address
+ * @param len   d1: the length
+ */
 void BLITZ_ROUTINE c_sersend(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 {
     LONG n = (LONG)(len - 1);
@@ -394,8 +448,18 @@ void BLITZ_ROUTINE c_sersend(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
     }
 }
 
-/* SerialReceiveBlock address,length: 1 = stopped (the thunk then returns
-   the original's way, BUG(orig) #803) */
+/**
+ * @brief SerialReceiveBlock address,length: receives a block byte by byte.
+ *
+ * BUG(orig) (#792): never opens the port; BUG(orig) (#798): first throws
+ * away what is in the buffer, then waits; BUG(orig) (#799): a length of
+ * 1 receives without end; BUG(orig) (#803): SerialStop ends it by
+ * returning to the long above the return address (assembler thunk
+ * __serreceive).
+ * @param addr  d0: the address
+ * @param len   d1: the length
+ * @return d0: 1 = stopped (for the thunk), 0 = done
+ */
 ULONG BLITZ_ROUTINE c_serreceive(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
 {
     ULONG value;
@@ -423,7 +487,12 @@ ULONG BLITZ_ROUTINE c_serreceive(ULONG addr BL_REG(d0), ULONG len BL_REG(d1))
     }
 }
 
-/* SerialFlush: read until empty (d0 of the call goes through) */
+/**
+ * @brief SerialFlush: reads until the receive buffer is empty.
+ *
+ * BUG(orig) (#792): never opens the port.
+ * @param value  d0: d0 at the call (goes through SerialRead)
+ */
 void BLITZ_ROUTINE c_flushser(ULONG value BL_REG(d0))
 {
     do
@@ -431,7 +500,16 @@ void BLITZ_ROUTINE c_flushser(ULONG value BL_REG(d0))
     while (value != (ULONG)-1);
 }
 
-/* SerialSendString a$: d0 = the string, a2 = the argument stack */
+/**
+ * @brief SerialSendString a$: meant to send a string.
+ *
+ * BUG(orig) (#801): sends the low byte of the string's address (with the
+ * stop bit) once for every long read from the a2 stack, down to one with
+ * a low byte 0 (DIFF: a2 unchanged).  BUG(orig) (#793): calls SerialOpen's
+ * code only when the port is open.
+ * @param str       d0: the string
+ * @param argstack  a2: the argument stack
+ */
 void BLITZ_ROUTINE c_sendserialstring(ULONG str BL_REG(d0), const ULONG *argstack BL_REG(a2))
 {
     ULONG value = str;                  /* d0: as openserial and writeser leave it (#801) */
@@ -445,8 +523,19 @@ void BLITZ_ROUTINE c_sendserialstring(ULONG str BL_REG(d0), const ULONG *argstac
     } while (l & 0xff);
 }
 
-/* SerialReadString: the bytes to a3; riser_rsreturn set when the port
-   is open (the thunk returns to the d0 of the call, BUG(orig) #796) */
+/**
+ * @brief SerialReadString: received bytes up to a 0, at a3.
+ *
+ * BUG(orig) (#795): stores up to and including the 0 and leaves a3
+ * behind it; BUG(orig) (#796): the count is reset only when the port is
+ * open, and then the routine returns to the d0 of the call (assembler
+ * thunk __readserialstring, riser_rsreturn); BUG(orig) (#797): the loop
+ * ends at a 0 only if the upper word of d0 at the call is 0 and no wait
+ * came before; BUG(orig) (#793): calls SerialOpen's code when the port
+ * is open.
+ * @param callerd0  d0: d0 at the call
+ * @return d0: the count of characters - 1
+ */
 volatile UBYTE riser_rsreturn;
 
 ULONG BLITZ_ROUTINE c_readserialstring(ULONG callerd0 BL_REG(d0))
@@ -468,13 +557,24 @@ ULONG BLITZ_ROUTINE c_readserialstring(ULONG callerd0 BL_REG(d0))
     return numchars - 1;
 }
 
+/**
+ * @brief SerialProgress: the remaining count of the last send (or
+ * receive) block.
+ * @return d0: the count
+ */
 ULONG BLITZ_ROUTINE c_buffpos(void)
 {
     return bufflength;
 }
 
-/* SerialReadLong: never returns (BUG(orig) #794); `longword` (d1) is what the
-   original builds from the bytes */
+/**
+ * @brief SerialReadLong: meant to read a long.
+ *
+ * BUG(orig) (#794): never returns (the loop counter is taken back from
+ * the stack every time: it reads bytes without end); BUG(orig) (#792):
+ * always calls SerialOpen's code.
+ * @param longword  d1: what the original builds from the bytes
+ */
 void BLITZ_ROUTINE c_readlong(ULONG longword BL_REG(d1))
 {
     ULONG value = openserial(0);
@@ -487,7 +587,14 @@ void BLITZ_ROUTINE c_readlong(ULONG longword BL_REG(d1))
     }
 }
 
-/* SerialWriteLong longword: the low byte, then three times $01 */
+/**
+ * @brief SerialWriteLong longword: meant to send a long.
+ *
+ * BUG(orig) (#805): sends the low byte, then three times $01 (it rotates
+ * the register SerialWrite changed); BUG(orig) (#792): always calls
+ * SerialOpen's code.
+ * @param longword  d0: the long
+ */
 void BLITZ_ROUTINE c_writelong(ULONG longword BL_REG(d0))
 {
     int i;
@@ -499,18 +606,30 @@ void BLITZ_ROUTINE c_writelong(ULONG longword BL_REG(d0))
     }
 }
 
+/**
+ * @brief SerialStop: ends a block transfer (sets the stop flag).
+ */
 void BLITZ_ROUTINE c_abortxfer(void)
 {
     quitflag = 1;
 }
 
-/* SerialGot: -1 (word) if a byte is waiting */
+/**
+ * @brief SerialGot: whether a byte is waiting.
+ *
+ * BUG(orig) (#802): -1/0, not the count the help text promises.
+ * @return d0: $FFFF (the word -1) if a byte is waiting, else 0
+ */
 ULONG BLITZ_ROUTINE c_buffcount(void)
 {
     return rd.big != rd.end ? 0xffff : 0;
 }
 
-/* SerialWait: wait for a byte, then SerialRead */
+/**
+ * @brief SerialWait: waits for a byte and reads it (SerialRead).
+ * @param value  d0: d0 at the call
+ * @return d0: as SerialRead (BUG(orig) (#797))
+ */
 ULONG BLITZ_ROUTINE c_buffcount2(ULONG value BL_REG(d0))
 {
     while (rd.big == rd.end)
@@ -518,7 +637,10 @@ ULONG BLITZ_ROUTINE c_buffcount2(ULONG value BL_REG(d0))
     return readser(value);
 }
 
-/* the receive interrupt (level 5): 1 = RBF handled, 0 = not ours */
+/**
+ * @brief The receive interrupt (level 5): SERDATR's byte into the ring.
+ * @return d0: 1 = RBF handled (RTE), 0 = not ours (on to the old vector)
+ */
 ULONG BLITZ_ROUTINE c_readint(void)
 {
     if (!(INTREQR_HI & 0x08))
@@ -529,7 +651,11 @@ ULONG BLITZ_ROUTINE c_readint(void)
     return 1;
 }
 
-/* the transmit interrupt (level 1): one word when the ring has one */
+/**
+ * @brief The transmit interrupt (level 1): one word of the ring when
+ * SERDATR shows TBE.
+ * @return d0: 1 = TBE handled (RTE), 0 = not ours (on to the old vector)
+ */
 ULONG BLITZ_ROUTINE c_writeint(void)
 {
     UWORD b;
