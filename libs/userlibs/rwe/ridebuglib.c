@@ -126,17 +126,21 @@ void BLITZ_ROUTINE _dummybranch(void)
 
 /* --------------------------------------------- the checks (debugger only) */
 
-/* mess1: the message block (command, data1, data2, pad, size.l, 252
-   characters).  The original has it in the error check area; here it is
-   ordinary data, 260 bytes that also stay without the debugger. */
-static UBYTE mess1[4 + 4 + 252] __attribute__((aligned(2)));
-
-#define SETL(p, v) (*(ULONG *)(p) = (v))
+/* mess1: the message block, the source's Newtype DMessage.  The original
+   has it in the error check area; here it is ordinary data, 260 bytes
+   that also stay without the debugger. */
+static struct dmessage {
+    UBYTE command;              /* +0 */
+    UBYTE data1, data2, pad;    /* +1, +2, +3 */
+    ULONG size;                 /* +4 an address since 5/1/94 */
+    UBYTE chars[252];           /* +8 null terminated */
+} mess1;
+static_assert(sizeof mess1 == 4 + 4 + 252);
 
 /* LEA mess1(pc),a0:ALibJsr $d509 */
 static void BLITZ_ERRCHK send(void)
 {
-    struct bl_regs r = { .a0 = (ULONG)mess1 };
+    struct bl_regs r = { .a0 = (ULONG)&mess1 };
 
     BLITZ_ALIBJSR(TOK_docall, r);
 }
@@ -162,12 +166,12 @@ static void BLITZ_ERRCHK addvartrace_c(ULONG var BL_REG(d0), const UBYTE *name B
     UBYTE type = converttype[(WORD)types[-1]];          /* 0(a1,d0.w), BUG(orig) (#609) */
     UBYTE *p;
 
-    mess1[0] = DC_ADDTRACE;
-    mess1[1] = type ? type : 1;
-    mess1[2] = (UBYTE)out ? (UBYTE)out : 1;
-    mess1[3] = 255;
-    SETL(mess1 + 4, var);
-    p = copyname(mess1 + 8, name);
+    mess1.command = DC_ADDTRACE;
+    mess1.data1 = type ? type : 1;
+    mess1.data2 = (UBYTE)out ? (UBYTE)out : 1;
+    mess1.pad = 255;
+    mess1.size = var;
+    p = copyname(mess1.chars, name);
     *p = 0;
     send();
 }
@@ -175,16 +179,16 @@ static void BLITZ_ERRCHK addvartrace_c(ULONG var BL_REG(d0), const UBYTE *name B
 /* DelVarTrace name$: d0 = name, written at +12 (BUG(orig) (#610)) */
 static void BLITZ_ERRCHK delvartrace_c(const UBYTE *name BL_REG(d0))
 {
-    mess1[0] = DC_DELTRACE;
-    *copyname(mess1 + 12, name) = 0;
+    mess1.command = DC_DELTRACE;
+    *copyname(mess1.chars + 4, name) = 0;     /* +12: BUG(orig) (#610) */
     send();
 }
 
 /* VarTraceWindow */
 static void BLITZ_ERRCHK vartracewindow_c(void)
 {
-    mess1[0] = DC_VARWINDOW;
-    mess1[1] = 0xff;
+    mess1.command = DC_VARWINDOW;
+    mess1.data1 = 0xff;
     send();
 }
 
@@ -194,12 +198,12 @@ static void BLITZ_ERRCHK disasm_c(const UWORD *pc BL_REG(a0))
 {
     while (*pc != 0x4e41)                               /* BUG(orig) (#611): no limit */
         pc--;
-    mess1[0] = DC_DISWINDOW;
-    mess1[1] = 0xff;
-    mess1[2] = 0xff;
-    mess1[3] = 0xff;
-    SETL(mess1 + 4, (ULONG)pc);
-    mess1[8] = 0;
+    mess1.command = DC_DISWINDOW;
+    mess1.data1 = 0xff;
+    mess1.data2 = 0xff;                         /* MOVE.w #-1: data2 and pad */
+    mess1.pad = 0xff;
+    mess1.size = (ULONG)pc;
+    mess1.chars[0] = 0;
     send();
 }
 
@@ -208,12 +212,12 @@ static void BLITZ_ERRCHK coptrace_c(ULONG adr BL_REG(d0))
 {
     if (!adr)
         return;
-    mess1[0] = DC_COPPERLIST;
-    mess1[1] = 0;
-    mess1[2] = 0;
-    mess1[3] = 0;
-    SETL(mess1 + 4, adr);
-    mess1[8] = 0;
+    mess1.command = DC_COPPERLIST;
+    mess1.data1 = 0;
+    mess1.data2 = 0;                            /* MOVE.w #0: data2 and pad */
+    mess1.pad = 0;
+    mess1.size = adr;
+    mess1.chars[0] = 0;
     send();
 }
 
@@ -229,10 +233,10 @@ static void BLITZ_ERRCHK coptrace2_c(const UBYTE *adr BL_REG(d0), UWORD off BL_R
 /* ProcControl [on]: data1 = on (toggle: 0), data2 = 0 (toggle) / $FF */
 static void BLITZ_ERRCHK procstatus_c(UBYTE on, UBYTE explicit)
 {
-    mess1[2] = explicit;
-    mess1[0] = DC_PROCCONTROL;
-    mess1[1] = on;
-    mess1[4] = 0;
+    mess1.data2 = explicit;
+    mess1.command = DC_PROCCONTROL;
+    mess1.data1 = on;
+    *(UBYTE *)&mess1.size = 0;                  /* MOVE.b #0,4(a0): the top byte of size */
     send();
 }
 
@@ -249,10 +253,10 @@ static void BLITZ_ERRCHK procstatus2_c(UWORD on BL_REG(d0))
 /* MemoryWindow num,address: data1 = num.b, size = address */
 static void BLITZ_ERRCHK memadr_c(UWORD num BL_REG(d0), ULONG adr BL_REG(d1))
 {
-    mess1[0] = DC_MEMWINDOWMOVE;
-    mess1[1] = (UBYTE)num;
-    SETL(mess1 + 4, adr);
-    mess1[8] = 0;
+    mess1.command = DC_MEMWINDOWMOVE;
+    mess1.data1 = (UBYTE)num;
+    mess1.size = adr;
+    mess1.chars[0] = 0;
     send();
 }
 
