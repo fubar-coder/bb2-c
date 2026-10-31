@@ -1,0 +1,32 @@
+Archive member included to satisfy reference by file (symbol)
+
+libnix/lib/libb/libnix20.a(__nocommandline.o)
+                              libnix/lib/nbcrt0.o (__nocommandline)
+libnix/lib/libb/libnix20.a(__udivsi3.o)
+                              compile.c.obj (__umodsi3)
+libnix/lib/libb/libnixmain.a(__stdiowin.o)
+                              libnix/lib/libb/libnix20.a(__nocommandline.o) (__stdiowin)
+libnix/lib/libb/libnix.a(__initcpp.o)
+                              libnix/lib/nbcrt0.o (__initcpp)
+libnix/lib/libb/libnix.a(__initlibraries.o)
+                              libnix/lib/nbcrt0.o (__initlibraries)
+libnix/lib/libb/libnix.a(longjmp.o)
+                              compile.c.obj (longjmp)
+libnix/lib/libb/libnix.a(memcpy.o)
+                              data.c.obj (memcpy)
+libnix/lib/libb/libnix.a(setjmp.o)
+                              asmlibs.c.obj (setjmp)
+libnix/lib/libb/libnix.a(strcat.o)
+                              main.c.obj (strcat)
+libnix/lib/libb/libnix.a(strncpy.o)
+                              main.c.obj (strncpy)
+libnix/lib/libb/libstubs.a(dos.o)
+                              asmlibs.c.obj (DOSBase)
+libnix/lib/libb/libstubs.a(utility.o)
+                              libnix/lib/libb/libnix20.a(__udivsi3.o) (UtilityBase)
+
+Allocating common symbols
+
+Linker script and memory map
+
+                0x00015558                UtilityBase

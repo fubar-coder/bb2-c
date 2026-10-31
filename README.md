@@ -140,6 +140,11 @@ again):
   deflibs of its variant): no library number twice (`biglib check`; deflibs together with
   the acidlibs loaded with it) – two libraries with one number would have
   the same tokens.
+* `blitz2` after every link (POST_BUILD): `programs/blitz2/checklink.cmake`
+  on the link map - no libnix20 member and no base of a library that
+  Kickstart 1.3 lacks (`UtilityBase`): blitz2 starts on Kickstart 1.x like
+  the original (#936; ctest `blitz2_checklink_broken_*` with the map of
+  the earlier link).
 * reference build of blitz2: the original
   `archive/sources/blitz2-1.95/blitz2.s` with vasm to
   `build/amiga/programs/blitz2/ref/` (`blitz2`, listing, `blitz2.map`,
@@ -470,10 +475,8 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   does not start on Kickstart 1.x). The reference blitz2 1.95 is
   assembled with `-kick1hunks` (HUNK_RELOC32: Kickstart 1.x's LoadSeg
   knows no HUNK_DREL32). Not there on Kickstart 1.x: `gate=`
-  (reqclosetest, reqclose), `@INJECT@`, `@WBRUN@` (V36 functions), and
-  blitz2-c itself does not start there yet (#936: it opens
-  utility.library) - port and clib show `utility.library failed to
-  load` until then. A crash on Kickstart 1.3 ends in the requester
+  (reqclosetest, reqclose), `@INJECT@`, `@WBRUN@` (V36 functions).
+  blitz2-c starts there since #936 (linked with libnix13). A crash on Kickstart 1.3 ends in the requester
   "Software error - task held", which reqtrap answers with Cancel: a
   Guru that waits for the mouse, the session runs into its timeout.
 

@@ -197,11 +197,14 @@ hardfile read-only. `a500-68010` is the same machine with a 68010
   TED 1.1 starts, and so does the reference blitz2 1.95 (assembled with
   `-kick1hunks`: Kickstart 1.x's LoadSeg knows no HUNK_DREL32, vasm's
   default for relocations); programs compiled elsewhere (e.g. by a
-  bug-orig run on the A1200) run. The port's `blitz2` does not start
-  ("utility.library failed to load": its libnix startup opens
-  utility.library, which Kickstart 1.x lacks; #936). Programs linked
-  with libnix20 (the toolchain's default with `-noixemul`) crash at
-  start; libnix13 works.
+  bug-orig run on the A1200) run. The port's `blitz2` starts too since
+  #936 (before, it stopped with "utility.library failed to load":
+  libnix20's division helpers made its startup open utility.library,
+  which Kickstart 1.x lacks; now it is linked with libnix13,
+  `programs/blitz2/checklink.cmake`); checked 2026-10-30: compiling an
+  executable and COMPILE/RUN give the same log, output and executable as
+  the CD's blitz2 2.10. Programs linked with libnix20 (the toolchain's
+  default with `-noixemul`) crash at start; libnix13 works.
 * **The bug-orig harness** runs there (machine= / `; @machine`, README,
   "Tests"): the session script in 1.3 syntax with `rcput` for the
   `rc=N` lines, tedstub and its edstub frame with Kickstart 1.2

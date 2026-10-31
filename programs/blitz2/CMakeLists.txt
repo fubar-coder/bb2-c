@@ -22,9 +22,38 @@ if(BLITZ2_BASEREL)
 	target_link_options(blitz2 PRIVATE -fbaserel)
 endif()
 # no symbol table in release builds
-target_link_options(blitz2 PRIVATE $<$<CONFIG:Release,MinSizeRel>:-s>)
+target_link_options(blitz2 PRIVATE $<$<CONFIG:Release,MinSizeRel>:-s>
+	-Wl,-Map,${CMAKE_CURRENT_BINARY_DIR}/blitz2.map)
+# Kickstart 1.x like the original (#936): libnix13 in front of the driver's
+# libnix20, whose helpers need Kickstart 2.0 (__udivsi3/__umodsi3 call
+# utility.library, which the startup code then opens; __nocommandline calls
+# AllocVec ...).  libnix13 has the same helpers with 1.x calls only.
+target_link_libraries(blitz2 PRIVATE nix13)
 set_target_properties(blitz2 PROPERTIES OUTPUT_NAME blitz2 SUFFIX ""
 	RUNTIME_OUTPUT_DIRECTORY ${BLITZ2_DIR})
+
+# check after every link; if it fails, blitz2 does not count as built:
+# no libnix20 member, no base of a library Kickstart 1.3 does not have
+# (UtilityBase) - checklink.cmake
+add_custom_command(TARGET blitz2 POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/checklink.cmake
+		${CMAKE_CURRENT_BINARY_DIR}/blitz2.map
+	VERBATIM)
+# the check itself: the map of blitz2 linked without libnix13 (before #936)
+# must fail it, once for each rule
+set(checklink_broken ${CMAKE_CURRENT_SOURCE_DIR}/tests/checklink/libnix20.map)
+foreach(t IN ITEMS
+		"libnix20|libnix20\\.a\\(__udivsi3\\.o\\) \\(Kickstart 2\\.0 variant\\)"
+		"stubs|libstubs\\.a\\(utility\\.o\\) \\(library not in Kickstart 1\\.3\\)"
+		"utilitybase|UtilityBase defined")
+	string(REPLACE "|" ";" t "${t}")
+	list(GET t 0 name)
+	list(GET t 1 regex)
+	add_test(NAME blitz2_checklink_broken_${name} COMMAND ${CMAKE_COMMAND}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/checklink.cmake ${checklink_broken})
+	set_tests_properties(blitz2_checklink_broken_${name} PROPERTIES
+		PASS_REGULAR_EXPRESSION "not allowed in blitz2: ${regex}")
+endforeach()
 
 # ------------------------------------------------------- reference build
 # The original blitz2.s v1.95 (archive/sources/blitz2-1.95) assembled with
