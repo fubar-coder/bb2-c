@@ -480,13 +480,18 @@ BLITZ_THUNK(fixmode, fixmode_c, "d1/a0-a1");
 /* -------------------------------------------------------- handleflags */
 
 /* labels of the assembler parts above */
-extern ULONG trapregs[16] __asm__("trapregs");  /* d0-d7/a0-a7 at the trap */
+/* the register image at the trap (MOVEM.l d0-d7/a0-a6,trapregs, then
+   USP to a7_) */
+struct trapregs {
+    ULONG d[8];                                 /* d0_..d7_ */
+    ULONG a[8];                                 /* a0_..a7_ */
+};
+static_assert(sizeof(struct trapregs) == 16 * 4);
+extern struct trapregs trapregs __asm__("trapregs");
 extern UBYTE *trappc __asm__("trappc");
 extern char evaluate_[] __asm__("evaluate");    /* a0 = text -> a0 = output */
 extern char execute_[] __asm__("execute");
 void executestate(void) __attribute__((noreturn));
-#define TRAP_A4 12
-#define TRAP_A5 13
 
 /* BCLR #bit,flags with its Z result.  Atomic (one instruction): the flags
    are also set from outside the program (e.g. the editor's stop key). */
@@ -537,7 +542,7 @@ void BLITZ_ROUTINE __attribute__((noreturn)) handleflags(void)
     do {                                        /* handleflags: */
         if (flagclr(7)) {
             struct bl_regs r = { 0, 0, 0, 0 };
-            blitz_globals = (UBYTE *)trapregs[TRAP_A5];
+            blitz_globals = (UBYTE *)trapregs.a[5];
             BLITZ_ALIBJSR(TOK_endjmp, r);       /* does not return */
         }
         if (flagclr(6)) {
@@ -549,15 +554,15 @@ void BLITZ_ROUTINE __attribute__((noreturn)) handleflags(void)
             callhandler(userhandler, &arg);
         }
         if (flagclr(4)) {
-            blitz_locals = (UBYTE *)trapregs[TRAP_A4];  /* MOVEM.l a4_,a4-a5 */
-            blitz_globals = (UBYTE *)trapregs[TRAP_A5];
+            blitz_locals = (UBYTE *)trapregs.a[4];  /* MOVEM.l a4_,a4-a5 */
+            blitz_globals = (UBYTE *)trapregs.a[5];
             arg = (ULONG)evaltext;
             callhandler(evaluate_, &arg);
             callhandler(evalhandler, &arg);
         }
         if (flagclr(3)) {
-            blitz_locals = (UBYTE *)trapregs[TRAP_A4];
-            blitz_globals = (UBYTE *)trapregs[TRAP_A5];
+            blitz_locals = (UBYTE *)trapregs.a[4];
+            blitz_globals = (UBYTE *)trapregs.a[5];
             arg = (ULONG)exectext;
             callhandler(execute_, &arg);
             if (*(UBYTE *)arg)                  /* any output? */
@@ -676,22 +681,32 @@ BLITZ_ASM_ROUTINE(docall,
 "   jsr     (a1)\n"
 "   rts");
 
+/* the debugger front end's handler table (dosethandler a0) */
+struct handlers {
+    APTR state, super, user, wait, eval;
+    APTR unused;                        /* entry 5: not read */
+    APTR call;                          /* h6: docall */
+    APTR proc;                          /* h7: procedure start/end */
+};
+static_assert(sizeof(struct handlers) == 8 * 4);
+
 /* dosethandler - $D502: d0 = pointer to the procedure flag word, a0 =
    handler table (state, super, user, wait, eval, -, docall, procedure).
    C part: copy the table, return the old one. */
-static APTR BLITZ_ROUTINE dosethandler_c(UWORD *pflag BL_REG(d0), APTR *tab BL_REG(a0))
+static APTR BLITZ_ROUTINE dosethandler_c(UWORD *pflag BL_REG(d0),
+                                         const struct handlers *tab BL_REG(a0))
 {
     APTR old = handler;
 
     procflag = pflag;
-    handler = tab;
-    statehandler = tab[0];
-    superhandler = tab[1];
-    userhandler = tab[2];
-    waithandler = tab[3];
-    evalhandler = tab[4];
-    h6 = tab[6];
-    h7 = tab[7];
+    handler = (APTR)tab;
+    statehandler = tab->state;
+    superhandler = tab->super;
+    userhandler = tab->user;
+    waithandler = tab->wait;
+    evalhandler = tab->eval;
+    h6 = tab->call;
+    h7 = tab->proc;
     return old;
 }
 /* d0 = old table, a0 = trap registers, a1 = &oldmode, a2 = tokens; the
