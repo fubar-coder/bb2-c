@@ -119,7 +119,12 @@ BLITZ_NULLSUB_AT(init, _dummybranch, 0, 0);
 
 BLITZ_LIBFIN();
 
-/* _dummybranch: RTS - every routine, init and finit */
+/**
+ * @brief _dummybranch: the routine of every command, init and finit: RTS.
+ *
+ * The commands act only in their error check routines (below), i.e. only
+ * when the program is compiled with the debugger.
+ */
 void BLITZ_ROUTINE _dummybranch(void)
 {
 }
@@ -158,8 +163,20 @@ static UBYTE *BLITZ_ERRCHK copyname(UBYTE *d, const UBYTE *s)
     return d;
 }
 
-/* AddVarTrace variable,name$,output: d0 = varptr, d1 = name, d2 =
-   output, -2(a2) = the type word */
+/**
+ * @brief AddVarTrace variable,string$,output (check): add a variable trace.
+ *
+ * Sends _addtrace (255): data1 = the debugger type of the variable
+ * (converttype; 0 becomes 1), data2 = output (0 becomes 1), pad = 255,
+ * size = the variable's address, then the name.
+ * BUG(orig) (#609): the type indexes the 8 byte table unchecked.
+ * BUG(orig) (#612, #613): the name copy tests the byte after the one
+ * copied (an empty name copies on to the next 0) and has no limit.
+ * @param var    d0: the variable's address (#varptr)
+ * @param name   d1: the name string
+ * @param out    d2: the output format (byte)
+ * @param types  a2: the argument stack, -2(a2) = the variable's type word
+ */
 static void BLITZ_ERRCHK addvartrace_c(ULONG var BL_REG(d0), const UBYTE *name BL_REG(d1),
                                        UWORD out BL_REG(d2), const UWORD *types BL_REG(a2))
 {
@@ -176,7 +193,15 @@ static void BLITZ_ERRCHK addvartrace_c(ULONG var BL_REG(d0), const UBYTE *name B
     send();
 }
 
-/* DelVarTrace name$: d0 = name, written at +12 (BUG(orig) (#610)) */
+/**
+ * @brief DelVarTrace variable$ (check): remove a trace on a named variable.
+ *
+ * Sends _deltrace (254) with the name.  BUG(orig) (#610): the name goes
+ * to +12 instead of +8 (+1..+11 keep the previous message), its 0
+ * without advancing; BUG(orig) (#612, #613): the name copy as in
+ * AddVarTrace.
+ * @param name  d0: the variable's name
+ */
 static void BLITZ_ERRCHK delvartrace_c(const UBYTE *name BL_REG(d0))
 {
     mess1.command = DC_DELTRACE;
@@ -184,7 +209,10 @@ static void BLITZ_ERRCHK delvartrace_c(const UBYTE *name BL_REG(d0))
     send();
 }
 
-/* VarTraceWindow */
+/**
+ * @brief VarTraceWindow (check): open the variable trace window on the
+ * debugger screen (_varwindow, 253; data1 = $FF).
+ */
 static void BLITZ_ERRCHK vartracewindow_c(void)
 {
     mess1.command = DC_VARWINDOW;
@@ -192,8 +220,17 @@ static void BLITZ_ERRCHK vartracewindow_c(void)
     send();
 }
 
-/* DisAsmWindow: a0 = the return address into the program (thunk); back
-   to the TRAP #1 in front of the call */
+/**
+ * @brief DisAsmWindow (check): open the disassembly window at this
+ * instruction.
+ *
+ * Searches back from the return address for the TRAP #1 ($4E41) the
+ * debugger's code has in front of the call and sends _diswindow (252)
+ * with data1/data2/pad = $FF and size = its address.
+ * BUG(orig) (#611): the search has no limit.
+ * @param pc  a0: the return address into the program (from the
+ *            assembler thunk __disasmchk)
+ */
 static void BLITZ_ERRCHK disasm_c(const UWORD *pc BL_REG(a0))
 {
     while (*pc != 0x4e41)                               /* BUG(orig) (#611): no limit */
@@ -207,7 +244,12 @@ static void BLITZ_ERRCHK disasm_c(const UWORD *pc BL_REG(a0))
     send();
 }
 
-/* CopperTrace address: if not 0 */
+/**
+ * @brief CopperTrace address (check): open the copper window at address.
+ *
+ * Sends _copperlist (251) with size = address; nothing if address is 0.
+ * @param adr  d0: the copper list address
+ */
 static void BLITZ_ERRCHK coptrace_c(ULONG adr BL_REG(d0))
 {
     if (!adr)
@@ -221,8 +263,14 @@ static void BLITZ_ERRCHK coptrace_c(ULONG adr BL_REG(d0))
     send();
 }
 
-/* CopperTrace address,offset: the copper list at address+offset.w (a
-   CopList object) */
+/**
+ * @brief CopperTrace address,offset (check): the copper list whose
+ * address is at address+offset (a CopList object).
+ *
+ * Nothing if address or the long read there is 0.
+ * @param adr  d0: the object's address
+ * @param off  d1: the offset (word) of the copper list pointer
+ */
 static void BLITZ_ERRCHK coptrace2_c(const UBYTE *adr BL_REG(d0), UWORD off BL_REG(d1))
 {
     if (!adr)
@@ -230,7 +278,8 @@ static void BLITZ_ERRCHK coptrace2_c(const UBYTE *adr BL_REG(d0), UWORD off BL_R
     coptrace_c(*(const ULONG *)(adr + (WORD)off));
 }
 
-/* ProcControl [on]: data1 = on (toggle: 0), data2 = 0 (toggle) / $FF */
+/* ProcControl's message: data1 = on (toggle: 0), data2 = 0 (toggle) /
+   $FF (explicit) */
 static void BLITZ_ERRCHK procstatus_c(UBYTE on, UBYTE explicit)
 {
     mess1.data2 = explicit;
@@ -240,17 +289,31 @@ static void BLITZ_ERRCHK procstatus_c(UBYTE on, UBYTE explicit)
     send();
 }
 
+/**
+ * @brief ProcControl (check): toggle the procedure checking
+ * (_proccontrol, 250, data1 = data2 = 0).
+ */
 static void BLITZ_ERRCHK procstatus0_c(void)
 {
     procstatus_c(0, 0);
 }
 
+/**
+ * @brief ProcControl On|Off (check): set the procedure checking
+ * (_proccontrol, data1 = the byte, data2 = $FF).
+ * @param on  d0: On/Off (the low byte)
+ */
 static void BLITZ_ERRCHK procstatus2_c(UWORD on BL_REG(d0))
 {
     procstatus_c((UBYTE)on, 0xff);
 }
 
-/* MemoryWindow num,address: data1 = num.b, size = address */
+/**
+ * @brief MemoryWindow num#,address (check): open a memory window on the
+ * debugger screen (_memwindowmove, 249).
+ * @param num  d0: the window number (data1, a byte)
+ * @param adr  d1: the address (size)
+ */
 static void BLITZ_ERRCHK memadr_c(UWORD num BL_REG(d0), ULONG adr BL_REG(d1))
 {
     mess1.command = DC_MEMWINDOWMOVE;
