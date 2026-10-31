@@ -170,9 +170,9 @@ library returns `Quotient<<16|Rest` for Quick, a long for Float, but the
 compiler reads the result as word or long, blitz2.s:9459/9463 – which is
 the intended integer semantics of MOD):
 Quick 0 → Float `$00000080`; `lmultiply`/`arrmult` add
-partial products via SWAP (visible only on overflow); `newlist` writes, for
-size 0 (e.g. dimension −1), 8 bytes behind the block; division by 0 returns
-`$7FFFFFFF` regardless of the sign.
+partial products via SWAP (visible only on overflow); division by 0 returns
+`$7FFFFFFF` regardless of the sign. Fixed since (intended deviation, #59):
+`newlist` wrote, for size 0 (e.g. dimension −1), 8 bytes behind the block.
 
 ## State: command libraries (acidlibs)
 

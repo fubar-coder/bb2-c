@@ -26,6 +26,11 @@
  *   28.l : "lIsT" : list ID
  *              32 long
  *
+ * Fixed (intended deviation, #59): newlist/newloclist link an item only
+ *   if its node (next.l, last.l) fits in the block; the original linked
+ *   the first item before checking, so a list of size 0 got 8 bytes
+ *   written behind its block.
+ *
  * DIFF: newlocarr/newloclist do not swap a4/a5 while calling memlib; they
  * pass the base (a4) to the common C code instead.  memlib does not use
  * a5, so the result is the same.
@@ -168,16 +173,16 @@ static void new_list(UBYTE *base, WORD ptr, WORD size, WORD itemsize)
     h->id = BB_LISTID;                          /* "lIsT" */
 
     /* OK, link all things together..... */
-    /* BUG(orig) (#59): every linked item gets 8 bytes written (next.l, last.l at
-       item+0/+4), but the loop only checks that the item STARTS below
-       `end`.  The compiler's Dim List passes itemsize = listsize (element
-       size + 8, >= 9) and a size that is a multiple of it, so the last
-       item always has its 8 bytes.  Only size 0 (dimension -1, an
-       overflowed arrmult, or a direct call with any sizes) writes past the
-       block: the do-while still links one item at h+32, so all 8 bytes
-       land behind the block.  Kept as in the original. */
+    /* fixed (#59): every linked item gets 8 bytes written (next.l, last.l
+       at item+0/+4); the original's do-while linked the first item before
+       any check and then only checked that the next one STARTS below
+       `end`, so a size of 0 (dimension -1, an overflowed arrmult, or a
+       direct call with any sizes) wrote all 8 bytes behind the block.
+       Here an item is linked only if its node fits; for the compiler's
+       Dim List (itemsize = element size + 8, a size that is a multiple
+       of it) these are the same items as in the original. */
     tail = (struct MinNode *)&h->free.mlh_Tail; /* tail node */
-    do {                                        /* insert a0 node before a2 node */
+    while (item + sizeof(struct MinNode) <= end) { /* insert a0 node before a2 node */
         struct MinNode *node = (struct MinNode *)item;
 
         last = tail->mln_Pred;                  /* old last of tail */
@@ -186,7 +191,7 @@ static void new_list(UBYTE *base, WORD ptr, WORD size, WORD itemsize)
         tail->mln_Pred = node;                  /* new last of tail */
         last->mln_Succ = node;                  /* new next of old last */
         item += itemsize;                       /* ADD d4,a0 (word) */
-    } while (item < end);                       /* CMP.l a1,a0:BCS 'loop */
+    }
 }
 
 /**
@@ -197,8 +202,9 @@ static void new_list(UBYTE *base, WORD ptr, WORD size, WORD itemsize)
  * allocates the 32 byte header and 0(a5,d3) bytes (memlib localloc,
  * MEMF_PUBLIC|MEMF_CLEAR), sets up the header (empty list of items in
  * use, "lIsT") and links all items of d4.w bytes into the free list;
- * 0(a5,d2) = the first item (header+32).  BUG(orig) (#59): a size of 0
- * still links one item, its 8 bytes land behind the block.  The original
+ * 0(a5,d2) = the first item (header+32).  Fixed (#59): only items whose
+ * node (8 bytes) fits are linked; the original still linked one item for
+ * a size of 0, its 8 bytes behind the block.  The original
  * changes d0/d1/a0-a3 (a3 too); the C build keeps a2/a3.
  *
  * @param ptr       d2.w: offset of the list pointer from a5

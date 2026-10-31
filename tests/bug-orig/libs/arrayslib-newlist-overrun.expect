@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+dimmed
+inject: rc=0
+rc=0
