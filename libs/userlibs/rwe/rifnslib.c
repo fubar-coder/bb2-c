@@ -75,6 +75,7 @@
  *   at 'z' (91 glyphs), codes 123..159 are drawn from the bytes behind it.
  */
 #include "blitzlib.h"
+#include <graphics/gfx.h>
 #include <stddef.h>
 
 /* RIAmosFuncLib (75): index n-1 of its token list */
@@ -259,7 +260,7 @@ struct fns {
     UWORD originx, originy;
     UWORD xmin, ymin, xmax, ymax;
     UWORD tabsize;
-    ULONG bit_address;
+    struct BitMap *bit_address;         /* FNSOutput's bitmap */
     ULONG font_add[16];                 /* FNSSlot */
     UBYTE def_font[FONTSIZE];           /* IncBin "FNS:Personal.FNS" */
 } __attribute__((packed, aligned(2)));
@@ -301,8 +302,17 @@ struct fns fns __asm__("_fns") = {
     },
 };
 
+/* the header of an FNS font; the width table, indexed by the character
+   code, starts at +0 too (codes 32..159 are used), the glyphs at +256 */
+struct fnshead {
+    ULONG id;                           /* FNSID */
+    UWORD height, width, underpos;      /* 4 6 8 */
+    UWORD multi;                        /* 10: bytes per character */
+};
+static_assert(sizeof(struct fnshead) == 12);
+#define FH(font) ((const struct fnshead *)(font))
+
 #define LONGAT(p) (*(ULONG *)(p))
-#define WORDAT(p) (*(UWORD *)(p))
 #define BITSTACK ((ULONG *)((UBYTE *)&fns + offsetof(struct fns, bitstack)))
 
 /* ------------------------------------------------------------ FNSPrint */
@@ -420,7 +430,7 @@ static UBYTE *print(UWORD fontnum, UWORD x0, UWORD y0, const UBYTE *str, UBYTE p
                     UBYTE colour, UBYTE *result)
 {
     const UBYTE *font, *s;
-    UBYTE *planes;
+    UBYTE *planes;                      /* the plane pointers */
     UWORD x, y, n, lw;
     ULONG yoff;
     UBYTE c, i;
@@ -429,16 +439,16 @@ restart:
     fns.textprefs = prefs;
     fns.tcolour = colour;
     font = (const UBYTE *)fns.font_add[fontnum & 15];
-    if (LONGAT(font) != FNSID)
+    if (FH(font)->id != FNSID)
         return result;
     x = (UWORD)(x0 + fns.originx);
     y = (UWORD)(y0 + fns.originy);
     s = str;
-    fns.height = (UWORD)(WORDAT(font + 4) - 1);
-    fns.multi = WORDAT(font + 10);
-    fns.fontwidth = WORDAT(font + 6);
-    fns.underpos = WORDAT(font + 8);
-    planes = (UBYTE *)fns.bit_address + 8;
+    fns.height = (UWORD)(FH(font)->height - 1);
+    fns.multi = FH(font)->multi;
+    fns.fontwidth = FH(font)->width;
+    fns.underpos = FH(font)->underpos;
+    planes = (UBYTE *)fns.bit_address->Planes;
     fns.ycord = y;
     if ((WORD)y < (WORD)fns.ymin)
         y = fns.ymin;
@@ -517,7 +527,8 @@ draw:
    ycord + underpos, in the planes of the bitmap */
 static void underline(UWORD x)
 {
-    UWORD *planes = (UWORD *)((UBYTE *)fns.bit_address + 8), *p;
+    PLANEPTR *planes = fns.bit_address->Planes;
+    UWORD *p;
     UWORD xend, y, cnt, left, word;
     ULONG off;
     UBYTE pl, bit, b;
@@ -538,7 +549,7 @@ static void underline(UWORD x)
     pl = 0;
     do {
         int set = fns.tcolour & (1 << (pl & 7));
-        p = (UWORD *)(LONGAT((UBYTE *)planes + 4 * pl) + off);
+        p = (UWORD *)(planes[pl] + off);
         left = cnt;
         b = bit;
         word = *p;
@@ -641,7 +652,7 @@ void BLITZ_ROUTINE _libfinit(void)
 /* InstallFNS(fontnum,address): only an "FNS." font; fontnum & 15 or 0 */
 static ULONG BLITZ_ROUTINE installfns_c(ULONG n BL_REG(d0), const UBYTE *font BL_REG(d1))
 {
-    if (LONGAT(font) != FNSID)
+    if (FH(font)->id != FNSID)
         return 0;
     n &= 15;
     fns.font_add[n] = (ULONG)font;
@@ -655,28 +666,28 @@ static void BLITZ_ROUTINE removefns_c(ULONG n BL_REG(d0))
 
 static void BLITZ_ROUTINE clipoutput_c(void)
 {
-    const UWORD *bm = (const UWORD *)fns.bit_address;
+    const struct BitMap *bm = fns.bit_address;
 
     fns.xmin = 0;
     fns.ymin = 0;
-    fns.ymax = (UWORD)(bm[1] - 1);
-    fns.xmax = (UWORD)(bm[0] << 3);
+    fns.ymax = (UWORD)(bm->Rows - 1);
+    fns.xmax = (UWORD)(bm->BytesPerRow << 3);
 }
 
 /* FNSOutput bitmap[,clip] (a0 = the bitmap, d1 = clip) */
-static void BLITZ_ROUTINE output_c(UWORD clip BL_REG(d1), const UBYTE *bm BL_REG(a0))
+static void BLITZ_ROUTINE output_c(UWORD clip BL_REG(d1), struct BitMap *bm BL_REG(a0))
 {
-    UWORD fd = WORDAT(bm + 4);          /* Flags<<8 | Depth */
+    UWORD fd = *(const UWORD *)&bm->Flags;      /* one word: Flags<<8 | Depth */
 
-    fns.bit_address = (ULONG)bm;
-    fns.scr_width = WORDAT(bm);
+    fns.bit_address = bm;
+    fns.scr_width = bm->BytesPerRow;
     fns.bitdepth = (UBYTE)fd;
     fns.bitdepthminusone = (UWORD)(fd - 1);
     if ((UBYTE)clip)
         clipoutput_c();
 }
 
-static void BLITZ_ROUTINE output2_c(const UBYTE *bm BL_REG(a0))
+static void BLITZ_ROUTINE output2_c(struct BitMap *bm BL_REG(a0))
 {
     output_c(0, bm);
 }
@@ -697,30 +708,30 @@ static void BLITZ_ROUTINE prefs_c(UWORD p BL_REG(d0), UWORD c BL_REG(d1))
     fns.textprefs2 = (UBYTE)p;
 }
 
-/* FNSHeight/FNSWidth/FNSUnderline: the word at `off` of the font, -1
-   if the slot has none */
+/* FNSHeight/FNSWidth/FNSUnderline: the word at `off` of the font header,
+   -1 if the slot has none */
 static ULONG fontword(ULONG n, int off)
 {
     const UBYTE *font = (const UBYTE *)fns.font_add[n & 15];
 
-    if (LONGAT(font) != FNSID)
+    if (FH(font)->id != FNSID)
         return (ULONG)-1;
-    return WORDAT(font + off);
+    return *(const UWORD *)(font + off);
 }
 
 static ULONG BLITZ_ROUTINE height_c(ULONG n BL_REG(d0))
 {
-    return fontword(n, 4);
+    return fontword(n, offsetof(struct fnshead, height));
 }
 
 static ULONG BLITZ_ROUTINE underline_c(ULONG n BL_REG(d0))
 {
-    return fontword(n, 8);
+    return fontword(n, offsetof(struct fnshead, underpos));
 }
 
 static ULONG BLITZ_ROUTINE width_c(ULONG n BL_REG(d0))
 {
-    return fontword(n, 6);
+    return fontword(n, offsetof(struct fnshead, width));
 }
 
 /* FNSClip: x rounded down to 16 */
@@ -741,7 +752,7 @@ static ULONG BLITZ_ROUTINE length_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG(
     const UBYTE *font = (const UBYTE *)LONGAT((UBYTE *)fns.font_add + (WORD)(n << 2));
     UWORD w;
 
-    if (LONGAT(font) != FNSID)
+    if (FH(font)->id != FNSID)
         return (ULONG)-1;
     w = (UWORD)(countwidth(font, str, (prefs & 2) ? 1 : 0) - 2);
     if ((WORD)w < 0)
