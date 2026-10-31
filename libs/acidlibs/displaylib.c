@@ -381,14 +381,20 @@ static const ULONG bcp[6] = { 0x01040224, 0x01060c00, 0x010c0011, 0x01020000,
                               0x01080000, 0x010a0000 };
 static ULONG spp[4] = { 0x01400000, 0x01420000, 0x01200000, 0x01220000 };
 
-/* table: maxbp, fetchwid, xmask, xrshift, adjwid, adjstop, ctrl (6 longs),
-   14 bytes pad = 64 bytes per entry */
+/* the mode table (resolution x fetch mode): 64 bytes per entry */
+struct modeent {
+    UWORD maxbp, fetchwid, xmask, xrshift, adjwid, adjstop;
+    ULONG ctrl[6];              /* moves FMODE, DIWSTRT, DIWSTOP, DDFSTRT,
+                                   DDFSTOP, BPLCON0 */
+    UWORD pad[14];
+};
+static_assert(sizeof(struct modeent) == 64);
 #define T(maxbp, fetchwid, xmask, xrshift, adjwid, adjstop, fmode,          \
           diwstrt, diwstop, ddfstrt, ddfstop, bplcon0)                      \
-    { maxbp, fetchwid, xmask, xrshift, adjwid, adjstop, 0x1fc, fmode,      \
-      0x8e, diwstrt, 0x90, diwstop, 0x92, ddfstrt, 0x94, ddfstop,           \
-      0x100, bplcon0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-static const UWORD table[12][32] = {
+    { maxbp, fetchwid, xmask, xrshift, adjwid, adjstop,                     \
+      { 0x1fc0000 | fmode, 0x8e0000 | diwstrt, 0x900000 | diwstop,          \
+        0x920000 | ddfstrt, 0x940000 | ddfstop, 0x1000000 | bplcon0 } }
+static const struct modeent table[12] = {
     T(8, 40, 0x3f, 5, 2, 8, 0, 0x81, 0x70c1, 0x38, 0xd0, 0x201),
     T(8, 40, 0x7f, 5, 4, 16, 1, 0x81, 0x70c1, 0x38, 0xc0, 0x201),
     T(8, 40, 0x7f, 5, 4, 16, 2, 0x81, 0x70c1, 0x38, 0xc0, 0x201),
@@ -565,7 +571,7 @@ static void initcoplist(ULONG ypos, ULONG height, ULONG type, ULONG sprites, ULO
     ULONG bpmove;                               /* d0: MOVE BPLxPT */
     ULONG dotoff;                               /* d0: the dot offset */
     ULONG nop;                                  /* d7: COPNOP */
-    const UWORD *mode;
+    const struct modeent *mode;
     UWORD i;
 
     *(UBYTE **)(blitz_globals + used) = cop;    /* make used */
@@ -632,22 +638,23 @@ static void initcoplist(ULONG ypos, ULONG height, ULONG type, ULONG sprites, ULO
         ULONG ctrl[6];
         int k;
 
-        mode = (const UWORD *)((const UBYTE *)table + (WORD)modeoff);
+        mode = (const struct modeent *)((const UBYTE *)table + (WORD)modeoff);
         CM(cop, resshift) = (UWORD)(2 - resindex);
-        for (k = 0; k < 6; k++)
-            ctrl[k] = ((const ULONG *)(mode + 6))[k];
+        for (k = 0; k < 6; k++)         /* mode->ctrl[k] (this form keeps the code) */
+            ctrl[k] = ((const ULONG *)((const UBYTE *)mode +
+                                       offsetof(struct modeent, ctrl)))[k];
         BL_SETW(ctrl[0], (UWORD)ctrl[0] | CM(cop, sfetch));
         BL_SETW(ctrl[5], (UWORD)ctrl[5] | d.genlock);
         for (k = 0; k < 6; k++)
             ins[k] = ctrl[k];
-        CM(cop, fetchwid) = mode[1];
-        CM(cop, xand) = mode[2];
-        CM(cop, xshift) = mode[3];
+        CM(cop, fetchwid) = mode->fetchwid;
+        CM(cop, xand) = mode->xmask;
+        CM(cop, xshift) = mode->xrshift;
         if (res & (1 << 4)) {
-            CM(cop, fetchwid) += mode[4];
-            W((UBYTE *)ins, 14) -= mode[5];
+            CM(cop, fetchwid) += mode->adjwid;
+            W((UBYTE *)ins, 14) -= mode->adjstop;  /* the DDFSTRT data */
         }
-        if ((WORD)CM(cop, numbp) > (WORD)mode[0])
+        if ((WORD)CM(cop, numbp) > (WORD)mode->maxbp)
             GOTO(maxbperr);
         i = bpb[CM(cop, numbp)];
         if (res & (1 << 7))
