@@ -335,6 +335,21 @@ int main(int argc, char **argv)
     CHECK(slot_clean());
     free(log);
 
+    /* broken: a restored state whose TEST: takes no file (here: the
+       check writes to a volume that does not exist) gets no start and is
+       dropped, the session boots cold; then a new snapshot */
+    CHECK(snapshots(path, sizeof path) == 1);
+    setenv("AMIGA_EMULATION_SNAP_CHECK_VOLUME", "NOSUCHVOLUME", 1);
+    CHECK(session("notest", emu, 0, AMIGA_EMULATION_SNAP_FALLBACK, &log, &secs) == 1);
+    unsetenv("AMIGA_EMULATION_SNAP_CHECK_VOLUME");
+    CHECK(log && strstr(log, "restore failed (no start)") && strstr(log, "boot cold"));
+    CHECK(snapshots(path, sizeof path) == 0);
+    CHECK(slot_clean());
+    free(log);
+    CHECK(session("again", emu, 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs) == 1);
+    free(log);
+    CHECK(slot_clean());
+
     /* broken: a corrupted state is dropped, the session boots cold */
     CHECK(snapshots(path, sizeof path) == 1);
     f = fopen(path, "wb");

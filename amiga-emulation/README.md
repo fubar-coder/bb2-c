@@ -94,7 +94,8 @@ of the booted system, taken when the system waits for its job (about
   configuration takes a cold boot plus about 2 s; with 5 slots up to 5
   sessions per configuration boot – once per build directory, not per
   ctest run (the life cycle below).
-* **The job** (`SNAP:job.script`) writes `SNAP:started`, sets the clock
+* **The job** (`SNAP:job.script`) writes a file to `TEST:` and deletes
+  it again, then (only if that worked) writes `SNAP:started`, sets the clock
   (`SetClock LOAD`; on the A500 machines a `DATE` line with the host's
   time, `SetClock LOAD` takes 1.8 s there) and executes the test's
   script. During the session `TEST:run.script` is the prologue; at the
@@ -167,8 +168,8 @@ of the booted system, taken when the system waits for its job (about
   A restored session sees its own `TEST:` and mounts through the slot's
   links, made anew for every session, and `SNAP:` is emptied before
   every start, so nothing of an earlier session reaches it.
-* **A restore that fails** (no `SNAP:started` within 6 s, or Amiberry
-  ends) is dropped, the state file too, and the session boots cold
+* **A restore that fails** (no `SNAP:started` within 6 s, also when
+  `TEST:` takes no file, or Amiberry ends) is dropped, the state file too, and the session boots cold
   without snapshot. A test mount called `SNAP` also means a cold boot.
 * **The supervisor:** every session (also without snapshot) is driven by
   a process of its own that the library forks at the start: it starts

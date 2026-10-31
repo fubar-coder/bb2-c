@@ -791,6 +791,7 @@ static void set_use(struct amiga_emulation *e, enum amiga_emulation_snapshot_use
 #define SNAP_VOLUME         "SNAP"
 #define SNAP_READY          "ready"
 #define SNAP_STARTED        "started"
+#define SNAP_TESTCHECK      ".snapcheck"    /* on TEST:, for a moment */
 #define SNAP_JOB            "job.script"
 #define SNAP_WAITER         "waitjob"
 #define SNAP_LOG            "snapshot.log"  /* in the work directory */
@@ -1429,7 +1430,19 @@ static int snap_write_job(struct amiga_emulation *e)
     } else {
         snprintf(clock, sizeof clock, "SETCLOCK LOAD\n");
     }
-    text = str_printf("ECHO >" SNAP_VOLUME ":" SNAP_STARTED " \"started\"\n%s%s", clock, e->job);
+    /* SNAP:started only once TEST: takes a file: a restored state whose
+       TEST: does not work (seen once, cause unknown) gets no start and
+       is dropped (the session boots cold, restore_until).  The test of
+       this check names another volume (AMIGA_EMULATION_SNAP_CHECK_VOLUME) */
+    const char *vol = getenv("AMIGA_EMULATION_SNAP_CHECK_VOLUME");
+
+    if (!vol || !*vol)
+        vol = "TEST";
+    text = str_printf("ECHO >%s:" SNAP_TESTCHECK " \"\"\n"
+                      "IF EXISTS %s:" SNAP_TESTCHECK "\n"
+                      "DELETE %s:" SNAP_TESTCHECK " QUIET\n"
+                      "ECHO >" SNAP_VOLUME ":" SNAP_STARTED " \"started\"\n"
+                      "ENDIF\n%s%s", vol, vol, vol, clock, e->job);
     r = !tmp || !dst || !text || write_file(tmp, text) || rename(tmp, dst) ? -1 : 0;
     free(tmp);
     free(dst);

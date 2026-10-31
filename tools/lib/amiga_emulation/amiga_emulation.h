@@ -131,7 +131,8 @@ struct amiga_emulation_params {
  * test must not be called SNAP (the session then boots cold).
  * TEST:run.script is a fixed prologue (1.3 syntax) that writes
  * SNAP:ready and runs SNAP:waitjob (waitjob.s, 68000, dos.library V0)
- * until SNAP:job.script exists; the job writes SNAP:started, sets the
+ * until SNAP:job.script exists; the job writes SNAP:started once TEST:
+ * takes a file (TEST:.snapcheck, deleted at once), sets the
  * clock (SetClock LOAD, on the A500 machines a DATE line with the host's
  * time) and runs the test's script.  The first session of a configuration
  * in a slot boots cold, saves the state at SNAP:ready into
