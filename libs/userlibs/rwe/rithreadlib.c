@@ -133,7 +133,14 @@ _Static_assert(__builtin_offsetof(struct thstate, memory) == 72, "startupcode: m
 _Static_assert(__builtin_offsetof(struct thstate, stringbuffersize) == 80,
                "startupcode: stringbuffersize");
 
-/* the exit code of every thread (DOS calls it when the code returns) */
+/**
+ * @brief The exit code of every thread (NP_ExitCode; DOS calls it when the
+ * thread's code returns).
+ *
+ * Counts the thread down (one SUBQ.l, the parent and the threads change
+ * the count) and sends the parent task the init's signal when the count
+ * is 0.
+ */
 void BLITZ_ROUTINE c_cleanup(void)
 {
     __asm__ volatile("subq.l #1,%0" : "+m"(th.threadcount) : : "cc");
@@ -141,14 +148,36 @@ void BLITZ_ROUTINE c_cleanup(void)
         Signal(th.parenttask, 1UL << th.thesignal);
 }
 
-/* ActiveThreads: the count, as a long (no defect, see above) */
+/**
+ * @brief ActiveThreads: the number of threads not yet ended.
+ *
+ * The function is a #word one; the count is returned as a long, the
+ * caller takes the low word, which is the count (no defect).
+ * @return d0: the count
+ */
 ULONG BLITZ_ROUTINE c_activethreads(void)
 {
     return th.threadcount;
 }
 
-/* CreateThread name$,address: `r` = the registers of the call, d0-d7/
-   a0-a6 */
+/**
+ * @brief CreateThread name$,address: run the Blitz code at address as a new
+ * DOS process (CreateNewProc).
+ *
+ * Nothing without dos.library V36 (init).  Counts the thread up, takes
+ * 10240 bytes (stringbuffersize + 8192, MEMF_CLEAR) through memlib's
+ * globalloc (freed by memlib's finit; globalloc never returns 0, it
+ * raises "Out of Memory!") and saves d0-d7/a1-a6 as they are after that
+ * call (d0 = the memory) for startupcode, which loads them, sets a2/a3/a4
+ * in the memory and jumps to the address.  The thread shares the
+ * program's globals (a5).  BUG(orig) (#838): registers, memory and
+ * address are single variables - a second CreateThread before the first
+ * thread has started gives both threads the second call's.
+ * @param r  a0: the registers of the call as the thunk pushed them,
+ *           d0-d7/a0-a6 (d0 = name$, the process name as it is, which
+ *           CreateNewProc copies; d1 = address)
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_createthread(const ULONG *r BL_REG(a0))
 {
     if (!th.dbase)
@@ -188,7 +217,12 @@ void BLITZ_ROUTINE c_createthread(const ULONG *r BL_REG(a0))
     }
 }
 
-/* init: a signal (31 down to 17), the task, dos.library V36 */
+/**
+ * @brief init: a signal of the calling task, the task, dos.library V36.
+ *
+ * The highest free signal of 31 down to 17; without one, dos.library is
+ * not opened (dbase = 0, every CreateThread does nothing).
+ */
 void BLITZ_ROUTINE c_libinit(void)
 {
     LONG sig, n;
@@ -207,7 +241,14 @@ void BLITZ_ROUTINE c_libinit(void)
     th.dbase = OpenLibrary((CONST_STRPTR)dosname, 36);
 }
 
-/* finit: wait for the last thread (once, BUG(orig) #837), close dos.library */
+/**
+ * @brief finit: wait for the last thread, close dos.library.
+ *
+ * Waits for the signal if threads are running (the last one to end sends
+ * it).  BUG(orig) (#837): it waits only once, so a signal left from an
+ * earlier time the count was 0 lets it go on while threads run; the
+ * signal is never freed, dos.library's base not cleared (#839).
+ */
 void BLITZ_ROUTINE c_libfinit(void)
 {
     if (!th.dbase)
