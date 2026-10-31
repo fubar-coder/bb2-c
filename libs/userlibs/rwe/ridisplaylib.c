@@ -73,13 +73,25 @@ static struct BL_PACKED {
 
 static struct Library *gfxbase;
 
-/* init: graphics.library 39 */
+/**
+ * @brief init: open graphics.library 39.
+ *
+ * The base is only used by finit (to know that the library is open).
+ * @return nothing (BL_NORET)
+ */
 static void BLITZ_ROUTINE codeinit_c(void)
 {
     gfxbase = OpenLibrary((CONST_STRPTR)"graphics.library", 39);
 }
 
-/* finit: close graphics.library, free the last copper list */
+/**
+ * @brief finit: close graphics.library and free the last copper list.
+ *
+ * Nothing happens if init could not open the library.  Only the list of
+ * the last InitView is freed, the earlier ones are lost (BUG(orig)
+ * (#891)); after a failed AllocMem this is FreeMem(0, size) (#888).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE codefinit_c(void)
 {
     if (!gfxbase)
@@ -96,7 +108,26 @@ static void BLITZ_ROUTINE codefinit_c(void)
 /* the word at an absolute address (a "register name", BUG(orig), #889) */
 #define ABSW(a) (*(volatile const UWORD *)(a))
 
-/* InitView height,depth,numsprites,numcolours (d0-d3) */
+/**
+ * @brief InitView height,depth,numsprites,numcolours: allocate a copper
+ * list in chip memory and write its first four moves.
+ *
+ * The size is 16*numsprites + 16*depth + 8*height + 38, computed as a
+ * word and sign-extended (EXT.l): the colour count is lost, MOVE.w d0,d3
+ * overwrites it with the height before it is read (BUG(orig) (#890)).
+ * The four `!cmove`s read their register and value from absolute
+ * addresses: the list gets the words at $8E, $2C81, $90, $2CC1, $92,
+ * $38, $94, $D0 (two odd addresses: an address error on a 68000)
+ * (BUG(orig) (#889)).  AllocMem is not checked: without chip memory the
+ * words go to address 0 (BUG(orig) (#888)).  Every call allocates a new
+ * list; the old one is forgotten (BUG(orig) (#891)).  The list is never
+ * installed.
+ * @param height   d0.w: the height (counts 8 bytes per line)
+ * @param depth    d1.w: the depth (16 bytes per plane)
+ * @param sprites  d2.w: the number of sprites (16 bytes each)
+ *                 (d3.w numcolours: ignored, see above)
+ * @return d0: the address of the copper list (0 without chip memory)
+ */
 static ULONG BLITZ_ROUTINE initview_c(UWORD height BL_REG(d0), UWORD depth BL_REG(d1),
                                       UWORD sprites BL_REG(d2))
 {
@@ -124,7 +155,13 @@ static ULONG BLITZ_ROUTINE initview_c(UWORD height BL_REG(d0), UWORD depth BL_RE
     return (ULONG)vd.cop;
 }
 
-/* ViewBitmap: RTS */
+/**
+ * @brief ViewBitmap bitmap: no code (RTS).
+ *
+ * a0 = the bitmap object (!libs #bitmaplib) is not used; d0 stays
+ * unchanged.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE nothing_c(void)
 {
 }
