@@ -336,22 +336,22 @@ BLITZ_THUNK(domenustate3, domenustate3_c, "d0-d1/a0-a1");
 BLITZ_THUNK(domenustate4, domenustate4_c, "d0-d1/a0-a1");
 
 /* checked: BTST #0,12(a2):SNE d0:EXT d0 - upper word of d0 stays */
-static ULONG checked(ULONG d0, const UBYTE *p)
+static ULONG checked(ULONG prev, const UBYTE *p)
 {
-    return (d0 & 0xffff0000UL) | ((B(p, 12) & 1) ? 0xffff : 0);
+    return (prev & 0xffff0000UL) | ((B(p, 12) & 1) ? 0xffff : 0);
 }
 
 /* MenuChecked(l,m,i) - a2 = the list */
-static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG d0 BL_REG(d0), UBYTE *p BL_REG(a2),
+static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG prev BL_REG(d0), UBYTE *p BL_REG(a2),
                                            UWORD m BL_REG(d1), UWORD i BL_REG(d2))
 {
     p = walk(p, m) + M_FIRST;
-    return checked(d0, walk(p, i));
+    return checked(prev, walk(p, i));
 }
 BLITZ_THUNK(domenuchecked, domenuchecked_c, "d1/a0-a1");
 
 /* MenuChecked(l,m,i,s) - BUG(orig) (#217): both inner DBF jump to the menu loop */
-static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG d0 BL_REG(d0), UBYTE *p BL_REG(a2),
+static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG prev BL_REG(d0), UBYTE *p BL_REG(a2),
                                             UWORD m BL_REG(d1), UWORD i BL_REG(d2),
                                             UWORD s BL_REG(d3))
 {
@@ -367,7 +367,7 @@ loop1:
     p = P(p, 0);
     if (s-- != 0)
         goto loop1;
-    return checked(d0, p);
+    return checked(prev, p);
 }
 BLITZ_THUNK(domenuchecked2, domenuchecked2_c, "d1/a0-a1");
 
@@ -461,16 +461,16 @@ static UBYTE *getthing(UBYTE *p, WORD n)
 /* findthing - a0 = list head, d1 = number; d0 = size of an entry,
    d2 = offset of its position (size at d2+4), d3 = its size, d4 = offset
    of its sublist.  Returns the (new) entry. */
-static UBYTE *findthing(UBYTE *a0, WORD n, ULONG memlen, int pos, WORD size, int sub)
+static UBYTE *findthing(UBYTE *link, WORD n, ULONG memlen, int pos, WORD size, int sub)
 {
     WORD at = 0;
     UBYTE *old, *e;
 
     while (--n >= 0) {                          /* loop0 */
-        a0 = P(a0, 0);
-        at += W(a0, pos + 4);
+        link = P(link, 0);
+        at += W(link, pos + 4);
     }
-    old = P(a0, 0);
+    old = P(link, 0);
     if (old) {
         /* it already exists: free it, alloc a new one, adjust the
            following ones */
@@ -485,7 +485,7 @@ static UBYTE *findthing(UBYTE *a0, WORD n, ULONG memlen, int pos, WORD size, int
         globfree(old, memlen);
         e = globalloc(memlen);
         P(e, sub) = sublist;
-        P(a0, 0) = e;
+        P(link, 0) = e;
         P(e, 0) = next;
         for (old = e; P(old, 0); ) {
             old = P(old, 0);
@@ -494,7 +494,7 @@ static UBYTE *findthing(UBYTE *a0, WORD n, ULONG memlen, int pos, WORD size, int
     } else {
         e = globalloc(memlen);                  /* 'ad */
         L(e, 0) = 0;
-        P(a0, 0) = e;
+        P(link, 0) = e;
         L(e, sub) = 0;
     }
     W(e, pos) = at;
@@ -511,13 +511,13 @@ void BLITZ_ROUTINE domenutitle(WORD m BL_REG(d1), const UBYTE *text BL_REG(d2),
 {
     ULONG len = lens[-1];                       /* MOVE.l -(a2),d1 */
     WORD w = ((UWORD)len << 3) + 8;             /* 8 wide font, for now */
-    UBYTE *t = allocst(text, len);
+    UBYTE *title = allocst(text, len);
     UBYTE *e;
 
     shortcut = 0;
     e = findthing(blitz_string, m, MENUSIZE, M_LEFT, w, M_FIRST);
     W(e, M_LEFT) += 2;
-    P(e, M_NAME) = t;
+    P(e, M_NAME) = title;
     W(e, M_WIDTH) = w;
     W(e, M_HEIGHT) = 10;
     W(e, M_FLAGS) = 1;
@@ -552,26 +552,26 @@ struct textsize { WORD width, height; UBYTE *text; };
 static struct textsize textcalc(const ULONG **sp, const UBYTE *s, UWORD item,
                                 struct Library *intbase)
 {
-    struct textsize t;
+    struct textsize extent;
     ULONG len;
 
     sussflags(BL_POPL(*sp), item);
-    t.height = menuyxs + menuyxs + fonthite;
+    extent.height = menuyxs + menuyxs + fonthite;
     len = BL_POPL(*sp);
-    t.text = allocst(s, len);
-    dumintuitext.IText = t.text;
-    t.width = (WORD)IntuiTextLength(&dumintuitext) + menuxxs + menuxxs;
-    return t;
+    extent.text = allocst(s, len);
+    dumintuitext.IText = extent.text;
+    extent.width = (WORD)IntuiTextLength(&dumintuitext) + menuxxs + menuxxs;
+    return extent;
 }
 
 /* menucont - the item with its IntuiText */
-static UBYTE *menucont(UBYTE *head, WORD n, struct textsize t, WORD size)
+static UBYTE *menucont(UBYTE *head, WORD n, struct textsize extent, WORD size)
 {
-    UBYTE *e = finditem(head, n, t.width, t.height, size);
+    UBYTE *e = finditem(head, n, extent.width, extent.height, size);
     UBYTE *it = e + I_TEXT;
 
     L(it, 8) = (ULONG)fontattr;                 /* ITextFont */
-    P(it, 12) = t.text;                         /* IText */
+    P(it, 12) = extent.text;                    /* IText */
     UW(it, 0) = *(UWORD *)menupens;             /* FrontPen, BackPen */
     B(it, 2) = menumode;                        /* DrawMode */
     W(it, 4) = menuxxs;
@@ -584,11 +584,11 @@ static UBYTE *menucont(UBYTE *head, WORD n, struct textsize t, WORD size)
 static void menuitem(WORD m, WORD i, const UBYTE *text, struct TextAttr **font,
                      const ULONG *lens, struct Library *intbase)
 {
-    struct textsize t;
+    struct textsize extent;
 
     fontcalc(font);
-    t = textcalc(&lens, text, i, intbase);
-    menucont(getthing(blitz_string, m) + M_FIRST, i, t, t.height);
+    extent = textcalc(&lens, text, i, intbase);
+    menucont(getthing(blitz_string, m) + M_FIRST, i, extent, extent.height);
 }
 
 void BLITZ_ROUTINE domenuitem(WORD m BL_REG(d1), WORD i BL_REG(d2),
@@ -623,14 +623,14 @@ static void subcont(UBYTE *e)
 static void subitem(WORD m, WORD i, WORD s, const UBYTE *text, struct TextAttr **font,
                     const ULONG *lens, struct Library *intbase)
 {
-    struct textsize t;
+    struct textsize extent;
     UBYTE *p;
 
     fontcalc(font);
-    t = textcalc(&lens, text, s, intbase);
+    extent = textcalc(&lens, text, s, intbase);
     p = getthing(blitz_string, m) + M_FIRST;
     p = getthing(p, i) + I_SUB;
-    subcont(menucont(p, s, t, s));
+    subcont(menucont(p, s, extent, s));
 }
 
 void BLITZ_ROUTINE dosubitem(WORD m BL_REG(d1), WORD i BL_REG(d2), WORD s BL_REG(d3),
@@ -658,22 +658,22 @@ void BLITZ_ROUTINE dosubitem2(WORD m BL_REG(d1), WORD i BL_REG(d2), WORD s BL_RE
    of mexclude); size = shape size + 2 * gap */
 static struct textsize shapecalc(UWORD flagshi, UWORD item, const UWORD *shape)
 {
-    struct textsize t;
+    struct textsize extent;
 
     mt.temp = flagshi;
     mexclude = 0;                               /* CLR.l mexclude in sussflags */
     sussflags(*(ULONG *)((UBYTE *)&mt.temp - 2), item);
     shortcut = 0;
-    t.width = menuxxs + menuxxs + shape[0];
-    t.height = menuyxs + menuyxs + shape[1];
-    t.text = NULL;
-    return t;
+    extent.width = menuxxs + menuxxs + shape[0];
+    extent.height = menuyxs + menuyxs + shape[1];
+    extent.text = NULL;
+    return extent;
 }
 
 /* shapecont - the item with an Image of the shape */
-static UBYTE *shapecont(UBYTE *head, WORD n, struct textsize t, const UBYTE *shape)
+static UBYTE *shapecont(UBYTE *head, WORD n, struct textsize extent, const UBYTE *shape)
 {
-    UBYTE *e = finditem(head, n, t.width, t.height, t.height);
+    UBYTE *e = finditem(head, n, extent.width, extent.height, extent.height);
     UBYTE *im = e + I_TEXT;
 
     W(im, 0) = menuxxs;
@@ -684,8 +684,8 @@ static UBYTE *shapecont(UBYTE *head, WORD n, struct textsize t, const UBYTE *sha
     L(im, 10) = L(shape, 14);                   /* data */
     W(im, 14) = -1;                             /* PlanePick, PlaneOnOff */
     P(e, I_FILL) = im;
-    W(e, M_WIDTH) = t.width;
-    W(e, M_HEIGHT) = t.height;
+    W(e, M_WIDTH) = extent.width;
+    W(e, M_HEIGHT) = extent.height;
     UW(e, M_FLAGS) = menflags & ~2;             /* MOVE, not OR */
     return e;
 }
@@ -694,21 +694,21 @@ static UBYTE *shapecont(UBYTE *head, WORD n, struct textsize t, const UBYTE *sha
 static void BLITZ_ROUTINE doshapeitem_c(WORD m BL_REG(d1), WORD i BL_REG(d2),
                                         const UBYTE *shape BL_REG(a2), UWORD flagshi BL_REG(d7))
 {
-    struct textsize t = shapecalc(flagshi, i, (const UWORD *)shape);
+    struct textsize extent = shapecalc(flagshi, i, (const UWORD *)shape);
 
-    shapecont(getthing(blitz_string, m) + M_FIRST, i, t, shape);
+    shapecont(getthing(blitz_string, m) + M_FIRST, i, extent, shape);
 }
 
 /* ShapeSub l,flags,m,i,s,shape# */
 static void BLITZ_ROUTINE doshapesub_c(WORD m BL_REG(d1), WORD i BL_REG(d2), WORD s BL_REG(d3),
                                        const UBYTE *shape BL_REG(a2), UWORD flagshi BL_REG(d7))
 {
-    struct textsize t = shapecalc(flagshi, s, (const UWORD *)shape);
+    struct textsize extent = shapecalc(flagshi, s, (const UWORD *)shape);
     UBYTE *p;
 
     p = getthing(blitz_string, m) + M_FIRST;
     p = getthing(p, i) + I_SUB;
-    subcont(shapecont(p, s, t, shape));
+    subcont(shapecont(p, s, extent, shape));
 }
 /* MOVE 4(a7),d7: the high word of the flags long above the return address */
 BLITZ_THUNK_PRE(doshapeitem, doshapeitem_c, "d0", "move.w 8(sp),d7");
@@ -760,27 +760,27 @@ BLITZ_ERRCHK_MESSAGE(mess7, "Uninitialized IntuiFont");
 
 /* existschk - entries 0..n of the list at *a0 exist (DBF); the list
    pointer moves to entry n.  Returns 0 if one is missing. */
-static int BLITZ_ERRCHK existschk(UBYTE **a0, UWORD n)
+static int BLITZ_ERRCHK existschk(UBYTE **entry, UWORD n)
 {
-    UBYTE *p = *a0;
+    UBYTE *p = *entry;
 
     do {
         if (!P(p, 0)) {
-            *a0 = p;
+            *entry = p;
             return 0;
         }
         p = P(p, 0);
     } while (n-- != 0);
-    *a0 = p;
+    *entry = p;
     return 1;
 }
 
 /* nextchk - n may be one more than the last entry */
-static int BLITZ_ERRCHK nextchk(UBYTE **a0, UWORD n)
+static int BLITZ_ERRCHK nextchk(UBYTE **entry, UWORD n)
 {
     if ((WORD)--n < 0)
         return 1;
-    return existschk(a0, n);
+    return existschk(entry, n);
 }
 
 static void BLITZ_ERRCHK setmenuchk_c(const ULONG *win BL_REG(a2))
@@ -793,40 +793,40 @@ static void BLITZ_ERRCHK setmenuchk_c(const ULONG *win BL_REG(a2))
 
 static void BLITZ_ERRCHK menutitlechk_c(UWORD m BL_REG(d1))
 {
-    UBYTE *a0 = blitz_string;
+    UBYTE *entry = blitz_string;
 
-    if (!nextchk(&a0, m))
+    if (!nextchk(&entry, m))
         BLITZ_RUNERR(mess1);
 }
 
 static void BLITZ_ERRCHK itemchk(UBYTE *list, UWORD m, UWORD i)
 {
-    UBYTE *a0 = list;
+    UBYTE *entry = list;
 
-    if (!existschk(&a0, m)) {
+    if (!existschk(&entry, m)) {
         BLITZ_RUNERR(mess1);
         return;
     }
-    a0 += M_FIRST;
-    if (!nextchk(&a0, i))
+    entry += M_FIRST;
+    if (!nextchk(&entry, i))
         BLITZ_RUNERR(mess2);
 }
 
 static void BLITZ_ERRCHK subchk(UBYTE *list, UWORD m, UWORD i, UWORD s)
 {
-    UBYTE *a0 = list;
+    UBYTE *entry = list;
 
-    if (!existschk(&a0, m)) {
+    if (!existschk(&entry, m)) {
         BLITZ_RUNERR(mess1);
         return;
     }
-    a0 += M_FIRST;
-    if (!existschk(&a0, i)) {
+    entry += M_FIRST;
+    if (!existschk(&entry, i)) {
         BLITZ_RUNERR(mess2);
         return;
     }
-    a0 += I_SUB;
-    if (!nextchk(&a0, s))
+    entry += I_SUB;
+    if (!nextchk(&entry, s))
         BLITZ_RUNERR(mess3);
 }
 
@@ -870,23 +870,23 @@ static void BLITZ_ERRCHK shapesubchk_c(UWORD m BL_REG(d1), UWORD i BL_REG(d2),
    for MenuChecked (chkchk3/4: EXG a2,a3) */
 static int BLITZ_ERRCHK statechk(UBYTE *list, int depth, UWORD m, UWORD i, UWORD s)
 {
-    UBYTE *a0 = list;
+    UBYTE *entry = list;
 
-    if (!existschk(&a0, m)) {
+    if (!existschk(&entry, m)) {
         BLITZ_RUNERR(mess1);
         return 0;
     }
     if (depth < 3)
         return 1;
-    a0 += M_FIRST;
-    if (!existschk(&a0, i)) {
+    entry += M_FIRST;
+    if (!existschk(&entry, i)) {
         BLITZ_RUNERR(mess2);
         return 0;
     }
     if (depth < 4)
         return 1;
-    a0 += I_SUB;
-    if (!existschk(&a0, s)) {
+    entry += I_SUB;
+    if (!existschk(&entry, s)) {
         BLITZ_RUNERR(mess3);
         return 0;
     }
