@@ -102,14 +102,30 @@ static WORD matoff;
 /* rawkeylib qconvertkey: d0 = raw code, d1 = qualifier -> d0 = character */
 #define TOK_qconvertkey ((LIB_rawkeylib << 7) + 3)
 
-/* BlitzQualifier: MOVE bqual(pc),d0 (word, upper word kept: thunk) */
+/**
+ * @brief BlitzQualifier: the qualifier of the last key BlitzKey read.
+ *
+ * MOVE bqual(pc),d0: a word function, the upper word of d0 is the
+ * caller's (thunk; the compiler uses only d0.w).
+ *
+ * @return d0.w: the qualifier word of the key event
+ */
 static UWORD BLITZ_ROUTINE doblitzqualifier_c(void)
 {
     return bqual;
 }
 BLITZ_THUNK_POST(doblitzqualifier, doblitzqualifier_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
-/* init - a0 = keyboard.device */
+/**
+ * @brief The init routine: remember keyboard.device and its key matrix.
+ *
+ * Clears the BlitzKeys flag and the qualifier; matoff = $136 (exec V36+)
+ * or $106 (CMP #36,20(a0):BCC): the offset of the key matrix in
+ * keyboard.device.
+ *
+ * @param kd  a0: switchlib's init value, the keyboard.device base
+ *            (!libs{#switchlib,#la0}; switchlib walks the device list)
+ */
 void BLITZ_ROUTINE codeinit(UBYTE *kd BL_REG(a0))
 {
     key = kd;
@@ -120,12 +136,25 @@ void BLITZ_ROUTINE codeinit(UBYTE *kd BL_REG(a0))
         matoff = 0x106;
 }
 
-/* BlitzRepeat: RTS */
+/**
+ * @brief BlitzRepeat Delay,Speed: does nothing (RTS).
+ */
 void BLITZ_ROUTINE doblitzrepeat(void)
 {
 }
 
-/* BlitzKeys On|Off */
+/**
+ * @brief BlitzKeys On|Off: BlitzKey as the input handler (Blitz mode only).
+ *
+ * On installs binkey as input handler (inputoutputlib +3, TOK_setin) and
+ * keeps the old one in oldin; the handler's -4 entry (read a line) jumps
+ * to the -4 entry of the old handler.  ison is toggled with NOT (On:
+ * $FFFF, only tested for 0; not a bug).  Errors: Blitz mode only (err1 =
+ * 1).
+ * BUG(orig) (#408): Off only clears the flag; the input handler stays.
+ *
+ * @param on  d0.w: 0 = Off, otherwise On
+ */
 void BLITZ_ROUTINE dobkeys(WORD on BL_REG(d0))
 {
     if (on) {
@@ -139,9 +168,24 @@ void BLITZ_ROUTINE dobkeys(WORD on BL_REG(d0))
         ison = ~ison;                   /* BUG(orig) (#408): handler stays */
 }
 
-/* BlitzKey / input handler: code = d0, d1 = the buffer position, then the
-   qualifier; both are the caller's registers (their upper words survive
-   the word loads of the original) */
+/**
+ * @brief BlitzKey: the next key from keyboard.device's buffer, -1 if none.
+ *
+ * Also the input handler's single character entry.  Takes the next key
+ * down event from keyboard.device's buffer (+$70 read index, +$72 write
+ * index, entries {code.w, qualifier.w} at +$74, index + 4 & 127) and
+ * writes the read index for every entry it passes, also key up codes
+ * (bit 7, skipped; needed to get past them); $7D gives -1.  The character
+ * comes from rawkeylib qconvertkey (+3) with the qualifier, which is also
+ * kept for BlitzQualifier.  Keeps d1/a0-a1 (MOVEM in the original, here
+ * the thunk; GCC keeps d2-d7/a2-a6 around the ALibJsr).
+ *
+ * @param code  d0: the caller's register; its low word gets the raw code
+ *              (the upper word survives the word loads of the original)
+ * @param callerd1  d1: the caller's register; first the buffer position,
+ *                  then its low word gets the qualifier
+ * @return d0: the character, -1 = no key
+ */
 static ULONG BLITZ_ROUTINE binkey_c(ULONG code BL_REG(d0), ULONG callerd1 BL_REG(d1))
 {
     UBYTE *keydata = key;
@@ -185,7 +229,16 @@ __asm__("   .text\n   .even\n"
         "   move.l  _oldin,a6\n"
         "   jmp     -4(a6)\n");
 
-/* RawStatus(code): BTST d1,0(a0,d0.w):SNE d0:EXT d0 */
+/**
+ * @brief RawStatus(Rawkey): whether a key is down.
+ *
+ * Bit code&7 of byte code>>3 of keyboard.device's key matrix
+ * (BTST d1,0(a0,d0.w):SNE d0:EXT d0).  A word function: the upper word of
+ * d0 is the caller's (thunk; the compiler uses only d0.w).
+ *
+ * @param code  d0.w: the raw key code
+ * @return d0.w: -1 = down, 0 = up
+ */
 static UWORD BLITZ_ROUTINE dorstat_c(UWORD code BL_REG(d0))
 {
     UBYTE *matrix = key + matoff;       /* ADD matoff(pc),a0 (ADDA.w) */

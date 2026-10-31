@@ -108,7 +108,29 @@ static ULONG movestring(const UBYTE *s)
     return n - 1;
 }
 
-/* GetParPath - d0 = argument, d1 = type (word) */
+/**
+ * @brief ParPath$(Par#,#type): the path of a Workbench argument (V36+).
+ *
+ * NameFromLock(lock, pathBuffer, 255) of the argument's lock, copied to
+ * a3; type 0 = the drawer only, otherwise drawer + "/" + name (no "/"
+ * after a ":"; the type is tested as a word).  An empty path would
+ * compare the byte in front of the string (unreachable: NameFromLock
+ * succeeds only with a non-empty path).
+ * DIFF: the original branches on the CCR that dos.library leaves after
+ * NameFromLock (BEQ right after the JSR); here d0 = 0 is tested (the
+ * documented failure value).  Either way nothing is written and d0 = 0.
+ * Errors (debugger only, CheckParPath): "Can only call ParPath$() when
+ * run from WB.", then those of Par$.
+ * BUG(orig) (#106): no range check of the argument number (FindArg).
+ * BUG(orig) (#107): without the error checks also called for CLI
+ * arguments (lock 0).
+ *
+ * @param wb  a0: wbstartuplib's argument data (!libs{#wbstartuplib,#la0})
+ * @param n  d0: the argument number (from 1)
+ * @param type  d1.w: 0 = drawer only, otherwise drawer and name
+ * @param dosbase  a6: dos.library
+ * @return d0: the length of the string at a3, 0 if NameFromLock fails
+ */
 ULONG BLITZ_ROUTINE GetParPath(const struct argdata *wb BL_REG(a0), ULONG n BL_REG(d0),
                                UWORD type BL_REG(d1), struct Library *dosbase BL_REG(a6))
 {
@@ -128,21 +150,49 @@ ULONG BLITZ_ROUTINE GetParPath(const struct argdata *wb BL_REG(a0), ULONG n BL_R
     return len + movestring(a->text);
 }
 
-/* FromCLI - MOVE.w (a0),d0: upper word of d0 stays */
+/**
+ * @brief FromCLI: whether the program was started from the CLI.
+ *
+ * MOVE.w (a0),d0: a word function; the upper word of d0 stays (thunk
+ * with "move.w d0,2(sp)"; not a bug, the compiler uses only d0.w).
+ *
+ * @param wb  a0: wbstartuplib's argument data (!libs{#wbstartuplib,#la0})
+ * @return d0.w: -1 = CLI (or Blitz), 0 = Workbench
+ */
 static UWORD BLITZ_ROUTINE fromcli_c(const struct argdata *wb BL_REG(a0))
 {
     return wb->fromcli;
 }
 BLITZ_THUNK_POST(FromCLI, fromcli_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
-/* GetNumPars - MOVE.l numArgs(a0),d0 */
+/**
+ * @brief NumPars: the number of arguments passed to the program.
+ *
+ * MOVE.l numArgs(a0),d0.
+ *
+ * @param wb  a0: wbstartuplib's argument data (!libs{#wbstartuplib,#la0})
+ * @return d0: the number of arguments
+ */
 static ULONG BLITZ_ROUTINE getnumpars_c(const struct argdata *wb BL_REG(a0))
 {
     return wb->numargs;
 }
 BLITZ_THUNK(GetNumPars, getnumpars_c, "d1/a0-a1");
 
-/* GetParString - d0 = argument; the original changes a0/a1, keeps d1 */
+/**
+ * @brief Par$(Parameter#): the text of an argument.
+ *
+ * Copies the argument's text to a3.  The original changes a0/a1, keeps
+ * d1.  Errors (debugger only, CheckParNum): "No parameters passed.",
+ * "Non-Existent Parameter." (not 1 <= Parameter# <= NumPars, signed).
+ * BUG(orig) (#106): FindArg walks the list without a check: argument
+ * numbers <= 0 or > NumPars run over the end of the list (argument 0:
+ * 2^32 steps).
+ *
+ * @param wb  a0: wbstartuplib's argument data (!libs{#wbstartuplib,#la0})
+ * @param n  d0: the argument number (from 1)
+ * @return d0: the length of the string at a3
+ */
 static ULONG BLITZ_ROUTINE getparstring_c(const struct argdata *wb BL_REG(a0),
                                           ULONG n BL_REG(d0))
 {
