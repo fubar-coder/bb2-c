@@ -197,19 +197,18 @@ static void globfree(ULONG mem, ULONG size)
 static void freeanim_c(UBYTE *anim)
 {
     UBYTE *link;
-    ULONG nodeval;                      /* d0: next pointer, then length */
+    UBYTE *next;                        /* d0: the next pointer */
 
     if (!W(anim, 0))
         return;
     W(anim, 0) = 0;
     globfree(L(anim, 10), L(anim, 14));
     link = anim + 18;
-    while ((nodeval = L(link, 0)) != 0) {
-        UBYTE *next = (UBYTE *)nodeval;
+    while ((next = (UBYTE *)L(link, 0)) != 0) {
+        ULONG len = L(link, 4);         /* d0: the node length */
 
-        nodeval = L(link, 4);
         link = next;
-        globfree((ULONG)next, nodeval); /* BUG(orig) (#399): (a2) read after */
+        globfree((ULONG)next, len);     /* BUG(orig) (#399): (a2) read after */
     }
 }
 
@@ -232,7 +231,12 @@ void BLITZ_ROUTINE doanimload(UBYTE *anim BL_REG(a0), ULONG name BL_REG(d1))
 {
     struct bl_regs r;
     UBYTE *info, *node;
-    ULONG val, len;                     /* d0, d2 */
+    ULONG bodylen;                      /* d0 */
+    ULONG bodymem;                      /* d0 */
+    ULONG dltalen;                      /* d0 */
+    ULONG nodelen;                      /* d0: the DLTA length + 8 */
+    UBYTE *next;                        /* d0: the new node */
+    ULONG len;                          /* d2 */
     int found;
 
     blitz_string = anim;                /* MOVE.l a0,a3:BSR freeanim */
@@ -248,12 +252,12 @@ void BLITZ_ROUTINE doanimload(UBYTE *anim BL_REG(a0), ULONG name BL_REG(d1))
     W(anim, 4) = W(info, 4);
     W(anim, 6) = (UWORD)(W(info, 6) << 1);
     W(anim, 8) = 1;
-    val = ifffind(0x424f4459, &found);  /* "BODY" */
-    L(anim, 14) = val;
-    len = val;
-    val = globalloc(val, 1);
-    L(anim, 10) = val;
-    iffread(val, len);
+    bodylen = ifffind(0x424f4459, &found); /* "BODY" */
+    L(anim, 14) = bodylen;
+    len = bodylen;
+    bodymem = globalloc(bodylen, 1);
+    L(anim, 10) = bodymem;
+    iffread(bodymem, len);
     L(anim, 26) = 0;
     W(anim, 30) = 0;
     node = anim + 18;
@@ -267,16 +271,16 @@ void BLITZ_ROUTINE doanimload(UBYTE *anim BL_REG(a0), ULONG name BL_REG(d1))
         W(anim, 30) = (UWORD)(ifflong() & 2);
         W(anim, 8) = 0xffff;
         for (;;) {
-            val = ifffind(0x444c5441, &found); /* "DLTA" */
+            dltalen = ifffind(0x444c5441, &found); /* "DLTA" */
             if (!found)
                 break;
-            len = val;
+            len = dltalen;
             W(anim, 8)++;
-            val += 8;
-            L(node, 4) = val;
-            val = globalloc(val, 1);
-            L(node, 0) = val;
-            node = (UBYTE *)val;
+            nodelen = dltalen + 8;
+            L(node, 4) = nodelen;
+            next = (UBYTE *)globalloc(nodelen, 1);
+            L(node, 0) = (ULONG)next;
+            node = next;
             blitz_string = node;        /* a3 stays on the last node */
             L(node, 0) = 0;
             iffread(node + 8, len);
@@ -393,17 +397,18 @@ static void BLITZ_ROUTINE donextframe_c(UBYTE *anim BL_REG(a0),
     ULONG *offs = (ULONG *)(node + 8);
     WORD bpr = W(bm, 0);
     UWORD cols = W(anim, 6) - 1;
-    ULONG val;                          /* d0: delta offset, then next node */
+    ULONG delta;                        /* d0: the delta offset */
+    ULONG next;                         /* d0: the next node */
 
     do {                                            /* 'loop: planes */
         UBYTE *column = (UBYTE *)*planep++;
         UBYTE *ops;
         UWORD colsleft;
 
-        val = *offs++;
-        if (!val)
+        delta = *offs++;
+        if (!delta)
             continue;                               /* 'more */
-        ops = node + 8 + val;
+        ops = node + 8 + delta;
         colsleft = cols;
         do {                                        /* 'loop2: columns */
             UWORD nops = *ops++;                    /* number of ops */
@@ -447,12 +452,12 @@ static void BLITZ_ROUTINE donextframe_c(UBYTE *anim BL_REG(a0),
             column += 1;                            /* 'more2 */
         } while ((WORD)--colsleft != -1);
     } while ((WORD)--planes != -1);
-    val = L(node, 0);
-    if (!val) {
+    next = L(node, 0);
+    if (!next) {
         node = (UBYTE *)L(anim, 18);
-        val = L(node, 0);
+        next = L(node, 0);
     }
-    L(anim, 26) = val;
+    L(anim, 26) = next;
     blitz_string = node;                /* a3 stays on the (first) node */
 }
 BLITZ_THUNK(donextframe, donextframe_c, "d0-d1/a0-a1");
