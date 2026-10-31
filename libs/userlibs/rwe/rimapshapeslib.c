@@ -180,12 +180,23 @@ static_assert(sizeof(struct shape) == 32);
 
 /* ---------------------------------------------------------------- init */
 
+/**
+ * @brief init: the group block (512 bytes, AllocVec MEMF_PUBLIC|MEMF_CLEAR).
+ *
+ * BUG(orig) (#905): the AllocVec is not checked (ResetGroup then writes
+ * at 0).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     groupaddr = AllocVec(512, MEMF_PUBLIC | MEMF_CLEAR);
 }
 BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
 
+/**
+ * @brief finit: frees the map shapes and the group block.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (baseshape) {
@@ -198,7 +209,18 @@ BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
 
 /* ---------------------------------------------------------- map shapes */
 
-/* ShapeToMapShape shape#,mapshape#: a0 = the shape, d1 = the map shape */
+/**
+ * @brief ShapeToMapShape shape#,mapshape#: a map shape from a Blitz shape.
+ *
+ * Width, height, depth and ebwidth of the shape; the plane pointers point
+ * into the shape's data (onebpmem apart, not copied).  BUG(orig): no
+ * check of the map shape number (#906); depth 0 writes 65536 plane
+ * pointers (DBRA), depths above 8 run into unused[] and the next map
+ * shapes (#903).
+ * @param n   d1: the map shape number
+ * @param sh  a0: the shape (!libs #shapeslib,#ia0|#pd0)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE shapetomapshape_c(UWORD n BL_REG(d1), const struct shape *sh BL_REG(a0))
 {
     struct mapshape *ms = MAPSHAPE(n);
@@ -235,8 +257,25 @@ static void blit(struct Library *gfx, struct mapshape *ms, struct RastPort *rp, 
                       (LONG)height, minterm);
 }
 
-/* BlitMapShape window#,mapshape#,x,y: a1 = the window object, a6 =
-   graphics.library */
+/**
+ * @brief BlitMapShape window#,mapshape#,x,y: a map shape blitted into the
+ * window's RastPort.
+ *
+ * BltBitMapRastPort from 0,0, minterm $C0, the map shape's width and
+ * height; nothing for an empty map shape (width 0).  x and y go to the
+ * call as the caller's longs; width, height and minterm replace the low
+ * words of the caller's d4/d5/d6.  BUG(orig) (#906): the map shape
+ * number is not checked.
+ * @param n        d1: the map shape number
+ * @param x        d2: x
+ * @param y        d3: y
+ * @param width    d4: the caller's d4 (upper word)
+ * @param height   d5: the caller's d5 (upper word)
+ * @param minterm  d6: the caller's d6 (upper word)
+ * @param win      a1: the window object
+ * @param gfx      a6: graphics.library
+ * @return nothing
+ */
 static void BLITZ_ROUTINE blitmapshape_c(UWORD n BL_REG(d1), ULONG x BL_REG(d2),
                                          ULONG y BL_REG(d3), ULONG width BL_REG(d4),
                                          ULONG height BL_REG(d5), ULONG minterm BL_REG(d6),
@@ -247,8 +286,23 @@ static void BLITZ_ROUTINE blitmapshape_c(UWORD n BL_REG(d1), ULONG x BL_REG(d2),
 }
 BLITZ_THUNK(_blitmapshape, blitmapshape_c, "d0-d1/a0-a1");
 
-/* BlitMapShapeSize window#,mapshape#,x,y,width,height: the height at most
-   the map shape's (signed) */
+/**
+ * @brief BlitMapShapeSize window#,mapshape#,x,y,width,height: a part of a
+ * map shape blitted into the window's RastPort.
+ *
+ * As BlitMapShape with the given width and height, the height at most
+ * the map shape's (signed words; the width is not limited); nothing for
+ * an empty map shape.  BUG(orig) (#906): the number is not checked.
+ * @param n        d1: the map shape number
+ * @param x        d2: x
+ * @param y        d3: y
+ * @param w        d4: the width (the caller's long)
+ * @param h        d5: the height (the caller's long, low word limited)
+ * @param minterm  d6: the caller's d6 (upper word; the low word $C0)
+ * @param win      a1: the window object
+ * @param gfx      a6: graphics.library
+ * @return nothing
+ */
 static void BLITZ_ROUTINE blitmapshapesize_c(UWORD n BL_REG(d1), ULONG x BL_REG(d2),
                                              ULONG y BL_REG(d3), ULONG w BL_REG(d4),
                                              ULONG h BL_REG(d5), ULONG minterm BL_REG(d6),
@@ -267,14 +321,26 @@ static void BLITZ_ROUTINE blitmapshapesize_c(UWORD n BL_REG(d1), ULONG x BL_REG(
 }
 BLITZ_THUNK(_blitmapshapesize, blitmapshapesize_c, "d0-d1/a0-a1");
 
-/* RemapMapShape mapshape#,botcol,topcol: nothing (the original computes
-   the map shape's address and returns) */
+/**
+ * @brief RemapMapShape mapshape#,botcol,topcol: does nothing.
+ *
+ * The original computes the map shape's address and returns (the ReMap
+ * call is commented out in the source: a command left unfinished, not a
+ * defect).  No result.
+ */
 void _remapmapshape(void)
 {
 }
 
-/* SetNumMapShapes num: the old block freed, num * 64 bytes allocated
-   (AllocVec MEMF_PUBLIC|MEMF_CLEAR, unchecked) */
+/**
+ * @brief SetNumMapShapes num: (re)allocates num map shapes.
+ *
+ * The old block is freed, num * 64 bytes allocated (AllocVec
+ * MEMF_PUBLIC|MEMF_CLEAR, unchecked: after a failure, or with num 0, the
+ * map shapes are at 0, BUG(orig) #906).
+ * @param num  d0: the number of map shapes (a word)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE setnummapshapes_c(UWORD num BL_REG(d0))
 {
     if (baseshape) {
@@ -285,16 +351,28 @@ static void BLITZ_ROUTINE setnummapshapes_c(UWORD num BL_REG(d0))
 }
 BLITZ_THUNK(_setnummapshapes, setnummapshapes_c, "d0-d1/a0-a1");
 
-/* MapShapeAddr(mapshape#) */
+/**
+ * @brief MapShapeAddr(mapshape#): the address of a map shape.
+ * @param n  d0: the map shape number (not checked)
+ * @return d0: the map shape's address
+ */
 static struct mapshape *BLITZ_ROUTINE mapshapeaddr_c(UWORD n BL_REG(d0))
 {
     return MAPSHAPE(n);
 }
 BLITZ_THUNK(_mapshapeaddr, mapshapeaddr_c, "d1/a0-a1");
 
-/* FreeMapShapes first,last: nothing if last < first (signed words), else
-   the widths of the map shapes from first to last cleared (the addresses
-   compared signed) */
+/**
+ * @brief FreeMapShapes first,last: the map shapes first to last made
+ * empty.
+ *
+ * Nothing if last < first (signed words), else the widths of the map
+ * shapes from first to last cleared (the addresses compared signed); the
+ * memory stays allocated.
+ * @param first  d0: the first map shape number
+ * @param last   d1: the last map shape number
+ * @return nothing
+ */
 static void BLITZ_ROUTINE freemapshapes_c(UWORD first BL_REG(d0), UWORD last BL_REG(d1))
 {
     struct mapshape *p, *e;
@@ -312,7 +390,15 @@ BLITZ_THUNK(_freemapshapes, freemapshapes_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------------- groups */
 
-/* ResetGroup blockwidth,blockheight -> the group's address */
+/**
+ * @brief ResetGroup(blockwidth,blockheight): empties the group and sets
+ * the block size for AddGroupMember.
+ *
+ * BUG(orig) (#905): without init's block (not checked) it writes at 0.
+ * @param bw  d0: the block width
+ * @param bh  d1: the block height
+ * @return d0: the group's address
+ */
 static struct member *BLITZ_ROUTINE resetgroup_c(UWORD bw BL_REG(d0), UWORD bh BL_REG(d1))
 {
     blockwidth = bw;
@@ -323,9 +409,18 @@ static struct member *BLITZ_ROUTINE resetgroup_c(UWORD bw BL_REG(d0), UWORD bh B
 }
 BLITZ_THUNK(_resetgroup, resetgroup_c, "d1/a0-a1");
 
-/* AddGroupMember mapshape#,dx,dy: {map shape, dx*blockwidth,
-   dy*blockheight (MULU.w, the low words)}, then the end mark.
-   BUG(orig): no limit (#904), and before ResetGroup at address 0 (#901) */
+/**
+ * @brief AddGroupMember mapshape#,dx,dy: a map shape added to the group.
+ *
+ * The member {map shape, dx*blockwidth, dy*blockheight (MULU.w, the low
+ * words)}, then the end mark.  BUG(orig): no limit, the 64th member's
+ * end mark is written behind the 512-byte block (#904); before
+ * ResetGroup it writes at address 0 (#901).
+ * @param n   d0: the map shape number
+ * @param dx  d1: the column in blocks
+ * @param dy  d2: the row in blocks
+ * @return nothing
+ */
 static void BLITZ_ROUTINE addgroupmember_c(UWORD n BL_REG(d0), UWORD dx BL_REG(d1),
                                            UWORD dy BL_REG(d2))
 {
@@ -340,11 +435,25 @@ static void BLITZ_ROUTINE addgroupmember_c(UWORD n BL_REG(d0), UWORD dx BL_REG(d
 }
 BLITZ_THUNK(_addgroupmember, addgroupmember_c, "d0-d1/a0-a1");
 
-/* BlitGroup window#,x,y: every member at x+dx, y+dy (words; the upper
-   words of the caller's d2/d3).  BUG(orig) (#902): a6 is the caller's, not
-   graphics.library's.  The original's d5 is the member's address when
-   _blitmapshape2 loads the height into its low word.  d2 comes in with y
-   in its low word and becomes xbase. */
+/**
+ * @brief BlitGroup window#,x,y: every member of the group blitted at
+ * x+dx, y+dy.
+ *
+ * As BlitMapShape for each member (empty ones skipped); x+dx and y+dy
+ * are words, with the upper words of the caller's d2/d3.  The original's
+ * d5 is the member's address when _blitmapshape2 loads the height into
+ * its low word.  d2 comes in with y in its low word and becomes xbase.
+ * BUG(orig) (#902): a6 is the caller's, not graphics.library's (no
+ * #graphicslib in the !libs).
+ * @param x        d1: x (a word)
+ * @param yin      d2: y in the low word, the caller's upper word
+ * @param ybase    d3: the caller's d3 (upper word)
+ * @param width    d4: the caller's d4 (upper word)
+ * @param minterm  d6: the caller's d6 (upper word)
+ * @param win      a1: the window object
+ * @param gfx      a6: the caller's a6
+ * @return nothing
+ */
 static void BLITZ_ROUTINE blitgroup_c(UWORD x BL_REG(d1), ULONG yin BL_REG(d2),
                                       ULONG ybase BL_REG(d3), ULONG width BL_REG(d4),
                                       ULONG minterm BL_REG(d6), struct Window **win BL_REG(a1),
