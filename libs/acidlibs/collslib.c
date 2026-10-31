@@ -117,11 +117,11 @@ BLITZ_LIBFIN();
 
 static UWORD colval;                            /* latched CLXDAT */
 
-/* CLXCON = v, then d0.w = CLXDAT (the upper word of d0 stays) */
-static ULONG setclx(ULONG d0, UWORD v)
+/* CLXCON = v, then result.w = CLXDAT (result = d0, its upper word stays) */
+static ULONG setclx(ULONG result, UWORD v)
 {
     CLXCON = v;
-    return (d0 & 0xffff0000UL) | CLXDAT;
+    return (result & 0xffff0000UL) | CLXDAT;
 }
 
 static void BLITZ_ROUTINE dodocoll_c(void)
@@ -223,21 +223,21 @@ BLITZ_THUNK(dorectshit, dorectshit_c, "d1/a0-a1");
 
 /* ------------------------------------------------------- SetColl ... */
 
-static ULONG BLITZ_ROUTINE dosetcolodd_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE dosetcolodd_c(ULONG result BL_REG(d0))
 {
-    return setclx(d0, 64 + 1 + 0xf000);
+    return setclx(result, 64 + 1 + 0xf000);
 }
 BLITZ_THUNK(dosetcolodd, dosetcolodd_c, "d1/a0-a1");
 
 /* d0 = colour, d1 = bitplanes */
-static ULONG setcol(ULONG d0, UWORD planes)
+static ULONG setcol(ULONG colour, UWORD planes)
 {
-    UWORD d2 = 0, n = planes - 1;
+    UWORD enable = 0, n = planes - 1;
 
     do
-        d2 = (UWORD)(d2 << 1) | 0x40;
+        enable = (UWORD)(enable << 1) | 0x40;
     while (n-- != 0);
-    return setclx(d0, d2 | (UWORD)d0 | 0xf000);
+    return setclx(colour, enable | (UWORD)colour | 0xf000);
 }
 
 static ULONG BLITZ_ROUTINE dosetcol_c(ULONG col BL_REG(d0), ULONG planes BL_REG(d1))
@@ -247,39 +247,39 @@ static ULONG BLITZ_ROUTINE dosetcol_c(ULONG col BL_REG(d0), ULONG planes BL_REG(
 BLITZ_THUNK(dosetcol, dosetcol_c, "d1/a0-a1");
 
 /* spreadit: insert 0's between the bits (6 bits) */
-static UWORD spreadit(UWORD c)
+static UWORD spreadit(UWORD bits)
 {
-    UWORD r = 0, b = 0;
+    UWORD spread = 0, pos = 0;
     int i;
 
     for (i = 0; i < 6; i++) {
-        if (c & 1)
-            r |= (UWORD)(1 << (b & 15));
-        c >>= 1;
-        b += 2;
+        if (bits & 1)
+            spread |= (UWORD)(1 << (pos & 15));
+        bits >>= 1;
+        pos += 2;
     }
-    return r;
+    return spread;
 }
 
 /* d2 = playfield (1 = front, otherwise back: one bit up) */
 static ULONG BLITZ_ROUTINE dosetcol2_c(ULONG col BL_REG(d0), ULONG planes BL_REG(d1),
                                        ULONG pf BL_REG(d2))
 {
-    UWORD c = spreadit((UWORD)col);
+    UWORD spread = spreadit((UWORD)col);
 
     if ((UWORD)pf != 1)
-        c <<= 1;
-    return setcol((col & 0xffff0000UL) | c, (UWORD)planes);
+        spread <<= 1;
+    return setcol((col & 0xffff0000UL) | spread, (UWORD)planes);
 }
 BLITZ_THUNK(dosetcol2, dosetcol2_c, "d1/a0-a1");
 
 static ULONG BLITZ_ROUTINE dosetcolhi_c(ULONG planes BL_REG(d0))
 {
     UWORD n = (UWORD)(planes - 1) & 63;
-    UWORD d1 = n < 16 ? (UWORD)(1 << n) : 0;
+    UWORD enable = n < 16 ? (UWORD)(1 << n) : 0;
 
-    d1 |= (UWORD)(d1 << 6);
-    return setclx(planes, d1 | 0xf000);
+    enable |= (UWORD)(enable << 6);
+    return setclx(planes, enable | 0xf000);
 }
 BLITZ_THUNK(dosetcolhi, dosetcolhi_c, "d1/a0-a1");
 
