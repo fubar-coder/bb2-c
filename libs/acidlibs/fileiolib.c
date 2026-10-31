@@ -277,7 +277,7 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 5);
 /* ********************** CODE BELOW ************************ */
 
 static struct Library *dosbase_g;               /* dosbase: Dc.l 0 */
-static UBYTE temp;                              /* temp: Dc 0 */
+static UBYTE iobyte;                            /* temp: Dc 0, inchar's/outchar's byte */
 static struct bfile *infile, *outfile;          /* Dc.l 0 */
 static ULONG doslen = 2048;                     /* size of mydos buffer */
 
@@ -634,15 +634,16 @@ void BLITZ_ROUTINE dorecord(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2))
 }
 
 /* transdata - a3 = file, d1 = record#: seek to record * (word) record
-   length, then write (Put) or read (Get) every field; result = d0: the
-   file number, then what myread/mywrite return */
-static void transdata(int put, ULONG result, UWORD record, struct Library *dosbase)
+   length, then write (Put) or read (Get) every field; d0: the file
+   number, then what myread/mywrite return */
+static void transdata(int put, ULONG fileno, UWORD record, struct Library *dosbase)
 {
     struct bfile *f = (struct bfile *)blitz_string;
     struct rec *p;
+    ULONG result;                               /* d0 */
 
     /* seekrec: MULU 6(a3),d1 */
-    if (myseek(result, f, (ULONG)record * (UWORD)f->reclen, -1, dosbase) + 1 == 0) {
+    if (myseek(fileno, f, (ULONG)record * (UWORD)f->reclen, -1, dosbase) + 1 == 0) {
         BLITZ_RUNERR(mess3);                    /* err3 */
         return;
     }
@@ -711,12 +712,12 @@ static ULONG BLITZ_ROUTINE inchar_c(void)
         BLITZ_RUNERR(mess1);                    /* err1 */
         return 0;
     }
-    got = myread(0, f, &temp, 1, dosbase_g);
+    got = myread(0, f, &iobyte, 1, dosbase_g);
     if (got == (ULONG)-1) {
         BLITZ_RUNERR(mess7);                    /* err7 */
         return 0;
     }
-    return got ? temp : (ULONG)-1;
+    return got ? iobyte : (ULONG)-1;
 }
 
 /* inhandle2 - a0 = buffer, d0 = bytes max: read, cut behind the first
@@ -759,8 +760,8 @@ static ULONG BLITZ_ROUTINE outchar_c(UBYTE c BL_REG(d0))
         BLITZ_RUNERR(mess2);                    /* err2 */
         return 0;
     }
-    temp = c;
-    written = mywrite(c, f, &temp, 1, dosbase_g);
+    iobyte = c;
+    written = mywrite(c, f, &iobyte, 1, dosbase_g);
     if (written + 1 == 0)
         BLITZ_RUNERR(mess7);                    /* err7 */
     return written;
