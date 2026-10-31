@@ -228,7 +228,14 @@ BLITZ_LIBFIN();
 /* shapeslib MakeCookie (a3 = the shape) */
 #define TOK_makecookie ((LIB_shapeslib << 7) + 2)
 
-#define DO_FREELIST 78                  /* the FreeList behind the DiskObject */
+/* the FreeList behind the DiskObject (DiskObject+78), as icon.library
+   allocates it */
+struct diskobjfree {
+    struct DiskObject dob;
+    struct FreeList freelist;
+};
+static_assert(offsetof(struct diskobjfree, freelist) == 78);
+#define DO_FREELIST(dob) (&((struct diskobjfree *)(dob))->freelist)
 #define NTOOLTYPES 100
 
 static struct Library *iconlibbase;
@@ -245,9 +252,20 @@ static UWORD shapenumber;
 static struct Image SelectRender;
 static STRPTR tooltypearray[NTOOLTYPES];
 
-/* shape objects (shapeslib) */
-#define SW(s, o) (*(UWORD *)((UBYTE *)(s) + (o)))
-#define SL(s, o) (*(ULONG *)((UBYTE *)(s) + (o)))
+/* a shape object (shapeslib, 32 bytes) */
+struct shape {
+    UWORD width, height, depth;         /* 0 2 4 */
+    UWORD ebwidth, bltsize;             /* 6 8 */
+    WORD xhandle, yhandle;              /* 10 12 */
+    APTR data;                          /* 14: plane after plane (CHIP) */
+    APTR cookie;                        /* 18: or 0 */
+    UWORD onebpmem, onebpmemx;          /* 22 24: per plane, + a word per row */
+    UWORD allbpmem, allbpmemx;          /* 26 28: whole shape, + a word per row */
+    UWORD cludge;                       /* 30: CLUDGE = the data is not ours */
+};
+static_assert(sizeof(struct shape) == 32);
+static_assert(offsetof(struct shape, data) == 14);
+static_assert(offsetof(struct shape, cludge) == 30);
 #define CLUDGE 0x634c                   /* "cL" */
 
 static ULONG globalloc(ULONG size, ULONG flags)
@@ -474,7 +492,7 @@ static ULONG gotit(STRPTR *entry)
     mem = AllocMem(toolbuffersize, MEMF_CLEAR | MEMF_PUBLIC);
     if (!mem)
         return 0;
-    if (!AddFreeList((struct FreeList *)((UBYTE *)diskobject + DO_FREELIST), mem,
+    if (!AddFreeList(DO_FREELIST(diskobject), mem,
                      toolbuffersize)) {
         /* BUG(orig) #840: MOVE.l d0,a1 with d0 = AddFreeList's 0 - frees
            address 0, the block is lost */
@@ -563,31 +581,32 @@ void BLITZ_ROUTINE c_seticonhit(UWORD w BL_REG(d0), UWORD h BL_REG(d1))
 }
 
 /* ShapeToIcon shape: the gadget's size and image from the shape */
-void BLITZ_ROUTINE c_shapetoicon(const UBYTE *shape BL_REG(a0))
+void BLITZ_ROUTINE c_shapetoicon(const struct shape *shape BL_REG(a0))
 {
     struct Image *im;
 
     if (!diskobject)
         return;
-    diskobject->do_Gadget.Width = SW(shape, 0);
-    diskobject->do_Gadget.Height = SW(shape, 2);
+    diskobject->do_Gadget.Width = shape->width;
+    diskobject->do_Gadget.Height = shape->height;
     diskobject->do_Gadget.Height += 1;
     im = (struct Image *)diskobject->do_Gadget.GadgetRender;
-    im->Width = SW(shape, 0);
-    im->Height = SW(shape, 2);
-    im->Depth = SW(shape, 4);
-    im->ImageData = (UWORD *)SL(shape, 14);
+    im->Width = shape->width;
+    im->Height = shape->height;
+    im->Depth = shape->depth;
+    im->ImageData = shape->data;
 }
 
 /* ShapeToIcon shape,shape: the second shape as selected image */
-void BLITZ_ROUTINE c_shapetoicon2(const UBYTE *shape BL_REG(a0), const UBYTE *shape2 BL_REG(a1))
+void BLITZ_ROUTINE c_shapetoicon2(const struct shape *shape BL_REG(a0),
+                                  const struct shape *shape2 BL_REG(a1))
 {
     if (!diskobject)
         return;
-    SelectRender.Width = SW(shape2, 0);
-    SelectRender.Height = SW(shape2, 2);
-    SelectRender.Depth = SW(shape2, 4);
-    SelectRender.ImageData = (UWORD *)SL(shape2, 14);
+    SelectRender.Width = shape2->width;
+    SelectRender.Height = shape2->height;
+    SelectRender.Depth = shape2->depth;
+    SelectRender.ImageData = shape2->data;
     diskobject->do_Gadget.SelectRender = &SelectRender;
     diskobject->do_Gadget.Flags = 6;    /* GFLG_GADGHIMAGE | GFLG_GADGIMAGE */
     c_shapetoicon(shape);
@@ -629,7 +648,7 @@ ULONG BLITZ_ROUTINE c_defaulttool(const char *tool BL_REG(d0), const ULONG *lens
     mem = AllocMem(toolbuffersize, MEMF_CLEAR | MEMF_PUBLIC);
     if (!mem)
         return 0;
-    if (!AddFreeList((struct FreeList *)((UBYTE *)diskobject + DO_FREELIST), mem,
+    if (!AddFreeList(DO_FREELIST(diskobject), mem,
                      toolbuffersize)) {
         /* BUG(orig) #840: MOVE.l d0,a1 with d0 = AddFreeList's 0 - frees
            address 0, the block is lost */
@@ -646,32 +665,36 @@ ULONG BLITZ_ROUTINE c_defaulttool(const char *tool BL_REG(d0), const ULONG *lens
 }
 
 /* freeashape (a3 = shape): free data and cookie of a shape in use */
-static void freeashape(UBYTE *s)
+static void freeashape(struct shape *s)
 {
-    ULONG c;
+    APTR c;
 
-    if (!SW(s, 0))
+    if (!s->width)
         return;
-    SW(s, 0) = 0;
-    if (SW(s, 30) != CLUDGE) {
-        SW(s, 30) = 0;
-        globfree(SL(s, 14), SW(s, 26));
+    s->width = 0;
+    if (s->cludge != CLUDGE) {
+        s->cludge = 0;
+        globfree((ULONG)s->data, s->allbpmem);
     }
-    c = SL(s, 18);
+    c = s->cookie;
     if (c) {
-        SL(s, 18) = 0;
-        globfree(c, SW(s, 22));
+        s->cookie = NULL;
+        globfree((ULONG)c, s->onebpmem);
     }
 }
 
 /* icontoshape_jump: shape (a0) from the image at do_Gadget+render
-   (GadgetRender 22, SelectRender 26); shapearg = d0, `cookiestr` = the a3 the
-   original has at this point (the shape after freeashape, otherwise
-   unchanged) */
-static void icontoshape_jump(ULONG shapearg, UBYTE *shape, UWORD render,
+   (GadgetRender 22, SelectRender 26: RENDER_IMAGE/RENDER_SELECT);
+   shapearg = d0, `cookiestr` = the a3 the original has at this point (the
+   shape after freeashape, otherwise unchanged) */
+#define RENDER_IMAGE offsetof(struct DiskObject, do_Gadget.GadgetRender)
+#define RENDER_SELECT offsetof(struct DiskObject, do_Gadget.SelectRender)
+static_assert(RENDER_IMAGE == 22 && RENDER_SELECT == 26);
+
+static void icontoshape_jump(ULONG shapearg, struct shape *shape, UWORD render,
                              UBYTE **cookiestr)
 {
-    UBYTE *im;
+    const struct Image *im;
     UWORD w, h, words, bytes;
     UWORD planebytes;                   /* the bytes of one plane */
     UWORD count;                        /* the DBRA count of the words to copy */
@@ -679,42 +702,41 @@ static void icontoshape_jump(ULONG shapearg, UBYTE *shape, UWORD render,
     UWORD *to;
     ULONG mem;
 
-    if (SW(shape, 0)) {
-        *cookiestr = shape;
+    if (shape->width) {
+        *cookiestr = (UBYTE *)shape;
         freeashape(shape);
     }
     shapenumber = (UWORD)((WORD)shapearg >> 5);
-    im = *(UBYTE **)((UBYTE *)diskobject + render);
+    im = *(const struct Image **)((UBYTE *)diskobject + render);
     if (!im)
         return;
-    im += 4;                            /* Image.Width */
-    SL(shape, 0) = SL(im, 0);           /* width and height */
-    SW(shape, 4) = SW(im, 4);           /* depth */
-    w = SW(im, 0);
-    h = SW(im, 2);
+    *(ULONG *)&shape->width = *(const ULONG *)&im->Width;      /* width and height, a long */
+    shape->depth = im->Depth;
+    w = im->Width;
+    h = im->Height;
     words = (UWORD)((UWORD)(w + 15) >> 4);
     bytes = (UWORD)(words + words);
-    SW(shape, 6) = bytes;               /* ebwidth */
-    SW(shape, 8) = (UWORD)(((UWORD)(h << 6) | words) + 1);  /* blitsize */
-    SL(shape, 10) = 0;                  /* handles */
+    shape->ebwidth = bytes;
+    shape->bltsize = (UWORD)(((UWORD)(h << 6) | words) + 1);
+    *(ULONG *)&shape->xhandle = 0;      /* both handles, a long */
     planebytes = (UWORD)bl_mulu_w(bytes, h);
-    SW(shape, 22) = planebytes;         /* onebpmem */
-    SW(shape, 24) = (UWORD)(planebytes + (UWORD)(h << 1));      /* onebpmemx */
-    SW(shape, 26) = (UWORD)bl_mulu_w(planebytes, SW(im, 4));    /* allbpmem */
-    SW(shape, 28) = (UWORD)bl_mulu_w(SW(shape, 24), SW(im, 4)); /* allbpmemx */
-    mem = globalloc(SW(shape, 26), 0x10001 | MEMF_CHIP);
+    shape->onebpmem = planebytes;
+    shape->onebpmemx = (UWORD)(planebytes + (UWORD)(h << 1));
+    shape->allbpmem = (UWORD)bl_mulu_w(planebytes, im->Depth);
+    shape->allbpmemx = (UWORD)bl_mulu_w(shape->onebpmemx, im->Depth);
+    mem = globalloc(shape->allbpmem, 0x10001 | MEMF_CHIP);
     if (!mem)
         return;
-    SL(shape, 14) = mem;
-    from = *(const UWORD **)(im + 6);   /* ImageData */
+    shape->data = (APTR)mem;
+    from = im->ImageData;
     to = (UWORD *)mem;
     /* BUG(orig) #847: (width >> 4) + 1 words per row (MULU.w: low words) */
-    count = (UWORD)bl_mulu_w((UWORD)bl_mulu_w((UWORD)(((WORD)w >> 4) + 1), h), SW(im, 4));
+    count = (UWORD)bl_mulu_w((UWORD)bl_mulu_w((UWORD)(((WORD)w >> 4) + 1), h), im->Depth);
     count--;
     do
         *to++ = *from++;
     while (count-- != 0);               /* DBRA */
-    SW(shape, 30) = 0;
+    shape->cludge = 0;
     {
         /* ALibJsr MakeCookie with d0 = shapenumber and the original's a3 */
         UBYTE *keep = blitz_string;
@@ -727,26 +749,27 @@ static void icontoshape_jump(ULONG shapearg, UBYTE *shape, UWORD render,
 }
 
 /* IconToShape shape: the icon's image as shape (DIFF: a3 kept) */
-void BLITZ_ROUTINE c_icontoshape(ULONG shapearg BL_REG(d0), UBYTE *shape BL_REG(a0))
+void BLITZ_ROUTINE c_icontoshape(ULONG shapearg BL_REG(d0), struct shape *shape BL_REG(a0))
 {
     UBYTE *cookiestr = blitz_string;    /* a3 */
 
     if (!diskobject)
         return;
-    icontoshape_jump(shapearg, shape, 22, &cookiestr);
+    icontoshape_jump(shapearg, shape, RENDER_IMAGE, &cookiestr);
 }
 
 /* IconToShape shape,shape: the image and the selected image */
 void BLITZ_ROUTINE c_icontoshape2(ULONG shapearg BL_REG(d0),
                                   ULONG shapearg2 BL_REG(d1),
-                                  UBYTE *shape BL_REG(a0), UBYTE *shape2 BL_REG(a1))
+                                  struct shape *shape BL_REG(a0),
+                                  struct shape *shape2 BL_REG(a1))
 {
     UBYTE *cookiestr = blitz_string;    /* a3 */
 
     if (!diskobject)
         return;
-    icontoshape_jump(shapearg, shape, 22, &cookiestr);
-    icontoshape_jump(shapearg2, shape2, 26, &cookiestr);
+    icontoshape_jump(shapearg, shape, RENDER_IMAGE, &cookiestr);
+    icontoshape_jump(shapearg2, shape2, RENDER_SELECT, &cookiestr);
 }
 
 /* entries: keep every one of d0/d1/a0/a1 that is not the result */
