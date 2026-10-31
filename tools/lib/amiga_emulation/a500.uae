@@ -3,7 +3,7 @@
 ; 8.5.0): only the machine; host paths, sound card, GUI and window
 ; settings removed.  @EMULATION_DIR@ is <repo>/amiga-emulation; TEST: and
 ; everything else a test needs is added by the library.
-; A500, ECS Agnus, 68000 cycle-exact, 24-bit addressing, 1 MB chip
+; A500, ECS Agnus, 68000 (not cycle-exact), 24-bit addressing, 1 MB chip
 ; (chipmem_size=2), 1 MB slow (bogomem_size=4), Kickstart 1.3 (34.5),
 ; Workbench 1.3.5 on an RDB hardfile, read-only.  The machine
 ; "a500-68010" changes only the CPU (amiga_emulation_a500_68010).
@@ -100,10 +100,10 @@ cpu_model=68000
 cpu_compatible=true
 cpu_24bit_addressing=true
 cpu_data_cache=false
-cpu_cycle_exact=true
-cpu_memory_cycle_exact=true
-blitter_cycle_exact=true
-cycle_exact=true
+cpu_cycle_exact=false
+cpu_memory_cycle_exact=false
+blitter_cycle_exact=false
+cycle_exact=false
 fpu_strict=false
 debug_mem=false
 log_illegal_mem=false

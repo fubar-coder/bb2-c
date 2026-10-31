@@ -222,7 +222,7 @@ file `machine=a500`, bug-orig header `; @machine a500`) is for tests of
 bugs that only show on a 68000/68010 or under Kickstart 1.x. Its
 configuration is `tools/lib/amiga_emulation/a500.uae` (taken from the
 user's "A500 - Kick 1.3.uae", Amiberry 8.5.0): A500, ECS Agnus, 68000
-cycle-exact, 24-bit addressing, `chipmem_size=2` (1 MB chip),
+not cycle-exact, 24-bit addressing, `chipmem_size=2` (1 MB chip),
 `bogomem_size=4` (1 MB slow memory at $C00000), no Zorro II/III fast
 memory (Amiberry 8.5.0 crashes with 8 MB of Zorro II fast memory and the
 Zorro II RTG card of the user's configuration, `BlitterStudio/amiberry#2585`), the
