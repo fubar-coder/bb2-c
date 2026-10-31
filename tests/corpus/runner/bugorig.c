@@ -205,6 +205,29 @@ static void lines_of(const char *text, struct text *t, const char *except)
 }
 
 /* the log with the size of a successful RESULT removed */
+/* a line of the version requester ("Blitz Basic 2 Version 1.95"): added
+   with the version number as N.NN, so that the reference (1.95) and the
+   port (2.10) show the same line; 0 = not such a line */
+static int version_line(struct text *t, const char *p, size_t m)
+{
+    static const char tag[] = "\"Blitz Basic 2 Version ";
+    const char *v = NULL, *q, *end = p + m;
+
+    for (q = p; (size_t)(end - q) >= sizeof tag - 1; q++)
+        if (!memcmp(q, tag, sizeof tag - 1)) {
+            v = q + sizeof tag - 1;
+            break;
+        }
+    if (!v)
+        return 0;
+    for (q = v; q < end && *q != '"'; q++)
+        ;
+    if (q == end)
+        return 0;
+    text_add(t, "%.*sN.NN%.*s\n", (int)(v - p), p, (int)(end - q), q);
+    return 1;
+}
+
 static void log_of(const char *log, struct text *t)
 {
     const char *p = log;
@@ -219,7 +242,8 @@ static void log_of(const char *log, struct text *t)
         if (m > 7 && !memcmp(p, "RESULT\t", 7) && (ok = memchr(p + 7, '\t', m - 7))
             && (size_t)(p + m - ok) > 3 && !memcmp(ok, "\tok\t", 4))
             m = (size_t)(ok + 3 - p);
-        text_add(t, "%.*s\n", (int)m, p);
+        if (!version_line(t, p, m))
+            text_add(t, "%.*s\n", (int)m, p);
         p = eol ? eol + 1 : NULL;
     }
 }

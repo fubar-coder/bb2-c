@@ -14,7 +14,9 @@
  *   [run]      what the program wrote, with rc=N (empty: not run)
  *   [blitz2]   what the compiler (and a wrapper, `wrap=`) wrote besides
  *              the session log, with rc=N
- *   [log]      the session log of tedstub (RESULT without the size)
+ *   [log]      the session log of tedstub (RESULT without the size, the
+ *              version of the version requester as N.NN: the reference
+ *              is 1.95, the port 2.10)
  * Expectation (NAME.expect): the sections that matter, same format; a
  * line ending in `*` matches every line that begins with the text before
  * it, a line `...` any number of lines (also none).  [session] not given

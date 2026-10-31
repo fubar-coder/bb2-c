@@ -84,6 +84,13 @@ int main(void)
     CHECK(!strcmp(bugorig_get(&a, "run"), "42\nrc=0\n"));
     CHECK(!strcmp(bugorig_get(&a, "blitz2"), "rc=0\n"));          /* the log lines left out */
     CHECK(strstr(bugorig_get(&a, "log"), "RESULT\tj000\tok\nBATCH"));  /* size removed */
+    observe(&c, "done", "openreq \"Blitz Basic 2 Version 1.95\"\n"
+            "getinput \"Blitz Basic 2 Version 2.10\" -> gadget 1 \" OKEE DOKEE \" (version requester)\n"
+            "openreq \"Blitz Basic 2 Version x\n", NULL, NULL);  /* the version as N.NN */
+    CHECK(!strcmp(bugorig_get(&c, "log"), "openreq \"Blitz Basic 2 Version N.NN\"\n"
+                  "getinput \"Blitz Basic 2 Version N.NN\" -> gadget 1 \" OKEE DOKEE \" (version requester)\n"
+                  "openreq \"Blitz Basic 2 Version x\n"));      /* no closing quote: unchanged */
+    bugorig_free(&c);
     observe(&b, "timeout", LOG_ERR, NULL, NULL);
     CHECK(!strcmp(bugorig_get(&b, "compile"), "error 3 Syntax Error\n"));
     CHECK(!strcmp(bugorig_get(&b, "run"), "") && !strcmp(bugorig_get(&b, "blitz2"), ""));
