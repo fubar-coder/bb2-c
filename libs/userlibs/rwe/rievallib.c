@@ -358,7 +358,21 @@ endthis:
     return 0;
 }
 
-/* ConvToPostFix string,buffer (d0, d1) */
+/**
+ * @brief ConvToPostFix string,buffer: converts an infix expression to postfix.
+ *
+ * Lower-cases the string in place, then writes the operands and
+ * operators separated by spaces to the buffer (0 terminated), with an
+ * operator stack; "(" ... ")" group.  A `-` is a sign at the start or
+ * after an operator or `(` - not after a space (BUG(orig) #633).
+ * BUG(orig): a `.` copies the next character unchecked (#631); an operand
+ * character that is no digit, a-f, register, `$ % . { }` ends the operand
+ * and is dropped (#632).  a3 is left at the string (a statement: nothing
+ * uses it after it).
+ * @param str  d0: the expression (changed: lower case)
+ * @param buf  d1: the output buffer
+ * @return nothing
+ */
 static void BLITZ_ROUTINE convtopostfix_c(UBYTE *str BL_REG(d0), UBYTE *buf BL_REG(d1))
 {
     struct state s;
@@ -665,8 +679,28 @@ evalbin:
     goto endofnum;
 }
 
-/* PFEvaluate(string): d0 = the string, d1 = the caller's d1 (the stale
-   d1 of a register in {}), ret = the caller's return address (thunk) */
+/**
+ * @brief PFEvaluate(string): evaluates a postfix expression of ConvToPostFix.
+ *
+ * Operands: decimal, `$` hex, `%` binary numbers, `-` signs, registers
+ * `d0`-`d7`, `a0`-`a7`, `pc` of the PFRegisters block, `{...}` an
+ * indirection (a long, `.b`/`.w`/`.l` behind it; PFIndirectAddr keeps the
+ * address).  Operators: = & | < > + - * / ^ (comparisons give -1/0).
+ * Errors set PFErrorType/PFErrorText and return 0: 1 "Need 2 arguments",
+ * 2 "Register structure not found", 3 "Divide by 0", 4 "No result
+ * value", 5 "No close bracket on indirect", 6 "Invalid size for
+ * indirection".  An empty string returns 0, error 0.
+ * BUG(orig): `<` is unsigned "less or same", `>` signed (#638); `*`
+ * overflows wrongly (#639); `^` (#641); 128 or more values (#645); only
+ * the last value counts (#635); a string of spaces returns the caller's
+ * return address with error 4 (#644); register operands (#642), the `}`
+ * check after a register (#637), `-$`/`-%` (#643), unchecked digits
+ * (#634), indirection at any address (#636).
+ * @param str        d0: the postfix string
+ * @param caller_d1  d1: the caller's d1 (the stale d1 of a register in {})
+ * @param ret        a1: the caller's return address (the thunk passes it)
+ * @return d0: the value, 0 on an error
+ */
 static ULONG BLITZ_ROUTINE evaluate_c(UBYTE *str BL_REG(d0), ULONG caller_d1 BL_REG(d1),
                                       ULONG ret BL_REG(a1))
 {
@@ -689,20 +723,41 @@ static ULONG BLITZ_ROUTINE evaluate_c(UBYTE *str BL_REG(d0), ULONG caller_d1 BL_
 
 /* --------------------------------------------------------- the others */
 
-/* PFRegisters *registerblock */
+/**
+ * @brief PFRegisters *registerblock: the register block of PFEvaluate.
+ *
+ * Longs d0-d7, a0-a7, pc (index * 4); 0 = none (register operands fail
+ * with error 2).
+ * @param block  d0: the address of the block
+ * @return nothing
+ */
 static void BLITZ_ROUTINE registers_c(ULONG block BL_REG(d0))
 {
     regs = block;
 }
 
-/* PFErrorType: MOVE.w errortype,d0 */
+/**
+ * @brief PFErrorType: the number of the last PFEvaluate error, 0 for none.
+ *
+ * MOVE.w errortype,d0: the caller's upper word of d0 stays (a word
+ * result, no defect).
+ * @param result  d0: the caller's d0
+ * @return d0.w: the error number (1-6) or 0
+ */
 static ULONG BLITZ_ROUTINE errortype_c(ULONG result BL_REG(d0))
 {
     return BL_SETW(result, errortype);
 }
 
-/* PFErrorText: the text at a3 (a3 ends at its 0), d0 = its length; no
-   error: d0.w = 0, nothing written */
+/**
+ * @brief PFErrorText: the text of the last PFEvaluate error.
+ *
+ * The text at a3 (a3 ends at its 0), d0 = its length.  BUG(orig) (#640):
+ * with no error d0.w = 0 and nothing is written, the upper word of d0 is
+ * the caller's - no valid string length.
+ * @param result  d0: the caller's d0
+ * @return d0: the length of the text
+ */
 static ULONG BLITZ_ROUTINE errortext_c(ULONG result BL_REG(d0))
 {
     const char *p;
@@ -719,17 +774,27 @@ static ULONG BLITZ_ROUTINE errortext_c(ULONG result BL_REG(d0))
     return result;
 }
 
-/* PFIndirectAddr: the address of the last indirection */
+/**
+ * @brief PFIndirectAddr: the address of the last `{...}` indirection.
+ * @return d0: the address
+ */
 static ULONG BLITZ_ROUTINE indirectaddr_c(void)
 {
     return lastaddr;
 }
 
-/* _libinit, _libfinit: RTS */
+/**
+ * @brief init: nothing (RTS).
+ * @return nothing
+ */
 void BLITZ_ROUTINE _libinit(void)
 {
 }
 
+/**
+ * @brief finit: nothing (RTS).
+ * @return nothing
+ */
 void BLITZ_ROUTINE _libfinit(void)
 {
 }
