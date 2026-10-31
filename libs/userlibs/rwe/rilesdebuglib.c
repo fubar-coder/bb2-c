@@ -447,6 +447,11 @@ static const UBYTE customchipnames[256][8] = {
 
 /* --------------------------------------------------------- init, finit */
 
+/**
+ * @brief init: open graphics.library (any version) and set ProcessString's
+ * %p ("REDDebugger") and %c (the token list address in hex) entries.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     gfxbase = (struct GfxBase *)OpenLibrary((CONST_STRPTR)"graphics.library", 0);
@@ -454,6 +459,10 @@ static void BLITZ_ROUTINE libinit_c(void)
     stringtokens.fixed[1].p = tokenaddr;
 }
 
+/**
+ * @brief finit: close graphics.library.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     CloseLibrary((struct Library *)gfxbase);
@@ -462,8 +471,17 @@ static void BLITZ_ROUTINE libfinit_c(void)
 
 /* ------------------------------------------------------- D_FindVolume */
 
-/* D_FindVolume(name) (d0, a6 = dos): the DosList entry (devices,
-   volumes, assigns), 0 */
+/**
+ * @brief D_FindVolume(volumename): look up a device, volume or assign
+ * (Amiga mode only).
+ *
+ * LockDosList, FindDosEntry, UnLockDosList with LDF_READ, devices,
+ * volumes and assigns.
+ * @param name    d0: the name (without the colon)
+ * @param dosbase a6: dos.library (!libs #doslib)
+ * @return d0: the DosList entry, 0 if not found (or LockDosList failed);
+ *         the list is no longer locked
+ */
 #define FINDFLAGS (LDF_READ | LDF_DEVICES | LDF_VOLUMES | LDF_ASSIGNS | LDF_ENTRY)
 static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0),
                                      struct DosLibrary *dosbase BL_REG(a6))
@@ -479,8 +497,14 @@ static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0),
 
 /* -------------------------------------------- registers and memory as text */
 
-/* D_GetSR buffer,SR (d0, d1.b): "XNZVC" with '-' for the bits not set,
-   and a 0 */
+/**
+ * @brief D_GetSR buffer,SR: the condition codes as text.
+ *
+ * "XNZVC" with '-' for the bits not set, and a 0 (6 bytes).
+ * @param buf  d0: the buffer
+ * @param sr   d1.b: the status register (its low byte)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE getsr_c(UBYTE *buf BL_REG(d0), UBYTE sr BL_REG(d1))
 {
     static const UBYTE flags[5] = "CVZNX";
@@ -509,8 +533,18 @@ static UBYTE *hexbyte(UBYTE *d, const UBYTE **s)
     return d;
 }
 
-/* D_HexWord source,address,num (d0, d1, d2.w): num words as hex, "XXXX "
-   each (at an odd source "XX YY", BUG(orig) (#715)); "*" below $420 */
+/**
+ * @brief D_HexWord source,address,num: num words of memory as hex text.
+ *
+ * "XXXX " each; at an odd source "XX YY" without the space behind
+ * (BUG(orig) (#715)).  Bytes at addresses below $420 show "*" (a signed
+ * compare: from $80000000 too, BUG(orig) (#717)).  No 0 is written.
+ * num 0 runs 65536 times (DBRA, BUG(orig) (#701)).
+ * @param src  d0: the source address
+ * @param dst  d1: the buffer
+ * @param num  d2.w: the number of words
+ * @return nothing
+ */
 static void BLITZ_ROUTINE hexword_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_REG(d1),
                                     UWORD num BL_REG(d2))
 {
@@ -544,8 +578,17 @@ static void BLITZ_ROUTINE hexword_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_R
     } while (n-- != 0);
 }
 
-/* D_CheckNMove source,dest[,count] (d0, d1, d2.w): count longs as 4
-   characters each, one byte left between them */
+/**
+ * @brief D_CheckNMove source_address,dest_address,count: count longs as 4
+ * characters each, one byte left between them.
+ *
+ * The bytes are copied as they are (also 0 and below $420).  count 0
+ * runs 65536 times (DBRA, BUG(orig) (#701)).
+ * @param s      d0: the source
+ * @param d      d1: the destination (5 bytes per long)
+ * @param count  d2.w: the number of longs
+ * @return nothing
+ */
 static void BLITZ_ROUTINE checknmove2_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_REG(d1),
                                         UWORD count BL_REG(d2))
 {
@@ -561,6 +604,12 @@ static void BLITZ_ROUTINE checknmove2_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_R
     } while (n-- != 0);
 }
 
+/**
+ * @brief D_CheckNMove source_address,dest_address: one long (count 1).
+ * @param s  d0: the source
+ * @param d  d1: the destination
+ * @return nothing
+ */
 static void BLITZ_ROUTINE checknmove_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_REG(d1))
 {
     checknmove2_c(s, d, 1);
@@ -580,8 +629,17 @@ static UBYTE *checkbyte(UBYTE *d, const UBYTE **s)
     return d;
 }
 
-/* D_CheckNMoveA source,dest[,count]: as D_CheckNMove, with no 0 in the
-   characters and "*" below $420 */
+/**
+ * @brief D_CheckNMoveA source_address,dest_address,count: as
+ * D_CheckNMove, with no 0 in the characters and "*" below $420.
+ *
+ * A 0 byte becomes 1; an address below $420 (signed compare, BUG(orig)
+ * (#717)) gives '*'.  count 0 runs 65536 times (#701).
+ * @param s      d0: the source
+ * @param d      d1: the destination (5 bytes per long)
+ * @param count  d2.w: the number of longs
+ * @return nothing
+ */
 static void BLITZ_ROUTINE checknmovea2_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_REG(d1),
                                          UWORD count BL_REG(d2))
 {
@@ -595,13 +653,28 @@ static void BLITZ_ROUTINE checknmovea2_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_
     } while (n-- != 0);
 }
 
+/**
+ * @brief D_CheckNMoveA source_address,dest_address: one long (count 1).
+ * @param s  d0: the source
+ * @param d  d1: the destination
+ * @return nothing
+ */
 static void BLITZ_ROUTINE checknmovea_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_REG(d1))
 {
     checknmovea2_c(s, d, 1);
 }
 
-/* D_CheckNMoveWord source,dest[,count]: count words as 2 characters each,
-   no gap; no 0, "*" below $420 */
+/**
+ * @brief D_CheckNMoveWord source_address,dest_address,count: count words
+ * as 2 characters each, no gap; no 0, "*" below $420.
+ *
+ * count 0 (and $8000: the byte count count*2 is a word) runs 65536 times
+ * (DBRA, BUG(orig) (#701)); the address check is signed (#717).
+ * @param s      d0: the source
+ * @param d      d1: the destination
+ * @param count  d2.w: the number of words
+ * @return nothing
+ */
 static void BLITZ_ROUTINE checknmoveword2_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_REG(d1),
                                             UWORD count BL_REG(d2))
 {
@@ -612,13 +685,28 @@ static void BLITZ_ROUTINE checknmoveword2_c(const UBYTE *s BL_REG(d0), UBYTE *d 
     while (n-- != 0);
 }
 
+/**
+ * @brief D_CheckNMoveWord source_address,dest_address: one word (count 1).
+ * @param s  d0: the source
+ * @param d  d1: the destination
+ * @return nothing
+ */
 static void BLITZ_ROUTINE checknmoveword_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_REG(d1))
 {
     checknmoveword2_c(s, d, 1);
 }
 
-/* D_FindStringPtr(areg5,lookfor): the first address from areg5-32768 in
-   steps of 2 with the long lookfor, before areg5; -1 */
+/**
+ * @brief D_FindStringPtr(areg5,lookfor): search a long in the 32 KB below
+ * an address.
+ *
+ * From areg5-32768 in steps of 2 up to areg5; the long at areg5 itself
+ * is never compared (BUG(orig) (#705)).
+ * @param areg5  d0: the end of the search
+ * @param look   d1: the long to find
+ * @return d0: the first address with the long, -1 if not found (not a
+ *         truth value)
+ */
 static ULONG BLITZ_ROUTINE findstringptr_c(const UBYTE *areg5 BL_REG(d0), ULONG look BL_REG(d1))
 {
     const UBYTE *p = areg5 - 32768;
@@ -631,8 +719,17 @@ static ULONG BLITZ_ROUTINE findstringptr_c(const UBYTE *areg5 BL_REG(d0), ULONG 
     return (ULONG)-1;
 }
 
-/* PeekMax$(address,max) (d0, d1.w): the characters up to the 0, at most
-   max+1 written; the length counts one less then (BUG(orig) (#718)) */
+/**
+ * @brief PeekMax$(address,max_chars): the string at an address, at most
+ * max_chars characters.
+ *
+ * The characters up to the 0 go to a3; at most max+1 are written, the
+ * length then counts one less (a3 one behind the result, BUG(orig)
+ * (#718)).  No check of low addresses.
+ * @param s    d0: the address
+ * @param max  d1.w: the maximum number of characters
+ * @return d0: the length (counted as a word)
+ */
 static ULONG BLITZ_ROUTINE peekmax_c(const UBYTE *s BL_REG(d0), UWORD max BL_REG(d1))
 {
     ULONG n = 0xffff;
@@ -674,13 +771,29 @@ static ULONG hexout(ULONG v, int mode)
     return n;
 }
 
-/* GetHex$(value,mode) (d0, d1.b): 2, 4 or 8 hex digits */
+/**
+ * @brief GetHex$(value,mode): a value as 2, 4 or 8 hex digits.
+ *
+ * Written at a3, no 0.
+ * @param v     d0: the value
+ * @param mode  d1.b: 1 byte, 2 word, otherwise long
+ * @return d0: the length (2, 4, 8)
+ */
 static ULONG BLITZ_ROUTINE gethex_c(ULONG v BL_REG(d0), UBYTE mode BL_REG(d1))
 {
     return hexout(v, mode == 1 ? 1 : mode == 2 ? 2 : 3);
 }
 
-/* GetHexAdr$(address,mode): the byte, word or long at address in hex */
+/**
+ * @brief GetHexAdr$(*value,mode): the byte, word or long at an address in
+ * hex.
+ *
+ * As GetHex$; no check of low addresses (a word or long at an odd
+ * address: an address error on a 68000).
+ * @param addr  d0: the address
+ * @param mode  d1.b: 1 byte, 2 word, otherwise long
+ * @return d0: the length (2, 4, 8)
+ */
 static ULONG BLITZ_ROUTINE gethexadr_c(const UBYTE *addr BL_REG(d0), UBYTE mode BL_REG(d1))
 {
     if (mode == 1)
@@ -690,8 +803,17 @@ static ULONG BLITZ_ROUTINE gethexadr_c(const UBYTE *addr BL_REG(d0), UBYTE mode 
     return hexout(*(const ULONG *)addr, 3);
 }
 
-/* GetDataItem(address,size) (d0, d1.w): the byte, word or long (size 3 or
-   more: long) at address, 0 below $420; size 0 or below: DBRA from -1 */
+/**
+ * @brief GetDataItem(address,size): the byte, word or long at an address.
+ *
+ * Read byte by byte (also at odd addresses); size 3 or more: a long.
+ * Size 0 or below reads 65536 bytes or more (DBRA from -1, BUG(orig)
+ * (#701)).
+ * @param addr  d0: the address
+ * @param size  d1.w: 1 byte, 2 word, otherwise long
+ * @return d0: the value, 0 for an address below $420 (a signed compare:
+ *         from $80000000 too, BUG(orig) (#717))
+ */
 static ULONG BLITZ_ROUTINE getdataitem_c(const UBYTE *addr BL_REG(d0), UWORD size BL_REG(d1))
 {
     ULONG v = 0;
@@ -707,9 +829,15 @@ static ULONG BLITZ_ROUTINE getdataitem_c(const UBYTE *addr BL_REG(d0), UWORD siz
     return v;
 }
 
-/* FindLineToken(start) (d0): the first token (a byte with bit 7 and the
-   next) of the line as a word without bit 15, 0 at the end of the line;
-   d0's high word stays (the address's) */
+/**
+ * @brief FindLineToken(Start_Address): the first token of a tokenised
+ * line.
+ *
+ * A token is a byte with bit 7 and the next byte.
+ * @param s  d0: the line
+ * @return d0.w: the token as a word without bit 15, 0 at the end of the
+ *         line; d0's high word stays (the address's)
+ */
 static ULONG BLITZ_ROUTINE findlinetoken_c(const UBYTE *s BL_REG(d0))
 {
     ULONG result = (ULONG)s;
@@ -741,25 +869,56 @@ static ULONG cursor_offset(void)
     return (ULONG)xcurs + (ULONG)(UWORD)((UWORD)(ycurs << 3) + yoffset) * 80;
 }
 
+/**
+ * @brief FLocate x,y: the cursor of the font printer.
+ * @param x  d0.w: the column (8 pixels each)
+ * @param y  d1.w: the row (8 pixels each)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE flocate_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
 {
     xcurs = x;
     ycurs = y;
 }
 
+/**
+ * @brief FInverse inversemode: inverse printing on or off.
+ *
+ * FPrint tests the word, FPrintDetoke only its high byte: FInverse 1
+ * inverts FPrint only (BUG(orig) (#706)).
+ * @param on  d0.w: nonzero inverse
+ * @return nothing
+ */
 static void BLITZ_ROUTINE finverse_c(UWORD on BL_REG(d0))
 {
     inverse = on;
 }
 
+/**
+ * @brief FYOffset pixel_offset: the pixel offset added to the cursor's
+ * row.
+ * @param off  d0.w: the offset in pixel lines
+ * @return nothing
+ */
 static void BLITZ_ROUTINE fyoffset_c(UWORD off BL_REG(d0))
 {
     yoffset = off;
 }
 
-/* FPrint a$ (d0, its length at -4(a2), a0 = the bitmap): the characters
-   into plane 0 at the cursor, inverted if inverse (the word); the cursor
-   moves on */
+/**
+ * @brief FPrint a$: print a string with the 8x8 font into plane 0 of the
+ * used bitmap.
+ *
+ * At the cursor, 8 bytes per character in rows of 80 bytes, inverted if
+ * the FInverse word is set; the cursor moves on.  The column check is a
+ * byte compare with 80 tested on N: columns 80-207 stop, 208-255 print;
+ * nothing checks the bitmap's size (BUG(orig) (#707)).  A string of 32769
+ * characters or more prints nothing (SUBQ.w/BMI, #710).
+ * @param s     d0: the string
+ * @param bm    a0: the used bitmap (!libs #bitmaplib)
+ * @param args  a2: the argument stack, the string's length at -4(a2)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE fprint_c(const UBYTE *s BL_REG(d0), struct BitMap *bm BL_REG(a0),
                                    const ULONG *args BL_REG(a2))
 {
@@ -788,7 +947,14 @@ out:
     xcurs = x;
 }
 
-/* FNPrint a$: FPrint, then the start of the next row */
+/**
+ * @brief FNPrint a$: FPrint, then the cursor to the start of the next
+ * row.
+ * @param s     d0: the string
+ * @param bm    a0: the used bitmap (!libs #bitmaplib)
+ * @param args  a2: the argument stack, the string's length at -4(a2)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE fnprint_c(const UBYTE *s BL_REG(d0), struct BitMap *bm BL_REG(a0),
                                     const ULONG *args BL_REG(a2))
 {
@@ -827,12 +993,30 @@ static UWORD draw_char(struct dt *t, UWORD glyph)
     return glyph;
 }
 
-/* FPrintDetoke line,cio,typ,lineoffset (d0, d1.w, d2.b, d3.w; a0 = the
-   bitmap, d6 = the caller's, its high word kept): the tokenised line at
-   the cursor; tokens (a byte with bit 7 and the next) as their names from
-   the token list (also into plane 1 with SetupLESDebug's tokenise);
-   lineoffset characters skipped; before the character at cio a marker,
-   '>' (typ 0) or an inverse space */
+/**
+ * @brief FPrintDetoke tokenised_string,cio,typ,lineoffset: print a
+ * tokenised line with the 8x8 font, its tokens as their names.
+ *
+ * At the cursor in plane 0 of the used bitmap; tokens (a byte with bit
+ * 7 and the next) as their names from the token list of SetupLESDebug
+ * ("?????" for an unknown one), also into plane 1 with SetupLESDebug's
+ * tokenise; lineoffset characters skipped from the left; before the
+ * character at cio a marker, '>' (typ 0) or an inverse space.  Inverse
+ * printing tests the high byte of the FInverse word, the marker sets and
+ * clears it (BUG(orig) (#706)); with it set and tokens drawn into two
+ * planes, the second plane gets the character of the last glyph byte
+ * (#709).  After the '>' marker an inverse space follows if the column
+ * count (d6 with the caller's high word) became 0 (#708).  The column
+ * check is FPrint's (#707).
+ * @param line       d0: the tokenised line (0-terminated)
+ * @param cio        d1.w: the character before which the marker goes
+ * @param typ        d2.b: the marker, 0 '>', else an inverse space
+ * @param lineoff    d3.w: the characters to skip
+ * @param callercol  d6: the caller's d6, its high word kept in the column
+ *                   count
+ * @param bm         a0: the used bitmap (!libs #bitmaplib)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE fprintdetoke_c(const UBYTE *line BL_REG(d0), UWORD cio BL_REG(d1),
                                          UWORD typ BL_REG(d2), UWORD lineoff BL_REG(d3),
                                          ULONG callercol BL_REG(d6), struct BitMap *bm BL_REG(a0))
@@ -911,8 +1095,18 @@ out:
     xcurs = (UWORD)t.col;
 }
 
-/* OutText x,y,rastport,string (d0.w, d1.w, d2, d3): Move to x,y+baseline
-   of the rastport's font, Text */
+/**
+ * @brief OutText x,y,rastport,address/string: print a string on a
+ * RastPort.
+ *
+ * Move to x, y + the baseline of the rastport's font (a word add), Text
+ * with the string's length (counted up to the 0).
+ * @param x   d0.w: the x position
+ * @param y   d1.w: the y position (of the top of the text)
+ * @param rp  d2: the RastPort
+ * @param s   d3: the string (an address or a string)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE outtext_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
                                     struct RastPort *rp BL_REG(d2), CONST_STRPTR s BL_REG(d3))
 {
@@ -926,8 +1120,13 @@ static void BLITZ_ROUTINE outtext_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
     Text(rp, s, n);
 }
 
-/* OutTextPen rastport,pen (d0, d1.w): SetAPen (d0's high word the
-   rastport's) */
+/**
+ * @brief OutTextPen rastport,pen: SetAPen on a RastPort.
+ * @param rp   d0: the RastPort
+ * @param pen  d1.w: the pen (SetAPen gets d0's high word, the rastport's,
+ *             with the pen as the low word)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE outtextpen_c(struct RastPort *rp BL_REG(d0), UWORD pen BL_REG(d1))
 {
     ULONG penarg = (ULONG)rp;
@@ -958,8 +1157,16 @@ static void outs(const char *s)
         *blitz_string++ = (UBYTE)*s++;
 }
 
-/* GetCopIns$(copdata) (d0): "MOVE vvvv to NAME    " or "WAIT|SKIP (xx,yy)
-   MASK (xx,yy)[ [BFD]]" */
+/**
+ * @brief GetCopIns$(copdata): a copper instruction as text.
+ *
+ * "MOVE vvvv to NAME    " (the register's 8 character name) or
+ * "WAIT|SKIP (xx,yy) MASK (xx,yy)[ [BFD]]"; the horizontal digits lose
+ * bit 0 of both nibbles, so odd digits never show (BUG(orig) (#711)).
+ * Written at a3, no 0.
+ * @param ins  d0: the instruction (two words)
+ * @return d0: the length (21, 25 or 31)
+ */
 static ULONG BLITZ_ROUTINE getcopins_c(const UWORD *ins BL_REG(d0))
 {
     UWORD ir1 = ins[0], ir2 = ins[1];
@@ -988,9 +1195,17 @@ static ULONG BLITZ_ROUTINE getcopins_c(const UWORD *ins BL_REG(d0))
     return 31;
 }
 
-/* GetCustomReg(address) (d0.w; d0.l tested): the register's name up to
-   its first space, at most 8 (and the next name's first, BUG(orig)
-   (#712)) */
+/**
+ * @brief GetCustomReg(address): the name of a custom chip register.
+ *
+ * The name up to its first space, at most 8 characters, at a3; a name
+ * of 8 characters copies one more (the first of the next name) and
+ * returns 8 (BUG(orig) (#712)).  The range test checks the word above
+ * $1FC but the long for negative: a negative word with d0.l not negative
+ * reads in front of the name table (#714).
+ * @param reg  d0.w: the register's offset ($000-$1FC)
+ * @return d0: the length, 0 for an offset out of range
+ */
 static ULONG BLITZ_ROUTINE getcustomreg_c(ULONG reg BL_REG(d0))
 {
     const UBYTE *p;
@@ -1009,8 +1224,16 @@ static ULONG BLITZ_ROUTINE getcustomreg_c(ULONG reg BL_REG(d0))
     return n;
 }
 
-/* GetCustomRegAdr(name$) (d0): the offset of the register whose name
-   (up to a space) the string starts with, among $000-$1FC; -1 */
+/**
+ * @brief GetCustomRegAdr(name$): the offset of a custom chip register.
+ *
+ * The first register among $000-$1FC whose name (up to a space) the
+ * string starts with: a prefix match, the string may go on behind the
+ * name; a name of 8 characters is never found (BUG(orig) (#713)), and
+ * the last register ($1FE NOOP) is never looked at (#702).
+ * @param name  d0: the name
+ * @return d0: the offset, -1 if not found (not a truth value)
+ */
 static ULONG BLITZ_ROUTINE getcustomregadr_c(const UBYTE *name BL_REG(d0))
 {
     const UBYTE *t = &customchipnames[0][0];
@@ -1031,8 +1254,14 @@ static ULONG BLITZ_ROUTINE getcustomregadr_c(const UBYTE *name BL_REG(d0))
     return (ULONG)-1;
 }
 
-/* GetProgMode mode,buffer (d0.w, d1): "BLITZ " (< 0), "AMIGA " (0),
-   "QAMIGA" (> 0), no 0 */
+/**
+ * @brief GetProgMode mode,buffer: the name of a program mode.
+ *
+ * Six characters, no 0: "BLITZ " (< 0), "AMIGA " (0), "QAMIGA" (> 0).
+ * @param mode  d0.w: the mode
+ * @param buf   d1: the buffer
+ * @return nothing
+ */
 static void BLITZ_ROUTINE getprogmode_c(WORD mode BL_REG(d0), UBYTE *buf BL_REG(d1))
 {
     const UBYTE *t = mode < 0 ? blitztext : mode == 0 ? amigatext : qamigatext;
@@ -1053,11 +1282,24 @@ static int space_down(void)
     return (UBYTE)r.d0 != 0;
 }
 
-/* SearchMem(type,value,start,end) (d0.b, d1, d2, d3): the first place in
-   start..end-1 with the byte (1), word (2), long (3, 5, 6) or string (4,
-   value = its address); -1 found (SearchMemFound = the address), 0 not
-   found (SearchMemFound = 0), 1 when the space bar was down (tested every
-   127 steps, SearchMemFound kept) */
+/**
+ * @brief SearchMem(type,value,start_ad,end_ad): search memory for a value.
+ *
+ * The first place in start..end-1 with the byte (type 1), word (2), long
+ * (3, 5, 6) or string (4, value = its address); another type finds
+ * nothing.  The space bar is tested (RawStatus) every 127 steps and
+ * ends the search.  The string search does not go back after a partial
+ * match ("ab" is not found in "aab", BUG(orig) (#723)); an empty string
+ * compares the bytes behind its 0 (#721).  The word and long searches
+ * compare bytes up to 1/3 behind the end (#722).
+ * @param type   d0.b: the type
+ * @param value  d1: the value, or the string's address
+ * @param p      d2: the start
+ * @param end    d3: the end (exclusive)
+ * @return d0: -1 found (SearchMemFound = the address), 0 not found
+ *         (SearchMemFound = 0), 1 when the space bar was down
+ *         (SearchMemFound kept) - three values, so not BB_BOOL
+ */
 static ULONG BLITZ_ROUTINE searchmem_c(UBYTE type BL_REG(d0), ULONG value BL_REG(d1),
                                        const UBYTE *p BL_REG(d2), const UBYTE *end BL_REG(d3))
 {
@@ -1133,6 +1375,10 @@ notfound:
     return 0;
 }
 
+/**
+ * @brief SearchMemFound: the address SearchMem found.
+ * @return d0: the address, 0 after a search that found nothing
+ */
 static ULONG BLITZ_ROUTINE searchmemfound_c(void)
 {
     return findaddress;
@@ -1140,8 +1386,18 @@ static ULONG BLITZ_ROUTINE searchmemfound_c(void)
 
 /* ---------------------------------------------- tokens, labels, parsing */
 
-/* SetupLESDebug token_addr,tokenise (d0, d1.b): the token list for
-   FPrintDetoke, and its address as 8 hex digits (%c) */
+/**
+ * @brief SetupLESDebug token_addr,tokenise: the token list for
+ * FPrintDetoke.
+ *
+ * Also its address as 8 hex digits, ProcessString's %c.  The list: a
+ * chain of entries, the next at +0, the token number at +4, the name at
+ * +6.
+ * @param tok       d0: the token list
+ * @param tokenise  d1.b: nonzero: FPrintDetoke draws token names into
+ *                  plane 1 too
+ * @return nothing
+ */
 static void BLITZ_ROUTINE setuplesdebug_c(ULONG tok BL_REG(d0), UBYTE tokenise BL_REG(d1))
 {
     int i;
@@ -1154,10 +1410,16 @@ static void BLITZ_ROUTINE setuplesdebug_c(ULONG tok BL_REG(d0), UBYTE tokenise B
     }
 }
 
-/* ExtractLabel(label_string) (d0): from 9 characters on, the name behind
-   the first '.' up to a 0 or ':' (the source's test for a space is
-   assembled as CMPI.b #0 - BUG(orig) (#704), compiler bug #343, in every
-   build) */
+/**
+ * @brief ExtractLabel(label_string): the label name in a line.
+ *
+ * From 9 characters on, the name behind the first '.' up to a 0 or ':',
+ * at a3.  The '.' is searched without a limit (BUG(orig) (#703)); the
+ * source's test for a space is assembled as CMPI.b #0 - BUG(orig) (#704),
+ * compiler bug #343, in every build - so a space does not end the label.
+ * @param s  d0: the line
+ * @return d0: the length of the name
+ */
 static ULONG BLITZ_ROUTINE extractlabel_c(const UBYTE *s BL_REG(d0))
 {
     const UBYTE *name = s + 9;
@@ -1177,7 +1439,15 @@ static ULONG BLITZ_ROUTINE extractlabel_c(const UBYTE *s BL_REG(d0))
     return (UWORD)n;
 }
 
-/* D_InitParse string (d0): copied into the buffer (BUG(orig) (#716): no limit) */
+/**
+ * @brief D_InitParse string: start parsing a string of comma separated
+ * arguments.
+ *
+ * The string is copied into the parser's 256 byte buffer without a limit
+ * (BUG(orig) (#716)); the position goes to its start.
+ * @param s  d0: the string
+ * @return nothing
+ */
 static void BLITZ_ROUTINE initparse_c(const UBYTE *s BL_REG(d0))
 {
     UBYTE *d = parseadr;
@@ -1187,7 +1457,13 @@ static void BLITZ_ROUTINE initparse_c(const UBYTE *s BL_REG(d0))
         ;
 }
 
-/* D_NextArg$: the characters up to the next ',' (none after the last) */
+/**
+ * @brief D_NextArg$: the next argument of D_InitParse's string.
+ *
+ * The characters up to the next ',' (at a3); after the last argument
+ * the position is 0 and the result empty.
+ * @return d0: the length
+ */
 static ULONG BLITZ_ROUTINE nextparsearg_c(void)
 {
     const UBYTE *a = curadr;
@@ -1211,8 +1487,17 @@ static ULONG BLITZ_ROUTINE nextparsearg_c(void)
     }
 }
 
-/* ProcessString: the parser's text from its current position with %x
-   replaced by the string of entry x (%% a '%') */
+/**
+ * @brief ProcessString string: the parser's text with %x replaced.
+ *
+ * The text from the parser's current position (its "string" is no
+ * argument), at a3, with %x replaced by the string of entry x (%p
+ * "REDDebugger", %c the token list address, then AddProcessPtr's
+ * entries); %% gives a '%', a %x without an entry drops x.  Reads from
+ * 0 when there is no position (BUG(orig) (#719)) and goes on behind a
+ * '%' at the end of the string (#720).
+ * @return d0: the length
+ */
 static ULONG BLITZ_ROUTINE processstring_c(void)
 {
     const UBYTE *a = curadr, *p;
@@ -1241,8 +1526,16 @@ static ULONG BLITZ_ROUTINE processstring_c(void)
     }
 }
 
-/* AddProcessPtr character$,string (d0, d1): a new entry behind the last
-   (BUG(orig) (#700): no limit) */
+/**
+ * @brief AddProcessPtr character,string: a new %x entry for ProcessString.
+ *
+ * Behind the last entry, without a limit: after 20 entries the original
+ * overwrites the code of D_InitParse behind the table, the C build other
+ * data (BUG(orig) (#700)).
+ * @param ch  d0: the string whose first character is x
+ * @param s   d1: the string %x stands for
+ * @return nothing
+ */
 static void BLITZ_ROUTINE addprocessptr_c(const UBYTE *ch BL_REG(d0), const UBYTE *s BL_REG(d1))
 {
     struct ptok *e = stringtokens.user;
@@ -1254,6 +1547,13 @@ static void BLITZ_ROUTINE addprocessptr_c(const UBYTE *ch BL_REG(d0), const UBYT
     e[1].c = 0;
 }
 
+/**
+ * @brief ClearProcessPtrs: remove AddProcessPtr's entries.
+ *
+ * Only the first entry is cleared: it ends the lookup, and the next
+ * AddProcessPtr reuses it (no defect).  %p and %c stay.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE clearprocessptrs_c(void)
 {
     stringtokens.user[0].c = 0;
