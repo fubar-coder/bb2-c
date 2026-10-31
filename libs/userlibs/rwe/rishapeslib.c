@@ -61,7 +61,7 @@
  *     closes the file); a second such shape returns into the Blitz
  *     program's stack (#807).  An allocation that fails in the shape loop
  *     or in the cookie returns with a0 still pushed: it jumps to the data
- *     address (#806).  Stack imbalances that C cannot express: see rs_pop
+ *     address (#806; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  Stack imbalances that C cannot express: see rs_pop
  *     and rs_crash.
  *   - LELoadShapes form 3 (shape#,filename$,palette#) takes the palette of
  *     d3, not of the third argument (!libs #pd3) (#812).  LELoadShapes
@@ -69,9 +69,9 @@
  *     exchanged (a3 = the last shape, a2 = the first) (#813).  A failing
  *     chunk allocation frees the header buffer and closes the file twice
  *     (readchunk jumps to the cleanup of its caller and returns there)
- *     (#819).
+ *     (#819; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
  *   - read_palette: no check of the allocation (writes to address 0)
- *     (#821), the colour count of DIVU #3 (overflow: unchanged), 0 colours
+ *     (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"), the colour count of DIVU #3 (overflow: unchanged), 0 colours
  *     decode 65536; sizes are word additions (ADDQ #8) (#820).
  *   - LESaveShapes: whether the palette is written depends on the flags
  *     dos Write leaves (MOVE.l paletteptr,a0 is a MOVEA, the BNE tests
@@ -391,7 +391,7 @@ BLITZ_THUNK(_safetoblit, safetoblit_c, "d1/a0-a1");
 
 /* CreateCookie: the cookie of shape a2 in chip memory, the planes ORed
    (DBRA on depth - 1 and plane bytes - 1).  a0 = the original's pushed
-   a0 (BUG(orig): returned to if the allocation fails, #806). */
+   a0 (returned to if the allocation fails - never, #806). */
 static void createcookie(UBYTE *shape, UBYTE *pushed)
 {
     UBYTE *src, *dst;
@@ -560,7 +560,7 @@ static void read_palette(const UBYTE *cmap)
     }
     size = bl_mulu_w(colourcount, 12);
     BL_SETW(size, size + 8);
-    SL(palette, 0) = galloc(size, MEMF_PUBLIC | MEMF_CLEAR);  /* BUG(orig): unchecked (#821) */
+    SL(palette, 0) = galloc(size, MEMF_PUBLIC | MEMF_CLEAR);  /* unchecked: harmless (#821) */
     SW(palette, 4) = colourcount;
     p = (ULONG *)SL(palette, 0);
     *(volatile UWORD *)p = colourcount;
@@ -609,7 +609,7 @@ static int __attribute__((noinline)) readshapes(UBYTE *data)
         } else {
             SL(shape, 14) = galloc(SW(shape, 26), MEMF_CHIP);
             if (!SL(shape, 14))
-                rs_crash(data);         /* BUG(orig): RTS with a0 pushed (#806) */
+                rs_crash(data);         /* never reached (#806) */
             if ((WORD)compressed < 0 && (LONG)(packedsize = SL(data, 0)) >= 0) {
                 /* 'unpack_shape */
                 data += 4;
@@ -630,7 +630,7 @@ static int __attribute__((noinline)) readshapes(UBYTE *data)
         /* 'dodacookie */
         SL(shape, 18) = galloc(SW(shape, 22), MEMF_CHIP | MEMF_CLEAR);
         if (!SL(shape, 18))
-            rs_crash(data);             /* BUG(orig): RTS with a0 pushed (#806) */
+            rs_crash(data);             /* never reached (#806) */
         {
             const UBYTE *src = (const UBYTE *)SL(shape, 14);
             planes = SW(shape, 4) - 1;

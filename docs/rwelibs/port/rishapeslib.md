@@ -104,9 +104,9 @@ Further assembler:
   * A failing chunk allocation runs the caller's cleanup and returns
     there. The caller then frees the header buffer and closes the file a
     second time if packedsize is 0, and otherwise uses packedsize as the
-    chunk (#819).
+    chunk (#819; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
 * **read_palette:**
-  * The allocation is not checked; a failure writes to address 0 (#821).
+  * The allocation is not checked; a failure writes to address 0 (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
   * The colour count is `DIVU #3` of the chunk size; on overflow the
     register is unchanged (#820).
   * 0 colours decode 65536 (#820).

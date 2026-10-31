@@ -58,7 +58,7 @@
  *     selected image with PlanePick/PlaneOnOff 0 and sets the gadget
  *     flags to 6 (GADGHIMAGE), dropping all others (#854).
  *   - IconToShape: the shape is filled before the data is allocated (no
- *     memory: the shape keeps its size and has no data) (#848); the copy
+ *     memory: the shape keeps its size and has no data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); the copy
  *     takes (width >> 4) + 1 words per row, one word more than the
  *     shape's data has when the width is a multiple of 16 (writes behind
  *     it) (#847); MakeCookie is called with a3 = the shape only if the

@@ -71,7 +71,7 @@ bounds. They are kept here (below).
 * `LoadTrackerModule` has no `!libs`: the dos calls go through whatever
   a6 holds (#443). Length = file size + 3 as a **byte** add (a size with
   the low byte ≥ $FD loses the carry: $10FE gives $1001, and only that
-  much is read) (#442); the chip memory is not checked (#440); after a
+  much is read) (#442); the chip memory is not checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); after a
   Read error it unlocks the lock that `OpenFromLock` took over (#444).
   The runtime errors after `Lock` leave the lock allocated, and the
   FileInfoBlock is freed only on success (#441).
@@ -80,7 +80,7 @@ bounds. They are kept here (below).
   copies to chip memory with the size + 3 as a **word** add (#434);
   without memory the slot keeps the old address with flag 2 and the new
   length (a later `FreeTrackerModule` frees memory that was never
-  allocated) (#433). `FreeTrackerModule` does not stop a module that
+  allocated) (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"). `FreeTrackerModule` does not stop a module that
   plays from the slot (#436).
 * `StartTracker` of an empty slot returns the slot number (the MOVEM
   restores d0 over the 0) (#451). `ModuleToChip` is an RTS: it returns

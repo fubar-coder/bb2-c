@@ -44,14 +44,14 @@
  *   - LoadTrackerModule (no !libs): the dos calls go through whatever a6
  *     holds (#443); the length is the file size + 3 as a byte add
  *     (ADD.b), so the carry is lost (#442); the chip memory is not
- *     checked (#440); a Read error unlocks the lock OpenFromLock took over
+ *     checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); a Read error unlocks the lock OpenFromLock took over
  *     (#444); the runtime errors after Lock (no FileInfoBlock, Examine
  *     failing) leave the lock allocated (#441).
  *   - DecodeModule into chip memory (an address < $200000, signed) keeps
  *     the address (#432); from other memory it copies the module to chip
  *     memory with the size + 3 as a word add (ADD.w) (#434); when the
  *     memory is missing the slot keeps the old address with flag 2 and
- *     the new length (#433).  The size is computed with mt_init's scan
+ *     the new length (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
  *     (below).
  *   - StartTracker of an empty slot returns the slot number (the MOVEM
  *     restores d0 over the 0) (#451).  ModuleToChip does nothing and

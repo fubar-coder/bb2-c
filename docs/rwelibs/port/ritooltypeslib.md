@@ -56,7 +56,7 @@ that are not the result.
   selected image and sets the gadget flags to 6, dropping the others
   (#854).
 * IconToShape fills the shape before allocating its data (no memory:
-  size without data) (#848); copies `(width >> 4) + 1` words per row, one
+  size without data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); copies `(width >> 4) + 1` words per row, one
   more than the shape's data has when the width is a multiple of 16
   (#847); calls MakeCookie with a3 = the shape only if it was in use
   before (freeashape), otherwise with the caller's a3 (a cookie for
