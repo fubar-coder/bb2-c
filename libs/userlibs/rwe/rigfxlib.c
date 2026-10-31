@@ -251,10 +251,10 @@ BLITZ_THUNK(paladjust2, paladjust2_c, "d0-d1/a0-a1");
 /* without start/end: 0 .. (the colours of PaletteInfo's palette) - 1;
    the upper word of `end` is the caller's d3 (SUB.w), unused */
 static void BLITZ_ROUTINE paladjust_c(UBYTE **obj BL_REG(a0), ULONG ratio BL_REG(d1),
-                                       ULONG d3 BL_REG(d3))
+                                       ULONG end BL_REG(d3))
 {
-    BL_SETW(d3, W(paladdr - 4) - 1);
-    paladjust2_c(obj, ratio, 0, d3);
+    BL_SETW(end, W(paladdr - 4) - 1);
+    paladjust2_c(obj, ratio, 0, end);
 }
 BLITZ_THUNK(paladjust, paladjust_c, "d0-d1/a0-a1");
 
@@ -448,35 +448,35 @@ BLITZ_THUNK(savecmap, savecmap_c, "d1/a0-a1");
 /* the planes of src1, then of src2, into dest (numplanes of them; 0 = all
    of both, DBRA from -1); nothing if a source has word 62 = 0, dest not,
    or numplanes > the sum of the depths (signed words) */
-static void BLITZ_ROUTINE mergebitplanes_c(UBYTE *s1 BL_REG(a0), UBYTE *s2 BL_REG(a1),
+static void BLITZ_ROUTINE mergebitplanes_c(UBYTE *src1 BL_REG(a0), UBYTE *src2 BL_REG(a1),
                                             UBYTE *dst BL_REG(a2), ULONG planes BL_REG(d3))
 {
-    UWORD c0, c1, n;
-    const ULONG *p0, *p1;
+    UWORD left1, left2, n;
+    const ULONG *planes1, *planes2;
     ULONG *pd;
 
-    if (!W(s1 + 62) || !W(s2 + 62) || W(dst + 62))
+    if (!W(src1 + 62) || !W(src2 + 62) || W(dst + 62))
         return;
-    if ((WORD)planes > (WORD)(UWORD)(W(s1 + 4) + W(s2 + 4)))
+    if ((WORD)planes > (WORD)(UWORD)(W(src1 + 4) + W(src2 + 4)))
         return;
     W(dst + 4) = (UWORD)planes;
-    LG(dst) = LG(s1);
+    LG(dst) = LG(src1);
     LG(dst + 52) = 0;
-    LG(dst + 56) = LG(s1 + 56);
+    LG(dst + 56) = LG(src1 + 56);
     W(dst + 62) = 1;
     n = (UWORD)(planes - 1);
-    c0 = W(s1 + 4);
-    c1 = W(s2 + 4);
-    p0 = (const ULONG *)(s1 + 8);
-    p1 = (const ULONG *)(s2 + 8);
+    left1 = W(src1 + 4);
+    left2 = W(src2 + 4);
+    planes1 = (const ULONG *)(src1 + 8);
+    planes2 = (const ULONG *)(src2 + 8);
     pd = (ULONG *)(dst + 8);
-    while ((WORD)--c0 >= 0) {           /* SUBQ.w #1:BMI */
-        *pd++ = *p0++;
+    while ((WORD)--left1 >= 0) {        /* SUBQ.w #1:BMI */
+        *pd++ = *planes1++;
         if (n-- == 0)                   /* DBRA */
             return;
     }
-    while ((WORD)--c1 >= 0) {
-        *pd++ = *p1++;
+    while ((WORD)--left2 >= 0) {
+        *pd++ = *planes2++;
         if (n-- == 0)
             return;
     }
