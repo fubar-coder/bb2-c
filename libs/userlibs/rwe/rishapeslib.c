@@ -493,20 +493,22 @@ BLITZ_THUNK(_loadshapestoaddress, loadshapestoaddress_c, "d1/a0-a1");
    bytes of all planes for +28 (LEInitShape computes +26 first) */
 static void shapesizes(UBYTE *shape, int init)
 {
-    UWORD work, planebytes;             /* d0: row bytes, words, height, 2 * height; d1 */
+    UWORD rowbytes, rowwords;           /* d0 */
+    UWORD height, height2;              /* d0: the height, 2 * height */
+    UWORD planebytes;                   /* d1 */
 
-    work = (UWORD)(((UWORD)(SW(shape, 0) + 15) >> 4) << 1);
-    SW(shape, 6) = work;
-    work >>= 1;
-    SW(shape, 8) = (UWORD)(work + (UWORD)bl_mulu_w(SW(shape, 2), 64) + 1);
-    work = SW(shape, 2);
-    planebytes = (UWORD)bl_mulu_w(SW(shape, 6), work);
+    rowbytes = (UWORD)(((UWORD)(SW(shape, 0) + 15) >> 4) << 1);
+    SW(shape, 6) = rowbytes;
+    rowwords = rowbytes >> 1;
+    SW(shape, 8) = (UWORD)(rowwords + (UWORD)bl_mulu_w(SW(shape, 2), 64) + 1);
+    height = SW(shape, 2);
+    planebytes = (UWORD)bl_mulu_w(SW(shape, 6), height);
     SW(shape, 22) = planebytes;
     if (init)
         SW(shape, 26) = (UWORD)bl_mulu_w(planebytes, SW(shape, 4));
-    work <<= 1;
-    SW(shape, 24) = (UWORD)(planebytes + work);
-    SW(shape, 28) = (UWORD)(bl_mulu_w(work, SW(shape, 4)) + SW(shape, 26));
+    height2 = (UWORD)(height << 1);
+    SW(shape, 24) = (UWORD)(planebytes + height2);
+    SW(shape, 28) = (UWORD)(bl_mulu_w(height2, SW(shape, 4)) + SW(shape, 26));
 }
 
 /* LEInitShape shape#,width,height,depth: a2 = the shape; new cleared
@@ -847,8 +849,10 @@ static void BLITZ_ROUTINE leloadshapesingle_c(ULONG shapenum BL_REG(d0), ULONG n
                                               UBYTE *objects BL_REG(a3),
                                               struct DosLibrary *dos BL_REG(a6))
 {
-    BL_SETW(maxshapes, (UWORD)((UWORD)(maxshapes - 1) << 5));
-    leloadshapes(shapenum, maxshapes, name, palette, first, objects + (WORD)maxshapes, dos);
+    ULONG lastoff = maxshapes;          /* d4: the last shape's offset, upper word kept */
+
+    BL_SETW(lastoff, (UWORD)((UWORD)(maxshapes - 1) << 5));
+    leloadshapes(shapenum, lastoff, name, palette, first, objects + (WORD)lastoff, dos);
 }
 BLITZ_THUNK_PRE(_leloadshapesingle, leloadshapesingle_c, "d0-d1/a0-a1", "move.l sp,_rs_sp");
 
@@ -989,13 +993,15 @@ static ULONG writeshapes(BPTR fh, ULONG bufsize)
 }
 
 /* LESaveShapes shape#,shape#,filename$[,palette#] */
-static void BLITZ_ROUTINE lesaveshapes_c(ULONG shape1 BL_REG(d0), ULONG shapes BL_REG(d1),
+static void BLITZ_ROUTINE lesaveshapes_c(ULONG shape1 BL_REG(d0), ULONG shape2 BL_REG(d1),
                                          ULONG name BL_REG(d2), UBYTE *palette BL_REG(a0),
                                          UBYTE *first BL_REG(a2), UBYTE *last BL_REG(a3),
                                          struct DosLibrary *dos BL_REG(a6))
 {
     BPTR fh;
     ULONG written, len, result;
+    ULONG count = shape2;               /* d1: the shape count, upper word kept */
+    UWORD num2;                         /* d1: shape2 >> 5 */
     UBYTE z;
 
     dosbase = dos;
@@ -1003,9 +1009,9 @@ static void BLITZ_ROUTINE lesaveshapes_c(ULONG shape1 BL_REG(d0), ULONG shapes B
     startshape = first;
     endshape = last;
     BL_SETW(shape1, (WORD)shape1 >> 5);
-    BL_SETW(shapes, (WORD)shapes >> 5);
-    BL_SETW(shapes, shapes - shape1);
-    shapecount = shapes;                /* BUG(orig): the upper word too (#815) */
+    num2 = (UWORD)((WORD)shape2 >> 5);
+    BL_SETW(count, num2 - shape1);
+    shapecount = count;                 /* BUG(orig): the upper word too (#815) */
     fh = Open((STRPTR)name, MODE_NEWFILE);
     if (!fh)
         return;
@@ -1027,11 +1033,11 @@ static void BLITZ_ROUTINE lesaveshapes_c(ULONG shape1 BL_REG(d0), ULONG shapes B
 }
 BLITZ_THUNK(_lesaveshapes, lesaveshapes_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE lesaveshapesnop_c(ULONG shape1 BL_REG(d0), ULONG shapes BL_REG(d1),
+static void BLITZ_ROUTINE lesaveshapesnop_c(ULONG shape1 BL_REG(d0), ULONG shape2 BL_REG(d1),
                                             ULONG name BL_REG(d2), UBYTE *first BL_REG(a2),
                                             UBYTE *last BL_REG(a3),
                                             struct DosLibrary *dos BL_REG(a6))
 {
-    lesaveshapes_c(shape1, shapes, name, NULL, first, last, dos);
+    lesaveshapes_c(shape1, shape2, name, NULL, first, last, dos);
 }
 BLITZ_THUNK(_lesaveshapesnop, lesaveshapesnop_c, "d0-d1/a0-a1");
