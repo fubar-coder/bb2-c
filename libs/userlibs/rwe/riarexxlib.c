@@ -259,7 +259,7 @@ BLITZ_ERRCHK_THUNK(portchk, portchk_c, "d0-d1/a0-a1");
 static ULONG msgstring, msgtype;
 static UBYTE *msgportname;
 static UBYTE quote;
-static ULONG tokenise;
+static ULONG tokenise;                  /* RXTokenise: the whole register (#547) */
 static UWORD oktodelete;
 static UBYTE *curadr;                   /* the parser (parseadr unused) */
 static UBYTE tempstorage[256], stringbuffer[256];
@@ -387,7 +387,7 @@ static ULONG tostring(const UBYTE *s)
 static ULONG BLITZ_ROUTINE libinit_c(void)
 {
     quote = 34;
-    tokenise = (ULONG)-1;
+    tokenise = BB_TRUE;
     v.rexxportname[0] = 'R';            /* MOVE.l #"REXX" */
     v.rexxportname[1] = 'E';
     v.rexxportname[2] = 'X';
@@ -404,7 +404,7 @@ static void deleteport(void);
 
 static void BLITZ_ROUTINE libfinit_c(void)
 {
-    tokenise = (ULONG)-1;
+    tokenise = BB_TRUE;
     if (msgport)
         deleteport();
 }
@@ -778,13 +778,13 @@ BLITZ_THUNK(waitport, rxwaitport_c, "d1/a0-a1");
 /* ------------------------------------------------- the current message */
 
 /* RXReplyMsg errcode[,result$] (the length of result$ on the a2 stack) */
-static ULONG replymsg(ULONG code, const UBYTE *res, const ULONG *args)
+static BB_BOOL replymsg(ULONG code, const UBYTE *res, const ULONG *args)
 {
     struct RexxMsg *m = v.currentmessage;
     UBYTE *leftover;
 
     if (!m)
-        return 0;
+        return BB_FALSE;
     m->rm_Result1 = code;
     if (!res)
         m->rm_Result2 = 0;
@@ -793,13 +793,13 @@ static ULONG replymsg(ULONG code, const UBYTE *res, const ULONG *args)
     if (findport_a0((UBYTE *)m->rm_Node.mn_Node.ln_Name, &leftover)) {
         v.currentmessage->rm_Node.mn_Node.ln_Type = NT_REPLYMSG;
         ReplyMsg(&v.currentmessage->rm_Node);
-        return (ULONG)-1;
+        return BB_TRUE;
     }
     /* 'shit: BUG(orig) the Result2 of the a0 FindPort left (#540) */
     if (!((struct RexxMsg *)leftover)->rm_Result2)
-        return 0;
+        return BB_FALSE;
     deleteargstring(v.currentmessage->rm_Result2);
-    return 0;
+    return BB_FALSE;
 }
 
 static void BLITZ_ROUTINE replymsg_c(ULONG code BL_REG(d0))
