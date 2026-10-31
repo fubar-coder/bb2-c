@@ -133,14 +133,17 @@ BLITZ_LIBFIN();
 
 static UWORD dateformat;                /* 0 = dd/mm/yyyy, else mm/dd/yyyy */
 static ULONG totday;                    /* days since 0/0/0 of the last Date$ */
-static UWORD dym[3];                    /* day, year, month of the last Date$ */
+static struct {                        /* the last Date$ (dym: MOVEM d0-d2) */
+    UWORD day, year, month;
+} dym;
+static_assert(sizeof dym == 3 * 2);
 
 /* stamp and months in one block, as in the original: NumDays reads
    months-2 for month 0 (the low word of the tick count) and the words
    after the table for months 14/15 (the original library ends there with
    MOVEQ #0,d0:RTS). */
 static struct {
-    ULONG stamp[3];                     /* struct DateStamp */
+    struct DateStamp stamp;
     UWORD months[13];
     UWORD tail[2];
 } dt = {
@@ -148,26 +151,27 @@ static struct {
     { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 1000 },
     { 0x7000, 0x4e75 },
 };
+static_assert(sizeof dt == 42);
 
 /* _hours - JSR _DateStamp(a6); minutes / 60: hours in the low word,
    minutes in the high word */
 ULONG BLITZ_ROUTINE hours_c(struct Library *dosbase BL_REG(a6))
 {
-    DateStamp((struct DateStamp *)dt.stamp);
-    return bl_divu_w(dt.stamp[1], 60);
+    DateStamp(&dt.stamp);
+    return bl_divu_w(dt.stamp.ds_Minute, 60);
 }
 
 /* _mins - of the last DateStamp: minutes / 60, SWAP */
 ULONG BLITZ_ROUTINE mins_c(void)
 {
-    ULONG hourmin = bl_divu_w(dt.stamp[1], 60);
+    ULONG hourmin = bl_divu_w(dt.stamp.ds_Minute, 60);
     return BL_SWAP(hourmin);
 }
 
 /* _secs - of the last DateStamp: ticks / 50 */
 ULONG BLITZ_ROUTINE secs_c(void)
 {
-    return bl_divu_w(dt.stamp[2], 50);
+    return bl_divu_w(dt.stamp.ds_Tick, 50);
 }
 
 /* _dateformat - MOVE d0,dateformat */
@@ -179,8 +183,8 @@ void BLITZ_ROUTINE dateformat_c(UWORD f BL_REG(d0))
 /* _date - JSR _DateStamp(a6): the day count */
 ULONG BLITZ_ROUTINE date_c(struct Library *dosbase BL_REG(a6))
 {
-    DateStamp((struct DateStamp *)dt.stamp);
-    return dt.stamp[0];
+    DateStamp(&dt.stamp);
+    return dt.stamp.ds_Days;
 }
 
 /* two digits of the low word of r: EXT.l, DIVU #10, quotient and
@@ -230,9 +234,9 @@ ULONG BLITZ_ROUTINE datestr_c(LONG days BL_REG(d0))
     while ((WORD)((UWORD)day - *entry++) >= 0);
     BL_SETW(day, day - entry[-2]);
     BL_SETW(day, day + 1);
-    dym[0] = day;                                       /* MOVEM d0-d2,dym */
-    dym[1] = year;
-    dym[2] = month;
+    dym.day = day;                                      /* MOVEM d0-d2,dym */
+    dym.year = year;
+    dym.month = month;
     if (dateformat) {                                   /* EXG d0,d2 */
         ULONG saved = day;
         day = month;
@@ -262,9 +266,9 @@ ULONG BLITZ_ROUTINE weekday_c(void)
     return BL_SWAP(value);
 }
 
-UWORD BLITZ_ROUTINE days_c(void)   { return dym[0]; }
-UWORD BLITZ_ROUTINE months_c(void) { return dym[2]; }
-UWORD BLITZ_ROUTINE years_c(void)  { return dym[1]; }
+UWORD BLITZ_ROUTINE days_c(void)   { return dym.day; }
+UWORD BLITZ_ROUTINE months_c(void) { return dym.month; }
+UWORD BLITZ_ROUTINE years_c(void)  { return dym.year; }
 
 /* _calcdays - "dd/mm/yyyy" (or mm/dd/yyyy) to days since 1/1/1978; 0 if
    day or month are not followed by "/".  Day and month: 1 or 2 digits,
