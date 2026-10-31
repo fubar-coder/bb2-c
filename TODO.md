@@ -367,7 +367,18 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   repository; history of bb2 (plans, logs, reviews) unchanged in content,
   remaining bb2 mentions explained in `docs/README.md`.
 - [ ] **Tests for the issues labelled `needs-test`** (99 open issues at the
-  start, 3 open on 2026-10-29: #14, #26, #42). A failing test is added with label
+  start, 3 open on 2026-10-29: #14, #26, #42). State 2026-10-31: #42 done
+  (a500-68010); a batch with the new tools (`inject allocfail`, the
+  machines `a500`/`a600`, CD image with `uaescsi.device`) gave tests for
+  #939–#942, #825, #647, #636, #524, #927, #666, #840, #579 (#824 had
+  one); label `untestable` (reason in the issue): #896, #675, #607, #469,
+  #581, #384, #352; #655 deferred. Still `needs-test`: #848, #821, #806,
+  #819, #440, #433 (a failing globalloc never returns: memlib's
+  "Out of Memory!" - no bug in practice, closing to be decided), #366
+  (not reproducible on the reference), #356, #444 (needs inject for
+  `OpenFromLock`), #361, #369, #917, #14, #26. Found: #946 (bug-port,
+  ricompactdisclib's SCSI CDReadTOC hangs after a session without
+  scsiflag). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,
   and `needs-test` is removed (allowed for these issues, 2026-10-28).
   - Done (2026-10-28), every test REPRODUCED and, except where noted in
