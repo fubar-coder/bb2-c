@@ -9,7 +9,7 @@
 ; AttemptLockLayerRom_ (function), the layer in a5, on a layer of
 ; layers.library on a bitmap of its own, each followed by a read of the
 ; global g.  (exec Supervisor_, also a5, cannot be compiled at all: its
-; token is also the token of doslib's finit.)
+; token is also the token of doslib's finit, #960.)
 ; Correct: the program prints local 7, global 42 four times and locked -1.
 DEFTYPE .l
 Statement wb{}
