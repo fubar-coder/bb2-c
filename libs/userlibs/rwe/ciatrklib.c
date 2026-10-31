@@ -457,19 +457,19 @@ static ULONG peekl(ULONG addr)
 }
 
 /* LEA modtable,a3: MULU #10,d0: ADDA d0,a3 (word, sign extended) */
-static struct modent *slot(ULONG d0)
+static struct modent *slot(ULONG num)
 {
-    UBYTE *a3 = (UBYTE *)g.modtable;
-    LAUNDER(a3);
-    return (struct modent *)(a3 + (WORD)bl_mulu_w((UWORD)d0, 10));
+    UBYTE *table = (UBYTE *)g.modtable;
+    LAUNDER(table);
+    return (struct modent *)(table + (WORD)bl_mulu_w((UWORD)num, 10));
 }
 
 /* the period table of finetune `ft` (MULU #36*2: also > 15) */
 static const UWORD *periods(UBYTE ft)
 {
-    const UWORD *t = p.PeriodTable;
-    LAUNDER(t);
-    return (const UWORD *)((const UBYTE *)t + bl_mulu_w(ft, 36 * 2));
+    const UWORD *table = p.PeriodTable;
+    LAUNDER(table);
+    return (const UWORD *)((const UBYTE *)table + bl_mulu_w(ft, 36 * 2));
 }
 
 /* the registers of voice `ch`: Paula's, or fake_channel if masked */
@@ -509,8 +509,8 @@ static void setciaint(void)
 {
     const char *name = c.CIAAname;
     struct Library *res, *gfx;
-    UWORD d6 = 2;
-    ULONG d7;
+    UWORD tries = 2;
+    ULONG timerval;
 
     for (;;) {
         res = OpenResource((STRPTR)name);
@@ -523,41 +523,41 @@ static void setciaint(void)
             return;
         }
         if (((struct GfxBase *)gfx)->DisplayFlags & PAL)
-            d7 = 1773447;               /* PAL */
+            timerval = 1773447;         /* PAL */
         else
-            d7 = 1789773;               /* NTSC */
-        c.TimerValue = d7;
-        d7 = bl_divu_w(d7, 125);        /* default: 50 Hz */
+            timerval = 1789773;         /* NTSC */
+        c.TimerValue = timerval;
+        timerval = bl_divu_w(timerval, 125); /* default: 50 Hz */
         CloseLibrary(gfx);
-        if (d6 != 2) {                  /* 'TryTimerB */
-            volatile UBYTE *a5 = (volatile UBYTE *)0xbfd000;
+        if (tries != 2) {               /* 'TryTimerB */
+            volatile UBYTE *cia = (volatile UBYTE *)0xbfd000;
             /* BUG(orig): the bit is the long at address 2 (#450) */
             struct bl_regs r = { .d0 = peekl(2), .a1 = (ULONG)&c.MusicIntServer };
             ULONG err = BLITZ_BASEJSR(res, -6, r);      /* AddICRVector */
             c.TimerFlag = 1;
             if (!err) {
-                c.CIAAaddr = a5;
-                a5[CIATBLO] = (UBYTE)d7;
-                a5[CIATBHI] = (UBYTE)((UWORD)d7 >> 8);
-                a5[CIACRB] |= 1;
+                c.CIAAaddr = cia;
+                cia[CIATBLO] = (UBYTE)timerval;
+                cia[CIATBHI] = (UBYTE)((UWORD)timerval >> 8);
+                cia[CIACRB] |= 1;
                 return;
             }
         } else {                        /* 'TryTimerA */
-            volatile UBYTE *a5 = (volatile UBYTE *)0xbfe001;
+            volatile UBYTE *cia = (volatile UBYTE *)0xbfe001;
             /* BUG(orig): the bit is the long at address 1 (#450) */
             struct bl_regs r = { .d0 = peekl(1), .a1 = (ULONG)&c.MusicIntServer };
             ULONG err = BLITZ_BASEJSR(res, -6, r);      /* AddICRVector */
             c.TimerFlag = 0;
             if (!err) {
-                c.CIAAaddr = a5;
-                a5[CIATALO] = (UBYTE)d7;
-                a5[CIATAHI] = (UBYTE)((UWORD)d7 >> 8);
-                a5[CIACRA] |= 1;
+                c.CIAAaddr = cia;
+                cia[CIATALO] = (UBYTE)timerval;
+                cia[CIATAHI] = (UBYTE)((UWORD)timerval >> 8);
+                cia[CIACRA] |= 1;
                 return;
             }
         }
         name = c.CIABname;              /* 'CIAError */
-        if (--d6 == 0)
+        if (--tries == 0)
             break;
     }
     c.CIAAbase = NULL;
@@ -567,16 +567,16 @@ static void setciaint(void)
 static void resetciaint(void)
 {
     struct Library *res = c.CIAAbase;
-    volatile UBYTE *a5;
+    volatile UBYTE *cia;
 
     if (!res)
         return;
     c.CIAAbase = NULL;
-    a5 = c.CIAAaddr;
+    cia = c.CIAAaddr;
     if (c.TimerFlag)
-        a5[CIACRB] &= ~1;
+        cia[CIACRB] &= ~1;
     else
-        a5[CIACRA] &= ~1;
+        cia[CIACRA] &= ~1;
     {
         /* BUG(orig): always bit 0 (MOVEQ #0,d0 after MOVEQ #1,D0) (#448) */
         struct bl_regs r = { .d0 = 0, .a1 = (ULONG)&c.MusicIntServer };
@@ -586,24 +586,24 @@ static void resetciaint(void)
 }
 
 /* SetTempo: d0 = beats per minute (>= 32), the timer TimerValue / d0 */
-static void settempo(UWORD d0)
+static void settempo(UWORD bpm)
 {
-    volatile UBYTE *a4;
-    ULONG d2;
+    volatile UBYTE *cia;
+    ULONG count;
 
     if (!c.CIAAbase)
         return;
-    if (d0 < 32)
-        d0 = 32;
-    c.RealTempo = d0;
-    d2 = bl_divu_w(c.TimerValue, d0);
-    a4 = c.CIAAaddr;
+    if (bpm < 32)
+        bpm = 32;
+    c.RealTempo = bpm;
+    count = bl_divu_w(c.TimerValue, bpm);
+    cia = c.CIAAaddr;
     if (c.TimerFlag) {
-        a4[CIATBLO] = (UBYTE)d2;
-        a4[CIATBHI] = (UBYTE)((UWORD)d2 >> 8);
+        cia[CIATBLO] = (UBYTE)count;
+        cia[CIATBHI] = (UBYTE)((UWORD)count >> 8);
     } else {
-        a4[CIATALO] = (UBYTE)d2;
-        a4[CIATAHI] = (UBYTE)((UWORD)d2 >> 8);
+        cia[CIATALO] = (UBYTE)count;
+        cia[CIATAHI] = (UBYTE)((UWORD)count >> 8);
     }
 }
 
@@ -616,30 +616,30 @@ static UWORD set_volume(UWORD v)
 }
 
 /* Set_Real_Mask: the DMA bits of masked channels off */
-static UWORD set_real_mask(UWORD d0)
+static UWORD set_real_mask(UWORD bits)
 {
-    return d0 & (0xfff0 | g.master_mask);
+    return bits & (0xfff0 | g.master_mask);
 }
 
 /* the highest pattern number of the song positions (mt_init, _modtochip):
    positions 0-126 (BUG(orig), see the head, #477); signed compare */
 static UBYTE maxpattern(const UBYTE *mod)
 {
-    const BYTE *a1 = (const BYTE *)mod + 952;
-    UWORD d0 = 126;                     /* MOVEQ #127: SUBQ.W #1 */
-    BYTE d2 = 0, d1;
+    const BYTE *pos = (const BYTE *)mod + 952;
+    UWORD left = 126;                   /* MOVEQ #127: SUBQ.W #1 */
+    BYTE max = 0, pat;
 
     for (;;) {
-        d1 = *a1++;
-        if (d1 > d2) {                  /* BGT mtloop */
-            d2 = d1;
-            d0--;
+        pat = *pos++;
+        if (pat > max) {                /* BGT mtloop */
+            max = pat;
+            left--;
             continue;
         }
-        if (d0-- == 0)                  /* DBRA */
+        if (left-- == 0)                /* DBRA */
             break;
     }
-    return (UBYTE)d2;
+    return (UBYTE)max;
 }
 
 /* the size of the pattern data and samples: 1084 + (max+1)*1024 */
@@ -663,19 +663,19 @@ static void mt_end(void)
 }
 
 /* mt_init: a4 = the module length (4(a3) of the slot) */
-static void mt_init(ULONG a4)
+static void mt_init(ULONG modlen)
 {
-    UBYTE *a0 = c.mt_data, *a2;
+    UBYTE *hdr = c.mt_data, *sampdata;
     int i;
 
-    p.SongDataPtr = a0;
-    a2 = a0 + patternsize(a0);
+    p.SongDataPtr = hdr;
+    sampdata = hdr + patternsize(hdr);
     for (i = 0; i < 31; i++) {
-        if ((LONG)a4 > (LONG)a2)        /* BUG(orig): the length (#438) */
-            LONGAT(a2) = 0;
-        p.SampleStarts[i] = a2;
-        a2 += (ULONG)WORDAT(a0 + 42) << 1;
-        a0 += 30;
+        if ((LONG)modlen > (LONG)sampdata) /* BUG(orig): the length (#438) */
+            LONGAT(sampdata) = 0;
+        p.SampleStarts[i] = sampdata;
+        sampdata += (ULONG)WORDAT(hdr + 42) << 1;
+        hdr += 30;
     }
     CIAAPRA |= 2;                       /* filter off */
     p.speed = 6;
@@ -696,128 +696,128 @@ static void waitline(void)
 
 /* mt_PlaySamples (the busy-wait fix of Delirium Softdesign): stop the
    channels of d2 that play, start them, then set their periods */
-static void playsamples(UWORD d2)
+static void playsamples(UWORD chans)
 {
     volatile struct Custom *cu = CUSTOM;
-    UWORD d0, d1;
+    UWORD bits, dmabits;
     int i;
 
     waitline();
     for (i = 0; i < 4; i++)
-        if (d2 & (1 << i))
+        if (chans & (1 << i))
             cu->aud[i].ac_per = 1;      /* max. speed */
-    d0 = cu->dmaconr & d2;              /* active channels */
-    d1 = d0;
-    d0 <<= 7;
-    cu->intreq = d0;                    /* stop channels */
-    cu->dmacon = d1;
-    while ((cu->intreqr & d0) != d0)    /* mt_Wait2 */
+    bits = cu->dmaconr & chans;         /* active channels */
+    dmabits = bits;
+    bits <<= 7;
+    cu->intreq = bits;                  /* stop channels */
+    cu->dmacon = dmabits;
+    while ((cu->intreqr & bits) != bits) /* mt_Wait2 */
         ;
-    d0 = ~cu->dmaconr & d2;
-    d1 = d0;
-    d0 <<= 7;
-    cu->intreq = d0;
-    cu->dmacon = d1 | 0x8000;           /* start channels */
-    while ((cu->intreqr & d0) != d0)    /* mt_Wait3 */
+    bits = ~cu->dmaconr & chans;
+    dmabits = bits;
+    bits <<= 7;
+    cu->intreq = bits;
+    cu->dmacon = dmabits | 0x8000;      /* start channels */
+    while ((cu->intreqr & bits) != bits) /* mt_Wait3 */
         ;
     waitline();
     for (i = 0; i < 4; i++)
-        if (d2 & (1 << i))
+        if (chans & (1 << i))
             cu->aud[i].ac_per = p.chan[i].period;
 }
 
-static void pernop(struct chan *ch, aud_t *a5)
+static void pernop(struct chan *ch, aud_t *aud)
 {
-    a5->ac_per = ch->period;
+    aud->ac_per = ch->period;
 }
 
 /* mt_UpdateFunk: invert loop (EFx) */
 static void updatefunk(struct chan *ch)
 {
-    UBYTE x = ch->glissfunk >> 4, *a0, *end;
+    UBYTE speed = ch->glissfunk >> 4, *pos, *end;
 
-    if (!x)
+    if (!speed)
         return;
-    ch->funkoffset += p.FunkTable[x];
+    ch->funkoffset += p.FunkTable[speed];
     if (!(ch->funkoffset & 0x80))
         return;
     ch->funkoffset = 0;
     end = ch->loopstart + ch->replen + ch->replen;
-    a0 = ch->wavestart + 1;
-    if (!(a0 < end))
-        a0 = ch->loopstart;
-    ch->wavestart = a0;
-    *a0 = (UBYTE)(0xff - *a0);          /* MOVEQ #-1,D0: SUB.B (A0),D0 */
+    pos = ch->wavestart + 1;
+    if (!(pos < end))
+        pos = ch->loopstart;
+    ch->wavestart = pos;
+    *pos = (UBYTE)(0xff - *pos);        /* MOVEQ #-1,D0: SUB.B (A0),D0 */
 }
 
 /* mt_Arpeggio */
-static void arpeggio(struct chan *ch, aud_t *a5)
+static void arpeggio(struct chan *ch, aud_t *aud)
 {
-    UWORD r = (UWORD)(bl_divs_w(p.counter, 3) >> 16), d0;      /* DIVS: SWAP */
-    const UWORD *a0;
+    UWORD step = (UWORD)(bl_divs_w(p.counter, 3) >> 16), halftones; /* DIVS: SWAP */
+    const UWORD *table;
     int i;
 
-    if (r == 0) {
-        a5->ac_per = ch->period;
+    if (step == 0) {
+        aud->ac_per = ch->period;
         return;
     }
-    d0 = r == 2 ? ch->n.f.cmdlo & 15 : ch->n.f.cmdlo >> 4;
-    a0 = periods(ch->finetune);
+    halftones = step == 2 ? ch->n.f.cmdlo & 15 : ch->n.f.cmdlo >> 4;
+    table = periods(ch->finetune);
     for (i = 0; i <= 36; i++) {         /* reads up to 15 words behind */
-        UWORD d2 = a0[i + d0];
-        if (ch->period >= a0[i]) {
-            a5->ac_per = d2;
+        UWORD per = table[i + halftones];
+        if (ch->period >= table[i]) {
+            aud->ac_per = per;
             return;
         }
     }
 }
 
 /* mt_PortaUp (mt_LowMask: $0F for E1x, else $FF after the first use) */
-static void portaup(struct chan *ch, aud_t *a5)
+static void portaup(struct chan *ch, aud_t *aud)
 {
-    UBYTE d0 = ch->n.f.cmdlo & p.LowMask;
+    UBYTE delta = ch->n.f.cmdlo & p.LowMask;
 
     p.LowMask = 0xff;
-    ch->period -= d0;
+    ch->period -= delta;
     if ((WORD)((ch->period & 0x0fff) - 113) < 0)
         ch->period = (ch->period & 0xf000) | 113;
-    a5->ac_per = ch->period & 0x0fff;
+    aud->ac_per = ch->period & 0x0fff;
 }
 
-static void portadown(struct chan *ch, aud_t *a5)
+static void portadown(struct chan *ch, aud_t *aud)
 {
-    UBYTE d0 = ch->n.f.cmdlo & p.LowMask;
+    UBYTE delta = ch->n.f.cmdlo & p.LowMask;
 
     p.LowMask = 0xff;
-    ch->period += d0;
+    ch->period += delta;
     if ((WORD)((ch->period & 0x0fff) - 856) >= 0)
         ch->period = (ch->period & 0xf000) | 856;
-    a5->ac_per = ch->period & 0x0fff;
+    aud->ac_per = ch->period & 0x0fff;
 }
 
-static void fineportaup(struct chan *ch, aud_t *a5)
+static void fineportaup(struct chan *ch, aud_t *aud)
 {
     if (p.counter)
         return;
     p.LowMask = 0x0f;
-    portaup(ch, a5);
+    portaup(ch, aud);
 }
 
-static void fineportadown(struct chan *ch, aud_t *a5)
+static void fineportadown(struct chan *ch, aud_t *aud)
 {
     if (p.counter)
         return;
     p.LowMask = 0x0f;
-    portadown(ch, a5);
+    portadown(ch, aud);
 }
 
 /* the index of the first period <= d2 in table t (35 if none) */
-static UWORD findperiod(const UWORD *t, UWORD d2)
+static UWORD findperiod(const UWORD *table, UWORD per)
 {
     UWORD i;
 
     for (i = 0; i < 36; i++)
-        if (d2 >= t[i])
+        if (per >= table[i])
             return i;
     return 35;
 }
@@ -825,24 +825,24 @@ static UWORD findperiod(const UWORD *t, UWORD d2)
 /* mt_SetTonePorta */
 static void settoneporta(struct chan *ch)
 {
-    const UWORD *a0 = periods(ch->finetune);
-    UWORD i = findperiod(a0, ch->n.f.note & 0x0fff), d2;
+    const UWORD *table = periods(ch->finetune);
+    UWORD i = findperiod(table, ch->n.f.note & 0x0fff), per;
 
     if ((ch->finetune & 8) && i)
         i--;
-    d2 = a0[i];
-    ch->wantedperiod = d2;
+    per = table[i];
+    ch->wantedperiod = per;
     ch->toneportdirec = 0;
-    if (d2 == ch->period)
+    if (per == ch->period)
         ch->wantedperiod = 0;
-    else if ((WORD)d2 < (WORD)ch->period)
+    else if ((WORD)per < (WORD)ch->period)
         ch->toneportdirec = 1;
 }
 
 /* mt_TonePortNoChange */
-static void toneportnochange(struct chan *ch, aud_t *a5)
+static void toneportnochange(struct chan *ch, aud_t *aud)
 {
-    UWORD d2;
+    UWORD per;
 
     if (!ch->wantedperiod)
         return;
@@ -859,51 +859,51 @@ static void toneportnochange(struct chan *ch, aud_t *a5)
             ch->wantedperiod = 0;
         }
     }
-    d2 = ch->period;
+    per = ch->period;
     if (ch->glissfunk & 0x0f) {         /* glissando: the table's period */
-        const UWORD *a0 = periods(ch->finetune);
-        d2 = a0[findperiod(a0, d2)];
+        const UWORD *table = periods(ch->finetune);
+        per = table[findperiod(table, per)];
     }
-    a5->ac_per = d2;
+    aud->ac_per = per;
 }
 
-static void toneportamento(struct chan *ch, aud_t *a5)
+static void toneportamento(struct chan *ch, aud_t *aud)
 {
     if (ch->n.f.cmdlo) {
         ch->toneportspeed = ch->n.f.cmdlo;
         ch->n.f.cmdlo = 0;
     }
-    toneportnochange(ch, a5);
+    toneportnochange(ch, aud);
 }
 
 /* the wave value of position `pos` (vibrato and tremolo): sine, ramp
    down (tested on `rpos`), square */
 static UBYTE wave(UBYTE pos, UBYTE form, UBYTE rpos)
 {
-    UBYTE d0 = (pos >> 2) & 0x1f;
+    UBYTE val = (pos >> 2) & 0x1f;
 
     if (form == 0)
-        return p.VibratoTable[d0];
-    d0 <<= 3;
+        return p.VibratoTable[val];
+    val <<= 3;
     if (form != 1)
         return 255;
     if ((BYTE)rpos < 0)
-        return (UBYTE)(255 - d0);
-    return d0;
+        return (UBYTE)(255 - val);
+    return val;
 }
 
 /* mt_Vibrato2 */
-static void vibrato2(struct chan *ch, aud_t *a5)
+static void vibrato2(struct chan *ch, aud_t *aud)
 {
-    UWORD d2 = wave(ch->vibratopos, ch->wavecontrol & 3, ch->vibratopos);
-    UWORD d0 = ch->period;
+    UWORD delta = wave(ch->vibratopos, ch->wavecontrol & 3, ch->vibratopos);
+    UWORD per = ch->period;
 
-    d2 = (UWORD)(bl_mulu_w(d2, ch->vibratocmd & 15) >> 7);
+    delta = (UWORD)(bl_mulu_w(delta, ch->vibratocmd & 15) >> 7);
     if ((BYTE)ch->vibratopos < 0)
-        d0 -= d2;
+        per -= delta;
     else
-        d0 += d2;
-    a5->ac_per = d0;
+        per += delta;
+    aud->ac_per = per;
     ch->vibratopos += (ch->vibratocmd >> 2) & 0x3c;
 }
 
@@ -917,90 +917,90 @@ static UBYTE newcmd(UBYTE old, UBYTE cmdlo)
     return old;
 }
 
-static void vibrato(struct chan *ch, aud_t *a5)
+static void vibrato(struct chan *ch, aud_t *aud)
 {
     if (ch->n.f.cmdlo)
         ch->vibratocmd = newcmd(ch->vibratocmd, ch->n.f.cmdlo);
-    vibrato2(ch, a5);
+    vibrato2(ch, aud);
 }
 
-static void volumeslide(struct chan *ch, aud_t *a5);
+static void volumeslide(struct chan *ch, aud_t *aud);
 
-static void toneplusvolslide(struct chan *ch, aud_t *a5)
+static void toneplusvolslide(struct chan *ch, aud_t *aud)
 {
-    toneportnochange(ch, a5);
-    volumeslide(ch, a5);
+    toneportnochange(ch, aud);
+    volumeslide(ch, aud);
 }
 
-static void vibratoplusvolslide(struct chan *ch, aud_t *a5)
+static void vibratoplusvolslide(struct chan *ch, aud_t *aud)
 {
-    vibrato2(ch, a5);
-    volumeslide(ch, a5);
+    vibrato2(ch, aud);
+    volumeslide(ch, aud);
 }
 
 /* mt_Tremolo: BUG(orig) the ramp down tests n_vibratopos (#482) */
-static void tremolo(struct chan *ch, aud_t *a5)
+static void tremolo(struct chan *ch, aud_t *aud)
 {
-    UWORD d2;
-    WORD d0;
+    UWORD delta;
+    WORD vol;
 
     if (ch->n.f.cmdlo)
         ch->tremolocmd = newcmd(ch->tremolocmd, ch->n.f.cmdlo);
-    d2 = wave(ch->tremolopos, (ch->wavecontrol >> 4) & 3, ch->vibratopos);
-    d2 = (UWORD)(bl_mulu_w(d2, ch->tremolocmd & 15) >> 6);
-    d0 = ch->volume;
+    delta = wave(ch->tremolopos, (ch->wavecontrol >> 4) & 3, ch->vibratopos);
+    delta = (UWORD)(bl_mulu_w(delta, ch->tremolocmd & 15) >> 6);
+    vol = ch->volume;
     if ((BYTE)ch->tremolopos < 0)
-        d0 -= d2;
+        vol -= delta;
     else
-        d0 += d2;
-    if (d0 < 0)
-        d0 = 0;
-    if ((UWORD)d0 > 0x40)
-        d0 = 0x40;
-    a5->ac_vol = set_volume(d0);
+        vol += delta;
+    if (vol < 0)
+        vol = 0;
+    if ((UWORD)vol > 0x40)
+        vol = 0x40;
+    aud->ac_vol = set_volume(vol);
     ch->tremolopos += (ch->tremolocmd >> 2) & 0x3c;
 }
 
 /* mt_SampleOffset */
 static void sampleoffset(struct chan *ch)
 {
-    UWORD d0;
+    UWORD offset;
 
     if (ch->n.f.cmdlo)
         ch->sampleoffset = ch->n.f.cmdlo;
-    d0 = (UWORD)(ch->sampleoffset << 7);
-    if ((WORD)d0 >= (WORD)ch->length) { /* BUG(orig): signed (CMP.w, BGE) (#472) */
+    offset = (UWORD)(ch->sampleoffset << 7);
+    if ((WORD)offset >= (WORD)ch->length) { /* BUG(orig): signed (CMP.w, BGE) (#472) */
         ch->length = 1;
         return;
     }
-    ch->length -= d0;
-    ch->start += (UWORD)(d0 << 1);
+    ch->length -= offset;
+    ch->start += (UWORD)(offset << 1);
 }
 
-static void volslideup(struct chan *ch, aud_t *a5, UBYTE d0)
+static void volslideup(struct chan *ch, aud_t *aud, UBYTE delta)
 {
-    ch->volume += d0;
+    ch->volume += delta;
     if ((BYTE)(ch->volume - 0x40) >= 0) /* CMP.B #$40: BMI */
         ch->volume = 0x40;
-    a5->ac_vol = set_volume(ch->volume);
+    aud->ac_vol = set_volume(ch->volume);
 }
 
-static void volslidedown2(struct chan *ch, aud_t *a5, UBYTE d0)
+static void volslidedown2(struct chan *ch, aud_t *aud, UBYTE delta)
 {
-    ch->volume -= d0;
+    ch->volume -= delta;
     if ((BYTE)ch->volume < 0)           /* BPL */
         ch->volume = 0;
-    a5->ac_vol = set_volume(ch->volume);
+    aud->ac_vol = set_volume(ch->volume);
 }
 
-static void volumeslide(struct chan *ch, aud_t *a5)
+static void volumeslide(struct chan *ch, aud_t *aud)
 {
-    UBYTE d0 = ch->n.f.cmdlo >> 4;
+    UBYTE up = ch->n.f.cmdlo >> 4;
 
-    if (d0)
-        volslideup(ch, a5, d0);
+    if (up)
+        volslideup(ch, aud, up);
     else
-        volslidedown2(ch, a5, ch->n.f.cmdlo & 0x0f);
+        volslidedown2(ch, aud, ch->n.f.cmdlo & 0x0f);
 }
 
 static void positionjump(struct chan *ch)
@@ -1010,40 +1010,40 @@ static void positionjump(struct chan *ch)
     p.PosJumpFlag = 0xff;
 }
 
-static void volumechange(struct chan *ch, aud_t *a5)
+static void volumechange(struct chan *ch, aud_t *aud)
 {
-    UBYTE d0 = ch->n.f.cmdlo;
+    UBYTE vol = ch->n.f.cmdlo;
 
-    if (d0 > 0x40)
-        d0 = 0x40;
-    ch->volume = d0;
-    a5->ac_vol = set_volume(d0);
+    if (vol > 0x40)
+        vol = 0x40;
+    ch->volume = vol;
+    aud->ac_vol = set_volume(vol);
 }
 
 /* mt_PatternBreak: the row in BCD */
 static void patternbreak(struct chan *ch)
 {
-    UBYTE d0 = (UBYTE)(bl_mulu_w(ch->n.f.cmdlo >> 4, 10) + (ch->n.f.cmdlo & 0x0f));
+    UBYTE row = (UBYTE)(bl_mulu_w(ch->n.f.cmdlo >> 4, 10) + (ch->n.f.cmdlo & 0x0f));
 
-    p.PBreakPos = d0 > 63 ? 0 : d0;
+    p.PBreakPos = row > 63 ? 0 : row;
     p.PosJumpFlag = 0xff;
 }
 
 /* mt_SetSpeed: 0 stops (mt_end), >= 32 is the tempo */
 static void setspeed(struct chan *ch)
 {
-    UBYTE d0 = ch->n.f.cmdlo;
+    UBYTE speed = ch->n.f.cmdlo;
 
-    if (!d0) {
+    if (!speed) {
         mt_end();
         return;
     }
-    if (d0 >= 32) {
-        settempo(d0);
+    if (speed >= 32) {
+        settempo(speed);
         return;
     }
     p.counter = 0;
-    p.speed = d0;
+    p.speed = speed;
 }
 
 static void filteronoff(struct chan *ch)
@@ -1054,12 +1054,12 @@ static void filteronoff(struct chan *ch)
 
 static void jumploop(struct chan *ch)
 {
-    UBYTE d0;
+    UBYTE count;
 
     if (p.counter)
         return;
-    d0 = ch->n.f.cmdlo & 0x0f;
-    if (!d0) {                          /* mt_SetLoop */
+    count = ch->n.f.cmdlo & 0x0f;
+    if (!count) {                       /* mt_SetLoop */
         ch->pattpos = (UBYTE)(p.PatternPos >> 4);
         return;
     }
@@ -1067,7 +1067,7 @@ static void jumploop(struct chan *ch)
         if (--ch->loopcount == 0)
             return;
     } else {
-        ch->loopcount = d0;
+        ch->loopcount = count;
     }
     p.PBreakPos = ch->pattpos;
     p.PBreakFlag = 0xff;
@@ -1077,71 +1077,71 @@ static void jumploop(struct chan *ch)
    (#439) */
 static void karplusstrong(struct chan *ch)
 {
-    BYTE *a0 = (BYTE *)ch->loopstart, *a1 = a0;
-    UWORD d0 = (UWORD)(ch->replen + ch->replen - 2);
+    BYTE *pos = (BYTE *)ch->loopstart, *first = pos;
+    UWORD n = (UWORD)(ch->replen + ch->replen - 2);
 
     do {
-        *a0 = (BYTE)((a0[0] + a0[1]) >> 1);
-        a0++;
-    } while (d0-- != 0);
-    *a0 = (BYTE)((*a0 + *a1) >> 1);
+        *pos = (BYTE)((pos[0] + pos[1]) >> 1);
+        pos++;
+    } while (n-- != 0);
+    *pos = (BYTE)((*pos + *first) >> 1);
 }
 
 /* mt_DoRetrig: the sample from its start, then the loop; the length and
    the period as one long (MOVE.L n_replen(A6),4(A5)) */
-static void doretrig(struct chan *ch, aud_t *a5)
+static void doretrig(struct chan *ch, aud_t *aud)
 {
-    a5->ac_ptr = (UWORD *)ch->start;
-    a5->ac_len = ch->length;
+    aud->ac_ptr = (UWORD *)ch->start;
+    aud->ac_len = ch->length;
     playsamples(set_real_mask(ch->dmabit));
-    a5->ac_ptr = (UWORD *)ch->loopstart;
-    *(volatile ULONG *)&a5->ac_len = (ULONG)ch->replen << 16 | ch->period;
+    aud->ac_ptr = (UWORD *)ch->loopstart;
+    *(volatile ULONG *)&aud->ac_len = (ULONG)ch->replen << 16 | ch->period;
 }
 
-static void retrignote(struct chan *ch, aud_t *a5)
+static void retrignote(struct chan *ch, aud_t *aud)
 {
-    UWORD d0 = ch->n.f.cmdlo & 0x0f, d1;
+    UWORD rate = ch->n.f.cmdlo & 0x0f, tick;
 
-    if (!d0)
+    if (!rate)
         return;
-    d1 = p.counter;
-    if (!d1 && (ch->n.f.note & 0x0fff))
+    tick = p.counter;
+    if (!tick && (ch->n.f.note & 0x0fff))
         return;
-    if (bl_divu_w(d1, d0) >> 16)        /* DIVU: the remainder */
+    if (bl_divu_w(tick, rate) >> 16)    /* DIVU: the remainder */
         return;
-    doretrig(ch, a5);
+    doretrig(ch, aud);
 }
 
-static void volumefineup(struct chan *ch, aud_t *a5)
-{
-    if (p.counter)
-        return;
-    volslideup(ch, a5, ch->n.f.cmdlo & 0x0f);
-}
-
-static void volumefinedown(struct chan *ch, aud_t *a5)
+static void volumefineup(struct chan *ch, aud_t *aud)
 {
     if (p.counter)
         return;
-    volslidedown2(ch, a5, ch->n.f.cmdlo & 0x0f);
+    volslideup(ch, aud, ch->n.f.cmdlo & 0x0f);
 }
 
-static void notecut(struct chan *ch, aud_t *a5)
+static void volumefinedown(struct chan *ch, aud_t *aud)
+{
+    if (p.counter)
+        return;
+    volslidedown2(ch, aud, ch->n.f.cmdlo & 0x0f);
+}
+
+static void notecut(struct chan *ch, aud_t *aud)
 {
     if ((ch->n.f.cmdlo & 0x0f) != p.counter)
         return;
     ch->volume = 0;
-    a5->ac_vol = 0;
+    aud->ac_vol = 0;
 }
 
 /* mt_NoteDelay: the whole note word (sample number too) must be set */
-static void notedelay(struct chan *ch, aud_t *a5)
+static void notedelay(struct chan *ch, aud_t *aud)
 {
     if ((ch->n.f.cmdlo & 0x0f) != p.counter)
         return;
     if (!ch->n.f.note)
         return;
-    doretrig(ch, a5);
+    doretrig(ch, aud);
 }
 
 static void patterndelay(struct chan *ch)
@@ -1153,135 +1153,135 @@ static void patterndelay(struct chan *ch)
 
 static void funkit(struct chan *ch)
 {
-    UBYTE d0;
+    UBYTE speed;
 
     if (p.counter)
         return;
-    d0 = (UBYTE)((ch->n.f.cmdlo & 0x0f) << 4);
-    ch->glissfunk = (ch->glissfunk & 0x0f) | d0;
-    if (!d0)
+    speed = (UBYTE)((ch->n.f.cmdlo & 0x0f) << 4);
+    ch->glissfunk = (ch->glissfunk & 0x0f) | speed;
+    if (!speed)
         return;
     updatefunk(ch);
 }
 
 /* mt_E_Commands */
-static void e_commands(struct chan *ch, aud_t *a5)
+static void e_commands(struct chan *ch, aud_t *aud)
 {
     UBYTE lo = ch->n.f.cmdlo & 0x0f;
 
     switch (ch->n.f.cmdlo >> 4) {
     case 0x0: filteronoff(ch); break;
-    case 0x1: fineportaup(ch, a5); break;
-    case 0x2: fineportadown(ch, a5); break;
+    case 0x1: fineportaup(ch, aud); break;
+    case 0x2: fineportadown(ch, aud); break;
     case 0x3: ch->glissfunk = (ch->glissfunk & 0xf0) | lo; break;
     case 0x4: ch->wavecontrol = (ch->wavecontrol & 0xf0) | lo; break;
     case 0x5: ch->finetune = lo; break;
     case 0x6: jumploop(ch); break;
     case 0x7: ch->wavecontrol = (ch->wavecontrol & 0x0f) | (UBYTE)(lo << 4); break;
     case 0x8: karplusstrong(ch); break;
-    case 0x9: retrignote(ch, a5); break;
-    case 0xa: volumefineup(ch, a5); break;
-    case 0xb: volumefinedown(ch, a5); break;
-    case 0xc: notecut(ch, a5); break;
-    case 0xd: notedelay(ch, a5); break;
+    case 0x9: retrignote(ch, aud); break;
+    case 0xa: volumefineup(ch, aud); break;
+    case 0xb: volumefinedown(ch, aud); break;
+    case 0xc: notecut(ch, aud); break;
+    case 0xd: notedelay(ch, aud); break;
     case 0xe: patterndelay(ch); break;
     case 0xf: funkit(ch); break;
     }
 }
 
 /* mt_CheckEfx: the effects of the ticks between the rows */
-static void checkefx(struct chan *ch, aud_t *a5)
+static void checkefx(struct chan *ch, aud_t *aud)
 {
-    UBYTE d0;
+    UBYTE cmd;
 
     updatefunk(ch);
     if (!(CMDW(ch) & 0x0fff)) {
-        pernop(ch, a5);
+        pernop(ch, aud);
         return;
     }
-    switch (d0 = ch->n.f.cmd & 0x0f) {
-    case 0x0: arpeggio(ch, a5); return;
-    case 0x1: portaup(ch, a5); return;
-    case 0x2: portadown(ch, a5); return;
-    case 0x3: toneportamento(ch, a5); return;
-    case 0x4: vibrato(ch, a5); return;
-    case 0x5: toneplusvolslide(ch, a5); return;
-    case 0x6: vibratoplusvolslide(ch, a5); return;
-    case 0xe: e_commands(ch, a5); return;
+    switch (cmd = ch->n.f.cmd & 0x0f) {
+    case 0x0: arpeggio(ch, aud); return;
+    case 0x1: portaup(ch, aud); return;
+    case 0x2: portadown(ch, aud); return;
+    case 0x3: toneportamento(ch, aud); return;
+    case 0x4: vibrato(ch, aud); return;
+    case 0x5: toneplusvolslide(ch, aud); return;
+    case 0x6: vibratoplusvolslide(ch, aud); return;
+    case 0xe: e_commands(ch, aud); return;
     }
-    a5->ac_per = ch->period;            /* SetBack */
-    if (d0 == 7)
-        tremolo(ch, a5);
-    else if (d0 == 0xa)
-        volumeslide(ch, a5);
-    else if (d0 == 8)
+    aud->ac_per = ch->period;           /* SetBack */
+    if (cmd == 7)
+        tremolo(ch, aud);
+    else if (cmd == 0xa)
+        volumeslide(ch, aud);
+    else if (cmd == 8)
         p.TrkEvt = ch->n.f.cmdlo;       /* nor_TrackEvent */
 }
 
 /* mt_CheckMoreEfx: the effects of the row's tick */
-static void checkmoreefx(struct chan *ch, aud_t *a5)
+static void checkmoreefx(struct chan *ch, aud_t *aud)
 {
     updatefunk(ch);
     switch (ch->n.f.cmd & 0x0f) {
     case 0x9: sampleoffset(ch); return;
     case 0xb: positionjump(ch); return;
     case 0xd: patternbreak(ch); return;
-    case 0xe: e_commands(ch, a5); return;
+    case 0xe: e_commands(ch, aud); return;
     case 0xf: setspeed(ch); return;
-    case 0xc: volumechange(ch, a5); return;
+    case 0xc: volumechange(ch, aud); return;
     }
-    pernop(ch, a5);
+    pernop(ch, aud);
 }
 
 /* mt_SetPeriod: BUG(orig) a note below 113 takes entry 37 (#481) */
-static void setperiod(struct chan *ch, aud_t *a5)
+static void setperiod(struct chan *ch, aud_t *aud)
 {
-    const UWORD *a1 = p.PeriodTable;
-    UWORD d1 = ch->n.f.note & 0x0fff, d0;
+    const UWORD *table = p.PeriodTable;
+    UWORD note = ch->n.f.note & 0x0fff, idx;
 
-    LAUNDER(a1);
-    for (d0 = 0; d0 < 37; d0++)
-        if (d1 >= a1[d0])
+    LAUNDER(table);
+    for (idx = 0; idx < 37; idx++)
+        if (note >= table[idx])
             break;
-    ch->period = periods(ch->finetune)[d0];
+    ch->period = periods(ch->finetune)[idx];
     if ((CMDW(ch) & 0x0ff0) == 0x0ed0) {        /* note delay */
-        checkmoreefx(ch, a5);
+        checkmoreefx(ch, aud);
         return;
     }
     if (!(ch->wavecontrol & 4))
         ch->vibratopos = 0;
     if (!(ch->wavecontrol & 0x40))
         ch->tremolopos = 0;
-    a5->ac_ptr = (UWORD *)ch->start;            /* mt_trenoc */
-    a5->ac_len = ch->length;
+    aud->ac_ptr = (UWORD *)ch->start;           /* mt_trenoc */
+    aud->ac_len = ch->length;
     p.DMACONtemp |= ch->dmabit;
-    checkmoreefx(ch, a5);
+    checkmoreefx(ch, aud);
 }
 
 /* mt_PlayVoice: the voice's note at pattern data + d1 */
-static void playvoice(struct chan *ch, aud_t *a5, const UBYTE *a3, const UBYTE *note)
+static void playvoice(struct chan *ch, aud_t *aud, const UBYTE *samples, const UBYTE *note)
 {
-    UWORD d2;
+    UWORD sample;
 
     if (!ch->n.l)
-        pernop(ch, a5);
+        pernop(ch, aud);
     ch->n.l = LONGAT(note);
-    d2 = ((ch->n.f.cmd & 0xf0) >> 4) | ((ch->n.f.note >> 8) & 0xf0);
-    if (d2) {
-        UBYTE *const *a1 = p.SampleStarts;
+    sample = ((ch->n.f.cmd & 0xf0) >> 4) | ((ch->n.f.note >> 8) & 0xf0);
+    if (sample) {
+        UBYTE *const *starts = p.SampleStarts;
         const UBYTE *h;
-        UWORD d3;
+        UWORD repeat;
 
-        LAUNDER(a1);
-        h = a3 + bl_mulu_w(d2, 30);
-        ch->start = a1[d2 - 1];         /* > 31: behind the table */
+        LAUNDER(starts);
+        h = samples + bl_mulu_w(sample, 30);
+        ch->start = starts[sample - 1]; /* > 31: behind the table */
         ch->length = WORDAT(h);
         ch->reallength = WORDAT(h);
         ch->finetune = h[2];
         ch->volume = h[3];
-        d3 = WORDAT(h + 4);             /* repeat */
-        if (d3) {
-            ch->loopstart = ch->start + (UWORD)(d3 << 1);       /* ASL.W */
+        repeat = WORDAT(h + 4);         /* repeat */
+        if (repeat) {
+            ch->loopstart = ch->start + (UWORD)(repeat << 1);   /* ASL.W */
             ch->wavestart = ch->loopstart;
             ch->length = WORDAT(h + 4) + WORDAT(h + 6);
             ch->replen = WORDAT(h + 6);
@@ -1290,28 +1290,28 @@ static void playvoice(struct chan *ch, aud_t *a5, const UBYTE *a3, const UBYTE *
             ch->wavestart = ch->start;
             ch->replen = WORDAT(h + 6);
         }
-        a5->ac_vol = set_volume(ch->volume);
+        aud->ac_vol = set_volume(ch->volume);
     }
     if (!(ch->n.f.note & 0x0fff)) {     /* mt_SetRegs: no note */
-        checkmoreefx(ch, a5);
+        checkmoreefx(ch, aud);
         return;
     }
     if ((CMDW(ch) & 0x0ff0) == 0x0e50) {
         ch->finetune = ch->n.f.cmdlo & 0x0f;
-        setperiod(ch, a5);
+        setperiod(ch, aud);
         return;
     }
     switch (ch->n.f.cmd & 0x0f) {
     case 3:
     case 5:
         settoneporta(ch);
-        checkmoreefx(ch, a5);
+        checkmoreefx(ch, aud);
         return;
     case 9:                             /* BUG(orig): the offset twice (#473) */
-        checkmoreefx(ch, a5);
+        checkmoreefx(ch, aud);
         break;
     }
-    setperiod(ch, a5);
+    setperiod(ch, aud);
 }
 
 /* mt_NextPosition */
@@ -1357,17 +1357,17 @@ static void nonewallchannels(void)
 /* mt_GetNewNote, mt_SetDMA */
 static void getnewnote(void)
 {
-    const UBYTE *a0 = p.SongDataPtr;
-    const UBYTE *a3 = a0 + 12;
-    ULONG d1 = (ULONG)a0[952 + p.SongPos] << 10;
+    const UBYTE *mod = p.SongDataPtr;
+    const UBYTE *samples = mod + 12;
+    ULONG off = (ULONG)mod[952 + p.SongPos] << 10;
     volatile struct Custom *cu = CUSTOM;
     int i;
 
-    d1 = (d1 & 0xffff0000UL) | (UWORD)(d1 + p.PatternPos);     /* ADD.W */
-    patdata = a0 + 1084;
+    off = (off & 0xffff0000UL) | (UWORD)(off + p.PatternPos);  /* ADD.W */
+    patdata = mod + 1084;
     p.DMACONtemp = 0;
-    for (i = 0; i < 4; i++, d1 += 4)
-        playvoice(&p.chan[i], voice(i), a3, patdata + d1);    /* 0(A0,D1.L) */
+    for (i = 0; i < 4; i++, off += 4)
+        playvoice(&p.chan[i], voice(i), samples, patdata + off); /* 0(A0,D1.L) */
     playsamples(set_real_mask(p.DMACONtemp));   /* mt_SetDMA */
     for (i = 0; i < 4; i++)
         if (g.master_mask & (1 << i)) {
@@ -1410,9 +1410,9 @@ static void change_volume_levels(void)
 
 /* ---------------------------------------------------------- the module */
 
-static void freetrackermodule_c(ULONG d0 BL_REG(d0))
+static void freetrackermodule_c(ULONG num BL_REG(d0))
 {
-    struct modent *e = slot(d0);
+    struct modent *e = slot(num);
 
     if (!e->addr)
         return;
@@ -1424,15 +1424,15 @@ static void freetrackermodule_c(ULONG d0 BL_REG(d0))
 }
 
 /* LoadTrackerModule (a6 = whatever the program has: BUG(orig), #443) */
-static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1),
+static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG val BL_REG(d0), ULONG name BL_REG(d1),
                                            struct DosLibrary *dos BL_REG(a6))
 {
     struct modent *e;
-    LONG d;
+    LONG readlen;
 
-    thismod = d0;
-    fname = d1;
-    freetrackermodule_c(d0);
+    thismod = val;
+    fname = name;
+    freetrackermodule_c(val);
     e = slot(thismod);
     lock = Lock((STRPTR)fname, -2);
     if (!lock)
@@ -1442,18 +1442,18 @@ static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(
         BLITZ_RUNERR(mess2);
     if (!Examine(lock, (struct FileInfoBlock *)fib))
         BLITZ_RUNERR(mess);
-    d0 = (ULONG)((struct FileInfoBlock *)fib)->fib_Size;
-    e->len = BL_SETB(d0, d0 + 3);       /* ADD.b (BUG(orig), #442) */
+    val = (ULONG)((struct FileInfoBlock *)fib)->fib_Size;
+    e->len = BL_SETB(val, val + 3);     /* ADD.b (BUG(orig), #442) */
     globfree(fib, 512);
     e->addr = (UBYTE *)globalloc(e->len, MEMF_CHIP);
     hand = OpenFromLock(lock);
-    d = Read(hand, e->addr, e->len);
+    readlen = Read(hand, e->addr, e->len);
     e->flag = 1;
-    readerr = (ULONG)d;
+    readerr = (ULONG)readlen;
     Close(hand);
-    d0 = readerr;
+    val = readerr;
     readerr = (ULONG)-1;
-    if (d0 == (ULONG)-1) {
+    if (val == (ULONG)-1) {
         UnLock(lock);                   /* BUG(orig): OpenFromLock's lock (#444) */
         readerr = 0;
         freetrackermodule_c(thismod);
@@ -1465,60 +1465,60 @@ static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(
 
 /* _modtochip: a module outside chip memory (address >= $200000) to chip
    memory; d0 -1 or 0 */
-static ULONG modtochip(ULONG d0)
+static ULONG modtochip(ULONG num)
 {
-    struct modent *e = slot(d0);
-    UBYTE *a0 = e->addr, *a1, *a2;
+    struct modent *e = slot(num);
+    UBYTE *src = e->addr, *hdr, *dst;
     ULONG size, n;
     int i;
 
-    if ((LONG)a0 < 0x200000)
+    if ((LONG)src < 0x200000)
         return 0;
-    size = patternsize(a0);
-    for (i = 0, a1 = a0; i < 31; i++, a1 += 30)
-        size += (ULONG)WORDAT(a1 + 42) << 1;
+    size = patternsize(src);
+    for (i = 0, hdr = src; i < 31; i++, hdr += 30)
+        size += (ULONG)WORDAT(hdr + 42) << 1;
     e->flag = 2;
     e->len = BL_SETW(size, size + 3);   /* ADD.w (BUG(orig), #434) */
-    a2 = (UBYTE *)globalloc(e->len, MEMF_CHIP);
-    if (!a2)
+    dst = (UBYTE *)globalloc(e->len, MEMF_CHIP);
+    if (!dst)
         return 0;
-    e->addr = a2;
+    e->addr = dst;
     n = e->len;
     do
-        *a2++ = *a0++;
+        *dst++ = *src++;
     while (--n);
     return (ULONG)-1;
 }
 
-static void BLITZ_ROUTINE decodemod_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1))
+static void BLITZ_ROUTINE decodemod_c(ULONG num BL_REG(d0), ULONG addr BL_REG(d1))
 {
-    struct modent *e = slot(d0);
+    struct modent *e = slot(num);
 
-    e->addr = (UBYTE *)d1;
+    e->addr = (UBYTE *)addr;
     e->len = 1;                         /* (so CheckTrackerID works) */
     e->flag = 0;
-    modtochip(d0);
+    modtochip(num);
 }
 
-static ULONG BLITZ_ROUTINE gettrklen_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE gettrklen_c(ULONG num BL_REG(d0))
 {
-    return slot(d0)->len;
+    return slot(num)->len;
 }
 
-static ULONG BLITZ_ROUTINE gettrkloc_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE gettrkloc_c(ULONG num BL_REG(d0))
 {
-    return (ULONG)slot(d0)->addr;
+    return (ULONG)slot(num)->addr;
 }
 
-static void BLITZ_ROUTINE freetrk_c(ULONG d0 BL_REG(d0))
+static void BLITZ_ROUTINE freetrk_c(ULONG num BL_REG(d0))
 {
-    freetrackermodule_c(d0);
+    freetrackermodule_c(num);
 }
 
 /* CheckTrackerID: -1 for M.K. / M!K!, else the long at address 0 */
-static ULONG BLITZ_ROUTINE checkid_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE checkid_c(ULONG num BL_REG(d0))
 {
-    struct modent *e = slot(d0);
+    struct modent *e = slot(num);
     ULONG id;
 
     if (!e->len)
@@ -1530,38 +1530,38 @@ static ULONG BLITZ_ROUTINE checkid_c(ULONG d0 BL_REG(d0))
 }
 
 /* ModuleToChip: RTS (the argument comes back) */
-static ULONG BLITZ_ROUTINE modtochip2_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE modtochip2_c(ULONG arg BL_REG(d0))
 {
-    return d0;
+    return arg;
 }
 
 /* GetModuleName$: up to 20 characters of the module's name at a3 */
-static ULONG BLITZ_ROUTINE getmodulename_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE getmodulename_c(ULONG val BL_REG(d0))
 {
-    ULONG off = bl_mulu_w((UWORD)d0, 10);
-    const UBYTE *a1 = slot(d0)->addr;
-    UWORD d1 = 19;
+    ULONG off = bl_mulu_w((UWORD)val, 10);
+    const UBYTE *name = slot(val)->addr;
+    UWORD left = 19;
 
-    if (!a1)
+    if (!name)
         return off;                     /* BUG(orig): no string, d0 = slot*10 (#437) */
-    d0 = 0;
+    val = 0;
     do {
-        if (!*a1)
+        if (!*name)
             break;
-        BL_SETW(d0, d0 + 1);            /* ADDQ #1,d0 */
-        *blitz_string++ = *a1++;
-    } while (d1-- != 0);
+        BL_SETW(val, val + 1);          /* ADDQ #1,d0 */
+        *blitz_string++ = *name++;
+    } while (left-- != 0);
     *blitz_string = 0;
-    return d0;
+    return val;
 }
 
 /* StartTracker */
-static ULONG BLITZ_ROUTINE starttrkmodule_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE starttrkmodule_c(ULONG num BL_REG(d0))
 {
-    struct modent *e = slot(d0);
+    struct modent *e = slot(num);
 
     if (!e->addr)
-        return d0;                      /* BUG(orig): the slot number (#451) */
+        return num;                     /* BUG(orig): the slot number (#451) */
     c.mt_data = e->addr;
     resetciaint();                      /* _ResetCIATempo */
     if (g.play_type != 1)
@@ -1577,39 +1577,39 @@ static void BLITZ_ROUTINE stoptracker_c(void)
     p.Enable = 0;
 }
 
-static ULONG BLITZ_ROUTINE maxpatterns_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE maxpatterns_c(ULONG num BL_REG(d0))
 {
-    const UBYTE *a1 = slot(d0)->addr;
+    const UBYTE *mod = slot(num)->addr;
 
-    if (!a1)
+    if (!mod)
         return 0;
-    return a1[950];
+    return mod[950];
 }
 
 /* ------------------------------------------------------------ the rest */
 
-static ULONG BLITZ_ROUTINE gettrackerevent_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE gettrackerevent_c(ULONG old BL_REG(d0))
 {
-    return BL_SETB(d0, p.TrkEvt);
+    return BL_SETB(old, p.TrkEvt);
 }
 
 /* CheckTrackerEvent: d0.w -1 for a new event, else d0.b the last one */
-static ULONG BLITZ_ROUTINE checktrackerevent_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE checktrackerevent_c(ULONG old BL_REG(d0))
 {
     if (p.LstEvt == p.TrkEvt)
-        return BL_SETB(d0, p.LstEvt);
+        return BL_SETB(old, p.LstEvt);
     p.LstEvt = p.TrkEvt;
-    return BL_SETW(d0, 0xffff);
+    return BL_SETW(old, 0xffff);
 }
 
 /* WaitTrackerEvent: WaitTOF (-270) through a6 (BUG(orig): no !libs,
    #453) */
-static void BLITZ_ROUTINE waittrackerevent_c(const void *a6 BL_REG(a6))
+static void BLITZ_ROUTINE waittrackerevent_c(const void *caller_a6 BL_REG(a6))
 {
     checktrackerevent_c(0);
     for (;;) {
         struct bl_regs r = { 0 };
-        BLITZ_BASEJSR(a6, -270, r);
+        BLITZ_BASEJSR(caller_a6, -270, r);
         if (p.LstEvt != p.TrkEvt) {
             p.LstEvt = p.TrkEvt;
             return;
@@ -1617,16 +1617,16 @@ static void BLITZ_ROUTINE waittrackerevent_c(const void *a6 BL_REG(a6))
     }
 }
 
-static void BLITZ_ROUTINE modulepositionjump_c(ULONG d0 BL_REG(d0))
+static void BLITZ_ROUTINE modulepositionjump_c(ULONG pos BL_REG(d0))
 {
-    p.SongPos = (UBYTE)d0;
+    p.SongPos = (UBYTE)pos;
     p.PBreakPos = 0;
     p.PosJumpFlag = 0xff;
 }
 
-static ULONG BLITZ_ROUTINE getmoduleposition_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE getmoduleposition_c(ULONG old BL_REG(d0))
 {
-    return BL_SETB(d0, p.SongPos);
+    return BL_SETB(old, p.SongPos);
 }
 
 static void BLITZ_ROUTINE pausemodule_c(void)
@@ -1649,31 +1649,31 @@ static void BLITZ_ROUTINE change_playtype_c(void)
 
 /* TrackerVolume: only 0 < new < 64 sets the playing notes (BUG(orig),
    #452) */
-static void BLITZ_ROUTINE volume_control_c(ULONG d0 BL_REG(d0))
+static void BLITZ_ROUTINE volume_control_c(ULONG vol BL_REG(d0))
 {
-    UWORD d1, d2;
+    UWORD level, diff;
 
-    if ((UWORD)d0 > 0x40)
+    if ((UWORD)vol > 0x40)
         return;
     g.old_volume = g.master_volume;
-    d1 = g.old_volume;
-    g.master_volume = (UWORD)d0;
-    d2 = (UWORD)(g.master_volume - g.old_volume);
-    d1 += d2;
-    if ((WORD)(d1 - 0x40) >= 0)         /* CMP.W #$40,d1: BMI */
+    level = g.old_volume;
+    g.master_volume = (UWORD)vol;
+    diff = (UWORD)(g.master_volume - g.old_volume);
+    level += diff;
+    if ((WORD)(level - 0x40) >= 0)      /* CMP.W #$40,d1: BMI */
         return;
-    if ((WORD)d1 <= 0)                  /* CMP.w #0,d1: BGT */
+    if ((WORD)level <= 0)               /* CMP.w #0,d1: BGT */
         return;
-    g.volume_flag = d2;
+    g.volume_flag = diff;
     change_volume_levels();
 }
 
-static void BLITZ_ROUTINE changetrackermask_c(ULONG d0 BL_REG(d0))
+static void BLITZ_ROUTINE changetrackermask_c(ULONG mask BL_REG(d0))
 {
     int i;
 
     for (i = 0; i < 4; i++) {
-        if (d0 & (1 << i)) {
+        if (mask & (1 << i)) {
             g.master_mask |= 1 << i;
         } else {
             g.master_mask &= ~(1 << i);
@@ -1741,32 +1741,32 @@ BLITZ_ERRCHK_MESSAGE(msg02, "Tracker: Load/Decode module first.");
 BLITZ_ERRCHK_MESSAGE(msg03, "Tracker: Decode to an empty slot.");
 
 /* _slotcheck: CMP #9,d0 (word) */
-static void BLITZ_ERRCHK slotcheck_c(ULONG d0 BL_REG(d0))
+static void BLITZ_ERRCHK slotcheck_c(ULONG num BL_REG(d0))
 {
-    if ((UWORD)d0 >= 9)
+    if ((UWORD)num >= 9)
         BLITZ_RUNERR(msg00);
 }
 
-static void BLITZ_ERRCHK loadcheck_c(ULONG d0 BL_REG(d0))
+static void BLITZ_ERRCHK loadcheck_c(ULONG num BL_REG(d0))
 {
-    slotcheck_c(d0);
-    if (slot(d0)->addr)
+    slotcheck_c(num);
+    if (slot(num)->addr)
         BLITZ_RUNERR(msg01);
 }
 
-static void BLITZ_ERRCHK checkused_c(ULONG d0 BL_REG(d0))
+static void BLITZ_ERRCHK checkused_c(ULONG num BL_REG(d0))
 {
-    slotcheck_c(d0);
-    if (!slot(d0)->addr)
+    slotcheck_c(num);
+    if (!slot(num)->addr)
         BLITZ_RUNERR(msg02);
 }
 
-static void BLITZ_ERRCHK decodecheck_c(ULONG d0 BL_REG(d0))
+static void BLITZ_ERRCHK decodecheck_c(ULONG num BL_REG(d0))
 {
     struct modent *e;
 
-    slotcheck_c(d0);
-    e = slot(d0);
+    slotcheck_c(num);
+    e = slot(num);
     if (e->flag && e->addr)
         BLITZ_RUNERR(msg03);
 }
