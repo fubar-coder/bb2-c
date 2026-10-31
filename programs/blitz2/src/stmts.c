@@ -597,7 +597,10 @@ void dosetint(UWORD c)
     setint2(-1);        /* type - need new string space */
 }
 
-/* blitz2.s:3879 stamigalib - an amigalib called through a statement! */
+/* blitz2.s:3879 stamigalib - an amigalib called through a statement!
+   BUG(orig) (#958): a parameter in a5 or a4 is popped into the register
+   before libbase (move.l off(a5),a6) and stays there after the call - the
+   bases of the global/local variables are lost. */
 void stamigalib(UWORD c, UBYTE *sub)
 {
     struct blitzlib *lib;

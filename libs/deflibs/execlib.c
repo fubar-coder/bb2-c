@@ -138,6 +138,7 @@ BLITZ_OSCALL(LIB_execlib, -738, "ChildFree_", "(tid)", d0);
 BLITZ_OSCALL(LIB_execlib, -744, "ChildOrphan_", "(tid)", d0);
 BLITZ_OSCALL(LIB_execlib, -750, "ChildStatus_", "(tid)", d0);
 BLITZ_OSCALL(LIB_execlib, -756, "ChildWait_", "(tid)", d0);
+/* BUG(orig) (#959): exec takes flags in d0 (exec_lib.fd), not d1 */
 BLITZ_OSCALL(LIB_execlib, -762, "CachePreDMA_", "(address,length,flags)", a0, a1, d1);
 BLITZ_OSCALL(LIB_execlib, -768, "CachePostDMA_", "(address,length,flags)", a0, a1, d1);
 BLITZ_OSCALL(LIB_execlib, -774, "AddMemHandler_", "(memhand)", a1);

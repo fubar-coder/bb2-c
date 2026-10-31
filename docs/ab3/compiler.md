@@ -39,7 +39,7 @@
 | AB3 commit | Date | What | Our issue | blitz2.s |
 |---|---|---|---|---|
 | `AmiBlitz/AmiBlitz3@d7d380c0` | 2026-10-02 | Relocation table split into several `HUNK_RELOC32` blocks (the V36+ loader cannot load more than 65535 entries in one) | #943 | 6852–6874 (`savefile`) |
-| `AmiBlitz/AmiBlitz3@808bc4c2` (SVN r291) | 2012-03-07 | Amiga library call with a parameter in A4/A5: `movem.l a4/a5,-(a7)` / `movem.l (a7)+,a4/a5` around the call (`checka4a5`/`restorea4a5`); BB2 loads A4/A5 from the stack and loses the local/global base | – | 3879 (`stamigalib`), function-call path |
+| `AmiBlitz/AmiBlitz3@808bc4c2` (SVN r291) | 2012-03-07 | Amiga library call with a parameter in A4/A5: `movem.l a4/a5,-(a7)` / `movem.l (a7)+,a4/a5` around the call (`checka4a5`/`restorea4a5`); BB2 loads A4/A5 from the stack and loses the local/global base | #958 | 3879 (`stamigalib`), function-call path |
 | `AmiBlitz/AmiBlitz3@aee91740` | 2025-03-07 | `IncBin`: the lock is released right after `Examine`, before the directory check (the file handle is still not closed on a read error); message also names "not closing include files after compile error" (?) | #38 (lock part only) | 12772 (`doincbin`) |
 | `AmiBlitz/AmiBlitz3@185c218e` | 2026-06-29 | Userlibs loader (rewritten in BASIC): the reloc-header `Read` is compared with `= 12`, so −1 fails; the header and code reads are still unchecked; deflibs/acidlibs are read through another routine | #3 (partial, userlibs only) (?) | 6470 (`loadalib`) |
 | `AmiBlitz/AmiBlitz3@c7fc6f60` | 2024-09-16 | "fixed bug in freeing memory for macrobuffer": now `FreeMem(begin-4, macrobuffer_size+4)`; still the **current** size, not the one stored at allocation – does not fix the mismatch | #336 (not effective) (?) | 1384–1390, 1463–1466 |

@@ -1886,7 +1886,9 @@ static UWORD tstbras(UWORD first, UWORD c, UWORD n)
     return c;                       /* .skip */
 }
 
-/* blitz2.s:10183 amigalib - Amiga OS library function call */
+/* blitz2.s:10183 amigalib - Amiga OS library function call.
+   BUG(orig) (#958): a4/a5 parameters clobber the variable bases, as in
+   stamigalib */
 static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
 {
     struct blitzlib *ol;

@@ -164,7 +164,7 @@ both):
 
 | Class | Count | Items |
 |---|---|---|
-| fix | 4 | init without loop for libraries (#44, pre-git, datatypes in 2021); the same for 6 resources (partial: #44 only); `CachePreDMA_`/`CachePostDMA_` flags register (no issue of ours) |
+| fix | 4 | init without loop for libraries (#44, pre-git, datatypes in 2021); the same for 6 resources (partial: #44 only); `CachePreDMA_`/`CachePostDMA_` flags register (#959) |
 | extension | 14 changes to BB2 libraries + 35 new libraries at HEAD (36 with `wbstart`) | V40–V47 calls in exec, graphics, amigaguide, icon, workbench (2), datatypes, diskfont, intuition, layers, rexxsyslib, utility, gadtools |
 | incompatible | 12 | removed calls (exec `Child*`, graphics `GfxInternal*`/`GfxSpare*`, icon `GetIcon_`/`PutIcon_`, amigaguide `AGARexxHost_`, datatypes `RLDispatch_`), token shifts (also workbench, gadtools, graphics `EraseRect_`/`ExtendFont_` moved), 3 libraries removed with numbers reused |
 | cosmetic | 4 | help texts in dos, locale, utility, exec `FindSemaphore_` |
@@ -178,9 +178,8 @@ Mapping of our issues:
   then depends on the compiler (?).
 * **#45** (resource name shifted): **not fixed** in AB3; the 6 rebuilt
   resources point further off (`$001D`), ciaa/ciab keep the BB2 code.
-* No issue yet: **`CachePreDMA_`/`CachePostDMA_` pass `flags` in d1**
-  instead of d0 (`libs/deflibs/execlib.c`), fixed in AB3 before 2009 –
-  a candidate for a new `bug-orig` issue (`lib:execlib`).
+* **#959**: **`CachePreDMA_`/`CachePostDMA_` pass `flags` in d1**
+  instead of d0 (`libs/deflibs/execlib.c`), fixed in AB3 before 2009.
 
 Candidates to take over, once fixing original bugs is allowed: the
 library init/finit without loop (#44), the `CachePreDMA_`/`CachePostDMA_`

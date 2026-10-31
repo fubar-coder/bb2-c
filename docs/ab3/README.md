@@ -42,10 +42,9 @@ library numbers of BB2 2.10, so they are not candidates for the default
 variant. Fixes that match our issues:
 
 * compiler: #943 (several `HUNK_RELOC32` blocks), #38 partly (the lock of
-  `IncBin`), A4/A5 saved around OS calls that take parameters there (no
-  issue yet);
-* deflibs: #44 (library init without the endless loop), exec
-  `CachePreDMA_`/`CachePostDMA_` take `flags` in d0 (no issue yet); #45 is
+  `IncBin`), #958 (A4/A5 saved around OS calls that take parameters there);
+* deflibs: #44 (library init without the endless loop),
+  #959 (exec `CachePreDMA_`/`CachePostDMA_` take `flags` in d0); #45 is
   not fixed in AmiBlitz3;
 * acidlibs: #148 (fontlib), #120 (datelib), #42 partly (environlib),
   #174 (gtlib), windowslib #317, #320, #322, #329 (and #318 partly);
