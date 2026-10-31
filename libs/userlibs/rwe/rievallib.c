@@ -158,8 +158,8 @@ struct state {
     struct chunk *c, *bottom;   /* the chunk of the top value, the first */
     int n;                      /* values in c */
     ULONG (*loop)(struct state *);
-    UBYTE *a0, *a1, *a3;        /* string, output, string start */
-    ULONG d0, d1, d7;           /* registers carrying state */
+    UBYTE *pos, *out, *start;   /* a0, a1, a3: string, output, its start */
+    ULONG acc, aux, prec;       /* d0, d1, d7: registers carrying state */
     ULONG ret;                  /* the caller's return address */
 };
 
@@ -245,109 +245,109 @@ static int is_operator(UBYTE c)
    the operator stack holds d0 with the character in its low byte */
 static ULONG ctp_loop(struct state *s)
 {
-    const UBYTE *a2;
-    UBYTE d2;
+    const UBYTE *op;                    /* a2: the table entry */
+    UBYTE opprec;                       /* d2: its precedence */
 
 loop:
-    if (*s->a0 == 0)
+    if (*s->pos == 0)
         goto endthis;
-    if (*s->a0++ == ' ')
+    if (*s->pos++ == ' ')
         goto loop;
-    s->a0--;
-    BL_SETB(s->d0, *s->a0);
+    s->pos--;
+    BL_SETB(s->acc, *s->pos);
 
     /* check the special operators - ( ) */
-    if ((UBYTE)s->d0 == '-') {
-        if (s->a0 == s->a3)                     /* start of the string */
+    if ((UBYTE)s->acc == '-') {
+        if (s->pos == s->start)                 /* start of the string */
             goto notoperator;
-        if (s->a0[1] == '(')
+        if (s->pos[1] == '(')
             goto checkoperator;
-        BL_SETB(s->d1, s->a0[-1]);
-        if (is_operator((UBYTE)s->d1))          /* - is for negative */
+        BL_SETB(s->aux, s->pos[-1]);
+        if (is_operator((UBYTE)s->aux))         /* - is for negative */
             goto notoperator;
         goto checkoperator;
     }
-    if ((UBYTE)s->d0 == '(') {
-        s->a0++;
-        PUSH(s, s->d0);
+    if ((UBYTE)s->acc == '(') {
+        s->pos++;
+        PUSH(s, s->acc);
         goto loop;
     }
-    if ((UBYTE)s->d0 == ')') {
-        s->a0++;
+    if ((UBYTE)s->acc == ')') {
+        s->pos++;
         while (!st_empty(s)) {                  /* 'unstackloop */
-            s->d0 = st_pop(s);
-            if ((UBYTE)s->d0 == '(')
+            s->acc = st_pop(s);
+            if ((UBYTE)s->acc == '(')
                 break;
-            *s->a1++ = (UBYTE)s->d0;
-            *s->a1++ = ' ';
+            *s->out++ = (UBYTE)s->acc;
+            *s->out++ = ' ';
         }
         goto loop;
     }
 
 checkoperator:
-    for (a2 = operators; *a2; a2 += 2)
-        if (*a2 == (UBYTE)s->d0) {
-            s->a0++;
-            BL_SETB(s->d7, a2[1]);
+    for (op = operators; *op; op += 2)
+        if (*op == (UBYTE)s->acc) {
+            s->pos++;
+            BL_SETB(s->prec, op[1]);
             goto operator;
         }
 
 notoperator:                                    /* a number or register */
-    if ((UBYTE)s->d0 == '-') {
-        *s->a1++ = (UBYTE)s->d0;
-        s->a0++;
+    if ((UBYTE)s->acc == '-') {
+        *s->out++ = (UBYTE)s->acc;
+        s->pos++;
     }
     for (;;) {                                  /* 'evall */
-        UBYTE c = *s->a0++;
+        UBYTE c = *s->pos++;
 
-        BL_SETB(s->d0, c);
+        BL_SETB(s->acc, c);
         if (c == 0 || is_operator(c) || c == ')') {
-            s->a0--;                            /* 'endeval2 */
+            s->pos--;                           /* 'endeval2 */
             break;
         }
         if (c == ' ')
             break;
         if (c == '.') {                         /* and the next one, unchecked */
-            *s->a1++ = c;
-            c = *s->a0++;
-            BL_SETB(s->d0, c);
+            *s->out++ = c;
+            c = *s->pos++;
+            BL_SETB(s->acc, c);
         } else if (c != 'a' && c != 'd' && c != 'p' && c != 'c' && c != '$'
                    && c != '%' && c != '{' && c != '}'
                    && !((BYTE)c >= 'a' && (BYTE)c <= 'f')
                    && !((BYTE)c >= '0' && (BYTE)c <= '9'))
             break;                              /* 'endeval: c dropped */
-        *s->a1++ = c;                           /* 'putchar */
+        *s->out++ = c;                          /* 'putchar */
     }
-    *s->a1++ = ' ';                             /* 'endeval */
+    *s->out++ = ' ';                            /* 'endeval */
     goto loop;
 
 operator:
     /* unstack the operators of higher or equal precedence */
     while (!st_empty(s)) {
-        s->d1 = *st_top(s);
-        for (a2 = operators; *a2++ != (UBYTE)s->d1; a2++)
+        s->aux = *st_top(s);
+        for (op = operators; *op++ != (UBYTE)s->aux; op++)
             ;
-        d2 = *a2;
-        if ((BYTE)s->d7 > (BYTE)d2)
+        opprec = *op;
+        if ((BYTE)s->prec > (BYTE)opprec)
             break;
         st_pop(s);
-        if ((UBYTE)s->d1 == '(')                /* never: "(" has 0 */
+        if ((UBYTE)s->aux == '(')               /* never: "(" has 0 */
             goto loop;
-        *s->a1++ = (UBYTE)s->d1;
-        *s->a1++ = ' ';
+        *s->out++ = (UBYTE)s->aux;
+        *s->out++ = ' ';
     }
-    PUSH(s, s->d0);                             /* 'stacktoken */
+    PUSH(s, s->acc);                            /* 'stacktoken */
     goto loop;
 
 endthis:
     while (!st_empty(s)) {
-        s->d0 = st_pop(s);
-        if ((UBYTE)s->d0 == '(')
+        s->acc = st_pop(s);
+        if ((UBYTE)s->acc == '(')
             continue;
-        *s->a1++ = (UBYTE)s->d0;
-        *s->a1++ = ' ';
+        *s->out++ = (UBYTE)s->acc;
+        *s->out++ = ' ';
     }
-    *s->a1 = 0;
+    *s->out = 0;
     return 0;
 }
 
@@ -363,11 +363,11 @@ static void BLITZ_ROUTINE convtopostfix_c(UBYTE *str BL_REG(d0), UBYTE *buf BL_R
             p[-1] = c | 32;
     st_init(&s, &k);
     s.loop = ctp_loop;
-    s.a0 = s.a3 = str;
-    s.a1 = buf;
-    s.d0 = (ULONG)str;
-    s.d1 = (ULONG)buf;
-    s.d7 = 0;                                   /* set by every operator first */
+    s.pos = s.start = str;
+    s.out = buf;
+    s.acc = (ULONG)str;
+    s.aux = (ULONG)buf;
+    s.prec = 0;                                 /* set by every operator first */
     s.ret = 0;
     blitz_string = str;                         /* MOVE.l d0,a3, not restored */
     ctp_loop(&s);
@@ -376,65 +376,65 @@ static void BLITZ_ROUTINE convtopostfix_c(UBYTE *str BL_REG(d0), UBYTE *buf BL_R
 /* --------------------------------------------------------- PFEvaluate */
 
 /* lmult: d0 = d0 * d1, d1 = |d1| swapped (the original's registers) */
-static ULONG lmult(ULONG d0, ULONG *d1)
+static ULONG lmult(ULONG lhs, ULONG *rhs)
 {
-    ULONG d2 = 0, d3, d4;
+    ULONG sign = 0, hi_lo, lo_hi;       /* d2-d4 */
 
-    if ((LONG)d0 < 0) {
-        d0 = -d0;
-        d2 = 0xffffffffUL;
+    if ((LONG)lhs < 0) {
+        lhs = -lhs;
+        sign = 0xffffffffUL;
     }
-    if ((LONG)*d1 < 0) {
-        *d1 = -*d1;
-        d2 ^= 0xffff;                           /* NOT d2 (.w) */
+    if ((LONG)*rhs < 0) {
+        *rhs = -*rhs;
+        sign ^= 0xffff;                         /* NOT d2 (.w) */
     }
-    d3 = d4 = d0;
-    d0 = bl_mulu_w((UWORD)d0, (UWORD)*d1);      /* MULU d1,d0 */
-    d3 = BL_SWAP(d3);
-    d3 = bl_mulu_w((UWORD)d3, (UWORD)*d1);
-    d3 = BL_SWAP(d3);                           /* BUG(orig) (#639): its high word too */
-    d0 += d3;
-    *d1 = BL_SWAP(*d1);
-    d4 = bl_mulu_w((UWORD)d4, (UWORD)*d1);
-    d4 = BL_SWAP(d4);
-    d0 += d4;
-    if ((UWORD)d2)
-        d0 = -d0;
-    return d0;
+    hi_lo = lo_hi = lhs;
+    lhs = bl_mulu_w((UWORD)lhs, (UWORD)*rhs);   /* MULU d1,d0 */
+    hi_lo = BL_SWAP(hi_lo);
+    hi_lo = bl_mulu_w((UWORD)hi_lo, (UWORD)*rhs);
+    hi_lo = BL_SWAP(hi_lo);                     /* BUG(orig) (#639): its high word too */
+    lhs += hi_lo;
+    *rhs = BL_SWAP(*rhs);
+    lo_hi = bl_mulu_w((UWORD)lo_hi, (UWORD)*rhs);
+    lo_hi = BL_SWAP(lo_hi);
+    lhs += lo_hi;
+    if ((UWORD)sign)
+        lhs = -lhs;
+    return lhs;
 }
 
 /* ldivide: d0 = d0 / d1 (d1 not 0 here), bit by bit as the original;
    d1 = what its shifts leave */
-static ULONG ldivide(ULONG d0, ULONG *d1)
+static ULONG ldivide(ULONG dividend, ULONG *divisor)
 {
-    ULONG d2 = 0, d3 = 0, d4 = 0, x;
-    int d5;
+    ULONG sign = 0, shifted = 0, quotient = 0, carry; /* d2-d4, X */
+    int bit;                            /* d5 */
 
-    if (*d1 == 0)
+    if (*divisor == 0)
         return 0x7fffffffUL;                    /* 'infinity */
-    if ((LONG)*d1 < 0) {
-        *d1 = -*d1;
-        d2 = 0xffffffffUL;
+    if ((LONG)*divisor < 0) {
+        *divisor = -*divisor;
+        sign = 0xffffffffUL;
     }
-    if ((LONG)d0 < 0) {
-        d0 = -d0;
-        d2 ^= 0xffff;
+    if ((LONG)dividend < 0) {
+        dividend = -dividend;
+        sign ^= 0xffff;
     }
-    for (d5 = 31; d5 >= 0; d5--) {              /* DBF d5 */
-        d4 <<= 1;
-        x = *d1 & 1;                            /* LSR.l #1,d1: X */
-        *d1 >>= 1;
-        d3 = d3 >> 1 | x << 31;                 /* ROXR.l #1,d3 */
-        if (*d1 != 0)
+    for (bit = 31; bit >= 0; bit--) {           /* DBF d5 */
+        quotient <<= 1;
+        carry = *divisor & 1;                   /* LSR.l #1,d1: X */
+        *divisor >>= 1;
+        shifted = shifted >> 1 | carry << 31;   /* ROXR.l #1,d3 */
+        if (*divisor != 0)
             continue;
-        if (d3 != 0 && d0 >= d3) {              /* 'skip6 */
-            d0 -= d3;
-            d4 |= 1;                            /* ADDQ #1,d4 on LSL'd d4 */
+        if (shifted != 0 && dividend >= shifted) { /* 'skip6 */
+            dividend -= shifted;
+            quotient |= 1;                      /* ADDQ #1,d4 on LSL'd d4 */
         }
     }
-    if ((UWORD)d2)
-        d4 = -d4;
-    return d4;
+    if ((UWORD)sign)
+        quotient = -quotient;
+    return quotient;
 }
 
 /* the error exits: errortext, errortype, d0 = 0 */
@@ -451,24 +451,24 @@ static int ev_indirect(struct state *s)
 {
     UBYTE c;
 
-    if ((UBYTE)s->d1 != '}') {
+    if ((UBYTE)s->aux != '}') {
         ev_error(err_close, 5);
         return 1;
     }
-    lastaddr = s->d0;
-    s->d0 = *(ULONG *)s->d0;
-    BL_SETB(s->d1, *s->a0);
-    if ((UBYTE)s->d1 != '.')
+    lastaddr = s->acc;
+    s->acc = *(ULONG *)s->acc;
+    BL_SETB(s->aux, *s->pos);
+    if ((UBYTE)s->aux != '.')
         return 0;
-    s->a0++;
-    c = *s->a0++;
-    BL_SETB(s->d1, c);
+    s->pos++;
+    c = *s->pos++;
+    BL_SETB(s->aux, c);
     if (c == 'b') {
-        s->d0 = (s->d0 << 8 | s->d0 >> 24) & 0xff;
+        s->acc = (s->acc << 8 | s->acc >> 24) & 0xff;
         return 0;
     }
     if (c == 'w') {
-        s->d0 = BL_SWAP(s->d0) & 0xffff;
+        s->acc = BL_SWAP(s->acc) & 0xffff;
         return 0;
     }
     if (c == 'l')
@@ -480,27 +480,27 @@ static int ev_indirect(struct state *s)
 /* the loop of PFEvaluate from evloop */
 static ULONG ev_loop(struct state *s)
 {
-    const UBYTE *a2;
-    ULONG x;
+    const UBYTE *op_at;                 /* a2 */
+    ULONG rhs;                          /* the popped value */
     int op;
     UWORD cnt;
 
 evloop:
-    if (*s->a0 == 0) {                          /* ev_eol */
+    if (*s->pos == 0) {                         /* ev_eol */
         if (st_empty(s)) {
             ev_error(err_noresult, 4);
             return s->ret;                      /* BUG(orig) (#644): MOVE.l (a7)+,d0 */
         }
         return st_pop(s);
     }
-    if (*s->a0++ == ' ')
+    if (*s->pos++ == ' ')
         goto evloop;
-    s->a0--;
-    BL_SETB(s->d0, *s->a0);
-    if ((UBYTE)s->d0 == '-' && s->a0[1] != ' ' && s->a0[1] != 0)
+    s->pos--;
+    BL_SETB(s->acc, *s->pos);
+    if ((UBYTE)s->acc == '-' && s->pos[1] != ' ' && s->pos[1] != 0)
         goto evall;
-    for (a2 = operators + 2, op = 0; *a2; a2 += 2, op++)
-        if (*a2 == (UBYTE)s->d0)
+    for (op_at = operators + 2, op = 0; *op_at; op_at += 2, op++)
+        if (*op_at == (UBYTE)s->acc)
             goto gotop;
     goto evall;
 
@@ -509,156 +509,156 @@ gotop:
         return ev_error(err_arg, 1);
     switch (op) {
     case 0:                                     /* = */
-        x = st_pop(s);
-        s->d0 = x == *st_top(s) ? 0xffffffffUL : 0;
+        rhs = st_pop(s);
+        s->acc = rhs == *st_top(s) ? 0xffffffffUL : 0;
         break;
     case 1:                                     /* & */
-        s->d0 = st_pop(s) & *st_top(s);
+        s->acc = st_pop(s) & *st_top(s);
         break;
     case 2:                                     /* | */
-        s->d0 = st_pop(s) | *st_top(s);
+        s->acc = st_pop(s) | *st_top(s);
         break;
     case 3:                                     /* < : SLS, unsigned <= */
-        x = st_pop(s);
-        s->d0 = *st_top(s) <= x ? 0xffffffffUL : 0;
+        rhs = st_pop(s);
+        s->acc = *st_top(s) <= rhs ? 0xffffffffUL : 0;
         break;
     case 4:                                     /* > : SGT */
-        x = st_pop(s);
-        s->d0 = (LONG)*st_top(s) > (LONG)x ? 0xffffffffUL : 0;
+        rhs = st_pop(s);
+        s->acc = (LONG)*st_top(s) > (LONG)rhs ? 0xffffffffUL : 0;
         break;
     case 5:                                     /* + */
-        s->d0 = st_pop(s) + *st_top(s);
+        s->acc = st_pop(s) + *st_top(s);
         break;
     case 6:                                     /* - */
-        x = st_pop(s);
-        s->d0 = *st_top(s) - x;
+        rhs = st_pop(s);
+        s->acc = *st_top(s) - rhs;
         break;
     case 7:                                     /* * */
-        s->d0 = st_pop(s);
-        s->d1 = *st_top(s);
-        s->d0 = lmult(s->d0, &s->d1);
+        s->acc = st_pop(s);
+        s->aux = *st_top(s);
+        s->acc = lmult(s->acc, &s->aux);
         break;
     case 8:                                     /* / */
-        s->d1 = st_pop(s);
-        if (s->d1 == 0)
+        s->aux = st_pop(s);
+        if (s->aux == 0)
             return ev_error(err_divide0, 3);
-        s->d0 = ldivide(*st_top(s), &s->d1);
+        s->acc = ldivide(*st_top(s), &s->aux);
         break;
     default:                                    /* ^ */
-        x = st_pop(s);                          /* d2 */
-        s->d0 = *st_top(s);
-        if (s->d0 == 0)
-            s->d0 = 1;
-        else if ((LONG)(x -= 2) >= 0) {
-            ULONG d3 = s->d0;
-            cnt = (UWORD)x;
+        rhs = st_pop(s);                        /* d2 */
+        s->acc = *st_top(s);
+        if (s->acc == 0)
+            s->acc = 1;
+        else if ((LONG)(rhs -= 2) >= 0) {
+            ULONG base = s->acc;
+            cnt = (UWORD)rhs;
             do {                                /* DBRA d2 */
-                s->d1 = d3;
-                s->d0 = lmult(s->d0, &s->d1);
+                s->aux = base;
+                s->acc = lmult(s->acc, &s->aux);
             } while (cnt-- != 0);
         }
         break;
     }
-    *st_top(s) = s->d0;                         /* !putarg */
-    s->a0++;
+    *st_top(s) = s->acc;                        /* !putarg */
+    s->pos++;
     argc--;
     goto evloop;
 
 evall:
     indirect = 0;
-    if (*s->a0 == '{') {
+    if (*s->pos == '{') {
         indirect = 0xff;
-        s->a0++;
+        s->pos++;
     }
-    if (*s->a0 == '$')
+    if (*s->pos == '$')
         goto evalhex;
-    if (*s->a0 == '%')
+    if (*s->pos == '%')
         goto evalbin;
-    negative = *s->a0 == '-' ? 0xff : 0;
+    negative = *s->pos == '-' ? 0xff : 0;
     if (negative)
-        s->a0++;
-    if (*s->a0 == 'a') {
-        BL_SETB(s->d0, s->a0[1] - '0' + 8);
-        s->a0 += 2;
+        s->pos++;
+    if (*s->pos == 'a') {
+        BL_SETB(s->acc, s->pos[1] - '0' + 8);
+        s->pos += 2;
         goto getreg;
     }
-    if (*s->a0 == 'd') {
-        BL_SETB(s->d0, s->a0[1] - '0');
-        s->a0 += 2;
+    if (*s->pos == 'd') {
+        BL_SETB(s->acc, s->pos[1] - '0');
+        s->pos += 2;
         goto getreg;
     }
-    if (*s->a0 == 'p' && s->a0[1] == 'c') {
-        s->d0 = 16;
-        s->a0 += 2;
+    if (*s->pos == 'p' && s->pos[1] == 'c') {
+        s->acc = 16;
+        s->pos += 2;
         goto getreg;
     }
     /* the number, decimal */
-    s->d0 = 0;
-    s->d1 = 0;
-    while (*s->a0 != 0) {
-        BL_SETB(s->d1, *s->a0++);
-        if ((UBYTE)s->d1 == ' ' || (UBYTE)s->d1 == '}')
+    s->acc = 0;
+    s->aux = 0;
+    while (*s->pos != 0) {
+        BL_SETB(s->aux, *s->pos++);
+        if ((UBYTE)s->aux == ' ' || (UBYTE)s->aux == '}')
             break;
-        s->d0 = (s->d0 << 3) + s->d0 + s->d0;
-        BL_SETB(s->d1, s->d1 - '0');
-        s->d0 += s->d1;
+        s->acc = (s->acc << 3) + s->acc + s->acc;
+        BL_SETB(s->aux, s->aux - '0');
+        s->acc += s->aux;
     }
     goto endofnum;
 
 getreg:
-    BL_SETW(s->d0, ((UBYTE)s->d0) << 2);        /* ANDI.w #$ff:ASL.w #2 */
+    BL_SETW(s->acc, ((UBYTE)s->acc) << 2);      /* ANDI.w #$ff:ASL.w #2 */
     if (!regs)
         return ev_error(err_reg, 2);
-    s->d0 = *(ULONG *)(regs + (WORD)s->d0);
+    s->acc = *(ULONG *)(regs + (WORD)s->acc);
 
 endofnum:
     if (negative)
-        s->d0 = -s->d0;
+        s->acc = -s->acc;
     if (indirect && ev_indirect(s))
         return 0;
     argc++;                                     /* after the push in the original */
-    PUSH(s, s->d0);
+    PUSH(s, s->acc);
     goto evloop;
 
 evalhex:
     negative = 0;
-    s->d0 = 0;
-    s->d1 = 0;
-    s->a0++;
-    while (*s->a0 != 0) {
-        BL_SETB(s->d1, *s->a0++);
-        if ((UBYTE)s->d1 == ' ' || (UBYTE)s->d1 == '}')
+    s->acc = 0;
+    s->aux = 0;
+    s->pos++;
+    while (*s->pos != 0) {
+        BL_SETB(s->aux, *s->pos++);
+        if ((UBYTE)s->aux == ' ' || (UBYTE)s->aux == '}')
             break;
-        s->d0 <<= 4;
-        if ((BYTE)s->d1 < 'a') {
-            BL_SETB(s->d1, s->d1 - '0');
-            s->d0 += s->d1;
+        s->acc <<= 4;
+        if ((BYTE)s->aux < 'a') {
+            BL_SETB(s->aux, s->aux - '0');
+            s->acc += s->aux;
         } else {
-            BL_SETB(s->d1, s->d1 - 'a' + 10);
-            s->d0 |= (UBYTE)s->d1;
+            BL_SETB(s->aux, s->aux - 'a' + 10);
+            s->acc |= (UBYTE)s->aux;
         }
     }
     goto endofnum;
 
 evalbin:
     negative = 0;
-    s->d0 = 0;
-    s->d1 = 0;
-    s->a0++;
-    while (*s->a0 != 0) {
-        BL_SETB(s->d1, *s->a0++);
-        if ((UBYTE)s->d1 == ' ' || (UBYTE)s->d1 == '}')
+    s->acc = 0;
+    s->aux = 0;
+    s->pos++;
+    while (*s->pos != 0) {
+        BL_SETB(s->aux, *s->pos++);
+        if ((UBYTE)s->aux == ' ' || (UBYTE)s->aux == '}')
             break;
-        s->d0 <<= 1;
-        BL_SETB(s->d1, s->d1 - '0');
-        s->d0 |= (UBYTE)s->d1;
+        s->acc <<= 1;
+        BL_SETB(s->aux, s->aux - '0');
+        s->acc |= (UBYTE)s->aux;
     }
     goto endofnum;
 }
 
 /* PFEvaluate(string): d0 = the string, d1 = the caller's d1 (the stale
    d1 of a register in {}), ret = the caller's return address (thunk) */
-static ULONG BLITZ_ROUTINE evaluate_c(UBYTE *str BL_REG(d0), ULONG d1 BL_REG(d1),
+static ULONG BLITZ_ROUTINE evaluate_c(UBYTE *str BL_REG(d0), ULONG caller_d1 BL_REG(d1),
                                       ULONG ret BL_REG(a1))
 {
     struct state s;
@@ -670,10 +670,10 @@ static ULONG BLITZ_ROUTINE evaluate_c(UBYTE *str BL_REG(d0), ULONG d1 BL_REG(d1)
         return 0;
     st_init(&s, &k);
     s.loop = ev_loop;
-    s.a0 = s.a1 = s.a3 = str;
-    s.d0 = (ULONG)str;
-    s.d1 = d1;
-    s.d7 = 0;
+    s.pos = s.out = s.start = str;
+    s.acc = (ULONG)str;
+    s.aux = caller_d1;
+    s.prec = 0;
     s.ret = ret;
     return ev_loop(&s);
 }
@@ -687,27 +687,27 @@ static void BLITZ_ROUTINE registers_c(ULONG block BL_REG(d0))
 }
 
 /* PFErrorType: MOVE.w errortype,d0 */
-static ULONG BLITZ_ROUTINE errortype_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE errortype_c(ULONG result BL_REG(d0))
 {
-    return BL_SETW(d0, errortype);
+    return BL_SETW(result, errortype);
 }
 
 /* PFErrorText: the text at a3 (a3 ends at its 0), d0 = its length; no
    error: d0.w = 0, nothing written */
-static ULONG BLITZ_ROUTINE errortext_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE errortext_c(ULONG result BL_REG(d0))
 {
     const char *p;
 
-    BL_SETW(d0, errortype);
+    BL_SETW(result, errortype);
     if (!errortype)
-        return d0;
+        return result;
     p = errortext;
-    d0 = (ULONG)-1;
+    result = (ULONG)-1;
     do
-        d0++;
+        result++;
     while ((*blitz_string++ = *p++) != 0);
     blitz_string--;
-    return d0;
+    return result;
 }
 
 /* PFIndirectAddr: the address of the last indirection */
