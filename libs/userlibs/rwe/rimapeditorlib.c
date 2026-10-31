@@ -67,6 +67,7 @@
 #include <graphics/rastport.h>
 #include <graphics/text.h>
 #include <intuition/intuition.h>
+#include <stddef.h>
 #define __NOLIBBASE__
 #define GRAPHICS_BASE_NAME gfx
 #include <proto/graphics.h>
@@ -305,24 +306,40 @@ BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
 /* !libfin {_toke,_load,_save,_use,_free,5,5} */
 BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 5);
 
-/* the MapObject */
-#define M_WIDTH         0
-#define M_HEIGHT        2
-#define M_BWIDTH        4
-#define M_BHEIGHT       6
-#define M_DATASIZE      8
-#define M_MAPNULL       9
-#define M_MEMPOINTER    10
-#define M_VIEWX         14
-#define M_VIEWY         16
-#define M_FILENAME      18
-#define M_CHANGED       22
-#define M_LASTADDRESS   24
-#define M_RUBTHROUGHMAP 28
+/* the MapObject (32 bytes); the inline routines below use its offsets */
+struct mapobject {
+    UWORD width, height;                /* 0 2 */
+    UWORD bwidth, bheight;              /* 4 6 */
+    UBYTE datasize, mapnull;            /* 8 9 */
+    UBYTE *data;                        /* 10: width*height words (M_MEMPOINTER) */
+    UWORD viewx, viewy;                 /* 14 16 */
+    ULONG name;                         /* 18: a maxslib string (M_FILENAME) */
+    UWORD changed;                      /* 22 */
+    UWORD *lastaddress;                 /* 24: MapCanDraw's map word */
+    struct mapobject *rubthrough;       /* 28: the rub-through map */
+};
+static_assert(sizeof(struct mapobject) == 32);
+static_assert(offsetof(struct mapobject, height) == 2);
+static_assert(offsetof(struct mapobject, data) == 10);
+static_assert(offsetof(struct mapobject, viewx) == 14);
+static_assert(offsetof(struct mapobject, viewy) == 16);
+static_assert(offsetof(struct mapobject, changed) == 22);
+static_assert(offsetof(struct mapobject, lastaddress) == 24);
+static_assert(offsetof(struct mapobject, rubthrough) == 28);
 
-#define MW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
-#define ML(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
-#define MP(p, o) (*(UBYTE **)((UBYTE *)(p) + (o)))
+/* a Blitz shape object (shapeslib, 32 bytes) */
+struct shape {
+    UWORD width, height, depth;         /* 0 2 4: pixwidth, pixheight, depth */
+    UWORD ebwidth, bltsize;             /* 6 8 */
+    WORD xhandle, yhandle;              /* 10 12 */
+    UBYTE *data;                        /* 14: plane after plane */
+    ULONG *cookie;                      /* 18 */
+    UWORD onebpmem, onebpmemx, allbpmem, allbpmemx;     /* 22 24 26 28 */
+    UWORD cludge;                       /* 30: "cL" = the data is not ours */
+};
+static_assert(sizeof(struct shape) == 32);
+static_assert(offsetof(struct shape, data) == 14);
+static_assert(offsetof(struct shape, cookie) == 18);
 
 static struct Library *gfxbase;
 static const UBYTE *mapstencil;
@@ -382,25 +399,25 @@ BLITZ_THUNK(_setstencil, setstencil_c, "d0-d1/a0-a1");
    shape# + 1 (resp. the rub-through map's word).  The address of the
    map's word is kept at 24.  d0's upper word stays (ADDQ.w). */
 static ULONG BLITZ_ROUTINE candraw_c(ULONG shapenum BL_REG(d0), UWORD x BL_REG(d1),
-                                     UWORD y BL_REG(d2), UBYTE *map BL_REG(a3))
+                                     UWORD y BL_REG(d2), struct mapobject *map BL_REG(a3))
 {
-    UBYTE *rub;
+    struct mapobject *rub;
     UWORD *cell;
     UWORD v;
     ULONG result = shapenum;            /* d0: the shape number or the rub-through word, + 1 */
 
-    if ((WORD)x >= (WORD)MW(map, M_WIDTH) || (WORD)y >= (WORD)MW(map, M_HEIGHT))
+    if ((WORD)x >= (WORD)map->width || (WORD)y >= (WORD)map->height)
         return 0xffffffffUL;
-    rub = MP(map, M_RUBTHROUGHMAP);
+    rub = map->rubthrough;
     if (rub) {
         ULONG off;
-        if ((WORD)x >= (WORD)MW(rub, M_WIDTH) || (WORD)y >= (WORD)MW(rub, M_HEIGHT))
+        if ((WORD)x >= (WORD)rub->width || (WORD)y >= (WORD)rub->height)
             return 0xffffffffUL;
-        off = rol1(bl_mulu_w(y, MW(rub, M_WIDTH)) + x);
-        BL_SETW(result, *(UWORD *)(MP(rub, M_MEMPOINTER) + off) - 1);
+        off = rol1(bl_mulu_w(y, rub->width) + x);
+        BL_SETW(result, *(UWORD *)(rub->data + off) - 1);
     }
-    cell = (UWORD *)(MP(map, M_MEMPOINTER) + rol1(bl_mulu_w(y, MW(map, M_WIDTH)) + x));
-    MP(map, M_LASTADDRESS) = (UBYTE *)cell;
+    cell = (UWORD *)(map->data + rol1(bl_mulu_w(y, map->width) + x));
+    map->lastaddress = cell;
     BL_SETW(result, result + 1);
     v = *cell;
     if ((UWORD)result == v)
@@ -413,27 +430,23 @@ BLITZ_THUNK(_candraw, candraw_c, "d1/a0-a1");
 
 /* --------------------------------------------------------------- shapes */
 
-/* a Blitz shape: pixwidth 0, pixheight 2, depth 4, ebwidth 6, data 14,
-   cookie 18 */
-#define SW(sh, o) (*(UWORD *)((UBYTE *)(sh) + (o)))
-
 /* ScanShapes startnum,highest: a0 = shape startnum, d0 = its offset
    (shape# << 5); from it to the first empty shape or `highest` the
    largest width/height/depth (signed).  -> d0 = the last number. */
 static ULONG BLITZ_ROUTINE scanshapes_c(ULONG shapenum BL_REG(d0), UWORD highest BL_REG(d1),
-                                        const UBYTE *sh BL_REG(a0))
+                                        const struct shape *sh BL_REG(a0))
 {
     UWORD w = 0, h = 0, d = 0;
 
     BL_SETW(shapenum, (WORD)shapenum >> 5);
-    while (SW(sh, 0)) {
-        if (!((WORD)w > (WORD)SW(sh, 0)))
-            w = SW(sh, 0);
-        if (!((WORD)h > (WORD)SW(sh, 2)))
-            h = SW(sh, 2);
-        if (!((WORD)d > (WORD)SW(sh, 4)))
-            d = SW(sh, 4);
-        sh += 32;
+    while (sh->width) {
+        if (!((WORD)w > (WORD)sh->width))
+            w = sh->width;
+        if (!((WORD)h > (WORD)sh->height))
+            h = sh->height;
+        if (!((WORD)d > (WORD)sh->depth))
+            d = sh->depth;
+        sh++;
         if ((UWORD)shapenum == highest)
             break;
         BL_SETW(shapenum, shapenum + 1);
@@ -468,23 +481,24 @@ BLITZ_THUNK(_scanmaxdepth, scanmaxdepth_c, "d1/a0-a1");
 /* ShapeTo1616 src,dest: the first word of every row of every plane of
    src into dest's data, 16 rows per plane (missing rows 0, more rows
    skipped).  BUG(orig): height or depth 0 -> 65536 (DBRA) (#895) */
-static void BLITZ_ROUTINE shapetosquare_c(const UBYTE *src BL_REG(a0), UBYTE *dst BL_REG(a1))
+static void BLITZ_ROUTINE shapetosquare_c(const struct shape *src BL_REG(a0),
+                                          struct shape *dst BL_REG(a1))
 {
-    WORD h = (WORD)SW(src, 2);
-    ULONG eb = SW(src, 6);
-    const UBYTE *s = MP(src, 14);
-    UWORD *d = (UWORD *)MP(dst, 14);
-    UWORD planes = SW(src, 4) - 1, n;
+    WORD h = (WORD)src->height;
+    ULONG eb = src->ebwidth;
+    const UBYTE *s = src->data;
+    UWORD *d = (UWORD *)dst->data;
+    UWORD planes = src->depth - 1, n;
 
     if (h == 16) {
-        n = (UWORD)bl_mulu_w(SW(src, 4), 16) - 1;   /* depth * 16 rows */
+        n = (UWORD)bl_mulu_w(src->depth, 16) - 1;   /* depth * 16 rows */
         do {
             *d++ = *(const UWORD *)s;
             s += eb;
             __asm__("" : "+a"(s));     /* no __mulsi3 */
         } while (n-- != 0);
     } else if (h > 16) {
-        ULONG skip = bl_mulu_w((UWORD)(h - 16), SW(src, 6));
+        ULONG skip = bl_mulu_w((UWORD)(h - 16), src->ebwidth);
         do {
             n = 15;
             do {
@@ -513,9 +527,9 @@ static void BLITZ_ROUTINE shapetosquare_c(const UBYTE *src BL_REG(a0), UBYTE *ds
 BLITZ_THUNK(_shapetosquare, shapetosquare_c, "d0-d1/a0-a1");
 
 /* ShapeMaskFill shape#: 8 longs of the cookie = -1 */
-static void BLITZ_ROUTINE shapemaskfill_c(const UBYTE *sh BL_REG(a0))
+static void BLITZ_ROUTINE shapemaskfill_c(const struct shape *sh BL_REG(a0))
 {
-    ULONG *c = (ULONG *)MP(sh, 18);
+    ULONG *c = sh->cookie;
     int i;
 
     for (i = 0; i < 8; i++)
@@ -523,14 +537,14 @@ static void BLITZ_ROUTINE shapemaskfill_c(const UBYTE *sh BL_REG(a0))
 }
 BLITZ_THUNK(_shapemaskfill, shapemaskfill_c, "d0-d1/a0-a1");
 
-/* FillBitplane bitmap#,width,height: plane 0 of the bitmap object (its
-   ebwidth at 0, planes at 8) gets width/16 words per row (at least one:
-   DBRA) of $5555/$AAAA, alternating per row */
+/* FillBitplane bitmap#,width,height: plane 0 of the bitmap object (a
+   struct BitMap: its ebwidth at 0, planes at 8) gets width/16 words per
+   row (at least one: DBRA) of $5555/$AAAA, alternating per row */
 static void BLITZ_ROUTINE fillbitplane_c(UWORD w BL_REG(d1), UWORD h BL_REG(d2),
-                                         const UBYTE *bm BL_REG(a0))
+                                         const struct BitMap *bm BL_REG(a0))
 {
-    UBYTE *plane = MP(bm, 8);
-    ULONG eb = SW(bm, 0);
+    UBYTE *plane = bm->Planes[0];
+    ULONG eb = bm->BytesPerRow;
     UWORD xs = (UWORD)((w >> 4) - 1), rows = h - 1, pat = 0xaaaa;
 
     do {
@@ -548,24 +562,23 @@ BLITZ_THUNK(_fillbitplane, fillbitplane_c, "d0-d1/a0-a1");
 
 /* the object's free routine (and CreateMap's): data (FreeMem, the size
    computed like CreateMap's) and name freed, the 32 bytes cleared */
-static void freemap(UBYTE *map)
+static void freemap(struct mapobject *map)
 {
     ULONG *p = (ULONG *)map;
     int i;
 
-    if (ML(map, M_MEMPOINTER))
-        FreeMem(MP(map, M_MEMPOINTER),
-                bl_mulu_w((UWORD)(MW(map, M_WIDTH) << 1), MW(map, M_HEIGHT)));
-    if (ML(map, M_FILENAME)) {
+    if (map->data)
+        FreeMem(map->data, bl_mulu_w((UWORD)(map->width << 1), map->height));
+    if (map->name) {
         struct bl_regs r = { 0, 0, 0, 0 };
-        r.d0 = ML(map, M_FILENAME);
+        r.d0 = map->name;
         BLITZ_ALIBJSR(TOK_freest, r);
     }
     for (i = 0; i < 8; i++)
         p[i] = 0;
 }
 
-static void BLITZ_ROUTINE freemap_c(UBYTE *map BL_REG(a3))
+static void BLITZ_ROUTINE freemap_c(struct mapobject *map BL_REG(a3))
 {
     freemap(map);
 }
@@ -578,37 +591,39 @@ BLITZ_THUNK(_freemap, freemap_c, "d0-d1/a0-a1");
 static void BLITZ_ROUTINE newmap_c(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD bw BL_REG(d3),
                                    UWORD bh BL_REG(d4), ULONG name BL_REG(d5),
                                    UWORD used BL_REG(d6), const ULONG *lens BL_REG(a2),
-                                   UBYTE *map BL_REG(a3))
+                                   struct mapobject *map BL_REG(a3))
 {
     ULONG len = BL_POPL(lens);
     struct bl_regs r = { 0, 0, 0, 0 };
     UBYTE *mem;
 
-    *(UBYTE **)(blitz_globals + (WORD)used) = map;      /* MOVE.l a3,0(a5,d6) */
-    if (ML(map, 12))                    /* BUG(orig): not 10 (#894) */
+    *(struct mapobject **)(blitz_globals + (WORD)used) = map;  /* MOVE.l a3,0(a5,d6) */
+    /* BUG(orig) (#894): the long at 12 - data's low word and viewx - not data */
+    if (*(ULONG *)((UBYTE *)map + offsetof(struct mapobject, data) + 2))
         freemap(map);
-    MW(map, M_WIDTH) = w;
-    MW(map, M_HEIGHT) = h;
-    MW(map, M_BWIDTH) = bw;
-    MW(map, M_BHEIGHT) = bh;
-    map[M_DATASIZE] = 1;
-    map[M_MAPNULL] = 0;
+    map->width = w;
+    map->height = h;
+    map->bwidth = bw;
+    map->bheight = bh;
+    map->datasize = 1;
+    __asm__("" : "+m"(map->datasize));  /* two byte stores, not merged */
+    map->mapnull = 0;
     mem = AllocMem(bl_mulu_w((UWORD)(w << 1), h), MEMF_PUBLIC | MEMF_CLEAR);
     if (!mem) {
-        ML(map, 0) = 0;
-        ML(map, 4) = 0;
-        MW(map, 4) = 0;
-        blitz_string = map + 10;
+        *(ULONG *)&map->width = 0;      /* a long: width and height */
+        *(ULONG *)&map->bwidth = 0;     /* a long: bwidth and bheight */
+        map->bwidth = 0;                /* (once more, as a word) */
+        blitz_string = (UBYTE *)&map->data;
         return;
     }
-    MP(map, M_MEMPOINTER) = mem;
-    MW(map, M_VIEWX) = 0;
-    MW(map, M_VIEWY) = 0;
+    map->data = mem;
+    map->viewx = 0;
+    map->viewy = 0;
     r.d0 = name;
     r.d1 = len;
-    ML(map, M_FILENAME) = BLITZ_ALIBJSR(TOK_allocst, r);
-    MW(map, M_CHANGED) = 0;
-    blitz_string = map + 24;
+    map->name = BLITZ_ALIBJSR(TOK_allocst, r);
+    map->changed = 0;
+    blitz_string = (UBYTE *)&map->lastaddress;
 }
 BLITZ_THUNK(_newmap, newmap_c, "d0-d1/a0-a1");
 
@@ -638,15 +653,15 @@ BLITZ_INLINE(_mapobjheight, "move.w 2(a3),d0");
 /* MapDataGrab address,datasize,mapnull: width*height values from address
    (datasize 0: bytes, else words) + mapnull into the data */
 static void BLITZ_ROUTINE mapgrab_c(const UBYTE *src BL_REG(d0), UWORD type BL_REG(d1),
-                                    UWORD null BL_REG(d2), UBYTE *map BL_REG(a3))
+                                    UWORD null BL_REG(d2), struct mapobject *map BL_REG(a3))
 {
-    UWORD *dst = (UWORD *)MP(map, M_MEMPOINTER);
-    UWORD rows = MW(map, M_HEIGHT) - 1, n;
+    UWORD *dst = (UWORD *)map->data;
+    UWORD rows = map->height - 1, n;
 
     if (!type) {
         UWORD v = 0;                    /* d0.w */
         do {
-            n = MW(map, M_WIDTH) - 1;
+            n = map->width - 1;
             do {
                 v = (v & 0xff00) | *src++;      /* BUG(orig): MOVE.b (#898) */
                 v += null;
@@ -655,7 +670,7 @@ static void BLITZ_ROUTINE mapgrab_c(const UBYTE *src BL_REG(d0), UWORD type BL_R
         } while (rows-- != 0);
     } else {
         do {
-            n = MW(map, M_WIDTH) - 1;
+            n = map->width - 1;
             do {
                 *dst++ = *(const UWORD *)src + null;
                 src += 2;
@@ -667,9 +682,9 @@ BLITZ_THUNK(_mapgrab, mapgrab_c, "d0-d1/a0-a1");
 
 /* MapObjName$: a1 = the used map; the name's characters at a3 (no 0),
    d0 = their number as a byte; d0 = 0 without a name */
-static ULONG BLITZ_ROUTINE mapobjname_c(const UBYTE *map BL_REG(a1))
+static ULONG BLITZ_ROUTINE mapobjname_c(const struct mapobject *map BL_REG(a1))
 {
-    const UBYTE *s = MP(map, M_FILENAME);
+    const UBYTE *s = (const UBYTE *)map->name;
     ULONG n = 0;
     UBYTE c;
 
@@ -685,17 +700,17 @@ BLITZ_THUNK(_mapobjname, mapobjname_c, "d1/a0-a1");
 
 /* SetMapObjName$ name$: the old name freed, the new one copied */
 static void BLITZ_ROUTINE setmapobjname_c(ULONG name BL_REG(d0), const ULONG *lens BL_REG(a2),
-                                          UBYTE *map BL_REG(a3))
+                                          struct mapobject *map BL_REG(a3))
 {
     struct bl_regs r = { 0, 0, 0, 0 };
 
-    if (ML(map, M_FILENAME)) {
-        r.d0 = ML(map, M_FILENAME);
+    if (map->name) {
+        r.d0 = map->name;
         BLITZ_ALIBJSR(TOK_freest, r);
     }
     r.d0 = name;
     r.d1 = lens[-1];                    /* MOVE.l -(a2),d1 */
-    ML(map, M_FILENAME) = BLITZ_ALIBJSR(TOK_allocst, r);
+    map->name = BLITZ_ALIBJSR(TOK_allocst, r);
 }
 BLITZ_THUNK(_setmapobjname, setmapobjname_c, "d0-d1/a0-a1");
 
@@ -704,11 +719,12 @@ BLITZ_INLINE(_mapobjviewy, "move.w 16(a3),d0");
 BLITZ_INLINE(_mapdatachanged, "move.w 22(a3),d0");
 
 /* MapDataChanged(newstate): the old state, the new one stored */
-static ULONG BLITZ_ROUTINE mapdatachanged2_c(ULONG newstate BL_REG(d0), UBYTE *map BL_REG(a3))
+static ULONG BLITZ_ROUTINE mapdatachanged2_c(ULONG newstate BL_REG(d0),
+                                             struct mapobject *map BL_REG(a3))
 {
-    UWORD old = MW(map, M_CHANGED);
+    UWORD old = map->changed;
 
-    MW(map, M_CHANGED) = (UWORD)newstate;
+    map->changed = (UWORD)newstate;
     return BL_SETW(newstate, old);
 }
 BLITZ_THUNK(_mapdatachanged2, mapdatachanged2_c, "d1/a0-a1");
