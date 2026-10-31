@@ -34,39 +34,10 @@
  *     of a non-interleaved bitmap, so only the field itself differs). (#77)
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <intuition/screens.h>
 
-/* a bitmap object, 2^6 bytes */
-struct bbitmap {
-    UWORD bpr;                  /* +0 */
-    UWORD rows;                 /* +2 */
-    UBYTE flags;                /* +4 */
-    UBYTE depth;                /* +5 */
-    UWORD oldfd;                /* +6 */
-    UBYTE *planes[8];           /* +8 */
-    UBYTE pad[12];              /* +40 */
-    UBYTE ilflag;               /* +52 bit 7: interleaved */
-    UBYTE pad53;
-    UWORD planedist;            /* +54 */
-    UWORD width;                /* +56 */
-    UWORD height;               /* +58 */
-    UWORD colours;              /* +60 */
-    WORD isreal;                /* +62 */
-} BL_PACKED;
-static_assert(sizeof(struct bbitmap) == 64);
-
-/* a shape object of shapeslib (32 bytes; the part read here) */
-struct shape {
-    UWORD width;                /* +0 pixel width, 0 = none */
-    UWORD height;               /* +2 */
-    UWORD depth;                /* +4 */
-    UWORD ebwidth;              /* +6 even byte width */
-    UWORD bltsize;              /* +8 */
-    WORD xhandle, yhandle;      /* +10, +12 */
-    UBYTE *data;                /* +14 the planes, one after the other */
-    UBYTE *cookie;              /* +18 */
-    WORD planesize;             /* +22 bytes per plane */
-};
+/* the objects: struct bb_bitmap, struct bb_shape (blitzobj.h) */
 
 /* ilbmifflib: load an ILBM into a bitmap (a0 = name, a1 = bitmap) */
 /* palettelib getpal: load a palette (a0 = name, a1 = palette) */
@@ -76,12 +47,12 @@ void _bitmapchk(void), _bitloadchk(void), sbchk(void), cbchk(void), shchk(void);
 void _usechk(void), extbitmap(void);
 void BLITZ_ROUTINE _bitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d BL_REG(d3),
                            WORD usedoff BL_REG(d6));
-void BLITZ_ROUTINE _bitload(const UBYTE *name BL_REG(d1), struct bbitmap *bm BL_REG(a1));
+void BLITZ_ROUTINE _bitload(const UBYTE *name BL_REG(d1), struct bb_bitmap *bm BL_REG(a1));
 void BLITZ_ROUTINE _bitload2(const UBYTE *name BL_REG(d1), APTR pal BL_REG(a0),
-                             struct bbitmap *bm BL_REG(a1));
+                             struct bb_bitmap *bm BL_REG(a1));
 void BLITZ_ROUTINE doscbitmap(UBYTE **scr BL_REG(a2), WORD usedoff BL_REG(d6));
-void BLITZ_ROUTINE docopybitmap(struct bbitmap *src BL_REG(a2));
-void BLITZ_ROUTINE doshbitmap(const struct shape *shape BL_REG(a2), WORD usedoff BL_REG(d6));
+void BLITZ_ROUTINE docopybitmap(struct bb_bitmap *src BL_REG(a2));
+void BLITZ_ROUTINE doshbitmap(const struct bb_shape *shape BL_REG(a2), WORD usedoff BL_REG(d6));
 void BLITZ_ROUTINE _cludgebitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d BL_REG(d3),
                                  ULONG mem BL_REG(d4), WORD usedoff BL_REG(d6));
 void BLITZ_ROUTINE _freebitmap(void);
@@ -144,20 +115,20 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 10, 6);
 
 /* ********************* Code Follows ************************* */
 
-#define BM ((struct bbitmap *)blitz_string)
+#define BM ((struct bb_bitmap *)blitz_string)
 
 static void setused(WORD off)
 {
-    *(struct bbitmap **)(blitz_globals + off) = BM;     /* MOVE.l a3,0(a5,d6) */
+    *(struct bb_bitmap **)(blitz_globals + off) = BM;     /* MOVE.l a3,0(a5,d6) */
 }
 
 /* _freebitmap - our own memory (isreal < 0) is freed */
-static void freebitmap(struct bbitmap *b)
+static void freebitmap(struct bb_bitmap *b)
 {
     if (b->isreal < 0) {
         struct bl_regs r = { 0 };
 
-        r.d0 = (ULONG)(UWORD)(b->rows * *(UWORD *)&b->flags) * b->bpr;
+        r.d0 = (ULONG)(UWORD)(b->rows * b->flagsdepth) * b->bpr;
         r.a1 = (ULONG)b->planes[0];
         BLITZ_ALIBJSR(TOK_globfree, r);
     }
@@ -177,16 +148,16 @@ void BLITZ_ROUTINE _freebitmap(void)
 }
 
 /* prepxtra - the extra fields */
-static void prepxtra(struct bbitmap *b)
+static void prepxtra(struct bb_bitmap *b)
 {
     UWORD d, w;
     ULONG dist;
 
-    b->oldfd = *(UWORD *)&b->flags;
+    b->oldfd = b->flagsdepth;
     b->flags = 0;
-    *(UWORD *)&b->ilflag = 0;
+    b->ilword = 0;
     b->height = b->rows;
-    d = *(UWORD *)&b->flags;                    /* = depth */
+    d = b->flagsdepth;                          /* = depth */
     b->colours = d < 16 ? 1u << d : 0;          /* LSL d1,d0 (word) */
     w = b->bpr << 3;
     if ((WORD)d >= 2) {
@@ -218,7 +189,7 @@ static void prepxtra(struct bbitmap *b)
 }
 
 /* extbitmap - a3 = object, d1/d2/d3 = width (pixels), height, depth */
-static void ext(struct bbitmap *b, UWORD w, UWORD h, UWORD d)
+static void ext(struct bb_bitmap *b, UWORD w, UWORD h, UWORD d)
 {
     struct bl_regs r = { 0 };
     ULONG mem, psize;
@@ -279,7 +250,7 @@ BLITZ_THUNK(extbitmap, extbitmap_c, "a0");
 void BLITZ_ROUTINE _bitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d BL_REG(d3),
                            WORD usedoff BL_REG(d6))
 {
-    struct bbitmap *b = BM;
+    struct bb_bitmap *b = BM;
 
     setused(usedoff);
     freebitmap(b);
@@ -306,7 +277,7 @@ void BLITZ_ROUTINE _bitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d BL_RE
 void BLITZ_ROUTINE _cludgebitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d BL_REG(d3),
                                  ULONG mem BL_REG(d4), WORD usedoff BL_REG(d6))
 {
-    struct bbitmap *b = BM;
+    struct bb_bitmap *b = BM;
     ULONG psize;
     UWORD n;
     UBYTE **p = b->planes;
@@ -325,11 +296,11 @@ void BLITZ_ROUTINE _cludgebitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d
         *p++ = (UBYTE *)mem;
         mem += psize;
     } while (n-- != 0);
-    b->oldfd = *(UWORD *)&b->flags;
+    b->oldfd = b->flagsdepth;
     b->flags = 0;
-    *(UWORD *)&b->ilflag = 0;
+    b->ilword = 0;
     b->height = b->rows;
-    b->colours = *(UWORD *)&b->flags < 16 ? 1u << *(UWORD *)&b->flags : 0;
+    b->colours = b->flagsdepth < 16 ? 1u << b->flagsdepth : 0;
     b->width = b->bpr << 3;
 }
 
@@ -347,9 +318,9 @@ void BLITZ_ROUTINE _cludgebitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d
  * @param src  a2: the source bitmap (!libs {#bitmaplib,$1280}); the
  *             destination comes in a3 ($1381)
  */
-void BLITZ_ROUTINE docopybitmap(struct bbitmap *src BL_REG(a2))
+void BLITZ_ROUTINE docopybitmap(struct bb_bitmap *src BL_REG(a2))
 {
-    struct bbitmap *b = BM;
+    struct bb_bitmap *b = BM;
     struct bl_regs r = { 0 };
     ULONG words;
     UBYTE *mem;
@@ -395,7 +366,7 @@ void BLITZ_ROUTINE docopybitmap(struct bbitmap *src BL_REG(a2))
  */
 void BLITZ_ROUTINE doscbitmap(UBYTE **scr BL_REG(a2), WORD usedoff BL_REG(d6))
 {
-    struct bbitmap *b = BM;
+    struct bb_bitmap *b = BM;
     const ULONG *s;
     ULONG *d = (ULONG *)b;
     int i;
@@ -422,9 +393,9 @@ void BLITZ_ROUTINE doscbitmap(UBYTE **scr BL_REG(a2), WORD usedoff BL_REG(d6))
  * @param usedoff  d6: offset of the used bitmap from a5 (!libs
  *                 {#bitmaplib,$0604}); it becomes this bitmap
  */
-void BLITZ_ROUTINE doshbitmap(const struct shape *shape BL_REG(a2), WORD usedoff BL_REG(d6))
+void BLITZ_ROUTINE doshbitmap(const struct bb_shape *shape BL_REG(a2), WORD usedoff BL_REG(d6))
 {
-    struct bbitmap *b = BM;
+    struct bb_bitmap *b = BM;
     UBYTE *pl;
     WORD size;
     UWORD n;
@@ -435,7 +406,7 @@ void BLITZ_ROUTINE doshbitmap(const struct shape *shape BL_REG(a2), WORD usedoff
     b->bpr = shape->ebwidth;
     b->rows = shape->height;
     n = shape->depth;
-    *(UWORD *)&b->flags = n;
+    b->flagsdepth = n;
     b->isreal = 1;
     n--;
     pl = shape->data;
@@ -456,7 +427,7 @@ void BLITZ_ROUTINE doshbitmap(const struct shape *shape BL_REG(a2), WORD usedoff
  * @param name  d1: the file name
  * @param bm    a1: the bitmap (!libs {#bitmaplib,$1180})
  */
-void BLITZ_ROUTINE _bitload(const UBYTE *name BL_REG(d1), struct bbitmap *bm BL_REG(a1))
+void BLITZ_ROUTINE _bitload(const UBYTE *name BL_REG(d1), struct bb_bitmap *bm BL_REG(a1))
 {
     struct bl_regs r = { .a0 = (ULONG)name, .a1 = (ULONG)bm };
 
@@ -475,7 +446,7 @@ void BLITZ_ROUTINE _bitload(const UBYTE *name BL_REG(d1), struct bbitmap *bm BL_
  * @param bm    a1: the bitmap (!libs {#bitmaplib,$1180})
  */
 void BLITZ_ROUTINE _bitload2(const UBYTE *name BL_REG(d1), APTR pal BL_REG(a0),
-                             struct bbitmap *bm BL_REG(a1))
+                             struct bb_bitmap *bm BL_REG(a1))
 {
     struct bl_regs r = { .a0 = (ULONG)name, .a1 = (ULONG)pal };
 
@@ -505,7 +476,7 @@ static void BLITZ_ERRCHK _usechk_c(void)
         BLITZ_RUNERR(mess2);
 }
 
-static void BLITZ_ERRCHK _bitloadchk_c(const struct bbitmap *b BL_REG(a1))
+static void BLITZ_ERRCHK _bitloadchk_c(const struct bb_bitmap *b BL_REG(a1))
 {
     if (!b->isreal)
         BLITZ_RUNERR(mess2);
@@ -523,7 +494,7 @@ static void BLITZ_ERRCHK shchk_c(const ULONG *s BL_REG(a2))
         BLITZ_RUNERR(mess4);
 }
 
-static void BLITZ_ERRCHK cbchk_c(const struct bbitmap *b BL_REG(a2))
+static void BLITZ_ERRCHK cbchk_c(const struct bb_bitmap *b BL_REG(a2))
 {
     if (b->isreal >= 0)
         BLITZ_RUNERR(mess5);
