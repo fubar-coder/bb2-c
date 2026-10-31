@@ -315,18 +315,19 @@ static ULONG BLITZ_ROUTINE zoneinit1_c(void)
 }
 
 /* ZoneInit zone (d0): only the upper bound is checked */
-static ULONG BLITZ_ROUTINE zoneinit2_c(ULONG zoneval BL_REG(d0))
+static ULONG BLITZ_ROUTINE zoneinit2_c(ULONG zonenum BL_REG(d0))
 {
     ULONG *zt = zd.zonetable;
+    ULONG off;                          /* d0: the zone's byte offset */
     LONG *z;
 
-    if (!zt || MI(zt[0] - 1, zoneval))
+    if (!zt || MI(zt[0] - 1, zonenum))
         return (ULONG)-1;
-    zoneval = ASLW(zoneval, 3);
-    z = (LONG *)zone(zt, zoneval);
+    off = ASLW(zonenum, 3);
+    z = (LONG *)zone(zt, off);
     z[0] = -1;
     z[1] = -1;
-    return zoneval;
+    return off;
 }
 
 /* init: is020 (AttnFlags bit AFB_68020), table 0 with 256 zones */
