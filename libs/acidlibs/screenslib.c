@@ -58,6 +58,7 @@
  * DIFF: a2 stays unchanged (the original pops the arguments).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #define __NOLIBBASE__
 #include <proto/intuition.h>
 #include <proto/graphics.h>
@@ -795,11 +796,12 @@ static void showbitmap2(struct IntuitionBase *intui, struct GfxBase *GfxBase)
 }
 
 /* intshowbitmap - interlace: planes into the screen's BitMap, MakeVPort */
-static void intshowbitmap(UBYTE *bm, struct Screen *scr, struct IntuitionBase *intui,
+static void intshowbitmap(const struct bb_bitmap *bm, struct Screen *scr,
+                          struct IntuitionBase *intui,
                           struct GfxBase *GfxBase)
 {
-    ULONG *src = (ULONG *)(bm + 8), *dst = (ULONG *)scr->BitMap.Planes;
-    UWORD n = *(UWORD *)(bm + 4) - 1;
+    ULONG *src = (ULONG *)bm->planes, *dst = (ULONG *)scr->BitMap.Planes;
+    UWORD n = bm->flagsdepth - 1;
 
     do
         *dst++ = *src++;
@@ -809,7 +811,8 @@ static void intshowbitmap(UBYTE *bm, struct Screen *scr, struct IntuitionBase *i
 }
 
 /* agashowbitmap - V39+: ChangeVPBitMap, DBufInfo allocated once */
-static void agashowbitmap(UBYTE *bm, struct scrobj *obj, struct GfxBase *GfxBase)
+static void agashowbitmap(const struct bb_bitmap *bm, struct scrobj *obj,
+                          struct GfxBase *GfxBase)
 {
     struct Screen *scr = obj->screen;
     struct DBufInfo *db = obj->dbuf;
@@ -824,7 +827,8 @@ static void agashowbitmap(UBYTE *bm, struct scrobj *obj, struct GfxBase *GfxBase
 /* doshowbitmap - a0 = bitmap, a1 = screen object, a3 = intuition, a6 =
    graphics.  Before V39: the BPLxPT moves of the screen's copper list
    (first $0000F0E0 = MOVE to bpl1pth) get the plane pointers. */
-static void showbitmap(UBYTE *bm, struct scrobj *obj, struct GfxBase *GfxBase)
+static void showbitmap(const struct bb_bitmap *bm, struct scrobj *obj,
+                       struct GfxBase *GfxBase)
 {
     struct IntuitionBase *intui = (struct IntuitionBase *)blitz_string;   /* a3 */
     struct Screen *scr;
@@ -865,8 +869,8 @@ static void showbitmap(UBYTE *bm, struct scrobj *obj, struct GfxBase *GfxBase)
         } while (n-- != 0);
     }
 found:
-    nwords = *(UWORD *)(bm + 4) * 2;
-    src = (const UWORD *)(bm + 8);
+    nwords = bm->flagsdepth * 2;
+    src = (const UWORD *)bm->planes;
     for (;;) {
         do {                                    /* 'loop */
             if (*(UWORD *)ins == 2)
@@ -904,7 +908,8 @@ more:
  */
 void BLITZ_ROUTINE doshowbitmap0(struct scrobj *obj BL_REG(a1), struct GfxBase *gfx BL_REG(a6))
 {
-    showbitmap((UBYTE *)&obj->screen->BitMap, obj, gfx);
+    /* a struct BitMap: showbitmap reads only that part of a bitmap object */
+    showbitmap((const struct bb_bitmap *)&obj->screen->BitMap, obj, gfx);
 }
 
 /**
@@ -923,7 +928,8 @@ void BLITZ_ROUTINE doshowbitmap0(struct scrobj *obj BL_REG(a1), struct GfxBase *
  * @param obj a1: the used screen object
  * @param gfx a6: graphics.library
  */
-void BLITZ_ROUTINE doshowbitmap1(UBYTE *bm BL_REG(a0), struct scrobj *obj BL_REG(a1),
+void BLITZ_ROUTINE doshowbitmap1(const struct bb_bitmap *bm BL_REG(a0),
+                                 struct scrobj *obj BL_REG(a1),
                                  struct GfxBase *gfx BL_REG(a6))
 {
     showbitmap(bm, obj, gfx);
@@ -1073,15 +1079,15 @@ static void BLITZ_ERRCHK prescreen_c(ULONG vm BL_REG(d1), const UBYTE *ifont BL_
 }
 
 /* prescreen2 - prescreen and the bitmap at least as big as the screen */
-static void BLITZ_ERRCHK prescreen2_c(ULONG vm BL_REG(d1), const UWORD *bm BL_REG(a0),
+static void BLITZ_ERRCHK prescreen2_c(ULONG vm BL_REG(d1), const struct bb_bitmap *bm BL_REG(a0),
                                       const UBYTE *ifont BL_REG(a1),
                                       const UBYTE *args BL_REG(a2))
 {
     prescreen_c(vm, ifont, args);
-    if (!bm[0])
+    if (!bm->bpr)
         BLITZ_RUNERR(mess2);
-    if ((UWORD)(bm[0] << 3) < *(UWORD *)(args - 6)
-        || bm[1] < *(UWORD *)(args - 8) || bm[2] < *(UWORD *)(args - 10))
+    if ((UWORD)(bm->bpr << 3) < *(UWORD *)(args - 6)
+        || bm->rows < *(UWORD *)(args - 8) || bm->flagsdepth < *(UWORD *)(args - 10))
         BLITZ_RUNERR(mess3);
 }
 
@@ -1112,17 +1118,17 @@ static void BLITZ_ERRCHK showbmchk0_c(const struct scrobj *obj BL_REG(a1))
 }
 
 /* showbmchk - bitmap of the same size as the screen's */
-static void BLITZ_ERRCHK showbmchk_c(const UBYTE *bm BL_REG(a0),
+static void BLITZ_ERRCHK showbmchk_c(const struct bb_bitmap *bm BL_REG(a0),
                                      const struct scrobj *obj BL_REG(a1))
 {
     const UBYTE *s;
 
     showbmchk0_c(obj);
-    if (!*(UWORD *)bm)
+    if (!bm->bpr)
         BLITZ_RUNERR(mess2);
     s = (const UBYTE *)&obj->screen->BitMap;
-    if (*(UWORD *)bm != *(UWORD *)s || *(UWORD *)(bm + 2) != *(UWORD *)(s + 2)
-        || bm[5] != s[5])
+    if (bm->bpr != *(UWORD *)s || bm->rows != *(UWORD *)(s + 2)
+        || bm->depth != s[5])
         BLITZ_RUNERR(mess14);
 }
 
