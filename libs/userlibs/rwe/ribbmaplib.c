@@ -176,26 +176,26 @@ static UBYTE *lastchunkaddr, *lastmapchunkaddr;
 static UBYTE *search(ULONG id, UBYTE *loc, UBYTE *end, ULONG *last, UBYTE **lastaddr,
                      UBYTE **at)
 {
-    UBYTE *a0;
+    UBYTE *cursor;
 
     if (id == *last)
         return *at = *lastaddr;
-    a0 = loc + 12;
+    cursor = loc + 12;
     for (;;) {
-        ULONG c = LONGAT(a0);
-        a0 += 4;
+        ULONG c = LONGAT(cursor);
+        cursor += 4;
         if (c == id)
             break;
-        if ((LONG)a0 >= (LONG)end) {    /* CMP.l a1,a0: BGE */
-            *at = a0;
+        if ((LONG)cursor >= (LONG)end) { /* CMP.l a1,a0: BGE */
+            *at = cursor;
             return NULL;
         }
-        a0 += LONGAT(a0) + 4;
+        cursor += LONGAT(cursor) + 4;
     }
-    a0 += 4;
+    cursor += 4;
     *last = id;
-    *lastaddr = a0;
-    return *at = a0;
+    *lastaddr = cursor;
+    return *at = cursor;
 }
 
 static UBYTE *findchunk(ULONG id)
@@ -212,22 +212,22 @@ static UBYTE *findmapchunk(ULONG id)
 
 /* ------------------------------------------------------------- the files */
 
-static ULONG BLITZ_ROUTINE setbbscenarioloc_c(UBYTE *a BL_REG(d0))
+static ULONG BLITZ_ROUTINE setbbscenarioloc_c(UBYTE *form BL_REG(d0))
 {
-    if (LONGAT(a) != ID('F', 'O', 'R', 'M') || LONGAT(a + 8) != ID('S', 'C', 'E', 'N'))
+    if (LONGAT(form) != ID('F', 'O', 'R', 'M') || LONGAT(form + 8) != ID('S', 'C', 'E', 'N'))
         return 0;
-    scenarioloc = a;
-    scenarioend = a + LONGAT(a + 4) + 8;
+    scenarioloc = form;
+    scenarioend = form + LONGAT(form + 4) + 8;
     lastchunk = 0;
     return (ULONG)-1;
 }
 
-static ULONG BLITZ_ROUTINE setbbmaploc_c(UBYTE *a BL_REG(d0))
+static ULONG BLITZ_ROUTINE setbbmaploc_c(UBYTE *form BL_REG(d0))
 {
-    maploc = a;                         /* BUG(orig): before the check (#554) */
-    if (LONGAT(a) != ID('F', 'O', 'R', 'M') || LONGAT(a + 8) != ID('B', 'M', 'A', 'P'))
+    maploc = form;                      /* BUG(orig): before the check (#554) */
+    if (LONGAT(form) != ID('F', 'O', 'R', 'M') || LONGAT(form + 8) != ID('B', 'M', 'A', 'P'))
         return 0;
-    mapend = a + LONGAT(a + 4) + 8;
+    mapend = form + LONGAT(form + 4) + 8;
     lastmapchunk = 0;
     search(ID('M', 'F', 'R', 'M'), maploc, mapend, &lastmapchunk, &lastmapchunkaddr, &mfrmchunk);
     return (ULONG)-1;
@@ -238,14 +238,14 @@ static ULONG BLITZ_ROUTINE setbbmaploc_c(UBYTE *a BL_REG(d0))
 /* a word of a chunk: $FFFF in the upper word */
 static ULONG chunkword(ULONG id, int off)
 {
-    UBYTE *a = findchunk(id);
-    return a ? HI | WORDAT(a + off) : 0;
+    UBYTE *chunk = findchunk(id);
+    return chunk ? HI | WORDAT(chunk + off) : 0;
 }
 
 static ULONG chunkaddr(ULONG id, int off)
 {
-    UBYTE *a = findchunk(id);
-    return a ? (ULONG)a + off : 0;
+    UBYTE *chunk = findchunk(id);
+    return chunk ? (ULONG)chunk + off : 0;
 }
 
 static ULONG BLITZ_ROUTINE bbscenariolevel_c(void)
@@ -260,8 +260,8 @@ static ULONG BLITZ_ROUTINE bbscenariodepth_c(void)
 
 static ULONG BLITZ_ROUTINE bbscenarioprefix_c(void)
 {
-    UBYTE *a = findchunk(ID('P', 'R', 'F', 'X'));
-    return a ? LONGAT(a) : 0;
+    UBYTE *chunk = findchunk(ID('P', 'R', 'F', 'X'));
+    return chunk ? LONGAT(chunk) : 0;
 }
 
 static ULONG BLITZ_ROUTINE bbscenariopalette_c(void)
@@ -272,14 +272,14 @@ static ULONG BLITZ_ROUTINE bbscenariopalette_c(void)
 /* the byte with its sign (EXT.w) */
 static ULONG BLITZ_ROUTINE bbscenariolowcol_c(void)
 {
-    UBYTE *a = findchunk(ID('C', 'O', 'L', 'R'));
-    return a ? HI | (UWORD)(WORD)(BYTE)a[0] : 0;
+    UBYTE *chunk = findchunk(ID('C', 'O', 'L', 'R'));
+    return chunk ? HI | (UWORD)(WORD)(BYTE)chunk[0] : 0;
 }
 
 static ULONG BLITZ_ROUTINE bbscenariohighcol_c(void)
 {
-    UBYTE *a = findchunk(ID('C', 'O', 'L', 'R'));
-    return a ? HI | (UWORD)(WORD)(BYTE)a[1] : 0;
+    UBYTE *chunk = findchunk(ID('C', 'O', 'L', 'R'));
+    return chunk ? HI | (UWORD)(WORD)(BYTE)chunk[1] : 0;
 }
 
 static ULONG BLITZ_ROUTINE bbnumbackground_c(void)
@@ -304,15 +304,15 @@ static ULONG BLITZ_ROUTINE bbnumtunnels_c(void)
 
 static ULONG BLITZ_ROUTINE bbnumbaddies_c(void)
 {
-    UBYTE *a = findchunk(ID('B', 'A', 'D', '!'));
-    return a ? a[0] : 0;
+    UBYTE *chunk = findchunk(ID('B', 'A', 'D', '!'));
+    return chunk ? chunk[0] : 0;
 }
 
 /* the long number `set` of SHDW (ASL.w #2: a word index) */
 static ULONG BLITZ_ROUTINE bbshadowvalue_c(ULONG set BL_REG(d0))
 {
-    UBYTE *a = findchunk(ID('S', 'H', 'D', 'W'));
-    return a ? LONGAT(a + (WORD)(set << 2)) : 0;
+    UBYTE *chunk = findchunk(ID('S', 'H', 'D', 'W'));
+    return chunk ? LONGAT(chunk + (WORD)(set << 2)) : 0;
 }
 
 static ULONG BLITZ_ROUTINE bbtunnelsloc_c(void)
@@ -322,8 +322,8 @@ static ULONG BLITZ_ROUTINE bbtunnelsloc_c(void)
 
 static ULONG BLITZ_ROUTINE bbtunnelholes_c(void)
 {
-    UBYTE *a = findchunk(ID('T', 'U', 'N', 'L'));
-    return a ? LONGAT(a + 2) : 0;
+    UBYTE *chunk = findchunk(ID('T', 'U', 'N', 'L'));
+    return chunk ? LONGAT(chunk + 2) : 0;
 }
 
 static ULONG BLITZ_ROUTINE bbscenarioshapes_c(void)
@@ -346,15 +346,15 @@ static ULONG BLITZ_ROUTINE bbdestructloc_c(void)
     return chunkaddr(ID('D', 'E', 'S', 'T'), 0);
 }
 
-/* returnname: the string at a to a3 (without its 0, a3 behind the last
+/* returnname: the string at text to a3 (without its 0, a3 behind the last
    character), d0 = its length; 0 if no chunk */
-static ULONG copystring(const UBYTE *a)
+static ULONG copystring(const UBYTE *text)
 {
     ULONG n = 0;
-    if (!a)
+    if (!text)
         return 0;
-    while (*a) {
-        *blitz_string++ = *a++;
+    while (*text) {
+        *blitz_string++ = *text++;
         n++;
     }
     return n;
@@ -368,14 +368,14 @@ static ULONG BLITZ_ROUTINE bbscenarioname_c(void)
 /* returnauthor: the string behind the name's 0, at an even address */
 static ULONG BLITZ_ROUTINE bbscenarioauthor_c(void)
 {
-    const UBYTE *a = findchunk(ID('A', 'N', 'N', 'O'));
-    if (!a)
+    const UBYTE *text = findchunk(ID('A', 'N', 'N', 'O'));
+    if (!text)
         return 0;
-    while (*a++)
+    while (*text++)
         ;
-    if ((ULONG)a & 1)
-        a++;
-    return copystring(a);
+    if ((ULONG)text & 1)
+        text++;
+    return copystring(text);
 }
 
 /* BBGetPalette: the colours low..high of COLR (bytes r,g,b, each made a
@@ -383,27 +383,27 @@ static ULONG BLITZ_ROUTINE bbscenarioauthor_c(void)
    colour block if high >= the colour count (see BUG(orig) above, #548) */
 static void BLITZ_ROUTINE bbgetpalette_c(UBYTE *pal BL_REG(a0))
 {
-    const UBYTE *a = findchunk(ID('C', 'O', 'L', 'R'));
+    const UBYTE *chunk = findchunk(ID('C', 'O', 'L', 'R'));
     UWORD low, high, num;
-    ULONG *d;
+    ULONG *colour;
 
-    if (!a)
+    if (!chunk)
         return;
-    low = a[0];
-    high = a[1];
-    a += 2;
+    low = chunk[0];
+    high = chunk[1];
+    chunk += 2;
     num = WORDAT(pal + 4);
     if (!((WORD)high < (WORD)num)) {
         struct bl_regs r = { .d0 = (ULONG)(UWORD)(high + 1) * 12 + 4, .d1 = 0x10001 };
         UBYTE *new = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
         UBYTE *old = (UBYTE *)LONGAT(pal);
         if (num) {
-            ULONG *s = (ULONG *)(old + 4), *t = (ULONG *)(new + 4);
+            ULONG *src = (ULONG *)(old + 4), *dst = (ULONG *)(new + 4);
             UWORD i = num - 1;
             do {
-                *t++ = *s++;
-                *t++ = *s++;
-                *t++ = *s++;
+                *dst++ = *src++;
+                *dst++ = *src++;
+                *dst++ = *src++;
             } while (i--);
         }
         LONGAT(pal) = (ULONG)new;
@@ -414,12 +414,12 @@ static void BLITZ_ROUTINE bbgetpalette_c(UBYTE *pal BL_REG(a0))
             BLITZ_ALIBJSR(TOK_globfree, f);
         }
     }
-    d = (ULONG *)(LONGAT(pal) + 4 + (WORD)(low * 12));
+    colour = (ULONG *)(LONGAT(pal) + 4 + (WORD)(low * 12));
     do {
         int k;
         for (k = 0; k < 3; k++) {
-            ULONG w = (ULONG)*a++ * 0x101;
-            *d++ = w << 16 | w;
+            ULONG wide = (ULONG)*chunk++ * 0x101;
+            *colour++ = wide << 16 | wide;
         }
         low++;
     } while ((WORD)high >= (WORD)low);
@@ -437,15 +437,16 @@ static ULONG BLITZ_ROUTINE bbmapscenarioid_c(void)
     return maploc ? LONGAT(mfrmchunk) : 0;
 }
 
-/* the word functions on the info chunk: the upper word of d0 stays */
-static ULONG BLITZ_ROUTINE bbmapwidth_c(ULONG d0 BL_REG(d0))
+/* the word functions on the info chunk: the upper word of d0 stays
+   (prev = d0 on entry) */
+static ULONG BLITZ_ROUTINE bbmapwidth_c(ULONG prev BL_REG(d0))
 {
-    return maploc ? (d0 & HI) | WORDAT(mfrmchunk + 4) : 0;
+    return maploc ? (prev & HI) | WORDAT(mfrmchunk + 4) : 0;
 }
 
-static ULONG BLITZ_ROUTINE bbmapheight_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE bbmapheight_c(ULONG prev BL_REG(d0))
 {
-    return maploc ? (d0 & HI) | WORDAT(mfrmchunk + 6) : 0;
+    return maploc ? (prev & HI) | WORDAT(mfrmchunk + 6) : 0;
 }
 
 static ULONG BLITZ_ROUTINE bbmapinfo_c(void)
