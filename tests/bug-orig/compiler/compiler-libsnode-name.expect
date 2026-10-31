@@ -3,3 +3,6 @@ ok
 [run]
 hello
 rc=0
+[blitz2]
+inject: rc=0
+rc=0
