@@ -110,6 +110,7 @@ static ULONG BLITZ_ROUTINE convertkey_c(ULONG key BL_REG(d0), ULONG qual BL_REG(
 {
     UWORD c = key;
     LONG r;
+    ULONG ch;                                   /* d1: the converted character */
 
     rawkey_d1 = qual;
     if (c <= 89) {                              /* CMP #89,d0:BHI */
@@ -123,11 +124,11 @@ static ULONG BLITZ_ROUTINE convertkey_c(ULONG key BL_REG(d0), ULONG qual BL_REG(
     event.ie_Qualifier = qual;
     buf = 0;
     r = RawKeyConvert(&event, (STRPTR)&buf, 1, NULL);
-    qual = 0;
+    ch = 0;
     if ((UWORD)r != 0xffff)                     /* CMP #-1,d0 (word) */
-        qual = *(UBYTE *)&buf;
-    rawkey_d1 = qual;
-    return ((ULONG)r & 0xffff0000) | (UWORD)qual; /* MOVE d1,d0 */
+        ch = *(UBYTE *)&buf;
+    rawkey_d1 = ch;
+    return ((ULONG)r & 0xffff0000) | (UWORD)ch; /* MOVE d1,d0 */
 }
 BLITZ_THUNK_POST(convertkey, convertkey_c, "a0-a1", "move.l  _rawkey_d1,d1");
 
@@ -187,7 +188,8 @@ ULONG BLITZ_ROUTINE codeinit(void)
 {
     UBYTE *p = (UBYTE *)&con;
     struct List *l = &con.port.mp_MsgList;
-    ULONG result;
+    ULONG openerr;                              /* d0 */
+    ULONG key;                                  /* d0: its upper word carries over */
     UWORD i;
 
     for (i = 0; i < sizeof(con); i++)           /* 41 words cleared */
@@ -200,17 +202,18 @@ ULONG BLITZ_ROUTINE codeinit(void)
     con.port.mp_SigTask = FindTask(NULL);
     con.port.mp_SigBit = AllocSignal(-1);
     con.io.io_Message.mn_ReplyPort = &con.port;
-    result = OpenDevice("console.device", -1, (struct IORequest *)&con.io, 0);
+    openerr = OpenDevice("console.device", -1, (struct IORequest *)&con.io, 0);
     ConsoleDevice = (struct Library *)con.io.io_Device;
+    key = openerr;
     for (i = 0; i < 105; i++) {
-        result = (result & 0xffff0000) | i;     /* MOVE d2,d0 */
-        result = convertkey_c(result, 0);
-        maps.normmap[i] = result;
-        result = (result & 0xffff0000) | i;
-        result = convertkey_c(result, 1);
-        maps.shiftmap[i] = result;
+        key = (key & 0xffff0000) | i;           /* MOVE d2,d0 */
+        key = convertkey_c(key, 0);
+        maps.normmap[i] = key;
+        key = (key & 0xffff0000) | i;
+        key = convertkey_c(key, 1);
+        maps.shiftmap[i] = key;
     }
-    return result;
+    return key;
 }
 
 void BLITZ_ROUTINE codefinit(void)
