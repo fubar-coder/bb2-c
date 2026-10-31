@@ -355,18 +355,18 @@ static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG prev BL_REG(d0), UBYTE *p BL_R
                                             UWORD m BL_REG(d1), UWORD i BL_REG(d2),
                                             UWORD s BL_REG(d3))
 {
-loop1:
+menuloop:                                       /* loop1 */
     p = P(p, 0);
     if (m-- != 0)
-        goto loop1;
+        goto menuloop;
     p += M_FIRST;
     p = P(p, 0);
     if (i-- != 0)
-        goto loop1;
+        goto menuloop;
     p += I_SUB;
     p = P(p, 0);
     if (s-- != 0)
-        goto loop1;
+        goto menuloop;
     return checked(prev, p);
 }
 BLITZ_THUNK(domenuchecked2, domenuchecked2_c, "d1/a0-a1");

@@ -126,10 +126,10 @@ static void makestencil(struct stencil *s, const UBYTE *bm)
     BL_CUSTOML(cb, 0x44) = 0xffffffff;
     BL_CUSTOML(cb, 0x64) = 0;
     BL_CUSTOMW(cb, 0x60) = 0;
-    goto loop2;
+    goto noblitwait;
     do {
         BL_BLITWAIT(cb);
-loop2:
+noblitwait:                                     /* loop2 */
         BL_CUSTOML(cb, 0x50) = (ULONG)*plane++;
         BL_CUSTOML(cb, 0x48) = mem;
         BL_CUSTOML(cb, 0x54) = mem;
