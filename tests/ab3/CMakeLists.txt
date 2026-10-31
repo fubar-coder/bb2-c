@@ -54,3 +54,29 @@ endfunction()
 
 equivalence_pass(ab3_bb2_equivalence off)
 equivalence_pass(ab3_bb2_equivalence_runerr on)
+
+# AB3 mode's token list (spec ab3-compat/libraries): blitz2-ab3's
+# AmiBlitz3 list (the one ending with $80DB, programs/blitz2/src/toklist.h)
+# followed by the tokens of AmiBlitz3 v3.14.0's BigLibs in its load order
+# must equal the list of AmiBlitz3 v3.14.0's own compiler (the binary
+# Amiblitz3 at 58a11658: its token list, read like blitz2's) with the same
+# libraries.  The library tokens are numbered by blitztokens for both
+# (AmiBlitz3's process_libraries numbers as blitz2's fixlibs).  Skipped
+# (77) without the fetched files.
+set(AB3_V314 ${PROJECT_SOURCE_DIR}/archive/amiblitz3/github-58a11658)
+set(ab3_biglibs baseLibs utilLibs OsLibs csLibs)
+list(TRANSFORM ab3_biglibs PREPEND ${AB3_V314}/BlitzLibs/)
+# ab3_tokens(NAME LAST): the test with blitz2-ab3's list ending with $LAST
+function(ab3_tokens name last)
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DBLITZTOKENS=${BLITZTOKENS}
+		-DBLITZ2=$<TARGET_FILE:blitz2-ab3> -DLAST=${last} -DAB3=${AB3_V314}/Amiblitz3
+		"-DLIBS=${ab3_biglibs}" -DOUT=${CMAKE_CURRENT_BINARY_DIR}/${name}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/tokens.cmake)
+	set_tests_properties(${name} PROPERTIES SKIP_RETURN_CODE 77)
+endfunction()
+ab3_tokens(ab3_tokens 80DB)
+# the check itself: blitz2's list of blitz2-ab3 (ending with $80D3) is a
+# changed list, the test must find its first difference
+ab3_tokens(ab3_tokens_broken 80D3)
+set_tests_properties(ab3_tokens_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"at[ \n]+line[ \n]+20:[ \n]+\"8014[ \n]+Jimi\",[ \n]+AmiBlitz3[ \n]+\"8014[ \n]+SYNTAX\"")
