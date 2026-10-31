@@ -41,6 +41,7 @@
  *     (#829).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 
 /* entry points (thunks, below) */
 void _loadsounds(void), _libinit(void), _libfinit(void);
@@ -66,16 +67,7 @@ BLITZ_LIBFIN();
 #define LONGAT(p) (*(ULONG *)(p))
 #define WORDAT(p) (*(UWORD *)(p))
 
-/* the sound object of audiolib (struct sound in audiolib.c) */
-struct sound {
-    UBYTE *data;                        /* +0: the sample */
-    UWORD period;                       /* +4 */
-    UWORD len;                          /* +6: in words */
-    UBYTE *rep;                         /* +8: the loop */
-    UWORD replen;                       /* +12 */
-    UWORD mark;                         /* +14: "cL" = DecodeSound data */
-};
-static_assert(sizeof(struct sound) == 16);
+/* the sound object of audiolib: struct bb_sound (blitzobj.h) */
 
 /** @brief init: RTS (nothing to set up). */
 void BLITZ_ROUTINE _libinit(void)
@@ -114,7 +106,7 @@ void BLITZ_ROUTINE _libfinit(void)
  *         or the chip memory is missing
  */
 static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
-                                          struct sound *saddr BL_REG(a0))
+                                          struct bb_sound *saddr BL_REG(a0))
 {
     UBYTE *iff, *src, *dst, *mem;       /* a0: the current IFF chunk */
     ULONG rate, clock, slen;

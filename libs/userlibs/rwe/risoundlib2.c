@@ -72,6 +72,7 @@
  *     use (#933).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include "blitzexec.h"
 #include <exec/io.h>
 #include <exec/memory.h>
@@ -183,14 +184,7 @@ BLITZ_LIBFIN();
 #define LONGAT(p) (*(ULONG *)(p))
 #define WORDAT(p) (*(UWORD *)(p))
 
-/* audiolib's sound object (16 bytes; audiolib.c's struct sound) */
-struct sound {
-    UBYTE *data;                        /* +0 */
-    UWORD period, len;                  /* +4 +6: len in words */
-    UBYTE *rep;                         /* +8 */
-    UWORD replen, mark;                 /* +12 +14: mark "cL" of DecodeSound */
-};
-static_assert(sizeof(struct sound) == 16);
+/* audiolib's sound object (16 bytes): struct bb_sound (blitzobj.h) */
 
 /* the word +16 of a sound object: the first word of the next object
    (BUG(orig) (#926): CludgeSound's rate, read by PlaySoundAHI) */
@@ -353,7 +347,7 @@ BB_BOOL BLITZ_ROUTINE c_openahi(ULONG unit BL_REG(d0))
  * @return d0: 0, or SendIO's d0
  */
 ULONG BLITZ_ROUTINE c_playsound2(ULONG vol BL_REG(d1), ULONG bal BL_REG(d2),
-                                 struct sound *obj BL_REG(a0))
+                                 struct bb_sound *obj BL_REG(a0))
 {
     struct AHIRequest *req = ahiiorequest;
     struct IOStdReq *io = &req->ahir_Std;
@@ -378,7 +372,7 @@ ULONG BLITZ_ROUTINE c_playsound2(ULONG vol BL_REG(d1), ULONG bal BL_REG(d2),
  * @param obj  a0: audiolib's sound object
  * @return d0: as c_playsound2()
  */
-ULONG BLITZ_ROUTINE c_playsound1(ULONG vol BL_REG(d1), struct sound *obj BL_REG(a0))
+ULONG BLITZ_ROUTINE c_playsound1(ULONG vol BL_REG(d1), struct bb_sound *obj BL_REG(a0))
 {
     return c_playsound2(vol, 0x8000, obj);
 }
@@ -388,7 +382,7 @@ ULONG BLITZ_ROUTINE c_playsound1(ULONG vol BL_REG(d1), struct sound *obj BL_REG(
  * @param obj  a0: audiolib's sound object
  * @return d0: as c_playsound2()
  */
-ULONG BLITZ_ROUTINE c_playsound(struct sound *obj BL_REG(a0))
+ULONG BLITZ_ROUTINE c_playsound(struct bb_sound *obj BL_REG(a0))
 {
     return c_playsound2(0x10000, 0x8000, obj);
 }
@@ -618,7 +612,7 @@ ULONG BLITZ_ROUTINE c_requestedfreq(void)
  *         no chip memory
  */
 static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
-                                          struct sound *saddr BL_REG(a0))
+                                          struct bb_sound *saddr BL_REG(a0))
 {
     UBYTE *iff, *src, *dst, *mem;       /* a0: the current IFF chunk */
     ULONG rate, clock, slen;
