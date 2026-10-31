@@ -379,24 +379,27 @@ static UBYTE *doasc(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
 {
     ULONG srcoff = (ULONG)y1 * MW(src, 0) + (LONG)((WORD)x1 >> 3);
     ULONG dstoff = (ULONG)y2 * MW(dst, 0) + (LONG)((WORD)x2 >> 3);
-    UWORD *cook = cookwait(cb), bits, words, pos, w = args[-1];
+    UWORD *cook = cookwait(cb), words, w = args[-1];
+    UWORD shift;                                /* d4: the BLTCON shift */
+    UWORD mask;                                 /* d4: the right edge mask */
+    UWORD cookoff;                              /* d3: the cookie offset */
 
     words = (UWORD)(((x1 + w) & 0xfff0) - (x1 & 0xfff0));
     words = (words >> 4) + 3;
-    bits = (x2 & 15) - (x1 & 15);
-    if ((WORD)bits < 0) {
-        bits &= 15;
+    shift = (x2 & 15) - (x1 & 15);
+    if ((WORD)shift < 0) {
+        shift &= 15;
         dstoff -= 2;
     }
-    bits = (UWORD)(bits >> 4 | bits << 12);     /* ROR #4 */
-    CW(cb, 0x42) = bits;
-    CW(cb, 0x40) = bits | scminiterm;
+    shift = (UWORD)(shift >> 4 | shift << 12);  /* ROR #4 */
+    CW(cb, 0x42) = shift;
+    CW(cb, 0x40) = shift | scminiterm;
     cook[0] = masks[x1 & 15];
-    pos = words + words - 6;
-    offset = pos;
-    bits = ~masks[(x1 + w) & 15];
-    MW(cook, (WORD)pos) &= bits;
-    ML(cook, (WORD)pos + 2) = 0;
+    cookoff = words + words - 6;
+    offset = cookoff;
+    mask = ~masks[(x1 + w) & 15];
+    MW(cook, (WORD)cookoff) &= mask;
+    ML(cook, (WORD)cookoff + 2) = 0;
     CL(cb, 0x4c) = (ULONG)cook;
     return doit(cb, src, dst, args, srcoff, dstoff, words);
 }
@@ -404,7 +407,10 @@ static UBYTE *doasc(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
 static UBYTE *dodesc(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
                      const UBYTE *dst, UBYTE *cb, const UWORD *args)
 {
-    UWORD w = args[-1], h = args[-2], bits, words, pos;
+    UWORD w = args[-1], h = args[-2], words;
+    UWORD shift;                                /* d4: the BLTCON shift */
+    UWORD dstbits;                              /* d3: the dest x bits */
+    UWORD cookoff;                              /* d3: the cookie offset */
     ULONG srcoff = (ULONG)(UWORD)(y1 + h - 1) * MW(src, 0)
              + (LONG)((WORD)(UWORD)(x1 + w - 1) >> 3);
     ULONG dstoff = (ULONG)(UWORD)(y2 + h - 1) * MW(dst, 0)
@@ -413,20 +419,20 @@ static UBYTE *dodesc(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
 
     words = (UWORD)(((x1 + w - 1) & 0xfff0) - ((x1 - 1) & 0xfff0));
     words = (words >> 4) + 3;
-    pos = (x2 + w - 1) & 15;
-    bits = ((x1 + w - 1) & 15) - pos;
-    if ((WORD)bits < 0) {
-        bits &= 15;
+    dstbits = (x2 + w - 1) & 15;
+    shift = ((x1 + w - 1) & 15) - dstbits;
+    if ((WORD)shift < 0) {
+        shift &= 15;
         dstoff += 2;
     }
-    bits = (UWORD)(bits >> 4 | bits << 12);
-    CW(cb, 0x42) = bits | 2;
-    CW(cb, 0x40) = bits | scminiterm;
+    shift = (UWORD)(shift >> 4 | shift << 12);
+    CW(cb, 0x42) = shift | 2;
+    CW(cb, 0x40) = shift | scminiterm;
     MW(cook, CWIDTH - 2) = ~masks[((x1 + w - 1) & 15) + 1];
-    pos = CWIDTH - (words + words);
-    offset = pos;
-    ML(cook, (WORD)pos) = 0;
-    MW(cook, (WORD)pos + 4) &= masks[((x1 - 1) & 15) + 1];
+    cookoff = CWIDTH - (words + words);
+    offset = cookoff;
+    ML(cook, (WORD)cookoff) = 0;
+    MW(cook, (WORD)cookoff + 4) &= masks[((x1 - 1) & 15) + 1];
     CL(cb, 0x4c) = (ULONG)((UBYTE *)cook + CWIDTH - 2);
     return doit(cb, src, dst, args, srcoff, dstoff, words);
 }
@@ -480,16 +486,18 @@ static UBYTE *blockscroll(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *s
                         UBYTE *cb, const UWORD *args)
 {
     const UBYTE *dst = blitz_string;
-    UWORD srcmod = MW(src, 0), dstmod = MW(dst, 0), n, size;
+    UWORD srcmod = MW(src, 0), dstmod = MW(dst, 0), n;
+    UWORD bytes;                                /* d2: the byte width */
+    UWORD size;                                 /* d2: BLTSIZE */
     ULONG srcoff = (ULONG)y1 * srcmod + (LONG)((WORD)x1 >> 3);
     ULONG dstoff = (ULONG)y2 * dstmod + (LONG)((WORD)x2 >> 3);
     const ULONG *ps = (const ULONG *)(src + 8), *pd = (const ULONG *)(dst + 8);
     UWORD h = args[-2], w = args[-1];           /* MOVEM -4(a2),d0/d2 */
 
-    size = w >> 3;
-    srcmod -= size;
-    dstmod -= size;
-    size = ((WORD)size >> 1) | (UWORD)(h << 6);
+    bytes = w >> 3;
+    srcmod -= bytes;
+    dstmod -= bytes;
+    size = ((WORD)bytes >> 1) | (UWORD)(h << 6);
     BLITWAIT(cb);
     CL(cb, 0x40) = 0x09f00000;
     CL(cb, 0x44) = 0xffffffff;
