@@ -360,18 +360,18 @@ static UWORD cmdword(const struct chan *c)
 
 /* SetTempo: d0 = the tempo (>= 32 from mt_SetSpeed); the CIA value is
    deftime / tempo - deftime is 0 (BUG(orig), #571) */
-static void settempo(UWORD d0)
+static void settempo(UWORD tempo)
 {
-    ULONG d2;
+    ULONG timer;
 
-    if ((WORD)d0 <= 32)                 /* CMP.w #32,d0: BGT */
-        d0 = 32;
-    glue.realtempo = d0;
-    d2 = glue.deftime;
-    d2 = bl_divu_w(d2, d0);
-    glue.ciatime = (UWORD)d2;
-    CIABTALO = (UBYTE)d2;
-    CIABTAHI = (UBYTE)((UWORD)d2 >> 8);
+    if ((WORD)tempo <= 32)              /* CMP.w #32,d0: BGT */
+        tempo = 32;
+    glue.realtempo = tempo;
+    timer = glue.deftime;
+    timer = bl_divu_w(timer, tempo);
+    glue.ciatime = (UWORD)timer;
+    CIABTALO = (UBYTE)timer;
+    CIABTAHI = (UBYTE)((UWORD)timer >> 8);
 }
 
 /* l6_Int, the interrupt code of the dead _ciaplayerinit */
@@ -386,12 +386,12 @@ static void BLITZ_ROUTINE l6_int(void)
 static void BLITZ_ROUTINE ciaplayerinit_unreached(void)
 {
     UBYTE *eb = *(UBYTE **)4;          /* ExecBase */
-    ULONG d7 = 1773447;                 /* PAL CIA time */
+    ULONG clock = 1773447;              /* PAL CIA time */
 
     if (eb[530] != 50)       /* VBlankFrequency */
-        d7 = 1789773;                   /* NTSC */
-    glue.deftime = d7;
-    glue.ciatime = (UWORD)bl_divu_w(d7, 125);   /* the 50 Hz timer */
+        clock = 1789773;                /* NTSC */
+    glue.deftime = clock;
+    glue.ciatime = (UWORD)bl_divu_w(clock, 125);   /* the 50 Hz timer */
     {
         struct bl_regs r = { .d0 = 0x8043, .d1 = (ULONG)l6_int };
         BLITZ_ALIBJSR(TOK_setint, r);
@@ -416,34 +416,34 @@ static void ciaplayerfinit(void)
 /* mt_init: the sample starts behind the highest pattern, song position 0 */
 static void mt_init(void)
 {
-    UBYTE *a0, *a1, *a2;
-    UWORD d0;
-    ULONG d1, d2;
+    UBYTE *mod, *order, *sample;
+    UWORD count;
+    ULONG pattern, highest;
     int i;
 
     if (!pt.status)
         return;
-    a0 = glue.mt_data;
-    pt.songdataptr = a0;
-    a1 = a0 + 952;
-    d0 = 127;
-    d1 = 0;
-mtloop:
-    d2 = d1;
-    d0--;
-mtloop2:
-    d1 = (d1 & ~0xffUL) | *a1++;
-    if ((BYTE)d1 > (BYTE)d2)            /* BUG(orig): signed, see above (#477) */
-        goto mtloop;
-    if (d0-- != 0)
-        goto mtloop2;
-    d2 = (d2 & ~0xffUL) | (UBYTE)(d2 + 1);
-    a2 = (UBYTE *)((d2 << 10) + 1084 + (ULONG)a0);
+    mod = glue.mt_data;
+    pt.songdataptr = mod;
+    order = mod + 952;
+    count = 127;
+    pattern = 0;
+newhighest:                             /* mtloop */
+    highest = pattern;
+    count--;
+nextentry:                              /* mtloop2 */
+    pattern = (pattern & ~0xffUL) | *order++;
+    if ((BYTE)pattern > (BYTE)highest)  /* BUG(orig): signed, see above (#477) */
+        goto newhighest;
+    if (count-- != 0)
+        goto nextentry;
+    highest = (highest & ~0xffUL) | (UBYTE)(highest + 1);
+    sample = (UBYTE *)((highest << 10) + 1084 + (ULONG)mod);
     for (i = 0; i < 31; i++) {
-        *(ULONG *)a2 = 0;               /* BUG(orig): also behind the module (#570) */
-        pt.samplestarts[i] = a2;
-        a2 += (ULONG)W(a0 + 42) << 1;
-        a0 += 30;
+        *(ULONG *)sample = 0;           /* BUG(orig): also behind the module (#570) */
+        pt.samplestarts[i] = sample;
+        sample += (ULONG)W(mod + 42) << 1;
+        mod += 30;
     }
     CIAAPRA |= 2;                       /* filter off */
     pt.speed = 6;
@@ -473,51 +473,51 @@ static void mt_pernop(aud_t *hw, struct chan *c)
 /* mt_UpdateFunk: invert loop (EFx) */
 static void mt_updatefunk(struct chan *c)
 {
-    UBYTE d0 = c->glissfunk >> 4;
-    UBYTE *a0;
+    UBYTE speed = c->glissfunk >> 4;
+    UBYTE *wave;
     ULONG end;
 
-    if (!d0)
+    if (!speed)
         return;
-    c->funkoffset += pt.funktable[d0];
+    c->funkoffset += pt.funktable[speed];
     if (!(c->funkoffset & 0x80))
         return;
     c->funkoffset = 0;
     end = (ULONG)c->loopstart + 2 * (ULONG)c->replen;
-    a0 = c->wavestart + 1;
-    if (!((ULONG)a0 < end))
-        a0 = c->loopstart;
-    c->wavestart = a0;
-    *a0 = (UBYTE)~*a0;
+    wave = c->wavestart + 1;
+    if (!((ULONG)wave < end))
+        wave = c->loopstart;
+    c->wavestart = wave;
+    *wave = (UBYTE)~*wave;
 }
 
 /* mt_Arpeggio (effect 0xy) */
 static void mt_arpeggio(aud_t *hw, struct chan *c)
 {
-    UWORD d0, d2;
-    ULONG a0;
-    UWORD d1;
-    int d3;
+    UWORD arp, arpperiod;               /* d0: counter % 3, then the note step; d2 */
+    ULONG row;
+    UWORD period;
+    int left;
 
-    d0 = (UWORD)(pt.counter % 3);       /* DIVS #3: SWAP */
-    if (d0 == 0) {
+    arp = (UWORD)(pt.counter % 3);      /* DIVS #3: SWAP */
+    if (arp == 0) {
         hw->ac_per = c->period;
         return;
     }
-    if (d0 == 2)
-        d0 = c->cmdlo & 15;
+    if (arp == 2)
+        arp = c->cmdlo & 15;
     else
-        d0 = c->cmdlo >> 4;
-    d0 <<= 1;
-    a0 = (ULONG)c->finetune * 36 * 2;
-    d1 = c->period;
-    for (d3 = 36; d3 >= 0; d3--) {      /* BUG(orig): 37 entries (#474) */
-        d2 = PERIOD(a0 + d0);
-        if (d1 >= PERIOD(a0)) {
-            hw->ac_per = d2;
+        arp = c->cmdlo >> 4;
+    arp <<= 1;
+    row = (ULONG)c->finetune * 36 * 2;
+    period = c->period;
+    for (left = 36; left >= 0; left--) {  /* BUG(orig): 37 entries (#474) */
+        arpperiod = PERIOD(row + arp);
+        if (period >= PERIOD(row)) {
+            hw->ac_per = arpperiod;
             return;
         }
-        a0 += 2;
+        row += 2;
     }
 }
 
@@ -531,10 +531,10 @@ static void nor_trackevent(struct chan *c)
 /* mt_PortaUp (1xx), mt_FinePortaUp (E1x) */
 static void mt_portaup(aud_t *hw, struct chan *c)
 {
-    UWORD d0 = c->cmdlo & pt.lowmask;
+    UWORD amount = c->cmdlo & pt.lowmask;
 
     pt.lowmask = 0xff;
-    c->period -= d0;
+    c->period -= amount;
     if ((WORD)(c->period & 0x0fff) < 113)
         c->period = (c->period & 0xf000) | 113;
     hw->ac_per = c->period & 0x0fff;
@@ -551,10 +551,10 @@ static void mt_fineportaup(aud_t *hw, struct chan *c)
 /* mt_PortaDown (2xx), mt_FinePortaDown (E2x) */
 static void mt_portadown(aud_t *hw, struct chan *c)
 {
-    UWORD d0 = c->cmdlo & pt.lowmask;
+    UWORD amount = c->cmdlo & pt.lowmask;
 
     pt.lowmask = 0xff;
-    c->period += d0;
+    c->period += amount;
     if ((WORD)(c->period & 0x0fff) >= 856)
         c->period = (c->period & 0xf000) | 856;
     hw->ac_per = c->period & 0x0fff;
@@ -571,29 +571,29 @@ static void mt_fineportadown(aud_t *hw, struct chan *c)
 /* mt_SetTonePorta: the wanted period of the note (3xx/5xx with a note) */
 static void mt_settoneporta(struct chan *c)
 {
-    UWORD d2 = c->note & 0x0fff, d0;
-    ULONG a0 = (ULONG)c->finetune * 36 * 2;
+    UWORD target = c->note & 0x0fff, work;  /* d2; d0: table offset, then period */
+    ULONG row = (ULONG)c->finetune * 36 * 2;
 
-    for (d0 = 0; ; ) {
-        if (d2 >= PERIOD(a0 + d0))
+    for (work = 0; ; ) {
+        if (target >= PERIOD(row + work))
             break;
-        d0 += 2;
-        if (d0 >= 36 * 2) {
-            d0 = 35 * 2;
+        work += 2;
+        if (work >= 36 * 2) {
+            work = 35 * 2;
             break;
         }
     }
-    if ((c->finetune & 8) && d0 != 0)
-        d0 -= 2;
-    d2 = PERIOD(a0 + d0);
-    c->wantedperiod = d2;
-    d0 = c->period;
+    if ((c->finetune & 8) && work != 0)
+        work -= 2;
+    target = PERIOD(row + work);
+    c->wantedperiod = target;
+    work = c->period;
     c->toneportdirec = 0;
-    if (d2 == d0) {
+    if (target == work) {
         c->wantedperiod = 0;
         return;
     }
-    if ((WORD)d2 >= (WORD)d0)
+    if ((WORD)target >= (WORD)work)
         return;
     c->toneportdirec = 1;
 }
@@ -602,39 +602,39 @@ static void mt_settoneporta(struct chan *c)
    the table) */
 static void mt_toneportnochange(aud_t *hw, struct chan *c)
 {
-    UWORD d0, d2;
+    UWORD work, per;                    /* d0: speed, then table offset; d2 */
 
     if (!c->wantedperiod)
         return;
-    d0 = c->toneportspeed;
+    work = c->toneportspeed;
     if (!c->toneportdirec) {
-        c->period += d0;
+        c->period += work;
         if ((WORD)c->wantedperiod <= (WORD)c->period) {
             c->period = c->wantedperiod;
             c->wantedperiod = 0;
         }
     } else {
-        c->period -= d0;
+        c->period -= work;
         if ((WORD)c->wantedperiod >= (WORD)c->period) {
             c->period = c->wantedperiod;
             c->wantedperiod = 0;
         }
     }
-    d2 = c->period;
+    per = c->period;
     if (c->glissfunk & 0x0f) {
-        ULONG a0 = (ULONG)c->finetune * 36 * 2;
-        for (d0 = 0; ; ) {
-            if (d2 >= PERIOD(a0 + d0))
+        ULONG row = (ULONG)c->finetune * 36 * 2;
+        for (work = 0; ; ) {
+            if (per >= PERIOD(row + work))
                 break;
-            d0 += 2;
-            if (d0 >= 36 * 2) {
-                d0 = 35 * 2;
+            work += 2;
+            if (work >= 36 * 2) {
+                work = 35 * 2;
                 break;
             }
         }
-        d2 = PERIOD(a0 + d0);
+        per = PERIOD(row + work);
     }
-    hw->ac_per = d2;
+    hw->ac_per = per;
 }
 
 /* mt_TonePortamento (3xx) */
@@ -650,30 +650,30 @@ static void mt_toneportamento(aud_t *hw, struct chan *c)
 /* mt_Vibrato2: the vibrato step (4xy, 6xy) */
 static void mt_vibrato2(aud_t *hw, struct chan *c)
 {
-    UBYTE d0 = (c->vibratopos >> 2) & 0x1f;
-    UWORD d2, per;
+    UBYTE pos = (c->vibratopos >> 2) & 0x1f;
+    UWORD delta, per;
 
     switch (c->wavecontrol & 3) {
     case 0:
-        d2 = pt.vibtable[d0];
+        delta = pt.vibtable[pos];
         break;
     case 1:                             /* ramp down */
-        d0 = (UBYTE)(d0 << 3);
+        pos = (UBYTE)(pos << 3);
         if ((BYTE)c->vibratopos < 0)
-            d2 = (UBYTE)(255 - d0);
+            delta = (UBYTE)(255 - pos);
         else
-            d2 = d0;
+            delta = pos;
         break;
     default:                            /* square */
-        d2 = 255;
+        delta = 255;
         break;
     }
-    d2 = (UWORD)(d2 * (c->vibratocmd & 15)) >> 7;
+    delta = (UWORD)(delta * (c->vibratocmd & 15)) >> 7;
     per = c->period;
     if ((BYTE)c->vibratopos < 0)
-        per -= d2;
+        per -= delta;
     else
-        per += d2;
+        per += delta;
     hw->ac_per = per;
     c->vibratopos += (c->vibratocmd >> 2) & 0x3c;
 }
@@ -681,15 +681,15 @@ static void mt_vibrato2(aud_t *hw, struct chan *c)
 /* mt_Vibrato (4xy) */
 static void mt_vibrato(aud_t *hw, struct chan *c)
 {
-    UBYTE d0 = c->cmdlo, d2;
+    UBYTE arg = c->cmdlo, cmd;
 
-    if (d0) {
-        d2 = c->vibratocmd;
-        if (d0 & 0x0f)
-            d2 = (d2 & 0xf0) | (d0 & 0x0f);
+    if (arg) {
+        cmd = c->vibratocmd;
+        if (arg & 0x0f)
+            cmd = (cmd & 0xf0) | (arg & 0x0f);
         if (c->cmdlo & 0xf0)
-            d2 = (d2 & 0x0f) | (c->cmdlo & 0xf0);
-        c->vibratocmd = d2;
+            cmd = (cmd & 0x0f) | (c->cmdlo & 0xf0);
+        c->vibratocmd = cmd;
     }
     mt_vibrato2(hw, c);
 }
@@ -697,39 +697,39 @@ static void mt_vibrato(aud_t *hw, struct chan *c)
 /* mt_Tremolo (7xy) */
 static void mt_tremolo(aud_t *hw, struct chan *c)
 {
-    UBYTE d0 = c->cmdlo, b;
-    UWORD d2, vol;
+    UBYTE work = c->cmdlo, b;           /* d0: argument, then table position */
+    UWORD delta, vol;
 
-    if (d0) {
+    if (work) {
         b = c->tremolocmd;
-        if (d0 & 0x0f)
-            b = (b & 0xf0) | (d0 & 0x0f);
+        if (work & 0x0f)
+            b = (b & 0xf0) | (work & 0x0f);
         if (c->cmdlo & 0xf0)
             b = (b & 0x0f) | (c->cmdlo & 0xf0);
         c->tremolocmd = b;
     }
-    d0 = (c->tremolopos >> 2) & 0x1f;
+    work = (c->tremolopos >> 2) & 0x1f;
     switch ((c->wavecontrol >> 4) & 3) {
     case 0:
-        d2 = pt.vibtable[d0];
+        delta = pt.vibtable[work];
         break;
     case 1:                             /* ramp down */
-        d0 = (UBYTE)(d0 << 3);
+        work = (UBYTE)(work << 3);
         if ((BYTE)c->vibratopos < 0)    /* BUG(orig): the vibrato position (#482) */
-            d2 = (UBYTE)(255 - d0);
+            delta = (UBYTE)(255 - work);
         else
-            d2 = d0;
+            delta = work;
         break;
     default:
-        d2 = 255;
+        delta = 255;
         break;
     }
-    d2 = (UWORD)(d2 * (c->tremolocmd & 15)) >> 6;
+    delta = (UWORD)(delta * (c->tremolocmd & 15)) >> 6;
     vol = c->volume;
     if ((BYTE)c->tremolopos < 0)
-        vol -= d2;
+        vol -= delta;
     else
-        vol += d2;
+        vol += delta;
     if ((WORD)vol < 0)
         vol = 0;
     if (vol > 0x40)
@@ -741,31 +741,31 @@ static void mt_tremolo(aud_t *hw, struct chan *c)
 /* mt_SampleOffset (9xx) */
 static void mt_sampleoffset(struct chan *c)
 {
-    UWORD d0;
+    UWORD offset;
 
     if (c->cmdlo)
         c->sampleoffset = c->cmdlo;
-    d0 = (UWORD)(c->sampleoffset << 7);
-    if ((WORD)d0 >= (WORD)c->length) {  /* BUG(orig): signed (#472) */
+    offset = (UWORD)(c->sampleoffset << 7);
+    if ((WORD)offset >= (WORD)c->length) {  /* BUG(orig): signed (#472) */
         c->length = 1;
         return;
     }
-    c->length -= d0;
-    c->start += (UWORD)(d0 << 1);
+    c->length -= offset;
+    c->start += (UWORD)(offset << 1);
 }
 
 /* mt_VolSlideUp / mt_VolSlideDown2 (Axy, EAx, EBx) */
-static void mt_volslideup(aud_t *hw, struct chan *c, UBYTE d0)
+static void mt_volslideup(aud_t *hw, struct chan *c, UBYTE amount)
 {
-    c->volume += d0;
+    c->volume += amount;
     if ((BYTE)(UBYTE)(c->volume - 0x40) >= 0)   /* CMP.B #$40: BMI */
         c->volume = 0x40;
     hw->ac_vol = c->volume;
 }
 
-static void mt_volslidedown2(aud_t *hw, struct chan *c, UBYTE d0)
+static void mt_volslidedown2(aud_t *hw, struct chan *c, UBYTE amount)
 {
-    c->volume -= d0;
+    c->volume -= amount;
     if ((BYTE)c->volume < 0)
         c->volume = 0;
     hw->ac_vol = c->volume;
@@ -773,10 +773,10 @@ static void mt_volslidedown2(aud_t *hw, struct chan *c, UBYTE d0)
 
 static void mt_volumeslide(aud_t *hw, struct chan *c)
 {
-    UBYTE d0 = c->cmdlo >> 4;
+    UBYTE up = c->cmdlo >> 4;
 
-    if (d0)
-        mt_volslideup(hw, c, d0);
+    if (up)
+        mt_volslideup(hw, c, up);
     else
         mt_volslidedown2(hw, c, c->cmdlo & 0x0f);
 }
@@ -796,43 +796,43 @@ static void mt_positionjump(struct chan *c)
 
 static void mt_patternbreak(struct chan *c)
 {
-    UBYTE d0 = (UBYTE)((c->cmdlo >> 4) * 10 + (c->cmdlo & 0x0f));
+    UBYTE row = (UBYTE)((c->cmdlo >> 4) * 10 + (c->cmdlo & 0x0f));
 
-    if (d0 > 63) {
+    if (row > 63) {
         mt_pj2();
         return;
     }
-    pt.pbreakpos = d0;
+    pt.pbreakpos = row;
     pt.posjumpflag = 0xff;
 }
 
 /* mt_VolumeChange (Cxx) */
 static void mt_volumechange(aud_t *hw, struct chan *c)
 {
-    UBYTE d0 = c->cmdlo;
+    UBYTE vol = c->cmdlo;
 
-    if (d0 > 0x40)
-        d0 = 0x40;
-    c->volume = d0;
-    hw->ac_vol = d0;
+    if (vol > 0x40)
+        vol = 0x40;
+    c->volume = vol;
+    hw->ac_vol = vol;
 }
 
 /* mt_SetSpeed (Fxx): 0 stops (mt_end), >= 32 signed the tempo
    (BUG(orig): F80-FFF are speeds, #569) */
 static void mt_setspeed(struct chan *c)
 {
-    UBYTE d0 = c->cmdlo;
+    UBYTE speed = c->cmdlo;
 
-    if (!d0) {
+    if (!speed) {
         mt_end();
         return;
     }
-    if ((BYTE)d0 >= 32) {
-        settempo(d0);
+    if ((BYTE)speed >= 32) {
+        settempo(speed);
         return;
     }
     pt.counter = 0;
-    pt.speed = d0;
+    pt.speed = speed;
 }
 
 /* mt_DoRetrig: restart the sample (E9x, EDx) */
@@ -852,13 +852,13 @@ static void mt_doretrig(aud_t *hw, struct chan *c)
 /* the E commands (Exy) */
 static void mt_e_commands(aud_t *hw, struct chan *c)
 {
-    UBYTE x = c->cmdlo & 0x0f, d0;
+    UBYTE x = c->cmdlo & 0x0f, value;   /* d0: filter bit or funk speed */
 
     switch (c->cmdlo >> 4) {
     case 0x0:                           /* mt_FilterOnOff */
-        d0 = (UBYTE)((c->cmdlo & 1) << 1);
+        value = (UBYTE)((c->cmdlo & 1) << 1);
         CIAAPRA &= 0xfd;
-        CIAAPRA |= d0;
+        CIAAPRA |= value;
         break;
     case 0x1:
         mt_fineportaup(hw, c);
@@ -894,14 +894,14 @@ static void mt_e_commands(aud_t *hw, struct chan *c)
         c->wavecontrol = (c->wavecontrol & 0x0f) | (UBYTE)(x << 4);
         break;
     case 0x9: {                         /* mt_RetrigNote */
-        UBYTE d1;
+        UBYTE tick;
 
         if (!x)
             break;
-        d1 = pt.counter;
-        if (!d1 && (c->note & 0x0fff))
+        tick = pt.counter;
+        if (!tick && (c->note & 0x0fff))
             break;
-        if (d1 % x)
+        if (tick % x)
             break;
         mt_doretrig(hw, c);
         break;
@@ -933,9 +933,9 @@ static void mt_e_commands(aud_t *hw, struct chan *c)
     case 0xf:                           /* mt_FunkIt */
         if (pt.counter)
             break;
-        d0 = (UBYTE)(x << 4);
-        c->glissfunk = (c->glissfunk & 0x0f) | d0;
-        if (d0)
+        value = (UBYTE)(x << 4);
+        c->glissfunk = (c->glissfunk & 0x0f) | value;
+        if (value)
             mt_updatefunk(c);
         break;
     default:                            /* E8x: nothing */
@@ -1026,15 +1026,15 @@ static void checkmoreefx(aud_t *hw, struct chan *c)
    sample (not with EDx) */
 static void mt_setperiod(aud_t *hw, struct chan *c)
 {
-    UWORD d1 = c->note & 0x0fff, d0 = 0;
-    int d2;
+    UWORD note = c->note & 0x0fff, off = 0;
+    int left;
 
-    for (d2 = 36; d2 >= 0; d2--) {      /* not found: d0 = 74, BUG(orig) (#481) */
-        if (d1 >= PERIOD(d0))
+    for (left = 36; left >= 0; left--) {  /* not found: d0 = 74, BUG(orig) (#481) */
+        if (note >= PERIOD(off))
             break;
-        d0 += 2;
+        off += 2;
     }
-    c->period = PERIOD((ULONG)c->finetune * 36 * 2 + d0);
+    c->period = PERIOD((ULONG)c->finetune * 36 * 2 + off);
     if ((cmdword(c) & 0x0ff0) == 0x0ed0) {
         checkmoreefx(hw, c);
         return;
@@ -1052,41 +1052,41 @@ static void mt_setperiod(aud_t *hw, struct chan *c)
 }
 
 /* mt_PlayVoice: the next note of the pattern at patdata + *d1 */
-static void mt_playvoice(aud_t *hw, struct chan *c, ULONG *d1, UBYTE *a3)
+static void mt_playvoice(aud_t *hw, struct chan *c, ULONG *patpos, UBYTE *sampleinfo)
 {
     ULONG v;
-    ULONG d2;
-    UWORD d3, d4w;
-    ULONG d4;
+    ULONG work;                         /* d2: sample, start offset, loop start */
+    UWORD repeat, sample;
+    ULONG infooff;
 
     if (!c->note && !c->cmd && !c->cmdlo)
         mt_pernop(hw, c);
-    v = *(volatile ULONG *)(patdata + *d1);    /* MOVE.L: one access */
+    v = *(volatile ULONG *)(patdata + *patpos);    /* MOVE.L: one access */
     c->note = (UWORD)(v >> 16);
     c->cmd = (UBYTE)(v >> 8);
     c->cmdlo = (UBYTE)v;
-    *d1 += 4;
-    d2 = (UBYTE)((c->cmd & 0xf0) >> 4 | (UBYTE)(c->note >> 8 & 0xf0));
-    if (d2) {
-        d4w = (UWORD)d2;
-        d2 = (d2 - 1) << 2;
-        d4 = (ULONG)d4w * 30;
-        c->start = SAMPLESTART(d2);     /* BUG(orig): sample > 31 (#480) */
-        c->length = W(a3 + d4);
-        c->reallength = W(a3 + d4);
-        c->finetune = a3[d4 + 2];
-        c->volume = a3[d4 + 3];
-        d3 = W(a3 + d4 + 4);            /* repeat */
-        if (d3) {
-            d2 = (ULONG)c->start + (UWORD)(d3 << 1);    /* BUG(orig): word (#479) */
-            c->loopstart = (UBYTE *)d2;
-            c->wavestart = (UBYTE *)d2;
-            c->length = (UWORD)(W(a3 + d4 + 4) + W(a3 + d4 + 6));
-            c->replen = W(a3 + d4 + 6);
+    *patpos += 4;
+    work = (UBYTE)((c->cmd & 0xf0) >> 4 | (UBYTE)(c->note >> 8 & 0xf0));
+    if (work) {
+        sample = (UWORD)work;
+        work = (work - 1) << 2;
+        infooff = (ULONG)sample * 30;
+        c->start = SAMPLESTART(work);   /* BUG(orig): sample > 31 (#480) */
+        c->length = W(sampleinfo + infooff);
+        c->reallength = W(sampleinfo + infooff);
+        c->finetune = sampleinfo[infooff + 2];
+        c->volume = sampleinfo[infooff + 3];
+        repeat = W(sampleinfo + infooff + 4);    /* repeat */
+        if (repeat) {
+            work = (ULONG)c->start + (UWORD)(repeat << 1);  /* BUG(orig): word (#479) */
+            c->loopstart = (UBYTE *)work;
+            c->wavestart = (UBYTE *)work;
+            c->length = (UWORD)(W(sampleinfo + infooff + 4) + W(sampleinfo + infooff + 6));
+            c->replen = W(sampleinfo + infooff + 6);
         } else {
             c->loopstart = c->start;
             c->wavestart = c->start;
-            c->replen = W(a3 + d4 + 6);
+            c->replen = W(sampleinfo + infooff + 6);
         }
         hw->ac_vol = c->volume;
     }
@@ -1132,17 +1132,17 @@ static void mt_music_c(void)
             mt_checkefx(&CUSTOM.aud[i], &pt.chan[i]);
     } else {
         /* mt_GetNewNote */
-        UBYTE *a0 = pt.songdataptr, *a3 = a0 + 12, *a2 = a0 + 952;
-        ULONG d1;
+        UBYTE *mod = pt.songdataptr, *sampleinfo = mod + 12, *order = mod + 952;
+        ULONG patpos;
 
-        patdata = a0 + 1084;
-        d1 = (ULONG)a2[pt.songpos] << 10;
-        d1 = (d1 & 0xffff0000UL) | (UWORD)((UWORD)d1 + pt.patternpos);
+        patdata = mod + 1084;
+        patpos = (ULONG)order[pt.songpos] << 10;
+        patpos = (patpos & 0xffff0000UL) | (UWORD)((UWORD)patpos + pt.patternpos);
         pt.dmacontemp = 0;
         /* BUG(orig): a masked voice does not advance d1 (#568) */
         for (i = 0; i < 4; i++)
             if (pt.mask & (8 >> i))
-                mt_playvoice(&CUSTOM.aud[i], &pt.chan[i], &d1, a3);
+                mt_playvoice(&CUSTOM.aud[i], &pt.chan[i], &patpos, sampleinfo);
         /* mt_SetDMA */
         dmawait();
         CUSTOM.dmacon = pt.dmacontemp | 0x8000;
@@ -1195,31 +1195,31 @@ static void BLITZ_ROUTINE libfinit_c(void)
 }
 
 /* Tracker on+off */
-static void BLITZ_ROUTINE tracker_c(UBYTE d0 BL_REG(d0))
+static void BLITZ_ROUTINE tracker_c(UBYTE on BL_REG(d0))
 {
-    if ((BYTE)d0 == pt.status)
+    if ((BYTE)on == pt.status)
         return;
-    pt.enable &= d0;                    /* BUG(orig): On does not resume (#572) */
-    pt.status = (BYTE)d0;
-    if (d0)
+    pt.enable &= on;                    /* BUG(orig): On does not resume (#572) */
+    pt.status = (BYTE)on;
+    if (on)
         ciaplayerinit();
     else
         ciaplayerfinit();
 }
 
 /* TrackInit address */
-static void BLITZ_ROUTINE initmodule_c(UBYTE *d0 BL_REG(d0))
+static void BLITZ_ROUTINE initmodule_c(UBYTE *module BL_REG(d0))
 {
-    glue.mt_data = d0;
+    glue.mt_data = module;
     ciaplayerinit();
     pt.playing = 1;
     mt_init();                          /* BUG(orig): nothing if Tracker Off (#573) */
     pt.enable = 0xff;
 }
 
-static void BLITZ_ROUTINE tracksetdma_c(UWORD d0 BL_REG(d0))
+static void BLITZ_ROUTINE tracksetdma_c(UWORD wait BL_REG(d0))
 {
-    pt.dmawait = d0;
+    pt.dmawait = wait;
 }
 
 static void BLITZ_ROUTINE stopmodule_c(void)
@@ -1229,9 +1229,9 @@ static void BLITZ_ROUTINE stopmodule_c(void)
 }
 
 /* TrackerPause On|Off: nonzero stops, 0 continues (_contmodule) */
-static void BLITZ_ROUTINE trackerpause_c(UBYTE d0 BL_REG(d0))
+static void BLITZ_ROUTINE trackerpause_c(UBYTE pause BL_REG(d0))
 {
-    if (d0) {
+    if (pause) {
         ciaplayerfinit();
         return;
     }
@@ -1250,13 +1250,13 @@ static void cut(aud_t *hw)
 }
 
 /* TrackerChannels mask */
-static void BLITZ_ROUTINE trackermask_c(UBYTE d0 BL_REG(d0))
+static void BLITZ_ROUTINE trackermask_c(UBYTE mask BL_REG(d0))
 {
     int i;
 
-    pt.mask = d0;
+    pt.mask = mask;
     for (i = 0; i < 4; i++)
-        if (!(d0 & (8 >> i)))
+        if (!(mask & (8 >> i)))
             cut(&CUSTOM.aud[i]);
 }
 
