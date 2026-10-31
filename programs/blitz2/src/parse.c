@@ -240,6 +240,8 @@ void savefile(void)
 
     mywrite(fh, (APTR)(pcat + noinits), (objlen - noinits + 3) & 0xfffffffc);
 
+    /* BUG(orig) (#943): all relocations in one HUNK_RELOC32 block; more
+       than 65535 are said not to load on AmigaOS V36+ */
     *tstsize3 = numoffs;
     if (numoffs) {
         ULONG skip = noinits;
