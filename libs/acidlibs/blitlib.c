@@ -287,6 +287,22 @@ static UWORD blitcoll(const struct shape *shape, const struct bmap *bm, UBYTE *c
 #define REG_ARGS WORD x BL_REG(d1), WORD y BL_REG(d2), UBYTE *cb BL_REG(a1), \
                  const struct bmap *bm BL_REG(a2)
 
+/**
+ * @brief Blit Shape#,X,Y: blit the shape into the used bitmap (Blitz
+ *        mode).
+ *
+ * Per shape plane A = cookie, B = shape data (one pointer for all planes),
+ * C = D = bitmap plane; BLTCON0 = shift | the BlitMode (default $FCA,
+ * cookie cut).  Errors (debugger, blitchk): "Shape does not have a cookie
+ * cut", "Unitialized BitMap", "Uninialized Shape", "Shape has too many
+ * BitPlanes", "Coords outside of BitMap".
+ * The shape comes in a3 (!libs {#shapeslib,$1380}, from Shape# in d0).
+ *
+ * @param x    d1.w: x (the shape's handle is subtracted)
+ * @param y    d2.w: y
+ * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
+ * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
+ */
 void BLITZ_ROUTINE b_doblit_c(REG_ARGS);
 void BLITZ_ROUTINE b_doblit_c(REG_ARGS)
 {
@@ -295,6 +311,23 @@ void BLITZ_ROUTINE b_doblit_c(REG_ARGS)
     blit((const struct shape *)blitz_string, bm, cb, x, y, &st);
 }
 
+/**
+ * @brief Blit Shape#,X,Y (Amiga mode).
+ *
+ * Amiga mode: OwnBlitter, the blit, wait for the blitter, DisownBlitter.
+ * Per shape plane A = cookie, B = shape data (one pointer for all planes),
+ * C = D = bitmap plane; BLTCON0 = shift | the BlitMode (default $FCA,
+ * cookie cut).  Errors (debugger, blitchk): "Shape does not have a cookie
+ * cut", "Unitialized BitMap", "Uninialized Shape", "Shape has too many
+ * BitPlanes", "Coords outside of BitMap".
+ * The shape comes in a3 (!libs {#shapeslib,$1380}, from Shape# in d0).
+ *
+ * @param x    d1.w: x (the shape's handle is subtracted)
+ * @param y    d2.w: y
+ * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
+ * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
+ * @param gfx  a6: graphics.library (!libs {#graphicslib,$5600})
+ */
 void BLITZ_ROUTINE a_doblit_c(REG_ARGS, struct Library *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_doblit_c(REG_ARGS, struct Library *gfx BL_REG(a6))
 {
@@ -307,6 +340,21 @@ void BLITZ_ROUTINE a_doblit_c(REG_ARGS, struct Library *gfx BL_REG(a6))
 }
 BLITZ_AB_ROUTINE(doblit, b_doblit_c, "   jmp     _a_doblit_c");
 
+/**
+ * @brief Blit Shape#,X,Y,Excessonoff (Blitz mode; also a nullsub for other
+ *        libraries).
+ *
+ * Blit, then the bitmap planes beyond the shape's depth get A = cookie,
+ * minterm $0A (cleared where the cookie is) or $FA (set), one bit of
+ * Excessonoff per plane.  Errors (debugger, blitchk): as Blit.
+ * The shape comes in a3 (!libs {#shapeslib,$1380}, from Shape# in d0).
+ *
+ * @param x    d1.w: x (the shape's handle is subtracted)
+ * @param y    d2.w: y
+ * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
+ * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
+ * @param bits d3.w: Excessonoff, one bit per excess plane (set = $FA)
+ */
 void BLITZ_ROUTINE b_doblitex_c(REG_ARGS, UWORD bits BL_REG(d3));
 void BLITZ_ROUTINE b_doblitex_c(REG_ARGS, UWORD bits BL_REG(d3))
 {
@@ -314,6 +362,22 @@ void BLITZ_ROUTINE b_doblitex_c(REG_ARGS, UWORD bits BL_REG(d3))
 }
 BLITZ_THUNK(b_doblitex, b_doblitex_c, "a2");
 
+/**
+ * @brief Blit Shape#,X,Y,Excessonoff (Amiga mode).
+ *
+ * Amiga mode: OwnBlitter, the blit, wait for the blitter, DisownBlitter.
+ * Blit, then the bitmap planes beyond the shape's depth get A = cookie,
+ * minterm $0A (cleared where the cookie is) or $FA (set), one bit of
+ * Excessonoff per plane.  Errors (debugger, blitchk): as Blit.
+ * The shape comes in a3 (!libs {#shapeslib,$1380}, from Shape# in d0).
+ *
+ * @param x    d1.w: x (the shape's handle is subtracted)
+ * @param y    d2.w: y
+ * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
+ * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
+ * @param bits d3.w: Excessonoff, one bit per excess plane (set = $FA)
+ * @param gfx  a6: graphics.library (!libs {#graphicslib,$5600})
+ */
 void BLITZ_ROUTINE a_doblitex_c(REG_ARGS, UWORD bits BL_REG(d3),
                                 struct Library *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_doblitex_c(REG_ARGS, UWORD bits BL_REG(d3),
@@ -326,12 +390,43 @@ void BLITZ_ROUTINE a_doblitex_c(REG_ARGS, UWORD bits BL_REG(d3),
 }
 BLITZ_AB_ROUTINE(doblitex, b_doblitex_c, "   jmp     _a_doblitex_c");
 
+/**
+ * @brief Block Shape#,X,Y: copy the shape into the used bitmap (Blitz
+ *        mode).
+ *
+ * A -> D copy of the shape data: no shift, x / 8 bytes, bltsize - 1 (without
+ * the extra word).  Not a bug: byte positions (the blitter ignores bit 0 of
+ * the address; Block is documented as word boundary blitting).  Errors
+ * (debugger, blitchknc): as Blit, but no cookie needed.
+ * The shape comes in a3 (!libs {#shapeslib,$1380}, from Shape# in d0).
+ *
+ * @param x    d1.w: x (the shape's handle is subtracted)
+ * @param y    d2.w: y
+ * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
+ * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
+ */
 void BLITZ_ROUTINE b_doblock_c(REG_ARGS);
 void BLITZ_ROUTINE b_doblock_c(REG_ARGS)
 {
     block((const struct shape *)blitz_string, bm, cb, x, y);
 }
 
+/**
+ * @brief Block Shape#,X,Y (Amiga mode).
+ *
+ * Amiga mode: OwnBlitter, the blit, wait for the blitter, DisownBlitter.
+ * A -> D copy of the shape data: no shift, x / 8 bytes, bltsize - 1 (without
+ * the extra word).  Not a bug: byte positions (the blitter ignores bit 0 of
+ * the address; Block is documented as word boundary blitting).  Errors
+ * (debugger, blitchknc): as Blit, but no cookie needed.
+ * The shape comes in a3 (!libs {#shapeslib,$1380}, from Shape# in d0).
+ *
+ * @param x    d1.w: x (the shape's handle is subtracted)
+ * @param y    d2.w: y
+ * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
+ * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
+ * @param gfx  a6: graphics.library (!libs {#graphicslib,$5600})
+ */
 void BLITZ_ROUTINE a_doblock_c(REG_ARGS, struct Library *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_doblock_c(REG_ARGS, struct Library *gfx BL_REG(a6))
 {
@@ -342,7 +437,22 @@ void BLITZ_ROUTINE a_doblock_c(REG_ARGS, struct Library *gfx BL_REG(a6))
 }
 BLITZ_AB_ROUTINE(doblock, b_doblock_c, "   jmp     _a_doblock_c");
 
-/* BlitColl: result word (MOVEQ: full long) */
+/**
+ * @brief BlitColl(Shape#,x,y): does the shape's cookie hit a set pixel of
+ *        the used bitmap (Blitz mode)?
+ *
+ * A = cookie, C = bitmap plane, no D, for every plane of the bitmap (not a
+ * bug: of the bitmap, not of the shape).  Errors (debugger, blitchk3): as
+ * Blit without the depth check.
+ * The shape comes in a3 (!libs {#shapeslib,$1380}, from Shape# in d0).
+ *
+ * @param x    d1.w: x (the shape's handle is subtracted)
+ * @param y    d2.w: y
+ * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
+ * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
+ * @return d0: BB_TRUE if any plane has a set pixel under the cookie (BZERO
+ *         clear), else BB_FALSE (a word function, MOVEQ: the full long)
+ */
 BB_BOOL BLITZ_ROUTINE b_doblitcoll_c(REG_ARGS);
 BB_BOOL BLITZ_ROUTINE b_doblitcoll_c(REG_ARGS)
 {
@@ -351,9 +461,25 @@ BB_BOOL BLITZ_ROUTINE b_doblitcoll_c(REG_ARGS)
                                          bm, cb, x, y);
 }
 
-/* Amiga mode: MOVE d0,-(a7):DisownBlitter:MOVE (a7)+,d0 - only the low
-   word of the result is set, the upper word is what DisownBlitter left
-   in d0 (DIFF: here 0; BlitColl is a #word function) */
+/**
+ * @brief BlitColl(Shape#,x,y) (Amiga mode).
+ *
+ * OwnBlitter, the test, DisownBlitter (MOVE d0,-(a7):DisownBlitter:MOVE
+ * (a7)+,d0 - only the low word of the result is set, the upper word is
+ * what DisownBlitter left in d0; DIFF: here 0; BlitColl is a #word
+ * function).
+ * A = cookie, C = bitmap plane, no D, for every plane of the bitmap (not a
+ * bug: of the bitmap, not of the shape).  Errors (debugger, blitchk3): as
+ * Blit without the depth check.
+ * The shape comes in a3 (!libs {#shapeslib,$1380}, from Shape# in d0).
+ *
+ * @param x    d1.w: x (the shape's handle is subtracted)
+ * @param y    d2.w: y
+ * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
+ * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
+ * @param gfx  a6: graphics.library (!libs {#graphicslib,$5600})
+ * @return d0.w: -1 on a collision, else 0 (upper word 0)
+ */
 ULONG BLITZ_ROUTINE a_doblitcoll_c(REG_ARGS, struct Library *gfx BL_REG(a6));
 ULONG BLITZ_ROUTINE a_doblitcoll_c(REG_ARGS, struct Library *gfx BL_REG(a6))
 {
@@ -366,14 +492,25 @@ ULONG BLITZ_ROUTINE a_doblitcoll_c(REG_ARGS, struct Library *gfx BL_REG(a6))
 }
 BLITZ_AB_ROUTINE(doblitcoll, b_doblitcoll_c, "   jmp     _a_doblitcoll_c");
 
-/* BlitMode / init */
+/**
+ * @brief BlitMode BLTCON0: the minterm/channel bits of Blit's BLTCON0
+ *        (ORed with the shift; CookieMode ... give the usual values).
+ *
+ * @param m  d0.w: the BLTCON0 value without the shift
+ */
 static void BLITZ_ROUTINE doblitmode_c(UWORD m BL_REG(d0))
 {
     bcon0 = m;
 }
 BLITZ_THUNK(doblitmode, doblitmode_c, "d0-d1/a0-a1");
 
-/* codeinit: MOVE #$fca,d0 and on into doblitmode */
+/**
+ * @brief init: BlitMode $FCA (cookie cut) - MOVE #$fca,d0 and on into
+ *        doblitmode.
+ *
+ * @param caller_d0  d0: what the caller had in d0
+ * @return d0: caller_d0 with $FCA in the low word
+ */
 static ULONG BLITZ_ROUTINE codeinit_c(ULONG caller_d0 BL_REG(d0))
 {
     bcon0 = 0xfca;
@@ -381,7 +518,13 @@ static ULONG BLITZ_ROUTINE codeinit_c(ULONG caller_d0 BL_REG(d0))
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
 
-/* the modes: inline MOVE #mode,d0 */
+/**
+ * @brief CookieMode, EraseMode, InvMode, SolidMode: the BlitMode values
+ *        $FCA (cookie cut), $B0A (erase), $B5A (invert), $BFA (solid).
+ *
+ * Inline MOVE.w #mode,d0 (not a bug: the upper word of d0 stays; word
+ * results, the compiler uses only d0.w).
+ */
 BLITZ_INLINE(docookiemode, "move.w #0xfca,d0");
 BLITZ_INLINE(doerasemode, "move.w #0xb0a,d0");
 BLITZ_INLINE(doinvmode, "move.w #0xb5a,d0");
