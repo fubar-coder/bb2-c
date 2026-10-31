@@ -298,6 +298,10 @@ static ULONG allocst(const UBYTE *s, ULONG len)
 
 /* ------------------------------------------------------------ init */
 
+/**
+ * @brief Library init: ScreenPens on (NS_EXTENDED), the default pens of
+ * the Workbench, the Exec version (environlib ExecVersion) in romrevision.
+ */
 static void BLITZ_ROUTINE doinit_c(void)
 {
     static const UWORD defpens[10] = { 1, 2, 1, 3, 1, 0, 2, 1, 2, 1 };
@@ -312,13 +316,35 @@ BLITZ_THUNK(doinit, doinit_c, "d1/a0-a1");
 
 /* --------------------------------------------------------- ScreenPens */
 
+/**
+ * @brief ScreenPens On|Off - use the ScreenPens for the following Screens.
+ *
+ * Sets or clears the NS_EXTENDED flag ($1000) of the screen type, so that
+ * OpenScreen reads the tag list with SA_Pens and SA_DisplayID.
+ *
+ * @param on d0.w: <> 0 = on
+ */
 static void BLITZ_ROUTINE doscreenpens2_c(UWORD on BL_REG(d0))
 {
     sd.defstype = on ? 0x1000 : 0;
 }
 BLITZ_THUNK(doscreenpens2, doscreenpens2_c, "d0-d1/a0-a1");
 
-/* MOVEM d0-d5,pens+4:MOVE -(a2),pens+16 */
+/**
+ * @brief ScreenPens Text,Shine,Shadow,Fill,FillText,Background,HighLight -
+ * the DrawInfo pens of the following Screens (pens 2-8 of SA_Pens).
+ *
+ * MOVEM d0-d5,pens+4:MOVE -(a2),pens+16; the NS_EXTENDED flag is not
+ * changed.
+ *
+ * @param p0   d0.w: TEXTPEN
+ * @param p1   d1.w: SHINEPEN
+ * @param p2   d2.w: SHADOWPEN
+ * @param p3   d3.w: FILLPEN
+ * @param p4   d4.w: FILLTEXTPEN
+ * @param p5   d5.w: BACKGROUNDPEN
+ * @param args a2: the argument stack, -2(a2) = HIGHLIGHTTEXTPEN
+ */
 static void BLITZ_ROUTINE doscreenpens_c(UWORD p0 BL_REG(d0), UWORD p1 BL_REG(d1),
                                          UWORD p2 BL_REG(d2), UWORD p3 BL_REG(d3),
                                          UWORD p4 BL_REG(d4), UWORD p5 BL_REG(d5),
@@ -338,19 +364,61 @@ BLITZ_THUNK(doscreenpens, doscreenpens_c, "d0-d1/a1");
 
 /* ------------------------------------------------------- inline routines */
 
+/**
+ * @brief ViewPort(Screen#) - the address of the screen's ViewPort (inline,
+ * a0 = the screen object; result d0 = screen + 44).
+ *
+ * Errors: "Uninitialized Screen" (loadscreenchk, debugger only).
+ */
 BLITZ_INLINE(dosviewport,
     "   move.l  (a0),a0\n"
     "   lea     44(a0),a0\n"
     "   move.l  a0,d0");
+/**
+ * @brief ShowScreen Screen# - ScreenToFront (inline, a0 = the screen
+ * object, a6 = intuition).
+ *
+ * Errors: "Uninitialized Screen" (loadscreenchk, debugger only).
+ */
 BLITZ_INLINE(doshowscreen, "   move.l  (a0),a0\n   jsr     -252(a6)");    /* ScreenToFront */
+/**
+ * @brief HideScreen Screen# - ScreenToBack (inline, a0 = the screen
+ * object, a6 = intuition).
+ *
+ * Errors: "Uninitialized Screen" (loadscreenchk, debugger only).
+ */
 BLITZ_INLINE(dohidescreen, "   move.l  (a0),a0\n   jsr     -246(a6)");    /* ScreenToBack */
+/**
+ * @brief BeepScreen Screen# - DisplayBeep (inline, a0 = the screen
+ * object, a6 = intuition).
+ *
+ * Errors: "Uninitialized Screen" (loadscreenchk, debugger only).
+ */
 BLITZ_INLINE(dobeepscreen, "   move.l  (a0),a0\n   jsr     -96(a6)");     /* DisplayBeep */
+/**
+ * @brief MoveScreen Screen#,deltax,deltay - intuition MoveScreen (inline,
+ * a0 = the screen object, d1.w/d2.w = the deltas, a6 = intuition).
+ *
+ * Errors: "Uninitialized Screen" (loadscreenchk, debugger only).
+ */
 BLITZ_INLINE(domovescreen,
     "   move.l  (a0),a0\n"
     "   move.w  d1,d0\n"
     "   move.w  d2,d1\n"
     "   jsr     -162(a6)");                                                /* MoveScreen */
+/**
+ * @brief SMouseX - the mouse x position on the used screen (inline, a0 =
+ * the used screen object; d0.w = Screen.MouseX).
+ *
+ * Errors: "Uninitialized Screen" (loadscreenchk, debugger only).
+ */
 BLITZ_INLINE(dosmousex, "   move.l  (a0),a0\n   move.w  18(a0),d0");
+/**
+ * @brief SMouseY - the mouse y position on the used screen (inline, a0 =
+ * the used screen object; d0.w = Screen.MouseY).
+ *
+ * Errors: "Uninitialized Screen" (loadscreenchk, debugger only).
+ */
 BLITZ_INLINE(dosmousey, "   move.l  (a0),a0\n   move.w  16(a0),d0");
 
 /* ---------------------------------------------------------- freescreen */
@@ -376,6 +444,17 @@ static void freescreen_(struct scrobj *obj, struct IntuitionBase *IntuitionBase,
     obj->screen = NULL;
 }
 
+/**
+ * @brief CloseScreen Screen# and the object's free routine (_free).
+ *
+ * a3 = the screen object.  Only screens the library opened ("bLtZ" in
+ * UserData) are closed (the title copy freed with maxslib $CF02, the
+ * DBufInfo with FreeDBufInfo); screens of WbToScreen/FindScreen are only
+ * forgotten.
+ *
+ * @param intui a6: intuition.library
+ * @param gfx   a2: graphics.library
+ */
 static void BLITZ_ROUTINE freescreen_c(struct IntuitionBase *intui BL_REG(a6),
                                        struct GfxBase *gfx BL_REG(a2))
 {
@@ -424,6 +503,34 @@ static void openscreen(UBYTE *bitmap, ULONG *ifont, WORD used, ULONG viewmode,
     scr->UserData = (APTR)BLTZ;
 }
 
+/**
+ * @brief Screen Screen#,X,Y,W,H,D,Viewmode,Title$,Dpen,Bpen - open a screen
+ * (_screen).
+ *
+ * a3 = the screen object, which becomes the used screen; its old screen
+ * is freed first.  The width is rounded UP to a multiple of 16; the
+ * ExtNewScreen gets SA_DisplayID (= viewmode) and SA_Pens (ScreenPens),
+ * the current IntuiFont and the type CUSTOMSCREEN | the ScreenPens flag
+ * NS_EXTENDED; the screen gets "bLtZ" in UserData.
+ *
+ * BUG(orig) (#247): the old screen is freed with a2 = the argument stack
+ * as graphics base (FreeDBufInfo through garbage if it had a DBufInfo).
+ * BUG(orig) (#250): SA_DisplayID gets only the low word of the viewmode.
+ * BUG(orig) (#251): "Can't open Screen" is `BEQ err1` into the error area
+ * (without the debugger a jump behind the library); DIFF: called per JSR.
+ * Errors (prescreen, debugger only): "Uninitialized IntuiFont", width < 320,
+ * height < 10, "Illegal number of BitPlanes".
+ *
+ * @param viewmode d1: the view mode
+ * @param title    d2: the title
+ * @param dpen     d3.b: DetailPen
+ * @param bpen     d4.b: BlockPen
+ * @param ifont    a1: intuifontlib's TextAttr pointer
+ * @param used     d6.w: the offset of the used screen in the globals
+ * @param args     a2: the argument stack: x, y, w, h, d (words), title
+ *                 length (long), popped from the top
+ * @param intui    a6: intuition.library
+ */
 void BLITZ_ROUTINE _screen(ULONG viewmode BL_REG(d1), const UBYTE *title BL_REG(d2),
                            UBYTE dpen BL_REG(d3), UBYTE bpen BL_REG(d4),
                            ULONG *ifont BL_REG(a1), WORD used BL_REG(d6),
@@ -432,6 +539,17 @@ void BLITZ_ROUTINE _screen(ULONG viewmode BL_REG(d1), const UBYTE *title BL_REG(
     openscreen(0, ifont, used, viewmode, title, dpen, bpen, args, intui);
 }
 
+/**
+ * @brief Screen Screen#,X,Y,W,H,D,Viewmode,Title$,Dpen,Bpen,BitMap# - open a
+ * screen on a bitmap (_screen2).
+ *
+ * As _screen with CUSTOMBITMAP and the bitmap as CustomBitMap.
+ *
+ * Errors (prescreen2, debugger only): those of _screen, "Uninitialized
+ * BitMap", "Can't use specified BitMap" (smaller than the screen).
+ *
+ * @param bitmap a0: the bitmap object
+ */
 void BLITZ_ROUTINE _screen2(ULONG viewmode BL_REG(d1), const UBYTE *title BL_REG(d2),
                             UBYTE dpen BL_REG(d3), UBYTE bpen BL_REG(d4),
                             UBYTE *bitmap BL_REG(a0), ULONG *ifont BL_REG(a1),
@@ -468,6 +586,22 @@ static void modec(UWORD mode, const UBYTE *title, ULONG len, const UBYTE *gfx,
     openscreen(0, ifont, used, vm, title, 1, 2, DUMMYF, intui);
 }
 
+/**
+ * @brief Screen Screen#,Mode - open a screen from a mode number.
+ *
+ * depth = mode & 7 (0 = 8), bit 3 hires (640, HIRES), bit 4 interlace
+ * (height * 2, LACE), height 200 (NTSC, bit 0 of GfxBase+207) or 256;
+ * pens 1/2, no title.  Through a fake a2 stack (`dummydata`) into the long
+ * form (_screen), with its notes.
+ *
+ * Errors: "Illegal Mode" before V39 (modechk, debugger only).
+ *
+ * @param mode  d1.w: the mode
+ * @param gfx   a0: graphics.library
+ * @param ifont a1: intuifontlib's TextAttr pointer
+ * @param used  d6.w: the offset of the used screen in the globals
+ * @param intui a6: intuition.library
+ */
 void BLITZ_ROUTINE domode(UWORD mode BL_REG(d1), const UBYTE *gfx BL_REG(a0),
                           ULONG *ifont BL_REG(a1), WORD used BL_REG(d6),
                           struct IntuitionBase *intui BL_REG(a6))
@@ -475,6 +609,12 @@ void BLITZ_ROUTINE domode(UWORD mode BL_REG(d1), const UBYTE *gfx BL_REG(a0),
     modec(mode, 0, 0, gfx, ifont, used, intui);
 }
 
+/**
+ * @brief Screen Screen#,Mode,Title$ - as domode with a title.
+ *
+ * @param title d2: the title
+ * @param lens  a2: the argument stack, -4(a2) = the title's length
+ */
 void BLITZ_ROUTINE domode2(UWORD mode BL_REG(d1), const UBYTE *title BL_REG(d2),
                            const UBYTE *gfx BL_REG(a0), ULONG *ifont BL_REG(a1),
                            WORD used BL_REG(d6), const ULONG *lens BL_REG(a2),
@@ -487,6 +627,21 @@ void BLITZ_ROUTINE domode2(UWORD mode BL_REG(d1), const UBYTE *title BL_REG(d2),
 
 /* ------------------------------------------------ WbToScreen, FindScreen */
 
+/**
+ * @brief WbToScreen Screen# - the Workbench screen as a screen object.
+ *
+ * a3 = the screen object; the first screen with type WBENCHSCREEN, which
+ * becomes the used screen.  It is never closed by the library.
+ *
+ * BUG(orig) (#248): the object's old screen is freed (closed if the
+ * library opened it), (#247) with a2 = the argument stack as graphics
+ * base.  Errors: "Can't find WorkBench" (err8, in the
+ * normal code, its text in the error area).
+ *
+ * @param used  d6.w: the offset of the used screen in the globals
+ * @param args  a2: the argument stack (passed as graphics base, see above)
+ * @param intui a6: intuition.library
+ */
 void BLITZ_ROUTINE dowbscreen(WORD used BL_REG(d6), const UBYTE *args BL_REG(a2),
                               struct IntuitionBase *intui BL_REG(a6))
 {
@@ -544,12 +699,39 @@ static void findscreen(const UBYTE *title, WORD used, const UBYTE *args,
     obj->screen = s;
 }
 
+/**
+ * @brief FindScreen Screen# - the frontmost screen as a screen object.
+ *
+ * a3 = the screen object, which becomes the used screen.  Notes and errors
+ * as dofindscreen.
+ *
+ * @param used  d6.w: the offset of the used screen in the globals
+ * @param args  a2: the argument stack (passed as graphics base, #247)
+ * @param intui a6: intuition.library
+ */
 void BLITZ_ROUTINE dofstoscreen(WORD used BL_REG(d6), const UBYTE *args BL_REG(a2),
                                 struct IntuitionBase *intui BL_REG(a6))
 {
     findscreen(0, used, args, intui);           /* no title */
 }
 
+/**
+ * @brief FindScreen Screen#,Title$ - the first screen whose title or
+ * default title starts with Title$, as a screen object.
+ *
+ * a3 = the screen object, which becomes the used screen.  The screen is
+ * never closed by the library.
+ *
+ * BUG(orig) (#248): the object's old screen is freed (closed if the
+ * library opened it), (#247) with a2 = the argument stack as graphics
+ * base.  Errors: "Can't find Screen" (err12, in the
+ * normal code, its text in the error area).
+ *
+ * @param title d1: the title prefix
+ * @param used  d6.w: the offset of the used screen in the globals
+ * @param args  a2: the argument stack (passed as graphics base, see above)
+ * @param intui a6: intuition.library
+ */
 void BLITZ_ROUTINE dofindscreen(const UBYTE *title BL_REG(d1), WORD used BL_REG(d6),
                                 const UBYTE *args BL_REG(a2),
                                 struct IntuitionBase *intui BL_REG(a6))
@@ -568,11 +750,30 @@ static ULONG loadscreen(struct scrobj *obj, const UBYTE *name)
     return BLITZ_ALIBJSR(TOK_ilbmbitmap, r);
 }
 
+/**
+ * @brief LoadScreen Screen#,Filename$ - load an ILBM into the screen's
+ * bitmap (ilbmifflib ilbmbitmap; its result is not checked here).
+ *
+ * Errors: "Uninitialized Screen" (loadscreenchk, debugger only).
+ *
+ * @param obj  a0: the screen object
+ * @param name d1: the file name
+ */
 void BLITZ_ROUTINE doloadscreen(struct scrobj *obj BL_REG(a0), const UBYTE *name BL_REG(d1))
 {
     loadscreen(obj, name);
 }
 
+/**
+ * @brief LoadScreen Screen#,Filename$,Palette# - load the file's palette
+ * (palettelib getpal2) and the ILBM into the screen's bitmap.
+ *
+ * Errors: "Uninitialized Screen" (loadscreenchk, debugger only).
+ *
+ * @param obj  a0: the screen object
+ * @param name d1: the file name
+ * @param pal  a1: the palette object
+ */
 void BLITZ_ROUTINE doloadscreen2(struct scrobj *obj BL_REG(a0), const UBYTE *name BL_REG(d1),
                                  ULONG pal BL_REG(a1))
 {
@@ -691,11 +892,37 @@ more:
     }
 }
 
+/**
+ * @brief ShowBitMap - show the used screen's own bitmap again.
+ *
+ * As doshowbitmap1 with the screen's BitMap.
+ *
+ * Errors: "Uninitialized Screen" (showbmchk0, debugger only).
+ *
+ * @param obj a1: the used screen object
+ * @param gfx a6: graphics.library
+ */
 void BLITZ_ROUTINE doshowbitmap0(struct scrobj *obj BL_REG(a1), struct GfxBase *gfx BL_REG(a6))
 {
     showbitmap((UBYTE *)&obj->screen->BitMap, obj, gfx);
 }
 
+/**
+ * @brief ShowBitMap BitMap# - show a bitmap in the used screen.
+ *
+ * V39+ (environlib ExecVersion): ChangeVPBitMap, the DBufInfo allocated
+ * once per object.  Before: the plane pointers into the BPLxPT moves of
+ * the screen's copper list or, for interlace, into the screen's BitMap +
+ * MakeVPort, then MrgCop/LoadView with interrupts off.  a3 = intuition.
+ *
+ * Errors: "Can't find CopIns!" (err13, in the normal code, before V39);
+ * debugger only (showbmchk): "Uninitialized Screen", "Uninitialized
+ * BitMap", "Screen and BitMap MUST be same size".
+ *
+ * @param bm  a0: the bitmap object
+ * @param obj a1: the used screen object
+ * @param gfx a6: graphics.library
+ */
 void BLITZ_ROUTINE doshowbitmap1(UBYTE *bm BL_REG(a0), struct scrobj *obj BL_REG(a1),
                                  struct GfxBase *gfx BL_REG(a6))
 {
@@ -733,7 +960,26 @@ static const ULONG *tagstart(const UBYTE *title, const ULONG *lens, ULONG *ifont
     return sp;
 }
 
-/* ScreenTags n,title$,taglist - copy the taglist (up to TAG_END) */
+/**
+ * @brief ScreenTags(Screen#,Title$,&TagList) - open a screen with a tag list.
+ *
+ * a3 = the screen object, which becomes the used screen; its old screen
+ * is freed first.  OpenScreenTagList (V36+) with SA_Title (a copy),
+ * SA_Font (the IntuiFont), SA_ErrorCode and the user tags, copied up to
+ * TAG_END; the screen gets "bLtZ" in UserData.
+ *
+ * BUG(orig) (#249): the tag list is copied without a limit into 32 longs.
+ * BUG(orig) (#247): the old screen is freed with a2 as graphics base.
+ *
+ * @param title d1: the title
+ * @param tags  d2: the tag list
+ * @param ifont a1: intuifontlib's TextAttr pointer
+ * @param used  d6.w: the offset of the used screen in the globals
+ * @param lens  a2: the argument stack, -4(a2) = the title's length
+ * @param intui a6: intuition.library
+ * @return d0: the screen, or the error code (SA_ErrorCode; -1 if none was
+ *         set, also before V36)
+ */
 ULONG BLITZ_ROUTINE doscreentags3(const UBYTE *title BL_REG(d1), const ULONG *tags BL_REG(d2),
                                   ULONG *ifont BL_REG(a1), WORD used BL_REG(d6),
                                   const ULONG *lens BL_REG(a2),
@@ -751,7 +997,20 @@ ULONG BLITZ_ROUTINE doscreentags3(const UBYTE *title BL_REG(d1), const ULONG *ta
     return duntags((struct scrobj *)blitz_string, intui);
 }
 
-/* ScreenTags n,title$[,tag,data...] - d7 = number of pairs (a2 stack) */
+/**
+ * @brief ScreenTags(Screen#,Title$,Tag,Data...) - open a screen with tags
+ * given as arguments.
+ *
+ * As doscreentags3, the tag/data pairs from the argument stack.
+ *
+ * @param n     d7.w: the number of tag/data pairs on the a2 stack
+ * @param title d1: the title
+ * @param ifont a1: intuifontlib's TextAttr pointer
+ * @param used  d6.w: the offset of the used screen in the globals
+ * @param lens  a2: the argument stack: the title's length, then the pairs
+ * @param intui a6: intuition.library
+ * @return d0: the screen, or the error code (-1 if none was set)
+ */
 ULONG BLITZ_ROUTINE doscreentags(UWORD n BL_REG(d7), const UBYTE *title BL_REG(d1),
                                  ULONG *ifont BL_REG(a1), WORD used BL_REG(d6),
                                  const ULONG *lens BL_REG(a2),
@@ -769,6 +1028,11 @@ ULONG BLITZ_ROUTINE doscreentags(UWORD n BL_REG(d7), const UBYTE *title BL_REG(d
     return duntags((struct scrobj *)blitz_string, intui);
 }
 
+/**
+ * @brief ScreenTags(Screen#,Title$) - as doscreentags without user tags.
+ *
+ * @return d0: the screen, or the error code (-1 if none was set)
+ */
 ULONG BLITZ_ROUTINE doscreentags2(const UBYTE *title BL_REG(d1), ULONG *ifont BL_REG(a1),
                                   WORD used BL_REG(d6), const ULONG *lens BL_REG(a2),
                                   struct IntuitionBase *intui BL_REG(a6))
