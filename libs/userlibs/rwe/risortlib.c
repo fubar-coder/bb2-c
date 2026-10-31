@@ -272,7 +272,7 @@ doswap:
  * @return d0: BB_TRUE when done, BB_FALSE on failure
  */
 static BB_BOOL BLITZ_ROUTINE stringlistsort2_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
-                                             const char *cmpstr BL_REG(a1))
+                                               const char *cmpstr BL_REG(a1))
 {
     return dosort(list, size, 0, FIRSTITEM, cmpstr);
 }
@@ -287,7 +287,7 @@ static BB_BOOL BLITZ_ROUTINE stringlistsort2_c(UBYTE *list BL_REG(d0), UWORD siz
  * @return d0: BB_TRUE when done, BB_FALSE on failure
  */
 static BB_BOOL BLITZ_ROUTINE stringlistsort_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
-                                            UWORD off BL_REG(d2), const char *cmpstr BL_REG(a1))
+                                              UWORD off BL_REG(d2), const char *cmpstr BL_REG(a1))
 {
     return dosort(list, size, (WORD)off, FIRSTITEM, cmpstr);
 }
@@ -301,7 +301,7 @@ static BB_BOOL BLITZ_ROUTINE stringlistsort_c(UBYTE *list BL_REG(d0), UWORD size
  * @return d0: BB_TRUE when done, BB_FALSE on failure
  */
 static BB_BOOL BLITZ_ROUTINE stringlistsortitem2_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
-                                                 const char *cmpstr BL_REG(a1))
+                                                   const char *cmpstr BL_REG(a1))
 {
     return dosort(list, size, 0, CURRITEM, cmpstr);
 }
@@ -316,7 +316,7 @@ static BB_BOOL BLITZ_ROUTINE stringlistsortitem2_c(UBYTE *list BL_REG(d0), UWORD
  * @return d0: BB_TRUE when done, BB_FALSE on failure
  */
 static BB_BOOL BLITZ_ROUTINE stringlistsortitem_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
-                                                UWORD off BL_REG(d2), const char *cmpstr BL_REG(a1))
+                                                  UWORD off BL_REG(d2), const char *cmpstr BL_REG(a1))
 {
     return dosort(list, size, (WORD)off, CURRITEM, cmpstr);
 }
