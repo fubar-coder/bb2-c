@@ -32,6 +32,7 @@
  * the number back).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 
 /* entry points (thunks, defined below) */
 void dopointer(void), dopointer2(void), domousearea(void);
@@ -320,15 +321,15 @@ BLITZ_ERRCHK_MESSAGE(mess6, "Sprite Channel Unavailable");
  * @param chan d1: the sprite channel.
  * @param slice a2: the used slice; a3 = the sprite.
  */
-static void BLITZ_ERRCHK sspchk_c(WORD chan BL_REG(d1), const UBYTE *slice BL_REG(a2))
+static void BLITZ_ERRCHK sspchk_c(WORD chan BL_REG(d1), const struct bb_slice *slice BL_REG(a2))
 {
-    const UBYTE *spr = blitz_string;
+    const struct bb_sprite *spr = (const struct bb_sprite *)blitz_string;
 
-    if (!*(const ULONG *)spr)
+    if (!spr->data)
         BLITZ_RUNERR(mess4);
-    else if (!*(const UWORD *)slice)
+    else if (!slice->y)
         BLITZ_RUNERR(mess5);
-    else if ((UWORD)(chan + *(const UWORD *)(spr + 6)) > *(const UWORD *)(slice + 6))
+    else if ((UWORD)(chan + spr->count) > slice->sprites)
         BLITZ_RUNERR(mess6);
 }
 BLITZ_ERRCHK_THUNK(sspchk, sspchk_c, "d0-d1/a0-a1");
