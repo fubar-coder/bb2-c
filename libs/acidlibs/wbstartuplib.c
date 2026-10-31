@@ -68,14 +68,17 @@ static struct Message *wbMsg;
 static UWORD inQuote;
 static UBYTE cliString[256];
 
-/* only used with the debugger: after `errors` */
-static const char err1[] BLITZ_ERRCHK = "Can't read args!";
+/* AddArg's message in the normal code (fixed, #305: in the original it
+   lies after `errors`, in the error check area); errMsg2 is unused (its
+   check is commented out in the original) */
+static const char err1[] = "Can't read args!";
 static const char errMsg2[] BLITZ_ERRCHK = "Missing closing quote in argument string.";
 
 /* AddArg - allocate a new argument (text, thisLock) at the end of the
-   list.  DIFF (#305): without memory the original jumps to `err` (runtime
-   error, in the error check area: dangling without debugger); here the
-   runtime error is raised and NULL returned, the caller stops. */
+   list.  Fixed (#305): without memory the original jumps to `err`
+   (runtime error, in the error check area with its message: dangling
+   without debugger); here the runtime error is raised in the normal code
+   with its message and NULL returned, the caller stops. */
 static struct arg *addarg(UBYTE *text)
 {
     struct arg *a = AllocMem(DATSIZE, MEMF_PUBLIC | MEMF_CLEAR);
@@ -131,7 +134,7 @@ static UBYTE *getcliarg(UBYTE **pp, UWORD *len)
  * the program itself.  Keeps d1-d7/a1-a6.
  *
  * Errors: no memory for an argument node raises "Can't read args!" (see
- * addarg, DIFF (#305)).
+ * addarg, fixed (#305)).
  *
  * BUG(orig) (#306, #307): dos.library is never closed, the old current
  * directory is not restored.  BUG(orig) (#308): no length check of the CLI

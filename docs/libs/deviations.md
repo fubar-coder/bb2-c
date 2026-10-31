@@ -55,7 +55,7 @@ intended deviations (kind **F**), each with its issue.
 | fontlib messages (fontlib.c:45) | err1-err3 (Can't Open Font, Uninitialized BitMap/Font) trap in normal code, their messages are in the error check area (without debugger d0 behind the lib) | messages in normal code | **F** | #955: the same runtime errors with the debugger; without it TRAP #0 with the right message (test `fontlib-messages-errarea`) |
 | fontlib calcoff (fontlib.c:50) | after a trap (no bitmap/font) it runs into the next trap | draws nothing; unreferenced check `bitmapchk` missing | **K** | only with a returning trap |
 | inputoutputlib defin single character (inputoutputlib.c:45, :233) | `BRA err1` into the error check area (without debugger: jump behind the lib) | trap and message in normal code | **K** | without debugger: runtime error instead of jump into nowhere (observable only in this error case). The jump would be technically possible (cf. audiolib, screenslib, shapeslib) |
-| wbstartuplib AddArg (wbstartuplib.c:74) | without memory, jump to `err` in the error check area | runtime error, NULL, caller aborts | **K** | only without memory |
+| wbstartuplib AddArg (wbstartuplib.c:78) | without memory, jump to `err` in the error check area, its message there too | runtime error with its message in normal code, NULL, caller aborts | **F** | #305 (the trap moved first as a silent correction, now also its message); only without memory at the start of the program, before any program code: no test (no handler of the program can see d0) |
 | linklistlib SortList (linklistlib.c:35) | destroys a3 and d6 | a3 unchanged | **K** | statement, a3 is not read afterwards. Not observable |
 
 ## 3. Command libraries
@@ -205,7 +205,7 @@ binary in acidlibs, followed on 2026-10-29.
   error cases, with overflows or corrupted data.
 * **K – silent corrections (existing):** traps in normal code instead of a jump
   into the cut-off error check area (inputoutputlib, fileiolib,
-  palettelib, windowslib, brexxlib, wbstartuplib), return instead of crash
+  palettelib, windowslib, brexxlib), return instead of crash
   or continuing error chain or running into the message text (arexxlib,
   memlib err1/locfree, runerrlib, fontlib, palettelib, seriallib noser,
   utillib CreateMsgPort), preserved a3 (linklistlib, medlib, seriallib,
