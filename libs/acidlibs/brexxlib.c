@@ -311,7 +311,7 @@ static void clearie(void)
    Returns the d0 the original leaves (see ClickButton). */
 static ULONG addtape(void)
 {
-    struct InputEvent *n, **a3;
+    struct InputEvent *n, **link;
 
     if (!tapeadd) {
         mode = 0x8000;
@@ -319,10 +319,10 @@ static ULONG addtape(void)
     }
     n = globalloc(IESIZE);
     copyw((UWORD *)n, (const UWORD *)&dumevent, IESIZE / 2);
-    a3 = &tapeadd->first;               /* find where in the tape */
-    while (*a3)
-        a3 = &(*a3)->ie_NextEvent;
-    *a3 = n;
+    link = &tapeadd->first;             /* find where in the tape */
+    while (*link)
+        link = &(*link)->ie_NextEvent;
+    *link = n;
     n->ie_NextEvent = 0;
     mode = 0;
     if (trap_mode)
@@ -365,18 +365,18 @@ BLITZ_THUNK(dotapemode, dotapemode_c, "d0-d1/a0-a1");
 /* free the macro key d0 = rawkey, d1 = qualifier (the first match) */
 static void freemacrokey(UBYTE key, UBYTE qual)
 {
-    struct mkey *a0, *a1 = (struct mkey *)&mkeys;
+    struct mkey *prev, *cur = (struct mkey *)&mkeys;
 
     for (;;) {
-        if (!a1->next)
+        if (!cur->next)
             return;
-        a0 = a1;
-        a1 = a1->next;
-        if (a1->rawkey == key && a1->qual == qual)
+        prev = cur;
+        cur = cur->next;
+        if (cur->rawkey == key && cur->qual == qual)
             break;
     }
-    a0->next = a1->next;                        /* fix link */
-    globfree(a1, 10);                           /* free it! */
+    prev->next = cur->next;                     /* fix link */
+    globfree(cur, 10);                          /* free it! */
 }
 
 static void BLITZ_ROUTINE dofreemacrokey_c(ULONG key BL_REG(d0), ULONG qual BL_REG(d1))
@@ -501,29 +501,29 @@ static void playbackoff(void)
 }
 
 /* start playing tape t (also from the handler: macro keys) */
-static void playback3(struct tape *t)
+static void playback3(struct tape *tape)
 {
-    lastrec = (struct InputEvent *)t;           /* the tape's link = node 0 */
-    lastlink = t->first;
-    playval[0] = t->secs;
-    playval[1] = t->micros;
+    lastrec = (struct InputEvent *)tape;        /* the tape's link = node 0 */
+    lastlink = tape->first;
+    playval[0] = tape->secs;
+    playval[1] = tape->micros;
     dumevent.ie_Class = IECLASS_NULL;
     mode = 0x8002;
 }
 
 /* freetape: the events of tape a3 */
-static void freetape_(struct tape *t)
+static void freetape_(struct tape *tape)
 {
-    struct InputEvent *a2, *a1;
+    struct InputEvent *ev, *gone;
 
     playbackoff();                              /* just in case..... */
     recordoff();
-    a2 = t->first;
-    t->first = 0;
-    while (a2) {
-        a1 = a2;
-        a2 = a2->ie_NextEvent;
-        globfree(a1, IESIZE);
+    ev = tape->first;
+    tape->first = 0;
+    while (ev) {
+        gone = ev;
+        ev = ev->ie_NextEvent;
+        globfree(gone, IESIZE);
     }
 }
 
@@ -542,12 +542,12 @@ BLITZ_THUNK(dorecord, dorecord_c, "d0-d1/a0-a1");
 /* Record Tape#: a3 = tape */
 static void BLITZ_ROUTINE dorecord2_c(void)
 {
-    struct tape *t = (struct tape *)blitz_string;
+    struct tape *tape = (struct tape *)blitz_string;
 
     recordoff();                                /* any other recording */
-    freetape_(t);
-    firsta3 = t;
-    lastrec = (struct InputEvent *)t;
+    freetape_(tape);
+    firsta3 = tape;
+    lastrec = (struct InputEvent *)tape;
     dumevent.ie_Class = IECLASS_NULL;
     mode = 0x8001;
 }
@@ -560,13 +560,13 @@ static void BLITZ_ROUTINE doplayback_c(void)
 BLITZ_THUNK(doplayback, doplayback_c, "d0-d1/a0-a1");
 
 /* dopb: play tape t if it has events; sig = signal at the end */
-static void dopb(struct tape *t, UWORD sig)
+static void dopb(struct tape *tape, UWORD sig)
 {
-    if (!t->first)
+    if (!tape->first)
         return;
     playbackoff();
     sigit = sig;
-    playback3(t);
+    playback3(tape);
 }
 
 static void BLITZ_ROUTINE doplayback2_c(void)
@@ -597,19 +597,19 @@ const char mess1[] = "Can't Open File";
 /* SaveTape: a3 = tape, d1 = file name, a6 = dos */
 static void BLITZ_ROUTINE dosavetape_c(const char *name BL_REG(d1), struct DosLibrary *dos BL_REG(a6))
 {
-    struct tape *t = (struct tape *)blitz_string;
-    struct InputEvent *a2;
+    struct tape *tape = (struct tape *)blitz_string;
+    struct InputEvent *ev;
     BPTR fh;
 
-    if (!t->first)
+    if (!tape->first)
         return;
     dosbase = dos;
     fh = Open((CONST_STRPTR)name, MODE_NEWFILE);
     if (!fh)
         BLITZ_RUNERR(mess1);
-    Write(fh, &t->secs, 8);
-    for (a2 = t->first; a2; a2 = a2->ie_NextEvent)
-        Write(fh, (UBYTE *)a2 + 4, IESIZE - 4);
+    Write(fh, &tape->secs, 8);
+    for (ev = tape->first; ev; ev = ev->ie_NextEvent)
+        Write(fh, (UBYTE *)ev + 4, IESIZE - 4);
     Close(fh);
 }
 BLITZ_THUNK(dosavetape, dosavetape_c, "d0-d1/a0-a1");
@@ -617,23 +617,23 @@ BLITZ_THUNK(dosavetape, dosavetape_c, "d0-d1/a0-a1");
 /* LoadTape: a3 = tape, d1 = file name, a6 = dos */
 static void BLITZ_ROUTINE doloadtape_c(const char *name BL_REG(d1), struct DosLibrary *dos BL_REG(a6))
 {
-    struct tape *t = (struct tape *)blitz_string;
-    struct InputEvent **a3 = &t->first;
+    struct tape *tape = (struct tape *)blitz_string;
+    struct InputEvent **link = &tape->first;
     BPTR fh;
 
-    freetape_(t);
+    freetape_(tape);
     dosbase = dos;
     fh = Open((CONST_STRPTR)name, MODE_OLDFILE);
     if (!fh)
         BLITZ_RUNERR(mess1);
-    Read(fh, &t->secs, 8);
+    Read(fh, &tape->secs, 8);
     while (Read(fh, dumtape, 18) == 18) {
         struct InputEvent *n = globalloc(IESIZE);
 
         copyw((UWORD *)n + 2, dumtape, 9);
         n->ie_NextEvent = 0;
-        *a3 = n;
-        a3 = &n->ie_NextEvent;
+        *link = n;
+        link = &n->ie_NextEvent;
     }
     Close(fh);
 }
@@ -643,14 +643,14 @@ BLITZ_THUNK(doloadtape, doloadtape_c, "d0-d1/a0-a1");
 
 static LONG openinput(void)
 {
-    UWORD *a0 = (UWORD *)&io_request;
+    UWORD *word = (UWORD *)&io_request;
     struct MsgPort *port = &io_request.port;
     struct List *l = &port->mp_MsgList;
     UWORD n = sizeof(io_request) / 2;
     struct Task *task;
 
     do
-        *a0++ = 0;
+        *word++ = 0;
     while (--n);
     io_request.io.io_Message.mn_Node.ln_Type = NT_MESSAGE;
     io_request.io.io_Message.mn_Length = sizeof(struct IOStdReq);
@@ -707,26 +707,26 @@ static int timebefore(ULONG s1, ULONG m1, ULONG s0, ULONG m0)
     return s1 < s0 || (s1 == s0 && m1 < m0);
 }
 
-static struct InputEvent *my_handler(struct InputEvent *a0 BL_REG(a0))
+static struct InputEvent *my_handler(struct InputEvent *events BL_REG(a0))
 {
-    UWORD d0;
+    UWORD curmode;
 
-    if (!a0)
-        return a0;
-    d0 = mode;
-    if (d0 == 0)
+    if (!events)
+        return events;
+    curmode = mode;
+    if (curmode == 0)
         goto isitmacro;
-    if ((WORD)d0 < 0) {
+    if ((WORD)curmode < 0) {
         /* execute dumevent - get timeval */
-        mode = d0 & 0x7fff;
-        firstval[0] = a0->ie_TimeStamp.tv_secs;
-        firstval[1] = a0->ie_TimeStamp.tv_micro;
-        dumevent.ie_NextEvent = a0;
+        mode = curmode & 0x7fff;
+        firstval[0] = events->ie_TimeStamp.tv_secs;
+        firstval[1] = events->ie_TimeStamp.tv_micro;
+        dumevent.ie_NextEvent = events;
         return &dumevent;
     }
-    if (d0 == 1) {
+    if (curmode == 1) {
         /* record */
-        struct InputEvent *e = a0;
+        struct InputEvent *e = events;
 
         do {
             UBYTE c = e->ie_Class;
@@ -741,30 +741,32 @@ static struct InputEvent *my_handler(struct InputEvent *a0 BL_REG(a0))
             }
             e = e->ie_NextEvent;
         } while (e);
-        return a0;
+        return events;
     }
-    if (d0 == 2) {
+    if (curmode == 2) {
         /* playback */
-        struct InputEvent *a1, *a2, *first;
+        struct InputEvent *ev, *lastplayed, *first;
 
         lastrec->ie_NextEvent = lastlink;
         if (!lastlink) {
             mode = 0;
             if (sigit)
                 Signal(mytask, mysig);
-            return a0;
+            return events;
         }
-        a1 = lastlink;
-        a2 = a0;
+        ev = lastlink;
+        lastplayed = events;
         do {
             /* is it time to play this one back yet? */
             if (!qplay) {
-                ULONG s = a1->ie_TimeStamp.tv_secs, m = a1->ie_TimeStamp.tv_micro;
+                ULONG s = ev->ie_TimeStamp.tv_secs,
+                      m = ev->ie_TimeStamp.tv_micro;
 
                 if (s | m) {
                     ULONG ps = s - playval[0] - (m < playval[1]);   /* SUB/SUBX */
                     ULONG pm = m - playval[1];
-                    ULONG is = a0->ie_TimeStamp.tv_secs, im = a0->ie_TimeStamp.tv_micro;
+                    ULONG is = events->ie_TimeStamp.tv_secs,
+                          im = events->ie_TimeStamp.tv_micro;
                     ULONG ds = is - firstval[0] - (im < firstval[1]);
                     ULONG dm = im - firstval[1];
 
@@ -772,30 +774,30 @@ static struct InputEvent *my_handler(struct InputEvent *a0 BL_REG(a0))
                         break;                                  /* not yet */
                 }
             }
-            a2 = a1;                                            /* yes now */
-            a1 = a1->ie_NextEvent;
-        } while (a1);
-        if (a2 == a0)
-            return a0;
+            lastplayed = ev;                                    /* yes now */
+            ev = ev->ie_NextEvent;
+        } while (ev);
+        if (lastplayed == events)
+            return events;
         first = lastrec->ie_NextEvent;                          /* where we start from */
-        lastrec = a2;
-        lastlink = a2->ie_NextEvent;
-        a2->ie_NextEvent = a0;
+        lastrec = lastplayed;
+        lastlink = lastplayed->ie_NextEvent;
+        lastplayed->ie_NextEvent = events;
         return first;
     }
-    return a0;                                                  /* notplay */
+    return events;                                              /* notplay */
 
 isitmacro:
-    if (a0->ie_Class == IECLASS_RAWKEY) {
+    if (events->ie_Class == IECLASS_RAWKEY) {
         /* key hit, check if it's a macro key! */
-        UBYTE key = (UBYTE)a0->ie_Code, qual = (UBYTE)a0->ie_Qualifier;
-        struct mkey *a1 = (struct mkey *)&mkeys;
+        UBYTE key = (UBYTE)events->ie_Code, qual = (UBYTE)events->ie_Qualifier;
+        struct mkey *ev = (struct mkey *)&mkeys;
 
-        while ((a1 = a1->next) != 0)
-            if (a1->rawkey == key && a1->qual == qual) {
-                playback3(a1->tape);                            /* was 2 */
+        while ((ev = ev->next) != 0)
+            if (ev->rawkey == key && ev->qual == qual) {
+                playback3(ev->tape);                            /* was 2 */
                 break;
             }
     }
-    return a0;
+    return events;
 }
