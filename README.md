@@ -251,7 +251,11 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   (`tools/lib/amiga_emulation`; the wait does not count into the
   session's timeout, and every emulator test has `EMULATION_QUEUE_WAIT`
   seconds (default 7200, `cmake/emulation-queue.cmake`) more in its
-  ctest TIMEOUT for it). `corpus_cd`: all 724 sources of the CD
+  ctest TIMEOUT for it). A session with a slot starts from a savestate
+  of the booted system instead of booting (snapshot mode, about 13 s
+  less per session; the first session per slot and configuration boots
+  and saves it); `AMIGA_EMULATION_SNAPSHOT=0` turns it off
+  (`amiga-emulation/README.md`, "Snapshot mode"). `corpus_cd`: all 724 sources of the CD
   compiled with blitz2-c (like bb2's bb2corpus: `.xtra` of the sources,
   assigns to CD directories, directory of the relative INCLUDEs) and
   compared with `tests/data/blitz2-cd.tsv` (result, error line and

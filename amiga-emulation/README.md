@@ -58,6 +58,54 @@ runners cannot block each other). A runner thus runs as many sessions at
 once as it gets slots, at least one, and its sessions may run one after
 the other.
 
+## Snapshot mode
+
+A session with a slot does not boot: it starts Amiberry from a savestate
+of the booted system, taken when the system waits for its job (about
+1.2 s to the script instead of 14 s; `tools/lib/amiga_emulation`,
+`amiga_emulation.h`). `AMIGA_EMULATION_SNAPSHOT=0` in the environment
+(or `amiga_run --cold`) turns it off: every session boots as before
+(so does `AMIGA_EMULATION_MAX=0`: without a limit there are no slots).
+
+* **Per-slot directories** `slot-K/` next to the lock files: Amiberry
+  keeps the host paths of the mounted directories in the savestate and
+  uses those on a restore, so a session mounts fixed paths of its slot.
+  On a restore they are links to the session's own directories:
+  `slot-K/test` to its `TEST:`, `slot-K/mnt-I` to its mount I (also the
+  read-only ones). An extra volume `SNAP:` (`slot-K/ctl`) holds the waiter
+  and the job. At the end of the session the links and `SNAP:` are
+  removed; only the snapshots `slot-K/snap-KEY.uss` stay (about 0.6 MB
+  on the A1200, 80 KB on the A500), the 8 most recently used per slot.
+* **The first session** of a configuration in a slot boots cold, with
+  real empty directories at those paths (Amiberry resolves a link when it
+  mounts, the state would keep the link's target): `TEST:run.script` is a
+  fixed prologue (AmigaDOS 1.3 syntax) that writes `SNAP:ready` and runs
+  `SNAP:waitjob`, a 68000 program (`tools/lib/amiga_emulation/waitjob.s`,
+  dos.library V0, polls `SNAP:job.script` every 40 ms). The library saves
+  the state then, ends that Amiberry and restores the new state like
+  every later session. So the first session per slot and configuration
+  takes a cold boot plus about 2 s; with 5 slots up to 5 sessions per
+  configuration boot.
+* **The job** (`SNAP:job.script`) writes `SNAP:started`, sets the clock
+  (`SetClock LOAD`; on the A500 machines a `DATE` line with the host's
+  time, `SetClock LOAD` takes 1.8 s there) and executes the test's
+  script. During the session `TEST:run.script` is the prologue; at the
+  end it is the test's script again, as without snapshot.
+* **The key** of a snapshot is a hash of the configuration (with the
+  slot's paths, so it does not depend on the session's directories), the
+  prologue, the waiter and the identity (device, inode, size,
+  modification time) of the Kickstart ROM, the hardfile and the Amiberry
+  program: a new hardfile or Amiberry gets new snapshots by itself.
+* **A restore that fails** (no `SNAP:started` within 3 s, or Amiberry
+  ends) is dropped, the state file too, and the session boots cold
+  without snapshot. A test mount called `SNAP` also means a cold boot.
+* `snapshot.log` in the work directory tells what the session did
+  (restore, cold boot and save, a failed restore) with the seconds since
+  its start.
+
+Removing `slot-K/snap-*.uss` (while no tests run) is always safe: the
+next session per slot boots and saves again.
+
 ## Conditions for the hardfiles
 
 * **`user-startup`** executes `TEST:run.script` if `TEST:` is mounted,
