@@ -24,8 +24,15 @@ the corpus and the libraries' bug-orig tests. No split changed a
 behaviour; where the original depends on a reused register (asllib's
 empty font name returns 0, trackerlib's song end after a break
 BUG(orig) (#292), the upper words kept by word loads), the split keeps
-it and says so in a comment. Open: the userlibs/rwe part and the rwe
-statics below.
+it and says so in a comment. The userlibs/rwe part is done as well
+(2026-10-31, "rwe: split the multi-use variables of X.c", and the rwe
+statics); the code changed in rishapeslib, ritrackerlib, richunkylib,
+rievallib, ristcdecrunchlib and ristonecrackerlib. Left as they are
+because the original depends on them: rievallib's `aux` in ev_loop
+(read after a register in `{}`) and `acc` in ctp_loop, the riseriallib
+openserial/writeser/readser chain (BUG(orig) #797, #801), rifxlib
+asmderez's value after yloop (BUG(orig) #672), riwbspritelib's
+`wd.temppointer` (compared by libs_emulator).
 
 ## Kept in stage 1, renamed in stage 2
 
