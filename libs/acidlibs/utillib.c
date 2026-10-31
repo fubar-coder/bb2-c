@@ -89,7 +89,12 @@ struct portnode {
     struct MsgPort port;                                /* +8, $22 bytes */
 };
 #define PORTBLOCK 0x2a
-static struct portnode *PortListStart[2];
+static_assert(sizeof(struct portnode) == PORTBLOCK);
+
+/* the head: next and prev like a node (its prev is never read) */
+static struct {
+    struct portnode *next, *prev;
+} PortListStart;
 
 static const char NoMem[] = "Failed to allocate memory for Port";
 static const char NoSig[] = "Failed to allocate signal for Port";
@@ -133,7 +138,7 @@ ULONG BLITZ_ROUTINE _dowait(void)
 /* FindListEnd - the last node (or the head) */
 static struct portnode *findlistend(void)
 {
-    struct portnode *next = (struct portnode *)PortListStart, *node;
+    struct portnode *next = (struct portnode *)&PortListStart, *node;
 
     do {
         node = next;
@@ -247,7 +252,7 @@ static void BLITZ_ROUTINE closeroutine_c(void)
 {
     struct portnode *n;
 
-    while ((n = PortListStart[0]) != NULL)
+    while ((n = PortListStart.next) != NULL)
         deletemsgport_c(&n->port);
 }
 BLITZ_THUNK(CloseRoutine, closeroutine_c, "d1/a1");
