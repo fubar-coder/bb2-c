@@ -70,46 +70,46 @@ BLITZ_LIBFIN();
 static void BLITZ_ROUTINE killinvader_c(UBYTE *sprad BL_REG(d0), UWORD x BL_REG(d1),
                                         UWORD y BL_REG(d2), UWORD offset BL_REG(d3))
 {
-    UBYTE *a0, *a1, *a2, *a3;
-    UWORD d1;
+    UBYTE *img, *img48, *imgoff, *img48off;     /* a0-a3; img first the entry */
+    UWORD rowoff;                               /* d1 */
     int i;
 
-    a0 = sprad + (WORD)(UWORD)((x >> 2) << 4);
-    a1 = *(UBYTE **)(a0 + 3 * 16);
-    a0 = *(UBYTE **)a0;
-    d1 = (UWORD)((x & 3) << 1) + (UWORD)((ULONG)y * (INVADER_Y_DISP * 16));
-    a0 += (WORD)d1;
-    a1 += (WORD)d1;
-    a2 = a0 + (WORD)offset;
-    a3 = a1 + (WORD)offset;
+    img = sprad + (WORD)(UWORD)((x >> 2) << 4);
+    img48 = *(UBYTE **)(img + 3 * 16);
+    img = *(UBYTE **)img;
+    rowoff = (UWORD)((x & 3) << 1) + (UWORD)((ULONG)y * (INVADER_Y_DISP * 16));
+    img += (WORD)rowoff;
+    img48 += (WORD)rowoff;
+    imgoff = img + (WORD)offset;
+    img48off = img48 + (WORD)offset;
     for (i = 0; i < INVADER_HEIGHT; i++) {
-        WORDAT(a0) = 0;
-        WORDAT(a0 + 8) = 0;
-        a0 += 16;
-        WORDAT(a1) = 0;
-        WORDAT(a1 + 8) = 0;
-        a1 += 16;
-        WORDAT(a2) = 0;
-        WORDAT(a2 + 8) = 0;
-        a2 += 16;
-        WORDAT(a3) = 0;
-        WORDAT(a3 + 8) = 0;
-        a3 += 16;
+        WORDAT(img) = 0;
+        WORDAT(img + 8) = 0;
+        img += 16;
+        WORDAT(img48) = 0;
+        WORDAT(img48 + 8) = 0;
+        img48 += 16;
+        WORDAT(imgoff) = 0;
+        WORDAT(imgoff + 8) = 0;
+        imgoff += 16;
+        WORDAT(img48off) = 0;
+        WORDAT(img48off + 8) = 0;
+        img48off += 16;
     }
 }
 
-static void BLITZ_ROUTINE drawstarfield_c(UWORD *t BL_REG(d0), UBYTE *plane BL_REG(d1))
+static void BLITZ_ROUTINE drawstarfield_c(UWORD *table BL_REG(d0), UBYTE *plane BL_REG(d1))
 {
     WORD speed;
 
-    while ((speed = (WORD)*t++) >= 0) {
-        UBYTE bit = 1 << (*t++ & 7);
-        UWORD o = *t;
+    while ((speed = (WORD)*table++) >= 0) {
+        UBYTE bit = 1 << (*table++ & 7);
+        UWORD o = *table;
         plane[(WORD)o] &= ~bit;
         o += speed;
         if (!((WORD)o < PLAYFIELD_Y_END * 40))
             o -= PLAYFIELD_HEIGHT * 40;
-        *t++ = o;
+        *table++ = o;
         plane[(WORD)o] |= bit;
     }
 }
