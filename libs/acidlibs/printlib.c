@@ -274,7 +274,12 @@ static int ezchar(struct ez *z)
 static ULONG prtype1(const UBYTE *numtext, ULONG len)
 {
     struct ez z;
-    UWORD nchars, point, lead, trail, count, n;
+    UWORD nchars, point, trail, n;
+    UWORD ldigits;                              /* d3: the leading digits */
+    UWORD lpad;                                 /* d3: leading spaces/zeros to write */
+    UWORD pos;                                  /* d5: the position counter */
+    UWORD over;                                 /* d5: the overflow */
+    UWORD count;                                /* d5: the lead/trail loop counter */
     ULONG last = 0;                             /* after the last copied digit */
     UBYTE *out;
     const UBYTE *p;
@@ -290,23 +295,23 @@ static ULONG prtype1(const UBYTE *numtext, ULONG len)
         numtext++;
         nchars--;
     }
-    lead = 0;                                   /* leading digits */
+    ldigits = 0;                                /* leading digits */
     trail = 0;                                  /* trailing digits */
-    count = 0;                                  /* pos counter */
+    pos = 0;                                    /* pos counter */
     n = nchars - 1;
     p = numtext;
     do {
         if (*p == '.')
-            point = count;
+            point = pos;
         else {
-            lead++;
+            ldigits++;
             if ((WORD)point >= 0) {
-                lead--;
+                ldigits--;
                 trail++;
             }
         }
         p++;
-        count++;
+        pos++;
     } while (--n != 0xffff);                    /* DBF d6,'loop */
 
     /* OK, now we copy to 'chars' buffer. */
@@ -315,15 +320,14 @@ static ULONG prtype1(const UBYTE *numtext, ULONG len)
     z.left = pl.formlen;
 
     /* Leading chars first.... */
-    count = pl.formlead - lead;
-    if ((WORD)count < 0) {                      /* Overflow! */
+    lpad = pl.formlead - ldigits;
+    if ((WORD)lpad < 0) {                       /* Overflow! */
         *out++ = '?';
-        count = -count;
-        numtext += (WORD)count;                 /* ADD d5,a0 (sign extended) */
-        nchars -= count;
-        count = pl.formlead;
+        over = -lpad;
+        numtext += (WORD)over;                  /* ADD d5,a0 (sign extended) */
+        nchars -= over;
+        lpad = pl.formlead;
     }
-    lead = count;
     count = pl.formlead;
     if (count) {
         count--;
@@ -333,14 +337,14 @@ static ULONG prtype1(const UBYTE *numtext, ULONG len)
                 goto alldone_z;
             out = z.out;
             if (*z.form++ == '#') {
-                if ((WORD)--lead >= 0 || (WORD)--nchars < 0)
+                if ((WORD)--lpad >= 0 || (WORD)--nchars < 0)
                     *out++ = ' ';               /* 'putspc */
                 else {
                     *out++ = *numtext++;
                     last = (ULONG)out;
                 }
             } else {                            /* 'iszero */
-                if ((WORD)--lead >= 0)
+                if ((WORD)--lpad >= 0)
                     *out++ = '0';               /* 'putzero */
                 else if ((WORD)--nchars < 0)
                     *out++ = ' ';               /* -> 'putspc */
@@ -389,7 +393,7 @@ askip:
 alldone2:
     /* round up if the next digit is >= 5 (TST.l d3: the upper word of d3
        is always 0) */
-    if ((WORD)--nchars >= 0 && lead && *numtext >= '5') {
+    if ((WORD)--nchars >= 0 && lpad && *numtext >= '5') {
         UBYTE *q = (UBYTE *)last;               /* 0 if no digit was copied */
 
         for (;;) {                              /* 'sssl */
@@ -614,24 +618,27 @@ static ULONG pquick2(ULONG value)
    null terminated string; mode = FloatMode (<0 fixed point, 0 guess, >0
    exponent form).  Integer arithmetic only (no mathffp): 7 digits from
    the table of powers of ten, rounding with $80 below the mantissa. */
-static UBYTE *ffptoascii(ULONG num, UWORD mode)
+static UBYTE *ffptoascii(ULONG value, UWORD mode)
 {
     UBYTE *buf = FA_BUF1, *out, *start;
     UBYTE *ten;
     UBYTE b;
     WORD bexp;
-    UWORD edig, dexp;
+    UWORD dexp;
+    UWORD eabs;                                 /* d2: |exponent| for "E+nn" */
+    UWORD etens;                                /* d2: the exponent's tens digit */
+    ULONG mant;                                 /* d0: the mantissa being reduced */
     int i;
 
-    if (!(UBYTE)num)                            /* TST.b d0:BNE */
-        num = 65;                               /* MOVEQ #65,d0 */
+    if (!(UBYTE)value)                          /* TST.b d0:BNE */
+        value = 65;                             /* MOVEQ #65,d0 */
     buf[0] = '+';                               /* MOVE #$2b2e,0(a0) */
     buf[1] = '.';
-    b = (UBYTE)num;
+    b = (UBYTE)value;
     if (b & 0x80)
         buf[0] += 2;                            /* '-' */
     b = (UBYTE)(b + b) ^ 0x80;                  /* ADD.b d1,d1:EOR.b #$80 */
-    num = (num & ~0xffUL) | 0x80;               /* MOVE.b #$80,d0 */
+    mant = (value & ~0xffUL) | 0x80;            /* MOVE.b #$80,d0 */
     bexp = (WORD)(BYTE)b >> 1;                  /* EXT d1:ASR #1,d1 */
 
     /* find the power of ten <= the number: a3 -> entry, d3 = exponent+1 */
@@ -652,7 +659,7 @@ static UBYTE *ffptoascii(ULONG num, UWORD mode)
         if (bexp != (WORD)RDW(ten))
             goto next;
     }
-    if (num >= RDL(ten + 2))                    /* CMP.l 2(a3),d0:BCC */
+    if (mant >= RDL(ten + 2))                   /* CMP.l 2(a3),d0:BCC */
         goto found;
 next:
     ten += 6;
@@ -663,22 +670,22 @@ found:
     buf[11] = '+';
     buf[12] = '0';
     buf[13] = '0';
-    edig = dexp;
-    if ((WORD)edig < 0) {
-        edig = -edig;
+    eabs = dexp;
+    if ((WORD)eabs < 0) {
+        eabs = -eabs;
         buf[11] += 2;
     }
-    if (edig >= 10) {
+    if (eabs >= 10) {
         buf[12] += 1;
-        edig -= 10;
+        eabs -= 10;
     }
-    buf[13] |= (UBYTE)edig;
+    buf[13] |= (UBYTE)eabs;
 
     /* 7 digits: subtract the power of ten, shifted to the number's
        exponent, until it borrows */
     out = buf + 2;
-    if ((LONG)num >= 0 || !ten[5])              /* exact power: no rounding */
-        num &= ~0xffUL;
+    if ((LONG)mant >= 0 || !ten[5])             /* exact power: no rounding */
+        mant &= ~0xffUL;
     for (i = 0; i < 7; i++) {
         UWORD sh = bexp - RDW(ten);
         ULONG power = RDL(ten + 2);
@@ -689,14 +696,14 @@ found:
         sh &= 63;                               /* LSR.l d4,d5: count mod 64 */
         power = sh >= 32 ? 0 : power >> sh;
         for (;;) {                              /* SUB.l d5,d0:DBCS d4 */
-            borrow = num < power;
-            num -= power;
+            borrow = mant < power;
+            mant -= power;
             if (borrow || --count == 0xffff)
                 break;
         }
         if (!borrow)
             count &= 0xff00;                    /* CLR.b d4 */
-        num += power;
+        mant += power;
         *out++ = (UBYTE)-(UBYTE)((UBYTE)count - 9) | '0';
     }
     *out++ = '0';
@@ -771,10 +778,10 @@ sign:
     {
         ULONG q = bl_divu_w(dexp, 10);          /* MOVEQ #0,d2:MOVE d3,d2:DIVU */
 
-        edig = (UWORD)q;
-        if (edig)
-            *out++ = edig + '0';
-        dexp -= edig * 10;
+        etens = (UWORD)q;
+        if (etens)
+            *out++ = etens + '0';
+        dexp -= etens * 10;
         *out++ = dexp + '0';
     }
 term:
