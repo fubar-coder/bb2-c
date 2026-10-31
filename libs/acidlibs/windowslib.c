@@ -17,7 +17,8 @@
  * (!libfin{_toke,...,5,5}): the Blitz object "Window" (the name of the
  * first token), objects of 2^5 = 32 bytes:
  *   +0 struct Window *, +4.w/+6.w text cursor x/y, +8 pointer data,
- *   +12 its size, +16.w/+18.w super bitmap position.
+ *   +12 its size, +16.w/+18.w super bitmap position; here also +20/+24
+ *   the title copies (not in the original, fixed #318).
  * _use = WindowInput + WindowOutput, _free = CloseWindow.  Many entries
  * are Amiga mode only (code address + 1 in !subs).
  *
@@ -64,8 +65,7 @@
  *   - WindowTags without tags keeps the user tags of the last
  *     WindowTags (no TAG_DONE written) (#316); the tag pairs of
  *     WindowTags ...,Tag,Data... are copied without a limit into 32 longs
- *     (#317, only the &TagList form is fixed, see below).  Window titles
- *     (Window, WindowTags, WTitle) are allocated and never freed (#318).
+ *     (#317, only the &TagList form is fixed, see below).
  *   - Window with flag $80 (super bitmap) uses the bitmap of the last
  *     Window with BitMap#; the NewWindow is static, its BitMap stays. (#319)
  *   - The line editor (Edit$ in a window) and calcwidth: proportional
@@ -77,6 +77,13 @@
  *   TAG_MORE to the rest of it (AmiBlitz3 links the whole list with
  *   TAG_MORE; copying the short lists keeps them as before, also for
  *   #316).
+ * Fixed (intended deviation, #318): Window, WindowTags and WTitle copy
+ *   the titles (maxslib allocst) and never freed the copies in the
+ *   original.  Here the object keeps its copies (+20 window title, +24
+ *   screen title of WTitle): WTitle frees the old ones after
+ *   SetWindowTitles, CloseWindow (and a failed open) frees them.
+ *   AmiBlitz3 only frees the old window title in WTitle (read back from
+ *   the Window).
  * Fixed (intended deviation, #320): WMove/WSize waited in a loop until
  *   the window had exactly the new position/size, without an end if
  *   Intuition limits the values (size limits, screen edge; the checks
@@ -131,6 +138,8 @@ struct bwin {
     UWORD *ptrdata;             /* +8 pointer data */
     ULONG ptrsize;              /* +12 */
     WORD sbx, sby;              /* +16/+18 super bitmap position */
+    UBYTE *title;               /* +20 our copy of the window title (#318) */
+    UBYTE *stitle;              /* +24 our copy of WTitle's screen title */
 } BL_PACKED;
 static_assert(sizeof(struct bwin) <= 1 << 5);
 
@@ -760,6 +769,14 @@ static UBYTE *allocst(const UBYTE *s, ULONG len)
     struct bl_regs r = { .d0 = (ULONG)s, .d1 = len };
 
     return (UBYTE *)BLITZ_ALIBJSR(TOK_allocst, r);
+}
+
+/* maxslib: free a copy of allocst (0: nothing) */
+static void freest(UBYTE *s)
+{
+    struct bl_regs r = { .d0 = (ULONG)s };
+
+    BLITZ_ALIBJSR(TOK_freest, r);
 }
 
 /* rawkeylib: the character of a key (0 = none) */
@@ -2480,7 +2497,9 @@ void BLITZ_ROUTINE dowline(UWORD c BL_REG(d0), UWORD n BL_REG(d7), UBYTE *args B
  *
  * Errors (debugger only, wchk): "Uninitialized Window".
  *
- * BUG(orig) (#318): copies of both strings (allocst), never freed.
+ * Copies of both strings (allocst), kept in the object; the old copies
+ * are freed after SetWindowTitles.  Fixed (intended deviation, #318): the
+ * original never frees them.
  *
  * @param wt d0: the window title
  * @param st d1: the screen title
@@ -2499,6 +2518,10 @@ void BLITZ_ROUTINE dowtitle(const UBYTE *wt BL_REG(d0), const UBYTE *st BL_REG(d
     wtitle = allocst(wt, BL_POPL(sp));
     stitle = allocst(st, BL_POPL(sp));
     SetWindowTitles(win, (STRPTR)wtitle, (STRPTR)stitle);
+    freest(w->title);                           /* fixed, #318 */
+    freest(w->stitle);
+    w->title = wtitle;
+    w->stitle = stitle;
 }
 
 /* the most frames WMove/WSize wait for Intuition (fixed, #320) */
@@ -2885,7 +2908,8 @@ void BLITZ_ROUTINE _bitmaptowindow(struct bwin *w BL_REG(a0),
  *
  * Under Forbid: replies the messages of this window at the port, clears
  * pr_WindowPtr if it is this window, ClearMenuStrip, UserPort = 0 (the
- * port is shared), CloseWindow; then frees the events of this window.
+ * port is shared), CloseWindow; then frees the events of this window and
+ * the title copies of the object (fixed, #318: the original keeps them).
  * a3 = the window object (blitz_string); nothing happens if it is not
  * open.
  *
@@ -2919,6 +2943,9 @@ void BLITZ_ROUTINE freewindow(struct Library *intbase BL_REG(a6))
     CloseWindow(win);
     Permit();
     unlinkwin(win);
+    freest(w->title);                           /* fixed, #318 */
+    freest(w->stitle);
+    w->title = w->stitle = NULL;
 }
 
 /* the end of Window/WindowTags: our port, window number, cursor origin */
@@ -2980,9 +3007,11 @@ static void openwindow(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *t
     win = OpenWindow(nw);
     w->win = win;
     if (!win) {
+        freest(nw->Title);                      /* fixed, #318 */
         BLITZ_RUNERR(mess1);                    /* err1 */
         return;
     }
+    w->title = nw->Title;                       /* freed at the close (#318) */
     windowopened(w, win, num, intbase);
     blitz_string = (UBYTE *)w;                  /* MOVE.l (a7)+,a3 */
     dousewindow2();
@@ -3003,7 +3032,8 @@ static void openwindow(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *t
  *
  * Errors: OpenWindow fails -> "Couldn't Open Window" (err1).
  *
- * BUG(orig) (#318): the title is copied (allocst) and never freed.
+ * The title is copied (allocst) and freed when the window is closed
+ * (fixed, intended deviation, #318: the original never frees it).
  * BUG(orig) (#319): flag $80 uses the bitmap of the last Window with
  * BitMap#.
  *
@@ -3101,9 +3131,11 @@ static void opentags(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *tit
     win = OpenWindowTagList(NULL, &tags.flags);
     w->win = win;
     if (!win) {
+        freest(wtitle);                         /* fixed, #318 */
         BLITZ_RUNERR(mess1);                    /* err1 */
         return;
     }
+    w->title = wtitle;                          /* freed at the close (#318) */
     windowopened(w, win, num, intbase);
     blitz_string = (UBYTE *)w;
     dousewindow2();
@@ -3121,8 +3153,8 @@ static void opentags(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *tit
  * Errors: OpenWindowTagList fails -> "Couldn't Open Window" (err1).
  *
  * BUG(orig) (#316): without tags no TAG_DONE is written: the user tags of
- * the last WindowTags stay.  BUG(orig) (#318): the title copy is never
- * freed.
+ * the last WindowTags stay.  The title copy is freed when the window is
+ * closed (fixed, #318: the original never frees it).
  *
  * @param objoff d0: the object offset (window number << 5)
  * @param flags d1: the window flags
