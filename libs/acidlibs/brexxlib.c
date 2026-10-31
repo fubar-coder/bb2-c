@@ -217,8 +217,9 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 4);
 /* a tape object */
 struct tape {
     struct InputEvent *first;
-    ULONG secs, micros;                 /* start time (firstval of Record) */
+    struct timeval start;               /* start time (firstval of Record) */
 };
+static_assert(sizeof(struct tape) == 12);  /* of the 16 byte object */
 
 /* a macro key (10 bytes) */
 struct mkey {
@@ -226,6 +227,7 @@ struct mkey {
     struct tape *tape;
     UBYTE rawkey, qual;
 };
+static_assert(sizeof(struct mkey) == 10);
 
 #define IESIZE 22                       /* ief-ie */
 
@@ -233,9 +235,9 @@ static volatile UWORD mode;             /* 0, 1 record, 2 playback; bit 15 */
 static struct InputEvent *lastrec;      /* last node of the tape (record),
                                            node whose link is hijacked (play) */
 static struct InputEvent *lastlink;     /* its real link */
-static ULONG firstval[2];               /* time of the first event */
+static struct timeval firstval;          /* time of the first event */
 static struct tape *firsta3;            /* tape being recorded */
-static ULONG playval[2];                /* start time of the tape played */
+static struct timeval playval;           /* start time of the tape played */
 static struct tape *tapeadd;            /* tape for simple events */
 static UWORD trap_mode = 1;
 static UWORD qplay;
@@ -481,8 +483,8 @@ static void recordoff(void)
     waitlast();
     Forbid();
     if (mode == 1) {
-        firsta3->secs = firstval[0];
-        firsta3->micros = firstval[1];
+        firsta3->start.tv_secs = firstval.tv_secs;
+        firsta3->start.tv_micro = firstval.tv_micro;
         mode = 0;
     }
     Permit();
@@ -505,8 +507,8 @@ static void playback3(struct tape *tape)
 {
     lastrec = (struct InputEvent *)tape;        /* the tape's link = node 0 */
     lastlink = tape->first;
-    playval[0] = tape->secs;
-    playval[1] = tape->micros;
+    playval.tv_secs = tape->start.tv_secs;
+    playval.tv_micro = tape->start.tv_micro;
     dumevent.ie_Class = IECLASS_NULL;
     mode = 0x8002;
 }
@@ -607,7 +609,7 @@ static void BLITZ_ROUTINE dosavetape_c(const char *name BL_REG(d1), struct DosLi
     fh = Open((CONST_STRPTR)name, MODE_NEWFILE);
     if (!fh)
         BLITZ_RUNERR(mess1);
-    Write(fh, &tape->secs, 8);
+    Write(fh, &tape->start, 8);
     for (ev = tape->first; ev; ev = ev->ie_NextEvent)
         Write(fh, (UBYTE *)ev + 4, IESIZE - 4);
     Close(fh);
@@ -626,7 +628,7 @@ static void BLITZ_ROUTINE doloadtape_c(const char *name BL_REG(d1), struct DosLi
     fh = Open((CONST_STRPTR)name, MODE_OLDFILE);
     if (!fh)
         BLITZ_RUNERR(mess1);
-    Read(fh, &tape->secs, 8);
+    Read(fh, &tape->start, 8);
     while (Read(fh, dumtape, 18) == 18) {
         struct InputEvent *n = globalloc(IESIZE);
 
@@ -719,8 +721,8 @@ static struct InputEvent *my_handler(struct InputEvent *events BL_REG(a0))
     if ((WORD)curmode < 0) {
         /* execute dumevent - get timeval */
         mode = curmode & 0x7fff;
-        firstval[0] = events->ie_TimeStamp.tv_secs;
-        firstval[1] = events->ie_TimeStamp.tv_micro;
+        firstval.tv_secs = events->ie_TimeStamp.tv_secs;
+        firstval.tv_micro = events->ie_TimeStamp.tv_micro;
         dumevent.ie_NextEvent = events;
         return &dumevent;
     }
@@ -763,12 +765,12 @@ static struct InputEvent *my_handler(struct InputEvent *events BL_REG(a0))
                       m = ev->ie_TimeStamp.tv_micro;
 
                 if (s | m) {
-                    ULONG ps = s - playval[0] - (m < playval[1]);   /* SUB/SUBX */
-                    ULONG pm = m - playval[1];
+                    ULONG ps = s - playval.tv_secs - (m < playval.tv_micro);   /* SUB/SUBX */
+                    ULONG pm = m - playval.tv_micro;
                     ULONG is = events->ie_TimeStamp.tv_secs,
                           im = events->ie_TimeStamp.tv_micro;
-                    ULONG ds = is - firstval[0] - (im < firstval[1]);
-                    ULONG dm = im - firstval[1];
+                    ULONG ds = is - firstval.tv_secs - (im < firstval.tv_micro);
+                    ULONG dm = im - firstval.tv_micro;
 
                     if (timebefore(ds, dm, ps, pm))
                         break;                                  /* not yet */
