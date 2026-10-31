@@ -126,39 +126,81 @@ static struct listitem *lpntr;
 /* a field at `off` of an item's data (as 8+off(item), like the original) */
 #define FIELD(item, off, type) (*(type *)((UBYTE *)(item) + 8 + (off)))
 
-/* init: utility.library, any version */
+/**
+ * @brief init: open utility.library (any version).
+ *
+ * Without it every sort returns 0.
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     utillibbase = OpenLibrary((CONST_STRPTR)utillibname, 0);
 }
 
-/* finit: BUG(orig): also when OpenLibrary failed (CloseLibrary(0)) (#824) */
+/**
+ * @brief finit: close utility.library.
+ *
+ * BUG(orig) (#824): also when OpenLibrary failed (CloseLibrary(0)).
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     CloseLibrary(utillibbase);
 }
 
-/* SortPriorityOffset offset */
+/**
+ * @brief SortPriorityOffset offset: the offset of a long priority in the
+ * items' data, compared before the string.
+ *
+ * Signed; the larger priority comes first, equal priorities are sorted
+ * by the string.  -1 (the default, every negative value) disables it.
+ * @param off  d0.w: the offset in the data, -1 = disabled
+ * @return nothing
+ */
 static void BLITZ_ROUTINE sortpriorityoffset_c(UWORD off BL_REG(d0))
 {
     priorityoffset = (WORD)off;
 }
 
-/* StringSortDir direction */
+/**
+ * @brief StringSortDir direction: the order of the string sorts.
+ * @param dir  d0.w: 0 ascending, any other value descending
+ * @return nothing
+ */
 static void BLITZ_ROUTINE stringsortdir_c(UWORD dir BL_REG(d0))
 {
     sortdir = dir;
 }
 
-/* ListBase(list) */
+/**
+ * @brief ListBase(list): the address of a list (the array argument).
+ * @param list  d0: the list
+ * @return d0: the same address, unchanged
+ */
 static ULONG BLITZ_ROUTINE listbase_c(ULONG list BL_REG(d0))
 {
     return list;
 }
 
-/* dosort: hdr = the list header field of the start item (d6), off = the
-   string field (d5), size (d1), a1 = the caller's a1 (BUG(orig) #826: the
-   compare string after a swap by priority before any string compare) */
+/**
+ * @brief The sort of StringSort/StringSortItem: a selection sort of the
+ * items' data from the start item on.
+ *
+ * Each item is compared with all following ones (by the priority if
+ * SortPriorityOffset enabled it, then utility.library Stricmp,
+ * case-insensitive, in the StringSortDir order) and the data (size bytes)
+ * swapped where the order is wrong.  BUG(orig): the priority is read
+ * also when disabled, from data - 1 (#825); swapped by the priority, the
+ * compare string is not loaded (#826); size 0 swaps 65536 bytes (#827).
+ * @param list    d0: the list ("lIsT" at -4)
+ * @param size    d1: sizeof.type, the bytes swapped
+ * @param off     d5: the offset of the string field (a string pointer)
+ * @param hdr     d6: the list header field of the start item (-28 the
+ *                first, -32 the current item)
+ * @param cmpstr  a1: the caller's a1, the compare string after a swap by
+ *                priority before any string compare (#826)
+ * @return BB_TRUE when done; BB_FALSE without utility.library, if it is
+ *         no list, the start item is 0 or a string pointer is 0 (then
+ *         stopped where it was)
+ */
 static BB_BOOL dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *cmpstr)
 {
     struct Library *util = utillibbase;
@@ -221,26 +263,58 @@ doswap:
     }
 }
 
-/* StringSort list,size[,offset] (d0, d1, d2) */
+/**
+ * @brief StringSort list,sizeof.type: sort the list from its first item by
+ * the string at offset 0 of the data (see dosort).
+ * @param list    d0: the list
+ * @param size    d1.w: sizeof.type
+ * @param cmpstr  a1: the caller's a1 (#826)
+ * @return d0: BB_TRUE when done, BB_FALSE on failure
+ */
 static BB_BOOL BLITZ_ROUTINE stringlistsort2_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
                                              const char *cmpstr BL_REG(a1))
 {
     return dosort(list, size, 0, FIRSTITEM, cmpstr);
 }
 
+/**
+ * @brief StringSort list,sizeof.type,offset: sort the list from its first
+ * item by the string at offset of the data (see dosort).
+ * @param list    d0: the list
+ * @param size    d1.w: sizeof.type
+ * @param off     d2.w: the offset of the string field
+ * @param cmpstr  a1: the caller's a1 (#826)
+ * @return d0: BB_TRUE when done, BB_FALSE on failure
+ */
 static BB_BOOL BLITZ_ROUTINE stringlistsort_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
                                             UWORD off BL_REG(d2), const char *cmpstr BL_REG(a1))
 {
     return dosort(list, size, (WORD)off, FIRSTITEM, cmpstr);
 }
 
-/* StringSortItem list,size[,offset] */
+/**
+ * @brief StringSortItem list,sizeof.type: sort the list from its current
+ * item by the string at offset 0 of the data (see dosort).
+ * @param list    d0: the list
+ * @param size    d1.w: sizeof.type
+ * @param cmpstr  a1: the caller's a1 (#826)
+ * @return d0: BB_TRUE when done, BB_FALSE on failure
+ */
 static BB_BOOL BLITZ_ROUTINE stringlistsortitem2_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
                                                  const char *cmpstr BL_REG(a1))
 {
     return dosort(list, size, 0, CURRITEM, cmpstr);
 }
 
+/**
+ * @brief StringSortItem list,sizeof.type,offset: sort the list from its
+ * current item by the string at offset of the data (see dosort).
+ * @param list    d0: the list
+ * @param size    d1.w: sizeof.type
+ * @param off     d2.w: the offset of the string field
+ * @param cmpstr  a1: the caller's a1 (#826)
+ * @return d0: BB_TRUE when done, BB_FALSE on failure
+ */
 static BB_BOOL BLITZ_ROUTINE stringlistsortitem_c(UBYTE *list BL_REG(d0), UWORD size BL_REG(d1),
                                                 UWORD off BL_REG(d2), const char *cmpstr BL_REG(a1))
 {
