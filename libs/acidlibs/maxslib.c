@@ -69,13 +69,19 @@ BLITZ_THUNK(dofreest, dofreest_c, "d0-d1/a0-a1");
    a0/a1 are kept (memlib's globalloc keeps them, so the original does).
    The original leaves a2 behind the table, d3 = last offset, d4.w = -1;
    the program start code does not use them (like staticslib). */
-static void BLITZ_ROUTINE setmaxs_c(const UWORD *tab BL_REG(a2), UWORD n BL_REG(d4))
+struct maxs {
+    WORD off;                                   /* in the globals (a5) */
+    ULONG size;
+};
+static_assert(sizeof(struct maxs) == 6);
+
+static void BLITZ_ROUTINE setmaxs_c(const struct maxs *tab BL_REG(a2), UWORD n BL_REG(d4))
 {
     do {
-        WORD off = (WORD)*tab++;                /* MOVE (a2)+,d3 */
+        WORD off = tab->off;                    /* MOVE (a2)+,d3 */
         struct bl_regs r = { 0, 0, 0, 0 };
-        r.d0 = (ULONG)tab[0] << 16 | tab[1];    /* MOVE.l (a2)+,d0 */
-        tab += 2;
+        r.d0 = tab->size;                       /* MOVE.l (a2)+,d0 */
+        tab++;
         r.d1 = MEMF_PUBLIC | MEMF_CLEAR;        /* #$10001 */
         BLITZ_ALIBJSR(TOK_globalloc, r);        /* global alloc */
         *(ULONG *)(blitz_globals + off) = r.d0; /* MOVE.l d0,0(a5,d3.w) */
