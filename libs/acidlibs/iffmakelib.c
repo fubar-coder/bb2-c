@@ -46,8 +46,8 @@
  *  - Not a bug (exec versions are < 32768): the ExecVersion check uses
  *    CMP.w/BLT (signed).
  *  - SaveShape does not check the depth: depth 0 writes 65536 plane
- *    pointers (DBF) from tempbm on, depth 15 and more run past its 14
- *    pointers (usewid, tempcols, then whatever follows). (#326)
+ *    pointers (DBF) from bmcopy on, depth 15 and more run past its 14
+ *    pointers (usewid, scrcols, then whatever follows). (#326)
  *
  * Error checks (debugger only): uninitialized bitmap (BytesPerRow word 0),
  * palette (colour pointer 0), screen (pointer 0), shape (width 0).
@@ -117,9 +117,9 @@ struct palette {
 
 static UBYTE iffbuff[BUFSIZE] __attribute__((aligned(4)));
 static ULONG ifflen, bodylen, bodyseek;
-static ULONG tempcols[3 * 256 + 2];
-static struct palette temppal = { tempcols, 0 };
-static ULONG tempbm[64 / 4];                    /* BitMap (+ 24 bytes) */
+static ULONG scrcols[3 * 256 + 2];              /* tempcols: SaveScreen's colours */
+static struct palette scrpal = { scrcols, 0 };  /* temppal */
+static ULONG bmcopy[64 / 4];                    /* tempbm: BitMap (+ 24 bytes) */
 static UWORD usewid;
 
 static const UBYTE jeeze[4] = { 0x80, 0, 0, 0 };
@@ -193,13 +193,14 @@ static void makecolor(const struct palette *pal)
 {
     UBYTE *out = iffbuff;
     const ULONG *rgb = pal->cols + 1;
-    UWORD count = pal->num;
-    ULONG size = (UWORD)(count + (UWORD)(count << 1)); /* LSL #1:ADD (words) */
+    UWORD ncols = pal->num;                     /* d2 */
+    UWORD count;                                /* d2: the DBF counter */
+    ULONG size = (UWORD)(ncols + (UWORD)(ncols << 1)); /* LSL #1:ADD (words) */
 
     put_l(&out, ID_CMAP);
     put_l(&out, size);
     ifflen += size;
-    count--;
+    count = ncols - 1;
     do {                                        /* DBF d2 */
         *out++ = (UBYTE)(*rgb++ >> 24);
         *out++ = (UBYTE)(*rgb++ >> 24);
@@ -249,11 +250,12 @@ static void savearow(const UBYTE *row, const UBYTE *bm)
             *out++ = byte;
         } else {
             /* a literal lot */
-            byte = row[(WORD)pos + 1];          /* last byte */
+            UBYTE last = row[(WORD)pos + 1];    /* last byte */
+
             while (runlen < 128 && scan < bpr) {
-                if (row[(WORD)scan + 1] == byte && row[(WORD)scan] == byte)
+                if (row[(WORD)scan + 1] == last && row[(WORD)scan] == last)
                     break;
-                byte = row[(WORD)scan];
+                last = row[(WORD)scan];
                 runlen++;
                 scan++;
             }
@@ -348,11 +350,11 @@ static void BLITZ_ROUTINE dosavebitmap_c(const UBYTE *bm BL_REG(a0), const char 
 }
 BLITZ_THUNK(dosavebitmap, dosavebitmap_c, "d0-d1/a0-a1");
 
-/* SaveShape: the shape as BitMap in tempbm */
+/* SaveShape: the shape as BitMap in bmcopy */
 static void saveshape(const UBYTE *shape, const char *name, const struct palette *pal,
                       struct DosLibrary *dos)
 {
-    UBYTE *dst = (UBYTE *)tempbm;
+    UBYTE *dst = (UBYTE *)bmcopy;
     UBYTE *plane;
     UWORD count;
 
@@ -368,7 +370,7 @@ static void saveshape(const UBYTE *shape, const char *name, const struct palette
         dst += 4;
         plane += *(const WORD *)(shape + 22);   /* ADD 22(a0),a1 */
     } while (count-- != 0);
-    savebm((UBYTE *)tempbm, name, pal, dos);
+    savebm((UBYTE *)bmcopy, name, pal, dos);
 }
 
 static void BLITZ_ROUTINE dosaveshape1_c(const UBYTE *shape BL_REG(a0), const char *name BL_REG(d1),
@@ -427,14 +429,14 @@ static void BLITZ_ROUTINE dosavescreen_c(void **scr BL_REG(a0), const char *name
 
     if (ncols > 256)
         ncols = 256;
-    temppal.num = ncols;
+    scrpal.num = ncols;
     BLITZ_ALIBJSR(TOK_execversion, r);              /* find aga flag */
     if ((WORD)r.d0 >= 39) {
         /* it's A G A */
         UWORD col = 0;
         struct GfxBase *GfxBase = gfx;
 
-        rgb = tempcols + 1;
+        rgb = scrcols + 1;
         do {
             GetRGB32(cm, col, 1, rgb);
             rgb += 3;
@@ -443,7 +445,7 @@ static void BLITZ_ROUTINE dosavescreen_c(void **scr BL_REG(a0), const char *name
     } else {
         const UWORD *ctab = (const UWORD *)cm->ColorTable;
 
-        rgb = tempcols + 1;
+        rgb = scrcols + 1;
         ncols--;
         do {
             *rgb++ = makelong(*ctab >> 8);
@@ -453,10 +455,10 @@ static void BLITZ_ROUTINE dosavescreen_c(void **scr BL_REG(a0), const char *name
     }
     bm = *(UBYTE **)(s + 88);                   /* RastPort.BitMap */
     for (i = 0; i < 16; i++)
-        tempbm[i] = ((ULONG *)bm)[i];
-    ((UBYTE *)tempbm)[4] = 0;                   /* Flags */
+        bmcopy[i] = ((ULONG *)bm)[i];
+    ((UBYTE *)bmcopy)[4] = 0;                   /* Flags */
     usewid = 0;
-    savebm((UBYTE *)tempbm, name, &temppal, dos);
+    savebm((UBYTE *)bmcopy, name, &scrpal, dos);
 }
 BLITZ_THUNK(dosavescreen, dosavescreen_c, "d0-d1/a0-a1");
 
