@@ -61,7 +61,9 @@
  * errd); here these runtime errors and messages are in the normal code.
  */
 #include "blitzlib.h"
+#include <stddef.h>
 #include <graphics/view.h>
+#include <intuition/screens.h>
 #define __NOLIBBASE__
 #define GRAPHICS_BASE_NAME gfx
 #include <proto/graphics.h>
@@ -287,7 +289,13 @@ static UWORD rgbs4bit[32];      /* 32 4 bit RGB values */
 static WORD palmode;
 static UWORD myoff;
 static ULONG agatable[3];
-static ULONG table[5] = { 0x10000, 0, 0, 0, 0 };    /* AGARGB's LoadRGB32 table */
+/* AGARGB's LoadRGB32 table: one colour, then the end mark */
+static struct {
+    UWORD count, first;
+    ULONG red, green, blue;
+    ULONG end;
+} table = { .count = 1 };
+static_assert(sizeof table == 5 * 4);
 
 /* runtime errors of the normal code (DIFF: messages here, see above) */
 static const char mess0[] = "Can't Open IFF";
@@ -297,7 +305,9 @@ static const char messd[] = "Cycles must be added in order, you silly sausage!";
 
 #define L(p, o)  (*(ULONG *)((UBYTE *)(p) + (o)))
 #define W(p, o)  (*(UWORD *)((UBYTE *)(p) + (o)))
-#define SL(p)    ((struct ViewPort *)((UBYTE *)*(APTR *)(p) + 44))   /* screen -> ViewPort */
+/* the used screen (object: the struct Screen pointer) -> its ViewPort */
+#define SL(p)    (&(*(struct Screen **)(p))->ViewPort)
+static_assert(offsetof(struct Screen, ViewPort) == 44);
 
 static APTR globalloc(ULONG size, ULONG flags)
 {
@@ -1022,11 +1032,11 @@ static void BLITZ_ROUTINE doaargb_c(UBYTE c BL_REG(d0), UWORD r BL_REG(d1), UWOR
                                     UWORD b BL_REG(d3), APTR *scr BL_REG(a0),
                                     struct Library *gfx BL_REG(a6))
 {
-    ((UBYTE *)table)[3] = c;
-    table[1] = rep8(r);
-    table[2] = rep8(g);
-    table[3] = rep8(b);
-    LoadRGB32(SL(scr), table);
+    ((UBYTE *)&table.first)[1] = c;             /* MOVE.b: the low byte */
+    table.red = rep8(r);
+    table.green = rep8(g);
+    table.blue = rep8(b);
+    LoadRGB32(SL(scr), (ULONG *)&table);
 }
 BLITZ_THUNK(doaargb, doaargb_c, "a2");
 
