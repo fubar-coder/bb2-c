@@ -45,6 +45,23 @@ int blitztokens_compiler(const uint8_t *buf, size_t size, struct blitztokens *ou
                          char *err, size_t errlen);
 
 /**
+ * @brief Like blitztokens_compiler, for a compiler with several lists
+ *        (blitz2-ab3: blitz2's and AmiBlitz3's, programs/blitz2/src/
+ *        toklist.h): the list whose last token is `last`.
+ * @param buf     the load file
+ * @param size    its size
+ * @param last    the number of the list's last token (bit 15 set or not);
+ *                0 = the only list, as blitztokens_compiler
+ * @param out     the list the tokens are appended to
+ * @param err     the message of an error (also: no list or two lists end
+ *                with `last`)
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = error
+ */
+int blitztokens_compiler_last(const uint8_t *buf, size_t size, uint16_t last,
+                              struct blitztokens *out, char *err, size_t errlen);
+
+/**
  * @brief Add the tokens of a library file or of every library of a BigLib
  *        file (acidlibs, deflibs), in order.
  * @param buf     the file

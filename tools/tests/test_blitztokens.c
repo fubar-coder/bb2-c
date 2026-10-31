@@ -39,6 +39,32 @@ static struct buf compiler(uint32_t last, int reloc_last, const char *first)
     return f;
 }
 
+/* a compiler with two lists (as blitz2-ab3): NEWTYPE End, then NEWTYPE
+   End Let */
+static struct buf compiler2(void)
+{
+    struct buf code = { 0 }, f;
+    uint32_t relocs[3], a0, a1, b0, b1, b2;
+
+    put32(&code, 0x70004E75);
+    a0 = (uint32_t)code.n;
+    a1 = a0 + 16;                       /* 4+2+"NEWTYPE\0"+"\0" */
+    b0 = a1 + 12;                       /* 4+2+"End\0"+"\0", even */
+    b1 = b0 + 16;
+    b2 = b1 + 12;
+    node(&code, a1, 1, "NEWTYPE");
+    node(&code, 0, 2, "End");
+    node(&code, b1, 1, "NEWTYPE");
+    node(&code, b2, 2, "End");
+    node(&code, 0, 3, "Let");
+    relocs[0] = a0;
+    relocs[1] = b0;
+    relocs[2] = b1;
+    f = loadfile1(1, HUNK_CODE, &code, relocs, 3, 0);
+    free(code.p);
+    return f;
+}
+
 /* a library: header with libnum, then statement A, a nullsub, dumtoke D,
    statement B */
 static void stmt(struct buf *b, const char *name)
@@ -173,6 +199,31 @@ int main(void)
     blitztokens_free(&l);
     c = compiler(4, 1, "NEWTYPE");      /* the last node points to the first */
     CHECK(blitztokens_compiler(c.p, c.n, &l, err, sizeof err) == -1 && strstr(err, "loop"));
+    blitztokens_free(&l);
+    CHECK(blitztokens_compiler_last(c.p, c.n, 0x8003, &l, err, sizeof err) == -1
+          && strstr(err, "loop"));
+    blitztokens_free(&l);
+
+    /* two lists: only one with -last, chosen by its last token */
+    free(c.p);
+    c = compiler2();
+    CHECK(blitztokens_compiler(c.p, c.n, &l, err, sizeof err) == -1 && strstr(err, "twice"));
+    blitztokens_free(&l);
+    CHECK(blitztokens_compiler_last(c.p, c.n, 0x8003, &l, err, sizeof err) == 0);
+    CHECK(l.n == 3 && has(&l, 0, 0x8001, "NEWTYPE") && has(&l, 2, 0x8003, "Let"));
+    blitztokens_free(&l);
+    CHECK(blitztokens_compiler_last(c.p, c.n, 2, &l, err, sizeof err) == 0);
+    CHECK(l.n == 2 && has(&l, 1, 0x8002, "End"));
+    blitztokens_free(&l);
+    CHECK(blitztokens_compiler_last(c.p, c.n, 0x8004, &l, err, sizeof err) == -1
+          && strstr(err, "no token list ends with $8004"));
+    blitztokens_free(&l);
+    /* one list, -last given: it must end with that token */
+    free(c.p);
+    c = compiler(0, 0, "NEWTYPE");
+    CHECK(blitztokens_compiler_last(c.p, c.n, 0x8003, &l, err, sizeof err) == 0 && l.n == 3);
+    blitztokens_free(&l);
+    CHECK(blitztokens_compiler_last(c.p, c.n, 0x8002, &l, err, sizeof err) == -1);
     blitztokens_free(&l);
 
     free(c.p);
