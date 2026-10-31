@@ -116,7 +116,7 @@ intended deviations (kind **F**), each with its issue.
 | windowslib registers (windowslib.c:73) | changes a3 (WBlit, inputstr), d7, a4 (Window); WindowTags with tag pairs writes the title length back to the argument stack | does not | **K**/**B** | not observable |
 | windowslib WindowTags &TagList (windowslib.c:73, :2379) | parks the title length with `MOVE.l (a7)+,(a2)+` in the 4 bytes **behind the TAG_DONE pair of the user's tag list** and reads it back there | reads the length from the argument stack, writes nothing into the tag list | **K** | reproducible; **observable** when user data lies behind the tag list (e.g. an array element: original = title length, C = unchanged) |
 | windowslib coordinates (windowslib.c:73) | unknown upper word (zcursor) | sign-extended | **T** | register leftover |
-| shapeslib (shapeslib.c) | – | no deviation (err10 jumps into the error check area as in the original) | – | – |
+| shapeslib DecodeShapes err10 (shapeslib.c, header) | address 0: `BEQ err10` into the error check area: without debugger a jump behind the library | err10 and its message in the normal code: a TRAP #0 with the right message | **F** | #270; observable without debugger (trap instead of a jump into nowhere); test `bug_orig_shapeslib_decodeshapes_null` |
 | shapetrixlib XFlip (shapetrixlib.c, header) | no wait after the last blit before the CPU mirroring | reproduced likewise; result timing-dependent, C loop is faster | **T** | timing; in the test different for shapes 13 and 21 pixels wide (21 pixels only with runtime error checking); t141 checks XFlip only without shifting blit |
 | spriteslib, collslib | – | no deviation | – | – |
 | iffmakelib | – | no deviation (check functions in the check area since c4a736d, see section 6) | – | – |

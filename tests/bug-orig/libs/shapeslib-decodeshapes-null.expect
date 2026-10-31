@@ -1,0 +1,6 @@
+[run]
+before
+runtime error Shapes file at memory location 0? NOWAY!
+runtime error Shapes file at memory location 0? NOWAY!
+after
+rc=0

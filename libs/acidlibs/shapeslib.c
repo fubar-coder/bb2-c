@@ -44,14 +44,18 @@
  *    copied to CHIP memory.
  *  - Not a bug (word results, the compiler uses only d0.w):
  *    ShapeWidth/ShapeHeight load only the low word of d0.
- *  - DecodeShapes with address 0 jumps (BEQ) into the error check area
- *    (err10): without the debugger behind the library. (#270)
  *  - LoadShapes s,file$ / DecodeShapes s,mem: the last shape is base +
  *    (max - 1) << 5 as a word (SUBQ/LSL/ADD d2,a2): from a maximum of
  *    1025 on it lies before the table. (#939)
  * err2/err3/err7/err8
  * (files, ANIM) are in the normal code with their messages in the error
  * check area, as in the original.
+ *
+ * Fixed (intended deviation, docs/libs/deviations.md): DecodeShapes with
+ * address 0 branches (BEQ) in the original into the error check area
+ * (err10): without the debugger behind the library.  Here err10 and its
+ * message are in the normal code; without the debugger the runtime error
+ * is a TRAP #0 with the right message. (#270)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -267,19 +271,11 @@ BLITZ_ERRCHK_MESSAGE(mess6, "Uninitialized BitMap");
 BLITZ_ERRCHK_MESSAGE(mess7, "ANIM format not supported");
 BLITZ_ERRCHK_MESSAGE(mess8, "Illegal ANIM interleave value");
 BLITZ_ERRCHK_MESSAGE(mess9, "Cannot GetaShape from an interleaved Bitmap");
-BLITZ_ERRCHK_MESSAGE(mess10, "Shapes file at memory location 0? NOWAY!");
 
-/* err10: in the error check area, reached with BEQ from DecodeShapes (as
-   in the original: without the debugger a jump behind the library) */
-void err10(void);
-__asm__("   .section .blitzlib.errchk,\"ax\"\n"
-        "   .even\n"
-        "_err10:\n"
-        "   move.l  #_mess10,d0\n"
-        "   trap    #0\n"
-        "   .text\n");
-/* TST.l d2:BEQ err10 */
-#define JMP_ERR10() __asm__ volatile("jmp _err10")
+/* err10 of DecodeShapes (TST.l d2:BEQ err10) and its message in the
+   normal code (the original has them in the error check area; fixed,
+   #270) */
+static const char mess10[] = "Shapes file at memory location 0? NOWAY!";
 
 /** @brief Library init: AutoCookie on. */
 static void BLITZ_ROUTINE codeinit_c(void)
@@ -829,17 +825,19 @@ static void cludge(struct bb_shape *shape, struct bb_shape *last, UBYTE *mem)
  * used in place and marked "cL" (never freed), above it is copied to CHIP
  * memory.  Cookie with AutoCookie on.
  *
- * BUG(orig) (#270): address 0 jumps (BEQ) into the error check area
- * (err10, "Shapes file at memory location 0? NOWAY!"): without the
- * debugger behind the library.
+ * Address 0: runtime error "Shapes file at memory location 0? NOWAY!"
+ * (err10, in the normal code; the original branches into the error check
+ * area, fixed: #270).
  *
  * @param last a2: the last shape
  * @param mem  d2: the address of the data
  */
 static void BLITZ_ROUTINE cludgeshapes_c(struct bb_shape *last BL_REG(a2), UBYTE *mem BL_REG(d2))
 {
-    if (!mem)
-        JMP_ERR10();
+    if (!mem) {
+        BLITZ_RUNERR(mess10);                   /* err10 */
+        return;
+    }
     cludge((struct bb_shape *)blitz_string, last, mem);
 }
 BLITZ_THUNK(_cludgeshapes, cludgeshapes_c, "d0-d1/a0-a1");
@@ -849,7 +847,7 @@ BLITZ_THUNK(_cludgeshapes, cludgeshapes_c, "d0-d1/a0-a1");
  * up to the last shape object.
  *
  * BUG(orig) (#939): the last shape is a2 + (WORD)((max-1) << 5).
- * BUG(orig) (#270): address 0, as cludgeshapes_c.
+ * Address 0: runtime error, as cludgeshapes_c (#270).
  *
  * @param base a2: shape 0
  * @param max  d2: the maximum
@@ -861,8 +859,10 @@ static void BLITZ_ROUTINE cludgeshapes2_c(UBYTE *base BL_REG(a2), ULONG max BL_R
     /* BUG(orig) (#939) */
     struct bb_shape *last = (struct bb_shape *)(base + (WORD)(UWORD)((UWORD)(max - 1) << 5));
 
-    if (!mem)
-        JMP_ERR10();
+    if (!mem) {
+        BLITZ_RUNERR(mess10);                   /* err10 */
+        return;
+    }
     cludge((struct bb_shape *)blitz_string, last, mem);
 }
 BLITZ_THUNK(_cludgeshapes2, cludgeshapes2_c, "d0-d1/a0-a1");
