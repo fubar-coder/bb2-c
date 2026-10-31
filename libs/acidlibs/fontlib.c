@@ -266,8 +266,9 @@ BLITZ_THUNK(docursy, docursy_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------- drawing */
 
-/* calcoff - check bitmap and font: bitmap, font, d7 = line offset */
-static int calcoff(UBYTE **bm, UBYTE **font, LONG *d7)
+/* calcoff - check bitmap and font: bitmap, font, lineoff (d7) = line
+   offset */
+static int calcoff(UBYTE **bm, UBYTE **font, LONG *lineoff)
 {
     if (!bitmapout || !BM_BPR(bitmapout)) {
         BLITZ_RUNERR(mess2);                    /* err2 */
@@ -279,31 +280,34 @@ static int calcoff(UBYTE **bm, UBYTE **font, LONG *d7)
     }
     *bm = bitmapout;
     *font = (UBYTE *)*fontout;
-    *d7 = (LONG)(WORD)BM_CURSY(*bm) * (WORD)BM_BPR(*bm);   /* MULS */
+    *lineoff = (LONG)(WORD)BM_CURSY(*bm) * (WORD)BM_BPR(*bm); /* MULS */
     return 1;
 }
 
-/* docr - new line: x = 0, y += 8, d7 += bytes per row * 8 */
-static void docr(UBYTE *bm, UWORD *d1, UWORD *d2, LONG *d7)
+/* docr - new line: col (d1) = 0, row (d2) += 8, lineoff (d7) += bytes
+   per row * 8 */
+static void docr(UBYTE *bm, UWORD *col, UWORD *row, LONG *lineoff)
 {
-    *d1 = 0;
-    *d2 += 8;
-    *d7 += (WORD)(BM_BPR(bm) << 3);             /* LSL #3:EXT.l */
+    *col = 0;
+    *row += 8;
+    *lineoff += (WORD)(BM_BPR(bm) << 3);        /* LSL #3:EXT.l */
 }
 
-/* bitchar - d0 = character, a0 = bitmap, a1 = font, d7 = offset of the
-   line's left edge in the bitmap (changed by a new line) */
-static void bitchar(UBYTE c, UBYTE *bm, UBYTE *font, LONG *d7)
+/* bitchar - d0 = character, a0 = bitmap, a1 = font, lineoff (d7) = offset
+   of the line's left edge in the bitmap (changed by a new line);
+   col/row = d1/d2, backbits/forebits = d4/d5 (background/foreground
+   colour bits) */
+static void bitchar(UBYTE c, UBYTE *bm, UBYTE *font, LONG *lineoff)
 {
-    UWORD d1, d2 = BM_CURSY(bm), d4, d5, depth, bpr, modulo;
+    UWORD col, row = BM_CURSY(bm), backbits, forebits, depth, bpr, modulo;
     const UBYTE *src;
     LONG off;
     UWORD i, k;
 
     if (c == 10) {
-        docr(bm, &d1, &d2, d7);
-        BM_CURSX(bm) = d1;
-        BM_CURSY(bm) = d2;
+        docr(bm, &col, &row, lineoff);
+        BM_CURSX(bm) = col;
+        BM_CURSY(bm) = row;
         return;
     }
     if (c > TF_HICHAR(font))                    /* CMP.b 33(a1),d0:BHI */
@@ -311,32 +315,32 @@ static void bitchar(UBYTE c, UBYTE *bm, UBYTE *font, LONG *d7)
     c -= TF_LOCHAR(font);                       /* SUB.b 32(a1),d0:BMI */
     if ((BYTE)c < 0)
         return;
-    d1 = BM_CURSX(bm) >> 3;
-    if (d1 >= BM_BPR(bm)) {                     /* CMP (a0),d1:BCS 'skip */
-        docr(bm, &d1, &d2, d7);
-        BM_CURSY(bm) = d2;
+    col = BM_CURSX(bm) >> 3;
+    if (col >= BM_BPR(bm)) {                    /* CMP (a0),d1:BCS 'skip */
+        docr(bm, &col, &row, lineoff);
+        BM_CURSY(bm) = row;
     }
-    BM_CURSX(bm) = (d1 + 1) << 3;
-    if ((UWORD)(d2 + 8) > BM_ROWS(bm))          /* CMP 2(a0),d3:BHI 'done */
+    BM_CURSX(bm) = (col + 1) << 3;
+    if ((UWORD)(row + 8) > BM_ROWS(bm))         /* CMP 2(a0),d3:BHI 'done */
         return;
 
-    off = *d7 + (WORD)d1;                       /* EXT.l d1:ADD.l d1,d7 */
+    off = *lineoff + (WORD)col;                 /* EXT.l d1:ADD.l d1,d7 */
     src = TF_CHARDATA(font)
         + (WORD)(*(UWORD *)(TF_CHARLOC(font) + ((UWORD)c << 2)) >> 3);
     modulo = TF_MODULO(font);
     depth = BM_DEPTH(bm);
     bpr = BM_BPR(bm);
-    d5 = pcolour;
-    d4 = pback;
+    forebits = pcolour;
+    backbits = pback;
     i = 0;
     do {                                        /* 'loop: one bitplane */
         UBYTE *dst = BM_PLANE(bm, i) + off;
         const UBYTE *s = src;
-        UBYTE bg = (d4 & 1) ? 0xff : 0;         /* LSR #1,d4:SCS d3 */
-        UBYTE fg = (d5 & 1) ? 0xff : 0;         /* LSR #1,d5:SCS d2 */
+        UBYTE bg = (backbits & 1) ? 0xff : 0;   /* LSR #1,d4:SCS d3 */
+        UBYTE fg = (forebits & 1) ? 0xff : 0;   /* LSR #1,d5:SCS d2 */
 
-        d4 >>= 1;
-        d5 >>= 1;
+        backbits >>= 1;
+        forebits >>= 1;
         for (k = 0; k < 8; k++) {               /* !oneline x 8 */
             *dst = ~*s & bg;
             *dst |= *s & fg;
@@ -351,24 +355,24 @@ static void bitchar(UBYTE c, UBYTE *bm, UBYTE *font, LONG *d7)
 static void BLITZ_ROUTINE bitout_c(UBYTE c BL_REG(d0))
 {
     UBYTE *bm, *font;
-    LONG d7;
+    LONG lineoff;
 
-    if (calcoff(&bm, &font, &d7))
-        bitchar(c, bm, font, &d7);
+    if (calcoff(&bm, &font, &lineoff))
+        bitchar(c, bm, font, &lineoff);
 }
 
 /* bitout2 - string a0, length d0 */
 static void bitout2_(const UBYTE *s, ULONG len)
 {
     UBYTE *bm, *font;
-    LONG d7;
+    LONG lineoff;
 
     if (!len)
         return;
-    if (!calcoff(&bm, &font, &d7))
+    if (!calcoff(&bm, &font, &lineoff))
         return;
     do
-        bitchar(*s++, bm, font, &d7);
+        bitchar(*s++, bm, font, &lineoff);
     while (--len);
 }
 
@@ -427,17 +431,17 @@ static ULONG getchar_old(void)
 /* docursor - EOR the cursor cell (8 lines, all planes) at x */
 static void docursor(UBYTE *bm, UWORD x)
 {
-    ULONG d0 = (ULONG)BM_CURSY(bm) * BM_BPR(bm)                 /* MULU */
-             + (LONG)(WORD)((BM_CURSX(bm) >> 3) + x);           /* EXT.l */
-    UWORD line, d2, i;
+    ULONG off = (ULONG)BM_CURSY(bm) * BM_BPR(bm)                /* MULU */
+              + (LONG)(WORD)((BM_CURSX(bm) >> 3) + x);          /* EXT.l */
+    UWORD line, planes, i;
 
     for (line = 0; line < 8; line++) {
-        d2 = BM_DEPTH(bm) - 1;
+        planes = BM_DEPTH(bm) - 1;
         i = 0;
         do
-            BM_PLANE(bm, i++)[d0] ^= 0xff;      /* NOT.b (a1) */
-        while (d2-- != 0);                      /* DBF d2 */
-        d0 += (WORD)BM_BPR(bm);                 /* ADD (a4),a1 (ADDA.w) */
+            BM_PLANE(bm, i++)[off] ^= 0xff;     /* NOT.b (a1) */
+        while (planes-- != 0);                  /* DBF d2 */
+        off += (WORD)BM_BPR(bm);                /* ADD (a4),a1 (ADDA.w) */
     }
 }
 
