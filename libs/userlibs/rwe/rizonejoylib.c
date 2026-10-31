@@ -289,6 +289,13 @@ static void free_mem(struct zonetable *table)
 
 static void BLITZ_ROUTINE initmem_c(void);
 
+/**
+ * @brief finit: frees every zone table of the list.
+ *
+ * BUG(orig) (#871): the entries stay set (and #868: FreeZoneTable leaves
+ * its freed block there, freed here again).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     int i;
@@ -300,7 +307,14 @@ static void BLITZ_ROUTINE libfinit_c(void)
 
 /* ------------------------------------------------------------ ZoneInit */
 
-/* ZoneInit start,end (d0, d1): -1 without table or for a bad range */
+/**
+ * @brief ZoneInit start_num,end_num: clears the zones start..end of the current table.
+ *
+ * x1..y2 = -1 (not set).  BUG(orig) (#873): start is not checked for < 0.
+ * @param zonenum  d0: the first zone
+ * @param lastnum  d1: the last zone
+ * @return d0: end + 1 (the low word), -1 without a table or for a bad range
+ */
 static ULONG BLITZ_ROUTINE zoneinit_c(ULONG zonenum BL_REG(d0), ULONG lastnum BL_REG(d1))
 {
     struct zonetable *zt = zd.zonetable;
@@ -323,8 +337,13 @@ static ULONG BLITZ_ROUTINE zoneinit_c(ULONG zonenum BL_REG(d0), ULONG lastnum BL
     return zonenum;
 }
 
-/* ZoneInit: all zones of the current table (without one, the original
-   reads the count from address 0 zonenum - not observable, left out) */
+/**
+ * @brief ZoneInit: clears all zones of the current table.
+ *
+ * Without a table the original reads the count from address 0 - not
+ * observable, left out.
+ * @return d0: as ZoneInit start,end; -1 without a table
+ */
 static ULONG BLITZ_ROUTINE zoneinit1_c(void)
 {
     if (!zd.zonetable)
@@ -332,7 +351,14 @@ static ULONG BLITZ_ROUTINE zoneinit1_c(void)
     return zoneinit_c(0, zd.zonetable->count - 1);
 }
 
-/* ZoneInit zone (d0): only the upper bound is checked */
+/**
+ * @brief ZoneInit zone_num: clears one zone of the current table.
+ *
+ * Only the upper bound is checked (BUG(orig) #873: a negative number
+ * writes before the table).
+ * @param zonenum  d0: the zone
+ * @return d0: the zone's byte offset, -1 without a table or out of range
+ */
 static ULONG BLITZ_ROUTINE zoneinit2_c(ULONG zonenum BL_REG(d0))
 {
     struct zonetable *zt = zd.zonetable;
@@ -348,7 +374,15 @@ static ULONG BLITZ_ROUTINE zoneinit2_c(ULONG zonenum BL_REG(d0))
     return off;
 }
 
-/* init: is020 (AttnFlags bit AFB_68020), table 0 with 256 zones */
+/**
+ * @brief init: the 68020 mode and zone table 0 with 256 zones.
+ *
+ * is020 and the 68020 mode from AttnFlags (AFB_68020); table 0 (2052
+ * bytes, MEMF_PUBLIC) is the current one, all zones cleared; without
+ * memory there is no table.  BUG(orig) (#871): only entry 0 of the list
+ * is cleared.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE initmem_c(void)
 {
     UBYTE f = (SysBase->AttnFlags & AFF_68020) ? 0xff : 0;     /* SF/ST */
@@ -387,7 +421,18 @@ static BB_BOOL doset(ULONG n, UWORD x1, UWORD y1, UWORD x2, UWORD y2)
     return BB_TRUE;
 }
 
-/* SetZone num,x1,y1,x2,y2 (d0-d4): x1 < x2 and y1 < y2 by EXG */
+/**
+ * @brief SetZone(num,x1,y1,x2,y2): sets a rectangular zone of the current table.
+ *
+ * The corners are ordered (EXG) so that x1 < x2 and y1 < y2.  BUG(orig):
+ * no check for num < 0 (#873); without a table the result is -1 (#876).
+ * @param n   d0: the zone number
+ * @param x1  d1: a corner x
+ * @param y1  d2: a corner y
+ * @param x2  d3: the other corner x
+ * @param y2  d4: the other corner y
+ * @return d0: BB_TRUE done (also without a table), BB_FALSE out of range
+ */
 static BB_BOOL BLITZ_ROUTINE setzone_c(ULONG n BL_REG(d0), UWORD x1 BL_REG(d1),
                                        UWORD y1 BL_REG(d2), UWORD x2 BL_REG(d3),
                                        UWORD y2 BL_REG(d4))
@@ -407,7 +452,17 @@ static BB_BOOL BLITZ_ROUTINE setzone_c(ULONG n BL_REG(d0), UWORD x1 BL_REG(d1),
     return doset(n, x1, y1, x2, y2);
 }
 
-/* SetZone num,x,y,radius (d0-d3): a circle, x2 = radius^2 (a word) */
+/**
+ * @brief SetZone(num,x,y,radius): sets a circular zone of the current table.
+ *
+ * x1, y1 = the centre, x2 = radius^2 as a word (BUG(orig) #867: radius
+ * 256 and more wraps), y2 = -1.  Results and bugs as the rectangle form.
+ * @param n  d0: the zone number
+ * @param x  d1: the centre x
+ * @param y  d2: the centre y
+ * @param r  d3: the radius
+ * @return d0: BB_TRUE done (also without a table), BB_FALSE out of range
+ */
 static BB_BOOL BLITZ_ROUTINE setzone2_c(ULONG n BL_REG(d0), UWORD x BL_REG(d1),
                                         UWORD y BL_REG(d2), UWORD r BL_REG(d3))
 {
@@ -462,7 +517,17 @@ static ULONG testrange(ULONG zonenum, ULONG lastnum, UWORD x, UWORD y)
     return (ULONG)-1;
 }
 
-/* Zone(x,y) (d0, d1): all zones of the table */
+/**
+ * @brief Zone(x,y): the first zone of the current table that contains x,y.
+ *
+ * Rectangles: x1 <= x <= x2, y1 <= y <= y2 (68000 mode: BUG(orig) #879, the
+ * sign of x2-x/y2-y; 68020 mode: signed bounds as CMP2); circles: the
+ * squared distance <= x2 (BUG(orig) #867, #880 in the 68020 mode); zones
+ * with x1 < 0 are skipped.
+ * @param x  d0: x (a word)
+ * @param y  d1: y (a word)
+ * @return d0: the zone number, -1 if none or without a table
+ */
 static ULONG BLITZ_ROUTINE zonetest_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
 {
     if (!zd.zonetable)
@@ -470,14 +535,35 @@ static ULONG BLITZ_ROUTINE zonetest_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
     return testrange(0, zd.zonetable->count - 1, x, y);
 }
 
-/* ZoneTest(start,x,y) (d0-d2): one zone */
+/**
+ * @brief ZoneTest(start_num,x,y): whether the zone start contains x,y.
+ *
+ * As Zone(x,y) for the one zone; start beyond the table is the last zone.
+ * BUG(orig) (#881): the zone is found through the low byte of start.
+ * @param s  d0: the zone number
+ * @param x  d1: x (a word)
+ * @param y  d2: y (a word)
+ * @return d0: the zone number, -1 if it does not contain x,y
+ */
 static ULONG BLITZ_ROUTINE testzonerange2_c(ULONG s BL_REG(d0), UWORD x BL_REG(d1),
                                             UWORD y BL_REG(d2))
 {
     return testrange(s, s, x, y);
 }
 
-/* ZoneTest(start,end,x,y) (d0-d3) */
+/**
+ * @brief ZoneTest(start_num,end_num,x,y): the first zone of start..end that contains x,y.
+ *
+ * As Zone(x,y) for the range; start beyond the table is the last zone,
+ * a bad range gives -1.  BUG(orig) (#881): from zone 256 on, the zones are
+ * found through the low byte of start (wrong zones under the right
+ * numbers).
+ * @param s  d0: the first zone
+ * @param e  d1: the last zone
+ * @param x  d2: x (a word)
+ * @param y  d3: y (a word)
+ * @return d0: the zone number, -1 if none
+ */
 static ULONG BLITZ_ROUTINE testzonerange_c(ULONG s BL_REG(d0), ULONG e BL_REG(d1),
                                            UWORD x BL_REG(d2), UWORD y BL_REG(d3))
 {
@@ -486,18 +572,35 @@ static ULONG BLITZ_ROUTINE testzonerange_c(ULONG s BL_REG(d0), ULONG e BL_REG(d1
 
 /* --------------------------------------------------------- zone tables */
 
-/* ZoneTable: the current table, -1 if none (BUG(orig) #876) */
+/**
+ * @brief ZoneTable: the address of the current zone table.
+ * @return d0: the table, -1 if none (BUG(orig) #876: not 0)
+ */
 static ULONG BLITZ_ROUTINE zonetable_c(void)
 {
     return zd.zonetable ? (ULONG)zd.zonetable : (ULONG)-1;
 }
 
+/**
+ * @brief ZoneTableSize: the number of zones of the current table.
+ * @return d0: the count, 0 without a table
+ */
 static ULONG BLITZ_ROUTINE zonetablesize_c(void)
 {
     return zd.zonetable ? zd.zonetable->count : 0;
 }
 
-/* NewZoneTable(n,zones) (d0, d1): n 1..15, zones 2..65535 */
+/**
+ * @brief NewZoneTable table#,num_zones: allocates zone table n.
+ *
+ * n 1..15, num_zones 2..65535; an old table of that number is freed
+ * first.  BUG(orig): ZoneInit runs on the CURRENT table, the new one keeps
+ * AllocMem's garbage (#875); if the AllocMem fails after the free, the
+ * entry keeps the freed block (#874); a negative n is not refused (#872).
+ * @param n    d0: the table number
+ * @param num  d1: the number of zones
+ * @return d0: BB_TRUE done, BB_FALSE bad arguments or no memory
+ */
 static BB_BOOL BLITZ_ROUTINE newzonetable_c(ULONG n BL_REG(d0), ULONG num BL_REG(d1))
 {
     struct zonetable **e, *mem;
@@ -516,7 +619,13 @@ static BB_BOOL BLITZ_ROUTINE newzonetable_c(ULONG n BL_REG(d0), ULONG num BL_REG
     return BB_TRUE;
 }
 
-/* UseZoneTable n (d0): n < 16 with a table */
+/**
+ * @brief UseZoneTable table#: makes table n the current one.
+ *
+ * BUG(orig) (#872): a negative n is not refused (entry -1 is _zonetable).
+ * @param n  d0: the table number (< 16)
+ * @return d0: BB_TRUE done, BB_FALSE n too large or no such table
+ */
 static BB_BOOL BLITZ_ROUTINE usezonetable_c(ULONG n BL_REG(d0))
 {
     struct zonetable **e;
@@ -530,7 +639,14 @@ static BB_BOOL BLITZ_ROUTINE usezonetable_c(ULONG n BL_REG(d0))
     return BB_TRUE;
 }
 
-/* FreeZoneTable(n) (d0): n 1..15; the entry stays, table 0 current */
+/**
+ * @brief FreeZoneTable table#: frees zone table n (1..15).
+ *
+ * BUG(orig): the freed block stays in its entry (#868), table 0 always
+ * becomes the current one (#869), a negative n is not refused (#872).
+ * @param n  d0: the table number
+ * @return d0: BB_TRUE done, BB_FALSE bad number or no such table
+ */
 static BB_BOOL BLITZ_ROUTINE freezonetable_c(ULONG n BL_REG(d0))
 {
     struct zonetable **e;
@@ -545,7 +661,10 @@ static BB_BOOL BLITZ_ROUTINE freezonetable_c(ULONG n BL_REG(d0))
     return BB_TRUE;
 }
 
-/* ZoneTableNumber: the list index of the current table, -1 */
+/**
+ * @brief ZoneTableNumber: the number of the current zone table.
+ * @return d0: its index in the list, -1 without a table (or not listed)
+ */
 static ULONG BLITZ_ROUTINE zonetablenumber_c(void)
 {
     int i;
@@ -558,13 +677,22 @@ static ULONG BLITZ_ROUTINE zonetablenumber_c(void)
     return (ULONG)-1;
 }
 
-/* ZoneMode: MOVE.b zones020,d0 (thunk: the low byte only) */
+/**
+ * @brief ZoneMode: -1 for the 68020 mode, 0 for the 68000 mode.
+ *
+ * MOVE.b zones020,d0: the thunk replaces the low byte of d0 only.
+ * @return d0.b: the mode byte ($FF or 0, or what SetZoneMode stored)
+ */
 static ULONG BLITZ_ROUTINE zonemode_c(void)
 {
     return zd.zones020;
 }
 
-/* SetZoneMode mode (d0.b): only on a 68020 */
+/**
+ * @brief SetZoneMode mode: sets the zone test mode, only on a 68020 or better.
+ * @param mode  d0.b: the mode byte (non-zero: 68020 mode)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE setzonemode_c(ULONG mode BL_REG(d0))
 {
     if (zd.is020)
@@ -583,14 +711,22 @@ static ULONG zoneinfo(ULONG zonenum, UWORD off)
         | *(const UWORD *)((const UBYTE *)(zt + 1) + (WORD)((UWORD)(zonenum << 3) + off));
 }
 
+/* GetZoneX1(zone), GetZoneX2(zone), GetZoneY1(zone), GetZoneY2(zone):
+   d0.w = the zone, d0 = the field (the low word replaced), -1 if the zone
+   count is not above the field's offset (BUG(orig) #870: no range check
+   of the zone, without a table address 0 is read) */
 #define ZONEINFO(f, member)                                                  \
     static ULONG BLITZ_ROUTINE f(ULONG zonenum BL_REG(d0))                   \
     {                                                                        \
         return zoneinfo(zonenum, offsetof(struct zone, member));             \
     }
+/** @brief GetZoneX1(zone): the start x of a zone (see ZONEINFO). */
 ZONEINFO(zoneinfox1_c, x1)
+/** @brief GetZoneX2(zone): the end x (circle: radius^2) of a zone. */
 ZONEINFO(zoneinfox2_c, x2)
+/** @brief GetZoneY1(zone): the start y of a zone. */
 ZONEINFO(zoneinfoy1_c, y1)
+/** @brief GetZoneY2(zone): the end y of a zone (circle: -1). */
 ZONEINFO(zoneinfoy2_c, y2)
 
 /* ----------------------------------------------------------- joysticks */
@@ -605,7 +741,15 @@ ZONEINFO(zoneinfoy2_c, y2)
 #define JOY0DAT    (*(volatile UWORD *)0xdff00a)
 #define JOY1DAT    (*(volatile UWORD *)0xdff00c)
 
-/* JFire(port) (d0.b): 1 = fire, +2 = second button (ports 1, 2) */
+/**
+ * @brief JFire(port): the fire buttons of a joystick port.
+ *
+ * Ports 1, 2: CIAA PRA /FIR1 resp. /FIR0, the second button through
+ * POTGO/POTINP; ports 3, 4: the four player adaptor (CIAB PRA SEL/BUSY),
+ * 0 if it is switched off (JAdaptorStatus).
+ * @param port  d0.b: the port 1..4
+ * @return d0: 1 = fire, + 2 = the second button (ports 1, 2); 0 for other ports
+ */
 static ULONG BLITZ_ROUTINE jfire_c(UWORD port BL_REG(d0))
 {
     ULONG r = 0;
@@ -661,7 +805,14 @@ static ULONG adaptor(UBYTE first, UBYTE second)
     return !(b & second);
 }
 
-/* JVert(port) (d0.b) */
+/**
+ * @brief JVert(port): the vertical direction of a joystick port.
+ *
+ * Ports 1, 2: JOY1DAT resp. JOY0DAT; ports 3, 4: the four player adaptor
+ * in CIAA PRB (0 if switched off).
+ * @param port  d0.b: the port 1..4
+ * @return d0: -1 up, 1 down, 0 none (or another port)
+ */
 static ULONG BLITZ_ROUTINE jvert_c(UWORD port BL_REG(d0))
 {
     switch ((UBYTE)port) {
@@ -673,7 +824,14 @@ static ULONG BLITZ_ROUTINE jvert_c(UWORD port BL_REG(d0))
     return 0;
 }
 
-/* JHoriz(port) (d0.b): port 1 "right" returns d0 unchanged (= 1, see above) */
+/**
+ * @brief JHoriz(port): the horizontal direction of a joystick port.
+ *
+ * As JVert; port 1 "right" returns d0 unchanged (the port number 1, which
+ * is also the result for "right": no defect).
+ * @param port  d0.b: the port 1..4
+ * @return d0: -1 left, 1 right, 0 none (or another port)
+ */
 static ULONG BLITZ_ROUTINE jhoriz_c(ULONG port BL_REG(d0))
 {
     UWORD d;
@@ -695,8 +853,14 @@ static ULONG BLITZ_ROUTINE jhoriz_c(ULONG port BL_REG(d0))
     return 0;
 }
 
-/* AllFire([bits]) (d0.b, default %1111): a bit per pressed fire button
-   of the ports 1..4 asked for (3 and 4 only with the adaptor) */
+/**
+ * @brief AllFire(joybits): the fire buttons of the ports asked for.
+ *
+ * Bit n-1 of joybits asks for port n (1..4; 3 and 4 only with the four
+ * player adaptor switched on).
+ * @param bits  d0.b: the ports
+ * @return d0: a bit per pressed fire button (bit n-1 = port n)
+ */
 static ULONG BLITZ_ROUTINE allfire2_c(UWORD bits BL_REG(d0))
 {
     UBYTE b = (UBYTE)bits;
@@ -715,12 +879,22 @@ static ULONG BLITZ_ROUTINE allfire2_c(UWORD bits BL_REG(d0))
     return r;
 }
 
+/**
+ * @brief AllFire: the fire buttons of all four ports (joybits %1111).
+ * @return d0: a bit per pressed fire button
+ */
 static ULONG BLITZ_ROUTINE allfire_c(void)
 {
     return allfire2_c(0x0f);
 }
 
-/* JAdaptorStatus on (d0.b): the old status in d0.b */
+/**
+ * @brief JAdaptorStatus On/Off: switches the reading of the four player adaptor.
+ *
+ * On by default ($FF); with 0, ports 3 and 4 read as nothing.
+ * @param status  d0.b: the new status
+ * @return d0: the old status in the low byte, d0's upper bytes kept
+ */
 static ULONG BLITZ_ROUTINE fouradaptor_c(ULONG status BL_REG(d0))
 {
     UBYTE old = fourplayer;
@@ -763,6 +937,14 @@ first:
     return r;
 }
 
+/**
+ * @brief ReadJoyPad(port#): the buttons of a CD32 pad.
+ *
+ * Clocks the pad's shift register through the fire line (see readpad).
+ * BUG(orig) (#877): every port number but 2 reads the joystick port.
+ * @param port  d0.w: the port (2 = the mouse port)
+ * @return d0: bits 7..0 = B, R, Y, G, FF, RW, PL, 0 (as the help text)
+ */
 static ULONG BLITZ_ROUTINE readjoypad_c(UWORD port BL_REG(d0))
 {
     if (port == 2)
