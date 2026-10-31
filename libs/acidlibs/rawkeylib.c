@@ -106,6 +106,22 @@ ULONG rawkey_d1;
 
 /* ---------------------------------------------------------- convertkey */
 
+/**
+ * @brief convertkey (+1, for other libraries) - raw key code to a character
+ * through console.device.
+ *
+ * F1-F10 ($50-$59) -> 129-138, cursor keys ($4C-$4F) -> 28-31, Help
+ * ($5F) -> 139; everything else through RawKeyConvert (one character,
+ * keymap NULL, the qualifier as given; 0 if nothing comes, the buffer's
+ * first byte also on an error).  The result is only in the low word of d0
+ * (MOVE.w / ADDI.w): the upper word is the caller's (fixed codes) or the
+ * one of RawKeyConvert's result.
+ *
+ * @param key  d0: the raw key code (low word)
+ * @param qual d1: the qualifier
+ * @return d0.w: the character; d1 = the character on the RawKeyConvert
+ *         path, else the qualifier (set by the thunk)
+ */
 static ULONG BLITZ_ROUTINE convertkey_c(ULONG key BL_REG(d0), ULONG qual BL_REG(d1))
 {
     UWORD c = key;
@@ -134,6 +150,16 @@ BLITZ_THUNK_POST(convertkey, convertkey_c, "a0-a1", "move.l  _rawkey_d1,d1");
 
 /* ----------------------------------------------------------- unconvert */
 
+/**
+ * @brief unconvert (+2, for other libraries) - character to raw key code.
+ *
+ * Looks through both tables in one run (normal, then shifted), so a
+ * character that exists in both gives the unshifted key.
+ *
+ * @param ch d0.b: the character
+ * @return d0: the raw key code, -1 if not found; d1 = 0 (normal table) or
+ *         1 (shifted table, also when not found)
+ */
 static ULONG BLITZ_ROUTINE unconvert_c(ULONG ch BL_REG(d0))
 {
     const UBYTE *p = maps.normmap;
@@ -156,6 +182,24 @@ BLITZ_THUNK_POST(unconvert, unconvert_c, "a0-a1", "move.l  _rawkey_d1,d1");
 
 /* --------------------------------------------------------- qconvertkey */
 
+/**
+ * @brief qconvertkey (+3, for other libraries) - raw key code to a
+ * character by table look-up (no console.device).
+ *
+ * The normal table (qualifier & 3 = 0) or the shifted one; with CTRL
+ * (bit 3) A-Z/a-z -> 1-26 and the other characters 65-122 except 91-96
+ * (`AND #$FFDF:SUB #64`: [ \ ] ^ _ ` stay), else CAPS LOCK (bit 2) makes
+ * a-z upper case.  Only the low word of d0 changes.
+ *
+ * BUG(orig) (#245): the table is indexed with the raw code & 255 - codes
+ * 105-255 (key-up codes $80+ included) read on behind the table: the
+ * shifted table, then the library's own code (the bytes of the original
+ * are appended to the tables).
+ *
+ * @param key  d0: the raw key code (low word)
+ * @param qual d1: the qualifier
+ * @return d0.w: the character (0 if none)
+ */
 static ULONG BLITZ_ROUTINE qconvertkey_c(ULONG key BL_REG(d0), ULONG qual BL_REG(d1))
 {
     const UBYTE *map = (qual & 3) ? maps.shiftmap : maps.normmap;
@@ -184,6 +228,17 @@ BLITZ_THUNK(qconvertkey, qconvertkey_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------ init/finit */
 
+/**
+ * @brief Library init: open console.device and fill the two tables.
+ *
+ * Clears the IOStdReq and MsgPort, sets them up (signal from AllocSignal),
+ * opens console.device unit -1 and fills the tables for the raw codes
+ * 0-104 with convertkey(code, 0) and convertkey(code, 1) (shift).  Neither
+ * the signal nor OpenDevice is checked.
+ *
+ * @return d0: d0 of the last convertkey call (code 104, shifted); stored
+ *         by the compiler, used by nobody
+ */
 ULONG BLITZ_ROUTINE codeinit(void)
 {
     UBYTE *p = (UBYTE *)&con;
@@ -216,6 +271,7 @@ ULONG BLITZ_ROUTINE codeinit(void)
     return key;
 }
 
+/** @brief Library finit: free the signal and close console.device. */
 void BLITZ_ROUTINE codefinit(void)
 {
     FreeSignal((UBYTE)con.port.mp_SigBit);      /* MOVEQ #0,d0:MOVE.b */
