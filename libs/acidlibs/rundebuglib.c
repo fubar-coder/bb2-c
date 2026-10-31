@@ -99,13 +99,24 @@ __asm__(
 "   trap    #0\n"
 );
 
-/* printerr - user mode...OK to generate error.  Never returns.
-   BUG(orig) (#6): d0 is taken as message pointer as it is.  The numeric codes
-   that only debuglib translates (1 "No currently used object!",
-   2 "Offset out of range", 3 "End of Program") give a requester with an
-   empty text - e.g. when an executable compiled with runtime errors on
-   runs off its end: blitz2 appends moveq #3,d0:trap #0 (eopcode); End
-   jumps behind it. */
+/**
+ * @brief printerr - show a runtime error and end the program ("user
+ * mode...OK to generate error").
+ *
+ * The TRAP #0 handler continues here in user mode.  a5 is set back to
+ * the globals of the init, the message is shown in an AutoRequest
+ * (64,64,640,64, both gadgets "OKAY!") and the program ends through
+ * exitslib's endjmp ($C800).  Never returns.
+ *
+ * BUG(orig) (#6): d0 is taken as message pointer as it is.  The numeric
+ * codes that only debuglib translates (1 "No currently used object!",
+ * 2 "Offset out of range", 3 "End of Program") give a requester with an
+ * empty text - e.g. when an executable compiled with runtime errors on
+ * runs off its end: blitz2 appends moveq #3,d0:trap #0 (eopcode); End
+ * jumps behind it.
+ *
+ * @param msg d0: the message (C string) of the runtime error
+ */
 void BLITZ_ROUTINE printerr(ULONG msg BL_REG(d0))
 {
     struct bl_regs r = { 0, 0, 0, 0 };
@@ -119,6 +130,14 @@ void BLITZ_ROUTINE printerr(ULONG msg BL_REG(d0))
     __builtin_unreachable();
 }
 
+/**
+ * @brief Library init: open intuition, remember a5 and install the TRAP
+ * #0..#5 handlers.
+ *
+ * The old vectors (VBR from runerrlib's getvbr, $C31D) are saved in
+ * oldtrap and replaced by mytrap0..mytrap5; ctrlc is cleared.
+ * OldOpenLibrary is not checked.
+ */
 void BLITZ_ROUTINE codeinit(void)
 {
     struct bl_regs r = { 0, 0, 0, 0 };
@@ -156,6 +175,10 @@ static void fixtraps(void)
         v[i] = oldtrap[i];
 }
 
+/**
+ * @brief Library finit: put the old TRAP #0..#5 vectors back (fixtraps)
+ * and close intuition.
+ */
 void BLITZ_ROUTINE codefinit(void)
 {
     fixtraps();
