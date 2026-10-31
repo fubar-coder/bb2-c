@@ -239,17 +239,17 @@ ULONG BLITZ_ROUTINE c_motoroff(LONG unit BL_REG(d0))
 }
 
 /* CloseDisk unit#: -1 if it was open */
-ULONG BLITZ_ROUTINE c_closedisk(LONG unit BL_REG(d0))
+BB_BOOL BLITZ_ROUTINE c_closedisk(LONG unit BL_REG(d0))
 {
     struct IOStdReq *req;
 
     if (unit > 3 || !td.msgport || !(req = getioreq(unit)))
-        return 0;
+        return BB_FALSE;
     c_motoroff(unit);
     CloseDevice((struct IORequest *)req);
     DeleteIORequest((struct IORequest *)req);   /* V36 (#941) */
     putioreq(unit, NULL);
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 void BLITZ_ROUTINE c_libfinit(void)
@@ -264,27 +264,27 @@ void BLITZ_ROUTINE c_libfinit(void)
 }
 
 /* OpenDisk unit#: -1 if the device opened */
-ULONG BLITZ_ROUTINE c_opentrack(LONG unit BL_REG(d0))
+BB_BOOL BLITZ_ROUTINE c_opentrack(LONG unit BL_REG(d0))
 {
     struct IOStdReq *req;
 
     if (unit > 3 || !td.msgport)
-        return 0;
+        return BB_FALSE;
     req = (struct IOStdReq *)CreateIORequest(td.msgport, 200); /* V36 (#941) */
     if (!req)
-        return 0;
+        return BB_FALSE;
     putioreq(unit, req);
     if (OpenDevice((CONST_STRPTR)td.trackname, unit, (struct IORequest *)req, 0)) {
         req = getioreq(unit);           /* 0 for a negative unit */
         putioreq(unit, NULL);
         DeleteIORequest((struct IORequest *)req);   /* V36 (#941) */
-        return 0;
+        return BB_FALSE;
     }
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* OpenDisk unit#,devicename$: the name stays for later OpenDisks */
-ULONG BLITZ_ROUTINE c_opentrack2(LONG unit BL_REG(d0), const char *name BL_REG(d1))
+BB_BOOL BLITZ_ROUTINE c_opentrack2(LONG unit BL_REG(d0), const char *name BL_REG(d1))
 {
     char *p = td.trackname;
 
