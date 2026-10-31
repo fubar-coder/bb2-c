@@ -185,6 +185,24 @@ static struct cfx {
 } cfx;
 _Static_assert(sizeof(struct cfx) == 20, "cfx layout");
 
+/* a coplist object of displaylib (NEWTYPE .mycop, 128 bytes): the
+   pointers into the copper list in front, +28 the custom space */
+struct mycop {
+    ULONG size;                         /* +0: 0 = not initialised */
+    UBYTE *coppos, *colors, *sprites;   /* +4 +8 +12 */
+    UBYTE *bpcons, *bplanes, *dot;      /* +16 +20 +24 */
+    UBYTE *customs;                     /* +28 */
+    UBYTE rest[96];                     /* +32 dob, bot, ... */
+};
+static_assert(sizeof(struct mycop) == 128);
+
+/* the colours of a colour split (cols_adr): the r, g, b of the first
+   line, then of the last, 8 bit values as longs */
+struct colsplit {
+    LONG start[3], end[3];
+};
+static_assert(sizeof(struct colsplit) == 24);
+
 /* _getcustom: the next free place in the custom space, NULL if there is
    none */
 static UWORD *getcustom(void)
@@ -220,27 +238,30 @@ static UWORD lownibbles(UWORD r, UWORD g, UWORD b)
     return (UWORD)(((r & 0xf) << 8) | ((g & 0xf) << 4) | (b & 0xf));
 }
 
-/* the gradient of DoColSplit/RedoColSplit: start values (cols[0..2] <<
-   14) and steps ((cols[3..5] - cols[0..2]) * (16384 / numlines), MULS.w
-   of the low words) */
+/* the gradient of DoColSplit/RedoColSplit: start values (start << 14)
+   and steps ((end - start) * (16384 / numlines), MULS.w of the low
+   words) */
 struct grad {
     LONG v[3], step[3];
 };
 
-static void gradient(struct grad *g, const LONG *cols, UWORD numlines)
+static void gradient(struct grad *g, const struct colsplit *cols, UWORD numlines)
 {
     WORD f = (WORD)bl_divs_w(CALCFACTOR, (WORD)numlines);   /* DIVS d7,d3 */
+    /* the six longs: c[i] = start[i], c[3 + i] = end[i] (indexed like
+       this, the code stays byte-identical) */
+    const LONG *c = (const LONG *)cols;
     int i;
 
     for (i = 0; i < 3; i++) {
-        g->step[i] = bl_muls_w((WORD)(cols[3 + i] - cols[i]), f);
-        g->v[i] = bl_muls_w((WORD)cols[i], CALCFACTOR);
+        g->step[i] = bl_muls_w((WORD)(c[3 + i] - c[i]), f);
+        g->v[i] = bl_muls_w((WORD)c[i], CALCFACTOR);
     }
 }
 
 /* DoColSplit cols_adr,numlines,colour_register: per line a WAIT, BPLCON3
    (high nibbles), the colour, BPLCON3 (low nibbles), the colour */
-ULONG BLITZ_ROUTINE c_docolsplit(const LONG *cols BL_REG(d0),
+ULONG BLITZ_ROUTINE c_docolsplit(const struct colsplit *cols BL_REG(d0),
                                         UWORD numlines BL_REG(d1),
                                         UBYTE reg BL_REG(d2))
 {
@@ -291,7 +312,7 @@ ULONG BLITZ_ROUTINE c_docolsplit(const LONG *cols BL_REG(d0),
 /* RedoColSplit cols_adr,numlines,ccoffset: new colours for a split made
    by DoColSplit at instruction ccoffset (skips a line 256 WAIT, writes
    only the two colour values per line) */
-void BLITZ_ROUTINE c_redocolsplit(const LONG *cols BL_REG(d0),
+void BLITZ_ROUTINE c_redocolsplit(const struct colsplit *cols BL_REG(d0),
                                          UWORD numlines BL_REG(d1),
                                          ULONG ccoffset BL_REG(d2))
 {
@@ -324,16 +345,16 @@ void BLITZ_ROUTINE c_redocolsplit(const LONG *cols BL_REG(d0),
 /* CopperReset coplist#,startline[,ccoffset]: a0 = the coplist object */
 void BLITZ_ROUTINE c_splitreset(UWORD startline BL_REG(d1),
                                        UWORD ccoffset BL_REG(d2),
-                                       UBYTE *coplist BL_REG(a0))
+                                       struct mycop *coplist BL_REG(a0))
 {
-    cfx.coplistaddr = coplist;
-    cfx.customaddr = *(UBYTE **)(coplist + 28);
+    cfx.coplistaddr = (UBYTE *)coplist;
+    cfx.customaddr = coplist->customs;
     cfx.startline = startline;
     cfx.ccoffset = (UWORD)(ccoffset << 2);
 }
 
 void BLITZ_ROUTINE c_splitreset2(UWORD startline BL_REG(d1),
-                                        UBYTE *coplist BL_REG(a0))
+                                        struct mycop *coplist BL_REG(a0))
 {
     c_splitreset(startline, 0, coplist);
 }
