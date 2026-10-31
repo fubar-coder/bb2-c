@@ -47,15 +47,16 @@
  *  - LoadShapes s,file$ / DecodeShapes s,mem: the last shape is base +
  *    (max - 1) << 5 as a word (SUBQ/LSL/ADD d2,a2): from a maximum of
  *    1025 on it lies before the table. (#939)
- * err2/err3/err7/err8
- * (files, ANIM) are in the normal code with their messages in the error
- * check area, as in the original.
  *
- * Fixed (intended deviation, docs/libs/deviations.md): DecodeShapes with
- * address 0 branches (BEQ) in the original into the error check area
- * (err10): without the debugger behind the library.  Here err10 and its
- * message are in the normal code; without the debugger the runtime error
- * is a TRAP #0 with the right message. (#270)
+ * Fixed (intended deviation, docs/libs/deviations.md):
+ *  - DecodeShapes with address 0 branches (BEQ) in the original into the
+ *    error check area (err10): without the debugger behind the library.
+ *    Here err10 and its message are in the normal code; without the
+ *    debugger the runtime error is a TRAP #0 with the right message. (#270)
+ *  - err2/err3/err7/err8 (files, ANIM) are in the normal code, in the
+ *    original with their messages in the error check area (without the
+ *    debugger d0 points behind the library); here the messages are in the
+ *    normal code too. (#953)
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -263,19 +264,23 @@ static struct {
 } BL_PACKED tb __attribute__((aligned(4)));
 
 BLITZ_ERRCHK_MESSAGE(mess1, "Uninitialized Shape");
-BLITZ_ERRCHK_MESSAGE(mess2, "Can't open Shapes File");
-BLITZ_ERRCHK_MESSAGE(mess3, "Can't Read/Write Shapes File");
 BLITZ_ERRCHK_MESSAGE(mess4, "First shape must be lower than second");
 BLITZ_ERRCHK_MESSAGE(mess5, "Illegal area for GetaShape");
 BLITZ_ERRCHK_MESSAGE(mess6, "Uninitialized BitMap");
-BLITZ_ERRCHK_MESSAGE(mess7, "ANIM format not supported");
-BLITZ_ERRCHK_MESSAGE(mess8, "Illegal ANIM interleave value");
 BLITZ_ERRCHK_MESSAGE(mess9, "Cannot GetaShape from an interleaved Bitmap");
 
 /* err10 of DecodeShapes (TST.l d2:BEQ err10) and its message in the
    normal code (the original has them in the error check area; fixed,
    #270) */
 static const char mess10[] = "Shapes file at memory location 0? NOWAY!";
+
+/* the messages of err2/err3/err7/err8 (files, ANIM) in the normal code
+   with their error routines (the original has them in the error check
+   area; fixed, #953) */
+static const char mess2[] = "Can't open Shapes File";
+static const char mess3[] = "Can't Read/Write Shapes File";
+static const char mess7[] = "ANIM format not supported";
+static const char mess8[] = "Illegal ANIM interleave value";
 
 /** @brief Library init: AutoCookie on. */
 static void BLITZ_ROUTINE codeinit_c(void)
@@ -655,7 +660,7 @@ static struct DosLibrary *dosbase;
  * used shape.
  *
  * Errors: "Can't open Shapes File", "Can't Read/Write Shapes File" (in
- * the normal code, their texts in the error area); "First shape must be
+ * the normal code with their texts, fixed: #953); "First shape must be
  * lower than second" (schkz, debugger only).
  *
  * @param last a2: the last shape
