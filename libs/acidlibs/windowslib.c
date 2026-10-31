@@ -94,6 +94,7 @@
 #include <graphics/rastport.h>
 #include <graphics/text.h>
 #include <graphics/gfx.h>
+#include <stddef.h>
 #include <dos/dosextens.h>
 #define __NOLIBBASE__
 #define INTUITION_BASE_NAME intbase
@@ -115,11 +116,17 @@ struct bwin {
     ULONG ptrsize;              /* +12 */
     WORD sbx, sby;              /* +16/+18 super bitmap position */
 } BL_PACKED;
+static_assert(sizeof(struct bwin) <= 1 << 5);
 
-/* the window number and the cursor origin in the Window's UserData */
-#define WNUM(w)  (*(UWORD *)((UBYTE *)(w) + 120))
-#define WORGX(w) (*(BYTE *)((UBYTE *)(w) + 122))
-#define WORGY(w) (*(BYTE *)((UBYTE *)(w) + 123))
+/* the window number and the cursor origin in the Window's UserData (the
+   long at +120 is used as these four bytes) */
+struct wuserdata {
+    UWORD num;                  /* +120 the window number */
+    BYTE orgx, orgy;            /* +122/+123 the cursor origin */
+} BL_PACKED;
+static_assert(offsetof(struct Window, UserData) == 120);
+static_assert(sizeof(struct wuserdata) == sizeof(APTR));
+#define WUD(w) ((struct wuserdata *)&((struct Window *)(w))->UserData)
 
 /* an event node (24 bytes) */
 struct evnode {
@@ -131,6 +138,16 @@ struct evnode {
     WORD mx, my;                /* 16/18 */
     struct Window *win;         /* 20 */
 };
+static_assert(sizeof(struct evnode) == 24);
+
+/* an IntuiFont object of intuifontlib (16 bytes): the TextAttr, +8 the
+   opened font */
+struct ifont {
+    struct TextAttr ta;
+    struct TextFont *font;
+    ULONG pad;
+};
+static_assert(sizeof(struct ifont) == 16);
 
 
 /* entry points (thunks / C / asm, defined below) */
@@ -207,9 +224,10 @@ void BLITZ_ROUTINE domenusok(UWORD on BL_REG(d0), UBYTE *objs BL_REG(a2),
                              UWORD max BL_REG(d2), struct Library *intbase BL_REG(a6));
 void BLITZ_ROUTINE dowpointer(const UBYTE *shape BL_REG(a2), ULONG xoff_reg BL_REG(d2),
                               ULONG yoff_reg BL_REG(d3), struct Library *intbase BL_REG(a6));
-void BLITZ_ROUTINE dowfont(const UBYTE *font BL_REG(a0), struct bwin *w BL_REG(a1),
+void BLITZ_ROUTINE dowfont(const struct ifont *font BL_REG(a0),
+                           struct bwin *w BL_REG(a1),
                            struct Library *gfxbase BL_REG(a6));
-void BLITZ_ROUTINE dowfont2(ULONG style BL_REG(d1), const UBYTE *font BL_REG(a0),
+void BLITZ_ROUTINE dowfont2(ULONG style BL_REG(d1), const struct ifont *font BL_REG(a0),
                             struct bwin *w BL_REG(a1),
                             struct Library *gfxbase BL_REG(a6));
 void BLITZ_ROUTINE dobtow1(struct bwin *w BL_REG(a0), struct BitMap *bm BL_REG(a1),
@@ -673,7 +691,9 @@ static struct BL_PACKED {
 #define LONGAT(field) (*(ULONG *)&V.field)
 
 static struct MsgPort myport;
-static WORD sizelimits[4] = { 128, 64, 0, 0 };
+/* SizeLimits: the NewWindow limits of the next Window */
+static struct { WORD minw, minh, maxw, maxh; } sizelimits = { 128, 64, 0, 0 };
+static_assert(sizeof sizelimits == 8);
 static WORD sizelimitsok = -1;
 static APTR oldwptr;
 static struct Library *intbase_g;
@@ -686,9 +706,15 @@ static ULONG origxy;
 static struct NewWindow anewwindow = {
     .MinWidth = 0x20, .MinHeight = 0x40, .MaxWidth = 0xffff, .MaxHeight = 0xffff };
 
-/* wintags + usertags: one list (no TAG_MORE) */
-static struct { ULONG wintags[8]; ULONG usertags[32]; } tags = { {
-    WA_Flags, 0, WA_Title, 0, WA_CustomScreen, 0, WA_NewLookMenus, (ULONG)-1 } };
+/* wintags + usertags: one list (no TAG_MORE); WindowTags copies the user
+   tags behind the four fixed ones, BUG(orig) (#317) without a limit, and
+   without tags writes no TAG_DONE: the last user tags stay (#316) */
+static struct {
+    struct TagItem flags, title, screen, newlook;   /* wintags */
+    struct TagItem user[16];                        /* usertags: 32 longs */
+} tags = {
+    { WA_Flags, 0 }, { WA_Title, 0 }, { WA_CustomScreen, 0 }, { WA_NewLookMenus, (ULONG)-1 } };
+static_assert(sizeof tags == 40 * 4);
 
 /* WBlit's bitmap */
 static struct BitMap mybmap;
@@ -777,10 +803,10 @@ BLITZ_THUNK(dowindowidcmp, dowindowidcmp_c, "d0-d1/a0-a1");
 static void BLITZ_ROUTINE doslimits_c(WORD a BL_REG(d0), WORD b BL_REG(d1), WORD c BL_REG(d2),
                                       WORD d BL_REG(d3))
 {
-    sizelimits[0] = a;
-    sizelimits[1] = b;
-    sizelimits[2] = c;
-    sizelimits[3] = d;
+    sizelimits.minw = a;
+    sizelimits.minh = b;
+    sizelimits.maxw = c;
+    sizelimits.maxh = d;
 }
 BLITZ_THUNK(doslimits, doslimits_c, "d0-d1/a1");
 
@@ -956,7 +982,7 @@ static ULONG BLITZ_ROUTINE doeventwindow_c(void)
 
     if (!w)
         return (ULONG)-1;
-    return (w & 0xffff0000UL) | WNUM(w);
+    return (w & 0xffff0000UL) | WUD(w)->num;
 }
 BLITZ_THUNK(doeventwindow, doeventwindow_c, "d1/a0-a1");
 
@@ -965,13 +991,13 @@ BLITZ_THUNK(doeventwindow, doeventwindow_c, "d1/a0-a1");
 /* WCursX/WCursY - cursor minus the origin of the window */
 static UWORD BLITZ_ROUTINE dowcursx_c(struct bwin *w BL_REG(a1))
 {
-    return w->cx - WORGX(w->win);
+    return w->cx - WUD(w->win)->orgx;
 }
 WORD_FN(dowcursx, dowcursx_c);
 
 static UWORD BLITZ_ROUTINE dowcursy_c(struct bwin *w BL_REG(a1))
 {
-    return w->cy - WORGY(w->win);
+    return w->cy - WUD(w->win)->orgy;
 }
 WORD_FN(dowcursy, dowcursy_c);
 
@@ -979,8 +1005,8 @@ WORD_FN(dowcursy, dowcursy_c);
 static void BLITZ_ROUTINE dowlocate_c(WORD x BL_REG(d0), WORD y BL_REG(d1),
                                       struct bwin *w BL_REG(a1))
 {
-    w->cx = x + WORGX(w->win);
-    w->cy = y + WORGY(w->win);
+    w->cx = x + WUD(w->win)->orgx;
+    w->cy = y + WUD(w->win)->orgy;
 }
 BLITZ_THUNK(dowlocate, dowlocate_c, "a1");
 
@@ -1036,7 +1062,7 @@ static ULONG windowprint(ULONG c)
         }
         win = pw->win;
         pw->cy += win->RPort->TxHeight;
-        pw->cx = (UBYTE)WORGX(win);         /* CLR.w:MOVE.b to the low byte */
+        pw->cx = (UBYTE)WUD(win)->orgx;     /* CLR.w:MOVE.b to the low byte */
         return (c & 0xffff0000UL) | (UWORD)pw->cy;
     }
     pw = outwin();
@@ -1242,30 +1268,42 @@ static void refgada3(struct Gadget *g, struct evnode *e)
     g->GadgetRender = render;
 }
 
-#define USERDATA_HI(g) (*(UWORD *)&(g)->UserData)
-#define USERDATA_LO(g) (((UWORD *)&(g)->UserData)[1])
+/* gadgetslib's UserData of a gadget: "bL" and the button group */
+struct gaduserdata {
+    UWORD magic;                /* "bL": a Blitz gadget */
+    UWORD group;                /* the button group, 0 = none */
+};
+static_assert(sizeof(struct gaduserdata) == sizeof(APTR));
+#define GUD(g) ((struct gaduserdata *)&(g)->UserData)
+
+/* gadgetslib's IntuiText (24 bytes): +20 = the start of its texts */
+struct gadtext {
+    struct IntuiText it;
+    UBYTE *texts;
+};
+static_assert(sizeof(struct gadtext) == 24);
 
 /* notbuttongad - a "bL" gadget without group: cycle its text (gadgetslib:
    the texts behind each other, their start at IntuiText+20, total length
    in front of it) */
 static void notbuttongad(struct Gadget *g, struct evnode *e)
 {
-    UBYTE *it = (UBYTE *)g->GadgetText;
+    struct gadtext *it = (struct gadtext *)g->GadgetText;
     UBYTE *cur, *base;
     LONG n;
 
     if (!it || (g->Activation & 0x100))
         return;
-    cur = *(UBYTE **)(it + 12);
-    base = *(UBYTE **)(it + 20);
+    cur = it->it.IText;
+    base = it->texts;
     n = ((LONG *)base)[-1] - (cur - base);
     for (;;) {
         if (--n < 0) {
-            *(UBYTE **)(it + 12) = base;        /* wrap */
+            it->it.IText = base;                /* wrap */
             break;
         }
         if (!*cur++) {
-            *(UBYTE **)(it + 12) = cur;
+            it->it.IText = cur;
             break;
         }
     }
@@ -1279,16 +1317,16 @@ static void gadgetevent(struct evnode *e)
     UWORD grp;
 
     V.eventgnum = g->GadgetID;
-    if (USERDATA_HI(g) != ('b' << 8 | 'L'))
+    if (GUD(g)->magic != ('b' << 8 | 'L'))
         return;
-    grp = USERDATA_LO(g);
+    grp = GUD(g)->group;
     if (!grp) {
         notbuttongad(g, e);
         return;
     }
     /* button style gadget: switch off the others of the group */
     for (o = e->win->FirstGadget; o; o = o->NextGadget) {
-        if (USERDATA_HI(o) != ('b' << 8 | 'L') || USERDATA_LO(o) != grp)
+        if (GUD(o)->magic != ('b' << 8 | 'L') || GUD(o)->group != grp)
             continue;
         if (o == g || !(o->Flags & GFLG_SELECTED))
             continue;
@@ -1304,34 +1342,34 @@ static void gadgetevent(struct evnode *e)
 /* findmenuitem - the item (or subitem) of a menu code */
 static struct MenuItem *findmenuitem(struct Menu *m, UWORD code)
 {
-    UBYTE *node = (UBYTE *)m;
+    struct MenuItem *it;
     WORD n;
 
     n = code & 31;
     if (n) {
         n--;
         do
-            node = *(UBYTE **)node;
+            m = m->NextMenu;
         while (n-- != 0);
     }
-    node = *(UBYTE **)(node + 18);
+    it = m->FirstItem;                          /* 18(a0) */
     n = (code >> 5) & 63;
     if (n) {
         n--;
         do
-            node = *(UBYTE **)node;
+            it = it->NextItem;
         while (n-- != 0);
     }
     n = (UWORD)(code << 5 | code >> 11) & 31;   /* ROL #5 */
     if (n != 31) {
-        node = *(UBYTE **)(node + 28);
+        it = it->SubItem;                       /* 28(a0) */
         if (--n >= 0) {
             do
-                node = *(UBYTE **)node;
+                it = it->NextItem;
             while (n-- != 0);
         }
     }
-    return (struct MenuItem *)node;
+    return it;
 }
 
 /* the number of a menu code part: 31/63 (NOMENU ...) -> -1 */
@@ -2113,18 +2151,18 @@ void BLITZ_ROUTINE dowpointer(const UBYTE *shape BL_REG(a2), ULONG xoff_reg BL_R
 }
 
 /* WindowFont font#[,style] - a0 = the IntuiFont object (+8 = TextFont) */
-void BLITZ_ROUTINE dowfont(const UBYTE *font BL_REG(a0), struct bwin *w BL_REG(a1),
+void BLITZ_ROUTINE dowfont(const struct ifont *font BL_REG(a0), struct bwin *w BL_REG(a1),
                              struct Library *gfxbase BL_REG(a6))
 {
-    SetFont(w->win->RPort, *(struct TextFont **)(font + 8));
+    SetFont(w->win->RPort, font->font);
 }
 
-void BLITZ_ROUTINE dowfont2(ULONG style BL_REG(d1), const UBYTE *font BL_REG(a0),
+void BLITZ_ROUTINE dowfont2(ULONG style BL_REG(d1), const struct ifont *font BL_REG(a0),
                               struct bwin *w BL_REG(a1), struct Library *gfxbase BL_REG(a6))
 {
     struct RastPort *rp = w->win->RPort;
 
-    SetFont(rp, *(struct TextFont **)(font + 8));
+    SetFont(rp, font->font);
     SetSoftStyle(rp, style, (ULONG)-1);
 }
 
@@ -2234,14 +2272,15 @@ static void windowopened(struct bwin *w, struct Window *win, UWORD num,
                          struct Library *intbase)
 {
     win->UserPort = &myport;
-    WNUM(win) = num;
-    *(UWORD *)((UBYTE *)win + 122) = *(UWORD *)&win->BorderLeft;
+    WUD(win)->num = num;
+    /* orgx, orgy = BorderLeft, BorderTop (one word) */
+    *(UWORD *)&WUD(win)->orgx = *(UWORD *)&win->BorderLeft;
     if (win->Flags & WFLG_GIMMEZEROZERO)
-        *(UWORD *)((UBYTE *)win + 122) = 0;
+        *(UWORD *)&WUD(win)->orgx = 0;
     *(ULONG *)&w->cx = 0;
     *(ULONG *)&w->sbx = 0;
-    ((UBYTE *)&w->cx)[1] = WORGX(win);
-    ((UBYTE *)&w->cy)[1] = WORGY(win);
+    ((UBYTE *)&w->cx)[1] = WUD(win)->orgx;
+    ((UBYTE *)&w->cy)[1] = WUD(win)->orgy;
     ModifyIDCMP(win, V.idcmp);
 }
 
@@ -2265,10 +2304,10 @@ static void openwindow(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *t
     nw->BlockPen = bpen;
     nw->FirstGadget = (struct Gadget *)*glist;
     if (sizelimitsok) {
-        nw->MinWidth = sizelimits[0];
-        nw->MinHeight = sizelimits[1];
-        nw->MaxWidth = sizelimits[2];
-        nw->MaxHeight = sizelimits[3];
+        nw->MinWidth = sizelimits.minw;
+        nw->MinHeight = sizelimits.minh;
+        nw->MaxWidth = sizelimits.maxw;
+        nw->MaxHeight = sizelimits.maxh;
     }
     nw->LeftEdge = BL_POPW(sp);
     nw->TopEdge = BL_POPW(sp);
@@ -2341,10 +2380,10 @@ static void opentags(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *tit
     *(struct bwin **)(blitz_globals + usedoff) = w;     /* set used window! */
     num = objoff >> 5;
     freewindow(intbase);
-    tags.wintags[1] = flags;
-    tags.wintags[3] = (ULONG)wtitle;
-    tags.wintags[5] = (ULONG)*scr;
-    win = OpenWindowTagList(NULL, (struct TagItem *)tags.wintags);
+    tags.flags.ti_Data = flags;
+    tags.title.ti_Data = (ULONG)wtitle;
+    tags.screen.ti_Data = (ULONG)*scr;
+    win = OpenWindowTagList(NULL, &tags.flags);
     w->win = win;
     if (!win) {
         BLITZ_RUNERR(mess1);                    /* err1 */
@@ -2371,13 +2410,14 @@ void BLITZ_ROUTINE dowindowtags3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1)
                                    const ULONG *lens BL_REG(a2),
                                    struct Library *intbase BL_REG(a6))
 {
-    ULONG *d = tags.usertags, tag;
+    struct TagItem *d = tags.user;     /* BUG(orig) (#317): no limit */
+    ULONG tag;
 
     do {
         tag = *tl++;
-        d[0] = tag;
-        d[1] = *tl++;
-        d += 2;
+        d->ti_Tag = tag;
+        d->ti_Data = *tl++;
+        d++;
     } while (tag);
     /* DIFF (K): the original keeps the title length with MOVE.l -(a2),
        -(a7) / MOVE.l (a7)+,(a2)+ in the 4 bytes behind the TAG_DONE pair
@@ -2394,14 +2434,15 @@ void BLITZ_ROUTINE dowindowtags2(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1)
                                    struct Library *intbase BL_REG(a6))
 {
     const ULONG *sp = lens;
-    ULONG len = BL_POPL(sp), *d = tags.usertags;
+    ULONG len = BL_POPL(sp);
+    struct TagItem *d = tags.user;
 
     while (n-- != 0) {                          /* DBRA d7 */
-        d[0] = BL_POPL(sp);
-        d[1] = BL_POPL(sp);
-        d += 2;
+        d->ti_Tag = BL_POPL(sp);
+        d->ti_Data = BL_POPL(sp);
+        d++;
     }
-    d[0] = 0;                                   /* TAG_DONE (data not set) */
+    d->ti_Tag = TAG_DONE;                       /* data not set */
     opentags((struct bwin *)blitz_string, objoff, flags, title, len, scr, usedoff, intbase);
 }
 
@@ -2439,10 +2480,10 @@ ULONG BLITZ_ROUTINE codeinit(struct Library *gfx BL_REG(a0), struct Library *int
     V.tjam = 1;
     V.outmwin = NULL;
     V.linw = 0;
-    sizelimits[0] = 128;
-    sizelimits[1] = 64;
-    sizelimits[2] = -1;
-    sizelimits[3] = -1;
+    sizelimits.minw = 128;
+    sizelimits.minh = 64;
+    sizelimits.maxw = -1;
+    sizelimits.maxh = -1;
     sizelimitsok = -1;
     LONGAT(evmousex) = 0;
     return (ULONG)&myport;
@@ -2477,11 +2518,12 @@ static void BLITZ_ERRCHK wchk_c(const ULONG *w BL_REG(a1))
 }
 
 /* wfontchk - and a0 = an IntuiFont with font */
-static void BLITZ_ERRCHK wfontchk_c(const ULONG *w BL_REG(a1), const UBYTE *font BL_REG(a0))
+static void BLITZ_ERRCHK wfontchk_c(const ULONG *w BL_REG(a1),
+                                    const struct ifont *font BL_REG(a0))
 {
     if (!*w)
         BLITZ_RUNERR(mess3);
-    else if (!*(const ULONG *)(font + 8))
+    else if (!font->font)
         BLITZ_RUNERR(mess4);
 }
 
