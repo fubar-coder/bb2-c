@@ -113,7 +113,7 @@ static void readbuff(void)
 }
 
 /* iffopen - a0 = file name; d0 unchanged if opened, else -1 */
-static ULONG BLITZ_ROUTINE iffopen_c(ULONG d0 BL_REG(d0), const char *name BL_REG(a0))
+static ULONG BLITZ_ROUTINE iffopen_c(ULONG value BL_REG(d0), const char *name BL_REG(a0))
 {
     filehand = Open((CONST_STRPTR)name, MODE_OLDFILE);
     if (!filehand) {
@@ -122,7 +122,7 @@ static ULONG BLITZ_ROUTINE iffopen_c(ULONG d0 BL_REG(d0), const char *name BL_RE
     }
     readbuff();
     iff_fail = 0;
-    return d0;
+    return value;
 }
 BLITZ_THUNK_POST(iffopen, iffopen_c, "d1/a0-a1", "tst.w _iff_fail");
 
@@ -148,7 +148,7 @@ static LONG getbyte(void)
 }
 
 /* iffbyte - d0.b = byte (rest of d0 kept), or d0 = -1 */
-static ULONG byte_(ULONG d0)
+static ULONG byte_(ULONG value)
 {
     LONG b = getbyte();
 
@@ -157,57 +157,57 @@ static ULONG byte_(ULONG d0)
         return (ULONG)-1;
     }
     iff_fail = 0;
-    return (d0 & 0xffffff00UL) | (UBYTE)b;
+    return (value & 0xffffff00UL) | (UBYTE)b;
 }
 
 /* iffword - d0.w = word (rest of d0 kept), or d0 = -1 */
-static ULONG word_(ULONG d0)
+static ULONG word_(ULONG value)
 {
-    ULONG d1;
+    ULONG part;                         /* d1 */
 
-    d0 = byte_(d0);
+    value = byte_(value);
     if (iff_fail)
-        return d0;
-    d1 = (UWORD)(d0 << 8);              /* MOVE d0,d1:LSL #8,d1 */
-    d0 = byte_(d0);
+        return value;
+    part = (UWORD)(value << 8);         /* MOVE d0,d1:LSL #8,d1 */
+    value = byte_(value);
     if (iff_fail)
-        return d0;
-    BL_SETB(d1, d0);                    /* MOVE.b d0,d1 */
-    BL_SETW(d0, d1);                    /* MOVE d1,d0 */
-    return d0;
+        return value;
+    BL_SETB(part, value);               /* MOVE.b d0,d1 */
+    BL_SETW(value, part);               /* MOVE d1,d0 */
+    return value;
 }
 
 /* ifflong - d0 = long, or -1 */
-static ULONG long_(ULONG d0)
+static ULONG long_(ULONG value)
 {
-    ULONG d1;
+    ULONG part;                         /* d1 */
 
-    d0 = word_(d0);
+    value = word_(value);
     if (iff_fail)
-        return d0;
-    d1 = (ULONG)(UWORD)d0 << 16;        /* MOVE d0,d1:SWAP d1 (low word of
+        return value;
+    part = (ULONG)(UWORD)value << 16;   /* MOVE d0,d1:SWAP d1 (low word of
                                            the caller's d1 is overwritten) */
-    d0 = word_(d0);
+    value = word_(value);
     if (iff_fail)
-        return d0;
-    return d1 | (UWORD)d0;
+        return value;
+    return part | (UWORD)value;
 }
 
-static ULONG BLITZ_ROUTINE iffbyte_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE iffbyte_c(ULONG value BL_REG(d0))
 {
-    return byte_(d0);
+    return byte_(value);
 }
 BLITZ_THUNK_POST(iffbyte, iffbyte_c, "d1/a0-a1", "tst.w _iff_fail");
 
-static ULONG BLITZ_ROUTINE iffword_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE iffword_c(ULONG value BL_REG(d0))
 {
-    return word_(d0);
+    return word_(value);
 }
 BLITZ_THUNK_POST(iffword, iffword_c, "d1/a0-a1", "tst.w _iff_fail");
 
-static ULONG BLITZ_ROUTINE ifflong_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE ifflong_c(ULONG value BL_REG(d0))
 {
-    return long_(d0);
+    return long_(value);
 }
 BLITZ_THUNK_POST(ifflong, ifflong_c, "d1/a0-a1", "tst.w _iff_fail");
 
@@ -215,24 +215,24 @@ BLITZ_THUNK_POST(ifflong, ifflong_c, "d1/a0-a1", "tst.w _iff_fail");
    length (ifflong); -1 at the end of the data or at "BODY" */
 static ULONG BLITZ_ROUTINE ifffind_c(ULONG id BL_REG(d0))
 {
-    ULONG d2 = 0;
-    UWORD d1 = charat;
+    ULONG last4 = 0;                    /* d2: the last 4 bytes */
+    UWORD at = charat;                  /* d1 */
 
     for (;;) {
-        if (d1 >= BUFSIZE) {
+        if (at >= BUFSIZE) {
             readbuff();
-            d1 = 0;
+            at = 0;
         }
-        if (d1 >= charsleft) {
+        if (at >= charsleft) {
             iff_fail = 0xffff;
             return (ULONG)-1;
         }
-        d1++;
-        charat = d1;
-        d2 = (d2 << 8) | iffbuff[(UWORD)(d1 - 1)];  /* MOVE.b -1(a0,d1),d2 */
-        if (d2 == id)
+        at++;
+        charat = at;
+        last4 = (last4 << 8) | iffbuff[(UWORD)(at - 1)]; /* MOVE.b -1(a0,d1),d2 */
+        if (last4 == id)
             return long_(id);
-        if (d2 == ID_BODY) {
+        if (last4 == ID_BODY) {
             iff_fail = 0xffff;
             return (ULONG)-1;
         }
@@ -243,14 +243,14 @@ BLITZ_THUNK_POST(ifffind, ifffind_c, "d1/a0-a1", "tst.w _iff_fail");
 /* iffskip - skip d0 bytes; Z when done, not Z at the end of the data */
 static ULONG BLITZ_ROUTINE iffskip_c(ULONG n BL_REG(d0))
 {
-    ULONG d0 = n;
+    ULONG value = n;                    /* d0 */
 
     for (;;) {
-        d0 = byte_(d0);
+        value = byte_(value);
         if (iff_fail)
-            return d0;                  /* BNE 'done: Z clear */
+            return value;               /* BNE 'done: Z clear */
         if (--n == 0)
-            return d0;                  /* SUBQ.l: Z set, iff_fail = 0 */
+            return value;               /* SUBQ.l: Z set, iff_fail = 0 */
     }
 }
 BLITZ_THUNK_POST(iffskip, iffskip_c, "d1/a0-a1", "tst.w _iff_fail");
@@ -258,25 +258,25 @@ BLITZ_THUNK_POST(iffskip, iffskip_c, "d1/a0-a1", "tst.w _iff_fail");
 /* iffread - copy d0 bytes to a0 (see the head comment) */
 static ULONG BLITZ_ROUTINE iffread_c(ULONG n BL_REG(d0), UBYTE *dst BL_REG(a0))
 {
-    UWORD d1 = charat;
+    UWORD at = charat;                  /* d1 */
     LONG res;
 
     for (;;) {
-        if (d1 >= BUFSIZE)
+        if (at >= BUFSIZE)
             break;
-        if (d1 >= charsleft) {
-            charat = d1;
+        if (at >= charsleft) {
+            charat = at;
             iff_a0 = dst;
             return n;
         }
-        *dst++ = iffbuff[d1++];
+        *dst++ = iffbuff[at++];
         if (--n == 0) {
-            charat = d1;
+            charat = at;
             iff_a0 = dst;
             return 0;
         }
     }
-    charat = d1;
+    charat = at;
     res = Read(filehand, dst, n);
     iff_a0 = dst;
     return (ULONG)res;
