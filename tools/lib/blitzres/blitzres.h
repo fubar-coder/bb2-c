@@ -25,15 +25,18 @@
 #include <stdint.h>
 #include <stdio.h>
 
-/* the longest constant name: the node length is a byte (19 + name + 0) */
+/** @brief The longest constant name: the node length is a byte (19 + name
+    + 0). */
 #define BLITZRES_MAXNAME 235
 
+/** @brief A constant: NAME = VALUE. */
 struct blitzres_const {
     char *name;
     int32_t value;
 };
 
-/* constants in the order of definition; skip: names never added */
+/** @brief Constants in the order of definition; skip: names never added
+    (blitzres_free). */
 struct blitzres_list {
     struct blitzres_const *c;
     size_t n, cap;
@@ -41,64 +44,139 @@ struct blitzres_list {
     size_t nskip;
 };
 
-/* a name blitz2 takes as a constant (letter or _, then letters, digits,
-   _), not longer than BLITZRES_MAXNAME */
+/**
+ * @brief Whether blitz2 takes a name as a constant (letter or _, then
+ *        letters, digits, _), not longer than BLITZRES_MAXNAME.
+ * @return 1 = valid, 0 = not
+ */
 int blitzres_valid_name(const char *name);
 
-/* append NAME=VALUE: a name on the skip list is left out (1), a name that
-   is there already with the same value too (2, blitz2 keeps the first);
-   0 = added, -1 = error (invalid name, the name with another value) */
+/**
+ * @brief Append NAME=VALUE.
+ * @param l       the list
+ * @param name    the name
+ * @param value   the value
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = added; 1 = left out (a name on the skip list); 2 = left out
+ *         (there already with the same value: blitz2 keeps the first);
+ *         -1 = error (invalid name, the name with another value)
+ */
 int blitzres_add(struct blitzres_list *l, const char *name, int32_t value, char *err,
                  size_t errlen);
-/* NAME is never added (it must be a valid name); 0 = ok, -1 = error */
+
+/**
+ * @brief NAME is never added (it must be a valid name).
+ * @return 0 = ok, -1 = error
+ */
 int blitzres_skip(struct blitzres_list *l, const char *name, char *err, size_t errlen);
-/* the value of NAME in the list; 0 = found, -1 = not there */
+
+/**
+ * @brief The value of NAME in the list.
+ * @param l      the list
+ * @param name   the name
+ * @param value  out: the value
+ * @return 0 = found, -1 = not there
+ */
 int blitzres_find(const struct blitzres_list *l, const char *name, int32_t *value);
+
+/** @brief Free the list. */
 void blitzres_free(struct blitzres_list *l);
 
-/* the resident of the constants of l (malloc'd, *len bytes);
-   0 = ok, -1 = error (more than 65535 constants) */
+/**
+ * @brief The resident of the constants of l.
+ * @param l       the constants
+ * @param out     out: the resident (malloc'd)
+ * @param len     out: its length in bytes
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = error (more than 65535 constants)
+ */
 int blitzres_write(const struct blitzres_list *l, uint8_t **out, size_t *len, char *err,
                    size_t errlen);
 
-/* the contents of a resident: types, macros, constants, one per line
- *   type NAME size=N
- *     field NAME offset=N flags=N [ndims=N] type=N   (ndims: an array)
- *   macro NAME "TEXT"           (bytes outside 32..126, " and \ as \xNN)
- *   const NAME=VALUE
- * without the unused bytes.  0 = ok, -1 = error (no resident, bounds) */
+/**
+ * @brief The contents of a resident: types, macros, constants, one per
+ *        line, without the unused bytes.
+ *
+ *     type NAME size=N
+ *       field NAME offset=N flags=N [ndims=N] type=N   (ndims: an array)
+ *     macro NAME "TEXT"           (bytes outside 32..126, " and \ as \xNN)
+ *     const NAME=VALUE
+ *
+ * @return 0 = ok, -1 = error (no resident, bounds)
+ */
 int blitzres_dump(const uint8_t *buf, size_t size, FILE *out, char *err, size_t errlen);
 
-/* the constants of a resident (only the constants: a resident with types
-   or macros is an error); appended to l with blitzres_add.  With strict,
-   the file must be exactly what blitzres_write makes of them (pointers,
-   relocations, unused bytes 0).  0 = ok, -1 = error */
+/**
+ * @brief The constants of a resident, appended to l with blitzres_add.
+ *
+ * Only the constants: a resident with types or macros is an error.
+ *
+ * @param buf     the resident
+ * @param size    its size
+ * @param strict  nonzero: the file must be exactly what blitzres_write
+ *                makes of them (pointers, relocations, unused bytes 0)
+ * @param l       the list
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = error
+ */
 int blitzres_read_consts(const uint8_t *buf, size_t size, int strict, struct blitzres_list *l,
                          char *err, size_t errlen);
 
-/* an FD file (##base/##bias/##public/##private, NAME(args)(regs)): every
-   public function as _NAME = -offset (the bias counts private functions
-   too).  varargs: then also _NAME without the A of a tag function NAMEA
-   whose FD has no NAME (the stubs of amiga.lib, e.g. SetDTAttrs).
-   0 = ok, -1 = error (a function before ##bias, blitzres_add) */
+/**
+ * @brief The functions of an FD file as constants.
+ *
+ * An FD file (##base/##bias/##public/##private, NAME(args)(regs)): every
+ * public function as _NAME = -offset (the bias counts private functions
+ * too).
+ *
+ * @param text     the FD file
+ * @param len      its length
+ * @param varargs  nonzero: then also _NAME without the A of a tag function
+ *                 NAMEA whose FD has no NAME (the stubs of amiga.lib, e.g.
+ *                 SetDTAttrs)
+ * @param l        the list
+ * @param err      the message of an error
+ * @param errlen   the size of err
+ * @return 0 = ok, -1 = error (a function before ##bias, blitzres_add)
+ */
 int blitzres_fd(const char *text, size_t len, int varargs, struct blitzres_list *l, char *err,
                 size_t errlen);
 
-/* an assembler include: every "NAME EQU|equ|SET EXPR" at the start of a
-   line (the comment from ; on left out) whose EXPR is a number ($hex,
-   0xhex, decimal, 'ABCD' four characters), a symbol defined before (in
-   syms or by an earlier line) or + - * << >> & | ^ ~ ( ) of them, as 32
-   bit value: NAME is defined in syms and appended to l.  Names ending in
-   _I (the include guards) and lines with other expressions (strings,
-   unknown symbols) are left out.  0 = ok, -1 = error (blitzres_add) */
+/**
+ * @brief The constants of an assembler include.
+ *
+ * Every "NAME EQU|equ|SET EXPR" at the start of a line (the comment from ;
+ * on left out) whose EXPR is a number ($hex, 0xhex, decimal, 'ABCD' four
+ * characters), a symbol defined before (in syms or by an earlier line) or
+ * + - * << >> & | ^ ~ ( ) of them, as 32 bit value: NAME is defined in
+ * syms and appended to l.  Names ending in _I (the include guards) and
+ * lines with other expressions (strings, unknown symbols) are left out.
+ *
+ * @param text    the include
+ * @param len     its length
+ * @param syms    the symbols known so far (extended)
+ * @param l       the list
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = error (blitzres_add)
+ */
 int blitzres_equ(const char *text, size_t len, struct blitzres_list *syms,
                  struct blitzres_list *l, char *err, size_t errlen);
 
-/* an LVO include (sfdc: "_LVONAME EQU -offset", for a library without an
-   FD file in the NDK, e.g. lvo/ahi.i): every _LVONAME as NAME = -offset,
-   the name without _LVO (as RWE's AHI.res has them: JSR
-   AHI_AudioRequestA(a6)).  0 = ok, -1 = error (no _LVO name, an offset
-   not below 0, blitzres_add) */
+/**
+ * @brief The functions of an LVO include as constants.
+ *
+ * An LVO include (sfdc: "_LVONAME EQU -offset", for a library without an
+ * FD file in the NDK, e.g. lvo/ahi.i): every _LVONAME as NAME = -offset,
+ * the name without _LVO (as RWE's AHI.res has them: JSR
+ * AHI_AudioRequestA(a6)).
+ *
+ * @return 0 = ok, -1 = error (no _LVO name, an offset not below 0,
+ *         blitzres_add)
+ */
 int blitzres_lvo(const char *text, size_t len, struct blitzres_list *l, char *err,
                  size_t errlen);
 

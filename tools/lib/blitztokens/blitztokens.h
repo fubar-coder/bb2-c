@@ -19,30 +19,53 @@
 #include <stdint.h>
 #include <stdio.h>
 
+/** @brief One token. */
 struct blitztoken {
     uint16_t num;               /* as in a tokenised source: bit 15 set */
     const char *name;
 };
 
+/** @brief A token list (blitztokens_free). */
 struct blitztokens {
     struct blitztoken *t;
     size_t n, cap;
 };
 
-/* the compiler's own tokens from the compiler's load file (the list that
-   starts with the node of token 1 "NEWTYPE"); 0 = ok, -1 = error (err) */
+/**
+ * @brief Add the compiler's own tokens from the compiler's load file (the
+ *        list that starts with the node of token 1 "NEWTYPE").
+ * @param buf     the load file
+ * @param size    its size
+ * @param out     the list the tokens are appended to
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = error
+ */
 int blitztokens_compiler(const uint8_t *buf, size_t size, struct blitztokens *out,
                          char *err, size_t errlen);
 
-/* the tokens of a library file or of every library of a BigLib file
-   (acidlibs, deflibs), in order; 0 = ok, -1 = error (err) */
+/**
+ * @brief Add the tokens of a library file or of every library of a BigLib
+ *        file (acidlibs, deflibs), in order.
+ * @param buf     the file
+ * @param size    its size
+ * @param out     the list the tokens are appended to
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = error
+ */
 int blitztokens_libraries(const uint8_t *buf, size_t size, struct blitztokens *out,
                           char *err, size_t errlen);
 
-/* the list as tests/data/ted-tokens.txt: "XXXX name" per line;
-   0 = ok, -1 = write error */
+/**
+ * @brief Write the list as tests/data/ted-tokens.txt: "XXXX name" per line.
+ * @param f     the file
+ * @param list  the tokens
+ * @return 0 = ok, -1 = write error
+ */
 int blitztokens_write(FILE *f, const struct blitztokens *list);
 
+/** @brief Free the list (not the names: they point into the files). */
 void blitztokens_free(struct blitztokens *list);
 
 #endif
