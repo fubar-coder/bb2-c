@@ -38,6 +38,8 @@ Result in `build/amiga/blitz2/` – the contents of the `blitz2:` directory:
 | `ted` | the editor (blitz2 loads it as `blitz2:ted`) |
 | `acidlibs` | the 83 command libraries |
 | `deflibs` | the 39 declaration libraries of the AmigaOS calls |
+| `blitz2-ab3` | the compiler with AmiBlitz3's mode as well (section "blitz2-ab3") |
+| `ab3cli` | the headless editor of a command line run of `blitz2-ab3` |
 
 Preset `amiga-debug`: the same code (`-Os`) with symbols, without strip.
 
@@ -91,6 +93,62 @@ by `tools/bblines`), ctest `rwe_refbuild` compiles them with the CD's
 blitz2 2.10 in Amiberry to `build/amiga/libs/userlibs/rwe/ref/NAME.obj`.
 An `RWE_LIBS` entry with REFERENCE `refbuild` is compared with that
 file.
+
+## blitz2-ab3: AmiBlitz3 sources
+
+`blitz2-ab3` (in `build/<preset>/blitz2/`, with `ab3cli` next to it) is
+a second build of the compiler from the same sources
+(`-DBLITZ2_AB3`, docs/ab3/variant.md): it compiles a Blitz Basic 2
+source exactly as `blitz2` and an AmiBlitz3 source with AmiBlitz3
+v3.14.0's token list and its binary libraries (AB3 mode). Started
+without options it is the editor session of `blitz2` (always BB2 mode);
+from the shell it compiles one source without the editor, with the
+option names of AmiBlitz3's CLI mode:
+
+```
+blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2]
+```
+
+| Option | |
+|---|---|
+| `-s`, `-source FILE` | the source: text (tokenised while loading, as TED does) or tokenised |
+| `-e`, `-exe FILE` | the executable to write |
+| `-r`, `-release` | no runtime error checking, no debugger, no debug information |
+| `-mode ab3\|bb2` | force the mode (an extension of this repository) |
+| `-h`, `-help` | the usage |
+
+The mode is AB3 for a text whose first line is AmiBlitz3's embedded
+header (`; XTRA`), for a file named `*.ab3`, and for a tokenised source
+whose companion `.xtra` has AmiBlitz3's format; anything else is BB2.
+The options of the compile come from the embedded header, else from the
+companion `SOURCE.xtra`, else they are the compiler's own. Includes of
+text are tokenised the same way with the program's token list; a
+tokenised include of the other mode is refused. Relative names
+(source, executable, includes) are relative to the shell's current
+directory. Errors go to the console – a compile error as
+`FILE:LINE: MESSAGE` – and the return code is 0 (compiled), 10 (compile
+error) or 20 (argument or set-up error). AmiBlitz3's other options
+(`-d`, `-run`, `-dump`, `-PED`, `-save`, …) are refused with 20.
+
+AB3 mode needs AmiBlitz3's files under `Blitz3:` (`BlitzLibs/baseLibs`,
+`utilLibs`, `OsLibs`, `csLibs`, `BlitzLibs/UserLibs/`,
+`BlitzLibs/Residents/`); BB2 mode the `blitz2:` directory as `blitz2`.
+Example, with `blitz2:` the directory of `build/<preset>/blitz2/` and
+`Blitz3:` an AmiBlitz3 v3.14.0 directory (`archive/amiblitz3/github-58a11658/`
+after `fetch-originals` has its `BlitzLibs/` and the test program used
+here):
+
+```
+cd Blitz3:
+blitz2:blitz2-ab3 -s Sourcecodes/Amiblitz3/Tests/atoi.ab3 -e RAM:atoi
+RAM:atoi
+```
+
+`ab3cli` is the headless editor of such a run (`programs/ab3cli`: the
+edstub frame, TED's core for loading and tokenising, `shared/xtra` for
+the header); `blitz2-ab3` loads it as `PROGDIR:ab3cli` instead of
+`blitz2:ted`. It needs Kickstart 2.0 (`PROGDIR:`), the editor session
+does not.
 
 ## IDE (CLion and others)
 
@@ -723,6 +781,8 @@ cmake/BlitzLibrary.cmake     blitz_library(), biglib_join()
 programs/blitz2/             compiler (src/: sections of blitz2.s + glue)
 programs/ted/                editor (src/: Amiga part, src/core/: OS-free
                              core)
+programs/ab3cli/             headless editor of blitz2-ab3's command line
+                             (edstub frame + TED's core + shared/xtra)
 libs/include/                blitzlib.h & co. (conventions of the libraries)
 libs/variants/               the variants of the libraries (NAME/libnums.h:
                              the library numbers; bb2-2.10 the default)
@@ -739,11 +799,13 @@ shared/filereq/              file requester of freqlib and TED (one source,
                              compiled by both with their own options)
 shared/edstub/               frame for programs that blitz2 loads as
                              blitz2:ted (entry points, comdata, no screen)
+shared/ab3job/               the command line of blitz2-ab3 and the job it
+                             hands to ab3cli (C99, no libc)
 shared/xtra/                 the companion settings of a source (.xtra)
                              as one structure: Blitz 2 .xtra, BB22
                              header, AmiBlitz3 embedded header (C99, no
-                             libc; compiled by each user, for later use
-                             in blitz2 and TED; m68k compile-only now)
+                             libc; compiled by each user: blitz2-ab3,
+                             ab3cli, the host tools)
 host/                        the host side: everything built with the
                              native compiler (tools, host tests), as
                              ExternalProject (build/<preset>/host)
@@ -786,6 +848,7 @@ tools/                       host tools:
                              contents read; NDK FD files and includes),
                              bblines (line edits of tokenised sources),
                              xtra (shared/xtra compiled for the host),
+                             ab3job (shared/ab3job for the host),
                              teststats (the @stat line of the emulator
                              sessions, statistics of JUnit files);
                              blitzlib also compares declarations

@@ -299,6 +299,56 @@ Rough total: G1–G5 about 20–40 commits, G6–G7 about 15–25, G8 open
    conversion by name only when needed (§1).
 8. Order: spike, G1–G5, then G7 (68020), then G6 (FPU).
 
+## The command line (G1, 2026-11-01)
+
+```
+blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2]
+```
+
+The option names are those of AmiBlitz3's CLI mode (its help text in
+v3.14.0's compiler); `-s`/`-source`, `-e`/`-exe`, `-r`/`-release` and
+`-h`/`-help` are supported, `-mode` is this repository's. AmiBlitz3's
+other options (`-d`/`-debug`, `-run`, `-dump`, `-setcom`, `-setdbg`,
+`-strbufsize`, `-stacksize`, `-maxerrors`, `-1`/`-1pass`, `-dform`,
+`-PED`, `-save`, `-v`/`-verbose`) are refused. Without any argument
+starting with `-`, `blitz2-ab3` starts the editor exactly as `blitz2`
+(BB2 mode). Return codes: 0 compiled (or `-h`), 10 compile error, 20
+argument or set-up error (assumption, AmiBlitz3's own are not
+documented).
+
+How it works (`shared/ab3job`, `programs/blitz2/src/ab3main.c`,
+`programs/ab3cli`): `blitz2-ab3` parses the arguments, reads the source
+and its companion `.xtra` and decides the mode (`xtra_mode`, §1) before
+it loads anything; then it runs as for the editor, but loads
+`PROGDIR:ab3cli` instead of `blitz2:ted` and hands it the job instead
+of a file name. `ab3cli` is a headless editor on the edstub frame with
+TED's core: it loads the source as TED does (a text source tokenised
+with the token list of the program's mode), hands the compiler the
+options (AmiBlitz3's embedded header as a Blitz 2 `.xtra` image, else
+the companion `.xtra`, else the compiler's own; `-r` switches runtime
+error checking, the debugger and debug information off), compiles with
+CREATE EXECUTABLE and prints errors as `FILE:LINE: MESSAGE`.
+
+Includes: blitz2 only reads tokenised includes (`readinc`, design D4 of
+the change). In a command line run an include of text is therefore
+tokenised by `ab3cli` first – TED's way of loading a source, with the
+program's token list – and `readinc` reads those lines; an editor
+session reads includes exactly as `blitz2`. A tokenised include of the
+other mode is refused ("Include of another mode: NAME").
+
+Limits of G1, found on the way:
+* Relative names (source, executable, includes, residents with a path)
+  are relative to the shell's current directory.
+* The `Max NAME` lines of the embedded header are not used (a Blitz 2
+  `.xtra` names the library by number; mapping needs the libraries):
+  the compiler's maximums apply.
+* A text line longer than TED's 128 characters is split as TED splits
+  it; names that contain a command name are tokenised inside (`show2{`
+  becomes `Show` + `2{`), as in TED and AmiBlitz3's tokenised sources.
+* `PROGDIR:` needs Kickstart 2.0; the editor session runs on 1.3 as
+  `blitz2`. The `.xtra` image goes to the compiler through a temporary
+  file in `T:` (else `RAM:`).
+
 ## Spike result (2026-10-31)
 
 Phase 0, no compiler change: today's blitz2 (build of `main`) with
