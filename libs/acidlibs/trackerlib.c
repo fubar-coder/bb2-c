@@ -44,6 +44,10 @@
  *     that the original reads its own code). (#295)
  *   - LoadModule of a missing file / a directory: runtime error without
  *     FreeMem of the FileInfoBlock (a directory also stays locked). (#296)
+ * Fixed (intended deviation, #957): "Error Accessing Module File" (err1)
+ * traps in the normal code, but the original has its message in the error
+ * check area (without the debugger d0 points behind the library); here
+ * the message is in the normal code.
  * DIFF: none in the results; the interrupt routine is C (GCC keeps
  * d2-d7/a2-a6, the thunk d0-d1/a0-a1: everything like the original).
  */
@@ -202,7 +206,10 @@ static const UWORD mt_periods[38] = {
     0x0000, 0x0000,
 };
 
-extern const char mess1[], mess2[];
+/* err1's message in the normal code (fixed, #957: in the original it lies
+   in the error check area); mess2 is in the error check area (playchk) */
+static const char mess1[] = "Error Accessing Module File";
+extern const char mess2[];
 
 /* MOVE.w #$12c,d0:DBF d0,* - a timing loop, assembler so that it stays */
 static inline void mt_delay(void)
@@ -583,8 +590,8 @@ static void freemod2(struct module *m, int blitz);
  * reads the file in one Read.
  *
  * Errors: "Error Accessing Module File" (runtime error also without the
- * debugger) for a missing file or a directory, or when the file cannot be
- * opened.
+ * debugger, its message in the normal code: fixed, #957) for a missing
+ * file or a directory, or when the file cannot be opened.
  *
  * BUG(orig) (#296): on that error the FileInfoBlock is not freed (a
  * directory also stays locked).
@@ -731,5 +738,4 @@ static void BLITZ_ERRCHK playchk_c(void)
 }
 
 BLITZ_ERRCHK_THUNK(playchk, playchk_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_MESSAGE(mess1, "Error Accessing Module File");
 BLITZ_ERRCHK_MESSAGE(mess2, "Uninitialized Module");

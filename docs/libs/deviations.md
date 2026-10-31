@@ -107,7 +107,8 @@ intended deviations (kind **F**), each with its issue.
 | speaklib (speaklib.c:30) | a2 popped | unchanged | **B** | convention |
 | stringfunclib (stringfunclib.c:24, :634, :730, :815) | a2 decremented differently depending on the path (String$ ≤ 0, Replace$ empty, Cvi/Cvl/Cvq not at all) | always unchanged | **B** | convention |
 | utillib CreateMsgPort (utillib.c:30, :153, :165, :193) | after the runtime error (`TRAP #0`, "Failed to allocate memory/signal for Port") the code runs into the message text; the NoSig branch first falls into `Error_NoMemory` (pops a0 and the registers from the stack a second time, second trap) | runtime error, then return with 0 | **K** | only with a returning trap; the original never reaches the NoMem branches anyway (memlib globalloc does not return on lack of memory), the NoSig branch never (`AllocSignal(-1)` does not return 0) |
-| trackerlib (trackerlib.c:47) | – | interrupt routine in C, same registers | – | explicitly "no deviation" |
+| trackerlib (trackerlib.c:51) | – | interrupt routine in C, same registers | – | explicitly "no deviation" |
+| trackerlib LoadModule err1 (trackerlib.c:47) | err1 traps in normal code, its message "Error Accessing Module File" is in the error check area (without debugger d0 behind the lib) | message in normal code | **F** | #957: the same runtime error with the debugger; without it TRAP #0 with the right message (test `trackerlib-err1-errarea`) |
 | vallib (vallib.c:18) | a2 decremented by 2/4 | unchanged | **B** | convention |
 | windowslib err6/err7 (windowslib.c:73) | jumps into the error check area | trap in normal code | **K** | only in these error cases without debugger |
 | windowslib registers (windowslib.c:73) | changes a3 (WBlit, inputstr), d7, a4 (Window); WindowTags with tag pairs writes the title length back to the argument stack | does not | **K**/**B** | not observable |
