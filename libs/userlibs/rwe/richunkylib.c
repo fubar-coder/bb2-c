@@ -132,15 +132,15 @@ static void BLITZ_ROUTINE nothing_c(void)
 /* _freechunkybitmap (a0 = the object): the size width*height through
    lmullib (the width extended twice, d1's upper word the caller's - no
    defect, the product is unused), globfree, the fields cleared, the LED
-   toggled */
-static void freechunky(UBYTE *o, ULONG d1)
+   toggled; callerd1 = the caller's d1 */
+static void freechunky(UBYTE *o, ULONG callerd1)
 {
     struct bl_regs r;
 
     if (!OL(o, CDATA))
         return;
     r.d0 = (ULONG)(LONG)OW(o, CW);
-    r.d1 = (d1 & 0xffff0000UL) | (UWORD)OW(o, CH);
+    r.d1 = (callerd1 & 0xffff0000UL) | (UWORD)OW(o, CH);
     r.a0 = (ULONG)o;
     r.a1 = 0;
     BLITZ_ALIBJSR(TOK_lmultiply, r);
@@ -153,9 +153,9 @@ static void freechunky(UBYTE *o, ULONG d1)
 }
 
 /* the object manager's free routine: a3 = the object */
-static void BLITZ_ROUTINE dofreechunkybitmap_c(ULONG d1 BL_REG(d1), UBYTE *o BL_REG(a3))
+static void BLITZ_ROUTINE dofreechunkybitmap_c(ULONG callerd1 BL_REG(d1), UBYTE *o BL_REG(a3))
 {
-    freechunky(o, d1);
+    freechunky(o, callerd1);
 }
 
 /* ChunkyBitmap n,width,height (d1, d2; a0 = the object) */
@@ -241,40 +241,41 @@ static void BLITZ_ROUTINE c2p_c(UBYTE *o BL_REG(a0), UBYTE *bm BL_REG(a1))
         int k;
 
         for (k = 0; k < 4; k++) {
-            ULONG d0 = *src++, d1 = *src++, d2, d3, d4;
+            /* d0-d4: pixels, then nibble and bit groups */
+            ULONG px0 = *src++, px1 = *src++, mix0, mix1, bits;
 
-            d2 = d0 & 0x0f0f0f0fUL;
-            d0 ^= d2;
-            d3 = d1 & 0x0f0f0f0fUL;
-            d1 ^= d3;
-            d2 = (d2 << 4) | d3;
-            d0 |= d1 >> 4;
-            d3 = merge2(d2);
-            d1 = merge2(d0);
+            mix0 = px0 & 0x0f0f0f0fUL;
+            px0 ^= mix0;
+            mix1 = px1 & 0x0f0f0f0fUL;
+            px1 ^= mix1;
+            mix0 = (mix0 << 4) | mix1;
+            px0 |= px1 >> 4;
+            mix1 = merge2(mix0);
+            px1 = merge2(px0);
 
-            d2 = d1 >> 7;
-            d0 = d1 & 0x55555555UL;
-            d1 ^= d0;
-            d4 = d2 & 0x55555555UL;
-            d2 ^= d4;
-            d1 = (d1 | d4) >> 1;
-            buf[7][k] = (UBYTE)d1;
-            buf[5][k] = (UBYTE)(d1 >> 16);
-            d2 |= d0;
-            buf[6][k] = (UBYTE)d2;
-            buf[4][k] = (UBYTE)(d2 >> 16);
+            mix0 = px1 >> 7;
+            px0 = px1 & 0x55555555UL;
+            px1 ^= px0;
+            bits = mix0 & 0x55555555UL;
+            mix0 ^= bits;
+            px1 = (px1 | bits) >> 1;
+            buf[7][k] = (UBYTE)px1;
+            buf[5][k] = (UBYTE)(px1 >> 16);
+            mix0 |= px0;
+            buf[6][k] = (UBYTE)mix0;
+            buf[4][k] = (UBYTE)(mix0 >> 16);
 
-            d2 = d3 >> 7;
-            d0 = d3 & 0x55555555UL;
-            d3 ^= d0;
-            d4 = d2 & 0x55555555UL;
-            d2 ^= d4;
-            d3 = (d3 | d4) >> 1;
-            buf[3][k] = (UBYTE)d3;
-            buf[1][k] = (UBYTE)(d3 >> 16);
-            d2 |= d0;
-            buf[2][k] = (UBYTE)d2;
-            buf[0][k] = (UBYTE)(d2 >> 16);
+            mix0 = mix1 >> 7;
+            px0 = mix1 & 0x55555555UL;
+            mix1 ^= px0;
+            bits = mix0 & 0x55555555UL;
+            mix0 ^= bits;
+            mix1 = (mix1 | bits) >> 1;
+            buf[3][k] = (UBYTE)mix1;
+            buf[1][k] = (UBYTE)(mix1 >> 16);
+            mix0 |= px0;
+            buf[2][k] = (UBYTE)mix0;
+            buf[0][k] = (UBYTE)(mix0 >> 16);
         }
         /* the buffers to the planes as longs, in the original's order */
         pl[PLSIZ / 4 * 1] = *(ULONG *)buf[1];
