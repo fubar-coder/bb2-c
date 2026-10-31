@@ -258,6 +258,13 @@ static_assert(sizeof pa == 36 * 4);
 
 #define TABLESIZE 1856
 
+/**
+ * @brief finit: frees the zoom tables (1856 bytes, memlib globfree).
+ *
+ * Nothing if init could not allocate them.  BUG(orig) (#673): the table
+ * pointers stay set after the free.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     struct bl_regs r;
@@ -269,6 +276,16 @@ static void BLITZ_ROUTINE libfinit_c(void)
 }
 BLITZ_THUNK(libfinit, libfinit_c, "d1/a0-a1");
 
+/**
+ * @brief init: allocates the zoom tables (memlib globalloc, 1856 bytes
+ * MEMF_PUBLIC) and fills them.
+ *
+ * reducex2: 256 bytes, bits 7,5,3,1 to bits 3-0; zoomx2: 256 words, every
+ * bit twice; zoomx4: 256 longs, every bit four times; zoomx8: 16 longs,
+ * four bits eight times each.  Without memory the pointers stay 0 and the
+ * zooms that need a table do nothing.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     struct bl_regs r = { .d0 = TABLESIZE, .d1 = MEMF_PUBLIC };
@@ -327,7 +344,13 @@ static void BLITZ_ROUTINE libinit_c(void)
 }
 BLITZ_THUNK(libinit, libinit_c, "d1/a0-a1");
 
-/* GetZoomTables */
+/**
+ * @brief GetZoomTables: the address of the four table pointers.
+ *
+ * The longs reducex2, zoomx2, zoomx4, zoomx8 (0 before init or if init
+ * found no memory).
+ * @return d0: the address of the pointer block
+ */
 static ULONG BLITZ_ROUTINE zoomtables_c(void)
 {
     return (ULONG)&tables;
@@ -414,10 +437,39 @@ static void clearbitmap_c(ULONG delay, UWORD h, UWORD off, ULONG bm)
 
 /* the two forms: without height/offset the whole bitmap (bm_Rows, 0).
    The original keeps a4-a6 only: the C functions are the entries. */
+
+/**
+ * @brief ClearBitmap bitmap#,delay: clears the whole bitmap line by line
+ * with a dither fade (see clearbitmap_c).
+ *
+ * Height bm_Rows, offset 0.  BUG(orig): one word too low (#668), the
+ * depth from the word at 4 (#670), delay 0 = 2^32 turns (#669), more
+ * than 16 planes overrun the pointer arrays (#674).
+ * @param delay  d1: turns of the busy loop per line
+ * @param bm     a0: the bitmap (struct BitMap) of bitmap# (d0)
+ * @return nothing (keeps a4-a6 only)
+ */
 static void BLITZ_ROUTINE clearbitmap2(ULONG delay BL_REG(d1), ULONG bm BL_REG(a0))
 {
     clearbitmap_c(delay, BM_ROWS(bm), 0, bm);
 }
+
+/**
+ * @brief ClearBitmap bitmap#,delay,height,offset: clears `height` lines
+ * from line `offset` on with a dither fade.
+ *
+ * Backwards from the end of the area: each line is first ANDed with the
+ * alternating mask $AAAA/$5555, 19 lines later cleared.  BUG(orig): starts
+ * at end-4, not end-2: one word too low, the last word of the area stays
+ * and the word before the area is cleared (#668); the depth is the word
+ * bm_Flags:bm_Depth (#670); delay 0 = 2^32 turns (#669); more than 16
+ * planes overrun the pointer arrays (#674).
+ * @param delay  d1: turns of the busy loop per line
+ * @param h      d2.w: the number of lines
+ * @param off    d3.w: the first line
+ * @param bm     a0: the bitmap of bitmap# (d0)
+ * @return nothing (keeps a4-a6 only)
+ */
 static void BLITZ_ROUTINE clearbitmap(ULONG delay BL_REG(d1), ULONG h BL_REG(d2),
                                       ULONG off BL_REG(d3), ULONG bm BL_REG(a0))
 {
@@ -497,11 +549,43 @@ static void fadein_c(ULONG delay, UWORD h, UWORD off1, UWORD off2, ULONG src, UL
 }
 
 /* the two forms (bm_Rows of the source, offsets 0); entries as above */
+
+/**
+ * @brief FadeInBitmap bitmapsource#,bitmapdest#,delay: fades the whole
+ * source into the destination line by line (see fadein_c).
+ *
+ * Height bm_Rows of the source, offsets 0.  BUG(orig): the depth from the
+ * word at 4 (#670), delay 0 = 2^32 turns (#669), more than 8 planes
+ * overrun the pointer arrays (#674).
+ * @param delay  d2: turns of the busy loop per line
+ * @param src    a0: the source bitmap (bitmapsource#, d0)
+ * @param dst    a1: the destination bitmap (bitmapdest#, d1)
+ * @return nothing (keeps a4-a6 only)
+ */
 static void BLITZ_ROUTINE fadeinbitmap2(ULONG delay BL_REG(d2), ULONG src BL_REG(a0),
                                         ULONG dst BL_REG(a1))
 {
     fadein_c(delay, BM_ROWS(src), 0, 0, src, dst);
 }
+
+/**
+ * @brief FadeInBitmap bitmapsource#,bitmapdest#,delay,height,offset1,offset2:
+ * fades `height` source lines into the destination with a dither.
+ *
+ * Forwards: each line is first copied through the alternating mask
+ * $AAAA/$5555, 19 lines later copied whole.  Width, depth and both line
+ * offsets come from the source bitmap (offsets times the SOURCE's bytes
+ * per row).  BUG(orig): the depth is the word bm_Flags:bm_Depth (#670);
+ * delay 0 = 2^32 turns (#669); from 9 planes on the two pointers per
+ * plane overrun bit_add/dest_add (#674).
+ * @param delay  d2: turns of the busy loop per line
+ * @param h      d3.w: the number of lines
+ * @param off1   d4.w: the first source line
+ * @param off2   d5.w: the first destination line
+ * @param src    a0: the source bitmap (d0)
+ * @param dst    a1: the destination bitmap (d1)
+ * @return nothing (keeps a4-a6 only)
+ */
 static void BLITZ_ROUTINE fadeinbitmap(ULONG delay BL_REG(d2), ULONG h BL_REG(d3),
                                        ULONG off1 BL_REG(d4), ULONG off2 BL_REG(d5),
                                        ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
@@ -608,6 +692,21 @@ static void zoomx4_c(UBYTE sel, ULONG srcadd, ULONG dstadd, UWORD width, UWORD h
     } while (planes-- != 0);
 }
 
+/**
+ * @brief ZoomX4 source#,dest#,sourceadd,destadd,width,height: every source
+ * pixel becomes 4x4 pixels (zoomx4 table, see zoomx4_c).
+ *
+ * Nothing without the table (init found no memory), with a width below 8
+ * or a height below 1.  The number of planes is the source's bm_Depth (a
+ * byte: 0 = 256).
+ * @param srcadd  d2: byte offset added to every source plane
+ * @param dstadd  d3: byte offset added to every destination plane
+ * @param width   d4.w: the width in pixels (ASR.w #3: whole bytes)
+ * @param h       d5.w: the number of source lines
+ * @param src     a0: the source bitmap (source#, d0)
+ * @param dst     a1: the destination bitmap (dest#, d1)
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE zoomx4_6_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(d3),
                                      ULONG width BL_REG(d4), ULONG h BL_REG(d5),
                                      ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
@@ -616,6 +715,22 @@ static void BLITZ_ROUTINE zoomx4_6_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_RE
         return;
     zoomx4_c(0, srcadd, dstadd, (UWORD)width, (UWORD)h, src, dst);   /* CLR.b d7 */
 }
+
+/**
+ * @brief ZoomX4 source#,dest#,sourceadd,destadd,width,height,xy_select:
+ * as ZoomX4 above, in one direction only if asked.
+ *
+ * xy_select 1 = only x (4 times as wide), 2 = only y (4 times as high),
+ * anything else both.
+ * @param srcadd  d2: byte offset added to every source plane
+ * @param dstadd  d3: byte offset added to every destination plane
+ * @param width   d4.w: the width in pixels
+ * @param h       d5.w: the number of source lines
+ * @param src     a0: the source bitmap (d0)
+ * @param dst     a1: the destination bitmap (d1)
+ * @param args    a2: the argument stack, xy_select the byte at -1(a2)
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE zoomx4_7_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(d3),
                                      ULONG width BL_REG(d4), ULONG h BL_REG(d5),
                                      ULONG src BL_REG(a0), ULONG dst BL_REG(a1),
@@ -629,7 +744,20 @@ static void BLITZ_ROUTINE zoomx4_7_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_RE
 BLITZ_THUNK(zoomxy_no_xy, zoomx4_6_c, "d0-d1/a0-a1");
 BLITZ_THUNK(zoomx4_xy, zoomx4_7_c, "d0-d1/a0-a1");
 
-/* ZoomX2 source#,dest#,sourceadd,destadd,width,height */
+/**
+ * @brief ZoomX2 source#,dest#,sourceadd,destadd,width,height: every source
+ * pixel becomes 2x2 pixels (zoomx2 table).
+ *
+ * Nothing without the table, with a width below 8 or a height below 1.
+ * The number of planes is the source's bm_Depth (0 = 256).
+ * @param srcadd  d2: byte offset added to every source plane
+ * @param dstadd  d3: byte offset added to every destination plane
+ * @param width   d4.w: the width in pixels (ASR.w #3: whole bytes)
+ * @param h       d5.w: the number of source lines
+ * @param src     a0: the source bitmap (source#, d0)
+ * @param dst     a1: the destination bitmap (dest#, d1)
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE zoomx2_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(d3),
                                    ULONG width BL_REG(d4), ULONG h BL_REG(d5),
                                    ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
@@ -670,8 +798,21 @@ static void BLITZ_ROUTINE zoomx2_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(
 }
 BLITZ_THUNK(zoomx2, zoomx2_c, "d0-d1/a0-a1");
 
-/* ZoomX8 source#,dest#,sourceadd,destadd,width,height - every source
-   line becomes 8 lines of 8 times the width (two passes of 4 lines) */
+/**
+ * @brief ZoomX8 source#,dest#,sourceadd,destadd,width,height: every source
+ * pixel becomes 8x8 pixels (zoomx8 table).
+ *
+ * Every source line becomes 8 lines of 8 times the width (two passes of 4
+ * lines).  Nothing without the table, with a width below 8 or a height
+ * below 1.  The number of planes is the source's bm_Depth (0 = 256).
+ * @param srcadd  d2: byte offset added to every source plane
+ * @param dstadd  d3: byte offset added to every destination plane
+ * @param width   d4.w: the width in pixels (ASR.w #3: whole bytes)
+ * @param h       d5.w: the number of source lines
+ * @param src     a0: the source bitmap (source#, d0)
+ * @param dst     a1: the destination bitmap (dest#, d1)
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE zoomx8_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(d3),
                                    ULONG width BL_REG(d4), ULONG h BL_REG(d5),
                                    ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
@@ -728,10 +869,17 @@ static void BLITZ_ROUTINE zoomx8_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(
 }
 BLITZ_THUNK(zoomx8, zoomx8_c, "d0-d1/a0-a1");
 
-/* ZoomyZoom bitmap# - BUG(orig) (#670, #676): depth = the word at 4, and
-   fixed 32 lines of 80 bytes whatever the bitmap's size; the left 40
-   bytes of a line are doubled in place (from the right, so nothing is
-   read after it is written) */
+/**
+ * @brief ZoomyZoom bitmap#: doubles the left half of the bitmap in x, in
+ * place (zoomx2 table).
+ *
+ * BUG(orig) (#670, #676): depth = the word at 4, and fixed 32 lines of 80
+ * bytes whatever the bitmap's size; the left 40 bytes of a line are
+ * doubled in place (from the right, so nothing is read after it is
+ * written).  Nothing without the table.
+ * @param bm  a0: the bitmap of bitmap# (d0)
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE dozoomy_c(ULONG bm BL_REG(a0))
 {
     ULONG planes = BM_PLANES(bm), line, tab = tables.zoomx2;
@@ -756,8 +904,21 @@ static void BLITZ_ROUTINE dozoomy_c(ULONG bm BL_REG(a0))
 /* the original keeps everything if there is no table: keep d0/d1/a0/a1 */
 BLITZ_THUNK(dozoomy, dozoomy_c, "d0-d1/a0-a1");
 
-/* ReduceX2 source#,dest#,sourceadd,destadd,width,height - half the size:
-   every second line, two source bytes -> one (bits 7,5,3,1) */
+/**
+ * @brief ReduceX2 source#,dest#,sourceadd,destadd,width,height: halves the
+ * size (reducex2 table).
+ *
+ * Every second line, two source bytes -> one (bits 7,5,3,1).  Nothing
+ * without the table, with a width below 16 or a height below 2.  The
+ * number of planes is the source's bm_Depth (0 = 256).
+ * @param srcadd  d2: byte offset added to every source plane
+ * @param dstadd  d3: byte offset added to every destination plane
+ * @param width   d4.w: the source width in pixels
+ * @param h       d5.w: the number of source lines
+ * @param src     a0: the source bitmap (source#, d0)
+ * @param dst     a1: the destination bitmap (dest#, d1)
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE reducex2_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(d3),
                                      ULONG width BL_REG(d4), ULONG h BL_REG(d5),
                                      ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
@@ -878,11 +1039,28 @@ static ULONG unrezx2(void)
     return pixels;
 }
 
-/* Derez source#,dest#,sourceadd,destadd,derez_value,height - lores
-   bitmaps: blocks of derez_value pixels and lines get the colour of
-   their first pixel (1 = ScreenCopy, 2 = UnrezX2, up to 17 through the
-   mask table myline, above that bit by bit).  BUG(orig) (#672): no result is
-   set - the d0 returned here is what the original leaves in d0. */
+/**
+ * @brief Derez source#,dest#,sourceadd,destadd,derez_value,height: lowers
+ * the resolution of a lores bitmap (40 bytes per line).
+ *
+ * Blocks of derez_value pixels and lines get the colour of their first
+ * pixel (1 = ScreenCopy, 2 = UnrezX2, up to 17 through the mask table
+ * myline, above that bit by bit); derez_value 0 does nothing.  BUG(orig):
+ * no result is set (#672) - the d0 returned here is what the original
+ * leaves in d0 (the input for 0, its upper word and $FFFF for 1, the
+ * last long for 2, else the last mask/source word); only the low byte of
+ * sbitdepth is set (#675); a depth-0 source gives 65536 planes (#947);
+ * values >= 3 write 20 (21) words of myline into 18 (#671, DIFF: room
+ * for 21 here); more than 16 planes overrun the pointer arrays (#674).
+ * @param callerd0  d0: the caller's d0 (source#), the "result" for 0
+ * @param sadd      d2: byte offset added to every source plane
+ * @param dadd      d3: byte offset added to every destination plane
+ * @param rez       d4.w: derez_value, the block size
+ * @param h         d5.w: the number of lines
+ * @param src       a0: the source bitmap (d0)
+ * @param dst       a1: the destination bitmap (d1)
+ * @return d0: what the routine leaves there (declared !acommand{#long})
+ */
 static ULONG BLITZ_ROUTINE asmderez_c(ULONG callerd0 BL_REG(d0), ULONG sadd BL_REG(d2),
                                       ULONG dadd BL_REG(d3), ULONG rez BL_REG(d4),
                                       ULONG h BL_REG(d5), ULONG src BL_REG(a0),
@@ -1065,7 +1243,15 @@ yloop:
 /* the original keeps d1-d7/a0-a6 */
 BLITZ_THUNK(asmderez, asmderez_c, "d1/a0-a1");
 
-/* InitZoomXY source#,dest#,sourceadd,destadd - for ZoomXY */
+/**
+ * @brief InitZoomXY source#,dest#,sourceadd,destadd: stores the bitmaps
+ * and offsets for ZoomXY.
+ * @param sadd  d2: byte offset added to every source plane
+ * @param dadd  d3: byte offset added to every destination plane
+ * @param src   a0: the source bitmap (source#, d0)
+ * @param dst   a1: the destination bitmap (dest#, d1)
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE initzoomxy_c(ULONG sadd BL_REG(d2), ULONG dadd BL_REG(d3),
                                        ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
 {
@@ -1076,9 +1262,19 @@ static void BLITZ_ROUTINE initzoomxy_c(ULONG sadd BL_REG(d2), ULONG dadd BL_REG(
 }
 BLITZ_THUNK(InitZoomxy, initzoomxy_c, "d0-d1/a0-a1");
 
-/* ZoomXY xzoom,yzoom,height - the bitmaps of InitZoomXY (lores): every
-   source pixel xzoom pixels wide, every line yzoom lines high; 1,1 =
-   ScreenCopy */
+/**
+ * @brief ZoomXY xzoom,yzoom,height: zooms the bitmaps of InitZoomXY
+ * (lores, 40 bytes per line) by whole factors.
+ *
+ * Every source pixel becomes xzoom pixels wide, every line yzoom lines
+ * high; 1,1 = ScreenCopy; a factor 0 does nothing.  BUG(orig): only the
+ * low byte of sbitdepth is set (#675); a depth-0 source gives 65536
+ * planes (#947); more than 16 planes overrun the pointer arrays (#674).
+ * @param xz  d0.w: xzoom
+ * @param yz  d1.w: yzoom
+ * @param h   d2.w: the number of lines
+ * @return nothing (keeps d1-d7/a0-a6, and d0 if it does nothing)
+ */
 static void BLITZ_ROUTINE asmzoom_c(ULONG xz BL_REG(d0), ULONG yz BL_REG(d1), ULONG h BL_REG(d2))
 {
     /* bitptr a0, destptr a6, copysrc a1, pos a2 (the source), nextline
@@ -1194,7 +1390,13 @@ static void BLITZ_ROUTINE asmzoom_c(ULONG xz BL_REG(d0), ULONG yz BL_REG(d1), UL
 /* the original keeps d1-d7/a0-a6, and d0 if it does nothing */
 BLITZ_THUNK(AsmZoom, asmzoom_c, "d0-d1/a0-a1");
 
-/* ADDValue(bitmap#,x,y) = y * bm_BytesPerRow + x/8 (ASR.w); changes d1 */
+/**
+ * @brief ADDValue(bitmap#,x,y): the byte offset of pixel x,y in a plane.
+ * @param x   d1.w: x (ASR.w #3: signed)
+ * @param y   d2.w: the line
+ * @param bm  a0: the bitmap of bitmap# (d0)
+ * @return d0: y * bm_BytesPerRow + x/8 (changes d1)
+ */
 static ULONG BLITZ_ROUTINE addvalue_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
                                       ULONG bm BL_REG(a0))
 {
