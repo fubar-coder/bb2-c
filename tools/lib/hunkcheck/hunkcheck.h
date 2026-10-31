@@ -10,8 +10,17 @@
 #include <stdio.h>
 #include "hunk.h"
 
-/* specs: "OFFSET:HEXBYTES" (offset decimal or 0x hex, e.g. "4:48e7");
-   0 = ok, 1 = mismatch or bad spec; messages to out, prefixed with name */
+/**
+ * @brief Check that the first hunk is code and has the given bytes at the
+ *        given offsets.
+ * @param lf      the load file
+ * @param nspecs  the number of specs
+ * @param specs   "OFFSET:HEXBYTES" each (offset decimal or 0x hex, e.g.
+ *                "4:48e7")
+ * @param name    the prefix of the messages
+ * @param out     the messages
+ * @return 0 = ok, 1 = mismatch or bad spec
+ */
 int hunk_check(const struct loadfile *lf, int nspecs, char **specs, const char *name, FILE *out);
 
 #endif

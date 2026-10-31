@@ -24,13 +24,15 @@
 #define HUNK_RELOC32SHORT  0x3FC
 #define HUNK_RELRELOC32    0x3FD
 
-/* a symbol: the name points into the file (len bytes, not 0-terminated) */
+/** @brief A symbol: the name points into the file (len bytes, not
+    0-terminated). */
 struct hunk_symbol {
     const char *name;
     uint32_t len;
     uint32_t value;             /* offset in the hunk */
 };
 
+/** @brief A hunk with its relocations and symbols. */
 struct hunk {
     uint32_t type;              /* HUNK_CODE, HUNK_DATA or HUNK_BSS */
     const uint8_t *data;        /* contents (NULL for BSS) */
@@ -42,8 +44,9 @@ struct hunk {
     struct hunk_symbol *syms;
 };
 
+/** @brief A load file: the file and its hunks (load_free). */
 struct loadfile {
-    const uint8_t *data;        /* the whole file */
+    const uint8_t *data;       /* the whole file */
     size_t size;
     uint8_t *buf;               /* owned by load_read, else NULL */
     uint32_t table_size;        /* number of hunks in the header */
@@ -51,15 +54,37 @@ struct loadfile {
     struct hunk *hunks;
 };
 
+/** @brief The big-endian word at p. */
 uint16_t be16(const uint8_t *p);
+/** @brief The big-endian long at p. */
 uint32_t be32(const uint8_t *p);
 
-/* 0 = ok; -1 = error, message in err (lf is empty then) */
+/**
+ * @brief Parse a load file in memory (see the top).
+ * @param buf     the file (lf points into it: it must stay)
+ * @param size    its size
+ * @param lf      out: the load file (empty on an error)
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = error
+ */
 int load_parse(const uint8_t *buf, size_t size, struct loadfile *lf, char *err, size_t errlen);
+
+/** @brief Read a load file from disk and parse it; as load_parse() (the
+    buffer is owned by lf). */
 int load_read(const char *path, struct loadfile *lf, char *err, size_t errlen);
-/* the symbol NAME (0-terminated) in any hunk: its hunk index and value;
-   0 = found, -1 = not there (the last definition wins) */
+
+/**
+ * @brief Find a symbol in any hunk (the last definition wins).
+ * @param lf     the load file
+ * @param name   the symbol (0-terminated)
+ * @param hunk   out: its hunk index
+ * @param value  out: its value
+ * @return 0 = found, -1 = not there
+ */
 int load_symbol(const struct loadfile *lf, const char *name, uint32_t *hunk, uint32_t *value);
+
+/** @brief Free what load_parse/load_read filled in. */
 void load_free(struct loadfile *lf);
 
 #endif

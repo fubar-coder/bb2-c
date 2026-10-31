@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include "hunk.h"
 
+/** @brief A row of the listing. */
 struct listing_row {
     uint32_t addr;
     uint8_t *bytes;             /* the bytes of the row (may be none) */
@@ -24,11 +25,13 @@ struct listing_row {
     char *text;                 /* the source text of the row */
 };
 
+/** @brief A symbol of the symbol table. */
 struct listing_symbol {
     char *name;
     uint32_t value;
 };
 
+/** @brief A listing: rows, symbols and source files (listing_free). */
 struct listing {
     struct listing_row *rows;
     size_t nrows;
@@ -38,24 +41,56 @@ struct listing {
     size_t nfiles;
 };
 
-/* 0 = ok, -1 = error (message in err, l empty) */
+/**
+ * @brief Read a listing file.
+ * @param path    the file
+ * @param l       out: the listing (empty on an error)
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = error
+ */
 int listing_read(const char *path, struct listing *l, char *err, size_t errlen);
+
+/** @brief Read a listing from an open file; as listing_read(). */
 int listing_read_stream(FILE *f, struct listing *l, char *err, size_t errlen);
+
+/** @brief Free what listing_read filled in. */
 void listing_free(struct listing *l);
 
-/* where a label is defined: the first row whose text starts with it (case
-   insensitive, [A-Za-z_][A-Za-z0-9_]*); NULL if none */
+/**
+ * @brief Where a label is defined: the first row whose text starts with it
+ *        (case insensitive, [A-Za-z_][A-Za-z0-9_]*).
+ * @param l     the listing
+ * @param name  the label
+ * @return the row, NULL if none
+ */
 const struct listing_row *listing_defrow(const struct listing *l, const char *name);
 
-/* the views (formats of bb2's tedlisting.py):
-   map     "ADDR\tFILE:LINE\tHEXBYTES\tSOURCE" for every row with bytes
-   labels  "ADDR\tNAME\tFILE:LINE" sorted by address (stable; ?:0 if the
-           definition row is not found); -1 = out of memory */
+/**
+ * @brief The map view (format of bb2's tedlisting.py):
+ *        "ADDR\tFILE:LINE\tHEXBYTES\tSOURCE" for every row with bytes.
+ */
 void listing_print_map(const struct listing *l, FILE *out);
+
+/**
+ * @brief The labels view (format of bb2's tedlisting.py):
+ *        "ADDR\tNAME\tFILE:LINE" sorted by address (stable; ?:0 if the
+ *        definition row is not found).
+ * @return 0 = ok, -1 = out of memory
+ */
 int listing_print_labels(const struct listing *l, FILE *out);
-/* every listed byte against the code hunk h (relocated longs skipped: the
-   listing shows 0 there); the first 20 differing rows go to out ("diff
-   ADDR FILE:LINE SOURCE"); returns the number of differing rows */
+
+/**
+ * @brief Compare every listed byte with the code hunk.
+ *
+ * Relocated longs are skipped (the listing shows 0 there); the first 20
+ * differing rows go to out ("diff ADDR FILE:LINE SOURCE").
+ *
+ * @param l    the listing
+ * @param h    the code hunk
+ * @param out  the differing rows
+ * @return the number of differing rows
+ */
 size_t listing_verify(const struct listing *l, const struct hunk *h, FILE *out);
 
 #endif

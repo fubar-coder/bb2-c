@@ -14,6 +14,7 @@
 #include "hunk.h"
 #include "vasmlisting.h"
 
+/** @brief One check: a C symbol against a range of the reference. */
 struct checkdata_entry {
     char *csym;                 /* C symbol, e.g. "_sleep_" */
     char *start;                /* start label in the listing */
@@ -23,20 +24,41 @@ struct checkdata_entry {
     unsigned line;              /* in the table */
 };
 
+/** @brief The checks of a table. */
 struct checkdata_table {
     struct checkdata_entry *v;
     size_t n;
 };
 
-/* the table: "CSYM<TAB>START<TAB>END-LABEL|SIZE<TAB>NOTE" per line, '#'
-   comments and empty lines; 0 = ok, -1 = error (message in err) */
+/**
+ * @brief Parse the table of checks.
+ * @param text    the table: "CSYM<TAB>START<TAB>END-LABEL|SIZE<TAB>NOTE"
+ *                per line, '#' comments and empty lines
+ * @param len     its length
+ * @param t       out: the checks (checkdata_table_free)
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = error
+ */
 int checkdata_table_parse(const char *text, size_t len, struct checkdata_table *t,
                           char *err, size_t errlen);
+
+/** @brief Free the checks of checkdata_table_parse. */
 void checkdata_table_free(struct checkdata_table *t);
 
-/* runs every check: ref = the code hunk of the reference, c = the C build
-   with symbols.  "FAIL"/"MISSING" lines (verbose: also "ok") and a summary
-   to out; returns the number of failed checks */
+/**
+ * @brief Run every check of the table.
+ *
+ * Writes "FAIL"/"MISSING" lines (verbose: also "ok") and a summary to out.
+ *
+ * @param t        the checks
+ * @param l        the vasm listing of the reference (the labels)
+ * @param ref      the code hunk of the reference
+ * @param c        the C build with symbols
+ * @param verbose  nonzero: also the checks that pass
+ * @param out      the result
+ * @return the number of failed checks
+ */
 long checkdata_run(const struct checkdata_table *t, const struct listing *l,
                    const struct hunk *ref, const struct loadfile *c, int verbose, FILE *out);
 
