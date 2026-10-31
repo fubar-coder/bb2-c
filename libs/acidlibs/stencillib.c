@@ -80,7 +80,14 @@ struct stencil {
 };
 static_assert(sizeof(struct stencil) == 8);
 
-/* SBlitMode */
+/**
+ * @brief SBlitMode BLTCON0 - the blitter minterm/channels for the blit of
+ * SBlit (default $FCA).
+ *
+ * The cookie blit into the stencil keeps $BFA.
+ *
+ * @param m d0.w: the BLTCON0 value (the shift is ORed in)
+ */
 static void BLITZ_ROUTINE doblitmode_c(UWORD m BL_REG(d0))
 {
     bcon0 = m;
@@ -100,6 +107,13 @@ static void freest(struct stencil *s)
     }
 }
 
+/**
+ * @brief Free Stencil (the object library's _free) - free the stencil's
+ * memory.
+ *
+ * Not a bug: the memory pointer stays (the width is cleared, which is
+ * what this routine and the SBlit check test).  a3: the stencil object.
+ */
 static void BLITZ_ROUTINE dofreestencil_c(void)
 {
     freest((struct stencil *)blitz_string);
@@ -139,12 +153,34 @@ noblitwait:                                     /* loop2 */
 }
 
 void BLITZ_ROUTINE b_dostencil_c(const UBYTE *bm BL_REG(a2));
+/**
+ * @brief Stencil Stencil#,BitMap# - make a stencil from a bitmap: the OR
+ * of all its planes (Blitz mode variant).
+ *
+ * Frees the old stencil, allocates bytes per row * rows (CHIP, cleared)
+ * and ORs the planes into it with the blitter (A | C -> D, $DFF000
+ * directly).
+ *
+ * BUG(orig) (#284): bltsize is rows << 6 | bpr / 2 - right only up to
+ * 1024 rows / 64 words.
+ *
+ * @param bm a2: the bitmap; a3: the stencil object
+ */
 void BLITZ_ROUTINE b_dostencil_c(const UBYTE *bm BL_REG(a2))
 {
     makestencil((struct stencil *)blitz_string, bm);
 }
 
 void BLITZ_ROUTINE a_dostencil_c(const UBYTE *bm BL_REG(a2), struct Library *gfx BL_REG(a6));
+/**
+ * @brief Stencil Stencil#,BitMap# - Amiga mode variant: as the Blitz mode
+ * one between OwnBlitter and DisownBlitter.
+ *
+ * BUG(orig) (#284): see the Blitz mode variant.
+ *
+ * @param bm  a2: the bitmap; a3: the stencil object
+ * @param gfx a6: graphics.library
+ */
 void BLITZ_ROUTINE a_dostencil_c(const UBYTE *bm BL_REG(a2), struct Library *gfx BL_REG(a6))
 {
     OwnBlitter();
@@ -236,6 +272,24 @@ static void sblitex(const struct stencil *s, const UBYTE *shape, const UBYTE *bm
                    UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2)
 
 void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS);
+/**
+ * @brief SBlit Stencil#,Shape#,X,Y - blit a shape and add its cookie to
+ * the stencil (Blitz mode variant).
+ *
+ * Blits like blitlib's Blit (BLTCON0 from SBlitMode) at x/y minus the
+ * shape's handle, then ORs the cookie into the stencil at the same
+ * position (BLTCON0 $BFA).
+ *
+ * Errors (debugger, sblitchk): "Uninitialized Stencil", "Shape does not
+ * have a cookie cut", "Unitialized BitMap", "Uninialized Shape", "Shape
+ * has too many BitPlanes", "Coords outside of BitMap".
+ *
+ * @param x  d2: x position
+ * @param y  d3: y position
+ * @param s  a0: the stencil object
+ * @param cb a1: the chip base (chipbaselib)
+ * @param bm a2: the used bitmap; a3: the shape
+ */
 void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS)
 {
     struct blitstate st;
@@ -244,6 +298,17 @@ void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS)
 }
 
 void BLITZ_ROUTINE a_doblit_c(SBLIT_REGS, struct Library *gfx BL_REG(a6));
+/**
+ * @brief SBlit Stencil#,Shape#,X,Y - Amiga mode variant: as the Blitz
+ * mode one between OwnBlitter and DisownBlitter.
+ *
+ * @param x   d2: x position
+ * @param y   d3: y position
+ * @param s   a0: the stencil object
+ * @param cb  a1: the chip base
+ * @param bm  a2: the used bitmap; a3: the shape
+ * @param gfx a6: graphics.library
+ */
 void BLITZ_ROUTINE a_doblit_c(SBLIT_REGS, struct Library *gfx BL_REG(a6))
 {
     struct blitstate st;
@@ -256,6 +321,22 @@ void BLITZ_ROUTINE a_doblit_c(SBLIT_REGS, struct Library *gfx BL_REG(a6))
 BLITZ_AB_ROUTINE(doblit, b_doblit_c, "   jmp     _a_doblit_c");
 
 void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4));
+/**
+ * @brief SBlit Stencil#,Shape#,X,Y,Excessonoff - SBlit, then the bitmap's
+ * planes beyond the shape's depth (Blitz mode variant).
+ *
+ * Per excess plane bit 0 of Excessonoff chooses set ($BFA) or clear
+ * ($B0A) through the cookie, then the next bit.
+ *
+ * Errors (debugger, sblitchk): as SBlit.
+ *
+ * @param x    d2: x position
+ * @param y    d3: y position
+ * @param s    a0: the stencil object
+ * @param cb   a1: the chip base
+ * @param bm   a2: the used bitmap; a3: the shape
+ * @param bits d4.w: one bit per excess plane
+ */
 void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4))
 {
     sblitex(s, blitz_string, bm, cb, x, y, bits);
@@ -263,6 +344,18 @@ void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4))
 
 void BLITZ_ROUTINE a_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4),
                                 struct Library *gfx BL_REG(a6));
+/**
+ * @brief SBlit Stencil#,Shape#,X,Y,Excessonoff - Amiga mode variant: as
+ * the Blitz mode one between OwnBlitter and DisownBlitter.
+ *
+ * @param x    d2: x position
+ * @param y    d3: y position
+ * @param s    a0: the stencil object
+ * @param cb   a1: the chip base
+ * @param bm   a2: the used bitmap; a3: the shape
+ * @param bits d4.w: one bit per excess plane
+ * @param gfx  a6: graphics.library
+ */
 void BLITZ_ROUTINE a_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4),
                                 struct Library *gfx BL_REG(a6))
 {
