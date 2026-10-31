@@ -59,10 +59,10 @@ ULONG BLITZ_ROUTINE doeditstr2(ULONG n BL_REG(d0));
 ULONG BLITZ_ROUTINE doeditstr(UBYTE *def BL_REG(d0), ULONG n BL_REG(d1),
                               const UBYTE *args BL_REG(a2));
 ULONG BLITZ_ROUTINE doinkey(void);
-ULONG BLITZ_ROUTINE doinkey2(ULONG n BL_REG(d0), ULONG d6 BL_REG(d6));
-ULONG BLITZ_ROUTINE doedit2(ULONG n BL_REG(d0), const void *a6 BL_REG(a6));
+ULONG BLITZ_ROUTINE doinkey2(ULONG n BL_REG(d0), ULONG count BL_REG(d6));
+ULONG BLITZ_ROUTINE doedit2(ULONG n BL_REG(d0), const void *caller_a6 BL_REG(a6));
 ULONG BLITZ_ROUTINE doedit(ULONG def BL_REG(d0), ULONG n BL_REG(d1),
-                           const void *a6 BL_REG(a6));
+                           const void *caller_a6 BL_REG(a6));
 void editchk1(void), editchk2(void), editchkz(void), editchk(void);
 
 /* !libheader{#editlib,0,0,0,errors} */
@@ -118,20 +118,20 @@ ULONG BLITZ_ROUTINE doinkey(void)
 }
 
 /* Inkey$(n) - n attempts, the characters that came */
-ULONG BLITZ_ROUTINE doinkey2(ULONG n BL_REG(d0), ULONG d6 BL_REG(d6))
+ULONG BLITZ_ROUTINE doinkey2(ULONG n BL_REG(d0), ULONG count BL_REG(d6))
 {
     if (!n)                                     /* BEQ 'none: d6 not set */
-        return d6;
-    d6 = 0;
+        return count;
+    count = 0;
     do {
         ULONG c = getsingle();
 
         if ((WORD)c >= 0) {
             *blitz_string++ = (UBYTE)c;
-            d6++;
+            count++;
         }
     } while (--n);                              /* SUBQ.l #1,d7:BNE 'loop */
-    return d6;
+    return count;
 }
 
 /* -------------------------------------------------------------- Edit$ */
@@ -142,15 +142,15 @@ ULONG BLITZ_ROUTINE doinkey2(ULONG n BL_REG(d0), ULONG d6 BL_REG(d6))
 static ULONG editstr(UBYTE *def, ULONG max, ULONG deflen)
 {
     struct bl_regs r = { 0 };
-    LONG d1 = max - deflen;
+    LONG pad = max - deflen;                    /* d1 */
     ULONG n;
 
-    if (d1 >= 0 && --d1 >= 0) {                 /* SUB.l d2,d1:BMI:SUBQ.l #1,d1:BMI */
+    if (pad >= 0 && --pad >= 0) {               /* SUB.l d2,d1:BMI:SUBQ.l #1,d1:BMI */
         if ((ULONG)def != (ULONG)blitz_string)  /* CMP.l a3,d0:BEQ 'noclu */
             blitz_string--;
         do
             *blitz_string++ = ' ';
-        while (--d1 >= 0);                      /* SUBQ.l #1,d1:BPL 'loop */
+        while (--pad >= 0);                     /* SUBQ.l #1,d1:BPL 'loop */
     }
     blitz_string = def;
     r.d0 = max;
@@ -190,38 +190,38 @@ static struct BL_PACKED {
 #define ED_PARSF ((const UBYTE *)&ed + 86)      /* parsf: a2 for type */
 
 /* doeditz - read the line over the default (length in pars), then Val */
-static ULONG doeditz(ULONG n, const void *a6, UBYTE *save3)
+static ULONG doeditz(ULONG n, const void *caller_a6, UBYTE *saved_string)
 {
     ULONG v;
 
     v = editstr(ed.buff, n, ed.len);            /* BSR doeditstr, a2 = pars+4 */
     *blitz_string = 0;                          /* CLR.b (a3) */
     ed.len = v;                                 /* MOVE.l d0,(a2)+ */
-    v = BLITZ_ALIBJSR_A2A6(TOK_val, ed.buff, ED_PARS4, a6);    /* val... */
-    blitz_string = save3;                       /* MOVEM.l (a7)+,a2-a3/a6 */
+    v = BLITZ_ALIBJSR_A2A6(TOK_val, ed.buff, ED_PARS4, caller_a6); /* val... */
+    blitz_string = saved_string;                /* MOVEM.l (a7)+,a2-a3/a6 */
     return v;
 }
 
 /* Edit(n) - no default: "0" */
-ULONG BLITZ_ROUTINE doedit2(ULONG n BL_REG(d0), const void *a6 BL_REG(a6))
+ULONG BLITZ_ROUTINE doedit2(ULONG n BL_REG(d0), const void *caller_a6 BL_REG(a6))
 {
-    UBYTE *save3 = blitz_string;
+    UBYTE *saved_string = blitz_string;
 
     ed.buff[0] = '0';
     blitz_string = ed.buff + 1;
     ed.len = 1;
-    return doeditz(n, a6, save3);
+    return doeditz(n, caller_a6, saved_string);
 }
 
 /* Edit(Default,n) - default with UStr$ to editbuff */
 ULONG BLITZ_ROUTINE doedit(ULONG def BL_REG(d0), ULONG n BL_REG(d1),
-                           const void *a6 BL_REG(a6))
+                           const void *caller_a6 BL_REG(a6))
 {
-    UBYTE *save3 = blitz_string;
+    UBYTE *saved_string = blitz_string;
 
     blitz_string = ed.buff;
-    ed.len = BLITZ_ALIBJSR_A2A6(TOK_ustr, def, ED_PARSF, a6);   /* ustr$ */
-    return doeditz(n, a6, save3);
+    ed.len = BLITZ_ALIBJSR_A2A6(TOK_ustr, def, ED_PARSF, caller_a6); /* ustr$ */
+    return doeditz(n, caller_a6, saved_string);
 }
 
 /* ------------------------------------------- error checks (debugger only) */
