@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+decoded
+cludged -1
+rc=0
