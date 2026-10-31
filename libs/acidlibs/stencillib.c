@@ -17,6 +17,7 @@
  * the free routine and the SBlit check test).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #define __NOLIBBASE__
 #define GRAPHICS_BASE_NAME gfx
 #include <proto/graphics.h>
@@ -70,8 +71,8 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 3);
 
 static UWORD bcon0 = 0xfca;
 
-#define SW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
-#define SL(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
+/* the shape (shapeslib) and the bitmap (bitmaplib) objects: struct bb_shape,
+   struct bb_bitmap (blitzobj.h) */
 
 /* a stencil object */
 struct stencil {
@@ -121,21 +122,21 @@ static void BLITZ_ROUTINE dofreestencil_c(void)
 BLITZ_THUNK(dofreestencil, dofreestencil_c, "a0");
 
 /* b_dostencil - a3 = stencil, a2 = bitmap: OR of the planes */
-static void makestencil(struct stencil *s, const UBYTE *bm)
+static void makestencil(struct stencil *s, const struct bb_bitmap *bm)
 {
     struct bl_regs r = { .d1 = MEMF_CHIP | MEMF_CLEAR };
     UBYTE *cb = BL_CUSTOM;
-    UBYTE **plane = (UBYTE **)(bm + 8);
+    UBYTE **plane = (UBYTE **)bm->planes;
     ULONG mem;
     UWORD size, n;
 
     freest(s);
-    r.d0 = (ULONG)SW(bm, 0) * SW(bm, 2);
+    r.d0 = (ULONG)bm->bpr * bm->rows;
     mem = BLITZ_ALIBJSR(TOK_globalloc, r);
-    *(ULONG *)s = SL(bm, 0);
+    *(ULONG *)s = *(const ULONG *)&bm->bpr;
     s->mem = (UBYTE *)mem;
-    size = (UWORD)(SW(bm, 2) << 6) | (UWORD)(SW(bm, 0) >> 1);
-    n = SW(bm, 4) - 1;
+    size = (UWORD)(bm->rows << 6) | (UWORD)(bm->bpr >> 1);
+    n = bm->flagsdepth - 1;
     BL_BLITWAIT(cb);
     BL_CUSTOML(cb, 0x40) = 0x0bfa0000;
     BL_CUSTOML(cb, 0x44) = 0xffffffff;
@@ -152,7 +153,7 @@ noblitwait:                                     /* loop2 */
     } while (n-- != 0);
 }
 
-void BLITZ_ROUTINE b_dostencil_c(const UBYTE *bm BL_REG(a2));
+void BLITZ_ROUTINE b_dostencil_c(const struct bb_bitmap *bm BL_REG(a2));
 /**
  * @brief Stencil Stencil#,BitMap# - make a stencil from a bitmap: the OR
  * of all its planes (Blitz mode variant).
@@ -166,12 +167,13 @@ void BLITZ_ROUTINE b_dostencil_c(const UBYTE *bm BL_REG(a2));
  *
  * @param bm a2: the bitmap; a3: the stencil object
  */
-void BLITZ_ROUTINE b_dostencil_c(const UBYTE *bm BL_REG(a2))
+void BLITZ_ROUTINE b_dostencil_c(const struct bb_bitmap *bm BL_REG(a2))
 {
     makestencil((struct stencil *)blitz_string, bm);
 }
 
-void BLITZ_ROUTINE a_dostencil_c(const UBYTE *bm BL_REG(a2), struct Library *gfx BL_REG(a6));
+void BLITZ_ROUTINE a_dostencil_c(const struct bb_bitmap *bm BL_REG(a2),
+                                 struct Library *gfx BL_REG(a6));
 /**
  * @brief Stencil Stencil#,BitMap# - Amiga mode variant: as the Blitz mode
  * one between OwnBlitter and DisownBlitter.
@@ -181,7 +183,8 @@ void BLITZ_ROUTINE a_dostencil_c(const UBYTE *bm BL_REG(a2), struct Library *gfx
  * @param bm  a2: the bitmap; a3: the stencil object
  * @param gfx a6: graphics.library
  */
-void BLITZ_ROUTINE a_dostencil_c(const UBYTE *bm BL_REG(a2), struct Library *gfx BL_REG(a6))
+void BLITZ_ROUTINE a_dostencil_c(const struct bb_bitmap *bm BL_REG(a2),
+                                 struct Library *gfx BL_REG(a6))
 {
     OwnBlitter();
     makestencil((struct stencil *)blitz_string, bm);
@@ -200,15 +203,16 @@ struct blitstate {
 
 /* b_doblit - a0 = stencil, a3 = shape, a2 = bitmap, a1 = chip base, d2/d3
    = x/y: blit, then OR the cookie into the stencil */
-static void sblit(const struct stencil *s, const UBYTE *shape, const UBYTE *bm, UBYTE *cb,
+static void sblit(const struct stencil *s, const struct bb_shape *shape,
+                  const struct bb_bitmap *bm, UBYTE *cb,
                   WORD x, WORD y, struct blitstate *st)
 {
     ULONG smem = (ULONG)s->mem, mods, mods_swapped;
     UWORD n;
 
-    x -= SW(shape, 10);
-    y -= SW(shape, 12);
-    mods = 0xfffe0000UL | (UWORD)(SW(bm, 0) - SW(shape, 6) - 2);
+    x -= (UWORD)shape->handlex;
+    y -= (UWORD)shape->handley;
+    mods = 0xfffe0000UL | (UWORD)(bm->bpr - shape->ebwidth - 2);
     mods_swapped = mods << 16 | mods >> 16;
     BL_BLITWAIT(cb);
     BL_CUSTOML(cb, 0x60) = mods_swapped;
@@ -217,12 +221,12 @@ static void sblit(const struct stencil *s, const UBYTE *shape, const UBYTE *bm, 
     BL_CUSTOMW(cb, 0x42) = st->shift;
     BL_CUSTOMW(cb, 0x40) = st->shift | bcon0;
     BL_CUSTOML(cb, 0x44) = 0xffff0000UL;
-    BL_CUSTOML(cb, 0x4c) = SL(shape, 14);
-    st->cookie = SL(shape, 18);
-    st->off = (ULONG)((LONG)y * (WORD)SW(bm, 0)) + (LONG)(WORD)(x >> 3);
-    st->plane = (UBYTE **)(bm + 8);
-    n = SW(shape, 4) - 1;
-    st->size = SW(shape, 8);
+    BL_CUSTOML(cb, 0x4c) = (ULONG)shape->data;
+    st->cookie = (ULONG)shape->cookie;
+    st->off = (ULONG)((LONG)y * (WORD)bm->bpr) + (LONG)(WORD)(x >> 3);
+    st->plane = (UBYTE **)bm->planes;
+    n = shape->depth - 1;
+    st->size = shape->bltsize;
     goto doblit;
     do {
         BL_BLITWAIT(cb);
@@ -245,14 +249,15 @@ doblit:
     BL_CUSTOMW(cb, 0x58) = st->size;
 }
 
-static void sblitex(const struct stencil *s, const UBYTE *shape, const UBYTE *bm, UBYTE *cb,
+static void sblitex(const struct stencil *s, const struct bb_shape *shape,
+                    const struct bb_bitmap *bm, UBYTE *cb,
                     WORD x, WORD y, UWORD bits)
 {
     struct blitstate st;
     UWORD p;
 
     sblit(s, shape, bm, cb, x, y, &st);
-    for (p = SW(shape, 4); p < SW(bm, 4); p++) {
+    for (p = shape->depth; p < bm->flagsdepth; p++) {
         UWORD con = (bits & 1) ? 0xbfa : 0xb0a;
         ULONG d;
 
@@ -269,7 +274,7 @@ static void sblitex(const struct stencil *s, const UBYTE *shape, const UBYTE *bm
 }
 
 #define SBLIT_REGS WORD x BL_REG(d2), WORD y BL_REG(d3), const struct stencil *s BL_REG(a0), \
-                   UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2)
+                   UBYTE *cb BL_REG(a1), const struct bb_bitmap *bm BL_REG(a2)
 
 void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS);
 /**
@@ -294,7 +299,7 @@ void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS)
 {
     struct blitstate st;
 
-    sblit(s, blitz_string, bm, cb, x, y, &st);
+    sblit(s, (const struct bb_shape *)blitz_string, bm, cb, x, y, &st);
 }
 
 void BLITZ_ROUTINE a_doblit_c(SBLIT_REGS, struct Library *gfx BL_REG(a6));
@@ -314,7 +319,7 @@ void BLITZ_ROUTINE a_doblit_c(SBLIT_REGS, struct Library *gfx BL_REG(a6))
     struct blitstate st;
 
     OwnBlitter();
-    sblit(s, blitz_string, bm, cb, x, y, &st);
+    sblit(s, (const struct bb_shape *)blitz_string, bm, cb, x, y, &st);
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
@@ -339,7 +344,7 @@ void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4));
  */
 void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4))
 {
-    sblitex(s, blitz_string, bm, cb, x, y, bits);
+    sblitex(s, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
 }
 
 void BLITZ_ROUTINE a_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4),
@@ -360,7 +365,7 @@ void BLITZ_ROUTINE a_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4),
                                 struct Library *gfx BL_REG(a6))
 {
     OwnBlitter();
-    sblitex(s, blitz_string, bm, cb, x, y, bits);
+    sblitex(s, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
@@ -378,25 +383,25 @@ BLITZ_ERRCHK_MESSAGE(mess4, "Coords outside of BitMap");
 /* sblitchk - stencil there, then blitchk with x/y from d2/d3 */
 static void BLITZ_ERRCHK sblitchk_c(WORD x BL_REG(d2), WORD y BL_REG(d3),
                                     const struct stencil *s BL_REG(a0),
-                                    const UBYTE *bm BL_REG(a2))
+                                    const struct bb_bitmap *bm BL_REG(a2))
 {
-    const UBYTE *shape = blitz_string;
+    const struct bb_shape *shape = (const struct bb_shape *)blitz_string;
 
     if (!s->bpr)
         BLITZ_RUNERR(messz);
-    else if (!SL(shape, 18))
+    else if (!shape->cookie)
         BLITZ_RUNERR(mess3);
-    else if (!SW(bm, 62))
+    else if (!bm->isreal)
         BLITZ_RUNERR(mess1);
-    else if (!SW(shape, 0))
+    else if (!shape->width)
         BLITZ_RUNERR(mess2);
-    else if (SW(shape, 4) > SW(bm, 4))
+    else if (shape->depth > bm->flagsdepth)
         BLITZ_RUNERR(mess0);
     else {
-        x -= SW(shape, 10);
-        y -= SW(shape, 12);
-        if (x < 0 || y < 0 || (UWORD)(x + SW(shape, 0)) > SW(bm, 56)
-            || (UWORD)(y + SW(shape, 2)) > SW(bm, 58))
+        x -= (UWORD)shape->handlex;
+        y -= (UWORD)shape->handley;
+        if (x < 0 || y < 0 || (UWORD)(x + shape->width) > bm->width
+            || (UWORD)(y + shape->height) > bm->height)
             BLITZ_RUNERR(mess4);
     }
 }
