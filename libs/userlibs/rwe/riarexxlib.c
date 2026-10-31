@@ -444,23 +444,23 @@ BLITZ_THUNK(_rxdefportname, rxdefportname_c, "d0-d1/a0-a1");
 /* --------------------------------------------------------- the lists */
 
 /* _addtolist: d0 into the first 0 long of the list */
-static void addtolist(ULONG *l, ULONG d0)
+static void addtolist(ULONG *l, ULONG item)
 {
     while (*l++)
         ;
-    l[-1] = d0;
+    l[-1] = item;
 }
 
 /* _deleteitem: remove the long at a0, the rest moves up */
-static void deleteitem(ULONG *a0)
+static void deleteitem(ULONG *item)
 {
-    ULONG *a1;
+    ULONG *next;
 
-    if (!a0)
+    if (!item)
         return;
-    a1 = a0 + 1;
-    *a0 = 0;
-    while ((*a0++ = *a1++) != 0)
+    next = item + 1;
+    *item = 0;
+    while ((*item++ = *next++) != 0)
         ;
 }
 
@@ -478,53 +478,53 @@ static void parseinit(const UBYTE *s)
 /* _nextparsearg: the next word to `out`, its length (0: none) */
 static ULONG nextparsearg(UBYTE *out)
 {
-    UBYTE *a0, *a3 = out, c;
-    ULONG d7 = 0;
+    UBYTE *p, *dst = out, c;
+    ULONG quotes = 0;
 
     if (!curadr)
         return 0;
-    a0 = curadr;
+    p = curadr;
     for (;;) {
-        if (!*a0) {                     /* 'lastarg */
+        if (!*p) {                      /* 'lastarg */
             curadr = NULL;
             return 0;
         }
-        if (*a0 != ' ')
+        if (*p != ' ')
             break;
-        a0++;
+        p++;
     }
     for (;;) {                          /* 'cmploop */
-        c = *a0++;
+        c = *p++;
         if (!c)
             goto endthisfirst;
         if (c == quote)
             break;
         if (c == ' ')
             goto endthis;
-        *a3++ = c;
+        *dst++ = c;
     }
-    d7++;                               /* 'insidequotedloop */
+    quotes++;                           /* 'insidequotedloop */
     for (;;) {                          /* 'quoteloop */
-        c = *a0++;
+        c = *p++;
         if (!c)
             goto endthisfirst;
         if (c != quote) {
-            *a3++ = c;
+            *dst++ = c;
             continue;
         }
-        d7++;                           /* 'gotquote */
-        if (!(d7 & 1) && *a0 != quote) {
-            a0++;                       /* BUG(orig): skips any character (#538 #535) */
+        quotes++;                       /* 'gotquote */
+        if (!(quotes & 1) && *p != quote) {
+            p++;                        /* BUG(orig): skips any character (#538 #535) */
             goto endthis;
         }
-        if ((*a3++ = *a0++) == 0)       /* 'cantquityet */
+        if ((*dst++ = *p++) == 0)       /* 'cantquityet */
             goto endthisfirst;
     }
 endthisfirst:
-    a0--;
+    p--;
 endthis:
-    curadr = a0;
-    return a3 - out;
+    curadr = p;
+    return dst - out;
 }
 
 /* ----------------------------------------------------------- messages */
@@ -553,41 +553,41 @@ static struct RexxMsg *makemsg(void)
 
 static void makemsgargs(void)
 {
-    ULONG *a5 = (ULONG *)((UBYTE *)v.thismsg + 0x28);   /* rm_Args */
+    ULONG *arg = (ULONG *)((UBYTE *)v.thismsg + 0x28);  /* rm_Args */
     const UBYTE *s = (const UBYTE *)msgstring;
-    ULONG n, a;
+    ULONG n, argstr;
 
     if (!tokenise) {
         for (n = 0; s[n]; n++)
             ;
-        *a5 = createargstring(s, n);
+        *arg = createargstring(s, n);
         return;
     }
     parseinit(s);
     while ((n = nextparsearg(stringbuffer)) != 0) {
-        if (!(a = createargstring(stringbuffer, n)))
+        if (!(argstr = createargstring(stringbuffer, n)))
             break;
-        *a5++ = a;                      /* BUG(orig): no limit of 16 (#527) */
+        *arg++ = argstr;                /* BUG(orig): no limit of 16 (#527) */
     }
 }
 
-static ULONG waitport_c(ULONG d0);
+static ULONG waitport_c(ULONG result);
 static ULONG readport_c(void);
 
 /* _sendmsg: PutMsg, with replyreq the wait for the reply and its result
    string at a3 */
 static ULONG sendmsg(void)
 {
-    ULONG d0;
+    ULONG result;
 
     if (!v.thismsg)
         return 0;
-    d0 = putmsg_d0(v.destport, &v.thismsg->rm_Node);
+    result = putmsg_d0(v.destport, &v.thismsg->rm_Node);
     if (!v.replyreq)
-        return d0;                      /* BUG(orig): PutMsg's d0 (#543) */
+        return result;                  /* BUG(orig): PutMsg's d0 (#543) */
     do {
         oktodelete = 0xffff;
-        d0 = waitport_c(d0);
+        result = waitport_c(result);
     } while (v.waitreply);
     oktodelete = 0;
     if (!v.returnstring)
@@ -677,7 +677,7 @@ BLITZ_THUNK(_rxsendcommand, rxsendcommand_c, "d1/a0-a1");
 
 /* -------------------------------------------------- receiving messages */
 
-static void freemsg(ULONG *a0)
+static void freemsg(ULONG *item)
 {
     ULONG *args = (ULONG *)((UBYTE *)v.thismsg + 0x28);
     int n;
@@ -685,7 +685,7 @@ static void freemsg(ULONG *a0)
     for (n = 0; n < 16 && args[n]; n++)         /* DBRA d3 = 15 */
         deleteargstring(args[n]);
     FreeVec(v.thismsg);
-    deleteitem(a0);
+    deleteitem(item);
 }
 
 static void storeresult(struct RexxMsg *m)
@@ -718,15 +718,15 @@ static void handlereply(void)
 }
 
 /* donereadport: the first message of the list becomes current */
-static ULONG donereadport(ULONG d0)
+static ULONG donereadport(ULONG result)
 {
     if (oktodelete)
-        return d0;
-    d0 = v.messagelist[0];
-    v.currentmessage = (struct RexxMsg *)d0;
+        return result;
+    result = v.messagelist[0];
+    v.currentmessage = (struct RexxMsg *)result;
     v.currentarg = 1;
     deleteitem(v.messagelist);
-    return d0;
+    return result;
 }
 
 static ULONG readport_c(void)
@@ -750,17 +750,17 @@ static ULONG readport_c(void)
 }
 BLITZ_THUNK(readport, readport_c, "d1/a0-a1");
 
-static ULONG waitport_c(ULONG d0)
+static ULONG waitport_c(ULONG result)
 {
     if (!v.waitreply && v.messagelist[0])
-        return donereadport(d0);
+        return donereadport(result);
     WaitPort(msgport);
     return readport_c();
 }
 
-static ULONG BLITZ_ROUTINE rxwaitport_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE rxwaitport_c(ULONG result BL_REG(d0))
 {
-    return waitport_c(d0);
+    return waitport_c(result);
 }
 BLITZ_THUNK(waitport, rxwaitport_c, "d1/a0-a1");
 
@@ -770,7 +770,7 @@ BLITZ_THUNK(waitport, rxwaitport_c, "d1/a0-a1");
 static ULONG replymsg(ULONG code, const UBYTE *res, const ULONG *args)
 {
     struct RexxMsg *m = v.currentmessage;
-    UBYTE *a0;
+    UBYTE *leftover;
 
     if (!m)
         return 0;
@@ -779,13 +779,13 @@ static ULONG replymsg(ULONG code, const UBYTE *res, const ULONG *args)
         m->rm_Result2 = 0;
     else
         m->rm_Result2 = createargstring(res, args[-1]);
-    if (findport_a0((UBYTE *)m->rm_Node.mn_Node.ln_Name, &a0)) {
+    if (findport_a0((UBYTE *)m->rm_Node.mn_Node.ln_Name, &leftover)) {
         v.currentmessage->rm_Node.mn_Node.ln_Type = NT_REPLYMSG;
         ReplyMsg(&v.currentmessage->rm_Node);
         return (ULONG)-1;
     }
     /* 'shit: BUG(orig) the Result2 of the a0 FindPort left (#540) */
-    if (!((struct RexxMsg *)a0)->rm_Result2)
+    if (!((struct RexxMsg *)leftover)->rm_Result2)
         return 0;
     deleteargstring(v.currentmessage->rm_Result2);
     return 0;
@@ -813,17 +813,17 @@ static ULONG BLITZ_ROUTINE rxsendersname_c(void)
 BLITZ_THUNK(_rxsendersname, rxsendersname_c, "d1/a0-a1");
 
 /* RXGetArg(n): argument n (1..16) of the current message */
-static ULONG getarg(ULONG d0)
+static ULONG getarg(ULONG n)
 {
-    ULONG a;
+    ULONG argstr;
 
-    BL_SETW(d0, d0 - 1);
-    if ((WORD)d0 < 0 || (WORD)d0 > 15 || !v.currentmessage)
+    BL_SETW(n, n - 1);
+    if ((WORD)n < 0 || (WORD)n > 15 || !v.currentmessage)
         return 0;
-    a = (ULONG)v.currentmessage->rm_Args[(WORD)d0];
-    if (!a)
+    argstr = (ULONG)v.currentmessage->rm_Args[(WORD)n];
+    if (!argstr)
         return 0;
-    return tostring((UBYTE *)a);
+    return tostring((UBYTE *)argstr);
 }
 
 static ULONG BLITZ_ROUTINE rxgetarg_c(ULONG n BL_REG(d0))
@@ -833,26 +833,26 @@ static ULONG BLITZ_ROUTINE rxgetarg_c(ULONG n BL_REG(d0))
 BLITZ_THUNK(_rxgetarg, rxgetarg_c, "d1/a0-a1");
 
 /* RXNextArg: MOVE.w currentarg,d0 keeps the upper word of d0 */
-static ULONG BLITZ_ROUTINE rxnextarg_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE rxnextarg_c(ULONG value BL_REG(d0))
 {
-    BL_SETW(d0, v.currentarg);
-    d0 = getarg(d0);
-    if (d0)
+    BL_SETW(value, v.currentarg);
+    value = getarg(value);
+    if (value)
         v.currentarg++;
-    return d0;
+    return value;
 }
 BLITZ_THUNK(_rxnextarg, rxnextarg_c, "d1/a0-a1");
 
 static ULONG BLITZ_ROUTINE rxnumargs_c(void)
 {
-    ULONG *a, n = (ULONG)-1;
+    ULONG *arg, n = (ULONG)-1;
 
     if (!v.currentmessage)
         return 0;
-    a = (ULONG *)v.currentmessage->rm_Args;
+    arg = (ULONG *)v.currentmessage->rm_Args;
     do
         n++;
-    while (*a++);
+    while (*arg++);
     return n;
 }
 BLITZ_THUNK(_rxnumargs, rxnumargs_c, "d1/a0-a1");
