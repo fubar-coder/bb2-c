@@ -150,24 +150,52 @@ static void popchannel(struct channel *c)
     c->code = *(void **)((UBYTE *)c->stack + (WORD)c->sp);
 }
 
+/**
+ * @brief dosetin (+3): make a handler the current input channel.
+ *
+ * The previous handler is pushed on the input stack (a ring of 16).
+ *
+ * @param handler  a0: the handler (entries at -4 and 0, see the head comment)
+ * @return d0: the previous handler
+ */
 static ULONG BLITZ_ROUTINE dosetin_c(void *handler BL_REG(a0))
 {
     return setchannel(&iochan_in, handler);
 }
 BLITZ_THUNK(dosetin, dosetin_c, "d1/a0-a1");
 
+/**
+ * @brief dosetout (+4): make a handler the current output channel, as
+ * dosetin.
+ *
+ * @param handler  a0: the handler (entries at -8, -4 and 0)
+ * @return d0: the previous handler
+ */
 static ULONG BLITZ_ROUTINE dosetout_c(void *handler BL_REG(a0))
 {
     return setchannel(&iochan_out, handler);
 }
 BLITZ_THUNK(dosetout, dosetout_c, "d1/a0-a1");
 
+/**
+ * @brief PopInput: go back to the previous input channel.
+ *
+ * Errors (debugger only): "No Input channel to pop!" (count 0).  Without
+ * the debugger popping more than was pushed takes old ring entries,
+ * BUG(orig) (#194).
+ */
 static void BLITZ_ROUTINE dopopinput_c(void)
 {
     popchannel(&iochan_in);
 }
 BLITZ_THUNK(dopopinput, dopopinput_c, "d1/a0-a1");
 
+/**
+ * @brief PopOutput: go back to the previous output channel, as PopInput.
+ *
+ * Errors (debugger only): "No Output channel to pop!".  BUG(orig) (#194)
+ * as PopInput; after one PopOutput at the start the handler is 0.
+ */
 static void BLITZ_ROUTINE dopopoutput_c(void)
 {
     popchannel(&iochan_out);
@@ -249,21 +277,35 @@ __asm__("   .text\n   .even\n"
 
 /* ------------------------------------------------ DefaultInput/Output */
 
+/**
+ * @brief DefaultInput: make the default input (dos Input(), handler
+ * defin) the current input channel; the previous one is pushed.
+ * @return d0: the previous handler (a statement: not used by Blitz)
+ */
 static ULONG BLITZ_ROUTINE dodefin_c(void)
 {
     return setchannel(&iochan_in, defin);
 }
 BLITZ_THUNK(dodefin, dodefin_c, "d1/a0-a1");
 
+/**
+ * @brief DefaultOutput: make the default output (dos Output(), handler
+ * defout) the current output channel; the previous one is pushed.
+ * @return d0: the previous handler (a statement: not used by Blitz)
+ */
 static ULONG BLITZ_ROUTINE dodefout_c(void)
 {
     return setchannel(&iochan_out, defout);
 }
 BLITZ_THUNK(dodefout, dodefout_c, "d1/a0-a1");
 
-/* init (a6 = dos.library): remember the dos base and Input()/Output(),
-   empty stacks, then DefaultInput and DefaultOutput (each pushes the
-   handler 0) */
+/**
+ * @brief The library's init: remember the dos base and Input()/Output(),
+ * empty stacks, then DefaultInput and DefaultOutput (each pushes the
+ * handler 0).
+ *
+ * @param dos  a6: dos.library (!libs #doslib,#la6)
+ */
 static void BLITZ_ROUTINE codeinit_c(struct DosLibrary *dos BL_REG(a6))
 {
     dosbase = dos;
@@ -291,6 +333,17 @@ BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
         "   move.l  (sp)+,a6\n"                                             \
         "   rts")
 
+/**
+ * @brief The channel dispatchers for other libraries: dogetsingle (+5,
+ * JSR (incode)), dogetstring (+6, JSR -4(incode)), dooutsingle (+7, JSR
+ * (outcode)), dooutstring1 (+8, JSR -4(outcode)), dooutstring2 (+9, JSR
+ * -8(outcode)).
+ *
+ * All registers go unchanged to the handler, with a6 = the handler
+ * address; d0 and the rest come back as the handler leaves them, only a6
+ * is restored.  The parameters and results are the handler's (head
+ * comment).
+ */
 DISPATCH(dogetsingle, "_iochan_in", "0");
 DISPATCH(dogetstring, "_iochan_in", "-4");
 DISPATCH(dooutsingle, "_iochan_out", "0");
