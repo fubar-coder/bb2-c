@@ -197,6 +197,18 @@ BLITZ_LIBFIN();
 /* ---------------------------------------------------------------- data */
 
 #define BLOCKSIZE 768                   /* 192 + 512 + 64 */
+
+/* the block of init: the three tables of 16 objects, the path buffer
+   of NextAppFile and the DiskObjects of the App icons; the original's
+   variables below point into it */
+struct appblock {
+    ULONG menus[16];                    /* +0 the AppMenuItems */
+    ULONG windows[16];                  /* +64 the AppWindows */
+    ULONG icons[16];                    /* +128 the AppIcons */
+    UBYTE path[512];                    /* +192 */
+    struct DiskObject *disks[16];       /* +704 */
+};
+static_assert(sizeof(struct appblock) == BLOCKSIZE);
 #define NO_POS 0x80000000UL             /* NO_ICON_POSITION */
 
 static struct Library *wbbase, *iconbase;
@@ -221,7 +233,7 @@ BLITZ_INLINE(appeventidcmp, "move.l #0x800000,d0");
 
 static void BLITZ_ROUTINE libinit_c(void)
 {
-    UBYTE *block;
+    struct appblock *block;
 
     msgportflag = 0;
     msgport = CreateMsgPort();
@@ -235,11 +247,11 @@ static void BLITZ_ROUTINE libinit_c(void)
         libflag = 0;
         return;
     }
-    appmenus = (ULONG *)block;
-    appwindows = (ULONG *)(block + 64);
-    appicons = (ULONG *)(block + 128);
-    arglist = block + 192;
-    disklist = (struct DiskObject **)(block + 704);
+    appmenus = block->menus;
+    appwindows = block->windows;
+    appicons = block->icons;
+    arglist = block->path;
+    disklist = block->disks;
     /* BUG(orig): the libraries opened before a failing one stay open (#526) */
     if (!(wbbase = OpenLibrary((STRPTR)"workbench.library", 37))
         || !(dosbase = (struct DosLibrary *)OpenLibrary((STRPTR)"dos.library", 37))
