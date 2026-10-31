@@ -68,6 +68,7 @@
  * upper word (differs only for coordinates around 0/negative).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <graphics/gfx.h>
 
 /* entry points (thunks, defined below) */
@@ -1876,9 +1877,9 @@ BLITZ_THUNK(_deselectbox, deselectbox_c, "d0-d1/a0-a1");
 /* the edit cursor: NOT 8 bytes in plane 0 */
 static void docursor(struct page *p)
 {
-    UBYTE *bm = p->mybitmap;
-    UWORD bpr = *(UWORD *)bm;
-    UBYTE *pos = *(UBYTE **)(bm + 8);
+    const struct bb_bitmap *bm = (const struct bb_bitmap *)p->mybitmap;
+    UWORD bpr = bm->bpr;
+    UBYTE *pos = bm->planes[0];
     int i;
 
     pos += (WORD)((UWORD)edxyc[0] >> 3);
@@ -1894,16 +1895,16 @@ static void docursor(struct page *p)
 /* show the text from the prompt on, at edxyc (the bitmap's cursor) */
 static void edstring(struct page *p, struct box *b)
 {
-    UBYTE *bm = p->mybitmap;
-    ULONG old = *(ULONG *)(bm + 40);
+    struct bb_bitmap *bm = (struct bb_bitmap *)p->mybitmap;
+    ULONG old = *(ULONG *)&bm->cursx;
     WORD prompt = b->prompt;
     ULONG len = b->tlen;
 
-    *(ULONG *)(bm + 40) = *(ULONG *)edxyc;
+    *(ULONG *)&bm->cursx = *(ULONG *)edxyc;
     BL_SETW(len, len - prompt);
     BL_SETW(len, len - 1);
     printn(b->text + prompt, len);
-    *(ULONG *)(bm + 40) = old;
+    *(ULONG *)&bm->cursx = old;
 }
 
 static void activateselected(struct page *p)
