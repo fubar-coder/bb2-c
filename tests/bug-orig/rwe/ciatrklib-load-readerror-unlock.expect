@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+after
+inject: readfail: 1 reads failed
+inject: ownedunlock: 0 UnLocks of a lock a file owns
+inject: rc=0
+rc=0
