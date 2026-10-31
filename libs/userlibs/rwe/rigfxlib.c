@@ -239,43 +239,85 @@ static LONG colindex(ULONG c)
 
 /* ------------------------------------------------------- colour values */
 
+/**
+ * @brief PaletteInfo palette#: select the palette PalRed ... and PalAdjust read.
+ *
+ * Remembers the address of its colour 0 (paladdr); the object's data
+ * pointer is taken as it is, not checked.
+ * @param obj  a0: the palette object (!libs #palettelib,#ia0|#pd0)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE paletteinfo_c(struct palobj *obj BL_REG(a0))
 {
     paladdr = COLBYTES(obj->data);
 }
 BLITZ_THUNK(paletteinfo, paletteinfo_c, "d0-d1/a0-a1");
 
-/* MOVE.b 0/4/8(a0,d0.w),d0: ASR.l #4:ANDI.l #15 (4 bit) or ANDI.l #$ff */
+/**
+ * @brief PalRed(colour#): the red value (4 bit) of a colour of PaletteInfo's palette.
+ *
+ * MOVE.b 0/4/8(a0,d0.w),d0: ASR.l #4:ANDI.l #15 (4 bit) or ANDI.l #$ff
+ * (the AGA functions).  BUG(orig): the palette of the last PaletteInfo
+ * is used unchecked (before one: address 0) (#686); colour numbers from
+ * 2731 on index before the palette (12 * c as a signed word) (#677).
+ * @param c  d0: colour# (its low word)
+ * @return d0: the top 4 bits of the colour's red byte
+ */
 static ULONG BLITZ_ROUTINE palred_c(ULONG c BL_REG(d0))
 {
     return paladdr[colindex(c)] >> 4;
 }
 BLITZ_THUNK(palred, palred_c, "d1/a0-a1");
 
+/**
+ * @brief PalGreen(colour#): the green value (4 bit); as PalRed (#686, #677).
+ * @param c  d0: colour#
+ * @return d0: the top 4 bits of the colour's green byte
+ */
 static ULONG BLITZ_ROUTINE palgreen_c(ULONG c BL_REG(d0))
 {
     return paladdr[colindex(c) + 4] >> 4;
 }
 BLITZ_THUNK(palgreen, palgreen_c, "d1/a0-a1");
 
+/**
+ * @brief PalBlue(colour#): the blue value (4 bit); as PalRed (#686, #677).
+ * @param c  d0: colour#
+ * @return d0: the top 4 bits of the colour's blue byte
+ */
 static ULONG BLITZ_ROUTINE palblue_c(ULONG c BL_REG(d0))
 {
     return paladdr[colindex(c) + 8] >> 4;
 }
 BLITZ_THUNK(palblue, palblue_c, "d1/a0-a1");
 
+/**
+ * @brief AGAPalRed(colour#): the red value (8 bit); as PalRed (#686, #677).
+ * @param c  d0: colour#
+ * @return d0: the colour's red byte
+ */
 static ULONG BLITZ_ROUTINE agapalred_c(ULONG c BL_REG(d0))
 {
     return paladdr[colindex(c)];
 }
 BLITZ_THUNK(agapalred, agapalred_c, "d1/a0-a1");
 
+/**
+ * @brief AGAPalGreen(colour#): the green value (8 bit); as PalRed (#686, #677).
+ * @param c  d0: colour#
+ * @return d0: the colour's green byte
+ */
 static ULONG BLITZ_ROUTINE agapalgreen_c(ULONG c BL_REG(d0))
 {
     return paladdr[colindex(c) + 4];
 }
 BLITZ_THUNK(agapalgreen, agapalgreen_c, "d1/a0-a1");
 
+/**
+ * @brief AGAPalBlue(colour#): the blue value (8 bit); as PalRed (#686, #677).
+ * @param c  d0: colour#
+ * @return d0: the colour's blue byte
+ */
 static ULONG BLITZ_ROUTINE agapalblue_c(ULONG c BL_REG(d0))
 {
     return paladdr[colindex(c) + 8];
@@ -284,9 +326,21 @@ BLITZ_THUNK(agapalblue, agapalblue_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------ PalAdjust */
 
-/* PalAdjust palette#,ratio.q,start,end: target colours start..end =
-   PaletteInfo's colours * ratio (8.8 fixed point from the Quick 16.16),
-   saturated at 255; only the top byte of each channel is written */
+/**
+ * @brief PalAdjust palette#,ratio.q,start_col,end_col: scale colours of PaletteInfo's palette into a palette.
+ *
+ * Target colours start..end = PaletteInfo's colours * ratio (8.8 fixed
+ * point from the Quick 16.16), saturated at 255; only the top byte of
+ * each channel is written.  BUG(orig): PaletteInfo's palette unchecked
+ * (#686); colour numbers from 2731 on index before the palettes (#677);
+ * end < start runs 65536*3 channels (count 0 after MULU.w/SUBQ.w)
+ * (#684).
+ * @param obj    a0: the target palette object (!libs #palettelib,#ia0|#pd0)
+ * @param ratio  d1: the ratio, a Quick (16.16)
+ * @param start  d2: the first colour
+ * @param end    d3: the last colour
+ * @return nothing
+ */
 static void BLITZ_ROUTINE paladjust2_c(struct palobj *obj BL_REG(a0), ULONG ratio BL_REG(d1),
                                         ULONG start BL_REG(d2), ULONG end BL_REG(d3))
 {
@@ -306,8 +360,17 @@ static void BLITZ_ROUTINE paladjust2_c(struct palobj *obj BL_REG(a0), ULONG rati
 }
 BLITZ_THUNK(paladjust2, paladjust2_c, "d0-d1/a0-a1");
 
-/* without start/end: 0 .. (the colours of PaletteInfo's palette) - 1;
-   the upper word of `end` is the caller's d3 (SUB.w), unused */
+/**
+ * @brief PalAdjust palette#,ratio.q: c_paladjust2() for the colours 0 .. n-1.
+ *
+ * n is the number of colours of PaletteInfo's palette, not of the target
+ * (BUG(orig) (#685)); the upper word of `end` is the caller's d3
+ * (SUB.w), unused.
+ * @param obj    a0: the target palette object
+ * @param ratio  d1: the ratio, a Quick (16.16)
+ * @param end    d3: the caller's d3 (its low word is replaced)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE paladjust_c(struct palobj *obj BL_REG(a0), ULONG ratio BL_REG(d1),
                                        ULONG end BL_REG(d3))
 {
@@ -349,6 +412,21 @@ static ULONG nib(ULONG v)
     return (v & 0xf) << 4;
 }
 
+/**
+ * @brief AGAFillPalette palette#,r,g,b,start_col,end_col: fill colours with an 8 bit r,g,b.
+ *
+ * The low bytes of r, g, b become the top bytes of the channels.  end =
+ * 0 means the last colour; BUG(orig) (#683): that test is on the whole
+ * register, the comparison with start on the words.  Nothing if end <
+ * start.
+ * @param obj    a0: the palette object (!libs #palettelib,#ia0|#pd0)
+ * @param r      d1: red
+ * @param g      d2: green
+ * @param b      d3: blue
+ * @param start  d4: the first colour
+ * @param end    d5: the last colour (0: the palette's last)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE agafillpalette2_c(struct palobj *obj BL_REG(a0), ULONG r BL_REG(d1),
     ULONG g BL_REG(d2), ULONG b BL_REG(d3), ULONG start BL_REG(d4), ULONG end BL_REG(d5))
 {
@@ -356,6 +434,14 @@ static void BLITZ_ROUTINE agafillpalette2_c(struct palobj *obj BL_REG(a0), ULONG
 }
 BLITZ_THUNK(agafillpalette2, agafillpalette2_c, "d0-d1/a0-a1");
 
+/**
+ * @brief AGAFillPalette palette#,r,g,b: fill the whole palette with an 8 bit r,g,b.
+ * @param obj  a0: the palette object
+ * @param r    d1: red
+ * @param g    d2: green
+ * @param b    d3: blue
+ * @return nothing
+ */
 static void BLITZ_ROUTINE agafillpalette_c(struct palobj *obj BL_REG(a0), ULONG r BL_REG(d1),
     ULONG g BL_REG(d2), ULONG b BL_REG(d3))
 {
@@ -363,6 +449,19 @@ static void BLITZ_ROUTINE agafillpalette_c(struct palobj *obj BL_REG(a0), ULONG 
 }
 BLITZ_THUNK(agafillpalette, agafillpalette_c, "d0-d1/a0-a1");
 
+/**
+ * @brief FillPalette palette#,r,g,b,start_col,end_col: fill colours with a 4 bit r,g,b.
+ *
+ * As AGAFillPalette with the low nibbles of r, g, b as the top nibbles
+ * of the channel bytes (ANDI.b #$f:ASL.b #4) (#683).
+ * @param obj    a0: the palette object (!libs #palettelib,#ia0|#pd0)
+ * @param r      d1: red
+ * @param g      d2: green
+ * @param b      d3: blue
+ * @param start  d4: the first colour
+ * @param end    d5: the last colour (0: the palette's last)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE fillpalette2_c(struct palobj *obj BL_REG(a0), ULONG r BL_REG(d1),
     ULONG g BL_REG(d2), ULONG b BL_REG(d3), ULONG start BL_REG(d4), ULONG end BL_REG(d5))
 {
@@ -370,6 +469,14 @@ static void BLITZ_ROUTINE fillpalette2_c(struct palobj *obj BL_REG(a0), ULONG r 
 }
 BLITZ_THUNK(fillpalette2, fillpalette2_c, "d0-d1/a0-a1");
 
+/**
+ * @brief FillPalette palette#,r,g,b: fill the whole palette with a 4 bit r,g,b.
+ * @param obj  a0: the palette object
+ * @param r    d1: red
+ * @param g    d2: green
+ * @param b    d3: blue
+ * @return nothing
+ */
 static void BLITZ_ROUTINE fillpalette_c(struct palobj *obj BL_REG(a0), ULONG r BL_REG(d1),
     ULONG g BL_REG(d2), ULONG b BL_REG(d3))
 {
@@ -379,8 +486,20 @@ BLITZ_THUNK(fillpalette, fillpalette_c, "d0-d1/a0-a1");
 
 /* ----------------------------------------------------------- CopyColour */
 
-/* -1, or 0 if a colour number is not below the palette's number of
-   colours (signed words: BUG(orig) (#678), negative numbers pass) */
+/**
+ * @brief CopyColour(sourcepal#,destpal#,colsource#,coldest#): copy one colour between palettes.
+ *
+ * The three channel longs of colsource# of the source palette go to
+ * coldest# of the target.  BUG(orig) (#678): the colour numbers are
+ * compared with the palettes' number of colours as signed words:
+ * negative ones pass and index far behind the palette (MULU.w).
+ * @param src  a0: the source palette object (#ia0)
+ * @param dst  a1: the target palette object (#ia1)
+ * @param cs   d2: the source colour
+ * @param cd   d3: the target colour
+ * @return d0: BB_TRUE, BB_FALSE if a colour number is not below its
+ *         palette's number of colours
+ */
 static BB_BOOL BLITZ_ROUTINE copycolour_c(struct palobj *src BL_REG(a0),
                                           struct palobj *dst BL_REG(a1),
                                           ULONG cs BL_REG(d2), ULONG cd BL_REG(d3))
@@ -423,8 +542,18 @@ static void clearplane(UBYTE *end, ULONG moves)
     while (n-- != 0);
 }
 
-/* CPUCls bitmap#: every plane, BytesPerRow*Rows bytes; the original's
-   register arithmetic for the block count (DIVU #40, the rest as words) */
+/**
+ * @brief CPUCls bitmap#: clear every plane of a bitmap with the CPU (the work behind the entry cpucls).
+ *
+ * BytesPerRow*Rows bytes per plane, cleared from the end down; the
+ * original's register arithmetic for the block count (DIVU #40, the rest
+ * as words).  BUG(orig): blocks of 40 bytes, DBRA on blocks - 1: a plane
+ * of less than 40 bytes clears 65536 blocks (2.6 MB below the plane)
+ * (#682); an odd rest byte stays (#681); the depth is the word
+ * Flags<<8|Depth, 0 planes = 65536 (#679).
+ * @param bm  a0: the bitmap object (!libs #bitmaplib,#ia0|#pd0)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE cpucls_c(struct bmobj *bm BL_REG(a0))
 {
     ULONG size = bl_mulu_w(bm->bpr, bm->rows);
@@ -442,11 +571,17 @@ static void BLITZ_ROUTINE cpucls_c(struct bmobj *bm BL_REG(a0))
     while (planes-- != 0);
 }
 
-/* TST.l 8(a0):BEQ 'oops - BUG(orig) (#680): 'oops is the MOVEM.l (a7)+,a4-a6:RTS
-   meant for after MOVEM.l a4-a6,-(a7), which has not run yet: it pops the
-   return address and two more longs into a4-a6 and returns to whatever
-   follows on the stack.  A stack imbalance C cannot express, so this
-   entry is assembler; the real work is cpucls_c. */
+/**
+ * @brief CPUCls bitmap#: the entry; nothing (but a crash) without plane 0.
+ *
+ * TST.l 8(a0):BEQ 'oops - BUG(orig) (#680): 'oops is the MOVEM.l
+ * (a7)+,a4-a6:RTS meant for after MOVEM.l a4-a6,-(a7), which has not
+ * run yet: it pops the return address and two more longs into a4-a6 and
+ * returns to whatever follows on the stack.  A stack imbalance C cannot
+ * express, so this entry is assembler; the real work is cpucls_c(),
+ * called with d0/d1/a0/a1 kept.
+ * a0: the bitmap object.
+ */
 BLITZ_ASM_ROUTINE(cpucls,
     "   tst.l   8(a0)\n"
     "   beq.s   1f\n"
@@ -459,8 +594,20 @@ BLITZ_ASM_ROUTINE(cpucls,
 
 /* ------------------------------------------------------------- SaveCMAP */
 
-/* SaveCMAP(palette#,filename): an ILBM with an empty BMHD and the CMAP,
-   written by RIAmosFuncLib's BSave; its result, or 0 */
+/**
+ * @brief SaveCMAP(palette#,filename$): save a palette as an IFF ILBM with a CMAP.
+ *
+ * Builds FORM ILBM with an empty BMHD (20 zero bytes: no defect, a
+ * palette file) and the CMAP (3 bytes per colour, the channels' top
+ * bytes) in memory (memlib globalloc, MEMF_CLEAR), writes it with
+ * RIAmosFuncLib's BSave (form 1: d0 name, d1 address, d2 length) and
+ * frees it.  BUG(orig): no pad byte behind a CMAP of odd length (#687);
+ * a palette of 0 colours copies 65536 (#688).
+ * @param obj   a0: the palette object (!libs #palettelib,#ia0|#pd0)
+ * @param name  d1: the file name
+ * @return d0: BSave's result, 0 if the palette has no data or there is
+ *         no memory
+ */
 static ULONG BLITZ_ROUTINE savecmap_c(struct palobj *obj BL_REG(a0), ULONG name BL_REG(d1))
 {
     struct bl_regs r;
@@ -505,9 +652,20 @@ BLITZ_THUNK(savecmap, savecmap_c, "d1/a0-a1");
 
 /* ------------------------------------------------------- MergeBitplanes */
 
-/* the planes of src1, then of src2, into dest (numplanes of them; 0 = all
-   of both, DBRA from -1); nothing if a source has word 62 = 0, dest not,
-   or numplanes > the sum of the depths (signed words) */
+/**
+ * @brief MergeBitplanes srcbitmap,srcbitmap,destbitmap,numplanes: a bitmap of the planes of two others.
+ *
+ * The plane pointers of src1, then of src2, go into dest (numplanes of
+ * them; 0 = all of both, DBRA from -1); dest gets src1's BytesPerRow,
+ * Rows, width and height, numplanes as its Flags<<8|Depth word, +52 = 0
+ * and +62 = 1.  Nothing if a source has word 62 = 0, dest not, or
+ * numplanes > the sum of the depths (signed words).
+ * @param src1    a0: the first source bitmap object (#ia0)
+ * @param src2    a1: the second source bitmap object (#ia1)
+ * @param dst     a2: the target bitmap object (#ia2)
+ * @param planes  d3: numplanes
+ * @return nothing
+ */
 static void BLITZ_ROUTINE mergebitplanes_c(struct bmobj *src1 BL_REG(a0),
                                             struct bmobj *src2 BL_REG(a1),
                                             struct bmobj *dst BL_REG(a2), ULONG planes BL_REG(d3))
