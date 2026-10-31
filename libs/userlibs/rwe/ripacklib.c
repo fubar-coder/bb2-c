@@ -53,6 +53,7 @@
  *     8 bytes converted below the end of the data) (#767).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <graphics/gfx.h>
 #include <datatypes/pictureclass.h>
 
@@ -147,15 +148,11 @@ BLITZ_LIBFIN();
 #define LG(p) (*(ULONG *)(p))
 #define ID(a, b, c, d) ((ULONG)(a) << 24 | (ULONG)(b) << 16 | (c) << 8 | (d))
 
-/* a palette object of palettelib, as far as ILBMPalette writes it: the
-   colour block (count.w, 0.w, then the components as longs), the number
-   of colours, the low and high words of the first colour cycle */
-struct ppal {
-    ULONG pdata;                /* +0 */
-    UWORD numcols;              /* +4 */
-    ULONG cycle0;               /* +6 */
-} BL_PACKED;
-static_assert(sizeof(struct ppal) == 10);
+/* a palette object of palettelib: struct bb_palette (blitzobj.h); ILBMPalette
+   writes the colour block (count.w, 0.w, then the components as longs), kept
+   as the long the original moves (PDATA), the number of colours and the low
+   and high words of the first colour cycle as one long */
+#define PDATA(p) (*(ULONG *)&(p)->pdata)
 
 /**
  * @brief init: does nothing (RTS).
@@ -651,7 +648,7 @@ BLITZ_THUNK(iff1, iff1_c, "d1/a0-a1");
  * @return d0: BB_TRUE, BB_FALSE without CMAP or memory
  */
 static BB_BOOL BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0),
-                                            struct ppal *obj BL_REG(a1),
+                                            struct bb_palette *obj BL_REG(a1),
                                             LONG offset BL_REG(d2))
 {
     const UBYTE *cmap = src;
@@ -666,7 +663,7 @@ static BB_BOOL BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0),
             return BB_FALSE;
     }
     cmap += 4;                                  /* the chunk size */
-    if (obj->pdata) {
+    if (PDATA(obj)) {
         ULONG oldcols = ((ULONG)src & 0xffff0000UL) | obj->numcols;  /* MOVE.w 4(a1),d0 */
         int kill = offset < 0;
         if (!kill) {
@@ -674,10 +671,10 @@ static BB_BOOL BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0),
             kill = (WORD)oldcols < (WORD)need;  /* CMP.w d7,d0:BLT */
         }
         if (!kill)
-            to = (UBYTE *)obj->pdata + 4;
+            to = (UBYTE *)PDATA(obj) + 4;
         else {                                  /* killmem */
             offset = -1;
-            r = (struct bl_regs){ .d0 = bl_mulu_w((UWORD)oldcols, 12) + 16, .a1 = obj->pdata };
+            r = (struct bl_regs){ .d0 = bl_mulu_w((UWORD)oldcols, 12) + 16, .a1 = PDATA(obj) };
             BLITZ_ALIBJSR(TOK_globfree, r);
             goto reserve;
         }
@@ -690,10 +687,10 @@ static BB_BOOL BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0),
             block = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
             if (!block)
                 return BB_FALSE;
-            obj->pdata = (ULONG)block;
+            PDATA(obj) = (ULONG)block;
             cols = bl_divu_w(LG(cmap), 3);
             obj->numcols = (UWORD)cols;
-            obj->cycle0 = 0;
+            *(ULONG *)&obj->cyc[0] = 0;
             LG(block) = 0;
             W(block) = (UWORD)cols;
             to = block + 4;
@@ -723,7 +720,7 @@ BLITZ_THUNK(ilbmpalette2, ilbmpalette2_c, "d1/a0-a1");
  * @return d0: BB_TRUE, BB_FALSE without CMAP or memory
  */
 static BB_BOOL BLITZ_ROUTINE ilbmpalette_c(const UBYTE *src BL_REG(d0),
-                                           struct ppal *obj BL_REG(a1))
+                                           struct bb_palette *obj BL_REG(a1))
 {
     return ilbmpalette2_c(src, obj, -1);
 }
@@ -739,7 +736,7 @@ BLITZ_THUNK(ilbmpalette, ilbmpalette_c, "d1/a0-a1");
  *               to -1
  */
 static void BLITZ_ROUTINE ilbmgrab_c(const UBYTE *src BL_REG(d0), struct BitMap *bm BL_REG(a0),
-                                     struct ppal *pal BL_REG(a1), ULONG lines BL_REG(d2))
+                                     struct bb_palette *pal BL_REG(a1), ULONG lines BL_REG(d2))
 {
     iff1_c(src, bm, lines);
     ilbmpalette_c(src, pal);
@@ -763,7 +760,7 @@ BLITZ_THUNK(ilbmgrab, ilbmgrab_c, "d0-d1/a0-a1");
  *         load
  */
 static BB_BOOL BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), struct BitMap *bm BL_REG(a0),
-                                        struct ppal *pal BL_REG(a1))
+                                        struct bb_palette *pal BL_REG(a1))
 {
     struct bl_regs r = { .d0 = 51 };
     ULONG bank, start;

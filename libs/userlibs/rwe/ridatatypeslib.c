@@ -70,6 +70,7 @@
  * it below the pairs), as in all C ports (docs/libs/cmdlibs-port.md).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include "blitzexec.h"
 #define __NOLIBBASE__
 #define DATATYPES_BASE_NAME database
@@ -660,9 +661,10 @@ ULONG BLITZ_ROUTINE c_datatypebitmap(void)
     return (ULONG)bitmapheader;
 }
 
-/* the colour block of a palette object (palettelib): the number of
-   colours, a word 0, then per colour a long per component (the value in
-   the top byte, the bytes below as the program set them) */
+/* the colour block of a palette object (palettelib, struct bb_palette of
+   blitzobj.h, its pdata): the number of colours, a word 0, then per
+   colour a long per component (the value in the top byte, the bytes
+   below as the program set them) */
 struct pcolour {
     UBYTE red, red_low[3];
     UBYTE green, green_low[3];
@@ -674,6 +676,7 @@ struct pdata {
     UWORD first;
     struct pcolour colour[];
 };
+#define PALDATA(o) ((struct pdata *)(o)->pdata)
 
 /**
  * @brief DataTypesPalette palette#: the object's colours
@@ -687,7 +690,7 @@ struct pdata {
  * @return d0: the address of the buffer; BUG(orig) (#607): without
  *         colours GetAttr's result; 0 without object
  */
-ULONG BLITZ_ROUTINE c_datatypespalette(struct pdata **palobj BL_REG(a0))
+ULONG BLITZ_ROUTINE c_datatypespalette(struct bb_palette *palobj BL_REG(a0))
 {
     const UBYTE *cr;
     struct pcolour *p;
@@ -700,8 +703,8 @@ ULONG BLITZ_ROUTINE c_datatypespalette(struct pdata **palobj BL_REG(a0))
     cr = (const UBYTE *)storage->value;
     if (!cr)
         return r;                       /* BUG(orig) (#607): GetAttr's result */
-    n = (*palobj)->count;
-    p = (*palobj)->colour;
+    n = PALDATA(palobj)->count;
+    p = PALDATA(palobj)->colour;
     n--;
     do {                                /* BUG(orig) (#606): DBRA, 0 = 65536 */
         p->red = *cr++;
