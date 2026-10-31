@@ -49,12 +49,16 @@ not stop running sessions; the next ones wait). Only a number from 1 to
 means 4. `AMIGA_EMULATION_MAX` in the environment of a runner overrides
 the file for that runner (0 = no limit).
 
-The limit is hard: every session holds a slot. A runner that runs several
-sessions at once (`parallel=`) waits for a slot only while none of its
-own sessions runs; if no slot is free for a further one, it ends one of
-its own sessions first and starts the next then (it never waits for a
-slot while holding one, so two
-runners cannot block each other). A runner thus runs as many sessions at
+The limit is hard: every session holds a slot, from its start until its
+end. The session's supervisor process holds it, not the runner: it is
+free again as soon as the session has ended, also while the runner
+still waits for an earlier session before it joins this one. A runner
+that runs several sessions at once (`parallel=`) waits for a slot only
+while it has no session of its own that it has not freed yet (one that
+has ended but is not joined counts); if no slot is free for a further
+one, it ends one of its own sessions first and starts the next then (it
+never waits for a slot while holding one, so two runners cannot block
+each other). A runner thus runs as many sessions at
 once as it gets slots, at least one, and its sessions may run one after
 the other.
 

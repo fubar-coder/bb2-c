@@ -131,7 +131,10 @@ struct amiga_emulation {
     int own_work_dir;
     int joined;
     int exited;                 /* waitpid has reaped the process */
-    int slot;                   /* the locked slot file, -1: none */
+    int slot;                   /* the locked slot file, -1: none; the caller
+                                   holds it until the supervisor runs, then
+                                   only the supervisor */
+    char *slot_lock;            /* its path, NULL without a slot index */
     int counted;                /* counted in active_runs */
     double shots;               /* $AMIGA_EMULATION_SHOTS: seconds between screenshots */
     unsigned nshots;
@@ -711,12 +714,14 @@ static char *slots_dir(void)
    with no_slot - waiting while holding slots could deadlock two runners
    that wait for each other's slots.  The runner then ends one of its own
    sessions and tries again.  *index: the slot's number, -1 without a
-   limit (AMIGA_EMULATION_MAX=0) */
-static int take_slot(int *index, char *err, size_t errlen)
+   limit (AMIGA_EMULATION_MAX=0); *lock: the path of its lock file (NULL
+   without a slot number, or out of memory) */
+static int take_slot(int *index, char **lock, char *err, size_t errlen)
 {
     char *dir = slots_dir();
     int fd = dir ? slot_take(dir, AMIGA_EMULATION_SLOTS_AUTO, active_runs == 0, index) : -1;
 
+    *lock = fd >= 0 && *index >= 0 ? str_printf("%s/slot-%d.lock", dir, *index) : NULL;
     if (fd < 0 && active_runs && errno == EAGAIN) {
         no_slot = 1;
         set_err(err, errlen, "no free emulator slot in %s (sessions of this process running: %u)",
@@ -1500,8 +1505,12 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     free(path);
 
     e->slot_from = now();
-    if ((e->slot = take_slot(&slot_index, err, errlen)) < 0)
+    if ((e->slot = take_slot(&slot_index, &e->slot_lock, err, errlen)) < 0)
         goto fail;
+    if (slot_index >= 0 && !e->slot_lock) {
+        set_err(err, errlen, "out of memory");
+        goto fail;
+    }
     e->slot_got = now();
     e->machine = strdup(p->machine ? p->machine : "a1200");
     active_runs++;
@@ -1834,21 +1843,28 @@ static void supervise(struct amiga_emulation *e)
         snap_finish(e);
 }
 
-/* closes the descriptors from 3 on: the supervisor must not keep the
-   caller's files open (the locks of its other sessions' slots, sockets) */
-static void close_fds(void)
+/* closes the descriptors from 3 on but keep (its own slot, -1: none): the
+   supervisor must not keep the caller's files open (the locks of its
+   other sessions' slots, sockets) */
+static void close_fds(int keep)
 {
     long max, fd;
 
 #if defined(__linux__) && defined(SYS_close_range)
-    if (!syscall(SYS_close_range, 3u, ~0u, 0u))
+    if (keep < 3) {
+        if (!syscall(SYS_close_range, 3u, ~0u, 0u))
+            return;
+    } else if ((keep == 3 || !syscall(SYS_close_range, 3u, (unsigned)keep - 1, 0u))
+               && !syscall(SYS_close_range, (unsigned)keep + 1, ~0u, 0u)) {
         return;
+    }
 #endif
     max = sysconf(_SC_OPEN_MAX);
     if (max < 0 || max > 65536)
         max = 65536;
     for (fd = 3; fd < max; fd++)
-        close((int)fd);
+        if (fd != keep)
+            close((int)fd);
 }
 
 /* the supervisor's process: starts Amiberry and drives the session to its
@@ -1864,8 +1880,12 @@ static void close_fds(void)
     if (prctl(PR_SET_PDEATHSIG, SIGKILL) || getppid() != e->parent)
         _exit(126);
 #endif
-    close_fds();
-    e->slot = -1;               /* closed: the caller holds the slot */
+    /* the slot stays locked while the supervisor lives: the caller closes
+       its copy of the descriptor (one open file description, one lock),
+       so the slot is free again when the session has ended, not when the
+       caller joins it; the descriptor is O_CLOEXEC, Amiberry does not
+       inherit it */
+    close_fds(e->slot);
     e->parent = getpid();
     memset(&sa, 0, sizeof sa);
     sigemptyset(&sa.sa_mask);
@@ -1920,12 +1940,36 @@ static int start_supervisor(struct amiga_emulation *e, const char *statefile, ch
     if (pid == 0)
         supervisor(e, statefile);
     e->sup = pid;
+    /* from here on the supervisor holds the slot (see supervisor) */
+    if (e->slot >= 0) {
+        close(e->slot);
+        e->slot = -1;
+    }
+    return 0;
+}
+
+/* the caller, when the supervisor has ended without finishing the session
+   (killed): the slot again, to clean up its directories.  1 = locked (in
+   *fd, -1 without a slot lock file); 0: another session has the slot by
+   now and has its directories. */
+static int slot_again(struct amiga_emulation *e, int *fd)
+{
+    *fd = -1;
+    /* still held (no supervisor started), or no lock file */
+    if (e->slot >= 0 || !e->slot_lock)
+        return 1;
+    *fd = open(e->slot_lock, O_RDWR | O_CLOEXEC);
+    if (*fd >= 0 && !flock(*fd, LOCK_EX | LOCK_NB))
+        return 1;
+    if (*fd >= 0)
+        close(*fd);
+    *fd = -1;
     return 0;
 }
 
 /* the caller, after the supervisor has ended: the result; if it did not
    end the session itself (killed), its Amiberry and the slot's
-   directories */
+   directories (if the slot is still free, slot_again) */
 static void collect(struct amiga_emulation *e)
 {
     if (atomic_load(&e->sh->finished)) {
@@ -1933,12 +1977,19 @@ static void collect(struct amiga_emulation *e)
         e->end_at = from_us(atomic_load(&e->sh->end));
         e->snap = SNAP_OFF;     /* snap_finish done */
     } else {
-        int pg = atomic_load(&e->sh->pgid);
+        int pg = atomic_load(&e->sh->pgid), fd;
 
         if (pg > 0)
             kill(-pg, SIGKILL);
+        if (!slot_again(e, &fd)) {
+            /* the slot's directories are not ours any more */
+            free(e->slot_dir);
+            e->slot_dir = NULL;
+        }
         if (e->slot_dir)
             snap_finish(e);
+        if (fd >= 0)
+            close(fd);
         e->status = AMIGA_EMULATION_FAILED;
         e->end_at = now();
     }
@@ -2022,6 +2073,7 @@ void amiga_emulation_free(struct amiga_emulation *e)
     free(e->work_dir);
     free(e->test_dir);
     free(e->slot_dir);
+    free(e->slot_lock);
     free(e->machine);
     free(e->ctl_dir);
     free(e->snap_path);

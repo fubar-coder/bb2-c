@@ -381,6 +381,41 @@ static void free_running(void)
     CHECK(slot_clean(0) && slot_clean(1));
 }
 
+/* only the supervisor holds the slot: a session that has ended frees its
+   slot at once, also while the caller still waits for an earlier session
+   (joins in start order); a third start of the same process gets it */
+static void slot_free_at_end(void)
+{
+    struct amiga_emulation *a = start("HANG", 30), *b = start("Echo ok", 30), *c = NULL;
+    double until = now() + 15;
+    char done[4200];
+    int x = -1;
+
+    CHECK(a && b);
+    if (!a || !b)
+        goto out;
+    snprintf(done, sizeof done, "%s/run.done", amiga_emulation_test_dir(b));
+    /* bounded: b ends within seconds, a only at its limit (30 s) */
+    while (now() < until && (x = amiga_emulation_slot(slots, AMIGA_EMULATION_SLOTS_AUTO, 0)) < 0)
+        nap(0.1);
+    CHECK(x >= 0);
+    CHECK(exists(done));
+    if (x >= 0)
+        close(x);
+    c = start("Echo ok", 30);
+    CHECK(c &&amiga_emulation_join(c) == AMIGA_EMULATION_DONE);
+    CHECK(amiga_emulation_join(b) == AMIGA_EMULATION_DONE);
+    if (failures) {
+        show("a", a);
+        show("b", b);
+    }
+out:
+    amiga_emulation_free(c);
+    amiga_emulation_free(a);
+    amiga_emulation_free(b);
+    CHECK(slot_clean(0) && slot_clean(1));
+}
+
 /* without snapshot: the session ends with its job too, not at the join */
 static void cold(void)
 {
@@ -439,6 +474,7 @@ int main(int argc, char **argv)
     join_order();
     restore_and_fallback();
     free_running();
+    slot_free_at_end();
     cold();
 
     if (!failures)

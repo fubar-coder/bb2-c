@@ -25,9 +25,10 @@
  * the script with FailAt 1000 in front and `Echo >TEST:run.done` behind it.
  *
  * Every session has a supervisor: a process amiga_emulation_start forks
- * (no exec; it closes the caller's descriptors from 3 on, so it holds no
- * other session's slot) that starts Amiberry and drives the session to its
- * end on its own, whenever the caller joins it: it waits for run.done,
+ * (no exec; it closes the caller's descriptors from 3 on but its own
+ * slot's lock, so it holds no other session's slot) that starts Amiberry
+ * and drives the session to its end on its own, whenever the caller joins
+ * it: it waits for run.done,
  * then ends Amiberry over the control socket (QUIT); at the time limit it
  * takes a screenshot (timeout.png in the work directory) and kills
  * Amiberry's process group; in snapshot mode (below) it also saves,
@@ -54,10 +55,16 @@
  * the machine, over all runners, build directories and worktrees:
  * amiga_emulation_start first takes one of the slots (flock on
  * slot-K.lock in $XDG_RUNTIME_DIR/amiga-emulation-slots, else
- * /tmp/amiga-emulation-slots-UID) and waits for a free one; the slot is
- * held until amiga_emulation_free (the kernel frees it if the runner
- * dies).  The wait does not count into the run's timeout.  Without
- * AMIGA_EMULATION_MAX in the environment, the limit is the number in the
+ * /tmp/amiga-emulation-slots-UID) and waits for a free one.  Once the
+ * supervisor runs, only the supervisor holds the slot (the caller closes
+ * its copy of the lock): the slot is free again when the session has
+ * ended and its slot directory is cleaned up, not only when the caller
+ * joins or frees it, so a session that waits for its join (a runner joins
+ * in start order) does not keep a slot without an Amiberry.  The kernel
+ * frees it if the supervisor dies; the caller then cleans up the slot's
+ * directories only if it gets the slot again at once (else another
+ * session has it).  The wait does not count into the run's timeout.
+ * Without AMIGA_EMULATION_MAX in the environment, the limit is the number in the
  * file max of the slot directory (1 to 64, e.g. `echo 6 > .../max`), else
  * 4; it is read again on every try of a waiting run, so a change takes
  * effect for the runs that already wait.  The limit is hard: every
