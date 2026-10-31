@@ -238,28 +238,28 @@ static struct Message *getmsg_cc(struct MsgPort *port, UBYTE *ne)
 
 /* WaitCommodity.  BUG(orig): see the head of the file - the CCR of
    GetMsg decides, and inverted: "ne" waits for the next message (#566). */
-static LONG BLITZ_ROUTINE waitevent_c(void)
+static BB_BOOL BLITZ_ROUTINE waitevent_c(void)
 {
     struct Message *m;
     UBYTE ne;
 
     if (!st.cobject)
-        return 0;
+        return BB_FALSE;
     m = getmsg_cc(st.msgport, &ne);
     if (ne)
         m = WaitPort(st.msgport);
     st.msg = (CxMsg *)m;
-    return -1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(waitevent, waitevent_c, "d1/a0-a1");
 
 /* CommodityEvent: GetMsg -> msg, -1 if there was one */
-static LONG BLITZ_ROUTINE event_c(void)
+static BB_BOOL BLITZ_ROUTINE event_c(void)
 {
     if (!st.cobject)
-        return 0;
+        return BB_FALSE;
     st.msg = (CxMsg *)GetMsg(st.msgport);
-    return st.msg ? -1 : 0;
+    return st.msg ? BB_TRUE : BB_FALSE;
 }
 BLITZ_THUNK(event, event_c, "d1/a0-a1");
 
@@ -305,19 +305,19 @@ BLITZ_INLINE(cxlist, "move.l #27,d0");
 BLITZ_INLINE(cxunique, "move.l #25,d0");
 
 /* Exchange...: -1 if the id of the last message is the command */
-static LONG is_cmd(ULONG cmd)
+static BB_BOOL is_cmd(ULONG cmd)
 {
     if (!st.cxmsgid || st.cxmsgid != cmd)
-        return 0;
-    return -1;
+        return BB_FALSE;
+    return BB_TRUE;
 }
-static LONG BLITZ_ROUTINE disabled_c(void) { return is_cmd(CMD_DISABLE); }
-static LONG BLITZ_ROUTINE enable_c(void) { return is_cmd(CMD_ENABLE); }
-static LONG BLITZ_ROUTINE appear_c(void) { return is_cmd(CMD_APPEAR); }
-static LONG BLITZ_ROUTINE disappear_c(void) { return is_cmd(CMD_DISAPPEAR); }
-static LONG BLITZ_ROUTINE kill_c(void) { return is_cmd(CMD_KILL); }
-static LONG BLITZ_ROUTINE list_c(void) { return is_cmd(CMD_LIST_CHG); }
-static LONG BLITZ_ROUTINE unqiue_c(void) { return is_cmd(CMD_UNIQUE); }
+static BB_BOOL BLITZ_ROUTINE disabled_c(void) { return is_cmd(CMD_DISABLE); }
+static BB_BOOL BLITZ_ROUTINE enable_c(void) { return is_cmd(CMD_ENABLE); }
+static BB_BOOL BLITZ_ROUTINE appear_c(void) { return is_cmd(CMD_APPEAR); }
+static BB_BOOL BLITZ_ROUTINE disappear_c(void) { return is_cmd(CMD_DISAPPEAR); }
+static BB_BOOL BLITZ_ROUTINE kill_c(void) { return is_cmd(CMD_KILL); }
+static BB_BOOL BLITZ_ROUTINE list_c(void) { return is_cmd(CMD_LIST_CHG); }
+static BB_BOOL BLITZ_ROUTINE unqiue_c(void) { return is_cmd(CMD_UNIQUE); }
 BLITZ_THUNK(disabled, disabled_c, "d1/a0-a1");
 BLITZ_THUNK(enable, enable_c, "d1/a0-a1");
 BLITZ_THUNK(appear, appear_c, "d1/a0-a1");
@@ -328,7 +328,7 @@ BLITZ_THUNK(unqiue, unqiue_c, "d1/a0-a1");
 
 /* AttachCxObj is void; the original tests the d0 it leaves, so it is
    called through the jump table with d0 as the result */
-static ULONG attach(CxObj *head, CxObj *co)
+static LONG attach(CxObj *head, CxObj *co)
 {
     struct bl_regs r = { .a0 = (ULONG)head, .a1 = (ULONG)co };
     return BLITZ_BASEJSR(st_cbase, -84, r);
@@ -336,13 +336,13 @@ static ULONG attach(CxObj *head, CxObj *co)
 
 /* SetHotKey n,hotkey$.  BUG(orig): see the head of the file (#564, #563,
    #565). */
-static LONG BLITZ_ROUTINE addhotkey_c(LONG n BL_REG(d0), STRPTR desc BL_REG(d1))
+static BB_BOOL BLITZ_ROUTINE addhotkey_c(LONG n BL_REG(d0), STRPTR desc BL_REG(d1))
 {
     ULONG *slot, o;
     CxObj *obj;
 
     if (!st.cobject)
-        return 0;
+        return BB_FALSE;
     st.hotkey = n;
     st.hotkeystring = desc;
     slot = SLOT(st.cxfilter, st.hotkey);
@@ -359,19 +359,19 @@ static LONG BLITZ_ROUTINE addhotkey_c(LONG n BL_REG(d0), STRPTR desc BL_REG(d1))
     }
     obj = CreateCxObj(CX_FILTER, (LONG)st.hotkeystring, 0);
     if (!obj)
-        return 0;
+        return BB_FALSE;
     st.currentfilter = obj;
     *SLOT(st.cxfilter, st.hotkey) = (ULONG)obj;
     if (!attach(st.cobject, st.currentfilter))
-        return 0;
+        return BB_FALSE;
     obj = CreateCxObj(CX_SEND, (LONG)st.msgport, st.hotkey);
     if (!obj)
-        return 0;
+        return BB_FALSE;
     *SLOT(st.cxsends, st.hotkey) = (ULONG)obj;
     if (!attach(st.currentfilter, obj))
-        return 0;
+        return BB_FALSE;
     ActivateCxObj(st.cobject, 1);
-    return -1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(addhotkey, addhotkey_c, "d1/a0-a1");
 
@@ -384,30 +384,30 @@ BLITZ_THUNK(port, port_c, "d1/a0-a1");
 
 /* SetCxStatus on|off: -1 activates, 0 deactivates the broker.
    BUG(orig): tests the message port, not the broker (#562). */
-static LONG BLITZ_ROUTINE status_c(LONG on BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE status_c(LONG on BL_REG(d0))
 {
     if (!st.msgport)
-        return 0;
+        return BB_FALSE;
     if (on == -1)
         on = 1;
     else if (on != 0)
-        return 0;
+        return BB_FALSE;
     ActivateCxObj(st.cobject, on);
-    return -1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(status, status_c, "d1/a0-a1");
 
 /* MakeCommodity name$,title$,description$.  BUG(orig): a new broker on
    every call, the previous one is not deleted (#560). */
-static LONG BLITZ_ROUTINE makecommodity_c(STRPTR name BL_REG(d0), STRPTR title BL_REG(d1),
-                                          STRPTR descr BL_REG(d2))
+static BB_BOOL BLITZ_ROUTINE makecommodity_c(STRPTR name BL_REG(d0), STRPTR title BL_REG(d1),
+                                             STRPTR descr BL_REG(d2))
 {
     CxObj *co;
 
     if (!st.msgport) {
         struct MsgPort *p = CreateMsgPort();    /* makemsgport */
         if (!p)
-            return 0;
+            return BB_FALSE;
         st.msgport = p;
     }
     st.newbroker.name = name;
@@ -420,9 +420,9 @@ static LONG BLITZ_ROUTINE makecommodity_c(STRPTR name BL_REG(d0), STRPTR title B
     st.newbroker.port = st.msgport;
     co = CxBroker((struct NewBroker *)&st.newbroker, NULL);
     if (!co)
-        return 0;
+        return BB_FALSE;
     st.cobject = co;
     ActivateCxObj(st.cobject, 1);
-    return -1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(makecommodity, makecommodity_c, "d1/a0-a1");
