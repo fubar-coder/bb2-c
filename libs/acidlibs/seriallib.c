@@ -230,8 +230,25 @@ static void initport(struct serio *s)
     s->io.IOSer.io_Message.mn_Node.ln_Type = NT_MESSAGE;
 }
 
-/* _openserial - d0 = device name, d1 = unit, d2 = baud, d3 = serflags;
-   result: address of the unit's read half, 0 on failure */
+/**
+ * @brief OpenSerial(device$,unit#,baud,io_serflags) - open a unit of a
+ * serial device (_openserial).
+ *
+ * Sets up the read half (port, signal, IOExtSer), opens the device with
+ * the serflags, sets the baud rate and flags (SDCMD_SETPARAMS), copies the
+ * 128 bytes to the write half and gives that its own port and signal.
+ *
+ * BUG(orig): if the write half's AllocSignal fails, the device stays open
+ * and the write half keeps its request pointer (#259); a second OpenSerial
+ * of an open unit that fails (exclusive access) clears the read half, so
+ * the open device is never closed (#260).
+ *
+ * @param name d0: the device name
+ * @param unit d1: the unit (the slot is unit*256, word arithmetic, #252)
+ * @param baud d2: the baud rate
+ * @param flag d3: io_SerFlags
+ * @return d0: the address of the unit's read half, 0 on failure
+ */
 ULONG BLITZ_ROUTINE openserial(UBYTE *name BL_REG(d0), ULONG unit BL_REG(d1),
                                ULONG baud BL_REG(d2), ULONG flag BL_REG(d3))
 {
@@ -282,7 +299,21 @@ fail:
     return 0;
 }
 
-/* _closeserial - BUG(orig) (#252): unit*128, see the head comment */
+/**
+ * @brief CloseSerial unit# - close a unit (_closeserial).
+ *
+ * AbortIO and CloseDevice through the read half's request, the signal is
+ * freed; the write half's signal is freed too.  Nothing happens for a
+ * unit that is not open.
+ *
+ * BUG(orig) (#252): the slot is unit*128, see the head comment (CloseSerial
+ * 1 closes the device through unit 0's write request and frees unit 1's
+ * read signal).  BUG(orig) (#258): AbortIO without WaitIO, the write
+ * half's request is neither aborted nor closed (a pending SendIO write
+ * stays pending).
+ *
+ * @param unit d0.w: the unit
+ */
 void BLITZ_ROUTINE closeserial(UWORD unit BL_REG(d0))
 {
     struct serio *s = slot(unit, 7, 0);
@@ -300,7 +331,10 @@ void BLITZ_ROUTINE closeserial(UWORD unit BL_REG(d0))
     s->request = NULL;
 }
 
-/* _closeallio (finit) */
+/**
+ * @brief Library finit (_closeallio): AbortIO, WaitIO, CloseDevice and
+ * FreeSignal for every unit still open (both halves' signals).
+ */
 void BLITZ_ROUTINE closeallio(void)
 {
     struct serio *s = allio;
@@ -321,7 +355,17 @@ void BLITZ_ROUTINE closeallio(void)
     }
 }
 
-/* _writebyte - one byte through the write half, DoIO */
+/**
+ * @brief WriteSerial unit#,byte - write one byte (_writebyte).
+ *
+ * CMD_WRITE of one byte through the write half, DoIO.
+ *
+ * Errors: "Serial Device Not Open" (TRAP #0, also without the debugger;
+ * the C version returns if the trap does, #262).
+ *
+ * @param unit d0.w: the unit
+ * @param byte d1.b: the byte
+ */
 void BLITZ_ROUTINE writebyte(UWORD unit BL_REG(d0), UBYTE byte BL_REG(d1))
 {
     struct serio *s = slot(unit, 8, 128);
@@ -337,7 +381,23 @@ void BLITZ_ROUTINE writebyte(UWORD unit BL_REG(d0), UBYTE byte BL_REG(d1))
     DoIO((struct IORequest *)s->request);
 }
 
-/* _writestring3 - d1 = string, d2 = flags, -4(a2) = its length */
+/**
+ * @brief WriteSerialString unit#,string,flags - write a string (_writestring3).
+ *
+ * CMD_WRITE through the write half.
+ *
+ * BUG(orig) (#254): flags bit 1 (value 2) selects both TrueString (length
+ * from the string instead of -1 = null terminated) and DoIO; without it
+ * the write is started with SendIO and not waited for.  Bit 0 ("1=DoIO"
+ * in the help text) is never tested.
+ *
+ * Errors: "Serial Device Not Open" (TRAP #0, #262).
+ *
+ * @param unit  d0.w: the unit
+ * @param data  d1: the string
+ * @param flags d2.w: the flags (bit 1, see above)
+ * @param lens  a2: the argument stack, -4(a2) = the string's length
+ */
 void BLITZ_ROUTINE writestring3(UWORD unit BL_REG(d0), ULONG data BL_REG(d1),
                                 UWORD flags BL_REG(d2),
                                 const ULONG *lens BL_REG(a2))
@@ -361,8 +421,20 @@ void BLITZ_ROUTINE writestring3(UWORD unit BL_REG(d0), ULONG data BL_REG(d1),
         SendIO((struct IORequest *)s->request);
 }
 
-/* _writestring2 - MOVEQ #0,d2 then _writestring3 (the length popped there
-   is not used with flags 0, so it is not read here) */
+/**
+ * @brief WriteSerialString unit#,address - write a null terminated string
+ * (_writestring2).
+ *
+ * MOVEQ #0,d2 then _writestring3 (the length popped there is not used
+ * with flags 0, so it is not read here): SendIO with length -1, not
+ * waited for.  BUG(orig) (#254): the two argument form takes a #long (an
+ * address).
+ *
+ * Errors: "Serial Device Not Open" (TRAP #0, #262).
+ *
+ * @param unit d0.w: the unit
+ * @param data d1: the address of the string
+ */
 void BLITZ_ROUTINE writestring2(UWORD unit BL_REG(d0), ULONG data BL_REG(d1))
 {
     struct serio *s = slot(unit, 8, 128);
@@ -392,21 +464,57 @@ static void memio(UWORD unit, UWORD cmd, ULONG addr, ULONG len)
     DoIO((struct IORequest *)s->request);
 }
 
-/* _writemem */
+/**
+ * @brief WriteSerialMem unit#,Address,Length - write memory (_writemem).
+ *
+ * CMD_WRITE through the write half, DoIO.
+ *
+ * Errors: "Serial Device Not Open" (TRAP #0, #262).
+ *
+ * @param unit d0.w: the unit
+ * @param addr d1: the address
+ * @param len  d2: the length in bytes
+ */
 void BLITZ_ROUTINE writemem(UWORD unit BL_REG(d0), ULONG addr BL_REG(d1),
                             ULONG len BL_REG(d2))
 {
     memio(unit, CMD_WRITE, addr, len);
 }
 
-/* _readmem - BUG(orig) (#253): CMD_READ through the write half */
+/**
+ * @brief ReadSerialMem unit#,Address,Length - read into memory (_readmem).
+ *
+ * CMD_READ, DoIO.  BUG(orig) (#253): through the WRITE request (+128).
+ *
+ * Errors: "Serial Device Not Open" (TRAP #0, #262).
+ *
+ * @param unit d0.w: the unit
+ * @param addr d1: the address
+ * @param len  d2: the length in bytes
+ */
 void BLITZ_ROUTINE readmem(UWORD unit BL_REG(d0), ULONG addr BL_REG(d1),
                            ULONG len BL_REG(d2))
 {
     memio(unit, CMD_READ, addr, len);
 }
 
-/* _readbyte - d1 bit 1 = wait (no query); -1 if nothing is waiting */
+/**
+ * @brief ReadSerial(unit#,flags) - read one byte (_readbyte).
+ *
+ * Without the wait flag SDCMD_QUERY first: -1 if nothing is waiting;
+ * then CMD_READ of one byte, DoIO.
+ *
+ * BUG(orig) (#255): the "wait" flag is bit 1 (value 2), not 1 as the help
+ * says; with it the query is skipped and the read waits for a byte.
+ * DIFF: a3 is not changed (the original leaves it on its one byte buffer
+ * rb1 inside the library).
+ *
+ * Errors: "Serial Device Not Open" (TRAP #0, #262; returns 0).
+ *
+ * @param unit  d0.w: the unit
+ * @param flags d1.w: bit 1 = wait
+ * @return d0: the byte, -1 if nothing is waiting
+ */
 ULONG BLITZ_ROUTINE readbyte(UWORD unit BL_REG(d0), UWORD flags BL_REG(d1))
 {
     struct serio *s = slot(unit, 8, 0);
@@ -429,13 +537,34 @@ ULONG BLITZ_ROUTINE readbyte(UWORD unit BL_REG(d0), UWORD flags BL_REG(d1))
     return rb1[0];
 }
 
-/* _readobyte - MOVEQ #0,d1 then _readbyte */
+/**
+ * @brief ReadSerial(unit#) - read one byte without waiting (_readobyte).
+ *
+ * MOVEQ #0,d1 then _readbyte.
+ *
+ * @param unit d0.w: the unit
+ * @return d0: the byte, -1 if nothing is waiting
+ */
 ULONG BLITZ_ROUTINE readobyte(UWORD unit BL_REG(d0))
 {
     return readbyte(unit, 0);
 }
 
-/* _readstring - everything waiting, to a3 (no terminating 0) */
+/**
+ * @brief ReadSerialString(unit#) - read everything waiting as a string
+ * (_readstring).
+ *
+ * SDCMD_QUERY, then CMD_READ of io_Actual bytes to a3 (the string
+ * buffer), which is advanced over them.  BUG(orig) (#256): the number of
+ * bytes is not limited.  No terminating 0 (not a bug: the compiler
+ * appends clr.b (a3)+ itself where it passes a string on, blitz2.s:8767
+ * sbtolong, #257).
+ *
+ * Errors: "Serial Device Not Open" (TRAP #0, #262; returns 0).
+ *
+ * @param unit d0.w: the unit
+ * @return d0: the number of bytes (string length), 0 if nothing is waiting
+ */
 ULONG BLITZ_ROUTINE readstring(UWORD unit BL_REG(d0))
 {
     struct serio *s = slot(unit, 8, 0);
@@ -476,7 +605,16 @@ static void setparams(struct serio *s)
     DoIO((struct IORequest *)s->request);
 }
 
-/* _serialbuffer */
+/**
+ * @brief SetSerialBuffer unit#,bufferlength - set io_RBufLen (_serialbuffer).
+ *
+ * SDCMD_SETPARAMS, DoIO.  BUG(orig) (#252): the slot is unit*128.
+ *
+ * Errors: "Serial Device Not Open" (TRAP #0, #262).
+ *
+ * @param unit d0.w: the unit
+ * @param len  d1: the read buffer length
+ */
 void BLITZ_ROUTINE serialbuffer(UWORD unit BL_REG(d0), ULONG len BL_REG(d1))
 {
     struct serio *s = paramslot(unit);
@@ -487,7 +625,19 @@ void BLITZ_ROUTINE serialbuffer(UWORD unit BL_REG(d0), ULONG len BL_REG(d1))
     }
 }
 
-/* _seriallens */
+/**
+ * @brief SetSerialLens unit#,readlen,writelen,stopbits - set the bit
+ * lengths and stop bits (_seriallens).
+ *
+ * SDCMD_SETPARAMS, DoIO.  BUG(orig) (#252): the slot is unit*128.
+ *
+ * Errors: "Serial Device Not Open" (TRAP #0, #262).
+ *
+ * @param unit d0.w: the unit
+ * @param rlen d1.b: io_ReadLen
+ * @param wlen d2.b: io_WriteLen
+ * @param stop d3.b: io_StopBits
+ */
 void BLITZ_ROUTINE seriallens(UWORD unit BL_REG(d0), UBYTE rlen BL_REG(d1),
                               UBYTE wlen BL_REG(d2), UBYTE stop BL_REG(d3))
 {
@@ -501,7 +651,16 @@ void BLITZ_ROUTINE seriallens(UWORD unit BL_REG(d0), UBYTE rlen BL_REG(d1),
     }
 }
 
-/* _serialsetparams */
+/**
+ * @brief SetSerialParams unit# - SDCMD_SETPARAMS with the request's
+ * current values (_serialsetparams).
+ *
+ * BUG(orig) (#252): the slot is unit*128.
+ *
+ * Errors: "Serial Device Not Open" (TRAP #0, #262).
+ *
+ * @param unit d0.w: the unit
+ */
 void BLITZ_ROUTINE serialsetparams(UWORD unit BL_REG(d0))
 {
     struct serio *s = paramslot(unit);
@@ -510,9 +669,18 @@ void BLITZ_ROUTINE serialsetparams(UWORD unit BL_REG(d0))
         setparams(s);
 }
 
-/* _checkevent - a0 = utillib's `signals` (result of its Wait); 1 if the
-   write port's signal is set, 2 if the read port's (2 wins); no check
-   whether the unit is open.  BUG(orig) (#252): unit*128. */
+/**
+ * @brief SerialEvent(unit#) - which of the unit's signals came (_checkevent).
+ *
+ * No check whether the unit is open (not a bug: it tests bit 0 of a
+ * cleared slot and returns 0).  Keeps a0/a1 as the original (thunk).
+ * BUG(orig) (#252): the slot is unit*128.
+ *
+ * @param unit d0.w: the unit
+ * @param sigs a0: utillib's `signals` (the result of its Wait)
+ * @return d0: 1 if the write port's signal is set, 2 if the read port's
+ *         (2 wins), else 0
+ */
 static ULONG BLITZ_ROUTINE checkevent_c(UWORD unit BL_REG(d0),
                                         const ULONG *sigs BL_REG(a0))
 {
