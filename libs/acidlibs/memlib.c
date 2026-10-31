@@ -20,6 +20,12 @@
  * Every routine keeps the registers the original keeps: the compiler calls
  * them in the middle of generated code (e.g. newmem at procedure entry,
  * with the parameters in d0-d5).  The thunks save what GCC may change.
+ *
+ * Fixed (intended deviation, #956): "Out of Memory!" (err1) and "Unable
+ * to Free Memory" (err2) trap in the normal code, but the original has
+ * their messages in the error check area (without the debugger d0 points
+ * behind the library); here the messages are in the normal code.  The
+ * error check area is empty.
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -58,9 +64,11 @@ struct memlist {
 static struct memlist *firstdata;
 static UWORD memerr;
 
-/* only used with the debugger: after `errors` */
-static const char mess1[] BLITZ_ERRCHK = "Out of Memory!";
-static const char mess2[] BLITZ_ERRCHK = "Unable to Free Memory";
+/* the messages of err1/err2 in the normal code (fixed, #956: in the
+   original they lie after `errors`, in the error check area, although
+   err1/err2 trap in the normal code) */
+static const char mess1[] = "Out of Memory!";
+static const char mess2[] = "Unable to Free Memory";
 
 static ULONG freelast_c(void);
 

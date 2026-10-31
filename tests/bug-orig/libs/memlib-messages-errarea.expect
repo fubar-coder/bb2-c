@@ -1,0 +1,4 @@
+[run]
+before
+runtime error Out of Memory!
+rc=0

@@ -42,8 +42,9 @@ intended deviations (kind **F**), each with its issue.
 
 | Library/routine (file:line) | Original | C version | Kind | Reason / observable? |
 |---|---|---|---|---|
-| memlib err1 (memlib.c:76) | jump out of localloc/newmem with saved registers on the stack, never returns | err1 returns, caller returns 0 | **K** | only if the runtime error trap returns (normally the program ends); practically not observable |
-| memlib locfree err2 (memlib.c:171) | unknown block: one-time `TRAP #0` "Unable to Free Memory" (err2 in normal code); if the trap returns, the code continues in `newmem`, the registers saved by locfree are still on the stack | locfree returns after the runtime error | **K** | only with a returning trap; practically not observable |
+| memlib err1 (memlib.c:89) | jump out of localloc/newmem with saved registers on the stack, never returns | err1 returns, caller returns 0 | **K** | only if the runtime error trap returns (normally the program ends); practically not observable |
+| memlib locfree err2 (memlib.c:196) | unknown block: one-time `TRAP #0` "Unable to Free Memory" (err2 in normal code); if the trap returns, the code continues in `newmem`, the registers saved by locfree are still on the stack | locfree returns after the runtime error | **K** | only with a returning trap; practically not observable |
+| memlib messages (memlib.c:24) | err1/err2 trap in normal code, their messages "Out of Memory!"/"Unable to Free Memory" are in the error check area (without debugger d0 behind the lib) | messages in normal code; the error check area is empty | **F** | #956: the same runtime errors with the debugger; without it TRAP #0 with the right message (test `memlib-messages-errarea`) |
 | arrayslib newlocarr/newloclist (arrayslib.c:29) | swaps a4/a5 around the memlib call | passes the base directly | **T** | a4/a5 are fixed registers in C; memlib does not use a5. Not observable |
 | arrayslib dimension calculation (arrayslib.c:90) | returns d1.w+1, changes d2 | d2 preserved, d1 undefined | **B** (register preservation) | compiler does not use d1/d2. Not observable |
 | maxlenlib (maxlenlib.c:19) | changes d2 and a2 | preserves d2/a2 | **B** | not results. Not observable |
