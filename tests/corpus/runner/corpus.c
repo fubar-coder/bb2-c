@@ -146,6 +146,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
     p->timeout = 300;
     p->parallel = 1;
     p->stack = 40000;
+    p->run = 1;
     while (*line) {
         const char *eol = strchr(line, '\n'), *v;
         char key[32], *val;
@@ -184,18 +185,20 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             continue;
         }
         if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial") || !strcmp(key, "regression")
-            || !strcmp(key, "timeout") || !strcmp(key, "parallel") || !strcmp(key, "stack")) {
+            || !strcmp(key, "run") || !strcmp(key, "timeout") || !strcmp(key, "parallel")
+            || !strcmp(key, "stack")) {
             char *e;
             unsigned long u = strtoul(val, &e, 10);
 
             if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial")
-                || !strcmp(key, "regression")) {
+                || !strcmp(key, "regression") || !strcmp(key, "run")) {
                 if (strcmp(val, "on") && strcmp(val, "off")) {
                     free(val);
                     return fail(p, err, errlen, "line %u: %s=on or %s=off", no, key, key);
                 }
                 *(!strcmp(key, "runtime_errors") ? &p->runtime_errors
-                  : !strcmp(key, "serial") ? &p->serial : &p->regression) = !strcmp(val, "on");
+                  : !strcmp(key, "serial") ? &p->serial
+                  : !strcmp(key, "run") ? &p->run : &p->regression) = !strcmp(val, "on");
             } else if (!*val || *e || !u) {
                 free(val);
                 return fail(p, err, errlen, "line %u: %s needs a number > 0", no, key);
@@ -357,8 +360,13 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         free(val);
         return fail(p, err, errlen, "line %u: unknown key %s", no, key);
     }
-    if (!p->work || !p->report || !p->ted || !p->launcher || !p->defaultdbug)
+    if (!p->work || !p->report || !p->ted || (p->run && !p->launcher) || !p->defaultdbug)
         return fail(p, err, errlen, "work, report, ted, launcher and defaultdbug are needed");
+    /* compile only: nothing that belongs to the runs */
+    if (!p->run && (p->launcher || p->gate || p->serial || p->runwrap || p->runargs || p->expect
+                    || p->serial_same_as))
+        return fail(p, err, errlen, "run=off: no launcher, gate, serial, runwrap, runargs, "
+                    "expect or serial_same_as");
     if (p->nconfigs < 2 || !p->nsources)
         return fail(p, err, errlen, "a reference, another configuration and sources are needed");
     if (p->expect && (p->nsources != 1 || p->serial_same_as))
@@ -578,7 +586,7 @@ static char *script13(const struct corpus_pass *p)
         text_add(&s, "blitz2:blitz2 >" VOLUME ":out/blitz2.out " VOLUME ":jobs\n");
     text_add(&s, VOLUME ":rcput " VOLUME ":out/blitz2.out\n"
             "Assign blitz2:\n");
-    for (i = 0; i < p->nsources; i++) {
+    for (i = 0; p->run && i < p->nsources; i++) {
         char *n = corpus_name(p->sources[i]);
 
         text_add(&s, "If EXISTS " VOLUME ":out/%s\n"
@@ -615,7 +623,7 @@ char *corpus_script(const struct corpus_pass *p)
                 "Set gate $RC\n"
                 "Echo \"rc=$gate\" >>" VOLUME ":out/gate.run\n"
                 "If VAL $gate EQ 0\n");
-    for (i = 0; i < p->nsources; i++) {
+    for (i = 0; p->run && i < p->nsources; i++) {
         char *n = corpus_name(p->sources[i]);
 
         text_add(&s, "If EXISTS " VOLUME ":out/%s\n"
@@ -1041,6 +1049,42 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
 
         load_outcome(p, 0, i, slog[0], &ref);
         text_add(&rep, "%-16s", name ? name : "?");
+        /* compile only: the reference's result, and its executable (if any) */
+        if (!p->run) {
+            int noresult = !strncmp(ref.result, "no RESULT", 9);
+
+            if (noresult) {
+                text_add(&rep, " reference: %s", ref.result);
+                diff = 1;
+                vbad[0] = 1;
+            } else
+                text_add(&rep, " %s", ref.exe ? "compiles" : "does not compile");
+            for (c = 1; c < p->nconfigs; c++) {
+                const struct corpus_config *cf = &p->configs[c];
+                int ok;
+
+                load_outcome(p, c, i, slog[c], &o);
+                ok = !strcmp(ref.result, o.result);
+                text_add(&rep, "; %s:%s", cf->tag, ok ? " result same" : " RESULT DIFFERS (");
+                if (!ok)
+                    text_add(&rep, "%s / %s)", ref.result, o.result);
+                if (cf->expect == CORPUS_EXE && (ref.exe || o.exe)) {
+                    int same_exe = same(ref.exe, ref.exelen, o.exe, o.exelen);
+
+                    text_add(&rep, same_exe ? ", exe identical" : o.exe && ref.exe ? ", EXE DIFFERS"
+                                   : o.exe ? ", AN EXE" : ", NO EXE");
+                    ok &= same_exe;
+                }
+                diff |= !ok;
+                vbad[c] |= !ok;
+                free_outcome(&o);
+            }
+            text_add(&rep, "\n");
+            bad += diff;
+            free_outcome(&ref);
+            free(name);
+            continue;
+        }
         if (!ref.exe) {
             text_add(&rep, " reference did not compile: %s\n", ref.result);
             bad++;

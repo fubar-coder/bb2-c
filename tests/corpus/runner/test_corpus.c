@@ -202,6 +202,52 @@ int main(void)
         corpus_free(&p);
     }
 
+    /* compile only (run=off): no launcher, nothing of the runs, the script
+       only compiles */
+    {
+        static const char want[] =
+            "Assign blitz2: CORPUS:blitz2\n"
+            "Stack 40000\n"
+            "blitz2:blitz2 CORPUS:jobs >CORPUS:out/blitz2.out\n"
+            "Echo \"rc=$RC\" >>CORPUS:out/blitz2.out\n"
+            "Assign blitz2:\n";
+        static const char want13[] =
+            "Assign blitz2: CORPUS:blitz2\n"
+            "Stack 40000\n"
+            "blitz2:blitz2 >CORPUS:out/blitz2.out CORPUS:jobs\n"
+            "CORPUS:rcput CORPUS:out/blitz2.out\n"
+            "Assign blitz2:\n";
+#define NORUN "work=/w\nreport=/r\nted=/t\ndefaultdbug=/d\nrun=off\n" CONFIGS "source=/s/t01.bb2\n"
+        char *t;
+
+        CHECK(corpus_parse(NORUN, &p, err, sizeof err) == 0);
+        CHECK(!p.run && !p.launcher);
+        t = corpus_script(&p);
+        CHECK(t && !strcmp(t, want));
+        free(t);
+        corpus_free(&p);
+        CHECK(corpus_parse(NORUN "machine=a500\nrcput=/rc\n", &p, err, sizeof err) == 0);
+        t = corpus_script(&p);
+        CHECK(t && !strcmp(t, want13));
+        free(t);
+        corpus_free(&p);
+        CHECK(corpus_parse(BASE CONFIGS "source=/s\n", &p, err, sizeof err) == 0 && p.run);
+        corpus_free(&p);
+        CHECK(parse(BASE CONFIGS "source=/s\nrun=off\n", err, sizeof err) == -1
+              && strstr(err, "run=off"));
+        CHECK(parse(NORUN "gate=/g\n", err, sizeof err) == -1 && strstr(err, "run=off"));
+        CHECK(parse(NORUN "serial=on\n", err, sizeof err) == -1 && strstr(err, "run=off"));
+        CHECK(parse(NORUN "runwrap=/r\n", err, sizeof err) == -1 && strstr(err, "run=off"));
+        CHECK(parse(NORUN "runargs=x\n", err, sizeof err) == -1 && strstr(err, "run=off"));
+        CHECK(parse(NORUN "expect=/e\n", err, sizeof err) == -1 && strstr(err, "run=off"));
+        CHECK(parse(NORUN "serial_same_as=/o\n", err, sizeof err) == -1 && strstr(err, "run=off"));
+        CHECK(parse(NORUN "run=maybe\n", err, sizeof err) == -1);
+        /* without run=off the launcher is still needed */
+        CHECK(parse("work=/w\nreport=/r\nted=/t\ndefaultdbug=/d\n" CONFIGS "source=/s\n", err,
+                    sizeof err) == -1);
+#undef NORUN
+    }
+
     /* masking: 8 bytes behind each trap #1 / #4, the search goes on behind
        the block; first every trap #1, then every trap #4 (as bb2's
        mask_trap1: the trap #1 at 14 also clears the $4E71, the trap #4 at

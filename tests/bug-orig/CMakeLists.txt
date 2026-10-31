@@ -308,6 +308,9 @@ bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/regression-selftest-broken.ba
 	regression_selftest_broken REGRESSION WANT 3)
 
 add_custom_target(bug_orig_sources ALL DEPENDS ${bug_orig_sources} ${testdata_files})
+# for the equivalence of blitz2-ab3 (tests/ab3)
+set_property(GLOBAL PROPERTY BUG_ORIG_SOURCES ${bug_orig_sources})
+set_property(GLOBAL PROPERTY BUG_ORIG_USERLIB ${USERLIB})
 if(bug_orig_deps)
 	list(REMOVE_DUPLICATES bug_orig_deps)
 	add_dependencies(bug_orig_sources ${bug_orig_deps})

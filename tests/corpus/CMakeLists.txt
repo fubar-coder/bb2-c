@@ -31,6 +31,8 @@ foreach(dir tests tests-runerr tests-req tests-serial)
 	endforeach()
 endforeach()
 add_custom_target(corpus_sources ALL DEPENDS ${corpus_tokenised})
+# for the equivalence of blitz2-ab3 (tests/ab3)
+set_property(GLOBAL PROPERTY CORPUS_SOURCES ${corpus_tokenised})
 
 # ---------------------------------------------------------- the passes
 # Configurations (bb2 corpus_check): ref = the original compiler (2.10,

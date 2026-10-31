@@ -15,8 +15,17 @@
  *   parallel=N        emulator sessions at the same time (1 always works)
  *   stack=N           Stack for blitz2 and the programs
  *   ted=PATH          tedstub (blitz2:ted)
- *   launcher=PATH     starts every program: reqtrap or reqclose
- *   gate=PATH         optional: run through the launcher first (reqclosetest);
+ *   launcher=PATH     starts every program: reqtrap or reqclose (not
+ *                     needed with run=off)
+ *   run=on|off        off: the programs are only compiled, not run (no
+ *                     launcher, gate, serial, runwrap, runargs, expect);
+ *                     every configuration must give the reference's
+ *                     compile result (tedstub's RESULT line: ok and the
+ *                     size, or the error with line and message), and with
+ *                     exe the same executable - also for a source the
+ *                     reference does not compile (blitz2-ab3 against
+ *                     blitz2, tests/ab3)
+ *   gate=PATH        optional: run through the launcher first (reqclosetest);
  *                     if it does not return 0, the programs are not run and
  *                     the pass fails (they would block on their requesters)
  *   defaultdbug=PATH  blitz2:defaultdbug
@@ -108,7 +117,7 @@ struct corpus_config {
 struct corpus_pass {
     char *work, *report, *ted, *launcher, *gate, *defaultdbug, *serial_same_as;
     char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs, *machine, *rcput;
-    int runtime_errors, serial, regression;
+    int runtime_errors, serial, regression, run;   /* run: 0 = compile only (run=off) */
     unsigned timeout, parallel, stack;
     struct corpus_config *configs;
     size_t nconfigs;
