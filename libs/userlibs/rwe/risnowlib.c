@@ -188,7 +188,7 @@ static void bset(UBYTE *p, UWORD idx, UWORD bit)
     p[(WORD)idx] |= (UBYTE)(1 << (bit & 7));
 }
 
-/* init, finit: RTS */
+/** @brief init and finit: RTS (nothing to do). */
 static void BLITZ_ROUTINE nothing_c(void)
 {
 }
@@ -212,8 +212,22 @@ static UBYTE *killhead(UBYTE *p, ULONG size)
     return p + 4 + size;
 }
 
-/* InitSnowDrop(listnum,numpoints,bitmap,bp_size) (d0, d1, d3; a3 = the
-   bitmap object) */
+/**
+ * @brief InitSnowDrop(listnum,numpoints,bitmap,bp_size): the four lists
+ * of a snow field.
+ *
+ * One block (memlib globalloc, MEMF_CLEAR; not checked: memlib raises
+ * Out of Memory) for drop lists A and B and kill lists 1 and 2, each
+ * numpoints*16 bytes, all empty.  BUG(orig): the list number is not
+ * checked (#913); the size is computed with ASL.w #2 (numpoints from
+ * 1024 on: the block is too small, #912); an earlier block of the same
+ * number is not freed (#911).
+ * @param n       d0: the list number (0-3)
+ * @param num     d1: the number of points
+ * @param bpsize  d3: the end offset in the plane (bp_size)
+ * @param bm      a3: the bitmap object (!libs #bitmaplib,#ia3|#pd2)
+ * @return d0: the address of the list table (listpointers)
+ */
 static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d1),
                                           ULONG bpsize BL_REG(d3), ULONG bm BL_REG(a3))
 {
@@ -241,7 +255,22 @@ static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d
 
 /* ------------------------------------------------------------ LDoSnow */
 
-/* LDoSnow listnum,randomtable (d0, d1) */
+/**
+ * @brief LDoSnow listnum,randomtable: one step of the snow.
+ *
+ * Reads the newer drop list and writes the other (they swap): a flake
+ * moves one row down if the pixel there is clear, else to the side (left
+ * or right first, alternating) where the pixel and the one below are
+ * clear, else it stays; one that cannot move with plane 1 set below it
+ * stops (set in plane 1, dropped).  A flake below bp_size is removed.
+ * Then a new flake from the random table (the index steps by 2 modulo
+ * 1024).  COLOR00 is red while it runs ($F00, then 0: a debug flash).
+ * BUG(orig): the list number is not checked (#913); no bounds for the
+ * lists (#914); a bit above 7 reads behind the side tables (#910).
+ * @param n   d0: the list number
+ * @param rt  d1: the random table (index.w, then pairs offset.b, bit.b)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE asmdosnow_c(ULONG n BL_REG(d0), struct randomtable *rt BL_REG(d1))
 {
     struct snowfield *e;
@@ -334,8 +363,20 @@ static int unpause(UBYTE *plane1, const UBYTE *plane2, UWORD at, UWORD bit, UWOR
     return 1;
 }
 
-/* LDoSnowActivate(listnum) (d0): the kill list's pixels; the number of
-   entries + 1 */
+/**
+ * @brief LDoSnowActivate(listnum): stopped snow next to removed pixels
+ * falls again.
+ *
+ * For each pixel of the kill list (the two kill lists swap): stopped snow
+ * (plane 1 set, plane 2 clear) at the two sides below and at the pixel
+ * is cleared in plane 1 and added to the newer drop list; the pixel above
+ * goes into the other kill list.  Checking plane 2 at the killed pixel
+ * again is redundant (no defect).  BUG(orig): the drop list's last is 0
+ * before the first LDoSnow (writes at 0, #908) and is not updated
+ * (#909); the list number is not checked (#913); a bit above 7 (#910).
+ * @param n  d0: the list number
+ * @return d0: the number of kill list entries + 1
+ */
 static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
 {
     struct snowfield *e = entry(n);
@@ -386,8 +427,16 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
 
 /* ---------------------------------------------------------- KillPoint */
 
-/* KillPoint(listnum,x,y) (d0-d2): a pixel of plane 2 cleared in all
-   three planes and added to the kill list; -1, or 0 if it was clear */
+/**
+ * @brief KillPoint(listnum,x,y): removes a "blue" pixel (plane 2).
+ *
+ * The pixel is cleared in all three planes and the pixel above it added
+ * to the kill list.  BUG(orig) (#913): the list number is not checked.
+ * @param n  d0: the list number
+ * @param x  d1: x (a word)
+ * @param y  d2: y (a word; 40 bytes per row)
+ * @return d0: BB_TRUE, BB_FALSE if the pixel was clear in plane 2
+ */
 static BB_BOOL BLITZ_ROUTINE killpoint_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1),
                                          ULONG y BL_REG(d2))
 {
