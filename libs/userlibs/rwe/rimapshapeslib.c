@@ -141,18 +141,42 @@ BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
+/* a map shape: the width and a struct BitMap at +2 (BytesPerRow =
+   ebwidth, Rows = height, Flags/Depth written as one word = the depth),
+   22 bytes unused */
+struct mapshape {
+    UWORD width;                        /* +0: 0 = empty */
+    struct BitMap bm;                   /* +2 */
+    UBYTE unused[22];                   /* +42 */
+};
+static_assert(sizeof(struct mapshape) == 64);
+
+/* a group member; the group ends with a 0 mapshape */
+struct member {
+    struct mapshape *ms;                /* +0 */
+    UWORD dx, dy;                       /* +4, +6: in pixels */
+};
+static_assert(sizeof(struct member) == 8);
+
 static UWORD blockwidth, blockheight;
-static UBYTE *baseshape;                /* the map shapes, 64 bytes each */
-static ULONG *nextgroupmember;
-static ULONG *groupaddr;                /* the group, 512 bytes */
+static struct mapshape *baseshape;      /* the map shapes */
+static struct member *nextgroupmember;
+static struct member *groupaddr;        /* the group, 512 bytes */
 
 /* GetMapShape: ANDI.l #$ffff:LSL.l #6:ADD.l baseshape */
-#define MAPSHAPE(n) (baseshape + ((ULONG)(UWORD)(n) << 6))
-#define MW(ms, o) (*(UWORD *)((ms) + (o)))
+#define MAPSHAPE(n) ((struct mapshape *)((UBYTE *)baseshape + ((ULONG)(UWORD)(n) << 6)))
 
-/* a Blitz shape: pixwidth 0, pixheight 2, depth 4, ebwidth 6, data 14,
-   onebpmem 22 */
-#define SW(sh, o) (*(UWORD *)((UBYTE *)(sh) + (o)))
+/* a Blitz shape (shapeslib) */
+struct shape {
+    UWORD pixwidth, pixheight, depth;   /* +0, +2, +4 */
+    UWORD ebwidth, bltsize;             /* +6, +8 */
+    WORD xhandle, yhandle;              /* +10, +12 */
+    UBYTE *data, *cookie;               /* +14, +18 */
+    UWORD onebpmem, onebpmemx;          /* +22, +24 */
+    UWORD allbpmem, allbpmemx;          /* +26, +28 */
+    UWORD pad;                          /* +30 */
+};
+static_assert(sizeof(struct shape) == 32);
 
 /* ---------------------------------------------------------------- init */
 
@@ -175,19 +199,20 @@ BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
 /* ---------------------------------------------------------- map shapes */
 
 /* ShapeToMapShape shape#,mapshape#: a0 = the shape, d1 = the map shape */
-static void BLITZ_ROUTINE shapetomapshape_c(UWORD n BL_REG(d1), const UBYTE *sh BL_REG(a0))
+static void BLITZ_ROUTINE shapetomapshape_c(UWORD n BL_REG(d1), const struct shape *sh BL_REG(a0))
 {
-    UBYTE *ms = MAPSHAPE(n);
-    UBYTE **planes = (UBYTE **)(ms + 10);
-    UBYTE *p = *(UBYTE **)(sh + 14);
-    WORD onebp = (WORD)SW(sh, 22);
-    UWORD depth = SW(sh, 4), c;
+    struct mapshape *ms = MAPSHAPE(n);
+    PLANEPTR *planes = ms->bm.Planes;
+    UBYTE *p = sh->data;
+    WORD onebp = (WORD)sh->onebpmem;
+    UWORD depth = sh->depth, c;
 
-    MW(ms, 0) = SW(sh, 0);              /* pixwidth */
-    MW(ms, 4) = SW(sh, 2);              /* height */
-    MW(ms, 6) = depth;
-    MW(ms, 2) = SW(sh, 6);              /* ebwidth */
-    /* BUG(orig): depth 0 -> 65536 planes (DBRA) (#903) */
+    ms->width = sh->pixwidth;
+    ms->bm.Rows = sh->pixheight;
+    *(UWORD *)&ms->bm.Flags = depth;    /* Flags 0, Depth */
+    ms->bm.BytesPerRow = sh->ebwidth;
+    /* BUG(orig): depth 0 -> 65536 planes (DBRA), more than 8 run into
+       unused[] and the next map shapes (#903) */
     c = depth - 1;
     do {
         *planes++ = p;
@@ -198,15 +223,15 @@ BLITZ_THUNK(_shapetomapshape, shapetomapshape_c, "d0-d1/a0-a1");
 
 /* _blitmapshape2: a map shape that is not empty (width) is blitted to
    x,y; d4/d5/d6 get width/height/minterm in their low words */
-static void blit(struct Library *gfx, UBYTE *ms, struct RastPort *rp, ULONG x, ULONG y,
+static void blit(struct Library *gfx, struct mapshape *ms, struct RastPort *rp, ULONG x, ULONG y,
                  ULONG width, ULONG height, ULONG minterm)
 {
-    if (!MW(ms, 0))
+    if (!ms->width)
         return;
-    BL_SETW(width, MW(ms, 0));
-    BL_SETW(height, MW(ms, 4));
+    BL_SETW(width, ms->width);
+    BL_SETW(height, ms->bm.Rows);
     BL_SETW(minterm, 0xc0);
-    BltBitMapRastPort((struct BitMap *)(ms + 2), 0, 0, rp, (LONG)x, (LONG)y, (LONG)width,
+    BltBitMapRastPort(&ms->bm, 0, 0, rp, (LONG)x, (LONG)y, (LONG)width,
                       (LONG)height, minterm);
 }
 
@@ -230,14 +255,14 @@ static void BLITZ_ROUTINE blitmapshapesize_c(UWORD n BL_REG(d1), ULONG x BL_REG(
                                              struct Window **win BL_REG(a1),
                                              struct Library *gfx BL_REG(a6))
 {
-    UBYTE *ms = MAPSHAPE(n);
+    struct mapshape *ms = MAPSHAPE(n);
 
-    if (!MW(ms, 0))
+    if (!ms->width)
         return;
-    if ((WORD)h > (WORD)MW(ms, 4))
-        BL_SETW(h, MW(ms, 4));
+    if ((WORD)h > (WORD)ms->bm.Rows)
+        BL_SETW(h, ms->bm.Rows);
     BL_SETW(minterm, 0xc0);
-    BltBitMapRastPort((struct BitMap *)(ms + 2), 0, 0, (*win)->RPort, (LONG)x, (LONG)y,
+    BltBitMapRastPort(&ms->bm, 0, 0, (*win)->RPort, (LONG)x, (LONG)y,
                       (LONG)w, (LONG)h, minterm);
 }
 BLITZ_THUNK(_blitmapshapesize, blitmapshapesize_c, "d0-d1/a0-a1");
@@ -261,7 +286,7 @@ static void BLITZ_ROUTINE setnummapshapes_c(UWORD num BL_REG(d0))
 BLITZ_THUNK(_setnummapshapes, setnummapshapes_c, "d0-d1/a0-a1");
 
 /* MapShapeAddr(mapshape#) */
-static UBYTE *BLITZ_ROUTINE mapshapeaddr_c(UWORD n BL_REG(d0))
+static struct mapshape *BLITZ_ROUTINE mapshapeaddr_c(UWORD n BL_REG(d0))
 {
     return MAPSHAPE(n);
 }
@@ -272,15 +297,15 @@ BLITZ_THUNK(_mapshapeaddr, mapshapeaddr_c, "d1/a0-a1");
    compared signed) */
 static void BLITZ_ROUTINE freemapshapes_c(UWORD first BL_REG(d0), UWORD last BL_REG(d1))
 {
-    UBYTE *p, *e;
+    struct mapshape *p, *e;
 
     if ((WORD)last < (WORD)first)
         return;
     p = MAPSHAPE(first);
     e = MAPSHAPE(last);
     while ((LONG)e >= (LONG)p) {
-        MW(p, 0) = 0;
-        p += 64;
+        p->width = 0;
+        p++;
     }
 }
 BLITZ_THUNK(_freemapshapes, freemapshapes_c, "d0-d1/a0-a1");
@@ -288,11 +313,11 @@ BLITZ_THUNK(_freemapshapes, freemapshapes_c, "d0-d1/a0-a1");
 /* -------------------------------------------------------------- groups */
 
 /* ResetGroup blockwidth,blockheight -> the group's address */
-static ULONG *BLITZ_ROUTINE resetgroup_c(UWORD bw BL_REG(d0), UWORD bh BL_REG(d1))
+static struct member *BLITZ_ROUTINE resetgroup_c(UWORD bw BL_REG(d0), UWORD bh BL_REG(d1))
 {
     blockwidth = bw;
     blockheight = bh;
-    groupaddr[0] = 0;
+    groupaddr[0].ms = NULL;
     nextgroupmember = groupaddr;
     return groupaddr;
 }
@@ -304,13 +329,13 @@ BLITZ_THUNK(_resetgroup, resetgroup_c, "d1/a0-a1");
 static void BLITZ_ROUTINE addgroupmember_c(UWORD n BL_REG(d0), UWORD dx BL_REG(d1),
                                            UWORD dy BL_REG(d2))
 {
-    ULONG *p = nextgroupmember;
+    struct member *p = nextgroupmember;
 
-    *p++ = (ULONG)MAPSHAPE(n);
-    ((UWORD *)p)[0] = (UWORD)bl_mulu_w(dx, blockwidth);
-    ((UWORD *)p)[1] = (UWORD)bl_mulu_w(dy, blockheight);
+    p->ms = MAPSHAPE(n);
+    p->dx = (UWORD)bl_mulu_w(dx, blockwidth);
+    p->dy = (UWORD)bl_mulu_w(dy, blockheight);
     p++;
-    *p = 0;
+    p->ms = NULL;                       /* the end mark */
     nextgroupmember = p;
 }
 BLITZ_THUNK(_addgroupmember, addgroupmember_c, "d0-d1/a0-a1");
@@ -326,17 +351,17 @@ static void BLITZ_ROUTINE blitgroup_c(UWORD x BL_REG(d1), ULONG yin BL_REG(d2),
                                       struct Library *gfx BL_REG(a6))
 {
     struct RastPort *rp = (*win)->RPort;
-    const ULONG *p = groupaddr;
+    const struct member *p = groupaddr;
     ULONG xbase = yin;                  /* d2 */
-    ULONG ms;
+    struct mapshape *ms;
 
     BL_SETW(ybase, yin);                /* MOVE.w d2,d3 */
     BL_SETW(xbase, x);                  /* MOVE.w d1,d2 */
-    while ((ms = *p++) != 0) {
+    while ((ms = p->ms) != NULL) {
         ULONG mx = xbase, my = ybase;
-        BL_SETW(mx, xbase + ((const UWORD *)p)[0]);
-        BL_SETW(my, ybase + ((const UWORD *)p)[1]);
-        blit(gfx, (UBYTE *)ms, rp, mx, my, width, ms, minterm);
+        BL_SETW(mx, xbase + p->dx);
+        BL_SETW(my, ybase + p->dy);
+        blit(gfx, ms, rp, mx, my, width, (ULONG)ms, minterm);
         p++;
     }
 }
