@@ -87,23 +87,23 @@ static UWORD joydat(UWORD port)
     return port ? JOY1DAT : JOY0DAT;
 }
 
-/* _joyx with d1 = the counter word */
-static LONG joyx(UWORD d1)
+/* _joyx with dat = d1 = the counter word */
+static LONG joyx(UWORD dat)
 {
-    if (d1 & (1 << 9))
+    if (dat & (1 << 9))
         return -1;
-    if (d1 & (1 << 1))
+    if (dat & (1 << 1))
         return 1;
     return 0;
 }
 
 /* _joyy2: MOVE d1,d2:LSR #1,d2:EOR d2,d1 */
-static LONG joyy(UWORD d1)
+static LONG joyy(UWORD dat)
 {
-    d1 ^= d1 >> 1;
-    if (d1 & (1 << 8))
+    dat ^= dat >> 1;
+    if (dat & (1 << 8))
         return -1;
-    if (d1 & 1)                         /* LSR #1,d1:BCS */
+    if (dat & 1)                        /* LSR #1,d1:BCS */
         return 1;
     return 0;
 }
@@ -123,9 +123,9 @@ static const UWORD rots[16] = { 8, 2, 8, 6, 4, 3, 8, 5, 8, 8, 8, 8, 0, 1, 8, 7 }
 
 static ULONG BLITZ_ROUTINE _joyr_c(UWORD port BL_REG(d0))
 {
-    UWORD d1 = joydat(port);
-    UWORD x = (UWORD)joyx(d1);
-    ULONG y = (ULONG)joyy(d1);          /* MOVEQ: upper word kept below */
+    UWORD dat = joydat(port);
+    UWORD x = (UWORD)joyx(dat);
+    ULONG y = (ULONG)joyy(dat);         /* MOVEQ: upper word kept below */
     UWORD i = (UWORD)((y & 3) << 3 | (x & 3) << 1);
 
     return (y & 0xffff0000UL) | rots[i >> 1];
@@ -133,21 +133,21 @@ static ULONG BLITZ_ROUTINE _joyr_c(UWORD port BL_REG(d0))
 
 static ULONG BLITZ_ROUTINE _joyb_c(UWORD port BL_REG(d0))
 {
-    ULONG d0 = 0;
+    ULONG buttons = 0;                          /* d0 */
 
     if (!port) {
         if (!(*CIAAPRA & (1 << 6)))
-            d0 = 1;
+            buttons = 1;
         if (!(POTGORH & (1 << 2)))      /* DATLY (bit 10) */
-            d0 |= 2;
+            buttons |= 2;
     } else {
         if (!(*CIAAPRA & (1 << 7)))
-            d0 = 1;
+            buttons = 1;
         POTGO = 0xc000;
         if (!(POTGORH & (1 << 6)))      /* DATRY (bit 14) */
-            d0 |= 2;
+            buttons |= 2;
     }
-    return d0;
+    return buttons;
 }
 
 BLITZ_THUNK(_joyx, _joyx_c, "a0-a1");
@@ -158,40 +158,40 @@ BLITZ_THUNK(_joyb, _joyb_c, "d1/a0-a1");
 /* _gameb - CD32 pad (see the head comment) */
 ULONG BLITZ_ROUTINE _gameb(UWORD port BL_REG(d0))
 {
-    volatile UBYTE *a0 = CIAAPRA;
-    UWORD d4;
+    volatile UBYTE *ciapra = CIAAPRA;           /* a0 */
+    UWORD potmask;                              /* d4: the DATxY bit */
     UBYTE bit;
-    ULONG d0 = 0;
-    WORD d1 = 6;
+    ULONG buttons = 0;                          /* d0 */
+    WORD bitnum = 6;                            /* d1 */
     int i;
 
     if (port) {
         bit = 1 << 7;
-        d4 = 0x4000;
-        a0[0x200] |= bit;
-        *a0 &= ~bit;
+        potmask = 0x4000;
+        ciapra[0x200] |= bit;
+        *ciapra &= ~bit;
         POTGO = 0x2000;
     } else {
         bit = 1 << 6;
-        d4 = 0x0400;
-        a0[0x200] |= bit;
-        *a0 &= ~bit;
+        potmask = 0x0400;
+        ciapra[0x200] |= bit;
+        *ciapra &= ~bit;
         POTGO = 0x0200;
     }
     do {
-        UWORD d2;
+        UWORD pot;                              /* d2 */
 
         for (i = 0; i < 8; i++)         /* TST.b (a0) x 8: delay */
-            (void)*a0;
-        d2 = POTGOR;
-        *a0 |= bit;
-        *a0 &= ~bit;
-        if (!(d2 & d4))
-            d0 |= 1UL << d1;
-    } while (--d1 >= 0);                /* DBF d1 */
+            (void)*ciapra;
+        pot = POTGOR;
+        *ciapra |= bit;
+        *ciapra &= ~bit;
+        if (!(pot & potmask))
+            buttons |= 1UL << bitnum;
+    } while (--bitnum >= 0);            /* DBF d1 */
     POTGO = 0x3000;                     /* BUG(orig) (#415): also for port 0 */
-    a0[0x200] &= ~bit;
-    return d0;
+    ciapra[0x200] &= ~bit;
+    return buttons;
 }
 
 /* -------------------------------------------- errors (debugger only) */
