@@ -236,22 +236,28 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 3);
 /* ExtNewScreen, its tags and the pens, in the order of the original */
 static struct BL_PACKED {
     UWORD romrevision;
-    struct BL_PACKED {
-        WORD left, top, width, height, depth;
-        UBYTE dpen, bpen;
-        UWORD viewmodes, type;
-        ULONG font, title, gadgets, bitmap;
-        ULONG ext;                              /* Dc.l extnewscreen */
-    } ns;
-    ULONG tags[5];                              /* extnewscreen */
+    struct ExtNewScreen ns;                     /* .Extension: Dc.l extnewscreen */
+    struct {                                    /* extnewscreen */
+        struct TagItem displayid;               /* SA_DisplayID, newmodes */
+        struct TagItem pens;                    /* SA_Pens */
+        ULONG end;                              /* TAG_END */
+    } tags;
     UWORD pens[13];
     UWORD defstype;
 } sd = {
-    .ns = { .type = 0x1000, .ext = (ULONG)&sd.tags },
-    .tags = { 0x80000032, 0, 0x8000003a, (ULONG)&sd.pens, 0 },   /* DisplayID, Pens */
+    .ns = { .Type = 0x1000, .Extension = (struct TagItem *)&sd.tags },
+    .tags = { { SA_DisplayID, 0 }, { SA_Pens, (ULONG)&sd.pens }, TAG_END },
     .pens = { 2, 1, 1, 2, 1, 3, 1, 0, 2, 1, 2, 1, 0xffff },     /* defaults (WB) */
     .defstype = 0x1000,
 };
+static_assert(sizeof sd == 2 + 36 + 20 + 26 + 2, "sd layout");
+
+/* a screen object, 8 bytes */
+struct scrobj {
+    struct Screen *screen;                      /* +0 */
+    struct DBufInfo *dbuf;                      /* +4 ShowBitMap on V39+ */
+};
+static_assert(sizeof(struct scrobj) == 8, "scrobj size");
 
 /* dummydata: the a2 stack of Screen n,mode: title length, d, h, w, y, x */
 static struct BL_PACKED {
@@ -264,11 +270,12 @@ static struct BL_PACKED {
 /* ScreenTags */
 static LONG errcode = -1;
 static struct {
-    ULONG title[2], font[2], error[2];
-    ULONG usertags[32];
+    struct TagItem title, font, error;
+    ULONG usertags[32];                         /* tag/data pairs, TAG_END */
 } tl = {
-    { 0x80000028, 0 }, { 0x8000002b, 0 }, { 0x8000002a, (ULONG)&errcode }, { 0 },
+    { SA_Title, 0 }, { SA_Font, 0 }, { SA_ErrorCode, (ULONG)&errcode }, { 0 },
 };
+static_assert(sizeof tl == 3 * 8 + 32 * 4, "tl layout");
 
 /* messages in the error area (BLITZ_ERRCHK_MESSAGE at the end) */
 extern const char mess1[], mess2[], mess3[], mess5[], mess6[], mess7[], mess8[];
@@ -349,30 +356,30 @@ BLITZ_INLINE(dosmousey, "   move.l  (a0),a0\n   move.w  16(a0),d0");
 /* ---------------------------------------------------------- freescreen */
 
 /* freescreen - a3 = object, a6 = intuition, a2 = graphics */
-static void freescreen_(ULONG *obj, struct IntuitionBase *IntuitionBase,
+static void freescreen_(struct scrobj *obj, struct IntuitionBase *IntuitionBase,
                         struct GfxBase *GfxBase)
 {
-    UBYTE *s = (UBYTE *)obj[0];
+    struct Screen *s = obj->screen;
     struct bl_regs r = { 0 };
 
     if (!s)
         return;
-    if (*(ULONG *)(s + 342) == BLTZ) {          /* don't close non Blitzs */
-        r.d0 = *(ULONG *)(s + 22);              /* title copy */
+    if ((ULONG)s->UserData == BLTZ) {           /* don't close non Blitzs */
+        r.d0 = (ULONG)s->Title;                 /* title copy */
         BLITZ_ALIBJSR(TOK_freest, r);
-        CloseScreen((struct Screen *)obj[0]);
-        if (obj[1]) {
-            FreeDBufInfo((struct DBufInfo *)obj[1]);
-            obj[1] = 0;
+        CloseScreen(obj->screen);
+        if (obj->dbuf) {
+            FreeDBufInfo(obj->dbuf);
+            obj->dbuf = NULL;
         }
     }
-    obj[0] = 0;
+    obj->screen = NULL;
 }
 
 static void BLITZ_ROUTINE freescreen_c(struct IntuitionBase *intui BL_REG(a6),
                                        struct GfxBase *gfx BL_REG(a2))
 {
-    freescreen_((ULONG *)blitz_string, intui, gfx);
+    freescreen_((struct scrobj *)blitz_string, intui, gfx);
 }
 BLITZ_THUNK(freescreen, freescreen_c, "d1/a0-a1");
 
@@ -385,35 +392,36 @@ static void openscreen(UBYTE *bitmap, ULONG *ifont, WORD used, ULONG viewmode,
                        const UBYTE *title, UBYTE dpen, UBYTE bpen, const UBYTE *args,
                        struct IntuitionBase *IntuitionBase)
 {
-    ULONG *obj = (ULONG *)blitz_string;
+    struct scrobj *obj = (struct scrobj *)blitz_string;
     const UBYTE *sp = args;
     struct Screen *scr;
     ULONG font = *ifont;                        /* MOVE.l (a1),d7 */
     UWORD w;
 
-    *(ULONG **)(blitz_globals + used) = obj;    /* set used screen! */
+    *(struct scrobj **)(blitz_globals + used) = obj;   /* set used screen! */
     freescreen_(obj, IntuitionBase, (struct GfxBase *)args);   /* BUG(orig) (#247): a2 */
-    sd.ns.font = font;
-    sd.ns.left = BL_POPW(sp);
-    sd.ns.top = BL_POPW(sp);
+    sd.ns.Font = (struct TextAttr *)font;
+    sd.ns.LeftEdge = BL_POPW(sp);
+    sd.ns.TopEdge = BL_POPW(sp);
     w = BL_POPW(sp);
-    sd.ns.width = (w + 15) & 0xfff0;
-    sd.ns.height = BL_POPW(sp);
-    sd.ns.depth = BL_POPW(sp);
-    sd.ns.viewmodes = viewmode;
-    BL_SETW(sd.tags[1], viewmode);              /* MOVE d1,newmodes+2 */
-    sd.ns.dpen = dpen;
-    sd.ns.bpen = bpen;
-    sd.ns.bitmap = (ULONG)bitmap;
-    sd.ns.title = allocst(title, BL_POPL(sp));
-    sd.ns.type = (sd.ns.bitmap ? 0x4f : 15) | sd.defstype;
+    sd.ns.Width = (w + 15) & 0xfff0;
+    sd.ns.Height = BL_POPW(sp);
+    sd.ns.Depth = BL_POPW(sp);
+    sd.ns.ViewModes = viewmode;
+    /* MOVE d1,newmodes+2: BUG(orig) (#250) only the low word */
+    BL_SETW(sd.tags.displayid.ti_Data, viewmode);
+    sd.ns.DetailPen = dpen;
+    sd.ns.BlockPen = bpen;
+    sd.ns.CustomBitMap = (struct BitMap *)bitmap;
+    sd.ns.DefaultTitle = (STRPTR)allocst(title, BL_POPL(sp));
+    sd.ns.Type = (sd.ns.CustomBitMap ? 0x4f : 15) | sd.defstype;
     scr = OpenScreen((struct NewScreen *)&sd.ns);
-    obj[0] = (ULONG)scr;
+    obj->screen = scr;
     if (!scr) {
         err1();                                 /* BEQ err1 (error area) */
         return;
     }
-    *(ULONG *)((UBYTE *)scr + 342) = BLTZ;
+    scr->UserData = (APTR)BLTZ;
 }
 
 void BLITZ_ROUTINE _screen(ULONG viewmode BL_REG(d1), const UBYTE *title BL_REG(d2),
@@ -482,20 +490,20 @@ void BLITZ_ROUTINE domode2(UWORD mode BL_REG(d1), const UBYTE *title BL_REG(d2),
 void BLITZ_ROUTINE dowbscreen(WORD used BL_REG(d6), const UBYTE *args BL_REG(a2),
                               struct IntuitionBase *intui BL_REG(a6))
 {
-    ULONG *obj = (ULONG *)blitz_string;
-    UBYTE *s = (UBYTE *)intui->FirstScreen;
+    struct scrobj *obj = (struct scrobj *)blitz_string;
+    struct Screen *s = intui->FirstScreen;
 
     freescreen_(obj, intui, (struct GfxBase *)args);           /* BUG(orig) (#247, #248): a2 */
-    for (;; s = *(UBYTE **)s) {
+    for (;; s = s->NextScreen) {
         if (!s) {
             BLITZ_RUNERR(mess8);                /* err8 */
             return;
         }
-        if ((*(UWORD *)(s + 20) & 15) == WBENCHSCREEN)
+        if ((s->Flags & 15) == WBENCHSCREEN)
             break;
     }
-    obj[0] = (ULONG)s;                          /* Got WorkBench */
-    *(ULONG **)(blitz_globals + used) = obj;
+    obj->screen = s;                            /* Got WorkBench */
+    *(struct scrobj **)(blitz_globals + used) = obj;
 }
 
 /* title / default title starting with pfx? */
@@ -510,29 +518,30 @@ static int prefix(const UBYTE *title, const UBYTE *pfx)
 static void findscreen(const UBYTE *title, WORD used, const UBYTE *args,
                        struct IntuitionBase *intui)
 {
-    ULONG *obj = (ULONG *)blitz_string;
-    UBYTE *s = (UBYTE *)&intui->FirstScreen;    /* the list starts at +60 */
+    struct scrobj *obj = (struct scrobj *)blitz_string;
+    /* the list starts at +60: &FirstScreen taken as a screen's NextScreen */
+    struct Screen *s = (struct Screen *)&intui->FirstScreen;
 
-    *(ULONG **)(blitz_globals + used) = obj;
+    *(struct scrobj **)(blitz_globals + used) = obj;
     freescreen_(obj, intui, (struct GfxBase *)args);           /* BUG(orig) (#247, #248): a2 */
     for (;;) {
-        s = *(UBYTE **)s;
+        s = s->NextScreen;
         if (!s) {
             BLITZ_RUNERR(mess12);               /* err12 */
             return;
         }
         if (!title)
             break;
-        if (!*(UBYTE **)(s + 22))               /* no title: next screen */
+        if (!s->Title)                          /* no title: next screen */
             continue;
-        if (prefix(*(UBYTE **)(s + 22), title))
+        if (prefix(s->Title, title))
             break;
-        if (!*(UBYTE **)(s + 26))
+        if (!s->DefaultTitle)
             continue;
-        if (prefix(*(UBYTE **)(s + 26), title)) /* DefaultTitle */
+        if (prefix(s->DefaultTitle, title))
             break;
     }
-    obj[0] = (ULONG)s;
+    obj->screen = s;
 }
 
 void BLITZ_ROUTINE dofstoscreen(WORD used BL_REG(d6), const UBYTE *args BL_REG(a2),
@@ -550,21 +559,21 @@ void BLITZ_ROUTINE dofindscreen(const UBYTE *title BL_REG(d1), WORD used BL_REG(
 
 /* ---------------------------------------------------------- LoadScreen */
 
-static ULONG loadscreen(ULONG *obj, const UBYTE *name)
+static ULONG loadscreen(struct scrobj *obj, const UBYTE *name)
 {
     struct bl_regs r = { 0 };
 
-    r.a1 = *(ULONG *)(obj[0] + 88);             /* screen->RastPort.BitMap */
+    r.a1 = (ULONG)obj->screen->RastPort.BitMap;
     r.a0 = (ULONG)name;
     return BLITZ_ALIBJSR(TOK_ilbmbitmap, r);
 }
 
-void BLITZ_ROUTINE doloadscreen(ULONG *obj BL_REG(a0), const UBYTE *name BL_REG(d1))
+void BLITZ_ROUTINE doloadscreen(struct scrobj *obj BL_REG(a0), const UBYTE *name BL_REG(d1))
 {
     loadscreen(obj, name);
 }
 
-void BLITZ_ROUTINE doloadscreen2(ULONG *obj BL_REG(a0), const UBYTE *name BL_REG(d1),
+void BLITZ_ROUTINE doloadscreen2(struct scrobj *obj BL_REG(a0), const UBYTE *name BL_REG(d1),
                                  ULONG pal BL_REG(a1))
 {
     struct bl_regs r = { .d0 = 0, .a0 = (ULONG)name, .a1 = pal };
@@ -585,39 +594,40 @@ static void showbitmap2(struct IntuitionBase *intui, struct GfxBase *GfxBase)
 }
 
 /* intshowbitmap - interlace: planes into the screen's BitMap, MakeVPort */
-static void intshowbitmap(UBYTE *bm, UBYTE *scr, struct IntuitionBase *intui,
+static void intshowbitmap(UBYTE *bm, struct Screen *scr, struct IntuitionBase *intui,
                           struct GfxBase *GfxBase)
 {
-    ULONG *src = (ULONG *)(bm + 8), *dst = (ULONG *)(scr + 192);
+    ULONG *src = (ULONG *)(bm + 8), *dst = (ULONG *)scr->BitMap.Planes;
     UWORD n = *(UWORD *)(bm + 4) - 1;
 
     do
         *dst++ = *src++;
     while (n-- != 0);                           /* DBF d0 */
-    MakeVPort(&intui->ViewLord, (struct ViewPort *)(scr + 44));
+    MakeVPort(&intui->ViewLord, &scr->ViewPort);
     showbitmap2(intui, GfxBase);
 }
 
 /* agashowbitmap - V39+: ChangeVPBitMap, DBufInfo allocated once */
-static void agashowbitmap(UBYTE *bm, ULONG *obj, struct GfxBase *GfxBase)
+static void agashowbitmap(UBYTE *bm, struct scrobj *obj, struct GfxBase *GfxBase)
 {
-    UBYTE *scr = (UBYTE *)obj[0];
-    struct DBufInfo *db = (struct DBufInfo *)obj[1];
+    struct Screen *scr = obj->screen;
+    struct DBufInfo *db = obj->dbuf;
 
     if (!db) {
-        db = AllocDBufInfo((struct ViewPort *)(scr + 44));
-        obj[1] = (ULONG)db;
+        db = AllocDBufInfo(&scr->ViewPort);
+        obj->dbuf = db;
     }
-    ChangeVPBitMap((struct ViewPort *)(scr + 44), (struct BitMap *)bm, db);
+    ChangeVPBitMap(&scr->ViewPort, (struct BitMap *)bm, db);
 }
 
 /* doshowbitmap - a0 = bitmap, a1 = screen object, a3 = intuition, a6 =
    graphics.  Before V39: the BPLxPT moves of the screen's copper list
    (first $0000F0E0 = MOVE to bpl1pth) get the plane pointers. */
-static void showbitmap(UBYTE *bm, ULONG *obj, struct GfxBase *GfxBase)
+static void showbitmap(UBYTE *bm, struct scrobj *obj, struct GfxBase *GfxBase)
 {
     struct IntuitionBase *intui = (struct IntuitionBase *)blitz_string;   /* a3 */
-    UBYTE *scr, *cl, *ins;
+    struct Screen *scr;
+    UBYTE *cl, *ins;
     const UWORD *src;
     UWORD n, nwords;
 
@@ -626,8 +636,8 @@ static void showbitmap(UBYTE *bm, ULONG *obj, struct GfxBase *GfxBase)
         return;
     }
     BL_INTS_OFF();
-    scr = (UBYTE *)obj[0];
-    if (scr[77] & 4) {                          /* interlace! */
+    scr = obj->screen;
+    if (scr->ViewPort.Modes & LACE) {           /* interlace! */
         intshowbitmap(bm, scr, intui, GfxBase);
         return;
     }
@@ -635,7 +645,7 @@ static void showbitmap(UBYTE *bm, ULONG *obj, struct GfxBase *GfxBase)
         intshowbitmap(bm, scr, intui, GfxBase);
         return;
     }
-    cl = scr + 52;                              /* &ViewPort.DspIns */
+    cl = (UBYTE *)&scr->ViewPort.DspIns;        /* CopList.Next is at +0 */
     for (;;) {                                  /* 'loop0 */
         cl = *(UBYTE **)cl;
         if (!cl) {
@@ -681,12 +691,12 @@ more:
     }
 }
 
-void BLITZ_ROUTINE doshowbitmap0(ULONG *obj BL_REG(a1), struct GfxBase *gfx BL_REG(a6))
+void BLITZ_ROUTINE doshowbitmap0(struct scrobj *obj BL_REG(a1), struct GfxBase *gfx BL_REG(a6))
 {
-    showbitmap((UBYTE *)obj[0] + 184, obj, gfx);    /* the screen's BitMap */
+    showbitmap((UBYTE *)&obj->screen->BitMap, obj, gfx);
 }
 
-void BLITZ_ROUTINE doshowbitmap1(UBYTE *bm BL_REG(a0), ULONG *obj BL_REG(a1),
+void BLITZ_ROUTINE doshowbitmap1(UBYTE *bm BL_REG(a0), struct scrobj *obj BL_REG(a1),
                                  struct GfxBase *gfx BL_REG(a6))
 {
     showbitmap(bm, obj, gfx);
@@ -695,17 +705,17 @@ void BLITZ_ROUTINE doshowbitmap1(UBYTE *bm BL_REG(a0), ULONG *obj BL_REG(a1),
 /* ---------------------------------------------------------- ScreenTags */
 
 /* duntags - OpenScreenTagList (V36+), result screen or the error code */
-static ULONG duntags(ULONG *obj, struct IntuitionBase *IntuitionBase)
+static ULONG duntags(struct scrobj *obj, struct IntuitionBase *IntuitionBase)
 {
     struct Screen *scr;
 
     if ((WORD)(execversion() - 36) < 0)         /* CMP #36,d0:BMI */
         return errcode;
-    scr = OpenScreenTagList(NULL, (struct TagItem *)&tl);
-    obj[0] = (ULONG)scr;
+    scr = OpenScreenTagList(NULL, &tl.title);
+    obj->screen = scr;
     if (!scr)
         return errcode;
-    *(ULONG *)((UBYTE *)scr + 342) = BLTZ;
+    scr->UserData = (APTR)BLTZ;
     return (ULONG)scr;
 }
 
@@ -713,12 +723,12 @@ static ULONG duntags(ULONG *obj, struct IntuitionBase *IntuitionBase)
 static const ULONG *tagstart(const UBYTE *title, const ULONG *lens, ULONG *ifont,
                              WORD used, struct IntuitionBase *intui)
 {
-    ULONG *obj = (ULONG *)blitz_string;
+    struct scrobj *obj = (struct scrobj *)blitz_string;
     const ULONG *sp = lens;
 
-    *(ULONG **)(blitz_globals + used) = obj;    /* make used */
-    tl.title[1] = allocst(title, BL_POPL(sp));
-    tl.font[1] = *ifont;
+    *(struct scrobj **)(blitz_globals + used) = obj;   /* make used */
+    tl.title.ti_Data = allocst(title, BL_POPL(sp));
+    tl.font.ti_Data = *ifont;
     freescreen_(obj, intui, (struct GfxBase *)sp);  /* BUG(orig) (#247): a2 */
     return sp;
 }
@@ -738,7 +748,7 @@ ULONG BLITZ_ROUTINE doscreentags3(const UBYTE *title BL_REG(d1), const ULONG *ta
         dst[1] = *tags++;
         dst += 2;
     } while (tag);
-    return duntags((ULONG *)blitz_string, intui);
+    return duntags((struct scrobj *)blitz_string, intui);
 }
 
 /* ScreenTags n,title$[,tag,data...] - d7 = number of pairs (a2 stack) */
@@ -756,7 +766,7 @@ ULONG BLITZ_ROUTINE doscreentags(UWORD n BL_REG(d7), const UBYTE *title BL_REG(d
         dst += 2;
     }
     *dst = 0;                                   /* MOVE.l #0,(a0)+ */
-    return duntags((ULONG *)blitz_string, intui);
+    return duntags((struct scrobj *)blitz_string, intui);
 }
 
 ULONG BLITZ_ROUTINE doscreentags2(const UBYTE *title BL_REG(d1), ULONG *ifont BL_REG(a1),
@@ -811,9 +821,9 @@ static void BLITZ_ERRCHK prescreen2_c(ULONG vm BL_REG(d1), const UWORD *bm BL_RE
         BLITZ_RUNERR(mess3);
 }
 
-static void BLITZ_ERRCHK loadscreenchk_c(const ULONG *obj BL_REG(a0))
+static void BLITZ_ERRCHK loadscreenchk_c(const struct scrobj *obj BL_REG(a0))
 {
-    if (!*obj)
+    if (!obj->screen)
         BLITZ_RUNERR(mess7);
 }
 
@@ -831,21 +841,22 @@ static void BLITZ_ERRCHK modechk_c(UWORD mode BL_REG(d1))
         BLITZ_RUNERR(mess11);
 }
 
-static void BLITZ_ERRCHK showbmchk0_c(const ULONG *obj BL_REG(a1))
+static void BLITZ_ERRCHK showbmchk0_c(const struct scrobj *obj BL_REG(a1))
 {
-    if (!*obj)
+    if (!obj->screen)
         BLITZ_RUNERR(mess7);
 }
 
 /* showbmchk - bitmap of the same size as the screen's */
-static void BLITZ_ERRCHK showbmchk_c(const UBYTE *bm BL_REG(a0), const ULONG *obj BL_REG(a1))
+static void BLITZ_ERRCHK showbmchk_c(const UBYTE *bm BL_REG(a0),
+                                     const struct scrobj *obj BL_REG(a1))
 {
     const UBYTE *s;
 
     showbmchk0_c(obj);
     if (!*(UWORD *)bm)
         BLITZ_RUNERR(mess2);
-    s = (const UBYTE *)*obj + 184;
+    s = (const UBYTE *)&obj->screen->BitMap;
     if (*(UWORD *)bm != *(UWORD *)s || *(UWORD *)(bm + 2) != *(UWORD *)(s + 2)
         || bm[5] != s[5])
         BLITZ_RUNERR(mess14);
