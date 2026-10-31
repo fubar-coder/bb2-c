@@ -187,7 +187,17 @@ static struct MsgPort *msgport;
 
 /* ---------------------------------------------------------- the paths */
 
-/* GetFileName(p$) (d0; the length's low word at -2(a2)) */
+/**
+ * @brief GetFileName(filepath$): the part behind the last / or :.
+ *
+ * The argument's string space is given back (a3 - length - 1), the
+ * result built in tbuf and then copied to a3 (no 0 written, a3 on the end
+ * of the characters: the compiler adds it).  BUG(orig): the length is
+ * taken as a word (#628); nothing limits tbuf to 256 characters (#627).
+ * @param s     d0: the path
+ * @param lens  a2: the argument stack, the length's low word at -2(a2)
+ * @return d0: the length of the result
+ */
 static ULONG BLITZ_ROUTINE getfilename_c(const UBYTE *s BL_REG(d0), const UWORD *lens BL_REG(a2))
 {
     UBYTE *t = tbuf, c;
@@ -206,8 +216,19 @@ static ULONG BLITZ_ROUTINE getfilename_c(const UBYTE *s BL_REG(d0), const UWORD 
     return n;
 }
 
-/* GetPathName(p$) (d0; -2(a2) as above): searched from the end, the
-   first character is never looked at (BUG(orig) (#624)) */
+/**
+ * @brief GetPathName(filepath$): the part up to and including the last /
+ * or :.
+ *
+ * Searched from the end; the argument's string space is given back and
+ * the result built in tbuf, then copied to a3 with its 0.  BUG(orig): the
+ * first character is never looked at ("/abc" and ":x" give "", like a
+ * name without separator, #624); a3 ends behind the 0 (#618); the length
+ * is taken as a word (#628); tbuf is not limited (#627).
+ * @param s     d0: the path
+ * @param lens  a2: the argument stack, the length's low word at -2(a2)
+ * @return d0: the length of the result, 0 without separator
+ */
 static ULONG BLITZ_ROUTINE getpathname_c(const UBYTE *s BL_REG(d0), const UWORD *lens BL_REG(a2))
 {
     ULONG n = (ULONG)lens[-1] + 1, i;
@@ -235,7 +256,10 @@ static ULONG BLITZ_ROUTINE getpathname_c(const UBYTE *s BL_REG(d0), const UWORD 
 
 /* ------------------------------------------------------ notifications */
 
-/* NotifyPort */
+/**
+ * @brief NotifyPort: the message port of the notifications.
+ * @return d0: the port (init's CreateMsgPort), 0 if there is none
+ */
 static ULONG BLITZ_ROUTINE notifyport_c(void)
 {
     return (ULONG)msgport;
@@ -254,6 +278,13 @@ static ULONG dochecknotify(void)
     return id;
 }
 
+/**
+ * @brief CheckNotify: the id of the next notification message.
+ *
+ * The message is replied.
+ * @return d0: the id (the request's UserData), 0 if there is none or no
+ *         port
+ */
 static ULONG BLITZ_ROUTINE checknotify_c(void)
 {
     if (!msgport)
@@ -261,6 +292,12 @@ static ULONG BLITZ_ROUTINE checknotify_c(void)
     return dochecknotify();
 }
 
+/**
+ * @brief WaitNotify: waits for a notification message and returns its id.
+ *
+ * WaitPort, then as CheckNotify.
+ * @return d0: the id, 0 without a port
+ */
 static ULONG BLITZ_ROUTINE waitnotify_c(void)
 {
     if (!msgport)
@@ -269,8 +306,18 @@ static ULONG BLITZ_ROUTINE waitnotify_c(void)
     return dochecknotify();
 }
 
-/* RemNotify id (d0): d0 unchanged without dos/port, id*4 if the entry is
-   empty */
+/**
+ * @brief RemNotify notify#: ends a notification and frees its request and
+ * the name copy.
+ *
+ * filelens[id] stays set and the original sets d4 to $12345678 (a
+ * debugging leftover, no result): no defects.  BUG(orig) (#626): no range
+ * check of the id (offset id*4).
+ * @param id  d0: the id
+ * @return d0: unchanged (id) without dos.library or port, id*4 if the
+ *         entry is empty, else the address of the freed name (a
+ *         statement: the value is not used)
+ */
 static ULONG BLITZ_ROUTINE remnotify_c(LONG id BL_REG(d0))
 {
     struct DosLibrary *dos = dosbase_;
@@ -292,7 +339,21 @@ static ULONG BLITZ_ROUTINE remnotify_c(LONG id BL_REG(d0))
     return r;
 }
 
-/* AddNotify id,file$ (d0, d1; the length at -4(a2)) */
+/**
+ * @brief AddNotify(idno,filespec$): starts a notification for a file.
+ *
+ * A NotifyRequest (48 bytes, MEMF_CLEAR) with a copy of the name,
+ * UserData = id, NRF_SEND_MESSAGE to the port; kept in notifys[id].
+ * BUG(orig): no range check of the id (64 entries, the offset id*4 as a
+ * word, #626); AllocMem's results are not checked (#619); an id used
+ * twice loses the first request (#620); a request whose StartNotify
+ * failed stays in the table and is not counted (#621).
+ * @param id    d0: the id
+ * @param file  d1: the file name
+ * @param lens  a2: the argument stack, the name's length at -4(a2)
+ * @return d0: BB_TRUE if StartNotify worked, BB_FALSE otherwise or
+ *         without dos.library or port
+ */
 static BB_BOOL BLITZ_ROUTINE addnotify_c(ULONG id BL_REG(d0), STRPTR file BL_REG(d1),
                                          const ULONG *lens BL_REG(a2))
 {
@@ -328,6 +389,11 @@ static BB_BOOL BLITZ_ROUTINE addnotify_c(ULONG id BL_REG(d0), STRPTR file BL_REG
 
 /* ---------------------------------------------------------- init/finit */
 
+/**
+ * @brief init: opens dos.library V36 (_dosbase) and creates the message
+ * port of all notifications.
+ * @return d0: the port (init's result is not used: BL_NORET)
+ */
 static ULONG BLITZ_ROUTINE libinit_c(void)
 {
     notifycnt = 0;
@@ -336,6 +402,15 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
     return (ULONG)msgport;
 }
 
+/**
+ * @brief finit: ends the notifications still active, closes dos.library
+ * and deletes the port.
+ *
+ * BUG(orig) (#621): the requests are removed from id 63 down only while
+ * the counter is not 0.  The port is deleted only if dos.library was
+ * open (always, where CreateMsgPort exists: no defect).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (msgport) {
@@ -356,7 +431,15 @@ static void BLITZ_ROUTINE libfinit_c(void)
 
 /* ------------------------------------------------------ the device list */
 
-/* GetDeviceList flags (d0.w, a6 = the program's dos base) */
+/**
+ * @brief GetDeviceList(flags): locks the DOS device list
+ * (LockDosList(flags | LDF_READ)).
+ *
+ * The current entry is the list itself until NextDevice.
+ * @param flags  d0.w: the LDF_ flags
+ * @param dos    a6: the program's dos base (!libs #doslib,#la6)
+ * @return d0: BB_TRUE, BB_FALSE if LockDosList fails
+ */
 static BB_BOOL BLITZ_ROUTINE lockdoslist_c(UWORD flags BL_REG(d0),
                                            struct DosLibrary *dos BL_REG(a6))
 {
@@ -368,8 +451,18 @@ static BB_BOOL BLITZ_ROUTINE lockdoslist_c(UWORD flags BL_REG(d0),
     return BB_TRUE;
 }
 
-/* NextDevice: d0 unchanged without a list (BUG(orig) (#625)), else the
-   length byte of the name */
+/**
+ * @brief NextDevice: the name of the next entry of the locked list
+ * (NextDosEntry), "" at the end.
+ *
+ * The name is copied to a3 up to its 0 (DOS BSTRs have one).  BUG(orig):
+ * without GetDeviceList d0 comes back unchanged as the string's length
+ * (#625); a3 ends behind the 0 (#618).
+ * @param result  d0: the caller's d0
+ * @param dos     a6: the program's dos base
+ * @return d0: the length byte of the name, 0 at the end, the caller's d0
+ *         without a list
+ */
 static ULONG BLITZ_ROUTINE nextlistitem_c(ULONG result BL_REG(d0),
                                           struct DosLibrary *dos BL_REG(a6))
 {
@@ -387,7 +480,14 @@ static ULONG BLITZ_ROUTINE nextlistitem_c(ULONG result BL_REG(d0),
     return result;
 }
 
-/* DeviceEntryType */
+/**
+ * @brief DeviceEntryType: dol_Type of the current entry (dev 0, dir 1,
+ * vol 2, late 3, nonbind 4).
+ *
+ * BUG(orig) (#622): after FreeDeviceList it reads the entry of the
+ * unlocked list.
+ * @return d0: the type, -1 if there is no entry
+ */
 static ULONG BLITZ_ROUTINE dosentrytype_c(void)
 {
     if (!mydosentry)
@@ -395,8 +495,17 @@ static ULONG BLITZ_ROUTINE dosentrytype_c(void)
     return (ULONG)mydosentry->dol_Type;
 }
 
-/* FreeDeviceList (a6 = the program's dos base): d0 unchanged without
-   _dosbase */
+/**
+ * @brief FreeDeviceList: unlocks the DOS device list (UnLockDosList).
+ *
+ * BUG(orig) (#623): it does not check that the list is locked
+ * (UnLockDosList releases the semaphore once too often and always calls
+ * Permit); the current entry stays (#622).
+ * @param incoming  d0: the caller's d0
+ * @param dos       a6: the program's dos base (the original goes through
+ *                  init's _dosbase: the same pointer)
+ * @return d0: -1, the caller's d0 without _dosbase
+ */
 static ULONG BLITZ_ROUTINE unlockdoslist_c(ULONG incoming BL_REG(d0),
                                            struct DosLibrary *dos BL_REG(a6))
 {
