@@ -69,6 +69,13 @@ foreach(t xtra_load xtra_blitz2 xtra_bb22 xtra_ab3 xtra_ab3_update xtra_ab3_bina
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
 
+# the command line of blitz2-ab3 (shared/ab3job, lib_ab3job)
+add_executable(test_ab3args test_ab3args.cpp)
+target_link_libraries(test_ab3args PRIVATE lib_ab3job snitch::snitch)
+target_compile_options(test_ab3args PRIVATE -Wall -Wextra)
+set_target_properties(test_ab3args PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME ab3args COMMAND test_ab3args)
+
 # the check of SNAP:waitjob (static_assert in amiga_emulation.c) with
 # waiters assembled the wrong way
 add_test(NAME amiga_emulation_waiter_broken COMMAND ${CMAKE_COMMAND} -DCC=${CMAKE_C_COMPILER}
