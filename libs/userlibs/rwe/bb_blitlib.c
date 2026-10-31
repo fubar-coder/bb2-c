@@ -162,11 +162,16 @@ BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
-/* init, finit: RTS */
+/**
+ * @brief init: does nothing (RTS).
+ */
 void BLITZ_ROUTINE _libinit(void)
 {
 }
 
+/**
+ * @brief finit: does nothing (RTS).
+ */
 void BLITZ_ROUTINE _libfinit(void)
 {
 }
@@ -240,7 +245,13 @@ enum {
 static UWORD ebwidth = 40, modwidth = 38, modwidth2 = 36;
 static UWORD coltoblit;
 
-/* SetupMapTwo ebwidth */
+/**
+ * @brief SetupMapTwo ebwidth: the bytes per line of the bitmaps.
+ *
+ * SpecialBlock, TBlock and the predator blits assume bitmaps of this
+ * width (default 40); also sets the modulos ebwidth-2 and ebwidth-4.
+ * @param w  d0: the bytes per line
+ */
 static void BLITZ_ROUTINE mapinfo_c(UWORD w BL_REG(d0))
 {
     ebwidth = w;
@@ -257,9 +268,19 @@ static UWORD xyoff(UWORD x, UWORD y, UWORD width)
 
 /* ------------------------------------------------------- SpecialBlock */
 
-/* the 16x16 top shape (B) over the bottom shape (C) through top's cookie
-   (A) into each plane of the used bitmap at off; B and C go on from plane
-   to plane */
+/**
+ * @brief SpecialBlock topshape,bottomshape,offset: a 16x16 block of two
+ * shapes into the used bitmap.
+ *
+ * The top shape (B) over the bottom shape (C) through top's cookie (A)
+ * into each plane of the used bitmap at off (D = A ? B : C); B and C go
+ * on from plane to plane.  Assumes 16x16 shapes and bitmaps of
+ * SetupMapTwo's width.  BUG(orig) (#429): depth 0 loops 65536 times.
+ * @param off  d2: the byte offset in the bitmap
+ * @param bm   a0: the used bitmap object
+ * @param top  a1: the top shape object (parameter 0)
+ * @param bot  a2: the bottom shape object (parameter 1)
+ */
 static void BLITZ_ROUTINE specialblock2_c(UWORD off BL_REG(d2), struct bmap *bm BL_REG(a0),
                                           struct shape *top BL_REG(a1),
                                           struct shape *bot BL_REG(a2))
@@ -291,6 +312,15 @@ first:
     } while (n-- != 0);
 }
 
+/**
+ * @brief SpecialBlock topshape,bottomshape,x,y: as the offset form, at
+ * y * SetupMapTwo's width + x/8.
+ * @param x    d2: x (ASR 3: a byte column)
+ * @param y    d3: y
+ * @param bm   a0: the used bitmap object
+ * @param top  a1: the top shape object
+ * @param bot  a2: the bottom shape object
+ */
 static void BLITZ_ROUTINE specialblock_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
                                          struct bmap *bm BL_REG(a0), struct shape *top BL_REG(a1),
                                          struct shape *bot BL_REG(a2))
@@ -300,8 +330,18 @@ static void BLITZ_ROUTINE specialblock_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
 
 /* ------------------------------------------------- SpecialBlockBitmap */
 
-/* the shape (B, any size) over the source bitmap (C) through its cookie
-   into the used bitmap, both at off */
+/**
+ * @brief SpecialBlockBitmap topshape,bitmap,offset: a shape over another
+ * bitmap into the used bitmap.
+ *
+ * The shape (B, any size) over the same area of the source bitmap (C)
+ * through its cookie (A) into the used bitmap, both at off; B goes on
+ * from plane to plane.  BUG(orig) (#429): depth 0 loops 65536 times.
+ * @param off    d2: the byte offset in both bitmaps
+ * @param bm     a0: the used bitmap object
+ * @param shape  a1: the shape object (parameter 0)
+ * @param src    a2: the source bitmap object (parameter 1)
+ */
 static void BLITZ_ROUTINE specialblockbitmap2_c(UWORD off BL_REG(d2),
                                                 struct bmap *bm BL_REG(a0),
                                                 struct shape *shape BL_REG(a1),
@@ -333,6 +373,15 @@ first:
     } while (n-- != 0);
 }
 
+/**
+ * @brief SpecialBlockBitmap topshape,bitmap,x,y: as the offset form, at
+ * y * the used bitmap's width + x/8.
+ * @param x      d2: x (ASR 3)
+ * @param y      d3: y
+ * @param bm     a0: the used bitmap object
+ * @param shape  a1: the shape object
+ * @param src    a2: the source bitmap object
+ */
 static void BLITZ_ROUTINE specialblockbitmap_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
                                                struct bmap *bm BL_REG(a0),
                                                struct shape *shape BL_REG(a1),
@@ -343,7 +392,18 @@ static void BLITZ_ROUTINE specialblockbitmap_c(UWORD x BL_REG(d2), UWORD y BL_RE
 
 /* ------------------------------------------------------------- TBlock */
 
-/* a 16x16 shape (B) through its cookie (A) onto the bitmap (C = D) */
+/**
+ * @brief TBlock shape,x,y: a 16x16 shape through its cookie onto the used
+ * bitmap.
+ *
+ * B = the shape, A = its cookie, C = D = the bitmap at y * SetupMapTwo's
+ * width + x/8; B goes on from plane to plane.  BUG(orig) (#429): depth 0
+ * loops 65536 times.
+ * @param x      d1: x (ASR 3)
+ * @param y      d2: y
+ * @param bm     a0: the used bitmap object
+ * @param shape  a1: the shape object
+ */
 static void BLITZ_ROUTINE tblock_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2),
                                    struct bmap *bm BL_REG(a0), struct shape *shape BL_REG(a1))
 {
@@ -377,9 +437,20 @@ first:
 
 /* ------------------------------------------------------- PredatorBlit */
 
-/* B = the bitmap one line further, shifted by x and one pixel more, C =
-   D = the bitmap, 2 words wide at the even word, through the cookie (A,
-   shifted, last word masked); d0 = the cookie */
+/**
+ * @brief PredatorBlit(shape,x,y): the "predator" effect inside a shape's
+ * cookie.
+ *
+ * B = the bitmap one line (SetupMapTwo's width) further, shifted by x
+ * and one pixel more, C = D = the bitmap, 2 words wide at the even word,
+ * through the cookie (A, shifted, last word masked).  Assumes 16x16
+ * shapes.  BUG(orig) (#429): depth 0 loops 65536 times.
+ * @param x      d1: x
+ * @param y      d2: y
+ * @param bm     a0: the used bitmap object
+ * @param shape  a1: the shape object
+ * @return d0: the address of the shape's cookie
+ */
 static ULONG BLITZ_ROUTINE predatorblit_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2),
                                           struct bmap *bm BL_REG(a0),
                                           struct shape *shape BL_REG(a1))
@@ -475,9 +546,22 @@ first:
     buf->pos = rec;
 }
 
-/* BPredatorBlit: the shape's area saved (one line less: "BB Cludge"),
-   then PredatorBlit's blit through the shifted cookie (B: the line
-   ebwidth below, one pixel more) */
+/**
+ * @brief BPredatorBlit buffer,shape,x,y: PredatorBlit, buffered.
+ *
+ * The shape's area (at x,y minus the handle) is saved into a record of
+ * the buffer as bblitlib's BBlit does, with a blit size one line less
+ * (deliberate: ";!!! BB Cludge!"), then PredatorBlit's blit through the
+ * shifted cookie (B: the line ebwidth below, one pixel more).
+ * BUG(orig) (#426): B reads the line SetupMapTwo's width below, not the
+ * bitmap's.  BUG(orig) (#429): depth 0 loops 65536 times.
+ * @param x      d2: x
+ * @param y      d3: y
+ * @param buf    a0: the buffer object (bblitlib)
+ * @param cb     a1: the chip base (chipbaselib)
+ * @param bm     a2: the used bitmap object
+ * @param shape  a3: the shape object
+ */
 static void BLITZ_ROUTINE bpredatorblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
                                           struct buffer *buf BL_REG(a0), UBYTE *cb BL_REG(a1),
                                           struct bmap *bm BL_REG(a2),
@@ -518,8 +602,22 @@ first:
     } while (n-- != 0);
 }
 
-/* BColourBlit: the shape's area saved, then the cookie (shifted) in
-   `colour`: per plane D = A | C (bit set) or ~A & C */
+/**
+ * @brief BColourBlit buffer,shape,x,y,colour: a shape's cookie in one
+ * colour, buffered.
+ *
+ * The area is saved as BBlit does, then the shifted cookie is blitted in
+ * `colour`: per plane D = A | C (bit set) or ~A & C.  Sets the B modulos
+ * it does not use and shifts the colour as a byte (at most 8 planes):
+ * original behaviour.  BUG(orig) (#429): depth 0 loops 65536 times.
+ * @param x       d2: x
+ * @param y       d3: y
+ * @param colour  d4: the colour
+ * @param buf     a0: the buffer object
+ * @param cb      a1: the chip base
+ * @param bm      a2: the used bitmap object
+ * @param shape   a3: the shape object
+ */
 static void BLITZ_ROUTINE docolblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
                                       UWORD colour BL_REG(d4), struct buffer *buf BL_REG(a0),
                                       UBYTE *cb BL_REG(a1), struct bmap *bm BL_REG(a2),
@@ -565,8 +663,18 @@ first:
 
 /* ------------------------------------------------------------ images */
 
-/* TBlockImage: image `image` of image_addr (224 bytes: the mask, then 6
-   planes of 16x16) through its mask onto 6 planes of the used bitmap */
+/**
+ * @brief TBlockImage image_addr,image,x,y: a 16x16 image of 6 planes
+ * through its mask.
+ *
+ * Image `image` of image_addr (224 bytes: the mask, then 6 planes of
+ * 16x16) through its mask onto 6 planes of the used bitmap.
+ * @param addr   d0: image_addr
+ * @param image  d1: the image number
+ * @param x      d2: x (ASR 3)
+ * @param y      d3: y
+ * @param bm     a0: the used bitmap object
+ */
 static void BLITZ_ROUTINE tblockimage_c(ULONG addr BL_REG(d0), UWORD image BL_REG(d1),
                                         UWORD x BL_REG(d2), UWORD y BL_REG(d3),
                                         struct bmap *bm BL_REG(a0))
@@ -599,7 +707,21 @@ first:
     } while (n-- != 0);
 }
 
-/* BTBlockImage: the area saved, then the image shifted through its mask */
+/**
+ * @brief BTBlockImage buffer,image_addr,x,y,image: TBlockImage, buffered
+ * and shifted.
+ *
+ * The area is saved as BBlit does, then the image shifted through its
+ * mask.  BUG(orig) (#427): image*224 is added as a word (from image 147
+ * on before image_addr).
+ * @param addr   d1: image_addr
+ * @param x      d2: x
+ * @param y      d3: y
+ * @param image  d4: the image number
+ * @param buf    a0: the buffer object
+ * @param cb     a1: the chip base
+ * @param bm     a2: the used bitmap object
+ */
 static void BLITZ_ROUTINE btblockimage_c(ULONG addr BL_REG(d1), UWORD x BL_REG(d2),
                                          UWORD y BL_REG(d3), UWORD image BL_REG(d4),
                                          struct buffer *buf BL_REG(a0), UBYTE *cb BL_REG(a1),
@@ -639,8 +761,19 @@ first:
 
 /* ------------------------------------------------------------ shapes */
 
-/* CreateShape: count shape objects from a2 like a3, the data at mem one
-   after another (+26 of the like shape each), no cookie, "cL" */
+/**
+ * @brief CreateShape start_shape,count,chipmemblock,like_shape: shape
+ * objects whose data lie in a given block.
+ *
+ * count shape objects from start_shape on like like_shape, their data at
+ * chipmemblock one after another (allbpmem, +26, of the like shape
+ * each), no cookie, "cL" (the data is not the shapes').
+ * BUG(orig) (#428): count 0 creates 65536 shapes.
+ * @param count  d1: the number of shapes
+ * @param mem    d2: the chip memory block
+ * @param shape  a2: the first shape object
+ * @param like   a3: the shape to copy the sizes from
+ */
 static void BLITZ_ROUTINE createshape_c(UWORD count BL_REG(d1), ULONG mem BL_REG(d2),
                                         struct shape *shape BL_REG(a2),
                                         struct shape *like BL_REG(a3))
@@ -663,7 +796,17 @@ static void BLITZ_ROUTINE createshape_c(UWORD count BL_REG(d1), ULONG mem BL_REG
     } while (n-- != 0);
 }
 
-/* SpecialBlockToShape: SpecialBlock into the data of dest (16x16) */
+/**
+ * @brief SpecialBlockToShape topshape,bottomshape,destshape: SpecialBlock
+ * into a shape.
+ *
+ * The 16x16 block (top over bottom through top's cookie) into the data
+ * of dest.  Error check: errsblocktoshape_c.  BUG(orig) (#429): depth 0
+ * loops 65536 times.
+ * @param dest  a0: the destination shape object
+ * @param top   a1: the top shape object
+ * @param bot   a2: the bottom shape object
+ */
 static void BLITZ_ROUTINE specialblocktoshape_c(struct shape *dest BL_REG(a0),
                                                 struct shape *top BL_REG(a1),
                                                 struct shape *bot BL_REG(a2))
@@ -691,7 +834,14 @@ first:
     } while (n-- != 0);
 }
 
-/* BlockToShape: height*depth words of the shape's data to dest's */
+/**
+ * @brief BlockToShape shape,destshape: copies a shape's data into another.
+ *
+ * height*depth words of the shape's data to dest's: BUG(orig) (#425),
+ * one word per line.  Error check: errblocktoshape_c.
+ * @param shape  a1: the source shape object
+ * @param dest   a2: the destination shape object
+ */
 static void BLITZ_ROUTINE blocktoshape_c(struct shape *shape BL_REG(a1),
                                          struct shape *dest BL_REG(a2))
 {
@@ -728,7 +878,15 @@ BLITZ_THUNK(_btblockimage, btblockimage_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_MESSAGE(diffsizes, "Shapes must be the same size!");
 BLITZ_ERRCHK_MESSAGE(noshape, "Destination shape MUST be pre-reserved!");
 
-/* BlockToShape: dest has data, both shapes the same size (+26) */
+/**
+ * @brief BlockToShape's error check: dest has data, both shapes the same
+ * size (allbpmem, +26).
+ *
+ * Runtime errors "Destination shape MUST be pre-reserved!" and "Shapes
+ * must be the same size!".
+ * @param shape  a1: the source shape object
+ * @param dest   a2: the destination shape object
+ */
 static void BLITZ_ERRCHK errblocktoshape_c(struct shape *shape BL_REG(a1),
                                            struct shape *dest BL_REG(a2))
 {
@@ -738,7 +896,12 @@ static void BLITZ_ERRCHK errblocktoshape_c(struct shape *shape BL_REG(a1),
         BLITZ_RUNERR(diffsizes);
 }
 
-/* SpecialBlockToShape: the same for dest (a0) and the top shape */
+/**
+ * @brief SpecialBlockToShape's error check: the same for dest and the top
+ * shape.
+ * @param dest  a0: the destination shape object
+ * @param top   a1: the top shape object
+ */
 static void BLITZ_ERRCHK errsblocktoshape_c(struct shape *dest BL_REG(a0),
                                             struct shape *top BL_REG(a1))
 {
