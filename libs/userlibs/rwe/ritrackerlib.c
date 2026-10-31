@@ -1186,11 +1186,19 @@ nonewposyet:
 
 /* --------------------------------------------------------------- commands */
 
+/**
+ * @brief init: nothing plays yet (playing = 0).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     pt.playing = 0;
 }
 
+/**
+ * @brief finit: silence the voices (mt_end) if TrackInit was called.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (!pt.playing)
@@ -1199,7 +1207,17 @@ static void BLITZ_ROUTINE libfinit_c(void)
     ciaplayerfinit();
 }
 
-/* Tracker on+off */
+/**
+ * @brief Tracker on+off: switch the player on or off.
+ *
+ * Nothing happens if the status does not change.  0: mt_end (voices
+ * silent, audio DMA off) and status off; else status on - mt_Enable is
+ * only ANDed with the value, so the song stays stopped until TrackInit
+ * or TrackerPause 0 (BUG(orig) (#572)).  While off, TrackInit does not
+ * initialise the song (#573).
+ * @param on  d0.b: 0 off, else on (any nonzero byte)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE tracker_c(UBYTE on BL_REG(d0))
 {
     if ((BYTE)on == pt.status)
@@ -1212,7 +1230,19 @@ static void BLITZ_ROUTINE tracker_c(UBYTE on BL_REG(d0))
         ciaplayerfinit();
 }
 
-/* TrackInit address */
+/**
+ * @brief TrackInit address: initialise a module and enable playing.
+ *
+ * mt_init: the sample starts behind the highest pattern, song position
+ * 0 (its pattern scan and sample clearing: BUG(orig) (#477, #570)).
+ * Playing is enabled even while Tracker Off, where mt_init does nothing:
+ * Tracker On then plays with the old song pointer (BUG(orig) (#573)).
+ * The program calls TrackPlay itself (the CIA interrupt setup is dead,
+ * #571).
+ * @param module  d0: the module (a Protracker file in memory, 31
+ *                samples, "M.K."; not checked)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE initmodule_c(UBYTE *module BL_REG(d0))
 {
     glue.mt_data = module;
@@ -1222,18 +1252,38 @@ static void BLITZ_ROUTINE initmodule_c(UBYTE *module BL_REG(d0))
     pt.enable = 0xff;
 }
 
+/**
+ * @brief TrackDMA dmawait.w: the DBRA count of the waits for Paula's DMA.
+ *
+ * The waits run DMA_Wait + 1 passes; the default is 4000.
+ * @param wait  d0.w: the count
+ * @return nothing
+ */
 static void BLITZ_ROUTINE tracksetdma_c(UWORD wait BL_REG(d0))
 {
     pt.dmawait = wait;
 }
 
+/**
+ * @brief TrackStop: stop playing (mt_end: volumes 0, audio DMA off).
+ *
+ * The module address goes to mt_olddata, which nothing reads.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE stopmodule_c(void)
 {
     pt.olddata = glue.mt_data;
     mt_end();
 }
 
-/* TrackerPause On|Off: nonzero stops, 0 continues (_contmodule) */
+/**
+ * @brief TrackerPause On|Off: pause or continue the module.
+ *
+ * Nonzero stops (mt_end), 0 continues (_contmodule): enables playing and
+ * plays one tick at once.
+ * @param pause  d0.b: nonzero pause, 0 continue
+ * @return nothing
+ */
 static void BLITZ_ROUTINE trackerpause_c(UBYTE pause BL_REG(d0))
 {
     if (pause) {
@@ -1254,7 +1304,17 @@ static void cut(aud_t *hw)
     hw->ac_vol = 0;
 }
 
-/* TrackerChannels mask */
+/**
+ * @brief TrackerChannels mask: the voices to play.
+ *
+ * Bit 3 = voice 1 ... bit 0 = voice 4 (default 15).  A cleared voice's
+ * pointer, length, period and volume are zeroed (its DMA stays).  A
+ * masked voice does not advance the pattern offset, so the following
+ * voices play the notes of the voice before (BUG(orig) (#568)); effects
+ * and the loop pointers still go to all four voices (#567).
+ * @param mask  d0.b: the voice bits
+ * @return nothing
+ */
 static void BLITZ_ROUTINE trackermask_c(UBYTE mask BL_REG(d0))
 {
     int i;
@@ -1265,6 +1325,15 @@ static void BLITZ_ROUTINE trackermask_c(UBYTE mask BL_REG(d0))
             cut(&CUSTOM.aud[i]);
 }
 
+/**
+ * @brief TrackPlay: one tick of the play routine (mt_music).
+ *
+ * Called by the program once per tick (e.g. from a SetInt 5 vertical
+ * blank handler); does nothing unless playing is enabled and Tracker is
+ * on.  The known PT2.3A bugs of the routine are listed in the head of
+ * the file.
+ * @return nothing (all registers kept)
+ */
 static void BLITZ_ROUTINE music_c(void)
 {
     mt_music_c();
