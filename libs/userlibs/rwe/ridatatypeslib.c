@@ -273,6 +273,13 @@ static struct BitMapHeader *bitmapheader;
 static ULONG attached;                  /* window object, then the Window */
 static UWORD attachtobitmap;
 
+/**
+ * @brief init: opens datatypes, dos, intuition and graphics.library (V37)
+ * and allocates the 1024 byte buffer (memlib globalloc, MEMF_CLEAR).
+ *
+ * A library that does not open leaves its base 0; the commands that test
+ * the base then do nothing.
+ */
 void BLITZ_ROUTINE c_libinit(void)
 {
     struct bl_regs r = { .d0 = 1024, .d1 = MEMF_CLEAR };
@@ -283,7 +290,12 @@ void BLITZ_ROUTINE c_libinit(void)
     storage = (void *)BLITZ_ALIBJSR(TOK_globalloc, r);
 }
 
-/* DetachDataType */
+/**
+ * @brief DetachDataType: removes the object from the window it is attached
+ * to.
+ *
+ * Nothing if it is not attached, or attached to a bitmap.
+ */
 void BLITZ_ROUTINE c_detachdatatype(void)
 {
     if ((LONG)attached <= 0)
@@ -294,7 +306,14 @@ void BLITZ_ROUTINE c_detachdatatype(void)
     attached = 0;
 }
 
-/* DataTypeClose: the object, the DataType, the lock */
+/**
+ * @brief DataTypeClose: disposes of the object, releases the DataType and
+ * unlocks the file.
+ *
+ * BUG(orig) (#599): the object is not detached from its window first;
+ * BUG(orig) (#605): the file is unlocked only if there is a DataType.
+ * Nothing without datatypes.library.
+ */
 void BLITZ_ROUTINE c_datatypeclose(void)
 {
     if (!database)
@@ -313,6 +332,13 @@ void BLITZ_ROUTINE c_datatypeclose(void)
     dtypehead = NULL;
 }
 
+/**
+ * @brief finit: DetachDataType, DataTypeClose, closes the libraries and
+ * frees the buffer.
+ *
+ * BUG(orig) (#602): closes the libraries only up to the first one that
+ * did not open.
+ */
 void BLITZ_ROUTINE c_libfinit(void)
 {
     struct Library **p;
@@ -356,8 +382,17 @@ static ULONG putid(const UBYTE *s)
     }
 }
 
-/* DataTypeOpen filename$: the DataType of the file (0: no file, or one
-   is open) */
+/**
+ * @brief DataTypeOpen filename$: locks a file and obtains its DataType.
+ *
+ * The name is copied to the buffer DataTypeCreate uses.
+ * BUG(orig) (#604): the copy into the 384 byte buffer has no limit;
+ * BUG(orig) (#605): the DataTypeHeader is read from ObtainDataType's
+ * result without checking it for 0.
+ * @param name  d0: the file name
+ * @return d0: the DataType, 0 without datatypes.library, if a file is
+ *         already open or the file does not lock
+ */
 ULONG BLITZ_ROUTINE c_datatypeopen(CONST_STRPTR name BL_REG(d0))
 {
     const UBYTE *s = (const UBYTE *)name;
@@ -375,7 +410,12 @@ ULONG BLITZ_ROUTINE c_datatypeopen(CONST_STRPTR name BL_REG(d0))
     return (ULONG)dtype;
 }
 
-/* DataTypeName / DataTypeBaseName / DataTypeID / DataTypeGroup */
+/**
+ * @brief DataTypeName: the name of the file's DataType (dth_Name).
+ *
+ * The string is written at a3 (a3 behind its 0).
+ * @return d0: its length, 0 without datatypes.library or DataType
+ */
 ULONG BLITZ_ROUTINE c_datatypename(void)
 {
     if (!database || !dtypehead)
@@ -383,6 +423,11 @@ ULONG BLITZ_ROUTINE c_datatypename(void)
     return putstring((const UBYTE *)dtypehead->dth_Name);
 }
 
+/**
+ * @brief DataTypeBaseName: the base name of the file's DataType
+ * (dth_BaseName), written at a3 like DataTypeName.
+ * @return d0: its length, 0 without datatypes.library or DataType
+ */
 ULONG BLITZ_ROUTINE c_datatypebasename(void)
 {
     if (!database || !dtype)
@@ -390,6 +435,12 @@ ULONG BLITZ_ROUTINE c_datatypebasename(void)
     return putstring((const UBYTE *)dtypehead->dth_BaseName);
 }
 
+/**
+ * @brief DataTypeID: the ID of the file's DataType (dth_ID), up to four
+ * characters (up to a 0) at a3.
+ * @return d0: the number of characters, 0 without datatypes.library or
+ *         DataType
+ */
 ULONG BLITZ_ROUTINE c_datatypeid(void)
 {
     if (!database || !dtype)
@@ -397,6 +448,12 @@ ULONG BLITZ_ROUTINE c_datatypeid(void)
     return putid((const UBYTE *)&dtypehead->dth_ID);
 }
 
+/**
+ * @brief DataTypeGroup: the group ID of the file's DataType
+ * (dth_GroupID), up to four characters at a3.
+ * @return d0: the number of characters, 0 without datatypes.library or
+ *         DataType
+ */
 ULONG BLITZ_ROUTINE c_datatypegroup(void)
 {
     if (!database || !dtypehead)
@@ -411,6 +468,14 @@ static ULONG create(struct TagItem *tags)
     return (ULONG)object;
 }
 
+/**
+ * @brief DataTypeCreate: NewDTObject of the file's name without tags.
+ *
+ * BUG(orig) (#601): needs no open file (the name is the last one
+ * DataTypeOpen copied, at first ""); BUG(orig) (#600): an object before
+ * is lost.
+ * @return d0: the object, 0 without datatypes.library or on failure
+ */
 ULONG BLITZ_ROUTINE c_datatypecreate2(void)
 {
     if (!database)
@@ -419,6 +484,15 @@ ULONG BLITZ_ROUTINE c_datatypecreate2(void)
     return create(storage->tags);
 }
 
+/**
+ * @brief DataTypeCreate &taglist: NewDTObject of the file's name with a
+ * tag list.
+ *
+ * BUG(orig) (#600): an object before is lost.
+ * @param tags  d0: the tag list
+ * @return d0: the object, 0 without datatypes.library or open file, or
+ *         on failure
+ */
 ULONG BLITZ_ROUTINE c_datatypecreate(struct TagItem *tags BL_REG(d0))
 {
     if (!database || !lock)
@@ -451,7 +525,19 @@ static struct TagItem *tailtags(struct TagItem *t)
 /* one tag */
 #define TAG(t, tag, data) ((t)->ti_Tag = (tag), (t)->ti_Data = (data), (t)++)
 
-/* AttachDataType window,id: at 0,0 with the size of the BitMapHeader */
+/**
+ * @brief AttachDataType window,id: attaches the object to a window at 0,0
+ * with the size of the BitMapHeader.
+ *
+ * SetAttrs (GA_Left/Top/Width/Height/ID, ICA_TARGET ICTARGET_IDCMP,
+ * PDTA_Remap 0), then AddDTObject.  BUG(orig) (#595): the BitMapHeader
+ * is not checked (address 0 without DataTypeBitmap).  Does not test
+ * datatypes.library.
+ * @param id      d1: the gadget id
+ * @param winobj  a0: the window object (windowslib, parameter 0)
+ * @return d0: BB_TRUE, BB_FALSE without an open file or if attached
+ *         already
+ */
 BB_BOOL BLITZ_ROUTINE c_attachdatatype(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a0))
 {
     struct TagItem *t = storage->tags;
@@ -469,8 +555,21 @@ BB_BOOL BLITZ_ROUTINE c_attachdatatype(ULONG id BL_REG(d1), ULONG *winobj BL_REG
     return doattach((const ULONG *)attached);
 }
 
-/* AttachDataType window,id,x,y,width,height (BUG(orig) (#597): the words as
-   longs) */
+/**
+ * @brief AttachDataType window,id,x,y,width,height: attaches the object to
+ * a window at a position and size.
+ *
+ * BUG(orig) (#597): the word arguments go into the tag list as longs,
+ * with the upper words the registers have.
+ * @param id      d1: the gadget id
+ * @param x       d2: left (word)
+ * @param y       d3: top (word)
+ * @param w       d4: width (word)
+ * @param h       d5: height (word)
+ * @param winobj  a0: the window object
+ * @return d0: BB_TRUE, BB_FALSE without datatypes.library or an open file,
+ *         or if attached already
+ */
 BB_BOOL BLITZ_ROUTINE c_attachdatatype2(ULONG id BL_REG(d1), ULONG x BL_REG(d2),
                                         ULONG y BL_REG(d3), ULONG w BL_REG(d4),
                                         ULONG h BL_REG(d5), ULONG *winobj BL_REG(a0))
@@ -490,8 +589,17 @@ BB_BOOL BLITZ_ROUTINE c_attachdatatype2(ULONG id BL_REG(d1), ULONG x BL_REG(d2),
     return doattach((const ULONG *)attached);
 }
 
-/* AttachDataType window,id,&taglist (BUG(orig) (#596): the id is the tag list
-   of the second SetAttrsA) */
+/**
+ * @brief AttachDataType window,id,&taglist: attaches the object to a
+ * window with a tag list of the program's.
+ *
+ * BUG(orig) (#596): the id is passed as the tag list of the second
+ * SetAttrsA, the program's tag list (d2) is ignored.
+ * @param id      d1: the gadget id
+ * @param winobj  a0: the window object
+ * @return d0: BB_TRUE, BB_FALSE without an open file or if attached
+ *         already
+ */
 BB_BOOL BLITZ_ROUTINE c_attachdatatype3(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a0))
 {
     struct TagItem *t = storage->tags;
@@ -506,7 +614,12 @@ BB_BOOL BLITZ_ROUTINE c_attachdatatype3(ULONG id BL_REG(d1), ULONG *winobj BL_RE
     return doattach((const ULONG *)attached);
 }
 
-/* DataTypeReady: -1 when the layout is done */
+/**
+ * @brief DataTypeReady: whether the attached object's layout is done
+ * (DTA_LayoutProc 0).
+ * @return d0: BB_TRUE when done, BB_FALSE while laying out, without
+ *         datatypes.library or when not attached
+ */
 BB_BOOL BLITZ_ROUTINE c_datatypeready(void)
 {
     if (!database || !attached)
@@ -518,7 +631,11 @@ BB_BOOL BLITZ_ROUTINE c_datatypeready(void)
     return BB_TRUE;
 }
 
-/* DataTypeSuper: the ID of the object's class */
+/**
+ * @brief DataTypeSuper: the ID of the object's class (cl_ID), written at
+ * a3 like DataTypeName.
+ * @return d0: its length, 0 without datatypes.library or object
+ */
 ULONG BLITZ_ROUTINE c_datatypesuper(void)
 {
     if (!database || !object)
@@ -526,7 +643,14 @@ ULONG BLITZ_ROUTINE c_datatypesuper(void)
     return putstring((const UBYTE *)OCLASS(object)->cl_ID);
 }
 
-/* DataTypeBitmap: the BitMapHeader (BUG(orig) (#598): GetAttr not checked) */
+/**
+ * @brief DataTypeBitmap: gets the object's BitMapHeader
+ * (PDTA_BitMapHeader) for DataTypeWidth/Height/Depth/ModeID and
+ * AttachDataType.
+ *
+ * BUG(orig) (#598): takes whatever is in the buffer if GetAttr fails.
+ * @return d0: the BitMapHeader, 0 without datatypes.library or object
+ */
 ULONG BLITZ_ROUTINE c_datatypebitmap(void)
 {
     if (!database || !object)
@@ -551,8 +675,18 @@ struct pdata {
     struct pcolour colour[];
 };
 
-/* DataTypesPalette palette#: the colours into the palette object (count.w,
-   first.w, then a long per component; the upper bytes set) */
+/**
+ * @brief DataTypesPalette palette#: the object's colours
+ * (PDTA_ColorRegisters) into a palette object.
+ *
+ * Into the palette's colour block (count.w, first.w, then a long per
+ * component; the top bytes set).  BUG(orig) (#606): as many colours as
+ * the palette has (read behind the datatype's colours; 0 colours:
+ * 65536).  Does not test datatypes.library.
+ * @param palobj  a0: the palette object (palettelib, parameter 0)
+ * @return d0: the address of the buffer; BUG(orig) (#607): without
+ *         colours GetAttr's result; 0 without object
+ */
 ULONG BLITZ_ROUTINE c_datatypespalette(struct pdata **palobj BL_REG(a0))
 {
     const UBYTE *cr;
@@ -578,7 +712,10 @@ ULONG BLITZ_ROUTINE c_datatypespalette(struct pdata **palobj BL_REG(a0))
     return (ULONG)storage;
 }
 
-/* DataTypeWidth / DataTypeHeight / DataTypeDepth */
+/**
+ * @brief DataTypeWidth: the picture's width (bmh_Width).
+ * @return d0.w: the width, 0 without datatypes.library or DataTypeBitmap
+ */
 UWORD BLITZ_ROUTINE c_datatypewidth(void)
 {
     if (!database || !bitmapheader)
@@ -586,6 +723,10 @@ UWORD BLITZ_ROUTINE c_datatypewidth(void)
     return bitmapheader->bmh_Width;
 }
 
+/**
+ * @brief DataTypeHeight: the picture's height (bmh_Height).
+ * @return d0.w: the height, 0 without DataTypeBitmap
+ */
 UWORD BLITZ_ROUTINE c_datatypeheight(void)
 {
     if (!bitmapheader)
@@ -593,6 +734,10 @@ UWORD BLITZ_ROUTINE c_datatypeheight(void)
     return bitmapheader->bmh_Height;
 }
 
+/**
+ * @brief DataTypeDepth: the picture's depth (bmh_Depth, sign-extended).
+ * @return d0.w: the depth, 0 without DataTypeBitmap
+ */
 UWORD BLITZ_ROUTINE c_datatypedepth(void)
 {
     if (!bitmapheader)
@@ -600,7 +745,10 @@ UWORD BLITZ_ROUTINE c_datatypedepth(void)
     return (UWORD)(WORD)(BYTE)bitmapheader->bmh_Depth;
 }
 
-/* SetDataTypeAttr &taglist */
+/**
+ * @brief SetDataTypeAttr &taglist: SetAttrs on the object.
+ * @param tags  d0: the tag list
+ */
 void BLITZ_ROUTINE c_setdatatypeattr(struct TagItem *tags BL_REG(d0))
 {
     if (!object)
@@ -608,7 +756,15 @@ void BLITZ_ROUTINE c_setdatatypeattr(struct TagItem *tags BL_REG(d0))
     SetAttrsA(object, tags);
 }
 
-/* SetDataTypeAttr attr,data[,attr,data...]: d7 pairs below a2 */
+/**
+ * @brief SetDataTypeAttr attr,data[,attr,data..]: SetAttrs with the pairs
+ * as a tag list in the buffer.
+ *
+ * BUG(orig) (#608): 0 pairs are 65536 (DBRA), more than 127 overflow the
+ * 1024 byte buffer.  DIFF: a2 stays unchanged.
+ * @param n   d7: the number of pairs
+ * @param sp  a2: the argument stack (the pairs below it)
+ */
 void BLITZ_ROUTINE c_setdatatypeattr2(UWORD n BL_REG(d7), const ULONG *sp BL_REG(a2))
 {
     struct TagItem *t = storage->tags;
@@ -624,7 +780,12 @@ void BLITZ_ROUTINE c_setdatatypeattr2(UWORD n BL_REG(d7), const ULONG *sp BL_REG
     SetAttrsA(object, storage->tags);
 }
 
-/* GetDataTypeAttr(attribute): the address of the value */
+/**
+ * @brief GetDataTypeAttr(attribute): GetAttr of one attribute into the
+ * buffer.
+ * @param attr  d0: the attribute
+ * @return d0: the address of the value (the buffer), 0 without object
+ */
 ULONG BLITZ_ROUTINE c_getdatatypeattr(ULONG attr BL_REG(d0))
 {
     if (!object)
@@ -649,11 +810,22 @@ static ULONG domodeid(struct TagItem *t)
     return BestModeIDA(t);
 }
 
+/**
+ * @brief DataTypeModeID: BestModeID for the picture's size and depth
+ * (the tags in the buffer).
+ * @return d0: the mode id, 0 without DataTypeBitmap
+ */
 ULONG BLITZ_ROUTINE c_getmodeid(void)
 {
     return domodeid(storage->tags);
 }
 
+/**
+ * @brief DataTypeModeID taglist: as DataTypeModeID, the tags written to
+ * the program's tag list (BUG(orig) (#603)).
+ * @param tags  d0: the tag list
+ * @return d0: the mode id, 0 without DataTypeBitmap
+ */
 ULONG BLITZ_ROUTINE c_getmodeid2(struct TagItem *tags BL_REG(d0))
 {
     return domodeid(tags);
