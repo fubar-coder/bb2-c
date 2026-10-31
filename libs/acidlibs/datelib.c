@@ -194,18 +194,24 @@ static void put2(ULONG r)
 }
 
 /* _datestr - days since 1/1/1978 to "dd/mm/yyyy" at a3; d0 = length 10.
-   year holds the 4 year cycles first, month the days of the cycles; for
+   d1 holds the 4 year cycles first, d2 the days of the cycles; for
    mm/dd/yyyy day and month are exchanged (EXG) before the output */
 ULONG BLITZ_ROUTINE datestr_c(LONG days BL_REG(d0))
 {
-    ULONG day = (ULONG)days + DAYSP1978, year, month;  /* d0 d1 d2 */
+    ULONG day = (ULONG)days + DAYSP1978;                /* d0 */
+    ULONG cycles;                                       /* d1: DIVS result */
+    ULONG year;                                         /* d1 */
+    ULONG cycdays;                                      /* d2 */
+    ULONG month;                                        /* d2 */
+    ULONG century;                                      /* d1: DIVU result */
     const UWORD *entry;
 
     totday = day;
-    year = bl_divs_w(day, DAYSINQUADYR);                /* cycles */
-    month = (ULONG)(DAYSINQUADYR * (LONG)(WORD)year);   /* MULS d1,d2 */
-    day -= month;                                       /* day in cycle */
-    BL_SETW(year, (UWORD)year << 2);                    /* ASL #2,d1: year */
+    cycles = bl_divs_w(day, DAYSINQUADYR);
+    cycdays = (ULONG)(DAYSINQUADYR * (LONG)(WORD)cycles); /* MULS d1,d2 */
+    day -= cycdays;                                     /* day in cycle */
+    year = cycles;
+    BL_SETW(year, (UWORD)cycles << 2);                  /* ASL #2,d1: year */
     /* BUG(orig) (#120): BLE - day 366 stays in the leap year (32/12) */
     if ((WORD)day > 366) {
         BL_SETW(day, day - 366);
@@ -236,10 +242,9 @@ ULONG BLITZ_ROUTINE datestr_c(LONG days BL_REG(d0))
     *blitz_string++ = '/';
     put2(month);
     *blitz_string++ = '/';
-    year = bl_divu_w(BL_EXTL(year), 100);
-    put2(year);
-    year = BL_SWAP(year);
-    put2(year);
+    century = bl_divu_w(BL_EXTL(year), 100);
+    put2(century);
+    put2(BL_SWAP(century));
     return 10;
 }
 
@@ -265,13 +270,20 @@ UWORD BLITZ_ROUTINE years_c(void)  { return dym[1]; }
    day or month are not followed by "/".  Day and month: 1 or 2 digits,
    year: up to 4 (ends at "/" or after 4 characters, not at the end of the
    string).  "Digits" are not checked: every character counts as char-48.
-   num is the field being read, later the year / 4; digit the character,
-   later the leap days; day and month hold the first and second field
-   until the EXG for mm/dd/yyyy. */
+   d1 is the field being read, later the year / 4; d2 the character,
+   later the leap days; d3 and d4 hold the first and second field, after
+   the EXG for mm/dd/yyyy the day and the month. */
 ULONG BLITZ_ROUTINE calcdays_c(const UBYTE *s BL_REG(d0))
 {
     const UBYTE *cur = s;                               /* a0 */
-    ULONG total, num, digit = 0, day = 0, month = 0;    /* d0-d4 */
+    ULONG total;                                        /* d0 */
+    ULONG num;                                          /* d1: the field */
+    ULONG quads;                                        /* d1: DIVU year by 4 */
+    ULONG digit = 0;                                    /* d2: the character */
+    ULONG leap;                                         /* d2: the leap days */
+    ULONG field1 = 0, field2 = 0;                       /* d3 d4 */
+    ULONG day, month;                                   /* d3 d4 after the EXG */
+    ULONG moff;                                         /* d4: month table offset */
     int i;
 
     num = *cur++;                                       /* day */
@@ -287,7 +299,7 @@ ULONG BLITZ_ROUTINE calcdays_c(const UBYTE *s BL_REG(d0))
     if (*cur++ != '/')
         return 0;                                       /* skipcalc */
 getm:
-    BL_SETW(day, num);
+    BL_SETW(field1, num);
     num = *cur++;                                       /* month */
     if ((UWORD)num == '/')
         goto gety;
@@ -301,7 +313,7 @@ getm:
     if (*cur++ != '/')
         return 0;
 gety:
-    BL_SETW(month, num);
+    BL_SETW(field2, num);
     num = *cur++;                                       /* year */
     /* BUG(orig) (#123): "/" here jumps back to gety (month = 47) */
     if ((UWORD)num == '/')
@@ -317,20 +329,24 @@ gety:
     }
     /* goty */
     if (dateformat) {                                   /* EXG d3,d4 */
-        ULONG saved = day;
-        day = month;
-        month = saved;
+        day = field2;
+        month = field1;
+    } else {
+        day = field1;
+        month = field2;
     }
     total = 365UL * (UWORD)num;                         /* MULU d1,d0 */
-    num = bl_divu_w(num, 4);
-    BL_SETW(digit, num);                                /* leap days */
-    BL_SETW(month, month + month);
+    quads = bl_divu_w(num, 4);
+    leap = digit;
+    BL_SETW(leap, quads);                               /* leap days */
+    moff = month;
+    BL_SETW(moff, month + month);
     /* ADD months-2(pc,d4.w),d2 */
-    BL_SETW(digit, digit + *(const UWORD *)((const UBYTE *)dt.months - 2 + (WORD)month));
-    total += BL_EXTL(digit);
-    num = BL_SWAP(num);
-    /* not a leap year and before March: one leap day less in the table */
-    if ((UWORD)num != 0 && (WORD)((UWORD)month - 6) < 0)
+    BL_SETW(leap, leap + *(const UWORD *)((const UBYTE *)dt.months - 2 + (WORD)moff));
+    total += BL_EXTL(leap);
+    /* not a leap year (the remainder, SWAP d1) and before March: one
+       leap day less in the table */
+    if ((UWORD)BL_SWAP(quads) != 0 && (WORD)((UWORD)moff - 6) < 0)
         BL_SETW(total, total + 1);                      /* BUG(orig) (#122): ADDQ.w */
     total += BL_EXTL(day);
     total -= DAYSP1978;
