@@ -55,6 +55,13 @@ blitz2_program(blitz2-ab3 BLITZ2_AB3=1)
 set(xtra_dir ${PROJECT_SOURCE_DIR}/shared/xtra)
 target_sources(blitz2-ab3 PRIVATE ${xtra_dir}/xtra.c ${xtra_dir}/xtra_ab3.c ${xtra_dir}/xtra_mode.c)
 target_include_directories(blitz2-ab3 PRIVATE ${xtra_dir})
+# and its command line (-s SOURCE -e EXE: a compile with ab3cli as the
+# editor, src/ab3main.c), parsed by shared/ab3job
+set(ab3job_dir ${PROJECT_SOURCE_DIR}/shared/ab3job)
+target_sources(blitz2-ab3 PRIVATE src/ab3main.c ${ab3job_dir}/ab3args.c)
+target_include_directories(blitz2-ab3 PRIVATE ${ab3job_dir})
+# PROGDIR:ab3cli belongs to it
+add_dependencies(blitz2-ab3 ab3cli)
 
 # the check itself: the map of blitz2 linked without libnix13 (before #936)
 # must fail it, once for each rule
