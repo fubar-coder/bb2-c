@@ -37,7 +37,7 @@
  *   - OpenFile/ReadFile/WriteFile first close the File#; if that file had
  *     Fields, the original loop leaves a2 = 0, and the name length is read
  *     from -4(0) (on the A1200's 24 bit bus the last long of the ROM),
- *     then name[(WORD)length] is cleared.  Nachgebildet. (#138)
+ *     then name[(WORD)length] is cleared (#138).
  *   - CloseFile frees the record fields but leaves the pointer to them
  *     and the record length; OpenFile clears them (#140).  Fields adds to
  *     the existing fields and record length (no reset) (#141).
@@ -607,7 +607,7 @@ static const ULONG *freefile(struct bfile *f, const ULONG *cursor,
     r = (struct bl_regs){ .d0 = f->buflen, .a1 = (ULONG)f->buf };
     f->buf = NULL;                              /* free mydos buffer */
     BLITZ_ALIBJSR(TOK_globfree, r);
-    p = f->recs;                                /* BUG(orig) (#138): 12(a3) stays */
+    p = f->recs;                                /* BUG(orig) (#140): 12(a3) stays */
     if (!p)
         return cursor;
     while (p) {
@@ -636,7 +636,7 @@ void BLITZ_ROUTINE dofreefile(struct Library *dosbase BL_REG(a6))
    file only (ReadFile), > 0 new file only (WriteFile), 0 either
    (OpenFile: old, or new if "object not found") */
 static BB_BOOL realopen(WORD mode, struct bfile *f, UBYTE *name, const ULONG *lens,
-                      struct Library *dosbase)
+                        struct Library *dosbase)
 {
     struct bl_regs r;
     BPTR fh;
