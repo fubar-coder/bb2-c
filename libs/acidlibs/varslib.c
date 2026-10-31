@@ -22,8 +22,17 @@ BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
 BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
 BLITZ_LIBFIN();
 
-/* codeinit - allocate the globals, set a5 (blitz_globals) to block+$8000
-   and return it; 0 if there is no memory */
+/**
+ * @brief init - allocate the global variables.
+ *
+ * Allocates the block (MEMF_PUBLIC | MEMF_CLEAR) and sets a5
+ * (blitz_globals) to block+$8000, so the globals are addressed with
+ * signed 16 bit offsets.
+ *
+ * @param size d0: the size of the globals
+ * @return d0: the new a5, 0 if there is no memory (the entry codeinit then
+ *         ends the program)
+ */
 static ULONG BLITZ_ROUTINE codeinit_c(ULONG size BL_REG(d0))
 {
     UBYTE *mem = AllocMem(size, MEMF_PUBLIC | MEMF_CLEAR);
@@ -34,9 +43,13 @@ static ULONG BLITZ_ROUTINE codeinit_c(ULONG size BL_REG(d0))
     return (ULONG)blitz_globals;
 }
 
-/* entry: a0 is preserved.  Without memory the original drops 12 bytes
-   (saved a0, its own return address and the start code's return address)
-   and so returns from the program start - the program ends. */
+/**
+ * @brief init entry (thunk of codeinit_c).
+ *
+ * a0 is preserved.  Without memory the original drops 12 bytes (saved a0,
+ * its own return address and the start code's return address) and so
+ * returns from the program start - the program ends.
+ */
 BLITZ_ASM_ROUTINE(codeinit,
 "   move.l  a0,-(sp)\n"
 "   jsr     _codeinit_c\n"
@@ -47,8 +60,13 @@ BLITZ_ASM_ROUTINE(codeinit,
 "1: lea     12(sp),sp\n"                /* 'fuct: sever crap out */
 "   rts");
 
-/* codefinit - free the globals (d0 = size, as given to codeinit).
-   a5-$8000: ADD #$8000,a1 adds the sign extended word -32768. */
+/**
+ * @brief finit - free the global variables.
+ *
+ * Frees a5-$8000: ADD #$8000,a1 adds the sign extended word -32768.
+ *
+ * @param size d0: the size of the globals, as given to codeinit
+ */
 void BLITZ_ROUTINE codefinit(ULONG size BL_REG(d0))
 {
     FreeMem(blitz_globals - 0x8000, size);
