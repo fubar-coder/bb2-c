@@ -133,13 +133,13 @@ ULONG BLITZ_ROUTINE _dowait(void)
 /* FindListEnd - the last node (or the head) */
 static struct portnode *findlistend(void)
 {
-    struct portnode *a1 = (struct portnode *)PortListStart, *a0;
+    struct portnode *next = (struct portnode *)PortListStart, *node;
 
     do {
-        a0 = a1;
-        a1 = a0->next;
-    } while (a1);
-    return a0;
+        node = next;
+        next = node->next;
+    } while (next);
+    return node;
 }
 
 /* _CreateMsgPort - d0 = name, -4(a2) = its length */
