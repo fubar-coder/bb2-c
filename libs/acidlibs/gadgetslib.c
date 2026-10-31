@@ -455,12 +455,29 @@ static void BLITZ_ROUTINE codeinit_c(void)
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
 
+/**
+ * @brief ButtonGroup Group: the button group of the following gadgets.
+ *
+ * Gadgets made with flag bit 9 get it in the low word of UserData
+ * (ButtonId).  Errors (debugger, bgroupchk): "Button Group MUST be
+ * greater than zero".
+ *
+ * @param grp  d0: the group
+ */
 static void BLITZ_ROUTINE dobgroup_c(UWORD grp BL_REG(d0))
 {
     g.bgroup = grp;
 }
 BLITZ_THUNK(dobgroup, dobgroup_c, "d0-d1/a0-a1");
 
+/**
+ * @brief SelectMode 1=Box, 0=Inverse: the highlight mode of new gadgets.
+ *
+ * Stores 1 for any non-zero value, 0 otherwise (g.selmode; not used by
+ * the gadget routines of this library).
+ *
+ * @param on  d0: the mode
+ */
 static void BLITZ_ROUTINE doselectmode_c(UWORD on BL_REG(d0))
 {
     g.selmode = 0;
@@ -469,12 +486,24 @@ static void BLITZ_ROUTINE doselectmode_c(UWORD on BL_REG(d0))
 }
 BLITZ_THUNK(doselectmode, doselectmode_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GadgetJam Jammode: the draw mode of the gadget texts.
+ *
+ * @param mode  d0: the IntuiText DrawMode of new text gadgets
+ */
 static void BLITZ_ROUTINE dogjam_c(UBYTE mode BL_REG(d0))
 {
     g.mode = mode;
 }
 BLITZ_THUNK(dogjam, dogjam_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GadgetPens Foreground Colour,Background Colour: the pens of the
+ * gadget texts.
+ *
+ * @param fg  d0: the FrontPen of new text gadgets
+ * @param bg  d1: the BackPen
+ */
 static void BLITZ_ROUTINE dogpens_c(UBYTE fg BL_REG(d0), UBYTE bg BL_REG(d1))
 {
     g.bpen = bg;
@@ -482,12 +511,24 @@ static void BLITZ_ROUTINE dogpens_c(UBYTE fg BL_REG(d0), UBYTE bg BL_REG(d1))
 }
 BLITZ_THUNK(dogpens, dogpens_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GadgetPens Foreground Colour: the front pen only.
+ *
+ * @param fg  d0: the FrontPen of new text gadgets
+ */
 static void BLITZ_ROUTINE dogpens2_c(UBYTE fg BL_REG(d0))
 {
     g.fpen = fg;
 }
 BLITZ_THUNK(dogpens2, dogpens2_c, "d0-d1/a0-a1");
 
+/**
+ * @brief BorderPens Highlight Colour,Shadow Colour: the pens of the
+ * gadget borders.
+ *
+ * @param light  d0: the pen of the left/top border
+ * @param shadow  d1: the pen of the right/bottom border
+ */
 static void BLITZ_ROUTINE dobpens_c(UBYTE light BL_REG(d0), UBYTE shadow BL_REG(d1))
 {
     g.bco1 = light;
@@ -495,7 +536,16 @@ static void BLITZ_ROUTINE dobpens_c(UBYTE light BL_REG(d0), UBYTE shadow BL_REG(
 }
 BLITZ_THUNK(dobpens, dobpens_c, "d0-d1/a0-a1");
 
-/* Borders w,h */
+/**
+ * @brief Borders Width,Height: the space between a gadget's text and its
+ * border.
+ *
+ * Sets the border excess and its saved copy (the value Borders On
+ * restores).
+ *
+ * @param w  d0: the horizontal excess
+ * @param h  d1: the vertical excess
+ */
 static void BLITZ_ROUTINE dogb_c(UWORD w BL_REG(d0), UWORD h BL_REG(d1))
 {
     g.bxxs = w;
@@ -505,7 +555,14 @@ static void BLITZ_ROUTINE dogb_c(UWORD w BL_REG(d0), UWORD h BL_REG(d1))
 }
 BLITZ_THUNK(dogb, dogb_c, "d0-d1/a0-a1");
 
-/* Borders on/off */
+/**
+ * @brief Borders On|Off: give new gadgets borders or not.
+ *
+ * Off saves the border excess and sets it to 0, On restores it; nothing
+ * happens if the state does not change.
+ *
+ * @param on  d0: 0 = off, anything else = on
+ */
 static void BLITZ_ROUTINE dogb2_c(WORD on BL_REG(d0))
 {
     if (on) {
@@ -673,7 +730,28 @@ static WORD findmaxlen(struct gtext *it, struct Library *intbase)
 
 /* ------------------------------------------------------------- gadgets */
 
-/* TextGadget l,x,y,flags,id,text$ (a1 = intuifontlib's current font) */
+/**
+ * @brief TextGadget GadgetList#,X,Y,Flags,Id,Text$: add a text (boolean)
+ * gadget to the list.
+ *
+ * a3 = the list.  The IntuiText (struct gtext) gets a copy of the text,
+ * the gadget pens, the jam mode and the current font; a text with "|"
+ * cycles through its parts (SetGadgetStatus/GadgetStatus), the gadget is
+ * as wide as the widest part plus the border excess, with a border if
+ * Borders are on.  Flags: bit 0 toggle, 1-4 relative right/bottom/width/
+ * height, 5 box select, 9 button group, 12-15 right/left/top/bottom
+ * border, 16 GZZ gadget.  TextGadget with an empty text has IText 0 (not
+ * a bug).
+ *
+ * @param x  d1: the left edge
+ * @param y  d2: the top edge
+ * @param flags  d3: the flags
+ * @param id  d4: the gadget id
+ * @param text  d5: Text$
+ * @param font  a1: intuifontlib's current font (a TextAttr)
+ * @param lens  a2: the argument stack, the text's length at -4
+ * @param intbase  a6: intuition.library
+ */
 void BLITZ_ROUTINE dotextgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
                                 ULONG flags BL_REG(d3), UWORD id BL_REG(d4),
                                 const UBYTE *text BL_REG(d5),
@@ -706,7 +784,24 @@ void BLITZ_ROUTINE dotextgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
     handleflags(gad, flags);
 }
 
-/* StringGadget l,x,y,flags,id,maxlen,width (width: -4(a2)) */
+/**
+ * @brief StringGadget GadgetList#,X,Y,Flags,Id,Maxlen,Width: add a string
+ * gadget to the list.
+ *
+ * a3 = the list.  The gadget is the font height high, its border (if
+ * Borders are on) goes around it; the StringInfo gets a buffer of Maxlen
+ * bytes (cleared).  Flags as TextGadget.
+ * BUG(orig) (#164): with Borders off the border offsets are written to
+ * the addresses 0, 2, 36 and 38.
+ * BUG(orig) (#165): Maxlen 0 clears 65536 bytes of the 0 byte buffer.
+ *
+ * @param x  d1: the left edge
+ * @param y  d2: the top edge
+ * @param flags  d3: the flags
+ * @param id  d4: the gadget id
+ * @param maxlen  d5: the size of the buffer
+ * @param args  a2: the argument stack, Width at -4(a2) (its low word)
+ */
 void BLITZ_ROUTINE dostringgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
                                   ULONG flags BL_REG(d3), UWORD id BL_REG(d4),
                                   UWORD maxlen BL_REG(d5),
@@ -747,7 +842,21 @@ void BLITZ_ROUTINE dostringgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
     while (n-- != 0);
 }
 
-/* PropGadget l,x,y,flags,id,width,height (height: -4(a2)) */
+/**
+ * @brief PropGadget GadgetList#,X,Y,Flags,Id,Width,Height: add a
+ * proportional gadget to the list.
+ *
+ * a3 = the list.  A PropInfo with AUTOKNOB and PROPNEWLOOK, pots and
+ * bodies $8000, and an empty knob Image.  Flags as TextGadget, plus bit
+ * 6 FREEHORIZ, 7 FREEVERT, 8 PROPBORDERLESS.
+ *
+ * @param x  d1: the left edge
+ * @param y  d2: the top edge
+ * @param flags  d3: the flags
+ * @param id  d4: the gadget id
+ * @param w  d5: the width
+ * @param args  a2: the argument stack, Height at -4(a2) (its low word)
+ */
 void BLITZ_ROUTINE dopropgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
                                 ULONG flags BL_REG(d3), UWORD id BL_REG(d4),
                                 UWORD w BL_REG(d5), const UWORD *args BL_REG(a2))
@@ -815,7 +924,21 @@ static void shapegadget(WORD x, WORD y, ULONG flags, UWORD id,
     handleflags(gad, flags);
 }
 
-/* ShapeGadget l,x,y,flags,id,shape (a2 = the shape) */
+/**
+ * @brief ShapeGadget GadgetList#,X,Y,Flags,Id,Shape#: add an image gadget
+ * made from a shape.
+ *
+ * a3 = the list.  The position is moved by the shape's handle, the
+ * Image (makeintuishape) uses the shape's data.  Flags as TextGadget.
+ * BUG(orig) (#167): a shape of depth 0 gives PlanePick $FF.  Errors
+ * (debugger, sgchk): "Uninitialized Shape".
+ *
+ * @param x  d1: the left edge
+ * @param y  d2: the top edge
+ * @param flags  d3: the flags
+ * @param id  d4: the gadget id
+ * @param shape  a2: the shape (!libs #shapeslib,$1285)
+ */
 void BLITZ_ROUTINE doshapegadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
                                  ULONG flags BL_REG(d3), UWORD id BL_REG(d4),
                                  const UBYTE *shape BL_REG(a2))
@@ -823,7 +946,20 @@ void BLITZ_ROUTINE doshapegadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
     shapegadget(x, y, flags, id, shape, NULL);
 }
 
-/* ShapeGadget l,x,y,flags,id,shape,alt (a1 = the alternative shape) */
+/**
+ * @brief ShapeGadget GadgetList#,X,Y,Flags,Id,Shape#,Shape#: an image
+ * gadget with an alternative image for the selected state (GADGHIMAGE).
+ *
+ * As ShapeGadget.  Errors (debugger, sgchk2): "Uninitialized Shape" for
+ * either shape.
+ *
+ * @param x  d1: the left edge
+ * @param y  d2: the top edge
+ * @param flags  d3: the flags
+ * @param id  d4: the gadget id
+ * @param alt  a1: the alternative shape (!libs #shapeslib,$1186)
+ * @param shape  a2: the shape (!libs #shapeslib,$1285)
+ */
 void BLITZ_ROUTINE doshapegadget2(WORD x BL_REG(d1), WORD y BL_REG(d2),
                                   ULONG flags BL_REG(d3), UWORD id BL_REG(d4),
                                   const UBYTE *alt BL_REG(a1),
@@ -851,6 +987,21 @@ static void setprop(UWORD id, ULONG pot, ULONG body, struct Gadget **list, int o
     UW(pi, off + 4) = (UWORD)body;
 }
 
+/**
+ * @brief SetHProp GadgetList#,Id,Pot,Body: the horizontal pot and body of
+ * a prop gadget.
+ *
+ * Quick values, 1.0 ($10000) or more becomes $FFFF.  The gadget is not
+ * redrawn.
+ * Errors (debugger, propchk): "Can't Find Gadget" (also if it is no
+ * prop gadget).  BUG(orig) (#166): without the debugger the search does
+ * not stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param pot  d2: the pot (Quick)
+ * @param body  d3: the body (Quick)
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ */
 static void BLITZ_ROUTINE dosethprop_c(UWORD id BL_REG(d1), ULONG pot BL_REG(d2),
                               ULONG body BL_REG(d3), struct Gadget **list BL_REG(a1))
 {
@@ -858,6 +1009,20 @@ static void BLITZ_ROUTINE dosethprop_c(UWORD id BL_REG(d1), ULONG pot BL_REG(d2)
 }
 BLITZ_THUNK(dosethprop, dosethprop_c, "d0-d1/a1");
 
+/**
+ * @brief SetVProp GadgetList#,Id,Pot,Body: the vertical pot and body of a
+ * prop gadget.
+ *
+ * As SetHProp.
+ * Errors (debugger, propchk): "Can't Find Gadget" (also if it is no
+ * prop gadget).  BUG(orig) (#166): without the debugger the search does
+ * not stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param pot  d2: the pot (Quick)
+ * @param body  d3: the body (Quick)
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ */
 static void BLITZ_ROUTINE dosetvprop_c(UWORD id BL_REG(d1), ULONG pot BL_REG(d2),
                               ULONG body BL_REG(d3), struct Gadget **list BL_REG(a1))
 {
@@ -870,24 +1035,68 @@ static ULONG readprop(UWORD id, struct Gadget **list, int off)
     return UW(findgadget(list, id)->SpecialInfo, off);
 }
 
+/**
+ * @brief HPropPot(GadgetList#,Id): the HorizPot of a prop gadget.
+ *
+ * Errors (debugger, propchk): "Can't Find Gadget" (also if it is no
+ * prop gadget).  BUG(orig) (#166): without the debugger the search does
+ * not stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ * @return d0: the HorizPot as a Quick ($FFFF = almost 1.0)
+ */
 static ULONG BLITZ_ROUTINE dohproppot_c(UWORD id BL_REG(d1), struct Gadget **list BL_REG(a1))
 {
     return readprop(id, list, offsetof(struct PropInfo, HorizPot));
 }
 BLITZ_THUNK(dohproppot, dohproppot_c, "a1");
 
+/**
+ * @brief HPropBody(GadgetList#,Id): the HorizBody of a prop gadget.
+ *
+ * Errors (debugger, propchk): "Can't Find Gadget" (also if it is no
+ * prop gadget).  BUG(orig) (#166): without the debugger the search does
+ * not stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ * @return d0: the HorizBody as a Quick ($FFFF = almost 1.0)
+ */
 static ULONG BLITZ_ROUTINE dohpropbody_c(UWORD id BL_REG(d1), struct Gadget **list BL_REG(a1))
 {
     return readprop(id, list, offsetof(struct PropInfo, HorizBody));
 }
 BLITZ_THUNK(dohpropbody, dohpropbody_c, "a1");
 
+/**
+ * @brief VPropPot(GadgetList#,Id): the VertPot of a prop gadget.
+ *
+ * Errors (debugger, propchk): "Can't Find Gadget" (also if it is no
+ * prop gadget).  BUG(orig) (#166): without the debugger the search does
+ * not stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ * @return d0: the VertPot as a Quick ($FFFF = almost 1.0)
+ */
 static ULONG BLITZ_ROUTINE dovproppot_c(UWORD id BL_REG(d1), struct Gadget **list BL_REG(a1))
 {
     return readprop(id, list, offsetof(struct PropInfo, VertPot));
 }
 BLITZ_THUNK(dovproppot, dovproppot_c, "a1");
 
+/**
+ * @brief VPropBody(GadgetList#,Id): the VertBody of a prop gadget.
+ *
+ * Errors (debugger, propchk): "Can't Find Gadget" (also if it is no
+ * prop gadget).  BUG(orig) (#166): without the debugger the search does
+ * not stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ * @return d0: the VertBody as a Quick ($FFFF = almost 1.0)
+ */
 static ULONG BLITZ_ROUTINE dovpropbody_c(UWORD id BL_REG(d1), struct Gadget **list BL_REG(a1))
 {
     return readprop(id, list, offsetof(struct PropInfo, VertBody));
@@ -896,7 +1105,18 @@ BLITZ_THUNK(dovpropbody, dovpropbody_c, "a1");
 
 /* ------------------------------------------------------ window commands */
 
-/* Redraw w,id - RefreshGList(gadget, window, 0, 1) */
+/**
+ * @brief Redraw Window#,Id: redraw a gadget of the window.
+ *
+ * RefreshGList(gadget, window, 0, 1).  Amiga mode only.  Errors
+ * (debugger, redrawchk): "Uninitialized Window", "Can't Find Gadget".
+ * BUG(orig) (#166): without the debugger the search does not stop at the
+ * end of the window's gadget list.
+ *
+ * @param id  d1: the gadget id
+ * @param win  a1: the window (!libs #windowslib,$1180)
+ * @param intbase  a6: intuition.library
+ */
 void BLITZ_ROUTINE doredraw(UWORD id BL_REG(d1), struct Window **win BL_REG(a1),
                              struct Library *intbase BL_REG(a6))
 {
@@ -906,7 +1126,19 @@ void BLITZ_ROUTINE doredraw(UWORD id BL_REG(d1), struct Window **win BL_REG(a1),
     RefreshGList(gad, w, NULL, 1);
 }
 
-/* ActivateString w,id - ActivateGadget(gadget, window, 0) */
+/**
+ * @brief ActivateString Window#,Id: activate a string gadget of the
+ * window.
+ *
+ * ActivateGadget(gadget, window, 0).  Amiga mode only.  Errors (debugger,
+ * actchk): "Uninitialized Window", "Can't Find Gadget", "Not a String
+ * Gadget".  BUG(orig) (#166) as Redraw.
+ *
+ * @param id  d1: the gadget id
+ * @param win  a1: the window (!libs #windowslib,$1180)
+ * @param intbase  a6: intuition.library
+ * @return d0: ActivateGadget's result (a statement: not used)
+ */
 ULONG BLITZ_ROUTINE dostringactivate(UWORD id BL_REG(d1),
                                      struct Window **win BL_REG(a1),
                                      struct Library *intbase BL_REG(a6))
@@ -917,7 +1149,21 @@ ULONG BLITZ_ROUTINE dostringactivate(UWORD id BL_REG(d1),
     return ActivateGadget(gad, w, NULL);
 }
 
-/* GadgetBorder x,y,w,h - draw a border into the used window */
+/**
+ * @brief GadgetBorder X,Y,Width,Height: draw a gadget style border into
+ * the used window.
+ *
+ * The border goes around the box with the saved border excess (also with
+ * Borders off); its memory is freed again.  Amiga mode only.  Errors
+ * (debugger, wchk): "Uninitialized Window".
+ *
+ * @param x  d0: the left edge of the box
+ * @param y  d1: the top edge
+ * @param w  d2: the width
+ * @param h  d3: the height
+ * @param win  a1: the used window (!libs #windowslib,$1102)
+ * @param intbase  a6: intuition.library
+ */
 void BLITZ_ROUTINE dogborder(WORD x BL_REG(d0), WORD y BL_REG(d1),
                              WORD w BL_REG(d2), WORD h BL_REG(d3),
                              struct Window **win BL_REG(a1),
@@ -931,6 +1177,17 @@ void BLITZ_ROUTINE dogborder(WORD x BL_REG(d0), WORD y BL_REG(d1),
 
 /* --------------------------------------------------------- gadget state */
 
+/**
+ * @brief Toggle GadgetList#,Id,On|Off: select or deselect a gadget.
+ *
+ * Sets or clears SELECTED; the gadget is not redrawn.
+ * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * without the debugger the search does not stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param on  d2: 0 = deselect, anything else = select
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ */
 static void BLITZ_ROUTINE doselect_c(UWORD id BL_REG(d1), UWORD on BL_REG(d2),
                             struct Gadget **list BL_REG(a1))
 {
@@ -943,26 +1200,64 @@ static void BLITZ_ROUTINE doselect_c(UWORD id BL_REG(d1), UWORD on BL_REG(d2),
 }
 BLITZ_THUNK(doselect, doselect_c, "d0-d1/a1");
 
+/**
+ * @brief Toggle GadgetList#,Id: flip the SELECTED state of a gadget.
+ *
+ * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * without the debugger the search does not stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ */
 static void BLITZ_ROUTINE doselect2_c(UWORD id BL_REG(d1), struct Gadget **list BL_REG(a1))
 {
     GFLAGS_LO(findgadget(list, id)) ^= 0x80;
 }
 BLITZ_THUNK(doselect2, doselect2_c, "d0-d1/a1");
 
+/**
+ * @brief Enable GadgetList#,Id: clear DISABLED of a gadget.
+ *
+ * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * without the debugger the search does not stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ */
 static void BLITZ_ROUTINE doenable_c(UWORD id BL_REG(d1), struct Gadget **list BL_REG(a1))
 {
     GFLAGS_HI(findgadget(list, id)) &= ~1;
 }
 BLITZ_THUNK(doenable, doenable_c, "d0-d1/a1");
 
+/**
+ * @brief Disable GadgetList#,Id: set DISABLED of a gadget.
+ *
+ * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * without the debugger the search does not stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ */
 static void BLITZ_ROUTINE dodisable_c(UWORD id BL_REG(d1), struct Gadget **list BL_REG(a1))
 {
     GFLAGS_HI(findgadget(list, id)) |= 1;
 }
 BLITZ_THUNK(dodisable, dodisable_c, "d0-d1/a1");
 
-/* SetGadgetStatus l,id,v - text part v (1 = first) of a cycling text
-   gadget; ignored for toggle gadgets and gadgets without text */
+/**
+ * @brief SetGadgetStatus GadgetList#,Id,Value: show text part Value of a
+ * cycling text gadget.
+ *
+ * Value 1 = the first part; ignored for toggle gadgets, gadgets without
+ * text and Value 0.  The gadget is not redrawn.
+ * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * without the debugger the search does not stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param v  d2: the part
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ */
 static void BLITZ_ROUTINE setdogstatus_c(UWORD id BL_REG(d1), UWORD v BL_REG(d2),
                                 struct Gadget **list BL_REG(a1))
 {
@@ -983,8 +1278,21 @@ static void BLITZ_ROUTINE setdogstatus_c(UWORD id BL_REG(d1), UWORD v BL_REG(d2)
 }
 BLITZ_THUNK(setdogstatus, setdogstatus_c, "d1");
 
-/* GadgetStatus(l,id) - number of the shown text part, or -1/0 (selected)
-   for toggle gadgets and gadgets without text */
+/**
+ * @brief GadgetStatus(GadgetList#,Id): the shown text part, or whether
+ * the gadget is selected.
+ *
+ * For a text gadget that is no toggle gadget: the number of the shown
+ * part (1 = first).  For toggle gadgets and gadgets without text: -1 if
+ * SELECTED, else 0 (SNE/EXT.w: not a bug, the upper word of d0 is that of
+ * the GadgetText pointer).
+ * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * without the debugger the search does not stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ * @return d0.w: the part number, or -1/0
+ */
 static ULONG BLITZ_ROUTINE dogstatus_c(UWORD id BL_REG(d1), struct Gadget **list BL_REG(a1))
 {
     struct Gadget *gad = findgadget(list, id);
@@ -1010,7 +1318,18 @@ static ULONG BLITZ_ROUTINE dogstatus_c(UWORD id BL_REG(d1), struct Gadget **list
 }
 BLITZ_THUNK(dogstatus, dogstatus_c, "d1");
 
-/* ButtonId(l,group) - id of the selected gadget of the group, -1 */
+/**
+ * @brief ButtonId(GadgetList#,ButtonGroup): the selected gadget of a
+ * button group.
+ *
+ * The first gadget of the list with the group in UserData and SELECTED
+ * set.  Not a bug (word function): the upper word of d0 is that of the
+ * gadget pointer.
+ *
+ * @param grp  d1: the button group
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ * @return d0.w: the gadget id, -1 if none is selected
+ */
 static ULONG BLITZ_ROUTINE dobuttonid_c(UWORD grp BL_REG(d1), struct Gadget **list BL_REG(a1))
 {
     struct Gadget *gad = (struct Gadget *)list;
@@ -1027,8 +1346,20 @@ static ULONG BLITZ_ROUTINE dobuttonid_c(UWORD grp BL_REG(d1), struct Gadget **li
 }
 BLITZ_THUNK(dobuttonid, dobuttonid_c, "d1/a0");
 
-/* SetTextGadget l,id,text$ - overwrite the text in place, padded with
-   spaces, never longer */
+/**
+ * @brief SetTextGadget GadgetList#,Id,Text$: overwrite the text of a
+ * gadget.
+ *
+ * In place: the new text is padded with spaces and never longer than the
+ * old one; nothing for a gadget without text.  The gadget is not
+ * redrawn.
+ * Errors (debugger, gchk): "Can't Find Gadget".  BUG(orig) (#166):
+ * without the debugger the search does not stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param src  d2: Text$
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ */
 static void BLITZ_ROUTINE settextgadget_c(UWORD id BL_REG(d1), const UBYTE *src BL_REG(d2),
                                  struct Gadget **list BL_REG(a1))
 {
@@ -1056,7 +1387,19 @@ BLITZ_THUNK(settextgadget, settextgadget_c, "d1");
 
 /* ------------------------------------------------------- string gadgets */
 
-/* SetString l,id,s$ - copy into the buffer (with 0) */
+/**
+ * @brief SetString GadgetList#,Id,String$: set the contents of a string
+ * gadget.
+ *
+ * Copies the string (with its 0) into the buffer; the positions stay and
+ * the gadget is not redrawn.  Errors (debugger, settest): as ResetString,
+ * and "String to long for Gadget" if the string is not shorter than
+ * MaxChars.
+ *
+ * @param id  d1: the gadget id
+ * @param s  d2: String$
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ */
 static void BLITZ_ROUTINE dosetstring_c(UWORD id BL_REG(d1), const UBYTE *s BL_REG(d2),
                                struct Gadget **list BL_REG(a1))
 {
@@ -1067,6 +1410,17 @@ static void BLITZ_ROUTINE dosetstring_c(UWORD id BL_REG(d1), const UBYTE *s BL_R
 }
 BLITZ_THUNK(dosetstring, dosetstring_c, "d0-d1");
 
+/**
+ * @brief ClearString GadgetList#,Id: empty a string gadget.
+ *
+ * BufferPos and DispPos 0, an empty buffer.
+ * Errors (debugger, reschk): "Can't Find Gadget", "Not a String
+ * Gadget".  BUG(orig) (#166): without the debugger the search does not
+ * stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ */
 static void BLITZ_ROUTINE dostringclear_c(UWORD id BL_REG(d1), struct Gadget **list BL_REG(a1))
 {
     struct StringInfo *si = findgadget(list, id)->SpecialInfo;
@@ -1077,6 +1431,18 @@ static void BLITZ_ROUTINE dostringclear_c(UWORD id BL_REG(d1), struct Gadget **l
 }
 BLITZ_THUNK(dostringclear, dostringclear_c, "d0-d1/a1");
 
+/**
+ * @brief ResetString GadgetList#,Id: the cursor of a string gadget to
+ * the start.
+ *
+ * BufferPos and DispPos 0, the contents stay.
+ * Errors (debugger, reschk): "Can't Find Gadget", "Not a String
+ * Gadget".  BUG(orig) (#166): without the debugger the search does not
+ * stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ */
 static void BLITZ_ROUTINE dostringreset_c(UWORD id BL_REG(d1), struct Gadget **list BL_REG(a1))
 {
     struct StringInfo *si = findgadget(list, id)->SpecialInfo;
@@ -1086,7 +1452,18 @@ static void BLITZ_ROUTINE dostringreset_c(UWORD id BL_REG(d1), struct Gadget **l
 }
 BLITZ_THUNK(dostringreset, dostringreset_c, "d0-d1/a1");
 
-/* StringText$(l,id) - the buffer to a3 */
+/**
+ * @brief StringText$(GadgetList#,Id): the contents of a string gadget.
+ *
+ * Copies the buffer to a3 (a3 is left on the terminating 0).
+ * Errors (debugger, reschk): "Can't Find Gadget", "Not a String
+ * Gadget".  BUG(orig) (#166): without the debugger the search does not
+ * stop at the end of the list.
+ *
+ * @param id  d1: the gadget id
+ * @param list  a1: the gadget list (!libs #gadgetslib,$1180)
+ * @return d0: the length
+ */
 static ULONG BLITZ_ROUTINE dostringtext_c(UWORD id BL_REG(d1), struct Gadget **list BL_REG(a1))
 {
     const UBYTE *s = ((struct StringInfo *)findgadget(list, id)->SpecialInfo)->Buffer;
@@ -1109,7 +1486,14 @@ static void freerend(struct Gadget *gad, APTR r)
         globfree(r, (GFLAGS_LO(gad) & 4) ? sizeof(struct Image) : BORDERMEM);
 }
 
-/* freegadget - a3 = the list: free every "bL" gadget */
+/**
+ * @brief _free of a GadgetList object: free its gadgets.
+ *
+ * a3 = the list; the list is cleared, every "bL" gadget is freed with its
+ * IntuiText and text, its render and select Border or Image.  BUG(orig)
+ * (#163): the SpecialInfo (StringInfo and buffer, PropInfo) is never
+ * freed.
+ */
 void BLITZ_ROUTINE freegadget(void)
 {
     struct Gadget **list = (struct Gadget **)blitz_string;
