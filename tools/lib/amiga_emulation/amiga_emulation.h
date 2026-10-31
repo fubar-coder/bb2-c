@@ -23,11 +23,32 @@
  *
  * The hardfile's user-startup executes TEST:run.script; the library writes
  * the script with FailAt 1000 in front and `Echo >TEST:run.done` behind it.
- * amiga_emulation_join waits for run.done, then ends Amiberry over the
- * control socket (QUIT); at the time limit it takes a screenshot
- * (timeout.png in the work directory) and kills the process group.
- * On Linux, Amiberry also dies (SIGKILL) when the process that started it
- * ends without amiga_emulation_free, e.g. a crashed test runner.
+ *
+ * Every session has a supervisor: a process amiga_emulation_start forks
+ * (no exec; it closes the caller's descriptors from 3 on, so it holds no
+ * other session's slot) that starts Amiberry and drives the session to its
+ * end on its own, whenever the caller joins it: it waits for run.done,
+ * then ends Amiberry over the control socket (QUIT); at the time limit it
+ * takes a screenshot (timeout.png in the work directory) and kills
+ * Amiberry's process group; in snapshot mode (below) it also saves,
+ * restores and falls back.  amiga_emulation_join waits for the
+ * supervisor's end and takes its result (a page shared with it), so a
+ * runner that joins its sessions in start order no longer delays the
+ * others: a session waiting for its join has already ended, and its time
+ * limit and times (amiga_emulation_stats) end with it.
+ * amiga_emulation_free of a session not joined stops it (SIGTERM to the
+ * supervisor, SIGKILL after 5 s).  On Linux, the supervisor dies
+ * (SIGKILL) when the process that started it ends without
+ * amiga_emulation_free, e.g. a crashed test runner, and Amiberry dies
+ * with the supervisor.
+ *
+ * The time limit counts from the start of the Amiberry process that gets
+ * the job, the job already in place: for a cold boot TEST:run.script
+ * (the boot is included), for a restore SNAP:job.script (the restore is
+ * included).  A restart starts it again: a first-save session's restore
+ * after the save, the cold boot of a fallback.  A first-save session's
+ * cold boot until the save has a limit of the same length from its start.
+ * The wait for a slot and the wait for the caller's join do not count.
  *
  * At most AMIGA_EMULATION_MAX runs (0 = no limit) go at the same time on
  * the machine, over all runners, build directories and worktrees:
@@ -51,8 +72,8 @@
  * For debugging, from the environment (for every runner):
  *   AMIGA_EMULATION_VISIBLE=1   as `visible`: the window, host input
  *   AMIGA_EMULATION_SHOTS=N     a screenshot every N seconds (0.2 too) while
- *                               amiga_emulation_join waits, to
- *                               shots/NNNN.png in the work directory
+ *                               the session runs, to shots/NNNN.png in the
+ *                               work directory
  */
 #ifndef AMIGA_EMULATION_H
 #define AMIGA_EMULATION_H
@@ -79,7 +100,8 @@ struct amiga_emulation_params {
     const struct amiga_emulation_mount *mounts;     /* besides TEST: */
     size_t nmounts;
     const char *script;         /* AmigaDOS script text */
-    unsigned timeout;           /* seconds for the whole run, boot included */
+    unsigned timeout;           /* seconds for the run, boot or restore included
+                                   (from Amiberry's start, see above) */
     int visible;                /* show the window (debugging) */
     int log;                    /* Amiberry's own log (--log) into amiberry.log,
                                    e.g. for log_illegal_mem */
@@ -152,7 +174,8 @@ const char *amiga_emulation_work_dir(const struct amiga_emulation *e);
 int amiga_emulation_command(struct amiga_emulation *e, const char *const *args,
                             char *reply, size_t len);
 
-/* waits for the end of the run (see above); may be called once */
+/* waits for the end of the run (the supervisor's, see above) and returns
+   its result; again: the same result */
 enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e);
 
 /* what the snapshot mode did for a session */
@@ -170,11 +193,14 @@ enum amiga_emulation_snapshot_use {
 struct amiga_emulation_stats {
     double wait;                /* seconds amiga_emulation_start waited for a slot */
     double session;             /* seconds from the slot taken to the end of
-                                   amiga_emulation_join (until now if not
-                                   joined yet), the wait not included */
+                                   the session (the supervisor's: Amiberry
+                                   ended; until now if it runs), the wait
+                                   for the slot and for the join not
+                                   included */
     double timed;               /* the part of it counted against the time
                                    limit: from the last (re)start of Amiberry
-                                   (a snapshot save or a fallback restarts it) */
+                                   (a snapshot save or a fallback restarts it)
+                                   to the end of the session */
     unsigned timeout;           /* the time limit (seconds) */
     const char *machine;        /* params.machine, "a1200" for the default;
                                    valid as long as the handle */

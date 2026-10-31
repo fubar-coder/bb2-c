@@ -3,6 +3,7 @@
  * amiga_emulation.h.
  */
 #define _XOPEN_SOURCE 700       /* mkdtemp, nftw, setenv, kill, setpgid */
+#define _DEFAULT_SOURCE         /* MAP_ANONYMOUS, syscall */
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -10,11 +11,13 @@
 #include <poll.h>
 #include <signal.h>
 #include <stdarg.h>
+#include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <sys/file.h>
+#include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
@@ -23,6 +26,7 @@
 #include <unistd.h>
 #ifdef __linux__
 #include <sys/prctl.h>
+#include <sys/syscall.h>
 #endif
 #include "amiga_emulation.h"
 
@@ -97,9 +101,28 @@ const size_t amiga_emulation_rtg_count = sizeof amiga_emulation_rtg / sizeof ami
    does not end within 10 s, which cost every session about 15 s. */
 #define QUIT_GRACE  1           /* seconds between QUIT and SIGTERM */
 #define KILL_GRACE  1           /* seconds between SIGTERM and SIGKILL */
+#define SUP_STOP_GRACE 5        /* seconds amiga_emulation_free gives a supervisor */
+
+/* What a session's supervisor (the process that drives the session, see
+   amiga_emulation_start) shares with the caller: a MAP_SHARED page.  Times
+   in microseconds of CLOCK_MONOTONIC (the same clock in every process). */
+struct shared {
+    atomic_int finished;        /* the supervisor has ended the session */
+    atomic_int status;          /* enum amiga_emulation_status */
+    atomic_int snap_use;        /* enum amiga_emulation_snapshot_use */
+    atomic_int pgid;            /* the process group of the running Amiberry, 0: none */
+    atomic_llong launched;      /* the last start of Amiberry, 0: none yet */
+    atomic_llong end;           /* the end of the session */
+};
+/* lock-free, else the atomics would not work between processes */
+static_assert(ATOMIC_INT_LOCK_FREE == 2 && ATOMIC_LLONG_LOCK_FREE == 2,
+              "amiga_emulation: the shared state needs lock-free atomics");
 
 struct amiga_emulation {
-    pid_t pid;                  /* also the process group */
+    pid_t pid;                  /* Amiberry, also its process group (the supervisor's) */
+    pid_t sup;                  /* the supervisor (the caller's handle), 0 in the supervisor */
+    int sup_reaped;             /* the caller has reaped the supervisor */
+    struct shared *sh;          /* NULL before the supervisor's start */
     double deadline;            /* monotonic seconds */
     char *work_dir;
     char *test_dir;
@@ -532,6 +555,8 @@ static void child(const char *work_dir, const char *runtime_dir, const char *ami
 #endif
     if (chdir(work_dir))
         _exit(126);
+    /* the supervisor ignores SIGPIPE; Amiberry gets the default */
+    signal(SIGPIPE, SIG_DFL);
     /* appended: a session can start Amiberry twice (snapshot mode) */
     log = open("amiberry.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
     if (log >= 0) {
@@ -684,8 +709,7 @@ static char *slots_dir(void)
    run of its own waits: one that already runs sessions (a runner with
    parallel > 1) takes a free slot if there is one, else the start fails
    with no_slot - waiting while holding slots could deadlock two runners
-   that wait for each other's slots, and its running sessions' time limits
-   would not be watched meanwhile.  The runner then ends one of its own
+   that wait for each other's slots.  The runner then ends one of its own
    sessions and tries again.  *index: the slot's number, -1 without a
    limit (AMIGA_EMULATION_MAX=0) */
 static int take_slot(int *index, char *err, size_t errlen)
@@ -707,12 +731,29 @@ static int take_slot(int *index, char *err, size_t errlen)
 
 static int command_wait(struct amiga_emulation *e, const char *const *args, char *reply,
                         size_t len, double wait);
+static int start_supervisor(struct amiga_emulation *e, const char *statefile, char *err,
+                            size_t errlen);
 
+static long long to_us(double t)
+{
+    return (long long)(t * 1e6);
+}
+
+static double from_us(long long us)
+{
+    return us / 1e6;
+}
+
+/* starts Amiberry (in the supervisor).  The time limit counts from here:
+   the job is in place before (TEST:run.script for a cold boot,
+   SNAP:job.script for a restore); a first-save session's cold boot until
+   the save has a limit of the same length from its own start. */
 static int launch(struct amiga_emulation *e, const char *statefile, char *err, size_t errlen)
 {
     /* a second start of the session: not the ended one's socket */
     unlink(e->socket_path);
     e->exited = 0;
+    e->deadline = now() + e->timeout;
     e->pid = fork();
     if (e->pid < 0) {
         set_err(err, errlen, "fork: %s", strerror(errno));
@@ -721,7 +762,18 @@ static int launch(struct amiga_emulation *e, const char *statefile, char *err, s
     if (e->pid == 0)
         child(e->work_dir, e->runtime_dir, e->amiberry, e->visible, e->log_on, statefile, e->parent);
     setpgid(e->pid, e->pid);
+    if (e->sh) {
+        atomic_store(&e->sh->pgid, (int)e->pid);
+        atomic_store(&e->sh->launched, to_us(e->deadline - e->timeout));
+    }
     return 0;
+}
+
+static void set_use(struct amiga_emulation *e, enum amiga_emulation_snapshot_use u)
+{
+    e->snap_use = u;
+    if (e->sh)
+        atomic_store(&e->sh->snap_use, (int)u);
 }
 
 /* ------------------------------------------------------- snapshot mode */
@@ -1398,18 +1450,17 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
             }
             if (e->snap == SNAP_RESTORING) {
                 statefile = e->snap_path;
-                e->snap_use = AMIGA_EMULATION_SNAP_RESTORED;
+                set_use(e, AMIGA_EMULATION_SNAP_RESTORED);
                 /* the newest use first when the slot's snapshots are pruned */
                 utimensat(AT_FDCWD, e->snap_path, NULL, 0);
                 e->restore_until = now() + SNAP_RESTORE_GRACE;
                 snap_log(e, "restore %s", e->snap_path);
             } else {
                 snap_log(e, "boot cold, save %s", e->snap_path);
-                e->snap_use = AMIGA_EMULATION_SNAP_FIRST_SAVE;
+                set_use(e, AMIGA_EMULATION_SNAP_FIRST_SAVE);
             }
         }
     }
-    e->deadline = now() + e->timeout;
     if (getenv("AMIGA_EMULATION_SHOTS"))
         e->shots = strtod(getenv("AMIGA_EMULATION_SHOTS"), NULL);
     if (!(e->shots > 0))
@@ -1421,7 +1472,7 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     if (path)
         unlink(path);
     free(path);
-    if (launch(e, statefile, err, errlen))
+    if (start_supervisor(e, statefile, err, errlen))
         goto fail;
     free(cfg);
     free(script);
@@ -1446,9 +1497,20 @@ const char *amiga_emulation_work_dir(const struct amiga_emulation *e)
     return e->work_dir;
 }
 
-/* reaps the process if it has ended; 1 = ended */
+/* the caller: reaps the supervisor if it has ended; 1 = ended */
+static int sup_ended(struct amiga_emulation *e)
+{
+    if (!e->sup_reaped && e->sup > 0 && waitpid(e->sup, NULL, WNOHANG) == e->sup)
+        e->sup_reaped = 1;
+    return e->sup_reaped;
+}
+
+/* reaps Amiberry if it has ended; 1 = ended.  On the caller's side: the
+   session has ended (the supervisor runs Amiberry). */
 static int reaped(struct amiga_emulation *e)
 {
+    if (e->sup > 0)
+        return atomic_load(&e->sh->finished) || sup_ended(e);
     if (!e->exited && e->pid > 0 && waitpid(e->pid, NULL, WNOHANG) == e->pid)
         e->exited = 1;
     return e->exited;
@@ -1546,16 +1608,37 @@ static void stop_group(struct amiga_emulation *e)
     }
 }
 
-enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
+/* ---------------------------------------------------------- supervisor */
+
+/* SIGTERM to the supervisor: amiga_emulation_free before the end */
+static volatile sig_atomic_t stop_asked;
+
+static void on_term(int sig)
+{
+    (void)sig;
+    stop_asked = 1;
+}
+
+/* the session in the supervisor, from Amiberry's first start to its end:
+   waits for TEST:run.done, saves and restores (snapshot mode), the time
+   limit, the screenshots */
+static void supervise(struct amiga_emulation *e)
 {
     char *done = str_printf("%s/%s", e->test_dir, DONE_FILE);
     double quit_until = 0;
 
-    if (e->joined || !done) {
-        free(done);
-        return e->status;
+    if (!done) {
+        stop_group(e);
+        e->status = AMIGA_EMULATION_FAILED;
     }
-    for (;;) {
+    while (done) {
+        if (stop_asked) {
+            if (e->snap != SNAP_OFF)
+                snap_log(e, "stopped (amiga_emulation_free)");
+            stop_group(e);
+            e->status = AMIGA_EMULATION_FAILED;
+            break;
+        }
         if (e->snap == SNAP_RESTORING) {
             char *started = str_printf("%s/" SNAP_STARTED, e->ctl_dir);
             int ok = started && file_exists(started);
@@ -1574,12 +1657,11 @@ enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
                          started && file_exists(started) ? ", the job had just started" : "");
                 free(started);
                 unlink(e->snap_path);
-                e->snap_use = AMIGA_EMULATION_SNAP_FALLBACK;
+                set_use(e, AMIGA_EMULATION_SNAP_FALLBACK);
                 if (snap_off(e) || launch(e, NULL, err, sizeof err)) {
                     e->status = AMIGA_EMULATION_FAILED;
                     break;
                 }
-                e->deadline = now() + e->timeout;
                 continue;
             }
             free(started);
@@ -1607,13 +1689,12 @@ enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
                     }
                 } else {
                     snap_log(e, "boot cold");
-                    e->snap_use = AMIGA_EMULATION_SNAP_FALLBACK;
+                    set_use(e, AMIGA_EMULATION_SNAP_FALLBACK);
                     if (snap_off(e) || launch(e, NULL, err, sizeof err)) {
                         e->status = AMIGA_EMULATION_FAILED;
                         break;
                     }
                 }
-                e->deadline = now() + e->timeout;
                 continue;
             }
         }
@@ -1665,28 +1746,153 @@ enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
         sleep_ms(100);
     }
     free(done);
-    if (e->slot_dir) {
-        stop_group(e);
+    stop_group(e);
+    if (e->slot_dir)
         snap_finish(e);
+}
+
+/* closes the descriptors from 3 on: the supervisor must not keep the
+   caller's files open (the locks of its other sessions' slots, sockets) */
+static void close_fds(void)
+{
+    long max, fd;
+
+#if defined(__linux__) && defined(SYS_close_range)
+    if (!syscall(SYS_close_range, 3u, ~0u, 0u))
+        return;
+#endif
+    max = sysconf(_SC_OPEN_MAX);
+    if (max < 0 || max > 65536)
+        max = 65536;
+    for (fd = 3; fd < max; fd++)
+        close((int)fd);
+}
+
+/* the supervisor's process: starts Amiberry and drives the session to its
+   end, whenever the caller joins it */
+[[noreturn]] static void supervisor(struct amiga_emulation *e, const char *statefile)
+{
+    struct sigaction sa;
+    sigset_t none;
+    char err[256];
+
+#ifdef __linux__
+    /* it dies with the caller (Amiberry dies with it, see child) */
+    if (prctl(PR_SET_PDEATHSIG, SIGKILL) || getppid() != e->parent)
+        _exit(126);
+#endif
+    close_fds();
+    e->slot = -1;               /* closed: the caller holds the slot */
+    e->parent = getpid();
+    memset(&sa, 0, sizeof sa);
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = on_term;
+    sigaction(SIGTERM, &sa, NULL);
+    sa.sa_handler = SIG_IGN;    /* a write to a socket Amiberry has closed */
+    sigaction(SIGPIPE, &sa, NULL);
+    sa.sa_handler = SIG_DFL;    /* waitpid for Amiberry */
+    sigaction(SIGCHLD, &sa, NULL);
+    sigemptyset(&none);
+    sigprocmask(SIG_SETMASK, &none, NULL);
+    if (launch(e, statefile, err, sizeof err)) {
+        snap_log(e, "cannot start Amiberry: %s", err);
+        if (e->slot_dir)
+            snap_finish(e);
+        e->status = AMIGA_EMULATION_FAILED;
+    } else {
+        supervise(e);
+    }
+    atomic_store(&e->sh->pgid, 0);
+    atomic_store(&e->sh->status, (int)e->status);
+    atomic_store(&e->sh->snap_use, (int)e->snap_use);
+    atomic_store(&e->sh->end, to_us(now()));
+    atomic_store(&e->sh->finished, 1);
+    _exit(0);
+}
+
+/* the shared state and the supervisor (amiga_emulation.h, "Every session
+   has a supervisor") */
+static int start_supervisor(struct amiga_emulation *e, const char *statefile, char *err,
+                            size_t errlen)
+{
+    void *m = mmap(NULL, sizeof *e->sh, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    pid_t pid;
+
+    if (m == MAP_FAILED) {
+        set_err(err, errlen, "mmap: %s", strerror(errno));
+        return -1;
+    }
+    e->sh = m;
+    atomic_init(&e->sh->finished, 0);
+    atomic_init(&e->sh->status, (int)AMIGA_EMULATION_FAILED);
+    atomic_init(&e->sh->snap_use, (int)e->snap_use);
+    atomic_init(&e->sh->pgid, 0);
+    atomic_init(&e->sh->launched, 0);
+    atomic_init(&e->sh->end, 0);
+    pid = fork();
+    if (pid < 0) {
+        set_err(err, errlen, "fork: %s", strerror(errno));
+        return -1;
+    }
+    if (pid == 0)
+        supervisor(e, statefile);
+    e->sup = pid;
+    return 0;
+}
+
+/* the caller, after the supervisor has ended: the result; if it did not
+   end the session itself (killed), its Amiberry and the slot's
+   directories */
+static void collect(struct amiga_emulation *e)
+{
+    if (atomic_load(&e->sh->finished)) {
+        e->status = (enum amiga_emulation_status)atomic_load(&e->sh->status);
+        e->end_at = from_us(atomic_load(&e->sh->end));
+        e->snap = SNAP_OFF;     /* snap_finish done */
+    } else {
+        int pg = atomic_load(&e->sh->pgid);
+
+        if (pg > 0)
+            kill(-pg, SIGKILL);
+        if (e->slot_dir)
+            snap_finish(e);
+        e->status = AMIGA_EMULATION_FAILED;
+        e->end_at = now();
+    }
+    e->snap_use = (enum amiga_emulation_snapshot_use)atomic_load(&e->sh->snap_use);
+}
+
+enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
+{
+    if (e->joined)
+        return e->status;
+    if (e->sup > 0) {
+        while (!e->sup_reaped && waitpid(e->sup, NULL, 0) < 0 && errno == EINTR)
+            ;
+        e->sup_reaped = 1;
+        collect(e);
     }
     e->joined = 1;
-    e->end_at = now();
     return e->status;
 }
 
 void amiga_emulation_stats(const struct amiga_emulation *e, struct amiga_emulation_stats *s)
 {
-    double end = e->joined ? e->end_at : now();
+    double end = e->joined ? e->end_at
+                 : e->sh && atomic_load(&e->sh->finished) ? from_us(atomic_load(&e->sh->end))
+                 : now();
+    long long launched = e->sh ? atomic_load(&e->sh->launched) : 0;
 
     s->wait = e->slot_got > e->slot_from ? e->slot_got - e->slot_from : 0;
     s->session = e->slot_got ? end - e->slot_got : 0;
     /* the time limit counts from the last (re)start of Amiberry */
-    s->timed = e->deadline ? end - (e->deadline - e->timeout) : 0;
+    s->timed = launched ? end - from_us(launched) : 0;
     if (s->timed < 0)
         s->timed = 0;
     s->timeout = e->timeout;
     s->machine = e->machine ? e->machine : "a1200";
-    s->snapshot = e->snap_use;
+    s->snapshot = e->sh ? (enum amiga_emulation_snapshot_use)atomic_load(&e->sh->snap_use)
+                        : e->snap_use;
     s->status = e->joined ? e->status : AMIGA_EMULATION_FAILED;
 }
 
@@ -1704,8 +1910,23 @@ void amiga_emulation_free(struct amiga_emulation *e)
 {
     if (!e)
         return;
-    if (e->pid > 0 && !e->exited)
-        stop_group(e);
+    if (e->sup > 0 && !e->sup_reaped) {
+        /* not joined: the supervisor stops the session (bounded, then
+           killed; collect ends its Amiberry then) */
+        double until = now() + SUP_STOP_GRACE;
+
+        kill(e->sup, SIGTERM);
+        while (!sup_ended(e) && now() < until)
+            sleep_ms(50);
+        if (!e->sup_reaped) {
+            kill(e->sup, SIGKILL);
+            while (waitpid(e->sup, NULL, 0) < 0 && errno == EINTR)
+                ;
+            e->sup_reaped = 1;
+        }
+    }
+    if (e->sh && !e->joined)
+        collect(e);
     if (e->snap != SNAP_OFF)
         snap_finish(e);
     if (e->slot >= 0)
@@ -1729,5 +1950,7 @@ void amiga_emulation_free(struct amiga_emulation *e)
     free(e->mount_dirs);
     free(e->runtime_dir);
     free(e->socket_path);
+    if (e->sh)
+        munmap(e->sh, sizeof *e->sh);
     free(e);
 }

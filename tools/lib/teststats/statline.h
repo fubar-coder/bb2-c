@@ -23,10 +23,13 @@
  *             restored, first-save (booted, saved, restored), fallback
  *             (the snapshot did not work: booted after all)
  *   session   seconds from the emulator slot taken to the end of the
- *             session (the wait for the slot not included)
+ *             session (Amiberry ended by the session's supervisor, not
+ *             when the runner joined it; the wait for the slot not
+ *             included)
  *   wait      seconds the session waited for an emulator slot
  *   timed     the part of `session` counted against the time limit (from
- *             the last start of Amiberry: a snapshot save restarts it)
+ *             the last start of Amiberry, the job in place: a snapshot
+ *             save or a fallback restarts it; amiga_emulation.h)
  *   limit     the time limit of the session (seconds)
  *   end       done (the script ran to its end), timeout (killed at the
  *             limit), exited (Amiberry ended before the script), failed

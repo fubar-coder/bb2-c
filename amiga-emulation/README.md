@@ -83,11 +83,11 @@ of the booted system, taken when the system waits for its job (about
   mounts, the state would keep the link's target): `TEST:run.script` is a
   fixed prologue (AmigaDOS 1.3 syntax) that writes `SNAP:ready` and runs
   `SNAP:waitjob`, a 68000 program (`tools/lib/amiga_emulation/waitjob.s`,
-  dos.library V0, polls `SNAP:job.script` every 40 ms). The library saves
-  the state then, ends that Amiberry and restores the new state like
-  every later session. So the first session per slot and configuration
-  takes a cold boot plus about 2 s; with 5 slots up to 5 sessions per
-  configuration boot.
+  dos.library V0, polls `SNAP:job.script` every 40 ms). The session's
+  supervisor saves the state then, ends that Amiberry and restores the
+  new state like every later session. So the first session per slot and
+  configuration takes a cold boot plus about 2 s; with 5 slots up to 5
+  sessions per configuration boot.
 * **The job** (`SNAP:job.script`) writes `SNAP:started`, sets the clock
   (`SetClock LOAD`; on the A500 machines a `DATE` line with the host's
   time, `SetClock LOAD` takes 1.8 s there) and executes the test's
@@ -101,6 +101,16 @@ of the booted system, taken when the system waits for its job (about
 * **A restore that fails** (no `SNAP:started` within 6 s, or Amiberry
   ends) is dropped, the state file too, and the session boots cold
   without snapshot. A test mount called `SNAP` also means a cold boot.
+* **The supervisor:** every session (also without snapshot) is driven by
+  a process of its own that the library forks at the start: it starts
+  Amiberry, saves and restores, falls back, ends the session at
+  `TEST:run.done` or at the time limit. The progress of a session thus
+  does not depend on when its runner joins it (a runner joins its
+  sessions in start order; before, a first session sat idle at
+  `SNAP:ready` while the runner waited for an earlier one and could run
+  out of time without its job). The time limit counts from the start of
+  the Amiberry that gets the job (boot or restore included); a restart
+  (the restore after the save, a fallback) starts it again.
 * `snapshot.log` in the work directory tells what the session did
   (restore, cold boot and save, a failed restore) with the seconds since
   its start.

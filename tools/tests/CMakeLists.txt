@@ -6,6 +6,12 @@ foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
 
+# the sessions' supervisors (no emulator: the test is its own fake Amiberry)
+add_executable(test_amiga_emulation_supervisor test_amiga_emulation_supervisor.c)
+target_link_libraries(test_amiga_emulation_supervisor PRIVATE lib_amiga_emulation lib_hunk)
+target_compile_options(test_amiga_emulation_supervisor PRIVATE -Wno-unused-function)
+add_test(NAME amiga_emulation_supervisor COMMAND test_amiga_emulation_supervisor)
+
 add_executable(test_blitzlib_compare test_blitzlib_compare.c)
 target_link_libraries(test_blitzlib_compare PRIVATE lib_blitzlib lib_hunk)
 target_compile_options(test_blitzlib_compare PRIVATE -Wno-unused-function)
@@ -38,6 +44,15 @@ target_compile_options(test_amiga_emulation_snapshot PRIVATE -Wno-unused-functio
 add_test(NAME amiga_emulation_snapshot COMMAND test_amiga_emulation_snapshot)
 math(EXPR limit "240 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(amiga_emulation_snapshot PROPERTIES
+	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+# two sessions joined in start order: the first hangs until its limit, the
+# second (first-save) runs its job meanwhile; it holds two shared slots
+add_executable(test_amiga_emulation_join_order test_amiga_emulation_join_order.c)
+target_link_libraries(test_amiga_emulation_join_order PRIVATE lib_amiga_emulation lib_hunk)
+target_compile_options(test_amiga_emulation_join_order PRIVATE -Wno-unused-function)
+add_test(NAME amiga_emulation_join_order COMMAND test_amiga_emulation_join_order)
+math(EXPR limit "120 + 2 * ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(amiga_emulation_join_order PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 
 # the .xtra model of shared/xtra (lib_xtra): snitch programs, one per file
