@@ -13,13 +13,26 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* every line whose first statement (after spaces and tabs) is the token
-   word TOKEN (bit 15 set, e.g. $80BF INCDIR) becomes ";" - an empty
-   comment, the line numbers stay.  Such a line must hold only that
-   statement (no ':' outside quotes, else it is an error: the rest would
-   go too).  The result is malloc'd (*out, *outlen); *count = the lines
-   changed.  0 = ok, -1 = error (err: not tokenised, a line without its
-   end, a token without its second byte, a line with more statements) */
+/**
+ * @brief Turn every line whose first statement is a given token into an
+ *        empty comment.
+ *
+ * Every line whose first statement (after spaces and tabs) is the token
+ * word TOKEN becomes ";" - an empty comment, the line numbers stay.  Such
+ * a line must hold only that statement (no ':' outside quotes, else it is
+ * an error: the rest would go too).
+ *
+ * @param src     the tokenised source
+ * @param len     its length
+ * @param token   the token word (bit 15 set, e.g. $80BF INCDIR)
+ * @param out     out: the result (malloc'd)
+ * @param outlen  out: its length
+ * @param count   out: the lines changed
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = error (not tokenised, a line without its end, a
+ *         token without its second byte, a line with more statements)
+ */
 int bblines_comment(const uint8_t *src, size_t len, uint16_t token, uint8_t **out,
                     size_t *outlen, size_t *count, char *err, size_t errlen);
 

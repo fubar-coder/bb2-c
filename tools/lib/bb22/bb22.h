@@ -39,12 +39,14 @@
 extern "C" {
 #endif
 
-/* one line: its text (without prefix and 0 byte) at buf[offset] */
+/** @brief One line: its text (without prefix and 0 byte) at buf[offset]. */
 struct bb22_line {
     size_t offset;
     size_t len;
 };
 
+/** @brief A parsed BB22 file: the header's values and the lines
+    (bb22_free). */
 struct bb22 {
     unsigned version;           /* word at +4: 8 or 10 */
     size_t header_size;         /* 14 or 16 */
@@ -55,24 +57,44 @@ struct bb22 {
     size_t max_len;             /* longest line in bytes (tokenised) */
 };
 
-/* true if buf begins with "BB22" (says nothing about the rest) */
+/**
+ * @brief Whether buf begins with "BB22" (says nothing about the rest).
+ * @return true for "BB22" at the start
+ */
 bool bb22_is(const uint8_t *buf, size_t size);
 
-/* reads the BB22 file buf[0..size): 0 = ok (*out filled, bb22_free it);
-   -1 = refused, message in err ("offset N: ..." / "line N: ...") and
-   *out empty */
+/**
+ * @brief Read a BB22 file (strict, see the top).
+ * @param buf     the file, buf[0..size)
+ * @param size    its size
+ * @param out     out: the header and the lines (bb22_free it); empty on
+ *                an error
+ * @param err     the message when refused ("offset N: ..." /
+ *                "line N: ...")
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = refused
+ */
 int bb22_parse(const uint8_t *buf, size_t size, struct bb22 *out, char *err, size_t errlen);
 
+/** @brief Free what bb22_parse filled in. */
 void bb22_free(struct bb22 *b);
 
-/* size of the file in TED's format: the lines and a 0 byte each */
+/** @brief The size of the file in TED's format: the lines and a 0 byte
+    each. */
 size_t bb22_ted_size(const struct bb22 *b);
 
-/* writes the lines of b (parsed from buf) in TED's format to out, which
-   has bb22_ted_size(b) bytes */
+/**
+ * @brief Write the lines in TED's format.
+ * @param b    the parsed file
+ * @param buf  the file b was parsed from
+ * @param out  the output, bb22_ted_size(b) bytes
+ */
 void bb22_to_ted(const struct bb22 *b, const uint8_t *buf, uint8_t *out);
 
-/* the same to a file: 0 = ok, -1 = write error */
+/**
+ * @brief Write the lines in TED's format to a file (as bb22_to_ted()).
+ * @return 0 = ok, -1 = write error
+ */
 int bb22_write_ted(const struct bb22 *b, const uint8_t *buf, FILE *f);
 
 #ifdef __cplusplus

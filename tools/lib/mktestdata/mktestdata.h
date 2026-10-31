@@ -36,9 +36,15 @@
 extern "C" {
 #endif
 
-/* builds the data of the description `spec` (0-terminated text): 0 = ok,
-   *out (malloc'd, free it) with *len bytes; -1 = error, message in err
-   ("line N: ...") */
+/**
+ * @brief Build the data of a description (the format above).
+ * @param spec    the description (0-terminated text)
+ * @param out     out: the data (malloc'd, free it)
+ * @param len     out: their length
+ * @param err     the message of an error ("line N: ...")
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = error
+ */
 int mktestdata_build(const char *spec, uint8_t **out, size_t *len, char *err, size_t errlen);
 
 #ifdef __cplusplus
