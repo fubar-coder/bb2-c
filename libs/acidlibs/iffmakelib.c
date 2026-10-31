@@ -53,6 +53,7 @@
  * palette (colour pointer 0), screen (pointer 0), shape (width 0).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <graphics/gfx.h>
 #include <graphics/view.h>
 #include <intuition/screens.h>
@@ -109,27 +110,16 @@ BLITZ_LIBFIN();
 
 #define BUFSIZE 4096
 
-/* a palette object: colour block (one long, then 3 longs per colour),
-   number of colours */
+/* the start of a palette object (struct bb_palette of blitzobj.h, pdata
+   and numcols): kept local, temppal (SaveScreen's palette) is only
+   these 6 bytes; colour block: one long, then 3 longs per colour */
 struct palette {
     ULONG *cols;
     UWORD num;
 };
+static_assert(offsetof(struct palette, num) == offsetof(struct bb_palette, numcols));
 
-/* a shape object (shapeslib), the fields SaveShape reads */
-struct shape {
-    UWORD width;                /* +0 pixel width (0 = none) */
-    UWORD height;               /* +2 */
-    UWORD depth;                /* +4 */
-    UWORD ebwidth;              /* +6 even byte width */
-    UWORD bltsize;              /* +8 */
-    WORD xhandle, yhandle;      /* +10, +12 */
-    UBYTE *data;                /* +14 plane after plane */
-    UBYTE *cookie;              /* +18 */
-    WORD planesize;             /* +22 bytes per plane */
-    UWORD rest[4];              /* +24 .. +31 */
-} BL_PACKED;
-static_assert(sizeof(struct shape) == 32);
+/* the shape object is struct bb_shape (blitzobj.h) */
 
 static UBYTE iffbuff[BUFSIZE] __attribute__((aligned(4)));
 static ULONG ifflen, bodylen, bodyseek;
@@ -405,7 +395,7 @@ static void BLITZ_ROUTINE dosavebitmap_c(const struct BitMap *bm BL_REG(a0), con
 BLITZ_THUNK(dosavebitmap, dosavebitmap_c, "d0-d1/a0-a1");
 
 /* SaveShape: the shape as BitMap in bmcopy */
-static void saveshape(const struct shape *shape, const char *name, const struct palette *pal,
+static void saveshape(const struct bb_shape *shape, const char *name, const struct palette *pal,
                       struct DosLibrary *dos)
 {
     PLANEPTR *dst = bmcopy.bm.Planes;
@@ -420,7 +410,7 @@ static void saveshape(const struct shape *shape, const char *name, const struct 
     count = shape->depth - 1;                   /* BUG(orig) (#326): depth unchecked */
     do {
         *dst++ = plane;
-        plane += shape->planesize;              /* ADD 22(a0),a1 */
+        plane += (WORD)shape->planesize;        /* ADD 22(a0),a1 */
     } while (count-- != 0);
     savebm(&bmcopy.bm, name, pal, dos);
 }
@@ -440,7 +430,7 @@ static void saveshape(const struct shape *shape, const char *name, const struct 
  * @param name   d1: the file name
  * @param dos    a6: dos.library
  */
-static void BLITZ_ROUTINE dosaveshape1_c(const struct shape *shape BL_REG(a0), const char *name BL_REG(d1),
+static void BLITZ_ROUTINE dosaveshape1_c(const struct bb_shape *shape BL_REG(a0), const char *name BL_REG(d1),
                                          struct DosLibrary *dos BL_REG(a6))
 {
     saveshape(shape, name, 0, dos);
@@ -458,7 +448,7 @@ BLITZ_THUNK(dosaveshape1, dosaveshape1_c, "d0-d1/a0-a1");
  * @param pal    a1: the palette (!libs {#palettelib,$1182})
  * @param dos    a6: dos.library
  */
-static void BLITZ_ROUTINE dosaveshape2_c(const struct shape *shape BL_REG(a0), const char *name BL_REG(d1),
+static void BLITZ_ROUTINE dosaveshape2_c(const struct bb_shape *shape BL_REG(a0), const char *name BL_REG(d1),
                                          const struct palette *pal BL_REG(a1),
                                          struct DosLibrary *dos BL_REG(a6))
 {
