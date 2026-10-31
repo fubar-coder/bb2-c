@@ -34,6 +34,7 @@
  *     of a non-interleaved bitmap, so only the field itself differs). (#77)
  */
 #include "blitzlib.h"
+#include <intuition/screens.h>
 
 /* a bitmap object, 2^6 bytes */
 struct bbitmap {
@@ -52,6 +53,20 @@ struct bbitmap {
     UWORD colours;              /* +60 */
     WORD isreal;                /* +62 */
 } BL_PACKED;
+static_assert(sizeof(struct bbitmap) == 64);
+
+/* a shape object of shapeslib (32 bytes; the part read here) */
+struct shape {
+    UWORD width;                /* +0 pixel width, 0 = none */
+    UWORD height;               /* +2 */
+    UWORD depth;                /* +4 */
+    UWORD ebwidth;              /* +6 even byte width */
+    UWORD bltsize;              /* +8 */
+    WORD xhandle, yhandle;      /* +10, +12 */
+    UBYTE *data;                /* +14 the planes, one after the other */
+    UBYTE *cookie;              /* +18 */
+    WORD planesize;             /* +22 bytes per plane */
+};
 
 /* ilbmifflib: load an ILBM into a bitmap (a0 = name, a1 = bitmap) */
 /* palettelib getpal: load a palette (a0 = name, a1 = palette) */
@@ -66,7 +81,7 @@ void BLITZ_ROUTINE _bitload2(const UBYTE *name BL_REG(d1), APTR pal BL_REG(a0),
                              struct bbitmap *bm BL_REG(a1));
 void BLITZ_ROUTINE doscbitmap(UBYTE **scr BL_REG(a2), WORD usedoff BL_REG(d6));
 void BLITZ_ROUTINE docopybitmap(struct bbitmap *src BL_REG(a2));
-void BLITZ_ROUTINE doshbitmap(const UBYTE *shape BL_REG(a2), WORD usedoff BL_REG(d6));
+void BLITZ_ROUTINE doshbitmap(const struct shape *shape BL_REG(a2), WORD usedoff BL_REG(d6));
 void BLITZ_ROUTINE _cludgebitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d BL_REG(d3),
                                  ULONG mem BL_REG(d4), WORD usedoff BL_REG(d6));
 void BLITZ_ROUTINE _freebitmap(void);
@@ -314,7 +329,7 @@ void BLITZ_ROUTINE doscbitmap(UBYTE **scr BL_REG(a2), WORD usedoff BL_REG(d6))
 
     setused(usedoff);
     freebitmap(b);
-    s = (const ULONG *)*(UBYTE **)(*scr + 88);   /* RastPort.BitMap */
+    s = (const ULONG *)((struct Screen *)*scr)->RastPort.BitMap; /* +88 */
     b->isreal = 1;
     for (i = 0; i < 10; i++)
         *d++ = *s++;
@@ -322,7 +337,7 @@ void BLITZ_ROUTINE doscbitmap(UBYTE **scr BL_REG(a2), WORD usedoff BL_REG(d6))
 }
 
 /* ShapesBitMap shape,b - the shape's planes */
-void BLITZ_ROUTINE doshbitmap(const UBYTE *shape BL_REG(a2), WORD usedoff BL_REG(d6))
+void BLITZ_ROUTINE doshbitmap(const struct shape *shape BL_REG(a2), WORD usedoff BL_REG(d6))
 {
     struct bbitmap *b = BM;
     UBYTE *pl;
@@ -332,14 +347,14 @@ void BLITZ_ROUTINE doshbitmap(const UBYTE *shape BL_REG(a2), WORD usedoff BL_REG
 
     setused(usedoff);
     freebitmap(b);
-    b->bpr = *(UWORD *)(shape + 6);
-    b->rows = *(UWORD *)(shape + 2);
-    n = *(UWORD *)(shape + 4);
+    b->bpr = shape->ebwidth;
+    b->rows = shape->height;
+    n = shape->depth;
     *(UWORD *)&b->flags = n;
     b->isreal = 1;
     n--;
-    pl = *(UBYTE **)(shape + 14);
-    size = *(WORD *)(shape + 22);
+    pl = shape->data;
+    size = shape->planesize;
     do {
         *p++ = pl;
         pl += size;
