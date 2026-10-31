@@ -52,3 +52,12 @@ variant. Fixes that match our issues:
   uncertain: #59, #168, #169, #173, #175, #224, #250, #251, #327;
 * userlibs: none beyond the fixes already in the reference (RIAmosFuncLib
   of SVN r279).
+
+## Taken over (2026-10-31)
+
+Fixed in this repository's default variant, BB2-compatibly (kind F in
+`docs/libs/deviations.md`, each with a bug-orig test that comes out
+FIXED): compiler #38, #42, #943, #958; deflibs #44, #45 (not fixed in
+AmiBlitz3), #959; acidlibs #59, #120, #148, #168, #169, #173, #174,
+#224, #250, #317, #318, #320, #322, #327. Left open: #175 (which gadget
+of an Id is right is unclear). Found on the way: #960, #961, #962.
