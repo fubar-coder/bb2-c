@@ -171,8 +171,43 @@ void BLITZ_ROUTINE _libfinit(void)
 {
 }
 
-#define SW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
-#define SL(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
+/* a shape object of shapeslib (32 bytes) */
+struct shape {
+    UWORD width;                /* +0 pixel width */
+    UWORD height;               /* +2 */
+    UWORD depth;                /* +4 */
+    UWORD ebwidth;              /* +6 even byte width */
+    UWORD blitsize;             /* +8 height<<6 | words+1 */
+    UWORD xhandle, yhandle;     /* +10, +12 */
+    ULONG data;                 /* +14 plane after plane, chip memory */
+    ULONG cookie;               /* +18 OR of all planes, or 0 */
+    UWORD onebpmem;             /* +22 bytes per plane */
+    UWORD onebpmemx;            /* +24 per plane + one word per row */
+    UWORD allbpmem;             /* +26 the whole shape */
+    UWORD allbpmemx;            /* +28 whole + one word per row */
+    UWORD cl;                   /* +30 "cL": the data is not the shape's */
+} BL_PACKED;
+static_assert(sizeof(struct shape) == 32);
+
+/* a bitmap object of bitmaplib, as far as these routines read it: the
+   original reads flags and depth (+4, +5) as one word */
+struct bmap {
+    UWORD bpr;                  /* +0 bytes per row */
+    UWORD rows;                 /* +2 */
+    UWORD depth;                /* +4.w */
+    UWORD pad;                  /* +6 */
+    UBYTE *planes[8];           /* +8 */
+} BL_PACKED;
+static_assert(sizeof(struct bmap) == 40);
+
+/* a buffer object of bblitlib, as far as the buffered blits use it */
+struct buffer {
+    UBYTE *pos;                 /* +0 write position */
+    UBYTE *last;                /* +4 last record (0: none) */
+};
+
+/* CreateShape copies two words of a shape as one long */
+#define LONGS(d, s, m) (*(ULONG *)&(d)->m = *(const ULONG *)&(s)->m)
 
 /* the blitter registers: absolute ($DFF0xx) or through the chip base the
    buffered routines get in a1 (#chipbaselib) */
@@ -225,11 +260,12 @@ static UWORD xyoff(UWORD x, UWORD y, UWORD width)
 /* the 16x16 top shape (B) over the bottom shape (C) through top's cookie
    (A) into each plane of the used bitmap at off; B and C go on from plane
    to plane */
-static void BLITZ_ROUTINE specialblock2_c(UWORD off BL_REG(d2), UBYTE *bm BL_REG(a0),
-                                          UBYTE *top BL_REG(a1), UBYTE *bot BL_REG(a2))
+static void BLITZ_ROUTINE specialblock2_c(UWORD off BL_REG(d2), struct bmap *bm BL_REG(a0),
+                                          struct shape *top BL_REG(a1),
+                                          struct shape *bot BL_REG(a2))
 {
-    UWORD n = SW(top, 4) - 1;
-    UBYTE **plane = (UBYTE **)(bm + 8);
+    UWORD n = top->depth - 1;
+    UBYTE **plane = bm->planes;
     ULONG cookie;
 
     BLITWAIT();
@@ -239,9 +275,9 @@ static void BLITZ_ROUTINE specialblock2_c(UWORD off BL_REG(d2), UBYTE *bm BL_REG
     W(BLTCMOD) = 0;
     W(BLTDMOD) = modwidth;
     L(BLTAFWM) = 0xffffffff;
-    L(BLTBPT) = SL(top, 14);
-    L(BLTCPT) = SL(bot, 14);
-    cookie = SL(top, 18);
+    L(BLTBPT) = top->data;
+    L(BLTCPT) = bot->data;
+    cookie = top->cookie;
     goto first;
     do {
         BLITWAIT();
@@ -256,8 +292,8 @@ first:
 }
 
 static void BLITZ_ROUTINE specialblock_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
-                                         UBYTE *bm BL_REG(a0), UBYTE *top BL_REG(a1),
-                                         UBYTE *bot BL_REG(a2))
+                                         struct bmap *bm BL_REG(a0), struct shape *top BL_REG(a1),
+                                         struct shape *bot BL_REG(a2))
 {
     specialblock2_c(xyoff(x, y, ebwidth), bm, top, bot);
 }
@@ -266,13 +302,15 @@ static void BLITZ_ROUTINE specialblock_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
 
 /* the shape (B, any size) over the source bitmap (C) through its cookie
    into the used bitmap, both at off */
-static void BLITZ_ROUTINE specialblockbitmap2_c(UWORD off BL_REG(d2), UBYTE *bm BL_REG(a0),
-                                                UBYTE *shape BL_REG(a1), UBYTE *src BL_REG(a2))
+static void BLITZ_ROUTINE specialblockbitmap2_c(UWORD off BL_REG(d2),
+                                                struct bmap *bm BL_REG(a0),
+                                                struct shape *shape BL_REG(a1),
+                                                struct bmap *src BL_REG(a2))
 {
-    UWORD n = SW(shape, 4) - 1;
-    UWORD mod = SW(bm, 0) - SW(shape, 6);
-    UWORD size = (UWORD)(SW(shape, 6) >> 1) + (UWORD)(SW(shape, 2) << 6);
-    UBYTE **plane = (UBYTE **)(bm + 8), **splane = (UBYTE **)(src + 8);
+    UWORD n = shape->depth - 1;
+    UWORD mod = bm->bpr - shape->ebwidth;
+    UWORD size = (UWORD)(shape->ebwidth >> 1) + (UWORD)(shape->height << 6);
+    UBYTE **plane = bm->planes, **splane = src->planes;
     ULONG cookie;
 
     BLITWAIT();
@@ -282,8 +320,8 @@ static void BLITZ_ROUTINE specialblockbitmap2_c(UWORD off BL_REG(d2), UBYTE *bm 
     W(BLTCMOD) = mod;
     W(BLTDMOD) = mod;
     L(BLTAFWM) = 0xffffffff;
-    L(BLTBPT) = SL(shape, 14);
-    cookie = SL(shape, 18);
+    L(BLTBPT) = shape->data;
+    cookie = shape->cookie;
     goto first;
     do {
         BLITWAIT();
@@ -296,21 +334,22 @@ first:
 }
 
 static void BLITZ_ROUTINE specialblockbitmap_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
-                                               UBYTE *bm BL_REG(a0), UBYTE *shape BL_REG(a1),
-                                               UBYTE *src BL_REG(a2))
+                                               struct bmap *bm BL_REG(a0),
+                                               struct shape *shape BL_REG(a1),
+                                               struct bmap *src BL_REG(a2))
 {
-    specialblockbitmap2_c(xyoff(x, y, SW(bm, 0)), bm, shape, src);
+    specialblockbitmap2_c(xyoff(x, y, bm->bpr), bm, shape, src);
 }
 
 /* ------------------------------------------------------------- TBlock */
 
 /* a 16x16 shape (B) through its cookie (A) onto the bitmap (C = D) */
-static void BLITZ_ROUTINE tblock_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2), UBYTE *bm BL_REG(a0),
-                                   UBYTE *shape BL_REG(a1))
+static void BLITZ_ROUTINE tblock_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2),
+                                   struct bmap *bm BL_REG(a0), struct shape *shape BL_REG(a1))
 {
     ULONG off = xyoff(x, y, ebwidth);
-    UWORD n = SW(shape, 4) - 1;
-    UBYTE **plane = (UBYTE **)(bm + 8);
+    UWORD n = shape->depth - 1;
+    UBYTE **plane = bm->planes;
     ULONG cookie;
 
     BLITWAIT();
@@ -320,8 +359,8 @@ static void BLITZ_ROUTINE tblock_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2), UBYTE
     W(BLTCMOD) = modwidth;
     W(BLTDMOD) = modwidth;
     L(BLTAFWM) = 0xffffffff;
-    L(BLTBPT) = SL(shape, 14);
-    cookie = SL(shape, 18);
+    L(BLTBPT) = shape->data;
+    cookie = shape->cookie;
     goto first;
     do {
         BLITWAIT();
@@ -342,12 +381,13 @@ first:
    D = the bitmap, 2 words wide at the even word, through the cookie (A,
    shifted, last word masked); d0 = the cookie */
 static ULONG BLITZ_ROUTINE predatorblit_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2),
-                                          UBYTE *bm BL_REG(a0), UBYTE *shape BL_REG(a1))
+                                          struct bmap *bm BL_REG(a0),
+                                          struct shape *shape BL_REG(a1))
 {
     ULONG con = 0x0fca1000UL | (ULONG)(x & 15) << 28;
     ULONG off = (UWORD)((UWORD)((ULONG)y * ebwidth) + (UWORD)(((WORD)x >> 3) & 0xfffe));
-    UWORD n = SW(shape, 4) - 1;
-    UBYTE **plane = (UBYTE **)(bm + 8);
+    UWORD n = shape->depth - 1;
+    UBYTE **plane = bm->planes;
     ULONG cookie;
 
     BLITWAIT();
@@ -357,7 +397,7 @@ static ULONG BLITZ_ROUTINE predatorblit_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2)
     W(BLTCMOD) = modwidth2;
     W(BLTDMOD) = modwidth2;
     L(BLTAFWM) = 0xffff0000;
-    cookie = SL(shape, 18);
+    cookie = shape->cookie;
     goto first;
     do {
         BLITWAIT();
@@ -386,25 +426,25 @@ struct bsave {
     UWORD size;
 };
 
-static void bsave(struct bsave *s, UBYTE *buf, UBYTE *bm, UBYTE *cb, WORD x, WORD y,
+static void bsave(struct bsave *s, struct buffer *buf, struct bmap *bm, UBYTE *cb, WORD x, WORD y,
                   UWORD mod, UWORD size, UWORD save)
 {
-    UBYTE *rec = *(UBYTE **)buf;
+    UBYTE *rec = buf->pos;
     UWORD n;
     UBYTE **plane;
 
-    *(ULONG *)rec = SL(buf, 4);                 /* link the record */
-    SL(buf, 4) = (ULONG)rec;
+    *(UBYTE **)rec = buf->last;                /* link the record */
+    buf->last = rec;
     rec += 4;
     s->admod = 0xfffe0000UL | mod;
     *(UWORD *)rec = mod;
     rec += 2;
     s->cbmod = s->admod << 16 | s->admod >> 16;
-    s->off = (ULONG)bl_muls_w(y, SW(bm, 0)) + (LONG)(WORD)(x >> 3);
+    s->off = (ULONG)bl_muls_w(y, bm->bpr) + (LONG)(WORD)(x >> 3);
     s->size = size;
     *(UWORD *)rec = size;
     rec += 2;
-    n = SW(bm, 4) - 1;
+    n = bm->depth - 1;
     *(UWORD *)rec = n;
     rec += 2;
     *(UWORD *)rec = save;
@@ -416,7 +456,7 @@ static void bsave(struct bsave *s, UBYTE *buf, UBYTE *bm, UBYTE *cb, WORD x, WOR
     CW(BLTDMOD) = 0;
     CL(BLTCON0) = 0x09f00000;                   /* A -> D */
     CL(BLTAFWM) = 0xffffffff;
-    plane = (UBYTE **)(bm + 8);
+    plane = bm->planes;
     goto first;
     do {
         BL_BLITWAIT(cb);
@@ -432,28 +472,29 @@ first:
             __asm__("" : "+a"(rec));            /* no IV multiplication */
         }
     } while (n-- != 0);
-    *(UBYTE **)buf = rec;
+    buf->pos = rec;
 }
 
 /* BPredatorBlit: the shape's area saved (one line less: "BB Cludge"),
    then PredatorBlit's blit through the shifted cookie (B: the line
    ebwidth below, one pixel more) */
 static void BLITZ_ROUTINE bpredatorblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
-                                          UBYTE *buf BL_REG(a0), UBYTE *cb BL_REG(a1),
-                                          UBYTE *bm BL_REG(a2), UBYTE *shape BL_REG(a3))
+                                          struct buffer *buf BL_REG(a0), UBYTE *cb BL_REG(a1),
+                                          struct bmap *bm BL_REG(a2),
+                                          struct shape *shape BL_REG(a3))
 {
     struct bsave s;
     UWORD shift, n;
     UBYTE **plane;
     ULONG cookie;
 
-    x -= SW(shape, 10);
-    y -= SW(shape, 12);
-    bsave(&s, buf, bm, cb, x, y, (UWORD)(SW(bm, 0) - SW(shape, 6) - 2),
-          (UWORD)(SW(shape, 8) - 64), SW(shape, 24));
+    x -= shape->xhandle;
+    y -= shape->yhandle;
+    bsave(&s, buf, bm, cb, x, y, (UWORD)(bm->bpr - shape->ebwidth - 2),
+          (UWORD)(shape->blitsize - 64), shape->onebpmemx);
     shift = (UWORD)((x & 15) << 12);
-    n = SW(shape, 4) - 1;
-    plane = (UBYTE **)(bm + 8);
+    n = shape->depth - 1;
+    plane = bm->planes;
     BL_BLITWAIT(cb);
     L(BLTCMOD) = s.cbmod;                       /* MOVEM.l d4-d5,BLTCMOD */
     L(BLTAMOD) = s.admod;
@@ -461,7 +502,7 @@ static void BLITZ_ROUTINE bpredatorblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3)
     W(BLTCON1) = 0x1000;
     W(BLTCON0) = shift | 0xfca;
     CW(BLTALWM) = 0;
-    cookie = SL(shape, 18);
+    cookie = shape->cookie;
     goto first;
     do {
         BL_BLITWAIT(cb);
@@ -480,9 +521,9 @@ first:
 /* BColourBlit: the shape's area saved, then the cookie (shifted) in
    `colour`: per plane D = A | C (bit set) or ~A & C */
 static void BLITZ_ROUTINE docolblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
-                                      UWORD colour BL_REG(d4), UBYTE *buf BL_REG(a0),
-                                      UBYTE *cb BL_REG(a1), UBYTE *bm BL_REG(a2),
-                                      UBYTE *shape BL_REG(a3))
+                                      UWORD colour BL_REG(d4), struct buffer *buf BL_REG(a0),
+                                      UBYTE *cb BL_REG(a1), struct bmap *bm BL_REG(a2),
+                                      struct shape *shape BL_REG(a3))
 {
     struct bsave s;
     UWORD con, n;
@@ -491,19 +532,19 @@ static void BLITZ_ROUTINE docolblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
     ULONG cookie;
 
     coltoblit = colour;
-    x -= SW(shape, 10);
-    y -= SW(shape, 12);
-    bsave(&s, buf, bm, cb, x, y, (UWORD)(SW(bm, 0) - SW(shape, 6) - 2), SW(shape, 8),
-          SW(shape, 24));
+    x -= shape->xhandle;
+    y -= shape->yhandle;
+    bsave(&s, buf, bm, cb, x, y, (UWORD)(bm->bpr - shape->ebwidth - 2), shape->blitsize,
+          shape->onebpmemx);
     con = (UWORD)((x & 15) << 12) | 0xb00;      /* A, C, D */
-    n = SW(shape, 4) - 1;
-    plane = (UBYTE **)(bm + 8);
+    n = shape->depth - 1;
+    plane = bm->planes;
     BL_BLITWAIT(cb);
     L(BLTCMOD) = s.cbmod;
     L(BLTAMOD) = s.admod;
     W(BLTCON1) = 0;
     CW(BLTALWM) = 0;
-    cookie = SL(shape, 18);
+    cookie = shape->cookie;
     bits = (UBYTE)coltoblit;
     goto first;
     do {
@@ -528,12 +569,12 @@ first:
    planes of 16x16) through its mask onto 6 planes of the used bitmap */
 static void BLITZ_ROUTINE tblockimage_c(ULONG addr BL_REG(d0), UWORD image BL_REG(d1),
                                         UWORD x BL_REG(d2), UWORD y BL_REG(d3),
-                                        UBYTE *bm BL_REG(a0))
+                                        struct bmap *bm BL_REG(a0))
 {
-    UWORD width = SW(bm, 0);
+    UWORD width = bm->bpr;
     ULONG off = xyoff(x, y, width);
     UWORD n = DEPTH - 1;
-    UBYTE **plane = (UBYTE **)(bm + 8);
+    UBYTE **plane = bm->planes;
 
     addr += (ULONG)image * IMAGESIZE;
     BLITWAIT();
@@ -561,8 +602,8 @@ first:
 /* BTBlockImage: the area saved, then the image shifted through its mask */
 static void BLITZ_ROUTINE btblockimage_c(ULONG addr BL_REG(d1), UWORD x BL_REG(d2),
                                          UWORD y BL_REG(d3), UWORD image BL_REG(d4),
-                                         UBYTE *buf BL_REG(a0), UBYTE *cb BL_REG(a1),
-                                         UBYTE *bm BL_REG(a2))
+                                         struct buffer *buf BL_REG(a0), UBYTE *cb BL_REG(a1),
+                                         struct bmap *bm BL_REG(a2))
 {
     struct bsave s;
     UWORD shift, n = SHAPE_DEPTH - 1;
@@ -570,10 +611,10 @@ static void BLITZ_ROUTINE btblockimage_c(ULONG addr BL_REG(d1), UWORD x BL_REG(d
     ULONG mask;
 
     addr += (WORD)(UWORD)((ULONG)image * SHAPE_BYTESIZE);     /* ADD.w */
-    bsave(&s, buf, bm, cb, x, y, (UWORD)(SW(bm, 0) - SHAPE_EBWIDTH - 2), SHAPE_BLITSIZE,
+    bsave(&s, buf, bm, cb, x, y, (UWORD)(bm->bpr - SHAPE_EBWIDTH - 2), SHAPE_BLITSIZE,
           SHAPE_ONEBPMEMX);
     shift = (UWORD)((x & 15) << 12);
-    plane = (UBYTE **)(bm + 8);
+    plane = bm->planes;
     BL_BLITWAIT(cb);
     CL(BLTCMOD) = s.cbmod;
     CL(BLTAMOD) = s.admod;
@@ -601,31 +642,33 @@ first:
 /* CreateShape: count shape objects from a2 like a3, the data at mem one
    after another (+26 of the like shape each), no cookie, "cL" */
 static void BLITZ_ROUTINE createshape_c(UWORD count BL_REG(d1), ULONG mem BL_REG(d2),
-                                        UBYTE *shape BL_REG(a2), UBYTE *like BL_REG(a3))
+                                        struct shape *shape BL_REG(a2),
+                                        struct shape *like BL_REG(a3))
 {
     UWORD n = count - 1;
-    ULONG all = SW(like, 26);
+    ULONG all = like->allbpmem;
 
     do {
-        SL(shape, 0) = SL(like, 0);
-        SL(shape, 4) = SL(like, 4);
-        SL(shape, 8) = SL(like, 8);
-        SW(shape, 12) = SW(like, 12);
-        SL(shape, 14) = mem;
-        SL(shape, 18) = 0;
-        SL(shape, 22) = SL(like, 22);
-        SL(shape, 26) = SL(like, 26);
-        SW(shape, 30) = 0x634c;                 /* "cL" */
-        shape += 32;
+        LONGS(shape, like, width);         /* MOVE.l: width, height */
+        LONGS(shape, like, depth);         /* depth, ebwidth */
+        LONGS(shape, like, blitsize);      /* blitsize, xhandle */
+        shape->yhandle = like->yhandle;
+        shape->data = mem;
+        shape->cookie = 0;
+        LONGS(shape, like, onebpmem);      /* onebpmem, onebpmemx */
+        LONGS(shape, like, allbpmem);      /* allbpmem, allbpmemx */
+        shape->cl = 0x634c;                 /* "cL" */
+        shape++;
         mem += all;
     } while (n-- != 0);
 }
 
 /* SpecialBlockToShape: SpecialBlock into the data of dest (16x16) */
-static void BLITZ_ROUTINE specialblocktoshape_c(UBYTE *dest BL_REG(a0), UBYTE *top BL_REG(a1),
-                                                UBYTE *bot BL_REG(a2))
+static void BLITZ_ROUTINE specialblocktoshape_c(struct shape *dest BL_REG(a0),
+                                                struct shape *top BL_REG(a1),
+                                                struct shape *bot BL_REG(a2))
 {
-    UWORD n = SW(top, 4) - 1;
+    UWORD n = top->depth - 1;
     ULONG cookie;
 
     BLITWAIT();
@@ -635,10 +678,10 @@ static void BLITZ_ROUTINE specialblocktoshape_c(UBYTE *dest BL_REG(a0), UBYTE *t
     W(BLTCMOD) = 0;
     W(BLTDMOD) = 0;
     L(BLTAFWM) = 0xffffffff;
-    L(BLTBPT) = SL(top, 14);
-    L(BLTCPT) = SL(bot, 14);
-    L(BLTDPT) = SL(dest, 14);
-    cookie = SL(top, 18);
+    L(BLTBPT) = top->data;
+    L(BLTCPT) = bot->data;
+    L(BLTDPT) = dest->data;
+    cookie = top->cookie;
     goto first;
     do {
         BLITWAIT();
@@ -649,16 +692,17 @@ first:
 }
 
 /* BlockToShape: height*depth words of the shape's data to dest's */
-static void BLITZ_ROUTINE blocktoshape_c(UBYTE *shape BL_REG(a1), UBYTE *dest BL_REG(a2))
+static void BLITZ_ROUTINE blocktoshape_c(struct shape *shape BL_REG(a1),
+                                         struct shape *dest BL_REG(a2))
 {
     BLITWAIT();
     L(BLTCON0) = 0x09f00000;                    /* D = A */
     W(BLTAMOD) = 0;
     W(BLTDMOD) = 0;
     L(BLTAFWM) = 0xffffffff;
-    L(BLTAPT) = SL(shape, 14);
-    L(BLTDPT) = SL(dest, 14);
-    W(BLTSIZE) = (UWORD)((UWORD)(SW(shape, 2) * SW(shape, 4)) << 6) + 1;
+    L(BLTAPT) = shape->data;
+    L(BLTDPT) = dest->data;
+    W(BLTSIZE) = (UWORD)((UWORD)(shape->height * shape->depth) << 6) + 1;
 }
 
 /* Registers: the original changes d0-d7/a0-a3 (the routines differ) and
@@ -685,20 +729,22 @@ BLITZ_ERRCHK_MESSAGE(diffsizes, "Shapes must be the same size!");
 BLITZ_ERRCHK_MESSAGE(noshape, "Destination shape MUST be pre-reserved!");
 
 /* BlockToShape: dest has data, both shapes the same size (+26) */
-static void BLITZ_ERRCHK errblocktoshape_c(UBYTE *shape BL_REG(a1), UBYTE *dest BL_REG(a2))
+static void BLITZ_ERRCHK errblocktoshape_c(struct shape *shape BL_REG(a1),
+                                           struct shape *dest BL_REG(a2))
 {
-    if (!SL(dest, 14))
+    if (!dest->data)
         BLITZ_RUNERR(noshape);
-    if (SW(shape, 26) != SW(dest, 26))
+    if (shape->allbpmem != dest->allbpmem)
         BLITZ_RUNERR(diffsizes);
 }
 
 /* SpecialBlockToShape: the same for dest (a0) and the top shape */
-static void BLITZ_ERRCHK errsblocktoshape_c(UBYTE *dest BL_REG(a0), UBYTE *top BL_REG(a1))
+static void BLITZ_ERRCHK errsblocktoshape_c(struct shape *dest BL_REG(a0),
+                                            struct shape *top BL_REG(a1))
 {
-    if (!SL(dest, 14))
+    if (!dest->data)
         BLITZ_RUNERR(noshape);
-    if (SW(top, 26) != SW(dest, 26))
+    if (top->allbpmem != dest->allbpmem)
         BLITZ_RUNERR(diffsizes);
 }
 
