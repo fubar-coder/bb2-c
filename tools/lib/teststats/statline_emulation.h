@@ -11,8 +11,16 @@
 #include "amiga_emulation.h"
 #include "statline.h"
 
-/* the line of session e of pass `work` (the work directory: its last part
-   is the test) for config */
+/**
+ * @brief Fill the @stat line of an emulator session.
+ *
+ * The verdict is not set here: the caller sets it once it is known.
+ *
+ * @param s       out: the line (initialised here, statline_init)
+ * @param work    the work directory of the pass: its last part is the test
+ * @param config  the configuration
+ * @param e       the session (after amiga_emulation_join)
+ */
 static inline void statline_session(struct statline *s, const char *work, const char *config,
                                     const struct amiga_emulation *e)
 {

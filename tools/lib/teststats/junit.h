@@ -24,8 +24,10 @@
 
 #include <stddef.h>
 
+/** @brief The result of a testcase. */
 enum junit_status { JUNIT_PASSED, JUNIT_FAILED, JUNIT_SKIPPED };
 
+/** @brief A testcase. */
 struct junit_case {
     char *name;
     double time;                /* seconds */
@@ -34,6 +36,7 @@ struct junit_case {
     char *out;                  /* <system-out>, the entities resolved; "" without */
 };
 
+/** @brief A JUnit file: its testsuite's timestamp and testcases. */
 struct junit_file {
     char *timestamp;            /* of the testsuite, "" without */
     struct junit_case *cases;
@@ -42,9 +45,19 @@ struct junit_file {
     size_t nproblems;
 };
 
-/* reads text (len bytes): 0 with *f filled (problems maybe), -1 if the
-   file is malformed or memory ran out (a message in err; *f empty) */
+/**
+ * @brief Read a JUnit file.
+ * @param text    the file
+ * @param len     its length
+ * @param f       out: the testcases (problems maybe; empty on an error;
+ *                junit_free)
+ * @param err     the message of an error
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 if the file is malformed or memory ran out
+ */
 int junit_parse(const char *text, size_t len, struct junit_file *f, char *err, size_t errlen);
+
+/** @brief Free what junit_parse filled in. */
 void junit_free(struct junit_file *f);
 
 #endif

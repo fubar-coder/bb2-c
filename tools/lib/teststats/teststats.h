@@ -33,8 +33,10 @@
 #include <stddef.h>
 #include <stdio.h>
 
+/** @brief The collected runs (opaque; teststats_new, teststats_free). */
 struct teststats;
 
+/** @brief The options of the report. */
 struct teststats_options {
     double factor;              /* time limit = max timed x factor (default 3) */
     double floor;               /* ... at least this (seconds, default 30) */
@@ -44,20 +46,38 @@ struct teststats_options {
 #define TESTSTATS_FACTOR 3.0
 #define TESTSTATS_FLOOR  30.0
 
+/** @brief New, empty statistics; NULL if out of memory. */
 struct teststats *teststats_new(void);
+
+/** @brief Free the statistics. */
 void teststats_free(struct teststats *t);
 
-/* one JUnit file (len bytes of text, named source in messages) as a run.
-   Problems go to diag: a malformed file (-1, nothing of it counts), a
-   testcase left out, a broken @stat line (left out).  The number of
-   problems, -1 for a file refused or memory out. */
+/**
+ * @brief Add one JUnit file as a run.
+ *
+ * Problems go to diag: a malformed file (-1, nothing of it counts), a
+ * testcase left out, a broken @stat line (left out).
+ *
+ * @param t       the statistics
+ * @param source  the file's name, in messages
+ * @param text    the file
+ * @param len     its length
+ * @param diag    the problems
+ * @return the number of problems, -1 for a file refused or memory out
+ */
 int teststats_add(struct teststats *t, const char *source, const char *text, size_t len,
                   FILE *diag);
 
-/* the number of runs (files) added */
+/** @brief The number of runs (files) added. */
 size_t teststats_runs(const struct teststats *t);
 
-/* the report; -1 if memory ran out */
+/**
+ * @brief Write the report (the sections above).
+ * @param t    the statistics
+ * @param o    the options (may be NULL)
+ * @param out  the report
+ * @return 0 = ok, -1 if memory ran out
+ */
 int teststats_report(const struct teststats *t, const struct teststats_options *o, FILE *out);
 
 #endif

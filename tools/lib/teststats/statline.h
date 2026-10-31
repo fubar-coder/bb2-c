@@ -57,6 +57,7 @@
 #define STATLINE_TAG     "@stat"
 #define STATLINE_VERSION 1
 
+/** @brief The fields of a @stat line (see the top). */
 struct statline {
     char test[128];
     char config[128];
@@ -69,22 +70,39 @@ struct statline {
     int runs;                   /* -1 = none */
 };
 
-/* an empty line: no verdict, no runs */
+/** @brief An empty line: no verdict, no runs. */
 void statline_init(struct statline *s);
 
-/* sets a text field (cut to its size) */
+/**
+ * @brief Set a text field (cut to its size).
+ * @param field  the field
+ * @param size   its size
+ * @param value  the text (NULL: "")
+ */
 void statline_set(char *field, size_t size, const char *value);
 
-/* the line (without newline) into buf; the length, or -1 if it does not
-   fit */
+/**
+ * @brief Format the line (without newline).
+ * @param s    the fields
+ * @param buf  out: the line
+ * @param len  the size of buf
+ * @return the length, or -1 if it does not fit
+ */
 int statline_format(const struct statline *s, char *buf, size_t len);
 
-/* writes the line and a newline to f and flushes it */
+/** @brief Write the line and a newline to f and flush it. */
 void statline_write(FILE *f, const struct statline *s);
 
-/* reads one line (len characters, no newline needed): 1 = a @stat line in
-   *s, 0 = not one (it does not start with "@stat "), -1 = a broken one
-   (a message in err) */
+/**
+ * @brief Read one line.
+ * @param line    the line (no newline needed)
+ * @param len     its length in characters
+ * @param s       out: the fields
+ * @param err     the message for a broken line
+ * @param errlen  the size of err
+ * @return 1 = a @stat line in *s, 0 = not one (it does not start with
+ *         "@stat "), -1 = a broken one
+ */
 int statline_parse(const char *line, size_t len, struct statline *s, char *err, size_t errlen);
 
 #endif
