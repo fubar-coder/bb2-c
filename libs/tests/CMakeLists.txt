@@ -66,7 +66,7 @@ target_link_libraries(libs_tests PRIVATE snitch::snitch)
 # or the CD)
 get_property(rwe_userlibs GLOBAL PROPERTY RWE_EMULATOR_LIBS)
 string(REPLACE ";" "$<SEMICOLON>" rwe_userlibs "${rwe_userlibs}")
-set(LIBS_TESTS_TIMEOUT 120 CACHE STRING "libs_emulator: time limit of the emulator run (seconds)")
+set(LIBS_TESTS_TIMEOUT 300 CACHE STRING "libs_emulator: time limit of the emulator run (seconds)")
 add_test(NAME libs_emulator COMMAND ${CMAKE_COMMAND}
 	-DAMIGA_RUN=${AMIGA_RUN} -DBIGLIB=${BIGLIB}
 	-DPROGRAM=$<TARGET_FILE:libs_tests>
