@@ -336,22 +336,22 @@ BLITZ_THUNK(domenustate3, domenustate3_c, "d0-d1/a0-a1");
 BLITZ_THUNK(domenustate4, domenustate4_c, "d0-d1/a0-a1");
 
 /* checked: BTST #0,12(a2):SNE d0:EXT d0 - upper word of d0 stays */
-static ULONG checked(ULONG prev, const UBYTE *p)
+static ULONG checked(ULONG hiword, const UBYTE *p)
 {
-    return (prev & 0xffff0000UL) | ((B(p, 12) & 1) ? 0xffff : 0);
+    return (hiword & 0xffff0000UL) | ((B(p, 12) & 1) ? 0xffff : 0);
 }
 
 /* MenuChecked(l,m,i) - a2 = the list */
-static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG prev BL_REG(d0), UBYTE *p BL_REG(a2),
+static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG hiword BL_REG(d0), UBYTE *p BL_REG(a2),
                                            UWORD m BL_REG(d1), UWORD i BL_REG(d2))
 {
     p = walk(p, m) + M_FIRST;
-    return checked(prev, walk(p, i));
+    return checked(hiword, walk(p, i));
 }
 BLITZ_THUNK(domenuchecked, domenuchecked_c, "d1/a0-a1");
 
 /* MenuChecked(l,m,i,s) - BUG(orig) (#217): both inner DBF jump to the menu loop */
-static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG prev BL_REG(d0), UBYTE *p BL_REG(a2),
+static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG hiword BL_REG(d0), UBYTE *p BL_REG(a2),
                                             UWORD m BL_REG(d1), UWORD i BL_REG(d2),
                                             UWORD s BL_REG(d3))
 {
@@ -367,7 +367,7 @@ menuloop:                                       /* loop1 */
     p = P(p, 0);
     if (s-- != 0)
         goto menuloop;
-    return checked(prev, p);
+    return checked(hiword, p);
 }
 BLITZ_THUNK(domenuchecked2, domenuchecked2_c, "d1/a0-a1");
 

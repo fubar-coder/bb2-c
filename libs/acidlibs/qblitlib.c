@@ -111,10 +111,10 @@ static void BLITZ_ROUTINE doqblitmode_c(UWORD m BL_REG(d0))
 }
 BLITZ_THUNK(doqblitmode, doqblitmode_c, "d0-d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE codeinit_c(ULONG prev BL_REG(d0))
+static ULONG BLITZ_ROUTINE codeinit_c(ULONG hiword BL_REG(d0))
 {
     bcon0 = 0xfca;
-    return (prev & 0xffff0000UL) | 0xfca;
+    return (hiword & 0xffff0000UL) | 0xfca;
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
 

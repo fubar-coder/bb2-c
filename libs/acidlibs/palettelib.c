@@ -405,9 +405,9 @@ BLITZ_THUNK_POST(make4bitrgbs, make4bitrgbs_c, "d0/a0",
 
 /* init - a0 = graphics; returns agamode (EXT.w: upper word from
    ExecVersion's d0) */
-static ULONG BLITZ_ROUTINE codeinit_c(ULONG prev BL_REG(d0), struct Library *gfx BL_REG(a0))
+static ULONG BLITZ_ROUTINE codeinit_c(ULONG callerd0 BL_REG(d0), struct Library *gfx BL_REG(a0))
 {
-    struct bl_regs r = { .d0 = prev };
+    struct bl_regs r = { .d0 = callerd0 };
     ULONG v;
 
     gfxbase = gfx;
