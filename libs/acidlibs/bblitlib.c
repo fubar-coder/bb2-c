@@ -26,6 +26,7 @@
  * DIFF: the nullsub-less entries keep a4/a5 (the original saves them too).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #define __NOLIBBASE__
 #define GRAPHICS_BASE_NAME gfx
 #include <proto/graphics.h>
@@ -103,36 +104,7 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 10, 4);
 
 static UWORD bcon0 = 0xfca;
 
-/* a shape object of shapeslib (32 bytes; the part read here, every
-   field as the word or long the original reads) */
-struct shape {
-    UWORD width;                /* +0 pixel width, 0 = none */
-    UWORD height;               /* +2 */
-    UWORD depth;                /* +4 */
-    UWORD ebwidth;              /* +6 even byte width */
-    UWORD bltsize;              /* +8 */
-    UWORD xhandle, yhandle;     /* +10, +12 */
-    UBYTE *data;                /* +14 the planes, one after the other */
-    UBYTE *cookie;              /* +18 0 = none */
-    UWORD planesize;            /* +22 bytes per plane */
-    UWORD savesize;             /* +24 per plane + one word per row */
-};
-
-/* a bitmap object of bitmaplib (64 bytes; the part read here): +4 is
-   flags.b/depth.b, read as one word as in the original */
-struct bmap {
-    UWORD bpr;                  /* +0 bytes per row */
-    UWORD rows;                 /* +2 */
-    UWORD depth;                /* +4 flags << 8 | depth */
-    UWORD pad6;
-    UBYTE *planes[8];           /* +8 */
-    UBYTE pad40[16];
-    UWORD width;                /* +56 */
-    UWORD height;               /* +58 */
-    UWORD colours;              /* +60 */
-    UWORD isreal;               /* +62 0 = not set up */
-};
-static_assert(sizeof(struct bmap) == 64);
+/* the objects: struct bb_shape, struct bb_bitmap (blitzobj.h) */
 
 /* a buffer object */
 struct record;
@@ -265,7 +237,7 @@ struct blitstate {
 
 /* b_doblit - a0 = buffer, a3 = shape, a2 = bitmap, a1 = chip base, d2/d3
    = x/y: save the background into a record, then blit */
-static void bblit(struct buffer *b, const struct shape *shape, const struct bmap *bm, UBYTE *cb,
+static void bblit(struct buffer *b, const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb,
                   WORD x, WORD y, struct blitstate *st)
 {
     struct record *hdr = b->pos;
@@ -274,8 +246,8 @@ static void bblit(struct buffer *b, const struct shape *shape, const struct bmap
     UWORD n, save;
     UBYTE **plane;
 
-    x -= shape->xhandle;
-    y -= shape->yhandle;
+    x -= shape->handlex;
+    y -= shape->handley;
     hdr->prev = b->last;                        /* link the record */
     b->last = hdr;
     admod = 0xfffe0000UL | (UWORD)(bm->bpr - shape->ebwidth - 2);
@@ -284,9 +256,9 @@ static void bblit(struct buffer *b, const struct shape *shape, const struct bmap
     st->off = (ULONG)bl_muls_w(y, bm->bpr) + (LONG)(WORD)(x >> 3);
     st->size = shape->bltsize;
     hdr->size = st->size;
-    n = bm->depth - 1;
+    n = bm->flagsdepth - 1;
     hdr->planes = n;
-    save = shape->savesize;
+    save = shape->xplanesize;
     hdr->save = save;
     hdr->off = st->off;
     rec = (UBYTE *)(hdr + 1);
@@ -342,14 +314,14 @@ doblit:
 }
 
 /* b_doblitex - excess planes, d4 = bits (one per plane) */
-static void bblitex(struct buffer *b, const struct shape *shape, const struct bmap *bm, UBYTE *cb,
+static void bblitex(struct buffer *b, const struct bb_shape *shape, const struct bb_bitmap *bm, UBYTE *cb,
                     WORD x, WORD y, UWORD bits)
 {
     struct blitstate st;
     UWORD p;
 
     bblit(b, shape, bm, cb, x, y, &st);
-    for (p = shape->depth; p < bm->depth; p++) {
+    for (p = shape->depth; p < bm->flagsdepth; p++) {
         UWORD con = (bits & 1) ? 0xbfa : 0xb0a;
         ULONG dst;
 
@@ -452,7 +424,7 @@ nextplane:                                      /* loop3a */
 /* ---------------------------------------------------- the entries */
 
 #define BBLIT_REGS WORD x BL_REG(d2), WORD y BL_REG(d3), struct buffer *b BL_REG(a0), \
-                   UBYTE *cb BL_REG(a1), const struct bmap *bm BL_REG(a2)
+                   UBYTE *cb BL_REG(a1), const struct bb_bitmap *bm BL_REG(a2)
 
 /**
  * @brief BBlit Buffer#,Shape#,X,Y: blit the shape into the used bitmap,
@@ -481,7 +453,7 @@ void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS)
 {
     struct blitstate st;
 
-    bblit(b, (const struct shape *)blitz_string, bm, cb, x, y, &st);
+    bblit(b, (const struct bb_shape *)blitz_string, bm, cb, x, y, &st);
 }
 
 /**
@@ -513,7 +485,7 @@ void BLITZ_ROUTINE a_doblit_c(BBLIT_REGS, struct Library *gfx BL_REG(a6))
     struct blitstate st;
 
     OwnBlitter();
-    bblit(b, (const struct shape *)blitz_string, bm, cb, x, y, &st);
+    bblit(b, (const struct bb_shape *)blitz_string, bm, cb, x, y, &st);
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
@@ -537,7 +509,7 @@ BLITZ_AB_ROUTINE(doblit, b_doblit_c, "   jmp     _a_doblit_c");
 void BLITZ_ROUTINE b_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4));
 void BLITZ_ROUTINE b_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4))
 {
-    bblitex(b, (const struct shape *)blitz_string, bm, cb, x, y, bits);
+    bblitex(b, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
 }
 
 /**
@@ -563,7 +535,7 @@ void BLITZ_ROUTINE a_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4),
                                 struct Library *gfx BL_REG(a6))
 {
     OwnBlitter();
-    bblitex(b, (const struct shape *)blitz_string, bm, cb, x, y, bits);
+    bblitex(b, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
@@ -665,7 +637,7 @@ BLITZ_ERRCHK_MESSAGE(mess6, "Buffer Overflow");
 BLITZ_ERRCHK_MESSAGE(mess7, "Uninitialized Stencil");
 
 /* bliterrs: maxchk (cookie, bitmap, shape), poschk (depth, position) */
-static int BLITZ_ERRCHK maxchk(const struct shape *shape, const struct bmap *bm)
+static int BLITZ_ERRCHK maxchk(const struct bb_shape *shape, const struct bb_bitmap *bm)
 {
     if (!(ULONG)shape->cookie)
         BLITZ_RUNERR(mess3);
@@ -678,14 +650,14 @@ static int BLITZ_ERRCHK maxchk(const struct shape *shape, const struct bmap *bm)
     return 0;
 }
 
-static int BLITZ_ERRCHK poschk(const struct shape *shape, const struct bmap *bm, WORD x, WORD y)
+static int BLITZ_ERRCHK poschk(const struct bb_shape *shape, const struct bb_bitmap *bm, WORD x, WORD y)
 {
-    if (shape->depth > bm->depth) {
+    if (shape->depth > bm->flagsdepth) {
         BLITZ_RUNERR(mess0);
         return 0;
     }
-    x -= shape->xhandle;
-    y -= shape->yhandle;
+    x -= shape->handlex;
+    y -= shape->handley;
     if (x < 0 || y < 0
         || (UWORD)(x + shape->width) > bm->width || (UWORD)(y + shape->height) > bm->height) {
         BLITZ_RUNERR(mess4);
@@ -698,9 +670,9 @@ static int BLITZ_ERRCHK poschk(const struct shape *shape, const struct bmap *bm,
    record: 24(shape) * planes + 4 * planes + 16 */
 static void BLITZ_ERRCHK bblitchk_c(WORD x BL_REG(d2), WORD y BL_REG(d3),
                                     const struct buffer *b BL_REG(a0),
-                                    const struct bmap *bm BL_REG(a2))
+                                    const struct bb_bitmap *bm BL_REG(a2))
 {
-    const struct shape *shape = (const struct shape *)blitz_string;
+    const struct bb_shape *shape = (const struct bb_shape *)blitz_string;
     ULONG need;
 
     if (!b->mem) {
@@ -709,8 +681,8 @@ static void BLITZ_ERRCHK bblitchk_c(WORD x BL_REG(d2), WORD y BL_REG(d3),
     }
     if (!maxchk(shape, bm) || !poschk(shape, bm, x, y))
         return;
-    need = bl_mulu_w(shape->savesize, bm->depth);
-    need += (UWORD)(bm->depth << 2);
+    need = bl_mulu_w(shape->xplanesize, bm->flagsdepth);
+    need += (UWORD)(bm->flagsdepth << 2);
     need += 16 + (ULONG)b->pos;
     if (need > (ULONG)b->mem + b->len)
         BLITZ_RUNERR(mess6);
