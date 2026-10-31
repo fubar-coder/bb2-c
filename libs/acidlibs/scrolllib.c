@@ -121,6 +121,21 @@ extern const char mess1[], mess2[], mess3[];
 
 /* --------------------------------------------------------- Plot, Point */
 
+/**
+ * @brief Plot X,Y,Colour - set a pixel of the used bitmap.
+ *
+ * The bitmap's origin (+48/+50) is added; outside the clip size (+56/+58,
+ * unsigned compare) nothing happens.  A negative colour complements the
+ * pixel in all planes (BCHG).
+ *
+ * BUG(orig) (#393): a bitmap of depth 0 runs the plane loop 65536 times.
+ * Errors: "Uninitialized BitMap" (bmchk, debugger only).
+ *
+ * @param x   d0.w: x
+ * @param y   d1.w: y
+ * @param col d2.w: the colour, < 0 = complement
+ * @param bm  a2: the used bitmap
+ */
 static void BLITZ_ROUTINE doplot_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
                                    UWORD col BL_REG(d2), const UBYTE *bm BL_REG(a2))
 {
@@ -153,6 +168,19 @@ static void BLITZ_ROUTINE doplot_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
 }
 BLITZ_THUNK(doplot, doplot_c, "d1/a0-a1");
 
+/**
+ * @brief Point(X,Y) - the colour of a pixel of the used bitmap.
+ *
+ * Origin and clipping as in Plot.
+ *
+ * Errors: "Uninitialized BitMap" (bmchk, debugger only).
+ *
+ * @param xarg d0.w: x
+ * @param y    d1.w: y
+ * @param bm   a2: the used bitmap
+ * @return d0.w: the colour, 0 outside the bitmap (MOVEQ #0,d0); the upper
+ *         word is the one of @p xarg (MOVE d2,d0)
+ */
 static ULONG BLITZ_ROUTINE dopoint_c(ULONG xarg BL_REG(d0), UWORD y BL_REG(d1),
                                      const UBYTE *bm BL_REG(a2))
 {
@@ -276,17 +304,48 @@ static void b_cls(UBYTE *cb, const UBYTE *bm, UWORD col)
     }
 }
 
+/**
+ * @brief Cls - clear the used bitmap to colour 0 (Blitz mode).
+ *
+ * The blitter fills every plane (D only, BLTCDAT = the colour's bit); an
+ * interleaved bitmap in bands of up to 1024 rows and 64 words, a normal
+ * one plane by plane in blits of up to 128K (clsnotint, as in the CD
+ * binary).
+ *
+ * BUG(orig) (#393): a bitmap of depth 0 runs the plane loop 65536 times.
+ * Errors: "Uninitialized BitMap" (bmchk, debugger only).
+ *
+ * @param cb a1: the chip base ($DFF000, chipbaselib)
+ * @param bm a2: the used bitmap
+ */
 static void BLITZ_ROUTINE b_docls_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2))
 {
     b_cls(cb, bm, 0);
 }
 
+/**
+ * @brief Cls Colour - fill the used bitmap with a colour (Blitz mode).
+ *
+ * As b_docls_c with the colour's bits.
+ *
+ * @param col d0.w: the colour
+ * @param cb  a1: the chip base ($DFF000)
+ * @param bm  a2: the used bitmap
+ */
 static void BLITZ_ROUTINE b_docls2_c(UWORD col BL_REG(d0), UBYTE *cb BL_REG(a1),
                                      const UBYTE *bm BL_REG(a2))
 {
     b_cls(cb, bm, col);
 }
 
+/**
+ * @brief Cls in Amiga mode: b_docls_c between OwnBlitter and
+ * DisownBlitter, waiting for the blitter at the end.
+ *
+ * @param cb  a1: the chip base ($DFF000)
+ * @param bm  a2: the used bitmap
+ * @param gfx a6: graphics.library
+ */
 static void BLITZ_ROUTINE a_docls_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2),
                                     struct GfxBase *gfx BL_REG(a6))
 {
@@ -296,6 +355,15 @@ static void BLITZ_ROUTINE a_docls_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG
     DisownBlitter();
 }
 
+/**
+ * @brief Cls Colour in Amiga mode: b_docls2_c between OwnBlitter and
+ * DisownBlitter, waiting for the blitter at the end.
+ *
+ * @param col d0.w: the colour
+ * @param cb  a1: the chip base ($DFF000)
+ * @param bm  a2: the used bitmap
+ * @param gfx a6: graphics.library
+ */
 static void BLITZ_ROUTINE a_docls2_c(UWORD col BL_REG(d0), UBYTE *cb BL_REG(a1),
                                      const UBYTE *bm BL_REG(a2), struct GfxBase *gfx BL_REG(a6))
 {
@@ -312,6 +380,10 @@ BLITZ_AB_ROUTINE(docls2, b_docls2, "   jmp     _a_docls2_c");
 
 /* ---------------------------------------------------------- init */
 
+/**
+ * @brief Library init: allocate the 144 byte cookie buffer (memlib
+ * globalloc, CHIP, not checked) and fill it with $FFFFFFFF.
+ */
 static void BLITZ_ROUTINE codeinit_c(void)
 {
     struct bl_regs r = { .d0 = CWIDTH, .d1 = MEMF_CHIP };
@@ -462,11 +534,42 @@ static UBYTE *scroll(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
     UWORD y2 BL_REG(d3), const UBYTE *src BL_REG(a0), UBYTE *cb BL_REG(a1), \
     UWORD *args BL_REG(a2)
 
+/**
+ * @brief Scroll X1,Y1,Width,Height,X2,Y2[,BitMap#] - copy an area with the
+ * blitter (Blitz mode).
+ *
+ * From the source bitmap (the used one, or BitMap#) to the used bitmap;
+ * ascending or descending depending on the overlap, the edges masked
+ * through the cookie buffer, as many planes as the shallower bitmap has.
+ * Areas wider than 960 pixels are copied in two blits: the width word on
+ * the caller's argument stack is changed for that, as in the original
+ * (not a bug: it belongs to this call and is discarded by the compiler
+ * afterwards).  a3 is left as the original leaves it (dest bitmap planes
+ * + 4 * planes).
+ *
+ * Errors (scchk1/scchk2, debugger only): "Illegal Scroll Area" (an area
+ * outside a bitmap), "Uninitialized BitMap", "Scroll area to large"
+ * (height > 1024).
+ *
+ * @param x1   d0.w: source x
+ * @param y1   d1.w: source y
+ * @param x2   d2.w: destination x
+ * @param y2   d3.w: destination y
+ * @param src  a0: the source bitmap
+ * @param cb   a1: the chip base ($DFF000)
+ * @param args a2: the argument stack: -2(a2) width, -4(a2) height
+ */
 static void BLITZ_ROUTINE b_doscroll_c(SCROLL_REGS)
 {
     blitz_string = scroll(x1, y1, x2, y2, src, cb, args);
 }
 
+/**
+ * @brief Scroll in Amiga mode: b_doscroll_c between OwnBlitter and
+ * DisownBlitter, waiting for the blitter at the end.
+ *
+ * @param gfx d6: graphics.library (!libs)
+ */
 static void BLITZ_ROUTINE a_doscroll_c(SCROLL_REGS, struct GfxBase *gfx BL_REG(d6))
 {
     UBYTE *end;
@@ -518,11 +621,34 @@ static UBYTE *blockscroll(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *s
     return (UBYTE *)pd;                         /* a3 after the loop */
 }
 
+/**
+ * @brief BlockScroll X1,Y1,Width,Height,X2,Y2[,BitMap#] - copy whole bytes
+ * with the blitter (Blitz mode).
+ *
+ * As Scroll, but x / 8 and width / 8: no shift, no masks, ascending only.
+ * a3 is left behind the destination's plane pointers as in the original.
+ *
+ * Errors: as Scroll (scchk1/scchk2, debugger only).
+ *
+ * @param x1   d0.w: source x
+ * @param y1   d1.w: source y
+ * @param x2   d2.w: destination x
+ * @param y2   d3.w: destination y
+ * @param src  a0: the source bitmap
+ * @param cb   a1: the chip base ($DFF000)
+ * @param args a2: the argument stack: -2(a2) width, -4(a2) height
+ */
 static void BLITZ_ROUTINE b_doblockscroll_c(SCROLL_REGS)
 {
     blitz_string = blockscroll(x1, y1, x2, y2, src, cb, args);
 }
 
+/**
+ * @brief BlockScroll in Amiga mode: b_doblockscroll_c between OwnBlitter
+ * and DisownBlitter, waiting for the blitter at the end.
+ *
+ * @param gfx d6: graphics.library (!libs)
+ */
 static void BLITZ_ROUTINE a_doblockscroll_c(SCROLL_REGS, struct GfxBase *gfx BL_REG(d6))
 {
     UBYTE *end;
