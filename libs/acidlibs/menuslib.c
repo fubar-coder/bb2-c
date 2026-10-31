@@ -50,6 +50,7 @@
  *     the end of the lists. (#416)
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <stddef.h>
 #include <intuition/intuition.h>
 #define __NOLIBBASE__
@@ -881,7 +882,7 @@ void BLITZ_ROUTINE dosubitem2(WORD m BL_REG(d1), WORD i BL_REG(d2), WORD s BL_RE
 /* shapecalc - BUG(orig) (#218): flags = the high word of the pushed long (MOVE
    4(a7),d7 -> temp, read as long from temp-2 behind the cleared low word
    of mexclude); size = shape size + 2 * gap */
-static struct textsize shapecalc(UWORD flagshi, UWORD item, const UWORD *shape)
+static struct textsize shapecalc(UWORD flagshi, UWORD item, const struct bb_shape *shape)
 {
     struct textsize extent;
 
@@ -889,24 +890,25 @@ static struct textsize shapecalc(UWORD flagshi, UWORD item, const UWORD *shape)
     mexclude = 0;                               /* CLR.l mexclude in sussflags */
     sussflags(*(ULONG *)((UBYTE *)&mt.temp - 2), item);
     shortcut = 0;
-    extent.width = menuxxs + menuxxs + shape[0];
-    extent.height = menuyxs + menuyxs + shape[1];
+    extent.width = menuxxs + menuxxs + shape->width;
+    extent.height = menuyxs + menuyxs + shape->height;
     extent.text = NULL;
     return extent;
 }
 
 /* shapecont - the item with an Image of the shape */
-static struct item *shapecont(UBYTE *head, WORD n, struct textsize extent, const UBYTE *shape)
+static struct item *shapecont(UBYTE *head, WORD n, struct textsize extent,
+                              const struct bb_shape *shape)
 {
     struct item *e = finditem(head, n, extent.width, extent.height, extent.height);
     struct Image *im = &e->fill.image;
 
     im->LeftEdge = menuxxs;
     im->TopEdge = menuyxs;
-    im->Width = W(shape, 0);                    /* the shape's width */
-    im->Height = W(shape, 2);                   /* height */
-    im->Depth = W(shape, 4);                    /* depth */
-    im->ImageData = (UWORD *)L(shape, 14);      /* data */
+    im->Width = shape->width;
+    im->Height = shape->height;
+    im->Depth = shape->depth;
+    im->ImageData = (UWORD *)shape->data;
     *(UWORD *)&im->PlanePick = 0xffff;          /* PlanePick, PlaneOnOff */
     e->item.ItemFill = im;
     e->item.Width = extent.width;
@@ -937,9 +939,10 @@ static struct item *shapecont(UBYTE *head, WORD n, struct textsize extent, const
  *        from 8(sp)).
  */
 static void BLITZ_ROUTINE doshapeitem_c(WORD m BL_REG(d1), WORD i BL_REG(d2),
-                                        const UBYTE *shape BL_REG(a2), UWORD flagshi BL_REG(d7))
+                                        const struct bb_shape *shape BL_REG(a2),
+                                        UWORD flagshi BL_REG(d7))
 {
-    struct textsize extent = shapecalc(flagshi, i, (const UWORD *)shape);
+    struct textsize extent = shapecalc(flagshi, i, shape);
 
     shapecont(getthing(blitz_string, m) + M_FIRST, i, extent, shape);
 }
@@ -962,9 +965,10 @@ static void BLITZ_ROUTINE doshapeitem_c(WORD m BL_REG(d1), WORD i BL_REG(d2),
  * @param flagshi d7: the high word of the Flags long.
  */
 static void BLITZ_ROUTINE doshapesub_c(WORD m BL_REG(d1), WORD i BL_REG(d2), WORD s BL_REG(d3),
-                                       const UBYTE *shape BL_REG(a2), UWORD flagshi BL_REG(d7))
+                                       const struct bb_shape *shape BL_REG(a2),
+                                       UWORD flagshi BL_REG(d7))
 {
-    struct textsize extent = shapecalc(flagshi, s, (const UWORD *)shape);
+    struct textsize extent = shapecalc(flagshi, s, shape);
     UBYTE *p;
 
     p = getthing(blitz_string, m) + M_FIRST;
@@ -1098,36 +1102,36 @@ static void BLITZ_ERRCHK subchk(UBYTE *list, UWORD m, UWORD i, UWORD s)
 }
 
 static void BLITZ_ERRCHK itemchk2_c(UWORD m BL_REG(d1), UWORD i BL_REG(d2),
-                                    const UBYTE *font BL_REG(a1))
+                                    const struct bb_intuifont *font BL_REG(a1))
 {
-    if (!L(font, 8))
+    if (!font->font)
         BLITZ_RUNERR(mess7);
     else
         itemchk(blitz_string, m, i);
 }
 
 static void BLITZ_ERRCHK shapeitemchk_c(UWORD m BL_REG(d1), UWORD i BL_REG(d2),
-                                        const UWORD *shape BL_REG(a2))
+                                        const struct bb_shape *shape BL_REG(a2))
 {
-    if (!*shape)
+    if (!shape->width)
         BLITZ_RUNERR(mess4);
     else
         itemchk(blitz_string, m, i);
 }
 
 static void BLITZ_ERRCHK subchk2_c(UWORD m BL_REG(d1), UWORD i BL_REG(d2), UWORD s BL_REG(d3),
-                                   const UBYTE *font BL_REG(a1))
+                                   const struct bb_intuifont *font BL_REG(a1))
 {
-    if (!L(font, 8))
+    if (!font->font)
         BLITZ_RUNERR(mess7);
     else
         subchk(blitz_string, m, i, s);
 }
 
 static void BLITZ_ERRCHK shapesubchk_c(UWORD m BL_REG(d1), UWORD i BL_REG(d2),
-                                       UWORD s BL_REG(d3), const UWORD *shape BL_REG(a2))
+                                       UWORD s BL_REG(d3), const struct bb_shape *shape BL_REG(a2))
 {
-    if (!*shape)
+    if (!shape->width)
         BLITZ_RUNERR(mess4);
     else
         subchk(blitz_string, m, i, s);
