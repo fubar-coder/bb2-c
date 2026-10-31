@@ -78,6 +78,7 @@ struct stencil {
     UWORD bpr, rows;            /* +0, +2 */
     UBYTE *mem;                 /* +4 */
 };
+static_assert(sizeof(struct stencil) == 8);
 
 /* SBlitMode */
 static void BLITZ_ROUTINE doblitmode_c(UWORD m BL_REG(d0))
@@ -283,11 +284,12 @@ BLITZ_ERRCHK_MESSAGE(mess4, "Coords outside of BitMap");
 
 /* sblitchk - stencil there, then blitchk with x/y from d2/d3 */
 static void BLITZ_ERRCHK sblitchk_c(WORD x BL_REG(d2), WORD y BL_REG(d3),
-                                    const UWORD *s BL_REG(a0), const UBYTE *bm BL_REG(a2))
+                                    const struct stencil *s BL_REG(a0),
+                                    const UBYTE *bm BL_REG(a2))
 {
     const UBYTE *shape = blitz_string;
 
-    if (!*s)
+    if (!s->bpr)
         BLITZ_RUNERR(messz);
     else if (!SL(shape, 18))
         BLITZ_RUNERR(mess3);
