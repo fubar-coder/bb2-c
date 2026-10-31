@@ -98,7 +98,10 @@ in finit) is translated although it is never reached.
   object's sample pointer, behind the last into whatever follows the
   objects (#926); +14, audiolib's
   "cL" mark of DecodeSound data, is no longer cleared
-  (#925).
+  (#925); the old sample is freed without looking at that mark, so
+  DecodeSound's in-place data of chip memory goes to memlib globfree
+  ("Unable to Free Memory") (#945; test
+  `tests/bug-orig/rwe/risoundlib2-cludgesound-frees-decoded`).
 * Never reached (behind the `ahidevice` check): PlaySoundAHI gives the
   length in words (+6) as `io_Length` in bytes
   (#932), and sends the one request

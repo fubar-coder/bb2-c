@@ -61,7 +61,9 @@
  *     audiolib (into the next object, behind the last one into whatever
  *     follows) (#926); +14
  *     (audiolib's "cL" mark of DecodeSound data) is no longer cleared
- *     (#925).
+ *     (#925); the old sample is freed without looking at that mark:
+ *     after a DecodeSound of chip data the file's own BODY goes to memlib
+ *     globfree ("Unable to Free Memory") (#945).
  *   - Behind the ahidevice check, never reached: PlaySoundAHI takes the
  *     length in words (+6) as the length in bytes
  *     (#932) and sends the one request
@@ -435,7 +437,8 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_R
     UWORD sper, n;
     int chunk;
 
-    if (LONGAT(saddr)) {                /* free the old sample (BUG(orig) #831) */
+    if (LONGAT(saddr)) {                /* free the old sample (BUG(orig) #831),
+                                           also "cL" data (BUG(orig) #945) */
         struct bl_regs r = { .a1 = LONGAT(saddr) };
         r.d0 = BL_SETW(sound, WORDAT(saddr + 6));
         BLITZ_ALIBJSR(TOK_globfree, r);

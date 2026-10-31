@@ -25,6 +25,10 @@
  *     keeps the pointer: when CludgeSound then fails, the sound object
  *     points to freed memory (and the next CludgeSound frees it again)
  *     (#831).
+ *   - The old sample is freed without looking at audiolib's "cL" mark
+ *     (+14): after a DecodeSound of chip data the sample is the file's
+ *     own BODY, which memlib never allocated - globfree does not find it
+ *     ("Unable to Free Memory", TRAP #0) (#945).
  *   - The sample rate is the word at VHDR + 4(VHDR) (the chunk length):
  *     right only for the usual VHDR length 20 (samplesPerSec at +12 of
  *     the data) (#832); the period is a subtraction loop, rate 0 never
@@ -81,7 +85,8 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_R
     UWORD sper, n;
     int chunk;
 
-    if (LONGAT(saddr)) {                /* free the old sample (BUG(orig) #831) */
+    if (LONGAT(saddr)) {                /* free the old sample (BUG(orig) #831),
+                                           also "cL" data (BUG(orig) #945) */
         struct bl_regs r = { .a1 = LONGAT(saddr) };
         r.d0 = BL_SETW(sound, WORDAT(saddr + 6));
         BLITZ_ALIBJSR(TOK_globfree, r);

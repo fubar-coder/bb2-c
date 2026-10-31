@@ -47,6 +47,11 @@ with its signed compare.
   stays in the object: a CludgeSound that fails leaves the object
   pointing to freed memory, and the next CludgeSound on it frees it again
   (memlib's "not found" error) (#831).
+* The old sample is freed without looking at audiolib's `"cL"` mark
+  (+14): after a DecodeSound of an 8SVX file in chip memory the sample is
+  the file's own BODY, which memlib never allocated, and globfree raises
+  "Unable to Free Memory" (TRAP #0) (#945; test
+  `tests/bug-orig/rwe/risoundlib-cludgesound-frees-decoded`).
 * The rate is the word at VHDR + the VHDR length (`ADD.l 4(a0),a0`): it is
   `samplesPerSec` only for the usual length 20 (#832). Rate 0 never
   returns (the subtraction loop) (#830).
