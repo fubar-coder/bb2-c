@@ -3,6 +3,7 @@
  * amiga_emulation.h.
  */
 #define _XOPEN_SOURCE 700       /* mkdtemp, nftw, setenv, kill, setpgid */
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <ftw.h>
@@ -104,6 +105,20 @@ struct amiga_emulation {
     unsigned nshots;
     double next_shot;
     enum amiga_emulation_status status;
+    /* snapshot mode (EXPERIMENT, amiga_emulation.h) */
+    enum { SNAP_OFF, SNAP_CREATING, SNAP_RESTORING, SNAP_RUNNING } snap;
+    char *orig_test_dir;        /* the work directory's TEST: */
+    char *slot_dir;             /* slot-K */
+    char *snap_path;            /* slot-K/snap-HASH.uss */
+    char *job;                  /* TEST:job.script */
+    char **wm_host, **wm_slot;  /* writable mounts: host and slot directories */
+    size_t nwm;
+    double ready_at, restore_until;
+    unsigned timeout;
+    const char *amiberry;
+    int visible, log_on;
+    int date_from_host;         /* the clock by DATE (Kickstart 1.3) */
+    pid_t parent;
 };
 
 /* ------------------------------------------------------------- helpers */
@@ -482,7 +497,7 @@ static char *make_runtime_dir(void)
 }
 
 static void child(const char *work_dir, const char *runtime_dir, const char *amiberry, int visible,
-                  int log_on, pid_t parent)
+                  int log_on, const char *statefile, pid_t parent)
 {
     static const char *const xdg[][2] = {
         { "XDG_CONFIG_HOME", "xdg/config" }, { "XDG_DATA_HOME", "xdg/data" },
@@ -521,10 +536,23 @@ static void child(const char *work_dir, const char *runtime_dir, const char *ami
         setenv("SDL_VIDEO_DRIVER", "offscreen", 1);
         setenv("SDL_AUDIO_DRIVER", "dummy", 1);
     }
-    if (log_on)
-        execlp(amiberry, amiberry, "--config", "amiberry.uae", "-G", "--log", (char *)NULL);
-    else
-        execlp(amiberry, amiberry, "--config", "amiberry.uae", "-G", (char *)NULL);
+    {
+        const char *argv[8];
+        int n = 0;
+
+        argv[n++] = amiberry;
+        argv[n++] = "--config";
+        argv[n++] = "amiberry.uae";
+        argv[n++] = "-G";
+        if (log_on)
+            argv[n++] = "--log";
+        if (statefile) {
+            argv[n++] = "--statefile";
+            argv[n++] = statefile;
+        }
+        argv[n] = NULL;
+        execvp(amiberry, (char *const *)argv);
+    }
     _exit(127);
 }
 
@@ -562,10 +590,11 @@ unsigned amiga_emulation_slot_max(const char *dir)
     return (unsigned)n;
 }
 
-int amiga_emulation_slot(const char *dir, unsigned max, int wait)
+static int slot_take(const char *dir, unsigned max, int wait, int *index)
 {
     unsigned k, m;
 
+    *index = -1;
     if (!max)
         return open("/dev/null", O_RDONLY | O_CLOEXEC);
     if (mkdir(dir, 0700) && errno != EEXIST)
@@ -583,8 +612,10 @@ int amiga_emulation_slot(const char *dir, unsigned max, int wait)
             free(path);
             if (fd < 0)
                 return -1;
-            if (!flock(fd, LOCK_EX | LOCK_NB))
+            if (!flock(fd, LOCK_EX | LOCK_NB)) {
+                *index = (int)k;
                 return fd;
+            }
             close(fd);
         }
         if (!wait) {
@@ -593,6 +624,13 @@ int amiga_emulation_slot(const char *dir, unsigned max, int wait)
         }
         sleep_ms(250);
     }
+}
+
+int amiga_emulation_slot(const char *dir, unsigned max, int wait)
+{
+    int index;
+
+    return slot_take(dir, max, wait, &index);
 }
 
 /* the runs of this process that are started and not freed yet */
@@ -606,6 +644,14 @@ int amiga_emulation_no_slot(void)
     return no_slot;
 }
 
+static char *slots_dir(void)
+{
+    const char *xdg = getenv("XDG_RUNTIME_DIR");
+
+    return xdg && *xdg ? str_printf("%s/amiga-emulation-slots", xdg)
+                       : str_printf("/tmp/amiga-emulation-slots-%u", (unsigned)getuid());
+}
+
 /* a slot for this run: $AMIGA_EMULATION_MAX of them, else the number in
    the slot directory's file max, else 4 (amiga_emulation_slot_max).  The
    limit is hard: every session holds a slot.  Only a process without a
@@ -614,13 +660,12 @@ int amiga_emulation_no_slot(void)
    with no_slot - waiting while holding slots could deadlock two runners
    that wait for each other's slots, and its running sessions' time limits
    would not be watched meanwhile.  The runner then ends one of its own
-   sessions and tries again. */
-static int take_slot(char *err, size_t errlen)
+   sessions and tries again.  *index: the slot's number, -1 without a
+   limit (AMIGA_EMULATION_MAX=0) */
+static int take_slot(int *index, char *err, size_t errlen)
 {
-    const char *xdg = getenv("XDG_RUNTIME_DIR");
-    char *dir = xdg && *xdg ? str_printf("%s/amiga-emulation-slots", xdg)
-                            : str_printf("/tmp/amiga-emulation-slots-%u", (unsigned)getuid());
-    int fd = dir ? amiga_emulation_slot(dir, AMIGA_EMULATION_SLOTS_AUTO, active_runs == 0) : -1;
+    char *dir = slots_dir();
+    int fd = dir ? slot_take(dir, AMIGA_EMULATION_SLOTS_AUTO, active_runs == 0, index) : -1;
 
     if (fd < 0 && active_runs && errno == EAGAIN) {
         no_slot = 1;
@@ -634,6 +679,432 @@ static int take_slot(char *err, size_t errlen)
     return fd;
 }
 
+static int command_wait(struct amiga_emulation *e, const char *const *args, char *reply,
+                        size_t len, double wait);
+
+static int launch(struct amiga_emulation *e, const char *statefile, char *err, size_t errlen)
+{
+    e->exited = 0;
+    e->pid = fork();
+    if (e->pid < 0) {
+        set_err(err, errlen, "fork: %s", strerror(errno));
+        return -1;
+    }
+    if (e->pid == 0)
+        child(e->work_dir, e->runtime_dir, e->amiberry, e->visible, e->log_on, statefile, e->parent);
+    setpgid(e->pid, e->pid);
+    return 0;
+}
+
+/* ------------------------------------------ snapshot mode (EXPERIMENT) */
+
+#define SNAP_READY          "ready"
+#define SNAP_STARTED        "run.started"
+#define SNAP_JOB            "job.script"
+#define SNAP_WAITER         "waitjob"
+#define SNAP_SAVE_DELAY     0.5     /* seconds between TEST:ready and SAVESTATE */
+#define SNAP_RESTORE_GRACE  10      /* seconds from the start to TEST:run.started */
+
+/* TEST:run.script of every session in snapshot mode (AmigaDOS 1.3 syntax:
+   it also runs under Kickstart 1.3); the snapshot is taken in the waiter */
+static const char snap_prologue[] =
+    "FAILAT 1000\n"
+    "ECHO >TEST:" SNAP_READY " \"ready\"\n"
+    "TEST:" SNAP_WAITER "\n"
+    "EXECUTE TEST:" SNAP_JOB "\n";
+
+/* TEST:waitjob, a hunk file: returns when TEST:job.script exists
+   (68000, dos.library V0 calls only):
+        movem.l d2/a6,-(sp)
+        move.l  4.w,a6
+        lea     dosname(pc),a1
+        moveq   #0,d0
+        jsr     -552(a6)        ; OpenLibrary
+        move.l  d0,a6
+   loop lea     fname(pc),a0
+        move.l  a0,d1
+        moveq   #-2,d2          ; ACCESS_READ
+        jsr     -84(a6)         ; Lock
+        tst.l   d0
+        bne.s   found
+        moveq   #2,d1
+        jsr     -198(a6)        ; Delay 2 ticks
+        bra.s   loop
+   found move.l d0,d1
+        jsr     -90(a6)         ; UnLock
+        move.l  a6,a1
+        move.l  4.w,a6
+        jsr     -414(a6)        ; CloseLibrary
+        moveq   #0,d0
+        movem.l (sp)+,d2/a6
+        rts
+   dosname dc.b "dos.library",0
+   fname   dc.b "TEST:job.script",0 */
+static const unsigned char snap_waiter[] = {
+    0x00, 0x00, 0x03, 0xf3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,    /* HUNK_HEADER */
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18,
+    0x00, 0x00, 0x03, 0xe9, 0x00, 0x00, 0x00, 0x18,                            /* HUNK_CODE */
+    0x48, 0xe7, 0x20, 0x02, 0x2c, 0x78, 0x00, 0x04, 0x43, 0xfa, 0x00, 0x3a,
+    0x70, 0x00, 0x4e, 0xae, 0xfd, 0xd8, 0x2c, 0x40, 0x41, 0xfa, 0x00, 0x3a,
+    0x22, 0x08, 0x74, 0xfe, 0x4e, 0xae, 0xff, 0xac, 0x4a, 0x80, 0x66, 0x08,
+    0x72, 0x02, 0x4e, 0xae, 0xff, 0x3a, 0x60, 0xe8, 0x22, 0x00, 0x4e, 0xae,
+    0xff, 0xa6, 0x22, 0x4e, 0x2c, 0x78, 0x00, 0x04, 0x4e, 0xae, 0xfe, 0x62,
+    0x70, 0x00, 0x4c, 0xdf, 0x40, 0x04, 0x4e, 0x75, 0x64, 0x6f, 0x73, 0x2e,
+    0x6c, 0x69, 0x62, 0x72, 0x61, 0x72, 0x79, 0x00, 0x54, 0x45, 0x53, 0x54,
+    0x3a, 0x6a, 0x6f, 0x62, 0x2e, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x00,
+    0x00, 0x00, 0x03, 0xf2,                                                    /* HUNK_END */
+};
+
+/* the files of the prologue in the slot's TEST:, not copied back */
+static const char *const snap_private[] = {
+    "run.script", SNAP_JOB, SNAP_WAITER, SNAP_READY, SNAP_STARTED, "job.tmp", NULL
+};
+
+static unsigned long long fnv(unsigned long long h, const void *p, size_t n)
+{
+    const unsigned char *s = p;
+
+    while (n--) {
+        h ^= *s++;
+        h *= 0x100000001b3ULL;
+    }
+    return h;
+}
+
+/* the identity of a file (device, inode, size, mtime) into the hash */
+static unsigned long long fnv_file(unsigned long long h, const char *path)
+{
+    struct stat st;
+
+    if (path && !stat(path, &st)) {
+        long long v[5] = { (long long)st.st_dev, (long long)st.st_ino, (long long)st.st_size,
+                           (long long)st.st_mtim.tv_sec, (long long)st.st_mtim.tv_nsec };
+
+        return fnv(h, v, sizeof v);
+    }
+    return fnv(h, "?", 1);
+}
+
+/* the program's path as execvp finds it (malloc'd), NULL if not found */
+static char *find_program(const char *name)
+{
+    const char *path = getenv("PATH"), *p;
+
+    if (strchr(name, '/'))
+        return strdup(name);
+    for (p = path ? path : ""; *p;) {
+        size_t n = strcspn(p, ":");
+        char *f = str_printf("%.*s/%s", (int)n, p, name);
+
+        if (f && !access(f, X_OK))
+            return f;
+        free(f);
+        p += n + (p[n] == ':');
+    }
+    return NULL;
+}
+
+static int write_bytes(const char *path, const void *buf, size_t n)
+{
+    FILE *f = fopen(path, "wb");
+
+    if (!f)
+        return -1;
+    if (fwrite(buf, 1, n, f) != n) {
+        fclose(f);
+        return -1;
+    }
+    return fclose(f) ? -1 : 0;
+}
+
+static int copy_file(const char *src, const char *dst, const struct stat *st)
+{
+    char buf[65536];
+    int in = open(src, O_RDONLY | O_CLOEXEC), out, r = 0;
+    ssize_t n;
+
+    if (in < 0)
+        return -1;
+    out = open(dst, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, st->st_mode & 0777);
+    if (out < 0) {
+        close(in);
+        return -1;
+    }
+    while ((n = read(in, buf, sizeof buf)) > 0)
+        if (write(out, buf, (size_t)n) != n) {
+            r = -1;
+            break;
+        }
+    if (n < 0)
+        r = -1;
+    /* the Amiga sees the host's modification time as the file date */
+    if (!r) {
+        struct timespec ts[2] = { st->st_atim, st->st_mtim };
+
+        futimens(out, ts);
+    }
+    close(in);
+    return close(out) || r ? -1 : 0;
+}
+
+static int in_list(const char *name, const char *const *list)
+{
+    for (; list && *list; list++)
+        if (!strcmp(name, *list))
+            return 1;
+    return 0;
+}
+
+/* src into dst (created if missing), without the top-level names in skip */
+static int copy_tree(const char *src, const char *dst, const char *const *skip)
+{
+    DIR *d = opendir(src);
+    struct dirent *de;
+    int r = 0;
+
+    if (!d)
+        return -1;
+    if (mkdir(dst, 0700) && errno != EEXIST) {
+        closedir(d);
+        return -1;
+    }
+    while ((de = readdir(d)) != NULL) {
+        char *s, *t;
+        struct stat st;
+
+        if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, "..") || in_list(de->d_name, skip))
+            continue;
+        s = str_printf("%s/%s", src, de->d_name);
+        t = str_printf("%s/%s", dst, de->d_name);
+        if (!s || !t || stat(s, &st))
+            r = -1;
+        else if (S_ISDIR(st.st_mode))
+            r |= copy_tree(s, t, NULL);
+        else if (S_ISREG(st.st_mode))
+            r |= copy_file(s, t, &st);
+        free(s);
+        free(t);
+    }
+    closedir(d);
+    return r;
+}
+
+/* removes the contents of dir except the top-level names in keep */
+static int empty_dir(const char *dir, const char *const *keep)
+{
+    DIR *d = opendir(dir);
+    struct dirent *de;
+
+    if (!d)
+        return mkdir(dir, 0700) && errno != EEXIST ? -1 : 0;
+    while ((de = readdir(d)) != NULL) {
+        char *s;
+
+        if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, "..") || in_list(de->d_name, keep))
+            continue;
+        if ((s = str_printf("%s/%s", dir, de->d_name)) != NULL)
+            rm_tree(s);
+        free(s);
+    }
+    closedir(d);
+    return 0;
+}
+
+/* the slot's directories for a (new) start: the work directory's TEST:
+   and the writable mounts copied in, the prologue and the waiter */
+static int snap_prepare(struct amiga_emulation *e)
+{
+    char *path;
+    size_t i;
+    int r = 0;
+
+    if (empty_dir(e->test_dir, NULL) || copy_tree(e->orig_test_dir, e->test_dir, snap_private))
+        return -1;
+    for (i = 0; i < e->nwm; i++)
+        if (empty_dir(e->wm_slot[i], NULL) || copy_tree(e->wm_host[i], e->wm_slot[i], NULL))
+            return -1;
+    path = str_printf("%s/run.script", e->test_dir);
+    r |= !path || write_file(path, snap_prologue);
+    free(path);
+    path = str_printf("%s/" SNAP_WAITER, e->test_dir);
+    r |= !path || write_bytes(path, snap_waiter, sizeof snap_waiter);
+    free(path);
+    return r ? -1 : 0;
+}
+
+/* TEST:job.script (complete before the waiter can see it): the clock, the
+   start mark, the test's script */
+static int snap_write_job(struct amiga_emulation *e, int date_from_host)
+{
+    char clock[64], *tmp = str_printf("%s/job.tmp", e->test_dir);
+    char *dst = str_printf("%s/" SNAP_JOB, e->test_dir), *text;
+    int r;
+
+    if (date_from_host) {
+        /* Kickstart 1.3: SetClock LOAD takes about 1.8 s there, Date is
+           at once (dd-Mon-yy in English, as 1.3 reads it) */
+        static const char mon[][4] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+        time_t t = time(NULL);
+        struct tm tm;
+
+        localtime_r(&t, &tm);
+        snprintf(clock, sizeof clock, "DATE %02d-%s-%02d %02d:%02d:%02d\n", tm.tm_mday,
+                 mon[tm.tm_mon], tm.tm_year % 100, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    } else {
+        snprintf(clock, sizeof clock, "SETCLOCK LOAD\n");
+    }
+    text = str_printf("%sECHO >TEST:" SNAP_STARTED " \"started\"\n%s", clock, e->job);
+    r = !tmp || !dst || !text || write_file(tmp, text) || rename(tmp, dst) ? -1 : 0;
+    free(tmp);
+    free(dst);
+    free(text);
+    return r;
+}
+
+/* SAVESTATE into snap_path (through a temporary name) */
+static void snap_save(struct amiga_emulation *e)
+{
+    char *tmp = str_printf("%s.tmp.uss", e->snap_path);
+    char *cfg = str_printf("%s/snapshot.uae", e->work_dir);
+    const char *cmd[] = { "SAVESTATE", tmp, cfg, NULL };
+    char reply[256];
+
+    if (tmp && cfg && !command_wait(e, cmd, reply, sizeof reply, 5)) {
+        /* the reply may come before the file is complete: wait until its
+           size stays the same for 0.2 s (at most 5 s) */
+        double until = now() + 5;
+        off_t last = -1;
+        struct stat st;
+
+        while (now() < until) {
+            sleep_ms(200);
+            if (!stat(tmp, &st) && st.st_size > 0 && st.st_size == last)
+                break;
+            last = stat(tmp, &st) ? -1 : st.st_size;
+        }
+        if (!stat(tmp, &st) && st.st_size > 0 && st.st_size == last)
+            rename(tmp, e->snap_path);
+    }
+    if (tmp)
+        unlink(tmp);
+    if (cfg)
+        unlink(cfg);
+    free(tmp);
+    free(cfg);
+}
+
+/* the results back: the slot's TEST: into the work directory's, the
+   writable mounts into their host directories */
+static void snap_finish(struct amiga_emulation *e)
+{
+    static const char *const keep[] = { "run.script", NULL };
+    char *slot_test = e->test_dir;
+    size_t i;
+
+    empty_dir(e->orig_test_dir, keep);
+    copy_tree(slot_test, e->orig_test_dir, snap_private);
+    empty_dir(slot_test, NULL);
+    for (i = 0; i < e->nwm; i++) {
+        empty_dir(e->wm_host[i], NULL);
+        copy_tree(e->wm_slot[i], e->wm_host[i], NULL);
+        empty_dir(e->wm_slot[i], NULL);
+    }
+    e->test_dir = e->orig_test_dir;
+    e->orig_test_dir = slot_test;
+    e->snap = SNAP_OFF;
+}
+
+/* switches the run to the slot's directories; the configuration for them
+   into the work directory; *statefile: the snapshot if there is one */
+static int snap_setup(struct amiga_emulation *e, const struct amiga_emulation_params *p,
+                      const char *emulation_dir, int index, const char **statefile,
+                      char *err, size_t errlen)
+{
+    struct amiga_emulation_params q = *p;
+    struct amiga_emulation_mount *mounts = NULL;
+    char *dir = slots_dir(), *cfg = NULL, *path, *rom, *hdf, *prog;
+    unsigned long long h = 0xcbf29ce484222325ULL;
+    size_t i;
+    int r = -1;
+
+    *statefile = NULL;
+    e->slot_dir = dir ? str_printf("%s/slot-%d", dir, index) : NULL;
+    free(dir);
+    if (!e->slot_dir || (mkdir(e->slot_dir, 0700) && errno != EEXIST))
+        goto out;
+    e->orig_test_dir = e->test_dir;
+    e->test_dir = str_printf("%s/test", e->slot_dir);
+    if (!e->test_dir)
+        goto out;
+    if (p->nmounts) {
+        mounts = calloc(p->nmounts, sizeof *mounts);
+        e->wm_host = calloc(p->nmounts, sizeof *e->wm_host);
+        e->wm_slot = calloc(p->nmounts, sizeof *e->wm_slot);
+        if (!mounts || !e->wm_host || !e->wm_slot)
+            goto out;
+    }
+    for (i = 0; i < p->nmounts; i++) {
+        mounts[i] = p->mounts[i];
+        if (!p->mounts[i].writable)
+            continue;
+        e->wm_host[e->nwm] = strdup(p->mounts[i].host_dir);
+        e->wm_slot[e->nwm] = str_printf("%s/mnt-%zu", e->slot_dir, i);
+        mounts[i].host_dir = e->wm_slot[e->nwm];
+        if (!e->wm_host[e->nwm] || !e->wm_slot[e->nwm++])
+            goto out;
+    }
+    q.mounts = mounts;
+    if (!(cfg = amiga_emulation_config(&q, emulation_dir, e->test_dir, err, errlen)))
+        goto out;
+    /* the snapshot's key */
+    h = fnv(h, cfg, strlen(cfg));
+    h = fnv(h, snap_prologue, sizeof snap_prologue);
+    h = fnv(h, snap_waiter, sizeof snap_waiter);
+    rom = config_value(cfg, "kickstart_rom_file");
+    hdf = config_value(cfg, "hardfile2");
+    path = hdf ? strstr(hdf, "DH0:") : NULL;
+    if (path) {
+        path += 4;
+        path[strcspn(path, ",")] = 0;
+    }
+    prog = find_program(e->amiberry);
+    h = fnv_file(fnv_file(fnv_file(h, rom), path), prog);
+    free(rom);
+    free(hdf);
+    free(prog);
+    e->snap_path = str_printf("%s/snap-%016llx.uss", e->slot_dir, h);
+    path = str_printf("%s/amiberry.uae", e->work_dir);
+    if (!e->snap_path || !path || write_file(path, cfg)) {
+        free(path);
+        set_err(err, errlen, "cannot write the configuration");
+        goto out;
+    }
+    free(path);
+    if (snap_prepare(e)) {
+        set_err(err, errlen, "cannot prepare the slot directory %s", e->slot_dir);
+        goto out;
+    }
+    if (file_exists(e->snap_path)) {
+        *statefile = e->snap_path;
+        e->snap = SNAP_RESTORING;
+    } else {
+        e->snap = SNAP_CREATING;
+    }
+    r = 0;
+out:
+    free(mounts);
+    free(cfg);
+    return r;
+}
+
+static int snap_date_from_host(const struct amiga_emulation_params *p)
+{
+    const struct machine *m = find_machine(p->machine);
+
+    return m && m->template_text == a500_uae;
+}
+
 struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_params *p,
                                               char *err, size_t errlen)
 {
@@ -643,7 +1114,8 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     struct amiga_emulation *e = calloc(1, sizeof *e);
     char *cfg = NULL, *script = NULL, *path;
     struct sockaddr_un sa;
-    pid_t parent;
+    const char *statefile = NULL;
+    int slot_index = -1;
 
     no_slot = 0;
     if (!emulation_dir || !*emulation_dir)
@@ -698,12 +1170,29 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     }
     free(path);
 
-    if ((e->slot = take_slot(err, errlen)) < 0)
+    if ((e->slot = take_slot(&slot_index, err, errlen)) < 0)
         goto fail;
     active_runs++;
     e->counted = 1;
-    parent = getpid();
-    e->deadline = now() + (p->timeout ? p->timeout : 60);
+    e->parent = getpid();
+    e->timeout = p->timeout ? p->timeout : 60;
+    e->amiberry = p->amiberry ? p->amiberry : "amiberry";
+    e->visible = p->visible || env_on("AMIGA_EMULATION_VISIBLE");
+    e->log_on = p->log;
+    if ((p->snapshot || env_on("AMIGA_EMULATION_SNAPSHOT")) && slot_index >= 0) {
+        e->date_from_host = snap_date_from_host(p);
+        if (!(e->job = strdup(script))
+            || snap_setup(e, p, emulation_dir, slot_index, &statefile, err, errlen))
+            goto fail;
+        if (e->snap == SNAP_RESTORING) {
+            if (snap_write_job(e, e->date_from_host)) {
+                set_err(err, errlen, "cannot write TEST:" SNAP_JOB);
+                goto fail;
+            }
+            e->restore_until = now() + SNAP_RESTORE_GRACE;
+        }
+    }
+    e->deadline = now() + e->timeout;
     if (getenv("AMIGA_EMULATION_SHOTS"))
         e->shots = strtod(getenv("AMIGA_EMULATION_SHOTS"), NULL);
     if (!(e->shots > 0))
@@ -711,16 +1200,8 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     if (e->shots && mkdirs(e->work_dir, (const char *const[]){ "shots", NULL }))
         e->shots = 0;
     e->next_shot = now() + e->shots;
-    e->pid = fork();
-    if (e->pid < 0) {
-        set_err(err, errlen, "fork: %s", strerror(errno));
+    if (launch(e, statefile, err, errlen))
         goto fail;
-    }
-    if (e->pid == 0)
-        child(e->work_dir, e->runtime_dir, p->amiberry ? p->amiberry : "amiberry",
-              p->visible || env_on("AMIGA_EMULATION_VISIBLE"),
-              p->log, parent);
-    setpgid(e->pid, e->pid);
     free(cfg);
     free(script);
     return e;
@@ -854,6 +1335,45 @@ enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
         return e->status;
     }
     for (;;) {
+        if (e->snap == SNAP_RESTORING) {
+            char *started = str_printf("%s/" SNAP_STARTED, e->test_dir);
+            int ok = started && file_exists(started);
+
+            free(started);
+            if (ok) {
+                e->snap = SNAP_RUNNING;
+            } else if (reaped(e) || now() > e->restore_until) {
+                /* the snapshot does not work: drop it, boot cold */
+                char err[256];
+
+                stop_group(e);
+                unlink(e->snap_path);
+                if (snap_prepare(e) || launch(e, NULL, err, sizeof err)) {
+                    e->status = AMIGA_EMULATION_FAILED;
+                    break;
+                }
+                e->snap = SNAP_CREATING;
+                e->ready_at = 0;
+                e->deadline = now() + e->timeout;
+                continue;
+            }
+        }
+        if (e->snap == SNAP_CREATING) {
+            char *ready = str_printf("%s/" SNAP_READY, e->test_dir);
+
+            if (!e->ready_at && ready && file_exists(ready))
+                e->ready_at = now() + SNAP_SAVE_DELAY;
+            free(ready);
+            if (e->ready_at && now() >= e->ready_at && !reaped(e)) {
+                snap_save(e);
+                if (snap_write_job(e, e->date_from_host)) {
+                    e->status = AMIGA_EMULATION_FAILED;
+                    stop_group(e);
+                    break;
+                }
+                e->snap = SNAP_RUNNING;
+            }
+        }
         if (reaped(e)) {
             e->status = file_exists(done) ? AMIGA_EMULATION_DONE : AMIGA_EMULATION_EXITED;
             break;
@@ -895,6 +1415,10 @@ enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
         sleep_ms(100);
     }
     free(done);
+    if (e->snap != SNAP_OFF) {
+        stop_group(e);
+        snap_finish(e);
+    }
     e->joined = 1;
     return e->status;
 }
@@ -914,6 +1438,16 @@ void amiga_emulation_free(struct amiga_emulation *e)
         rm_tree(e->work_dir);
     free(e->work_dir);
     free(e->test_dir);
+    free(e->orig_test_dir);
+    free(e->slot_dir);
+    free(e->snap_path);
+    free(e->job);
+    for (size_t i = 0; i < e->nwm; i++) {
+        free(e->wm_host[i]);
+        free(e->wm_slot[i]);
+    }
+    free(e->wm_host);
+    free(e->wm_slot);
     free(e->runtime_dir);
     free(e->socket_path);
     free(e);

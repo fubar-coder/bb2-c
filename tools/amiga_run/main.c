@@ -3,7 +3,7 @@
  *
  *   amiga_run [--machine NAME] [--rtg] [--visible] [--log] [--timeout SEC]
  *             [--set KEY=VALUE]... [--unset KEY]... [--mount VOL=DIR]...
- *             [--mount-ro VOL=DIR]... [--dir WORKDIR] SCRIPT|-
+ *             [--mount-ro VOL=DIR]... [--dir WORKDIR] [--snapshot] SCRIPT|-
  *
  * --machine: a1200 (the default), a500 (68000, Kickstart 1.3) or
  * a500-68010 (amiga_emulation.h).
@@ -13,6 +13,7 @@
  * 0 if the script ran to its end, 1 otherwise, 77 if the emulator cannot
  * start (Amiberry or its data missing: skipped), 2 on usage errors.
  * --log: Amiberry's own log into WORKDIR/amiberry.log (with --dir).
+ * --snapshot: EXPERIMENT, start from a savestate (amiga_emulation.h).
  */
 #define _XOPEN_SOURCE 700       /* scandir */
 #include <dirent.h>
@@ -84,7 +85,7 @@ static int usage(FILE *out)
 {
     fprintf(out, "usage: amiga_run [--machine NAME] [--rtg] [--visible] [--log] [--timeout SEC]\n"
                  "                 [--set KEY=VALUE]... [--unset KEY]... [--mount VOL=DIR]...\n"
-                 "                 [--mount-ro VOL=DIR]... [--dir WORKDIR] SCRIPT|-\n"
+                 "                 [--mount-ro VOL=DIR]... [--dir WORKDIR] [--snapshot] SCRIPT|-\n"
                  "  run an AmigaDOS script (a file or - for stdin) in Amiberry\n"
                  "  --machine: a1200 (default), a500 (68000, Kickstart 1.3), a500-68010\n");
     return out == stdout ? 0 : 2;
@@ -131,6 +132,8 @@ int main(int argc, char **argv)
             p.visible = 1;
         } else if (!strcmp(a, "--log")) {
             p.log = 1;
+        } else if (!strcmp(a, "--snapshot")) {
+            p.snapshot = 1;
         } else if (!strcmp(a, "--timeout") && i + 1 < argc) {
             p.timeout = (unsigned)strtoul(argv[++i], NULL, 10);
         } else if (!strcmp(a, "--set") && i + 1 < argc && (eq = strchr(argv[i + 1], '='))) {

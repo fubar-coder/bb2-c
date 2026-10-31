@@ -86,7 +86,32 @@ struct amiga_emulation_params {
     const char *emulation_dir;  /* NULL: $AMIGA_EMULATION_DIR, else built in */
     const char *work_dir;       /* NULL: new directory under $TMPDIR, removed by free */
     const char *amiberry;       /* NULL: "amiberry" from PATH */
+    int snapshot;               /* EXPERIMENT: start from a savestate (below) */
 };
+
+/*
+ * EXPERIMENT (not used by the tests): snapshot mode, `snapshot` or
+ * AMIGA_EMULATION_SNAPSHOT=1.  A session with a slot runs with fixed
+ * directories in the slot (slot-K/test for TEST:, slot-K/mnt-I for each
+ * writable mount; read-only mounts keep their host path): the library
+ * copies the work directory's TEST: and the writable mounts in at the
+ * start and back at the end of amiga_emulation_join (Amiberry stores the
+ * real host paths of the mounts in the savestate and uses those, not the
+ * configuration's, when it restores).  TEST:run.script is then a fixed
+ * prologue that writes TEST:ready and waits (a 96-byte 68000/Kickstart 1.x
+ * waiter, polling every 2 ticks) for TEST:job.script, the test's script.
+ * The first session of a configuration boots cold, saves the state at
+ * TEST:ready into slot-K/snap-HASH.uss (HASH over the configuration, the
+ * prologue, the waiter and the identity of the ROM, the hardfile and the
+ * Amiberry binary) and continues; later sessions start Amiberry with
+ * --statefile.  A restore that does not reach the job within
+ * SNAP_RESTORE_GRACE seconds is dropped (the state file too) and the
+ * session boots cold.  The job begins with SetClock LOAD (the restored
+ * system clock is the snapshot's; on the A500 machines a DATE line with
+ * the host's time instead: SetClock LOAD takes 1.8 s there).  Without a
+ * slot: cold boot as usual.  The slot's directories are emptied after the
+ * results are copied back; the snapshots stay (0.6 MB A1200, 76 KB A500).
+ */
 
 /* the RTG variant: Workbench on uaegfx (the other hardfile) */
 extern const struct amiga_emulation_option amiga_emulation_rtg[];
