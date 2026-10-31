@@ -762,7 +762,16 @@ static UWORD rawkey(UWORD code, UWORD qual)
 
 /* ------------------------------------------------------- small ones */
 
-/* SetEventFilter pre,post */
+/**
+ * @brief SetEventFilter preprocess,postprocess - routines around every message.
+ *
+ * The pre routine runs before a message is taken into the event list (d0
+ * = message, 0 back = drop it), the post routine after it (d0 = message or
+ * 0); see callfilter.  0 = none.
+ *
+ * @param pre d0: the preprocess routine
+ * @param post d1: the postprocess routine
+ */
 static void BLITZ_ROUTINE dosetevfilter_c(ULONG pre BL_REG(d0), ULONG post BL_REG(d1))
 {
     prefilter = pre;
@@ -770,23 +779,51 @@ static void BLITZ_ROUTINE dosetevfilter_c(ULONG pre BL_REG(d0), ULONG post BL_RE
 }
 BLITZ_THUNK(dosetevfilter, dosetevfilter_c, "d0-d1/a0-a1");
 
-/* RastPort(Window#) - inline: MOVE.l (a1),a1:MOVE.l 50(a1),d0 */
+/**
+ * @brief RastPort(Window#) - the RastPort of a window (inline).
+ *
+ * MOVE.l (a1),a1:MOVE.l 50(a1),d0 (Window->RPort).
+ *
+ * Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the window object
+ * @return d0: the RastPort
+ */
 BLITZ_INLINE(dowrport, "move.l (a1),a1\n   move.l 50(a1),d0");
 
-/* CatchDosErrs - DOS requesters on the used window */
+/**
+ * @brief CatchDosErrs - DOS requesters appear on the used window.
+ *
+ * Sets pr_WindowPtr of the program's process; finit restores the old one.
+ *
+ * Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the used window object
+ */
 static void BLITZ_ROUTINE docatchdoserrs_c(struct bwin *w BL_REG(a1))
 {
     THISPROC->pr_WindowPtr = w->win;
 }
 BLITZ_THUNK(docatchdoserrs, docatchdoserrs_c, "d0-d1/a1");
 
+/**
+ * @brief AddIDCMP IDCMP_Flags - add flags to the IDCMP of the next windows.
+ * @param f d0: the IDCMP flags
+ */
 static void BLITZ_ROUTINE doaddidcmp_c(ULONG f BL_REG(d0))
 {
     V.idcmp |= f;
 }
 BLITZ_THUNK(doaddidcmp, doaddidcmp_c, "d0-d1/a0-a1");
 
-/* SubIDCMP: NOT.l d0 - d0 comes back inverted */
+/**
+ * @brief SubIDCMP IDCMP_Flags - remove flags from the IDCMP of the next windows.
+ *
+ * NOT.l d0 - d0 comes back inverted.
+ *
+ * @param f d0: the IDCMP flags
+ * @return d0: ~f (no result for Blitz)
+ */
 static ULONG BLITZ_ROUTINE dosubidcmp_c(ULONG f BL_REG(d0))
 {
     V.idcmp &= ~f;
@@ -794,12 +831,27 @@ static ULONG BLITZ_ROUTINE dosubidcmp_c(ULONG f BL_REG(d0))
 }
 BLITZ_THUNK(dosubidcmp, dosubidcmp_c, "d1/a0-a1");
 
+/**
+ * @brief DefaultIDCMP IDCMP_Flags - the IDCMP of the windows opened next.
+ *
+ * Errors (debugger only, idcmpchk): 0 -> "IDCMP must not be 0".
+ *
+ * @param f d0: the IDCMP flags
+ */
 static void BLITZ_ROUTINE dowindowidcmp_c(ULONG f BL_REG(d0))
 {
     V.idcmp = f;
 }
 BLITZ_THUNK(dowindowidcmp, dowindowidcmp_c, "d0-d1/a0-a1");
 
+/**
+ * @brief SizeLimits Min Width,Min Height,Max Width,Max Height - the size
+ * limits of the windows opened next.
+ * @param a d0: minimum width
+ * @param b d1: minimum height
+ * @param c d2: maximum width
+ * @param d d3: maximum height
+ */
 static void BLITZ_ROUTINE doslimits_c(WORD a BL_REG(d0), WORD b BL_REG(d1), WORD c BL_REG(d2),
                                       WORD d BL_REG(d3))
 {
@@ -810,56 +862,128 @@ static void BLITZ_ROUTINE doslimits_c(WORD a BL_REG(d0), WORD b BL_REG(d1), WORD
 }
 BLITZ_THUNK(doslimits, doslimits_c, "d0-d1/a1");
 
+/**
+ * @brief SizeLimits Flag (the one argument form) - whether the next
+ * windows get the SizeLimits.
+ *
+ * 0: Window opens with all limits 0.
+ *
+ * @param on d0: <>0 = use the limits (a word)
+ */
 static void BLITZ_ROUTINE doslimits2_c(WORD on BL_REG(d0))
 {
     sizelimitsok = on;
 }
 BLITZ_THUNK(doslimits2, doslimits2_c, "d0-d1/a0-a1");
 
-/* WTopOff/WLeftOff: MOVEQ #0,d0:MOVE.b border,d0 */
+/**
+ * @brief WTopOff - the height of the used window's top border.
+ *
+ * MOVEQ #0,d0:MOVE.b border,d0.
+ *
+ * Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the used window object
+ * @return d0: BorderTop (unsigned byte)
+ */
 static ULONG BLITZ_ROUTINE dowtopoff_c(struct bwin *w BL_REG(a1))
 {
     return (UBYTE)w->win->BorderTop;
 }
 BLITZ_THUNK(dowtopoff, dowtopoff_c, "d1/a1");
 
+/**
+ * @brief WLeftOff - the width of the used window's left border.
+ *
+ * MOVEQ #0,d0:MOVE.b border,d0.
+ *
+ * Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the used window object
+ * @return d0: BorderLeft (unsigned byte)
+ */
 static ULONG BLITZ_ROUTINE dowleftoff_c(struct bwin *w BL_REG(a1))
 {
     return (UBYTE)w->win->BorderLeft;
 }
 BLITZ_THUNK(dowleftoff, dowleftoff_c, "d1/a1");
 
+/**
+ * @brief WindowWidth - the width of the used window.
+ *
+ * Word functions (WORD_FN): MOVE.w into d0, the upper word stays.
+ * Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the used window object
+ * @return d0: Width (low word)
+ */
 static UWORD BLITZ_ROUTINE dowindowwidth_c(struct bwin *w BL_REG(a1))
 {
     return w->win->Width;
 }
 WORD_FN(dowindowwidth, dowindowwidth_c);
 
+/**
+ * @brief WindowHeight - the height of the used window.
+ *
+ * Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the used window object
+ * @return d0: Height (low word)
+ */
 static UWORD BLITZ_ROUTINE dowindowheight_c(struct bwin *w BL_REG(a1))
 {
     return w->win->Height;
 }
 WORD_FN(dowindowheight, dowindowheight_c);
 
+/**
+ * @brief InnerWidth - the inner width of the used window (GZZWidth).
+ *
+ * Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the used window object
+ * @return d0: GZZWidth (low word)
+ */
 static UWORD BLITZ_ROUTINE dogzzwidth_c(struct bwin *w BL_REG(a1))
 {
     return w->win->GZZWidth;
 }
 WORD_FN(dogzzwidth, dogzzwidth_c);
 
+/**
+ * @brief InnerHeight - the inner height of the used window (GZZHeight).
+ *
+ * Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the used window object
+ * @return d0: GZZHeight (low word)
+ */
 static UWORD BLITZ_ROUTINE dogzzheight_c(struct bwin *w BL_REG(a1))
 {
     return w->win->GZZHeight;
 }
 WORD_FN(dogzzheight, dogzzheight_c);
 
-/* Activate Window# - a1 = the window object */
+/**
+ * @brief Activate Window# - activate a window (ActivateWindow).
+ *
+ * Amiga mode only.  Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the window object
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE doactivate(struct bwin *w BL_REG(a1), struct Library *intbase BL_REG(a6))
 {
     ActivateWindow(w->win);
 }
 
-/* WColour / WJam */
+/**
+ * @brief WColour Foreground Colour,Background Colour - the text pens of
+ * the window output.
+ * @param f d0: the foreground pen
+ * @param b d1: the background pen
+ */
 static void BLITZ_ROUTINE dosetpens2_c(UWORD f BL_REG(d0), UWORD b BL_REG(d1))
 {
     V.bpen = b;
@@ -867,12 +991,20 @@ static void BLITZ_ROUTINE dosetpens2_c(UWORD f BL_REG(d0), UWORD b BL_REG(d1))
 }
 BLITZ_THUNK(dosetpens2, dosetpens2_c, "d0-d1/a0-a1");
 
+/**
+ * @brief WColour Foreground Colour - the foreground pen of the window output.
+ * @param f d0: the foreground pen
+ */
 static void BLITZ_ROUTINE dosetpens_c(UWORD f BL_REG(d0))
 {
     V.fpen = f;
 }
 BLITZ_THUNK(dosetpens, dosetpens_c, "d0-d1/a0-a1");
 
+/**
+ * @brief WJam Jammode - the drawing mode of the window output and drawing.
+ * @param j d0: the draw mode (SetDrMd)
+ */
 static void BLITZ_ROUTINE dosetjam_c(UWORD j BL_REG(d0))
 {
     V.tjam = j;
@@ -881,6 +1013,16 @@ BLITZ_THUNK(dosetjam, dosetjam_c, "d0-d1/a0-a1");
 
 /* WindowX/WindowY: the window position, + border for GIMMEZEROZERO;
    WMouseX/WMouseY: the mouse in the window, - border for GZZ */
+
+/**
+ * @brief WindowX - the x position of the used window.
+ *
+ * + BorderLeft for a GIMMEZEROZERO window.
+ * Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the used window object
+ * @return d0: the x position (low word)
+ */
 static UWORD BLITZ_ROUTINE dowindowx_c(struct bwin *w BL_REG(a1))
 {
     struct Window *win = w->win;
@@ -892,6 +1034,15 @@ static UWORD BLITZ_ROUTINE dowindowx_c(struct bwin *w BL_REG(a1))
 }
 WORD_FN(dowindowx, dowindowx_c);
 
+/**
+ * @brief WMouseX - the mouse x position in the used window.
+ *
+ * - BorderLeft for a GIMMEZEROZERO window.
+ * Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the used window object
+ * @return d0: MouseX (low word)
+ */
 static UWORD BLITZ_ROUTINE dowmousex_c(struct bwin *w BL_REG(a1))
 {
     struct Window *win = w->win;
@@ -903,6 +1054,15 @@ static UWORD BLITZ_ROUTINE dowmousex_c(struct bwin *w BL_REG(a1))
 }
 WORD_FN(dowmousex, dowmousex_c);
 
+/**
+ * @brief WindowY - the y position of the used window.
+ *
+ * + BorderTop for a GIMMEZEROZERO window.
+ * Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the used window object
+ * @return d0: the y position (low word)
+ */
 static UWORD BLITZ_ROUTINE dowindowy_c(struct bwin *w BL_REG(a1))
 {
     struct Window *win = w->win;
@@ -914,6 +1074,15 @@ static UWORD BLITZ_ROUTINE dowindowy_c(struct bwin *w BL_REG(a1))
 }
 WORD_FN(dowindowy, dowindowy_c);
 
+/**
+ * @brief WMouseY - the mouse y position in the used window.
+ *
+ * - BorderTop for a GIMMEZEROZERO window.
+ * Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the used window object
+ * @return d0: MouseY (low word)
+ */
 static UWORD BLITZ_ROUTINE dowmousey_c(struct bwin *w BL_REG(a1))
 {
     struct Window *win = w->win;
@@ -925,16 +1094,33 @@ static UWORD BLITZ_ROUTINE dowmousey_c(struct bwin *w BL_REG(a1))
 }
 WORD_FN(dowmousey, dowmousey_c);
 
-/* the editor's variables */
+/* the editor's variables; word functions (WORD_FN): MOVE.w into d0, the
+   upper word stays */
+
+/** @brief Editat - where the last Edit$ in a window ended (cursor position).
+    @return d0: the position (low word) */
 static UWORD BLITZ_ROUTINE doeditat_c(void)   { return V.eat; }
+/** @brief EditExit - the character that ended the last Edit$ in a window
+    ($FFFF: another event in EditFrom mode).
+    @return d0: the character (low word) */
 static UWORD BLITZ_ROUTINE doeditexit_c(void) { return V.eexit; }
+/** @brief RawKey - the raw key code of the last key read from a window.
+    @return d0: the code (low word) */
 static UWORD BLITZ_ROUTINE dorawkey_c(void)   { return V.lrawkey; }
+/** @brief Qualifier - the qualifier of the last key read from a window.
+    BUG(orig) (#313): a #long function, but only the low word of d0 is
+    set.
+    @return d0: the qualifier & 255 (low word) */
 static UWORD BLITZ_ROUTINE doqual_c(void)     { return V.kqualifier & 255; }
 WORD_FN(doeditat, doeditat_c);
 WORD_FN(doeditexit, doeditexit_c);
 WORD_FN(dorawkey, dorawkey_c);
 WORD_FN(doqual, doqual_c);              /* BUG(orig) (#313): a #long function */
 
+/**
+ * @brief EditFrom - the next Edit$ in a window starts at position 0 and
+ * ends only with Return.
+ */
 static void BLITZ_ROUTINE doeditfrom_c(void)
 {
     V.emode = 0;
@@ -942,6 +1128,11 @@ static void BLITZ_ROUTINE doeditfrom_c(void)
 }
 BLITZ_THUNK(doeditfrom, doeditfrom_c, "d0-d1/a0-a1");
 
+/**
+ * @brief EditFrom Characterpos - the next Edit$ in a window starts at that
+ * position and also ends on any other event (EditExit $FFFF).
+ * @param at d0: the cursor position in the text
+ */
 static void BLITZ_ROUTINE doeditfrom2_c(UWORD at BL_REG(d0))
 {
     V.emode = -1;
@@ -949,20 +1140,41 @@ static void BLITZ_ROUTINE doeditfrom2_c(UWORD at BL_REG(d0))
 }
 BLITZ_THUNK(doeditfrom2, doeditfrom2_c, "d0-d1/a0-a1");
 
+/**
+ * @brief Cursor Thickness - the cursor of Edit$ in a window.
+ * @param u d0: < 0 a block, >= 0 an underline of that thickness
+ */
 static void BLITZ_ROUTINE docursor_c(WORD u BL_REG(d0))
 {
     V.underline = u;
 }
 BLITZ_THUNK(docursor, docursor_c, "d0-d1/a0-a1");
 
-/* the event data */
+/* the event data (word functions, see above) */
+
+/** @brief EMouseX - the mouse x position of the last event.
+    @return d0: the position (low word) */
 static UWORD BLITZ_ROUTINE doemousex_c(void)        { return V.evmousex; }
+/** @brief EMouseY - the mouse y position of the last event.
+    @return d0: the position (low word) */
 static UWORD BLITZ_ROUTINE doemousey_c(void)        { return V.evmousey; }
+/** @brief GadgetHit - the gadget id of the last gadget event (-1 at init).
+    @return d0: the id (low word) */
 static UWORD BLITZ_ROUTINE dogadgethit_c(void)      { return V.eventgnum; }
+/** @brief MenuHit - the menu number of the last menu event, -1 for none.
+    @return d0: the number (low word) */
 static UWORD BLITZ_ROUTINE domenuhit_c(void)        { return V.menunum; }
+/** @brief ItemHit - the item number of the last menu event, -1 for none.
+    @return d0: the number (low word) */
 static UWORD BLITZ_ROUTINE doitemhit_c(void)        { return V.itemnum; }
+/** @brief SubHit - the subitem number of the last menu event, -1 for none.
+    @return d0: the number (low word) */
 static UWORD BLITZ_ROUTINE dosubhit_c(void)         { return V.subnum; }
+/** @brief EventCode - the IDCMP code of the last event.
+    @return d0: the code (low word) */
 static UWORD BLITZ_ROUTINE doeventcode_c(void)      { return V.evcode; }
+/** @brief EventQualifier - the qualifier of the last event.
+    @return d0: the qualifier (low word) */
 static UWORD BLITZ_ROUTINE doeventqualifier_c(void) { return V.evqualifier; }
 WORD_FN(doemousex, doemousex_c);
 WORD_FN(doemousey, doemousey_c);
@@ -973,9 +1185,14 @@ WORD_FN(dosubhit, dosubhit_c);
 WORD_FN(doeventcode, doeventcode_c);
 WORD_FN(doeventqualifier, doeventqualifier_c);
 
-/* EventWindow - the window number of the last event (MOVE.w into d0
-   after MOVE.l eventwin,d0: upper word = upper word of the pointer),
-   -1 if none */
+/**
+ * @brief EventWindow - the window number of the last event.
+ *
+ * MOVE.w into d0 after MOVE.l eventwin,d0: upper word = upper word of the
+ * pointer.
+ *
+ * @return d0: the window number (low word), -1 if there was no event
+ */
 static ULONG BLITZ_ROUTINE doeventwindow_c(void)
 {
     ULONG w = (ULONG)V.eventwin;
@@ -988,20 +1205,46 @@ BLITZ_THUNK(doeventwindow, doeventwindow_c, "d1/a0-a1");
 
 /* --------------------------------------------------- windows' text */
 
-/* WCursX/WCursY - cursor minus the origin of the window */
+/**
+ * @brief WCursX - the text cursor x of the used window.
+ *
+ * The cursor minus the origin of the window (the left border, 0 for
+ * GIMMEZEROZERO).  Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the used window object
+ * @return d0: the cursor x (low word)
+ */
 static UWORD BLITZ_ROUTINE dowcursx_c(struct bwin *w BL_REG(a1))
 {
     return w->cx - WUD(w->win)->orgx;
 }
 WORD_FN(dowcursx, dowcursx_c);
 
+/**
+ * @brief WCursY - the text cursor y of the used window.
+ *
+ * The cursor minus the origin of the window (the top border, 0 for
+ * GIMMEZEROZERO).  Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * @param w a1: the used window object
+ * @return d0: the cursor y (low word)
+ */
 static UWORD BLITZ_ROUTINE dowcursy_c(struct bwin *w BL_REG(a1))
 {
     return w->cy - WUD(w->win)->orgy;
 }
 WORD_FN(dowcursy, dowcursy_c);
 
-/* WLocate x,y */
+/**
+ * @brief WLocate Cursor x,Cursor y - place the text cursor of the used window.
+ *
+ * Relative to the origin of the window.  Errors (debugger only, wchk):
+ * "Uninitialized Window".
+ *
+ * @param x d0: the cursor x
+ * @param y d1: the cursor y
+ * @param w a1: the used window object
+ */
 static void BLITZ_ROUTINE dowlocate_c(WORD x BL_REG(d0), WORD y BL_REG(d1),
                                       struct bwin *w BL_REG(a1))
 {
@@ -1204,7 +1447,12 @@ static void unlinkall(void)
         unlinkmess(&V.firstmess, V.firstmess);
 }
 
-/* FlushEvents */
+/**
+ * @brief FlushEvents - drop all events.
+ *
+ * Takes the outstanding messages of the port into the list and frees the
+ * whole list; no outstanding key or mouse button any more.
+ */
 static void BLITZ_ROUTINE doflushevents_c(void)
 {
     updateevents();
@@ -1214,7 +1462,14 @@ static void BLITZ_ROUTINE doflushevents_c(void)
 }
 BLITZ_THUNK(doflushevents, doflushevents_c, "a0");
 
-/* FlushEvents class - all events of that class (long compare) */
+/**
+ * @brief FlushEvents IDCMP_Flag - drop all events of one class.
+ *
+ * Long compare of the class.  RAWKEY ($400) also drops the outstanding
+ * key, MOUSEBUTTONS (8) the outstanding mouse button.
+ *
+ * @param class d0: the IDCMP class
+ */
 void BLITZ_ROUTINE doflushevents2(ULONG class BL_REG(d0))
 {
     struct evnode **prev = &V.firstmess;
@@ -1467,14 +1722,36 @@ done3:
     return class;
 }
 
-/* Event */
+/**
+ * @brief Event - the next event, without waiting.
+ *
+ * Takes the first event node (doevent2): sets the data of EventWindow,
+ * EventCode, EventQualifier, EMouseX/Y, GadgetHit (gadget up/down,
+ * gadgetslib's button groups and cycle texts), MenuHit/ItemHit/SubHit,
+ * the outstanding key (Inkey$) and mouse button (MButtons).  Amiga mode
+ * only.
+ *
+ * BUG(orig) (#311): a gadget down of a string gadget gives an extra
+ * "gadget up" ($40) on the next Event.  BUG(orig) (#312): MENUPICK appends
+ * one more MENUPICK node for the item's NextSelect, with qualifier and
+ * iaddress not set.
+ *
+ * @return d0: the IDCMP class, 0 = no event (or one with nothing to report)
+ */
 ULONG BLITZ_ROUTINE doevent(void)
 {
     updateevents();
     return doevent2();
 }
 
-/* WaitEvent */
+/**
+ * @brief WaitEvent - wait for the next event (statement or function).
+ *
+ * As Event, but waits on the port until an event with a class <> 0 comes.
+ * Amiga mode only.
+ *
+ * @return d0: the IDCMP class
+ */
 ULONG BLITZ_ROUTINE dowaitevent(void)
 {
     for (;;) {
@@ -1491,8 +1768,18 @@ ULONG BLITZ_ROUTINE dowaitevent(void)
     }
 }
 
-/* EventWindow etc. are above; MButtons: 0 = nothing, 1 left down, 2
-   right down, 5 left up, 6 right up (only events of the input window) */
+/**
+ * @brief MButtons - the next mouse button event of the input window.
+ *
+ * EventWindow etc. are above.  Takes the outstanding button of Event or
+ * the next MOUSEBUTTONS event of the input window; those of other windows
+ * are dropped.  Amiga mode only.
+ *
+ * Errors: no input window -> "Invalid Input Window" (err6, DIFF: raised
+ * from the normal code).
+ *
+ * @return d0: 0 = nothing, 1 left down, 2 right down, 5 left up, 6 right up
+ */
 ULONG BLITZ_ROUTINE buttons(void)
 {
     struct bwin *iw = V.inwindow;
@@ -1868,6 +2155,15 @@ __asm__("   .text\n   .even\n"
 void windowinp_h(void), windowprint_h(void);
 
 /* WindowInput / WindowOutput / _use (both) - a3 = the window object */
+
+/**
+ * @brief WindowInput Window# - Inkey$/Edit$ etc. read from a window.
+ *
+ * Hands windowinp_h (inputoutputlib's input handler, -4 = the line
+ * editor) to inputoutputlib (setin).
+ *
+ * a3: the window object (blitz_string)
+ */
 static void BLITZ_ROUTINE doinwindow_c(void)
 {
     struct bl_regs r = { .a0 = (ULONG)windowinp_h };
@@ -1877,6 +2173,14 @@ static void BLITZ_ROUTINE doinwindow_c(void)
 }
 BLITZ_THUNK(doinwindow, doinwindow_c, "d1/a1");
 
+/**
+ * @brief WindowOutput Window# - Print/NPrint write to a window.
+ *
+ * Hands windowprint_h (-8 = 0-terminated string, -4 = string with
+ * length, 0 = one character) to inputoutputlib (setout).
+ *
+ * a3: the window object (blitz_string)
+ */
 static void BLITZ_ROUTINE dooutwindow_c(void)
 {
     struct bl_regs r = { .a0 = (ULONG)windowprint_h };
@@ -1892,6 +2196,11 @@ static void dousewindow2(void)
     doinwindow_c();
 }
 
+/**
+ * @brief _use (Use Window) - WindowOutput and WindowInput of a window.
+ *
+ * a3: the window object (blitz_string)
+ */
 static void BLITZ_ROUTINE dousewindow_c(void)
 {
     dousewindow2();
@@ -1911,7 +2220,19 @@ static struct RastPort *setpen2(struct bwin *w, UWORD pen, struct Library *gfxba
     return rp;
 }
 
-/* WPlot x,y,c */
+/* The drawing commands draw into the used window with the pen given, the
+   WColour background pen and the WJam mode (setpen2); they are Amiga
+   mode only, and with the debugger wchk checks the window ("Uninitialized
+   Window"). */
+
+/**
+ * @brief WPlot X,Y,Colour - a point in the used window.
+ * @param x d0: x
+ * @param y d1: y
+ * @param c d2: the colour (pen)
+ * @param w a1: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dowplot(WORD x BL_REG(d0), WORD y BL_REG(d1), UWORD c BL_REG(d2),
                              struct bwin *w BL_REG(a1), struct Library *gfxbase BL_REG(a6))
 {
@@ -1925,7 +2246,19 @@ static void dowbox2(struct bwin *w, UWORD c, WORD x0, WORD y0, ULONG x1, ULONG y
     RectFill(setpen2(w, c, gfxbase), x0, y0, x1, y1);
 }
 
-/* WBox x1,y1,x2,y2,c - corners sorted (unsigned word compare) */
+/**
+ * @brief WBox X1,Y1,X2,Y2,Colour - a filled box in the used window.
+ *
+ * The corners are sorted (unsigned word compare), then RectFill.
+ *
+ * @param x0 d0: x1
+ * @param y0 d1: y1
+ * @param x1 d2: x2
+ * @param y1 d3: y2
+ * @param c d4: the colour (pen)
+ * @param w a1: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dowbox(ULONG x0 BL_REG(d0), ULONG y0 BL_REG(d1), ULONG x1 BL_REG(d2),
                             ULONG y1 BL_REG(d3), UWORD c BL_REG(d4),
                             struct bwin *w BL_REG(a1), struct Library *gfxbase BL_REG(a6))
@@ -1941,7 +2274,15 @@ void BLITZ_ROUTINE dowbox(ULONG x0 BL_REG(d0), ULONG y0 BL_REG(d1), ULONG x1 BL_
     dowbox2(w, c, x0, y0, x1, y1, gfxbase);
 }
 
-/* WCls [c] - RectFill 0,1,Width-1,Height-1 */
+/**
+ * @brief WCls Colour - clear the used window with a colour.
+ *
+ * RectFill 0,1,Width-1,Height-1.  BUG(orig) (#314): fills from y = 1.
+ *
+ * @param c d0: the colour (pen)
+ * @param w a1: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dowcls2(UWORD c BL_REG(d0), struct bwin *w BL_REG(a1),
                              struct Library *gfxbase BL_REG(a6))
 {
@@ -1950,12 +2291,22 @@ void BLITZ_ROUTINE dowcls2(UWORD c BL_REG(d0), struct bwin *w BL_REG(a1),
     dowbox2(w, c, 0, 1, (WORD)(win->Width - 1), (WORD)(win->Height - 1), gfxbase);
 }
 
+/**
+ * @brief WCls - clear the used window with colour 0 (see dowcls2, #314).
+ * @param w a1: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dowcls(struct bwin *w BL_REG(a1), struct Library *gfxbase BL_REG(a6))
 {
     dowcls2(0, w, gfxbase);
 }
 
-/* InnerCls [c] - inside the borders */
+/**
+ * @brief InnerCls Colour - clear the inside of the used window's borders.
+ * @param c d0: the colour (pen)
+ * @param w a1: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE doinnercls2(UWORD c BL_REG(d0), struct bwin *w BL_REG(a1),
                                  struct Library *gfxbase BL_REG(a6))
 {
@@ -1966,12 +2317,28 @@ void BLITZ_ROUTINE doinnercls2(UWORD c BL_REG(d0), struct bwin *w BL_REG(a1),
     dowbox2(w, c, (UBYTE)win->BorderLeft, (UBYTE)win->BorderTop, x1, y1, gfxbase);
 }
 
+/**
+ * @brief InnerCls - clear the inside of the used window's borders with
+ * colour 0.
+ * @param w a1: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE doinnercls(struct bwin *w BL_REG(a1), struct Library *gfxbase BL_REG(a6))
 {
     doinnercls2(0, w, gfxbase);
 }
 
-/* WCircle x,y,r,c / WEllipse x,y,rx,ry,c */
+/**
+ * @brief WEllipse X,Y,X Radius,Y Radius,Colour - an ellipse in the used
+ * window (DrawEllipse).
+ * @param x d0: centre x
+ * @param y d1: centre y
+ * @param rx d2: x radius
+ * @param ry d3: y radius
+ * @param c d4: the colour (pen)
+ * @param w a1: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dowellipse(WORD x BL_REG(d0), WORD y BL_REG(d1), ULONG rx BL_REG(d2),
                                 ULONG ry BL_REG(d3), UWORD c BL_REG(d4),
                                 struct bwin *w BL_REG(a1), struct Library *gfxbase BL_REG(a6))
@@ -1979,6 +2346,16 @@ void BLITZ_ROUTINE dowellipse(WORD x BL_REG(d0), WORD y BL_REG(d1), ULONG rx BL_
     DrawEllipse(setpen2(w, c, gfxbase), x, y, rx, ry);
 }
 
+/**
+ * @brief WCircle X,Y,Radius,Colour - a circle in the used window (an
+ * ellipse with both radii r).
+ * @param x d0: centre x
+ * @param y d1: centre y
+ * @param r d2: the radius
+ * @param c d3: the colour (pen)
+ * @param w a1: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dowcircle(WORD x BL_REG(d0), WORD y BL_REG(d1), ULONG r BL_REG(d2),
                                UWORD c BL_REG(d3), struct bwin *w BL_REG(a1),
                                struct Library *gfxbase BL_REG(a6))
@@ -1986,7 +2363,21 @@ void BLITZ_ROUTINE dowcircle(WORD x BL_REG(d0), WORD y BL_REG(d1), ULONG r BL_RE
     dowellipse(x, y, r, r, c, w, gfxbase);
 }
 
-/* WScroll x1,y1,x2,y2,dx,dy - BUG(orig) (#315): A pen 0 */
+/**
+ * @brief WScroll X1,Y1,X2,Y2,Delta X,Delta Y - scroll an area of the used
+ * window (ScrollRaster).
+ *
+ * BUG(orig) (#315): sets the A pen to 0.
+ *
+ * @param x0 d0: x1
+ * @param y0 d1: y1
+ * @param x1 d2: x2
+ * @param y1 d3: y2
+ * @param dx d4: delta x
+ * @param dy d5: delta y
+ * @param w a1: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dowscroll(ULONG x0 BL_REG(d0), ULONG y0 BL_REG(d1), ULONG x1 BL_REG(d2),
                                ULONG y1 BL_REG(d3), WORD dx BL_REG(d4), WORD dy BL_REG(d5),
                                struct bwin *w BL_REG(a1), struct Library *gfxbase BL_REG(a6))
@@ -1994,8 +2385,19 @@ void BLITZ_ROUTINE dowscroll(ULONG x0 BL_REG(d0), ULONG y0 BL_REG(d1), ULONG x1 
     ScrollRaster(setpen2(w, 0, gfxbase), dx, dy, x0, y0, x1, y1);
 }
 
-/* WPrintScroll - scroll the window if the cursor is below its inner
-   height */
+/**
+ * @brief WPrintScroll - scroll the used window if the text cursor is below
+ * its inner height.
+ *
+ * Scrolls the inner area up so that the cursor line fits, and moves the
+ * cursor up by the same amount.  Not Amiga mode only.  Errors (debugger
+ * only, wchk): "Uninitialized Window".
+ *
+ * BUG(orig) (#315): sets the A pen to 0.
+ *
+ * @param w a1: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dowprintscroll(struct bwin *w BL_REG(a1),
                                     struct Library *gfxbase BL_REG(a6))
 {
@@ -2008,8 +2410,20 @@ void BLITZ_ROUTINE dowprintscroll(struct bwin *w BL_REG(a1),
     ScrollRaster(setpen2(w, 0, gfxbase), 0, d, 0, 0, win->GZZWidth, win->GZZHeight);
 }
 
-/* WLine x1,y1,...,c - d7 = number of points (pairs on the argument
-   stack, swapped in place to x,y), d0 = colour */
+/**
+ * @brief WLine X1,Y1,X2,Y2[,Xn,Yn...],Colour - lines through the points in
+ * the used window (Move + PolyDraw).
+ *
+ * The point pairs are on the argument stack and are swapped in place to
+ * x,y.  Errors (debugger only, wlinechk): fewer than 2 points -> "Not
+ * Enough Coordinates", "Uninitialized Window".
+ *
+ * @param c d0: the colour (pen)
+ * @param n d7: the number of points
+ * @param args a2: the argument stack (the points below it)
+ * @param w a1: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dowline(UWORD c BL_REG(d0), UWORD n BL_REG(d7), UBYTE *args BL_REG(a2),
                              struct bwin *w BL_REG(a1), struct Library *gfxbase BL_REG(a6))
 {
@@ -2034,7 +2448,20 @@ void BLITZ_ROUTINE dowline(UWORD c BL_REG(d0), UWORD n BL_REG(d7), UBYTE *args B
 
 /* ------------------------------------------------- window operations */
 
-/* WTitle win$,scr$ - copies of both strings (allocst, never freed) */
+/**
+ * @brief WTitle windowtitle$,screentitle$ - the titles of the used window
+ * and its screen (SetWindowTitles).
+ *
+ * Errors (debugger only, wchk): "Uninitialized Window".
+ *
+ * BUG(orig) (#318): copies of both strings (allocst), never freed.
+ *
+ * @param wt d0: the window title
+ * @param st d1: the screen title
+ * @param lens a2: the argument stack, the string lengths below it
+ * @param w a1: the used window object
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE dowtitle(const UBYTE *wt BL_REG(d0), const UBYTE *st BL_REG(d1),
                               const ULONG *lens BL_REG(a2), struct bwin *w BL_REG(a1),
                               struct Library *intbase BL_REG(a6))
@@ -2048,7 +2475,21 @@ void BLITZ_ROUTINE dowtitle(const UBYTE *wt BL_REG(d0), const UBYTE *st BL_REG(d
     SetWindowTitles(win, (STRPTR)wtitle, (STRPTR)stitle);
 }
 
-/* WMove x,y - a0 = used window; waits until Intuition has moved it */
+/**
+ * @brief WMove X,Y - move the used window (MoveWindow by the difference).
+ *
+ * Errors (debugger only, wmovechk): "Uninitialized Window"; a negative
+ * position or the window outside its screen -> "Can't move Window".
+ *
+ * BUG(orig) (#320): waits in a loop until the window has the new
+ * position; never ends if Intuition clips it (only the checks prevent
+ * that).
+ *
+ * @param x d0: the new x (the upper word goes to MoveWindow)
+ * @param y d1: the new y
+ * @param w a0: the used window object
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE dowmove(ULONG x BL_REG(d0), ULONG y BL_REG(d1), struct bwin *w BL_REG(a0),
                              struct Library *intbase BL_REG(a6))
 {
@@ -2060,7 +2501,21 @@ void BLITZ_ROUTINE dowmove(ULONG x BL_REG(d0), ULONG y BL_REG(d1), struct bwin *
         ;
 }
 
-/* WSize w,h */
+/**
+ * @brief WSize Width,Height - resize the used window (SizeWindow by the
+ * difference).
+ *
+ * Errors (debugger only, wsizechk): "Uninitialized Window"; a size <= 0 or
+ * the window outside its screen -> "Can't Size Window".
+ *
+ * BUG(orig) (#320): waits in a loop until the window has the new size;
+ * never ends if Intuition clips it (only the checks prevent that).
+ *
+ * @param x d0: the new width (the upper word goes to SizeWindow)
+ * @param y d1: the new height
+ * @param w a0: the used window object
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE dowsize(ULONG x BL_REG(d0), ULONG y BL_REG(d1), struct bwin *w BL_REG(a0),
                              struct Library *intbase BL_REG(a6))
 {
@@ -2095,18 +2550,53 @@ static void newidcmp(UBYTE *objs, UWORD max, UWORD verify, UWORD rmbtrap,
     } while (n-- != 0);
 }
 
+/**
+ * @brief MenusOn - the menus of all windows work again.
+ *
+ * Clears RMBTRAP and MENUVERIFY of every window (newidcmp).  Amiga mode
+ * only.
+ *
+ * BUG(orig) (#310): steps through the window objects with 16 bytes and
+ * only `maximum` slots: half of the windows are not reached.
+ *
+ * @param objs a2: the window objects (base)
+ * @param max d2: the maximum of window objects
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE domenuson(UBYTE *objs BL_REG(a2), UWORD max BL_REG(d2),
                                struct Library *intbase BL_REG(a6))
 {
     newidcmp(objs, max, 0, 0, intbase);
 }
 
+/**
+ * @brief MenusOff - switch the menus of all windows off.
+ *
+ * Sets RMBTRAP and MENUVERIFY of every window (newidcmp; the event reader
+ * answers MENUVERIFY with MENUCANCEL).  Amiga mode only.
+ *
+ * BUG(orig) (#310): only half of the windows are reached (16 byte steps).
+ *
+ * @param objs a2: the window objects (base)
+ * @param max d2: the maximum of window objects
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE domenusoff(UBYTE *objs BL_REG(a2), UWORD max BL_REG(d2),
                                 struct Library *intbase BL_REG(a6))
 {
     newidcmp(objs, max, 0x2000, 1, intbase);
 }
 
+/**
+ * @brief Menus On|Off - MenusOn or MenusOff.
+ *
+ * BUG(orig) (#310): only half of the windows are reached (16 byte steps).
+ *
+ * @param on d0: <>0 = on (a word)
+ * @param objs a2: the window objects (base)
+ * @param max d2: the maximum of window objects
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE domenusok(UWORD on BL_REG(d0), UBYTE *objs BL_REG(a2), UWORD max BL_REG(d2),
                                struct Library *intbase BL_REG(a6))
 {
@@ -2116,8 +2606,23 @@ void BLITZ_ROUTINE domenusok(UWORD on BL_REG(d0), UBYTE *objs BL_REG(a2), UWORD 
         newidcmp(objs, max, 0x2000, 1, intbase);
 }
 
-/* WPointer shape# - a2 = the shape, a3 = the used window: a sprite
-   pointer from the first two planes (one word wide) */
+/**
+ * @brief WPointer Shape# - a shape as the mouse pointer of the used window.
+ *
+ * A sprite pointer from the first two planes of the shape (one word
+ * wide), in chip memory (memlib globalloc, kept in the window object; an
+ * old one is cleared and freed first); SetPointer with the shape's
+ * handle as offset.  a3 = the used window object (blitz_string).  Amiga
+ * mode only.
+ *
+ * Errors (debugger only, wpointerchk): "Uninitialized Shape",
+ * "Uninitialized Window".
+ *
+ * @param shape a2: the shape object
+ * @param xoff_reg d2: the caller's d2 (its upper word goes to SetPointer)
+ * @param yoff_reg d3: the caller's d3 (its upper word goes to SetPointer)
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE dowpointer(const UBYTE *shape BL_REG(a2), ULONG xoff_reg BL_REG(d2),
                                 ULONG yoff_reg BL_REG(d3), struct Library *intbase BL_REG(a6))
 {
@@ -2150,13 +2655,33 @@ void BLITZ_ROUTINE dowpointer(const UBYTE *shape BL_REG(a2), ULONG xoff_reg BL_R
                (yoff_reg & 0xffff0000UL) | *(UWORD *)(shape + 12));
 }
 
-/* WindowFont font#[,style] - a0 = the IntuiFont object (+8 = TextFont) */
+/**
+ * @brief WindowFont IntuiFont# - the font of the used window (SetFont).
+ *
+ * Amiga mode only.  Errors (debugger only, wfontchk): "Uninitialized
+ * Window", an IntuiFont without font -> "Uninitialized IntuiFont".
+ *
+ * @param font a0: the IntuiFont object (+8 = TextFont)
+ * @param w a1: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dowfont(const struct ifont *font BL_REG(a0), struct bwin *w BL_REG(a1),
                              struct Library *gfxbase BL_REG(a6))
 {
     SetFont(w->win->RPort, font->font);
 }
 
+/**
+ * @brief WindowFont IntuiFont#,SoftStyle - font and soft style of the used
+ * window (SetFont, SetSoftStyle with all style bits enabled).
+ *
+ * Amiga mode only.  Errors as WindowFont IntuiFont#.
+ *
+ * @param style d1: the soft style
+ * @param font a0: the IntuiFont object (+8 = TextFont)
+ * @param w a1: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dowfont2(ULONG style BL_REG(d1), const struct ifont *font BL_REG(a0),
                               struct bwin *w BL_REG(a1), struct Library *gfxbase BL_REG(a6))
 {
@@ -2166,7 +2691,17 @@ void BLITZ_ROUTINE dowfont2(ULONG style BL_REG(d1), const struct ifont *font BL_
     SetSoftStyle(rp, style, (ULONG)-1);
 }
 
-/* BitMaptoWindow bm#,win#[,sx,sy,dx,dy,w,h] - a0 = window, a1 = bitmap */
+/**
+ * @brief BitMaptoWindow Bitmap#,Window# - copy a whole bitmap into a
+ * window at 0,0 (BltBitMapRastPort, minterm $C0).
+ *
+ * Errors (debugger only, wbtowchk): "Uninitialized Window",
+ * "Ininitialised BitMap".
+ *
+ * @param w a0: the window object
+ * @param bm a1: the bitmap object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dobtow1(struct bwin *w BL_REG(a0), struct BitMap *bm BL_REG(a1),
                              struct Library *gfxbase BL_REG(a6))
 {
@@ -2174,6 +2709,26 @@ void BLITZ_ROUTINE dobtow1(struct bwin *w BL_REG(a0), struct BitMap *bm BL_REG(a
                       (WORD)bm->Rows, 0xc0);
 }
 
+/**
+ * @brief BitMaptoWindow Bitmap#,Window#,srcx,srcy,destx,desty,wid,height -
+ * copy an area of a bitmap into a window.
+ *
+ * The coordinates come in d2-d5, width and height from the argument
+ * stack; MOVE.w: the upper words of the registers stay (each value keeps
+ * the upper word of the register it is moved into).  Errors as the short
+ * form.
+ *
+ * @param sx_reg d0: the bitmap number register (upper word of srcx)
+ * @param sy_reg d1: the window number register (upper word of srcy)
+ * @param sx d2: srcx
+ * @param sy d3: srcy
+ * @param dx d4: destx
+ * @param dy d5: desty
+ * @param args a2: the argument stack: width, height below it
+ * @param w a0: the window object
+ * @param bm a1: the bitmap object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dobtow2(ULONG sx_reg BL_REG(d0), ULONG sy_reg BL_REG(d1), ULONG sx BL_REG(d2),
                              ULONG sy BL_REG(d3), ULONG dx BL_REG(d4), ULONG dy BL_REG(d5),
                              const UWORD *args BL_REG(a2), struct bwin *w BL_REG(a0),
@@ -2189,8 +2744,23 @@ void BLITZ_ROUTINE dobtow2(ULONG sx_reg BL_REG(d0), ULONG sy_reg BL_REG(d1), ULO
                       (dy & 0xffff0000UL) | ht, 0xc0);
 }
 
-/* WBlit shape#,x,y - a0 = used window, a2 = the shape: its planes as a
-   BitMap (mybmap), with the cookie as mask if there is one */
+/**
+ * @brief WBlit Shape#,x,y - draw a shape into the used window.
+ *
+ * The shape's planes as a BitMap (mybmap), with the cookie as mask if
+ * there is one (BltMaskBitMapRastPort minterm $E0, else BltBitMapRastPort
+ * $C0); the position is minus the shape's handle.
+ *
+ * Errors (debugger only, wblitchk): "Uninitialized Window", "Ininitialised
+ * Shape".
+ *
+ * @param xpos d1: x
+ * @param ypos d2: y (its upper word also becomes that of x)
+ * @param y_reg d3: the caller's d3 (its upper word becomes that of y)
+ * @param w a0: the used window object
+ * @param shape a2: the shape object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE dowblit(ULONG xpos BL_REG(d1), ULONG ypos BL_REG(d2), ULONG y_reg BL_REG(d3),
                              struct bwin *w BL_REG(a0), const UBYTE *shape BL_REG(a2),
                              struct Library *gfxbase BL_REG(a6))
@@ -2218,7 +2788,17 @@ void BLITZ_ROUTINE dowblit(ULONG xpos BL_REG(d1), ULONG ypos BL_REG(d2), ULONG y
         BltBitMapRastPort(&mybmap, 0, 0, rp, x, y, *(WORD *)shape, *(WORD *)(shape + 2), 0xc0);
 }
 
-/* PositionSuperBitMap x,y - ScrollLayer by the difference */
+/**
+ * @brief PositionSuperBitMap x,y - the view of a super bitmap window.
+ *
+ * ScrollLayer by the difference to the last position (kept in the window
+ * object).
+ *
+ * @param x d0: x
+ * @param y d1: y
+ * @param w a1: the used window object
+ * @param layersbase a6: the layers base
+ */
 void BLITZ_ROUTINE _showsuper(WORD x BL_REG(d0), WORD y BL_REG(d1), struct bwin *w BL_REG(a1),
                                 struct Library *layersbase BL_REG(a6))
 {
@@ -2229,13 +2809,24 @@ void BLITZ_ROUTINE _showsuper(WORD x BL_REG(d0), WORD y BL_REG(d1), struct bwin 
     ScrollLayer(0, w->win->RPort->Layer, (WORD)(x - ox), (WORD)(y - oy));
 }
 
-/* GetSuperBitMap / PutSuperBitMap */
+/**
+ * @brief GetSuperBitMap - copy the window's contents into its super bitmap
+ * (SyncSBitMap).
+ * @param w a0: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE _windowtobitmap(struct bwin *w BL_REG(a0),
                                      struct Library *gfxbase BL_REG(a6))
 {
     SyncSBitMap(w->win->RPort->Layer);
 }
 
+/**
+ * @brief PutSuperBitMap - copy the super bitmap into the window
+ * (CopySBitMap).
+ * @param w a0: the used window object
+ * @param gfxbase a6: the graphics base
+ */
 void BLITZ_ROUTINE _bitmaptowindow(struct bwin *w BL_REG(a0),
                                      struct Library *gfxbase BL_REG(a6))
 {
@@ -2244,7 +2835,18 @@ void BLITZ_ROUTINE _bitmaptowindow(struct bwin *w BL_REG(a0),
 
 /* ------------------------------------------------ opening, closing */
 
-/* freewindow (CloseWindow, _free) - a3 = the window object */
+/**
+ * @brief CloseWindow Window# (and _free) - close a window.
+ *
+ * Under Forbid: replies all messages of the port, clears pr_WindowPtr if
+ * it is this window, ClearMenuStrip, UserPort = 0 (the port is shared),
+ * CloseWindow; then frees the event list.  a3 = the window object
+ * (blitz_string); nothing happens if it is not open.
+ *
+ * BUG(orig) (#322): drops all events of all windows.
+ *
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE freewindow(struct Library *intbase BL_REG(a6))
 {
     struct bwin *w = (struct bwin *)blitz_string;
@@ -2335,6 +2937,35 @@ static void openwindow(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *t
 }
 
 /* the three forms: d1 = flags, d2 = title, d3/d4 = pens */
+
+/**
+ * @brief Window Window#,X,Y,Width,Height,Flags,Title$,Dpen,Bpen,GadgetList# -
+ * open a window with a gadget list.
+ *
+ * Closes the window object first, then opens the window on the used
+ * screen with the static NewWindow (SizeLimits if on, flag $80 = super
+ * bitmap, REPORTMOUSE if the IDCMP has MOUSEMOVE), gives it the shared
+ * port and the DefaultIDCMP, and makes it the used, input and output
+ * window.  X, Y, Width and Height come from the argument stack.  a3 =
+ * the window object (blitz_string).  Amiga mode only.
+ *
+ * Errors: OpenWindow fails -> "Couldn't Open Window" (err1).
+ *
+ * BUG(orig) (#318): the title is copied (allocst) and never freed.
+ * BUG(orig) (#319): flag $80 uses the bitmap of the last Window with
+ * BitMap#.
+ *
+ * @param objoff d0: the object offset (window number << 5)
+ * @param flags d1: the window flags
+ * @param title d2: the title
+ * @param dpen d3: the detail pen
+ * @param bpen d4: the block pen
+ * @param glist a0: the gadget list object
+ * @param scr a1: the used screen object
+ * @param usedoff d6: the offset of the used window in the globals
+ * @param lens a2: the argument stack (position, size, title length)
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE dowindow(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                               const UBYTE *title BL_REG(d2), UBYTE dpen BL_REG(d3),
                               UBYTE bpen BL_REG(d4), ULONG *glist BL_REG(a0),
@@ -2345,6 +2976,22 @@ void BLITZ_ROUTINE dowindow(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                usedoff, lens, intbase);
 }
 
+/**
+ * @brief Window Window#,X,Y,Width,Height,Flags,Title$,Dpen,Bpen - open a
+ * window without gadgets.
+ *
+ * As the form with GadgetList#, with the empty gadget list (V.zero).
+ *
+ * @param objoff d0: the object offset (window number << 5)
+ * @param flags d1: the window flags
+ * @param title d2: the title
+ * @param dpen d3: the detail pen
+ * @param bpen d4: the block pen
+ * @param scr a1: the used screen object
+ * @param usedoff d6: the offset of the used window in the globals
+ * @param lens a2: the argument stack (position, size, title length)
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE dowindow2(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                const UBYTE *title BL_REG(d2), UBYTE dpen BL_REG(d3),
                                UBYTE bpen BL_REG(d4),
@@ -2355,7 +3002,23 @@ void BLITZ_ROUTINE dowindow2(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                usedoff, lens, intbase);
 }
 
-/* dowindow3 - pens from the stack (-10/-12(a2)), a4 = the bitmap */
+/**
+ * @brief Window Window#,X,Y,Width,Height,Flags,Title$,Dpen,Bpen,GadgetList#,BitMap# -
+ * open a window with a gadget list and a super bitmap.
+ *
+ * As the form with GadgetList#; the pens come from the stack
+ * (-10/-12(a2)), a4 = the bitmap object, kept for the super bitmap flag
+ * $80 (BUG(orig) (#319): also for later windows).
+ *
+ * @param objoff d0: the object offset (window number << 5)
+ * @param flags d1: the window flags
+ * @param title d2: the title
+ * @param glist a0: the gadget list object
+ * @param scr a1: the used screen object
+ * @param usedoff d6: the offset of the used window in the globals
+ * @param lens a2: the argument stack (position, size, pens, title length)
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE dowindow3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                const UBYTE *title BL_REG(d2), ULONG *glist BL_REG(a0),
                                struct Screen **scr BL_REG(a1), WORD usedoff BL_REG(d6),
@@ -2394,6 +3057,29 @@ static void opentags(struct bwin *w, UWORD objoff, ULONG flags, const UBYTE *tit
     dousewindow2();
 }
 
+/**
+ * @brief WindowTags Window#,Flags,Title$ - open a window with OpenWindowTagList.
+ *
+ * Closes the window object first; the tags are WA_Flags, WA_Title (a copy
+ * of the title), WA_CustomScreen (the used screen), WA_NewLookMenus, then
+ * the user tags.  The window gets the shared port and the DefaultIDCMP and
+ * becomes the used, input and output window.  a3 = the window object
+ * (blitz_string).  Amiga mode only.
+ *
+ * Errors: OpenWindowTagList fails -> "Couldn't Open Window" (err1).
+ *
+ * BUG(orig) (#316): without tags no TAG_DONE is written: the user tags of
+ * the last WindowTags stay.  BUG(orig) (#318): the title copy is never
+ * freed.
+ *
+ * @param objoff d0: the object offset (window number << 5)
+ * @param flags d1: the window flags
+ * @param title d2: the title
+ * @param scr a1: the used screen object
+ * @param usedoff d6: the offset of the used window in the globals
+ * @param lens a2: the argument stack, -4 = the title length
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE dowindowtags1(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                    const UBYTE *title BL_REG(d2),
                                    struct Screen **scr BL_REG(a1), WORD usedoff BL_REG(d6),
@@ -2403,7 +3089,24 @@ void BLITZ_ROUTINE dowindowtags1(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1)
     opentags((struct bwin *)blitz_string, objoff, flags, title, lens[-1], scr, usedoff, intbase);
 }
 
-/* &TagList: copied up to and including TAG_DONE */
+/**
+ * @brief WindowTags Window#,Flags,Title$,&TagList - open a window with a
+ * tag list of the program.
+ *
+ * As WindowTags Window#,Flags,Title$; the list is copied up to and
+ * including TAG_DONE behind the fixed tags.
+ *
+ * BUG(orig) (#317): copied without a limit into 32 longs.
+ *
+ * @param objoff d0: the object offset (window number << 5)
+ * @param flags d1: the window flags
+ * @param title d2: the title
+ * @param tl d3: the tag list
+ * @param scr a1: the used screen object
+ * @param usedoff d6: the offset of the used window in the globals
+ * @param lens a2: the argument stack, -4 = the title length
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE dowindowtags3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                    const UBYTE *title BL_REG(d2), const ULONG *tl BL_REG(d3),
                                    struct Screen **scr BL_REG(a1), WORD usedoff BL_REG(d6),
@@ -2426,7 +3129,24 @@ void BLITZ_ROUTINE dowindowtags3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1)
     opentags((struct bwin *)blitz_string, objoff, flags, title, lens[-1], scr, usedoff, intbase);
 }
 
-/* tag pairs on the argument stack, d7 = their number */
+/**
+ * @brief WindowTags Window#,Flags,Title$,Tag,Data[,Tag,Data...] - open a
+ * window with tag pairs.
+ *
+ * As WindowTags Window#,Flags,Title$; the pairs come from the argument
+ * stack, then TAG_DONE (its data not set).
+ *
+ * BUG(orig) (#317): no limit for the 16 user tags.
+ *
+ * @param objoff d0: the object offset (window number << 5)
+ * @param flags d1: the window flags
+ * @param title d2: the title
+ * @param n d7: the number of tag pairs
+ * @param scr a1: the used screen object
+ * @param usedoff d6: the offset of the used window in the globals
+ * @param lens a2: the argument stack: the title length, then the pairs
+ * @param intbase a6: the intuition base
+ */
 void BLITZ_ROUTINE dowindowtags2(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1),
                                    const UBYTE *title BL_REG(d2), UWORD n BL_REG(d7),
                                    struct Screen **scr BL_REG(a1), WORD usedoff BL_REG(d6),
@@ -2448,7 +3168,17 @@ void BLITZ_ROUTINE dowindowtags2(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1)
 
 /* ------------------------------------------------------ init, finit */
 
-/* init - a0 = graphics, a1 = intuition: the port; returns its address */
+/**
+ * @brief init - the shared message port and the defaults.
+ *
+ * One message port for all windows (signal of the program's task), the
+ * empty event list, the default IDCMP, pens, cursor and size limits;
+ * keeps the old pr_WindowPtr for finit.
+ *
+ * @param gfx a0: the graphics base
+ * @param intb a1: the intuition base
+ * @return d0: the port's address (the init value, #long)
+ */
 ULONG BLITZ_ROUTINE codeinit(struct Library *gfx BL_REG(a0), struct Library *intb BL_REG(a1))
 {
     struct List *l = &myport.mp_MsgList;
@@ -2489,7 +3219,9 @@ ULONG BLITZ_ROUTINE codeinit(struct Library *gfx BL_REG(a0), struct Library *int
     return (ULONG)&myport;
 }
 
-/* finit - FreeSignal, the old pr_WindowPtr */
+/**
+ * @brief finit - free the port's signal, restore the old pr_WindowPtr.
+ */
 void BLITZ_ROUTINE codefinit(void)
 {
     FreeSignal(myport.mp_SigBit);
