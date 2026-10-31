@@ -76,7 +76,21 @@ static UBYTE wheels[3];
    makes it negative (BPL) - at least one pass (BUG(orig) (#630), see above) */
 #define NEG(n) ((n) & 0x80000000UL)
 
-/* Encrypt memadr,length,wheel1,wheel2,wheel3 (d0-d4; ANDI.l #$ff) */
+/**
+ * @brief Encrypt memadr,length,wheel1,wheel2,wheel3: encrypts a block in
+ * place with the three-wheel cipher.
+ *
+ * Every byte b becomes b + w1 + w2 + w3, the wheels stepped before each
+ * byte like an odometer (w1 + 1, on its carry w2 + 1, on that w3 + 1);
+ * the last state is kept for GetWheel.  BUG(orig) (#630): length 0 (or
+ * one above 2^31) processes one byte.
+ * @param p       d0: memadr
+ * @param len     d1: length
+ * @param wheel1  d2: the start of wheel 1 (its low byte, ANDI.l #$ff)
+ * @param wheel2  d3: the start of wheel 2
+ * @param wheel3  d4: the start of wheel 3
+ * @return d0: memadr with the last byte written in its low byte
+ */
 static ULONG BLITZ_ROUTINE encrypt_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1),
                                     UWORD wheel1 BL_REG(d2),
                                     UWORD wheel2 BL_REG(d3),
@@ -110,7 +124,13 @@ static UBYTE rndwheel(ULONG range)
     return (UBYTE)r.d0;
 }
 
-/* Encrypt memadr,length - random wheels */
+/**
+ * @brief Encrypt memadr,length: as above with random start wheels (vallib
+ * Rnd); GetWheel tells the state after it.
+ * @param p    d0: memadr
+ * @param len  d1: length
+ * @return d0: memadr with the last byte written in its low byte
+ */
 static ULONG BLITZ_ROUTINE encrypt2_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1))
 {
     UBYTE a = rndwheel(256);
@@ -120,7 +140,20 @@ static ULONG BLITZ_ROUTINE encrypt2_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1))
     return encrypt_c(p, len, a, b, c);
 }
 
-/* Decrypt memadr,length,wheel1,wheel2,wheel3 (d0-d4), from the end */
+/**
+ * @brief Decrypt memadr,length,wheel1,wheel2,wheel3: decrypts a block in
+ * place, from the end backwards.
+ *
+ * The wheels are those Encrypt left (GetWheel); each byte loses w1 + w2 +
+ * w3, then the wheels step back.  The last state is kept for GetWheel.
+ * BUG(orig) (#630): length 0 processes one byte, the one at memadr-1.
+ * @param base    d0: memadr
+ * @param len     d1: length
+ * @param wheel1  d2: wheel 1 (its low byte)
+ * @param wheel2  d3: wheel 2
+ * @param wheel3  d4: wheel 3
+ * @return d0: memadr with the last byte written in its low byte
+ */
 static ULONG BLITZ_ROUTINE decrypt_c(UBYTE *base BL_REG(d0), ULONG len BL_REG(d1),
                                     UWORD wheel1 BL_REG(d2),
                                     UWORD wheel2 BL_REG(d3),
@@ -143,9 +176,21 @@ static ULONG BLITZ_ROUTINE decrypt_c(UBYTE *base BL_REG(d0), ULONG len BL_REG(d1
     return BL_SETB(result, x);                          /* d0.b = the last byte */
 }
 
-/* Decrypt memadr,length,wheel1,wheel2,wheel3,mode (d0-d5): mode 1 (the
-   low byte, CMPI.b) adds the length's bytes 0..2 to the wheels, each
-   without carry (BUG(orig) (#629)) */
+/**
+ * @brief Decrypt memadr,length,wheel1,wheel2,wheel3,mode: as above; mode 1
+ * starts from the wheels Encrypt started with.
+ *
+ * Mode 1 (the low byte, CMPI.b) adds the length's bytes 0..2 to the
+ * wheels first.  BUG(orig) (#629): each without the carry into the next
+ * wheel, so the state can be one step off.
+ * @param p       d0: memadr
+ * @param len     d1: length
+ * @param wheel1  d2: wheel 1
+ * @param wheel2  d3: wheel 2
+ * @param wheel3  d4: wheel 3
+ * @param mode    d5: 1 = the start wheels, else as Decrypt above
+ * @return d0: memadr with the last byte written in its low byte
+ */
 static ULONG BLITZ_ROUTINE decrypt2_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1),
                                      UWORD wheel1 BL_REG(d2),
                                      UWORD wheel2 BL_REG(d3),
@@ -159,7 +204,11 @@ static ULONG BLITZ_ROUTINE decrypt2_c(UBYTE *p BL_REG(d0), ULONG len BL_REG(d1),
     return decrypt_c(p, len, wheel1, wheel2, wheel3);
 }
 
-/* GetWheel(n) (d0.b): wheel 1..3 zero extended, otherwise -1 */
+/**
+ * @brief GetWheel(wheel#): a wheel after the last Encrypt/Decrypt.
+ * @param n  d0.b: wheel# 1..3
+ * @return d0: the wheel zero extended, -1 for another wheel#
+ */
 static ULONG BLITZ_ROUTINE getwheel_c(UWORD n BL_REG(d0))
 {
     switch ((UBYTE)n) {

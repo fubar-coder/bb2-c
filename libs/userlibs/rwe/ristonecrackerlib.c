@@ -130,13 +130,22 @@ static ULONG stcdecrunch(UBYTE *a)
 
 /* ------------------------------------------------------------ commands */
 
-/* init (codeinit): dos.library, any version */
+/**
+ * @brief init (codeinit): opens dos.library, any version.
+ *
+ * BUG(orig) (#834): it is never closed (finit is 0).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE codeinit_c(void)
 {
     dosbase = OpenLibrary((CONST_STRPTR)dosname, 0);
 }
 
-/* STCLength(address) */
+/**
+ * @brief STCLength(address): the unpacked size of an S404 file in memory.
+ * @param a  d0: the file
+ * @return d0: the unpacked length, 0 if a is no S404 file
+ */
 static ULONG BLITZ_ROUTINE stclength_c(const UBYTE *a BL_REG(d0))
 {
     if (HDR(a)->id != S404)
@@ -144,7 +153,14 @@ static ULONG BLITZ_ROUTINE stclength_c(const UBYTE *a BL_REG(d0))
     return HDR(a)->unpacked;
 }
 
-/* STCStart(address): the check only in the binary */
+/**
+ * @brief STCStart(address): where the data of an S404 file unpacked in
+ * place begin (address + security offset).
+ *
+ * The header check is only in the binary (not in the source).
+ * @param a  d0: the file
+ * @return d0: address + offset, 0 if a is no S404 file
+ */
 static ULONG BLITZ_ROUTINE stcstart_c(const UBYTE *a BL_REG(d0))
 {
     if (HDR(a)->id != S404)
@@ -152,7 +168,14 @@ static ULONG BLITZ_ROUTINE stcstart_c(const UBYTE *a BL_REG(d0))
     return (ULONG)a + HDR(a)->offset;
 }
 
-/* STCSafeLen(address): the check only in the binary */
+/**
+ * @brief STCSafeLen(address): the buffer size an S404 file needs to be
+ * unpacked in place (unpacked length + security offset).
+ *
+ * The header check is only in the binary (not in the source).
+ * @param a  d0: the file
+ * @return d0: the size, 0 if a is no S404 file
+ */
 static ULONG BLITZ_ROUTINE stcsafelen_c(const UBYTE *a BL_REG(d0))
 {
     if (HDR(a)->id != S404)
@@ -160,7 +183,20 @@ static ULONG BLITZ_ROUTINE stcsafelen_c(const UBYTE *a BL_REG(d0))
     return HDR(a)->unpacked + HDR(a)->offset;
 }
 
-/* STCLoad filename$,address (d0, d1) */
+/**
+ * @brief STCLoad filename$,address: reads an S404 file to address (its
+ * whole length) and unpacks it in place.
+ *
+ * Examine's and Read's results are not checked.  BUG(orig): the lock that
+ * OpenFromLock took over is unlocked again after Close (#835); the header
+ * is not checked and the whole file is read whatever the buffer's size
+ * (#836); the decruncher does not check the data (#833).
+ * @param name  d0: filename$
+ * @param ad    d1: the buffer (STCSafeLen bytes)
+ * @return d0: the start of the unpacked data (address + offset), 0 if the
+ *         file cannot be locked or opened or there is no memory for the
+ *         FileInfoBlock
+ */
 static ULONG BLITZ_ROUTINE stcload_c(CONST_STRPTR name BL_REG(d0), UBYTE *ad BL_REG(d1))
 {
     struct Library *dos = dosbase;
