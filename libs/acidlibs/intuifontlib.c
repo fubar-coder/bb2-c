@@ -87,7 +87,12 @@ static struct BL_PACKED {
 
 /* ---------------------------------------------------------------- init */
 
-/* codeinit - default topaz 8, d0 = &textattr (the pad is not cleared) */
+/**
+ * @brief The library's init: the default object topaz 8 becomes the
+ * current IntuiFont (the pad is not cleared).
+ * @return d0: &textattr, the library's init value (other libraries read
+ *         the current IntuiFont through it)
+ */
 static ULONG BLITZ_ROUTINE codeinit_c(void)
 {
     fd.textattr = &fd.defattr;
@@ -114,12 +119,24 @@ static void freeifont(struct ifont *f, const void *gfx)
     BLITZ_BASEJSR(gfx, LVO_CloseFont, r);
 }
 
+/**
+ * @brief Free IntuiFont#: the object's free routine (_free): close its
+ * font (CloseFont), if one is open.
+ *
+ * The name copy is not freed, BUG(orig) (#198).  The object comes in a3.
+ *
+ * @param gfx  a6: graphics.library
+ */
 static void BLITZ_ROUTINE dofreeifont_c(const void *gfx BL_REG(a6))
 {
     freeifont((struct ifont *)blitz_string, gfx);   /* a3 = object */
 }
 BLITZ_THUNK(dofreeifont, dofreeifont_c, "d1/a0-a1");
 
+/**
+ * @brief Use IntuiFont#: the object's use routine (_use): the object (a3)
+ * becomes the current IntuiFont (MOVE.l a3,textattr).
+ */
 static void BLITZ_ROUTINE douseifont_c(void)
 {
     fd.textattr = (struct ifont *)blitz_string;     /* MOVE.l a3,textattr */
@@ -152,6 +169,26 @@ static ULONG setifont(const UBYTE *name, UWORD ysize, UWORD style,
     return f->font;                             /* MOVE.l d0,8(a3): Z for loadchk */
 }
 
+/**
+ * @brief LoadFont IntuiFont#,Fontname.font$,Y size: load a font into an
+ * IntuiFont object (style 0).
+ *
+ * The object (a3) becomes the used and the current IntuiFont; its old
+ * font is closed, the name copied with maxslib allocst (the copy of a
+ * previous LoadFont is never freed, BUG(orig) (#198)), then OpenDiskFont.
+ * Amiga mode only.  DIFF: a2 stays unchanged (the original pops the name
+ * length).
+ * Errors (debugger only): "Can't Open Font" - loadchk tests the Z flag
+ * the routine leaves.
+ *
+ * @param name      d1: the font name
+ * @param ysize     d2: the height
+ * @param lens      a2: the stack with the name's length
+ * @param used      d5: the offset of the `used` variable from a5
+ * @param gfx       d6: graphics.library
+ * @param diskfont  a6: diskfont.library
+ * @return d0: the font, 0 if it could not be opened (CCR Z then)
+ */
 static ULONG BLITZ_ROUTINE dosetifont_c(const UBYTE *name BL_REG(d1), UWORD ysize BL_REG(d2),
                                         const ULONG *lens BL_REG(a2), WORD used BL_REG(d5),
                                         const void *gfx BL_REG(d6), const void *diskfont BL_REG(a6))
@@ -160,6 +197,22 @@ static ULONG BLITZ_ROUTINE dosetifont_c(const UBYTE *name BL_REG(d1), UWORD ysiz
 }
 BLITZ_THUNK_Z(dosetifont, dosetifont_c, "d1");
 
+/**
+ * @brief LoadFont IntuiFont#,Fontname.font$,Y size,style: LoadFont with a
+ * style.
+ *
+ * BUG(orig) (#197): the style goes to the WORD at +6: ta_Style = the
+ * upper byte of the argument (0 for 0..255), ta_Flags = the style.
+ *
+ * @param name      d1: the font name
+ * @param ysize     d2: the height
+ * @param style     d3: the style
+ * @param lens      a2: the stack with the name's length
+ * @param used      d5: the offset of the `used` variable from a5
+ * @param gfx       d6: graphics.library
+ * @param diskfont  a6: diskfont.library
+ * @return d0: the font, 0 if it could not be opened (CCR Z then)
+ */
 static ULONG BLITZ_ROUTINE dosetifont2_c(const UBYTE *name BL_REG(d1), UWORD ysize BL_REG(d2),
                                          UWORD style BL_REG(d3), const ULONG *lens BL_REG(a2),
                                          WORD used BL_REG(d5), const void *gfx BL_REG(d6),
