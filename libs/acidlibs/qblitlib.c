@@ -97,11 +97,21 @@ static UWORD bcon0 = 0xfca;
 #define SW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
 #define SL(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
 
+/* a queue item, 14 bytes (QBlit appends, UnQueue reads) */
+struct qitem {
+    UWORD mod;                  /* +0  destination modulo */
+    UWORD size;                 /* +2  BLTSIZE */
+    UWORD planes;               /* +4  bitmap depth - 1 */
+    const UBYTE *bm;            /* +6  the bitmap object */
+    ULONG off;                  /* +10 byte offset in each plane */
+};
+static_assert(sizeof(struct qitem) == 14, "qitem size");
+
 /* a queue object */
 struct queue {
-    UBYTE *pos;                 /* +0 */
-    UBYTE *mem;                 /* +4 */
-    ULONG len;                  /* +8 */
+    struct qitem *pos;          /* +0  write position */
+    struct qitem *mem;          /* +4  the items */
+    ULONG len;                  /* +8  their length in bytes */
 };
 
 /* QBlitMode / init */
@@ -147,7 +157,7 @@ static void BLITZ_ROUTINE doqueue_c(UWORD items BL_REG(d1))
     freeq(q);
     r.d0 = (ULONG)items * 14;
     q->len = r.d0;
-    q->pos = q->mem = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
+    q->pos = q->mem = (struct qitem *)BLITZ_ALIBJSR(TOK_globalloc, r);
 }
 BLITZ_THUNK(doqueue, doqueue_c, "a0");
 
@@ -163,15 +173,14 @@ struct blitstate {
 static void qblit(struct queue *q, const UBYTE *shape, const UBYTE *bm, UBYTE *cb,
                   WORD x, WORD y, struct blitstate *st)
 {
-    UBYTE *item = q->pos;
+    struct qitem *item = q->pos;
     ULONG mods, mods_swapped;
     UWORD n;
 
     x -= SW(shape, 10);
     y -= SW(shape, 12);
     mods = 0xfffe0000UL | (UWORD)(SW(bm, 0) - SW(shape, 6) - 2);
-    *(UWORD *)item = (UWORD)mods;
-    item += 2;
+    item->mod = (UWORD)mods;
     mods_swapped = mods << 16 | mods >> 16;
     BL_BLITWAIT(cb);
     BL_CUSTOML(cb, 0x60) = mods_swapped;
@@ -185,15 +194,11 @@ static void qblit(struct queue *q, const UBYTE *shape, const UBYTE *bm, UBYTE *c
     st->off = (ULONG)((LONG)y * (WORD)SW(bm, 0)) + (LONG)(WORD)(x >> 3);
     n = SW(shape, 4) - 1;
     st->size = SW(shape, 8);
-    *(UWORD *)item = st->size;
-    item += 2;
-    *(UWORD *)item = SW(bm, 4) - 1;
-    item += 2;
-    *(const UBYTE **)item = bm;
-    item += 4;
-    *(ULONG *)item = st->off;
-    item += 4;
-    q->pos = item;
+    item->size = st->size;
+    item->planes = SW(bm, 4) - 1;
+    item->bm = bm;
+    item->off = st->off;
+    q->pos = item + 1;
     st->plane = (UBYTE **)(bm + 8);
     goto doblit;
     do {
@@ -236,7 +241,7 @@ static void qblitex(struct queue *q, const UBYTE *shape, const UBYTE *bm, UBYTE 
 /* b_dounqueue - clear the queued areas (D only, minterm 0) */
 static void unqueue(struct queue *q, UBYTE *cb)
 {
-    UBYTE *end = q->pos, *it = q->mem;
+    struct qitem *end = q->pos, *it = q->mem;
 
     BL_BLITWAIT(cb);
     BL_CUSTOML(cb, 0x40) = 0x01f00000;
@@ -254,12 +259,12 @@ static void unqueue(struct queue *q, UBYTE *cb)
             return;
         BL_BLITWAIT(cb);
 start:
-        BL_CUSTOMW(cb, 0x66) = *(UWORD *)it;
-        size = *(UWORD *)(it + 2);
-        n = *(UWORD *)(it + 4);
-        plane = (UBYTE **)(*(UBYTE **)(it + 6) + 8);
-        off = *(ULONG *)(it + 10);
-        it += 14;
+        BL_CUSTOMW(cb, 0x66) = it->mod;
+        size = it->size;
+        n = it->planes;
+        plane = (UBYTE **)(it->bm + 8);
+        off = it->off;
+        it++;
         do {
             BL_BLITWAIT(cb);
             BL_CUSTOML(cb, 0x54) = (ULONG)*plane++ + off;
@@ -271,7 +276,7 @@ start:
 /* b_dounqueue2 - copy the queued areas from the bitmap a2 */
 static void unqueue2(struct queue *q, UBYTE *cb, const UBYTE *src)
 {
-    UBYTE *end = q->pos, *it = q->mem;
+    struct qitem *end = q->pos, *it = q->mem;
 
     BL_BLITWAIT(cb);
     BL_CUSTOML(cb, 0x40) = 0x09f00000;
@@ -289,13 +294,13 @@ static void unqueue2(struct queue *q, UBYTE *cb, const UBYTE *src)
             return;
         BL_BLITWAIT(cb);
 start:
-        BL_CUSTOMW(cb, 0x66) = *(UWORD *)it;
-        BL_CUSTOMW(cb, 0x64) = *(UWORD *)it;
-        size = *(UWORD *)(it + 2);
-        n = *(UWORD *)(it + 4);
-        plane = (UBYTE **)(*(UBYTE **)(it + 6) + 8);
-        off = *(ULONG *)(it + 10);
-        it += 14;
+        BL_CUSTOMW(cb, 0x66) = it->mod;
+        BL_CUSTOMW(cb, 0x64) = it->mod;
+        size = it->size;
+        n = it->planes;
+        plane = (UBYTE **)(it->bm + 8);
+        off = it->off;
+        it++;
         from = (UBYTE **)(src + 8);
         do {
             BL_BLITWAIT(cb);
@@ -434,7 +439,7 @@ static void BLITZ_ERRCHK qblitchk_c(WORD x BL_REG(d2), WORD y BL_REG(d3),
     }
     if (!maxchk(blitz_string, bm) || !poschk(blitz_string, bm, x, y))
         return;
-    if ((ULONG)q->pos + 14 > (ULONG)q->mem + q->len)
+    if ((ULONG)(q->pos + 1) > (ULONG)q->mem + q->len)
         BLITZ_RUNERR(mess7);
 }
 
