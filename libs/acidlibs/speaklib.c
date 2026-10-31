@@ -152,6 +152,25 @@ BLITZ_THUNK(libfinit, libfinit_c, "d1/a0-a1");
 /* CMP #c,d / BPL / BMI: sign of the 16 bit difference */
 #define GE(v, c) ((WORD)(UWORD)((v) - (c)) >= 0)
 
+/**
+ * @brief SetVoice rate,pitch,expression,sex,volume,freq - set the
+ * narrator's voice for the following Speak/PhoneticSpeak.
+ *
+ * Clips the values and stores them in the request (MOVEM d0-d3,rate /
+ * MOVEM d4-d5,vol): rate 40-400, pitch 65-320, mode (expression) and sex
+ * & 1, volume at most 64, sample frequency 5000-28000.
+ *
+ * BUG(orig) (#279): the clipping uses word CMP and BPL/BMI (N flag only,
+ * no V): values beyond +-32767 wrap, large negative values whose
+ * difference overflows end on the maximum.
+ *
+ * @param rate  d0: speaking rate (words per minute, default 150)
+ * @param pitch d1: pitch in Hz (default 110)
+ * @param mode  d2: expression, the narrator's mode (& 1, default 1)
+ * @param sex   d3: the narrator's sex (& 1: 0 male, 1 female)
+ * @param vol   d4: volume (0-64, default 64)
+ * @param freq  d5: sample frequency (default 22200)
+ */
 static void BLITZ_ROUTINE _setvoice_c(UWORD rate BL_REG(d0), UWORD pitch BL_REG(d1),
                                       UWORD mode BL_REG(d2), UWORD sex BL_REG(d3),
                                       UWORD vol BL_REG(d4), UWORD freq BL_REG(d5))
@@ -181,6 +200,14 @@ static void BLITZ_ROUTINE _setvoice_c(UWORD rate BL_REG(d0), UWORD pitch BL_REG(
 }
 BLITZ_THUNK(_setvoice, _setvoice_c, "d0-d1/a0-a1");
 
+/**
+ * @brief VoiceLoc - the address of the request's V37 part (the newvoice
+ * fields).
+ *
+ * The 19 bytes after numchan in the narrator request, at an odd address.
+ *
+ * @return d0: the address of the V37 bytes of the request
+ */
 static ULONG BLITZ_ROUTINE _voiceloc_c(void)
 {
     return (ULONG)ioreq.v37;
@@ -209,6 +236,18 @@ static void say(const UBYTE *data, ULONG len)
     initial = -1;
 }
 
+/**
+ * @brief Speak string - translate a text into phonemes and speak it.
+ *
+ * Translates the text (translator.library Translate, into a 1024 byte
+ * part of the 4K buffer) and sends the phonemes to narrator.device
+ * (CMD_WRITE, SendIO, length incl. the 0) without waiting; first waits
+ * for the previous Speak/PhoneticSpeak (WaitIO).
+ * DIFF: a2 stays unchanged (the original pops the string length).
+ *
+ * @param s    d0: the text
+ * @param lens a2: the string length on the stack (long)
+ */
 void BLITZ_ROUTINE _speak(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     const ULONG *sp = lens;
@@ -222,7 +261,20 @@ void BLITZ_ROUTINE _speak(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2
     say(spkbuff, n);
 }
 
-/* Translate$ - phonemes over the argument (see BUG(orig) (#277)) */
+/**
+ * @brief Translate$(string) - the phoneme translation of a text.
+ *
+ * Translates into the library's buffer and copies the phonemes over the
+ * argument (a3 = the argument's address).
+ * DIFF: a2 stays unchanged (the original pops the string length).
+ *
+ * BUG(orig) (#277): writes the phonemes over its argument, returns the
+ * length INCLUDING the terminating 0 and leaves a3 behind the 0.
+ *
+ * @param s    d0: the text (also the result buffer)
+ * @param lens a2: the string length on the stack (long)
+ * @return d0: the length of the phonemes including the 0; a3 behind it
+ */
 ULONG BLITZ_ROUTINE _translate(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     const ULONG *sp = lens;
@@ -237,6 +289,17 @@ ULONG BLITZ_ROUTINE _translate(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2)
     return n;                                   /* MOVEQ #0,d0:ADDQ #1,d0 */
 }
 
+/**
+ * @brief PhoneticSpeak phonetic string - speak a string of phonemes.
+ *
+ * Sends the string as it is to narrator.device (CMD_WRITE, SendIO, the
+ * popped length), after waiting for the previous one.  Leaves a3 = its
+ * argument (not a bug: a statement, a3 has no meaning after it).
+ * DIFF: a2 stays unchanged (the original pops the string length).
+ *
+ * @param s    d0: the phonemes
+ * @param lens a2: the string length on the stack (long)
+ */
 void BLITZ_ROUTINE _phospeak(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     const ULONG *sp = lens;
