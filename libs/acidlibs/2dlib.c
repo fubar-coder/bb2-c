@@ -48,6 +48,7 @@
  * original the code behind polypts / l1, here the data behind them.
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #define __NOLIBBASE__
 #define GRAPHICS_BASE_NAME gfx
 #include <proto/graphics.h>
@@ -195,31 +196,8 @@ BLITZ_LIBFIN();
 
 /* -------------------------------------------------------------- objects */
 
-/* a Blitz bitmap (bitmaplib) */
-struct bitmap {
-    UWORD bpr;                  /* +0 bytes per row */
-    UWORD rows;                 /* +2 */
-    UWORD depth;                /* +4 read as a word (flags byte, depth byte) */
-    UWORD pad6;
-    UBYTE *planes[8];           /* +8 */
-    UBYTE pad40[8];
-    WORD xorigin, yorigin;      /* +48/+50 BitMapOrigin */
-    UWORD flags;                /* +52 */
-    UWORD winbpr;               /* +54 bytes per row of the window */
-    UWORD width, height;        /* +56/+58 clip size */
-    UWORD colours;              /* +60 */
-    WORD isreal;                /* +62 */
-} BL_PACKED;
-
-/* a shape (shapeslib), for ClipBlit */
-struct shape {
-    UWORD width, height, depth;
-    UWORD bpr;                  /* +6 bytes per row */
-    UWORD bltsize;              /* +8 */
-    WORD xhandle, yhandle;      /* +10/+12 */
-    UBYTE *data;                /* +14 */
-    UBYTE *cookie;              /* +18 the mask */
-} BL_PACKED;
+/* the bitmap and the shape: struct bb_bitmap, struct bb_shape (blitzobj.h);
+   the bitmap's depth word is flagsdepth, the word at +52 ilword */
 
 /* blitter registers (a long write sets two of them) */
 #define BLTCON0 0x40
@@ -324,7 +302,7 @@ static void memfree(ULONG mem, ULONG size)
 /* ------------------------------------------------- BitMapOrigin & co */
 
 static void BLITZ_ROUTINE _bitmaporigin_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2),
-                                          struct bitmap *bm BL_REG(a0))
+                                          struct bb_bitmap *bm BL_REG(a0))
 {
     if (!bm->isreal)
         return;
@@ -333,8 +311,8 @@ static void BLITZ_ROUTINE _bitmaporigin_c(UWORD x BL_REG(d1), UWORD y BL_REG(d2)
 }
 BLITZ_THUNK(_bitmaporigin, _bitmaporigin_c, "d1/a0-a1");
 
-static void BLITZ_ROUTINE _bitplanesbitmap_c(ULONG pick BL_REG(d2), struct bitmap *src BL_REG(a0),
-                                             struct bitmap *dst BL_REG(a1))
+static void BLITZ_ROUTINE _bitplanesbitmap_c(ULONG pick BL_REG(d2), struct bb_bitmap *src BL_REG(a0),
+                                             struct bb_bitmap *dst BL_REG(a1))
 {
     UWORD n = 0, i = 0;
     UBYTE **srcplane = src->planes, **dstplane = dst->planes;
@@ -351,12 +329,12 @@ static void BLITZ_ROUTINE _bitplanesbitmap_c(ULONG pick BL_REG(d2), struct bitma
             *dstplane++ = p;
         }
         i++;
-    } while (i != src->depth);
+    } while (i != src->flagsdepth);
     blitz_string = (UBYTE *)dstplane;           /* a3 left behind as LEA 8(a1),a3 */
-    dst->depth = n;
+    dst->flagsdepth = n;
     if (!n)
         return;
-    dst->flags = 0;
+    dst->ilword = 0;
     dst->width = src->width;
     dst->height = src->height;
     dst->isreal = 1;
@@ -365,8 +343,8 @@ BLITZ_THUNK(_bitplanesbitmap, _bitplanesbitmap_c, "d1/a0-a1");
 
 static void BLITZ_ROUTINE _bitmapwindow_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
                                           UWORD w BL_REG(d4), UWORD h BL_REG(d5),
-                                          struct bitmap *src BL_REG(a0),
-                                          struct bitmap *dst BL_REG(a1))
+                                          struct bb_bitmap *src BL_REG(a0),
+                                          struct bb_bitmap *dst BL_REG(a1))
 {
     UWORD n;
     ULONG off;
@@ -379,14 +357,14 @@ static void BLITZ_ROUTINE _bitmapwindow_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3)
     off = (ULONG)y * src->bpr + (LONG)(WORD)x;
     dst->bpr = src->bpr;
     dst->rows = h;
-    dst->depth = src->depth;
-    n = src->depth - 1;
+    dst->flagsdepth = src->flagsdepth;
+    n = src->flagsdepth - 1;
     do
         *dstplane++ = *srcplane++ + off;
     while (n-- != 0);
     blitz_string = (UBYTE *)dstplane;           /* a3 left behind */
-    dst->flags = src->flags | 1;
-    dst->winbpr = w;
+    dst->ilword = src->ilword | 1;
+    dst->planedist = w;
     dst->width = w << 3;
     dst->height = h;
     dst->colours = src->colours;
@@ -405,7 +383,7 @@ BLITZ_THUNK(_init, _init_c, "d0-d1/a0-a1");
 
 /* _allocfill: the fill buffer for bm (clip width / 8 * height bytes,
    chip), grown when needed; returns it */
-static ULONG allocfill(const struct bitmap *bm)
+static ULONG allocfill(const struct bb_bitmap *bm)
 {
     ULONG size = bl_mulu_w(bm->width >> 3, bm->height);
 
@@ -420,7 +398,7 @@ static ULONG allocfill(const struct bitmap *bm)
 
 static void BLITZ_ROUTINE _allocfill_c(void)
 {
-    allocfill((struct bitmap *)blitz_string);   /* BUG(orig) (#390): no bitmap here */
+    allocfill((struct bb_bitmap *)blitz_string);   /* BUG(orig) (#390): no bitmap here */
 }
 BLITZ_THUNK(_allocfill, _allocfill_c, "d0-d1/a0-a1");
 
@@ -440,7 +418,7 @@ BLITZ_THUNK(_freefill, _freefill_c, "d1/a0-a1");
    bitmap, drawn with the blitter in line mode plane by plane: colour bit
    1 sets, 0 clears, a negative colour complements.  Returns the a3 the
    original leaves: the bitmap, or behind the plane pointers it used. */
-static UBYTE *drawline(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
+static UBYTE *drawline(struct bb_bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
                        UWORD colour)
 {
     WORD w = bm->width, h = bm->height, t, dx, dy, err;
@@ -542,11 +520,11 @@ static UBYTE *drawline(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2
             } while (n-- != 0);
         }
         CW(chip, BLTSIZE) = size;
-    } while (++i != (UBYTE)bm->depth);
+    } while (++i != (UBYTE)bm->flagsdepth);
     return (UBYTE *)plane;
 }
 
-static UBYTE *line(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
+static UBYTE *line(struct bb_bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
                    UWORD colour)
 {
     cpos[0] = x2;
@@ -555,7 +533,7 @@ static UBYTE *line(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WO
 }
 
 /* Line x,y,colour: from x,y to the end of the last line */
-static UBYTE *lineto(struct bitmap *bm, UBYTE *chip, WORD x, WORD y, UWORD colour)
+static UBYTE *lineto(struct bb_bitmap *bm, UBYTE *chip, WORD x, WORD y, UWORD colour)
 {
     WORD x2 = cpos[0], y2 = cpos[1];
 
@@ -566,7 +544,7 @@ static UBYTE *lineto(struct bitmap *bm, UBYTE *chip, WORD x, WORD y, UWORD colou
 
 /* Line with width: for w = width .. 0 four lines, each with one of the
    coordinates + w; a3 is restored after each line */
-static UBYTE *linew(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
+static UBYTE *linew(struct bb_bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
                     UWORD colour, UWORD width)
 {
     UWORD w = width;
@@ -584,7 +562,7 @@ static UBYTE *linew(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, W
 
 /* Box: four lines; the origin is added here and again in the line
    clipper (BUG(orig) #391) */
-static UBYTE *box(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
+static UBYTE *box(struct bb_bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
                   UWORD colour)
 {
     WORD t;
@@ -608,7 +586,7 @@ static UBYTE *box(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WOR
    colour bit 1 sets, 0 clears; a negative colour (its low word) only
    complements the planes of its 1 bits.  Returns the a3 the original
    leaves (behind the plane pointers). */
-static UBYTE *dobof(struct bitmap *bm, UBYTE *chip, UWORD x1, UWORD y1, UWORD x2, UWORD y2,
+static UBYTE *dobof(struct bb_bitmap *bm, UBYTE *chip, UWORD x1, UWORD y1, UWORD x2, UWORD y2,
                     ULONG colour)
 {
     UBYTE **plane = bm->planes, *p;
@@ -639,7 +617,7 @@ static UBYTE *dobof(struct bitmap *bm, UBYTE *chip, UWORD x1, UWORD y1, UWORD x2
                 if (!(colour & (1UL << (i & 31))))
                     CW(chip, BLTCON0) = 0x30a;
                 CW(chip, BLTSIZE) = size;
-            } while (++i != bm->depth);         /* depth 0: 65536 (#393) */
+            } while (++i != bm->flagsdepth);         /* depth 0: 65536 (#393) */
             return (UBYTE *)plane;
         }
         do {                                    /* nxp2 */
@@ -652,7 +630,7 @@ static UBYTE *dobof(struct bitmap *bm, UBYTE *chip, UWORD x1, UWORD y1, UWORD x2
                 CW(chip, BLTCON0) = 0x35a;
                 CW(chip, BLTSIZE) = size;
             }
-        } while (++i != bm->depth);
+        } while (++i != bm->flagsdepth);
         return (UBYTE *)plane;
     }
     do {                                        /* longun */
@@ -679,13 +657,13 @@ static UBYTE *dobof(struct bitmap *bm, UBYTE *chip, UWORD x1, UWORD y1, UWORD x2
             BLITWAIT(chip);
         } while (n-- != 0);
         CW(chip, BLTSIZE) = size;
-    } while (++i != bm->depth);
+    } while (++i != bm->flagsdepth);
     return (UBYTE *)plane;
 }
 
 /* Boxf: the rectangle (plus the origin) clipped (a box starting in the
    last column or line is not drawn), in parts of 990 pixels */
-static UBYTE *boxf(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
+static UBYTE *boxf(struct bb_bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
                    ULONG colour)
 {
     WORD t, last_x, last_y;
@@ -780,7 +758,7 @@ static void ellipse_step2(struct ellipse *e)
 /* cplot: the point x, y in colour (complement if negative) with the CPU;
    y is checked only with a signed compare, its unsigned word multiplied
    (#392); the plane loop counts with CMP.b on the depth byte (#393) */
-static void cplot(struct bitmap *bm, WORD x, WORD y, UWORD colour)
+static void cplot(struct bb_bitmap *bm, WORD x, WORD y, UWORD colour)
 {
     ULONG off;
     UBYTE bit, i = 0;
@@ -797,7 +775,7 @@ static void cplot(struct bitmap *bm, WORD x, WORD y, UWORD colour)
     if ((WORD)colour < 0) {
         do                                      /* nxpm */
             bm->planes[i][off] ^= bit;
-        while (++i != (UBYTE)bm->depth);
+        while (++i != (UBYTE)bm->flagsdepth);
         return;
     }
     do {                                        /* nxpp */
@@ -805,11 +783,11 @@ static void cplot(struct bitmap *bm, WORD x, WORD y, UWORD colour)
             bm->planes[i][off] |= bit;
         else
             bm->planes[i][off] &= ~bit;
-    } while (++i != (UBYTE)bm->depth);
+    } while (++i != (UBYTE)bm->flagsdepth);
 }
 
 /* Circle/Ellipse: the outline with the CPU */
-static void ellipse(struct bitmap *bm, WORD cx, WORD cy, UWORD a, UWORD b, UWORD colour)
+static void ellipse(struct bb_bitmap *bm, WORD cx, WORD cy, UWORD a, UWORD b, UWORD colour)
 {
     struct ellipse e;
     int second = 0;
@@ -842,14 +820,14 @@ static void ellipse(struct bitmap *bm, WORD cx, WORD cy, UWORD a, UWORD b, UWORD
 static void BLITZ_ROUTINE _ellipse_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1), UWORD rx BL_REG(d2),
                                      UWORD ry BL_REG(d3), UWORD c BL_REG(d4))
 {
-    ellipse((struct bitmap *)blitz_string, x, y, rx, ry, c);
+    ellipse((struct bb_bitmap *)blitz_string, x, y, rx, ry, c);
 }
 BLITZ_THUNK(_ellipse, _ellipse_c, "d1/a0-a1");
 
 static void BLITZ_ROUTINE _circle_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1), UWORD r BL_REG(d2),
                                     UWORD c BL_REG(d3))
 {
-    ellipse((struct bitmap *)blitz_string, x, y, r, r, c);
+    ellipse((struct bb_bitmap *)blitz_string, x, y, r, r, c);
 }
 BLITZ_THUNK(_circle, _circle_c, "d1/a0-a1");
 
@@ -864,7 +842,7 @@ static void bltsize(UBYTE *chip, UWORD size)
 
 /* cplot2: toggle the bit of x, y in the fill buffer, x clipped at last
    (y as in cplot: #392) */
-static void cplot2(const struct bitmap *bm, WORD x, WORD y, WORD last)
+static void cplot2(const struct bb_bitmap *bm, WORD x, WORD y, WORD last)
 {
     ULONG off;
 
@@ -887,7 +865,7 @@ static void cplot2(const struct bitmap *bm, WORD x, WORD y, WORD last)
    plane: colour bit 1 sets, 0 clears, a negative colour complements.
    Returns the a3 the original leaves: the bitmap, or behind the plane
    pointers. */
-static UBYTE *ellipsef(struct bitmap *bm, UBYTE *chip, WORD cx, WORD cy, UWORD a, UWORD b,
+static UBYTE *ellipsef(struct bb_bitmap *bm, UBYTE *chip, WORD cx, WORD cy, UWORD a, UWORD b,
                        UWORD colour)
 {
     struct ellipse e;
@@ -983,7 +961,7 @@ static UBYTE *ellipsef(struct bitmap *bm, UBYTE *chip, WORD cx, WORD cy, UWORD a
     CL(chip, BLTCON0) = 0x09f0000a;
     bltsize(chip, size);
 
-    k = bm->depth - 1;                          /* DoTransfer (DBRA: 0 = 65536) */
+    k = bm->flagsdepth - 1;                          /* DoTransfer (DBRA: 0 = 65536) */
     bits = colour;
     do {
         UBYTE *p = *plane++ + planeoff;
@@ -1017,7 +995,7 @@ struct columns {
     UWORD size;                 /* BLTSIZE of the last column */
 };
 
-static void columns(const struct bitmap *bm, struct columns *c)
+static void columns(const struct bb_bitmap *bm, struct columns *c)
 {
     UWORD words = bm->width >> 4;
     ULONG lines = (ULONG)(LONG)(WORD)bm->height << 6;
@@ -1060,11 +1038,11 @@ static void blitsize3(UBYTE *chip, UWORD parts, UWORD size)
        (plane 0, or its complement), then D = A AND C (C = D = the mask)
      write (dunxx2): colour where the mask is set: D = A OR C (set) or
        NOT A AND C (clear), A = the mask, C = D = the plane */
-static void column(UBYTE *chip, const struct bitmap *bm, ULONG colour, WORD off, UBYTE *mask,
+static void column(UBYTE *chip, const struct bb_bitmap *bm, ULONG colour, WORD off, UBYTE *mask,
                    const struct columns *c, UWORD size, int write)
 {
     UBYTE *const *plane = bm->planes;
-    UWORD k = bm->depth - 1, i = 0;
+    UWORD k = bm->flagsdepth - 1, i = 0;
 
     for (;;) {
         UBYTE *p = *plane++ + off;
@@ -1092,7 +1070,7 @@ static void column(UBYTE *chip, const struct bitmap *bm, ULONG colour, WORD off,
    fill buffer (fetch, allocates it) or colour through the mask into the
    bitmap (write).  Returns the buffer position of the last column and its
    BLTSIZE in *size (FloodFill with border inverts only there). */
-static UBYTE *mono(UBYTE *chip, struct bitmap *bm, ULONG colour, int write, UWORD *size)
+static UBYTE *mono(UBYTE *chip, struct bb_bitmap *bm, ULONG colour, int write, UWORD *size)
 {
     struct columns c;
     UBYTE *mask = write ? (UBYTE *)fbloc : (UBYTE *)allocfill(bm);
@@ -1230,16 +1208,16 @@ BLITZ_ASM_ROUTINE(yofill_asm,
 "finito:\n"
 "   rts");
 
-static void yofill(struct bitmap *bm)
+static void yofill(struct bb_bitmap *bm)
 {
-    register struct bitmap *r_a0 __asm("a0") = bm;
+    register struct bb_bitmap *r_a0 __asm("a0") = bm;
 
     __asm volatile("jsr     _yofill_asm"
                    : "+a"(r_a0) : : "d0", "d1", "a1", "cc", "memory");
 }
 
 /* FloodFill x,y,colour: fill the area of the colour under the point */
-static UBYTE *floodfill(struct bitmap *bm, UBYTE *chip, WORD x, WORD y, UWORD colour)
+static UBYTE *floodfill(struct bb_bitmap *bm, UBYTE *chip, WORD x, WORD y, UWORD colour)
 {
     ULONG off, under = 0;
     UWORD i = 0, size;
@@ -1252,7 +1230,7 @@ static UBYTE *floodfill(struct bitmap *bm, UBYTE *chip, WORD x, WORD y, UWORD co
     do {                                        /* the colour under the point */
         if (bm->planes[i][off] & (1 << bit))
             under |= 1UL << (i & 31);
-    } while (++i != bm->depth);
+    } while (++i != bm->flagsdepth);
     mono(chip, bm, under, 0, &size);
     BLITWAIT(chip);
     yofill(bm);
@@ -1262,7 +1240,7 @@ static UBYTE *floodfill(struct bitmap *bm, UBYTE *chip, WORD x, WORD y, UWORD co
 /* FloodFill x,y,colour,border: fill up to the border colour (the mask of
    the border colour inverted - only in the last column of 64 words).  The
    border colour is a word in the register of x (SETW(d0, d3)). */
-static UBYTE *floodfill2(struct bitmap *bm, UBYTE *chip, ULONG x, WORD y, UWORD colour,
+static UBYTE *floodfill2(struct bb_bitmap *bm, UBYTE *chip, ULONG x, WORD y, UWORD colour,
                          UWORD border)
 {
     UBYTE *mask;
@@ -1284,7 +1262,7 @@ static UBYTE *floodfill2(struct bitmap *bm, UBYTE *chip, ULONG x, WORD y, UWORD 
 
 /* ReMap from,to[,dst]: the pixels of colour from (in bm) get colour to
    (in dst); returns dst (a3) */
-static UBYTE *remap(struct bitmap *bm, UBYTE *chip, ULONG from, ULONG to, struct bitmap *dst)
+static UBYTE *remap(struct bb_bitmap *bm, UBYTE *chip, ULONG from, ULONG to, struct bb_bitmap *dst)
 {
     UWORD size;
 
@@ -1298,7 +1276,7 @@ static UBYTE *remap(struct bitmap *bm, UBYTE *chip, ULONG from, ULONG to, struct
 /* Poly: the lines between the points and back to the first; the count
    is decremented after the first line (SUB #1,pfc:BNE): 1 point draws
    65536 lines (#396).  Returns the a3 of the last line. */
-static UBYTE *poly(struct bitmap *bm, UBYTE *chip, UWORD n, const struct point *pts,
+static UBYTE *poly(struct bb_bitmap *bm, UBYTE *chip, UWORD n, const struct point *pts,
                    UWORD colour)
 {
     const struct point *p = pts;
@@ -1499,7 +1477,7 @@ static UWORD *outline(UWORD n, WORD width, WORD height)
    = $FFFF in the span's masks, D = C = the plane, set or cleared by the
    colour bit; a negative colour draws nothing.  a3 = what the copy loop
    left; returns the a3 the original leaves (or that one). */
-static UBYTE *drawpoly(struct bitmap *bm, UWORD n, UWORD colour, UBYTE *a3)
+static UBYTE *drawpoly(struct bb_bitmap *bm, UWORD n, UWORD colour, UBYTE *a3)
 {
     UBYTE *chip = BL_CUSTOM;
     const struct edge *le = (const struct edge *)pv.ledges;
@@ -1563,7 +1541,7 @@ static UBYTE *drawpoly(struct bitmap *bm, UWORD n, UWORD colour, UBYTE *a3)
             CL(chip, BLTCPT) = (ULONG)a3;
             CL(chip, BLTDPT) = (ULONG)a3;
             CW(chip, BLTSIZE) = words + 65;
-        } while (++plane != bm->depth);         /* depth 0: 65536 (#393) */
+        } while (++plane != bm->flagsdepth);         /* depth 0: 65536 (#393) */
         rowoff += bm->bpr;
         left = edge_step(left, lstep);
         right = edge_step(right, rstep);
@@ -1577,7 +1555,7 @@ static UBYTE *drawpoly(struct bitmap *bm, UWORD n, UWORD colour, UBYTE *a3)
 /* Polyf: the points twice into polypts - backwards if they run anti-
    clockwise (by the first three points), then with colour2 (#395: more
    than 16 points overflow it) */
-static UBYTE *polyf(struct bitmap *bm, UWORD n, const struct point *pts, UWORD colour,
+static UBYTE *polyf(struct bb_bitmap *bm, UWORD n, const struct point *pts, UWORD colour,
                     UWORD colour2)
 {
     LONG a = bl_muls_w(pts[1].x - pts[0].x, pts[2].y - pts[1].y);
@@ -1625,15 +1603,15 @@ struct cblit {
    onto the planes of bm (cookie cut, BLTCON0 = shift | ClipBlitMode),
    clipped at all edges.  r6/r7: the caller's d6/d7 (MOVEM.l d6-d7,$60
    (a1), overwritten before the blit).  Returns 0 if nothing was blitted. */
-static int docblit(UBYTE *chip, struct shape *sh, struct bitmap *bm, WORD x, WORD y,
+static int docblit(UBYTE *chip, struct bb_shape *sh, struct bb_bitmap *bm, WORD x, WORD y,
                    ULONG r6, ULONG r7, struct cblit *cb)
 {
     ULONG src = 0, planesize, p;
     WORD bottom, amod, dmod, over, rowbytes;
     UWORD size, k;
 
-    x -= sh->xhandle;
-    y -= sh->yhandle;
+    x -= sh->handlex;
+    y -= sh->handley;
     if (!BMI_W(x, bm->width) || !BMI_W(y, bm->height))
         return 0;
     BLITWAIT(chip);
@@ -1645,7 +1623,7 @@ static int docblit(UBYTE *chip, struct shape *sh, struct bitmap *bm, WORD x, WOR
         y = -y;
         if (!BMI_W(y, sh->height))
             return 0;
-        src = bl_mulu_w(y, sh->bpr);
+        src = bl_mulu_w(y, sh->ebwidth);
         y <<= 6;
         if (size < (UWORD)y)                    /* SUB.w d2,d6:BCS */
             return 0;
@@ -1664,7 +1642,7 @@ static int docblit(UBYTE *chip, struct shape *sh, struct bitmap *bm, WORD x, WOR
     }
     CL(chip, BLTAFWM) = 0xffff0000;             /* abuv */
     amod = -2;
-    dmod = bm->bpr - sh->bpr - 2;
+    dmod = bm->bpr - sh->ebwidth - 2;
     if (x < 0) {                                /* clip left: whole words */
         if (!BMI_W(-x, sh->width))
             return 0;
@@ -1680,7 +1658,7 @@ static int docblit(UBYTE *chip, struct shape *sh, struct bitmap *bm, WORD x, WOR
         CW(chip, BLTAFWM) = ~(UWORD)((x & 63) >= 16 ? 0 : 0xffff << (x & 63));      /* g2 */
         x -= 16;
     }
-    over = (WORD)(((WORD)x >> 4) * 2 + sh->bpr + 2);    /* nolo */
+    over = (WORD)(((WORD)x >> 4) * 2 + sh->ebwidth + 2);    /* nolo */
     rowbytes = bm->width >> 3;
     if (!(over <= rowbytes)) {                  /* clip right */
         over -= rowbytes;
@@ -1701,7 +1679,7 @@ static int docblit(UBYTE *chip, struct shape *sh, struct bitmap *bm, WORD x, WOR
     cb->dest = (ULONG)bl_muls_w(y, bm->bpr) + 2 * (LONG)((WORD)x >> 4);
     cb->plane = bm->planes;
     cb->size = size;
-    planesize = bl_mulu_w(sh->height, sh->bpr);
+    planesize = bl_mulu_w(sh->height, sh->ebwidth);
     k = sh->depth;
     if (!k)
         return 0;
@@ -1722,7 +1700,7 @@ static int docblit(UBYTE *chip, struct shape *sh, struct bitmap *bm, WORD x, WOR
 
 /* b_docblitx: and the planes of bm beyond the shape's depth through the
    cookie: bit set in excess = set, else cleared */
-static void docblitx(UBYTE *chip, struct shape *sh, struct bitmap *bm, WORD x, WORD y,
+static void docblitx(UBYTE *chip, struct bb_shape *sh, struct bb_bitmap *bm, WORD x, WORD y,
                      UWORD excess, ULONG r6, ULONG r7)
 {
     struct cblit cb;
@@ -1730,7 +1708,7 @@ static void docblitx(UBYTE *chip, struct shape *sh, struct bitmap *bm, WORD x, W
 
     if (!docblit(chip, sh, bm, x, y, r6, r7, &cb))
         return;
-    for (i = sh->depth; i < bm->depth; i++) {
+    for (i = sh->depth; i < bm->flagsdepth; i++) {
         UWORD con = (excess & 1) ? 0xbfa : 0xb0a;
         ULONG p = (ULONG)*cb.plane++ + cb.dest;
 
@@ -1752,14 +1730,14 @@ static void docblitx(UBYTE *chip, struct shape *sh, struct bitmap *bm, WORD x, W
 #define BLITPAIR(name, call, ...)                                           \
     static void BLITZ_ROUTINE b_##name##_c(__VA_ARGS__, UBYTE *chip BL_REG(a2)) \
     {                                                                       \
-        struct bitmap *bm = (struct bitmap *)blitz_string;                  \
+        struct bb_bitmap *bm = (struct bb_bitmap *)blitz_string;                  \
                                                                             \
         blitz_string = call;                                                \
     }                                                                       \
     static void BLITZ_ROUTINE a_##name##_c(__VA_ARGS__, UBYTE *chip BL_REG(a2), \
                                            struct GfxBase *gfx BL_REG(a6))  \
     {                                                                       \
-        struct bitmap *bm = (struct bitmap *)blitz_string;                  \
+        struct bb_bitmap *bm = (struct bb_bitmap *)blitz_string;                  \
         UBYTE *a3;                                                          \
                                                                             \
         OwnBlitter();                                                       \
@@ -1790,7 +1768,7 @@ BLITPAIR(floodfill2, floodfill2(bm, chip, x, y, c, border),
          ULONG x BL_REG(d0), WORD y BL_REG(d1), UWORD c BL_REG(d2), UWORD border BL_REG(d3))
 BLITPAIR(remap, remap(bm, chip, from, to, bm), ULONG from BL_REG(d0), ULONG to BL_REG(d1))
 BLITPAIR(remap2, remap(bm, chip, from, to, dst), ULONG from BL_REG(d0), ULONG to BL_REG(d1),
-         struct bitmap *dst BL_REG(a0))
+         struct bb_bitmap *dst BL_REG(a0))
 BLITPAIR(poly, poly(bm, chip, n, (const struct point *)pts, c),
          UWORD n BL_REG(d0), ULONG pts BL_REG(d1), UWORD c BL_REG(d2))
 BLITPAIR(polyf, ((void)chip, polyf(bm, n, (const struct point *)pts, c, c)),
@@ -1821,8 +1799,8 @@ ABENTRY(_polyf2, polyf2);
 /* ClipBlit: a3 = shape, a2 = bitmap, a1 = chip, d1/d2 = x/y, d3 = planes */
 #define CBREGS WORD x BL_REG(d1), WORD y BL_REG(d2), UWORD excess BL_REG(d3), \
                ULONG r6 BL_REG(d6), ULONG r7 BL_REG(d7), UBYTE *chip BL_REG(a1), \
-               struct bitmap *bm BL_REG(a2)
-#define SHAPE ((struct shape *)blitz_string)
+               struct bb_bitmap *bm BL_REG(a2)
+#define SHAPE ((struct bb_shape *)blitz_string)
 
 static void BLITZ_ROUTINE b_docblit_c(CBREGS)
 {
