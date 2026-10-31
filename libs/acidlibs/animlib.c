@@ -39,17 +39,18 @@
  *     after the last delta the wrap goes to node 2 (the ANIM op-5
  *     double-buffer loop convention, the last two deltas lead back to
  *     frames 0/1).
- *   - "Can't Open Anim File": BEQ err7 into the error check area, i.e.
- *     behind the library without the debugger (reproduced: JSR to err7
- *     in the check area); "Anim format not supported" (err6, in the
- *     normal code) loads mess6 from the check area and runs on into err1. (#398)
  * Not a bug (statements, a3 has no meaning after them), reproduced: LoadAnim
  * leaves a3 on the last delta node (or anim+18), InitAnim behind the BODY
  * data / in the last plane of the second bitmap, NextFrame on the current
  * (or first) node.
- * DIFF: a2 stays unchanged (port convention, notes/cmdlibs-port.md); err6/
- * err7 are reached by JSR (return address and the C function's saved
- * registers on the stack - GCC drops code behind an inline BRA).
+ * Fixed (intended deviation, #398): the original's "Can't Open Anim File"
+ * is `BEQ err7` into the error check area (behind the library without the
+ * debugger), "Anim format not supported" (err6, in the normal code) loads
+ * mess6 from the check area and runs on into err1 if the trap returns.
+ * Here both traps and their texts are in the normal code: the same
+ * runtime errors with the debugger, TRAP #0 with the right text without
+ * it; if the trap returns, LoadAnim returns.
+ * DIFF: a2 stays unchanged (port convention, notes/cmdlibs-port.md).
  */
 #include "blitzlib.h"
 #include "blitzobj.h"
@@ -271,10 +272,10 @@ void BLITZ_ROUTINE freeanim(void)
  */
 BLITZ_INLINE(doframes, "move.w 8(a0),d0");
 
-/* err6 (normal code, its message in the error check area) and err7 (in
-   the error check area, see below): reached by a branch, never left */
-void err6(void) __attribute__((noreturn)), err7(void) __attribute__((noreturn));
-#define GOTO(label) label()     /* JSR to the noreturn label, see displaylib.c */
+/* the messages of err6/err7 in the normal code (fixed, #398: in the
+   original they lie in the error check area) */
+static const char mess6[] = "Anim format not supported";
+static const char mess7[] = "Can't Open Anim File";
 
 /**
  * @brief LoadAnim Anim#,Filename$: load an IFF ANIM (op 5) into the anim.
@@ -285,10 +286,9 @@ void err6(void) __attribute__((noreturn)), err7(void) __attribute__((noreturn));
  * of `bits` = EOR) and every following DLTA chunk into a delta node;
  * frames = number of DLTAs - 1 (1 without ANHD).  The file is read through
  * iffiolib.  a3 is left on the last delta node (or anim+18; not a bug).
- * Errors: "Can't Open Anim File" (err7) - BUG(orig) (#398): a BEQ into
- * the error check area, behind the library without the debugger
- * (reproduced: JSR to err7); "Anim format not supported" (err6, its text
- * in the check area, runs on into err1, #398).  BUG(orig): a missing BODY
+ * Errors: "Can't Open Anim File" (err7), "Anim format not supported"
+ * (err6), both in the normal code (fixed, #398: the original's err7 is in
+ * the error check area, err6's text too).  BUG(orig): a missing BODY
  * gives length -1 (#400); a single delta gives current = 0 (#401).
  *
  * @param anim  a0: the anim (!libs {#animlib,$1080}, from Anim# in d0)
@@ -313,8 +313,10 @@ void BLITZ_ROUTINE doanimload(struct anim *anim BL_REG(a0), ULONG name BL_REG(d1
     r.d1 = name;
     r.a0 = name;
     r.a1 = 0;
-    if (!BLITZ_ALIBJSR(TOK_ilbminit, r))
-        GOTO(err7);                     /* BUG(orig) (#398): into the check area */
+    if (!BLITZ_ALIBJSR(TOK_ilbminit, r)) {
+        BLITZ_RUNERR(mess7);            /* err7, fixed (#398) */
+        return;
+    }
     info = (const struct iffstuff *)r.a0;
     /* width and height with one MOVE.l */
     *(ULONG *)&anim->width = *(const ULONG *)&info->width;
@@ -334,8 +336,10 @@ void BLITZ_ROUTINE doanimload(struct anim *anim BL_REG(a0), ULONG name BL_REG(d1
     node->next = 0;
     ifffind(0x414e4844, &found);        /* "ANHD" */
     if (found) {
-        if ((UBYTE)iffbyte() != 5)
-            GOTO(err6);
+        if ((UBYTE)iffbyte() != 5) {
+            BLITZ_RUNERR(mess6);        /* err6, fixed (#398) */
+            return;
+        }
         iffskip(19);
         anim->eor = (UWORD)(ifflong() & 2);
         anim->frames = 0xffff;
@@ -577,27 +581,15 @@ static void BLITZ_ROUTINE donextframe_c(struct anim *anim BL_REG(a0),
 }
 BLITZ_THUNK(donextframe, donextframe_c, "d0-d1/a0-a1");
 
-/* err6:MOVE.l #mess6,d0:TRAP #0 - the last code before `errors`: after
-   the trap the original runs on into err1 (the start of the check area,
-   without the debugger whatever follows the library) */
-__asm__("   .text\n   .even\n   .globl  _err6\n"
-        "_err6:\n"
-        "   move.l  #_mess6,d0\n"
-        "   trap    #0\n"
-        "   bra.w   _err1\n");
-
 /* ****************** ERRORS BELOW **************** */
 
-/* err1..err5, err7 as in the original (err7 is also the target of
-   LoadAnim's BEQ, see doanimload) */
+/* err1..err5 as in the original (err7 moved into doanimload, #398) */
 __asm__("   .section .blitzlib.errchk,\"ax\"\n   .even\n"
         "_err1:   move.l  #_mess1,d0\n   trap    #0\n"
         "_err2:   move.l  #_mess2,d0\n   trap    #0\n"
         "_err3:   move.l  #_mess3,d0\n   trap    #0\n"
         "_err4:   move.l  #_mess4,d0\n   trap    #0\n"
         "_err5:   move.l  #_mess5,d0\n   trap    #0\n"
-        "   .globl  _err7\n"
-        "_err7:   move.l  #_mess7,d0\n   trap    #0\n"
         "   .text\n");
 
 BLITZ_ERRCHK_MESSAGE(mess1, "BitMap not large enough for ANIM");
@@ -605,8 +597,6 @@ BLITZ_ERRCHK_MESSAGE(mess2, "Uninitialized BitMap");
 BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialized Anim");
 BLITZ_ERRCHK_MESSAGE(mess4, "Anim not Initialized");
 BLITZ_ERRCHK_MESSAGE(mess5, "Anim has only 1 frame");
-BLITZ_ERRCHK_MESSAGE(mess6, "Anim format not supported");
-BLITZ_ERRCHK_MESSAGE(mess7, "Can't Open Anim File");
 
 /* animchk: the anim at a0 fits into the bitmap at a1 (signed words) */
 static void BLITZ_ERRCHK animchk_c(struct anim *anim BL_REG(a0),

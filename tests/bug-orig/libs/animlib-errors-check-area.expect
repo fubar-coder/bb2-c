@@ -1,0 +1,5 @@
+[run]
+before
+runtime error Anim format not supported
+runtime error Can't Open Anim File
+rc=0

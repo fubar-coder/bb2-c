@@ -62,8 +62,8 @@ intended deviations (kind **F**), each with its issue.
 |---|---|---|---|---|
 | 2dlib overflows (2dlib.c:47) | Polyf with more than 16 points / BitMapPoly edge lists overwrite the code behind polypts/l1 | overwrite the data behind them | **T** | memory layout; observable only with these overflows (BUG(orig), #395). FloodFill (yofill) is the original assembler, a3 as in the original |
 | polylib overflows (polylib.c:40) | more than 16 points / 10 edges per side hit the lib's own code | hit the data behind them | **T** | memory layout; only with overflows |
-| animlib err6/err7 (animlib.c:45) | `BEQ err7` into the error check area or err6 in normal code | reached via JSR (return address and saved registers of the C function on the stack) | **T** | GCC drops code after an inline BRA or merges the paths; target and message as in the original, only the stack at the trap differs; not observable |
-| animlib a2 (animlib.c:45) | a2 decremented | unchanged | **B** | convention |
+| animlib err6/err7 (animlib.c:46) | Can't Open Anim File: `BEQ err7` into the error check area; err6 (Anim format not supported) traps in normal code with its message in the error check area and runs on into err1 if the trap returns | traps and messages in normal code; LoadAnim returns if the trap returns | **F** | #398: the same runtime errors with the debugger; without it TRAP #0 with the right message (test `animlib-errors-check-area`) |
+| animlib a2 (animlib.c:53) | a2 decremented | unchanged | **B** | convention |
 | arexxlib ReplyRexxMsg (arexxlib.c:62, :505) | with a non-RexxMsg: pops 15 never-saved registers (crash) | returns | **K** | observable only in this error case (crash vs. nothing) |
 | arexxlib CreateRexxMsg (arexxlib.c:62) | copies -8(a2) to -4(a2) on the compiler stack | does not copy, a2 unchanged | **B** | convention; the compiler does not read the value |
 | asllib title (asllib.c:44) | writes maxslib's d1 (-1) into the length cell of the title on the compiler stack | stack and a2 stay | **B** | convention; not observable |
@@ -74,7 +74,7 @@ intended deviations (kind **F**), each with its issue.
 | blitzkeyslib | – | no deviation (DIFF-free; binary has 6 more unused bytes) | – | – |
 | dhandlerlib | – | no deviation (byte-identical to the CD's library, relocation table included) | – | – |
 | displaylib a2 (displaylib.c:64) | a2 decremented as argument stack | unchanged | **B** | convention |
-| displaylib error jumps (displaylib.c:64) | all errors: Bcc from normal code to the error routines | via JSR (one more return address on the stack) | **T** | like animlib; only stack contents at the trap |
+| displaylib error jumps (displaylib.c:64) | all errors: Bcc from normal code into the error check area | via JSR (one more return address on the stack) | **T** | GCC drops code after an inline BRA or merges the paths; same target, only stack contents at the trap |
 | displaylib error routines (displaylib.c:34, #412) | the ten error routines (`MOVE.l #message,d0:TRAP #0`) and their messages lie in the error check area; without the debugger every error (bitplanes for the resolution, uninitialised CopList/palette/sprite, sprite channels, custom copper space, CustomString length, AGA palette mode, CustomChunky ypos, custom cops overrun) branches behind the library | routines and messages in the normal code: with the debugger the same runtime error, without it a TRAP #0 with the message (no handler: a clean crash); the !subs check `_checkcoplist` stays in the error check area | **F** | fixed (#412); observable only in these error cases without the debugger. Tests: bug-orig `displaylib-errors-errarea` (FIXED), with the debugger corpus t167, t169 |
 | displaylib table indices (displaylib.c:64) | sprite mode > 5, mode table beyond resolution 2 / fetch 3, doublescan > 6 read the lib's own code | read other data | **T** | memory layout; only with invalid values |
 | blitzoslib coordinates (blitzoslib.c:66) | upper word of the coordinates passed to Boxf/Line/Locate = sign of the box field | word value sign-extended | **K** | reproducible; differs only for coordinates around 0/negative and only if the called lib uses the upper word |
@@ -195,7 +195,7 @@ binary in acidlibs, followed on 2026-10-29.
   OS returns (blitlib BlitColl, freqlib, cliargslib CCR, windowslib
   zcursor, ilbmifflib a0, deflibs retry), memory layout with overflows and
   invalid indices (2dlib, polylib, displaylib, crunchlib), stack contents
-  with error jumps via JSR (animlib, displaylib) and other stack questions
+  with error jumps via JSR (displaylib) and other stack questions
   (crunchlib, arrayslib a4/a5), timing (shapetrixlib XFlip) and in the
   compiler all stack tricks and placeholders. Observable at most in
   error cases, with overflows or corrupted data.

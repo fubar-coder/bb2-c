@@ -332,7 +332,7 @@ C, declarations identical (binary has 6 more unused bytes). Init value = keyboar
 
 ## 94 animlib
 
-C, declarations identical, binary = source. Object "Anim" (32 bytes), BODY and DLTA nodes via memlib, file via ilbmifflib/iffiolib. BUG(orig): BODY always as ByteRun1 (#397); freeanim reads the node after freeing (#399); "Can't Open Anim File" via BEQ into the error check area, err6 continues into err1 (#398); a missing BODY gives length -1 (#400); a single delta gives current = 0 (#401); height/depth/width 0 run 65536 times (#402). Not bugs: wrap-around to delta 2 (the ANIM op-5 double-buffer loop convention); a3 stays on the last node or behind the data (statements; reproduced). DIFF: a2 unchanged; err6/err7 via JSR instead of Bcc (an inline BRA with `__builtin_unreachable()` made GCC merge the paths). Test: t162 (self-generated ANIM in RAM:, result = host model), t168.
+C, declarations identical, binary = source. Object "Anim" (32 bytes), BODY and DLTA nodes via memlib, file via ilbmifflib/iffiolib. BUG(orig): BODY always as ByteRun1 (#397); freeanim reads the node after freeing (#399); a missing BODY gives length -1 (#400); a single delta gives current = 0 (#401); height/depth/width 0 run 65536 times (#402). Not bugs: wrap-around to delta 2 (the ANIM op-5 double-buffer loop convention); a3 stays on the last node or behind the data (statements; reproduced). Fixed (intended deviation, #398): the original's "Can't Open Anim File" is a BEQ into the error check area, err6 has its message there and continues into err1; here traps and messages are in normal code (bug-orig test `animlib-errors-check-area`). DIFF: a2 unchanged. Test: t162 (self-generated ANIM in RAM:, result = host model), t168.
 
 ## 144 blitzcoplib
 
