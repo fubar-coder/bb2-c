@@ -57,6 +57,7 @@
  * port's convention, notes/cmdlibs-port.md "Allgemein").
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <graphics/gfxbase.h>
 
 /* entry points (thunks / C routines, defined below) */
@@ -194,46 +195,16 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 10, 6);
 
 /* ******************* CODE BELOW **************** */
 
-/* a bitmap object of bitmaplib: byte/word offsets */
-#define W(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
-#define B(p, o) (*(UBYTE *)((UBYTE *)(p) + (o)))
-
-/* the slice object (64 bytes); the pointers are addresses in the copper
-   list (0 = not there) */
-struct slice {
-    UWORD y;                    /* +0: 0 = not in use */
-    union {                     /* +2 */
-        UWORD flags;
-        struct { UBYTE flagshi, flagslo; };
-    };
-    union {                     /* +4: bits 14/15: dual playfield half */
-        UWORD planes;
-        struct { UBYTE planeshi, planeslo; };
-    };
-    UWORD sprites;              /* +6 */
-    UWORD colours;              /* +8 */
-    union {                     /* +10 */
-        ULONG moves[5];
-        struct {
-            ULONG bplmoves;     /* the bitplane pointer moves */
-            ULONG sprmoves;     /* the sprite pointer moves */
-            ULONG colmoves;     /* the colour moves */
-            ULONG con1;         /* the BPLCON1 value */
-            ULONG con2;         /* the BPLCON2 value */
-        };
-    };
-    UWORD con1val;              /* +30: a copy of BPLCON1 */
-    UWORD height;               /* +32 */
-    UBYTE pad[30];
-} BL_PACKED;
-static_assert(sizeof(struct slice) == 64);
+/* the bitmap (bitmaplib) and the slice objects (64 bytes): struct bb_bitmap,
+   struct bb_slice (blitzobj.h); the slice's pointers are addresses in
+   the copper list (0 = not there) */
 
 #define TOK_setcoplist 0xc205   /* switchlib: a0 = copper list */
 #define TOK_c104       0xc104   /* intlib (Blitz mode), d0 = 0 */
 
 ULONG mycop;                    /* the copper list (chip memory) */
 static ULONG mycoplen;
-static struct slice *slicebase;
+static struct bb_slice *slicebase;
 static UWORD maxslice;
 static UBYTE hwait[2];          /* a word, used as its high byte */
 static UWORD hstart = 0x81;
@@ -363,7 +334,7 @@ static void makedumcop(void)
  * @param n  d0: the maximum number of slices (!libs{#blitzcoplib,$0003})
  * @param gfx  a1: GfxBase
  */
-static void BLITZ_ROUTINE dokillslices_c(struct slice *slice BL_REG(a0), UWORD n BL_REG(d0),
+static void BLITZ_ROUTINE dokillslices_c(struct bb_slice *slice BL_REG(a0), UWORD n BL_REG(d0),
                                          struct GfxBase *gfx BL_REG(a1))
 {
     ULONG list;
@@ -411,7 +382,7 @@ BLITZ_THUNK(doshowblitz, doshowblitz_c, "a2");
  * @param base  a0: slice 0 (!libs{#blitzcoplib,$1001})
  * @param max  d0: the maximum number of slices (!libs{#blitzcoplib,$0003})
  */
-static void BLITZ_ROUTINE doinit_c(struct slice *base BL_REG(a0), UWORD max BL_REG(d0))
+static void BLITZ_ROUTINE doinit_c(struct bb_slice *base BL_REG(a0), UWORD max BL_REG(d0))
 {
     slicebase = base;
     maxslice = max;
@@ -529,7 +500,7 @@ static ULONG inscop2(ULONG *list, ULONG len, UWORD y)
     mycoplen = newlen;
     yline = y;
     {
-        struct slice *slice = slicebase;
+        struct bb_slice *slice = slicebase;
         UWORD k = maxslice - 1;
 
         do {                                    /* 'adjloop */
@@ -572,7 +543,7 @@ static ULONG inscop(ULONG *list, ULONG len, UWORD y)
 static void doslice2(const UWORD *args, UWORD flags, UWORD planes, UWORD sprites,
                      UWORD colours, WORD used)
 {
-    struct slice *slice = (struct slice *)blitz_string;
+    struct bb_slice *slice = (struct bb_slice *)blitz_string;
     UWORD *cop;
     UWORD width, step, y;
     UWORD ddfstrt;                              /* hstart */
@@ -585,7 +556,7 @@ static void doslice2(const UWORD *args, UWORD flags, UWORD planes, UWORD sprites
     ULONG pos;
     int i;
 
-    *(struct slice **)(blitz_globals + used) = slice; /* set current slice */
+    *(struct bb_slice **)(blitz_globals + used) = slice; /* set current slice */
     slice->flags = flags;
     slice->height = args[-3];
     if ((flags & 1) && !(flags & 8) && (width = args[-2]) > 640) {
@@ -939,7 +910,7 @@ static ULONG BLITZ_ROUTINE bdocustomcop_c(ULONG str BL_REG(d0), UWORD y BL_REG(d
 }
 
 /* ColSplit reg,r,g,b,y - a1 = used slice */
-static ULONG a_colsplit(UWORD reg, UWORD r, UWORD g, UWORD b, UWORD y, const struct slice *slice)
+static ULONG a_colsplit(UWORD reg, UWORD r, UWORD g, UWORD b, UWORD y, const struct bb_slice *slice)
 {
     UWORD *cs = (UWORD *)&colstuff;
 
@@ -970,7 +941,7 @@ static ULONG a_colsplit(UWORD reg, UWORD r, UWORD g, UWORD b, UWORD y, const str
  */
 static ULONG BLITZ_ROUTINE a_colsplit_c(UWORD reg BL_REG(d0), UWORD r BL_REG(d1),
                                         UWORD g BL_REG(d2), UWORD b BL_REG(d3),
-                                        UWORD y BL_REG(d4), const struct slice *slice BL_REG(a1))
+                                        UWORD y BL_REG(d4), const struct bb_slice *slice BL_REG(a1))
 {
     return a_colsplit(reg, r, g, b, y, slice);
 }
@@ -984,7 +955,7 @@ static ULONG BLITZ_ROUTINE a_colsplit_c(UWORD reg BL_REG(d0), UWORD r BL_REG(d1)
  */
 static ULONG BLITZ_ROUTINE b_colsplit_c(UWORD reg BL_REG(d0), UWORD r BL_REG(d1),
                                         UWORD g BL_REG(d2), UWORD b BL_REG(d3),
-                                        UWORD y BL_REG(d4), const struct slice *slice BL_REG(a1))
+                                        UWORD y BL_REG(d4), const struct bb_slice *slice BL_REG(a1))
 {
     ULONG pos = a_colsplit(reg, r, g, b, y, slice);
 
@@ -1006,7 +977,7 @@ BLITZ_AB_ROUTINE(docolsplit, b_colsplit, "   jmp     _a_colsplit_t");
 
 /* calcoff - d1 = x, d2 = y, a1 = slice, a0 = bitmap: d1 (x adjusted)
    and the offset d4 */
-static LONG calcoff(UWORD *x, WORD y, const UBYTE *bitmap, const struct slice *slice)
+static LONG calcoff(UWORD *x, WORD y, const struct bb_bitmap *bitmap, const struct bb_slice *slice)
 {
     WORD offset;
 
@@ -1018,14 +989,14 @@ static LONG calcoff(UWORD *x, WORD y, const UBYTE *bitmap, const struct slice *s
         offset <<= 1;
         offset -= 2;
     }
-    return (LONG)offset + muls16((WORD)W(bitmap, 0), y);
+    return (LONG)offset + muls16((WORD)bitmap->bpr, y);
 }
 
 /* the bitplane pointers: step = 8 or 16 bytes */
-static void setplanes(const UBYTE *bitmap, UWORD *moves, LONG offset, WORD step)
+static void setplanes(const struct bb_bitmap *bitmap, UWORD *moves, LONG offset, WORD step)
 {
-    const ULONG *pl = (const ULONG *)(bitmap + 8);
-    UWORD n = W(bitmap, 4) - 1;
+    const ULONG *pl = (const ULONG *)bitmap->planes;
+    UWORD n = bitmap->flagsdepth - 1;
 
     do {
         ULONG plane = *pl++ + offset;
@@ -1036,7 +1007,7 @@ static void setplanes(const UBYTE *bitmap, UWORD *moves, LONG offset, WORD step)
     } while ((WORD)--n != -1);
 }
 
-static void show(const UBYTE *bitmap, struct slice *slice, UWORD x, WORD y)
+static void show(const struct bb_bitmap *bitmap, struct bb_slice *slice, UWORD x, WORD y)
 {
     LONG offset = calcoff(&x, y, bitmap, slice);
     UWORD scroll;                               /* in x: the BPLCON1 scroll */
@@ -1049,7 +1020,7 @@ static void show(const UBYTE *bitmap, struct slice *slice, UWORD x, WORD y)
     slice->con1val = con1;
 }
 
-static void showf(const UBYTE *bitmap, struct slice *slice, UWORD x, WORD y, UWORD x2)
+static void showf(const struct bb_bitmap *bitmap, struct bb_slice *slice, UWORD x, WORD y, UWORD x2)
 {
     LONG offset = calcoff(&x, y, bitmap, slice);
     UWORD scroll, scroll2;                      /* in x, x2: the BPLCON1 scrolls */
@@ -1062,7 +1033,7 @@ static void showf(const UBYTE *bitmap, struct slice *slice, UWORD x, WORD y, UWO
     slice->con1val = scroll;
 }
 
-static void showb(const UBYTE *bitmap, struct slice *slice, UWORD x, WORD y, UWORD x2)
+static void showb(const struct bb_bitmap *bitmap, struct bb_slice *slice, UWORD x, WORD y, UWORD x2)
 {
     LONG offset = calcoff(&x, y, bitmap, slice);
     UBYTE *moves = (UBYTE *)slice->bplmoves + 8;   /* start at even */
@@ -1081,7 +1052,7 @@ static void showb(const UBYTE *bitmap, struct slice *slice, UWORD x, WORD y, UWO
     slice->con1val = scroll;
 }
 
-#define SHOWARGS const UBYTE *bitmap BL_REG(a0), struct slice *slice BL_REG(a1)
+#define SHOWARGS const struct bb_bitmap *bitmap BL_REG(a0), struct bb_slice *slice BL_REG(a1)
 /**
  * @brief Show Bitmap#: show a bitmap in the used slice at 0,0.
  *
@@ -1224,7 +1195,7 @@ BLITZ_ERRCHK_MESSAGE(mess10, "Hires slice width MUST be multiple of 32");
 
 static void BLITZ_ERRCHK cspltst_c(UWORD reg BL_REG(d0), UWORD r BL_REG(d1),
                                    UWORD g BL_REG(d2), UWORD b BL_REG(d3),
-                                   const struct slice *slice BL_REG(a1))
+                                   const struct bb_slice *slice BL_REG(a1))
 {
     if (!slice->y)
         BLITZ_RUNERR(mess4);
@@ -1236,7 +1207,7 @@ static void BLITZ_ERRCHK cspltst_c(UWORD reg BL_REG(d0), UWORD r BL_REG(d1),
 
 static void BLITZ_ERRCHK slicechk_c(void)
 {
-    if (((struct slice *)blitz_string)->y)                     /* TST (a3) */
+    if (((struct bb_slice *)blitz_string)->y)                     /* TST (a3) */
         BLITZ_RUNERR(mess1);
 }
 
@@ -1257,16 +1228,16 @@ static void BLITZ_ERRCHK slicechk2_c(const UWORD *args BL_REG(a2), UWORD flags B
 }
 
 /* showchk: TST (a0):MOVE.b 5(a0),d7:CMP.b 5(a1),d7:BHI err2 */
-static void BLITZ_ERRCHK showchk(const UBYTE *bitmap, const struct slice *slice)
+static void BLITZ_ERRCHK showchk(const struct bb_bitmap *bitmap, const struct bb_slice *slice)
 {
-    if (!W(bitmap, 0))
+    if (!bitmap->bpr)
         BLITZ_RUNERR(mess8);
-    else if (B(bitmap, 5) > slice->planeslo)
+    else if (bitmap->depth > slice->planeslo)
         BLITZ_RUNERR(mess2);
 }
 
-static void BLITZ_ERRCHK nshowchk_c(const UBYTE *bitmap BL_REG(a0),
-                                    const struct slice *slice BL_REG(a1))
+static void BLITZ_ERRCHK nshowchk_c(const struct bb_bitmap *bitmap BL_REG(a0),
+                                    const struct bb_slice *slice BL_REG(a1))
 {
     if (!slice->y)
         BLITZ_RUNERR(mess4);
@@ -1278,15 +1249,15 @@ static void BLITZ_ERRCHK nshowchk_c(const UBYTE *bitmap BL_REG(a0),
 
 /* showfchk/showbchk: below 256 bitplanes words the "dual playfield"
    check (signed byte compare), else bit 7 / 6 of +4 and showchk */
-static void BLITZ_ERRCHK showfchk_c(const UBYTE *bitmap BL_REG(a0),
-                                    const struct slice *slice BL_REG(a1))
+static void BLITZ_ERRCHK showfchk_c(const struct bb_bitmap *bitmap BL_REG(a0),
+                                    const struct bb_slice *slice BL_REG(a1))
 {
     if (!slice->y)
         BLITZ_RUNERR(mess4);
     else if (slice->planes < 256) {
-        if (!W(bitmap, 0))
+        if (!bitmap->bpr)
             BLITZ_RUNERR(mess8);
-        else if ((BYTE)((UBYTE)(slice->planeslo + 1) >> 1) < (BYTE)B(bitmap, 5))
+        else if ((BYTE)((UBYTE)(slice->planeslo + 1) >> 1) < (BYTE)bitmap->depth)
             BLITZ_RUNERR(mess2);
     } else if (!(slice->planeshi & 0x80))
         BLITZ_RUNERR(mess3);
@@ -1294,15 +1265,15 @@ static void BLITZ_ERRCHK showfchk_c(const UBYTE *bitmap BL_REG(a0),
         showchk(bitmap, slice);
 }
 
-static void BLITZ_ERRCHK showbchk_c(const UBYTE *bitmap BL_REG(a0),
-                                    const struct slice *slice BL_REG(a1))
+static void BLITZ_ERRCHK showbchk_c(const struct bb_bitmap *bitmap BL_REG(a0),
+                                    const struct bb_slice *slice BL_REG(a1))
 {
     if (!slice->y)
         BLITZ_RUNERR(mess4);
     else if (slice->planes < 256) {
-        if (!W(bitmap, 0))
+        if (!bitmap->bpr)
             BLITZ_RUNERR(mess8);
-        else if ((BYTE)(slice->planeslo >> 1) < (BYTE)B(bitmap, 5))
+        else if ((BYTE)(slice->planeslo >> 1) < (BYTE)bitmap->depth)
             BLITZ_RUNERR(mess2);
     } else if (!(slice->planeshi & 0x40))
         BLITZ_RUNERR(mess3);
