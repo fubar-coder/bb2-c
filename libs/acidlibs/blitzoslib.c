@@ -774,8 +774,20 @@ notext:
 
 static void freepage_(struct page *p);
 
-/* InitPage: a3 = page, a2 = bitmap object, d2 = number of boxes, d6 =
-   offset of the used page (auto use) */
+/**
+ * @brief InitPage Page#,BitMap#,NumBoxes: a page of boxes drawn into a
+ * bitmap.
+ *
+ * Frees the page's old boxes, allocates NumBoxes cleared boxes (32 bytes
+ * each, MEMF_PUBLIC|MEMF_CLEAR), sets the pens 1,3,2,1 (the help text of
+ * SetPagePens says 3,1,2,3) and makes the page the used one.  Errors
+ * (always checked): "Unitialised BitMap".
+ *
+ * Reads a3: the page (!libs{#blitzoslib,$1380} from Page# in d0).
+ * @param n  d2: NumBoxes
+ * @param bm  a2: the bitmap object (!libs{#bitmaplib,$1281} from BitMap#)
+ * @param used  d6: the offset of the used page variable (auto use)
+ */
 static void BLITZ_ROUTINE initpage_c(ULONG n BL_REG(d2), UWORD *bm BL_REG(a2), ULONG used BL_REG(d6))
 {
     struct page *p = PG;
@@ -804,12 +816,29 @@ static void freepage_(struct page *p)
     p->numboxes = 0;
 }
 
+/**
+ * @brief FreePage Page#: free the boxes of a page.
+ *
+ * Nothing for an unused page.  The texts of the boxes are not freed
+ * (memlib's global memory, freed with the program).
+ *
+ * Reads a3: the page (!libs{#blitzoslib,$1380} from Page# in d0).
+ */
 static void BLITZ_ROUTINE freepage_c(void)
 {
     freepage_(PG);
 }
 BLITZ_THUNK(_freepage, freepage_c, "d0-d1/a0-a1");
 
+/**
+ * @brief SetPagePens Page#,c0,c1,c2,c3: the pens of a page.
+ *
+ * Reads a3: the page (!libs{#blitzoslib,$1380} from Page# in d0).
+ * @param dark  d1.w: c0, the dark bevel pen
+ * @param light  d2.w: c1, the light bevel pen
+ * @param mid  d3.w: c2, the background pen
+ * @param txt  d4.w: c3, the text pen
+ */
 static void BLITZ_ROUTINE setpagepens_c(ULONG dark BL_REG(d1), ULONG light BL_REG(d2),
                                         ULONG mid BL_REG(d3), ULONG txt BL_REG(d4))
 {
@@ -822,6 +851,15 @@ static void BLITZ_ROUTINE setpagepens_c(ULONG dark BL_REG(d1), ULONG light BL_RE
 }
 BLITZ_THUNK(_setpagepens, setpagepens_c, "d0-d1/a0-a1");
 
+/**
+ * @brief ToggleBox Box#: invert the bevel of a box (NOT of its colour).
+ *
+ * Not redrawn.  Errors (always checked): "UnInitialised Page", "Illegal
+ * Box# For Page".
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ */
 static void BLITZ_ROUTINE togglebox_c(ULONG n BL_REG(d0))
 {
     struct box *b = getbox(PG, n);
@@ -830,6 +868,15 @@ static void BLITZ_ROUTINE togglebox_c(ULONG n BL_REG(d0))
 }
 BLITZ_THUNK(_togglebox, togglebox_c, "d0-d1/a0-a1");
 
+/**
+ * @brief EnableBox Box#: enable a disabled box (a positive type).
+ *
+ * Not redrawn.  Errors (always checked): "UnInitialised Page", "Illegal
+ * Box# For Page".
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ */
 static void BLITZ_ROUTINE enablebox_c(ULONG n BL_REG(d0))
 {
     struct box *b = getbox(PG, n);
@@ -839,6 +886,16 @@ static void BLITZ_ROUTINE enablebox_c(ULONG n BL_REG(d0))
 }
 BLITZ_THUNK(_enablebox, enablebox_c, "d0-d1/a0-a1");
 
+/**
+ * @brief DisableBox Box#: disable a box (a negative type).
+ *
+ * Not redrawn; a disabled box is drawn as a plain c2 box and cannot be
+ * selected with the mouse.  Errors (always checked): "UnInitialised
+ * Page", "Illegal Box# For Page".
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ */
 static void BLITZ_ROUTINE disablebox_c(ULONG n BL_REG(d0))
 {
     struct box *b = getbox(PG, n);
@@ -848,13 +905,32 @@ static void BLITZ_ROUTINE disablebox_c(ULONG n BL_REG(d0))
 }
 BLITZ_THUNK(_disablebox, disablebox_c, "d0-d1/a0-a1");
 
-/* BoxPropX/Y: the knob position as Quick (word * 2) */
+/**
+ * @brief BoxPropX Box#: the horizontal knob position of a prop box.
+ *
+ * Errors (always checked): "UnInitialised Page", "Illegal Box# For
+ * Page".
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ * @return d0: the knob position as Quick (the word * 2; -1 * 2 for a
+ *         fixed axis)
+ */
 static ULONG BLITZ_ROUTINE boxpropx_c(ULONG n BL_REG(d0))
 {
     return (ULONG)(LONG)getbox(PG, n)->propx << 1;
 }
 BLITZ_THUNK(_boxpropx, boxpropx_c, "d1/a1");
 
+/**
+ * @brief BoxPropY Box#: the vertical knob position of a prop box.
+ *
+ * As BoxPropX.
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ * @return d0: the knob position as Quick (the word * 2)
+ */
 static ULONG BLITZ_ROUTINE boxpropy_c(ULONG n BL_REG(d0))
 {
     return (ULONG)(LONG)getbox(PG, n)->propy << 1;
@@ -923,6 +999,25 @@ static struct box *addbox(struct page *p, ULONG n, ULONG x, ULONG y, ULONG w, UL
     return b;
 }
 
+/**
+ * @brief AddBox Page#,Box#,x,y,w,h,type: define a box.
+ *
+ * Frees the box's old text; type bit 0 = inverted bevel (NOT of the
+ * colour c2), type >> 1 = the box type (0 view, 1 button, 2 string, 3
+ * prop, 4 shape/display, 5 list, 6 drag).  A string box gets w/8 spaces,
+ * a prop box its knob (fixed axis -1 if the track is too short).  Not
+ * drawn.  Errors (always checked): "UnInitialised Page", "Illegal Box#
+ * For Page", "No Room For String" (a string box narrower than 8 pixels).
+ * BUG(orig) (#84): a string box 8..15 pixels wide writes 65536 spaces.
+ *
+ * Reads a3: the page (!libs{#blitzoslib,$1380} from Page# in d0).
+ * @param n  d1.w: Box#
+ * @param x  d2.w: x
+ * @param y  d3.w: y
+ * @param w  d4.w: the width
+ * @param h  d5.w: the height
+ * @param args  a2: the argument stack, -2(a2) = type
+ */
 static void BLITZ_ROUTINE addbox_c(ULONG n BL_REG(d1), ULONG x BL_REG(d2), ULONG y BL_REG(d3),
                                    ULONG w BL_REG(d4), ULONG h BL_REG(d5), const UWORD *args BL_REG(a2))
 {
@@ -930,7 +1025,22 @@ static void BLITZ_ROUTINE addbox_c(ULONG n BL_REG(d1), ULONG x BL_REG(d2), ULONG
 }
 BLITZ_THUNK(_addbox, addbox_c, "d0-d1/a0-a1");
 
-/* AddBox ... shape, shape */
+/**
+ * @brief AddBox Page#,Box#,x,y,w,h,type,shape,shape: a shape button.
+ *
+ * As AddBox, then the box shows shapes (isshape -1): the first shape and
+ * the number of shapes (range = second - first + 1); the button's value
+ * selects the shape.
+ *
+ * Reads a3: the page (!libs{#blitzoslib,$1380} from Page# in d0).
+ * @param n  d1.w: Box#
+ * @param x  d2.w: x
+ * @param y  d3.w: y
+ * @param w  d4.w: the width
+ * @param h  d5.w: the height
+ * @param args  a2: the argument stack, -2(a2) = type, -4 the first shape,
+ *              -6 the last shape
+ */
 static void BLITZ_ROUTINE addbox2_c(ULONG n BL_REG(d1), ULONG x BL_REG(d2), ULONG y BL_REG(d3),
                                     ULONG w BL_REG(d4), ULONG h BL_REG(d5), const UWORD *args BL_REG(a2))
 {
@@ -985,8 +1095,24 @@ static void boxtext(struct box *b, ULONG len, const UBYTE *s)
     }
 }
 
-/* AddBox ... text$: the string pointer and its length are below the type
-   word on the a2 stack */
+/**
+ * @brief AddBox Page#,Box#,x,y,w,h,type,text$: a box with a text.
+ *
+ * As AddBox, then the text: for a string box the prompt (copied into the
+ * spaces; error "No Room For String" if it does not fit); otherwise a
+ * copy (memlib globalloc) with "|" as separator of several strings (a
+ * text starting with "|" is taken verbatim), view and button boxes get
+ * value 0 and range = the number of strings.
+ *
+ * Reads a3: the page (!libs{#blitzoslib,$1380} from Page# in d0).
+ * @param n  d1.w: Box#
+ * @param x  d2.w: x
+ * @param y  d3.w: y
+ * @param w  d4.w: the width
+ * @param h  d5.w: the height
+ * @param args  a2: the argument stack: the string pointer and its length
+ *              are below the type word
+ */
 static void BLITZ_ROUTINE addbox1_c(ULONG n BL_REG(d1), ULONG x BL_REG(d2), ULONG y BL_REG(d3),
                                     ULONG w BL_REG(d4), ULONG h BL_REG(d5), const UBYTE *args BL_REG(a2))
 {
@@ -996,7 +1122,18 @@ static void BLITZ_ROUTINE addbox1_c(ULONG n BL_REG(d1), ULONG x BL_REG(d2), ULON
 }
 BLITZ_THUNK(_addbox1, addbox1_c, "d0-d1/a0-a1");
 
-/* SetBoxTitle: d1 = string, -4(a2) = length */
+/**
+ * @brief SetBoxTitle Box#,String$: the text of a box.
+ *
+ * Frees the old text (not of a string box) and sets the new one as
+ * AddBox ...,text$.  Not redrawn.  Errors (always checked):
+ * "UnInitialised Page", "Illegal Box# For Page", "No Room For String".
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ * @param s  d1: the string
+ * @param lens  a2: the argument stack, -4(a2) = the string's length
+ */
 static void BLITZ_ROUTINE setboxtitle_c(ULONG n BL_REG(d0), const UBYTE *s BL_REG(d1),
                                         const ULONG *lens BL_REG(a2))
 {
@@ -1023,20 +1160,48 @@ static void setbox(ULONG n, ULONG v)
     b->value = value;
 }
 
+/**
+ * @brief SetBox Box#,Value: the value of a box (the selected string).
+ *
+ * A negative value counts from the end (+ range).  Not redrawn.  Errors
+ * (always checked): "UnInitialised Page", "Illegal Box# For Page",
+ * "Value Out of Range" (not 0 <= value < range).
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ * @param v  d1.w: Value
+ */
 static void BLITZ_ROUTINE setbox_c(ULONG n BL_REG(d0), ULONG v BL_REG(d1))
 {
     setbox(n, v);
 }
 BLITZ_THUNK(_setbox, setbox_c, "d0-d1/a0-a1");
 
-/* ChangeBox Page#,Box#,Value */
+/**
+ * @brief ChangeBox Page#,Box#,Value: SetBox for the box of a page.
+ *
+ * Reads a3: the page (!libs{#blitzoslib,$1380} from Page# in d0).
+ * @param n  d1.w: Box#
+ * @param v  d2.w: Value
+ */
 static void BLITZ_ROUTINE changebox_c(ULONG n BL_REG(d1), ULONG v BL_REG(d2))
 {
     setbox(n, v);
 }
 BLITZ_THUNK(_changebox, changebox_c, "d0-d1/a0-a1");
 
-/* SetBox Box#,xprop,yprop (Quick: (q-1 if q<>0).w >> 1) */
+/**
+ * @brief SetBox Box#,xprop,yprop: the knob position of a prop box.
+ *
+ * Quick values: (q-1 if q<>0).w >> 1; a fixed axis (-1) stays.  Not
+ * redrawn.  Errors (always checked): "UnInitialised Page", "Illegal Box#
+ * For Page", "Not a Prop Box".
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ * @param qx  d1: xprop (Quick)
+ * @param qy  d2: yprop (Quick)
+ */
 static void BLITZ_ROUTINE setbox2_c(ULONG n BL_REG(d0), ULONG qx BL_REG(d1), ULONG qy BL_REG(d2))
 {
     struct box *b = getbox(PG, n);
@@ -1054,6 +1219,16 @@ static void BLITZ_ROUTINE setbox2_c(ULONG n BL_REG(d0), ULONG qx BL_REG(d1), ULO
 }
 BLITZ_THUNK(_setbox2, setbox2_c, "d0-d1/a0-a1");
 
+/**
+ * @brief SetBoxColor Box#,color: the background colour of a box.
+ *
+ * Keeps an inverted bevel (NOT), then draws the box.  Errors (always
+ * checked): "UnInitialised Page", "Illegal Box# For Page".
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ * @param c  d1.w: the colour
+ */
 static void BLITZ_ROUTINE setboxcolor_c(ULONG n BL_REG(d0), ULONG c BL_REG(d1))
 {
     struct page *p = PG;
@@ -1066,8 +1241,18 @@ static void BLITZ_ROUTINE setboxcolor_c(ULONG n BL_REG(d0), ULONG c BL_REG(d1))
 }
 BLITZ_THUNK(_setboxcolor, setboxcolor_c, "d0-d1/a0-a1");
 
-/* SetBoxString: the answer of a string box (after the prompt), padded
-   with spaces */
+/**
+ * @brief SetBoxString Box#,String$: the answer of a string box.
+ *
+ * Written after the prompt, padded with spaces.  Not redrawn.  Errors
+ * (always checked): "UnInitialised Page", "Illegal Box# For Page", "No
+ * Room For String".
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ * @param s  d1: the string
+ * @param lens  a2: the argument stack, -4(a2) = the string's length
+ */
 static void BLITZ_ROUTINE setboxstring_c(ULONG n BL_REG(d0), const UBYTE *s BL_REG(d1),
                                          const ULONG *lens BL_REG(a2))
 {
@@ -1101,13 +1286,33 @@ BLITZ_THUNK(_setboxstring, setboxstring_c, "d0-d1/a0-a1");
 
 /* ------------------------------------------------------- functions */
 
-/* BoxValue: MOVE value,d0 (low word) */
+/**
+ * @brief BoxValue(Box#): the value of a box of the used page.
+ *
+ * MOVE value,d0: a word function, the upper word of d0 is the caller's.
+ * Errors (always checked): "UnInitialised Page", "Illegal Box# For
+ * Page".
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ * @return d0.w: the value
+ */
 static ULONG BLITZ_ROUTINE boxvalue_c(ULONG n BL_REG(d0))
 {
     return (n & 0xffff0000UL) | (UWORD)getbox(PG, n)->value;
 }
 BLITZ_THUNK(_boxvalue, boxvalue_c, "d1/a1");
 
+/**
+ * @brief BoxValue(Page#,Box#): the value of a box of a page.
+ *
+ * As BoxValue(Box#) (MOVE d1,d0 first).
+ *
+ * Reads a3: the page (!libs{#blitzoslib,$1380} from Page# in d0).
+ * @param callerd0  d0: Page# (its upper word stays)
+ * @param n  d1.w: Box#
+ * @return d0.w: the value
+ */
 static ULONG BLITZ_ROUTINE boxvalue2_c(ULONG callerd0 BL_REG(d0), ULONG n BL_REG(d1))
 {
     BL_SETW(callerd0, n);                       /* MOVE d1,d0 */
@@ -1140,12 +1345,35 @@ static ULONG boxstring(struct page *p, ULONG n)
     return len;
 }
 
+/**
+ * @brief BoxString(Box#): the answer of a string box, without trailing
+ * spaces.
+ *
+ * The answer after the prompt goes to a3; no 0 is written, a3 = the end
+ * (not a bug, #86: the compiler appends the 0 itself).  Errors (always
+ * checked): "UnInitialised Page", "Illegal Box# For Page".
+ * BUG(orig) (#85): the trailing spaces are stripped backwards without a
+ * limit: an all-space answer runs into the prompt / memory before the
+ * text (d0 0: nothing, negative: a huge copy).
+ *
+ * @param n  d0.w: Box#
+ * @param p  a1: the used page (!libs{#blitzoslib,$1102})
+ * @return d0: the length of the string at a3
+ */
 static ULONG BLITZ_ROUTINE boxstring_c(ULONG n BL_REG(d0), struct page *p BL_REG(a1))
 {
     return boxstring(p, n);
 }
 BLITZ_THUNK(_boxstring, boxstring_c, "d1");
 
+/**
+ * @brief BoxString(Page#,Box#): BoxString of a box of a page.
+ *
+ * @param callerd0  d0: Page# (its upper word stays)
+ * @param n  d1.w: Box#
+ * @param p  a1: the page (!libs{#blitzoslib,$1180} from Page#)
+ * @return d0: the length of the string at a3
+ */
 static ULONG BLITZ_ROUTINE boxstring2_c(ULONG callerd0 BL_REG(d0), ULONG n BL_REG(d1),
                                         struct page *p BL_REG(a1))
 {
@@ -1154,7 +1382,15 @@ static ULONG BLITZ_ROUTINE boxstring2_c(ULONG callerd0 BL_REG(d0), ULONG n BL_RE
 }
 BLITZ_THUNK(_boxstring2, boxstring2_c, "d1");
 
-/* BoxSelected: (selected - memloc) >> 5 (LSR.w), -1 for none */
+/**
+ * @brief BoxSelected: the selected box of the used page.
+ *
+ * (selected - memloc) >> 5 (LSR.w).  Errors (always checked):
+ * "UnInitialised Page".
+ *
+ * Reads a3: the used page.
+ * @return d0.w: the Box#, -1 for none
+ */
 static ULONG BLITZ_ROUTINE boxselected_c(void)
 {
     struct page *p = PG;
@@ -1174,6 +1410,14 @@ BLITZ_THUNK(_boxselected, boxselected_c, "d1/a0-a1");
 
 /* ---------------------------------------------------------- drawing */
 
+/**
+ * @brief RedrawPage: draw all boxes of the used page.
+ *
+ * Draws every box with a width.  Errors (always checked): "UnInitialised
+ * Page".
+ *
+ * Reads a3: the used page.
+ */
 static void BLITZ_ROUTINE redrawpage_c(void)
 {
     struct page *p = PG;
@@ -1193,6 +1437,17 @@ static void BLITZ_ROUTINE redrawpage_c(void)
 }
 BLITZ_THUNK(_redrawpage, redrawpage_c, "d0-d1/a0-a1");
 
+/**
+ * @brief RedrawBox Box#: draw a box of the used page.
+ *
+ * Errors (always checked): "UnInitialised Page", "Illegal Box# For
+ * Page".
+ * BUG(orig) (#89): a box with tlen 0 but an old text pointer prints from
+ * address 0 with the pointer as length (in drawbox).
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ */
 static void BLITZ_ROUTINE redrawbox_c(ULONG n BL_REG(d0))
 {
     struct page *p = PG;
@@ -1227,6 +1482,19 @@ static void dobs(struct page *p, struct box *b)
     scroll((LONG)px, (LONG)py, (LONG)dx, (LONG)dy, w, h, src, p->mybitmap);
 }
 
+/**
+ * @brief BoxShow Box#,Bitmap#,x,y: show part of a bitmap in a view box.
+ *
+ * Scrolls the bitmap from x,y (clipped to the bitmap) into the box.
+ * Errors (always checked): "UnInitialised Page", "Illegal Box# For
+ * Page", "Illegal Box Type" (not a view box).
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ * @param bm  a2: the bitmap object (!libs{#bitmaplib,$1281} from Bitmap#)
+ * @param x  d2.w: x in the bitmap
+ * @param y  d3.w: y in the bitmap
+ */
 static void BLITZ_ROUTINE boxshow_c(ULONG n BL_REG(d0), UBYTE *bm BL_REG(a2),
                                     ULONG x BL_REG(d2), ULONG y BL_REG(d3))
 {
@@ -1242,6 +1510,17 @@ static void BLITZ_ROUTINE boxshow_c(ULONG n BL_REG(d0), UBYTE *bm BL_REG(a2),
 }
 BLITZ_THUNK(_boxshow, boxshow_c, "d0-d1/a0-a1");
 
+/**
+ * @brief BoxShow Box#,dx,dy: move the view of a view box.
+ *
+ * As BoxShow Box#,Bitmap#,x,y with the position moved by dx,dy.  Errors
+ * as BoxShow.
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ * @param dx  d1.w: the x offset
+ * @param dy  d2.w: the y offset
+ */
 static void BLITZ_ROUTINE boxshow2_c(ULONG n BL_REG(d0), ULONG dx BL_REG(d1), ULONG dy BL_REG(d2))
 {
     struct page *p = PG;
@@ -1311,6 +1590,21 @@ static void boxprint(struct page *p, ULONG n, const UBYTE *s, ULONG *lens)
     }
 }
 
+/**
+ * @brief BoxPrint Box#,String$: print a line into a view box.
+ *
+ * A box lower than 16 pixels scrolls its line left and prints at the
+ * right; otherwise the box scrolls up 8 pixels and the string goes into
+ * the last line.  Errors (always checked): "UnInitialised Page",
+ * "Illegal Box# For Page", "Illegal Box Type" (not a view box).
+ * Not a bug (#88): overwrites the string length at -4(a2) with Scroll's
+ * size.
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ * @param s  d1: the string
+ * @param lens  a2: the argument stack, -4(a2) = the string's length
+ */
 static void BLITZ_ROUTINE boxprint_c(ULONG n BL_REG(d0), const UBYTE *s BL_REG(d1),
                                      ULONG *lens BL_REG(a2))
 {
@@ -1320,7 +1614,19 @@ BLITZ_THUNK(_boxprint, boxprint_c, "d0-d1/a0-a1");
 
 static ULONG linelen[2];                        /* length; a2 points behind */
 
-/* BoxPrint Box#,Bank#,Line: a2 = bank object, d2 = line */
+/**
+ * @brief BoxPrint Box#,Bank#,Line: print a line of a bank into a view box.
+ *
+ * The line (ended by LF or 0) is printed as BoxPrint Box#,String$.
+ * Errors (always checked): "Unitialised Bank", then those of BoxPrint.
+ * BUG(orig) (#87): lines over 0 bytes are skipped too, and the line's LF
+ * in the bank is replaced by 0.
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ * @param bank  a2: the bank object (!libs{#banklib,$1281} from Bank#)
+ * @param ln  d2.w: Line (from 0)
+ */
 static void BLITZ_ROUTINE boxprint2_c(ULONG n BL_REG(d0), UBYTE **bank BL_REG(a2), ULONG ln BL_REG(d2))
 {
     UBYTE *pos = *bank, *start;
@@ -1364,7 +1670,17 @@ static WORD status, delay, button, mo, jx, jy, jb, mx, my, mb, ox, oy;
 static constexpr WORD dcon = 6;                 /* delay constant */
 static constexpr WORD pspd = 1024;              /* prop speed */
 
-/* SelectBox Box# (negative / >= 1024: deselect) */
+/**
+ * @brief SelectBox Box#: select a box (and draw it and the old one).
+ *
+ * Errors (always checked): "UnInitialised Page".
+ * BUG(orig) (#81): the offset is computed as a word (ASL #5).
+ * BUG(orig) (#82): Box# is not range checked: negative or >= 1024 only
+ * deselect.
+ *
+ * Reads a3: the used page.
+ * @param n  d0.w: Box#
+ */
 static void BLITZ_ROUTINE selectbox_c(ULONG n BL_REG(d0))
 {
     struct page *p = PG;
@@ -1427,6 +1743,19 @@ static LONG selectbox3(struct page *p, WORD x, WORD y)
     return 0;
 }
 
+/**
+ * @brief SelectBox 0,x,y: select the enabled box at x,y.
+ *
+ * Draws the new box and the old one.  Errors (always checked):
+ * "UnInitialised Page".
+ * Not a bug (#93): redraws the old box also when it is the new one.
+ *
+ * Reads a3: the used page.
+ * @param x  d1.w: x
+ * @param y  d2.w: y
+ * @return d0: -1 = a box was found and selected, 0 = none (a statement:
+ *         the value is used only by BlitzEvent)
+ */
 static ULONG BLITZ_ROUTINE selectbox3_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2))
 {
     return selectbox3(PG, (WORD)x, (WORD)y);
@@ -1500,12 +1829,32 @@ mis:
     drawbox(p, p->selected);
 }
 
+/**
+ * @brief SelectBox x+,y+: select the nearest box in a direction.
+ *
+ * From the selected box, the nearest enabled box in direction dx,dy
+ * (signs); nothing without a selected box.  Errors (always checked):
+ * "UnInitialised Page".
+ *
+ * Reads a3: the used page.
+ * @param dx  d0.w: the x direction (<0, 0, >0)
+ * @param dy  d1.w: the y direction (<0, 0, >0)
+ */
 static void BLITZ_ROUTINE selectbox2_c(ULONG dx BL_REG(d0), ULONG dy BL_REG(d1))
 {
     selectbox2(PG, (WORD)dx, (WORD)dy);
 }
 BLITZ_THUNK(_selectbox2, selectbox2_c, "d0-d1/a0-a1");
 
+/**
+ * @brief DeSelectBox: draw the selected box as not pressed.
+ *
+ * Restores an inverted bevel and ends editing, prop and drag.  Errors
+ * (always checked): "UnInitialised Page".
+ * BUG(orig) (#94): does not clear `selected`.
+ *
+ * Reads a3: the used page.
+ */
 static void BLITZ_ROUTINE deselectbox_c(void)
 {
     struct page *p = PG;
@@ -1585,13 +1934,30 @@ static void activateselected(struct page *p)
     }
 }
 
+/**
+ * @brief ActivateSelectedBox: activate the selected box.
+ *
+ * Button and list: redraw; string box: start editing (cursor after the
+ * prompt); prop: start moving the knob; drag: start dragging.  Errors
+ * (always checked): "UnInitialised Page".
+ *
+ * Reads a3: the used page.
+ */
 static void BLITZ_ROUTINE activateselected_c(void)
 {
     activateselected(PG);
 }
 BLITZ_THUNK(_activateselected, activateselected_c, "d0-d1/a0-a1");
 
-/* SpotBox: the box under (mx,my), -1 for none (no page check) */
+/**
+ * @brief SpotBox: the box that the mouse is over.
+ *
+ * The first enabled box under (mx,my) of the last BlitzEvent.
+ * BUG(orig) (#83): no page check; with 0 boxes it scans 65536.
+ *
+ * Reads a3: the used page.
+ * @return d0.w: the Box#, -1 for none (the upper word is mx's sign)
+ */
 static ULONG BLITZ_ROUTINE spotbox_c(void)
 {
     struct page *p = PG;
@@ -1609,7 +1975,15 @@ static ULONG BLITZ_ROUTINE spotbox_c(void)
 }
 BLITZ_THUNK(_spotbox, spotbox_c, "d1/a0-a1");
 
-/* MouseEnabled: MOVE mo,d0 (low word) / 0 while dragging */
+/**
+ * @brief MouseEnabled: whether BlitzEvent follows the mouse.
+ *
+ * MOVE mo,d0 (low word): set when the mouse moved fast enough, cleared
+ * by a direction of the joystick or the cursor keys; 0 while dragging.
+ *
+ * @param callerd0  d0: the caller's register (its upper word stays)
+ * @return d0.w: -1 = mouse, 0 = joystick/keys
+ */
 static ULONG BLITZ_ROUTINE mouseenabled_c(ULONG callerd0 BL_REG(d0))
 {
     if (indrag)
@@ -1904,6 +2278,23 @@ moveprop:
     }
 }
 
+/**
+ * @brief BlitzEvent: handle the user input of the used page.
+ *
+ * Reads joystick, mouse, cursor keys (Return as button, left Alt + left
+ * Amiga and right Amiga + right Alt as the mouse buttons) and the
+ * keyboard (BlitzKey): moves the selection, edits string boxes, moves
+ * list entries, prop knobs and drag boxes, presses and releases buttons.
+ * BUG(orig) (#90): with cursor up/down it reads btype of `selected` also
+ * when nothing is selected.
+ * BUG(orig) (#91): Backspace at position 0 leaves the cursor off.
+ * Not a bug (#92): the character cycle of the cursor keys uses BMI after
+ * CMP.b.
+ *
+ * Reads a3: the used page.
+ * @return d0: -1 = a button was released (clicked), 1 = a box was
+ *         activated, 2 = a prop or drag box moved, 0 = nothing
+ */
 static ULONG BLITZ_ROUTINE blitzevent_c(void)
 {
     return (ULONG)blitzevent(PG);
