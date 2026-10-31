@@ -570,11 +570,28 @@ BLITZ_THUNK(myint, myint_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------------- module */
 
-/* LoadModule n,name$ - a3 = module, d1 = name, a6 = dos */
 void BLITZ_ROUTINE doloadmod(const UBYTE *name BL_REG(d1), struct DosLibrary *DOSBase BL_REG(a6));
 
 static void freemod2(struct module *m, int blitz);
 
+/**
+ * @brief LoadModule Module#,Filename$ - load a Sound/NoiseTracker module
+ * into chip memory (Amiga mode only).
+ *
+ * Frees the old module (stopping it if it is playing), takes the length
+ * from Examine (FileInfoBlock from memlib), allocates chip memory and
+ * reads the file in one Read.
+ *
+ * Errors: "Error Accessing Module File" (runtime error also without the
+ * debugger) for a missing file or a directory, or when the file cannot be
+ * opened.
+ *
+ * BUG(orig) (#296): on that error the FileInfoBlock is not freed (a
+ * directory also stays locked).
+ *
+ * @param name    d1: the file name; a3: the module object
+ * @param DOSBase a6: dos.library
+ */
 void BLITZ_ROUTINE doloadmod(const UBYTE *name BL_REG(d1), struct DosLibrary *DOSBase BL_REG(a6))
 {
     struct module *m = (struct module *)blitz_string;
@@ -648,10 +665,38 @@ static void freemod2(struct module *m, int blitz)
     BLITZ_ALIBJSR(TOK_globfree, r);
 }
 
+/**
+ * @brief PlayModule Module# - start playing a module (Amiga / Blitz mode
+ * variant).
+ *
+ * mt_init on the module (highest pattern, sample starts, clears the first
+ * long of each sample, filter off, speed 6), then the vertical blank
+ * interrupt (intlib SetInt $C100, level $8025; ALibJsr / BLibJsr) calls
+ * mt_music every frame.  a3: the module object.
+ *
+ * Errors (debugger, playchk): "Uninitialized Module".
+ *
+ * BUG(orig): the NoiseTracker player's bugs, see the file header (#289 -
+ * #295).
+ */
 static void BLITZ_ROUTINE doplaymod_a(void) { playmod2(0); }
+/** @brief PlayModule Module# - the Blitz mode variant (BLibJsr). */
 static void BLITZ_ROUTINE doplaymod_b(void) { playmod2(1); }
+/**
+ * @brief StopModule - stop the module (Amiga mode variant; also the
+ * library's finit).
+ *
+ * ClrInt $C101 (level $8025), then mt_end: volumes 0, audio DMA off.
+ */
 static void BLITZ_ROUTINE dostopmod_a(void) { stopmod2(0); }
+/** @brief StopModule - the Blitz mode variant (BLibJsr). */
 static void BLITZ_ROUTINE dostopmod_b(void) { stopmod2(1); }
+/**
+ * @brief Free Module (the object library's _free; Amiga / Blitz mode
+ * variant) - stop the module if it is playing, free its memory.
+ *
+ * a3: the module object.
+ */
 static void BLITZ_ROUTINE freemod_a(void) { freemod2((struct module *)blitz_string, 0); }
 static void BLITZ_ROUTINE freemod_b_c(void) { freemod2((struct module *)blitz_string, 1); }
 
