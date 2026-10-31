@@ -77,6 +77,13 @@
 #include <libnums.h>     /* LIB_xxx = #xxx of libnums.bb; <>: a variant
                              (libs/variants) brings its own */
 
+/* a truth value as Blitz programs see it: -1 true, 0 false (exec's TRUE
+   is 1).  Exactly a ULONG (C23 fixed underlying type): d0, BL_REG and the
+   code stay the same.  gcc -Wc++-compat and clang -Wassign-enum warn
+   about an int assigned to it; an enum used as a ULONG is not caught */
+typedef enum : ULONG { BB_FALSE = 0, BB_TRUE = 0xffffffffUL } BB_BOOL;
+static_assert(sizeof(BB_BOOL) == sizeof(ULONG), "BB_BOOL must be a long");
+
 /* ----------------------------------------------------------- constants */
 
 /* types (!args / !afunction) */
