@@ -48,14 +48,14 @@ BLITZ_LIBFIN();
    behaviour - on overflow (quotient outside -32768..32767) d0 stays
    UNCHANGED, and a divisor of 0 raises the 68000 divide-by-zero exception
    (vector 5) like the original. */
-static ULONG mod_w(ULONG d0, ULONG d1)
+static ULONG mod_w(ULONG acc, ULONG divisor)
 {
-    d0 = BL_EXTL(d0);                               /* EXT.l d0 */
-    d0 = bl_divs_w(d0, d1);
-    d0 = BL_SWAP(d0);                               /* SWAP d0 */
-    if ((WORD)d0 < 0)                               /* TST d0:BPL 'skip */
-        BL_SETW(d0, (UWORD)d0 + (UWORD)d1);         /* ADD d1,d0 */
-    return d0;
+    acc = BL_EXTL(acc);                             /* EXT.l d0 */
+    acc = bl_divs_w(acc, divisor);
+    acc = BL_SWAP(acc);                             /* SWAP d0 */
+    if ((WORD)acc < 0)                              /* TST d0:BPL 'skip */
+        BL_SETW(acc, (UWORD)acc + (UWORD)divisor);  /* ADD d1,d0 */
+    return acc;
 }
 
 static ULONG BLITZ_ROUTINE domodword_c(ULONG a BL_REG(d0), ULONG b BL_REG(d1))
@@ -79,15 +79,15 @@ BLITZ_THUNK(domodquick, domodquick_c, "d1/a0-a1");
 static ULONG mod_l(ULONG a, ULONG b)
 {
     struct bl_regs r = { .d0 = a, .d1 = b };
-    ULONG d0;
+    ULONG rem;
 
     BLITZ_ALIBJSR(TOK_ldivide, r);
     r.d1 = b;                                       /* MOVE.l (a7),d1 */
     BLITZ_ALIBJSR(TOK_lmultiply, r);
-    d0 = a - r.d0;                                  /* SUB.l d1,d0 */
-    if ((LONG)d0 < 0)                               /* BPL 'done */
-        d0 += b;                                    /* ADD.l (a7),d0 */
-    return d0;
+    rem = a - r.d0;                                 /* SUB.l d1,d0 */
+    if ((LONG)rem < 0)                              /* BPL 'done */
+        rem += b;                                   /* ADD.l (a7),d0 */
+    return rem;
 }
 
 static ULONG BLITZ_ROUTINE domodlong_c(ULONG a BL_REG(d0), ULONG b BL_REG(d1))

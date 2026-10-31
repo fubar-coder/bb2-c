@@ -171,13 +171,13 @@ static void BLITZ_ROUTINE dopointer2_c(void)
 BLITZ_THUNK(dopointer2, dopointer2_c, "d0-d1/a0-a1");
 
 /* MouseArea Minx,Miny,Maxx,Maxy */
-static void BLITZ_ROUTINE domousearea_c(WORD x0 BL_REG(d0), WORD y0 BL_REG(d1),
-                                        WORD x1 BL_REG(d2), WORD y1 BL_REG(d3))
+static void BLITZ_ROUTINE domousearea_c(WORD left BL_REG(d0), WORD top BL_REG(d1),
+                                        WORD right BL_REG(d2), WORD bottom BL_REG(d3))
 {
-    minx = x0;
-    miny = y0;
-    maxx = x1;
-    maxy = y1;
+    minx = left;
+    miny = top;
+    maxx = right;
+    maxy = bottom;
 }
 BLITZ_THUNK(domousearea, domousearea_c, "d0-d1/a0-a1");
 
