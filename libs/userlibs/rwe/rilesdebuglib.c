@@ -838,7 +838,9 @@ static void BLITZ_ROUTINE fprintdetoke_c(const UBYTE *line BL_REG(d0), UWORD cio
                                          ULONG callercol BL_REG(d6), struct BitMap *bm BL_REG(a0))
 {
     struct dt t;
-    UWORD tocursor = cio, skip = lineoff, code;
+    UWORD tocursor = cio, skip = lineoff;
+    UWORD code;                                         /* d0: the token number */
+    UWORD glyph;                                        /* d0: draw_char's glyph */
     ULONG off = cursor_offset();
     const UBYTE *p = line, *name;
     UBYTE c;
@@ -894,12 +896,12 @@ static void BLITZ_ROUTINE fprintdetoke_c(const UBYTE *line BL_REG(d0), UWORD cio
                 break;
             if ((WORD)--skip >= 0)
                 continue;
-            code = draw_char(&t, (UWORD)c << 3);
+            glyph = draw_char(&t, (UWORD)c << 3);
             if (!plz_tokenise)
                 continue;
             t.plane1--;                                 /* plane 1, same place */
             other = t.plane0, t.plane0 = t.plane1, t.plane1 = other;
-            draw_char(&t, code);
+            draw_char(&t, glyph);
             t.plane1--;
             other = t.plane0, t.plane0 = t.plane1, t.plane1 = other;
             BL_SETW(t.col, t.col - 1);

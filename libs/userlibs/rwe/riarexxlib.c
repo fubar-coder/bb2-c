@@ -718,15 +718,17 @@ static void handlereply(void)
 }
 
 /* donereadport: the first message of the list becomes current */
-static ULONG donereadport(ULONG result)
+static ULONG donereadport(ULONG passed)
 {
+    ULONG first;                        /* d0: the first message */
+
     if (oktodelete)
-        return result;
-    result = v.messagelist[0];
-    v.currentmessage = (struct RexxMsg *)result;
+        return passed;
+    first = v.messagelist[0];
+    v.currentmessage = (struct RexxMsg *)first;
     v.currentarg = 1;
     deleteitem(v.messagelist);
-    return result;
+    return first;
 }
 
 static ULONG readport_c(void)
@@ -833,13 +835,15 @@ static ULONG BLITZ_ROUTINE rxgetarg_c(ULONG n BL_REG(d0))
 BLITZ_THUNK(_rxgetarg, rxgetarg_c, "d1/a0-a1");
 
 /* RXNextArg: MOVE.w currentarg,d0 keeps the upper word of d0 */
-static ULONG BLITZ_ROUTINE rxnextarg_c(ULONG value BL_REG(d0))
+static ULONG BLITZ_ROUTINE rxnextarg_c(ULONG argnum BL_REG(d0))
 {
-    BL_SETW(value, v.currentarg);
-    value = getarg(value);
-    if (value)
+    ULONG arg;                          /* d0: the argument string */
+
+    BL_SETW(argnum, v.currentarg);
+    arg = getarg(argnum);
+    if (arg)
         v.currentarg++;
-    return value;
+    return arg;
 }
 BLITZ_THUNK(_rxnextarg, rxnextarg_c, "d1/a0-a1");
 
