@@ -1,0 +1,6 @@
+[run]
+deftool 6: 0
+inject: allocfail: 1 allocations failed
+inject: rc=0
+inject: track: 44 allocations left, 343102 bytes
+...
