@@ -264,8 +264,8 @@ void BLITZ_ROUTINE c_AnimLoop(UBYTE on BL_REG(d0))
 
 /* RIAnimInit (address,bitmap#,palette#[,offset]): -1, 0 if no ANIM with
    an ILBM and BMHD */
-ULONG BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
-                               ULONG pal BL_REG(d2), ULONG offset BL_REG(d3))
+BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
+                                 ULONG pal BL_REG(d2), ULONG offset BL_REG(d3))
 {
     UBYTE *chunk;
     struct BitMapHeader *bmhd;
@@ -275,15 +275,15 @@ ULONG BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     palettenumber = (UBYTE)pal;
     bitplaneoffset = offset;
     if (!initfindchunk((UBYTE *)address, ID_ANIM))
-        return 0;
+        return BB_FALSE;
     firstframe = firstchunk;
     animend = endoffile;
     animaddress = (UBYTE *)address;
     if (!initfindchunk(firstchunk, ID_ILBM))
-        return 0;
+        return BB_FALSE;
     endoffile = animend;                /* BUG(orig): the whole ANIM (#511) */
     if (!findchunk(ID_BMHD, &chunk))
-        return 0;
+        return BB_FALSE;
     bmhd = (struct BitMapHeader *)chunk;
     animwidth = bmhd->bmh_Width;
     animheight = bmhd->bmh_Height;
@@ -299,20 +299,20 @@ ULONG BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
         if (findnextchunk(ID_FORM, &chunk))     /* the third frame */
             thirdframe = chunk - 8;
     }
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
-ULONG BLITZ_ROUTINE c_InitAnim2(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
-                                ULONG pal BL_REG(d2))
+BB_BOOL BLITZ_ROUTINE c_InitAnim2(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
+                                  ULONG pal BL_REG(d2))
 {
     return c_InitAnim(address, bm, pal, 0);
 }
 
 /* RIAnimInit (address,bitmap#,palette#,x,y): a0 = the bitmap object, d1
    = bitmap# * 64 (#pd1) */
-ULONG BLITZ_ROUTINE c_InitAnim3(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
-                                ULONG pal BL_REG(d2), ULONG x BL_REG(d3), ULONG y BL_REG(d4),
-                                const struct BitMap *bitmap BL_REG(a0))
+BB_BOOL BLITZ_ROUTINE c_InitAnim3(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
+                                  ULONG pal BL_REG(d2), ULONG x BL_REG(d3), ULONG y BL_REG(d4),
+                                  const struct BitMap *bitmap BL_REG(a0))
 {
     ULONG off = bl_mulu_w(bitmap->BytesPerRow, (UWORD)y) + (ULONG)((LONG)x >> 3);
 
