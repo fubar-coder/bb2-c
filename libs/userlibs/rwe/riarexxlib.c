@@ -384,6 +384,14 @@ static ULONG tostring(const UBYTE *s)
 
 /* ------------------------------------------------------- init / finit */
 
+/**
+ * @brief init: open rexxsyslib.library V34; the defaults (quote '"',
+ * RXTokenise on, the default port "REXX").
+ *
+ * BUG(orig) (#532): "REXX" and a 0 at +5 are written into the default
+ * port name: the byte at +4 of an earlier RXDefaultPort stays.
+ * @return d0: 0
+ */
 static ULONG BLITZ_ROUTINE libinit_c(void)
 {
     quote = 34;
@@ -402,6 +410,10 @@ BLITZ_THUNK(_libinit, libinit_c, "d1/a0-a1");
 
 static void deleteport(void);
 
+/**
+ * @brief finit: RXTokenise on again, delete the port if there is one (as
+ * RXDeletePort).
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     tokenise = BB_TRUE;
@@ -412,26 +424,47 @@ BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
 
 /* ----------------------------------------------------- small commands */
 
+/**
+ * @brief RXQuoteChar char$: the quote character of the parser (RXTokenise
+ * on; default '"').
+ * @param s  d0: the string, its first character
+ * @return nothing
+ */
 static void BLITZ_ROUTINE rxquotechar_c(const UBYTE *s BL_REG(d0))
 {
     quote = *s;
 }
 BLITZ_THUNK(_rxquotechar, rxquotechar_c, "d0-d1/a0-a1");
 
+/**
+ * @brief RXMessageList: the list of received messages not yet current.
+ * @return d0: the list (32 longs, 0 ended; 0 before RXCreatePort)
+ */
 static ULONG BLITZ_ROUTINE rxmessagelist_c(void)
 {
     return (ULONG)v.messagelist;
 }
 BLITZ_THUNK(_rxmessagelist, rxmessagelist_c, "d1/a0-a1");
 
-/* RXTokenise: MOVE.l d0 - BUG(orig): the upper word of the word too
-   (#547) */
+/**
+ * @brief RXTokenise on|off: whether commands are split into words (with
+ * RXQuoteChar quotes) or sent as one argument string.
+ *
+ * BUG(orig) (#547): MOVE.l d0 stores the upper word of the word argument
+ * too.
+ * @param on  d0.w: 0 off, else on (the whole register is stored)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE rxtokenise_c(ULONG on BL_REG(d0))
 {
     tokenise = on;
 }
 BLITZ_THUNK(_rxtokenise, rxtokenise_c, "d0-d1/a0-a1");
 
+/**
+ * @brief RXReturnCode: the Result1 of the last reply to RXSendCommand.
+ * @return d0: the code; BUG(orig) (#542): 0 while no message is current
+ */
 static ULONG BLITZ_ROUTINE rxreturncode_c(void)
 {
     if (!v.currentmessage)
@@ -440,7 +473,15 @@ static ULONG BLITZ_ROUTINE rxreturncode_c(void)
 }
 BLITZ_THUNK(_rxreturncode, rxreturncode_c, "d1/a0-a1");
 
-/* RXDefaultPort: BUG(orig) without a limit (see the struct) (#529) */
+/**
+ * @brief RXDefaultPort portname$: the port of the forms of RXRunCommand
+ * and RXSendCommand without a port name.
+ *
+ * BUG(orig) (#529): copied without a limit into the 66 bytes of
+ * rexxportname, over the variables behind it.
+ * @param s  d0: portname$
+ * @return nothing
+ */
 static void BLITZ_ROUTINE rxdefportname_c(const UBYTE *s BL_REG(d0))
 {
     UBYTE *d = v.rexxportname;
@@ -625,20 +666,45 @@ static ULONG runcommand(const UBYTE *port, ULONG cmd)
     return sendmessage();
 }
 
+/**
+ * @brief RXRunCommand portname$,command$: send a command to a port, no
+ * reply awaited.
+ *
+ * The message (RXCOMM|RXFF_STRING) goes into the sent list.  BUG(orig):
+ * the replies are freed without their arguments and stay in the sent
+ * list (#531); a failed AllocVec sends the message before (#533).
+ * @param port  d0: portname$
+ * @param cmd   d1: command$
+ * @return d0: 0 if the port is not found or there is no message; else
+ *         d0 of PutMsg (BUG(orig) #543)
+ */
 static ULONG BLITZ_ROUTINE rxruncommand_c(const UBYTE *port BL_REG(d0), ULONG cmd BL_REG(d1))
 {
     return runcommand(port, cmd);
 }
 BLITZ_THUNK(_rxruncommand, rxruncommand_c, "d1/a0-a1");
 
+/**
+ * @brief RXRunCommand command$: as RXRunCommand to the RXDefaultPort port.
+ * @param cmd  d0: command$
+ * @return d0: as above (#543)
+ */
 static ULONG BLITZ_ROUTINE rxruncommand2_c(ULONG cmd BL_REG(d0))
 {
     return runcommand(v.rexxportname, cmd);
 }
 BLITZ_THUNK(_rxruncommand2, rxruncommand2_c, "d1/a0-a1");
 
-/* BUG(orig): the type of the scripts is overwritten by _rxruncommand
-   (#544) */
+/**
+ * @brief RXExecuteScript scriptname$: run an ARexx script through the port
+ * "REXX".
+ *
+ * BUG(orig) (#544): its message type (RXCOMM|RXFF_RESULT) is overwritten
+ * by _rxruncommand: it sends RXCOMM|RXFF_STRING (the script name as a
+ * string program), without a result.
+ * @param name  d0: scriptname$
+ * @return d0: as RXRunCommand (#543)
+ */
 static ULONG BLITZ_ROUTINE rxexecutescript_c(ULONG name BL_REG(d0))
 {
     msgtype = RXCOMM | RXFF_RESULT;
@@ -646,6 +712,14 @@ static ULONG BLITZ_ROUTINE rxexecutescript_c(ULONG name BL_REG(d0))
 }
 BLITZ_THUNK(_rxexecutescript, rxexecutescript_c, "d1/a0-a1");
 
+/**
+ * @brief RXRunScript scriptname$: run an ARexx script through the port
+ * "REXX".
+ *
+ * BUG(orig) (#544): its type RXCOMM is overwritten as in RXExecuteScript.
+ * @param name  d0: scriptname$
+ * @return d0: as RXRunCommand (#543)
+ */
 static ULONG BLITZ_ROUTINE rxrunscript_c(ULONG name BL_REG(d0))
 {
     msgtype = RXCOMM;
@@ -667,14 +741,34 @@ static ULONG sendcommand(const UBYTE *port, ULONG cmd)
     return sendmessage();
 }
 
+/**
+ * @brief RXSendCommand(command$): as RXSendCommand to the RXDefaultPort
+ * port.
+ * @param cmd  d0: command$
+ * @return d0: the length of the result string (at a3); 0 without
+ */
 static ULONG BLITZ_ROUTINE rxsendcommand2_c(ULONG cmd BL_REG(d0))
 {
     return sendcommand(v.rexxportname, cmd);
 }
 BLITZ_THUNK(_rxsendcommand2, rxsendcommand2_c, "d1/a0-a1");
 
-/* RXSendCommand(port$,command$): the result over the two arguments - a3
-   back by both lengths (on the a2 stack) + 2 */
+/**
+ * @brief RXSendCommand(portname$,command$): send a command and wait for
+ * the reply; its result string.
+ *
+ * RXCOMM|RXFF_STRING|RXFF_RESULT.  The result goes over the two
+ * arguments: a3 back by both lengths (on the a2 stack) + 2.  While it
+ * waits, received messages go to the message list.  The reply's Result1
+ * is RXReturnCode.  BUG(orig): the result string is copied (AllocSt,
+ * never freed), the reply's own string never deleted (#546); Result2 is
+ * taken as a string also when Result1 is not 0 (#545).
+ * @param port  d0: portname$
+ * @param cmd   d1: command$
+ * @param args  a2: the argument stack, -4/-8(a2) the two lengths
+ * @return d0: the length of the result string; 0 without one or if the
+ *         port is not found
+ */
 static ULONG BLITZ_ROUTINE rxsendcommand_c(const UBYTE *port BL_REG(d0), ULONG cmd BL_REG(d1),
                                            const ULONG *args BL_REG(a2))
 {
@@ -740,6 +834,16 @@ static ULONG donereadport(ULONG passed)
     return first;
 }
 
+/**
+ * @brief RXReadPort: take every message from the port; the first of the
+ * message list becomes the current message.
+ *
+ * Replies to our messages are freed (to RXSendCommand's: its result
+ * kept); messages go to the message list; anything else is replied and
+ * ends the reading.  Error check portchk: "No message port opened!".
+ * @return d0: the new current message (0 if the list is empty); 0 while
+ *         RXSendCommand waits (oktodelete: no message becomes current)
+ */
 static ULONG readport_c(void)
 {
     struct Message *m;
@@ -769,6 +873,13 @@ static ULONG waitport_c(ULONG result)
     return readport_c();
 }
 
+/**
+ * @brief RXWaitPort: wait for a message (if none is in the list), then
+ * RXReadPort.
+ * @param result  d0: returned instead of a message while RXSendCommand
+ *                waits (oktodelete)
+ * @return d0: as RXReadPort
+ */
 static ULONG BLITZ_ROUTINE rxwaitport_c(ULONG result BL_REG(d0))
 {
     return waitport_c(result);
@@ -777,7 +888,8 @@ BLITZ_THUNK(waitport, rxwaitport_c, "d1/a0-a1");
 
 /* ------------------------------------------------- the current message */
 
-/* RXReplyMsg errcode[,result$] (the length of result$ on the a2 stack) */
+/* RXReplyMsg errcode[,result$] (the length of result$ on the a2 stack):
+   BB_TRUE if replied */
 static BB_BOOL replymsg(ULONG code, const UBYTE *res, const ULONG *args)
 {
     struct RexxMsg *m = v.currentmessage;
@@ -802,12 +914,33 @@ static BB_BOOL replymsg(ULONG code, const UBYTE *res, const ULONG *args)
     return BB_FALSE;
 }
 
+/**
+ * @brief RXReplyMsg errcode: reply the current message.
+ *
+ * Nothing without a current message.  BUG(orig): the current message
+ * stays current after the reply (#541); it does not check that a result
+ * was asked for (#539); if the port of the message's ln_Name no longer
+ * exists, it is not replied (#540).
+ * @param code  d0: Result1
+ * @return nothing
+ */
 static void BLITZ_ROUTINE replymsg_c(ULONG code BL_REG(d0))
 {
     replymsg(code, NULL, NULL);
 }
 BLITZ_THUNK(_replymsg, replymsg_c, "d0-d1/a0-a1");
 
+/**
+ * @brief RXReplyMsg errcode,result$: reply the current message with a
+ * result string (CreateArgString).
+ *
+ * As the form without; BUG(orig) (#540): if the sender's port is gone,
+ * the Result2 tested is the one at the a0 FindPort leaves.
+ * @param code  d0: Result1
+ * @param res   d1: result$, Result2
+ * @param args  a2: the argument stack, -4(a2) the length of result$
+ * @return nothing
+ */
 static void BLITZ_ROUTINE replymsg2_c(ULONG code BL_REG(d0), const UBYTE *res BL_REG(d1),
                                       const ULONG *args BL_REG(a2))
 {
@@ -815,6 +948,12 @@ static void BLITZ_ROUTINE replymsg2_c(ULONG code BL_REG(d0), const UBYTE *res BL
 }
 BLITZ_THUNK(_replymsg2, replymsg2_c, "d0-d1/a0-a1");
 
+/**
+ * @brief RXSendersName: the name of the current message (ln_Name: the
+ * sender's port).
+ * @return d0: the length of the name (at a3); 0 without a current
+ *         message
+ */
 static ULONG BLITZ_ROUTINE rxsendersname_c(void)
 {
     if (!v.currentmessage)
@@ -837,13 +976,27 @@ static ULONG getarg(ULONG n)
     return tostring((UBYTE *)argstr);
 }
 
+/**
+ * @brief RXGetArg(argnum): argument argnum (1..16) of the current message.
+ * @param n  d0.w: the argument's number
+ * @return d0: the length of the argument (at a3); 0 if out of range,
+ *         without a current message or argument
+ */
 static ULONG BLITZ_ROUTINE rxgetarg_c(ULONG n BL_REG(d0))
 {
     return getarg(n);
 }
 BLITZ_THUNK(_rxgetarg, rxgetarg_c, "d1/a0-a1");
 
-/* RXNextArg: MOVE.w currentarg,d0 keeps the upper word of d0 */
+/**
+ * @brief RXNextArg: the next argument of the current message (from 1 on,
+ * as RXGetArg).
+ *
+ * BUG(orig) (#534): it does not advance after an empty argument.
+ * @param argnum  d0: no argument; MOVE.w currentarg,d0 keeps its upper
+ *                word
+ * @return d0: the length of the argument (at a3); 0 at the end
+ */
 static ULONG BLITZ_ROUTINE rxnextarg_c(ULONG argnum BL_REG(d0))
 {
     ULONG arg;                          /* d0: the argument string */
@@ -856,6 +1009,11 @@ static ULONG BLITZ_ROUTINE rxnextarg_c(ULONG argnum BL_REG(d0))
 }
 BLITZ_THUNK(_rxnextarg, rxnextarg_c, "d1/a0-a1");
 
+/**
+ * @brief RXNumArgs: the number of arguments of the current message (up to
+ * the first 0 of rm_Args).
+ * @return d0: the count; 0 without a current message
+ */
 static ULONG BLITZ_ROUTINE rxnumargs_c(void)
 {
     ULONG *arg, n = (ULONG)-1;
@@ -893,6 +1051,15 @@ static void deleteport(void)
     msgport = NULL;
 }
 
+/**
+ * @brief RXDeletePort: delete the port.
+ *
+ * Messages still waiting are replied (RXReplyMsg 5 for each current
+ * message, then ReplyMsg for the rest of the message list), then
+ * RemPort, DeleteMsgPort.  BUG(orig) (#530): neither the
+ * lists nor the name are freed.  Error check portchk.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE rxdeleteport_c(void)
 {
     if (msgport)
@@ -900,7 +1067,17 @@ static void BLITZ_ROUTINE rxdeleteport_c(void)
 }
 BLITZ_THUNK(_rxdeleteport, rxdeleteport_c, "d0-d1/a0-a1");
 
-/* RXCreatePort(name$): the name's length on the a2 stack */
+/**
+ * @brief RXCreatePort(name$): make the public port name$ and the message
+ * lists.
+ *
+ * The name is copied with AllocSt.  BUG(orig) (#528): it tests d0 of
+ * AddPort; on 0, or if the lists cannot be allocated, it deletes the
+ * port without RemPort (it stays in the public list).
+ * @param name  d0: name$
+ * @param args  a2: the argument stack, -4(a2) the length of name$
+ * @return d0: the MsgPort; 0 if there is one already or on failure
+ */
 static ULONG BLITZ_ROUTINE rxcreateport_c(ULONG name BL_REG(d0), const ULONG *args BL_REG(a2))
 {
     struct msglists *lists;
