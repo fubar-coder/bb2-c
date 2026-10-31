@@ -140,17 +140,17 @@ BLITZ_ERRCHK_MESSAGE(mess4, "Can't Find IFF 'BMHD'");
 /* ID_BMHD, ID_BODY, ID_FORM, ID_ILBM: <datatypes/pictureclass.h> */
 
 /* -1 = ok (iffstuff filled), 0 = no file / no BMHD */
-static LONG ilbminit_(const char *name)
+static BB_BOOL ilbminit_(const char *name)
 {
     struct iffstuff *st = &iffstuff;
     ULONG value = 0;
     UWORD vmode = 0;
 
     if (!IFFJSR(TOK_iffopen, &value, name))             /* open iff */
-        return 0;
+        return BB_FALSE;
     value = ID_BMHD;
     if (!IFFJSR(TOK_ifffind, &value, st))               /* find BMHD */
-        return 0;
+        return BB_FALSE;
     IFFJSR(TOK_iffword, &value, st);                    /* read word */
     st->width = (UWORD)value;
     st->wwidth = (UWORD)((UWORD)value + 15) >> 4;
@@ -172,15 +172,15 @@ static LONG ilbminit_(const char *name)
         vmode |= 4;
     ilbmvmode = vmode;
     *(ULONG *)&st->repeat = 0;                        /* repeat and copy */
-    return -1;
+    return BB_TRUE;
 }
 
 /* the address left in a0 by the ilbminit thunk */
 UBYTE *ilbm_a0;
 
-static LONG BLITZ_ROUTINE ilbminit_c(const char *name BL_REG(a0))
+static BB_BOOL BLITZ_ROUTINE ilbminit_c(const char *name BL_REG(a0))
 {
-    LONG r = ilbminit_(name);
+    BB_BOOL r = ilbminit_(name);
 
     ilbm_a0 = r ? (UBYTE *)&iffstuff : (UBYTE *)name;
     return r;
@@ -271,9 +271,9 @@ BLITZ_THUNK_POST(ilbmbitmap, ilbmbitmap_c, "d0-d1/a1", "lea _iffstuff,a0");
 
 /* ------------------------------------------------------------- functions */
 
-static LONG BLITZ_ROUTINE doilbminfo_c(const char *name BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE doilbminfo_c(const char *name BL_REG(d0))
 {
-    LONG r = ilbminit_(name);
+    BB_BOOL r = ilbminit_(name);
     ULONG value = r;
 
     IFFJSR(TOK_iffclose, &value, &iffstuff);            /* close ? */
