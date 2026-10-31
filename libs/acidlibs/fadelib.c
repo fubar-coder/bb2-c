@@ -35,26 +35,29 @@
  *     (err1) (#331).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 
 /* intlib vwait (Blitz mode): d0 = frames */
 
 /* entry points (thunks / C, defined below) */
 void fadechk0(void), fadechk(void), dosetfade(void), dofadestatus(void);
 void codeinit(void);
-void BLITZ_ROUTINE dofadein2(ULONG palofs BL_REG(d0), const UBYTE *pal BL_REG(a0),
-                             UBYTE *slice BL_REG(a1));
+void BLITZ_ROUTINE dofadein2(ULONG palofs BL_REG(d0), const struct bb_palette *pal BL_REG(a0),
+                             struct bb_slice *slice BL_REG(a1));
 void BLITZ_ROUTINE dofadein3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
-                             const UBYTE *pal BL_REG(a0), UBYTE *slice BL_REG(a1));
+                             const struct bb_palette *pal BL_REG(a0),
+                             struct bb_slice *slice BL_REG(a1));
 void BLITZ_ROUTINE dofadein(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
-                            UWORD hi BL_REG(d3), const UBYTE *pal BL_REG(a0),
-                            UBYTE *slice BL_REG(a1));
-void BLITZ_ROUTINE dofadeout2(ULONG palofs BL_REG(d0), const UBYTE *pal BL_REG(a0),
-                              UBYTE *slice BL_REG(a1));
+                            UWORD hi BL_REG(d3), const struct bb_palette *pal BL_REG(a0),
+                            struct bb_slice *slice BL_REG(a1));
+void BLITZ_ROUTINE dofadeout2(ULONG palofs BL_REG(d0), const struct bb_palette *pal BL_REG(a0),
+                              struct bb_slice *slice BL_REG(a1));
 void BLITZ_ROUTINE dofadeout3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
-                              const UBYTE *pal BL_REG(a0), UBYTE *slice BL_REG(a1));
+                              const struct bb_palette *pal BL_REG(a0),
+                              struct bb_slice *slice BL_REG(a1));
 void BLITZ_ROUTINE dofadeout(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
-                             UWORD hi BL_REG(d3), const UBYTE *pal BL_REG(a0),
-                             UBYTE *slice BL_REG(a1));
+                             UWORD hi BL_REG(d3), const struct bb_palette *pal BL_REG(a0),
+                             struct bb_slice *slice BL_REG(a1));
 void BLITZ_ROUTINE doasyncfade(void);
 
 BLITZ_ENTRY_DECL(init);
@@ -105,12 +108,18 @@ BLITZ_LIBFIN();
 
 /* ********************* CODE BELOW ********************* */
 
+/* the slice's colour moves (a long in blitzcoplib) read as the pointer
+   they are: as a cast value GCC would order the address arithmetic
+   differently */
+#define COLMOVES(s) (*(UBYTE *const *)&(s)->colmoves)
+
 static UBYTE fade[96];          /* rfade, gfade, bfade: fade values */
 static UBYTE fadef[96];         /* rfadef, gfadef, bfadef: fractions */
+
 static struct BL_PACKED {
     UWORD fadelow;              /* low fade colour */
     UWORD fadehi;               /* high fade colour */
-    UBYTE *fadesl;              /* fade slice */
+    struct bb_slice *fadesl;    /* fade slice */
     UWORD faderate;             /* rate of fade */
     UWORD fadenum;              /* fades left to do */
     UWORD fadetype;             /* 1 = async */
@@ -166,7 +175,7 @@ void BLITZ_ROUTINE doasyncfade(void)
         return;
     F.fadenum--;
     i = F.fadelow;
-    poke = (UWORD *)(*(UBYTE **)(F.fadesl + 18) + 2 + (WORD)(i << 2));
+    poke = (UWORD *)(COLMOVES(F.fadesl) + 2 + (WORD)(i << 2));
     do {
         UWORD rgb;
 
@@ -183,22 +192,24 @@ void BLITZ_ROUTINE doasyncfade(void)
 }
 
 /* calcrange - 0 .. min(palette colours, slice colours) - 1 */
-static void calcrange(const UBYTE *pal, const UBYTE *slice, UWORD *lo, UWORD *hi)
+static void calcrange(const struct bb_palette *pal, const struct bb_slice *slice, UWORD *lo,
+                      UWORD *hi)
 {
-    UWORD h = *(UWORD *)(pal + 4) - 1;
+    UWORD h = pal->numcols - 1;
 
-    if (h >= *(UWORD *)(slice + 8))
-        h = *(UWORD *)(slice + 8) - 1;
+    if (h >= slice->colours)
+        h = slice->colours - 1;
     *lo = 0;
     *hi = h;
 }
 
 /* calcfade - the fractions; palofs = d0 (.w = palette# * 128 from the
    caller), its upper byte comes in (BUG(orig), #134) */
-static void calcfade(ULONG palofs, const UBYTE *pal, UBYTE *slice, UWORD rate, UWORD lo,
+static void calcfade(ULONG palofs, const struct bb_palette *pal, struct bb_slice *slice,
+                     UWORD rate, UWORD lo,
                      UWORD hi)
 {
-    const UBYTE *rgbs = *(UBYTE **)pal + 4;
+    const UBYTE *rgbs = pal->pdata + 4;
     UBYTE *frac;
     UWORD ofs, endofs;
     UWORD shifted = (UWORD)palofs;              /* d0.w, upper byte kept */
@@ -271,8 +282,8 @@ static void dosyncfade(void)
  * @param slice  a1: the used slice (!libs #blitzcoplib,$1102)
  */
 void BLITZ_ROUTINE dofadein(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
-                            UWORD hi BL_REG(d3), const UBYTE *pal BL_REG(a0),
-                            UBYTE *slice BL_REG(a1))
+                            UWORD hi BL_REG(d3), const struct bb_palette *pal BL_REG(a0),
+                            struct bb_slice *slice BL_REG(a1))
 {
     int i;
 
@@ -295,7 +306,8 @@ void BLITZ_ROUTINE dofadein(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWOR
  * @param slice  a1: the used slice
  */
 void BLITZ_ROUTINE dofadein3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
-                             const UBYTE *pal BL_REG(a0), UBYTE *slice BL_REG(a1))
+                             const struct bb_palette *pal BL_REG(a0),
+                             struct bb_slice *slice BL_REG(a1))
 {
     UWORD lo, hi;
 
@@ -310,8 +322,8 @@ void BLITZ_ROUTINE dofadein3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
  * @param pal  a0: the palette
  * @param slice  a1: the used slice
  */
-void BLITZ_ROUTINE dofadein2(ULONG palofs BL_REG(d0), const UBYTE *pal BL_REG(a0),
-                             UBYTE *slice BL_REG(a1))
+void BLITZ_ROUTINE dofadein2(ULONG palofs BL_REG(d0), const struct bb_palette *pal BL_REG(a0),
+                             struct bb_slice *slice BL_REG(a1))
 {
     dofadein3(palofs, 0, pal, slice);
 }
@@ -331,8 +343,8 @@ void BLITZ_ROUTINE dofadein2(ULONG palofs BL_REG(d0), const UBYTE *pal BL_REG(a0
  * @param slice  a1: the used slice (!libs #blitzcoplib,$1102)
  */
 void BLITZ_ROUTINE dofadeout(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
-                             UWORD hi BL_REG(d3), const UBYTE *pal BL_REG(a0),
-                             UBYTE *slice BL_REG(a1))
+                             UWORD hi BL_REG(d3), const struct bb_palette *pal BL_REG(a0),
+                             struct bb_slice *slice BL_REG(a1))
 {
     int i;
 
@@ -356,7 +368,8 @@ void BLITZ_ROUTINE dofadeout(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWO
  * @param slice  a1: the used slice
  */
 void BLITZ_ROUTINE dofadeout3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
-                              const UBYTE *pal BL_REG(a0), UBYTE *slice BL_REG(a1))
+                              const struct bb_palette *pal BL_REG(a0),
+                              struct bb_slice *slice BL_REG(a1))
 {
     UWORD lo, hi;
 
@@ -371,8 +384,8 @@ void BLITZ_ROUTINE dofadeout3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
  * @param pal  a0: the palette
  * @param slice  a1: the used slice
  */
-void BLITZ_ROUTINE dofadeout2(ULONG palofs BL_REG(d0), const UBYTE *pal BL_REG(a0),
-                              UBYTE *slice BL_REG(a1))
+void BLITZ_ROUTINE dofadeout2(ULONG palofs BL_REG(d0), const struct bb_palette *pal BL_REG(a0),
+                              struct bb_slice *slice BL_REG(a1))
 {
     dofadeout3(palofs, 0, pal, slice);
 }
@@ -384,31 +397,33 @@ BLITZ_ERRCHK_MESSAGE(mess2, "Not enough colours in Slice");
 BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialized Palette");     /* BUG(orig) (#330): unused */
 
 /* fadechk0 - slice and palette set up (word tests), slice with colours */
-static int BLITZ_ERRCHK fadechk0_x(const UWORD *pal, const UWORD *slice)
+static int BLITZ_ERRCHK fadechk0_x(const UWORD *pal, const struct bb_slice *slice)
 {
-    if (!slice[0]) {
+    if (!slice->y) {
         BLITZ_RUNERR(mess1);
         return 0;
     }
-    if (!pal[0] || !slice[4]) {
+    if (!pal[0] || !slice->colours) {
         BLITZ_RUNERR(mess2);            /* BUG(orig) (#330): also for the palette */
         return 0;
     }
     return 1;
 }
 
-static void BLITZ_ERRCHK fadechk0_c(const UWORD *pal BL_REG(a0), const UWORD *slice BL_REG(a1))
+static void BLITZ_ERRCHK fadechk0_c(const UWORD *pal BL_REG(a0),
+                                    const struct bb_slice *slice BL_REG(a1))
 {
     fadechk0_x(pal, slice);
 }
 
 /* fadechk - and the colour range within the slice */
 static void BLITZ_ERRCHK fadechk_c(UWORD lo BL_REG(d2), UWORD hi BL_REG(d3),
-                                   const UWORD *pal BL_REG(a0), const UWORD *slice BL_REG(a1))
+                                   const UWORD *pal BL_REG(a0),
+                                   const struct bb_slice *slice BL_REG(a1))
 {
     if (!fadechk0_x(pal, slice))
         return;
-    if (lo >= slice[4] || hi >= slice[4])
+    if (lo >= slice->colours || hi >= slice->colours)
         BLITZ_RUNERR(mess1);            /* BUG(orig) (#331): err1, not err2 */
 }
 
