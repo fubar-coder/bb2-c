@@ -411,7 +411,7 @@ static ULONG getinfo(const UBYTE *p)
     return (ULONG)p[0] << 24 | (ULONG)p[1] << 16 | (ULONG)p[2] << 8 | p[3];
 }
 
-static ULONG BLITZ_ROUTINE deice_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_REG(d1))
+static BB_BOOL BLITZ_ROUTINE deice_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_REG(d1))
 {
     struct ice s;
     UBYTE *end;
@@ -419,7 +419,7 @@ static ULONG BLITZ_ROUTINE deice_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_RE
     UWORD *p;
 
     if (getinfo(src) != ID('I', 'C', 'E', '!'))
-        return 0;
+        return BB_FALSE;
     s.src = src + getinfo(src + 4);             /* LEA -8(a0,d0.l),a5 */
     end = dst + getinfo(src + 8);
     s.dst = end;
@@ -428,7 +428,7 @@ static ULONG BLITZ_ROUTINE deice_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_RE
     ice_normal(&s);
     /* the picture flag: Atari ST low-res bitplanes -> interleaved words */
     if (!ice_bit(&s))
-        return -1;
+        return BB_TRUE;
     /* BUG(orig): MOVE.w #$0f9f,d7 replaces the bit buffer (#767) */
     s.bits = 0x9f;
     count = 0x0f9f;
@@ -451,7 +451,7 @@ static ULONG BLITZ_ROUTINE deice_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_RE
         p[2] = c[2];
         p[3] = c[3];
     } while (count-- != 0);
-    return -1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(deice, deice_c, "d1/a0-a1");
 
@@ -469,8 +469,9 @@ static struct {
 /* UnpackIFF(source,bitmap#,numlines,xy_offset): -1, or 0 without
    BMHD/BODY or if the bitmap is too small (a1 = the bitmap object; lines
    < 0: all) */
-static ULONG BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0), struct BitMap *bm BL_REG(a1),
-                                       ULONG lines BL_REG(d2), ULONG xy BL_REG(d3))
+static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
+                                         struct BitMap *bm BL_REG(a1),
+                                         ULONG lines BL_REG(d2), ULONG xy BL_REG(d3))
 {
     const UBYTE *chunk = src, *body;
     const struct BitMapHeader *hd;
@@ -483,7 +484,7 @@ static ULONG BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0), struct BitMa
     while (LG(chunk) != ID('B', 'M', 'H', 'D')) {
         chunk += 2;
         if ((left -= 2) == 0)
-            return 0;
+            return BB_FALSE;
     }
     hd = (const struct BitMapHeader *)(chunk + 8);
     if ((WORD)lines < 0)
@@ -492,15 +493,15 @@ static ULONG BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0), struct BitMa
         BL_SETW(lines, bm->Rows);
     BL_SETW(lines, lines - 1);
     if ((WORD)lines < 0)
-        return 0;
+        return BB_FALSE;
     v.iffheight = (UWORD)lines;
     planes = hd->bmh_Depth;
     if (planes > bm->Depth)                     /* BHI: unsigned bytes */
-        return 0;
+        return BB_FALSE;
     v.iffdepth = (UBYTE)(planes - 1);
     v.bitmapwidth = bm->BytesPerRow;
     if (!LG(bm->Planes))                        /* MOVE.l 8(a1),d0 */
-        return 0;
+        return BB_FALSE;
     {
         const ULONG *pl = (const ULONG *)bm->Planes;
         UBYTE **to = v.bitplanes;
@@ -511,7 +512,7 @@ static ULONG BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0), struct BitMa
     }
     rowbytes = (UWORD)((WORD)hd->bmh_Width >> 3); /* ASR.w #3 */
     if (rowbytes > v.bitmapwidth)               /* BHI */
-        return 0;
+        return BB_FALSE;
     v.bytewidth = (UWORD)(rowbytes - 1);
     body = (const UBYTE *)hd;
     bodyleft = 5120;
@@ -519,7 +520,7 @@ static ULONG BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0), struct BitMa
         body += 2;
         bodyleft -= 2;                          /* SUBQ.w #2:BMI */
         if ((WORD)bodyleft < 0)
-            return 0;
+            return BB_FALSE;
     }
     body += 8;
     line = v.iffheight;
@@ -553,13 +554,13 @@ static ULONG BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0), struct BitMa
             }
         } while (plane-- != 0);
     } while (line-- != 0);
-    return -1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(unpackiff, unpackiff_c, "d1/a0-a1");
 
 /* UnpackIFF(source,bitmap#): MOVE.w #-1,d2:MOVEQ #0,d3 */
-static ULONG BLITZ_ROUTINE iff1_c(const UBYTE *src BL_REG(d0), struct BitMap *bm BL_REG(a1),
-                                  ULONG lines BL_REG(d2))
+static BB_BOOL BLITZ_ROUTINE iff1_c(const UBYTE *src BL_REG(d0), struct BitMap *bm BL_REG(a1),
+                                    ULONG lines BL_REG(d2))
 {
     BL_SETW(lines, 0xffff);
     return unpackiff_c(src, bm, lines, 0);
@@ -571,8 +572,9 @@ BLITZ_THUNK(iff1, iff1_c, "d1/a0-a1");
 /* ILBMPalette(source,palette#,offset): the CMAP into the palette object
    (a1) from colour `offset` on (< 0: a new block, see the BUG(orig) at
    the top, #768, #769); -1, or 0 without CMAP or memory */
-static ULONG BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0), struct ppal *obj BL_REG(a1),
-                                          LONG offset BL_REG(d2))
+static BB_BOOL BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0),
+                                            struct ppal *obj BL_REG(a1),
+                                            LONG offset BL_REG(d2))
 {
     const UBYTE *cmap = src;
     LONG left = 5120;
@@ -583,7 +585,7 @@ static ULONG BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0), struct pp
     while (LG(cmap) != ID('C', 'M', 'A', 'P')) {
         cmap += 2;
         if ((left -= 2) < 0)                    /* SUBQ.l #2:BPL */
-            return 0;
+            return BB_FALSE;
     }
     cmap += 4;                                  /* the chunk size */
     if (obj->pdata) {
@@ -609,7 +611,7 @@ static ULONG BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0), struct pp
                                   .d1 = MEMF_PUBLIC | MEMF_CLEAR };
             block = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
             if (!block)
-                return 0;
+                return BB_FALSE;
             obj->pdata = (ULONG)block;
             cols = bl_divu_w(LG(cmap), 3);
             obj->numcols = (UWORD)cols;
@@ -631,11 +633,12 @@ static ULONG BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0), struct pp
             to += 4;
         }
     } while (n-- != 0);
-    return -1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(ilbmpalette2, ilbmpalette2_c, "d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE ilbmpalette_c(const UBYTE *src BL_REG(d0), struct ppal *obj BL_REG(a1))
+static BB_BOOL BLITZ_ROUTINE ilbmpalette_c(const UBYTE *src BL_REG(d0),
+                                           struct ppal *obj BL_REG(a1))
 {
     return ilbmpalette2_c(src, obj, -1);
 }
@@ -656,19 +659,19 @@ BLITZ_THUNK(ilbmgrab, ilbmgrab_c, "d0-d1/a0-a1");
    RIAmosFuncLib (from 51 on), UnpackIFF and ILBMPalette from there, the
    bank erased; -1 (BUG(orig): also if UnpackIFF failed, #771), 0 if there is
    no bank or the file does not load */
-static ULONG BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), struct BitMap *bm BL_REG(a0),
-                                      struct ppal *pal BL_REG(a1))
+static BB_BOOL BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), struct BitMap *bm BL_REG(a0),
+                                        struct ppal *pal BL_REG(a1))
 {
     struct bl_regs r = { .d0 = 51 };
     ULONG bank, start;
 
     bank = BLITZ_ALIBJSR(TOK_nextbank, r);
     if ((LONG)bank < 0)
-        return 0;
+        return BB_FALSE;
     if (!BL_JSR_D4_(BL_TOKVAL(TOK_bload, 1), name, bank, 0, 0)) {
         r = (struct bl_regs){ .d0 = bank };
         BLITZ_ALIBJSR(TOK_erase, r);
-        return 0;
+        return BB_FALSE;
     }
     r = (struct bl_regs){ .d0 = bank };
     start = BLITZ_ALIBJSR(TOK_start, r);
@@ -680,11 +683,11 @@ static ULONG BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), struct BitMap *bm B
     }
     r = (struct bl_regs){ .d0 = bank };
     BLITZ_ALIBJSR(TOK_erase, r);
-    return -1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(ilbmload, ilbmload_c, "d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE ilbmloadnopal_c(ULONG name BL_REG(d0), struct BitMap *bm BL_REG(a0))
+static BB_BOOL BLITZ_ROUTINE ilbmloadnopal_c(ULONG name BL_REG(d0), struct BitMap *bm BL_REG(a0))
 {
     return ilbmload_c(name, bm, NULL);
 }
