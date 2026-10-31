@@ -26,6 +26,7 @@ int systest_mathstr_main(int argc, char **argv);
 int systest_runtime_main(int argc, char **argv);
 int systest_system_main(int argc, char **argv);
 int systest_cmdlibs_main(int argc, char **argv);
+int systest_med_main(int argc, char **argv);
 int bugorig_cliargs_parpath_cli(const char *dir);
 int bugorig_crunch_implode_overread(const char *dir);
 int bugorig_crunch_decrunch_corrupt(const char *dir);
@@ -107,6 +108,11 @@ TEST_CASE("systest_system: wbstartuplib intlib switchlib runerrlib debuglib", "[
 TEST_CASE("systest_cmdlibs: memacclib sortlib mathtranslib utillib environlib", "[cmd]")
 {
     CHECK(run_systest(systest_cmdlibs_main) == 0);
+}
+
+TEST_CASE("systest_med: medlib (generated modules)", "[med]")
+{
+    CHECK(run_systest(systest_med_main) == 0);
 }
 
 // the RWE userlibs (libs/userlibs/rwe), each against its CD binary

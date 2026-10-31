@@ -25,7 +25,8 @@ set(SNITCH_APPEND_TO_CHARS    OFF CACHE BOOL "" FORCE)
 include(${PROJECT_SOURCE_DIR}/cmake/Snitch.cmake)
 target_compile_options(snitch PRIVATE -fno-exceptions -fno-rtti)
 
-set(c_tests libtest systest systest_mathstr systest_runtime systest_system systest_cmdlibs)
+set(c_tests libtest systest systest_mathstr systest_runtime systest_system systest_cmdlibs
+	systest_med)
 list(TRANSFORM c_tests APPEND .c OUTPUT_VARIABLE c_sources)
 # the tests of the RWE userlibs: rwe/NAME.c (main renamed rwe_NAME_main;
 # argv[1] = the directory with NAME.obj and NAME.orig, see sysload.h),
