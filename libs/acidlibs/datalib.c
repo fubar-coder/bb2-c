@@ -21,7 +21,14 @@ BLITZ_LIBFIN();
 
 static ULONG datastart;
 
-/* codeinit - d0 = start of the DATA area; returned unchanged (init value) */
+/**
+ * @brief The init routine: remember the start of the program's DATA area.
+ *
+ * The program start code calls it with the address of the data area.
+ *
+ * @param start  d0: the start of the DATA area
+ * @return d0: start, unchanged (the init value)
+ */
 static ULONG BLITZ_ROUTINE codeinit_c(ULONG start BL_REG(d0))
 {
     datastart = start;
@@ -29,7 +36,13 @@ static ULONG BLITZ_ROUTINE codeinit_c(ULONG start BL_REG(d0))
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
 
-/* getstart - d0 = start of the DATA area */
+/**
+ * @brief getdstart ($CD00): the start of the program's DATA area.
+ *
+ * For Restore/Read; keeps d1/a0-a1 (the thunk).
+ *
+ * @return d0: the address the init routine got
+ */
 static ULONG BLITZ_ROUTINE getstart_c(void)
 {
     return datastart;
