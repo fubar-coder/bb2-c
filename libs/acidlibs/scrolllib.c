@@ -8,7 +8,7 @@
  * #$FFC0,d3 ... ADD.l d3,d3:SUB.l d3,d4:BEQ ... LSR.l #1,d4); this file
  * follows the binary.  Everything else is the source.
  *
- * Bitmap object: 0 bytes per row, 2 rows, 4 depth, 8 planes[8],
+ * Bitmap object (struct bb_bitmap, blitzobj.h): 0 bytes per row, 2 rows, 4 depth, 8 planes[8],
  * 48/50 origin x/y, 52 flags (< 0 interleaved), 54 bytes per line of
  * one plane (interleaved), 56/58 clip width/height, 62 "is real".
  *
@@ -32,6 +32,7 @@
  * height <= 1024 ("Scroll area to large").
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #define __NOLIBBASE__
 #define GRAPHICS_BASE_NAME gfx
 #include <proto/graphics.h>
@@ -137,20 +138,20 @@ extern const char mess1[], mess2[], mess3[];
  * @param bm  a2: the used bitmap
  */
 static void BLITZ_ROUTINE doplot_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
-                                   UWORD col BL_REG(d2), const UBYTE *bm BL_REG(a2))
+                                   UWORD col BL_REG(d2), const struct bb_bitmap *bm BL_REG(a2))
 {
     ULONG off;
     UBYTE bit;
     UWORD n;
-    UBYTE **pl = (UBYTE **)(bm + 8);
+    UBYTE **pl = (UBYTE **)bm->planes;
 
-    x += MW(bm, 48);
-    y += MW(bm, 50);
-    if (x >= MW(bm, 56) || y >= MW(bm, 58))
+    x += (UWORD)bm->xorigin;
+    y += (UWORD)bm->yorigin;
+    if (x >= bm->width || y >= bm->height)
         return;
-    off = (ULONG)y * MW(bm, 0) + (x >> 3);
+    off = (ULONG)y * bm->bpr + (x >> 3);
     bit = ~x & 7;                               /* NOT d0, bit mod 8 */
-    n = MW(bm, 4) - 1;
+    n = bm->flagsdepth - 1;
     if ((WORD)col < 0) {
         do
             (*pl++)[off] ^= 1 << bit;           /* BCHG */
@@ -182,23 +183,23 @@ BLITZ_THUNK(doplot, doplot_c, "d1/a0-a1");
  *         word is the one of @p xarg (MOVE d2,d0)
  */
 static ULONG BLITZ_ROUTINE dopoint_c(ULONG xarg BL_REG(d0), UWORD y BL_REG(d1),
-                                     const UBYTE *bm BL_REG(a2))
+                                     const struct bb_bitmap *bm BL_REG(a2))
 {
-    UWORD x = xarg + MW(bm, 48), col = 0, i = 0;
-    UBYTE **pl = (UBYTE **)(bm + 8);
+    UWORD x = xarg + (UWORD)bm->xorigin, col = 0, i = 0;
+    UBYTE **pl = (UBYTE **)bm->planes;
     ULONG off;
     UBYTE bit;
 
-    y += MW(bm, 50);
-    if (x >= MW(bm, 56) || y >= MW(bm, 58))
+    y += (UWORD)bm->yorigin;
+    if (x >= bm->width || y >= bm->height)
         return 0;                               /* MOVEQ #0,d0 */
-    off = (ULONG)y * MW(bm, 0) + (x >> 3);
+    off = (ULONG)y * bm->bpr + (x >> 3);
     bit = ~x & 7;
     do {
         if ((*pl++)[off] & (1 << bit))
             col |= 1 << (i & 31);               /* BSET d3,d2 */
         i++;
-    } while (i < MW(bm, 4));
+    } while (i < bm->flagsdepth);
     return (xarg & 0xffff0000) | col;           /* MOVE d2,d0 (upper word of ~x) */
 }
 BLITZ_THUNK(dopoint, dopoint_c, "d1/a0-a1");
@@ -206,10 +207,10 @@ BLITZ_THUNK(dopoint, dopoint_c, "d1/a0-a1");
 /* ------------------------------------------------------------------ Cls */
 
 /* clsdepth - d0/d1 colour, d2 bltsize, d3 dest modulo, d4 offset */
-static void clsdepth(UBYTE *cb, const UBYTE *bm, UWORD col, UWORD size, UWORD mod, ULONG off)
+static void clsdepth(UBYTE *cb, const struct bb_bitmap *bm, UWORD col, UWORD size, UWORD mod, ULONG off)
 {
-    UWORD n = MW(bm, 4);
-    const ULONG *pl = (const ULONG *)(bm + 8);
+    UWORD n = bm->flagsdepth;
+    const ULONG *pl = (const ULONG *)bm->planes;
 
     do {
         UWORD fill = (col & 1) ? 0xffff : 0;   /* LSR #1,d1:SCS:EXT */
@@ -224,12 +225,12 @@ static void clsdepth(UBYTE *cb, const UBYTE *bm, UWORD col, UWORD size, UWORD mo
 }
 
 /* clswidth - one band of height d2 (interleaved bitmap) */
-static void clswidth(UBYTE *cb, const UBYTE *bm, UWORD col, UWORD h, ULONG off)
+static void clswidth(UBYTE *cb, const struct bb_bitmap *bm, UWORD col, UWORD h, ULONG off)
 {
-    UWORD size = h << 6, w = MW(bm, 54), mod;
+    UWORD size = h << 6, w = bm->planedist, mod;
 
     for (;;) {
-        mod = MW(bm, 0);
+        mod = bm->bpr;
         if ((WORD)w <= 128)
             break;
         clsdepth(cb, bm, col, size, mod - 128, off);    /* full width (64 words) */
@@ -243,14 +244,14 @@ static void clswidth(UBYTE *cb, const UBYTE *bm, UWORD col, UWORD h, ULONG off)
     clsdepth(cb, bm, col, size, mod, off);
 }
 
-static void b_cls(UBYTE *cb, const UBYTE *bm, UWORD col)
+static void b_cls(UBYTE *cb, const struct bb_bitmap *bm, UWORD col)
 {
     BLITWAIT(cb);
     CL(cb, 0x40) = 0x01f00000;
     CL(cb, 0x44) = 0xffffffff;
-    if ((WORD)MW(bm, 52) < 0) {                 /* interleaved */
+    if ((WORD)bm->ilword < 0) {                 /* interleaved */
         ULONG off = 0;
-        UWORD h = MW(bm, 58);
+        UWORD h = bm->height;
 
         for (;;) {
             if ((WORD)h <= 1024) {
@@ -261,13 +262,13 @@ static void b_cls(UBYTE *cb, const UBYTE *bm, UWORD col)
             h -= 1024;
             if (!h)
                 return;
-            off += (ULONG)MW(bm, 0) << 10;
+            off += (ULONG)bm->bpr << 10;
         }
     }
     {                                           /* clsnotint (binary) */
-        ULONG size = (ULONG)MW(bm, 0) * MW(bm, 58);
-        UWORD n = MW(bm, 4) - 1;
-        const ULONG *pl = (const ULONG *)(bm + 8);
+        ULONG size = (ULONG)bm->bpr * bm->height;
+        UWORD n = bm->flagsdepth - 1;
+        const ULONG *pl = (const ULONG *)bm->planes;
 
         CW(cb, 0x66) = 0;
         do {
@@ -318,7 +319,7 @@ static void b_cls(UBYTE *cb, const UBYTE *bm, UWORD col)
  * @param cb a1: the chip base ($DFF000, chipbaselib)
  * @param bm a2: the used bitmap
  */
-static void BLITZ_ROUTINE b_docls_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2))
+static void BLITZ_ROUTINE b_docls_c(UBYTE *cb BL_REG(a1), const struct bb_bitmap *bm BL_REG(a2))
 {
     b_cls(cb, bm, 0);
 }
@@ -333,7 +334,7 @@ static void BLITZ_ROUTINE b_docls_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG
  * @param bm  a2: the used bitmap
  */
 static void BLITZ_ROUTINE b_docls2_c(UWORD col BL_REG(d0), UBYTE *cb BL_REG(a1),
-                                     const UBYTE *bm BL_REG(a2))
+                                     const struct bb_bitmap *bm BL_REG(a2))
 {
     b_cls(cb, bm, col);
 }
@@ -346,7 +347,7 @@ static void BLITZ_ROUTINE b_docls2_c(UWORD col BL_REG(d0), UBYTE *cb BL_REG(a1),
  * @param bm  a2: the used bitmap
  * @param gfx a6: graphics.library
  */
-static void BLITZ_ROUTINE a_docls_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2),
+static void BLITZ_ROUTINE a_docls_c(UBYTE *cb BL_REG(a1), const struct bb_bitmap *bm BL_REG(a2),
                                     struct GfxBase *gfx BL_REG(a6))
 {
     OwnBlitter();
@@ -365,7 +366,7 @@ static void BLITZ_ROUTINE a_docls_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG
  * @param gfx a6: graphics.library
  */
 static void BLITZ_ROUTINE a_docls2_c(UWORD col BL_REG(d0), UBYTE *cb BL_REG(a1),
-                                     const UBYTE *bm BL_REG(a2), struct GfxBase *gfx BL_REG(a6))
+                                     const struct bb_bitmap *bm BL_REG(a2), struct GfxBase *gfx BL_REG(a6))
 {
     OwnBlitter();
     b_cls(cb, bm, col);
@@ -414,21 +415,21 @@ static UWORD *cookwait(UBYTE *cb)
 }
 
 /* doit - the blit for all planes (d6 src / d7 dest offset, d5 words) */
-static UBYTE *doit(UBYTE *cb, const UBYTE *src, const UBYTE *dst, const UWORD *args,
+static UBYTE *doit(UBYTE *cb, const struct bb_bitmap *src, const struct bb_bitmap *dst, const UWORD *args,
                    ULONG srcoff, ULONG dstoff, UWORD words)
 {
     UWORD n, bw, size;
-    const ULONG *ps = (const ULONG *)(src + 8), *pd = (const ULONG *)(dst + 8);
+    const ULONG *ps = (const ULONG *)src->planes, *pd = (const ULONG *)dst->planes;
 
     CL(cb, 0x44) = 0xffffffff;
-    n = MW(src, 4);
-    if (n > MW(dst, 4))
-        n = MW(dst, 4);
+    n = src->flagsdepth;
+    if (n > dst->flagsdepth)
+        n = dst->flagsdepth;
     n--;
     bw = words + words;
-    CW(cb, 0x64) = MW(src, 0) - bw;
-    CW(cb, 0x60) = MW(dst, 0) - bw;
-    CW(cb, 0x66) = MW(dst, 0) - bw;
+    CW(cb, 0x64) = src->bpr - bw;
+    CW(cb, 0x60) = dst->bpr - bw;
+    CW(cb, 0x66) = dst->bpr - bw;
     CW(cb, 0x62) = -bw;
     size = (args[-2] << 6) | words;
     for (;;) {
@@ -446,11 +447,11 @@ static UBYTE *doit(UBYTE *cb, const UBYTE *src, const UBYTE *dst, const UWORD *a
     return (UBYTE *)pd;                         /* a3 after the loop */
 }
 
-static UBYTE *doasc(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
-                    const UBYTE *dst, UBYTE *cb, const UWORD *args)
+static UBYTE *doasc(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const struct bb_bitmap *src,
+                    const struct bb_bitmap *dst, UBYTE *cb, const UWORD *args)
 {
-    ULONG srcoff = (ULONG)y1 * MW(src, 0) + (LONG)((WORD)x1 >> 3);
-    ULONG dstoff = (ULONG)y2 * MW(dst, 0) + (LONG)((WORD)x2 >> 3);
+    ULONG srcoff = (ULONG)y1 * src->bpr + (LONG)((WORD)x1 >> 3);
+    ULONG dstoff = (ULONG)y2 * dst->bpr + (LONG)((WORD)x2 >> 3);
     UWORD *cook = cookwait(cb), words, w = args[-1];
     UWORD shift;                                /* d4: the BLTCON shift */
     UWORD mask;                                 /* d4: the right edge mask */
@@ -476,16 +477,16 @@ static UBYTE *doasc(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
     return doit(cb, src, dst, args, srcoff, dstoff, words);
 }
 
-static UBYTE *dodesc(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
-                     const UBYTE *dst, UBYTE *cb, const UWORD *args)
+static UBYTE *dodesc(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const struct bb_bitmap *src,
+                     const struct bb_bitmap *dst, UBYTE *cb, const UWORD *args)
 {
     UWORD w = args[-1], h = args[-2], words;
     UWORD shift;                                /* d4: the BLTCON shift */
     UWORD dstbits;                              /* d3: the dest x bits */
     UWORD cookoff;                              /* d3: the cookie offset */
-    ULONG srcoff = (ULONG)(UWORD)(y1 + h - 1) * MW(src, 0)
+    ULONG srcoff = (ULONG)(UWORD)(y1 + h - 1) * src->bpr
              + (LONG)((WORD)(UWORD)(x1 + w - 1) >> 3);
-    ULONG dstoff = (ULONG)(UWORD)(y2 + h - 1) * MW(dst, 0)
+    ULONG dstoff = (ULONG)(UWORD)(y2 + h - 1) * dst->bpr
              + (LONG)((WORD)(UWORD)(x2 + w - 1) >> 3);
     UWORD *cook = cookwait(cb);
 
@@ -511,10 +512,11 @@ static UBYTE *dodesc(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
 
 /* returns a3 as the original leaves it (dest bitmap planes + 4 * planes;
    the 960 pixel split restores a3 in between) */
-static UBYTE *scroll(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
+static UBYTE *scroll(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const struct bb_bitmap *src,
                      UBYTE *cb, UWORD *args)
 {
-    const UBYTE *dst = blitz_string;            /* a3 = dest bitmap */
+    /* a3 = dest bitmap */
+    const struct bb_bitmap *dst = (const struct bb_bitmap *)blitz_string;
 
     if ((WORD)(args[-1] - 961) >= 0) {          /* CMP #961,-2(a2):BMI simon */
         UWORD w = args[-1];
@@ -531,7 +533,7 @@ static UBYTE *scroll(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
 }
 
 #define SCROLL_REGS UWORD x1 BL_REG(d0), UWORD y1 BL_REG(d1), UWORD x2 BL_REG(d2), \
-    UWORD y2 BL_REG(d3), const UBYTE *src BL_REG(a0), UBYTE *cb BL_REG(a1), \
+    UWORD y2 BL_REG(d3), const struct bb_bitmap *src BL_REG(a0), UBYTE *cb BL_REG(a1), \
     UWORD *args BL_REG(a2)
 
 /**
@@ -585,16 +587,16 @@ BLITZ_AB_ROUTINE(doscroll, b_doscroll, "   jmp     _a_doscroll_c");
 
 /* --------------------------------------------------------- BlockScroll */
 
-static UBYTE *blockscroll(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *src,
+static UBYTE *blockscroll(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const struct bb_bitmap *src,
                         UBYTE *cb, const UWORD *args)
 {
-    const UBYTE *dst = blitz_string;
-    UWORD srcmod = MW(src, 0), dstmod = MW(dst, 0), n;
+    const struct bb_bitmap *dst = (const struct bb_bitmap *)blitz_string;
+    UWORD srcmod = src->bpr, dstmod = dst->bpr, n;
     UWORD bytes;                                /* d2: the byte width */
     UWORD size;                                 /* d2: BLTSIZE */
     ULONG srcoff = (ULONG)y1 * srcmod + (LONG)((WORD)x1 >> 3);
     ULONG dstoff = (ULONG)y2 * dstmod + (LONG)((WORD)x2 >> 3);
-    const ULONG *ps = (const ULONG *)(src + 8), *pd = (const ULONG *)(dst + 8);
+    const ULONG *ps = (const ULONG *)src->planes, *pd = (const ULONG *)dst->planes;
     UWORD h = args[-2], w = args[-1];           /* MOVEM -4(a2),d0/d2 */
 
     bytes = w >> 3;
@@ -606,9 +608,9 @@ static UBYTE *blockscroll(UWORD x1, UWORD y1, UWORD x2, UWORD y2, const UBYTE *s
     CL(cb, 0x44) = 0xffffffff;
     CW(cb, 0x64) = srcmod;
     CW(cb, 0x66) = dstmod;
-    n = MW(src, 4);
-    if (n > MW(dst, 4))
-        n = MW(dst, 4);
+    n = src->flagsdepth;
+    if (n > dst->flagsdepth)
+        n = dst->flagsdepth;
     n--;
     for (;;) {
         CL(cb, 0x50) = *ps++ + srcoff;
@@ -666,19 +668,19 @@ BLITZ_AB_ROUTINE(doblockscroll, b_doblockscroll, "   jmp     _a_doblockscroll_c"
 /* ------------------------------------------- error checks (debugger only) */
 
 /* scchk - d4 = x, d5 = y, a0 = bitmap */
-static void BLITZ_ERRCHK scchk(UWORD x, UWORD y, const UBYTE *bm, const UWORD *args)
+static void BLITZ_ERRCHK scchk(UWORD x, UWORD y, const struct bb_bitmap *bm, const UWORD *args)
 {
     if (args[-2] > 1024)
         BLITZ_RUNERR(mess3);
-    if (!MW(bm, 62))
+    if (!bm->isreal)
         BLITZ_RUNERR(mess2);
-    if (y >= MW(bm, 58))
+    if (y >= bm->height)
         BLITZ_RUNERR(mess1);
-    if ((UWORD)(y + args[-2]) > MW(bm, 58))
+    if ((UWORD)(y + args[-2]) > bm->height)
         BLITZ_RUNERR(mess1);
-    if (x >= MW(bm, 56))
+    if (x >= bm->width)
         BLITZ_RUNERR(mess1);
-    if ((UWORD)(x + args[-1]) > MW(bm, 56))
+    if ((UWORD)(x + args[-1]) > bm->width)
         BLITZ_RUNERR(mess1);
 }
 
@@ -693,12 +695,12 @@ static void BLITZ_ERRCHK scchk2_c(SCROLL_REGS)
 {
     (void)cb;
     scchk(x1, y1, src, args);
-    scchk(x2, y2, blitz_string, args);
+    scchk(x2, y2, (const struct bb_bitmap *)blitz_string, args);
 }
 
-static void BLITZ_ERRCHK bmchk_c(const UBYTE *bm BL_REG(a2))
+static void BLITZ_ERRCHK bmchk_c(const struct bb_bitmap *bm BL_REG(a2))
 {
-    if (!MW(bm, 62))
+    if (!bm->isreal)
         BLITZ_RUNERR(mess2);
 }
 
