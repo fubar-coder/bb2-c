@@ -58,6 +58,7 @@
  * $ABCD with a new flake.
  */
 #include "blitzlib.h"
+#include <graphics/gfx.h>
 
 /* entry points (thunks, below) */
 void _AsmDoSnow(void), _InitSnowDrop(void), _KillPoint(void), _DoKillList(void);
@@ -105,30 +106,71 @@ BLITZ_LIBFIN();
 #define END 0xabcd                      /* the end of a list */
 #define COLOR00 (*(volatile UWORD *)0xdff180)
 
-/* listpointers: per list number drop A, drop B, kill 1, kill 2 */
-static ULONG lp[16];
+/* The lists' addresses are longs, as in the original (as pointers GCC
+   builds other code). */
+
+/* a drop list: its header, then the entries (offset.w, bit.w) up to END */
+struct droplist {
+    ULONG size;                         /* +0: numpoints*16 */
+    ULONG bm;                           /* +4: the Blitz bitmap object (struct BitMap) */
+    ULONG bpsize;                       /* +8: compared as a word */
+    ULONG last;                         /* +12: the END behind the entries */
+    UWORD entries[];                    /* +16 */
+};
+static_assert(sizeof(struct droplist) == 16);
+
+/* a kill list: last, then the entries */
+struct killlist {
+    ULONG last;                         /* +0: the END behind the entries */
+    UWORD entries[];                    /* +4 */
+};
+static_assert(sizeof(struct killlist) == 4);
+
+/* listpointers: per list number drop A, drop B, kill 1, kill 2 (the
+   struct droplist / struct killlist) */
+struct snowfield {
+    ULONG drop[2];                      /* [0] the newer one */
+    ULONG kill[2];                      /* [0] the newer one */
+};
+static_assert(sizeof(struct snowfield) == 16);
+static struct snowfield lp[4];
+
+/* the random table: the word index, then pairs offset.b, bit.b */
+struct randomtable {
+    UWORD index;
+    UBYTE pairs[1024];
+};
 
 /* lookup_leftfirst, lookup_rightfirst: per bit (7 = the left pixel of a
    byte) the first and the second side to try, as offset.w, bit.w */
-static const WORD lookup[2][8][4] = {
-    { { 0, 1, 1, 7 }, { 0, 2, 0, 0 }, { 0, 3, 0, 1 }, { 0, 4, 0, 2 },
-      { 0, 5, 0, 3 }, { 0, 6, 0, 4 }, { 0, 7, 0, 5 }, { -1, 0, 0, 6 } },
-    { { 1, 7, 0, 1 }, { 0, 0, 0, 2 }, { 0, 1, 0, 3 }, { 0, 2, 0, 4 },
-      { 0, 3, 0, 5 }, { 0, 4, 0, 6 }, { 0, 5, 0, 7 }, { 0, 6, -1, 0 } },
+struct side {
+    WORD offset;
+    UWORD bit;
 };
+static const struct side lookup[2][8][2] = {
+    { { { 0, 1 }, { 1, 7 } }, { { 0, 2 }, { 0, 0 } }, { { 0, 3 }, { 0, 1 } },
+      { { 0, 4 }, { 0, 2 } }, { { 0, 5 }, { 0, 3 } }, { { 0, 6 }, { 0, 4 } },
+      { { 0, 7 }, { 0, 5 } }, { { -1, 0 }, { 0, 6 } } },
+    { { { 1, 7 }, { 0, 1 } }, { { 0, 0 }, { 0, 2 } }, { { 0, 1 }, { 0, 3 } },
+      { { 0, 2 }, { 0, 4 } }, { { 0, 3 }, { 0, 5 } }, { { 0, 4 }, { 0, 6 } },
+      { { 0, 5 }, { 0, 7 } }, { { 0, 6 }, { -1, 0 } } },
+};
+static_assert(sizeof lookup == 2 * 8 * 4 * 2);
 
 /* ASL.w #n,d: the low word shifted, the upper word kept */
 #define ASLW(d, n) (((ULONG)(d) & 0xffff0000UL) | (UWORD)((ULONG)(d) << (n)))
 
-/* the 4 longs of a list number (ASL.w #4,d0: ADD.l d0,a2) */
-static ULONG *entry(ULONG n)
+/* the 4 longs of a list number (ASL.w #4,d0: ADD.l d0,a2), BUG(orig):
+   not checked (#913) */
+static struct snowfield *entry(ULONG n)
 {
-    return (ULONG *)((UBYTE *)lp + (LONG)ASLW(n, 4));
+    return (struct snowfield *)((UBYTE *)lp + (LONG)ASLW(n, 4));
 }
 
-#define LONGAT(p, off) (*(ULONG *)((UBYTE *)(p) + (off)))
-/* plane n of a Blitz bitmap object (struct BitMap) */
-#define PLANE(bm, n) ((UBYTE *)LONGAT(bm, 8 + 4 * (n)))
+#define DROP(a) ((struct droplist *)(a))
+#define KILL(a) ((struct killlist *)(a))
+/* plane n of a Blitz bitmap object (struct BitMap) at address bm */
+#define PLANE(bm, n) ((UBYTE *)*(ULONG *)&((const struct BitMap *)(bm))->Planes[n])
 
 /* BTST/BCLR/BSET Dn,d(An,Dm.w): the bit modulo 8 of a byte */
 static int btst(const UBYTE *p, UWORD idx, UWORD bit)
@@ -152,22 +194,21 @@ static void BLITZ_ROUTINE nothing_c(void)
 }
 
 /* ------------------------------------------------------- InitSnowDrop */
-
 /* a drop list's header at p: size, bitmap, bp_size, (last), then END */
 static UBYTE *drophead(UBYTE *p, ULONG size, ULONG bm, ULONG bpsize)
 {
-    LONGAT(p, 0) = size;
-    LONGAT(p, 4) = bm;
-    LONGAT(p, 8) = bpsize;
-    *(UWORD *)(p + 16) = END;
+    DROP(p)->size = size;
+    DROP(p)->bm = bm;
+    DROP(p)->bpsize = bpsize;
+    DROP(p)->entries[0] = END;
     return p + 16 + size;
 }
 
 /* a kill list at p: last = its first entry, END */
 static UBYTE *killhead(UBYTE *p, ULONG size)
 {
-    LONGAT(p, 0) = (ULONG)(p + 4);
-    *(UWORD *)(p + 4) = END;
+    KILL(p)->last = (ULONG)(p + 4);
+    KILL(p)->entries[0] = END;
     return p + 4 + size;
 }
 
@@ -176,7 +217,7 @@ static UBYTE *killhead(UBYTE *p, ULONG size)
 static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d1),
                                           ULONG bpsize BL_REG(d3), ULONG bm BL_REG(a3))
 {
-    ULONG *e = entry(n);
+    struct snowfield *e = entry(n);
     ULONG size = num << 4;              /* each list */
     struct bl_regs r;
     UBYTE *p;
@@ -187,13 +228,13 @@ static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d
     r.a1 = 0;
     BLITZ_ALIBJSR(TOK_globalloc, r);
     p = (UBYTE *)r.d0;                  /* not checked: memlib raises Out of Memory */
-    e[0] = (ULONG)p;
+    e->drop[0] = (ULONG)p;
     p = drophead(p, size, bm, bpsize);
-    e[1] = (ULONG)p;
+    e->drop[1] = (ULONG)p;
     p = drophead(p, size, bm, bpsize);
-    e[2] = (ULONG)p;
+    e->kill[0] = (ULONG)p;
     p = killhead(p, size);
-    e[3] = (ULONG)p;
+    e->kill[1] = (ULONG)p;
     killhead(p, size);
     return (ULONG)lp;
 }
@@ -201,9 +242,9 @@ static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d
 /* ------------------------------------------------------------ LDoSnow */
 
 /* LDoSnow listnum,randomtable (d0, d1) */
-static void BLITZ_ROUTINE asmdosnow_c(ULONG n BL_REG(d0), UBYTE *rt BL_REG(d1))
+static void BLITZ_ROUTINE asmdosnow_c(ULONG n BL_REG(d0), struct randomtable *rt BL_REG(d1))
 {
-    ULONG *e;
+    struct snowfield *e;
     UBYTE *in, *out, *plane0, *plane1;
     const UBYTE *bm;
     UWORD bpsize, i;
@@ -211,20 +252,20 @@ static void BLITZ_ROUTINE asmdosnow_c(ULONG n BL_REG(d0), UBYTE *rt BL_REG(d1))
 
     COLOR00 = 0x0f00;
     e = entry(n);
-    in = (UBYTE *)e[0];                 /* the newer list: read */
-    out = (UBYTE *)e[1];                /* the other: written */
-    e[0] = (ULONG)out;
-    e[1] = (ULONG)in;
-    bm = (const UBYTE *)LONGAT(in, 4);
-    bpsize = (UWORD)LONGAT(in, 8);      /* compared as a word */
+    in = (UBYTE *)e->drop[0];           /* the newer list: read */
+    out = (UBYTE *)e->drop[1];          /* the other: written */
+    e->drop[0] = (ULONG)out;
+    e->drop[1] = (ULONG)in;
+    bm = (const UBYTE *)DROP(in)->bm;
+    bpsize = (UWORD)DROP(in)->bpsize;   /* compared as a word */
     plane1 = PLANE(bm, 1);
     plane0 = PLANE(bm, 0);
     {
-        UWORD *src = (UWORD *)(in + 16), *dst = (UWORD *)(out + 16);
+        UWORD *src = DROP(in)->entries, *dst = DROP(out)->entries;
 
         while (*src != END) {
             UWORD at = *src++, bit = *src++, below = (UWORD)(at + 40);
-            const UWORD *look;
+            const struct side *look;
             UWORD side, sbit;
 
             if (!((WORD)bpsize > (WORD)below)) {
@@ -238,12 +279,13 @@ static void BLITZ_ROUTINE asmdosnow_c(ULONG n BL_REG(d0), UBYTE *rt BL_REG(d1))
                 *dst++ = bit;
                 continue;
             }
-            /* 'look: left or right first, alternating */
-            look = (const UWORD *)lookup[flip];
+            /* 'look: left or right first, alternating; bit << 3 bytes
+               into the table (BUG(orig): a bit above 7 behind it, #910) */
+            look = lookup[flip][0];
             flip = !flip;
-            look = (const UWORD *)((const UBYTE *)look + (UWORD)(bit << 3));
-            side = (UWORD)(at + look[0]);               /* 'doleft */
-            sbit = look[1];
+            look = (const struct side *)((const UBYTE *)look + (UWORD)(bit << 3));
+            side = (UWORD)(at + look[0].offset);        /* 'doleft */
+            sbit = look[0].bit;
             if (!btst(plane0, side, sbit) && !btst(plane0 + 40, side, sbit)) {
                 bclr(plane0, at, bit);
                 bset(plane0, side, sbit);
@@ -251,8 +293,8 @@ static void BLITZ_ROUTINE asmdosnow_c(ULONG n BL_REG(d0), UBYTE *rt BL_REG(d1))
                 *dst++ = sbit;
                 continue;
             }
-            side = (UWORD)(at + look[2]);               /* 'doright */
-            sbit = look[3];
+            side = (UWORD)(at + look[1].offset);        /* 'doright */
+            sbit = look[1].bit;
             if (!btst(plane0, side, sbit) && !btst(plane0 + 40, side, sbit)) {
                 bclr(plane0, at, bit);
                 bset(plane0, side, sbit);
@@ -268,12 +310,12 @@ static void BLITZ_ROUTINE asmdosnow_c(ULONG n BL_REG(d0), UBYTE *rt BL_REG(d1))
             bset(plane1, at, bit);                      /* 'okpause */
         }
         /* 'addone: a new flake from the random table */
-        i = *(UWORD *)rt;
-        *dst++ = rt[2 + (WORD)i];
-        *dst++ = rt[3 + (WORD)i];
-        *(UWORD *)rt = (UWORD)((i + 2) & 1023);
+        i = rt->index;
+        *dst++ = rt->pairs[(WORD)i];
+        *dst++ = rt->pairs[1 + (WORD)i];
+        rt->index = (UWORD)((i + 2) & 1023);
         *dst = END;
-        LONGAT(out, 12) = (ULONG)dst;
+        DROP(out)->last = (ULONG)dst;
     }
     COLOR00 = 0;
 }
@@ -296,21 +338,22 @@ static int unpause(UBYTE *plane1, const UBYTE *plane2, UWORD at, UWORD bit, UWOR
    entries + 1 */
 static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
 {
-    ULONG *e = entry(n);
-    UBYTE *drops = (UBYTE *)e[0], *killin, *killout, *plane1, *plane2;
-    const UBYTE *bm = (const UBYTE *)LONGAT(drops, 4);
+    struct snowfield *e = entry(n);
+    UBYTE *drops = (UBYTE *)e->drop[0], *killin, *killout, *plane1, *plane2;
+    const UBYTE *bm = (const UBYTE *)DROP(drops)->bm;
     const UBYTE *look = (const UBYTE *)lookup[0];
-    UWORD *drop = (UWORD *)LONGAT(drops, 12), *src, *dst;
+    UWORD *drop = (UWORD *)DROP(drops)->last, *src, *dst;  /* BUG(orig): 0 before
+                                                              LDoSnow (#908) */
     ULONG count = 0;
 
     plane1 = PLANE(bm, 1);
     plane2 = PLANE(bm, 2);
-    killin = (UBYTE *)e[2];
-    killout = (UBYTE *)e[3];
-    e[2] = (ULONG)killout;
-    e[3] = (ULONG)killin;
-    src = (UWORD *)(killin + 4);
-    dst = (UWORD *)(killout + 4);
+    killin = (UBYTE *)e->kill[0];
+    killout = (UBYTE *)e->kill[1];
+    e->kill[0] = (ULONG)killout;
+    e->kill[1] = (ULONG)killin;
+    src = KILL(killin)->entries;
+    dst = KILL(killout)->entries;
     for (;;) {
         UWORD at, bit, idx;
         int found = 0;
@@ -322,8 +365,9 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
         bit = *src++;
         if (btst(plane2, at, bit))
             continue;
-        idx = (UWORD)(bit << 3);
-        /* the two sides below (left-first table), then the pixel */
+        idx = (UWORD)(bit << 3);        /* BUG(orig): bit > 7 (#910) */
+        /* the two sides below (left-first table: struct side at idx and
+           idx + 4), then the pixel */
         found |= unpause(plane1, plane2, (UWORD)(at + 40 + *(const WORD *)(look + (WORD)idx)),
                          *(const UWORD *)(look + (WORD)idx + 2), &drop);
         found |= unpause(plane1, plane2, (UWORD)(at + 40 + *(const WORD *)(look + (WORD)idx + 4)),
@@ -335,8 +379,8 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
         }
     }
     *dst = END;
-    *drop = END;
-    LONGAT(killout, 0) = (ULONG)dst;
+    *drop = END;                        /* the drop list's last not updated (#909) */
+    KILL(killout)->last = (ULONG)dst;
     return count;
 }
 
@@ -347,10 +391,10 @@ static ULONG BLITZ_ROUTINE dokilllist_c(ULONG n BL_REG(d0))
 static ULONG BLITZ_ROUTINE killpoint_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1),
                                        ULONG y BL_REG(d2))
 {
-    ULONG *e = entry(n);
-    UBYTE *kill = (UBYTE *)e[2];
-    UWORD *dst = (UWORD *)LONGAT(kill, 0);
-    const UBYTE *bm = (const UBYTE *)LONGAT(e[0], 4);
+    struct snowfield *e = entry(n);
+    UBYTE *kill = (UBYTE *)e->kill[0];
+    UWORD *dst = (UWORD *)KILL(kill)->last;
+    const UBYTE *bm = (const UBYTE *)DROP(e->drop[0])->bm;
     UBYTE *plane0 = PLANE(bm, 0), *plane1 = PLANE(bm, 1), *plane2 = PLANE(bm, 2);
     UWORD at = (UWORD)((UWORD)y * 40UL + (UWORD)((WORD)x >> 3));
     UWORD bit = (UWORD)(~x & 7);
@@ -363,7 +407,7 @@ static ULONG BLITZ_ROUTINE killpoint_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1),
     *dst++ = (UWORD)(at - 40);
     *dst++ = bit;
     *dst = END;
-    LONGAT(kill, 0) = (ULONG)dst;
+    KILL(kill)->last = (ULONG)dst;
     return (ULONG)-1;
 }
 
