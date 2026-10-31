@@ -160,8 +160,8 @@ ULONG BLITZ_ROUTINE hours_c(struct Library *dosbase BL_REG(a6))
 /* _mins - of the last DateStamp: minutes / 60, SWAP */
 ULONG BLITZ_ROUTINE mins_c(void)
 {
-    ULONG d0 = bl_divu_w(dt.stamp[1], 60);
-    return BL_SWAP(d0);
+    ULONG hourmin = bl_divu_w(dt.stamp[1], 60);
+    return BL_SWAP(hourmin);
 }
 
 /* _secs - of the last DateStamp: ticks / 50 */
@@ -187,57 +187,59 @@ ULONG BLITZ_ROUTINE date_c(struct Library *dosbase BL_REG(a6))
    remainder + "0" (a value outside 0..99 gives other characters) */
 static void put2(ULONG r)
 {
-    ULONG d3 = bl_divu_w(BL_EXTL(r), 10);
-    *blitz_string++ = (UBYTE)(d3 + 48);
-    d3 = BL_SWAP(d3);
-    *blitz_string++ = (UBYTE)(d3 + 48);
+    ULONG digits = bl_divu_w(BL_EXTL(r), 10);     /* d3 */
+    *blitz_string++ = (UBYTE)(digits + 48);
+    digits = BL_SWAP(digits);
+    *blitz_string++ = (UBYTE)(digits + 48);
 }
 
-/* _datestr - days since 1/1/1978 to "dd/mm/yyyy" at a3; d0 = length 10 */
+/* _datestr - days since 1/1/1978 to "dd/mm/yyyy" at a3; d0 = length 10.
+   year holds the 4 year cycles first, month the days of the cycles; for
+   mm/dd/yyyy day and month are exchanged (EXG) before the output */
 ULONG BLITZ_ROUTINE datestr_c(LONG days BL_REG(d0))
 {
-    ULONG d0 = (ULONG)days + DAYSP1978, d1, d2;
-    const UWORD *a0;
+    ULONG day = (ULONG)days + DAYSP1978, year, month;  /* d0 d1 d2 */
+    const UWORD *entry;
 
-    totday = d0;
-    d1 = bl_divs_w(d0, DAYSINQUADYR);                   /* cycles */
-    d2 = (ULONG)(DAYSINQUADYR * (LONG)(WORD)d1);        /* MULS d1,d2 */
-    d0 -= d2;                                           /* day in cycle */
-    BL_SETW(d1, (UWORD)d1 << 2);                        /* ASL #2,d1: year */
+    totday = day;
+    year = bl_divs_w(day, DAYSINQUADYR);                /* cycles */
+    month = (ULONG)(DAYSINQUADYR * (LONG)(WORD)year);   /* MULS d1,d2 */
+    day -= month;                                       /* day in cycle */
+    BL_SETW(year, (UWORD)year << 2);                    /* ASL #2,d1: year */
     /* BUG(orig) (#120): BLE - day 366 stays in the leap year (32/12) */
-    if ((WORD)d0 > 366) {
-        BL_SETW(d0, d0 - 366);
-        d0 = bl_divs_w(BL_EXTL(d0), 365);
-        BL_SETW(d1, d1 + d0);
-        BL_SETW(d1, d1 + 1);
-        d0 = BL_SWAP(d0);                               /* day in year */
-        if ((WORD)d0 > 31 + 27)
-            BL_SETW(d0, d0 + 1);                        /* no Feb 29th */
+    if ((WORD)day > 366) {
+        BL_SETW(day, day - 366);
+        day = bl_divs_w(BL_EXTL(day), 365);
+        BL_SETW(year, year + day);
+        BL_SETW(year, year + 1);
+        day = BL_SWAP(day);                             /* day in year */
+        if ((WORD)day > 31 + 27)
+            BL_SETW(day, day + 1);                      /* no Feb 29th */
     }
     /* month: first table entry > day (BPL on the word difference) */
-    d2 = 0;
-    a0 = dt.months + 1;
+    month = 0;
+    entry = dt.months + 1;
     do
-        d2++;
-    while ((WORD)((UWORD)d0 - *a0++) >= 0);
-    BL_SETW(d0, d0 - a0[-2]);
-    BL_SETW(d0, d0 + 1);
-    dym[0] = d0;                                        /* MOVEM d0-d2,dym */
-    dym[1] = d1;
-    dym[2] = d2;
+        month++;
+    while ((WORD)((UWORD)day - *entry++) >= 0);
+    BL_SETW(day, day - entry[-2]);
+    BL_SETW(day, day + 1);
+    dym[0] = day;                                       /* MOVEM d0-d2,dym */
+    dym[1] = year;
+    dym[2] = month;
     if (dateformat) {                                   /* EXG d0,d2 */
-        ULONG t = d0;
-        d0 = d2;
-        d2 = t;
+        ULONG saved = day;
+        day = month;
+        month = saved;
     }
-    put2(d0);
+    put2(day);
     *blitz_string++ = '/';
-    put2(d2);
+    put2(month);
     *blitz_string++ = '/';
-    d1 = bl_divu_w(BL_EXTL(d1), 100);
-    put2(d1);
-    d1 = BL_SWAP(d1);
-    put2(d1);
+    year = bl_divu_w(BL_EXTL(year), 100);
+    put2(year);
+    year = BL_SWAP(year);
+    put2(year);
     return 10;
 }
 
@@ -245,14 +247,14 @@ ULONG BLITZ_ROUTINE datestr_c(LONG days BL_REG(d0))
    BUG(orig) (#121): SUBQ.w #2 - no borrow from the high word. */
 ULONG BLITZ_ROUTINE weekday_c(void)
 {
-    ULONG d0 = totday;
+    ULONG value = totday;                         /* d0 */
 
-    BL_SETW(d0, d0 - 2);
-    d0 = bl_divu_w(d0, 32767);
-    d0 = BL_SWAP(d0);
-    d0 = BL_EXTL(d0);
-    d0 = bl_divu_w(d0, 7);
-    return BL_SWAP(d0);
+    BL_SETW(value, value - 2);
+    value = bl_divu_w(value, 32767);
+    value = BL_SWAP(value);
+    value = BL_EXTL(value);
+    value = bl_divu_w(value, 7);
+    return BL_SWAP(value);
 }
 
 UWORD BLITZ_ROUTINE days_c(void)   { return dym[0]; }
@@ -262,73 +264,76 @@ UWORD BLITZ_ROUTINE years_c(void)  { return dym[1]; }
 /* _calcdays - "dd/mm/yyyy" (or mm/dd/yyyy) to days since 1/1/1978; 0 if
    day or month are not followed by "/".  Day and month: 1 or 2 digits,
    year: up to 4 (ends at "/" or after 4 characters, not at the end of the
-   string).  "Digits" are not checked: every character counts as char-48. */
+   string).  "Digits" are not checked: every character counts as char-48.
+   num is the field being read, later the year / 4; digit the character,
+   later the leap days; day and month hold the first and second field
+   until the EXG for mm/dd/yyyy. */
 ULONG BLITZ_ROUTINE calcdays_c(const UBYTE *s BL_REG(d0))
 {
-    const UBYTE *a0 = s;
-    ULONG d0, d1, d2 = 0, d3 = 0, d4 = 0;
+    const UBYTE *cur = s;                               /* a0 */
+    ULONG total, num, digit = 0, day = 0, month = 0;    /* d0-d4 */
     int i;
 
-    d1 = *a0++;                                         /* day */
-    if ((UWORD)d1 == '/')
+    num = *cur++;                                       /* day */
+    if ((UWORD)num == '/')
         goto getm;
-    BL_SETW(d1, d1 - 48);
-    BL_SETB(d2, *a0++);
-    if ((UWORD)d2 == '/')
+    BL_SETW(num, num - 48);
+    BL_SETB(digit, *cur++);
+    if ((UWORD)digit == '/')
         goto getm;
-    BL_SETW(d2, d2 - 48);
-    d1 = (UWORD)d1 * 10UL;                              /* MULU #10,d1 */
-    BL_SETW(d1, d1 + d2);
-    if (*a0++ != '/')
+    BL_SETW(digit, digit - 48);
+    num = (UWORD)num * 10UL;                            /* MULU #10,d1 */
+    BL_SETW(num, num + digit);
+    if (*cur++ != '/')
         return 0;                                       /* skipcalc */
 getm:
-    BL_SETW(d3, d1);
-    d1 = *a0++;                                         /* month */
-    if ((UWORD)d1 == '/')
+    BL_SETW(day, num);
+    num = *cur++;                                       /* month */
+    if ((UWORD)num == '/')
         goto gety;
-    BL_SETW(d1, d1 - 48);
-    BL_SETB(d2, *a0++);
-    if ((UWORD)d2 == '/')
+    BL_SETW(num, num - 48);
+    BL_SETB(digit, *cur++);
+    if ((UWORD)digit == '/')
         goto gety;
-    BL_SETW(d2, d2 - 48);
-    d1 = (UWORD)d1 * 10UL;
-    BL_SETW(d1, d1 + d2);
-    if (*a0++ != '/')
+    BL_SETW(digit, digit - 48);
+    num = (UWORD)num * 10UL;
+    BL_SETW(num, num + digit);
+    if (*cur++ != '/')
         return 0;
 gety:
-    BL_SETW(d4, d1);
-    d1 = *a0++;                                         /* year */
+    BL_SETW(month, num);
+    num = *cur++;                                       /* year */
     /* BUG(orig) (#123): "/" here jumps back to gety (month = 47) */
-    if ((UWORD)d1 == '/')
+    if ((UWORD)num == '/')
         goto gety;
-    BL_SETW(d1, d1 - 48);
+    BL_SETW(num, num - 48);
     for (i = 0; i < 3; i++) {
-        BL_SETB(d2, *a0++);
-        if ((UWORD)d2 == '/')
+        BL_SETB(digit, *cur++);
+        if ((UWORD)digit == '/')
             break;
-        BL_SETW(d2, d2 - 48);
-        d1 = (UWORD)d1 * 10UL;
-        BL_SETW(d1, d1 + d2);
+        BL_SETW(digit, digit - 48);
+        num = (UWORD)num * 10UL;
+        BL_SETW(num, num + digit);
     }
     /* goty */
     if (dateformat) {                                   /* EXG d3,d4 */
-        ULONG t = d3;
-        d3 = d4;
-        d4 = t;
+        ULONG saved = day;
+        day = month;
+        month = saved;
     }
-    d0 = 365UL * (UWORD)d1;                             /* MULU d1,d0 */
-    d1 = bl_divu_w(d1, 4);
-    BL_SETW(d2, d1);                                    /* leap days */
-    BL_SETW(d4, d4 + d4);
+    total = 365UL * (UWORD)num;                         /* MULU d1,d0 */
+    num = bl_divu_w(num, 4);
+    BL_SETW(digit, num);                                /* leap days */
+    BL_SETW(month, month + month);
     /* ADD months-2(pc,d4.w),d2 */
-    BL_SETW(d2, d2 + *(const UWORD *)((const UBYTE *)dt.months - 2 + (WORD)d4));
-    d0 += BL_EXTL(d2);
-    d1 = BL_SWAP(d1);
+    BL_SETW(digit, digit + *(const UWORD *)((const UBYTE *)dt.months - 2 + (WORD)month));
+    total += BL_EXTL(digit);
+    num = BL_SWAP(num);
     /* not a leap year and before March: one leap day less in the table */
-    if ((UWORD)d1 != 0 && (WORD)((UWORD)d4 - 6) < 0)
-        BL_SETW(d0, d0 + 1);                            /* BUG(orig) (#122): ADDQ.w */
-    d0 += BL_EXTL(d3);
-    d0 -= DAYSP1978;
-    BL_SETW(d0, d0 - 1);                                /* BUG(orig) (#122): SUBQ.w */
-    return d0;
+    if ((UWORD)num != 0 && (WORD)((UWORD)month - 6) < 0)
+        BL_SETW(total, total + 1);                      /* BUG(orig) (#122): ADDQ.w */
+    total += BL_EXTL(day);
+    total -= DAYSP1978;
+    BL_SETW(total, total - 1);                          /* BUG(orig) (#122): SUBQ.w */
+    return total;
 }
