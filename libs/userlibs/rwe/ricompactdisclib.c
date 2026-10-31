@@ -568,26 +568,27 @@ ULONG BLITZ_ROUTINE c_cdtracklength(ULONG track BL_REG(d0))
 }
 
 /* CDUpdateInfo (doinfo: CD_QCODEMSF into qcodeinfo): the address of the track position's minutes;
-   BUG(orig) (#587): without device the caller's a0 + 5 */
-ULONG BLITZ_ROUTINE c_cdtracktime(ULONG a0 BL_REG(a0))
+   BUG(orig) (#587): without device the caller's a0 + 5
+   (prev = a0 on entry) */
+ULONG BLITZ_ROUTINE c_cdtracktime(ULONG prev BL_REG(a0))
 {
     if (!cd.flag)
-        return a0 + 5;
+        return prev + 5;
     cdio(DOIO, CD_QCODEMSF, cd.qcodeinfo, 0, 0);
     return (ULONG)cd.qcodeinfo + 5;
 }
 
 /* CDTrackMins/CDTrackSecs: ASL.b #2,d0 : MOVE.b n(a0,d0.w),d0 */
-static ULONG qbyte(ULONG d0, int n)
+static ULONG qbyte(ULONG offset, int n)
 {
-    ULONG i = (d0 & 0xffffff00UL) | (UBYTE)(d0 << 2);
+    ULONG index = (offset & 0xffffff00UL) | (UBYTE)(offset << 2);
 
-    return (d0 & 0xffffff00UL) | ((const UBYTE *)cd.qcodeinfo)[n + (WORD)i];
+    return (offset & 0xffffff00UL) | ((const UBYTE *)cd.qcodeinfo)[n + (WORD)index];
 }
 
-ULONG BLITZ_ROUTINE c_cdtrackmins(ULONG d0 BL_REG(d0))
+ULONG BLITZ_ROUTINE c_cdtrackmins(ULONG offset BL_REG(d0))
 {
-    return qbyte(d0, 5);
+    return qbyte(offset, 5);
 }
 
 ULONG BLITZ_ROUTINE c_cdtrackmins2(void)
@@ -595,9 +596,9 @@ ULONG BLITZ_ROUTINE c_cdtrackmins2(void)
     return qbyte(0, 5);
 }
 
-ULONG BLITZ_ROUTINE c_cdtracksecs(ULONG d0 BL_REG(d0))
+ULONG BLITZ_ROUTINE c_cdtracksecs(ULONG offset BL_REG(d0))
 {
-    return qbyte(d0, 6);
+    return qbyte(offset, 6);
 }
 
 ULONG BLITZ_ROUTINE c_cdtracksecs2(void)
