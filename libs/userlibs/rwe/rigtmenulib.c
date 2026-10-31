@@ -225,19 +225,49 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 4);
 
 /* ---------------------------------------------------------------- data */
 
-#define SW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
-#define SL(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
-#define P(p, o) (*(UBYTE **)((UBYTE *)(p) + (o)))
+/* the object GTMenuList (16 bytes) */
+struct gtmenulist {
+    struct Menu *strip;                 /* 0: made by CreateMenuStrip */
+    struct gtentry *titles;             /* 4: the list of titles */
+    UWORD count;                        /* 8: the number of entries added */
+    UWORD rest[3];                      /* 10: unused (CLR.l 8(a3) clears 10) */
+};
+static_assert(sizeof(struct gtmenulist) == 16);
 
+/* a title (TITLESIZE, the first three fields) or an item/sub item
+   (ITEMSIZE, cleared); the strings are maxslib strings */
+struct gtentry {
+    struct gtentry *next;               /* 0 */
+    ULONG text;                         /* 4: an item's -1 = NM_BARLABEL */
+    struct gtentry *items;              /* 8: a title's first item; 0 */
+    UWORD flags;                        /* 12 */
+    ULONG shortcut;                     /* 14 */
+    struct gtentry *subs;               /* 18: an item's first sub item */
+    ULONG mutualexclude;                /* 22 */
+    ULONG userdata;                     /* 26 */
+};
 #define TITLESIZE 12
 #define ITEMSIZE 30
-#define MI_SIZEOF 34                    /* GadTools' UserData behind a MenuItem */
+static_assert(__builtin_offsetof(struct gtentry, flags) == TITLESIZE);
+static_assert(sizeof(struct gtentry) == ITEMSIZE);
+static_assert(sizeof(struct NewMenu) == 20);
+
+/* a list head (the object's titles, a title's items, an item's subs) as
+   an entry whose next is the head, as the original walks the lists
+   (MOVE.l (aN),aN from the head on) */
+#define HEAD(head) ((struct gtentry *)&(head))
+
+/* the bytes of Intuition's Menu/MenuItem Flags, as the original changes
+   them (BSET/BCLR/BTST on a byte): the high byte (CHECKED) and the low
+   byte (MENUENABLED, ITEMENABLED) */
+#define FLAGS_HI(f) (((UBYTE *)&(f))[0])
+#define FLAGS_LO(f) (((UBYTE *)&(f))[1])
 
 static struct Library *gtbase, *intuibase;
 static ULONG me, userdata;              /* mutual exclude, UserData */
 static UWORD flags;
 static ULONG marraysize;
-static UBYTE *marray;
+static struct NewMenu *marray;
 static APTR vi;
 static const char gtname[] = "gadtools.library";
 static const struct TagItem taglist[] = { { GTMN_FullMenu, (ULONG)-1 }, { 0, 0 } };
@@ -267,12 +297,17 @@ static void freest(ULONG s)
     BLITZ_ALIBJSR(TOK_freest, r);
 }
 
-/* n + 1 links on from p (MOVE.l (aN),aN:DBF n) */
-static UBYTE *walk(UBYTE *p, UWORD n)
+/* n + 1 links on from the link at `slot` (MOVE.l (aN),aN:DBF n) of the
+   menu strip: Menu and MenuItem have their link (NextMenu, NextItem, as
+   the list heads FirstItem, SubItem) at offset 0 */
+static APTR walk(APTR *slot, UWORD n)
 {
-    do
-        p = P(p, 0);
-    while (n-- != 0);
+    APTR p;
+
+    do {
+        p = *slot;
+        slot = (APTR *)p;
+    } while (n-- != 0);
     return p;
 }
 
@@ -297,64 +332,65 @@ BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
 /* ------------------------------------------------------- the menu strip */
 
 /* makearray: the NewMenu array of the lists of the object */
-static UBYTE *makearray(UBYTE *obj)
+static struct NewMenu *makearray(struct gtmenulist *obj)
 {
-    UBYTE *title = P(obj, 4), *entry, *it, *sub;
+    struct gtentry *title = obj->titles, *it, *sub;
+    struct NewMenu *entry;
 
-    marraysize = bl_mulu_w((UWORD)(SW(obj, 8) + 1), 20);
-    marray = entry = (UBYTE *)galloc(marraysize, MEMF_PUBLIC | MEMF_CLEAR);
+    marraysize = bl_mulu_w((UWORD)(obj->count + 1), sizeof(struct NewMenu));
+    marray = entry = (struct NewMenu *)galloc(marraysize, MEMF_PUBLIC | MEMF_CLEAR);
     for (;;) {
-        entry[0] = NM_TITLE;
-        SL(entry, 2) = SL(title, 4);
-        entry += 20;
-        for (it = P(title, 8); it; it = P(it, 0)) {
-            entry[0] = NM_ITEM;
-            SL(entry, 2) = SL(it, 4);
-            SL(entry, 6) = SL(it, 14);
-            SW(entry, 10) = SW(it, 12);
-            SL(entry, 12) = SL(it, 22);
-            SL(entry, 16) = SL(it, 26);
-            entry += 20;
-            for (sub = P(it, 18); sub; sub = P(sub, 0)) {
-                entry[0] = NM_SUB;
-                SL(entry, 2) = SL(sub, 4);
-                SL(entry, 6) = SL(sub, 14);
-                SW(entry, 10) = SW(sub, 12);
-                SL(entry, 12) = SL(sub, 22);
-                SL(entry, 16) = SL(sub, 26);
-                entry += 20;
+        entry->nm_Type = NM_TITLE;
+        entry->nm_Label = (STRPTR)title->text;
+        entry++;
+        for (it = title->items; it; it = it->next) {
+            entry->nm_Type = NM_ITEM;
+            entry->nm_Label = (STRPTR)it->text;
+            entry->nm_CommKey = (STRPTR)it->shortcut;
+            entry->nm_Flags = it->flags;
+            entry->nm_MutualExclude = it->mutualexclude;
+            entry->nm_UserData = (APTR)it->userdata;
+            entry++;
+            for (sub = it->subs; sub; sub = sub->next) {
+                entry->nm_Type = NM_SUB;
+                entry->nm_Label = (STRPTR)sub->text;
+                entry->nm_CommKey = (STRPTR)sub->shortcut;
+                entry->nm_Flags = sub->flags;
+                entry->nm_MutualExclude = sub->mutualexclude;
+                entry->nm_UserData = (APTR)sub->userdata;
+                entry++;
             }
         }
-        if (!(title = P(title, 0)))
+        if (!(title = title->next))
             break;
     }
-    entry[0] = NM_END;
+    entry->nm_Type = NM_END;
     return marray;
 }
 
 /* CreateMenuStrip: a3 = the object, a0 = the used screen object */
-static ULONG createmenustrip(UBYTE *obj, struct Screen **scr)
+static ULONG createmenustrip(struct gtmenulist *obj, struct Screen **scr)
 {
-    UBYTE *arr;
+    struct NewMenu *arr;
 
     if (!gtbase)
         return 0;
-    if (P(obj, 0)) {
-        FreeMenus((struct Menu *)P(obj, 0));
-        SL(obj, 0) = 0;
+    if (obj->strip) {
+        FreeMenus(obj->strip);
+        obj->strip = NULL;
     }
     if (!(arr = makearray(obj)))
         return 0;
-    SL(obj, 0) = (ULONG)CreateMenusA((struct NewMenu *)arr, (struct TagItem *)taglist);
+    obj->strip = CreateMenusA(arr, (struct TagItem *)taglist);
     vi = GetVisualInfoA(*scr, NULL);
-    LayoutMenusA((struct Menu *)P(obj, 0), vi, (struct TagItem *)tl_layout);
+    LayoutMenusA(obj->strip, vi, (struct TagItem *)tl_layout);
     FreeVisualInfo(vi);
     gfree(marray, marraysize);
     return (ULONG)-1;
 }
 
 static ULONG BLITZ_ROUTINE createmenustrip_c(struct Screen **scr BL_REG(a0),
-                                             UBYTE *obj BL_REG(a3))
+                                             struct gtmenulist *obj BL_REG(a3))
 {
     return createmenustrip(obj, scr);
 }
@@ -362,20 +398,21 @@ BLITZ_THUNK(_CreateMenuStrip, createmenustrip_c, "d1/a0-a1");
 
 /* GTSetMenu: a1 = the used window object, a6 = intuition */
 static void BLITZ_ROUTINE setmenu_c(struct Screen **scr BL_REG(a0), struct Window **win BL_REG(a1),
-                                    UBYTE *obj BL_REG(a3), struct Library *intui BL_REG(a6))
+                                    struct gtmenulist *obj BL_REG(a3),
+                                    struct Library *intui BL_REG(a6))
 {
     struct Window *w;
 
     intuibase = intui;
-    if (!P(obj, 0)) {
+    if (!obj->strip) {
         createmenustrip(obj, scr);
-        if (!P(obj, 0))
+        if (!obj->strip)
             return;
     }
     w = *win;
     if (w->MenuStrip)
         ClearMenuStrip(w);
-    SetMenuStrip(w, (struct Menu *)P(obj, 0));
+    SetMenuStrip(w, obj->strip);
 }
 BLITZ_THUNK(_setmenu, setmenu_c, "d0-d1/a0-a1");
 
@@ -392,9 +429,10 @@ BLITZ_THUNK(_gtunsetmenu, gtunsetmenu_c, "d0-d1/a0-a1");
 
 /* GTMenuTitle list#,menu,title$: inserted as title `menu` */
 static void BLITZ_ROUTINE gtmenutitle_c(ULONG menu BL_REG(d1), ULONG text BL_REG(d2),
-                                        const ULONG *args BL_REG(a2), UBYTE *obj BL_REG(a3))
+                                        const ULONG *args BL_REG(a2),
+                                        struct gtmenulist *obj BL_REG(a3))
 {
-    UBYTE *link = obj + 4, *title;
+    struct gtentry *link = HEAD(obj->titles), *title;
     UWORD n;
 
     if (!gtbase)
@@ -402,85 +440,85 @@ static void BLITZ_ROUTINE gtmenutitle_c(ULONG menu BL_REG(d1), ULONG text BL_REG
     n = (UWORD)menu - 1;
     if ((WORD)n >= 0)
         do {
-            if (!P(link, 0))
+            if (!link->next)
                 return;
-            link = P(link, 0);
+            link = link->next;
         } while (n-- != 0);
-    title = (UBYTE *)galloc(TITLESIZE, MEMF_PUBLIC);    /* uncleared, all written */
+    title = (struct gtentry *)galloc(TITLESIZE, MEMF_PUBLIC); /* uncleared, all written */
     if (!title)
         return;
-    SL(title, 0) = SL(link, 0);
-    SL(link, 0) = (ULONG)title;
-    SL(title, 4) = allocst(text, args[-1]);
-    SL(title, 8) = 0;
-    SW(obj, 8)++;
+    title->next = link->next;
+    link->next = title;
+    title->text = allocst(text, args[-1]);
+    title->items = NULL;
+    obj->count++;
 }
 BLITZ_THUNK(_gtmenutitle, gtmenutitle_c, "d0-d1/a0-a1");
 
-/* a new item or sub item after entry n - 1 of the list at a0 (n = 0: at
+/* a new item or sub item after entry n - 1 of the list at link (n = 0: at
    the head) of the object obj (+8 counts it); text < 0: NM_BARLABEL; the
    lengths popped from the a2 stack in order (`sp`); the shortcut: `sc`
    and its length, or for a sub item (`sub`) the length and the pushed
    address from the stack */
-static void additem(UBYTE *obj, UBYTE *link, UWORD n, int sub, ULONG text, ULONG sc,
-                    const ULONG *sp)
+static void additem(struct gtmenulist *obj, struct gtentry *link, UWORD n, int sub, ULONG text,
+                    ULONG sc, const ULONG *sp)
 {
-    UBYTE *it;
+    struct gtentry *it;
 
     n--;
     if ((WORD)n >= 0)
         do {
-            if (!P(link, 0))
+            if (!link->next)
                 return;
-            link = P(link, 0);
+            link = link->next;
         } while (n-- != 0);
-    it = (UBYTE *)galloc(ITEMSIZE, MEMF_PUBLIC | MEMF_CLEAR);
+    it = (struct gtentry *)galloc(ITEMSIZE, MEMF_PUBLIC | MEMF_CLEAR);
     if (!it)
         return;
-    SL(it, 0) = SL(link, 0);
-    SL(link, 0) = (ULONG)it;
+    it->next = link->next;
+    link->next = it;
     if ((LONG)text < 0)
-        SL(it, 4) = (ULONG)NM_BARLABEL;
+        it->text = (ULONG)NM_BARLABEL;
     else
-        SL(it, 4) = allocst(text, BL_POPL(sp));
-    SL(it, 8) = 0;
-    SW(it, 12) = flags;
+        it->text = allocst(text, BL_POPL(sp));
+    it->items = NULL;
+    it->flags = flags;
     if ((UWORD)sc) {                    /* BUG(orig) (#694): TST.w */
         if (sub) {
             /* MOVE.l -(a2),d1:MOVE.l -(a2),d0: length and the pushed
                address from the stack */
             ULONG len = BL_POPL(sp);
-            SL(it, 14) = allocst(BL_POPL(sp), len);
+            it->shortcut = allocst(BL_POPL(sp), len);
         } else
-            SL(it, 14) = allocst(sc, BL_POPL(sp));
+            it->shortcut = allocst(sc, BL_POPL(sp));
     }
-    SL(it, 22) = me;
-    SL(it, 26) = userdata;
-    SW(obj, 8)++;
+    it->mutualexclude = me;
+    it->userdata = userdata;
+    obj->count++;
 }
 
 /* _do_gtitem: d1 flags, d2 menu, d3 item, d4 text, d5 shortcut */
 static void do_gtitem(ULONG itemflags, ULONG menu, ULONG itemno, ULONG text, ULONG shortcut,
-                      const ULONG *sp, UBYTE *obj)
+                      const ULONG *sp, struct gtmenulist *obj)
 {
-    UBYTE *link = obj + 4;
+    struct gtentry *link = HEAD(obj->titles);
     UWORD n = (UWORD)menu;
 
     if (!gtbase)
         return;
     flags = (UWORD)itemflags;
     do {
-        if (!P(link, 0))
+        if (!link->next)
             return;
-        link = P(link, 0);
+        link = link->next;
     } while (n-- != 0);
-    additem(obj, link + 8, (UWORD)itemno, 0, text, shortcut, sp);
+    additem(obj, HEAD(link->items), (UWORD)itemno, 0, text, shortcut, sp);
 }
 #define gtitem do_gtitem
 
 #define ITEMARGS ULONG itemflags BL_REG(d1), ULONG menu BL_REG(d2), ULONG itemno BL_REG(d3), \
     ULONG text BL_REG(d4), ULONG shortcut BL_REG(d5), ULONG exclude BL_REG(d6),              \
-    const ULONG *stack BL_REG(a2), UBYTE *obj BL_REG(a3)
+    const ULONG *stack BL_REG(a2), struct gtmenulist *obj BL_REG(a3)
 
 static void BLITZ_ROUTINE gtmenuitem2_c(ITEMARGS)
 {
@@ -527,32 +565,32 @@ BLITZ_THUNK(_gtmenuitem5, gtmenuitem5_c, "d0-d1/a0-a1");
 
 /* _do_gtsubitem: d1 flags, d2 menu, d3 item, d4 sub, d5 text, d6 shortcut */
 static void do_gtsubitem(ULONG itemflags, ULONG menu, ULONG itemno, ULONG subno, ULONG text,
-                         ULONG shortcut, const ULONG *sp, UBYTE *obj)
+                         ULONG shortcut, const ULONG *sp, struct gtmenulist *obj)
 {
-    UBYTE *link = obj + 4;
+    struct gtentry *link = HEAD(obj->titles);
     UWORD n = (UWORD)menu;
 
     if (!gtbase)
         return;
     flags = (UWORD)itemflags;
     do {
-        if (!P(link, 0))
+        if (!link->next)
             return;
-        link = P(link, 0);
+        link = link->next;
     } while (n-- != 0);
-    link += 8;
+    link = HEAD(link->items);
     n = (UWORD)itemno;
     do {
-        if (!P(link, 0))
+        if (!link->next)
             return;
-        link = P(link, 0);
+        link = link->next;
     } while (n-- != 0);
-    additem(obj, link + 18, (UWORD)subno, 1, text, shortcut, sp);
+    additem(obj, HEAD(link->subs), (UWORD)subno, 1, text, shortcut, sp);
 }
 
 #define SUBARGS ULONG itemflags BL_REG(d1), ULONG menu BL_REG(d2), ULONG itemno BL_REG(d3), \
     ULONG subno BL_REG(d4), ULONG text BL_REG(d5), ULONG shortcut BL_REG(d6),            \
-    const ULONG *stack BL_REG(a2), UBYTE *obj BL_REG(a3)
+    const ULONG *stack BL_REG(a2), struct gtmenulist *obj BL_REG(a3)
 
 static void BLITZ_ROUTINE gtsubitem2_c(SUBARGS)
 {
@@ -600,27 +638,27 @@ BLITZ_THUNK(_gtsubitem5, gtsubitem5_c, "d0-d1/a0-a1");
 
 /* freeitemlist: up to n items (DBRA on the long n - 1) from `it` with
    their strings and sub items */
-static void freeitemlist(UBYTE *it, ULONG n)
+static void freeitemlist(struct gtentry *it, ULONG n)
 {
-    UBYTE *entry, *sub;
+    struct gtentry *entry, *sub;
     UWORD left = (UWORD)(n - 1);        /* d7 */
 
     for (;;) {
-        if ((LONG)SL(it, 4) > 0)
-            freest(SL(it, 4));
-        if (SL(it, 14))
-            freest(SL(it, 14));
-        for (sub = P(it, 18); sub; ) {
-            if ((LONG)SL(sub, 4) > 0)
-                freest(SL(sub, 4));
-            if (SL(sub, 14))
-                freest(SL(sub, 14));
+        if ((LONG)it->text > 0)
+            freest(it->text);
+        if (it->shortcut)
+            freest(it->shortcut);
+        for (sub = it->subs; sub; ) {
+            if ((LONG)sub->text > 0)
+                freest(sub->text);
+            if (sub->shortcut)
+                freest(sub->shortcut);
             entry = sub;
-            sub = P(sub, 0);
+            sub = sub->next;
             gfree(entry, ITEMSIZE);
         }
         entry = it;
-        it = P(it, 0);
+        it = it->next;
         gfree(entry, ITEMSIZE);
         if (!it || left-- == 0)
             return;
@@ -629,59 +667,60 @@ static void freeitemlist(UBYTE *it, ULONG n)
 
 /* the object's free routine (FreeMenus with gtbase unchecked, like the
    original); BUG(orig) (#695): the title strings stay */
-static void BLITZ_ROUTINE freemenu_c(UBYTE *obj BL_REG(a3))
+static void BLITZ_ROUTINE freemenu_c(struct gtmenulist *obj BL_REG(a3))
 {
-    UBYTE *title, *next, *items;
+    struct gtentry *title, *next, *items;
 
-    if (P(obj, 0))
-        FreeMenus((struct Menu *)P(obj, 0));
-    for (title = P(obj, 4); title; title = next) {
-        next = P(title, 0);
-        items = P(title, 8);
+    if (obj->strip)
+        FreeMenus(obj->strip);
+    for (title = obj->titles; title; title = next) {
+        next = title->next;
+        items = title->items;
         gfree(title, TITLESIZE);
         if (items)
             freeitemlist(items, 99999);
     }
-    SL(obj, 0) = 0;
-    SL(obj, 4) = 0;
-    SL(obj, 8) = 0;
+    obj->strip = NULL;
+    obj->titles = NULL;
+    *(ULONG *)&obj->count = 0;          /* CLR.l 8(a3): count and +10 */
 }
 BLITZ_THUNK(freemenu, freemenu_c, "d0-d1/a0-a1");
 
 /* finditem: title d1, item d2 (if d2 >= 0 as a long), sub item d3 (if
    d3 >= 0); *prev = the link that points to it */
-static UBYTE *finditem(UBYTE *obj, ULONG menu, ULONG itemno, ULONG subno, UBYTE **prev)
+static struct gtentry *finditem(struct gtmenulist *obj, ULONG menu, ULONG itemno, ULONG subno,
+                                struct gtentry **prev)
 {
-    UBYTE *entry, *link;
+    struct gtentry *entry, *link;
     UWORD n;
 
-    if (!gtbase || !SL(obj, 4))
+    if (!gtbase || !*(ULONG *)&obj->titles)     /* TST.l: no list (as a long) */
         return NULL;
-    entry = obj + 4;
+    entry = HEAD(obj->titles);
     n = (UWORD)menu;
     do {
         link = entry;
-        if (!P(entry, 0))
+        if (!entry->next)
             return NULL;
-        entry = P(entry, 0);
+        entry = entry->next;
     } while (n-- != 0);
     if ((LONG)itemno >= 0) {
-        entry += 8;
+        entry = HEAD(entry->items);
         n = (UWORD)itemno;
         do {
             link = entry;
-            if (!P(entry, 0))
+            if (!entry->next)
                 return NULL;
-            entry = P(entry, 0);
+            entry = entry->next;
         } while (n-- != 0);
         if ((LONG)subno >= 0) {
-            entry += 18;
+            entry = HEAD(entry->subs);
             n = (UWORD)subno;
             do {
                 link = entry;
-                if (!P(entry, 0))
+                if (!entry->next)
                     return NULL;
-                entry = P(entry, 0);
+                entry = entry->next;
             } while (n-- != 0);
         }
     }
@@ -689,14 +728,14 @@ static UBYTE *finditem(UBYTE *obj, ULONG menu, ULONG itemno, ULONG subno, UBYTE 
     return entry;
 }
 
-static void BLITZ_ROUTINE freetitle_c(ULONG menu BL_REG(d1), UBYTE *obj BL_REG(a3))
+static void BLITZ_ROUTINE freetitle_c(ULONG menu BL_REG(d1), struct gtmenulist *obj BL_REG(a3))
 {
-    UBYTE *title, *prev, *items;
+    struct gtentry *title, *prev, *items;
 
     if (!(title = finditem(obj, menu, (ULONG)-1, (ULONG)-1, &prev)))
         return;
-    SL(prev, 0) = SL(title, 0);
-    items = P(title, 8);
+    prev->next = title->next;
+    items = title->items;
     gfree(title, TITLESIZE);
     if (items)
         freeitemlist(items, 99999);
@@ -704,110 +743,118 @@ static void BLITZ_ROUTINE freetitle_c(ULONG menu BL_REG(d1), UBYTE *obj BL_REG(a
 BLITZ_THUNK(_freetitle, freetitle_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE freeitem_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
-                                     UBYTE *obj BL_REG(a3))
+                                     struct gtmenulist *obj BL_REG(a3))
 {
-    UBYTE *it, *prev;
+    struct gtentry *it, *prev;
 
     if (!(it = finditem(obj, menu, itemno, (ULONG)-1, &prev)))
         return;
-    SL(prev, 0) = SL(it, 0);
+    prev->next = it->next;
     freeitemlist(it, 1);
 }
 BLITZ_THUNK(_freeitem, freeitem_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE freesubitem_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
-                                        ULONG subno BL_REG(d3), UBYTE *obj BL_REG(a3))
+                                        ULONG subno BL_REG(d3), struct gtmenulist *obj BL_REG(a3))
 {
-    UBYTE *it, *prev;
+    struct gtentry *it, *prev;
 
     if (!(it = finditem(obj, menu, itemno, subno, &prev)))
         return;
-    SL(prev, 0) = SL(it, 0);
+    prev->next = it->next;
     freeitemlist(it, 1);
 }
 BLITZ_THUNK(_freesubitem, freesubitem_c, "d0-d1/a0-a1");
 
 /* ------------------------------------------------ the menu strip's flags */
 
-/* menu d1, item d2 (+18: FirstItem), sub d3 (+28: SubItem) of the strip
-   at *obj */
-static UBYTE *item(UBYTE *obj, UWORD menu, UWORD itemno)
+/* the menu `menu` of the strip, its item `itemno`, an item's sub item
+   `subno` */
+#define MENU(obj, menu) ((struct Menu *)walk((APTR *)&(obj)->strip, (menu)))
+#define SUBITEM(mi, subno) ((struct MenuItem *)walk((APTR *)&(mi)->SubItem, (subno)))
+static struct MenuItem *item(struct gtmenulist *obj, UWORD menu, UWORD itemno)
 {
-    return walk(walk(obj, menu) + 18, itemno);
+    return walk((APTR *)&MENU(obj, menu)->FirstItem, itemno);
 }
 
-static void changestate(UBYTE *p, UWORD on, UBYTE bit)
+/* the Flags of a Menu or MenuItem (both at 12) */
+static_assert(__builtin_offsetof(struct Menu, Flags) == __builtin_offsetof(struct MenuItem, Flags));
+static void changestate(struct Menu *m, UWORD on, UBYTE bit)
 {
     if (on)
-        p[13] |= bit;
+        FLAGS_LO(m->Flags) |= bit;
     else
-        p[13] &= (UBYTE)~bit;
+        FLAGS_LO(m->Flags) &= (UBYTE)~bit;
 }
 
 /* GTMenuState list#,on|off: every menu (MENUENABLED) */
-static void BLITZ_ROUTINE domenustate_c(ULONG on BL_REG(d1), UBYTE *obj BL_REG(a3))
+static void BLITZ_ROUTINE domenustate_c(ULONG on BL_REG(d1), struct gtmenulist *obj BL_REG(a3))
 {
-    UBYTE *p;
+    APTR *p;
 
-    for (p = obj; P(p, 0); ) {
-        p = P(p, 0);
-        changestate(p, (UWORD)on, 1);
+    for (p = (APTR *)&obj->strip; *p; ) {
+        p = (APTR *)*p;
+        changestate((struct Menu *)p, (UWORD)on, MENUENABLED);
     }
 }
 BLITZ_THUNK(domenustate, domenustate_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE domenustate2_c(ULONG menu BL_REG(d1), ULONG on BL_REG(d2),
-                                         UBYTE *obj BL_REG(a3))
+                                         struct gtmenulist *obj BL_REG(a3))
 {
-    changestate(walk(obj, (UWORD)menu), (UWORD)on, 1);
+    changestate(MENU(obj, (UWORD)menu), (UWORD)on, MENUENABLED);
 }
 BLITZ_THUNK(domenustate2, domenustate2_c, "d0-d1/a0-a1");
 
 /* an item: ITEMENABLED (bit 4 of the low byte of Flags) */
 static void BLITZ_ROUTINE domenustate3_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
-                                         ULONG on BL_REG(d3), UBYTE *obj BL_REG(a3))
+                                         ULONG on BL_REG(d3), struct gtmenulist *obj BL_REG(a3))
 {
-    changestate(item(obj, (UWORD)menu, (UWORD)itemno), (UWORD)on, 0x10);
+    changestate((struct Menu *)item(obj, (UWORD)menu, (UWORD)itemno), (UWORD)on, ITEMENABLED);
 }
 BLITZ_THUNK(domenustate3, domenustate3_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE domenustate4_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                          ULONG subno BL_REG(d3), ULONG on BL_REG(d4),
-                                         UBYTE *obj BL_REG(a3))
+                                         struct gtmenulist *obj BL_REG(a3))
 {
-    changestate(walk(item(obj, (UWORD)menu, (UWORD)itemno) + 28, (UWORD)subno), (UWORD)on, 0x10);
+    changestate((struct Menu *)SUBITEM(item(obj, (UWORD)menu, (UWORD)itemno), (UWORD)subno),
+                (UWORD)on, ITEMENABLED);
 }
 BLITZ_THUNK(domenustate4, domenustate4_c, "d0-d1/a0-a1");
 
 /* GTMenuChecked: CHECKED (bit 0 of the high byte of Flags); SNE:EXT.w -
    the upper word of d0 stays */
 static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG result BL_REG(d0), ULONG menu BL_REG(d1),
-                                           ULONG itemno BL_REG(d2), UBYTE *obj BL_REG(a2))
+                                           ULONG itemno BL_REG(d2),
+                                           struct gtmenulist *obj BL_REG(a2))
 {
-    return BL_SETW(result, (item(obj, (UWORD)menu, (UWORD)itemno)[12] & 1) ? 0xffff : 0);
+    return BL_SETW(result,
+                   (FLAGS_HI(item(obj, (UWORD)menu, (UWORD)itemno)->Flags) & (CHECKED >> 8))
+                       ? 0xffff : 0);
 }
 BLITZ_THUNK(domenuchecked, domenuchecked_c, "d1/a0-a1");
 
 static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG result BL_REG(d0), ULONG menu BL_REG(d1),
                                             ULONG itemno BL_REG(d2), ULONG subno BL_REG(d3),
-                                            UBYTE *obj BL_REG(a2))
+                                            struct gtmenulist *obj BL_REG(a2))
 {
-    UBYTE *p = walk(item(obj, (UWORD)menu, (UWORD)itemno) + 28, (UWORD)subno);
+    struct MenuItem *mi = SUBITEM(item(obj, (UWORD)menu, (UWORD)itemno), (UWORD)subno);
 
-    return BL_SETW(result, (p[12] & 1) ? 0xffff : 0);
+    return BL_SETW(result, (FLAGS_HI(mi->Flags) & (CHECKED >> 8)) ? 0xffff : 0);
 }
 BLITZ_THUNK(domenuchecked2, domenuchecked2_c, "d1/a0-a1");
 
-static void setchecked(UBYTE *p, UWORD on)
+static void setchecked(struct MenuItem *mi, UWORD on)
 {
     if (on)
-        p[12] |= 1;
+        FLAGS_HI(mi->Flags) |= CHECKED >> 8;
     else
-        p[12] &= (UBYTE)~1;
+        FLAGS_HI(mi->Flags) &= (UBYTE)~(CHECKED >> 8);
 }
 
 static void BLITZ_ROUTINE setmenuchecked_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
-                                           ULONG on BL_REG(d3), UBYTE *obj BL_REG(a2))
+                                           ULONG on BL_REG(d3), struct gtmenulist *obj BL_REG(a2))
 {
     setchecked(item(obj, (UWORD)menu, (UWORD)itemno), (UWORD)on);
 }
@@ -815,31 +862,31 @@ BLITZ_THUNK(setmenuchecked, setmenuchecked_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE setmenuchecked2_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                             ULONG subno BL_REG(d3), ULONG on BL_REG(d4),
-                                            UBYTE *obj BL_REG(a2))
+                                            struct gtmenulist *obj BL_REG(a2))
 {
-    setchecked(walk(item(obj, (UWORD)menu, (UWORD)itemno) + 28, (UWORD)subno), (UWORD)on);
+    setchecked(SUBITEM(item(obj, (UWORD)menu, (UWORD)itemno), (UWORD)subno), (UWORD)on);
 }
 BLITZ_THUNK(setmenuchecked2, setmenuchecked2_c, "d0-d1/a0-a1");
 
 /* GTGetUserData: the long behind the MenuItem (GadTools' UserData) */
-static ULONG getuserdata(UBYTE *obj, ULONG menu, ULONG itemno, ULONG subno)
+static ULONG getuserdata(struct gtmenulist *obj, ULONG menu, ULONG itemno, ULONG subno)
 {
-    UBYTE *p = item(obj, (UWORD)menu, (UWORD)itemno);
+    struct MenuItem *mi = item(obj, (UWORD)menu, (UWORD)itemno);
 
     if ((WORD)subno >= 0)
-        p = walk(p + 28, (UWORD)subno);
-    return SL(p, MI_SIZEOF);
+        mi = SUBITEM(mi, (UWORD)subno);
+    return (ULONG)GTMENUITEM_USERDATA(mi);
 }
 
 static ULONG BLITZ_ROUTINE getuserdata_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
-                                         UBYTE *obj BL_REG(a2))
+                                         struct gtmenulist *obj BL_REG(a2))
 {
     return getuserdata(obj, menu, itemno, (ULONG)-1);
 }
 BLITZ_THUNK(_GetUserData, getuserdata_c, "d1/a0-a1");
 
 static ULONG BLITZ_ROUTINE getuserdata2_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
-                                          ULONG subno BL_REG(d3), UBYTE *obj BL_REG(a2))
+                                          ULONG subno BL_REG(d3), struct gtmenulist *obj BL_REG(a2))
 {
     return getuserdata(obj, menu, itemno, subno);
 }
@@ -853,36 +900,38 @@ BLITZ_ERRCHK_MESSAGE(mess3, "Illegal Menu Sub Item number");
 BLITZ_ERRCHK_MESSAGE(mess8, "GTMenu has no data to build GTMenuList from!");
 
 /* createchk, setchk: the object has a list */
-static void BLITZ_ERRCHK listchk_c(UBYTE *obj BL_REG(a3))
+static void BLITZ_ERRCHK listchk_c(struct gtmenulist *obj BL_REG(a3))
 {
-    if (!SL(obj, 4))
+    if (!obj->titles)
         BLITZ_RUNERR(mess8);
 }
 BLITZ_ERRCHK_THUNK(createchk, listchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(setchk, listchk_c, "d0-d1/a0-a1");
 
-/* existschk: entries 0..n of the list at *a0 exist (DBF); *a0 moves to
-   entry n, or stays at the last one there is.  0 if one is missing. */
-static int BLITZ_ERRCHK existschk(UBYTE **entry, UWORD n)
+/* existschk: entries 0..n of the list at the link **slot exist (DBF);
+   *slot moves to entry n, or stays at the last one there is.  0 if one
+   is missing. */
+static int BLITZ_ERRCHK existschk(APTR **slot, UWORD n)
 {
-    UBYTE *p = *entry;
+    APTR *p = *slot;
 
     do {
-        if (!P(p, 0)) {
-            *entry = p;
+        if (!*p) {
+            *slot = p;
             return 0;
         }
-        p = P(p, 0);
+        p = (APTR *)*p;
     } while (n-- != 0);
-    *entry = p;
+    *slot = p;
     return 1;
 }
 
-/* statechk2/3/4: menu d1, item d2 (+18), sub item d3 (+28) exist in the
-   strip of the object */
-static void BLITZ_ERRCHK statechk(UBYTE *obj, int depth, UWORD menu, UWORD itemno, UWORD subno)
+/* statechk2/3/4: menu d1, item d2 (FirstItem), sub item d3 (SubItem)
+   exist in the strip of the object */
+static void BLITZ_ERRCHK statechk(struct gtmenulist *obj, int depth, UWORD menu, UWORD itemno,
+                                  UWORD subno)
 {
-    UBYTE *entry = obj;
+    APTR *entry = (APTR *)&obj->strip;
 
     if (!existschk(&entry, menu)) {
         BLITZ_RUNERR(mess1);
@@ -890,33 +939,33 @@ static void BLITZ_ERRCHK statechk(UBYTE *obj, int depth, UWORD menu, UWORD itemn
     }
     if (depth < 3)
         return;
-    entry += 18;
+    entry = (APTR *)&((struct Menu *)entry)->FirstItem;
     if (!existschk(&entry, itemno)) {
         BLITZ_RUNERR(mess2);
         return;
     }
     if (depth < 4)
         return;
-    entry += 28;
+    entry = (APTR *)&((struct MenuItem *)entry)->SubItem;
     if (!existschk(&entry, subno))
         BLITZ_RUNERR(mess3);
 }
 
 #define CHKARGS ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2), ULONG subno BL_REG(d3)
 
-static void BLITZ_ERRCHK statechk2_c(CHKARGS, UBYTE *obj BL_REG(a3))
+static void BLITZ_ERRCHK statechk2_c(CHKARGS, struct gtmenulist *obj BL_REG(a3))
 {
     statechk(obj, 2, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
 BLITZ_ERRCHK_THUNK(statechk2, statechk2_c, "d0-d1/a0-a1");
 
-static void BLITZ_ERRCHK statechk3_c(CHKARGS, UBYTE *obj BL_REG(a3))
+static void BLITZ_ERRCHK statechk3_c(CHKARGS, struct gtmenulist *obj BL_REG(a3))
 {
     statechk(obj, 3, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
 BLITZ_ERRCHK_THUNK(statechk3, statechk3_c, "d0-d1/a0-a1");
 
-static void BLITZ_ERRCHK statechk4_c(CHKARGS, UBYTE *obj BL_REG(a3))
+static void BLITZ_ERRCHK statechk4_c(CHKARGS, struct gtmenulist *obj BL_REG(a3))
 {
     statechk(obj, 4, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
@@ -924,19 +973,19 @@ BLITZ_ERRCHK_THUNK(statechk4, statechk4_c, "d0-d1/a0-a1");
 
 /* chkchk3/4: the same with the object in a2 (EXG a2,a3); chkchk5: chkchk3
    if the sub item is -1 (CMP.w), else chkchk4 */
-static void BLITZ_ERRCHK chkchk3_c(CHKARGS, UBYTE *obj BL_REG(a2))
+static void BLITZ_ERRCHK chkchk3_c(CHKARGS, struct gtmenulist *obj BL_REG(a2))
 {
     statechk(obj, 3, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
 BLITZ_ERRCHK_THUNK(chkchk3, chkchk3_c, "d0-d1/a0-a1");
 
-static void BLITZ_ERRCHK chkchk4_c(CHKARGS, UBYTE *obj BL_REG(a2))
+static void BLITZ_ERRCHK chkchk4_c(CHKARGS, struct gtmenulist *obj BL_REG(a2))
 {
     statechk(obj, 4, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
 BLITZ_ERRCHK_THUNK(chkchk4, chkchk4_c, "d0-d1/a0-a1");
 
-static void BLITZ_ERRCHK chkchk5_c(CHKARGS, UBYTE *obj BL_REG(a2))
+static void BLITZ_ERRCHK chkchk5_c(CHKARGS, struct gtmenulist *obj BL_REG(a2))
 {
     statechk(obj, (UWORD)subno == 0xffff ? 3 : 4, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
