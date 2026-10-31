@@ -258,7 +258,12 @@ static const char *const libnames[] = {
     "datatypes.library", "dos.library", "intuition.library", "graphics.library", NULL
 };
 
-static ULONG *storage;
+/* storage: the 1024 byte buffer of every command - GetAttr's result in
+   its first long, or a tag list */
+static union {
+    ULONG value;
+    struct TagItem tags[128];
+} *storage;
 static BPTR lock;
 static struct DataType *dtype;
 static struct DataTypeHeader *dtypehead;
@@ -275,7 +280,7 @@ void BLITZ_ROUTINE c_libinit(void)
 
     for (i = 0; libnames[i]; i++)
         libbases[i] = OpenLibrary((CONST_STRPTR)libnames[i], 37);
-    storage = (ULONG *)BLITZ_ALIBJSR(TOK_globalloc, r);
+    storage = (void *)BLITZ_ALIBJSR(TOK_globalloc, r);
 }
 
 /* DetachDataType */
@@ -410,8 +415,8 @@ ULONG BLITZ_ROUTINE c_datatypecreate2(void)
 {
     if (!database)
         return 0;
-    storage[0] = TAG_DONE;
-    return create((struct TagItem *)storage);
+    storage->tags[0].ti_Tag = TAG_DONE;
+    return create(storage->tags);
 }
 
 ULONG BLITZ_ROUTINE c_datatypecreate(struct TagItem *tags BL_REG(d0))
@@ -431,36 +436,36 @@ static ULONG doattach(const ULONG *winobj)
 }
 
 /* the tags every form ends with */
-static ULONG *tailtags(ULONG *t)
+static struct TagItem *tailtags(struct TagItem *t)
 {
-    *t++ = ICA_TARGET;
-    *t++ = (ULONG)-1;
-    *t++ = PDTA_Remap;
-    *t++ = 0;
-    *t = TAG_DONE;
+    t->ti_Tag = ICA_TARGET;
+    t->ti_Data = (ULONG)-1;                     /* ICTARGET_IDCMP */
+    t++;
+    t->ti_Tag = PDTA_Remap;
+    t->ti_Data = 0;
+    t++;
+    t->ti_Tag = TAG_DONE;
     return t;
 }
+
+/* one tag */
+#define TAG(t, tag, data) ((t)->ti_Tag = (tag), (t)->ti_Data = (data), (t)++)
 
 /* AttachDataType window,id: at 0,0 with the size of the BitMapHeader */
 ULONG BLITZ_ROUTINE c_attachdatatype(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a0))
 {
-    ULONG *t = storage;
+    struct TagItem *t = storage->tags;
 
     if (!lock || attached)
         return 0;
     attached = (ULONG)winobj;
-    *t++ = GA_Left;
-    *t++ = 0;
-    *t++ = GA_Top;
-    *t++ = 0;
-    *t++ = GA_Width;
-    *t++ = bitmapheader->bmh_Width;     /* BUG(orig) (#595): 0 not checked */
-    *t++ = GA_Height;
-    *t++ = bitmapheader->bmh_Height;
-    *t++ = GA_ID;
-    *t++ = id;
+    TAG(t, GA_Left, 0);
+    TAG(t, GA_Top, 0);
+    TAG(t, GA_Width, bitmapheader->bmh_Width);  /* BUG(orig) (#595): 0 not checked */
+    TAG(t, GA_Height, bitmapheader->bmh_Height);
+    TAG(t, GA_ID, id);
     tailtags(t);
-    SetAttrsA(object, (struct TagItem *)storage);
+    SetAttrsA(object, storage->tags);
     return doattach((const ULONG *)attached);
 }
 
@@ -470,23 +475,18 @@ ULONG BLITZ_ROUTINE c_attachdatatype2(ULONG id BL_REG(d1), ULONG x BL_REG(d2),
                                       ULONG y BL_REG(d3), ULONG w BL_REG(d4),
                                       ULONG h BL_REG(d5), ULONG *winobj BL_REG(a0))
 {
-    ULONG *t = storage;
+    struct TagItem *t = storage->tags;
 
     if (!database || !lock || attached)
         return 0;
     attached = (ULONG)winobj;
-    *t++ = GA_ID;
-    *t++ = id;
-    *t++ = GA_Left;
-    *t++ = x;
-    *t++ = GA_Top;
-    *t++ = y;
-    *t++ = GA_Width;
-    *t++ = w;
-    *t++ = GA_Height;
-    *t++ = h;
+    TAG(t, GA_ID, id);
+    TAG(t, GA_Left, x);
+    TAG(t, GA_Top, y);
+    TAG(t, GA_Width, w);
+    TAG(t, GA_Height, h);
     tailtags(t);
-    SetAttrsA(object, (struct TagItem *)storage);
+    SetAttrsA(object, storage->tags);
     return doattach((const ULONG *)attached);
 }
 
@@ -494,15 +494,14 @@ ULONG BLITZ_ROUTINE c_attachdatatype2(ULONG id BL_REG(d1), ULONG x BL_REG(d2),
    of the second SetAttrsA) */
 ULONG BLITZ_ROUTINE c_attachdatatype3(ULONG id BL_REG(d1), ULONG *winobj BL_REG(a0))
 {
-    ULONG *t = storage;
+    struct TagItem *t = storage->tags;
 
     if (!lock || attached)
         return 0;
     attached = (ULONG)winobj;
-    *t++ = GA_ID;
-    *t++ = id;
+    TAG(t, GA_ID, id);
     tailtags(t);
-    SetAttrsA(object, (struct TagItem *)storage);
+    SetAttrsA(object, storage->tags);
     SetAttrsA(object, (struct TagItem *)id);
     return doattach((const ULONG *)attached);
 }
@@ -512,9 +511,9 @@ ULONG BLITZ_ROUTINE c_datatypeready(void)
 {
     if (!database || !attached)
         return 0;
-    storage[0] = 0;
-    GetAttr(DTA_LayoutProc, object, storage);
-    if (storage[0])
+    storage->value = 0;
+    GetAttr(DTA_LayoutProc, object, &storage->value);
+    if (storage->value)
         return 0;
     return (ULONG)-1;
 }
@@ -532,35 +531,49 @@ ULONG BLITZ_ROUTINE c_datatypebitmap(void)
 {
     if (!database || !object)
         return 0;
-    GetAttr(PDTA_BitMapHeader, object, storage);
-    bitmapheader = (struct BitMapHeader *)storage[0];
+    GetAttr(PDTA_BitMapHeader, object, &storage->value);
+    bitmapheader = (struct BitMapHeader *)storage->value;
     return (ULONG)bitmapheader;
 }
 
+/* the colour block of a palette object (palettelib): the number of
+   colours, a word 0, then per colour a long per component (the value in
+   the top byte, the bytes below as the program set them) */
+struct pcolour {
+    UBYTE red, red_low[3];
+    UBYTE green, green_low[3];
+    UBYTE blue, blue_low[3];
+};
+static_assert(sizeof(struct pcolour) == 12);
+struct pdata {
+    UWORD count;
+    UWORD first;
+    struct pcolour colour[];
+};
+
 /* DataTypesPalette palette#: the colours into the palette object (count.w,
    first.w, then a long per component; the upper bytes set) */
-ULONG BLITZ_ROUTINE c_datatypespalette(UBYTE **palobj BL_REG(a0))
+ULONG BLITZ_ROUTINE c_datatypespalette(struct pdata **palobj BL_REG(a0))
 {
     const UBYTE *cr;
-    UBYTE *p;
+    struct pcolour *p;
     UWORD n;
     ULONG r;
 
     if (!object)
         return 0;
-    r = GetAttr(PDTA_ColorRegisters, object, storage);
-    cr = (const UBYTE *)storage[0];
+    r = GetAttr(PDTA_ColorRegisters, object, &storage->value);
+    cr = (const UBYTE *)storage->value;
     if (!cr)
         return r;                       /* BUG(orig) (#607): GetAttr's result */
-    p = *palobj;
-    n = *(const UWORD *)p;
-    p += 4;
+    n = (*palobj)->count;
+    p = (*palobj)->colour;
     n--;
     do {                                /* BUG(orig) (#606): DBRA, 0 = 65536 */
-        p[0] = *cr++;
-        p[4] = *cr++;
-        p[8] = *cr++;
-        p += 12;
+        p->red = *cr++;
+        p->green = *cr++;
+        p->blue = *cr++;
+        p++;
     } while (n-- != 0);
     return (ULONG)storage;
 }
@@ -598,17 +611,17 @@ void BLITZ_ROUTINE c_setdatatypeattr(struct TagItem *tags BL_REG(d0))
 /* SetDataTypeAttr attr,data[,attr,data...]: d7 pairs below a2 */
 void BLITZ_ROUTINE c_setdatatypeattr2(UWORD n BL_REG(d7), const ULONG *sp BL_REG(a2))
 {
-    ULONG *t = storage;
+    struct TagItem *t = storage->tags;
 
     if (!object)
         return;
     n--;
     do {                                /* BUG(orig) (#608): DBRA, no limit */
-        *t++ = *--sp;
-        *t++ = *--sp;
+        t->ti_Tag = *--sp;
+        (t++)->ti_Data = *--sp;
     } while (n-- != 0);
-    *t = TAG_DONE;
-    SetAttrsA(object, (struct TagItem *)storage);
+    t->ti_Tag = TAG_DONE;
+    SetAttrsA(object, storage->tags);
 }
 
 /* GetDataTypeAttr(attribute): the address of the value */
@@ -616,32 +629,32 @@ ULONG BLITZ_ROUTINE c_getdatatypeattr(ULONG attr BL_REG(d0))
 {
     if (!object)
         return 0;
-    GetAttr(attr, object, storage);
+    GetAttr(attr, object, &storage->value);
     return (ULONG)storage;
 }
 
 /* DataTypeModeID [taglist]: BestModeID for the picture's size and depth
    (the tags are written to the tag list, BUG(orig) (#603)) */
-static ULONG domodeid(ULONG *t)
+static ULONG domodeid(struct TagItem *t)
 {
     if (!bitmapheader)
         return 0;
-    t[0] = BIDTAG_NominalWidth;
-    t[1] = bitmapheader->bmh_Width;
-    t[2] = BIDTAG_NominalHeight;
-    t[3] = bitmapheader->bmh_Height;
-    t[4] = BIDTAG_Depth;
-    t[5] = bitmapheader->bmh_Depth;
-    t[6] = TAG_DONE;
-    return BestModeIDA((struct TagItem *)t);
+    t[0].ti_Tag = BIDTAG_NominalWidth;
+    t[0].ti_Data = bitmapheader->bmh_Width;
+    t[1].ti_Tag = BIDTAG_NominalHeight;
+    t[1].ti_Data = bitmapheader->bmh_Height;
+    t[2].ti_Tag = BIDTAG_Depth;
+    t[2].ti_Data = bitmapheader->bmh_Depth;
+    t[3].ti_Tag = TAG_DONE;
+    return BestModeIDA(t);
 }
 
 ULONG BLITZ_ROUTINE c_getmodeid(void)
 {
-    return domodeid(storage);
+    return domodeid(storage->tags);
 }
 
-ULONG BLITZ_ROUTINE c_getmodeid2(ULONG *tags BL_REG(d0))
+ULONG BLITZ_ROUTINE c_getmodeid2(struct TagItem *tags BL_REG(d0))
 {
     return domodeid(tags);
 }
