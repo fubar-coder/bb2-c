@@ -278,7 +278,8 @@ static ULONG BLITZ_ROUTINE hookfunc_c(struct Hook *hook BL_REG(a0), struct LVDra
     struct Library *gfx;
     const UWORD *entry;                 /* a2: the field entries */
     const UWORD *col;
-    UWORD value, backpen;               /* d0: the indent, then the front pen; d1 */
+    UWORD indentoff, indentval;         /* d0: the indent's offset, the indent */
+    UWORD frontpen, backpen;            /* d0, d1 */
     ULONG state;
 
     if (msg->lvdm_MethodID != LV_DRAW)
@@ -289,21 +290,22 @@ static ULONG BLITZ_ROUTINE hookfunc_c(struct Hook *hook BL_REG(a0), struct LVDra
     msgrastport = msg->lvdm_RastPort;
     state = msg->lvdm_State;
     /* (the original loads lvdm_DrawInfo->dri_Pens and does not use it) */
-    value = dispaddress[0];             /* the offset of the indent */
-    if (value)
-        value = (UWORD)WAT(node, value);
-    indent = (WORD)value;
+    indentoff = dispaddress[0];         /* the offset of the indent */
+    indentval = indentoff;
+    if (indentoff)
+        indentval = (UWORD)WAT(node, indentoff);
+    indent = (WORD)indentval;
     col = (const UWORD *)LAT(node, dispaddress[1]);     /* the colour table */
     dispaddress = (const UWORD *)((const UBYTE *)dispaddress + ENTRYBYTESIZE);
-    value = col[2];
+    frontpen = col[2];
     backpen = col[3];
     if (state == LVR_NORMAL || state == LVR_NORMALDISABLED_) {
-        value = col[0];
+        frontpen = col[0];
         backpen = col[1];
     }
-    apen = value;
+    apen = frontpen;
     bpen = backpen;
-    SetABPenDrMd(msgrastport, value, backpen, JAM2);
+    SetABPenDrMd(msgrastport, frontpen, backpen, JAM2);
 
     maxXboundary = msg->lvdm_Bounds.MaxX;
     ob = msg->lvdm_Bounds;

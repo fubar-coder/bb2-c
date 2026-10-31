@@ -672,7 +672,9 @@ static void icontoshape_jump(ULONG shapearg, UBYTE *shape, UWORD render,
                              UBYTE **cookiestr)
 {
     UBYTE *im;
-    UWORD w, h, words, bytes, count;
+    UWORD w, h, words, bytes;
+    UWORD planebytes;                   /* the bytes of one plane */
+    UWORD count;                        /* the DBRA count of the words to copy */
     const UWORD *from;
     UWORD *to;
     ULONG mem;
@@ -695,10 +697,10 @@ static void icontoshape_jump(ULONG shapearg, UBYTE *shape, UWORD render,
     SW(shape, 6) = bytes;               /* ebwidth */
     SW(shape, 8) = (UWORD)(((UWORD)(h << 6) | words) + 1);  /* blitsize */
     SL(shape, 10) = 0;                  /* handles */
-    count = (UWORD)bl_mulu_w(bytes, h);
-    SW(shape, 22) = count;              /* onebpmem */
-    SW(shape, 24) = (UWORD)(count + (UWORD)(h << 1));           /* onebpmemx */
-    SW(shape, 26) = (UWORD)bl_mulu_w(count, SW(im, 4));         /* allbpmem */
+    planebytes = (UWORD)bl_mulu_w(bytes, h);
+    SW(shape, 22) = planebytes;         /* onebpmem */
+    SW(shape, 24) = (UWORD)(planebytes + (UWORD)(h << 1));      /* onebpmemx */
+    SW(shape, 26) = (UWORD)bl_mulu_w(planebytes, SW(im, 4));    /* allbpmem */
     SW(shape, 28) = (UWORD)bl_mulu_w(SW(shape, 24), SW(im, 4)); /* allbpmemx */
     mem = globalloc(SW(shape, 26), 0x10001 | MEMF_CHIP);
     if (!mem)
