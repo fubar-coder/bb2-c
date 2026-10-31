@@ -46,6 +46,7 @@
  * the error checks keep d0-d1/a0-a1 (more than the original).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <intuition/intuition.h>
 #define __NOLIBBASE__
 #define INTUITION_BASE_NAME intbase
@@ -71,11 +72,11 @@ void BLITZ_ROUTINE dopropgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
                                 UWORD w BL_REG(d5), const UWORD *args BL_REG(a2));
 void BLITZ_ROUTINE doshapegadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
                                  ULONG flags BL_REG(d3), UWORD id BL_REG(d4),
-                                 const UBYTE *shape BL_REG(a2));
+                                 const struct bb_shape *shape BL_REG(a2));
 void BLITZ_ROUTINE doshapegadget2(WORD x BL_REG(d1), WORD y BL_REG(d2),
                                   ULONG flags BL_REG(d3), UWORD id BL_REG(d4),
-                                  const UBYTE *alt BL_REG(a1),
-                                  const UBYTE *shape BL_REG(a2));
+                                  const struct bb_shape *alt BL_REG(a1),
+                                  const struct bb_shape *shape BL_REG(a2));
 void dosethprop(void);
 void dosetvprop(void);
 void dohproppot(void);
@@ -381,12 +382,9 @@ static_assert(sizeof(struct Image) == 20);
 #define GUSER_BL(gad)    (((UWORD *)&(gad)->UserData)[0])   /* 40 */
 #define GUSER_GROUP(gad) (((UWORD *)&(gad)->UserData)[1])   /* 42 */
 
-/* a shape object (shapeslib): +0 width, +2 height, +4 depth, +10/+12
-   the handle, +14 the data; and the PropInfo pots/bodies (setprop,
-   readprop) */
-#define W(p, o)  (*(WORD *)((UBYTE *)(p) + (o)))
+/* the PropInfo pots/bodies (setprop, readprop) by offset; the shape object
+   (shapeslib) is struct bb_shape (blitzobj.h) */
 #define UW(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
-#define L(p, o)  (*(ULONG *)((UBYTE *)(p) + (o)))
 
 /* the variables in the code of the original, same layout (long moves
    go over several of them) */
@@ -891,17 +889,17 @@ void BLITZ_ROUTINE dopropgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
 
 /* makeintuishape - an Image (20 bytes) for the shape (width, height,
    depth at 0/2/4, data at 14) */
-static struct Image *makeintuishape(const UBYTE *shape)
+static struct Image *makeintuishape(const struct bb_shape *shape)
 {
     struct Image *img = (struct Image *)globalloc(sizeof(struct Image),
                                                   MEMF_PUBLIC | MEMF_CLEAR);
     UWORD planepick = 0, n;
 
-    img->Width = W(shape, 0);
-    img->Height = W(shape, 2);
-    img->Depth = W(shape, 4);
-    img->ImageData = (UWORD *)L(shape, 14);
-    n = UW(shape, 4) - 1;
+    img->Width = (WORD)shape->width;
+    img->Height = (WORD)shape->height;
+    img->Depth = (WORD)shape->depth;
+    img->ImageData = (UWORD *)shape->data;
+    n = shape->depth - 1;
     do
         planepick = (UWORD)(planepick << 1) | 1;
     while (n-- != 0);
@@ -911,15 +909,15 @@ static struct Image *makeintuishape(const UBYTE *shape)
 }
 
 static void shapegadget(WORD x, WORD y, ULONG flags, UWORD id,
-                        const UBYTE *shape, struct Image *alt)
+                        const struct bb_shape *shape, struct Image *alt)
 {
     struct Image *img;
     struct Gadget *gad;
 
-    x -= W(shape, 10);                  /* handle */
-    y -= W(shape, 12);
+    x -= shape->handlex;                  /* handle */
+    y -= shape->handley;
     img = makeintuishape(shape);
-    gad = allocgadget(x, y, id, W(shape, 0), W(shape, 2));
+    gad = allocgadget(x, y, id, (WORD)shape->width, (WORD)shape->height);
     gad->GadgetType = 1;
     GFLAGS_LO(gad) |= 1 << 2;           /* GADGIMAGE */
     gad->GadgetRender = img;
@@ -946,7 +944,7 @@ static void shapegadget(WORD x, WORD y, ULONG flags, UWORD id,
  */
 void BLITZ_ROUTINE doshapegadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
                                  ULONG flags BL_REG(d3), UWORD id BL_REG(d4),
-                                 const UBYTE *shape BL_REG(a2))
+                                 const struct bb_shape *shape BL_REG(a2))
 {
     shapegadget(x, y, flags, id, shape, NULL);
 }
@@ -967,8 +965,8 @@ void BLITZ_ROUTINE doshapegadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
  */
 void BLITZ_ROUTINE doshapegadget2(WORD x BL_REG(d1), WORD y BL_REG(d2),
                                   ULONG flags BL_REG(d3), UWORD id BL_REG(d4),
-                                  const UBYTE *alt BL_REG(a1),
-                                  const UBYTE *shape BL_REG(a2))
+                                  const struct bb_shape *alt BL_REG(a1),
+                                  const struct bb_shape *shape BL_REG(a2))
 {
     struct Image *img = makeintuishape(alt);
 
@@ -1620,16 +1618,16 @@ static void BLITZ_ERRCHK wchk_c(struct Window **win BL_REG(a1))
 }
 
 /* sgchk2 - TST (a1): the alternative shape; sgchk - TST (a2) */
-static void BLITZ_ERRCHK sgchk2_c(const UWORD *alt BL_REG(a1),
-                                  const UWORD *shape BL_REG(a2))
+static void BLITZ_ERRCHK sgchk2_c(const struct bb_shape *alt BL_REG(a1),
+                                  const struct bb_shape *shape BL_REG(a2))
 {
-    if (!*alt || !*shape)
+    if (!alt->width || !shape->width)
         BLITZ_RUNERR(mess5);
 }
 
-static void BLITZ_ERRCHK sgchk_c(const UWORD *shape BL_REG(a2))
+static void BLITZ_ERRCHK sgchk_c(const struct bb_shape *shape BL_REG(a2))
 {
-    if (!*shape)
+    if (!shape->width)
         BLITZ_RUNERR(mess5);
 }
 
