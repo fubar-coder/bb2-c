@@ -279,6 +279,23 @@ static void xflip(struct shape *s, volatile UBYTE *chip)
     cookieit(s);
 }
 
+/**
+ * @brief XFlip Shape# - mirror a shape horizontally (Blitz mode).
+ *
+ * a3 = the shape.  First the planes are shifted right with the blitter by
+ * ebw*8-width pixels (so the image is "hard left" after the flip; one
+ * blit per plane, the same pointer as source and destination, modulo 0),
+ * then every row's bytes are mirrored and bit-reversed by the CPU; a
+ * cookie is made again if the shape had one (shapeslib +11).
+ *
+ * BUG(orig) (#271): no wait after the last blit before the CPU flips the
+ * bytes; the shift uses the shape's bltsize-1 words per plane.  The
+ * result depends on timing.  BUG(orig) (#274): row steps ADDA.w, the
+ * row count a MULU low word.  Errors: "Uninitialized Shape" (fchk,
+ * debugger only).
+ *
+ * @param chip a1: the chip base ($DFF000, chipbaselib)
+ */
 void BLITZ_ROUTINE b_doxflip_c(volatile UBYTE *chip BL_REG(a1));
 void BLITZ_ROUTINE b_doxflip_c(volatile UBYTE *chip BL_REG(a1))
 {
@@ -286,7 +303,13 @@ void BLITZ_ROUTINE b_doxflip_c(volatile UBYTE *chip BL_REG(a1))
 }
 BLITZ_THUNK(b_doxflip, b_doxflip_c, "d0-d1/a0-a1");
 
-/* Amiga mode: OwnBlitter, flip, (no real wait), DisownBlitter */
+/**
+ * @brief XFlip Shape# in Amiga mode: OwnBlitter, flip, (no real wait:
+ * BTST twice without a loop, #271), DisownBlitter.
+ *
+ * @param chip a1: the chip base ($DFF000)
+ * @param gfx  a6: graphics.library
+ */
 void BLITZ_ROUTINE a_doxflip_c(volatile UBYTE *chip BL_REG(a1), struct GfxBase *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_doxflip_c(volatile UBYTE *chip BL_REG(a1), struct GfxBase *gfx BL_REG(a6))
 {
@@ -307,6 +330,14 @@ BLITZ_AB_ROUTINE(doxflip, b_doxflip,
 
 /* -------------------------------------------------------------- YFlip */
 
+/**
+ * @brief YFlip Shape# - mirror a shape vertically (rows swapped plane by
+ * plane); a3 = the shape.
+ *
+ * A cookie is made again if the shape had one (shapeslib +11).
+ * BUG(orig) (#274): plane steps ADDA.w.  Errors: "Uninitialized Shape"
+ * (fchk, debugger only).
+ */
 static void BLITZ_ROUTINE doyflip_c(void)
 {
     struct shape *s = (struct shape *)blitz_string;
@@ -416,7 +447,21 @@ static void rotit2(WORD x, WORD y, UWORD angle)
         yh = ny;
 }
 
-/* a3 = shape, d1 = angle (Quick, 0..1) */
+/**
+ * @brief Rotate Shape#,Angle Ratio - rotate a shape.
+ *
+ * a3 = the shape.  angle = Quick 0..1 -> 256 steps; the new size comes
+ * from the rotated corners; every destination pixel is rotated back
+ * (rotit, sin table, rounding +-$8000) and copied when it falls inside
+ * the source.  The new shape (newshape, MEMF_CHIP|MEMF_CLEAR, not
+ * checked, handle 0) replaces the old one; a cookie is made again if the
+ * shape had one.
+ *
+ * BUG(orig) (#274): word arithmetic (ADDA.w steps, MULU low words).
+ * Errors: "Uninitialized Shape" (fchk, debugger only).
+ *
+ * @param q d1: the angle as a Quick (0..1 = a full turn)
+ */
 static void BLITZ_ROUTINE dorotate_c(ULONG q BL_REG(d1))
 {
     struct shape *s = (struct shape *)blitz_string, *ns = &newshape;
@@ -584,7 +629,22 @@ static void scale(struct shape *shape, ULONG xr, ULONG yr)
     makeshape(shape);
 }
 
-/* Scale without a palette: every colour counts 1 */
+/**
+ * @brief Scale Shape#,X Ratio,Y Ratio - scale a shape.
+ *
+ * a3 = the shape.  New size = size * ratio (lmullib $CA00, at least 1),
+ * source steps 1/ratio (ldivlib $CB00); every destination pixel takes the
+ * colour with the highest sum of "brightness" over the source pixels it
+ * covers - without a palette every colour counts 1, so the most frequent
+ * colour.  The new shape replaces the old one as in Rotate.
+ *
+ * BUG(orig) (#273): reads source pixels to the right/bottom of the shape
+ * when a target size below 1 is raised to 1 (reads only); (#274) word
+ * arithmetic.  Errors: "Uninitialized Shape" (scalechk2, debugger only).
+ *
+ * @param xr d1: the x ratio (Quick)
+ * @param yr d2: the y ratio (Quick)
+ */
 static void BLITZ_ROUTINE doscale2_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2))
 {
     int i;
@@ -596,7 +656,22 @@ static void BLITZ_ROUTINE doscale2_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2))
 }
 BLITZ_THUNK(doscale2, doscale2_c, "d0-d1/a0-a1");
 
-/* Scale with a palette (a2): brightness = r+g+b+3 of the top bytes */
+/**
+ * @brief Scale Shape#,X Ratio,Y Ratio,Palette# - scale a shape, the colour
+ * choice weighted by the palette.
+ *
+ * As doscale2_c, the brightness of a colour = r+g+b+3 of the top bytes of
+ * the palette's entries.  Not a bug (#272): entries beyond the current
+ * palette keep the values of an earlier Scale (never used: the choice
+ * only compares usevals[0..numcols]).
+ *
+ * Errors (scalechk, debugger only): "Uninitialized Palette",
+ * "Uninitialized Shape".
+ *
+ * @param xr  d1: the x ratio (Quick)
+ * @param yr  d2: the y ratio (Quick)
+ * @param pal a2: the palette object
+ */
 static void BLITZ_ROUTINE doscale_c(ULONG xr BL_REG(d1), ULONG yr BL_REG(d2), UBYTE *pal BL_REG(a2))
 {
     UWORD n = SW(pal, 4) - 1;
