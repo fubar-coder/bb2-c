@@ -52,6 +52,7 @@
  *     graphics.library again (#919).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include "blitzexec.h"
 #include <graphics/gfx.h>
 #include <graphics/sprite.h>
@@ -153,17 +154,10 @@ static_assert(sizeof wd == 166);
 /* the low word of a long (MOVE.w to its address + 2) */
 #define LOWORD(l) (((UWORD *)&(l))[1])
 
-/* a Blitz shape (shapeslib) */
-struct shape {
-    UWORD pixwidth, pixheight, depth;   /* +0, +2, +4 */
-    UWORD ebwidth, bltsize;             /* +6, +8 */
-    WORD xhandle, yhandle;              /* +10, +12 */
-    ULONG data, cookie;                 /* +14, +18: addresses */
-    UWORD onebpmem, onebpmemx;          /* +22, +24 */
-    UWORD allbpmem, allbpmemx;          /* +26, +28 */
-    UWORD pad;                          /* +30 */
-};
-static_assert(sizeof(struct shape) == 32);
+/* a Blitz shape (shapeslib): struct bb_shape (blitzobj.h); its data
+   address tested as the long the original reads (as a pointer test GCC
+   would order the code differently) */
+#define SHAPEDATA(s) (*(const ULONG *)&((const struct bb_shape *)(s))->data)
 
 /* ASL.w #2,d: the low word shifted, the upper word kept */
 #define ASLW2(d) (((ULONG)(d) & 0xffff0000UL) | (UWORD)((ULONG)(d) << 2))
@@ -260,9 +254,9 @@ static void BLITZ_ROUTINE libfinit_c(void)
    row, height rows, depth planes (DBRA counts) */
 static void copyshape(struct BitMap *bm)
 {
-    const struct shape *shape = (const struct shape *)wd.shapeaddr;
-    UWORD wcount = (UWORD)(((WORD)shape->pixwidth >> 4) - 1);
-    UWORD hcount = (UWORD)(shape->pixheight - 1);
+    const struct bb_shape *shape = (const struct bb_shape *)wd.shapeaddr;
+    UWORD wcount = (UWORD)(((WORD)shape->width >> 4) - 1);
+    UWORD hcount = (UWORD)(shape->height - 1);
     UWORD pcount = (UWORD)(shape->depth - 1);
     const UWORD *src = (const UWORD *)shape->data;
     PLANEPTR *planes = bm->Planes;
@@ -286,14 +280,14 @@ static void copyshape(struct BitMap *bm)
    tag list: 1, 0 if narrower than 16, -1 if AllocBitMap fails */
 static int shapebitmap(void)
 {
-    const struct shape *shape = (const struct shape *)wd.shapeaddr;
-    UWORD w = shape->pixwidth & 0xfff0;
+    const struct bb_shape *shape = (const struct bb_shape *)wd.shapeaddr;
+    UWORD w = shape->width & 0xfff0;
     struct BitMap *bm;
 
     if (!w)
         return 0;
     wd.sprwidth = w;
-    wd.sprheight = shape->pixheight;
+    wd.sprheight = shape->height;
     bm = AllocBitMap(w, wd.sprheight, shape->depth, 0, NULL);
     if (!bm)
         return -1;
@@ -344,7 +338,7 @@ static ULONG BLITZ_ROUTINE getwbsprite_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
 
     if (!wd.graphicslibbase)
         return 0;
-    if (!((const struct shape *)shape)->data)
+    if (!SHAPEDATA(shape))
         return (ULONG)-1;
     wd.shapeaddr = shape;
     wd.sprx = x;
@@ -442,7 +436,7 @@ static BB_BOOL BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_R
     ULONG *e;
     LONG r;
 
-    if (!wd.graphicslibbase || !((const struct shape *)shape)->data)
+    if (!wd.graphicslibbase || !SHAPEDATA(shape))
         return BB_FALSE;
     wd.myviewport = vp;
     wd.sprchannel = (LONG)ch;

@@ -80,6 +80,7 @@
  * everywhere, a2 in several routines).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include "blitzexec.h"
 #define __NOLIBBASE__
 #define ICON_BASE_NAME iconlibbase
@@ -252,21 +253,8 @@ static UWORD shapenumber;
 static struct Image SelectRender;
 static STRPTR tooltypearray[NTOOLTYPES];
 
-/* a shape object (shapeslib, 32 bytes) */
-struct shape {
-    UWORD width, height, depth;         /* 0 2 4 */
-    UWORD ebwidth, bltsize;             /* 6 8 */
-    WORD xhandle, yhandle;              /* 10 12 */
-    APTR data;                          /* 14: plane after plane (CHIP) */
-    APTR cookie;                        /* 18: or 0 */
-    UWORD onebpmem, onebpmemx;          /* 22 24: per plane, + a word per row */
-    UWORD allbpmem, allbpmemx;          /* 26 28: whole shape, + a word per row */
-    UWORD cludge;                       /* 30: CLUDGE = the data is not ours */
-};
-static_assert(sizeof(struct shape) == 32);
-static_assert(offsetof(struct shape, data) == 14);
-static_assert(offsetof(struct shape, cludge) == 30);
-#define CLUDGE 0x634c                   /* "cL" */
+/* a shape object (shapeslib, 32 bytes): struct bb_shape (blitzobj.h);
+   BB_CLUDGE = the data is not ours */
 
 static ULONG globalloc(ULONG size, ULONG flags)
 {
@@ -715,7 +703,7 @@ void BLITZ_ROUTINE c_seticonhit(UWORD w BL_REG(d0), UWORD h BL_REG(d1))
  * @param shape  a0: the shape object (#ia0|#pd0)
  * @return nothing (nothing happens without an icon)
  */
-void BLITZ_ROUTINE c_shapetoicon(const struct shape *shape BL_REG(a0))
+void BLITZ_ROUTINE c_shapetoicon(const struct bb_shape *shape BL_REG(a0))
 {
     struct Image *im;
 
@@ -728,7 +716,7 @@ void BLITZ_ROUTINE c_shapetoicon(const struct shape *shape BL_REG(a0))
     im->Width = shape->width;
     im->Height = shape->height;
     im->Depth = shape->depth;
-    im->ImageData = shape->data;
+    im->ImageData = (UWORD *)shape->data;
 }
 
 /**
@@ -742,15 +730,15 @@ void BLITZ_ROUTINE c_shapetoicon(const struct shape *shape BL_REG(a0))
  * @param shape2  a1: the shape for the selected image (#ia1|#pd1)
  * @return nothing (nothing happens without an icon)
  */
-void BLITZ_ROUTINE c_shapetoicon2(const struct shape *shape BL_REG(a0),
-                                  const struct shape *shape2 BL_REG(a1))
+void BLITZ_ROUTINE c_shapetoicon2(const struct bb_shape *shape BL_REG(a0),
+                                  const struct bb_shape *shape2 BL_REG(a1))
 {
     if (!diskobject)
         return;
     SelectRender.Width = shape2->width;
     SelectRender.Height = shape2->height;
     SelectRender.Depth = shape2->depth;
-    SelectRender.ImageData = shape2->data;
+    SelectRender.ImageData = (UWORD *)shape2->data;
     diskobject->do_Gadget.SelectRender = &SelectRender;
     diskobject->do_Gadget.Flags = 6;    /* GFLG_GADGHIMAGE | GFLG_GADGIMAGE */
     c_shapetoicon(shape);
@@ -828,21 +816,21 @@ BB_BOOL BLITZ_ROUTINE c_defaulttool(const char *tool BL_REG(d0), const ULONG *le
 }
 
 /* freeashape (a3 = shape): free data and cookie of a shape in use */
-static void freeashape(struct shape *s)
+static void freeashape(struct bb_shape *s)
 {
     APTR c;
 
     if (!s->width)
         return;
     s->width = 0;
-    if (s->cludge != CLUDGE) {
+    if (s->cludge != BB_CLUDGE) {
         s->cludge = 0;
-        globfree((ULONG)s->data, s->allbpmem);
+        globfree((ULONG)s->data, s->size);
     }
     c = s->cookie;
     if (c) {
         s->cookie = NULL;
-        globfree((ULONG)c, s->onebpmem);
+        globfree((ULONG)c, s->planesize);
     }
 }
 
@@ -854,7 +842,7 @@ static void freeashape(struct shape *s)
 #define RENDER_SELECT offsetof(struct DiskObject, do_Gadget.SelectRender)
 static_assert(RENDER_IMAGE == 22 && RENDER_SELECT == 26);
 
-static void icontoshape_jump(ULONG shapearg, struct shape *shape, UWORD render,
+static void icontoshape_jump(ULONG shapearg, struct bb_shape *shape, UWORD render,
                              UBYTE **cookiestr)
 {
     const struct Image *im;
@@ -881,13 +869,13 @@ static void icontoshape_jump(ULONG shapearg, struct shape *shape, UWORD render,
     bytes = (UWORD)(words + words);
     shape->ebwidth = bytes;
     shape->bltsize = (UWORD)(((UWORD)(h << 6) | words) + 1);
-    *(ULONG *)&shape->xhandle = 0;      /* both handles, a long */
+    *(ULONG *)&shape->handlex = 0;      /* both handles, a long */
     planebytes = (UWORD)bl_mulu_w(bytes, h);
-    shape->onebpmem = planebytes;
-    shape->onebpmemx = (UWORD)(planebytes + (UWORD)(h << 1));
-    shape->allbpmem = (UWORD)bl_mulu_w(planebytes, im->Depth);
-    shape->allbpmemx = (UWORD)bl_mulu_w(shape->onebpmemx, im->Depth);
-    mem = globalloc(shape->allbpmem, 0x10001 | MEMF_CHIP);
+    shape->planesize = planebytes;
+    shape->xplanesize = (UWORD)(planebytes + (UWORD)(h << 1));
+    shape->size = (UWORD)bl_mulu_w(planebytes, im->Depth);
+    shape->xsize = (UWORD)bl_mulu_w(shape->xplanesize, im->Depth);
+    mem = globalloc(shape->size, 0x10001 | MEMF_CHIP);
     if (!mem)
         return;
     shape->data = (APTR)mem;
@@ -924,7 +912,7 @@ static void icontoshape_jump(ULONG shapearg, struct shape *shape, UWORD render,
  * @param shape     a0: the shape object (#ia0|#pd0)
  * @return nothing (nothing happens without an icon or image)
  */
-void BLITZ_ROUTINE c_icontoshape(ULONG shapearg BL_REG(d0), struct shape *shape BL_REG(a0))
+void BLITZ_ROUTINE c_icontoshape(ULONG shapearg BL_REG(d0), struct bb_shape *shape BL_REG(a0))
 {
     UBYTE *cookiestr = blitz_string;    /* a3 */
 
@@ -946,8 +934,8 @@ void BLITZ_ROUTINE c_icontoshape(ULONG shapearg BL_REG(d0), struct shape *shape 
  */
 void BLITZ_ROUTINE c_icontoshape2(ULONG shapearg BL_REG(d0),
                                   ULONG shapearg2 BL_REG(d1),
-                                  struct shape *shape BL_REG(a0),
-                                  struct shape *shape2 BL_REG(a1))
+                                  struct bb_shape *shape BL_REG(a0),
+                                  struct bb_shape *shape2 BL_REG(a1))
 {
     UBYTE *cookiestr = blitz_string;    /* a3 */
 

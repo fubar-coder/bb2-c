@@ -51,6 +51,7 @@
  * "library 254, $5600" (sic).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include "blitzexec.h"
 #include <exec/memory.h>
 #include <graphics/gfx.h>
@@ -166,17 +167,7 @@ static struct member *groupaddr;        /* the group, 512 bytes */
 /* GetMapShape: ANDI.l #$ffff:LSL.l #6:ADD.l baseshape */
 #define MAPSHAPE(n) ((struct mapshape *)((UBYTE *)baseshape + ((ULONG)(UWORD)(n) << 6)))
 
-/* a Blitz shape (shapeslib) */
-struct shape {
-    UWORD pixwidth, pixheight, depth;   /* +0, +2, +4 */
-    UWORD ebwidth, bltsize;             /* +6, +8 */
-    WORD xhandle, yhandle;              /* +10, +12 */
-    UBYTE *data, *cookie;               /* +14, +18 */
-    UWORD onebpmem, onebpmemx;          /* +22, +24 */
-    UWORD allbpmem, allbpmemx;          /* +26, +28 */
-    UWORD pad;                          /* +30 */
-};
-static_assert(sizeof(struct shape) == 32);
+/* a Blitz shape (shapeslib): struct bb_shape (blitzobj.h) */
 
 /* ---------------------------------------------------------------- init */
 
@@ -221,16 +212,16 @@ BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
  * @param sh  a0: the shape (!libs #shapeslib,#ia0|#pd0)
  * @return nothing
  */
-static void BLITZ_ROUTINE shapetomapshape_c(UWORD n BL_REG(d1), const struct shape *sh BL_REG(a0))
+static void BLITZ_ROUTINE shapetomapshape_c(UWORD n BL_REG(d1), const struct bb_shape *sh BL_REG(a0))
 {
     struct mapshape *ms = MAPSHAPE(n);
     PLANEPTR *planes = ms->bm.Planes;
     UBYTE *p = sh->data;
-    WORD onebp = (WORD)sh->onebpmem;
+    WORD onebp = (WORD)sh->planesize;
     UWORD depth = sh->depth, c;
 
-    ms->width = sh->pixwidth;
-    ms->bm.Rows = sh->pixheight;
+    ms->width = sh->width;
+    ms->bm.Rows = sh->height;
     *(UWORD *)&ms->bm.Flags = depth;    /* Flags 0, Depth */
     ms->bm.BytesPerRow = sh->ebwidth;
     /* BUG(orig): depth 0 -> 65536 planes (DBRA), more than 8 run into

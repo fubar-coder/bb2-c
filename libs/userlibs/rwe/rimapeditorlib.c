@@ -61,6 +61,7 @@
  * of the command).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include "blitzexec.h"
 #include <exec/memory.h>
 #include <graphics/gfx.h>
@@ -327,19 +328,7 @@ static_assert(offsetof(struct mapobject, changed) == 22);
 static_assert(offsetof(struct mapobject, lastaddress) == 24);
 static_assert(offsetof(struct mapobject, rubthrough) == 28);
 
-/* a Blitz shape object (shapeslib, 32 bytes) */
-struct shape {
-    UWORD width, height, depth;         /* 0 2 4: pixwidth, pixheight, depth */
-    UWORD ebwidth, bltsize;             /* 6 8 */
-    WORD xhandle, yhandle;              /* 10 12 */
-    UBYTE *data;                        /* 14: plane after plane */
-    ULONG *cookie;                      /* 18 */
-    UWORD onebpmem, onebpmemx, allbpmem, allbpmemx;     /* 22 24 26 28 */
-    UWORD cludge;                       /* 30: "cL" = the data is not ours */
-};
-static_assert(sizeof(struct shape) == 32);
-static_assert(offsetof(struct shape, data) == 14);
-static_assert(offsetof(struct shape, cookie) == 18);
+/* a Blitz shape object (shapeslib, 32 bytes): struct bb_shape (blitzobj.h) */
 
 static struct Library *gfxbase;
 static const UBYTE *mapstencil;
@@ -483,7 +472,7 @@ BLITZ_THUNK(_candraw, candraw_c, "d1/a0-a1");
  * @return d0.w: the last number scanned (the empty shape, or highest)
  */
 static ULONG BLITZ_ROUTINE scanshapes_c(ULONG shapenum BL_REG(d0), UWORD highest BL_REG(d1),
-                                        const struct shape *sh BL_REG(a0))
+                                        const struct bb_shape *sh BL_REG(a0))
 {
     UWORD w = 0, h = 0, d = 0;
 
@@ -553,8 +542,8 @@ BLITZ_THUNK(_scanmaxdepth, scanmaxdepth_c, "d1/a0-a1");
  * @param dst  a1: the destination shape (#ia1|#pd1)
  * @return nothing
  */
-static void BLITZ_ROUTINE shapetosquare_c(const struct shape *src BL_REG(a0),
-                                          struct shape *dst BL_REG(a1))
+static void BLITZ_ROUTINE shapetosquare_c(const struct bb_shape *src BL_REG(a0),
+                                          struct bb_shape *dst BL_REG(a1))
 {
     WORD h = (WORD)src->height;
     ULONG eb = src->ebwidth;
@@ -603,9 +592,9 @@ BLITZ_THUNK(_shapetosquare, shapetosquare_c, "d0-d1/a0-a1");
  * @param sh  a0: the shape (#ia0|#pd0)
  * @return nothing
  */
-static void BLITZ_ROUTINE shapemaskfill_c(const struct shape *sh BL_REG(a0))
+static void BLITZ_ROUTINE shapemaskfill_c(const struct bb_shape *sh BL_REG(a0))
 {
-    ULONG *c = sh->cookie;
+    ULONG *c = (ULONG *)sh->cookie;
     int i;
 
     for (i = 0; i < 8; i++)
