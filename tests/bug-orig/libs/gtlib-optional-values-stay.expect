@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+cycle 2 0
+mx 1 0
+string 1 abc
+string 2 0
+rc=0

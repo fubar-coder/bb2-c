@@ -29,10 +29,6 @@
  * via TAG_MORE (then cleared).
  *
  * Kept from the original (BUG(orig)):
- *   - The optional values (cycle/mx active, listview top/selected,
- *     scroller top, slider level, string default) stay in the static tag
- *     lists: a later call without them uses the previous values (GTString
- *     a pointer into the old string work area). (#169)
  *   - GTBevelBox: flags <> 0 gives the tag GTBB_Recessed with value 0, so
  *     the box is never recessed. (#170)
  *   - GTButton toggle (bit 13) sets TOGGLESELECT even if CreateGadget
@@ -57,6 +53,12 @@
  *   a GTTags list after it was reached through a wrong pointer.  Here the
  *   colour goes to GTPA_Color; the form without it sets GTPA_Color 0 (the
  *   value it always had).
+ * Fixed (intended deviation, #169): the optional values (cycle/mx
+ *   active, listview top/selected, scroller top, slider level, string
+ *   default) stayed in the static tag lists, a later call without them
+ *   used the previous values (GTString a pointer into the old string work
+ *   area).  Here the forms without them set the initial values of the
+ *   lists (0, GTLV_Selected -1, GTST_String NULL).
  * Fixed (intended deviation, #174): getoptions (cycle/mx labels) sized
  *   its block as option length + 258 with the pointer array at +0 and the
  *   texts at +256: at most 63 labels + NULL without a check (more
@@ -797,9 +799,9 @@ static void cycle(STDARGS)
  * As GTButton.  Options$ ("a|b|c") becomes the GTCY_Labels array
  * (getoptions: memlib globalloc, freed with the gadget or the GTList;
  * fixed, #174: the original had room for 63 labels without a check and
- * never freed it).  Flag bit 6 GA_Disabled.  Without
- * `active` GTCY_Active keeps the value of an earlier GTCycle with it,
- * BUG(orig) (#169).  Amiga mode only.
+ * never freed it).  Flag bit 6 GA_Disabled.  Without `active` GTCY_Active
+ * is 0 (fixed, #169: the original kept the value of an earlier GTCycle
+ * with it).  Amiga mode only.
  *
  * @param id,x,y,w,h  d1-d5: gadget id, position and size
  * @param font  a0: the current IntuiFont (intuifontlib's textattr)
@@ -808,6 +810,7 @@ static void cycle(STDARGS)
  */
 static void BLITZ_ROUTINE gtcycle_c(STDARGS)
 {
+    cycletags.active.ti_Data = 0;               /* fixed (#169) */
     cycle(id, x, y, w, h, font, scr, args);
 }
 
@@ -843,8 +846,8 @@ static void mx(STDARGS)
  * gadget.
  *
  * As GTCycle (Options$ -> GTMX_Labels, fixed #174).  Flag bits: 6
- * GA_Disabled, 9 GTMX_Scaled.  Without `active` GTMX_Active keeps an
- * earlier value, BUG(orig) (#169).  Amiga mode only.
+ * GA_Disabled, 9 GTMX_Scaled.  Without `active` GTMX_Active is 0 (fixed,
+ * #169: the original kept an earlier value).  Amiga mode only.
  *
  * @param id,x,y,w,h  d1-d5: gadget id, position and size
  * @param font  a0: the current IntuiFont (intuifontlib's textattr)
@@ -853,6 +856,7 @@ static void mx(STDARGS)
  */
 static void BLITZ_ROUTINE gtmx_c(STDARGS)
 {
+    mxtags.active.ti_Data = 0;                  /* fixed (#169) */
     mx(id, x, y, w, h, font, scr, args);
 }
 
@@ -934,8 +938,9 @@ static void listview(STDARGS)
  *
  * As GTButton.  GTLV_Labels = the List header of the list array (its
  * address - 28).  Flag bits: 6 GA_Disabled, 12 GTLV_ReadOnly.  Without
- * selected/top GTLV_Selected and GTLV_Top keep the values of an earlier
- * GTListView with them, BUG(orig) (#169).  Amiga mode only.
+ * selected/top GTLV_Selected is -1 and GTLV_Top 0 (fixed, #169: the
+ * original kept the values of an earlier GTListView with them).  Amiga
+ * mode only.
  *
  * @param id,x,y,w,h  d1-d5: gadget id, position and size
  * @param font  a0: the current IntuiFont (intuifontlib's textattr)
@@ -944,6 +949,8 @@ static void listview(STDARGS)
  */
 static void BLITZ_ROUTINE gtlistview_c(STDARGS)
 {
+    listtags.top.ti_Data = 0;                   /* fixed (#169) */
+    listtags.selected.ti_Data = (ULONG)-1;
     listview(id, x, y, w, h, font, scr, args);
 }
 
@@ -1072,7 +1079,8 @@ static void scroller(STDARGS)
  * As GTButton, with GTSC_Visible and GTSC_Total (words), GA_RelVerify.
  * Flag bits: 6 GA_Disabled, 7 GA_Immediate, 10 vertical (PGA_Freedom 2,
  * else 1), 11 arrows (GTSC_Arrows = GTArrowSize's size, else 0).  Without
- * Top GTSC_Top keeps an earlier value, BUG(orig) (#169).  Amiga mode only.
+ * Top GTSC_Top is 0 (fixed, #169: the original kept an earlier value).
+ * Amiga mode only.
  *
  * @param id,x,y,w,h  d1-d5: gadget id, position and size
  * @param font  a0: the current IntuiFont (intuifontlib's textattr)
@@ -1082,6 +1090,7 @@ static void scroller(STDARGS)
  */
 static void BLITZ_ROUTINE gtscroller_c(STDARGS)
 {
+    scrollertags.top.ti_Data = 0;               /* fixed (#169) */
     scroller(id, x, y, w, h, font, scr, args);
 }
 
@@ -1120,8 +1129,8 @@ static void slider(STDARGS)
  *
  * As GTButton, with GTSL_Min and GTSL_Max (words), GA_RelVerify.  Flag
  * bits: 6 GA_Disabled, 7 GA_Immediate (the tag list's initial value is 1),
- * 10 vertical (PGA_Freedom 2, else 1).  Without Level GTSL_Level keeps an
- * earlier value, BUG(orig) (#169).  Amiga mode only.
+ * 10 vertical (PGA_Freedom 2, else 1).  Without Level GTSL_Level is 0
+ * (fixed, #169: the original kept an earlier value).  Amiga mode only.
  *
  * @param id,x,y,w,h  d1-d5: gadget id, position and size
  * @param font  a0: the current IntuiFont (intuifontlib's textattr)
@@ -1130,6 +1139,7 @@ static void slider(STDARGS)
  */
 static void BLITZ_ROUTINE gtslider_c(STDARGS)
 {
+    slidertags.level.ti_Data = 0;               /* fixed (#169) */
     slider(id, x, y, w, h, font, scr, args);
 }
 
@@ -1165,9 +1175,9 @@ static void string(STDARGS)
  * STRING_KIND gadget.
  *
  * As GTButton, with GTST_MaxChars (word).  Flag bits: 6 GA_Disabled, 7
- * GA_Immediate.  Without default$ GTST_String keeps the pointer of an
- * earlier GTString with it - into the old string work area, BUG(orig)
- * (#169).  Amiga mode only.
+ * GA_Immediate.  Without default$ GTST_String is NULL (fixed, #169: the
+ * original kept the pointer of an earlier GTString with it, into the old
+ * string work area).  Amiga mode only.
  *
  * @param id,x,y,w,h  d1-d5: gadget id, position and size
  * @param font  a0: the current IntuiFont (intuifontlib's textattr)
@@ -1176,6 +1186,7 @@ static void string(STDARGS)
  */
 static void BLITZ_ROUTINE gtstring_c(STDARGS)
 {
+    stringtags.string.ti_Data = 0;              /* fixed (#169) */
     string(id, x, y, w, h, font, scr, args);
 }
 
