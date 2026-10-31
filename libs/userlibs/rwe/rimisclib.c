@@ -381,6 +381,12 @@ static ULONG copyout(const UBYTE *s)
 
 /* ------------------------------------------------------------ init/finit */
 
+/**
+ * @brief init: open dos.library and intuition.library (any version).
+ *
+ * No font prefs buffer yet.
+ * @return d0: the intuition.library base (0 if it is missing)
+ */
 static ULONG BLITZ_ROUTINE libinit_c(void)
 {
     dosbase_ = (struct DosLibrary *)OpenLibrary((CONST_STRPTR)dosname, 0);
@@ -392,6 +398,12 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
 
 static ULONG BLITZ_ROUTINE closefontprefs_c(void);
 
+/**
+ * @brief finit: close intuition.library (if open) and dos.library, free
+ * the font prefs buffer.
+ *
+ * The bases are not cleared (no defect: nothing uses them after finit).
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (intuibase)
@@ -402,7 +414,12 @@ static void BLITZ_ROUTINE libfinit_c(void)
 
 /* ------------------------------------------------------------ hardware */
 
-/* TimerReset: CIA-A TOD to 0 (hi stops it, lo starts it again) */
+/**
+ * @brief TimerReset: set the CIA-A TOD counter to 0.
+ *
+ * Writing the high byte stops it, the low byte starts it again.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE resettimer_c(void)
 {
     CIAA_TODHI = 0;
@@ -410,8 +427,13 @@ static void BLITZ_ROUTINE resettimer_c(void)
     CIAA_TODLOW = 0;
 }
 
-/* ClickWait: until the left mouse button is pressed, a short delay, until
-   it is released */
+/**
+ * @brief ClickWait: wait for a click of the left mouse button.
+ *
+ * Busy waits on CIA-A until the button is pressed, a short delay (DBRA
+ * of 12767), until it is released.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE doclickwait_c(void)
 {
     UWORD n = 12767;
@@ -427,13 +449,28 @@ static void BLITZ_ROUTINE doclickwait_c(void)
 
 /* ---------------------------------------------------------- small ones */
 
-/* PortSigBit(msgport) (d0): mp_SigBit */
+/**
+ * @brief PortSigBit(msgport): the signal bit of a message port.
+ * @param port  d0: the MsgPort
+ * @return d0: its mp_SigBit (a byte result)
+ */
 static ULONG BLITZ_ROUTINE getsigbit_c(const struct MsgPort *port BL_REG(d0))
 {
     return port->mp_SigBit;
 }
 
-/* WorkbenchHere: d0 = IntuitionBase (BUG(orig): d0 is no argument, #759) */
+/**
+ * @brief WorkbenchHere: whether a screen's title contains "Workbench".
+ *
+ * Searches the screen titles from IntuitionBase->FirstScreen.
+ * BUG(orig): IntuitionBase is taken from d0, which is no argument (#759);
+ * the screen list is never ended (no 0 check), so it returns BB_TRUE or
+ * hangs (#761); a title that ends with the start of "Workbench" restarts
+ * the same screen for ever (#762); after a partial match it goes on with
+ * the next screen (#760).
+ * @param ib  d0: whatever the program left there, used as IntuitionBase
+ * @return d0: BB_TRUE when found (it never returns BB_FALSE)
+ */
 static BB_BOOL BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0))
 {
     const struct Screen *scr = ib->FirstScreen;
@@ -467,7 +504,14 @@ static BB_BOOL BLITZ_ROUTINE iswbhere_c(const struct IntuitionBase *ib BL_REG(d0
     }
 }
 
-/* FromBlitz: the task name starts with "Blitz ][ Program Proc" */
+/**
+ * @brief FromBlitz: whether the program runs from Blitz (the task name
+ * starts with "Blitz ][ Program Proc").
+ *
+ * Compares bytes (DIFF: the original's CMPM.l is an address error at an
+ * odd task name on a 68000).
+ * @return d0: BB_TRUE if it does, else BB_FALSE
+ */
 static BB_BOOL BLITZ_ROUTINE fromblitz_c(void)
 {
     const UBYTE *n = (const UBYTE *)SysBase->ThisTask->tc_Node.ln_Name;
@@ -479,8 +523,14 @@ static BB_BOOL BLITZ_ROUTINE fromblitz_c(void)
     return n[20] == 'c' ? BB_TRUE : BB_FALSE;
 }
 
-/* LtoS(l) (d0): the 4 bytes, highest first, no 0; 0-31 and 128-255 as
-   128 (BUG(orig): signed CMPI.b #32, #753) */
+/**
+ * @brief LtoS(longword): a long as a string of its 4 bytes.
+ *
+ * Highest byte first, written to a3 without a 0.  BUG(orig) (#753): the
+ * bytes 0-31 and 128-255 become 128 (a signed CMPI.b #32).
+ * @param v  d0: the long
+ * @return d0: 4, the length
+ */
 static ULONG BLITZ_ROUTINE ltos_c(ULONG v BL_REG(d0))
 {
     int i;
@@ -497,7 +547,14 @@ static ULONG BLITZ_ROUTINE ltos_c(ULONG v BL_REG(d0))
     return 4;
 }
 
-/* ASCRaw(rawkey) (d0.w, signed, unchecked) */
+/**
+ * @brief ASCRaw(rawkey): the character of a raw key code.
+ *
+ * From the original's table of 114 entries; BUG(orig) (#744): the code
+ * is not checked, a key beyond the table reads behind it.
+ * @param key  d0.w: the raw key code (signed)
+ * @return d0: 1, the length of the string at a3
+ */
 static ULONG BLITZ_ROUTINE ascraw_c(UWORD key BL_REG(d0))
 {
     *blitz_string++ = rawtable[(WORD)key];
@@ -505,8 +562,15 @@ static ULONG BLITZ_ROUTINE ascraw_c(UWORD key BL_REG(d0))
     return 1;
 }
 
-/* RawASC(char$) (d0): the first index of its first character (searched
-   for ever, BUG(orig) #744) */
+/**
+ * @brief RawASC(char): the raw key code of a character.
+ *
+ * The first index of the string's first character in the table.
+ * BUG(orig) (#744): a character not in the table is searched for behind
+ * it until the byte is found somewhere.
+ * @param s  d0: the string
+ * @return d0.w: the raw key code
+ */
 static ULONG BLITZ_ROUTINE rawasc_c(const UBYTE *s BL_REG(d0))
 {
     UBYTE c = *s;
@@ -517,8 +581,15 @@ static ULONG BLITZ_ROUTINE rawasc_c(const UBYTE *s BL_REG(d0))
     return i;
 }
 
-/* Flip$(s$): reversed in place - the argument below a3 (length -4(a2)),
-   a3 unchanged */
+/**
+ * @brief Flip$(String$): the string reversed.
+ *
+ * Reversed in place: the argument is the string below a3, a3 stays.
+ * BUG(orig) (#751): a string of 0 or 1 characters swaps 65536 byte pairs
+ * (DBRA with -1).
+ * @param lens  a2: the argument stack, -4(a2) the length of the string
+ * @return d0: the length
+ */
 static ULONG BLITZ_ROUTINE doflip_c(const ULONG *lens BL_REG(a2))
 {
     ULONG len = lens[-1];
@@ -534,8 +605,17 @@ static ULONG BLITZ_ROUTINE doflip_c(const ULONG *lens BL_REG(a2))
     return len;
 }
 
-/* BInstr(s$,f$) (d0, d1; the length of s$ at -4(a2)): the position of the
-   last f$ in s$, 1 based; 0 if none (and for f$ = "") */
+/**
+ * @brief BInstr(String$,Findstring$): the position of the last
+ * Findstring$ in String$.
+ *
+ * Searches backwards.  DIFF: a2 and a3 stay unchanged (the original
+ * leaves them on the strings).
+ * @param src   d0: String$
+ * @param find  d1: Findstring$
+ * @param lens  a2: the argument stack, -4(a2) the length of String$
+ * @return d0: the position, 1 based; 0 if none (and for Findstring$ = "")
+ */
 static ULONG BLITZ_ROUTINE binstr_c(const UBYTE *src BL_REG(d0), const UBYTE *find BL_REG(d1),
                                     const ULONG *lens BL_REG(a2))
 {
@@ -560,7 +640,15 @@ static ULONG BLITZ_ROUTINE binstr_c(const UBYTE *src BL_REG(d0), const UBYTE *fi
 
 /* -------------------------------------------------------- arg parsing */
 
-/* InitArgParse s (d0): the copy and four more 0 (BUG(orig): no limit, #752) */
+/**
+ * @brief InitArgParse parameter$: start parsing a string with NextArg$ /
+ * NextArgChar$.
+ *
+ * Copies it into the 256 byte buffer with four more 0 behind it.
+ * BUG(orig) (#752): the copy has no limit.
+ * @param s  d0: the string
+ * @return nothing
+ */
 static void BLITZ_ROUTINE parseinit_c(const UBYTE *s BL_REG(d0))
 {
     UBYTE *dst = argbuffer;
@@ -575,7 +663,16 @@ static void BLITZ_ROUTINE parseinit_c(const UBYTE *s BL_REG(d0))
     curadr = argbuffer;
 }
 
-/* NextArg$: the next word to a3 (no 0), its length; 0 at the end */
+/**
+ * @brief NextArg$: the next word of the InitArgParse string.
+ *
+ * Leading spaces are skipped; quotes group (a quoted word ends at the
+ * closing quote even if no space follows, as ReadItem does), "" inside
+ * quotes is a quote.  The word goes to a3 without a 0 (none needed,
+ * #257).  BUG(orig) (#755): after "" inside quotes, the next quote copies
+ * the character behind it.
+ * @return d0: the length; 0 at the end (also before InitArgParse)
+ */
 static ULONG BLITZ_ROUTINE nextparsearg_c(void)
 {
     UBYTE *pos = curadr, *start = blitz_string, c;
@@ -620,8 +717,16 @@ endthis:
     return (ULONG)(blitz_string - start);
 }
 
-/* NextArgChar$ c (d0.b): everything up to c (or the end) to a3, no 0;
-   BUG(orig): curadr unchecked (#754) */
+/**
+ * @brief NextArgChar$ char: the InitArgParse string up to a character.
+ *
+ * Everything up to char (or the end) to a3, without a 0; the parse
+ * position goes behind char.  BUG(orig) (#754): the parse pointer is not
+ * checked: before InitArgParse and after NextArg$ came to the end it
+ * reads from address 0.
+ * @param ch  d0.b: the character
+ * @return d0: the length
+ */
 static ULONG BLITZ_ROUTINE nextparseuntilchar_c(UBYTE ch BL_REG(d0))
 {
     UBYTE *pos = curadr, c;
@@ -644,7 +749,8 @@ static ULONG BLITZ_ROUTINE nextparseuntilchar_c(UBYTE ch BL_REG(d0))
 
 /* ------------------------------------------------------------ EZRequest */
 
-/* doeasybegin: '|' to line feeds in the body, EasyRequestArgs */
+/* doeasybegin: '|' to line feeds in the body (the compiler's copy of
+   the argument), EasyRequestArgs on the EZOutput window */
 static ULONG doeasybegin(void)
 {
     UBYTE *p = (UBYTE *)ez.es.es_TextFormat, c;
@@ -717,7 +823,17 @@ static void doargs(const UBYTE *sp, UWORD cnt, UBYTE *fmt, const void *caller_a6
     } while (n-- != 0);
 }
 
-/* EZRequest title$,body$,gadget$ (d0, d1, d2) */
+/**
+ * @brief EZRequest title$,body$,gadget$: an EasyRequest on the EZOutput
+ * window ('|' in the body: a line feed).
+ *
+ * DIFF: a2 stays (the original: 0); a3 = 0 afterwards, like the
+ * original (the NDK inline of EasyRequestArgs).
+ * @param title   d0: the title
+ * @param body    d1: the body text
+ * @param gadget  d2: the gadgets ('|' separated)
+ * @return d0: what EasyRequestArgs returns (the gadget number)
+ */
 static ULONG BLITZ_ROUTINE doeasy_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                     STRPTR gadget BL_REG(d2))
 {
@@ -728,7 +844,12 @@ static ULONG BLITZ_ROUTINE doeasy_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(
     return doeasybegin();
 }
 
-/* EZRequest body$,gadget$ (d0, d1) */
+/**
+ * @brief EZRequest body$,gadget$: an EasyRequest without a title.
+ * @param body    d0: the body text
+ * @param gadget  d1: the gadgets
+ * @return d0: what EasyRequestArgs returns
+ */
 static ULONG BLITZ_ROUTINE doeasy2_c(STRPTR body BL_REG(d0), STRPTR gadget BL_REG(d1))
 {
     ez.es.es_GadgetFormat = gadget;
@@ -738,14 +859,32 @@ static ULONG BLITZ_ROUTINE doeasy2_c(STRPTR body BL_REG(d0), STRPTR gadget BL_RE
     return doeasybegin();
 }
 
-/* EZRequest body$ (d0): gadget "Ok" */
+/**
+ * @brief EZRequest body$: an EasyRequest without a title, gadget "Ok".
+ * @param body  d0: the body text
+ * @return d0: what EasyRequestArgs returns
+ */
 static ULONG BLITZ_ROUTINE doeasy3_c(STRPTR body BL_REG(d0))
 {
     return doeasy2_c(body, (STRPTR)okgad);
 }
 
-/* EZRequest title$,body$,gadget$,var.. (d0-d2; a2: the three lengths,
-   below them the arguments; d7.w their number) */
+/**
+ * @brief EZRequest title$,body$,gadget$,var..: an EasyRequest with the
+ * arguments as the format arguments.
+ *
+ * See doargs; BUG(orig): no limit of the 16 argument longs (#748), Quick
+ * and Float arguments as in #749/#750.  a3 = the argument array
+ * afterwards, like the original.
+ * @param title      d0: the title
+ * @param body       d1: the body (format) text
+ * @param gadget     d2: the gadgets
+ * @param args       a2: the argument stack: the three lengths, below
+ *                   them the repeated arguments
+ * @param reps       d7.w: the number of arguments
+ * @param caller_a6  a6: the caller's a6, passed to fltoqu (#749)
+ * @return d0: what EasyRequestArgs returns
+ */
 static ULONG BLITZ_ROUTINE doeasy4_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                      STRPTR gadget BL_REG(d2), UBYTE *args BL_REG(a2),
                                      UWORD reps BL_REG(d7), const void *caller_a6 BL_REG(a6))
@@ -758,7 +897,20 @@ static ULONG BLITZ_ROUTINE doeasy4_c(STRPTR title BL_REG(d0), STRPTR body BL_REG
     return doeasybegin();
 }
 
-/* EZRequestArgs var.. (a2, d7.w as above): the body from the arguments */
+/**
+ * @brief EZRequestArgs args..: an EasyRequest whose body is built from the
+ * arguments.
+ *
+ * %s / %ld / %d per type, separated by the EZSeparator character ('|': a
+ * line feed), gadget "Ok", no title.  BUG(orig): no 0 behind the format
+ * text (160 byte buffer, #747); no limit of the arguments (#748);
+ * without arguments a type word is read from a2 and the count 0 runs the
+ * loop 65536 times (#746); Quick/Float as in #749/#750.
+ * @param args       a2: the argument stack, the repeated arguments
+ * @param reps       d7.w: the number of arguments
+ * @param caller_a6  a6: the caller's a6, passed to fltoqu (#749)
+ * @return d0: what EasyRequestArgs returns
+ */
 static ULONG BLITZ_ROUTINE doeasy6_c(UBYTE *args BL_REG(a2), ULONG reps BL_REG(d7),
                                      const void *caller_a6 BL_REG(a6))
 {
@@ -771,19 +923,32 @@ static ULONG BLITZ_ROUTINE doeasy6_c(UBYTE *args BL_REG(a2), ULONG reps BL_REG(d
     return doeasybegin();
 }
 
-/* EZOutput win# (a0 = the window object, its first long the Window) */
+/**
+ * @brief EZOutput win#: the window of the EZRequests.
+ * @param w  a0: the window object (windowslib, #ia0|#pd0), its first long
+ *           the Window
+ * @return nothing
+ */
 static void BLITZ_ROUTINE ezoutput_c(struct Window **w BL_REG(a0))
 {
     win = *w;
 }
 
-/* EZOutput */
+/**
+ * @brief EZOutput: the EZRequests on the default screen again (no window).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE ezoutput2_c(void)
 {
     win = NULL;
 }
 
-/* EZSeparator c$ (d0): its first character */
+/**
+ * @brief EZSeparator char: the separator EZRequestArgs puts between the
+ * arguments (default '|', a line feed).
+ * @param s  d0: the string, its first character
+ * @return nothing
+ */
 static void BLITZ_ROUTINE doeasysep_c(const UBYTE *s BL_REG(d0))
 {
     sep = *s;
@@ -791,7 +956,16 @@ static void BLITZ_ROUTINE doeasysep_c(const UBYTE *s BL_REG(d0))
 
 /* ------------------------------------------------------------ the paths */
 
-/* ProgPath$: the program's directory and name (a3 behind the 0) */
+/**
+ * @brief ProgPath$: the program's directory and name.
+ *
+ * GetProgramDir (without one: the current directory) and
+ * GetProgramName (empty: the task name); fills the buffers of ProgDir$
+ * and ProgName$.  BUG(orig): a3 stays behind the 0 of the result (d0 is
+ * right) (#743); with an empty directory name it reads the byte before
+ * the result (#758).
+ * @return d0: the length
+ */
 static ULONG BLITZ_ROUTINE doprogpath_c(void)
 {
     BPTR lock = GetProgramDir();
@@ -839,7 +1013,13 @@ static ULONG BLITZ_ROUTINE doprogpath_c(void)
     return n;
 }
 
-/* ProgDir$ */
+/**
+ * @brief ProgDir$: the program's directory.
+ *
+ * Calls ProgPath$ only while its buffer is empty (the directory does not
+ * change).  BUG(orig) (#743): a3 stays behind the 0.
+ * @return d0: the length
+ */
 static ULONG BLITZ_ROUTINE doprogdir_c(void)
 {
     if (!pd.progdir[0]) {
@@ -851,7 +1031,13 @@ static ULONG BLITZ_ROUTINE doprogdir_c(void)
     return copyout(pd.progdir);
 }
 
-/* ProgName$ */
+/**
+ * @brief ProgName$: the program's name.
+ *
+ * Calls ProgPath$ only while its buffer is empty.  BUG(orig) (#743): a3
+ * stays behind the 0.
+ * @return d0: the length
+ */
 static ULONG BLITZ_ROUTINE doprogname_c(void)
 {
     if (!pd.progname[0]) {
@@ -865,7 +1051,10 @@ static ULONG BLITZ_ROUTINE doprogname_c(void)
 
 /* ---------------------------------------------------------- font prefs */
 
-/* CloseFontPrefs: 0 */
+/**
+ * @brief CloseFontPrefs: free the font prefs buffer of OpenFontPrefs.
+ * @return d0: 0 (OpenFontPrefs' failures return it)
+ */
 static ULONG BLITZ_ROUTINE closefontprefs_c(void)
 {
     if (!fontloc)
@@ -876,9 +1065,15 @@ static ULONG BLITZ_ROUTINE closefontprefs_c(void)
     return 0;
 }
 
-/* OpenFontPrefs: ENV:SYS/Font.Prefs into the buffer; -1 if it is a FORM
-   PREF with PRHD and a FONT chunk behind it, else 0 (buffer freed: the
-   tail call of CloseFontPrefs, which returns 0) */
+/**
+ * @brief OpenFontPrefs: read ENV:SYS/Font.Prefs into a 16K buffer.
+ *
+ * BUG(orig): AllocMem is not checked (#756); a second OpenFontPrefs
+ * loses the first buffer (#757).
+ * @return d0: BB_TRUE if it is a FORM PREF with PRHD and a FONT chunk
+ *         behind it; else BB_FALSE, the buffer freed (the tail call of
+ *         CloseFontPrefs, which returns 0)
+ */
 static BB_BOOL BLITZ_ROUTINE openfontprefs_c(void)
 {
     const ULONG *p;
@@ -907,7 +1102,9 @@ static BB_BOOL BLITZ_ROUTINE openfontprefs_c(void)
 }
 
 /* the FONT chunk with fp_Type = type, stepping by 164 bytes to the end of
-   the buffer; NULL if none */
+   the buffer; NULL if none.  BUG(orig) (#745): through the uncleared
+   memory behind the file, and the last chunk up to 26 bytes behind the
+   buffer */
 static const struct FontPrefs *findfont(UWORD type)
 {
     const UBYTE *end, *p;
@@ -921,7 +1118,13 @@ static const struct FontPrefs *findfont(UWORD type)
     return NULL;
 }
 
-/* DefaultFontHeight(type) (d0.w): ta_YSize (d0's high word kept), 0 */
+/**
+ * @brief DefaultFontHeight(fonttype): the height of a font of the font
+ * prefs (OpenFontPrefs).
+ * @param type  d0.w: fp_Type (0 icon, 1 system, 2 screen)
+ * @return d0.w: its ta_YSize (d0's high word kept); 0 if there is no
+ *         buffer or no such chunk (#745)
+ */
 static ULONG BLITZ_ROUTINE defaultfontheight_c(ULONG type BL_REG(d0))
 {
     const struct FontPrefs *p = findfont((UWORD)type);
@@ -931,7 +1134,12 @@ static ULONG BLITZ_ROUTINE defaultfontheight_c(ULONG type BL_REG(d0))
     return (type & 0xffff0000UL) | p->fp_TextAttr.ta_YSize;
 }
 
-/* DefaultFontName(type) (d0.w): fp_Name (a3 behind the 0), "" */
+/**
+ * @brief DefaultFontName(fonttype): the name of a font of the font prefs.
+ * @param type  d0.w: fp_Type (0 icon, 1 system, 2 screen)
+ * @return d0: the length of fp_Name (at a3, a3 behind the 0); 0 ("") if
+ *         there is no buffer or no such chunk (#745)
+ */
 static ULONG BLITZ_ROUTINE defaultfontname_c(UWORD type BL_REG(d0))
 {
     const struct FontPrefs *p = findfont(type);
