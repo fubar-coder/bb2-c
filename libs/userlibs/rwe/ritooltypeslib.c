@@ -356,9 +356,9 @@ ULONG BLITZ_ROUTINE c_gettoolnumber(ULONG n BL_REG(d0))
 /* FindToolType(tt$[,bracket_check]): -1 = found, 1 = found as "(tt$)" */
 ULONG BLITZ_ROUTINE c_istooltype(CONST_STRPTR name BL_REG(d0))
 {
-    UBYTE *temp;
-    const char *s;
-    char *d;
+    UBYTE *bracketed;
+    const char *src;
+    char *dst;
     ULONG r;
 
     if (!tooltype)
@@ -370,18 +370,18 @@ ULONG BLITZ_ROUTINE c_istooltype(CONST_STRPTR name BL_REG(d0))
         return 0;
     if (*string_address == '(')
         return 0;
-    temp = AllocMem(256, MEMF_PUBLIC);
-    if (!temp)
+    bracketed = AllocMem(256, MEMF_PUBLIC);
+    if (!bracketed)
         return 0;
-    s = string_address;
-    d = (char *)temp;
-    *d++ = '(';
-    while ((*d++ = *s++) != 0)
+    src = string_address;
+    dst = (char *)bracketed;
+    *dst++ = '(';
+    while ((*dst++ = *src++) != 0)
         ;
-    d[-1] = ')';
-    *d = 0;
-    r = FindToolType((CONST_STRPTR *)tooltype, (CONST_STRPTR)temp) ? 1 : 0;
-    FreeMem(temp, 256);
+    dst[-1] = ')';
+    *dst = 0;
+    r = FindToolType((CONST_STRPTR *)tooltype, (CONST_STRPTR)bracketed) ? 1 : 0;
+    FreeMem(bracketed, 256);
     bracket_check = 0;
     return r;
 }
@@ -665,21 +665,23 @@ static void freeashape(UBYTE *s)
 }
 
 /* icontoshape_jump: shape (a0) from the image at do_Gadget+render
-   (GadgetRender 22, SelectRender 26); `a3` = the a3 the original has at
-   this point (the shape after freeashape, otherwise unchanged) */
-static void icontoshape_jump(ULONG d0, UBYTE *shape, UWORD render, UBYTE **a3)
+   (GadgetRender 22, SelectRender 26); shapearg = d0, `cookiestr` = the a3 the
+   original has at this point (the shape after freeashape, otherwise
+   unchanged) */
+static void icontoshape_jump(ULONG shapearg, UBYTE *shape, UWORD render,
+                             UBYTE **cookiestr)
 {
     UBYTE *im;
-    UWORD w, h, words, bytes, d;
+    UWORD w, h, words, bytes, count;
     const UWORD *from;
     UWORD *to;
     ULONG mem;
 
     if (SW(shape, 0)) {
-        *a3 = shape;
+        *cookiestr = shape;
         freeashape(shape);
     }
-    shapenumber = (UWORD)((WORD)d0 >> 5);
+    shapenumber = (UWORD)((WORD)shapearg >> 5);
     im = *(UBYTE **)((UBYTE *)diskobject + render);
     if (!im)
         return;
@@ -693,10 +695,10 @@ static void icontoshape_jump(ULONG d0, UBYTE *shape, UWORD render, UBYTE **a3)
     SW(shape, 6) = bytes;               /* ebwidth */
     SW(shape, 8) = (UWORD)(((UWORD)(h << 6) | words) + 1);  /* blitsize */
     SL(shape, 10) = 0;                  /* handles */
-    d = (UWORD)bl_mulu_w(bytes, h);
-    SW(shape, 22) = d;                  /* onebpmem */
-    SW(shape, 24) = (UWORD)(d + (UWORD)(h << 1));               /* onebpmemx */
-    SW(shape, 26) = (UWORD)bl_mulu_w(d, SW(im, 4));             /* allbpmem */
+    count = (UWORD)bl_mulu_w(bytes, h);
+    SW(shape, 22) = count;              /* onebpmem */
+    SW(shape, 24) = (UWORD)(count + (UWORD)(h << 1));           /* onebpmemx */
+    SW(shape, 26) = (UWORD)bl_mulu_w(count, SW(im, 4));         /* allbpmem */
     SW(shape, 28) = (UWORD)bl_mulu_w(SW(shape, 24), SW(im, 4)); /* allbpmemx */
     mem = globalloc(SW(shape, 26), 0x10001 | MEMF_CHIP);
     if (!mem)
@@ -705,43 +707,44 @@ static void icontoshape_jump(ULONG d0, UBYTE *shape, UWORD render, UBYTE **a3)
     from = *(const UWORD **)(im + 6);   /* ImageData */
     to = (UWORD *)mem;
     /* BUG(orig) #847: (width >> 4) + 1 words per row (MULU.w: low words) */
-    d = (UWORD)bl_mulu_w((UWORD)bl_mulu_w((UWORD)(((WORD)w >> 4) + 1), h), SW(im, 4));
-    d--;
+    count = (UWORD)bl_mulu_w((UWORD)bl_mulu_w((UWORD)(((WORD)w >> 4) + 1), h), SW(im, 4));
+    count--;
     do
         *to++ = *from++;
-    while (d-- != 0);                   /* DBRA */
+    while (count-- != 0);               /* DBRA */
     SW(shape, 30) = 0;
     {
         /* ALibJsr MakeCookie with d0 = shapenumber and the original's a3 */
         UBYTE *keep = blitz_string;
         struct bl_regs r = { .d0 = shapenumber };
 
-        blitz_string = *a3;
+        blitz_string = *cookiestr;
         BLITZ_ALIBJSR(TOK_makecookie, r);
         blitz_string = keep;
     }
 }
 
 /* IconToShape shape: the icon's image as shape (DIFF: a3 kept) */
-void BLITZ_ROUTINE c_icontoshape(ULONG d0 BL_REG(d0), UBYTE *shape BL_REG(a0))
+void BLITZ_ROUTINE c_icontoshape(ULONG shapearg BL_REG(d0), UBYTE *shape BL_REG(a0))
 {
-    UBYTE *a3 = blitz_string;
+    UBYTE *cookiestr = blitz_string;    /* a3 */
 
     if (!diskobject)
         return;
-    icontoshape_jump(d0, shape, 22, &a3);
+    icontoshape_jump(shapearg, shape, 22, &cookiestr);
 }
 
 /* IconToShape shape,shape: the image and the selected image */
-void BLITZ_ROUTINE c_icontoshape2(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1),
+void BLITZ_ROUTINE c_icontoshape2(ULONG shapearg BL_REG(d0),
+                                  ULONG shapearg2 BL_REG(d1),
                                   UBYTE *shape BL_REG(a0), UBYTE *shape2 BL_REG(a1))
 {
-    UBYTE *a3 = blitz_string;
+    UBYTE *cookiestr = blitz_string;    /* a3 */
 
     if (!diskobject)
         return;
-    icontoshape_jump(d0, shape, 22, &a3);
-    icontoshape_jump(d1, shape2, 26, &a3);
+    icontoshape_jump(shapearg, shape, 22, &cookiestr);
+    icontoshape_jump(shapearg2, shape2, 26, &cookiestr);
 }
 
 /* entries: keep every one of d0/d1/a0/a1 that is not the result */
