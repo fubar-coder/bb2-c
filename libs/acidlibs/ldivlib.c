@@ -20,41 +20,42 @@ BLITZ_NULLSUB(ldivide, 0, 0);           /* $CB01 longdiv */
 BLITZ_LIBFIN();
 
 /* divide - common part.  `steps` is the dbf counter: 31 for Long (32
-   quotient bits), 47 for Quick (16 more bits = 16.16 fixed point).
+   quotient bits), 47 for Quick (16 more bits = 16.16 fixed point);
+   dividend = d0 (the remainder in the end), divisor = d1.
      d1 = 0           -> $7FFFFFFF ("LARGEST POSITIVE NUMBER", any sign;
                          BUG(orig) (#200): tested before the signs, no error)
      the signs are removed first and applied to the quotient at the end */
-static LONG divide(ULONG d0, ULONG d1, UWORD steps)
+static LONG divide(ULONG dividend, ULONG divisor, UWORD steps)
 {
     UWORD neg = 0;                      /* d2.w: odd number of negatives */
-    ULONG d3 = 0, d4 = 0;               /* shifted divisor, quotient */
-    ULONG x;                            /* X flag */
+    ULONG shifted = 0, quotient = 0;    /* d3 shifted divisor, d4 quotient */
+    ULONG xbit;                         /* X flag */
 
-    if (d1 == 0)
+    if (divisor == 0)
         return 0x7fffffff;              /* 'infinity */
-    if ((LONG)d1 < 0) {
-        d1 = -d1;
+    if ((LONG)divisor < 0) {
+        divisor = -divisor;
         neg = 0xffff;                   /* MOVEQ #-1,d2 */
     }
-    if ((LONG)d0 < 0) {
-        d0 = -d0;
+    if ((LONG)dividend < 0) {
+        dividend = -dividend;
         neg = ~neg;                     /* NOT d2 */
     }
     do {                                /* 'loop */
-        d4 <<= 1;
-        x = d1 & 1;                     /* LSR.l #1,d1 */
-        d1 >>= 1;
-        d3 = (d3 >> 1) | (x << 31);     /* ROXR.l #1,d3 */
+        quotient <<= 1;
+        xbit = divisor & 1;             /* LSR.l #1,d1 */
+        divisor >>= 1;
+        shifted = (shifted >> 1) | (xbit << 31); /* ROXR.l #1,d3 */
         /* while d1 still has bits, the divisor is only moved into d3
            (from the top); afterwards each step compares and subtracts */
-        if (d1 == 0 && d3 != 0 && d0 >= d3) {      /* 'skip6 / BCS 'skip3 */
-            d0 -= d3;
-            d4 += 1;                    /* ADDQ #1,d4 (bit 0 is free) */
+        if (divisor == 0 && shifted != 0 && dividend >= shifted) { /* 'skip6 / BCS 'skip3 */
+            dividend -= shifted;
+            quotient += 1;              /* ADDQ #1,d4 (bit 0 is free) */
         }
     } while (steps-- != 0);             /* DBF d5,'loop */
     if (neg)                            /* 'skip7 */
-        d4 = -d4;
-    return (LONG)d4;
+        quotient = -quotient;
+    return (LONG)quotient;
 }
 
 /* qdivide - d0.q = d0.q / d1.q */

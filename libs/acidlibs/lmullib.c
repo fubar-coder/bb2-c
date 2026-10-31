@@ -37,26 +37,26 @@ static inline ULONG swap(ULONG a)
    >= $10000, i.e. when the true product does not fit in 32 bits anyway. */
 LONG lmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
 {
-    ULONG d0 = a, d1 = b, d3, d4;
+    ULONG acc = a, mag_b = b, cross_hilo, cross_lohi;  /* d0 d1 d3 d4 */
     UWORD neg = 0;                      /* d2.w */
 
-    if ((LONG)d0 < 0) {
-        d0 = -d0;
+    if ((LONG)acc < 0) {
+        acc = -acc;
         neg = 0xffff;
     }
-    if ((LONG)d1 < 0) {                 /* 'skip */
-        d1 = -d1;
+    if ((LONG)mag_b < 0) {              /* 'skip */
+        mag_b = -mag_b;
         neg = ~neg;
     }
-    d3 = d4 = d0;                       /* 'skip2 */
-    d0 = mulu(d0, d1);                  /* lo(a) * lo(b) */
-    d3 = mulu(swap(d3), d1);            /* hi(a) * lo(b) */
-    d0 += swap(d3);
-    d4 = mulu(d4, swap(d1));            /* lo(a) * hi(b) */
-    d0 += swap(d4);
+    cross_hilo = cross_lohi = acc;      /* 'skip2 */
+    acc = mulu(acc, mag_b);             /* lo(a) * lo(b) */
+    cross_hilo = mulu(swap(cross_hilo), mag_b); /* hi(a) * lo(b) */
+    acc += swap(cross_hilo);
+    cross_lohi = mulu(cross_lohi, swap(mag_b)); /* lo(a) * hi(b) */
+    acc += swap(cross_lohi);
     if (neg)
-        d0 = -d0;                       /* 'skip3 */
-    return (LONG)d0;
+        acc = -acc;                     /* 'skip3 */
+    return (LONG)acc;
 }
 
 /* qmultiply - d0.q = d0.q * d1.q (16.16 fixed point): the four partial
@@ -66,25 +66,25 @@ LONG lmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
    lmultiply (its high word lands in the low word when hi*hi >= $10000). */
 LONG qmultiply(LONG a BL_REG(d0), LONG b BL_REG(d1))
 {
-    ULONG d0 = a, d1 = b, d3, d4;
+    ULONG acc = a, mag_b = b, a_hi, a_lo;   /* d0 d1 d3 d4 */
     UWORD neg = 0;                      /* d2.w */
 
-    if ((LONG)d0 < 0) {
-        d0 = -d0;
+    if ((LONG)acc < 0) {
+        acc = -acc;
         neg = 0xffff;
     }
-    if ((LONG)d1 < 0) {                 /* 'skip */
-        d1 = -d1;
+    if ((LONG)mag_b < 0) {              /* 'skip */
+        mag_b = -mag_b;
         neg = ~neg;
     }
-    d3 = d4 = d0;                       /* 'skip2 */
-    d0 = mulu(d0, d1) >> 16;            /* lo*lo: CLR d0:SWAP d0 */
-    d0 += mulu(swap(d3), d1);           /* + hi(a) * lo(b) */
-    d1 = swap(d1);
-    d3 = d4;
-    d0 += mulu(d4, d1);                 /* + lo(a) * hi(b) */
-    d0 += swap(mulu(swap(d3), d1));     /* + hi(a) * hi(b) << 16 */
+    a_hi = a_lo = acc;                  /* 'skip2 */
+    acc = mulu(acc, mag_b) >> 16;       /* lo*lo: CLR d0:SWAP d0 */
+    acc += mulu(swap(a_hi), mag_b);     /* + hi(a) * lo(b) */
+    mag_b = swap(mag_b);
+    a_hi = a_lo;
+    acc += mulu(a_lo, mag_b);           /* + lo(a) * hi(b) */
+    acc += swap(mulu(swap(a_hi), mag_b)); /* + hi(a) * hi(b) << 16 */
     if (neg)
-        d0 = -d0;                       /* 'skip3 */
-    return (LONG)d0;
+        acc = -acc;                     /* 'skip3 */
+    return (LONG)acc;
 }
