@@ -358,7 +358,7 @@ ULONG BLITZ_ROUTINE c_playraw(ULONG data BL_REG(d0), ULONG len BL_REG(d1),
    requester's result, 0 without ahi.device or requester.  BUG(orig)
    (see the header): the tag offsets, the screen, the requester not freed */
 ULONG BLITZ_ROUTINE c_outreq6(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL_REG(d2),
-                              ULONG h BL_REG(d3), ULONG id BL_REG(d4), ULONG f BL_REG(d5))
+                              ULONG h BL_REG(d3), ULONG id BL_REG(d4), ULONG freq BL_REG(d5))
 {
     struct bl_regs r;
 
@@ -369,7 +369,7 @@ ULONG BLITZ_ROUTINE c_outreq6(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL
     ahireqtags[4] = w;                  /* 16(a0): the tag id of width */
     ahireqtags[5] = h;                  /* 20(a0) */
     ahireqtags[6] = id;                 /* 24(a0): the tag id of height */
-    ahireqtags[7] = f;                  /* 28(a0) */
+    ahireqtags[7] = freq;               /* 28(a0) */
     r = (struct bl_regs){ .a0 = (ULONG)ahireqtags };
     ahirequest = (APTR)BLITZ_BASEJSR(ahibase, LVO_AHI_AllocAudioRequestA, r);
     if (!ahirequest)
@@ -392,9 +392,9 @@ ULONG BLITZ_ROUTINE c_outreq2(ULONG id BL_REG(d4))
 
 /* "AudioID, Frequency" - the entry of 1 argument: d0 replaced, d4/d5 as
    they are */
-ULONG BLITZ_ROUTINE c_outreq3(ULONG id BL_REG(d4), ULONG f BL_REG(d5))
+ULONG BLITZ_ROUTINE c_outreq3(ULONG id BL_REG(d4), ULONG freq BL_REG(d5))
 {
-    return c_outreq6((ULONG)-1, (ULONG)-1, (ULONG)-1, (ULONG)-1, id, f);
+    return c_outreq6((ULONG)-1, (ULONG)-1, (ULONG)-1, (ULONG)-1, id, freq);
 }
 
 /* "X,Y,WIDTH,HEIGHT" - the entry of 2 arguments: d2/d3 as they are */
@@ -427,39 +427,39 @@ ULONG BLITZ_ROUTINE c_requestedfreq(void)
 
 /* CludgeSound sound#,address: d0 = sound#, d1 = the 8SVX file, a0 = the
    sound object; risoundlib's routine, the rate also at +16 */
-static ULONG BLITZ_ROUTINE loadsounds_c(ULONG d0 BL_REG(d0), UBYTE *sram BL_REG(d1),
+static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
                                         UBYTE *saddr BL_REG(a0))
 {
-    UBYTE *a0, *src, *dst, *mem;
+    UBYTE *iff, *src, *dst, *mem;       /* a0: the current IFF chunk */
     ULONG rate, clock, slen;
     UWORD sper, n;
     int chunk;
 
     if (LONGAT(saddr)) {                /* free the old sample (BUG(orig) #831) */
         struct bl_regs r = { .a1 = LONGAT(saddr) };
-        r.d0 = BL_SETW(d0, WORDAT(saddr + 6));
+        r.d0 = BL_SETW(sound, WORDAT(saddr + 6));
         BLITZ_ALIBJSR(TOK_globfree, r);
     }
     if (LONGAT(sram + 8) != ID('8', 'S', 'V', 'X') || LONGAT(sram + 12) != ID('V', 'H', 'D', 'R'))
         return 0;
-    a0 = sram + 12;
-    a0 += LONGAT(a0 + 4);               /* BUG(orig): VHDR length 20 only (#832) */
-    rate = WORDAT(a0);
+    iff = sram + 12;
+    iff += LONGAT(iff + 4);             /* BUG(orig): VHDR length 20 only (#832) */
+    rate = WORDAT(iff);
     clock = 3579545;                    /* CMP.l d1,d0:BLT: signed */
     sper = 0;
     while ((LONG)clock >= (LONG)rate) { /* BUG(orig): rate 0 never ends (#830) */
         sper++;
         clock -= rate;
     }
-    a0 = sram + 12;
-    for (chunk = 0; LONGAT(a0) != ID('B', 'O', 'D', 'Y'); ) {
-        a0 += LONGAT(a0 + 4);           /* BUG(orig): no pad byte (#828) */
-        a0 += 8;
+    iff = sram + 12;
+    for (chunk = 0; LONGAT(iff) != ID('B', 'O', 'D', 'Y'); ) {
+        iff += LONGAT(iff + 4);         /* BUG(orig): no pad byte (#828) */
+        iff += 8;
         if (++chunk > 6)
             return 0;
     }
-    src = a0 + 8;
-    slen = LONGAT(a0 + 4);
+    src = iff + 8;
+    slen = LONGAT(iff + 4);
     {
         struct bl_regs r = { .d0 = slen, .d1 = MEMF_CHIP };
         mem = dst = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
