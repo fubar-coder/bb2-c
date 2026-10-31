@@ -1,0 +1,5 @@
+[run]
+start
+error
+chip buffer freed
+rc=*
