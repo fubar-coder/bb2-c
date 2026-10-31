@@ -619,15 +619,15 @@ static void BLITZ_ROUTINE checknmoveword_c(const UBYTE *s BL_REG(d0), UBYTE *d B
 
 /* D_FindStringPtr(areg5,lookfor): the first address from areg5-32768 in
    steps of 2 with the long lookfor, before areg5; -1 */
-static ULONG BLITZ_ROUTINE findstringptr_c(const UBYTE *a5 BL_REG(d0), ULONG look BL_REG(d1))
+static ULONG BLITZ_ROUTINE findstringptr_c(const UBYTE *areg5 BL_REG(d0), ULONG look BL_REG(d1))
 {
-    const UBYTE *p = a5 - 32768;
+    const UBYTE *p = areg5 - 32768;
 
     do {
         if (*(const ULONG *)p == look)
             return (ULONG)p;
         p += 2;
-    } while (p != a5);
+    } while (p != areg5);
     return (ULONG)-1;
 }
 
@@ -653,7 +653,7 @@ static ULONG BLITZ_ROUTINE peekmax_c(const UBYTE *s BL_REG(d0), UWORD max BL_REG
 /* the hex digits of GetHex$/GetHexAdr$ ('__dobyte, '__doword, '__dohex) */
 static ULONG hexout(ULONG v, int mode)
 {
-    UWORD d7;
+    UWORD digits;
     ULONG n;
 
     if (mode == 1) {
@@ -662,15 +662,15 @@ static ULONG hexout(ULONG v, int mode)
         return 2;
     }
     if (mode == 2) {
-        d7 = 3;
+        digits = 3;
         v = BL_SWAP(v);
     } else
-        d7 = 7;
-    n = (ULONG)d7 + 1;
+        digits = 7;
+    n = (ULONG)digits + 1;
     do {
         v = v << 4 | v >> 28;                           /* ROL.l #4 */
         *blitz_string++ = hexdigits[v & 15];
-    } while (d7-- != 0);
+    } while (digits-- != 0);
     return n;
 }
 
@@ -681,28 +681,28 @@ static ULONG BLITZ_ROUTINE gethex_c(ULONG v BL_REG(d0), UBYTE mode BL_REG(d1))
 }
 
 /* GetHexAdr$(address,mode): the byte, word or long at address in hex */
-static ULONG BLITZ_ROUTINE gethexadr_c(const UBYTE *a BL_REG(d0), UBYTE mode BL_REG(d1))
+static ULONG BLITZ_ROUTINE gethexadr_c(const UBYTE *addr BL_REG(d0), UBYTE mode BL_REG(d1))
 {
     if (mode == 1)
-        return hexout(*a, 1);
+        return hexout(*addr, 1);
     if (mode == 2)
-        return hexout(*(const UWORD *)a, 2);
-    return hexout(*(const ULONG *)a, 3);
+        return hexout(*(const UWORD *)addr, 2);
+    return hexout(*(const ULONG *)addr, 3);
 }
 
 /* GetDataItem(address,size) (d0, d1.w): the byte, word or long (size 3 or
    more: long) at address, 0 below $420; size 0 or below: DBRA from -1 */
-static ULONG BLITZ_ROUTINE getdataitem_c(const UBYTE *a BL_REG(d0), UWORD size BL_REG(d1))
+static ULONG BLITZ_ROUTINE getdataitem_c(const UBYTE *addr BL_REG(d0), UWORD size BL_REG(d1))
 {
     ULONG v = 0;
 
-    if (LOWMEM(a))
+    if (LOWMEM(addr))
         return 0;
     if ((WORD)size >= 3)
         size = 4;
     size--;
     do
-        v = v << 8 | *a++;
+        v = v << 8 | *addr++;
     while (size-- != 0);
     return v;
 }
@@ -712,7 +712,7 @@ static ULONG BLITZ_ROUTINE getdataitem_c(const UBYTE *a BL_REG(d0), UWORD size B
    d0's high word stays (the address's) */
 static ULONG BLITZ_ROUTINE findlinetoken_c(const UBYTE *s BL_REG(d0))
 {
-    ULONG d0 = (ULONG)s;
+    ULONG result = (ULONG)s;
     UBYTE c;
 
     for (;;) {
@@ -722,8 +722,8 @@ static ULONG BLITZ_ROUTINE findlinetoken_c(const UBYTE *s BL_REG(d0))
         if (c & 0x80)
             break;
     }
-    BL_SETW(d0, ((UWORD)c << 8 | *s) & 0x7fff);
-    return d0;
+    BL_SETW(result, ((UWORD)c << 8 | *s) & 0x7fff);
+    return result;
 }
 
 /* --------------------------------------------------------- the printer */
@@ -761,11 +761,11 @@ static void BLITZ_ROUTINE fyoffset_c(UWORD off BL_REG(d0))
    into plane 0 at the cursor, inverted if inverse (the word); the cursor
    moves on */
 static void BLITZ_ROUTINE fprint_c(const UBYTE *s BL_REG(d0), struct BitMap *bm BL_REG(a0),
-                                   const ULONG *a2 BL_REG(a2))
+                                   const ULONG *args BL_REG(a2))
 {
     UBYTE *p = bm->Planes[0] + cursor_offset();
     UWORD x = xcurs;                                    /* d6 */
-    UWORD n = (UWORD)a2[-1] - 1;                        /* d5 */
+    UWORD n = (UWORD)args[-1] - 1;                      /* d5 */
     int i;
 
     if ((WORD)n < 0 || !column_ok(x))
@@ -790,9 +790,9 @@ out:
 
 /* FNPrint a$: FPrint, then the start of the next row */
 static void BLITZ_ROUTINE fnprint_c(const UBYTE *s BL_REG(d0), struct BitMap *bm BL_REG(a0),
-                                    const ULONG *a2 BL_REG(a2))
+                                    const ULONG *args BL_REG(a2))
 {
-    fprint_c(s, bm, a2);
+    fprint_c(s, bm, args);
     xcurs = 0;
     ycurs++;
 }
@@ -800,31 +800,31 @@ static void BLITZ_ROUTINE fnprint_c(const UBYTE *s BL_REG(d0), struct BitMap *bm
 /* draw_char of FPrintDetoke: a0 = plane 0 (drawn into), a4 = plane 1
    (moved along), d6 = the column */
 struct dt {
-    UBYTE *a0, *a4;
-    ULONG d6;
+    UBYTE *plane0, *plane1;             /* a0, a4 */
+    ULONG col;                          /* d6 */
 };
 
 /* the glyph at d0 (character * 8), inverted if the high byte of inverse is
    set; returns d0 - its low byte the last glyph byte drawn inverted */
-static UWORD draw_char(struct dt *t, UWORD d0)
+static UWORD draw_char(struct dt *t, UWORD glyph)
 {
-    const UBYTE *g = font_dat + (WORD)d0;
+    const UBYTE *g = font_dat + (WORD)glyph;
     int i;
 
     if (INVERSE_HI)
         for (i = 0; i < 8; i++) {
             UBYTE b = (UBYTE)~g[i];
 
-            t->a0[i * 80] = b;
-            d0 = (d0 & 0xff00) | b;
+            t->plane0[i * 80] = b;
+            glyph = (glyph & 0xff00) | b;
         }
     else
         for (i = 0; i < 8; i++)
-            t->a0[i * 80] = g[i];
-    t->a0++;
-    t->a4++;
-    t->d6++;
-    return d0;
+            t->plane0[i * 80] = g[i];
+    t->plane0++;
+    t->plane1++;
+    t->col++;
+    return glyph;
 }
 
 /* FPrintDetoke line,cio,typ,lineoffset (d0, d1.w, d2.b, d3.w; a0 = the
@@ -835,30 +835,30 @@ static UWORD draw_char(struct dt *t, UWORD d0)
    '>' (typ 0) or an inverse space */
 static void BLITZ_ROUTINE fprintdetoke_c(const UBYTE *line BL_REG(d0), UWORD cio BL_REG(d1),
                                          UWORD typ BL_REG(d2), UWORD lineoff BL_REG(d3),
-                                         ULONG d6 BL_REG(d6), struct BitMap *bm BL_REG(a0))
+                                         ULONG callercol BL_REG(d6), struct BitMap *bm BL_REG(a0))
 {
     struct dt t;
-    UWORD d3 = cio, d5 = lineoff, d0;
+    UWORD tocursor = cio, skip = lineoff, code;
     ULONG off = cursor_offset();
-    const UBYTE *a1 = line, *name;
+    const UBYTE *p = line, *name;
     UBYTE c;
 
     chartyp = (UBYTE)typ;
-    t.a4 = bm->Planes[1];
-    t.a0 = bm->Planes[0];
-    if (!t.a4)
-        t.a4 = t.a0;
-    t.a0 += off;
-    t.a4 += off;
-    t.d6 = (d6 & 0xffff0000UL) | xcurs;
+    t.plane1 = bm->Planes[1];
+    t.plane0 = bm->Planes[0];
+    if (!t.plane1)
+        t.plane1 = t.plane0;
+    t.plane0 += off;
+    t.plane1 += off;
+    t.col = (callercol & 0xffff0000UL) | xcurs;
     for (;;) {                                          /* 'mainloop */
-        if (!column_ok(t.d6))
+        if (!column_ok(t.col))
             goto out;
-        if (!d3 && (WORD)--d5 < 0) {
+        if (!tocursor && (WORD)--skip < 0) {
             if (chartyp)
                 goto curins;
             draw_char(&t, '>' * 8);
-            if (t.d6 != 0)                              /* BSR draw_char:SBNE 'con */
+            if (t.col != 0)                             /* BSR draw_char:SBNE 'con */
                 goto con;
         curins:
             INVERSE_HI = 0xff;
@@ -866,47 +866,47 @@ static void BLITZ_ROUTINE fprintdetoke_c(const UBYTE *line BL_REG(d0), UWORD cio
             INVERSE_HI = 0;
         }
     con:
-        c = *a1++;
+        c = *p++;
         if (!c)
             goto out;
         if (!(c & 0x80)) {
-            d3--;
-            if ((WORD)--d5 >= 0)
+            tocursor--;
+            if ((WORD)--skip >= 0)
                 continue;
             draw_char(&t, (UWORD)c << 3);
             continue;
         }
-        d3 -= 2;                                        /* 'detokechars */
-        d0 = ((UWORD)c << 8 | *a1++) & 0x7fff;
+        tocursor -= 2;                                  /* 'detokechars */
+        code = ((UWORD)c << 8 | *p++) & 0x7fff;
         name = notoke;                                  /* 'err */
         for (ULONG n = tokens; n; n = *(const ULONG *)n)
-            if (*(const UWORD *)(n + 4) == d0) {
+            if (*(const UWORD *)(n + 4) == code) {
                 name = (const UBYTE *)n + 6;
                 break;
             }
         for (;;) {                                      /* 'loop3 */
-            UBYTE *x;
+            UBYTE *other;
 
-            if (!column_ok(t.d6))
+            if (!column_ok(t.col))
                 goto out;
             c = *name++;
             if (!c)
                 break;
-            if ((WORD)--d5 >= 0)
+            if ((WORD)--skip >= 0)
                 continue;
-            d0 = draw_char(&t, (UWORD)c << 3);
+            code = draw_char(&t, (UWORD)c << 3);
             if (!plz_tokenise)
                 continue;
-            t.a4--;                                     /* plane 1, same place */
-            x = t.a0, t.a0 = t.a4, t.a4 = x;
-            draw_char(&t, d0);
-            t.a4--;
-            x = t.a0, t.a0 = t.a4, t.a4 = x;
-            BL_SETW(t.d6, t.d6 - 1);
+            t.plane1--;                                 /* plane 1, same place */
+            other = t.plane0, t.plane0 = t.plane1, t.plane1 = other;
+            draw_char(&t, code);
+            t.plane1--;
+            other = t.plane0, t.plane0 = t.plane1, t.plane1 = other;
+            BL_SETW(t.col, t.col - 1);
         }
     }
 out:
-    xcurs = (UWORD)t.d6;
+    xcurs = (UWORD)t.col;
 }
 
 /* OutText x,y,rastport,string (d0.w, d1.w, d2, d3): Move to x,y+baseline
@@ -928,10 +928,10 @@ static void BLITZ_ROUTINE outtext_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
    rastport's) */
 static void BLITZ_ROUTINE outtextpen_c(struct RastPort *rp BL_REG(d0), UWORD pen BL_REG(d1))
 {
-    ULONG d0 = (ULONG)rp;
+    ULONG penarg = (ULONG)rp;
 
-    BL_SETW(d0, pen);
-    SetAPen(rp, d0);
+    BL_SETW(penarg, pen);
+    SetAPen(rp, penarg);
 }
 
 /* ------------------------------------------------- copper and registers */
@@ -1057,21 +1057,21 @@ static int space_down(void)
    found (SearchMemFound = 0), 1 when the space bar was down (tested every
    127 steps, SearchMemFound kept) */
 static ULONG BLITZ_ROUTINE searchmem_c(UBYTE type BL_REG(d0), ULONG value BL_REG(d1),
-                                       const UBYTE *a1 BL_REG(d2), const UBYTE *end BL_REG(d3))
+                                       const UBYTE *p BL_REG(d2), const UBYTE *end BL_REG(d3))
 {
-    UWORD d7 = 127;
+    UWORD steps = 127;
     ULONG l;
     UWORD w;
-    const UBYTE *s, *a3;
+    const UBYTE *s, *match;
 
 /* the macro CheckEnd */
 #define CHECKEND() do {                                                     \
-        if (!--d7) {                                                        \
+        if (!--steps) {                                                     \
             if (space_down())                                               \
                 return 1;                                                   \
-            d7 = 127;                                                       \
+            steps = 127;                                                    \
         }                                                                   \
-        if (a1 == end)                                                      \
+        if (p == end)                                                       \
             goto notfound;                                                  \
     } while (0)
 
@@ -1079,44 +1079,44 @@ static ULONG BLITZ_ROUTINE searchmem_c(UBYTE type BL_REG(d0), ULONG value BL_REG
     case 1:
         for (;;) {
             CHECKEND();
-            if (*a1 == (UBYTE)value)
+            if (*p == (UBYTE)value)
                 goto found;
-            a1++;
+            p++;
         }
     case 2:
-        w = a1[0];
+        w = p[0];
         for (;;) {
             CHECKEND();
-            w = (UWORD)(w << 8) | a1[1];
+            w = (UWORD)(w << 8) | p[1];
             if (w == (UWORD)value)
                 goto found;
-            a1++;
+            p++;
         }
     case 3:
     case 5:
     case 6:
-        l = (ULONG)a1[0] << 16 | (ULONG)a1[1] << 8 | a1[2];
+        l = (ULONG)p[0] << 16 | (ULONG)p[1] << 8 | p[2];
         for (;;) {
             CHECKEND();
-            l = l << 8 | a1[3];
+            l = l << 8 | p[3];
             if (l == value)
                 goto found;
-            a1++;
+            p++;
         }
     case 4:
         s = (const UBYTE *)value;
-        a3 = s;
-        a1--;
+        match = s;
+        p--;
         for (;;) {
-            a1++;
+            p++;
             CHECKEND();
-            if (*a3 != *a1) {
-                a3 = s;
+            if (*match != *p) {
+                match = s;
                 continue;
             }
-            if (*++a3)
+            if (*++match)
                 continue;
-            a1 -= a3 - (s + 1);
+            p -= match - (s + 1);
             goto found;
         }
     default:
@@ -1124,7 +1124,7 @@ static ULONG BLITZ_ROUTINE searchmem_c(UBYTE type BL_REG(d0), ULONG value BL_REG
     }
 #undef CHECKEND
 found:
-    findaddress = (ULONG)a1;
+    findaddress = (ULONG)p;
     return (ULONG)-1;
 notfound:
     findaddress = 0;
@@ -1158,20 +1158,20 @@ static void BLITZ_ROUTINE setuplesdebug_c(ULONG tok BL_REG(d0), UBYTE tokenise B
    build) */
 static ULONG BLITZ_ROUTINE extractlabel_c(const UBYTE *s BL_REG(d0))
 {
-    const UBYTE *a0 = s + 9;
+    const UBYTE *name = s + 9;
     WORD n = 0;
     UBYTE c;
 
-    while (*a0++ != '.')
+    while (*name++ != '.')
         ;
     for (;;) {
-        c = a0[n];
+        c = name[n];
         if (!c || c == ':')
             break;
         n++;
     }
     for (WORD i = 0; i < n; i++)
-        *blitz_string++ = a0[i];
+        *blitz_string++ = name[i];
     return (UWORD)n;
 }
 
