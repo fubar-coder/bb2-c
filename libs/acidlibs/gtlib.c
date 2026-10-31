@@ -1443,7 +1443,9 @@ static struct Gadget *lastof(struct Gadget *gad, UWORD id)
  *
  * The whole run from the first to the last gadget with the id
  * (FreeGadgets), BUG(orig) (#175); fixed (#174, #173): with the label
- * blocks and GTShape images of the freed gadgets.  Amiga mode only.
+ * blocks and GTShape images of the freed gadgets.  BUG(orig) (#962): the
+ * GTList's last gadget (current) is not updated - freeing it leaves the
+ * next creator linking into freed memory.  Amiga mode only.
  * Errors (debugger only): "GTList must be detached from window first!"
  * (freegadchk).
  *
