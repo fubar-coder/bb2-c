@@ -1122,6 +1122,36 @@ ULONG deflibs;                          /* 1772 */
 char acidname[] = "blitz2:acidlibs";    /* 1774 */
 ULONG acidlibs;                         /* 1776 */
 
+#if BLITZ2_AB3
+/* main.h; AmiBlitz3's paths of a default installation (AmiBlitz3.ab3:
+   config\path_baselibs ... from the tool types, BlitzLibs/UserLibs) */
+const char *const ab3libname[AB3LIBS] = {
+    "Blitz3:BlitzLibs/baseLibs", "Blitz3:BlitzLibs/utilLibs",
+    "Blitz3:BlitzLibs/OsLibs", "Blitz3:BlitzLibs/csLibs",
+};
+ULONG ab3libs[AB3LIBS];
+const char *ab3liberr;
+
+/* makelibs of AB3 mode: the sizes of the four files; the first missing
+   one is the error of the compile.  No libslist: the userlibs directory
+   is flat (loadblitzlibs) */
+static BOOL makeab3libs(void)
+{
+    static char msg[sizeof "Library file not found: " + 32] = "Library file not found: ";
+    int i;
+
+    ab3liberr = NULL;
+    for (i = 0; i < AB3LIBS; i++) {
+        ab3libs[i] = checklib(ab3libname[i]);
+        if (!ab3libs[i] && !ab3liberr) {
+            strcpy(msg + sizeof "Library file not found: " - 1, ab3libname[i]);
+            ab3liberr = msg;
+        }
+    }
+    return ab3liberr == NULL;
+}
+#endif
+
 /* blitz2.s:1778 menu8 - reload all libs */
 void menu8(void)
 {
@@ -1150,6 +1180,10 @@ ULONG checklib(const char *name)
    of 'em.  return FALSE (asm eq) if error */
 BOOL makelibs(void)
 {
+#if BLITZ2_AB3
+    if (progmode == XTRA_MODE_AB3)
+        return makeab3libs();
+#endif
     deflibs = checklib(defname);
     acidlibs = checklib(acidname);
     return makeblitzlibs();             /* falls through */

@@ -489,6 +489,19 @@ extern asmchkfn movemchk, movepchk, movechk, exgchk, bitchk,
    XTRA_MODE_BB2 or XTRA_MODE_AB3 (docs/ab3/variant.md).  One mode per
    compile; an editor session is always BB2 */
 extern int progmode;
+
+/* AB3 mode's libraries (design D5): AmiBlitz3's four BigLibs in its load
+   order instead of acidlibs and deflibs (loadlibgroup each), then every
+   file of the flat userlibs directory, a userlib replacing a loaded library
+   of the same number (AmiBlitz/AmiBlitz3@7ab0350b) */
+#define AB3LIBS 4
+extern const char *const ab3libname[AB3LIBS]; /* "Blitz3:BlitzLibs/baseLibs" ... */
+extern ULONG ab3libs[AB3LIBS];        /* their sizes (makelibs, 0 = missing) */
+#define AB3USERLIBS "Blitz3:BlitzLibs/UserLibs"
+/* the error of a missing library file ("Library file not found: NAME"), NULL
+   if none: makelibs finds it at start-up, where there is no compile to
+   stop yet; compile reports it */
+extern const char *ab3liberr;
 #endif
 
 #endif
