@@ -148,11 +148,13 @@ BLITZ_LIBFIN();
 static UBYTE *firstchunk, *lastfoundchunk, *endoffile;
 
 static UBYTE *firstframe, *animaddress, *animend, *nextanimframe;
-static UWORD animheight, animwidth, animwidthtemp;
+static UWORD animheight, animwidth;
+static UWORD deltacolumns;              /* a delta's columns per plane - 1 (DBRA) */
 static UBYTE animdepth;
 static ULONG *bitmapaddress;            /* the bitmap object's planes */
 static ULONG animtype7, bitplaneoffset;
-static UBYTE *thirdframe, *mytemp;
+static UBYTE *thirdframe;
+static UBYTE *cmapchunk;                /* the CMAP chunk over the ILBMPalette call */
 static UBYTE doanimloop = 0xff, bitmapnumber, palettenumber, animtype;
 
 /* InitFindChunk(a0, id): a FORM of type id (its chunks), or a chunk
@@ -321,7 +323,7 @@ ULONG BLITZ_ROUTINE c_CountFrames(void)
 /* ANIM5: one plane, columns of bytes */
 static void plane5(const UBYTE *ops, UBYTE *column, ULONG mod)
 {
-    UWORD col = animwidthtemp, c;
+    UWORD col = deltacolumns, c;
     UBYTE *dst;
     UBYTE n, op, v;
 
@@ -356,7 +358,7 @@ static void plane5(const UBYTE *ops, UBYTE *column, ULONG mod)
 /* ANIM7 (long form): one plane, columns of longs; the data from a3 */
 static void plane7(const UBYTE *ops, UBYTE *column, const ULONG *data, ULONG mod)
 {
-    UWORD col = animwidthtemp, c;
+    UWORD col = deltacolumns, c;
     UBYTE *dst;
     UBYTE n, op;
     ULONG v;
@@ -399,7 +401,7 @@ static void unpackanim(UBYTE *dlta, BOOL seven)
     ULONG mod = WD((UBYTE *)planes - 8);  /* the bitmap's ebwidth */
     UBYTE plane = 0;
 
-    animwidthtemp = (UWORD)(((WORD)animwidth >> (seven ? 5 : 3)) - 1);
+    deltacolumns = (UWORD)(((WORD)animwidth >> (seven ? 5 : 3)) - 1);
     do {                                /* BUG(orig): up to the byte (#509) */
         UBYTE *column = (UBYTE *)*planes++ + bitplaneoffset;
         ULONG op = offsets[0], data = offsets[8];
@@ -441,10 +443,10 @@ unsigned long long BLITZ_ROUTINE c_NextAnimFrame(ULONG *bitmap BL_REG(a0))
     animtype7 = LG(chunk + 28);
     chunk += LG(chunk + 4) + 8;
     if (LG(chunk) == ID_CMAP) {
-        mytemp = chunk;
+        cmapchunk = chunk;
         r = (struct bl_regs){ .d0 = (ULONG)chunk, .d1 = palettenumber };
         BLITZ_ALIBJSR(TOK_ilbmpalette, r);
-        chunk = mytemp;
+        chunk = cmapchunk;
         chunk += LG(chunk + 4) + 8;
     }
     if (LG(chunk) != ID_DLTA)

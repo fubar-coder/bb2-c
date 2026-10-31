@@ -469,7 +469,8 @@ static ULONG glrTagList[] = {
 #define glrMax glrTagList[11]
 
 /* RTEZGetString */
-static UBYTE *a3_, *swsPtr, *gsBuffer;
+static UBYTE *callerstring;             /* the caller's a3 */
+static UBYTE *swsPtr, *gsBuffer;
 static ULONG gsTxtSize, gsActual;
 static ULONG gsTagList[] = {
     RT_LockWindow, (ULONG)-1, RTGL_TextFmt, 0, RT_ReqPos, REQPOS_CENTERSCR,
@@ -1005,7 +1006,7 @@ static ULONG getstring(STRPTR title, STRPTR body, ULONG max)
     gsTxtSize = max;
     r = RTJSR(LVO_rtGetStringA, max, gsTagList, gsBuffer, title, 0);
     returnvalue = r;
-    blitz_string = a3_;
+    blitz_string = callerstring;
     if (!r)
         return 0;
     blitz_string = swsPtr;
@@ -1022,7 +1023,7 @@ static ULONG getstring(STRPTR title, STRPTR body, ULONG max)
 static ULONG BLITZ_ROUTINE rtgetstr_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                       ULONG max BL_REG(d2))
 {
-    a3_ = blitz_string;
+    callerstring = blitz_string;
     gsBuffer = gsalloc(max);
     return getstring(title, body, max);
 }
@@ -1034,7 +1035,7 @@ static ULONG BLITZ_ROUTINE rtgetstrDef_c(STRPTR title BL_REG(d0), STRPTR body BL
 {
     UBYTE *savedstr = blitz_string;
 
-    a3_ = blitz_string;
+    callerstring = blitz_string;
     gsBuffer = gsalloc(max);
     blitz_string = gsBuffer;
     copystring(def, 0);

@@ -323,7 +323,7 @@ static struct {
 
 /* the argument parser */
 static UBYTE *parseadr, *curadr;
-static UBYTE tempstorage[256];
+static UBYTE argbuffer[256];            /* InitArgParse's copy of the string */
 
 /* EZRequest: the EasyStruct, the argument array, the window */
 static struct {
@@ -561,7 +561,7 @@ static ULONG BLITZ_ROUTINE binstr_c(const UBYTE *src BL_REG(d0), const UBYTE *fi
 /* InitArgParse s (d0): the copy and four more 0 (BUG(orig): no limit, #752) */
 static void BLITZ_ROUTINE parseinit_c(const UBYTE *s BL_REG(d0))
 {
-    UBYTE *dst = tempstorage;
+    UBYTE *dst = argbuffer;
 
     while ((*dst++ = *s++) != 0)
         ;
@@ -569,8 +569,8 @@ static void BLITZ_ROUTINE parseinit_c(const UBYTE *s BL_REG(d0))
     dst[1] = 0;
     dst[2] = 0;
     dst[3] = 0;
-    parseadr = tempstorage;
-    curadr = tempstorage;
+    parseadr = argbuffer;
+    curadr = argbuffer;
 }
 
 /* NextArg$: the next word to a3 (no 0), its length; 0 at the end */

@@ -369,9 +369,9 @@ static struct BL_PACKED {
 _Static_assert(offsetof(__typeof__(v), opsize) == 84, "LineBuff layout");
 
 static ULONG disasm_add;
-static const UBYTE *a0;                 /* the instruction stream */
-static char *a2;                        /* the line */
-static const char *a5;                  /* the operand string / list */
+static const UBYTE *instr;              /* a0: the instruction stream */
+static char *linepos;                   /* a2: the line */
+static const char *opstr;               /* a5: the operand string / list */
 
 static char hexbuff2[11] = "$00000000"; /* "$" HexBuff "00000000",0,0 */
 static const char hexchrtab[] = "0123456789ABCDEF";
@@ -386,33 +386,33 @@ static const char scaletab[] __attribute__((nonstring)) = "0248";
 static const char pdrlist[32] __attribute__((nonstring)) =
     "d0d1d2d3d4d5d6d7a0a1a2a3a4a5a6a7";
 static char pdrbuff[50];
-static char l1, l2;
+static char rangereg, rangedigit;     /* the pending end of a register range */
 
 /* the memory, with the original's access widths */
 static UWORD peekw(void)
 {
-    return *(volatile const UWORD *)a0;
+    return *(volatile const UWORD *)instr;
 }
 
 static UWORD rdw(void)
 {
     UWORD w = peekw();
 
-    a0 += 2;
+    instr += 2;
     return w;
 }
 
 static ULONG rdl(void)
 {
-    ULONG l = *(volatile const ULONG *)a0;
+    ULONG l = *(volatile const ULONG *)instr;
 
-    a0 += 4;
+    instr += 4;
     return l;
 }
 
 static void put(char c)
 {
-    *a2++ = c;
+    *linepos++ = c;
 }
 
 /* LSR.w dn,dm: the count modulo 64, 16 and more give 0 */
@@ -470,12 +470,12 @@ static char *sdecprint(ULONG n)
     return p - 1;
 }
 
-/* STRCOPY: a5 to a2 (a5 behind the 0) */
+/* STRCOPY: opstr (a5) to linepos (a2), opstr behind the 0 */
 static void strcopy(void)
 {
     char c;
 
-    while ((c = *a5++) != 0)
+    while ((c = *opstr++) != 0)
         put(c);
 }
 
@@ -485,7 +485,7 @@ static void hexlast(ULONG n, int digits)
     char *p = hexprint(n) + 8 - digits;
 
     *p = '$';
-    a5 = p;
+    opstr = p;
     strcopy();
 }
 
@@ -509,19 +509,19 @@ static void immediate(void)
         p += v.opsize == 1 ? 4 : 6;
         *p = '$';
     }
-    a5 = p;
+    opstr = p;
     strcopy();
 }
 
 /* an index register of an extension word: "d5.w" "*2" */
 static void indexreg(UWORD ext, char reg, UWORD scale)
 {
-    *a2 = (ext & 0x8000) ? 'a' : 'd';
-    a2++;
+    *linepos = (ext & 0x8000) ? 'a' : 'd';
+    linepos++;
     put(reg);
     put('.');
-    *a2 = (ext & 0x800) ? 'l' : 'w';
-    a2++;
+    *linepos = (ext & 0x800) ? 'l' : 'w';
+    linepos++;
     if (scale) {
         put('*');
         put(scaletab[scale]);
@@ -554,7 +554,7 @@ static ULONG disp(UWORD sz)
    register digit (pc: the PC) */
 static void indexed(char reg, int pc)
 {
-    const UBYTE *at = a0;               /* d6: the extension word's address */
+    const UBYTE *at = instr;            /* d6: the extension word's address */
     UWORD e = peekw(), scale;
     char ireg;
     ULONG n;
@@ -566,9 +566,9 @@ static void indexed(char reg, int pc)
         ireg = (char)('0' + ((e & 0x7000) >> 12));
         n = (ULONG)(LONG)(BYTE)e;
         if (pc)
-            a5 = hexprint(n + (ULONG)at);
+            opstr = hexprint(n + (ULONG)at);
         else
-            a5 = sdecprint(n);
+            opstr = sdecprint(n);
         strcopy();
         put('(');
         basereg(reg, pc);
@@ -591,13 +591,13 @@ static void indexed(char reg, int pc)
     n = disp((e & 0x30) >> 4);
     if (!(e & 3)) {
         /* bd(an,xn) without memory indirection */
-        a5 = sdecprint(n);
+        opstr = sdecprint(n);
         strcopy();
         put('(');
         if (!(e & 0x80))
             basereg(reg, pc);
         if (!(e & 0x40)) {
-            if (a2[-1] != '(')
+            if (linepos[-1] != '(')
                 put(',');
             indexreg(e, ireg, scale);
         }
@@ -607,7 +607,7 @@ static void indexed(char reg, int pc)
     /* memory indirect: ([bd,an],xn,od) (bit 2) or ([bd,an,xn],od) */
     put('(');
     put('[');
-    a5 = sdecprint(n);
+    opstr = sdecprint(n);
     strcopy();
     if (!(e & 0x80)) {
         put(',');
@@ -623,7 +623,7 @@ static void indexed(char reg, int pc)
         put(']');
     put(',');
     n = disp(e & 3);
-    a5 = sdecprint(n);
+    opstr = sdecprint(n);
     strcopy();
     put(')');
 }
@@ -661,7 +661,7 @@ static void decodeearev(UWORD mode, UWORD r)
         put(')');
         return;
     case 5:
-        a5 = sdecprint((ULONG)(LONG)(WORD)rdw());
+        opstr = sdecprint((ULONG)(LONG)(WORD)rdw());
         strcopy();
         put('(');
         put('a');
@@ -674,9 +674,9 @@ static void decodeearev(UWORD mode, UWORD r)
     }
     switch (r) {                        /* mode 7 */
     case 2:
-        at = a0;
+        at = instr;
         n = (ULONG)(LONG)(WORD)rdw() + (ULONG)at;
-        a5 = hexprint(n);
+        opstr = hexprint(n);
         strcopy();
         put('(');
         put('p');
@@ -695,7 +695,7 @@ static void decodeearev(UWORD mode, UWORD r)
         put('w');
         return;
     case 1:
-        a5 = hexprint(rdl());
+        opstr = hexprint(rdl());
         strcopy();
         return;
     }
@@ -731,8 +731,8 @@ static void rlist(UWORD op)
         p += 2;
     }
     *b = 0;
-    a5 = p;
-    l1 = 0;
+    opstr = p;
+    rangereg = 0;
     last = 9999;
     for (b = pdrbuff; *b; ) {
         char c = *b++, digit = *b++;
@@ -745,26 +745,27 @@ static void rlist(UWORD op)
             dist = (WORD)-dist;
         if (dist <= 1) {
             last = code;
-            l1 = c;
-            l2 = digit;
-            if (a2[-1] != '-')
+            rangereg = c;
+            rangedigit = digit;
+            if (linepos[-1] != '-')
                 put('-');
             continue;
         }
-        if (l1) {
-            put(l1);
-            put(l2);
-            l1 = 0;
+        if (rangereg) {
+            put(rangereg);
+            put(rangedigit);
+            rangereg = 0;
         }
-        if ((BYTE)a2[-1] > 32 && a2[-1] != ',' && a2[-1] != '/' && a2[-1] != '-')
+        if ((BYTE)linepos[-1] > 32 && linepos[-1] != ',' && linepos[-1] != '/'
+            && linepos[-1] != '-')
             put('/');
         put(c);
         put(digit);
         last = code;
     }
-    if (l1) {
-        put(l1);
-        put(l2);
+    if (rangereg) {
+        put(rangereg);
+        put(rangedigit);
     }
 }
 
@@ -808,7 +809,7 @@ static void decodespecial(UWORD code, UWORD op)
         put((char)('0' + (x ? x : 8)));
         return;
     case DISPLACE:                      /* Bcc: 8, 16 or 32 bit */
-        at = a0;
+        at = instr;
         x = op & 0xff;
         if (!x)
             n = (ULONG)(LONG)(WORD)rdw();
@@ -816,13 +817,13 @@ static void decodespecial(UWORD code, UWORD op)
             n = rdl();
         else
             n = (ULONG)(LONG)(BYTE)x;
-        a5 = hexprint(n + (ULONG)at);
+        opstr = hexprint(n + (ULONG)at);
         strcopy();
         return;
     case DISPLACE2:                     /* DBcc */
-        at = a0;
+        at = instr;
         n = (ULONG)(LONG)(WORD)rdw() + (ULONG)at;
-        a5 = hexprint(n);
+        opstr = hexprint(n);
         strcopy();
         return;
     case IMMED2:
@@ -831,8 +832,8 @@ static void decodespecial(UWORD code, UWORD op)
         return;
     case DAREG215:
         x = v.extrainstr;
-        *a2 = (x & 0x8000) ? 'a' : 'd';
-        a2++;
+        *linepos = (x & 0x8000) ? 'a' : 'd';
+        linepos++;
         put((char)('0' + ((x & 0x7000) >> 12)));
         return;
     case ADDRPI2:
@@ -896,7 +897,7 @@ static void decodespecial(UWORD code, UWORD op)
 
         put('#');
         *p = '$';
-        a5 = p;
+        opstr = p;
         strcopy();
         return;
     }
@@ -912,14 +913,14 @@ static int decode(const struct disdata *e, UWORD op)
     char c;
     int i;
 
-    a2 = v.linebuff;
+    linepos = v.linebuff;
     for (i = 0; i < 9; i++)
         v.linebuff[i] = ' ';
     while ((c = *n++) != 0) {
         if (c == '*') {                 /* the condition of bits 8-11 */
             const char *cond = v.condtable;
 
-            if (a2[-1] == 'b' && a2[-2] != 'd')
+            if (linepos[-1] == 'b' && linepos[-2] != 'd')
                 cond = v.bcondtable;    /* Bcc: ra, sr ... */
             cond += ((op & 0xf00) >> 8) * 2;
             put(cond[0]);
@@ -928,10 +929,10 @@ static int decode(const struct disdata *e, UWORD op)
         }
         put(c);
     }
-    if (a2[-3] == '!') {                /* DIVx.l/MULx.l: bit 11 of word 2 */
-        a2[-3] = 's';
+    if (linepos[-3] == '!') {          /* DIVx.l/MULx.l: bit 11 of word 2 */
+        linepos[-3] = 's';
         if (peekw() & 0x800)
-            a2[-3] = 'u';
+            linepos[-3] = 'u';
     }
     v.opextra = 0;
     if (!e->szmask) {
@@ -947,7 +948,7 @@ static int decode(const struct disdata *e, UWORD op)
             s++;
         if (m == 0b110000000 && s == 0b11)
             s = 0b01;
-        if (a2[-1] != '.')
+        if (linepos[-1] != '.')
             put('.');
         if (s == 0) {
             put('b');
@@ -962,19 +963,19 @@ static int decode(const struct disdata *e, UWORD op)
             return 0;
         }
     }
-    a2 = v.linebuff + 9;
+    linepos = v.linebuff + 9;
     if (e->szshift & 0xf000) {
         v.opextra = (e->szshift & 0xf000) >> 12;
         v.extrainstr = rdw();
     }
-    a5 = a2;
+    opstr = linepos;
     if (e->srcmask) {
         decodeea(lsrw(op & e->srcmask, e->src));
     } else {
         v.isdestop = 0;
         decodespecial(e->src, op);
     }
-    v.docomma = a2 != a5;               /* BUG(orig) (#615): a5 moves too */
+    v.docomma = linepos != opstr;       /* BUG(orig) (#615): opstr moves too */
     if (e->dstmask) {
         UWORD ea = lsrw(op & e->dstmask, e->dst);
 
@@ -998,14 +999,14 @@ ULONG BLITZ_ROUTINE c_disoneline(ULONG addr BL_REG(d0))
     UWORD op;
     int i;
 
-    a0 = (const UBYTE *)addr;
+    instr = (const UBYTE *)addr;
     disasm_add = addr;
     for (i = 0; i < 80; i++)
         v.linebuff[i] = ' ';
     op = rdw();
     for (e = disdata; ; e++) {
         if (!e->mask) {
-            disasm_add = (ULONG)a0 - disasm_add;
+            disasm_add = (ULONG)instr - disasm_add;
             for (i = 0; i < 5; i++)
                 *blitz_string++ = '?';
             return 5;
@@ -1013,7 +1014,7 @@ ULONG BLITZ_ROUTINE c_disoneline(ULONG addr BL_REG(d0))
         if ((op & e->mask) == e->cmp && decode(e, op))
             break;
     }
-    disasm_add = (ULONG)a0 - disasm_add;
+    disasm_add = (ULONG)instr - disasm_add;
     for (i = 0; i < 17; i++) {          /* MOVE.w (a0)+,(a3)+ */
         *(volatile UWORD *)blitz_string = ((const UWORD *)v.linebuff)[i];
         blitz_string += 2;
