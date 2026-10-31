@@ -9,7 +9,8 @@
  * bblibsrc/palettelib: Red/Green/Blue take a #long, make4bitrgbs uses the
  * LOW byte of each component (source: the high byte), AGARed/AGAGreen/
  * AGABlue check the screen and mask the colour number - ported from the
- * binary, the rest is the same as the source.
+ * binary, the rest is the same as the source.  make4bitrgbs takes the TOP
+ * byte here (fixed, #224, see below).
  *
  * An object library (!libfin{_toke,...,4,7}): the Blitz object "Palette",
  * default maximum 4, objects of 2^7 = 128 bytes:
@@ -34,9 +35,15 @@
  *     the source components 2 bytes early (palette data + 2): the MULU
  *     takes the upper word of each component (equal to the lower one for
  *     PalRGB colours, the only non-zero part for DecodePalette colours).
- *   - make4bitrgbs (Amiga mode with agamode = 0, i.e. Kickstart < 3.0:
- *     ShowPalette/cycling) uses the low byte of each component:
- *     DecodePalette colours (top byte only) come out black there. (#224)
+ *   - Fixed (intended deviation, #224): make4bitrgbs (Amiga mode with
+ *     agamode = 0, i.e. Kickstart < 3.0: ShowPalette/cycling) used the
+ *     low byte of each component in the original: DecodePalette colours
+ *     (top byte only) came out black there, and the results of
+ *     FadePalette/MixPalette (the colour in the top byte) wrong.  Here it
+ *     takes the top 4 bits of the top byte (the same for colours with the
+ *     byte repeated: PalRGB, AGAPalRGB, LoadPalette).  The older source's
+ *     version (top byte, but MOVE.b of the whole green byte) would mix
+ *     green's low nibble into blue.
  *   - Not a bug (both are overwritten later): LoadPalette with an offset
  *     first writes colour offset+count with the offset as red value
  *     (overwritten by the loop); CRNG ranges with low = high only
@@ -408,7 +415,8 @@ static void BLITZ_ROUTINE do4bitpalrgb_c(UWORD c BL_REG(d1), UWORD r BL_REG(d2),
 BLITZ_THUNK(do4bitpalrgb, do4bitpalrgb_c, "d0-d1/a0-a1");
 
 /* make4bitrgbs - a0 = palette: up to 32 4 bit RGB words in rgbs4bit
-   (from the LOW byte of each component, see above); d0 = count */
+   (from the top byte of each component, fixed #224, see above); d0 =
+   count */
 static UWORD make4(const struct bb_palette *p)
 {
     UWORD n = p->numcols, k;
@@ -422,9 +430,9 @@ static UWORD make4(const struct bb_palette *p)
     s = (const ULONG *)(p->pdata + 4);
     k = n - 1;
     do {
-        UWORD v = (UWORD)((s[0] & 0xf0) << 4);
-        v |= s[1] & 0xf0;
-        v |= (UWORD)(s[2] & 0xf0) >> 4;
+        UWORD v = (UWORD)((s[0] >> 28) << 8);
+        v |= (UWORD)((s[1] >> 24) & 0xf0);
+        v |= (UWORD)(s[2] >> 28);
         *d++ = v;
         s += 3;
     } while (k-- != 0);
@@ -435,10 +443,10 @@ static UWORD make4(const struct bb_palette *p)
  * @brief make4bitrgbs (a nullsub for other libraries) - the 4 bit RGB
  * words of a palette, for LoadRGB4.
  *
- * Up to 32 colours, from the LOW byte of each component.
+ * Up to 32 colours, from the top byte of each component.
  *
- * BUG(orig) (#224): colours of DecodePalette (top byte only) come out
- * black.
+ * Fixed (intended deviation, #224): the original took the low byte, the
+ * colours of DecodePalette (top byte only) came out black.
  *
  * @param p a0: the palette.
  * @return d0.w: the count (MOVE.w: the caller's upper word stays), a1 =
@@ -947,7 +955,8 @@ void BLITZ_ROUTINE showpal_a(APTR *scr BL_REG(a2), struct Library *gfx BL_REG(a6
  * screen's ViewPort.
  *
  * With agamode LoadRGB32 of the palette data, else LoadRGB4 of up to 32
- * colours (make4bitrgbs, BUG(orig) (#224) for DecodePalette colours).
+ * colours (make4bitrgbs; with the original's low byte DecodePalette colours
+ * were black, fixed: #224).
  * The palette is in a3.
  *
  * BUG(orig) (#230): with an empty palette the original runs into

@@ -98,6 +98,7 @@ intended deviations (kind **F**), each with its issue.
 | intuifontlib (intuifontlib.c:28) | a2 decremented | unchanged | **B** | convention |
 | maxlenlib/maxslib/modlib | see system libs | | | |
 | medlib (medlib.c:59) | LoadMedModule/SetMedVolume leave a3 on object+8 or track | a3 unchanged | **K** | statements; not observable |
+| palettelib make4bitrgbs (palettelib.c:38, :420) | the 4 bit colours for LoadRGB4 (agamode 0: Kickstart < 3.0, ShowPalette and cycling in Amiga mode) from the low byte of each component (CD binary): DecodePalette colours (top byte only) black, FadePalette/MixPalette results wrong | from the top byte (the same for colours with the byte repeated: PalRGB, AGAPalRGB, LoadPalette) | **F** | #224; observable under Kickstart < 3.0 (test `palettelib-make4bitrgbs-lowbyte`, exec version set to 37) |
 | palettelib errors (palettelib.c:55, :288) | AGARed/Green/Blue `err3` and messages err0/err1/errd in the error check area | trap and messages in normal code | **K** | only in error cases without debugger |
 | palettelib empty palette (palettelib.c:52, :726, :732) | ShowPalette/Use Palette Amiga mode with an empty palette runs into the Blitz code `b_showpal`, in both branches: from ExecVersion 39 on (`agamode`, a0 arbitrary) and below via `make4bitrgbs` (a0 = palette object); writes nothing | returns in both branches | **K** | result the same (nothing written); only with `agamode` and odd a0 on the 68000 an address error in the original |
 | printlib (printlib.c:23) | a2 decremented | unchanged | **B** | convention |
