@@ -158,6 +158,14 @@ static void freebank(struct bank *b)
     b->size = 0;
 }
 
+/**
+ * @brief FreeBank bank#: free the bank's memory.
+ *
+ * memlib globfree of pos/size if both are set, then both cleared; memtype
+ * stays (not a bug: no visible effect).
+ *
+ * The bank comes in a3 (!libs {#banklib,$1380}, from bank# in d0).
+ */
 static void BLITZ_ROUTINE freebank_c(void)
 {
     freebank(BANK);
@@ -178,13 +186,45 @@ static void initbank(struct bank *b, ULONG size, ULONG memtype)
     b->pos = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
 }
 
+/**
+ * @brief InitBank bank#,size,memtype: (re)allocate the bank.
+ *
+ * Frees the bank, then (size not 0) stores size and memtype and allocates
+ * size bytes (memlib globalloc).  Not a bug (intended): size 0 only frees
+ * the bank.  Not a bug (no visible effect, #71): size and memtype are
+ * stored before the allocation; the original memlib never returns from a
+ * failed one ("Out of Memory!"), only the C memlib does (K).
+ *
+ * The bank comes in a3 (!libs {#banklib,$1380}, from bank# in d0).
+ *
+ * @param size     d1: the size in bytes
+ * @param memtype  d2: the memory type (0 = fast, 2 = chip, 65536 = clear)
+ */
 static void BLITZ_ROUTINE initbank_c(ULONG size BL_REG(d1), ULONG memtype BL_REG(d2))
 {
     initbank(BANK, size, memtype);
 }
 BLITZ_THUNK(_initbank, initbank_c, "a0");
 
-/* _bankloadb - d1 = name, d2 = memtype */
+/**
+ * @brief LoadBank bank#,filename$,memtype: load a file into the bank.
+ *
+ * Asks fileiolib's Exists (ALibJsr $3E15) for the file size: 0 (no file,
+ * an empty file) = nothing happens.  The bank is (re)allocated with the
+ * file size if the memtype differs or if the file is not smaller than the
+ * bank (CMP.l/BMI: the same size is reallocated too); a larger bank is
+ * kept, its old contents behind the file's data stay.  Then Read(file,
+ * pos, BANK size).  Errors of Open/Read are ignored.  BUG(orig) (#72): a
+ * drawer (Exists = -1) with a different memtype allocates $FFFFFFFF
+ * bytes: memlib's header makes it AllocMem(7), pos points behind that
+ * block and size is -1 (the Open of the drawer then fails silently).
+ *
+ * The bank comes in a3 (!libs {#banklib,$1380}, from bank# in d0).
+ *
+ * @param name     d1: the file name
+ * @param memtype  d2: the memory type (0 = fast, 2 = chip, 65536 = clear)
+ * @param dosbase  a6: dos.library
+ */
 void BLITZ_ROUTINE _bankloadb(const UBYTE *name BL_REG(d1), ULONG memtype BL_REG(d2),
                               struct Library *dosbase BL_REG(a6))
 {
@@ -206,7 +246,15 @@ void BLITZ_ROUTINE _bankloadb(const UBYTE *name BL_REG(d1), ULONG memtype BL_REG
     Close(hand);
 }
 
-/* _bankload - memtype = the bank's memtype if in use, else 0 */
+/**
+ * @brief LoadBank bank#,filename$: LoadBank with the bank's memtype if it
+ *        is in use, else 0.
+ *
+ * The bank comes in a3 (!libs {#banklib,$1380}, from bank# in d0).
+ *
+ * @param name     d1: the file name
+ * @param dosbase  a6: dos.library
+ */
 void BLITZ_ROUTINE _bankload(const UBYTE *name BL_REG(d1),
                              struct Library *dosbase BL_REG(a6))
 {
@@ -215,7 +263,17 @@ void BLITZ_ROUTINE _bankload(const UBYTE *name BL_REG(d1),
     _bankloadb(name, b->pos ? b->memtype : 0, dosbase);
 }
 
-/* _banksave - d1 = name; Write(pos, size) to a new file */
+/**
+ * @brief SaveBank bank#,filename$: write the bank to a new file.
+ *
+ * Write(pos, size); nothing for an unused bank.  Not a bug (no error
+ * reporting anywhere in the library): errors of Open/Write are ignored.
+ *
+ * The bank comes in a3 (!libs {#banklib,$1380}, from bank# in d0).
+ *
+ * @param name     d1: the file name
+ * @param dosbase  a6: dos.library
+ */
 void BLITZ_ROUTINE _banksave(const UBYTE *name BL_REG(d1),
                              struct Library *dosbase BL_REG(a6))
 {
@@ -230,21 +288,40 @@ void BLITZ_ROUTINE _banksave(const UBYTE *name BL_REG(d1),
     Close(hand);
 }
 
-/* _bankloc / _banksize - a0 = the bank (!libs {#banklib,$1080}) */
+/**
+ * @brief Bank(bank#), BankLoc(bank#): the address of the bank's memory.
+ *
+ * @param b  a0: the bank (!libs {#banklib,$1080}, from bank# in d0)
+ * @return d0: the address, 0 if the bank is not in use
+ */
 static ULONG BLITZ_ROUTINE bankloc_c(const struct bank *b BL_REG(a0))
 {
     return (ULONG)b->pos;
 }
 BLITZ_THUNK(_bankloc, bankloc_c, "d1/a0-a1");
 
+/**
+ * @brief BankSize(bank#): the size of the bank.
+ *
+ * @param b  a0: the bank (!libs {#banklib,$1080}, from bank# in d0)
+ * @return d0: the size in bytes (0 if never set)
+ */
 static ULONG BLITZ_ROUTINE banksize_c(const struct bank *b BL_REG(a0))
 {
     return b->size;
 }
 BLITZ_THUNK(_banksize, banksize_c, "d1/a0-a1");
 
-/* _allocmem - memlib globalloc (d0 = size, d1 = memtype); keeps a0/a1
-   like globalloc */
+/**
+ * @brief AllocMem(size,memtype): memory from memlib globalloc (freed at
+ *        the end of the program).
+ *
+ * Keeps a0/a1 like globalloc.
+ *
+ * @param size     d0: the size in bytes
+ * @param memtype  d1: the memory type (0 = fast, 2 = chip, 65536 = clear)
+ * @return d0: the address (no memory: memlib's "Out of Memory!")
+ */
 static ULONG BLITZ_ROUTINE allocmem_c(ULONG size BL_REG(d0), ULONG memtype BL_REG(d1))
 {
     struct bl_regs r = { .d0 = size, .d1 = memtype };
@@ -253,7 +330,15 @@ static ULONG BLITZ_ROUTINE allocmem_c(ULONG size BL_REG(d0), ULONG memtype BL_RE
 }
 BLITZ_THUNK(_allocmem, allocmem_c, "a0-a1");
 
-/* _freemem - memlib globfree (a1 = address, d0 = size); keeps d1/a0 */
+/**
+ * @brief FreeMem address,size: memlib globfree (a1 = address, d0 =
+ *        size).
+ *
+ * Keeps d1/a0.
+ *
+ * @param mem   d0: the address
+ * @param size  d1: the size in bytes
+ */
 static void BLITZ_ROUTINE freemem_c(ULONG mem BL_REG(d0), ULONG size BL_REG(d1))
 {
     struct bl_regs r = { .d0 = size, .a1 = mem };
