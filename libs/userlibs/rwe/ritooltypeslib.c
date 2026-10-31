@@ -292,13 +292,22 @@ static APTR nofree(void)
     return p;
 }
 
+/**
+ * @brief init: opens icon.library (any version).
+ *
+ * Without it (iconlibbase 0) the commands do nothing and return 0.
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_libinit(void)
 {
     iconlibbase = OpenLibrary((CONST_STRPTR)"icon.library", 0);
     tooltype = NULL;
 }
 
-/* FreeIconObject: -1 if an icon was open */
+/**
+ * @brief FreeIconObject: frees the open icon (FreeDiskObject).
+ * @return d0: BB_TRUE if an icon was open, BB_FALSE otherwise or without icon.library
+ */
 BB_BOOL BLITZ_ROUTINE c_Close_icon(void)
 {
     if (!iconlibbase || !diskobject)
@@ -309,6 +318,10 @@ BB_BOOL BLITZ_ROUTINE c_Close_icon(void)
     return BB_TRUE;
 }
 
+/**
+ * @brief finit: frees the open icon, closes icon.library.
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_libfinit(void)
 {
     if (!iconlibbase)
@@ -318,8 +331,17 @@ void BLITZ_ROUTINE c_libfinit(void)
     CloseLibrary(iconlibbase);
 }
 
-/* GetIconObject filename$: the DiskObject, 0 if an icon is open already
-   or there is none */
+/**
+ * @brief GetIconObject(filename$): opens the icon of a file.
+ *
+ * GetDiskObjectNew; the icon's tool types are copied into the library's
+ * array of 100 entries, which becomes the icon's do_ToolTypes.
+ * BUG(orig): no limit for the copy (#855), and an icon without tool types
+ * is read from address 0 (#845).
+ * @param name  d0: the file name (without .info)
+ * @return d0: the DiskObject, 0 if an icon is open already, there is none
+ *         or no icon.library
+ */
 ULONG BLITZ_ROUTINE c_getstructure(CONST_STRPTR name BL_REG(d0))
 {
     STRPTR *from;
@@ -341,7 +363,13 @@ ULONG BLITZ_ROUTINE c_getstructure(CONST_STRPTR name BL_REG(d0))
     return (ULONG)diskobject;
 }
 
-/* ClearToolTypes */
+/**
+ * @brief ClearToolTypes: removes all tool types of the open icon.
+ *
+ * Clears the entries of the array up to the first empty one; nothing
+ * without an icon.
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_cleartooltypes(void)
 {
     STRPTR *p = tooltype;
@@ -352,7 +380,14 @@ void BLITZ_ROUTINE c_cleartooltypes(void)
         *p++ = NULL;
 }
 
-/* FindToolNumber(n): the n-th tool type to a3 (no 0) */
+/**
+ * @brief FindToolNumber(tooltype#): the tool type of that number (0 = the first).
+ *
+ * Copied to a3 without a terminating 0 (string results need none: no
+ * defect, #257).
+ * @param n  d0: the number
+ * @return d0: the length of the string, 0 if there is no such entry or no icon
+ */
 ULONG BLITZ_ROUTINE c_gettoolnumber(ULONG n BL_REG(d0))
 {
     STRPTR *p = tooltype, s;
@@ -371,7 +406,19 @@ ULONG BLITZ_ROUTINE c_gettoolnumber(ULONG n BL_REG(d0))
     return len;
 }
 
-/* FindToolType(tt$[,bracket_check]): -1 = found, 1 = found as "(tt$)" */
+/**
+ * @brief FindToolType(tooltype$): whether the icon has the tool type.
+ *
+ * icon.library FindToolType; with the bracket check set (FindToolType
+ * tt$,1) also the switched-off form "(tt$)", in a 256 byte AllocMem
+ * buffer; the bracket search clears the flag.  BUG(orig): the flag stays
+ * set after a hit without brackets, a name with "(", or a call before
+ * GetIconObject (#843); a name over 253 characters overflows the buffer
+ * (#842).
+ * @param name  d0: the tool type's name
+ * @return d0: -1 found, 1 found as "(tt$)" (no defect: it tells the two
+ *         apart), 0 not found or no icon
+ */
 ULONG BLITZ_ROUTINE c_istooltype(CONST_STRPTR name BL_REG(d0))
 {
     UBYTE *bracketed;
@@ -404,14 +451,29 @@ ULONG BLITZ_ROUTINE c_istooltype(CONST_STRPTR name BL_REG(d0))
     return r;
 }
 
+/**
+ * @brief FindToolType(tooltype$,bracket_check): as FindToolType(tt$), with the bracket check.
+ *
+ * Sets the bracket check flag (any bracket_check value), BUG(orig) #843.
+ * @param name  d0: the tool type's name
+ * @return d0: -1 found, 1 found as "(tt$)", 0 not found
+ */
 ULONG BLITZ_ROUTINE c_istooltype2(CONST_STRPTR name BL_REG(d0))
 {
     bracket_check = 0xffff;
     return c_istooltype(name);
 }
 
-/* FindToolValue(tt$): the value after "=" up to ")" or the end, over
-   the argument at a3 (a3 - length - 1) */
+/**
+ * @brief FindToolValue(tooltype$): the value of a tool type.
+ *
+ * The value after "=" (icon.library FindToolType) up to ")" or the end,
+ * written over the argument at a3 (a3 - length - 1), without a 0.
+ * BUG(orig) (#844): it also stops at a ")" inside the value.
+ * @param name  d0: the tool type's name
+ * @param lens  a2: the argument stack (lens[-1] = the length of name)
+ * @return d0: the length of the value, 0 if not found or no icon
+ */
 ULONG BLITZ_ROUTINE c_gettooltype(CONST_STRPTR name BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     STRPTR v;
@@ -428,7 +490,14 @@ ULONG BLITZ_ROUTINE c_gettooltype(CONST_STRPTR name BL_REG(d0), const ULONG *len
     return len;
 }
 
-/* MatchToolValue(tt$,value$): -1 if the tool type has the value */
+/**
+ * @brief MatchToolValue(tooltype$,value$): whether the tool type has the value.
+ *
+ * icon.library FindToolType, then MatchToolValue.
+ * @param name   d0: the tool type's name
+ * @param value  d1: the value
+ * @return d0: BB_TRUE if it matches, BB_FALSE otherwise or no icon
+ */
 BB_BOOL BLITZ_ROUTINE c_Matchtoolvalue(CONST_STRPTR name BL_REG(d0),
                                        CONST_STRPTR value BL_REG(d1))
 {
@@ -443,7 +512,16 @@ BB_BOOL BLITZ_ROUTINE c_Matchtoolvalue(CONST_STRPTR name BL_REG(d0),
     return MatchToolValue(v, (CONST_STRPTR)string_address) ? BB_TRUE : BB_FALSE;
 }
 
-/* PutIconObject filename$[,icontype] */
+/**
+ * @brief PutIconObject(filename$,icontype): writes the open icon and closes it.
+ *
+ * A non-zero icontype (its low byte) becomes do_Type; PutDiskObject.
+ * BUG(orig): PutDiskObject's result is ignored (#851), and the icon is
+ * forgotten without FreeDiskObject (lost, #850).
+ * @param name  d0: the file name
+ * @param type  d1: the icon type (0: unchanged)
+ * @return d0: BB_TRUE (also if writing failed), BB_FALSE without an icon
+ */
 BB_BOOL BLITZ_ROUTINE c_Put_icon(CONST_STRPTR name BL_REG(d0), ULONG type BL_REG(d1))
 {
     if (!iconlibbase || !diskobject)
@@ -456,6 +534,11 @@ BB_BOOL BLITZ_ROUTINE c_Put_icon(CONST_STRPTR name BL_REG(d0), ULONG type BL_REG
     return BB_TRUE;
 }
 
+/**
+ * @brief PutIconObject(filename$): as PutIconObject with the icon type unchanged.
+ * @param name  d0: the file name
+ * @return d0: BB_TRUE, BB_FALSE without an icon
+ */
 BB_BOOL BLITZ_ROUTINE c_Put_icon2(CONST_STRPTR name BL_REG(d0))
 {
     return c_Put_icon(name, 0);
@@ -528,8 +611,22 @@ static void toolargs(const char *name, const char *value, BB_BOOL status, const 
     toolbuffersize = lens[-1] + lens[-2] + 8;
 }
 
-/* SetToolValue(tt$,value$[,status]): replace the entry that starts with
-   tt$; 0 if there is none */
+/**
+ * @brief SetToolValue(tooltype$,value$,status): replaces a tool type.
+ *
+ * The first entry that starts with tt$ (case insensitive for a-z, its own
+ * "(" skipped: "OFF" also replaces "(OFF)=1", no defect) becomes
+ * "tt$=value$" (no "=" for an empty value), "(tt$=value$)" with status 0;
+ * the string is allocated (length of both + 8) and hung on the icon's
+ * FreeList.  BUG(orig): a name that is a prefix matches ("FL" replaces
+ * "FLAG", #853); an empty name copies what follows it (#841); a failing
+ * AddFreeList frees address 0 (#840).
+ * @param name    d0: the tool type's name
+ * @param value   d1: the value
+ * @param status  d2: BB_FALSE for the switched-off form
+ * @param lens    a2: the argument stack (the lengths of name and value)
+ * @return d0: BB_TRUE done, BB_FALSE no such entry, no memory or no icon
+ */
 BB_BOOL BLITZ_ROUTINE c_PutTool(const char *name BL_REG(d0), const char *value BL_REG(d1),
                                 BB_BOOL status BL_REG(d2), const ULONG *lens BL_REG(a2))
 {
@@ -544,13 +641,31 @@ BB_BOOL BLITZ_ROUTINE c_PutTool(const char *name BL_REG(d0), const char *value B
     return BB_FALSE;
 }
 
+/**
+ * @brief SetToolValue(tooltype$,value$): as SetToolValue with status -1.
+ * @param name   d0: the tool type's name
+ * @param value  d1: the value
+ * @param lens   a2: the argument stack
+ * @return d0: BB_TRUE done, BB_FALSE otherwise
+ */
 BB_BOOL BLITZ_ROUTINE c_PutTool2(const char *name BL_REG(d0), const char *value BL_REG(d1),
                                  const ULONG *lens BL_REG(a2))
 {
     return c_PutTool(name, value, BB_TRUE, lens);
 }
 
-/* NewToolType(tt$,value$[,status]): a new entry at the end */
+/**
+ * @brief NewToolType(tooltype$,value$,status): appends a tool type.
+ *
+ * A new entry at the end, built as by SetToolValue.  BUG(orig): no limit
+ * for the 100 entries (#855); the string bugs of SetToolValue (#841,
+ * #840).
+ * @param name    d0: the tool type's name
+ * @param value   d1: the value
+ * @param status  d2: BB_FALSE for the switched-off form "(tt$=value$)"
+ * @param lens    a2: the argument stack (the lengths of name and value)
+ * @return d0: BB_TRUE done, BB_FALSE no memory or no icon
+ */
 BB_BOOL BLITZ_ROUTINE c_NewTool(const char *name BL_REG(d0), const char *value BL_REG(d1),
                                 BB_BOOL status BL_REG(d2), const ULONG *lens BL_REG(a2))
 {
@@ -565,13 +680,25 @@ BB_BOOL BLITZ_ROUTINE c_NewTool(const char *name BL_REG(d0), const char *value B
     return gotit(p);
 }
 
+/**
+ * @brief NewToolType(tooltype$,value$): as NewToolType with status -1.
+ * @param name   d0: the tool type's name
+ * @param value  d1: the value
+ * @param lens   a2: the argument stack
+ * @return d0: BB_TRUE done, BB_FALSE otherwise
+ */
 BB_BOOL BLITZ_ROUTINE c_NewTool2(const char *name BL_REG(d0), const char *value BL_REG(d1),
                                  const ULONG *lens BL_REG(a2))
 {
     return c_NewTool(name, value, BB_TRUE, lens);
 }
 
-/* SetIconHit width,height: the gadget's size */
+/**
+ * @brief SetIconHit width,height: the size of the icon's gadget (the hit box).
+ * @param w  d0: the width
+ * @param h  d1: the height
+ * @return nothing (nothing happens without an icon)
+ */
 void BLITZ_ROUTINE c_seticonhit(UWORD w BL_REG(d0), UWORD h BL_REG(d1))
 {
     if (!diskobject)
@@ -580,7 +707,14 @@ void BLITZ_ROUTINE c_seticonhit(UWORD w BL_REG(d0), UWORD h BL_REG(d1))
     diskobject->do_Gadget.Height = h;
 }
 
-/* ShapeToIcon shape: the gadget's size and image from the shape */
+/**
+ * @brief ShapeToIcon shape: the icon's image from a shape.
+ *
+ * The gadget gets the shape's width and height + 1, its GadgetRender
+ * Image the shape's width, height, depth and data.
+ * @param shape  a0: the shape object (#ia0|#pd0)
+ * @return nothing (nothing happens without an icon)
+ */
 void BLITZ_ROUTINE c_shapetoicon(const struct shape *shape BL_REG(a0))
 {
     struct Image *im;
@@ -597,7 +731,17 @@ void BLITZ_ROUTINE c_shapetoicon(const struct shape *shape BL_REG(a0))
     im->ImageData = shape->data;
 }
 
-/* ShapeToIcon shape,shape: the second shape as selected image */
+/**
+ * @brief ShapeToIcon shape,shape: the icon's image and selected image from two shapes.
+ *
+ * The second shape goes into the library's own Image (SelectRender),
+ * then as ShapeToIcon shape.  BUG(orig) (#854): that Image has PlanePick/
+ * PlaneOnOff 0, and the gadget flags become 6 (GADGHIMAGE), all others
+ * dropped.  DIFF: a3 unchanged.
+ * @param shape   a0: the shape for the image (#ia0|#pd0)
+ * @param shape2  a1: the shape for the selected image (#ia1|#pd1)
+ * @return nothing (nothing happens without an icon)
+ */
 void BLITZ_ROUTINE c_shapetoicon2(const struct shape *shape BL_REG(a0),
                                   const struct shape *shape2 BL_REG(a1))
 {
@@ -612,7 +756,13 @@ void BLITZ_ROUTINE c_shapetoicon2(const struct shape *shape BL_REG(a0),
     c_shapetoicon(shape);
 }
 
-/* SetIconType object_type (1-5): -1; BUG(orig) without icon d0 = type (#852) */
+/**
+ * @brief SetIconType object_type: the icon's type (do_Type, 1-5).
+ *
+ * BUG(orig) (#852): without an icon the result is the argument.
+ * @param type  d0: the type
+ * @return d0: -1 done, 0 for a type outside 1-5; without an icon the type
+ */
 ULONG BLITZ_ROUTINE c_icontype(ULONG type BL_REG(d0))
 {
     if (!diskobject)
@@ -623,14 +773,27 @@ ULONG BLITZ_ROUTINE c_icontype(ULONG type BL_REG(d0))
     return (ULONG)-1;
 }
 
-/* IconRender render_flags: the gadget flags */
+/**
+ * @brief IconRender render_flags: the flags of the icon's gadget.
+ * @param flags  d0: the gadget flags (a word)
+ * @return nothing (nothing happens without an icon)
+ */
 void BLITZ_ROUTINE c_selectrender(UWORD flags BL_REG(d0))
 {
     if (diskobject)
         diskobject->do_Gadget.Flags = flags;
 }
 
-/* IconDefTool tool$: the default tool (a copy on the FreeList) */
+/**
+ * @brief IconDefTool tool$: the icon's default tool.
+ *
+ * A copy of tool$ (AllocMem, on the icon's FreeList) becomes
+ * do_DefaultTool.  BUG(orig): a3 is rewound by the length + 1 and stays
+ * there (#846); a failing AddFreeList frees address 0 (#840).
+ * @param tool  d0: the default tool
+ * @param lens  a2: the argument stack (lens[-1] = the length of tool$)
+ * @return d0: BB_TRUE done, BB_FALSE for an empty string, no memory or no icon
+ */
 BB_BOOL BLITZ_ROUTINE c_defaulttool(const char *tool BL_REG(d0), const ULONG *lens BL_REG(a2))
 {
     UBYTE *mem, *d;
@@ -748,7 +911,19 @@ static void icontoshape_jump(ULONG shapearg, struct shape *shape, UWORD render,
     }
 }
 
-/* IconToShape shape: the icon's image as shape (DIFF: a3 kept) */
+/**
+ * @brief IconToShape shape: the icon's image (GadgetRender) as a shape.
+ *
+ * A shape in use is freed first; the data is allocated with memlib
+ * globalloc (CHIP) and copied from the Image, the cookie made with
+ * shapeslib's MakeCookie.  BUG(orig): the shape is filled before the data
+ * is allocated (#848, not a bug in practice); the copy takes one word per
+ * row too many for a width that is a multiple of 16 (#847); MakeCookie
+ * gets the caller's a3 unless the shape was in use (#849).  DIFF: a3 kept.
+ * @param shapearg  d0: the shape's offset (shape# << 5)
+ * @param shape     a0: the shape object (#ia0|#pd0)
+ * @return nothing (nothing happens without an icon or image)
+ */
 void BLITZ_ROUTINE c_icontoshape(ULONG shapearg BL_REG(d0), struct shape *shape BL_REG(a0))
 {
     UBYTE *cookiestr = blitz_string;    /* a3 */
@@ -758,7 +933,17 @@ void BLITZ_ROUTINE c_icontoshape(ULONG shapearg BL_REG(d0), struct shape *shape 
     icontoshape_jump(shapearg, shape, RENDER_IMAGE, &cookiestr);
 }
 
-/* IconToShape shape,shape: the image and the selected image */
+/**
+ * @brief IconToShape shape,shape: the image and the selected image as two shapes.
+ *
+ * As IconToShape shape for each; BUG(orig) (#849): the second shape gets
+ * the cookie of the first (a3 is still the first shape).
+ * @param shapearg   d0: the first shape's offset (shape# << 5)
+ * @param shapearg2  d1: the second shape's offset
+ * @param shape      a0: the shape for the image (#ia0|#pd0)
+ * @param shape2     a1: the shape for the selected image (#ia1|#pd1)
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_icontoshape2(ULONG shapearg BL_REG(d0),
                                   ULONG shapearg2 BL_REG(d1),
                                   struct shape *shape BL_REG(a0),
