@@ -65,10 +65,15 @@ static struct intnode *allints[32];             /* _fints: Amiga mode lists, */
 static struct intnode **ints;                   /* list set of setint2/clrint2 */
 static UWORD blitzintson;                       /* are blitz ints on? */
 
-/* dovwait - VWait [n]: wait for n+1 vertical blanks (n = d0.w, DBF
-   count: 0 = once, $FFFF = 65536 times).
-   Amiga mode: WaitTOF with the graphics base in a6 (!libs); the original
-   (MOVE d0,d2) keeps no register but a6 and d3-d7/a2-a5. */
+/**
+ * @brief VWait [n] ($C104, Amiga mode): wait for n+1 vertical blanks.
+ *
+ * WaitTOF with the graphics base in a6 (!libs); the original (MOVE d0,d2)
+ * keeps no register but a6 and d3-d7/a2-a5.
+ *
+ * @param n    d0.w: the DBF count (0 = once, $FFFF = 65536 times)
+ * @param gfx  a6: graphics.library
+ */
 static void BLITZ_ROUTINE dovwait_c(UWORD n BL_REG(d0), struct GfxBase *gfx BL_REG(a6))
 {
     do
@@ -76,9 +81,15 @@ static void BLITZ_ROUTINE dovwait_c(UWORD n BL_REG(d0), struct GfxBase *gfx BL_R
     while (n-- != 0);
 }
 
-/* Blitz mode: poll VPOSR bit 0 (V8, vertical position >= 256) - wait for
-   it to become 1, then 0 again = one frame.  Only d0 is changed by the
-   original (DBF), so the thunk keeps d1/a0-a1. */
+/**
+ * @brief VWait [n] ($C104, Blitz mode): wait for n+1 frames.
+ *
+ * Polls VPOSR bit 0 (V8, vertical position >= 256): waits for it to
+ * become 1, then 0 again = one frame.  Only d0 is changed by the original
+ * (DBF), so the thunk keeps d1/a0-a1.
+ *
+ * @param n  d0.w: the DBF count (0 = once, $FFFF = 65536 times)
+ */
 static void BLITZ_ROUTINE b_dovwait_c(UWORD n BL_REG(d0))
 {
     volatile UBYTE *vposr = (volatile UBYTE *)0xdff005;
@@ -94,7 +105,10 @@ BLITZ_THUNK(b_dovwait, b_dovwait_c, "d1/a0-a1");
 BLITZ_AB_ROUTINE(dovwait, b_dovwait,
 "   jmp     _dovwait_c");
 
-/* codeinit - zero out all ints (both sets, 32 lists), remember a5 */
+/**
+ * @brief The library's init: zero out all ints (both sets, 32 lists),
+ * remember a5 (the program's globals) for the handlers.
+ */
 static void BLITZ_ROUTINE codeinit_c(void)
 {
     int i;
@@ -127,9 +141,13 @@ static void intsoff(struct intnode **set)
             RemIntServer(n->level & 15, &n->is);
 }
 
-/* cleanup - at program end: remove the servers, free all nodes of both
-   sets.  blitzintson is not reset (not a bug: a program ends in Amiga
-   mode anyway).  The original changes d0-d2/a0-a3/a6. */
+/**
+ * @brief Cleanup ($C105) at program end: remove the servers, free all
+ * nodes of both sets.
+ *
+ * blitzintson is not reset (not a bug: a program ends in Amiga mode
+ * anyway).  The original changes d0-d2/a0-a3/a6.
+ */
 void BLITZ_ROUTINE cleanup(void)
 {
     struct intnode **l, *n, *next;
@@ -153,14 +171,17 @@ void BLITZ_ROUTINE cleanup(void)
     }
 }
 
-/* newint - start of an interrupt handler: a5 = the program's globals */
+/**
+ * @brief newint ($C102), the start of an interrupt handler's code: a5 =
+ * the program's globals (remembered by init).
+ */
 static void BLITZ_ROUTINE newint_c(void)
 {
     blitz_globals = inta5;
 }
 BLITZ_THUNK(newint, newint_c, "d0-d1/a0-a1");
 
-/* oldint - end of an interrupt handler: nothing to do */
+/** @brief oldint ($C103), the end of an interrupt handler: nothing to do. */
 void BLITZ_ROUTINE oldint(void)
 {
 }
@@ -187,7 +208,16 @@ static void setint2(UWORD level, ULONG code)
         AddIntServer(level & 15, &n->is);
 }
 
-/* setint (Amiga mode): servers are added at once */
+/**
+ * @brief SetInt level ($C100, Amiga mode): install an interrupt handler.
+ *
+ * A node (setint2) in the Amiga mode lists; the server is added at once.
+ * The allocation is not checked (#196, see setint2).
+ *
+ * @param level  d0: the interrupt number (low 4 bits; the other bits allow
+ *               a selective ClrInt)
+ * @param code   d1: the handler's code
+ */
 static void BLITZ_ROUTINE setint_c(ULONG level BL_REG(d0), ULONG code BL_REG(d1))
 {
     ints = fints;
@@ -195,8 +225,14 @@ static void BLITZ_ROUTINE setint_c(ULONG level BL_REG(d0), ULONG code BL_REG(d1)
     setint2(level, code);
 }
 
-/* b_setint (Blitz mode): blitz list; added now only if the blitz servers
-   are on (SEQ dontdo: $FF00 = don't) */
+/**
+ * @brief SetInt level ($C100, Blitz mode): as SetInt in Amiga mode, in the
+ * Blitz mode lists; the server is added now only if the blitz servers are
+ * on (SEQ dontdo: $FF00 = don't).
+ *
+ * @param level  d0: the interrupt number (low 4 bits)
+ * @param code   d1: the handler's code
+ */
 static void BLITZ_ROUTINE b_setint_c(ULONG level BL_REG(d0), ULONG code BL_REG(d1))
 {
     ints = bints;
@@ -233,6 +269,15 @@ static void clrint2(UWORD level)
     }
 }
 
+/**
+ * @brief ClrInt level ($C101, Amiga mode): remove the interrupt handlers
+ * of a level.
+ *
+ * Every node of list `level & 15` whose level word equals d0 (clrint2);
+ * the servers are removed at once.
+ *
+ * @param level  d0: the level as given to SetInt
+ */
 static void BLITZ_ROUTINE clrint_c(ULONG level BL_REG(d0))
 {
     ints = fints;
@@ -240,6 +285,13 @@ static void BLITZ_ROUTINE clrint_c(ULONG level BL_REG(d0))
     clrint2(level);
 }
 
+/**
+ * @brief ClrInt level ($C101, Blitz mode): as ClrInt in Amiga mode, in the
+ * Blitz mode lists; the servers are removed only if the blitz servers are
+ * on.
+ *
+ * @param level  d0: the level as given to SetInt
+ */
 static void BLITZ_ROUTINE b_clrint_c(ULONG level BL_REG(d0))
 {
     ints = bints;
@@ -255,7 +307,8 @@ BLITZ_AB_ROUTINE(clrint, b_clrint,
 "   movem.l (sp)+,d0-d1/a0-a1\n"
 "   rts");
 
-/* goblitz - (switchlib) going to Blitz mode: add the blitz servers */
+/** @brief goblitz ($C106, switchlib): going to Blitz mode, add the blitz
+    servers (once). */
 static void BLITZ_ROUTINE goblitz_c(void)
 {
     if (blitzintson)
@@ -265,7 +318,8 @@ static void BLITZ_ROUTINE goblitz_c(void)
 }
 BLITZ_THUNK(goblitz, goblitz_c, "d0-d1/a0-a1");
 
-/* goamiga - (switchlib) back to Amiga mode: remove the blitz servers */
+/** @brief goamiga ($C107, switchlib): back to Amiga mode, remove the blitz
+    servers (if they are on). */
 static void BLITZ_ROUTINE goamiga_c(void)
 {
     if (!blitzintson)
