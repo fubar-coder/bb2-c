@@ -516,13 +516,13 @@ void BLITZ_ROUTINE serialsetparams(UWORD unit BL_REG(d0))
 static ULONG BLITZ_ROUTINE checkevent_c(UWORD unit BL_REG(d0),
                                         const ULONG *sigs BL_REG(a0))
 {
-    ULONG d7 = *sigs;
+    ULONG signals = *sigs;
     struct serio *s = slot(unit, 7, 0);
     ULONG r = 0;
 
-    if (d7 & (1UL << (s[1].port.mp_SigBit & 31)))     /* port+15+128 */
+    if (signals & (1UL << (s[1].port.mp_SigBit & 31))) /* port+15+128 */
         r = 1;
-    if (d7 & (1UL << (s->port.mp_SigBit & 31)))       /* port+15 */
+    if (signals & (1UL << (s->port.mp_SigBit & 31)))  /* port+15 */
         r = 2;
     return r;
 }

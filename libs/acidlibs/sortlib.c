@@ -144,10 +144,10 @@ static void recurs(const struct sorter *s, UBYTE *lo, UBYTE *hi)
     ULONG step = s->size;
 
     for (;;) {
-        UBYTE *d6 = lo, *d7 = hi;                       /* copies of */
+        UBYTE *first = lo, *last = hi;                  /* copies of */
         ULONG off = (ULONG)(hi - lo) >> 1;              /* LSR.l #1,d0 */
         ULONG pivot;
-        UBYTE *a0 = lo, *a1 = hi;
+        UBYTE *scan_lo = lo, *scan_hi = hi;
 
         if (step == 1)
             pivot = lo[off];                            /* MOVE.b 0(a0,d0.l),d0 */
@@ -158,29 +158,29 @@ static void recurs(const struct sorter *s, UBYTE *lo, UBYTE *hi)
 
         do {                                            /* 'loop0 */
             if (sdir == 0) {
-                while (compare(s, pivot, a0) > 0)       /* 'loop1: BGT */
-                    a0 += step;
-                while (compare(s, pivot, a1) < 0)       /* 'loop2: BLT */
-                    a1 -= step;
+                while (compare(s, pivot, scan_lo) > 0)  /* 'loop1: BGT */
+                    scan_lo += step;
+                while (compare(s, pivot, scan_hi) < 0)  /* 'loop2: BLT */
+                    scan_hi -= step;
             } else {
-                while (compare(s, pivot, a0) < 0)       /* 'loop3: BLT */
-                    a0 += step;
-                while (compare(s, pivot, a1) > 0)       /* 'loop4: BGT */
-                    a1 -= step;
+                while (compare(s, pivot, scan_lo) < 0)  /* 'loop3: BLT */
+                    scan_lo += step;
+                while (compare(s, pivot, scan_hi) > 0)  /* 'loop4: BGT */
+                    scan_hi -= step;
             }
-            if (a0 > a1)                                /* 'lskip: BHI 'skip */
+            if (scan_lo > scan_hi)                      /* 'lskip: BHI 'skip */
                 break;
-            swap(s, a0, a1);
-            a0 += step;
-            a1 -= step;
-        } while (a0 <= a1);                             /* BLS 'loop0 */
+            swap(s, scan_lo, scan_hi);
+            scan_lo += step;
+            scan_hi -= step;
+        } while (scan_lo <= scan_hi);                   /* BLS 'loop0 */
 
-        if (d6 < a1)                                    /* CMP.l a1,d6:BCC 'skip2 */
-            recurs(s, d6, a1);
-        if (!(a0 < d7))                                 /* CMP.l d7,a0:BCC 'skip3 */
+        if (first < scan_hi)                            /* CMP.l a1,d6:BCC 'skip2 */
+            recurs(s, first, scan_hi);
+        if (!(scan_lo < last))                          /* CMP.l d7,a0:BCC 'skip3 */
             return;
-        lo = a0;                                        /* MOVE.l d7,a1:BRA 'recurs */
-        hi = d7;
+        lo = scan_lo;                                   /* MOVE.l d7,a1:BRA 'recurs */
+        hi = last;
     }
 }
 

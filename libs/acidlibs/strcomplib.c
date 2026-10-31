@@ -35,17 +35,17 @@ BLITZ_LIBFIN();
 /* strcomp2 - the loop as in the original: lengths count down as signed
    longs (SUBQ.l #1/BMI); when the left string ends first, the result
    depends on whether d1 is 0 (TST.l d1, d1 not yet decremented) */
-static LONG compare(const UBYTE *a0, ULONG d0, const UBYTE *a1, ULONG d1)
+static LONG compare(const UBYTE *a, ULONG alen, const UBYTE *b, ULONG blen)
 {
     for (;;) {
-        if ((LONG)--d0 < 0)                     /* 'eos1 */
-            return d1 != 0 ? -1 : 0;
-        if ((LONG)--d1 < 0)                     /* 'isgt */
+        if ((LONG)--alen < 0)                   /* 'eos1 */
+            return blen != 0 ? -1 : 0;
+        if ((LONG)--blen < 0)                   /* 'isgt */
             return 1;
-        if (*a0 != *a1)                         /* CMPM.b (a1)+,(a0)+ */
-            return *a0 < *a1 ? -1 : 1;          /* BCS 'islt */
-        a0++;
-        a1++;
+        if (*a != *b)                           /* CMPM.b (a1)+,(a0)+ */
+            return *a < *b ? -1 : 1;            /* BCS 'islt */
+        a++;
+        b++;
     }
 }
 
