@@ -133,12 +133,12 @@ static struct Library *reqbase;
 static const char reqname[] = "req.library";
 
 /* init: d0 comes back unchanged if the library is already open */
-static ULONG BLITZ_ROUTINE libinit_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE libinit_c(ULONG incoming BL_REG(d0))
 {
     UBYTE *mem;
 
     if (reqbase)
-        return d0;                                      /* oops */
+        return incoming;                                /* oops */
     reqbase = OpenLibrary((CONST_STRPTR)reqname, 0);
     if (!reqbase)
         return 0;
