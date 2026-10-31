@@ -95,6 +95,14 @@ UBYTE *iff_a0;
 
 /* ------------------------------------------------------------------ init */
 
+/**
+ * @brief The library's init: remember dos.library, allocate the buffer.
+ *
+ * The 2048 byte buffer comes from memlib's globalloc (MEMF_PUBLIC).
+ *
+ * @param dos  a0: dos.library (!libs #doslib,#la0)
+ * @return d0: the buffer's address (the library's init value)
+ */
 ULONG BLITZ_ROUTINE codeinit(struct DosLibrary *dos BL_REG(a0))
 {
     struct bl_regs r = { .d0 = BUFSIZE, .d1 = MEMF_PUBLIC };
@@ -112,7 +120,15 @@ static void readbuff(void)
     charat = 0;
 }
 
-/* iffopen - a0 = file name; d0 unchanged if opened, else -1 */
+/**
+ * @brief iffopen (+1): open a file for reading and fill the buffer.
+ *
+ * One file at a time.  CCR for the caller (thunk): Z = opened.
+ *
+ * @param value  d0: returned unchanged if the file was opened
+ * @param name   a0: the file name
+ * @return d0: value if opened, -1 (N, not Z) if not
+ */
 static ULONG BLITZ_ROUTINE iffopen_c(ULONG value BL_REG(d0), const char *name BL_REG(a0))
 {
     filehand = Open((CONST_STRPTR)name, MODE_OLDFILE);
@@ -126,6 +142,7 @@ static ULONG BLITZ_ROUTINE iffopen_c(ULONG value BL_REG(d0), const char *name BL
 }
 BLITZ_THUNK_POST(iffopen, iffopen_c, "d1/a0-a1", "tst.w _iff_fail");
 
+/** @brief iffclose (+2): close the file (dos Close, also of 0). */
 static void BLITZ_ROUTINE iffclose_c(void)
 {
     Close(filehand);
@@ -193,26 +210,63 @@ static ULONG long_(ULONG value)
     return part | (UWORD)value;
 }
 
+/**
+ * @brief iffbyte (+3): the next byte of the file.
+ *
+ * Refills the buffer when it is used up.  CCR: Z = ok.
+ * BUG(orig) (#177): after a read error (-1) the buffer counts as 65535
+ * bytes long.
+ *
+ * @param value  d0: the caller's d0, only its low byte is replaced
+ * @return d0: value with the byte in the low byte, -1 (N, not Z) at the
+ *         end of the data
+ */
 static ULONG BLITZ_ROUTINE iffbyte_c(ULONG value BL_REG(d0))
 {
     return byte_(value);
 }
 BLITZ_THUNK_POST(iffbyte, iffbyte_c, "d1/a0-a1", "tst.w _iff_fail");
 
+/**
+ * @brief iffword (+4): the next word (big endian), two iffbytes.
+ *
+ * CCR: Z = ok.
+ *
+ * @param value  d0: the caller's d0, only its low word is replaced
+ * @return d0: value with the word in the low word, -1 at the end of the
+ *         data
+ */
 static ULONG BLITZ_ROUTINE iffword_c(ULONG value BL_REG(d0))
 {
     return word_(value);
 }
 BLITZ_THUNK_POST(iffword, iffword_c, "d1/a0-a1", "tst.w _iff_fail");
 
+/**
+ * @brief ifflong (+5): the next long (big endian), two iffwords.
+ *
+ * CCR: Z = ok.
+ *
+ * @param value  d0: the caller's d0
+ * @return d0: the long, -1 at the end of the data
+ */
 static ULONG BLITZ_ROUTINE ifflong_c(ULONG value BL_REG(d0))
 {
     return long_(value);
 }
 BLITZ_THUNK_POST(ifflong, ifflong_c, "d1/a0-a1", "tst.w _iff_fail");
 
-/* ifffind - d0 = id; reads up to and including the id, then the chunk
-   length (ifflong); -1 at the end of the data or at "BODY" */
+/**
+ * @brief ifffind (+6): find a chunk.
+ *
+ * Reads up to and including the id, then the chunk length (ifflong).
+ * CCR: Z = found.
+ * BUG(orig) (#178): it gives up at a "BODY" id (unless it is looking for
+ * BODY) and reads ahead byte by byte (the ids need not be aligned).
+ *
+ * @param id  d0: the chunk id
+ * @return d0: the chunk length, -1 at the end of the data or at "BODY"
+ */
 static ULONG BLITZ_ROUTINE ifffind_c(ULONG id BL_REG(d0))
 {
     ULONG last4 = 0;                    /* d2: the last 4 bytes */
@@ -240,7 +294,15 @@ static ULONG BLITZ_ROUTINE ifffind_c(ULONG id BL_REG(d0))
 }
 BLITZ_THUNK_POST(ifffind, ifffind_c, "d1/a0-a1", "tst.w _iff_fail");
 
-/* iffskip - skip d0 bytes; Z when done, not Z at the end of the data */
+/**
+ * @brief iffskip (+7): skip bytes (the source says "long words").
+ *
+ * CCR: Z when all bytes were skipped, not Z at the end of the data.
+ * BUG(orig) (#179): d0 = 0 counts down from 2^32.
+ *
+ * @param n  d0: the number of bytes
+ * @return d0: the last iffbyte result
+ */
 static ULONG BLITZ_ROUTINE iffskip_c(ULONG n BL_REG(d0))
 {
     ULONG value = n;                    /* d0 */
@@ -255,7 +317,20 @@ static ULONG BLITZ_ROUTINE iffskip_c(ULONG n BL_REG(d0))
 }
 BLITZ_THUNK_POST(iffskip, iffskip_c, "d1/a0-a1", "tst.w _iff_fail");
 
-/* iffread - copy d0 bytes to a0 (see the head comment) */
+/**
+ * @brief iffread (+8): copy bytes of the file to memory.
+ *
+ * From the buffer; when the buffer position reaches 2048 the rest is read
+ * with one dos Read directly to a0 (a0 not advanced; the buffer is
+ * refilled by the next iffbyte).  When the data ends inside the buffer,
+ * d0 = the bytes still wanted and a0 = the end.  Not a bug: all callers
+ * ignore d0/a0 afterwards.
+ * BUG(orig) (#179): d0 = 0 counts down from 2^32.
+ *
+ * @param n    d0: the number of bytes
+ * @param dst  a0: the destination; a0 afterwards: see above
+ * @return d0: 0, the bytes still wanted, or the result of the dos Read
+ */
 static ULONG BLITZ_ROUTINE iffread_c(ULONG n BL_REG(d0), UBYTE *dst BL_REG(a0))
 {
     UWORD at = charat;                  /* d1 */
