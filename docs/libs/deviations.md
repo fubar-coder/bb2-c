@@ -115,6 +115,7 @@ intended deviations (kind **F**), each with its issue.
 | shapetrixlib XFlip (shapetrixlib.c, header) | no wait after the last blit before the CPU mirroring | reproduced likewise; result timing-dependent, C loop is faster | **T** | timing; in the test different for shapes 13 and 21 pixels wide (21 pixels only with runtime error checking); t141 checks XFlip only without shifting blit |
 | spriteslib, collslib | – | no deviation | – | – |
 | iffmakelib | – | no deviation (check functions in the check area since c4a736d, see section 6) | – | – |
+| iffmakelib err2 (iffmakelib.c:49) | "Can't open File" (err2) traps in normal code, its message is in the error check area (without debugger d0 behind the lib) | message in normal code | **F** | #185: the same runtime error with the debugger; without it TRAP #0 with the right message (test `iffmakelib-openerr-errarea`) |
 
 ## 4. deflibs (AmigaOS call declarations)
 

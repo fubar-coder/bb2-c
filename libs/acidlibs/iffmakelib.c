@@ -40,14 +40,16 @@
  *  - CMAP chunks of an odd size are not padded. (#184)
  *  - SaveBitmap with a palette of 0 colours writes 65536 colours (DBF) -
  *    over the end of the buffer (not tested). (#182)
- *  - Can't open the file: runtime error "Can't open File" (err2 in the
- *    normal code, message in the error check area as in the original:
- *    without the debugger d0 points behind the library). (#185)
  *  - Not a bug (exec versions are < 32768): the ExecVersion check uses
  *    CMP.w/BLT (signed).
  *  - SaveShape does not check the depth: depth 0 writes 65536 plane
  *    pointers (DBF) from bmcopy on, depth 15 and more run past its 14
  *    pointers (usewid, scrcols, then whatever follows). (#326)
+ *
+ * Fixed (intended deviation, #185): "Can't open File" (err2 in the normal
+ * code) has its message in the error check area in the original (without
+ * the debugger d0 points behind the library); here the message is in the
+ * normal code.
  *
  * Error checks (debugger only): uninitialized bitmap (BytesPerRow word 0),
  * palette (colour pointer 0), screen (pointer 0), shape (width 0).
@@ -149,10 +151,12 @@ static struct DosLibrary *dosbase;
 #define ID_BODY 0x424f4459
 
 BLITZ_ERRCHK_MESSAGE(mess1, "Uninitialized Bitmap");
-BLITZ_ERRCHK_MESSAGE(mess2, "Can't open File");
 BLITZ_ERRCHK_MESSAGE(mess3, "Uninitialized Palette");
 BLITZ_ERRCHK_MESSAGE(mess4, "Uninitialized Screen");
 BLITZ_ERRCHK_MESSAGE(mess5, "Uninitialized Shape");
+/* err2's message in the normal code (fixed, #185: in the original it
+   lies in the error check area) */
+static const char mess2[] = "Can't open File";
 
 /* -------------------------------------------------------------- chunks */
 
@@ -334,7 +338,7 @@ static void savebm(const struct BitMap *bm, const char *name, const struct palet
     dosbase = dos;
     fh = Open((CONST_STRPTR)name, MODE_NEWFILE);
     if (!fh)
-        BLITZ_RUNERR(mess2);                    /* BEQ err2 */
+        BLITZ_RUNERR(mess2);                    /* BEQ err2, fixed (#185) */
     makehead(bm);
     if (pal)
         makecolor(pal);
@@ -350,9 +354,9 @@ static void savebm(const struct BitMap *bm, const char *name, const struct palet
  *
  * FORM/ILBM/BMHD, the ByteRun1 packed BODY (see the head comment).  Amiga
  * mode only.
- * Errors: "Can't open File" if the file cannot be created - the message is
- * in the error check area, BUG(orig) (#185); debugger only: "Uninitialized
- * Bitmap" (bitchk).
+ * Errors: "Can't open File" if the file cannot be created (the message in
+ * the normal code, fixed, #185); debugger only: "Uninitialized Bitmap"
+ * (bitchk).
  * BUG(orig): the plane loop compares with the word over Flags and Depth
  * (#180), the row and plane loops run at least once (#181), savearow reads
  * one byte behind the row (#183).
@@ -461,8 +465,8 @@ BLITZ_THUNK(dosaveshape2, dosaveshape2_c, "d0-d1/a0-a1");
  * only the CMAP chunk (no FORM).
  *
  * Nothing for a palette without colours.  Amiga mode only.
- * Errors: "Can't open File", BUG(orig) (#185) as SaveBitmap; the CMAP is
- * not padded (#184).
+ * Errors: "Can't open File" as SaveBitmap; BUG(orig): the CMAP is not
+ * padded (#184).
  *
  * @param pal   a2: the palette (!libs {#palettelib,$1280})
  * @param name  d1: the file name

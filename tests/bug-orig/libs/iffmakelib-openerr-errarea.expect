@@ -1,0 +1,4 @@
+[run]
+before
+runtime error Can't open File
+rc=0
