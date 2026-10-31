@@ -467,7 +467,8 @@ static ULONG dopop(UBYTE *items, struct popup *parent, UWORD x, UWORD y)
     struct popup *p = allocstruct(items, parent);
     struct Window *win;
     UWORD w, h;
-    ULONG result;                       /* d0: an event class, then the result */
+    ULONG event;                        /* d0: an event class or a sub level's result */
+    ULONG result;                       /* d0 */
 
     w = calcwinsize(p, &h);
     p->winx = x;
@@ -482,26 +483,26 @@ static ULONG dopop(UBYTE *items, struct popup *parent, UWORD x, UWORD y)
     drawitems(p, win);
     for (;;) {
         if (p->popupdelay)
-            result = waitwinevent();
+            event = waitwinevent();
         else {
             /* the active item's sub menu, to the right of it */
-            result = dopop(*(UBYTE **)(p->activeitem + IT_SUBS), p,
-                           p->winx + p->winwidth, p->winy + p->activeypos - 2);
+            event = dopop(*(UBYTE **)(p->activeitem + IT_SUBS), p,
+                          p->winx + p->winwidth, p->winy + p->activeypos - 2);
             p->popupdelay = 1;
-            if (!result)
+            if (!event || (event != (ULONG)p && event != (ULONG)p->parent)) {
+                result = event;
                 break;
-            if (result != (ULONG)p && result != (ULONG)p->parent)
-                break;
-            result = IDCMP_MOUSEMOVE;
+            }
+            event = IDCMP_MOUSEMOVE;
         }
-        if (result == IDCMP_MOUSEMOVE) {
+        if (event == IDCMP_MOUSEMOVE) {
             mousemove(p);
             result = p->exitval;
             if ((LONG)result < 0)
                 continue;
             break;
         }
-        if (result == IDCMP_MOUSEBUTTONS) {
+        if (event == IDCMP_MOUSEBUTTONS) {
             result = (ULONG)p->activeitem;
             break;
         }
