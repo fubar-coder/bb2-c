@@ -183,17 +183,19 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             *dst = val;
             continue;
         }
-        if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial") || !strcmp(key, "timeout")
-            || !strcmp(key, "parallel") || !strcmp(key, "stack")) {
+        if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial") || !strcmp(key, "regression")
+            || !strcmp(key, "timeout") || !strcmp(key, "parallel") || !strcmp(key, "stack")) {
             char *e;
             unsigned long u = strtoul(val, &e, 10);
 
-            if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial")) {
+            if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial")
+                || !strcmp(key, "regression")) {
                 if (strcmp(val, "on") && strcmp(val, "off")) {
                     free(val);
                     return fail(p, err, errlen, "line %u: %s=on or %s=off", no, key, key);
                 }
-                *(!strcmp(key, "runtime_errors") ? &p->runtime_errors : &p->serial) = !strcmp(val, "on");
+                *(!strcmp(key, "runtime_errors") ? &p->runtime_errors
+                  : !strcmp(key, "serial") ? &p->serial : &p->regression) = !strcmp(val, "on");
             } else if (!*val || *e || !u) {
                 free(val);
                 return fail(p, err, errlen, "line %u: %s needs a number > 0", no, key);
@@ -361,6 +363,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         return fail(p, err, errlen, "a reference, another configuration and sources are needed");
     if (p->expect && (p->nsources != 1 || p->serial_same_as))
         return fail(p, err, errlen, "expect= needs exactly one source and no serial_same_as");
+    if (p->regression && !p->expect)
+        return fail(p, err, errlen, "regression=on needs expect=");
     /* Kickstart 1.x: no $RC (rcput instead), no gate (reqclosetest needs V36) */
     if (amiga_emulation_machine_kickstart(p->machine) < 36 && (!p->rcput || p->gate))
         return fail(p, err, errlen, "machine=%s (Kickstart 1.x) needs rcput= and no gate=",
@@ -832,25 +836,34 @@ static int judge(const struct corpus_pass *p, const enum amiga_emulation_status 
         free(t.p);
         free(path);
     }
-    text_add(&rep, "== bug-orig %s: runtime error checking %s, expectation %s\n", name,
+    text_add(&rep, "== %s %s: runtime error checking %s, expectation %s\n",
+        p->regression ? "port regression" : "bug-orig", name,
         p->runtime_errors ? "on" : "off", p->expect);
     statline_set(stl[0].verdict, sizeof stl[0].verdict, "reference");
-    if (bugorig_matches(&e, &o[0])) {
+    /* a bug-orig test needs a reference that does not show the expected
+       behaviour, a port regression test (regression=on) one that does */
+    if (bugorig_matches(&e, &o[0]) != p->regression) {
         statline_set(stl[0].verdict, sizeof stl[0].verdict, "BROKEN");
-        text_add(&rep, "BROKEN TEST: the original shows the expected (correct) behaviour - it does "
-            "not have the bug, or the expectation describes the bug\n");
+        text_add(&rep, p->regression
+            ? "BROKEN TEST: the original does not show the expected behaviour - the "
+              "expectation is not what the original does\n"
+            : "BROKEN TEST: the original shows the expected (correct) behaviour - it does "
+              "not have the bug, or the expectation describes the bug\n");
         worst = 3;
     }
     for (c = 1; c < p->nconfigs && worst < 3; c++) {
         struct text why = { 0 };
-        enum bugorig_verdict v = bugorig_judge(&e, &o[0], &o[c], &why);
+        enum bugorig_verdict v = p->regression ? bugorig_judge_regression(&e, &o[0], &o[c], &why)
+                                 : bugorig_judge(&e, &o[0], &o[c], &why);
         static const int order[] = { [BUGORIG_FIXED] = 0, [BUGORIG_REPRODUCED] = 1,
                                      [BUGORIG_DIFFERS] = 2, [BUGORIG_BROKEN] = 3 };
 
         statline_set(stl[c].verdict, sizeof stl[c].verdict, bugorig_verdict_name(v));
         text_add(&rep, "%s: %s%s\n", p->configs[c].tag, bugorig_verdict_name(v),
-            v == BUGORIG_FIXED ? " - the configuration behaves correctly"
+            v == BUGORIG_FIXED && p->regression ? " - the configuration does what the original does"
+            : v == BUGORIG_FIXED ? " - the configuration behaves correctly"
             : v == BUGORIG_REPRODUCED ? " - the bug of the original, reproduced on purpose"
+            : p->regression ? " - THE PORT DOES NOT DO WHAT THE ORIGINAL DOES"
             : " - THE PORT DOES NOT REPRODUCE THE ORIGINAL");
         if (why.p)
             text_add(&rep, "%s", why.p);

@@ -80,6 +80,12 @@
  *                     bug, as intended), 3 = BROKEN (the original does not
  *                     show the bug), 4 = DIFFERS (the port does not
  *                     reproduce the original)
+ *   regression=on     with expect=: a port regression test instead (a bug
+ *                     of the port, not of the original): the expectation
+ *                     is what the reference does.  Exit status 0 = every
+ *                     configuration does it (FIXED), 3 = BROKEN (the
+ *                     reference does not), 4 = DIFFERS (a configuration
+ *                     does not)
  * With runtime error checking the 8 byte parameter blocks behind trap #1
  * and trap #4 are zeroed before comparing (the memory address of the
  * editor's line item, depends on the memory layout).
@@ -102,7 +108,7 @@ struct corpus_config {
 struct corpus_pass {
     char *work, *report, *ted, *launcher, *gate, *defaultdbug, *serial_same_as;
     char *expect, *wrap, *wrap_args, *runwrap, *runwrap_args, *runargs, *machine, *rcput;
-    int runtime_errors, serial;
+    int runtime_errors, serial, regression;
     unsigned timeout, parallel, stack;
     struct corpus_config *configs;
     size_t nconfigs;

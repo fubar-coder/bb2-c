@@ -43,7 +43,11 @@
 #                                           the libraries (blitztokens)
 #   AREA/ID.expect   the correct behaviour (sections, bugorig.h)
 # ID is the bug ID of the issue; ctest bug_orig_ID (- as _), labels
-# bug-orig and emulator, skipped (77) without Amiberry or the CD.  The
+# bug-orig and emulator, skipped (77) without Amiberry or the CD.
+# The area regression/ holds port regression tests instead (a bug of the
+# port, not of the original; corpus.h regression=on): the expectation is
+# what the reference does, ctest regression_ID, label emulator only (the
+# test passes once the port does what the original does).  The
 # files are found by a glob: adding a test touches no list.
 #   @VAR@ in @pass: USERLIB (amiga/userlib.c: a library for
 #   blitz2:userlibs), INJECT (amiga/inject.c: faults, counts and input;
@@ -91,7 +95,7 @@ file(CONFIGURE OUTPUT ${tokens} CONTENT "${t1}${t2}" @ONLY)
 set(bug_orig_sources)
 set(bug_orig_deps)
 function(bug_orig_test bas name)
-	cmake_parse_arguments(PARSE_ARGV 2 arg "" "WANT" "")
+	cmake_parse_arguments(PARSE_ARGV 2 arg "REGRESSION" "WANT" "")
 	get_filename_component(id ${bas} NAME_WE)
 	get_filename_component(dir ${bas} DIRECTORY)
 	set(expect ${dir}/${id}.expect)
@@ -204,6 +208,9 @@ function(bug_orig_test bas name)
 	endforeach()
 	string(APPEND text "mount=BB2|${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1\n"
 		"source=${src}\nexpect=${expect}\n${extra}")
+	if(arg_REGRESSION)
+		string(APPEND text "regression=on\n")
+	endif()
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 
 	if(DEFINED arg_WANT)
@@ -212,7 +219,11 @@ function(bug_orig_test bas name)
 		set(labels emulator)
 	else()
 		add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
-		set(labels "bug-orig;emulator")
+		if(arg_REGRESSION)
+			set(labels emulator)
+		else()
+			set(labels "bug-orig;emulator")
+		endif()
 	endif()
 	# a session per configuration (ref and the judged ones), one after the
 	# other if there are not enough emulator slots free, each maybe
@@ -277,14 +288,24 @@ foreach(bas IN LISTS tests)
 		continue()
 	endif()
 	get_filename_component(id ${bas} NAME_WE)
-	string(REPLACE "-" "_" name "bug_orig_${id}")
-	bug_orig_test(${bas} ${name})
+	if(area STREQUAL "regression")
+		# a port regression test: ctest regression_ID, label emulator only
+		string(REPLACE "-" "_" name "regression_${id}")
+		bug_orig_test(${bas} ${name} REGRESSION)
+	else()
+		string(REPLACE "-" "_" name "bug_orig_${id}")
+		bug_orig_test(${bas} ${name})
+	endif()
 endforeach()
 
 # the self test: an expectation equal to what the original does must be
 # reported as broken (exit status 3), not as a reproduced bug
 bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/bug-orig-selftest-broken.bas
 	bug_orig_selftest_broken WANT 3)
+# the same for a port regression test: an expectation that is not what
+# the original does
+bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/regression-selftest-broken.bas
+	regression_selftest_broken REGRESSION WANT 3)
 
 add_custom_target(bug_orig_sources ALL DEPENDS ${bug_orig_sources} ${testdata_files})
 if(bug_orig_deps)

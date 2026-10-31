@@ -2,7 +2,8 @@
  * test_bugorig.c - the verdict of the bug-orig tests (bugorig.h) with
  * inputs from memory: expectations valid and broken, observations from
  * the raw outputs, the four verdicts (an expectation that equals the
- * buggy output must come out BROKEN).
+ * buggy output must come out BROKEN), and those of a port regression test
+ * (an expectation the original does not show must come out BROKEN).
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,6 +48,27 @@ static enum bugorig_verdict judge(const char *expect, const struct bugorig_obs *
     }
     v = bugorig_judge(&e, ref, o, &why);
     CHECK(v == BUGORIG_FIXED || (why.p && *why.p));     /* every failure says why */
+    free(why.p);
+    bugorig_free(&e);
+    return v;
+}
+
+/* the same for a port regression test (bugorig_judge_regression) */
+static enum bugorig_verdict judge_regression(const char *expect, const struct bugorig_obs *ref,
+                                             const struct bugorig_obs *o)
+{
+    struct bugorig_obs e;
+    char err[200];
+    enum bugorig_verdict v;
+    struct text why = { 0 };
+
+    if (bugorig_parse(expect, &e, err, sizeof err)) {
+        fprintf(stderr, "expectation: %s\n", err);
+        failures++;
+        return BUGORIG_BROKEN;
+    }
+    v = bugorig_judge_regression(&e, ref, o, &why);
+    CHECK(v == BUGORIG_FIXED || (why.p && *why.p));
     free(why.p);
     bugorig_free(&e);
     return v;
@@ -136,6 +158,14 @@ int main(void)
     CHECK(judge("[log]\n...\nJOB*\n...\nBATCH\tstart\n...\n", &b, &a) == BUGORIG_DIFFERS);
     CHECK(judge("[session]\ntimeout\n[log]\n...\nRESULT\tj000\terror*\n...\n", &a, &b) == BUGORIG_FIXED);
     CHECK(judge("[session]\ntimeout\n[log]\n...\nRESULT\tj000\terror*\n...\n", &b, &a) == BUGORIG_BROKEN);
+    /* port regression: the expectation is what the original does (a
+       prints 42); c does the same, d not */
+    CHECK(judge_regression("[run]\n42\nrc=0\n", &a, &c) == BUGORIG_FIXED);
+    CHECK(judge_regression("[run]\n4*\nrc=0\n", &a, &d) == BUGORIG_FIXED);  /* wildcard */
+    CHECK(judge_regression("[run]\n42\nrc=0\n", &a, &d) == BUGORIG_DIFFERS);
+    /* broken on purpose: the expectation is not what the original does */
+    CHECK(judge_regression("[run]\n41\nrc=0\n", &a, &d) == BUGORIG_BROKEN);
+    CHECK(judge_regression("[session]\ntimeout\n", &a, &a) == BUGORIG_BROKEN);
     CHECK(!strcmp(bugorig_verdict_name(BUGORIG_BROKEN), "BROKEN"));
     bugorig_free(&a);
     bugorig_free(&b);

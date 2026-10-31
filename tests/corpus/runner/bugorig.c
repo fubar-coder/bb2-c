@@ -397,6 +397,25 @@ enum bugorig_verdict bugorig_judge(const struct bugorig_obs *e, const struct bug
     return BUGORIG_DIFFERS;
 }
 
+enum bugorig_verdict bugorig_judge_regression(const struct bugorig_obs *e,
+                                              const struct bugorig_obs *ref,
+                                              const struct bugorig_obs *o, struct text *why)
+{
+    if (!bugorig_matches(e, ref)) {
+        if (why) {
+            text_add(why, "  the original does not show the expected behaviour: the expectation "
+                     "is not what the original does\n");
+            explain(e, ref, "the original", why);
+        }
+        return BUGORIG_BROKEN;
+    }
+    if (bugorig_matches(e, o))
+        return BUGORIG_FIXED;
+    if (why)
+        explain(e, o, "observed", why);
+    return BUGORIG_DIFFERS;
+}
+
 const char *bugorig_verdict_name(enum bugorig_verdict v)
 {
     switch (v) {

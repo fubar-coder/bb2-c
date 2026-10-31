@@ -138,6 +138,13 @@ int main(void)
     CHECK(corpus_parse(BASE CONFIGS "source=/s\nserial=on\nexpect=/e\n", &p, err, sizeof err) == 0);
     CHECK(p.serial && !strcmp(p.expect, "/e"));
     corpus_free(&p);
+    /* port regression: needs expect= */
+    CHECK(corpus_parse(BASE CONFIGS "source=/s\nexpect=/e\nregression=on\n", &p, err, sizeof err) == 0);
+    CHECK(p.regression);
+    corpus_free(&p);
+    CHECK(parse(BASE CONFIGS "source=/s\nregression=on\n", err, sizeof err) == -1
+          && strstr(err, "expect="));
+    CHECK(parse(BASE CONFIGS "source=/s\nexpect=/e\nregression=yes\n", err, sizeof err) == -1);
 
     /* the session script: on the A1200 with $RC and >> (unchanged), on
        Kickstart 1.x in AmigaDOS 1.3 syntax - the redirection right behind

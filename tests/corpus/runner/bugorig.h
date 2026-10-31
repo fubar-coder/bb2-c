@@ -31,6 +31,10 @@
  *   DIFFERS     neither: the port does not reproduce the original
  * A test is valid if the reference does not match the expectation; it
  * passes when every configuration is FIXED.
+ * A port regression test (corpus.h regression=on, bugorig_judge_regression)
+ * judges a bug of the port, not of the original: its expectation is what
+ * the reference does, so the test is BROKEN if the reference does not
+ * match it, and a configuration is FIXED (it matches) or DIFFERS.
  */
 #ifndef BUGORIG_H
 #define BUGORIG_H
@@ -78,6 +82,13 @@ int bugorig_matches(const struct bugorig_obs *e, const struct bugorig_obs *o);
    (may be NULL) */
 enum bugorig_verdict bugorig_judge(const struct bugorig_obs *e, const struct bugorig_obs *ref,
                                    const struct bugorig_obs *o, struct text *why);
+
+/* the verdict of a port regression test (corpus.h regression=on): the
+   expectation is what the reference does - BROKEN if the reference does
+   not match it, FIXED if the configuration does, else DIFFERS */
+enum bugorig_verdict bugorig_judge_regression(const struct bugorig_obs *e,
+                                              const struct bugorig_obs *ref,
+                                              const struct bugorig_obs *o, struct text *why);
 
 const char *bugorig_verdict_name(enum bugorig_verdict v);
 
