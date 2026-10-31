@@ -66,6 +66,7 @@
  * CrMDecrunch and PPDecrunch keep all registers (thunks).
  */
 #include "blitzlib.h"
+#include <stddef.h>
 
 /* entry points (defined below) */
 ULONG BLITZ_ROUTINE _startcrunch(UBYTE *buf BL_REG(d0), ULONG len BL_REG(d1));
@@ -132,24 +133,59 @@ static const ULONG imtab3[3] = { 0x1010101, 0x2030304, 0x405070E };
 static const ULONG imtab4[6] = { 0x20002, 0x20002, 0x6000A, 0xA0012,
                                  0x16002A, 0x8A4012 };
 
-/* The work area (a6 of the original, 176 bytes on the stack):
-     $00.b explode table flag      $01.b table number
-     $02.l a5 of the caller        $06.l info routine
-     $0A.l buffer start            $0E.l buffer end
-     $12.l data length             $16.l result
-     $1A.l window (max. offset)    $1E.l literal counter (not read)
-     $22.l source                  $26.l destination
-     $2A.w best gain               $2C.b bit buffer   $2D.b bit counter
-     $2E.b best length             $30.l literals since the last match
-     $34.b[8] match lengths (2..8, long)   $3C.l[8] their offsets
-     $5C..$68 code of the best match (copy of $68..$74)
-     $68.b offset bits  $69.b length bits  $6A.b literal count bits
-     $6C.l offset code  $70.w length code  $72.w literal count code
-     $74.l[12] 1<<table bits ($84.. + $74..)   $A4.b[12] table bits */
-#define WS      0xB0
-#define SB(o)   RB(st + (o))
-#define SW(o)   RW(st + (o))
-#define SL(o)   RL(st + (o))
+/* the code of a match (im40): bit counts and codes of the offset, the
+   length and the literal count; im40 writes single bytes of the length
+   and literal count code words */
+struct imcode {
+    UBYTE offbits;              /* $68 / $5C */
+    UBYTE lenbits;              /* $69 / $5D */
+    UBYTE litbits;              /* $6A / $5E */
+    UBYTE pad;
+    ULONG offcode;              /* $6C / $60 */
+    union { UWORD w; UBYTE b[2]; } lencode;     /* $70 / $64 */
+    union { UWORD w; UBYTE b[2]; } litcode;     /* $72 / $66 */
+};
+static_assert(sizeof(struct imcode) == 12);
+
+/* The work area (a6 of the original, 176 bytes on the stack, cleared) */
+struct imwork {
+    UBYTE explode;              /* $00 explode table flag */
+    UBYTE tabno;                /* $01 table number */
+    ULONG a5;                   /* $02 a5 of the caller */
+    ULONG info;                 /* $06 info routine */
+    ULONG start;                /* $0A buffer start */
+    ULONG end;                  /* $0E buffer end */
+    ULONG len;                  /* $12 data length */
+    ULONG result;               /* $16 */
+    ULONG window;               /* $1A window (max. offset) */
+    ULONG litcount;             /* $1E literal counter (not read) */
+    ULONG src;                  /* $22 source */
+    ULONG dst;                  /* $26 destination */
+    UWORD bestgain;             /* $2A best gain */
+    UBYTE bitbuf;               /* $2C bit buffer */
+    UBYTE bitcnt;               /* $2D bit counter */
+    UBYTE bestlen;              /* $2E best length (TST.w with $2F) */
+    UBYTE pad2f;                /* $2F always 0 */
+    ULONG lits;                 /* $30 literals since the last match */
+    UBYTE mlen[8];              /* $34 match lengths (2..8, long) */
+    ULONG moff[8];              /* $3C their offsets */
+    struct imcode best;         /* $5C code of the best match (copy of cur) */
+    struct imcode cur;          /* $68 the code im40 made */
+    ULONG tabval[12];           /* $74 1<<table bits ($84.. + $74..) */
+    UBYTE tabbits[12];          /* $A4 table bits */
+};
+static_assert(sizeof(struct imwork) == 0xB0);
+static_assert(offsetof(struct imwork, lits) == 0x30);
+static_assert(offsetof(struct imwork, best) == 0x5C);
+static_assert(offsetof(struct imwork, tabbits) == 0xA4);
+#define WS      sizeof(struct imwork)
+/* a member of the work area at st (a UBYTE pointer, as the original's
+   a6: the code keeps the original's address arithmetic) */
+#define IMOFF(m) ((int)offsetof(struct imwork, m))
+#define ST(m)   (*(__typeof__(((struct imwork *)0)->m) *)(st + IMOFF(m)))
+/* element i of the array member m */
+#define IMELEM(m) __typeof__(((struct imwork *)0)->m[0])
+#define STA(m, i) (*(IMELEM(m) *)(st + (IMOFF(m) + (int)sizeof(IMELEM(m)) * (i))))
 
 typedef LONG infofunc(ULONG gain);
 
@@ -166,12 +202,12 @@ static LONG own(ULONG gain)
 /* im26 - call the info routine; TRUE = break */
 static int im26(UBYTE *st)
 {
-    infofunc *info = (infofunc *)SL(6); /* d0 */
+    infofunc *info = (infofunc *)ST(info); /* d0 */
     ULONG res;                          /* d0: the inverted result */
 
     if (!info)
         return 0;
-    res = info(SL(0x22) - SL(0x26));
+    res = info(ST(src) - ST(dst));
     res = ~res;
     return res != 0;
 }
@@ -180,8 +216,8 @@ static int im26(UBYTE *st)
    (LSB first); returns value shifted (LSR.l) */
 static ULONG im37(UBYTE *st, UBYTE nbits, ULONG value)
 {
-    UBYTE bitbuf = SB(0x2c), bitcnt = SB(0x2d), carry;
-    UBYTE *dest = (UBYTE *)SL(0x26);
+    UBYTE bitbuf = ST(bitbuf), bitcnt = ST(bitcnt), carry;
+    UBYTE *dest = (UBYTE *)ST(dst);
 
     do {
         carry = value & 1;              /* LSR.l #1,d1 */
@@ -193,9 +229,9 @@ static ULONG im37(UBYTE *st, UBYTE nbits, ULONG value)
             bitbuf = 0;
         }
     } while (--nbits);
-    SL(0x26) = (ULONG)dest;
-    SB(0x2d) = bitcnt;
-    SB(0x2c) = bitbuf;
+    ST(dst) = (ULONG)dest;
+    ST(bitcnt) = bitcnt;
+    ST(bitbuf) = bitbuf;
     return value;
 }
 
@@ -205,12 +241,12 @@ static ULONG im37(UBYTE *st, UBYTE nbits, ULONG value)
    $34/$3C. */
 static int im28(UBYTE *st)
 {
-    UBYTE *src = (UBYTE *)SL(0x22);
-    ULONG end = SL(0x0e), searchend;
-    UBYTE *cmp1, *cmp2, *scan, *ahead, *slots = st + 0x34;
+    UBYTE *src = (UBYTE *)ST(src);
+    ULONG end = ST(end), searchend;
+    UBYTE *cmp1, *cmp2, *scan, *ahead, *slots = st + IMOFF(mlen);
     UWORD bestlen, len;
     UBYTE first;
-    ULONG winend = (ULONG)src + 1 + SL(0x1a);
+    ULONG winend = (ULONG)src + 1 + ST(window);
 
     if (winend > end) {
         winend = end;
@@ -259,13 +295,13 @@ im35:
             continue;
         bestlen = len;
         if (len > 8) {                  /* im36: long match */
-            slots[7] = (UBYTE)len;
+            slots[7] = (UBYTE)len;      /* mlen[7], moff[7] */
             RL(slots + 0x24) = (ULONG)scan - (ULONG)src - 2;
             if ((UBYTE)len == 0xff)
                 return -1;
             continue;
         }
-        if (slots[(WORD)len - 2])
+        if (slots[(WORD)len - 2])       /* mlen[len - 2], moff[len - 2] */
             continue;
         slots[(WORD)len - 2] = (UBYTE)len;
         RL(slots + (WORD)(len << 2)) = (ULONG)scan - (ULONG)src - 2;
@@ -286,73 +322,74 @@ static int im40(UBYTE *st, ULONG len, ULONG offset)
     ULONG idx;                          /* d0: the length - 2 table index */
 
     if (mlen > 13) {                    /* im42 */
-        SB(0x70) = 0x1f;
-        SB(0x71) = mlen;
-        SB(0x69) = 13;
+        ST(cur.lencode.b[0]) = 0x1f;
+        ST(cur.lencode.b[1]) = mlen;
+        ST(cur.lenbits) = 13;
         clen = 5;
     } else if (mlen > 5) {              /* im41 */
-        SB(0x71) = (UBYTE)((mlen - 6) | 0xf0);
-        SB(0x69) = 8;
+        ST(cur.lencode.b[1]) = (UBYTE)((mlen - 6) | 0xf0);
+        ST(cur.lenbits) = 8;
         clen = 5;
     } else {
-        SB(0x71) = t2[(WORD)mlen - 2];
-        SB(0x69) = t2[(WORD)mlen + 2];
+        ST(cur.lencode.b[1]) = t2[(WORD)mlen - 2];
+        ST(cur.lenbits) = t2[(WORD)mlen + 2];
         clen = mlen;
     }
     /* im44 */
     idx = (UBYTE)(clen - 2);
-    litcnt = (UWORD)SL(0x30);
+    litcnt = (UWORD)ST(lits);
     tab = (const UBYTE *)imtab4 + idx + idx;
     if (litcnt < RW(tab)) {
         nbits = t3[(WORD)idx];
         codebits = nbits + 1;
-        SB(0x73) = 0;
+        ST(cur.litcode.b[1]) = 0;
         litbase = 0;
     } else if (litcnt < RW(tab + 8)) {  /* im45 */
         nbits = t3[(WORD)idx + 4];
         codebits = nbits + 2;
-        SB(0x73) = 2;
+        ST(cur.litcode.b[1]) = 2;
         litbase = RW(tab);
     } else if (litcnt >= RW(tab + 0x10)) { /* im46 */
         return 0;
     } else {                            /* im47 */
         nbits = t3[(WORD)idx + 8];
         codebits = nbits + 2;
-        SB(0x73) = 3;
+        ST(cur.litcode.b[1]) = 3;
         litbase = RW(tab + 8);
     }
     /* im48 */
-    SB(0x6a) = codebits;
+    ST(cur.litbits) = codebits;
     litcnt -= litbase;
     shift = 16 - nbits;
     litcnt = (shift & 63) >= 16 ? 0 : (UWORD)(litcnt << (shift & 63));
     do {                                /* im49 */
         UWORD carry = litcnt >> 15;     /* ADD.w d2,d2 */
         litcnt <<= 1;
-        SW(0x72) = (UWORD)((SW(0x72) << 1) | carry);    /* ROXL $72(a6) */
+        /* ROXL $72(a6) */
+        ST(cur.litcode.w) = (UWORD)((ST(cur.litcode.w) << 1) | carry);
     } while (--nbits);
 
-    tab = st + 0x74 + 4 * (WORD)(UWORD)idx;
+    tab = st + IMOFF(tabval) + 4 * (WORD)(UWORD)idx;
     if (offset < RL(tab)) {
-        nbits = SB(0xa4 + (WORD)idx);
+        nbits = STA(tabbits, (WORD)idx);
         codebits = nbits + 1;
         prefix = 0;
         offbase = 0;
     } else if (offset < RL(tab + 0x10)) { /* im50 */
-        nbits = SB(0xa4 + 4 + (WORD)idx);
+        nbits = STA(tabbits, 4 + (WORD)idx);
         codebits = nbits + 2;
         prefix = 2;
         offbase = RL(tab);
     } else if (offset >= RL(tab + 0x20)) { /* im51 */
         return 0;
     } else {                            /* im52 */
-        nbits = SB(0xa4 + 8 + (WORD)idx);
+        nbits = STA(tabbits, 8 + (WORD)idx);
         codebits = nbits + 2;
         prefix = 3;
         offbase = RL(tab + 0x10);
     }
     /* im53 */
-    SB(0x68) = codebits;
+    ST(cur.offbits) = codebits;
     offset -= offbase;
     shift = 32 - nbits;
     offset = (shift & 63) >= 32 ? 0 : offset << (shift & 63);
@@ -361,7 +398,7 @@ static int im40(UBYTE *st, ULONG len, ULONG offset)
         offset <<= 1;
         prefix = prefix + prefix + carry;
     } while (--nbits);
-    SL(0x6c) = prefix;
+    ST(cur.offcode) = prefix;
     return -1;
 }
 
@@ -370,10 +407,10 @@ static int im40(UBYTE *st, ULONG len, ULONG offset)
    found (TST.w $2E(a6)). */
 static int im55(UBYTE *st)
 {
-    UBYTE *lens = st + 0x34, *offs = st + 0x3c;
+    UBYTE *lens = st + IMOFF(mlen), *offs = st + IMOFF(moff);
 
-    SW(0x2a) = 0;
-    SB(0x2e) = 0;
+    ST(bestgain) = 0;
+    ST(bestlen) = 0;
     do {
         ULONG offset = RL(offs);
         UBYTE len = *lens++;
@@ -383,31 +420,34 @@ static int im55(UBYTE *st)
             UBYTE bits = 0;
             int i;
 
-            bits += SB(0x69);
-            bits += SB(0x68);
-            bits += SB(0x6a);
+            bits += ST(cur.lenbits);
+            bits += ST(cur.offbits);
+            bits += ST(cur.litbits);
             gain -= bits;
-            if ((WORD)gain < 0 || gain < SW(0x2a))
+            if ((WORD)gain < 0 || gain < ST(bestgain))
                 continue;
-            SW(0x2a) = gain;
-            SB(0x2e) = lens[-1];
+            ST(bestgain) = gain;
+            ST(bestlen) = lens[-1];
+            /* MOVEQ #12,d1 / DBF: 13 bytes, cur and the first byte of
+               tabval[0] (0) to best and cur.offbits - not a bug (no
+               visible effect: im40 sets cur.offbits before it is read) */
             for (i = 0; i < 13; i++)
-                SB(0x5c + i) = SB(0x68 + i);
+                RB(st + IMOFF(best) + i) = RB(st + IMOFF(cur) + i);
         }
-    } while (lens - st != 0x3c);
-    RL(lens - 4) = 0;                   /* CLR.l -(a4) twice */
+    } while (lens - st != IMOFF(moff));
+    RL(lens - 4) = 0;                   /* CLR.l -(a4) twice: mlen[] */
     RL(lens - 8) = 0;
-    return SW(0x2e) != 0;
+    return RW(st + IMOFF(bestlen)) != 0;    /* TST.w $2E(a6) */
 }
 
 /* copy one literal byte (im12 / im15) */
 static void literal(UBYTE *st)
 {
-    *(UBYTE *)SL(0x26) = *(UBYTE *)SL(0x22);
-    SL(0x22)++;
-    SL(0x26)++;
-    SL(0x30)++;
-    SL(0x1e)++;
+    *(UBYTE *)ST(dst) = *(UBYTE *)ST(src);
+    ST(src)++;
+    ST(dst)++;
+    ST(lits)++;
+    ST(litcount)++;
 }
 
 /* Implode - a0 = buffer, d0 = length, a1 = info routine, d1 = mode,
@@ -429,47 +469,47 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
 
     for (i = 0; i < WS / 4; i++)
         work[i] = 0;
-    SL(2) = (ULONG)blitz_globals;
+    ST(a5) = (ULONG)blitz_globals;
     if (len < 0x40)
         goto im23;
-    SB(0) = (mode & 0x80) ? 0xff : 0;   /* LSR.l #8,d1:SCS (a6) */
+    ST(explode) = (mode & 0x80) ? 0xff : 0; /* LSR.l #8,d1:SCS (a6) */
     tabno = mode >> 16;
     if ((UBYTE)tabno >= 12)
         tabno = 0;
-    SL(6) = (ULONG)info;
-    SL(0x0a) = (ULONG)buf;
-    SL(0x22) = (ULONG)buf;
-    SL(0x26) = (ULONG)buf;
-    SL(0x12) = len;
-    SL(0x0e) = (ULONG)buf + len;
+    ST(info) = (ULONG)info;
+    ST(start) = (ULONG)buf;
+    ST(src) = (ULONG)buf;
+    ST(dst) = (ULONG)buf;
+    ST(len) = len;
+    ST(end) = (ULONG)buf + len;
     window = imtab0[(UWORD)(tabno << 2) >> 2] + 1;
     if (window > len)
         window = len - 1;
-    SL(0x1a) = window;
+    ST(window) = window;
     window--;
     idx = 0;
     tab = imtab0;
     while (window > *tab++)             /* im04 */
         idx = (idx & ~0xffUL) | (UBYTE)(idx + 1);
-    SB(1) = (UBYTE)idx;
+    ST(tabno) = (UBYTE)idx;
     {
         const UBYTE *s = (const UBYTE *)imtab1 + (UWORD)idx * 12;
         for (i = 0; i < 12; i++)
-            SB(0xa4 + i) = s[i];
+            STA(tabbits, i) = s[i];
     }
     for (i = 0; i < 12; i++)            /* im07 */
-        SL(0x74 + 4 * i) = 1UL << (SB(0xa4 + i) & 31);
+        STA(tabval, i) = 1UL << (STA(tabbits, i) & 31);
     for (i = 0; i < 8; i++)             /* im08 */
-        SL(0x84 + 4 * i) += SL(0x74 + 4 * i);
-    if (SB(0)) {                        /* never with mode 8 */
+        STA(tabval, 4 + i) += STA(tabval, i);
+    if (ST(explode)) {                  /* never with mode 8 */
         for (i = 0; i < 8; i++) {
-            RW(tabout) = (UWORD)SL(0x74 + 4 * i);
+            RW(tabout) = (UWORD)STA(tabval, i);
             tabout += 2;
         }
         for (i = 0; i < 12; i++)
-            *tabout++ = SB(0xa4 + i);
+            *tabout++ = STA(tabbits, i);
     }
-    SB(0x2d) = 7;
+    ST(bitcnt) = 7;
 
     for (;;) {                          /* im12 */
         if (im26(st))
@@ -478,48 +518,48 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
             break;
         if (!im55(st)) {
             literal(st);
-            if (SL(0x30) < 0x4012)
+            if (ST(lits) < 0x4012)
                 continue;
             break;
         }
         /* im13 */
-        bits = im37(st, SB(0x5c), SL(0x60));
-        bits = (bits & 0xffff0000UL) | SW(0x66);
-        bits = im37(st, SB(0x5e), bits);
-        nbits = SB(0x5d);
-        bits = (bits & 0xffff0000UL) | SW(0x64);
+        bits = im37(st, ST(best.offbits), ST(best.offcode));
+        bits = (bits & 0xffff0000UL) | ST(best.litcode.w);
+        bits = im37(st, ST(best.litbits), bits);
+        nbits = ST(best.lenbits);
+        bits = (bits & 0xffff0000UL) | ST(best.lencode.w);
         if (nbits == 13) {
-            UBYTE *dest = (UBYTE *)SL(0x26);
+            UBYTE *dest = (UBYTE *)ST(dst);
             *dest++ = (UBYTE)bits;
-            SL(0x26) = (ULONG)dest;
+            ST(dst) = (ULONG)dest;
             nbits = 5;
             bits = 0x1f;
         }
         im37(st, nbits, bits);          /* im14 */
-        SL(0x22) += SB(0x2e);
-        SL(0x30) = 0;
+        ST(src) += ST(bestlen);
+        ST(lits) = 0;
     }
     do {                                /* im15 */
         if (im26(st))
             goto im22;
         literal(st);
-    } while (SL(0x22) != SL(0x0e));
+    } while (ST(src) != ST(end));
     if (im26(st))
         goto im22;
 
-    if (!SB(0)) {
+    if (!ST(explode)) {
         UBYTE *head, *out;
         ULONG oddflag;
         UWORD last;
 
-        clen = SL(0x26) - SL(0x0a);
+        clen = ST(dst) - ST(start);
         if (clen < 12)
             goto im23;
-        gain = SL(0x12) - clen;
+        gain = ST(len) - clen;
         if (gain <= 0x36)
             goto im23;
-        head = (UBYTE *)SL(0x0a);
-        out = (UBYTE *)SL(0x26);
+        head = (UBYTE *)ST(start);
+        out = (UBYTE *)ST(dst);
         oddflag = 0xff00;
         if (clen & 1) {
             oddflag = 0;
@@ -530,45 +570,45 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
         RL(out + 8) = RL(head);
         RL(head) = ID_IMP;
         RL(out + 4) = RL(head + 4);
-        RL(head + 4) = SL(0x12);
+        RL(head + 4) = ST(len);
         RL(out) = RL(head + 8);
         RL(head + 8) = clen;
         clen += 0x2e;
-        SL(0x16) = clen;
-        RL(out + 12) = SL(0x30);
-        last = SB(0x2c) & 0xfe;         /* MOVE.b:AND.w #$FE */
-        last |= (UWORD)(1U << (SB(0x2d) & 31)); /* BSET d0,d1 */
+        ST(result) = clen;
+        RL(out + 12) = ST(lits);
+        last = ST(bitbuf) & 0xfe;         /* MOVE.b:AND.w #$FE */
+        last |= (UWORD)(1U << (ST(bitcnt) & 31)); /* BSET d0,d1 */
         last |= (UWORD)oddflag;
         RW(out + 0x10) = last;
         out += 0x12;
         for (i = 0; i < 8; i++) {       /* im17 */
-            RW(out) = (UWORD)SL(0x74 + 4 * i);
+            RW(out) = (UWORD)STA(tabval, i);
             out += 2;
         }
         for (i = 0; i < 12; i++)        /* im18 */
-            *out++ = SB(0xa4 + i);
+            *out++ = STA(tabbits, i);
     } else {                            /* im19, never with mode 8 */
         UBYTE lastbyte, *out;
 
-        clen = SL(0x26) - SL(0x0a);
-        gain = SL(0x12) - clen;
+        clen = ST(dst) - ST(start);
+        gain = ST(len) - clen;
         if (gain <= 6)
             goto im23;
-        lastbyte = (UBYTE)((SB(0x2c) & 0xfe) | (1U << (SB(0x2d) & 7)));
-        out = (UBYTE *)SL(0x26);
+        lastbyte = (UBYTE)((ST(bitbuf) & 0xfe) | (1U << (ST(bitcnt) & 7)));
+        out = (UBYTE *)ST(dst);
         if (clen & 1) {
             *out++ = lastbyte;
-            RL(out) = SL(0x30);
+            RL(out) = ST(lits);
         } else {
-            RL(out) = SL(0x30);
+            RL(out) = ST(lits);
             out += 4;
             *out = lastbyte;
         }
         clen += 5;
-        SL(0x16) = clen;
+        ST(result) = clen;
     }
 im23:
-    return SL(0x16);
+    return ST(result);
 im22:
     return (ULONG)-1;
 }
@@ -848,11 +888,20 @@ insertbytes:
 
 /* LZHDecruncher tables (Tabbs: Dc.w 0, then CmpTab 32 words, AddTab 32,
    RealTab 527, AnzPerBits 32) - static, as in the original */
-static UWORD tabbs[1 + 32 + 32 + 527 + 32];
-#define OCMPTAB     0
-#define OADDTAB     64
-#define OREALTAB    128
-#define OANZPERBITS 1182
+static struct {
+    UWORD zero;                 /* Tabbs: Dc.w 0 ("unbedingt!") */
+    UWORD cmptab[32];           /* CmpTab: Len 16, Dist 16 */
+    UWORD addtab[32];           /* AddTab: Len 16, Dist 16 */
+    UWORD realtab[527];         /* RealTab: Dist+Len */
+    UWORD anzperbits[32];       /* AnzPerBits: Dist+Len */
+} tabbs;
+static_assert(sizeof tabbs == 2 * (1 + 32 + 32 + 527 + 32));
+/* the original's offsets from Tabbs+2 (a6) */
+#define OCMPTAB     (offsetof(typeof(tabbs), cmptab) - 2)
+#define OADDTAB     (offsetof(typeof(tabbs), addtab) - 2)
+#define OREALTAB    (offsetof(typeof(tabbs), realtab) - 2)
+#define OANZPERBITS (offsetof(typeof(tabbs), anzperbits) - 2)
+static_assert(OADDTAB == 64 && OREALTAB == 128 && OANZPERBITS == 1182);
 
 /* ReadTab - d2 = max. bits; a0 = AnzPerBits, a4 = RealTab part */
 static void readtab(struct crmbits *b, UWORD maxbits, UBYTE *counts, UBYTE *codes)
@@ -918,7 +967,7 @@ static UWORD readit(struct crmbits *b, const UBYTE *cmp, const UBYTE *real)
 /* LZHDecruncher ("CrM2") */
 static void lzhdecruncher(UBYTE *dst, const UBYTE *src, ULONG dstlen, ULONG srclen)
 {
-    UBYTE *tabs = (UBYTE *)tabbs + 2;   /* a6 = Tabbs+2 */
+    UBYTE *tabs = (UBYTE *)&tabbs.cmptab; /* a6 = Tabbs+2 */
     struct crmbits b;
 
     dst += dstlen;
