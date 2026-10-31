@@ -634,14 +634,14 @@ static ULONG BLITZ_ROUTINE rtreturnvalue_c(void)
 
 /* RTVersion / RTRevision: lib_Version / lib_Revision (d0's high word
    kept) */
-static ULONG BLITZ_ROUTINE rtver_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE rtver_c(ULONG callerd0 BL_REG(d0))
 {
-    return (d0 & 0xffff0000UL) | rtbase->lib_Version;
+    return (callerd0 & 0xffff0000UL) | rtbase->lib_Version;
 }
 
-static ULONG BLITZ_ROUTINE rtrev_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE rtrev_c(ULONG callerd0 BL_REG(d0))
 {
-    return (d0 & 0xffff0000UL) | rtbase->lib_Revision;
+    return (callerd0 & 0xffff0000UL) | rtbase->lib_Revision;
 }
 
 /* --------------------------------------------------------- EZ requests */
@@ -775,14 +775,14 @@ static ULONG BLITZ_ROUTINE rtTagsfreq_c(STRPTR title BL_REG(d0), const UBYTE *fi
    back unchanged (MOVEM a3-a6) */
 static ULONG BLITZ_ROUTINE rtsfreq_c(STRPTR title BL_REG(d0), const UBYTE *file BL_REG(d1))
 {
-    UBYTE *a3 = blitz_string;
+    UBYTE *savedstr = blitz_string;
     ULONG r;
 
     Sfilenamestr = allocst(file, 108);
     swsSFreq = title;
     r = filerequest(Sfilereq, title, Sfilenamestr, SfreqTagList);
     freest(Sfilenamestr);
-    blitz_string = a3;
+    blitz_string = savedstr;
     return r;
 }
 
@@ -1032,13 +1032,13 @@ static ULONG BLITZ_ROUTINE rtgetstr_c(STRPTR title BL_REG(d0), STRPTR body BL_RE
 static ULONG BLITZ_ROUTINE rtgetstrDef_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                          ULONG max BL_REG(d2), const UBYTE *def BL_REG(d3))
 {
-    UBYTE *a3 = blitz_string;
+    UBYTE *savedstr = blitz_string;
 
     a3_ = blitz_string;
     gsBuffer = gsalloc(max);
     blitz_string = gsBuffer;
     copystring(def, 0);
-    blitz_string = a3;
+    blitz_string = savedstr;
     return getstring(title, body, max);
 }
 
