@@ -28,8 +28,8 @@
  *
  * State: mode (SetSerialMode writes the first byte of the word, TST.b
  * reads it), numbytes (DoSerialIO's count - 1), inbuf/outbuf, baud (the
- * SERPER value, 0 = not initialised), inten, temp (one byte buffer, the
- * first byte of a word).
+ * SERPER value, 0 = not initialised), inten, bytebuf (temp: one byte
+ * buffer, the first byte of a word).
  *
  * BUG(orig):
  *   - InitSerialIO/SetIOSpeed use DIVU.L, a 68020 instruction (above);
@@ -51,7 +51,7 @@
  *     (#649).
  *   - SyncSerial: two machines starting at the same time both become
  *     master (each takes the other's sync byte for the echo) (#655).
- * SyncGet sends the byte in temp (whatever was last written there) for
+ * SyncGet sends the byte in bytebuf (whatever was last written there) for
  * every byte received: no defect, like the original (the answer only
  * paces the sender, its value does not matter).
  * Registers: the original changes d0 in every routine that sends (the
@@ -200,7 +200,7 @@ static struct {
     UBYTE *outbuf;
     UWORD baud;
     UWORD inten;
-    UBYTE temp[2];                      /* Dc.w: the first byte is used */
+    UBYTE bytebuf[2];                   /* temp, Dc.w: the first byte is used */
 } fs;
 
 /* !divul {0,1}: DIVU.L d0,d1 (68020) - see the head comment */
@@ -318,8 +318,8 @@ void BLITZ_ROUTINE c_putserial(UBYTE b BL_REG(d0))
 {
     if (!fs.baud)
         return;
-    fs.temp[0] = b;
-    writebyte(fs.temp[0]);
+    fs.bytebuf[0] = b;
+    writebyte(fs.bytebuf[0]);
 }
 
 /* PutSerial address,bytes (0 = 2^32) */
@@ -347,8 +347,8 @@ ULONG BLITZ_ROUTINE c_checkserial(void)
 /* GetSerial: wait for a byte */
 ULONG BLITZ_ROUTINE c_getserial(void)
 {
-    fs.temp[0] = readbyte();
-    return fs.temp[0];
+    fs.bytebuf[0] = readbyte();
+    return fs.bytebuf[0];
 }
 
 /* GetSerial address,bytes (0 = 2^32): d0 = address (BUG(orig) (#649)) */
@@ -367,21 +367,21 @@ void BLITZ_ROUTINE c_flushserialio(void)
     INTREQ = INTF_RBF;
 }
 
-/* SyncPut address,bytes: send a byte, wait for the echo (into temp) */
+/* SyncPut address,bytes: send a byte, wait for the echo (into bytebuf) */
 void BLITZ_ROUTINE c_syncput(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
     do {
         writebyte(*p++);
-        fs.temp[0] = readbyte();
+        fs.bytebuf[0] = readbyte();
     } while (--n != 0);
 }
 
-/* SyncGet address,bytes: receive a byte, answer with temp (like the original) */
+/* SyncGet address,bytes: receive a byte, answer with bytebuf (like the original) */
 void BLITZ_ROUTINE c_syncget(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
     do {
         *p++ = readbyte();
-        writebyte(fs.temp[0]);
+        writebyte(fs.bytebuf[0]);
     } while (--n != 0);
 }
 
@@ -393,34 +393,34 @@ ULONG BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
 {
     UBYTE b;
 
-    fs.temp[0] = sync;
+    fs.bytebuf[0] = sync;
     if (SERDATR_HI & RBF) {
         for (;;) {
             while (!(SERDATR_HI & RBF))
                 ;
             b = SERDATR_LO;
             INTREQ = INTF_RBF;
-            if (b == fs.temp[0])
+            if (b == fs.bytebuf[0])
                 break;
         }
-        writebyte(fs.temp[0]);
+        writebyte(fs.bytebuf[0]);
         do
-            fs.temp[0] = readbyte();
-        while (fs.temp[0] != 0);
+            fs.bytebuf[0] = readbyte();
+        while (fs.bytebuf[0] != 0);
         return 0;
     }
     for (;;) {
-        writebyte(fs.temp[0]);
+        writebyte(fs.bytebuf[0]);
         if (!(SERDATR_HI & RBF))
             continue;
         b = SERDATR_LO;
         INTREQ = INTF_RBF;
-        if (b == fs.temp[0])
+        if (b == fs.bytebuf[0])
             break;
     }
-    fs.temp[0] = 0;                     /* MOVE.w #0,(a0) */
-    fs.temp[1] = 0;
-    writebyte(fs.temp[0]);
+    fs.bytebuf[0] = 0;                  /* MOVE.w #0,(a0) */
+    fs.bytebuf[1] = 0;
+    writebyte(fs.bytebuf[0]);
     c_flushserialio();
     return (ULONG)-1;
 }
