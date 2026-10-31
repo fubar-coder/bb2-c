@@ -513,12 +513,29 @@ static void calcpoly(int swap)
 
 /* -------------------------------------------------------------- chunky */
 
+#undef width
+#undef height
+
+/* the chunky area of a CopList (displaylib CustomChunky, SizeOf.mycop) */
+struct coplist {
+    UBYTE pad[96];
+    UBYTE *chunky;              /* +96 cchunky: the first colour MOVE */
+    UWORD chy;                  /* +100 */
+    UWORD width, height;        /* +102/+104 chw/chh */
+    UWORD res;                  /* +106 chr */
+    UWORD modulo;               /* +108 chc: bytes per chunky line */
+} BL_PACKED;
+
+/* (WORD)(a - b) < 0: the original's CMP/SUB with BMI - the sign of the 16
+   bit difference, which wraps on overflow (unlike a signed compare) */
+#define BMI_W(a, b) ((WORD)((a) - (b)) < 0)
+
 static void BLITZ_ROUTINE _chunkycls_c(UWORD c BL_REG(d0))
 {
-    UBYTE *cl = blitz_string;
-    UBYTE *p = MP(cl, M_cchunky), *q;
-    UWORD x = MW(cl, M_chw) - 1, h = MW(cl, M_chh) - 1, n = 31, y;
-    WORD mod = MW(cl, M_chc);
+    struct coplist *cl = (struct coplist *)blitz_string;
+    UBYTE *p = cl->chunky, *q;
+    UWORD x = cl->width - 1, h = cl->height - 1, n = 31, y;
+    WORD mod = cl->modulo;
 
     do {                                        /* nxx */
         q = p;
@@ -536,93 +553,81 @@ static void BLITZ_ROUTINE _chunkycls_c(UWORD c BL_REG(d0))
 }
 BLITZ_THUNK(_chunkycls, _chunkycls_c, "d1/a0-a1");
 
-static void chunkyplot(void)
+/* the word of chunky pixel x, y: 32 colour MOVEs (4 bytes) and a bank
+   switch per 132 bytes, y * bytes per line */
+static UWORD *chunkypixel(const struct coplist *cl, UWORD x, UWORD y)
 {
-    a0 = MP(a3, M_cchunky);
-    SETW(d3, d0);
-    SETW(d3, d3 & 31);
-    SETW(d3, d3 << 2);
-    a0 += SW(d3);
-    SETW(d0, W(d0) >> 5);
-    d0 = MULU(d0, 132);
-    a0 += d0;
-    d1 = MULU(d1, MW(a3, M_chc));
-    a0 += d1;
-    *(UWORD *)a0 = d2;
+    return (UWORD *)(cl->chunky + ((x & 31) << 2) + bl_mulu_w(x >> 5, 132)
+                     + bl_mulu_w(y, cl->modulo));
 }
+
+static void BLITZ_ROUTINE _chunkyplot_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
+                                        UWORD colour BL_REG(d2))
+{
+    *chunkypixel((struct coplist *)blitz_string, x, y) = colour;
+}
+BLITZ_THUNK(_chunkyplot, _chunkyplot_c, "d1/a0-a1");
+
+static void BLITZ_ROUTINE _chunkyplotclip_c(WORD x BL_REG(d0), WORD y BL_REG(d1),
+                                            UWORD colour BL_REG(d2))
+{
+    struct coplist *cl = (struct coplist *)blitz_string;
+
+    if (x < 0 || y < 0 || !BMI_W(x, cl->width) || !BMI_W(y, cl->height))
+        return;
+    *chunkypixel(cl, x, y) = colour;
+}
+BLITZ_THUNK(_chunkyplotclip, _chunkyplotclip_c, "d1/a0-a1");
+
+/* y2 - y1 + 1 words down from x, y1 (DBRA: y1 > y2 gives about 65536, #417) */
+static void chunkyvlin(const struct coplist *cl, UWORD x, UWORD y1, UWORD y2, UWORD colour)
+{
+    UWORD *p = chunkypixel(cl, x, y1), n = y2 - y1;
+
+    do {
+        *p = colour;
+        p = (UWORD *)((UBYTE *)p + (WORD)cl->modulo);
+    } while (n-- != 0);
+}
+
+static void BLITZ_ROUTINE _chunkyvlin_c(UWORD x BL_REG(d0), UWORD y1 BL_REG(d1),
+                                        UWORD y2 BL_REG(d2), UWORD colour BL_REG(d3))
+{
+    chunkyvlin((struct coplist *)blitz_string, x, y1, y2, colour);
+}
+BLITZ_THUNK(_chunkyvlin, _chunkyvlin_c, "d1/a0-a1");
+
+static void BLITZ_ROUTINE _chunkyvlinclip_c(WORD x BL_REG(d0), WORD y1 BL_REG(d1),
+                                            WORD y2 BL_REG(d2), UWORD colour BL_REG(d3))
+{
+    struct coplist *cl = (struct coplist *)blitz_string;
+    WORD h = cl->height;
+
+    if (x < 0)
+        return;
+    if (BMI_W(y2, y1)) {                       /* CMP d1,d2:BPL */
+        WORD t = y1;
+
+        y1 = y2;
+        y2 = t;
+    }
+    if (y1 < 0)
+        y1 = 0;
+    if (y2 < 0 || !BMI_W(y1, h))
+        return;
+    if (!BMI_W(y2, h))
+        y2 = h - 1;
+    chunkyvlin(cl, x, y1, y2, colour);
+}
+BLITZ_THUNK(_chunkyvlinclip, _chunkyvlinclip_c, "d1/a0-a1");
+
+#define width  pv.width
+#define height pv.height
 
 #define CREGS ULONG r0 BL_REG(d0), ULONG r1 BL_REG(d1), ULONG r2 BL_REG(d2), \
               ULONG r3 BL_REG(d3)
 #define CLOAD() (d0 = r0, d1 = r1, d2 = r2, d3 = r3, a3 = blitz_string)
 
-static void BLITZ_ROUTINE _chunkyplot_c(CREGS)
-{
-    CLOAD();
-    chunkyplot();
-}
-BLITZ_THUNK(_chunkyplot, _chunkyplot_c, "d1/a0-a1");
-
-static void BLITZ_ROUTINE _chunkyplotclip_c(CREGS)
-{
-    CLOAD();
-    if (SW(d0) < 0 || SW(d1) < 0)
-        return;
-    if (SW(d0 - MW(a3, M_chw)) >= 0)
-        return;
-    if (SW(d1 - MW(a3, M_chh)) < 0)
-        chunkyplot();
-}
-BLITZ_THUNK(_chunkyplotclip, _chunkyplotclip_c, "d1/a0-a1");
-
-static void chunkyvlin(void)
-{
-    a0 = MP(a3, M_cchunky);
-    SETW(d4, d0);
-    SETW(d4, d4 & 31);
-    SETW(d4, d4 << 2);
-    a0 += SW(d4);
-    SETW(d0, W(d0) >> 5);
-    d0 = MULU(d0, 132);
-    a0 += d0;
-    SETW(d2, d2 - d1);
-    SETW(d0, MW(a3, M_chc));
-    d1 = MULU(d1, d0);
-    a0 += d1;
-    do {                                        /* nxvp */
-        *(UWORD *)a0 = d3;
-        a0 += SW(d0);
-        SETW(d2, d2 - 1);
-    } while (W(d2) != 0xffff);
-}
-
-static void BLITZ_ROUTINE _chunkyvlin_c(CREGS)
-{
-    CLOAD();
-    chunkyvlin();
-}
-BLITZ_THUNK(_chunkyvlin, _chunkyvlin_c, "d1/a0-a1");
-
-static void BLITZ_ROUTINE _chunkyvlinclip_c(CREGS)
-{
-    CLOAD();
-    if (SW(d0) < 0)
-        return;
-    if (SW(d2 - d1) < 0)                        /* CMP d1,d2:BPL na */
-        EXG(d1, d2);
-    if (SW(d1) < 0)
-        d1 = 0;
-    if (SW(d2) < 0)
-        return;
-    SETW(d4, MW(a3, M_chh));
-    if (SW(d1 - d4) >= 0)
-        return;
-    if (!(SW(d2 - d4) < 0)) {
-        SETW(d2, d4);
-        SETW(d2, d2 - 1);
-    }
-    chunkyvlin();
-}
-BLITZ_THUNK(_chunkyvlinclip, _chunkyvlinclip_c, "d1/a0-a1");
 
 /* ChunkyPoly - with the blitter (vertical lines, one blit each) or with
    the CPU (noblitter form); a3 = CopList */
