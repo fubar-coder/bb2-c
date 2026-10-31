@@ -153,34 +153,68 @@ static struct {
 };
 static_assert(sizeof dt == 42);
 
-/* _hours - JSR _DateStamp(a6); minutes / 60: hours in the low word,
-   minutes in the high word */
+/**
+ * @brief Hours: get the system time, the hour of the day.
+ *
+ * _hours: JSR _DateStamp(a6) into the library's DateStamp (also for Mins
+ * and Secs), then minutes / 60 (DIVU).
+ *
+ * @param dosbase  a6: dos.library
+ * @return d0: the hours in the low word, the minutes in the high word
+ */
 ULONG BLITZ_ROUTINE hours_c(struct Library *dosbase BL_REG(a6))
 {
     DateStamp(&dt.stamp);
     return bl_divu_w(dt.stamp.ds_Minute, 60);
 }
 
-/* _mins - of the last DateStamp: minutes / 60, SWAP */
+/**
+ * @brief Mins: the minutes of the time of the last Hours call.
+ *
+ * _mins: of the last DateStamp (no DateStamp of its own; documented, not
+ * a bug): minutes / 60, SWAP.
+ *
+ * @return d0: the minutes in the low word, the hours in the high word
+ */
 ULONG BLITZ_ROUTINE mins_c(void)
 {
     ULONG hourmin = bl_divu_w(dt.stamp.ds_Minute, 60);
     return BL_SWAP(hourmin);
 }
 
-/* _secs - of the last DateStamp: ticks / 50 */
+/**
+ * @brief Secs: the seconds of the time of the last Hours call.
+ *
+ * _secs: of the last DateStamp (no DateStamp of its own): ticks / 50.
+ *
+ * @return d0: the seconds in the low word, the remaining ticks in the
+ *         high word
+ */
 ULONG BLITZ_ROUTINE secs_c(void)
 {
     return bl_divu_w(dt.stamp.ds_Tick, 50);
 }
 
-/* _dateformat - MOVE d0,dateformat */
+/**
+ * @brief DateFormat 0|1: the string format of Date$ and NumDays.
+ *
+ * _dateformat: MOVE d0,dateformat.
+ *
+ * @param f  d0.w: 0 = dd/mm/yyyy, otherwise mm/dd/yyyy
+ */
 void BLITZ_ROUTINE dateformat_c(UWORD f BL_REG(d0))
 {
     dateformat = f;
 }
 
-/* _date - JSR _DateStamp(a6): the day count */
+/**
+ * @brief SystemDate: the system date as days since 1/1/1978.
+ *
+ * _date: JSR _DateStamp(a6) into the library's DateStamp.
+ *
+ * @param dosbase  a6: dos.library
+ * @return d0: ds_Days
+ */
 ULONG BLITZ_ROUTINE date_c(struct Library *dosbase BL_REG(a6))
 {
     DateStamp(&dt.stamp);
@@ -197,9 +231,22 @@ static void put2(ULONG r)
     *blitz_string++ = (UBYTE)(digits + 48);
 }
 
-/* _datestr - days since 1/1/1978 to "dd/mm/yyyy" at a3; d0 = length 10.
-   d1 holds the 4 year cycles first, d2 the days of the cycles; for
-   mm/dd/yyyy day and month are exchanged (EXG) before the output */
+/**
+ * @brief Date$(days.l): days since 1/1/1978 as a date string.
+ *
+ * _datestr: "dd/mm/yyyy" (or mm/dd/yyyy after DateFormat 1) at a3; keeps
+ * day, year and month for Days, Years, Months and the day count for
+ * WeekDay.  Dates are counted from day 0 = 1/1/0000 in 4 year cycles of
+ * 1461 days.  d1 holds the 4 year cycles first, d2 the days of the
+ * cycles; for mm/dd/yyyy day and month are exchanged (EXG) before the
+ * output.  Values outside 0..99 per two digits give other characters.
+ * BUG(orig) (#120): day 366 of a cycle (1/1 of the year after a leap
+ * year, e.g. 1/1/1981) is shown as 32/12 of the leap year (CMP #366: BLE
+ * instead of BLT).
+ *
+ * @param days  d0: the days since 1/1/1978
+ * @return d0: the length of the string, 10
+ */
 ULONG BLITZ_ROUTINE datestr_c(LONG days BL_REG(d0))
 {
     ULONG day = (ULONG)days + DAYSP1978;                /* d0 */
@@ -252,8 +299,14 @@ ULONG BLITZ_ROUTINE datestr_c(LONG days BL_REG(d0))
     return 10;
 }
 
-/* _weekday - of the last Date$ (0 = Sunday).
-   BUG(orig) (#121): SUBQ.w #2 - no borrow from the high word. */
+/**
+ * @brief WeekDay: the day of the week of the last Date$ (0 = Sunday).
+ *
+ * BUG(orig) (#121): SUBQ.w #2 on the day count - no borrow from the high
+ * word.
+ *
+ * @return d0.w: the day of the week, 0..6
+ */
 ULONG BLITZ_ROUTINE weekday_c(void)
 {
     ULONG value = totday;                         /* d0 */
@@ -266,17 +319,44 @@ ULONG BLITZ_ROUTINE weekday_c(void)
     return BL_SWAP(value);
 }
 
+/**
+ * @brief Days: the day of the month of the last Date$.
+ * @return d0.w: the day
+ */
 UWORD BLITZ_ROUTINE days_c(void)   { return dym.day; }
+/**
+ * @brief Months: the month of the last Date$.
+ * @return d0.w: the month
+ */
 UWORD BLITZ_ROUTINE months_c(void) { return dym.month; }
+/**
+ * @brief Years: the year of the last Date$.
+ * @return d0.w: the year
+ */
 UWORD BLITZ_ROUTINE years_c(void)  { return dym.year; }
 
-/* _calcdays - "dd/mm/yyyy" (or mm/dd/yyyy) to days since 1/1/1978; 0 if
-   day or month are not followed by "/".  Day and month: 1 or 2 digits,
-   year: up to 4 (ends at "/" or after 4 characters, not at the end of the
-   string).  "Digits" are not checked: every character counts as char-48.
-   d1 is the field being read, later the year / 4; d2 the character,
-   later the leap days; d3 and d4 hold the first and second field, after
-   the EXG for mm/dd/yyyy the day and the month. */
+/**
+ * @brief NumDays(date$): a date string as days since 1/1/1978.
+ *
+ * _calcdays: "dd/mm/yyyy" (or mm/dd/yyyy after DateFormat 1).  Day and
+ * month: 1 or 2 digits, year: up to 4 (ends at "/" or after 4
+ * characters, not at the end of the string).  "Digits" are not checked:
+ * every character counts as char-48.  d1 is the field being read, later
+ * the year / 4; d2 the character, later the leap days; d3 and d4 hold
+ * the first and second field, after the EXG for mm/dd/yyyy the day and
+ * the month.
+ * BUG(orig) (#122): ADDQ.w #1 / SUBQ.w #1 on the day count (no
+ * carry/borrow), e.g. NumDays("31/12/1977") = 65535, not -1.
+ * BUG(orig) (#123): a "/" as first character of a field becomes the
+ * value 47.
+ * BUG(orig) (#124): month 0 reads the low word of the tick count of the
+ * last DateStamp, months 14/15 the two words after the table.
+ * BUG(orig) (#125): a 2 digit year reads past the end of the string.
+ *
+ * @param s  d0: the date string
+ * @return d0: the days since 1/1/1978; 0 if day or month are not
+ *         followed by "/"
+ */
 ULONG BLITZ_ROUTINE calcdays_c(const UBYTE *s BL_REG(d0))
 {
     const UBYTE *cur = s;                               /* a0 */
