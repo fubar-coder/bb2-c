@@ -121,10 +121,11 @@ static void BLITZ_ROUTINE dobblitmode_c(UWORD m BL_REG(d0))
 }
 BLITZ_THUNK(dobblitmode, dobblitmode_c, "d0-d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE codeinit_c(ULONG d0 BL_REG(d0))
+/* returns the incoming d0 with 0xfca in the low word */
+static ULONG BLITZ_ROUTINE codeinit_c(ULONG incoming BL_REG(d0))
 {
     bcon0 = 0xfca;
-    return (d0 & 0xffff0000UL) | 0xfca;
+    return (incoming & 0xffff0000UL) | 0xfca;
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
 
@@ -188,7 +189,7 @@ static void bblit(struct buffer *b, const UBYTE *shape, const UBYTE *bm, UBYTE *
                   WORD x, WORD y, struct blitstate *st)
 {
     UBYTE *rec = b->pos;
-    ULONG d5, d4;
+    ULONG admod, cbmod;                         /* d5, d4: A:D and C:B modulos */
     UWORD n, save;
     UBYTE **plane;
 
@@ -197,10 +198,10 @@ static void bblit(struct buffer *b, const UBYTE *shape, const UBYTE *bm, UBYTE *
     *(UBYTE **)rec = b->last;                   /* link the record */
     b->last = rec;
     rec += 4;
-    d5 = 0xfffe0000UL | (UWORD)(SW(bm, 0) - SW(shape, 6) - 2);
-    *(UWORD *)rec = (UWORD)d5;
+    admod = 0xfffe0000UL | (UWORD)(SW(bm, 0) - SW(shape, 6) - 2);
+    *(UWORD *)rec = (UWORD)admod;
     rec += 2;
-    d4 = d5 << 16 | d5 >> 16;
+    cbmod = admod << 16 | admod >> 16;
     st->off = (ULONG)bl_muls_w(y, SW(bm, 0)) + (LONG)(WORD)(x >> 3);
     st->size = SW(shape, 8);
     *(UWORD *)rec = st->size;
@@ -215,15 +216,15 @@ static void bblit(struct buffer *b, const UBYTE *shape, const UBYTE *bm, UBYTE *
     rec += 4;
     /* the SAVE loop: bitmap -> buffer */
     BL_BLITWAIT(cb);
-    BL_CUSTOMW(cb, 0x64) = (UWORD)d5;
+    BL_CUSTOMW(cb, 0x64) = (UWORD)admod;
     BL_CUSTOMW(cb, 0x66) = 0;
     BL_CUSTOML(cb, 0x40) = 0x09f00000;
     BL_CUSTOML(cb, 0x44) = 0xffffffff;
     plane = (UBYTE **)(bm + 8);
-    goto saveit2;
+    goto saveplane;
     do {
         BL_BLITWAIT(cb);
-saveit2:
+saveplane:                                      /* saveit2 */
         {
             ULONG a = (ULONG)*plane++ + st->off;
 
@@ -242,8 +243,8 @@ saveit2:
     n = SW(shape, 4) - 1;
     st->plane = (UBYTE **)(bm + 8);
     BL_BLITWAIT(cb);
-    BL_CUSTOML(cb, 0x60) = d4;                          /* MOVEM.l d4-d5,$060 */
-    BL_CUSTOML(cb, 0x64) = d5;
+    BL_CUSTOML(cb, 0x60) = cbmod;                       /* MOVEM.l d4-d5,$060 */
+    BL_CUSTOML(cb, 0x64) = admod;
     BL_CUSTOMW(cb, 0x42) = st->shift;
     BL_CUSTOMW(cb, 0x40) = st->shift | bcon0;
     BL_CUSTOMW(cb, 0x46) = 0;
@@ -255,10 +256,10 @@ saveit2:
 doblit:
         BL_CUSTOML(cb, 0x50) = st->cookie;
         {
-            ULONG d = (ULONG)*st->plane++ + st->off;
+            ULONG dst = (ULONG)*st->plane++ + st->off;
 
-            BL_CUSTOML(cb, 0x48) = d;
-            BL_CUSTOML(cb, 0x54) = d;
+            BL_CUSTOML(cb, 0x48) = dst;
+            BL_CUSTOML(cb, 0x54) = dst;
         }
         BL_CUSTOMW(cb, 0x58) = st->size;
     } while (n-- != 0);
@@ -274,16 +275,16 @@ static void bblitex(struct buffer *b, const UBYTE *shape, const UBYTE *bm, UBYTE
     bblit(b, shape, bm, cb, x, y, &st);
     for (p = SW(shape, 4); p < SW(bm, 4); p++) {
         UWORD con = (bits & 1) ? 0xbfa : 0xb0a;
-        ULONG d;
+        ULONG dst;
 
         bits >>= 1;
         con |= st.shift;
-        d = (ULONG)*st.plane++ + st.off;
+        dst = (ULONG)*st.plane++ + st.off;
         BL_BLITWAIT(cb);
         BL_CUSTOMW(cb, 0x40) = con;
         BL_CUSTOML(cb, 0x50) = st.cookie;
-        BL_CUSTOML(cb, 0x48) = d;
-        BL_CUSTOML(cb, 0x54) = d;
+        BL_CUSTOML(cb, 0x48) = dst;
+        BL_CUSTOML(cb, 0x54) = dst;
         BL_CUSTOMW(cb, 0x58) = st.size;
     }
 }
@@ -299,28 +300,28 @@ static void unbuffer(struct buffer *b, UBYTE *cb)
     BL_CUSTOML(cb, 0x40) = 0x09f00000;
     BL_CUSTOML(cb, 0x44) = 0xffffffff;
     BL_CUSTOMW(cb, 0x64) = 0;
-    goto loop2;
+    goto nextrec;
     do {
-        UBYTE *a1;
+        UBYTE *cur;                             /* a1: in the record */
         UWORD size, n, save;
 
         BL_BLITWAIT(cb);
-loop2:
-        a1 = rec + 4;
-        BL_CUSTOMW(cb, 0x66) = *(UWORD *)a1;
-        size = *(UWORD *)(a1 + 2);
-        n = *(UWORD *)(a1 + 4);
-        save = *(UWORD *)(a1 + 6);
-        a1 += 12;
-        goto loop3a;
+nextrec:                                        /* loop2 */
+        cur = rec + 4;
+        BL_CUSTOMW(cb, 0x66) = *(UWORD *)cur;
+        size = *(UWORD *)(cur + 2);
+        n = *(UWORD *)(cur + 4);
+        save = *(UWORD *)(cur + 6);
+        cur += 12;
+        goto nextplane;
         do {
             BL_BLITWAIT(cb);
-loop3a:
-            BL_CUSTOML(cb, 0x54) = *(ULONG *)a1;
-            a1 += 4;
-            BL_CUSTOML(cb, 0x50) = (ULONG)a1;
+nextplane:                                      /* loop3a */
+            BL_CUSTOML(cb, 0x54) = *(ULONG *)cur;
+            cur += 4;
+            BL_CUSTOML(cb, 0x50) = (ULONG)cur;
             BL_CUSTOMW(cb, 0x58) = size;
-            a1 += (WORD)save;
+            cur += (WORD)save;
         } while (n-- != 0);
         rec = *(UBYTE **)rec;
     } while (rec);
@@ -340,35 +341,35 @@ static void showstencil(struct buffer *b, UBYTE *cb, const UBYTE *stencil)
     BL_CUSTOML(cb, 0x40) = 0x0fe20000;
     BL_CUSTOML(cb, 0x44) = 0xffffffff;
     BL_CUSTOMW(cb, 0x64) = 0;
-    goto loop2;
+    goto nextrec;
     do {
-        UBYTE *a1;
+        UBYTE *cur;                             /* a1: in the record */
         UWORD size, n, save, mod;
         ULONG st;
 
         BL_BLITWAIT(cb);
-loop2:
-        a1 = rec + 4;
-        mod = *(UWORD *)a1;
+nextrec:                                        /* loop2 */
+        cur = rec + 4;
+        mod = *(UWORD *)cur;
         BL_CUSTOMW(cb, 0x66) = mod;
         BL_CUSTOMW(cb, 0x60) = mod;
         BL_CUSTOMW(cb, 0x62) = mod;
-        size = *(UWORD *)(a1 + 2);
-        n = *(UWORD *)(a1 + 4);
-        save = *(UWORD *)(a1 + 6);
-        st = *(ULONG *)(a1 + 8) + SL(stencil, 4);
-        a1 += 12;
-        goto loop3a;
+        size = *(UWORD *)(cur + 2);
+        n = *(UWORD *)(cur + 4);
+        save = *(UWORD *)(cur + 6);
+        st = *(ULONG *)(cur + 8) + SL(stencil, 4);
+        cur += 12;
+        goto nextplane;
         do {
             BL_BLITWAIT(cb);
-loop3a:
-            BL_CUSTOML(cb, 0x54) = *(ULONG *)a1;
-            BL_CUSTOML(cb, 0x48) = *(ULONG *)a1;
-            a1 += 4;
-            BL_CUSTOML(cb, 0x50) = (ULONG)a1;
+nextplane:                                      /* loop3a */
+            BL_CUSTOML(cb, 0x54) = *(ULONG *)cur;
+            BL_CUSTOML(cb, 0x48) = *(ULONG *)cur;
+            cur += 4;
+            BL_CUSTOML(cb, 0x50) = (ULONG)cur;
             BL_CUSTOML(cb, 0x4c) = st;
             BL_CUSTOMW(cb, 0x58) = size;
-            a1 += (WORD)save;
+            cur += (WORD)save;
         } while (n-- != 0);
         rec = *(UBYTE **)rec;
     } while (rec);
