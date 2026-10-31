@@ -1,7 +1,7 @@
 /*
  * test_amiga_emulation.c - configuration and script of amiga_emulation
  * (no emulator), the slots that limit the runs, the snapshot mode's
- * configuration, key and pruning.
+ * configuration, key, pruning and the purge of one owner's snapshots.
  */
 #define _XOPEN_SOURCE 700       /* mkdtemp */
 #include <errno.h>
@@ -279,6 +279,135 @@ static void snapshot_prune(void)
     CHECK(rmdir(dir) == 0);
     /* broken: no directory */
     CHECK(amiga_emulation_snapshot_prune(dir, 2) == -1);
+}
+
+/* a/b/c, malloc'd (aborts without memory) */
+static char *str_cat3(const char *a, const char *b, const char *c)
+{
+    size_t n = strlen(a) + strlen(b) + strlen(c) + 1;
+    char *s = malloc(n);
+
+    if (!s)
+        abort();
+    snprintf(s, n, "%s%s%s", a, b, c);
+    return s;
+}
+
+/* the owner in the file name; the purge removes one owner's snapshots in
+   every slot of a temporary XDG_RUNTIME_DIR and nothing else */
+static void snapshot_purge(void)
+{
+    char rt[] = "/tmp/amiga-emulation-purge-XXXXXX", path[256], *a, *b, *n;
+    char *oxdg = getenv("XDG_RUNTIME_DIR") ? strdup(getenv("XDG_RUNTIME_DIR")) : NULL;
+    const char *own = "/build/one", *other = "/build/two";
+    char *keep[16], *gone[16];
+    size_t nk = 0, ng = 0, i;
+    int s;
+
+    /* the owner hash: 0 only without owner, stable, a link is the same */
+    CHECK(amiga_emulation_snapshot_owner(NULL) == 0 && amiga_emulation_snapshot_owner("") == 0);
+    CHECK(amiga_emulation_snapshot_owner(own) != 0);
+    CHECK(amiga_emulation_snapshot_owner(own) == amiga_emulation_snapshot_owner(own));
+    CHECK(amiga_emulation_snapshot_owner(own) != amiga_emulation_snapshot_owner(other));
+    n = amiga_emulation_snapshot_name(NULL, 0x1234);
+    CHECK(n && !strcmp(n, "snap-0000000000000000-0000000000001234.uss"));
+    free(n);
+    a = amiga_emulation_snapshot_name(own, 1);
+    b = amiga_emulation_snapshot_name(other, 1);
+    CHECK(a && b && strcmp(a, b) && strlen(a) == strlen("snap--.uss") + 32);
+    free(a);
+    free(b);
+
+    CHECK(mkdtemp(rt) != NULL);
+    setenv("XDG_RUNTIME_DIR", rt, 1);
+    /* broken: no slot directory yet */
+    CHECK(amiga_emulation_snapshot_purge(own) == -1);
+    snprintf(path, sizeof path, "%s/amiga-emulation-slots", rt);
+    CHECK(mkdir(path, 0700) == 0);
+    CHECK(amiga_emulation_snapshot_purge(own) == 0);
+    {
+        /* a link to the real directory is the same owner */
+        char real[] = "/tmp/amiga-emulation-owner-XXXXXX", link[64];
+
+        CHECK(mkdtemp(real) != NULL);
+        snprintf(link, sizeof link, "%s-link", real);
+        CHECK(symlink(real, link) == 0);
+        CHECK(amiga_emulation_snapshot_owner(link) == amiga_emulation_snapshot_owner(real));
+        remove(link);
+        rmdir(real);
+    }
+    for (s = 0; s < 2; s++) {
+        snprintf(path, sizeof path, "%s/amiga-emulation-slots/slot-%d", rt, s);
+        CHECK(mkdir(path, 0700) == 0);
+        for (i = 0; i < 2; i++) {
+            char *mine = amiga_emulation_snapshot_name(own, 0x10 + i);
+            char *theirs = amiga_emulation_snapshot_name(other, 0x10 + i);
+            char *none = amiga_emulation_snapshot_name(NULL, 0x10 + i);
+
+            gone[ng] = mine ? str_cat3(path, "/", mine) : NULL;
+            put_file(gone[ng++], 4);
+            keep[nk] = theirs ? str_cat3(path, "/", theirs) : NULL;
+            put_file(keep[nk++], 4);
+            if (!i) {
+                keep[nk] = none ? str_cat3(path, "/", none) : NULL;
+                put_file(keep[nk++], 4);
+            }
+            free(mine);
+            free(theirs);
+            free(none);
+        }
+        /* the owner's left-over save, an old name without owner, others */
+        snprintf(path, sizeof path, "%s/amiga-emulation-slots/slot-%d/save-%016llx-%016llx.uss",
+                 rt, s, amiga_emulation_snapshot_owner(own), 0x99ULL);
+        gone[ng] = strdup(path);
+        put_file(gone[ng++], 4);
+        snprintf(path, sizeof path, "%s/amiga-emulation-slots/slot-%d/snap-0000000000000007.uss", rt,
+                 s);
+        keep[nk] = strdup(path);
+        put_file(keep[nk++], 4);
+    }
+    /* a slot-K.lock and a directory not called slot-K with the owner's name */
+    snprintf(path, sizeof path, "%s/amiga-emulation-slots/slot-0.lock", rt);
+    keep[nk] = strdup(path);
+    put_file(keep[nk++], 0);
+    snprintf(path, sizeof path, "%s/amiga-emulation-slots/slot-x", rt);
+    CHECK(mkdir(path, 0700) == 0);
+    n = amiga_emulation_snapshot_name(own, 0x10);
+    keep[nk] = n ? str_cat3(path, "/", n) : NULL;
+    put_file(keep[nk++], 4);
+    free(n);
+
+    CHECK(ng == 6 && nk == 10);
+    CHECK(amiga_emulation_snapshot_purge(own) == 6);
+    for (i = 0; i < ng; i++)
+        CHECK(gone[i] && access(gone[i], F_OK) && errno == ENOENT);
+    for (i = 0; i < nk; i++)
+        CHECK(keep[i] && !access(keep[i], F_OK));
+    CHECK(amiga_emulation_snapshot_purge(own) == 0);
+    /* the other owner's: 2 per slot */
+    CHECK(amiga_emulation_snapshot_purge(other) == 4);
+    CHECK(amiga_emulation_snapshot_purge(NULL) == 2);
+    for (i = 0; i < ng; i++)
+        free(gone[i]);
+    for (i = 0; i < nk; i++) {
+        if (keep[i])
+            remove(keep[i]);
+        free(keep[i]);
+    }
+    for (s = 0; s < 2; s++) {
+        snprintf(path, sizeof path, "%s/amiga-emulation-slots/slot-%d", rt, s);
+        CHECK(rmdir(path) == 0);
+    }
+    snprintf(path, sizeof path, "%s/amiga-emulation-slots/slot-x", rt);
+    CHECK(rmdir(path) == 0);
+    snprintf(path, sizeof path, "%s/amiga-emulation-slots", rt);
+    CHECK(rmdir(path) == 0);
+    CHECK(rmdir(rt) == 0);
+    if (oxdg)
+        setenv("XDG_RUNTIME_DIR", oxdg, 1);
+    else
+        unsetenv("XDG_RUNTIME_DIR");
+    free(oxdg);
 }
 
 int main(void)
@@ -623,6 +752,7 @@ int main(void)
     snapshot_config();
     snapshot_key();
     snapshot_prune();
+    snapshot_purge();
 
     /* the names of the @stat lines (tools/lib/teststats/statline.h) */
     CHECK(!strcmp(amiga_emulation_snapshot_use_name(AMIGA_EMULATION_SNAP_COLD), "cold"));

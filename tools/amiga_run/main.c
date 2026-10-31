@@ -14,6 +14,14 @@
  * start (Amiberry or its data missing: skipped), 2 on usage errors.
  * --log: Amiberry's own log into WORKDIR/amiberry.log (with --dir).
  * --cold: boot, do not start from a snapshot (amiga_emulation.h).
+ *
+ *   amiga_run --purge-snapshots OWNER
+ *
+ * removes the snapshots of OWNER (a build directory, as in
+ * $AMIGA_EMULATION_OWNER) from all slots and nothing else
+ * (amiga_emulation_snapshot_purge); exit status 0, also without a slot
+ * directory, 2 on usage errors.  The fixture amiga_emulation_snapshot_reset
+ * of every ctest run calls it.
  */
 #define _XOPEN_SOURCE 700       /* scandir */
 #include <dirent.h>
@@ -87,8 +95,25 @@ static int usage(FILE *out)
                  "                 [--set KEY=VALUE]... [--unset KEY]... [--mount VOL=DIR]...\n"
                  "                 [--mount-ro VOL=DIR]... [--dir WORKDIR] [--cold] SCRIPT|-\n"
                  "  run an AmigaDOS script (a file or - for stdin) in Amiberry\n"
-                 "  --machine: a1200 (default), a500 (68000, Kickstart 1.3), a500-68010\n");
+                 "  --machine: a1200 (default), a500 (68000, Kickstart 1.3), a500-68010\n"
+                 "       amiga_run --purge-snapshots OWNER\n"
+                 "  remove the snapshots of OWNER (a build directory) from all slots\n");
     return out == stdout ? 0 : 2;
+}
+
+/* --purge-snapshots OWNER: no slot directory yet is not an error */
+static int purge(int argc, char **argv)
+{
+    int n;
+
+    if (argc != 3 || !*argv[2])
+        return usage(stderr);
+    n = amiga_emulation_snapshot_purge(argv[2]);
+    if (n < 0)
+        printf("amiga_run: no snapshot directory, nothing to purge\n");
+    else
+        printf("amiga_run: %d snapshot%s of %s removed\n", n, n == 1 ? "" : "s", argv[2]);
+    return 0;
 }
 
 int main(int argc, char **argv)
@@ -108,6 +133,11 @@ int main(int argc, char **argv)
         free(changes);
         free(mounts);
         return usage(stdout);
+    }
+    if (argc > 1 && !strcmp(argv[1], "--purge-snapshots")) {
+        free(changes);
+        free(mounts);
+        return purge(argc, argv);
     }
     if (!changes || !mounts)
         return 2;

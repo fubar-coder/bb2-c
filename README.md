@@ -260,7 +260,12 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   of the booted system instead of booting (snapshot mode, about 13 s
   less per session; the first session per slot and configuration boots
   and saves it); `AMIGA_EMULATION_SNAPSHOT=0` turns it off
-  (`amiga-emulation/README.md`, "Snapshot mode"). `corpus_cd`: all 724 sources of the CD
+  (`amiga-emulation/README.md`, "Snapshot mode"). The snapshots belong
+  to the build directory, and every ctest run starts fresh: the fixture
+  test `amiga_emulation_snapshot_reset`, which every emulator test
+  requires, first removes this build directory's snapshots (not those of
+  other build directories or worktrees); do not run two ctest runs of the
+  same build directory at once. `corpus_cd`: all 724 sources of the CD
   compiled with blitz2-c (like bb2's bb2corpus: `.xtra` of the sources,
   assigns to CD directories, directory of the relative INCLUDEs) and
   compared with `tests/data/blitz2-cd.tsv` (result, error line and

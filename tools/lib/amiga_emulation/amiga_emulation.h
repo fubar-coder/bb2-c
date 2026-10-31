@@ -127,8 +127,15 @@ struct amiga_emulation_params {
  * clock (SetClock LOAD, on the A500 machines a DATE line with the host's
  * time) and runs the test's script.  The first session of a configuration
  * in a slot boots cold, saves the state at SNAP:ready into
- * slot-K/snap-KEY.uss (amiga_emulation_snapshot_key) and goes on; later
- * ones restore it.  A restore that does not reach SNAP:started within 6 s
+ * slot-K/snap-OWNER-KEY.uss (amiga_emulation_snapshot_name) and goes on;
+ * later ones of the same owner restore it.  The owner is the build
+ * directory: $AMIGA_EMULATION_OWNER, which CMake sets for every emulator
+ * test (without it, e.g. amiga_run by hand: "no owner", hash 0).  A ctest
+ * run first removes the snapshots of its build directory
+ * (amiga_emulation_snapshot_purge, the fixture test
+ * amiga_emulation_snapshot_reset), so every run starts fresh and never
+ * restores a state saved by an older code state; the snapshots of other
+ * owners stay.  A restore that does not reach SNAP:started within 6 s
  * (or whose Amiberry ends) is dropped, the state file too, and the session
  * boots cold.  A slot keeps its AMIGA_EMULATION_SNAP_KEEP most recently
  * used snapshots.  Sessions end with SIGTERM right after run.done; at the
@@ -238,6 +245,22 @@ unsigned long long amiga_emulation_snapshot_key(const char *cfg, const char *ami
    modification time; a restore touches its file) and removes the rest and
    left-over save-*.uss; the number removed, -1 without the directory */
 int amiga_emulation_snapshot_prune(const char *slot_dir, unsigned keep);
+/* the hash of a snapshot owner (a build directory, by its real path if it
+   exists); 0 for NULL or "" (no owner), never 0 otherwise */
+unsigned long long amiga_emulation_snapshot_owner(const char *owner);
+/* the file name of the snapshot with key of owner (NULL: no owner):
+   "snap-OWNERHASH-KEY.uss", 16 hex digits each; malloc'd, NULL without
+   memory */
+char *amiga_emulation_snapshot_name(const char *owner, unsigned long long key);
+/* removes the snapshots of owner (snap-OWNERHASH-*.uss and left-over
+   save-OWNERHASH-*.uss) from every slot-K of the slot directory
+   ($XDG_RUNTIME_DIR/amiga-emulation-slots, see above) and touches nothing
+   else: the number removed, -1 without the slot directory.  It takes no
+   slot locks: a session of another owner never uses these files, and a
+   session of the same owner must not run meanwhile (two overlapping
+   ctest runs of one build directory are not supported; a session whose
+   snapshot goes away falls back to a cold boot). */
+int amiga_emulation_snapshot_purge(const char *owner);
 
 /* checks the Kickstart ROM file before a run: it exists, and an encrypted
    one (Cloanto, "AMIROMTYPE1") has rom.key in the directory of its real

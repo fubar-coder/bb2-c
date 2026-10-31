@@ -141,8 +141,8 @@ struct amiga_emulation {
     enum { SNAP_OFF, SNAP_CREATING, SNAP_RESTORING, SNAP_RUNNING } snap;
     char *slot_dir;             /* slot-K */
     char *ctl_dir;              /* slot-K/ctl, SNAP: */
-    char *snap_path;            /* slot-K/snap-KEY.uss */
-    unsigned long long snap_key;
+    char *snap_path;            /* slot-K/snap-OWNER-KEY.uss */
+    unsigned long long snap_key, snap_owner;
     char *real_test_dir;        /* the real paths of TEST: and the mounts */
     char **mount_dirs;
     size_t nmounts;
@@ -970,8 +970,9 @@ static char *drop_comments(char *cfg)
 /* the ROM and the hardfile by their real paths, without the comments
    (they name the emulation directory): the same files reached through
    other links (amiga-emulation/ of another worktree) give the same
-   configuration, so the same snapshot (the state stores the real path of
-   the hardfile anyway) */
+   configuration, so the same key (the state stores the real path of
+   the hardfile anyway); the owner in the file name keeps the snapshots of
+   different build directories apart */
 static char *resolve_files(char *cfg)
 {
     char *file[2], *real;
@@ -1125,6 +1126,85 @@ int amiga_emulation_snapshot_prune(const char *slot_dir, unsigned keep)
     return removed;
 }
 
+unsigned long long amiga_emulation_snapshot_owner(const char *owner)
+{
+    unsigned long long h;
+    char *real;
+    const char *s;
+
+    if (!owner || !*owner)
+        return 0;
+    /* the same directory through another path (a link) is the same owner */
+    real = realpath(owner, NULL);
+    s = real ? real : owner;
+    h = fnv(0xcbf29ce484222325ULL, s, strlen(s));
+    free(real);
+    return h ? h : 1;   /* 0 is "no owner" */
+}
+
+char *amiga_emulation_snapshot_name(const char *owner, unsigned long long key)
+{
+    return str_printf("snap-%016llx-%016llx.uss", amiga_emulation_snapshot_owner(owner), key);
+}
+
+/* the snapshots of the owner with hash o (snap-O-*.uss, left-over
+   save-O-*.uss) in one slot directory; the number removed */
+static int purge_slot(const char *slot_dir, unsigned long long o)
+{
+    DIR *d = opendir(slot_dir);
+    struct dirent *de;
+    char snap[32], save[32];
+    int removed = 0;
+
+    if (!d)
+        return 0;
+    snprintf(snap, sizeof snap, "snap-%016llx-", o);
+    snprintf(save, sizeof save, "save-%016llx-", o);
+    while ((de = readdir(d)) != NULL) {
+        char *path;
+        struct stat st;
+
+        if (!has_affixes(de->d_name, snap, ".uss") && !has_affixes(de->d_name, save, ".uss"))
+            continue;
+        path = str_printf("%s/%s", slot_dir, de->d_name);
+        if (path && !lstat(path, &st) && S_ISREG(st.st_mode) && !unlink(path))
+            removed++;
+        free(path);
+    }
+    closedir(d);
+    return removed;
+}
+
+int amiga_emulation_snapshot_purge(const char *owner)
+{
+    unsigned long long o = amiga_emulation_snapshot_owner(owner);
+    char *dir = slots_dir();
+    DIR *d = dir ? opendir(dir) : NULL;
+    struct dirent *de;
+    int removed = 0;
+
+    if (!d) {
+        free(dir);
+        return -1;
+    }
+    while ((de = readdir(d)) != NULL) {
+        const char *k = de->d_name + 5;
+        char *slot;
+        struct stat st;
+
+        /* slot-K, K a number (not slot-K.lock) */
+        if (strncmp(de->d_name, "slot-", 5) || !*k || strspn(k, "0123456789") != strlen(k))
+            continue;
+        slot = str_printf("%s/%s", dir, de->d_name);
+        if (slot && !lstat(slot, &st) && S_ISDIR(st.st_mode))
+            removed += purge_slot(slot, o);
+        free(slot);
+    }
+    closedir(d);
+    free(dir);
+    return removed;
+}
+
 /* one line into the work directory's snapshot.log */
 static void snap_log(struct amiga_emulation *e, const char *fmt, ...)
 {
@@ -1187,7 +1267,7 @@ static int snap_write_job(struct amiga_emulation *e)
    snapshots of the slot beyond AMIGA_EMULATION_SNAP_KEEP removed */
 static int snap_save(struct amiga_emulation *e)
 {
-    char *tmp = str_printf("%s/save-%016llx.uss", e->slot_dir, e->snap_key);
+    char *tmp = str_printf("%s/save-%016llx-%016llx.uss", e->slot_dir, e->snap_owner, e->snap_key);
     char *cfg = str_printf("%s/snapshot.uae", e->work_dir);
     const char *cmd[] = { "SAVESTATE", tmp, cfg, NULL };
     char reply[256];
@@ -1299,7 +1379,7 @@ static int snap_off(struct amiga_emulation *e)
 static int snap_setup(struct amiga_emulation *e, const struct amiga_emulation_params *p,
                       const char *emulation_dir, int index, char **cfg)
 {
-    char *dir = slots_dir(), err[256];
+    char *dir = slots_dir(), *name, err[256];
     size_t i;
 
     *cfg = NULL;
@@ -1315,7 +1395,10 @@ static int snap_setup(struct amiga_emulation *e, const struct amiga_emulation_pa
         return -1;
     }
     e->snap_key = amiga_emulation_snapshot_key(*cfg, e->amiberry);
-    e->snap_path = str_printf("%s/snap-%016llx.uss", e->slot_dir, e->snap_key);
+    e->snap_owner = amiga_emulation_snapshot_owner(getenv("AMIGA_EMULATION_OWNER"));
+    name = amiga_emulation_snapshot_name(getenv("AMIGA_EMULATION_OWNER"), e->snap_key);
+    e->snap_path = name ? str_printf("%s/%s", e->slot_dir, name) : NULL;
+    free(name);
     e->real_test_dir = realpath(e->test_dir, NULL);
     e->mount_dirs = calloc(p->nmounts + 1, sizeof *e->mount_dirs);
     for (i = 0; e->mount_dirs && i < p->nmounts; i++)

@@ -74,10 +74,11 @@ of the booted system, taken when the system waits for its job (about
   `slot-K/test` to its `TEST:`, `slot-K/mnt-I` to its mount I (also the
   read-only ones). An extra volume `SNAP:` (`slot-K/ctl`) holds the waiter
   and the job. At the end of the session the links and `SNAP:` are
-  removed; only the snapshots `slot-K/snap-KEY.uss` stay (about 0.6 MB
-  on the A1200, 80 KB on the A500), the 24 most recently used per slot
-  (the tests use about a dozen configurations; 5 slots × 24 × 0.6 MB is
-  at most about 70 MB).
+  removed; only the snapshots `slot-K/snap-OWNER-KEY.uss` stay (about
+  0.6 MB on the A1200, 80 KB on the A500), the 24 most recently used per
+  slot over all owners (the tests use about a dozen configurations; 5
+  slots × 24 × 0.6 MB is at most about 70 MB). The pruning also removes
+  the snapshots of build directories that are gone or no longer tested.
 * **The first session** of a configuration in a slot boots cold, with
   real empty directories at those paths (Amiberry resolves a link when it
   mounts, the state would keep the link's target): `TEST:run.script` is a
@@ -98,6 +99,33 @@ of the booted system, taken when the system waits for its job (about
   prologue, the waiter and the identity (device, inode, size,
   modification time) of the Kickstart ROM, the hardfile and the Amiberry
   program: a new hardfile or Amiberry gets new snapshots by itself.
+* **The owner** of a snapshot is the build directory whose tests saved
+  it: `AMIGA_EMULATION_OWNER` in the environment, which CMake sets for
+  every emulator test (the top-level build directory, also for the host
+  side's emulator tests). The file name has a hash of it and the key,
+  `snap-OWNERHASH-KEY.uss` (16 hex digits each); a session restores only
+  snapshots of its own owner. Without the variable (e.g. `amiga_run` by
+  hand) the owner is "none" (hash `0000000000000000`). The key alone does
+  not catch every change (a snapshot saved by an older state of this
+  code, e.g. of the waiter's protocol or the supervisor, has the same
+  key), so snapshots are not shared between build directories or
+  worktrees, and every ctest run starts fresh:
+* **The reset:** the fixture test `amiga_emulation_snapshot_reset`
+  (`FIXTURES_SETUP amiga_emulation_snapshots`, label `emulator`; every
+  test with the label `emulator` requires it, so ctest adds it to every
+  run of such a test, also with `-R`) runs before the first emulator test
+  of a ctest run: `amiga_run --purge-snapshots BUILDDIR` removes this
+  build directory's `snap-*`/`save-*` files in all slots and touches
+  nothing else (`amiga_emulation_snapshot_purge`; no slot directory yet
+  is not an error). The first session per slot and configuration of the
+  run then boots and saves, the later ones restore. The top-level test
+  `host_emulator` runs the host side's emulator tests without the host
+  side's own reset (`-FS`), which would remove the snapshots of the tests
+  running beside it. Two overlapping ctest runs of the same build
+  directory are not supported: the second one's reset removes snapshots
+  the first one restores (its sessions then boot cold after a failed
+  restore, or Amiberry has the file open already). Runs of other build
+  directories are never touched.
 * **A restore that fails** (no `SNAP:started` within 6 s, or Amiberry
   ends) is dropped, the state file too, and the session boots cold
   without snapshot. A test mount called `SNAP` also means a cold boot.
@@ -116,7 +144,9 @@ of the booted system, taken when the system waits for its job (about
   its start.
 
 Removing `slot-K/snap-*.uss` (while no tests run) is always safe: the
-next session per slot boots and saves again.
+next session per slot boots and saves again. Snapshots without an owner
+part (`snap-KEY.uss`, from before the owner) are never restored; the
+pruning removes them over time.
 
 ## Conditions for the hardfiles
 

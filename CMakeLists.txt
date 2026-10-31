@@ -88,6 +88,7 @@ ExternalProject_Add(host_tools
 		-DAMIGA_EMULATION_DIR=${PROJECT_SOURCE_DIR}/amiga-emulation
 		-DAMIGA_EMULATION_VASM=${VASM}
 		-DHOST_SANITIZE=${HOST_SANITIZE}
+		-DAMIGA_EMULATION_OWNER=${CMAKE_BINARY_DIR}
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
 	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${BLITZTOKENS} ${ASMCMP} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BB22} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${CDRUN} ${TEDAB})
@@ -102,8 +103,11 @@ include(cmake/BlitzLibrary.cmake)
 enable_testing()
 add_test(NAME host COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}
 	--output-on-failure -LE emulator)
+# (without the host side's own snapshot reset: this run's reset came
+# first, a second one would remove the snapshots of tests running now)
 add_test(NAME host_emulator COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}
-	--output-on-failure -L emulator)
+	--output-on-failure -L emulator -E ^amiga_emulation_snapshot_reset$
+	-FS amiga_emulation_snapshots)
 math(EXPR limit "300 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(host_emulator PROPERTIES LABELS emulator TIMEOUT ${limit})
 # the __saveds check of the configure step with a function without it
@@ -144,3 +148,7 @@ add_test(NAME help_amiga COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
 	-P ${PROJECT_SOURCE_DIR}/cmake/check-help-amiga.cmake)
 math(EXPR limit "120 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(help_amiga PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+
+# after all tests: every emulator test gets the fixture that removes this
+# build directory's snapshots first, and the owner (cmake/emulation-queue.cmake)
+emulation_snapshot_fixture(${AMIGA_RUN} ${CMAKE_BINARY_DIR})
