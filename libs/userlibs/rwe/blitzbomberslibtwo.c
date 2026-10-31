@@ -68,6 +68,20 @@ BLITZ_LIBFIN();
 
 #define WORDAT(p) (*(UWORD *)(p))
 
+/**
+ * @brief KillInvader sprad,x,y,offset: clear an invader in four sprite
+ * images.
+ *
+ * The images are the longs at sprad + (x>>2)*16 and 48 bytes further;
+ * in each, the 8 rows of 16 bytes from (x&3)*2 + y*224, and the same
+ * `offset` bytes behind, get the words at +0 and +8 cleared.  Word
+ * arithmetic and word offsets as in the original; nothing is checked.
+ * @param sprad   d0: the table of image pointers
+ * @param x       d1.w: the invader's column
+ * @param y       d2.w: the invader's row
+ * @param offset  d3.w: the offset of the second pair of images
+ * @return nothing
+ */
 static void BLITZ_ROUTINE killinvader_c(UBYTE *sprad BL_REG(d0), UWORD x BL_REG(d1),
                                         UWORD y BL_REG(d2), UWORD offset BL_REG(d3))
 {
@@ -108,6 +122,18 @@ struct star {
 };
 static_assert(sizeof(struct star) == 6);
 
+/**
+ * @brief DrawStarField table,bitplane: move the stars of the table one
+ * step.
+ *
+ * Per star: the bit is cleared at the old offset, the speed added (an
+ * offset from 236*40 on wraps back by 204*40), the new offset stored and
+ * the bit set there.  The bit numbers are taken modulo 8 (BCLR/BSET on
+ * memory address a byte; not a defect).
+ * @param s      d0: the table (struct star, ended by a negative speed)
+ * @param plane  d1: the bitplane (40 bytes per row)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE drawstarfield_c(struct star *s BL_REG(d0), UBYTE *plane BL_REG(d1))
 {
     WORD speed;
@@ -145,12 +171,31 @@ static void bullet(struct BitMap *bitm, UWORD x, UWORD y, int set)
     }
 }
 
+/**
+ * @brief DrawBullet bitm,x,y: draw a 1x3 pixel bullet in colour 4.
+ *
+ * Planes 0, 1 and 3 cleared, plane 2 set, at x,y and the two rows below,
+ * in a bitmap 320 pixels (40 bytes) wide; nothing is checked.
+ * @param bitm  d0: the bitmap (struct BitMap)
+ * @param x     d1.w: the column
+ * @param y     d2.w: the top row
+ * @return nothing
+ */
 static void BLITZ_ROUTINE drawbullet_c(struct BitMap *bitm BL_REG(d0), UWORD x BL_REG(d1),
                                        UWORD y BL_REG(d2))
 {
     bullet(bitm, x, y, 1);
 }
 
+/**
+ * @brief EraseBullet bitm,x,y: erase a bullet (colour 0 in planes 0-3).
+ *
+ * As DrawBullet, with plane 2 cleared too.
+ * @param bitm  d0: the bitmap (struct BitMap)
+ * @param x     d1.w: the column
+ * @param y     d2.w: the top row
+ * @return nothing
+ */
 static void BLITZ_ROUTINE erasebullet_c(struct BitMap *bitm BL_REG(d0), UWORD x BL_REG(d1),
                                         UWORD y BL_REG(d2))
 {
