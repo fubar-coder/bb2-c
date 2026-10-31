@@ -31,8 +31,10 @@ ctest --preset emulator                                # tests in Amiberry
 * The shell is **fish**: wrap loops, `$(...)`, heredocs in `bash -c '…'`
   or `bash <<'EOF'`.
 * A clean rebuild has **no compiler warnings**; the only expected ones are
-  the 73 warnings of `blitzlibcheck` (references into the error check
-  area, as with the originals).
+  those of `blitzlibcheck` (references into the error check area, as with
+  the originals): 73 per acidlibs set plus 3 of rigtmenulib, 441 with the
+  six sets of the build (default, rwe-1999, rwe-1999-eval, rwe-1999-ahi,
+  two selftest variants).
 * CMake generates `.clangd` on the first configure (not in git).
 * Emulator: the Kickstart ROM and hardfiles are local in
   `amiga-emulation/` (not in git, see the README there); default
