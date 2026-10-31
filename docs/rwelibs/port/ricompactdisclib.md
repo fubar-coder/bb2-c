@@ -32,9 +32,13 @@ globalloc/globfree through `BLITZ_ALIBJSR`. `CloseCD`'s `ALibJsr
 CDStop` is a C call. The data from `trackname` to `MyCDInfo` keep the
 original's order and sizes (one packed struct), so that a long device
 name and the unlimited `CDTrackMins`/`CDTrackSecs` offsets hit the same
-bytes. `CDPlayTrack`'s SCSI path writes its two longs to odd addresses
-with volatile long accesses, like the original. Every entry is a thunk
-keeping d1/a0/a1; the original's changes of a6, d7 (CDReadTOC) and
+bytes. DIFF (#946): behind `MyCDInfo` follow 8 bytes of room
+(`mycdinfo_rest`): a device that writes the whole 34-byte CDInfo for
+`CDStatus` (uaescsi.device) wrote them over the pointers of the SCSI
+buffers, and the next SCSI `CDReadTOC` hung; in the original they go
+behind the library (#948). `CDPlayTrack`'s SCSI path writes its two
+longs to odd addresses with volatile long accesses, like the original.
+Every entry is a thunk keeping d1/a0/a1; the original's changes of a6, d7 (CDReadTOC) and
 d1/d2 (CDTrackLength) are not reproduced.
 
 **BUG(orig)** (kept):
@@ -64,6 +68,10 @@ d1/d2 (CDTrackLength) are not reproduced.
   it, which CD_TOCMSF does not write; track 0 reads 65539 bytes behind
   toc. (#584, #585, #583)
 * `CDUpdateInfo` without an open device returns the caller's a0 + 5. (#587)
+* `CDStatus` asks for 26 bytes of CD_INFO, a struct CDInfo has 34: a
+  device that writes all of it (uaescsi.device) writes 8 bytes behind
+  `MyCDInfo`, the end of the library (here into `mycdinfo_rest`, see
+  above). (#948)
 * `CDTrackMins`/`CDTrackSecs offset`: `ASL.b #2` shifts the low byte
   only, the index is the whole word, the high bytes of d0 stay in the
   result; no limit. They and `CDTrackPlaying` do not check for an open

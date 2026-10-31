@@ -65,6 +65,10 @@
  *     track 0 reads 65539 bytes behind toc.  No check that toc exists
  *     (#584, #585, #583).
  *   - CDUpdateInfo without an open device returns the caller's a0 + 5 (#587).
+ *   - CDStatus asks for 26 bytes of CD_INFO (a struct CDInfo has 34): a
+ *     device that writes all of it (uaescsi.device) writes 8 bytes behind
+ *     MyCDInfo, the end of the library.  DIFF: here 8 bytes of room behind
+ *     mycdinfo take them (#948, #946).
  *   - CDTrackMins/CDTrackSecs offset: ASL.b #2 shifts the low byte only,
  *     the index is the whole word (high byte kept), and the high bytes of
  *     d0 stay in the result; any offset reads qcodeinfo[5 + 4 * offset]
@@ -287,10 +291,18 @@ static struct BL_PACKED {
     UBYTE flag;                         /* Even */
     UBYTE pad;
     UWORD mycdinfo[13];                 /* .MyCDInfo, Status = [12] */
+    /* DIFF (#946): CDStatus asks for 26 bytes of CD_INFO, but a device may
+       write the whole struct CDInfo (34 bytes, uaescsi.device does): in
+       the original the 8 bytes go behind its data, the end of the library
+       (BUG(orig), #948), here into this room instead of the pointers of
+       the SCSI buffers behind cd */
+    UWORD mycdinfo_rest[4];
 } cd = { cd.devicename, 0, "cd.device" };
 _Static_assert(offsetof(__typeof__(cd), toc) == 0x3a, "cd layout");
 _Static_assert(offsetof(__typeof__(cd), ioreq) == 0x5a, "cd layout");
 _Static_assert(offsetof(__typeof__(cd), mycdinfo) == 0x64, "cd layout");
+_Static_assert(offsetof(__typeof__(cd), mycdinfo_rest) == 0x64 + 26, "cd layout");
+_Static_assert(sizeof cd - offsetof(__typeof__(cd), mycdinfo) >= sizeof(struct CDInfo), "CD_INFO room");
 
 static ULONG globalloc(ULONG size, ULONG flags)
 {
