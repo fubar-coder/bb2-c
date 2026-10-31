@@ -379,7 +379,8 @@ static_assert(sizeof(struct rtFileList) == 12);
 /* ---------------------------------------------------------------- data */
 
 static struct Library *rtbase;
-static ULONG ReqToolsActive, returnvalue;
+static BB_BOOL ReqToolsActive;
+static ULONG returnvalue;
 /* the requesters, in the original's order */
 static struct rtFileRequester *filereq;
 static struct rtFontRequester *fontreq;
@@ -611,10 +612,10 @@ static ULONG BLITZ_ROUTINE initreqlib_c(void)
     ALLOC(preq, RT_FILEREQ);
     ALLOC(Tfilereq, RT_FILEREQ);
     ALLOC(Mfilereq, RT_FILEREQ);
-    ReqToolsActive = (ULONG)-1;
+    ReqToolsActive = BB_TRUE;
     return (ULONG)Mfilereq;
 failed:                                 /* BUG(orig): nothing given back (#460) */
-    ReqToolsActive = 0;
+    ReqToolsActive = BB_FALSE;
     return 0;
 }
 
@@ -634,7 +635,7 @@ static void BLITZ_ROUTINE cleanupreqlib_c(void)
 }
 
 /* IsReqToolsActive, RTReturnValue */
-static ULONG BLITZ_ROUTINE rtactive_c(void)
+static BB_BOOL BLITZ_ROUTINE rtactive_c(void)
 {
     return ReqToolsActive;
 }
@@ -1128,11 +1129,11 @@ static ULONG BLITZ_ROUTINE rtasPrequest_c(STRPTR title BL_REG(d0), ULONG first B
 }
 
 /* RTCheckASyncPaletteRequest: -1 while it is up, else 0 */
-static ULONG BLITZ_ROUTINE rtcheckasPreq_c(void)
+static BB_BOOL BLITZ_ROUTINE rtcheckasPreq_c(void)
 {
     ULONG r = RTJSR0(LVO_rtReqHandlerA, Psigs, 0, myPhandler);
 
-    return r == CALL_HANDLER ? (ULONG)-1 : 0;
+    return r == CALL_HANDLER ? BB_TRUE : BB_FALSE;
 }
 
 /* RTEndASyncPaletteRequest */
