@@ -60,8 +60,8 @@ extern "C" {
 
 /* ------------------------------------------------------------ fields */
 
-/* the switch words in file order (offset 2 + 2 * index); each is the
-   Flags word of the option gadget: XTRA_ON (GFLG_SELECTED) = on */
+/** @brief The switch words in file order (offset 2 + 2 * index); each is
+    the Flags word of the option gadget: XTRA_ON (GFLG_SELECTED) = on. */
 enum xtra_switch {
     XTRA_SW_RUNTIME_ERRORS,     /* +2  optreqga10, AB3 RuntimeDebug */
     XTRA_SW_DEBUGGER,           /* +4  optreqga11 */
@@ -80,13 +80,13 @@ enum xtra_switch {
 };
 #define XTRA_ON 0x0080          /* GFLG_SELECTED; also the icon byte */
 
-/* the buffer sizes in file order (offset 30 + 4 * index) */
+/** @brief The buffer sizes in file order (offset 30 + 4 * index). */
 enum xtra_buffer {
     XTRA_BUF_OBJECT, XTRA_BUF_LIBS, XTRA_BUF_SYSTEM, XTRA_BUF_DATA,
     XTRA_BUF_MACRO, XTRA_BUF_STRING
 };
 
-/* the type of a source file (xtra_detect, xtra_load) */
+/** @brief The type of a source file (xtra_detect, xtra_load). */
 enum xtra_type {
     XTRA_T_TED,                 /* TED's tokenised source (has a $00);
                                    settings in NAME.xtra */
@@ -100,14 +100,14 @@ enum xtra_type {
     XTRA_T_COUNT
 };
 
-/* where the settings came from */
+/** @brief Where the settings came from. */
 enum xtra_source {
     XTRA_SRC_NONE,              /* defaults only (xtra_init) */
     XTRA_SRC_BLITZ2,            /* a Blitz 2 .xtra */
     XTRA_SRC_AB3_TEXT           /* an AmiBlitz3 source (header or not) */
 };
 
-/* where the bytes of a view are; also the file of an error */
+/** @brief Where the bytes of a view are; also the file of an error. */
 enum xtra_in {
     XTRA_IN_NONE,               /* nothing: an empty text, no maxima */
     XTRA_IN_XTRA,               /* the .xtra buffer (xtra_base.xtra) */
@@ -117,15 +117,16 @@ enum xtra_in {
                                    xtra_set_maxima) or a constant */
 };
 
-/* the bases of the views: the .xtra as loaded and the kept source header
-   (src[0..x->hdr) of xtra_load, wherever it is now).  Either may be NULL
-   if no view points there. */
+/** @brief The bases of the views: the .xtra as loaded and the kept source
+    header (src[0..x->hdr) of xtra_load, wherever it is now).
+
+    Either may be NULL if no view points there. */
 struct xtra_base {
     const uint8_t *xtra;
     const uint8_t *header;
 };
 
-/* the text fields (xtra_text, xtra_set_text) */
+/** @brief The text fields (xtra_text, xtra_set_text). */
 enum xtra_field {
     XTRA_F_EXE_PATH,            /* .xtra 598, AB3 ExePath (< 192 bytes) */
     XTRA_F_EXE_NAME,            /* .xtra 790, AB3 ExeFile (< 192) */
@@ -136,9 +137,11 @@ enum xtra_field {
     XTRA_F_COUNT = XTRA_F_RES0 + XTRA_NRES
 };
 
-/* a text: a view (in, off, len) or the caller's bytes (XTRA_IN_SET: set,
-   len).  A view into the .xtra starts at its field: the Blitz 2 writer
-   copies the whole field from there (bytes after the 0 included). */
+/** @brief A text: a view (in, off, len) or the caller's bytes
+    (XTRA_IN_SET: set, len).
+
+    A view into the .xtra starts at its field: the Blitz 2 writer copies
+    the whole field from there (bytes after the 0 included). */
 struct xtra_text {
     const uint8_t *set;         /* XTRA_IN_SET: the bytes */
     uint32_t off;               /* XTRA_IN_XTRA/HEADER: offset in the base */
@@ -146,10 +149,12 @@ struct xtra_text {
     uint8_t in;                 /* enum xtra_in */
 };
 
-/* one object maximum.  The Blitz 2 file names the library by number
-   (XTRA_MAX_LIB), the AmiBlitz3 header the object by name (XTRA_MAX_NAME,
-   as written there: a blank in the name is '-'); mapping one to the other
-   needs the libraries and is the caller's business. */
+/** @brief One object maximum.
+
+    The Blitz 2 file names the library by number (XTRA_MAX_LIB), the
+    AmiBlitz3 header the object by name (XTRA_MAX_NAME, as written there:
+    a blank in the name is '-'); mapping one to the other needs the
+    libraries and is the caller's business. */
 struct xtra_max {
     const uint8_t *name;        /* XTRA_MAX_NAME: namelen bytes, no 0 */
     uint16_t namelen;
@@ -160,10 +165,12 @@ struct xtra_max {
 #define XTRA_MAX_LIB  0x01
 #define XTRA_MAX_NAME 0x02
 
-/* the maxima: the {lib, max} pairs of the .xtra (off: the first pair),
-   the "Max NAME" lines of the header (off: the first one's line, n lines;
-   a NAME given twice is there twice, the last one counts) or the caller's
-   array (xtra_set_maxima).  Read with xtra_max_begin/xtra_next_max. */
+/** @brief The maxima: the {lib, max} pairs of the .xtra (off: the first
+    pair), the "Max NAME" lines of the header (off: the first one's line,
+    n lines; a NAME given twice is there twice, the last one counts) or the
+    caller's array (xtra_set_maxima).
+
+    Read with xtra_max_begin/xtra_next_max. */
 struct xtra_maxima {
     const struct xtra_max *set; /* XTRA_IN_SET */
     uint32_t off;
@@ -171,8 +178,10 @@ struct xtra_maxima {
     uint8_t in;                 /* enum xtra_in */
 };
 
-/* the editor part: not in a Blitz 2 .xtra; from a BB22 header or the
-   AmiBlitz3 header.  All values 0-based. */
+/** @brief The editor part: not in a Blitz 2 .xtra; from a BB22 header or
+    the AmiBlitz3 header.
+
+    All values 0-based. */
 struct xtra_editor {
     uint8_t flags;              /* XTRA_ED_CURSOR, XTRA_ED_TOP */
     uint32_t line;              /* cursor line (XTRA_ED_CURSOR) */
@@ -182,8 +191,8 @@ struct xtra_editor {
 #define XTRA_ED_CURSOR 0x01
 #define XTRA_ED_TOP    0x02
 
-/* keys of the AmiBlitz3 header: bit (1 << key) in xtra_ab3.seen when the
-   header has the key (docs/formats.md 7.2) */
+/** @brief Keys of the AmiBlitz3 header: bit (1 << key) in xtra_ab3.seen
+    when the header has the key (docs/formats.md 7.2). */
 enum xtra_ab3_key {
     XTRA_K_EXEPATH, XTRA_K_EXEFILE, XTRA_K_CREATEICON, XTRA_K_RESIDENTS,
     XTRA_K_STRINGBUFFER, XTRA_K_MAKESMALLEST, XTRA_K_FUNCOPTIMIZE,
@@ -196,8 +205,9 @@ enum xtra_ab3_key {
     XTRA_K_COUNT
 };
 
-/* numbers only AmiBlitz3 has (LabelSearch: XTRA_F_LABEL_SEARCH).  Without
-   the key in the header the value is AmiBlitz3's default. */
+/** @brief Numbers only AmiBlitz3 has (LabelSearch: XTRA_F_LABEL_SEARCH).
+
+    Without the key in the header the value is AmiBlitz3's default. */
 struct xtra_ab3 {
     uint32_t seen;              /* 1 << enum xtra_ab3_key: keys in the header */
     uint32_t stack;             /* StackSize (default 32768) */
@@ -214,9 +224,11 @@ struct xtra_ab3 {
     uint32_t unknown_line;
 };
 
-/* The settings.  The numbers are members to read and set directly; the
-   texts through xtra_text/xtra_set_text, the maxima through the iterator
-   and xtra_set_maxima. */
+/** @brief The settings.
+
+    The numbers are members to read and set directly; the texts through
+    xtra_text/xtra_set_text, the maxima through the iterator and
+    xtra_set_maxima. */
 struct xtra {
     uint8_t type;               /* enum xtra_type (xtra_load) */
     uint8_t source;             /* enum xtra_source */
@@ -237,6 +249,7 @@ struct xtra {
 
 /* ------------------------------------------------------------ errors */
 
+/** @brief The error codes of the functions (XTRA_OK = 0: no error). */
 enum xtra_err {
     XTRA_OK,
     XTRA_E_SHORT,               /* shorter than the fixed part */
@@ -260,8 +273,8 @@ enum xtra_err {
     XTRA_E_COUNT
 };
 
-/* where an error is: file (XTRA_IN_XTRA or XTRA_IN_HEADER = the source),
-   byte offset (binary formats) or line (1-based, AB3) */
+/** @brief Where an error is: file (XTRA_IN_XTRA or XTRA_IN_HEADER = the
+    source), byte offset (binary formats) or line (1-based, AB3). */
 struct xtra_error {
     int code;                   /* enum xtra_err */
     int in;                     /* enum xtra_in */
@@ -269,134 +282,261 @@ struct xtra_error {
     uint32_t line;
 };
 
-/* the message of an error code (English, without position) */
+/**
+ * @brief The message of an error code (English, without position).
+ * @param code  an enum xtra_err
+ * @return the message; "unknown error" for another code
+ */
 const char *xtra_strerror(int code);
 
 /* ------------------------------------------------------------ loading */
 
-/* the type of a source buf[0..len): "BB22" at the start: XTRA_T_BB22; a
-   $00 byte: XTRA_T_TED; first line "; XTRA": XTRA_T_AB3; other text:
-   XTRA_T_AB3 if path (may be NULL) ends in ".ab3" (any case, AmiBlitz3
-   reads every .ab3 so), else XTRA_T_TEXT.  The caller may pass another
-   type to xtra_load. */
+/**
+ * @brief The type of a source.
+ *
+ * "BB22" at the start: XTRA_T_BB22; a $00 byte: XTRA_T_TED; first line
+ * "; XTRA": XTRA_T_AB3; other text: XTRA_T_AB3 if path ends in ".ab3"
+ * (any case, AmiBlitz3 reads every .ab3 so), else XTRA_T_TEXT.  The
+ * caller may pass another type to xtra_load.
+ *
+ * @param buf   the source
+ * @param len   its length
+ * @param path  its file name (may be NULL)
+ * @return an enum xtra_type
+ */
 int xtra_detect(const uint8_t *buf, size_t len, const char *path);
 
-/* 1 if the settings of a source of this type are in NAME.xtra */
+/**
+ * @brief Whether the settings of a source of this type are in NAME.xtra.
+ * @param type  an enum xtra_type
+ * @return 1 for XTRA_T_TED, XTRA_T_BB22 and XTRA_T_TEXT, else 0
+ */
 int xtra_has_companion(int type);
 
-/* the name of the companion of the source path: path + ".xtra" (as TED
-   and blitz2 make it), 0-terminated into out (cap bytes).  0 or
-   XTRA_E_SPACE. */
+/**
+ * @brief The name of the companion of the source path: path + ".xtra" (as
+ *        TED and blitz2 make it).
+ * @param path  the source's file name
+ * @param out   the name, 0-terminated
+ * @param cap   the size of out in bytes
+ * @return 0 or XTRA_E_SPACE
+ */
 int xtra_companion_name(const char *path, char *out, size_t cap);
 
-/* loads the settings of a source: src[0..len) the source (may be NULL for
-   XTRA_T_TED/XTRA_T_TEXT), xtra[0..xlen) its companion .xtra (NULL: none;
-   ignored for XTRA_T_AB3).  x is initialised (xtra_init) and gets:
-     XTRA_T_TED, XTRA_T_TEXT  the .xtra (source XTRA_SRC_BLITZ2) or the
-                              defaults (XTRA_SRC_NONE); hdr 0
-     XTRA_T_BB22              the header's editor part, hdr 14/16; the .xtra
-     XTRA_T_AB3               the embedded header (XTRA_SRC_AB3_TEXT, its
-                              size in hdr) or AmiBlitz3's defaults (hdr 0)
-   The views point into the .xtra and into src[0..x->hdr) - the caller
-   keeps both (struct xtra_base).  Strict: a .xtra must be 982 + 4n
-   (vers 0) or 1110 + 4n bytes (vers 1) with 0-terminated text fields;
-   the AB3 header must be well-formed (docs/formats.md 7.4).  0 or enum
-   xtra_err with the place in err (may be NULL); on an error x holds the
-   defaults. */
+/**
+ * @brief Load the settings of a source.
+ *
+ * x is initialised (xtra_init) and gets:
+ *   - XTRA_T_TED, XTRA_T_TEXT: the .xtra (source XTRA_SRC_BLITZ2) or the
+ *     defaults (XTRA_SRC_NONE); hdr 0
+ *   - XTRA_T_BB22: the header's editor part, hdr 14/16; the .xtra
+ *   - XTRA_T_AB3: the embedded header (XTRA_SRC_AB3_TEXT, its size in
+ *     hdr) or AmiBlitz3's defaults (hdr 0)
+ *
+ * The views point into the .xtra and into src[0..x->hdr) - the caller
+ * keeps both (struct xtra_base).  Strict: a .xtra must be 982 + 4n
+ * (vers 0) or 1110 + 4n bytes (vers 1) with 0-terminated text fields; the
+ * AB3 header must be well-formed (docs/formats.md 7.4).
+ *
+ * @param x     the settings
+ * @param type  an enum xtra_type
+ * @param src   the source, src[0..len) (may be NULL for XTRA_T_TED/
+ *              XTRA_T_TEXT)
+ * @param len   its length
+ * @param xtra  its companion .xtra, xtra[0..xlen) (NULL: none; ignored for
+ *              XTRA_T_AB3)
+ * @param xlen  its length
+ * @param err   the place of an error (may be NULL)
+ * @return 0 or an enum xtra_err; on an error x holds the defaults
+ */
 int xtra_load(struct xtra *x, int type, const uint8_t *src, size_t len, const uint8_t *xtra,
               size_t xlen, struct xtra_error *err);
 
 /* ------------------------------------------------------------ fields */
 
-/* Blitz 2's defaults (options.src, the initial gadget flags), no
-   residents, empty texts, no maxima, no editor part, AmiBlitz3's
-   defaults for its own numbers; vers 1, type XTRA_T_TED, XTRA_SRC_NONE */
+/**
+ * @brief Initialise settings with the defaults.
+ *
+ * Blitz 2's defaults (options.src, the initial gadget flags), no
+ * residents, empty texts, no maxima, no editor part, AmiBlitz3's defaults
+ * for its own numbers; vers 1, type XTRA_T_TED, XTRA_SRC_NONE.
+ *
+ * @param x  the settings
+ */
 void xtra_init(struct xtra *x);
 
-/* what blitz2's loadxtra does after reading a vers 0 file: Auto Run on,
-   Interrupt/Overflow Checking from their defaults, Assembler Checking
-   off (blitz2.s:15371).  The loader leaves the file values alone. */
+/**
+ * @brief What blitz2's loadxtra does after reading a vers 0 file.
+ *
+ * Auto Run on, Interrupt/Overflow Checking from their defaults, Assembler
+ * Checking off (blitz2.s:15371).  The loader leaves the file values alone.
+ *
+ * @param x  the settings
+ */
 void xtra_apply_vers0(struct xtra *x);
 
-/* a text field: its bytes (not 0-terminated) and length in *len; "" for
-   an empty one.  NULL (and *len 0) for a field number out of range or a
-   view whose base b (may be NULL) does not give. */
+/**
+ * @brief A text field.
+ * @param x      the settings
+ * @param b      the bases of the views (may be NULL)
+ * @param field  an enum xtra_field
+ * @param len    out: the length
+ * @return its bytes (not 0-terminated); "" for an empty one; NULL (and
+ *         *len 0) for a field number out of range or a view whose base b
+ *         does not give
+ */
 const uint8_t *xtra_text(const struct xtra *x, const struct xtra_base *b, int field, size_t *len);
 
-/* the bytes of a text field in a Blitz 2 .xtra (with the 0): a text is
-   shorter than this; 0 for a field number out of range */
+/**
+ * @brief The bytes of a text field in a Blitz 2 .xtra (with the 0): a text
+ *        is shorter than this.
+ * @param field  an enum xtra_field
+ * @return the size; 0 for a field number out of range
+ */
 size_t xtra_text_cap(int field);
 
-/* sets a text field to the caller's p[0..len) - kept by the caller as
-   long as x is used (a writer reads it from there).  0, XTRA_E_FIELD,
-   XTRA_E_LONG (len >= xtra_text_cap) or XTRA_E_TEXT (a 0, CR or LF). */
+/**
+ * @brief Set a text field to the caller's bytes.
+ * @param x      the settings
+ * @param field  an enum xtra_field
+ * @param p      the text, p[0..len) - kept by the caller as long as x is
+ *               used (a writer reads it from there)
+ * @param len    its length
+ * @return 0, XTRA_E_FIELD, XTRA_E_LONG (len >= xtra_text_cap) or
+ *         XTRA_E_TEXT (a 0, CR or LF)
+ */
 int xtra_set_text(struct xtra *x, int field, const void *p, size_t len);
 
-/* the maxima from the caller's m[0..n) (kept by the caller) instead of
-   those of the .xtra/header; n 0: none.  The AmiBlitz3 writer then
-   replaces all "Max" lines (written in front of "; /XTRA"). */
+/**
+ * @brief The maxima from the caller's array instead of those of the
+ *        .xtra/header.
+ *
+ * The AmiBlitz3 writer then replaces all "Max" lines (written in front of
+ * "; /XTRA").
+ *
+ * @param x  the settings
+ * @param m  the maxima, m[0..n) (kept by the caller)
+ * @param n  their number; 0: none
+ */
 void xtra_set_maxima(struct xtra *x, const struct xtra_max *m, uint32_t n);
 
-/* the maxima one by one, in file order:
-     struct xtra_iter it;
-     struct xtra_max m;
-     xtra_max_begin(&it, x, b);
-     while (xtra_next_max(&it, &m)) ...
-   No maxima from a view whose base b does not give. */
+/**
+ * @brief An iterator over the maxima, one by one, in file order.
+ *
+ *     struct xtra_iter it;
+ *     struct xtra_max m;
+ *     xtra_max_begin(&it, x, b);
+ *     while (xtra_next_max(&it, &m)) ...
+ *
+ * No maxima from a view whose base b does not give.
+ */
 struct xtra_iter {
     const struct xtra *x;
     const uint8_t *base;        /* the .xtra or the header */
     const struct xtra_max *set; /* the next one of the caller's array */
     uint32_t pos, left;
 };
+
+/**
+ * @brief Start iterating the maxima of x.
+ * @param it  the iterator
+ * @param x   the settings
+ * @param b   the bases of the views
+ */
 void xtra_max_begin(struct xtra_iter *it, const struct xtra *x, const struct xtra_base *b);
+
+/**
+ * @brief The next maximum.
+ * @param it  the iterator (xtra_max_begin)
+ * @param m   out: the maximum
+ * @return 1 with *m set, 0 at the end
+ */
 int xtra_next_max(struct xtra_iter *it, struct xtra_max *m);
 
-/* takes what a Blitz 2 .xtra holds from from into to: vers, icon,
-   switches, buffers, residents (texts, pointers), executable path and
-   name, CLI argument - not the maxima, the editor part, AmiBlitz3's
-   own fields.  from's views keep pointing into its .xtra: the base used
-   with to needs from's .xtra (e.g. an .ab3 header updated from a .xtra). */
+/**
+ * @brief Take what a Blitz 2 .xtra holds from from into to.
+ *
+ * vers, icon, switches, buffers, residents (texts, pointers), executable
+ * path and name, CLI argument - not the maxima, the editor part,
+ * AmiBlitz3's own fields.  from's views keep pointing into its .xtra: the
+ * base used with to needs from's .xtra (e.g. an .ab3 header updated from
+ * a .xtra).
+ *
+ * @param to    the settings to change
+ * @param from  the settings to take from
+ */
 void xtra_take_blitz2(struct xtra *to, const struct xtra *from);
 
 /* ------------------------------------------------------------ Blitz 2 */
 
-/* bytes xtra_write_blitz2 writes: the fixed part of x->vers and 4 per
-   maximum with a library number */
+/**
+ * @brief The bytes xtra_write_blitz2 writes: the fixed part of x->vers and
+ *        4 per maximum with a library number.
+ * @param x  the settings
+ * @return the size
+ */
 size_t xtra_blitz2_size(const struct xtra *x);
 
-/* writes x as Blitz 2 .xtra to out (cap bytes): vers as in x (0 without
-   CLI block); a text from the .xtra as its whole field (the bytes after
-   the 0 included: a loaded file gives the same bytes), others
-   0-terminated and padded with 0; the pairs of the maxima with
-   XTRA_MAX_LIB in their order (the others skipped: *skipped, may be
-   NULL).  The size in *len.  0 or XTRA_E_VERS, XTRA_E_SPACE, XTRA_E_LONG,
-   XTRA_E_BASE. */
+/**
+ * @brief Write x as Blitz 2 .xtra.
+ *
+ * vers as in x (0 without CLI block); a text from the .xtra as its whole
+ * field (the bytes after the 0 included: a loaded file gives the same
+ * bytes), others 0-terminated and padded with 0; the pairs of the maxima
+ * with XTRA_MAX_LIB in their order (the others skipped).
+ *
+ * @param x        the settings
+ * @param b        the bases of the views
+ * @param out      the output
+ * @param cap      its size in bytes
+ * @param len      out: the size written
+ * @param skipped  out: the maxima skipped (may be NULL)
+ * @param err      the place of an error (may be NULL)
+ * @return 0 or XTRA_E_VERS, XTRA_E_SPACE, XTRA_E_LONG, XTRA_E_BASE
+ */
 int xtra_write_blitz2(const struct xtra *x, const struct xtra_base *b, uint8_t *out, size_t cap,
                       size_t *len, unsigned *skipped, struct xtra_error *err);
 
 /* ------------------------------------------------------------ AmiBlitz3 */
 
-/* writes x as AmiBlitz3 header to out (cap bytes, not 0-terminated):
-   * x from a source with header (x->ab3.header): that header (b->header,
-     x->hdr bytes), line by line: unchanged lines as they are (unknown
-     keys, comments, older layouts, the line ends); the line of a known
-     key whose value in x differs from what the line says gets the new
-     value (the rest of the line kept); keys the header lacks whose value
-     differs from AmiBlitz3's default are added in front of "; /XTRA";
-     maxima set by xtra_set_maxima replace the "Max" lines.  Unchanged x:
-     the same bytes.
-   * otherwise a new header, the lines of AmiBlitz3's write_AB3Header
-     (docs/formats.md 7.1), LF line ends.
-   Maxima without a name are skipped (*skipped, may be NULL).  The size in
-   *len (also when it does not fit).  0 or XTRA_E_SPACE, XTRA_E_BASE. */
+/**
+ * @brief Write x as AmiBlitz3 header (not 0-terminated).
+ *
+ *   - x from a source with header (x->ab3.header): that header
+ *     (b->header, x->hdr bytes), line by line: unchanged lines as they
+ *     are (unknown keys, comments, older layouts, the line ends); the line
+ *     of a known key whose value in x differs from what the line says gets
+ *     the new value (the rest of the line kept); keys the header lacks
+ *     whose value differs from AmiBlitz3's default are added in front of
+ *     "; /XTRA"; maxima set by xtra_set_maxima replace the "Max" lines.
+ *     Unchanged x: the same bytes.
+ *   - otherwise a new header, the lines of AmiBlitz3's write_AB3Header
+ *     (docs/formats.md 7.1), LF line ends.
+ *
+ * @param x        the settings
+ * @param b        the bases of the views
+ * @param out      the output
+ * @param cap      its size in bytes
+ * @param len      out: the size (also when it does not fit)
+ * @param skipped  out: the maxima without a name, skipped (may be NULL)
+ * @return 0 or XTRA_E_SPACE, XTRA_E_BASE
+ */
 int xtra_write_ab3(const struct xtra *x, const struct xtra_base *b, char *out, size_t cap,
                    size_t *len, unsigned *skipped);
 
-/* the bytes xtra_write_ab3 writes (0 on XTRA_E_BASE) */
+/**
+ * @brief The bytes xtra_write_ab3 writes.
+ * @param x  the settings
+ * @param b  the bases of the views
+ * @return the size; 0 on XTRA_E_BASE
+ */
 size_t xtra_ab3_size(const struct xtra *x, const struct xtra_base *b);
 
-/* the name of an AmiBlitz3 key ("ExePath", ..., "Max") */
+/**
+ * @brief The name of an AmiBlitz3 key ("ExePath", ..., "Max").
+ * @param key  an enum xtra_ab3_key
+ * @return the name; "" for another number
+ */
 const char *xtra_ab3_keyname(int key);
 
 #ifdef __cplusplus
