@@ -664,7 +664,7 @@ static void drawbox(struct page *p, UBYTE *box)
         ULONG tlen = BL(box, B_TLEN), tptr = BL(box, B_TEXT); /* d0 d1 */
         ULONG ptr, len;                         /* d0 d1 after the EXG */
 
-        ptr = tlen;                             /* no text: d0 = 0, d1 = B_TEXT */
+        ptr = tlen;                             /* no text: d0 = 0, d1 = B_TEXT (#89) */
         len = tptr;
         if (tlen) {
             ptr = tptr;                         /* EXG d0,d1 */

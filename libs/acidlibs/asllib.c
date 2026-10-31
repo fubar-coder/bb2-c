@@ -222,7 +222,8 @@ ULONG BLITZ_ROUTINE doaslfont(ULONG flags BL_REG(d0), struct Screen **scr BL_REG
     }
     FREEREQ(aslstruct);
     /* the test is on d7, the name length after a request: an empty font
-       name returns 0 as well */
+       name returns 0 as well - not a bug (an empty name is no font
+       OpenDiskFont could open; the program sees a cancelled request) */
     if (!ok || !len)
         return 0;
     return (ULONG)&fstruct;
