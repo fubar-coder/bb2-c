@@ -196,11 +196,17 @@ static ULONG allocst(ULONG s, ULONG len)
     return BLITZ_ALIBJSR(TOK_allocst, r);
 }
 
+/**
+ * @brief init: OpenLibrary("asl.library",0) -> aslbase (0 if not there).
+ */
 void BLITZ_ROUTINE codeinit(void)
 {
     aslbase = OpenLibrary((CONST_STRPTR)"asl.library", 0);
 }
 
+/**
+ * @brief finit: CloseLibrary(aslbase) if it was opened.
+ */
 void BLITZ_ROUTINE codefinit(void)
 {
     if (aslbase) {
@@ -209,7 +215,25 @@ void BLITZ_ROUTINE codefinit(void)
     }
 }
 
-/* ASLFontRequest(flags) */
+/**
+ * @brief ASLFontRequest(flags): an ASL font requester on the used screen.
+ *
+ * Amiga mode only.  flags enable the gadgets (1 = pen, 2 = background,
+ * 4 = style, 8 = drawmode, 16 = fixed size; ASLFO_Flags).  On OK the font
+ * is copied into the static .fontinfo {name$ (pointer to a BB2 string:
+ * length.l in front), ysize.w, style.b, flags.b, pen1.b, pen2.b,
+ * drawmode.b, pad.b}.  The test is on d7, the name length after a
+ * request: an empty font name returns 0 as well (not a bug: an empty name
+ * is no font OpenDiskFont could open).  BUG(orig) (#65): a name of more
+ * than 95 characters overruns the static buffer.  The CD binary has an
+ * extra tag ASL_TB+17 = 256 (ASLFO_MaxHeight).
+ *
+ * @param flags  d0: the enable flags
+ * @param scr    a1: the used screen object (!libs {#screenslib,$1102}):
+ *               its Screen, 0 = the default public screen
+ * @return d0: the address of .fontinfo, 0 on cancel (or without
+ *         asl.library, or if no requester could be allocated)
+ */
 ULONG BLITZ_ROUTINE doaslfont(ULONG flags BL_REG(d0), struct Screen **scr BL_REG(a1))
 {
     ULONG ok;                           /* d7: AslRequest's result */
@@ -248,7 +272,21 @@ ULONG BLITZ_ROUTINE doaslfont(ULONG flags BL_REG(d0), struct Screen **scr BL_REG
     return (ULONG)&fstruct;
 }
 
-/* ASLScreenRequest(flags) - BUG(orig) (#60): returns the freed requester */
+/**
+ * @brief ASLScreenRequest(flags): an ASL screen mode requester on the
+ *        used screen.
+ *
+ * Amiga mode only.  flags enable the gadgets (1 = width, 2 = height, 4 =
+ * depth, 8 = overscan, 16 = autoscroll; ASLSM_Do*: -1/0).  BUG(orig)
+ * (#60): returns the requester AFTER freeing it (asl LVO -36 =
+ * FreeFileRequest): freed memory.
+ *
+ * @param flags  d0: the enable flags
+ * @param scr    a1: the used screen object (!libs {#screenslib,$1102}):
+ *               its Screen, 0 = the default public screen
+ * @return d0: the ScreenModeRequester (freed), 0 on cancel (or without
+ *         asl.library, or if no requester could be allocated)
+ */
 ULONG BLITZ_ROUTINE doaslscreen(ULONG flags BL_REG(d0), struct Screen **scr BL_REG(a1))
 {
     ULONG ok;                           /* d7 */
@@ -335,7 +373,29 @@ static void dims(ULONG x, ULONG y, ULONG w, ULONG h)
     ULONG arg3 BL_REG(d3), ULONG arg4 BL_REG(d4), ULONG arg5 BL_REG(d5),                 \
     struct Screen **scr BL_REG(a1), const ULONG *lens BL_REG(a2)
 
-/* title, path, file */
+/**
+ * @brief ASLFileRequest$(Title$,Pathname$,Filename$): an ASL file
+ *        requester at 20,20 280x160 (doaslfreqa).
+ *
+ * The common part (aslreq): on OK the drawer and the file name are copied
+ * into the path$/file$ variables (their length longs at -4 updated); the
+ * result is drawer + "/" (unless empty or ending in ":") + file, written
+ * at a3 = the title argument's place in the string work area; Cancel: ""
+ * (0 at a3).  BUG(orig): without asl.library d0 = the title's address as
+ * string length (#62); the title (and pattern) copies of maxslib allocst
+ * are never freed (#63); FreeFileRequest(0) when AllocAslRequest fails
+ * (#403).  Errors (debugger, freqchk): path$ and file$ must be variables
+ * with room for 160/64 characters.
+ *
+ * @param arg0  d0: the title
+ * @param arg1  d1: the path$ variable
+ * @param arg2  d2: the file$ variable
+ * @param scr   a1: the used screen object (!libs {#screenslib,$1102}):
+ *              its Screen, 0 = the default public screen
+ * @param lens  a2: the compiler's string stack, -4(a2) = the title's
+ *              length
+ * @return d0: the length of the result string at a3, 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE freqa_c(FREQ_ARGS)
 {
     Tags.flags.ti_Data = 0;
@@ -343,7 +403,30 @@ static ULONG BLITZ_ROUTINE freqa_c(FREQ_ARGS)
     return aslreq(arg0, arg1, arg2, scr, lens);
 }
 
-/* title, path, file, pattern (-8(a2) = its length) */
+/**
+ * @brief ASLFileRequest$(Title$,Pathname$,Filename$,Pattern$): with a
+ *        pattern (FRF_DOPATTERNS), at 20,20 280x160 (doaslfreqb).
+ *
+ * The common part (aslreq): on OK the drawer and the file name are copied
+ * into the path$/file$ variables (their length longs at -4 updated); the
+ * result is drawer + "/" (unless empty or ending in ":") + file, written
+ * at a3 = the title argument's place in the string work area; Cancel: ""
+ * (0 at a3).  BUG(orig): without asl.library d0 = the title's address as
+ * string length (#62); the title (and pattern) copies of maxslib allocst
+ * are never freed (#63); FreeFileRequest(0) when AllocAslRequest fails
+ * (#403).  Errors (debugger, freqchk): path$ and file$ must be variables
+ * with room for 160/64 characters.
+ *
+ * @param arg0  d0: the title
+ * @param arg1  d1: the path$ variable
+ * @param arg2  d2: the file$ variable
+ * @param arg3  d3: the pattern
+ * @param scr   a1: the used screen object (!libs {#screenslib,$1102}):
+ *              its Screen, 0 = the default public screen
+ * @param lens  a2: the compiler's string stack, -4(a2) = the title's
+ *              length, -8(a2) = the pattern's
+ * @return d0: the length of the result string at a3, 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE freqb_c(FREQ_ARGS)
 {
     Tags.pattern.ti_Data = allocst(arg3, lens[-2]);
@@ -352,7 +435,32 @@ static ULONG BLITZ_ROUTINE freqb_c(FREQ_ARGS)
     return aslreq(arg0, arg1, arg2, scr, lens);
 }
 
-/* title, path, file, x, y, w, h (-8(a2)) */
+/**
+ * @brief ASLFileRequest$(Title$,Pathname$,Filename$,x,y,w,h): at the
+ *        given position and size (doaslfreqc).
+ *
+ * The common part (aslreq): on OK the drawer and the file name are copied
+ * into the path$/file$ variables (their length longs at -4 updated); the
+ * result is drawer + "/" (unless empty or ending in ":") + file, written
+ * at a3 = the title argument's place in the string work area; Cancel: ""
+ * (0 at a3).  BUG(orig): without asl.library d0 = the title's address as
+ * string length (#62); the title (and pattern) copies of maxslib allocst
+ * are never freed (#63); FreeFileRequest(0) when AllocAslRequest fails
+ * (#403).  Errors (debugger, freqchk): path$ and file$ must be variables
+ * with room for 160/64 characters.
+ *
+ * @param arg0  d0: the title
+ * @param arg1  d1: the path$ variable
+ * @param arg2  d2: the file$ variable
+ * @param arg3  d3: x
+ * @param arg4  d4: y
+ * @param arg5  d5: w
+ * @param scr   a1: the used screen object (!libs {#screenslib,$1102}):
+ *              its Screen, 0 = the default public screen
+ * @param lens  a2: the compiler's string stack, -4(a2) = the title's
+ *              length, -8(a2) = h
+ * @return d0: the length of the result string at a3, 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE freqc_c(FREQ_ARGS)
 {
     Tags.flags.ti_Data = 0;
@@ -360,7 +468,32 @@ static ULONG BLITZ_ROUTINE freqc_c(FREQ_ARGS)
     return aslreq(arg0, arg1, arg2, scr, lens);
 }
 
-/* title, path, file, pattern, x, y, w (-12(a2)), h (-16(a2)) */
+/**
+ * @brief ASLFileRequest$(Title$,Pathname$,Filename$,Pattern$,x,y,w,h):
+ *        with a pattern, at the given position and size (doaslfreqd).
+ *
+ * The common part (aslreq): on OK the drawer and the file name are copied
+ * into the path$/file$ variables (their length longs at -4 updated); the
+ * result is drawer + "/" (unless empty or ending in ":") + file, written
+ * at a3 = the title argument's place in the string work area; Cancel: ""
+ * (0 at a3).  BUG(orig): without asl.library d0 = the title's address as
+ * string length (#62); the title (and pattern) copies of maxslib allocst
+ * are never freed (#63); FreeFileRequest(0) when AllocAslRequest fails
+ * (#403).  Errors (debugger, freqchk): path$ and file$ must be variables
+ * with room for 160/64 characters.
+ *
+ * @param arg0  d0: the title
+ * @param arg1  d1: the path$ variable
+ * @param arg2  d2: the file$ variable
+ * @param arg3  d3: the pattern
+ * @param arg4  d4: x
+ * @param arg5  d5: y
+ * @param scr   a1: the used screen object (!libs {#screenslib,$1102}):
+ *              its Screen, 0 = the default public screen
+ * @param lens  a2: the compiler's string stack, -4(a2) = the title's
+ *              length, -8(a2) = the pattern's, -12(a2) = w, -16(a2) = h
+ * @return d0: the length of the result string at a3, 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE freqd_c(FREQ_ARGS)
 {
     Tags.pattern.ti_Data = allocst(arg3, lens[-2]);
@@ -369,7 +502,25 @@ static ULONG BLITZ_ROUTINE freqd_c(FREQ_ARGS)
     return aslreq(arg0, arg1, arg2, scr, lens);
 }
 
-/* ASLPathRequest$ title, path - d2 is no argument (BUG(orig), #61) */
+/**
+ * @brief ASLPathRequest$(Title$,Pathname$): an ASL drawer requester
+ *        (FRF_DRAWERSONLY) at 20,20 280x160 (doaslfreqe).
+ *
+ * As ASLFileRequest$ (aslreq).  BUG(orig) (#61): fr_File is copied into
+ * the address in d2, which is no argument here (whatever d2 holds), and
+ * its length written to d2-4.  BUG(orig) (#64): the pattern flag of the
+ * previous ASLFileRequest$ stays (flags is not reset).  Errors (debugger,
+ * freqchk2): path$ must be a variable with room for 160 characters.
+ *
+ * @param arg0  d0: the title
+ * @param arg1  d1: the path$ variable
+ * @param arg2  d2: no argument (BUG(orig), #61)
+ * @param scr   a1: the used screen object (!libs {#screenslib,$1102}):
+ *              its Screen, 0 = the default public screen
+ * @param lens  a2: the compiler's string stack, -4(a2) = the title's
+ *              length
+ * @return d0: the length of the result string at a3, 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE freqe_c(FREQ_ARGS)
 {
     Tags.flags2.ti_Data = FRF_DRAWERSONLY_;
@@ -377,7 +528,26 @@ static ULONG BLITZ_ROUTINE freqe_c(FREQ_ARGS)
     return aslreq(arg0, arg1, arg2, scr, lens);
 }
 
-/* ASLPathRequest$ title, path, x, y, w, h */
+/**
+ * @brief ASLPathRequest$(Title$,Pathname$,x,y,w,h): an ASL drawer
+ *        requester at the given position and size (doaslfreqf).
+ *
+ * As ASLPathRequest$; BUG(orig) (#61): fr_File is copied to the address
+ * in d2 = x (and its length to x-4).  Errors (debugger, freqchk2): path$
+ * must be a variable with room for 160 characters.
+ *
+ * @param arg0  d0: the title
+ * @param arg1  d1: the path$ variable
+ * @param arg2  d2: x
+ * @param arg3  d3: y
+ * @param arg4  d4: w
+ * @param arg5  d5: h
+ * @param scr   a1: the used screen object (!libs {#screenslib,$1102}):
+ *              its Screen, 0 = the default public screen
+ * @param lens  a2: the compiler's string stack, -4(a2) = the title's
+ *              length
+ * @return d0: the length of the result string at a3, 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE freqf_c(FREQ_ARGS)
 {
     Tags.flags.ti_Data = 0;
