@@ -232,26 +232,26 @@ static UBYTE *findmapchunk(ULONG id)
 
 /* ------------------------------------------------------------- the files */
 
-static ULONG BLITZ_ROUTINE setbbscenarioloc_c(struct form *form BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE setbbscenarioloc_c(struct form *form BL_REG(d0))
 {
     if (form->id != ID('F', 'O', 'R', 'M') || form->type != ID('S', 'C', 'E', 'N'))
-        return 0;
+        return BB_FALSE;
     scenarioloc = (UBYTE *)form;
     scenarioend = (UBYTE *)form + form->length + 8;
     lastchunk = 0;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
-static ULONG BLITZ_ROUTINE setbbmaploc_c(struct form *form BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE setbbmaploc_c(struct form *form BL_REG(d0))
 {
     maploc = (UBYTE *)form;             /* BUG(orig): before the check (#554) */
     if (form->id != ID('F', 'O', 'R', 'M') || form->type != ID('B', 'M', 'A', 'P'))
-        return 0;
+        return BB_FALSE;
     mapend = (UBYTE *)form + form->length + 8;
     lastmapchunk = 0;
     search(ID('M', 'F', 'R', 'M'), maploc, mapend, &lastmapchunk, &lastmapchunkaddr,
            (UBYTE **)&mfrmchunk);
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* --------------------------------------------------------- the scenario */
