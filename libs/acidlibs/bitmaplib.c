@@ -164,6 +164,13 @@ static void freebitmap(struct bbitmap *b)
     b->isreal = 0;
 }
 
+/**
+ * @brief Free BitMap (the object's _free nullsub): free the planes of the
+ *        bitmap in a3 if they are its own memory (isreal < 0).
+ *
+ * memlib globfree of rows * depth * bytes per row (BUG(orig) (#76): MULU
+ * word products); isreal = 0.
+ */
 void BLITZ_ROUTINE _freebitmap(void)
 {
     freebitmap(BM);
@@ -235,6 +242,18 @@ static void ext(struct bbitmap *b, UWORD w, UWORD h, UWORD d)
     prepxtra(b);
 }
 
+/**
+ * @brief extbitmap (nullsub, for other libraries): allocate and set up
+ *        the bitmap in a3 without freeing it first.
+ *
+ * Even byte width, one MEMF_CHIP|MEMF_CLEAR block for all planes (memlib
+ * globalloc; BUG(orig) (#76): the size is a MULU word product), then the
+ * extra fields (prepxtra).  isreal is not set.
+ *
+ * @param w  d1.w: the width in pixels
+ * @param h  d2.w: the height
+ * @param d  d3.w: the depth
+ */
 static void BLITZ_ROUTINE extbitmap_c(UWORD w BL_REG(d1), UWORD h BL_REG(d2),
                                       UWORD d BL_REG(d3))
 {
@@ -242,7 +261,21 @@ static void BLITZ_ROUTINE extbitmap_c(UWORD w BL_REG(d1), UWORD h BL_REG(d2),
 }
 BLITZ_THUNK(extbitmap, extbitmap_c, "a0");
 
-/* BitMap n,w,h,d */
+/**
+ * @brief BitMap BitMap#,Width,Height,Depth: a new bitmap in chip memory.
+ *
+ * Becomes the used bitmap; frees the old one, isreal = -1 (own memory),
+ * then as extbitmap.  BUG(orig): the size is a MULU word product (#76);
+ * the planes beyond the depth are not cleared (#80).  Errors (debugger,
+ * _bitmapchk): error 1 if the depth is 0 or more than 8.
+ * The bitmap object comes in a3 (!libs {#bitmaplib,$1380/$1381}).
+ *
+ * @param w        d1.w: the width in pixels
+ * @param h        d2.w: the height
+ * @param d        d3.w: the depth
+ * @param usedoff  d6: offset of the used bitmap from a5 (!libs
+ *                 {#bitmaplib,$0604}); it becomes this bitmap
+ */
 void BLITZ_ROUTINE _bitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d BL_REG(d3),
                            WORD usedoff BL_REG(d6))
 {
@@ -254,7 +287,22 @@ void BLITZ_ROUTINE _bitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d BL_RE
     ext(b, w, h, d);
 }
 
-/* CludgeBitMap n,w,h,d,mem - borrowed memory; no interleave check */
+/**
+ * @brief CludgeBitMap BitMap#,Width,Height,Depth,Memory: a bitmap in
+ *        memory of the program (borrowed, isreal = 1).
+ *
+ * Becomes the used bitmap; frees the old one; the planes follow each
+ * other in the memory.  No interleave check: not a bug (no visible
+ * effect, #77): +52 is cleared, the plane distance +54 stays from before.
+ * The bitmap object comes in a3 (!libs {#bitmaplib,$1380/$1381}).
+ *
+ * @param w        d1.w: the width in pixels
+ * @param h        d2.w: the height
+ * @param d        d3.w: the depth
+ * @param mem      d4: the memory (chip memory for display/blits)
+ * @param usedoff  d6: offset of the used bitmap from a5 (!libs
+ *                 {#bitmaplib,$0604}); it becomes this bitmap
+ */
 void BLITZ_ROUTINE _cludgebitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d BL_REG(d3),
                                  ULONG mem BL_REG(d4), WORD usedoff BL_REG(d6))
 {
@@ -285,7 +333,20 @@ void BLITZ_ROUTINE _cludgebitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d
     b->width = b->bpr << 3;
 }
 
-/* CopyBitMap src,dest - a2 = source, a3 = destination */
+/**
+ * @brief CopyBitMap Src BitMap#,Dest BitMap#: a copy of the source bitmap
+ *        in own chip memory.
+ *
+ * Frees the destination, allocates one MEMF_CHIP block (not cleared) and
+ * copies plane by plane.  BUG(orig): (bytes per row * rows) / 2 words per
+ * plane, 0 words = 4 billion (#78); the size is a MULU word product
+ * (#76).  Not a bug: the used bitmap is not set (CopyBitMap is not
+ * documented to select it).  Errors (debugger, cbchk): "Can't copy
+ * borrowed Bitmap" (the destination is borrowed).
+ *
+ * @param src  a2: the source bitmap (!libs {#bitmaplib,$1280}); the
+ *             destination comes in a3 ($1381)
+ */
 void BLITZ_ROUTINE docopybitmap(struct bbitmap *src BL_REG(a2))
 {
     struct bbitmap *b = BM;
@@ -319,7 +380,19 @@ void BLITZ_ROUTINE docopybitmap(struct bbitmap *src BL_REG(a2))
     prepxtra(b);
 }
 
-/* ScreensBitMap s,b - the screen's BitMap (struct copied) */
+/**
+ * @brief ScreensBitMap Screen#,BitMap#: the bitmap of a screen (borrowed,
+ *        isreal = 1).
+ *
+ * Becomes the used bitmap; frees the old one, copies the screen's struct
+ * BitMap (RastPort.BitMap, 40 bytes), then the extra fields.  Errors
+ * (debugger, sbchk): "Uninitialized Screen".
+ *
+ * @param scr      a2: the screen object (!libs {#screenslib,$1280}): its
+ *                 Screen; the bitmap comes in a3 ($1381)
+ * @param usedoff  d6: offset of the used bitmap from a5 (!libs
+ *                 {#bitmaplib,$0604}); it becomes this bitmap
+ */
 void BLITZ_ROUTINE doscbitmap(UBYTE **scr BL_REG(a2), WORD usedoff BL_REG(d6))
 {
     struct bbitmap *b = BM;
@@ -336,7 +409,19 @@ void BLITZ_ROUTINE doscbitmap(UBYTE **scr BL_REG(a2), WORD usedoff BL_REG(d6))
     prepxtra(b);
 }
 
-/* ShapesBitMap shape,b - the shape's planes */
+/**
+ * @brief ShapesBitMap Shape#,BitMap#: a bitmap on the planes of a shape
+ *        (borrowed, isreal = 1).
+ *
+ * Becomes the used bitmap; frees the old one; bytes per row, rows and
+ * depth from the shape.  BUG(orig) (#79): the plane size is added as a
+ * word (sign extended).  Errors (debugger, shchk): "Uninitialized Shape".
+ *
+ * @param shape    a2: the shape (!libs {#shapeslib,$1280}); the bitmap
+ *                 comes in a3 ($1381)
+ * @param usedoff  d6: offset of the used bitmap from a5 (!libs
+ *                 {#bitmaplib,$0604}); it becomes this bitmap
+ */
 void BLITZ_ROUTINE doshbitmap(const struct shape *shape BL_REG(a2), WORD usedoff BL_REG(d6))
 {
     struct bbitmap *b = BM;
@@ -362,7 +447,15 @@ void BLITZ_ROUTINE doshbitmap(const struct shape *shape BL_REG(a2), WORD usedoff
     prepxtra(b);
 }
 
-/* LoadBitMap n,file$[,palette] - ilbmifflib (a0 = name, a1 = bitmap) */
+/**
+ * @brief LoadBitMap BitMap#,Filename$: load an ILBM into the bitmap.
+ *
+ * Amiga mode only.  ilbmifflib +3 ilbmbitmap (a0 = name, a1 = bitmap).
+ * Errors (debugger, _bitloadchk): "Uninitialized BitMap".
+ *
+ * @param name  d1: the file name
+ * @param bm    a1: the bitmap (!libs {#bitmaplib,$1180})
+ */
 void BLITZ_ROUTINE _bitload(const UBYTE *name BL_REG(d1), struct bbitmap *bm BL_REG(a1))
 {
     struct bl_regs r = { .a0 = (ULONG)name, .a1 = (ULONG)bm };
@@ -370,6 +463,17 @@ void BLITZ_ROUTINE _bitload(const UBYTE *name BL_REG(d1), struct bbitmap *bm BL_
     BLITZ_ALIBJSR(TOK_ilbmbitmap, r);
 }
 
+/**
+ * @brief LoadBitMap BitMap#,Filename$,Palette#: LoadBitMap, first the
+ *        palette (palettelib +3, a0 = name, a1 = palette).
+ *
+ * Amiga mode only.  Errors (debugger, _bitloadchk): "Uninitialized
+ * BitMap".
+ *
+ * @param name  d1: the file name
+ * @param pal   a0: the palette (!libs {#palettelib,$1082})
+ * @param bm    a1: the bitmap (!libs {#bitmaplib,$1180})
+ */
 void BLITZ_ROUTINE _bitload2(const UBYTE *name BL_REG(d1), APTR pal BL_REG(a0),
                              struct bbitmap *bm BL_REG(a1))
 {
