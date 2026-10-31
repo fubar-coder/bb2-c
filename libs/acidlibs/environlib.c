@@ -110,13 +110,80 @@ static void BLITZ_ROUTINE codeinit_c(const void *intuition BL_REG(a6))
 }
 BLITZ_THUNK(codeinit, codeinit_c, "a0-a1");
 
+/**
+ * @brief WBWidth: the width of the Workbench screen.
+ *
+ * The value read at program start (GetScreenData, not checked: a failed
+ * call leaves 0).
+ *
+ * @return d0: the width (long); every other register kept
+ */
 static ULONG BLITZ_ROUTINE wbwidth_c(void) { return wbwidth_; }
+
+/**
+ * @brief WBHeight: the height of the Workbench screen.
+ *
+ * The value read at program start (GetScreenData, not checked).
+ *
+ * @return d0: the height (long); every other register kept
+ */
 static ULONG BLITZ_ROUTINE wbhite_c(void) { return wbhite_; }
+
+/**
+ * @brief cr_vbr: the vector base register.
+ *
+ * Read at program start in supervisor state, only on a 68020 or higher;
+ * 0 otherwise.  BUG(orig) (#42): a 68010 has a VBR too, it is not read
+ * (0).
+ *
+ * @return d0: the VBR (long); every other register kept
+ */
 static ULONG BLITZ_ROUTINE cr_vbr_c(void) { return vbr_; }
+
+/**
+ * @brief WBDepth: the depth of the Workbench screen's bitmap.
+ *
+ * The value read at program start (RastPort.BitMap->Depth of the copy).
+ *
+ * @return d0.w: the depth; the upper word of d0 stays as it was
+ */
 static ULONG BLITZ_ROUTINE wbdepth_c(void) { return wbdepth_; }
-static ULONG BLITZ_ROUTINE wbviewmode_c(void) { return wbview_ >> 16; }    /* MOVE.w wbview_ */
-static ULONG BLITZ_ROUTINE extwbviewmode_c(void) { return (UWORD)wbview_; } /* MOVE.w wbview_+2 */
+
+/**
+ * @brief WBViewMode: the view modes of the Workbench screen.
+ *
+ * ViewPort.Modes of the copy read at program start (MOVE.w wbview_).
+ *
+ * @return d0.w: the modes; the upper word of d0 stays as it was
+ */
+static ULONG BLITZ_ROUTINE wbviewmode_c(void) { return wbview_ >> 16; }
+
+/**
+ * @brief WBExtViewMode: the word behind ViewPort.Modes of the Workbench
+ * screen.
+ *
+ * The low word of the long read at ViewPort.Modes at program start
+ * (MOVE.w wbview_+2): ViewPort.SpritePriority and ExtendedModes.
+ *
+ * @return d0.w: the word; the upper word of d0 stays as it was
+ */
+static ULONG BLITZ_ROUTINE extwbviewmode_c(void) { return (UWORD)wbview_; }
+
+/**
+ * @brief Processor: the CPU, from exec's AttnFlags.
+ *
+ * The number of shifts until AttnFlags & 15 is 0: 0 = 68000, 1 = 68010,
+ * 2 = 68020, 3 = 68030, 4 = 68040.
+ *
+ * @return d0.w: the number; the upper word of d0 stays as it was
+ */
 static ULONG BLITZ_ROUTINE processor_c(void) { return cpu_; }
+
+/**
+ * @brief ExecVersion: exec.library's version (SysBase->LibNode.lib_Version).
+ *
+ * @return d0.w: the version; the upper word of d0 stays as it was
+ */
 static ULONG BLITZ_ROUTINE execversion_c(void) { return execver_; }
 
 /* long functions: MOVE.l x,d0 - every other register kept */
