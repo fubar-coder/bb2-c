@@ -212,28 +212,30 @@ static void blitwait(volatile UBYTE *chip)
 /* a3 = shape, a1 = chip base */
 static void xflip(UBYTE *s, volatile UBYTE *chip)
 {
-    UWORD val = (UWORD)(SW(s, 6) << 3) - SW(s, 0);
+    UWORD pad = (UWORD)(SW(s, 6) << 3) - SW(s, 0); /* d0: the pad bits */
     UWORD rows;
     UBYTE *row;
 
-    if (val) {
+    if (pad) {
         /* scroll across to the right, 'hard left' justified after the flip */
         UWORD planes;
+        UWORD shift;                            /* d0: the BLTCON0 shift */
+        UWORD bltsize;                          /* d0: BLTSIZE - 1 */
 
         blitwait(chip);
-        val &= 15;
-        val = (UWORD)((val >> 4) | (val << 12)); /* ROR #4 */
-        *(volatile UWORD *)(chip + 0x040) = val | 0x9f0;
+        pad &= 15;
+        shift = (UWORD)((pad >> 4) | (pad << 12)); /* ROR #4 */
+        *(volatile UWORD *)(chip + 0x040) = shift | 0x9f0;
         *(volatile UWORD *)(chip + 0x042) = 0;
         *(volatile ULONG *)(chip + 0x044) = 0xffffffffUL;
         *(volatile ULONG *)(chip + 0x064) = 0;
         *(volatile ULONG *)(chip + 0x050) = SL(s, 14);
         *(volatile ULONG *)(chip + 0x054) = SL(s, 14);
         planes = SW(s, 4) - 1;
-        val = SW(s, 8) - 1;
+        bltsize = SW(s, 8) - 1;
         do {
             blitwait(chip);
-            *(volatile UWORD *)(chip + 0x058) = val;
+            *(volatile UWORD *)(chip + 0x058) = bltsize;
         } while (planes-- != 0);
     }
     /* now, to do the flipping! */
