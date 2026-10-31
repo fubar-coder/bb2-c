@@ -29,6 +29,7 @@
  * DIFF: a2 stays unchanged (the original pops the name length).
  */
 #include "blitzlib.h"
+#include <graphics/text.h>
 
 #define LVO_OpenDiskFont (-30)  /* diskfont: a0 = TextAttr */
 #define LVO_CloseFont    (-78)  /* graphics: a1 = font */
@@ -69,14 +70,13 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 4);
 
 /* ------------------------------------------------------------ variables */
 
-/* one IntuiFont object = a TextAttr + the opened font + pad */
+/* one IntuiFont object (16 bytes) = a TextAttr + the opened font + pad */
 struct ifont {
-    UBYTE *name;
-    UWORD ysize;
-    UBYTE style, flags;
-    ULONG font;
-    ULONG pad;
+    struct TextAttr ta;         /* 0 name, 4 ysize, 6 style, 7 flags */
+    ULONG font;                 /* 8 OpenDiskFont's result */
+    ULONG pad;                  /* 12 */
 };
+static_assert(sizeof(struct ifont) == 16);
 
 /* textattr, then the default object and its name, as in the original */
 static struct BL_PACKED {
@@ -91,10 +91,10 @@ static struct BL_PACKED {
 static ULONG BLITZ_ROUTINE codeinit_c(void)
 {
     fd.textattr = &fd.defattr;
-    fd.defattr.name = (UBYTE *)fd.defname;
-    fd.defattr.ysize = 8;
-    fd.defattr.style = 0;                       /* CLR defattr+6 */
-    fd.defattr.flags = 0;
+    fd.defattr.ta.ta_Name = (STRPTR)fd.defname;
+    fd.defattr.ta.ta_YSize = 8;
+    fd.defattr.ta.ta_Style = 0;                 /* CLR defattr+6 */
+    fd.defattr.ta.ta_Flags = 0;
     fd.defattr.font = 0;
     return (ULONG)&fd.textattr;
 }
@@ -139,11 +139,13 @@ static ULONG setifont(const UBYTE *name, UWORD ysize, UWORD style,
     *(struct ifont **)(blitz_globals + used) = f;   /* MOVE.l a3,0(a5,d5) */
     fd.textattr = f;
     freeifont(f, gfx);
-    f->ysize = ysize;
-    *(UWORD *)&f->style = style;                /* CLR 6(a3):MOVE.w d3,6(a3) */
+    f->ta.ta_YSize = ysize;
+    /* CLR 6(a3):MOVE.w d3,6(a3) - BUG(orig) (#197): the word over ta_Style
+       and ta_Flags */
+    *(UWORD *)&f->ta.ta_Style = style;
     r.d0 = (ULONG)name;
     r.d1 = BL_POPL(sp);
-    f->name = (UBYTE *)BLITZ_ALIBJSR(TOK_allocst, r);
+    f->ta.ta_Name = (STRPTR)BLITZ_ALIBJSR(TOK_allocst, r);
     r.d0 = r.d1 = r.a1 = 0;
     r.a0 = (ULONG)f;
     f->font = BLITZ_BASEJSR(diskfont, LVO_OpenDiskFont, r);
