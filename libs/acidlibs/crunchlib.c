@@ -166,36 +166,36 @@ static LONG own(ULONG gain)
 /* im26 - call the info routine; TRUE = break */
 static int im26(UBYTE *st)
 {
-    ULONG d0 = SL(6);
+    ULONG infores = SL(6);
 
-    if (d0) {
-        d0 = ((infofunc *)d0)(SL(0x22) - SL(0x26));
-        d0 = ~d0;
+    if (infores) {
+        infores = ((infofunc *)infores)(SL(0x22) - SL(0x26));
+        infores = ~infores;
     }
-    return d0 != 0;
+    return infores != 0;
 }
 
-/* im37 - put the low d0 bits of d1 into the bit stream (LSB first);
-   returns d1 shifted (LSR.l) */
-static ULONG im37(UBYTE *st, UBYTE d0, ULONG d1)
+/* im37 - put the low nbits (d0) bits of value (d1) into the bit stream
+   (LSB first); returns value shifted (LSR.l) */
+static ULONG im37(UBYTE *st, UBYTE nbits, ULONG value)
 {
-    UBYTE d2 = SB(0x2c), d3 = SB(0x2d), x;
-    UBYTE *a0 = (UBYTE *)SL(0x26);
+    UBYTE bitbuf = SB(0x2c), bitcnt = SB(0x2d), carry;
+    UBYTE *dest = (UBYTE *)SL(0x26);
 
     do {
-        x = d1 & 1;                     /* LSR.l #1,d1 */
-        d1 >>= 1;
-        d2 = (UBYTE)((d2 >> 1) | (x << 7));     /* ROXR.b #1,d2 */
-        if ((BYTE)--d3 < 0) {
-            d3 = 7;
-            *a0++ = d2;
-            d2 = 0;
+        carry = value & 1;              /* LSR.l #1,d1 */
+        value >>= 1;
+        bitbuf = (UBYTE)((bitbuf >> 1) | (carry << 7)); /* ROXR.b #1,d2 */
+        if ((BYTE)--bitcnt < 0) {
+            bitcnt = 7;
+            *dest++ = bitbuf;
+            bitbuf = 0;
         }
-    } while (--d0);
-    SL(0x26) = (ULONG)a0;
-    SB(0x2d) = d3;
-    SB(0x2c) = d2;
-    return d1;
+    } while (--nbits);
+    SL(0x26) = (ULONG)dest;
+    SB(0x2d) = bitcnt;
+    SB(0x2c) = bitbuf;
+    return value;
 }
 
 /* im28/im29..im36 - search the matches at the source position.  Returns 0
@@ -204,161 +204,161 @@ static ULONG im37(UBYTE *st, UBYTE d0, ULONG d1)
    $34/$3C. */
 static int im28(UBYTE *st)
 {
-    UBYTE *a5 = (UBYTE *)SL(0x22);
-    ULONG d4 = SL(0x0e), d5;
-    UBYTE *a0, *a1, *a2, *a4, *a3 = st + 0x34;
-    UWORD d7, d6;
-    UBYTE d3;
-    ULONG d0 = (ULONG)a5 + 1 + SL(0x1a);
+    UBYTE *src = (UBYTE *)SL(0x22);
+    ULONG end = SL(0x0e), searchend;
+    UBYTE *cmp1, *cmp2, *scan, *ahead, *slots = st + 0x34;
+    UWORD bestlen, len;
+    UBYTE first;
+    ULONG winend = (ULONG)src + 1 + SL(0x1a);
 
-    if (d0 > d4) {
-        d0 = d4;
-        if (d0 - (ULONG)a5 < 3)
+    if (winend > end) {
+        winend = end;
+        if (winend - (ULONG)src < 3)
             return 0;
     }
     /* im29 */
-    d5 = d0;
-    a2 = a5 + 1;
-    a4 = a2;
-    d7 = 1;
-    d3 = *a5;
+    searchend = winend;
+    scan = src + 1;
+    ahead = scan;
+    bestlen = 1;
+    first = *src;
     for (;;) {
         /* im30: 16 compares per loop test */
         int i;
         for (i = 0; i < 16; i++)
-            if (*a2++ == d3)
+            if (*scan++ == first)
                 goto im32;
-        if (d5 > (ULONG)a2)
+        if (searchend > (ULONG)scan)
             continue;
         return -1;                      /* im31 */
 im32:
-        if (d5 <= (ULONG)a2)
+        if (searchend <= (ULONG)scan)
             return -1;
-        a0 = a4;
-        a1 = a2;
-        if (*a0++ != *a1++)
+        cmp1 = ahead;
+        cmp2 = scan;
+        if (*cmp1++ != *cmp2++)
             continue;
-        if (*a0++ != *a1++)
+        if (*cmp1++ != *cmp2++)
             goto im35;
-        if (*a0++ == *a1++) {
+        if (*cmp1++ == *cmp2++) {
             UWORD n = 251;              /* DBNE: up to 252 more */
             for (;;) {
-                if (*a0++ != *a1++)
+                if (*cmp1++ != *cmp2++)
                     break;
                 if (n-- == 0)
                     break;
             }
         }
         /* im34 */
-        if ((ULONG)a1 > d4)
-            a1 = (UBYTE *)d4;
+        if ((ULONG)cmp2 > end)
+            cmp2 = (UBYTE *)end;
 im35:
-        d6 = (UWORD)((ULONG)a1 - (ULONG)a2);
-        if (d7 >= d6)                   /* CMP.w d6,d7: BCC */
+        len = (UWORD)((ULONG)cmp2 - (ULONG)scan);
+        if (bestlen >= len)             /* CMP.w d6,d7: BCC */
             continue;
-        d7 = d6;
-        if (d6 > 8) {                   /* im36: long match */
-            a3[7] = (UBYTE)d6;
-            RL(a3 + 0x24) = (ULONG)a2 - (ULONG)a5 - 2;
-            if ((UBYTE)d6 == 0xff)
+        bestlen = len;
+        if (len > 8) {                  /* im36: long match */
+            slots[7] = (UBYTE)len;
+            RL(slots + 0x24) = (ULONG)scan - (ULONG)src - 2;
+            if ((UBYTE)len == 0xff)
                 return -1;
             continue;
         }
-        if (a3[(WORD)d6 - 2])
+        if (slots[(WORD)len - 2])
             continue;
-        a3[(WORD)d6 - 2] = (UBYTE)d6;
-        RL(a3 + (WORD)(d6 << 2)) = (ULONG)a2 - (ULONG)a5 - 2;
+        slots[(WORD)len - 2] = (UBYTE)len;
+        RL(slots + (WORD)(len << 2)) = (ULONG)scan - (ULONG)src - 2;
     }
 }
 
 /* im40 - code of a match: d0 = length, d1 = offset; 0 if it cannot be
    coded (offset or literal count too large) */
-static int im40(UBYTE *st, ULONG d0, ULONG d1)
+static int im40(UBYTE *st, ULONG len, ULONG offset)
 {
     const UBYTE *t2 = (const UBYTE *)imtab2, *t3 = (const UBYTE *)imtab3;
-    const UBYTE *a0;
-    UWORD d2, d4w;
-    UBYTE d6, d3, d5;
-    ULONG d7, d4;
+    const UBYTE *tab;
+    UWORD litcnt, litbase;
+    UBYTE nbits, codebits, shift;
+    ULONG prefix, offbase;
 
-    d0 &= 0xff;
-    if ((UBYTE)d0 > 13) {               /* im42 */
+    len &= 0xff;
+    if ((UBYTE)len > 13) {              /* im42 */
         SB(0x70) = 0x1f;
-        SB(0x71) = (UBYTE)d0;
+        SB(0x71) = (UBYTE)len;
         SB(0x69) = 13;
-        d0 = 5;
-    } else if ((UBYTE)d0 > 5) {         /* im41 */
-        d0 = (d0 & ~0xffUL) | (UBYTE)(((UBYTE)d0 - 6) | 0xf0);
-        SB(0x71) = (UBYTE)d0;
+        len = 5;
+    } else if ((UBYTE)len > 5) {        /* im41 */
+        len = (len & ~0xffUL) | (UBYTE)(((UBYTE)len - 6) | 0xf0);
+        SB(0x71) = (UBYTE)len;
         SB(0x69) = 8;
-        d0 = 5;
+        len = 5;
     } else {
-        SB(0x71) = t2[(WORD)d0 - 2];
-        SB(0x69) = t2[(WORD)d0 + 2];
+        SB(0x71) = t2[(WORD)len - 2];
+        SB(0x69) = t2[(WORD)len + 2];
     }
     /* im44 */
-    d0 = (d0 & ~0xffUL) | (UBYTE)((UBYTE)d0 - 2);
-    d2 = (UWORD)SL(0x30);
-    a0 = (const UBYTE *)imtab4 + d0 + d0;
-    if (d2 < RW(a0)) {
-        d6 = t3[(WORD)d0];
-        d3 = d6 + 1;
+    len = (len & ~0xffUL) | (UBYTE)((UBYTE)len - 2);
+    litcnt = (UWORD)SL(0x30);
+    tab = (const UBYTE *)imtab4 + len + len;
+    if (litcnt < RW(tab)) {
+        nbits = t3[(WORD)len];
+        codebits = nbits + 1;
         SB(0x73) = 0;
-        d4w = 0;
-    } else if (d2 < RW(a0 + 8)) {       /* im45 */
-        d6 = t3[(WORD)d0 + 4];
-        d3 = d6 + 2;
+        litbase = 0;
+    } else if (litcnt < RW(tab + 8)) {  /* im45 */
+        nbits = t3[(WORD)len + 4];
+        codebits = nbits + 2;
         SB(0x73) = 2;
-        d4w = RW(a0);
-    } else if (d2 >= RW(a0 + 0x10)) {   /* im46 */
+        litbase = RW(tab);
+    } else if (litcnt >= RW(tab + 0x10)) { /* im46 */
         return 0;
     } else {                            /* im47 */
-        d6 = t3[(WORD)d0 + 8];
-        d3 = d6 + 2;
+        nbits = t3[(WORD)len + 8];
+        codebits = nbits + 2;
         SB(0x73) = 3;
-        d4w = RW(a0 + 8);
+        litbase = RW(tab + 8);
     }
     /* im48 */
-    SB(0x6a) = d3;
-    d2 -= d4w;
-    d5 = 16 - d6;
-    d2 = (d5 & 63) >= 16 ? 0 : (UWORD)(d2 << (d5 & 63));
+    SB(0x6a) = codebits;
+    litcnt -= litbase;
+    shift = 16 - nbits;
+    litcnt = (shift & 63) >= 16 ? 0 : (UWORD)(litcnt << (shift & 63));
     do {                                /* im49 */
-        UWORD x = d2 >> 15;             /* ADD.w d2,d2 */
-        d2 <<= 1;
-        SW(0x72) = (UWORD)((SW(0x72) << 1) | x);        /* ROXL $72(a6) */
-    } while (--d6);
+        UWORD carry = litcnt >> 15;     /* ADD.w d2,d2 */
+        litcnt <<= 1;
+        SW(0x72) = (UWORD)((SW(0x72) << 1) | carry);    /* ROXL $72(a6) */
+    } while (--nbits);
 
-    a0 = st + 0x74 + 4 * (WORD)(UWORD)d0;
-    if (d1 < RL(a0)) {
-        d6 = SB(0xa4 + (WORD)d0);
-        d3 = d6 + 1;
-        d7 = 0;
-        d4 = 0;
-    } else if (d1 < RL(a0 + 0x10)) {    /* im50 */
-        d6 = SB(0xa4 + 4 + (WORD)d0);
-        d3 = d6 + 2;
-        d7 = 2;
-        d4 = RL(a0);
-    } else if (d1 >= RL(a0 + 0x20)) {   /* im51 */
+    tab = st + 0x74 + 4 * (WORD)(UWORD)len;
+    if (offset < RL(tab)) {
+        nbits = SB(0xa4 + (WORD)len);
+        codebits = nbits + 1;
+        prefix = 0;
+        offbase = 0;
+    } else if (offset < RL(tab + 0x10)) { /* im50 */
+        nbits = SB(0xa4 + 4 + (WORD)len);
+        codebits = nbits + 2;
+        prefix = 2;
+        offbase = RL(tab);
+    } else if (offset >= RL(tab + 0x20)) { /* im51 */
         return 0;
     } else {                            /* im52 */
-        d6 = SB(0xa4 + 8 + (WORD)d0);
-        d3 = d6 + 2;
-        d7 = 3;
-        d4 = RL(a0 + 0x10);
+        nbits = SB(0xa4 + 8 + (WORD)len);
+        codebits = nbits + 2;
+        prefix = 3;
+        offbase = RL(tab + 0x10);
     }
     /* im53 */
-    SB(0x68) = d3;
-    d1 -= d4;
-    d5 = 32 - d6;
-    d1 = (d5 & 63) >= 32 ? 0 : d1 << (d5 & 63);
+    SB(0x68) = codebits;
+    offset -= offbase;
+    shift = 32 - nbits;
+    offset = (shift & 63) >= 32 ? 0 : offset << (shift & 63);
     do {                                /* im54: ADD.l d1,d1:ADDX.l d7,d7 */
-        ULONG x = d1 >> 31;
-        d1 <<= 1;
-        d7 = d7 + d7 + x;
-    } while (--d6);
-    SL(0x6c) = d7;
+        ULONG carry = offset >> 31;
+        offset <<= 1;
+        prefix = prefix + prefix + carry;
+    } while (--nbits);
+    SL(0x6c) = prefix;
     return -1;
 }
 
@@ -367,33 +367,33 @@ static int im40(UBYTE *st, ULONG d0, ULONG d1)
    found (TST.w $2E(a6)). */
 static int im55(UBYTE *st)
 {
-    UBYTE *a4 = st + 0x34, *a5 = st + 0x3c;
+    UBYTE *lens = st + 0x34, *offs = st + 0x3c;
 
     SW(0x2a) = 0;
     SB(0x2e) = 0;
     do {
-        ULONG d1 = RL(a5);
-        UBYTE len = *a4++;
-        a5 += 4;
-        if (len && im40(st, len, d1)) {
-            UWORD d0 = (UWORD)(a4[-1] << 3);
-            UBYTE b = 0;
+        ULONG offset = RL(offs);
+        UBYTE len = *lens++;
+        offs += 4;
+        if (len && im40(st, len, offset)) {
+            UWORD gain = (UWORD)(lens[-1] << 3);
+            UBYTE bits = 0;
             int i;
 
-            b += SB(0x69);
-            b += SB(0x68);
-            b += SB(0x6a);
-            d0 -= b;
-            if ((WORD)d0 < 0 || d0 < SW(0x2a))
+            bits += SB(0x69);
+            bits += SB(0x68);
+            bits += SB(0x6a);
+            gain -= bits;
+            if ((WORD)gain < 0 || gain < SW(0x2a))
                 continue;
-            SW(0x2a) = d0;
-            SB(0x2e) = a4[-1];
+            SW(0x2a) = gain;
+            SB(0x2e) = lens[-1];
             for (i = 0; i < 13; i++)
                 SB(0x5c + i) = SB(0x68 + i);
         }
-    } while (a4 - st != 0x3c);
-    RL(a4 - 4) = 0;                     /* CLR.l -(a4) twice */
-    RL(a4 - 8) = 0;
+    } while (lens - st != 0x3c);
+    RL(lens - 4) = 0;                   /* CLR.l -(a4) twice */
+    RL(lens - 8) = 0;
     return SW(0x2e) != 0;
 }
 
@@ -410,12 +410,12 @@ static void literal(UBYTE *st)
 /* Implode - a0 = buffer, d0 = length, a1 = info routine, d1 = mode,
    a2 = output of the explode table (only with the mode flag) */
 static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
-                     UBYTE *a2)
+                     UBYTE *tabout)
 {
     ULONG work[WS / 4];
     UBYTE *st = (UBYTE *)work;
-    const ULONG *a0;
-    ULONG d0, d1;
+    const ULONG *tab;
+    ULONG num, val;
     int i;
 
     for (i = 0; i < WS / 4; i++)
@@ -424,27 +424,27 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
     if (len < 0x40)
         goto im23;
     SB(0) = (mode & 0x80) ? 0xff : 0;   /* LSR.l #8,d1:SCS (a6) */
-    d1 = mode >> 16;
-    if ((UBYTE)d1 >= 12)
-        d1 = 0;
+    val = mode >> 16;
+    if ((UBYTE)val >= 12)
+        val = 0;
     SL(6) = (ULONG)info;
     SL(0x0a) = (ULONG)buf;
     SL(0x22) = (ULONG)buf;
     SL(0x26) = (ULONG)buf;
     SL(0x12) = len;
     SL(0x0e) = (ULONG)buf + len;
-    d1 = imtab0[(UWORD)(d1 << 2) >> 2] + 1;
-    if (d1 > len)
-        d1 = len - 1;
-    SL(0x1a) = d1;
-    d1--;
-    d0 = 0;
-    a0 = imtab0;
-    while (d1 > *a0++)                  /* im04 */
-        d0 = (d0 & ~0xffUL) | (UBYTE)(d0 + 1);
-    SB(1) = (UBYTE)d0;
+    val = imtab0[(UWORD)(val << 2) >> 2] + 1;
+    if (val > len)
+        val = len - 1;
+    SL(0x1a) = val;
+    val--;
+    num = 0;
+    tab = imtab0;
+    while (val > *tab++)                /* im04 */
+        num = (num & ~0xffUL) | (UBYTE)(num + 1);
+    SB(1) = (UBYTE)num;
     {
-        const UBYTE *s = (const UBYTE *)imtab1 + (UWORD)d0 * 12;
+        const UBYTE *s = (const UBYTE *)imtab1 + (UWORD)num * 12;
         for (i = 0; i < 12; i++)
             SB(0xa4 + i) = s[i];
     }
@@ -454,11 +454,11 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
         SL(0x84 + 4 * i) += SL(0x74 + 4 * i);
     if (SB(0)) {                        /* never with mode 8 */
         for (i = 0; i < 8; i++) {
-            RW(a2) = (UWORD)SL(0x74 + 4 * i);
-            a2 += 2;
+            RW(tabout) = (UWORD)SL(0x74 + 4 * i);
+            tabout += 2;
         }
         for (i = 0; i < 12; i++)
-            *a2++ = SB(0xa4 + i);
+            *tabout++ = SB(0xa4 + i);
     }
     SB(0x2d) = 7;
 
@@ -474,19 +474,19 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
             break;
         }
         /* im13 */
-        d1 = im37(st, SB(0x5c), SL(0x60));
-        d1 = (d1 & 0xffff0000UL) | SW(0x66);
-        d1 = im37(st, SB(0x5e), d1);
-        d0 = SB(0x5d);
-        d1 = (d1 & 0xffff0000UL) | SW(0x64);
-        if ((UBYTE)d0 == 13) {
-            UBYTE *d = (UBYTE *)SL(0x26);
-            *d++ = (UBYTE)d1;
-            SL(0x26) = (ULONG)d;
-            d0 = 5;
-            d1 = 0x1f;
+        val = im37(st, SB(0x5c), SL(0x60));
+        val = (val & 0xffff0000UL) | SW(0x66);
+        val = im37(st, SB(0x5e), val);
+        num = SB(0x5d);
+        val = (val & 0xffff0000UL) | SW(0x64);
+        if ((UBYTE)num == 13) {
+            UBYTE *dest = (UBYTE *)SL(0x26);
+            *dest++ = (UBYTE)val;
+            SL(0x26) = (ULONG)dest;
+            num = 5;
+            val = 0x1f;
         }
-        im37(st, (UBYTE)d0, d1);        /* im14 */
+        im37(st, (UBYTE)num, val);      /* im14 */
         SL(0x22) += SB(0x2e);
         SL(0x30) = 0;
     }
@@ -499,64 +499,64 @@ static ULONG implode(UBYTE *buf, ULONG len, infofunc *info, ULONG mode,
         goto im22;
 
     if (!SB(0)) {
-        UBYTE *a1, *o;
-        ULONG d7;
-        UWORD w;
+        UBYTE *head, *out;
+        ULONG oddflag;
+        UWORD last;
 
-        d0 = SL(0x26) - SL(0x0a);
-        if (d0 < 12)
+        num = SL(0x26) - SL(0x0a);
+        if (num < 12)
             goto im23;
-        d1 = SL(0x12) - d0;
-        if (d1 <= 0x36)
+        val = SL(0x12) - num;
+        if (val <= 0x36)
             goto im23;
-        a1 = (UBYTE *)SL(0x0a);
-        o = (UBYTE *)SL(0x26);
-        d7 = 0xff00;
-        if (d0 & 1) {
-            d7 = 0;
-            d0++;
-            *o++ = 0;
+        head = (UBYTE *)SL(0x0a);
+        out = (UBYTE *)SL(0x26);
+        oddflag = 0xff00;
+        if (num & 1) {
+            oddflag = 0;
+            num++;
+            *out++ = 0;
         }
         /* im16: the first 12 bytes go to the end, header in front */
-        RL(o + 8) = RL(a1);
-        RL(a1) = ID_IMP;
-        RL(o + 4) = RL(a1 + 4);
-        RL(a1 + 4) = SL(0x12);
-        RL(o) = RL(a1 + 8);
-        RL(a1 + 8) = d0;
-        d0 += 0x2e;
-        SL(0x16) = d0;
-        RL(o + 12) = SL(0x30);
-        w = SB(0x2c) & 0xfe;            /* MOVE.b:AND.w #$FE */
-        w |= (UWORD)(1U << (SB(0x2d) & 31));    /* BSET d0,d1 */
-        w |= (UWORD)d7;
-        RW(o + 0x10) = w;
-        o += 0x12;
+        RL(out + 8) = RL(head);
+        RL(head) = ID_IMP;
+        RL(out + 4) = RL(head + 4);
+        RL(head + 4) = SL(0x12);
+        RL(out) = RL(head + 8);
+        RL(head + 8) = num;
+        num += 0x2e;
+        SL(0x16) = num;
+        RL(out + 12) = SL(0x30);
+        last = SB(0x2c) & 0xfe;         /* MOVE.b:AND.w #$FE */
+        last |= (UWORD)(1U << (SB(0x2d) & 31)); /* BSET d0,d1 */
+        last |= (UWORD)oddflag;
+        RW(out + 0x10) = last;
+        out += 0x12;
         for (i = 0; i < 8; i++) {       /* im17 */
-            RW(o) = (UWORD)SL(0x74 + 4 * i);
-            o += 2;
+            RW(out) = (UWORD)SL(0x74 + 4 * i);
+            out += 2;
         }
         for (i = 0; i < 12; i++)        /* im18 */
-            *o++ = SB(0xa4 + i);
+            *out++ = SB(0xa4 + i);
     } else {                            /* im19, never with mode 8 */
-        UBYTE b, *o;
+        UBYTE lastbyte, *out;
 
-        d0 = SL(0x26) - SL(0x0a);
-        d1 = SL(0x12) - d0;
-        if (d1 <= 6)
+        num = SL(0x26) - SL(0x0a);
+        val = SL(0x12) - num;
+        if (val <= 6)
             goto im23;
-        b = (UBYTE)((SB(0x2c) & 0xfe) | (1U << (SB(0x2d) & 7)));
-        o = (UBYTE *)SL(0x26);
-        if (d0 & 1) {
-            *o++ = b;
-            RL(o) = SL(0x30);
+        lastbyte = (UBYTE)((SB(0x2c) & 0xfe) | (1U << (SB(0x2d) & 7)));
+        out = (UBYTE *)SL(0x26);
+        if (num & 1) {
+            *out++ = lastbyte;
+            RL(out) = SL(0x30);
         } else {
-            RL(o) = SL(0x30);
-            o += 4;
-            *o = b;
+            RL(out) = SL(0x30);
+            out += 4;
+            *out = lastbyte;
         }
-        d0 += 5;
-        SL(0x16) = d0;
+        num += 5;
+        SL(0x16) = num;
     }
 im23:
     return SL(0x16);
@@ -578,126 +578,126 @@ static const UBYTE I1F90[12] = { 0x01, 0x01, 0x01, 0x01, 0x02, 0x03, 0x03,
 
 /* the bit stream of the Imploder: ADD.b d3,d3, at 0 the next byte
    (backwards) with ADDX.b d3,d3 (the marker bit comes in at bit 0) */
-static int imbit(UBYTE *d3, const UBYTE **a3)
+static int imbit(UBYTE *bitbuf, const UBYTE **src)
 {
-    UBYTE v = *d3;
+    UBYTE v = *bitbuf;
     int c = v >> 7;
 
     v <<= 1;
     if (v == 0) {
-        UBYTE n = *--*a3;
+        UBYTE n = *--*src;
         v = (UBYTE)((n << 1) | c);
         c = n >> 7;
     }
-    *d3 = v;
+    *bitbuf = v;
     return c;
 }
 
 /* deplode - a0 = crunched data; -1 = ok, 0 = error */
-static ULONG deplode(UBYTE *a0)
+static ULONG deplode(UBYTE *buf)
 {
-    UBYTE *a4;
-    const UBYTE *a3, *a2;
+    UBYTE *dst;
+    const UBYTE *packed, *hdr;
     UBYTE tab[28];
-    ULONG d2;
-    UBYTE d3;
+    ULONG litcnt;
+    UBYTE bitbuf;
     int i;
 
-    if (RL(a0) != ID_IMP)
+    if (RL(buf) != ID_IMP)
         return 0;
-    a4 = a0 + RL(a0 + 4);
-    a3 = a0 + RL(a0 + 8);
-    a2 = a3;
-    RL(a0 + 8) = RL(a2);
-    RL(a0 + 4) = RL(a2 + 4);
-    RL(a0) = RL(a2 + 8);
-    d2 = RL(a2 + 12);
-    d3 = (UBYTE)RW(a2 + 16);            /* only the low byte is used */
-    if (!(RW(a2 + 16) & 0x8000))
-        a3--;
-    a2 += 18;
+    dst = buf + RL(buf + 4);
+    packed = buf + RL(buf + 8);
+    hdr = packed;
+    RL(buf + 8) = RL(hdr);
+    RL(buf + 4) = RL(hdr + 4);
+    RL(buf) = RL(hdr + 8);
+    litcnt = RL(hdr + 12);
+    bitbuf = (UBYTE)RW(hdr + 16);       /* only the low byte is used */
+    if (!(RW(hdr + 16) & 0x8000))
+        packed--;
+    hdr += 18;
     for (i = 0; i < 28; i++)            /* 7 longs */
-        tab[i] = a2[i];
+        tab[i] = hdr[i];
 
     for (;;) {
-        UWORD d4, d0, d1, cnt;
-        ULONG d5, src;
+        UWORD len, idx, lenidx, cnt;
+        ULONG extra, src;
         UBYTE n;
 
         /* I1E70: literal run */
-        for (; d2; d2--)
-            *--a4 = *--a3;
+        for (; litcnt; litcnt--)
+            *--dst = *--packed;
         /* I1E7A */
-        if (a0 >= a4)
-            return a3 == a0 ? (ULONG)-1 : 0;
+        if (buf >= dst)
+            return packed == buf ? (ULONG)-1 : 0;
         /* I1E92: match length */
-        if (!imbit(&d3, &a3)) {
-            d4 = 1; d0 = 0;
-        } else if (!imbit(&d3, &a3)) {
-            d4 = 2; d0 = 1;
-        } else if (!imbit(&d3, &a3)) {
-            d4 = 3; d0 = 2;
-        } else if (!imbit(&d3, &a3)) {
-            d4 = 4; d0 = 3;
+        if (!imbit(&bitbuf, &packed)) {
+            len = 1; idx = 0;
+        } else if (!imbit(&bitbuf, &packed)) {
+            len = 2; idx = 1;
+        } else if (!imbit(&bitbuf, &packed)) {
+            len = 3; idx = 2;
+        } else if (!imbit(&bitbuf, &packed)) {
+            len = 4; idx = 3;
         } else {
             UBYTE b = 0;
-            if (imbit(&d3, &a3)) {
-                b = *--a3;
+            if (imbit(&bitbuf, &packed)) {
+                b = *--packed;
                 b--;
             } else {
-                b = (UBYTE)(b + b + imbit(&d3, &a3));
-                b = (UBYTE)(b + b + imbit(&d3, &a3));
-                b = (UBYTE)(b + b + imbit(&d3, &a3));
+                b = (UBYTE)(b + b + imbit(&bitbuf, &packed));
+                b = (UBYTE)(b + b + imbit(&bitbuf, &packed));
+                b = (UBYTE)(b + b + imbit(&bitbuf, &packed));
                 b += 5;
             }
-            d4 = b;
-            d0 = 3;
+            len = b;
+            idx = 3;
         }
         /* I1F08: next literal count */
-        d5 = 0;
-        d1 = d0;
-        if (imbit(&d3, &a3)) {
-            if (imbit(&d3, &a3)) {
-                d5 = I1F8C[d0];
-                d0 = (UBYTE)(d0 + 8);
+        extra = 0;
+        lenidx = idx;
+        if (imbit(&bitbuf, &packed)) {
+            if (imbit(&bitbuf, &packed)) {
+                extra = I1F8C[idx];
+                idx = (UBYTE)(idx + 8);
             } else {
-                d5 = 2;
-                d0 = (UBYTE)(d0 + 4);
+                extra = 2;
+                idx = (UBYTE)(idx + 4);
             }
         }
-        n = I1F90[d0];
+        n = I1F90[idx];
         {
-            UWORD w = (UWORD)d2;
+            UWORD w = (UWORD)litcnt;
             do
-                w = (UWORD)(w + w + imbit(&d3, &a3));
+                w = (UWORD)(w + w + imbit(&bitbuf, &packed));
             while (--n);
-            w += (UWORD)d5;
-            d2 = (d2 & 0xffff0000UL) | w;
+            w += (UWORD)extra;
+            litcnt = (litcnt & 0xffff0000UL) | w;
         }
         /* offset */
-        d5 = 0;
+        extra = 0;
         src = 0;
-        d0 = d1;
-        if (imbit(&d3, &a3)) {
-            d1 += d1;
-            if (imbit(&d3, &a3)) {
-                src = (ULONG)(LONG)(WORD)RW(tab + 8 + d1);
-                d0 = (UBYTE)(d0 + 8);
+        idx = lenidx;
+        if (imbit(&bitbuf, &packed)) {
+            lenidx += lenidx;
+            if (imbit(&bitbuf, &packed)) {
+                src = (ULONG)(LONG)(WORD)RW(tab + 8 + lenidx);
+                idx = (UBYTE)(idx + 8);
             } else {
-                src = (ULONG)(LONG)(WORD)RW(tab + d1);
-                d0 = (UBYTE)(d0 + 4);
+                src = (ULONG)(LONG)(WORD)RW(tab + lenidx);
+                idx = (UBYTE)(idx + 4);
             }
         }
-        n = tab[0x10 + d0];
+        n = tab[0x10 + idx];
         do
-            d5 = d5 + d5 + imbit(&d3, &a3);
+            extra = extra + extra + imbit(&bitbuf, &packed);
         while (--n);
-        src += 1 + d5 + (ULONG)a4;
+        src += 1 + extra + (ULONG)dst;
         {
             const UBYTE *s = (const UBYTE *)src;
-            cnt = d4;
+            cnt = len;
             do
-                *--a4 = *--s;
+                *--dst = *--s;
             while (cnt-- != 0);
         }
     }
@@ -713,9 +713,9 @@ ULONG BLITZ_ROUTINE _decrunch(UBYTE *buf BL_REG(d0))
 
 /* bit reader state of the CrM decrunchers (d6 bits, d7 count, a2 source) */
 struct crmbits {
-    ULONG d6;
-    UWORD d7;
-    const UBYTE *a2;
+    ULONG bits;                 /* d6 */
+    UWORD count;                /* d7 */
+    const UBYTE *src;           /* a2 */
 };
 
 static ULONG ror32(ULONG v, unsigned n)
@@ -733,105 +733,105 @@ static ULONG rol32(ULONG v, unsigned n)
 /* BitTest / one bit of ReadIt: the bit shifted out of d6 */
 static int crmbit(struct crmbits *b)
 {
-    int c = b->d6 & 1;
+    int c = b->bits & 1;
 
-    if (--b->d7 != 0) {
-        b->d6 >>= 1;
+    if (--b->count != 0) {
+        b->bits >>= 1;
     } else {                            /* next word into the high word */
-        b->d7 = 16;
-        b->a2 -= 2;
-        b->d6 = ((ULONG)RW(b->a2) << 16) | ((b->d6 >> 1) & 0xffff);
+        b->count = 16;
+        b->src -= 2;
+        b->bits = ((ULONG)RW(b->src) << 16) | ((b->bits >> 1) & 0xffff);
     }
     return c;
 }
 
 /* GetBits/GetBits2 - d1 bits (1..16) */
-static UWORD crmgetbits(struct crmbits *b, UWORD d1)
+static UWORD crmgetbits(struct crmbits *b, UWORD n)
 {
-    UWORD d0 = (UWORD)b->d6;
+    UWORD value = (UWORD)b->bits;
 
-    b->d6 = (d1 & 63) >= 32 ? 0 : b->d6 >> (d1 & 63);
-    b->d7 -= d1;
-    if ((WORD)b->d7 <= 0) {
-        b->d7 += 16;                    /* ADD.w d3,d7 */
-        b->d6 = ror32(b->d6, b->d7 & 63);
-        b->a2 -= 2;
-        b->d6 = (b->d6 & 0xffff0000UL) | RW(b->a2);
-        b->d6 = rol32(b->d6, b->d7 & 63);
+    b->bits = (n & 63) >= 32 ? 0 : b->bits >> (n & 63);
+    b->count -= n;
+    if ((WORD)b->count <= 0) {
+        b->count += 16;                    /* ADD.w d3,d7 */
+        b->bits = ror32(b->bits, b->count & 63);
+        b->src -= 2;
+        b->bits = (b->bits & 0xffff0000UL) | RW(b->src);
+        b->bits = rol32(b->bits, b->count & 63);
     }
-    return d0 & (UWORD)((1UL << d1) - 1);       /* AndData */
+    return value & (UWORD)((1UL << n) - 1);     /* AndData */
 }
 
 /* start of the bit stream at the end of the data (a2 = end) */
 static void crminit(struct crmbits *b, const UBYTE *end)
 {
-    UWORD d0;
-    UWORD d7;
+    UWORD lastbits;
+    UWORD shift;
 
-    b->a2 = end - 2;
-    d0 = RW(b->a2);                     /* bits in the last word */
-    b->a2 -= 4;
-    b->d6 = RL(b->a2);
-    d7 = (UWORD)(16 - d0);
-    b->d6 = (d7 & 63) >= 32 ? 0 : b->d6 >> (d7 & 63);
-    b->d7 = d0;
+    b->src = end - 2;
+    lastbits = RW(b->src);               /* bits in the last word */
+    b->src -= 4;
+    b->bits = RL(b->src);
+    shift = (UWORD)(16 - lastbits);
+    b->bits = (shift & 63) >= 32 ? 0 : b->bits >> (shift & 63);
+    b->count = lastbits;
 }
 
 /* FastDecruncher ("CrM!") - a1 = dest, a2 = packed data, d1/d2 = their
    lengths */
-static void fastdecruncher(UBYTE *a1, const UBYTE *a2, ULONG d1, ULONG d2)
+static void fastdecruncher(UBYTE *dst, const UBYTE *src, ULONG dstlen, ULONG srclen)
 {
-    UBYTE *a5 = a1;
+    UBYTE *start = dst;
     struct crmbits b;
-    UWORD d4 = 0;
+    UWORD len = 0;
 
-    a1 += d1;
-    crminit(&b, a2 + d2);
+    dst += dstlen;
+    crminit(&b, src + srclen);
     for (;;) {
-        UWORD bits, d2w;
-        const UBYTE *a3;
+        UWORD bits, distbase;
+        const UBYTE *from;
 
-        if ((LONG)a1 <= (LONG)a5)
+        if ((LONG)dst <= (LONG)start)
             return;                     /* DecrEnd */
         if (crmbit(&b)) {
-            d4 = 0;
+            len = 0;
 insertbytes:
             do
-                *--a1 = (UBYTE)crmgetbits(&b, 8);
-            while (d4-- != 0);
+                *--dst = (UBYTE)crmgetbits(&b, 8);
+            while (len-- != 0);
             continue;
         }
         /* InsertSeq: length */
         if (!crmbit(&b)) {
-            bits = 1; d4 = 1;
+            bits = 1; len = 1;
         } else if (!crmbit(&b)) {
-            bits = 2; d4 = 3;
+            bits = 2; len = 3;
         } else if (!crmbit(&b)) {
-            bits = 4; d4 = 7;
+            bits = 4; len = 7;
         } else {
-            bits = 8; d4 = 0x17;
+            bits = 8; len = 0x17;
         }
-        d4 += crmgetbits(&b, bits);
-        if (d4 == 22) {                 /* SpecialInsert */
-            d4 = 14;
+        len += crmgetbits(&b, bits);
+        if (len == 22) {                /* SpecialInsert */
+            len = 14;
             bits = crmbit(&b) ? 5 : 14;
-            d4 += crmgetbits(&b, bits);
+            len += crmgetbits(&b, bits);
             goto insertbytes;
         }
-        if ((WORD)d4 > 22)
-            d4--;
+        if ((WORD)len > 22)
+            len--;
         /* distance */
         if (!crmbit(&b)) {
-            bits = 9; d2w = 0x20;
+            bits = 9; distbase = 0x20;
         } else if (!crmbit(&b)) {
-            bits = 5; d2w = 0;
+            bits = 5; distbase = 0;
         } else {
-            bits = 14; d2w = 0x220;
+            bits = 14; distbase = 0x220;
         }
-        a3 = a1 + (WORD)(UWORD)(crmgetbits(&b, bits) + d2w);
+        from = dst + (WORD)(UWORD)(crmgetbits(&b, bits) + distbase);
         do
-            *--a1 = *--a3;
-        while (d4-- != 0);
+            *--dst = *--from;
+        while (len-- != 0);
     }
 }
 
@@ -844,146 +844,146 @@ static UWORD tabbs[1 + 32 + 32 + 527 + 32];
 #define OANZPERBITS 1182
 
 /* ReadTab - d2 = max. bits; a0 = AnzPerBits, a4 = RealTab part */
-static void readtab(struct crmbits *b, UWORD d2, UBYTE *a0, UBYTE *a4)
+static void readtab(struct crmbits *b, UWORD maxbits, UBYTE *counts, UBYTE *codes)
 {
-    UWORD d5, d4 = 0, d1;
-    UWORD a3 = 0;                       /* only the low word is used */
+    UWORD n, bitn = 0, nbits;
+    UWORD total = 0;                    /* only the low word is used */
 
-    d5 = (UWORD)(crmgetbits(b, 4) - 1);
+    n = (UWORD)(crmgetbits(b, 4) - 1);
     do {                                /* RTlop */
-        UWORD d0;
-        d4++;
-        d1 = d4;
-        if ((WORD)d1 > (WORD)d2)
-            d1 = d2;
-        d0 = crmgetbits(b, d1);
-        RW(a0) = d0;
-        a0 += 2;
-        a3 += d0;
-    } while (d5-- != 0);
-    d5 = (UWORD)(a3 - 1);
+        UWORD count;
+        bitn++;
+        nbits = bitn;
+        if ((WORD)nbits > (WORD)maxbits)
+            nbits = maxbits;
+        count = crmgetbits(b, nbits);
+        RW(counts) = count;
+        counts += 2;
+        total += count;
+    } while (n-- != 0);
+    n = (UWORD)(total - 1);
     do {                                /* RTlp2 */
-        RW(a4) = crmgetbits(b, d2);
-        a4 += 2;
-    } while (d5-- != 0);
+        RW(codes) = crmgetbits(b, maxbits);
+        codes += 2;
+    } while (n-- != 0);
 }
 
 /* CalcCmpTab - a3 = AnzPerBits part, a4 = CmpTab part (-2) */
-static void calccmptab(const UBYTE *a3, UBYTE *a4)
+static void calccmptab(const UBYTE *counts, UBYTE *cmp)
 {
-    UWORD d2 = 0, d3 = 0, d6;
+    UWORD code = 0, sum = 0, count;
     int i;
 
-    RW(a4) = 0;
-    a4 += 2;
+    RW(cmp) = 0;
+    cmp += 2;
     for (i = 0; i < 15; i++) {          /* CClop */
-        d6 = RW(a3);
-        a3 += 2;
-        RW(a4 + 64) = d3;
-        RW(a4 + 64) -= (UWORD)(RW(a4 - 2) + RW(a4 - 2));
-        d3 += d6;
-        d2 += d6;                       /* MULU d1(=1),d6 */
-        RW(a4) = d2;
-        a4 += 2;
-        d2 <<= 1;
+        count = RW(counts);
+        counts += 2;
+        RW(cmp + 64) = sum;
+        RW(cmp + 64) -= (UWORD)(RW(cmp - 2) + RW(cmp - 2));
+        sum += count;
+        code += count;                  /* MULU d1(=1),d6 */
+        RW(cmp) = code;
+        cmp += 2;
+        code <<= 1;
     }
 }
 
 /* ReadIt - one Huffman code: a4 = CmpTab part, a0 = RealTab part */
-static UWORD readit(struct crmbits *b, const UBYTE *a4, const UBYTE *a0)
+static UWORD readit(struct crmbits *b, const UBYTE *cmp, const UBYTE *real)
 {
-    UWORD d1 = 0, d0;
+    UWORD code = 0, limit;
 
     do {
-        d1 = (UWORD)((d1 << 1) | crmbit(b));    /* ROXL.w #1,d1 */
-        d0 = RW(a4);
-        a4 += 2;
-    } while (d0 <= d1);
-    d1 += RW(a4 + 62);
-    d1 += d1;
-    return RW(a0 + (WORD)d1);
+        code = (UWORD)((code << 1) | crmbit(b)); /* ROXL.w #1,d1 */
+        limit = RW(cmp);
+        cmp += 2;
+    } while (limit <= code);
+    code += RW(cmp + 62);
+    code += code;
+    return RW(real + (WORD)code);
 }
 
 /* LZHDecruncher ("CrM2") */
-static void lzhdecruncher(UBYTE *a1, const UBYTE *a2, ULONG d1, ULONG d2)
+static void lzhdecruncher(UBYTE *dst, const UBYTE *src, ULONG dstlen, ULONG srclen)
 {
-    UBYTE *t = (UBYTE *)tabbs + 2;      /* a6 = Tabbs+2 */
+    UBYTE *tabs = (UBYTE *)tabbs + 2;   /* a6 = Tabbs+2 */
     struct crmbits b;
 
-    a1 += d1;
-    crminit(&b, a2 + d2);
+    dst += dstlen;
+    crminit(&b, src + srclen);
     do {                                /* BufLoop */
-        const UBYTE *a0, *a5;
-        UWORD d5;
+        const UBYTE *real, *realdist;
+        UWORD n;
         int i;
 
         for (i = 0; i < 32; i++)
-            RW(t + OANZPERBITS + 2 * i) = 0;
-        readtab(&b, 9, t + OANZPERBITS + 32, t + OREALTAB + 30);
-        readtab(&b, 4, t + OANZPERBITS, t + OREALTAB);
-        calccmptab(t + OANZPERBITS + 32, t + OCMPTAB - 2);
-        calccmptab(t + OANZPERBITS, t + OCMPTAB + 30);
-        d5 = crmgetbits(&b, 16);
-        a0 = t + OREALTAB + 30;
-        a5 = a0 - 30;
+            RW(tabs + OANZPERBITS + 2 * i) = 0;
+        readtab(&b, 9, tabs + OANZPERBITS + 32, tabs + OREALTAB + 30);
+        readtab(&b, 4, tabs + OANZPERBITS, tabs + OREALTAB);
+        calccmptab(tabs + OANZPERBITS + 32, tabs + OCMPTAB - 2);
+        calccmptab(tabs + OANZPERBITS, tabs + OCMPTAB + 30);
+        n = crmgetbits(&b, 16);
+        real = tabs + OREALTAB + 30;
+        realdist = real - 30;
         do {                            /* decrloop */
-            UWORD d0 = readit(&b, t, a0);
-            UBYTE c = (UBYTE)d0;
-            if (!(d0 & 0x100)) {
-                UWORD d4 = d0, bits, d2w;
-                const UBYTE *a3;
-                d0 = readit(&b, t + OCMPTAB + 32, a5);
-                bits = d0;
-                d2w = d0;
-                if (!d0) {
+            UWORD sym = readit(&b, tabs, real);
+            UBYTE c = (UBYTE)sym;
+            if (!(sym & 0x100)) {
+                UWORD len = sym, bits, topbit;
+                const UBYTE *from;
+                sym = readit(&b, tabs + OCMPTAB + 32, realdist);
+                bits = sym;
+                topbit = sym;
+                if (!sym) {
                     bits = 1;
-                    d2w = 16;
+                    topbit = 16;
                 }
-                d0 = crmgetbits(&b, bits);
-                if ((d2w & 31) < 16)    /* BSET d2,d0: bits 16-31 */
-                    d0 |= (UWORD)(1U << (d2w & 31));    /* are not used */
-                a3 = a1 + 1 + (WORD)d0;
+                sym = crmgetbits(&b, bits);
+                if ((topbit & 31) < 16) /* BSET d2,d0: bits 16-31 */
+                    sym |= (UWORD)(1U << (topbit & 31)); /* are not used */
+                from = dst + 1 + (WORD)sym;
                 do
-                    *--a1 = *--a3;
-                while (d4-- != 0);
-                *--a1 = *--a3;
-                c = *--a3;
+                    *--dst = *--from;
+                while (len-- != 0);
+                *--dst = *--from;
+                c = *--from;
             }
-            *--a1 = c;                  /* skip */
-        } while (d5-- != 0);
+            *--dst = c;                 /* skip */
+        } while (n-- != 0);
     } while (crmgetbits(&b, 1));
 }
 
 /* OverlapDecrunch - a0 = source with header, a1 = destination */
-static void overlapdecrunch(const UBYTE *a0, UBYTE *a1)
+static void overlapdecrunch(const UBYTE *src, UBYTE *dst)
 {
     void (*dec)(UBYTE *, const UBYTE *, ULONG, ULONG) = fastdecruncher;
-    ULONG id = RL(a0), d0, d1, d2;
-    const UBYTE *a2;
+    ULONG id = RL(src), mindist, dstlen, srclen;
+    const UBYTE *limit;
 
-    a0 += 4;
+    src += 4;
     if (id != ID_CRM) {
         dec = lzhdecruncher;
         if (id != ID_CRM2)
             return;                     /* NotCrunched */
     }
-    d0 = RW(a0);                        /* MinSecDist */
-    d1 = RL(a0 + 2);                    /* DestLen */
-    d2 = RL(a0 + 6);                    /* SrcLen */
-    a0 += 10;
-    a2 = a0 + d0;
+    mindist = RW(src);                  /* MinSecDist */
+    dstlen = RL(src + 2);               /* DestLen */
+    srclen = RL(src + 6);               /* SrcLen */
+    src += 10;
+    limit = src + mindist;
     /* BUG(orig) (#116): a1 - MinSecDist lies in front of the destination buffer
        (always for _crm, destination = source) */
-    if ((LONG)a2 > (LONG)a1) {          /* copy below the destination */
-        ULONG *s = (ULONG *)a0, *d, n = d2 >> 2;
-        a0 = a1 - d0;
-        d = (ULONG *)a0;
+    if ((LONG)limit > (LONG)dst) {      /* copy below the destination */
+        ULONG *from = (ULONG *)src, *to, n = srclen >> 2;
+        src = dst - mindist;
+        to = (ULONG *)src;
         do
-            *d++ = *s++;
+            *to++ = *from++;
         while (--n != 0);
-        *d = *s;                        /* in case of ... */
+        *to = *from;                    /* in case of ... */
     }
-    dec(a1, a0, d1, d2);
+    dec(dst, src, dstlen, srclen);
 }
 
 /* _crm - d0 = buffer (in place); _crm2 - d0 = source, d1 = destination;
@@ -1005,97 +1005,97 @@ BLITZ_THUNK(_crm2, crm2_c, "d0-d1/a0-a1");
 
 /* bit reader of the PowerPacker decruncher (d5 bits, a0 source) */
 struct ppbits {
-    ULONG d5;
-    const UBYTE *a0;
+    ULONG bits;                 /* d5 */
+    const UBYTE *src;           /* a0 */
 };
 
 /* ReadBit: LSR.l #1,d5, at 0 the next long with ROXR.l #1,d5 */
 static int ppbit(struct ppbits *b)
 {
-    int x = b->d5 & 1;
+    int bit = b->bits & 1;
 
-    b->d5 >>= 1;
-    if (b->d5 == 0) {
+    b->bits >>= 1;
+    if (b->bits == 0) {
         ULONG n;
-        b->a0 -= 4;
-        n = RL(b->a0);
-        b->d5 = ((ULONG)x << 31) | (n >> 1);
-        x = n & 1;
+        b->src -= 4;
+        n = RL(b->src);
+        b->bits = ((ULONG)bit << 31) | (n >> 1);
+        bit = n & 1;
     }
-    return x;
+    return bit;
 }
 
 /* ReadD1 - d0+1 bits (DBF on the low word) */
-static UWORD ppread(struct ppbits *b, UWORD d0)
+static UWORD ppread(struct ppbits *b, UWORD n)
 {
-    ULONG d1 = 0;
+    ULONG value = 0;
 
     do
-        d1 = (d1 << 1) | ppbit(b);
-    while (d0-- != 0);
-    return (UWORD)d1;
+        value = (value << 1) | ppbit(b);
+    while (n-- != 0);
+    return (UWORD)value;
 }
 
-static void ppdecrunch(const UBYTE *a0, const UBYTE *a1, UBYTE *a2)
+static void ppdecrunch(const UBYTE *file, const UBYTE *end, UBYTE *dest)
 {
-    const UBYTE *a5;
-    UBYTE *a3;
+    const UBYTE *eff;
+    UBYTE *dst;
     struct ppbits b;
-    ULONG d1;
+    ULONG lenword;
     int crunched;
 
-    if (RL(a0) != ID_PP20)
+    if (RL(file) != ID_PP20)
         return;                         /* nopower */
-    a5 = a0 + 4;                        /* efficiency */
-    b.a0 = a1;
-    a3 = a2;
-    b.d5 = 1;
-    b.a0 -= 4;
-    d1 = RL(b.a0);                      /* length and empty bits */
-    if ((UBYTE)d1) {
+    eff = file + 4;                     /* efficiency */
+    b.src = end;
+    dst = dest;
+    b.bits = 1;
+    b.src -= 4;
+    lenword = RL(b.src);                 /* length and empty bits */
+    if ((UBYTE)lenword) {
         ppbit(&b);                      /* always the next long */
-        d1 = (d1 & ~0xffUL) | (UBYTE)((UBYTE)d1 - 1);
-        b.d5 = (d1 & 63) >= 32 ? 0 : b.d5 >> (d1 & 63);
+        lenword = (lenword & ~0xffUL) | (UBYTE)((UBYTE)lenword - 1);
+        b.bits = (lenword & 63) >= 32 ? 0 : b.bits >> (lenword & 63);
     }
-    d1 >>= 8;
-    a3 += d1;                           /* end of the file */
+    lenword >>= 8;
+    dst += lenword;                     /* end of the file */
     crunched = ppbit(&b);               /* LoopCheckCrunch */
     for (;;) {
-        UWORD d2, n, d3, d0;
+        UWORD count, n, offset, offbits;
 
         if (!crunched) {                /* NormalBytes */
-            d2 = 0;
+            count = 0;
             do {
                 n = ppread(&b, 1);
-                d2 += n;
+                count += n;
             } while (n == 3);
             do
-                *--a3 = (UBYTE)ppread(&b, 7);
-            while (d2-- != 0);
-            if (!(a2 < a3))
+                *--dst = (UBYTE)ppread(&b, 7);
+            while (count-- != 0);
+            if (!(dest < dst))
                 return;
         }
         /* CrunchedBytes */
         n = ppread(&b, 1);              /* code = length-2 */
-        d0 = a5[n];                     /* offset bits */
-        d2 = n;
-        if (d2 == 3) {
+        offbits = eff[n];               /* offset bits */
+        count = n;
+        if (count == 3) {
             if (!ppbit(&b))
-                d0 = 7;
-            d3 = ppread(&b, (UWORD)(d0 - 1));   /* ReadD1_SUB */
+                offbits = 7;
+            offset = ppread(&b, (UWORD)(offbits - 1)); /* ReadD1_SUB */
             do {
                 n = ppread(&b, 2);
-                d2 += n;
+                count += n;
             } while (n == 7);
         } else {
-            d3 = ppread(&b, (UWORD)(d0 - 1));
+            offset = ppread(&b, (UWORD)(offbits - 1));
         }
-        d2++;
+        count++;
         do {                            /* MOVE.b 0(a3,d3.w),-(a3) */
-            UBYTE v = a3[(WORD)d3];
-            *--a3 = v;
-        } while (d2-- != 0);
-        if (!(a2 < a3))
+            UBYTE v = dst[(WORD)offset];
+            *--dst = v;
+        } while (count-- != 0);
+        if (!(dest < dst))
             return;
         crunched = ppbit(&b);           /* LoopCheckCrunch */
     }
