@@ -252,7 +252,7 @@ static ULONG dx, dy, asq, bsq, asq2, bsq2;
 static UWORD flag;
 static UWORD modsize[2];
 static UWORD bigsize[2];
-static ULONG tempadd, blitpos;
+static ULONG planeoff, blitpos;                 /* tempadd: offset in a plane */
 static UWORD center[5] = { 0, 0, 0, 0, 1 };     /* center[4] = color */
 #define color center[4]
 static UWORD cpos[2];
@@ -1088,7 +1088,7 @@ static void ellipsefo(void)
     a0 = (UBYTE *)d7;
     a0 += SW(d6);
     a0 += SW(d6);
-    tempadd = (ULONG)a0;
+    planeoff = (ULONG)a0;
     a0 += fbloc;
     blitpos = (ULONG)a0;
     modsize[0] = d0;
@@ -1190,7 +1190,7 @@ nxelp2:
     d3 = 0xffffffff;
     SETW(d3, d3 + MW(a3, 4));
     a3 += 8;
-    d6 = tempadd;
+    d6 = planeoff;
     SETW(d4, color);
     if (SW(d4) >= 0) {
         do {                                    /* nxplaner */

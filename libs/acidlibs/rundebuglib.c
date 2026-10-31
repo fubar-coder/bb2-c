@@ -58,10 +58,11 @@ UWORD ctrlc;                            /* read by mytrap1 */
 
 static UBYTE text2[] = "OKAY!";
 static UBYTE text3[] = "OKAY!";
-/* t1: the message (tadd = t1.IText), t2/t3: the two "OKAY!" gadgets */
-static struct IntuiText t1 = { 1, 0, 0, 0, 8, NULL, NULL, NULL };
-static struct IntuiText t2 = { 1, 0, 0, 0, 0, NULL, text2, NULL };
-static struct IntuiText t3 = { 1, 0, 0, 0, 0, NULL, text3, NULL };
+/* the original's t1: the message (tadd = t1's IText); t2/t3: the two
+   "OKAY!" gadgets, AutoRequest's positive and negative text */
+static struct IntuiText bodytext = { 1, 0, 0, 0, 8, NULL, NULL, NULL };
+static struct IntuiText postext = { 1, 0, 0, 0, 0, NULL, text2, NULL };
+static struct IntuiText negtext = { 1, 0, 0, 0, 0, NULL, text3, NULL };
 
 /* the trap handlers: exception frames (SR, PC at 2(sp)) and RTE */
 __asm__(
@@ -110,9 +111,9 @@ void BLITZ_ROUTINE printerr(ULONG msg BL_REG(d0))
     struct bl_regs r = { 0, 0, 0, 0 };
 
     blitz_globals = olda5;
-    t1.IText = (UBYTE *)msg;            /* MOVE.l d0,tadd */
+    bodytext.IText = (UBYTE *)msg;      /* MOVE.l d0,tadd */
 #define IntuitionBase myint
-    AutoRequest(NULL, &t1, &t2, &t3, 64, 64, 640, 64);
+    AutoRequest(NULL, &bodytext, &postext, &negtext, 64, 64, 640, 64);
 #undef IntuitionBase
     BLITZ_ALIBJSR(TOK_endjmp, r);       /* end! */
     __builtin_unreachable();

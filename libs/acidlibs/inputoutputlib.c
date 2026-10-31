@@ -125,7 +125,7 @@ struct channel {
 struct channel iochan_in, iochan_out;
 static struct DosLibrary *dosbase;
 static BPTR inputh, outputh;
-static UBYTE temp;                              /* defout's character */
+static UBYTE outchar;                           /* temp: defout's character */
 
 #define DOSBase dosbase                         /* for proto/dos.h */
 
@@ -176,11 +176,11 @@ BLITZ_THUNK(dopopoutput, dopopoutput_c, "d1/a0-a1");
 
 /* ------------------------------------------------------ default output */
 
-/* defout - single character d0 (Write of 1 byte from temp) */
+/* defout - single character d0 (Write of 1 byte from outchar) */
 static LONG BLITZ_ROUTINE defout_c(ULONG c BL_REG(d0))
 {
-    temp = (UBYTE)c;
-    return Write(outputh, &temp, 1);
+    outchar = (UBYTE)c;
+    return Write(outputh, &outchar, 1);
 }
 
 /* defout2 - string a0, length d0 */
