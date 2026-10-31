@@ -75,6 +75,7 @@
 #include "blitzexec.h"
 #include <exec/io.h>
 #include <exec/memory.h>
+#include <utility/tagitem.h>
 
 /* entry points (thunks, below) */
 void _loadsounds(void), _libinit(void), _libfinit(void), _OpenAHI(void), _OpenAHI2(void);
@@ -208,15 +209,20 @@ BLITZ_LIBFIN();
 #define AHIR_INITIALMIXFREQ (AHI_TAGBASE + 245)
 #define AHIR_DOMIXFREQ      (AHI_TAGBASE + 260)
 
-/* ahireqtags: the requester's tags (ahileft, ahitop, ahiwidth,
-   ahiheight, ahiaudioid, ahifrequency, ahiscreen, DoMixFreq, TAG_END);
-   AHIOutputRequest writes the longs at 4, 12, 16, 20, 24, 28 */
-static ULONG ahireqtags[17] = {
-    AHIR_INITIALLEFTEDGE, (ULONG)-1, AHIR_INITIALTOPEDGE, (ULONG)-1,
-    AHIR_INITIALWIDTH, (ULONG)-1, AHIR_INITIALHEIGHT, (ULONG)-1,
-    AHIR_INITIALAUDIOID, (ULONG)-1, AHIR_INITIALMIXFREQ, 0,
-    AHIR_SCREEN, 0, AHIR_DOMIXFREQ, 1, 0 /* TAG_END */
+/* ahireqtags: the requester's tags (the original's labels ahileft,
+   ahitop, ahiwidth, ahiheight, ahiaudioid, ahifrequency, ahiscreen, then
+   DoMixFreq and TAG_END); AHIOutputRequest writes the longs at 4, 12, 16,
+   20, 24, 28 - two of them tag ids (#931) */
+static struct {
+    struct TagItem left, top, width, height, audioid, mixfreq, screen, domixfreq;
+    ULONG end;
+} ahireqtags = {
+    { AHIR_INITIALLEFTEDGE, (ULONG)-1 }, { AHIR_INITIALTOPEDGE, (ULONG)-1 },
+    { AHIR_INITIALWIDTH, (ULONG)-1 }, { AHIR_INITIALHEIGHT, (ULONG)-1 },
+    { AHIR_INITIALAUDIOID, (ULONG)-1 }, { AHIR_INITIALMIXFREQ, 0 },
+    { AHIR_SCREEN, 0 }, { AHIR_DOMIXFREQ, 1 }, TAG_END
 };
+static_assert(sizeof ahireqtags == 17 * 4);
 static APTR ahirequest;
 
 static ULONG deviceunit, deviceid;
@@ -366,13 +372,13 @@ ULONG BLITZ_ROUTINE c_outreq6(ULONG x BL_REG(d0), ULONG y BL_REG(d1), ULONG w BL
 
     if (!ahibase)
         return 0;
-    ahireqtags[1] = x;                  /* 4(a0) */
-    ahireqtags[3] = y;                  /* 12(a0) */
-    ahireqtags[4] = w;                  /* 16(a0): the tag id of width */
-    ahireqtags[5] = h;                  /* 20(a0) */
-    ahireqtags[6] = id;                 /* 24(a0): the tag id of height */
-    ahireqtags[7] = freq;               /* 28(a0) */
-    r = (struct bl_regs){ .a0 = (ULONG)ahireqtags };
+    ahireqtags.left.ti_Data = x;        /* 4(a0) */
+    ahireqtags.top.ti_Data = y;         /* 12(a0) */
+    ahireqtags.width.ti_Tag = w;        /* 16(a0): BUG(orig) (#931) a tag id */
+    ahireqtags.width.ti_Data = h;       /* 20(a0): BUG(orig) (#931) width's data */
+    ahireqtags.height.ti_Tag = id;      /* 24(a0): BUG(orig) (#931) a tag id */
+    ahireqtags.height.ti_Data = freq;   /* 28(a0): BUG(orig) (#931) height's data */
+    r = (struct bl_regs){ .a0 = (ULONG)&ahireqtags };
     ahirequest = (APTR)BLITZ_BASEJSR(ahibase, LVO_AHI_AllocAudioRequestA, r);
     if (!ahirequest)
         return 0;
@@ -417,14 +423,16 @@ ULONG BLITZ_ROUTINE c_requestedid(void)
 {
     if (!ahibase)
         return 0;
-    return ahireqtags[9];               /* ahiaudioid+4 */
+    return ahireqtags.audioid.ti_Data;  /* ahiaudioid+4: the initial value, not
+                                           the requester's ahiam_AudioID */
 }
 
 ULONG BLITZ_ROUTINE c_requestedfreq(void)
 {
     if (!ahibase)
         return 0;
-    return ahireqtags[11];              /* ahifrequency+4 */
+    return ahireqtags.mixfreq.ti_Data;  /* ahifrequency+4: the initial value,
+                                           not the requester's ahiam_MixFreq */
 }
 
 /* CludgeSound sound#,address: d0 = sound#, d1 = the 8SVX file, a0 = the
