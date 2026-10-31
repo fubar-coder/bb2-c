@@ -31,6 +31,7 @@
  * a5, so the result is the same.
  */
 #include "blitzlib.h"
+#include <exec/lists.h>
 
 /* entry points (thunks / C, defined below) */
 void newarr(void), newlocarr(void), arrmult(void);
@@ -47,6 +48,17 @@ BLITZ_NULLSUB(arrmult, 0, 0);                   /* $C402 arrmult */
 BLITZ_NULLSUB(newlist, 0, 0);                   /* $C403 (newarr+3) */
 BLITZ_NULLSUB(newloclist, 0, 0);                /* $C404 (newlocarr+3) */
 BLITZ_LIBFIN();
+
+/* a list's header (32 bytes in front of the first item): the current
+   item, the exec style list headers of the items in use and of the free
+   items, the ID "lIsT"; an item starts with its node (next.l, last.l) */
+struct listhead {
+    UBYTE *current;             /* 00 */
+    struct MinList used;        /* 04 */
+    struct MinList free;        /* 16 */
+    ULONG id;                   /* 28 */
+};
+static_assert(sizeof(struct listhead) == 32);
 
 #define AT(base, off) (*(ULONG *)((base) + (WORD)(off)))  /* 0(a5,dN.w) */
 
@@ -108,7 +120,9 @@ BLITZ_THUNK(arrmult, arrmult_c, "a0-a1");
 static void new_list(UBYTE *base, WORD ptr, WORD size, WORD itemsize)
 {
     struct bl_regs r = { 0, 0, 0, 0 };
-    UBYTE *h, *item, *end, *tail, *last;
+    struct listhead *h;
+    UBYTE *item, *end;
+    struct MinNode *tail, *last;
 
     if (AT(base, ptr)) {
         r.a1 = AT(base, ptr) - 32;              /* MOVEQ #32,d0:SUB d0,a1 */
@@ -118,17 +132,17 @@ static void new_list(UBYTE *base, WORD ptr, WORD size, WORD itemsize)
     r.d0 = 32 + AT(base, size);
     r.d1 = MEMF_PUBLIC | MEMF_CLEAR;
     BLITZ_ALIBJSR(TOK_localloc, r);
-    h = (UBYTE *)r.d0;                          /* a2 */
-    item = h + 32;                              /* a0 */
+    h = (struct listhead *)r.d0;                /* a2 */
+    item = (UBYTE *)(h + 1);                    /* a0 */
     AT(base, ptr) = (ULONG)item;
     end = item + AT(base, size);                /* a1 */
 
     /* Empty out the IN-USE list, FREE list, and set ID */
-    *(UBYTE **)(h + 12) = h + 4;
-    *(UBYTE **)(h + 4) = h + 8;
-    *(UBYTE **)(h + 24) = h + 16;
-    *(UBYTE **)(h + 16) = h + 20;
-    *(ULONG *)(h + 28) = 0x6c497354;            /* "lIsT" */
+    h->used.mlh_TailPred = (struct MinNode *)&h->used.mlh_Head;
+    h->used.mlh_Head = (struct MinNode *)&h->used.mlh_Tail;
+    h->free.mlh_TailPred = (struct MinNode *)&h->free.mlh_Head;
+    h->free.mlh_Head = (struct MinNode *)&h->free.mlh_Tail;
+    h->id = 0x6c497354;                         /* "lIsT" */
 
     /* OK, link all things together..... */
     /* BUG(orig) (#59): every linked item gets 8 bytes written (next.l, last.l at
@@ -139,13 +153,15 @@ static void new_list(UBYTE *base, WORD ptr, WORD size, WORD itemsize)
        overflowed arrmult, or a direct call with any sizes) writes past the
        block: the do-while still links one item at h+32, so all 8 bytes
        land behind the block.  Kept as in the original. */
-    tail = h + 20;                              /* tail node */
+    tail = (struct MinNode *)&h->free.mlh_Tail; /* tail node */
     do {                                        /* insert a0 node before a2 node */
-        last = *(UBYTE **)(tail + 4);           /* old last of tail */
-        *(UBYTE **)item = tail;                 /* new next of me */
-        *(UBYTE **)(item + 4) = last;           /* new last of me */
-        *(UBYTE **)(tail + 4) = item;           /* new last of tail */
-        *(UBYTE **)last = item;                 /* new next of old last */
+        struct MinNode *node = (struct MinNode *)item;
+
+        last = tail->mln_Pred;                  /* old last of tail */
+        node->mln_Succ = tail;                  /* new next of me */
+        node->mln_Pred = last;                  /* new last of me */
+        tail->mln_Pred = node;                  /* new last of tail */
+        last->mln_Succ = node;                  /* new next of old last */
         item += itemsize;                       /* ADD d4,a0 (word) */
     } while (item < end);                       /* CMP.l a1,a0:BCS 'loop */
 }
