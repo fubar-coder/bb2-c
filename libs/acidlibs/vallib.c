@@ -238,16 +238,16 @@ static const UWORD arc[512] = {
 /* DIVU.w y,d0: quotient in the low word, remainder in the high word; on
    overflow (quotient > $FFFF, i.e. high word >= y) d0 is unchanged.
    Restoring division (no libgcc on this target). */
-static ULONG divu(ULONG d0, UWORD y)
+static ULONG divu(ULONG dividend, UWORD y)
 {
-    ULONG rem = d0 >> 16;
+    ULONG rem = dividend >> 16;
     UWORD q = 0;
     WORD i;
 
     if (rem >= y)
-        return d0;
+        return dividend;
     for (i = 15; i >= 0; i--) {
-        rem = rem << 1 | ((d0 >> i) & 1);
+        rem = rem << 1 | ((dividend >> i) & 1);
         q <<= 1;
         if (rem >= y) {
             rem -= y;
@@ -265,15 +265,15 @@ static ULONG divu(ULONG d0, UWORD y)
 static ULONG BLITZ_ROUTINE doqangle_c(UWORD sx BL_REG(d0), UWORD sy BL_REG(d1),
                                       UWORD dx BL_REG(d2), UWORD dy BL_REG(d3))
 {
-    UWORD x = sx - dx, y = sy - dy, d2 = 0, a, t, r;
-    ULONG d0;
+    UWORD x = sx - dx, y = sy - dy, octant = 0, a, old_x, r;
+    ULONG quot;
 
     if ((WORD)y < 0) {                          /* TST d1:BPL 'hpos */
-        d2 = 16;
+        octant = 16;
         y = -y;
     }
     if ((WORD)x < 0) {                          /* TST d0:BPL 'wpos */
-        d2 ^= 8;
+        octant ^= 8;
         x = -x;
     }
     if ((WORD)(UWORD)(x - y) >= 0) {            /* CMP d1,d0:BMI 'notsteep */
@@ -281,22 +281,22 @@ static ULONG BLITZ_ROUTINE doqangle_c(UWORD sx BL_REG(d0), UWORD sy BL_REG(d1),
             a = 0x2000;
             goto flow;
         }
-        d2 ^= 4;                                /* 'neq */
-        t = x;                                  /* EXG d1,d0 */
+        octant ^= 4;                            /* 'neq */
+        old_x = x;                              /* EXG d1,d0 */
         x = y;
-        y = t;
+        y = old_x;
     }
     if (!y) {                                   /* 'notsteep: TST d1:BNE 'noflow */
         a = 0;
         goto flow;
     }
-    d0 = (ULONG)(LONG)(WORD)x;                  /* EXT.l d0 */
-    d0 = d0 << 16 | d0 >> 16;                   /* SWAP d0 */
-    d0 = divu(d0, y);                           /* DIVU d1,d0 */
-    a = arc[(((UWORD)d0 >> 6) & 1022) >> 1];    /* LSR #6,d0:AND #1022,d0 */
+    quot = (ULONG)(LONG)(WORD)x;                /* EXT.l d0 */
+    quot = quot << 16 | quot >> 16;             /* SWAP d0 */
+    quot = divu(quot, y);                       /* DIVU d1,d0 */
+    a = arc[(((UWORD)quot >> 6) & 1022) >> 1];  /* LSR #6,d0:AND #1022,d0 */
 flow:
-    a ^= (UWORD)oct[d2 >> 2];                   /* MOVE.l 'oct(pc,d2),d0:EOR d0,d1 */
-    r = (UWORD)(oct[d2 >> 2] >> 16) + a;        /* CLR d0:SWAP d0:ADD d1,d0 */
+    a ^= (UWORD)oct[octant >> 2];               /* MOVE.l 'oct(pc,d2),d0:EOR d0,d1 */
+    r = (UWORD)(oct[octant >> 2] >> 16) + a;    /* CLR d0:SWAP d0:ADD d1,d0 */
     r = -r;                                     /* NEG d0 */
     r -= 0x4000;                                /* SUB #$4000,d0 */
     return r;
@@ -320,17 +320,17 @@ BLITZ_INLINE(dobeamy,
 /* DispHeight - 200 for NTSC or 256 for PAL: bit 0 of the low byte of
    GfxBase->DisplayFlags (207(a0), a0 = graphics base).  MOVE.w: the
    upper word of d0 is kept. */
-static ULONG BLITZ_ROUTINE dodispheight_c(ULONG d0 BL_REG(d0), const UBYTE *gfx BL_REG(a0))
+static ULONG BLITZ_ROUTINE dodispheight_c(ULONG prev BL_REG(d0), const UBYTE *gfx BL_REG(a0))
 {
-    return (d0 & 0xffff0000) | ((gfx[207] & 1) ? 200 : 256);
+    return (prev & 0xffff0000) | ((gfx[207] & 1) ? 200 : 256);
 }
 BLITZ_THUNK(dodispheight, dodispheight_c, "d1/a0-a1");
 
 /* NTSC - -1 if in ntsc mode: BTST #0,207(a0):SNE d0:EXT d0 (upper word
    of d0 kept) */
-static ULONG BLITZ_ROUTINE dontsc_c(ULONG d0 BL_REG(d0), const UBYTE *gfx BL_REG(a0))
+static ULONG BLITZ_ROUTINE dontsc_c(ULONG prev BL_REG(d0), const UBYTE *gfx BL_REG(a0))
 {
-    return (d0 & 0xffff0000) | ((gfx[207] & 1) ? 0xffff : 0);
+    return (prev & 0xffff0000) | ((gfx[207] & 1) ? 0xffff : 0);
 }
 BLITZ_THUNK(dontsc, dontsc_c, "d1/a0-a1");
 
@@ -357,16 +357,16 @@ static ULONG BLITZ_ROUTINE dofabs_c(ULONG v BL_REG(d0), const void *ffp BL_REG(a
                                     const UBYTE *args BL_REG(a2))
 {
     const UBYTE *sp = args;
-    UWORD t = BL_POPW(sp);
+    UWORD type = BL_POPW(sp);
 
-    if (t == 5)                                 /* 'float */
+    if (type == 5)                              /* 'float */
         ;
-    else if (t == 4)                            /* 'quick: ALibJsr $d300 */
+    else if (type == 4)                         /* 'quick: ALibJsr $d300 */
         v = BLITZ_ALIBJSR_A6(TOK_qutofl, ffp, v);
     else {
-        if (t < 2)                              /* 'byte: EXT d0 */
+        if (type < 2)                           /* 'byte: EXT d0 */
             v = (UWORD)(WORD)(BYTE)v;
-        if (t <= 2)                             /* 'word: EXT.l d0 */
+        if (type <= 2)                          /* 'word: EXT.l d0 */
             v = (LONG)(WORD)v;
         v = BLITZ_BASEJSR1(ffp, LVO_SPFlt, v);  /* 'long */
     }
@@ -382,19 +382,19 @@ static ULONG BLITZ_ROUTINE doint_c(ULONG v BL_REG(d0), const void *ffp BL_REG(a6
                                    const UBYTE *args BL_REG(a2))
 {
     const UBYTE *sp = args;
-    UWORD t = BL_POPW(sp);
+    UWORD type = BL_POPW(sp);
 
-    if (t >= 4) {                               /* CMP #4,d1:BCC 'over3 */
-        if (t != 4)                             /* 'float: JMP -30(a6) */
+    if (type >= 4) {                            /* CMP #4,d1:BCC 'over3 */
+        if (type != 4)                          /* 'float: JMP -30(a6) */
             return BLITZ_BASEJSR1(ffp, LVO_SPFix, v);
         if ((LONG)v >= 0)                       /* 'pos: CLR d0:SWAP d0:EXT.l d0 */
             return (LONG)(WORD)(v >> 16);
         v = -v;                                 /* NEG.l d0:CLR d0:SWAP d0 */
         return (LONG)(WORD)-(WORD)(v >> 16);    /* NEG d0:EXT.l d0 */
     }
-    if (t == 3)                                 /* 'done */
+    if (type == 3)                              /* 'done */
         return v;
-    if (t != 2)                                 /* EXT d0 */
+    if (type != 2)                              /* EXT d0 */
         v = (UWORD)(WORD)(BYTE)v;
     return (LONG)(WORD)v;                       /* 'word: EXT.l d0 */
 }
@@ -406,16 +406,16 @@ BLITZ_THUNK(doint, doint_c, "d1/a0-a1");
    (MOVE -(a2),d1: 5 in the low word, the caller's upper word), so Sgn of
    a float is 1 whatever the value (Sgn(-1.0) = Sgn(0.0) = 1).  Kept: d1
    is passed as the original has it. */
-static ULONG BLITZ_ROUTINE dosgn_c(ULONG v BL_REG(d0), ULONG d1 BL_REG(d1),
+static ULONG BLITZ_ROUTINE dosgn_c(ULONG v BL_REG(d0), ULONG caller_d1 BL_REG(d1),
                                    const void *ffp BL_REG(a6), const UBYTE *args BL_REG(a2))
 {
     const UBYTE *sp = args;
-    UWORD t = BL_POPW(sp);
+    UWORD type = BL_POPW(sp);
 
-    if (t > 4)                                  /* 'float: JSR -48(a6) */
-        v = BLITZ_BASEJSR2(ffp, LVO_SPTst, v, (d1 & 0xffff0000) | t);
-    else if (t != 4 && t != 3) {
-        if (t == 1)                             /* EXT d0 */
+    if (type > 4)                               /* 'float: JSR -48(a6) */
+        v = BLITZ_BASEJSR2(ffp, LVO_SPTst, v, (caller_d1 & 0xffff0000) | type);
+    else if (type != 4 && type != 3) {
+        if (type == 1)                          /* EXT d0 */
             v = (UWORD)(WORD)(BYTE)v;
         v = (LONG)(WORD)v;                      /* 'word: EXT.l d0 */
     }
@@ -488,22 +488,22 @@ BLITZ_THUNK(doqlimit, doqlimit_c, "d1/a0-a1");
    JOY0DAT.  ROL.w d2,d1 rotates by last mod 64 = mod 16 for a word. */
 static UWORD genrnd(void)
 {
-    UWORD r, d1, n;
+    UWORD r, noise, n;
 
     r = *(volatile UWORD *)0xdff006;            /* MOVE $dff006,d0 */
-    d1 = *(volatile UWORD *)0xdff00a;           /* MOVE $dff00a,d1:ROR #8,d1 */
-    d1 = d1 >> 8 | d1 << 8;
-    r ^= d1;
-    d1 = (d1 & 0xff00) | *(volatile UBYTE *)0xbfe601;  /* MOVE.b $bfe601,d1 */
+    noise = *(volatile UWORD *)0xdff00a;        /* MOVE $dff00a,d1:ROR #8,d1 */
+    noise = noise >> 8 | noise << 8;
+    r ^= noise;
+    noise = (noise & 0xff00) | *(volatile UBYTE *)0xbfe601; /* MOVE.b $bfe601,d1 */
     n = last & 15;                              /* MOVE last(pc),d2:ROL d2,d1 */
     if (n)
-        d1 = d1 << n | d1 >> (16 - n);
-    r ^= d1;
+        noise = noise << n | noise >> (16 - n);
+    r ^= noise;
     r ^= last;                                  /* EOR d2,d0 */
-    d1 = sweor ^ 0xaaaa;                        /* EOR #$aaaa,d1:ROR #1,d1 */
-    d1 = d1 >> 1 | d1 << 15;
-    sweor = d1;
-    r ^= d1;
+    noise = sweor ^ 0xaaaa;                     /* EOR #$aaaa,d1:ROR #1,d1 */
+    noise = noise >> 1 | noise << 15;
+    sweor = noise;
+    r ^= noise;
     last = r;
     return r;
 }
@@ -534,22 +534,22 @@ struct valstate {
 /* getdec - get a decimal number into d7, 10^ in d6 (both mod 2^32);
    d3 = the character that ended it (or the last digit's value / 0 if the
    count ran out) */
-static UWORD getdec(struct valstate *s, ULONG *d7, ULONG *d6)
+static UWORD getdec(struct valstate *s, ULONG *num, ULONG *scale)
 {
-    UWORD d3 = 0;
+    UWORD ch = 0;
     ULONG a = 0, m = 1;
 
     while (--s->n >= 0) {                       /* SUBQ #1,d2:BMI 'done */
-        d3 = *s->p++;                           /* MOVE.b (a3)+,d3 */
-        if (d3 < '0' || d3 > '9')
+        ch = *s->p++;                           /* MOVE.b (a3)+,d3 */
+        if (ch < '0' || ch > '9')
             break;
-        d3 -= '0';
+        ch -= '0';
         m = (m << 1) + (m << 3);                /* multiply d6 and d7 by ten */
-        a = (a << 1) + (a << 3) + d3;           /* add digit to d7 */
+        a = (a << 1) + (a << 3) + ch;           /* add digit to d7 */
     }
-    *d7 = a;
-    *d6 = m;
-    return d3;
+    *num = a;
+    *scale = m;
+    return ch;
 }
 
 /* 'notneg - integer part, optionally "." and fraction:
@@ -558,18 +558,18 @@ static UWORD getdec(struct valstate *s, ULONG *d7, ULONG *d6)
    make 10^n mod 2^32 = 0 and the fraction is dropped. */
 static ULONG notneg(const void *ffp, struct valstate *s)
 {
-    ULONG d7, d6, d5, x;
+    ULONG num, scale, ipart, x;
 
-    if (getdec(s, &d7, &d6) != '.')
-        return BLITZ_BASEJSR1(ffp, LVO_SPFlt, d7); /* that's it! */
-    d5 = BLITZ_BASEJSR1(ffp, LVO_SPFlt, d7);
-    getdec(s, &d7, &d6);
-    if (!d6)
-        return d5;
-    x = BLITZ_BASEJSR1(ffp, LVO_SPFlt, d6);     /* divisor to float */
-    d7 = BLITZ_BASEJSR1(ffp, LVO_SPFlt, d7);    /* fraction to float */
-    x = BLITZ_BASEJSR2(ffp, LVO_SPDiv, d7, x);
-    return BLITZ_BASEJSR2(ffp, LVO_SPAdd, x, d5);
+    if (getdec(s, &num, &scale) != '.')
+        return BLITZ_BASEJSR1(ffp, LVO_SPFlt, num); /* that's it! */
+    ipart = BLITZ_BASEJSR1(ffp, LVO_SPFlt, num);
+    getdec(s, &num, &scale);
+    if (!scale)
+        return ipart;
+    x = BLITZ_BASEJSR1(ffp, LVO_SPFlt, scale);  /* divisor to float */
+    num = BLITZ_BASEJSR1(ffp, LVO_SPFlt, num);  /* fraction to float */
+    x = BLITZ_BASEJSR2(ffp, LVO_SPDiv, num, x);
+    return BLITZ_BASEJSR2(ffp, LVO_SPAdd, x, ipart);
 }
 
 /* gethex - "$" and hex digits (0-9, A-F, a-f), byte arithmetic as in the
