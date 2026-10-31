@@ -249,9 +249,9 @@ static ULONG galloc(ULONG size, ULONG fl)
     return BLITZ_ALIBJSR(TOK_globalloc, r);
 }
 
-static void gfree(APTR mem, ULONG d1)
+static void gfree(APTR mem, ULONG size)
 {
-    struct bl_regs r = { .d1 = d1, .a1 = (ULONG)mem };
+    struct bl_regs r = { .d1 = size, .a1 = (ULONG)mem };
     BLITZ_ALIBJSR(TOK_globfree, r);
 }
 
@@ -299,36 +299,36 @@ BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
 /* makearray: the NewMenu array of the lists of the object */
 static UBYTE *makearray(UBYTE *obj)
 {
-    UBYTE *t = P(obj, 4), *a1, *it, *sub;
+    UBYTE *title = P(obj, 4), *entry, *it, *sub;
 
     marraysize = bl_mulu_w((UWORD)(SW(obj, 8) + 1), 20);
-    marray = a1 = (UBYTE *)galloc(marraysize, MEMF_PUBLIC | MEMF_CLEAR);
+    marray = entry = (UBYTE *)galloc(marraysize, MEMF_PUBLIC | MEMF_CLEAR);
     for (;;) {
-        a1[0] = NM_TITLE;
-        SL(a1, 2) = SL(t, 4);
-        a1 += 20;
-        for (it = P(t, 8); it; it = P(it, 0)) {
-            a1[0] = NM_ITEM;
-            SL(a1, 2) = SL(it, 4);
-            SL(a1, 6) = SL(it, 14);
-            SW(a1, 10) = SW(it, 12);
-            SL(a1, 12) = SL(it, 22);
-            SL(a1, 16) = SL(it, 26);
-            a1 += 20;
+        entry[0] = NM_TITLE;
+        SL(entry, 2) = SL(title, 4);
+        entry += 20;
+        for (it = P(title, 8); it; it = P(it, 0)) {
+            entry[0] = NM_ITEM;
+            SL(entry, 2) = SL(it, 4);
+            SL(entry, 6) = SL(it, 14);
+            SW(entry, 10) = SW(it, 12);
+            SL(entry, 12) = SL(it, 22);
+            SL(entry, 16) = SL(it, 26);
+            entry += 20;
             for (sub = P(it, 18); sub; sub = P(sub, 0)) {
-                a1[0] = NM_SUB;
-                SL(a1, 2) = SL(sub, 4);
-                SL(a1, 6) = SL(sub, 14);
-                SW(a1, 10) = SW(sub, 12);
-                SL(a1, 12) = SL(sub, 22);
-                SL(a1, 16) = SL(sub, 26);
-                a1 += 20;
+                entry[0] = NM_SUB;
+                SL(entry, 2) = SL(sub, 4);
+                SL(entry, 6) = SL(sub, 14);
+                SW(entry, 10) = SW(sub, 12);
+                SL(entry, 12) = SL(sub, 22);
+                SL(entry, 16) = SL(sub, 26);
+                entry += 20;
             }
         }
-        if (!(t = P(t, 0)))
+        if (!(title = P(title, 0)))
             break;
     }
-    a1[0] = NM_END;
+    entry[0] = NM_END;
     return marray;
 }
 
@@ -391,28 +391,28 @@ BLITZ_THUNK(_gtunsetmenu, gtunsetmenu_c, "d0-d1/a0-a1");
 /* ----------------------------------------------------------- the lists */
 
 /* GTMenuTitle list#,menu,title$: inserted as title `menu` */
-static void BLITZ_ROUTINE gtmenutitle_c(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2),
+static void BLITZ_ROUTINE gtmenutitle_c(ULONG menu BL_REG(d1), ULONG text BL_REG(d2),
                                         const ULONG *args BL_REG(a2), UBYTE *obj BL_REG(a3))
 {
-    UBYTE *a0 = obj + 4, *t;
+    UBYTE *link = obj + 4, *title;
     UWORD n;
 
     if (!gtbase)
         return;
-    n = (UWORD)d1 - 1;
+    n = (UWORD)menu - 1;
     if ((WORD)n >= 0)
         do {
-            if (!P(a0, 0))
+            if (!P(link, 0))
                 return;
-            a0 = P(a0, 0);
+            link = P(link, 0);
         } while (n-- != 0);
-    t = (UBYTE *)galloc(TITLESIZE, MEMF_PUBLIC);        /* uncleared, all written */
-    if (!t)
+    title = (UBYTE *)galloc(TITLESIZE, MEMF_PUBLIC);    /* uncleared, all written */
+    if (!title)
         return;
-    SL(t, 0) = SL(a0, 0);
-    SL(a0, 0) = (ULONG)t;
-    SL(t, 4) = allocst(d2, args[-1]);
-    SL(t, 8) = 0;
+    SL(title, 0) = SL(link, 0);
+    SL(link, 0) = (ULONG)title;
+    SL(title, 4) = allocst(text, args[-1]);
+    SL(title, 8) = 0;
     SW(obj, 8)++;
 }
 BLITZ_THUNK(_gtmenutitle, gtmenutitle_c, "d0-d1/a0-a1");
@@ -422,7 +422,7 @@ BLITZ_THUNK(_gtmenutitle, gtmenutitle_c, "d0-d1/a0-a1");
    lengths popped from the a2 stack in order (`sp`); the shortcut: `sc`
    and its length, or for a sub item (`sub`) the length and the pushed
    address from the stack */
-static void additem(UBYTE *obj, UBYTE *a0, UWORD n, int sub, ULONG text, ULONG sc,
+static void additem(UBYTE *obj, UBYTE *link, UWORD n, int sub, ULONG text, ULONG sc,
                     const ULONG *sp)
 {
     UBYTE *it;
@@ -430,15 +430,15 @@ static void additem(UBYTE *obj, UBYTE *a0, UWORD n, int sub, ULONG text, ULONG s
     n--;
     if ((WORD)n >= 0)
         do {
-            if (!P(a0, 0))
+            if (!P(link, 0))
                 return;
-            a0 = P(a0, 0);
+            link = P(link, 0);
         } while (n-- != 0);
     it = (UBYTE *)galloc(ITEMSIZE, MEMF_PUBLIC | MEMF_CLEAR);
     if (!it)
         return;
-    SL(it, 0) = SL(a0, 0);
-    SL(a0, 0) = (ULONG)it;
+    SL(it, 0) = SL(link, 0);
+    SL(link, 0) = (ULONG)it;
     if ((LONG)text < 0)
         SL(it, 4) = (ULONG)NM_BARLABEL;
     else
@@ -460,43 +460,43 @@ static void additem(UBYTE *obj, UBYTE *a0, UWORD n, int sub, ULONG text, ULONG s
 }
 
 /* _do_gtitem: d1 flags, d2 menu, d3 item, d4 text, d5 shortcut */
-static void do_gtitem(ULONG d1, ULONG d2, ULONG d3, ULONG d4, ULONG d5, const ULONG *sp,
-                      UBYTE *obj)
+static void do_gtitem(ULONG itemflags, ULONG menu, ULONG itemno, ULONG text, ULONG shortcut,
+                      const ULONG *sp, UBYTE *obj)
 {
-    UBYTE *a0 = obj + 4;
-    UWORD n = (UWORD)d2;
+    UBYTE *link = obj + 4;
+    UWORD n = (UWORD)menu;
 
     if (!gtbase)
         return;
-    flags = (UWORD)d1;
+    flags = (UWORD)itemflags;
     do {
-        if (!P(a0, 0))
+        if (!P(link, 0))
             return;
-        a0 = P(a0, 0);
+        link = P(link, 0);
     } while (n-- != 0);
-    additem(obj, a0 + 8, (UWORD)d3, 0, d4, d5, sp);
+    additem(obj, link + 8, (UWORD)itemno, 0, text, shortcut, sp);
 }
 #define gtitem do_gtitem
 
-#define ITEMARGS ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2), ULONG d3 BL_REG(d3), \
-    ULONG d4 BL_REG(d4), ULONG d5 BL_REG(d5), ULONG d6 BL_REG(d6),               \
-    const ULONG *a2 BL_REG(a2), UBYTE *obj BL_REG(a3)
+#define ITEMARGS ULONG itemflags BL_REG(d1), ULONG menu BL_REG(d2), ULONG itemno BL_REG(d3), \
+    ULONG text BL_REG(d4), ULONG shortcut BL_REG(d5), ULONG exclude BL_REG(d6),              \
+    const ULONG *stack BL_REG(a2), UBYTE *obj BL_REG(a3)
 
 static void BLITZ_ROUTINE gtmenuitem2_c(ITEMARGS)
 {
-    (void)d4; (void)d5;
+    (void)text; (void)shortcut;
     me = 0;
     userdata = 0;
-    gtitem(d1, d2, d3, (ULONG)-1, 0, a2, obj);
+    gtitem(itemflags, menu, itemno, (ULONG)-1, 0, stack, obj);
 }
 BLITZ_THUNK(_gtmenuitem2, gtmenuitem2_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE gtmenuitem3_c(ITEMARGS)
 {
-    (void)d5;
+    (void)shortcut;
     me = 0;
     userdata = 0;
-    gtitem(d1, d2, d3, d4, 0, a2, obj);
+    gtitem(itemflags, menu, itemno, text, 0, stack, obj);
 }
 BLITZ_THUNK(_gtmenuitem3, gtmenuitem3_c, "d0-d1/a0-a1");
 
@@ -504,71 +504,71 @@ static void BLITZ_ROUTINE gtmenuitem_c(ITEMARGS)
 {
     me = 0;
     userdata = 0;
-    gtitem(d1, d2, d3, d4, d5, a2, obj);
+    gtitem(itemflags, menu, itemno, text, shortcut, stack, obj);
 }
 BLITZ_THUNK(_gtmenuitem, gtmenuitem_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE gtmenuitem4_c(ITEMARGS)
 {
-    me = d6;
+    me = exclude;
     userdata = 0;
-    gtitem(d1, d2, d3, d4, d5, a2, obj);
+    gtitem(itemflags, menu, itemno, text, shortcut, stack, obj);
 }
 BLITZ_THUNK(_gtmenuitem4, gtmenuitem4_c, "d0-d1/a0-a1");
 
 /* BUG(orig) (#692): `me` stays from the call before */
 static void BLITZ_ROUTINE gtmenuitem5_c(ITEMARGS)
 {
-    (void)d6;
-    userdata = a2[-4];                  /* -16(a2) */
-    gtitem(d1, d2, d3, d4, d5, a2, obj);
+    (void)exclude;
+    userdata = stack[-4];               /* -16(a2) */
+    gtitem(itemflags, menu, itemno, text, shortcut, stack, obj);
 }
 BLITZ_THUNK(_gtmenuitem5, gtmenuitem5_c, "d0-d1/a0-a1");
 
 /* _do_gtsubitem: d1 flags, d2 menu, d3 item, d4 sub, d5 text, d6 shortcut */
-static void do_gtsubitem(ULONG d1, ULONG d2, ULONG d3, ULONG d4, ULONG d5, ULONG d6,
-                         const ULONG *sp, UBYTE *obj)
+static void do_gtsubitem(ULONG itemflags, ULONG menu, ULONG itemno, ULONG subno, ULONG text,
+                         ULONG shortcut, const ULONG *sp, UBYTE *obj)
 {
-    UBYTE *a0 = obj + 4;
-    UWORD n = (UWORD)d2;
+    UBYTE *link = obj + 4;
+    UWORD n = (UWORD)menu;
 
     if (!gtbase)
         return;
-    flags = (UWORD)d1;
+    flags = (UWORD)itemflags;
     do {
-        if (!P(a0, 0))
+        if (!P(link, 0))
             return;
-        a0 = P(a0, 0);
+        link = P(link, 0);
     } while (n-- != 0);
-    a0 += 8;
-    n = (UWORD)d3;
+    link += 8;
+    n = (UWORD)itemno;
     do {
-        if (!P(a0, 0))
+        if (!P(link, 0))
             return;
-        a0 = P(a0, 0);
+        link = P(link, 0);
     } while (n-- != 0);
-    additem(obj, a0 + 18, (UWORD)d4, 1, d5, d6, sp);
+    additem(obj, link + 18, (UWORD)subno, 1, text, shortcut, sp);
 }
 
-#define SUBARGS ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2), ULONG d3 BL_REG(d3), \
-    ULONG d4 BL_REG(d4), ULONG d5 BL_REG(d5), ULONG d6 BL_REG(d6),             \
-    const ULONG *a2 BL_REG(a2), UBYTE *obj BL_REG(a3)
+#define SUBARGS ULONG itemflags BL_REG(d1), ULONG menu BL_REG(d2), ULONG itemno BL_REG(d3), \
+    ULONG subno BL_REG(d4), ULONG text BL_REG(d5), ULONG shortcut BL_REG(d6),            \
+    const ULONG *stack BL_REG(a2), UBYTE *obj BL_REG(a3)
 
 static void BLITZ_ROUTINE gtsubitem2_c(SUBARGS)
 {
-    (void)d5; (void)d6;
+    (void)text; (void)shortcut;
     me = 0;
     userdata = 0;
-    do_gtsubitem(d1, d2, d3, d4, (ULONG)-1, 0, a2, obj);
+    do_gtsubitem(itemflags, menu, itemno, subno, (ULONG)-1, 0, stack, obj);
 }
 BLITZ_THUNK(_gtsubitem2, gtsubitem2_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE gtsubitem3_c(SUBARGS)
 {
-    (void)d6;
+    (void)shortcut;
     me = 0;
     userdata = 0;
-    do_gtsubitem(d1, d2, d3, d4, d5, 0, a2, obj);
+    do_gtsubitem(itemflags, menu, itemno, subno, text, 0, stack, obj);
 }
 BLITZ_THUNK(_gtsubitem3, gtsubitem3_c, "d0-d1/a0-a1");
 
@@ -576,23 +576,23 @@ static void BLITZ_ROUTINE gtsubitem_c(SUBARGS)
 {
     me = 0;
     userdata = 0;
-    do_gtsubitem(d1, d2, d3, d4, d5, d6, a2, obj);
+    do_gtsubitem(itemflags, menu, itemno, subno, text, shortcut, stack, obj);
 }
 BLITZ_THUNK(_gtsubitem, gtsubitem_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE gtsubitem4_c(SUBARGS)
 {
     userdata = 0;
-    me = a2[-4];                        /* -16(a2) */
-    do_gtsubitem(d1, d2, d3, d4, d5, d6, a2, obj);
+    me = stack[-4];                     /* -16(a2) */
+    do_gtsubitem(itemflags, menu, itemno, subno, text, shortcut, stack, obj);
 }
 BLITZ_THUNK(_gtsubitem4, gtsubitem4_c, "d0-d1/a0-a1");
 
 static void BLITZ_ROUTINE gtsubitem5_c(SUBARGS)
 {
-    userdata = a2[-5];                  /* -20(a2) */
-    me = a2[-4];
-    do_gtsubitem(d1, d2, d3, d4, d5, d6, a2, obj);
+    userdata = stack[-5];               /* -20(a2) */
+    me = stack[-4];
+    do_gtsubitem(itemflags, menu, itemno, subno, text, shortcut, stack, obj);
 }
 BLITZ_THUNK(_gtsubitem5, gtsubitem5_c, "d0-d1/a0-a1");
 
@@ -602,8 +602,8 @@ BLITZ_THUNK(_gtsubitem5, gtsubitem5_c, "d0-d1/a0-a1");
    their strings and sub items */
 static void freeitemlist(UBYTE *it, ULONG n)
 {
-    UBYTE *a1, *sub;
-    UWORD d7 = (UWORD)(n - 1);
+    UBYTE *entry, *sub;
+    UWORD left = (UWORD)(n - 1);        /* d7 */
 
     for (;;) {
         if ((LONG)SL(it, 4) > 0)
@@ -615,14 +615,14 @@ static void freeitemlist(UBYTE *it, ULONG n)
                 freest(SL(sub, 4));
             if (SL(sub, 14))
                 freest(SL(sub, 14));
-            a1 = sub;
+            entry = sub;
             sub = P(sub, 0);
-            gfree(a1, ITEMSIZE);
+            gfree(entry, ITEMSIZE);
         }
-        a1 = it;
+        entry = it;
         it = P(it, 0);
-        gfree(a1, ITEMSIZE);
-        if (!it || d7-- == 0)
+        gfree(entry, ITEMSIZE);
+        if (!it || left-- == 0)
             return;
     }
 }
@@ -631,14 +631,14 @@ static void freeitemlist(UBYTE *it, ULONG n)
    original); BUG(orig) (#695): the title strings stay */
 static void BLITZ_ROUTINE freemenu_c(UBYTE *obj BL_REG(a3))
 {
-    UBYTE *t, *next, *items;
+    UBYTE *title, *next, *items;
 
     if (P(obj, 0))
         FreeMenus((struct Menu *)P(obj, 0));
-    for (t = P(obj, 4); t; t = next) {
-        next = P(t, 0);
-        items = P(t, 8);
-        gfree(t, TITLESIZE);
+    for (title = P(obj, 4); title; title = next) {
+        next = P(title, 0);
+        items = P(title, 8);
+        gfree(title, TITLESIZE);
         if (items)
             freeitemlist(items, 99999);
     }
@@ -650,77 +650,77 @@ BLITZ_THUNK(freemenu, freemenu_c, "d0-d1/a0-a1");
 
 /* finditem: title d1, item d2 (if d2 >= 0 as a long), sub item d3 (if
    d3 >= 0); *prev = the link that points to it */
-static UBYTE *finditem(UBYTE *obj, ULONG d1, ULONG d2, ULONG d3, UBYTE **prev)
+static UBYTE *finditem(UBYTE *obj, ULONG menu, ULONG itemno, ULONG subno, UBYTE **prev)
 {
-    UBYTE *a0, *a1;
+    UBYTE *entry, *link;
     UWORD n;
 
     if (!gtbase || !SL(obj, 4))
         return NULL;
-    a0 = obj + 4;
-    n = (UWORD)d1;
+    entry = obj + 4;
+    n = (UWORD)menu;
     do {
-        a1 = a0;
-        if (!P(a0, 0))
+        link = entry;
+        if (!P(entry, 0))
             return NULL;
-        a0 = P(a0, 0);
+        entry = P(entry, 0);
     } while (n-- != 0);
-    if ((LONG)d2 >= 0) {
-        a0 += 8;
-        n = (UWORD)d2;
+    if ((LONG)itemno >= 0) {
+        entry += 8;
+        n = (UWORD)itemno;
         do {
-            a1 = a0;
-            if (!P(a0, 0))
+            link = entry;
+            if (!P(entry, 0))
                 return NULL;
-            a0 = P(a0, 0);
+            entry = P(entry, 0);
         } while (n-- != 0);
-        if ((LONG)d3 >= 0) {
-            a0 += 18;
-            n = (UWORD)d3;
+        if ((LONG)subno >= 0) {
+            entry += 18;
+            n = (UWORD)subno;
             do {
-                a1 = a0;
-                if (!P(a0, 0))
+                link = entry;
+                if (!P(entry, 0))
                     return NULL;
-                a0 = P(a0, 0);
+                entry = P(entry, 0);
             } while (n-- != 0);
         }
     }
-    *prev = a1;
-    return a0;
+    *prev = link;
+    return entry;
 }
 
-static void BLITZ_ROUTINE freetitle_c(ULONG d1 BL_REG(d1), UBYTE *obj BL_REG(a3))
+static void BLITZ_ROUTINE freetitle_c(ULONG menu BL_REG(d1), UBYTE *obj BL_REG(a3))
 {
-    UBYTE *t, *prev, *items;
+    UBYTE *title, *prev, *items;
 
-    if (!(t = finditem(obj, d1, (ULONG)-1, (ULONG)-1, &prev)))
+    if (!(title = finditem(obj, menu, (ULONG)-1, (ULONG)-1, &prev)))
         return;
-    SL(prev, 0) = SL(t, 0);
-    items = P(t, 8);
-    gfree(t, TITLESIZE);
+    SL(prev, 0) = SL(title, 0);
+    items = P(title, 8);
+    gfree(title, TITLESIZE);
     if (items)
         freeitemlist(items, 99999);
 }
 BLITZ_THUNK(_freetitle, freetitle_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE freeitem_c(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2),
+static void BLITZ_ROUTINE freeitem_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                      UBYTE *obj BL_REG(a3))
 {
     UBYTE *it, *prev;
 
-    if (!(it = finditem(obj, d1, d2, (ULONG)-1, &prev)))
+    if (!(it = finditem(obj, menu, itemno, (ULONG)-1, &prev)))
         return;
     SL(prev, 0) = SL(it, 0);
     freeitemlist(it, 1);
 }
 BLITZ_THUNK(_freeitem, freeitem_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE freesubitem_c(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2),
-                                        ULONG d3 BL_REG(d3), UBYTE *obj BL_REG(a3))
+static void BLITZ_ROUTINE freesubitem_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
+                                        ULONG subno BL_REG(d3), UBYTE *obj BL_REG(a3))
 {
     UBYTE *it, *prev;
 
-    if (!(it = finditem(obj, d1, d2, d3, &prev)))
+    if (!(it = finditem(obj, menu, itemno, subno, &prev)))
         return;
     SL(prev, 0) = SL(it, 0);
     freeitemlist(it, 1);
@@ -731,9 +731,9 @@ BLITZ_THUNK(_freesubitem, freesubitem_c, "d0-d1/a0-a1");
 
 /* menu d1, item d2 (+18: FirstItem), sub d3 (+28: SubItem) of the strip
    at *obj */
-static UBYTE *item(UBYTE *obj, UWORD m, UWORD i)
+static UBYTE *item(UBYTE *obj, UWORD menu, UWORD itemno)
 {
-    return walk(walk(obj, m) + 18, i);
+    return walk(walk(obj, menu) + 18, itemno);
 }
 
 static void changestate(UBYTE *p, UWORD on, UBYTE bit)
@@ -745,56 +745,56 @@ static void changestate(UBYTE *p, UWORD on, UBYTE bit)
 }
 
 /* GTMenuState list#,on|off: every menu (MENUENABLED) */
-static void BLITZ_ROUTINE domenustate_c(ULONG d1 BL_REG(d1), UBYTE *obj BL_REG(a3))
+static void BLITZ_ROUTINE domenustate_c(ULONG on BL_REG(d1), UBYTE *obj BL_REG(a3))
 {
     UBYTE *p;
 
     for (p = obj; P(p, 0); ) {
         p = P(p, 0);
-        changestate(p, (UWORD)d1, 1);
+        changestate(p, (UWORD)on, 1);
     }
 }
 BLITZ_THUNK(domenustate, domenustate_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE domenustate2_c(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2),
+static void BLITZ_ROUTINE domenustate2_c(ULONG menu BL_REG(d1), ULONG on BL_REG(d2),
                                          UBYTE *obj BL_REG(a3))
 {
-    changestate(walk(obj, (UWORD)d1), (UWORD)d2, 1);
+    changestate(walk(obj, (UWORD)menu), (UWORD)on, 1);
 }
 BLITZ_THUNK(domenustate2, domenustate2_c, "d0-d1/a0-a1");
 
 /* an item: ITEMENABLED (bit 4 of the low byte of Flags) */
-static void BLITZ_ROUTINE domenustate3_c(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2),
-                                         ULONG d3 BL_REG(d3), UBYTE *obj BL_REG(a3))
+static void BLITZ_ROUTINE domenustate3_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
+                                         ULONG on BL_REG(d3), UBYTE *obj BL_REG(a3))
 {
-    changestate(item(obj, (UWORD)d1, (UWORD)d2), (UWORD)d3, 0x10);
+    changestate(item(obj, (UWORD)menu, (UWORD)itemno), (UWORD)on, 0x10);
 }
 BLITZ_THUNK(domenustate3, domenustate3_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE domenustate4_c(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2),
-                                         ULONG d3 BL_REG(d3), ULONG d4 BL_REG(d4),
+static void BLITZ_ROUTINE domenustate4_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
+                                         ULONG subno BL_REG(d3), ULONG on BL_REG(d4),
                                          UBYTE *obj BL_REG(a3))
 {
-    changestate(walk(item(obj, (UWORD)d1, (UWORD)d2) + 28, (UWORD)d3), (UWORD)d4, 0x10);
+    changestate(walk(item(obj, (UWORD)menu, (UWORD)itemno) + 28, (UWORD)subno), (UWORD)on, 0x10);
 }
 BLITZ_THUNK(domenustate4, domenustate4_c, "d0-d1/a0-a1");
 
 /* GTMenuChecked: CHECKED (bit 0 of the high byte of Flags); SNE:EXT.w -
    the upper word of d0 stays */
-static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1),
-                                           ULONG d2 BL_REG(d2), UBYTE *obj BL_REG(a2))
+static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG result BL_REG(d0), ULONG menu BL_REG(d1),
+                                           ULONG itemno BL_REG(d2), UBYTE *obj BL_REG(a2))
 {
-    return BL_SETW(d0, (item(obj, (UWORD)d1, (UWORD)d2)[12] & 1) ? 0xffff : 0);
+    return BL_SETW(result, (item(obj, (UWORD)menu, (UWORD)itemno)[12] & 1) ? 0xffff : 0);
 }
 BLITZ_THUNK(domenuchecked, domenuchecked_c, "d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG d0 BL_REG(d0), ULONG d1 BL_REG(d1),
-                                            ULONG d2 BL_REG(d2), ULONG d3 BL_REG(d3),
+static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG result BL_REG(d0), ULONG menu BL_REG(d1),
+                                            ULONG itemno BL_REG(d2), ULONG subno BL_REG(d3),
                                             UBYTE *obj BL_REG(a2))
 {
-    UBYTE *p = walk(item(obj, (UWORD)d1, (UWORD)d2) + 28, (UWORD)d3);
+    UBYTE *p = walk(item(obj, (UWORD)menu, (UWORD)itemno) + 28, (UWORD)subno);
 
-    return BL_SETW(d0, (p[12] & 1) ? 0xffff : 0);
+    return BL_SETW(result, (p[12] & 1) ? 0xffff : 0);
 }
 BLITZ_THUNK(domenuchecked2, domenuchecked2_c, "d1/a0-a1");
 
@@ -806,42 +806,42 @@ static void setchecked(UBYTE *p, UWORD on)
         p[12] &= (UBYTE)~1;
 }
 
-static void BLITZ_ROUTINE setmenuchecked_c(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2),
-                                           ULONG d3 BL_REG(d3), UBYTE *obj BL_REG(a2))
+static void BLITZ_ROUTINE setmenuchecked_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
+                                           ULONG on BL_REG(d3), UBYTE *obj BL_REG(a2))
 {
-    setchecked(item(obj, (UWORD)d1, (UWORD)d2), (UWORD)d3);
+    setchecked(item(obj, (UWORD)menu, (UWORD)itemno), (UWORD)on);
 }
 BLITZ_THUNK(setmenuchecked, setmenuchecked_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE setmenuchecked2_c(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2),
-                                            ULONG d3 BL_REG(d3), ULONG d4 BL_REG(d4),
+static void BLITZ_ROUTINE setmenuchecked2_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
+                                            ULONG subno BL_REG(d3), ULONG on BL_REG(d4),
                                             UBYTE *obj BL_REG(a2))
 {
-    setchecked(walk(item(obj, (UWORD)d1, (UWORD)d2) + 28, (UWORD)d3), (UWORD)d4);
+    setchecked(walk(item(obj, (UWORD)menu, (UWORD)itemno) + 28, (UWORD)subno), (UWORD)on);
 }
 BLITZ_THUNK(setmenuchecked2, setmenuchecked2_c, "d0-d1/a0-a1");
 
 /* GTGetUserData: the long behind the MenuItem (GadTools' UserData) */
-static ULONG getuserdata(UBYTE *obj, ULONG d1, ULONG d2, ULONG d3)
+static ULONG getuserdata(UBYTE *obj, ULONG menu, ULONG itemno, ULONG subno)
 {
-    UBYTE *p = item(obj, (UWORD)d1, (UWORD)d2);
+    UBYTE *p = item(obj, (UWORD)menu, (UWORD)itemno);
 
-    if ((WORD)d3 >= 0)
-        p = walk(p + 28, (UWORD)d3);
+    if ((WORD)subno >= 0)
+        p = walk(p + 28, (UWORD)subno);
     return SL(p, MI_SIZEOF);
 }
 
-static ULONG BLITZ_ROUTINE getuserdata_c(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2),
+static ULONG BLITZ_ROUTINE getuserdata_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                          UBYTE *obj BL_REG(a2))
 {
-    return getuserdata(obj, d1, d2, (ULONG)-1);
+    return getuserdata(obj, menu, itemno, (ULONG)-1);
 }
 BLITZ_THUNK(_GetUserData, getuserdata_c, "d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE getuserdata2_c(ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2),
-                                          ULONG d3 BL_REG(d3), UBYTE *obj BL_REG(a2))
+static ULONG BLITZ_ROUTINE getuserdata2_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
+                                          ULONG subno BL_REG(d3), UBYTE *obj BL_REG(a2))
 {
-    return getuserdata(obj, d1, d2, d3);
+    return getuserdata(obj, menu, itemno, subno);
 }
 BLITZ_THUNK(_GetUserData2, getuserdata2_c, "d1/a0-a1");
 
@@ -863,62 +863,62 @@ BLITZ_ERRCHK_THUNK(setchk, listchk_c, "d0-d1/a0-a1");
 
 /* existschk: entries 0..n of the list at *a0 exist (DBF); *a0 moves to
    entry n, or stays at the last one there is.  0 if one is missing. */
-static int BLITZ_ERRCHK existschk(UBYTE **a0, UWORD n)
+static int BLITZ_ERRCHK existschk(UBYTE **entry, UWORD n)
 {
-    UBYTE *p = *a0;
+    UBYTE *p = *entry;
 
     do {
         if (!P(p, 0)) {
-            *a0 = p;
+            *entry = p;
             return 0;
         }
         p = P(p, 0);
     } while (n-- != 0);
-    *a0 = p;
+    *entry = p;
     return 1;
 }
 
 /* statechk2/3/4: menu d1, item d2 (+18), sub item d3 (+28) exist in the
    strip of the object */
-static void BLITZ_ERRCHK statechk(UBYTE *obj, int depth, UWORD d1, UWORD d2, UWORD d3)
+static void BLITZ_ERRCHK statechk(UBYTE *obj, int depth, UWORD menu, UWORD itemno, UWORD subno)
 {
-    UBYTE *a0 = obj;
+    UBYTE *entry = obj;
 
-    if (!existschk(&a0, d1)) {
+    if (!existschk(&entry, menu)) {
         BLITZ_RUNERR(mess1);
         return;
     }
     if (depth < 3)
         return;
-    a0 += 18;
-    if (!existschk(&a0, d2)) {
+    entry += 18;
+    if (!existschk(&entry, itemno)) {
         BLITZ_RUNERR(mess2);
         return;
     }
     if (depth < 4)
         return;
-    a0 += 28;
-    if (!existschk(&a0, d3))
+    entry += 28;
+    if (!existschk(&entry, subno))
         BLITZ_RUNERR(mess3);
 }
 
-#define CHKARGS ULONG d1 BL_REG(d1), ULONG d2 BL_REG(d2), ULONG d3 BL_REG(d3)
+#define CHKARGS ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2), ULONG subno BL_REG(d3)
 
 static void BLITZ_ERRCHK statechk2_c(CHKARGS, UBYTE *obj BL_REG(a3))
 {
-    statechk(obj, 2, (UWORD)d1, (UWORD)d2, (UWORD)d3);
+    statechk(obj, 2, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
 BLITZ_ERRCHK_THUNK(statechk2, statechk2_c, "d0-d1/a0-a1");
 
 static void BLITZ_ERRCHK statechk3_c(CHKARGS, UBYTE *obj BL_REG(a3))
 {
-    statechk(obj, 3, (UWORD)d1, (UWORD)d2, (UWORD)d3);
+    statechk(obj, 3, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
 BLITZ_ERRCHK_THUNK(statechk3, statechk3_c, "d0-d1/a0-a1");
 
 static void BLITZ_ERRCHK statechk4_c(CHKARGS, UBYTE *obj BL_REG(a3))
 {
-    statechk(obj, 4, (UWORD)d1, (UWORD)d2, (UWORD)d3);
+    statechk(obj, 4, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
 BLITZ_ERRCHK_THUNK(statechk4, statechk4_c, "d0-d1/a0-a1");
 
@@ -926,18 +926,18 @@ BLITZ_ERRCHK_THUNK(statechk4, statechk4_c, "d0-d1/a0-a1");
    if the sub item is -1 (CMP.w), else chkchk4 */
 static void BLITZ_ERRCHK chkchk3_c(CHKARGS, UBYTE *obj BL_REG(a2))
 {
-    statechk(obj, 3, (UWORD)d1, (UWORD)d2, (UWORD)d3);
+    statechk(obj, 3, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
 BLITZ_ERRCHK_THUNK(chkchk3, chkchk3_c, "d0-d1/a0-a1");
 
 static void BLITZ_ERRCHK chkchk4_c(CHKARGS, UBYTE *obj BL_REG(a2))
 {
-    statechk(obj, 4, (UWORD)d1, (UWORD)d2, (UWORD)d3);
+    statechk(obj, 4, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
 BLITZ_ERRCHK_THUNK(chkchk4, chkchk4_c, "d0-d1/a0-a1");
 
 static void BLITZ_ERRCHK chkchk5_c(CHKARGS, UBYTE *obj BL_REG(a2))
 {
-    statechk(obj, (UWORD)d3 == 0xffff ? 3 : 4, (UWORD)d1, (UWORD)d2, (UWORD)d3);
+    statechk(obj, (UWORD)subno == 0xffff ? 3 : 4, (UWORD)menu, (UWORD)itemno, (UWORD)subno);
 }
 BLITZ_ERRCHK_THUNK(chkchk5, chkchk5_c, "d0-d1/a0-a1");
