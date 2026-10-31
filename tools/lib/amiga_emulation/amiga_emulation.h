@@ -155,6 +155,36 @@ int amiga_emulation_command(struct amiga_emulation *e, const char *const *args,
 /* waits for the end of the run (see above); may be called once */
 enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e);
 
+/* what the snapshot mode did for a session */
+enum amiga_emulation_snapshot_use {
+    AMIGA_EMULATION_SNAP_COLD,          /* booted, no snapshot (cold, off, no slot
+                                           directory) */
+    AMIGA_EMULATION_SNAP_RESTORED,      /* started from the slot's snapshot */
+    AMIGA_EMULATION_SNAP_FIRST_SAVE,    /* booted, saved the snapshot, restored it */
+    AMIGA_EMULATION_SNAP_FALLBACK       /* the snapshot did not work (restore or
+                                           save failed): booted cold after all */
+};
+
+/* the times of a session, for test statistics (the runners' @stat lines,
+   tools/lib/teststats/statline.h) */
+struct amiga_emulation_stats {
+    double wait;                /* seconds amiga_emulation_start waited for a slot */
+    double session;             /* seconds from the slot taken to the end of
+                                   amiga_emulation_join (until now if not
+                                   joined yet), the wait not included */
+    double timed;               /* the part of it counted against the time
+                                   limit: from the last (re)start of Amiberry
+                                   (a snapshot save or a fallback restarts it) */
+    unsigned timeout;           /* the time limit (seconds) */
+    const char *machine;        /* params.machine, "a1200" for the default;
+                                   valid as long as the handle */
+    enum amiga_emulation_snapshot_use snapshot;
+    enum amiga_emulation_status status;     /* of the join; FAILED before it */
+};
+void amiga_emulation_stats(const struct amiga_emulation *e, struct amiga_emulation_stats *s);
+/* "cold", "restored", "first-save", "fallback" */
+const char *amiga_emulation_snapshot_use_name(enum amiga_emulation_snapshot_use u);
+
 /* frees the handle; removes the work directory if the library made it */
 void amiga_emulation_free(struct amiga_emulation *e);
 

@@ -101,8 +101,10 @@ static int slot_clean(void)
 }
 
 /* one session in base/NAME; the snapshot.log into *log; 1 = the results
-   are right, -1 = cannot start */
-static int session(const char *name, int cold, char **log, double *secs)
+   are right (amiga_emulation_stats too: snapshot use `use`), -1 = cannot
+   start */
+static int session(const char *name, int cold, enum amiga_emulation_snapshot_use use, char **log,
+                   double *secs)
 {
     static const char script[] =
         "Type TEST:in.txt >TEST:out.txt\n"
@@ -113,6 +115,7 @@ static int session(const char *name, int cold, char **log, double *secs)
     struct amiga_emulation_mount mounts[2];
     struct amiga_emulation_params p = { 0 };
     struct amiga_emulation *e;
+    struct amiga_emulation_stats st;
     int ok;
 
     snprintf(work, sizeof work, "%s/%s", base, name);
@@ -138,6 +141,15 @@ static int session(const char *name, int cold, char **log, double *secs)
     }
     ok = amiga_emulation_join(e) == AMIGA_EMULATION_DONE;
     *secs = now() - *secs;
+    amiga_emulation_stats(e, &st);
+    if (st.snapshot != use || st.status != AMIGA_EMULATION_DONE || st.timeout != 90
+        || strcmp(st.machine, "a1200") || st.wait < 0 || st.session <= 0
+        || st.session > *secs + 0.01 || st.timed <= 0 || st.timed > st.session + 0.01) {
+        fprintf(stderr, "test_amiga_emulation_snapshot: %s: stats %s %s wait %.2f session %.2f "
+                "timed %.2f (whole %.2f)\n", name, amiga_emulation_snapshot_use_name(st.snapshot),
+                amiga_emulation_status_name(st.status), st.wait, st.session, st.timed, *secs);
+        ok = 0;
+    }
     s = read_text(test, "out.txt");
     ok = ok && s && !strncmp(s, name, strlen(name));
     free(s);
@@ -189,7 +201,7 @@ int main(void)
     unsetenv("AMIGA_EMULATION_SNAPSHOT");
 
     /* the first session: boots cold, saves, restores */
-    r = session("first", 0, &log, &secs);
+    r = session("first", 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs);
     if (r < 0)
         return 77;
     CHECK(r == 1);
@@ -201,7 +213,7 @@ int main(void)
     fprintf(stderr, "test_amiga_emulation_snapshot: first session %.1f s\n", secs);
 
     /* the second: restored */
-    CHECK(session("second", 0, &log, &secs) == 1);
+    CHECK(session("second", 0, AMIGA_EMULATION_SNAP_RESTORED, &log, &secs) == 1);
     CHECK(log && strstr(log, "restore ") && strstr(log, "job started") && !strstr(log, "cold")
           && !strstr(log, "failed"));
     CHECK(secs < 10);
@@ -218,14 +230,14 @@ int main(void)
         fputs("not a savestate", f);
         fclose(f);
     }
-    CHECK(session("corrupted", 0, &log, &secs) == 1);
+    CHECK(session("corrupted", 0, AMIGA_EMULATION_SNAP_FALLBACK, &log, &secs) == 1);
     CHECK(log && strstr(log, "restore failed") && strstr(log, "boot cold"));
     CHECK(snapshots(path, sizeof path) == 0);
     CHECK(slot_clean());
     free(log);
 
     /* cold: no snapshot at all */
-    CHECK(session("cold", 1, &log, &secs) == 1);
+    CHECK(session("cold", 1, AMIGA_EMULATION_SNAP_COLD, &log, &secs) == 1);
     CHECK(log && !*log);
     CHECK(snapshots(path, sizeof path) == 0);
     free(log);

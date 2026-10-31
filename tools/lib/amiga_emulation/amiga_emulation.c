@@ -124,6 +124,10 @@ struct amiga_emulation {
     int date_from_host;         /* the clock by DATE (Kickstart 1.3) */
     pid_t parent;
     double t0;                  /* the start, for snapshot.log */
+    /* amiga_emulation_stats */
+    double slot_from, slot_got, end_at;
+    enum amiga_emulation_snapshot_use snap_use;
+    char *machine;
 };
 
 /* ------------------------------------------------------------- helpers */
@@ -1352,8 +1356,11 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     }
     free(path);
 
+    e->slot_from = now();
     if ((e->slot = take_slot(&slot_index, err, errlen)) < 0)
         goto fail;
+    e->slot_got = now();
+    e->machine = strdup(p->machine ? p->machine : "a1200");
     active_runs++;
     e->counted = 1;
     e->parent = getpid();
@@ -1383,12 +1390,14 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
             }
             if (e->snap == SNAP_RESTORING) {
                 statefile = e->snap_path;
+                e->snap_use = AMIGA_EMULATION_SNAP_RESTORED;
                 /* the newest use first when the slot's snapshots are pruned */
                 utimensat(AT_FDCWD, e->snap_path, NULL, 0);
                 e->restore_until = now() + SNAP_RESTORE_GRACE;
                 snap_log(e, "restore %s", e->snap_path);
             } else {
                 snap_log(e, "boot cold, save %s", e->snap_path);
+                e->snap_use = AMIGA_EMULATION_SNAP_FIRST_SAVE;
             }
         }
     }
@@ -1557,6 +1566,7 @@ enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
                          started && file_exists(started) ? ", the job had just started" : "");
                 free(started);
                 unlink(e->snap_path);
+                e->snap_use = AMIGA_EMULATION_SNAP_FALLBACK;
                 if (snap_off(e) || launch(e, NULL, err, sizeof err)) {
                     e->status = AMIGA_EMULATION_FAILED;
                     break;
@@ -1589,6 +1599,7 @@ enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
                     }
                 } else {
                     snap_log(e, "boot cold");
+                    e->snap_use = AMIGA_EMULATION_SNAP_FALLBACK;
                     if (snap_off(e) || launch(e, NULL, err, sizeof err)) {
                         e->status = AMIGA_EMULATION_FAILED;
                         break;
@@ -1651,7 +1662,34 @@ enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
         snap_finish(e);
     }
     e->joined = 1;
+    e->end_at = now();
     return e->status;
+}
+
+void amiga_emulation_stats(const struct amiga_emulation *e, struct amiga_emulation_stats *s)
+{
+    double end = e->joined ? e->end_at : now();
+
+    s->wait = e->slot_got > e->slot_from ? e->slot_got - e->slot_from : 0;
+    s->session = e->slot_got ? end - e->slot_got : 0;
+    /* the time limit counts from the last (re)start of Amiberry */
+    s->timed = e->deadline ? end - (e->deadline - e->timeout) : 0;
+    if (s->timed < 0)
+        s->timed = 0;
+    s->timeout = e->timeout;
+    s->machine = e->machine ? e->machine : "a1200";
+    s->snapshot = e->snap_use;
+    s->status = e->joined ? e->status : AMIGA_EMULATION_FAILED;
+}
+
+const char *amiga_emulation_snapshot_use_name(enum amiga_emulation_snapshot_use u)
+{
+    switch (u) {
+    case AMIGA_EMULATION_SNAP_RESTORED: return "restored";
+    case AMIGA_EMULATION_SNAP_FIRST_SAVE: return "first-save";
+    case AMIGA_EMULATION_SNAP_FALLBACK: return "fallback";
+    default: return "cold";
+    }
 }
 
 void amiga_emulation_free(struct amiga_emulation *e)
@@ -1672,6 +1710,7 @@ void amiga_emulation_free(struct amiga_emulation *e)
     free(e->work_dir);
     free(e->test_dir);
     free(e->slot_dir);
+    free(e->machine);
     free(e->ctl_dir);
     free(e->snap_path);
     free(e->job);

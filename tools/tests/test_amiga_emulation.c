@@ -619,6 +619,13 @@ int main(void)
     snapshot_key();
     snapshot_prune();
 
+    /* the names of the @stat lines (tools/lib/teststats/statline.h) */
+    CHECK(!strcmp(amiga_emulation_snapshot_use_name(AMIGA_EMULATION_SNAP_COLD), "cold"));
+    CHECK(!strcmp(amiga_emulation_snapshot_use_name(AMIGA_EMULATION_SNAP_RESTORED), "restored"));
+    CHECK(!strcmp(amiga_emulation_snapshot_use_name(AMIGA_EMULATION_SNAP_FIRST_SAVE),
+                  "first-save"));
+    CHECK(!strcmp(amiga_emulation_snapshot_use_name(AMIGA_EMULATION_SNAP_FALLBACK), "fallback"));
+
     if (failures)
         fprintf(stderr, "test_amiga_emulation: %d failures\n", failures);
     return failures != 0;
