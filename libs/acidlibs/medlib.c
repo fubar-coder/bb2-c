@@ -575,10 +575,10 @@ static void relocdmp(void)
     if (!d3)
         return;
     {
-        UBYTE *t = (UBYTE *)d3;                 /* EXG.l a0,d3 */
+        UBYTE *other = (UBYTE *)d3;             /* EXG.l a0,d3 */
 
         d3 = (ULONG)a0;
-        a0 = t;
+        a0 = other;
     }
     a0 += 4;
     relocentr();
@@ -637,8 +637,8 @@ static void RelocModule(void)
     if (MB(a2, 0) != 'M')
         return;
     {
-        UBYTE *s2 = a2, *s3 = a3;               /* MOVEM.l a2-a3/d2-d3 */
-        ULONG t2 = d2, t3 = d3;
+        UBYTE *saved_a2 = a2, *saved_a3 = a3;   /* MOVEM.l a2-a3/d2-d3 */
+        ULONG saved_d2 = d2, saved_d3 = d3;
 
         MB(a2, 0) = 'R';
         d1 = (ULONG)a2;
@@ -673,10 +673,10 @@ static void RelocModule(void)
             relocp();
             a1 = MP(a2, 8);
         }
-        a2 = s2;
-        a3 = s3;
-        d2 = t2;
-        d3 = t3;
+        a2 = saved_a2;
+        a3 = saved_a3;
+        d2 = saved_d2;
+        d3 = saved_d3;
     }
 }
 
@@ -701,7 +701,7 @@ static void ChannelOff(void)
 
 static void SoundOff(void)
 {
-    ULONG s2 = d2;
+    ULONG saved_d2 = d2;
 
     for (d2 = 15; ; ) {
         d0 = d2;
@@ -711,7 +711,7 @@ static void SoundOff(void)
             break;
     }
     db.module = 0;
-    d2 = s2;
+    d2 = saved_d2;
 }
 
 /* --------------------------------------------------------------- synth */
@@ -730,7 +730,7 @@ static void synth_getwf(void)
 /* synth_start2 - d0 = synth instrument, d5 = period; result d5 */
 static void synth_start2(void)
 {
-    UBYTE *s3 = a3;
+    UBYTE *saved_a3 = a3;
 
     a0 = (UBYTE *)d0;
     a3 = MP(a5, trk_audioaddr);
@@ -958,7 +958,7 @@ synth_arpeggio:
     SETW(d5, d5 + MW(a5, trk_perchg));          /* synth_rts */
     if (SW(d5) < 113)
         d1 = 113;                               /* BUG(orig) (#206): d1, not d5 */
-    a3 = s3;
+    a3 = saved_a3;
 }
 
 static void synth_start(void)
@@ -1010,7 +1010,7 @@ tlwtst0:
     d3 = 0;
     SETW(d0, MW(a0, 4));
     if (W(d0)) {                                /* iff5R3oct */
-        ULONG s7 = d7;
+        ULONG saved_d7 = d7;
 
         d7 = 0;
         SETW(d7, d1);
@@ -1051,7 +1051,7 @@ tlwtst0:
         SETB(d5, d5 + octstart[SW(d7)]);
         SETB(d5, d5 + d5);
         SETW(d5, MW(a1, SW(d5)));
-        d7 = s7;
+        d7 = saved_d7;
     } else {
         a1 = PERIODTABLE0;
         SETB(d2, MB(a5, trk_finetune));
@@ -1154,8 +1154,8 @@ hSn2:
 /* playfxnote - replay the previous note (hold counter continued) */
 static void playfxnote(void)
 {
-    ULONG s3;
-    UBYTE *sa3;
+    ULONG saved_d3;
+    UBYTE *saved_a3;
 
     d1 = 0;
     SETB(d1, MB(a5, trk_prevnote));
@@ -1170,14 +1170,14 @@ static void playfxnote(void)
             SETB(d0, 0xff);
     }
     MB(a5, trk_noteoffcnt) = d0;
-    s3 = d3;
-    sa3 = a3;
+    saved_d3 = d3;
+    saved_a3 = a3;
     d3 = 0;
     SETB(d3, MB(a5, trk_previnstr));
     a3 = MP(a5, trk_previnstra);
     PlayNote();
-    d3 = s3;
-    a3 = sa3;
+    d3 = saved_d3;
+    a3 = saved_a3;
 }
 
 static void cmd_F(void)
@@ -1944,7 +1944,7 @@ plr_exit:
 
 static void InitModule(void)
 {
-    UBYTE *s2 = a2, *s3 = a3;
+    UBYTE *saved_a2 = a2, *saved_a3 = a3;
     ULONG s2d = d2;
     int i;
 
@@ -1996,8 +1996,8 @@ clrhlddec:
         SETW(d0, d0 - 1);
     } while (W(d0) != 0xffff);
 exit:
-    a2 = s2;
-    a3 = s3;
+    a2 = saved_a2;
+    a3 = saved_a3;
     d2 = s2d;
 }
 
@@ -2085,11 +2085,11 @@ static ULONG globalloc(ULONG size, ULONG flags)
 static void BLITZ_ROUTINE _cludgemedmodule_c(ULONG addr BL_REG(d1))
 {
     ULONG *obj = (ULONG *)blitz_string;
-    UWORD *s = (UWORD *)addr, *t;
+    UWORD *src = (UWORD *)addr, *dst;
     ULONG n;
 
     freemedmodule(obj);
-    obj[0] = *(ULONG *)s;
+    obj[0] = *(ULONG *)src;
     if (*(UWORD *)obj != 0x4d4d)                /* "MM" */
         return;
     if ((addr & 0x1fffff) == addr) {            /* inchip */
@@ -2097,15 +2097,15 @@ static void BLITZ_ROUTINE _cludgemedmodule_c(ULONG addr BL_REG(d1))
         obj[2] = addr;
         return;
     }
-    obj[1] = ((ULONG *)s)[1];                   /* infast */
+    obj[1] = ((ULONG *)src)[1];                 /* infast */
     obj[2] = globalloc(obj[1], MEMF_CHIP);
-    t = (UWORD *)obj[2];
+    dst = (UWORD *)obj[2];
     n = obj[1] >> 1;
     do
-        *t++ = *s++;
+        *dst++ = *src++;
     while ((LONG)--n > 0);                      /* SUBQ.l #1,d0:BGT */
     if (obj[1] & 1)                             /* LSR #1,d1:BCC */
-        *(UBYTE *)t = *(UBYTE *)s;
+        *(UBYTE *)dst = *(UBYTE *)src;
 }
 BLITZ_THUNK(_cludgemedmodule, _cludgemedmodule_c, "d1/a0-a1");
 
@@ -2214,10 +2214,10 @@ BLITZ_THUNK(_SetMedVolume, _SetMedVolume_c, "d1/a0-a1");
 /* GetMedVolume/Note/Instr(channel) - read and clear */
 static ULONG getclear(UWORD ch, int off)
 {
-    UBYTE *t = *(UBYTE **)((UBYTE *)db.trackdataptrs + (WORD)(UWORD)(ch << 2));
-    ULONG v = MB(t, off);
+    UBYTE *track = *(UBYTE **)((UBYTE *)db.trackdataptrs + (WORD)(UWORD)(ch << 2));
+    ULONG v = MB(track, off);
 
-    MB(t, off) = 0;
+    MB(track, off) = 0;
     return v;
 }
 
