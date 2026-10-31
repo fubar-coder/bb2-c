@@ -66,6 +66,7 @@
 #include "blitzexec.h"
 #include <exec/io.h>
 #include <devices/trackdisk.h>
+#include <devices/bootblock.h>
 #include <stddef.h>
 
 /* entries (thunks below) */
@@ -365,14 +366,15 @@ ULONG BLITZ_ROUTINE c_install2(LONG unit BL_REG(d0), APTR buffer BL_REG(d2))
 /* BootProg unit#,memoryaddress: "DOS",0, checksum, write sectors 0-1 */
 ULONG BLITZ_ROUTINE c_bootprog(LONG unit BL_REG(d0), UBYTE *mem BL_REG(d1))
 {
+    struct BootBlock *bb = (struct BootBlock *)mem;
     ULONG *p = (ULONG *)mem, sum = 0;
     int i;
 
     if (!td.msgport)
         return 0;
-    mem[0] = 'D';
-    mem[1] = 'O';
-    mem[2] = 'S';
+    mem[0] = 'D';                       /* bb_id, byte by byte (MOVE.b; */
+    mem[1] = 'O';                       /* as bb->bb_id GCC would merge */
+    mem[2] = 'S';                       /* them into words) */
     mem[3] = 0;
     for (i = 0; i < 256; i++) {         /* ADD.l (a0)+,d0:BCC:ADDQ.l #1 */
         ULONG v = p[i];
@@ -380,8 +382,8 @@ ULONG BLITZ_ROUTINE c_bootprog(LONG unit BL_REG(d0), UBYTE *mem BL_REG(d1))
         if (sum < v)
             sum++;
     }
-    p[1] = sum;
-    p[2] = 0;
+    bb->bb_chksum = sum;                /* BUG(orig): not complemented (#856) */
+    bb->bb_dosblock = 0;                /* BUG(orig): after the sum (#856) */
     return c_writesector2(unit, 0, mem, 2);
 }
 
