@@ -1,5 +1,5 @@
 [compile]
 ok
 [run]
-after
+marker kept
 rc=0
