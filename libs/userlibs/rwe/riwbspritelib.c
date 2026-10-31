@@ -374,25 +374,25 @@ static ULONG BLITZ_ROUTINE movewbsprite_c(ULONG vp BL_REG(d0), ULONG x BL_REG(d1
 }
 
 /* ChangeWBSprite(viewport,channel,shape) (d0, d1; a0 = the shape) */
-static ULONG BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_REG(d1),
-                                            ULONG shape BL_REG(a0))
+static BB_BOOL BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_REG(d1),
+                                              ULONG shape BL_REG(a0))
 {
     ULONG *e;
     LONG r;
 
     if (!wd.graphicslibbase || !((const struct shape *)shape)->data)
-        return 0;
+        return BB_FALSE;
     wd.myviewport = vp;
     wd.sprchannel = (LONG)ch;
     e = (ULONG *)((UBYTE *)wd.spritepointers + (LONG)ASLW2(ch));
     if (!*e)
-        return 0;
+        return BB_FALSE;
     wd.oldpointer = (ULONG)e;
     wd.sprx = ((struct ExtSprite *)*e)->es_SimpleSprite.x;
     wd.spry = ((struct ExtSprite *)*e)->es_SimpleSprite.y;
     wd.shapeaddr = shape;
     if (shapebitmap() <= 0)
-        return 0;
+        return BB_FALSE;
     r = 0;
     if (newsprite()) {
         r = changeextsprite(wd.myviewport, *(ULONG *)wd.oldpointer, wd.temppointer,
@@ -404,7 +404,7 @@ static ULONG BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_REG
         }
     }
     FreeBitMap((struct BitMap *)wd.mybitmap);
-    return (ULONG)r;
+    return (BB_BOOL)r;                  /* 0 or -1 */
 }
 
 /* WBSpriteX/Y(channel) (d0.w): the low word of d0 replaced */
