@@ -1376,7 +1376,15 @@ static void getnewnote(void)
     dskip();
 }
 
-/* mt_music: one tick (the CIA interrupt, PlayTracker) */
+/**
+ * @brief PlayTracker: one tick of the play routine (mt_music).
+ *
+ * Also the code of the CIA interrupt (MusicIntServer); after
+ * ChangeTrackerVBlank the program calls PlayTracker itself, once per
+ * tick.  Nothing happens unless a module plays (mt_Enable).  The bugs of
+ * the Protracker 2.3A routine are listed in the head of the file.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE mt_music_c(void)
 {
     if (!playdata.Enable)
@@ -1409,6 +1417,9 @@ static void change_volume_levels(void)
 
 /* ---------------------------------------------------------- the module */
 
+/* _freetrackermodule (FreeTrackerModule, and LoadTrackerModule before
+   loading): an empty slot stays as it is; memory of a loaded or copied
+   module (flag 1, 2) is freed, the slot cleared */
 static void freetrackermodule_c(ULONG num BL_REG(d0))
 {
     struct modent *e = slot(num);
@@ -1422,7 +1433,26 @@ static void freetrackermodule_c(ULONG num BL_REG(d0))
     e->flag = 0;
 }
 
-/* LoadTrackerModule (a6 = whatever the program has: BUG(orig), #443) */
+/**
+ * @brief LoadTrackerModule(TrackerModule#,Name): load a module file into
+ * chip memory.
+ *
+ * The slot is freed first; Lock, Examine (FileInfoBlock of memlib),
+ * memory of the file size + 3 (a byte add, the carry is lost: BUG(orig)
+ * (#442)) from memlib's globalloc (not checked, #440: memlib ends the
+ * program when it fails), OpenFromLock, Read, Close; flag 1.  No !libs:
+ * the dos calls go through whatever a6 holds (BUG(orig) (#443)).  A
+ * failing Lock, FileInfoBlock or Examine is a runtime error ("Tracker:
+ * File error! (Not found?)", "Tracker Library Error"), the last two
+ * leave the lock allocated (#441).  A Read error unlocks the lock that
+ * OpenFromLock took over (#444) and frees the slot.  Error check
+ * (_loadcheck): slots 0-8, the slot must be empty.
+ * @param num   d0: the slot
+ * @param name  d1: the file name
+ * @param dos   a6: the caller's a6 (dos.library, if it happens to be)
+ * @return d0: -1 when the file was read, IoErr() after a Read error (so
+ *         not BB_BOOL)
+ */
 static ULONG BLITZ_ROUTINE loadtrkmodule_c(ULONG num BL_REG(d0), ULONG name BL_REG(d1),
                                            struct DosLibrary *dos BL_REG(a6))
 {
@@ -1491,6 +1521,23 @@ static BB_BOOL modtochip(ULONG num)
     return BB_TRUE;
 }
 
+/**
+ * @brief DecodeModule TrackerModule#,ModuleAddress: use a module in
+ * memory.
+ *
+ * The slot gets the address, length 1 (so CheckTrackerID works) and
+ * flag 0.  A module in chip memory (an address below $200000, signed)
+ * stays where it is (BUG(orig) (#432)); one from other memory is copied
+ * to chip memory, with the size + 3 as a word add (#434), flag 2; when
+ * that memory is missing the slot keeps the old address with flag 2 and
+ * the new length (#433; memlib's globalloc ends the program instead).
+ * The size comes from mt_init's scan of the song positions (#477).
+ * Error check (_decodecheck): slots 0-8, no loaded or copied module in
+ * the slot.
+ * @param num   d0: the slot
+ * @param addr  d1: the module
+ * @return nothing
+ */
 static void BLITZ_ROUTINE decodemod_c(ULONG num BL_REG(d0), ULONG addr BL_REG(d1))
 {
     struct modent *e = slot(num);
@@ -1501,22 +1548,57 @@ static void BLITZ_ROUTINE decodemod_c(ULONG num BL_REG(d0), ULONG addr BL_REG(d1
     modtochip(num);
 }
 
+/**
+ * @brief GetTrackerSize(TrackerModule#): the length of a slot's module.
+ *
+ * Error check (_checkused): slots 0-8, a module in the slot.
+ * @param num  d0.w: the slot
+ * @return d0: the length (file size + 3 for a loaded one, see
+ *         LoadTrackerModule; 1 for a module DecodeModule left in place)
+ */
 static ULONG BLITZ_ROUTINE gettrklen_c(ULONG num BL_REG(d0))
 {
     return slot(num)->len;
 }
 
+/**
+ * @brief GetTrackerLocation(TrackerModule#): the address of a slot's
+ * module.
+ *
+ * Error check (_checkused): slots 0-8, a module in the slot.
+ * @param num  d0: the slot
+ * @return d0: the address, 0 for an empty slot
+ */
 static ULONG BLITZ_ROUTINE gettrkloc_c(ULONG num BL_REG(d0))
 {
     return (ULONG)slot(num)->addr;
 }
 
+/**
+ * @brief FreeTrackerModule TrackerModule#: free a slot's module.
+ *
+ * The memory of a loaded or copied module is freed; a module that plays
+ * from the slot is not stopped (BUG(orig) (#436)).  Error check
+ * (_slotcheck): slots 0-8.
+ * @param num  d0: the slot
+ * @return nothing
+ */
 static void BLITZ_ROUTINE freetrk_c(ULONG num BL_REG(d0))
 {
     freetrackermodule_c(num);
 }
 
-/* CheckTrackerID: -1 for M.K. / M!K!, else the long at address 0 */
+/**
+ * @brief CheckTrackerID(TrackerModule#): is the slot's module a
+ * Protracker module?
+ *
+ * Tests the id at $438 for "M.K." or "M!K!".  "Not a module" and an
+ * empty slot (length 0) return the long at ADDRESS 0 (MOVE.l 0,d0,
+ * BUG(orig) (#430)).  Error check (_checkused): slots 0-8, a module in
+ * the slot.
+ * @param num  d0: the slot
+ * @return d0: -1 for a module, else the long at address 0 (not BB_BOOL)
+ */
 static ULONG BLITZ_ROUTINE checkid_c(ULONG num BL_REG(d0))
 {
     struct modent *e = slot(num);
@@ -1530,13 +1612,28 @@ static ULONG BLITZ_ROUTINE checkid_c(ULONG num BL_REG(d0))
     return peekl(0);
 }
 
-/* ModuleToChip: RTS (the argument comes back) */
+/**
+ * @brief ModuleToChip(TrackerModule#): does nothing (RTS).
+ *
+ * BUG(orig) (#446): the module is not copied (DecodeModule does that).
+ * @param arg  d0: the slot
+ * @return d0: the argument
+ */
 static ULONG BLITZ_ROUTINE modtochip2_c(ULONG arg BL_REG(d0))
 {
     return arg;
 }
 
-/* GetModuleName$: up to 20 characters of the module's name at a3 */
+/**
+ * @brief GetModuleName$(TrackerModule#): the name of a slot's module.
+ *
+ * Up to 20 characters of the module's name, at a3, and a 0.  An empty
+ * slot writes nothing (not even the 0) and returns slot*10 as the length
+ * (BUG(orig) (#437)).  Error check (_checkused): slots 0-8, a module in
+ * the slot.
+ * @param num  d0: the slot
+ * @return d0: the length (counted as a word)
+ */
 static ULONG BLITZ_ROUTINE getmodulename_c(ULONG num BL_REG(d0))
 {
     ULONG off = bl_mulu_w((UWORD)num, 10);
@@ -1557,7 +1654,17 @@ static ULONG BLITZ_ROUTINE getmodulename_c(ULONG num BL_REG(d0))
     return len;
 }
 
-/* StartTracker */
+/**
+ * @brief StartTracker(TrackerModule#): play a slot's module.
+ *
+ * Resets the CIA tempo (removes the interrupt), installs it again
+ * unless ChangeTrackerVBlank was used, mt_init (its scan and sample
+ * clearing: BUG(orig) (#438, #477)) and enables playing.  Error check
+ * (_checkused): slots 0-8, a module in the slot.
+ * @param num  d0: the slot
+ * @return d0: -1 when it plays; the slot number for an empty slot (the
+ *         MOVEM restores d0 over the 0, BUG(orig) (#451))
+ */
 static ULONG BLITZ_ROUTINE starttrkmodule_c(ULONG num BL_REG(d0))
 {
     struct modent *e = slot(num);
@@ -1573,12 +1680,24 @@ static ULONG BLITZ_ROUTINE starttrkmodule_c(ULONG num BL_REG(d0))
     return BB_TRUE;                     /* not BB_BOOL: or the slot (#451) */
 }
 
+/**
+ * @brief StopTracker: stop playing (mt_end: volumes 0, audio DMA off).
+ * @return nothing
+ */
 static void BLITZ_ROUTINE stoptracker_c(void)
 {
     mt_end();
     playdata.Enable = 0;
 }
 
+/**
+ * @brief ModulePatterns(Module #): meant to give the number of patterns.
+ *
+ * Returns the song length (byte 950 of the module) instead (BUG(orig)
+ * (#445)).  Error check (_checkused): slots 0-8, a module in the slot.
+ * @param num  d0: the slot
+ * @return d0.b: the song length, 0 for an empty slot
+ */
 static ULONG BLITZ_ROUTINE maxpatterns_c(ULONG num BL_REG(d0))
 {
     const UBYTE *mod = slot(num)->addr;
@@ -1590,12 +1709,28 @@ static ULONG BLITZ_ROUTINE maxpatterns_c(ULONG num BL_REG(d0))
 
 /* ------------------------------------------------------------ the rest */
 
+/**
+ * @brief GetTrackerEvent: the value of the last tracker event (effect 8).
+ *
+ * Effect 8 is seen only on ticks other than 0 (BUG(orig) (#435)).
+ * Only the low byte of d0 changes (declared #byte, not a defect).
+ * @param old  d0: the caller's d0
+ * @return d0.b: the event value
+ */
 static ULONG BLITZ_ROUTINE gettrackerevent_c(ULONG old BL_REG(d0))
 {
     return BL_SETB(old, playdata.TrkEvt);
 }
 
-/* CheckTrackerEvent: d0.w -1 for a new event, else d0.b the last one */
+/**
+ * @brief CheckTrackerEvent: has a new tracker event come?
+ *
+ * A new event (one that differs from the last seen) is marked seen.
+ * The "no" case changes only the low byte of d0 (BUG(orig) (#431)).
+ * @param old  d0: the caller's d0
+ * @return d0.w: -1 for a new event (a word, not BB_BOOL); else d0.b the
+ *         last event's value, the rest of d0 as it was
+ */
 static ULONG BLITZ_ROUTINE checktrackerevent_c(ULONG old BL_REG(d0))
 {
     if (playdata.LstEvt == playdata.TrkEvt)
@@ -1604,8 +1739,15 @@ static ULONG BLITZ_ROUTINE checktrackerevent_c(ULONG old BL_REG(d0))
     return BL_SETW(old, 0xffff);
 }
 
-/* WaitTrackerEvent: WaitTOF (-270) through a6 (BUG(orig): no !libs,
-   #453) */
+/**
+ * @brief WaitTrackerEvent: wait for the next tracker event.
+ *
+ * Marks the current event seen, then WaitTOF (-270) until the event
+ * changes - through whatever a6 holds: no !libs (BUG(orig) (#453)).
+ * @param caller_a6  a6: the caller's a6 (graphics.library, if it
+ *                   happens to be)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE waittrackerevent_c(const void *caller_a6 BL_REG(a6))
 {
     checktrackerevent_c(0);
@@ -1619,6 +1761,14 @@ static void BLITZ_ROUTINE waittrackerevent_c(const void *caller_a6 BL_REG(a6))
     }
 }
 
+/**
+ * @brief ModulePositionJump (Position#): jump to a song position.
+ *
+ * At the next tick mt_NextPosition increments it: the song continues at
+ * position n + 1 (BUG(orig) (#447)).
+ * @param pos  d0.b: the position
+ * @return nothing
+ */
 static void BLITZ_ROUTINE modulepositionjump_c(ULONG pos BL_REG(d0))
 {
     playdata.SongPos = (UBYTE)pos;
@@ -1626,11 +1776,23 @@ static void BLITZ_ROUTINE modulepositionjump_c(ULONG pos BL_REG(d0))
     playdata.PosJumpFlag = 0xff;
 }
 
+/**
+ * @brief GetModulePosition: the current song position.
+ * @param old  d0: the caller's d0
+ * @return d0.b: the position (the rest of d0 as it was)
+ */
 static ULONG BLITZ_ROUTINE getmoduleposition_c(ULONG old BL_REG(d0))
 {
     return BL_SETB(old, playdata.SongPos);
 }
 
+/**
+ * @brief PauseModule: pause or continue the playing module.
+ *
+ * Toggles: the first call stops (mt_end), the next enables playing
+ * again.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE pausemodule_c(void)
 {
     if (libvars.pause_status == 0) {
@@ -1642,6 +1804,14 @@ static void BLITZ_ROUTINE pausemodule_c(void)
     }
 }
 
+/**
+ * @brief ChangeTrackerVBlank: play without the CIA interrupt.
+ *
+ * Stops playing (mt_end) and removes the CIA interrupt (ResetCIAInt,
+ * with its bugs #448, #449); from then on the program calls PlayTracker
+ * itself and StartTracker installs no interrupt.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE change_playtype_c(void)
 {
     libvars.play_type = 1;
@@ -1649,8 +1819,16 @@ static void BLITZ_ROUTINE change_playtype_c(void)
     resetciaint();
 }
 
-/* TrackerVolume: only 0 < new < 64 sets the playing notes (BUG(orig),
-   #452) */
+/**
+ * @brief TrackerVolume (Volume Range: 0-64): the master volume.
+ *
+ * Values above 64 are ignored.  Only 0 < volume < 64 changes the volumes
+ * of the notes that play now (Change_Volume_Levels): TrackerVolume 0 or
+ * 64 does not (BUG(orig) (#452)); new notes get note volume * master /
+ * 64.
+ * @param vol  d0.w: the volume
+ * @return nothing
+ */
 static void BLITZ_ROUTINE volume_control_c(ULONG vol BL_REG(d0))
 {
     UWORD level, diff;
@@ -1670,6 +1848,14 @@ static void BLITZ_ROUTINE volume_control_c(ULONG vol BL_REG(d0))
     change_volume_levels();
 }
 
+/**
+ * @brief ChangeTrackerMask Channel_Mask: the voices to play.
+ *
+ * Bit 0 = voice 1 ... bit 3 = voice 4.  A masked voice writes its
+ * registers into fake_channel; its volume is set to 0 at once.
+ * @param mask  d0.w: the voice bits
+ * @return nothing
+ */
 static void BLITZ_ROUTINE changetrackermask_c(ULONG mask BL_REG(d0))
 {
     int i;
@@ -1684,6 +1870,14 @@ static void BLITZ_ROUTINE changetrackermask_c(ULONG mask BL_REG(d0))
     }
 }
 
+/**
+ * @brief init: install the CIA interrupt and clear the module slots.
+ *
+ * SetCIAInt (mt_music every 1/50 s on timer A of ciaa, else timer B of
+ * ciab; its ICR bit comes from the addresses 1 and 2, BUG(orig) (#450)),
+ * slots 0-7 cleared (DBNE from 7), master volume 64, all four voices on.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE inittrackerlib_c(void)
 {
     int i;
@@ -1700,6 +1894,14 @@ static void BLITZ_ROUTINE inittrackerlib_c(void)
     libvars.volume_flag = 0;
 }
 
+/**
+ * @brief finit: stop playing and remove the CIA interrupt.
+ *
+ * ResetCIAInt (unless ChangeTrackerVBlank removed it) removes the vector
+ * with bit 0 (#448) and toggles the filter (#449).  The module slots are
+ * not freed here.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE finittrackerlib_c(void)
 {
     stoptracker_c();
