@@ -98,7 +98,7 @@ of the booted system, taken when the system waits for its job (about
   prologue, the waiter and the identity (device, inode, size,
   modification time) of the Kickstart ROM, the hardfile and the Amiberry
   program: a new hardfile or Amiberry gets new snapshots by itself.
-* **A restore that fails** (no `SNAP:started` within 3 s, or Amiberry
+* **A restore that fails** (no `SNAP:started` within 6 s, or Amiberry
   ends) is dropped, the state file too, and the session boots cold
   without snapshot. A test mount called `SNAP` also means a cold boot.
 * `snapshot.log` in the work directory tells what the session did

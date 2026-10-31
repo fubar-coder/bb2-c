@@ -106,7 +106,7 @@ struct amiga_emulation_params {
  * time) and runs the test's script.  The first session of a configuration
  * in a slot boots cold, saves the state at SNAP:ready into
  * slot-K/snap-KEY.uss (amiga_emulation_snapshot_key) and goes on; later
- * ones restore it.  A restore that does not reach SNAP:started within 3 s
+ * ones restore it.  A restore that does not reach SNAP:started within 6 s
  * (or whose Amiberry ends) is dropped, the state file too, and the session
  * boots cold.  A slot keeps its AMIGA_EMULATION_SNAP_KEEP most recently
  * used snapshots.  Sessions end with SIGTERM right after run.done; at the

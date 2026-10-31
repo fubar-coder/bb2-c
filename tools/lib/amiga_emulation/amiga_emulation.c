@@ -721,7 +721,7 @@ static int launch(struct amiga_emulation *e, const char *statefile, char *err, s
 #define SNAP_WAITER         "waitjob"
 #define SNAP_LOG            "snapshot.log"  /* in the work directory */
 #define SNAP_SAVE_DELAY     0.5     /* seconds between SNAP:ready and SAVESTATE */
-#define SNAP_RESTORE_GRACE  3       /* seconds from the start to SNAP:started */
+#define SNAP_RESTORE_GRACE  6       /* seconds from the start to SNAP:started */
 
 /* TEST:run.script of every session in snapshot mode (AmigaDOS 1.3 syntax:
    it also runs under Kickstart 1.3); the state is saved in the waiter */
