@@ -210,10 +210,10 @@ static void putioreq(LONG unit, struct IOStdReq *req)
 static ULONG doio(struct IOStdReq *req)
 {
     struct bl_regs r = { .a1 = (ULONG)req };
-    ULONG d0 = BLITZ_BASEJSR(SysBase, LVO_DoIO, r);
+    ULONG result = BLITZ_BASEJSR(SysBase, LVO_DoIO, r);
 
-    BL_SETB(d0, req->io_Error);
-    return d0;
+    BL_SETB(result, req->io_Error);
+    return result;
 }
 
 void BLITZ_ROUTINE c_libinit(void)
@@ -357,9 +357,9 @@ ULONG BLITZ_ROUTINE c_install1(LONG unit BL_REG(d0))
 }
 
 /* WriteBoot unit#,bootdata: BUG(orig) the buffer is the caller's d2 (#864) */
-ULONG BLITZ_ROUTINE c_install2(LONG unit BL_REG(d0), APTR d2 BL_REG(d2))
+ULONG BLITZ_ROUTINE c_install2(LONG unit BL_REG(d0), APTR buffer BL_REG(d2))
 {
-    return c_formatsector2(unit, 0, d2, 2);
+    return c_formatsector2(unit, 0, buffer, 2);
 }
 
 /* BootProg unit#,memoryaddress: "DOS",0, checksum, write sectors 0-1 */
