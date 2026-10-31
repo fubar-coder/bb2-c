@@ -93,6 +93,7 @@ intended deviations (kind **F**), each with its issue.
 | gtlib GTTags/GTSetAttrs (gtlib.c:58) | pop the tag pairs from a2 | a2 unchanged; unused check routine freqchk missing | **B** | convention |
 | iffiolib iffopen (iffiolib.c:34) | a0 lost after dos Open | a0 preserved | **B** (register preservation) | **not marked as DIFF**, described in the header; not observable |
 | ilbmifflib ilbminit (ilbmifflib.c:46) | a0 after failure = leftover from dos.library | a0 = file name | **T** | register leftover; described in the header |
+| ilbmifflib messages (ilbmifflib.c, header) | error routines in the normal code, their messages `mess2`-`mess4` in the error check area: without debugger d0 points behind the library | messages in the normal code | **F** | #192; observable without debugger only by a handler that reads d0 (SetErr, own trap handler); test `bug_orig_ilbmifflib_messages_errarea` |
 | intuifontlib (intuifontlib.c:28) | a2 decremented | unchanged | **B** | convention |
 | maxlenlib/maxslib/modlib | see system libs | | | |
 | medlib (medlib.c:59) | LoadMedModule/SetMedVolume leave a3 on object+8 or track | a3 unchanged | **K** | statements; not observable |

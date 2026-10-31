@@ -1,0 +1,6 @@
+[run]
+before
+runtime error Can't Find IFF 'BMHD'
+runtime error Can't Find IFF 'BODY'
+after
+rc=0

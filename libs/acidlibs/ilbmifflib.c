@@ -37,12 +37,14 @@
  *    BitMap's BytesPerRow as row step; ByteRun1 runs are not clipped at
  *    the row end (a run over the row end continues in the next plane row
  *    with a smaller count) (#191).  Uncompressed rows are copied as words.
- *  - The error routines are in the normal code, their messages in the
- *    error check area (as in the original: without the debugger d0 points
- *    behind the library). (#192)
  *  - Not a bug (word functions, the compiler uses only d0.w):
  *    ILBMWidth/Height/Depth load only the low word of d0 (thunks keep the
  *    caller's upper word); ILBMViewMode is a long (MOVEQ #0 first).
+ *
+ * Fixed (intended deviation, docs/libs/deviations.md): the original has the
+ * error routines in the normal code but their messages in the error check
+ * area (without the debugger d0 points behind the library); here the
+ * messages are in the normal code too. (#192)
  *
  * Registers: ilbminit keeps d1-d7/a1-a6 (a0 = iffstuff, on failure the
  * file name - the original leaves dos.library's a0), ilbmgetbyte
@@ -130,10 +132,13 @@ static UWORD ilbmvmode;
 
 /* ---------------------------------------------------------------- errors */
 
+/* mess1 has no user (#187) and stays in the error check area; the others
+   are in the normal code like the error routines (the original has them
+   in the error check area; fixed, #192) */
 BLITZ_ERRCHK_MESSAGE(mess1, "Can't Open File");
-BLITZ_ERRCHK_MESSAGE(mess2, "Can't Read File");
-BLITZ_ERRCHK_MESSAGE(mess3, "Can't Find IFF 'BODY'");
-BLITZ_ERRCHK_MESSAGE(mess4, "Can't Find IFF 'BMHD'");
+static const char mess2[] = "Can't Read File";
+static const char mess3[] = "Can't Find IFF 'BODY'";
+static const char mess4[] = "Can't Find IFF 'BMHD'";
 
 /* -------------------------------------------------------------- ilbminit */
 
@@ -234,8 +239,8 @@ static ULONG getbyte(ULONG byte, struct iffstuff *st)
  * @brief ilbmgetbyte (+2): the next byte of the BODY, ByteRun1 decoded
  * (for lib 154).
  *
- * Errors: "Can't Read File" at the end of the data - the message is in
- * the error check area, BUG(orig) (#192).
+ * Errors: "Can't Read File" at the end of the data (the message in the
+ * normal code, fixed: #192).
  *
  * @param byte  d0: the previous byte (returned again inside a repeat run)
  * @param st    a0: iffstuff (from ilbminit)
@@ -255,8 +260,8 @@ BLITZ_THUNK(ilbmgetbyte, ilbmgetbyte_c, "d1/a0-a1");
  *
  * Reads row after row, plane after plane, width-in-words*2 bytes each,
  * and stores what fits into BytesPerRow/Depth/Rows; closes the file.
- * Errors: "Can't Find IFF 'BODY'" - the message is in the error check
- * area, BUG(orig) (#192); "Can't Read File" from ilbmgetbyte.
+ * Errors: "Can't Find IFF 'BODY'" (the message in the normal code, fixed:
+ * #192); "Can't Read File" from ilbmgetbyte.
  * BUG(orig): a failed ilbminit is ignored and "BODY" is searched in what is
  * left in iffiolib's buffer (#187); the depth test is on the word over
  * Flags and Depth (#188).
@@ -374,7 +379,7 @@ BLITZ_THUNK(doilbmviewmode, ilbmviewmode_c, "d1/a0-a1");
  * (copied as words).  The bitmap object comes in a3 (!libs
  * {#bitmaplib,$1380}).
  * Errors: "Can't Find IFF 'BMHD'" (no FORM/ILBM/BMHD), "Can't Find IFF
- * 'BODY'" - the messages are in the error check area, BUG(orig) (#192).
+ * 'BODY'" (the messages in the normal code, fixed: #192).
  * BUG(orig): chunk lengths are not padded to even (#189); all planes of
  * the ILBM are written through the BitMap's plane pointers (#190); the
  * ILBM's row length per row, the BitMap's BytesPerRow as the row step,
