@@ -122,52 +122,68 @@ static APTR aslstruct;
 
 /* font requester tags and result (.fontinfo) */
 /* the binary has a third tag (not in the source): ASL_TB+17, 256 */
-static ULONG ftags[8] = { ASLTAG + 40, 0, ASLTAG + 20, 15, ASLTAG + 17, 256, 0, 0 };
-#define fscreen ftags[1]
-#define fflags  ftags[3]
+static struct {
+    struct TagItem screen;      /* ASLFO_Screen */
+    struct TagItem flags;       /* ASLFO_Flags */
+    struct TagItem maxheight;   /* ASLFO_MaxHeight (binary only) */
+    struct TagItem end;         /* TAG_END */
+} ftags = {
+    { ASLTAG + 40, 0 }, { ASLTAG + 20, 15 }, { ASLTAG + 17, 256 }, { 0, 0 }
+};
+static_assert(sizeof ftags == 8 * 4);
 static struct {
     char *name;                 /* strng+4 */
-    UWORD size;
-    UBYTE style[6];             /* style, flags, pen1, pen2, drawmode, pad */
+    UWORD size;                 /* ta_YSize */
+    UBYTE style;                /* ta_Style */
+    UBYTE flags;                /* ta_Flags */
+    UBYTE pen1;                 /* fo_FrontPen */
+    UBYTE pen2;                 /* fo_BackPen */
+    UBYTE drawmode;             /* fo_DrawMode */
+    UBYTE pad;                  /* the byte behind fo_DrawMode */
     ULONG len;                  /* strng: length of the name */
     char str[96];
 } BL_PACKED fstruct = { fstruct.str };
+static_assert(sizeof fstruct == 12 + 4 + 96);
 
 /* screen mode requester tags */
-static ULONG stags[14] = { ASLTAG + 40, 0, ASLTAG + 109, 0, ASLTAG + 110, 0,
-                           ASLTAG + 111, 0, ASLTAG + 112, 0, ASLTAG + 113, 0,
-                           0, 0 };
+static struct {
+    struct TagItem screen;      /* ASLSM_Screen */
+    struct TagItem dotags[5];   /* ASLSM_DoWidth, DoHeight, DoDepth,
+                                   DoOverscanType, DoAutoScroll */
+    struct TagItem end;         /* TAG_END */
+} stags = {
+    { ASLTAG + 40, 0 },
+    { { ASLTAG + 109, 0 }, { ASLTAG + 110, 0 }, { ASLTAG + 111, 0 },
+      { ASLTAG + 112, 0 }, { ASLTAG + 113, 0 } },
+    { 0, 0 }
+};
+static_assert(sizeof stags == 14 * 4);
 
 /* an empty string (the binary points the pattern tag at a 0 word) */
 static const UWORD nullstr[1] = { 0 };
 
-/* file requester tags */
-static ULONG Tags[26] = {
-    ASLTAG + 40, 0,             /* ascreen */
-    ASLTAG + 1, 0,              /* aname (TitleText) */
-    ASLTAG + 9, 0,              /* apath (InitialDrawer) */
-    ASLTAG + 8, 0,              /* afile (InitialFile) */
-    ASLTAG + 3, 0,              /* ax */
-    ASLTAG + 4, 0,              /* ay */
-    ASLTAG + 5, 0,              /* aw */
-    ASLTAG + 6, 0,              /* ah */
-    ASLTAG + 20, 0,             /* flags (FRF_DOPATTERNS) */
-    ASLTAG + 10, (ULONG)nullstr, /* pattern: binary "" (source 0) */
-    ASLTAG + 60, (ULONG)-1,     /* noinfo */
-    ASLTAG + 22, 0,             /* flags2 (FRF_DRAWERSONLY) */
-    0, 0
+/* file requester tags (the original's labels in the comments) */
+static struct {
+    struct TagItem screen;      /* ascreen: ASLFR_Screen */
+    struct TagItem name;        /* aname: ASLFR_TitleText */
+    struct TagItem path;        /* apath: ASLFR_InitialDrawer */
+    struct TagItem file;        /* afile: ASLFR_InitialFile */
+    struct TagItem x;           /* ax: ASLFR_InitialLeftEdge */
+    struct TagItem y;           /* ay: ASLFR_InitialTopEdge */
+    struct TagItem w;           /* aw: ASLFR_InitialWidth */
+    struct TagItem h;           /* ah: ASLFR_InitialHeight */
+    struct TagItem flags;       /* ASLFR_Flags1 (FRF_DOPATTERNS) */
+    struct TagItem pattern;     /* ASLFR_InitialPattern: binary "" (source 0) */
+    struct TagItem noinfo;      /* ASLFR_RejectIcons */
+    struct TagItem flags2;      /* ASLFR_Flags2 (FRF_DRAWERSONLY) */
+    struct TagItem end;         /* TAG_END */
+} Tags = {
+    { ASLTAG + 40, 0 }, { ASLTAG + 1, 0 }, { ASLTAG + 9, 0 }, { ASLTAG + 8, 0 },
+    { ASLTAG + 3, 0 }, { ASLTAG + 4, 0 }, { ASLTAG + 5, 0 }, { ASLTAG + 6, 0 },
+    { ASLTAG + 20, 0 }, { ASLTAG + 10, (ULONG)nullstr }, { ASLTAG + 60, (ULONG)-1 },
+    { ASLTAG + 22, 0 }, { 0, 0 }
 };
-#define T_SCREEN  1
-#define T_NAME    3
-#define T_PATH    5
-#define T_FILE    7
-#define T_X       9
-#define T_Y       11
-#define T_W       13
-#define T_H       15
-#define T_FLAGS   17
-#define T_PATTERN 19
-#define T_FLAGS2  23
+static_assert(sizeof Tags == 26 * 4);
 
 /* the original frees with LVO -36 = FreeFileRequest (also for font and
    screen mode requesters; asl.library V38 treats it like FreeAslRequest) */
@@ -199,21 +215,24 @@ ULONG BLITZ_ROUTINE doaslfont(ULONG flags BL_REG(d0), struct Screen **scr BL_REG
     ULONG ok;                           /* d7: AslRequest's result */
     ULONG len = 0;                      /* d7: the font name length */
 
-    fscreen = (ULONG)*scr;
-    fflags = flags;
+    ftags.screen.ti_Data = (ULONG)*scr;
+    ftags.flags.ti_Data = flags;
     if (!aslbase)
         return 0;
-    aslstruct = AllocAslRequest(ASL_FontRequest, (struct TagItem *)ftags);
+    aslstruct = AllocAslRequest(ASL_FontRequest, (struct TagItem *)&ftags);
     if (!aslstruct)
         return 0;
-    ok = AslRequest(aslstruct, (struct TagItem *)ftags);
+    ok = AslRequest(aslstruct, (struct TagItem *)&ftags);
     if (ok) {
-        const UBYTE *attr = (const UBYTE *)aslstruct + 8, *name;
+        const struct FontRequester *fo = aslstruct;
+        const UBYTE *name;
         char *dst = fstruct.str;
 
-        name = *(const UBYTE **)attr;                   /* ta_Name */
-        *(ULONG *)&fstruct.size = *(const ULONG *)(attr + 4);
-        *(ULONG *)&fstruct.style[2] = *(const ULONG *)(attr + 8);
+        name = (const UBYTE *)fo->fo_Attr.ta_Name;
+        /* two MOVE.l: ta_YSize/ta_Style/ta_Flags, then the pens, the draw
+           mode and the byte behind it */
+        *(ULONG *)&fstruct.size = *(const ULONG *)&fo->fo_Attr.ta_YSize;
+        *(ULONG *)&fstruct.pen1 = *(const ULONG *)&fo->fo_FrontPen;
         len = (ULONG)-1;
         do
             len++;
@@ -236,14 +255,14 @@ ULONG BLITZ_ROUTINE doaslscreen(ULONG flags BL_REG(d0), struct Screen **scr BL_R
     int i;
 
     for (i = 0; i < 5; i++)
-        stags[3 + 2 * i] = (flags & (1UL << i)) ? (ULONG)-1 : 0;
-    stags[1] = (ULONG)*scr;
+        stags.dotags[i].ti_Data = (flags & (1UL << i)) ? (ULONG)-1 : 0;
+    stags.screen.ti_Data = (ULONG)*scr;
     if (!aslbase)
         return 0;
-    aslstruct = AllocAslRequest(ASL_ScreenModeRequest, (struct TagItem *)stags);
+    aslstruct = AllocAslRequest(ASL_ScreenModeRequest, (struct TagItem *)&stags);
     if (!aslstruct)
         return 0;
-    ok = AslRequest(aslstruct, (struct TagItem *)stags);
+    ok = AslRequest(aslstruct, (struct TagItem *)&stags);
     FREEREQ(aslstruct);
     if (!ok)
         return 0;
@@ -274,16 +293,16 @@ static ULONG aslreq(ULONG title, ULONG path, ULONG file, struct Screen **scr,
 
     if (!aslbase)
         return title;                   /* BUG(orig) (#62): d0 unchanged */
-    Tags[T_SCREEN] = (ULONG)*scr;
+    Tags.screen.ti_Data = (ULONG)*scr;
     blitz_string = (UBYTE *)title;      /* the result goes here */
-    Tags[T_NAME] = allocst(title, lens[-1]);
-    Tags[T_PATH] = path;
-    Tags[T_FILE] = file;
-    aslstruct = AllocAslRequest(ASL_FileRequest, (struct TagItem *)Tags);
-    if (!aslstruct || !AslRequest(aslstruct, (struct TagItem *)Tags)) {
+    Tags.name.ti_Data = allocst(title, lens[-1]);
+    Tags.path.ti_Data = path;
+    Tags.file.ti_Data = file;
+    aslstruct = AllocAslRequest(ASL_FileRequest, (struct TagItem *)&Tags);
+    if (!aslstruct || !AslRequest(aslstruct, (struct TagItem *)&Tags)) {
         FREEREQ(aslstruct);      /* filefail (also with 0) */
         *blitz_string = 0;
-        Tags[T_FLAGS2] = 0;
+        Tags.flags2.ti_Data = 0;
         return 0;
     }
     fr = aslstruct;
@@ -297,16 +316,16 @@ static ULONG aslreq(ULONG title, ULONG path, ULONG file, struct Screen **scr,
     *(ULONG *)(file - 4) = filelen;
     len += filelen;
     FREEREQ(aslstruct);
-    Tags[T_FLAGS2] = 0;
+    Tags.flags2.ti_Data = 0;
     return len;
 }
 
 static void dims(ULONG x, ULONG y, ULONG w, ULONG h)
 {
-    Tags[T_X] = x;
-    Tags[T_Y] = y;
-    Tags[T_W] = w;
-    Tags[T_H] = h;
+    Tags.x.ti_Data = x;
+    Tags.y.ti_Data = y;
+    Tags.w.ti_Data = w;
+    Tags.h.ti_Data = h;
 }
 
 /* the C entry functions get all registers they may use as parameters
@@ -319,7 +338,7 @@ static void dims(ULONG x, ULONG y, ULONG w, ULONG h)
 /* title, path, file */
 static ULONG BLITZ_ROUTINE freqa_c(FREQ_ARGS)
 {
-    Tags[T_FLAGS] = 0;
+    Tags.flags.ti_Data = 0;
     dims(20, 20, 280, 160);
     return aslreq(arg0, arg1, arg2, scr, lens);
 }
@@ -327,8 +346,8 @@ static ULONG BLITZ_ROUTINE freqa_c(FREQ_ARGS)
 /* title, path, file, pattern (-8(a2) = its length) */
 static ULONG BLITZ_ROUTINE freqb_c(FREQ_ARGS)
 {
-    Tags[T_PATTERN] = allocst(arg3, lens[-2]);
-    Tags[T_FLAGS] = 1;                  /* FRF_DOPATTERNS */
+    Tags.pattern.ti_Data = allocst(arg3, lens[-2]);
+    Tags.flags.ti_Data = 1;                  /* FRF_DOPATTERNS */
     dims(20, 20, 280, 160);
     return aslreq(arg0, arg1, arg2, scr, lens);
 }
@@ -336,7 +355,7 @@ static ULONG BLITZ_ROUTINE freqb_c(FREQ_ARGS)
 /* title, path, file, x, y, w, h (-8(a2)) */
 static ULONG BLITZ_ROUTINE freqc_c(FREQ_ARGS)
 {
-    Tags[T_FLAGS] = 0;
+    Tags.flags.ti_Data = 0;
     dims(arg3, arg4, arg5, lens[-2]);
     return aslreq(arg0, arg1, arg2, scr, lens);
 }
@@ -344,8 +363,8 @@ static ULONG BLITZ_ROUTINE freqc_c(FREQ_ARGS)
 /* title, path, file, pattern, x, y, w (-12(a2)), h (-16(a2)) */
 static ULONG BLITZ_ROUTINE freqd_c(FREQ_ARGS)
 {
-    Tags[T_PATTERN] = allocst(arg3, lens[-2]);
-    Tags[T_FLAGS] = 1;
+    Tags.pattern.ti_Data = allocst(arg3, lens[-2]);
+    Tags.flags.ti_Data = 1;
     dims(arg4, arg5, lens[-3], lens[-4]);
     return aslreq(arg0, arg1, arg2, scr, lens);
 }
@@ -353,7 +372,7 @@ static ULONG BLITZ_ROUTINE freqd_c(FREQ_ARGS)
 /* ASLPathRequest$ title, path - d2 is no argument (BUG(orig), #61) */
 static ULONG BLITZ_ROUTINE freqe_c(FREQ_ARGS)
 {
-    Tags[T_FLAGS2] = FRF_DRAWERSONLY_;
+    Tags.flags2.ti_Data = FRF_DRAWERSONLY_;
     dims(20, 20, 280, 160);             /* flags stay from the last call */
     return aslreq(arg0, arg1, arg2, scr, lens);
 }
@@ -361,9 +380,9 @@ static ULONG BLITZ_ROUTINE freqe_c(FREQ_ARGS)
 /* ASLPathRequest$ title, path, x, y, w, h */
 static ULONG BLITZ_ROUTINE freqf_c(FREQ_ARGS)
 {
-    Tags[T_FLAGS] = 0;
+    Tags.flags.ti_Data = 0;
     dims(arg2, arg3, arg4, arg5);
-    Tags[T_FLAGS2] = FRF_DRAWERSONLY_;
+    Tags.flags2.ti_Data = FRF_DRAWERSONLY_;
     return aslreq(arg0, arg1, arg2, scr, lens);
 }
 
