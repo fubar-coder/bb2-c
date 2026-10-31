@@ -45,6 +45,7 @@
  *   - finit closes utility.library without checking it was opened (#824).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include "blitzexec.h"
 #define __NOLIBBASE__
 #define UTILITY_BASE_NAME util
@@ -104,24 +105,22 @@ BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
-#define LIST 0x6c497354UL               /* "lIsT" */
-#define FIRSTITEM (-28)
-#define CURRITEM (-32)
+/* the list header in front of a list (struct bb_listhead, blitzobj.h):
+   dosort starts at its first item (used.mlh_Head) or its current item,
+   given as the offset from the list */
+#define FIRSTITEM ((WORD)offsetof(struct bb_listhead, used) - (WORD)sizeof(struct bb_listhead))
+#define CURRITEM ((WORD)offsetof(struct bb_listhead, current) - (WORD)sizeof(struct bb_listhead))
+static_assert(FIRSTITEM == -28 && CURRITEM == -32);
 
-/* an item of a Blitz list: the links, then the data of sizeof.type bytes */
-struct listitem {
-    struct listitem *next;              /* 0: 0 in the item that ends the list */
-    struct listitem *prev;              /* 4 */
-    UBYTE data[];                       /* 8 */
-};
-static_assert(sizeof(struct listitem) == 8);
+/* an item of a Blitz list: struct bb_listitem (blitzobj.h), the links,
+   then the data of sizeof.type bytes */
 
 static struct Library *utillibbase;
 static const char utillibname[] = "utility.library";
 static UWORD sortdir;
 static LONG priority;
 static WORD priorityoffset = -1;
-static struct listitem *lpntr;
+static struct bb_listitem *lpntr;
 
 /* a field at `off` of an item's data (as 8+off(item), like the original) */
 #define FIELD(item, off, type) (*(type *)((UBYTE *)(item) + 8 + (off)))
@@ -206,17 +205,17 @@ static BB_BOOL dosort(UBYTE *list, UWORD size, WORD off, WORD hdr, const char *c
     struct Library *util = utillibbase;
     UWORD dbsize = (UWORD)(size - 1);   /* d7: DBRA count */
     const char *curstr;                 /* a0 */
-    struct listitem *item;              /* a3 */
+    struct bb_listitem *item;              /* a3 */
     WORD prioff;                        /* d4: priorityoffset */
 
     if (!util)
         return BB_FALSE;
-    if (*(ULONG *)(list - 4) != LIST)
+    if (((struct bb_listhead *)list - 1)->id != BB_LISTID)
         return BB_FALSE;
     if (!*(ULONG *)(list + hdr))
         return BB_FALSE;
     prioff = priorityoffset;
-    item = *(struct listitem **)(list + hdr);
+    item = *(struct bb_listitem **)(list + hdr);
     for (;;) {                          /* 'outerloop */
         if (!item->next)
             return BB_TRUE;

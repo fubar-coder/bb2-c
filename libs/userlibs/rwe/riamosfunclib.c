@@ -93,6 +93,7 @@
  * result, but memlib raises "Out of Memory" itself.
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include "blitzexec.h"
 #include <dos/dos.h>
 #include <dos/dosextens.h>
@@ -989,17 +990,9 @@ struct hunkitem {
     ULONG hunkloc, hunklen, reloc, reloclen, flags;
 } BL_PACKED;
 
-#define LISTMAGIC 0x6c497354                    /* "lIsT" */
-
-/* the 32 bytes in front of a Blitz list array (linklistlib): the
-   current item, the lists of the used and the free items, "lIsT" */
-struct listhead {
-    struct hunkitem *current;                   /* -32 */
-    struct MinList used;                        /* -28 */
-    struct MinList free;                        /* -16 */
-    ULONG magic;                                /* -4: LISTMAGIC */
-};
-static_assert(sizeof(struct listhead) == 32);
+/* the 32 bytes in front of a Blitz list array (linklistlib): struct
+   bb_listhead (blitzobj.h) - the current item, the lists of the used and
+   the free items, "lIsT" */
 
 /* execinit: the file and a HUNK_HEADER of 6 longs; -1 / 0 */
 static ULONG execinit(CONST_STRPTR name)
@@ -1078,11 +1071,11 @@ static void execfinit(ULONG nhunks, ULONG size)
  */
 static ULONG BLITZ_ROUTINE saveexec_c(CONST_STRPTR name BL_REG(d0), const UBYTE *list BL_REG(d1))
 {
-    const struct listhead *lh = (const struct listhead *)(list - sizeof(struct listhead));
+    const struct bb_listhead *lh = (const struct bb_listhead *)(list - sizeof(struct bb_listhead));
     const struct hunkitem *h;
     ULONG num = 0, size = 0;
 
-    if (lh->magic != LISTMAGIC)
+    if (lh->id != BB_LISTID)
         return 0;
     if (!execinit(name))
         return (ULONG)name;
