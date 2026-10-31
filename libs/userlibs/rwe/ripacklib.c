@@ -157,16 +157,26 @@ struct ppal {
 } BL_PACKED;
 static_assert(sizeof(struct ppal) == 10);
 
-/* init and finit: RTS */
+/**
+ * @brief init: does nothing (RTS).
+ */
 void BLITZ_ROUTINE libinit(void)
 {
 }
 
+/**
+ * @brief finit: does nothing (RTS).
+ */
 void BLITZ_ROUTINE libfinit(void)
 {
 }
 
-/* ChunkHeader(a$): the first long of the string */
+/**
+ * @brief ChunkHeader(a$): the first long of a string, as an IFF id.
+ * @param s  d0: the string (its first four bytes are read, whatever its
+ *           length)
+ * @return d0: the long
+ */
 static ULONG BLITZ_ROUTINE chunkheader_c(const UBYTE *s BL_REG(d0))
 {
     return LG(s);
@@ -175,10 +185,20 @@ BLITZ_THUNK(chunkheader, chunkheader_c, "d1/a0-a1");
 
 /* ------------------------------------------------------------ UnPackPBM */
 
-/* ByteRun1: n >= 0 copies n+1 bytes, n < 0 (not -128) repeats the next
-   byte 1-n times, -128 is skipped.  BUG(orig): the end tests come after
-   the access and compare signed - the byte at source+length is read, one
-   byte past destlength written (#778). */
+/**
+ * @brief UnPackPBM sourceaddr,destaddr,length,destlength: unpacks
+ * ByteRun1 data.
+ *
+ * n >= 0 copies n+1 bytes, n < 0 (not -128) repeats the next byte 1-n
+ * times, -128 is skipped; stops at the end of the source or of the
+ * destination.  BUG(orig) (#778): the end tests come after the access
+ * and compare signed - the byte at source+length is read, one byte past
+ * destlength written.  Also the tail of PackPBM's failure (#772).
+ * @param src   d0: the packed data
+ * @param dst   d1: the destination
+ * @param len   d2: the length of the packed data
+ * @param dlen  d3: the size of the destination
+ */
 static void BLITZ_ROUTINE unpackpbm_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_REG(d1),
                                       ULONG len BL_REG(d2), ULONG dlen BL_REG(d3))
 {
@@ -215,9 +235,19 @@ BLITZ_THUNK(unpackpbm, unpackpbm_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------------- PackPBM */
 
-/* PackPBM(source,dest,length) - ByteRun1 with runs of at most 128 (127
-   in the counter); -1 if the result would reach `length` bytes.  d3 is
-   only used by the failure (BUG(orig): UnPackPBM, see above, #772). */
+/**
+ * @brief PackPBM(sourceaddr,destaddr,length): packs data with ByteRun1.
+ *
+ * Runs of at most 128 (127 in the counter).  BUG(orig) (#772): the
+ * failure falls into UnPackPBM with d0 = -1, which unpacks from address
+ * -1 into dest, limited by the caller's d3, before -1 is returned.
+ * @param src   d0: the source
+ * @param dst   d1: the destination
+ * @param size  d2: the length of the source
+ * @param dlen  d3: only used by the failure (UnPackPBM's destlength)
+ * @return d0: the length of the packed data, or -1 if it would reach
+ *         `length` bytes
+ */
 static ULONG BLITZ_ROUTINE packpbm_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_REG(d1),
                                      ULONG size BL_REG(d2), ULONG dlen BL_REG(d3))
 {
@@ -404,13 +434,24 @@ static void ice_normal(struct ice *s)
     }
 }
 
-/* DeIce(source,dest): -1 after unpacking "ICE!" data, else 0 */
 /* getinfo: a long read byte by byte (the data may be at an odd address) */
 static ULONG getinfo(const UBYTE *p)
 {
     return (ULONG)p[0] << 24 | (ULONG)p[1] << 16 | (ULONG)p[2] << 8 | p[3];
 }
 
+/**
+ * @brief DeIce(sourceaddr,destaddr): unpacks Pack-Ice 2.40 data.
+ *
+ * The data must start with "ICE!" (then the packed and the unpacked
+ * length); the picture flag of Pack-Ice converts Atari ST low-res
+ * bitplanes into interleaved words.  BUG(orig) (#767): the picture flag
+ * overwrites the bit buffer with the default count $0F9F: the default is
+ * never used, the count read is at least $3C00.
+ * @param src  d0: the packed data
+ * @param dst  d1: the destination
+ * @return d0: BB_TRUE after unpacking, BB_FALSE without "ICE!"
+ */
 static BB_BOOL BLITZ_ROUTINE deice_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_REG(d1))
 {
     struct ice s;
@@ -466,9 +507,25 @@ static struct {
     UBYTE iffdepth;
 } BL_PACKED v;
 
-/* UnpackIFF(source,bitmap#,numlines,xy_offset): -1, or 0 without
-   BMHD/BODY or if the bitmap is too small (a1 = the bitmap object; lines
-   < 0: all) */
+/**
+ * @brief UnpackIFF(sourceaddr,bitmap#,numlines,xy_offset): the BODY of an
+ * ILBM in memory into a bitmap.
+ *
+ * Searches the BMHD (5120 bytes from source, by 2 bytes) and the BODY
+ * (from the BMHD on, BUG(orig) (#766)), then unpacks numlines lines into
+ * the planes, each plane pointer + xy_offset.  Fails without BMHD or BODY,
+ * if the bitmap has fewer planes or bytes per row than the picture, or no
+ * planes.  BUG(orig): every BODY is taken as ByteRun1 (#773), the row
+ * width is width/8 (#775), a row counts its bytes in a signed byte (rows
+ * of 129 bytes and more are skipped, #774), a run does not stop at the
+ * end of the row (#776), nPlanes 0 stores 256 plane pointers (#777).
+ * @param src    d0: the ILBM data (FORM)
+ * @param bm     a1: the bitmap object (parameter 1)
+ * @param lines  d2: the number of lines (word; < 0: the BMHD's height;
+ *               at most the bitmap's)
+ * @param xy     d3: the byte offset added to every plane
+ * @return d0: BB_TRUE, BB_FALSE on failure
+ */
 static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
                                          struct BitMap *bm BL_REG(a1),
                                          ULONG lines BL_REG(d2), ULONG xy BL_REG(d3))
@@ -558,7 +615,14 @@ static BB_BOOL BLITZ_ROUTINE unpackiff_c(const UBYTE *src BL_REG(d0),
 }
 BLITZ_THUNK(unpackiff, unpackiff_c, "d1/a0-a1");
 
-/* UnpackIFF(source,bitmap#): MOVE.w #-1,d2:MOVEQ #0,d3 */
+/**
+ * @brief UnpackIFF(sourceaddr,bitmap#): all lines, no offset
+ * (MOVE.w #-1,d2:MOVEQ #0,d3).
+ * @param src    d0: the ILBM data
+ * @param bm     a1: the bitmap object
+ * @param lines  d2: its low word is set to -1 (all lines)
+ * @return d0: as UnpackIFF's long form
+ */
 static BB_BOOL BLITZ_ROUTINE iff1_c(const UBYTE *src BL_REG(d0), struct BitMap *bm BL_REG(a1),
                                     ULONG lines BL_REG(d2))
 {
@@ -569,9 +633,23 @@ BLITZ_THUNK(iff1, iff1_c, "d1/a0-a1");
 
 /* ---------------------------------------------------------- ILBMPalette */
 
-/* ILBMPalette(source,palette#,offset): the CMAP into the palette object
-   (a1) from colour `offset` on (< 0: a new block, see the BUG(orig) at
-   the top, #768, #769); -1, or 0 without CMAP or memory */
+/**
+ * @brief ILBMPalette(sourceaddr,palette#,offset): the CMAP of an ILBM into
+ * a palette object.
+ *
+ * Searches the CMAP (5122 bytes from source, by 2 bytes, BUG(orig)
+ * (#766)) and writes its colours from colour `offset` on; offset < 0
+ * gives the object a new colour block of the CMAP's size.
+ * BUG(orig) (#769): without offset, or with an offset into a palette
+ * that is too small, the old block is always freed and a new one
+ * allocated (the offset ignored); BUG(orig) (#768): the freed size comes
+ * from the object's colour count, and on a failed allocation the object
+ * keeps the freed block.
+ * @param src     d0: the ILBM data
+ * @param obj     a1: the palette object (parameter 1)
+ * @param offset  d2: the first colour, < 0: a new block
+ * @return d0: BB_TRUE, BB_FALSE without CMAP or memory
+ */
 static BB_BOOL BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0),
                                             struct ppal *obj BL_REG(a1),
                                             LONG offset BL_REG(d2))
@@ -637,6 +715,13 @@ static BB_BOOL BLITZ_ROUTINE ilbmpalette2_c(const UBYTE *src BL_REG(d0),
 }
 BLITZ_THUNK(ilbmpalette2, ilbmpalette2_c, "d1/a0-a1");
 
+/**
+ * @brief ILBMPalette(sourceaddr,palette#): as with offset -1 (a new
+ * colour block).
+ * @param src  d0: the ILBM data
+ * @param obj  a1: the palette object
+ * @return d0: BB_TRUE, BB_FALSE without CMAP or memory
+ */
 static BB_BOOL BLITZ_ROUTINE ilbmpalette_c(const UBYTE *src BL_REG(d0),
                                            struct ppal *obj BL_REG(a1))
 {
@@ -644,7 +729,15 @@ static BB_BOOL BLITZ_ROUTINE ilbmpalette_c(const UBYTE *src BL_REG(d0),
 }
 BLITZ_THUNK(ilbmpalette, ilbmpalette_c, "d1/a0-a1");
 
-/* ILBMGrab source,bitmap#,palette#: UnpackIFF and ILBMPalette */
+/**
+ * @brief ILBMGrab sourceaddr,bitmap#,palette#: UnpackIFF(source,bitmap#)
+ * and ILBMPalette(source,palette#); the results are dropped.
+ * @param src    d0: the ILBM data
+ * @param bm     a0: the bitmap object (parameter 1)
+ * @param pal    a1: the palette object (parameter 2)
+ * @param lines  d2: (the palette number) - UnpackIFF sets its low word
+ *               to -1
+ */
 static void BLITZ_ROUTINE ilbmgrab_c(const UBYTE *src BL_REG(d0), struct BitMap *bm BL_REG(a0),
                                      struct ppal *pal BL_REG(a1), ULONG lines BL_REG(d2))
 {
@@ -655,10 +748,20 @@ BLITZ_THUNK(ilbmgrab, ilbmgrab_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------------- LoadIFF */
 
-/* LoadIFF(filename$,bitmap[,palette]): the file into a free bank of
-   RIAmosFuncLib (from 51 on), UnpackIFF and ILBMPalette from there, the
-   bank erased; -1 (BUG(orig): also if UnpackIFF failed, #771), 0 if there is
-   no bank or the file does not load */
+/**
+ * @brief LoadIFF(filename$,bitmap,palette): loads an ILBM file into a
+ * bitmap and a palette.
+ *
+ * The file goes into a free bank of RIAmosFuncLib (NextBank from 51 on,
+ * BLoad), UnpackIFF and (with a palette) ILBMPalette from there, then
+ * the bank is erased.  BUG(orig) (#771): BB_TRUE also if UnpackIFF
+ * failed.
+ * @param name  d0: the file name
+ * @param bm    a0: the bitmap object (parameter 1)
+ * @param pal   a1: the palette object (parameter 2), NULL: none
+ * @return d0: BB_TRUE, BB_FALSE if there is no bank or the file does not
+ *         load
+ */
 static BB_BOOL BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), struct BitMap *bm BL_REG(a0),
                                         struct ppal *pal BL_REG(a1))
 {
@@ -687,6 +790,12 @@ static BB_BOOL BLITZ_ROUTINE ilbmload_c(ULONG name BL_REG(d0), struct BitMap *bm
 }
 BLITZ_THUNK(ilbmload, ilbmload_c, "d1/a0-a1");
 
+/**
+ * @brief LoadIFF(filename$,bitmap): as above without a palette.
+ * @param name  d0: the file name
+ * @param bm    a0: the bitmap object
+ * @return d0: as LoadIFF with a palette
+ */
 static BB_BOOL BLITZ_ROUTINE ilbmloadnopal_c(ULONG name BL_REG(d0), struct BitMap *bm BL_REG(a0))
 {
     return ilbmload_c(name, bm, NULL);
