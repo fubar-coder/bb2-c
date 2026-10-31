@@ -1,0 +1,6 @@
+[compile]
+error 11 Error Reading File
+[blitz2]
+...
+inject: not in use: CORPUS:incbin.bin
+...

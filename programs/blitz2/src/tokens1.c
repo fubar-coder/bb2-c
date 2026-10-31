@@ -731,25 +731,32 @@ void doxinclude(UWORD c)
     doinc2(len);
 }
 
-/* blitz2.s:12772 doincbin */
+/* blitz2.s:12772 doincbin.
+   Fixed (intended deviation, #38): the original leaves the lock behind
+   for a directory (the type test comes before the UnLock), the file open
+   on a read error (readerr before the Close) and does not check Examine
+   (an old content of macrobuff counts as the FileInfoBlock).  Here the
+   lock is released before the errors, the file is closed before readerr,
+   and a failed Examine is "Can't open Include". */
 void doincbin(UWORD c)
 {
     BPTR lk, fh;
     struct FileInfoBlock *fib;
     ULONG size, end;
-    LONG r;
+    LONG r, ok, isdir;
 
     (void)c;
     makeiname();
     lk = Lock((CONST_STRPTR)namebuff, ACCESS_READ);
     if (!lk)
         noincerr();
-    Examine(lk, (struct FileInfoBlock *)macrobuff);
     fib = (struct FileInfoBlock *)macrobuff;
-    if (fib->fib_DirEntryType >= 0)
-        noincerr();                             /* BUG(orig) (#38): lock not released */
+    ok = Examine(lk, fib);
+    isdir = fib->fib_DirEntryType >= 0;
     size = fib->fib_Size;                       /* length */
     UnLock(lk);
+    if (!ok || isdir)
+        noincerr();
     fh = Open((CONST_STRPTR)namebuff, MODE_OLDFILE);
     if (!fh)
         noincerr();
@@ -759,8 +766,10 @@ void doincbin(UWORD c)
         pc = end;
     } else {
         r = Read(fh, (APTR)pc, size);
-        if (r == -1)
-            readerr();                          /* BUG(orig) (#38): fh not closed */
+        if (r == -1) {
+            Close(fh);                          /* fixed (#38): the original keeps it open */
+            readerr();
+        }
         pc += r;
     }
     Close(fh);                                  /* .close */

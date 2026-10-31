@@ -163,6 +163,7 @@ internal deviations. Conventions: `-fbaserel` (globals a4-relative,
 | stmts.c:1664 | flushc after the register restore | before it | **T** | no |
 | Start (main.c:31, :1072, :1096, :1134, :1141) | own Workbench/CLI start, opens/closes dos.library | libnix start (DOSBase, WBStartup, argv) | **T** | command line is split by libnix (quotes) |
 | main.c:1529 | SuperState/movec/UserState | `Supervisor()` | **T** | no |
+| doincbin (tokens1.c:741) | IncBin of a directory: "Can't open Include" with the lock left behind; a read error: "Error Reading File" with the file left open; Examine unchecked (an old content of macrobuff counts as the FileInfoBlock) | the lock is released and the file closed before the error; a failed Examine is "Can't open Include" | **F** | #38: the same errors, nothing left in use (tests `compiler-incbin-leaks`, `compiler-incbin-leaks-readerr`) |
 
 The individual reasons are each given at the comment `DIFF:` in
 `programs/blitz2/src/`.
