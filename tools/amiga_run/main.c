@@ -15,13 +15,16 @@
  * --log: Amiberry's own log into WORKDIR/amiberry.log (with --dir).
  * --cold: boot, do not start from a snapshot (amiga_emulation.h).
  *
- *   amiga_run --purge-snapshots OWNER
+ *   amiga_run --purge-snapshots [OWNER]
  *
  * removes the snapshots of OWNER (a build directory, as in
- * $AMIGA_EMULATION_OWNER) from all slots and nothing else
- * (amiga_emulation_snapshot_purge); exit status 0, also without a slot
- * directory, 2 on usage errors.  The fixture amiga_emulation_snapshot_reset
- * of every ctest run calls it.
+ * $AMIGA_EMULATION_OWNER; without it $AMIGA_EMULATION_OWNER, unset: the
+ * snapshots without owner, those of amiga_run by hand) from all slots and
+ * nothing else (amiga_emulation_snapshot_purge); exit status 0, also
+ * without a slot directory, 2 on usage errors.  For manual use: the tests
+ * keep their snapshots across runs, and a session discards one whose
+ * inputs have changed by itself (amiga-emulation/README.md, "Snapshot
+ * mode").
  */
 #define _XOPEN_SOURCE 700       /* scandir */
 #include <dirent.h>
@@ -96,23 +99,28 @@ static int usage(FILE *out)
                  "                 [--mount-ro VOL=DIR]... [--dir WORKDIR] [--cold] SCRIPT|-\n"
                  "  run an AmigaDOS script (a file or - for stdin) in Amiberry\n"
                  "  --machine: a1200 (default), a500 (68000, Kickstart 1.3), a500-68010\n"
-                 "       amiga_run --purge-snapshots OWNER\n"
-                 "  remove the snapshots of OWNER (a build directory) from all slots\n");
+                 "       amiga_run --purge-snapshots [OWNER]\n"
+                 "  remove the snapshots of OWNER (a build directory; default\n"
+                 "  $AMIGA_EMULATION_OWNER, unset: those without owner) from all slots\n");
     return out == stdout ? 0 : 2;
 }
 
-/* --purge-snapshots OWNER: no slot directory yet is not an error */
+/* --purge-snapshots [OWNER]: no slot directory yet is not an error */
 static int purge(int argc, char **argv)
 {
+    const char *owner = argc == 3 ? argv[2] : getenv("AMIGA_EMULATION_OWNER");
     int n;
 
-    if (argc != 3 || !*argv[2])
+    if (argc > 3 || (argc == 3 && !*argv[2]))
         return usage(stderr);
-    n = amiga_emulation_snapshot_purge(argv[2]);
+    if (owner && !*owner)
+        owner = NULL;
+    n = amiga_emulation_snapshot_purge(owner);
     if (n < 0)
         printf("amiga_run: no snapshot directory, nothing to purge\n");
     else
-        printf("amiga_run: %d snapshot%s of %s removed\n", n, n == 1 ? "" : "s", argv[2]);
+        printf("amiga_run: %d snapshot%s of %s removed\n", n, n == 1 ? "" : "s",
+               owner ? owner : "no owner");
     return 0;
 }
 

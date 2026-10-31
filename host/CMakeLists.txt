@@ -36,9 +36,9 @@ foreach(t amiga_run asmcmp biglib blitztokens blitzlibcheck blitzlibcompare chec
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/check-help.cmake)
 endforeach()
 
-# fresh snapshots per ctest run (cmake/emulation-queue.cmake): the owner
-# is the build directory - in the m68k build its top-level one (the same
+# the owner of the emulator snapshots (cmake/emulation-queue.cmake): the
+# build directory - in the m68k build its top-level one (the same
 # snapshots as its other emulator tests), else this one
 set(AMIGA_EMULATION_OWNER ${CMAKE_BINARY_DIR} CACHE PATH
 	"owner of the emulator snapshots of this build's tests (the build directory)")
-emulation_snapshot_fixture($<TARGET_FILE:amiga_run> ${AMIGA_EMULATION_OWNER})
+emulation_snapshot_owner(${AMIGA_EMULATION_OWNER})

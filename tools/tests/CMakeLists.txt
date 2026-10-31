@@ -74,12 +74,25 @@ add_test(NAME amiga_emulation_waiter_broken COMMAND ${CMAKE_COMMAND} -DCC=${CMAK
 	-DVASM=${AMIGA_EMULATION_VASM} -DSRC=${CMAKE_CURRENT_SOURCE_DIR}/../lib/amiga_emulation
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/waiter-broken -P ${CMAKE_CURRENT_SOURCE_DIR}/waiter_broken.cmake)
 
-# amiga_run --purge-snapshots (the snapshot reset of every ctest run):
-# without a slot directory it does nothing and succeeds; without OWNER a
-# usage error.  The purge itself: test_amiga_emulation (snapshot_purge).
+# amiga_run --purge-snapshots [OWNER] (by hand): without a slot directory
+# it does nothing and succeeds; without OWNER it takes
+# $AMIGA_EMULATION_OWNER, unset the snapshots without owner; an empty
+# OWNER or a second argument is a usage error.  The purge itself:
+# test_amiga_emulation (snapshot_purge).
 add_test(NAME amiga_run_purge_no_dir COMMAND amiga_run --purge-snapshots /no/such/build)
 set_tests_properties(amiga_run_purge_no_dir PROPERTIES
 	ENVIRONMENT XDG_RUNTIME_DIR=${CMAKE_CURRENT_BINARY_DIR}/purge-no-such-runtime-dir
 	PASS_REGULAR_EXPRESSION "no snapshot directory, nothing to purge")
-add_test(NAME amiga_run_purge_no_owner COMMAND amiga_run --purge-snapshots)
-set_tests_properties(amiga_run_purge_no_owner PROPERTIES WILL_FAIL ON)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/purge-runtime-dir/amiga-emulation-slots)
+add_test(NAME amiga_run_purge_default_owner COMMAND amiga_run --purge-snapshots)
+set_tests_properties(amiga_run_purge_default_owner PROPERTIES
+	ENVIRONMENT "XDG_RUNTIME_DIR=${CMAKE_CURRENT_BINARY_DIR}/purge-runtime-dir;AMIGA_EMULATION_OWNER=/no/such/build"
+	PASS_REGULAR_EXPRESSION "0 snapshots of /no/such/build removed")
+add_test(NAME amiga_run_purge_no_owner COMMAND ${CMAKE_COMMAND} -E env --unset=AMIGA_EMULATION_OWNER
+	XDG_RUNTIME_DIR=${CMAKE_CURRENT_BINARY_DIR}/purge-runtime-dir $<TARGET_FILE:amiga_run> --purge-snapshots)
+set_tests_properties(amiga_run_purge_no_owner PROPERTIES
+	PASS_REGULAR_EXPRESSION "0 snapshots of no owner removed")
+add_test(NAME amiga_run_purge_empty_owner COMMAND amiga_run --purge-snapshots "")
+set_tests_properties(amiga_run_purge_empty_owner PROPERTIES WILL_FAIL ON)
+add_test(NAME amiga_run_purge_two_owners COMMAND amiga_run --purge-snapshots /a /b)
+set_tests_properties(amiga_run_purge_two_owners PROPERTIES WILL_FAIL ON)
