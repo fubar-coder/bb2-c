@@ -1,0 +1,7 @@
+[compile]
+ok
+[run]
+after 65: 1
+after 196: 2
+drawn: -1
+rc=0

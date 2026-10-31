@@ -54,8 +54,11 @@ BitMapOutput 0
 Locate 0,9.5 : Print "below" : Locate 39,9 : Print "XY"
 DefaultOutput
 sums{"below"}
+; the codes from LoChar+128 on (160...) only in the bug-orig test
+; fontlib-lochar-127: the original drops them, the C library draws them
+; (fixed, #148)
 BitMapOutput 0
-Locate 0,0 : Print Chr$(1)+Chr$(31)+"a"+Chr$(127)+Chr$(160)+Chr$(255)+Chr$(10)+"b"
+Locate 0,0 : Print Chr$(1)+Chr$(31)+"a"+Chr$(127)+Chr$(10)+"b"
 DefaultOutput
 sums{"range"}
 LoadBlitzFont 1,"topaz.font"

@@ -34,14 +34,16 @@
  * BUG(orig), kept:
  *   - Not a bug (pixel cursor by design): Locate: Y is Quick, X a word;
  *     CursX/CursY return the cursor / 8 as Quick (fractions of a character).
- *   - characters with code < tf_LoChar: SUB.b/BMI, so characters 128 or
- *     more above tf_LoChar are dropped as well; with tf_LoChar > 128 codes
- *     more than 128 below it are drawn with index c - LoChar + 256. (#148)
  *   - a bitmap of depth 0 runs the plane loops 65536 times. (#149)
  *   - LoadBlitzFont of a wrong font: the font is not closed again. (#150)
  *   - BitMapInput edits an existing (Edit$ padded) buffer and waits for
  *     return without end: at end of file (-1 from the previous handler)
  *     it loops forever. (#151)
+ * Fixed (intended deviation, #148): characters below tf_LoChar are
+ *   dropped with an unsigned compare (the original: SUB.b/BMI, so
+ *   characters 128 or more above tf_LoChar were dropped as well, e.g. the
+ *   umlauts of topaz, and with tf_LoChar > 128 codes more than 128 below
+ *   it were drawn with index c - LoChar + 256).
  * Fixed (intended deviation, #955): err1-err3 (Can't Open Font,
  *   Uninitialized BitMap / Font of the drawing) trap in the normal code,
  *   but the original has their messages in the error check area (without
@@ -372,9 +374,11 @@ static void bitchar(UBYTE c, struct bb_bitmap *bm, struct TextFont *font, LONG *
     }
     if (c > font->tf_HiChar)                    /* CMP.b 33(a1),d0:BHI */
         return;
-    c -= font->tf_LoChar;                       /* SUB.b 32(a1),d0:BMI */
-    if ((BYTE)c < 0)
+    /* fixed (#148): unsigned (the original SUB.b 32(a1),d0:BMI also
+       dropped the characters 128 or more above tf_LoChar) */
+    if (c < font->tf_LoChar)
         return;
+    c -= font->tf_LoChar;
     col = bm->cursx >> 3;
     if (col >= bm->bpr) {                       /* CMP (a0),d1:BCS 'skip */
         docr(bm, &col, &row, lineoff);
@@ -442,10 +446,11 @@ static void bitout2_(const UBYTE *s, ULONG len)
  * @brief bitout2 (token for other libraries, output handler -4): draw a
  * string on the output bitmap.
  *
- * Characters below tf_LoChar or above tf_HiChar are ignored (BUG(orig)
- * (#148): a byte compare), 10 = new line; at the right edge a new line,
- * below the bitmap nothing is drawn.  BUG(orig) (#149): a bitmap of depth
- * 0 runs the plane loop 65536 times.  Errors: "Uninitialized BitMap",
+ * Characters below tf_LoChar or above tf_HiChar are ignored (fixed,
+ * #148: the original compared signed bytes), 10 = new line; at the right
+ * edge a new line, below the bitmap nothing is drawn.  BUG(orig) (#149):
+ * a bitmap of depth 0 runs the plane loop 65536 times.  Errors:
+ * "Uninitialized BitMap",
  * "Uninitialized Font" (DIFF: nothing drawn if the trap returns).
  *
  * @param len  d0: the length
