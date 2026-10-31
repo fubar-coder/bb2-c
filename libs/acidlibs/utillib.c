@@ -99,8 +99,17 @@ static struct {
 static const char NoMem[] = "Failed to allocate memory for Port";
 static const char NoSig[] = "Failed to allocate signal for Port";
 
-/* _taskname - d0 = task (0 = FindTask(0)); copy its name to a3 including
-   the 0, a3 stays behind it */
+/**
+ * @brief TaskName$(task) - the name of a task.
+ *
+ * Copies the name to a3 including the 0.
+ *
+ * BUG(orig) (#297): a3 is left BEHIND the terminating 0 (no SUBQ #1,a3;
+ * no visible effect); a task without a name reads from address 0.
+ *
+ * @param task d0: the task, 0 = this task (FindTask(0))
+ * @return d0: the length of the name; a3 behind its 0
+ */
 static ULONG BLITZ_ROUTINE taskname_c(struct Task *task BL_REG(d0))
 {
     const UBYTE *s;
@@ -119,7 +128,13 @@ static ULONG BLITZ_ROUTINE taskname_c(struct Task *task BL_REG(d0))
 }
 BLITZ_THUNK(_taskname, taskname_c, "a1");
 
-/* _startup - CLR.l signals:MOVE.l #signals,d0 */
+/**
+ * @brief init - CLR.l signals:MOVE.l #signals,d0.
+ *
+ * "other libs access using #utillib,#la0 then btst sigbit,(a0)".
+ *
+ * @return d0: the address of `signals`, the library's init value
+ */
 static ULONG BLITZ_ROUTINE startup_c(void)
 {
     signals = 0;
@@ -127,7 +142,14 @@ static ULONG BLITZ_ROUTINE startup_c(void)
 }
 BLITZ_THUNK(_startup, startup_c, "d1/a0-a1");
 
-/* _dowait - Wait(FindTask(0)->tc_SigAlloc), result also in `signals` */
+/**
+ * @brief Wait - wait for any allocated signal of the task.
+ *
+ * Wait(FindTask(0)->tc_SigAlloc) - all allocated signals (not a bug: the
+ * intended semantics); the result also goes to `signals`.
+ *
+ * @return d0: the signals received
+ */
 ULONG BLITZ_ROUTINE _dowait(void)
 {
     ULONG got = Wait(FindTask(NULL)->tc_SigAlloc);
@@ -147,7 +169,33 @@ static struct portnode *findlistend(void)
     return node;
 }
 
-/* _CreateMsgPort - d0 = name, -4(a2) = its length */
+/**
+ * @brief CreateMsgPort(PortName$) - create a message port.
+ *
+ * Allocates the $2A byte block (memlib globalloc, MEMF_PUBLIC|MEMF_CLEAR),
+ * allocates a signal, initialises the port (PA_SIGNAL, this task) and
+ * links it into utillib's port list (freed by the finit).  A non-empty
+ * name is copied into its own block {size.l, characters, 0} and the port
+ * made public (AddPort).  Returns with a3 = the name argument ("Protect
+ * BB2 String area from corruption") and copies (UWORD)len+1 bytes of the
+ * name (DBRA on the length's low word; not a bug: a port name of 64 KB
+ * does not occur).
+ *
+ * Errors: "Failed to allocate memory for Port" (runtime error; the port
+ * block stays allocated if the name allocation fails).  DIFF (K, #300):
+ * after a returning TRAP #0 the original runs into its message text; the
+ * C version returns 0.
+ *
+ * BUG(orig) (#298): a failed AllocSignal (-1) is not noticed (TST.l
+ * d0:BEQ tests for signal 0): mp_SigBit = $FF.  The error path behind it
+ * (globfree of the port address and $22, "Failed to allocate signal for
+ * Port") is never reached.
+ *
+ * @param name d0: the port name ("" = a private port)
+ * @param lens a2: the compiler's argument pointer: -4(a2) = the name's
+ *             length
+ * @return d0: the MsgPort (block + 8), 0 after an error (DIFF)
+ */
 static ULONG BLITZ_ROUTINE createmsgport_c(const UBYTE *name BL_REG(d0),
                                            const ULONG *lens BL_REG(a2))
 {
@@ -221,7 +269,17 @@ static ULONG BLITZ_ROUTINE createmsgport_c(const UBYTE *name BL_REG(d0),
 }
 BLITZ_THUNK(_CreateMsgPort, createmsgport_c, "d1/a1");
 
-/* _DeleteMsgPort - d0 = port; keeps all registers */
+/**
+ * @brief DeleteMsgPort *UserPort - delete a port made by CreateMsgPort.
+ *
+ * RemPort and frees the name if there is one, frees the signal, unlinks
+ * the port from utillib's list and frees its block.  Keeps all registers.
+ *
+ * BUG(orig) (#299): accepts anything: pending messages are not replied,
+ * a port that utillib did not create corrupts memory.
+ *
+ * @param port d0: the port
+ */
 static void BLITZ_ROUTINE deletemsgport_c(struct MsgPort *port BL_REG(d0))
 {
     struct portnode *node, *prev, *next;
