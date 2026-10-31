@@ -166,7 +166,27 @@ void BLITZ_ROUTINE codefinit(void)
 #define WORDAT(p) (*(UWORD *)(p))
 #define HI 0xffff0000UL                 /* MOVEQ #-1,d0 of the chunk search */
 
-static UBYTE *maploc, *mapend, *mfrmchunk;
+/* the header of an IFF file */
+struct form {
+    ULONG id;                           /* "FORM" */
+    ULONG length;                       /* of what follows */
+    ULONG type;                         /* "BMAP" / "SCEN" */
+};
+
+/* the data of a map's MFRM chunk (BBMapInfo) */
+struct mfrm {
+    ULONG scenarioid;                   /* +0 */
+    UWORD width, height;                /* +4, +6 */
+};
+
+/* a palette object of palettelib, as far as BBGetPalette uses it */
+struct bpal {
+    ULONG pdata;                        /* +0 the colour block */
+    UWORD numcols;                      /* +4 */
+} BL_PACKED;
+
+static UBYTE *maploc, *mapend;
+static struct mfrm *mfrmchunk;
 static UBYTE *scenarioloc, *scenarioend;
 static ULONG lastchunk, lastmapchunk;
 static UBYTE *lastchunkaddr, *lastmapchunkaddr;
@@ -212,24 +232,25 @@ static UBYTE *findmapchunk(ULONG id)
 
 /* ------------------------------------------------------------- the files */
 
-static ULONG BLITZ_ROUTINE setbbscenarioloc_c(UBYTE *form BL_REG(d0))
+static ULONG BLITZ_ROUTINE setbbscenarioloc_c(struct form *form BL_REG(d0))
 {
-    if (LONGAT(form) != ID('F', 'O', 'R', 'M') || LONGAT(form + 8) != ID('S', 'C', 'E', 'N'))
+    if (form->id != ID('F', 'O', 'R', 'M') || form->type != ID('S', 'C', 'E', 'N'))
         return 0;
-    scenarioloc = form;
-    scenarioend = form + LONGAT(form + 4) + 8;
+    scenarioloc = (UBYTE *)form;
+    scenarioend = (UBYTE *)form + form->length + 8;
     lastchunk = 0;
     return (ULONG)-1;
 }
 
-static ULONG BLITZ_ROUTINE setbbmaploc_c(UBYTE *form BL_REG(d0))
+static ULONG BLITZ_ROUTINE setbbmaploc_c(struct form *form BL_REG(d0))
 {
-    maploc = form;                      /* BUG(orig): before the check (#554) */
-    if (LONGAT(form) != ID('F', 'O', 'R', 'M') || LONGAT(form + 8) != ID('B', 'M', 'A', 'P'))
+    maploc = (UBYTE *)form;             /* BUG(orig): before the check (#554) */
+    if (form->id != ID('F', 'O', 'R', 'M') || form->type != ID('B', 'M', 'A', 'P'))
         return 0;
-    mapend = form + LONGAT(form + 4) + 8;
+    mapend = (UBYTE *)form + form->length + 8;
     lastmapchunk = 0;
-    search(ID('M', 'F', 'R', 'M'), maploc, mapend, &lastmapchunk, &lastmapchunkaddr, &mfrmchunk);
+    search(ID('M', 'F', 'R', 'M'), maploc, mapend, &lastmapchunk, &lastmapchunkaddr,
+           (UBYTE **)&mfrmchunk);
     return (ULONG)-1;
 }
 
@@ -381,7 +402,7 @@ static ULONG BLITZ_ROUTINE bbscenarioauthor_c(void)
 /* BBGetPalette: the colours low..high of COLR (bytes r,g,b, each made a
    long $xxxxxxxx) into the palette object at its colour low; a new
    colour block if high >= the colour count (see BUG(orig) above, #548) */
-static void BLITZ_ROUTINE bbgetpalette_c(UBYTE *pal BL_REG(a0))
+static void BLITZ_ROUTINE bbgetpalette_c(struct bpal *pal BL_REG(a0))
 {
     const UBYTE *chunk = findchunk(ID('C', 'O', 'L', 'R'));
     UWORD low, high, num;
@@ -392,11 +413,11 @@ static void BLITZ_ROUTINE bbgetpalette_c(UBYTE *pal BL_REG(a0))
     low = chunk[0];
     high = chunk[1];
     chunk += 2;
-    num = WORDAT(pal + 4);
+    num = pal->numcols;
     if (!((WORD)high < (WORD)num)) {
         struct bl_regs r = { .d0 = (ULONG)(UWORD)(high + 1) * 12 + 4, .d1 = 0x10001 };
         UBYTE *new = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
-        UBYTE *old = (UBYTE *)LONGAT(pal);
+        UBYTE *old = (UBYTE *)pal->pdata;
         if (num) {
             ULONG *src = (ULONG *)(old + 4), *dst = (ULONG *)(new + 4);
             UWORD i = num - 1;
@@ -406,15 +427,15 @@ static void BLITZ_ROUTINE bbgetpalette_c(UBYTE *pal BL_REG(a0))
                 *dst++ = *src++;
             } while (i--);
         }
-        LONGAT(pal) = (ULONG)new;
+        pal->pdata = (ULONG)new;
         WORDAT(new) = high;
-        WORDAT(pal + 4) = high;
+        pal->numcols = high;
         if (num) {
             struct bl_regs f = { .d0 = (ULONG)num * 12, .a1 = (ULONG)old };
             BLITZ_ALIBJSR(TOK_globfree, f);
         }
     }
-    colour = (ULONG *)(LONGAT(pal) + 4 + (WORD)(low * 12));
+    colour = (ULONG *)(pal->pdata + 4 + (WORD)(low * 12));
     do {
         int k;
         for (k = 0; k < 3; k++) {
@@ -434,19 +455,19 @@ static ULONG mapchunkaddr(ULONG id)
 
 static ULONG BLITZ_ROUTINE bbmapscenarioid_c(void)
 {
-    return maploc ? LONGAT(mfrmchunk) : 0;
+    return maploc ? mfrmchunk->scenarioid : 0;
 }
 
 /* the word functions on the info chunk: the upper word of d0 stays
    (prev = d0 on entry) */
 static ULONG BLITZ_ROUTINE bbmapwidth_c(ULONG prev BL_REG(d0))
 {
-    return maploc ? (prev & HI) | WORDAT(mfrmchunk + 4) : 0;
+    return maploc ? (prev & HI) | mfrmchunk->width : 0;
 }
 
 static ULONG BLITZ_ROUTINE bbmapheight_c(ULONG prev BL_REG(d0))
 {
-    return maploc ? (prev & HI) | WORDAT(mfrmchunk + 6) : 0;
+    return maploc ? (prev & HI) | mfrmchunk->height : 0;
 }
 
 static ULONG BLITZ_ROUTINE bbmapinfo_c(void)
