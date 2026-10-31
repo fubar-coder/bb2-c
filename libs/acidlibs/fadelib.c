@@ -62,16 +62,16 @@ BLITZ_ENTRY_DECL(init);
 /* !libheader{157,init,0,0,errors} */
 BLITZ_LIBHEADER(LIB_fadelib_header, init, BL_NORET, 0, BLITZ_ERROR_AREA);
 
-#define FADE_FORMS(c2, c3, c)                                               \
+#define FADE_FORMS(palonly, withrate, withrange)                            \
     BLITZ_ARGS(BL_WORD);                                                    \
     BLITZ_LIBS(LIB_palettelib, 0x1080, LIB_blitzcoplib, 0x1102);            \
-    BLITZ_SUBS(c2, BLITZ_BLITZONLY_CHK(fadechk0), 0);                                \
+    BLITZ_SUBS(palonly, BLITZ_BLITZONLY_CHK(fadechk0), 0);                           \
     BLITZ_ARGS(BL_WORD, BL_WORD);                                           \
     BLITZ_LIBS(LIB_palettelib, 0x1080, LIB_blitzcoplib, 0x1102);            \
-    BLITZ_SUBS(c3, BLITZ_BLITZONLY_CHK(fadechk0), 0);                                \
+    BLITZ_SUBS(withrate, BLITZ_BLITZONLY_CHK(fadechk0), 0);                          \
     BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);                         \
     BLITZ_LIBS(LIB_palettelib, 0x1080, LIB_blitzcoplib, 0x1102);            \
-    BLITZ_SUBS(c, BLITZ_BLITZONLY_CHK(fadechk), 0)
+    BLITZ_SUBS(withrange, BLITZ_BLITZONLY_CHK(fadechk), 0)
 
 BLITZ_ASTATEMENT();
 FADE_FORMS(dofadein2, dofadein3, dofadein);
