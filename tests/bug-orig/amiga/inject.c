@@ -576,7 +576,7 @@ ULONG free_pre(ULONG mem, ULONG size)
                 wrong_alloc[nwrong] = slot[h].size;
                 wrong_free[nwrong++] = size;
             }
-            if (o_pad) {
+            if (o_pad && !o_guard) {    /* guard: its pattern, checked below */
                 const UBYTE *p = (const UBYTE *)mem + slot[h].size;
 
                 for (i = 0; i < PAD && !p[i]; i++)
