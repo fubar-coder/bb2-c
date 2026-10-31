@@ -112,7 +112,7 @@ struct amiga_emulation_params {
  * used snapshots.  Sessions end with SIGTERM right after run.done; at the
  * end TEST:run.script is the test's script again and the links are
  * removed.  The work directory's snapshot.log tells what the session did.
- * Without a slot (a runner over the limit): cold boot.
+ * Without slots (AMIGA_EMULATION_MAX=0, no limit): cold boot.
  */
 #define AMIGA_EMULATION_SNAP_KEEP 8u
 
