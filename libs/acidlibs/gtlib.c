@@ -534,7 +534,13 @@ void BLITZ_ROUTINE _codefinit(void)
     }
 }
 
-/* _freecontext (_free) - a3 = the GTList */
+/**
+ * @brief Free GTList#: the object's free routine (_free).
+ *
+ * Frees the VisualInfo and all gadgets of the GTList (a3) and clears the
+ * context and the window; nothing for a GTList without gadgets.  It does
+ * not detach the gadgets from a window.
+ */
 void BLITZ_ROUTINE _freecontext(void)
 {
     struct gtcontext *c = (struct gtcontext *)blitz_string;
@@ -616,11 +622,37 @@ static struct Gadget *create(ULONG kind, ULONG flags, struct TagItem *tags, int 
 #define CREATE(kind, flags, tl) \
     create(kind, flags, (struct TagItem *)&(tl), (sizeof(tl) - sizeof(struct TagItem)) / 4)
 
+/* the arguments of every creator (STDLIBS): GTList# in d0 becomes the
+   object in a3 (!libs {#mygadtoolslib,$1380}), d1 = id, d2/d3 = x/y,
+   d4/d5 = width/height, a0 = intuifontlib's `textattr` variable (the
+   current IntuiFont), a1 = screenslib's used screen variable, a2 = the
+   stack of the further arguments: Text$ (length, then address), flags,
+   then the creator's own values; optional values are read at fixed
+   negative offsets from a2 */
 #define STDARGS UWORD id BL_REG(d1), WORD x BL_REG(d2), WORD y BL_REG(d3), \
     WORD w BL_REG(d4), WORD h BL_REG(d5), struct TextAttr **font BL_REG(a0), \
     struct Screen **scr BL_REG(a1), const ULONG *args BL_REG(a2)
 #define HANDLESTD(a) handlestd(id, x, y, w, h, font, scr, a, 0)
 
+/**
+ * @brief GTButton GTList#,id,x,y,w,h,Text$,flags: add a BUTTON_KIND gadget.
+ *
+ * Fills the NewGadget (handlestd: position plus the screen's border sizes
+ * and font height unless GTGimmeCludge is on, the label copied with
+ * allocst) and creates the gadget behind the last one of the GTList (the
+ * context is created on first use).  Flag bits: 6 GA_Disabled, 7
+ * GA_Immediate, 13 toggle (TOGGLESELECT); ng_Flags = flags & $3F.  A
+ * GTTags list given before is appended with TAG_MORE (then cleared).
+ * Amiga mode only.
+ * BUG(orig) (#171): with bit 13 TOGGLESELECT is set even if CreateGadget
+ * failed (writes address 14).  BUG(orig) (#176), all creators: without a
+ * used screen the border sizes are read from address 0.
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags (see STDARGS); the GTList in a3
+ */
 static void BLITZ_ROUTINE gtbutton_c(STDARGS)
 {
     const ULONG *sp = HANDLESTD(args);
@@ -636,6 +668,18 @@ static void BLITZ_ROUTINE gtbutton_c(STDARGS)
     }
 }
 
+/**
+ * @brief GTCheckBox GTList#,id,x,y,w,h,Text$,flags: add a CHECKBOX_KIND
+ * gadget.
+ *
+ * As GTButton.  Flag bits: 6 GA_Disabled, 8 GTCB_Checked, 9 GTCB_Scaled.
+ * Amiga mode only.
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags (see STDARGS); the GTList in a3
+ */
 static void BLITZ_ROUTINE gtcheckbox_c(STDARGS)
 {
     const ULONG *sp = HANDLESTD(args);
@@ -685,11 +729,35 @@ static void cycle(STDARGS)
     CREATE(CYCLE_KIND, f, cycletags);
 }
 
+/**
+ * @brief GTCycle GTList#,id,x,y,w,h,Text$,flags,Options$: add a
+ * CYCLE_KIND gadget.
+ *
+ * As GTButton.  Options$ ("a|b|c") becomes the GTCY_Labels array
+ * (getoptions: memlib globalloc, at most 63 labels + NULL without a check,
+ * never freed, BUG(orig) (#174)).  Flag bit 6 GA_Disabled.  Without
+ * `active` GTCY_Active keeps the value of an earlier GTCycle with it,
+ * BUG(orig) (#169).  Amiga mode only.
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, Options$ (see STDARGS); the GTList in a3
+ */
 static void BLITZ_ROUTINE gtcycle_c(STDARGS)
 {
     cycle(id, x, y, w, h, font, scr, args);
 }
 
+/**
+ * @brief GTCycle GTList#,id,x,y,w,h,Text$,flags,Options$,active: GTCycle
+ * with the active entry (GTCY_Active, the word at a2-22).
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, Options$, active (see STDARGS)
+ */
 static void BLITZ_ROUTINE gtcycle2_c(STDARGS)
 {
     LOWORD(cycletags.active) = UW(args, -22);
@@ -707,17 +775,51 @@ static void mx(STDARGS)
     CREATE(MX_KIND, f, mxtags);
 }
 
+/**
+ * @brief GTMX GTList#,id,x,y,w,h,Text$,flags,Options$: add an MX_KIND
+ * gadget.
+ *
+ * As GTCycle (Options$ -> GTMX_Labels, BUG(orig) (#174)).  Flag bits: 6
+ * GA_Disabled, 9 GTMX_Scaled.  Without `active` GTMX_Active keeps an
+ * earlier value, BUG(orig) (#169).  Amiga mode only.
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, Options$ (see STDARGS); the GTList in a3
+ */
 static void BLITZ_ROUTINE gtmx_c(STDARGS)
 {
     mx(id, x, y, w, h, font, scr, args);
 }
 
+/**
+ * @brief GTMX GTList#,id,x,y,w,h,Text$,flags,Options$,active: GTMX with
+ * the active entry (GTMX_Active, the word at a2-22).
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, Options$, active (see STDARGS)
+ */
 static void BLITZ_ROUTINE gtmx2_c(STDARGS)
 {
     LOWORD(mxtags.active) = UW(args, -22);
     mx(id, x, y, w, h, font, scr, args);
 }
 
+/**
+ * @brief GTText GTList#,id,x,y,w,h,Text$,flags,Display$: add a TEXT_KIND
+ * gadget.
+ *
+ * As GTButton; Display$ is copied with allocst (GTTX_Text), with
+ * GTTX_Border.  No flag tags.  Amiga mode only.
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, Display$ (see STDARGS); the GTList in a3
+ */
 static void BLITZ_ROUTINE gttext_c(STDARGS)
 {
     const ULONG *sp = HANDLESTD(args);
@@ -729,6 +831,18 @@ static void BLITZ_ROUTINE gttext_c(STDARGS)
     CREATE(TEXT_KIND, f, texttags);
 }
 
+/**
+ * @brief GTInteger GTList#,id,x,y,w,h,Text$,flags,default: add an
+ * INTEGER_KIND gadget.
+ *
+ * As GTButton, with GTIN_Number = default.  Flag bits: 6 GA_Disabled, 7
+ * GA_Immediate.  Amiga mode only.
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, default (see STDARGS); the GTList in a3
+ */
 static void BLITZ_ROUTINE gtinteger_c(STDARGS)
 {
     const ULONG *sp = HANDLESTD(args);
@@ -751,11 +865,34 @@ static void listview(STDARGS)
     CREATE(LISTVIEW_KIND, f, listtags);
 }
 
+/**
+ * @brief GTListView GTList#,id,x,y,w,h,Text$,flags,list(): add a
+ * LISTVIEW_KIND gadget.
+ *
+ * As GTButton.  GTLV_Labels = the List header of the list array (its
+ * address - 28).  Flag bits: 6 GA_Disabled, 12 GTLV_ReadOnly.  Without
+ * selected/top GTLV_Selected and GTLV_Top keep the values of an earlier
+ * GTListView with them, BUG(orig) (#169).  Amiga mode only.
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, list() (see STDARGS); the GTList in a3
+ */
 static void BLITZ_ROUTINE gtlistview_c(STDARGS)
 {
     listview(id, x, y, w, h, font, scr, args);
 }
 
+/**
+ * @brief GTListView GTList#,id,x,y,w,h,Text$,flags,list(),selected:
+ * GTListView with GTLV_Selected = GTLV_Top = selected (the word at a2-18).
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, list(), selected (see STDARGS)
+ */
 static void BLITZ_ROUTINE gtlistview1_c(STDARGS)
 {
     LOWORD(listtags.top) = UW(args, -18);       /* top = selected */
@@ -763,6 +900,15 @@ static void BLITZ_ROUTINE gtlistview1_c(STDARGS)
     listview(id, x, y, w, h, font, scr, args);
 }
 
+/**
+ * @brief GTListView GTList#,id,x,y,w,h,Text$,flags,list(),selected,top:
+ * GTListView with GTLV_Selected (the word at a2-18) and GTLV_Top (a2-22).
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, list(), selected, top (see STDARGS)
+ */
 static void BLITZ_ROUTINE gtlistview2_c(STDARGS)
 {
     LOWORD(listtags.selected) = UW(args, -18);  /* selected */
@@ -770,6 +916,18 @@ static void BLITZ_ROUTINE gtlistview2_c(STDARGS)
     listview(id, x, y, w, h, font, scr, args);
 }
 
+/**
+ * @brief GTNumber GTList#,id,x,y,w,h,Text$,flags,value: add a NUMBER_KIND
+ * gadget.
+ *
+ * As GTButton, with GTNM_Number = value and GTNM_Border.  No flag tags.
+ * Amiga mode only.
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, value (see STDARGS); the GTList in a3
+ */
 static void BLITZ_ROUTINE gtnumber_c(STDARGS)
 {
     const ULONG *sp = HANDLESTD(args);
@@ -789,13 +947,37 @@ static void palette(STDARGS)
     CREATE(PALETTE_KIND, f, palettetags);
 }
 
+/**
+ * @brief GTPalette GTList#,id,x,y,w,h,Text$,flags,depth: add a
+ * PALETTE_KIND gadget.
+ *
+ * As GTButton, with GTPA_Depth = depth.  Flag bit 6 GA_Disabled.  Amiga
+ * mode only.
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, depth (see STDARGS); the GTList in a3
+ */
 static void BLITZ_ROUTINE gtpalette_c(STDARGS)
 {
     palette(id, x, y, w, h, font, scr, args);
 }
 
-/* BUG(orig) (#168): +38 is the low word of the TAG_MORE pointer (the
-   usertags address), not GTPA_Color's value */
+/**
+ * @brief GTPalette GTList#,id,x,y,w,h,Text$,flags,depth,Color: GTPalette
+ * with a colour (the word at a2-18).
+ *
+ * BUG(orig) (#168): the colour goes to +38 of the tag list, the low word
+ * of the TAG_MORE pointer (the usertags address), not GTPA_Color's value
+ * (the source layout had two more tags): the colour is ignored, a GTTags
+ * list after it is reached through a wrong pointer.
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, depth, Color (see STDARGS)
+ */
 static void BLITZ_ROUTINE gtpalette2_c(STDARGS)
 {
     LOWORD(palettetags.more) = UW(args, -18);   /* not .color */
@@ -817,11 +999,35 @@ static void scroller(STDARGS)
     CREATE(SCROLLER_KIND, f, scrollertags);
 }
 
+/**
+ * @brief GTScroller GTList#,id,x,y,w,h,Text$,flags,Visible,Total: add a
+ * SCROLLER_KIND gadget.
+ *
+ * As GTButton, with GTSC_Visible and GTSC_Total (words), GA_RelVerify.
+ * Flag bits: 6 GA_Disabled, 7 GA_Immediate, 10 vertical (PGA_Freedom 2,
+ * else 1), 11 arrows (GTSC_Arrows = GTArrowSize's size, else 0).  Without
+ * Top GTSC_Top keeps an earlier value, BUG(orig) (#169).  Amiga mode only.
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, Visible, Total (see STDARGS); the GTList
+ *              in a3
+ */
 static void BLITZ_ROUTINE gtscroller_c(STDARGS)
 {
     scroller(id, x, y, w, h, font, scr, args);
 }
 
+/**
+ * @brief GTScroller GTList#,id,x,y,w,h,Text$,flags,Visible,Total,Top:
+ * GTScroller with GTSC_Top (the word at a2-18).
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, Visible, Total, Top (see STDARGS)
+ */
 static void BLITZ_ROUTINE gtscroller2_c(STDARGS)
 {
     LOWORD(scrollertags.top) = UW(args, -18);
@@ -842,11 +1048,34 @@ static void slider(STDARGS)
     CREATE(SLIDER_KIND, f, slidertags);
 }
 
+/**
+ * @brief GTSlider GTList#,id,x,y,w,h,Text$,flags,Min,Max: add a
+ * SLIDER_KIND gadget.
+ *
+ * As GTButton, with GTSL_Min and GTSL_Max (words), GA_RelVerify.  Flag
+ * bits: 6 GA_Disabled, 7 GA_Immediate (the tag list's initial value is 1),
+ * 10 vertical (PGA_Freedom 2, else 1).  Without Level GTSL_Level keeps an
+ * earlier value, BUG(orig) (#169).  Amiga mode only.
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, Min, Max (see STDARGS); the GTList in a3
+ */
 static void BLITZ_ROUTINE gtslider_c(STDARGS)
 {
     slider(id, x, y, w, h, font, scr, args);
 }
 
+/**
+ * @brief GTSlider GTList#,id,x,y,w,h,Text$,flags,Min,Max,Level: GTSlider
+ * with GTSL_Level (the word at a2-18).
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, Min, Max, Level (see STDARGS)
+ */
 static void BLITZ_ROUTINE gtslider2_c(STDARGS)
 {
     LOWORD(slidertags.level) = UW(args, -18);
@@ -865,11 +1094,34 @@ static void string(STDARGS)
     CREATE(STRING_KIND, f, stringtags);
 }
 
+/**
+ * @brief GTString GTList#,id,x,y,w,h,Text$,flags,MaxChars: add a
+ * STRING_KIND gadget.
+ *
+ * As GTButton, with GTST_MaxChars (word).  Flag bits: 6 GA_Disabled, 7
+ * GA_Immediate.  Without default$ GTST_String keeps the pointer of an
+ * earlier GTString with it - into the old string work area, BUG(orig)
+ * (#169).  Amiga mode only.
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, MaxChars (see STDARGS); the GTList in a3
+ */
 static void BLITZ_ROUTINE gtstring_c(STDARGS)
 {
     string(id, x, y, w, h, font, scr, args);
 }
 
+/**
+ * @brief GTString GTList#,id,x,y,w,h,Text$,flags,MaxChars,default$:
+ * GTString with GTST_String = default$ (the long at a2-22).
+ *
+ * @param id,x,y,w,h  d1-d5: gadget id, position and size
+ * @param font  a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr   a1: the used screen (screenslib)
+ * @param args  a2: Text$, flags, MaxChars, default$ (see STDARGS)
+ */
 static void BLITZ_ROUTINE gtstring2_c(STDARGS)
 {
     stringtags.string.ti_Data = L(args, -22);   /* default$ */
@@ -915,12 +1167,44 @@ static void shape1(const UWORD *shape)
     gflags += GFLG_GADGIMAGE;
 }
 
+/**
+ * @brief GTShape GTList#,id,x,y,flags,Shape#: add a BUTTON_KIND gadget
+ * that shows a shape.
+ *
+ * The shape's width, height, depth and data become the static Image 1
+ * (GFLG_GADGIMAGE); the gadget gets the shape's size, GACT_RELVERIFY
+ * and the boolean gadget type, GadgetRender = Image 1, SelectRender =
+ * Image 2.  Flag bits: 6 GA_Disabled, 7 GA_Immediate.  Amiga mode only.
+ * Errors (debugger only): "Uninitialized Shape" (sgchk).
+ * BUG(orig): the label of the previous gadget stays in the NewGadget
+ * (#172); an existing GadgetRender is overwritten with Image 1 (20 bytes)
+ * (#173); the result of CreateGadget is not checked (#327).
+ *
+ * @param id,x,y  d1-d3: gadget id and position
+ * @param flags   d4: the flags
+ * @param font    a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr     a1: the used screen (screenslib)
+ * @param shape   a6: the shape (!libs {#shapeslib,$1685}); the GTList in a3
+ */
 static void BLITZ_ROUTINE gtshape_c(SHAPEARGS, const UWORD *shape BL_REG(a6))
 {
     shape1(shape);
     doshape(id, x, y, flags, font, scr);
 }
 
+/**
+ * @brief GTShape GTList#,id,x,y,flags,Shape#,Shape#: GTShape with a second
+ * shape as the selected image (Image 2, GFLG_GADGHIMAGE).
+ *
+ * Errors (debugger only): "Uninitialized Shape" (sgchk2).
+ *
+ * @param id,x,y  d1-d3: gadget id and position
+ * @param flags   d4: the flags
+ * @param font    a0: the current IntuiFont (intuifontlib's textattr)
+ * @param scr     a1: the used screen (screenslib)
+ * @param shape2  a2: the second shape (!libs {#shapeslib,$1286})
+ * @param shape   a6: the shape (!libs {#shapeslib,$1685}); the GTList in a3
+ */
 static void BLITZ_ROUTINE gtshape2_c(SHAPEARGS, const UWORD *shape2 BL_REG(a2),
                                      const UWORD *shape BL_REG(a6))
 {
@@ -951,7 +1235,19 @@ static void addglist(struct Library *ib, struct Window *w, struct Gadget *g)
         : "a"(libreg) : "cc", "memory");
 }
 
-/* AttachGTList l,w: a1 = list, a0 = window object, a6 = intuition */
+/**
+ * @brief AttachGTList GTList#,Window#: add the GTList's gadgets to a
+ * window.
+ *
+ * AddGList (position -1, all gadgets), RefreshGList and GT_RefreshWindow;
+ * the GTList remembers the window.  Amiga mode only.
+ * Errors (debugger only): "GTList already attached to window!" if it is
+ * attached to this window already (attachchk).
+ *
+ * @param c        a1: the GTList (!libs {#mygadtoolslib,$1180})
+ * @param win      a0: the window object (!libs {#windowslib,$1081})
+ * @param intbase  a6: intuition.library
+ */
 static void BLITZ_ROUTINE attachgtlist_c(struct gtcontext *c BL_REG(a1),
                                          struct Window **win BL_REG(a0),
                                          struct Library *intbase BL_REG(a6))
@@ -966,7 +1262,16 @@ static void BLITZ_ROUTINE attachgtlist_c(struct gtcontext *c BL_REG(a1),
     GT_RefreshWindow(w, NULL);
 }
 
-/* DetachGTList l */
+/**
+ * @brief DetachGTList GTList#: remove the GTList's gadgets from its window.
+ *
+ * RemoveGList of all gadgets; nothing if the GTList is not attached.
+ * Amiga mode only.
+ * Errors (debugger only): "GTList not attached to a window" (detachchk).
+ *
+ * @param c        a1: the GTList (!libs {#mygadtoolslib,$1180})
+ * @param intbase  a6: intuition.library
+ */
 static void BLITZ_ROUTINE detachgtlist_c(struct gtcontext *c BL_REG(a1),
                                          struct Library *intbase BL_REG(a6))
 {
@@ -999,8 +1304,19 @@ static struct Gadget *lastof(struct Gadget *gad, UWORD id)
     return gad;
 }
 
-/* GTFreeGadget l,id - unlink the run of gadgets with the id and free
-   them; returns their number (0: none) */
+/**
+ * @brief GTFreeGadget GTList#,id: unlink the run of gadgets with the id
+ * and free them.
+ *
+ * The whole run from the first to the last gadget with the id
+ * (FreeGadgets), BUG(orig) (#175).  Amiga mode only.
+ * Errors (debugger only): "GTList must be detached from window first!"
+ * (freegadchk).
+ *
+ * @param id  d1: the gadget id
+ * @param c   a1: the GTList (!libs {#mygadtoolslib,$1180})
+ * @return d0.w: the number of gadgets freed, 0 if there is none with the id
+ */
 static ULONG BLITZ_ROUTINE gtfreegadget_c(UWORD id BL_REG(d1),
                                           struct gtcontext *c BL_REG(a1))
 {
@@ -1025,7 +1341,19 @@ static ULONG BLITZ_ROUTINE gtfreegadget_c(UWORD id BL_REG(d1),
     return n;
 }
 
-/* GTBevelBox l,x,y,w,h,flags (a0 = list) */
+/**
+ * @brief GTBevelBox GTList#,x,y,w,h,flags: draw a bevel box into the
+ * GTList's window.
+ *
+ * DrawBevelBox with the GTList's VisualInfo in the RastPort of the window
+ * it is attached to (not checked).  Amiga mode only.
+ * BUG(orig) (#170): flags <> 0 gives the tag GTBB_Recessed with value 0,
+ * flags = 0 ends the tag list there: the box is never recessed.
+ *
+ * @param x,y,w,h  d1-d4: position and size
+ * @param flags    d5: <> 0 meant as "recessed"
+ * @param c        a0: the GTList (!libs {#mygadtoolslib,$1080})
+ */
 static void BLITZ_ROUTINE gtbevel_c(LONG x BL_REG(d1), LONG y BL_REG(d2),
                                     LONG w BL_REG(d3), LONG h BL_REG(d4),
                                     ULONG flags BL_REG(d5),
@@ -1038,7 +1366,16 @@ static void BLITZ_ROUTINE gtbevel_c(LONG x BL_REG(d1), LONG y BL_REG(d2),
     DrawBevelBoxA(c->window->RPort, x, y, w, h, &beveltags.vinfo);
 }
 
-/* GTGadPtr(l,id) */
+/**
+ * @brief GTGadPtr(GTList#,id): the address of the gadget with the id.
+ *
+ * The FIRST gadget with the id (the search starts at the context gadget,
+ * id -1), BUG(orig) (#175).  Amiga mode only.
+ *
+ * @param id  d1: the gadget id
+ * @param c   a1: the GTList (!libs {#mygadtoolslib,$1180})
+ * @return d0: the gadget, 0 if there is none
+ */
 static ULONG BLITZ_ROUTINE gtptr_c(UWORD id BL_REG(d1), struct gtcontext *c BL_REG(a1))
 {
     return (ULONG)find((struct Gadget *)c, id);
@@ -1058,7 +1395,18 @@ static ULONG setattrs(struct gtcontext *c, UWORD id, struct TagItem *tags, int l
     return 0;
 }
 
-/* GTChangeList l,id[,list()] - GTLV_Labels (-1: detach the labels) */
+/**
+ * @brief GTChangeList GTList#,id,List(): give a listview new labels.
+ *
+ * GTLV_Labels = the List header of the list array (its address - 28) on
+ * the LAST gadget of the run with the id, BUG(orig) (#175); nothing
+ * without a context or gadget.  Amiga mode only.
+ * BUG(orig) (#328): the tag list is left in a3.
+ *
+ * @param id    d1: the gadget id
+ * @param c     a1: the GTList (!libs {#mygadtoolslib,$1180})
+ * @param args  a2: the stack with the list array's address
+ */
 static void BLITZ_ROUTINE gtchnglist1_c(UWORD id BL_REG(d1),
                                         struct gtcontext *c BL_REG(a1),
                                         const ULONG *args BL_REG(a2))
@@ -1069,6 +1417,16 @@ static void BLITZ_ROUTINE gtchnglist1_c(UWORD id BL_REG(d1),
     setattrs(c, id, &gatchtags.labels, 1);
 }
 
+/**
+ * @brief GTChangeList GTList#,id: detach the listview's labels
+ * (GTLV_Labels = -1), as GTChangeList with a list.
+ *
+ * Unlike the form with a list it does not test for a context first.
+ * BUG(orig) (#328): the tag list is left in a3.
+ *
+ * @param id  d1: the gadget id
+ * @param c   a1: the GTList (!libs {#mygadtoolslib,$1180})
+ */
 static void BLITZ_ROUTINE gtchnglist2_c(UWORD id BL_REG(d1),
                                         struct gtcontext *c BL_REG(a1))
 {
@@ -1076,7 +1434,19 @@ static void BLITZ_ROUTINE gtchnglist2_c(UWORD id BL_REG(d1),
     setattrs(c, id, &gatchtags.labels, 1);
 }
 
-/* GTSetHighlight l,id,value - GTLV_Selected and GTLV_MakeVisible */
+/**
+ * @brief GTSetHighlight GTList#,id,value: select a listview entry and
+ * make it visible.
+ *
+ * GTLV_Selected and GTLV_MakeVisible = value on the LAST gadget of the run
+ * with the id, BUG(orig) (#175); nothing without a context or gadget.
+ * Amiga mode only.
+ * BUG(orig) (#328): the tag list is left in a3.
+ *
+ * @param id  d1: the gadget id
+ * @param v   d2: the entry
+ * @param c   a1: the GTList (!libs {#mygadtoolslib,$1180})
+ */
 static void BLITZ_ROUTINE gtsethighlight_c(UWORD id BL_REG(d1), ULONG v BL_REG(d2),
                                            struct gtcontext *c BL_REG(a1))
 {
@@ -1101,12 +1471,36 @@ static const ULONG *gttags(UWORD pairs, const ULONG *sp)
     return sp;
 }
 
+/**
+ * @brief GTTags Tag,Value[,Tag,Value...]: extra tags for the next gadget.
+ *
+ * The pairs go to `usertags` (at most 15 without a check), which the next
+ * creator appends with TAG_MORE and then clears.  DIFF: a2 is not moved
+ * (the original pops the pairs).  Amiga mode only.
+ *
+ * @param pairs  d7: the number of pairs
+ * @param args   a2: the stack of the pairs
+ */
 static void BLITZ_ROUTINE gttags_c(UWORD pairs BL_REG(d7), const ULONG *args BL_REG(a2))
 {
     gttags(pairs, args);
 }
 
-/* GTSetAttrs l,id,tag,value... (also a function: 0 if no gadget) */
+/**
+ * @brief GTSetAttrs GTList#,id[,Tag,Value...]: set tags of a gadget (also
+ * a function).
+ *
+ * GT_SetGadgetAttrs with the pairs (put into `usertags`) on the LAST
+ * gadget of the run with the id, BUG(orig) (#175); nothing without a
+ * context or gadget.  DIFF: a2 is not moved.  Amiga mode only.
+ * BUG(orig) (#328): a3 = usertags afterwards, also as a function.
+ *
+ * @param id     d1: the gadget id
+ * @param pairs  d7: the number of pairs
+ * @param c      a1: the GTList (!libs {#mygadtoolslib,$1180})
+ * @param args   a2: the stack of the pairs
+ * @return d0: 0 (the original returns what d0 holds)
+ */
 static ULONG BLITZ_ROUTINE gtsetattrs_c(UWORD id BL_REG(d1), UWORD pairs BL_REG(d7),
                                         struct gtcontext *c BL_REG(a1),
                                         const ULONG *args BL_REG(a2))
@@ -1121,8 +1515,7 @@ static ULONG BLITZ_ROUTINE gtsetattrs_c(UWORD id BL_REG(d1), UWORD pairs BL_REG(
     gad = lastof(gad, id);
     gttags(pairs, args);
     /* BUG(orig) (#328): a3 = usertags afterwards (also as a function) */
-    GT_SetGadgetAttrsA(gad, c->window, NULL,
-                       usertags);
+    GT_SetGadgetAttrsA(gad, c->window, NULL, usertags);
     return 0;                           /* the original: what d0 holds */
 }
 
@@ -1140,19 +1533,53 @@ static void setone(struct gtcontext *c, UWORD id, ULONG v, ULONG tstr, ULONG tot
     GT_SetGadgetAttrsA(gad, c->window, NULL, &onetag.tag);
 }
 
+/**
+ * @brief GTSetString GTList#,id,string$: set the text of a string or text
+ * gadget.
+ *
+ * GTST_String for a STRING_KIND gadget (GadgetType $104), else GTTX_Text,
+ * on the FIRST gadget with the id (the search starts at the context
+ * gadget); nothing if there is none.  Amiga mode only.
+ * BUG(orig) (#328): the tag list is left in a3.
+ *
+ * @param id   d1: the gadget id
+ * @param str  d2: the string
+ * @param c    a1: the GTList (!libs {#mygadtoolslib,$1180})
+ */
 static void BLITZ_ROUTINE gtsetstring_c(UWORD id BL_REG(d1), ULONG str BL_REG(d2),
                                         struct gtcontext *c BL_REG(a1))
 {
     setone(c, id, str, GTST_String, GTTX_Text);
 }
 
+/**
+ * @brief GTSetInteger GTList#,id,value: set the value of an integer or
+ * number gadget.
+ *
+ * GTIN_Number for an INTEGER_KIND gadget (GadgetType $104), else
+ * GTNM_Number, as GTSetString.  Amiga mode only.
+ * BUG(orig) (#328): the tag list is left in a3.
+ *
+ * @param id  d1: the gadget id
+ * @param v   d2: the value
+ * @param c   a1: the GTList (!libs {#mygadtoolslib,$1180})
+ */
 static void BLITZ_ROUTINE gtsetint_c(UWORD id BL_REG(d1), ULONG v BL_REG(d2),
                                      struct gtcontext *c BL_REG(a1))
 {
     setone(c, id, v, GTIN_Number, GTNM_Number);
 }
 
-/* GTGetString(l,id) - the StringInfo buffer to a3 */
+/**
+ * @brief GTGetString(GTList#,id): the contents of a string gadget.
+ *
+ * Copies the StringInfo buffer of the FIRST gadget with the id to the
+ * string buffer (a3, left behind the text).  Amiga mode only.
+ *
+ * @param id  d1: the gadget id
+ * @param c   a1: the GTList (!libs {#mygadtoolslib,$1180})
+ * @return d0: the length of the string, 0 if there is no such gadget
+ */
 static ULONG BLITZ_ROUTINE gtgetstring_c(UWORD id BL_REG(d1),
                                          struct gtcontext *c BL_REG(a1))
 {
@@ -1170,7 +1597,16 @@ static ULONG BLITZ_ROUTINE gtgetstring_c(UWORD id BL_REG(d1),
     return n;
 }
 
-/* GTGetInteger(l,id) - StringInfo LongInt */
+/**
+ * @brief GTGetInteger(GTList#,id): the value of an integer gadget.
+ *
+ * The StringInfo's LongInt of the FIRST gadget with the id.  Amiga mode
+ * only.
+ *
+ * @param id  d1: the gadget id
+ * @param c   a1: the GTList (!libs {#mygadtoolslib,$1180})
+ * @return d0: the value, 0 if there is no such gadget
+ */
 static ULONG BLITZ_ROUTINE gtgetint_c(UWORD id BL_REG(d1), struct gtcontext *c BL_REG(a1))
 {
     struct Gadget *gad = find((struct Gadget *)c, id);
@@ -1180,7 +1616,20 @@ static ULONG BLITZ_ROUTINE gtgetint_c(UWORD id BL_REG(d1), struct gtcontext *c B
     return ((struct StringInfo *)gad->SpecialInfo)->LongInt;
 }
 
-/* GTGetAttrs(l,id,tag) - GT_GetGadgetAttrs into `value` */
+/**
+ * @brief GTGetAttrs(GTList#,id,Tag): read one attribute of a gadget.
+ *
+ * GT_GetGadgetAttrs of the tag into the library's `value` on the FIRST
+ * gadget with the id.  Amiga mode only.
+ * BUG(orig) (#328): a3 = gettag afterwards - in a string expression the
+ * rest is written over gettag, value and what follows them.
+ *
+ * @param id   d1: the gadget id
+ * @param tag  d2: the tag
+ * @param c    a1: the GTList (!libs {#mygadtoolslib,$1180})
+ * @return d0: the value (the previous `value` if GadTools does not set
+ *         it), 0 if there is no such gadget
+ */
 static ULONG BLITZ_ROUTINE gtgetattrs_c(UWORD id BL_REG(d1), ULONG tag BL_REG(d2),
                                         struct gtcontext *c BL_REG(a1))
 {
@@ -1196,7 +1645,16 @@ static ULONG BLITZ_ROUTINE gtgetattrs_c(UWORD id BL_REG(d1), ULONG tag BL_REG(d2
     return value;
 }
 
-/* GTStatus(l,id) - SELECTED as 0/1 */
+/**
+ * @brief GTStatus(GTList#,Id): whether a gadget is selected.
+ *
+ * GFLG_SELECTED of the FIRST gadget with the id, as 0/1 (not a Blitz
+ * truth value).  Function of type byte.
+ *
+ * @param id  d1: the gadget id
+ * @param c   a1: the GTList (!libs {#mygadtoolslib,$1180})
+ * @return d0: 1 selected, 0 not selected or no such gadget
+ */
 static ULONG BLITZ_ROUTINE gtgetstatus_c(UWORD id BL_REG(d1),
                                          struct gtcontext *c BL_REG(a1))
 {
@@ -1207,13 +1665,23 @@ static ULONG BLITZ_ROUTINE gtgetstatus_c(UWORD id BL_REG(d1),
     return (UWORD)((WORD)(gad->Flags & GFLG_SELECTED) >> 7);
 }
 
-/* GTArrowSize size */
+/**
+ * @brief GTArrowSize size: the arrow size of later GTScrollers with
+ * arrows (flag bit 11, GTSC_Arrows; initially 16).
+ *
+ * @param size  d0: the size
+ */
 static void BLITZ_ROUTINE gtarrowsize_c(ULONG size BL_REG(d0))
 {
     arrowsize = size;
 }
 
-/* GTGimmeCludge on/off - on: no border offsets (cludge = 0) */
+/**
+ * @brief GTGimmeCludge On/Off: on = later gadgets are placed without the
+ * screen's border sizes and font height (cludge = 0).
+ *
+ * @param on  d0.w: <> 0 on, 0 off
+ */
 static void BLITZ_ROUTINE gtcludge_c(UWORD on BL_REG(d0))
 {
     cludge = on ? 0 : -1;
@@ -1233,6 +1701,16 @@ static struct Gadget *findgadget(struct Gadget *list, UWORD id)
     }
 }
 
+/**
+ * @brief GTEnable GTList#,Id: clear GFLG_DISABLED of a gadget.
+ *
+ * On the first gadget with the id whose GadgetType has bit 15 clear
+ * (findgadget); only the flag, no refresh; nothing if there is none.
+ *
+ * @param id    d1: the gadget id
+ * @param list  a1: the GTList (!libs {#mygadtoolslib,$1180}), its first
+ *              long as the head of the gadget list
+ */
 static void BLITZ_ROUTINE doenable_c(UWORD id BL_REG(d1), struct Gadget *list BL_REG(a1))
 {
     struct Gadget *gad = findgadget(list, id);
@@ -1241,6 +1719,12 @@ static void BLITZ_ROUTINE doenable_c(UWORD id BL_REG(d1), struct Gadget *list BL
         HI(gad->Flags) &= ~(GFLG_DISABLED >> 8);
 }
 
+/**
+ * @brief GTDisable GTList#,Id: set GFLG_DISABLED of a gadget, as GTEnable.
+ *
+ * @param id    d1: the gadget id
+ * @param list  a1: the GTList (!libs {#mygadtoolslib,$1180})
+ */
 static void BLITZ_ROUTINE dodisable_c(UWORD id BL_REG(d1), struct Gadget *list BL_REG(a1))
 {
     struct Gadget *gad = findgadget(list, id);
@@ -1249,6 +1733,14 @@ static void BLITZ_ROUTINE dodisable_c(UWORD id BL_REG(d1), struct Gadget *list B
         HI(gad->Flags) |= GFLG_DISABLED >> 8;
 }
 
+/**
+ * @brief GTToggle GTList#,Id,On|Off: set or clear GFLG_SELECTED of a
+ * gadget, as GTEnable.
+ *
+ * @param id    d1: the gadget id
+ * @param on    d2.w: <> 0 set, 0 clear
+ * @param list  a1: the GTList (!libs {#mygadtoolslib,$1180})
+ */
 static void BLITZ_ROUTINE doselect_c(UWORD id BL_REG(d1), UWORD on BL_REG(d2),
                                      struct Gadget *list BL_REG(a1))
 {
@@ -1262,6 +1754,13 @@ static void BLITZ_ROUTINE doselect_c(UWORD id BL_REG(d1), UWORD on BL_REG(d2),
         LO(gad->Flags) &= ~GFLG_SELECTED;
 }
 
+/**
+ * @brief GTToggle GTList#,Id: invert GFLG_SELECTED of a gadget, as
+ * GTEnable.
+ *
+ * @param id    d1: the gadget id
+ * @param list  a1: the GTList (!libs {#mygadtoolslib,$1180})
+ */
 static void BLITZ_ROUTINE doselect2_c(UWORD id BL_REG(d1), struct Gadget *list BL_REG(a1))
 {
     struct Gadget *gad = findgadget(list, id);
