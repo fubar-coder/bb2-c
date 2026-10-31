@@ -218,6 +218,12 @@ static void dealloc(void *mem, ULONG size)
 
 /* ---------------------------------------------------- Filter, Volume */
 
+/**
+ * @brief Filter On|Off: the audio low pass filter (the power LED bit,
+ *        BSET/BCLR #1,$BFE001).
+ *
+ * @param on  d0.w: not 0 = on
+ */
 static void BLITZ_ROUTINE dofilter_c(UWORD on BL_REG(d0))
 {
     if (on)
@@ -227,13 +233,28 @@ static void BLITZ_ROUTINE dofilter_c(UWORD on BL_REG(d0))
 }
 BLITZ_THUNK(dofilter, dofilter_c, "d0-d1/a0-a1");
 
+/**
+ * @brief DiskBuffer Bufferlen: the length of each half of DiskPlay's chip
+ *        buffer (default 1024).
+ *
+ * @param len  d0: the length in bytes
+ */
 static void BLITZ_ROUTINE dodiskbuff_c(ULONG len BL_REG(d0))
 {
     dbufflen = len;
 }
 BLITZ_THUNK(dodiskbuff, dodiskbuff_c, "d0-d1/a0-a1");
 
-/* Volume mask,vol... - the volumes from the a2 stack */
+/**
+ * @brief Volume Channelmask,Vol1[,Vol2...]: set the volume of the
+ *        channels of the mask.
+ *
+ * The volumes from the a2 stack, one per set bit (channel 0 first).
+ * Errors (debugger, vchk): "Illegal Chanel Mask" (mask > 15).
+ *
+ * @param mask  d0.w: the channel mask
+ * @param args  a2: the compiler's stack with the volumes (words)
+ */
 static void BLITZ_ROUTINE dovolume_c(UWORD mask BL_REG(d0), const UBYTE *args BL_REG(a2))
 {
     const UBYTE *sp = args;
@@ -260,6 +281,10 @@ static void freesound(struct sound *s)
     dealloc(d, (ULONG)s->len << 1);
 }
 
+/**
+ * @brief Free Sound (the object's _free nullsub): free the sample of the
+ *        sound in a3 (not for "cL" data of DecodeSound).
+ */
 static void BLITZ_ROUTINE dofreesound_c(void)
 {
     freesound((struct sound *)blitz_string);
@@ -307,7 +332,19 @@ err3:
     return 0;
 }
 
-/* LoadSound n,name$ */
+/**
+ * @brief LoadSound Sound#,Filename$: load an IFF 8SVX file into the sound.
+ *
+ * Through iffiolib: VHDR (repeat start and length, period = 3579440 /
+ * samplesPerSec, DIVU: overflow below 55 Hz leaves 3579440), then BODY
+ * into chip memory.  Errors: "Illegal Sound file" (no file), "Can't Find
+ * VHDR", "Error Reading File", "Sound too long" (>= 128K) - BUG(orig)
+ * (#67): then the file stays open.
+ * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
+ * d0).
+ *
+ * @param name  d1: the file name
+ */
 void BLITZ_ROUTINE doloadsound(const UBYTE *name BL_REG(d1))
 {
     struct sound *s = (struct sound *)blitz_string;
@@ -332,8 +369,21 @@ void BLITZ_ROUTINE doloadsound(const UBYTE *name BL_REG(d1))
     IFFCALL(TOK_iffclose, r);
 }
 
-/* DecodeSound n,address - an 8SVX FORM in memory; chip data is used in
-   place ("cL"), other data copied to chip memory */
+/**
+ * @brief DecodeSound Sound#,MemoryLocation: a sound from an 8SVX FORM in
+ *        memory.
+ *
+ * Looks for VHDR and BODY; chip data (below 2 MB) is used in place
+ * ("cL", never freed), other data copied to chip memory.  BUG(orig)
+ * (#68): a later DecodeSound into fast memory does not clear the "cL"
+ * mark (the copy is never freed).  Errors: "Illegal Sound file" (no
+ * FORM/8SVX, no VHDR/BODY before the end of the FORM), "Sound too long"
+ * (>= 128K).
+ * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
+ * d0).
+ *
+ * @param p  d1: the address of the FORM
+ */
 void BLITZ_ROUTINE _cludgesound(ULONG *p BL_REG(d1))
 {
     struct sound *s = (struct sound *)blitz_string;
@@ -399,7 +449,19 @@ err1:
     BLITZ_RUNERR(mess1);
 }
 
-/* SetPeriod n,period */
+/**
+ * @brief SetPeriod Sound#,Period: set the sound's period.
+ *
+ * BUG(orig) (#70): without a sound `BEQ err5` from the normal code into
+ * the error check area ("Uninitialized Sound"; dangling without the
+ * debugger).  BUG(orig) (#66): the error check (sndchk) goes on into
+ * dpchk and tests the period as channel mask: a period > 15 is "Illegal
+ * Chanel Mask" with the debugger.
+ * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
+ * d0).
+ *
+ * @param period  d1.w: the period
+ */
 void BLITZ_ROUTINE _setperiod(UWORD period BL_REG(d1))
 {
     struct sound *s = (struct sound *)blitz_string;
@@ -425,29 +487,76 @@ static void initsound(ULONG len, UWORD period, ULONG rep)
     s->rep += (ULONG)s->data;
 }
 
+/**
+ * @brief InitSound Sound#,Length: an empty sound of Length bytes in chip
+ *        memory (cleared), period 428, repeat from the start.
+ *
+ * Errors (debugger, ischk1): "Sound too long" (>= 128K), "Sound Length
+ * MUST be even".
+ * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
+ * d0).
+ *
+ * @param len  d1: the length in bytes
+ */
 void BLITZ_ROUTINE doisound2(ULONG len BL_REG(d1))
 {
     initsound(len, 428, 0);
 }
 
+/**
+ * @brief InitSound Sound#,Length,Period: InitSound with a period.
+ *
+ * Errors (debugger, ischk1): as InitSound Sound#,Length.
+ * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
+ * d0).
+ *
+ * @param len     d1: the length in bytes
+ * @param period  d2.w: the period
+ */
 void BLITZ_ROUTINE doisound3(ULONG len BL_REG(d1), UWORD period BL_REG(d2))
 {
     initsound(len, period, 0);
 }
 
+/**
+ * @brief InitSound Sound#,Length,Period,Repeat: InitSound with a period
+ *        and a repeat offset.
+ *
+ * Errors (debugger, ischk2): as InitSound Sound#,Length, and "Repeat
+ * offset MUST be even", "Repeat MUST be less than Length".
+ * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
+ * d0).
+ *
+ * @param len     d1: the length in bytes
+ * @param period  d2.w: the period
+ * @param rep     d3: the repeat offset in bytes
+ */
 void BLITZ_ROUTINE doisound(ULONG len BL_REG(d1), UWORD period BL_REG(d2),
                             ULONG rep BL_REG(d3))
 {
     initsound(len, period, rep);
 }
 
-/* SoundData n,offset,byte / PeekSound(n,offset) - inline as in the
-   original.  BUG(orig) (#46): a3 = the Sound object (!libs $1380) is left as
-   it is - a PeekSound inside a string expression makes the rest of the
-   expression write into the object. */
+/**
+ * @brief SoundData Sound#,Offset,Data: write a byte of the sample (inline
+ *        MOVE.l (a3),a0:MOVE.b d2,0(a0,d1.l), as in the original).
+ *
+ * a3 = the Sound object (!libs {#audiolib,$1380}), d1 = the offset, d2 =
+ * the byte.  Errors (debugger, sdatachk): "Uninitialized Sound", "Data
+ * offset too large".
+ */
 BLITZ_INLINE(dosdata,
     "   move.l  (a3),a0\n"
     "   move.b  d2,0(a0,d1.l)");
+/**
+ * @brief PeekSound(Sound#,Offset): a byte of the sample, sign extended to
+ *        a word (inline, as in the original).
+ *
+ * a3 = the Sound object (!libs {#audiolib,$1380}), d1 = the offset; d0.w
+ * = the byte.  BUG(orig) (#46): a3 is left as it is - a PeekSound inside
+ * a string expression makes the rest of the expression write into the
+ * object.  Errors (debugger, sdatachk): as SoundData.
+ */
 BLITZ_INLINE(dopsound,
     "   move.l  (a3),a0\n"
     "   move.b  0(a0,d1.l),d0\n"
@@ -512,22 +621,80 @@ static void playsound(UWORD mask, WORD nvol, int loop, const UBYTE *args)
         }
 }
 
+/**
+ * @brief Sound Sound#,Channelmask: play the sound once on the channels.
+ *
+ * Switches the channels' DMA off, waits for 12 changes of the VHPOSR
+ * line byte, starts the sound on every channel of the mask (volume 64 or
+ * the next given one) and after another 12 lines sets a zero word in chip memory as the repeat part.
+ * Errors (debugger, sndchk): "Uninitialized Sound", "Illegal Chanel
+ * Mask" (mask > 15).
+ * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
+ * d0).
+ *
+ * @param mask  d1.w: the channel mask
+ */
 void BLITZ_ROUTINE dosound2(UWORD mask BL_REG(d1))
 {
     playsound(mask, 0, 0, 0);
 }
 
+/**
+ * @brief Sound Sound#,Channelmask,Vol1[,Vol2...]: Sound with volumes.
+ *
+ * Switches the channels' DMA off, waits for 12 changes of the VHPOSR
+ * line byte, starts the sound on every channel of the mask (volume 64 or
+ * the next given one) and after another 12 lines sets a zero word in chip memory as the repeat part.
+ * Errors (debugger, sndchk): "Uninitialized Sound", "Illegal Chanel
+ * Mask" (mask > 15).
+ * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
+ * d0).
+ *
+ * @param mask  d1.w: the channel mask
+ * @param nvol  d7.w: the number of volumes
+ * @param args  a2: the compiler's stack with the volumes (words)
+ */
 void BLITZ_ROUTINE dosound(UWORD mask BL_REG(d1), WORD nvol BL_REG(d7),
                            const UBYTE *args BL_REG(a2))
 {
     playsound(mask, nvol, 0, args);
 }
 
+/**
+ * @brief LoopSound Sound#,Channelmask: play the sound and repeat its
+ *        repeat part.
+ *
+ * Switches the channels' DMA off, waits for 12 changes of the VHPOSR
+ * line byte, starts the sound on every channel of the mask (volume 64 or
+ * the next given one) and after another 12 lines sets the repeat part.
+ * Errors (debugger, sndchk): "Uninitialized Sound", "Illegal Chanel
+ * Mask" (mask > 15).
+ * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
+ * d0).
+ *
+ * @param mask  d1.w: the channel mask
+ */
 void BLITZ_ROUTINE dosoundl2(UWORD mask BL_REG(d1))
 {
     playsound(mask, 0, 1, 0);
 }
 
+/**
+ * @brief LoopSound Sound#,Channelmask,Vol1[,Vol2...]: LoopSound with
+ *        volumes.
+ *
+ * Switches the channels' DMA off, waits for 12 changes of the VHPOSR
+ * line byte, starts the sound on every channel of the mask (volume 64 or
+ * the next given one) and after another 12 lines sets the repeat part.
+ * Errors (debugger, sndchk): "Uninitialized Sound", "Illegal Chanel
+ * Mask" (mask > 15).
+ * The Sound object comes in a3 (!libs {#audiolib,$1380}, from Sound# in
+ * d0).
+ *
+ * @param mask  d1.w: the channel mask
+ * @param nvol  d7.w: the number of volumes
+ * @param args  a2: the compiler's stack with the volumes (words)
+ */
 void BLITZ_ROUTINE dosoundl(UWORD mask BL_REG(d1), WORD nvol BL_REG(d7),
                             const UBYTE *args BL_REG(a2))
 {
@@ -623,6 +790,19 @@ static void diskplay(const UBYTE *name, UWORD mask, WORD nvol, const UBYTE *args
     IFFCALL(TOK_iffclose, r);
 }
 
+/**
+ * @brief DiskPlay Filename$,Channelmask: stream an 8SVX file from disk.
+ *
+ * Through two halves of a chip buffer (DiskBuffer, default 1024 bytes
+ * each), waiting for the audio interrupt bits in INTREQR (busy wait, as
+ * in the original).  BUG(orig) (#69): a file whose length is a multiple
+ * of the buffer length never ends.  Errors: as LoadSound (no file, no
+ * VHDR, read error); (debugger, dpchk) "Illegal Chanel Mask".
+ *
+ * @param name  d0: the file name
+ * @param mask  d1.w: the channel mask
+ * @param args  a2: the compiler's stack (its string length is dropped)
+ */
 static void BLITZ_ROUTINE dodplay2_c(const UBYTE *name BL_REG(d0), UWORD mask BL_REG(d1),
                                      const UBYTE *args BL_REG(a2))
 {
@@ -630,6 +810,18 @@ static void BLITZ_ROUTINE dodplay2_c(const UBYTE *name BL_REG(d0), UWORD mask BL
 }
 BLITZ_THUNK(dodplay2, dodplay2_c, "d1/a0-a1");
 
+/**
+ * @brief DiskPlay Filename$,Channelmask,Vol1[,Vol2...]: DiskPlay with
+ *        volumes.
+ *
+ * As DiskPlay Filename$,Channelmask (BUG(orig) #69 too).
+ *
+ * @param name  d0: the file name
+ * @param mask  d1.w: the channel mask
+ * @param nvol  d7.w: the number of volumes
+ * @param args  a2: the compiler's stack with the string length and the
+ *              volumes (words)
+ */
 static void BLITZ_ROUTINE dodplay_c(const UBYTE *name BL_REG(d0), UWORD mask BL_REG(d1),
                                     WORD nvol BL_REG(d7), const UBYTE *args BL_REG(a2))
 {
@@ -639,6 +831,10 @@ BLITZ_THUNK(dodplay, dodplay_c, "d1/a0-a1");
 
 /* --------------------------------------------------------- init / finit */
 
+/**
+ * @brief init: audio DMA and interrupts off, DiskBuffer 1024, a zero word
+ *        in chip memory (memlib globalloc).
+ */
 static void BLITZ_ROUTINE codeinit_c(void)
 {
     BL_CUSTOMW(BL_CUSTOM, 0x96) = 0xf;                         /* audio DMA OFF */
@@ -649,6 +845,9 @@ static void BLITZ_ROUTINE codeinit_c(void)
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
 
+/**
+ * @brief finit: audio DMA off, the volume of all channels 0.
+ */
 static void BLITZ_ROUTINE codefinit_c(void)
 {
     int ch;
