@@ -241,41 +241,47 @@ static void BLITZ_ROUTINE c2p_c(UBYTE *o BL_REG(a0), UBYTE *bm BL_REG(a1))
         int k;
 
         for (k = 0; k < 4; k++) {
-            /* d0-d4: pixels, then nibble and bit groups */
-            ULONG px0 = *src++, px1 = *src++, mix0, mix1, bits;
+            /* d0-d4: the pixels, then nibble and bit groups */
+            ULONG px0 = *src++, px1 = *src++;   /* d0, d1: the input longs */
+            ULONG lo0, lo1, hi0, hi1;           /* d2, d3, d0, d1: the nibble halves */
+            ULONG lonib, hinib;                 /* d2, d0: the merged nibbles */
+            ULONG lomerge, himerge;             /* d3, d1: merge2 of them */
 
-            mix0 = px0 & 0x0f0f0f0fUL;
-            px0 ^= mix0;
-            mix1 = px1 & 0x0f0f0f0fUL;
-            px1 ^= mix1;
-            mix0 = (mix0 << 4) | mix1;
-            px0 |= px1 >> 4;
-            mix1 = merge2(mix0);
-            px1 = merge2(px0);
+            lo0 = px0 & 0x0f0f0f0fUL;
+            hi0 = px0 ^ lo0;
+            lo1 = px1 & 0x0f0f0f0fUL;
+            hi1 = px1 ^ lo1;
+            lonib = (lo0 << 4) | lo1;
+            hinib = hi0 | hi1 >> 4;
+            lomerge = merge2(lonib);
+            himerge = merge2(hinib);
 
-            mix0 = px1 >> 7;
-            px0 = px1 & 0x55555555UL;
-            px1 ^= px0;
-            bits = mix0 & 0x55555555UL;
-            mix0 ^= bits;
-            px1 = (px1 | bits) >> 1;
-            buf[7][k] = (UBYTE)px1;
-            buf[5][k] = (UBYTE)(px1 >> 16);
-            mix0 |= px0;
-            buf[6][k] = (UBYTE)mix0;
-            buf[4][k] = (UBYTE)(mix0 >> 16);
+            {                                   /* planes 7, 5, 6, 4 */
+                ULONG shifted = himerge >> 7;               /* d2 */
+                ULONG even = himerge & 0x55555555UL;        /* d0 */
+                ULONG odd = himerge ^ even;                 /* d1 */
+                ULONG mask = shifted & 0x55555555UL;        /* d4 */
+                ULONG oddpl = (odd | mask) >> 1;            /* d1 */
+                ULONG evenpl = (shifted ^ mask) | even;     /* d2 */
 
-            mix0 = mix1 >> 7;
-            px0 = mix1 & 0x55555555UL;
-            mix1 ^= px0;
-            bits = mix0 & 0x55555555UL;
-            mix0 ^= bits;
-            mix1 = (mix1 | bits) >> 1;
-            buf[3][k] = (UBYTE)mix1;
-            buf[1][k] = (UBYTE)(mix1 >> 16);
-            mix0 |= px0;
-            buf[2][k] = (UBYTE)mix0;
-            buf[0][k] = (UBYTE)(mix0 >> 16);
+                buf[7][k] = (UBYTE)oddpl;
+                buf[5][k] = (UBYTE)(oddpl >> 16);
+                buf[6][k] = (UBYTE)evenpl;
+                buf[4][k] = (UBYTE)(evenpl >> 16);
+            }
+            {                                   /* planes 3, 1, 2, 0 */
+                ULONG shifted = lomerge >> 7;               /* d2 */
+                ULONG even = lomerge & 0x55555555UL;        /* d0 */
+                ULONG odd = lomerge ^ even;                 /* d3 */
+                ULONG mask = shifted & 0x55555555UL;        /* d4 */
+                ULONG oddpl = (odd | mask) >> 1;            /* d3 */
+                ULONG evenpl = (shifted ^ mask) | even;     /* d2 */
+
+                buf[3][k] = (UBYTE)oddpl;
+                buf[1][k] = (UBYTE)(oddpl >> 16);
+                buf[2][k] = (UBYTE)evenpl;
+                buf[0][k] = (UBYTE)(evenpl >> 16);
+            }
         }
         /* the buffers to the planes as longs, in the original's order */
         pl[PLSIZ / 4 * 1] = *(ULONG *)buf[1];
