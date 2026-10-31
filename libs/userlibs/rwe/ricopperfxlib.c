@@ -57,6 +57,7 @@
  * result, GCC keeps d2-d7/a2-a6.
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 
 /* custom chip registers (custom.res) */
 #define DMACON  0x096
@@ -185,16 +186,8 @@ static struct cfx {
 } cfx;
 _Static_assert(sizeof(struct cfx) == 20, "cfx layout");
 
-/* a coplist object of displaylib (NEWTYPE .mycop, 128 bytes): the
-   pointers into the copper list in front, +28 the custom space */
-struct mycop {
-    ULONG size;                         /* +0: 0 = not initialised */
-    UBYTE *coppos, *colors, *sprites;   /* +4 +8 +12 */
-    UBYTE *bpcons, *bplanes, *dot;      /* +16 +20 +24 */
-    UBYTE *customs;                     /* +28 */
-    UBYTE rest[96];                     /* +32 dob, bot, ... */
-};
-static_assert(sizeof(struct mycop) == 128);
+/* a coplist object of displaylib (NEWTYPE .mycop, 128 bytes): struct
+   bb_coplist (blitzobj.h); +28 customs, the custom space */
 
 /* the colours of a colour split (cols_adr): the r, g, b of the first
    line, then of the last, 8 bit values as longs */
@@ -382,10 +375,10 @@ void BLITZ_ROUTINE c_redocolsplit(const struct colsplit *cols BL_REG(d0),
  */
 void BLITZ_ROUTINE c_splitreset(UWORD startline BL_REG(d1),
                                        UWORD ccoffset BL_REG(d2),
-                                       struct mycop *coplist BL_REG(a0))
+                                       struct bb_coplist *coplist BL_REG(a0))
 {
     cfx.coplistaddr = (UBYTE *)coplist;
-    cfx.customaddr = coplist->customs;
+    cfx.customaddr = (UBYTE *)coplist->customs;
     cfx.startline = startline;
     cfx.ccoffset = (UWORD)(ccoffset << 2);
 }
@@ -397,7 +390,7 @@ void BLITZ_ROUTINE c_splitreset(UWORD startline BL_REG(d1),
  * @return nothing
  */
 void BLITZ_ROUTINE c_splitreset2(UWORD startline BL_REG(d1),
-                                        struct mycop *coplist BL_REG(a0))
+                                        struct bb_coplist *coplist BL_REG(a0))
 {
     c_splitreset(startline, 0, coplist);
 }
