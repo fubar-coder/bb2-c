@@ -382,9 +382,9 @@ static UBYTE *allocst(const UBYTE *s, ULONG len)
     return (UBYTE *)BLITZ_ALIBJSR(TOK_allocst, r);
 }
 
-static void freest(ULONG s)
+static void freest(ULONG str)
 {
-    struct bl_regs r = { .d0 = s };
+    struct bl_regs r = { .d0 = str };
 
     BLITZ_ALIBJSR(TOK_freest, r);
 }
@@ -407,12 +407,12 @@ static void globfree(void *mem, ULONG size)
    (GadgetType bit 15) skipped */
 static UBYTE *findgadget(UBYTE **list, UWORD id)
 {
-    UBYTE *a0 = (UBYTE *)list;
+    UBYTE *gad = (UBYTE *)list;
 
     do
-        a0 = P(a0, 0);
-    while (UW(a0, G_ID) != id || W(a0, G_TYPE) < 0);
-    return a0;
+        gad = P(gad, 0);
+    while (UW(gad, G_ID) != id || W(gad, G_TYPE) < 0);
+    return gad;
 }
 
 /* ------------------------------------------------------------ settings */
@@ -436,37 +436,37 @@ static void BLITZ_ROUTINE dobgroup_c(UWORD grp BL_REG(d0))
 }
 BLITZ_THUNK(dobgroup, dobgroup_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE doselectmode_c(UWORD m BL_REG(d0))
+static void BLITZ_ROUTINE doselectmode_c(UWORD on BL_REG(d0))
 {
     g.selmode = 0;
-    if (m)
+    if (on)
         g.selmode++;
 }
 BLITZ_THUNK(doselectmode, doselectmode_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE dogjam_c(UBYTE m BL_REG(d0))
+static void BLITZ_ROUTINE dogjam_c(UBYTE mode BL_REG(d0))
 {
-    g.mode = m;
+    g.mode = mode;
 }
 BLITZ_THUNK(dogjam, dogjam_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE dogpens_c(UBYTE f BL_REG(d0), UBYTE b BL_REG(d1))
+static void BLITZ_ROUTINE dogpens_c(UBYTE fg BL_REG(d0), UBYTE bg BL_REG(d1))
 {
-    g.bpen = b;
-    g.fpen = f;
+    g.bpen = bg;
+    g.fpen = fg;
 }
 BLITZ_THUNK(dogpens, dogpens_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE dogpens2_c(UBYTE f BL_REG(d0))
+static void BLITZ_ROUTINE dogpens2_c(UBYTE fg BL_REG(d0))
 {
-    g.fpen = f;
+    g.fpen = fg;
 }
 BLITZ_THUNK(dogpens2, dogpens2_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE dobpens_c(UBYTE h BL_REG(d0), UBYTE s BL_REG(d1))
+static void BLITZ_ROUTINE dobpens_c(UBYTE light BL_REG(d0), UBYTE shadow BL_REG(d1))
 {
-    g.bco1 = h;
-    g.bco2 = s;
+    g.bco1 = light;
+    g.bco2 = shadow;
 }
 BLITZ_THUNK(dobpens, dobpens_c, "d0-d1/a0-a1");
 
@@ -507,33 +507,33 @@ BLITZ_THUNK(dogb2, dogb2_c, "d0/a0-a1");
    of w x h */
 static UBYTE *allocborder2(WORD w, WORD h)
 {
-    UBYTE *a0 = globalloc(BORDERMEM, MEMF_PUBLIC | MEMF_CLEAR);
+    UBYTE *border = globalloc(BORDERMEM, MEMF_PUBLIC | MEMF_CLEAR);
 
-    B(a0, 4) = g.bco1;
-    B(a0, 4 + 36) = g.bco2;
-    B(a0, 7) = 5;
-    B(a0, 7 + 36) = 5;
-    P(a0, 8) = a0 + 16;
-    P(a0, 12) = a0 + 36;
-    P(a0, 8 + 36) = a0 + 16 + 36;
+    B(border, 4) = g.bco1;
+    B(border, 4 + 36) = g.bco2;
+    B(border, 7) = 5;
+    B(border, 7 + 36) = 5;
+    P(border, 8) = border + 16;
+    P(border, 12) = border + 36;
+    P(border, 8 + 36) = border + 16 + 36;
     w--;
     h--;
-    W(a0, 16) = w;
-    W(a0, 26) = h;
-    W(a0, 30) = h - 1;
-    W(a0, 28) = 1;
-    W(a0, 32) = 1;
-    W(a0, 34) = 1;
-    W(a0, 36 + 18) = h;
-    W(a0, 36 + 22) = h;
-    W(a0, 36 + 34) = h;
-    W(a0, 36 + 30) = 1;
-    W(a0, 36 + 16) = 1;
-    W(a0, 36 + 20) = w;
-    W(a0, 36 + 24) = w;
-    W(a0, 36 + 28) = w - 1;
-    W(a0, 36 + 32) = w - 1;
-    return a0;
+    W(border, 16) = w;
+    W(border, 26) = h;
+    W(border, 30) = h - 1;
+    W(border, 28) = 1;
+    W(border, 32) = 1;
+    W(border, 34) = 1;
+    W(border, 36 + 18) = h;
+    W(border, 36 + 22) = h;
+    W(border, 36 + 34) = h;
+    W(border, 36 + 30) = 1;
+    W(border, 36 + 16) = 1;
+    W(border, 36 + 20) = w;
+    W(border, 36 + 24) = w;
+    W(border, 36 + 28) = w - 1;
+    W(border, 36 + 32) = w - 1;
+    return border;
 }
 
 /* allocborder - 0 if borders are off */
@@ -547,99 +547,99 @@ static UBYTE *allocborder(WORD w, WORD h)
 /* allocgadget - a new gadget at the end of the list in a3 */
 static UBYTE *allocgadget(WORD x, WORD y, UWORD id, WORD w, WORD h)
 {
-    UBYTE *a0 = globalloc(GADGETSIZE, MEMF_PUBLIC | MEMF_CLEAR);
-    UBYTE *a1, *d0 = blitz_string;
+    UBYTE *gad = globalloc(GADGETSIZE, MEMF_PUBLIC | MEMF_CLEAR);
+    UBYTE *prev, *next = blitz_string;
 
     do {
-        a1 = d0;
-        d0 = P(a1, 0);
-    } while (d0);
-    P(a1, 0) = a0;
-    W(a0, G_LEFT) = x;
-    W(a0, G_TOP) = y;
-    W(a0, G_WIDTH) = w;
-    W(a0, G_HEIGHT) = h;
-    W(a0, G_FLAGS) = g.defflags;
-    UW(a0, G_ID) = id;
-    W(a0, G_ACT) = 3;                   /* RELVERIFY|GADGIMMEDIATE */
-    UW(a0, G_USER) = 0x624c;            /* "bL": blitz type gadget */
-    W(a0, G_GROUP) = 0;
-    return a0;
+        prev = next;
+        next = P(prev, 0);
+    } while (next);
+    P(prev, 0) = gad;
+    W(gad, G_LEFT) = x;
+    W(gad, G_TOP) = y;
+    W(gad, G_WIDTH) = w;
+    W(gad, G_HEIGHT) = h;
+    W(gad, G_FLAGS) = g.defflags;
+    UW(gad, G_ID) = id;
+    W(gad, G_ACT) = 3;                  /* RELVERIFY|GADGIMMEDIATE */
+    UW(gad, G_USER) = 0x624c;           /* "bL": blitz type gadget */
+    W(gad, G_GROUP) = 0;
+    return gad;
 }
 
 /* allocintui - IntuiText (24 bytes) with a copy of the text */
 static UBYTE *allocintui(const UBYTE *s, ULONG len)
 {
     UBYTE *copy = allocst(s, len);
-    UBYTE *a0 = globalloc(24, MEMF_PUBLIC | MEMF_CLEAR);
+    UBYTE *it = globalloc(24, MEMF_PUBLIC | MEMF_CLEAR);
 
-    P(a0, 12) = copy;
-    P(a0, 20) = copy;
-    UW(a0, 0) = UW(&g, 0);              /* fpen, bpen */
-    B(a0, 2) = g.mode;
-    L(a0, 8) = g.fontattr;
-    return a0;
+    P(it, 12) = copy;
+    P(it, 20) = copy;
+    UW(it, 0) = UW(&g, 0);              /* fpen, bpen */
+    B(it, 2) = g.mode;
+    L(it, 8) = g.fontattr;
+    return it;
 }
 
 /* handleflags - d3 = the flags argument (word shifts as the original) */
-static void handleflags(UBYTE *a0, ULONG d3)
+static void handleflags(UBYTE *gad, ULONG flags)
 {
-    UWORD f;
+    UWORD lowflags;
 
-    if (d3 & (1UL << 16))
-        B(a0, G_TYPE) |= 1 << 5;        /* GZZGADGET */
-    if (d3 & (1UL << 15))
-        B(a0, G_ACT + 1) |= 1 << 7;     /* BOTTOMBORDER */
-    if (d3 & (1UL << 14))
-        B(a0, G_ACT + 1) |= 1 << 6;     /* TOPBORDER */
-    if (d3 & (1UL << 13))
-        B(a0, G_ACT + 1) |= 1 << 5;     /* LEFTBORDER */
-    if (d3 & (1UL << 12))
-        B(a0, G_ACT + 1) |= 1 << 4;     /* RIGHTBORDER */
-    if (d3 & (1UL << 9))
-        W(a0, G_GROUP) = g.bgroup;
-    f = (UWORD)d3;
-    if (f & 1)
-        B(a0, G_ACT) |= 1;              /* toggle */
-    if (f & 2)
-        B(a0, G_FLAGS + 1) |= 1 << 4;   /* rel right */
-    if (f & 4)
-        B(a0, G_FLAGS + 1) |= 1 << 3;   /* rel bottom */
-    if (f & 8)
-        B(a0, G_FLAGS + 1) |= 1 << 5;   /* rel width */
-    if (f & 16)
-        B(a0, G_FLAGS + 1) |= 1 << 6;   /* rel height */
-    if (f & 32)
-        B(a0, G_FLAGS + 1) |= 1 << 0;   /* box select */
+    if (flags & (1UL << 16))
+        B(gad, G_TYPE) |= 1 << 5;       /* GZZGADGET */
+    if (flags & (1UL << 15))
+        B(gad, G_ACT + 1) |= 1 << 7;    /* BOTTOMBORDER */
+    if (flags & (1UL << 14))
+        B(gad, G_ACT + 1) |= 1 << 6;    /* TOPBORDER */
+    if (flags & (1UL << 13))
+        B(gad, G_ACT + 1) |= 1 << 5;    /* LEFTBORDER */
+    if (flags & (1UL << 12))
+        B(gad, G_ACT + 1) |= 1 << 4;    /* RIGHTBORDER */
+    if (flags & (1UL << 9))
+        W(gad, G_GROUP) = g.bgroup;
+    lowflags = (UWORD)flags;
+    if (lowflags & 1)
+        B(gad, G_ACT) |= 1;             /* toggle */
+    if (lowflags & 2)
+        B(gad, G_FLAGS + 1) |= 1 << 4;  /* rel right */
+    if (lowflags & 4)
+        B(gad, G_FLAGS + 1) |= 1 << 3;  /* rel bottom */
+    if (lowflags & 8)
+        B(gad, G_FLAGS + 1) |= 1 << 5;  /* rel width */
+    if (lowflags & 16)
+        B(gad, G_FLAGS + 1) |= 1 << 6;  /* rel height */
+    if (lowflags & 32)
+        B(gad, G_FLAGS + 1) |= 1 << 0;  /* box select */
 }
 
 /* findmaxlen - text gadget: the "|" become 0, result = the width of the
    widest part (IntuiTextLength) */
 static WORD findmaxlen(UBYTE *it, struct Library *intbase)
 {
-    UBYTE *start = P(it, 12), *a2 = start, *a0;
-    WORD d7 = 0, d0;
+    UBYTE *start = P(it, 12), *part = start, *end;
+    WORD maxwidth = 0, width;
     UBYTE c;
 
     for (;;) {
-        a0 = a2;
-        while ((c = *a0++) != 0 && c != '|')
+        end = part;
+        while ((c = *end++) != 0 && c != '|')
             ;
         if (!c)
             break;
-        a0[-1] = 0;
-        P(it, 12) = a2;
-        d0 = (WORD)IntuiTextLength((struct IntuiText *)it);
-        a2 = a0;
-        if (d0 > d7)
-            d7 = d0;
+        end[-1] = 0;
+        P(it, 12) = part;
+        width = (WORD)IntuiTextLength((struct IntuiText *)it);
+        part = end;
+        if (width > maxwidth)
+            maxwidth = width;
     }
-    P(it, 12) = a2;
-    d0 = (WORD)IntuiTextLength((struct IntuiText *)it);
-    if (d0 > d7)
-        d7 = d0;
+    P(it, 12) = part;
+    width = (WORD)IntuiTextLength((struct IntuiText *)it);
+    if (width > maxwidth)
+        maxwidth = width;
     P(it, 12) = start;
-    return d7;
+    return maxwidth;
 }
 
 /* ------------------------------------------------------------- gadgets */
@@ -652,26 +652,26 @@ void BLITZ_ROUTINE dotextgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
                                 const ULONG *lens BL_REG(a2),
                                 struct Library *intbase BL_REG(a6))
 {
-    UBYTE *it, *border, *a0;
-    WORD w, d6, d7;
+    UBYTE *it, *border, *gad;
+    WORD w, boxw, boxh;
 
     /* fontcalc */
     g.fontattr = (ULONG)*font;
     g.fhit = W(*font, 4);
     it = allocintui(text, lens[-1]);
     w = findmaxlen(it, intbase);
-    d6 = g.bxxs;
-    d7 = g.byxs;
-    W(it, 4) = d6;
-    W(it, 6) = d7;
-    d6 = d6 + d6 + w;
-    d7 = d7 + d7 + g.fhit;
-    border = allocborder(d6, d7);
-    a0 = allocgadget(x, y, id, d6, d7);
-    P(a0, G_RENDER) = border;
-    P(a0, G_TEXT) = it;
-    W(a0, G_TYPE) = 1;                  /* BOOLGADGET */
-    handleflags(a0, flags);
+    boxw = g.bxxs;
+    boxh = g.byxs;
+    W(it, 4) = boxw;
+    W(it, 6) = boxh;
+    boxw = boxw + boxw + w;
+    boxh = boxh + boxh + g.fhit;
+    border = allocborder(boxw, boxh);
+    gad = allocgadget(x, y, id, boxw, boxh);
+    P(gad, G_RENDER) = border;
+    P(gad, G_TEXT) = it;
+    W(gad, G_TYPE) = 1;                 /* BOOLGADGET */
+    handleflags(gad, flags);
 }
 
 /* StringGadget l,x,y,flags,id,maxlen,width (width: -4(a2)) */
@@ -681,31 +681,31 @@ void BLITZ_ROUTINE dostringgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
                                   const UWORD *args BL_REG(a2))
 {
     WORD width = (WORD)args[-1];        /* MOVE -(a2),d6: low word */
-    UBYTE *border, *a0, *a1, *buf;
-    WORD d0;
+    UBYTE *border, *gad, *si, *buf;
+    WORD offset;
     UWORD n;
 
     border = allocborder(width + g.bxxs + g.bxxs, g.fhit + g.byxs + g.byxs);
     __asm__("" : "+a"(border));         /* may be 0, see above */
-    d0 = g.bxxs;
-    x += d0;
-    d0 = -d0;
-    *(volatile WORD *)(border + 0) = d0;            /* border 0: BUG(orig) (#164) */
-    *(volatile WORD *)(border + BORDERSIZ) = d0;
-    d0 = g.byxs;
-    y += d0;
-    d0 = -d0;
-    *(volatile WORD *)(border + 2) = d0;
-    *(volatile WORD *)(border + 2 + BORDERSIZ) = d0;
-    a0 = allocgadget(x, y, id, width, g.fhit);
-    W(a0, G_TYPE) = 4;                  /* STRGADGET */
-    handleflags(a0, flags);
-    P(a0, G_RENDER) = border;
-    a1 = globalloc(36, MEMF_PUBLIC | MEMF_CLEAR);
-    P(a0, G_SPECIAL) = a1;
+    offset = g.bxxs;
+    x += offset;
+    offset = -offset;
+    *(volatile WORD *)(border + 0) = offset;        /* border 0: BUG(orig) (#164) */
+    *(volatile WORD *)(border + BORDERSIZ) = offset;
+    offset = g.byxs;
+    y += offset;
+    offset = -offset;
+    *(volatile WORD *)(border + 2) = offset;
+    *(volatile WORD *)(border + 2 + BORDERSIZ) = offset;
+    gad = allocgadget(x, y, id, width, g.fhit);
+    W(gad, G_TYPE) = 4;                 /* STRGADGET */
+    handleflags(gad, flags);
+    P(gad, G_RENDER) = border;
+    si = globalloc(36, MEMF_PUBLIC | MEMF_CLEAR);
+    P(gad, G_SPECIAL) = si;
     buf = globalloc(maxlen, MEMF_PUBLIC);
-    P(a1, 0) = buf;
-    UW(a1, 10) = maxlen;
+    P(si, 0) = buf;
+    UW(si, 10) = maxlen;
     n = maxlen - 1;                     /* DBF: maxlen 0 clears 65536 */
     do
         *buf++ = 0;
@@ -717,64 +717,64 @@ void BLITZ_ROUTINE dopropgadget(WORD x BL_REG(d1), WORD y BL_REG(d2),
                                 ULONG flags BL_REG(d3), UWORD id BL_REG(d4),
                                 UWORD w BL_REG(d5), const UWORD *args BL_REG(a2))
 {
-    UBYTE *a0 = allocgadget(x, y, id, w, args[-1]);
-    UBYTE *a1 = globalloc(22, MEMF_PUBLIC | MEMF_CLEAR);
-    UWORD d3, d0 = 1;                   /* AUTOKNOB */
+    UBYTE *gad = allocgadget(x, y, id, w, args[-1]);
+    UBYTE *pi = globalloc(22, MEMF_PUBLIC | MEMF_CLEAR);
+    UWORD shifted, piflags = 1;         /* AUTOKNOB */
 
-    W(a0, G_TYPE) = 3;                  /* PROPGADGET */
-    handleflags(a0, flags);
-    d3 = (UWORD)flags >> 6;             /* handleflags shifted it 6 times */
-    if (d3 & 1)
-        d0 |= 2;                        /* FREEHORIZ */
-    if (d3 & 2)
-        d0 |= 4;                        /* FREEVERT */
-    if (d3 & 4)
-        d0 |= 8;                        /* PROPBORDERLESS */
-    d0 |= 16;                           /* PROPNEWLOOK */
-    UW(a1, 0) = d0;
-    L(a1, 2) = 0x80008000;
-    L(a1, 6) = 0x80008000;
-    P(a0, G_SPECIAL) = a1;
-    P(a0, G_RENDER) = globalloc(20, MEMF_PUBLIC | MEMF_CLEAR);
-    B(a0, G_FLAGS + 1) |= 1 << 2;       /* GADGIMAGE */
+    W(gad, G_TYPE) = 3;                 /* PROPGADGET */
+    handleflags(gad, flags);
+    shifted = (UWORD)flags >> 6;        /* handleflags shifted it 6 times */
+    if (shifted & 1)
+        piflags |= 2;                   /* FREEHORIZ */
+    if (shifted & 2)
+        piflags |= 4;                   /* FREEVERT */
+    if (shifted & 4)
+        piflags |= 8;                   /* PROPBORDERLESS */
+    piflags |= 16;                      /* PROPNEWLOOK */
+    UW(pi, 0) = piflags;
+    L(pi, 2) = 0x80008000;
+    L(pi, 6) = 0x80008000;
+    P(gad, G_SPECIAL) = pi;
+    P(gad, G_RENDER) = globalloc(20, MEMF_PUBLIC | MEMF_CLEAR);
+    B(gad, G_FLAGS + 1) |= 1 << 2;      /* GADGIMAGE */
 }
 
 /* makeintuishape - an Image (20 bytes) for the shape (width, height,
    depth at 0/2/4, data at 14) */
 static UBYTE *makeintuishape(const UBYTE *shape)
 {
-    UBYTE *a1 = globalloc(20, MEMF_PUBLIC | MEMF_CLEAR);
-    UWORD d0 = 0, n;
+    UBYTE *img = globalloc(20, MEMF_PUBLIC | MEMF_CLEAR);
+    UWORD planepick = 0, n;
 
-    W(a1, 4) = W(shape, 0);
-    W(a1, 6) = W(shape, 2);
-    W(a1, 8) = W(shape, 4);
-    L(a1, 10) = L(shape, 14);
+    W(img, 4) = W(shape, 0);
+    W(img, 6) = W(shape, 2);
+    W(img, 8) = W(shape, 4);
+    L(img, 10) = L(shape, 14);
     n = UW(shape, 4) - 1;
     do
-        d0 = (UWORD)(d0 << 1) | 1;
+        planepick = (UWORD)(planepick << 1) | 1;
     while (n-- != 0);
-    B(a1, 14) = (UBYTE)d0;
-    B(a1, 15) = 0;
-    return a1;
+    B(img, 14) = (UBYTE)planepick;
+    B(img, 15) = 0;
+    return img;
 }
 
 static void shapegadget(WORD x, WORD y, ULONG flags, UWORD id,
                         const UBYTE *shape, UBYTE *alt)
 {
-    UBYTE *img, *a0;
+    UBYTE *img, *gad;
 
     x -= W(shape, 10);                  /* handle */
     y -= W(shape, 12);
     img = makeintuishape(shape);
-    a0 = allocgadget(x, y, id, W(shape, 0), W(shape, 2));
-    W(a0, G_TYPE) = 1;
-    B(a0, G_FLAGS + 1) |= 1 << 2;       /* GADGIMAGE */
-    P(a0, G_RENDER) = img;
-    P(a0, G_SELECT) = alt;
+    gad = allocgadget(x, y, id, W(shape, 0), W(shape, 2));
+    W(gad, G_TYPE) = 1;
+    B(gad, G_FLAGS + 1) |= 1 << 2;      /* GADGIMAGE */
+    P(gad, G_RENDER) = img;
+    P(gad, G_SELECT) = alt;
     if (alt)
-        B(a0, G_FLAGS + 1) |= 1 << 1;   /* GADGHIMAGE */
-    handleflags(a0, flags);
+        B(gad, G_FLAGS + 1) |= 1 << 1;  /* GADGHIMAGE */
+    handleflags(gad, flags);
 }
 
 /* ShapeGadget l,x,y,flags,id,shape (a2 = the shape) */
@@ -884,10 +884,10 @@ void BLITZ_ROUTINE dogborder(WORD x BL_REG(d0), WORD y BL_REG(d1),
                              struct Window **win BL_REG(a1),
                              struct Library *intbase BL_REG(a6))
 {
-    UBYTE *b = allocborder2(w + g.bxxs2 + g.bxxs2, h + g.byxs2 + g.byxs2);
+    UBYTE *border = allocborder2(w + g.bxxs2 + g.bxxs2, h + g.byxs2 + g.byxs2);
 
-    DrawBorder((*win)->RPort, (struct Border *)b, x - g.bxxs2, y - g.byxs2);
-    globfree(b, BORDERMEM);
+    DrawBorder((*win)->RPort, (struct Border *)border, x - g.bxxs2, y - g.byxs2);
+    globfree(border, BORDERMEM);
 }
 
 /* --------------------------------------------------------- gadget state */
@@ -895,12 +895,12 @@ void BLITZ_ROUTINE dogborder(WORD x BL_REG(d0), WORD y BL_REG(d1),
 static void BLITZ_ROUTINE doselect_c(UWORD id BL_REG(d1), UWORD on BL_REG(d2),
                             UBYTE **list BL_REG(a1))
 {
-    UBYTE *a0 = findgadget(list, id);
+    UBYTE *gad = findgadget(list, id);
 
     if (on)
-        B(a0, G_FLAGS + 1) |= 0x80;
+        B(gad, G_FLAGS + 1) |= 0x80;
     else
-        B(a0, G_FLAGS + 1) &= ~0x80;
+        B(gad, G_FLAGS + 1) &= ~0x80;
 }
 BLITZ_THUNK(doselect, doselect_c, "d0-d1/a1");
 
@@ -927,18 +927,18 @@ BLITZ_THUNK(dodisable, dodisable_c, "d0-d1/a1");
 static void BLITZ_ROUTINE setdogstatus_c(UWORD id BL_REG(d1), UWORD v BL_REG(d2),
                                 UBYTE **list BL_REG(a1))
 {
-    UBYTE *a0 = findgadget(list, id), *it, *a1;
+    UBYTE *gad = findgadget(list, id), *it, *text;
 
-    it = P(a0, G_TEXT);
-    if (!it || (B(a0, G_ACT) & 1))
+    it = P(gad, G_TEXT);
+    if (!it || (B(gad, G_ACT) & 1))
         return;
-    a1 = P(it, 20);
+    text = P(it, 20);
     if ((WORD)--v < 0)
         return;
     while (v-- != 0)                    /* BRA 'nxstr: DBRA d2 */
-        while (*a1++)
+        while (*text++)
             ;
-    P(it, 12) = a1;
+    P(it, 12) = text;
 }
 BLITZ_THUNK(setdogstatus, setdogstatus_c, "d1");
 
@@ -946,66 +946,66 @@ BLITZ_THUNK(setdogstatus, setdogstatus_c, "d1");
    for toggle gadgets and gadgets without text */
 static ULONG BLITZ_ROUTINE dogstatus_c(UWORD id BL_REG(d1), UBYTE **list BL_REG(a1))
 {
-    UBYTE *a0 = findgadget(list, id), *it, *cur, *p;
-    ULONG d0;
+    UBYTE *gad = findgadget(list, id), *it, *cur, *p;
+    ULONG result;
 
-    it = P(a0, G_TEXT);
-    d0 = (ULONG)it;
-    if (it && !(B(a0, G_ACT) & 1)) {
+    it = P(gad, G_TEXT);
+    result = (ULONG)it;
+    if (it && !(B(gad, G_ACT) & 1)) {
         cur = P(it, 12);
         p = P(it, 20);
-        d0 = 1;
+        result = 1;
         while (p < cur) {
-            d0 = (d0 & 0xffff0000UL) | (UWORD)(d0 + 1);
+            result = (result & 0xffff0000UL) | (UWORD)(result + 1);
             while (*p++)
                 ;
         }
-        return d0;
+        return result;
     }
     /* 'skip: BTST #7,13(a0):SNE d0:EXT.w d0 */
-    return (d0 & 0xffff0000UL) | ((B(a0, G_FLAGS + 1) & 0x80) ? 0xffff : 0);
+    return (result & 0xffff0000UL) | ((B(gad, G_FLAGS + 1) & 0x80) ? 0xffff : 0);
 }
 BLITZ_THUNK(dogstatus, dogstatus_c, "d1");
 
 /* ButtonId(l,group) - id of the selected gadget of the group, -1 */
 static ULONG BLITZ_ROUTINE dobuttonid_c(UWORD grp BL_REG(d1), UBYTE **list BL_REG(a1))
 {
-    UBYTE *a1 = (UBYTE *)list;
-    ULONG d0;
+    UBYTE *gad = (UBYTE *)list;
+    ULONG next;
 
     for (;;) {
-        d0 = L(a1, 0);
-        if (!d0)
+        next = L(gad, 0);
+        if (!next)
             return (ULONG)-1;
-        a1 = (UBYTE *)d0;
-        if (UW(a1, G_GROUP) == grp && (B(a1, G_FLAGS + 1) & 0x80))
-            return (d0 & 0xffff0000UL) | UW(a1, G_ID);
+        gad = (UBYTE *)next;
+        if (UW(gad, G_GROUP) == grp && (B(gad, G_FLAGS + 1) & 0x80))
+            return (next & 0xffff0000UL) | UW(gad, G_ID);
     }
 }
 BLITZ_THUNK(dobuttonid, dobuttonid_c, "d1/a0");
 
 /* SetTextGadget l,id,text$ - overwrite the text in place, padded with
    spaces, never longer */
-static void BLITZ_ROUTINE settextgadget_c(UWORD id BL_REG(d1), const UBYTE *s BL_REG(d2),
+static void BLITZ_ROUTINE settextgadget_c(UWORD id BL_REG(d1), const UBYTE *src BL_REG(d2),
                                  UBYTE **list BL_REG(a1))
 {
-    UBYTE *a0 = findgadget(list, id), *it, *a1;
+    UBYTE *gad = findgadget(list, id), *it, *text;
 
-    it = P(a0, G_TEXT);
+    it = P(gad, G_TEXT);
     if (!it)
         return;
-    a1 = P(it, 12);
-    if (!a1)
+    text = P(it, 12);
+    if (!text)
         return;
     for (;;) {                          /* nxc1 */
-        if (!*a1)
+        if (!*text)
             return;
-        if ((*a1++ = *s++) == 0)
+        if ((*text++ = *src++) == 0)
             break;
     }
-    a1[-1] = ' ';
-    while (*a1)                         /* nxc2 */
-        *a1++ = ' ';
+    text[-1] = ' ';
+    while (*text)                       /* nxc2 */
+        *text++ = ' ';
 }
 BLITZ_THUNK(settextgadget, settextgadget_c, "d1");
 
@@ -1015,9 +1015,9 @@ BLITZ_THUNK(settextgadget, settextgadget_c, "d1");
 static void BLITZ_ROUTINE dosetstring_c(UWORD id BL_REG(d1), const UBYTE *s BL_REG(d2),
                                UBYTE **list BL_REG(a1))
 {
-    UBYTE *d = P(P(findgadget(list, id), G_SPECIAL), 0);
+    UBYTE *buf = P(P(findgadget(list, id), G_SPECIAL), 0);
 
-    while ((*d++ = *s++) != 0)
+    while ((*buf++ = *s++) != 0)
         ;
 }
 BLITZ_THUNK(dosetstring, dosetstring_c, "d0-d1");
@@ -1067,26 +1067,26 @@ static void freerend(UBYTE *gad, UBYTE *r)
 /* freegadget - a3 = the list: free every "bL" gadget */
 void BLITZ_ROUTINE freegadget(void)
 {
-    UBYTE *a2 = P(blitz_string, 0), *n;
+    UBYTE *gad = P(blitz_string, 0), *n;
 
     P(blitz_string, 0) = NULL;
-    while (a2) {
-        if (UW(a2, G_USER) != 0x624c) {
-            a2 = P(a2, 0);
+    while (gad) {
+        if (UW(gad, G_USER) != 0x624c) {
+            gad = P(gad, 0);
             continue;
         }
-        if (P(a2, G_TEXT)) {
-            UBYTE *it = P(a2, G_TEXT);
+        if (P(gad, G_TEXT)) {
+            UBYTE *it = P(gad, G_TEXT);
             freest(L(it, 20));
             globfree(it, 24);
         }
-        freerend(a2, P(a2, G_RENDER));
-        freerend(a2, P(a2, G_SELECT));
+        freerend(gad, P(gad, G_RENDER));
+        freerend(gad, P(gad, G_SELECT));
         /* BUG(orig) (#163): MOVEQ #22,d0 overwrites the type, the SpecialInfo
            is never freed */
-        n = P(a2, 0);
-        globfree(a2, GADGETSIZE);
-        a2 = n;
+        n = P(gad, 0);
+        globfree(gad, GADGETSIZE);
+        gad = n;
     }
 }
 
@@ -1102,16 +1102,16 @@ BLITZ_ERRCHK_MESSAGE(mess6, "Button Group MUST be greater than zero");
 /* gchk - the gadget exists; 0 (after the runtime error) if not */
 static UBYTE *BLITZ_ERRCHK gchk1(UBYTE **list, UWORD id)
 {
-    UBYTE *a0 = (UBYTE *)list;
+    UBYTE *gad = (UBYTE *)list;
 
     for (;;) {
-        a0 = P(a0, 0);
-        if (!a0) {
+        gad = P(gad, 0);
+        if (!gad) {
             BLITZ_RUNERR(mess1);
             return NULL;
         }
-        if (UW(a0, G_ID) == id && W(a0, G_TYPE) >= 0)
-            return a0;
+        if (UW(gad, G_ID) == id && W(gad, G_TYPE) >= 0)
+            return gad;
     }
 }
 
@@ -1122,9 +1122,9 @@ static void BLITZ_ERRCHK gchk_c(UWORD id BL_REG(d1), UBYTE **list BL_REG(a1))
 
 static void BLITZ_ERRCHK propchk_c(UWORD id BL_REG(d1), UBYTE **list BL_REG(a1))
 {
-    UBYTE *a0 = gchk1(list, id);
+    UBYTE *gad = gchk1(list, id);
 
-    if (a0 && B(a0, G_TYPE + 1) != 3)
+    if (gad && B(gad, G_TYPE + 1) != 3)
         BLITZ_RUNERR(mess1);
 }
 
@@ -1146,21 +1146,21 @@ static void BLITZ_ERRCHK redrawchk_c(UWORD id BL_REG(d1),
 static void BLITZ_ERRCHK actchk_c(UWORD id BL_REG(d1),
                                   struct Window **win BL_REG(a1))
 {
-    UBYTE *a0 = redrawchk1(id, win);
+    UBYTE *gad = redrawchk1(id, win);
 
-    if (a0 && !(B(a0, G_TYPE + 1) & 4))
+    if (gad && !(B(gad, G_TYPE + 1) & 4))
         BLITZ_RUNERR(mess3);
 }
 
 static UBYTE *BLITZ_ERRCHK reschk1(UWORD id, UBYTE **list)
 {
-    UBYTE *a0 = gchk1(list, id);
+    UBYTE *gad = gchk1(list, id);
 
-    if (a0 && !(B(a0, G_TYPE + 1) & 4)) {
+    if (gad && !(B(gad, G_TYPE + 1) & 4)) {
         BLITZ_RUNERR(mess3);
         return NULL;
     }
-    return a0;
+    return gad;
 }
 
 static void BLITZ_ERRCHK reschk_c(UWORD id BL_REG(d1), UBYTE **list BL_REG(a1))
@@ -1172,9 +1172,9 @@ static void BLITZ_ERRCHK reschk_c(UWORD id BL_REG(d1), UBYTE **list BL_REG(a1))
 static void BLITZ_ERRCHK settest_c(UWORD id BL_REG(d1), UBYTE **list BL_REG(a1),
                                    const ULONG *lens BL_REG(a2))
 {
-    UBYTE *a0 = reschk1(id, list);
+    UBYTE *gad = reschk1(id, list);
 
-    if (a0 && (ULONG)UW(P(a0, G_SPECIAL), 10) <= lens[-1])
+    if (gad && (ULONG)UW(P(gad, G_SPECIAL), 10) <= lens[-1])
         BLITZ_RUNERR(mess4);
 }
 
