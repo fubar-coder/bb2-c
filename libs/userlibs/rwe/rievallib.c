@@ -247,6 +247,8 @@ static ULONG ctp_loop(struct state *s)
 {
     const UBYTE *op;                    /* a2: the table entry */
     UBYTE opprec;                       /* d2: its precedence */
+    UBYTE prevch;                       /* d1.b: the character before a "-" */
+    UBYTE top;                          /* d1.b: the operator on the stack top */
 
 loop:
     if (*s->pos == 0)
@@ -262,8 +264,8 @@ loop:
             goto notoperator;
         if (s->pos[1] == '(')
             goto checkoperator;
-        BL_SETB(s->aux, s->pos[-1]);
-        if (is_operator((UBYTE)s->aux))         /* - is for negative */
+        prevch = s->pos[-1];
+        if (is_operator(prevch))                /* - is for negative */
             goto notoperator;
         goto checkoperator;
     }
@@ -324,16 +326,16 @@ notoperator:                                    /* a number or register */
 operator:
     /* unstack the operators of higher or equal precedence */
     while (!st_empty(s)) {
-        s->aux = *st_top(s);
-        for (op = operators; *op++ != (UBYTE)s->aux; op++)
+        top = (UBYTE)*st_top(s);
+        for (op = operators; *op++ != top; op++)
             ;
         opprec = *op;
         if ((BYTE)s->prec > (BYTE)opprec)
             break;
         st_pop(s);
-        if ((UBYTE)s->aux == '(')               /* never: "(" has 0 */
+        if (top == '(')                         /* never: "(" has 0 */
             goto loop;
-        *s->out++ = (UBYTE)s->aux;
+        *s->out++ = top;
         *s->out++ = ' ';
     }
     PUSH(s, s->acc);                            /* 'stacktoken */
@@ -482,8 +484,10 @@ static ULONG ev_loop(struct state *s)
 {
     const UBYTE *op_at;                 /* a2 */
     ULONG rhs;                          /* the popped value */
+    UBYTE ch;                           /* d0.b: the character */
+    UWORD regoff;                       /* d0.w: the register's offset in regs */
     int op;
-    UWORD cnt;
+    UWORD cnt;                          /* d2: the exponent loop count */
 
 evloop:
     if (*s->pos == 0) {                         /* ev_eol */
@@ -496,11 +500,11 @@ evloop:
     if (*s->pos++ == ' ')
         goto evloop;
     s->pos--;
-    BL_SETB(s->acc, *s->pos);
-    if ((UBYTE)s->acc == '-' && s->pos[1] != ' ' && s->pos[1] != 0)
+    ch = *s->pos;
+    if (ch == '-' && s->pos[1] != ' ' && s->pos[1] != 0)
         goto evall;
     for (op_at = operators + 2, op = 0; *op_at; op_at += 2, op++)
-        if (*op_at == (UBYTE)s->acc)
+        if (*op_at == ch)
             goto gotop;
     goto evall;
 
@@ -549,9 +553,9 @@ gotop:
         s->acc = *st_top(s);
         if (s->acc == 0)
             s->acc = 1;
-        else if ((LONG)(rhs -= 2) >= 0) {
+        else if ((LONG)(rhs - 2) >= 0) {
             ULONG base = s->acc;
-            cnt = (UWORD)rhs;
+            cnt = (UWORD)(rhs - 2);
             do {                                /* DBRA d2 */
                 s->aux = base;
                 s->acc = lmult(s->acc, &s->aux);
@@ -578,17 +582,17 @@ evall:
     if (negative)
         s->pos++;
     if (*s->pos == 'a') {
-        BL_SETB(s->acc, s->pos[1] - '0' + 8);
+        regoff = (UBYTE)(s->pos[1] - '0' + 8);
         s->pos += 2;
         goto getreg;
     }
     if (*s->pos == 'd') {
-        BL_SETB(s->acc, s->pos[1] - '0');
+        regoff = (UBYTE)(s->pos[1] - '0');
         s->pos += 2;
         goto getreg;
     }
     if (*s->pos == 'p' && s->pos[1] == 'c') {
-        s->acc = 16;
+        regoff = 16;
         s->pos += 2;
         goto getreg;
     }
@@ -606,10 +610,10 @@ evall:
     goto endofnum;
 
 getreg:
-    BL_SETW(s->acc, ((UBYTE)s->acc) << 2);      /* ANDI.w #$ff:ASL.w #2 */
+    regoff = (UWORD)(regoff << 2);              /* ANDI.w #$ff:ASL.w #2 */
     if (!regs)
         return ev_error(err_reg, 2);
-    s->acc = *(ULONG *)(regs + (WORD)s->acc);
+    s->acc = *(ULONG *)(regs + (WORD)regoff);
 
 endofnum:
     if (negative)
