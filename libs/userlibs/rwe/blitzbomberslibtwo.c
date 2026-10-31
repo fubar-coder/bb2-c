@@ -70,13 +70,14 @@ BLITZ_LIBFIN();
 static void BLITZ_ROUTINE killinvader_c(UBYTE *sprad BL_REG(d0), UWORD x BL_REG(d1),
                                         UWORD y BL_REG(d2), UWORD offset BL_REG(d3))
 {
-    UBYTE *img, *img48, *imgoff, *img48off;     /* a0-a3; img first the entry */
+    UBYTE *entry;                               /* a0: the table entry */
+    UBYTE *img, *img48, *imgoff, *img48off;     /* a0-a3 */
     UWORD rowoff;                               /* d1 */
     int i;
 
-    img = sprad + (WORD)(UWORD)((x >> 2) << 4);
-    img48 = *(UBYTE **)(img + 3 * 16);
-    img = *(UBYTE **)img;
+    entry = sprad + (WORD)(UWORD)((x >> 2) << 4);
+    img48 = *(UBYTE **)(entry + 3 * 16);
+    img = *(UBYTE **)entry;
     rowoff = (UWORD)((x & 3) << 1) + (UWORD)((ULONG)y * (INVADER_Y_DISP * 16));
     img += (WORD)rowoff;
     img48 += (WORD)rowoff;
