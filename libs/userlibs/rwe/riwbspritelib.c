@@ -333,15 +333,15 @@ static ULONG BLITZ_ROUTINE getwbsprite_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1),
 /* FreeWBSprite channel (d0.b): the table entry of channel & 15; d0 = 0
    without a sprite (failed: MOVEQ #0), else as FreeSpriteData leaves it
    (a statement: the value is not used) */
-static ULONG BLITZ_ROUTINE freesprite_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE freesprite_c(ULONG ch BL_REG(d0))
 {
-    ULONG *e = (ULONG *)((UBYTE *)wd.spritepointers + ((d0 & 15) << 2));
+    ULONG *e = (ULONG *)((UBYTE *)wd.spritepointers + ((ch & 15) << 2));
     ULONG spr;
 
     if (!*e)
         return 0;
     wd.temppointer = (ULONG)e;
-    FreeSprite((WORD)d0);                               /* the whole d0: BUG(orig) (#916) */
+    FreeSprite((WORD)ch);                               /* the whole d0: BUG(orig) (#916) */
     spr = *e;
     *e = 0;
     return freespritedata(spr);
@@ -393,18 +393,18 @@ static ULONG BLITZ_ROUTINE changewbsprite_c(ULONG vp BL_REG(d0), ULONG ch BL_REG
 }
 
 /* WBSpriteX/Y(channel) (d0.w): the low word of d0 replaced */
-static ULONG BLITZ_ROUTINE wbspritex_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE wbspritex_c(ULONG ch BL_REG(d0))
 {
-    ULONG spr = *ENTRYW(d0);
+    ULONG spr = *ENTRYW(ch);
 
-    return (d0 & 0xffff0000UL) | SW(spr, 6);
+    return (ch & 0xffff0000UL) | SW(spr, 6);
 }
 
-static ULONG BLITZ_ROUTINE wbspritey_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE wbspritey_c(ULONG ch BL_REG(d0))
 {
-    ULONG spr = *ENTRYW(d0);
+    ULONG spr = *ENTRYW(ch);
 
-    return (d0 & 0xffff0000UL) | SW(spr, 8);
+    return (ch & 0xffff0000UL) | SW(spr, 8);
 }
 
 /* Registers: the original changes d0-d7/a0-a2/a6 (keeps a3-a5); the
