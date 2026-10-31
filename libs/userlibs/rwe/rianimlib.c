@@ -228,7 +228,15 @@ static LONG findbmhd(ULONG address, struct BitMapHeader **data)
     return findchunk(ID_BMHD, (UBYTE **)data);
 }
 
-/* RIAnimDepth / RIAnimWidth / RIAnimHeight (address) */
+/**
+ * @brief RIAnimDepth address: the depth (bmh_Depth) of the ANIM's first frame.
+ *
+ * The BMHD is searched up to the end of the ANIM (InitFindChunk of the
+ * ANIM and of its first ILBM, then FindChunk); the chunk walk adds no
+ * pad byte (BUG(orig) (#505)).  It changes the chunk search state.
+ * @param address  d0: the ANIM file in memory
+ * @return d0: the depth (a byte), 0 without ANIM, ILBM or BMHD
+ */
 ULONG BLITZ_ROUTINE c_AnimDepth(ULONG address BL_REG(d0))
 {
     struct BitMapHeader *bmhd;
@@ -238,6 +246,13 @@ ULONG BLITZ_ROUTINE c_AnimDepth(ULONG address BL_REG(d0))
     return bmhd->bmh_Depth;
 }
 
+/**
+ * @brief RIAnimWidth address: the width (bmh_Width) of the ANIM's first frame.
+ *
+ * As RIAnimDepth; MOVE.w into a d0 that is -1: the upper word is $FFFF.
+ * @param address  d0: the ANIM file in memory
+ * @return d0: $FFFF0000 | the width, 0 without ANIM, ILBM or BMHD
+ */
 ULONG BLITZ_ROUTINE c_AnimWidth(ULONG address BL_REG(d0))
 {
     struct BitMapHeader *bmhd;
@@ -247,6 +262,13 @@ ULONG BLITZ_ROUTINE c_AnimWidth(ULONG address BL_REG(d0))
     return 0xffff0000UL | bmhd->bmh_Width;      /* MOVE.w into d0 = -1 */
 }
 
+/**
+ * @brief RIAnimHeight address: the height (bmh_Height) of the ANIM's first frame.
+ *
+ * As RIAnimWidth.
+ * @param address  d0: the ANIM file in memory
+ * @return d0: $FFFF0000 | the height, 0 without ANIM, ILBM or BMHD
+ */
 ULONG BLITZ_ROUTINE c_AnimHeight(ULONG address BL_REG(d0))
 {
     struct BitMapHeader *bmhd;
@@ -256,14 +278,35 @@ ULONG BLITZ_ROUTINE c_AnimHeight(ULONG address BL_REG(d0))
     return 0xffff0000UL | bmhd->bmh_Height;
 }
 
-/* AnimLoop On|Off */
+/**
+ * @brief AnimLoop On|Off: go on with the third frame at the end of the ANIM (default On).
+ * @param on  d0: the byte of On (-1) or Off (0)
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_AnimLoop(UBYTE on BL_REG(d0))
 {
     doanimloop = on ? 0xff : 0;
 }
 
-/* RIAnimInit (address,bitmap#,palette#[,offset]): -1, 0 if no ANIM with
-   an ILBM and BMHD */
+/**
+ * @brief RIAnimInit address,bitmap#,palette#,xy_offset: show the first frame of an ANIM.
+ *
+ * Finds the first frame (FORM ILBM in the FORM ANIM) and its BMHD
+ * (searched up to the end of the ANIM, not of the frame: BUG(orig)
+ * (#511)), unpacks it into the bitmap with RIPackLib's UnpackIFF (form
+ * 1: d0 source, d1 bitmap#, d2 -1 lines, d3 offset) and sets the palette
+ * with ILBMPalette (d0 source, d1 palette#), both through ALibJsr; then
+ * remembers the second and third frame (the first if there are none).
+ * BUG(orig) (#512): it keeps the ANIM's address and end even if no ILBM
+ * or BMHD is found, and the frame pointers of the animation before.  The
+ * original returns to the caller's a1 for a chunk "pointed at directly"
+ * (#513, DIFF: -1 here).
+ * @param address  d0: the ANIM file in memory
+ * @param bm       d1: bitmap# (its low byte is kept)
+ * @param pal      d2: palette# (its low byte is kept)
+ * @param offset   d3: the byte offset into each plane
+ * @return d0: BB_TRUE, BB_FALSE if there is no ANIM with an ILBM and BMHD
+ */
 BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
                                  ULONG pal BL_REG(d2), ULONG offset BL_REG(d3))
 {
@@ -302,14 +345,33 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     return BB_TRUE;
 }
 
+/**
+ * @brief RIAnimInit address,bitmap#,palette#: c_InitAnim() with offset 0.
+ * @param address  d0: the ANIM file in memory
+ * @param bm       d1: bitmap#
+ * @param pal      d2: palette#
+ * @return d0: as c_InitAnim()
+ */
 BB_BOOL BLITZ_ROUTINE c_InitAnim2(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
                                   ULONG pal BL_REG(d2))
 {
     return c_InitAnim(address, bm, pal, 0);
 }
 
-/* RIAnimInit (address,bitmap#,palette#,x,y): a0 = the bitmap object, d1
-   = bitmap# * 64 (#pd1) */
+/**
+ * @brief RIAnimInit address,bitmap#,palette#,x,y: c_InitAnim() at the pixel position x,y.
+ *
+ * The offset is BytesPerRow * y (MULU.w: the low words) + x >> 3
+ * (ASR.l); the bitmap# is d1 / 64 with DIVU.w, which overflows (no
+ * change) for numbers of 64 * 65536 and above (BUG(orig) (#514)).
+ * @param address  d0: the ANIM file in memory
+ * @param bm       d1: bitmap# * 64 (#pd1)
+ * @param pal      d2: palette#
+ * @param x        d3: the x position in pixels
+ * @param y        d4: the y position in lines
+ * @param bitmap   a0: the bitmap object (!bmap {0,1})
+ * @return d0: as c_InitAnim()
+ */
 BB_BOOL BLITZ_ROUTINE c_InitAnim3(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
                                   ULONG pal BL_REG(d2), ULONG x BL_REG(d3), ULONG y BL_REG(d4),
                                   const struct BitMap *bitmap BL_REG(a0))
@@ -319,7 +381,14 @@ BB_BOOL BLITZ_ROUTINE c_InitAnim3(ULONG address BL_REG(d0), ULONG bm BL_REG(d1),
     return c_InitAnim(address, bl_divu_w(bm, SIZEOF_BITMAP), pal, off);
 }
 
-/* RIAnimFrameCount: the chunks of the ANIM (BUG(orig): all of them, #510) */
+/**
+ * @brief RIAnimFrameCount: the number of frames of the ANIM of the last RIAnimInit.
+ *
+ * BUG(orig): counts every chunk of the ANIM, not only the frames (#510);
+ * the walk adds no pad byte (#505) and compares the addresses signed
+ * (#506).
+ * @return d0: the number of chunks, 0 before an RIAnimInit
+ */
 ULONG BLITZ_ROUTINE c_CountFrames(void)
 {
     UBYTE *p;
@@ -434,9 +503,24 @@ static void unpackanim(UBYTE *dlta, BOOL seven)
     } while (++plane != animdepth);
 }
 
-/* RINextAnimFrame (bitmap#) with a0 = the bitmap object: -1 if a delta
-   was applied.  The result in the upper half, the lower 1 if the
-   original returns without restoring its registers (no DLTA). */
+/**
+ * @brief RINextAnimFrame bitmap#: apply the DLTA of the next frame to the bitmap.
+ *
+ * ANHD operation 5 or 65 (byte vertical delta) or 7 (long vertical
+ * delta; the short form is never used, BUG(orig) (#504)) on the planes
+ * (+ the offset of RIAnimInit); a CMAP of the frame goes through
+ * ILBMPalette.  At the end of the ANIM it goes on with the third frame
+ * if AnimLoop is on, else returns 0.  BUG(orig): the columns are width
+ * >> 5 / >> 3, dropping a rest and giving 65536 columns below 32 / 8
+ * pixels (#507); a run or copy count of 0 is 256 (#508); depth 0 is 256
+ * planes (#509); without a DLTA after the ANHD (and CMAP) the original
+ * returns without restoring its 14 saved registers (#515, reproduced by
+ * the thunk __NextAnimFrame).
+ * @param bitmap  a0: the bitmap object (!bmap {0,0})
+ * @return the upper long: d0 = -1 if a delta was applied, else 0; the
+ *         lower long: 1 if the thunk must return without restoring the
+ *         registers (no DLTA), else 0
+ */
 unsigned long long BLITZ_ROUTINE c_NextAnimFrame(struct BitMap *bitmap BL_REG(a0))
 {
     UBYTE *chunk = nextanimframe;
