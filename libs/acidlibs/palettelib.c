@@ -76,7 +76,10 @@
 /* intlib SetInt/ClrInt (Amiga mode): d0 = level, d1 = code */
 
 /* a palette object, 2^7 bytes: struct bb_palette, its colour cycles struct
-   bb_cycle (blitzobj.h) */
+   bb_cycle (blitzobj.h); the slice (blitzcoplib) struct bb_slice, its colour
+   moves (a long there) read as the pointer they are: as a cast value GCC
+   would order the address arithmetic differently */
+#define COLMOVES(s) (*(UBYTE *const *)&(s)->colmoves)
 
 /* entry points (thunks / C / asm, defined below) */
 void dopalload(void), dopalload2(void), getpal(void), getpal2(void);
@@ -916,10 +919,10 @@ static void showpal_amiga(struct bb_palette *p, APTR *scr, struct Library *gfx)
 }
 
 /* b_showpal (Blitz) - a0 = used slice: its colour moves */
-static void showpal_blitz(struct bb_palette *p, UBYTE *slice)
+static void showpal_blitz(struct bb_palette *p, struct bb_slice *slice)
 {
-    UWORD *poke = *(UWORD **)(slice + 18);
-    UWORD n = W(slice, 8);
+    UWORD *poke = (UWORD *)COLMOVES(slice);
+    UWORD n = slice->colours;
     const ULONG *s;
 
     if (n > p->numcols)
@@ -960,7 +963,7 @@ void BLITZ_ROUTINE showpal_a(APTR *scr BL_REG(a2), struct Library *gfx BL_REG(a6
     showpal_amiga((struct bb_palette *)blitz_string, scr, gfx);
 }
 
-void BLITZ_ROUTINE showpal_b(UBYTE *slice BL_REG(a0));
+void BLITZ_ROUTINE showpal_b(struct bb_slice *slice BL_REG(a0));
 /**
  * @brief ShowPalette Palette#, Blitz mode - write the palette into the
  * colour moves of the used slice.
@@ -973,7 +976,7 @@ void BLITZ_ROUTINE showpal_b(UBYTE *slice BL_REG(a0));
  *
  * @param slice a0: the used slice (!libs #blitzcoplib,$9002).
  */
-void BLITZ_ROUTINE showpal_b(UBYTE *slice BL_REG(a0))
+void BLITZ_ROUTINE showpal_b(struct bb_slice *slice BL_REG(a0))
 {
     showpal_blitz((struct bb_palette *)blitz_string, slice);
 }
@@ -997,14 +1000,14 @@ void BLITZ_ROUTINE usepal_a(APTR *scr BL_REG(a2), struct Library *gfx BL_REG(a6)
         showpal_a(scr, gfx);
 }
 
-void BLITZ_ROUTINE usepal_b(UBYTE *slice BL_REG(a0));
+void BLITZ_ROUTINE usepal_b(struct bb_slice *slice BL_REG(a0));
 /**
  * @brief _use of the Palette object (Use Palette), Blitz mode -
  * ShowPalette unless NewPaletteMode On.
  *
  * @param slice a0: the used slice.
  */
-void BLITZ_ROUTINE usepal_b(UBYTE *slice BL_REG(a0))
+void BLITZ_ROUTINE usepal_b(struct bb_slice *slice BL_REG(a0))
 {
     if (!palmode)
         showpal_b(slice);
@@ -1175,9 +1178,9 @@ static ULONG getcol_a(ULONG c, APTR *scr, struct Library *gfx, int shift)
 }
 
 /* Blitz: the colour move of the used slice; upper word of d0 stays */
-static ULONG getcol_b(ULONG c, UBYTE *slice, int shift)
+static ULONG getcol_b(ULONG c, struct bb_slice *slice, int shift)
 {
-    UWORD v = *(UWORD *)(*(UBYTE **)(slice + 18) + 2 + (WORD)(UWORD)(c << 2));
+    UWORD v = *(UWORD *)(COLMOVES(slice) + 2 + (WORD)(UWORD)(c << 2));
 
     return (c & 0xffff0000UL) | ((v >> shift) & 15);
 }
@@ -1190,8 +1193,8 @@ static ULONG getcol_b(ULONG c, UBYTE *slice, int shift)
     {                                                                       \
         return getcol_a(c, scr, gfx, shift);                                \
     }                                                                       \
-    ULONG BLITZ_ROUTINE name##_b(ULONG c BL_REG(d0), UBYTE *slice BL_REG(a0)); \
-    ULONG BLITZ_ROUTINE name##_b(ULONG c BL_REG(d0), UBYTE *slice BL_REG(a0)) \
+    ULONG BLITZ_ROUTINE name##_b(ULONG c BL_REG(d0), struct bb_slice *slice BL_REG(a0)); \
+    ULONG BLITZ_ROUTINE name##_b(ULONG c BL_REG(d0), struct bb_slice *slice BL_REG(a0)) \
     {                                                                       \
         return getcol_b(c, slice, shift);                                   \
     }                                                                       \
@@ -1298,7 +1301,7 @@ BLITZ_THUNK(doagablue, doagablue_c, "a2");
    (with a1 = the ViewPort, as a C call left it, the emulator's
    graphics.library stored green $8C instead of $88 for 8 - t122) */
 void BLITZ_ROUTINE dorgb_b(UWORD c BL_REG(d0), UWORD r BL_REG(d1), UWORD g BL_REG(d2),
-                           UWORD b BL_REG(d3), UBYTE *slice BL_REG(a0));
+                           UWORD b BL_REG(d3), struct bb_slice *slice BL_REG(a0));
 /**
  * @brief RGB Colour Register,Red,Green,Blue - set a colour of the used
  * screen (Amiga mode) or slice (Blitz mode), 4 bit components.
@@ -1320,9 +1323,9 @@ void BLITZ_ROUTINE dorgb_b(UWORD c BL_REG(d0), UWORD r BL_REG(d1), UWORD g BL_RE
  *        screen (object), a6 = graphics.library.
  */
 void BLITZ_ROUTINE dorgb_b(UWORD c BL_REG(d0), UWORD r BL_REG(d1), UWORD g BL_REG(d2),
-                           UWORD b BL_REG(d3), UBYTE *slice BL_REG(a0))
+                           UWORD b BL_REG(d3), struct bb_slice *slice BL_REG(a0))
 {
-    *(UWORD *)(*(UBYTE **)(slice + 18) + 2 + (WORD)(UWORD)(c << 2)) =
+    *(UWORD *)(COLMOVES(slice) + 2 + (WORD)(UWORD)(c << 2)) =
         (UWORD)(r << 8) | (UWORD)(g << 4) | b;
 }
 BLITZ_AB_ROUTINE(dorgb, dorgb_b,
@@ -1578,13 +1581,13 @@ static void BLITZ_ERRCHK rgbchk_a_c(UWORD c BL_REG(d0), UWORD r BL_REG(d1), UWOR
 }
 
 static void BLITZ_ERRCHK rgbchk_b_c(UWORD c BL_REG(d0), UWORD r BL_REG(d1), UWORD g BL_REG(d2),
-                                    UWORD b BL_REG(d3), const UWORD *slice BL_REG(a0))
+                                    UWORD b BL_REG(d3), const struct bb_slice *slice BL_REG(a0))
 {
-    if (!slice[0])
+    if (!slice->y)
         BLITZ_RUNERR(mess6);
     else if (c > 31)
         BLITZ_RUNERR(mess8);
-    else if (c >= slice[4])
+    else if (c >= slice->colours)
         BLITZ_RUNERR(mess7);
     else
         rgbchk2(r, g, b);
@@ -1611,11 +1614,11 @@ static void BLITZ_ERRCHK showpalchk_a_c(const ULONG *scr BL_REG(a2))
         BLITZ_RUNERR(mess3);
 }
 
-static void BLITZ_ERRCHK showpalchk_b_c(const UWORD *slice BL_REG(a0))
+static void BLITZ_ERRCHK showpalchk_b_c(const struct bb_slice *slice BL_REG(a0))
 {
-    if (!slice[0])
+    if (!slice->y)
         BLITZ_RUNERR(mess6);
-    else if (!slice[4])
+    else if (!slice->colours)
         BLITZ_RUNERR(mess7);
 }
 
@@ -1625,7 +1628,7 @@ static void BLITZ_ERRCHK usepalchk_a_c(const ULONG *scr BL_REG(a2))
         showpalchk_a_c(scr);
 }
 
-static void BLITZ_ERRCHK usepalchk_b_c(const UWORD *slice BL_REG(a0))
+static void BLITZ_ERRCHK usepalchk_b_c(const struct bb_slice *slice BL_REG(a0))
 {
     if (!palmode)
         showpalchk_b_c(slice);
@@ -1643,9 +1646,9 @@ static void BLITZ_ERRCHK colchk_a_c(const ULONG *scr BL_REG(a0))
         BLITZ_RUNERR(mess3);
 }
 
-static void BLITZ_ERRCHK colchk_b_c(const UWORD *slice BL_REG(a0))
+static void BLITZ_ERRCHK colchk_b_c(const struct bb_slice *slice BL_REG(a0))
 {
-    if (!slice[0])
+    if (!slice->y)
         BLITZ_RUNERR(mess6);
 }
 
