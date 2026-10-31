@@ -201,6 +201,20 @@ ULONG BLITZ_ROUTINE codeinit(void)
     return (ULONG)&sv.mode;
 }
 
+/**
+ * @brief SpriteMode 0=16 1=32 2=64 - the sprite width (FMODE) for the
+ * following GetaSprite/ShowSprite.
+ *
+ * Mode 0/1/2 = 16/32/64 pixels per sprite: widthshift 2/3/4, spritewid
+ * 2/4/8 bytes (from the table shlup).
+ *
+ * BUG(orig) (#281): the width is read from a table of 3 words without a
+ * check: modes > 2 read the variables behind it.
+ * BUG(orig) (#280): sprites made before the change are later freed (and
+ * saved/loaded) with the size of the new mode.
+ *
+ * @param m d0.w: the mode
+ */
 static void BLITZ_ROUTINE dospritemode_c(ULONG m BL_REG(d0))
 {
     sv.mode = (UWORD)m;
@@ -270,7 +284,25 @@ static UBYTE *onesprite(const UBYTE *src, UBYTE *dst, UWORD height, const UBYTE 
     return dst + 16;
 }
 
-/* a3 = sprite, a2 = shape */
+/**
+ * @brief GetaSprite Sprite#,Shape# - make a sprite from a 4 or 16 colour
+ * shape.
+ *
+ * Frees the sprite's old data, allocates CHIP memory for
+ * ((width-1) >> (shift+2)) + 1 hardware sprites (twice for 16 colours:
+ * attached pairs, planes 2+3 in the attached sprite) and copies per sprite
+ * and row the two planes' words/longs, then a 0 line (no control words:
+ * ShowSprite writes position and control into the slice's copper list).
+ * Takes the shape's handle.
+ *
+ * Errors (debugger, gspchk): "Uninitialized Shape", "Shape MUST be 4 or
+ * 16 colours", "Sprite too Wide".
+ *
+ * BUG(orig) (#282): reads 16/32/64 pixels per sprite whatever the
+ * shape's width (beyond the row for narrow shapes).
+ *
+ * @param shape a2: the shape object; a3: the sprite object
+ */
 static void BLITZ_ROUTINE dogetsprite_c(UBYTE *shape BL_REG(a2))
 {
     struct sprite *sp = (struct sprite *)blitz_string;
@@ -313,7 +345,28 @@ BLITZ_THUNK(dogetsprite, dogetsprite_c, "d0-d1/a0-a1");
 
 /* ------------------------------------------------------- Blitz mode */
 
-/* ShowSprite: a3 = sprite, a2 = slice, d1 = x, d2 = y, d3 = channel */
+/**
+ * @brief ShowSprite Sprite#,X,Y,Sprite Channel - show a sprite on the
+ * used slice (Blitz mode only).
+ *
+ * Writes position, control and data pointer of each hardware sprite into
+ * the slice's copper list from the channel on.  Clips at the top (the
+ * data pointer is advanced 4 bytes per line; the offset is a long
+ * register whose upper word is the caller's y, as in the original) and
+ * the bottom of the slice; switches the sprites off when completely
+ * outside.
+ *
+ * Errors (debugger, sspchk): "Uninitialized Sprite", "Uninitialized
+ * Slice", "Sprite Channel Unavailable".
+ *
+ * BUG(orig) (#283): the top clipping skips 4 bytes per line also in the
+ * 32/64 pixel modes.
+ *
+ * @param x     d1: x position
+ * @param y     d2: y position
+ * @param ch    d3: the first sprite channel
+ * @param slice a2: the used slice; a3: the sprite object
+ */
 static void BLITZ_ROUTINE doshowsprite_c(ULONG x BL_REG(d1), ULONG y BL_REG(d2),
                                          ULONG ch BL_REG(d3), UBYTE *slice BL_REG(a2))
 {
@@ -401,7 +454,19 @@ spriteoff:
 }
 BLITZ_THUNK(doshowsprite, doshowsprite_c, "d0-d1/a0-a1");
 
-/* InFront/InFrontB: last sprite in front of playfield 2 (BPLCON2 3-5) */
+/**
+ * @brief InFront Sprite Channel, InFrontB Sprite Channel - sprites from
+ * the channel on appear in front of playfield 2 (Blitz mode only).
+ *
+ * Sets the playfield 2 priority bits (BPLCON2 3-5) to channel/2 in the
+ * copper list of the used slice.
+ *
+ * Errors (debugger, infchk): "Sprite Channel not in range" (odd or > 8),
+ * "Uninitialized Slice", "Slice does not support priority".
+ *
+ * @param ch    d0.w: the sprite channel (even, 0-8)
+ * @param slice a2: the used slice
+ */
 static void BLITZ_ROUTINE doinfront1_c(ULONG ch BL_REG(d0), UBYTE *slice BL_REG(a2))
 {
     UWORD *bplcon2 = (UWORD *)SP(slice, 26);
@@ -410,7 +475,18 @@ static void BLITZ_ROUTINE doinfront1_c(ULONG ch BL_REG(d0), UBYTE *slice BL_REG(
 }
 BLITZ_THUNK(doinfront1, doinfront1_c, "d0-d1/a0-a1");
 
-/* InFrontF: last sprite in front of playfield 1 (BPLCON2 0-2) */
+/**
+ * @brief InFrontF Sprite Channel - sprites from the channel on appear in
+ * front of playfield 1 (Blitz mode only).
+ *
+ * Sets the playfield 1 priority bits (BPLCON2 0-2) to channel/2 in the
+ * copper list of the used slice.
+ *
+ * Errors (debugger, infchk): as InFront.
+ *
+ * @param ch    d0.w: the sprite channel (even, 0-8)
+ * @param slice a2: the used slice
+ */
 static void BLITZ_ROUTINE doinfront2_c(ULONG ch BL_REG(d0), UBYTE *slice BL_REG(a2))
 {
     UWORD *bplcon2 = (UWORD *)SP(slice, 26);
@@ -427,6 +503,22 @@ static struct DosLibrary *dosbase;
 BLITZ_ERRCHK_MESSAGE(mess10, "Can't open Sprites file");
 BLITZ_ERRCHK_MESSAGE(mess11, "Error reading/writing Sprites file");
 
+/**
+ * @brief SaveSprites Sprite#,Sprite#,Filename$ - save a range of sprites
+ * to a file (Amiga mode only).
+ *
+ * Per sprite the 16 byte object, then its data if it has any.
+ *
+ * Errors: "Can't open Sprites file", "Error reading/writing Sprites file"
+ * (runtime errors also without the debugger); debugger (ssz): "First
+ * Sprite must be lower than second".
+ *
+ * BUG(orig) (#280): the data size uses the current SpriteMode.
+ *
+ * @param last a2: the last sprite object; a3: the first
+ * @param name d2: the file name
+ * @param dos  a6: dos.library
+ */
 static void BLITZ_ROUTINE dosavesprites_c(UBYTE *last BL_REG(a2), const char *name BL_REG(d2),
                                           struct DosLibrary *dos BL_REG(a6))
 {
@@ -481,6 +573,21 @@ static void loadsprites(struct sprite *sp, const UBYTE *last, const char *name, 
     Close(fh);
 }
 
+/**
+ * @brief LoadSprites Sprite#,Sprite#,Filename$ - load a range of sprites
+ * from a file made by SaveSprites (Amiga mode only).
+ *
+ * Frees each sprite, reads its 16 byte object and its data (CHIP
+ * memory); stops at the end of the file.
+ *
+ * Errors: as SaveSprites.
+ *
+ * BUG(orig) (#280): the data size uses the current SpriteMode.
+ *
+ * @param last a2: the last sprite object; a3: the first
+ * @param name d2: the file name
+ * @param dos  a6: dos.library
+ */
 static void BLITZ_ROUTINE doloadsprites_c(UBYTE *last BL_REG(a2), const char *name BL_REG(d2),
                                           struct DosLibrary *dos BL_REG(a6))
 {
@@ -488,6 +595,20 @@ static void BLITZ_ROUTINE doloadsprites_c(UBYTE *last BL_REG(a2), const char *na
 }
 BLITZ_THUNK(doloadsprites, doloadsprites_c, "d0-d1/a0-a1");
 
+/**
+ * @brief LoadSprites Sprite#,Filename$ - load sprites from the given one
+ * up to the last of the object table (Amiga mode only).
+ *
+ * As LoadSprites with two sprites; the last is base + (maximum - 1) << 4.
+ *
+ * BUG(orig) (#939): that offset is a word: from a maximum of 2049 on the
+ * last sprite lies before the table.
+ *
+ * @param base a2: the sprite table (object base); a3: the first sprite
+ * @param max  d2: the maximum number of sprites
+ * @param name d1: the file name
+ * @param dos  a6: dos.library
+ */
 static void BLITZ_ROUTINE doloadsprites2_c(UBYTE *base BL_REG(a2), ULONG max BL_REG(d2),
                                            const char *name BL_REG(d1),
                                            struct DosLibrary *dos BL_REG(a6))
