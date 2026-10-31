@@ -170,9 +170,18 @@ static void disownblit(void)
     DisownBlitter();
 }
 
-/* $C203/$C204 - keep all registers */
+/**
+ * @brief $C203 - OwnBlitter, once (for the display libraries).
+ *
+ * Keeps all registers.
+ */
 static void BLITZ_ROUTINE doownblit_c(void) { ownblit(); }
 BLITZ_THUNK(doownblit, doownblit_c, "d0-d1/a0-a1");
+/**
+ * @brief $C204 - DisownBlitter, if owned.
+ *
+ * Keeps all registers.
+ */
 static void BLITZ_ROUTINE dodisownblit_c(void) { disownblit(); }
 BLITZ_THUNK(dodisownblit, dodisownblit_c, "d0-d1/a0-a1");
 
@@ -197,6 +206,16 @@ static UWORD setmode(WORD mode)
 
 /* The mode switches keep every register but d0.w (the thunks write the
    result into the low word of the saved d0). */
+
+/**
+ * @brief $C207 (QAmigaS) - QAmiga mode for the debugger, without touching
+ * the display.
+ *
+ * Only remembers the view, intlib goamiga, Permit, DisownBlitter.
+ *
+ * @return d0.w: the previous mode (-1 Blitz, 0 Amiga, 1 QAmiga); the
+ *         upper word of d0 is the caller's
+ */
 static UWORD BLITZ_ROUTINE goqamigaS_c(void)
 {
     doviewoffS();
@@ -207,6 +226,15 @@ static UWORD BLITZ_ROUTINE goqamigaS_c(void)
 }
 BLITZ_THUNK_POST(goqamigaS, goqamigaS_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
+/**
+ * @brief $C206 (BlitzS) - Blitz mode for the debugger, without touching
+ * the display.
+ *
+ * Only remembers the view, OwnBlitter, Forbid (keyboard.device told the
+ * OS is not reading the keyboard), intlib goblitz.
+ *
+ * @return d0.w: the previous mode (-1 Blitz, 0 Amiga, 1 QAmiga)
+ */
 static UWORD BLITZ_ROUTINE goblitzS_c(void)
 {
     doviewoffS();
@@ -217,6 +245,16 @@ static UWORD BLITZ_ROUTINE goblitzS_c(void)
 }
 BLITZ_THUNK_POST(goblitzS, goblitzS_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
+/**
+ * @brief $C200 BLITZ - switch to Blitz mode.
+ *
+ * OS display off (LoadView(NULL), two frames; our own copper list if one
+ * is set; FMODE 0, BPLCON3 $C00, on V39+ BEAMCON0), OwnBlitter, Forbid
+ * (keyboard.device told the OS is not reading the keyboard), intlib
+ * goblitz.
+ *
+ * @return d0.w: the previous mode (-1 Blitz, 0 Amiga, 1 QAmiga)
+ */
 static UWORD BLITZ_ROUTINE goblitz_c(void)
 {
     doviewoff();
@@ -227,6 +265,14 @@ static UWORD BLITZ_ROUTINE goblitz_c(void)
 }
 BLITZ_THUNK_POST(goblitz, goblitz_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
+/**
+ * @brief $C201 AMIGA - switch to Amiga mode.
+ *
+ * intlib goamiga, Permit, DisownBlitter, back to the OS display (copper
+ * to the system list, DMA on, LoadView(oldview)).
+ *
+ * @return d0.w: the previous mode (-1 Blitz, 0 Amiga, 1 QAmiga)
+ */
 static UWORD BLITZ_ROUTINE goamiga_c(void)
 {
     intjsr(intgoamiga);
@@ -237,6 +283,14 @@ static UWORD BLITZ_ROUTINE goamiga_c(void)
 }
 BLITZ_THUNK_POST(goamiga, goamiga_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
+/**
+ * @brief $C202 QAMIGA - switch to QAmiga mode (OS running, the program's
+ * own display).
+ *
+ * intlib goamiga, Permit, DisownBlitter, OS display off as for BLITZ.
+ *
+ * @return d0.w: the previous mode (-1 Blitz, 0 Amiga, 1 QAmiga)
+ */
 static UWORD BLITZ_ROUTINE goqamiga_c(void)
 {
     intjsr(intgoamiga);
@@ -247,9 +301,16 @@ static UWORD BLITZ_ROUTINE goqamiga_c(void)
 }
 BLITZ_THUNK_POST(goqamiga, goqamiga_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
-/* doinit - open graphics, find keyboard.device; init value = its base.
-   The device list walk has no end check (not a bug: keyboard.device is
-   always there). */
+/**
+ * @brief init - open graphics, find keyboard.device.
+ *
+ * Also notes the exec version (V39+: BEAMCON0 in Blitz mode), BEAMCON0
+ * for Blitz mode from the NTSC flag, and opens ciaa.resource (unused).
+ * The device list walk has no end check (not a bug: keyboard.device is
+ * always there).
+ *
+ * @return d0: the keyboard.device base, the library's init value
+ */
 ULONG BLITZ_ROUTINE doinit(void)
 {
     static const char kbd[] = "keyboard.";
@@ -287,7 +348,13 @@ void BLITZ_ROUTINE dofinit(void)
     CloseLibrary((struct Library *)gr);
 }
 
-/* setcoplist - a0 = copper list for Blitz/QAmiga mode; keeps all */
+/**
+ * @brief $C205 (setcoplist) - set the copper list for Blitz/QAmiga mode.
+ *
+ * Started when the OS display is switched off.  Keeps all registers.
+ *
+ * @param cop a0: the copper list (0 = none)
+ */
 static void BLITZ_ROUTINE setcoplist_c(ULONG cop BL_REG(a0))
 {
     oldviewS = 0;
