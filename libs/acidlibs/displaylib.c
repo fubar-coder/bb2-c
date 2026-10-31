@@ -1186,9 +1186,9 @@ BLITZ_THUNK(_displaydbmap2, _displaydbmap2_c, "a2");
 
 /* ------------------------------------------------------ sprite routines */
 
-static void spriteoff(UBYTE *cop, const UBYTE *spr, UWORD chan)
+static void spriteoff(UBYTE *cop, const struct bb_sprite *spr, UWORD chan)
 {
-    UWORD count = W(spr, 6) - 1;
+    UWORD count = spr->count - 1;
     UBYTE *sprmove = (UBYTE *)CM(cop, sprites) + (WORD)(UWORD)(chan << 4);
 
     do {
@@ -1197,7 +1197,7 @@ static void spriteoff(UBYTE *cop, const UBYTE *spr, UWORD chan)
         W(sprmove, 10) = (UWORD)(d.mysprite >> 16);
         W(sprmove, 14) = (UWORD)d.mysprite;
         sprmove += 16;
-        if ((WORD)W(spr, 8) < 0) {
+        if ((WORD)spr->flags < 0) {
             W(sprmove, 2) = 0;
             W(sprmove, 6) = 0;
             W(sprmove, 10) = (UWORD)(d.mysprite >> 16);
@@ -1231,7 +1231,8 @@ static void spriteoff(UBYTE *cop, const UBYTE *spr, UWORD chan)
  * @param y        d3: the y position
  * @param channel  d4: the first sprite channel
  */
-static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG x BL_REG(d2),
+static void BLITZ_ROUTINE _displaysprite_c(const struct bb_sprite *spr BL_REG(a1),
+                                           ULONG x BL_REG(d2),
                                            ULONG y BL_REG(d3), ULONG channel BL_REG(d4))
 {
     UBYTE *cop = blitz_string, *sprmove;
@@ -1251,13 +1252,13 @@ static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG x 
     ULONG nspr;                                 /* d6: the sprite channels */
     ULONG posword, ctlword;                     /* d6 d7: SPRxPOS, SPRxCTL */
 
-    if (!L(spr, 0))
+    if (!spr->data)
         GOTO(nosprierr);
     chanend = (UWORD)channel;
     nspr = CM(cop, numsprites);
     if (CM(cop, csprites))
         nspr = (UWORD)(nspr + nspr);
-    chanend = (UWORD)(chanend + W(spr, 6));
+    chanend = (UWORD)(chanend + spr->count);
     if ((WORD)((UWORD)nspr - (UWORD)chanend) < 0) /* CMP d5,d6:BMI */
         GOTO(spriterr);
     hpos = x;
@@ -1265,8 +1266,8 @@ static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG x 
     BL_SETW(vpos, (UWORD)y);
     chan = y;
     BL_SETW(chan, (UWORD)channel);
-    xhandle = BL_EXTL(W(spr, 12));
-    yhandle = BL_EXTL(W(spr, 14));
+    xhandle = BL_EXTL(spr->handlex);
+    yhandle = BL_EXTL(spr->handley);
     xhandle = asr_w(asl_w(xhandle, 2), CM(cop, spri));
     hpos = BL_SWAP(hpos);
     hpos = rol_l(hpos, CM(cop, resshift));
@@ -1283,7 +1284,7 @@ static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG x 
         lines = (UWORD)(bottom - (WORD)vpos);
     }
     skip = 0;
-    height = W(spr, 4);
+    height = spr->height;
     if ((WORD)vpos < 0) {                       /* off the top */
         if ((LONG)(WORD)height + (WORD)vpos <= 0) { /* ADD d2,d5:BLE */
             spriteoff(cop, spr, (UWORD)chan);
@@ -1325,7 +1326,7 @@ static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG x 
         ctlword |= 1 << 1;
     BL_SETW(vstop, (UWORD)vstop << 8);
     ctlword |= (UWORD)vstop;
-    if ((WORD)W(spr, 8) < 0)
+    if ((WORD)spr->flags < 0)
         ctlword |= 1 << 7;
     sprmove = (UBYTE *)CM(cop, sprites);
     if ((UWORD)chan >= CM(cop, numsprites)) {
@@ -1333,9 +1334,9 @@ static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG x 
         sprmove = (UBYTE *)CM(cop, csprites);
     }
     sprmove += (WORD)(UWORD)((UWORD)chan << 4);
-    data = L(spr, 0) + skip;
-    step = BL_EXTL(W(spr, 10));
-    count = (UWORD)(W(spr, 6) - 1);
+    data = (ULONG)spr->data + skip;
+    step = BL_EXTL(spr->imgsize);
+    count = (UWORD)(spr->count - 1);
     do {
         W(sprmove, 2) = (UWORD)posword;
         W(sprmove, 6) = (UWORD)ctlword;
@@ -1343,7 +1344,7 @@ static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG x 
         W(sprmove, 10) = (UWORD)(data >> 16);
         data += step;
         sprmove += 16;
-        if ((WORD)W(spr, 8) < 0) {              /* attached */
+        if ((WORD)spr->flags < 0) {             /* attached */
             W(sprmove, 2) = (UWORD)posword;
             W(sprmove, 6) = (UWORD)ctlword;
             W(sprmove, 14) = (UWORD)data;
