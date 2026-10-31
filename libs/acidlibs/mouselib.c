@@ -122,7 +122,16 @@ static WORD sliceo;
 
 void mouseint(void);
 
-/* PositionMouse - MOVEM d0-d1,mx */
+/**
+ * @brief PositionMouse x,y - set the mouse position (Blitz and Amiga
+ * mode).
+ *
+ * MOVEM d0-d1,mx: only the position variables; it is not clipped to
+ * MouseArea here.
+ *
+ * @param x d0: the x position.
+ * @param y d1: the y position.
+ */
 static void BLITZ_ROUTINE doposmouse_c(WORD x BL_REG(d0), WORD y BL_REG(d1))
 {
     mx = x;
@@ -130,17 +139,36 @@ static void BLITZ_ROUTINE doposmouse_c(WORD x BL_REG(d0), WORD y BL_REG(d1))
 }
 BLITZ_THUNK(doposmouse, doposmouse_c, "d0-d1/a0-a1");
 
-/* MouseX ... - Quick: MOVE w,d0:SWAP d0:CLR d0 */
+/* MouseX ... - Quick: MOVE w,d0:SWAP d0:CLR d0.  Blitz mode only. */
+
+/** @brief MouseX - the mouse's x position (Blitz mode only).
+    @return d0: the position as a Quick (the value in the upper word). */
 static ULONG BLITZ_ROUTINE domousex_c(void)  { return (ULONG)(UWORD)mx << 16; }
+/** @brief MouseY - the mouse's y position (Blitz mode only).
+    @return d0: the position as a Quick (the value in the upper word). */
 static ULONG BLITZ_ROUTINE domousey_c(void)  { return (ULONG)(UWORD)my << 16; }
+/** @brief MouseXSpeed - the last horizontal movement, the counter
+    difference of the last vertical blank (Blitz mode only).
+    @return d0: the speed as a Quick (the value in the upper word). */
 static ULONG BLITZ_ROUTINE domousexs_c(void) { return (ULONG)(UWORD)xs << 16; }
+/** @brief MouseYSpeed - the last vertical movement, the counter
+    difference of the last vertical blank (Blitz mode only).
+    @return d0: the speed as a Quick (the value in the upper word). */
 static ULONG BLITZ_ROUTINE domouseys_c(void) { return (ULONG)(UWORD)ys << 16; }
 BLITZ_THUNK(domousex, domousex_c, "d1/a0-a1");
 BLITZ_THUNK(domousey, domousey_c, "d1/a0-a1");
 BLITZ_THUNK(domousexs, domousexs_c, "d1/a0-a1");
 BLITZ_THUNK(domouseys, domouseys_c, "d1/a0-a1");
 
-/* init - d0 = offset of the used slice */
+/**
+ * @brief Library init - keep a5 and the offset of the used slice; mouse
+ * area 0,0,320,200, no Pointer.
+ *
+ * A nullsub with !libs{#blitzcoplib,$0004}.
+ *
+ * @param off d0: the offset of blitzcoplib's "used slice" variable in the
+ *        globals.
+ */
 static void BLITZ_ROUTINE codeinit_c(WORD off BL_REG(d0))
 {
     inta5 = blitz_globals;
@@ -153,7 +181,21 @@ static void BLITZ_ROUTINE codeinit_c(WORD off BL_REG(d0))
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
 
-/* Pointer Sprite#,Channel - a2 = used slice, d0 = sprite offset */
+/**
+ * @brief Pointer Sprite#,Sprite Channel - show a sprite as the mouse
+ * pointer (Blitz mode only).
+ *
+ * The interrupt of Mouse On moves the sprite with the mouse, on the slice
+ * that was used when Pointer was called.  Not a bug: the sprite number is
+ * the object offset >> 4 (offset = number * 16, LSR #4).
+ *
+ * Errors (debugger only, sspchk): an uninitialized sprite or slice, or a
+ * channel the sprite does not fit in.
+ *
+ * @param off d0: the sprite's object offset (number * 16).
+ * @param chan d1: the sprite channel.
+ * @param slice a2: the used slice (!libs #blitzcoplib,$1202).
+ */
 static void BLITZ_ROUTINE dopointer_c(UWORD off BL_REG(d0), WORD chan BL_REG(d1),
                                       ULONG slice BL_REG(a2))
 {
@@ -163,14 +205,25 @@ static void BLITZ_ROUTINE dopointer_c(UWORD off BL_REG(d0), WORD chan BL_REG(d1)
 }
 BLITZ_THUNK(dopointer, dopointer_c, "d0-d1/a0-a1");
 
-/* Pointer (no arguments): no mouse sprite */
+/** @brief Pointer (no arguments) - no mouse sprite any more (Blitz mode
+    only). */
 static void BLITZ_ROUTINE dopointer2_c(void)
 {
     snum = -1;
 }
 BLITZ_THUNK(dopointer2, dopointer2_c, "d0-d1/a0-a1");
 
-/* MouseArea Minx,Miny,Maxx,Maxy */
+/**
+ * @brief MouseArea Minx,Miny,Maxx,Maxy - the area the mouse position is
+ * clipped to (Blitz and Amiga mode).
+ *
+ * The maximum is exclusive: the interrupt clips to Maxx-1, Maxy-1.
+ *
+ * @param left d0: Minx.
+ * @param top d1: Miny.
+ * @param right d2: Maxx.
+ * @param bottom d3: Maxy.
+ */
 static void BLITZ_ROUTINE domousearea_c(WORD left BL_REG(d0), WORD top BL_REG(d1),
                                         WORD right BL_REG(d2), WORD bottom BL_REG(d3))
 {
@@ -181,7 +234,19 @@ static void BLITZ_ROUTINE domousearea_c(WORD left BL_REG(d0), WORD top BL_REG(d1
 }
 BLITZ_THUNK(domousearea, domousearea_c, "d0-d1/a0-a1");
 
-/* Mouse On|Off */
+/**
+ * @brief Mouse On|Off - read the mouse in the vertical blank interrupt
+ * (Blitz mode only).
+ *
+ * On: SetInt (intlib $C100, BLibJsr) with mouseint on level $8015
+ * (vertical blank); Off: ClrInt ($C101).
+ *
+ * BUG(orig) (#223): Mouse On initialises the last X counter from $DFF00A
+ * (the Y counter) and the last Y counter from $DFF00B (the X counter):
+ * the first interrupt moves the mouse by the difference of the two.
+ *
+ * @param on d0: On (<> 0) or Off (0).
+ */
 void BLITZ_ROUTINE domouse(WORD on BL_REG(d0))
 {
     struct bl_regs r = { .d0 = 0x8015 };
@@ -243,8 +308,18 @@ BLITZ_ERRCHK_MESSAGE(mess4, "Uninitialized Sprite");
 BLITZ_ERRCHK_MESSAGE(mess5, "Uninitialized Slice");
 BLITZ_ERRCHK_MESSAGE(mess6, "Sprite Channel Unavailable");
 
-/* sspchk - a3 = sprite, a2 = slice, d1 = channel: the sprite's channels
-   (word at +6) from d1 on must fit the slice's (word at +6) */
+/**
+ * @brief The error check of Pointer Sprite#,Channel (debugger only).
+ *
+ * The sprite's channels (word at +6) from d1 on must fit the slice's
+ * (word at +6).
+ *
+ * Errors: "Uninitialized Sprite", "Uninitialized Slice", "Sprite Channel
+ * Unavailable".
+ *
+ * @param chan d1: the sprite channel.
+ * @param slice a2: the used slice; a3 = the sprite.
+ */
 static void BLITZ_ERRCHK sspchk_c(WORD chan BL_REG(d1), const UBYTE *slice BL_REG(a2))
 {
     const UBYTE *spr = blitz_string;

@@ -61,7 +61,16 @@ BLITZ_LIBFIN();
 
 static const char libname[] = "mathtrans.library";
 
-/* codeinit - initloop: OldOpenLibrary until it succeeds */
+/**
+ * @brief Library init - open mathtrans.library.
+ *
+ * initloop: OldOpenLibrary until it succeeds.
+ *
+ * BUG(orig) (#202): if the library cannot be opened, the init tries
+ * again forever (TST.l d0:BEQ initloop).
+ *
+ * @return d0: the library base, the init value (a6 of the functions).
+ */
 ULONG BLITZ_ROUTINE codeinit(void)
 {
     struct Library *base;
@@ -72,14 +81,46 @@ ULONG BLITZ_ROUTINE codeinit(void)
     return (ULONG)base;
 }
 
-/* codefinit - MOVE.l 4,a6:JMP _CloseLibrary(a6) */
+/**
+ * @brief Library finit - close mathtrans.library.
+ *
+ * MOVE.l 4,a6:JMP _CloseLibrary(a6).
+ *
+ * @param lib a1: the library base (!libs #mathtranslib,#la1).
+ */
 void BLITZ_ROUTINE codefinit(struct Library *lib BL_REG(a1))
 {
     CloseLibrary(lib);
 }
 
 /* mathtrans.library LVOs */
+
+/**
+ * @brief The ^ operator for floats (the first nullsub, called by the
+ * compiler) - x^y with SPPow.
+ *
+ * Inline code (`Dc $a000,len`): the compiler copies the `JSR -90(a6)` to
+ * the call.
+ *
+ * @param d0 x, the base (FFP).
+ * @param d1 y, the exponent (FFP).
+ * @param a6 the mathtrans.library base (!libs #mathtranslib,#la6).
+ * @return d0: x^y (FFP).
+ */
 BLITZ_INLINE(dopow,   "jsr -90(a6)");                   /* SPPow: d0^d1 */
+
+/**
+ * @brief ACos, ASin, ATan, Cos, HCos, Exp, Log, Log10, Sin, HSin, Sqr,
+ * Tan, HTan (Float) - the mathtrans.library function named in the comment
+ * of each line.
+ *
+ * Inline code (`Dc $a000,len`): the compiler copies the `JSR lvo(a6)` to
+ * the call; the original has no RTS behind it.
+ *
+ * @param d0 the argument (FFP).
+ * @param a6 the mathtrans.library base (!libs #mathtranslib,#la6).
+ * @return d0: the result (FFP).
+ */
 BLITZ_INLINE(spacos,  "jsr -120(a6)");                  /* SPAcos */
 BLITZ_INLINE(spasin,  "jsr -114(a6)");                  /* SPAsin */
 BLITZ_INLINE(spatan,  "jsr -30(a6)");                   /* SPAtan */

@@ -70,9 +70,26 @@ static ULONG maxlen(UBYTE **var, ULONG n, const UBYTE *mem)
     return (ULONG)h->chars;
 }
 
-/* domaxlenl - local string; domaxlen: global string, ADDQ #8,a6 first
-   (in the thunk, as in the original: a6 stays +8).  a0/a1 are kept: the
-   original leaves them unchanged on some paths (no old memory / n = 0). */
+/**
+ * @brief MaxLen a$=n (tokens maxlen $D000 for a global, lmaxlen $D001 for
+ * a local string) - give a string variable a buffer of n characters.
+ *
+ * domaxlenl - local string; domaxlen: global string, ADDQ #8,a6 first
+ * (in the thunk, as in the original: a6 stays +8).  The old memory is
+ * freed (len = alloc'd+9) and the variable cleared; for n <> 0, n+9 bytes
+ * are allocated: alloc'd len = n, string len 0, empty string.  a0/a1 are
+ * kept: the original leaves them unchanged on some paths (no old memory /
+ * n = 0).  DIFF: d2/a2 are kept (the original leaves n and the variable
+ * address there).
+ *
+ * Errors: n < 0 is runtime error 1, but only with the debugger (echk1).
+ *
+ * @param var d0: the address of the string variable.
+ * @param n d1: the maximum length.
+ * @param mem a6: memlib's membase table (!libs 65530,#la6); +8 for the
+ *        global versions.
+ * @return d0: the new variable contents (0 for n = 0).
+ */
 static ULONG BLITZ_ROUTINE domaxlenl_c(UBYTE **var BL_REG(d0), ULONG n BL_REG(d1),
                                        const UBYTE *mem BL_REG(a6))
 {
@@ -81,8 +98,16 @@ static ULONG BLITZ_ROUTINE domaxlenl_c(UBYTE **var BL_REG(d0), ULONG n BL_REG(d1
 BLITZ_THUNK(domaxlenl, domaxlenl_c, "a0-a1");
 BLITZ_THUNK_PRE(domaxlen, domaxlenl_c, "a0-a1", "addq.w #8,a6");
 
-/* echk1 - TST.l d1:BMI err1:RTS; err1: MOVEQ #1,d0:TRAP #0.
-   Keeps all registers (d0 only changed on the error). */
+/**
+ * @brief The error check of MaxLen (debugger only): the length must not be
+ * negative.
+ *
+ * echk1 - TST.l d1:BMI err1:RTS; err1: MOVEQ #1,d0:TRAP #0 (an error
+ * number instead of a message pointer).  Keeps all registers (d0 only
+ * changed on the error).
+ *
+ * @param n d1: the maximum length.
+ */
 static void BLITZ_ROUTINE echk1_c(LONG n BL_REG(d1))
 {
     if (n < 0)

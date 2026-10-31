@@ -64,7 +64,12 @@ static const char mess2[] BLITZ_ERRCHK = "Unable to Free Memory";
 
 static ULONG freelast_c(void);
 
-/* codefinit - free all lists */
+/**
+ * @brief Library finit and token $C006 - free ALL memory allocated: every
+ * list (local and global) with all its blocks.
+ *
+ * Keeps all registers.
+ */
 static void BLITZ_ROUTINE codefinit_c(void)
 {
     while (freelast_c())
@@ -82,7 +87,16 @@ static void err1(void)
     BLITZ_RUNERR(mess1);
 }
 
-/* newmem - create a new node (for local stuff); keeps all registers */
+/**
+ * @brief newmem ($C004, at procedure entry) - create a new node (for
+ * local stuff): a new current local list.
+ *
+ * Keeps all registers (the compiler calls it with the parameters in
+ * d0-d5).
+ *
+ * Errors: no memory for the list header - err1: all memory is freed and
+ * the runtime error "Out of Memory!" raised.
+ */
 static void BLITZ_ROUTINE newmem_c(void)
 {
     struct memlist *l = AllocMem(sizeof *l, MEMF_PUBLIC);
@@ -97,7 +111,12 @@ static void BLITZ_ROUTINE newmem_c(void)
 }
 BLITZ_THUNK(newmem, newmem_c, "d0-d1/a0-a1");
 
-/* codeinit - init value: the jump table membase */
+/**
+ * @brief Library init - start with one list (the global one).
+ *
+ * @return d0: the init value, the jump table membase (localloc, locfree,
+ *         globalloc, globfree; !libs 65530,#la6 of other libraries).
+ */
 static ULONG BLITZ_ROUTINE codeinit_c(void)
 {
     firstdata = NULL;
@@ -128,8 +147,20 @@ static struct memlist *findglob(struct memlist *l)
     return l;
 }
 
-/* localloc - allocate some memory in the local region!
-   d0 = size, d1 = AllocMem flags -> d0 = memory; keeps a0-a1/a6 */
+/**
+ * @brief localloc ($C000) - allocate some memory in the local region!
+ *
+ * The block (8 bytes longer: next, length + 8) goes into the current
+ * (first) list.  Keeps a0-a1/a6.
+ *
+ * Errors: out of memory - err1: all memory is freed and the runtime error
+ * "Out of Memory!" raised.  DIFF: the original never returns from err1
+ * (its saved registers stay on the stack); here the result is 0.
+ *
+ * @param size d0: the size in bytes.
+ * @param flags d1: the AllocMem flags.
+ * @return d0: the memory.
+ */
 static ULONG BLITZ_ROUTINE localloc_c(ULONG size BL_REG(d0), ULONG flags BL_REG(d1))
 {
     struct memblock *b;
@@ -147,7 +178,18 @@ static ULONG BLITZ_ROUTINE localloc_c(ULONG size BL_REG(d0), ULONG flags BL_REG(
 }
 BLITZ_THUNK(localloc, localloc_c, "a0-a1");
 
-/* locfree - a1 = memory (d0 = length, ignored!); keeps a0/d1/a6 */
+/**
+ * @brief locfree ($C001) - free memory of the current local list.
+ *
+ * The block is looked up in the list and freed with its stored length.
+ * Keeps a0/d1/a6.
+ *
+ * Errors: a block that is not in the list - the runtime error "Unable to
+ * Free Memory", reported only once (memerr).  DIFF (K): if the trap
+ * returns, the original runs on into newmem; here locfree returns.
+ *
+ * @param mem a1: the memory (d0 = length, ignored!).
+ */
 static void BLITZ_ROUTINE locfree_c(APTR mem BL_REG(a1))
 {
     struct memblock *b = (struct memblock *)mem - 1;      /* SUBQ #8,a1 */
@@ -173,7 +215,15 @@ static void BLITZ_ROUTINE locfree_c(APTR mem BL_REG(a1))
 }
 BLITZ_THUNK(locfree, locfree_c, "d1/a0");
 
-/* globalloc - like localloc, but in the global (last) list; keeps a0 */
+/**
+ * @brief globalloc ($C002) - like localloc, but in the global (last) list.
+ *
+ * Keeps a0-a1.  Errors as localloc.
+ *
+ * @param size d0: the size in bytes.
+ * @param flags d1: the AllocMem flags.
+ * @return d0: the memory.
+ */
 static ULONG BLITZ_ROUTINE globalloc_c(ULONG size BL_REG(d0), ULONG flags BL_REG(d1))
 {
     struct memlist *save = firstdata;
@@ -186,7 +236,13 @@ static ULONG BLITZ_ROUTINE globalloc_c(ULONG size BL_REG(d0), ULONG flags BL_REG
 }
 BLITZ_THUNK(globalloc, globalloc_c, "a0-a1");
 
-/* globfree - like locfree, in the global list; keeps a0/d1 */
+/**
+ * @brief globfree ($C003) - like locfree, in the global list.
+ *
+ * Keeps a0/d1.  Errors as locfree.
+ *
+ * @param mem a1: the memory (d0 = length, ignored).
+ */
 static void BLITZ_ROUTINE globfree_c(APTR mem BL_REG(a1))
 {
     struct memlist *save = firstdata;
@@ -197,8 +253,15 @@ static void BLITZ_ROUTINE globfree_c(APTR mem BL_REG(a1))
 }
 BLITZ_THUNK(globfree, globfree_c, "d1/a0");
 
-/* freelast - free up most recent node with all its blocks; keeps all
-   registers, Z=1 if there was none (result 0, tested as long) */
+/**
+ * @brief freelast ($C005, at procedure exit) - free up most recent node
+ * with all its blocks.
+ *
+ * Keeps all registers.
+ *
+ * @return Z = 1 if there was none (result 0, tested as long; an exec
+ *         BOOL, internal, not a Blitz truth value).
+ */
 static ULONG BLITZ_ROUTINE freelast_c(void)
 {
     struct memlist *l = firstdata;

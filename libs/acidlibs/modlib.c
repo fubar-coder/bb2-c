@@ -58,6 +58,22 @@ static ULONG mod_w(ULONG acc, ULONG divisor)
     return acc;
 }
 
+/**
+ * @brief a MOD b for Word and Byte (tokens modword $D401, modbyte $D400).
+ *
+ * EXT.l d0:DIVS d1,d0:SWAP d0, a negative remainder gets the divisor
+ * added (once).  domodbyte is the same code (the byte is sign extended by
+ * the compiler; only EXT.l on the word).  Keeps d1/a0/a1 (and everything
+ * else).
+ *
+ * Errors: b = 0 raises the 68000 divide-by-zero exception (vector 5) like
+ * the original; on a DIVS overflow d0 stays unchanged.
+ *
+ * @param a d0: the left operand.
+ * @param b d1: the right operand.
+ * @return d0: the remainder in the low word, the quotient in the high
+ *         word.
+ */
 static ULONG BLITZ_ROUTINE domodword_c(ULONG a BL_REG(d0), ULONG b BL_REG(d1))
 {
     return mod_w(a, b);
@@ -68,7 +84,22 @@ BLITZ_THUNK(domodword, domodword_c, "d1/a0-a1");
    compiler; only EXT.l on the word) */
 BLITZ_THUNK(domodbyte, domodword_c, "d1/a0-a1");
 
-/* domodquick - SWAP d0:SWAP d1, then domodword */
+/**
+ * @brief a MOD b for Quick (token modquick $D403).
+ *
+ * SWAP d0:SWAP d1, then the word code on the integer parts (the fractions
+ * of the inputs are ignored).  The result is quotient<<16 | remainder,
+ * but the compiler types it as a Word (blitz2.s:9459 domodq "now a
+ * word"), so only the remainder is used - not a visible bug (#221).
+ * DIFF: keeps d1 (the original leaves it swapped).
+ *
+ * Errors as for Word.
+ *
+ * @param a d0: the left operand (Quick).
+ * @param b d1: the right operand (Quick).
+ * @return d0: the remainder in the low word, the quotient in the high
+ *         word.
+ */
 static ULONG BLITZ_ROUTINE domodquick_c(ULONG a BL_REG(d0), ULONG b BL_REG(d1))
 {
     return mod_w(BL_SWAP(a), BL_SWAP(b));
@@ -90,14 +121,37 @@ static ULONG mod_l(ULONG a, ULONG b)
     return rem;
 }
 
+/**
+ * @brief a MOD b for Long (token modlong $D402).
+ *
+ * a - (a/b)*b with ldivlib ldivide ($CB01) and lmullib lmultiply ($CA01),
+ * plus b if negative.  Keeps a0/a1; d1 is changed (the original leaves
+ * (a/b)*b in d1).
+ *
+ * @param a d0: the left operand.
+ * @param b d1: the right operand.
+ * @return d0: the remainder.
+ */
 static ULONG BLITZ_ROUTINE domodlong_c(ULONG a BL_REG(d0), ULONG b BL_REG(d1))
 {
     return mod_l(a, b);
 }
 BLITZ_THUNK(domodlong, domodlong_c, "a0-a1");
 
-/* domodfloat - SPFix(a), SPFix(b) (d0 in, d0 out; the original passes the
-   other operand in d1, mathffp ignores it), then domodlong */
+/**
+ * @brief a MOD b for Float (token modfloat $D404).
+ *
+ * SPFix(a), SPFix(b) (d0 in, d0 out; the original passes the other
+ * operand in d1, mathffp ignores it), then the long code.  The result is
+ * a Long, not an FFP number - the compiler types it as a Long
+ * (blitz2.s:9463 domodf "now a long"), so this is correct (only the
+ * fractions are lost, #222).  Keeps a0/a1; d1 is changed.
+ *
+ * @param a d0: the left operand (FFP).
+ * @param b d1: the right operand (FFP).
+ * @param ffp a6: the mathffp base (!libs #ffplib,#la6).
+ * @return d0: the remainder (Long).
+ */
 static ULONG BLITZ_ROUTINE domodfloat_c(ULONG a BL_REG(d0), ULONG b BL_REG(d1),
                                         const void *ffp BL_REG(a6))
 {

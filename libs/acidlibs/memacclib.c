@@ -50,10 +50,22 @@ BLITZ_NAME("Call", "Address");
 
 BLITZ_LIBFIN();
 
-/* dopeek - d0 = type, d1 = address.  CMP #2,d0:BHI 'long:BEQ 'word: the
-   type compare is a word compare; byte/word results replace only the low
-   byte/word of d0 (MOVE.b (a0),d0 / MOVE (a0),d0), the rest of d0 is the
-   type's upper bits (0 for the compiler's types). */
+/**
+ * @brief Peek [.Type](Address) - read a byte, word, long, quick, float or
+ * string from memory.
+ *
+ * CMP #2,d0:BHI 'long:BEQ 'word: the type compare is a word compare (type
+ * 0 reads a byte too); byte/word results replace only the low byte/word
+ * of d0 (MOVE.b (a0),d0 / MOVE (a0),d0), the rest of d0 is the type's
+ * upper bits (0 for the compiler's types).  A string is copied to a3 up
+ * to and including its 0; a3 then points to the 0.  The original changes
+ * only d0, a0 (and a3 for strings).
+ *
+ * @param type d0: the type the compiler chose (1 byte, 2 word, 3 long,
+ *        4 quick, 5 float, 7 string).
+ * @param loc d1: the address.
+ * @return d0: the value; for a string its length.
+ */
 static ULONG BLITZ_ROUTINE dopeek_c(ULONG type BL_REG(d0), ULONG loc BL_REG(d1))
 {
     UWORD type_word = (UWORD)type;
@@ -77,12 +89,22 @@ static ULONG BLITZ_ROUTINE dopeek_c(ULONG type BL_REG(d0), ULONG loc BL_REG(d1))
 /* the original changes only d0, a0 (and a3 for strings) */
 BLITZ_THUNK(dopeek, dopeek_c, "d1/a1");
 
-/* dopeeks - d0 = address, d1 = number of characters: copied to a3 without
-   a terminating 0 (as in the original, not a bug, #213: the compiler uses d0 =
-   length, and where it passes a string on as an address it appends
-   clr.b (a3)+ itself, blitz2.s:8767 sbtolong); d1 = 0 copies nothing;
-   d0 = d1.  BUG(orig) (#214): the count is unsigned 32 bit
-   (SUBQ.l #1,d1:BNE), a negative length copies ~4 GB. */
+/**
+ * @brief Peeks$(Address,Length) - a string of Length characters from
+ * memory.
+ *
+ * The characters are copied to a3 without a terminating 0 (as in the
+ * original, not a bug, #213: the compiler uses d0 = length, and where it
+ * passes a string on as an address it appends clr.b (a3)+ itself,
+ * blitz2.s:8767 sbtolong); a length of 0 copies nothing.
+ *
+ * BUG(orig) (#214): the count is unsigned 32 bit (SUBQ.l #1,d1:BNE), a
+ * negative length copies ~4 GB.
+ *
+ * @param loc d0: the address.
+ * @param n d1: the number of characters.
+ * @return d0: the length (= d1).
+ */
 ULONG BLITZ_ROUTINE dopeeks(ULONG loc BL_REG(d0), ULONG n BL_REG(d1))
 {
     const UBYTE *s = (const UBYTE *)loc;
@@ -95,9 +117,22 @@ ULONG BLITZ_ROUTINE dopeeks(ULONG loc BL_REG(d0), ULONG n BL_REG(d1))
     return len;
 }
 
-/* dopoke - d0 = type, d1 = address, d2 = data (string: the characters,
-   length at -(a2)).  Poke.s copies the length's bytes and writes a 0
-   behind them. */
+/**
+ * @brief Poke [.Type] Address,Data - write a byte, word, long, quick,
+ * float or string to memory.
+ *
+ * The type compare is a word compare as in Peek.  Poke.s copies the
+ * length's bytes and writes a 0 behind them.  The original changes a0
+ * (strings: also d0, a1, a2); C keeps a2 (the compiler does not use it
+ * after the call).
+ *
+ * @param type d0: the type the compiler chose (1 byte, 2 word, 3 long,
+ *        4 quick, 5 float, 7 string).
+ * @param loc d1: the address.
+ * @param data d2: the value; for a string the characters.
+ * @param lens a2: the stack pointer before the arguments; a string's
+ *        length is the long at -4(a2) (MOVE.l -(a2),d0).
+ */
 static void BLITZ_ROUTINE dopoke_c(ULONG type BL_REG(d0), ULONG loc BL_REG(d1),
                                    ULONG data BL_REG(d2), const ULONG *lens BL_REG(a2))
 {
@@ -123,10 +158,16 @@ static void BLITZ_ROUTINE dopoke_c(ULONG type BL_REG(d0), ULONG loc BL_REG(d1),
 /* the original changes a0 (strings: also d0, a1, a2) */
 BLITZ_THUNK(dopoke, dopoke_c, "d0-d1/a1");
 
-/* docall - MOVE.l d0,a0:JMP (a0).  Assembler by nature: the called code
-   gets every register unchanged (a0 = d0 = address) and returns directly
-   to the Blitz program; a C call would have to assume that it keeps
-   d2-d7/a2-a6, which user code need not do. */
+/**
+ * @brief Call Address - jump to machine code.
+ *
+ * MOVE.l d0,a0:JMP (a0).  Assembler by nature: the called code gets every
+ * register unchanged (a0 = d0 = address) and returns directly to the
+ * Blitz program; a C call would have to assume that it keeps
+ * d2-d7/a2-a6, which user code need not do.
+ *
+ * @param d0 the address of the code.
+ */
 BLITZ_ASM_ROUTINE(docall,
     "   move.l  d0,a0\n"
     "   jmp     (a0)");

@@ -29,9 +29,17 @@ BLITZ_NULLSUB(doallocst, 0, 0);                 /* $CF01 allocst */
 BLITZ_NULLSUB(dofreest, 0, 0);                  /* $CF02 freest */
 BLITZ_LIBFIN();
 
-/* doallocst - keeps a0-a1 (MOVEM).
-   DIFF: the original returns d1 = -1 after copying (d1 = 0 if nothing was
-   copied); the thunk keeps d1. */
+/**
+ * @brief allocst ($CF01) - copy a string into global memory.
+ *
+ * The copy is length.l, the bytes, 0 (memlib globalloc, MEMF_PUBLIC).
+ * Keeps a0-a1 (MOVEM).  DIFF: the original returns d1 = -1 after copying
+ * (d1 = 0 if nothing was copied); the thunk keeps d1.
+ *
+ * @param src d0: the characters.
+ * @param len d1: the length; 0 allocates nothing.
+ * @return d0: the copy (points to the bytes), 0 for length 0.
+ */
 static ULONG BLITZ_ROUTINE doallocst_c(const UBYTE *src BL_REG(d0), ULONG len BL_REG(d1))
 {
     struct bl_regs r = { 0, 0, 0, 0 };
@@ -51,8 +59,14 @@ static ULONG BLITZ_ROUTINE doallocst_c(const UBYTE *src BL_REG(d0), ULONG len BL
 }
 BLITZ_THUNK(doallocst, doallocst_c, "d1/a0-a1");
 
-/* dofreest - keeps d1/a0-a1 (MOVEM); d0 = 0: nothing to do.
-   DIFF: the thunk keeps d0 too (the original returns memlib's d0). */
+/**
+ * @brief freest ($CF02) - free a string copied by allocst.
+ *
+ * Frees length + 5 bytes (memlib globfree).  Keeps d1/a0-a1 (MOVEM).
+ * DIFF: the thunk keeps d0 too (the original returns memlib's d0).
+ *
+ * @param str d0: the string (as allocst returned it); 0: nothing to do.
+ */
 static void BLITZ_ROUTINE dofreest_c(ULONG str BL_REG(d0))
 {
     struct bl_regs r = { 0, 0, 0, 0 };
@@ -65,15 +79,26 @@ static void BLITZ_ROUTINE dofreest_c(ULONG str BL_REG(d0))
 }
 BLITZ_THUNK(dofreest, dofreest_c, "d0-d1/a0-a1");
 
-/* setmaxs - a2 = {offset.w, size.l} table, d4.w = entries - 1.
-   a0/a1 are kept (memlib's globalloc keeps them, so the original does).
-   The original leaves a2 behind the table, d3 = last offset, d4.w = -1;
-   the program start code does not use them (like staticslib). */
+/* an entry of setmaxs' table */
 struct maxs {
     WORD off;                                   /* in the globals (a5) */
     ULONG size;
 };
 static_assert(sizeof(struct maxs) == 6);
+
+/**
+ * @brief setmaxs ($CF00) - allocate the object arrays and global buffers
+ * of the program (called by the program start code, blitz2.s ~11236).
+ *
+ * Every entry gets `size` bytes (memlib globalloc, MEMF_PUBLIC|MEMF_CLEAR)
+ * at offset(a5).  a0/a1 are kept (memlib's globalloc keeps them, so the
+ * original does).  The original leaves a2 behind the table, d3 = last
+ * offset, d4.w = -1; the program start code does not use them (like
+ * staticslib).
+ *
+ * @param tab a2: the table of {offset.w, size.l}.
+ * @param n d4.w: the number of entries - 1.
+ */
 
 static void BLITZ_ROUTINE setmaxs_c(const struct maxs *tab BL_REG(a2), UWORD n BL_REG(d4))
 {
