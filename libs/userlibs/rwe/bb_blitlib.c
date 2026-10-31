@@ -381,7 +381,7 @@ first:
    planes-1, +10.w bytes per plane, +12 offset, per plane {address,
    data}.  The values the blit goes on with. */
 struct bsave {
-    ULONG d4, d5;                               /* the modulos, MOVEM.l d4-d5 */
+    ULONG cbmod, admod;                         /* d4-d5: the modulos, MOVEM.l d4-d5 */
     ULONG off;
     UWORD size;
 };
@@ -396,10 +396,10 @@ static void bsave(struct bsave *s, UBYTE *buf, UBYTE *bm, UBYTE *cb, WORD x, WOR
     *(ULONG *)rec = SL(buf, 4);                 /* link the record */
     SL(buf, 4) = (ULONG)rec;
     rec += 4;
-    s->d5 = 0xfffe0000UL | mod;
+    s->admod = 0xfffe0000UL | mod;
     *(UWORD *)rec = mod;
     rec += 2;
-    s->d4 = s->d5 << 16 | s->d5 >> 16;
+    s->cbmod = s->admod << 16 | s->admod >> 16;
     s->off = (ULONG)bl_muls_w(y, SW(bm, 0)) + (LONG)(WORD)(x >> 3);
     s->size = size;
     *(UWORD *)rec = size;
@@ -455,9 +455,9 @@ static void BLITZ_ROUTINE bpredatorblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3)
     n = SW(shape, 4) - 1;
     plane = (UBYTE **)(bm + 8);
     BL_BLITWAIT(cb);
-    L(BLTCMOD) = s.d4;                          /* MOVEM.l d4-d5,BLTCMOD */
-    L(BLTAMOD) = s.d5;
-    W(BLTBMOD) = (UWORD)s.d5;
+    L(BLTCMOD) = s.cbmod;                       /* MOVEM.l d4-d5,BLTCMOD */
+    L(BLTAMOD) = s.admod;
+    W(BLTBMOD) = (UWORD)s.admod;
     W(BLTCON1) = 0x1000;
     W(BLTCON0) = shift | 0xfca;
     CW(BLTALWM) = 0;
@@ -499,8 +499,8 @@ static void BLITZ_ROUTINE docolblit_c(UWORD x BL_REG(d2), UWORD y BL_REG(d3),
     n = SW(shape, 4) - 1;
     plane = (UBYTE **)(bm + 8);
     BL_BLITWAIT(cb);
-    L(BLTCMOD) = s.d4;
-    L(BLTAMOD) = s.d5;
+    L(BLTCMOD) = s.cbmod;
+    L(BLTAMOD) = s.admod;
     W(BLTCON1) = 0;
     CW(BLTALWM) = 0;
     cookie = SL(shape, 18);
@@ -575,8 +575,8 @@ static void BLITZ_ROUTINE btblockimage_c(ULONG addr BL_REG(d1), UWORD x BL_REG(d
     shift = (UWORD)((x & 15) << 12);
     plane = (UBYTE **)(bm + 8);
     BL_BLITWAIT(cb);
-    CL(BLTCMOD) = s.d4;
-    CL(BLTAMOD) = s.d5;
+    CL(BLTCMOD) = s.cbmod;
+    CL(BLTAMOD) = s.admod;
     CW(BLTCON1) = shift;
     CW(BLTCON0) = shift | 0xfca;
     CW(BLTALWM) = 0;
@@ -601,22 +601,22 @@ first:
 /* CreateShape: count shape objects from a2 like a3, the data at mem one
    after another (+26 of the like shape each), no cookie, "cL" */
 static void BLITZ_ROUTINE createshape_c(UWORD count BL_REG(d1), ULONG mem BL_REG(d2),
-                                        UBYTE *a2 BL_REG(a2), UBYTE *like BL_REG(a3))
+                                        UBYTE *shape BL_REG(a2), UBYTE *like BL_REG(a3))
 {
     UWORD n = count - 1;
     ULONG all = SW(like, 26);
 
     do {
-        SL(a2, 0) = SL(like, 0);
-        SL(a2, 4) = SL(like, 4);
-        SL(a2, 8) = SL(like, 8);
-        SW(a2, 12) = SW(like, 12);
-        SL(a2, 14) = mem;
-        SL(a2, 18) = 0;
-        SL(a2, 22) = SL(like, 22);
-        SL(a2, 26) = SL(like, 26);
-        SW(a2, 30) = 0x634c;                    /* "cL" */
-        a2 += 32;
+        SL(shape, 0) = SL(like, 0);
+        SL(shape, 4) = SL(like, 4);
+        SL(shape, 8) = SL(like, 8);
+        SW(shape, 12) = SW(like, 12);
+        SL(shape, 14) = mem;
+        SL(shape, 18) = 0;
+        SL(shape, 22) = SL(like, 22);
+        SL(shape, 26) = SL(like, 26);
+        SW(shape, 30) = 0x634c;                 /* "cL" */
+        shape += 32;
         mem += all;
     } while (n-- != 0);
 }
