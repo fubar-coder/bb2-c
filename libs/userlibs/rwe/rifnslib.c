@@ -571,6 +571,29 @@ static void underline(UWORD x)
     } while (++pl != fns.bitdepth);
 }
 
+/**
+ * @brief FNSPrint fontnum,x,y,a$,prefs,colour: prints a text into the FNSOutput bitmap.
+ *
+ * Behind the entries _fnsprint/_fnsprint2 (below), which check the
+ * bitmap.  At x,y + the origin, in the font of slot fontnum & 15 (nothing
+ * if it is no "FNS." font); prefs bit 0 centred, 1 bold, 2 underlined, 3
+ * right aligned; chr$(1) + c changes the colour, chr$(9) a tab
+ * (FNSSetTab), chr$(10) a new line, chr$(0), codes below 32 and from 160
+ * on (BUG(orig) #657) end the text; clipped by FNSClip.  BUG(orig): an
+ * empty text counts width 1 (#659); depth 0 or above 8 overruns the
+ * plane stack (#658); rows above ymax are tested unsigned (#664), 48/64
+ * pixel glyphs shift after a clipped row (#656); FNSSetTab 0 divides by
+ * 0 (#666); the underline ignores xmin (#667); height 0 draws 65536 rows
+ * (#663).
+ * @param fontnum  d0: the font slot
+ * @param x        d1: x
+ * @param y        d2: y
+ * @param str      d3: the text (a string or an address)
+ * @param prefs    d4: the prefs (a byte)
+ * @param colour   d5: the colour (a byte)
+ * @param result   a0: the caller's a0 (the result without a font)
+ * @return a0: the address of the end x and y (words, in the variable block)
+ */
 static UBYTE *BLITZ_ROUTINE print_c(UWORD fontnum BL_REG(d0), UWORD x BL_REG(d1),
                                     UWORD y BL_REG(d2), const UBYTE *str BL_REG(d3),
                                     UWORD prefs BL_REG(d4), UWORD colour BL_REG(d5),
@@ -579,7 +602,21 @@ static UBYTE *BLITZ_ROUTINE print_c(UWORD fontnum BL_REG(d0), UWORD x BL_REG(d1)
     return print(fontnum, x, y, str, (UBYTE)prefs, (UBYTE)colour, result);
 }
 
-/* FNSShadowPrint: the shadow at x+1,y+1 in colour `shadow`, then the text */
+/**
+ * @brief FNSShadowPrint fontnum,x,y,a$,prefs,colour,shadow: prints a text with a shadow.
+ *
+ * Behind the entries _fnsshadowprint..3 (below).  First the text at
+ * x+1,y+1 in the shadow colour, then normally, as FNSPrint.
+ * @param fontnum  d0: the font slot
+ * @param x        d1: x
+ * @param y        d2: y
+ * @param str      d3: the text
+ * @param prefs    d4: the prefs (a byte)
+ * @param colour   d5: the colour (a byte)
+ * @param shadow   d6: the shadow colour (a byte)
+ * @param result   a0: the caller's a0
+ * @return a0: the address of the end x and y of the second print
+ */
 static UBYTE *BLITZ_ROUTINE shadow_c(UWORD fontnum BL_REG(d0), UWORD x BL_REG(d1),
                                      UWORD y BL_REG(d2), const UBYTE *str BL_REG(d3),
                                      UWORD prefs BL_REG(d4), UWORD colour BL_REG(d5),
@@ -590,7 +627,9 @@ static UBYTE *BLITZ_ROUTINE shadow_c(UWORD fontnum BL_REG(d0), UWORD x BL_REG(d1
     return print(fontnum, x, y, str, (UBYTE)prefs, (UBYTE)colour, result);
 }
 
-/* The FNSPrint entries.  _FNSPrint2 pushes d0-d6/a1-a6 and then, without
+/* The FNSPrint entries (_fnsprint: FNSPrint fontnum,x,y,a$; _fnsprint2:
+   with prefs,colour; _fnsshadowprint, ...2, ...3: FNSShadowPrint without
+   prefs, with prefs,colour, with the shadow colour).  _FNSPrint2 pushes d0-d6/a1-a6 and then, without
    a bitmap (bit_address 0), returns with RTS - to the pushed d0
    (BUG(orig) (#665)): a stack imbalance C cannot express, so the entries are
    assembler; the work is print_c/shadow_c.  They keep d0-d6/a1-a6 (the
@@ -632,12 +671,20 @@ BLITZ_ASM_ROUTINE(_fnsshadowprint3,
     "   movem.l (sp)+,d0-d1/a1\n"
     "   rts");
 
-/* FNSVersion: inline MOVE.l #65536+6553,d0 (1.1 as a Quick) */
+/**
+ * @brief FNSVersion: the version of the library, 1.1 as a Quick.
+ *
+ * Inline: MOVE.l #65536+6553,d0.
+ * @return d0: 1.1 (a Quick)
+ */
 BLITZ_INLINE(_fnsversion, "move.l #65536+6553,d0");
 
 /* ---------------------------------------------------------- the rest */
 
-/* init: slot 0 = the built-in font, origin 0,0 */
+/**
+ * @brief init: slot 0 = the built-in font, origin 0,0.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     fns.font_add[0] = (ULONG)fns.def_font;
@@ -645,11 +692,22 @@ static void BLITZ_ROUTINE libinit_c(void)
     fns.originy = 0;
 }
 
+/**
+ * @brief finit: nothing.
+ * @return nothing
+ */
 void BLITZ_ROUTINE _libfinit(void)
 {
 }
 
-/* InstallFNS(fontnum,address): only an "FNS." font; fontnum & 15 or 0 */
+/**
+ * @brief InstallFNS(fontnum,address): puts a font in memory into a slot.
+ *
+ * Only an "FNS." font.
+ * @param n     d0: the slot (& 15)
+ * @param font  d1: the address of the font
+ * @return d0.b: the slot, 0 if it is no FNS font
+ */
 static ULONG BLITZ_ROUTINE installfns_c(ULONG n BL_REG(d0), const UBYTE *font BL_REG(d1))
 {
     if (FH(font)->id != FNSID)
@@ -659,11 +717,22 @@ static ULONG BLITZ_ROUTINE installfns_c(ULONG n BL_REG(d0), const UBYTE *font BL
     return n;
 }
 
+/**
+ * @brief RemoveFNS fontnum: empties a font slot.
+ * @param n  d0: the slot (& 15)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE removefns_c(ULONG n BL_REG(d0))
 {
     fns.font_add[n & 15] = 0;
 }
 
+/**
+ * @brief FNSClipOutput: the clipping zone = the whole output bitmap.
+ *
+ * xmin, ymin 0, xmax = the bytes per row * 8, ymax = the rows - 1.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE clipoutput_c(void)
 {
     const struct BitMap *bm = fns.bit_address;
@@ -674,7 +743,16 @@ static void BLITZ_ROUTINE clipoutput_c(void)
     fns.xmax = (UWORD)(bm->BytesPerRow << 3);
 }
 
-/* FNSOutput bitmap[,clip] (a0 = the bitmap, d1 = clip) */
+/**
+ * @brief FNSOutput bitmap,clip_update: the bitmap to print into.
+ *
+ * Keeps the bitmap, its bytes per row and depth.  BUG(orig) (#658): the
+ * 16 pixel loop draws (Flags<<8 | Depth) - 1 + 1 planes - with Flags set
+ * or depth 0 hundreds or 65536.
+ * @param clip  d1: On: also FNSClipOutput (a byte)
+ * @param bm    a0: the bitmap object (!bmap)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE output_c(UWORD clip BL_REG(d1), struct BitMap *bm BL_REG(a0))
 {
     UWORD fd = *(const UWORD *)&bm->Flags;      /* one word: Flags<<8 | Depth */
@@ -687,21 +765,42 @@ static void BLITZ_ROUTINE output_c(UWORD clip BL_REG(d1), struct BitMap *bm BL_R
         clipoutput_c();
 }
 
+/**
+ * @brief FNSOutput bitmap: as FNSOutput bitmap,Off (the clipping zone stays).
+ * @param bm  a0: the bitmap object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE output2_c(struct BitMap *bm BL_REG(a0))
 {
     output_c(0, bm);
 }
 
+/**
+ * @brief FNSInk colour: the colour of FNSPrint without prefs,colour.
+ * @param c  d0: the colour (its low byte)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE ink_c(UWORD c BL_REG(d0))
 {
     fns.tcolour2 = (UBYTE)c;
 }
 
+/**
+ * @brief FNSPrefs prefs: the prefs of FNSPrint without prefs,colour.
+ * @param p  d0: the prefs (its low byte)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE prefs2_c(UWORD p BL_REG(d0))
 {
     fns.textprefs2 = (UBYTE)p;
 }
 
+/**
+ * @brief FNSPrefs prefs,colour: the prefs and the colour of FNSPrint without them.
+ * @param p  d0: the prefs (its low byte)
+ * @param c  d1: the colour (its low byte)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE prefs_c(UWORD p BL_REG(d0), UWORD c BL_REG(d1))
 {
     fns.tcolour2 = (UBYTE)c;
@@ -719,22 +818,44 @@ static ULONG fontword(ULONG n, int off)
     return *(const UWORD *)(font + off);
 }
 
+/**
+ * @brief FNSHeight(fontnum): the height of a font.
+ * @param n  d0: the slot (& 15)
+ * @return d0.w: the height, -1 if the slot has no FNS font
+ */
 static ULONG BLITZ_ROUTINE height_c(ULONG n BL_REG(d0))
 {
     return fontword(n, offsetof(struct fnshead, height));
 }
 
+/**
+ * @brief FNSUnderline(fontnum): the underline offset of a font.
+ * @param n  d0: the slot (& 15)
+ * @return d0.w: the offset, -1 if the slot has no FNS font
+ */
 static ULONG BLITZ_ROUTINE underline_c(ULONG n BL_REG(d0))
 {
     return fontword(n, offsetof(struct fnshead, underpos));
 }
 
+/**
+ * @brief FNSWidth(fontnum): the width of a font in pixels (16, 32, 48, 64).
+ * @param n  d0: the slot (& 15)
+ * @return d0.w: the width, -1 if the slot has no FNS font
+ */
 static ULONG BLITZ_ROUTINE width_c(ULONG n BL_REG(d0))
 {
     return fontword(n, offsetof(struct fnshead, width));
 }
 
-/* FNSClip: x rounded down to 16 */
+/**
+ * @brief FNSClip xmin,ymin,xmax,ymax: the clipping zone; x rounded down to 16.
+ * @param x0  d0: xmin
+ * @param y0  d1: ymin
+ * @param x1  d2: xmax
+ * @param y1  d3: ymax
+ * @return nothing
+ */
 static void BLITZ_ROUTINE clipset_c(UWORD x0 BL_REG(d0), UWORD y0 BL_REG(d1),
                                     UWORD x1 BL_REG(d2), UWORD y1 BL_REG(d3))
 {
@@ -744,8 +865,19 @@ static void BLITZ_ROUTINE clipset_c(UWORD x0 BL_REG(d0), UWORD y0 BL_REG(d1),
     fns.ymax = y1;
 }
 
-/* FNSLength(fontnum,a$[,prefs]): width - 2, at least 0; -1 without a
-   font.  The number is not masked (BUG(orig) (#660), DIFF outside the block) */
+/**
+ * @brief FNSLength(fontnum,a$,prefs): the width of a text in pixels.
+ *
+ * The widths of the characters (+ 1 for bold, prefs bit 1) up to the
+ * first code that ends the text.  BUG(orig): the result is the width - 2,
+ * 0 at least (#662); the font number is not masked (ASL.w #2 of the whole
+ * word: slots 16 on read the font data, negative ones the variables
+ * before font_add) (#660; DIFF outside the block).
+ * @param n      d0: the slot
+ * @param str    d1: the text
+ * @param prefs  d2: the prefs (a byte)
+ * @return d0.w: the width - 2 (0 at least), -1 if the slot has no FNS font
+ */
 static ULONG BLITZ_ROUTINE length_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG(d1),
                                     UWORD prefs BL_REG(d2))
 {
@@ -760,26 +892,50 @@ static ULONG BLITZ_ROUTINE length_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG(
     return w;
 }
 
-/* FNSLength without prefs: the prefs of the last FNSPrint (BUG(orig) (#661)) */
+/**
+ * @brief FNSLength(fontnum,a$): as FNSLength with the prefs of the last FNSPrint.
+ *
+ * BUG(orig) (#661): not FNSPrefs' prefs.
+ * @param n    d0: the slot
+ * @param str  d1: the text
+ * @return d0.w: as FNSLength
+ */
 static ULONG BLITZ_ROUTINE length2_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG(d1))
 {
     return length_c(n, str, fns.textprefs);
 }
 
+/**
+ * @brief FNSOrigin: the origin of FNSPrint back to 0,0.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE origin2_c(void)
 {
     fns.originx = 0;
     fns.originy = 0;
 }
 
+/**
+ * @brief FNSOrigin x,y: the origin added to FNSPrint's x,y.
+ * @param x  d0: x
+ * @param y  d1: y
+ * @return nothing
+ */
 static void BLITZ_ROUTINE origin_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
 {
     fns.originx = x;
     fns.originy = y;
 }
 
-/* FNSLoad(name,slot): BLoad into bank 55 + slot, then its start into the
-   slot (no "FNS." check); the slot, or -1 */
+/**
+ * @brief FNSLoad(fontname$,fontslot): loads a font file into a slot.
+ *
+ * RIAmosFuncLib BLoad into bank 55 + slot, then its Start into the slot
+ * (no "FNS." check).  Amiga mode only.
+ * @param name  d0: the file name
+ * @param slot  d1: the slot (& 15)
+ * @return d0.w: the slot, -1 if the load failed
+ */
 static ULONG BLITZ_ROUTINE load_c(ULONG name BL_REG(d0), ULONG slot BL_REG(d1))
 {
     struct bl_regs r;
@@ -797,7 +953,11 @@ static ULONG BLITZ_ROUTINE load_c(ULONG name BL_REG(d0), ULONG slot BL_REG(d1))
     return slot;
 }
 
-/* FNSUnload slot: empties the slot, erases bank 55 + slot */
+/**
+ * @brief FNSUnload fontslot: empties the slot and erases bank 55 + slot.
+ * @param slot  d0: the slot (& 15)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE unload_c(ULONG slot BL_REG(d0))
 {
     struct bl_regs r;
@@ -808,11 +968,22 @@ static void BLITZ_ROUTINE unload_c(ULONG slot BL_REG(d0))
     BLITZ_ALIBJSR(TOK_erase, r);
 }
 
+/**
+ * @brief FNSSlot: the address of the 16 font slots (longs).
+ * @return d0: the address (in the variable block)
+ */
 static ULONG BLITZ_ROUTINE slot_c(void)
 {
     return (ULONG)fns.font_add;
 }
 
+/**
+ * @brief FNSSetTab tab_size: the tab size in pixels (32 at first).
+ *
+ * BUG(orig) (#666): 0 makes chr$(9) divide by 0.
+ * @param t  d0: the tab size
+ * @return nothing
+ */
 static void BLITZ_ROUTINE settab_c(UWORD t BL_REG(d0))
 {
     fns.tabsize = t;
