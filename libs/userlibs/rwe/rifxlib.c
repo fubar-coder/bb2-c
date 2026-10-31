@@ -253,57 +253,57 @@ BLITZ_THUNK(libfinit, libfinit_c, "d1/a0-a1");
 static void BLITZ_ROUTINE libinit_c(void)
 {
     struct bl_regs r = { .d0 = TABLESIZE, .d1 = MEMF_PUBLIC };
-    ULONG a0, d1;
-    UWORD d0;
+    ULONG table, bits;
+    UWORD index;
 
-    a0 = BLITZ_ALIBJSR(TOK_globalloc, r);
-    if (!a0)
+    table = BLITZ_ALIBJSR(TOK_globalloc, r);
+    if (!table)
         return;
-    tableaddress = a0;
+    tableaddress = table;
 
     /* CreateReduceX2: bits 7,5,3,1 -> bits 3,2,1,0 */
-    reducex2table = a0;
-    for (d0 = 0; d0 != 256; d0++) {
-        d1 = 0;
-        if (d0 & 0x80) d1 |= 8;
-        if (d0 & 0x20) d1 |= 4;
-        if (d0 & 0x08) d1 |= 2;
-        if (d0 & 0x02) d1 |= 1;
-        B_(a0) = (UBYTE)d1;
-        a0 += 1;
+    reducex2table = table;
+    for (index = 0; index != 256; index++) {
+        bits = 0;
+        if (index & 0x80) bits |= 8;
+        if (index & 0x20) bits |= 4;
+        if (index & 0x08) bits |= 2;
+        if (index & 0x02) bits |= 1;
+        B_(table) = (UBYTE)bits;
+        table += 1;
     }
     /* CreateZoomX2: every bit twice */
-    zoomx2table = a0;
-    for (d0 = 0; d0 != 256; d0++) {
+    zoomx2table = table;
+    for (index = 0; index != 256; index++) {
         UWORD v = 0;
         int b;
         for (b = 0; b < 8; b++)
-            if (d0 & (1 << b))
+            if (index & (1 << b))
                 v |= (UWORD)(3 << (2 * b));
-        W_(a0) = v;
-        a0 += 2;
+        W_(table) = v;
+        table += 2;
     }
     /* CreateZoomX4: every bit four times */
-    zoomx4table = a0;
-    for (d0 = 0; d0 != 256; d0++) {
+    zoomx4table = table;
+    for (index = 0; index != 256; index++) {
         ULONG v = 0;
         int b;
         for (b = 0; b < 8; b++)
-            if (d0 & (1 << b))
+            if (index & (1 << b))
                 v |= 0xfUL << (4 * b);
-        L_(a0) = v;
-        a0 += 4;
+        L_(table) = v;
+        table += 4;
     }
     /* CreateZoomX8: four bits, every bit eight times */
-    zoomx8table = a0;
-    for (d0 = 0; d0 != 16; d0++) {
+    zoomx8table = table;
+    for (index = 0; index != 16; index++) {
         ULONG v = 0;
         int b;
         for (b = 0; b < 4; b++)
-            if (d0 & (1 << b))
+            if (index & (1 << b))
                 v |= 0xffUL << (8 * b);
-        L_(a0) = v;
-        a0 += 4;
+        L_(table) = v;
+        table += 4;
     }
 }
 BLITZ_THUNK(libinit, libinit_c, "d1/a0-a1");
@@ -333,64 +333,64 @@ static void slow_down(void)
    cleared. */
 static void clearbitmap_c(ULONG delay, UWORD h, UWORD off, ULONG bm)
 {
-    ULONG d2, *a1, *a0, a2;
-    UWORD n, d6, d7, mask;
-    WORD d5, d4;
+    ULONG areaend, *ptrs, *ptr, addr;
+    UWORD n, col, plane, mask;
+    WORD maskline, clearline;
 
     delay_timer = delay;
     EWWidth = (UWORD)(((WORD)BM_BPR(bm) >> 1) - 1);
     BDepth = (UWORD)(BM_FLDEPTH(bm) - 1);       /* BUG(orig) (#670): word at 4 */
     BHeight = (UWORD)(h - 1);
-    d2 = bl_mulu_w((UWORD)(h + off), BM_BPR(bm));
-    d2 -= 4;                                    /* BUG(orig) (#668): 4, not 2 */
+    areaend = bl_mulu_w((UWORD)(h + off), BM_BPR(bm));
+    areaend -= 4;                               /* BUG(orig) (#668): 4, not 2 */
 
-    a0 = (ULONG *)BM_PLANES(bm);
-    a1 = bit_add;
+    ptr = (ULONG *)BM_PLANES(bm);
+    ptrs = bit_add;
     {
-        ULONG *a2p = dest_add;
+        ULONG *destptr = dest_add;
         n = BDepth;
         do {
-            ULONG v = *a0++ + d2;
-            *a1++ = v;
-            *a2p++ = v;
+            ULONG v = *ptr++ + areaend;
+            *ptrs++ = v;
+            *destptr++ = v;
         } while (n-- != 0);
     }
 
-    d5 = (WORD)BHeight;
-    d4 = -19;
+    maskline = (WORD)BHeight;
+    clearline = -19;
     mask = 0xaaaa;
     do {
-        if (d5 >= 0) {                          /* Mask_a_line */
-            a1 = bit_add;
-            d6 = EWWidth;
+        if (maskline >= 0) {                    /* Mask_a_line */
+            ptrs = bit_add;
+            col = EWWidth;
             do {
-                d7 = BDepth;
-                a0 = a1;
+                plane = BDepth;
+                ptr = ptrs;
                 do {
-                    a2 = *a0;
-                    W_(a2) &= mask;
-                    *a0++ -= 2;
-                } while (d7-- != 0);
-            } while (d6-- != 0);
+                    addr = *ptr;
+                    W_(addr) &= mask;
+                    *ptr++ -= 2;
+                } while (plane-- != 0);
+            } while (col-- != 0);
             mask = (UWORD)~mask;
         }
-        if (d4 >= 0) {                          /* Clear_a_line */
-            a1 = dest_add;
-            d6 = EWWidth;
+        if (clearline >= 0) {                   /* Clear_a_line */
+            ptrs = dest_add;
+            col = EWWidth;
             do {
-                d7 = BDepth;
-                a0 = a1;
+                plane = BDepth;
+                ptr = ptrs;
                 do {
-                    a2 = *a0;
-                    W_(a2) = 0;
-                    *a0++ -= 2;
-                } while (d7-- != 0);
-            } while (d6-- != 0);
+                    addr = *ptr;
+                    W_(addr) = 0;
+                    *ptr++ -= 2;
+                } while (plane-- != 0);
+            } while (col-- != 0);
         }
         slow_down();
-        d4 = (WORD)(d4 + 1);
-        d5 = (WORD)(d5 - 1);
-    } while (d5 != -20);
+        clearline = (WORD)(clearline + 1);
+        maskline = (WORD)(maskline - 1);
+    } while (maskline != -20);
 }
 
 /* the two forms: without height/offset the whole bitmap (bm_Rows, 0).
@@ -411,70 +411,70 @@ static void BLITZ_ROUTINE clearbitmap(ULONG delay BL_REG(d1), ULONG h BL_REG(d2)
    through the mask, 19 lines later copied whole. */
 static void fadein_c(ULONG delay, UWORD h, UWORD off1, UWORD off2, ULONG src, ULONG dst)
 {
-    ULONG o1, o2, *a0, *a1, *a2, *a3, s, d;
-    UWORD n, d6, d7, mask;
-    WORD d5, d4;
+    ULONG srcoff, dstoff, *ptr, *ptrs, *bitptr, *destptr, from, to;
+    UWORD n, col, plane, mask;
+    WORD maskline, copyline;
 
     delay_timer = delay;
     EWWidth = (UWORD)(((WORD)BM_BPR(src) >> 1) - 1);
     BDepth = (UWORD)(BM_FLDEPTH(src) - 1);      /* BUG(orig) (#670): word at 4 */
     BHeight = (UWORD)(h - 1);
-    o1 = bl_mulu_w(off1, BM_BPR(src));
-    o2 = bl_mulu_w(off2, BM_BPR(src));
+    srcoff = bl_mulu_w(off1, BM_BPR(src));
+    dstoff = bl_mulu_w(off2, BM_BPR(src));
 
-    a0 = (ULONG *)BM_PLANES(src);
-    a1 = (ULONG *)BM_PLANES(dst);
-    a2 = bit_add;
-    a3 = dest_add;
+    ptr = (ULONG *)BM_PLANES(src);
+    ptrs = (ULONG *)BM_PLANES(dst);
+    bitptr = bit_add;
+    destptr = dest_add;
     n = BDepth;
     do {                                        /* pairs source, dest */
-        ULONG v = *a0++ + o1;
-        *a2++ = v;
-        *a3++ = v;
-        v = *a1++ + o2;
-        *a2++ = v;
-        *a3++ = v;
+        ULONG v = *ptr++ + srcoff;
+        *bitptr++ = v;
+        *destptr++ = v;
+        v = *ptrs++ + dstoff;
+        *bitptr++ = v;
+        *destptr++ = v;
     } while (n-- != 0);
 
-    d5 = (WORD)BHeight;
-    d4 = -19;
+    maskline = (WORD)BHeight;
+    copyline = -19;
     mask = 0xaaaa;
     do {
-        if (d5 >= 0) {                          /* Mask_a_line */
-            a1 = bit_add;
-            d6 = EWWidth;
+        if (maskline >= 0) {                    /* Mask_a_line */
+            ptrs = bit_add;
+            col = EWWidth;
             do {
-                d7 = BDepth;
-                a0 = a1;
+                plane = BDepth;
+                ptr = ptrs;
                 do {
-                    s = a0[0];
-                    d = a0[1];
-                    W_(d) = W_(s) & mask;
-                    *a0++ += 2;
-                    *a0++ += 2;
-                } while (d7-- != 0);
-            } while (d6-- != 0);
+                    from = ptr[0];
+                    to = ptr[1];
+                    W_(to) = W_(from) & mask;
+                    *ptr++ += 2;
+                    *ptr++ += 2;
+                } while (plane-- != 0);
+            } while (col-- != 0);
             mask = (UWORD)~mask;
         }
-        if (d4 >= 0) {                          /* Clear_a_line: copy */
-            a1 = dest_add;
-            d6 = EWWidth;
+        if (copyline >= 0) {                    /* Clear_a_line: copy */
+            ptrs = dest_add;
+            col = EWWidth;
             do {
-                d7 = BDepth;
-                a0 = a1;
+                plane = BDepth;
+                ptr = ptrs;
                 do {
-                    s = a0[0];
-                    d = a0[1];
-                    W_(d) = W_(s);
-                    *a0++ += 2;
-                    *a0++ += 2;
-                } while (d7-- != 0);
-            } while (d6-- != 0);
+                    from = ptr[0];
+                    to = ptr[1];
+                    W_(to) = W_(from);
+                    *ptr++ += 2;
+                    *ptr++ += 2;
+                } while (plane-- != 0);
+            } while (col-- != 0);
         }
         slow_down();
-        d4 = (WORD)(d4 + 1);
-        d5 = (WORD)(d5 - 1);
-    } while (d5 != -20);
+        copyline = (WORD)(copyline + 1);
+        maskline = (WORD)(maskline - 1);
+    } while (maskline != -20);
 }
 
 /* the two forms (bm_Rows of the source, offsets 0); entries as above */
@@ -494,12 +494,12 @@ static void BLITZ_ROUTINE fadeinbitmap(ULONG delay BL_REG(d2), ULONG h BL_REG(d3
 
 /* the common start of ZoomX2/X4/X8: width in bytes (ASR.w #3), the DBRA
    counts in xzoom/yzoom; FALSE if one of them is negative */
-static BOOL zoomstart(UWORD width, UWORD h, WORD *w8)
+static BOOL zoomstart(UWORD width, UWORD h, WORD *wbytes)
 {
     WORD xz, yz;
 
-    *w8 = (WORD)width >> 3;
-    xz = (WORD)(*w8 - 1);
+    *wbytes = (WORD)width >> 3;
+    xz = (WORD)(*wbytes - 1);
     if (xz < 0)
         return FALSE;
     yz = (WORD)(h - 1);
@@ -516,76 +516,76 @@ static BOOL zoomstart(UWORD width, UWORD h, WORD *w8)
 static void zoomx4_c(UBYTE sel, ULONG srcadd, ULONG dstadd, UWORD width, UWORD h,
                      ULONG src, ULONG dst)
 {
-    ULONG sp = BM_PLANES(src), dp = BM_PLANES(dst);
-    ULONG smod, dmod, a0, a1, a2, a3, a5, tab = zoomx4table;
-    UWORD planes, d0, d1, dbpr = BM_BPR(dst);
-    WORD w8;
+    ULONG srcplane = BM_PLANES(src), dstplane = BM_PLANES(dst);
+    ULONG smod, dmod, from, line0, line1, line2, line3, tab = zoomx4table;
+    UWORD planes, x, y, dbpr = BM_BPR(dst);
+    WORD wbytes;
 
     planes = (UBYTE)(BM_DEPTH(src) - 1);        /* SUBQ.b: depth 0 = 256 */
-    if (!zoomstart(width, h, &w8))
+    if (!zoomstart(width, h, &wbytes))
         return;
-    smod = (UWORD)(BM_BPR(src) - w8);
+    smod = (UWORD)(BM_BPR(src) - wbytes);
 
     if (sel == 1) {                             /* X4_x */
-        dmod = (UWORD)(dbpr - (UWORD)(w8 << 2));
+        dmod = (UWORD)(dbpr - (UWORD)(wbytes << 2));
         do {
-            a0 = L_(sp) + srcadd;
-            sp += 4;
-            a1 = L_(dp) + dstadd;
-            dp += 4;
-            d1 = yzoom;
+            from = L_(srcplane) + srcadd;
+            srcplane += 4;
+            line0 = L_(dstplane) + dstadd;
+            dstplane += 4;
+            y = yzoom;
             do {
-                d0 = xzoom;
+                x = xzoom;
                 do {
-                    L_(a1) = L_(tab + ((ULONG)B_(a0) << 2));
-                    a0 += 1;
-                    a1 += 4;
-                } while (d0-- != 0);
-                a0 += smod;
-                a1 += dmod;
-            } while (d1-- != 0);
+                    L_(line0) = L_(tab + ((ULONG)B_(from) << 2));
+                    from += 1;
+                    line0 += 4;
+                } while (x-- != 0);
+                from += smod;
+                line0 += dmod;
+            } while (y-- != 0);
         } while (planes-- != 0);
         return;
     }
 
     bytesperline = dbpr;
     if (sel == 2)                               /* X4_y */
-        dmod = (UWORD)((UWORD)(dbpr << 2) - w8);
+        dmod = (UWORD)((UWORD)(dbpr << 2) - wbytes);
     else                                        /* x and y */
-        dmod = (UWORD)((UWORD)(dbpr << 2) - (UWORD)(w8 << 2));
+        dmod = (UWORD)((UWORD)(dbpr << 2) - (UWORD)(wbytes << 2));
     do {
-        a0 = L_(sp) + srcadd;
-        sp += 4;
-        a1 = L_(dp) + dstadd;
-        dp += 4;
-        a2 = a1 + bytesperline;
-        a3 = a2 + bytesperline;
-        a5 = a3 + bytesperline;
-        d1 = yzoom;
+        from = L_(srcplane) + srcadd;
+        srcplane += 4;
+        line0 = L_(dstplane) + dstadd;
+        dstplane += 4;
+        line1 = line0 + bytesperline;
+        line2 = line1 + bytesperline;
+        line3 = line2 + bytesperline;
+        y = yzoom;
         do {
-            d0 = xzoom;
+            x = xzoom;
             do {
                 if (sel == 2) {
-                    UBYTE v = B_(a0);
-                    B_(a1) = v; a1 += 1;
-                    B_(a2) = v; a2 += 1;
-                    B_(a3) = v; a3 += 1;
-                    B_(a5) = v; a5 += 1;
+                    UBYTE v = B_(from);
+                    B_(line0) = v; line0 += 1;
+                    B_(line1) = v; line1 += 1;
+                    B_(line2) = v; line2 += 1;
+                    B_(line3) = v; line3 += 1;
                 } else {
-                    ULONG v = L_(tab + ((ULONG)B_(a0) << 2));
-                    L_(a1) = v; a1 += 4;
-                    L_(a2) = v; a2 += 4;
-                    L_(a3) = v; a3 += 4;
-                    L_(a5) = v; a5 += 4;
+                    ULONG v = L_(tab + ((ULONG)B_(from) << 2));
+                    L_(line0) = v; line0 += 4;
+                    L_(line1) = v; line1 += 4;
+                    L_(line2) = v; line2 += 4;
+                    L_(line3) = v; line3 += 4;
                 }
-                a0 += 1;
-            } while (d0-- != 0);
-            a0 += smod;
-            a1 += dmod;
-            a2 += dmod;
-            a3 += dmod;
-            a5 += dmod;
-        } while (d1-- != 0);
+                from += 1;
+            } while (x-- != 0);
+            from += smod;
+            line0 += dmod;
+            line1 += dmod;
+            line2 += dmod;
+            line3 += dmod;
+        } while (y-- != 0);
     } while (planes-- != 0);
 }
 
@@ -615,38 +615,38 @@ static void BLITZ_ROUTINE zoomx2_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(
                                    ULONG width BL_REG(d4), ULONG h BL_REG(d5),
                                    ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
 {
-    ULONG sp = BM_PLANES(src), dp = BM_PLANES(dst);
-    ULONG smod, dmod, a0, a1, a2, tab = zoomx2table;
-    UWORD planes, d0, d1, dbpr = BM_BPR(dst);
-    WORD w8;
+    ULONG srcplane = BM_PLANES(src), dstplane = BM_PLANES(dst);
+    ULONG smod, dmod, from, line0, line1, tab = zoomx2table;
+    UWORD planes, x, y, dbpr = BM_BPR(dst);
+    WORD wbytes;
 
     if (!tab)
         return;
     planes = (UBYTE)(BM_DEPTH(src) - 1);
-    if (!zoomstart((UWORD)width, (UWORD)h, &w8))
+    if (!zoomstart((UWORD)width, (UWORD)h, &wbytes))
         return;
-    smod = (UWORD)(BM_BPR(src) - w8);
+    smod = (UWORD)(BM_BPR(src) - wbytes);
     bytesperline = dbpr;
-    dmod = (UWORD)(dbpr - w8 - w8 + dbpr);
+    dmod = (UWORD)(dbpr - wbytes - wbytes + dbpr);
     do {
-        a0 = L_(sp) + srcadd;
-        sp += 4;
-        a1 = L_(dp) + dstadd;
-        dp += 4;
-        a2 = a1 + bytesperline;
-        d1 = yzoom;
+        from = L_(srcplane) + srcadd;
+        srcplane += 4;
+        line0 = L_(dstplane) + dstadd;
+        dstplane += 4;
+        line1 = line0 + bytesperline;
+        y = yzoom;
         do {
-            d0 = xzoom;
+            x = xzoom;
             do {
-                UWORD v = W_(tab + ((ULONG)B_(a0) << 1));
-                a0 += 1;
-                W_(a1) = v; a1 += 2;
-                W_(a2) = v; a2 += 2;
-            } while (d0-- != 0);
-            a0 += smod;
-            a1 += dmod;
-            a2 += dmod;
-        } while (d1-- != 0);
+                UWORD v = W_(tab + ((ULONG)B_(from) << 1));
+                from += 1;
+                W_(line0) = v; line0 += 2;
+                W_(line1) = v; line1 += 2;
+            } while (x-- != 0);
+            from += smod;
+            line0 += dmod;
+            line1 += dmod;
+        } while (y-- != 0);
     } while (planes-- != 0);
 }
 BLITZ_THUNK(zoomx2, zoomx2_c, "d0-d1/a0-a1");
@@ -657,54 +657,54 @@ static void BLITZ_ROUTINE zoomx8_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(
                                    ULONG width BL_REG(d4), ULONG h BL_REG(d5),
                                    ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
 {
-    ULONG sp = BM_PLANES(src), dp = BM_PLANES(dst);
-    ULONG smod, dmod, a0, a1, a2, a3, a5, save, tab = zoomx8table;
-    UWORD planes, d0, d1, dbpr = BM_BPR(dst);
-    WORD w8;
+    ULONG srcplane = BM_PLANES(src), dstplane = BM_PLANES(dst);
+    ULONG smod, dmod, from, line0, line1, line2, line3, save, tab = zoomx8table;
+    UWORD planes, x, y, dbpr = BM_BPR(dst);
+    WORD wbytes;
     int pass;
 
     if (!tab)
         return;
     planes = (UBYTE)(BM_DEPTH(src) - 1);
-    if (!zoomstart((UWORD)width, (UWORD)h, &w8))
+    if (!zoomstart((UWORD)width, (UWORD)h, &wbytes))
         return;
-    smod = (UWORD)(BM_BPR(src) - w8);
+    smod = (UWORD)(BM_BPR(src) - wbytes);
     bytesperline = dbpr;
-    dmod = (UWORD)((UWORD)(dbpr << 2) - (UWORD)(w8 << 3));
+    dmod = (UWORD)((UWORD)(dbpr << 2) - (UWORD)(wbytes << 3));
     do {
-        a0 = L_(sp) + srcadd;
-        sp += 4;
-        a1 = L_(dp) + dstadd;
-        dp += 4;
-        a2 = a1 + bytesperline;
-        a3 = a2 + bytesperline;
-        a5 = a3 + bytesperline;
-        d1 = yzoom;
+        from = L_(srcplane) + srcadd;
+        srcplane += 4;
+        line0 = L_(dstplane) + dstadd;
+        dstplane += 4;
+        line1 = line0 + bytesperline;
+        line2 = line1 + bytesperline;
+        line3 = line2 + bytesperline;
+        y = yzoom;
         do {
-            save = a0;
+            save = from;
             for (pass = 0; pass < 2; pass++) {
-                a0 = save;
-                d0 = xzoom;
+                from = save;
+                x = xzoom;
                 do {
-                    ULONG v = L_(tab + ((B_(a0) & 0xf0) >> 2));
-                    L_(a1) = v; a1 += 4;
-                    L_(a2) = v; a2 += 4;
-                    L_(a3) = v; a3 += 4;
-                    L_(a5) = v; a5 += 4;
-                    v = L_(tab + ((B_(a0) & 0x0f) << 2));
-                    a0 += 1;
-                    L_(a1) = v; a1 += 4;
-                    L_(a2) = v; a2 += 4;
-                    L_(a3) = v; a3 += 4;
-                    L_(a5) = v; a5 += 4;
-                } while (d0-- != 0);
-                a1 += dmod;
-                a2 += dmod;
-                a3 += dmod;
-                a5 += dmod;
+                    ULONG v = L_(tab + ((B_(from) & 0xf0) >> 2));
+                    L_(line0) = v; line0 += 4;
+                    L_(line1) = v; line1 += 4;
+                    L_(line2) = v; line2 += 4;
+                    L_(line3) = v; line3 += 4;
+                    v = L_(tab + ((B_(from) & 0x0f) << 2));
+                    from += 1;
+                    L_(line0) = v; line0 += 4;
+                    L_(line1) = v; line1 += 4;
+                    L_(line2) = v; line2 += 4;
+                    L_(line3) = v; line3 += 4;
+                } while (x-- != 0);
+                line0 += dmod;
+                line1 += dmod;
+                line2 += dmod;
+                line3 += dmod;
             }
-            a0 += smod;
-        } while (d1-- != 0);
+            from += smod;
+        } while (y-- != 0);
     } while (planes-- != 0);
 }
 BLITZ_THUNK(zoomx8, zoomx8_c, "d0-d1/a0-a1");
@@ -715,24 +715,24 @@ BLITZ_THUNK(zoomx8, zoomx8_c, "d0-d1/a0-a1");
    read after it is written) */
 static void BLITZ_ROUTINE dozoomy_c(ULONG bm BL_REG(a0))
 {
-    ULONG planes = BM_PLANES(bm), a1, tab = zoomx2table;
-    UWORD d7, d6;
-    WORD d4, d5;
+    ULONG planes = BM_PLANES(bm), line, tab = zoomx2table;
+    UWORD plane, y;
+    WORD srcx, dstx;
 
     if (!tab)
         return;
-    d7 = (UWORD)(BM_FLDEPTH(bm) - 1);
+    plane = (UWORD)(BM_FLDEPTH(bm) - 1);
     do {
-        a1 = L_(planes);
+        line = L_(planes);
         planes += 4;
-        d6 = 31;
+        y = 31;
         do {
-            d5 = 78;
-            for (d4 = 39; d4 >= 0; d4--, d5 -= 2)
-                W_(a1 + d5) = W_(tab + ((ULONG)B_(a1 + d4) << 1));
-            a1 += 80;
-        } while (d6-- != 0);
-    } while (d7-- != 0);
+            dstx = 78;
+            for (srcx = 39; srcx >= 0; srcx--, dstx -= 2)
+                W_(line + dstx) = W_(tab + ((ULONG)B_(line + srcx) << 1));
+            line += 80;
+        } while (y-- != 0);
+    } while (plane-- != 0);
 }
 /* the original keeps everything if there is no table: keep d0/d1/a0/a1 */
 BLITZ_THUNK(dozoomy, dozoomy_c, "d0-d1/a0-a1");
@@ -743,9 +743,9 @@ static void BLITZ_ROUTINE reducex2_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_RE
                                      ULONG width BL_REG(d4), ULONG h BL_REG(d5),
                                      ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
 {
-    ULONG sp = BM_PLANES(src), dp = BM_PLANES(dst);
-    ULONG a0, a1, tab = reducex2table;
-    UWORD planes, d0, d1;
+    ULONG srcplane = BM_PLANES(src), dstplane = BM_PLANES(dst);
+    ULONG from, to, tab = reducex2table;
+    UWORD planes, x, y;
     WORD w, xz, yz;
 
     if (!tab)
@@ -766,23 +766,23 @@ static void BLITZ_ROUTINE reducex2_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_RE
     xzoom = (UWORD)xz;
     yzoom = (UWORD)yz;
     do {
-        a0 = L_(sp) + srcadd;
-        sp += 4;
-        a1 = L_(dp) + dstadd;
-        dp += 4;
-        d1 = yzoom;
+        from = L_(srcplane) + srcadd;
+        srcplane += 4;
+        to = L_(dstplane) + dstadd;
+        dstplane += 4;
+        y = yzoom;
         do {
-            d0 = xzoom;
+            x = xzoom;
             do {
-                UBYTE v = (UBYTE)(B_(tab + B_(a0)) << 4);
-                v |= B_(tab + B_(a0 + 1));
-                a0 += 2;
-                B_(a1) = v;
-                a1 += 1;
-            } while (d0-- != 0);
-            a0 += bytesperline;
-            a1 += bytesperline2;
-        } while (d1-- != 0);
+                UBYTE v = (UBYTE)(B_(tab + B_(from)) << 4);
+                v |= B_(tab + B_(from + 1));
+                from += 2;
+                B_(to) = v;
+                to += 1;
+            } while (x-- != 0);
+            from += bytesperline;
+            to += bytesperline2;
+        } while (y-- != 0);
     } while (planes-- != 0);
 }
 BLITZ_THUNK(ReduceX2, reducex2_c, "d0-d1/a0-a1");
@@ -802,60 +802,61 @@ BLITZ_THUNK(ReduceX2, reducex2_c, "d0-d1/a0-a1");
 /* the plane pointers + offsets into bit_add/dest_add (sbitdepth+1) */
 static void store_bitplanes(ULONG src, ULONG dst, ULONG sadd, ULONG dadd)
 {
-    ULONG sp = BM_PLANES(src), dp = BM_PLANES(dst), *a2 = bit_add, *a3 = dest_add;
+    ULONG srcplane = BM_PLANES(src), dstplane = BM_PLANES(dst);
+    ULONG *bitptr = bit_add, *destptr = dest_add;
     UWORD n = sbitdepth;
 
     do {
-        *a2++ = L_(sp) + sadd;
-        sp += 4;
-        *a3++ = L_(dp) + dadd;
-        dp += 4;
+        *bitptr++ = L_(srcplane) + sadd;
+        srcplane += 4;
+        *destptr++ = L_(dstplane) + dadd;
+        dstplane += 4;
     } while (n-- != 0);
 }
 
 /* ScreenCopy: height+1 lines of 40 bytes per plane */
 static void screencopy(void)
 {
-    ULONG *a0 = bit_add, *a1 = dest_add, a2, a3;
-    UWORD d6 = sbitdepth, d5;
+    ULONG *bitptr = bit_add, *destptr = dest_add, from, to;
+    UWORD plane = sbitdepth, y;
 
     do {
-        a2 = *a0++;
-        a3 = *a1++;
-        d5 = height;
+        from = *bitptr++;
+        to = *destptr++;
+        y = height;
         do
-            COPY40(a2, a3);
-        while (d5-- != 0);
-    } while (d6-- != 0);
+            COPY40(from, to);
+        while (y-- != 0);
+    } while (plane-- != 0);
 }
 
 /* UnrezX2: every second pixel doubled, every second line doubled;
    returns the last long (d0) */
 static ULONG unrezx2(void)
 {
-    ULONG *a0 = bit_add, *a1 = dest_add, a2, a3, d0 = 0;
-    UWORD d7, d6 = sbitdepth, d5, d4;
+    ULONG *bitptr = bit_add, *destptr = dest_add, from, to, pixels = 0;
+    UWORD lines, plane = sbitdepth, y, x;
 
-    d7 = (UWORD)(((WORD)(height + 1) >> 1) - 1);
+    lines = (UWORD)(((WORD)(height + 1) >> 1) - 1);
     do {
-        a2 = *a0++;
-        a3 = *a1++;
-        d5 = d7;
+        from = *bitptr++;
+        to = *destptr++;
+        y = lines;
         do {
-            d4 = 9;
+            x = 9;
             do {
-                d0 = L_(a2) & 0xaaaaaaaaUL;
-                a2 += 4;
-                d0 |= (ULONG)((LONG)d0 >> 1);   /* ASR.l */
-                L_(a3) = d0;
-                a3 += 4;
-                L_(a3 + 36) = d0;               /* the line below */
-            } while (d4-- != 0);
-            a2 += 40;
-            a3 += 40;
-        } while (d5-- != 0);
-    } while (d6-- != 0);
-    return d0;
+                pixels = L_(from) & 0xaaaaaaaaUL;
+                from += 4;
+                pixels |= (ULONG)((LONG)pixels >> 1); /* ASR.l */
+                L_(to) = pixels;
+                to += 4;
+                L_(to + 36) = pixels;           /* the line below */
+            } while (x-- != 0);
+            from += 40;
+            to += 40;
+        } while (y-- != 0);
+    } while (plane-- != 0);
+    return pixels;
 }
 
 /* Derez source#,dest#,sourceadd,destadd,derez_value,height - lores
@@ -863,18 +864,21 @@ static ULONG unrezx2(void)
    their first pixel (1 = ScreenCopy, 2 = UnrezX2, up to 17 through the
    mask table myline, above that bit by bit).  BUG(orig) (#672): no result is
    set - the d0 returned here is what the original leaves in d0. */
-static ULONG BLITZ_ROUTINE asmderez_c(ULONG d0 BL_REG(d0), ULONG sadd BL_REG(d2),
+static ULONG BLITZ_ROUTINE asmderez_c(ULONG value BL_REG(d0), ULONG sadd BL_REG(d2),
                                       ULONG dadd BL_REG(d3), ULONG rez BL_REG(d4),
                                       ULONG h BL_REG(d5), ULONG src BL_REG(a0),
                                       ULONG dst BL_REG(a1))
 {
-    ULONG *a0, *a6, a1, a2, a3, d1, d2;
-    UWORD *a5, d4, d6, rv;
-    WORD c, b, d7;
-    BYTE d3b, d5b;
+    /* bitptr a0, destptr a6, copysrc a1, pos a2, dstline a3, carry d1,
+       bits d2, maskptr a5, count d4, plane d6, lines d7, bitno d3.b,
+       cols d5.b, value d0 */
+    ULONG *bitptr, *destptr, copysrc, pos, dstline, carry, bits;
+    UWORD *maskptr, count, plane, rv;
+    WORD c, b, lines;
+    BYTE bitno, cols;
 
     if (!(UWORD)rez)
-        return d0;
+        return value;
     res_value = (UWORD)rez;
     res_value2 = (UWORD)(rez - 1);
     res_value3 = (UWORD)(rez - 2);
@@ -882,11 +886,11 @@ static ULONG BLITZ_ROUTINE asmderez_c(ULONG d0 BL_REG(d0), ULONG sadd BL_REG(d2)
     sbitdepth = (UWORD)((sbitdepth & 0xff00) | BM_DEPTH(src));  /* BUG(orig) (#675) */
     sbitdepth--;
     store_bitplanes(src, dst, sadd, dadd);
-    d0 = (d0 & 0xffff0000UL) | 0xffff;          /* DBRA d0 of store_bitplanes */
+    value = (value & 0xffff0000UL) | 0xffff;    /* DBRA d0 of store_bitplanes */
 
     if (!res_value2) {
         screencopy();
-        return d0;
+        return value;
     }
     if (res_value == 2)
         return unrezx2();
@@ -896,18 +900,18 @@ static ULONG BLITZ_ROUTINE asmderez_c(ULONG d0 BL_REG(d0), ULONG sadd BL_REG(d2)
 
     /* myline: one word per 16 pixels, a bit at the first pixel of every
        block.  BUG(orig) (#671): 20 (21) words, see the head of the file. */
-    a5 = myline;
+    maskptr = myline;
     c = 19;
     b = 15;
     rv = res_value;
-    d2 = 0;
+    bits = 0;
 widthloop:
-    d2 |= 1UL << (b & 31);                      /* BSET d1,d2 */
+    bits |= 1UL << (b & 31);                    /* BSET d1,d2 */
     b = (WORD)(b - rv);
     if (b >= 0)
         goto widthloop;
-    *a5++ = (UWORD)d2;
-    d2 = 0;
+    *maskptr++ = (UWORD)bits;
+    bits = 0;
     b = (WORD)(b + 16);
     if (b < 0)
         goto moretodo;
@@ -915,7 +919,7 @@ widthloop:
         goto widthloop;
     goto yloop;
 moretodo:
-    *a5++ = 0;
+    *maskptr++ = 0;
     c = (WORD)(c - 1);
     if (c < 0)
         goto yloop;
@@ -926,112 +930,112 @@ moretodo:
         goto widthloop;
 
 yloop:
-    d0 = (UWORD)c;                              /* d0 = $0000FFFF */
+    value = (UWORD)c;                           /* d0 = $0000FFFF */
     for (;;) {
-        a0 = bit_add;
-        a6 = dest_add;
-        d6 = sbitdepth;
+        bitptr = bit_add;
+        destptr = dest_add;
+        plane = sbitdepth;
         do {                                    /* bitplane_loop */
-            d7 = (WORD)yvalue;
-            a2 = *a0;
-            a3 = *a6;
-            d1 = 0;
+            lines = (WORD)yvalue;
+            pos = *bitptr;
+            dstline = *destptr;
+            carry = 0;
             if (res_value2 <= 16) {
-                UWORD d5 = 19;
-                a5 = myline;
+                UWORD col = 19;
+                maskptr = myline;
                 do {                            /* xloop */
-                    d0 = W_(a2) & *a5++;
-                    a2 += 2;
-                    d2 = d0;
-                    d4 = res_value3;
+                    value = W_(pos) & *maskptr++;
+                    pos += 2;
+                    bits = value;
+                    count = res_value3;
                     do {
-                        d2 = (d2 >> 1) | (d2 << 31);    /* ROR.l #1 */
-                        d0 |= d2;
-                    } while (d4-- != 0);
-                    d0 = (d0 & 0xffff0000UL) | (UWORD)(d0 | d1);
-                    W_(a3) = (UWORD)d0;
-                    a3 += 2;
-                    d0 = BL_SWAP(d0);
-                    d1 = (UWORD)d0;
-                } while (d5-- != 0);
+                        bits = (bits >> 1) | (bits << 31); /* ROR.l #1 */
+                        value |= bits;
+                    } while (count-- != 0);
+                    value = (value & 0xffff0000UL) | (UWORD)(value | carry);
+                    W_(dstline) = (UWORD)value;
+                    dstline += 2;
+                    value = BL_SWAP(value);
+                    carry = (UWORD)value;
+                } while (col-- != 0);
                 goto done_line;
             }
             /* bit mode: every block bit by bit */
-            d3b = 15;
-            d5b = 19;
+            bitno = 15;
+            cols = 19;
         bitxloop:
-            d4 = res_value2;
-            d0 = (d0 & 0xffff0000UL) | W_(a2);
-            if (!(d0 & (1UL << (d3b & 31))))
+            count = res_value2;
+            value = (value & 0xffff0000UL) | W_(pos);
+            if (!(value & (1UL << (bitno & 31))))
                 goto clearbits;
-            d2 = W_(a3);
+            bits = W_(dstline);
         setbits_loop:
-            d2 |= 1UL << (d3b & 31);
-            d3b = (BYTE)(d3b - 1);
-            if (d3b < 0)
+            bits |= 1UL << (bitno & 31);
+            bitno = (BYTE)(bitno - 1);
+            if (bitno < 0)
                 goto setbits_word;
-            if (d4-- != 0)
+            if (count-- != 0)
                 goto setbits_loop;
             goto next_bit;
         setbits_word:
-            a2 += 2;
-            W_(a3) = (UWORD)d2;
-            a3 += 2;
-            d2 = W_(a3);
-            d3b = 15;
-            d5b = (BYTE)(d5b - 1);
-            if (d5b < 0)
+            pos += 2;
+            W_(dstline) = (UWORD)bits;
+            dstline += 2;
+            bits = W_(dstline);
+            bitno = 15;
+            cols = (BYTE)(cols - 1);
+            if (cols < 0)
                 goto done_line;
-            if (d4-- != 0)
+            if (count-- != 0)
                 goto setbits_loop;
             goto next_bit;
         clearbits:
-            d2 = W_(a3);
+            bits = W_(dstline);
         clearbits_loop:
-            d2 &= ~(1UL << (d3b & 31));
-            d3b = (BYTE)(d3b - 1);
-            if (d3b < 0)
+            bits &= ~(1UL << (bitno & 31));
+            bitno = (BYTE)(bitno - 1);
+            if (bitno < 0)
                 goto clearbits_word;
-            if (d4-- != 0)
+            if (count-- != 0)
                 goto clearbits_loop;
             goto next_bit;
         clearbits_word:
-            a2 += 2;
-            W_(a3) = (UWORD)d2;
-            a3 += 2;
-            d2 = W_(a3);
-            d3b = 15;
-            d5b = (BYTE)(d5b - 1);
-            if (d5b < 0)
+            pos += 2;
+            W_(dstline) = (UWORD)bits;
+            dstline += 2;
+            bits = W_(dstline);
+            bitno = 15;
+            cols = (BYTE)(cols - 1);
+            if (cols < 0)
                 goto done_line;
-            if (d4-- != 0)
+            if (count-- != 0)
                 goto clearbits_loop;
         next_bit:
-            W_(a3) = (UWORD)d2;
+            W_(dstline) = (UWORD)bits;
             goto bitxloop;
 
         done_line:                              /* the line downwards */
-            d4 = res_value3;
-            a1 = *a6;
-            a2 = a1 + 40;
+            count = res_value3;
+            copysrc = *destptr;
+            pos = copysrc + 40;
             for (;;) {
-                d7 = (WORD)(d7 - 1);
-                if (d7 < 0)
+                lines = (WORD)(lines - 1);
+                if (lines < 0)
                     goto out_of_screen;
-                COPY40(a1, a2);
-                if (d4-- == 0)
+                COPY40(copysrc, pos);
+                if (count-- == 0)
                     break;
             }
-            *a0 += add_value;
+            *bitptr += add_value;
         out_of_screen:
-            a0++;
-            *a6++ = a2;
-        } while (d6-- != 0);
+            bitptr++;
+            *destptr++ = pos;
+        } while (plane-- != 0);
         yvalue = (UWORD)(yvalue - res_value);
         if ((WORD)yvalue < 0)
             break;
     }
-    return d0;
+    return value;
 }
 /* the original keeps d1-d7/a0-a6 */
 BLITZ_THUNK(asmderez, asmderez_c, "d1/a0-a1");
@@ -1052,10 +1056,13 @@ BLITZ_THUNK(InitZoomxy, initzoomxy_c, "d0-d1/a0-a1");
    ScreenCopy */
 static void BLITZ_ROUTINE asmzoom_c(ULONG xz BL_REG(d0), ULONG yz BL_REG(d1), ULONG h BL_REG(d2))
 {
-    ULONG *a0, *a6, a1, a2, a3, d0, d2;
-    UWORD d4, d6;
-    WORD d7;
-    BYTE d1b, d3b, d5b;
+    /* bitptr a0, destptr a6, copysrc a1, pos a2, dstline a3, srcbits d0,
+       dstbits d2, count d4, plane d6, lines d7, srcbit d1.b, dstbit d3.b,
+       cols d5.b */
+    ULONG *bitptr, *destptr, copysrc, pos, dstline, srcbits, dstbits;
+    UWORD count, plane;
+    WORD lines;
+    BYTE srcbit, dstbit, cols;
 
     if (!(UWORD)xz || !(UWORD)yz)
         return;
@@ -1072,88 +1079,88 @@ static void BLITZ_ROUTINE asmzoom_c(ULONG xz BL_REG(d0), ULONG yz BL_REG(d1), UL
     }
     yvalue = height;
     for (;;) {
-        a0 = bit_add;
-        a6 = dest_add;
-        d6 = sbitdepth;
+        bitptr = bit_add;
+        destptr = dest_add;
+        plane = sbitdepth;
         do {                                    /* bitplane_loop */
-            d7 = (WORD)yvalue;
-            a2 = *a0;
-            a3 = *a6;
-            d5b = 9;
-            d3b = 31;
-            d1b = 31;
+            lines = (WORD)yvalue;
+            pos = *bitptr;
+            dstline = *destptr;
+            cols = 9;
+            dstbit = 31;
+            srcbit = 31;
         xloop:
-            d4 = xzoom_value;
-            d2 = L_(a3);
-            d0 = L_(a2);
-            if (!(d0 & (1UL << (d1b & 31))))
+            count = xzoom_value;
+            dstbits = L_(dstline);
+            srcbits = L_(pos);
+            if (!(srcbits & (1UL << (srcbit & 31))))
                 goto clearbits_loop;
         setbits_loop:
-            d2 |= 1UL << (d3b & 31);
-            d3b = (BYTE)(d3b - 1);
-            if (d3b < 0)
+            dstbits |= 1UL << (dstbit & 31);
+            dstbit = (BYTE)(dstbit - 1);
+            if (dstbit < 0)
                 goto setbits_word;
-            if (d4-- != 0)
+            if (count-- != 0)
                 goto setbits_loop;
             goto next_bit;
         setbits_word:
-            L_(a3) = d2;
-            a3 += 4;
-            d2 = L_(a3);
-            d3b = 31;
-            d5b = (BYTE)(d5b - 1);
-            if (d5b < 0)
+            L_(dstline) = dstbits;
+            dstline += 4;
+            dstbits = L_(dstline);
+            dstbit = 31;
+            cols = (BYTE)(cols - 1);
+            if (cols < 0)
                 goto done_line;
-            if (d4-- != 0)
+            if (count-- != 0)
                 goto setbits_loop;
             goto next_bit;
         clearbits_loop:
-            d2 &= ~(1UL << (d3b & 31));
-            d3b = (BYTE)(d3b - 1);
-            if (d3b < 0)
+            dstbits &= ~(1UL << (dstbit & 31));
+            dstbit = (BYTE)(dstbit - 1);
+            if (dstbit < 0)
                 goto clearbits_word;
-            if (d4-- != 0)
+            if (count-- != 0)
                 goto clearbits_loop;
             goto next_bit;
         clearbits_word:
-            L_(a3) = d2;
-            a3 += 4;
-            d2 = L_(a3);
-            d3b = 31;
-            d5b = (BYTE)(d5b - 1);
-            if (d5b < 0)
+            L_(dstline) = dstbits;
+            dstline += 4;
+            dstbits = L_(dstline);
+            dstbit = 31;
+            cols = (BYTE)(cols - 1);
+            if (cols < 0)
                 goto done_line;
-            if (d4-- != 0)
+            if (count-- != 0)
                 goto clearbits_loop;
         next_bit:
-            L_(a3) = d2;
-            d1b = (BYTE)(d1b - 1);
-            if (d1b >= 0)
+            L_(dstline) = dstbits;
+            srcbit = (BYTE)(srcbit - 1);
+            if (srcbit >= 0)
                 goto xloop;
-            d1b = 31;
-            a2 += 4;
+            srcbit = 31;
+            pos += 4;
             goto xloop;
 
         done_line:                              /* the line downwards */
-            d4 = yzoom_value;
-            if (!d4) {
-                a2 = *a6 + 40;                  /* yzoom1 */
+            count = yzoom_value;
+            if (!count) {
+                pos = *destptr + 40;            /* yzoom1 */
             } else {
-                d4--;
-                a1 = *a6;
-                a2 = a1 + 40;
+                count--;
+                copysrc = *destptr;
+                pos = copysrc + 40;
                 for (;;) {
-                    d7 = (WORD)(d7 - 1);
-                    if (d7 < 0)
+                    lines = (WORD)(lines - 1);
+                    if (lines < 0)
                         break;
-                    COPY40(a1, a2);
-                    if (d4-- == 0)
+                    COPY40(copysrc, pos);
+                    if (count-- == 0)
                         break;
                 }
             }
-            *a0++ += 40;                        /* out_of_screen */
-            *a6++ = a2;
-        } while (d6-- != 0);
+            *bitptr++ += 40;                    /* out_of_screen */
+            *destptr++ = pos;
+        } while (plane-- != 0);
         yvalue = (UWORD)(yvalue - yzoom_value2);
         if ((WORD)yvalue < 0)
             break;
