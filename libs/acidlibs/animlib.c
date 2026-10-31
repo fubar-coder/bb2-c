@@ -52,6 +52,7 @@
  * registers on the stack - GCC drops code behind an inline BRA).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 
 /* entry points (thunks / C routines, defined below) */
 struct anim;
@@ -150,15 +151,8 @@ struct iffstuff {
     UWORD words;                /* +6: width in words */
 };
 
-/* a bitmap object (the part read here; bitmaplib's struct bbitmap):
-   +4 is flags.b/depth.b, read as one word as in the original */
-struct bmap {
-    UWORD bpr;                  /* +0 */
-    UWORD rows;                 /* +2 */
-    UWORD depth;                /* +4: flags << 8 | depth */
-    UWORD pad;                  /* +6 */
-    ULONG planes[8];            /* +8 */
-};
+/* a bitmap object: struct bb_bitmap (blitzobj.h); the planes are read as
+   longs, Flags/Depth as one word (flagsdepth) as in the original */
 
 #define TOK_ilbminit   ((LIB_ilbmifflib << 7) + 1)  /* a0 = name -> a0 = info, d0 = 0: failed */
 #define TOK_getpal     ((LIB_palettelib << 7) + 3)  /* a0 = name, a1 = palette */
@@ -384,7 +378,7 @@ void BLITZ_ROUTINE doanimload2(struct anim *anim BL_REG(a0), ULONG name BL_REG(d
 }
 
 /* InitAnim - a0 = anim, a1 = bitmap: BODY (ByteRun1) into the bitmap */
-static void initanim(struct anim *anim, struct bmap *bm)
+static void initanim(struct anim *anim, struct bb_bitmap *bm)
 {
     UBYTE *src = anim->body;
     ULONG rowoff = 0;
@@ -392,7 +386,7 @@ static void initanim(struct anim *anim, struct bmap *bm)
 
     do {                                            /* 'loop2: rows */
         UWORD planes = anim->depth - 1;
-        ULONG *planep = bm->planes;
+        ULONG *planep = (ULONG *)bm->planes;
 
         do {                                        /* 'loop3: planes */
             WORD left = anim->ebwidth - 1;
@@ -441,7 +435,7 @@ static void initanim(struct anim *anim, struct bmap *bm)
  * @param bm    a1: the used bitmap (!libs {#bitmaplib,$1102})
  */
 static void BLITZ_ROUTINE doinitanim_c(struct anim *anim BL_REG(a0),
-                                       struct bmap *bm BL_REG(a1))
+                                       struct bb_bitmap *bm BL_REG(a1))
 {
     initanim(anim, bm);
 }
@@ -460,8 +454,8 @@ BLITZ_THUNK(doinitanim, doinitanim_c, "d0-d1/a0-a1");
  *              BitMap# in d1)
  */
 static void BLITZ_ROUTINE doinitanim2_c(struct anim *anim BL_REG(a0),
-                                        struct bmap *bm BL_REG(a1),
-                                        struct bmap *bm2 BL_REG(a2))
+                                        struct bb_bitmap *bm BL_REG(a1),
+                                        struct bb_bitmap *bm2 BL_REG(a2))
 {
     WORD bpr, bpr2, width;
     UWORD words, planes;
@@ -469,9 +463,9 @@ static void BLITZ_ROUTINE doinitanim2_c(struct anim *anim BL_REG(a0),
 
     initanim(anim, bm);
     bpr = bm->bpr;
-    p1 = bm->planes;
+    p1 = (ULONG *)bm->planes;
     bpr2 = bm2->bpr;
-    p2 = bm2->planes;
+    p2 = (ULONG *)bm2->planes;
     width = anim->ebwidth;
     words = (UWORD)((UWORD)width >> 1) - 1;
     planes = anim->depth - 1;
@@ -508,9 +502,9 @@ BLITZ_THUNK(doinitanim2, doinitanim2_c, "d0-d1/a0-a1");
  * @param bm    a1: the used bitmap (!libs {#bitmaplib,$1102})
  */
 static void BLITZ_ROUTINE donextframe_c(struct anim *anim BL_REG(a0),
-                                        struct bmap *bm BL_REG(a1))
+                                        struct bb_bitmap *bm BL_REG(a1))
 {
-    ULONG *planep = bm->planes;
+    ULONG *planep = (ULONG *)bm->planes;
     UWORD planes = anim->depth - 1;
     /* the current node read as a long: as a pointer member GCC gives
        other code */
@@ -616,7 +610,7 @@ BLITZ_ERRCHK_MESSAGE(mess7, "Can't Open Anim File");
 
 /* animchk: the anim at a0 fits into the bitmap at a1 (signed words) */
 static void BLITZ_ERRCHK animchk_c(struct anim *anim BL_REG(a0),
-                                   struct bmap *bm BL_REG(a1))
+                                   struct bb_bitmap *bm BL_REG(a1))
 {
     if (!anim->width)
         BLITZ_RUNERR(mess3);
@@ -624,19 +618,19 @@ static void BLITZ_ERRCHK animchk_c(struct anim *anim BL_REG(a0),
         BLITZ_RUNERR(mess2);
     else if ((WORD)anim->ebwidth > (WORD)bm->bpr
              || (WORD)anim->height > (WORD)bm->rows
-             || (WORD)anim->depth > (WORD)bm->depth)
+             || (WORD)anim->depth > (WORD)bm->flagsdepth)
         BLITZ_RUNERR(mess1);
 }
 
 /* animchk2: EXG a1,a2:BSR animchk:EXG a1,a2 */
 static void BLITZ_ERRCHK animchk2_c(struct anim *anim BL_REG(a0),
-                                    struct bmap *bm2 BL_REG(a2))
+                                    struct bb_bitmap *bm2 BL_REG(a2))
 {
     animchk_c(anim, bm2);
 }
 
 static void BLITZ_ERRCHK animchk3_c(struct anim *anim BL_REG(a0),
-                                    struct bmap *bm BL_REG(a1))
+                                    struct bb_bitmap *bm BL_REG(a1))
 {
     if ((WORD)anim->frames < 2)
         BLITZ_RUNERR(mess5);
