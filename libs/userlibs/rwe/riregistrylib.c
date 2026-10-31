@@ -74,6 +74,7 @@
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
+#include <stddef.h>
 
 /* entry points (thunks, defined below) */
 void _isregistryopen(void), _lockregistry(void), _unlockregistry(void);
@@ -358,10 +359,18 @@ BLITZ_LIBFIN();
 #define LVO_FreeStructureVariables         (-192)
 #define LVO_LoadLibraryVariables           (-198)
 
-/* RegistryStructure */
-#define RS_NAME 14
-#define RS_TYPE 18
-#define RS_DATA 24
+/* RegistryStructure, as far as the source reads it (registry.library's
+   own fields before and between them are unknown) */
+struct regstructure {
+    UBYTE rs_private0[14];
+    const UBYTE *name;                  /* 14 */
+    UWORD type;                         /* 18: VAR_... */
+    UBYTE rs_private1[4];
+    ULONG data;                         /* 24: a string (VAR_STRING), the number (3/4) */
+};
+static_assert(offsetof(struct regstructure, name) == 14);
+static_assert(offsetof(struct regstructure, type) == 18);
+static_assert(offsetof(struct regstructure, data) == 24);
 #define VAR_STRING 1
 #define VAR_DATA 2
 #define VAR_BOOLEAN 3
@@ -383,8 +392,6 @@ static struct BL_PACKED {
 /* structs(pc) + curstruct (a word index) */
 #define SLOT() (*(ULONG *)((UBYTE *)st.structs + (WORD)st.curstruct))
 
-#define LONGAT(p, o) (*(ULONG *)((UBYTE *)(p) + (o)))
-#define WORDAT(p, o) (*(UWORD *)((UBYTE *)(p) + (o)))
 
 /* regjsr(off, a0, d0, d1, d2, a1, a2, a3, a4): JSR off(a6) with a6 =
    regbase and the registers given.  a3/a4 are the fixed registers of the
@@ -453,10 +460,10 @@ static ULONG retstring(const UBYTE *s)
    BUG(orig): without a structure 18/24 of address 0 (#780) */
 static ULONG returnstring(void)
 {
-    UBYTE *rs = (UBYTE *)st.regstruct;
-    const UBYTE *v = (const UBYTE *)LONGAT(rs, RS_DATA);
+    const struct regstructure *rs = (const struct regstructure *)st.regstruct;
+    const UBYTE *v = (const UBYTE *)rs->data;
 
-    if (!v || WORDAT(rs, RS_TYPE) != VAR_STRING)
+    if (!v || rs->type != VAR_STRING)
         return 0;
     return retstring(v);
 }
@@ -655,7 +662,7 @@ static ULONG BLITZ_ROUTINE getregistryintvariable_c(ULONG name BL_REG(d0))
 
     if (type != VAR_BOOLEAN && type != VAR_INTEGER)
         return 0;
-    return LONGAT(st.regstruct, RS_DATA);
+    return ((const struct regstructure *)st.regstruct)->data;
 }
 
 static ULONG BLITZ_ROUTINE setregistryvariableindex_c(ULONG name BL_REG(d0), ULONG v BL_REG(d1),
@@ -686,7 +693,7 @@ static ULONG BLITZ_ROUTINE parseitemname_c(void)
 {
     if (!st.regstruct)
         return 0;
-    return retstring((const UBYTE *)LONGAT(st.regstruct, RS_NAME));
+    return retstring(((const struct regstructure *)st.regstruct)->name);
 }
 
 /* ParseItemValue$: the structure's string value */
