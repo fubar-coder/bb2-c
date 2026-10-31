@@ -46,8 +46,10 @@
  *     objects is not involved, but a ScreenTags/Screen title is only freed
  *     when the screen is closed by the library.
  *   - ScreenTags with a taglist copies it without a limit into 32 longs. (#249)
- *   - SA_DisplayID gets only the low word of the viewmode (MOVE
- *     d1,newmodes+2), the upper word stays 0. (#250)
+ * Fixed (intended deviation, #250): the original gives SA_DisplayID only
+ *   the low word of the viewmode (MOVE d1,newmodes+2, the upper word stays
+ *   0): display IDs with a monitor part (PAL, NTSC, DblPAL, ...) opened on
+ *   the default monitor.  Here SA_DisplayID gets the whole long.
  * Fixed (intended deviation, #251): the original's "Can't open Screen" is
  *   `BEQ err1` from the normal code into the error area (without the
  *   debugger a jump behind the library), and err8/12/13 (WorkBench /
@@ -495,8 +497,9 @@ static void openscreen(UBYTE *bitmap, ULONG *ifont, WORD used, ULONG viewmode,
     sd.ns.Height = BL_POPW(sp);
     sd.ns.Depth = BL_POPW(sp);
     sd.ns.ViewModes = viewmode;
-    /* MOVE d1,newmodes+2: BUG(orig) (#250) only the low word */
-    BL_SETW(sd.tags.displayid.ti_Data, viewmode);
+    /* the whole long (fixed, #250: the original's MOVE d1,newmodes+2 only
+       sets the low word) */
+    sd.tags.displayid.ti_Data = viewmode;
     sd.ns.DetailPen = dpen;
     sd.ns.BlockPen = bpen;
     sd.ns.CustomBitMap = (struct BitMap *)bitmap;
@@ -523,7 +526,8 @@ static void openscreen(UBYTE *bitmap, ULONG *ifont, WORD used, ULONG viewmode,
  *
  * BUG(orig) (#247): the old screen is freed with a2 = the argument stack
  * as graphics base (FreeDBufInfo through garbage if it had a DBufInfo).
- * BUG(orig) (#250): SA_DisplayID gets only the low word of the viewmode.
+ * Fixed (#250): SA_DisplayID gets the whole viewmode (the original only
+ * its low word).
  * Fixed (#251): "Can't open Screen" is raised in the normal code (the
  * original's `BEQ err1` goes into the error area).
  * Errors (prescreen, debugger only): "Uninitialized IntuiFont", width < 320,
