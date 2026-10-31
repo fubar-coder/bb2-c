@@ -432,8 +432,9 @@ void BLITZ_ROUTINE c_flushser(ULONG value BL_REG(d0))
 }
 
 /* SerialSendString a$: d0 = the string, a2 = the argument stack */
-void BLITZ_ROUTINE c_sendserialstring(ULONG value BL_REG(d0), const ULONG *argstack BL_REG(a2))
+void BLITZ_ROUTINE c_sendserialstring(ULONG str BL_REG(d0), const ULONG *argstack BL_REG(a2))
 {
+    ULONG value = str;                  /* d0: as openserial and writeser leave it (#801) */
     ULONG l;
 
     if (openflag)
@@ -448,8 +449,10 @@ void BLITZ_ROUTINE c_sendserialstring(ULONG value BL_REG(d0), const ULONG *argst
    is open (the thunk returns to the d0 of the call, BUG(orig) #796) */
 volatile UBYTE riser_rsreturn;
 
-ULONG BLITZ_ROUTINE c_readserialstring(ULONG value BL_REG(d0))
+ULONG BLITZ_ROUTINE c_readserialstring(ULONG callerd0 BL_REG(d0))
 {
+    ULONG value = callerd0;             /* d0: openserial's, then each byte read (#797) */
+
     riser_rsreturn = 0;
     if (openflag) {
         riser_rsreturn = 1;
