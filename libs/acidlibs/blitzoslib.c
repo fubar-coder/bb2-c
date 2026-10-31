@@ -395,17 +395,17 @@ static int rawstatus(UWORD key)
 }
 
 /* BLibJsr tok with d0 -> d0 */
-#define BCALL0(tok, d0v) ({ struct bregs r_ = { .d0 = (d0v) }; BCALL(tok, 0, r_); r_.d0; })
+#define BCALL0(tok, value) ({ struct bregs r_ = { .d0 = (value) }; BCALL(tok, 0, r_); r_.d0; })
 
 /* DIVS.w with the original's overflow handling (BVC: else 32767 in the
    low word); a divisor of 0 raises the divide-by-zero exception */
-static WORD divs_sat(ULONG d, WORD s)
+static WORD divs_sat(ULONG dividend, WORD divisor)
 {
     __asm__("divs.w %1,%0\n\t"
             "bvc.s 1f\n\t"
             "move.w #32767,%0\n"
-            "1:" : "+d"(d) : "dmi"(s) : "cc");
-    return (WORD)d;
+            "1:" : "+d"(dividend) : "dmi"(divisor) : "cc");
+    return (WORD)dividend;
 }
 
 /* !waitblit: wait for the blitter (DMACONR bit 14) */
@@ -512,44 +512,44 @@ static ULONG locrow(WORD y)
     return BL_SWAP(v) >> 3;
 }
 
-static void drawbox(struct page *p, UBYTE *a0)
+static void drawbox(struct page *p, UBYTE *box)
 {
-    ULONG d0, d1;
+    ULONG darklight, midtext;
     WORD x, y, x2, y2;
 
-    d0 = 0;
-    btype = BW(a0, B_BTYPE);
+    darklight = 0;
+    btype = BW(box, B_BTYPE);
     if (btype < 0) {
         btype = -btype;
-        d0 = (ULONG)-1;
+        darklight = (ULONG)-1;
     }
-    nable = (WORD)d0;
-    d0 = (ULONG)(UWORD)p->c0 << 16 | (UWORD)p->c1;
-    d1 = (ULONG)(UWORD)p->c2 << 16 | (UWORD)p->c3;
+    nable = (WORD)darklight;
+    darklight = (ULONG)(UWORD)p->c0 << 16 | (UWORD)p->c1;
+    midtext = (ULONG)(UWORD)p->c2 << 16 | (UWORD)p->c3;
     sel = 0;
-    if (p->selected != a0) {
-        BL_SETW(d1, d0);                        /* MOVE d0,d1 */
+    if (p->selected != box) {
+        BL_SETW(midtext, darklight);            /* MOVE d0,d1 */
         sel = -1;
     } else if (btype == 4)
-        BL_SETW(d0, d1);                        /* MOVE d1,d0 */
-    d1 = BL_SWAP(d1);
-    BL_SETW(d1, BW(a0, B_COLOR));
-    if ((WORD)d1 < 0) {
-        d0 = BL_SWAP(d0);
-        BL_SETW(d1, ~d1);
-        if (btype == 0 && BL(a0, B_TLEN))
-            d0 = 0;
+        BL_SETW(darklight, midtext);            /* MOVE d1,d0 */
+    midtext = BL_SWAP(midtext);
+    BL_SETW(midtext, BW(box, B_COLOR));
+    if ((WORD)midtext < 0) {
+        darklight = BL_SWAP(darklight);
+        BL_SETW(midtext, ~midtext);
+        if (btype == 0 && BL(box, B_TLEN))
+            darklight = 0;
     }
-    d1 = BL_SWAP(d1);
-    c0 = (WORD)(d0 >> 16);
-    c1 = (WORD)d0;
-    c2 = (WORD)(d1 >> 16);
-    c3 = (WORD)d1;
+    midtext = BL_SWAP(midtext);
+    c0 = (WORD)(darklight >> 16);
+    c1 = (WORD)darklight;
+    c2 = (WORD)(midtext >> 16);
+    c3 = (WORD)midtext;
 
-    x = BW(a0, B_X);
-    y = BW(a0, B_Y);
-    x2 = x + BW(a0, B_W) - 1;
-    y2 = y + BW(a0, B_H) - 1;
+    x = BW(box, B_X);
+    y = BW(box, B_Y);
+    x2 = x + BW(box, B_W) - 1;
+    y2 = y + BW(box, B_H) - 1;
     xyxy[0] = x;
     xyxy[1] = y;
     xyxy[2] = x2;
@@ -560,13 +560,13 @@ static void drawbox(struct page *p, UBYTE *a0)
     }
     if (btype == 4)
         goto notext;
-    if (btype == 6 && !BL(a0, B_TLEN))
+    if (btype == 6 && !BL(box, B_TLEN))
         goto notext;
-    if (btype == 1 && BW(a0, B_ISSHAPE)) {
+    if (btype == 1 && BW(box, B_ISSHAPE)) {
         /* shape button */
         boxf(x + 2, y + 1, x2 - 2, y2 - 1, (LONG)(sel ? c2 : c0));
         {
-            struct bregs r = { .d0 = (LONG)(WORD)(BW(a0, B_SHAPEOFF) + BW(a0, B_VALUE)),
+            struct bregs r = { .d0 = (LONG)(WORD)(BW(box, B_SHAPEOFF) + BW(box, B_VALUE)),
                                .d1 = (LONG)(WORD)(xyxy[0] + 2),
                                .d2 = (LONG)(WORD)(xyxy[1] + 1) };
             BCALL(T_BLIT, 0, r);
@@ -577,54 +577,55 @@ static void drawbox(struct page *p, UBYTE *a0)
     if (btype == 3) {
         /* prop: the knob */
         WORD px = x + 2, py = y + 1;
-        WORD pw = BW(a0, B_W) - 3 - BW(a0, B_PROMPT);
-        WORD ph = BW(a0, B_H) - 1 - BW(a0, B_ANSLEN);
-        WORD d4 = BW(a0, B_VALUE), d5 = BW(a0, B_RANGE);
-        WORD d6 = BW(a0, B_PROMPT), d7 = BW(a0, B_ANSLEN);
+        WORD pw = BW(box, B_W) - 3 - BW(box, B_PROMPT);
+        WORD ph = BW(box, B_H) - 1 - BW(box, B_ANSLEN);
+        WORD valx = BW(box, B_VALUE), valy = BW(box, B_RANGE);
+        WORD kx2 = BW(box, B_PROMPT), ky2 = BW(box, B_ANSLEN);  /* bsize, then
+                                                                   the knob's x2/y2 */
 
-        if (d4 >= 0)
-            px += (WORD)(((ULONG)(UWORD)pw * (UWORD)(d4 + d4)) >> 16);  /* MULU:SWAP */
-        if (d5 >= 0)
-            py += (WORD)(((ULONG)(UWORD)ph * (UWORD)(d5 + d5)) >> 16);
-        d6 += px - 1;
-        d7 += py - 1;
+        if (valx >= 0)
+            px += (WORD)(((ULONG)(UWORD)pw * (UWORD)(valx + valx)) >> 16); /* MULU:SWAP */
+        if (valy >= 0)
+            py += (WORD)(((ULONG)(UWORD)ph * (UWORD)(valy + valy)) >> 16);
+        kx2 += px - 1;
+        ky2 += py - 1;
         xyxy2[0] = px;
         xyxy2[1] = py;
-        xyxy2[2] = d6;
-        xyxy2[3] = d7;
+        xyxy2[2] = kx2;
+        xyxy2[3] = ky2;
         if (!sel)
-            boxf(px, py, d6, d7, (LONG)c3);
-        line(px, py, d6, py, (LONG)c1);
-        line(d6, py, d6, d7, (LONG)c1);
-        line(d6 + 1, py, d6 + 1, d7, (LONG)c1);
-        line(px, py, px, d7, (LONG)c0);
-        line(px - 1, py + 1, px - 1, d7, (LONG)c0);
-        line(px + 1, d7, d6 - 1, d7, (LONG)c0);
+            boxf(px, py, kx2, ky2, (LONG)c3);
+        line(px, py, kx2, py, (LONG)c1);
+        line(kx2, py, kx2, ky2, (LONG)c1);
+        line(kx2 + 1, py, kx2 + 1, ky2, (LONG)c1);
+        line(px, py, px, ky2, (LONG)c0);
+        line(px - 1, py + 1, px - 1, ky2, (LONG)c0);
+        line(px + 1, ky2, kx2 - 1, ky2, (LONG)c0);
     }
     /* dotext */
     if (btype == 5) {
         /* list */
-        WORD d0w = (UWORD)(BW(a0, B_H) - 3) >> 3, d2;
-        UBYTE *a1;
+        WORD limit = (UWORD)(BW(box, B_H) - 3) >> 3, first;
+        UBYTE *entry;
 
-        lines = d0w;
-        d0w = (UWORD)d0w >> 1;
-        d2 = BW(a0, B_VALUE) - d0w;
-        if (d2 < 0)
-            d2 = 0;
-        d0w = BW(a0, B_RANGE) - lines;
-        if (d0w < 0) {
-            d0w = 0;
-            lines = BW(a0, B_RANGE);
+        lines = limit;
+        limit = (UWORD)limit >> 1;
+        first = BW(box, B_VALUE) - limit;
+        if (first < 0)
+            first = 0;
+        limit = BW(box, B_RANGE) - lines;
+        if (limit < 0) {
+            limit = 0;
+            lines = BW(box, B_RANGE);
         }
-        if (d2 - d0w >= 0)                      /* CMP d0,d2:BMI noj */
-            d2 = d0w;
-        count = BW(a0, B_VALUE) - d2;
-        a1 = BP(a0, B_TEXT);
-        while (d2-- != 0)                       /* BRA inig: DBRA d2 */
-            while (*a1++)
+        if (first - limit >= 0)                 /* CMP d0,d2:BMI noj */
+            first = limit;
+        count = BW(box, B_VALUE) - first;
+        entry = BP(box, B_TEXT);
+        while (first-- != 0)                    /* BRA inig: DBRA d2 */
+            while (*entry++)
                 ;
-        text[0] = (ULONG)a1;
+        text[0] = (ULONG)entry;
         xx = (ULONG)(LONG)xyxy[0];
         BL_SETW(xx, (UWORD)(xyxy[0] + 11) >> 3);
         yy = locrow(xyxy[1]);
@@ -656,62 +657,62 @@ static void drawbox(struct page *p, UBYTE *a0)
     }
     /* oneline */
     {
-        ULONG d0l = BL(a0, B_TLEN), d1l = BL(a0, B_TEXT);
+        ULONG ptr = BL(box, B_TLEN), len = BL(box, B_TEXT);    /* swapped below */
 
-        if (d0l) {
-            ULONG t = d0l;                      /* EXG d0,d1 */
-            d0l = d1l;
-            d1l = t;
+        if (ptr) {
+            ULONG swap = ptr;                   /* EXG d0,d1 */
+            ptr = len;
+            len = swap;
             if (btype == 3) {
                 ULONG cx;
                 ULONG row;
 
-                text[0] = d0l;
-                text[1] = d1l;
+                text[0] = ptr;
+                text[1] = len;
                 cx = (ULONG)(LONG)xyxy[0];
                 BL_SETW(cx, (UWORD)(xyxy[0] + 11) >> 3);
                 row = (ULONG)(LONG)xyxy[1];
                 BL_SETW(row, row - 8);
-                if (BW(a0, B_PROMPT) >= 0) {
+                if (BW(box, B_PROMPT) >= 0) {
                     BL_SETW(row, row + 8);
-                    BL_SETW(cx, cx - (UWORD)d1l);
+                    BL_SETW(cx, cx - (UWORD)len);
                 }
                 BL_SETW(row, row + 2);
                 locate(cx, BL_SWAP(row) >> 3);
                 goto pme;
             }
-            if (btype != 6 && BW(a0, B_RANGE)) {
+            if (btype != 6 && BW(box, B_RANGE)) {
                 /* the value-th of the strings */
-                UWORD d2 = BW(a0, B_VALUE);
-                UBYTE *a1 = (UBYTE *)d0l;
+                UWORD index = BW(box, B_VALUE);
+                UBYTE *str = (UBYTE *)ptr;
                 ULONG n;
 
                 do {
                     n = 0;
                     do
                         n++;
-                    while (*a1++);
-                } while (d2-- != 0);
-                a1 -= n;
-                d1l = n;
-                BL_SETW(d1l, d1l - 1);
-                d0l = (ULONG)a1;
+                    while (*str++);
+                } while (index-- != 0);
+                str -= n;
+                len = n;
+                BL_SETW(len, len - 1);
+                ptr = (ULONG)str;
             }
         }
-        text[0] = d0l;                          /* t3 */
-        text[1] = d1l;
+        text[0] = ptr;                          /* t3 */
+        text[1] = len;
     }
     {
-        ULONG d0l = text[1];
+        ULONG col = text[1];
 
-        if (!d0l)
+        if (!col)
             goto notext;
         if (btype == 2) {
-            BL_SETW(d0l, (UWORD)(xyxy[0] + 11) >> 3);
+            BL_SETW(col, (UWORD)(xyxy[0] + 11) >> 3);
         } else {
-            BL_SETW(d0l, (UWORD)(((UWORD)(-(WORD)d0l << 3) + xyxy[0] + xyxy[2] + 7)) >> 4);
+            BL_SETW(col, (UWORD)(((UWORD)(-(WORD)col << 3) + xyxy[0] + xyxy[2] + 7)) >> 4);
         }
-        locate(d0l, locrow(xyxy[1]));
+        locate(col, locrow(xyxy[1]));
     }
 pme:
     colour((LONG)c3, (LONG)c2);
@@ -772,15 +773,15 @@ static void BLITZ_ROUTINE freepage_c(void)
 }
 BLITZ_THUNK(_freepage, freepage_c, "d0-d1/a0-a1");
 
-static void BLITZ_ROUTINE setpagepens_c(ULONG a BL_REG(d1), ULONG b BL_REG(d2),
-                                        ULONG c BL_REG(d3), ULONG d BL_REG(d4))
+static void BLITZ_ROUTINE setpagepens_c(ULONG dark BL_REG(d1), ULONG light BL_REG(d2),
+                                        ULONG mid BL_REG(d3), ULONG txt BL_REG(d4))
 {
     struct page *p = PG;
 
-    p->c0 = (WORD)a;
-    p->c1 = (WORD)b;
-    p->c2 = (WORD)c;
-    p->c3 = (WORD)d;
+    p->c0 = (WORD)dark;
+    p->c1 = (WORD)light;
+    p->c2 = (WORD)mid;
+    p->c3 = (WORD)txt;
 }
 BLITZ_THUNK(_setpagepens, setpagepens_c, "d0-d1/a0-a1");
 
@@ -828,7 +829,7 @@ BLITZ_THUNK(_boxpropy, boxpropy_c, "d1/a1");
 static UBYTE *addbox(struct page *p, ULONG n, ULONG x, ULONG y, ULONG w, ULONG h, WORD type)
 {
     UBYTE *b;
-    WORD d1;
+    WORD color;
 
     chkpage(p);
     if ((UWORD)n >= p->numboxes)
@@ -842,45 +843,45 @@ static UBYTE *addbox(struct page *p, ULONG n, ULONG x, ULONG y, ULONG w, ULONG h
     BW(b, B_Y) = (WORD)y;
     BW(b, B_W) = (WORD)w;
     BW(b, B_H) = (WORD)h;
-    d1 = p->c2;
+    color = p->c2;
     if (type & 1)                               /* ASR #1: carry */
-        d1 = ~d1;
+        color = ~color;
     type >>= 1;
     BW(b, B_BTYPE) = type;
-    BW(b, B_COLOR) = d1;
+    BW(b, B_COLOR) = color;
     if (type == 2) {
         /* a string box: spaces */
         UWORD len = (UWORD)w >> 3;
-        UBYTE *t;
+        UBYTE *fill;
         UWORD c;
 
         if (!len)                               /* EXT.l:BLE err4 */
             BLITZ_RUNERR(mess4);
         BL(b, B_TLEN) = len;
-        t = globalloc(len, 0);
-        BP(b, B_TEXT) = t;
+        fill = globalloc(len, 0);
+        BP(b, B_TEXT) = fill;
         c = (UWORD)(len - 2);
         do
-            *t++ = ' ';
+            *fill++ = ' ';
         while (c-- != 0);
-        *t = 0;
+        *fill = 0;
     } else if (type == 3) {
         /* a prop: bsize & bval */
-        WORD d2 = -1, d3 = -1;
-        WORD d4 = (WORD)w - 4, d5 = (WORD)h - 2;
+        WORD valx = -1, valy = -1;
+        WORD knobw = (WORD)w - 4, knobh = (WORD)h - 2;
 
-        if ((WORD)(d4 - 28) >= 0) {             /* CMP #28:BMI px */
-            d2 = 16384;
-            d4 = 12;
+        if ((WORD)(knobw - 28) >= 0) {          /* CMP #28:BMI px */
+            valx = 16384;
+            knobw = 12;
         }
-        if ((WORD)(d5 - 10) >= 0) {
-            d3 = 16384;
-            d5 = 6;
+        if ((WORD)(knobh - 10) >= 0) {
+            valy = 16384;
+            knobh = 6;
         }
-        BW(b, B_VALUE) = d2;
-        BW(b, B_RANGE) = d3;
-        BW(b, B_PROMPT) = d4;
-        BW(b, B_ANSLEN) = d5;
+        BW(b, B_VALUE) = valx;
+        BW(b, B_RANGE) = valy;
+        BW(b, B_PROMPT) = knobw;
+        BW(b, B_ANSLEN) = knobh;
     }
     return b;
 }
@@ -908,41 +909,41 @@ BLITZ_THUNK(_addbox2, addbox2_c, "d0-d1/a0-a1");
 /* the text of a box: d0 = length, a1 = string (nostrya / strya) */
 static void boxtext(UBYTE *b, ULONG len, const UBYTE *s)
 {
-    UBYTE *t;
-    UWORD d1;
+    UBYTE *dst;
+    UWORD strings;
 
     if (BW(b, B_BTYPE) == 2) {
         /* strya: the prompt of a string box */
         BW(b, B_PROMPT) = (WORD)len;
         if ((WORD)BL(b, B_TLEN) <= (WORD)len)   /* CMP d0,d1:BLE err4 */
             BLITZ_RUNERR(mess4);
-        t = BP(b, B_TEXT);
+        dst = BP(b, B_TEXT);
         while (*s)
-            *t++ = *s++;
+            *dst++ = *s++;
         return;
     }
     len++;
     BL(b, B_TLEN) = len;
-    t = globalloc(len, 0);
-    BP(b, B_TEXT) = t;
-    d1 = 1;
+    dst = globalloc(len, 0);
+    BP(b, B_TEXT) = dst;
+    strings = 1;
     if (*s == '|') {
         while (*s)                              /* verbatim */
-            *t++ = *s++;
+            *dst++ = *s++;
     } else {
         UBYTE c;
 
         while ((c = *s++) != 0) {
             if (c == '|') {
                 c = 0;
-                d1++;
+                strings++;
             }
-            *t++ = c;
+            *dst++ = c;
         }
     }
-    *t = 0;
+    *dst = 0;
     if (BW(b, B_BTYPE) - 2 < 0) {               /* CMP #2:BPL stdun */
-        BW(b, B_RANGE) = d1;
+        BW(b, B_RANGE) = strings;
         BW(b, B_VALUE) = 0;
     }
 }
@@ -976,13 +977,13 @@ BLITZ_THUNK(_setboxtitle, setboxtitle_c, "d0-d1/a0-a1");
 static void setbox(ULONG n, ULONG v)
 {
     UBYTE *b = getbox(PG, n);
-    WORD d1 = (WORD)v;
+    WORD value = (WORD)v;
 
-    if (d1 < 0)
-        d1 += BW(b, B_RANGE);
-    if ((UWORD)d1 >= (UWORD)BW(b, B_RANGE))
+    if (value < 0)
+        value += BW(b, B_RANGE);
+    if ((UWORD)value >= (UWORD)BW(b, B_RANGE))
         BLITZ_RUNERR(mess3);
-    BW(b, B_VALUE) = d1;
+    BW(b, B_VALUE) = value;
 }
 
 static void BLITZ_ROUTINE setbox_c(ULONG n BL_REG(d0), ULONG v BL_REG(d1))
@@ -1034,30 +1035,30 @@ static void BLITZ_ROUTINE setboxstring_c(ULONG n BL_REG(d0), const UBYTE *s BL_R
                                          const ULONG *lens BL_REG(a2))
 {
     UBYTE *b = getbox(PG, n);
-    ULONG d1 = lens[-1];
-    ULONG d2 = BL(b, B_TLEN);
-    UBYTE *t = BP(b, B_TEXT);
+    ULONG len = lens[-1];
+    ULONG pad = BL(b, B_TLEN);
+    UBYTE *dst = BP(b, B_TEXT);
 
-    BL_SETW(d2, d2 - BW(b, B_PROMPT));
-    BL_SETW(d2, d2 - d1);
-    if ((WORD)d2 <= 0)
+    BL_SETW(pad, pad - BW(b, B_PROMPT));
+    BL_SETW(pad, pad - len);
+    if ((WORD)pad <= 0)
         BLITZ_RUNERR(mess4);
-    t += BW(b, B_PROMPT);
-    BL_SETW(d1, d1 - 1);
-    if ((WORD)d1 >= 0) {
-        UWORD c = (UWORD)d1;
+    dst += BW(b, B_PROMPT);
+    BL_SETW(len, len - 1);
+    if ((WORD)len >= 0) {
+        UWORD c = (UWORD)len;
         do
-            *t++ = *s++;
+            *dst++ = *s++;
         while (c-- != 0);
     }
-    BL_SETW(d2, d2 - 2);
-    if ((WORD)d2 >= 0) {
-        UWORD c = (UWORD)d2;
+    BL_SETW(pad, pad - 2);
+    if ((WORD)pad >= 0) {
+        UWORD c = (UWORD)pad;
         do
-            *t++ = ' ';
+            *dst++ = ' ';
         while (c-- != 0);
     }
-    *t = 0;
+    *dst = 0;
 }
 BLITZ_THUNK(_setboxstring, setboxstring_c, "d0-d1/a0-a1");
 
@@ -1070,10 +1071,10 @@ static ULONG BLITZ_ROUTINE boxvalue_c(ULONG n BL_REG(d0))
 }
 BLITZ_THUNK(_boxvalue, boxvalue_c, "d1/a1");
 
-static ULONG BLITZ_ROUTINE boxvalue2_c(ULONG d0 BL_REG(d0), ULONG n BL_REG(d1))
+static ULONG BLITZ_ROUTINE boxvalue2_c(ULONG callerd0 BL_REG(d0), ULONG n BL_REG(d1))
 {
-    BL_SETW(d0, n);                             /* MOVE d1,d0 */
-    return (d0 & 0xffff0000UL) | (UWORD)BW(getbox(PG, d0), B_VALUE);
+    BL_SETW(callerd0, n);                       /* MOVE d1,d0 */
+    return (callerd0 & 0xffff0000UL) | (UWORD)BW(getbox(PG, callerd0), B_VALUE);
 }
 BLITZ_THUNK(_boxvalue2, boxvalue2_c, "d1/a1");
 
@@ -1082,24 +1083,24 @@ static ULONG boxstring(struct page *p, ULONG n)
 {
     UBYTE *b = getbox(p, n);
     WORD prompt = BW(b, B_PROMPT);
-    ULONG d0 = BL(b, B_TLEN);
-    const UBYTE *a0 = BP(b, B_TEXT) + prompt;
-    const UBYTE *a1;
+    ULONG len = BL(b, B_TLEN);
+    const UBYTE *answer = BP(b, B_TEXT) + prompt;
+    const UBYTE *end;
     UBYTE *dst = blitz_string;
 
-    BL_SETW(d0, d0 - prompt);
-    a1 = a0 + (WORD)d0 - 1;
+    BL_SETW(len, len - prompt);
+    end = answer + (WORD)len - 1;
     do                                          /* crop */
-        BL_SETW(d0, d0 - 1);
-    while (*--a1 == ' ');
-    if ((UWORD)d0) {
-        UWORD c = (UWORD)d0 - 1;
+        BL_SETW(len, len - 1);
+    while (*--end == ' ');
+    if ((UWORD)len) {
+        UWORD c = (UWORD)len - 1;
         do
-            *dst++ = *a0++;
+            *dst++ = *answer++;
         while (c-- != 0);
     }
     blitz_string = dst;
-    return d0;
+    return len;
 }
 
 static ULONG BLITZ_ROUTINE boxstring_c(ULONG n BL_REG(d0), struct page *p BL_REG(a1))
@@ -1108,10 +1109,11 @@ static ULONG BLITZ_ROUTINE boxstring_c(ULONG n BL_REG(d0), struct page *p BL_REG
 }
 BLITZ_THUNK(_boxstring, boxstring_c, "d1");
 
-static ULONG BLITZ_ROUTINE boxstring2_c(ULONG d0 BL_REG(d0), ULONG n BL_REG(d1), struct page *p BL_REG(a1))
+static ULONG BLITZ_ROUTINE boxstring2_c(ULONG callerd0 BL_REG(d0), ULONG n BL_REG(d1),
+                                        struct page *p BL_REG(a1))
 {
-    BL_SETW(d0, n);
-    return boxstring(p, d0);
+    BL_SETW(callerd0, n);
+    return boxstring(p, callerd0);
 }
 BLITZ_THUNK(_boxstring2, boxstring2_c, "d1");
 
@@ -1119,17 +1121,17 @@ BLITZ_THUNK(_boxstring2, boxstring2_c, "d1");
 static ULONG BLITZ_ROUTINE boxselected_c(void)
 {
     struct page *p = PG;
-    ULONG d0;
+    ULONG offset;
 
     chkpage(p);
-    d0 = (ULONG)p->selected;
-    if (!d0)
+    offset = (ULONG)p->selected;
+    if (!offset)
         return (ULONG)-1;
-    d0 -= (ULONG)p->memloc;
-    if ((LONG)d0 < 0)
+    offset -= (ULONG)p->memloc;
+    if ((LONG)offset < 0)
         return (ULONG)-1;
-    BL_SETW(d0, (UWORD)d0 >> 5);
-    return d0;
+    BL_SETW(offset, (UWORD)offset >> 5);
+    return offset;
 }
 BLITZ_THUNK(_boxselected, boxselected_c, "d1/a0-a1");
 
@@ -1222,7 +1224,7 @@ static UWORD cx, cy;
 static void boxprint(struct page *p, ULONG n, const UBYTE *s, ULONG *lens)
 {
     UBYTE *b;
-    ULONG d7;
+    ULONG len;
 
     chkpage(p);
     if ((UWORD)n >= p->numboxes)
@@ -1230,29 +1232,29 @@ static void boxprint(struct page *p, ULONG n, const UBYTE *s, ULONG *lens)
     b = p->memloc + (WORD)(UWORD)(n << 5);
     if (BW(b, B_BTYPE))
         BLITZ_RUNERR(mess5);
-    d7 = lens[-1];
+    len = lens[-1];
     if ((UWORD)BW(b, B_H) < 16) {
         /* doleft: scroll the line left, print at the right */
         WORD x = BW(b, B_X), y = BW(b, B_Y), w = BW(b, B_W);
         UWORD col = (UWORD)(x + 11) >> 3;
-        UWORD d0, d7w = (UWORD)(d7 << 3);
+        UWORD width, lenpix = (UWORD)(len << 3);
         UWORD *wh = (UWORD *)lens - 2;
 
         cx = col;
         cy = y + 2;
-        d0 = (UWORD)(x - (WORD)(col << 3) + w - 1) >> 3;
-        cx += d0;
-        d0 <<= 3;
+        width = (UWORD)(x - (WORD)(col << 3) + w - 1) >> 3;
+        cx += width;
+        width <<= 3;
         wh[0] = 8;                              /* -4(a2) = h */
-        wh[1] = d0 - d7w;                       /* -2(a2) = w */
+        wh[1] = width - lenpix;                 /* -2(a2) = w */
         {
             UWORD wv = wh[1];
-            scroll((UWORD)((col << 3) + d7w), (UWORD)cy, (UWORD)(col << 3), (UWORD)cy,
+            scroll((UWORD)((col << 3) + lenpix), (UWORD)cy, (UWORD)(col << 3), (UWORD)cy,
                    wv, 8, p->mybitmap, p->mybitmap);
         }
         waitblit();
-        locate((ULONG)(LONG)(WORD)(cx - (UWORD)d7), BL_SWAP((ULONG)(LONG)(WORD)cy) >> 3);
-        printn(s, d7);
+        locate((ULONG)(LONG)(WORD)(cx - (UWORD)len), BL_SWAP((ULONG)(LONG)(WORD)cy) >> 3);
+        printn(s, len);
         return;
     }
     {
@@ -1268,7 +1270,7 @@ static void boxprint(struct page *p, ULONG n, const UBYTE *s, ULONG *lens)
         waitblit();
         locate((ULONG)(LONG)(WORD)((UWORD)(x + 11) >> 3),
                BL_SWAP((ULONG)(LONG)(WORD)(y + h - 10)) >> 3);
-        printn(s, d7);
+        printn(s, len);
     }
 }
 
@@ -1284,34 +1286,34 @@ static ULONG linelen[2];                        /* length; a2 points behind */
 /* BoxPrint Box#,Bank#,Line: a2 = bank object, d2 = line */
 static void BLITZ_ROUTINE boxprint2_c(ULONG n BL_REG(d0), UBYTE **bank BL_REG(a2), ULONG ln BL_REG(d2))
 {
-    UBYTE *a2 = *bank, *start;
-    UWORD d2 = (UWORD)ln;
-    ULONG d3;
+    UBYTE *pos = *bank, *start;
+    UWORD skip = (UWORD)ln;
+    ULONG len;
 
-    if (!a2)
+    if (!pos)
         BLITZ_RUNERR(mess6);
-    if ((WORD)--d2 >= 0) {
+    if ((WORD)--skip >= 0) {
         do {
             UBYTE c;
             do
-                c = *a2++;
+                c = *pos++;
             while (c && c != 10);
-        } while (d2-- != 0);
+        } while (skip-- != 0);
     }
-    start = a2;
-    d3 = (ULONG)-1;
+    start = pos;
+    len = (ULONG)-1;
     for (;;) {
-        UBYTE c = *a2++;
+        UBYTE c = *pos++;
 
-        d3++;
+        len++;
         if (!c)
             break;
         if (c == 10) {
-            a2[-1] = 0;
+            pos[-1] = 0;
             break;
         }
     }
-    linelen[0] = d3;
+    linelen[0] = len;
     boxprint(PG, n, start, linelen + 1);
 }
 BLITZ_THUNK(_boxprint2, boxprint2_c, "d0-d1/a0-a1");
@@ -1348,21 +1350,21 @@ BLITZ_THUNK(_selectbox, selectbox_c, "d0-d1/a0-a1");
 /* find the box at (x, y): enabled, x <= px < x+w, y <= py < y+h */
 static int inbox(UBYTE *b, WORD px, WORD py)
 {
-    WORD d2, d3;
+    WORD dx, dy;
 
     if (BW(b, B_BTYPE) <= 0)
         return 0;
-    d2 = BW(b, B_X) - px;
-    if (d2 > 0)
+    dx = BW(b, B_X) - px;
+    if (dx > 0)
         return 0;
-    d3 = BW(b, B_Y) - py;
-    if (d3 > 0)
+    dy = BW(b, B_Y) - py;
+    if (dy > 0)
         return 0;
-    d2 = -d2;
-    d3 = -d3;
-    if (BW(b, B_W) <= d2)
+    dx = -dx;
+    dy = -dy;
+    if (BW(b, B_W) <= dx)
         return 0;
-    return BW(b, B_H) > d3;
+    return BW(b, B_H) > dy;
 }
 
 /* SelectBox 0,x,y: -1 = found (selected), 0 = none */
@@ -1397,67 +1399,67 @@ BLITZ_THUNK(_selectbox3, selectbox3_c, "d1/a0-a1");
 /* SelectBox dx,dy: the nearest box in that direction */
 static void selectbox2(struct page *p, WORD dx, WORD dy)
 {
-    UBYTE *a0, *a1, *a2;
-    WORD d4, d5;
-    UWORD d0, n;
+    UBYTE *cur, *b, *best;
+    WORD edgex, edgey;
+    UWORD bestdist, n;
 
     chkpage(p);
-    a0 = p->selected;
-    if (!a0)
+    cur = p->selected;
+    if (!cur)
         return;
-    a2 = a0;
-    a1 = p->memloc;
-    d4 = BW(a0, B_X);
-    d5 = BW(a0, B_Y);
+    best = cur;
+    b = p->memloc;
+    edgex = BW(cur, B_X);
+    edgey = BW(cur, B_Y);
     if (dx > 0)
-        d4 += BW(a0, B_W);
+        edgex += BW(cur, B_W);
     if (dy > 0)
-        d5 += BW(a0, B_H) - 1;
-    d0 = 8192;
+        edgey += BW(cur, B_H) - 1;
+    bestdist = 8192;
     n = p->numboxes - 1;
     do {
-        WORD d6, d7;
+        WORD distx, disty;
 
-        if (a1 == a0 || BW(a1, B_BTYPE) <= 0)
+        if (b == cur || BW(b, B_BTYPE) <= 0)
             goto mis;
-        d6 = BW(a1, B_X) - d4;
+        distx = BW(b, B_X) - edgex;
         if (dx < 0)
-            d6 = -d6;
-        if (d6 < 0) {
+            distx = -distx;
+        if (distx < 0) {
             if (dx)
                 goto mis;
-            d6 = -d6;
+            distx = -distx;
         }
-        d7 = BW(a1, B_Y) - d5;
+        disty = BW(b, B_Y) - edgey;
         if (dy < 0)
-            d7 = -d7;
-        if (d7 < 0) {
+            disty = -disty;
+        if (disty < 0) {
             if (dy)
                 goto mis;
-            d7 = -d7;
+            disty = -disty;
         }
         if (dx) {
-            if (!d6)
+            if (!distx)
                 goto mis;
-            d7 <<= 5;
+            disty <<= 5;
         }
         if (dy) {
-            if (!d7)
+            if (!disty)
                 goto mis;
-            d6 <<= 5;
+            distx <<= 5;
         }
-        d7 += d6;
-        if (d0 < (UWORD)d7)                     /* CMP d7,d0:BCS mis */
+        disty += distx;
+        if (bestdist < (UWORD)disty)            /* CMP d7,d0:BCS mis */
             goto mis;
-        d0 = (UWORD)d7;
-        a2 = a1;
+        bestdist = (UWORD)disty;
+        best = b;
 mis:
-        a1 += 32;
+        b += 32;
     } while (n-- != 0);
-    if (a2 == a0)
+    if (best == cur)
         return;
-    p->selected = a2;
-    drawbox(p, a0);
+    p->selected = best;
+    drawbox(p, cur);
     drawbox(p, p->selected);
 }
 
@@ -1490,16 +1492,16 @@ static void docursor(struct page *p)
 {
     UBYTE *bm = p->mybitmap;
     UWORD bpr = *(UWORD *)bm;
-    UBYTE *a4 = *(UBYTE **)(bm + 8);
+    UBYTE *pos = *(UBYTE **)(bm + 8);
     int i;
 
-    a4 += (WORD)((UWORD)edxyc[0] >> 3);
-    a4 += (ULONG)(UWORD)edxyc[1] * bpr;         /* MULU */
-    a4 += edxyc[2];
+    pos += (WORD)((UWORD)edxyc[0] >> 3);
+    pos += (ULONG)(UWORD)edxyc[1] * bpr;        /* MULU */
+    pos += edxyc[2];
     for (i = 0; i < 8; i++) {
-        *a4 = ~*a4;
+        *pos = ~*pos;
         if (i < 7)
-            a4 += (WORD)bpr;
+            pos += (WORD)bpr;
     }
 }
 
@@ -1509,38 +1511,38 @@ static void edstring(struct page *p, UBYTE *b)
     UBYTE *bm = p->mybitmap;
     ULONG old = *(ULONG *)(bm + 40);
     WORD prompt = BW(b, B_PROMPT);
-    ULONG d0 = BL(b, B_TLEN);
+    ULONG len = BL(b, B_TLEN);
 
     *(ULONG *)(bm + 40) = *(ULONG *)edxyc;
-    BL_SETW(d0, d0 - prompt);
-    BL_SETW(d0, d0 - 1);
-    printn(BP(b, B_TEXT) + prompt, d0);
+    BL_SETW(len, len - prompt);
+    BL_SETW(len, len - 1);
+    printn(BP(b, B_TEXT) + prompt, len);
     *(ULONG *)(bm + 40) = old;
 }
 
 static void activateselected(struct page *p)
 {
     UBYTE *b;
-    WORD t;
+    WORD type;
 
     chkpage(p);
     b = p->selected;
     if (!b)
         return;
-    t = BW(b, B_BTYPE);
-    if (t == 1 || t == 5) {
+    type = BW(b, B_BTYPE);
+    if (type == 1 || type == 5) {
         drawbox(p, b);                          /* button up now cycles */
-    } else if (t == 2) {
+    } else if (type == 2) {
         edxyc[0] = (WORD)((((UWORD)(BW(b, B_X) + 11) >> 3) + BW(b, B_PROMPT)) << 3);
         edxyc[1] = BW(b, B_Y) + 2;
         edxyc[2] = 0;
         inedit = -1;
         drawbox(p, b);
         docursor(p);
-    } else if (t == 3) {
+    } else if (type == 3) {
         inprop = -1;
         drawbox(p, b);
-    } else if (t == 6) {
+    } else if (type == 6) {
         indrag = -1;
         drawbox(p, b);
     }
@@ -1558,12 +1560,12 @@ static ULONG BLITZ_ROUTINE spotbox_c(void)
     struct page *p = PG;
     UBYTE *b = p->memloc;
     UWORD n = p->numboxes - 1;
-    ULONG d6 = 0;
+    ULONG index = 0;
 
     do {
         if (inbox(b, mx, my))
-            return ((ULONG)(LONG)mx & 0xffff0000UL) | (UWORD)d6;  /* MOVE d6,d0 */
-        d6++;
+            return ((ULONG)(LONG)mx & 0xffff0000UL) | (UWORD)index; /* MOVE d6,d0 */
+        index++;
         b += 32;
     } while (n-- != 0);
     return (ULONG)-1;
@@ -1571,12 +1573,12 @@ static ULONG BLITZ_ROUTINE spotbox_c(void)
 BLITZ_THUNK(_spotbox, spotbox_c, "d1/a0-a1");
 
 /* MouseEnabled: MOVE mo,d0 (low word) / 0 while dragging */
-static ULONG BLITZ_ROUTINE mouseenabled_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE mouseenabled_c(ULONG callerd0 BL_REG(d0))
 {
     if (indrag)
         return 0;
-    BL_SETW(d0, mo);
-    return d0;
+    BL_SETW(callerd0, mo);
+    return callerd0;
 }
 BLITZ_THUNK(_mouseenabled, mouseenabled_c, "d1/a0-a1");
 
@@ -1587,8 +1589,8 @@ static const WORD delt[] = { 0, 0, 0, -1, -1, 0, 0, 1, 1, 0 };
 /* status 1=up 3=down 2=left 4=right */
 static LONG blitzevent(struct page *p)
 {
-    WORD d2;
-    UBYTE *a0;
+    WORD dir;
+    UBYTE *box;
 
     jx = (WORD)BCALL0(T_JOYX, 1);
     jy = (WORD)BCALL0(T_JOYY, 1);
@@ -1608,39 +1610,39 @@ static LONG blitzevent(struct page *p)
     mx = (WORD)(BCALL0(T_MOUSEX, 0) >> 16);
     my = (WORD)(BCALL0(T_MOUSEY, 0) >> 16);
 checkdir:
-    d2 = jx;
-    if (d2)
-        d2 += 3;
+    dir = jx;
+    if (dir)
+        dir += 3;
     else {
-        d2 = jy;
-        if (d2)
-            d2 += 2;
+        dir = jy;
+        if (dir)
+            dir += 2;
     }
     if (rawstatus(0x4c))
-        d2 = 1;
+        dir = 1;
     if (rawstatus(0x4d))
-        d2 = 3;
+        dir = 3;
     if (rawstatus(0x4e))
-        d2 = 4;
+        dir = 4;
     if (rawstatus(0x4f))
-        d2 = 2;
+        dir = 2;
     if (rawstatus(0x64) && rawstatus(0x66))
         mb |= 1;
     if (rawstatus(0x67) && rawstatus(0x65))
         mb |= 2;
-    if (!d2) {
+    if (!dir) {
         status = 0;
         goto dobutton;
     }
     /* changedir */
     mo = 0;
-    if (status == d2) {
+    if (status == dir) {
         if (--delay >= 0)
             goto dobutton;
         delay = dcon;
     } else {
         delay = dcon + dcon;
-        status = d2;
+        status = dir;
     }
     /* dodir */
     if (inedit)
@@ -1648,8 +1650,8 @@ checkdir:
     if (button)
         goto dobutton;
     if (status & 1) {
-        a0 = p->selected;
-        if (BW(a0, B_BTYPE) == 5)
+        box = p->selected;
+        if (BW(box, B_BTYPE) == 5)
             goto movelist;
     }
     {
@@ -1660,46 +1662,46 @@ checkdir:
 
 movelist:
     {
-        WORD v = BW(a0, B_VALUE) + status - 2, r = BW(a0, B_RANGE);
+        WORD v = BW(box, B_VALUE) + status - 2, r = BW(box, B_RANGE);
 
         if (v < 0)
             v = 0;
         if (v - r >= 0)                         /* CMP d1,d0:BMI fop */
             v = r - 1;
-        BW(a0, B_VALUE) = v;
-        drawbox(p, a0);
+        BW(box, B_VALUE) = v;
+        drawbox(p, box);
         return 0;
     }
 
 movecursor:
     {
-        WORD d0, d1;
+        WORD cursor, last;
         UBYTE c;
 
         docursor(p);
-        d0 = edxyc[2];
-        a0 = p->selected;
-        d1 = (WORD)BL(a0, B_TLEN) - BW(a0, B_PROMPT) - 1;
-        if (status == 2 && --d0 < 0)
-            d0 = 0;
+        cursor = edxyc[2];
+        box = p->selected;
+        last = (WORD)BL(box, B_TLEN) - BW(box, B_PROMPT) - 1;
+        if (status == 2 && --cursor < 0)
+            cursor = 0;
         if (status == 4) {
-            d0++;
-            if (d0 - d1 >= 0)                   /* CMP d1,d0:BMI nri */
-                d0--;
+            cursor++;
+            if (cursor - last >= 0)             /* CMP d1,d0:BMI nri */
+                cursor--;
         }
-        edxyc[2] = d0;
+        edxyc[2] = cursor;
         if (status == 1 || status == 3) {
-            UBYTE *a1 = BP(a0, B_TEXT) + BW(a0, B_PROMPT) + d0;
+            UBYTE *chr = BP(box, B_TEXT) + BW(box, B_PROMPT) + cursor;
 
-            c = (UBYTE)((status == 1 ? 1 : -1) + *a1);
+            c = (UBYTE)((status == 1 ? 1 : -1) + *chr);
             if (c == 31)
                 c = 90;
             if (c == 33)
                 c = 48;
             if ((BYTE)(c - 48) < 0 || (BYTE)(c - 91) >= 0)  /* BMI after CMP.b */
                 c = 32;
-            *a1 = c;
-            edstring(p, a0);
+            *chr = c;
+            edstring(p, box);
         }
         docursor(p);
         return 0;
@@ -1707,10 +1709,10 @@ movecursor:
 
 dobutton:
     {
-        UWORD d = rawstatus(0x44) ? 0xffff : 0;
+        UWORD buttons = rawstatus(0x44) ? 0xffff : 0;
 
-        d |= jb | mb;
-        if (d)
+        buttons |= jb | mb;
+        if (buttons)
             goto down;
         if (!button)
             goto noselect;
@@ -1720,18 +1722,18 @@ dobutton:
             goto noselect;
         inprop = 0;
         indrag = 0;
-        a0 = p->selected;
-        if (!a0 || BW(a0, B_COLOR) >= 0)
+        box = p->selected;
+        if (!box || BW(box, B_COLOR) >= 0)
             goto noselect;
-        BW(a0, B_COLOR) = ~BW(a0, B_COLOR);
-        if (BW(a0, B_BTYPE) == 1) {
-            UWORD v = BW(a0, B_VALUE) + 1;
+        BW(box, B_COLOR) = ~BW(box, B_COLOR);
+        if (BW(box, B_BTYPE) == 1) {
+            UWORD v = BW(box, B_VALUE) + 1;
 
-            if (v >= (UWORD)BW(a0, B_RANGE))
+            if (v >= (UWORD)BW(box, B_RANGE))
                 v = 0;
-            BW(a0, B_VALUE) = v;
+            BW(box, B_VALUE) = v;
         }
-        drawbox(p, a0);
+        drawbox(p, box);
         return -1;
 
 down:
@@ -1741,66 +1743,66 @@ down:
             goto movedrag;
         if (button)
             goto noselect;
-        button = d;
+        button = buttons;
         if (inedit) {
             inedit = 0;
             goto noselect;
         }
         if (mo && !selectbox3(p, mx, my))
             return 0;
-        a0 = p->selected;
-        if (!a0)
+        box = p->selected;
+        if (!box)
             goto noselect;
-        BW(a0, B_COLOR) = ~BW(a0, B_COLOR);
+        BW(box, B_COLOR) = ~BW(box, B_COLOR);
         activateselected(p);
         return 1;
     }
 
 noselect:
     {
-        WORD d0, d1, d2c, d3;
-        UBYTE *a1;
+        WORD key, last, cursor, k;
+        UBYTE *answer;
 
         if (!inedit)
             return 0;
-        d0 = (WORD)BCALL0(T_BLITZKEY, 0);
-        if (d0 < 0)
+        key = (WORD)BCALL0(T_BLITZKEY, 0);
+        if (key < 0)
             return 0;
         docursor(p);
-        a0 = p->selected;
-        a1 = BP(a0, B_TEXT) + BW(a0, B_PROMPT);
-        d1 = (WORD)BL(a0, B_TLEN) - BW(a0, B_PROMPT) - 1;
-        d2c = edxyc[2];
-        if ((UWORD)d0 >= 32 && (UWORD)d0 <= 126) {
-            if ((UWORD)d0 >= 97)
-                d0 -= 32;
-            d3 = d1;
-            while (--d3 != d2c)
-                a1[d3] = a1[d3 - 1];
-            a1[d2c] = (UBYTE)d0;
-            d2c++;
-            if (d2c - d1 >= 0)
-                d2c--;
-            edxyc[2] = d2c;
+        box = p->selected;
+        answer = BP(box, B_TEXT) + BW(box, B_PROMPT);
+        last = (WORD)BL(box, B_TLEN) - BW(box, B_PROMPT) - 1;
+        cursor = edxyc[2];
+        if ((UWORD)key >= 32 && (UWORD)key <= 126) {
+            if ((UWORD)key >= 97)
+                key -= 32;
+            k = last;
+            while (--k != cursor)
+                answer[k] = answer[k - 1];
+            answer[cursor] = (UBYTE)key;
+            cursor++;
+            if (cursor - last >= 0)
+                cursor--;
+            edxyc[2] = cursor;
         } else {
-            if (d0 != 127) {
-                if (d0 != 8 || --d2c < 0)
+            if (key != 127) {
+                if (key != 8 || --cursor < 0)
                     return 0;
-                edxyc[2] = d2c;
+                edxyc[2] = cursor;
             }
-            while (++d2c != d1)
-                a1[d2c - 1] = a1[d2c];
-            a1[d2c - 1] = ' ';
+            while (++cursor != last)
+                answer[cursor - 1] = answer[cursor];
+            answer[cursor - 1] = ' ';
         }
-        edstring(p, a0);
+        edstring(p, box);
         docursor(p);
         return 0;
     }
 
 movedrag:
-    a0 = p->selected;
-    BW(a0, B_VALUE) = mx - ox;
-    BW(a0, B_RANGE) = my - oy;
+    box = p->selected;
+    BW(box, B_VALUE) = mx - ox;
+    BW(box, B_RANGE) = my - oy;
     mx = ox;
     my = oy;
     {
@@ -1811,56 +1813,56 @@ movedrag:
 
 moveprop:
     {
-        WORD d0, d1;
+        WORD valx, valy;
 
-        a0 = p->selected;
-        d0 = BW(a0, B_VALUE);
-        d1 = BW(a0, B_RANGE);
+        box = p->selected;
+        valx = BW(box, B_VALUE);
+        valy = BW(box, B_RANGE);
         if (mo) {
-            WORD d2w = BW(a0, B_W), d3w = BW(a0, B_H);
-            WORD d4 = BW(a0, B_PROMPT), d5 = BW(a0, B_ANSLEN);
+            WORD trackw = BW(box, B_W), trackh = BW(box, B_H);
+            WORD knobw = BW(box, B_PROMPT), knobh = BW(box, B_ANSLEN);
 
-            if (d0 >= 0) {
-                d0 = mx;
-                d2w = d2w - 4 - d4;
-                d0 = d0 - BW(a0, B_X) - 2;
-                d4 = (UWORD)d4 >> 1;
-                d0 -= d4;
-                if (d0 < 0)
-                    d0 = 0;
-                d0 = (UWORD)d0 >> 1;
-                d0 = divs_sat((ULONG)(UWORD)d0 << 16, d2w);
+            if (valx >= 0) {
+                valx = mx;
+                trackw = trackw - 4 - knobw;
+                valx = valx - BW(box, B_X) - 2;
+                knobw = (UWORD)knobw >> 1;
+                valx -= knobw;
+                if (valx < 0)
+                    valx = 0;
+                valx = (UWORD)valx >> 1;
+                valx = divs_sat((ULONG)(UWORD)valx << 16, trackw);
             }
-            if (d1 >= 0) {
-                d1 = my;
-                d3w = d3w - 2 - d5;
-                d1 = d1 - BW(a0, B_Y) - 2;
-                d5 = (UWORD)d5 >> 1;
-                d1 -= d5;
-                if (d1 < 0)
-                    d1 = 0;
-                d1 = (UWORD)d1 >> 1;
-                d1 = divs_sat((ULONG)(UWORD)d1 << 16, d3w);
+            if (valy >= 0) {
+                valy = my;
+                trackh = trackh - 2 - knobh;
+                valy = valy - BW(box, B_Y) - 2;
+                knobh = (UWORD)knobh >> 1;
+                valy -= knobh;
+                if (valy < 0)
+                    valy = 0;
+                valy = (UWORD)valy >> 1;
+                valy = divs_sat((ULONG)(UWORD)valy << 16, trackh);
             }
         } else {
-            WORD d2s = status, d3s = pspd;
+            WORD stat = status, speed = pspd;
 
-            if (d0 >= 0) {
-                if (d2s == 2 && (d0 -= d3s) < 0)
-                    d0 = 0;
-                if (d2s == 4 && (d0 += d3s) < 0)
-                    d0 = 32767;
+            if (valx >= 0) {
+                if (stat == 2 && (valx -= speed) < 0)
+                    valx = 0;
+                if (stat == 4 && (valx += speed) < 0)
+                    valx = 32767;
             }
-            if (d1 >= 0) {
-                if (d2s == 1 && (d1 -= d3s) < 0)
-                    d1 = 0;
-                if (d2s == 3 && (d1 += d3s) < 0)
-                    d1 = 32767;
+            if (valy >= 0) {
+                if (stat == 1 && (valy -= speed) < 0)
+                    valy = 0;
+                if (stat == 3 && (valy += speed) < 0)
+                    valy = 32767;
             }
         }
-        BW(a0, B_VALUE) = d0;
-        BW(a0, B_RANGE) = d1;
-        drawbox(p, a0);
+        BW(box, B_VALUE) = valx;
+        BW(box, B_RANGE) = valy;
+        drawbox(p, box);
         return 2;
     }
 }
