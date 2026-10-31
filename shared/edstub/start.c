@@ -11,7 +11,18 @@
  * lowest address) and hands a pointer to it to a C handler; what the
  * handler writes into the frame becomes the returned registers.  So every
  * register the C side does not change is preserved.
+ *
+ * Built with -fbaserel (a program on TED's core: ab3cli), C code
+ * addresses its globals relative to a4: every entry the compiler calls
+ * loads the program's a4 first; the compiler's a4 comes back with the
+ * frame.
  */
+#ifdef __baserel__
+#define EDSTUB_LOAD_A4 "   lea     ___a4_init,a4\n"
+#else
+#define EDSTUB_LOAD_A4 ""
+#endif
+
 __asm__(
 "   .text\n"
 "   .even\n"
@@ -22,6 +33,7 @@ __asm__(
 "   .globl  _outside\n"
 "_outside:\n"                           /* must be at hunk offset 4 */
 "   movem.l d0-d7/a0-a6,-(sp)\n"
+EDSTUB_LOAD_A4
 "   move.l  sp,-(sp)\n"
 "   jsr     _edstub_init_c\n"
 "   addq.l  #4,sp\n"
@@ -34,6 +46,7 @@ __asm__(
 "   .globl  _edstub_tomain\n"
 "_edstub_tomain:\n"
 "   movem.l d0-d7/a0-a6,-(sp)\n"
+EDSTUB_LOAD_A4
 "   move.l  sp,_edstub_abort_sp\n"
 "   move.l  sp,-(sp)\n"
 "   jsr     _edstub_main_c\n"
@@ -81,6 +94,7 @@ __asm__(                                    \
 "   .globl  _" #name "_stub\n"              \
 "_" #name "_stub:\n"                        \
 "   movem.l d0-d7/a0-a6,-(sp)\n"            \
+EDSTUB_LOAD_A4                              \
 "   move.l  sp,-(sp)\n"                     \
 "   jsr     _" #name "_c\n"                 \
 "   addq.l  #4,sp\n"                        \

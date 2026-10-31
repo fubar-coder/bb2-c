@@ -27,6 +27,7 @@ void (*edstub_openio_hook)(void);
 void (*edstub_closeio_hook)(void);
 UWORD (*edstub_getinput2_hook)(void);
 char edstub_logname[EDSTUB_PATHLEN];
+int edstub_quiet;
 
 void edstub_tomain(void);
 ULONG edstub_abort_sp;
@@ -264,7 +265,7 @@ void edstub_log(const char *s)
     ULONG n = edstub_strlen(s);
     BPTR out = Output(), fh;
 
-    if (out) {
+    if (out && !edstub_quiet) {
         Write(out, (APTR)s, n);
         Write(out, "\n", 1);
     }
@@ -667,6 +668,9 @@ void edstub_init_c(struct regs *r)
     old_winptr = me->pr_WindowPtr;
     me->pr_WindowPtr = (APTR)-1;
 
+#ifdef EDSTUB_INIT
+    edstub_init();
+#endif
     r->a[0] = (ULONG)edstub_tomain;
     r->a[1] = (ULONG)&cd.openreq;
     r->d[0] = 0;

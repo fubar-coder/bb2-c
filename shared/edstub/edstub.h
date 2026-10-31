@@ -14,7 +14,9 @@
  * version requester, "Not Enough Object Memory"), DOS requesters are off.
  *
  * Built without any C runtime (-nostdlib, -ffreestanding): no startup
- * code, no libc, no libgcc - no 32 bit multiplication or division.
+ * code, no libc, no libgcc - no 32 bit multiplication or division.  A
+ * program on TED's core (ab3cli) compiles the frame itself with TED's
+ * -fbaserel (the entries load its a4, start.c) and EDSTUB_INIT.
  *
  * Runs on Kickstart 1.2 (V33) and later: only functions of V33 (no
  * CreateMsgPort, CreateIORequest, AllocDosObject ...; the helpers below
@@ -60,6 +62,18 @@ extern struct edstruct *edstub_ed;
  * @param arg  the argument blitz2 got (a0 of the main entry: the file name)
  */
 void edstub_main(const char *arg);
+
+#ifdef EDSTUB_INIT
+/**
+ * @brief The program's set-up, provided by a program whose frame is
+ *        compiled with EDSTUB_INIT defined (ab3cli).
+ *
+ * Called by the init entry once the frame is ready, before the compiler
+ * goes on (loads its libraries, opens the version requester): the place to
+ * set the hooks and edstub_quiet for what comes before edstub_main.
+ */
+void edstub_init(void);
+#endif
 
 /**
  * @brief Call code that may change every register (compiler callbacks, TED
@@ -141,6 +155,10 @@ extern char edstub_logname[EDSTUB_PATHLEN];
  * @param s  the line, without its line feed
  */
 void edstub_log(const char *s);
+
+/** @brief Non-zero: edstub_log does not write to Output() (a program with a
+ *         console output of its own; the log file still gets the lines). */
+extern int edstub_quiet;
 
 /**
  * @brief Set the log file: create it (a new file) and write the lines kept
