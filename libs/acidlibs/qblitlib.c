@@ -114,13 +114,29 @@ struct queue {
     ULONG len;                  /* +8  their length in bytes */
 };
 
-/* QBlitMode / init */
+/**
+ * @brief QBlitMode BLTCON0 - set the BLTCON0 value of the following QBlits.
+ *
+ * Only the minterm and channel bits are used: QBlit ORs the shift of the
+ * x position into it.  The default (init) is $FCA (A, B, C, D: cookie cut).
+ *
+ * @param m d0.w: BLTCON0 without the shift
+ */
 static void BLITZ_ROUTINE doqblitmode_c(UWORD m BL_REG(d0))
 {
     bcon0 = m;
 }
 BLITZ_THUNK(doqblitmode, doqblitmode_c, "d0-d1/a0-a1");
 
+/**
+ * @brief Library init: BLTCON0 back to $FCA.
+ *
+ * The original is `MOVE #$fca,d0` falling into doqblitmode, so d0.w
+ * is $FCA afterwards (its upper word stays).
+ *
+ * @param hiword d0: the caller's d0 (only its upper word is kept)
+ * @return d0: the upper word of @p hiword, $FCA in the low word
+ */
 static ULONG BLITZ_ROUTINE codeinit_c(ULONG hiword BL_REG(d0))
 {
     bcon0 = 0xfca;
@@ -128,7 +144,14 @@ static ULONG BLITZ_ROUTINE codeinit_c(ULONG hiword BL_REG(d0))
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
 
-/* FlushQueue - inline MOVE.l 4(a3),(a3) */
+/**
+ * @brief FlushQueue Queue# - empty the queue without touching the bitmaps.
+ *
+ * Inline code `MOVE.l 4(a3),(a3)`: the write position goes back to the
+ * start of the queue memory.  a3 = the queue object.
+ *
+ * Errors: "Uninitialized Queue" (unqueuechk, debugger only).
+ */
 BLITZ_INLINE(doflushqueue, "move.l 4(a3),(a3)");
 
 /* freequeue (_free) */
@@ -142,13 +165,27 @@ static void freeq(struct queue *q)
     }
 }
 
+/**
+ * @brief Object free routine (_free) of a Queue: free its memory.
+ *
+ * a3 = the queue object; memlib globfree of the items, the memory pointer
+ * is cleared.  BUG(orig) (#244): the write position stays stale.
+ */
 static void BLITZ_ROUTINE freequeue_c(void)
 {
     freeq((struct queue *)blitz_string);
 }
 BLITZ_THUNK(freequeue, freequeue_c, "a0");
 
-/* Queue n,items - 14 bytes per item */
+/**
+ * @brief Queue Queue#,Max Items - set up a queue for that many QBlits.
+ *
+ * a3 = the queue object.  The old memory is freed first (freequeue), then
+ * items * 14 bytes are allocated (memlib globalloc, MEMF_PUBLIC); the
+ * write position is set to their start.  The allocation is not checked.
+ *
+ * @param items d1.w: the maximum number of items
+ */
 static void BLITZ_ROUTINE doqueue_c(UWORD items BL_REG(d1))
 {
     struct queue *q = (struct queue *)blitz_string;
@@ -316,6 +353,26 @@ start:
 #define QBLIT_REGS WORD x BL_REG(d2), WORD y BL_REG(d3), struct queue *q BL_REG(a0), \
                    UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2)
 
+/**
+ * @brief QBlit Queue#,Shape#,X,Y - blit a shape and remember the area (Blitz mode).
+ *
+ * The shape (a3) is blitted through its cookie into all its planes of the
+ * used bitmap at x/y minus the shape's handle (BLTCON0 = shift | the
+ * QBlitMode value); an item {modulo, bltsize, bitmap depth - 1, bitmap,
+ * offset} is appended to the queue for UnQueue.  Blitz mode version: the
+ * blitter is used directly, no OwnBlitter.
+ *
+ * Errors (qblitchk, debugger only): "Uninitialized Queue", the blitlib
+ * checks (cookie, bitmap, shape, depth, coordinates) and "Queue Overflow".
+ * BUG(orig) (#423): only the error check tests for an overflow; a shape of
+ * depth 0 loops 65536 times (DBF) (#243).
+ *
+ * @param x  d2.w: the x position
+ * @param y  d3.w: the y position
+ * @param q  a0: the queue object
+ * @param cb a1: the chip base ($DFF000, chipbaselib)
+ * @param bm a2: the used bitmap
+ */
 void BLITZ_ROUTINE b_doblit_c(QBLIT_REGS);
 void BLITZ_ROUTINE b_doblit_c(QBLIT_REGS)
 {
@@ -324,6 +381,12 @@ void BLITZ_ROUTINE b_doblit_c(QBLIT_REGS)
     qblit(q, blitz_string, bm, cb, x, y, &st);
 }
 
+/**
+ * @brief QBlit Queue#,Shape#,X,Y in Amiga mode: b_doblit_c between
+ * OwnBlitter and DisownBlitter, waiting for the blitter at the end.
+ *
+ * @param gfx a6: graphics.library
+ */
 void BLITZ_ROUTINE a_doblit_c(QBLIT_REGS, struct Library *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_doblit_c(QBLIT_REGS, struct Library *gfx BL_REG(a6))
 {
@@ -336,12 +399,32 @@ void BLITZ_ROUTINE a_doblit_c(QBLIT_REGS, struct Library *gfx BL_REG(a6))
 }
 BLITZ_AB_ROUTINE(doblit, b_doblit_c, "   jmp     _a_doblit_c");
 
+/**
+ * @brief QBlit Queue#,Shape#,X,Y,Excessonoff - QBlit and fill the bitmap's
+ * planes beyond the shape's depth (Blitz mode).
+ *
+ * As b_doblit_c, then for every plane from the shape's depth up to the
+ * bitmap's depth one bit of @p bits (bit 0 first): set = the cookie area
+ * is set (minterm $BFA), clear = it is cleared ($B0A).  The queue item is
+ * the one of b_doblit_c (UnQueue clears all planes of the bitmap anyway).
+ *
+ * Errors: as b_doblit_c (qblitchk).
+ *
+ * @param bits d4.w: one bit per excess plane
+ */
 void BLITZ_ROUTINE b_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4));
 void BLITZ_ROUTINE b_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4))
 {
     qblitex(q, blitz_string, bm, cb, x, y, bits);
 }
 
+/**
+ * @brief QBlit Queue#,Shape#,X,Y,Excessonoff in Amiga mode: b_doblitex_c
+ * between OwnBlitter and DisownBlitter, waiting for the blitter at the end.
+ *
+ * @param bits d4.w: one bit per excess plane
+ * @param gfx  a6: graphics.library
+ */
 void BLITZ_ROUTINE a_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4),
                                 struct Library *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4),
@@ -354,12 +437,32 @@ void BLITZ_ROUTINE a_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4),
 }
 BLITZ_AB_ROUTINE(doblitex, b_doblitex_c, "   jmp     _a_doblitex_c");
 
+/**
+ * @brief UnQueue Queue# - clear all queued areas and empty the queue (Blitz mode).
+ *
+ * a3 = the queue object.  Every item's area is cleared in all planes of
+ * its bitmap (D only, minterm 0), not only in those of the shape: QBlit
+ * with Excessonoff changes them too, and UnQueue is meant to clear the
+ * area to colour 0 (not a bug).  The write position goes back to the
+ * start.
+ *
+ * Errors: "Uninitialized Queue" (unqueuechk, debugger only).
+ *
+ * @param cb a1: the chip base ($DFF000)
+ */
 void BLITZ_ROUTINE b_dounqueue_c(UBYTE *cb BL_REG(a1));
 void BLITZ_ROUTINE b_dounqueue_c(UBYTE *cb BL_REG(a1))
 {
     unqueue((struct queue *)blitz_string, cb);
 }
 
+/**
+ * @brief UnQueue Queue# in Amiga mode: b_dounqueue_c between OwnBlitter
+ * and DisownBlitter, waiting for the blitter at the end.
+ *
+ * @param cb  a1: the chip base ($DFF000)
+ * @param gfx a6: graphics.library
+ */
 void BLITZ_ROUTINE a_dounqueue_c(UBYTE *cb BL_REG(a1), struct Library *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_dounqueue_c(UBYTE *cb BL_REG(a1), struct Library *gfx BL_REG(a6))
 {
@@ -370,12 +473,33 @@ void BLITZ_ROUTINE a_dounqueue_c(UBYTE *cb BL_REG(a1), struct Library *gfx BL_RE
 }
 BLITZ_AB_ROUTINE(dounqueue, b_dounqueue_c, "   jmp     _a_dounqueue_c");
 
+/**
+ * @brief UnQueue Queue#,BitMap# - restore all queued areas from a bitmap
+ * and empty the queue (Blitz mode).
+ *
+ * As b_dounqueue_c, but every area is copied from the same place of
+ * @p bm (A -> D, minterm $9F0), plane by plane, instead of cleared.
+ *
+ * Errors (unqueuechk2, debugger only): "Uninitialized Queue",
+ * "Uninitialized BitMap".
+ *
+ * @param cb a1: the chip base ($DFF000)
+ * @param bm a2: the bitmap to copy from
+ */
 void BLITZ_ROUTINE b_dounqueue2_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2));
 void BLITZ_ROUTINE b_dounqueue2_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2))
 {
     unqueue2((struct queue *)blitz_string, cb, bm);
 }
 
+/**
+ * @brief UnQueue Queue#,BitMap# in Amiga mode: b_dounqueue2_c between
+ * OwnBlitter and DisownBlitter, waiting for the blitter at the end.
+ *
+ * @param cb  a1: the chip base ($DFF000)
+ * @param bm  a2: the bitmap to copy from
+ * @param gfx a6: graphics.library
+ */
 void BLITZ_ROUTINE a_dounqueue2_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2),
                                   struct Library *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_dounqueue2_c(UBYTE *cb BL_REG(a1), const UBYTE *bm BL_REG(a2),
