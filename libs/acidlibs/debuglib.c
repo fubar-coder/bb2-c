@@ -586,9 +586,20 @@ void BLITZ_ROUTINE __attribute__((noreturn)) handleflags(void)
 
 static const char starttext[] = "Interrupted - program start";
 
-/* codeinit - d0.b = non zero for auto run! (0: stop at the first line).
-   Sets the trap vectors #0-#5 in the VBR table; the old TRAP #1 vector
-   is the editor's token list (tokens). */
+/**
+ * @brief Library init: resets the debugger state and installs the trap
+ *        handlers.
+ *
+ * Clears the flags, direct mode and the output redirection, resets the
+ * procedure and interrupt stacks and the default handlers, and sets the
+ * trap vectors #0-#5 in the VBR table (runerrlib getvbr).  The old TRAP #1
+ * vector is the editor's token list (tokens).  With d0.b = 0 the program
+ * stops at once ("Interrupted - program start"; the binary, not the
+ * source).
+ *
+ * @param autorun  d0: low byte non zero for auto run, 0 = stop at the
+ *                 first line
+ */
 static void BLITZ_ROUTINE codeinit_c(ULONG autorun BL_REG(d0))
 {
     struct bl_regs r = { 0 };
@@ -622,7 +633,9 @@ static void BLITZ_ROUTINE codeinit_c(ULONG autorun BL_REG(d0))
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
 
-/* codefinit - nothing (the vectors stay set) */
+/**
+ * @brief Library finit: nothing (the trap vectors stay set).
+ */
 void BLITZ_ROUTINE codefinit(void)
 {
 }
@@ -632,7 +645,12 @@ void BLITZ_ROUTINE codefinit(void)
 /* The flag setters keep all registers.  The flags are tested by the trap
    handlers: each is one read-modify-write instruction (bset/or.b). */
 
-/* dostop - $D501: "***** Interupted *****" */
+/**
+ * @brief $D501 dostop: stops the program at the next new line.
+ *
+ * Sets the user error flag with the text "***** Interupted *****"; all
+ * registers kept.
+ */
 static void BLITZ_ROUTINE dostop_c(void)
 {
     usertext = "***** Interupted *****";
@@ -640,7 +658,15 @@ static void BLITZ_ROUTINE dostop_c(void)
 }
 BLITZ_THUNK(dostop, dostop_c, "d0-d1/a0-a1");
 
-/* doevaluate - $D504: a0 = expression */
+/**
+ * @brief $D504 doevaluate: evaluates an expression at the next new line.
+ *
+ * Sets the evaluate flag: handleflags runs "Print "+expression with the
+ * output going to astring and passes it to the eval handler.  All
+ * registers kept.
+ *
+ * @param text  a0: the expression
+ */
 static void BLITZ_ROUTINE doevaluate_c(const char *text BL_REG(a0))
 {
     evaltext = text;
@@ -648,7 +674,16 @@ static void BLITZ_ROUTINE doevaluate_c(const char *text BL_REG(a0))
 }
 BLITZ_THUNK(doevaluate, doevaluate_c, "d0-d1/a0-a1");
 
-/* doexecute - $D505: a0 = text to execute */
+/**
+ * @brief $D505 doexecute: executes a line of Blitz code at the next new
+ *        line.
+ *
+ * Sets the execute flag: handleflags lets the compiler run the text in
+ * direct mode and passes any output or error message to the eval
+ * handler.  All registers kept.
+ *
+ * @param text  a0: the text to execute
+ */
 static void BLITZ_ROUTINE doexecute_c(const char *text BL_REG(a0))
 {
     exectext = text;
@@ -656,26 +691,43 @@ static void BLITZ_ROUTINE doexecute_c(const char *text BL_REG(a0))
 }
 BLITZ_THUNK(doexecute, doexecute_c, "d0-d1/a0-a1");
 
-/* doquit - $D506 (also the default error handlers) */
+/**
+ * @brief $D506 doquit: ends the program at the next new line.
+ *
+ * Sets the end flag (handleflags: exitslib's end with the program's a5).
+ * Also the default super/user error handlers.  All registers kept.
+ */
 static void BLITZ_ROUTINE doquit_c(void)
 {
     flags[0] |= 0x80;
 }
 BLITZ_THUNK(doquit, doquit_c, "d0-d1/a0-a1");
 
-/* doskip - $D508 */
+/**
+ * @brief $D508 doskip: skips the current statement at the next new line.
+ *
+ * Sets the skip flag: handleflags jumps over the statement if the word
+ * at trappc+6 (its distance) is not 0.  All registers kept.
+ */
 static void BLITZ_ROUTINE doskip_c(void)
 {
     flags[0] |= 0x04;
 }
 BLITZ_THUNK(doskip, doskip_c, "d0-d1/a0-a1");
 
-/* donewmode - $D500: nothing */
+/**
+ * @brief $D500 donewmode: nothing.
+ */
 void BLITZ_ROUTINE donewmode(void)
 {
 }
 
-/* docall - $D509: call handler 6 with all registers passed through */
+/**
+ * @brief $D509 docall: calls handler 6 of the front end's table.
+ *
+ * New in the binary (not in the source).  All registers are passed
+ * through to the handler and back (a1 = the handler's address).
+ */
 BLITZ_ASM_ROUTINE(docall,
 "   move.l  _h6(pc),a1\n"
 "   jsr     (a1)\n"
@@ -690,9 +742,19 @@ struct handlers {
 };
 static_assert(sizeof(struct handlers) == 8 * 4);
 
-/* dosethandler - $D502: d0 = pointer to the procedure flag word, a0 =
-   handler table (state, super, user, wait, eval, -, docall, procedure).
-   C part: copy the table, return the old one. */
+/**
+ * @brief $D502 dosethandler: installs the debugger front end's handlers.
+ *
+ * C part: copies the table (state, super, user, wait, eval, -, docall,
+ * procedure) into the handler variables and remembers the procedure flag
+ * word (TRAP #4/#5 call the procedure handler while it is non zero).  The
+ * assembler wrapper below also returns a0/a1/a2 (the binary, not the
+ * source).
+ *
+ * @param pflag  d0: pointer to the procedure flag word
+ * @param tab    a0: the handler table
+ * @return d0: the old handler table
+ */
 static APTR BLITZ_ROUTINE dosethandler_c(UWORD *pflag BL_REG(d0),
                                          const struct handlers *tab BL_REG(a0))
 {
@@ -731,9 +793,17 @@ static const char *tokename(UWORD token)
     return "?????";
 }
 
-/* dodetoke - $D503: detokenise a0 -> a1.  A byte with bit 7 set starts a
-   token (2 bytes, bit 15 cleared = the number).  Out: a0/a1 behind the
-   terminating 0 (the wrapper passes them in memory: p[0] = a0, p[1] = a1) */
+/**
+ * @brief $D503 dodetoke: detokenises a line (a0 -> a1).
+ *
+ * A byte with bit 7 set starts a token (2 bytes, bit 15 cleared = the
+ * number), which is replaced by its name from the editor's token list
+ * ("?????" if unknown).  Out: a0/a1 behind the terminating 0 (the wrapper
+ * passes them in memory: p[0] = a0, p[1] = a1).
+ *
+ * @param p  a0: p[0] = the tokenised line (a0), p[1] = the destination
+ *           (a1); both are returned there
+ */
 static void BLITZ_ROUTINE dodetoke_c(UBYTE **p BL_REG(a0))
 {
     UBYTE *s = p[0], *dst = p[1], c;
@@ -764,13 +834,21 @@ BLITZ_ASM_ROUTINE(dodetoke,
 "   move.l  (sp)+,a1\n"
 "   rts");
 
-/* dofindoff - $D507: a0 = tokenised string, d0.w = position in it ->
-   d0.w = position in the detokenised text.
-   BUG(orig) (#127): the loop end test (BEQ at 'loop) sees the flags of the last
-   instruction: after a normal character `SUBQ #1,d0`, after a token
-   `SUBQ #1,d1` (the result, not the position); the position is lowered
-   by 2 for a token without a test, so a position inside a token runs on
-   to the end of the string. */
+/**
+ * @brief $D507 dofindoff: converts a position in a tokenised line into
+ *        the position in the detokenised text.
+ *
+ * BUG(orig) (#127): the loop end test (BEQ at 'loop) sees the flags of
+ * the last instruction: after a normal character `SUBQ #1,d0`, after a
+ * token `SUBQ #1,d1` (the result, not the position); the position is
+ * lowered by 2 for a token without a test, so a position inside a token
+ * runs on to the end of the string.
+ *
+ * @param s    a0: the tokenised line
+ * @param pos  d0: the position in it (word)
+ * @return d0: the position in the detokenised text (word; the thunk
+ *         writes only the low word of the saved d0)
+ */
 static UWORD BLITZ_ROUTINE dofindoff_c(const UBYTE *s BL_REG(a0), UWORD pos BL_REG(d0))
 {
     UWORD off = 0;

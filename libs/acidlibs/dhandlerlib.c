@@ -54,7 +54,34 @@
  */
 #include "blitzlib.h"
 
-void codeinit(void), codefinit(void);
+/**
+ * @brief Library init (assembler below): starts the debugger program as
+ *        the process "Blitz ][ Debug Proc".
+ *
+ * Copies the code template mystart..mystart_f (memlib globalloc, not
+ * checked), patches it with ltable and progadd and starts it with
+ * CreateProc; waits (WaitTOF) until the debugger has called l2
+ * (dosethandler), then installs the Ctrl-LAlt-C check as vertical blank
+ * server (intlib SetInt, level 5).  Nothing happens without a debugger
+ * program (d0 = 0); waits for ever if it never calls l2.
+ * BUG(orig) (#409): the copied code is started without a cache flush.
+ *
+ * In: d0 = BPTR of the debugger program loaded by the editor (0: none),
+ * a6 = dos, d6 = graphics.
+ */
+void codeinit(void);
+/**
+ * @brief Library finit (assembler below): ends the debugger process.
+ *
+ * Removes the vertical blank server, calls the debugger's cleanup handler
+ * (handler table +20), waits until the process has returned (taskdone)
+ * and frees the segment.
+ * BUG(orig) (#410): the segment is freed while the process still has to
+ * execute its last RTS in it.
+ *
+ * In: a6 = dos, d6 = graphics.
+ */
+void codefinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
