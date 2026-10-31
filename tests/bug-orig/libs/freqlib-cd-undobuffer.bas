@@ -12,7 +12,7 @@
 ; Correct: CD leaves the UndoBuffer pointers alone.
 ; @configs clib
 ; @pass runwrap=@INJECT@|undobuf click=FQ/CD click=FQ/CANCEL
-; @pass timeout=60
+; @pass timeout=120
 Screen 0,0,0,320,256,2,0,"freqlib",1,2
 Use Screen 0
 MaxLen p$=160

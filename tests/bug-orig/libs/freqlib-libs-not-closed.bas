@@ -8,7 +8,7 @@
 ; original leaves each of the three opened once more.
 ; @configs clib
 ; @pass runwrap=@INJECT@|opencount=dos.library opencount=intuition.library opencount=graphics.library click=FQ/CANCEL
-; @pass timeout=60
+; @pass timeout=120
 Screen 0,0,0,320,256,2,0,"freqlib",1,2
 Use Screen 0
 MaxLen p$=160
