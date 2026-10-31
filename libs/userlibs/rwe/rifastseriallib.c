@@ -240,11 +240,24 @@ static void setbaud(ULONG baud)
     SERPER = fs.baud;
 }
 
+/**
+ * @brief init: nothing.
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_codeinit(void)
 {
 }
 
-/* FinitSerialIO (and finit) */
+/**
+ * @brief FinitSerialIO (and finit): end the serial I/O, switch TBE/RBF back on.
+ *
+ * Nothing if not initialised (baud 0); else baud = 0 and the TBE (bit 11)
+ * and RBF (bit 0) bits of the saved inten are set again.  BUG(orig):
+ * inten is always $F01C (#651), whose bits 11 and 0 are clear, so it
+ * never writes; the write would go to the absolute address $9A, not
+ * INTENA (#648).
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_finitserialio(void)
 {
     UWORD on = 0;
@@ -266,7 +279,15 @@ void BLITZ_ROUTINE c_finitserialio(void)
     }
 }
 
-/* DoSerialIO [numbytes-1]: exchange the buffers byte by byte */
+/**
+ * @brief DoSerialIO numbytes-1: exchange the buffers byte by byte.
+ *
+ * Master (SetSerialMode <> 0): writes a byte of outbuf, then reads one
+ * into inbuf; slave: the other way round.  n + 1 bytes (DBRA).  Does not
+ * check the initialisation (BUG(orig) (#652)).
+ * @param n  d0: the number of bytes - 1
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_doserialIO(UWORD n BL_REG(d0))
 {
     UBYTE *out = fs.outbuf, *in = fs.inbuf;
@@ -284,12 +305,31 @@ void BLITZ_ROUTINE c_doserialIO(UWORD n BL_REG(d0))
     }
 }
 
+/**
+ * @brief DoSerialIO: c_doserialIO() with the count of InitSerialIO/SetIOSize.
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_doserialIO2(void)
 {
     c_doserialIO(fs.numbytes);
 }
 
-/* InitSerialIO baud,numbytes,inbuf,outbuf: d0 = baud (BUG(orig) (#650)) */
+/**
+ * @brief InitSerialIO baud,numbytes,inbuf,outbuf: set up the serial port for the transfers.
+ *
+ * Nothing if already initialised.  Switches the TBE and RBF interrupts
+ * off (INTENA $0801), sets SERPER = 3546895 / baud - 1 with DIVU.L, a
+ * 68020 instruction: an illegal instruction exception on a 68000
+ * (BUG(orig) (#647)), and stores numbytes - 1 and the buffers.
+ * BUG(orig): inten gets the immediate $F01C (the address of INTENAR), not
+ * INTENAR's value (#651); a baud rate that gives SERPER 0 (>= 1773448)
+ * leaves the library "not initialised" (#653).
+ * @param baud      d0: the baud rate
+ * @param numbytes  d1: the bytes of a DoSerialIO
+ * @param inbuf     d2: the receive buffer
+ * @param outbuf    d3: the send buffer
+ * @return d0: the baud argument, also when it did nothing (BUG(orig) (#650))
+ */
 ULONG BLITZ_ROUTINE c_initserialio(ULONG baud BL_REG(d0), UWORD numbytes BL_REG(d1),
                                    UBYTE *inbuf BL_REG(d2), UBYTE *outbuf BL_REG(d3))
 {
@@ -304,16 +344,32 @@ ULONG BLITZ_ROUTINE c_initserialio(ULONG baud BL_REG(d0), UWORD numbytes BL_REG(
     return baud;
 }
 
+/**
+ * @brief SetSerialMode mode: master (<> 0) or slave (0) for DoSerialIO.
+ * @param mode  d0: the mode (a byte; the first byte of the word mode)
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_setserialmode(UBYTE mode BL_REG(d0))
 {
     fs.mode = mode;
 }
 
+/**
+ * @brief EndSerialIO: "disable serial read/write" - does nothing (an RTS).
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_endserialio(void)
 {
 }
 
-/* PutSerial byte */
+/**
+ * @brief PutSerial byte: send one byte (through bytebuf).
+ *
+ * Waits for TBE and writes the byte with a stop bit to SERDAT; nothing
+ * if not initialised.
+ * @param b  d0: the byte
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_putserial(UBYTE b BL_REG(d0))
 {
     if (!fs.baud)
@@ -322,7 +378,15 @@ void BLITZ_ROUTINE c_putserial(UBYTE b BL_REG(d0))
     writebyte(fs.bytebuf[0]);
 }
 
-/* PutSerial address,bytes (0 = 2^32) */
+/**
+ * @brief PutSerial address,bytes: send a block of bytes.
+ *
+ * Nothing if not initialised.  BUG(orig) (#646): 0 bytes are 2^32
+ * (SUBQ.l: BNE).
+ * @param p  d0: the address of the data
+ * @param n  d1: the number of bytes
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_putserial2(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
     if (!fs.baud)
@@ -332,7 +396,13 @@ void BLITZ_ROUTINE c_putserial2(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
     while (--n != 0);
 }
 
-/* CheckSerial: the received byte, -1 if there is none */
+/**
+ * @brief CheckSerial: the received byte, without waiting.
+ *
+ * If RBF is set: the byte of SERDATR, RBF acknowledged in INTREQ.  Does
+ * not check the initialisation (#652).
+ * @return d0: the byte, -1 if there is none
+ */
 ULONG BLITZ_ROUTINE c_checkserial(void)
 {
     UBYTE b;
@@ -344,14 +414,26 @@ ULONG BLITZ_ROUTINE c_checkserial(void)
     return b;
 }
 
-/* GetSerial: wait for a byte */
+/**
+ * @brief GetSerial: wait for a byte and return it (through bytebuf).
+ *
+ * Does not check the initialisation (#652).
+ * @return d0: the byte
+ */
 ULONG BLITZ_ROUTINE c_getserial(void)
 {
     fs.bytebuf[0] = readbyte();
     return fs.bytebuf[0];
 }
 
-/* GetSerial address,bytes (0 = 2^32): d0 = address (BUG(orig) (#649)) */
+/**
+ * @brief GetSerial address,bytes: receive a block of bytes.
+ *
+ * BUG(orig): 0 bytes are 2^32 (#646); no initialisation check (#652).
+ * @param p  d0: the buffer
+ * @param n  d1: the number of bytes
+ * @return d0: the address argument (a #byte result, BUG(orig) (#649))
+ */
 ULONG BLITZ_ROUTINE c_getserial2(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
     UBYTE *a = p;
@@ -362,12 +444,24 @@ ULONG BLITZ_ROUTINE c_getserial2(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
     return (ULONG)p;
 }
 
+/**
+ * @brief FlushSerialIO: "make sure serial port is empty" - acknowledge RBF in INTREQ.
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_flushserialio(void)
 {
     INTREQ = INTF_RBF;
 }
 
-/* SyncPut address,bytes: send a byte, wait for the echo (into bytebuf) */
+/**
+ * @brief SyncPut address,bytes: send bytes, each paced by the other side's answer.
+ *
+ * For every byte: send it, wait for a byte back (into bytebuf).
+ * BUG(orig): 0 bytes are 2^32 (#646); no initialisation check (#652).
+ * @param p  d0: the data
+ * @param n  d1: the number of bytes
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_syncput(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
     do {
@@ -376,7 +470,16 @@ void BLITZ_ROUTINE c_syncput(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
     } while (--n != 0);
 }
 
-/* SyncGet address,bytes: receive a byte, answer with bytebuf (like the original) */
+/**
+ * @brief SyncGet address,bytes: receive bytes, answering each one.
+ *
+ * For every byte received it sends the byte in bytebuf (whatever was
+ * last written there: no defect, the answer only paces the sender).
+ * BUG(orig): 0 bytes are 2^32 (#646); no initialisation check (#652).
+ * @param p  d0: the buffer
+ * @param n  d1: the number of bytes
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_syncget(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
     do {
@@ -385,10 +488,17 @@ void BLITZ_ROUTINE c_syncget(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
     } while (--n != 0);
 }
 
-/* SyncSerial syncbyte: -1 = master, 0 = slave.  A byte already waiting
-   makes this side the slave: it waits for the sync byte, echoes it and
-   reads until a 0 arrives.  Otherwise it is the master: it sends the
-   sync byte until it comes back, then sends 0. */
+/**
+ * @brief SyncSerial syncbyte: synchronise with the other machine, deciding master and slave.
+ *
+ * A byte already waiting makes this side the slave: it waits for the
+ * sync byte, echoes it and reads until a 0 arrives.  Otherwise it is the
+ * master: it sends the sync byte until it comes back, then sends 0 and
+ * flushes.  BUG(orig) (#655): two machines starting at the same time
+ * both become master (each takes the other's sync byte for the echo).
+ * @param sync  d0: the sync byte
+ * @return d0: BB_TRUE = master, BB_FALSE = slave (a #word result)
+ */
 BB_BOOL BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
 {
     UBYTE b;
@@ -425,7 +535,14 @@ BB_BOOL BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
     return BB_TRUE;
 }
 
-/* SetIOSpeed baudrate: BUG(orig) (#654) divides by all of d0 */
+/**
+ * @brief SetIOSpeed baudrate: a new baud rate (SERPER) if initialised.
+ *
+ * DIVU.L as in InitSerialIO (68020, #647); BUG(orig) (#654): it divides
+ * by all of d0, also the upper word of its #word argument.
+ * @param baud  d0: the baud rate
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_setiospeed(ULONG baud BL_REG(d0))
 {
     if (!fs.baud)
@@ -433,11 +550,25 @@ void BLITZ_ROUTINE c_setiospeed(ULONG baud BL_REG(d0))
     setbaud(baud);
 }
 
+/**
+ * @brief SetIOSize bytes: the count of DoSerialIO without argument.
+ *
+ * Stored as it is (DoSerialIO transfers count + 1 bytes); InitSerialIO
+ * stores numbytes - 1.
+ * @param n  d0: the count
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_setiosize(UWORD n BL_REG(d0))
 {
     fs.numbytes = n;
 }
 
+/**
+ * @brief SetIOBuffers inbuf,outbuf: the buffers of DoSerialIO.
+ * @param in   d0: the receive buffer
+ * @param out  d1: the send buffer
+ * @return nothing
+ */
 void BLITZ_ROUTINE c_setiobuf(UBYTE *in BL_REG(d0), UBYTE *out BL_REG(d1))
 {
     fs.inbuf = in;
