@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+gadget 1 render shape 0 select shape 1
+gadget 2 render shape 2 select shape 3
+gadget 1 freed -1
+freed
+rc=0

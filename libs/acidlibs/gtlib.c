@@ -34,8 +34,7 @@
  *   - GTButton toggle (bit 13) sets TOGGLESELECT even if CreateGadget
  *     failed (writes address 14). (#171)
  *   - GTShape: the label of the previous gadget stays in the NewGadget
- *     (#172); an existing GadgetRender of the button is overwritten with
- *     the static Image (20 bytes), else replaced by it (#173).
+ *     (#172).
  *   - GTSetAttrs/GTChangeList/GTSetHighlight work on the LAST gadget of a
  *     run of gadgets with the same id, GTGetAttrs/GTGadPtr etc. on the
  *     FIRST; GTFreeGadget frees the whole run (first to last). (#175)
@@ -57,6 +56,13 @@
  *   used the previous values (GTString a pointer into the old string work
  *   area).  Here the forms without them set the initial values of the
  *   lists (0, GTLV_Selected -1, GTST_String NULL).
+ * Fixed (intended deviation, #173): GTShape copied its static image1
+ *   over the GadgetRender of the GadTools button (or set the static
+ *   image1 if there was none) and gave every gadget the static image2 as
+ *   SelectRender: GadTools' render object was overwritten, and the last
+ *   GTShape's images applied to all.  Here every GTShape gadget gets two
+ *   images of its own (a block of the list below); GadTools' pointers are
+ *   kept and put back before FreeGadgets.
  * Fixed (intended deviation, #327): GTShape did not check the result of
  *   CreateGadget: if it failed, the images and flags went to addresses
  *   12-25 (the exception vectors), with a GadgetRender read from address
@@ -501,17 +507,28 @@ static struct TextAttr *ufont;
 static struct Screen *uscreen;
 static struct NewGadget wrkgadget;
 
-/* memory of the gadgets (fixed, #174: the labels of cycle/mx), memlib
-   globalloc with this header in front: the GTList (the object, a3) and
-   the gadget it belongs to (0 until CreateGadget returned, or if it
-   failed); freed with the gadget or the GTList */
+/* memory of the gadgets (fixed, #174: the labels of cycle/mx; #173: the
+   images of GTShape), memlib globalloc with this header in front: the
+   GTList (the object, a3) and the gadget it belongs to (0 until
+   CreateGadget returned, or if it failed); freed with the gadget or the
+   GTList */
 struct gtblock {
     struct gtblock *next;
     struct gtcontext *owner;
     struct Gadget *gad;
     ULONG size;                 /* with the header */
+    ULONG shape;                /* a struct shapeimg follows */
 };
 static struct gtblock *gtblocks;
+/* gtblock.gad of a released block (its gadget is being freed) */
+#define GTB_RELEASED ((struct Gadget *)1)
+
+/* GTShape's images (fixed, #173) and the render pointers of GadTools
+   they replace, put back before FreeGadgets */
+struct shapeimg {
+    struct Image image[2];
+    APTR render, select;
+};
 
 static ULONG allocst(ULONG str, ULONG len)
 {
@@ -531,11 +548,32 @@ static struct gtblock *gtalloc(ULONG size)
     b->owner = (struct gtcontext *)blitz_string;
     b->gad = NULL;
     b->size = sizeof(struct gtblock) + size;
+    b->shape = 0;
     gtblocks = b;
     return b;
 }
 
-/* free the blocks of GTList c: all (gad 0) or those of gadget gad */
+/* before FreeGadgets: release the blocks of GTList c, all (gad 0) or
+   those of gadget gad; the render pointers of a GTShape gadget are
+   GadTools' again */
+static void gtrelease(struct gtcontext *c, struct Gadget *gad)
+{
+    struct gtblock *b;
+
+    for (b = gtblocks; b; b = b->next)
+        if (b->owner == c && (!gad || b->gad == gad)) {
+            if (b->shape && b->gad) {
+                struct shapeimg *si = (struct shapeimg *)(b + 1);
+
+                b->gad->GadgetRender = si->render;
+                b->gad->SelectRender = si->select;
+            }
+            b->gad = GTB_RELEASED;
+        }
+}
+
+/* after FreeGadgets: free the released blocks of GTList c (gad
+   GTB_RELEASED) or all its blocks (gad 0) */
 static void gtfreeblocks(struct gtcontext *c, struct Gadget *gad)
 {
     struct gtblock **link = &gtblocks, *b;
@@ -597,8 +635,9 @@ void BLITZ_ROUTINE _codefinit(void)
  *
  * Frees the VisualInfo and all gadgets of the GTList (a3) and clears the
  * context and the window; nothing for a GTList without gadgets.  It does
- * not detach the gadgets from a window.  Fixed (#174): also the label
- * blocks of its cycle/mx gadgets.
+ * not detach the gadgets from a window.  Fixed (#174, #173): also the
+ * label blocks of its cycle/mx gadgets and the images of its GTShape
+ * gadgets (GadTools' render pointers put back before FreeGadgets).
  */
 void BLITZ_ROUTINE _freecontext(void)
 {
@@ -607,6 +646,7 @@ void BLITZ_ROUTINE _freecontext(void)
     if (!c->context)
         return;
     FreeVisualInfo(c->vinfo);
+    gtrelease(c, NULL);
     FreeGadgets(c->context);
     gtfreeblocks(c, NULL);
     c->context = NULL;
@@ -1218,6 +1258,8 @@ static void doshape(UWORD id, WORD x, WORD y, ULONG flags,
                     struct TextAttr **font, struct Screen **scr)
 {
     struct Gadget *gad;
+    struct gtblock *blk;
+    struct shapeimg *si;
 
     handlestd(id, x, y, 0, 0, font, scr, NULL, 1);
     shapetags.disabled.ti_Data = bit(flags, 6);
@@ -1228,14 +1270,19 @@ static void doshape(UWORD id, WORD x, WORD y, ULONG flags,
         gflags = 0;
         return;
     }
-    if (gad->GadgetRender) {
-        ULONG *dst = (ULONG *)gad->GadgetRender, *src = (ULONG *)&image1;
-        int i;
-        for (i = 0; i < 5; i++)
-            *dst++ = *src++;
-    } else
-        gad->GadgetRender = &image1;
-    gad->SelectRender = &image2;
+    /* fixed (#173): images of its own; the original copied image1 over
+       GadTools' GadgetRender (or set the static image1 if there was
+       none) and gave every gadget the static image2 */
+    blk = gtalloc(sizeof(struct shapeimg));
+    si = (struct shapeimg *)(blk + 1);
+    blk->shape = 1;
+    blk->gad = gad;
+    si->image[0] = image1;
+    si->image[1] = image2;
+    si->render = gad->GadgetRender;
+    si->select = gad->SelectRender;
+    gad->GadgetRender = &si->image[0];
+    gad->SelectRender = &si->image[1];
     gad->Flags = gflags;
     gad->Activation = GACT_RELVERIFY;
     gad->GadgetType = gad->GadgetType + GTYP_BOOLGADGET - 1;
@@ -1257,13 +1304,14 @@ static void shape1(const struct bb_shape *shape)
  *
  * The shape's width, height, depth and data become the static Image 1
  * (GFLG_GADGIMAGE); the gadget gets the shape's size, GACT_RELVERIFY
- * and the boolean gadget type, GadgetRender = Image 1, SelectRender =
- * Image 2.  Flag bits: 6 GA_Disabled, 7 GA_Immediate.  Amiga mode only.
+ * and the boolean gadget type, GadgetRender = a copy of Image 1,
+ * SelectRender = a copy of Image 2.  Flag bits: 6 GA_Disabled, 7 GA_Immediate.  Amiga mode only.
  * Errors (debugger only): "Uninitialized Shape" (sgchk).
  * BUG(orig): the label of the previous gadget stays in the NewGadget
- * (#172); an existing GadgetRender is overwritten with Image 1 (20 bytes)
- * (#173).  Fixed (#327): if CreateGadget fails, nothing is written (the
- * original wrote to addresses 12-25).
+ * (#172).  Fixed (#173): the gadget gets copies of Image 1/2 of its own
+ * (the original overwrote GadTools' GadgetRender with Image 1 and shared
+ * the static Image 2).  Fixed (#327): if CreateGadget fails, nothing is
+ * written (the original wrote to addresses 12-25).
  *
  * @param id,x,y  d1-d3: gadget id and position
  * @param flags   d4: the flags
@@ -1394,8 +1442,8 @@ static struct Gadget *lastof(struct Gadget *gad, UWORD id)
  * and free them.
  *
  * The whole run from the first to the last gadget with the id
- * (FreeGadgets), BUG(orig) (#175); fixed (#174): with the label blocks of
- * the freed cycle/mx gadgets.  Amiga mode only.
+ * (FreeGadgets), BUG(orig) (#175); fixed (#174, #173): with the label
+ * blocks and GTShape images of the freed gadgets.  Amiga mode only.
  * Errors (debugger only): "GTList must be detached from window first!"
  * (freegadchk).
  *
@@ -1424,8 +1472,9 @@ static ULONG BLITZ_ROUTINE gtfreegadget_c(UWORD id BL_REG(d1),
     prev->NextGadget = last->NextGadget;
     last->NextGadget = NULL;
     for (gad = first; gad; gad = gad->NextGadget)
-        gtfreeblocks(c, gad);
+        gtrelease(c, gad);
     FreeGadgets(first);
+    gtfreeblocks(c, GTB_RELEASED);
     return n;
 }
 
