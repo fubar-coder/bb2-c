@@ -280,12 +280,12 @@ void BLITZ_ROUTINE c_libfinit(void)
 }
 
 /* OpenAHI unit,deviceID: -1 if ahi.device opened */
-ULONG BLITZ_ROUTINE c_openahi2(ULONG unit BL_REG(d0), ULONG id BL_REG(d1))
+BB_BOOL BLITZ_ROUTINE c_openahi2(ULONG unit BL_REG(d0), ULONG id BL_REG(d1))
 {
     struct bl_regs r;
 
     if (ahidevice)                      /* never (BUG(orig)) */
-        return 0;
+        return BB_FALSE;
     ahidevice = 0;
     deviceunit = unit;
     deviceid = id;                      /* not used */
@@ -294,13 +294,13 @@ ULONG BLITZ_ROUTINE c_openahi2(ULONG unit BL_REG(d0), ULONG id BL_REG(d1))
     r = (struct bl_regs){ .d0 = unit, .d1 = 0, .a0 = (ULONG)ahiname,
                           .a1 = (ULONG)ahiiorequest };
     if (BLITZ_BASEJSR(SysBase, LVO_OpenDevice, r))
-        return 0;
+        return BB_FALSE;
     ahibase = ahiiorequest->ahir_Std.io_Device;
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* OpenAHI unit: deviceID AHI_DEFAULT_ID */
-ULONG BLITZ_ROUTINE c_openahi(ULONG unit BL_REG(d0))
+BB_BOOL BLITZ_ROUTINE c_openahi(ULONG unit BL_REG(d0))
 {
     return c_openahi2(unit, AHI_DEFAULT_ID);
 }
@@ -447,8 +447,8 @@ ULONG BLITZ_ROUTINE c_requestedfreq(void)
 
 /* CludgeSound sound#,address: d0 = sound#, d1 = the 8SVX file, a0 = the
    sound object; risoundlib's routine, the rate also at +16 */
-static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
-                                        struct sound *saddr BL_REG(a0))
+static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_REG(d1),
+                                          struct sound *saddr BL_REG(a0))
 {
     UBYTE *iff, *src, *dst, *mem;       /* a0: the current IFF chunk */
     ULONG rate, clock, slen;
@@ -462,7 +462,7 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_R
         BLITZ_ALIBJSR(TOK_globfree, r);
     }
     if (LONGAT(sram + 8) != ID('8', 'S', 'V', 'X') || LONGAT(sram + 12) != ID('V', 'H', 'D', 'R'))
-        return 0;
+        return BB_FALSE;
     iff = sram + 12;
     iff += LONGAT(iff + 4);             /* BUG(orig): VHDR length 20 only (#832) */
     rate = WORDAT(iff);
@@ -477,7 +477,7 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_R
         iff += LONGAT(iff + 4);         /* BUG(orig): no pad byte (#828) */
         iff += 8;
         if (++chunk > 6)
-            return 0;
+            return BB_FALSE;
     }
     src = iff + 8;
     slen = LONGAT(iff + 4);
@@ -486,7 +486,7 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_R
         mem = dst = (UBYTE *)BLITZ_ALIBJSR(TOK_globalloc, r);
     }
     if (!mem)
-        return 0;
+        return BB_FALSE;
     n = (UWORD)(slen - 1);              /* DBRA: BUG(orig) #829 */
     do
         *dst++ = *src++;
@@ -498,7 +498,7 @@ static ULONG BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL_R
     saddr->replen = 0;
     SOUNDRATE(saddr) = (UWORD)rate;     /* BUG(orig): behind the object (#926),
                                            mark (+14) not cleared (#925) */
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
 /* Registers: the originals change d0/d1/a0/a1 (exec, AHI, memlib), a6
