@@ -114,7 +114,7 @@ struct amiga_emulation_params {
  * removed.  The work directory's snapshot.log tells what the session did.
  * Without slots (AMIGA_EMULATION_MAX=0, no limit): cold boot.
  */
-#define AMIGA_EMULATION_SNAP_KEEP 8u
+#define AMIGA_EMULATION_SNAP_KEEP 24u
 
 /* the RTG variant: Workbench on uaegfx (the other hardfile) */
 extern const struct amiga_emulation_option amiga_emulation_rtg[];

@@ -75,7 +75,9 @@ of the booted system, taken when the system waits for its job (about
   read-only ones). An extra volume `SNAP:` (`slot-K/ctl`) holds the waiter
   and the job. At the end of the session the links and `SNAP:` are
   removed; only the snapshots `slot-K/snap-KEY.uss` stay (about 0.6 MB
-  on the A1200, 80 KB on the A500), the 8 most recently used per slot.
+  on the A1200, 80 KB on the A500), the 24 most recently used per slot
+  (the tests use about a dozen configurations; 5 slots × 24 × 0.6 MB is
+  at most about 70 MB).
 * **The first session** of a configuration in a slot boots cold, with
   real empty directories at those paths (Amiberry resolves a link when it
   mounts, the state would keep the link's target): `TEST:run.script` is a
