@@ -313,13 +313,23 @@ static APTR walk(APTR *slot, UWORD n)
 
 /* ------------------------------------------------------- init / finit */
 
+/**
+ * @brief init: open gadtools.library (any version).
+ *
+ * Without it the list commands and CreateMenuStrip do nothing.
+ */
 static void BLITZ_ROUTINE libinit_c(void)
 {
     gtbase = OpenLibrary((CONST_STRPTR)gtname, 0);
 }
 BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
 
-/* BUG(orig) (#690): closes only if not open */
+/**
+ * @brief finit: close gadtools.library.
+ *
+ * BUG(orig) (#690): it closes only if the library is NOT open (TST.l:BNE
+ * 'ok), so never.
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (!gtbase) {
@@ -389,6 +399,21 @@ static BB_BOOL createmenustrip(struct gtmenulist *obj, struct Screen **scr)
     return BB_TRUE;
 }
 
+/**
+ * @brief CreateMenuStrip GTMenuList#: make the menu strip of the object's
+ * lists (gadtools CreateMenusA, LayoutMenusA with new look menus).
+ *
+ * An old strip is freed first.  The NewMenu array ((count + 1) * 20
+ * bytes, memlib) is freed again afterwards.  BUG(orig) (#689): no title
+ * reads the list at address 0, a failed allocation writes it to address
+ * 0; CreateMenusA and GetVisualInfoA are not checked.  Error check
+ * (createchk): "GTMenu has no data to build GTMenuList from!".
+ * @param scr  a0: the used screen object (screenslib), its first long the
+ *             Screen
+ * @param obj  a3: the GTMenuList object (#ia3|#pd0 of list#)
+ * @return d0: BB_TRUE; BB_FALSE without gadtools.library or if the
+ *         array could not be allocated
+ */
 static BB_BOOL BLITZ_ROUTINE createmenustrip_c(struct Screen **scr BL_REG(a0),
                                                struct gtmenulist *obj BL_REG(a3))
 {
@@ -396,7 +421,18 @@ static BB_BOOL BLITZ_ROUTINE createmenustrip_c(struct Screen **scr BL_REG(a0),
 }
 BLITZ_THUNK(_CreateMenuStrip, createmenustrip_c, "d1/a0-a1");
 
-/* GTSetMenu: a1 = the used window object, a6 = intuition */
+/**
+ * @brief GTSetMenu GTMenuList#: attach the object's menu strip to the used
+ * window.
+ *
+ * Without a strip, CreateMenuStrip makes it first (nothing if that
+ * fails); a strip already on the window is cleared first.
+ * @param scr    a0: the used screen object
+ * @param win    a1: the used window object, its first long the Window
+ * @param obj    a3: the GTMenuList object
+ * @param intui  a6: intuition.library
+ * @return nothing
+ */
 static void BLITZ_ROUTINE setmenu_c(struct Screen **scr BL_REG(a0), struct Window **win BL_REG(a1),
                                     struct gtmenulist *obj BL_REG(a3),
                                     struct Library *intui BL_REG(a6))
@@ -416,6 +452,13 @@ static void BLITZ_ROUTINE setmenu_c(struct Screen **scr BL_REG(a0), struct Windo
 }
 BLITZ_THUNK(_setmenu, setmenu_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GTUnSetMenu: remove the menu strip from the used window (if it
+ * has one).
+ * @param win    a2: the used window object
+ * @param intui  a6: intuition.library
+ * @return nothing
+ */
 static void BLITZ_ROUTINE gtunsetmenu_c(struct Window **win BL_REG(a2),
                                         struct Library *intui BL_REG(a6))
 {
@@ -427,7 +470,19 @@ BLITZ_THUNK(_gtunsetmenu, gtunsetmenu_c, "d0-d1/a0-a1");
 
 /* ----------------------------------------------------------- the lists */
 
-/* GTMenuTitle list#,menu,title$: inserted as title `menu` */
+/**
+ * @brief GTMenuTitle GTMenuList#,menu,title$: insert a menu title as
+ * title `menu` of the list.
+ *
+ * Nothing without gadtools.library or if title menu - 1 is missing.  The
+ * title (12 bytes) is allocated uncleared (MEMF_PUBLIC; all its fields
+ * are written, no defect), the text copied with maxslib AllocSt.
+ * @param menu  d1.w: the title's number
+ * @param text  d2: title$
+ * @param args  a2: the argument stack, -4(a2) the length of title$
+ * @param obj   a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE gtmenutitle_c(ULONG menu BL_REG(d1), ULONG text BL_REG(d2),
                                         const ULONG *args BL_REG(a2),
                                         struct gtmenulist *obj BL_REG(a3))
@@ -520,6 +575,19 @@ static void do_gtitem(ULONG itemflags, ULONG menu, ULONG itemno, ULONG text, ULO
     ULONG text BL_REG(d4), ULONG shortcut BL_REG(d5), ULONG exclude BL_REG(d6),              \
     const ULONG *stack BL_REG(a2), struct gtmenulist *obj BL_REG(a3)
 
+/**
+ * @brief GTMenuItem GTMenuList#,flags,menu,item: insert a bar label
+ * (NM_BARLABEL) as item `item` of title `menu`.
+ *
+ * Mutual exclude and UserData 0.  Nothing without gadtools.library or if
+ * the title or item - 1 is missing.
+ * @param itemflags  d1.w: the NewMenu flags
+ * @param menu       d2.w: the title
+ * @param itemno     d3.w: the item's number
+ * @param stack      a2: the argument stack
+ * @param obj        a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE gtmenuitem2_c(ITEMARGS)
 {
     (void)text; (void)shortcut;
@@ -529,6 +597,19 @@ static void BLITZ_ROUTINE gtmenuitem2_c(ITEMARGS)
 }
 BLITZ_THUNK(_gtmenuitem2, gtmenuitem2_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GTMenuItem GTMenuList#,flags,menu,item,itemtext$: insert an item
+ * without a shortcut.
+ *
+ * As the form without text; the text is copied with AllocSt.
+ * @param itemflags  d1.w: the NewMenu flags
+ * @param menu       d2.w: the title
+ * @param itemno     d3.w: the item's number
+ * @param text       d4: itemtext$
+ * @param stack      a2: the argument stack (the string lengths)
+ * @param obj        a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE gtmenuitem3_c(ITEMARGS)
 {
     (void)shortcut;
@@ -538,6 +619,21 @@ static void BLITZ_ROUTINE gtmenuitem3_c(ITEMARGS)
 }
 BLITZ_THUNK(_gtmenuitem3, gtmenuitem3_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GTMenuItem GTMenuList#,flags,menu,item,itemtext$,shortcut$:
+ * insert an item with a shortcut.
+ *
+ * BUG(orig) (#694): shortcut$ is tested by its low word, a string at an
+ * address with low word 0 counts as none.
+ * @param itemflags  d1.w: the NewMenu flags
+ * @param menu       d2.w: the title
+ * @param itemno     d3.w: the item's number
+ * @param text       d4: itemtext$
+ * @param shortcut   d5: shortcut$
+ * @param stack      a2: the argument stack (the string lengths)
+ * @param obj        a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE gtmenuitem_c(ITEMARGS)
 {
     me = 0;
@@ -546,6 +642,19 @@ static void BLITZ_ROUTINE gtmenuitem_c(ITEMARGS)
 }
 BLITZ_THUNK(_gtmenuitem, gtmenuitem_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GTMenuItem ...,itemtext$,shortcut$,mutualexclude: insert an item
+ * with a mutual exclude mask.
+ * @param itemflags  d1.w: the NewMenu flags
+ * @param menu       d2.w: the title
+ * @param itemno     d3.w: the item's number
+ * @param text       d4: itemtext$
+ * @param shortcut   d5: shortcut$ (#694)
+ * @param exclude    d6: the mutual exclude mask
+ * @param stack      a2: the argument stack (the string lengths)
+ * @param obj        a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE gtmenuitem4_c(ITEMARGS)
 {
     me = exclude;
@@ -554,7 +663,22 @@ static void BLITZ_ROUTINE gtmenuitem4_c(ITEMARGS)
 }
 BLITZ_THUNK(_gtmenuitem4, gtmenuitem4_c, "d0-d1/a0-a1");
 
-/* BUG(orig) (#692): `me` stays from the call before */
+/**
+ * @brief GTMenuItem ...,itemtext$,shortcut$,mutualexclude,UserData:
+ * insert an item with UserData.
+ *
+ * BUG(orig) (#692): the mutual exclude is not taken (it jumps past MOVE.l
+ * d6,me): it stays from the GTMenuItem/GTSubItem before.
+ * @param itemflags  d1.w: the NewMenu flags
+ * @param menu       d2.w: the title
+ * @param itemno     d3.w: the item's number
+ * @param text       d4: itemtext$
+ * @param shortcut   d5: shortcut$ (#694)
+ * @param exclude    d6: the mutual exclude mask (ignored, #692)
+ * @param stack      a2: the argument stack, UserData at -16(a2)
+ * @param obj        a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE gtmenuitem5_c(ITEMARGS)
 {
     (void)exclude;
@@ -592,6 +716,20 @@ static void do_gtsubitem(ULONG itemflags, ULONG menu, ULONG itemno, ULONG subno,
     ULONG subno BL_REG(d4), ULONG text BL_REG(d5), ULONG shortcut BL_REG(d6),            \
     const ULONG *stack BL_REG(a2), struct gtmenulist *obj BL_REG(a3)
 
+/**
+ * @brief GTSubItem GTMenuList#,flags,menu,item,subitem: insert a bar label
+ * as sub item `subitem` of item `item` of title `menu`.
+ *
+ * Mutual exclude and UserData 0.  Nothing without gadtools.library or if
+ * the title, the item or subitem - 1 is missing.
+ * @param itemflags  d1.w: the NewMenu flags
+ * @param menu       d2.w: the title
+ * @param itemno     d3.w: the item
+ * @param subno      d4.w: the sub item's number
+ * @param stack      a2: the argument stack
+ * @param obj        a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE gtsubitem2_c(SUBARGS)
 {
     (void)text; (void)shortcut;
@@ -601,6 +739,18 @@ static void BLITZ_ROUTINE gtsubitem2_c(SUBARGS)
 }
 BLITZ_THUNK(_gtsubitem2, gtsubitem2_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GTSubItem GTMenuList#,flags,menu,item,subitem,itemtext$: insert a
+ * sub item without a shortcut.
+ * @param itemflags  d1.w: the NewMenu flags
+ * @param menu       d2.w: the title
+ * @param itemno     d3.w: the item
+ * @param subno      d4.w: the sub item's number
+ * @param text       d5: itemtext$
+ * @param stack      a2: the argument stack (the string lengths)
+ * @param obj        a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE gtsubitem3_c(SUBARGS)
 {
     (void)shortcut;
@@ -610,6 +760,24 @@ static void BLITZ_ROUTINE gtsubitem3_c(SUBARGS)
 }
 BLITZ_THUNK(_gtsubitem3, gtsubitem3_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GTSubItem ...,itemtext$,shortcut$: insert a sub item with a
+ * shortcut.
+ *
+ * shortcut$ is a #push argument: its address and length are taken from
+ * the a2 stack (the d6 value only decides whether there is one, by its
+ * low word, BUG(orig) #694).
+ * @param itemflags  d1.w: the NewMenu flags
+ * @param menu       d2.w: the title
+ * @param itemno     d3.w: the item
+ * @param subno      d4.w: the sub item's number
+ * @param text       d5: itemtext$
+ * @param shortcut   d6: tested for 0 (TST.w)
+ * @param stack      a2: the argument stack (the string lengths, the
+ *                   pushed shortcut$)
+ * @param obj        a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE gtsubitem_c(SUBARGS)
 {
     me = 0;
@@ -618,6 +786,19 @@ static void BLITZ_ROUTINE gtsubitem_c(SUBARGS)
 }
 BLITZ_THUNK(_gtsubitem, gtsubitem_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GTSubItem ...,itemtext$,shortcut$,mutualexclude: insert a sub
+ * item with a mutual exclude mask.
+ * @param itemflags  d1.w: the NewMenu flags
+ * @param menu       d2.w: the title
+ * @param itemno     d3.w: the item
+ * @param subno      d4.w: the sub item's number
+ * @param text       d5: itemtext$
+ * @param shortcut   d6: shortcut$ (#694)
+ * @param stack      a2: the argument stack, the mutual exclude at -16(a2)
+ * @param obj        a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE gtsubitem4_c(SUBARGS)
 {
     userdata = 0;
@@ -626,6 +807,20 @@ static void BLITZ_ROUTINE gtsubitem4_c(SUBARGS)
 }
 BLITZ_THUNK(_gtsubitem4, gtsubitem4_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GTSubItem ...,itemtext$,shortcut$,mutualexclude,UserData: insert
+ * a sub item with a mutual exclude mask and UserData.
+ * @param itemflags  d1.w: the NewMenu flags
+ * @param menu       d2.w: the title
+ * @param itemno     d3.w: the item
+ * @param subno      d4.w: the sub item's number
+ * @param text       d5: itemtext$
+ * @param shortcut   d6: shortcut$ (#694)
+ * @param stack      a2: the argument stack, the mutual exclude at -16(a2),
+ *                   UserData at -20(a2)
+ * @param obj        a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE gtsubitem5_c(SUBARGS)
 {
     userdata = stack[-5];               /* -20(a2) */
@@ -665,8 +860,16 @@ static void freeitemlist(struct gtentry *it, ULONG n)
     }
 }
 
-/* the object's free routine (FreeMenus with gtbase unchecked, like the
-   original); BUG(orig) (#695): the title strings stay */
+/**
+ * @brief The free routine of a GTMenuList object: the menu strip, the
+ * titles and their items.
+ *
+ * FreeMenus with the gadtools base unchecked, like the original (a strip
+ * exists only if it was open).  BUG(orig) (#695): the title strings are
+ * never freed.  The object is cleared (+0, +4, the long at +8).
+ * @param obj  a3: the object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE freemenu_c(struct gtmenulist *obj BL_REG(a3))
 {
     struct gtentry *title, *next, *items;
@@ -728,6 +931,17 @@ static struct gtentry *finditem(struct gtmenulist *obj, ULONG menu, ULONG itemno
     return entry;
 }
 
+/**
+ * @brief GTFreeMenu GTMenuList#,menu: remove a title with its items from
+ * the list.
+ *
+ * Nothing without gadtools.library or if it is missing.  BUG(orig)
+ * (#695): its string stays.  The menu strip is not changed (it is made
+ * again by CreateMenuStrip).
+ * @param menu  d1.w: the title
+ * @param obj   a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE freetitle_c(ULONG menu BL_REG(d1), struct gtmenulist *obj BL_REG(a3))
 {
     struct gtentry *title, *prev, *items;
@@ -742,6 +956,17 @@ static void BLITZ_ROUTINE freetitle_c(ULONG menu BL_REG(d1), struct gtmenulist *
 }
 BLITZ_THUNK(_freetitle, freetitle_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GTFreeMenu GTMenuList#,menu,item: remove an item with its sub
+ * items and strings from the list.
+ *
+ * BUG(orig) (#691): the item number is tested as a long (TST.l): the
+ * upper word of the word argument decides whether it is given.
+ * @param menu    d1.w: the title
+ * @param itemno  d2: the item
+ * @param obj     a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE freeitem_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                      struct gtmenulist *obj BL_REG(a3))
 {
@@ -754,6 +979,17 @@ static void BLITZ_ROUTINE freeitem_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(
 }
 BLITZ_THUNK(_freeitem, freeitem_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GTFreeMenu GTMenuList#,menu,item,subitem: remove a sub item with
+ * its strings from the list.
+ *
+ * BUG(orig) (#691): the numbers are tested as longs (TST.l).
+ * @param menu    d1.w: the title
+ * @param itemno  d2: the item
+ * @param subno   d3: the sub item
+ * @param obj     a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE freesubitem_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                         ULONG subno BL_REG(d3), struct gtmenulist *obj BL_REG(a3))
 {
@@ -787,7 +1023,16 @@ static void changestate(struct Menu *m, UWORD on, UBYTE bit)
         FLAGS_LO(m->Flags) &= (UBYTE)~bit;
 }
 
-/* GTMenuState list#,on|off: every menu (MENUENABLED) */
+/**
+ * @brief GTMenuState GTMenuList#,On|Off: enable or disable every menu of
+ * the strip (MENUENABLED).
+ *
+ * BUG(orig) (#693): the flags are changed directly, also while the strip
+ * is attached to a window.
+ * @param on   d1.w: 0 off, else on
+ * @param obj  a3: the GTMenuList object (0x1380: #ia3)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE domenustate_c(ULONG on BL_REG(d1), struct gtmenulist *obj BL_REG(a3))
 {
     APTR *p;
@@ -799,6 +1044,17 @@ static void BLITZ_ROUTINE domenustate_c(ULONG on BL_REG(d1), struct gtmenulist *
 }
 BLITZ_THUNK(domenustate, domenustate_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GTMenuState GTMenuList#,menu,On|Off: enable or disable a menu
+ * (MENUENABLED).
+ *
+ * The menu is not checked (a missing one reads address 0; error check
+ * statechk2: "Illegal Menu number").  BUG(orig) (#693) as above.
+ * @param menu  d1.w: the menu
+ * @param on    d2.w: 0 off, else on
+ * @param obj   a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE domenustate2_c(ULONG menu BL_REG(d1), ULONG on BL_REG(d2),
                                          struct gtmenulist *obj BL_REG(a3))
 {
@@ -806,7 +1062,17 @@ static void BLITZ_ROUTINE domenustate2_c(ULONG menu BL_REG(d1), ULONG on BL_REG(
 }
 BLITZ_THUNK(domenustate2, domenustate2_c, "d0-d1/a0-a1");
 
-/* an item: ITEMENABLED (bit 4 of the low byte of Flags) */
+/**
+ * @brief GTMenuState GTMenuList#,menu,item,On|Off: enable or disable an
+ * item (ITEMENABLED, bit 4 of the low byte of Flags).
+ *
+ * Not checked (error check statechk3); BUG(orig) (#693) as above.
+ * @param menu    d1.w: the menu
+ * @param itemno  d2.w: the item
+ * @param on      d3.w: 0 off, else on
+ * @param obj     a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE domenustate3_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                          ULONG on BL_REG(d3), struct gtmenulist *obj BL_REG(a3))
 {
@@ -814,6 +1080,18 @@ static void BLITZ_ROUTINE domenustate3_c(ULONG menu BL_REG(d1), ULONG itemno BL_
 }
 BLITZ_THUNK(domenustate3, domenustate3_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GTMenuState GTMenuList#,menu,item,subitem,On|Off: enable or
+ * disable a sub item (ITEMENABLED).
+ *
+ * Not checked (error check statechk4); BUG(orig) (#693) as above.
+ * @param menu    d1.w: the menu
+ * @param itemno  d2.w: the item
+ * @param subno   d3.w: the sub item
+ * @param on      d4.w: 0 off, else on
+ * @param obj     a3: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE domenustate4_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                          ULONG subno BL_REG(d3), ULONG on BL_REG(d4),
                                          struct gtmenulist *obj BL_REG(a3))
@@ -823,8 +1101,17 @@ static void BLITZ_ROUTINE domenustate4_c(ULONG menu BL_REG(d1), ULONG itemno BL_
 }
 BLITZ_THUNK(domenustate4, domenustate4_c, "d0-d1/a0-a1");
 
-/* GTMenuChecked: CHECKED (bit 0 of the high byte of Flags); SNE:EXT.w -
-   the upper word of d0 stays */
+/**
+ * @brief GTMenuChecked(GTMenuList#,Menu,Item): whether an item of the
+ * strip is checked (CHECKED, bit 0 of the high byte of Flags).
+ *
+ * Not checked (error check chkchk3).
+ * @param result  d0: its upper word stays (SNE:EXT.w, a word result)
+ * @param menu    d1.w: the menu
+ * @param itemno  d2.w: the item
+ * @param obj     a2: the GTMenuList object (0x1280: #ia2)
+ * @return d0.w: -1 if checked, else 0
+ */
 static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG result BL_REG(d0), ULONG menu BL_REG(d1),
                                            ULONG itemno BL_REG(d2),
                                            struct gtmenulist *obj BL_REG(a2))
@@ -835,6 +1122,18 @@ static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG result BL_REG(d0), ULONG menu B
 }
 BLITZ_THUNK(domenuchecked, domenuchecked_c, "d1/a0-a1");
 
+/**
+ * @brief GTMenuChecked(GTMenuList#,Menu,Item,Subitem): whether a sub item
+ * is checked.
+ *
+ * Not checked (error check chkchk4).
+ * @param result  d0: its upper word stays
+ * @param menu    d1.w: the menu
+ * @param itemno  d2.w: the item
+ * @param subno   d3.w: the sub item
+ * @param obj     a2: the GTMenuList object
+ * @return d0.w: -1 if checked, else 0
+ */
 static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG result BL_REG(d0), ULONG menu BL_REG(d1),
                                             ULONG itemno BL_REG(d2), ULONG subno BL_REG(d3),
                                             struct gtmenulist *obj BL_REG(a2))
@@ -853,6 +1152,18 @@ static void setchecked(struct MenuItem *mi, UWORD on)
         FLAGS_HI(mi->Flags) &= (UBYTE)~(CHECKED >> 8);
 }
 
+/**
+ * @brief GTSetMenuChecked GTMenuList#,Menu,Item,Off|On: check or uncheck
+ * an item of the strip (CHECKED).
+ *
+ * Not checked (error check chkchk3).  BUG(orig) (#693): directly, also
+ * while the strip is attached to a window.
+ * @param menu    d1.w: the menu
+ * @param itemno  d2.w: the item
+ * @param on      d3.w: 0 off, else on
+ * @param obj     a2: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE setmenuchecked_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                            ULONG on BL_REG(d3), struct gtmenulist *obj BL_REG(a2))
 {
@@ -860,6 +1171,18 @@ static void BLITZ_ROUTINE setmenuchecked_c(ULONG menu BL_REG(d1), ULONG itemno B
 }
 BLITZ_THUNK(setmenuchecked, setmenuchecked_c, "d0-d1/a0-a1");
 
+/**
+ * @brief GTSetMenuChecked GTMenuList#,Menu,Item,Subitem,Off|On: check or
+ * uncheck a sub item.
+ *
+ * Not checked (error check chkchk4).  BUG(orig) (#693) as above.
+ * @param menu    d1.w: the menu
+ * @param itemno  d2.w: the item
+ * @param subno   d3.w: the sub item
+ * @param on      d4.w: 0 off, else on
+ * @param obj     a2: the GTMenuList object
+ * @return nothing
+ */
 static void BLITZ_ROUTINE setmenuchecked2_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                             ULONG subno BL_REG(d3), ULONG on BL_REG(d4),
                                             struct gtmenulist *obj BL_REG(a2))
@@ -878,6 +1201,16 @@ static ULONG getuserdata(struct gtmenulist *obj, ULONG menu, ULONG itemno, ULONG
     return (ULONG)GTMENUITEM_USERDATA(mi);
 }
 
+/**
+ * @brief GTGetUserData(GTMenuList#,Menu,Item): the UserData of an item of
+ * the strip (GadTools' long behind the MenuItem).
+ *
+ * Not checked (error check chkchk3).
+ * @param menu    d1.w: the menu
+ * @param itemno  d2.w: the item
+ * @param obj     a2: the GTMenuList object
+ * @return d0: the UserData
+ */
 static ULONG BLITZ_ROUTINE getuserdata_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                          struct gtmenulist *obj BL_REG(a2))
 {
@@ -885,6 +1218,17 @@ static ULONG BLITZ_ROUTINE getuserdata_c(ULONG menu BL_REG(d1), ULONG itemno BL_
 }
 BLITZ_THUNK(_GetUserData, getuserdata_c, "d1/a0-a1");
 
+/**
+ * @brief GTGetUserData(GTMenuList#,Menu,Item,Subitem): the UserData of a
+ * sub item (of the item if Subitem is negative as a word).
+ *
+ * Not checked (error check chkchk5: as chkchk3 for Subitem -1).
+ * @param menu    d1.w: the menu
+ * @param itemno  d2.w: the item
+ * @param subno   d3.w: the sub item
+ * @param obj     a2: the GTMenuList object
+ * @return d0: the UserData
+ */
 static ULONG BLITZ_ROUTINE getuserdata2_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                           ULONG subno BL_REG(d3), struct gtmenulist *obj BL_REG(a2))
 {
