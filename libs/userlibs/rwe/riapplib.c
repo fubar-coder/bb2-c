@@ -438,18 +438,18 @@ BLITZ_THUNK(appfilemine, appfilemine_c, "d1/a0-a1");
 
 /* ----------------------------------------------------------- App menus */
 
-static ULONG BLITZ_ROUTINE delmenu_c(LONG id BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE delmenu_c(LONG id BL_REG(d0))
 {
     ULONG *slot;
 
     if (!libflag)
-        return 0;
+        return BB_FALSE;
     slot = &appmenus[id];
     if (!*slot)
-        return 0;
+        return BB_FALSE;
     RemoveAppMenuItem((struct AppMenuItem *)*slot);
     appmenus[id] = 0;
-    return -1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(delmenu, delmenu_c, "d1/a0-a1");
 
@@ -474,14 +474,14 @@ BLITZ_THUNK(addmenu, addmenu_c, "d1/a0-a1");
 
 /* AddAppIcon id,text$,filename$[,x,y] (after the libflag test) - the
    icon from GetDiskObject */
-static ULONG BLITZ_ROUTINE addicon_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1),
-                                     STRPTR name BL_REG(d2))
+static BB_BOOL BLITZ_ROUTINE addicon_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1),
+                                       STRPTR name BL_REG(d2))
 {
     struct DiskObject *dobj = GetDiskObject(name);
     struct AppIcon *icon;
 
     if (!dobj)
-        return 0;
+        return BB_FALSE;
     dobj->do_CurrentX = iconx;
     dobj->do_CurrentY = icony;
     if (appicons[id]) {
@@ -512,47 +512,47 @@ static ULONG BLITZ_ROUTINE addicon_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1),
         icon = (struct AppIcon *)d0;
     }
     if (!icon)
-        return 0;
+        return BB_FALSE;
     appicons[id] = (ULONG)icon;
-    return -1;
+    return BB_TRUE;
 }
 
-static ULONG BLITZ_ROUTINE addicon2_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1),
-                                      STRPTR name BL_REG(d2))
+static BB_BOOL BLITZ_ROUTINE addicon2_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1),
+                                        STRPTR name BL_REG(d2))
 {
     iconx = icony = NO_POS;
     if (!libflag)
-        return 0;
+        return BB_FALSE;
     return addicon_c(id, text, name);
 }
 BLITZ_THUNK(addicon, addicon2_c, "d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE addicon3_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1),
-                                      STRPTR name BL_REG(d2), ULONG x BL_REG(d3),
-                                      ULONG y BL_REG(d4))
+static BB_BOOL BLITZ_ROUTINE addicon3_c(LONG id BL_REG(d0), STRPTR text BL_REG(d1),
+                                        STRPTR name BL_REG(d2), ULONG x BL_REG(d3),
+                                        ULONG y BL_REG(d4))
 {
     iconx = x;
     icony = y;
     if (!libflag)
-        return 0;
+        return BB_FALSE;
     return addicon_c(id, text, name);
 }
 BLITZ_THUNK(addicon3, addicon3_c, "d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE delicon_c(LONG id BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE delicon_c(LONG id BL_REG(d0))
 {
     ULONG *slot;
 
     if (!libflag)
-        return 0;
+        return BB_FALSE;
     slot = &appicons[id];
     if (!*slot)
-        return 0;
+        return BB_FALSE;
     RemoveAppIcon((struct AppIcon *)*slot);
     *slot = 0;
     FreeDiskObject(disklist[id]);       /* BUG(orig): also NULL (#523) */
     disklist[id] = NULL;
-    return -1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(delicon, delicon_c, "d1/a0-a1");
 
@@ -560,33 +560,33 @@ BLITZ_THUNK(delicon, delicon_c, "d1/a0-a1");
 
 /* AddAppWindow window# - a0 = the windowslib object (first long = the
    Intuition window), the number on the compiler's stack (#push) */
-static ULONG BLITZ_ROUTINE addwindow_c(struct Window **wobj BL_REG(a0),
-                                       const ULONG *args BL_REG(a2))
+static BB_BOOL BLITZ_ROUTINE addwindow_c(struct Window **wobj BL_REG(a0),
+                                         const ULONG *args BL_REG(a2))
 {
     LONG n = args[-1];                  /* MOVE.l -(a2),d0 */
     struct Window *win = *wobj;
     struct AppWindow *aw;
 
     if (!libflag)
-        return 0;
+        return BB_FALSE;
     if (appwindows[n]) {
         RemoveAppWindow((struct AppWindow *)appwindows[n]);
         appwindows[n] = 0;
     }
     aw = AddAppWindowA(n, 0, win, msgport, NULL);
     if (!aw)
-        return 0;
+        return BB_FALSE;
     appwindows[n] = (ULONG)aw;
-    return -1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(addwindow, addwindow_c, "d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE delwindow_c(LONG n BL_REG(d0))
+static BB_BOOL BLITZ_ROUTINE delwindow_c(LONG n BL_REG(d0))
 {
     if (!libflag)
-        return 0;
+        return BB_FALSE;
     RemoveAppWindow((struct AppWindow *)appwindows[n]);    /* BUG(orig): also NULL (#523) */
     appwindows[n] = 0;
-    return -1;
+    return BB_TRUE;
 }
 BLITZ_THUNK(delwindow, delwindow_c, "d1/a0-a1");
