@@ -44,7 +44,7 @@ sources compile exactly as today.
 
 ## Measured facts
 
-* **Tokens** (`blitztokens`; AB3's BigLibs have no end mark, see 2):
+* **Tokens** (`blitztokens`; joined BigLibs, see 2 and the spike result):
   BB2 2.10 has 1611 library tokens; v3.14.0 has 4435 (239 libraries:
   baseLibs 33, csLibs 32, utilLibs 101, OsLibs 73). 225 of BB2's library
   tokens have another number in v3.14.0 or are gone (167 in v3.11.4, 125
@@ -140,9 +140,11 @@ the default once the tests show identical BB2 results.
 `userlibs/DIR/`); residents from `BlitzLibs/Residents`. In AB3 mode
 blitz2-ab3:
 
-* loads the four BigLibs with `loadlibgroup`, ending at the **buffer
-  length** instead of the end mark (a long 0; AB3 does not write it) –
-  small change in `asmlibs.c`; the BB2 path keeps the end mark;
+* loads the four BigLibs with `loadlibgroup` in AB3's order (base,
+  util, OS, cs). Each v3.14.0 file ends with the end mark (a long 0),
+  and AB3's own loader (`load_biglibsfile`) stops at it as ours does
+  (spike result below), so the loop needs no change; it is only called
+  four times instead of twice;
 * scans the flat userlibs directory, and replaces a loaded library of
   the same number by a userlib (`@7ab0350b`);
 * loads residents from the header's `Residents` list (up to 8, AB3
@@ -161,21 +163,27 @@ check below). BB2 and AB3 libraries share numbers, so never both sets
 at once.
 
 **What AB3's libraries expect from the compiler** (from compiler.md and
-the acidlibs notes; whether each is *required* or only an option is a
-guess until the spike of phase 0):
+the acidlibs notes; the last column is the result of the spike of
+phase 0, section "Spike result" below: *needed* = BB2-language programs
+fail without it, *not needed* = they work without it, *unknown* = not
+reached by the spike):
 
-| Entry / convention | Called by AB3's compiler for | Without it |
-|---|---|---|
-| strings2lib `$C703` setfpumode | every program (`OPTIMIZE` 2) | printlib/vallib use the non-FPU paths (guess: fine) |
-| strings1lib `$C602`/`$C603` | `StringBuffer` option of the header | default buffer (guess) |
-| runerrlib `$C320` checkpointer, `$C31F` updatestack | runtime checks | fewer checks |
-| arrayslib `$C405`/`$C406` | `Dim KEEP` | `Dim KEEP` impossible |
-| arrayslib `$C403`/`$C404` + list size in d4 | `Dim List` (BB2 has the same entries and `setles`) | – |
-| staticslib `$C502`–`$C509` | temporaries of AB3's code generation | not called by BB2 code |
-| lmullib/ldivlib `$CA02`/`$CB02` | 68020 mul/div (`OPTIMIZE` 1) | `$CA00`/`$CB00` as BB2 |
-| exitslib `$C801` | exit handlers | – |
-| memlib pools, 40-byte list header (fields from −32 unchanged) | internal to the libraries | nothing for the compiler (guess) |
-| debuglib `$D50A`, ComData `$EEE9`, dhandlerlib | AB3's debugger/PED | out of scope: AB3 mode compiles without the debugger |
+| Entry / convention | Called by AB3's compiler for | Without it | Spike |
+|---|---|---|---|
+| strings2lib `$C703` setfpumode | every program (`OPTIMIZE` 2) | printlib/vallib use the non-FPU paths | not needed (FFP `Print`/`Str$`/`Val`/`Sin`/`Sqr` correct); with G6 |
+| strings1lib `$C602`/`$C603` | `StringBuffer` option of the header | default buffer | not needed (the init gets the buffer size from `makessize` as in BB2) |
+| runerrlib `$C320` checkpointer, `$C31F` updatestack | runtime checks | fewer checks | not needed (runtime error checking on works with BB2's entries) |
+| arrayslib `$C405`/`$C406` | `Dim KEEP` | `Dim KEEP` impossible | not needed for G1 (G5) |
+| arrayslib `$C403`/`$C404` + list size in d4 | `Dim List` (BB2 has the same entries and `setles`) | – | not needed (BB2's `Dim List` works, also the dynamic `Dim List x(0)`) |
+| staticslib `$C502`–`$C509` | temporaries of AB3's code generation | not called by BB2 code | not needed |
+| lmullib/ldivlib `$CA02`/`$CB02` | 68020 mul/div (`OPTIMIZE` 1) | `$CA00`/`$CB00` as BB2 | not needed (G7) |
+| exitslib `$C801` | exit handlers | – | not needed (not called; programs end normally) |
+| memlib pools, 40-byte list header (fields from −32 unchanged) | internal to the libraries | nothing for the compiler | not needed (lists of newtypes and strings, 8000 items, `ClearList`) |
+| debuglib `$D50A`, ComData `$EEE9`, dhandlerlib | AB3's debugger/PED | out of scope: AB3 mode compiles without the debugger | unknown (out of scope; AB3's debuglib ends at `$D50A`, BB2's at `$D50F`) |
+| math library of `^` (`mathq`: BB2 library 192, AB3 library 44, token `$1601`, `AmiBlitz3.ab3` 14565) | every float power | `^` fails: "Library not Found" | **needed** |
+| init conventions of `makeLibInits` (varslib, debuglib, strings1lib, exitslib, datalib, dhandlerlib; memlib then `alstat`/`setmaxs`) | every program | – | not needed (AB3's are BB2's) |
+| compile-time plugins (`$12345678` in a sub, `AmiBlitz3.ab3` 9303) | – | – | not needed (no library of v3.14.0 has one) |
+| residents: names relative to `BlitzLibs/Residents` | header `Residents` | BB2 needs a full path | **needed** (the `.res` itself loads unchanged) |
 
 ## 3. The language changes in our blitz2, by what sources need
 
@@ -290,3 +298,81 @@ Rough total: G1–G5 about 20–40 commits, G6–G7 about 15–25, G8 open
 7. Mixed includes: a tokenised include of the other mode is rejected;
    conversion by name only when needed (§1).
 8. Order: spike, G1–G5, then G7 (68020), then G6 (FPU).
+
+## Spike result (2026-10-31)
+
+Phase 0, no compiler change: today's blitz2 (build of `main`) with
+AmiBlitz3 v3.14.0's BigLibs, A1200 in Amiberry, through the corpus
+runner (`corpusrun`, tedstub, reqtrap; a throw-away pass file, nothing
+of AB3 in the repository).
+
+**Libraries.** `baseLibs`, `utilLibs`, `OsLibs`, `csLibs` (58 + 98 + 71
++ 30 = 257 libraries) **do end with the end mark** (a long 0), and AB3's
+`load_biglibsfile` stops at it too; the plan's "no end mark" was wrong.
+Joined in AB3's load order as `acidlibs` = base + util and `deflibs` =
+OS + cs, the end mark of the first file of each pair dropped. blitz2
+loads them unchanged. `biglib check`: no library number twice.
+`blitzlibcheck` (each library taken out): no errors, 51 warnings in 15
+libraries, all "code refers into the error check area, dangling without
+debugger" (the class the CD's originals had). Token list
+(`blitztokens`): 4645 = 210 compiler + 4435 library tokens; 10 names
+twice (`STOP` as 68000 mnemonic and library `$ED12`; `fadd`, `fsub`,
+`fmul`, `fdiv`, `fneg`, `MakeDir`, `DBactive`, `PeekMax$` in two
+libraries each) – AB3's own state, not a break. Every internal entry
+blitz2 calls (the 81 tokens `$C000`–`$D404` of `main.h`, and
+`$BF00`) is in the AB3 library of the same number at the same token;
+AB3 only appended entries
+(memlib to `$C00C`, runerrlib to `$C320`, arrayslib to `$C406`,
+staticslib to `$C509`, strings1lib to `$C603`, strings2lib to `$C704`,
+exitslib `$C801`, lmullib/ldivlib `$CA02`/`$CB02`, wbstartuplib
+`$BF01`). AB3's `makeLibInits` passes the same values to the same
+libraries as BB2's.
+
+**Programs.** From `Sourcecodes/Amiblitz3/Tests` (embedded header cut
+off, tokenised with `tedtok --blitz2 … --lib` on the joined BigLibs):
+`atoi`, `compilersignals` (`WBStartup`, `FromCLI`, `NumPars`,
+`ProgDir$`, `Par$`, `Delay_`), `data_restore_in_function`, `exec_data`
+and `localization` (both with AB3's `all.res` as resident, through a
+`.xtra` with a full path), `fabrizio_speedquestion`, `memoryleak_test`
+(its `OPTIMIZE 13` line removed; dynamic `Dim List xyz.s(0)`, 8000
+items, `ClearList`, `AvailMem_`), `setint` (`SetInt 5`),
+`test_newtypes`, `trim` (`Trim$`): **all compile and run with plausible
+output** (the same twice, executables identical). Own probes with the
+same libraries: files (`OpenFile`, `FileOutput`, `ReadFile`, `Edit$`,
+`Eof`, `Exists`), banks, `AllocMem_`; lists of newtypes (`AddLast`,
+`KillItem`, `FirstItem`, `LastItem`, `PrevItem`), arrays of newtypes;
+procedures with strings, `Select` on strings, string compares, `Data$`,
+string growth to 2000 characters; FFP `Sin`/`Cos`/`Sqr`, long
+multiply/divide: output equal to the same source compiled with BB2's
+libraries where both have the commands. Runtime error checking on: the
+same programs work. Not compared with AB3's own compiler (that is the
+reference test of G1).
+
+**Failures and causes:**
+
+| Program | Result | Cause | For |
+|---|---|---|---|
+| probe `a.f^10` | "Library not Found" | blitz2 calls the float power as token `mathq` × 128 + 1, `mathq` = library 192 (`main.h`, `eval.c` `dopow`); in AB3 the math library is number 44 (token `$1601`, `AmiBlitz3.ab3` 14565) and 192 is an OsLibs library | G1: the only hard-coded user library number in blitz2; per mode |
+| `data_constants` | "Garbage at End of Line" at `Data.w #test1,#test2,3,-1` | constants in `Data` | G5 (known) |
+| `hexdigits` | "Syntax Error" at `NPrint Bin$(_start)` | a variable name beginning with `_` is not accepted in an expression (the assignment `_start.l = …` compiles) | language, new: G2 or G5 |
+| `elmoreinclib` | hangs | the unregistered ElmoreInclude library shows its alert "CLICK MOUSE TO CONTINUE" at start (the library's own behaviour, also under AB3) | none; not usable headless |
+| `exec_data`, `localization` without resident | "Type Not Found" | `ExecBase`, `Locale` come from `all.res`; with it they work | G1: header residents relative to `BlitzLibs/Residents` |
+
+The other programs of the test directory were not tried: they need
+`OPTIMIZE`/`SYNTAX`, optional parameters, `@@`, FPU or 68020 code, wait
+for the mouse or for input, or open windows. Tokenising pitfalls of own
+sources (not AB3's): AB3's and BB2's command and mnemonic names become
+tokens inside identifiers (`show{`, `add{`, `sub1` failed as names).
+
+**What G1 must therefore contain** (beyond section 1): loading the four
+BigLibs in AB3's order (the existing loop, no end-mark change); a
+per-mode value for `mathq` (44 in AB3 mode); AB3's compiler token table
+and AB3's library tokens for the tokeniser; residents from the header,
+resolved relative to the residents directory (the `.res` loader as is).
+Not needed for BB2-language AB3 programs: any new internal entry
+(`$C405`/`$C406`, `$C502`–`$C509`, `$C602`/`$C603`, `$C703`,
+`$C31F`/`$C320`, `$CA02`/`$CB02`, `$C801`), a change of the init
+conventions, the plugin mechanism. Add to G2/G5: identifiers beginning
+with `_`. Still unknown: the debugger with AB3's debuglib (out of
+scope), `.d` fields in residents (no AB3 program of the spike used one),
+and whether outputs equal AB3's own compiler (G1's reference test).
