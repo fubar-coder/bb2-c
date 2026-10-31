@@ -505,6 +505,39 @@ The presets keep the whole output of passing tests as well (up to 1 MiB
 per test, cut at the front if longer: `maxPassedTestOutputSize`,
 `testOutputTruncation`), so it is in the file (`<system-out>`).
 
+The runners of the emulator tests (`corpusrun`, `cdrun`, `tedab`, also in
+the bug-orig mode) write one line per emulator session to their output,
+after their report:
+
+```
+@stat v=1 test=audiolib-diskplay-endless config=clib machine=a1200 snapshot=restored session=45.16 wait=0.00 timed=45.15 limit=45 end=timeout verdict=REPRODUCED
+```
+
+test (the pass), config (corpus: ref/port/clib; TED: R5/C5/... in the
+bug-orig mode, else the session sNNN; cdrun: the worker), machine, what
+the snapshot mode did (cold, restored, first-save, fallback), the session
+time without the wait for an emulator slot, the wait, the part counted
+against the time limit, the limit, the end (done, timeout, exited,
+failed) and the verdict of the config (bug-orig FIXED/REPRODUCED/DIFFERS/
+BROKEN, reference; corpus same/differs; TED A/B ok/fail). The format is
+defined in `tools/lib/teststats/statline.h`. `teststats` reads one or
+more JUnit files (each one a run):
+
+```
+build/amiga/host/tools/teststats/teststats [--tsv] [--factor X] [--floor SEC] build/amiga/junit-*.xml
+```
+
+It prints per test the runs and their durations (min/median/max), per
+test and config the sessions (max session time, max time counted against
+the limit, max slot wait, timeouts, verdicts), the flaky ones (ctest
+result, verdict or end differs between runs), suggested time limits (max
+timed × factor, default 3, at least the floor, default 30 s; a config
+that ended by timeout in every session of every run is listed as hanging,
+without a number) and a suggested ctest `COST` per test (the median
+duration; a test's duration includes its waits for emulator slots). Broken input (malformed XML, a testcase without name or time,
+a bad `@stat` line) is reported on stderr (exit status 1), the rest
+still counts.
+
 ## Readable library sources
 
 The Blitz sources of the libraries (`bblibsrc.lha` in the Aminet archive,
@@ -701,7 +734,9 @@ tools/                       host tools:
                              blitzres (residents: constants written,
                              contents read; NDK FD files and includes),
                              bblines (line edits of tokenised sources),
-                             xtra (shared/xtra compiled for the host);
+                             xtra (shared/xtra compiled for the host),
+                             teststats (the @stat line of the emulator
+                             sessions, statistics of JUnit files);
                              blitzlib also compares declarations
   biglib/, blitzlibcheck/,   the tools: one main.c each around lib/
   blitzlibcompare/,
@@ -710,7 +745,7 @@ tools/                       host tools:
   vasmlisting/, checklabels/,
   checkdata/, asmcmp/,
   mktestdata/, bb22/, blitzres/,
-  bblines/, xtra/
+  bblines/, xtra/, teststats/
   tests/                     tests of lib/ with inputs from memory
 ```
 

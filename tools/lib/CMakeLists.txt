@@ -21,7 +21,8 @@
 #   xtra       the .xtra model of shared/xtra (Blitz 2 .xtra, BB22 header,
 #              AmiBlitz3 embedded header), compiled for the host
 #   teststats  the @stat line of the test runners' emulator sessions
-#              (lib_statline)
+#              (lib_statline) and statistics of test runs from ctest's
+#              JUnit files: durations, flaky results, time limits, COST
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
