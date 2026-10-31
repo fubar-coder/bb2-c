@@ -177,20 +177,48 @@ static void freefont(ULONG *obj, const void *gfx)
     BLITZ_BASEJSR(gfx, LVO_CloseFont, r);
 }
 
+/**
+ * @brief _free of a BlitzFont object: close its font.
+ *
+ * a3 = the object; CloseFont of the TextFont if it is set, the object is
+ * cleared.
+ *
+ * @param gfx  a6: graphics.library
+ */
 static void BLITZ_ROUTINE dofreefont_c(const void *gfx BL_REG(a6))
 {
     freefont((ULONG *)blitz_string, gfx);
 }
 BLITZ_THUNK(dofreefont, dofreefont_c, "d1/a0-a1");
 
+/**
+ * @brief _use of a BlitzFont object (Use BlitzFont n): the font for the
+ * output.
+ *
+ * MOVE.l a3,fontout: the object in a3 becomes the output font.
+ */
 static void BLITZ_ROUTINE dousefont_c(void)
 {
     fontout = (ULONG *)blitz_string;            /* MOVE.l a3,fontout */
 }
 BLITZ_THUNK(dousefont, dousefont_c, "d0-d1/a0-a1");
 
-/* doloadfont - a3 = object, d1 = name, d5 = offset of `used`, d6 =
-   graphics (for freeing the old font), a6 = diskfont */
+/**
+ * @brief LoadBlitzFont BlitzFont#,Fontname.font$: load an 8x8 font.
+ *
+ * a3 = the object.  The object becomes the used and the output font, its
+ * old font is closed, then OpenDiskFont with the TextAttr {name, 8, 0,
+ * 0}.  Only non-proportional 8x8 fonts are accepted.  Amiga mode only.
+ * BUG(orig) (#150): a wrong font is not closed again.
+ * Errors (also without the debugger, err1 in the normal code): "Can't
+ * Open Font".
+ *
+ * @param name  d1: the font name
+ * @param used  d5: the offset of the library's `used` global from a5
+ *              (!libs #fontlib,$0504)
+ * @param gfx  d6: graphics.library (for freeing the old font)
+ * @param diskfont  a6: diskfont.library
+ */
 void BLITZ_ROUTINE doloadfont(const UBYTE *name BL_REG(d1), WORD used BL_REG(d5),
                               const void *gfx BL_REG(d6), const void *diskfont BL_REG(a6))
 {
@@ -225,6 +253,14 @@ BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
 
 /* ----------------------------------------------- Colour, Locate, CursX/Y */
 
+/**
+ * @brief Colour Foreground Colour,Background Colour: the colours of the
+ * bitmap output.
+ *
+ * @param fg  d0: the foreground colour (the planes that get the
+ *            character bits)
+ * @param bg  d1: the background colour
+ */
 static void BLITZ_ROUTINE docolour_c(UBYTE fg BL_REG(d0), UBYTE bg BL_REG(d1))
 {
     pback = bg;
@@ -232,14 +268,28 @@ static void BLITZ_ROUTINE docolour_c(UBYTE fg BL_REG(d0), UBYTE bg BL_REG(d1))
 }
 BLITZ_THUNK(docolour, docolour_c, "d0-d1/a0-a1");
 
+/**
+ * @brief Colour Foreground Colour: the foreground colour only.
+ *
+ * @param fg  d0: the foreground colour
+ */
 static void BLITZ_ROUTINE docolour2_c(UBYTE fg BL_REG(d0))
 {
     pcolour = fg;
 }
 BLITZ_THUNK(docolour2, docolour2_c, "d0-d1/a0-a1");
 
-/* Locate x,y - LSL #3,d0:LSL.l #3,d1:SWAP d1:MOVEM d0-d1,40(a0)
-   (y is Quick: the integer part of y*8) */
+/**
+ * @brief Locate X,Y: the cursor of the bitmap output, in characters.
+ *
+ * LSL #3,d0:LSL.l #3,d1:SWAP d1:MOVEM d0-d1,40(a0): the pixel cursor of
+ * the output bitmap = x * 8, the integer part of y * 8.  Not a bug: Y is
+ * a Quick, X a word.  Errors (debugger, locatechk): "Uninitialized
+ * BitMap".
+ *
+ * @param x  d0: the column
+ * @param y  d1: the line (Quick)
+ */
 static void BLITZ_ROUTINE dolocate_c(UWORD x BL_REG(d0), ULONG y BL_REG(d1))
 {
     bitmapout->cursx = x << 3;
@@ -247,13 +297,28 @@ static void BLITZ_ROUTINE dolocate_c(UWORD x BL_REG(d0), ULONG y BL_REG(d1))
 }
 BLITZ_THUNK(dolocate, dolocate_c, "d1/a0-a1");
 
-/* CursX/CursY - (cursor << 16) >> 3 as Quick */
+/**
+ * @brief CursX: the cursor column of the bitmap output.
+ *
+ * (pixel cursor << 16) >> 3 as Quick: not a bug, fractions of a
+ * character are possible.  Errors (debugger): "Uninitialized BitMap".
+ *
+ * @return d0: the column (Quick)
+ */
 static ULONG BLITZ_ROUTINE docursx_c(void)
 {
     return ((ULONG)bitmapout->cursx << 16) >> 3;
 }
 BLITZ_THUNK(docursx, docursx_c, "d1/a0-a1");
 
+/**
+ * @brief CursY: the cursor line of the bitmap output.
+ *
+ * (pixel cursor << 16) >> 3 as Quick.  Errors (debugger): "Uninitialized
+ * BitMap".
+ *
+ * @return d0: the line (Quick)
+ */
 static ULONG BLITZ_ROUTINE docursy_c(void)
 {
     return ((ULONG)bitmapout->cursy << 16) >> 3;
@@ -374,12 +439,30 @@ static void bitout2_(const UBYTE *s, ULONG len)
     while (--len);
 }
 
+/**
+ * @brief bitout2 (token for other libraries, output handler -4): draw a
+ * string on the output bitmap.
+ *
+ * Characters below tf_LoChar or above tf_HiChar are ignored (BUG(orig)
+ * (#148): a byte compare), 10 = new line; at the right edge a new line,
+ * below the bitmap nothing is drawn.  BUG(orig) (#149): a bitmap of depth
+ * 0 runs the plane loop 65536 times.  Errors: "Uninitialized BitMap",
+ * "Uninitialized Font" (DIFF: nothing drawn if the trap returns).
+ *
+ * @param len  d0: the length
+ * @param s  a0: the string
+ */
 static void BLITZ_ROUTINE bitout2_c(ULONG len BL_REG(d0), const UBYTE *s BL_REG(a0))
 {
     bitout2_(s, len);
 }
 
-/* bitout3 - null terminated string a0 */
+/**
+ * @brief bitout3 (token for other libraries, output handler -8): draw a
+ * null terminated string on the output bitmap, as bitout2.
+ *
+ * @param s  a0: the string
+ */
 static void BLITZ_ROUTINE bitout3_c(const UBYTE *s BL_REG(a0))
 {
     const UBYTE *p = s;
@@ -405,7 +488,14 @@ __asm__("   .text\n   .even\n"
 BLITZ_THUNK(bitout2, bitout2_c, "d1/a0-a1");
 BLITZ_THUNK(bitout3, bitout3_c, "d0-d1/a0-a1");
 
-/* BitMapOutput n - a0 = bitmap object; the output goes to bitout */
+/**
+ * @brief BitMapOutput Bitmap#: print to a bitmap with the BlitzFont.
+ *
+ * The bitmap becomes the output bitmap and bitout the output handler of
+ * inputoutputlib (setout).
+ *
+ * @param bm  a0: the bitmap (!libs #bitmaplib,$1080)
+ */
 static void BLITZ_ROUTINE dobitmapoutput_c(struct fbitmap *bm BL_REG(a0))
 {
     struct bl_regs r = { 0 };
@@ -521,7 +611,17 @@ __asm__("   .text\n   .even\n"
         "   movem.l (sp)+,d1/a0-a1\n"
         "   rts\n");
 
-/* BitMapInput - input handler doinput1, remember the previous one */
+/**
+ * @brief BitMapInput: read with an editor on the output bitmap.
+ *
+ * doinput1 becomes the input handler (setin), the previous one is kept:
+ * single characters come from it, lines are edited on the bitmap
+ * (doinput2: printable characters inserted, 31/30 cursor left/right, 8
+ * backspace, 127 delete, 13 return; the result is the line without
+ * trailing spaces).  Blitz mode only (error1 = 1).  BUG(orig) (#151): at the
+ * end of the input (-1 from the previous handler) the editor waits
+ * forever.
+ */
 static void BLITZ_ROUTINE dobitmapinput_c(void)
 {
     struct bl_regs r = { 0 };
