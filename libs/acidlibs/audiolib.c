@@ -449,14 +449,14 @@ BLITZ_INLINE(dopsound,
 /* wait for 12 changes of the low byte of VHPOSR (the beam line) */
 static void wait12(void)
 {
-    UBYTE d2 = VHPOSR_B, d3;
+    UBYTE last = VHPOSR_B, now;
     int n;
 
     for (n = 0; n < 12; n++) {
         do
-            d3 = VHPOSR_B;
-        while (d3 == d2);
-        d2 = d3;
+            now = VHPOSR_B;
+        while (now == last);
+        last = now;
     }
 }
 
@@ -665,11 +665,11 @@ static void BLITZ_ERRCHK dpchk_c(UWORD mask BL_REG(d1))
 }
 
 /* sndchk - TST.l (a3):BEQ err5, then dpchk (also for SetPeriod's period) */
-static void BLITZ_ERRCHK sndchk_c(UWORD d1 BL_REG(d1))
+static void BLITZ_ERRCHK sndchk_c(UWORD value BL_REG(d1))
 {
     if (!((struct sound *)blitz_string)->data)
         BLITZ_RUNERR(mess5);
-    dpchk_c(d1);
+    dpchk_c(value);
 }
 
 static void BLITZ_ERRCHK vchk_c(UWORD mask BL_REG(d0))
