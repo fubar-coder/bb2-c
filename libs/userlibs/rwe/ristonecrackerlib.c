@@ -99,6 +99,19 @@ BLITZ_LIBFIN();
 
 #define S404 0x53343034UL
 
+/* the head of an S404 file, then the packed data */
+struct s404hdr {
+    ULONG id;                           /* S404 */
+    ULONG offset;                       /* the security offset */
+    ULONG unpacked;                     /* the unpacked length */
+    ULONG packed;                       /* the packed length */
+};
+static_assert(sizeof(struct s404hdr) == 16);
+#define HDR(p) ((const struct s404hdr *)(p))
+
+#define FIBSIZE 264     /* AllocMem'd for Examine: a little more than the FIB */
+static_assert(sizeof(struct FileInfoBlock) <= FIBSIZE);
+
 static struct Library *dosbase;         /* _dosbase */
 static const char dosname[] = "dos.library";
 
@@ -109,9 +122,9 @@ static const char dosname[] = "dos.library";
    before) */
 static ULONG stcdecrunch(UBYTE *a)
 {
-    ULONG len = LONGAT(a + 8);          /* MOVE.l 8(a1),-(a7) */
+    ULONG len = HDR(a)->unpacked;       /* MOVE.l 8(a1),-(a7) */
 
-    dostc(a, a + LONGAT(a + 4));
+    dostc(a, a + HDR(a)->offset);
     return len;
 }
 
@@ -126,25 +139,25 @@ static void BLITZ_ROUTINE codeinit_c(void)
 /* STCLength(address) */
 static ULONG BLITZ_ROUTINE stclength_c(const UBYTE *a BL_REG(d0))
 {
-    if (LONGAT(a) != S404)
+    if (HDR(a)->id != S404)
         return 0;
-    return LONGAT(a + 8);
+    return HDR(a)->unpacked;
 }
 
 /* STCStart(address): the check only in the binary */
 static ULONG BLITZ_ROUTINE stcstart_c(const UBYTE *a BL_REG(d0))
 {
-    if (LONGAT(a) != S404)
+    if (HDR(a)->id != S404)
         return 0;
-    return (ULONG)a + LONGAT(a + 4);
+    return (ULONG)a + HDR(a)->offset;
 }
 
 /* STCSafeLen(address): the check only in the binary */
 static ULONG BLITZ_ROUTINE stcsafelen_c(const UBYTE *a BL_REG(d0))
 {
-    if (LONGAT(a) != S404)
+    if (HDR(a)->id != S404)
         return 0;
-    return LONGAT(a + 8) + LONGAT(a + 4);
+    return HDR(a)->unpacked + HDR(a)->offset;
 }
 
 /* STCLoad filename$,address (d0, d1) */
@@ -158,7 +171,7 @@ static ULONG BLITZ_ROUTINE stcload_c(CONST_STRPTR name BL_REG(d0), UBYTE *ad BL_
     lock = Lock(name, ACCESS_READ);     /* MOVEQ #-2,d2 */
     if (!lock)
         return 0;
-    fib = AllocMem(264, MEMF_CLEAR);    /* sizeof(struct FileInfoBlock) */
+    fib = AllocMem(FIBSIZE, MEMF_CLEAR);
     if (!fib) {
         UnLock(lock);
         return 0;
@@ -167,16 +180,16 @@ static ULONG BLITZ_ROUTINE stcload_c(CONST_STRPTR name BL_REG(d0), UBYTE *ad BL_
     size = fib->fib_Size;
     fh = OpenFromLock(lock);
     if (!fh) {
-        FreeMem(fib, 264);
+        FreeMem(fib, FIBSIZE);
         UnLock(lock);
         return 0;
     }
     Read(fh, ad, size);                 /* not checked */
     Close(fh);
-    FreeMem(fib, 264);                  /* BSR oopsfreefib */
+    FreeMem(fib, FIBSIZE);              /* BSR oopsfreefib */
     UnLock(lock);                       /* BUG(orig): OpenFromLock took it (#835) */
     stcdecrunch(ad);                    /* BUG(orig): no header check (#836) */
-    return (ULONG)ad + LONGAT(ad + 4);
+    return (ULONG)ad + HDR(ad)->offset;
 }
 
 /* Registers: the original changes d0/a0 (STCLength, STCStart,
