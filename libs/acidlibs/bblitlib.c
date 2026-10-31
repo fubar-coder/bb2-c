@@ -163,14 +163,24 @@ struct stencil {
     ULONG mem;                  /* +4 the memory (CHIP) */
 };
 
-/* BBlitMode / init */
+/**
+ * @brief BBlitMode BLTCON0: the minterm/channel bits of BBlit's BLTCON0
+ *        (ORed with the shift; blitlib's CookieMode ... give the values).
+ *
+ * @param m  d0.w: the BLTCON0 value without the shift
+ */
 static void BLITZ_ROUTINE dobblitmode_c(UWORD m BL_REG(d0))
 {
     bcon0 = m;
 }
 BLITZ_THUNK(dobblitmode, dobblitmode_c, "d0-d1/a0-a1");
 
-/* returns the incoming d0 with 0xfca in the low word */
+/**
+ * @brief init: BBlitMode $FCA (cookie cut).
+ *
+ * @param incoming  d0: what the caller had in d0
+ * @return d0: incoming with $FCA in the low word
+ */
 static ULONG BLITZ_ROUTINE codeinit_c(ULONG incoming BL_REG(d0))
 {
     bcon0 = 0xfca;
@@ -191,13 +201,28 @@ static void freebuf(struct buffer *b)
     }
 }
 
+/**
+ * @brief Free Buffer (the object's _free nullsub): free the memory of the
+ *        buffer in a3.
+ *
+ * BUG(orig) (#75): the write position and the last record pointer are
+ * left stale.
+ */
 static void BLITZ_ROUTINE freebuffer_c(void)
 {
     freebuf((struct buffer *)blitz_string);
 }
 BLITZ_THUNK(freebuffer, freebuffer_c, "a0");
 
-/* Buffer n,len - MEMF_CHIP (not cleared) */
+/**
+ * @brief Buffer Buffer#,Memorylen: (re)allocate the buffer.
+ *
+ * Frees the old memory, allocates Memorylen bytes MEMF_CHIP (not cleared,
+ * memlib globalloc); the buffer is empty.  The buffer comes in a3 (!libs
+ * {#bblitlib,$1380}, from Buffer# in d0).
+ *
+ * @param len  d1: the length in bytes
+ */
 static void BLITZ_ROUTINE dobuffer_c(ULONG len BL_REG(d1))
 {
     struct buffer *b = (struct buffer *)blitz_string;
@@ -213,7 +238,13 @@ static void BLITZ_ROUTINE dobuffer_c(ULONG len BL_REG(d1))
 }
 BLITZ_THUNK(dobuffer, dobuffer_c, "a0");
 
-/* FlushBuffer n - MOVE.l 8(a3),(a3)+:CLR.l (a3) */
+/**
+ * @brief FlushBuffer Buffer#: empty the buffer without restoring the
+ *        background (MOVE.l 8(a3),(a3)+:CLR.l (a3)).
+ *
+ * Errors (debugger, unbufferchk): "Uninitialized Buffer".  The buffer
+ * comes in a3 (!libs {#bblitlib,$1380}, from Buffer# in d0).
+ */
 static void BLITZ_ROUTINE doflushbuff_c(void)
 {
     struct buffer *b = (struct buffer *)blitz_string;
@@ -423,6 +454,28 @@ nextplane:                                      /* loop3a */
 #define BBLIT_REGS WORD x BL_REG(d2), WORD y BL_REG(d3), struct buffer *b BL_REG(a0), \
                    UBYTE *cb BL_REG(a1), const struct bmap *bm BL_REG(a2)
 
+/**
+ * @brief BBlit Buffer#,Shape#,X,Y: blit the shape into the used bitmap,
+ *        the background saved in the buffer (Blitz mode).
+ *
+ * First the bitmap area under the shape is saved (A -> D copy, every
+ * bitmap plane) into a record at the buffer's write position, then the
+ * shape is blitted like blitlib's Blit (A = cookie, B = data, C = D =
+ * bitmap, BLTCON0 = shift | BBlitMode).  Not a bug: the last word mask of
+ * the blit is cleared, the first stays $FFFF from the save blit.
+ * BUG(orig): only the error check tests for an overflow of the buffer
+ * (#73); a bitmap or shape of depth 0 loops 65536 times (DBF, #74).
+ * Errors (debugger, bblitchk): "Uninitialized Buffer", "Shape does not
+ * have a cookie cut", "Unitialized BitMap", "Uninialized Shape", "Shape
+ * has too many BitPlanes", "Coords outside of BitMap", "Buffer Overflow".
+ * The shape comes in a3 (!libs {#shapeslib,$1381}, from Shape# in d1).
+ *
+ * @param x    d2.w: x (the shape's handle is subtracted)
+ * @param y    d3.w: y
+ * @param b    a0: the buffer (!libs {#bblitlib,$1080}, from Buffer# in d0)
+ * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
+ * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
+ */
 void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS);
 void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS)
 {
@@ -431,6 +484,29 @@ void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS)
     bblit(b, (const struct shape *)blitz_string, bm, cb, x, y, &st);
 }
 
+/**
+ * @brief BBlit Buffer#,Shape#,X,Y (Amiga mode).
+ *
+ * Amiga mode: OwnBlitter, the blit, wait for the blitter, DisownBlitter.
+ * First the bitmap area under the shape is saved (A -> D copy, every
+ * bitmap plane) into a record at the buffer's write position, then the
+ * shape is blitted like blitlib's Blit (A = cookie, B = data, C = D =
+ * bitmap, BLTCON0 = shift | BBlitMode).  Not a bug: the last word mask of
+ * the blit is cleared, the first stays $FFFF from the save blit.
+ * BUG(orig): only the error check tests for an overflow of the buffer
+ * (#73); a bitmap or shape of depth 0 loops 65536 times (DBF, #74).
+ * Errors (debugger, bblitchk): "Uninitialized Buffer", "Shape does not
+ * have a cookie cut", "Unitialized BitMap", "Uninialized Shape", "Shape
+ * has too many BitPlanes", "Coords outside of BitMap", "Buffer Overflow".
+ * The shape comes in a3 (!libs {#shapeslib,$1381}, from Shape# in d1).
+ *
+ * @param x    d2.w: x (the shape's handle is subtracted)
+ * @param y    d3.w: y
+ * @param b    a0: the buffer (!libs {#bblitlib,$1080}, from Buffer# in d0)
+ * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
+ * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
+ * @param gfx  a6: graphics.library (!libs {#graphicslib,$5600})
+ */
 void BLITZ_ROUTINE a_doblit_c(BBLIT_REGS, struct Library *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_doblit_c(BBLIT_REGS, struct Library *gfx BL_REG(a6))
 {
@@ -443,12 +519,44 @@ void BLITZ_ROUTINE a_doblit_c(BBLIT_REGS, struct Library *gfx BL_REG(a6))
 }
 BLITZ_AB_ROUTINE(doblit, b_doblit_c, "   jmp     _a_doblit_c");
 
+/**
+ * @brief BBlit Buffer#,Shape#,X,Y,Excessonoff (Blitz mode).
+ *
+ * BBlit, then the bitmap planes beyond the shape's depth get A = cookie,
+ * minterm $0A (cleared) or $FA (set), one bit of Excessonoff per plane.
+ * Errors (debugger, bblitchk): as BBlit.
+ * The shape comes in a3 (!libs {#shapeslib,$1381}, from Shape# in d1).
+ *
+ * @param x    d2.w: x (the shape's handle is subtracted)
+ * @param y    d3.w: y
+ * @param b    a0: the buffer (!libs {#bblitlib,$1080}, from Buffer# in d0)
+ * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
+ * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
+ * @param bits d4.w: Excessonoff, one bit per excess plane (set = $FA)
+ */
 void BLITZ_ROUTINE b_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4));
 void BLITZ_ROUTINE b_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4))
 {
     bblitex(b, (const struct shape *)blitz_string, bm, cb, x, y, bits);
 }
 
+/**
+ * @brief BBlit Buffer#,Shape#,X,Y,Excessonoff (Amiga mode).
+ *
+ * Amiga mode: OwnBlitter, the blit, wait for the blitter, DisownBlitter.
+ * BBlit, then the bitmap planes beyond the shape's depth get A = cookie,
+ * minterm $0A (cleared) or $FA (set), one bit of Excessonoff per plane.
+ * Errors (debugger, bblitchk): as BBlit.
+ * The shape comes in a3 (!libs {#shapeslib,$1381}, from Shape# in d1).
+ *
+ * @param x    d2.w: x (the shape's handle is subtracted)
+ * @param y    d3.w: y
+ * @param b    a0: the buffer (!libs {#bblitlib,$1080}, from Buffer# in d0)
+ * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
+ * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
+ * @param bits d4.w: Excessonoff, one bit per excess plane (set = $FA)
+ * @param gfx  a6: graphics.library (!libs {#graphicslib,$5600})
+ */
 void BLITZ_ROUTINE a_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4),
                                 struct Library *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4),
@@ -461,12 +569,33 @@ void BLITZ_ROUTINE a_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4),
 }
 BLITZ_AB_ROUTINE(doblitex, b_doblitex_c, "   jmp     _a_doblitex_c");
 
+/**
+ * @brief UnBuffer Buffer#: restore the background of all BBlits of the
+ *        buffer (Blitz mode).
+ *
+ * The records are copied back (newest first, A -> D), then the buffer is
+ * empty.  Errors (debugger, unbufferchk): "Uninitialized Buffer".
+ * The buffer comes in a3 (!libs {#bblitlib,$1380}, from Buffer# in d0).
+ *
+ * @param cb  a2: the custom chip base $DFF000 (chipbaselib)
+ */
 void BLITZ_ROUTINE b_dounbuffer_c(UBYTE *cb BL_REG(a2));
 void BLITZ_ROUTINE b_dounbuffer_c(UBYTE *cb BL_REG(a2))
 {
     unbuffer((struct buffer *)blitz_string, cb);
 }
 
+/**
+ * @brief UnBuffer Buffer# (Amiga mode).
+ *
+ * Amiga mode: OwnBlitter, the blit, wait for the blitter, DisownBlitter.
+ * The records are copied back (newest first, A -> D), then the buffer is
+ * empty.  Errors (debugger, unbufferchk): "Uninitialized Buffer".
+ * The buffer comes in a3 (!libs {#bblitlib,$1380}, from Buffer# in d0).
+ *
+ * @param cb   a2: the custom chip base $DFF000 (chipbaselib)
+ * @param gfx  a6: graphics.library (!libs {#graphicslib,$5600})
+ */
 void BLITZ_ROUTINE a_dounbuffer_c(UBYTE *cb BL_REG(a2), struct Library *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_dounbuffer_c(UBYTE *cb BL_REG(a2), struct Library *gfx BL_REG(a6))
 {
@@ -477,13 +606,40 @@ void BLITZ_ROUTINE a_dounbuffer_c(UBYTE *cb BL_REG(a2), struct Library *gfx BL_R
 }
 BLITZ_AB_ROUTINE(dounbuffer, b_dounbuffer_c, "   jmp     _a_dounbuffer_c");
 
+/**
+ * @brief ShowStencil Buffer#,Stencil#: restore the background of the
+ *        buffer's BBlits through a stencil (Blitz mode).
+ *
+ * As UnBuffer, through the stencil as B (minterm $E2); the buffer stays.
+ * Errors (debugger, unbufferchk2): "Uninitialized Stencil" (the buffer is
+ * not checked).
+ * The buffer comes in a3 (!libs {#bblitlib,$1380}, from Buffer# in d0).
+ *
+ * @param st  a1: the stencil (!libs {#stencillib,$1181}, from Stencil#
+ *            in d1)
+ * @param cb  a2: the custom chip base $DFF000 (chipbaselib)
+ */
 void BLITZ_ROUTINE b_showstencil_c(const struct stencil *st BL_REG(a1), UBYTE *cb BL_REG(a2));
 void BLITZ_ROUTINE b_showstencil_c(const struct stencil *st BL_REG(a1), UBYTE *cb BL_REG(a2))
 {
     showstencil((struct buffer *)blitz_string, cb, st);
 }
 
-/* Amiga mode: the wait is a single BTST loop */
+/**
+ * @brief ShowStencil Buffer#,Stencil# (Amiga mode; the wait is a single
+ *        BTST loop).
+ *
+ * Amiga mode: OwnBlitter, the blit, wait for the blitter, DisownBlitter.
+ * As UnBuffer, through the stencil as B (minterm $E2); the buffer stays.
+ * Errors (debugger, unbufferchk2): "Uninitialized Stencil" (the buffer is
+ * not checked).
+ * The buffer comes in a3 (!libs {#bblitlib,$1380}, from Buffer# in d0).
+ *
+ * @param st   a1: the stencil (!libs {#stencillib,$1181}, from Stencil#
+ *             in d1)
+ * @param cb   a2: the custom chip base $DFF000 (chipbaselib)
+ * @param gfx  a6: graphics.library (!libs {#graphicslib,$5600})
+ */
 void BLITZ_ROUTINE a_showstencil_c(const struct stencil *st BL_REG(a1), UBYTE *cb BL_REG(a2),
                                    struct Library *gfx BL_REG(a6));
 void BLITZ_ROUTINE a_showstencil_c(const struct stencil *st BL_REG(a1), UBYTE *cb BL_REG(a2),
