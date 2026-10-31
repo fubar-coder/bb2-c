@@ -498,16 +498,16 @@ void BLITZ_ROUTINE dowbscreen(WORD used BL_REG(d6), const UBYTE *args BL_REG(a2)
     *(ULONG **)(blitz_globals + used) = obj;
 }
 
-/* title / default title starting with t? */
-static int prefix(const UBYTE *s, const UBYTE *t)
+/* title / default title starting with pfx? */
+static int prefix(const UBYTE *title, const UBYTE *pfx)
 {
-    while (*t)
-        if (*s++ != *t++)                       /* CMPM.b (a1)+,(a2)+ */
+    while (*pfx)
+        if (*title++ != *pfx++)                 /* CMPM.b (a1)+,(a2)+ */
             return 0;
     return 1;
 }
 
-static void findscreen(const UBYTE *t, WORD used, const UBYTE *args,
+static void findscreen(const UBYTE *title, WORD used, const UBYTE *args,
                        struct IntuitionBase *intui)
 {
     ULONG *obj = (ULONG *)blitz_string;
@@ -521,15 +521,15 @@ static void findscreen(const UBYTE *t, WORD used, const UBYTE *args,
             BLITZ_RUNERR(mess12);               /* err12 */
             return;
         }
-        if (!t)
+        if (!title)
             break;
         if (!*(UBYTE **)(s + 22))               /* no title: next screen */
             continue;
-        if (prefix(*(UBYTE **)(s + 22), t))
+        if (prefix(*(UBYTE **)(s + 22), title))
             break;
         if (!*(UBYTE **)(s + 26))
             continue;
-        if (prefix(*(UBYTE **)(s + 26), t))     /* DefaultTitle */
+        if (prefix(*(UBYTE **)(s + 26), title)) /* DefaultTitle */
             break;
     }
     obj[0] = (ULONG)s;
@@ -541,11 +541,11 @@ void BLITZ_ROUTINE dofstoscreen(WORD used BL_REG(d6), const UBYTE *args BL_REG(a
     findscreen(0, used, args, intui);           /* no title */
 }
 
-void BLITZ_ROUTINE dofindscreen(const UBYTE *t BL_REG(d1), WORD used BL_REG(d6),
+void BLITZ_ROUTINE dofindscreen(const UBYTE *title BL_REG(d1), WORD used BL_REG(d6),
                                 const UBYTE *args BL_REG(a2),
                                 struct IntuitionBase *intui BL_REG(a6))
 {
-    findscreen(t, used, args, intui);
+    findscreen(title, used, args, intui);
 }
 
 /* ---------------------------------------------------------- LoadScreen */
@@ -619,7 +619,7 @@ static void showbitmap(UBYTE *bm, ULONG *obj, struct GfxBase *GfxBase)
     struct IntuitionBase *intui = (struct IntuitionBase *)blitz_string;   /* a3 */
     UBYTE *scr, *cl, *ins;
     const UWORD *src;
-    UWORD n, d1;
+    UWORD n, nwords;
 
     if ((WORD)(execversion() - 39) >= 0) {      /* CMP #39,d0:BPL */
         agashowbitmap(bm, obj, GfxBase);
@@ -654,7 +654,7 @@ static void showbitmap(UBYTE *bm, ULONG *obj, struct GfxBase *GfxBase)
         } while (n-- != 0);
     }
 found:
-    d1 = *(UWORD *)(bm + 4) * 2;
+    nwords = *(UWORD *)(bm + 4) * 2;
     src = (const UWORD *)(bm + 8);
     for (;;) {
         do {                                    /* 'loop */
@@ -662,7 +662,7 @@ found:
                 goto more;
             *(UWORD *)(ins + 4) = *src++;
             ins += 6;
-            if (!--d1) {                        /* SUBQ #1,d1:DBEQ:BEQ */
+            if (!--nwords) {                    /* SUBQ #1,d1:DBEQ:BEQ */
                 showbitmap2(intui, GfxBase);
                 return;
             }
@@ -729,15 +729,15 @@ ULONG BLITZ_ROUTINE doscreentags3(const UBYTE *title BL_REG(d1), const ULONG *ta
                                   const ULONG *lens BL_REG(a2),
                                   struct IntuitionBase *intui BL_REG(a6))
 {
-    ULONG *t = tl.usertags, d0;
+    ULONG *dst = tl.usertags, tag;
 
     tagstart(title, lens, ifont, used, intui);
     do {                                        /* nxtag: MOVEM.l (a2)+,d0-d1 */
-        d0 = *tags++;
-        t[0] = d0;
-        t[1] = *tags++;
-        t += 2;
-    } while (d0);
+        tag = *tags++;
+        dst[0] = tag;
+        dst[1] = *tags++;
+        dst += 2;
+    } while (tag);
     return duntags((ULONG *)blitz_string, intui);
 }
 
@@ -748,14 +748,14 @@ ULONG BLITZ_ROUTINE doscreentags(UWORD n BL_REG(d7), const UBYTE *title BL_REG(d
                                  struct IntuitionBase *intui BL_REG(a6))
 {
     const ULONG *sp = tagstart(title, lens, ifont, used, intui);
-    ULONG *t = tl.usertags;
+    ULONG *dst = tl.usertags;
 
     for (; n; n--) {                            /* gettags: DBRA d7,tagloop */
-        t[0] = BL_POPL(sp);
-        t[1] = BL_POPL(sp);
-        t += 2;
+        dst[0] = BL_POPL(sp);
+        dst[1] = BL_POPL(sp);
+        dst += 2;
     }
-    *t = 0;                                     /* MOVE.l #0,(a0)+ */
+    *dst = 0;                                   /* MOVE.l #0,(a0)+ */
     return duntags((ULONG *)blitz_string, intui);
 }
 
