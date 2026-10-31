@@ -369,28 +369,28 @@ static struct NewMenu *makearray(struct gtmenulist *obj)
 }
 
 /* CreateMenuStrip: a3 = the object, a0 = the used screen object */
-static ULONG createmenustrip(struct gtmenulist *obj, struct Screen **scr)
+static BB_BOOL createmenustrip(struct gtmenulist *obj, struct Screen **scr)
 {
     struct NewMenu *arr;
 
     if (!gtbase)
-        return 0;
+        return BB_FALSE;
     if (obj->strip) {
         FreeMenus(obj->strip);
         obj->strip = NULL;
     }
     if (!(arr = makearray(obj)))
-        return 0;
+        return BB_FALSE;
     obj->strip = CreateMenusA(arr, (struct TagItem *)taglist);
     vi = GetVisualInfoA(*scr, NULL);
     LayoutMenusA(obj->strip, vi, (struct TagItem *)tl_layout);
     FreeVisualInfo(vi);
     gfree(marray, marraysize);
-    return (ULONG)-1;
+    return BB_TRUE;
 }
 
-static ULONG BLITZ_ROUTINE createmenustrip_c(struct Screen **scr BL_REG(a0),
-                                             struct gtmenulist *obj BL_REG(a3))
+static BB_BOOL BLITZ_ROUTINE createmenustrip_c(struct Screen **scr BL_REG(a0),
+                                               struct gtmenulist *obj BL_REG(a3))
 {
     return createmenustrip(obj, scr);
 }
