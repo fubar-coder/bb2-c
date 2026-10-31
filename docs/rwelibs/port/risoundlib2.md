@@ -81,7 +81,8 @@ in finit) is translated although it is never reached.
   (#928). The values go to the offsets 4,
   12, 16, 20, 24, 28 of the tag list: 16 and 24 are the tag ids of
   `AHIR_InitialWidth` and `AHIR_InitialHeight` – width and the mode id
-  become tag ids (mode id 0, the default of most forms, is `TAG_DONE` and
+  become tag ids (mode id 0, passed by the 0- and 2-argument forms - the
+  1- and 4-argument forms leave d4 as it is -, is `TAG_DONE` and
   ends the list), height and frequency their data; the tags
   `AHIR_InitialAudioID`/`AHIR_InitialMixFreq` keep -1 and 0
   (#931). The current screen of
