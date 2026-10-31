@@ -58,11 +58,12 @@ BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
-/* init, finit: nothing (RTS) */
+/** @brief init: nothing (RTS). */
 void _libinit(void)
 {
 }
 
+/** @brief finit: nothing (RTS). */
 void _libfinit(void)
 {
 }
@@ -70,12 +71,18 @@ void _libfinit(void)
 /* CludgeAcid's saved a4 */
 ULONG rishapez_myold;
 
-/* PeekByte (inline: MOVE.l d0,a0:MOVE.b (a0),d0:ANDI.w #$ff,d0) and,
-   directly behind it as in the original, CludgeAcid on|off (d0.b = 1:
-   a4 = the saved a4, else the a4 saved).  Assembler: an inline routine,
-   and a4 is the Blitz program's locals pointer (fixed for GCC).
-   BUG(orig): PeekByte without RTS - as a subroutine it runs into
-   CludgeAcid (#907). */
+/**
+ * @brief PeekByte(address): the byte at address; and CludgeAcid on|off:
+ * a4 saved or restored.
+ *
+ * PeekByte is inline (MOVE.l d0,a0:MOVE.b (a0),d0:ANDI.w #$ff,d0): d0 =
+ * the address, result d0.w = the byte.  Directly behind it, as in the
+ * original, CludgeAcid on|off: d0.b = 1 sets a4 = the saved a4 (0 if
+ * nothing was saved yet), any other value saves a4 (the Blitz program's
+ * locals pointer, fixed for GCC: assembler); no result.
+ * BUG(orig) (#907): PeekByte has no RTS - as a subroutine it runs into
+ * CludgeAcid with d0 = the byte.
+ */
 __asm__("   .text\n   .even\n   .globl  __peekb\n"
         "__peekb:\n"
         "   .word   0xa000,2f-1f\n"
@@ -92,10 +99,20 @@ __asm__("   .text\n   .even\n   .globl  __peekb\n"
         "3: move.l  _rishapez_myold,a4\n"
         "   rts\n");
 
-/* SetWinDrawShapeZ window#,mode: a0 = the used window object (its first
-   long the Window) */
+/* the mesh of SetWinDrawShapeZ */
 static const UWORD mypattern[2] = { 0xaaaa, 0x5555 };
 
+/**
+ * @brief SetWinDrawShapeZ window#,mode: the used window's area pattern.
+ *
+ * Mode 0: no pattern (AreaPtrn NULL, AreaPtSz 0), else the mesh
+ * $AAAA/$5555 (AreaPtSz 1).  The window# argument (d0) is not used: the
+ * window is the used one (!libs #windowslib,#ua0); the help text names
+ * only the mode.
+ * @param mode  d1: 0 normal, else meshed (the word)
+ * @param win   a0: the used window object (its first long the Window)
+ * @return nothing
+ */
 static void BLITZ_ROUTINE setwindowdraw_c(UWORD mode BL_REG(d1),
                                           struct Window **win BL_REG(a0))
 {

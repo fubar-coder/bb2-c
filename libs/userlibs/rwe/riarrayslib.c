@@ -47,11 +47,12 @@ BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
-/* init, finit: nothing (RTS) */
+/** @brief init: nothing (RTS). */
 void _libinit(void)
 {
 }
 
+/** @brief finit: nothing (RTS). */
 void _libfinit(void)
 {
 }
@@ -81,9 +82,26 @@ void _libfinit(void)
     "   bne.s   12b\n"                                                      \
     "13:"
 
-/* FillArray array(): MOVE.l/.w/.b #0 (not CLR, which reads first on the
-   68000) */
+/**
+ * @brief FillArray array(): every element of a byte, word or long array 0.
+ *
+ * Inline (Dc $a000).  MOVE.l/.w/.b #0 (not CLR, which reads first on the
+ * 68000).  Other types do nothing.  BUG(orig) (#882): the loop stores
+ * first and compares after; an end not reached exactly (a size that is
+ * no multiple of the element size, 0 elements) runs through memory.
+ * Parameters: d0 = the first element; on the a2 stack the type word and,
+ * on top, the address behind the last element (both popped).
+ * Result: nothing.
+ */
 BLITZ_INLINE(_fillarray2, FILL("#0"));
 
-/* FillArray array(),value */
+/**
+ * @brief FillArray array(),value: every element of a byte, word or long
+ * array set to value.
+ *
+ * Inline as FillArray array(), with the value from d1 (its low byte or
+ * word for byte and word arrays); the same BUG(orig) (#882).
+ * Parameters: d0 = the first element, d1 = the value; the a2 stack as
+ * above.  Result: nothing.
+ */
 BLITZ_INLINE(_fillarray, FILL("d1"));

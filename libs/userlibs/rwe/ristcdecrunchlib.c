@@ -45,6 +45,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_stcdecrunch2, 0, 0);
 BLITZ_NAME("STCDecrunch", "source[,dest]");
 
+/** init and finit: no code (!nullsub{0,0,0}). */
 BLITZ_NULLSUB_AT(init, 0, 0, 0);
 BLITZ_NULLSUB_AT(finit, 0, 0, 0);
 
@@ -55,7 +56,17 @@ BLITZ_LIBFIN();
 /* the decruncher: dostc */
 #include "optidec.h"
 
-/* STCDecrunch source: in place, to source + offset; a0 at the end */
+/**
+ * @brief STCDecrunch(source): unpack S404 data in place.
+ *
+ * The data are unpacked to source + the security offset (the long at
+ * source + 4); the result is a0 at the end of the decruncher.  The
+ * decruncher checks nothing: BUG(orig) (#833), corrupt data write below
+ * the destination.
+ * @param a  d0: the S404 file in memory
+ * @return d0: the address of the unpacked data, 0 if source is no S404
+ *         file
+ */
 static ULONG BLITZ_ROUTINE stcdecrunch_c(UBYTE *a BL_REG(d0))
 {
     if (LONGAT(a) != S404)
@@ -63,7 +74,17 @@ static ULONG BLITZ_ROUTINE stcdecrunch_c(UBYTE *a BL_REG(d0))
     return (ULONG)dostc(a, a + LONGAT(a + 4));
 }
 
-/* STCDecrunch source,dest: d0 of the decruncher (MOVEQ #1,d0) */
+/**
+ * @brief STCDecrunch(source,dest): unpack S404 data to dest.
+ *
+ * No security offset; dest is not checked (the caller gives one for the
+ * unpacked length of the header: no defect).  BUG(orig) (#833) as in the
+ * first form.
+ * @param a     d0: the S404 file in memory
+ * @param dest  d1: the destination
+ * @return d0: 1 (d0 of the decruncher, MOVEQ #1,d0), 0 if source is no
+ *         S404 file
+ */
 static ULONG BLITZ_ROUTINE stcdecrunch2_c(const UBYTE *a BL_REG(d0), UBYTE *dest BL_REG(d1))
 {
     if (LONGAT(a) != S404)
