@@ -224,7 +224,8 @@ configuration is `tools/lib/amiga_emulation/a500.uae` (taken from the
 user's "A500 - Kick 1.3.uae", Amiberry 8.5.0): A500, ECS Agnus, 68000
 cycle-exact, 24-bit addressing, `chipmem_size=2` (1 MB chip),
 `bogomem_size=4` (1 MB slow memory at $C00000), no Zorro II/III fast
-memory (Amiberry crashes with Zorro II fast memory in this setup), the
+memory (Amiberry 8.5.0 crashes with 8 MB of Zorro II fast memory and the
+Zorro II RTG card of the user's configuration, `BlitterStudio/amiberry#2585`), the
 hardfile read-only. `a500-68010` is the same machine with a 68010
 (`cpu_type`/`cpu_model`, e.g. for #42).
 
@@ -312,7 +313,7 @@ with 24-bit addressing, not cycle-exact, `chipmem_size=4` (2 MB chip),
 `bogomem_size=4` (1 MB slow memory), no fast memory and no RTG card.
 Amiberry 8.5.0 crashes at the start with 8 MB of Zorro II fast memory
 together with a Zorro II RTG card, in `clear_bank()`
-(`src/expansion.cpp`). It boots the a1200's Workbench 3.2 hardfile
+(`src/expansion.cpp`; reported as `BlitterStudio/amiberry#2585`). It boots the a1200's Workbench 3.2 hardfile
 read-only.
 
 | File | Contents | Size | SHA-256 (as of 2026-10-31) |
