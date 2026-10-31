@@ -476,6 +476,15 @@ static ULONG *putwait(ULONG *ins, UWORD line, UWORD prev, UBYTE h)
 
 /* ------------------------------------------------- main initialisation */
 
+/**
+ * @brief Library init: allocates the blank sprite and checks for AGA.
+ *
+ * mysprite = 32 bytes of cleared chip memory (memlib globalloc); its
+ * address goes into the sprite move template spp.  agamac = -1 if LISAID
+ * ($DFF07C) has 248 in the low byte, else 0.
+ * BUG(orig) (#413): the address goes into the data words of the
+ * SPR0POS/SPR0CTL moves (spp+6/spp+2), not into SPR0PTH/PTL.
+ */
 static void BLITZ_ROUTINE _codeinit_c(void)
 {
     ULONG m = globalloc(32, 65538);
@@ -490,11 +499,29 @@ static void BLITZ_ROUTINE _codeinit_c(void)
 }
 BLITZ_THUNK(_codeinit, _codeinit_c, "a0-a1");
 
+/**
+ * @brief Library finit: nothing.
+ */
 void BLITZ_ROUTINE _codefinit(void)
 {
 }
 
-/* DisplayAdjust */
+/**
+ * @brief DisplayAdjust CopList#,fetchwid,ddfstrt,ddfstop,diwstrt,diwstop:
+ *        adds the values to the coplist's fetch width and to the DDF and
+ *        DIW moves of its list.
+ *
+ * The moves are the control moves behind the list's start (coppos+8).
+ * a3 = the coplist (!libs {#displaylib,$1380}).
+ * Errors (debugger only): uninitialised coplist ("Uninitialised
+ * CopList").
+ *
+ * @param fetchwid  d1: added to the fetch width
+ * @param ddfstrt   d2: added to the DDFSTRT data
+ * @param ddfstop   d3: added to the DDFSTOP data
+ * @param diwstrt   d4: added to the DIWSTRT data
+ * @param diwstop   d5: added to the DIWSTOP data
+ */
 static void BLITZ_ROUTINE _doadjust_c(UWORD fetchwid BL_REG(d1), UWORD ddfstrt BL_REG(d2),
                                       UWORD ddfstop BL_REG(d3), UWORD diwstrt BL_REG(d4),
                                       UWORD diwstop BL_REG(d5))
@@ -510,7 +537,19 @@ static void BLITZ_ROUTINE _doadjust_c(UWORD fetchwid BL_REG(d1), UWORD ddfstrt B
 }
 BLITZ_THUNK(_doadjust, _doadjust_c, "d0-d1/a0");
 
-/* DisplayControls */
+/**
+ * @brief DisplayControls CopList#,BPLCON2,BPLCON3,BPLCON4: changes the
+ *        BPLCON2/3/4 moves of the list.
+ *
+ * The values are XORed into the data of the three moves (and BPLCON3
+ * into the coplist's copy, which the palette routines use for their bank
+ * moves).  a3 = the coplist.
+ * Errors (debugger only): uninitialised coplist.
+ *
+ * @param bplcon2  d1: XORed into the BPLCON2 data
+ * @param bplcon3  d2: XORed into the BPLCON3 data
+ * @param bplcon4  d3: XORed into the BPLCON4 data
+ */
 static void BLITZ_ROUTINE _dobplcons_c(UWORD bplcon2 BL_REG(d1), UWORD bplcon3 BL_REG(d2),
                                        UWORD bplcon4 BL_REG(d3))
 {
@@ -528,14 +567,25 @@ static void BLITZ_ROUTINE _dobplcons_c(UWORD bplcon2 BL_REG(d1), UWORD bplcon3 B
 }
 BLITZ_THUNK(_dobplcons, _dobplcons_c, "d0-d1/a1");
 
-/* DisplayGenlock */
+/**
+ * @brief DisplayGenlock BPLCON0: bits that later InitCopLists OR into
+ *        their BPLCON0 move (2 = external sync, 4 = interlace).
+ *
+ * @param v  d0: the BPLCON0 bits
+ */
 static void BLITZ_ROUTINE _setgenlock_c(UWORD v BL_REG(d0))
 {
     d.genlock = v;
 }
 BLITZ_THUNK(_setgenlock, _setgenlock_c, "d0-d1/a0-a1");
 
-/* _freecoplist (also Free): a3 = coplist */
+/**
+ * @brief Free CopList: frees the list's memory (memlib globfree).
+ *
+ * Also called by InitCopList before it builds a new list.  Nothing
+ * happens for an uninitialised coplist (size 0); size and cpline are
+ * cleared.  a3 = the coplist.
+ */
 void BLITZ_ROUTINE _freecoplist(void)
 {
     UBYTE *cop = blitz_string;
@@ -773,7 +823,32 @@ static void initcoplist(ULONG ypos, ULONG height, ULONG type, ULONG sprites, ULO
     *ins++ = DMAOFF;
 }
 
-/* InitCopList CopList#,ypos,height,type,sprites,colors,numcustoms */
+/**
+ * @brief InitCopList CopList#,ypos,height,type,sprites,colors,numcustoms:
+ *        builds the coplist's copper list.
+ *
+ * Frees an old list, then allocates (chip, cleared) and builds the list
+ * (see initcoplist): 2 NOPs (later the start wait), FMODE/DIW/DDF/
+ * BPLCON0 from the mode table (resolution x fetch mode of the type),
+ * colour NOPs (AGA: with the bank moves), sprite moves, BPLCON2/3/4/1
+ * and BPL1/2MOD, the bitplane pointers, a wait + DMA on, the custom area
+ * (numcustoms NOPs, or for negative numcustoms per line a wait $e1 and
+ * cpline/4-1 NOPs), a wait + DMA off.  The coplist becomes the used one.
+ * a3 = the coplist (!libs {#displaylib,$1380}).
+ * Errors: more bitplanes than the resolution allows ("Illegal Number of
+ * BitPlanes for Resolution"); the branches go into the error check area, BUG(orig) (#412).
+ *
+ * @param ypos     d1: the first line of the display
+ * @param height   d2: the number of lines
+ * @param type     d3: bitplanes (bits 0-3), resolution, fetch mode,
+ *                 sprite resolution and AGA flags
+ * @param sprites  d4: the number of sprite channels
+ * @param colors   d5: the number of colours
+ * @param used     d6: the offset of the "used" variable (!libs
+ *                 {#displaylib,$0604})
+ * @param args     a2: the argument stack, numcustoms below it
+ * @param sprmode  a0: spriteslib's value (the sprite mode)
+ */
 static void BLITZ_ROUTINE _initcoplist_c(ULONG ypos BL_REG(d1), ULONG height BL_REG(d2),
                                          ULONG type BL_REG(d3), ULONG sprites BL_REG(d4),
                                          ULONG colours BL_REG(d5), ULONG used BL_REG(d6),
@@ -783,8 +858,20 @@ static void BLITZ_ROUTINE _initcoplist_c(ULONG ypos BL_REG(d1), ULONG height BL_
     initcoplist(ypos, height, type, sprites, colours, args, sprmode, (WORD)used);
 }
 
-/* InitCopList CopList#,type (quick version): d1 arrives as the type and
-   becomes the ypos */
+/**
+ * @brief InitCopList CopList#,type: the quick form of InitCopList.
+ *
+ * ypos 44, height 256, 8 sprites, no custom area; the colours come from
+ * the number of bitplanes (colup: 2^n, 256 for 8 and more), halved with
+ * type bit 5, 32 with type bit 6.  d1 arrives as the type and becomes the
+ * ypos (only its low word is set).
+ * Errors: as the long form.
+ *
+ * @param type     d1: the type
+ * @param height   d2: the caller's d2 (only its low word is set)
+ * @param used     d6: the offset of the "used" variable
+ * @param sprmode  a0: spriteslib's value (the sprite mode)
+ */
 static void BLITZ_ROUTINE _initcoplist2_c(ULONG type BL_REG(d1), ULONG height BL_REG(d2),
                                           ULONG used BL_REG(d6), const UWORD *sprmode BL_REG(a0))
 {
@@ -804,6 +891,21 @@ BLITZ_THUNK(_initcoplist2, _initcoplist2_c, "a2");
 
 /* ---------------------------------------- CreateDisplay (Blitz mode only) */
 
+/**
+ * @brief CreateDisplay CopList#[,CopList#..]: shows one or more coplists
+ *        (Blitz mode only).
+ *
+ * Fills the waits of every list (start - setup lines, the display start,
+ * the display end), links the lists with COP2LC/COPJMP2 moves, ends the
+ * last with a wait for the end, waits for the blitter and puts the first
+ * list on COP1LC (and switchlib's coplist, $C205).  a3 is left on the
+ * last coplist (not a bug: the compiler reloads it).
+ * Errors: an uninitialised coplist ("Uninitialised CopList"); the branches go into the error check area, BUG(orig) (#412).
+ *
+ * @param count     d7: the number of coplists
+ * @param args      a2: the argument stack, the coplist numbers below it
+ * @param coplists  a0: the coplist objects (!libs {#displaylib,$1001})
+ */
 static void BLITZ_ROUTINE _createdisplay_c(UWORD count BL_REG(d7), const UWORD *args BL_REG(a2),
                                            UBYTE *coplists BL_REG(a0))
 {
@@ -923,13 +1025,38 @@ static void displaybmap2(UBYTE *cop, const UBYTE *bm, ULONG xoff, ULONG yoff)
     } while ((WORD)--planes != -1);
 }
 
+/**
+ * @brief DisplayBitMap CopList#,bmap,x,y: shows a bitmap at a position.
+ *
+ * Sets the modulos, the BPLCON1 scroll value (bp1 table) and the bitplane
+ * pointers (HAM8: planes 7 and 8 first) for the position, and remembers
+ * x in x0/x1 for DisplayScroll.  a3 is left on the bp1 table (not a bug:
+ * the compiler reloads it).
+ * Errors (debugger only): uninitialised coplist.
+ *
+ * @param bm  a0: the bitmap (!libs {#bitmaplib,$1081})
+ * @param x   d2: the x position (quick)
+ * @param y   d3: the y position
+ */
 static void BLITZ_ROUTINE _displaybmap2_c(const UBYTE *bm BL_REG(a0), ULONG x BL_REG(d2),
                                           ULONG y BL_REG(d3))
 {
     displaybmap2(blitz_string, bm, x, y);
 }
 
-/* DisplayBitMap CopList#,bmap - d2/d3 are the caller's registers */
+/**
+ * @brief DisplayBitMap CopList#,bmap: shows a bitmap.
+ *
+ * Sets the modulos and the bitplane pointers (HAM8: planes 7 and 8
+ * first); with smooth scrolling in the type (bit 4) the x,y form at 0,0.
+ * BUG(orig) (#411): without smooth scrolling x0/x1 get the caller's
+ * d2/d3.
+ * Errors (debugger only): uninitialised coplist.
+ *
+ * @param bm       a0: the bitmap (!libs {#bitmaplib,$1081})
+ * @param staled2  d2: the caller's d2, stored in x0
+ * @param staled3  d3: the caller's d3, stored in x1
+ */
 static void BLITZ_ROUTINE _displaybmap_c(const UBYTE *bm BL_REG(a0), ULONG staled2 BL_REG(d2),
                                          ULONG staled3 BL_REG(d3))
 {
@@ -1025,6 +1152,22 @@ static void displaydbmap2(UBYTE *cop, const UBYTE *bm1, const UBYTE *bm2,
     }
 }
 
+/**
+ * @brief DisplayBitMap CopList#,bmap,x,y,bmap,x,y: shows two bitmaps
+ *        (dual playfield) at positions.
+ *
+ * As the single form, the planes alternate between the two bitmaps; the
+ * BPLCON1 value combines both scroll values.  a3 is left on the bp1
+ * table.
+ * Errors (debugger only): uninitialised coplist.
+ *
+ * @param bm1   a0: the first bitmap (!libs {#bitmaplib,$1081})
+ * @param bm2   a1: the second bitmap (!libs {#bitmaplib,$1184})
+ * @param x1    d2: the first x position (quick)
+ * @param y1    d3: the first y position
+ * @param x2    d5: the second x position (quick)
+ * @param args  a2: the argument stack, the second y below it
+ */
 static void BLITZ_ROUTINE _displaydbmap2_c(const UBYTE *bm1 BL_REG(a0), const UBYTE *bm2 BL_REG(a1),
                                            ULONG x1 BL_REG(d2), ULONG y1 BL_REG(d3),
                                            ULONG x2 BL_REG(d5), const UWORD *args BL_REG(a2))
@@ -1032,6 +1175,18 @@ static void BLITZ_ROUTINE _displaydbmap2_c(const UBYTE *bm1 BL_REG(a0), const UB
     displaydbmap2(blitz_string, bm1, bm2, x1, y1, x2, args[-1]);
 }
 
+/**
+ * @brief DisplayBitMap CopList#,bmap,bmap: shows two bitmaps (dual
+ *        playfield).
+ *
+ * The modulos and the bitplane pointers, alternating between the two
+ * bitmaps; x0/x1 = 0.  With smooth scrolling (type bit 4) the x,y form at
+ * 0,0.
+ * Errors (debugger only): uninitialised coplist.
+ *
+ * @param bm1  a0: the first bitmap (!libs {#bitmaplib,$1081})
+ * @param bm2  a1: the second bitmap (!libs {#bitmaplib,$1182})
+ */
 static void BLITZ_ROUTINE _displaydbmap_c(const UBYTE *bm1 BL_REG(a0), const UBYTE *bm2 BL_REG(a1))
 {
     UBYTE *cop = blitz_string;
@@ -1094,10 +1249,29 @@ static void spriteoff(UBYTE *cop, const UBYTE *spr, UWORD chan)
     } while ((WORD)--count != -1);
 }
 
-/* DisplaySprite CopList#,Sprite#,X,Y,Channel: a1 = sprite, d2 = x
-   (quick), d3 = y, d4 = channel.  Every register is reused; the word
-   loads into d2/d3 keep the upper word of the caller's register (BL_SETW
-   below) */
+/**
+ * @brief DisplaySprite CopList#,Sprite#,X,Y,Sprite Channel: shows a
+ *        sprite on one or more channels.
+ *
+ * Computes SPRxPOS/SPRxCTL from the position minus the handle (the x
+ * handle scaled by spri), clips at the top and the bottom of the display
+ * and writes position, control and data pointers into the channel's
+ * sprite moves (attached sprites: two channels per part); channels from
+ * numsprites on are those of CustomSprites.  A sprite completely above
+ * or below the display gets the blank sprite (spriteoff).  Every register is
+ * reused; the word loads into d2/d3 keep the upper word of the caller's
+ * register (BL_SETW below).
+ * BUG(orig) (#414): a sprite spanning the last normal channel and the
+ * CustomSprites bank overwrites the BPLCON moves.  BUG(orig) (#949):
+ * after CustomChunky's split form spri is 0.
+ * Errors: an uninitialised sprite ("Uninitialised Sprite"), not enough
+ * channels ("Not Enough Sprite Channels"); the branches go into the error check area, BUG(orig) (#412).
+ *
+ * @param spr      a1: the sprite (!libs {#spriteslib,$1181})
+ * @param x        d2: the x position (quick)
+ * @param y        d3: the y position
+ * @param channel  d4: the first sprite channel
+ */
 static void BLITZ_ROUTINE _displaysprite_c(const UBYTE *spr BL_REG(a1), ULONG x BL_REG(d2),
                                            ULONG y BL_REG(d3), ULONG channel BL_REG(d4))
 {
@@ -1304,6 +1478,19 @@ static const UBYTE *paldata(const UBYTE *palobj)
     return (const UBYTE *)p + 4;
 }
 
+/**
+ * @brief DisplayPalette CopList#,Palette#: puts a palette into the list's
+ *        colour moves.
+ *
+ * numcols colours from colour 0; ECS: one move per colour (simple), AGA
+ * (aga bit 15): per bank of 32 colours a bank move and the high and low
+ * nibbles (complex2).
+ * Errors: an uninitialised palette ("Uninitialised Palette"), a list
+ * overrun ("Not Enough Custom Cops"); the branches go into the error check area, BUG(orig) (#412).
+ *
+ * @param pal     a0: the palette (!libs {#palettelib,$1081})
+ * @param palnum  d1: the palette number (not used)
+ */
 static void BLITZ_ROUTINE _displaypalette_c(const UBYTE *pal BL_REG(a0), ULONG palnum BL_REG(d1))
 {
     UBYTE *cop = blitz_string;
@@ -1323,6 +1510,15 @@ static void BLITZ_ROUTINE _displaypalette_c(const UBYTE *pal BL_REG(a0), ULONG p
         complex2(cop, pal, ins, 0x01060000 | CM(cop, bplcon3), count);
 }
 
+/**
+ * @brief DisplayPalette CopList#,Palette#,coloroffset: as DisplayPalette,
+ *        from the palette's colour coloroffset.
+ *
+ * @param pal     a0: the palette (!libs {#palettelib,$1081})
+ * @param palnum  d1: the palette number (not used)
+ * @param coloff  d2: the first colour taken from the palette (word
+ *                offset of 12 bytes per entry: >= 2731 goes backwards)
+ */
 static void BLITZ_ROUTINE _displaypalette2_c(const UBYTE *pal BL_REG(a0), ULONG palnum BL_REG(d1),
                                              UWORD coloff BL_REG(d2))
 {
@@ -1344,6 +1540,16 @@ static void BLITZ_ROUTINE _displaypalette2_c(const UBYTE *pal BL_REG(a0), ULONG 
         complex2(cop, pal, ins, 0x01060000 | CM(cop, bplcon3), count);
 }
 
+/**
+ * @brief DisplayPalette CopList#,Palette#,coloroffset,bankoffset: as
+ *        DisplayPalette, from colour coloroffset into colour bank
+ *        bankoffset (AGA).
+ *
+ * @param pal      a0: the palette (!libs {#palettelib,$1081})
+ * @param palnum   d1: the palette number (not used)
+ * @param coloff   d2: the first colour taken from the palette
+ * @param bankoff  d3: added to the bank bits of BPLCON3 (bits 13-15)
+ */
 static void BLITZ_ROUTINE _displaypalette3_c(const UBYTE *pal BL_REG(a0), ULONG palnum BL_REG(d1),
                                              UWORD coloff BL_REG(d2), UWORD bankoff BL_REG(d3))
 {
@@ -1393,6 +1599,23 @@ static void customcols(UWORD ccoffset, UWORD ypos, const UBYTE *pal, UWORD start
     complex2(cop, pal, ins, bankmove, numcols);
 }
 
+/**
+ * @brief CustomColors CopList#,CCOffset,YPos,Palette,startcol,numcols:
+ *        colour changes at a line in the custom area.
+ *
+ * At CCOffset (longs) in the custom area: a wait for the line (with the
+ * line 256 wait if needed), then the colour moves of numcols colours from
+ * startcol (ECS 1 per colour, AGA with bank moves and both nibbles).
+ * Space: ECS 2+n, AGA 2+n+n+n/16 copper instructions.
+ * Errors: an uninitialised palette, an overrun ("Not Enough Custom
+ * Cops"); the branches go into the error check area, BUG(orig) (#412).
+ *
+ * @param ccoffset  d1: the offset in the custom area (longs)
+ * @param ypos      d2: the line (from the display's ypos)
+ * @param pal       a0: the palette (!libs {#palettelib,$1083})
+ * @param startcol  d4: the first colour
+ * @param numcols   d5: the number of colours
+ */
 static void BLITZ_ROUTINE _customcols_c(UWORD ccoffset BL_REG(d1), UWORD ypos BL_REG(d2),
                                         const UBYTE *pal BL_REG(a0), UWORD startcol BL_REG(d4),
                                         UWORD numcols BL_REG(d5))
@@ -1400,6 +1623,19 @@ static void BLITZ_ROUTINE _customcols_c(UWORD ccoffset BL_REG(d1), UWORD ypos BL
     customcols(ccoffset, ypos, pal, startcol, numcols);
 }
 
+/**
+ * @brief CustomColors CopList#,CCOffset,YPos,Palette,startcol,numcols,
+ *        thru256flag: as CustomColors, then bot = 257.
+ *
+ * The flag's value is not read: bot = 257 means that the next wait does
+ * not add the line 256 wait.
+ *
+ * @param ccoffset  d1: the offset in the custom area (longs)
+ * @param ypos      d2: the line
+ * @param pal       a0: the palette (!libs {#palettelib,$1083})
+ * @param startcol  d4: the first colour
+ * @param numcols   d5: the number of colours
+ */
 static void BLITZ_ROUTINE _customcols2_c(UWORD ccoffset BL_REG(d1), UWORD ypos BL_REG(d2),
                                          const UBYTE *pal BL_REG(a0), UWORD startcol BL_REG(d4),
                                          UWORD numcols BL_REG(d5))
@@ -1412,7 +1648,20 @@ BLITZ_THUNK(_customcols2, _customcols2_c, "a2");
 
 /* ------------------------------------------------- custom copper routines */
 
-/* CustomString CopList#,CCOffset,YPos,Copper$ */
+/**
+ * @brief CustomString CopList#,CCOffset,YPos,Copper$: copper instructions
+ *        from a string at a line in the custom area.
+ *
+ * A wait for the line, then the string's longs.  Space: 2+n (n =
+ * Len(Copper$)/4).
+ * Errors: a length that is 0 or not a multiple of 4 ("Custom Copper
+ * String Must Be Multiple Of 4 Bytes Silly!"), an overrun; the branches go into the error check area, BUG(orig) (#412).
+ *
+ * @param ccoffset  d1: the offset in the custom area (longs)
+ * @param ypos      d2: the line
+ * @param s         d3: the string
+ * @param lens      a2: the argument stack, the string length below it
+ */
 static void BLITZ_ROUTINE _customstring_c(UWORD ccoffset BL_REG(d1), UWORD ypos BL_REG(d2),
                                           const ULONG *s BL_REG(d3), const ULONG *lens BL_REG(a2))
 {
@@ -1512,7 +1761,26 @@ static void dblscan(UWORD mode, UWORD off)
 #undef SWAPMODS
 }
 
+/**
+ * @brief DisplayDblScan CopList#,Mode: line doubling with modulo moves in
+ *        the per line custom area.
+ *
+ * Two modulo moves per line: mode 0 clears them (NOPs), mode 1 swaps the
+ * doubling modulos (-fetchwid) and the normal ones every line, modes 2-5
+ * after runs set by the dloop table (1, 5, 13, 29 lines).
+ * Errors: not enough space per line ("Not Enough Custom Copper Space");
+ * the branches go into the error check area, BUG(orig) (#412).
+ *
+ * @param mode  d1: the mode
+ */
 static void BLITZ_ROUTINE _displaydblscan0_c(UWORD mode BL_REG(d1)) { dblscan(mode, 0); }
+/**
+ * @brief DisplayDblScan CopList#,Mode,copoffset: as DisplayDblScan, at an
+ *        offset in each line's custom area.
+ *
+ * @param mode  d1: the mode
+ * @param off   d2: the offset in the line's custom area (longs)
+ */
 static void BLITZ_ROUTINE _displaydblscan_c(UWORD mode BL_REG(d1), UWORD off BL_REG(d2))
 {
     dblscan(mode, off);
@@ -1520,9 +1788,22 @@ static void BLITZ_ROUTINE _displaydblscan_c(UWORD mode BL_REG(d1), UWORD off BL_
 BLITZ_THUNK(_displaydblscan0, _displaydblscan0_c, "a0");
 BLITZ_THUNK(_displaydblscan, _displaydblscan_c, "a0");
 
-/* CustomSprites CopList#,CCOffset,YPos,NumSprites.  BUG(orig) (#324): d1 is
-   CCOffset * 16 (see the declaration), the a1 the compiler loaded is not
-   used: the offset is CCOffset * 64 bytes */
+/**
+ * @brief CustomSprites CopList#,CCOffset,YPos,NumSprites: more sprite
+ *        moves at a line in the custom area.
+ *
+ * A wait for the line, then NumSprites x 4 moves of the template spp
+ * (channels from numsprites on for DisplaySprite).  Space: 4n+2.
+ * BUG(orig) (#324): d1 is CCOffset * 16 (the declaration has
+ * DisplaySprite's !libs), the a1 the compiler loaded is not used: the
+ * offset is CCOffset * 64 bytes.  BUG(orig) (#413): the moves carry the
+ * template's wrong data.
+ * Errors: an overrun ("Not Enough Custom Cops"); the branches go into the error check area, BUG(orig) (#412).
+ *
+ * @param ccoffset  d1: CCOffset * 16
+ * @param ypos      d2: the line
+ * @param count     d3: the number of sprite channels
+ */
 static void BLITZ_ROUTINE _customsprites_c(UWORD ccoffset BL_REG(d1), UWORD ypos BL_REG(d2),
                                            UWORD count BL_REG(d3))
 {
@@ -1622,10 +1903,29 @@ static void rainbow(UWORD reg, const UBYTE *pal, UWORD off)
     OVERRUN(cop, ins);
 }
 
+/**
+ * @brief DisplayRainbow CopList#,Register,Palette: one colour per line
+ *        from a palette, in the per line custom area.
+ *
+ * Colour register Register gets palette entry n on line n.  ECS 1, AGA 4
+ * moves per line (bank moves and both nibbles).
+ * Errors: not enough space per line, an overrun; the branches go into the error check area, BUG(orig) (#412).
+ *
+ * @param reg  d1: the colour register
+ * @param pal  a2: the palette (!libs {#palettelib,$1282})
+ */
 static void BLITZ_ROUTINE _displayrainbow0_c(UWORD reg BL_REG(d1), const UBYTE *pal BL_REG(a2))
 {
     rainbow(reg, pal, 0);
 }
+/**
+ * @brief DisplayRainbow CopList#,Register,Palette,copoffset: as
+ *        DisplayRainbow, at an offset in each line's custom area.
+ *
+ * @param reg  d1: the colour register
+ * @param pal  a2: the palette (!libs {#palettelib,$1282})
+ * @param off  d3: the offset in the line's custom area (longs)
+ */
 static void BLITZ_ROUTINE _displayrainbow_c(UWORD reg BL_REG(d1), const UBYTE *pal BL_REG(a2),
                                             UWORD off BL_REG(d3))
 {
@@ -1687,12 +1987,36 @@ static void rgb(UWORD reg, UWORD line, UWORD red, UWORD green, UWORD blue, UWORD
     OVERRUN(cop, ins);
 }
 
+/**
+ * @brief DisplayRGB CopList#,Register,line,r,g,b: one colour change at a
+ *        line, in the per line custom area.
+ *
+ * ECS 1 move, AGA 4 (bank moves, high and low nibbles).
+ * Errors: not enough space per line, an overrun; the branches go into the error check area, BUG(orig) (#412).
+ *
+ * @param reg    d1: the colour register
+ * @param line   d2: the line
+ * @param red    d3: red
+ * @param green  d4: green
+ * @param blue   d5: blue
+ */
 static void BLITZ_ROUTINE _displayrgb0_c(UWORD reg BL_REG(d1), UWORD line BL_REG(d2),
                                          UWORD red BL_REG(d3), UWORD green BL_REG(d4),
                                          UWORD blue BL_REG(d5))
 {
     rgb(reg, line, red, green, blue, blah[0]);
 }
+/**
+ * @brief DisplayRGB CopList#,Register,line,r,g,b,copoffset: as
+ *        DisplayRGB, at an offset in the line's custom area.
+ *
+ * @param reg    d1: the colour register
+ * @param line   d2: the line
+ * @param red    d3: red
+ * @param green  d4: green
+ * @param blue   d5: blue
+ * @param args   a2: the argument stack, copoffset (longs) below it
+ */
 static void BLITZ_ROUTINE _displayrgb_c(UWORD reg BL_REG(d1), UWORD line BL_REG(d2),
                                         UWORD red BL_REG(d3), UWORD green BL_REG(d4),
                                         UWORD blue BL_REG(d5), const UWORD *args BL_REG(a2))
@@ -1726,11 +2050,31 @@ static void user(UWORD line, const ULONG *s, UWORD off, ULONG len)
     OVERRUN(cop, ins);
 }
 
+/**
+ * @brief DisplayUser CopList#,Line,String: copper instructions from a
+ *        string into a line's custom area.
+ *
+ * Errors: not enough space per line, a length that is not a multiple of
+ * 4, an overrun; the branches go into the error check area, BUG(orig) (#412).
+ *
+ * @param line  d1: the line
+ * @param text  d2: the string
+ * @param lens  a2: the argument stack, the string length below it
+ */
 static void BLITZ_ROUTINE _displayuser0_c(UWORD line BL_REG(d1), const ULONG *text BL_REG(d2),
                                           const ULONG *lens BL_REG(a2))
 {
     user(line, text, 0, lens[-1]);
 }
+/**
+ * @brief DisplayUser CopList#,Line,String,Offset: as DisplayUser, at an
+ *        offset in the line's custom area.
+ *
+ * @param line  d1: the line
+ * @param text  d2: the string
+ * @param off   d3: the offset in the line's custom area (longs)
+ * @param lens  a2: the argument stack, the string length below it
+ */
 static void BLITZ_ROUTINE _displayuser_c(UWORD line BL_REG(d1), const ULONG *text BL_REG(d2),
                                          UWORD off BL_REG(d3), const ULONG *lens BL_REG(a2))
 {
@@ -1819,11 +2163,35 @@ static void scroll(const LONG *xpos1, const LONG *xpos2, UWORD off, ULONG caller
     } while ((WORD)--sc.ycont >= 0);
 }
 
+/**
+ * @brief DisplayScroll CopList#,&xpos.q(n),&xpos.q(n): per line horizontal
+ *        scrolling of the two playfields.
+ *
+ * Per line a BPLCON1 move and the two modulo moves (3 moves): from the
+ * positions x0/x1 of the last DisplayBitMap, each line adds the next
+ * value of the two arrays.
+ * Errors: not enough space per line ("Not Enough Custom Copper Space");
+ * the branches go into the error check area, BUG(orig) (#412).
+ *
+ * @param callerd0  d0: the caller's d0 (its upper bytes go into the
+ *                  resolution bits, as in the original)
+ * @param xpos1     d1: the first array (quick, one per line)
+ * @param xpos2     d2: the second array
+ */
 static void BLITZ_ROUTINE _displayscroll0_c(ULONG callerd0 BL_REG(d0), const LONG *xpos1 BL_REG(d1),
                                             const LONG *xpos2 BL_REG(d2))
 {
     scroll(xpos1, xpos2, 0, callerd0);
 }
+/**
+ * @brief DisplayScroll CopList#,&xpos.q(n),&xpos.q(n),Offset: as
+ *        DisplayScroll, at an offset in each line's custom area.
+ *
+ * @param callerd0  d0: the caller's d0
+ * @param xpos1     d1: the first array (quick, one per line)
+ * @param xpos2     d2: the second array
+ * @param off       d3: the offset in the line's custom area (longs)
+ */
 static void BLITZ_ROUTINE _displayscroll_c(ULONG callerd0 BL_REG(d0), const LONG *xpos1 BL_REG(d1),
                                            const LONG *xpos2 BL_REG(d2), UWORD off BL_REG(d3))
 {
@@ -1834,7 +2202,15 @@ BLITZ_THUNK(_displayscroll, _displayscroll_c, "a2");
 
 /* ------------------------------------------- chunky copper routines (AGA) */
 
-/* CustomChunkySize(width,height) */
+/**
+ * @brief CustomChunkySize(width,height): the custom copper space that
+ *        CustomChunky needs.
+ *
+ * @param width   d0: the width (colour moves per line)
+ * @param height  d1: the height
+ * @return d0: (width + (width+31)/32 + 3) * height + 2 copper
+ *         instructions (low word arithmetic)
+ */
 static ULONG BLITZ_ROUTINE _customchunkysize_c(ULONG width BL_REG(d0), UWORD height BL_REG(d1))
 {
     UWORD banks = (UWORD)((UWORD)((UWORD)width + 31) >> 5);
@@ -1901,6 +2277,23 @@ static void customchunky(UWORD ccoffset, UWORD ypos, UWORD width, UWORD height, 
     OVERRUN(cop, ins);
 }
 
+/**
+ * @brief CustomChunky CopList#,CCOffset,YPos,width,height,res: a copper
+ *        chunky area (AGA) in the custom area.
+ *
+ * A wait for the line, then per chunky line width colour moves (registers
+ * from $1BE down, a bank move before every 32), a wait for the next line
+ * (res lines on) and a BPLCON4 move; position, size and modulo are remembered in the coplist
+ * (cchunky, chy, chw, chh, chr, chc).  Space: CustomChunkySize.
+ * Errors: YPos lower than res ("CustomChunky must start at ypos greater
+ * than res"), an overrun; the branches go into the error check area, BUG(orig) (#412).
+ *
+ * @param ccoffset  d1: the offset in the custom area (longs)
+ * @param ypos      d2: the first line
+ * @param width     d3: the width
+ * @param height    d4: the height (chunky lines)
+ * @param res       d5: the lines per chunky line
+ */
 static void BLITZ_ROUTINE _customchunky_c(UWORD ccoffset BL_REG(d1), UWORD ypos BL_REG(d2),
                                           UWORD width BL_REG(d3), UWORD height BL_REG(d4),
                                           UWORD res BL_REG(d5))
@@ -1908,7 +2301,22 @@ static void BLITZ_ROUTINE _customchunky_c(UWORD ccoffset BL_REG(d1), UWORD ypos 
     customchunky(ccoffset, ypos, width, height, res);
 }
 
-/* the second form: -2(a2) = split position */
+/**
+ * @brief CustomChunky CopList#,CCOffset,YPos,width,height,res,splitpos: as
+ *        CustomChunky, split into two parts at splitpos.
+ *
+ * The description is copied to the second one (cchunky2...): the first
+ * part gets the height splitpos, the second the rest, starting splitpos
+ * lines later.
+ * BUG(orig) (#949): the 16 byte copy overwrites spri (see below).
+ *
+ * @param ccoffset  d1: the offset in the custom area (longs)
+ * @param ypos      d2: the first line
+ * @param width     d3: the width
+ * @param height    d4: the height (chunky lines)
+ * @param res       d5: the lines per chunky line
+ * @param args      a2: the argument stack, splitpos below it
+ */
 static void BLITZ_ROUTINE _customchunky2_c(UWORD ccoffset BL_REG(d1), UWORD ypos BL_REG(d2),
                                            UWORD width BL_REG(d3), UWORD height BL_REG(d4),
                                            UWORD res BL_REG(d5), const UWORD *args BL_REG(a2))
