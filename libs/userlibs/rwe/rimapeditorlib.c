@@ -381,7 +381,7 @@ BLITZ_THUNK(_setstencil, setstencil_c, "d0-d1/a0-a1");
    map's word), or the stencil byte of the map's word is set; else
    shape# + 1 (resp. the rub-through map's word).  The address of the
    map's word is kept at 24.  d0's upper word stays (ADDQ.w). */
-static ULONG BLITZ_ROUTINE candraw_c(ULONG d0 BL_REG(d0), UWORD x BL_REG(d1),
+static ULONG BLITZ_ROUTINE candraw_c(ULONG shapenum BL_REG(d0), UWORD x BL_REG(d1),
                                      UWORD y BL_REG(d2), UBYTE *map BL_REG(a3))
 {
     UBYTE *rub;
@@ -396,17 +396,17 @@ static ULONG BLITZ_ROUTINE candraw_c(ULONG d0 BL_REG(d0), UWORD x BL_REG(d1),
         if ((WORD)x >= (WORD)MW(rub, M_WIDTH) || (WORD)y >= (WORD)MW(rub, M_HEIGHT))
             return 0xffffffffUL;
         off = rol1(bl_mulu_w(y, MW(rub, M_WIDTH)) + x);
-        BL_SETW(d0, *(UWORD *)(MP(rub, M_MEMPOINTER) + off) - 1);
+        BL_SETW(shapenum, *(UWORD *)(MP(rub, M_MEMPOINTER) + off) - 1);
     }
     cell = (UWORD *)(MP(map, M_MEMPOINTER) + rol1(bl_mulu_w(y, MW(map, M_WIDTH)) + x));
     MP(map, M_LASTADDRESS) = (UBYTE *)cell;
-    BL_SETW(d0, d0 + 1);
+    BL_SETW(shapenum, shapenum + 1);
     v = *cell;
-    if ((UWORD)d0 == v)
+    if ((UWORD)shapenum == v)
         return 0xffffffffUL;
     if (mapstencil[(WORD)v])
         return 0xffffffffUL;
-    return d0;
+    return shapenum;
 }
 BLITZ_THUNK(_candraw, candraw_c, "d1/a0-a1");
 
@@ -419,12 +419,12 @@ BLITZ_THUNK(_candraw, candraw_c, "d1/a0-a1");
 /* ScanShapes startnum,highest: a0 = shape startnum, d0 = its offset
    (shape# << 5); from it to the first empty shape or `highest` the
    largest width/height/depth (signed).  -> d0 = the last number. */
-static ULONG BLITZ_ROUTINE scanshapes_c(ULONG d0 BL_REG(d0), UWORD highest BL_REG(d1),
+static ULONG BLITZ_ROUTINE scanshapes_c(ULONG shapenum BL_REG(d0), UWORD highest BL_REG(d1),
                                         const UBYTE *sh BL_REG(a0))
 {
     UWORD w = 0, h = 0, d = 0;
 
-    BL_SETW(d0, (WORD)d0 >> 5);
+    BL_SETW(shapenum, (WORD)shapenum >> 5);
     while (SW(sh, 0)) {
         if (!((WORD)w > (WORD)SW(sh, 0)))
             w = SW(sh, 0);
@@ -433,34 +433,34 @@ static ULONG BLITZ_ROUTINE scanshapes_c(ULONG d0 BL_REG(d0), UWORD highest BL_RE
         if (!((WORD)d > (WORD)SW(sh, 4)))
             d = SW(sh, 4);
         sh += 32;
-        if ((UWORD)d0 == highest)
+        if ((UWORD)shapenum == highest)
             break;
-        BL_SETW(d0, d0 + 1);
+        BL_SETW(shapenum, shapenum + 1);
     }
     maxwidth = w;
     maxheight = h;
     maxdepth = d;
-    return d0;
+    return shapenum;
 }
 BLITZ_THUNK(_scanshapes, scanshapes_c, "d1/a0-a1");
 
 /* ScanMaxWidth / ScanMaxheight / ScanMaxdepth (MOVE.w: d0's upper word
    stays) */
-static ULONG BLITZ_ROUTINE scanmaxwidth_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE scanmaxwidth_c(ULONG incoming BL_REG(d0))
 {
-    return BL_SETW(d0, maxwidth);
+    return BL_SETW(incoming, maxwidth);
 }
 BLITZ_THUNK(_scanmaxwidth, scanmaxwidth_c, "d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE scanmaxheight_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE scanmaxheight_c(ULONG incoming BL_REG(d0))
 {
-    return BL_SETW(d0, maxheight);
+    return BL_SETW(incoming, maxheight);
 }
 BLITZ_THUNK(_scanmaxheight, scanmaxheight_c, "d1/a0-a1");
 
-static ULONG BLITZ_ROUTINE scanmaxdepth_c(ULONG d0 BL_REG(d0))
+static ULONG BLITZ_ROUTINE scanmaxdepth_c(ULONG incoming BL_REG(d0))
 {
-    return BL_SETW(d0, maxdepth);
+    return BL_SETW(incoming, maxdepth);
 }
 BLITZ_THUNK(_scanmaxdepth, scanmaxdepth_c, "d1/a0-a1");
 
@@ -703,12 +703,12 @@ BLITZ_INLINE(_mapobjviewy, "move.w 16(a3),d0");
 BLITZ_INLINE(_mapdatachanged, "move.w 22(a3),d0");
 
 /* MapDataChanged(newstate): the old state, the new one stored */
-static ULONG BLITZ_ROUTINE mapdatachanged2_c(ULONG d0 BL_REG(d0), UBYTE *map BL_REG(a3))
+static ULONG BLITZ_ROUTINE mapdatachanged2_c(ULONG newstate BL_REG(d0), UBYTE *map BL_REG(a3))
 {
     UWORD old = MW(map, M_CHANGED);
 
-    MW(map, M_CHANGED) = (UWORD)d0;
-    return BL_SETW(d0, old);
+    MW(map, M_CHANGED) = (UWORD)newstate;
+    return BL_SETW(newstate, old);
 }
 BLITZ_THUNK(_mapdatachanged2, mapdatachanged2_c, "d1/a0-a1");
 
@@ -777,10 +777,10 @@ BLITZ_THUNK(_OutTextRight, outtextright_c, "d0-d1/a0-a1");
 static void BLITZ_ROUTINE outtextpen_c(ULONG rp BL_REG(d0), UWORD pen BL_REG(d1))
 {
     struct Library *gfx = gfxbase;
-    ULONG d0 = rp;
+    ULONG rppen = rp;
 
-    BL_SETW(d0, pen);
-    SetAPen((struct RastPort *)rp, d0);
+    BL_SETW(rppen, pen);
+    SetAPen((struct RastPort *)rp, rppen);
 }
 BLITZ_THUNK(_OutTextPen, outtextpen_c, "d0-d1/a0-a1");
 
