@@ -287,6 +287,16 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   `libs/acidlibs/dhandlerlib.c`, byte-identical to the CD's library
   (header in C, the rest assembler: process segment template, relocation
   order; `asmcmp_dhandlerlib`); `prebuilt/` removed.
+* **Readable names** (user decision 2026-10-30, before the error check
+  area fixes below). Stage 1 is done: a pure rename, every output
+  byte-identical. It covered blitz2, TED and the libraries (2026-10-31:
+  `libs/acidlibs`, `libs/userlibs/rwe`; `libs/deflibs` needed none).
+  Stage 2 splits the variables that hold several unrelated values (one
+  variable per value) and renames the file-scope statics kept in stage
+  1. It is not byte-identical, so it is checked with the tests and
+  named in the commit. The list is in `docs/libs/variable-split.md`.
+  The register-level translations (2dlib, medlib, polylib: static
+  `d0`-`d7`/`a0`-`a6`) are a rewrite of their own after stage 2.
 * **Warnings of `blitzlibcheck`:** 73 warnings per acidlibs set (and
   three of rigtmenulib): normal library code refers into the error check
   area – a command that fails at run time (e.g. `Screen`: `OpenScreen`
