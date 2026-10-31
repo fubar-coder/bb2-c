@@ -12,12 +12,14 @@ target_compile_options(test_blitzlib_compare PRIVATE -Wno-unused-function)
 add_test(NAME blitzlib_compare COMMAND test_blitzlib_compare)
 
 # with the emulator (label emulator; skipped without Amiberry or the
-# emulation data in amiga-emulation/): four runs in parallel
+# emulation data in amiga-emulation/): four runs, in parallel as far as
+# emulator slots are free, else one after the other - four sessions and
+# the one of the orphan check, each maybe waiting for a slot
 add_executable(test_amiga_emulation_run test_amiga_emulation_run.c)
 target_link_libraries(test_amiga_emulation_run PRIVATE lib_amiga_emulation lib_hunk)
 target_compile_options(test_amiga_emulation_run PRIVATE -Wno-unused-function)
 add_test(NAME amiga_emulation_run COMMAND test_amiga_emulation_run)
-math(EXPR limit "180 + ${EMULATION_QUEUE_WAIT}")
+math(EXPR limit "300 + 5 * ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(amiga_emulation_run PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 # the A500 machines (Kickstart 1.3), one run after the other

@@ -242,7 +242,10 @@ assign=FNS|FNS
 assign=Blitz2|BLITZ2
 ${ref_pass}")
 add_test(NAME rwe_refbuild COMMAND ${CDRUN} ${pass})
-math(EXPR limit "${RWE_REFBUILD_TIMEOUT} * 3 + 120 + ${EMULATION_QUEUE_WAIT}")
+# three rounds of a session per worker; the sessions of a round one after
+# the other if there are not enough emulator slots free, each maybe
+# waiting for one
+math(EXPR limit "(${RWE_REFBUILD_TIMEOUT} + ${EMULATION_QUEUE_WAIT}) * 3 * ${RWE_REFBUILD_PARALLEL} + 120")
 set_tests_properties(rwe_refbuild PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${limit} FIXTURES_SETUP rwe_refbuild)
 

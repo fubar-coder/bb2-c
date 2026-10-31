@@ -922,6 +922,36 @@ static int cache_digest(const char *text, char hex[65])
     return cdcache_digest(text, files, nfiles, dirs, 1, hex);
 }
 
+/* ends session s of worker w (e[w]) and takes over its results; list and
+   unf are scratch space */
+static void finish_session(unsigned w, unsigned s, struct amiga_emulation **e, size_t *list,
+                           size_t *unf, unsigned *empty, FILE *log)
+{
+    size_t nunf, started, k;
+    int exited;
+
+    amiga_emulation_join(e[w]);
+    amiga_emulation_free(e[w]);
+    e[w] = NULL;
+    started = read_session(w, s, unf, &nunf, &exited);
+    fprintf(log, "cdrun: session %03u worker %u: started %zu, unfinished %zu\n", s, w, started,
+            nunf);
+    if (!started) {
+        if (++empty[w] >= 2) {
+            size_t n = remaining(w, list);
+
+            for (k = 0; k < n; k++)
+                set_result(&jobs[list[k]], "nostart", "compiler/stub did not reach the job list");
+        }
+        return;
+    }
+    empty[w] = 0;
+    for (k = 0; k < nunf; k++)
+        if (++jobs[unf[k]].attempts >= 2)
+            set_result(&jobs[unf[k]], "crash", exited ? "blitz2 returned"
+                       : "emulator timeout (hang or crash requester)");
+}
+
 static int run(FILE *log)
 {
     const char *files[] = { P.blitz2, P.deflibs, P.acidlibs, P.defaultdbug, P.ted, P.tokens };
@@ -990,22 +1020,33 @@ static int run(FILE *log)
             goto out;
     fprintf(log, "cdrun: %zu sources, %zu to compile, %u workers\n", njobs, ntok, nworkers);
 
-    /* rounds: one session per worker that has jobs left */
+    /* rounds: one session per worker that has jobs left.  No free emulator
+       slot while sessions of this round run: the oldest of them is ended
+       first (the slot limit is hard), then the start is tried again */
     while (session < MAXSESSIONS) {
-        unsigned started_any = 0, s = ++session;
+        unsigned started_any = 0, s = ++session, oldest = 0;
 
+        for (w = 0; w < nworkers; w++)
+            e[w] = NULL;
         for (w = 0; w < nworkers; w++) {
             size_t n = remaining(w, list);
             char *script;
 
-            e[w] = NULL;
             if (!n || empty[w] >= 2)
                 continue;
             if (!(script = session_script(w, s, list, n))) {
                 fprintf(log, "cdrun: cannot write the session files\n");
                 goto out;
             }
-            e[w] = start_session(w, script, err, sizeof err);
+            while (!(e[w] = start_session(w, script, err, sizeof err))
+                   && amiga_emulation_no_slot()) {
+                while (oldest < w && !e[oldest])
+                    oldest++;
+                if (oldest >= w)
+                    break;
+                fprintf(log, "cdrun: worker %u: %s - again after worker %u\n", w, err, oldest);
+                finish_session(oldest, s, e, list, unf, empty, log);
+            }
             free(script);
             if (!e[w]) {
                 fprintf(log, "cdrun: %s - skipped\n", err);
@@ -1016,34 +1057,9 @@ static int run(FILE *log)
         }
         if (!started_any)
             break;
-        for (w = 0; w < nworkers; w++) {
-            size_t nunf, started, k;
-            int exited;
-
-            if (!e[w])
-                continue;
-            amiga_emulation_join(e[w]);
-            amiga_emulation_free(e[w]);
-            e[w] = NULL;
-            started = read_session(w, s, unf, &nunf, &exited);
-            fprintf(log, "cdrun: session %03u worker %u: started %zu, unfinished %zu\n", s, w,
-                    started, nunf);
-            if (!started) {
-                if (++empty[w] >= 2) {
-                    size_t n = remaining(w, list);
-
-                    for (k = 0; k < n; k++)
-                        set_result(&jobs[list[k]], "nostart",
-                                   "compiler/stub did not reach the job list");
-                }
-                continue;
-            }
-            empty[w] = 0;
-            for (k = 0; k < nunf; k++)
-                if (++jobs[unf[k]].attempts >= 2)
-                    set_result(&jobs[unf[k]], "crash", exited ? "blitz2 returned"
-                               : "emulator timeout (hang or crash requester)");
-        }
+        for (w = 0; w < nworkers; w++)
+            if (e[w])
+                finish_session(w, s, e, list, unf, empty, log);
         fflush(log);
     }
 

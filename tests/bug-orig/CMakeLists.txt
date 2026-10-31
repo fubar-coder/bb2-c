@@ -211,7 +211,13 @@ function(bug_orig_test bas name)
 		add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
 		set(labels "bug-orig;emulator")
 	endif()
-	math(EXPR limit "${BUG_ORIG_TIMEOUT} * 2 + 60 + ${EMULATION_QUEUE_WAIT}")
+	# a session per configuration (ref and the judged ones), one after the
+	# other if there are not enough emulator slots free, each maybe
+	# waiting for one
+	list(LENGTH configs nsessions)
+	math(EXPR nsessions "${nsessions} + 1")
+	math(EXPR limit
+		"${BUG_ORIG_TIMEOUT} * ${nsessions} + 60 + ${nsessions} * ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS "${labels}" SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
 	list(REMOVE_DUPLICATES fixtures)
@@ -328,9 +334,10 @@ function(bug_orig_ted_test scripts id name)
 		add_test(NAME ${name} COMMAND ${TEDAB} ${work}.pass)
 		set(labels "bug-orig;emulator")
 	endif()
-	# two sessions (one after the other with CORPUS_PARALLEL=1), each maybe
-	# repeated once (gates failed), and the wait for emulator slots
-	math(EXPR limit "${BUG_ORIG_TIMEOUT} * 4 + 120 + ${EMULATION_QUEUE_WAIT}")
+	# two sessions (one after the other with CORPUS_PARALLEL=1 or without
+	# enough free emulator slots), each maybe repeated once (gates failed),
+	# each maybe waiting for a slot
+	math(EXPR limit "${BUG_ORIG_TIMEOUT} * 4 + 120 + 4 * ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS "${labels}" SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
 endfunction()

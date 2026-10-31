@@ -31,8 +31,8 @@ in graphics card memory, where the blitter cannot reach them).
 
 ## How many emulators at once
 
-At most 4 Amiberry sessions run at the same time on the machine, over all
-runners, build directories and worktrees (the slots of
+At most 4 Amiberry instances run at the same time on the machine, over
+all runners, build directories and worktrees (the slots of
 `tools/lib/amiga_emulation`, lock files in
 `$XDG_RUNTIME_DIR/amiga-emulation-slots/`, without `XDG_RUNTIME_DIR` in
 `/tmp/amiga-emulation-slots-UID/`). The limit can be changed while tests
@@ -48,6 +48,15 @@ not stop running sessions; the next ones wait). Only a number from 1 to
 64 counts; a missing file or anything else (text, 0, a larger number)
 means 4. `AMIGA_EMULATION_MAX` in the environment of a runner overrides
 the file for that runner (0 = no limit).
+
+The limit is hard: every session holds a slot. A runner that runs several
+sessions at once (`parallel=`) waits for a slot only while none of its
+own sessions runs; if no slot is free for a further one, it ends one of
+its own sessions first and starts the next then (it never waits for a
+slot while holding one, so two
+runners cannot block each other). A runner thus runs as many sessions at
+once as it gets slots, at least one, and its sessions may run one after
+the other.
 
 ## Conditions for the hardfiles
 

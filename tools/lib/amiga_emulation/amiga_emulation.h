@@ -39,10 +39,14 @@
  * AMIGA_EMULATION_MAX in the environment, the limit is the number in the
  * file max of the slot directory (1 to 64, e.g. `echo 6 > .../max`), else
  * 4; it is read again on every try of a waiting run, so a change takes
- * effect for the runs that already wait.  Only a process
- * without a run of its own waits; a runner that already runs sessions
- * takes a free slot or runs the further session without one (no deadlock
- * between runners that each hold slots and wait for more).
+ * effect for the runs that already wait.  The limit is hard: every
+ * session holds a slot, so no more than the limit of Amiberry instances
+ * run.  Only a process without a run of its own waits; for a runner that
+ * already runs sessions, amiga_emulation_start takes a free slot or fails
+ * at once with amiga_emulation_no_slot() set (no deadlock between runners
+ * that each hold slots and wait for more).  The runner then ends one of
+ * its own sessions (join, free) and starts again; with none of its own
+ * left, that start waits as usual.
  *
  * For debugging, from the environment (for every runner):
  *   AMIGA_EMULATION_VISIBLE=1   as `visible`: the window, host input
@@ -97,9 +101,17 @@ enum amiga_emulation_status {
 
 struct amiga_emulation;
 
-/* starts the run; NULL on error (message in err) */
+/* starts the run; NULL on error (message in err).  NULL with errno EAGAIN
+   and amiga_emulation_no_slot() nonzero: no slot was free and this
+   process runs sessions of its own (see above) - not an error; end one of
+   them and start again. */
 struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_params *p,
                                               char *err, size_t errlen);
+
+/* nonzero if the last amiga_emulation_start of this process failed only
+   because no slot was free (errno alone does not tell: fork can also fail
+   with EAGAIN) */
+int amiga_emulation_no_slot(void);
 
 /* the host directory mounted as TEST: and the work directory */
 const char *amiga_emulation_test_dir(const struct amiga_emulation *e);
@@ -136,7 +148,8 @@ int amiga_emulation_machine_known(const char *name);
 
 /* the slots (see above): takes a free one of max in dir (created if
    missing); with wait, waits for one.  The locked file descriptor, -1 if
-   none was free (without wait) or on error; release with close().  max 0:
+   none was free (without wait; errno EAGAIN) or on error; release with
+   close().  max 0:
    no limit, returns a descriptor of /dev/null.  max
    AMIGA_EMULATION_SLOTS_AUTO: amiga_emulation_slot_max(dir), read again
    on every try. */

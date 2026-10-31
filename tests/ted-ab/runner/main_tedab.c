@@ -802,16 +802,8 @@ static int run(FILE *log)
             s->first = at;
             s->n = m;
             rs = calloc(m, sizeof *rs);
-            for (k = 0; rs && k < m; k++) {
-                struct run *r = &runs[list[at + k]];
-
-                rs[k] = r->r;
-                r->session = s->no;
-                r->attempts++;
-                free(r->dir);
-                r->dir = str_printf("%s/s%03u/vol/runs/%s/%s", P.work, s->no, r->r.test->name,
-                                    tedab_combo_names[r->r.combo]);
-            }
+            for (k = 0; rs && k < m; k++)
+                rs[k] = runs[list[at + k]].r;
             if (!rs || stage_session(s->no, rs, m, log)) {
                 free(rs);
                 free(list);
@@ -849,12 +841,35 @@ static int run(FILE *log)
             free(script);
             free(vol);
             free(emu);
+            /* no free emulator slot while sessions of this round run: the
+               round ends here (the slot limit is hard), the rest of the
+               queue goes to the next one */
+            if (!s->e && round && amiga_emulation_no_slot()) {
+                char *sd = session_dir(s->no, "");
+
+                fprintf(log, "tedab: %s - the round ends with %u sessions\n", err, round);
+                if (sd)
+                    rm_tree(sd);
+                free(sd);
+                nsess--;
+                pos = at;
+                break;
+            }
             if (!s->e) {
                 fprintf(log, "tedab: %s - skipped\n", err);
                 free(list);
                 free(next);
                 rc = 77;
                 goto out;
+            }
+            for (k = 0; k < m; k++) {
+                struct run *r = &runs[list[at + k]];
+
+                r->session = s->no;
+                r->attempts++;
+                free(r->dir);
+                r->dir = str_printf("%s/s%03u/vol/runs/%s/%s", P.work, s->no, r->r.test->name,
+                                    tedab_combo_names[r->r.combo]);
             }
             fprintf(log, "tedab: session %03u: %zu runs\n", s->no, m);
             round++;

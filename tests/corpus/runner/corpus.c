@@ -835,6 +835,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
     char *text = script(p), err[300];
     struct text rep = { 0 };
     size_t c, i, next = 0, done = 0;
+    unsigned waiting_port = 0;  /* the port of resp[next] */
     long bad = 0;
     int rc = 2;
 
@@ -877,20 +878,33 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
         if (stage(p, c, log))
             goto out;
     /* at most `parallel` sessions at a time, joined in start order; with
-       serial=on each one with its own port and remote end */
+       serial=on each one with its own port and remote end.  No free
+       emulator slot while sessions of this pass run: no further one until
+       the oldest has ended (the slot limit is hard; the remote end of the
+       session not started stays for the next try) */
     while (done < p->nconfigs) {
         while (next < p->nconfigs && next - done < p->parallel) {
             unsigned port = 0;
 
-            if (p->serial && (!(port = serial_free_port()) || !(resp[next] = serial_start(port)))) {
+            if (resp[next])
+                port = waiting_port;
+            else if (p->serial
+                     && (!(port = serial_free_port()) || !(resp[next] = serial_start(port)))) {
                 fprintf(log, "corpus: %s: no TCP port for the serial port\n",
                         p->configs[next].tag);
                 goto out;
             }
+            waiting_port = port;
             fprintf(log, "corpus: %s: emulator session%s\n", p->configs[next].tag,
                     port ? ", serial port" : "");
             fflush(log);
-            if (!(e[next] = start(p, next, text, port, err, sizeof err))) {
+            if (!(e[next] = start(p, next, text, port, err, sizeof err)) && next > done
+                && amiga_emulation_no_slot()) {
+                fprintf(log, "corpus: %s: %s - again after the session of %s\n", p->configs[next].tag,
+                        err, p->configs[done].tag);
+                break;
+            }
+            if (!e[next]) {
                 fprintf(log, "corpus: %s: %s - skipped\n", p->configs[next].tag, err);
                 rc = next ? 2 : 77;
                 goto out;

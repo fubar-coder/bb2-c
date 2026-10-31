@@ -587,8 +587,10 @@ int amiga_emulation_slot(const char *dir, unsigned max, int wait)
                 return fd;
             close(fd);
         }
-        if (!wait)
+        if (!wait) {
+            errno = EAGAIN;
             return -1;
+        }
         sleep_ms(250);
     }
 }
@@ -596,13 +598,23 @@ int amiga_emulation_slot(const char *dir, unsigned max, int wait)
 /* the runs of this process that are started and not freed yet */
 static unsigned active_runs;
 
+/* the last amiga_emulation_start failed only because no slot was free */
+static int no_slot;
+
+int amiga_emulation_no_slot(void)
+{
+    return no_slot;
+}
+
 /* a slot for this run: $AMIGA_EMULATION_MAX of them, else the number in
-   the slot directory's file max, else 4 (amiga_emulation_slot_max).  Only a
-   process without a run of its own waits: one that already runs sessions
-   (a runner with parallel > 1) takes a free slot if there is one and
-   otherwise runs this session without one - waiting while holding slots
-   could deadlock two runners that wait for each other's slots, and its
-   running sessions' time limits would not be watched meanwhile. */
+   the slot directory's file max, else 4 (amiga_emulation_slot_max).  The
+   limit is hard: every session holds a slot.  Only a process without a
+   run of its own waits: one that already runs sessions (a runner with
+   parallel > 1) takes a free slot if there is one, else the start fails
+   with no_slot - waiting while holding slots could deadlock two runners
+   that wait for each other's slots, and its running sessions' time limits
+   would not be watched meanwhile.  The runner then ends one of its own
+   sessions and tries again. */
 static int take_slot(char *err, size_t errlen)
 {
     const char *xdg = getenv("XDG_RUNTIME_DIR");
@@ -610,13 +622,14 @@ static int take_slot(char *err, size_t errlen)
                             : str_printf("/tmp/amiga-emulation-slots-%u", (unsigned)getuid());
     int fd = dir ? amiga_emulation_slot(dir, AMIGA_EMULATION_SLOTS_AUTO, active_runs == 0) : -1;
 
-    if (fd < 0 && active_runs) {
-        free(dir);
-        return open("/dev/null", O_RDONLY | O_CLOEXEC);
-    }
-    if (fd < 0)
+    if (fd < 0 && active_runs && errno == EAGAIN) {
+        no_slot = 1;
+        set_err(err, errlen, "no free emulator slot in %s (sessions of this process running: %u)",
+                dir, active_runs);
+    } else if (fd < 0) {
         set_err(err, errlen, "cannot take an emulator slot in %s: %s", dir ? dir : "",
                 strerror(errno));
+    }
     free(dir);
     return fd;
 }
@@ -632,6 +645,7 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     struct sockaddr_un sa;
     pid_t parent;
 
+    no_slot = 0;
     if (!emulation_dir || !*emulation_dir)
         emulation_dir = AMIGA_EMULATION_DIR_DEFAULT;
     if (!e) {
@@ -715,6 +729,8 @@ fail:
     free(cfg);
     free(script);
     amiga_emulation_free(e);
+    if (no_slot)
+        errno = EAGAIN;
     return NULL;
 }
 

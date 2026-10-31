@@ -3,6 +3,7 @@
  * (no emulator), the slots that limit the runs.
  */
 #define _XOPEN_SOURCE 700       /* mkdtemp */
+#include <errno.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -271,6 +272,100 @@ int main(void)
             remove(lock);
         }
         rmdir(dir);
+    }
+
+    /* the hard limit in amiga_emulation_start (XDG_RUNTIME_DIR and the
+       limit of this test, `true` as Amiberry: no emulator, no ROM, no
+       hardfile): a process with runs of its own gets no slot-less session
+       but "no slot now"; one without waits for a slot */
+    {
+        static const struct amiga_emulation_option bare[] = {
+            { "kickstart_rom_file", NULL }, { "hardfile2", NULL },
+        };
+        static const struct amiga_emulation_option nohdf[] = {
+            { "hardfile2", "ro,DH0:/nonexistent/x.hdf,32,1,2,512,0,,uae0" },
+        };
+        char xdg[] = "/tmp/amiga-emulation-xdgtest-XXXXXX", slots[96], lock[128];
+        char *oxdg = getenv("XDG_RUNTIME_DIR"), *omax = getenv("AMIGA_EMULATION_MAX");
+        char *sxdg = oxdg ? strdup(oxdg) : NULL, *smax = omax ? strdup(omax) : NULL;
+        struct amiga_emulation_params q = { 0 };
+        struct amiga_emulation *a, *b, *c;
+        pid_t pid;
+        int x, y, st;
+
+        CHECK(mkdtemp(xdg) != NULL);
+        snprintf(slots, sizeof slots, "%s/amiga-emulation-slots", xdg);
+        setenv("XDG_RUNTIME_DIR", xdg, 1);
+        setenv("AMIGA_EMULATION_MAX", "2", 1);
+        q.changes = bare;
+        q.nchanges = 2;
+        q.amiberry = "true";
+        q.timeout = 10;
+
+        a = amiga_emulation_start(&q, err, sizeof err);
+        CHECK(a != NULL && !amiga_emulation_no_slot());
+        b = amiga_emulation_start(&q, err, sizeof err);
+        CHECK(b != NULL && !amiga_emulation_no_slot());
+        /* both slots taken: the third fails at once, with EAGAIN */
+        errno = 0;
+        c = amiga_emulation_start(&q, err, sizeof err);
+        CHECK(c == NULL && errno == EAGAIN && amiga_emulation_no_slot());
+        CHECK(c == NULL && strstr(err, "no free emulator slot"));
+        CHECK(amiga_emulation_slot(slots, 2, 0) < 0);
+        amiga_emulation_free(c);
+        /* another error stays one (not "no slot") */
+        q.changes = nohdf;
+        q.nchanges = 1;
+        CHECK(amiga_emulation_start(&q, err, sizeof err) == NULL && !amiga_emulation_no_slot());
+        q.changes = bare;
+        q.nchanges = 2;
+        /* a freed run's slot is taken again */
+        amiga_emulation_free(a);
+        c = amiga_emulation_start(&q, err, sizeof err);
+        CHECK(c != NULL && !amiga_emulation_no_slot());
+        amiga_emulation_free(b);
+        amiga_emulation_free(c);
+
+        /* without runs of its own: waits (the child) until a slot is
+           freed; alarm ends it if it never gets one */
+        x = amiga_emulation_slot(slots, 2, 0);
+        y = amiga_emulation_slot(slots, 2, 0);
+        CHECK(x >= 0 && y >= 0);
+        pid = fork();
+        if (pid == 0) {
+            /* the copies of the parent's slots would hold their locks */
+            close(x);
+            close(y);
+            alarm(10);
+            a = amiga_emulation_start(&q, err, sizeof err);
+            st = a != NULL;
+            amiga_emulation_free(a);
+            _exit(st ? 0 : 1);
+        }
+        CHECK(pid > 0);
+        nanosleep(&(struct timespec){ 0, 600000000 }, NULL);
+        CHECK(pid > 0 && waitpid(pid, &st, WNOHANG) == 0);
+        close(x);
+        CHECK(pid > 0 && waitpid(pid, &st, 0) == pid && WIFEXITED(st)
+              && WEXITSTATUS(st) == 0);
+        close(y);
+
+        if (sxdg)
+            setenv("XDG_RUNTIME_DIR", sxdg, 1);
+        else
+            unsetenv("XDG_RUNTIME_DIR");
+        if (smax)
+            setenv("AMIGA_EMULATION_MAX", smax, 1);
+        else
+            unsetenv("AMIGA_EMULATION_MAX");
+        free(sxdg);
+        free(smax);
+        for (x = 0; x < 2; x++) {
+            snprintf(lock, sizeof lock, "%s/slot-%d.lock", slots, x);
+            remove(lock);
+        }
+        rmdir(slots);
+        rmdir(xdg);
     }
 
     /* the ROM check: missing, plain, encrypted without and with rom.key

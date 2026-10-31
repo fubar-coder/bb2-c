@@ -96,7 +96,9 @@ function(corpus_pass name)
 	endforeach()
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 	add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
-	math(EXPR limit "${CORPUS_TIMEOUT} * 3 + 120 + ${EMULATION_QUEUE_WAIT}")
+	# three sessions, one after the other if there are not enough emulator
+	# slots free, each maybe waiting for one
+	math(EXPR limit "${CORPUS_TIMEOUT} * 3 + 120 + 3 * ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
 	if(arg_SERIAL_SAME_AS)
