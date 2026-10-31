@@ -123,19 +123,40 @@ static void BLITZ_ROUTINE codeinit_c(void)
 }
 BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
 
+/**
+ * @brief ASyncFade On|Off: fade synchronously or step by step.
+ *
+ * Off (default): FadeIn/FadeOut do all 16 steps with VWait rate between
+ * them.  On: they only set the fade up, the program calls DoFade.
+ *
+ * @param type  d0: 0 = synchronous, anything else = asynchronous
+ */
 static void BLITZ_ROUTINE dosetfade_c(UWORD type BL_REG(d0))
 {
     F.fadetype = type;
 }
 BLITZ_THUNK(dosetfade, dosetfade_c, "d0-d1/a0-a1");
 
+/**
+ * @brief FadeStatus: the steps of the fade still to do.
+ *
+ * Blitz mode only.
+ *
+ * @return d0.w: the steps left (0..16); the upper word of d0 stays
+ */
 static UWORD BLITZ_ROUTINE dofadestatus_c(void)
 {
     return F.fadenum;
 }
 BLITZ_THUNK_POST(dofadestatus, dofadestatus_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
-/* DoFade - one step: add the fractions, write the colours */
+/**
+ * @brief DoFade: one step of the fade.
+ *
+ * Blitz mode only.  If steps are left: adds the fractions to the colours
+ * from the low to the high colour and writes r<<8|g<<4|b of the high
+ * nibbles into the copper colour moves of the slice (slice+18).
+ */
 void BLITZ_ROUTINE doasyncfade(void)
 {
     UWORD *poke;
@@ -224,7 +245,31 @@ static void dosyncfade(void)
     } while (n-- != 0);
 }
 
-/* FadeIn pal[,rate[,lo,hi]] - a0 = palette, a1 = used slice */
+/**
+ * @brief FadeIn Palette#,Rate,Low Colour,High Colour: fade the colours
+ * of the used slice from black to the palette.
+ *
+ * Blitz mode only.  Sets up 16 steps (calcfade: per colour the fraction
+ * = high byte of the component >> 4; low and high are swapped if low >
+ * high), starts at 0 and, with ASyncFade Off, does them all with VWait
+ * rate between them.
+ * BUG(orig) (#134): the upper byte of d0.w (palette# * 128) gets into the
+ * red and green fractions of the first colour (palettes 0/1 unaffected).
+ * BUG(orig) (#136): the range is not clipped to the colours of palette
+ * and slice.
+ * Errors (debugger, fadechk): "Uninitialized Slice", "Not enough colours
+ * in Slice" also for an uninitialized palette (BUG(orig) #330), a colour
+ * beyond the slice's colours gives "Uninitialized Slice" (BUG(orig)
+ * #331); the checks test only the high word of the pointers (BUG(orig)
+ * #135).
+ *
+ * @param palofs  d0: palette# * 128 (the compiler's object offset)
+ * @param rate  d1: the frames to wait between the steps (VWait)
+ * @param lo  d2: the low colour
+ * @param hi  d3: the high colour
+ * @param pal  a0: the palette (!libs #palettelib,$1080)
+ * @param slice  a1: the used slice (!libs #blitzcoplib,$1102)
+ */
 void BLITZ_ROUTINE dofadein(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
                             UWORD hi BL_REG(d3), const UBYTE *pal BL_REG(a0),
                             UBYTE *slice BL_REG(a1))
@@ -237,6 +282,18 @@ void BLITZ_ROUTINE dofadein(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWOR
     dosyncfade();
 }
 
+/**
+ * @brief FadeIn Palette#,Rate: fade all colours in.
+ *
+ * As FadeIn with the range 0 .. min(colours of the palette, colours of
+ * the slice) - 1.  Errors (debugger, fadechk0): as FadeIn without the
+ * range check.
+ *
+ * @param palofs  d0: palette# * 128
+ * @param rate  d1: the frames to wait between the steps
+ * @param pal  a0: the palette
+ * @param slice  a1: the used slice
+ */
 void BLITZ_ROUTINE dofadein3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
                              const UBYTE *pal BL_REG(a0), UBYTE *slice BL_REG(a1))
 {
@@ -246,13 +303,33 @@ void BLITZ_ROUTINE dofadein3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
     dofadein(palofs, rate, lo, hi, pal, slice);
 }
 
+/**
+ * @brief FadeIn Palette#: fade all colours in, rate 0.
+ *
+ * @param palofs  d0: palette# * 128
+ * @param pal  a0: the palette
+ * @param slice  a1: the used slice
+ */
 void BLITZ_ROUTINE dofadein2(ULONG palofs BL_REG(d0), const UBYTE *pal BL_REG(a0),
                              UBYTE *slice BL_REG(a1))
 {
     dofadein3(palofs, 0, pal, slice);
 }
 
-/* FadeOut - start at the full colours, fractions negated */
+/**
+ * @brief FadeOut Palette#,Rate,Low Colour,High Colour: fade the colours
+ * of the used slice from the palette to black.
+ *
+ * As FadeIn, but starts at the full colours (fraction << 4) and
+ * subtracts the fractions.  BUG(orig) (#134, #136) and errors as FadeIn.
+ *
+ * @param palofs  d0: palette# * 128 (the compiler's object offset)
+ * @param rate  d1: the frames to wait between the steps (VWait)
+ * @param lo  d2: the low colour
+ * @param hi  d3: the high colour
+ * @param pal  a0: the palette (!libs #palettelib,$1080)
+ * @param slice  a1: the used slice (!libs #blitzcoplib,$1102)
+ */
 void BLITZ_ROUTINE dofadeout(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWORD lo BL_REG(d2),
                              UWORD hi BL_REG(d3), const UBYTE *pal BL_REG(a0),
                              UBYTE *slice BL_REG(a1))
@@ -267,6 +344,17 @@ void BLITZ_ROUTINE dofadeout(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1), UWO
     dosyncfade();
 }
 
+/**
+ * @brief FadeOut Palette#,Rate: fade all colours out.
+ *
+ * As FadeOut with the range 0 .. min(colours of the palette, colours of
+ * the slice) - 1.
+ *
+ * @param palofs  d0: palette# * 128
+ * @param rate  d1: the frames to wait between the steps
+ * @param pal  a0: the palette
+ * @param slice  a1: the used slice
+ */
 void BLITZ_ROUTINE dofadeout3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
                               const UBYTE *pal BL_REG(a0), UBYTE *slice BL_REG(a1))
 {
@@ -276,6 +364,13 @@ void BLITZ_ROUTINE dofadeout3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
     dofadeout(palofs, rate, lo, hi, pal, slice);
 }
 
+/**
+ * @brief FadeOut Palette#: fade all colours out, rate 0.
+ *
+ * @param palofs  d0: palette# * 128
+ * @param pal  a0: the palette
+ * @param slice  a1: the used slice
+ */
 void BLITZ_ROUTINE dofadeout2(ULONG palofs BL_REG(d0), const UBYTE *pal BL_REG(a0),
                               UBYTE *slice BL_REG(a1))
 {
