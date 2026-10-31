@@ -8,11 +8,12 @@
  * older sis2dlib.bb: it has BitMapOrigin, Line with width, ClipBlit with
  * excess planes); binary of the CD's acidlibs checked against the source.
  *
- * Like medlib, the code is translated at register level: d0-d7 and
- * a0-a6 are static variables of this file, every instruction keeps its
- * operand size (MOVEM.w into data registers sign-extends to the long,
- * byte/word operations change only the low part, MULS/MULU/DIVS/DIVU as
- * on the 68000).  Lines, filled boxes, polygon fill, flood fill masks,
+ * Plain C with the integer semantics of the original: word arithmetic
+ * that wraps, MULS/MULU/DIVS as instructions (DIVS keeps the dividend on
+ * overflow), CMP/BMI (sign of the 16 bit difference) where the original
+ * tests that, plane loops counted as the original counts them (CMP.b on
+ * the depth byte, CMP.w, DBRA), colours tested as the register the
+ * original tests.  Lines, filled boxes, polygon fill, flood fill masks,
  * filled ellipses and ClipBlit program the blitter (chip registers through
  * a pointer, BTST #6 of DMACONR twice as wait); Circle and the flood fill
  * itself draw with the CPU.  The Blitz/Amiga variants ($A001) own the
@@ -31,8 +32,9 @@
  *     far outside the bitmap / fill buffer. (#392)
  *   - Poly with 1 point loops 65535 times (#396); Polyf with more than 16
  *     points overflows its 32-long point buffer, more than 10 edges on one
- *     side overflow the edge lists l0/l1 (#395).
- *   - AllocFill (statement) takes the bitmap from a3 = the string pointer. (#390)
+ *     side overflow the edge lists l0/l1 (here ledges/redges) (#395).
+ *   - AllocFill (statement) takes the bitmap from a3 = the string pointer
+ *     (#390), so the routines leave a3 where the original leaves it.
  *   - a depth of 0 makes the plane loops run 65536 (CMP.w) / 256 (CMP.b)
  *     times. (#393)
  *   - FreeFill does not clear the buffer pointer. (#394)
@@ -190,35 +192,6 @@ BLITZ_NULLSUB(_init, 0, 0);
 
 BLITZ_LIBFIN();
 
-/* ------------------------------------------------- register emulation */
-
-static ULONG d0, d1, d2, d3, d4, d5, d6, d7;
-static UBYTE *a0, *a1, *a2, *a3, *a4, *a5, *a6;
-
-#define B(r)       ((UBYTE)(r))
-#define SB(r)      ((BYTE)(r))
-#define W(r)       ((UWORD)(r))
-#define SW(r)      ((WORD)(r))
-#define SETB(r, v) ((r) = ((r) & 0xffffff00UL) | (UBYTE)(v))
-#define SETW(r, v) ((r) = ((r) & 0xffff0000UL) | (UWORD)(v))
-#define EXTL(r)    ((ULONG)(LONG)(WORD)(r))
-#define MULU(a, b) bl_mulu_w((UWORD)(a), (UWORD)(b))
-#define MULS(a, b) ((ULONG)bl_muls_w((WORD)(a), (WORD)(b)))
-#define SWAP(r)    ((ULONG)(r) << 16 | (ULONG)(r) >> 16)
-#define MB(p, o)   (*(UBYTE *)((UBYTE *)(p) + (o)))
-#define MW(p, o)   (*(UWORD *)((UBYTE *)(p) + (o)))
-#define ML(p, o)   (*(ULONG *)((UBYTE *)(p) + (o)))
-#define MP(p, o)   (*(UBYTE **)((UBYTE *)(p) + (o)))
-#define MOVEMW(p, o) EXTL(MW(p, o))        /* MOVEM.w to a data register */
-#define DIVS(r, s) ((r) = bl_divs_w((r), (WORD)(s)))
-#define DIVU(r, s) ((r) = bl_divu_w((r), (UWORD)(s)))
-#define EXG(x, y)  do { ULONG t_ = (x); (x) = (y); (y) = t_; } while (0)
-
-/* chip registers (base a1 / a2 / a4) */
-#define CW(cb, o) (*(volatile UWORD *)((UBYTE *)(cb) + (o)))
-#define CL(cb, o) (*(volatile ULONG *)((UBYTE *)(cb) + (o)))
-#define BUSY(cb)  (*(volatile UBYTE *)((UBYTE *)(cb) + 2) & 0x40)
-#define BLITWAIT(cb) do { (void)BUSY(cb); while (BUSY(cb)) ; } while (0)
 
 /* -------------------------------------------------------------- objects */
 
@@ -264,6 +237,9 @@ struct shape {
 #define BLTAMOD 0x64
 #define BLTDMOD 0x66
 #define BLTADAT 0x74
+#define CW(chip, o)    BL_CUSTOMW(chip, o)
+#define CL(chip, o)    BL_CUSTOML(chip, o)
+#define BLITWAIT(chip) BL_BLITWAIT(chip)
 
 /* a polygon point as the caller gives it (words x, y) */
 struct point {
@@ -283,41 +259,25 @@ struct edge {
 
 /* ------------------------------------------------------------ variables */
 
-static UWORD pfc;
-static ULONG polypts[32];
-/* in the order of the original, so that an overflow of l0 runs into l1 */
+static struct point polypts[32];        /* Polyf: the n points twice */
+/* in the order of the original, so that an overflow of ledges runs into
+   redges */
 static struct {
-    ULONG bmwid, bmoff;
-    ULONG pcolor;                       /* two words: colour, colour2 */
-    UWORD rtclip;
-    UWORD xyx[3];
-    UWORD l0[32], l1[32];
+    struct {
+        WORD left, y, right;            /* the first line of the outline */
+    } top;
+    UWORD ledges[32], redges[32];       /* struct edge lists (l0, l1) */
 } pv;
-#define bmwid  pv.bmwid
-#define bmoff  pv.bmoff
-#define pcolor pv.pcolor
-#define rtclip pv.rtclip
-#define xyx    pv.xyx
-#define l0     pv.l0
-#define l1     pv.l1
 static ULONG fbsize;
 /* used by the assembler part (yofill): not static */
-ULONG fbloc;
-UWORD coords[2];
-UWORD fcol;                             /* coords+4 */
+ULONG fbloc;                            /* the fill buffer */
+UWORD coords[2];                        /* FloodFill: start point */
+UWORD fcol;                             /* FloodFill: colour */
 UWORD widbytes;
 UBYTE flags[2];
-static UWORD finx;
-static UWORD dpth;
-static ULONG dx, dy, asq, bsq, asq2, bsq2;
-static UWORD flag;
-static UWORD modsize[2];
-static UWORD bigsize[2];
-static ULONG planeoff, blitpos;                 /* tempadd: offset in a plane */
-static UWORD center[5] = { 0, 0, 0, 0, 1 };     /* center[4] = color */
-#define color center[4]
-static UWORD cpos[2];
-static UWORD bcon0 = 0xfca;
+static UWORD bigsize[2];                /* Circlef: BLTSIZV, BLTSIZH */
+static WORD cpos[2];                    /* the end of the last Line (LineTo) */
+static UWORD bcon0 = 0xfca;             /* ClipBlitMode */
 
 static const UWORD lup1[16] = {
     0xffff, 0x7fff, 0x3fff, 0x1fff, 0x0fff, 0x07ff, 0x03ff, 0x01ff,
@@ -327,10 +287,23 @@ static const UWORD lup2[16] = {
     0x8000, 0xc000, 0xe000, 0xf000, 0xf800, 0xfc00, 0xfe00, 0xff00,
     0xff80, 0xffc0, 0xffe0, 0xfff0, 0xfff8, 0xfffc, 0xfffe, 0xffff,
 };
-#define m1 lup1
-#define m2 lup2
 
 static const char mess1[] = "SHAPE UNKNOWNST TO ME";
+
+/* ---------------------------------------------------------- arithmetic */
+
+/* MULS a,b : DIVS c - the quotient word (on overflow DIVS leaves the
+   product, then its low word) */
+static WORD muldiv(WORD a, WORD b, WORD c)
+{
+    return (WORD)bl_divs_w((ULONG)bl_muls_w(a, b), c);
+}
+
+/* 32 x 16 bit product, the low long (two MULUs) */
+static ULONG mul32x16(ULONG a, UWORD b)
+{
+    return bl_mulu_w(a, b) + (bl_mulu_w(a >> 16, b) << 16);
+}
 
 /* ----------------------------------------------- memlib for the buffers */
 
@@ -430,24 +403,24 @@ static void BLITZ_ROUTINE _init_c(void)
 }
 BLITZ_THUNK(_init, _init_c, "d0-d1/a0-a1");
 
-/* _allocfill - a3 = bitmap: buffer of width/8 * height bytes (chip),
-   d7 = buffer */
-static void allocfill(void)
+/* _allocfill: the fill buffer for bm (clip width / 8 * height bytes,
+   chip), grown when needed; returns it */
+static ULONG allocfill(const struct bitmap *bm)
 {
-    d7 = MULU((UWORD)(MW(a3, 56) >> 3), MW(a3, 58));
-    if (!((LONG)(d7 - fbsize) <= 0)) {          /* BMI/BEQ yokay */
+    ULONG size = bl_mulu_w(bm->width >> 3, bm->height);
+
+    if ((LONG)(size - fbsize) > 0) {           /* BMI/BEQ yokay */
         if (fbsize)
             memfree(fbloc, fbsize);
-        fbsize = d7;
-        fbloc = memalloc(d7, MEMF_CHIP);
+        fbsize = size;
+        fbloc = memalloc(size, MEMF_CHIP);
     }
-    d7 = fbloc;
+    return fbloc;
 }
 
 static void BLITZ_ROUTINE _allocfill_c(void)
 {
-    a3 = blitz_string;                          /* BUG(orig) (#390): no bitmap here */
-    allocfill();
+    allocfill((struct bitmap *)blitz_string);   /* BUG(orig) (#390): no bitmap here */
 }
 BLITZ_THUNK(_allocfill, _allocfill_c, "d0-d1/a0-a1");
 
@@ -463,1031 +436,689 @@ BLITZ_THUNK(_freefill, _freefill_c, "d1/a0-a1");
 
 /* -------------------------------------------------------------- lines */
 
-/* clipme - line d0,d1 - d2,d3 in colour `color` on a3, a2 = chip */
-static void clipme(void)
+/* clipme: the line x1,y1 - x2,y2 (plus the origin), clipped to the
+   bitmap, drawn with the blitter in line mode plane by plane: colour bit
+   1 sets, 0 clears, a negative colour complements.  Returns the a3 the
+   original leaves: the bitmap, or behind the plane pointers it used. */
+static UBYTE *drawline(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
+                       UWORD colour)
 {
-    d4 = MOVEMW(a3, 48);
-    d5 = MOVEMW(a3, 50);
-    SETW(d0, d0 + d4);
-    SETW(d2, d2 + d4);
-    SETW(d1, d1 + d5);
-    SETW(d3, d3 + d5);
-    d4 = MOVEMW(a3, 56);
-    d5 = MOVEMW(a3, 58);
-    if (SW(d2 - d0) < 0) {
-        EXG(d0, d2);
-        EXG(d1, d3);
-    }
-    if (SW(d2) < 0)
-        return;
-    if (SW(d0 - d4) >= 0)
-        return;
-    if (SW(d2 - d4) >= 0) {                     /* clip right */
-        SETW(d7, d2);
-        SETW(d7, d7 - d4);
-        SETW(d7, d7 + 1);
-        SETW(d6, d3);
-        SETW(d6, d6 - d1);
-        d7 = MULS(d7, d6);
-        SETW(d6, d2);
-        SETW(d6, d6 - d0);
-        DIVS(d7, d6);
-        SETW(d3, d3 - d7);
-        SETW(d2, d4);
-        SETW(d2, d2 - 1);
-    }
-    if (SW(d0) < 0) {                           /* clip left */
-        SETW(d7, d0);
-        SETW(d6, d3);
-        SETW(d6, d6 - d1);
-        d7 = MULS(d7, d6);
-        SETW(d6, d2);
-        SETW(d6, d6 - d0);
-        DIVS(d7, d6);
-        SETW(d1, d1 - d7);
-        SETW(d0, 0);
-    }
-    if (SW(d3 - d1) < 0) {
-        EXG(d0, d2);
-        EXG(d1, d3);
-    }
-    if (SW(d3) < 0)
-        return;
-    if (SW(d1 - d5) >= 0)
-        return;
-    if (SW(d3 - d5) >= 0) {                     /* clip bottom */
-        SETW(d7, d3);
-        SETW(d7, d7 - d5);
-        SETW(d7, d7 + 1);
-        SETW(d6, d2);
-        SETW(d6, d6 - d0);
-        d7 = MULS(d7, d6);
-        SETW(d6, d3);
-        SETW(d6, d6 - d1);
-        DIVS(d7, d6);
-        SETW(d2, d2 - d7);
-        SETW(d3, d5);
-        SETW(d3, d3 - 1);
-    }
-    if (SW(d1) < 0) {                           /* clip top */
-        SETW(d7, d1);
-        SETW(d6, d2);
-        SETW(d6, d6 - d0);
-        d7 = MULS(d7, d6);
-        SETW(d6, d3);
-        SETW(d6, d6 - d1);
-        DIVS(d7, d6);
-        SETW(d0, d0 - d7);
-        SETW(d1, 0);
-    }
-    /* noclip: CalcOctant */
-    SETW(d2, d2 - d0);
-    if (SW(d2) < 0) {                           /* xneg */
-        SETW(d2, -SW(d2));
-        SETW(d3, d3 - d1);
-        SETW(d7, d3);
-        if (SW(d3) < 0) {                       /* xyneg */
-            SETW(d3, -SW(d3));
-            if (SW(d2 - d3) < 0) {
-                EXG(d2, d3);
-                d5 = 12 + 1;
-            } else
-                d5 = 28 + 1;
-        } else if (SW(d2 - d3) < 0) {
-            EXG(d2, d3);
-            d5 = 8 + 1;
-        } else
-            d5 = 20 + 1;
-    } else {
-        SETW(d3, d3 - d1);
-        SETW(d7, d3);
-        if (SW(d3) < 0) {                       /* yneg */
-            SETW(d3, -SW(d3));
-            if (SW(d2 - d3) < 0) {
-                EXG(d2, d3);
-                d5 = 4 + 1;
-            } else
-                d5 = 24 + 1;
-        } else if (SW(d2 - d3) < 0) {
-            EXG(d2, d3);
-            d5 = 0 + 1;
-        } else
-            d5 = 16 + 1;
-    }
-    d1 = MULU(d1, MW(a3, 0));
-    a1 = (UBYTE *)d1;
-    d0 = EXTL(d0);
-    d0 = d0 >> 4 | d0 << 28;                    /* ROR.l #4 */
-    a1 += SW(d0);
-    a1 += SW(d0);
-    d0 = SWAP(d0);
-    SETW(d3, d3 << 2);
-    SETW(d2, d2 + d2);
-    SETW(d4, d2);
-    d4 = EXTL(d4);
-    d4 <<= 5;
-    d1 = d4;
-    d1 = SWAP(d1);
-    SETW(d4, d4 + 0x42);
-    BLITWAIT(a2);
-    CW(a2, 0x62) = d3;                          /* bmod */
-    SETW(d3, d3 - d2);
-    d3 = EXTL(d3);
-    d7 = d3;
-    if ((LONG)d3 < 0)
-        SETW(d5, d5 | 64);
-    SETW(d3, d3 - d2);                          /* love */
-    CW(a2, 0x64) = d3;                          /* amod */
-    CW(a2, 0x60) = MW(a3, 0);
-    CW(a2, 0x66) = MW(a3, 0);
-    CL(a2, 0x44) = 0xffffffff;
-    dpth = MW(a3, 4);
-    a3 += 8;
-    d6 = 0;
-    if (SW(color) >= 0) {
-        do {                                    /* nxplane */
-            a0 = MP(a3, 0) + (ULONG)a1;
-            a3 += 4;
-            SETW(d0, d0 | 0xbfa);
-            if (!((UBYTE)color & (1 << (d6 & 7))))
-                SETB(d0, d0 ^ 0xf0);
-            BLITWAIT(a2);                       /* colon */
-            CW(a2, 0x74) = 0x8000;
-            CL(a2, 0x50) = d7;
-            CL(a2, 0x48) = (ULONG)a0;
-            CL(a2, 0x54) = (ULONG)a0;
-            CW(a2, 0x40) = d0;
-            CW(a2, 0x42) = d5;
-            if (W(d1)) {                        /* doextend1 */
-                UWORD n = W(d1) - 1;
+    WORD w = bm->width, h = bm->height, t, dx, dy, err;
+    UWORD octant, major2, con0, extra, size;
+    ULONG rot, start, len;
+    UBYTE **plane = bm->planes, i = 0;
+    int xneg, yneg;
 
-                do {
-                    CW(a2, 0x58) = 2;
-                    BLITWAIT(a2);
-                } while (n-- != 0);
-            }
-            CW(a2, 0x58) = d4;                  /* dunex1 */
-            SETB(d6, d6 + 1);
-        } while (B(d6) != (UBYTE)dpth);
-        return;
+    x1 += bm->xorigin;
+    x2 += bm->xorigin;
+    y1 += bm->yorigin;
+    y2 += bm->yorigin;
+    if (BMI_W(x2, x1)) {
+        t = x1, x1 = x2, x2 = t;
+        t = y1, y1 = y2, y2 = t;
     }
-    do {                                        /* nxplanus */
-        a0 = MP(a3, 0) + (ULONG)a1;
-        a3 += 4;
-        SETW(d0, d0 | 0xb5a);
-        BLITWAIT(a2);
-        CW(a2, 0x74) = 0x8000;
-        CL(a2, 0x50) = d7;
-        CL(a2, 0x48) = (ULONG)a0;
-        CL(a2, 0x54) = (ULONG)a0;
-        CW(a2, 0x40) = d0;
-        CW(a2, 0x42) = d5;
-        if (W(d1)) {
-            UWORD n = W(d1) - 1;
+    if (x2 < 0 || !BMI_W(x1, w))
+        return (UBYTE *)bm;
+    if (!BMI_W(x2, w)) {                        /* clip right */
+        y2 -= muldiv(x2 - w + 1, y2 - y1, x2 - x1);
+        x2 = w - 1;
+    }
+    if (x1 < 0) {                               /* clip left */
+        y1 -= muldiv(x1, y2 - y1, x2 - x1);
+        x1 = 0;
+    }
+    if (BMI_W(y2, y1)) {
+        t = x1, x1 = x2, x2 = t;
+        t = y1, y1 = y2, y2 = t;
+    }
+    if (y2 < 0 || !BMI_W(y1, h))
+        return (UBYTE *)bm;
+    if (!BMI_W(y2, h)) {                        /* clip bottom */
+        x2 -= muldiv(y2 - h + 1, x2 - x1, y2 - y1);
+        y2 = h - 1;
+    }
+    if (y1 < 0) {                               /* clip top */
+        x1 -= muldiv(y1, x2 - x1, y2 - y1);
+        y1 = 0;
+    }
+
+    /* CalcOctant: dx = the major, dy = the minor distance */
+    dx = x2 - x1;
+    dy = y2 - y1;
+    xneg = dx < 0;
+    if (xneg)
+        dx = -dx;
+    yneg = dy < 0;
+    if (yneg)
+        dy = -dy;
+    if (BMI_W(dx, dy)) {
+        t = dx, dx = dy, dy = t;
+        octant = xneg ? (yneg ? 12 : 8) : (yneg ? 4 : 0);
+    } else
+        octant = xneg ? (yneg ? 28 : 20) : (yneg ? 24 : 16);
+    octant += 1;                                /* LINE */
+
+    /* the word of the start point: ROR.l #4 of x1 gives the word index in
+       the lower and the shift (bits 12-15) in the upper word */
+    rot = (ULONG)(LONG)x1;
+    rot = rot >> 4 | rot << 28;
+    start = bl_mulu_w(y1, bm->bpr) + (WORD)rot + (WORD)rot;
+    con0 = rot >> 16;
+    major2 = dx + dx;
+    len = (ULONG)(LONG)(WORD)major2 << 5;
+    extra = len >> 16;                          /* blits of 1024 pixels first */
+    size = (UWORD)len + 0x42;                   /* height dx + 1, width 2 */
+    BLITWAIT(chip);
+    CW(chip, BLTBMOD) = dy << 2;
+    err = (WORD)(dy << 2) - (WORD)major2;
+    if (err < 0)
+        octant |= 64;                           /* SIGN */
+    CW(chip, BLTAMOD) = err - major2;
+    CW(chip, BLTCMOD) = bm->bpr;
+    CW(chip, BLTDMOD) = bm->bpr;
+    CL(chip, BLTAFWM) = 0xffffffff;
+    /* the plane loop counts with CMP.b on the depth byte: 0 gives 256 (#393) */
+    do {
+        UBYTE *p = *plane++ + start;
+        UWORD con = (UWORD)(con0 | 0xbfa);
+
+        if ((WORD)colour < 0)
+            con = con0 | 0xb5a;                 /* complement */
+        else if (!((UBYTE)colour & (1 << (i & 7))))
+            con ^= 0xf0;                        /* clear */
+        BLITWAIT(chip);
+        CW(chip, BLTADAT) = 0x8000;
+        CL(chip, BLTAPT) = (ULONG)(LONG)err;
+        CL(chip, BLTCPT) = (ULONG)p;
+        CL(chip, BLTDPT) = (ULONG)p;
+        CW(chip, BLTCON0) = con;
+        CW(chip, BLTCON1) = octant;
+        if (extra) {
+            UWORD n = extra - 1;
 
             do {
-                CW(a2, 0x58) = 2;
-                BLITWAIT(a2);
+                CW(chip, BLTSIZE) = 2;
+                BLITWAIT(chip);
             } while (n-- != 0);
         }
-        CW(a2, 0x58) = d4;
-        SETB(d6, d6 + 1);
-    } while (B(d6) != (UBYTE)dpth);
+        CW(chip, BLTSIZE) = size;
+    } while (++i != (UBYTE)bm->depth);
+    return (UBYTE *)plane;
 }
 
-static void bline(void)
+static UBYTE *line(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
+                   UWORD colour)
 {
-    color = d4;
-    cpos[0] = d2;
-    cpos[1] = d3;
-    clipme();
+    cpos[0] = x2;
+    cpos[1] = y2;
+    return drawline(bm, chip, x1, y1, x2, y2, colour);
 }
 
-static void blineto(void)
+/* Line x,y,colour: from x,y to the end of the last line */
+static UBYTE *lineto(struct bitmap *bm, UBYTE *chip, WORD x, WORD y, UWORD colour)
 {
-    color = d2;
-    d2 = MOVEMW(cpos, 0);
-    d3 = MOVEMW(cpos, 2);
-    cpos[0] = d0;
-    cpos[1] = d1;
-    clipme();
+    WORD x2 = cpos[0], y2 = cpos[1];
+
+    cpos[0] = x;
+    cpos[1] = y;
+    return drawline(bm, chip, x, y, x2, y2, colour);
 }
 
-static void blinew(void)
+/* Line with width: for w = width .. 0 four lines, each with one of the
+   coordinates + w; a3 is restored after each line */
+static UBYTE *linew(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
+                    UWORD colour, UWORD width)
 {
-    UWORD saved[6];                             /* d0-d5 */
-    int i;
+    UWORD w = width;
 
     do {
-        saved[0] = d0; saved[1] = d1; saved[2] = d2;
-        saved[3] = d3; saved[4] = d4; saved[5] = d5;
-        for (i = 0; i < 4; i++) {
-            UBYTE *sa3 = a3;
-
-            if (i)
-                d0 = EXTL(saved[0]), d1 = EXTL(saved[1]), d2 = EXTL(saved[2]),
-                d3 = EXTL(saved[3]), d4 = EXTL(saved[4]), d5 = EXTL(saved[5]);
-            switch (i) {
-            case 0: SETW(d0, d0 + d5); break;
-            case 1: SETW(d1, d1 + d5); break;
-            case 2: SETW(d2, d2 + d5); break;
-            case 3: SETW(d3, d3 + d5); break;
-            }
-            bline();
-            a3 = sa3;
-        }
-        d0 = EXTL(saved[0]); d1 = EXTL(saved[1]); d2 = EXTL(saved[2]);
-        d3 = EXTL(saved[3]); d4 = EXTL(saved[4]); d5 = EXTL(saved[5]);
-        SETW(d5, d5 - 1);
-    } while (W(d5) != 0xffff);                  /* DBRA d5,_blinew */
+        line(bm, chip, x1 + w, y1, x2, y2, colour);
+        line(bm, chip, x1, y1 + w, x2, y2, colour);
+        line(bm, chip, x1, y1, x2 + w, y2, colour);
+        line(bm, chip, x1, y1, x2, y2 + w, colour);
+    } while (w-- != 0);
+    return (UBYTE *)bm;
 }
 
 /* ----------------------------------------------------------- Box, Boxf */
 
-static void boxo(void)
+/* Box: four lines; the origin is added here and again in the line
+   clipper (BUG(orig) #391) */
+static UBYTE *box(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
+                  UWORD colour)
 {
-    UBYTE *sa4 = a4;
+    WORD t;
 
-    d5 = MOVEMW(a3, 48);
-    d6 = MOVEMW(a3, 50);
-    SETW(d0, d0 + d5);
-    SETW(d2, d2 + d5);
-    SETW(d1, d1 + d6);
-    SETW(d3, d3 + d6);
-    if (SW(d2 - d0) < 0)
-        EXG(d0, d2);
-    if (SW(d3 - d1) < 0)
-        EXG(d1, d3);
-    center[0] = d0; center[1] = d1; center[2] = d2; center[3] = d3; center[4] = d4;
-    a4 = a3;
-    SETW(d2, d0);
-    SETW(d3, d3 - 1);
-    a3 = a4;
-    clipme();
-    d0 = MOVEMW(center, 0); d1 = MOVEMW(center, 2); d2 = MOVEMW(center, 4); d3 = MOVEMW(center, 6);
-    SETW(d0, d2);
-    SETW(d1, d1 + 1);
-    a3 = a4;
-    clipme();
-    d0 = MOVEMW(center, 0); d1 = MOVEMW(center, 2); d2 = MOVEMW(center, 4); d3 = MOVEMW(center, 6);
-    SETW(d3, d1);
-    SETW(d0, d0 + 1);
-    a3 = a4;
-    clipme();
-    d0 = MOVEMW(center, 0); d1 = MOVEMW(center, 2); d2 = MOVEMW(center, 4); d3 = MOVEMW(center, 6);
-    SETW(d1, d3);
-    SETW(d2, d2 - 1);
-    a3 = a4;
-    clipme();
-    a4 = sa4;
+    x1 += bm->xorigin;
+    x2 += bm->xorigin;
+    y1 += bm->yorigin;
+    y2 += bm->yorigin;
+    if (BMI_W(x2, x1))
+        t = x1, x1 = x2, x2 = t;
+    if (BMI_W(y2, y1))
+        t = y1, y1 = y2, y2 = t;
+    drawline(bm, chip, x1, y1, x1, y2 - 1, colour);
+    drawline(bm, chip, x2, y1 + 1, x2, y2, colour);
+    drawline(bm, chip, x1 + 1, y1, x2, y1, colour);
+    return drawline(bm, chip, x1, y2, x2 - 1, y2, colour);
 }
 
-/* dobof - filled rectangle d0,d1-d2,d3 (clipped), colour d4 (long) */
-static void dobof(void)
+/* dobof: the filled rectangle x1,y1 - x2,y2 (clipped, at most 990 pixels
+   wide), one blit per plane (more than 1023 lines: parts of 1024 first);
+   colour bit 1 sets, 0 clears; a negative colour (its low word) only
+   complements the planes of its 1 bits.  Returns the a3 the original
+   leaves (behind the plane pointers). */
+static UBYTE *dobof(struct bitmap *bm, UBYTE *chip, UWORD x1, UWORD y1, UWORD x2, UWORD y2,
+                    ULONG colour)
 {
-    BLITWAIT(a2);
-    SETW(d5, d0);
-    SETW(d5, d5 & 15);
-    SETW(d5, d5 + d5);
-    CW(a2, 0x44) = m1[W(d5) >> 1];
-    SETW(d5, d2);
-    SETW(d5, d5 & 15);
-    SETW(d5, d5 + d5);
-    CW(a2, 0x46) = m2[W(d5) >> 1];
-    CW(a2, 0x74) = 0xffff;
-    CW(a2, 0x42) = 0;
-    SETW(d3, d3 - d1);
-    SETW(d3, d3 + 1);
-    d3 = EXTL(d3);
-    d3 <<= 6;
-    d1 = MULU(d1, MW(a3, 0));
-    SETW(d0, W(d0) >> 4);
-    d0 = EXTL(d0);
-    d1 += d0;
-    d1 += d0;
-    SETW(d2, W(d2) >> 4);
-    SETW(d2, d2 - d0);
-    SETW(d2, d2 + 1);
-    SETW(d3, d3 | W(d2));
-    SETW(d6, MW(a3, 0));
-    SETW(d6, d6 - d2);
-    SETW(d6, d6 - d2);
-    CW(a2, 0x66) = d6;
-    CW(a2, 0x60) = d6;
-    d7 = 0;
-    SETW(d2, MW(a3, 4));
-    a3 += 8;
-    d5 = SWAP(d3);
-    if (!W(d5)) {
-        if (SW(d4) >= 0) {
+    UBYTE **plane = bm->planes, *p;
+    ULONG size, off;
+    UWORD words, parts, mod, n, i = 0;
+
+    BLITWAIT(chip);
+    CW(chip, BLTAFWM) = lup1[x1 & 15];
+    CW(chip, BLTALWM) = lup2[x2 & 15];
+    CW(chip, BLTADAT) = 0xffff;
+    CW(chip, BLTCON1) = 0;
+    size = (ULONG)(LONG)(WORD)(y2 - y1 + 1) << 6;
+    off = bl_mulu_w(y1, bm->bpr) + 2 * (x1 >> 4);
+    words = (x2 >> 4) - (x1 >> 4) + 1;
+    BL_SETW(size, size | words);
+    mod = bm->bpr - words - words;
+    CW(chip, BLTDMOD) = mod;
+    CW(chip, BLTCMOD) = mod;
+    parts = size >> 16;                         /* SWAP: 1024 line parts */
+    if (!parts) {
+        if ((WORD)colour >= 0) {
             do {                                /* nxp1 */
-                BLITWAIT(a2);
-                d0 = ML(a3, 0) + d1;
-                a3 += 4;
-                CL(a2, 0x48) = d0;
-                CL(a2, 0x54) = d0;
-                CW(a2, 0x40) = 0x3fa;
-                if (!(d4 & (1UL << (d7 & 31))))
-                    CW(a2, 0x40) = 0x30a;
-                CW(a2, 0x58) = d3;
-                SETW(d7, d7 + 1);
-            } while (W(d7) != W(d2));
-            return;
+                BLITWAIT(chip);
+                p = *plane++ + off;
+                CL(chip, BLTCPT) = (ULONG)p;
+                CL(chip, BLTDPT) = (ULONG)p;
+                CW(chip, BLTCON0) = 0x3fa;
+                if (!(colour & (1UL << (i & 31))))
+                    CW(chip, BLTCON0) = 0x30a;
+                CW(chip, BLTSIZE) = size;
+            } while (++i != bm->depth);         /* depth 0: 65536 (#393) */
+            return (UBYTE *)plane;
         }
         do {                                    /* nxp2 */
-            BLITWAIT(a2);
-            d0 = ML(a3, 0);
-            a3 += 4;
-            if (d4 & (1UL << (d7 & 31))) {
-                d0 += d1;
-                CL(a2, 0x48) = d0;
-                CL(a2, 0x54) = d0;
-                CW(a2, 0x40) = 0x35a;
-                CW(a2, 0x58) = d3;
+            BLITWAIT(chip);
+            p = *plane++;
+            if (colour & (1UL << (i & 31))) {
+                p += off;
+                CL(chip, BLTCPT) = (ULONG)p;
+                CL(chip, BLTDPT) = (ULONG)p;
+                CW(chip, BLTCON0) = 0x35a;
+                CW(chip, BLTSIZE) = size;
             }
-            SETW(d7, d7 + 1);
-        } while (W(d7) != W(d2));
-        return;
+        } while (++i != bm->depth);
+        return (UBYTE *)plane;
     }
-    /* longun: more than 1023 lines - blit the extra 1024 line parts */
-    do {
-        UWORD s3 = d3, s5 = d5, n;
-
-        BLITWAIT(a2);
-        d0 = ML(a3, 0);
-        a3 += 4;
-        if (SW(d4) >= 0) {
-            d0 += d1;
-            CL(a2, 0x48) = d0;
-            CL(a2, 0x54) = d0;
-            CW(a2, 0x40) = 0x3fa;
-            if (!(d4 & (1UL << (d7 & 31))))
-                CW(a2, 0x40) = 0x30a;
+    do {                                        /* longun */
+        BLITWAIT(chip);
+        p = *plane++;
+        if ((WORD)colour >= 0) {
+            p += off;
+            CL(chip, BLTCPT) = (ULONG)p;
+            CL(chip, BLTDPT) = (ULONG)p;
+            CW(chip, BLTCON0) = 0x3fa;
+            if (!(colour & (1UL << (i & 31))))
+                CW(chip, BLTCON0) = 0x30a;
         } else {
-            if (!(d4 & (1UL << (d7 & 31))))
-                goto lmissp;
-            d0 += d1;
-            CL(a2, 0x48) = d0;
-            CL(a2, 0x54) = d0;
-            CW(a2, 0x40) = 0x35a;
+            if (!(colour & (1UL << (i & 31))))
+                continue;                       /* lmissp */
+            p += off;
+            CL(chip, BLTCPT) = (ULONG)p;
+            CL(chip, BLTDPT) = (ULONG)p;
+            CW(chip, BLTCON0) = 0x35a;
         }
-        SETW(d3, d3 & 63);
-        n = W(d5) - 1;
+        n = parts - 1;
         do {
-            CW(a2, 0x58) = d3;
-            BLITWAIT(a2);
+            CW(chip, BLTSIZE) = size & 63;      /* height 0 = 1024 */
+            BLITWAIT(chip);
         } while (n-- != 0);
-        d3 = EXTL(s3);                          /* MOVEM (a7)+,d3/d5 */
-        d5 = EXTL(s5);
-        CW(a2, 0x58) = d3;
-lmissp:
-        SETW(d7, d7 + 1);
-    } while (W(d7) != W(d2));
+        CW(chip, BLTSIZE) = size;
+    } while (++i != bm->depth);
+    return (UBYTE *)plane;
 }
 
-static void boxfo(void)
+/* Boxf: the rectangle (plus the origin) clipped (a box starting in the
+   last column or line is not drawn), in parts of 990 pixels */
+static UBYTE *boxf(struct bitmap *bm, UBYTE *chip, WORD x1, WORD y1, WORD x2, WORD y2,
+                   ULONG colour)
 {
-    d5 = MOVEMW(a3, 48);
-    d6 = MOVEMW(a3, 50);
-    SETW(d0, d0 + d5);
-    SETW(d2, d2 + d5);
-    SETW(d1, d1 + d6);
-    SETW(d3, d3 + d6);
-    if (SW(d2 - d0) < 0)
-        EXG(d0, d2);
-    if (SW(d3 - d1) < 0)
-        EXG(d1, d3);
-    d6 = MOVEMW(a3, 56);
-    d7 = MOVEMW(a3, 58);
-    SETW(d6, d6 - 1);
-    SETW(d7, d7 - 1);
-    if (SW(d0) < 0)
-        SETW(d0, 0);
-    if (SW(d1) < 0)
-        SETW(d1, 0);
-    if (SW(d2) < 0 || SW(d3) < 0)
-        return;
-    if (SW(d0) >= SW(d6) || SW(d1) >= SW(d7))   /* BGE nobx */
-        return;
-    if (!(SW(d2) < SW(d6)))                     /* BLT */
-        SETW(d2, d6);
-    if (!(SW(d3) < SW(d7)))
-        SETW(d3, d7);
-    for (;;) {                                  /* noclip2 */
-        SETW(d6, d2);
-        SETW(d6, d6 - d0);
-        if (SW(d6 - 991) < 0)
-            break;
-        {
-            ULONG s0 = d0, s1 = d1, s2 = d2, s3 = d3, s4 = d4;
-            UBYTE *sa3 = a3;
+    WORD t, last_x, last_y;
 
-            SETW(d2, d0);
-            SETW(d2, d2 + 989);
-            dobof();
-            d0 = s0; d1 = s1; d2 = s2; d3 = s3; d4 = s4;
-            a3 = sa3;
-        }
-        SETW(d0, d0 + 990);
+    x1 += bm->xorigin;
+    x2 += bm->xorigin;
+    y1 += bm->yorigin;
+    y2 += bm->yorigin;
+    if (BMI_W(x2, x1))
+        t = x1, x1 = x2, x2 = t;
+    if (BMI_W(y2, y1))
+        t = y1, y1 = y2, y2 = t;
+    last_x = bm->width - 1;
+    last_y = bm->height - 1;
+    if (x1 < 0)
+        x1 = 0;
+    if (y1 < 0)
+        y1 = 0;
+    if (x2 < 0 || y2 < 0)
+        return (UBYTE *)bm;
+    if (x1 >= last_x || y1 >= last_y)           /* BGE nobx */
+        return (UBYTE *)bm;
+    if (!(x2 < last_x))
+        x2 = last_x;
+    if (!(y2 < last_y))
+        y2 = last_y;
+    while (!BMI_W(x2 - x1, 991)) {             /* noclip2 */
+        dobof(bm, chip, x1, y1, x1 + 989, y2, colour);
+        x1 += 990;
     }
-    dobof();
+    return dobof(bm, chip, x1, y1, x2, y2, colour);
 }
 
 /* -------------------------------------------------------------- ellipses */
 
-static void calcellipse(void)
+/* the midpoint ellipse (calcellipse): x, y from the top point, decision
+   d, dx = 2 b^2 x, dy = 2 a^2 y */
+struct ellipse {
+    UWORD x, y;
+    ULONG d, dx, dy, asq, bsq, asq2, bsq2;
+};
+
+static void calcellipse(struct ellipse *e, UWORD a, UWORD b)
 {
-    SETW(d7, d3);                               /* d7 = y = b */
-    d2 = MULU(d2, d2);
-    asq = d2;
-    d2 <<= 1;
-    asq2 = d2;
-    d3 = MULU(d3, d3);
-    bsq = d3;
-    d3 <<= 1;
-    bsq2 = d3;
-    d5 = bsq;
-    d3 = asq;
-    SETW(d6, d3);                               /* 32x16 multiply asq*b */
-    d6 = MULU(d6, d7);
-    d3 = SWAP(d3);
-    d3 = MULU(d3, d7);
-    d3 = SWAP(d3);
-    SETW(d3, 0);
-    d3 += d6;
-    d5 -= d3;
-    d3 = asq;
-    d3 = (ULONG)((LONG)d3 >> 2);
-    d5 += d3;
-    d0 = 0;
-    dx = d0;
-    d3 = asq2;
-    SETW(d6, d3);
-    d6 = MULU(d6, d7);
-    d3 = SWAP(d3);
-    d3 = MULU(d3, d7);
-    d3 = SWAP(d3);
-    SETW(d3, 0);
-    d3 += d6;
-    dy = d3;
-    d6 = 0;
+    e->asq = bl_mulu_w(a, a);
+    e->asq2 = e->asq << 1;
+    e->bsq = bl_mulu_w(b, b);
+    e->bsq2 = e->bsq << 1;
+    e->d = e->bsq - mul32x16(e->asq, b) + (ULONG)((LONG)e->asq >> 2);
+    e->dx = 0;
+    e->dy = mul32x16(e->asq2, b);
+    e->x = 0;
+    e->y = b;
 }
 
-/* cplot - CPU plot at d0,d1 in colour d4 (complement if negative) */
-static void cplot(void)
+/* the steps in x and in y */
+static void ellipse_x(struct ellipse *e)
 {
-    if (SW(d1 - MW(a3, 58)) >= 0)
+    e->x++;
+    e->dx += e->bsq2;
+    e->d += e->dx;
+}
+
+static void ellipse_y(struct ellipse *e)
+{
+    e->y--;
+    e->dy -= e->asq2;
+    e->d -= e->dy;
+}
+
+/* dxgtdy: the decision for the second region */
+static void ellipse_region2(struct ellipse *e)
+{
+    ULONG t = e->asq - e->bsq;
+
+    t += t << 1;
+    t = (ULONG)((LONG)t >> 1);
+    t -= e->dx;
+    t -= e->dy;
+    e->d += (ULONG)((LONG)t >> 1);
+}
+
+/* a step of the second region (dodab) */
+static void ellipse_step2(struct ellipse *e)
+{
+    if ((LONG)e->d < 0)
+        ellipse_x(e);
+    e->d += e->asq;
+    ellipse_y(e);
+}
+
+/* cplot: the point x, y in colour (complement if negative) with the CPU;
+   y is checked only with a signed compare, its unsigned word multiplied
+   (#392); the plane loop counts with CMP.b on the depth byte (#393) */
+static void cplot(struct bitmap *bm, WORD x, WORD y, UWORD colour)
+{
+    ULONG off;
+    UBYTE bit, i = 0;
+
+    if (!BMI_W(y, bm->height))
         return;
-    d1 = MULU(d1, MW(a3, 0));
-    if ((LONG)d1 < 0)
+    off = bl_mulu_w(y, bm->bpr);
+    if ((LONG)off < 0)
         return;
-    SETW(d3, d0);
-    if (SW(d3) < 0)
+    if (x < 0 || !BMI_W(x, bm->width))
         return;
-    if (SW(d3 - MW(a3, 56)) >= 0)
-        return;
-    SETW(d3, W(d3) >> 3);
-    d3 = EXTL(d3);
-    d1 += d3;
-    SETW(d0, d0 & 7);
-    SETW(d0, d0 ^ 7);
-    a2 = a3 + 8;
-    d3 = 0;
-    if (SW(d4) < 0) {
-        do {                                    /* nxpm */
-            a0 = MP(a2, 0);
-            a2 += 4;
-            MB(a0, d1) ^= 1 << (d0 & 7);
-            SETW(d3, d3 + 1);
-        } while (B(d3) != MB(a3, 5));
+    off += (UWORD)x >> 3;
+    bit = 1 << ((x & 7) ^ 7);
+    if ((WORD)colour < 0) {
+        do                                      /* nxpm */
+            bm->planes[i][off] ^= bit;
+        while (++i != (UBYTE)bm->depth);
         return;
     }
     do {                                        /* nxpp */
-        a0 = MP(a2, 0);
-        a2 += 4;
-        if (d4 & (1UL << (d3 & 31)))
-            MB(a0, d1) |= 1 << (d0 & 7);
+        if (colour & (1UL << (i & 31)))
+            bm->planes[i][off] |= bit;
         else
-            MB(a0, d1) &= ~(1 << (d0 & 7));
-        SETW(d3, d3 + 1);
-    } while (B(d3) != MB(a3, 5));
+            bm->planes[i][off] &= ~bit;
+    } while (++i != (UBYTE)bm->depth);
 }
 
-/* cplot2 - toggle a bit in the fill buffer a0, x clipped at d4 */
-static void cplot2(void)
+/* Circle/Ellipse: the outline with the CPU */
+static void ellipse(struct bitmap *bm, WORD cx, WORD cy, UWORD a, UWORD b, UWORD colour)
 {
-    if (SW(d1 - MW(a3, 58)) >= 0)
-        return;
-    d1 = MULU(d1, MW(a3, 0));
-    if ((LONG)d1 < 0)
-        return;
-    SETW(d3, d0);
-    if (SW(d3) < 0)
-        return;
-    if (!(SW(d3 - d4) < 0)) {
-        SETW(d3, d4);
-        SETW(d0, d4);
-    }
-    SETW(d3, W(d3) >> 3);
-    d3 = EXTL(d3);
-    d1 += d3;
-    SETW(d0, d0 & 7);
-    SETW(d0, d0 ^ 7);
-    MB(a0, d1) ^= 1 << (d0 & 7);
-}
+    struct ellipse e;
+    int second = 0;
 
-static void ellipse(void)
-{
-    flag = 0;
-    SETW(d0, d0 + MW(a3, 48));
-    SETW(d1, d1 + MW(a3, 50));
-    center[0] = d0; center[1] = d1; center[2] = d2; center[3] = d3; center[4] = d4;
-    calcellipse();
-    for (;;) {
-        d0 = MOVEMW(center, 0); d1 = MOVEMW(center, 2);         /* nxelp */
-        SETW(d0, d0 + d6);
-        SETW(d1, d1 + d7);
-        cplot();
-        d0 = MOVEMW(center, 0); d1 = MOVEMW(center, 2);
-        SETW(d0, d0 + d6);
-        SETW(d1, d1 - d7);
-        cplot();
-        d0 = MOVEMW(center, 0); d1 = MOVEMW(center, 2);
-        SETW(d0, d0 - d6);
-        SETW(d1, d1 + d7);
-        cplot();
-        d0 = MOVEMW(center, 0); d1 = MOVEMW(center, 2);
-        SETW(d0, d0 - d6);
-        SETW(d1, d1 - d7);
-        cplot();
-        d0 = dx; d1 = dy; d2 = asq; d3 = bsq;
-        if (!flag) {
-            if (!((LONG)(d0 - d1) >= 0)) {
-                if ((LONG)d5 > 0) {
-                    SETW(d7, d7 - 1);
-                    d1 -= asq2;
-                    d5 -= d1;
-                }
-                SETW(d6, d6 + 1);               /* nodab */
-                d0 += bsq2;
-                d5 += d0;
-                d5 += bsq;
-                dx = d0; dy = d1;
+    cx += bm->xorigin;
+    cy += bm->yorigin;
+    calcellipse(&e, a, b);
+    for (;;) {                                  /* nxelp */
+        cplot(bm, cx + e.x, cy + e.y, colour);
+        cplot(bm, cx + e.x, cy - e.y, colour);
+        cplot(bm, cx - e.x, cy + e.y, colour);
+        cplot(bm, cx - e.x, cy - e.y, colour);
+        if (!second) {
+            if ((LONG)(e.dx - e.dy) < 0) {
+                if ((LONG)e.d > 0)
+                    ellipse_y(&e);
+                ellipse_x(&e);                  /* nodab */
+                e.d += e.bsq;
                 continue;
             }
-            flag = ~flag;                       /* dxgtdy */
-            d2 -= d3;
-            d3 = d2;
-            d2 <<= 1;
-            d2 += d3;
-            d2 = (ULONG)((LONG)d2 >> 1);
-            d2 -= d0;
-            d2 -= d1;
-            d2 = (ULONG)((LONG)d2 >> 1);
-            d5 += d2;
+            second = 1;
+            ellipse_region2(&e);
         }
-        if (SW(d7) <= 0)                        /* dooly */
+        if ((WORD)e.y <= 0)                     /* dooly */
             return;
-        if ((LONG)d5 < 0) {
-            SETW(d6, d6 + 1);
-            d0 += bsq2;
-            d5 += d0;
-        }
-        SETW(d7, d7 - 1);                       /* dodab */
-        d1 -= asq2;
-        d5 += asq;
-        d5 -= d1;
-        dx = d0; dy = d1;
+        ellipse_step2(&e);
     }
 }
 
 static void BLITZ_ROUTINE _ellipse_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1), UWORD rx BL_REG(d2),
                                      UWORD ry BL_REG(d3), UWORD c BL_REG(d4))
 {
-    a3 = blitz_string;
-    d0 = x; d1 = y; d2 = rx; d3 = ry; d4 = c;
-    ellipse();
+    ellipse((struct bitmap *)blitz_string, x, y, rx, ry, c);
 }
 BLITZ_THUNK(_ellipse, _ellipse_c, "d1/a0-a1");
 
 static void BLITZ_ROUTINE _circle_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1), UWORD r BL_REG(d2),
                                     UWORD c BL_REG(d3))
 {
-    a3 = blitz_string;
-    d0 = x; d1 = y; d2 = r; d3 = r; d4 = c;     /* MOVE.w d3,d4:MOVE.w d2,d3 */
-    ellipse();
+    ellipse((struct bitmap *)blitz_string, x, y, r, r, c);
 }
 BLITZ_THUNK(_circle, _circle_c, "d1/a0-a1");
 
-/* bigsize (BLTSIZV/BLTSIZH) or a normal BLTSIZE */
-static void bltsize(UWORD size)
+/* a blit of `size`, or with BLTSIZV/BLTSIZH (bigsize) for size 0 */
+static void bltsize(UBYTE *chip, UWORD size)
 {
     if (size)
-        CW(a2, 0x58) = size;
+        CW(chip, BLTSIZE) = size;
     else
-        CL(a2, 0x5c) = *(ULONG *)bigsize;
+        CL(chip, BLTSIZV) = *(ULONG *)bigsize;
 }
 
-static void ellipsefo(void)
+/* cplot2: toggle the bit of x, y in the fill buffer, x clipped at last
+   (y as in cplot: #392) */
+static void cplot2(const struct bitmap *bm, WORD x, WORD y, WORD last)
 {
-    UBYTE *sa4 = a4, *sa5 = a5;
+    ULONG off;
 
-    allocfill();
-    flag = 0;
-    center[0] = d0; center[1] = d1; center[2] = d2; center[3] = d3; center[4] = d4;
-    SETW(d6, d0);
-    SETW(d7, d1);
-    d4 = 1;
-    SETW(d2, d2 + d4);                          /* bigger radius */
-    SETW(d3, d3 + d4);
-    SETW(d0, d0 - d2);
-    if (SW(d0) < 0)
-        SETW(d0, 0);
-    SETW(d1, d1 - d3);
-    if (SW(d1) < 0)
-        SETW(d1, 0);
-    SETW(d6, d6 + d2);
-    if (SW(d6) < 0)
-        goto pa;
-    SETW(d7, d7 + d3);
-    if (SW(d7) < 0)
-        goto pa;
-    d4 = 4;
-    SETW(d0, W(d0) >> 4);
-    SETW(d6, W(d6) >> 4);
-    d4 = MOVEMW(a3, 56);
-    d5 = MOVEMW(a3, 58);
-    SETW(d4, W(d4) >> 4);
-    if (SW(d0 - d4) >= 0 || SW(d1 - d5) >= 0)
-        goto pa;
-    if (!(SW(d6 - d4) < 0)) {
-        SETW(d6, d4);
-        SETW(d6, d6 - 1);
-    }
-    if (!(SW(d7 - d5) < 0)) {
-        SETW(d7, d5);
-        SETW(d7, d7 - 1);
-    }
-    SETW(d1, d1 - d7);                          /* bboc2 */
-    SETW(d1, -SW(d1));
-    SETW(d1, d1 + 1);
-    SETW(d0, d0 - d6);
-    SETW(d0, -SW(d0));
-    SETW(d0, d0 + 1);
-    if (SW(d1 - 1024) >= 0 || !(SW(d0 - 64) < 0)) {     /* bigo */
-        bigsize[0] = d1;
-        bigsize[1] = d0;
-        d1 = 0;
-    } else {
-        SETW(d1, d1 << 6);
-        SETW(d1, d1 | W(d0));
-    }
-    SETW(d0, d0 << 1);                          /* domod */
-    SETW(d0, d0 - MW(a3, 0));
-    SETW(d0, -SW(d0));
-    d7 = MULU(d7, MW(a3, 0));
-    a0 = (UBYTE *)d7;
-    a0 += SW(d6);
-    a0 += SW(d6);
-    planeoff = (ULONG)a0;
-    a0 += fbloc;
-    blitpos = (ULONG)a0;
-    modsize[0] = d0;
-    modsize[1] = d1;
-    BLITWAIT(a2);                               /* clear rectangle */
-    CL(a2, 0x44) = 0xffffffff;
-    CL(a2, 0x54) = (ULONG)a0;
-    CW(a2, 0x66) = d0;
-    CL(a2, 0x40) = 0x01000002;
-    bltsize(d1);
-    BLITWAIT(a2);
-    d0 = MOVEMW(center, 0); d1 = MOVEMW(center, 2); d2 = MOVEMW(center, 4); d3 = MOVEMW(center, 6);
-    calcellipse();
-    a0 = (UBYTE *)fbloc;
-    SETW(d4, MW(a3, 56));
-    SETW(d4, d4 - 1);
-    for (;;) {
-nxelp2:
-        if (W(d7)) {
-            d0 = MOVEMW(center, 0); d1 = MOVEMW(center, 2);
-            SETW(d0, d0 + d6);
-            SETW(d1, d1 + d7);
-            cplot2();
-            d0 = MOVEMW(center, 0); d1 = MOVEMW(center, 2);
-            SETW(d0, d0 - d6);
-            SETW(d1, d1 + d7);
-            cplot2();
+    if (!BMI_W(y, bm->height))
+        return;
+    off = bl_mulu_w(y, bm->bpr);
+    if ((LONG)off < 0)
+        return;
+    if (x < 0)
+        return;
+    if (!BMI_W(x, last))
+        x = last;
+    off += (UWORD)x >> 3;
+    ((UBYTE *)fbloc)[off] ^= 1 << ((x & 7) ^ 7);
+}
+
+/* Circlef/Ellipsef (no origin): the outline as one bit per line into the
+   fill buffer (the rectangle of the ellipse cleared first), filled with
+   the blitter (descending, exclusive fill), then through it into each
+   plane: colour bit 1 sets, 0 clears, a negative colour complements.
+   Returns the a3 the original leaves: the bitmap, or behind the plane
+   pointers. */
+static UBYTE *ellipsef(struct bitmap *bm, UBYTE *chip, WORD cx, WORD cy, UWORD a, UWORD b,
+                       UWORD colour)
+{
+    struct ellipse e;
+    UBYTE **plane = bm->planes;
+    ULONG planeoff, blitpos;
+    WORD x0, y0, x1, y1, wwords, h, lines, words, last;
+    UWORD size, mod, k, bits;
+    int second = 0;
+
+    allocfill(bm);
+    x0 = cx - (WORD)(a + 1);                    /* the radii + 1 */
+    if (x0 < 0)
+        x0 = 0;
+    y0 = cy - (WORD)(b + 1);
+    if (y0 < 0)
+        y0 = 0;
+    x1 = cx + (WORD)(a + 1);
+    if (x1 < 0)
+        return (UBYTE *)bm;
+    y1 = cy + (WORD)(b + 1);
+    if (y1 < 0)
+        return (UBYTE *)bm;
+    x0 = (UWORD)x0 >> 4;                        /* in words */
+    x1 = (UWORD)x1 >> 4;
+    wwords = bm->width >> 4;
+    h = bm->height;
+    if (!BMI_W(x0, wwords) || !BMI_W(y0, h))
+        return (UBYTE *)bm;
+    if (!BMI_W(x1, wwords))
+        x1 = wwords - 1;
+    if (!BMI_W(y1, h))
+        y1 = h - 1;
+    lines = y1 - y0 + 1;                        /* bboc2 */
+    words = x1 - x0 + 1;
+    if (!BMI_W(lines, 1024) || !BMI_W(words, 64)) {     /* bigo */
+        bigsize[0] = lines;
+        bigsize[1] = words;
+        size = 0;
+    } else
+        size = lines << 6 | (UWORD)words;
+    mod = bm->bpr - (words << 1);               /* domod */
+    /* descending blits: from the last word of the rectangle */
+    planeoff = bl_mulu_w(y1, bm->bpr) + x1 + x1;
+    blitpos = planeoff + fbloc;
+    BLITWAIT(chip);                             /* clear the rectangle */
+    CL(chip, BLTAFWM) = 0xffffffff;
+    CL(chip, BLTDPT) = blitpos;
+    CW(chip, BLTDMOD) = mod;
+    CL(chip, BLTCON0) = 0x01000002;
+    bltsize(chip, size);
+    BLITWAIT(chip);
+
+    calcellipse(&e, a, b);
+    last = bm->width - 1;
+    for (;;) {                                  /* nxelp2 */
+        if (e.y) {
+            cplot2(bm, cx + e.x, cy + e.y, last);
+            cplot2(bm, cx - e.x, cy + e.y, last);
         }
-        d0 = MOVEMW(center, 0); d1 = MOVEMW(center, 2);         /* j1e */
-        SETW(d0, d0 + d6);
-        SETW(d1, d1 - d7);
-        cplot2();
-        d0 = MOVEMW(center, 0); d1 = MOVEMW(center, 2);
-        SETW(d0, d0 - d6);
-        SETW(d1, d1 - d7);
-        cplot2();
-        for (;;) {                              /* flop9 */
-            d0 = dx; d1 = dy; d2 = asq; d3 = bsq;
-            if (flag)
-                break;
-            if ((LONG)(d0 - d1) >= 0) {         /* dxgtdy2 */
-                flag = ~flag;
-                d2 -= d3;
-                d3 = d2;
-                d2 <<= 1;
-                d2 += d3;
-                d2 = (ULONG)((LONG)d2 >> 1);
-                d2 -= d0;
-                d2 -= d1;
-                d2 = (ULONG)((LONG)d2 >> 1);
-                d5 += d2;
-                break;
+        cplot2(bm, cx + e.x, cy - e.y, last);   /* j1e */
+        cplot2(bm, cx - e.x, cy - e.y, last);
+        if (!second) {
+            /* flop9: x steps on the same line are not plotted (the fill
+               needs one bit per line) */
+            for (;;) {
+                if ((LONG)(e.dx - e.dy) >= 0) {
+                    second = 1;
+                    ellipse_region2(&e);
+                    break;
+                }
+                if ((LONG)e.d > 0) {
+                    ellipse_y(&e);
+                    ellipse_x(&e);
+                    e.d += e.bsq;
+                    break;
+                }
+                ellipse_x(&e);                  /* nodab2 */
+                e.d += e.bsq;
             }
-            if ((LONG)d5 > 0) {
-                SETW(d7, d7 - 1);
-                d1 -= asq2;
-                d5 -= d1;
-                SETW(d6, d6 + 1);
-                d0 += bsq2;
-                d5 += d0;
-                d5 += bsq;
-                dx = d0; dy = d1;
-                goto nxelp2;
-            }
-            SETW(d6, d6 + 1);                   /* nodab2 */
-            d0 += bsq2;
-            d5 += d0;
-            d5 += bsq;
-            dx = d0; dy = d1;
+            if (!second)
+                continue;
         }
-        if (!W(d7))                             /* dooly2 */
+        if (!e.y)                               /* dooly2 */
             break;
-        if ((LONG)d5 < 0) {
-            SETW(d6, d6 + 1);
-            d0 += bsq2;
-            d5 += d0;
-        }
-        SETW(d7, d7 - 1);                       /* dodab2 */
-        d1 -= asq2;
-        d5 += asq;
-        d5 -= d1;
-        dx = d0; dy = d1;
+        ellipse_step2(&e);
     }
-    /* DoFill */
-    a0 = (UBYTE *)blitpos;
-    d0 = MOVEMW(modsize, 0);
-    d1 = MOVEMW(modsize, 2);
-    BLITWAIT(a2);
-    CL(a2, 0x50) = (ULONG)a0;
-    CL(a2, 0x54) = (ULONG)a0;
-    CW(a2, 0x64) = d0;
-    CW(a2, 0x66) = d0;
-    CL(a2, 0x40) = 0x09f0000a;
-    bltsize(d1);
-    /* DoTransfer */
-    a0 = (UBYTE *)blitpos;
-    d0 = MOVEMW(modsize, 0);
-    d1 = MOVEMW(modsize, 2);
-    d3 = 0xffffffff;
-    SETW(d3, d3 + MW(a3, 4));
-    a3 += 8;
-    d6 = planeoff;
-    SETW(d4, color);
-    if (SW(d4) >= 0) {
-        do {                                    /* nxplaner */
-            a1 = MP(a3, 0) + d6;
-            a3 += 4;
-            BLITWAIT(a2);
-            CL(a2, 0x50) = (ULONG)a0;
-            CL(a2, 0x4c) = (ULONG)a1;
-            CL(a2, 0x54) = (ULONG)a1;
-            CW(a2, 0x64) = d0;
-            CW(a2, 0x62) = d0;
-            CW(a2, 0x66) = d0;
-            CL(a2, 0x40) = 0x0dfc0002;
-            {
-                int c = d4 & 1;
 
-                SETW(d4, W(d4) >> 1);
-                if (!c)
-                    CW(a2, 0x40) = 0x0d0c;
-            }
-            bltsize(d1);
-            SETW(d3, d3 - 1);
-        } while (W(d3) != 0xffff);
-    } else {
-        do {                                    /* xort */
-            a1 = MP(a3, 0) + d6;
-            a3 += 4;
-            BLITWAIT(a2);
-            CL(a2, 0x50) = (ULONG)a0;
-            CL(a2, 0x4c) = (ULONG)a1;
-            CL(a2, 0x54) = (ULONG)a1;
-            CW(a2, 0x64) = d0;
-            CW(a2, 0x62) = d0;
-            CW(a2, 0x66) = d0;
-            CL(a2, 0x40) = 0x0d3c0002;
-            bltsize(d1);
-            SETW(d3, d3 - 1);
-        } while (W(d3) != 0xffff);
-    }
-pa:
-    a4 = sa4;
-    a5 = sa5;
+    BLITWAIT(chip);                             /* DoFill */
+    CL(chip, BLTAPT) = blitpos;
+    CL(chip, BLTDPT) = blitpos;
+    CW(chip, BLTAMOD) = mod;
+    CW(chip, BLTDMOD) = mod;
+    CL(chip, BLTCON0) = 0x09f0000a;
+    bltsize(chip, size);
+
+    k = bm->depth - 1;                          /* DoTransfer (DBRA: 0 = 65536) */
+    bits = colour;
+    do {
+        UBYTE *p = *plane++ + planeoff;
+
+        BLITWAIT(chip);
+        CL(chip, BLTAPT) = blitpos;
+        CL(chip, BLTBPT) = (ULONG)p;
+        CL(chip, BLTDPT) = (ULONG)p;
+        CW(chip, BLTAMOD) = mod;
+        CW(chip, BLTBMOD) = mod;
+        CW(chip, BLTDMOD) = mod;
+        if ((WORD)colour >= 0) {                /* nxplaner */
+            CL(chip, BLTCON0) = 0x0dfc0002;
+            if (!(bits & 1))
+                CW(chip, BLTCON0) = 0x0d0c;
+            bits >>= 1;
+        } else
+            CL(chip, BLTCON0) = 0x0d3c0002;     /* xort */
+        bltsize(chip, size);
+    } while (k-- != 0);
+    return (UBYTE *)plane;
 }
 
 /* --------------------------------------------- mask fetch / write (ReMap) */
 
-/* column setup common to monofetch/monowrite */
-static void monosetup(void)
+/* monosetup: the bitmap in columns of 64 words (BLTSIZE width 0), the last
+   column with the rest of the width */
+struct columns {
+    UWORD last;                 /* byte offset of the last column (finx) */
+    UWORD parts;                /* 1024 line parts before each column blit */
+    UWORD size;                 /* BLTSIZE of the last column */
+};
+
+static void columns(const struct bitmap *bm, struct columns *c)
 {
-    SETW(d7, MW(a3, 4));
-    d5 = MOVEMW(a3, 56);
-    d6 = MOVEMW(a3, 58);
-    d6 <<= 6;
-    SETW(d5, W(d5) >> 4);
-    SETW(d2, d5);
-    SETW(d2, d2 & 0x3fc0);
-    SETW(d2, d2 + d2);
-    d3 = SWAP(d6);
-    if (!W(d6))
-        SETW(d3, d3 - 1);
-    SETW(d5, d5 & 63);
-    if (!W(d5))
-        SETW(d2, d2 - 128);
-    SETW(d6, d6 | W(d5));
-    a4 = a3 + 8;
-    SETW(d7, d7 - 1);
-    d5 = 0;
+    UWORD words = bm->width >> 4;
+    ULONG lines = (ULONG)(LONG)(WORD)bm->height << 6;
+
+    c->last = (words & 0x3fc0) * 2;
+    c->parts = lines >> 16;
+    if (!(UWORD)lines)
+        c->parts--;
+    words &= 63;
+    if (!words)
+        c->last -= 128;
+    c->size = (UWORD)lines | words;
 }
 
-static void setmods(UWORD m)
+static void setmods(UBYTE *chip, UWORD m)
 {
-    CW(a2, 0x60) = m;
-    CW(a2, 0x62) = m;
-    CW(a2, 0x64) = m;
-    CW(a2, 0x66) = m;
+    CW(chip, BLTCMOD) = m;
+    CW(chip, BLTBMOD) = m;
+    CW(chip, BLTAMOD) = m;
+    CW(chip, BLTDMOD) = m;
 }
 
-/* the extra 1024 line parts (d3 = count) and the final size */
-static void blitsize3(void)
+/* blitsize3: the 1024 line parts and the final size */
+static void blitsize3(UBYTE *chip, UWORD parts, UWORD size)
 {
-    if (W(d3)) {
-        UWORD s6 = d6;
+    if (parts) {
+        UWORD n = parts - 1;
 
-        SETW(d4, d3 - 1);
-        SETW(d6, d6 & 63);
         do {
-            CW(a2, 0x58) = d6;
-            BLITWAIT(a2);
-            SETW(d4, d4 - 1);
-        } while (W(d4) != 0xffff);              /* DBRA d4 */
-        SETW(d6, s6);
+            CW(chip, BLTSIZE) = size & 63;
+            BLITWAIT(chip);
+        } while (n-- != 0);
     }
-    CW(a2, 0x58) = d6;
+    CW(chip, BLTSIZE) = size;
 }
 
-/* dunxx1 - all planes of one 64 word column: mask of colour d0 to a5 */
-static void dunxx1(void)
+/* one column (at byte offset off) of all planes (DBRA over depth - 1: 0
+   gives 65536):
+     fetch (dunxx1): the mask of the pixels of colour into mask: D = A
+       (plane 0, or its complement), then D = A AND C (C = D = the mask)
+     write (dunxx2): colour where the mask is set: D = A OR C (set) or
+       NOT A AND C (clear), A = the mask, C = D = the plane */
+static void column(UBYTE *chip, const struct bitmap *bm, ULONG colour, WORD off, UBYTE *mask,
+                   const struct columns *c, UWORD size, int write)
 {
-    CL(a2, 0x40) = 0x0bf00000;
-    if (!(d0 & (1UL << (d5 & 31))))
-        CW(a2, 0x40) = 0x0b0f;
-    a0 = MP(a4, 0) + SW(d2);
-    a4 += 4;
-    CL(a2, 0x50) = (ULONG)a0;
-    CL(a2, 0x48) = (ULONG)a5;
-    CL(a2, 0x54) = (ULONG)a5;
-    blitsize3();
-    goto poo1;
-nxpoo1:
-    BLITWAIT(a2);
-    CW(a2, 0x40) = 0x0ba0;
-    if (!(d0 & (1UL << (d5 & 31))))
-        CW(a2, 0x40) = 0x0b0a;
-    a0 = MP(a4, 0) + SW(d2);
-    a4 += 4;
-    CL(a2, 0x50) = (ULONG)a0;
-    CL(a2, 0x48) = (ULONG)a5;
-    CL(a2, 0x54) = (ULONG)a5;
-    blitsize3();
-poo1:
-    SETW(d5, d5 + 1);
-    SETW(d7, d7 - 1);
-    if (W(d7) != 0xffff)
-        goto nxpoo1;
+    UBYTE *const *plane = bm->planes;
+    UWORD k = bm->depth - 1, i = 0;
+
+    for (;;) {
+        UBYTE *p = *plane++ + off;
+        int bit = (colour & (1UL << (i & 31))) != 0;
+
+        if (i)
+            BLITWAIT(chip);
+        if (!i)
+            CL(chip, BLTCON0) = write ? 0x0bfa0000 : 0x0bf00000;
+        else
+            CW(chip, BLTCON0) = write ? 0x0bfa : 0x0ba0;
+        if (!bit)
+            CW(chip, BLTCON0) = write ? 0x0b0a : (i ? 0x0b0a : 0x0b0f);
+        CL(chip, BLTAPT) = (ULONG)(write ? mask : p);
+        CL(chip, BLTCPT) = (ULONG)(write ? p : mask);
+        CL(chip, BLTDPT) = (ULONG)(write ? p : mask);
+        blitsize3(chip, c->parts, size);
+        i++;
+        if (k-- == 0)
+            break;
+    }
 }
 
-static void monofetch(void)
+/* monofetch/monowrite: the mask of colour over the whole bitmap into the
+   fill buffer (fetch, allocates it) or colour through the mask into the
+   bitmap (write).  Returns the buffer position of the last column and its
+   BLTSIZE in *size (FloodFill with border inverts only there). */
+static UBYTE *mono(UBYTE *chip, struct bitmap *bm, ULONG colour, int write, UWORD *size)
 {
-    allocfill();
-    monosetup();
-    a5 = (UBYTE *)fbloc;
-    BLITWAIT(a2);
-    CL(a2, 0x44) = 0xffffffff;
-    CL(a2, 0x60) = 0;
-    CL(a2, 0x64) = 0;
-    finx = d2;
-    if (W(d2)) {
-        UWORD s6;
+    struct columns c;
+    UBYTE *mask = write ? (UBYTE *)fbloc : (UBYTE *)allocfill(bm);
+    UWORD off = 0, m;
 
-        d2 = 0;
-        s6 = d6;
-        SETW(d6, d6 & 0xffc0);
-        SETW(d4, MW(a3, 0));
-        SETW(d4, d4 - 128);
-        setmods(d4);
+    columns(bm, &c);
+    BLITWAIT(chip);
+    CL(chip, BLTAFWM) = 0xffffffff;
+    CL(chip, BLTCMOD) = 0;
+    CL(chip, BLTAMOD) = 0;
+    if (c.last) {
+        setmods(chip, bm->bpr - 128);
         do {                                    /* nxxx1 */
-            ULONG s5 = d5, s7 = d7;
-            UBYTE *sa4 = a4;
-
-            dunxx1();
-            d5 = s5; d7 = s7; a4 = sa4;
-            BLITWAIT(a2);
-            SETW(d2, d2 + 128);
-            a5 += 128;
-        } while (W(d2) != finx);
-        SETW(d6, s6);
-        SETW(d4, MW(a3, 0));
-        SETW(d4, d4 & 127);
-        if (!W(d4))
-            SETW(d4, 128);
-        SETW(d4, d4 - MW(a3, 0));
-        SETW(d4, -SW(d4));
-        setmods(d4);
+            column(chip, bm, colour, off, mask, &c, c.size & 0xffc0, write);
+            BLITWAIT(chip);
+            off += 128;
+            mask += 128;
+        } while (off != c.last);
+        m = bm->bpr & 127;
+        if (!m)
+            m = 128;
+        setmods(chip, bm->bpr - m);
     }
-    dunxx1();
-}
-
-/* dunxx2 - all planes: colour d1 from the mask a5 */
-static void dunxx2(void)
-{
-    CL(a2, 0x40) = 0x0bfa0000;
-    if (!(d1 & (1UL << (d5 & 31))))
-        CW(a2, 0x40) = 0x0b0a;
-    CL(a2, 0x50) = (ULONG)a5;
-    a0 = MP(a4, 0) + SW(d2);
-    a4 += 4;
-    CL(a2, 0x48) = (ULONG)a0;
-    CL(a2, 0x54) = (ULONG)a0;
-    blitsize3();
-    goto poo2;
-nxpoo2:
-    BLITWAIT(a2);
-    CW(a2, 0x40) = 0x0bfa;
-    if (!(d1 & (1UL << (d5 & 31))))
-        CW(a2, 0x40) = 0x0b0a;
-    CL(a2, 0x50) = (ULONG)a5;
-    a0 = MP(a4, 0) + SW(d2);
-    a4 += 4;
-    CL(a2, 0x48) = (ULONG)a0;
-    CL(a2, 0x54) = (ULONG)a0;
-    blitsize3();
-poo2:
-    SETW(d5, d5 + 1);
-    SETW(d7, d7 - 1);
-    if (W(d7) != 0xffff)
-        goto nxpoo2;
-}
-
-static void monowrite(void)
-{
-    a5 = (UBYTE *)fbloc;
-    monosetup();
-    BLITWAIT(a2);
-    CL(a2, 0x44) = 0xffffffff;
-    CL(a2, 0x60) = 0;
-    CL(a2, 0x64) = 0;
-    finx = d2;
-    if (W(d2)) {
-        UWORD s6;
-
-        d2 = 0;
-        s6 = d6;
-        SETW(d6, d6 & 0xffc0);
-        SETW(d4, MW(a3, 0));
-        SETW(d4, d4 - 128);
-        setmods(d4);
-        do {
-            ULONG s5 = d5, s7 = d7;
-            UBYTE *sa4 = a4;
-
-            dunxx2();
-            d5 = s5; d7 = s7; a4 = sa4;
-            BLITWAIT(a2);
-            SETW(d2, d2 + 128);
-            a5 += 128;
-        } while (W(d2) != finx);
-        SETW(d6, s6);
-        SETW(d4, MW(a3, 0));
-        SETW(d4, d4 & 127);
-        if (!W(d4))
-            SETW(d4, 128);
-        SETW(d4, d4 - MW(a3, 0));
-        SETW(d4, -SW(d4));
-        setmods(d4);
-    }
-    dunxx2();
+    column(chip, bm, colour, c.last, mask, &c, c.size, write);
+    *size = c.size;
+    return mask;
 }
 
 /* ------------------------------------------------------------ FloodFill */
@@ -1599,548 +1230,378 @@ BLITZ_ASM_ROUTINE(yofill_asm,
 "finito:\n"
 "   rts");
 
-/* yofill with the bitmap in a3 (static) */
-static void yofill(void)
+static void yofill(struct bitmap *bm)
 {
-    register UBYTE *r_a0 __asm("a0") = a3;
+    register struct bitmap *r_a0 __asm("a0") = bm;
 
     __asm volatile("jsr     _yofill_asm"
                    : "+a"(r_a0) : : "d0", "d1", "a1", "cc", "memory");
 }
 
-static void floodfill(void)
+/* FloodFill x,y,colour: fill the area of the colour under the point */
+static UBYTE *floodfill(struct bitmap *bm, UBYTE *chip, WORD x, WORD y, UWORD colour)
 {
-    UBYTE *sa4 = a4, *sa5 = a5;
+    ULONG off, under = 0;
+    UWORD i = 0, size;
+    UBYTE bit = ~x & 7;
 
-    coords[0] = d0;
-    coords[1] = d1;
-    fcol = d2;
-    d1 = MULU(d1, MW(a3, 0));
-    SETW(d2, d0);
-    SETW(d2, ~d2);
-    SETW(d0, W(d0) >> 3);
-    d0 = EXTL(d0);
-    d1 += d0;
-    SETW(d7, MW(a3, 4));
-    d6 = 0;
-    d0 = 0;
-    a4 = a3 + 8;
-    do {                                        /* colour under the point */
-        a0 = MP(a4, 0);
-        a4 += 4;
-        if (MB(a0, d1) & (1 << (d2 & 7)))
-            d0 |= 1UL << (d6 & 31);
-        SETW(d6, d6 + 1);
-    } while (W(d6) != W(d7));
-    monofetch();
-    BLITWAIT(a2);
-    yofill();
-    a4 = sa4;
-    a5 = sa5;
+    coords[0] = x;
+    coords[1] = y;
+    fcol = colour;
+    off = bl_mulu_w(y, bm->bpr) + ((UWORD)x >> 3);
+    do {                                        /* the colour under the point */
+        if (bm->planes[i][off] & (1 << bit))
+            under |= 1UL << (i & 31);
+    } while (++i != bm->depth);
+    mono(chip, bm, under, 0, &size);
+    BLITWAIT(chip);
+    yofill(bm);
+    return (UBYTE *)bm;
 }
 
-static void floodfill2(void)
+/* FloodFill x,y,colour,border: fill up to the border colour (the mask of
+   the border colour inverted - only in the last column of 64 words).  The
+   border colour is a word in the register of x (SETW(d0, d3)). */
+static UBYTE *floodfill2(struct bitmap *bm, UBYTE *chip, ULONG x, WORD y, UWORD colour,
+                         UWORD border)
 {
-    UBYTE *sa4 = a4, *sa5 = a5;
+    UBYTE *mask;
+    UWORD size;
 
-    coords[0] = d0;
-    coords[1] = d1;
-    fcol = d2;
-    SETW(d0, d3);                               /* border colour */
-    monofetch();
-    BLITWAIT(a2);
-    CW(a2, 0x40) = 0x090f;                      /* invert the mask */
-    CL(a2, 0x50) = (ULONG)a5;
-    CL(a2, 0x54) = (ULONG)a5;
-    CW(a2, 0x58) = d6;
-    BLITWAIT(a2);
-    yofill();
-    a4 = sa4;
-    a5 = sa5;
+    coords[0] = x;
+    coords[1] = y;
+    fcol = colour;
+    mask = mono(chip, bm, (x & 0xffff0000UL) | border, 0, &size);
+    BLITWAIT(chip);
+    CW(chip, BLTCON0) = 0x090f;                 /* invert the mask */
+    CL(chip, BLTAPT) = (ULONG)mask;
+    CL(chip, BLTDPT) = (ULONG)mask;
+    CW(chip, BLTSIZE) = size;
+    BLITWAIT(chip);
+    yofill(bm);
+    return (UBYTE *)bm;
+}
+
+/* ReMap from,to[,dst]: the pixels of colour from (in bm) get colour to
+   (in dst); returns dst (a3) */
+static UBYTE *remap(struct bitmap *bm, UBYTE *chip, ULONG from, ULONG to, struct bitmap *dst)
+{
+    UWORD size;
+
+    mono(chip, bm, from, 0, &size);
+    mono(chip, dst, to, 1, &size);
+    return (UBYTE *)dst;
 }
 
 /* ------------------------------------------------------------ polygons */
 
-static void polyo(void)
+/* Poly: the lines between the points and back to the first; the count
+   is decremented after the first line (SUB #1,pfc:BNE): 1 point draws
+   65536 lines (#396).  Returns the a3 of the last line. */
+static UBYTE *poly(struct bitmap *bm, UBYTE *chip, UWORD n, const struct point *pts,
+                   UWORD colour)
 {
-    UBYTE *sa4 = a4, *sa5 = a5, *sa6 = a6;
+    const struct point *p = pts;
+    UWORD count = n - 1;
 
-    a4 = a3;
-    a5 = (UBYTE *)d1;
-    a6 = (UBYTE *)d1;
-    SETW(d0, d0 - 1);
-    pfc = d0;
-    color = d2;
     do {                                        /* nxpfc */
-        d0 = MOVEMW(a5, 0); d1 = MOVEMW(a5, 2); d2 = MOVEMW(a5, 4); d3 = MOVEMW(a5, 6);
-        a5 += 4;
-        a3 = a4;
-        clipme();
-    } while (--pfc);                            /* SUB #1,pfc:BNE */
-    d0 = MOVEMW(a5, 0); d1 = MOVEMW(a5, 2);
-    d2 = MOVEMW(a6, 0); d3 = MOVEMW(a6, 2);
-    a3 = a4;
-    clipme();
-    a4 = sa4;
-    a5 = sa5;
-    a6 = sa6;
+        drawline(bm, chip, p[0].x, p[0].y, p[1].x, p[1].y, colour);
+        p++;
+    } while (--count);
+    return drawline(bm, chip, p->x, p->y, pts->x, pts->y, colour);
 }
 
-/* polygon outline lists (shared with polylib's algorithm) */
-static void drawpoly(void)
+/* the steps along an edge (as polylib's): an x position is a fixed point
+   number with the fraction in the upper word and twice the integer in the
+   lower word; ADD.l adds a step, its carry adds 2 to the lower word */
+static ULONG edge_step(ULONG pos, ULONG step)
 {
-    if (SW(pcolor >> 16) < 0)                   /* TST pcolor */
-        return;
-    d6 = ML(a6, 48);                            /* porigin */
-    if (d6) {
-        UWORD n;
+    ULONG sum = pos + step;
 
-        d5 = SWAP(d6);
-        SETW(d4, d7);
-        SETW(d4, d4 - 1);
-        a1 = a0;
-        n = d4;
+    if (sum < pos)
+        sum = (sum & 0xffff0000UL) | (UWORD)(sum + 2);
+    return sum;
+}
+
+/* the start: x (sign extended) with the lower word 2 * x, the fraction
+   word EORed with $8000 (one half; $7FFF for a negative x) */
+static ULONG edge_start(WORD x)
+{
+    return (((ULONG)(LONG)x & 0xffff0000UL) | (UWORD)(x + x)) ^ 0x80000000UL;
+}
+
+/* the next edge of a list: its lines - 1 and its step; 0 at the end mark */
+static int next_edge(const struct edge **list, UWORD *lines, ULONG *step)
+{
+    const struct edge *e = (*list)++;
+
+    *lines = e->lines;
+    if (e->lines < 0)
+        return 0;
+    *step = e->step;
+    return 1;
+}
+
+/* lside/rside: the edges of one side from (x, y) over the points p, p +
+   dir, ... down to the bottom; cut where the side leaves the clip width
+   (the left side at x > width - 1, the right side at x < 0).  Returns the
+   address of the end mark. */
+static UWORD *side(UWORD *list, WORD x, WORD y, const struct point *p, int dir, int right,
+                   WORD width, WORD height)
+{
+    struct edge *e = (struct edge *)list;
+    WORD last = width - 1, tx = p->x, ty = p->y;
+
+    while (ty > y) {                            /* SUB y,ty:BLE: done */
+        WORD dy = ty - y;
+        UWORD rest = dy, shift = 15;
+        ULONG dx = (ULONG)(LONG)(WORD)(tx - x), step;
+
+        e->lines = dy - 1;
+        do {                                    /* dx * 4^k with dy < 4^k */
+            shift -= 2;
+            dx <<= 2;
+            rest >>= 2;
+        } while (rest);
+        step = (ULONG)(LONG)(WORD)bl_divs_w(dx, dy);
+        step = (shift & 63) >= 32 ? 0 : step << (shift & 63);     /* LSL.l */
+        step = BL_SWAP(step);
+        BL_SETW(step, step + step);
+        e->step = step;
+        e++;
+        x = p->x;
+        y = p->y;
+        if (!BMI_W(y, height)) {               /* lbot/rbot */
+            e[-1].lines -= (WORD)(y - height);
+            break;
+        }
+        if (right ? x < 0 : x > last) {         /* roff/loff */
+            const struct point *from = p - dir;
+
+            e[-1].lines -= muldiv(right ? x : x - last, from->y - y, from->x - x);
+            break;
+        }
+        p += dir;
+        tx = p->x;
+        ty = p->y;
+    }
+    *(ULONG *)e = 0xffffffffUL;
+    return (UWORD *)e;
+}
+
+/* tops..rside (the algorithm of polylib): the outline of the polygon in
+   polypts (n points, twice in a row) - the top line, clipped at the top
+   edge and at the sides, and the edge lists of the left side (backwards
+   through the points) and the right side.  NULL if nothing is visible,
+   else the address of the right list's end mark (where the original
+   leaves a3). */
+static UWORD *outline(UWORD n, WORD width, WORD height)
+{
+    const struct point *p = polypts, *lp, *rp;
+    WORD lx, rx, y, ly, ry;
+    UWORD k = n - 1;
+
+    /* the top point; for several, lp = the leftmost, rp = the rightmost */
+    lx = rx = p->x;
+    y = p->y;
+    lp = rp = p;
+    while (p++, --k != 0xffff) {
+        if (BMI_W(y, p->y))                     /* below */
+            continue;
+        if (y != p->y) {                        /* above: the new top */
+            lx = rx = p->x;
+            y = p->y;
+            lp = rp = p;
+        } else if (!BMI_W(lx, p->x)) {
+            lx = p->x;
+            lp = p;
+        } else if (BMI_W(rx, p->x)) {
+            rx = p->x;
+            rp = p;
+        }
+    }
+    /* the left side starts at the point before lp's copy (ADDA.w n*4),
+       the right side at the point after rp */
+    lp = (const struct point *)((const UBYTE *)lp + (WORD)(n << 2)) - 1;
+    rp++;
+
+    if (y < 0) {                                /* cliptotop */
+        ly = y;
+        while (!(0 < lp->y)) {
+            lx = lp->x;
+            ly = lp->y;
+            if (--lp < rp)
+                return NULL;
+        }
+        lx += muldiv(-ly, lp->x - lx, lp->y - ly);
+        ry = rp[-1].y;
+        while (!(0 < rp->y)) {
+            rx = rp->x;
+            ry = rp->y;
+            if (lp < ++rp)
+                return NULL;
+        }
+        rx += muldiv(-ry, rp->x - rx, rp->y - ry);
+        y = 0;
+    }
+    if (!BMI_W(lx, width)) {                   /* entering from the right */
+        WORD last = width - 1;
+
+        ly = y;
+        while (!(last > lp->x)) {
+            lx = lp->x;
+            ly = lp->y;
+            if (--lp < rp)
+                return NULL;
+        }
+        ly += muldiv(last - lx, lp->y - ly, lp->x - lx);
+        lx = last;
+        ry = y;
+        while (!BMI_W(ly, rp->y)) {
+            rx = rp->x;
+            ry = rp->y;
+            if (lp < ++rp)
+                return NULL;
+        }
+        rx -= muldiv(rp->x - rx, ry - ly, rp->y - ry);
+        y = ly;
+    } else if (rx < 0) {                        /* entering from the left */
+        ry = y;
+        while (!(0 < rp->x)) {
+            rx = rp->x;
+            ry = rp->y;
+            if (lp < ++rp)
+                return NULL;
+        }
+        ry += muldiv(-rx, rp->y - ry, rp->x - rx);
+        rx = 0;
+        ly = y;
+        while (!BMI_W(ry, lp->y)) {
+            lx = lp->x;
+            ly = lp->y;
+            if (--lp < rp)
+                return NULL;
+        }
+        lx -= muldiv(lp->x - lx, ly - ry, lp->y - ly);
+        y = ry;
+    }
+    if (!BMI_W(y, height))                     /* nonclip: inside? */
+        return NULL;
+    pv.top.left = lx;
+    pv.top.y = y;
+    pv.top.right = rx;
+    side(pv.ledges, lx, y, lp, -1, 0, width, height);
+    return side(pv.redges, rx, y, rp, 1, 1, width, height);
+}
+
+/* drawpoly: the polygon in polypts (plus the origin, added to both copies
+   of the points) filled with the blitter, one blit per line and plane: A
+   = $FFFF in the span's masks, D = C = the plane, set or cleared by the
+   colour bit; a negative colour draws nothing.  a3 = what the copy loop
+   left; returns the a3 the original leaves (or that one). */
+static UBYTE *drawpoly(struct bitmap *bm, UWORD n, UWORD colour, UBYTE *a3)
+{
+    UBYTE *chip = BL_CUSTOM;
+    const struct edge *le = (const struct edge *)pv.ledges;
+    const struct edge *re = (const struct edge *)pv.redges;
+    ULONG left, right, lstep, rstep, rowoff;
+    UWORD llines, rlines, rtclip, xs, xe, words, plane;
+    UBYTE *end;
+
+    if ((WORD)colour < 0)                       /* TST pcolor */
+        return a3;
+    if (bm->xorigin || bm->yorigin) {           /* porigin */
+        struct point *p = polypts;
+        UWORD k = n - 1;
+
         do {
-            MW(a1, 0) += d5; MW(a1, 2) += d6;
-            MW(a1, 4) += d5; MW(a1, 6) += d6;
-            a1 += 8;
-        } while (n-- != 0);
+            p[0].x += bm->xorigin;
+            p[0].y += bm->yorigin;
+            p[1].x += bm->xorigin;
+            p[1].y += bm->yorigin;
+            p += 2;
+        } while (k-- != 0);
     }
-    SETW(d6, d7);                               /* tops */
-    SETW(d7, d7 - 1);
-    goto fud;
-fhi:
-    if (SW(d1 - MW(a0, 2)) < 0)
-        goto flo;
-    if (W(d1) != MW(a0, 2))
-        goto fud;
-    if (SW(d0 - MW(a0, 0)) >= 0) {
-        SETW(d0, MW(a0, 0));
-        a1 = a0;
-        goto flo;
-    }
-    if (SW(d2 - MW(a0, 0)) >= 0)                /* fox */
-        goto flo;
-    SETW(d2, MW(a0, 0));
-    a2 = a0;
-    goto flo;
-fud:
-    d0 = MOVEMW(a0, 0);
-    d1 = MOVEMW(a0, 2);
-    SETW(d2, d0);
-    a1 = a0;
-    a2 = a0;
-flo:
-    a0 += 4;
-    SETW(d7, d7 - 1);
-    if (W(d7) != 0xffff)
-        goto fhi;
-    SETW(d6, d6 << 2);
-    a1 += SW(d6);
-    a1 -= 4;
-    a2 += 4;
-
-    /* cliptotop */
-    if (SW(d1) < 0) {
-        d5 = 0;
-        for (;;) {
-            if (SW(d5) < SW(MW(a1, 2)))
-                break;
-            d0 = MOVEMW(a1, 0); d1 = MOVEMW(a1, 2);
-            a1 -= 4;
-            if (!((LONG)(a1 - a2) >= 0))
-                return;
-        }
-        d3 = MOVEMW(a1, 0); d4 = MOVEMW(a1, 2);     /* clipl */
-        SETW(d5, d5 - d1);
-        SETW(d3, d3 - d0);
-        SETW(d4, d4 - d1);
-        d3 = MULS(d5, d3);
-        DIVS(d3, d4);
-        SETW(d0, d0 + d3);
-        d5 = 0;
-        SETW(d1, MW(a2, -2));
-        for (;;) {
-            if (SW(d5) < SW(MW(a2, 2)))
-                break;
-            d1 = MOVEMW(a2, 0); d2 = MOVEMW(a2, 2);
-            a2 += 4;
-            EXG(d1, d2);
-            if (!((LONG)(a1 - a2) >= 0))
-                return;
-        }
-        d3 = MOVEMW(a2, 0); d4 = MOVEMW(a2, 2);     /* clipr */
-        SETW(d5, d5 - d1);
-        SETW(d3, d3 - d2);
-        SETW(d4, d4 - d1);
-        d3 = MULS(d5, d3);
-        DIVS(d3, d4);
-        SETW(d2, d2 + d3);
-        d1 = 0;
-    }
-    /* cliptostrt */
-    if (!(SW(d0 - MW(a6, 56)) < 0)) {          /* entering from right */
-        SETW(d6, d1);
-        SETW(d5, MW(a6, 56));
-        SETW(d5, d5 - 1);
-        for (;;) {
-            if (SW(d5) > SW(MW(a1, 0)))
-                break;
-            d0 = MOVEMW(a1, 0); d1 = MOVEMW(a1, 2);
-            a1 -= 4;
-            if (!((LONG)(a1 - a2) >= 0))
-                return;
-        }
-        d3 = MOVEMW(a1, 0); d4 = MOVEMW(a1, 2);     /* clipm */
-        SETW(d5, d5 - d0);
-        SETW(d3, d3 - d0);
-        SETW(d4, d4 - d1);
-        d4 = MULS(d5, d4);
-        DIVS(d4, d3);
-        SETW(d1, d1 + d4);
-        EXG(d1, d6);
-        SETW(d0, MW(a6, 56));
-        SETW(d0, d0 - 1);
-        for (;;) {
-            if (SW(d6 - MW(a2, 2)) < 0)
-                break;
-            d1 = MOVEMW(a2, 0); d2 = MOVEMW(a2, 2);
-            a2 += 4;
-            EXG(d1, d2);
-            if (!((LONG)(a1 - a2) >= 0))
-                return;
-        }
-        d3 = MOVEMW(a2, 0); d4 = MOVEMW(a2, 2);     /* mom */
-        SETW(d4, d4 - d1);
-        SETW(d3, d3 - d2);
-        EXG(d1, d6);
-        SETW(d6, d6 - d1);
-        d6 = MULS(d3, d6);
-        DIVS(d6, d4);
-        SETW(d2, d2 - d6);
-    } else if (SW(d2) < 0) {                    /* entering from left */
-        SETW(d6, d1);
-        d5 = 0;
-        for (;;) {
-            if (SW(d5) < SW(MW(a2, 0)))
-                break;
-            d1 = MOVEMW(a2, 0); d2 = MOVEMW(a2, 2);
-            a2 += 4;
-            EXG(d1, d2);
-            if (!((LONG)(a1 - a2) >= 0))
-                return;
-        }
-        d3 = MOVEMW(a2, 0); d4 = MOVEMW(a2, 2);     /* clipn */
-        SETW(d5, d5 - d2);
-        SETW(d3, d3 - d2);
-        SETW(d4, d4 - d1);
-        d4 = MULS(d5, d4);
-        DIVS(d4, d3);
-        SETW(d1, d1 + d4);
-        d2 = 0;
-        EXG(d1, d6);
-        for (;;) {
-            if (SW(d6 - MW(a1, 2)) < 0)
-                break;
-            d0 = MOVEMW(a1, 0); d1 = MOVEMW(a1, 2);
-            a1 -= 4;
-            if (!((LONG)(a1 - a2) >= 0))
-                return;
-        }
-        d3 = MOVEMW(a1, 0); d4 = MOVEMW(a1, 2);     /* mon */
-        SETW(d4, d4 - d1);
-        SETW(d3, d3 - d0);
-        EXG(d1, d6);
-        SETW(d6, d6 - d1);
-        d6 = MULS(d3, d6);
-        DIVS(d6, d4);
-        SETW(d0, d0 - d6);
-    }
-    /* nonclip: still inside window? */
-    if (SW(d1 - MW(a6, 58)) >= 0)
-        return;
-    xyx[0] = d0;
-    xyx[1] = d1;
-    xyx[2] = d2;
-    SETW(d5, MW(a6, 58));
-    SETW(d6, MW(a6, 56));
-    SETW(d6, d6 - 1);
-    d7 = 0;
-
-    /* lside */
-    a3 = (UBYTE *)l0;
-    d2 = MOVEMW(a1, 0); d3 = MOVEMW(a1, 2);
-    for (;;) {                                  /* lline */
-        if (SW(d3) <= SW(d1)) {                 /* SUB d1,d3:BLE */
-            SETW(d3, d3 - d1);
-            goto dunl;
-        }
-        SETW(d3, d3 - d1);
-        SETW(d1, d3);
-        SETW(d3, d3 - 1);
-        MW(a3, 0) = d3;
-        a3 += 2;
-        SETW(d2, d2 - d0);
-        d2 = EXTL(d2);
-        d4 = 15;
-        SETW(d3, d3 + 1);
-        do {                                    /* lls */
-            SETW(d4, d4 - 2);
-            d2 <<= 2;
-            SETW(d3, W(d3) >> 2);
-        } while (W(d3));
-        DIVS(d2, d1);
-        d2 = EXTL(d2);
-        d2 = (d4 & 63) >= 32 ? 0 : d2 << (d4 & 63);
-        d2 = SWAP(d2);
-        SETW(d2, d2 + d2);
-        ML(a3, 0) = d2;
-        a3 += 4;
-        d0 = MOVEMW(a1, 0); d1 = MOVEMW(a1, 2);
-        if (SW(d1 - d5) >= 0) {                 /* lbot */
-            SETW(d1, d1 - d5);
-            MW(a3, -6) -= W(d1);
-            goto dunl;
-        }
-        if (SW(d0) > SW(d6)) {                  /* loff */
-            d2 = MOVEMW(a1, 4); d3 = MOVEMW(a1, 6);
-            SETW(d2, d2 - d0);
-            SETW(d3, d3 - d1);
-            SETW(d0, d0 - d6);
-            d3 = MULS(d0, d3);
-            DIVS(d3, d2);
-            MW(a3, -6) -= W(d3);
-            goto dunl;
-        }
-        a1 -= 4;
-        d2 = MOVEMW(a1, 0); d3 = MOVEMW(a1, 2);
-    }
-dunl:
-    ML(a3, 0) = 0xffffffff;
-
-    /* rside */
-    d0 = MOVEMW(xyx, 2); d1 = MOVEMW(xyx, 4);
-    EXG(d0, d1);
-    a3 = (UBYTE *)l1;
-    d2 = MOVEMW(a2, 0); d3 = MOVEMW(a2, 2);
-    for (;;) {                                  /* rline */
-        if (SW(d3) <= SW(d1)) {                 /* SUB d1,d3:BLE */
-            SETW(d3, d3 - d1);
-            goto dunr;
-        }
-        SETW(d3, d3 - d1);
-        SETW(d1, d3);
-        SETW(d3, d3 - 1);
-        MW(a3, 0) = d3;
-        a3 += 2;
-        SETW(d2, d2 - d0);
-        d2 = EXTL(d2);
-        d4 = 15;
-        SETW(d3, d3 + 1);
-        d0 = 3;
-        do {
-            SETW(d4, d4 - 2);
-            d2 <<= 2;
-            SETW(d3, W(d3) >> 2);
-        } while (W(d3));
-        DIVS(d2, d1);
-        d2 = EXTL(d2);
-        d2 = (d4 & 63) >= 32 ? 0 : d2 << (d4 & 63);
-        d2 = SWAP(d2);
-        SETW(d2, d2 + d2);
-        ML(a3, 0) = d2;
-        a3 += 4;
-        d0 = MOVEMW(a2, 0); d1 = MOVEMW(a2, 2); d2 = MOVEMW(a2, 4); d3 = MOVEMW(a2, 6);
-        if (SW(d1 - d5) >= 0) {                 /* rbot */
-            SETW(d1, d1 - d5);
-            MW(a3, -6) -= W(d1);
-            goto dunr;
-        }
-        if (SW(d0 - d7) < 0) {                  /* roff */
-            d2 = MOVEMW(a2, -4); d3 = MOVEMW(a2, -2);
-            SETW(d2, d2 - d0);
-            SETW(d3, d3 - d1);
-            SETW(d0, d0 - d7);
-            d3 = MULS(d0, d3);
-            DIVS(d3, d2);
-            MW(a3, -6) -= W(d3);
-            goto dunr;
-        }
-        a2 += 4;
-    }
-dunr:
-    ML(a3, 0) = 0xffffffff;
-
-    /* fill with the blitter */
-    d0 = MOVEMW(xyx, 0); d1 = MOVEMW(xyx, 2); d2 = MOVEMW(xyx, 4);
-    d1 = MULU(d1, MW(a6, 0));
-    bmoff = d1;
-    SETW(bmwid, MW(a6, 0));
-    SETW(d1, MW(a6, 56));
-    SETW(d1, d1 - 1);
-    SETW(d1, d1 + d1);
-    rtclip = d1;
-    d1 = d2;
-    SETW(d0, d0 + d0);
-    SETW(d1, d1 + d1);
-    d0 ^= 0x80000000;
-    d1 ^= 0x80000000;
-    a0 = (UBYTE *)l0;
-    SETW(d2, MW(a0, 0));
-    a0 += 2;
-    if (SW(d2) < 0)
-        return;
-    d4 = ML(a0, 0);
-    a0 += 4;
-    a1 = (UBYTE *)l1;
-    SETW(d3, MW(a1, 0));
-    a1 += 2;
-    if (SW(d3) < 0)
-        return;
-    d5 = ML(a1, 0);
-    a1 += 4;
-    a4 = (UBYTE *)0xdff000;
-    BLITWAIT(a4);                               /* bltsetup */
-    CW(a4, 0x74) = 0xffff;
-    CW(a4, 0x42) = 0;
+    end = (UBYTE *)outline(n, bm->width, bm->height);
+    if (!end)
+        return a3;
+    a3 = end;
+    rowoff = bl_mulu_w(pv.top.y, bm->bpr);
+    rtclip = (bm->width - 1) * 2;
+    left = edge_start(pv.top.left);
+    right = edge_start(pv.top.right);
+    if (!next_edge(&le, &llines, &lstep) || !next_edge(&re, &rlines, &rstep))
+        return a3;
+    BLITWAIT(chip);                             /* bltsetup */
+    CW(chip, BLTADAT) = 0xffff;
+    CW(chip, BLTCON1) = 0;
     for (;;) {                                  /* ploop */
-        ULONG before;                           /* for the carry of ADD.l */
-
-        before = d0;
-        d0 += d4;
-        if (d0 < before)
-            SETW(d0, d0 + 2);
-        before = d1;
-        d1 += d5;
-        if (d1 < before)
-            SETW(d1, d1 + 2);
-        SETW(d6, d0);
-        if (SW(d6) > SW(rtclip))
-            return;
-        d6 = SWAP(d6);
-        SETW(d6, d0);
-        if (SW(d6) < 0)
-            d6 = 0;
-        if (SW(d1) < 0)
-            return;
-        SETW(d7, rtclip);
-        if (!(SW(d7 - d1) < 0))
-            SETW(d7, d1);
-        BLITWAIT(a4);
-        SETW(d6, d6 & 30);
-        CW(a4, 0x44) = lup1[W(d6) >> 1];
-        SETW(d6, d7);
-        SETW(d6, d6 & 30);
-        CW(a4, 0x46) = lup2[W(d6) >> 1];
-        d6 = SWAP(d6);
-        SETW(d6, W(d6) >> 5);
-        SETW(d7, W(d7) >> 5);
-        SETW(d7, d7 - d6);
-        if (SW(d7) < 0)
-            return;
-        SETW(d7, d7 + 65);
-        SETW(d6, d6 + d6);
-        a2 = (UBYTE *)bmoff + SW(d6);
-        d6 = 0;
-        a5 = a6 + 8;
+        left = edge_step(left, lstep);
+        right = edge_step(right, rstep);
+        if ((WORD)left > (WORD)rtclip)
+            return a3;
+        xs = (WORD)left < 0 ? 0 : (UWORD)left;
+        if ((WORD)right < 0)
+            return a3;
+        xe = rtclip;
+        if (!BMI_W(xe, right))
+            xe = right;
+        BLITWAIT(chip);
+        CW(chip, BLTAFWM) = lup1[(xs & 30) >> 1];
+        CW(chip, BLTALWM) = lup2[(xe & 30) >> 1];
+        xs >>= 5;
+        words = (xe >> 5) - xs;
+        if ((WORD)words < 0)
+            return a3;
+        plane = 0;
         do {                                    /* nxpolyplane */
-            BLITWAIT(a4);
-            CW(a4, 0x40) = 0x3fa;
-            if (!((UBYTE)(pcolor >> 16) & (1 << (d6 & 7))))     /* BTST d6,pcolor+1 */
-                CW(a4, 0x40) = 0x30a;
-            a3 = MP(a5, 0) + (ULONG)a2;
-            a5 += 4;
-            CL(a4, 0x48) = (ULONG)a3;
-            CL(a4, 0x54) = (ULONG)a3;
-            CW(a4, 0x58) = d7;
-            SETW(d6, d6 + 1);
-        } while (W(d6) != MW(a6, 4));
-        d7 = bmwid;
-        bmoff += d7;
-        before = d0;
-        d0 += d4;
-        if (d0 < before)
-            SETW(d0, d0 + 2);
-        before = d1;
-        d1 += d5;
-        if (d1 < before)
-            SETW(d1, d1 + 2);
-        SETW(d2, d2 - 1);
-        if (W(d2) == 0xffff) {
-            SETW(d2, MW(a0, 0));
-            a0 += 2;
-            if (SW(d2) < 0)
-                return;
-            d4 = ML(a0, 0);
-            a0 += 4;
-        }
-        SETW(d3, d3 - 1);
-        if (W(d3) == 0xffff) {
-            SETW(d3, MW(a1, 0));
-            a1 += 2;
-            if (SW(d3) < 0)
-                return;
-            d5 = ML(a1, 0);
-            a1 += 4;
-        }
+            BLITWAIT(chip);
+            CW(chip, BLTCON0) = 0x3fa;
+            if (!((UBYTE)colour & (1 << (plane & 7))))
+                CW(chip, BLTCON0) = 0x30a;
+            a3 = bm->planes[plane] + rowoff + (WORD)(xs + xs);
+            CL(chip, BLTCPT) = (ULONG)a3;
+            CL(chip, BLTDPT) = (ULONG)a3;
+            CW(chip, BLTSIZE) = words + 65;
+        } while (++plane != bm->depth);         /* depth 0: 65536 (#393) */
+        rowoff += bm->bpr;
+        left = edge_step(left, lstep);
+        right = edge_step(right, rstep);
+        if (llines-- == 0 && !next_edge(&le, &llines, &lstep))
+            return a3;
+        if (rlines-- == 0 && !next_edge(&re, &rlines, &rstep))
+            return a3;
     }
 }
 
-static void polyfill(UWORD n, ULONG pts)
+/* Polyf: the points twice into polypts - backwards if they run anti-
+   clockwise (by the first three points), then with colour2 (#395: more
+   than 16 points overflow it) */
+static UBYTE *polyf(struct bitmap *bm, UWORD n, const struct point *pts, UWORD colour,
+                    UWORD colour2)
 {
-    UBYTE *sa4 = a4, *sa5 = a5, *sa6 = a6;
-    UWORD k;
-    int clockwise;
+    LONG a = bl_muls_w(pts[1].x - pts[0].x, pts[2].y - pts[1].y);
+    LONG b = bl_muls_w(pts[2].x - pts[1].x, pts[1].y - pts[0].y);
+    struct point *p, *q;
+    UWORD k = n - 1;
 
-    a2 = (UBYTE *)pts;
-    SETW(d7, n);
-    a6 = a3;
-    d0 = MOVEMW(a2, 0); d1 = MOVEMW(a2, 2); d2 = MOVEMW(a2, 4);
-    d3 = MOVEMW(a2, 6); d4 = MOVEMW(a2, 8); d5 = MOVEMW(a2, 10);
-    SETW(d4, d4 - d2);
-    SETW(d5, d5 - d3);
-    SETW(d2, d2 - d0);
-    SETW(d3, d3 - d1);
-    d5 = MULS(d2, d5);
-    d3 = MULS(d4, d3);
-    clockwise = !((LONG)d5 <= (LONG)d3);         /* SUB.l d3,d5:BLE anti */
-    d5 -= d3;
-    if (clockwise) {                            /* clck */
-        SETW(d6, d7);
-        SETW(d6, d6 << 2);
-        a1 = (UBYTE *)polypts;
-        a3 = a1 + SW(d6);
-        k = W(d7) - 1;
+    if (a > b) {                                /* clck */
+        p = polypts;
+        q = polypts + n;
         do {
-            d0 = ML(a2, 0);
-            a2 += 4;
-            ML(a1, 0) = d0;
-            a1 += 4;
-            ML(a3, 0) = d0;
-            a3 += 4;
+            *p++ = *pts;
+            *q++ = *pts++;
         } while (k-- != 0);
     } else {                                    /* anti */
-        SETW(d6, d7);
-        SETW(d6, d6 << 2);
-        a1 = (UBYTE *)polypts + SW(d6);
-        a3 = a1 + SW(d6);
-        k = W(d7) - 1;
+        p = polypts + n;
+        q = p + n;
         do {
-            d0 = ML(a2, 0);
-            a2 += 4;
-            a1 -= 4;
-            ML(a1, 0) = d0;
-            a3 -= 4;
-            ML(a3, 0) = d0;
+            *--p = *pts;
+            *--q = *pts++;
         } while (k-- != 0);
-        pcolor = (pcolor & 0xffff) | (pcolor << 16);    /* MOVE pcolor+2,pcolor */
+        colour = colour2;
     }
-    a0 = (UBYTE *)polypts;                      /* dunc */
-    drawpoly();
-    a4 = sa4;
-    a5 = sa5;
-    a6 = sa6;
-    a2 = (UBYTE *)0xdff000;
+    return drawpoly(bm, n, colour, (UBYTE *)q);
 }
 
 /* ------------------------------------------------------------- ClipBlit */
@@ -2285,78 +1746,57 @@ static void docblitx(UBYTE *chip, struct shape *sh, struct bitmap *bm, WORD x, W
 
 /* -------------------------------------------- entries (Blitz / Amiga) */
 
-/* load the routine's registers: d0-d7 from the caller, a1/a2/a3 */
-#define REGS ULONG r0 BL_REG(d0), ULONG r1 BL_REG(d1), ULONG r2 BL_REG(d2), \
-             ULONG r3 BL_REG(d3), ULONG r4 BL_REG(d4), ULONG r5 BL_REG(d5)
-#define LOAD() (d0 = r0, d1 = r1, d2 = r2, d3 = r3, d4 = r4, d5 = r5)
-
-/* Blitz version (b_) and Amiga version (a_) of a blitter routine:
-   the Amiga version owns the blitter (graphics base in a6) */
-#define BLITPAIR(name, body)                                                \
-    static void BLITZ_ROUTINE b_##name##_c(REGS, UBYTE *cb BL_REG(a2))      \
+/* Blitz version (b_) and Amiga version (a_, owns the blitter, graphics
+   base in a6) of a blitter routine: a3 = the bitmap, a2 = the chip base;
+   `call` gives the a3 the routine leaves */
+#define BLITPAIR(name, call, ...)                                           \
+    static void BLITZ_ROUTINE b_##name##_c(__VA_ARGS__, UBYTE *chip BL_REG(a2)) \
     {                                                                       \
-        LOAD();                                                             \
-        a2 = cb;                                                            \
-        a3 = blitz_string;                                                  \
-        body;                                                               \
-        blitz_string = a3;                                                  \
+        struct bitmap *bm = (struct bitmap *)blitz_string;                  \
+                                                                            \
+        blitz_string = call;                                                \
     }                                                                       \
-    static void BLITZ_ROUTINE a_##name##_c(REGS, UBYTE *cb BL_REG(a2),      \
+    static void BLITZ_ROUTINE a_##name##_c(__VA_ARGS__, UBYTE *chip BL_REG(a2), \
                                            struct GfxBase *gfx BL_REG(a6))  \
     {                                                                       \
+        struct bitmap *bm = (struct bitmap *)blitz_string;                  \
+        UBYTE *a3;                                                          \
+                                                                            \
         OwnBlitter();                                                       \
-        LOAD();                                                             \
-        a2 = cb;                                                            \
-        a3 = blitz_string;                                                  \
-        body;                                                               \
-        BLITWAIT(a2);                                                       \
+        a3 = call;                                                          \
+        BLITWAIT(chip);                                                     \
         DisownBlitter();                                                    \
         blitz_string = a3;                                                  \
     }
 
-BLITPAIR(line, bline())
-BLITPAIR(lineto, blineto())
-BLITPAIR(linew, blinew())
-BLITPAIR(box, boxo())
-BLITPAIR(boxf, boxfo())
-BLITPAIR(circlef, (SETW(d4, d3), SETW(d3, d2), ellipsefo()))
-BLITPAIR(ellipsef, ellipsefo())
-BLITPAIR(floodfill, floodfill())
-BLITPAIR(floodfill2, floodfill2())
-BLITPAIR(remap, (monofetch(), monowrite()))
-BLITPAIR(poly, polyo())
-BLITPAIR(polyf, (pcolor = (ULONG)(UWORD)d2 << 16 | (UWORD)d2, polyfill(d0, d1)))
-BLITPAIR(polyf2, (pcolor = (ULONG)(UWORD)d2 << 16 | (UWORD)d3, polyfill(d0, d1)))
+#define XY1 WORD x1 BL_REG(d0), WORD y1 BL_REG(d1)
+#define XY2 WORD x2 BL_REG(d2), WORD y2 BL_REG(d3)
 
-/* ReMap 2: destination bitmap in a0 */
-static void remap2(UBYTE *dst)
-{
-    monofetch();
-    a3 = dst;
-    monowrite();
-}
-
-static void BLITZ_ROUTINE b_remap2_c(REGS, UBYTE *dst BL_REG(a0), UBYTE *cb BL_REG(a2))
-{
-    LOAD();
-    a2 = cb;
-    a3 = blitz_string;
-    remap2(dst);
-    blitz_string = a3;
-}
-
-static void BLITZ_ROUTINE a_remap2_c(REGS, UBYTE *dst BL_REG(a0), UBYTE *cb BL_REG(a2),
-                                     struct GfxBase *gfx BL_REG(a6))
-{
-    OwnBlitter();
-    LOAD();
-    a2 = cb;
-    a3 = blitz_string;
-    remap2(dst);
-    BLITWAIT(a2);
-    DisownBlitter();
-    blitz_string = a3;
-}
+BLITPAIR(line, line(bm, chip, x1, y1, x2, y2, c), XY1, XY2, UWORD c BL_REG(d4))
+BLITPAIR(lineto, lineto(bm, chip, x, y, c),
+         WORD x BL_REG(d0), WORD y BL_REG(d1), UWORD c BL_REG(d2))
+BLITPAIR(linew, linew(bm, chip, x1, y1, x2, y2, c, w), XY1, XY2, UWORD c BL_REG(d4),
+         UWORD w BL_REG(d5))
+BLITPAIR(box, box(bm, chip, x1, y1, x2, y2, c), XY1, XY2, UWORD c BL_REG(d4))
+BLITPAIR(boxf, boxf(bm, chip, x1, y1, x2, y2, c), XY1, XY2, ULONG c BL_REG(d4))
+BLITPAIR(circlef, ellipsef(bm, chip, x, y, r, r, c),
+         WORD x BL_REG(d0), WORD y BL_REG(d1), UWORD r BL_REG(d2), UWORD c BL_REG(d3))
+BLITPAIR(ellipsef, ellipsef(bm, chip, x, y, rx, ry, c),
+         WORD x BL_REG(d0), WORD y BL_REG(d1), UWORD rx BL_REG(d2), UWORD ry BL_REG(d3),
+         UWORD c BL_REG(d4))
+BLITPAIR(floodfill, floodfill(bm, chip, x, y, c),
+         WORD x BL_REG(d0), WORD y BL_REG(d1), UWORD c BL_REG(d2))
+BLITPAIR(floodfill2, floodfill2(bm, chip, x, y, c, border),
+         ULONG x BL_REG(d0), WORD y BL_REG(d1), UWORD c BL_REG(d2), UWORD border BL_REG(d3))
+BLITPAIR(remap, remap(bm, chip, from, to, bm), ULONG from BL_REG(d0), ULONG to BL_REG(d1))
+BLITPAIR(remap2, remap(bm, chip, from, to, dst), ULONG from BL_REG(d0), ULONG to BL_REG(d1),
+         struct bitmap *dst BL_REG(a0))
+BLITPAIR(poly, poly(bm, chip, n, (const struct point *)pts, c),
+         UWORD n BL_REG(d0), ULONG pts BL_REG(d1), UWORD c BL_REG(d2))
+BLITPAIR(polyf, ((void)chip, polyf(bm, n, (const struct point *)pts, c, c)),
+         UWORD n BL_REG(d0), ULONG pts BL_REG(d1), UWORD c BL_REG(d2))
+BLITPAIR(polyf2, ((void)chip, polyf(bm, n, (const struct point *)pts, c, c2)),
+         UWORD n BL_REG(d0), ULONG pts BL_REG(d1), UWORD c BL_REG(d2), UWORD c2 BL_REG(d3))
 
 #define ABENTRY(e, n) \
     void b_##n(void); \

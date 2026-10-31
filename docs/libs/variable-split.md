@@ -53,9 +53,9 @@ asmderez's value after yloop (BUG(orig) #672), riwbspritelib's
   are the emulated 68000 registers, and each holds hundreds of values.
   These need a rewrite, not a split, so they are their own item:
   2dlib.c:195-196 (with the saved copies `sa3`, `sa4`, `s0`, ...),
-  medlib.c and polylib.c. polylib.c is rewritten (2026-10-31: plain C,
-  its edge lists `l0`/`l1` of the BUG(orig) #395 text are `ledges`/
-  `redges`).
+  medlib.c and polylib.c. polylib.c and 2dlib.c are rewritten
+  (2026-10-31: plain C, their edge lists `l0`/`l1` of the BUG(orig) #395
+  text are `ledges`/`redges`).
 - **Register-pinned bindings** (`register T d0 __asm("d0")`), which are
   the register itself: these stay.
   - debuglib callhandler `ra0`, `ra1`, `rd0`
