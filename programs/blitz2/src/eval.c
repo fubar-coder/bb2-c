@@ -1887,8 +1887,8 @@ static UWORD tstbras(UWORD first, UWORD c, UWORD n)
 }
 
 /* blitz2.s:10183 amigalib - Amiga OS library function call.
-   BUG(orig) (#958): a4/a5 parameters clobber the variable bases, as in
-   stamigalib */
+   Fixed (intended deviation, #958): parameters in a4/a5 no longer
+   clobber the variable bases, as in stamigalib (see amigaa4a5) */
 static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
 {
     struct blitzlib *ol;
@@ -1896,6 +1896,7 @@ static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
     UWORD base, lvo, first, c, n;
     UBYTE *p, *regs;
     WORD i;
+    BOOL a45;
 
     ol = uselib(W_(sub + 6));       /* get lib for base address */
     savereg(&push, &pull);
@@ -1906,6 +1907,7 @@ static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
     lvo = W_(p);                    /* get offset for lib */
     p += 2;
     regs = p;
+    a45 = amigaa4a5(regs);          /* fixed (#958): movem.l a4/a5,-(a7) */
     c = first = getchar3();         /* remember first bracket.... */
     /* collect longs for lib */
     n = 0;
@@ -1924,6 +1926,10 @@ static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
         break;
     }
     c = tstbras(first, c, n);       /* .done */
+    libjsr[1] = lvo;
+    libbase[1] = base;
+    if (a45)
+        pokel(L_(libbase));         /* fixed (#958): a6 before a5 is popped */
     p = regs;
     i = (WORD)n - 1;
     if (i >= 0) {
@@ -1946,10 +1952,11 @@ static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
             pokewd(opcode);                         /* .gotit */
         } while (--i >= 0);
     }
-    libjsr[1] = lvo;                /* .nopars */
-    libbase[1] = base;
-    pokel(L_(libbase));
+    if (!a45)                       /* .nopars */
+        pokel(L_(libbase));
     pokel(L_(libjsr));
+    if (a45)
+        pokel(0x4cdf3000UL);        /* fixed (#958): movem.l (a7)+,a4/a5 */
     if (regat)
         pokewd((regat << 9) | 0x2000);
     pokemovem(savedpull);           /* .nofin */

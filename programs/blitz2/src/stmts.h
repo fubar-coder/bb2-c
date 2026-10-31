@@ -110,6 +110,10 @@ UWORD gettokeps(UWORD c, UWORD *toke, UWORD *form);
    sub = token sub record (asm a3: +6.w lib#, +8.w LVO, +10 reg bytes, <0 end) */
 void stamigalib(UWORD c, UBYTE *sub);
 
+/* Fixed (#958): TRUE if an amigalib's register list (reg bytes, <0 end)
+   has a4 or a5; then it has poked movem.l a4/a5,-(a7). */
+BOOL amigaa4a5(const UBYTE *regs);
+
 /* decimal ULONG -> buf (no leading zeros, NUL terminated).
    asm: d2 value, a0 buf; returns a0 = address of the NUL. */
 char *makelong(char *buf, ULONG v);

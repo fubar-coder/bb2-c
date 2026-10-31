@@ -142,7 +142,8 @@ intended deviations (kind **F**), each with its issue.
 ## 5. Compiler blitz2-c (`programs/blitz2`)
 
 Produces byte-identical programs (test corpus and CD reference run), hence only
-internal deviations. Conventions: `-fbaserel` (globals a4-relative,
+internal deviations; except the fixed original bugs (kind **F**), which
+change the generated code of the programs they concern. Conventions: `-fbaserel` (globals a4-relative,
 `GLUE_LOAD_A4` in all entry points from outside, [README](../blitz2/bb2-readme.md)), assembler only in
 `programs/blitz2/src/glue*.c`, registers with persistent state as globals
 (`srcptr`; `numval`/`numfloat` local to libcall.c).
@@ -163,6 +164,7 @@ internal deviations. Conventions: `-fbaserel` (globals a4-relative,
 | stmts.c:1664 | flushc after the register restore | before it | **T** | no |
 | Start (main.c:31, :1072, :1096, :1134, :1141) | own Workbench/CLI start, opens/closes dos.library | libnix start (DOSBase, WBStartup, argv) | **T** | command line is split by libnix (quotes) |
 | main.c:1529 | SuperState/movec/UserState | `Supervisor()` | **T** | no |
+| stamigalib, amigalib (stmts.c:612, eval.c:1892) | Amiga library call with a parameter in a4 or a5 (graphics LockLayerRom_, UnlockLayerRom_, AttemptLockLayerRom_, workbench AddAppIconA_; exec Supervisor_ cannot be compiled at all, its token is doslib's finit): the parameters are popped into their registers before `move.l off(a5),a6`, a4/a5 not saved - with a5 a6 is garbage (crash at the jsr), after the call a4/a5 hold the parameters instead of the variable bases | `movem.l a4/a5,-(a7)` before the parameters, the library base before the pops, `movem.l (a7)+,a4/a5` after the jsr | **F** | #958: only calls with an a4/a5 parameter get other code (8 bytes more); test `compiler-amigalib-a4a5` |
 | doincbin (tokens1.c:741) | IncBin of a directory: "Can't open Include" with the lock left behind; a read error: "Error Reading File" with the file left open; Examine unchecked (an old content of macrobuff counts as the FileInfoBlock) | the lock is released and the file closed before the error; a failed Examine is "Can't open Include" | **F** | #38: the same errors, nothing left in use (tests `compiler-incbin-leaks`, `compiler-incbin-leaks-readerr`) |
 
 The individual reasons are each given at the comment `DIFF:` in

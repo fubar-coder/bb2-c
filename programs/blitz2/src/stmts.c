@@ -597,10 +597,30 @@ void dosetint(UWORD c)
     setint2(-1);        /* type - need new string space */
 }
 
+/* Fixed (intended deviation, #958): an amigalib with a parameter in a4 or
+   a5 (exec Supervisor_, graphics LockLayerRom_ ..., workbench
+   AddAppIconA_).  The original pops the parameters into their registers
+   before libbase (move.l off(a5),a6) and does not save a4/a5: with a5 the
+   library base is read relative to the parameter (a6 garbage), and after
+   the call a4/a5 hold the parameters instead of the bases of the local /
+   global variables.  For such a call: movem.l a4/a5,-(a7) before the
+   parameters, libbase before the pops (a5 is still the base) and
+   movem.l (a7)+,a4/a5 after the jsr.  Every other call is compiled as
+   before.
+   amigaa4a5 - TRUE if the register list (asm a3: reg bytes, <0 end) has
+   a4 or a5; it pokes the movem.l a4/a5,-(a7) then. */
+BOOL amigaa4a5(const UBYTE *regs)
+{
+    for (; (BYTE)*regs >= 0; regs++)
+        if (*regs == 0x14 || *regs == 0x15) {   /* a4, a5 */
+            pokel(0x48e7000cUL);                /* movem.l a4/a5,-(a7) */
+            return TRUE;
+        }
+    return FALSE;
+}
+
 /* blitz2.s:3879 stamigalib - an amigalib called through a statement!
-   BUG(orig) (#958): a parameter in a5 or a4 is popped into the register
-   before libbase (move.l off(a5),a6) and stays there after the call - the
-   bases of the global/local variables are lost. */
+   Fixed (#958): parameters in a4/a5, see amigaa4a5. */
 void stamigalib(UWORD c, UBYTE *sub)
 {
     struct blitzlib *lib;
@@ -608,12 +628,14 @@ void stamigalib(UWORD c, UBYTE *sub)
     UWORD lvo, type, w;
     UBYTE *regs, *p, reg;
     WORD npars;
+    BOOL a45;
 
     (void)c;
     lib = uselib(W_(sub + 6));          /* get lib for base address */
     libvar = lib->varoff;               /* libbase reg */
     lvo = W_(sub + 8);                  /* get offset for lib */
     regs = sub + 10;
+    a45 = amigaa4a5(regs);
     p = regs;
     /* collect longs for lib */
     npars = 0;
@@ -629,6 +651,10 @@ void stamigalib(UWORD c, UBYTE *sub)
             syntaxerr();
         break;
     }
+    libjsr[1] = lvo;            /* patched in place, as the asm */
+    libbase[1] = libvar;
+    if (a45)
+        pokel(L_(libbase));     /* fixed (#958): a6 before a5 is popped */
     p = regs;
     if (--npars < 0)
         getchar3();     /* no pars - get : */
@@ -645,10 +671,11 @@ void stamigalib(UWORD c, UBYTE *sub)
             pokewd(w);
         } while (--npars >= 0);
     }
-    libjsr[1] = lvo;            /* patched in place, as the asm */
-    libbase[1] = libvar;
-    pokel(L_(libbase));
+    if (!a45)
+        pokel(L_(libbase));
     pokel(L_(libjsr));
+    if (a45)
+        pokel(0x4cdf3000UL);    /* fixed (#958): movem.l (a7)+,a4/a5 */
 }
 
 /* ================================================================ allox */
