@@ -25,7 +25,16 @@ BLITZ_NULLSUB(0, 0, 0, LIB_strings1lib, BL_LA(3));      /* $C601 workstart */
 BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
 BLITZ_LIBFIN();
 
-/* codeinit - d0 = size; MOVEQ #1,d1 (MEMF_PUBLIC): ALibJsr $c002 */
+/**
+ * @brief init - allocate the string work buffer.
+ *
+ * MOVEQ #1,d1 (MEMF_PUBLIC): ALibJsr $c002 (memlib globalloc).  The
+ * result is the library's init value, which $C601 (workstart) loads into
+ * a3.
+ *
+ * @param size d0: the buffer size from the compiler options
+ * @return d0: the buffer
+ */
 static ULONG BLITZ_ROUTINE codeinit_c(ULONG size BL_REG(d0))
 {
     struct bl_regs r = { .d0 = size, .d1 = MEMF_PUBLIC };
@@ -33,11 +42,18 @@ static ULONG BLITZ_ROUTINE codeinit_c(ULONG size BL_REG(d0))
 }
 BLITZ_THUNK(codeinit, codeinit_c, "a0-a1");
 
-/* stringmode - copy `len` bytes from a0 to a3 and terminate with 0; a3
-   then points to the 0.  The length is the caller's stack argument (the
-   compiler pushes it with move.l (a0)+,-(a7) before the call and removes
-   it later).  The original copies in blocks of 8 bytes plus the rest; the
-   result is the same as this byte loop.  d0/d1 are preserved. */
+/**
+ * @brief $C600 (copstring) - copy a string into the work buffer at a3.
+ *
+ * Copies `len` bytes from a0 to a3 and terminates with 0; a3 then points
+ * to the 0.  The original copies in blocks of 8 bytes plus the rest; the
+ * result is the same as this byte loop.  d0/d1 are preserved.
+ *
+ * @param src a0: the characters
+ * @param len d0: the length - the caller's stack argument (the compiler
+ *            pushes it with move.l (a0)+,-(a7) before the call and removes
+ *            it later), loaded by the thunk
+ */
 static void BLITZ_ROUTINE stringmode_c(const UBYTE *src BL_REG(a0), ULONG len BL_REG(d0))
 {
     while (len--)

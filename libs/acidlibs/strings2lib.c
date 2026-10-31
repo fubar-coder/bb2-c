@@ -73,8 +73,21 @@ copy:
     *s = 0;                                     /* 'endass: CLR.b (a1) */
 }
 
-/* stringass - local string; gstringass: ADDQ #8,a6 first (globalloc/
-   globfree), in the thunk as in the original (a6 stays +8) */
+/**
+ * @brief $C700 (lastring) / $C701 (astring) - assign the string at a3 to
+ * a local / global string variable.
+ *
+ * If the new string fits into the allocated length, the memory is reused;
+ * otherwise it is freed and len+9 bytes are allocated (memlib localloc /
+ * locfree; gstringass: ADDQ #8,a6 first for globalloc/globfree, in the
+ * thunk as in the original: a6 stays +8).  a3 is advanced by len; d1 and
+ * a0 are kept, d0/a1 changed.
+ *
+ * @param len d0: the length - 4(a7), removed by the routine (MOVE.l
+ *            (a7)+,(a7):RTS), loaded by the thunk
+ * @param var a2: the address of the string variable
+ * @param mem a6: memlib's membase table
+ */
 static void BLITZ_ROUTINE stringass_c(ULONG len BL_REG(d0), UBYTE **var BL_REG(a2),
                                       const UBYTE *mem BL_REG(a6))
 {
