@@ -132,7 +132,16 @@ static struct BL_PACKED {
 static struct Library *reqbase;
 static const char reqname[] = "req.library";
 
-/* init: d0 comes back unchanged if the library is already open */
+/**
+ * @brief init: open req.library (any version) and allocate the buffers.
+ *
+ * One block of 940 bytes (MEMF_PUBLIC|MEMF_CLEAR): title (320),
+ * directory (150), file (150) and path (320); their addresses go to
+ * frq_Title ... frq_PathName, never into FrStruct (BUG(orig) #785).  If
+ * the AllocMem fails, the library is closed again (_oops2).
+ * @param incoming  d0: returned unchanged if the library is already open
+ * @return d0: the path buffer; 0 if the library or the memory is missing
+ */
 static ULONG BLITZ_ROUTINE libinit_c(ULONG incoming BL_REG(d0))
 {
     UBYTE *mem;
@@ -156,6 +165,9 @@ static ULONG BLITZ_ROUTINE libinit_c(ULONG incoming BL_REG(d0))
     return (ULONG)frq_PathName;
 }
 
+/**
+ * @brief finit: close req.library and free the buffers (if it was open).
+ */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
     if (!reqbase)
@@ -166,20 +178,41 @@ static void BLITZ_ROUTINE libfinit_c(void)
     frq_Title = NULL;
 }
 
-/* ReqFlags flags (d0) */
+/**
+ * @brief ReqFlags flags: the flags of the file requester (FrStruct's
+ * flags).
+ *
+ * The default is BUG(orig) (#787): bit numbers ORed, 7.
+ * @param flags  d0: the req.library file requester flags
+ * @return nothing
+ */
 static void BLITZ_ROUTINE reqflags_c(ULONG flags BL_REG(d0))
 {
     FrStruct.flags = flags;
 }
 
-/* ReqFileLoc: the path buffer (also in a0) */
+/**
+ * @brief ReqFileLoc: the address of the path buffer.
+ *
+ * The program may write the path there (it is what ReqFileRequest
+ * returns, BUG(orig) #785).  0 without the buffers (#788).
+ * @return d0 (and a0, the thunk): the path buffer
+ */
 static ULONG BLITZ_ROUTINE file_c(void)
 {
     return (ULONG)frq_PathName;
 }
 
-/* ReqFileRequest: FileRequester(FrStruct); the path buffer to a3 (a3
-   behind the 0, BUG(orig) #784), d0 = its length; 0 on cancel */
+/**
+ * @brief ReqFileRequest: the req.library file requester, the path as the
+ * result.
+ *
+ * FileRequester(FrStruct); the path buffer is copied to a3.  BUG(orig):
+ * a3 stays behind the terminating 0 (#784); FrStruct has no buffers, so
+ * the path is what the program wrote with ReqFileLoc (#785); req.library
+ * is not checked (#788).
+ * @return d0: the length of the path; 0 on cancel (a3 unchanged)
+ */
 static ULONG BLITZ_ROUTINE requestfile_c(void)
 {
     struct bl_regs r = { .a0 = (ULONG)&FrStruct };
@@ -195,8 +228,17 @@ static ULONG BLITZ_ROUTINE requestfile_c(void)
     return (ULONG)n - 1;
 }
 
-/* ReqFileRequest(title$) (d0; its length -4(a2)): the title string is
-   given up (a3 back by length + 1), then as above */
+/**
+ * @brief ReqFileRequest(title$): the file requester with a title.
+ *
+ * The title string is given up (a3 back by its length + 1), then as
+ * requestfile_c.  BUG(orig) (#789): the title stays for later calls
+ * without one; on cancel a3 stays at the start of the title string
+ * (#784).
+ * @param title  d0: the title
+ * @param lens   a2: the argument stack, -4(a2) the length of title$
+ * @return d0: the length of the path; 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE requestfiletitle_c(STRPTR title BL_REG(d0),
                                               const ULONG *lens BL_REG(a2))
 {
@@ -205,7 +247,16 @@ static ULONG BLITZ_ROUTINE requestfiletitle_c(STRPTR title BL_REG(d0),
     return requestfile_c();
 }
 
-/* ReqFileRequest(title$,flags) (d0, d1) */
+/**
+ * @brief ReqFileRequest(title$,flags): the file requester with a title
+ * and flags.
+ *
+ * BUG(orig) (#789): the flags are set for good, like ReqFlags.
+ * @param title  d0: the title
+ * @param flags  d1: the requester flags
+ * @param lens   a2: the argument stack, -4(a2) the length of title$
+ * @return d0: the length of the path; 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE requestfiletitleflags_c(STRPTR title BL_REG(d0),
                                                    ULONG flags BL_REG(d1),
                                                    const ULONG *lens BL_REG(a2))
@@ -214,7 +265,14 @@ static ULONG BLITZ_ROUTINE requestfiletitleflags_c(STRPTR title BL_REG(d0),
     return requestfiletitle_c(title, lens);
 }
 
-/* ReqColour(colour) (d0, ignored: BUG(orig) #786) */
+/**
+ * @brief ReqColour(colour): the req.library colour requester on the
+ * ReqOutput window.
+ *
+ * BUG(orig): the argument (d0) is ignored, DefColour stays 0 (#786);
+ * req.library is not checked (#788).
+ * @return d0: what ColorRequester returns
+ */
 static ULONG BLITZ_ROUTINE colourreq_c(void)
 {
     struct bl_regs r = { .a0 = (ULONG)&ecr };
@@ -223,7 +281,12 @@ static ULONG BLITZ_ROUTINE colourreq_c(void)
     return BLITZ_BASEJSR(reqbase, LVO_ColorRequester, r);
 }
 
-/* ReqOutput window# - a0 = the window object, its first long the Window */
+/**
+ * @brief ReqOutput window#: the window of both requesters.
+ * @param win  a0: the window object (windowslib, #ia0|#pd0), its first
+ *             long the Window
+ * @return nothing
+ */
 static void BLITZ_ROUTINE reqoutput_c(APTR *win BL_REG(a0))
 {
     APTR w = *win;
