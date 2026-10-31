@@ -598,6 +598,16 @@ static ULONG allocreq(ULONG type)
         var = (void *)r_;                                                   \
     } while (0)
 
+/**
+ * @brief init: opens reqtools.library V38 and allocates the seven
+ * requesters.
+ *
+ * File requesters for load, save, path, RTFileRequest and multi-load, a
+ * font and a screen mode requester; IsReqToolsActive becomes -1 if all
+ * that worked, else 0.  BUG(orig) (#460): on a failure the library and
+ * the requesters allocated so far stay (finit does nothing then).
+ * @return d0: the multi-load requester, 0 on a failure
+ */
 static ULONG BLITZ_ROUTINE initreqlib_c(void)
 {
     struct Library *l = OpenLibrary((CONST_STRPTR)rtName, 38);
@@ -619,6 +629,14 @@ failed:                                 /* BUG(orig): nothing given back (#460) 
     return 0;
 }
 
+/**
+ * @brief finit: frees the seven requesters and the file list of the last
+ * multi-load, closes reqtools.library.
+ *
+ * Only if init succeeded (IsReqToolsActive).  BUG(orig) (#460): nothing
+ * is cleared - a second finit frees again.
+ * @return nothing
+ */
 static void BLITZ_ROUTINE cleanupreqlib_c(void)
 {
     if (!ReqToolsActive)
@@ -634,24 +652,52 @@ static void BLITZ_ROUTINE cleanupreqlib_c(void)
     CloseLibrary(rtbase);
 }
 
-/* IsReqToolsActive, RTReturnValue */
+/**
+ * @brief IsReqToolsActive: whether init opened reqtools.library and
+ * allocated all its requesters.
+ *
+ * The other routines do not check it (#463).
+ * @return d0: -1 if so, 0 if not
+ */
 static BB_BOOL BLITZ_ROUTINE rtactive_c(void)
 {
     return ReqToolsActive;
 }
 
+/**
+ * @brief RTReturnValue: the result of the last reqtools call that stores
+ * it.
+ *
+ * Stored by the EZ, file, path, font, screen mode, number and string
+ * requesters, RTRequest and RTASyncRequest; not by RTEZPaletteRequest and
+ * RTASyncPaletteRequest (BUG(orig), #464), nor by the RTCheck.../RTEnd...
+ * and window routines.
+ * @return d0: the value
+ */
 static ULONG BLITZ_ROUTINE rtreturnvalue_c(void)
 {
     return returnvalue;
 }
 
-/* RTVersion / RTRevision: lib_Version / lib_Revision (d0's high word
-   kept) */
+/**
+ * @brief RTVersion: reqtools.library's lib_Version.
+ *
+ * BUG(orig) (#463): without the library it reads address $14.
+ * @param callerd0  d0: the caller's d0 (its high word stays)
+ * @return d0.w: the version
+ */
 static ULONG BLITZ_ROUTINE rtver_c(ULONG callerd0 BL_REG(d0))
 {
     return (callerd0 & 0xffff0000UL) | rtbase->lib_Version;
 }
 
+/**
+ * @brief RTRevision: reqtools.library's lib_Revision.
+ *
+ * BUG(orig) (#463): without the library it reads address $16.
+ * @param callerd0  d0: the caller's d0 (its high word stays)
+ * @return d0.w: the revision
+ */
 static ULONG BLITZ_ROUTINE rtrev_c(ULONG callerd0 BL_REG(d0))
 {
     return (callerd0 & 0xffff0000UL) | rtbase->lib_Revision;
@@ -659,9 +705,19 @@ static ULONG BLITZ_ROUTINE rtrev_c(ULONG callerd0 BL_REG(d0))
 
 /* --------------------------------------------------------- EZ requests */
 
-/* RTEZRequest(title$,body,gadget$) (d0-d2; the title's length -4(a2)):
-   the title tag only with a title; position, flags, default response
-   and title back to their defaults afterwards */
+/**
+ * @brief RTEZRequest(Title$,BodyText$,GadgetText$): an rtEZRequestA
+ * requester, centred on the screen.
+ *
+ * The title tag only with a non-empty title; afterwards position (centred),
+ * flags (0), default response (1) and title are back at their defaults.
+ * The result is stored for RTReturnValue.
+ * @param title   d0: Title$
+ * @param body    d1: BodyText$ (any type: the address is passed on)
+ * @param gadget  d2: GadgetText$
+ * @param lens    a2: the argument stack, the title's length at -4(a2)
+ * @return d0: rtEZRequestA's result (the gadget number)
+ */
 static ULONG BLITZ_ROUTINE rtrequest_c(STRPTR title BL_REG(d0), APTR body BL_REG(d1),
                                        STRPTR gadget BL_REG(d2),
                                        const ULONG *lens BL_REG(a2))
@@ -682,7 +738,16 @@ static ULONG BLITZ_ROUTINE rtrequest_c(STRPTR title BL_REG(d0), APTR body BL_REG
     return r;
 }
 
-/* RTEZRequest(...,pos) (d3) */
+/**
+ * @brief RTEZRequest(Title$,BodyText$,GadgetText$,ReqPosition): as above
+ * at the given position (for this call).
+ * @param title   d0: Title$
+ * @param body    d1: BodyText$
+ * @param gadget  d2: GadgetText$
+ * @param pos     d3: ReqPosition (RT_ReqPos)
+ * @param lens    a2: the argument stack, the title's length at -4(a2)
+ * @return d0: rtEZRequestA's result
+ */
 static ULONG BLITZ_ROUTINE rtrequestPos_c(STRPTR title BL_REG(d0), APTR body BL_REG(d1),
                                           STRPTR gadget BL_REG(d2), ULONG pos BL_REG(d3),
                                           const ULONG *lens BL_REG(a2))
@@ -691,7 +756,18 @@ static ULONG BLITZ_ROUTINE rtrequestPos_c(STRPTR title BL_REG(d0), APTR body BL_
     return rtrequest_c(title, body, gadget, lens);
 }
 
-/* RTEZRequest(...,pos,default,flags) (d3-d5) */
+/**
+ * @brief RTEZRequest(Title$,BodyText$,GadgetText$,ReqPosition,DefaultResponse,Flags):
+ * as above with default response and EZ flags (for this call).
+ * @param title   d0: Title$
+ * @param body    d1: BodyText$
+ * @param gadget  d2: GadgetText$
+ * @param pos     d3: ReqPosition (RT_ReqPos)
+ * @param def     d4: DefaultResponse (RTEZ_DefaultResponse)
+ * @param flags   d5: Flags (RTEZ_Flags)
+ * @param lens    a2: the argument stack, the title's length at -4(a2)
+ * @return d0: rtEZRequestA's result
+ */
 static ULONG BLITZ_ROUTINE rtrequestXtra_c(STRPTR title BL_REG(d0), APTR body BL_REG(d1),
                                            STRPTR gadget BL_REG(d2), ULONG pos BL_REG(d3),
                                            ULONG def BL_REG(d4), ULONG flags BL_REG(d5),
@@ -702,7 +778,16 @@ static ULONG BLITZ_ROUTINE rtrequestXtra_c(STRPTR title BL_REG(d0), APTR body BL
     return rtrequestPos_c(title, body, gadget, pos, lens);
 }
 
-/* RTRequest(body$,gadget$,taglist) (d0-d2) */
+/**
+ * @brief RTRequest(BodyText$,GadgetText$,TagList): rtEZRequestA with the
+ * caller's tag list.
+ *
+ * The result is stored for RTReturnValue.
+ * @param body    d0: BodyText$
+ * @param gadget  d1: GadgetText$
+ * @param tags    d2: the tag list
+ * @return d0: rtEZRequestA's result
+ */
 static ULONG BLITZ_ROUTINE rtTagrequest_c(STRPTR body BL_REG(d0), STRPTR gadget BL_REG(d1),
                                           APTR tags BL_REG(d2))
 {
@@ -712,9 +797,20 @@ static ULONG BLITZ_ROUTINE rtTagrequest_c(STRPTR body BL_REG(d0), STRPTR gadget 
     return r;
 }
 
-/* RTEZFlagsRequest(title$,body$,gadget$,idcmp) (d0-d3; the gadget's
-   length -12(a2): none = no gadgets); BUG(orig) (#455): the title goes to
-   RTEZRequest's list */
+/**
+ * @brief RTEZFlagsRequest(Title$,BodyText$,GadgetText$,IDCMPFlags): an EZ
+ * requester that also ends on the given IDCMP events.
+ *
+ * An empty GadgetText$ means no gadgets.  Afterwards the position is
+ * centred again.  BUG(orig) (#455): the title goes to RTEZRequest's tag
+ * list, so this requester has reqtools' default title.
+ * @param title   d0: Title$
+ * @param body    d1: BodyText$
+ * @param gadget  d2: GadgetText$
+ * @param idcmp   d3: IDCMPFlags (RT_IDCMPFlags)
+ * @param lens    a2: the argument stack, the gadget text's length at -12(a2)
+ * @return d0: rtEZRequestA's result (also for RTReturnValue)
+ */
 static ULONG BLITZ_ROUTINE rtflagsrequest_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                             STRPTR gadget BL_REG(d2), ULONG idcmp BL_REG(d3),
                                             const ULONG *lens BL_REG(a2))
@@ -732,7 +828,17 @@ static ULONG BLITZ_ROUTINE rtflagsrequest_c(STRPTR title BL_REG(d0), STRPTR body
     return r;
 }
 
-/* RTEZFlagsRequest(...,pos) (d4) */
+/**
+ * @brief RTEZFlagsRequest(Title$,BodyText$,GadgetText$,IDCMPFlags,ReqPosition):
+ * as above at the given position (for this call).
+ * @param title   d0: Title$
+ * @param body    d1: BodyText$
+ * @param gadget  d2: GadgetText$
+ * @param idcmp   d3: IDCMPFlags
+ * @param pos     d4: ReqPosition
+ * @param lens    a2: the argument stack
+ * @return d0: rtEZRequestA's result
+ */
 static ULONG BLITZ_ROUTINE rtflagsrequestPos_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                                STRPTR gadget BL_REG(d2), ULONG idcmp BL_REG(d3),
                                                ULONG pos BL_REG(d4),
@@ -760,7 +866,19 @@ static ULONG filerequest(struct rtFileRequester *req, STRPTR title, UBYTE *name,
     return r;
 }
 
-/* RTEZLoadFile(title$,file$) (d0, d1) */
+/**
+ * @brief RTEZLoadFile(Title$,Filename$): the load file requester; the
+ * chosen path.
+ *
+ * The file name buffer is a 108-byte copy of Filename$ (maxslib); the
+ * result, directory + "/" (unless it ends in ":") + file, is built from
+ * the start of the title string on.  BUG(orig) (#461): a3 stays behind
+ * the result's 0; on cancel a3 = the title.
+ * @param title  d0: Title$
+ * @param file   d1: Filename$
+ * @return d0: the length of the path, 0 on cancel (also for RTReturnValue:
+ *         rtFileRequestA's result)
+ */
 static ULONG BLITZ_ROUTINE rtfreq_c(STRPTR title BL_REG(d0), const UBYTE *file BL_REG(d1))
 {
     ULONG r;
@@ -772,7 +890,16 @@ static ULONG BLITZ_ROUTINE rtfreq_c(STRPTR title BL_REG(d0), const UBYTE *file B
     return r;
 }
 
-/* RTFileRequest(title$,file$,taglist) (d0-d2) */
+/**
+ * @brief RTFileRequest(Title$,FileName$,TagList): a file requester of its
+ * own with the caller's tag list; the chosen path.
+ *
+ * As RTEZLoadFile, BUG(orig) (#461) included.
+ * @param title  d0: Title$
+ * @param file   d1: FileName$
+ * @param tags   d2: the tag list
+ * @return d0: the length of the path, 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE rtTagsfreq_c(STRPTR title BL_REG(d0), const UBYTE *file BL_REG(d1),
                                         APTR tags BL_REG(d2))
 {
@@ -785,8 +912,17 @@ static ULONG BLITZ_ROUTINE rtTagsfreq_c(STRPTR title BL_REG(d0), const UBYTE *fi
     return r;
 }
 
-/* RTEZSaveFile(title$,file$) (d0, d1): like RTEZLoadFile, but a3 comes
-   back unchanged (MOVEM a3-a6) */
+/**
+ * @brief RTEZSaveFile(Title$,Filename$): the save file requester ("Save"
+ * button); the chosen path.
+ *
+ * Like RTEZLoadFile, but a3 comes back unchanged (MOVEM a3-a6):
+ * BUG(orig) (#465), the result is built at the title but a3 does not
+ * point behind it.
+ * @param title  d0: Title$
+ * @param file   d1: Filename$
+ * @return d0: the length of the path, 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE rtsfreq_c(STRPTR title BL_REG(d0), const UBYTE *file BL_REG(d1))
 {
     UBYTE *savedstr = blitz_string;
@@ -800,8 +936,16 @@ static ULONG BLITZ_ROUTINE rtsfreq_c(STRPTR title BL_REG(d0), const UBYTE *file 
     return r;
 }
 
-/* RTEZPathRequest(title$) (d0): the directory from the title on, with
-   "/" but no 0 */
+/**
+ * @brief RTEZPathRequest(Title$): a directory requester (no files); the
+ * chosen directory.
+ *
+ * The directory from the title on, with "/" (unless it ends in ":") but
+ * no 0; a3 behind it, on cancel a3 = the title.
+ * @param title  d0: Title$
+ * @return d0: the length of the directory, 0 on cancel (also for
+ *         RTReturnValue: rtFileRequestA's result)
+ */
 static ULONG BLITZ_ROUTINE rtpreq_c(STRPTR title BL_REG(d0))
 {
     ULONG r;
@@ -815,8 +959,14 @@ static ULONG BLITZ_ROUTINE rtpreq_c(STRPTR title BL_REG(d0))
     return r;
 }
 
-/* RTEZSetDefaultDirectory n,dir$ (d0, d1): 0 load, 1 save, 2 path,
-   3 multi-load */
+/**
+ * @brief RTEZSetDefaultDirectory Requester#,Directory$: sets the
+ * directory of a file requester (rtChangeReqAttrA RTFI_Dir).
+ * @param n    d0: Requester#: 0 load, 1 save, 2 path, 3 multi-load (others:
+ *             nothing)
+ * @param dir  d1: Directory$
+ * @return d0: 0
+ */
 static ULONG BLITZ_ROUTINE rtsetdefdir_c(ULONG n BL_REG(d0), STRPTR dir BL_REG(d1))
 {
     struct rtFileRequester *req;
@@ -836,8 +986,14 @@ static ULONG BLITZ_ROUTINE rtsetdefdir_c(ULONG n BL_REG(d0), STRPTR dir BL_REG(d
     return 0;
 }
 
-/* RTEZSetPattern n,pat$ (d0, d1): 0 load, 1 save, 3 multi-load - with
-   the pattern gadget */
+/**
+ * @brief RTEZSetPattern Requester#,Pattern$: sets the match pattern of a
+ * file requester and switches its pattern gadget on.
+ * @param n    d0: Requester#: 0 load, 1 save, 3 multi-load (others:
+ *             nothing)
+ * @param pat  d1: Pattern$ (RTFI_MatchPat)
+ * @return d0: 0
+ */
 static ULONG BLITZ_ROUTINE rtsetpat_c(ULONG n BL_REG(d0), STRPTR pat BL_REG(d1))
 {
     struct rtFileRequester *req;
@@ -858,7 +1014,15 @@ static ULONG BLITZ_ROUTINE rtsetpat_c(ULONG n BL_REG(d0), STRPTR pat BL_REG(d1))
     return 0;
 }
 
-/* RTEZFreePattern n (d0): BUG(orig): 2 for the multi-load (#456) */
+/**
+ * @brief RTEZFreePattern Requester#: switches the pattern gadget of a file
+ * requester off again (its flags back to the default).
+ *
+ * BUG(orig) (#456): 2 resets the multi-load requester, which is 3 in
+ * RTEZSetPattern and RTEZSetDefaultDirectory.
+ * @param n  d0: Requester#: 0 load, 1 save, 2 multi-load
+ * @return d0: 0
+ */
 static ULONG BLITZ_ROUTINE rtfreepat_c(ULONG n BL_REG(d0))
 {
     if (n == 0)
@@ -870,8 +1034,16 @@ static ULONG BLITZ_ROUTINE rtfreepat_c(ULONG n BL_REG(d0))
     return 0;
 }
 
-/* RTEZMultiLoadFile(title$) (d0): the file list (the old one freed), -1
-   unless its low byte is 0 */
+/**
+ * @brief RTEZMultiLoadFile(Title$): the multi-select file requester; the
+ * names then come from RTNextPathEntry.
+ *
+ * The file list of the previous call is freed first.  BUG(orig) (#462):
+ * only the low byte of the list address is tested (CMP.b #0,d0).
+ * @param title  d0: Title$
+ * @return d0: -1 if files were chosen; 0 on cancel - and the list address
+ *         itself if it ends in $00 (#462)
+ */
 static ULONG BLITZ_ROUTINE rtMfreq_c(STRPTR title BL_REG(d0))
 {
     ULONG r;
@@ -886,8 +1058,13 @@ static ULONG BLITZ_ROUTINE rtMfreq_c(STRPTR title BL_REG(d0))
     return (ULONG)-1;
 }
 
-/* RTNextPathEntry: directory and the next name of the list, a3 behind
-   the 0 */
+/**
+ * @brief RTNextPathEntry: the next path of RTEZMultiLoadFile's list.
+ *
+ * Directory + "/" (unless it ends in ":") + the next name, a3 behind the
+ * 0; the list position moves on.
+ * @return d0: the length of the path, 0 at the end of the list
+ */
 static ULONG BLITZ_ROUTINE rtnxtentry_c(void)
 {
     ULONG n;
@@ -905,8 +1082,16 @@ static ULONG BLITZ_ROUTINE rtnxtentry_c(void)
 
 /* --------------------------------------------- font, screen mode, palette */
 
-/* RTEZFontRequest(title$) (d0): the TextAttr (name, size, style, flags
-   of the requester), 0 */
+/**
+ * @brief RTEZFontRequest(Title$): the font requester (with style); the
+ * chosen font.
+ *
+ * The result is a TextAttr of the library's own (name, size, style,
+ * flags copied from the requester's Attr); the font name is not copied.
+ * @param title  d0: Title$
+ * @return d0: the TextAttr, 0 on cancel (rtFontRequestA's result for
+ *         RTReturnValue)
+ */
 static ULONG BLITZ_ROUTINE rtfontreq_c(STRPTR title BL_REG(d0))
 {
     ULONG r = RTJSR(LVO_rtFontRequestA, 0, &fontTagList, fontreq, 0, title);
@@ -922,7 +1107,19 @@ static ULONG BLITZ_ROUTINE rtfontreq_c(STRPTR title BL_REG(d0))
     return (ULONG)&myfont;
 }
 
-/* RTEZScreenModeRequest(title$) (d0): BUG(orig): rtFontRequestA (#466) */
+/**
+ * @brief RTEZScreenModeRequest(Title$): the screen mode requester (size
+ * and depth gadgets); the chosen mode.
+ *
+ * The result is a block of the library's own: DisplayID.l,
+ * DisplayWidth.w, DisplayHeight.w, DisplayDepth.w, OverscanType.w,
+ * AutoScroll.l, copied from the requester.  After a choice the flags are
+ * back at size and depth gadgets.  BUG(orig) (#466): calls rtFontRequestA
+ * (-96) with the screen mode requester instead of rtScreenModeRequestA
+ * (-144).
+ * @param title  d0: Title$
+ * @return d0: the block, 0 on cancel (also for RTReturnValue)
+ */
 static ULONG BLITZ_ROUTINE rtsmreq_c(STRPTR title BL_REG(d0))
 {
     ULONG r = RTJSR(LVO_rtFontRequestA, 0, &smTagList, smreq, 0, title);
@@ -940,14 +1137,27 @@ static ULONG BLITZ_ROUTINE rtsmreq_c(STRPTR title BL_REG(d0))
     return (ULONG)&smRetType;
 }
 
-/* RTEZScreenModeRequest(title$,flags) (d0, d1) */
+/**
+ * @brief RTEZScreenModeRequest(Title$,DisplayFlags): as above with the
+ * given requester flags (RTSC_Flags; kept until a choice is made).
+ * @param title  d0: Title$
+ * @param flags  d1: DisplayFlags
+ * @return d0: the block, 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE rtsmreqf_c(STRPTR title BL_REG(d0), ULONG flags BL_REG(d1))
 {
     smTagList.flags.ti_Data = flags;
     return rtsmreq_c(title);
 }
 
-/* RTEZPaletteRequest(title$,first) (d0, d1) */
+/**
+ * @brief RTEZPaletteRequest(Title$,FirstColour): the palette requester.
+ *
+ * BUG(orig) (#464): the result is not stored for RTReturnValue.
+ * @param title  d0: Title$
+ * @param first  d1: FirstColour (RTPA_Color)
+ * @return d0: rtPaletteRequestA's result
+ */
 static ULONG BLITZ_ROUTINE rtpalreq_c(STRPTR title BL_REG(d0), ULONG first BL_REG(d1))
 {
     palreqTagList.color.ti_Data = first;
@@ -956,7 +1166,16 @@ static ULONG BLITZ_ROUTINE rtpalreq_c(STRPTR title BL_REG(d0), ULONG first BL_RE
 
 /* ------------------------------------------------------------ numbers */
 
-/* RTEZGetLong(title$,body$) (d0, d1): the value, also on cancel */
+/**
+ * @brief RTEZGetLong(Title$,BodyText$): asks for a number (rtGetLongA).
+ *
+ * BUG(orig) (#457): the value is returned also on cancel, and it stays as
+ * the default of the next call.  rtGetLongA's result goes to
+ * RTReturnValue.
+ * @param title  d0: Title$
+ * @param body   d1: BodyText$ (RTGL_TextFmt)
+ * @return d0: the value
+ */
 static ULONG BLITZ_ROUTINE rtgetlong_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1))
 {
     glTagList.textfmt.ti_Data = (ULONG)body;
@@ -964,7 +1183,14 @@ static ULONG BLITZ_ROUTINE rtgetlong_c(STRPTR title BL_REG(d0), STRPTR body BL_R
     return glValue;
 }
 
-/* RTEZGetLong(title$,body$,default) (d2) */
+/**
+ * @brief RTEZGetLong(Title$,BodyText$,DefaultValue): as above with a
+ * default value.
+ * @param title  d0: Title$
+ * @param body   d1: BodyText$
+ * @param def    d2: DefaultValue
+ * @return d0: the value, also on cancel (#457)
+ */
 static ULONG BLITZ_ROUTINE rtgetlongDef_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                           ULONG def BL_REG(d2))
 {
@@ -972,7 +1198,18 @@ static ULONG BLITZ_ROUTINE rtgetlongDef_c(STRPTR title BL_REG(d0), STRPTR body B
     return rtgetlong_c(title, body);
 }
 
-/* RTEZGetLongRange(title$,body$,min,max) (d0-d3): the value, 0 */
+/**
+ * @brief RTEZGetLongRange(Title$,BodyText$,Min,Max): asks for a number in
+ * a range (rtGetLongA with RTGL_Min/RTGL_Max).
+ *
+ * The value stays as the default of the next call.  rtGetLongA's result
+ * goes to RTReturnValue.
+ * @param title  d0: Title$
+ * @param body   d1: BodyText$
+ * @param min    d2: Min
+ * @param max    d3: Max
+ * @return d0: the value, 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE rtgetlongrng_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                           ULONG min BL_REG(d2), ULONG max BL_REG(d3))
 {
@@ -988,7 +1225,16 @@ static ULONG BLITZ_ROUTINE rtgetlongrng_c(STRPTR title BL_REG(d0), STRPTR body B
     return r;
 }
 
-/* RTEZGetLongRange(...,default) (d4) */
+/**
+ * @brief RTEZGetLongRange(Title$,BodyText$,Min,Max,DefaultValue): as above
+ * with a default value.
+ * @param title  d0: Title$
+ * @param body   d1: BodyText$
+ * @param min    d2: Min
+ * @param max    d3: Max
+ * @param def    d4: DefaultValue
+ * @return d0: the value, 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE rtgetlongrngDef_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                              ULONG min BL_REG(d2), ULONG max BL_REG(d3),
                                              ULONG def BL_REG(d4))
@@ -1032,7 +1278,20 @@ static ULONG getstring(STRPTR title, STRPTR body, ULONG max)
     return gsActual;
 }
 
-/* RTEZGetString(title$,body$,max) (d0-d2) */
+/**
+ * @brief RTEZGetString(Title$,BodyText$,MaxChars): asks for a string
+ * (rtGetStringA).
+ *
+ * The buffer is MaxChars bytes of memlib (MEMF_CLEAR), freed after a
+ * choice; the string goes from the start of the title on (no 0, a3
+ * behind it).  On cancel a3 is back at the caller's and BUG(orig) (#458)
+ * the buffer is not freed (memlib frees it at the end of the program).
+ * rtGetStringA's result goes to RTReturnValue.
+ * @param title  d0: Title$
+ * @param body   d1: BodyText$
+ * @param max    d2: MaxChars
+ * @return d0: the length of the string, 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE rtgetstr_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                       ULONG max BL_REG(d2))
 {
@@ -1041,8 +1300,17 @@ static ULONG BLITZ_ROUTINE rtgetstr_c(STRPTR title BL_REG(d0), STRPTR body BL_RE
     return getstring(title, body, max);
 }
 
-/* RTEZGetString(title$,body$,max,default$) (d3): the default copied into
-   the buffer (BUG(orig): without a limit, #459) */
+/**
+ * @brief RTEZGetString(Title$,BodyText$,MaxChars,DefaultString): as above,
+ * the default string copied into the buffer first.
+ *
+ * BUG(orig) (#459): the copy has no limit (MaxChars is not checked).
+ * @param title  d0: Title$
+ * @param body   d1: BodyText$
+ * @param max    d2: MaxChars
+ * @param def    d3: DefaultString
+ * @return d0: the length of the string, 0 on cancel
+ */
 static ULONG BLITZ_ROUTINE rtgetstrDef_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                          ULONG max BL_REG(d2), const UBYTE *def BL_REG(d3))
 {
@@ -1058,14 +1326,25 @@ static ULONG BLITZ_ROUTINE rtgetstrDef_c(STRPTR title BL_REG(d0), STRPTR body BL
 
 /* ------------------------------------------------------------ windows */
 
-/* RTLockWindow(win#) (a1 = the window object, its first long the
-   Window) */
+/**
+ * @brief RTLockWindow(Window#): locks a window against input
+ * (rtLockWindow).
+ * @param win  a1: the window object of Window# (d0), its first long the
+ *             Window
+ * @return d0: the lock for RTUnlockWindow
+ */
 static ULONG BLITZ_ROUTINE rtlockwin_c(APTR *win BL_REG(a1))
 {
     return RTJSR0(LVO_rtLockWindow, 0, *win, 0);
 }
 
-/* RTUnlockWindow win#,lock (a1, d1): d0 what reqtools leaves */
+/**
+ * @brief RTUnlockWindow Window#,Lock: unlocks a window locked with
+ * RTLockWindow (rtUnlockWindow).
+ * @param lock  d1: the lock
+ * @param win   a1: the window object of Window# (d0)
+ * @return d0: what reqtools leaves there
+ */
 static ULONG BLITZ_ROUTINE rtunlockwin_c(ULONG lock BL_REG(d1), APTR *win BL_REG(a1))
 {
     return RTJSR0(LVO_rtUnlockWindow, 0, *win, lock);
@@ -1082,8 +1361,21 @@ static UBYTE portmask(const UBYTE *obj)
     return (UBYTE)(port->mp_SigBit << 1);
 }
 
-/* RTASyncRequest(title$,body$,gadget$) (d0-d2, a1 = the used window
-   object): -1 if the requester is up (CALL_HANDLER) */
+/**
+ * @brief RTASyncRequest(Title$,BodyText$,GadgetText$): opens an EZ
+ * requester that runs alongside the program (RT_ReqHandler).
+ *
+ * RTCheckASyncRequest polls it, RTEndASyncRequest ends it.  BUG(orig)
+ * (#454): the signal bit is read from the "user port" at 86 of the window
+ * object (not of the Window) and kept shifted by one in a byte nobody
+ * reads.
+ * @param title   d0: Title$
+ * @param body    d1: BodyText$
+ * @param gadget  d2: GadgetText$
+ * @param obj     a1: the used window object
+ * @return d0: -1 if the requester is up (CALL_HANDLER), else rtEZRequestA's
+ *         result (also for RTReturnValue, unconverted)
+ */
 static ULONG BLITZ_ROUTINE rtasrequest_c(STRPTR title BL_REG(d0), STRPTR body BL_REG(d1),
                                          STRPTR gadget BL_REG(d2), const UBYTE *obj BL_REG(a1))
 {
@@ -1098,7 +1390,13 @@ static ULONG BLITZ_ROUTINE rtasrequest_c(STRPTR title BL_REG(d0), STRPTR body BL
     return r;
 }
 
-/* RTCheckASyncRequest: -1 while it is up */
+/**
+ * @brief RTCheckASyncRequest: polls the requester of RTASyncRequest
+ * (rtReqHandlerA).
+ *
+ * BUG(orig) (#454): called with no signals (sigs is never set).
+ * @return d0: -1 while it is up, else the requester's result
+ */
 static ULONG BLITZ_ROUTINE rtcheckasreq_c(void)
 {
     ULONG r = RTJSR0(LVO_rtReqHandlerA, sigs, 0, myhandler);
@@ -1108,13 +1406,28 @@ static ULONG BLITZ_ROUTINE rtcheckasreq_c(void)
     return r;
 }
 
-/* RTEndASyncRequest */
+/**
+ * @brief RTEndASyncRequest: ends the requester of RTASyncRequest
+ * (rtReqHandlerA with RTRH_EndRequest).
+ * @return d0: rtReqHandlerA's result
+ */
 static ULONG BLITZ_ROUTINE rtendasreq_c(void)
 {
     return RTJSR0(LVO_rtReqHandlerA, sigs, &endreqTL, myhandler);
 }
 
-/* RTASyncPaletteRequest(title$,first) (d0, d1, a1 as above) */
+/**
+ * @brief RTASyncPaletteRequest(Title$,FirstColour): opens a palette
+ * requester that runs alongside the program (RT_ReqHandler).
+ *
+ * RTCheckASyncPaletteRequest polls it, RTEndASyncPaletteRequest ends it.
+ * BUG(orig): the signal bit as in RTASyncRequest (#454); the result is not
+ * stored for RTReturnValue (#464).
+ * @param title  d0: Title$
+ * @param first  d1: FirstColour (RTPA_Color)
+ * @param obj    a1: the used window object
+ * @return d0: -1 if the requester is up, else rtPaletteRequestA's result
+ */
 static ULONG BLITZ_ROUTINE rtasPrequest_c(STRPTR title BL_REG(d0), ULONG first BL_REG(d1),
                                           const UBYTE *obj BL_REG(a1))
 {
@@ -1128,7 +1441,13 @@ static ULONG BLITZ_ROUTINE rtasPrequest_c(STRPTR title BL_REG(d0), ULONG first B
     return r;
 }
 
-/* RTCheckASyncPaletteRequest: -1 while it is up, else 0 */
+/**
+ * @brief RTCheckASyncPaletteRequest: polls the requester of
+ * RTASyncPaletteRequest (rtReqHandlerA).
+ *
+ * BUG(orig) (#454): called with no signals (Psigs is never set).
+ * @return d0: -1 while it is up, else 0 (the colour is not returned)
+ */
 static BB_BOOL BLITZ_ROUTINE rtcheckasPreq_c(void)
 {
     ULONG r = RTJSR0(LVO_rtReqHandlerA, Psigs, 0, myPhandler);
@@ -1136,7 +1455,11 @@ static BB_BOOL BLITZ_ROUTINE rtcheckasPreq_c(void)
     return r == CALL_HANDLER ? BB_TRUE : BB_FALSE;
 }
 
-/* RTEndASyncPaletteRequest */
+/**
+ * @brief RTEndASyncPaletteRequest: ends the requester of
+ * RTASyncPaletteRequest (rtReqHandlerA with RTRH_EndRequest).
+ * @return d0: rtReqHandlerA's result
+ */
 static ULONG BLITZ_ROUTINE rtendasPreq_c(void)
 {
     return RTJSR0(LVO_rtReqHandlerA, Psigs, &endPreqTL, myPhandler);
