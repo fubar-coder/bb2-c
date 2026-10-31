@@ -156,13 +156,23 @@ __asm__(
 
 /* ------------------------------------------- checks on stack and flags */
 
-/* finalscheck - at program end a7 must be where it was at init */
+/**
+ * @brief finalscheck ($C300) - at program end a7 must be where it was at
+ * init (ostack).
+ *
+ * Errors: "Stack Error on Exit - Unterminated Gosub or For?".
+ */
 BLITZ_ASM_ROUTINE(finalscheck,
 "   cmp.l   _ostack(pc),a7\n"
 "   bne     stackerr\n"
 "   rts");
 
-/* stackchk - out of stack (not while in supervisor mode) */
+/**
+ * @brief stackchk ($C308) - out of stack: a7 below maxstack (not while in
+ * supervisor mode, supernest <> 0).
+ *
+ * Errors: "Out of Stack Space".
+ */
 BLITZ_ASM_ROUTINE(stackchk,
 "   tst.w   _supernest\n"
 "   bne.w   1f\n"
@@ -170,8 +180,12 @@ BLITZ_ASM_ROUTINE(stackchk,
 "   bcs     nostackerr\n"
 "1: rts");
 
-/* retchk - Return: the Gosub frame (return address, "gS") must be on the
-   stack; pop it and return there */
+/**
+ * @brief retchk ($C305) - Return: the Gosub frame (return address, "gS")
+ * must be on the stack; pop it and return there.
+ *
+ * Errors: "Return without Gosub".
+ */
 BLITZ_ASM_ROUTINE(retchk,
 "   cmp.w   #0x6753,8(a7)\n"            /* "gS" */
 "   bne     returnerr\n"
@@ -179,7 +193,12 @@ BLITZ_ASM_ROUTINE(retchk,
 "   lea     10(a7),a7\n"
 "   jmp     (a0)");
 
-/* nextchkw/l - Next: the For frame ("fO") must be on the stack */
+/**
+ * @brief nextchkw/nextchkl ($C306/$C307) - Next: the For frame ("fO") must
+ * be on the stack (at 12(a7) for a word loop, 16(a7) for a long one).
+ *
+ * Errors: "Next without For".
+ */
 BLITZ_ASM_ROUTINE(nextchkw,
 "   cmp.w   #0x664f,12(a7)\n"           /* "fO" */
 "   bne     nexterr\n"
@@ -189,7 +208,12 @@ BLITZ_ASM_ROUTINE(nextchkl,
 "   bne     nexterr\n"
 "   rts");
 
-/* casechkw/l - End Select etc.: the Select frame ("sE") */
+/**
+ * @brief casechkw/casechkl ($C313/$C314) - End Select, Case, Default: the
+ * Select frame ("sE") must be on the stack (6(a7) / 8(a7)).
+ *
+ * Errors: "End Select/Case/Default without Select".
+ */
 BLITZ_ASM_ROUTINE(casechkw,
 "   cmp.w   #0x7345,6(a7)\n"            /* "sE" */
 "   bne     caseerr\n"
@@ -199,8 +223,12 @@ BLITZ_ASM_ROUTINE(casechkl,
 "   bne     caseerr\n"
 "   rts");
 
-/* bmodechk/amodechk - the caller has just tested the mode flag: N set =
-   Blitz mode */
+/**
+ * @brief bmodechk/amodechk ($C311/$C312) - Blitz / Amiga mode only: the
+ * caller has just tested the mode flag (N set = Blitz mode).
+ *
+ * Errors: "Command only available in BLITZ mode!" / "... AMIGA mode!".
+ */
 BLITZ_ASM_ROUTINE(bmodechk,
 "   bpl     bmodeerr\n"
 "   rts");
@@ -250,11 +278,23 @@ static void ltow(LONG v)
         BLITZ_RUNERR(overmess);
 }
 
-/* ltobover - long to byte */
+/**
+ * @brief ltobover ($C316) - long to byte: -128..127.
+ *
+ * Errors: "OverFlow Error".
+ *
+ * @param v d0: the value
+ */
 static void BLITZ_ROUTINE ltobover_c(LONG v BL_REG(d0)) { ltob(v); }
 BLITZ_THUNK(ltobover, ltobover_c, "d0-d1/a0-a1");
 
-/* wtobover - word to byte (CMP.w) */
+/**
+ * @brief wtobover ($C317) - word to byte (CMP.w): -128..127.
+ *
+ * Errors: "OverFlow Error".
+ *
+ * @param v d0.w: the value
+ */
 static void BLITZ_ROUTINE wtobover_c(LONG v BL_REG(d0))
 {
     WORD w = (WORD)v;
@@ -264,12 +304,24 @@ static void BLITZ_ROUTINE wtobover_c(LONG v BL_REG(d0))
 }
 BLITZ_THUNK(wtobover, wtobover_c, "d0-d1/a0-a1");
 
-/* ltowover - long to word */
+/**
+ * @brief ltowover ($C318) - long to word: -32768..32767.
+ *
+ * Errors: "OverFlow Error".
+ *
+ * @param v d0: the value
+ */
 static void BLITZ_ROUTINE ltowover_c(LONG v BL_REG(d0)) { ltow(v); }
 BLITZ_THUNK(ltowover, ltowover_c, "d0-d1/a0-a1");
 
-/* qtobover - quick (16.16 fixed point) to byte: the integer part is the
-   upper word (SWAP d0:CMP.w) */
+/**
+ * @brief qtobover ($C319) - quick (16.16 fixed point) to byte: the integer
+ * part is the upper word (SWAP d0:CMP.w), -128..127.
+ *
+ * Errors: "OverFlow Error".
+ *
+ * @param v d0: the quick value
+ */
 static void BLITZ_ROUTINE qtobover_c(ULONG v BL_REG(d0))
 {
     WORD w = (WORD)(v >> 16);
@@ -294,7 +346,15 @@ static LONG spfix(ULONG x, APTR base, UBYTE *v)
     return d0;
 }
 
-/* ftobover/ftowover/ftolover - float to byte/word/long */
+/**
+ * @brief ftobover ($C31A) - float to byte: SPFix must not overflow and the
+ * integer must be -128..127.
+ *
+ * Errors: "OverFlow Error".
+ *
+ * @param f   d0: the FFP float
+ * @param ffp a6: mathffp.library (from ffplib)
+ */
 static void BLITZ_ROUTINE ftobover_c(ULONG f BL_REG(d0), APTR ffp BL_REG(a6))
 {
     UBYTE v;
@@ -307,6 +367,15 @@ static void BLITZ_ROUTINE ftobover_c(ULONG f BL_REG(d0), APTR ffp BL_REG(a6))
 }
 BLITZ_THUNK(ftobover, ftobover_c, "d0-d1/a0-a1");
 
+/**
+ * @brief ftowover ($C31B) - float to word: SPFix must not overflow and the
+ * integer must be -32768..32767.
+ *
+ * Errors: "OverFlow Error".
+ *
+ * @param f   d0: the FFP float
+ * @param ffp a6: mathffp.library (from ffplib)
+ */
 static void BLITZ_ROUTINE ftowover_c(ULONG f BL_REG(d0), APTR ffp BL_REG(a6))
 {
     UBYTE v;
@@ -319,6 +388,14 @@ static void BLITZ_ROUTINE ftowover_c(ULONG f BL_REG(d0), APTR ffp BL_REG(a6))
 }
 BLITZ_THUNK(ftowover, ftowover_c, "d0-d1/a0-a1");
 
+/**
+ * @brief ftolover ($C31C) - float to long: SPFix must not overflow (V flag).
+ *
+ * Errors: "OverFlow Error".
+ *
+ * @param f   d0: the FFP float
+ * @param ffp a6: mathffp.library (from ffplib)
+ */
 static void BLITZ_ROUTINE ftolover_c(ULONG f BL_REG(d0), APTR ffp BL_REG(a6))
 {
     UBYTE v;
@@ -329,7 +406,13 @@ static void BLITZ_ROUTINE ftolover_c(ULONG f BL_REG(d0), APTR ffp BL_REG(a6))
 }
 BLITZ_THUNK(ftolover, ftolover_c, "d0-d1/a0-a1");
 
-/* sarraychk/aarraychk - array dimension (d0 / d1) must be < 65536 */
+/**
+ * @brief sarraychk ($C30E) - an array dimension must be < 65536.
+ *
+ * Errors: "Array Dimension out of Range".
+ *
+ * @param d d0: the dimension
+ */
 static void BLITZ_ROUTINE sarraychk_c(ULONG d BL_REG(d0))
 {
     if (d >= 65536)
@@ -337,6 +420,13 @@ static void BLITZ_ROUTINE sarraychk_c(ULONG d BL_REG(d0))
 }
 BLITZ_THUNK(sarraychk, sarraychk_c, "d0-d1/a0-a1");
 
+/**
+ * @brief aarraychk ($C30F) - as sarraychk, the dimension in d1.
+ *
+ * Errors: "Array Dimension out of Range".
+ *
+ * @param d d1: the dimension
+ */
 static void BLITZ_ROUTINE aarraychk_c(ULONG d BL_REG(d1))
 {
     if (d >= 65536)
@@ -344,9 +434,16 @@ static void BLITZ_ROUTINE aarraychk_c(ULONG d BL_REG(d1))
 }
 BLITZ_THUNK(aarraychk, aarraychk_c, "d0-d1/a0-a1");
 
-/* datachk - Read: the data item at a3 must be "D" + type (d0.b); a3 is
-   advanced over both bytes.  (The original leaves the "D" in d1.b, the
-   thunk keeps d1.) */
+/**
+ * @brief datachk ($C310) - Read: the data item at a3 must be "D" + type.
+ *
+ * a3 is advanced over both bytes.  (The original leaves the "D" in d1.b,
+ * the thunk keeps d1.)
+ *
+ * Errors: "Data type mismatch".
+ *
+ * @param type d0.b: the type the Read expects
+ */
 static void BLITZ_ROUTINE datachk_c(ULONG type BL_REG(d0))
 {
     if (*blitz_string++ != 'D') {
@@ -358,7 +455,13 @@ static void BLITZ_ROUTINE datachk_c(ULONG type BL_REG(d0))
 }
 BLITZ_THUNK(datachk, datachk_c, "d0-d1/a0-a1");
 
-/* currentchk - a list command needs a current item (a2) */
+/**
+ * @brief currentchk ($C315) - a list command needs a current item.
+ *
+ * Errors: "No Current List Item".
+ *
+ * @param item a2: the current item (0 = none)
+ */
 static void BLITZ_ROUTINE currentchk_c(APTR item BL_REG(a2))
 {
     if (!item)
@@ -368,24 +471,55 @@ BLITZ_THUNK(currentchk, currentchk_c, "d0-d1/a0-a1");
 
 /* ---------------------------------------------------------------- misc */
 
-/* gosuper/gouser - no stack check while in supervisor mode */
+/**
+ * @brief gosuper ($C30B) - entering supervisor mode: no stack check
+ * (supernest + 1).
+ */
 static void BLITZ_ROUTINE gosuper_c(void) { supernest++; }
 BLITZ_THUNK(gosuper, gosuper_c, "d0-d1/a0-a1");
+/** @brief gouser ($C30C) - back to user mode (supernest - 1). */
 static void BLITZ_ROUTINE gouser_c(void) { supernest--; }
 BLITZ_THUNK(gouser, gouser_c, "d0-d1/a0-a1");
 
-/* getvbr - a0 = VBR (0 on a 68000); keeps d0-d1/a1 */
+/**
+ * @brief getvbr ($C31D) - the vector base register as read by the init.
+ *
+ * Keeps d0-d1/a1 (the thunk moves the result to a0).
+ *
+ * BUG(orig) (#42): 0 on a 68010 too, which has a VBR.
+ *
+ * @return a0: the VBR (0 on a 68000)
+ */
 static ULONG BLITZ_ROUTINE getvbr_c(void) { return vbr_; }
 BLITZ_THUNK_POST(getvbr, getvbr_c, "d0-d1/a1", "move.l d0,a0");
 
-/* getcpu - d0.w = CPU (0 = 68000 ... 4 = 68040); upper word kept */
+/**
+ * @brief getcpu ($C31E) - the CPU type.
+ *
+ * The number of the highest AttnFlags bit of 68010..68040.
+ *
+ * @return d0.w: 0 = 68000 ... 4 = 68040; the upper word is kept
+ */
 static UWORD BLITZ_ROUTINE getcpu_c(void) { return cpu_; }
 BLITZ_THUNK_POST(getcpu, getcpu_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 
-/* codeinit - sp = the stack pointer at entry (pointing to the return
-   address; the thunk computes it), d2 = stack size.
-   The original returns d2 = VBR (and changes d0-d1/a0/a6); the thunk
-   keeps everything. */
+/**
+ * @brief Library init: stack limits, trap handler, CPU and VBR.
+ *
+ * maxstack = the lowest allowed stack pointer (with 1K reserve), ostack =
+ * the stack pointer expected at the end; `trapper` becomes the task's
+ * tc_TrapCode (CPU exceptions become runtime errors "GURU! - ..."); the
+ * CPU type from AttnFlags and, from a 68020 on, the VBR (MOVEC in
+ * supervisor state).  The original returns d2 = VBR (and changes
+ * d0-d1/a0/a6); the thunk keeps everything.
+ *
+ * BUG(orig) (#42): the VBR is read only from a 68020 on, though a 68010
+ * has one too.
+ *
+ * @param sp    a0: the stack pointer at entry (pointing to the return
+ *              address; the thunk computes it)
+ * @param stack d2: the stack size
+ */
 static void BLITZ_ROUTINE codeinit_c(UBYTE *sp BL_REG(a0), ULONG stack BL_REG(d2))
 {
     UWORD f, n = 0;
@@ -411,7 +545,7 @@ static void BLITZ_ROUTINE codeinit_c(UBYTE *sp BL_REG(a0), ULONG stack BL_REG(d2
 }
 BLITZ_THUNK_PRE(codeinit, codeinit_c, "d0-d1/a0-a1", "lea 16(sp),a0");
 
-/* codefinit - restore the task's trap handler */
+/** @brief Library finit: restore the task's trap handler. */
 void BLITZ_ROUTINE codefinit(void)
 {
     SysBase->ThisTask->tc_TrapCode = oldtrap;
