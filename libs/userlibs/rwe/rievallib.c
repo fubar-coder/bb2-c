@@ -519,7 +519,7 @@ gotop:
     switch (op) {
     case 0:                                     /* = */
         rhs = st_pop(s);
-        s->acc = rhs == *st_top(s) ? 0xffffffffUL : 0;
+        s->acc = rhs == *st_top(s) ? BB_TRUE : BB_FALSE;
         break;
     case 1:                                     /* & */
         s->acc = st_pop(s) & *st_top(s);
@@ -529,11 +529,11 @@ gotop:
         break;
     case 3:                                     /* < : SLS, unsigned <= */
         rhs = st_pop(s);
-        s->acc = *st_top(s) <= rhs ? 0xffffffffUL : 0;
+        s->acc = *st_top(s) <= rhs ? BB_TRUE : BB_FALSE;
         break;
     case 4:                                     /* > : SGT */
         rhs = st_pop(s);
-        s->acc = (LONG)*st_top(s) > (LONG)rhs ? 0xffffffffUL : 0;
+        s->acc = (LONG)*st_top(s) > (LONG)rhs ? BB_TRUE : BB_FALSE;
         break;
     case 5:                                     /* + */
         s->acc = st_pop(s) + *st_top(s);
