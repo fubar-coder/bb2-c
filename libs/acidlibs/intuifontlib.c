@@ -29,6 +29,7 @@
  * DIFF: a2 stays unchanged (the original pops the name length).
  */
 #include "blitzlib.h"
+#include "blitzobj.h"
 #include <graphics/text.h>
 
 #define LVO_OpenDiskFont (-30)  /* diskfont: a0 = TextAttr */
@@ -70,18 +71,12 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 4);
 
 /* ------------------------------------------------------------ variables */
 
-/* one IntuiFont object (16 bytes) = a TextAttr + the opened font + pad */
-struct ifont {
-    struct TextAttr ta;         /* 0 name, 4 ysize, 6 style, 7 flags */
-    ULONG font;                 /* 8 OpenDiskFont's result */
-    ULONG pad;                  /* 12 */
-};
-static_assert(sizeof(struct ifont) == 16);
+/* one IntuiFont object (16 bytes): struct bb_intuifont (blitzobj.h) */
 
 /* textattr, then the default object and its name, as in the original */
 static struct BL_PACKED {
-    struct ifont *textattr;
-    struct ifont defattr;
+    struct bb_intuifont *textattr;
+    struct bb_intuifont defattr;
     char defname[12];
 } fd = { .defname = "topaz.font" };
 
@@ -108,13 +103,13 @@ BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
 /* ----------------------------------------------------- free / use font */
 
 /* dofreeifont - close the object's font (a3 = object, a6 = graphics) */
-static void freeifont(struct ifont *f, const void *gfx)
+static void freeifont(struct bb_intuifont *f, const void *gfx)
 {
     struct bl_regs r = { 0 };
 
     if (!f->font)
         return;
-    r.a1 = f->font;
+    r.a1 = (ULONG)f->font;
     f->font = 0;
     BLITZ_BASEJSR(gfx, LVO_CloseFont, r);
 }
@@ -129,7 +124,7 @@ static void freeifont(struct ifont *f, const void *gfx)
  */
 static void BLITZ_ROUTINE dofreeifont_c(const void *gfx BL_REG(a6))
 {
-    freeifont((struct ifont *)blitz_string, gfx);   /* a3 = object */
+    freeifont((struct bb_intuifont *)blitz_string, gfx);   /* a3 = object */
 }
 BLITZ_THUNK(dofreeifont, dofreeifont_c, "d1/a0-a1");
 
@@ -139,7 +134,7 @@ BLITZ_THUNK(dofreeifont, dofreeifont_c, "d1/a0-a1");
  */
 static void BLITZ_ROUTINE douseifont_c(void)
 {
-    fd.textattr = (struct ifont *)blitz_string;     /* MOVE.l a3,textattr */
+    fd.textattr = (struct bb_intuifont *)blitz_string;     /* MOVE.l a3,textattr */
 }
 BLITZ_THUNK(douseifont, douseifont_c, "d0-d1/a0-a1");
 
@@ -149,11 +144,11 @@ static ULONG setifont(const UBYTE *name, UWORD ysize, UWORD style,
                       const ULONG *lens, WORD used, const void *gfx,
                       const void *diskfont)
 {
-    struct ifont *f = (struct ifont *)blitz_string;     /* a3 = object */
+    struct bb_intuifont *f = (struct bb_intuifont *)blitz_string;     /* a3 = object */
     const ULONG *sp = lens;
     struct bl_regs r = { 0 };
 
-    *(struct ifont **)(blitz_globals + used) = f;   /* MOVE.l a3,0(a5,d5) */
+    *(struct bb_intuifont **)(blitz_globals + used) = f;   /* MOVE.l a3,0(a5,d5) */
     fd.textattr = f;
     freeifont(f, gfx);
     f->ta.ta_YSize = ysize;
@@ -165,8 +160,8 @@ static ULONG setifont(const UBYTE *name, UWORD ysize, UWORD style,
     f->ta.ta_Name = (STRPTR)BLITZ_ALIBJSR(TOK_allocst, r);
     r.d0 = r.d1 = r.a1 = 0;
     r.a0 = (ULONG)f;
-    f->font = BLITZ_BASEJSR(diskfont, LVO_OpenDiskFont, r);
-    return f->font;                             /* MOVE.l d0,8(a3): Z for loadchk */
+    f->font = (struct TextFont *)BLITZ_BASEJSR(diskfont, LVO_OpenDiskFont, r);
+    return (ULONG)f->font;                      /* MOVE.l d0,8(a3): Z for loadchk */
 }
 
 /**
