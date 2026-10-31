@@ -19,14 +19,17 @@
  * decay / finetune from the InstrExt) and starts it (twice, the "EASY"
  * start routine repeats it); ChanMask = 15.
  *
- * The player is translated at register level: d0-d7 and a0-a5 are static
- * variables of this file, every instruction keeps its operand size (byte
- * and word operations change only the low part, DIVU/MULU/MULS/ASR as on
- * the 68000), the data base "DB" (track structures, block and repeat
- * state, hold/decay/finetune tables, the 16 period tables taken from the
- * binary) has the layout of the original.  This is what the original's
- * results depend on - e.g. a Bxx command stores the whole word of d4,
- * whose upper byte is left over from the previous track (#203).
+ * The player is plain C with structs for the module (MMD0/MMD1 header,
+ * song, instruments, expansion data, synth instruments) and the track
+ * structures, and the integer semantics of the original: byte counters
+ * and positions that wrap (ADDQ.b on a word), DIVU/MULU/MULS as
+ * instructions, the word products the original takes.  The data base "DB"
+ * (track structures, block and repeat state, hold/decay/finetune tables,
+ * the 16 period tables taken from the binary) has the layout of the
+ * original.  Where a result depends on a register left over from other
+ * code, that value is kept explicitly: the qualifier word of a line
+ * (Bxx/1Dxx take the upper byte of d4 from a track before, #203) and the
+ * d1 that _PlayNote leaves (1Fxx, #205) - struct left.
  * Assembler: only the hardware (Paula registers, DMACON, filter LED,
  * VHPOSR waits) is accessed through volatile pointers - no inline asm.
  *
@@ -58,6 +61,7 @@
  * statements, nothing reads it).
  */
 #include "blitzlib.h"
+#include <stddef.h>
 #define __NOLIBBASE__
 #include <proto/dos.h>
 #undef __NOLIBBASE__
@@ -157,110 +161,139 @@ BLITZ_NULLSUB_AT(finit, _finitmedlib, 0, 0);
 
 BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 8, 5);
 
-/* ---------------------------------------------------------- constants */
 
-/* MMD0 */
-#define mmd_songinfo   8
-#define mmd_blockarr   16
-#define mmd_smplarr    24
-#define mmd_expdata    32
-#define mmd_pstate     40
-#define mmd_pblock     42
-#define mmd_pline      44
-#define mmd_pseqnum    46
-#define mmd_counter    50
+/* ------------------------------------------------------------ modules */
+
+/* MMD0/MMD1 module header; the player keeps its position in it */
+struct mmd {
+    UBYTE id[4];                /* "MMD0"/"MMD1"; "RMDx" once relocated */
+    ULONG modlen;
+    struct song *song;          /* +8 */
+    UWORD psecnum, pseq;
+    UBYTE **blockarr;           /* +16 */
+    UBYTE mmdflags, reserved[3];
+    UBYTE **smplarr;            /* +24 */
+    ULONG reserved2;
+    struct expdata *expdata;    /* +32 */
+    ULONG reserved3;
+    WORD pstate;                /* +40 */
+    UWORD pblock, pline, pseqnum;
+    WORD actplayline;
+    UBYTE counter, extra_songs; /* +50 */
+} BL_PACKED;
+
+/* an instrument of the song */
+struct instr {
+    UWORD repeat, replen;       /* in words */
+    UBYTE midich, midipreset;
+    UBYTE svol;
+    BYTE strans;
+} BL_PACKED;
+
 /* MMD0song */
-#define msng_numblocks 504
-#define msng_songlen   506
-#define msng_playseq   508
-#define msng_playtransp 766
-#define msng_flags     767
-#define msng_flags2    768
-#define msng_tempo2    769
-#define msng_trkvol    770
-#define msng_mastervol 786
-#define msng_numsamples 787
-/* instrument */
-#define inst_repeat    0
-#define inst_replen    2
-#define inst_midipreset 5
-#define inst_svol      6
-#define inst_strans    7
-/* track data */
-#define trk_prevnote   0
-#define trk_previnstr  1
-#define trk_prevvol    2
-#define trk_cmd        4
-#define trk_cmdqual    5
-#define trk_noteoffcnt 7
-#define trk_inithold   8
-#define trk_initdecay  9
-#define trk_stransp    10
-#define trk_finetune   11
-#define trk_soffset    12
-#define trk_previnstra 14
-#define trk_trackvol   18
-#define trk_prevper    20
-#define trk_audioaddr  22
-#define trk_sampleptr  26
-#define trk_samplelen  30
-#define trk_porttrgper 32
-#define trk_vibshift   34
-#define trk_vibrspd    35
-#define trk_vibrsz     36
-#define trk_synthptr   38
-#define trk_arpgoffs   42
-#define trk_arpsoffs   44
-#define trk_volxcnt    46
-#define trk_wfxcnt     47
-#define trk_volcmd     48
-#define trk_wfcmd      50
-#define trk_volwait    52
-#define trk_wfwait     53
-#define trk_synthvibspd 54
-#define trk_wfchgspd   56
-#define trk_perchg     58
-#define trk_envptr     60
-#define trk_synvibdep  64
-#define trk_synvibwf   66
-#define trk_synviboffs 70
-#define trk_initvolxspd 72
-#define trk_initwfxspd 73
-#define trk_volchgspd  74
-#define trk_prevnote2  75
-#define trk_synvol     76
-#define trk_synthtype  77
-#define trk_periodtbl  78
-#define trk_prevportspd 82
-#define trk_decay      84
-#define trk_fadespd    85
-#define trk_envrestart 86
-#define trk_envcount   90
-#define trk_vibroffs   92
-#define trk_tremoffs   93
-#define trk_tremsz     94
-#define trk_tremspd    96
-#define trk_tempvol    97
+struct song {
+    struct instr sample[63];
+    UWORD numblocks, songlen;   /* +504 */
+    UBYTE playseq[256];         /* +508 */
+    UWORD deftempo;
+    BYTE playtransp;            /* +766 */
+    UBYTE flags, flags2, tempo2;
+    UBYTE trkvol[16];           /* +770 */
+    UBYTE mastervol, numsamples;
+} BL_PACKED;
+
+/* expansion data, the part the player relocates and reads */
+struct expdata {
+    struct mmd *nextmod;
+    UBYTE *exp_smp;             /* InstrExt: hold, decay, -, finetune */
+    UWORD s_ext_entries, s_ext_entrsz;
+    UBYTE *annotxt;
+    ULONG annolen;
+    UBYTE *iinfo;               /* +20 */
+    UWORD i_ext_entries, i_ext_entrsz;
+    ULONG jumpmask;
+    UWORD *rgbtable;            /* +32 */
+    UBYTE channelsplit[4];
+    UBYTE *n_info;              /* +40 */
+    UBYTE *songname;
+    ULONG songnamelen;
+    UBYTE *dumps;               /* +52 MIDI dumps */
+} BL_PACKED;
+
+/* a sample (type 0, 1-7 = IFF octaves) or a synth/hybrid instrument
+   (type -1/-2) */
+struct sample {
+    ULONG length;
+    WORD type;
+} BL_PACKED;
+
+struct synth {
+    ULONG length;
+    WORD type;
+    UBYTE defaultdecay, reserved[3];
+    UWORD rep, replen, voltbllen, wftbllen;
+    UBYTE volspeed, wfspeed;    /* +18 */
+    UWORD wforms;               /* +20 */
+    UBYTE voltbl[128];          /* +22 */
+    UBYTE wftbl[128];           /* +150 */
+    UBYTE *wf[64];              /* +278: waveforms (length in words, data) */
+} BL_PACKED;
+
+#define SAMPLE(p) ((struct sample *)(p))
+
+/* the track structure of the player: tracks 0-3 have all of it, tracks
+   4-15 only the first 20 bytes (the rest belongs to the next one, #209) */
+struct track {
+    UBYTE prevnote, previnstr, prevvol, pad3;
+    UBYTE cmd, cmdqual, pad6;
+    BYTE noteoffcnt;            /* +7 */
+    UBYTE inithold, initdecay;
+    BYTE stransp, finetune;
+    UWORD soffset;              /* +12 */
+    struct instr *previnstra;   /* +14 */
+    UWORD trackvol;             /* +18 */
+    UWORD prevper;              /* +20 */
+    volatile UBYTE *audioaddr;  /* +22: Paula's registers of the channel */
+    ULONG sampleptr;            /* +26: repeat part (pushed after the start) */
+    UWORD samplelen;
+    UWORD porttrgper;           /* +32 */
+    UBYTE vibshift, vibrspd;
+    UWORD vibrsz;
+    struct synth *synthptr;     /* +38 */
+    UWORD arpgoffs, arpsoffs;   /* +42 */
+    BYTE volxcnt, wfxcnt;
+    UWORD volcmd, wfcmd;        /* +48: table positions */
+    UBYTE volwait, wfwait;
+    UWORD synthvibspd, wfchgspd;
+    WORD perchg;                /* +58 */
+    UBYTE *envptr;              /* +60 */
+    UWORD synvibdep;
+    const BYTE *synvibwf;       /* +66 */
+    UWORD synviboffs;
+    UBYTE initvolxspd, initwfxspd;  /* +72 */
+    UBYTE volchgspd, prevnote2, synvol, synthtype;
+    UWORD *periodtbl;           /* +78 */
+    UBYTE prevportspd, pad83;
+    UBYTE decay, fadespd;       /* +84 */
+    UBYTE *envrestart;          /* +86 */
+    BYTE envcount, pad91;
+    UBYTE vibroffs, tremoffs;   /* +92 */
+    UWORD tremsz;
+    UBYTE tremspd;
+    BYTE tempvol;               /* +97 */
+} BL_PACKED;
 #define T03SZ  98
 #define T415SZ 20
+_Static_assert(sizeof(struct track) == T03SZ, "track structure");
 
-/* memory access with an offset (byte addresses as in the original) */
-#define MB(p, o)  (*(UBYTE *)((UBYTE *)(p) + (o)))
-#define MSB(p, o) (*(BYTE *)((UBYTE *)(p) + (o)))
-#define MW(p, o)  (*(UWORD *)((UBYTE *)(p) + (o)))
-#define ML(p, o)  (*(ULONG *)((UBYTE *)(p) + (o)))
-#define MP(p, o)  (*(UBYTE **)((UBYTE *)(p) + (o)))
+/* the low byte of a word field (MOVE.b to field+1) */
+#define LO(w) (((UBYTE *)&(w))[1])
 
-/* register operations: byte / word ops change only the low part */
-#define B(r)       ((UBYTE)(r))
-#define SB(r)      ((BYTE)(r))
-#define W(r)       ((UWORD)(r))
-#define SW(r)      ((WORD)(r))
-#define SETB(r, v) ((r) = ((r) & 0xffffff00UL) | (UBYTE)(v))
-#define SETW(r, v) ((r) = ((r) & 0xffff0000UL) | (UWORD)(v))
-#define MULU(a, b) ((ULONG)(UWORD)(a) * (UWORD)(b))
-#define MULS(a, b) ((ULONG)((LONG)(WORD)(a) * (WORD)(b)))
-#define SWAP(r)    ((ULONG)(r) << 16 | (ULONG)(r) >> 16)
+/* Paula's registers through audioaddr */
+#define AC_PTR(r) (*(volatile ULONG *)(r))
+#define AC_LEN(r) (*(volatile UWORD *)((r) + 4))
+#define AC_PER(r) (*(volatile UWORD *)((r) + 6))
+#define AC_VOL(r) (*(volatile UBYTE *)((r) + 9))       /* ac_vol+1 */
 
 #define DMACON  (*(volatile UWORD *)0xdff096)
 #define CIAAPRA (*(volatile UBYTE *)0xbfe001)
@@ -269,19 +302,19 @@ BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 8, 5);
 /* ------------------------------------------------------------ variables */
 
 static UWORD Music;
-static UBYTE *UseMod;
+static struct mmd *UseMod;
 static UWORD ChanMask;
 static BPTR hand;
 
 /* the data base "DB" of the player, in the order of the original */
 static struct BL_PACKED {
     ULONG miscresbase;
-    UBYTE *module;
+    struct mmd *module;
     UWORD dmaonmsk;
-    UBYTE t03d[4][T03SZ];
+    struct track t03d[4];
     UBYTE t415d[4 * T415SZ];
     UBYTE t815d[8 * T415SZ];
-    UBYTE *trackdataptrs[16];
+    struct track *trackdataptrs[16];
     UBYTE nextblock, nxtnoclrln;
     UWORD numtracks, numlines, nextblockline;
     UWORD rptline, rptcounter, blkdelay;
@@ -293,16 +326,17 @@ static struct BL_PACKED {
     UBYTE *chipzero;
     UWORD modnum;
 } db = {
-#define AUDADDR(n) [22] = 0, [23] = 0xdf, [24] = 0xf0, [25] = 0xa0 + 16 * (n), [97] = 0xff
-    .t03d = { { AUDADDR(0) }, { AUDADDR(1) }, { AUDADDR(2) }, { AUDADDR(3) } },
+#define AUDADDR(n) { .audioaddr = (volatile UBYTE *)(0xdff0a0 + 16 * (n)), .tempvol = -1 }
+    .t03d = { AUDADDR(0), AUDADDR(1), AUDADDR(2), AUDADDR(3) },
 #undef AUDADDR
+#define T(a, n) ((struct track *)((a) + (n) * T415SZ))
     .trackdataptrs = {
-        db.t03d[0], db.t03d[1], db.t03d[2], db.t03d[3],
-        db.t415d, db.t415d + T415SZ, db.t415d + 2 * T415SZ, db.t415d + 3 * T415SZ,
-        db.t815d, db.t815d + T415SZ, db.t815d + 2 * T415SZ, db.t815d + 3 * T415SZ,
-        db.t815d + 4 * T415SZ, db.t815d + 5 * T415SZ, db.t815d + 6 * T415SZ,
-        db.t815d + 7 * T415SZ,
+        &db.t03d[0], &db.t03d[1], &db.t03d[2], &db.t03d[3],
+        T(db.t415d, 0), T(db.t415d, 1), T(db.t415d, 2), T(db.t415d, 3),
+        T(db.t815d, 0), T(db.t815d, 1), T(db.t815d, 2), T(db.t815d, 3),
+        T(db.t815d, 4), T(db.t815d, 5), T(db.t815d, 6), T(db.t815d, 7),
     },
+#undef T
     .bpmdiv = 3546895 / 2,
     .periods = {
         /* from the binary ($1C34-$2833 of ref/medlib.obj) */
@@ -475,27 +509,10 @@ static struct BL_PACKED {
     },
 };
 
-#define PERIODTABLE0 ((UBYTE *)db.periodtable + 32)    /* _periodtable+32 */
-
 static const BYTE sinetable[33] = {
     0, 25, 49, 71, 90, 106, 117, 125, 127, 125, 117, 106, 90, 71, 49,
     25, 0, -25, -49, -71, -90, -106, -117, -125, -127, -125, -117,
     -106, -90, -71, -49, -25, 0,
-};
-
-/* the jump tables of the two command dispatchers (offsets from fst / fxs,
-   from the binary): MOVE.w table(pc,d6.w),d0 leaves the offset in d0 */
-static const UWORD f_table[32] = {
-    0x018e, 0x018e, 0x018e, 0x0162, 0x018e, 0x018e, 0x018e, 0x018e, 0x0128, 0x00d2,
-    0x018e, 0x0146, 0x0092, 0x018e, 0x0082, 0x0000, 0x018e, 0x018e, 0x018e, 0x018e,
-    0x018e, 0x00da, 0x00e2, 0x018e, 0x018e, 0x013c, 0x018e, 0x018e, 0x0118, 0x0152,
-    0x018e, 0x001a,
-};
-static const UWORD fx_table[32] = {
-    0x006c, 0x0000, 0x003e, 0x0228, 0x00bc, 0x0210, 0x011c, 0x0134, 0x02e2, 0x02e2,
-    0x01a0, 0x02e2, 0x02e2, 0x01a0, 0x02e2, 0x02de, 0x0286, 0x002c, 0x005a, 0x0274,
-    0x00b2, 0x02e2, 0x02e2, 0x02e2, 0x029c, 0x02e2, 0x01e8, 0x01fc, 0x02e2, 0x02e2,
-    0x028a, 0x02aa,
 };
 
 static const UBYTE gid_addtable[6] = { 0, 6, 12, 18, 24, 30 };
@@ -513,686 +530,560 @@ static const UBYTE octstart[36] = {
     0, 12, 12, 24, 24, 24, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
 };
 
-/* the player's registers */
-static ULONG d0, d1, d2, d3, d4, d5, d6, d7;
-static UBYTE *a0, *a1, *a2, *a3, *a4, *a5;
-
 static const char mess[] = "Can't Open Med Module";
 static const char mess2[] = "Med Library Error";
 
+/* ---------------------------------------------------------- helpers */
+
+/* ADDQ.b/SUBQ.b on a word register: only the low byte changes */
+static UWORD addb(UWORD w, int n)
+{
+    return (w & 0xff00) | (UBYTE)(w + n);
+}
+
+/* the period table of a finetune: _periodtable+32 + (BYTE)(finetune * 4);
+   finetunes outside -8..7 read pointers outside the table (#211) */
+static UWORD *periods_of(UBYTE finetune)
+{
+    return db.periodtable[8 + (BYTE)(finetune << 2) / 4];
+}
+
+/* a period by a byte offset (the note doubled as a byte or a word) */
+#define PERIOD(tbl, off) (*(UWORD *)((UBYTE *)(tbl) + (off)))
+
+static int mmd1(const struct mmd *m)
+{
+    return m->id[3] == '1';
+}
+
+/* the block of the module's position (pblock * 4 as a word) */
+static UBYTE *curblock(const struct mmd *m)
+{
+    return *(UBYTE **)((UBYTE *)m->blockarr + (WORD)(m->pblock << 2));
+}
+
 /* --------------------------------------------------------- relocation */
 
-/* relocentr - if the long at a0 is not 0 add d1; a0 += 4 */
-static void relocentr(void)
+/* relocentr: a pointer of the module made absolute (if not 0) */
+static void reloc(void *field, ULONG base)
 {
-    if (ML(a0, 0))
-        ML(a0, 0) += d1;
-    a0 += 4;
+    ULONG *p = field;
+
+    if (*p)
+        *p += base;
 }
 
-static void reloci(void)
+/* reloci: the samples; the waveforms of a synth/hybrid relative to it
+   (wforms - 1 with DBF: 0 gives 65536) */
+static void reloci(struct mmd *m, ULONG base)
 {
-    d0 = ML(a2, 24);
-    if (!d0)
+    UBYTE **s = m->smplarr;
+    UWORD k;
+
+    if (!s)
         return;
-    a0 = (UBYTE *)d0;
-    d0 = 0;
-    SETB(d0, MB(a1, msng_numsamples));
-    SETB(d0, d0 - 1);
-    do {                                        /* relocs */
-        relocentr();
-        d3 = ML(a0, -4);
-        if (d3) {
-            a3 = (UBYTE *)d3;
-            if (SW(MW(a3, 4)) < 0) {            /* synth: waveform pointers */
-                SETW(d2, MW(a3, 20));
-                a3 += 278;
-                SETW(d2, d2 - 1);
-                do {
-                    ML(a3, 0) += d3;
-                    a3 += 4;
-                } while (SETW(d2, d2 - 1), W(d2) != 0xffff);
-            }
+    k = (UBYTE)(m->song->numsamples - 1);       /* DBF: 0 samples = 256 */
+    do {
+        struct synth *sy;
+
+        reloc(s, base);
+        sy = (struct synth *)*s++;
+        if (sy && sy->type < 0) {
+            UBYTE **wf = sy->wf;
+            UWORD n = sy->wforms - 1;
+
+            do
+                *(ULONG *)wf++ += (ULONG)sy;
+            while (n-- != 0);
         }
-    } while (SETW(d0, d0 - 1), W(d0) != 0xffff);   /* DBF d0 */
+    } while (k-- != 0);
 }
 
-static void relocp(void)
+/* relocp: song, blocks, samples, expansion data */
+static void relocp(struct mmd *m, ULONG base)
 {
-    a0 = a2 + 8;
-    relocentr();
-    a0 += 4;
-    relocentr();
-    a0 += 4;
-    relocentr();
-    a0 += 4;
-    relocentr();
+    reloc(&m->song, base);
+    reloc(&m->blockarr, base);
+    reloc(&m->smplarr, base);
+    reloc(&m->expdata, base);
 }
 
-static void relocdmp(void)
+/* relocb: the blocks (numblocks - 1 with SUBQ.b and DBF), for MMD1 also
+   the BlockInfo of each (backwards from where the first loop ended) */
+static void relocb(struct mmd *m, ULONG base)
 {
-    d3 = ML(a0, -4);
-    if (!d3)
+    UBYTE **b = m->blockarr;
+    UWORD n = m->song->numblocks, k;
+
+    if (!b)
         return;
-    {
-        UBYTE *other = (UBYTE *)d3;             /* EXG.l a0,d3 */
-
-        d3 = (ULONG)a0;
-        a0 = other;
-    }
-    a0 += 4;
-    relocentr();
-    a0 = (UBYTE *)d3;
-}
-
-static void relocb(void)
-{
-    d0 = ML(a2, 16);
-    if (!d0)
-        return;
-    a0 = (UBYTE *)d0;
-    SETW(d0, MW(a1, msng_numblocks));
-    SETB(d0, d0 - 1);                           /* SUBQ.b */
+    k = (n & 0xff00) | (UBYTE)(n - 1);
     do
-        relocentr();
-    while (SETW(d0, d0 - 1), W(d0) != 0xffff);
-    if (MB(a2, 3) != '1')
+        reloc(b++, base);
+    while (k-- != 0);
+    if (!mmd1(m))
         return;
-    SETW(d0, MW(a1, msng_numblocks));           /* relocbi */
-    a3 = a0;
-    for (;;) {
-        SETW(d0, d0 - 1);
-        if (SW(d0) < 0)
-            return;
-        a3 -= 4;
-        a0 = MP(a3, 0);
-        a0 += 4;
-        relocentr();                            /* BlockInfo pointer */
-        a0 -= 4;
-        if (!ML(a0, 0))
+    for (k = n; (WORD)--k >= 0; ) {             /* relocbi */
+        UBYTE *block = *--b, *info;
+
+        reloc(block + 4, base);                 /* BlockInfo */
+        info = *(UBYTE **)(block + 4);
+        if (!info)
             continue;
-        a0 = MP(a0, 0);
-        relocentr();                            /* hldata */
-        relocentr();                            /* block name */
+        reloc(info, base);                      /* hldata */
+        reloc(info + 4, base);                  /* block name */
     }
 }
 
-static void relocmdd(void)
+/* RelocModule: the module (and the modules behind it) made absolute;
+   "MMDx" -> "RMDx" once */
+static void RelocModule(struct mmd *m)
 {
-    a0 -= 4;
-    if (!ML(a0, 0))
-        return;
-    a0 = MP(a0, 0);
-    SETW(d0, MW(a0, 0));                        /* # of msg dumps */
-    a0 += 8;
-    while (W(d0)) {                             /* mddloop: BEQ */
-        relocentr();
-        relocdmp();
-        SETW(d0, d0 - 1);
-    }
-}
+    ULONG base = (ULONG)m;
 
-static void RelocModule(void)
-{
-    if (MB(a2, 0) != 'M')
+    if (m->id[0] != 'M')
         return;
-    {
-        UBYTE *saved_a2 = a2, *saved_a3 = a3;   /* MOVEM.l a2-a3/d2-d3 */
-        ULONG saved_d2 = d2, saved_d3 = d3;
+    m->id[0] = 'R';
+    relocp(m, base);
+    reloci(m, base);
+    for (;;) {                                  /* rel_lp */
+        struct expdata *e;
+        ULONG next;
 
-        MB(a2, 0) = 'R';
-        d1 = (ULONG)a2;
-        relocp();
-        a1 = MP(a2, 8);
-        reloci();
-        for (;;) {                              /* rel_lp */
-            relocb();
-            d0 = ML(a2, 32);
-            if (!d0)
-                break;
-            a0 = (UBYTE *)d0;
-            relocentr();                        /* next module */
-            relocentr();                        /* InstrExt */
-            a0 += 4;
-            relocentr();                        /* annotxt */
-            a0 += 4;
-            relocentr();                        /* InstrInfo */
-            a0 += 8;
-            relocentr();                        /* rgbtable */
-            a0 += 4;
-            relocentr();                        /* NotationInfo */
-            relocentr();                        /* songname */
-            a0 += 4;
-            relocentr();                        /* MIDI dump */
-            relocmdd();
-            a0 = (UBYTE *)d0;
-            d0 = *(volatile ULONG *)a0;         /* next module (0 -> end) */
-            if (!d0)
-                break;
-            a2 = (UBYTE *)d0;
-            relocp();
-            a1 = MP(a2, 8);
+        relocb(m, base);
+        e = m->expdata;
+        if (!e)
+            break;
+        reloc(&e->nextmod, base);
+        reloc(&e->exp_smp, base);
+        reloc(&e->annotxt, base);
+        reloc(&e->iinfo, base);
+        reloc(&e->rgbtable, base);
+        reloc(&e->n_info, base);
+        reloc(&e->songname, base);
+        reloc(&e->dumps, base);
+        next = (ULONG)e;
+        if (e->dumps) {                         /* relocmdd */
+            UBYTE *p = e->dumps + 8;
+            UWORD n = *(UWORD *)e->dumps;
+
+            while (n) {                         /* mddloop */
+                UBYTE *dump;
+
+                reloc(p, base);
+                dump = *(UBYTE **)p;
+                p += 4;
+                if (dump)                       /* relocdmp */
+                    reloc(dump + 4, base);
+                n--;
+            }
+            /* BUG(orig) (#207): the dump count was loaded into the low
+               word of the register with the expansion address */
+            next &= 0xffff0000UL;
         }
-        a2 = saved_a2;
-        a3 = saved_a3;
-        d2 = saved_d2;
-        d3 = saved_d3;
+        next = *(volatile ULONG *)next;         /* next module (0 -> end) */
+        if (!next)
+            break;
+        m = (struct mmd *)next;
+        relocp(m, base);
     }
 }
 
 /* ------------------------------------------------------------ channels */
 
-static void ChannelOff(void)
+/* ChannelOff: the channel's synth off and its DMA (channels 0-3); the
+   number counts as a byte (ASL.b #2) */
+static void ChannelOff(UWORD ch)
 {
-    a0 = (UBYTE *)&db;
-    a1 = (UBYTE *)db.trackdataptrs;
-    SETB(d0, d0 << 2);
-    a1 += SW(d0);                               /* ADDA.w d0,a1 */
-    SETB(d0, B(d0) >> 2);
-    a1 = MP(a1, 0);
-    if (SB(d0) < 4) {                           /* CMP.b #4,d0:BGE */
-        ML(a1, trk_synthptr) = 0;
-        MB(a1, trk_synthtype) = 0;
-        d1 = 1;
-        SETW(d1, d1 << (d0 & 63));
-        DMACON = W(d1);
+    UBYTE off = ch << 2;
+    struct track *t = *(struct track **)((UBYTE *)db.trackdataptrs
+                                         + (WORD)((ch & 0xff00) | off));
+
+    off >>= 2;
+    if ((BYTE)off < 4) {
+        t->synthptr = 0;
+        t->synthtype = 0;
+        DMACON = 1 << (off & 63);
     }
 }
 
 static void SoundOff(void)
 {
-    ULONG saved_d2 = d2;
+    UWORD ch = 15;
 
-    for (d2 = 15; ; ) {
-        d0 = d2;
-        ChannelOff();
-        SETW(d2, d2 - 1);
-        if (W(d2) == 0xffff)
-            break;
-    }
+    do
+        ChannelOff(ch);
+    while (ch-- != 0);
     db.module = 0;
-    d2 = saved_d2;
 }
 
 /* --------------------------------------------------------------- synth */
 
-static void synth_getwf(void)
+/* the envelope or vibrato waveform n of a synth (its data) */
+static UBYTE *getwf(struct synth *sy, UBYTE n)
 {
-    SETW(d1, (WORD)SB(d1));
-    SETW(d1, d1 + d1);
-    SETW(d1, d1 + d1);
-    a1 = a0 + 278;
-    a1 += SW(d1);
-    a1 = MP(a1, 0);
-    a1 += 2;
+    return sy->wf[(BYTE)n] + 2;
 }
 
-/* synth_start2 - d0 = synth instrument, d5 = period; result d5 */
-static void synth_start2(void)
+/* synth_start2: one tick of the volume and the waveform table, the
+   arpeggio and the vibrato of a synth/hybrid note; per = its period,
+   returns the new one.  A table position counts from 1 (the command at
+   table[pos - 1], its argument behind it) as a word whose low byte is
+   counted (ADDQ.b). */
+static UWORD synth(struct track *t, UWORD per)
 {
-    UBYTE *saved_a3 = a3;
+    struct synth *sy = t->synthptr;
+    volatile UBYTE *regs = t->audioaddr;
+    const UBYTE *vt = (const UBYTE *)sy + 21, *wt = (const UBYTE *)sy + 149;
+    UWORD pos;
+    UBYTE c;
 
-    a0 = (UBYTE *)d0;
-    a3 = MP(a5, trk_audioaddr);
-    if (--MSB(a5, trk_volxcnt) > 0)             /* SUBQ.b:BGT synth_wftbl */
-        goto synth_wftbl;
-    MB(a5, trk_volxcnt) = MB(a5, trk_initvolxspd);
-    SETB(d0, MB(a5, trk_volchgspd));
-    if (B(d0)) {
-        SETB(d0, d0 + MB(a5, trk_synvol));
-        if (SB(d0) < 0)
-            d0 = 0;
-        if (SB(d0) > 0x40)
-            d0 = 0x40;
-        MB(a5, trk_synvol) = d0;
+    if (--t->volxcnt > 0)
+        goto wftable;
+    t->volxcnt = t->initvolxspd;
+    if (t->volchgspd) {
+        BYTE v = t->volchgspd + t->synvol;
+
+        if (v < 0)
+            v = 0;
+        if (v > 0x40)
+            v = 0x40;
+        t->synvol = v;
     }
-    d1 = ML(a5, trk_envptr);                    /* synth_nochgvol */
-    if (d1) {
-        a1 = (UBYTE *)d1;
-        SETB(d0, *a1++);
-        SETB(d0, d0 + 128);
-        SETB(d0, B(d0) >> 2);
-        MB(a5, trk_synvol) = d0;
-        if (++MSB(a5, trk_envcount) < 0) {      /* ADDQ.b:BPL */
-            MB(a5, trk_envcount) = 0;
-            a1 = MP(a5, trk_envrestart);
+    if (t->envptr) {                            /* the envelope */
+        UBYTE *e = t->envptr;
+
+        t->synvol = (UBYTE)(*e++ + 128) >> 2;
+        if (++t->envcount < 0) {
+            t->envcount = 0;
+            e = t->envrestart;
         }
-        MP(a5, trk_envptr) = a1;
+        t->envptr = e;
     }
-    SETW(d0, MW(a5, trk_volcmd));               /* synth_novolenv */
-    if (MB(a5, trk_volwait)) {
-        if (--MSB(a5, trk_volwait) <= 0)
-            goto getvolcmd;
-        goto synth_wftbl;
+    pos = t->volcmd;
+    if (t->volwait && (BYTE)--t->volwait > 0)
+        goto wftable;
+    for (;;) {                                  /* getvolcmd */
+        pos = addb(pos, 1);
+        c = vt[(WORD)pos];
+        if ((BYTE)c >= 0) {                     /* a volume */
+            t->synvol = c;
+            break;
+        }
+        switch (c & 0x0f) {
+        case 0x0:                               /* SPD */
+            t->initvolxspd = vt[(WORD)pos + 1];
+            pos = addb(pos, 1);
+            continue;
+        case 0x1:                               /* WAI */
+            t->volwait = vt[(WORD)pos + 1];
+            pos = addb(pos, 1);
+            break;
+        case 0x2:                               /* CHD */
+            t->volchgspd = -vt[(WORD)pos + 1];
+            pos = addb(pos, 1);
+            continue;
+        case 0x3:                               /* CHU */
+            t->volchgspd = vt[(WORD)pos + 1];
+            pos = addb(pos, 1);
+            continue;
+        case 0x4:                               /* EN1 */
+        case 0x5:                               /* EN2: looping */
+            t->envptr = getwf(sy, vt[(WORD)pos + 1]);
+            t->envrestart = (c & 0x0f) == 0x5 ? t->envptr : 0;
+            t->envcount = 0;
+            pos = addb(pos, 1);
+            continue;
+        case 0x6:                               /* EN- */
+            t->envptr = 0;
+            continue;
+        case 0xa:                               /* JWS */
+            LO(t->wfcmd) = vt[(WORD)pos + 1];
+            t->wfwait = 0;
+            pos = addb(pos, 1);
+            continue;
+        case 0xb:                               /* HLT */
+        case 0xf:                               /* END */
+            pos = addb(pos, -1);
+            break;
+        case 0xe:                               /* JMP */
+            pos = (pos & 0xff00) | vt[(WORD)pos + 1];
+            continue;
+        default:                                /* 7 8 9 C D */
+            break;
+        }
+        break;
     }
-    goto getvolcmd;
-inccnt:
-    SETB(d0, d0 + 1);
-getvolcmd:
-    SETB(d0, d0 + 1);
-    SETB(d1, MB(a0 + SW(d0), 21));
-    if (SB(d1) >= 0) {
-        MB(a5, trk_synvol) = d1;
-        goto endvol;
-    }
-    SETW(d1, d1 & 0x000f);                      /* synth_cmd */
-    switch (W(d1)) {
-    case 0x0:
-        MB(a5, trk_initvolxspd) = MB(a0 + SW(d0), 22);
-        goto inccnt;
-    case 0x1:
-        MB(a5, trk_volwait) = MB(a0 + SW(d0), 22);
-        SETB(d0, d0 + 1);
-        goto endvol;
-    case 0x2:
-        SETB(d1, MB(a0 + SW(d0), 22));
-        SETB(d1, -B(d1));
-        MB(a5, trk_volchgspd) = d1;
-        goto inccnt;
-    case 0x3:
-        MB(a5, trk_volchgspd) = MB(a0 + SW(d0), 22);
-        goto inccnt;
-    case 0x4:
-        SETB(d1, MB(a0 + SW(d0), 22));
-        synth_getwf();
-        ML(a5, trk_envrestart) = 0;
-f4nd:
-        MP(a5, trk_envptr) = a1;
-        MB(a5, trk_envcount) = 0;
-        goto inccnt;
-    case 0x5:
-        SETB(d1, MB(a0 + SW(d0), 22));
-        synth_getwf();
-        MP(a5, trk_envrestart) = a1;
-        goto f4nd;
-    case 0x6:
-        ML(a5, trk_envptr) = 0;
-        goto getvolcmd;
-    case 0xa:
-        MB(a5, trk_wfcmd + 1) = MB(a0 + SW(d0), 22);
-        MB(a5, trk_wfwait) = 0;
-        goto inccnt;
-    case 0xb:
-    case 0xf:
-        SETB(d0, d0 - 1);                       /* syv_ff */
-        goto endvol;
-    case 0xe:
-        SETB(d0, MB(a0 + SW(d0), 22));          /* JMP */
-        goto getvolcmd;
-    default:                                    /* 7 8 9 c d */
-        goto endvol;
-    }
-endvol:
-    MW(a5, trk_volcmd) = d0;
-synth_wftbl:
-    d0 = 0;                                     /* RELVOL */
-    SETB(d0, MB(a5, trk_synvol));
-    d0 = MULU(d0, MW(a5, trk_trackvol));
-    SETW(d0, W(d0) >> 8);
-    MB(a5, trk_prevvol) = d0;
+    t->volcmd = pos;                            /* endvol */
 
-    a0 += 158;
-    if (--MSB(a5, trk_wfxcnt) > 0)
-        goto synth_arpeggio;
-    MB(a5, trk_wfxcnt) = MB(a5, trk_initwfxspd);
-    SETW(d0, MW(a5, trk_wfcmd));
-    SETW(d1, MW(a5, trk_wfchgspd));
-    if (W(d1)) {
-        SETW(d1, d1 + MW(a5, trk_perchg));
-        MW(a5, trk_perchg) = d1;
-    }
-    if (MB(a5, trk_wfwait)) {                   /* synth_tstwfwai */
-        if (--MB(a5, trk_wfwait) == 0)
-            goto getwfcmd;
-        goto synth_arpeggio;
-    }
-    goto getwfcmd;
-incwfc:
-    SETB(d0, d0 + 1);
-getwfcmd:
-    SETB(d0, d0 + 1);
-    SETB(d1, MB(a0 + SW(d0), -9));
-    if (SB(d1) >= 0) {
-        SETW(d1, (WORD)SB(d1));
-        SETW(d1, d1 + d1);
-        SETW(d1, d1 + d1);
-        a1 = MP(a0 + SW(d1), 120);
-        *(volatile UWORD *)(a3 + 4) = *(UWORD *)a1;     /* ac_len */
-        a1 += 2;
-        *(volatile ULONG *)a3 = (ULONG)a1;              /* ac_ptr */
-        goto wfend;
-    }
-    SETW(d1, d1 & 0x000f);                      /* synth_wfcmd */
-    switch (W(d1)) {
-    case 0x0:
-        MB(a5, trk_initwfxspd) = MB(a0 + SW(d0), -8);
-        goto incwfc;
-    case 0x1:
-        MB(a5, trk_wfwait) = MB(a0 + SW(d0), -8);
-        SETB(d0, d0 + 1);
-        goto wfend;
-    case 0x2:
-        d1 = 0;
-        SETB(d1, MB(a0 + SW(d0), -8));
-setsld:
-        MW(a5, trk_wfchgspd) = d1;
-        goto incwfc;
-    case 0x3:
-        SETB(d1, MB(a0 + SW(d0), -8));
-        SETB(d1, -B(d1));
-        SETW(d1, (WORD)SB(d1));
-        goto setsld;
-    case 0x4:
-        MB(a5, trk_synvibdep + 1) = MB(a0 + SW(d0), -8);
-        goto incwfc;
-    case 0x5:
-        MB(a5, trk_synthvibspd + 1) = MB(a0 + SW(d0), -8);
-        MB(a5, trk_synthvibspd + 1)++;
-        goto incwfc;
-    case 0x6:
-        MW(a5, trk_perchg) = 0;
-        SETW(d5, MW(a5, trk_prevper));
-        goto getwfcmd;
-    case 0x7:
-        SETB(d1, MB(a0 + SW(d0), -8));
-        SETW(d1, (WORD)SB(d1));
-        SETW(d1, d1 + d1);
-        SETW(d1, d1 + d1);
-        a1 = MP(a0 + SW(d1), 120);
-        a1 += 2;
-        MP(a5, trk_synvibwf) = a1;
-        goto incwfc;
-    case 0xa:
-        MB(a5, trk_volcmd + 1) = MB(a0 + SW(d0), -8);
-        MB(a5, trk_volwait) = 0;
-        goto incwfc;
-    case 0xb:
-    case 0xf:
-        SETB(d0, d0 - 1);                       /* syw_ff */
-        goto wfend;
-    case 0xc:
-        MW(a5, trk_arpsoffs) = d0;
-        MW(a5, trk_arpgoffs) = d0;
-        do
-            SETB(d0, d0 + 1);
-        while (SB(MB(a0 + SW(d0), -9)) >= 0);
-        goto getwfcmd;
-    case 0xd:
-        goto getwfcmd;
-    case 0xe:
-        SETB(d0, MB(a0 + SW(d0), -8));
-        goto getwfcmd;
-    default:                                    /* 8 9 */
-        goto wfend;
-    }
-wfend:
-    MW(a5, trk_wfcmd) = d0;
-synth_arpeggio:
-    SETW(d0, MW(a5, trk_arpgoffs));
-    if (W(d0)) {
-        d1 = 0;
-        SETB(d1, MB(a0 + SW(d0), -8));
-        SETB(d1, d1 + MB(a5, trk_prevnote2));
-        a1 = MP(a5, trk_periodtbl);
-        SETW(d1, d1 + d1);
-        SETW(d5, MW(a1, SW(d1)));
-        SETB(d0, d0 + 1);
-        if (SB(MB(a0 + SW(d0), -8)) < 0)
-            SETW(d0, MW(a5, trk_arpsoffs));
-        MW(a5, trk_arpgoffs) = d0;
-    }
-    SETW(d1, MW(a5, trk_synvibdep));            /* synth_vibrato */
-    if (W(d1)) {
-        SETW(d0, MW(a5, trk_synviboffs));
-        SETW(d0, W(d0) >> 4);
-        SETW(d0, d0 & 0x1f);
-        a0 = MP(a5, trk_synvibwf);
-        SETB(d0, MB(a0, SW(d0)));
-        SETW(d0, (WORD)SB(d0));
-        d0 = MULS(d0, d1);
-        SETW(d0, SW(d0) >> 8);
-        SETW(d5, d5 + d0);
-        SETW(d0, MW(a5, trk_synthvibspd));
-        MW(a5, trk_synviboffs) += W(d0);
-    }
-    SETW(d5, d5 + MW(a5, trk_perchg));          /* synth_rts */
-    if (SW(d5) < 113)
-        d1 = 113;                               /* BUG(orig) (#206): d1, not d5 */
-    a3 = saved_a3;
-}
+wftable:
+    t->prevvol = (UWORD)bl_mulu_w(t->synvol, t->trackvol) >> 8;     /* RELVOL */
+    if (--t->wfxcnt > 0)
+        goto arpeggio;
+    t->wfxcnt = t->initwfxspd;
+    pos = t->wfcmd;
+    if (t->wfchgspd)
+        t->perchg += t->wfchgspd;
+    if (t->wfwait && --t->wfwait != 0)
+        goto arpeggio;
+    for (;;) {                                  /* getwfcmd */
+        pos = addb(pos, 1);
+        c = wt[(WORD)pos];
+        if ((BYTE)c >= 0) {                     /* a waveform */
+            UBYTE *w = sy->wf[c];
 
-static void synth_start(void)
-{
-    SETW(d5, MW(a5, trk_prevper));
-    synth_start2();
+            AC_LEN(regs) = *(UWORD *)w;
+            AC_PTR(regs) = (ULONG)(w + 2);
+            break;
+        }
+        switch (c & 0x0f) {
+        case 0x0:                               /* SPD */
+            t->initwfxspd = wt[(WORD)pos + 1];
+            pos = addb(pos, 1);
+            continue;
+        case 0x1:                               /* WAI */
+            t->wfwait = wt[(WORD)pos + 1];
+            pos = addb(pos, 1);
+            break;
+        case 0x2:                               /* CHD */
+            t->wfchgspd = wt[(WORD)pos + 1];
+            pos = addb(pos, 1);
+            continue;
+        case 0x3:                               /* CHU */
+            t->wfchgspd = (WORD)(BYTE)-wt[(WORD)pos + 1];
+            pos = addb(pos, 1);
+            continue;
+        case 0x4:                               /* VBD */
+            LO(t->synvibdep) = wt[(WORD)pos + 1];
+            pos = addb(pos, 1);
+            continue;
+        case 0x5:                               /* VBS */
+            LO(t->synthvibspd) = wt[(WORD)pos + 1] + 1;
+            pos = addb(pos, 1);
+            continue;
+        case 0x6:                               /* RES */
+            t->perchg = 0;
+            per = t->prevper;
+            continue;
+        case 0x7:                               /* VWF */
+            t->synvibwf = (const BYTE *)getwf(sy, wt[(WORD)pos + 1]);
+            pos = addb(pos, 1);
+            continue;
+        case 0xa:                               /* JVS */
+            LO(t->volcmd) = wt[(WORD)pos + 1];
+            t->volwait = 0;
+            pos = addb(pos, 1);
+            continue;
+        case 0xb:                               /* HLT */
+        case 0xf:                               /* END */
+            pos = addb(pos, -1);
+            break;
+        case 0xc:                               /* ARP: up to its end */
+            t->arpsoffs = pos;
+            t->arpgoffs = pos;
+            do
+                pos = addb(pos, 1);
+            while ((BYTE)wt[(WORD)pos] >= 0);
+            continue;
+        case 0xd:                               /* ARE */
+            continue;
+        case 0xe:                               /* JMP */
+            pos = (pos & 0xff00) | wt[(WORD)pos + 1];
+            continue;
+        default:                                /* 8 9 */
+            break;
+        }
+        break;
+    }
+    t->wfcmd = pos;                             /* wfend */
+
+arpeggio:
+    pos = t->arpgoffs;
+    if (pos) {
+        UBYTE n = wt[(WORD)pos + 1] + t->prevnote2;
+
+        per = t->periodtbl[n];
+        pos = addb(pos, 1);
+        if ((BYTE)wt[(WORD)pos + 1] < 0)
+            pos = t->arpsoffs;
+        t->arpgoffs = pos;
+    }
+    if (t->synvibdep) {                         /* synth_vibrato */
+        BYTE v = t->synvibwf[(t->synviboffs >> 4) & 0x1f];
+
+        per += (WORD)bl_muls_w(v, t->synvibdep) >> 8;
+        t->synviboffs += t->synthvibspd;
+    }
+    per += t->perchg;
+    /* BUG(orig) (#206): the limit at 113 sets d1, not the period */
+    return per;
 }
 
 /* ------------------------------------------------------------ PlayNote */
 
-/* _PlayNote - d7 = track, d1 = note, d3 = instrument, a3 = its data */
-static void PlayNote(void)
+/* what _PlayNote leaves in d1 and d4: d4 (soffset, 64 after a synth note)
+   is the upper byte of a Bxx/1Dxx qualifier word of a later track (#203),
+   d1 the retrigger count of 1Fxx after the note delay (#205) */
+struct left {
+    ULONG d1, d4;
+};
+
+/* _PlayNote: note (0-based instrument instr, its song entry ins) on the
+   track ch: sample, IFF octave sample, synth or hybrid */
+static struct left playnote(struct track *t, UWORD ch, ULONG note, UWORD instr,
+                            struct instr *ins)
 {
-    d4 = (ULONG)a3;
-    if (!d4)
-        return;
-    d4 = 0;
-    SETW(d5, ChanMask);
-    if (!(d5 & (1UL << (d7 & 31))))
-        return;
-    d4 |= 1UL << (d7 & 31);                     /* BSET d7,d4 */
-    a0 = MP(a2, mmd_smplarr);
-    SETW(d3, d3 + d3);
-    SETW(d3, d3 + d3);
-    d5 = ML(a0, SW(d3));
-    SETB(d1, d1 + MB(a4, msng_playtransp));     /* inmem */
-    SETB(d1, d1 + MB(a3, inst_strans));
-    if (SB(d7) < 4) {
-        a1 = (UBYTE *)d5;
-        if (!d5 || SB(MB(a5, trk_synthtype)) <= 0 || MW(a1, 4) != 0xffff)
-            DMACON = W(d4);                     /* stpdma */
-        ML(a5, trk_synthptr) = 0;               /* nostpdma */
-    }
-    SETB(d1, d1 - 1);                           /* nodmaoff */
-    MB(a5, trk_fadespd) = 0;
-    MB(a5, trk_decay) = MB(a5, trk_initdecay);
-    MW(a5, trk_vibroffs) = 0;
-    db.dmaonmsk |= W(d4);
-    a0 = (UBYTE *)d5;
-    if (SW(MW(a0, 4)) < 0)
-        goto handleSynthnote;
-    MB(a5, trk_synthtype) = 0;
-tlwtst0:
-    while (SB(d1) < 0)
-        SETB(d1, d1 + 12);
-    if (SB(d1) > 62)
-        SETB(d1, d1 - 12);
-    d2 = 0;                                     /* endpttest */
-    d3 = 0;
-    SETW(d0, MW(a0, 4));
-    if (W(d0)) {                                /* iff5R3oct */
-        ULONG saved_d7 = d7;
+    struct mmd *m = db.module;
+    struct song *song = m->song;
+    struct left r = { note, 0 };
+    ULONG mask, sp, start, end, rep, repend, len;
+    UBYTE n;
+    UWORD per;
 
-        d7 = 0;
-        SETW(d7, d1);
-        d7 = bl_divu_w(d7, 12);                 /* octave */
-        d5 = d7;
-        if (SW(d7) >= 6)
-            d7 = 5;
-        d5 = SWAP(d5);                          /* note in the octave */
-        d1 = ML(a0, 0);
-        if (SW(d0) > 6)
-            d0 = 6;
-        SETB(d7, d7 + gid_addtable[SW(d0) - 1]);
-        SETB(d0, gid_divtable[SW(d0) - 1]);
-        d1 = bl_divu_w(d1, W(d0));              /* length of the highest octave */
-        d1 = SWAP(d1);
-        SETW(d1, 0);
-        d1 = SWAP(d1);
-        d0 = d1;
-        SETW(d2, MW(a3, inst_repeat));
-        SETW(d3, MW(a3, inst_replen));
-        d6 = 0;
-        SETB(d6, shiftcnt[SW(d7)]);
-        SETW(d2, W(d2) << (d6 & 63));
-        SETW(d3, W(d3) << (d6 & 63));
-        SETW(d1, W(d1) << (d6 & 63));
-        SETB(d6, mullencnt[SW(d7)]);
-        d0 = MULU(d0, d6);
-        d0 += (ULONG)a0;
-        d0 += 6;
-        d1 += d0;
-        a1 = PERIODTABLE0;
-        SETB(d6, MB(a5, trk_finetune));
-        SETB(d6, d6 + d6);
-        SETB(d6, d6 + d6);
-        SETW(d6, (WORD)SB(d6));
-        a1 = MP(a1, SW(d6));
-        MP(a5, trk_periodtbl) = a1;
-        SETB(d5, d5 + octstart[SW(d7)]);
-        SETB(d5, d5 + d5);
-        SETW(d5, MW(a1, SW(d5)));
-        d7 = saved_d7;
-    } else {
-        a1 = PERIODTABLE0;
-        SETB(d2, MB(a5, trk_finetune));
-        SETB(d2, d2 + d2);
-        SETB(d2, d2 + d2);
-        SETW(d2, (WORD)SB(d2));
-        a1 = MP(a1, SW(d2));
-        MP(a5, trk_periodtbl) = a1;
-        SETB(d1, d1 + d1);
-        SETW(d5, MW(a1, SW(d1)));
-        d0 = (ULONG)a0;
-        d0 += 6;                                /* skip structure */
-        d1 = ML(a0, 0);
-        d1 += d0;                               /* sample end */
-        SETW(d2, MW(a3, inst_repeat));
-        SETW(d3, MW(a3, inst_replen));
+    if (!ins)
+        return r;
+    if (!((ULONG)ChanMask & (1UL << (ch & 31))))
+        return r;
+    mask = 1UL << (ch & 31);
+    sp = *(ULONG *)((UBYTE *)m->smplarr + (WORD)(instr << 2));
+    n = note + song->playtransp + ins->strans;
+    if ((BYTE)ch < 4) {
+        if (!sp || (BYTE)t->synthtype <= 0 || SAMPLE(sp)->type != -1)
+            DMACON = (UWORD)mask;               /* stpdma */
+        t->synthptr = 0;
     }
-    d2 += d2;                                   /* gid_setrept */
-    d2 += d0;                                   /* repeat start */
-    if (W(d3) > 1) {
-        d3 += d3;
-        d3 += d2;                               /* repeat end */
+    n--;
+    t->fadespd = 0;
+    t->decay = t->initdecay;
+    t->vibroffs = 0;
+    t->tremoffs = 0;
+    db.dmaonmsk |= (UWORD)mask;
+    if (SAMPLE(sp)->type < 0)
+        goto synthnote;
+    t->synthtype = 0;
+sample:
+    while ((BYTE)n < 0)
+        n += 12;
+    if ((BYTE)n > 62)
+        n -= 12;
+    if (SAMPLE(sp)->type) {                     /* IFF octaves */
+        ULONG q = bl_divu_w(n, 12);
+        WORD type = SAMPLE(sp)->type;
+        UBYTE oct = (WORD)q >= 6 ? 5 : q, idx, sh;
+
+        if (type > 6)
+            type = 6;
+        idx = oct + gid_addtable[type - 1];
+        len = bl_divu_w(SAMPLE(sp)->length, gid_divtable[type - 1]) & 0xffff;
+        sh = shiftcnt[idx];
+        rep = (UWORD)(ins->repeat << sh);
+        repend = (UWORD)(ins->replen << sh);
+        start = sp + 6 + bl_mulu_w(len, mullencnt[idx]);
+        end = (UWORD)(len << sh) + start;
+        t->periodtbl = periods_of(t->finetune);
+        per = PERIOD(t->periodtbl, (UBYTE)((UBYTE)((q >> 16) + octstart[idx]) * 2));
+    } else {
+        t->periodtbl = periods_of(t->finetune);
+        per = PERIOD(t->periodtbl, (UBYTE)(n + n));
+        start = sp + 6;
+        end = SAMPLE(sp)->length + start;
+        rep = ins->repeat;
+        repend = ins->replen;
+    }
+    rep += rep;                                 /* gid_setrept */
+    rep += start;
+    if ((UWORD)repend > 1) {
+        repend += repend;
+        repend += rep;
     } else
-        d3 = 0;
-    d4 = 0;                                     /* gid_cont */
-    SETW(d4, MW(a5, trk_soffset));
-    d0 += d4;
-    if (!(d1 > d0))
-        d0 -= d4;
-    a1 = MP(a5, trk_audioaddr);
-    *(volatile ULONG *)a1 = d0;                 /* ac_ptr */
-    a1 += 4;
-    if (d3 > d0) {                              /* rRepeat */
-        ML(a5, trk_sampleptr) = d2;
-        d1 = d3;
-        d1 -= d0;
-        d1 >>= 1;
-        *(volatile UWORD *)a1 = W(d1);          /* ac_len */
-        a1 += 2;
-        d3 -= d2;
-        d3 >>= 1;
-        MW(a5, trk_samplelen) = d3;
+        repend = 0;
+    r.d4 = t->soffset;                          /* gid_cont */
+    start += r.d4;
+    if (!(end > start))
+        start -= r.d4;
+    AC_PTR(t->audioaddr) = start;
+    if (repend > start) {                       /* rRepeat */
+        t->sampleptr = rep;
+        r.d1 = len = (repend - start) >> 1;
+        AC_LEN(t->audioaddr) = len;
+        t->samplelen = (repend - rep) >> 1;
     } else {
-        MP(a5, trk_sampleptr) = db.chipzero;
-        MW(a5, trk_samplelen) = 1;
-        d1 -= d0;
-        d1 >>= 1;
-        *(volatile UWORD *)a1 = W(d1);
-        a1 += 2;
+        t->sampleptr = (ULONG)db.chipzero;
+        t->samplelen = 1;
+        r.d1 = len = (end - start) >> 1;
+        AC_LEN(t->audioaddr) = len;
     }
-    MW(a5, trk_prevper) = d5;                   /* retsn1 */
-    if (MB(a5, trk_synthtype))
-        goto hSn2;
-    return;
+    t->prevper = per;
+    if (t->synthtype)
+        goto hsn2;
+    return r;
 
-handleSynthnote:
-    MB(a5, trk_prevnote2) = d1;
-    MP(a5, trk_synthptr) = a0;
-    if (MW(a0, 4) == 0xfffe) {                  /* HYBRID */
-        MB(a5, trk_synthtype) = 0xff;
-        a0 = MP(a0, 278);
-        goto tlwtst0;
+synthnote:
+    t->prevnote2 = n;
+    t->synthptr = (struct synth *)sp;
+    if (SAMPLE(sp)->type == -2) {               /* HYBRID: the sample */
+        t->synthtype = 0xff;
+        sp = (ULONG)t->synthptr->wf[0];
+        goto sample;
     }
-    MB(a5, trk_synthtype) = 1;
-    a1 = PERIODTABLE0;
-    SETB(d0, MB(a5, trk_finetune));
-    SETB(d0, d0 + d0);
-    SETB(d0, d0 + d0);
-    SETW(d0, (WORD)SB(d0));
-    a1 = MP(a1, SW(d0));
-    a1 -= 48;
-    MP(a5, trk_periodtbl) = a1;
-    SETW(d1, d1 + d1);
-    SETW(d1, MW(a1, SW(d1)));
-    MW(a5, trk_prevper) = d1;
-    ML(a5, trk_sampleptr) = 0;
-hSn2:
-    a1 = a5 + trk_arpgoffs;
+    t->synthtype = 1;
+    t->periodtbl = periods_of(t->finetune) - 24;
+    per = PERIOD(t->periodtbl, (UWORD)(n + n));
+    r.d1 = (r.d1 & 0xffff0000UL) | per;
+    t->prevper = per;
+    t->sampleptr = 0;
+hsn2:
     {
+        ULONG *z = (ULONG *)&t->arpgoffs;       /* arpgoffs .. synvibdep */
         int i;
 
-        for (i = 0; i < 6; i++) {
-            ML(a1, 0) = 0;
-            a1 += 4;
-        }
+        for (i = 0; i < 6; i++)
+            *z++ = 0;
     }
-    ML(a1, 0) = (ULONG)sinetable;
-    a1 += 4;
-    MW(a1, 0) = 0;
-    a1 += 2;
-    a0 = MP(a5, trk_synthptr);
-    MW(a1, 0) = MW(a0, 18);
-    a1 += 2;
-    MB(a1, 0) = 0;
-    if (MB(a5, trk_cmd) == 0xe)
-        MB(a5, trk_wfcmd + 1) = MB(a5, trk_cmdqual);
-    d4 = 64;
+    t->synvibwf = sinetable;
+    t->synviboffs = 0;
+    t->initvolxspd = t->synthptr->volspeed;
+    t->initwfxspd = t->synthptr->wfspeed;
+    t->volchgspd = 0;
+    if (t->cmd == 0xe)
+        LO(t->wfcmd) = t->cmdqual;
+    r.d4 = 64;
+    return r;
 }
 
-/* playfxnote - replay the previous note (hold counter continued) */
-static void playfxnote(void)
+/* playfxnote: the previous note again (the hold counter continued by the
+   tick counter); returns d1 (#205) */
+static ULONG playfxnote(struct track *t, UWORD ch, UBYTE counter)
 {
-    ULONG saved_d3;
-    UBYTE *saved_a3;
+    BYTE c;
 
-    d1 = 0;
-    SETB(d1, MB(a5, trk_prevnote));
-    if (!B(d1))
-        return;
-    SETB(d0, MB(a5, trk_noteoffcnt));
-    if (SB(d0) >= 0)
-        SETB(d0, d0 + d3);
+    if (!t->prevnote)
+        return 0;
+    c = t->noteoffcnt;
+    if (c >= 0)
+        c += counter;
     else {
-        SETB(d0, MB(a5, trk_inithold));
-        if (!B(d0))
-            SETB(d0, 0xff);
+        c = t->inithold;
+        if (!c)
+            c = -1;
     }
-    MB(a5, trk_noteoffcnt) = d0;
-    saved_d3 = d3;
-    saved_a3 = a3;
-    d3 = 0;
-    SETB(d3, MB(a5, trk_previnstr));
-    a3 = MP(a5, trk_previnstra);
-    PlayNote();
-    d3 = saved_d3;
-    a3 = saved_a3;
+    t->noteoffcnt = c;
+    return playnote(t, ch, t->prevnote, t->previnstr, t->previnstra).d1;
 }
 
-static void cmd_F(void)
+/* Fxx in the ticks: F1/F2 replay on tick 3, F3 on ticks 2, 4 and 6, F8/F9
+   the filter */
+static void cmd_F(struct track *t, UWORD ch, UBYTE q, UBYTE counter)
 {
-    switch (B(d4)) {
+    switch (q) {
     case 0xf1:
     case 0xf2:
-        if (B(d3) == 3)
-            playfxnote();
+        if (counter == 3)
+            playfxnote(t, ch, counter);
         return;
     case 0xf3:
-        SETB(d0, d3);
-        SETB(d0, d0 & (2 + 4));
-        if (B(d0))
-            playfxnote();
+        if (counter & (2 + 4))
+            playfxnote(t, ch, counter);
         return;
     case 0xf8:
         CIAAPRA |= 2;                           /* filter off */
@@ -1205,7 +1096,8 @@ static void cmd_F(void)
 
 /* ------------------------------------------------------------ player */
 
-static void Wait1Lin(void)
+/* Wait1Lin: n + 1 raster lines (DBRA) */
+static void wait1lin(UWORD n)
 {
     UBYTE b;
 
@@ -1213,842 +1105,652 @@ static void Wait1Lin(void)
         b = VHPOSRB;
         while (VHPOSRB == b)
             ;
-        SETW(d1, d1 - 1);
-    } while (W(d1) != 0xffff);
+    } while (n-- != 0);
 }
 
-static void pushnewvals(void)
+/* the volume slide of 5, 6, A, D: up by the high nibble, else down */
+static void volslide(struct track *t, UBYTE q)
 {
-    a5 = MP(a1, 0);
-    a1 += 4;
-    {
-        int c = d0 & 1;
+    BYTE v;
 
-        SETB(d0, B(d0) >> 1);
-        if (!c)
-            return;
-    }
-    d1 = ML(a5, trk_sampleptr);
-    if (!d1)
-        return;
-    a0 = MP(a5, trk_audioaddr);
-    *(volatile ULONG *)a0 = d1;
-    *(volatile UWORD *)(a0 + 4) = MW(a5, trk_samplelen);
-}
-
-/* the volume slide of 5, 6, A, D */
-static void plr_volslide(void)
-{
-    SETB(d0, d4);
-    d1 = 0;
-    SETB(d1, MB(a5, trk_prevvol));
-    SETB(d0, d0 & 0xf0);
-    if (B(d0)) {                                /* crescendo */
-        SETB(d0, B(d0) >> 4);
-        SETB(d1, d1 + d0);
-        if (SB(d1) > 64)
-            d1 = 64;
+    if (q & 0xf0) {
+        v = t->prevvol + (q >> 4);
+        if (v > 64)
+            v = 64;
     } else {
-        SETB(d1, d1 - d4);
-        if (SB(d1) < 0)
-            d1 = 0;
+        v = t->prevvol - q;
+        if (v < 0)
+            v = 0;
     }
-    MB(a5, trk_prevvol) = d1;
+    t->prevvol = v;
 }
 
-static ULONG IntHandler(void)
+/* the instrument of the song by number (number * 8 as a word) */
+static struct instr *instrument(struct song *song, UBYTE i)
 {
-    UBYTE *noteptr, **tdp;
+    return (struct instr *)((UBYTE *)song + (WORD)(i << 3));
+}
 
-    if (SB(db.bpmcounter[0]) >= 0) {
-        if (SB(--db.bpmcounter[0]) > 0)
-            goto plr_exit;
+/* plr_loop0: the notes and the commands of a new line */
+static int newline(struct mmd *m, struct song *song)
+{
+    struct track **tdp = db.trackdataptrs;
+    UBYTE *block = curblock(m), *noteptr;
+    UWORD line = m->pline;
+    /* d4 of the original: the qualifier in the low byte, the upper byte
+       left over from a track before (PlayNote, 19xx) - Bxx and 1Dxx take
+       the whole word (#203) */
+    UWORD qual = 0;
+    UBYTE ch = 0;
+
+    if (!mmd1(m)) {
+        db.numtracks = block[0];
+        db.numlines = block[1];
+        noteptr = block + 2 + (WORD)bl_mulu_w((UWORD)(line * 3), db.numtracks);
+    } else {
+        noteptr = block + 8 + bl_mulu_w((UWORD)(line * 4), *(UWORD *)block);
+        db.numtracks = *(UWORD *)block;
+        db.numlines = *(UWORD *)(block + 2);
+    }
+    do {
+        struct track *t = *tdp++;
+        UBYTE note, instr, cmd, q, *p;
+
+        /* BUG(orig) (#334): a masked track is skipped before its note is
+           read, so noteptr stays: the next track reads this track's note */
+        if (!(ChanMask & (1 << (ch & 7))))
+            continue;
+        p = noteptr;
+        if (!mmd1(m)) {
+            note = *p++;
+            instr = *p >> 4;
+            cmd = *p++ & 0x0f;
+            t->cmdqual = *p++;
+            if (note & 0x80) {
+                note &= ~0x80;
+                instr |= 0x10;
+            }
+            if (note & 0x40) {
+                note &= ~0x40;
+                instr |= 0x20;
+            }
+        } else {
+            note = *p++;
+            if ((BYTE)note < 0)
+                note = 0;
+            instr = *p++;
+            cmd = *p++ & 0x1f;
+            t->cmdqual = *p++;
+        }
+        noteptr = p;
+        instr &= 0x3f;
+        if (instr) {
+            UBYTE *h = db.holdvals + --instr;
+            struct instr *ins = instrument(song, instr);
+
+            t->previnstr = instr;
+            t->inithold = h[0];
+            t->initdecay = h[63];
+            t->finetune = h[126];
+            t->previnstra = ins;
+            t->prevvol = (UWORD)bl_mulu_w(ins->svol, t->trackvol) >> 8;
+            t->stransp = ins->strans;
+            t->soffset = 0;
+        }
+        t->cmd = cmd;
+        if (!cmd)
+            goto fx;
+        q = t->cmdqual;
+        qual = (qual & 0xff00) | q;
+        switch (cmd) {
+        case 0x0f:                              /* tempo */
+            if (!q) {
+                db.nextblock = 1;               /* F00: pattern break */
+                break;
+            }
+            if (q <= 0xf0)
+                break;
+            if (q == 0xf2)
+                goto f_1f;
+            if (q == 0xfe) {                    /* FFE: stop */
+                m->pstate = 0;
+                SoundOff();
+                return 0;
+            }
+            if (q == 0xfd) {                    /* FFD: period only */
+                if ((BYTE)--note < 0)
+                    continue;
+                t->prevper = PERIOD(t->periodtbl, (UBYTE)(note + note));
+                note = 0;
+                break;
+            }
+            if (q == 0xff)
+                ChannelOff(ch);
+            break;
+        case 0x1f:                              /* note delay */
+f_1f:
+            t->prevnote = note;
+            t->noteoffcnt = t->inithold;
+            if (!t->noteoffcnt)
+                t->noteoffcnt = -1;
+            continue;
+        case 0x0e:
+            if ((BYTE)ch <= 3)
+                LO(t->wfcmd) = q;
+            break;
+        case 0x0c: {                            /* volume */
+            UWORD v = q;
+
+            if ((BYTE)q < 0) {
+                v = q & 0x7f;
+                instrument(song, t->previnstr)->svol = v;
+            } else if (!(song->flags & 0x10))
+                v = (UBYTE)((q >> 4) * 10 + (q & 0x0f));      /* decimal */
+            t->prevvol = (UWORD)bl_mulu_w(v, t->trackvol) >> 8;
+            break;
+        }
+        case 0x09:
+            song->tempo2 = q;
+            break;
+        case 0x15:
+            t->finetune = q;
+            break;
+        case 0x16:                              /* repeat loop */
+            if (!q) {
+                db.rptline = m->pline;
+                break;
+            }
+            if (db.rptcounter) {
+                if (!--db.rptcounter)
+                    break;
+            } else
+                LO(db.rptcounter) = q;
+            db.nextblockline = db.rptline + 1;
+            break;
+        case 0x1c:
+            instrument(song, t->previnstr)->midipreset = q;
+            break;
+        case 0x08:                              /* hold / decay */
+            t->initdecay = q >> 4;
+            t->inithold = q & 0x0f;
+            qual = (qual & 0xff00) | q >> 4;
+            break;
+        case 0x19:                              /* sample offset */
+            qual <<= 8;
+            t->soffset = qual;
+            break;
+        case 0x0b:                              /* BUG(orig) (#203): the word */
+            m->pseqnum = qual;
+            db.nextblock = 0xff;
+            break;
+        case 0x1d:
+            db.nextblock = 1;
+            db.nxtnoclrln = 0xff;
+            db.nextblockline = ++qual;
+            break;
+        case 0x03:                              /* portamento */
+            if ((BYTE)--note >= 0) {
+                UBYTE n = note + song->playtransp + t->stransp;
+
+                if ((BYTE)n < 0)
+                    continue;
+                t->porttrgper = PERIOD(t->periodtbl, (UWORD)(n + n));
+            }
+            if (q)
+                t->prevportspd = q;
+            continue;
+        }
+fx:
+        if (!note)
+            continue;
+        t->prevnote = note;
+        t->noteoffcnt = t->inithold;
+        if (!t->noteoffcnt)
+            t->noteoffcnt = -1;
+        qual = playnote(t, ch, note, t->previnstr, t->previnstra).d4;
+    } while (ch = (UBYTE)(ch + 1), (WORD)ch < (WORD)db.numtracks);
+    return 1;
+}
+
+/* advance the song pointer: the next line, a pattern break, the next
+   position (only the low bytes of pseqnum and pblock) */
+static void nextline(struct mmd *m, struct song *song)
+{
+    UWORD line;
+
+    if (db.nextblockline) {
+        line = db.nextblockline - 1;
+        db.nextblockline = 0;
+    } else
+        line = m->pline + 1;
+    if (line > db.numlines || db.nextblock) {   /* plr_chgblock */
+        if (!db.nxtnoclrln)
+            line = 0;
+        if (m->pstate < 0) {
+            UWORD pos = m->pseqnum;
+
+            if ((BYTE)db.nextblock >= 0)
+                pos++;
+            if (!((WORD)pos < (WORD)song->songlen))
+                pos = 0;
+            LO(m->pseqnum) = pos;
+            LO(m->pblock) = song->playseq[(WORD)pos];
+        }
+        db.nextblock = 0;
+        db.nxtnoclrln = 0;
+    }
+    m->pline = line;
+}
+
+/* hold: the notes held on into the new line (no new note, or a note with
+   command 3) get the ticks of the line added */
+static void hold(struct mmd *m, struct song *song)
+{
+    struct track **tdp = db.trackdataptrs;
+    UBYTE *block = curblock(m), *p, tempo = song->tempo2;
+    UWORD line = m->pline, k;
+
+    if (!mmd1(m)) {
+        UBYTE tracks = block[0];
+
+        p = block + 2 + (WORD)bl_mulu_w((UWORD)(line * 3), tracks);
+        k = (UBYTE)(tracks - 1);
+        do {
+            struct track *t = *tdp++;
+
+            if (t->noteoffcnt >= 0
+                && (p[0] ? !(p[0] & 0x3f) || (UBYTE)((p[1] & 0x0f) - 3) == 0 : (p[1] & 0xf0)))
+                t->noteoffcnt += tempo;
+            p += 3;
+        } while (k-- != 0);
+    } else {
+        UWORD tracks = *(UWORD *)block;
+
+        p = block + 8 + bl_mulu_w((UWORD)(line * 4), tracks);
+        k = (tracks & 0xff00) | (UBYTE)(tracks - 1);
+        do {
+            struct track *t = *tdp++;
+
+            if (t->noteoffcnt >= 0
+                && (p[0] ? !(p[0] & 0x7f) || (UBYTE)(p[2] - 3) == 0 : (p[1] & 0x3f)))
+                t->noteoffcnt += tempo;
+            p += 4;
+        } while (k-- != 0);
+    }
+}
+
+/* plr_loop1: the commands in every tick, the synth tables, the period
+   and the volume to Paula (tracks 0-3) */
+static void ticks(struct song *song, UBYTE counter)
+{
+    struct track **tdp = db.trackdataptrs;
+    UBYTE ch = 0;
+
+    do {
+        struct track *t = *tdp++;
+        UBYTE cmd, q;
+        UWORD per = 0;
+        ULONG d1;
+        BYTE v;
+
+        if (!(ChanMask & (1 << (ch & 7))))
+            continue;
+        cmd = t->cmd;
+        q = t->cmdqual;
+        if ((WORD)ch >= 4)
+            continue;
+        if (t->noteoffcnt >= 0 && --t->noteoffcnt < 0) {   /* hold ends */
+            if (t->synthtype) {
+                LO(t->volcmd) = t->decay;
+                t->volwait = 0;
+            } else {
+                t->fadespd = t->decay;
+                if (!t->fadespd)
+                    DMACON = 1 << (ch & 31);
+            }
+        }
+        if (t->fadespd) {                       /* plr_nowaitoff */
+            t->prevvol -= t->fadespd;
+            if ((BYTE)t->prevvol < 0) {
+                t->prevvol = 0;
+                t->fadespd = 0;
+            }
+        }
+        switch (cmd) {                          /* plr_nofade */
+        case 0x01:
+            if (!counter && (song->flags & 0x20))
+                break;
+            t->prevper -= q;
+            per = t->prevper;
+            if ((WORD)per < 113) {
+                per = 113;
+                t->prevper = per;
+            }
+            break;
+        case 0x11:
+            if (counter)
+                break;
+            t->prevper -= q;
+            per = t->prevper;
+            break;
+        case 0x02:
+            if (!counter && (song->flags & 0x20))
+                break;
+            t->prevper += q;
+            per = t->prevper;
+            break;
+        case 0x12:
+            if (counter)
+                break;
+            t->prevper += q;
+            per = t->prevper;
+            break;
+        case 0x00: {                            /* arpeggio */
+            UBYTE n;
+
+            if (!q)
+                break;
+            switch (bl_divu_w(counter, 3) >> 16) {
+            case 0:
+                n = (q & 0x0f) + t->prevnote;
+                break;
+            case 1:
+                n = (q >> 4) + t->prevnote;
+                break;
+            default:
+                n = t->prevnote;
+                break;
+            }
+            n = n - 1 + song->playtransp + t->stransp;
+            per = PERIOD(t->periodtbl, (UBYTE)(n + n));
+            goto newtmp;
+        }
+        case 0x14:
+            t->vibshift = 6;
+            goto vibrato;
+        case 0x04:
+            t->vibshift = 5;
+vibrato:
+            if (counter || !q)
+                goto nonvib;
+            if (q & 0x0f)
+                t->vibrsz = q & 0x0f;
+            if (!(q & 0xf0))
+                goto nonvib;
+            t->vibrspd = ((q & 0xf0) >> 3) & 0x3e;
+nonvib: {
+            WORD prod = bl_muls_w(sinetable[(t->vibroffs >> 2) & 0x1f], t->vibrsz);
+            UWORD sh = t->vibshift & 63;
+
+            per = sh >= 16 ? (prod < 0 ? 0xffff : 0) : (UWORD)(prod >> sh);
+            per += t->prevper;
+            t->vibroffs += t->vibrspd;
+            goto newtmp;
+        }
+        case 0x06:
+            if (!counter && (song->flags & 0x20))
+                break;
+            volslide(t, q);
+            goto nonvib;
+        case 0x07:                              /* tremolo */
+            if (counter || !q)
+                goto nontre;
+            if (q & 0x0f)
+                t->tremsz = q & 0x0f;
+            if (!(q & 0xf0))
+                goto nonvib;                    /* BUG(orig) (#204) */
+            t->tremspd = ((q & 0xf0) >> 2) & 0x3e;
+nontre: {
+            WORD prod = bl_muls_w(sinetable[(t->tremoffs >> 3) & 0x1f], t->tremsz);
+
+            t->tremoffs += t->tremspd;
+            v = t->prevvol + (UBYTE)(prod >> 7);
+            if (v < 0)
+                v = 0;
+            if (v > 64)
+                v = 64;
+            t->tempvol = v;
+            break;
+        }
+        case 0x0a:
+        case 0x0d:
+            if (!counter && (song->flags & 0x20))
+                break;
+            volslide(t, q);
+            break;
+        case 0x1a:
+            if (counter)
+                break;
+            v = t->prevvol + q;
+            if (v > 64)                         /* voltest */
+                v = 64;
+            t->prevvol = v;
+            break;
+        case 0x1b:
+            if (counter)
+                break;
+            v = t->prevvol - q;
+            if (v < 0)                          /* voltest0 */
+                v = 0;
+            t->prevvol = v;
+            break;
+        case 0x05:
+            if (!counter && (song->flags & 0x20))
+                break;
+            volslide(t, q);
+            goto portamento;
+        case 0x03:
+            if (!counter && (song->flags & 0x20))
+                break;
+portamento: {
+            UWORD target = t->porttrgper, p = t->prevper, spd = t->prevportspd;
+
+            if (!target)
+                break;
+            if (p > target) {                   /* subper */
+                p -= spd;
+                if ((WORD)p > (WORD)target)
+                    goto notreached;
+            } else {
+                p += spd;
+                if (!((WORD)p >= (WORD)target))
+                    goto notreached;
+            }
+            p = target;                         /* targreached */
+            t->porttrgper = 0;
+notreached:
+            t->prevper = p;
+            per = p;
+            break;
+        }
+        case 0x13:
+            per = t->prevper;
+            if ((BYTE)counter >= 3)
+                break;
+            per -= q;
+            break;
+        case 0x1e:                              /* block delay */
+            if (db.blkdelay)
+                break;
+            db.blkdelay = q + 1;
+            break;
+        case 0x18:                              /* note cut */
+            if (counter != q)
+                break;
+            t->prevvol = 0;
+            break;
+        case 0x1f:                              /* note delay / retrigger */
+            d1 = q;
+            if (q >> 4) {
+                if ((BYTE)counter < (BYTE)(q >> 4))
+                    break;
+                if (counter == q >> 4)
+                    d1 = playfxnote(t, ch, counter);    /* BUG(orig) (#205) */
+            }
+            if (!(d1 & 0x0f))                   /* nonotedelay */
+                break;
+            if (!(bl_divu_w(counter, d1 & 0x0f) >> 16))
+                playfxnote(t, ch, counter);
+            break;
+        case 0x0f:
+            cmd_F(t, ch, q, counter);
+            break;
+        default:                                /* 08 09 0b 0c 0e 10 15-17 19 1c 1d */
+            break;
+        }
+        /* fx_xx */
+        per = t->synthptr ? synth(t, t->prevper) : t->prevper;
+        goto tmpper;
+newtmp:
+        if (t->synthptr)
+            per = synth(t, per);
+tmpper:
+        AC_PER(t->audioaddr) = per;
+        if (!per)
+            continue;
+        if (t->tempvol >= 0) {
+            AC_VOL(t->audioaddr) = t->tempvol;
+            t->tempvol = -1;
+        } else
+            AC_VOL(t->audioaddr) = t->prevvol;
+    } while (ch = (UBYTE)(ch + 1), (WORD)ch < (WORD)db.numtracks);
+}
+
+/* _IntHandler: one timing pulse */
+static void IntHandler(void)
+{
+    struct mmd *m;
+    struct song *song;
+    UBYTE counter;
+    UWORD dma;
+    int k, bit;
+
+    if ((BYTE)db.bpmcounter[0] >= 0) {          /* SEQ: every 4th pulse */
+        if ((BYTE)--db.bpmcounter[0] > 0)
+            return;
         db.bpmcounter[0] = 4;
     }
-    a2 = db.module;
-    if (!a2)
-        goto plr_exit;
-    if (!MW(a2, mmd_pstate))
-        goto plr_exit;
+    m = db.module;
+    if (!m || !m->pstate)
+        return;
     db.dmaonmsk = 0;
-    a4 = MP(a2, mmd_songinfo);
-    d3 = 0;
-    SETB(d3, MB(a2, mmd_counter));
-    SETB(d3, d3 + 1);
-    if (SB(d3) < SB(MB(a4, msng_tempo2))) {
-        MB(a2, mmd_counter) = d3;
-        if (B(d3))
-            goto plr_fxtime;
+    song = m->song;
+    counter = m->counter + 1;
+    if ((BYTE)counter < (BYTE)song->tempo2) {
+        m->counter = counter;
+        if (counter)
+            goto fxtime;
     }
-    MB(a2, mmd_counter) = 0;                    /* plr_pnewnote */
-    if (db.blkdelay) {
-        if (--db.blkdelay)
-            goto nonewnote;
+    m->counter = 0;                             /* plr_pnewnote */
+    if (!db.blkdelay || !--db.blkdelay) {
+        if (!newline(m, song))
+            return;
+        nextline(m, song);
+        hold(m, song);
     }
-    SETW(d0, MW(a2, mmd_pblock));               /* plr_noblkdelay */
-    a0 = MP(a2, mmd_blockarr);
-    SETW(d0, d0 + d0);
-    SETW(d0, d0 + d0);
-    a1 = MP(a0, SW(d0));
-    SETW(d0, MW(a2, mmd_pline));
-    if (MB(a2, 3) != '1') {
-        SETW(d1, d0);
-        SETW(d0, d0 + d0);
-        SETW(d0, d0 + d1);
-        db.numtracks = 0;
-        db.numlines = 0;
-        db.numtracks = *a1++;
-        db.numlines = *a1;
-        d0 = MULU(d0, db.numtracks);
-        noteptr = a1 + 1 + SW(d0);
-    } else {
-        SETW(d0, d0 + d0);
-        SETW(d0, d0 + d0);
-        d0 = MULU(d0, MW(a1, 0));
-        noteptr = a1 + 8 + (LONG)d0;
-        db.numtracks = MW(a1, 0);
-        a1 += 2;
-        db.numlines = MW(a1, 0);
-    }
-    d7 = 0;                                     /* plr_begloop */
-    d4 = 0;
-    tdp = db.trackdataptrs;
-plr_loop0:
-    d5 = 0;
-    a5 = *tdp++;
-    /* BUG(orig) (#334): a masked track is skipped before its note is read, so
-       noteptr stays: the next track reads this track's note */
-    if (!(B(ChanMask) & (1 << (d7 & 7))))
-        goto plr_endloop0;
-    d3 = 0;
-    a1 = noteptr;
-    if (MB(a2, 3) != '1') {
-        SETB(d5, *a1++);
-        SETB(d6, *a1++);
-        MB(a5, trk_cmdqual) = *a1++;
-        SETB(d3, d6);
-        SETW(d6, d6 & 0x0f);
-        SETB(d3, B(d3) >> 4);
-        if (d5 & 0x80) {
-            SETB(d5, d5 & ~0x80);
-            d3 |= 0x10;
-        }
-        if (d5 & 0x40) {
-            SETB(d5, d5 & ~0x40);
-            d3 |= 0x20;
-        }
-    } else {
-        SETB(d5, *a1++);
-        if (SB(d5) < 0)
-            d5 = 0;
-        SETB(d3, *a1++);
-        SETB(d6, *a1++);
-        SETW(d6, d6 & 0x1f);
-        MB(a5, trk_cmdqual) = *a1++;
-    }
-    noteptr = a1;                               /* plr_nngok */
-    SETW(d3, d3 & 0x3f);
-    if (W(d3)) {
-        SETB(d3, d3 - 1);
-        MB(a5, trk_previnstr) = d3;
-        a0 = db.holdvals;
-        a0 += SW(d3);
-        MB(a5, trk_inithold) = MB(a0, 0);
-        MB(a5, trk_initdecay) = MB(a0, 63);
-        MB(a5, trk_finetune) = MB(a0, 126);
-        SETW(d3, d3 << 3);
-        a3 = a4 + SW(d3);
-        MP(a5, trk_previnstra) = a3;
-        d0 = 0;
-        SETB(d0, MB(a3, inst_svol));
-        d0 = MULU(d0, MW(a5, trk_trackvol));
-        SETW(d0, W(d0) >> 8);
-        MB(a5, trk_prevvol) = d0;
-        MB(a5, trk_stransp) = MB(a3, inst_strans);
-        MW(a5, trk_soffset) = 0;
-    }
-    MB(a5, trk_cmd) = d6;                       /* noinstnum */
-    if (!B(d6))
-        goto fx;
-    SETB(d4, MB(a5, trk_cmdqual));
-    SETB(d6, d6 + d6);
-    SETW(d0, f_table[W(d6) >> 1]);
-    switch (W(d6) >> 1) {
-    case 0x0f:                                  /* tempo */
-        if (!B(d4)) {
-            db.nextblock = 1;                   /* F00: pattern break */
-            goto fx;
-        }
-        if (!(B(d4) > 0xf0))
-            goto fx;
-        if (B(d4) == 0xf2)
-            goto f_1f;
-        if (B(d4) == 0xfe) {                    /* FFE: stop */
-            MW(a2, mmd_pstate) = 0;
-            SoundOff();
-            goto plr_exit;
-        }
-        if (B(d4) == 0xfd) {                    /* FFD: period only */
-            a0 = MP(a5, trk_periodtbl);
-            SETB(d5, d5 - 1);
-            if (SB(d5) < 0)
-                goto plr_endloop0;
-            SETB(d5, d5 + d5);
-            MW(a5, trk_prevper) = MW(a0, SW(d5));
-            d5 = 0;
-            goto fx;
-        }
-        if (B(d4) == 0xff) {
-            SETW(d0, d7);
-            ChannelOff();
-        }
-        goto fx;
-    case 0x1f:
-f_1f:
-        MB(a5, trk_prevnote) = d5;
-        d5 = 0;
-        MB(a5, trk_noteoffcnt) = MB(a5, trk_inithold);
-        if (!MB(a5, trk_noteoffcnt))
-            MB(a5, trk_noteoffcnt) = 0xff;
-        goto plr_endloop0;
-    case 0x0e:
-        if (SB(d7) > 3)
-            goto fx;
-        MB(a5, trk_wfcmd + 1) = d4;
-        goto fx;
-    case 0x0c:                                  /* volume */
-        SETB(d0, d4);
-        if (SB(d0) < 0) {
-            SETB(d0, d0 & 0x7f);
-            d1 = 0;
-            SETB(d1, MB(a5, trk_previnstr));
-            SETW(d1, d1 << 3);
-            MB(a4 + SW(d1), inst_svol) = d0;
-        } else if (!(MB(a4, msng_flags) & 0x10)) {
-            SETB(d0, B(d0) >> 4);
-            d0 = MULU(d0, 10);
-            SETB(d1, d4);
-            SETB(d1, d1 & 0x0f);
-            SETB(d0, d0 + d1);
-        }
-        d0 = MULU(d0, MW(a5, trk_trackvol));    /* plr_setvol */
-        SETW(d0, W(d0) >> 8);
-        MB(a5, trk_prevvol) = d0;
-        goto fx;
-    case 0x09:
-        MB(a4, msng_tempo2) = d4;
-        goto fx;
-    case 0x15:
-        MB(a5, trk_finetune) = d4;
-        goto fx;
-    case 0x16:                                  /* repeat loop */
-        if (!B(d4)) {
-            db.rptline = MW(a2, mmd_pline);
-            goto fx;
-        }
-        if (db.rptcounter) {
-            if (!--db.rptcounter)
-                goto fx;
-        } else
-            *((UBYTE *)&db.rptcounter + 1) = d4;
-        SETW(d0, db.rptline);
-        SETW(d0, d0 + 1);
-        db.nextblockline = d0;
-        goto fx;
-    case 0x1c:
-        d1 = 0;
-        SETB(d1, MB(a5, trk_previnstr));
-        SETW(d1, d1 << 3);
-        MB(a4 + SW(d1), inst_midipreset) = d4;
-        goto fx;
-    case 0x08:                                  /* hold / decay */
-        SETB(d0, d4);
-        SETB(d4, B(d4) >> 4);
-        SETB(d0, d0 & 0x0f);
-        MB(a5, trk_initdecay) = d4;
-        MB(a5, trk_inithold) = d0;
-        goto fx;
-    case 0x19:
-        SETW(d4, d4 << 8);
-        MW(a5, trk_soffset) = d4;
-        goto fx;
-    case 0x0b:
-        MW(a2, mmd_pseqnum) = d4;
-        db.nextblock = 0xff;
-        goto fx;
-    case 0x1d:
-        db.nextblock = 1;
-        db.nxtnoclrln = 0xff;
-        SETW(d4, d4 + 1);
-        db.nextblockline = d4;
-        goto fx;
-    case 0x03:                                  /* portamento */
-        SETB(d5, d5 - 1);
-        if (SB(d5) >= 0) {
-            a0 = MP(a5, trk_periodtbl);
-            SETB(d5, d5 + MB(a4, msng_playtransp));
-            SETB(d5, d5 + MB(a5, trk_stransp));
-            if (SB(d5) < 0)
-                goto plr_endloop0;
-            SETW(d5, d5 + d5);
-            MW(a5, trk_porttrgper) = MW(a0, SW(d5));
-        }
-        if (!B(d4))
-            goto plr_endloop0;
-        MB(a5, trk_prevportspd) = d4;
-        goto plr_endloop0;
-    default:
-        goto fx;
-    }
-fx:
-    if (!B(d5))
-        goto plr_endloop0;
-    MB(a5, trk_prevnote) = d5;
-    SETW(d1, d5);
-    d3 = 0;
-    SETB(d3, MB(a5, trk_previnstr));
-    a3 = MP(a5, trk_previnstra);
-    MB(a5, trk_noteoffcnt) = MB(a5, trk_inithold);
-    if (!MB(a5, trk_noteoffcnt))
-        MB(a5, trk_noteoffcnt) = 0xff;
-    PlayNote();
-plr_endloop0:
-    SETB(d7, d7 + 1);
-    if (SW(d7) < SW(db.numtracks))
-        goto plr_loop0;
+    counter = m->counter;                       /* nonewnote */
+fxtime:
+    ticks(song, counter);
+    dma = db.dmaonmsk;                          /* plr_endfx */
+    if (!dma)
+        return;
+    dma = (dma & ChanMask) | 0x8000;
+    wait1lin(8);
+    DMACON = dma;
+    wait1lin(8);
+    /* pushnewvals: the repeat part.  BUG(orig) (#208): for a channel mask
+       with gaps the k-th channel of the mask takes track k and bit k */
+    for (bit = 0, k = 0; bit < 4; bit++) {
+        struct track *t;
 
-    a3 = &db.nextblock;                         /* advance song pointer */
-    SETW(d1, db.nextblockline);
-    if (W(d1)) {
-        db.nextblockline = 0;
-        SETW(d1, d1 - 1);
-    } else {
-        SETW(d1, MW(a2, mmd_pline));
-        SETW(d1, d1 + 1);
-    }
-    if (W(d1) > db.numlines || db.nextblock) {  /* plr_chgblock */
-        if (!db.nxtnoclrln)
-            d1 = 0;
-        if (SW(MW(a2, mmd_pstate)) < 0) {
-            SETW(d0, MW(a2, mmd_pseqnum));
-            if (SB(db.nextblock) >= 0)
-                SETW(d0, d0 + 1);
-            if (!(SW(d0) < SW(MW(a4, msng_songlen))))
-                d0 = 0;
-            MB(a2, mmd_pseqnum + 1) = d0;
-            a0 = a4 + msng_playseq;
-            SETB(d0, MB(a0, SW(d0)));
-            MB(a2, mmd_pblock + 1) = d0;
-        }
-        MW(a3, 0) = 0;                          /* plr_nonewseq */
-    }
-    MW(a2, mmd_pline) = d1;                     /* plr_nochgblock */
-
-    /* hold: continue holding the notes of the new line */
-    a5 = (UBYTE *)db.trackdataptrs;
-    a0 = MP(a2, mmd_blockarr);
-    SETW(d0, MW(a2, mmd_pblock));
-    SETW(d0, d0 + d0);
-    SETW(d0, d0 + d0);
-    a1 = MP(a0, SW(d0));
-    SETW(d0, MW(a2, mmd_pline));
-    SETB(d3, MB(a4, msng_tempo2));
-    if (MB(a2, 3) != '1') {
-        SETB(d7, MB(a1, 0));
-        SETW(d1, d0);
-        SETW(d0, d0 + d0);
-        SETW(d0, d0 + d1);
-        d0 = MULU(d0, d7);
-        a3 = a1 + 2 + SW(d0);
-        SETB(d7, d7 - 1);
-        do {
-            a1 = MP(a5, 0);
-            a5 += 4;
-            if (SB(MB(a1, trk_noteoffcnt)) >= 0) {
-                SETB(d1, MB(a3, 0));
-                if (B(d1)) {
-                    SETB(d1, d1 & 0x3f);
-                    if (B(d1)) {
-                        SETB(d1, MB(a3, 1));
-                        SETB(d1, d1 & 0x0f);
-                        SETB(d1, d1 - 3);
-                        if (B(d1))
-                            goto holdendb;
-                    }
-                } else {
-                    SETB(d1, MB(a3, 1));
-                    SETB(d1, d1 & 0xf0);
-                    if (!B(d1))
-                        goto holdendb;
-                }
-                MB(a1, trk_noteoffcnt) += B(d3);
-            }
-holdendb:
-            a3 += 3;
-            SETW(d7, d7 - 1);
-        } while (W(d7) != 0xffff);
-    } else {
-        SETW(d7, MW(a1, 0));
-        SETW(d0, d0 + d0);
-        SETW(d0, d0 + d0);
-        d0 = MULU(d0, d7);
-        a3 = a1 + 8 + (LONG)d0;
-        SETB(d7, d7 - 1);
-        do {
-            a1 = MP(a5, 0);
-            a5 += 4;
-            if (SB(MB(a1, trk_noteoffcnt)) >= 0) {
-                SETB(d1, MB(a3, 0));
-                if (B(d1)) {
-                    SETB(d1, d1 & 0x7f);
-                    if (B(d1)) {
-                        SETB(d1, MB(a3, 2));
-                        SETB(d1, d1 - 3);
-                        if (B(d1))
-                            goto holdend;
-                    }
-                } else {
-                    SETB(d0, MB(a3, 1));
-                    SETB(d0, d0 & 0x3f);
-                    if (!B(d0))
-                        goto holdend;
-                }
-                MB(a1, trk_noteoffcnt) += B(d3);
-            }
-holdend:
-            a3 += 4;
-            SETW(d7, d7 - 1);
-        } while (W(d7) != 0xffff);
-    }
-nonewnote:
-    d3 = 0;
-    SETB(d3, MB(a2, mmd_counter));
-plr_fxtime:
-    a3 = (UBYTE *)db.trackdataptrs;
-    d7 = 0;
-plr_loop1:
-    a5 = MP(a3, 0);
-    a3 += 4;
-    d4 = 0;
-    d5 = 0;
-    d6 = 0;
-    if (!(B(ChanMask) & (1 << (d7 & 7))))
-        goto endl;
-    SETB(d6, MB(a5, trk_cmd));
-    SETB(d4, MB(a5, trk_cmdqual));
-    if (SW(d7) >= 4)
-        goto endl;
-    if (SB(MB(a5, trk_noteoffcnt)) >= 0) {      /* hold */
-        if (SB(--MB(a5, trk_noteoffcnt)) < 0) {
-            if (MB(a5, trk_synthtype)) {
-                MB(a5, trk_volcmd + 1) = MB(a5, trk_decay);
-                MB(a5, trk_volwait) = 0;
-            } else {
-                MB(a5, trk_fadespd) = MB(a5, trk_decay);
-                if (!MB(a5, trk_fadespd)) {
-                    d5 |= 1UL << (d7 & 31);
-                    DMACON = W(d5);
-                    d5 = 0;
-                }
-            }
+        if (!(ChanMask & (1 << bit)))
+            continue;
+        t = db.trackdataptrs[k];
+        if ((dma >> k++) & 1 && t->sampleptr) {
+            AC_PTR(t->audioaddr) = t->sampleptr;
+            AC_LEN(t->audioaddr) = t->samplelen;
         }
     }
-    SETB(d0, MB(a5, trk_fadespd));              /* plr_nowaitoff */
-    if (B(d0)) {
-        MB(a5, trk_prevvol) -= B(d0);
-        if (SB(MB(a5, trk_prevvol)) < 0) {
-            MB(a5, trk_prevvol) = 0;
-            MB(a5, trk_fadespd) = 0;
-        }
-    }
-    SETB(d6, d6 + d6);                          /* plr_nofade */
-    SETW(d0, fx_table[W(d6) >> 1]);
-    switch (W(d6) >> 1) {
-    case 0x01:
-        if (!B(d3) && (MB(a4, msng_flags) & 0x20))
-            goto fx_xx;
-        MW(a5, trk_prevper) -= W(d4);
-        SETW(d5, MW(a5, trk_prevper));
-        if (SW(d5) < 113) {
-            SETW(d5, 113);
-            MW(a5, trk_prevper) = d5;
-        }
-        goto fx_xx;
-    case 0x11:
-        if (B(d3))
-            goto fx_xx;
-        MW(a5, trk_prevper) -= W(d4);
-        SETW(d5, MW(a5, trk_prevper));
-        goto fx_xx;
-    case 0x02:
-        if (!B(d3) && (MB(a4, msng_flags) & 0x20))
-            goto fx_xx;
-        MW(a5, trk_prevper) += W(d4);
-        SETW(d5, MW(a5, trk_prevper));
-        goto fx_xx;
-    case 0x12:
-        if (B(d3))
-            goto fx_xx;
-        MW(a5, trk_prevper) += W(d4);
-        SETW(d5, MW(a5, trk_prevper));
-        goto fx_xx;
-    case 0x00:                                  /* arpeggio */
-        if (!B(d4))
-            goto fx_xx;
-        d0 = d3;
-        d0 = bl_divu_w(d0, 3);
-        d0 = SWAP(d0);
-        if (!W(d0)) {
-            SETB(d4, d4 & 0x0f);
-            SETB(d4, d4 + MB(a5, trk_prevnote));
-        } else {
-            SETB(d0, d0 - 1);
-            if (!B(d0)) {
-                SETB(d4, B(d4) >> 4);
-                SETB(d4, d4 + MB(a5, trk_prevnote));
-            } else
-                SETB(d4, MB(a5, trk_prevnote));
-        }
-        SETB(d4, d4 - 1);                       /* fx_doarp */
-        SETB(d4, d4 + MB(a4, msng_playtransp));
-        SETB(d4, d4 + MB(a5, trk_stransp));
-        SETB(d4, d4 + d4);
-        a1 = MP(a5, trk_periodtbl);
-        SETW(d5, MW(a1, SW(d4)));
-        goto plr_newtmp;
-    case 0x14:
-        MB(a5, trk_vibshift) = 6;
-        goto vib_cont;
-    case 0x04:
-        MB(a5, trk_vibshift) = 5;
-vib_cont:
-        if (B(d3))
-            goto nonvib;
-        SETB(d1, d4);
-        if (!B(d1))
-            goto nonvib;
-        SETW(d1, d1 & 0x0f);
-        if (W(d1))
-            MW(a5, trk_vibrsz) = d1;
-        SETB(d4, d4 & 0xf0);                    /* plr_chgvibspd */
-        if (!B(d4))
-            goto nonvib;
-        SETB(d4, B(d4) >> 3);
-        SETB(d4, d4 & 0x3e);
-        MB(a5, trk_vibrspd) = d4;
-nonvib:
-        SETB(d0, MB(a5, trk_vibroffs));
-        SETB(d0, B(d0) >> 2);
-        SETW(d0, d0 & 0x1f);
-        d1 = 0;
-        SETB(d5, sinetable[W(d0)]);
-        SETW(d5, (WORD)SB(d5));
-        d5 = MULS(d5, MW(a5, trk_vibrsz));
-        SETB(d1, MB(a5, trk_vibshift));
-        {
-            UWORD sh = d1 & 63;
-
-            SETW(d5, sh >= 16 ? (SW(d5) < 0 ? 0xffff : 0) : (UWORD)(SW(d5) >> sh));
-        }
-        SETW(d5, d5 + MW(a5, trk_prevper));
-        SETB(d0, MB(a5, trk_vibrspd));
-        MB(a5, trk_vibroffs) += B(d0);
-        goto plr_newtmp;
-    case 0x06:
-        if (!B(d3) && (MB(a4, msng_flags) & 0x20))
-            goto fx_xx;
-        plr_volslide();
-        goto nonvib;
-    case 0x07:                                  /* tremolo */
-        if (B(d3))
-            goto nontre;
-        SETB(d1, d4);
-        if (!B(d1))
-            goto nontre;
-        SETW(d1, d1 & 0x0f);
-        if (W(d1))
-            MW(a5, trk_tremsz) = d1;
-        SETB(d4, d4 & 0xf0);                    /* plr_chgtrespd */
-        if (!B(d4))
-            goto nonvib;                        /* BUG(orig) (#204) */
-        SETB(d4, B(d4) >> 2);
-        SETB(d4, d4 & 0x3e);
-        MB(a5, trk_tremspd) = d4;
-nontre:
-        SETB(d0, MB(a5, trk_tremoffs));
-        SETB(d0, B(d0) >> 3);
-        SETW(d0, d0 & 0x1f);
-        d1 = 0;
-        SETB(d5, sinetable[W(d0)]);
-        SETW(d5, (WORD)SB(d5));
-        d5 = MULS(d5, MW(a5, trk_tremsz));
-        SETW(d5, SW(d5) >> 7);
-        SETB(d0, MB(a5, trk_tremspd));
-        MB(a5, trk_tremoffs) += B(d0);
-        SETB(d1, MB(a5, trk_prevvol));
-        SETB(d1, d1 + d5);
-        if (SB(d1) < 0)
-            d1 = 0;
-        if (SB(d1) > 64)
-            d1 = 64;
-        MB(a5, trk_tempvol) = d1;
-        goto fx_xx;
-    case 0x0a:
-    case 0x0d:
-        if (!B(d3) && (MB(a4, msng_flags) & 0x20))
-            goto fx_xx;
-        plr_volslide();
-        goto fx_xx;
-    case 0x1a:
-        if (B(d3))
-            goto fx_xx;
-        SETB(d1, MB(a5, trk_prevvol));
-        SETB(d1, d1 + d4);
-        if (SB(d1) > 64)                        /* voltest */
-            d1 = 64;
-        MB(a5, trk_prevvol) = d1;
-        goto fx_xx;
-    case 0x1b:
-        if (B(d3))
-            goto fx_xx;
-        SETB(d1, MB(a5, trk_prevvol));
-        SETB(d1, d1 - d4);
-        if (SB(d1) < 0)                         /* voltest0 */
-            d1 = 0;
-        MB(a5, trk_prevvol) = d1;
-        goto fx_xx;
-    case 0x05:
-        if (!B(d3) && (MB(a4, msng_flags) & 0x20))
-            goto fx_xx;
-        plr_volslide();
-        goto fx_03nocnt0;
-    case 0x03:
-        if (!B(d3) && (MB(a4, msng_flags) & 0x20))
-            goto fx_xx;
-fx_03nocnt0:
-        SETW(d0, MW(a5, trk_porttrgper));
-        if (!W(d0))
-            goto fx_xx;
-        SETW(d1, MW(a5, trk_prevper));
-        SETB(d4, MB(a5, trk_prevportspd));
-        if (W(d1) > W(d0)) {                    /* subper */
-            SETW(d1, d1 - d4);
-            if (SW(d1) > SW(d0))
-                goto targnreach;
-        } else {
-            SETW(d1, d1 + d4);
-            if (!(SW(d1) >= SW(d0)))
-                goto targnreach;
-        }
-        SETW(d1, MW(a5, trk_porttrgper));       /* targreached */
-        MW(a5, trk_porttrgper) = 0;
-targnreach:
-        MW(a5, trk_prevper) = d1;
-        SETW(d5, d1);
-        goto fx_xx;
-    case 0x13:
-        SETW(d5, MW(a5, trk_prevper));
-        if (SB(d3) >= 3)
-            goto fx_xx;
-        SETW(d5, d5 - d4);
-        goto fx_xx;
-    case 0x1e:
-        if (db.blkdelay)
-            goto fx_xx;
-        SETW(d4, d4 + 1);
-        db.blkdelay = d4;
-        goto fx_xx;
-    case 0x18:
-        if (B(d3) != B(d4))
-            goto fx_xx;
-        MB(a5, trk_prevvol) = 0;
-        goto fx_xx;
-    case 0x1f:                                  /* note delay / retrigger */
-        SETB(d1, d4);
-        SETB(d4, B(d4) >> 4);
-        if (B(d4)) {
-            if (SB(d3) < SB(d4))
-                goto fx_xx;
-            if (B(d3) == B(d4))
-                playfxnote();
-        }
-        SETW(d1, d1 & 0x0f);                    /* nonotedelay */
-        if (!W(d1))
-            goto fx_xx;
-        d0 = 0;
-        SETB(d0, d3);
-        d0 = bl_divu_w(d0, W(d1));
-        d0 = SWAP(d0);
-        if (W(d0))
-            goto fx_xx;
-        playfxnote();
-        goto fx_xx;
-    case 0x0f:
-        cmd_F();
-        goto fx_xx;
-    default:                                    /* 08 09 0b 0c 0e 10 15-17 19 1c 1d */
-        goto fx_xx;
-    }
-fx_xx:
-    d0 = ML(a5, trk_synthptr);
-    if (d0) {
-        synth_start();
-        goto plr_tmpper;
-    }
-    SETW(d5, MW(a5, trk_prevper));              /* plr_nosynth */
-    goto plr_tmpper;
-plr_newtmp:
-    d0 = ML(a5, trk_synthptr);
-    if (d0)
-        synth_start2();
-plr_tmpper:
-    a1 = MP(a5, trk_audioaddr);
-    *(volatile UWORD *)(a1 + 6) = W(d5);        /* ac_per */
-    if (!W(d5))
-        goto endl;
-    SETB(d0, MB(a5, trk_tempvol));
-    if (SB(d0) >= 0) {
-        *(volatile UBYTE *)(a1 + 9) = d0;       /* ac_vol+1 */
-        MB(a5, trk_tempvol) = 0xff;
-    } else
-        *(volatile UBYTE *)(a1 + 9) = MB(a5, trk_prevvol);
-endl:
-    SETB(d7, d7 + 1);
-    if (SW(d7) < SW(db.numtracks))
-        goto plr_loop1;
-
-    SETW(d0, db.dmaonmsk);                      /* plr_endfx */
-    if (!W(d0))
-        goto plr_exit;
-    SETW(d0, d0 & ChanMask);
-    d0 |= 0x8000;
-    d1 = 8;
-    Wait1Lin();
-    DMACON = W(d0);
-    d1 = 8;
-    Wait1Lin();
-    a1 = (UBYTE *)db.trackdataptrs;
-    if (B(ChanMask) & 1)
-        pushnewvals();
-    if (B(ChanMask) & 2)
-        pushnewvals();
-    if (B(ChanMask) & 4)
-        pushnewvals();
-    if (B(ChanMask) & 8)
-        pushnewvals();
-plr_exit:
-    return 1;
 }
 
 /* ------------------------------------------------- module start / stop */
 
-static void InitModule(void)
+/* InitModule: track volumes = master * track volume / 16, hold, decay
+   and finetune of the instruments from the InstrExt (or cleared) */
+static void InitModule(struct mmd *m)
 {
-    UBYTE *saved_a2 = a2, *saved_a3 = a3;
-    ULONG s2d = d2;
+    struct song *song;
+    struct expdata *e;
+    UBYTE *h = db.holdvals;
+    UWORD master;
     int i;
 
-    if (!a0)
-        goto exit;
-    a1 = MP(a0, mmd_songinfo);
-    SETB(d0, MB(a1, msng_mastervol));
-    SETW(d0, (WORD)SB(d0));
-    a1 += msng_trkvol;
-    a2 = (UBYTE *)db.trackdataptrs;
-    for (i = 0; i < 16; i++) {
-        SETB(d2, *a1++);
-        SETW(d2, (WORD)SB(d2));
-        a3 = MP(a2, 0);
-        a2 += 4;
-        d2 = MULU(d0, d2);
-        SETW(d2, W(d2) >> 4);
-        MW(a3, trk_trackvol) = d2;
+    if (!m)
+        return;
+    song = m->song;
+    master = (WORD)(BYTE)song->mastervol;
+    for (i = 0; i < 16; i++)
+        db.trackdataptrs[i]->trackvol
+            = (UWORD)bl_mulu_w(master, (WORD)(BYTE)song->trkvol[i]) >> 4;
+    e = m->expdata;
+    if (e && e->exp_smp && e->s_ext_entries) {
+        UBYTE *x = e->exp_smp;
+        UWORD n = e->s_ext_entries - 1;
+
+        do {
+            if ((WORD)e->s_ext_entrsz > 3)
+                h[126] = x[3];                  /* finetune */
+            h[63] = x[1];                       /* decay */
+            *h++ = x[0];                        /* hold */
+            x += (WORD)e->s_ext_entrsz;
+        } while (n-- != 0);
+        return;
     }
-    SETW(d1, 0xffff);                           /* DBF d1 */
-    a2 = db.holdvals;
-    a3 = a0;
-    d0 = ML(a0, mmd_expdata);
-    if (!d0)
-        goto clrhlddec;
-    a1 = (UBYTE *)d0;
-    d0 = ML(a1, 4);                             /* exp_smp */
-    if (!d0)
-        goto clrhlddec;
-    a0 = (UBYTE *)d0;
-    SETW(d2, MW(a1, 8));                        /* # of entries */
-    if (!W(d2))
-        goto clrhlddec;
-    SETW(d2, d2 - 1);
-    SETW(d0, MW(a1, 10));                       /* entry size */
-    do {
-        if (SW(d0) > 3)
-            MB(a2, 126) = MB(a0, 3);            /* finetune */
-        MB(a2, 63) = MB(a0, 1);                 /* decay */
-        *a2++ = MB(a0, 0);                      /* hold */
-        a0 += SW(d0);
-        SETW(d2, d2 - 1);
-    } while (W(d2) != 0xffff);
-    goto exit;
-clrhlddec:
-    SETW(d0, 3 * 63 - 1);
-    do {
-        *a2++ = 0;
-        SETW(d0, d0 - 1);
-    } while (W(d0) != 0xffff);
-exit:
-    a2 = saved_a2;
-    a3 = saved_a3;
-    d2 = s2d;
+    for (i = 0; i < 3 * 63; i++)                /* clrhlddec */
+        *h++ = 0;
 }
 
-/* _PlayModule / contpoint - d0.b = clear the position (ST d0) */
-static void PlayModule(int clear)
+/* _PlayModule / contpoint - clear = from the start (ST d0) */
+static void PlayModule(struct mmd *m, int clear)
 {
-    UBYTE *m = a0;
+    struct song *song;
+    UWORD n;
 
-    InitModule();
-    a0 = m;
-    d1 = (ULONG)a0;
-    if (!a0)
+    InitModule(m);
+    if (!m)
         return;
     db.module = 0;
-    SETW(d1, db.modnum);
-    if (W(d1)) {
+    n = db.modnum;
+    if (n) {
         do {                                    /* PM_nextmod */
-            if (!ML(a0, mmd_expdata))
+            if (!m->expdata || !m->expdata->nextmod)
                 break;
-            a1 = MP(a0, mmd_expdata);
-            if (!ML(a1, 0))
-                break;
-            a0 = MP(a1, 0);
-            SETW(d1, d1 - 1);
-        } while (SW(d1) > 0);
+            m = m->expdata->nextmod;
+        } while ((WORD)--n > 0);
     }
-    a1 = MP(a0, mmd_songinfo);                  /* PM_modfound */
-    MB(a0, mmd_counter) = MB(a1, msng_tempo2);
-    if (MB(a1, msng_flags) & 1)
+    song = m->song;                             /* PM_modfound */
+    m->counter = song->tempo2;
+    if (song->flags & 1)
         CIAAPRA &= ~2;
     else
         CIAAPRA |= 2;
     if (clear) {
-        ML(a0, mmd_pline) = 0;
+        m->pline = 0;
+        m->pseqnum = 0;
         db.rptline = 0;
         db.rptcounter = 0;
         db.blkdelay = 0;
     }
-    SETW(d1, MW(a0, mmd_pseqnum));
-    SETW(d1, d1 + msng_playseq);
-    SETB(d1, MB(a1, SW(d1)));
-    MB(a0, mmd_pblock + 1) = d1;
-    MW(a0, mmd_pstate) = 0xffff;
-    db.module = a0;
-    db.bpmcounter[0] = (MB(a1, msng_flags2) & 0x20) ? 0 : 0xff;     /* SEQ */
+    LO(m->pblock) = ((UBYTE *)song)[(WORD)(m->pseqnum + offsetof(struct song, playseq))];
+    m->pstate = -1;
+    db.module = m;
+    db.bpmcounter[0] = (song->flags2 & 0x20) ? 0 : 0xff;      /* SEQ */
 }
 
 static void StopPlayer(void)
 {
     if (db.module) {
-        MW(db.module, mmd_pstate) = 0;
+        db.module->pstate = 0;
         db.module = 0;
     }
     SoundOff();
@@ -2165,16 +1867,12 @@ static void BLITZ_ROUTINE _StartMedModule_c(void)
         return;
     }
     Music = 0;
-    UseMod = (UBYTE *)obj[2];
-    a2 = UseMod;
-    RelocModule();
-    a0 = UseMod;
-    PlayModule(1);
+    UseMod = (struct mmd *)obj[2];
+    RelocModule(UseMod);
+    PlayModule(UseMod, 1);
     ChanMask = 15;
-    a2 = UseMod;                                /* _startmusic */
-    RelocModule();
-    a0 = UseMod;
-    PlayModule(1);
+    RelocModule(UseMod);                        /* _startmusic */
+    PlayModule(UseMod, 1);
     Music = 1;
 }
 BLITZ_THUNK(_StartMedModule, _StartMedModule_c, "d1/a0-a1");
@@ -2186,13 +1884,14 @@ static void BLITZ_ROUTINE _PlayMed_c(void)
 }
 BLITZ_THUNK(_PlayMed, _PlayMed_c, "d1/a0-a1");
 
-/* JumpMed n - position n-1 of the song, line 0 */
+/* JumpMed n - position n-1 of the song, line 0 (BUG(orig) #210: without a
+   playing module at address 44-47) */
 static void BLITZ_ROUTINE _JumpMed_c(UWORD n BL_REG(d0))
 {
-    UBYTE *m = db.module;
+    struct mmd *m = db.module;
 
-    MW(m, mmd_pseqnum) = n - 1;
-    MW(m, mmd_pline) = 0;
+    m->pseqnum = n - 1;
+    m->pline = 0;
     db.nextblock = 0xff;
 }
 BLITZ_THUNK(_JumpMed, _JumpMed_c, "d1/a0-a1");
@@ -2200,42 +1899,48 @@ BLITZ_THUNK(_JumpMed, _JumpMed_c, "d1/a0-a1");
 /* SetMedVolume v - track volumes = v * track volume / 16 */
 static void BLITZ_ROUTINE _SetMedVolume_c(UWORD v BL_REG(d0))
 {
-    UBYTE *song = MP(UseMod, mmd_songinfo) + msng_trkvol;
+    UBYTE *trkvol = UseMod->song->trkvol;
     int i;
 
     for (i = 0; i < 16; i++) {
-        UWORD tv = (WORD)(BYTE)*song++;
+        UWORD tv = (WORD)(BYTE)*trkvol++;
 
-        MW(db.trackdataptrs[i], trk_trackvol) = (UWORD)MULU(tv, v) >> 4;
+        db.trackdataptrs[i]->trackvol = (UWORD)bl_mulu_w(tv, v) >> 4;
     }
 }
 BLITZ_THUNK(_SetMedVolume, _SetMedVolume_c, "d1/a0-a1");
 
 /* GetMedVolume/Note/Instr(channel) - read and clear */
-static ULONG getclear(UWORD ch, int off)
+static UBYTE *trackfield(UWORD ch, UBYTE *field)
 {
-    UBYTE *track = *(UBYTE **)((UBYTE *)db.trackdataptrs + (WORD)(UWORD)(ch << 2));
-    ULONG v = MB(track, off);
+    struct track *t = *(struct track **)((UBYTE *)db.trackdataptrs + (WORD)(UWORD)(ch << 2));
 
-    MB(track, off) = 0;
+    return (UBYTE *)t + (field - (UBYTE *)&db.t03d[0]);
+}
+
+static ULONG getclear(UBYTE *p)
+{
+    ULONG v = *p;
+
+    *p = 0;
     return v;
 }
 
 static ULONG BLITZ_ROUTINE _GetMedVolume_c(UWORD ch BL_REG(d0))
 {
-    return getclear(ch, trk_prevvol);
+    return getclear(trackfield(ch, &db.t03d[0].prevvol));      /* #212 */
 }
 BLITZ_THUNK(_GetMedVolume, _GetMedVolume_c, "d1/a0-a1");
 
 static ULONG BLITZ_ROUTINE _GetMedNote_c(UWORD ch BL_REG(d0))
 {
-    return getclear(ch, trk_prevnote);
+    return getclear(trackfield(ch, &db.t03d[0].prevnote));
 }
 BLITZ_THUNK(_GetMedNote, _GetMedNote_c, "d1/a0-a1");
 
 static ULONG BLITZ_ROUTINE _GetMedInstr_c(UWORD ch BL_REG(d0))
 {
-    return getclear(ch, trk_previnstr);
+    return getclear(trackfield(ch, &db.t03d[0].previnstr));
 }
 BLITZ_THUNK(_GetMedInstr, _GetMedInstr_c, "d1/a0-a1");
 

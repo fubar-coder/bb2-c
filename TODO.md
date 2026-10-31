@@ -299,7 +299,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   variables left as they are where the original depends on the reused
   register (listed there).
   The register-level translations (2dlib, medlib, polylib: static
-  `d0`-`d7`/`a0`-`a6`) are a rewrite of their own after stage 2.
+  `d0`-`d7`/`a0`-`a6`) are a rewrite of their own after stage 2; done
+  2026-10-31 (plain C, checked with the corpus incl. t158/t159 and
+  libs/tests/systest_med.c).
 - [ ] **Data blocks as structs** (user decision 2026-10-31, after stage 2
   of the readable names): data blocks of the originals that the port
   addresses as arrays or with offsets (tag lists, NewScreen/NewWindow
