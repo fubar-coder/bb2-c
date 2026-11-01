@@ -376,6 +376,21 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   line references (C code: determined anew by content) adapted to this
   repository; history of bb2 (plans, logs, reviews) unchanged in content,
   remaining bb2 mentions explained in `docs/README.md`.
+- [ ] **Source compatibility with AmiBlitz3** (user decisions
+  2026-10-31, plan `docs/ab3/variant.md`): `blitz2-ab3` compiles sources
+  recognised as AmiBlitz3's with AmiBlitz3 v3.14.0's binary libraries;
+  `blitz2` stays byte-identical.
+  1. [x] G1 done (2026-11-01, OpenSpec change `ab3-mode-g1`): build,
+     command line with `ab3cli`, detection, AB3 token table, libraries,
+     `^`, residents, text includes; tests `ab3_*`, `corpus_cd_ab3`.
+  2. [ ] G2–G5 (`SYNTAX`, `OPTIMIZE`, `@@`, escapes, optional
+     parameters, `Null`, casts, `Dim KEEP`, `Data` constants,
+     identifiers beginning with `_`), then G7 (68020), then G6 (FPU);
+     the differences found against AmiBlitz3's compiler
+     (`docs/ab3/variant.md`, "Differences").
+  3. [ ] Check whether TED's baserel data hunk (0x7c8 bytes of `.bss`
+     without startup code) is always cleared by LoadSeg, also on
+     Kickstart 1.3 (found 2026-11-01).
 - [ ] **Tests for the issues labelled `needs-test`** (99 open issues at the
   start, 3 open on 2026-10-29: #14, #26, #42). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,

@@ -229,7 +229,14 @@ pre-2009 AB2 changes, which have no history. Every addition sits under
    which library conventions break without AB3's compiler (table of
    section 2). A few days.
 1. **Build and mode:** `blitz2-ab3` target, CLI front end, detection,
-   header, tokeniser, loader, residents, token table (G1).
+   header, tokeniser, loader, residents, token table (G1). **Done
+   2026-11-01** (OpenSpec change `ab3-mode-g1`): `blitz2-ab3` + `ab3cli`,
+   tests `ab3_bb2_equivalence(_runerr)`, `corpus_cd_ab3`, `ab3_tokens`,
+   `ab3_cli` (26 cases), `ab3_cli_ref` (17 cases against AmiBlitz3's own
+   compiler). Of AmiBlitz3's 68 test programs the suite holds the 10
+   BB2-language ones of the spike, all compile and run; the share over
+   all 68 (estimate for G1: 65 %) is not measured yet. On the way: #34
+   fixed (AmiBlitz3's `all.res` relies on it).
 2. **G2–G5** in that order (most programs per line of code).
 3. **G6, G7** (FPU and 68020; needs an A1200/FPU machine in the
    emulator for the tests).
