@@ -8,25 +8,37 @@ list(TRANSFORM BLITZ2_CHUNKS PREPEND src/ OUTPUT_VARIABLE chunk_sources)
 list(TRANSFORM chunk_sources APPEND .c)
 file(GLOB glue_sources CONFIGURE_DEPENDS src/glue*.c)
 
-# blitz2_program(TARGET [DEFINES...]): one compiler from the chunk sources.
-# blitz2 is the translation; blitz2-ab3 (BLITZ2_AB3, the AB3 mode of
-# docs/ab3/variant.md) is built from the same sources with
-# the additions of the AB3 mode, which sit under #if BLITZ2_AB3 - blitz2
-# itself stays byte-identical by construction.
 # globals relative to a4: shorter and faster accesses, fewer relocations
 # (data + bss must stay below 64 KB - the linker refuses a 16-bit a4
 # offset beyond it; entry stubs in glue*.c load a4)
 option(BLITZ2_BASEREL "address globals relative to a4 (-fbaserel)" ON)
-function(blitz2_program target)
-	add_executable(${target} ${chunk_sources} ${glue_sources})
+# blitz2_compile(TARGET): the compiler options of the program's sources
+function(blitz2_compile target)
 	target_include_directories(${target} PRIVATE src)
-	target_compile_definitions(${target} PRIVATE ${ARGN})
 	target_compile_options(${target} PRIVATE
 		-fomit-frame-pointer
 		-fno-strict-aliasing                # raw W_()/L_() accesses to patched templates and loaded images
 		-Wall -Wno-pointer-sign -Wno-parentheses)
 	if(BLITZ2_BASEREL)
 		target_compile_options(${target} PRIVATE -fbaserel)
+	endif()
+endfunction()
+
+# blitz2_core: the chunk files and the glue, compiled once and linked by
+# both programs (docs/ab3/variant.md, "Structure").  Where blitz2-ab3's
+# AB3 mode differs, they call the extension points of src/ext.h, which
+# each program implements: blitz2 with src/ext_bb2.c (BB2 only, nothing
+# handled), blitz2-ab3 with the AB3 modules src/ab3*.c.
+add_library(blitz2_core OBJECT ${chunk_sources} ${glue_sources})
+blitz2_compile(blitz2_core)
+
+# blitz2_program(TARGET SOURCES...): one compiler, the core with the
+# implementation of the extension points in SOURCES
+function(blitz2_program target)
+	# the core's objects first, in the order of the chunks
+	add_executable(${target} $<TARGET_OBJECTS:blitz2_core> ${ARGN})
+	blitz2_compile(${target})
+	if(BLITZ2_BASEREL)
 		target_link_options(${target} PRIVATE -fbaserel)
 	endif()
 	# no symbol table in release builds
@@ -48,22 +60,15 @@ function(blitz2_program target)
 			${CMAKE_CURRENT_BINARY_DIR}/${target}.map
 		VERBATIM)
 endfunction()
-blitz2_program(blitz2)
-blitz2_program(blitz2-ab3 BLITZ2_AB3=1)
-# the extension points of the chunk files (src/ext.h): blitz2's handle
-# nothing (BB2 mode only), blitz2-ab3's are the AB3 modules src/ab3*.c
-target_sources(blitz2 PRIVATE src/ext_bb2.c)
-target_sources(blitz2-ab3 PRIVATE src/ab3libs.c src/ab3res.c src/ab3inc.c src/ab3tok.c)
-# blitz2-ab3 decides the mode of a source with shared/xtra, compiled with
-# its own options (like shared/filereq)
+blitz2_program(blitz2 src/ext_bb2.c)
+# blitz2-ab3: the AB3 modules; the mode of a source is decided with
+# shared/xtra, the command line (-s SOURCE -e EXE: a compile with ab3cli
+# as the editor, src/ab3main.c) parsed by shared/ab3job
 set(xtra_dir ${PROJECT_SOURCE_DIR}/shared/xtra)
-target_sources(blitz2-ab3 PRIVATE ${xtra_dir}/xtra.c ${xtra_dir}/xtra_ab3.c ${xtra_dir}/xtra_mode.c)
-target_include_directories(blitz2-ab3 PRIVATE ${xtra_dir})
-# and its command line (-s SOURCE -e EXE: a compile with ab3cli as the
-# editor, src/ab3main.c), parsed by shared/ab3job
 set(ab3job_dir ${PROJECT_SOURCE_DIR}/shared/ab3job)
-target_sources(blitz2-ab3 PRIVATE src/ab3main.c ${ab3job_dir}/ab3args.c)
-target_include_directories(blitz2-ab3 PRIVATE ${ab3job_dir})
+blitz2_program(blitz2-ab3 src/ab3main.c src/ab3libs.c src/ab3res.c src/ab3inc.c src/ab3tok.c
+	${xtra_dir}/xtra.c ${xtra_dir}/xtra_ab3.c ${xtra_dir}/xtra_mode.c ${ab3job_dir}/ab3args.c)
+target_include_directories(blitz2-ab3 PRIVATE ${xtra_dir} ${ab3job_dir})
 # PROGDIR:ab3cli belongs to it
 add_dependencies(blitz2-ab3 ab3cli)
 
