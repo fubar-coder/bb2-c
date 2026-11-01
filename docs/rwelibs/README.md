@@ -226,8 +226,7 @@ these sources. Four things were needed:
   lines are replaced by `;` (INCDIR generates no code) [B, S].
 * `sbra.res` (and other residents of RWE) exist nowhere; `ASMMACS.RES`
   serves for `sbra.res`.
-* **Residents reconstructed** [B, S] (raw material
-  `.cache/…/residents/`): `lvo.res`, `custom.res` and `datatypes.res`
+* **Residents reconstructed** [B, S]: `lvo.res`, `custom.res` and `datatypes.res`
   exist nowhere; they only hold constants, so they are made from the
   NDK of the toolchain as Blitz sources and saved with *Create
   Resident* (tedstub `resident=`) by blitz2 2.10 (in the build:
@@ -337,8 +336,8 @@ and templates (section 2).
 no longer a throw-away run. The residents are written by the host tool
 `tools/blitzres` directly in the format of *Create Resident* (no
 emulator), from the same NDK files with the same rules; their contents
-equal those blitz2 2.10 made above (ctest `rwe_resident_NAME`, compared
-without the unused node bytes). The staging (target `rwe_refstage`,
+equal those blitz2 2.10 makes of them as Blitz source (ctest
+`rwe_residents_cd` in Amiberry, compared without the unused node bytes). The staging (target `rwe_refstage`,
 `build/<preset>/libs/userlibs/rwe/refstage/`) is the one above with
 two changes: the `INCDIR` lines are neutralised on the bytes of the
 sources (`tools/bblines`) – a text round trip through TED tokenises

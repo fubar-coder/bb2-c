@@ -5,6 +5,7 @@
  *
  *   blitzres -o OUT ITEM...
  *   blitzres --dump RES
+ *   blitzres --source RES OUT
  *
  * The constants of OUT in the order of the ITEMs:
  *   --fd FILE          the public functions of an FD file: _NAME=-offset
@@ -17,6 +18,9 @@
  * A name again with the same value is left out (blitz2 keeps the first);
  * with another value it is an error.  OUT is read back and must hold
  * exactly these constants (else it is removed, exit status 1).
+ * --source: the constants of RES (a resident with constants only) as a
+ * Blitz source text OUT, one #NAME=VALUE line each (blitzres_source):
+ * blitz2's Create Resident makes the same resident of it.
  */
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +30,7 @@ static void usage(FILE *f)
 {
     fprintf(f, "usage: blitzres -o OUT ITEM...\n"
                "       blitzres --dump RES\n"
+               "       blitzres --source RES OUT\n"
                "A Blitz Basic 2 resident with constants, as blitz2's Create Resident\n"
                "writes it; ITEMs in order:\n"
                "  --fd FILE          public functions of an FD file as _NAME=-offset\n"
@@ -35,7 +40,8 @@ static void usage(FILE *f)
                "  --const NAME=VALUE a constant (also a symbol for --equ)\n"
                "  --sym NAME=VALUE   a symbol for the expressions of --equ only\n"
                "  --skip NAME        never NAME as constant\n"
-               "--dump: the types, macros and constants of a resident.\n");
+               "--dump: the types, macros and constants of a resident.\n"
+               "--source: the constants of RES as Blitz source, #NAME=VALUE lines.\n");
 }
 
 static char *read_all(const char *path, size_t *len)
@@ -104,6 +110,40 @@ static int dump(const char *path)
     return rc ? 1 : 0;
 }
 
+/* --source: the constants of the resident at path as Blitz source to out */
+static int source(const char *path, const char *out)
+{
+    struct blitzres_list l = { 0 };
+    char err[300];
+    size_t len;
+    char *d = read_all(path, &len);
+    FILE *f = NULL;
+    int rc = 1;
+
+    if (!d) {
+        perror(path);
+        return 1;
+    }
+    if (blitzres_read_consts((const uint8_t *)d, len, 0, &l, err, sizeof err)) {
+        fprintf(stderr, "blitzres: %s: %s\n", path, err);
+        goto done;
+    }
+    if (!(f = fopen(out, "w"))) {
+        perror(out);
+        goto done;
+    }
+    if (blitzres_source(&l, f) | fclose(f)) {
+        perror(out);
+        remove(out);
+        goto done;
+    }
+    rc = 0;
+done:
+    free(d);
+    blitzres_free(&l);
+    return rc;
+}
+
 int main(int argc, char **argv)
 {
     struct blitzres_list l = { 0 }, syms = { 0 }, back = { 0 };
@@ -120,6 +160,8 @@ int main(int argc, char **argv)
     }
     if (argc == 3 && !strcmp(argv[1], "--dump"))
         return dump(argv[2]);
+    if (argc == 4 && !strcmp(argv[1], "--source"))
+        return source(argv[2], argv[3]);
     if (argc < 3 || strcmp(argv[1], "-o")) {
         usage(stderr);
         return 2;

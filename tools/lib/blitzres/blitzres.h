@@ -96,6 +96,15 @@ int blitzres_write(const struct blitzres_list *l, uint8_t **out, size_t *len, ch
                    size_t errlen);
 
 /**
+ * @brief The constants of l as Blitz source text, one "#NAME=VALUE" line
+ *        each in their order (VALUE decimal, -2147483648 as $80000000):
+ *        the source blitz2's Create Resident makes the same resident of
+ *        (ctest rwe_residents_cd).
+ * @return 0 = ok, -1 = write error
+ */
+int blitzres_source(const struct blitzres_list *l, FILE *out);
+
+/**
  * @brief The contents of a resident: types, macros, constants, one per
  *        line, without the unused bytes.
  *

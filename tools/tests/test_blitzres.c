@@ -2,7 +2,8 @@
  * test_blitzres.c - resident files built in memory: the bytes blitzres
  * writes (header, nodes, relocations as blitz2's menu5), reading them
  * back, the dump of a resident with a type, a macro and constants, the
- * constants of FD files and EQU includes, and broken inputs.
+ * constants of FD files and EQU includes, the Blitz source of constants,
+ * and broken inputs.
  */
 #include "testutil.h"
 #include "blitzres.h"
@@ -370,6 +371,33 @@ static void test_lvo(void)
     blitzres_free(&l);
 }
 
+/* the Blitz source of constants: one #NAME=VALUE line each, in order,
+   -2147483648 in hex; a write error */
+static void test_source(void)
+{
+    struct blitzres_list l = { 0 };
+    FILE *f = tmpfile();
+    char s[200] = { 0 };
+
+    if (!f)
+        abort();
+    CHECK(blitzres_add(&l, "custom", (int32_t)0xdff000, err, sizeof err) == 0);
+    CHECK(blitzres_add(&l, "_Forbid", -132, err, sizeof err) == 0);
+    CHECK(blitzres_add(&l, "TAG_USER", INT32_MIN, err, sizeof err) == 0);
+    CHECK(blitzres_source(&l, f) == 0);
+    rewind(f);
+    CHECK(fread(s, 1, sizeof s - 1, f) > 0);
+    CHECK(!strcmp(s, "#custom=14675968\n#_Forbid=-132\n#TAG_USER=$80000000\n"));
+    fclose(f);
+    /* broken: a stream with room for 4 bytes only */
+    if (!(f = fmemopen(s, 4, "w")))
+        abort();
+    setvbuf(f, NULL, _IONBF, 0);
+    CHECK(blitzres_source(&l, f) == -1);
+    fclose(f);
+    blitzres_free(&l);
+}
+
 int main(void)
 {
     test_write();
@@ -378,6 +406,7 @@ int main(void)
     test_fd();
     test_equ();
     test_lvo();
+    test_source();
     if (failures)
         fprintf(stderr, "%d check(s) failed\n", failures);
     return failures != 0;

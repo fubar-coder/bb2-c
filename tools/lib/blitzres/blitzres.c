@@ -437,6 +437,22 @@ static int read_consts(const struct res *r, uint32_t off, FILE *out, struct blit
     return 0;
 }
 
+int blitzres_source(const struct blitzres_list *l, FILE *out)
+{
+    size_t i;
+
+    for (i = 0; i < l->n; i++) {
+        /* -2147483648 in decimal would be the negation of a number beyond
+           the range: hex */
+        if (l->c[i].value == INT32_MIN) {
+            if (fprintf(out, "#%s=$80000000\n", l->c[i].name) < 0)
+                return -1;
+        } else if (fprintf(out, "#%s=%ld\n", l->c[i].name, (long)l->c[i].value) < 0)
+            return -1;
+    }
+    return 0;
+}
+
 int blitzres_dump(const uint8_t *buf, size_t size, FILE *out, char *err, size_t errlen)
 {
     struct loadfile lf;

@@ -735,7 +735,7 @@ several versions.
       RWE libraries has its GitHub issue (#344–#922, risoundlib2's #924–#934,
       2026-10-30; the numbers in the code, port notes and tests). **Reference build in the build** done (2026-10-29,
       `libs/userlibs/rwe/refbuild.cmake`): residents by `tools/blitzres`
-      from the NDK (contents equal to blitz2's, `rwe_resident_NAME`),
+      from the NDK (contents equal to blitz2's, `rwe_residents_cd`),
       staging (target `rwe_refstage`; `INCDIR` neutralised on the bytes
       by `tools/bblines`, `LIBNUMS.BB` with the numbers of `libnums.h`),
       ctest `rwe_refbuild` (cdrun `source=`, Amiberry, fixture) to
@@ -744,7 +744,7 @@ several versions.
       libraries whose reference is the source (§3.2 "Source", §3.3):
       REFERENCE `refbuild` in `RWE_LIBS`. `AHI.res` of risoundlib2
       done (2026-10-30): constants only, from the AHI SDK of the
-      toolchain (`rwe_resident_AHI`). Open: the further includes of the
+      toolchain (`rwe_residents_cd`). Open: the further includes of the
       sources not yet buildable (README §3.1). The RWE userlibs (their numbers: AmiBlitz3's
       libnums, the matching binaries, `#riarrayslib` = 7 from
       `defaultdbug50.bb2`; `docs/rwelibs/README.md` §3.1). ptlib is

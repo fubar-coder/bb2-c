@@ -300,11 +300,8 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   the editor) must equal `tests/data/ted-tokens.txt` – with the CD's
   compiler and libraries (skipped without the CD) and with the ones built
   here; `tokens_broken` checks that a missing library is noticed.
-  `rwe_resident_NAME`: the residents `blitzres` writes have the contents
-  (`blitzres --dump`: types, macros, constants without the unused node
-  bytes) of those blitz2 2.10's Create Resident made in the analysis
-  (`RWE_ANALYSIS_DIR`, default `.cache/rwelibs-analysis`, not in the
-  repository: skipped without). The host side on its own:
+  `rwe_residents_check_broken`: the comparison of two residents
+  (`tools/blitzres/check.cmake`) notices other contents. The host side on its own:
   `ctest --test-dir build/amiga/host`.
   With `-DHOST_SANITIZE=ON` the host side is built with AddressSanitizer
   and UBSan.
@@ -313,7 +310,13 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   `libs/tests/libs_tests` (snitch, m68k) loads every acidlib of this build
   and its original of the CD like the compiler does and compares results,
   registers and memory (skipped without the CD; selection:
-  `cmake ... -DFILTER="[mathstr]" -P libs/tests/emulator.cmake`). Among
+  `cmake ... -DFILTER="[mathstr]" -P libs/tests/emulator.cmake`).
+  `rwe_residents_cd`: the residents `blitzres` writes have the contents
+  (`blitzres --dump`: types, macros, constants without the unused node
+  bytes) of those blitz2 2.10 of the CD and blitz2-c save with Create
+  Resident of the same constants as Blitz source (`blitzres --source`,
+  one corpusrun pass with `run=off` and tedstub `resident=`;
+  `libs/userlibs/rwe/residents.cmake`; skipped without the CD). Among
   them the corpus
   (`tests/corpus/`): `corpus` (68 test programs without runtime error
   checking), `corpus_runerr` (131 with), `corpus_req` (3 with blocking
