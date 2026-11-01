@@ -123,6 +123,15 @@ void ext_nextline(void)
 {
 }
 
+void ext_passend(void)
+{
+}
+
+BOOL ext_savefile(void)
+{
+    return FALSE;
+}
+
 BOOL ext_cmdline(int argc, char **argv, int *rc)
 {
     return FALSE;

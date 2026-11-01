@@ -219,6 +219,8 @@ void savefile(void)
 
     sleepon();
     anyerrs = -1;                           /* forces a recompile before Run */
+    if (ext_savefile())
+        goto l_icon;
     if (!nomemleft) {
         UBYTE *code = (UBYTE *)pcat;
         ULONG base = pcat + noinits;
@@ -298,6 +300,7 @@ void savefile(void)
     mywrite(fh, tstdone, 4);
     Close(fh);
 
+l_icon:
     if (optreqga9.Flags & GFLG_SELECTED) {
         /* OK, create an icon for the object code! */
         char *ext = execname + strlen(execname);

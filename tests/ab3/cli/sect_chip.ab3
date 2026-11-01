@@ -1,0 +1,8 @@
+; Chip: the data after it go into a hunk loaded to chip memory (MEMF_CHIP
+; = 2); the program ends before it
+a.l = ?zdata
+NPrint "chip: ", (TypeOfMem_(a) AND 2) <> 0
+NPrint "data: ", Peek.w(a), " ", Peek.w(a + 2)
+End
+Chip
+zdata: Dc.w 1234, 5678

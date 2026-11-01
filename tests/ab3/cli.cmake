@@ -2,7 +2,7 @@
 #   cmake -DAMIGA_RUN=... -DOUTMATCH=... -DREQTRAP=... -DCONFIG=exe|ref
 #         -DCASES=FILE -DBLITZ2_DIR=DIR -DAB3=DIR -DSOURCES=FILE;...
 #         -DUSERLIB=OBJ -DWORK=DIR [-DTIMEOUT=SEC] [-DSAME=A=B,...]
-#         -P cli.cmake
+#         [-DHUNKCHECK=TOOL -DHUNKS=NAME=LAYOUT|...] -P cli.cmake
 # One emulator session compiles every case of CASES and runs the program
 # through reqtrap (tests/corpus/amiga: a requester is printed and answered
 # at once, nothing waits for a click):
@@ -24,7 +24,8 @@
 # [run] (the console output of AmiBlitz3 is its own), against REFEXPECT if
 # given (a difference of AmiBlitz3 recorded in docs/ab3/variant.md).
 # The executable of a case is kept as TEST:out/NAME.exe; SAME lists pairs
-# of cases whose executables must be byte-identical (A=B).
+# of cases whose executables must be byte-identical (A=B), HUNKS the hunk
+# layout of the executable of a case (hunkcheck --hunks LAYOUT).
 # Exit status 0 if every case matches; 77 (skipped) without the emulator
 # or the fetched AmiBlitz3 files.
 cmake_minimum_required(VERSION 3.29)
@@ -171,6 +172,23 @@ foreach(p IN LISTS same)
 	else()
 		message(STATUS "FAIL ${a}=${b}: the executables differ")
 		math(EXPR failed "${failed} + 1")
+	endif()
+endforeach()
+# the hunk layouts
+string(REPLACE "|" ";" hunks "${HUNKS}")
+foreach(h IN LISTS hunks)
+	string(FIND "${h}" "=" eq)
+	string(SUBSTRING "${h}" 0 ${eq} n)
+	math(EXPR eq "${eq} + 1")
+	string(SUBSTRING "${h}" ${eq} -1 layout)
+	execute_process(COMMAND ${HUNKCHECK} --hunks ${layout} ${test}/out/${n}.exe
+		RESULT_VARIABLE r ERROR_VARIABLE msg)
+	string(STRIP "${msg}" msg)
+	if(r)
+		message(STATUS "FAIL ${n}: hunks: ${msg}")
+		math(EXPR failed "${failed} + 1")
+	else()
+		message(STATUS "ok   ${n}: hunks ${layout}")
 	endif()
 endforeach()
 if(failed)

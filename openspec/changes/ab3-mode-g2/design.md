@@ -200,4 +200,20 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
   The joined line is the last one read: an error in it has that line's
   number; with runtime error checking the debug trap's offset into the
   line item is meaningless for it (only the editor's debugger reads it).
-
+- **2.4 BSS/Chip** (`ab3sect.c`, points `ext_passend` in dopass after
+  errchx2, `ext_savefile` in savefile; tokens `$80AD`/`$807F` through
+  `ext_token`): AmiBlitz3's sections are parts of the *code* stream
+  (`destpointer`), not of the data buffers: the code after `BSS`/`Chip`
+  up to the other one or to the end of the program (before its end
+  code, AmiBlitz3's `codeend`) is cut out of the code hunk; each starts
+  with a NOP and on a long boundary. With runtime error checking both
+  are ignored (one code hunk, case `sect_debug`); a BSS part with a byte
+  other than 0 is "BSS Segment contains no Data!" (checked at the end of
+  the pass, not in savefile, where an error cannot be reported). The
+  hunk layout of `sect_chip` (code, data+chip) and `sect_both` (code,
+  bss, data+chip) is AmiBlitz3's (`hunkcheck --hunks`, new; both
+  configurations); the relocations are written per hunk and target, so
+  a relocation inside the chip data is right here and wrong in
+  AmiBlitz3 (`sect_both.ref.expect`, docs/ab3/variant.md). The debug
+  information of the labels (option "debug info") is not written for an
+  executable with sections.

@@ -123,15 +123,19 @@ list(APPEND cli_made ${cli_gen}/incother_ab3tok.bb2.xtra)
 add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 
 # ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-userlib]
-#              [ARGS ARG...] [REF] [REF_EXPECT FILE] [SAME CASE]): a
-#              case of the suite; SAME: its executable is the one of the
-#              case CASE, in both configurations
+#              [ARGS ARG...] [REF] [REF_EXPECT FILE] [SAME CASE]
+#              [HUNKS LAYOUT]): a case of the suite; SAME: its executable
+#              is the one of the case CASE, HUNKS: its hunk layout
+#              (hunkcheck --hunks, e.g. code,bss,data+chip), in both
+#              configurations
 set(cli_exe_cases "")
 set(cli_ref_cases "")
 set(cli_exe_same "")
 set(cli_ref_same "")
+set(cli_exe_hunks "")
+set(cli_ref_hunks "")
 macro(ab3_cli_case name source)
-	cmake_parse_arguments(c "REF" "TREE;REF_EXPECT;SAME" "ARGS" ${ARGN})
+	cmake_parse_arguments(c "REF" "TREE;REF_EXPECT;SAME;HUNKS" "ARGS" ${ARGN})
 	if(NOT c_TREE)
 		set(c_TREE Blitz3)
 	endif()
@@ -141,6 +145,9 @@ macro(ab3_cli_case name source)
 	if(c_SAME)
 		list(APPEND cli_exe_same "${name}=${c_SAME}")
 	endif()
+	if(c_HUNKS)
+		string(APPEND cli_exe_hunks "|${name}=${c_HUNKS}")
+	endif()
 	if(c_REF)
 		if(c_REF_EXPECT)
 			string(APPEND c_line "|${cli_dir}/${c_REF_EXPECT}")
@@ -148,6 +155,9 @@ macro(ab3_cli_case name source)
 		string(APPEND cli_ref_cases "${c_line}\n")
 		if(c_SAME)
 			list(APPEND cli_ref_same "${name}=${c_SAME}")
+		endif()
+		if(c_HUNKS)
+			string(APPEND cli_ref_hunks "|${name}=${c_HUNKS}")
 		endif()
 	endif()
 endmacro()
@@ -200,6 +210,11 @@ ab3_cli_case(syntax2 syntax2.ab3 ARGS -r REF SAME syntax2_none)
 ab3_cli_case(runerrs runerrs.ab3 REF REF_EXPECT runerrs.ref.expect)
 ab3_cli_case(runerrs_unpaired runerrs_unpaired.ab3 REF)
 ab3_cli_case(runerrs_overflow runerrs_overflow.ab3 REF)
+ab3_cli_case(sect_chip sect_chip.ab3 ARGS -r REF HUNKS code,data+chip)
+ab3_cli_case(sect_both sect_both.ab3 ARGS -r REF REF_EXPECT sect_both.ref.expect HUNKS code,bss,data+chip)
+ab3_cli_case(sect_bss2 sect_bss2.ab3 ARGS -r REF)
+# with runtime error checking BSS and Chip are ignored: one code hunk
+ab3_cli_case(sect_debug sect_chip.ab3 HUNKS code)
 # the syntax rules of AB3 mode (spec ab3-compat/syntax-rules)
 ab3_cli_case(macro_ns macro_ns.ab3 REF)
 ab3_cli_case(macro_off macro_off.ab3 REF)
@@ -215,9 +230,10 @@ ab3_cli_case(join join.ab3 REF)
 ab3_cli_case(join_inc join_inc.ab3 REF)
 ab3_cli_case(join_incok join_incok.ab3 REF)
 
-# ab3_cli(NAME CONFIG CASES [SAME LIST]): the ctest
+# ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)
-	cmake_parse_arguments(a "" "" "SAME" ${ARGN})
+	cmake_parse_arguments(a "" "HUNKS" "SAME" ${ARGN})
+	string(REGEX REPLACE "^\\|" "" hunks "${a_HUNKS}")
 	list(JOIN a_SAME "," same)
 	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
 	file(WRITE ${work}.cases "${cases}")
@@ -229,14 +245,14 @@ function(ab3_cli name config cases)
 		-DBLITZ2_DIR=${BLITZ2_DIR} -DAB3=${AB3_V314} -DSOURCES=${sources}
 		-DUSERLIB=${CMAKE_CURRENT_BINARY_DIR}/amiga/ab3_userlib.obj
 		-DWORK=${work} -DTIMEOUT=${AB3_CLI_TIMEOUT}
-		-DSAME=${same}
+		-DSAME=${same} -DHUNKCHECK=${HUNKCHECK} "-DHUNKS=${hunks}"
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/cli.cmake)
 	math(EXPR limit "${AB3_CLI_TIMEOUT} + 120 + ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
 endfunction()
-ab3_cli(ab3_cli exe "${cli_exe_cases}" SAME ${cli_exe_same})
-ab3_cli(ab3_cli_ref ref "${cli_ref_cases}" SAME ${cli_ref_same})
+ab3_cli(ab3_cli exe "${cli_exe_cases}" SAME ${cli_exe_same} HUNKS "${cli_exe_hunks}")
+ab3_cli(ab3_cli_ref ref "${cli_ref_cases}" SAME ${cli_ref_same} HUNKS "${cli_ref_hunks}")
 # the check itself: a wrong expect file must fail, in both configurations
 # (broken.expect: atoi's output with one digit changed)
 set(broken "atoi|Blitz3|atoi.ab3||${cli_dir}/broken.expect\n")

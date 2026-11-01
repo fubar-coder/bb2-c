@@ -1,0 +1,6 @@
+[compile]
+rc=0
+[run]
+chip: 0
+data: 1234 5678
+rc=0

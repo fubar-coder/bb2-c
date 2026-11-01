@@ -1,0 +1,5 @@
+[compile]
+sect_bss2.ab3:6: Only one BSS / Chip Segment allowed
+rc=10
+[run]
+no executable

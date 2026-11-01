@@ -183,6 +183,17 @@ struct var *ext_sharedvar(UWORD len);
  *         line joined with the following ones). */
 void ext_nextline(void);
 
+/** @brief dopass (compile.c): the program is compiled (errchx2), its end
+ *         code follows; may stop the compile with err(). */
+void ext_passend(void);
+
+/**
+ * @brief savefile (parse.c): write the executable (execname).
+ * @return TRUE if handled: blitz2's hunk, relocations and symbols are not
+ *         written (the icon is)
+ */
+BOOL ext_savefile(void);
+
 /* ======================================= the command line, the editor */
 
 /**

@@ -808,6 +808,7 @@ void dopass(void)
     pointchk();
     linenumat = 0;
     errchx2();
+    ext_passend();
 
     if (DEBUGON) {
         debugstuff();

@@ -1,0 +1,14 @@
+; BSS, then Chip: a BSS hunk and a chip data hunk; the code refers to
+; both, the chip data to a label of the BSS part
+a.l = ?zbss
+b.l = ?zchip
+Poke.l a + 4, 77
+NPrint "bss: ", Peek.l(a), " ", Peek.l(a + 4), " ", (TypeOfMem_(a) AND 2) <> 0
+NPrint "chip: ", Peek.w(b), " ", (TypeOfMem_(b) AND 2) <> 0
+NPrint "ref: ", Peek.l(b + 2) = a
+End
+BSS
+zbss: Ds.l 4
+Chip
+zchip: Dc.w 42
+Dc.l zbss

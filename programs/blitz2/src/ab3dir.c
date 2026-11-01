@@ -32,6 +32,7 @@ void ext_passstart(void)
     optflags = 0;
     runerrsnest = 0;
     ab3_synpass();
+    ab3_sectpass();
 }
 
 BOOL ext_newsyntax(void)
@@ -91,6 +92,15 @@ BOOL ext_token(UWORD c)
         undodebug();
         if (!eos(getchar3()))
             getchar3();
+        return TRUE;
+    case 0x80ad:                        /* BSS (blitz2's TAS slot) */
+    case 0x807f:                        /* Chip (blitz2's MOVEP slot) */
+        undodebug();
+        if (c == 0x80ad)
+            ab3_bss();
+        else
+            ab3_chip();
+        getchar3();
         return TRUE;
     case 0x8000 + tnum + 32:            /* RunErrsOff */
         dorunerrsoff3();

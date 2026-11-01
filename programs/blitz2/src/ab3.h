@@ -33,4 +33,11 @@ extern const char *ab3liberr;
  *         back to its start (called by ext_passstart, ab3dir.c). */
 void ab3_synpass(void);
 
+/** @brief A pass starts: no sections (ab3sect.c, called by ext_passstart). */
+void ab3_sectpass(void);
+
+/** @brief The directives BSS and Chip (ab3sect.c): a section starts. */
+void ab3_bss(void);
+void ab3_chip(void);
+
 #endif

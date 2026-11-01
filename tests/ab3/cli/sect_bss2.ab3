@@ -1,0 +1,6 @@
+; a second BSS is an error (line 6)
+NPrint "x"
+End
+BSS
+zb: Ds.l 1
+BSS

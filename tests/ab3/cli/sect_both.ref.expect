@@ -1,0 +1,7 @@
+[compile]
+rc=0
+[run]
+bss: 0 77 0
+chip: 42 -1
+ref: 0
+rc=0
