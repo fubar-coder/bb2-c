@@ -53,6 +53,7 @@ blitz2_program(blitz2-ab3 BLITZ2_AB3=1)
 # the extension points of the chunk files (src/ext.h): blitz2's handle
 # nothing (BB2 mode only), blitz2-ab3's are the AB3 modules src/ab3*.c
 target_sources(blitz2 PRIVATE src/ext_bb2.c)
+target_sources(blitz2-ab3 PRIVATE src/ab3libs.c)
 # blitz2-ab3 decides the mode of a source with shared/xtra, compiled with
 # its own options (like shared/filereq)
 set(xtra_dir ${PROJECT_SOURCE_DIR}/shared/xtra)

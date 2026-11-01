@@ -483,26 +483,9 @@ extern asmchkfn movemchk, movepchk, movechk, exgchk, bitchk,
 #if BLITZ2_AB3
 /* =============================================== AB3 mode (blitz2-ab3) */
 
-#include "xtra.h"
-
-/* the mode of the program being compiled (enum xtra_mode, shared/xtra):
-   XTRA_MODE_BB2 or XTRA_MODE_AB3 (docs/ab3/variant.md).  One mode per
-   compile; an editor session is always BB2.  AB3 state (ab3main.c), not
-   an extension point: the chunk files call those of ext.h */
-extern int progmode;
-
-/* AB3 mode's libraries (design D5): AmiBlitz3's four BigLibs in its load
-   order instead of acidlibs and deflibs (loadlibgroup each), then every
-   file of the flat userlibs directory, a userlib replacing a loaded library
-   of the same number (AmiBlitz/AmiBlitz3@7ab0350b) */
-#define AB3LIBS 4
-extern const char *const ab3libname[AB3LIBS]; /* "Blitz3:BlitzLibs/baseLibs" ... */
-extern ULONG ab3libs[AB3LIBS];        /* their sizes (makelibs, 0 = missing) */
-#define AB3USERLIBS "Blitz3:BlitzLibs/UserLibs"
-/* the error of a missing library file ("Library file not found: NAME"), NULL
-   if none: makelibs finds it at start-up, where there is no compile to
-   stop yet; compile reports it */
-extern const char *ab3liberr;
+/* the state of the AB3 modules (ab3*.c) the blocks of the chunk files read
+   until they are extension points (ext.h) */
+#include "ab3.h"
 
 /* AB3 mode's residents: a name without device or directory is loaded from
    AB3RESIDENTS (loadres); the error of one that cannot be loaded ("Can't

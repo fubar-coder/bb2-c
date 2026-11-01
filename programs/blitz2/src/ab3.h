@@ -1,0 +1,22 @@
+/*
+ * ab3.h - the state shared by the AB3 modules of blitz2-ab3 (ab3*.c, the
+ * implementation of the extension points of ext.h; docs/ab3/variant.md).
+ * Not for the chunk files: they only know ext.h.
+ */
+#ifndef AB3_H
+#define AB3_H
+
+#include "xtra.h"
+
+/** @brief The mode of the program being compiled (enum xtra_mode,
+ *         shared/xtra): XTRA_MODE_BB2 or XTRA_MODE_AB3.  One mode per
+ *         compile, decided by the command line (ab3main.c) before anything
+ *         is loaded; an editor session is always BB2. */
+extern int progmode;
+
+/** @brief The error of a missing library file ("Library file not found:
+ *         NAME"), NULL if none (ab3libs.c): makelibs finds it at start-up,
+ *         where there is no compile to stop yet; compile reports it. */
+extern const char *ab3liberr;
+
+#endif

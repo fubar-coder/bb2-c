@@ -25,9 +25,6 @@ struct tokejsrnode *tokeslist = NULL;   /* blitz2.s:6227 */
 APTR deflibsat = NULL;                  /* blitz2.s:6318 */
 APTR acidlibsat = NULL;                 /* blitz2.s:6319 */
 struct node *blitzlibsat = NULL;        /* blitz2.s:6320 start of blitzlibs list! */
-#if BLITZ2_AB3
-APTR ab3libsat[AB3LIBS];                /* AB3 mode: the BigLib buffers (ab3libs bytes) */
-#endif
 struct blitzlib *ffplib = NULL;         /* blitz2.s:6616 */
 
 /* ========================================================== assembler */
@@ -1215,15 +1212,7 @@ void loadlibs(void)
 {
     struct node *tail = (struct node *)&firstlib;
 
-#if BLITZ2_AB3
-    if (progmode == XTRA_MODE_AB3) {
-        int i;
-
-        for (i = 0; i < AB3LIBS; i++)
-            ab3libsat[i] = loadlibgroup(ab3libs[i], (STRPTR)ab3libname[i], &tail);
-    } else
-#endif
-    {
+    if (!ext_loadlibs(&tail)) {
         acidlibsat = loadlibgroup(acidlibs, acidname, &tail);
         deflibsat = loadlibgroup(deflibs, defname, &tail);
     }
@@ -1232,68 +1221,6 @@ void loadlibs(void)
     blitzlibsat = tail;
     loadblitzlibs();                    /* falls through */
 }
-
-#if BLITZ2_AB3
-/* loadblitzlibs of AB3 mode: every file of the flat directory AB3USERLIBS
-   (no .info, no directories) in directory order, as AmiBlitz3's
-   load_userlibs.  A userlib with the number of a library loaded before
-   replaces it (AmiBlitz/AmiBlitz3@7ab0350b read_userlibsfile: the first
-   one of that number is unlinked): a BigLib's stays in its group buffer,
-   an earlier userlib is freed.  (menu8, reloading, is an editor menu:
-   never in AB3 mode.) */
-static void loadab3userlibs(struct node *tail)
-{
-    char path[sizeof AB3USERLIBS + 1 + 108];
-    size_t dirlen = sizeof AB3USERLIBS - 1;
-    BPTR lk = Lock((STRPTR)AB3USERLIBS, ACCESS_READ);
-
-    if (!lk)
-        return;
-    memcpy(path, AB3USERLIBS, dirlen);
-    path[dirlen++] = '/';
-    if (Examine(lk, namebufffib) && namebufffib->fib_DirEntryType >= 0) {
-        while (ExNext(lk, namebufffib)) {
-            struct blitzlib *nl, *l;
-            struct node *prev;
-
-            if (namebufffib->fib_DirEntryType >= 0)
-                continue;
-            if (endininfo(namebufffib->fib_FileName))
-                continue;
-            strcpy(path + dirlen, namebufffib->fib_FileName);
-            prev = tail;
-            loadalib((STRPTR)path, &tail);
-            if (tail == prev)
-                continue;               /* could not be opened */
-            tail->next = NULL;          /* the list ends here for now */
-            nl = (struct blitzlib *)tail;
-            for (prev = (struct node *)&firstlib; (l = (struct blitzlib *)prev->next) != nl;
-                 prev = prev->next) {
-                struct node *n;
-                BOOL user;
-
-                if (l->libnum != nl->libnum)
-                    continue;
-                /* a userlib if it comes after blitzlibsat */
-                for (user = FALSE, n = blitzlibsat->next; n != (struct node *)nl && !user;
-                     n = n->next)
-                    user = n == (struct node *)l;
-                prev->next = (struct node *)l->next;
-                if ((struct node *)l == blitzlibsat)
-                    blitzlibsat = prev;
-                if (user) {
-                    if (l->nrelocs)
-                        FreeMem(l->relocs, l->nrelocs << 2);
-                    FreeMem(l, l->size);
-                }
-                break;
-            }
-        }
-    }
-    UnLock(lk);
-    tail->next = NULL;
-}
-#endif
 
 /* blitz2.s:6392 loadblitzlibs - load in blitz libs only! */
 void loadblitzlibs(void)
@@ -1304,13 +1231,10 @@ void loadblitzlibs(void)
     struct node *node = (struct node *)&libslist; /* lib names! */
     struct node *tail = blitzlibsat;
 
-#if BLITZ2_AB3
-    if (progmode == XTRA_MODE_AB3) {
-        loadab3userlibs(tail);
+    if (ext_loaduserlibs(tail)) {
         fixlibs();
         return;
     }
-#endif
     while ((*dst++ = *src++) != 0)
         ;
     if (!libsdir[0]) {
@@ -1553,18 +1477,7 @@ void freelibs(void)
         acidlibsat = NULL;
         FreeMem(p, acidlibs);
     }
-#if BLITZ2_AB3
-    {
-        int i;
-
-        for (i = 0; i < AB3LIBS; i++)
-            if (ab3libs[i] && ab3libsat[i]) {
-                APTR p = ab3libsat[i];
-                ab3libsat[i] = NULL;
-                FreeMem(p, ab3libs[i]);
-            }
-    }
-#endif
+    ext_freelibs();
 }
 
 /* blitz2.s:6680 freemacs */
