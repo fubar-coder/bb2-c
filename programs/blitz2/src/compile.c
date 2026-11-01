@@ -444,7 +444,9 @@ void expandmax(void)
 
         args = srcptr;          /* start of parameters! */
         narg = 0;               /* narg=0 */
-        if (*args++ == '{') {
+        if (ext_macargs(m, &args, &narg)) {
+            srcptr = args;
+        } else if (*args++ == '{') {
             struct macparam *mp = (struct macparam *)macrobuff;
             UWORD t;
             /* no check against the end of macrobuff, as in the original: not

@@ -80,6 +80,11 @@ BOOL ext_newsyntax(void)
     return FALSE;
 }
 
+BOOL ext_macargs(struct macro *m, UBYTE **pp, WORD *narg)
+{
+    return FALSE;
+}
+
 BOOL ext_cmdline(int argc, char **argv, int *rc)
 {
     return FALSE;

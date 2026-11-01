@@ -16,14 +16,14 @@ behaviour only in `ab3*.c` behind extension points (D1).
 
 ## 2. Directives
 
-- [ ] 2.1 `OPTIMIZE` (D5): constant expression, flags replaced, reset per pass, no effect in skipped `CNIF`, value 2 refused, 1/8/16 accepted, the `setfpumode` call; verify: `ab3_cli` cases for each scenario of `ab3-compat/directives` OPTIMIZE requirements
+- [x] 2.1 `OPTIMIZE` (D5): constant expression, flags replaced, reset per pass, no effect in skipped `CNIF`, value 2 refused, 1/8/16 accepted, the `setfpumode` call; verify: `ab3_cli` cases for each scenario of `ab3-compat/directives` OPTIMIZE requirements
 - [ ] 2.2 `SYNTAX n` accepted with no code change; verify: a case where the executable with and without `SYNTAX 2` is the same
 - [ ] 2.3 `RunErrsOff` stack, `LastRunErrsMode`, both errors; verify: `ab3_cli` cases for the scenarios
 - [ ] 2.4 `BSS`/`Chip` sections (D6; tokens instead of the TAS/MOVEP data in `toklist.h`'s AB3 names); verify: the chip-memory case and the second-BSS error, hunk layout checked with `hunkcheck`, BB2 hunk layout unchanged
 
 ## 3. Syntax rules
 
-- [ ] 3.1 New syntax: macro calls without braces; verify: both scenarios in `ab3_cli`
+- [x] 3.1 New syntax: macro calls without braces; verify: both scenarios in `ab3_cli`
 - [ ] 3.2 New syntax: labels without colon (`allowtab`) and labels of another procedure; verify: the scenarios in `ab3_cli`
 - [ ] 3.3 `@@` line joining (parameter boundaries, macro text, multiple assignment, the include restriction); verify: the scenarios in `ab3_cli`
 - [ ] 3.4 Global `SHARED`, `_`-identifiers, `.name` labels, the `+` prefix, `:@` in comments; verify: one `ab3_cli` case each

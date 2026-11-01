@@ -75,7 +75,7 @@ blitz2_program(blitz2 src/ext_bb2.c)
 set(xtra_dir ${PROJECT_SOURCE_DIR}/shared/xtra)
 set(ab3job_dir ${PROJECT_SOURCE_DIR}/shared/ab3job)
 blitz2_program(blitz2-ab3 src/ab3main.c src/ab3libs.c src/ab3res.c src/ab3inc.c src/ab3tok.c
-	src/ab3dir.c
+	src/ab3dir.c src/ab3syn.c
 	${xtra_dir}/xtra.c ${xtra_dir}/xtra_ab3.c ${xtra_dir}/xtra_mode.c ${ab3job_dir}/ab3args.c)
 target_include_directories(blitz2-ab3 PRIVATE ${xtra_dir} ${ab3job_dir})
 # PROGDIR:ab3cli belongs to it

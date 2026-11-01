@@ -1,0 +1,28 @@
+; macro calls without braces (new syntax, OPTIMIZE bit 4): a macro whose
+; text has a parameter takes them from behind its name; one without
+; takes none.  OPTIMIZE 16 replaces the flags: new syntax off, braces
+; again.
+Macro pm
+NPrint "<`1|`2>"
+End Macro
+Macro pq
+NPrint `1
+End Macro
+Macro np
+NPrint "np"
+End Macro
+#zc = 6
+OPTIMIZE 4
+!pm 42
+!pm{7}
+!pm 3,4
+!pm -5
+!pm $10
+!pm #zc
+!pq "s,t"
+!pm
+!pm :NPrint "colon"
+!np :NPrint "np colon"
+OPTIMIZE 16
+!pm{8,9}
+End

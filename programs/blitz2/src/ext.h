@@ -26,6 +26,7 @@ struct node;
 struct token;
 struct include;
 struct resentry;
+struct macro;
 
 /* ================================================ the data of the mode */
 
@@ -126,6 +127,15 @@ BOOL ext_token(UWORD c);
 /** @brief Is the "new syntax" of AB3 mode on (OPTIMIZE bit 2)?  Always
  *         FALSE in BB2 mode. */
 BOOL ext_newsyntax(void);
+
+/**
+ * @brief expandmax (compile.c): the parameters of the call of the macro
+ *        m, at *pp (behind the name and its spaces).
+ * @param narg  their number if handled (in macrobuff as blitz2's)
+ * @return TRUE if handled: *pp is behind them (blitz2 takes them only
+ *         from braces)
+ */
+BOOL ext_macargs(struct macro *m, UBYTE **pp, WORD *narg);
 
 /* ======================================= the command line, the editor */
 

@@ -185,6 +185,9 @@ ab3_cli_case(opt_020 opt_020.ab3 REF)
 ab3_cli_case(opt_fpu opt_fpu.ab3 REF REF_EXPECT opt_fpu.ref.expect)
 ab3_cli_case(opt_short opt_short.ab3 REF)
 ab3_cli_case(opt_cnif opt_cnif.ab3 REF)
+# the syntax rules of AB3 mode (spec ab3-compat/syntax-rules)
+ab3_cli_case(macro_ns macro_ns.ab3 REF)
+ab3_cli_case(macro_off macro_off.ab3 REF)
 
 # ab3_cli(NAME CONFIG CASES): the ctest
 function(ab3_cli name config cases)

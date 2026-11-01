@@ -1,6 +1,6 @@
 [compile]
 rc=0
 [run]
-one
+<1>
 two
 rc=0

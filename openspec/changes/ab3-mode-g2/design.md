@@ -141,3 +141,11 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
   `opt_fpu`, `opt_fpu.ref.expect`). The risk "AmiBlitz3 refuses
   `OPTIMIZE 2` without an FPU" does not apply; FPU sources can be
   compared with AmiBlitz3 in G6.
+- **3.1 macro calls** (`ab3syn.c`, point `ext_macargs`): AmiBlitz3's
+  `handle_macro` and its own `findit`, which ends a parameter also at the
+  end of the line and at `:`/`;` outside a string (blitz2's needs the
+  closing brace). `macro_ns` gives AmiBlitz3's output for every form
+  (`!pm 42`, `{7}`, `3,4`, `-5`, `$10`, `#c`, a string with a comma, none,
+  `:`, a macro without parameters); `macro_off` shows the BB2 rule with
+  new syntax off, and the "flags replaced" scenario of 2.1: both
+  compilers stop with "Garbage at End of Line" at the same line.

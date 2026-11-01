@@ -1,0 +1,5 @@
+[compile]
+macro_off.ab3:11: Garbage at End of Line
+rc=10
+[run]
+no executable

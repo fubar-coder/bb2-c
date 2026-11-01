@@ -1,0 +1,12 @@
+; without new syntax a macro call takes no parameters without braces
+; (BB2's rule): after OPTIMIZE 4 !pm 42 is the call with 42, after
+; OPTIMIZE 16 (new syntax off) it is the call without parameters and
+; 42 is left in the line - "Garbage at End of Line" in line 11
+Macro pm
+NPrint "<`1>"
+End Macro
+OPTIMIZE 4
+!pm 42
+OPTIMIZE 16
+!pm 42
+End
