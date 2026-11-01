@@ -1272,6 +1272,9 @@ static void imakeend(struct include *inc, UBYTE *line)
         ;
     inc->ptr = p;
     srcptr = line;
+#if BLITZ2_AB3
+    ab3_incline(inc);                   /* the place of an error */
+#endif
 }
 
 /* blitz2.s:12020 closeinc - close the current include; returns TRUE if

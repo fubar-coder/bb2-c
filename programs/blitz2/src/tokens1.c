@@ -853,9 +853,10 @@ void doinc2(UWORD namelen)
         noincerr();
     numincs++;
 #if BLITZ2_AB3
-    /* an include of text in a command line run: tokenised by ab3cli
-       (readinc takes only tokenised lines); the editor session reads it
-       as blitz2 does */
+    /* a command line run counts its lines (the place of an error); an
+       include of text there is tokenised by ab3cli (readinc takes only
+       tokenised lines); the editor session reads it as blitz2 does */
+    ab3_incopen(n);
     if (checkincmode(n->fh, n->buf) && ab3job && ab3job->tokfile)
         ab3_textinc(n, (const char *)namebuff);
 #endif

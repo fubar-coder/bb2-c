@@ -9,6 +9,9 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include "blitz2.h"
+#if BLITZ2_AB3
+#include "ab3main.h"
+#endif
 
 /* long read of a UWORD template (asm move.l label,d1); avoids L_() on
    UWORD arrays (strict aliasing) */
@@ -546,6 +549,9 @@ void err(const char *msg)
             menuret = linenumat;
             endstop();
         }
+#if BLITZ2_AB3
+        ab3_errpos();                       /* a command line run: in an include? */
+#endif
         ed_error(msg);                      /* comdata+12, a0 = msg */
     }
     /* .quiet: d0 = msg */

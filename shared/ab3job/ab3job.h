@@ -43,7 +43,7 @@ enum ab3job_rc {
  * @brief The job of a command line run.
  *
  * Filled by ab3args_parse (force, release_exe, source, exe), by blitz2-ab3
- * (mode) and by ab3cli (started, result, tokfile).
+ * (mode, the error's place) and by ab3cli (started, result, tokfile).
  */
 struct ab3job {
     char magic[8];              /* AB3JOB_MAGIC with its 0 */
@@ -65,6 +65,15 @@ struct ab3job {
     void *tokfile;
     char source[AB3JOB_PATHLEN];        /* -s */
     char exe[AB3JOB_PATHLEN];           /* -e */
+    /* the place of a compile error inside an include (task 3.6): ab3cli
+       clears errset before the compile; blitz2-ab3 places the first error
+       (errset = 1): errline > 0 - line errline of the include errfile
+       (the innermost one that has a line read), 0 - the compiler's line
+       of the source */
+    uint8_t errset;
+    uint8_t pad2[3];
+    uint32_t errline;
+    char errfile[AB3JOB_PATHLEN];
 };
 
 /** @brief What ab3args_parse found. */

@@ -104,61 +104,107 @@ int ab3_cmdline(int argc, char **argv)
     return -1;
 }
 
-/* ------------------------------------------------- text includes (3.5) */
+/* -------------------------------- includes of a command line run (3.5, 3.6) */
 
-#define MAXTEXTINC 16                   /* open at the same time (nested) */
+#define MAXINC 16                       /* open at the same time (nested) */
 static struct {
-    struct include *inc;
-    UBYTE *mem;                         /* AllocMem(len + 1) by ab3cli */
+    struct include *inc;                /* NULL: a free slot */
+    ULONG line;                         /* its lines read so far (3.6) */
+    UBYTE *mem;                         /* a text include: its lines,
+                                           AllocMem(len + 1) by ab3cli */
     ULONG len, pos;
-} textinc[MAXTEXTINC];
+} incs[MAXINC];
+
+/* the slot of inc (NULL: a free one); MAXINC if there is none */
+static int incslot(const struct include *inc)
+{
+    int i;
+
+    for (i = 0; i < MAXINC && incs[i].inc != inc; i++)
+        ;
+    return i;
+}
+
+void ab3_incopen(struct include *inc)
+{
+    int i;
+
+    if (!ab3job || (i = incslot(NULL)) == MAXINC)
+        return;                         /* full: its errors at the outer place */
+    memset(&incs[i], 0, sizeof incs[i]);
+    incs[i].inc = inc;
+}
 
 void ab3_textinc(struct include *inc, const char *name)
 {
     static char msg[] = "Can't read include";
     struct m68kregs r;
-    int i;
+    int i = incslot(inc);
 
-    for (i = 0; i < MAXTEXTINC && textinc[i].inc; i++)
-        ;
-    if (i == MAXTEXTINC)
+    if (i == MAXINC)
         err("Too many includes of text");
     memset(&r, 0, sizeof r);
     r.a[0] = (ULONG)name;
     callregs(ab3job->tokfile, &r);
     if (!r.d[0])
         err(msg);                       /* ab3cli printed why */
-    textinc[i].inc = inc;
-    textinc[i].mem = (UBYTE *)r.d[0];
-    textinc[i].len = r.d[1];
-    textinc[i].pos = 0;
+    incs[i].mem = (UBYTE *)r.d[0];
+    incs[i].len = r.d[1];
+    incs[i].pos = 0;
 }
 
 LONG ab3_incread(struct include *inc, UBYTE *dst, LONG len)
 {
     ULONG n;
-    int i;
+    int i = incslot(inc);
 
-    for (i = 0; i < MAXTEXTINC && textinc[i].inc != inc; i++)
-        ;
-    if (i == MAXTEXTINC)
+    if (i == MAXINC || !incs[i].mem)
         return Read(inc->fh, dst, len);
-    n = textinc[i].len - textinc[i].pos;
+    n = incs[i].len - incs[i].pos;
     if (n > (ULONG)len)
         n = (ULONG)len;
-    memcpy(dst, textinc[i].mem + textinc[i].pos, n);
-    textinc[i].pos += n;
+    memcpy(dst, incs[i].mem + incs[i].pos, n);
+    incs[i].pos += n;
     return (LONG)n;
+}
+
+void ab3_incline(struct include *inc)
+{
+    int i = incslot(inc);
+
+    if (i < MAXINC)
+        incs[i].line++;
 }
 
 void ab3_incdone(struct include *inc)
 {
     int i;
 
-    for (i = 0; i < MAXTEXTINC; i++)
-        if (inc && textinc[i].inc == inc) {
-            FreeMem(textinc[i].mem, textinc[i].len + 1);
-            textinc[i].inc = NULL;
+    if (!inc || (i = incslot(inc)) == MAXINC)
+        return;
+    if (incs[i].mem)
+        FreeMem(incs[i].mem, incs[i].len + 1);
+    incs[i].inc = NULL;
+    incs[i].mem = NULL;
+}
+
+void ab3_errpos(void)
+{
+    struct include *inc;
+    int i;
+
+    if (!ab3job || ab3job->errset)
+        return;
+    ab3job->errset = 1;
+    ab3job->errline = 0;
+    /* the innermost include with a line read; one just opened (an error
+       in opening it, or of its kind) belongs to the INCLUDE line outside */
+    for (inc = firstinc; inc; inc = inc->next)
+        if ((i = incslot(inc)) < MAXINC && incs[i].line) {
+            strncpy(ab3job->errfile, inc->name, AB3JOB_PATHLEN - 1);
+            ab3job->errfile[AB3JOB_PATHLEN - 1] = 0;
+            ab3job->errline = incs[i].line;
+            return;
         }
 }
 

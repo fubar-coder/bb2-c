@@ -30,6 +30,30 @@ int ab3_cmdline(int argc, char **argv);
 struct include;
 
 /**
+ * @brief An include was opened (doinc2) in a command line run: its lines
+ *        are counted from now on, for the place of an error (task 3.6).
+ *
+ * Up to 16 nested includes; the errors of a deeper one are placed at the
+ * next outer one.  Nothing in an editor session.
+ *
+ * @param inc  the include, just opened
+ */
+void ab3_incopen(struct include *inc);
+
+/** @brief readinc took the next line of the include. */
+void ab3_incline(struct include *inc);
+
+/**
+ * @brief A compile error (err, before the editor's error service): its
+ *        place for ab3cli in the job - the first error of a compile only.
+ *
+ * Inside an include: its name and the line read last (the innermost
+ * include that has a line read), else line 0 (the compiler's line of the
+ * source, the editor's line number).  Nothing in an editor session.
+ */
+void ab3_errpos(void);
+
+/**
  * @brief A text include in a command line run (task 3.5): blitz2 reads an
  *        include raw (readinc), so ab3cli tokenises it first, as TED loads
  *        a source, with the program's token list (job tokfile); readinc
@@ -37,7 +61,7 @@ struct include;
  *
  * An error stops the compile (err).
  *
- * @param inc   the include, just opened (doinc2)
+ * @param inc   the include, just opened (doinc2) and ab3_incopen'ed
  * @param name  its name
  */
 void ab3_textinc(struct include *inc, const char *name);

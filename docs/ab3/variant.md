@@ -334,7 +334,13 @@ the change). In a command line run an include of text is therefore
 tokenised by `ab3cli` first – TED's way of loading a source, with the
 program's token list – and `readinc` reads those lines; an editor
 session reads includes exactly as `blitz2`. A tokenised include of the
-other mode is refused ("Include of another mode: NAME").
+other mode is refused ("Include of another mode: NAME"). A compile error
+inside an include is printed with the include's name and line
+(`INC:LINE: MESSAGE`): `blitz2-ab3` counts the lines `readinc` takes of
+every open include and places the first error of the compile at the
+innermost include that has a line read (an error of opening an include,
+or of its mode, at the `INCLUDE` line outside); `ab3cli` prints that
+place (job fields `errline`/`errfile`).
 
 Limits of G1, found on the way:
 * Relative names (source, executable, includes, residents with a path)
@@ -348,6 +354,10 @@ Limits of G1, found on the way:
 * `PROGDIR:` needs Kickstart 2.0; the editor session runs on 1.3 as
   `blitz2`. The `.xtra` image goes to the compiler through a temporary
   file in `T:` (else `RAM:`).
+* The line of an error in an include of text counts the lines as TED
+  loads them: after a line TED splits (longer than 128 characters) the
+  number is one too high. Of more than 16 nested includes, an error in a
+  deeper one is placed at the 16th.
 
 ## Spike result (2026-10-31)
 

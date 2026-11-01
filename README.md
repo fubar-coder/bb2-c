@@ -126,7 +126,8 @@ text are tokenised the same way with the program's token list; a
 tokenised include of the other mode is refused. Relative names
 (source, executable, includes) are relative to the shell's current
 directory. Errors go to the console – a compile error as
-`FILE:LINE: MESSAGE` – and the return code is 0 (compiled), 10 (compile
+`FILE:LINE: MESSAGE`, inside an include with the include's name and
+line – and the return code is 0 (compiled), 10 (compile
 error) or 20 (argument or set-up error). AmiBlitz3's other options
 (`-d`, `-run`, `-dump`, `-PED`, `-save`, …) are refused with 20.
 

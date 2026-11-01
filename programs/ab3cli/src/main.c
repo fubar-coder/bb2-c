@@ -17,7 +17,9 @@
  *     handed to us by blitz2-ab3 (job tokfile) and tokenised as TED loads
  *     a source, with the program's token list,
  *   - prints what went wrong on the console - a compile error as
- *     "FILE:LINE: MESSAGE" - and leaves the return code in the job: 0
+ *     "FILE:LINE: MESSAGE", inside an include with the include's name and
+ *     line (blitz2-ab3 places it in the job) - and leaves the return code
+ *     in the job: 0
  *     compiled, 10 compile error, 20 set-up error (design D6).
  * Relative names (source, executable, includes) are relative to the
  * shell's current directory.
@@ -493,14 +495,22 @@ static int run(void)
     if (!load_options() || setuperr)
         goto out;
     DeleteFile((CONST_STRPTR)job->exe); /* no stale executable */
+    job->errset = 0;                    /* blitz2-ab3 places the first error */
+    job->errline = 0;
     ret = call_menu(MENU_CREATE_EXECUTABLE);
     if (errpending) {
         OUT_BEGIN;
 
-        sbs(&L, job->source);
-        if (ret >= 0) {
+        if (job->errline) {             /* inside an include (task 3.6) */
+            sbs(&L, job->errfile);
             sbc(&L, ':');
-            sbn(&L, (LONG)ret + 1);
+            sbn(&L, (LONG)job->errline);
+        } else {
+            sbs(&L, job->source);
+            if (ret >= 0) {
+                sbc(&L, ':');
+                sbn(&L, (LONG)ret + 1);
+            }
         }
         sbs(&L, ": ");
         sbs(&L, errmsg);
