@@ -250,7 +250,13 @@ AB3 mode.
 3. **G6, G7** (FPU and 68020; needs an A1200/FPU machine in the
    emulator for the tests).
 4. **G8** only if AB3's error behaviour or byte-equal executables are
-   wanted.
+   wanted. Taken over before it (OpenSpec change `ab3-pointer-assign`,
+   2026-11-01, spec `ab3-compat/type-rules`): the rule AmiBlitz3 applies
+   without `SYNTAX`, a pointer takes no basic value other than long
+   (`AmiBlitz3.ab3` 23531-23572; AmiBlitz3 types the right side by the
+   last variable or function outside parameters). Still open for G8:
+   NewType left sides, the `SYNTAX 4` part of the check (NewType against
+   NewType, casts) and every other `SYNTAX` check.
 
 Rough total: G1–G5 about 20–40 commits, G6–G7 about 15–25, G8 open
 (guess).
@@ -568,7 +574,6 @@ machine); recorded, not changed in G1:
 
 | Case | AmiBlitz3 v3.14.0 | blitz2-ab3 | For |
 |---|---|---|---|
-| `exec_data` | line 1 `*exec.ExecBase = execbase` refused: "Can't convert types --> execbase", no executable | compiles: since G2 `execbase` stays a variable as in AmiBlitz3 (case-sensitive tokeniser), a quick 0 assigned to the pointer; the program prints what is at address 0 (before G2: TED's tokeniser took `execbase` as `ExecBase`, `$DE26`). The error is AmiBlitz3's assignment rule, not its tokeniser: a pointer on the left takes only a pointer or a long (`AmiBlitz3.ab3` 23540-23570 at `@58a11658`, independent of `SYNTAX`) | G8 (type checks; user decision 2026-11-01) |
 | `exec_data` | return code 0 after a compile error ("A unknow error happend!") | 10 (design D6) | none: ours is the documented convention |
 | text include without a final line end | its last line is lost: a last `NPrint` is not compiled, a last `INCLUDE` never done (measured 2026-11-01; guess: `read_includeline`'s scan stops before the 0 at the data end) | the last line is compiled | none: kept (silently losing code is not reproduced; user decision 2026-11-01) |
 | `opt_fpu` | `OPTIMIZE 7` compiles on the reference machine (Amiberry's A1200 has a 68882, `fpu_model` of `default.uae`: `_checkfpu` finds it) and the program runs | refused: "Not supported: OPTIMIZE 2 (FPU)" (spec `ab3-compat/directives`) | G6: FPU code |
@@ -588,7 +593,8 @@ runs headless), `windowtags` (`@@` in a tag list; opens its window on the
 Workbench screen and ends; compiled with `-r`: it has no `End`, case
 `noend`), `memoryleak_test` (`OPTIMIZE 13`) give
 AmiBlitz3's output; `unknown_function` (an include named without
-extension, `.ab3` added) is "Procedure not found" in both; `exec_data`,
+extension, `.ab3` added) is "Procedure not found" in both; `exec_data`
+is "Can't convert types" in both (since `ab3-pointer-assign`);
 `int_tests` and `jsr` differ (table above).
 
 AmiBlitz3's console output in CLI mode also names files it does not
@@ -611,7 +617,9 @@ compile only, the programs are not run.
   (84 %). Both give the same result (compiled or not) for 56: 46
   compile in both, 10 fail in both.
 * Compiled by blitz2-ab3 only: `exec_data` (AmiBlitz3's type rule of the
-  assignment, G8; "Differences").
+  assignment). Since `ab3-pointer-assign` (2026-11-01) it fails in both
+  (`ab3_cli`, `ab3_cli_ref`; the whole run not repeated): 46 of 68
+  then, the same result for 57.
 * Not compiled by blitz2-ab3, by AmiBlitz3 (11): `benchmark2`,
   `putdiskobject`, `quickdivtest`, `serial_read`, `statementcalls`
   ("Can't Convert Types" in `error.include.ab3` 226: its optional

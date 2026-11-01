@@ -13,7 +13,7 @@ byte-identical to the previous commit; clean build without warnings;
 
 ## 2. Integration
 
-- [ ] 2.1 `exec_data` expect files: AmiBlitz3's error now; remove its "Differences" entry in `docs/ab3/variant.md` and add a note under G8 that NewType left sides and the `SYNTAX 4` part are still open; verify: `ab3_cli`, `ab3_cli_ref` pass
+- [x] 2.1 `exec_data` expect files: AmiBlitz3's error now; remove its "Differences" entry in `docs/ab3/variant.md` and add a note under G8 that NewType left sides and the `SYNTAX 4` part are still open; verify: `ab3_cli`, `ab3_cli_ref` pass
 - [ ] 2.2 Full check: clean build without warnings, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
 
 ## Workflow follow-up

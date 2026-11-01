@@ -403,6 +403,12 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   5. [x] Checked 2026-11-01 whether TED's baserel data hunk (0x7c8 bytes
      of `.bss` without startup code) is cleared by LoadSeg: not on
      Kickstart 1.3 (only `HUNK_BSS` is), yes on 3.2 – port defect #963.
+  6. [x] AmiBlitz3's pointer assignment rule done (2026-11-01, OpenSpec
+     change `ab3-pointer-assign`): in AB3 mode a pointer takes no basic
+     value other than long ("Can't convert types", independent of
+     `SYNTAX`); `exec_data` now fails as with AmiBlitz3 (46 of the 68
+     test programs compile). NewType left sides and the `SYNTAX 4` part
+     stay for G8.
 - [ ] **Tests for the issues labelled `needs-test`** (99 open issues at the
   start, 3 open on 2026-10-29: #14, #26, #42). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,
