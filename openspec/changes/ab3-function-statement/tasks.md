@@ -8,8 +8,8 @@ byte-identical to the previous commit; clean build without warnings;
 
 ## 1. The rule
 
-- [ ] 1.1 Add an extension point in `handleproc` (`compile.c`) for a procedure with a return type called as a statement; `ext_bb2.c` keeps "Illegal Procedure Call", the AB3 implementation (`ab3syn.c`) compiles the call as for a `Statement` and discards the result (check against AmiBlitz3 what happens to a string result, e.g. the string buffer); verify: `blitz2`'s results byte-identical, `ab3_bb2_equivalence*` pass
-- [ ] 1.2 `ab3_cli` cases for the three scenarios of the `syntax-rules` delta (also in `ab3_cli_ref`), plus a function without parameters; verify: all pass with AmiBlitz3's output
+- [x] 1.1 Add an extension point in `handleproc` (`compile.c`) for a procedure with a return type called as a statement; `ext_bb2.c` keeps "Illegal Procedure Call", the AB3 implementation (`ab3syn.c`) compiles the call as for a `Statement` and discards the result (check against AmiBlitz3 what happens to a string result, e.g. the string buffer); verify: `blitz2`'s results byte-identical, `ab3_bb2_equivalence*` pass
+- [x] 1.2 `ab3_cli` cases for the three scenarios of the `syntax-rules` delta (also in `ab3_cli_ref`), plus a function without parameters; verify: all pass with AmiBlitz3's output
 
 ## 2. Integration
 

@@ -1,0 +1,5 @@
+[compile]
+rc=0
+[run]
+count 3
+rc=0

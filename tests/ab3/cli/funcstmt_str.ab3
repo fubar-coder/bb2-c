@@ -1,0 +1,12 @@
+; a string Function called as a statement: its result is left in the
+; string buffer, the strings of the program stay intact
+Function.s mygreet{n$}
+  NPrint "hello ", n$
+  Function Return "<" + n$ + ">"
+End Function
+a$ = "abc"
+mygreet{"world"}
+NPrint "next"
+b$ = mygreet{a$} : NPrint a$ + "x", b$
+mygreet{a$ + "def"} : NPrint a$
+End

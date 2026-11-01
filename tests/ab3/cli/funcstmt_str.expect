@@ -1,0 +1,10 @@
+[compile]
+rc=0
+[run]
+hello world
+next
+hello abc
+abcx<abc>
+hello abcdef
+abc
+rc=0

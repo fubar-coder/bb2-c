@@ -1,5 +1,4 @@
 [compile]
-jsr.ab3:86: Illegal Procedure Call
-rc=10
+rc=0
 [run]
-no executable
+rc=0

@@ -289,6 +289,12 @@ ab3_cli_case(ptr_addr ptr_addr.ab3 REF)
 ab3_cli_case(ptr_paren ptr_paren.ab3 REF)
 ab3_cli_case(ptr_accept ptr_accept.ab3 REF)
 ab3_cli_case(ptr_bb2 ptr_bb2.bb)
+# a Function called as a statement (change ab3-function-statement, spec
+# ab3-compat/syntax-rules): numeric, string, without parameters, BB2 mode
+ab3_cli_case(funcstmt_num funcstmt_num.ab3 REF)
+ab3_cli_case(funcstmt_str funcstmt_str.ab3 REF)
+ab3_cli_case(funcstmt_nopar funcstmt_nopar.ab3 REF)
+ab3_cli_case(funcstmt_bb2 funcstmt_bb2.bb)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)

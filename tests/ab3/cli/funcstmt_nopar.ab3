@@ -1,0 +1,14 @@
+; a Function without parameters called as a statement, also one that ends
+; without Function Return
+Function.w mycount{}
+  SHARED n.w
+  n = n + 1
+  Function Return n
+End Function
+Function.l mynothing{}
+End Function
+mycount{}
+mycount{}
+mynothing{}
+NPrint "count ", mycount{}
+End

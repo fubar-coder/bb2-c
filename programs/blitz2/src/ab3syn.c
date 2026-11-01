@@ -177,6 +177,18 @@ UWORD ext_stmtprefix(UWORD c)
     return c;
 }
 
+/* a Function called as a statement (AmiBlitz3.ab3:4416-4426
+   handle_statement: the check of the return type is commented out,
+   ";BPL.w illprocerr"): compiled as a Statement's call, the result
+   discarded.  A string result is left in the string buffer, as
+   AmiBlitz3's: no string base is set up for it (blitz2's afunction does
+   for an expression), the Function's own string code sets it. */
+BOOL ext_funcstmt(const struct proc *p)
+{
+    (void)p;
+    return progmode == XTRA_MODE_AB3;
+}
+
 /* code after ":@" in a comment is compiled (AmiBlitz3.ab3:10593 getchar):
    the comment ends there as a ':' */
 BOOL ext_comment(void)

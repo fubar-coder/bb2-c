@@ -28,6 +28,7 @@ struct include;
 struct resentry;
 struct macro;
 struct var;
+struct proc;
 
 /* ================================================ the data of the mode */
 
@@ -125,6 +126,16 @@ void ext_errpos(void);
 /** @brief A built-in token tok (without bit 15) is compiled as a
  *         statement or a function; may stop the compile with err(). */
 void ext_newtoken(UWORD tok);
+
+/* ==================== a Function as a statement (ab3-function-statement) */
+
+/**
+ * @brief handleproc (compile.c): the procedure p called at the start of a
+ *        statement (name{...}) is a Function (it has a return type).
+ * @return TRUE if allowed: the call is compiled as for a Statement, the
+ *         result discarded (blitz2: "Illegal Procedure Call")
+ */
+BOOL ext_funcstmt(const struct proc *p);
 
 /* ============================ AB3 mode's language (change ab3-mode-g2) */
 

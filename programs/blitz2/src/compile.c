@@ -1336,7 +1336,7 @@ static void handleproc(UWORD len)
 
     if (!p)
         noprocerr();
-    if (p->rettype >= 0)        /* tst.b 5(a2) / bpl */
+    if (p->rettype >= 0 && !ext_funcstmt(p))    /* tst.b 5(a2) / bpl */
         illprocerr();
     ppc = p->pc;                /* pc of proc. */
     if (p->nparams)

@@ -76,6 +76,11 @@ void ext_newtoken(UWORD tok)
 {
 }
 
+BOOL ext_funcstmt(const struct proc *p)
+{
+    return FALSE;
+}
+
 void ext_passstart(void)
 {
 }

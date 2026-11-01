@@ -1,0 +1,9 @@
+; a Function called as a statement: compiled as a Statement's call, the
+; result discarded (AmiBlitz3.ab3:4416-4426, ;BPL.w illprocerr)
+Function.l myadd{a.l,b.l}
+  NPrint a + b
+  Function Return a + b
+End Function
+myadd{2,3}
+x.l = myadd{4,5} : NPrint "sum ", x
+End
