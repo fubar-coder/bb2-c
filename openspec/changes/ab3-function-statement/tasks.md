@@ -14,7 +14,7 @@ byte-identical to the previous commit; clean build without warnings;
 ## 2. Integration
 
 - [x] 2.1 Add AmiBlitz3's test program `jsr` to `ab3_cli`/`ab3_cli_ref` (already fetched at `58a11658`); update the measured share and remove `jsr` from the open list in `docs/ab3/variant.md` and `TODO.md`; verify: `jsr` gives AmiBlitz3's output
-- [ ] 2.2 Full check: clean build without warnings, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
+- [x] 2.2 Full check: clean build without warnings, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
 
 ## Workflow follow-up
 
