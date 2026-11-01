@@ -1,0 +1,9 @@
+; XTRA
+; Embedded .xtra Header
+;
+; General Info
+; -------------------------------------------------------
+; Residents       = "nosuch.res"
+; /XTRA
+; a resident of the header that does not exist
+NPrint "not compiled"

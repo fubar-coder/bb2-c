@@ -1,0 +1,7 @@
+[compile]
+rc=0
+[run]
+main
+include: 1024
+main again
+rc=0

@@ -359,6 +359,22 @@ Limits of G1, found on the way:
   number is one too high. Of more than 16 nested includes, an error in a
   deeper one is placed at the 16th.
 
+Tests (`tests/ab3/CMakeLists.txt`, label `emulator`, skipped without
+Amiberry or the fetched AmiBlitz3 files): `ab3_cli` compiles the cases
+of `tests/ab3/cli/` with `blitz2-ab3 -s … -e …` in one session
+(`tests/ab3/cli.cmake`: `blitz2:`, three `Blitz3:` trees - the full
+one, one without `csLibs`, one with a userlib of number 152 replacing
+`baseLibs`' freqlib), runs each program through `reqtrap` and compares
+the compiler's console output, its return code, the program's output and
+return code with `NAME.expect` (`tools/outmatch`: literal lines, `~`/`+`
+patterns for memory sizes, timing and the system's language). The cases:
+AmiBlitz3's ten test programs of the spike (`memoryleak_test` without its
+`OPTIMIZE` line), `^` (library 44), header residents with and without a
+path, includes of text in both modes, the userlib, and the errors - a
+missing BigLib, a missing resident, tokenised includes of the other mode
+(both ways), `-d`, a syntax error, errors in an include of text and in a
+tokenised one. `ab3_cli_broken`: a wrong expect file must fail.
+
 ## Spike result (2026-10-31)
 
 Phase 0, no compiler change: today's blitz2 (build of `main`) with

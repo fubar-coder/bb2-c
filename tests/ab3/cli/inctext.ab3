@@ -1,0 +1,6 @@
+; an AB3 program with an include of text without header: tokenised in AB3
+; mode (Trim$ is a command of AmiBlitz3's libraries only)
+NPrint "main"
+INCLUDE "inctext_plain.ab3"
+NPrint "main again"
+End

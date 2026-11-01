@@ -151,6 +151,12 @@ the header); `blitz2-ab3` loads it as `PROGDIR:ab3cli` instead of
 `blitz2:ted`. It needs Kickstart 2.0 (`PROGDIR:`), the editor session
 does not.
 
+The emulator test `ab3_cli` (`tests/ab3/cli.cmake`) compiles AmiBlitz3's
+test programs and the cases of `tests/ab3/cli/` this way, runs them and
+compares the console output, the programs' output and the return codes
+with expect files (`tools/outmatch`; docs/ab3/variant.md, "The command
+line").
+
 ## IDE (CLion and others)
 
 The build uses two compilers: the m68k-amigaos-gcc for everything that

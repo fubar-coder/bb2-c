@@ -1,0 +1,18 @@
+[compile]
+rc=0
+[run]
+startup and DIMing list...
+~freemem: #
+used mem: 24
+filling list...
+added items: 8000
+used mem: 729120
+clearing list ...
+used mem: 729120
+filling list...
+added items: 8000
+used mem: 729120
+clearing list ...
+used mem: 729120
+The End
+rc=0

@@ -1,0 +1,5 @@
+[compile]
+incother_ab3.ab3:4: Include of another mode: incother_bb2tok.bb2
+rc=10
+[run]
+no executable

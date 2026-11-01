@@ -1,0 +1,3 @@
+; the text include of inctext.ab3 (no header)
+b$ = "  include  "
+NPrint ">" + Trim$(b$) + "<"

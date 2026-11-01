@@ -1,0 +1,6 @@
+[compile]
+rc=0
+[run]
+ExecBase: Kickstart 2.0 or newer
+NEWTYPE size: 632
+rc=0

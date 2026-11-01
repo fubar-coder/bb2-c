@@ -1,0 +1,5 @@
+; an AB3 program with a tokenised include of BB2 (no .xtra): refused, line 4
+NPrint "main"
+
+INCLUDE "incother_bb2tok.bb2"
+NPrint "main again"

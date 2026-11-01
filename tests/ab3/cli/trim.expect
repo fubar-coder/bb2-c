@@ -1,0 +1,7 @@
+[compile]
+rc=0
+[run]
+9
+> hallo   <
+>hallo<   
+rc=0

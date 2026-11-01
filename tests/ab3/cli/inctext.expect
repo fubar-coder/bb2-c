@@ -1,0 +1,7 @@
+[compile]
+rc=0
+[run]
+main
+>include<
+main again
+rc=0

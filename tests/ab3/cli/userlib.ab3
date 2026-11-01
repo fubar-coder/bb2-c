@@ -1,0 +1,4 @@
+; a library of Blitz3:BlitzLibs/UserLibs/ with the number of a library of
+; baseLibs (152, freqlib) replaces it: its function, not FileRequest$
+NPrint AB3UserLibTest
+End

@@ -1,0 +1,15 @@
+; XTRA
+; Embedded .xtra Header
+;
+; General Info
+; -------------------------------------------------------
+; Residents       = "all.res"
+; /XTRA
+; a resident of the header without a path: Blitz3:BlitzLibs/Residents/all.res
+; (its newtype ExecBase)
+*e.ExecBase = Peek.l(4)
+If *e\LibNode\lib_Version >= 36
+  NPrint "ExecBase: Kickstart 2.0 or newer"
+EndIf
+NPrint "NEWTYPE size: ", SizeOf .ExecBase
+End

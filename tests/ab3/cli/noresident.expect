@@ -1,0 +1,5 @@
+[compile]
+noresident.ab3: Can't Load Resident: nosuch.res
+rc=10
+[run]
+no executable

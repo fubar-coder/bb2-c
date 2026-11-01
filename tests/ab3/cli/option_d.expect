@@ -1,0 +1,5 @@
+[compile]
+blitz2-ab3: option -d is not supported by blitz2-ab3
+rc=20
+[run]
+no executable

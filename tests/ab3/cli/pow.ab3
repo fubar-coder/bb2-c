@@ -1,0 +1,13 @@
+; XTRA
+; Embedded .xtra Header
+;
+; General Info
+; -------------------------------------------------------
+; Residents       = ""
+; /XTRA
+; the float power in AB3 mode: AmiBlitz3's math library (44), not BB2's 192
+a.f = 2
+NPrint a^10
+b.f = 1.5
+NPrint b^2
+End

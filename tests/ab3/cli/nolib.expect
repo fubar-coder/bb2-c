@@ -1,0 +1,5 @@
+[compile]
+trim.ab3: Library file not found: Blitz3:BlitzLibs/csLibs
+rc=10
+[run]
+no executable

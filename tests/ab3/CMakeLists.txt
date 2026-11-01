@@ -80,3 +80,110 @@ ab3_tokens(ab3_tokens 80DB)
 ab3_tokens(ab3_tokens_broken 80D3)
 set_tests_properties(ab3_tokens_broken PROPERTIES PASS_REGULAR_EXPRESSION
 	"at[ \n]+line[ \n]+20:[ \n]+\"8014[ \n]+Jimi\",[ \n]+AmiBlitz3[ \n]+\"8014[ \n]+SYNTAX\"")
+
+# The command line of blitz2-ab3 (spec ab3-compat/*, cli.cmake): programs
+# compiled with blitz2-ab3 -s SOURCE -e EXE in one emulator session, run,
+# and their output (the compiler's console output and return code, the
+# program's output and return code) compared with cli/NAME.expect
+# (outmatch: literal lines, '~'/'+' patterns for memory sizes and timing).
+# Label emulator; skipped (77) without Amiberry or the fetched files.
+add_subdirectory(amiga)
+set(cli_dir ${CMAKE_CURRENT_SOURCE_DIR}/cli)
+set(cli_gen ${CMAKE_CURRENT_BINARY_DIR}/cli-src)
+set(AB3_CLI_TIMEOUT 600 CACHE STRING
+	"ab3 command line tests: time limit of the emulator session (seconds)")
+# the sources of git, and those made in the build: the tokenised includes
+# (tedtok, BB2's token list) and the AmiBlitz3 .xtra of one of them
+file(GLOB cli_sources CONFIGURE_DEPENDS ${cli_dir}/*.ab3 ${cli_dir}/*.bb)
+set(ted_tokens ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
+set(cli_made)
+foreach(pair incerr_tok_inc|incerr_tok_inc incother|incother_bb2tok incother|incother_ab3tok)
+	string(REPLACE "|" ";" pair "${pair}")
+	list(GET pair 0 in)
+	list(GET pair 1 out)
+	add_custom_command(OUTPUT ${cli_gen}/${out}.bb2
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${cli_gen}
+		COMMAND ${TEDTOK} ${ted_tokens} ${cli_dir}/${in}.bas ${cli_gen}/${out}.bb2
+		DEPENDS ${cli_dir}/${in}.bas ${ted_tokens} ${TEDTOK} host_tools
+		COMMENT "Tokenising tests/ab3/cli/${in}.bas as ${out}.bb2"
+		VERBATIM)
+	list(APPEND cli_made ${cli_gen}/${out}.bb2)
+endforeach()
+add_custom_command(OUTPUT ${cli_gen}/incother_ab3tok.bb2.xtra
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${cli_gen}
+	COMMAND ${MKTESTDATA} ${cli_dir}/ab3xtra.spec ${cli_gen}/incother_ab3tok.bb2.xtra
+	DEPENDS ${cli_dir}/ab3xtra.spec ${MKTESTDATA} host_tools
+	COMMENT "AmiBlitz3 .xtra of incother_ab3tok.bb2"
+	VERBATIM)
+list(APPEND cli_made ${cli_gen}/incother_ab3tok.bb2.xtra)
+add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
+
+# ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-userlib]
+#              [ARGS ARG...]): a case of the suite
+set(cli_exe_cases "")
+macro(ab3_cli_case name source)
+	cmake_parse_arguments(c "" "TREE" "ARGS" ${ARGN})
+	if(NOT c_TREE)
+		set(c_TREE Blitz3)
+	endif()
+	list(JOIN c_ARGS " " c_args)
+	set(c_line "${name}|${c_TREE}|${source}|${c_args}|${cli_dir}/${name}.expect")
+	string(APPEND cli_exe_cases "${c_line}\n")
+endmacro()
+
+# AmiBlitz3's test programs of the spike (task 5.2; memoryleak_test without
+# its OPTIMIZE line, cli.cmake), the float power, header residents
+ab3_cli_case(atoi atoi.ab3)
+ab3_cli_case(compilersignals compilersignals.ab3)
+ab3_cli_case(data_restore_in_function data_restore_in_function.ab3)
+ab3_cli_case(exec_data exec_data.ab3)
+ab3_cli_case(localization localization.ab3)
+ab3_cli_case(fabrizio_speedquestion fabrizio_speedquestion.ab3)
+ab3_cli_case(memoryleak_test memoryleak_test.ab3)
+ab3_cli_case(setint setint.ab3)
+ab3_cli_case(test_newtypes test_newtypes.ab3)
+ab3_cli_case(trim trim.ab3)
+ab3_cli_case(pow pow.ab3)
+ab3_cli_case(resident resident.ab3)
+ab3_cli_case(resident_path resident_path.ab3)
+# includes of text in both modes (task 3.5)
+ab3_cli_case(inctext inctext.ab3)
+ab3_cli_case(inctext_bb2 inctext_bb2.bb)
+# AB3 mode's libraries: a userlib replacing a BigLib library, a missing
+# BigLib (task 4.2)
+ab3_cli_case(userlib userlib.ab3 TREE Blitz3-userlib)
+ab3_cli_case(nolib trim.ab3 TREE Blitz3-nolib)
+# errors (task 5.3): tokenised includes of the other mode, a missing
+# resident, an unsupported option, a compile error; errors inside an
+# include of text and a tokenised one (task 3.6)
+ab3_cli_case(incother_ab3 incother_ab3.ab3)
+ab3_cli_case(incother_bb2 incother_bb2.bb)
+ab3_cli_case(noresident noresident.ab3)
+ab3_cli_case(option_d atoi.ab3 ARGS -d)
+ab3_cli_case(syntax syntax.ab3)
+ab3_cli_case(incerr_text incerr_text.ab3)
+ab3_cli_case(incerr_tok incerr_tok.bb)
+
+# ab3_cli(NAME CASES): the ctest
+function(ab3_cli name cases)
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
+	file(WRITE ${work}.cases "${cases}")
+	set(sources ${cli_sources} ${cli_made})
+	string(REPLACE ";" "$<SEMICOLON>" sources "${sources}")
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+		-DOUTMATCH=${OUTMATCH} -DREQTRAP=$<TARGET_FILE:reqtrap>
+		-DCASES=${work}.cases
+		-DBLITZ2_DIR=${BLITZ2_DIR} -DAB3=${AB3_V314} -DSOURCES=${sources}
+		-DUSERLIB=${CMAKE_CURRENT_BINARY_DIR}/amiga/ab3_userlib.obj
+		-DWORK=${work} -DTIMEOUT=${AB3_CLI_TIMEOUT}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/cli.cmake)
+	math(EXPR limit "${AB3_CLI_TIMEOUT} + 120 + ${EMULATION_QUEUE_WAIT}")
+	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT ${limit})
+endfunction()
+ab3_cli(ab3_cli "${cli_exe_cases}")
+# the check itself: a wrong expect file must fail (broken.expect: atoi's
+# output with one digit changed)
+ab3_cli(ab3_cli_broken "atoi|Blitz3|atoi.ab3||${cli_dir}/broken.expect\n")
+set_tests_properties(ab3_cli_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"FAIL atoi: outmatch: [^\n]*expect line 14: \"12325\", output line 14: \"12324\"")

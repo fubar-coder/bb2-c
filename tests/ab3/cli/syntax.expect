@@ -1,0 +1,5 @@
+[compile]
+syntax.ab3:4: Syntax Error
+rc=10
+[run]
+no executable

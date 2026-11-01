@@ -1,0 +1,5 @@
+; a compile error in line 4 of the source: its name, the line, the
+; compiler's message; no executable, return code 10
+NPrint "before"
+NPrint "a" +
+NPrint "after"

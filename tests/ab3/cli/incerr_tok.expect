@@ -1,0 +1,5 @@
+[compile]
+incerr_tok_inc.bb2:3: Syntax Error
+rc=10
+[run]
+no executable
