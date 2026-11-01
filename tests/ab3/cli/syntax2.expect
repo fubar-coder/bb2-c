@@ -1,0 +1,5 @@
+[compile]
+rc=0
+[run]
+a=5
+rc=0

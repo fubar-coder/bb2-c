@@ -1,0 +1,6 @@
+; SYNTAX 2 is accepted and changes no code: the executable is the one of
+; syntax2_none.ab3 (the same program without the line)
+
+a.l = 5
+NPrint "a=", a
+End

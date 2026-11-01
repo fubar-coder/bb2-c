@@ -1,7 +1,8 @@
 # The command line tests of blitz2-ab3 in Amiberry (tests/ab3/CMakeLists.txt):
 #   cmake -DAMIGA_RUN=... -DOUTMATCH=... -DREQTRAP=... -DCONFIG=exe|ref
 #         -DCASES=FILE -DBLITZ2_DIR=DIR -DAB3=DIR -DSOURCES=FILE;...
-#         -DUSERLIB=OBJ -DWORK=DIR [-DTIMEOUT=SEC] -P cli.cmake
+#         -DUSERLIB=OBJ -DWORK=DIR [-DTIMEOUT=SEC] [-DSAME=A=B,...]
+#         -P cli.cmake
 # One emulator session compiles every case of CASES and runs the program
 # through reqtrap (tests/corpus/amiga: a requester is printed and answered
 # at once, nothing waits for a click):
@@ -22,6 +23,8 @@
 # and is compared with EXPECT by outmatch: exe the whole file, ref only
 # [run] (the console output of AmiBlitz3 is its own), against REFEXPECT if
 # given (a difference of AmiBlitz3 recorded in docs/ab3/variant.md).
+# The executable of a case is kept as TEST:out/NAME.exe; SAME lists pairs
+# of cases whose executables must be byte-identical (A=B).
 # Exit status 0 if every case matches; 77 (skipped) without the emulator
 # or the fetched AmiBlitz3 files.
 cmake_minimum_required(VERSION 3.29)
@@ -105,6 +108,7 @@ foreach(c IN LISTS cases)
 		"Echo \"[compile]\" >${out}\n${cmd}\nEcho \"rc=$RC\" >>${out}\n"
 		"Echo \"[run]\" >>${out}\n"
 		"If EXISTS RAM:${name}\n  TEST:reqtrap >>${out} RAM:${name}\n  Echo \"rc=$RC\" >>${out}\n"
+		"  Copy RAM:${name} TEST:out/${name}.exe QUIET\n"
 		"  Delete >NIL: RAM:${name} QUIET\nElse\n  Echo \"no executable\" >>${out}\nEndIf\n")
 endforeach()
 file(WRITE ${WORK}/run.script "${script}")
@@ -145,6 +149,28 @@ foreach(c IN LISTS cases)
 		math(EXPR failed "${failed} + 1")
 	else()
 		message(STATUS "ok   ${name}")
+	endif()
+endforeach()
+# the executables that must be the same
+string(REPLACE "," ";" same "${SAME}")
+foreach(p IN LISTS same)
+	string(REPLACE "=" ";" p "${p}")
+	list(GET p 0 a)
+	list(GET p 1 b)
+	set(fa ${test}/out/${a}.exe)
+	set(fb ${test}/out/${b}.exe)
+	if(NOT EXISTS ${fa} OR NOT EXISTS ${fb})
+		message(STATUS "FAIL ${a}=${b}: no executable")
+		math(EXPR failed "${failed} + 1")
+		continue()
+	endif()
+	file(SHA256 ${fa} ha)
+	file(SHA256 ${fb} hb)
+	if(ha STREQUAL hb)
+		message(STATUS "ok   ${a}=${b}: the same executable")
+	else()
+		message(STATUS "FAIL ${a}=${b}: the executables differ")
+		math(EXPR failed "${failed} + 1")
 	endif()
 endforeach()
 if(failed)

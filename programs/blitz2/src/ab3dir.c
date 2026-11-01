@@ -54,6 +54,14 @@ BOOL ext_token(UWORD c)
     if (progmode != XTRA_MODE_AB3)
         return FALSE;
     switch (c) {
+    case 0x8014:                        /* SYNTAX n (BB2's Jimi slot) */
+        /* AmiBlitz3.ab3:26884 do_SYNTAX: the one character behind the
+           token; its declaration and type checks are G8, they change no
+           code.  No code of its own, as AmiBlitz3: no debug trap. */
+        undodebug();
+        if (!eos(getchar3()))
+            getchar3();
+        return TRUE;
     case 0x8000 + tnum + 40:            /* OPTIMIZE, $80DB */
         getchar3();
         dooptimize();

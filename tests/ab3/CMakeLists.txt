@@ -123,22 +123,32 @@ list(APPEND cli_made ${cli_gen}/incother_ab3tok.bb2.xtra)
 add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 
 # ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-userlib]
-#              [ARGS ARG...] [REF] [REF_EXPECT FILE]): a case of the suite
+#              [ARGS ARG...] [REF] [REF_EXPECT FILE] [SAME CASE]): a
+#              case of the suite; SAME: its executable is the one of the
+#              case CASE, in both configurations
 set(cli_exe_cases "")
 set(cli_ref_cases "")
+set(cli_exe_same "")
+set(cli_ref_same "")
 macro(ab3_cli_case name source)
-	cmake_parse_arguments(c "REF" "TREE;REF_EXPECT" "ARGS" ${ARGN})
+	cmake_parse_arguments(c "REF" "TREE;REF_EXPECT;SAME" "ARGS" ${ARGN})
 	if(NOT c_TREE)
 		set(c_TREE Blitz3)
 	endif()
 	list(JOIN c_ARGS " " c_args)
 	set(c_line "${name}|${c_TREE}|${source}|${c_args}|${cli_dir}/${name}.expect")
 	string(APPEND cli_exe_cases "${c_line}\n")
+	if(c_SAME)
+		list(APPEND cli_exe_same "${name}=${c_SAME}")
+	endif()
 	if(c_REF)
 		if(c_REF_EXPECT)
 			string(APPEND c_line "|${cli_dir}/${c_REF_EXPECT}")
 		endif()
 		string(APPEND cli_ref_cases "${c_line}\n")
+		if(c_SAME)
+			list(APPEND cli_ref_same "${name}=${c_SAME}")
+		endif()
 	endif()
 endmacro()
 
@@ -185,12 +195,16 @@ ab3_cli_case(opt_020 opt_020.ab3 REF)
 ab3_cli_case(opt_fpu opt_fpu.ab3 REF REF_EXPECT opt_fpu.ref.expect)
 ab3_cli_case(opt_short opt_short.ab3 REF)
 ab3_cli_case(opt_cnif opt_cnif.ab3 REF)
+ab3_cli_case(syntax2_none syntax2_none.ab3 ARGS -r REF)
+ab3_cli_case(syntax2 syntax2.ab3 ARGS -r REF SAME syntax2_none)
 # the syntax rules of AB3 mode (spec ab3-compat/syntax-rules)
 ab3_cli_case(macro_ns macro_ns.ab3 REF)
 ab3_cli_case(macro_off macro_off.ab3 REF)
 
-# ab3_cli(NAME CONFIG CASES): the ctest
+# ab3_cli(NAME CONFIG CASES [SAME LIST]): the ctest
 function(ab3_cli name config cases)
+	cmake_parse_arguments(a "" "" "SAME" ${ARGN})
+	list(JOIN a_SAME "," same)
 	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
 	file(WRITE ${work}.cases "${cases}")
 	set(sources ${cli_sources} ${cli_made})
@@ -201,13 +215,14 @@ function(ab3_cli name config cases)
 		-DBLITZ2_DIR=${BLITZ2_DIR} -DAB3=${AB3_V314} -DSOURCES=${sources}
 		-DUSERLIB=${CMAKE_CURRENT_BINARY_DIR}/amiga/ab3_userlib.obj
 		-DWORK=${work} -DTIMEOUT=${AB3_CLI_TIMEOUT}
+		-DSAME=${same}
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/cli.cmake)
 	math(EXPR limit "${AB3_CLI_TIMEOUT} + 120 + ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
 endfunction()
-ab3_cli(ab3_cli exe "${cli_exe_cases}")
-ab3_cli(ab3_cli_ref ref "${cli_ref_cases}")
+ab3_cli(ab3_cli exe "${cli_exe_cases}" SAME ${cli_exe_same})
+ab3_cli(ab3_cli_ref ref "${cli_ref_cases}" SAME ${cli_ref_same})
 # the check itself: a wrong expect file must fail, in both configurations
 # (broken.expect: atoi's output with one digit changed)
 set(broken "atoi|Blitz3|atoi.ab3||${cli_dir}/broken.expect\n")

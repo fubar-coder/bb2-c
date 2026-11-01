@@ -149,3 +149,10 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
   `:`, a macro without parameters); `macro_off` shows the BB2 rule with
   new syntax off, and the "flags replaced" scenario of 2.1: both
   compilers stop with "Garbage at End of Line" at the same line.
+- **2.2 SYNTAX**: consumed as AmiBlitz3 does (the one character behind
+  the token), without a debug trap of its own. `syntax2` and
+  `syntax2_none` (`-r`; with runtime error checking the traps hold the
+  addresses of the compiler's line items) give byte-identical
+  executables - also with AmiBlitz3, so its `SYNTAX 2` changes no code
+  either. `cli.cmake` keeps the executables (`TEST:out/NAME.exe`) and
+  compares the pairs of `SAME`.
