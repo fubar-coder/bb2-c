@@ -25,6 +25,8 @@
 #   teststats  the @stat line of the test runners' emulator sessions
 #              (lib_statline) and statistics of test runs from ctest's
 #              JUnit files: durations, flaky results, time limits, COST
+#   outmatch   the output of a test run against an expect file (the
+#              emulator tests of blitz2-ab3)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -43,3 +45,4 @@ add_subdirectory(bblines)
 add_subdirectory(xtra)
 add_subdirectory(ab3job)
 add_subdirectory(teststats)
+add_subdirectory(outmatch)

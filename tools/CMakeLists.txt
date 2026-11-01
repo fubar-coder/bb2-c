@@ -23,5 +23,6 @@ add_subdirectory(blitzres)
 add_subdirectory(bblines)
 add_subdirectory(xtra)
 add_subdirectory(teststats)
+add_subdirectory(outmatch)
 
 add_subdirectory(tests)
