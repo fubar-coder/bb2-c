@@ -97,10 +97,9 @@ file.
 ## blitz2-ab3: AmiBlitz3 sources
 
 `blitz2-ab3` (in `build/<preset>/blitz2/`, with `ab3cli` next to it) is
-a second build of the compiler from the same sources
-(`-DBLITZ2_AB3`, docs/ab3/variant.md): it compiles a Blitz Basic 2
-source exactly as `blitz2` and an AmiBlitz3 source with AmiBlitz3
-v3.14.0's token list and its binary libraries (AB3 mode). Started
+the compiler extended by AmiBlitz3's mode (docs/ab3/variant.md): it
+compiles a Blitz Basic 2 source exactly as `blitz2` and an AmiBlitz3
+source with AmiBlitz3 v3.14.0's token list and its binary libraries (AB3 mode). Started
 without options it is the editor session of `blitz2` (always BB2 mode);
 from the shell it compiles one source without the editor, with the
 option names of AmiBlitz3's CLI mode:
@@ -130,6 +129,18 @@ directory. Errors go to the console – a compile error as
 line – and the return code is 0 (compiled), 10 (compile
 error) or 20 (argument or set-up error). AmiBlitz3's other options
 (`-d`, `-run`, `-dump`, `-PED`, `-save`, …) are refused with 20.
+
+Structure (docs/ab3/variant.md, "Structure"): both programs link one
+core, the chunk files of `programs/blitz2/src` compiled once (CMake
+object library `blitz2_core`). Where AB3 mode differs, the core calls an
+extension point declared in `src/ext.h`: `blitz2` links `src/ext_bb2.c`
+(BB2 only, nothing handled), `blitz2-ab3` the AB3 modules `src/ab3*.c`
+(`ab3main.c` command line and editor, `ab3libs.c` libraries, `ab3res.c`
+residents, `ab3inc.c` includes, `ab3tok.c` mode and token list; their
+shared state in `ab3.h`) with `shared/xtra` and `shared/ab3job`. New AB3
+behaviour (G2 on) goes behind such a point, not into the chunk files;
+the link of both programs refuses `BLITZ2_AB3` in `src/`
+(`programs/blitz2/checkcore.cmake`).
 
 AB3 mode needs AmiBlitz3's files under `Blitz3:` (`BlitzLibs/baseLibs`,
 `utilLibs`, `OsLibs`, `csLibs`, `BlitzLibs/UserLibs/`,

@@ -24,7 +24,7 @@ touching AB3 code also `ab3_cli`, `ab3_cli_ref`, `ab3_tokens`,
 ## 3. Check and rule
 
 - [x] 3.1 Add the build check of D4 with a test on broken input; verify: the check passes on the sources, the broken-input test fails as expected
-- [ ] 3.2 Document the structure (core, `ext.h`, `ext_bb2.c`, `ab3*.c`) and the rule for G2 on in README ("blitz2-ab3") and `docs/ab3/variant.md`; verify: the documented file list matches `programs/blitz2/src`
+- [x] 3.2 Document the structure (core, `ext.h`, `ext_bb2.c`, `ab3*.c`) and the rule for G2 on in README ("blitz2-ab3") and `docs/ab3/variant.md`; verify: the documented file list matches `programs/blitz2/src`
 
 ## 4. Integration
 

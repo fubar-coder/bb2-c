@@ -30,11 +30,12 @@ sources compile exactly as today.
   release; its libraries and compiler are identical to HEAD `@b1a9dee1`
   (only documentation changed since), and its example sources match its
   libraries.
-* **Recommended form:** one source tree, a second build `blitz2-ab3`
-  (`-DBLITZ2_AB3`) that has BB2 *and* AB3 mode and switches **per
-  source** at run time. The default `blitz2` is built without the AB3
-  code, so it stays byte-identical; `blitz2-ab3` must give the same
-  executables as `blitz2` for every BB2 source.
+* **Recommended form:** one source tree, a second program `blitz2-ab3`
+  that has BB2 *and* AB3 mode and switches **per source** at run time.
+  The default `blitz2` has no AB3 code; `blitz2-ab3` must give the same
+  executables as `blitz2` for every BB2 source. (Built first with
+  `-DBLITZ2_AB3`; since 2026-11-01 both programs link one core and
+  differ by its extension points, section "Structure".)
 * A static scan of AB3's 226 example programs (`Sourcecodes/Examples`,
   `Templates`) estimates what compiles after each phase: about **60 %**
   after the AB3 mode itself (text sources, AB3 libraries and tokens),
@@ -123,7 +124,7 @@ sources need it.
 
 | | Run-time mode in the one `blitz2` | Separate `blitz2-ab3` build (AB3 only) | **`blitz2-ab3` with BB2 + AB3 mode (recommended)** |
 |---|---|---|---|
-| Default `blitz2` byte-identical | no (new code in it; acceptance only functional, deviation to be named in every commit) | yes | yes (`#if BLITZ2_AB3` off) |
+| Default `blitz2` byte-identical | no (new code in it; acceptance only functional, deviation to be named in every commit) | yes | yes (`#if BLITZ2_AB3` off; since 2026-11-01 its results, section "Structure") |
 | Per-source switch | yes | no | yes |
 | BB2 behaviour of the AB3-capable binary | must be proven | – | must be proven: same executables as `blitz2` over corpus, bug-orig, CD sources |
 | Library sets | BB2 and AB3 libraries have the same numbers: only one set loaded; a switch reloads (as menu item 8 "reload libs") | AB3 only | as the first column |
@@ -214,8 +215,9 @@ in G1): `BlitzMsgPort`, `DoMethodA`, the jpeg and icon V44 calls,
 `BestCModeIDTagList_`, `FLen`, MUI, wizard (`WZ…`) and tag-list
 commands. In all, about 6000–12000 lines of C in `programs/blitz2/src`
 (guess), taken from ~240 non-cosmetic AB3 compiler commits and the
-pre-2009 AB2 changes, which have no history. Every addition sits under
-`#if BLITZ2_AB3` and is active only in AB3 mode.
+pre-2009 AB2 changes, which have no history. Every addition is an
+extension point of the core (section "Structure") and active only in
+AB3 mode.
 
 ## 4. Phases, tests, license
 
@@ -323,9 +325,9 @@ starting with `-`, `blitz2-ab3` starts the editor exactly as `blitz2`
 argument or set-up error (assumption, AmiBlitz3's own are not
 documented).
 
-How it works (`shared/ab3job`, `programs/blitz2/src/ab3main.c`,
-`programs/ab3cli`): `blitz2-ab3` parses the arguments, reads the source
-and its companion `.xtra` and decides the mode (`xtra_mode`, §1) before
+How it works (`shared/ab3job`, `programs/blitz2/src/ab3main.c` and
+`ab3inc.c`, `programs/ab3cli`): `blitz2-ab3` parses the arguments,
+reads the source and its companion `.xtra` and decides the mode (`xtra_mode`, §1) before
 it loads anything; then it runs as for the editor, but loads
 `PROGDIR:ab3cli` instead of `blitz2:ted` and hands it the job instead
 of a file name. `ab3cli` is a headless editor on the edstub frame with
@@ -386,6 +388,57 @@ fetched binary; no further setup) and compares the programs' outputs with
 the same expect files, or with `NAME.ref.expect` where AmiBlitz3 differs
 (below). `ab3_cli_broken`/`ab3_cli_ref_broken`: a wrong expect file must
 fail.
+
+## Structure: the core and its extension points (2026-11-01)
+
+`blitz2` and `blitz2-ab3` are two programs built from one core (change
+`blitz2-ab3-extension-points`): the chunk files of `programs/blitz2/src`
+(the translation of blitz2.s: `main.c`, `compile.c`, `stmts.c`,
+`asmlibs.c`, `parse.c`, `eval.c`, `libcall.c`, `tokens1.c`,
+`tokens2.c`, `data.c`, each with its header, `blitz2.h`, `structs.h`,
+the token list `toklist.h` with `tokimg.h`) and the glue (`glue.c`,
+`glue_direct.c`, `glue.h`) are compiled **once**, without any define,
+as the CMake object library `blitz2_core`, and both programs link it. Where AB3 mode
+differs, the chunk code calls an **extension point**: a plain function
+(or reads an object) declared in `ext.h`. Each program links one
+implementation:
+
+| Program | Implementation of `ext.h` | |
+|---|---|---|
+| `blitz2` | `ext_bb2.c` | BB2 only: every point handles nothing, the data are BB2's (no logic) |
+| `blitz2-ab3` | `ab3main.c` | the command line, the editor (`ab3cli`) and the return code of a command line run |
+| | `ab3libs.c` | AmiBlitz3's BigLibs and flat userlibs directory |
+| | `ab3res.c` | AmiBlitz3's residents directory, the set-up errors of a compile |
+| | `ab3inc.c` | the mode of a tokenised include, includes of text, the place of an error |
+| | `ab3tok.c` | the mode (`progmode`), AmiBlitz3's token list, the library of `^`, its tokens not compiled yet |
+| | `ab3.h` | the state the AB3 modules share (not for the chunk files) |
+| | `shared/xtra`, `shared/ab3job` | the mode of a source, the arguments and the job of a command line run |
+
+The points (`ext.h`): `ext_makelibs`, `ext_loadlibs`,
+`ext_loaduserlibs`, `ext_freelibs` (libraries), `ext_resbegin`,
+`ext_loadres` (residents), `ext_compilestart` (the start of a compile),
+`ext_incopen`, `ext_readinc`, `ext_incline`, `ext_incdone` (includes),
+`ext_errpos` (a compile error), `ext_newtoken` (a built-in token),
+`ext_cmdline`, `ext_editor`, `ext_editorarg`, `ext_result` (command
+line and editor); the data of the mode `ext_toklist` (asm `tokens`) and
+`ext_mathq` (asm `mathq`). A point that stands for a part of a chunk
+function returns whether it handled the case; the BB2 code stays in the
+chunk file (`if (ext_loadres(res)) … else` blitz2's way), so an
+implementation that handles nothing gives blitz2's results.
+
+**Rule for G2 and later:** new AB3 behaviour is added behind an
+extension point – declared in `ext.h`, its BB2 answer in `ext_bb2.c`
+(nothing handled), its AB3 code in an `ab3*.c` module – not in the
+chunk files; a chunk file does not ask for the mode (`progmode` is AB3
+state), it calls a point named after the behaviour (e.g.
+`if (ext_newsyntax()) …` for a parser branch). The chunk files keep
+every BB2 behaviour and stay translations of blitz2.s. No source of
+`programs/blitz2/src` may contain `BLITZ2_AB3`, the define of the
+earlier second build: the link of both programs checks it
+(`programs/blitz2/checkcore.cmake`; ctest `blitz2_checkcore_broken`).
+`blitz2` itself may change with such a rework, its results may not
+(CLAUDE.md, rule of 2026-11-01): the executables it writes for the
+corpus, the bug-orig tests and the CD's sources stay byte-identical.
 
 ## Differences to AmiBlitz3's compiler (G2+, 2026-11-01)
 
