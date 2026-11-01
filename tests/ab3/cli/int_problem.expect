@@ -1,0 +1,7 @@
+[compile]
+rc=0
+[run]
+FPU: 2
+CPU: 2
+416.6656  Int: 416
+rc=0

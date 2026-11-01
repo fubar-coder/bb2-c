@@ -78,7 +78,17 @@ set(ab3v314_files
 	"Sourcecodes/Amiblitz3/Tests/memoryleak_test.ab3|55575c695af83140801dc609ecd136a20645efba467893ce05f53a087ecc08a9"
 	"Sourcecodes/Amiblitz3/Tests/setint.ab3|bf120eaad18b23b4e0b8f450826d460e22dfdac9d1a1ef64bb04b364d8f2205a"
 	"Sourcecodes/Amiblitz3/Tests/test_newtypes.ab3|a40aafb02addd7534e64506329f066f021f65dc88d9d4ab3af444b737ae66873"
-	"Sourcecodes/Amiblitz3/Tests/trim.ab3|f71b479bca8a0a3ec613d17fa549d71076ca3bd04bf4de5274c96784d1cf3ecd")
+	"Sourcecodes/Amiblitz3/Tests/trim.ab3|f71b479bca8a0a3ec613d17fa549d71076ca3bd04bf4de5274c96784d1cf3ecd"
+	"Sourcecodes/Amiblitz3/Tests/hex_error.ab3|3c08a8db340365e0fc9a0a3b39f0db05d89efb29bb410d567232d5a17d2da508"
+	"Sourcecodes/Amiblitz3/Tests/hexdigits.ab3|b8800234f7c2f5683d4b8dda352f272067a761e6d437aa4c922b34765c96c223"
+	"Sourcecodes/Amiblitz3/Tests/int_problem.ab3|addd87e4454c4ea7ef06e82d47dbedc6763dcb83f2e27efd6b27e03d31324a65"
+	"Sourcecodes/Amiblitz3/Tests/int_tests.ab3|6453ac0aa8e6c0518898dad6774cea63d485495ce8f0666b8f8ca61625f62133"
+	"Sourcecodes/Amiblitz3/Tests/jsr.ab3|a7e39e00557fb2d374b2b6c20b9b42f2d8bba3dc4d90286f710bb9c4befae4cb"
+	"Sourcecodes/Amiblitz3/Tests/macro_test.ab3|f8aa4c99c6bfd5783ec73bd9312c8bfb35d817166ae5797f1efebaa3e7dd11fa"
+	"Sourcecodes/Amiblitz3/Tests/unknown_function.ab3|7a12a957665f3168f7da33cda38691668c59f772ffd0325c1f6bfa15c27ba24d"
+	"Sourcecodes/Amiblitz3/Tests/unknown_function_include.ab3|e5ab24146a409e01d63625d8fbce805e61a8755d2b76dd05a89ce1b8aef8b9ed"
+	"Sourcecodes/Amiblitz3/Tests/kick13.ab3|4ee0f1d98eaa505679da143b85c5b53211f6abdcdcf8495040009a4052ffdb3a"
+	"Sourcecodes/Amiblitz3/Tests/windowtags.ab3|994f756fab869fcdf976ffe9dd18fbb42af857e809de5c99944fe40844dc38cb")
 foreach(f IN LISTS ab3v314_files)
 	string(REPLACE "|" ";" f "${f}")
 	list(GET f 0 path)

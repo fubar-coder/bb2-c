@@ -1,0 +1,5 @@
+[compile]
+unknown_function.ab3:82: Procedure not found
+rc=10
+[run]
+no executable

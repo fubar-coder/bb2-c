@@ -170,8 +170,8 @@ macro(ab3_cli_case name source)
 	endif()
 endmacro()
 
-# AmiBlitz3's test programs of the spike (task 5.2; memoryleak_test without
-# its OPTIMIZE line, cli.cmake), the float power, header residents
+# AmiBlitz3's test programs of the spike (ab3-mode-g1 task 5.2), the float
+# power, header residents
 ab3_cli_case(atoi atoi.ab3 REF)
 ab3_cli_case(compilersignals compilersignals.ab3 REF)
 ab3_cli_case(data_restore_in_function data_restore_in_function.ab3 REF)
@@ -251,6 +251,25 @@ ab3_cli_case(join_incok join_incok.ab3 REF)
 ab3_cli_case(incguard incguard.ab3 REF)
 ab3_cli_case(cnifdef cnifdef.ab3 REF)
 ab3_cli_case(cnifat_err cnifat_err.ab3 REF)
+# AmiBlitz3's test programs G2 makes compile (ab3-mode-g2 task 5.1;
+# memoryleak_test above with its OPTIMIZE 13 line; exec_data above, its
+# error a type rule of G8; unknown_function an error in both).  Recorded
+# differences (docs/ab3/variant.md): int_tests' Stop (-r: refused, with
+# runtime error checking it waits for the debugger; AmiBlitz3 ignores it
+# without its debugger) - the rest of it as int_tests_nostop; jsr's
+# function called as a statement
+ab3_cli_case(hex_error hex_error.ab3 REF)
+ab3_cli_case(hexdigits hexdigits.ab3 REF)
+ab3_cli_case(int_problem int_problem.ab3 REF)
+ab3_cli_case(int_tests int_tests.ab3 ARGS -r REF REF_EXPECT int_tests.ref.expect)
+ab3_cli_case(int_tests_nostop int_tests_nostop.ab3 REF)
+ab3_cli_case(jsr jsr.ab3 REF REF_EXPECT jsr.ref.expect)
+ab3_cli_case(macro_test macro_test.ab3 REF)
+ab3_cli_case(unknown_function unknown_function.ab3 REF)
+ab3_cli_case(kick13 kick13.ab3 REF)
+# windowtags has no End: -r, without it blitz2's empty requester at the end
+# (BUG(orig) #6, case noend)
+ab3_cli_case(windowtags windowtags.ab3 ARGS -r REF)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)

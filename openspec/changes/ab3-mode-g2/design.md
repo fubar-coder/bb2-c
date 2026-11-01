@@ -310,3 +310,25 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
   conditions) and `cnifat_err` (the error at the same line) give
   AmiBlitz3's results; AmiBlitz3 reports the error also for the
   following lines (its error recovery), blitz2-ab3 stops at the first.
+- **5.1** AmiBlitz3's test programs (fetched at `58a11658` with SHA-256,
+  `ab3_cli` and `ab3_cli_ref`): `hex_error`, `hexdigits`, `int_problem`,
+  `macro_test`, `kick13`, `windowtags` and `memoryleak_test` (now with
+  its `OPTIMIZE 13` line) give AmiBlitz3's output, `unknown_function` its
+  error ("Procedure not found", the include found as
+  `unknown_function_include.ab3`). Two of the research table do not
+  compile, for rules that are in no G2 spec (recorded in
+  `docs/ab3/variant.md`, "Differences", not implemented):
+  - `jsr`: a `Function` called as a statement. AmiBlitz3's
+    `handle_statement` (`AmiBlitz3.ab3` 4416-4426) has blitz2's check
+    commented out, independent of `OPTIMIZE`; blitz2-ab3 keeps blitz2's
+    "Illegal Procedure Call". The research table's "OPTIMIZE 13" was not
+    the cause.
+  - `int_tests`: its `Stop`. AmiBlitz3 without its debugger (CLI mode)
+    compiles `Stop` to nothing (`#stopignore`, `do_Stop` 22810-22831);
+    blitz2-ab3 refuses it with `-r` ("Debugger must be enabled for
+    STOP") and with runtime error checking calls debuglib's `Stop`, which
+    waits for the debugger (the command line run hangs). The case
+    `int_tests` is compiled with `-r` (the error); `int_tests_nostop`
+    (cli.cmake: the `Stop` line empty) gives AmiBlitz3's output.
+  `windowtags` has no `End`: compiled with `-r`, else blitz2's empty
+  requester at the end (BUG(orig) #6, as `noend`).

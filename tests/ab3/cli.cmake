@@ -11,8 +11,8 @@
 #   ref  AmiBlitz3 v3.14.0's own compiler, Blitz3:Amiblitz3 -s SOURCE
 #        -e RAM:NAME (CLI mode)
 # TEST:src holds SOURCES and AmiBlitz3's test programs (AB3/Sourcecodes/
-# Amiblitz3/Tests; memoryleak_test.ab3 without its OPTIMIZE line, a G2
-# directive).  Blitz3: is one of three trees, built from AB3: Blitz3
+# Amiblitz3/Tests, and int_tests_nostop.ab3: int_tests.ab3 without its Stop
+# line).  Blitz3: is one of three trees, built from AB3: Blitz3
 # (BlitzLibs/ with baseLibs, utilLibs, OsLibs, csLibs, Residents/all.res
 # and an empty UserLibs/; for ref the compiler Amiblitz3), Blitz3-nolib
 # (without csLibs), Blitz3-userlib (USERLIB in UserLibs/).
@@ -86,9 +86,12 @@ foreach(f IN LISTS ab3_tests SOURCES)
 	get_filename_component(n ${f} NAME)
 	file(COPY_FILE ${f} ${test}/src/${n})
 endforeach()
-file(READ ${tests_dir}/memoryleak_test.ab3 text)
-string(REGEX REPLACE "\nOPTIMIZE [^\n]*\n" "\n" text "${text}")
-file(WRITE ${test}/src/memoryleak_test.ab3 "${text}")
+
+# int_tests without its Stop line (an empty line instead, the line numbers
+# stay): AmiBlitz3 ignores Stop without its debugger (docs/ab3/variant.md)
+file(READ ${tests_dir}/int_tests.ab3 text)
+string(REGEX REPLACE "\nStop([\r\n])" "\n\\1" text "${text}")
+file(WRITE ${test}/src/int_tests_nostop.ab3 "${text}")
 
 # the session
 file(STRINGS ${CASES} cases)

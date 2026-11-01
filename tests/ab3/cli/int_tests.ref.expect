@@ -1,0 +1,15 @@
+[run]
+hallo
+CPU = 2
+FPU = 2
+ROM = 47
+
+testfloat.f = 123.4499
+int float    =123
+testquick.q = 66.352
+int quick   = 66
+testword.w  = 66
+testword.w  = 66
+Int(3.568)  = 3
+testword2   = 5
+rc=0

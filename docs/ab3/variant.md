@@ -382,8 +382,9 @@ one, one without `csLibs`, one with a userlib of number 152 replacing
 the compiler's console output, its return code, the program's output and
 return code with `NAME.expect` (`tools/outmatch`: literal lines, `~`/`+`
 patterns for memory sizes, timing and the system's language). The cases:
-AmiBlitz3's ten test programs of the spike (`memoryleak_test` without its
-`OPTIMIZE` line), `^` (library 44), header residents with and without a
+AmiBlitz3's ten test programs of the spike (`memoryleak_test` with its
+`OPTIMIZE 13` line since G2) and the ten G2 makes compile (below), `^`
+(library 44), header residents with and without a
 path, includes of text in both modes, the userlib, and the errors - a
 missing BigLib, a missing resident, tokenised includes of the other mode
 (both ways), `-d`, a syntax error, errors in an include of text and in a
@@ -566,7 +567,21 @@ machine); recorded, not changed in G1:
 | `runerrs` | in CLI mode without its debugger (`Defaultdbug`, not fetched) the executable has no runtime error checking: the array index out of range at the end is not seen | checked: blitz2's runtime error requester | none: the runtime part of AB3 mode |
 | `sect_both` | a relocation inside the chip section (`Dc.l zbss`) is written to the code hunk's list with its unshifted offset: the long stays wrong (0) | relocated in the chip hunk's own RELOC32 block: the address of `zbss` | none: ours is the correct executable |
 | `tokens/longline` | a main-source line of 250 characters or more ends the source: `LoadSource` re-reads it with `PeekT(…, 10)`, which goes past the line's 0 to the end of the buffer (no LF is left after tokenising), so the following lines are dropped (`CLIModeSupport.ab3` 480-497 at `@58a11658`, measured with `-save`) | the line is cut at 250 characters, the following lines stay | none: not reproduced |
+| `int_tests` | `Stop` without its debugger (CLI mode, no `Defaultdbug`) is compiled to nothing (`#stopignore`, `do_Stop`, `AmiBlitz3.ab3` 22810-22831 at `@58a11658`): the program runs on | blitz2's `Stop`: with `-r` "Debugger must be enabled for STOP" (line 92), with runtime error checking a call of debuglib's `Stop` (`$D501`), which waits for the debugger - the program hangs in a command line run. The rest of the program (`int_tests_nostop`, the `Stop` line empty) gives AmiBlitz3's output | open: not in the G2 specs (a rule for `Stop` in AB3 mode) |
+| `jsr` | a `Function` called as a statement (`test{}`) compiles (`handle_statement`, `AmiBlitz3.ab3` 4416-4426: the check of blitz2 commented out) | blitz2's "Illegal Procedure Call" (line 86) | open: not in the G2 specs (research §9 counted it for `OPTIMIZE 13`, but the rule does not depend on it) |
 | `noend` | a program without `End` with runtime error checking ends normally | an empty requester at the end: blitz2's end code (`blitz2.s:2683 eopcode`, `moveq #3,d0 : trap #0`) without `End`, BUG(orig) #6 | with #6 (the runtime part of AB3 mode) |
+
+AmiBlitz3's test programs of G2 (task 5.1 of `ab3-mode-g2`, fetched
+at `@58a11658`), in `ab3_cli` and `ab3_cli_ref`: `hex_error`
+(`OPTIMIZE 1`), `hexdigits` (`_` names), `int_problem`, `int_tests` /
+`int_tests_nostop` (`OPTIMIZE 4`, `SYNTAX 2`), `macro_test` (`@@`),
+`kick13` (`OPTIMIZE 4`, `SYNTAX 2`; it ends after its first `NPrint`, so it
+runs headless), `windowtags` (`@@` in a tag list; opens its window on the
+Workbench screen and ends; compiled with `-r`: it has no `End`, case
+`noend`), `memoryleak_test` (`OPTIMIZE 13`) give
+AmiBlitz3's output; `unknown_function` (an include named without
+extension, `.ab3` added) is "Procedure not found" in both; `exec_data`,
+`int_tests` and `jsr` differ (table above).
 
 AmiBlitz3's console output in CLI mode also names files it does not
 need for compiling (`Blitz3:System/token_mapping_libs.txt`,

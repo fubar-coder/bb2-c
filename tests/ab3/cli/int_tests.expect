@@ -1,0 +1,5 @@
+[compile]
+int_tests.ab3:92: Debugger must be enabled for STOP
+rc=10
+[run]
+no executable
