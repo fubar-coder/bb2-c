@@ -77,6 +77,13 @@ target_compile_options(test_ab3args PRIVATE -Wall -Wextra)
 set_target_properties(test_ab3args PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME ab3args COMMAND test_ab3args)
 
+# the tokeniser of shared/tokenizer (lib_tokenizer)
+add_executable(test_tokenizer test_tokenizer.cpp)
+target_link_libraries(test_tokenizer PRIVATE lib_tokenizer snitch::snitch)
+target_compile_options(test_tokenizer PRIVATE -Wall -Wextra)
+set_target_properties(test_tokenizer PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME tokenizer COMMAND test_tokenizer)
+
 # the check of SNAP:waitjob (static_assert in amiga_emulation.c) with
 # waiters assembled the wrong way
 add_test(NAME amiga_emulation_waiter_broken COMMAND ${CMAKE_COMMAND} -DCC=${CMAKE_C_COMPILER}

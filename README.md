@@ -826,6 +826,11 @@ shared/xtra/                 the companion settings of a source (.xtra)
                              header, AmiBlitz3 embedded header (C99, no
                              libc; compiled by each user: blitz2-ab3,
                              ab3cli, the host tools)
+shared/tokenizer/            source text to tokenised lines with a rule
+                             set (AmiBlitz3's), the ends of AmiBlitz3's
+                             embedded headers, its 250-character lines
+                             (C99, no libc; compiled by each user: ab3cli,
+                             the host tools)
 host/                        the host side: everything built with the
                              native compiler (tools, host tests), as
                              ExternalProject (build/<preset>/host)
@@ -869,6 +874,7 @@ tools/                       host tools:
                              bblines (line edits of tokenised sources),
                              xtra (shared/xtra compiled for the host),
                              ab3job (shared/ab3job for the host),
+                             tokenizer (shared/tokenizer for the host),
                              teststats (the @stat line of the emulator
                              sessions, statistics of JUnit files);
                              blitzlib also compares declarations

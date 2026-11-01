@@ -122,6 +122,7 @@ add_custom_target(fetch-originals
 
 add_subdirectory(shared/edstub)
 add_subdirectory(shared/xtra)
+add_subdirectory(shared/tokenizer)
 add_subdirectory(libs)
 add_subdirectory(programs/blitz2)
 add_subdirectory(programs/ted)
