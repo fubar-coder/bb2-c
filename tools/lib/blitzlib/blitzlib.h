@@ -1,6 +1,6 @@
 /*
  * blitzlib.h - Blitz Basic 2 library files: reading the header and the
- * token table (layout: blitz2.s fixlibs, Compiler-Spec 9.2), and the
+ * token table (layout: blitz2.s fixlibs), and the
  * checks of a library file built from C (the former mkblitzlib.py of bb2).
  */
 #ifndef BLITZLIB_H

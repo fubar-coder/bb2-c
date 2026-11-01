@@ -36,7 +36,7 @@
  * original, never less).  CaseSense keeps all registers.  The CCR is no
  * result.
  *
- * Inline routines (Compiler-Spec 9.3.2, copied into the program): Chr$,
+ * Inline routines (`$a000,len` prefix, copied into the program): Chr$,
  * Len - assembler text, as in the original.
  *
  * The init value (a long global of the program) is the address of

@@ -242,8 +242,8 @@ extensions); no product links it yet. Design of 2026-10-30 (rework):
 
 ### 2.1 Format **[S]** **[B]**
 
-Blitz 2.1 has the same format as AB3 (Compiler-Spec 06 §6.1.1). `menu5`
-("make resident", blitz2.s line 4105 ff.) writes a hunk file:
+Blitz 2.1 has the same format as AB3 (`blitz2.s` `menu5`, `loadres`).
+`menu5` ("make resident", blitz2.s line 4105 ff.) writes a hunk file:
 `HUNK_HEADER` with 1 hunk, `HUNK_CODE`, optionally `HUNK_RELOC32` (hunk 0)
 and `HUNK_END`. Padding is done with `'ZAP',0` to a longword. The code hunk
 contains, one after the other:
@@ -687,9 +687,8 @@ Stricter where AmiBlitz3 guesses, so that broken headers are reported:
   sources of `archive/amiblitz3/github-b1a9dee` pass, three of them in
   older layouts (ctest `xtra_ab3_examples`).
 * Survey **[B]** with `xtra check --ab3` (before the rework of
-  2026-10-30) over the 1158 `.ab3` files of a clone of the repository
-  (branch `compiler-spec`, `f0414b111696`, master plus specification
-  files): 964 start with `; XTRA`, 194 have no header; 1156 read without
+  2026-10-30) over the 1158 `.ab3` files of a local clone of AmiBlitz3's
+  repository: 964 start with `; XTRA`, 194 have no header; 1156 read without
   error; refused are the 2 whose header was cut off without `; /XTRA`
   (the next line is program text). 477 headers were not written back
   byte for byte by the writer of that time, which always wrote the

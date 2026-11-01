@@ -37,7 +37,7 @@ static UWORD W(const UBYTE *p) { return (UWORD)(p[0] << 8 | p[1]); }
 static ULONG L(const UBYTE *p) { return (ULONG)W(p) << 16 | W(p + 2); }
 static const UBYTE *even(const UBYTE *p) { return (const UBYTE *)(((ULONG)p + 1) & ~1UL); }
 
-/* collect the code addresses from the token table (Compiler-Spec 9.2.2);
+/* collect the code addresses from the token table (layout: blitz2.s fixlibs);
    only nullsubs and statement/function forms have code */
 static int scan(struct lib *l)
 {

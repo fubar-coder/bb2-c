@@ -27,8 +27,7 @@ As of 26.10.2026. Analysed was the local copy of the "Blitz Basic CD"
 **Note on the manual:** `blitz2_manual` is an OCR text. The backquote
 `` ` `` almost always appears as `'`, `{`/`}` partly as `(`, `)` or `t`,
 `1` as `I` or `]`, `0` as `O`. Quotes below are silently corrected where the
-meaning is unambiguous. In content, the manual is the basis of the "BPG"
-that the Compiler-Spec cites (D-BPG-…).
+meaning is unambiguous. 
 
 ---
 
@@ -88,7 +87,7 @@ that the Compiler-Spec cites (D-BPG-…).
 * The call search runs over the statement up to `:` or `;` outside of
   strings and looks for `!`; token words (byte ≥ `$80`) are skipped as
   two bytes. After each expansion the search starts again at the
-  start of the statement (`$3C9C bra $3A46`). This corresponds to Spec 06 §6.3.1.
+  start of the statement (`$3C9C bra $3A46`).
 * Replacement after `` ` `` (`$3B4C`):
   * `` `{ `` → constant expression up to `}` (`jsr $BF6E`). So
     `` `{ausdruck} `` already existed in 2.10; the manual does not describe it.
@@ -106,14 +105,13 @@ that the Compiler-Spec cites (D-BPG-…).
 
 ### 1.3 Conclusions [Schluss]
 
-* The quirks I-22 (punctuation after `` ` `` acts like `` `0 ``) and I-25
-  (`` `z `` not allowed) and the two-digit `` `0 `` already existed in 2.10.
+* The quirks (punctuation after `` ` `` acts like `` `0 ``; `` `z `` not
+  allowed) and the two-digit `` `0 `` already existed in 2.10.
   They are not regressions of AB3, but old peculiarities.
-* The header comment of the `Macro` line (Spec 06 §6.2.4) is a later
+* The header comment of the `Macro` line is a later
   extension.
 * Nested macro **definitions** were forbidden according to the docs. AB3,
-  in contrast, stores them as text and creates them during expansion
-  (Spec 06 §6.2.3). Whether 2.10 actually reports the error is not
+  in contrast, stores them as text and creates them during expansion. Whether 2.10 actually reports the error is not
   checked; the error message is in the binary.
 
 ---
@@ -144,12 +142,12 @@ that the Compiler-Spec cites (D-BPG-…).
 
 * `getchar` (`$7A2E`–`$7BD4`) handles the tokens `$801C`–`$801F` directly:
   `$801C` → `$C47E` (CNIF), `$801D` → `$C492` (CSIF), `$801E` CELSE,
-  `$801F` CEND. The numbers are the same as in AB3 (Spec 05 §5.1).
+  `$801F` CEND. The numbers are the same as in AB3.
 * If *compile* is false, every character except `0` is discarded. In the
   skipped area CNIF/CSIF only increments *nest* (`$7B4E`).
 * **CELSE** toggles if *nest* = 0 (`$7B58`–`$7B62`); it does not check
-  the stack. So multiple CELSE toggle multiple times (I-28), and a
-  CELSE without CNIF silently switches to skipping (I-65).
+  the stack. So multiple CELSE toggle multiple times, and a
+  CELSE without CNIF silently switches to skipping.
 * **CEND** restores the state from the stack; an empty stack leads
   to an error (`$7B6C`–`$7B9A`).
 * **CNIF** (`$C47E`) evaluates a **whole constant expression**
@@ -163,7 +161,7 @@ that the Compiler-Spec cites (D-BPG-…).
 
 The docs simplify: "Constant Comparison Constant" is in truth an
 arbitrary constant expression with a test for ≠ 0, as in AB3. The
-quirks I-28 and I-65 come from 2.10.
+multiple-CELSE and CELSE-without-CNIF quirks come from 2.10.
 
 ---
 
@@ -379,7 +377,7 @@ quirks I-28 and I-65 come from 2.10.
 * [Schluss] So Blitz 2.10 output the umlaut bytes of old sources as Latin-1
   ä ö ü Ä Ö Ü. Other control characters `$01`–`$19` ended a string
   like the end of the line. AB3 has the table with **swapped** ä/ö and Ä/Ö
-  (I-73), and `litstring` does not use it at all (I-72). Both are later
+ , and `litstring` does not use it at all. Both are later
   changes, not the behaviour of Blitz 2.1.
 
 ### 4.4 Unknown tokens
@@ -441,7 +439,7 @@ quirks I-28 and I-65 come from 2.10.
   1. we don't get all the clashing that has been going on and 2. users can
   use what ever ascii editor they please."
 * [Schluss] An automatic conversion of old token numbers (like
-  `replacedat` in AB3, I-33) is mentioned nowhere for 2.1. The recommended
+  `replacedat` in AB3) is mentioned nowhere for 2.1. The recommended
   way was to save the source as ASCII and tokenise it again. The
   tables in bb2 `tokens/` (not taken over) show the numbers of 2.1,
   e.g. the string commands in lib 185 and `Edit$`/`Inkey$` in lib 186.
@@ -469,65 +467,44 @@ quirks I-28 and I-65 come from 2.10.
     escape sequences `\\…`, no character literals `@"…"`, no `:@`, no
     header comment for macros, no `USEPATH2`/`USELASTPATH` and no
     lower-case mnemonics.
-  * The CMake character was `~` (`$7E`), not `$7F` (Spec I-05).
+  * The CMake character was `~` (`$7E`), not `$7F`.
   * The umlaut table `gs` was the right way round, and string literals used
-    it (Spec I-72, I-73).
+    it.
   * The macro buffer was 8192 bytes (AB3: 40 000).
   * The editor tokenised regardless of upper/lower case (AB3:
-    case-sensitive, Spec 03 §3.1).
+    case-sensitive).
 
 ---
 
-## 7 Comparison with the Compiler-Spec
+## 7 Where the 2.1 documentation and the 2.10 binary differ from AmiBlitz3
 
-Rating: **confirmed** = BB2.1 as in the spec; **contradicts** = BB2.1 docs
-or binary differ; **answered** = settles an open point;
-**origin** = shows whether a quirk is old or new.
+Observations on the CD's documentation [Doku] and the 2.10 compiler [Bin];
+details are in the sections above.
 
-| Spec location | BB2.1 docs / binary say | Rating |
+| Topic | BB2.1 docs / binary | Note |
 |---|---|---|
-| 04 §4.1, I-73 ("`gs` … Altlast aus BlitzBasic 2", "schon in Blitz 2, `amiblitz2.bb2`") | 2.10 binary: `gs` = `E4 F6 FC C4 D6 DC` (`$1A`=ä, `$1B`=ö …), same as TED 1.1/2.1/2.23 [Bin] | **contradicts**: in 2.10 compiler and editor agreed. The swap comes from a later source (`amiblitz2.bb2`); I-73 is a regression |
-| 04 §4.1, I-72 (`litstring` does not map `$1A`–`$1F`) | 2.10 reads literals via `get1bytemain` and thus via `gs` (`$ADC0`) [Bin] | **answers** the open question from bb2-format.md §5 and bb2-corpus.md §3.3: Blitz 2.1 output ä ö ü Ä Ö Ü. I-72 is a regression |
-| 04 §4.1 (`$00`–`$19` → 0 in strings) | the same in 2.10 [Bin] | confirmed; in 2.10 this also affected literals (control characters ended the string, [Schluss]) |
-| 04 §4.3 `:@` | 2.10 `getchar` skips after `;` to the end of the line, without `:@`; the docs know only `;` [Bin, Doku line 3618] | origin: `:@` is a later extension |
-| 04 §4.5.2 escapes | no mention; only "No Terminating Quote" [Doku] | origin: later extension (new syntax) |
-| 04 §4.6 `True`/`On`/`False`/`Off`/`Pi` | lines 1629–1639 [Doku] | confirmed |
-| 04 §4.7, B4 (naming rules, "darf nicht mit Befehlsnamen beginnen") | literally so in lines 3553–3568; names case-sensitive [Doku] | confirms the origin of B4. Presumably a consequence of the TED tokenizer (§4.1), [Schluss] |
-| 08 B1, I-38 (`UsePath`, `DefType`, `Nprint` in the docs) | TED recognised keywords regardless of spelling (frac/read.me) [Doku-indirect, Schluss] | **explains** B1: in BB2 the spelling in the docs did not matter, because TED normalised. Only the case-sensitive ASCII tokenizer breaks these examples |
-| 04 §4.9 USEPATH | textual, "top to bottom", the closest previous USEPATH applies; end marker `$02` [Doku, Bin] | confirmed; `USEPATH2`/`USELASTPATH` did not exist in 2.10 |
-| 04 §4.10, I-05 (`~…~` with `$7F`, "vermutlich nur aus alten `.bb2`") | docs lines 3424–3450 with `~`; binary compares with `$7E` [Doku, Bin] | **answered**: the character was `~` itself, also in `.bb2`. With `$7F` it is unreachable even for old `.bb2`. I-05 is a regression |
-| 04 §4.11 `@@` | not documented | open; presumably a later extension |
-| 05 §5.1 tokens `$801C`–`$801F` | same numbers, processing in `getchar` [Bin] | confirmed |
-| 05 §5.3 (CNIF = expression ≠ 0) | docs: "Constant Comparison Constant" with `< > = <> <= >=`; binary: expression + `D1=5` (≠ 0) like AB3 | docs simplify, behaviour confirmed |
-| 05 §5.3 `@#name` | not documented | origin: presumably later ([Schluss], binary not checked) |
-| 05 §5.4 CSIF operators (also `=<`, `=>`, `><`) | docs list only `< > = <> <= >=` | docs incomplete (like the AB3 docs) |
-| 05 §5.2, I-28 (multiple CELSE) | docs: "toggle"; binary toggles every time with *nest* = 0 | origin: quirk from 2.10 |
-| 05 §5.6, I-65 (CELSE without CNIF silent) | binary checks only *nest*, not the stack | origin: from 2.10 |
-| 05 §5.6, I-68 (redefinition of constants without message) | "Constant already defined: Constants can only be defined once" (line 11612) [Doku]; text also in the binary | **contradicts** the docs of 2.1; whether 2.10 actually reported the error is open |
-| 05 §5.6 (fractions → "Illegal constant expression") | "Illegal Constant Expression: … a decimal place, text or a variable name"; but also "Fractions Not allowed … usually rounded and no error" | partly confirmed; the docs contradict themselves |
-| 06 introduction, §6.1.1 (resident: types, macros, constants) | "contains a pre-compiled list of NewTypes, macros and constants"; generated after COMPILE&RUN [Doku] | confirmed |
-| 06 §6.1.1 ("Clash in Residents" checks only types/macros, not constants) | "must not include the same Macro and Constant definitions" [Doku] | **contradicts** the 2.1 docs for constants |
-| 06 §6.1.1, I-75 (at most 7 residents) | "one of the 'RESIDENT' fields"; `.xtra` has 8 fields of 68 bytes [Doku, Bin] | note: BB2 had 8 slots; the limit of 7 in AB3 lies in the text header (`ParseAB3Header`) |
-| 06 §6.1 table (`` `1 ``…`` `9 ``, `` `a ``…`` `y ``) and I-25/B3 (`` `z ``) | docs: "1-9, a-z"; binary: `` `z `` → error like AB3 | docs error already in 2.1; behaviour the same since 2.10 |
-| 06 §6.1 `` `0 `` two-digit | docs: "number of parameters"; binary: `divu #10`, two digits | confirmed (docs imprecise) |
-| 06 §6.1 `` `@ `` | only in the error text (line 11884, OCR "\@"); binary supports it | confirmed |
-| 06 §6.1 `` `{ausdruck} `` | not documented; binary supports it | confirmed; present since 2.10 |
-| 06 §6.2.3 (nested definition as text, created during expansion) | "Can't create Macro inside Macro: Macro definitions must occur in the primary code" [Doku] | **contradicts**: in 2.1 this was an error. Whether AB3 still generates the message is open |
-| 06 §6.2.3 single-line form (I-16) | examples only without a space before `:End Macro` (lines 3408, 4556) | confirms the spec: the docs form works; I-16 concerns only `… : End Macro` |
-| 06 §6.2.3 size (40 000 bytes) | buffer in the options window, default 8192 [Bin]; "Macro too Big", "Macro Buffer Overflow" [Doku] | limit different, mechanism the same |
-| 06 §6.2.4 header comment | no handling of `;` in the 2.10 expansion [Bin] | origin: later |
-| 06 §6.3.1 (search up to `:`/`;`, restart at the start of the statement) | the same in the binary (`$3A46`–`$3A90`, `$3C9C`) | confirmed |
-| 06 §6.3.3 classic mode, space before `{` | `!dolist {…}`, `!libheader {…}` in docs and lib sources | confirmed |
-| 06 §6.4 (v > n → empty) | the `dolist` example with `CSIF "`2">""` presupposes this | confirmed |
-| 06 §6.4 limits (no depth, only buffer overflow) | "Macros Nested too Deep: Eight levels" [Doku] | **contradicts**/open: in 2.1 there was a depth limit of 8 (for what exactly is open) |
-| 06 §6.5 (`[`/`]` not counted, I-24) | no statement | open |
-| 08 A5 / I-05 (CMake) | see 04 §4.10 | regression confirmed |
-| 08 B3 | see `` `z `` | docs error comes from the BB2 docs |
-| 11 I-03 (lines > 250 bytes) | SuperTED: `linelength.b` (≤ 255) [Doku] | origin: the editor did not allow longer lines; the 250 limit fits this ([Schluss]) |
-| 11 I-33 (`replacedat`) | no automatic conversion; recommendation "save as ASCII" [Doku] | origin: later; old sources without matching libs show `?????` |
-| 11 I-52 (libs > 127 entries) | "token number = libnumber*128 + token offset" [Doku] | confirms the calculation |
-| 11 I-54 (`$8012` = XINCLUDE) | order in the system lib: …, XINCLUDE, INCLUDE … [Bin] | confirmed |
-| 11 I-71 (keyword as text in `.bb2`) | tokenisation in TED can be switched off; "Save as ASCII" [Doku] | explains how such files could come about |
+| Umlaut table `gs` | 2.10 binary: `gs` = `E4 F6 FC C4 D6 DC` (`$1A`=ä, `$1B`=ö …), same as TED 1.1/2.1/2.23 [Bin] | compiler and editor agreed; AB3's table has ä/ö and Ä/Ö swapped |
+| String literals | 2.10 reads literals via `get1bytemain` and thus via `gs` (`$ADC0`) [Bin] | Blitz 2.1 output ä ö ü Ä Ö Ü; AB3's `litstring` does not map `$1A`–`$1F` |
+| `$00`–`$19` in strings | mapped to 0 in 2.10 [Bin] | control characters ended the string [Schluss] |
+| `:@`, escapes | 2.10 `getchar` skips after `;` to the end of the line; the docs know only `;` and "No Terminating Quote" [Bin, Doku line 3618] | later extensions |
+| CMake `~…~` | docs lines 3424–3450 use `~`; the binary compares with `$7E` [Doku, Bin] | the character is `~` itself, also in old `.bb2` |
+| Names | docs lines 3553–3568: names may not begin with a command name, case-sensitive [Doku] | presumably a consequence of the TED tokenizer [Schluss] |
+| Spelling in the docs (`UsePath`, `DefType`, `Nprint`) | TED recognised keywords regardless of spelling (frac/read.me) [Doku-indirect, Schluss] | in BB2 the spelling did not matter because TED normalised; only a case-sensitive ASCII tokenizer breaks such examples |
+| USEPATH | textual, "top to bottom", the closest previous USEPATH applies; end marker `$02` [Doku, Bin] | `USEPATH2`/`USELASTPATH` did not exist in 2.10 |
+| CNIF | docs: "Constant Comparison Constant" with `< > = <> <= >=`; binary: expression + `D1=5` (≠ 0) | docs simplify; CSIF operators `=<`, `=>`, `><` are not in the docs |
+| Multiple CELSE, CELSE without CNIF | docs: "toggle"; binary toggles every time with *nest* = 0 and checks only *nest*, not the stack [Bin] | quirks from 2.10 |
+| Redefinition of constants | docs: "Constant already defined: Constants can only be defined once" (line 11612); text also in the binary [Doku] | whether 2.10 actually reported the error is open |
+| Fractions in constants | "Illegal Constant Expression: … a decimal place, text or a variable name"; but also "Fractions Not allowed … usually rounded and no error" | the docs contradict themselves |
+| Residents | "contains a pre-compiled list of NewTypes, macros and constants"; "must not include the same Macro and Constant definitions" [Doku]; `.xtra` has 8 fields of 68 bytes [Bin] | BB2 had 8 slots; AB3's limit of 7 lies in the text header (`ParseAB3Header`) |
+| Macro parameters `` `1 ``…`` `9 ``, `` `a ``…`` `z `` | docs: "1-9, a-z"; binary: `` `z `` → error | docs error already in 2.1; `` `0 `` (two digits, `divu #10`), `` `@ `` (error text, line 11884) and `` `{ausdruck} `` are supported by the binary |
+| Nested macro definition | "Can't create Macro inside Macro: Macro definitions must occur in the primary code" [Doku] | an error in 2.1 |
+| Macro size and depth | buffer in the options window, default 8192 [Bin]; "Macro too Big", "Macro Buffer Overflow", "Macros Nested too Deep: Eight levels" [Doku] | a depth limit of 8 existed (for what exactly is open) |
+| Macro header comment | no handling of `;` in the 2.10 expansion [Bin] | later extension |
+| Macro call search | search up to `:`/`;`, restart at the start of the statement (`$3A46`–`$3A90`, `$3C9C`) [Bin] | |
+| Line length | SuperTED: `linelength.b` (≤ 255) [Doku] | the editor did not allow longer lines |
+| Old token numbers | no automatic conversion; recommendation "save as ASCII" [Doku] | old sources without matching libs show `?????`; tokenisation in TED can be switched off |
+| Library numbers | "token number = libnumber*128 + token offset" [Doku]; `$8012` = XINCLUDE: order in the system lib …, XINCLUDE, INCLUDE … [Bin] | |
+| `@@`, `@#name`, `[`/`]` counting | not documented | open |
 
 ---
 

@@ -17,9 +17,8 @@
 > **[Schluss]** inferred. What was neither read nor tried out is marked as
 > "not checked".
 >
-> References to the AmiBlitz3 Compiler-Spec (`AmiBlitz3/Docs/Compiler-Spec/`)
-> are given as "Spec 09 §9.2" etc.; the BigLib format is fully described there in chapter 09
-> and only summarised here.
+> The BigLib format is summarised in section 4.6; the layout is defined by
+> `blitz2.s` `fixlibs` and the library macros (`libs/include/blitzlib.h`).
 
 ## Contents
 
@@ -446,7 +445,7 @@ Other libs request such bases via `!libs` (e.g. `inputoutputlib`
 the DOS base), that is why even a program without a `…_` command can contain a lib from
 `deflibs`.
 
-### 4.6 BigLib format (short version of Spec 09) [S/B]
+### 4.6 BigLib format (short version) [S/B]
 
 ```
 BigLib file (acidlibs, deflibs) = { size.l, lib executable } … 0.l
@@ -472,14 +471,13 @@ Lib image:
 ```
 
 Details (kind values, register codes `#ld0`/`#la6`/`#lpush`/`#pd0`,
-repetition groups) are in Spec 09 §9.2 and in the macros
+repetition groups) are in the macros
 `archive/cd/ultimate-blitz-basic-2.1/EXTRAS/BLITZLIBS/LIBMACS.BB` or their C reproduction
 `libs/include/blitzlib.h`. Additionally important for linking:
 
 * **Inline routines:** if a routine begins with `$A000,len`, the
   compiler copies `len` bytes to the call site instead of `jsr`; `$A001,adr.l`
-  selects a separate version for Blitz mode (`blitz2.s:11541 doajsr2`,
-  Spec 09 §9.3.2).
+  selects a separate version for Blitz mode (`blitz2.s:11541 doajsr2`).
 * **`ALibJsr token[,form]`** in lib code: `jsr` with the placeholder
   `($8000|form)<<16 | token` (`BLibJsr`: `$C000|form`) and a relocation.
   When linking in, the compiler recognises the relocation by the set bit 15 of the
@@ -496,7 +494,7 @@ enabled file under `userlibs/<verzeichnis>/` (`loadblitzlibs`,
 `loadalib`). `fixlibs` (6525) chains everything in `firstlib`, sets for
 normal libs `first token = lib·128+1`, links the entries and appends
 the name blocks to the token list (`lasttoken`). There is **no**
-replacement of equal lib numbers as in AB3 (Spec 09 §9.1.1) – `findlib`
+replacement of equal lib numbers as in AB3 – `findlib`
 takes the first match [Schluss].
 
 Note: bb2's `bb2tok.py` looks up names in the order deflibs before acidlibs;
@@ -512,8 +510,7 @@ with "CREATE RESIDENT" (`blitz2.s:4105 menu5`), up to 8 of them loaded from
 the list in the `.xtra` (`blitz2.s:4393 loadres`, `stmts.c loadres()`),
 hooked into the lists `firsttype`/`firstmacro`/`firstconst`
 (`fixtypes`/`fixmacs`/`fixconsts`), then checked for equal names
-("Clash in Residents"). Format: [formats.md](formats.md) (same as AB3,
-Spec 06 §6.1.1).
+("Clash in Residents"). Format: [formats.md](formats.md) (same as AB3).
 
 ---
 
@@ -725,7 +722,7 @@ inits:  <inits>                      makeinits (11140): descending lib number
 | a7 | stack (Gosub, For frames, stack arguments) |
 
 The lib routines preserve a3 (changed in a defined way), a4, a5, a7; what else they
-may change is not uniform (Spec 09 §9.3, 12).
+may change is not uniform.
 
 ### 5.9 Runtime error checking on/off [S]
 
@@ -930,7 +927,7 @@ debug block:
   calling convention (d0…, a2 stack for string lengths, a3 string buffer,
   a5/a4), linking in whole libs with init/finit, `ALibJsr` placeholders,
   inline prefixes `$A000`/`$A001`, globals from `-32768(a5)` on
-  (Spec 09 §9.3–9.4, Spec 12).
+  (as the library files show).
 * **One code hunk, absolute addresses in the buffer, execution in
   memory:** the structure "program · finits · inits · libs · data" in
   one hunk is the result of a compiler without a linker.

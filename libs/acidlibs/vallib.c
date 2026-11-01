@@ -26,7 +26,7 @@
  * mathffp; the thunks keep d1/a0/a1 for all routines (more than the
  * original, never less).  The CCR is no result.
  *
- * Inline routines (Compiler-Spec 9.3.2, copied into the program): QFrac,
+ * Inline routines (`$a000,len` prefix, copied into the program): QFrac,
  * QWrap, QAbs, VPos, True, False - assembler text, as in the original.
  *
  * Rnd reads hardware (VHPOSR $DFF006, JOY0DAT $DFF00A, CIA-A timer A low

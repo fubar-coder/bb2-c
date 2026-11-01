@@ -3,8 +3,7 @@
 As of 26.10.2026. Source: Blitz Basic CD (`archive/cd/ultimate-blitz-basic-2.1/`, paths in lower case), libraries
 `blitz2/deflibs` (standard), `extras/bigdeflibs/deflibs` (large variant) and
 `blitz2/acidlibs`. The files have **the same BigLib format** as the
-BlitzLibs of AmiBlitz3 (Compiler-Spec 09); `biglib_dump.py --tokens` reads
-them unchanged.
+BlitzLibs of AmiBlitz3 (`tools/blitztokens` lists the tokens of both).
 
 The built-in commands (lib 0/1, words `$80xx`) are not in the
 libraries but in the compiler `blitz2/blitz2` (see `formats.md`).
@@ -23,8 +22,7 @@ libraries but in the compiler `blitz2/blitz2` (see `formats.md`).
 Generated with `tools/compare_tokens.py` and `tools/resolve_unknown.py` (in bb2, not taken over):
 
 ```
-T=../AmiBlitz3/Docs/Compiler-Spec/verification/tools
-python3 -I $T/biglib_dump.py --tokens cd/blitz2/acidlibs > tokens/acidlibs.txt
+blitztokens -o tokens/acidlibs.txt cd/blitz2/blitz2 cd/blitz2/acidlibs
 python3 -I tools/compare_tokens.py tokens/ab3.txt tokens/deflibs.txt \
     tokens/bigdeflibs.txt tokens/acidlibs.txt > tokens/vergleich.txt
 python3 -I tools/resolve_unknown.py \

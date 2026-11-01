@@ -678,7 +678,7 @@ ULONG bl_basejsr_clang(const void *base, int off, struct bl_regs *r);
     __asm__("   .text\n   .even\n   .globl  _" #entry "\n"                  \
             "_" #entry ":\n" text "\n")
 
-/* Inline routine (Compiler-Spec 9.3.2): `Dc $a000,len` before the code;
+/* Inline routine (blitz2.s doajsr2): `Dc $a000,len` before the code;
    the compiler copies the `len` bytes to the call instead of a JSR.
    Inline code is by nature a few instructions, so it is given as
    assembler text; the final RTS is for the JSR case (constant folding). */
