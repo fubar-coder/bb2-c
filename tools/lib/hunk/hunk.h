@@ -4,7 +4,8 @@
  * load_parse() checks the structure (bounds, known hunk types) and lists
  * the hunks with their RELOC32 relocations and their symbols (HUNK_SYMBOL);
  * debug and name hunks are skipped.  Memory flags (bits 30/31) are removed from types and sizes;
- * those of the header's size table are kept per hunk (memflags).
+ * those of the header's size table are kept per hunk (memflags), with the
+ * size there (memsize).
  */
 #ifndef HUNK_H
 #define HUNK_H
@@ -48,6 +49,10 @@ struct hunk {
     struct hunk_symbol *syms;
     uint32_t memflags;          /* bits 30/31 of its size in the header:
                                    HUNKF_CHIP, HUNKF_FAST */
+    uint32_t memsize;           /* its size in the header in bytes, what
+                                   LoadSeg allocates (0 beyond the first
+                                   64 hunks); for CODE/DATA it may exceed
+                                   size, the stored block */
 };
 
 /** @brief A load file: the file and its hunks (load_free). */

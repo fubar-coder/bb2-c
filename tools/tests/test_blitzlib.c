@@ -67,7 +67,7 @@ int main(void)
 
     /* the reader: header, one entry with its names, end of the table */
     {
-        struct hunk h = { HUNK_CODE, ok.p, (uint32_t)ok.n, 0, NULL, NULL, 0, NULL, 0 };
+        struct hunk h = { HUNK_CODE, ok.p, (uint32_t)ok.n, 0, NULL, NULL, 0, NULL, 0, 0 };
         struct blitzlib lib;
         char err[200];
 

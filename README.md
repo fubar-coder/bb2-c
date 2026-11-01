@@ -880,7 +880,8 @@ tools/                       host tools:
                              check rules), biglib (write/read BigLib),
                              blitztokens (the token list of compiler
                              and libraries),
-                             hunkcheck (bytes in the first hunk),
+                             hunkcheck (bytes in the first hunk, the
+                             layout, hunks stored whole),
                              amiga_emulation (scripts in Amiberry),
                              vasmlisting (read vasm listings), sha256,
                              checklabels (labels of ted.s in the C code),

@@ -117,6 +117,7 @@ int load_parse(const uint8_t *buf, size_t size, struct loadfile *lf, char *err, 
     long cur = -1;              /* index of the open hunk */
     uint32_t n, i, first, last;
     uint32_t flags[64] = { 0 };                 /* of the first 64 hunks */
+    uint32_t sizes[64] = { 0 };                 /* longs, of the first 64 hunks */
 
     memset(lf, 0, sizeof *lf);
     lf->data = buf;
@@ -133,8 +134,10 @@ int load_parse(const uint8_t *buf, size_t size, struct loadfile *lf, char *err, 
     for (i = first; i <= last && !r.bad; i++) {
         uint32_t sz = rd32(&r);
 
-        if (i - first < sizeof flags / sizeof flags[0])
+        if (i - first < sizeof flags / sizeof flags[0]) {
             flags[i - first] = sz & 0xC0000000;
+            sizes[i - first] = sz & 0x3FFFFFFF;
+        }
         if ((sz & 0xC0000000) == 0xC0000000)
             rd32(&r);                           /* extended memory flags */
     }
@@ -159,8 +162,10 @@ int load_parse(const uint8_t *buf, size_t size, struct loadfile *lf, char *err, 
             h = &lf->hunks[cur];
             memset(h, 0, sizeof *h);
             h->type = t;
-            if (cur < (long)(sizeof flags / sizeof flags[0]))
+            if (cur < (long)(sizeof flags / sizeof flags[0])) {
                 h->memflags = flags[cur];
+                h->memsize = sizes[cur] * 4;
+            }
             n = rd32(&r) & 0x3FFFFFFF;
             h->size = n * 4;
             if (t != HUNK_BSS) {

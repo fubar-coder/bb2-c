@@ -120,3 +120,21 @@ int hunk_layout(const struct loadfile *lf, const char *layout, const char *name,
     }
     return 0;
 }
+
+int hunk_stored(const struct loadfile *lf, const char *name, FILE *out)
+{
+    uint32_t i;
+    int bad = 0;
+
+    for (i = 0; i < lf->nhunks; i++) {
+        const struct hunk *h = &lf->hunks[i];
+
+        if (h->type != HUNK_BSS && h->memsize > h->size) {
+            fprintf(out, "%s: hunk %u (%s) has $%X bytes, only $%X stored: Kickstart 1.x's "
+                    "LoadSeg does not clear the rest (#963)\n", name, (unsigned)i,
+                    typename(h->type), (unsigned)h->memsize, (unsigned)h->size);
+            bad = 1;
+        }
+    }
+    return bad;
+}

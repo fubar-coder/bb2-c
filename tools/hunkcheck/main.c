@@ -4,6 +4,7 @@
  *
  *   hunkcheck FILE OFFSET:HEXBYTES...      e.g. hunkcheck ted 0:6100 4:48e7
  *   hunkcheck --hunks LAYOUT FILE          e.g. hunkcheck --hunks code,bss exe
+ *   hunkcheck --stored FILE                every CODE/DATA hunk stored whole
  *
  * Silent if everything is right; exit status 1 otherwise.
  */
@@ -14,8 +15,10 @@
 static const char usage[] =
     "usage: hunkcheck FILE OFFSET:HEXBYTES...\n"
     "       hunkcheck --hunks LAYOUT FILE\n"
+    "       hunkcheck --stored FILE\n"
     "  check the start of the first hunk of a load file, or its hunks\n"
-    "  (LAYOUT: code|data|bss[+chip],... e.g. code,bss,data+chip)\n";
+    "  (LAYOUT: code|data|bss[+chip],... e.g. code,bss,data+chip), or that\n"
+    "  no CODE/DATA hunk is larger than its stored block\n";
 
 int main(int argc, char **argv)
 {
@@ -33,6 +36,15 @@ int main(int argc, char **argv)
             return 1;
         }
         bad = hunk_layout(&lf, argv[2], argv[3], stderr);
+        load_free(&lf);
+        return bad;
+    }
+    if (argc == 3 && !strcmp(argv[1], "--stored")) {
+        if (load_read(argv[2], &lf, err, sizeof err)) {
+            fprintf(stderr, "hunkcheck: %s: %s\n", argv[2], err);
+            return 1;
+        }
+        bad = hunk_stored(&lf, argv[2], stderr);
         load_free(&lf);
         return bad;
     }
