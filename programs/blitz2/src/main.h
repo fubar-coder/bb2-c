@@ -486,12 +486,6 @@ extern asmchkfn movemchk, movepchk, movechk, exgchk, bitchk,
 /* the state of the AB3 modules (ab3*.c) the blocks of the chunk files read
    until they are extension points (ext.h) */
 #include "ab3.h"
-
-/* AB3 mode's residents: a name without device or directory is loaded from
-   AB3RESIDENTS (loadres); the error of one that cannot be loaded ("Can't
-   Load Resident: NAME"), NULL if none: compile reports it */
-#define AB3RESIDENTS "Blitz3:BlitzLibs/Residents/"
-extern const char *ab3reserr;         /* stmts.c */
 #endif
 
 #endif

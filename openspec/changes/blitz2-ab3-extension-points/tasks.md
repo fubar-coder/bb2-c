@@ -16,7 +16,7 @@ touching AB3 code also `ab3_cli`, `ab3_cli_ref`, `ab3_tokens`,
 ## 2. AB3 blocks into extension points, one area per task
 
 - [x] 2.1 Libraries: `makeab3libs` (main.c), the BigLib/userlib paths of `loadlibs`/`loadblitzlibs` (asmlibs.c) → `ext_makelibs`/`ext_loadlibs`, AB3 code and data in `ab3libs.c`; verify: no `BLITZ2_AB3` left in those parts, `ab3_cli` (`nolib`, `userlib`) passes, `blitz2` results byte-identical
-- [ ] 2.2 Residents and the library error of `compile` → `ext_loadres`, `ext_compilestart`, code in `ab3res.c`; verify: `ab3_cli` (`resident*`, `noresident`) passes, `blitz2` results byte-identical
+- [x] 2.2 Residents and the library error of `compile` → `ext_loadres`, `ext_compilestart`, code in `ab3res.c`; verify: `ab3_cli` (`resident*`, `noresident`) passes, `blitz2` results byte-identical
 - [ ] 2.3 Includes (`doinc2`, `readinc`, `closeinc`, `freeincs`) → `ext_incopen`/`ext_readinc`/`ext_incline`/`ext_incdone`, code in `ab3inc.c`; verify: `ab3_cli` (`inc*`) passes, `blitz2` results byte-identical
 - [ ] 2.4 Errors and tokens (`ab3_errpos`, `ab3newtoken`, the AB3 token image) → `ext_errpos`/`ext_newtoken`, code in `ab3tok.c`; verify: `ab3_tokens` and `ab3_cli` pass, `blitz2` results byte-identical
 - [ ] 2.5 Command line and editor (`main`, `begin`) → `ext_cmdline`/`ext_editor`/`ext_result`, `ab3main.c` keeps the command line; verify: `grep BLITZ2_AB3` finds nothing under `programs/blitz2/src`, all AB3 tests pass, `blitz2 -s x -e y` behaves as before (spec `ab3-compat/bb2-equivalence` "No AB3 mode in blitz2")

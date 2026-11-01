@@ -1180,36 +1180,6 @@ void freeres(void)
     freeres2();         /* falls through into freeres2 */
 }
 
-#if BLITZ2_AB3
-const char *ab3reserr;                  /* main.h */
-
-/* AB3 mode: a resident named without a device or directory is AmiBlitz3's,
-   in AB3RESIDENTS (AmiBlitz3.ab3: config\path_residents); one that cannot
-   be loaded is the error of the compile, "Can't Load Resident: NAME"
-   (the first one; the others are still loaded) */
-static BPTR loadab3res(const char *name)
-{
-    static char msg[sizeof "Can't Load Resident: " + sizeof resbuff->name]
-        = "Can't Load Resident: ";
-    char path[sizeof AB3RESIDENTS + sizeof resbuff->name];
-    BPTR seg;
-
-    if (strchr(name, ':') || strchr(name, '/'))
-        seg = LoadSeg((CONST_STRPTR)name);
-    else {
-        strcpy(path, AB3RESIDENTS);
-        strncat(path, name, sizeof resbuff->name - 1);
-        seg = LoadSeg((CONST_STRPTR)path);
-    }
-    if (!seg && !ab3reserr) {
-        msg[sizeof "Can't Load Resident: " - 1] = 0;
-        strncat(msg, name, sizeof resbuff->name - 1);
-        ab3reserr = msg;
-    }
-    return seg;
-}
-#endif
-
 /* blitz2.s:4393 loadres - load in resident structs..... */
 void loadres(void)
 {
@@ -1222,9 +1192,7 @@ void loadres(void)
     ezerr = -1;         /* not reset here: compile clears it */
     freeemup();
     freeres();
-#if BLITZ2_AB3
-    ab3reserr = NULL;
-#endif
+    ext_resbegin();
     for (i = 0, res = resbuff; i < MOSTRES; i++, res++) {
         /* asm: errstack = a7 at entry, errcont = .next - an error (reserr)
            continues with the next entry */
@@ -1233,15 +1201,11 @@ void loadres(void)
             continue;
         if (!res->name[0])
             continue;
-#if BLITZ2_AB3
-        if (progmode == XTRA_MODE_AB3) {
-            seg = loadab3res(res->name);
-            res->seg = seg;
+        if (ext_loadres(res)) {
+            seg = res->seg;
             if (!seg)
                 continue;
-        } else
-#endif
-        {
+        } else {
             seg = LoadSeg((STRPTR)res->name);
             res->seg = seg;
             if (!seg)
