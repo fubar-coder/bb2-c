@@ -135,3 +135,9 @@ check, docs); each with the acceptance of D5.
   `blitz2-ab3` sets AB3's when its command line decides the mode, before
   anything is loaded (the mode does not change after that). The asm names
   stay as macros in `main.h` (`tokens`, `mathq`), with no build switch.
+- *`ext_errpos` lives in `ab3inc.c`, not `ab3tok.c`:* the place of an
+  error is the include line count of a command line run, the state of
+  `ab3inc.c`; `ab3tok.c` has the token list, `ext_newtoken`, and the mode
+  with its data (`progmode`, `ext_toklist`, `ext_mathq`, set together by
+  `ab3_setmode`). The macros a token image is built of (asmmac equates,
+  node members) are shared by `main.c` and `ab3tok.c` in `tokimg.h`.

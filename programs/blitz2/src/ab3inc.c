@@ -14,7 +14,6 @@
 #include <proto/dos.h>
 #include "blitz2.h"
 #include "ab3.h"
-#include "ab3main.h"
 
 /* a tokenised include (TED's or BB22) has the mode of its own (xtra_mode:
    by its companion .xtra, as a main source); if that is not the program's,
@@ -162,7 +161,7 @@ void ext_incdone(struct include *inc)
    innermost include that has a line read), else line 0 (the compiler's
    line of the source, the editor's line number).  Nothing in an editor
    session. */
-void ab3_errpos(void)
+void ext_errpos(void)
 {
     struct include *inc;
     int i;

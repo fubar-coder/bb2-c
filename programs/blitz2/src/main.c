@@ -45,62 +45,17 @@ extern struct WBStartup *_WBenchMsg;
  * is the one of the asm (struct token: next.l, num.w, name\0, help\0,
  * even).  The asm mnemonic tokens (asmmac, fnum..fnum+117) are followed by
  * their struct asment data at the next even address (makeasmtab relies on
- * that).  `tokens` is an alias of the first node.  The nodes are listed
- * in toklist.h; blitz2-ab3 has a second image of them with AmiBlitz3's
- * names and new tokens (tokimg_ab3), `tokens` is then the one of the
- * program's mode. */
+ * that).  The nodes are listed in toklist.h; `tokens` (main.h) is the
+ * first node of the list of the program's mode (ext.h): this one in BB2
+ * mode, in AB3 mode blitz2-ab3's image with AmiBlitz3's names and new
+ * tokens (ab3tok.c). */
 
-/* asmmac equates (EA masks / size codes).  Renamed with a trailing `_`
-   because `long`, `word`, `byte` ... clash with C / NDK names. */
-#define ndn_    0xfffe
-#define nan_    0xfffd
-#define nian_   0xfffb
-#define nanp_   0xfff7
-#define npan_   0xffef
-#define ndan_   0xffdf
-#define ndanxi_ 0xffbf
-#define nabsw_  0xff7f
-#define nabsl_  0xfeff
-#define ndpc_   0xfdff
-#define ndpcxi_ 0xfbff
-#define nimm_   0xf7ff
-#define nccr_   0xefff
-#define nsr_    0xdfff
-#define nusp_   0xbfff
-#define nmem_   0x7fff
-#define nall_   0
-#define dn_     1
-#define an_     2
-#define ian_    4
-#define anp_    8
-#define pan_    16
-#define dan_    32
-#define danxi_  64
-#define absw_   128
-#define absl_   256
-#define dpc_    512
-#define dpcxi_  1024
-#define imm_    2048
-#define ccr_    4096
-#define sr_     8192
-#define usp_    16384
-#define mem_    32768
-#define all_    0xfff
-#define byte_   0xff0
-#define word_   0xf1f
-#define long_   0x2ff
-#define sall_   0x210
-#define nosz_   0xfff
-#define byteword_ 0xf10
-#define wordlong_ 0x10f
+#include "tokimg.h"
 
 /* the nodes (toklist.h): a struct member per node, then its initialiser;
    IMG is the image being defined, the names are blitz2's (M picks b2) */
-#define TKMEMBER(id, name, help) \
-    struct { struct token *next; UWORD num; char s[sizeof(name "\0" help)]; } id;
 #define TK(id, next, num, name, help)       TKMEMBER(id, name, help)
-#define TA(id, nx, n, name, ...) \
-    struct { struct token *next; UWORD num; char s[sizeof(name "\0" "")]; struct asment d; } id;
+#define TA(id, nx, n, name, ...)            TAMEMBER(id, name)
 #define TKLAST(id, num, name, help)         TKMEMBER(id, name, help)
 #define TK3(id, next, num, name, help)
 #define TK3LAST(id, num, name, help)
@@ -113,7 +68,6 @@ struct tokimage {
 #undef TK
 #undef TA
 #undef TKLAST
-#define NX(id) (struct token *)&IMG.id
 #define TK(id, next, num, name, help)       { NX(next), num, name "\0" help },
 #define TA(id, next, num, name, ...)        { NX(next), num, name "\0" "", { __VA_ARGS__ } },
 #define TKLAST(id, num, name, help)         { NULL, num, name "\0" help },
@@ -123,53 +77,12 @@ struct tokimage tokimg = {              /* asm label: tokens = first node */
 #include "toklist.h"
 };
 
-#if BLITZ2_AB3
-/* AmiBlitz3's list (toklist.h): the same nodes with AmiBlitz3's names
-   (M picks b3), blitz2's last one followed by AmiBlitz3's new ones */
 #undef TK
 #undef TA
 #undef TKLAST
 #undef TK3
 #undef TK3LAST
 #undef M
-#define TK(id, next, num, name, help)       TKMEMBER(id, name, help)
-#define TA(id, nx, n, name, ...) \
-    struct { struct token *next; UWORD num; char s[sizeof(name "\0" "")]; struct asment d; } id;
-#define TKLAST(id, num, name, help)         TKMEMBER(id, name, help)
-#define TK3(id, next, num, name, help)      TKMEMBER(id, name, help)
-#define TK3LAST(id, num, name, help)        TKMEMBER(id, name, help)
-#define M(b2, b3) b3
-
-struct tokimage_ab3 {
-#include "toklist.h"
-};
-
-#undef TK
-#undef TA
-#undef TKLAST
-#undef TK3
-#undef TK3LAST
-#undef IMG
-#define TK(id, next, num, name, help)       { NX(next), num, name "\0" help },
-#define TA(id, next, num, name, ...)        { NX(next), num, name "\0" "", { __VA_ARGS__ } },
-#define TKLAST(id, num, name, help)         { NX(toktnum34), num, name "\0" help },
-#define TK3(id, next, num, name, help)      { NX(next), num, name "\0" help },
-#define TK3LAST(id, num, name, help)        { NULL, num, name "\0" help },
-#define IMG tokimg_ab3
-
-struct tokimage_ab3 tokimg_ab3 = {
-#include "toklist.h"
-};
-#endif
-
-#undef TKMEMBER
-#undef TK
-#undef TA
-#undef TKLAST
-#undef TK3
-#undef TK3LAST
-#undef M
-#undef NX
 #undef IMG
 
 /* asm label `tokens` = first node: macro in main.h */

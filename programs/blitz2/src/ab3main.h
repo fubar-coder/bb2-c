@@ -23,17 +23,6 @@ extern const char ab3cliname[];
 int ab3_cmdline(int argc, char **argv);
 
 /**
- * @brief A compile error (err, before the editor's error service): its
- *        place for ab3cli in the job - the first error of a compile only.
- *
- * Inside an include: its name and the line read last (the innermost
- * include that has a line read), else line 0 (the compiler's line of the
- * source, the editor's line number).  Nothing in an editor session.
- * (ab3inc.c)
- */
-void ab3_errpos(void);
-
-/**
  * @brief The return code of a command line run, after the compiler ran
  *        (ab3cli left it in the job).
  * @return 0, 10 or 20

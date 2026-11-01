@@ -1354,9 +1354,7 @@ static void handletoken(UWORD c)
         handlelib(tok);
         return;
     }
-#if BLITZ2_AB3
-    ab3newtoken(tok);
-#endif
+    ext_newtoken(tok);
     if (tok >= tnum) {
         tok -= tnum - fnum;
         if (tok == fnum + 15 || tok == fnum + 10)
@@ -1376,26 +1374,6 @@ static void handletoken(UWORD c)
     /* asm: push handler, bra getchar3 */
     atokens[idx >> 2](getchar3());
 }
-
-#if BLITZ2_AB3
-/* compile.h */
-void ab3newtoken(UWORD tok)
-{
-    static char msg[sizeof "Not supported: " + 16] = "Not supported: ";
-    const struct token *t;
-    char *d = msg + sizeof "Not supported: " - 1;
-    const char *s;
-
-    if (progmode != XTRA_MODE_AB3 || tok < tnum + 33 || tok > tnum + 40)
-        return;
-    for (t = &tokens; t && t->num != tok; t = t->next)
-        ;
-    for (s = t ? t->name : "?"; *s && d < msg + sizeof msg - 1; )
-        *d++ = *s++;
-    *d = 0;
-    err(msg);
-}
-#endif
 
 /* blitz2.s:3169 handlelib - a token from a library! */
 static void handlelib(UWORD tok)

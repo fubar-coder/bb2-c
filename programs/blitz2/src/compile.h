@@ -190,13 +190,4 @@ UWORD dolibtoke(UWORD nparams, struct blitzlib *blib, UBYTE *sub);
  * usertype.  srcptr is backed up unless '$' was consumed. */
 UWORD sizespec2(void);
 
-#if BLITZ2_AB3
-/* blitz2-ab3: AmiBlitz3's tokens since Blitz Basic 2 (toklist.h,
-   tnum+33..tnum+40, $80D4-$80DB) are known to the tokeniser of AB3 mode
-   but not compiled yet (docs/ab3/variant.md, G2+): in AB3 mode the token
-   number tok (without bit 15) of one of them stops the compile with
-   "Not supported: NAME"; anything else returns */
-void ab3newtoken(UWORD tok);
-#endif
-
 #endif

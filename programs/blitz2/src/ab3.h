@@ -16,8 +16,13 @@ extern struct ab3job *ab3job;
 /** @brief The mode of the program being compiled (enum xtra_mode,
  *         shared/xtra): XTRA_MODE_BB2 or XTRA_MODE_AB3.  One mode per
  *         compile, decided by the command line (ab3main.c) before anything
- *         is loaded; an editor session is always BB2. */
+ *         is loaded; an editor session is always BB2.  (ab3tok.c) */
 extern int progmode;
+
+/** @brief Set the mode of the program (progmode) and the data of the mode
+ *         of ext.h (ext_toklist, ext_mathq) - once, before anything is
+ *         loaded. */
+void ab3_setmode(int mode);
 
 /** @brief The error of a missing library file ("Library file not found:
  *         NAME"), NULL if none (ab3libs.c): makelibs finds it at start-up,

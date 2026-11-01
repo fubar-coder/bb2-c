@@ -207,10 +207,6 @@ void  sleepon(void);                        /* 1494 comdata+76 busy pointer */
    object (struct tokimage, defined in main.c).  `tokens` is the first node
    of the token list of the program's mode (ext.h): tokimg's in BB2 mode */
 extern struct tokimage tokimg;
-#if BLITZ2_AB3
-/* blitz2-ab3: AmiBlitz3's list (toklist.h) in AB3 mode */
-extern struct tokimage_ab3 tokimg_ab3;
-#endif
 #define tokens (*ext_toklist)
 extern struct edstruct edstruct;      /* 274 */
 extern const char menus[];            /* 724 "COMPILER\0" + items "TEXT\0" key, 0 */

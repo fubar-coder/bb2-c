@@ -2,8 +2,9 @@
  * toklist.h - the compiler's own token list (blitz2.s 283-722 `tokens`,
  * asmmac), one entry per node in source order, as an X-macro list: the
  * includer defines the entry macros and gets the struct members or the
- * initialisers of a token image (main.c: `tokimg`, and in blitz2-ab3 also
- * `tokimg_ab3`).  No include guard: included once per use.
+ * initialisers of a token image (tokimg.h; main.c: `tokimg`, and in
+ * blitz2-ab3 also ab3tok.c: `tokimg_ab3`).  No include guard: included
+ * once per use.
  *
  *   TK(id, next, num, name, help)    a token node: next.l num.w name\0 help\0
  *   TA(id, next, num, name, asment)  an asm mnemonic node, its struct asment

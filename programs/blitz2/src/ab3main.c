@@ -22,11 +22,6 @@
 
 struct ab3job *ab3job;
 const char ab3cliname[] = "PROGDIR:ab3cli";
-int progmode = XTRA_MODE_BB2;           /* main.h */
-
-/* the data of the mode (ext.h): BB2's until the command line decides */
-struct token *ext_toklist = (struct token *)&tokimg;
-UWORD ext_mathq = 247-55;
 static struct ab3job job;
 
 static void say(const char *s)
@@ -104,13 +99,7 @@ int ab3_cmdline(int argc, char **argv)
     if (x)
         FreeMem(x, (ULONG)xlen + 1);
     FreeMem(src, (ULONG)len + 1);
-    progmode = job.mode;
-    if (progmode == XTRA_MODE_AB3) {
-        ext_toklist = (struct token *)&tokimg_ab3;  /* AmiBlitz3's list */
-        /* AmiBlitz3's math library is number 44 (AmiBlitz3.ab3 14565,
-           token $1601), its 192 an OsLibs one */
-        ext_mathq = 44;
-    }
+    ab3_setmode(job.mode);
     ab3job = &job;
     return -1;
 }
