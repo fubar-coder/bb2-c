@@ -7,6 +7,8 @@ set(BLITZ2_CHUNKS main compile stmts asmlibs parse eval libcall tokens1 tokens2 
 list(TRANSFORM BLITZ2_CHUNKS PREPEND src/ OUTPUT_VARIABLE chunk_sources)
 list(TRANSFORM chunk_sources APPEND .c)
 file(GLOB glue_sources CONFIGURE_DEPENDS src/glue*.c)
+# every file of src/, for the check of the core (checkcore.cmake)
+file(GLOB blitz2_src_files CONFIGURE_DEPENDS src/*)
 
 # globals relative to a4: shorter and faster accesses, fewer relocations
 # (data + bss must stay below 64 KB - the linker refuses a 16-bit a4
@@ -54,11 +56,17 @@ function(blitz2_program target)
 
 	# check after every link; if it fails, the program does not count as
 	# built: no libnix20 member, no base of a library Kickstart 1.3 does not
-	# have (UtilityBase) - checklink.cmake
+	# have (UtilityBase) - checklink.cmake; no BLITZ2_AB3 in the sources of
+	# the core and its extensions, src/ - checkcore.cmake (CMake runs no
+	# POST_BUILD for an object library: the programs check the core they
+	# link, and relink after a change of any file of src/)
 	add_custom_command(TARGET ${target} POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/checklink.cmake
 			${CMAKE_CURRENT_BINARY_DIR}/${target}.map
+		COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/checkcore.cmake
+			${blitz2_src_files}
 		VERBATIM)
+	set_property(TARGET ${target} APPEND PROPERTY LINK_DEPENDS ${blitz2_src_files})
 endfunction()
 blitz2_program(blitz2 src/ext_bb2.c)
 # blitz2-ab3: the AB3 modules; the mode of a source is decided with
@@ -87,6 +95,13 @@ foreach(t IN ITEMS
 	set_tests_properties(blitz2_checklink_broken_${name} PROPERTIES
 		PASS_REGULAR_EXPRESSION "not allowed in blitz2: ${regex}")
 endforeach()
+# and checkcore.cmake: a chunk file with a block of the former second
+# build must fail it
+add_test(NAME blitz2_checkcore_broken COMMAND ${CMAKE_COMMAND}
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/checkcore.cmake
+	${CMAKE_CURRENT_SOURCE_DIR}/tests/checkcore/broken.c)
+set_tests_properties(blitz2_checkcore_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"BLITZ2_AB3 not allowed in the compiler's sources.*tests/checkcore/broken\\.c")
 
 # ------------------------------------------------------- reference build
 # The original blitz2.s v1.95 (archive/sources/blitz2-1.95) assembled with

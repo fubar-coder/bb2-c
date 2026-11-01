@@ -141,3 +141,11 @@ check, docs); each with the acceptance of D5.
   with its data (`progmode`, `ext_toklist`, `ext_mathq`, set together by
   `ab3_setmode`). The macros a token image is built of (asmmac equates,
   node members) are shared by `main.c` and `ab3tok.c` in `tokimg.h`.
+- *The check of D4 runs at the link of the programs:* CMake refuses
+  `POST_BUILD` commands on an object library ("may not have PRE_BUILD,
+  PRE_LINK, or POST_BUILD commands"). `checkcore.cmake` therefore runs
+  in the `POST_BUILD` step of `blitz2` and `blitz2-ab3`, next to
+  `checklink.cmake`, over every file of `src/`; both programs have all of
+  them as `LINK_DEPENDS`, so a change of any file relinks and checks
+  again. A failing check leaves the program not built, as for
+  `checklink`.
