@@ -258,8 +258,8 @@ static int changed_emulation_dir(char *emu, size_t len)
         if (!access(from, F_OK) && symlink(from, to))
             return -1;
     }
-    snprintf(from, sizeof from, "%s/Workbench_OS3.2-AB3-AGA.vhd", src);
-    snprintf(to, sizeof to, "%s/Workbench_OS3.2-AB3-AGA.vhd", emu);
+    snprintf(from, sizeof from, "%s/Workbench_OS3.2-AB3-AGA.hdf", src);
+    snprintf(to, sizeof to, "%s/Workbench_OS3.2-AB3-AGA.hdf", emu);
     return copy_file(from, to);
 }
 
@@ -324,7 +324,7 @@ int main(int argc, char **argv)
     CHECK(slot_clean());
     free(log);
     /* the copy's modification time changed: again */
-    snprintf(path, sizeof path, "%s/Workbench_OS3.2-AB3-AGA.vhd", emu);
+    snprintf(path, sizeof path, "%s/Workbench_OS3.2-AB3-AGA.hdf", emu);
     CHECK(utimensat(AT_FDCWD, path, old, 0) == 0);
     snprintf(before, sizeof before, "%s", name);
     CHECK(session("mtime", emu, 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs) == 1);

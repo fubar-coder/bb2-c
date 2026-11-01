@@ -118,7 +118,7 @@ not an A/B error, but a blocker.
 
 Created by the user (27.10.2026): `~/Amiberry/Configurations/A1200-AB3-AGA.uae`
 = `A1200-AB3.uae` without RTG card (`gfxcard_size`/`gfxcard_type` removed)
-with its own hardfile `Workbench_OS3.2-AB3-AGA.vhd`; Workbench mode **PAL
+with its own hardfile `Workbench_OS3.2-AB3-AGA.hdf`; Workbench mode **PAL
 High Res Laced, 256 colours (depth 8)**. Selection via `AMIBERRY_CONFIG`
 (`tedab.py` sets it itself, `--config` overrides). Configuration and
 hardfile belong to the user and are not changed by the tools;

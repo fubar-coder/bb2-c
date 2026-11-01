@@ -378,7 +378,7 @@ read-only (`tests/emu/locate-let2.ados` via `--pre`: `CD` and
   `let2.bb2.xtra` and `.info` written (with the full name
   `TEDRUN:work/let2.bb2` in the file name gadget).
 * `cleanup.txt`: the start directory of the session is **`Workbench:`** (=
-  `SYS:` of the user's hardfile `Workbench_OS3.2-AB3-AGA.vhd`); there are
+  `SYS:` of the user's hardfile `Workbench_OS3.2-AB3-AGA.hdf`); there are
   four files from sessions F and H: `let2.bb2`, `let2.bb2.bak`
   (H renamed F's file), `let2.bb2.xtra`, `let2.bb2.info` (together
   1 KB, 10 blocks). Not deleted – decision of the user.

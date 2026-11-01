@@ -8,8 +8,8 @@ here.
 | File | Contents | Size | SHA-256 (as of 2026-10-27) |
 |---|---|---|---|
 | `A1200.47.115.rom` | Kickstart 3.2 (47.115), A1200 | 524288 | `27ddaf0a460e2ee85935139cbac1df234c283b3979c50526d118e9a55c61100a` |
-| `Workbench_OS3.2-AB3-AGA.vhd` | AmigaOS 3.2, Workbench native (PAL HighRes Laced, 256 colors) – default | 67176960 | – |
-| `Workbench_OS3.2-AB3.vhd` | AmigaOS 3.2, Workbench on RTG (uaegfx, 1680×1050) | 67176960 | – |
+| `Workbench_OS3.2-AB3-AGA.hdf` | AmigaOS 3.2, Workbench native (PAL HighRes Laced, 256 colors) – default | 67108864 | – |
+| `Workbench_OS3.2-AB3.hdf` | AmigaOS 3.2, Workbench on RTG (uaegfx, 1680×1050) | 67108864 | – |
 
 Everyone has set up the hardfiles themselves, so there is no checksum for
 them; they only have to meet the conditions below.
@@ -23,7 +23,7 @@ Tests change it only by key=value differences. The RTG variant:
 ```
 gfxcard_size=16
 gfxcard_type=ZorroIII
-hardfile2 / uaehf0: Workbench_OS3.2-AB3.vhd instead of Workbench_OS3.2-AB3-AGA.vhd
+hardfile2 / uaehf0: Workbench_OS3.2-AB3.hdf instead of Workbench_OS3.2-AB3-AGA.hdf
 ```
 
 TED can only be tested with the AGA variant (on RTG its bitplanes would be
@@ -214,7 +214,14 @@ over time, the owner's own ones its next save in the slot.
   run until the time limit – also by system programs: `ShowConfig` writes
   to `SYS:` and therefore hangs (checked 2026-10-27). Tests write only to
   `TEST:` or `RAM:`.
-* To change an image: start with a separate, writable configuration.
+* **Format:** raw images of one partition (`DOS\5`, no RDB, no container
+  like VHD), with the geometry of the `hardfile2` line (32 sectors per
+  track, 1 surface, 2 reserved blocks, 512-byte blocks).
+* To change an image: start with a separate, writable configuration, or
+  change it on the host with a tool that reads Amiga hardfiles (e.g.
+  `xdftool` of amitools) – not while tests run. The changed file gets a
+  new modification time, so the snapshots made from it are not used
+  again (section "Snapshot mode").
 
 ## A500 machine (Kickstart 1.3)
 

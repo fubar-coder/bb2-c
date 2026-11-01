@@ -94,8 +94,8 @@ int amiga_emulation_machine_kickstart(const char *name)
 const struct amiga_emulation_option amiga_emulation_rtg[] = {
     { "gfxcard_size", "16" },
     { "gfxcard_type", "ZorroIII" },
-    { "hardfile2", "ro,DH0:@EMULATION_DIR@/Workbench_OS3.2-AB3.vhd,32,1,2,512,0,,uae0" },
-    { "uaehf0", "hdf,ro,DH0:@EMULATION_DIR@/Workbench_OS3.2-AB3.vhd,32,1,2,512,0,,uae0" },
+    { "hardfile2", "ro,DH0:@EMULATION_DIR@/Workbench_OS3.2-AB3.hdf,32,1,2,512,0,,uae0" },
+    { "uaehf0", "hdf,ro,DH0:@EMULATION_DIR@/Workbench_OS3.2-AB3.hdf,32,1,2,512,0,,uae0" },
 };
 const size_t amiga_emulation_rtg_count = sizeof amiga_emulation_rtg / sizeof amiga_emulation_rtg[0];
 

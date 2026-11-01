@@ -130,7 +130,7 @@ static void snapshot_config(void)
     /* the ROM and the hardfile by their real paths: two emulation
        directories with links to the same files give the same text */
     {
-        static const char *const files[] = { "A1200.47.115.rom", "Workbench_OS3.2-AB3-AGA.vhd" };
+        static const char *const files[] = { "A1200.47.115.rom", "Workbench_OS3.2-AB3-AGA.hdf" };
         char dir[] = "/tmp/amiga-emulation-snapreal-XXXXXX", path[160], link[160], real[160];
         char *a, *b;
         size_t i;
@@ -201,7 +201,7 @@ static unsigned long long key_of(const struct amiga_emulation_params *p, const c
    missing file is a key of its own */
 static void snapshot_key(void)
 {
-    static const char *const files[] = { "A1200.47.115.rom", "Workbench_OS3.2-AB3-AGA.vhd",
+    static const char *const files[] = { "A1200.47.115.rom", "Workbench_OS3.2-AB3-AGA.hdf",
                                          "rom.key", "amiberry", "cd.iso" };
     char dir[] = "/tmp/amiga-emulation-snapkey-XXXXXX", path[5][96], tmp[110], err[200], *cfg;
     struct amiga_emulation_mount mounts[] = { { "CD", "/data/cd", 0 }, { "W", "/data/w", 1 } };
@@ -606,7 +606,7 @@ int main(void)
     CHECK(cfg != NULL);
     CHECK(cfg && !strstr(cfg, "@EMULATION_DIR@"));
     CHECK(cfg && lines_equal(cfg, "kickstart_rom_file=/emu/A1200.47.115.rom") == 1);
-    CHECK(cfg && lines_equal(cfg, "hardfile2=ro,DH0:/emu/Workbench_OS3.2-AB3-AGA.vhd,32,1,2,512,0,,uae0") == 1);
+    CHECK(cfg && lines_equal(cfg, "hardfile2=ro,DH0:/emu/Workbench_OS3.2-AB3-AGA.hdf,32,1,2,512,0,,uae0") == 1);
     CHECK(cfg && lines_equal(cfg, "filesystem2=rw,DH1:TEST:/run/test,0") == 1);
     CHECK(cfg && lines_equal(cfg, "uaehf1=dir,rw,DH1:TEST:/run/test,0") == 1);
     CHECK(cfg && lines_equal(cfg, "use_gui=no") == 1 && lines_equal(cfg, "sound_output=interrupts") == 1);
@@ -633,7 +633,7 @@ int main(void)
     cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
     CHECK(cfg && lines_equal(cfg, "gfxcard_size=16") == 1 && lines_equal(cfg, "gfxcard_type=ZorroIII") == 1);
     CHECK(cfg && key_lines(cfg, "hardfile2") == 1
-          && lines_equal(cfg, "hardfile2=ro,DH0:/emu/Workbench_OS3.2-AB3.vhd,32,1,2,512,0,,uae0") == 1);
+          && lines_equal(cfg, "hardfile2=ro,DH0:/emu/Workbench_OS3.2-AB3.hdf,32,1,2,512,0,,uae0") == 1);
     free(cfg);
 
     /* the machines: a1200 is the default; a500 has its own template */
