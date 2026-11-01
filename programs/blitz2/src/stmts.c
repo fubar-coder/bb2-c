@@ -962,9 +962,10 @@ static void resconsts(struct reswriter *w)
         w->pos += len;
         save = l->next;
         /* next := offset of the following written item (= the next
-           constant).  BUG(orig) (#34): for the last constant, if non-constant
-           labels follow it, next points past the section (fixconsts
-           leaves it as loaded) */
+           constant).  For the last constant, if non-constant labels
+           follow it, next points past the section (as in the original;
+           such residents exist, AmiBlitz3's all.res too): fixconsts ends
+           the list (fixed, #34) */
         if (l->next) {
             l->next = (struct label *)w->pos;
             addoff2(start);
@@ -1028,7 +1029,13 @@ void menu5(void)
     pointeron();
 }
 
-/* blitz2.s:4483 fixconsts */
+/* blitz2.s:4483 fixconsts.
+   Fixed (intended deviation, #34): the next of the last constant is set to
+   0, as AmiBlitz3's fixconsts does (CLR.l (a2) ;bugfix for object,
+   AmiBlitz/AmiBlitz3@ea8c25c7).  The original left it as loaded; in a
+   resident whose last constant is followed by other labels (resconsts)
+   it points to the end of the hunk, and every compile's freelabels (from
+   lastrescon) freed what lay behind the hunk. */
 UBYTE *fixconsts(UBYTE *p)
 {
     UWORD count = W_(p);
@@ -1043,6 +1050,7 @@ UBYTE *fixconsts(UBYTE *p)
         item = (struct node *)p;
         p = (UBYTE *)item->next;
     } while (count-- != 0);
+    item->next = NULL;          /* fixed (#34) */
     lastrescon = (struct label *)item;
     p = (UBYTE *)item;
     p += (WORD)(((UWORD)B_(p + 18) + 1) & ~1);
