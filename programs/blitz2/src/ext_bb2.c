@@ -66,6 +66,20 @@ void ext_newtoken(UWORD tok)
 {
 }
 
+void ext_passstart(void)
+{
+}
+
+BOOL ext_token(UWORD c)
+{
+    return FALSE;
+}
+
+BOOL ext_newsyntax(void)
+{
+    return FALSE;
+}
+
 BOOL ext_cmdline(int argc, char **argv, int *rc)
 {
     return FALSE;

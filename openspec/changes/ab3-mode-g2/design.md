@@ -124,3 +124,20 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
 - Whether AmiBlitz3's `-save` writes the tokenised form usable for the
   token comparison (decided during the tokenizer task; the spec allows
   "an equivalent dump").
+
+## Findings (implementation)
+
+- **2.1 OPTIMIZE** (`ab3dir.c`, points `ext_passstart`, `ext_token`,
+  `ext_newsyntax`): the code of the statement is AmiBlitz3's, byte for
+  byte: `move.l #0,d0` (`$203C`, a long 0) and `jsr` (`$4EB9`) to
+  strings2lib's `setfpumode` - 12 bytes, compared with AmiBlitz3's
+  executable by `opt_code` in `ab3_cli_ref` (with `-r`: with runtime
+  error checking blitz2-ab3 puts its debug trap before the statement,
+  AmiBlitz3 has no debugger in CLI mode). So D5's `moveq` became the
+  `move.l` of AmiBlitz3.
+- The reference machine **has an FPU**: Amiberry's A1200 of
+  `tools/lib/amiga_emulation/default.uae` has a 68882 (`fpu_model`), so
+  AmiBlitz3's `_checkfpu` passes and it compiles `OPTIMIZE 7` (case
+  `opt_fpu`, `opt_fpu.ref.expect`). The risk "AmiBlitz3 refuses
+  `OPTIMIZE 2` without an FPU" does not apply; FPU sources can be
+  compared with AmiBlitz3 in G6.

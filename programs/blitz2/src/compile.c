@@ -766,6 +766,7 @@ void dopass(void)
 
     resetlibs();
     freeemup();
+    ext_passstart();
 
     for (i = 1; i <= 4; i++)
         titleadd[i] = 0;
@@ -1342,6 +1343,8 @@ static void handletoken(UWORD c)
 {
     UWORD tok, idx;
 
+    if (ext_token(c))
+        return;
     if (c >= 0x8000 + fnum && c < 0x8000 + tnum) {
         if (!(optreq2ga3.Flags & GFLG_SELECTED))
             undodebug();

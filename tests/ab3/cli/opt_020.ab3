@@ -1,0 +1,12 @@
+; OPTIMIZE 5 (68020 + new syntax): compiled with 68000 code (the 68020
+; bit is accepted, docs/ab3/variant.md), the results are AmiBlitz3's
+OPTIMIZE 5
+Dim zarr.l(100)
+For i.l = 0 To 100
+  zarr(i) = i * i * 1000
+Next
+x.l = 123456
+y.l = -789
+NPrint x * y, " ", x / y, " ", x MOD 1000
+NPrint zarr(100), " ", zarr(37) / 7
+End

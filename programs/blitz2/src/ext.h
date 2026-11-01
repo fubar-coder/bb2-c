@@ -108,6 +108,25 @@ void ext_errpos(void);
  *         statement or a function; may stop the compile with err(). */
 void ext_newtoken(UWORD tok);
 
+/* ============================ AB3 mode's language (change ab3-mode-g2) */
+
+/** @brief dopass (compile.c) starts a pass, its state cleared
+ *         (freeemup): the state of the directives goes back to its
+ *         start. */
+void ext_passstart(void);
+
+/**
+ * @brief handletoken (compile.c): the token c (bit 15 set) starts a
+ *        statement.
+ * @return TRUE if handled (the statement is compiled, the next character
+ *         fetched): blitz2's handler is not called
+ */
+BOOL ext_token(UWORD c);
+
+/** @brief Is the "new syntax" of AB3 mode on (OPTIMIZE bit 2)?  Always
+ *         FALSE in BB2 mode. */
+BOOL ext_newsyntax(void);
+
 /* ======================================= the command line, the editor */
 
 /**

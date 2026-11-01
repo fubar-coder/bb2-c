@@ -1,0 +1,7 @@
+; OPTIMIZE 16 (short branches): the program's output is the same as
+; without the line
+OPTIMIZE 16
+For i = 1 To 3
+  If i = 2 Then NPrint "two" Else NPrint i
+Next
+End

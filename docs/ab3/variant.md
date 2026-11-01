@@ -411,6 +411,7 @@ implementation:
 | | `ab3res.c` | AmiBlitz3's residents directory, the set-up errors of a compile |
 | | `ab3inc.c` | the mode of a tokenised include, includes of text, the place of an error |
 | | `ab3tok.c` | the mode (`progmode`), AmiBlitz3's token list, the library of `^`, its tokens not compiled yet |
+| | `ab3dir.c` | AmiBlitz3's directives (`OPTIMIZE`; change `ab3-mode-g2`) |
 | | `ab3.h` | the state the AB3 modules share (not for the chunk files) |
 | | `shared/xtra`, `shared/ab3job` | the mode of a source, the arguments and the job of a command line run |
 
@@ -419,6 +420,8 @@ The points (`ext.h`): `ext_makelibs`, `ext_loadlibs`,
 `ext_loadres` (residents), `ext_compilestart` (the start of a compile),
 `ext_incopen`, `ext_readinc`, `ext_incline`, `ext_incdone` (includes),
 `ext_errpos` (a compile error), `ext_newtoken` (a built-in token),
+`ext_passstart` (the start of a pass), `ext_token` (a statement token
+of AB3 mode), `ext_newsyntax` (AmiBlitz3's new syntax),
 `ext_cmdline`, `ext_editor`, `ext_editorarg`, `ext_result` (command
 line and editor); the data of the mode `ext_toklist` (asm `tokens`) and
 `ext_mathq` (asm `mathq`). A point that stands for a part of a chunk
@@ -450,6 +453,7 @@ machine); recorded, not changed in G1:
 | `exec_data` | line 1 `*exec.ExecBase = execbase` refused: "Can't convert types --> execbase", no executable | compiles: TED's tokeniser takes `execbase` in any case as the library function `ExecBase` (`$DE26`); the program prints exec's version | G2: case of names when tokenising (cause in AmiBlitz3 to be checked) |
 | `exec_data` | return code 0 after a compile error ("A unknow error happend!") | 10 (design D6) | none: ours is the documented convention |
 | `inctext_bbname` | an include is tokenised by its name only (`.ab3`, `.AB3`, `.ab2`; `processInclude`, `AmiBlitz3.ab3` 20735 at `@58a11658`); `.bb`/`.bb2` are read as tokenised (a text include becomes one comment "line"), other names are refused | an include of text is tokenised by its contents (`xtra_detect`), whatever its name | G2: AB3's include rules (names, refusal) |
+| `opt_fpu` | `OPTIMIZE 7` compiles on the reference machine (Amiberry's A1200 has a 68882, `fpu_model` of `default.uae`: `_checkfpu` finds it) and the program runs | refused: "Not supported: OPTIMIZE 2 (FPU)" (spec `ab3-compat/directives`) | G6: FPU code |
 | `noend` | a program without `End` with runtime error checking ends normally | an empty requester at the end: blitz2's end code (`blitz2.s:2683 eopcode`, `moveq #3,d0 : trap #0`) without `End`, BUG(orig) #6 | with #6 (the runtime part of AB3 mode) |
 
 AmiBlitz3's console output in CLI mode also names files it does not

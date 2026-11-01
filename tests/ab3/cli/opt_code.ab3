@@ -1,0 +1,11 @@
+; OPTIMIZE 4 before a Print: the code of the statement is AmiBlitz3's
+; call of strings2lib's setfpumode with 0 (move.l #0,d0, a jsr); the
+; words between the two labels, without the address of the jsr
+NPrint "before"
+optstart:
+OPTIMIZE 4
+optend:
+NPrint "bytes: ", ?optend - ?optstart
+NPrint Hex$(Peek.w(?optstart)), " ", Hex$(Peek.l(?optstart + 2)), " ", Hex$(Peek.w(?optstart + 6))
+NPrint "after"
+End

@@ -1,0 +1,6 @@
+; OPTIMIZE 7 (68020 + FPU + new syntax): the FPU bit is refused until FPU
+; code exists; the error is at the OPTIMIZE line, no executable
+NPrint "start"
+OPTIMIZE 7
+NPrint "after"
+End

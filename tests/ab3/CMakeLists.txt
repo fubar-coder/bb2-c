@@ -178,6 +178,13 @@ ab3_cli_case(option_d atoi.ab3 ARGS -d)
 ab3_cli_case(syntax syntax.ab3)
 ab3_cli_case(incerr_text incerr_text.ab3)
 ab3_cli_case(incerr_tok incerr_tok.bb)
+# the directives of AB3 mode (change ab3-mode-g2, spec ab3-compat/directives)
+ab3_cli_case(opt_code opt_code.ab3 ARGS -r REF)
+ab3_cli_case(opt_expr opt_expr.ab3 REF)
+ab3_cli_case(opt_020 opt_020.ab3 REF)
+ab3_cli_case(opt_fpu opt_fpu.ab3 REF REF_EXPECT opt_fpu.ref.expect)
+ab3_cli_case(opt_short opt_short.ab3 REF)
+ab3_cli_case(opt_cnif opt_cnif.ab3 REF)
 
 # ab3_cli(NAME CONFIG CASES): the ctest
 function(ab3_cli name config cases)

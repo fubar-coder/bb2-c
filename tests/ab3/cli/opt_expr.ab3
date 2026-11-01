@@ -1,0 +1,8 @@
+; OPTIMIZE takes a constant expression: 1|4 (the 68020 bit and new
+; syntax) and a constant
+#opt = 16
+OPTIMIZE 1|4
+NPrint "one"
+OPTIMIZE #opt
+NPrint "two"
+End

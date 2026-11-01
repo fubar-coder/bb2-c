@@ -1,0 +1,8 @@
+[compile]
+rc=0
+[run]
+before
+bytes: 12
+0000203C 00000000 00004EB9
+after
+rc=0

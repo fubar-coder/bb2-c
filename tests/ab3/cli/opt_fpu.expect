@@ -1,0 +1,5 @@
+[compile]
+opt_fpu.ab3:4: Not supported: OPTIMIZE 2 (FPU)
+rc=10
+[run]
+no executable

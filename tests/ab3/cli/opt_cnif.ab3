@@ -1,0 +1,7 @@
+; OPTIMIZE inside a skipped CNIF block has no effect: the FPU bit there
+; is no error
+CNIF 1 = 0
+OPTIMIZE 7
+CEND
+NPrint "compiled"
+End
