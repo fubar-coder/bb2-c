@@ -373,7 +373,29 @@ AmiBlitz3's ten test programs of the spike (`memoryleak_test` without its
 path, includes of text in both modes, the userlib, and the errors - a
 missing BigLib, a missing resident, tokenised includes of the other mode
 (both ways), `-d`, a syntax error, errors in an include of text and in a
-tokenised one. `ab3_cli_broken`: a wrong expect file must fail.
+tokenised one. `ab3_cli_ref` compiles the AB3 cases with AmiBlitz3
+v3.14.0's own compiler (`Blitz3:Amiblitz3 -s … -e …`, CLI mode, the
+fetched binary; no further setup) and compares the programs' outputs with
+the same expect files, or with `NAME.ref.expect` where AmiBlitz3 differs
+(below). `ab3_cli_broken`/`ab3_cli_ref_broken`: a wrong expect file must
+fail.
+
+## Differences to AmiBlitz3's compiler (G2+, 2026-11-01)
+
+Found by `ab3_cli_ref` (AmiBlitz3 v3.14.0 in CLI mode on the same
+machine); recorded, not changed in G1:
+
+| Case | AmiBlitz3 v3.14.0 | blitz2-ab3 | For |
+|---|---|---|---|
+| `exec_data` | line 1 `*exec.ExecBase = execbase` refused: "Can't convert types --> execbase", no executable | compiles: TED's tokeniser takes `execbase` in any case as the library function `ExecBase` (`$DE26`); the program prints exec's version | G2: case of names when tokenising (cause in AmiBlitz3 to be checked) |
+| `exec_data` | return code 0 after a compile error ("A unknow error happend!") | 10 (design D6) | none: ours is the documented convention |
+| `inctext_bbname` | an include is tokenised by its name only (`.ab3`, `.AB3`, `.ab2`; `processInclude`, `AmiBlitz3.ab3` 20735 at `@58a11658`); `.bb`/`.bb2` are read as tokenised (a text include becomes one comment "line"), other names are refused | an include of text is tokenised by its contents (`xtra_detect`), whatever its name | G2: AB3's include rules (names, refusal) |
+| `noend` | a program without `End` with runtime error checking ends normally | an empty requester at the end: blitz2's end code (`blitz2.s:2683 eopcode`, `moveq #3,d0 : trap #0`) without `End`, BUG(orig) #6 | with #6 (the runtime part of AB3 mode) |
+
+AmiBlitz3's console output in CLI mode also names files it does not
+need for compiling (`Blitz3:System/token_mapping_libs.txt`,
+`token_mapping_userlibs.txt`, the debugger `Defaultdbug`); they are not
+fetched.
 
 ## Spike result (2026-10-31)
 

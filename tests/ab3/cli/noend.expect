@@ -1,0 +1,6 @@
+[compile]
+rc=0
+[run]
+no End
+REQUESTER: AutoRequest body "" pos "OKAY!" neg "OKAY!" -> answered FALSE
+rc=0

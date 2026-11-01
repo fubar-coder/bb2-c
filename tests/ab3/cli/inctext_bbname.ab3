@@ -1,0 +1,7 @@
+; an AB3 program with an include of text named .bb: blitz2-ab3 tokenises it
+; (by its contents); AmiBlitz3 tokenises an include only by its name
+; (.ab3, .ab2) and reads a .bb as tokenised - here one comment line
+NPrint "main"
+INCLUDE "inctext_bbname_inc.bb"
+NPrint "main again"
+End

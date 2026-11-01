@@ -1,28 +1,32 @@
 # The command line tests of blitz2-ab3 in Amiberry (tests/ab3/CMakeLists.txt):
-#   cmake -DAMIGA_RUN=... -DOUTMATCH=... -DREQTRAP=... -DCASES=FILE
-#         -DBLITZ2_DIR=DIR -DAB3=DIR -DSOURCES=FILE;... -DUSERLIB=OBJ
-#         -DWORK=DIR [-DTIMEOUT=SEC] -P cli.cmake
-# One emulator session compiles every case of CASES with
-# blitz2-ab3 -s SOURCE -e RAM:NAME ARGS (BLITZ2_DIR: blitz2-ab3, ab3cli and
-# BB2's libraries as blitz2:) and runs the program through reqtrap
-# (tests/corpus/amiga: a requester is printed and answered at once,
-# nothing waits for a click).
+#   cmake -DAMIGA_RUN=... -DOUTMATCH=... -DREQTRAP=... -DCONFIG=exe|ref
+#         -DCASES=FILE -DBLITZ2_DIR=DIR -DAB3=DIR -DSOURCES=FILE;...
+#         -DUSERLIB=OBJ -DWORK=DIR [-DTIMEOUT=SEC] -P cli.cmake
+# One emulator session compiles every case of CASES and runs the program
+# through reqtrap (tests/corpus/amiga: a requester is printed and answered
+# at once, nothing waits for a click):
+#   exe  blitz2-ab3 -s SOURCE -e RAM:NAME ARGS (BLITZ2_DIR: blitz2-ab3,
+#        ab3cli and BB2's libraries as blitz2:)
+#   ref  AmiBlitz3 v3.14.0's own compiler, Blitz3:Amiblitz3 -s SOURCE
+#        -e RAM:NAME (CLI mode)
 # TEST:src holds SOURCES and AmiBlitz3's test programs (AB3/Sourcecodes/
 # Amiblitz3/Tests; memoryleak_test.ab3 without its OPTIMIZE line, a G2
 # directive).  Blitz3: is one of three trees, built from AB3: Blitz3
 # (BlitzLibs/ with baseLibs, utilLibs, OsLibs, csLibs, Residents/all.res
-# and an empty UserLibs/), Blitz3-nolib (without csLibs), Blitz3-userlib
-# (USERLIB in UserLibs/).
-# CASES: one line per case, NAME|TREE|SOURCE|ARGS|EXPECT.  The output of a
-# case (TEST:out/NAME.txt) is
+# and an empty UserLibs/; for ref the compiler Amiblitz3), Blitz3-nolib
+# (without csLibs), Blitz3-userlib (USERLIB in UserLibs/).
+# CASES: one line per case, NAME|TREE|SOURCE|ARGS|EXPECT[|REFEXPECT].  The
+# output of a case (TEST:out/NAME.txt) is
 #   [compile]   the compiler's console output, rc=RC
 #   [run]       the program's output and rc=RC, or "no executable"
-# and is compared with EXPECT by outmatch.  Exit status 0 if every case
-# matches; 77 (skipped) without the emulator or the fetched AmiBlitz3
-# files.
+# and is compared with EXPECT by outmatch: exe the whole file, ref only
+# [run] (the console output of AmiBlitz3 is its own), against REFEXPECT if
+# given (a difference of AmiBlitz3 recorded in docs/ab3/variant.md).
+# Exit status 0 if every case matches; 77 (skipped) without the emulator
+# or the fetched AmiBlitz3 files.
 cmake_minimum_required(VERSION 3.29)
 
-foreach(v AMIGA_RUN OUTMATCH REQTRAP CASES BLITZ2_DIR AB3 WORK)
+foreach(v AMIGA_RUN OUTMATCH REQTRAP CONFIG CASES BLITZ2_DIR AB3 WORK)
 	if(NOT ${v})
 		message(FATAL_ERROR "cli.cmake: -D${v}=... missing")
 	endif()
@@ -36,6 +40,9 @@ foreach(f IN LISTS biglibs)
 	set(need ${need} ${AB3}/BlitzLibs/${f})
 endforeach()
 list(APPEND need ${AB3}/BlitzLibs/Residents/all.res ${tests_dir}/atoi.ab3)
+if(CONFIG STREQUAL "ref")
+	list(APPEND need ${AB3}/Amiblitz3)
+endif()
 foreach(f IN LISTS need)
 	if(NOT EXISTS ${f})
 		message(STATUS "cli.cmake: no ${f} - skipped (fetch-originals)")
@@ -61,6 +68,9 @@ foreach(tree Blitz3 Blitz3-nolib Blitz3-userlib)
 		endif()
 	endforeach()
 	file(COPY_FILE ${AB3}/BlitzLibs/Residents/all.res ${libs}/Residents/all.res)
+	if(CONFIG STREQUAL "ref")
+		file(COPY_FILE ${AB3}/Amiblitz3 ${test}/${tree}/Amiblitz3)
+	endif()
 endforeach()
 if(USERLIB)
 	file(COPY_FILE ${USERLIB} ${test}/Blitz3-userlib/BlitzLibs/UserLibs/ab3userlib.obj)
@@ -86,7 +96,11 @@ foreach(c IN LISTS cases)
 	list(GET c 2 source)
 	list(GET c 3 args)
 	set(out TEST:out/${name}.txt)
-	set(cmd "blitz2:blitz2-ab3 >>${out} -s ${source} -e RAM:${name} ${args}")
+	if(CONFIG STREQUAL "ref")
+		set(cmd "Blitz3:Amiblitz3 >>${out} -s ${source} -e RAM:${name}")
+	else()
+		set(cmd "blitz2:blitz2-ab3 >>${out} -s ${source} -e RAM:${name} ${args}")
+	endif()
 	string(APPEND script "Assign Blitz3: TEST:${tree}\n"
 		"Echo \"[compile]\" >${out}\n${cmd}\nEcho \"rc=$RC\" >>${out}\n"
 		"Echo \"[run]\" >>${out}\n"
@@ -109,13 +123,22 @@ foreach(c IN LISTS cases)
 	string(REPLACE "|" ";" c "${c}")
 	list(GET c 0 name)
 	list(GET c 4 expect)
+	list(LENGTH c n)
+	set(section)
+	if(CONFIG STREQUAL "ref")
+		set(section --section run)
+		if(n GREATER 5)
+			list(GET c 5 expect)
+		endif()
+	endif()
 	set(out ${test}/out/${name}.txt)
 	if(NOT EXISTS ${out})
 		message(STATUS "FAIL ${name}: no output")
 		math(EXPR failed "${failed} + 1")
 		continue()
 	endif()
-	execute_process(COMMAND ${OUTMATCH} ${expect} ${out} RESULT_VARIABLE r ERROR_VARIABLE msg)
+	execute_process(COMMAND ${OUTMATCH} ${section} ${expect} ${out}
+		RESULT_VARIABLE r ERROR_VARIABLE msg)
 	string(STRIP "${msg}" msg)
 	if(r)
 		message(STATUS "FAIL ${name}: ${msg}")
@@ -125,5 +148,5 @@ foreach(c IN LISTS cases)
 	endif()
 endforeach()
 if(failed)
-	message(FATAL_ERROR "cli.cmake: ${failed} case(s) failed (outputs in ${test}/out)")
+	message(FATAL_ERROR "cli.cmake: ${failed} case(s) failed (${CONFIG}, outputs in ${test}/out)")
 endif()

@@ -1,0 +1,11 @@
+; XTRA
+; Embedded .xtra Header
+;
+; Debugger
+; -------------------------------------------------------
+; RuntimeDebug    = 1
+; /XTRA
+; a program without End, with runtime error checking: the executable of
+; blitz2-ab3 ends with blitz2's empty requester (its end code, BUG(orig)
+; #6; answered by reqtrap), AmiBlitz3's does not (docs/ab3/variant.md)
+NPrint "no End"
