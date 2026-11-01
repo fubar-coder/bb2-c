@@ -164,6 +164,8 @@ ab3_cli_case(noend noend.ab3 REF REF_EXPECT noend.ref.expect)
 ab3_cli_case(inctext inctext.ab3 REF)
 ab3_cli_case(inctext_bbname inctext_bbname.ab3 REF REF_EXPECT inctext_bbname.ref.expect)
 ab3_cli_case(inctext_bb2 inctext_bb2.bb)
+# AB3 mode's tokeniser (ab3-mode-g2 task 1.2)
+ab3_cli_case(tokens tokens.ab3 REF)
 # AB3 mode's libraries: a userlib replacing a BigLib library, a missing
 # BigLib (task 4.2)
 ab3_cli_case(userlib userlib.ab3 TREE Blitz3-userlib REF)

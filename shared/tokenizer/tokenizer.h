@@ -196,6 +196,30 @@ size_t tokenizer_lines(const uint8_t *src, size_t len);
  */
 size_t tokenizer_ab3_mainline(const uint8_t *tok, size_t len, size_t pos, size_t *keep);
 
+/**
+ * @brief The extension of a file name as AmiBlitz3's dos_GetExt finds it
+ *        (Sourcecodes/Includes/dos.include.ab3:2353): the part behind the
+ *        last '.' among the last 10 characters, not a '.' at the start.
+ * @param name  the name
+ * @param len   its length
+ * @return the offset of the extension in name (behind the '.'); len if
+ *         there is none
+ */
+size_t tokenizer_ab3_getext(const char *name, size_t len);
+
+/**
+ * @brief Whether AmiBlitz3 tokenises a main source of this name as text
+ *        (CLIModeSupport.ab3 LoadSource: not a .bb or .bb2, in any case)
+ *        and skips its embedded header (not a .ab2 either, whose settings
+ *        are in its companion .xtra).
+ * @param name  the source's name
+ * @param len   its length
+ * @return a bit set: TOKENIZER_AB3_TEXT, TOKENIZER_AB3_HEADER
+ */
+int tokenizer_ab3_source(const char *name, size_t len);
+#define TOKENIZER_AB3_TEXT   1  /* tokenised as text */
+#define TOKENIZER_AB3_HEADER 2  /* its embedded header skipped */
+
 #ifdef __cplusplus
 }
 #endif

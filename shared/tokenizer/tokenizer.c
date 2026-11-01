@@ -350,3 +350,45 @@ size_t tokenizer_ab3_mainline(const uint8_t *tok, size_t len, size_t pos, size_t
     *keep = end - pos > TOKENIZER_AB3_COLUMNS ? TOKENIZER_AB3_COLUMNS : end - pos;
     return end < len ? end + 1 : len;
 }
+
+/* ------------------------------------------------------------ file names */
+
+size_t tokenizer_ab3_getext(const char *name, size_t len)
+{
+    size_t i = len;
+
+    while (i--) {
+        /* the character at m is read, then m - 1 = 0 or more than 10
+           characters behind it end the search without a result */
+        if (i == 0 || len - i > 10)
+            return len;
+        if (name[i] == '.')
+            return i + 1;
+    }
+    return len;
+}
+
+/* the extension equals ext (lower case) in any case */
+static int isext(const char *name, size_t len, const char *ext)
+{
+    size_t e = tokenizer_ab3_getext(name, len);
+
+    for (; e < len && *ext; e++, ext++) {
+        char c = name[e];
+
+        if (c >= 'A' && c <= 'Z')
+            c += 32;
+        if (c != *ext)
+            return 0;
+    }
+    return e == len && !*ext;
+}
+
+int tokenizer_ab3_source(const char *name, size_t len)
+{
+    if (isext(name, len, "bb") || isext(name, len, "bb2"))
+        return 0;
+    if (isext(name, len, "ab2"))
+        return TOKENIZER_AB3_TEXT;
+    return TOKENIZER_AB3_TEXT | TOKENIZER_AB3_HEADER;
+}

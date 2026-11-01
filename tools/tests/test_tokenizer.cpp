@@ -313,3 +313,31 @@ TEST_CASE("the lines of a main source", "[tokenizer]")
     CHECK(pos == tok.size());
     CHECK(keep == 3);
 }
+
+TEST_CASE("file names", "[tokenizer]")
+{
+    auto ext = [](const std::string &s) {
+        return s.substr(tokenizer_ab3_getext(s.data(), s.size()));
+    };
+    auto src = [](const std::string &s) { return tokenizer_ab3_source(s.data(), s.size()); };
+
+    CHECK(ext("TEST:src/x.ab3") == "ab3");
+    CHECK(ext("dos.include.ab3") == "ab3");
+    CHECK(ext("dos.include") == "include");
+    CHECK(ext("mylib") == "");
+    CHECK(ext(".ab3") == "");                  // a '.' at the start: none
+    CHECK(ext("x..ab3") == "ab3");
+    CHECK(ext("a.123456789") == "123456789");  // 9 characters behind the '.'
+    CHECK(ext("a.1234567890") == "");          // 10: too far back
+    CHECK(ext("dir.x/name") == "x/name");      // not stopped by a '/'
+    CHECK(ext("") == "");
+    CHECK(src("x.ab3") == (TOKENIZER_AB3_TEXT | TOKENIZER_AB3_HEADER));
+    CHECK(src("x.AB3") == (TOKENIZER_AB3_TEXT | TOKENIZER_AB3_HEADER));
+    CHECK(src("x.txt") == (TOKENIZER_AB3_TEXT | TOKENIZER_AB3_HEADER));
+    CHECK(src("x") == (TOKENIZER_AB3_TEXT | TOKENIZER_AB3_HEADER));
+    CHECK(src("x.ab2") == TOKENIZER_AB3_TEXT);
+    CHECK(src("x.Ab2") == TOKENIZER_AB3_TEXT);
+    CHECK(src("x.bb2") == 0);
+    CHECK(src("x.BB") == 0);
+    CHECK(src("x.bb22") == (TOKENIZER_AB3_TEXT | TOKENIZER_AB3_HEADER));
+}

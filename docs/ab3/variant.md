@@ -332,7 +332,8 @@ it loads anything; then it runs as for the editor, but loads
 `PROGDIR:ab3cli` instead of `blitz2:ted` and hands it the job instead
 of a file name. `ab3cli` is a headless editor on the edstub frame with
 TED's core: it loads the source as TED does (a text source tokenised
-with the token list of the program's mode), hands the compiler the
+with the token list of the program's mode; in AB3 mode, since G2, with
+AmiBlitz3's tokeniser, below), hands the compiler the
 options (AmiBlitz3's embedded header as a Blitz 2 `.xtra` image, else
 the companion `.xtra`, else the compiler's own; `-r` switches runtime
 error checking, the debugger and debug information off), compiles with
@@ -340,8 +341,8 @@ CREATE EXECUTABLE and prints errors as `FILE:LINE: MESSAGE`.
 
 Includes: blitz2 only reads tokenised includes (`readinc`, design D4 of
 the change). In a command line run an include of text is therefore
-tokenised by `ab3cli` first – TED's way of loading a source, with the
-program's token list – and `readinc` reads those lines; an editor
+tokenised by `ab3cli` first – the mode's way of loading a source, with
+the program's token list – and `readinc` reads those lines; an editor
 session reads includes exactly as `blitz2`. A tokenised include of the
 other mode is refused ("Include of another mode: NAME"). A compile error
 inside an include is printed with the include's name and line
@@ -360,11 +361,13 @@ Limits of G1, found on the way:
 * A text line longer than TED's 128 characters is split as TED splits
   it; names that contain a command name are tokenised inside (`show2{`
   becomes `Show` + `2{`), as in TED and AmiBlitz3's tokenised sources.
+  (BB2 mode only since G2: in AB3 mode the text is tokenised by
+  AmiBlitz3's rules, below.)
 * `PROGDIR:` needs Kickstart 2.0; the editor session runs on 1.3 as
   `blitz2`. The `.xtra` image goes to the compiler through a temporary
   file in `T:` (else `RAM:`).
 * The line of an error in an include of text counts the lines as TED
-  loads them: after a line TED splits (longer than 128 characters) the
+  loads them (BB2 mode): after a line TED splits (longer than 128 characters) the
   number is one too high. Of more than 16 nested includes, an error in a
   deeper one is placed at the 16th.
 
@@ -440,6 +443,40 @@ earlier second build: the link of both programs checks it
 (CLAUDE.md, rule of 2026-11-01): the executables it writes for the
 corpus, the bug-orig tests and the CD's sources stay byte-identical.
 
+## AB3 mode's tokeniser (G2, 2026-11-01)
+
+In AB3 mode `ab3cli` tokenises a text main source and the includes of
+text with `shared/tokenizer` (change `ab3-mode-g2`, design D2/D3), which
+follows AmiBlitz3 v3.14.0's `preproc_Tokenize`
+(`Shared/preprocessor.include.ab3:358` at `@58a11658`), with the token
+list blitz2-ab3 hands its editor (its own tokens, then the libraries'; a
+name given twice keeps its first token):
+
+* names match byte for byte: `execbase`, `nprint`, `if` stay names;
+* only a whole word that starts with a letter is looked up, and only if
+  it starts at the line start or after a space, an operator, a bracket,
+  `:`, `,`, `;`, `"` or a control character - never directly after `.`,
+  `\`, `#`, `$`, `'`, `@`, `_`, a digit or a letter (`show2{`, `sub1`,
+  `\Width`, `#MAX`, `.ExecBase` stay as they are);
+* at a `$` `name$` is looked up first, then `name`; a word is looked up
+  when a character that is not a letter, digit, `_` (or a `$`/`#` that
+  belongs to no token) ends it - a word at the very end of the file
+  (no line end behind it) is not looked up, as in AmiBlitz3;
+* strings and comments are copied unchanged, except a TAB (a space);
+  outside them a TAB becomes a space, CR, DEL and the other control
+  characters are dropped, a byte from 128 becomes `?`; LF and a 0 byte
+  end a line;
+* the main source: its embedded header (to the line that reads `/XTRA`,
+  AmiBlitz3's `ParseAB3Header`; not for `.ab2`) is skipped - here as
+  empty lines, so that the line numbers of errors stay the file's - and
+  a line longer than 250 characters is cut there (`LoadSource`);
+* an include of text: its header (AmiBlitz3's `SkipXtraHeader`: leading
+  lines with a `;` up to a `/XTRA`, `/xtra` or `/Xtra`) skipped, as empty
+  lines; no line cut.
+
+A tokenised source and BB2 mode keep TED's way of loading (TED's own
+tokeniser stays for TED, a later change).
+
 ## Differences to AmiBlitz3's compiler (G2+, 2026-11-01)
 
 Found by `ab3_cli_ref` (AmiBlitz3 v3.14.0 in CLI mode on the same
@@ -447,7 +484,7 @@ machine); recorded, not changed in G1:
 
 | Case | AmiBlitz3 v3.14.0 | blitz2-ab3 | For |
 |---|---|---|---|
-| `exec_data` | line 1 `*exec.ExecBase = execbase` refused: "Can't convert types --> execbase", no executable | compiles: TED's tokeniser takes `execbase` in any case as the library function `ExecBase` (`$DE26`); the program prints exec's version | G2: case of names when tokenising (cause in AmiBlitz3 to be checked) |
+| `exec_data` | line 1 `*exec.ExecBase = execbase` refused: "Can't convert types --> execbase", no executable | compiles: since G2 `execbase` stays a variable as in AmiBlitz3 (case-sensitive tokeniser), a quick 0 assigned to the pointer; the program prints what is at address 0 (before G2: TED's tokeniser took `execbase` as `ExecBase`, `$DE26`). The error is AmiBlitz3's assignment rule, not its tokeniser: a pointer on the left takes only a pointer or a long (`AmiBlitz3.ab3` 23540-23570 at `@58a11658`, independent of `SYNTAX`) | open: the rule is not in the G2 specs |
 | `exec_data` | return code 0 after a compile error ("A unknow error happend!") | 10 (design D6) | none: ours is the documented convention |
 | `inctext_bbname` | an include is tokenised by its name only (`.ab3`, `.AB3`, `.ab2`; `processInclude`, `AmiBlitz3.ab3` 20735 at `@58a11658`); `.bb`/`.bb2` are read as tokenised (a text include becomes one comment "line"), other names are refused | an include of text is tokenised by its contents (`xtra_detect`), whatever its name | G2: AB3's include rules (names, refusal) |
 | `noend` | a program without `End` with runtime error checking ends normally | an empty requester at the end: blitz2's end code (`blitz2.s:2683 eopcode`, `moveq #3,d0 : trap #0`) without `End`, BUG(orig) #6 | with #6 (the runtime part of AB3 mode) |

@@ -5,17 +5,21 @@
  * blitz2-ab3 -s SOURCE -e EXE loads PROGDIR:ab3cli instead of blitz2:ted
  * (edstub frame, shared/edstub) and calls its main entry with a0 = the job
  * (shared/ab3job/ab3job.h).  ab3cli
- *   - loads SOURCE with TED's core as TED does (fileopen2: a text source
- *     is tokenised with the token list blitz2 handed over - the one of the
- *     program's mode, a tokenised source is taken as it is),
+ *   - loads SOURCE: in AB3 mode a text source as AmiBlitz3 loads it
+ *     (shared/tokenizer: AmiBlitz3's tokeniser with the token list blitz2
+ *     handed over, its embedded header as empty lines, lines cut at 250
+ *     characters; change ab3-mode-g2, design D3), else with TED's core as
+ *     TED does (fileopen2: a text source is tokenised with the token list
+ *     of the program's mode, a tokenised source is taken as it is),
  *   - hands the compiler the options of the source (loadxtra): from
  *     AmiBlitz3's embedded header (shared/xtra, written as a Blitz 2
  *     .xtra image), else from the companion SOURCE.xtra, else the
  *     compiler's own; with -r without runtime error checking, debugger and
  *     debug information,
  *   - compiles with CREATE EXECUTABLE into EXE; an include of text is
- *     handed to us by blitz2-ab3 (job tokfile) and tokenised as TED loads
- *     a source, with the program's token list,
+ *     handed to us by blitz2-ab3 (job tokfile) and tokenised as the main
+ *     source of the mode, with the program's token list (AB3 mode: as
+ *     AmiBlitz3 tokenises an include, without the line cut),
  *   - prints what went wrong on the console - a compile error as
  *     "FILE:LINE: MESSAGE", inside an include with the include's name and
  *     line (blitz2-ab3 places it in the job) - and leaves the return code
@@ -41,6 +45,7 @@
 #include "loadsave.h"
 #include "state.h"
 #include "tokit.h"
+#include "tokenizer.h"
 
 extern struct DosLibrary *DOSBase;
 
@@ -378,6 +383,163 @@ out:
 }
 
 /* ---------------------------------------------------------------------
+ * AB3 mode: AmiBlitz3's tokeniser (shared/tokenizer, change ab3-mode-g2
+ * design D3) for the main source and the includes of text
+ * ------------------------------------------------------------------- */
+#define NBUCKET 4096                    /* hash buckets of the token list */
+
+static struct tokenizer tz;
+static struct tokenizer_entry *tzentry;
+static uint16_t *tzbucket;
+static ULONG tzcap;
+
+static void ab3_freetokenizer(void)
+{
+    if (tzentry)
+        FreeMem(tzentry, tzcap * sizeof *tzentry);
+    if (tzbucket)
+        FreeMem(tzbucket, NBUCKET * sizeof *tzbucket);
+    tzentry = 0;
+    tzbucket = 0;
+}
+
+/* the token list blitz2 handed over (its own tokens, then the libraries':
+   the order of AmiBlitz3's preproc_QueryTokens), once; 0 if out of memory
+   (reported) */
+static int ab3_tokenizer(void)
+{
+    const struct tokennode *t;
+    ULONG n = 0;
+
+    if (tzentry)
+        return 1;
+    for (t = tokens; t; t = t->next)
+        n++;
+    tzcap = n ? n : 1;
+    tzentry = AllocMem(tzcap * sizeof *tzentry, MEMF_PUBLIC);
+    tzbucket = AllocMem(NBUCKET * sizeof *tzbucket, MEMF_PUBLIC);
+    if (!tzentry || !tzbucket
+        || tokenizer_init(&tz, TOKENIZER_RULES_AB3, tzentry, tzcap, tzbucket, NBUCKET)) {
+        ab3_freetokenizer();
+        report("out of memory");
+        return 0;
+    }
+    for (t = tokens; t; t = t->next)
+        tokenizer_add(&tz, (const uint8_t *)t->name, edstub_strlen(t->name),
+                      (uint16_t)(t->num | 0x8000));  /* as tokit writes it */
+    return 1;
+}
+
+/* the text src[0..len) tokenised behind nh empty lines (the embedded
+   header AmiBlitz3 skips: the lines keep their numbers), in AllocMem(*out
+   + 1) memory; NULL if out of memory (reported) */
+static UBYTE *ab3_tokenise(const UBYTE *src, ULONG len, ULONG nh, ULONG *out)
+{
+    ULONG cap = TOKENIZER_BOUND(len);
+    UBYTE *tmp = AllocMem(cap, MEMF_PUBLIC), *mem = 0;
+    size_t n = 0;
+    ULONG i;
+
+    if (tmp && tokenizer_text(&tz, src, len, tmp, cap, &n) == TOKENIZER_OK
+        && (mem = AllocMem(nh + n + 1, MEMF_PUBLIC))) {
+        for (i = 0; i < nh; i++)
+            mem[i] = 0;
+        memcpy(mem + nh, tmp, n);
+        mem[nh + n] = 0;
+        *out = nh + n;
+    } else
+        report("out of memory");
+    if (tmp)
+        FreeMem(tmp, cap);
+    return mem;
+}
+
+/* the main source as lines of the editor: one block of items */
+static UBYTE *srcblock;
+static ULONG srcblocklen;
+
+#define ITEMSIZE(k) (((ULONG)lenitem + (k) + 1 + 1) & ~1UL) /* even: next.l */
+
+/* a text source in AB3 mode as AmiBlitz3's LoadSource loads it
+   (CLIModeSupport.ab3:437): its embedded header skipped (as empty lines,
+   not for .ab2), the rest tokenised, the lines cut at 250 characters.
+   1 = loaded (firstitem, numlines), 0 = error (reported) */
+static int ab3_loadsource(const UBYTE *src, ULONG slen)
+{
+    int how = tokenizer_ab3_source(job->source, edstub_strlen(job->source));
+    ULONG hdr = (how & TOKENIZER_AB3_HEADER) ? tokenizer_ab3_header(src, slen) : 0;
+    ULONG nh = tokenizer_lines(src, hdr), tlen, n = 0, size = 0, pos;
+    struct item *prev = 0, *it;
+    UBYTE *tok, *p;
+    size_t keep;
+
+    if (!ab3_tokenizer() || !(tok = ab3_tokenise(src + hdr, slen - hdr, nh, &tlen)))
+        return 0;
+    for (pos = 0; pos < tlen; n++) {
+        pos = tokenizer_ab3_mainline(tok, tlen, pos, &keep);
+        size += ITEMSIZE(keep);
+    }
+    if (!n) {                           /* the editor has a line at least */
+        n = 1;
+        size = ITEMSIZE(0);
+    }
+    if (n > 65535) {
+        report("too many lines");
+        FreeMem(tok, tlen + 1);
+        return 0;
+    }
+    if (!(srcblock = AllocMem(size, MEMF_PUBLIC | MEMF_CLEAR))) {
+        report("out of memory");
+        FreeMem(tok, tlen + 1);
+        return 0;
+    }
+    srcblocklen = size;
+    freeall();                          /* donew's line */
+    firstitem = (struct item *)srcblock;
+    p = srcblock;
+    for (pos = 0; pos < tlen || p == srcblock; ) {
+        ULONG start = pos;
+
+        if (pos < tlen)
+            pos = tokenizer_ab3_mainline(tok, tlen, pos, &keep);
+        else
+            keep = 0;
+        it = (struct item *)p;
+        it->lastitem = prev;
+        if (prev)
+            prev->nextitem = it;
+        it->numchars = (UBYTE)(keep + 1);
+        memcpy(it->chars, tok + start, keep);
+        it->chars[keep] = 0;
+        prev = it;
+        p += ITEMSIZE(keep);
+    }
+    numlines = (UWORD)n;
+    FreeMem(tok, tlen + 1);
+    return 1;
+}
+
+/* an include of text in AB3 mode as AmiBlitz3's read_includeline
+   tokenises it (AmiBlitz3.ab3:19412): its embedded header skipped (as
+   empty lines), no line cut */
+static UBYTE *ab3_tokenise_file(const char *name, ULONG *len)
+{
+    LONG flen;
+    UBYTE *src = readfile(name, &flen), *mem = 0;
+    ULONG hdr;
+
+    if (!src) {
+        report(flen ? "cannot read the include" : "cannot open the include");
+        return 0;
+    }
+    hdr = tokenizer_ab3_incheader(src, (ULONG)flen);
+    if (ab3_tokenizer())
+        mem = ab3_tokenise(src + hdr, (ULONG)flen - hdr, tokenizer_lines(src, hdr), len);
+    freefile(src, flen);
+    return mem;
+}
+
+/* ---------------------------------------------------------------------
  * text includes (task 3.5): blitz2-ab3 reads an include raw and takes its
  * 0-terminated pieces as tokenised lines (readinc); a text include is
  * therefore handed to us first and comes back as the editor would load
@@ -429,7 +591,8 @@ void ab3cli_tokfile_c(struct regs *r)
 
     curfile = name;
     loaderr = 0;
-    r->d[0] = (ULONG)tokenise_file(name, &len);
+    r->d[0] = (ULONG)(job->mode == XTRA_MODE_AB3 ? ab3_tokenise_file(name, &len)
+                                                 : tokenise_file(name, &len));
     r->d[1] = len;
     curfile = job->source;
 }
@@ -459,6 +622,32 @@ LOAD_A4
 /* ---------------------------------------------------------------------
  * the job
  * ------------------------------------------------------------------- */
+/* the source as the editor's lines: in AB3 mode a text source as
+   AmiBlitz3 loads it, else (and a tokenised source) as TED loads it.
+   1 = loaded, 0 = error (reported) */
+static int load_source(void)
+{
+    UBYTE *src;
+    LONG slen;
+    int type, ok;
+
+    if (job->mode == XTRA_MODE_AB3) {
+        if (!(src = readfile(job->source, &slen))) {
+            report(slen ? "cannot read the source" : "cannot open the source");
+            return 0;
+        }
+        type = xtra_detect(src, (size_t)slen, job->source);
+        if (type == XTRA_T_AB3 || type == XTRA_T_TEXT) {
+            ok = ab3_loadsource(src, (ULONG)slen);
+            freefile(src, slen);
+            return ok;
+        }
+        freefile(src, slen);
+    }
+    fileopen2((UBYTE *)job->source);
+    return !loaderr;
+}
+
 #define BUFFLEN (doslen + 3 * 128 + 6)  /* ted.s outside: dosbuff + charbuff1..3 */
 
 static int run(void)
@@ -489,8 +678,7 @@ static int run(void)
     tokenise = tokens ? 1 : 0;          /* getstuff */
     donew();                            /* the empty source of TED's start */
 
-    fileopen2((UBYTE *)job->source);
-    if (loaderr)
+    if (!load_source())
         goto out;
     if (!load_options() || setuperr)
         goto out;
@@ -522,7 +710,12 @@ static int run(void)
         report("no executable written");
 out:
     job->tokfile = 0;                   /* the buffers go now */
-    freeall();
+    if (srcblock) {                     /* AB3 mode's lines */
+        FreeMem(srcblock, srcblocklen);
+        srcblock = 0;
+    } else
+        freeall();
+    ab3_freetokenizer();
     firstitem = 0;
     numlines = 0;
     FreeMem(buffers, BUFFLEN);

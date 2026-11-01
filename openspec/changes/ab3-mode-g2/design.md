@@ -124,3 +124,27 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
 - Whether AmiBlitz3's `-save` writes the tokenised form usable for the
   token comparison (decided during the tokenizer task; the spec allows
   "an equivalent dump").
+
+## Findings during implementation
+
+- (Task 1.2, 2026-11-01) `exec_data`: with AmiBlitz3's tokeniser
+  `execbase` stays a variable, as in AmiBlitz3, but the program still
+  compiles (a quick 0 assigned to the pointer `*exec`). AmiBlitz3's
+  "Can't convert types --> execbase" is not its tokeniser but its
+  assignment rule: with a pointer on the left the right side must be a
+  pointer or a long (`AmiBlitz3.ab3` 23540-23570 at `58a11658`, after
+  `eval` in the assignment; independent of `SYNTAX`/`syntax_typecheck`).
+  That rule is in none of the G2 specs; the scenario "Lower-case library
+  name" of `ab3-compat/tokenizer` ("the compile gives the same result as
+  AmiBlitz3") and the verification of task 1.2 need it. Open: a spec
+  decision (a syntax rule of its own, or the scenario limited to the
+  tokens).
+- (Task 1.2) The embedded header of a main source and of an include is
+  skipped as AmiBlitz3 does, but as empty lines: the line numbers of
+  errors stay those of the file. AmiBlitz3's `ParseAB3Header` (main
+  source) and `SkipXtraHeader` (include) find the end differently; both
+  are kept (`shared/tokenizer`).
+- (Task 1.2) The 250-character cut of `LoadSource` re-reads a long line
+  with `PeekT(…, 10)`; after tokenising there is no LF left, so here the
+  line is taken to its 0 and cut (guess, checked by the token comparison
+  of task 1.3).

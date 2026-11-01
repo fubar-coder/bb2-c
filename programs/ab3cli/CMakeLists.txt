@@ -2,8 +2,8 @@
 # (src/main.c): blitz2-ab3 -s SOURCE -e EXE loads it as PROGDIR:ab3cli
 # instead of blitz2:ted.  An editor-world program: the edstub frame
 # (shared/edstub), TED's core (tedcore: loading and tokenising a source
-# as TED does) and shared/xtra, all compiled with TED's options - not
-# linked into blitz2.  Next to blitz2-ab3 in build/<preset>/blitz2/.
+# as TED does), shared/xtra and shared/tokenizer (AB3 mode's text), all
+# compiled with TED's options - not linked into blitz2.  Next to blitz2-ab3 in build/<preset>/blitz2/.
 
 # the frame and shared/xtra compiled here with TED's options (like
 # shared/filereq for TED): with TED's -fbaserel the frame's entries load
@@ -13,10 +13,11 @@ add_library(ab3cli_frame OBJECT ${EDSTUB_DIR}/start.c ${EDSTUB_DIR}/edstub.c)
 target_compile_options(ab3cli_frame PRIVATE ${EDSTUB_COMPILE_OPTIONS})
 target_compile_definitions(ab3cli_frame PRIVATE EDSTUB_INIT=1)
 
+set(tokenizer_dir ${PROJECT_SOURCE_DIR}/shared/tokenizer)
 add_executable(ab3cli $<TARGET_OBJECTS:ab3cli_frame> src/main.c src/hooks.c
-	${xtra_dir}/xtra.c ${xtra_dir}/xtra_ab3.c)
+	${xtra_dir}/xtra.c ${xtra_dir}/xtra_ab3.c ${tokenizer_dir}/tokenizer.c)
 target_include_directories(ab3cli PRIVATE src ${EDSTUB_DIR} ${xtra_dir}
-	${PROJECT_SOURCE_DIR}/shared/ab3job)
+	${PROJECT_SOURCE_DIR}/shared/ab3job ${tokenizer_dir})
 target_compile_definitions(ab3cli PRIVATE EDSTUB_INIT=1)
 target_compile_options(ab3cli PRIVATE -fomit-frame-pointer -fno-strict-aliasing -ffreestanding
 	-fno-builtin -Wall -Wno-pointer-sign -Wno-parentheses)
