@@ -13,3 +13,7 @@ cmake-build-*/
 /archive/cd
 /archive/aminet
 /archive/amiblitz3
+
+# Claude Code: agent definitions are in git, the rest is local
+/.claude/worktrees/
+/.claude/settings.local.json
