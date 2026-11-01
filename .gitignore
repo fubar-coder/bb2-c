@@ -9,7 +9,7 @@ cmake-build-*/
 !/amiga-emulation/.gitkeep
 !/amiga-emulation/README.md
 # downloaded originals (cmake/fetch-originals.cmake), see archive/README.md
-/.cache/
+/.cache
 /archive/cd
 /archive/aminet
 /archive/amiblitz3
