@@ -1,12 +1,17 @@
 /*
  * ab3inc.c - the includes of blitz2-ab3 (extension points of ext.h; spec
- * ab3-compat/command-line, docs/ab3/variant.md "The command line (G1)").
+ * ab3-compat/command-line and source-mode, docs/ab3/variant.md "The
+ * command line (G1)" and "Includes of AB3 mode (G2)").
  *
  * In both modes a tokenised include of the other mode is refused.  In a
  * command line run the lines readinc takes of every open include are
  * counted (the place of an error), and an include of text is tokenised by
  * ab3cli first (readinc takes only tokenised lines); an editor session
- * reads includes as blitz2 does.
+ * reads includes as blitz2 does.  In AB3 mode (change ab3-mode-g2, design
+ * D4) the name of an include is found and judged as AmiBlitz3 does it:
+ * searched in its four places with its extension fallback, of text or
+ * tokenised by its name, other names refused, an XINCLUDE skipped by its
+ * file part.
  */
 #include <string.h>
 #include <exec/memory.h>
@@ -14,6 +19,7 @@
 #include <proto/dos.h>
 #include "blitz2.h"
 #include "ab3.h"
+#include "tokenizer.h"
 
 /* a tokenised include (TED's or BB22) has the mode of its own (xtra_mode:
    by its companion .xtra, as a main source); if that is not the program's,
@@ -105,17 +111,146 @@ static void textinc(struct include *inc, const char *name)
 }
 
 /* up to 16 nested includes are counted; the errors of a deeper one are
-   placed at the next outer one */
+   placed at the next outer one.  Of text or tokenised: in AB3 mode by the
+   name (ext_incname), else by the contents. */
 void ext_incopen(struct include *inc)
 {
-    int i;
+    int i, text;
 
     if (ab3job && (i = incslot(NULL)) < MAXINC) {
         memset(&incs[i], 0, sizeof incs[i]);
         incs[i].inc = inc;
     }
-    if (checkincmode(inc->fh, inc->buf) && ab3job && ab3job->tokfile)
+    if (progmode == XTRA_MODE_AB3) {
+        text = tokenizer_ab3_inctype((const char *)namebuff, strlen((const char *)namebuff))
+               == TOKENIZER_AB3_TEXT;
+        if (!text)
+            checkincmode(inc->fh, inc->buf);    /* read as it is */
+    } else
+        text = checkincmode(inc->fh, inc->buf);
+    if (text && ab3job && ab3job->tokfile)
         textinc(inc, (const char *)namebuff);
+}
+
+/* ------------------------------------------ AmiBlitz3's include names */
+
+/* AmiBlitz3's includes directory: config\path_includes, the tooltype
+   INCLUDEDIR, by default Blitz3: + Sourcecodes/Includes (AmiBlitz3.ab3:351
+   at 58a11658) */
+#define AB3_INCLUDES "Blitz3:Sourcecodes/Includes"
+/* the longest name an include node holds (structs.h include: UBYTE len =
+   19 + name + 0) */
+#define MAXNAME 235
+
+static char incpath[300], inctry[300], incname[sizeof namebuff];
+
+/* ab3_GetIncludeLock (AmiBlitz3.ab3:25796): the name, then the names of
+   its extension fallback; the lock of the first that is there, 0 if none */
+static BPTR inclock(const char *name)
+{
+    BPTR l = 0;
+    int k;
+
+    for (k = 0; k < TOKENIZER_AB3_INCNAMES && !l; k++)
+        if (tokenizer_ab3_incname(name, strlen(name), k, inctry, sizeof inctry))
+            l = Lock((CONST_STRPTR)inctry, ACCESS_READ);
+    return l;
+}
+
+/* dir + name as AddPart joins them, then inclock; 0 if it does not fit */
+static BPTR inclockin(const char *dir, const char *name)
+{
+    strncpy(incpath, dir, sizeof incpath - 1);
+    incpath[sizeof incpath - 1] = 0;
+    return AddPart((STRPTR)incpath, (CONST_STRPTR)name, sizeof incpath) ? inclock(incpath) : 0;
+}
+
+/* check_incdir (AmiBlitz3.ab3:25836): the include name in namebuff
+   (INCDIR + the name, makeiname) searched in the includes directory, the
+   main source's directory, the directory of the innermost open include and
+   the includes directory with the name's file part; the found file's full
+   name (NameFromLock) replaces it.  Returns its length (len if not found:
+   Open fails later). */
+static UWORD resolve(UWORD len)
+{
+    BPTR l, src;
+
+    strcpy(incname, (const char *)namebuff);
+    l = inclockin(AB3_INCLUDES, incname);
+    if (!l && (src = Lock((CONST_STRPTR)ab3job->source, ACCESS_READ))) {
+        if (NameFromLock(src, (STRPTR)incpath, sizeof incpath)) {
+            *PathPart((CONST_STRPTR)incpath) = 0;
+            l = inclockin(incpath, incname);
+        }
+        UnLock(src);
+    }
+    if (!l && firstinc) {               /* the innermost one is the first */
+        strncpy(incpath, firstinc->name, sizeof incpath - 1);
+        incpath[sizeof incpath - 1] = 0;
+        *PathPart((CONST_STRPTR)incpath) = 0;
+        l = inclockin(incpath, incname);
+    }
+    if (!l)
+        l = inclockin(AB3_INCLUDES, (const char *)FilePart((CONST_STRPTR)incname));
+    if (l) {
+        if (NameFromLock(l, (STRPTR)incpath, sizeof incpath) && strlen(incpath) <= MAXNAME) {
+            strcpy((char *)namebuff, incpath);
+            len = (UWORD)strlen(incpath);
+        }
+        UnLock(l);
+    }
+    return len;
+}
+
+/* processInclude (AmiBlitz3.ab3:20754): only names ending in ab3, AB3,
+   ab2 (text) or bb2, .bb (tokenised) are included */
+static void inctype(UWORD len)
+{
+    if (tokenizer_ab3_inctype((const char *)namebuff, len) == TOKENIZER_AB3_REFUSED)
+        err("You can only include tokenized files (.bb2 |.bb)");
+}
+
+/* INCLUDE: found and judged as AmiBlitz3 does it.  The type is judged
+   before blitz2's "Already Included" (AmiBlitz3: after it) - only a
+   recursive include of a refused name sees the difference. */
+UWORD ext_incname(UWORD len)
+{
+    if (progmode != XTRA_MODE_AB3)
+        return len;
+    len = resolve(len);
+    inctype(len);
+    return len;
+}
+
+/* do_xinclude (AmiBlitz3.ab3:20615): the found name's file part decides
+   whether it was included already; the file is included by its full name */
+BOOL ext_xinclude(UWORD len)
+{
+    struct node *last;
+    char *fp;
+    UWORD fplen;
+
+    if (progmode != XTRA_MODE_AB3)
+        return FALSE;
+    len = resolve(len);
+    strcpy(incname, (const char *)namebuff);
+    for (fp = incname + len; fp > incname && fp[-1] != ':' && fp[-1] != '/'; fp--)
+        ;
+    fplen = (UWORD)strlen(fp);
+    strcpy((char *)namebuff, fp);
+    if (findxinc(fplen, &last)) {
+        strcpy((char *)namebuff, incname);
+        return TRUE;                    /* skipped */
+    }
+    addhere(last, NAMEOFF_XINC, fplen);
+    strcpy((char *)namebuff, incname);
+    inctype(len);
+    doinc2(len);
+}
+
+UWORD ab3_incdepth(void)
+{
+    return (UWORD)numincs;
 }
 
 /* the tokenised lines of a text include, else the file (not handled) */

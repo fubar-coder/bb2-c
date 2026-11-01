@@ -82,6 +82,22 @@ void ext_compilestart(void);
 
 /* ========================================================= includes */
 
+/**
+ * @brief doinclude (tokens1.c): the name of an INCLUDE is in namebuff
+ *        (makeiname, len bytes); may replace it by the file to include and
+ *        stop the compile with err().
+ * @return the length of the name in namebuff now (len if unchanged)
+ */
+UWORD ext_incname(UWORD len);
+
+/**
+ * @brief doxinclude (tokens1.c): an XINCLUDE of the name in namebuff
+ *        (makeiname, len bytes).
+ * @return TRUE if handled: skipped, or included (then it does not return:
+ *         doinc2); FALSE: blitz2's way (the whole name)
+ */
+BOOL ext_xinclude(UWORD len);
+
 /** @brief doinc2 (tokens1.c) opened the include inc (its name in
  *         namebuff); may stop the compile with err(). */
 void ext_incopen(struct include *inc);

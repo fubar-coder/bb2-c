@@ -220,6 +220,38 @@ int tokenizer_ab3_source(const char *name, size_t len);
 #define TOKENIZER_AB3_TEXT   1  /* tokenised as text */
 #define TOKENIZER_AB3_HEADER 2  /* its embedded header skipped */
 
+/** @brief The names AmiBlitz3 tries for an include at one place
+    (ab3_GetIncludeLock, AmiBlitz3.ab3:25796): the name, then its
+    extension replaced by .ab3, .ab2, .bb2, then these behind the old
+    extension (dos_SetExt/dos_RemExt of dos.include.ab3). */
+#define TOKENIZER_AB3_INCNAMES 7
+
+/**
+ * @brief One of the names AmiBlitz3 tries for an include.
+ * @param name  the name at that place (path + include name)
+ * @param len   its length
+ * @param k     which one: 0..TOKENIZER_AB3_INCNAMES-1
+ * @param out   the name, with a 0
+ * @param cap   the size of out
+ * @return its length; 0 if k is out of range or it does not fit
+ */
+size_t tokenizer_ab3_incname(const char *name, size_t len, int k, char *out, size_t cap);
+
+/**
+ * @brief How AmiBlitz3 includes a file of this (full) name
+ *        (processInclude, AmiBlitz3.ab3:20754): by its last three
+ *        characters, case-sensitively.
+ * @param name  the name
+ * @param len   its length
+ * @return TOKENIZER_AB3_TEXT ("ab3", "AB3", "ab2": tokenised as text),
+ *         TOKENIZER_AB3_TOKENISED ("bb2", ".bb": read as it is) or
+ *         TOKENIZER_AB3_REFUSED (any other: "You can only include
+ *         tokenized files")
+ */
+int tokenizer_ab3_inctype(const char *name, size_t len);
+#define TOKENIZER_AB3_TOKENISED 2
+#define TOKENIZER_AB3_REFUSED   0
+
 #ifdef __cplusplus
 }
 #endif

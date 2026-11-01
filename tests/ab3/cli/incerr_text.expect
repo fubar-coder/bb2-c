@@ -1,5 +1,5 @@
 [compile]
-incerr_text_inc.bb:3: Syntax Error
+TEST:src/incerr_text_inc.ab3:3: Syntax Error
 rc=10
 [run]
 no executable

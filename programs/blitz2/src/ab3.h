@@ -29,4 +29,9 @@ void ab3_setmode(int mode);
  *         where there is no compile to stop yet; compile reports it. */
 extern const char *ab3liberr;
 
+/** @brief The include depth: the includes open now (0 in the main
+ *         source, 1 inside an include, more in nested ones), for
+ *         AmiBlitz3's constant #__include (ab3inc.c). */
+UWORD ab3_incdepth(void);
+
 #endif

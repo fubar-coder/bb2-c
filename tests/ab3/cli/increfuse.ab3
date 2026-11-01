@@ -1,0 +1,7 @@
+; AB3 mode: an include whose name does not end in ab3, AB3, ab2, bb2 or
+; .bb is refused, also if no file of the name is there (spec
+; ab3-compat/source-mode, "Other extension refused")
+NPrint "main"
+INCLUDE "defs.h"
+NPrint "main again"
+End

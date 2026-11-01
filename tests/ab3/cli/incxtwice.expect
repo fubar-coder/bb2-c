@@ -1,6 +1,6 @@
 [compile]
 rc=0
 [run]
+lib
 main
-main again
 rc=0

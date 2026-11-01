@@ -1,0 +1,7 @@
+; AB3 mode: the same file with XINCLUDE twice - the second time by its
+; name without extension - is compiled once: its file part decides (spec
+; ab3-compat/source-mode, "Repeated XINCLUDE")
+XINCLUDE "incx_lib.ab3"
+XINCLUDE "incx_lib"
+NPrint "main"
+End

@@ -368,6 +368,77 @@ size_t tokenizer_ab3_getext(const char *name, size_t len)
     return len;
 }
 
+/* dos_RemExt: the name without the extension behind the last '.' among
+   the last 8 characters (not a '.' at the start); the length kept */
+static size_t remext(const char *name, size_t len)
+{
+    size_t i = len;
+
+    while (i--) {
+        if (i == 0 || len - i > 8)
+            return len;
+        if (name[i] == '.')
+            return i;
+    }
+    return len;
+}
+
+/* dos_SetExt into out[cap] (out may be name): name without its extension,
+   '.', ext; the length, 0 if it does not fit */
+static size_t setext(const char *name, size_t len, const char *e1, size_t n1, const char *e2,
+                     char *out, size_t cap)
+{
+    size_t keep = remext(name, len), n2 = 0, i;
+
+    while (e2 && e2[n2])
+        n2++;
+    if (keep + 1 + n1 + n2 + 1 > cap)
+        return 0;
+    for (i = 0; i < keep; i++)
+        out[i] = name[i];
+    out[i++] = '.';
+    while (n1--)
+        out[i++] = *e1++;
+    while (e2 && *e2)
+        out[i++] = *e2++;
+    out[i] = 0;
+    return i;
+}
+
+size_t tokenizer_ab3_incname(const char *name, size_t len, int k, char *out, size_t cap)
+{
+    static const char *const ext[] = { "ab3", "ab2", "bb2" };
+    size_t e = tokenizer_ab3_getext(name, len), n = len, i;
+    int j;
+
+    if (k < 0 || k >= TOKENIZER_AB3_INCNAMES || len + 1 > cap)
+        return 0;
+    for (i = 0; i < len; i++)           /* the name as given */
+        out[i] = name[i];
+    out[len] = 0;
+    /* each try replaces the extension of the one before (filename =
+       dos_SetExt{filename, ...}); the 4th puts the old extension back in
+       front of .ab3 */
+    for (j = 1; j <= k && n; j++)
+        n = j == 4 ? setext(out, n, name + e, len - e, ".ab3", out, cap)
+                   : setext(out, n, ext[j < 4 ? j - 1 : j - 4], 3, 0, out, cap);
+    return n;
+}
+
+int tokenizer_ab3_inctype(const char *name, size_t len)
+{
+    const char *t = name + len - 3;
+
+    if (len < 3)
+        return TOKENIZER_AB3_REFUSED;
+    if ((t[0] == 'b' && t[1] == 'b' && t[2] == '2') || (t[0] == '.' && t[1] == 'b' && t[2] == 'b'))
+        return TOKENIZER_AB3_TOKENISED;
+    if ((t[0] == 'a' && t[1] == 'b' && (t[2] == '3' || t[2] == '2'))
+        || (t[0] == 'A' && t[1] == 'B' && t[2] == '3'))
+        return TOKENIZER_AB3_TEXT;
+    return TOKENIZER_AB3_REFUSED;
+}
+
 /* the extension equals ext (lower case) in any case */
 static int isext(const char *name, size_t len, const char *ext)
 {

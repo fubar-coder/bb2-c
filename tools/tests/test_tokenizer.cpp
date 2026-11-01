@@ -341,3 +341,60 @@ TEST_CASE("file names", "[tokenizer]")
     CHECK(src("x.BB") == 0);
     CHECK(src("x.bb22") == (TOKENIZER_AB3_TEXT | TOKENIZER_AB3_HEADER));
 }
+
+TEST_CASE("the names of an include", "[tokenizer]")
+{
+    auto names = [](const std::string &s) {
+        std::vector<std::string> v;
+        char out[64];
+
+        for (int k = 0; k < TOKENIZER_AB3_INCNAMES; k++) {
+            size_t n = tokenizer_ab3_incname(s.data(), s.size(), k, out, sizeof out);
+            v.push_back(n ? std::string(out, n) : "-");
+        }
+        return v;
+    };
+    using v = std::vector<std::string>;
+
+    // spec: INCLUDE "mylib" finds mylib.ab3 (a name without extension)
+    CHECK(names("TEST:src/mylib") == v{ "TEST:src/mylib", "TEST:src/mylib.ab3",
+                                        "TEST:src/mylib.ab2", "TEST:src/mylib.bb2",
+                                        "TEST:src/mylib..ab3", "TEST:src/mylib..ab2",
+                                        "TEST:src/mylib..bb2" });
+    // the old extension kept in front: dos.include.ab3
+    CHECK(names("dos.include") == v{ "dos.include", "dos.ab3", "dos.ab2", "dos.bb2",
+                                     "dos.include.ab3", "dos.include.ab2", "dos.include.bb2" });
+    CHECK(names("x.ab3") == v{ "x.ab3", "x.ab3", "x.ab2", "x.bb2", "x.ab3.ab3", "x.ab3.ab2",
+                               "x.ab3.bb2" });
+    // an extension of 8 characters is not removed (dos_RemExt: 7 at most)
+    CHECK(names("a.12345678")[1] == "a.12345678.ab3");
+    CHECK(names("a.12345678")[4] == "a.12345678.12345678.ab3");
+    // no room, k out of range
+    char out[8];
+    CHECK(tokenizer_ab3_incname("mylib", 5, 1, out, sizeof out) == 0);
+    CHECK(tokenizer_ab3_incname("mylib", 5, 0, out, sizeof out) == 5);
+    CHECK(tokenizer_ab3_incname("mylib", 5, 7, out, sizeof out) == 0);
+    CHECK(tokenizer_ab3_incname("mylib", 5, -1, out, sizeof out) == 0);
+    CHECK(tokenizer_ab3_incname("mylongname", 10, 0, out, sizeof out) == 0);
+}
+
+TEST_CASE("the type of an include", "[tokenizer]")
+{
+    auto type = [](const std::string &s) { return tokenizer_ab3_inctype(s.data(), s.size()); };
+
+    CHECK(type("TEST:src/a.ab3") == TOKENIZER_AB3_TEXT);
+    CHECK(type("a.AB3") == TOKENIZER_AB3_TEXT);
+    CHECK(type("a.ab2") == TOKENIZER_AB3_TEXT);
+    CHECK(type("a.bb2") == TOKENIZER_AB3_TOKENISED);
+    CHECK(type("abb2") == TOKENIZER_AB3_TOKENISED);    // the last three only
+    CHECK(type("a.bb") == TOKENIZER_AB3_TOKENISED);
+    // spec: other names refused - also other cases
+    CHECK(type("defs.h") == TOKENIZER_AB3_REFUSED);
+    CHECK(type("a.Ab3") == TOKENIZER_AB3_REFUSED);
+    CHECK(type("a.BB2") == TOKENIZER_AB3_REFUSED);
+    CHECK(type("a.BB") == TOKENIZER_AB3_REFUSED);
+    CHECK(type("a.AB2") == TOKENIZER_AB3_REFUSED);
+    CHECK(type("a.txt") == TOKENIZER_AB3_REFUSED);
+    CHECK(type("bb") == TOKENIZER_AB3_REFUSED);
+    CHECK(type("") == TOKENIZER_AB3_REFUSED);
+}

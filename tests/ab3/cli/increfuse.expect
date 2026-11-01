@@ -1,0 +1,5 @@
+[compile]
+increfuse.ab3:5: You can only include tokenized files (.bb2 |.bb)
+rc=10
+[run]
+no executable

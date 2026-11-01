@@ -31,7 +31,7 @@ behaviour only in `ab3*.c` behind extension points (D1).
 
 ## 4. Includes
 
-- [ ] 4.1 AmiBlitz3's include rules in AB3 mode (D4): INCDIR + name, search order, extension fallback, type by name, refusal, repeated `INCLUDE`/`XINCLUDE`; the G1 other-mode check kept; update the `inctext_bbname` case and the "Differences" entry; verify: the scenarios of the modified `ab3-compat/source-mode` in `ab3_cli`
+- [x] 4.1 AmiBlitz3's include rules in AB3 mode (D4): INCDIR + name, search order, extension fallback, type by name, refusal, repeated `INCLUDE`/`XINCLUDE`; the G1 other-mode check kept; update the `inctext_bbname` case and the "Differences" entry; verify: the scenarios of the modified `ab3-compat/source-mode` in `ab3_cli`
 
 ## 5. Test programs and integration
 

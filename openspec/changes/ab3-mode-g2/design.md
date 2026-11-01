@@ -157,6 +157,27 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
   does, where ab3cli keeps empty lines. All equal, including a word at
   the end of the file without a line end (not tokenised by either).
   `ab3_tokenise_broken` gives NPrint another token: it must fail.
+- (Task 4.1) "Including the same file a second time with INCLUDE SHALL
+  be an error" (spec `ab3-compat/source-mode`, "Repeated includes"):
+  AmiBlitz3's `findinclude` (`AmiBlitz3.ab3` 11243, `processInclude`
+  20737) looks only at the includes that are open, as BB2's `findinc`;
+  measured (`ab3_cli_ref` case `incitwice`): two `INCLUDE`s of a file one
+  after the other compile it twice, only an include of itself is
+  "already included". Implemented as AmiBlitz3 (BB2's check, with the
+  found full name); the requirement's wording should say "while it is
+  open" (spec text only, no scenario affected).
+- (Task 4.1) The found name is `NameFromLock`'s full name, as
+  AmiBlitz3's: messages about an include name it so (`TEST:src/...` in
+  the expect files). The type check (by name) comes before blitz2's
+  "Already Included", in AmiBlitz3 after it - a difference only for an
+  include of itself under a refused name. AmiBlitz3's includes directory
+  is its tooltype `INCLUDEDIR`, by default `Blitz3:Sourcecodes/Includes`;
+  blitz2-ab3 has no tooltypes and takes the default.
+- (Task 4.1) The include depth for `#__include` (task 3.5, the other
+  group): `ab3_incdepth()` in `ab3.h` (ab3inc.c) - the includes open now
+  (`numincs`), 0 in the main source; it changes where AmiBlitz3's
+  `_include` label does (`processInclude` sets it, `next_includefile`
+  clears it with the last include).
 - (Task 1.3) A main-source line of 250 or more characters: `LoadSource`
   re-reads it with `PeekT(…, 10)`, which does not stop at the line's 0;
   there is no LF left after tokenising, so the rest of the buffer is

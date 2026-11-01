@@ -101,7 +101,8 @@ set(AB3_CLI_TIMEOUT 600 CACHE STRING
 file(GLOB cli_sources CONFIGURE_DEPENDS ${cli_dir}/*.ab3 ${cli_dir}/*.bb)
 set(ted_tokens ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
 set(cli_made)
-foreach(pair incerr_tok_inc|incerr_tok_inc incother|incother_bb2tok incother|incother_ab3tok)
+foreach(pair incerr_tok_inc|incerr_tok_inc incother|incother_bb2tok incother|incother_ab3tok
+		inctok_ab3_inc|inctok_ab3_inc)
 	string(REPLACE "|" ";" pair "${pair}")
 	list(GET pair 0 in)
 	list(GET pair 1 out)
@@ -120,6 +121,13 @@ add_custom_command(OUTPUT ${cli_gen}/incother_ab3tok.bb2.xtra
 	COMMENT "AmiBlitz3 .xtra of incother_ab3tok.bb2"
 	VERBATIM)
 list(APPEND cli_made ${cli_gen}/incother_ab3tok.bb2.xtra)
+add_custom_command(OUTPUT ${cli_gen}/inctok_ab3_inc.bb2.xtra
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${cli_gen}
+	COMMAND ${MKTESTDATA} ${cli_dir}/ab3xtra.spec ${cli_gen}/inctok_ab3_inc.bb2.xtra
+	DEPENDS ${cli_dir}/ab3xtra.spec ${MKTESTDATA} host_tools
+	COMMENT "AmiBlitz3 .xtra of inctok_ab3_inc.bb2"
+	VERBATIM)
+list(APPEND cli_made ${cli_gen}/inctok_ab3_inc.bb2.xtra)
 add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 
 # ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-userlib]
@@ -162,10 +170,18 @@ ab3_cli_case(resident_path resident_path.ab3 REF)
 ab3_cli_case(noend noend.ab3 REF REF_EXPECT noend.ref.expect)
 # includes of text in both modes (task 3.5)
 ab3_cli_case(inctext inctext.ab3 REF)
-ab3_cli_case(inctext_bbname inctext_bbname.ab3 REF REF_EXPECT inctext_bbname.ref.expect)
+ab3_cli_case(inctext_bbname inctext_bbname.ab3 REF)
 ab3_cli_case(inctext_bb2 inctext_bb2.bb)
 # AB3 mode's tokeniser (ab3-mode-g2 task 1.2)
 ab3_cli_case(tokens tokens.ab3 REF)
+# AmiBlitz3's include rules in AB3 mode (ab3-mode-g2 task 4.1): the
+# extension fallback, a refused name, a tokenised include by its name, a
+# repeated XINCLUDE
+ab3_cli_case(incfallback incfallback.ab3 REF)
+ab3_cli_case(increfuse increfuse.ab3 REF)
+ab3_cli_case(inctok_ab3 inctok_ab3.ab3 REF)
+ab3_cli_case(incxtwice incxtwice.ab3 REF)
+ab3_cli_case(incitwice incitwice.ab3 REF)
 # AB3 mode's libraries: a userlib replacing a BigLib library, a missing
 # BigLib (task 4.2)
 ab3_cli_case(userlib userlib.ab3 TREE Blitz3-userlib REF)

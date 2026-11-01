@@ -1,0 +1,6 @@
+[compile]
+rc=0
+[run]
+main
+42
+rc=0

@@ -724,6 +724,8 @@ void doxinclude(UWORD c)
 
     (void)c;
     len = makeiname();
+    if (ext_xinclude(len))
+        return;                                 /* AB3 mode: its own rule */
     if (findxinc(len, &last))
         return;                                 /* .done */
     addhere(last, NAMEOFF_XINC, len);
@@ -780,7 +782,7 @@ void doinclude(UWORD c)
     (void)c;
     if (dirmode)
         illdirerr();
-    doinc2(makeiname());
+    doinc2(ext_incname(makeiname()));
 }
 
 /* blitz2.s:12818 doinc2 */

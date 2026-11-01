@@ -1,5 +1,5 @@
 ; a compile error in line 3 of an include of text: the include's name and
 ; line, not the INCLUDE line of the program
 NPrint "main"
-INCLUDE "incerr_text_inc.bb"
+INCLUDE "incerr_text_inc.ab3"
 NPrint "main again"

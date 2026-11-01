@@ -1,0 +1,7 @@
+; AB3 mode: an include named .bb2 is read as tokenised; with AmiBlitz3's
+; .xtra it is one of AB3 mode (spec ab3-compat/source-mode, "Tokenised by
+; name"); its line has no token, so the BB2 tokeniser of the build makes it
+NPrint "main"
+INCLUDE "inctok_ab3_inc.bb2"
+NPrint zz
+End
