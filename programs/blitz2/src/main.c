@@ -16,9 +16,6 @@
 #include <dos/dosextens.h>
 #include <workbench/startup.h>
 #include "blitz2.h"
-#if BLITZ2_AB3
-#include "ab3main.h"
-#endif
 
 /* library bases: asm `maths` (1265) and `int` (14866, editor's base).
    asm `dos` (wbheader:107) is libnix's DOSBase. */
@@ -458,11 +455,9 @@ static WORD begin(void)
     }
     (void)count;
     lasttoken = (ULONG)tok;
-#if BLITZ2_AB3
-    /* the editor gets the list of the program's mode (progmode is decided
-       before begin, docs/ab3 D4) */
+    /* the editor gets the list of the program's mode (ext.h: decided
+       before begin; blitz2's own in BB2 mode, as initialised) */
     edstruct.toklist = &tokens;
-#endif
     makeasmtab();
     optreqprep();
     /* @1369 */
@@ -482,12 +477,7 @@ static WORD begin(void)
     macrobufff = macrobuff + macrolen;
     /* @1392 load the editor and call its init (seg+8 = ted `outside`):
        a1=edstruct in; Z=1 ok, a0=editor main entry, a1=comdata out */
-#if BLITZ2_AB3
-    /* a command line run: ab3cli instead of TED (ab3main.c) */
-    segadd = LoadSeg((CONST_STRPTR)(ab3job ? ab3cliname : segname));
-#else
-    segadd = LoadSeg((CONST_STRPTR)segname);
-#endif
+    segadd = LoadSeg((CONST_STRPTR)ext_editor(segname));
     if (!segadd)
         goto fail2a;
     memset(&r, 0, sizeof(r));
@@ -519,11 +509,7 @@ static WORD begin(void)
     dseg = LoadSeg((CONST_STRPTR)debugname);
     /* goto editor with filename! (returns when the user quits) */
     memset(&r, 0, sizeof(r));
-    r.a[0] = (ULONG)progfile;
-#if BLITZ2_AB3
-    if (ab3job)
-        r.a[0] = (ULONG)ab3job;         /* ab3cli gets the job */
-#endif
+    r.a[0] = (ULONG)ext_editorarg(progfile);
     callregs(edmain, &r);
     /* @1448 .skip */
     FreeSignal((LONG)panicbit);
@@ -560,17 +546,11 @@ int main(int argc, char **argv)
 {
     ULONG stack;
     BPTR fh;
+    int rc;
 
     us = FindTask(NULL);                /* asm: 276(execbase) = ThisTask */
-#if BLITZ2_AB3
-    {
-        /* the command line (-s SOURCE -e EXE ...): usage, errors, mode */
-        int rc = argc ? ab3_cmdline(argc, argv) : -1;
-
-        if (rc >= 0)
-            return rc;
-    }
-#endif
+    if (ext_cmdline(argc, argv, &rc))
+        return rc;
     if (argc == 0) {
         /* program was run from workbench - somehow, we have to eventually
            get stacksize into D2!  DIFF: libnix already got the message
@@ -629,10 +609,8 @@ int main(int argc, char **argv)
 #endif
     stackfuck = stack;
     begin();
-#if BLITZ2_AB3
-    if (ab3job)
-        return ab3_result();            /* ab3cli's return code */
-#endif
+    if (ext_result(&rc))
+        return rc;
     /* BUG(orig) (#22): wb_exit overwrites d0 (0 from the CLI; from the Workbench
        whatever ReplyMsg/Permit leave), so DOS never sees returncode */
     return 0;

@@ -476,12 +476,4 @@ extern asmchkfn movemchk, movepchk, movechk, exgchk, bitchk,
 /* asm alias */
 #define maths MathBase
 
-#if BLITZ2_AB3
-/* =============================================== AB3 mode (blitz2-ab3) */
-
-/* the state of the AB3 modules (ab3*.c) the blocks of the chunk files read
-   until they are extension points (ext.h) */
-#include "ab3.h"
-#endif
-
 #endif

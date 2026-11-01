@@ -1,7 +1,8 @@
 /*
- * ab3main.c - the command line run of blitz2-ab3 (ab3main.h; spec
- * ab3-compat/command-line, design D2/D4 of the change ab3-mode-g1).  Only
- * in blitz2-ab3: blitz2 has no command line but the file to edit.
+ * ab3main.c - the command line run of blitz2-ab3 (extension points of
+ * ext.h; spec ab3-compat/command-line, design D2/D4 of the change
+ * ab3-mode-g1).  Only in blitz2-ab3: blitz2 has no command line but the
+ * file to edit.
  *
  *   blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2]
  *
@@ -10,7 +11,7 @@
  * xtra_mode: -mode, AmiBlitz3's embedded header or a .ab3 name, the
  * companion .xtra of a tokenised source); then begin() runs as for the
  * editor, but with PROGDIR:ab3cli as the editor and the job as its
- * argument (main.c).
+ * argument (main.c begin, ext_editor/ext_editorarg).
  */
 #include <string.h>
 #include <exec/memory.h>
@@ -18,10 +19,11 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include "blitz2.h"
-#include "ab3main.h"
+#include "ab3.h"
 
-struct ab3job *ab3job;
-const char ab3cliname[] = "PROGDIR:ab3cli";
+struct ab3job *ab3job;                  /* ab3.h */
+/* the editor of a command line run (instead of blitz2:ted) */
+static const char ab3cliname[] = "PROGDIR:ab3cli";
 static struct ab3job job;
 
 static void say(const char *s)
@@ -65,7 +67,12 @@ static UBYTE *readall(const char *name, LONG *len)
     return buf;
 }
 
-int ab3_cmdline(int argc, char **argv)
+/* the command line (-s SOURCE -e EXE ...), before anything is loaded (the
+   libraries depend on the mode): for a compile decide the program's mode
+   and set ab3job.  Prints the usage and the messages of argument errors
+   itself.  Returns -1: go on (editor session, or the compile of ab3job);
+   else the return code of the run (usage, argument or set-up error) */
+static int cmdline(int argc, char **argv)
 {
     char msg[AB3JOB_PATHLEN + 64], compname[AB3JOB_PATHLEN + 8];
     UBYTE *src, *x;
@@ -104,11 +111,37 @@ int ab3_cmdline(int argc, char **argv)
     return -1;
 }
 
-int ab3_result(void)
+BOOL ext_cmdline(int argc, char **argv, int *rc)
 {
+    int r;
+
+    /* from the Workbench: the editor session */
+    if (!argc || (r = cmdline(argc, argv)) < 0)
+        return FALSE;
+    *rc = r;
+    return TRUE;
+}
+
+/* a command line run: ab3cli instead of TED, with the job */
+const char *ext_editor(const char *name)
+{
+    return ab3job ? ab3cliname : name;
+}
+
+APTR ext_editorarg(APTR arg)
+{
+    return ab3job ? (APTR)ab3job : arg;
+}
+
+/* a command line run: ab3cli's return code (it left it in the job) */
+BOOL ext_result(int *rc)
+{
+    if (!ab3job)
+        return FALSE;
     if (!job.started) {
         sayline("the compiler did not start ", ab3cliname);
-        return AB3JOB_RC_FAIL;
-    }
-    return job.result;
+        *rc = AB3JOB_RC_FAIL;
+    } else
+        *rc = job.result;
+    return TRUE;
 }
