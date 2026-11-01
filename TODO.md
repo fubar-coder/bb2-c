@@ -385,12 +385,22 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   1. [x] G1 done (2026-11-01, OpenSpec change `ab3-mode-g1`): build,
      command line with `ab3cli`, detection, AB3 token table, libraries,
      `^`, residents, text includes; tests `ab3_*`, `corpus_cd_ab3`.
-  2. [ ] G2–G5 (`SYNTAX`, `OPTIMIZE`, `@@`, escapes, optional
-     parameters, `Null`, casts, `Dim KEEP`, `Data` constants,
-     identifiers beginning with `_`), then G7 (68020), then G6 (FPU);
-     the differences found against AmiBlitz3's compiler
-     (`docs/ab3/variant.md`, "Differences").
-  3. [x] Checked 2026-11-01 whether TED's baserel data hunk (0x7c8 bytes
+  2. [x] G2 done (2026-11-01, OpenSpec change `ab3-mode-g2`): AB3
+     tokeniser `shared/tokenizer`, AmiBlitz3's include rules,
+     `OPTIMIZE`, `SYNTAX`, `RunErrs*`, `BSS`/`Chip`, new syntax, `@@`,
+     global `SHARED`, `_` names, `.name`, `+`, `:@`, `#__include`/
+     `#__debug`/`CNIF @`; 47 of AmiBlitz3's 68 test programs compile
+     (AmiBlitz3: 57; `docs/ab3/variant.md`, "Measured share").
+  3. [ ] G3–G5 (escapes, optional parameters, `Null`, casts, `Dim KEEP`,
+     `Data` constants), then G7 (68020), then G6 (FPU); the differences
+     found against AmiBlitz3's compiler (`docs/ab3/variant.md`,
+     "Differences"), among them two rules of no group yet: a `Function`
+     called as a statement (`jsr`) and `Stop` without the debugger
+     (`int_tests`).
+  4. [ ] `68k_crash_newtype` (AmiBlitz3's tokenised test program): the
+     compile of blitz2-ab3 hangs (AmiBlitz3: "Garbage at the end of
+     line" in line 1); found 2026-11-01 by the measurement of G2.
+  5. [x] Checked 2026-11-01 whether TED's baserel data hunk (0x7c8 bytes
      of `.bss` without startup code) is cleared by LoadSeg: not on
      Kickstart 1.3 (only `HUNK_BSS` is), yes on 3.2 – port defect #963.
 - [ ] **Tests for the issues labelled `needs-test`** (99 open issues at the

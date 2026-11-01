@@ -239,7 +239,14 @@ AB3 mode.
    BB2-language ones of the spike, all compile and run; the share over
    all 68 (estimate for G1: 65 %) is not measured yet. On the way: #34
    fixed (AmiBlitz3's `all.res` relies on it).
-2. **G2–G5** in that order (most programs per line of code).
+2. **G2–G5** in that order (most programs per line of code). **G2
+   done 2026-11-01** (OpenSpec change `ab3-mode-g2`): AB3 mode's
+   tokeniser (`shared/tokenizer`), AmiBlitz3's include rules,
+   `OPTIMIZE`, `SYNTAX`, `RunErrsOff`/`LastRunErrsMode`, `BSS`/`Chip`,
+   the new syntax, `@@`, global `SHARED`, `_` names, `.name` labels, the
+   `+` prefix, `:@`, `#__include`/`#__debug`/`CNIF @`; `ab3_cli` and
+   `ab3_cli_ref` with ten more of AmiBlitz3's test programs. Measured
+   share of the 68 test programs: section "Measured share".
 3. **G6, G7** (FPU and 68020; needs an A1200/FPU machine in the
    emulator for the tests).
 4. **G8** only if AB3's error behaviour or byte-equal executables are
@@ -587,6 +594,41 @@ AmiBlitz3's console output in CLI mode also names files it does not
 need for compiling (`Blitz3:System/token_mapping_libs.txt`,
 `token_mapping_userlibs.txt`, the debugger `Defaultdbug`); they are not
 fetched.
+
+## Measured share of AmiBlitz3's test programs (G2, 2026-11-01)
+
+A throw-away run (not in the repository): every one of the 68 test
+programs of `Sourcecodes/Amiblitz3/Tests` at `@58a11658` (67 `.ab3`, the
+includes among them, and the tokenised `68k_crash_newtype`) compiled
+once by `blitz2-ab3` (state of task 5.1 of `ab3-mode-g2`, the options of
+each program's header) and once by AmiBlitz3 v3.14.0 in CLI mode, in
+Amiberry's A1200 (`default.uae`, 68020 + 68882), with AmiBlitz3's
+`Sourcecodes/Includes` and `BlitzLibs/Residents` of the same commit;
+compile only, the programs are not run.
+
+* **blitz2-ab3 compiles 47 of 68 (69 %)**; AmiBlitz3 itself compiles 57
+  (84 %). Both give the same result (compiled or not) for 56: 46
+  compile in both, 10 fail in both.
+* Compiled by blitz2-ab3 only: `exec_data` (AmiBlitz3's type rule of the
+  assignment, G8; "Differences").
+* Not compiled by blitz2-ab3, by AmiBlitz3 (11): `benchmark2`,
+  `putdiskobject`, `quickdivtest`, `serial_read`, `statementcalls`
+  ("Can't Convert Types" in `error.include.ab3` 226: its optional
+  parameters `@titletext.s`, G4), `function_problem` (`@p`, G4),
+  `benchmark` (`FAST` in `convert.include.ab3`, G4), `data_constants`
+  (`Data.w #c`, G5), `double_print`, `fpu_test2` (`OPTIMIZE 2`, G6),
+  `jsr` (a `Function` called as a statement; "Differences").
+* Not compiled by either (10): `ab3_Errors`, `dimcrash`,
+  `errorInIncludes` (errors on purpose), `include_dc`, `include_dc_main`,
+  `includes_test` (`.h` includes), `_new_includes` (includes not in the
+  repository), `printlib_test`, `unknown_function` (on purpose),
+  `68k_crash_newtype` - AmiBlitz3 stops with "Garbage at the end of
+  line" in line 1, **blitz2-ab3 hangs while compiling it** (open).
+* `int_tests` compiles with runtime error checking (its `Stop` hangs at
+  run time, "Differences"), `windowtags`, `setwindowpointer`, `hunktest`
+  compile; the research table (G2 research §9) expected 52 after G2 -
+  `jsr` was counted for G2 wrongly, the rest of the difference are its
+  upper bounds.
 
 ## Spike result (2026-10-31)
 

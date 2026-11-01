@@ -36,7 +36,7 @@ behaviour only in `ab3*.c` behind extension points (D1).
 ## 5. Test programs and integration
 
 - [x] 5.1 Add AmiBlitz3's test programs that G2 makes compile (hex_error, hexdigits, int_problem, int_tests, jsr, macro_test, memoryleak_test with its `OPTIMIZE 13` line, exec_data and unknown_function as expected errors; kick13/windowtags if headless) to `ab3_cli` and `ab3_cli_ref` (fetch-originals at `58a11658` with SHA-256); verify: all pass, differences to AmiBlitz3 recorded in `docs/ab3/variant.md`
-- [ ] 5.2 Full check: clean build without warnings, `blitz2`'s results unchanged, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts; update `docs/ab3/variant.md` (G2 done, measured share of the 68 test programs) and `TODO.md`
+- [x] 5.2 Full check: clean build without warnings, `blitz2`'s results unchanged, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts; update `docs/ab3/variant.md` (G2 done, measured share of the 68 test programs) and `TODO.md`
 
 ## Workflow follow-up
 

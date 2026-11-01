@@ -332,3 +332,26 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
     (cli.cmake: the `Stop` line empty) gives AmiBlitz3's output.
   `windowtags` has no `End`: compiled with `-r`, else blitz2's empty
   requester at the end (BUG(orig) #6, as `noend`).
+- **5.2** Full check (2026-11-01): a clean rebuild without warnings;
+  `blitz2`'s executables for the corpus and the bug-orig sources (both
+  runtime error modes, corpusrun with the build of `main` before the
+  change as the reference) unchanged, `corpus_cd` passes; `ctest --preset
+  all` 133 of 133. `ctest --preset bug-orig`: the known DIFFERS
+  (`compiler-incdir-overflow`, `ridoslib-path-buffer-overflow`,
+  `rilesdebuglib-addprocessptr-no-limit`), and `rimisclib-ezrequest-
+  args-unbounded`, `rimisclib-initargparse-unbounded`,
+  `ripacklib-unpackiff-zero-planes` DIFFERS also when run alone (seen
+  with the old blitz2 too); `freqlib-parentdir-leak`,
+  `bb_blitlib-createshape-count0` and `rishapeslib-cludged-shape-pop`
+  DIFFERS only under load (a session timeout; alone REPRODUCED), except
+  `rishapeslib-cludged-shape-pop`: run alone, a session timeout of its
+  port or of its clib configuration in three of four runs with the new
+  blitz2, REPRODUCED in the one run with `main`'s blitz2 swapped in. Its
+  executable (an RWE program, not in the comparison above) compiled by
+  `main`'s and by the new blitz2 with its port libraries: identical
+  (a throw-away corpusrun pass). So the timeouts are the test's or the
+  machine's, not the change's (open point: a flaky test). The measured share of
+  AmiBlitz3's 68 test programs (a throw-away run): 47 compile with
+  blitz2-ab3, 57 with AmiBlitz3 (`docs/ab3/variant.md`, "Measured
+  share"); found on the way: blitz2-ab3 hangs compiling the tokenised
+  `68k_crash_newtype` (TODO.md).
