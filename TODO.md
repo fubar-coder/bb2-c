@@ -379,7 +379,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
 - [ ] **Source compatibility with AmiBlitz3** (user decisions
   2026-10-31, plan `docs/ab3/variant.md`): `blitz2-ab3` compiles sources
   recognised as AmiBlitz3's with AmiBlitz3 v3.14.0's binary libraries;
-  `blitz2` stays byte-identical.
+  `blitz2`'s results stay byte-identical (rule of 2026-11-01); since
+  2026-11-01 both programs share one core (`blitz2_core`, extension
+  points in `ext.h`, change `blitz2-ab3-extension-points`).
   1. [x] G1 done (2026-11-01, OpenSpec change `ab3-mode-g1`): build,
      command line with `ab3cli`, detection, AB3 token table, libraries,
      `^`, residents, text includes; tests `ab3_*`, `corpus_cd_ab3`.
