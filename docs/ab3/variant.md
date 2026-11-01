@@ -432,7 +432,8 @@ The points (`ext.h`): `ext_makelibs`, `ext_loadlibs`,
 token of AB3 mode), `ext_newsyntax` (AmiBlitz3's new syntax),
 `ext_macargs`, `ext_namelabel`, `ext_dotlabel`, `ext_stmtprefix`,
 `ext_comment`, `ext_letter`, `ext_shared`, `ext_sharedvar`,
-`ext_nextline` (AmiBlitz3's syntax rules), `ext_savefile` (the
+`ext_nextline`, `ext_cnifstart`, `ext_cnifend`, `ext_constant`
+(AmiBlitz3's syntax rules), `ext_savefile` (the
 executable),
 `ext_cmdline`, `ext_editor`, `ext_editorarg`, `ext_result` (command
 line and editor); the data of the mode `ext_toklist` (asm `tokens`) and
@@ -534,7 +535,17 @@ v3.14.0 does it (change `ab3-mode-g2`, design D4; `ab3inc.c` behind
   BB2.
 
 The include depth (the includes open now: 0 in the main source) is
-`ab3_incdepth()` of `ab3.h`, for AmiBlitz3's `#__include`.
+`ab3_incdepth()` of `ab3.h`. AmiBlitz3's constants of the include
+mechanism (`ab3syn.c`, points `ext_constant` in fetchconst and
+`ext_cnifstart`/`ext_cnifend` in docnif): `#__include` is 1 while an
+include is open, 0 in the main source (also after the last include);
+`#__debug` is 0 (AmiBlitz3's `debugmode`; AB3 mode has no runtime
+debugger). An `@` right behind `CNIF` makes every `#name` of that
+condition a "defined?" test giving 1 or 0, without "Constant Not Found"
+(`CNIF @#mylib_include=0`, the include guard of AmiBlitz3's includes);
+an `@` elsewhere in a condition is "Illegal Constant Expression", as in
+AmiBlitz3 (`AmiBlitz3.ab3` 10677-10691, 15400-15412). Cases `incguard`,
+`cnifdef`, `cnifat_err`, also in `ab3_cli_ref`.
 
 `ab3_cli` cases: `incfallback` (the fallback), `increfuse` (a refused
 name), `inctok_ab3` (a `.bb2` with AmiBlitz3's `.xtra` read as

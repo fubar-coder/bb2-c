@@ -290,3 +290,23 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
   requirement "Constants of the include mechanism" needs this wording
   before 3.5 is implemented (its include-guard scenario holds either
   way); `ab3_incdepth` (ab3inc.c) is ready for `#__include`.
+- **3.5** (after the spec's correction; `ab3syn.c`, points
+  `ext_cnifstart`/`ext_cnifend` in docnif, `ext_constant` in
+  fetchconst): AmiBlitz3 puts `__include` and `__debug` into its
+  constant list at the start of each pass (`AmiBlitz3.ab3` 3405-3440)
+  and sets `__include` to 1 when an include opens (`processInclude`
+  20799) and to 0 when the last one closes (`next_includefile` 19534);
+  here the two names are answered in fetchconst before the label list,
+  `#__include` from `ab3_incdepth()`. In a `CNIF @` condition the test
+  is AmiBlitz3's `findlabel2`: any entry of the label list counts (also a
+  program label), and the two names count as defined. A difference not
+  measured: AmiBlitz3's two constants are real entries of the list, ours
+  are answered before it, so a program's own definition of
+  `#__include`/`#__debug` is ignored here (no program of AmiBlitz3's
+  defines them). `#@name` (AmiBlitz3's
+  automatic counter constants, `automode` in fetch_Constant) is not part
+  of G2. `incguard` (INCLUDE twice and XINCLUDE: compiled once, the
+  `CNIF #__include=0` block inside skipped), `cnifdef` (the measured
+  conditions) and `cnifat_err` (the error at the same line) give
+  AmiBlitz3's results; AmiBlitz3 reports the error also for the
+  following lines (its error recovery), blitz2-ab3 stops at the first.

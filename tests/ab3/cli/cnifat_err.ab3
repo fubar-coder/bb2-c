@@ -1,0 +1,7 @@
+; AB3 mode: an '@' elsewhere in a CNIF condition than right behind CNIF
+; is an error in line 4
+#zq = 5
+CNIF #zq + @#zq = 6
+NPrint "x"
+CEND
+End

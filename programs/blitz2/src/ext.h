@@ -182,6 +182,22 @@ BOOL ext_comment(void);
  *         blitz2's letters, '*', '\')? */
 BOOL ext_letter(UWORD c);
 
+/** @brief docnif (tokens1.c): the condition of a CNIF starts with c;
+ *         returns the character it starts with now (another one if the
+ *         mode reads a prefix of the condition). */
+UWORD ext_cnifstart(UWORD c);
+
+/** @brief docnif: the condition of the CNIF is evaluated. */
+void ext_cnifend(void);
+
+/**
+ * @brief fetchconst (eval.c): the constant named namebuff (len bytes)
+ *        in an expression.
+ * @return TRUE if handled: *value is its value (blitz2 looks for it in
+ *         the labels, "Constant Not Found" if none)
+ */
+BOOL ext_constant(UWORD len, ULONG *value);
+
 /**
  * @brief doshared (tokens1.c): SHARED outside a procedure, c its first
  *        character.

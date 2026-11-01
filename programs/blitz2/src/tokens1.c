@@ -285,8 +285,10 @@ void docnif(UWORD c)
 {
     ULONG value;
 
+    c = ext_cnifstart(c);
     (void)c;
     value = evalconst(NULL, NULL);
+    ext_cnifend();
     bakup();
     compare(numcom(value), 5);                  /* asm comment says beq: index 5 = cifne */
 }

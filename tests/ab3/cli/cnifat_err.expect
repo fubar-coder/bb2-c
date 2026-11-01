@@ -1,0 +1,5 @@
+[compile]
+cnifat_err.ab3:4: Illegal Constant Expression
+rc=10
+[run]
+no executable

@@ -14,9 +14,12 @@
 static struct var *gshared[MAXSHARED];
 static UWORD ngshared;
 
+static BOOL cnifdef;
+
 void ab3_synpass(void)
 {
     ngshared = 0;
+    cnifdef = FALSE;
 }
 
 /* AmiBlitz3's chartab (AmiBlitz3.ab3:1161-1191): the characters that end
@@ -196,6 +199,50 @@ BOOL ext_comment(void)
 BOOL ext_letter(UWORD c)
 {
     return progmode == XTRA_MODE_AB3 && c >= '[' && c <= '`';
+}
+
+/* CNIF @ (AmiBlitz3.ab3:10677-10691, flag incnif): an '@' right behind
+   CNIF makes every #name of the condition a "defined?" test
+   (fetch_Constant 15400-15412: findlabel2, 1 if found, else 0, never
+   "Constant Not Found").  An '@' elsewhere in a condition is blitz2's
+   "Illegal Constant Expression" (getelement2 in a constant), as in
+   AmiBlitz3.  cnifdef: in such a condition. */
+
+UWORD ext_cnifstart(UWORD c)
+{
+    if (progmode != XTRA_MODE_AB3 || c != '@')
+        return c;
+    cnifdef = TRUE;
+    return getchar3();
+}
+
+void ext_cnifend(void)
+{
+    cnifdef = FALSE;
+}
+
+/* AmiBlitz3's constants of the include mechanism (AmiBlitz3.ab3:3405-3440,
+   processInclude 20799, next_includefile 19534): #__include is 1 while an
+   include is open, else 0; #__debug is AmiBlitz3's debugmode, 0 here
+   (AB3 mode has no runtime debugger).  AmiBlitz3 has them in its constant
+   list, so a "defined?" test finds them. */
+BOOL ext_constant(UWORD len, ULONG *value)
+{
+    BOOL inc, dbg;
+
+    if (progmode != XTRA_MODE_AB3)
+        return FALSE;
+    inc = len == 9 && !memcmp(namebuff, "__include", 9);
+    dbg = len == 7 && !memcmp(namebuff, "__debug", 7);
+    if (cnifdef)
+        *value = inc || dbg || findadd(len, NULL) != NULL;
+    else if (inc)
+        *value = ab3_incdepth() != 0;
+    else if (dbg)
+        *value = 0;
+    else
+        return FALSE;
+    return TRUE;
 }
 
 /* SHARED outside a procedure (AmiBlitz3.ab3:20505 do_shared,

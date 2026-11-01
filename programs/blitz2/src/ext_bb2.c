@@ -119,6 +119,20 @@ BOOL ext_letter(UWORD c)
     return FALSE;
 }
 
+UWORD ext_cnifstart(UWORD c)
+{
+    return c;
+}
+
+void ext_cnifend(void)
+{
+}
+
+BOOL ext_constant(UWORD len, ULONG *value)
+{
+    return FALSE;
+}
+
 BOOL ext_shared(UWORD c)
 {
     return FALSE;

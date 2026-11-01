@@ -1711,15 +1711,19 @@ static UWORD fetchconst(UWORD *type)
 {
     UWORD saved = *type, c, len;
     struct label *l;
+    ULONG value;
 
     len = makename(&c);             /* Z not tested (asm) */
-    l = findadd(len, NULL);
-    if (!l)
-        cnferr();
-    if ((ULONG)l->refs != 1)
-        cnferr();
+    if (!ext_constant(len, &value)) {
+        l = findadd(len, NULL);
+        if (!l)
+            cnferr();
+        if ((ULONG)l->refs != 1)
+            cnferr();
+        value = l->pc;
+    }
     *type = saved;
-    return (UWORD)fetchnum2(l->pc, type, FALSE);  /* to right type. */
+    return (UWORD)fetchnum2(value, type, FALSE);  /* to right type. */
 }
 
 /* blitz2.s:9906 ampersand */

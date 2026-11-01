@@ -1,0 +1,23 @@
+; AB3 mode: CNIF @ - every #name of the condition is a "defined?" test
+; giving 1 or 0, without an error for an undefined one; #__debug is 0
+#zq = 5
+CNIF @#zq = 1
+NPrint "zq defined"
+CEND
+CNIF @#zr = 0
+NPrint "zr undefined"
+CEND
+CNIF @#zq + #zq = 2
+NPrint "both are tests"
+CEND
+CNIF @#zq + #zr = 1
+NPrint "no error"
+CEND
+CNIF @#__include = 1
+NPrint "__include defined"
+CEND
+CNIF #__debug = 0
+NPrint "no debugger"
+CEND
+NPrint #__include, " ", #__debug, " ", #zq
+End

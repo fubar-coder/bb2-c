@@ -247,6 +247,10 @@ ab3_cli_case(comment_code comment_code.ab3 REF)
 ab3_cli_case(join join.ab3 REF)
 ab3_cli_case(join_inc join_inc.ab3 REF)
 ab3_cli_case(join_incok join_incok.ab3 REF)
+# the constants of the include mechanism: #__include, #__debug, CNIF @
+ab3_cli_case(incguard incguard.ab3 REF)
+ab3_cli_case(cnifdef cnifdef.ab3 REF)
+ab3_cli_case(cnifat_err cnifat_err.ab3 REF)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)

@@ -1,0 +1,10 @@
+; AB3 mode: an include guard (spec ab3-compat/syntax-rules, "Constants
+; of the include mechanism"): the include is compiled once although it is
+; included three times, its CNIF #__include=0 block is skipped
+NPrint "main ", #__include
+INCLUDE "incguard_lib.ab3"
+INCLUDE "incguard_lib.ab3"
+XINCLUDE "incguard_lib.ab3"
+NPrint "count ", cnt
+NPrint "after ", #__include
+End

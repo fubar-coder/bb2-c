@@ -1,0 +1,11 @@
+[compile]
+rc=0
+[run]
+zq defined
+zr undefined
+both are tests
+no error
+__include defined
+no debugger
+0 0 5
+rc=0
