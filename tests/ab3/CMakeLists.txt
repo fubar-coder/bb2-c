@@ -203,6 +203,9 @@ ab3_cli_case(runerrs_overflow runerrs_overflow.ab3 REF)
 # the syntax rules of AB3 mode (spec ab3-compat/syntax-rules)
 ab3_cli_case(macro_ns macro_ns.ab3 REF)
 ab3_cli_case(macro_off macro_off.ab3 REF)
+ab3_cli_case(label_ns label_ns.ab3 REF)
+ab3_cli_case(label_proc label_proc.ab3 REF)
+ab3_cli_case(label_proc_off label_proc_off.ab3 REF)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST]): the ctest
 function(ab3_cli name config cases)

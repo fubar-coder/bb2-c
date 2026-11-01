@@ -1,0 +1,11 @@
+; without new syntax a forward reference to a label of another procedure
+; context is BB2's error, at the line of the reference (5)
+
+Statement zst{}
+  zp.l = ?zlab
+  NPrint "in ", zp <> 0
+End Statement
+zst{}
+zlab:
+NPrint "end"
+End

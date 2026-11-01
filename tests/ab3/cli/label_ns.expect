@@ -1,0 +1,7 @@
+[compile]
+rc=0
+[run]
+x
+x
+4
+rc=0

@@ -1,0 +1,11 @@
+; new syntax: a forward reference to a label of another procedure context
+; (the main program's zlab from inside a statement) is accepted
+OPTIMIZE 4
+Statement zst{}
+  zp.l = ?zlab
+  NPrint "in ", zp <> 0
+End Statement
+zst{}
+zlab:
+NPrint "end"
+End

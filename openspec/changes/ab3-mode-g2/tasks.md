@@ -24,7 +24,7 @@ behaviour only in `ab3*.c` behind extension points (D1).
 ## 3. Syntax rules
 
 - [x] 3.1 New syntax: macro calls without braces; verify: both scenarios in `ab3_cli`
-- [ ] 3.2 New syntax: labels without colon (`allowtab`) and labels of another procedure; verify: the scenarios in `ab3_cli`
+- [x] 3.2 New syntax: labels without colon (`allowtab`) and labels of another procedure; verify: the scenarios in `ab3_cli`
 - [ ] 3.3 `@@` line joining (parameter boundaries, macro text, multiple assignment, the include restriction); verify: the scenarios in `ab3_cli`
 - [ ] 3.4 Global `SHARED`, `_`-identifiers, `.name` labels, the `+` prefix, `:@` in comments; verify: one `ab3_cli` case each
 - [ ] 3.5 `#__include`, `#__debug`, `@#name` (also in `CNIF`); verify: the include-guard scenario in `ab3_cli`

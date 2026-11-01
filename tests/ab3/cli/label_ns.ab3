@@ -1,0 +1,12 @@
+; labels without colon (new syntax): a name followed by a token at the
+; start of a statement is a label - zz is reached twice; followed by one
+; of allowtab's tokens (LSL) it is BB2's assignment shortcut: a = a LSL 2
+OPTIMIZE 4
+n = 0
+zz NPrint "x"
+n + 1
+If n < 2 Then Goto zz
+a = 1
+a LSL 2
+NPrint a
+End

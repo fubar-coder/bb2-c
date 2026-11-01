@@ -1,0 +1,5 @@
+[compile]
+label_proc_off.ab3:5: Label reference out of context
+rc=10
+[run]
+no executable

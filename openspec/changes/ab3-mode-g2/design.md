@@ -161,3 +161,9 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
   line "Too many 'RunErrs' nested", ours are one line). The nesting
   itself cannot be compared: AmiBlitz3's executables of CLI mode have no
   runtime error checking without its debugger (`runerrs.ref.expect`).
+- **3.2 labels** (points `ext_namelabel` in handleascii, `ext_newsyntax`
+  in handlelab2): the label ends as in AmiBlitz3 - the source back at the
+  token, `lastchar` a `:` - so the statement after it is compiled as the
+  next one. `label_ns`, `label_proc` give AmiBlitz3's output;
+  `label_proc_off` its error at the same line (blitz2's "Label reference
+  out of context").

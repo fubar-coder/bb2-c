@@ -1199,6 +1199,10 @@ static void handleascii(UWORD c)
         handleproc(len);
         return;
     }
+    if (ext_namelabel(c)) {
+        handlelabel(len);
+        return;
+    }
     dolet2(c, len, NULL, NULL);
 }
 
@@ -1271,7 +1275,7 @@ static void handlelab2(UWORD len)
     while (ref) {
         struct labref *next;
 
-        if (ref->procnum != l->procnum) {
+        if (ref->procnum != l->procnum && !ext_newsyntax()) {
             /* Bad Reference */
             linenumat = ref->line;
             referr();

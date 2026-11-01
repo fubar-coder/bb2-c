@@ -114,3 +114,32 @@ BOOL ext_macargs(struct macro *m, UBYTE **pp, WORD *narg)
     *pp = p;
     return TRUE;
 }
+
+/* the end of a label at the start of a statement before the token c: the
+   source back at the token, as if a ':' had come (AmiBlitz3.ab3:4219,
+   4289: subq.l #2,a5, lastchar ':') */
+static void labelend(void)
+{
+    srcptr -= 2;
+    lastchar = ':';
+}
+
+/* New syntax: a name at the start of a statement followed by a token is
+   a label without colon (AmiBlitz3.ab3:4214-4225), unless the low byte of
+   the token is one of allowtab (1198-1215): LSL, LSR, ASL, ASR, MOD, NOT,
+   BitTst, BitSet, BitClr, BitChg - the BB2 shortcut "a LSL 2" */
+BOOL ext_namelabel(UWORD c)
+{
+    static const UBYTE allowtab[] = {
+        0x7d, 0x7c, 0x44, 0x45, 0xb9, 0x89, 0xce, 0xcf, 0xd0, 0xcd
+    };
+    unsigned i;
+
+    if (!ext_newsyntax() || !(c & 0x8000))
+        return FALSE;
+    for (i = 0; i < sizeof allowtab; i++)
+        if ((UBYTE)c == allowtab[i])
+            return FALSE;
+    labelend();
+    return TRUE;
+}

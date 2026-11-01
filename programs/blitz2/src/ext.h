@@ -137,6 +137,14 @@ BOOL ext_newsyntax(void);
  */
 BOOL ext_macargs(struct macro *m, UBYTE **pp, WORD *narg);
 
+/**
+ * @brief handleascii (compile.c): a name at the start of a statement is
+ *        followed by c (not the end, not '{').
+ * @return TRUE if it is a label (the source is back at c, the statement
+ *         ends there): blitz2 compiles an assignment
+ */
+BOOL ext_namelabel(UWORD c);
+
 /* ======================================= the command line, the editor */
 
 /**
