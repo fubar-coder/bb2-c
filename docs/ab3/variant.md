@@ -246,7 +246,9 @@ AB3 mode.
    the new syntax, `@@`, global `SHARED`, `_` names, `.name` labels, the
    `+` prefix, `:@`, `#__include`/`#__debug`/`CNIF @`; `ab3_cli` and
    `ab3_cli_ref` with ten more of AmiBlitz3's test programs. Measured
-   share of the 68 test programs: section "Measured share".
+   share of the 68 test programs: section "Measured share". After G2
+   (OpenSpec change `ab3-function-statement`, 2026-11-01): a `Function`
+   called as a statement compiles as in AmiBlitz3 (`jsr`).
 3. **G6, G7** (FPU and 68020; needs an A1200/FPU machine in the
    emulator for the tests).
 4. **G8** only if AB3's error behaviour or byte-equal executables are
@@ -447,7 +449,8 @@ token of AB3 mode), `ext_newsyntax` (AmiBlitz3's new syntax),
 `ext_macargs`, `ext_namelabel`, `ext_dotlabel`, `ext_stmtprefix`,
 `ext_comment`, `ext_letter`, `ext_shared`, `ext_sharedvar`,
 `ext_nextline`, `ext_cnifstart`, `ext_cnifend`, `ext_constant`
-(AmiBlitz3's syntax rules), `ext_savefile` (the
+(AmiBlitz3's syntax rules), `ext_funcstmt` (a `Function` called as a
+statement, change `ab3-function-statement`), `ext_savefile` (the
 executable),
 `ext_cmdline`, `ext_editor`, `ext_editorarg`, `ext_result` (command
 line and editor); the data of the mode `ext_toklist` (asm `tokens`) and
@@ -581,7 +584,6 @@ machine); recorded, not changed in G1:
 | `sect_both` | a relocation inside the chip section (`Dc.l zbss`) is written to the code hunk's list with its unshifted offset: the long stays wrong (0) | relocated in the chip hunk's own RELOC32 block: the address of `zbss` | none: ours is the correct executable |
 | `tokens/longline` | a main-source line of 250 characters or more ends the source: `LoadSource` re-reads it with `PeekT(…, 10)`, which goes past the line's 0 to the end of the buffer (no LF is left after tokenising), so the following lines are dropped (`CLIModeSupport.ab3` 480-497 at `@58a11658`, measured with `-save`) | the line is cut at 250 characters, the following lines stay | none: not reproduced |
 | `int_tests` | `Stop` without its debugger (CLI mode, no `Defaultdbug`) is compiled to nothing (`#stopignore`, `do_Stop`, `AmiBlitz3.ab3` 22810-22831 at `@58a11658`): the program runs on | blitz2's `Stop`: with `-r` "Debugger must be enabled for STOP" (line 92), with runtime error checking a call of debuglib's `Stop` (`$D501`), which waits for the debugger - the program hangs in a command line run. The rest of the program (`int_tests_nostop`, the `Stop` line empty) gives AmiBlitz3's output | open: not in the G2 specs (a rule for `Stop` in AB3 mode) |
-| `jsr` | a `Function` called as a statement (`test{}`) compiles (`handle_statement`, `AmiBlitz3.ab3` 4416-4426: the check of blitz2 commented out) | blitz2's "Illegal Procedure Call" (line 86) | open: not in the G2 specs (research §9 counted it for `OPTIMIZE 13`, but the rule does not depend on it) |
 | `noend` | a program without `End` with runtime error checking ends normally | an empty requester at the end: blitz2's end code (`blitz2.s:2683 eopcode`, `moveq #3,d0 : trap #0`) without `End`, BUG(orig) #6 | with #6 (the runtime part of AB3 mode) |
 
 AmiBlitz3's test programs of G2 (task 5.1 of `ab3-mode-g2`, fetched
@@ -591,11 +593,12 @@ at `@58a11658`), in `ab3_cli` and `ab3_cli_ref`: `hex_error`
 `kick13` (`OPTIMIZE 4`, `SYNTAX 2`; it ends after its first `NPrint`, so it
 runs headless), `windowtags` (`@@` in a tag list; opens its window on the
 Workbench screen and ends; compiled with `-r`: it has no `End`, case
-`noend`), `memoryleak_test` (`OPTIMIZE 13`) give
-AmiBlitz3's output; `unknown_function` (an include named without
+`noend`), `memoryleak_test` (`OPTIMIZE 13`) and, since the change
+`ab3-function-statement`, `jsr` (a `Function` called as a statement)
+give AmiBlitz3's output; `unknown_function` (an include named without
 extension, `.ab3` added) is "Procedure not found" in both; `exec_data`
 is "Can't convert types" in both (since `ab3-pointer-assign`);
-`int_tests` and `jsr` differ (table above).
+`int_tests` differs (table above).
 
 AmiBlitz3's console output in CLI mode also names files it does not
 need for compiling (`Blitz3:System/token_mapping_libs.txt`,
@@ -614,19 +617,21 @@ Amiberry's A1200 (`default.uae`, 68020 + 68882), with AmiBlitz3's
 compile only, the programs are not run.
 
 * **blitz2-ab3 compiles 47 of 68 (69 %)**; AmiBlitz3 itself compiles 57
-  (84 %). Both give the same result (compiled or not) for 56: 46
-  compile in both, 10 fail in both.
+  (84 %). Both give the same result (compiled or not) for 58: 47
+  compile in both, 11 fail in both. (The run measured 47 at the end of
+  G2, with `exec_data` compiled by blitz2-ab3 only and `jsr` by
+  AmiBlitz3 only; since `ab3-pointer-assign` `exec_data` fails in both,
+  since `ab3-function-statement` `jsr` compiles in both - each checked by
+  `ab3_cli`/`ab3_cli_ref`, the whole run not repeated.)
 * Compiled by blitz2-ab3 only: `exec_data` (AmiBlitz3's type rule of the
   assignment). Since `ab3-pointer-assign` (2026-11-01) it fails in both
-  (`ab3_cli`, `ab3_cli_ref`; the whole run not repeated): 46 of 68
-  then, the same result for 57.
-* Not compiled by blitz2-ab3, by AmiBlitz3 (11): `benchmark2`,
+  (`ab3_cli`, `ab3_cli_ref`).
+* Not compiled by blitz2-ab3, by AmiBlitz3 (10): `benchmark2`,
   `putdiskobject`, `quickdivtest`, `serial_read`, `statementcalls`
   ("Can't Convert Types" in `error.include.ab3` 226: its optional
   parameters `@titletext.s`, G4), `function_problem` (`@p`, G4),
   `benchmark` (`FAST` in `convert.include.ab3`, G4), `data_constants`
-  (`Data.w #c`, G5), `double_print`, `fpu_test2` (`OPTIMIZE 2`, G6),
-  `jsr` (a `Function` called as a statement; "Differences").
+  (`Data.w #c`, G5), `double_print`, `fpu_test2` (`OPTIMIZE 2`, G6).
 * Not compiled by either (10): `ab3_Errors`, `dimcrash`,
   `errorInIncludes` (errors on purpose), `include_dc`, `include_dc_main`,
   `includes_test` (`.h` includes), `_new_includes` (includes not in the
@@ -636,7 +641,8 @@ compile only, the programs are not run.
 * `int_tests` compiles with runtime error checking (its `Stop` hangs at
   run time, "Differences"), `windowtags`, `setwindowpointer`, `hunktest`
   compile; the research table (G2 research §9) expected 52 after G2 -
-  `jsr` was counted for G2 wrongly, the rest of the difference are its
+  `jsr` was counted for G2 wrongly (it compiles since the change
+  `ab3-function-statement`), the rest of the difference are its
   upper bounds.
 
 ## Spike result (2026-10-31)

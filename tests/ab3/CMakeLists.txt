@@ -257,14 +257,12 @@ ab3_cli_case(cnifat_err cnifat_err.ab3 REF)
 # both).  Recorded
 # differences (docs/ab3/variant.md): int_tests' Stop (-r: refused, with
 # runtime error checking it waits for the debugger; AmiBlitz3 ignores it
-# without its debugger) - the rest of it as int_tests_nostop; jsr's
-# function called as a statement
+# without its debugger) - the rest of it as int_tests_nostop
 ab3_cli_case(hex_error hex_error.ab3 REF)
 ab3_cli_case(hexdigits hexdigits.ab3 REF)
 ab3_cli_case(int_problem int_problem.ab3 REF)
 ab3_cli_case(int_tests int_tests.ab3 ARGS -r REF REF_EXPECT int_tests.ref.expect)
 ab3_cli_case(int_tests_nostop int_tests_nostop.ab3 REF)
-ab3_cli_case(jsr jsr.ab3 REF REF_EXPECT jsr.ref.expect)
 ab3_cli_case(macro_test macro_test.ab3 REF)
 ab3_cli_case(unknown_function unknown_function.ab3 REF)
 ab3_cli_case(kick13 kick13.ab3 REF)
@@ -290,11 +288,13 @@ ab3_cli_case(ptr_paren ptr_paren.ab3 REF)
 ab3_cli_case(ptr_accept ptr_accept.ab3 REF)
 ab3_cli_case(ptr_bb2 ptr_bb2.bb)
 # a Function called as a statement (change ab3-function-statement, spec
-# ab3-compat/syntax-rules): numeric, string, without parameters, BB2 mode
+# ab3-compat/syntax-rules): numeric, string, without parameters, BB2 mode;
+# AmiBlitz3's test program jsr
 ab3_cli_case(funcstmt_num funcstmt_num.ab3 REF)
 ab3_cli_case(funcstmt_str funcstmt_str.ab3 REF)
 ab3_cli_case(funcstmt_nopar funcstmt_nopar.ab3 REF)
 ab3_cli_case(funcstmt_bb2 funcstmt_bb2.bb)
+ab3_cli_case(jsr jsr.ab3 REF)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)

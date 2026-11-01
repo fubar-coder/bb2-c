@@ -390,13 +390,15 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      `OPTIMIZE`, `SYNTAX`, `RunErrs*`, `BSS`/`Chip`, new syntax, `@@`,
      global `SHARED`, `_` names, `.name`, `+`, `:@`, `#__include`/
      `#__debug`/`CNIF @`; 47 of AmiBlitz3's 68 test programs compile
-     (AmiBlitz3: 57; `docs/ab3/variant.md`, "Measured share").
+     (AmiBlitz3: 57; `docs/ab3/variant.md`, "Measured share"); still 47
+     after `ab3-pointer-assign` (`exec_data` now refused as in AmiBlitz3)
+     and `ab3-function-statement` (`jsr` compiles): the same result as
+     AmiBlitz3 for 58.
   3. [ ] G3–G5 (escapes, optional parameters, `Null`, casts, `Dim KEEP`,
      `Data` constants), then G7 (68020), then G6 (FPU); the differences
      found against AmiBlitz3's compiler (`docs/ab3/variant.md`,
-     "Differences"), among them two rules of no group yet: a `Function`
-     called as a statement (`jsr`) and `Stop` without the debugger
-     (`int_tests`).
+     "Differences"), among them a rule of no group yet: `Stop` without
+     the debugger (`int_tests`).
   4. [ ] `68k_crash_newtype` (AmiBlitz3's tokenised test program): the
      compile of blitz2-ab3 hangs (AmiBlitz3: "Garbage at the end of
      line" in line 1); found 2026-11-01 by the measurement of G2.
