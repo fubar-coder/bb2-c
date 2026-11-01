@@ -53,12 +53,18 @@ ctest --preset emulator                                # tests in Amiberry
 
 ## Rules
 
-* **Acceptance for every rework:** `blitz2`, `ted`, `acidlibs`, `deflibs`
-  and all library files byte-identical to the state before (build of the
-  previous commit of this repository). If a deviation is intended (e.g. a
-  code rework), check functionally with the tests here
-  (`ctest --preset all`, needs Amiberry and the originals) and name the
-  deviation in the commit.
+* **Acceptance for every rework** (rule of 2026-11-01): the *results*
+  stay byte-identical to the state before (build of the previous commit
+  of this repository) unless a change of them is intended: the
+  executables the compilers generate, the files TED writes, and
+  `acidlibs`, `deflibs` and all library files. The programs themselves
+  (`blitz2`, `blitz2-ab3`, `ted`, the tools) may change with a code
+  rework; then check functionally with the tests here
+  (`ctest --preset all` and `ctest --preset bug-orig`, needs Amiberry
+  and the originals) and name the rework in the commit. A rework that
+  is meant to change no code is still best checked by comparing the
+  programs byte by byte. An intended change of a result (e.g. a fixed
+  original bug) is named in the commit, with tests.
 * **`archive/`** contains unchanged originals (sources like
   `sources/ted-1.1/`, reference data) – never edit; a new state is a new
   directory with a version number, the origin is in `archive/README.md`.
