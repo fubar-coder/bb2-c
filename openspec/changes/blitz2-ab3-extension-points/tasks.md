@@ -28,7 +28,7 @@ touching AB3 code also `ab3_cli`, `ab3_cli_ref`, `ab3_tokens`,
 
 ## 4. Integration
 
-- [ ] 4.1 Full check: clean rebuild without warnings; `blitz2`'s executables for corpus, bug-orig and CD sources byte-identical to the state before the change; `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
+- [x] 4.1 Full check: clean rebuild without warnings; `blitz2`'s executables for corpus, bug-orig and CD sources byte-identical to the state before the change; `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
 
 ## Workflow follow-up
 
