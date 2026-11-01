@@ -411,7 +411,7 @@ implementation:
 | | `ab3res.c` | AmiBlitz3's residents directory, the set-up errors of a compile |
 | | `ab3inc.c` | the mode of a tokenised include, includes of text, the place of an error |
 | | `ab3tok.c` | the mode (`progmode`), AmiBlitz3's token list, the library of `^`, its tokens not compiled yet |
-| | `ab3dir.c` | AmiBlitz3's directives (`OPTIMIZE`; change `ab3-mode-g2`) |
+| | `ab3dir.c` | AmiBlitz3's directives (`OPTIMIZE`, `SYNTAX`, `RunErrsOff`/`LastRunErrsMode`; change `ab3-mode-g2`) |
 | | `ab3.h` | the state the AB3 modules share (not for the chunk files) |
 | | `shared/xtra`, `shared/ab3job` | the mode of a source, the arguments and the job of a command line run |
 
@@ -454,6 +454,7 @@ machine); recorded, not changed in G1:
 | `exec_data` | return code 0 after a compile error ("A unknow error happend!") | 10 (design D6) | none: ours is the documented convention |
 | `inctext_bbname` | an include is tokenised by its name only (`.ab3`, `.AB3`, `.ab2`; `processInclude`, `AmiBlitz3.ab3` 20735 at `@58a11658`); `.bb`/`.bb2` are read as tokenised (a text include becomes one comment "line"), other names are refused | an include of text is tokenised by its contents (`xtra_detect`), whatever its name | G2: AB3's include rules (names, refusal) |
 | `opt_fpu` | `OPTIMIZE 7` compiles on the reference machine (Amiberry's A1200 has a 68882, `fpu_model` of `default.uae`: `_checkfpu` finds it) and the program runs | refused: "Not supported: OPTIMIZE 2 (FPU)" (spec `ab3-compat/directives`) | G6: FPU code |
+| `runerrs` | in CLI mode without its debugger (`Defaultdbug`, not fetched) the executable has no runtime error checking: the array index out of range at the end is not seen | checked: blitz2's runtime error requester | none: the runtime part of AB3 mode |
 | `noend` | a program without `End` with runtime error checking ends normally | an empty requester at the end: blitz2's end code (`blitz2.s:2683 eopcode`, `moveq #3,d0 : trap #0`) without `End`, BUG(orig) #6 | with #6 (the runtime part of AB3 mode) |
 
 AmiBlitz3's console output in CLI mode also names files it does not

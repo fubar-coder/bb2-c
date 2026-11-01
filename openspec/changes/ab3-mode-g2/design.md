@@ -156,3 +156,8 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
   executables - also with AmiBlitz3, so its `SYNTAX 2` changes no code
   either. `cli.cmake` keeps the executables (`TEST:out/NAME.exe`) and
   compares the pairs of `SAME`.
+- **2.3 RunErrs**: AmiBlitz3's errors are the same at the same lines
+  (`runerrs_unpaired`, `runerrs_overflow`; its messages have a second
+  line "Too many 'RunErrs' nested", ours are one line). The nesting
+  itself cannot be compared: AmiBlitz3's executables of CLI mode have no
+  runtime error checking without its debugger (`runerrs.ref.expect`).

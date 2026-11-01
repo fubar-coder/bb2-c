@@ -1,0 +1,5 @@
+[compile]
+runerrs_unpaired.ab3:5: 'LastRunErrsMode' called without 'RunErrsOff'!
+rc=10
+[run]
+no executable

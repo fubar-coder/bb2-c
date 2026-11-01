@@ -1,0 +1,5 @@
+[compile]
+runerrs_overflow.ab3:22: Precedence 'RunErrs' stack overflow! Too many 'RunErrs' nested
+rc=10
+[run]
+no executable

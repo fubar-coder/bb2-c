@@ -20,9 +20,17 @@ static UWORD optflags;
    the run-time libraries, called by every OPTIMIZE */
 #define SETFPUMODE      0xc703
 
+/* the modes of runtime error checking before each nested RunErrsOff
+   (debugga's high byte; AmiBlitz3.ab3:26568 do_runerrsoff, storedebugmode):
+   up to 17, reset per pass (Aclearallvars 2532) */
+#define RUNERRS_NEST    18
+static UWORD runerrs[RUNERRS_NEST];
+static UWORD runerrsnest;
+
 void ext_passstart(void)
 {
     optflags = 0;
+    runerrsnest = 0;
 }
 
 BOOL ext_newsyntax(void)
@@ -47,6 +55,27 @@ static void dooptimize(void)
     tokejsr(SETFPUMODE);
 }
 
+/* RunErrsOff (AmiBlitz3.ab3:26568): the mode before it is kept for
+   LastRunErrsMode, then blitz2's RunErrsOff; the 18th without a
+   LastRunErrsMode is an error */
+static void dorunerrsoff3(void)
+{
+    if (++runerrsnest >= RUNERRS_NEST)
+        err("Precedence 'RunErrs' stack overflow! Too many 'RunErrs' nested");
+    runerrs[runerrsnest] = debugga & 0xff00;
+    dorunerrsoff(getchar3());
+}
+
+/* LastRunErrsMode (AmiBlitz3.ab3:26536): runtime error checking as before
+   the matching RunErrsOff */
+static void dolastrunerrs(void)
+{
+    if (!runerrsnest)
+        err("'LastRunErrsMode' called without 'RunErrsOff'!");
+    debugga = (debugga & 0x00ff) | runerrs[runerrsnest--];
+    getchar3();
+}
+
 /* the statements of AB3 mode that are not blitz2's (the tokens of
    toklist.h's AmiBlitz3 names) */
 BOOL ext_token(UWORD c)
@@ -61,6 +90,12 @@ BOOL ext_token(UWORD c)
         undodebug();
         if (!eos(getchar3()))
             getchar3();
+        return TRUE;
+    case 0x8000 + tnum + 32:            /* RunErrsOff */
+        dorunerrsoff3();
+        return TRUE;
+    case 0x8000 + tnum + 38:            /* LastRunErrsMode, $80D9 */
+        dolastrunerrs();
         return TRUE;
     case 0x8000 + tnum + 40:            /* OPTIMIZE, $80DB */
         getchar3();

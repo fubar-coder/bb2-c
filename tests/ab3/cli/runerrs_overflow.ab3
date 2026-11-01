@@ -1,0 +1,23 @@
+; more than 17 nested RunErrsOff without LastRunErrsMode: the 18th open one
+; (line 22) is an error
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+RunErrsOff
+LastRunErrsMode
+RunErrsOff
+RunErrsOff
+End

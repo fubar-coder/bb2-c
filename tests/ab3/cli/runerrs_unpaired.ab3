@@ -1,0 +1,6 @@
+; LastRunErrsMode without a RunErrsOff before it: an error in line 5
+RunErrsOff
+LastRunErrsMode
+NPrint "x"
+LastRunErrsMode
+End

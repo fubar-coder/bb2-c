@@ -1,0 +1,20 @@
+; XTRA
+; Embedded .xtra Header
+;
+; Debugger
+; -------------------------------------------------------
+; RuntimeDebug    = 1
+; /XTRA
+; RunErrsOff nests, LastRunErrsMode goes back to the mode before the
+; matching RunErrsOff: a(9) is out of range, checked only at the end
+Dim a(5)
+RunErrsOff
+x = a(9) : NPrint "off 1"
+RunErrsOff
+x = a(9) : NPrint "off 2"
+LastRunErrsMode
+x = a(9) : NPrint "off 3"
+LastRunErrsMode
+NPrint "on"
+x = a(9) : NPrint "not checked"
+End
