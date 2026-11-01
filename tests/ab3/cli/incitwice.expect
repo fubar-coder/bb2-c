@@ -1,0 +1,7 @@
+[compile]
+rc=0
+[run]
+lib
+lib
+main
+rc=0

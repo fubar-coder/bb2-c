@@ -1,0 +1,9 @@
+; tokeniser edge cases for the comparison with AmiBlitz3 (ab3_tokenise):
+; case, words inside identifiers, after . \ # ' @ _ and a digit, name$
+; first, strings, comments, TABs and a word at the end of the file
+; without a line end
+nprint "x" : NPrint "nprint" : If a Then NPrint a : EndIf : if b
+show2{1} : sub1=3 : *w.Window\Width : #MAX : 'loc : @x : _Print : 2Print
+a$=Str$(5)+Left$(b$,1)+Mid$(c$,2)+UCase$(d$) : e.l=Len(a$)
+	NPrint	"a	b" ;	c NPrint
+End

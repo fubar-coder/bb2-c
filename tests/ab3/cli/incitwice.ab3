@@ -1,0 +1,7 @@
+; AB3 mode: the same file with INCLUDE twice, one after the other: as
+; in AmiBlitz3 only an include that is still open is "already included"
+; (findinclude: the open includes), so it is compiled twice
+INCLUDE "incx_lib.ab3"
+INCLUDE "incx_lib.ab3"
+NPrint "main"
+End

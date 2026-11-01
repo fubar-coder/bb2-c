@@ -101,7 +101,8 @@ set(AB3_CLI_TIMEOUT 600 CACHE STRING
 file(GLOB cli_sources CONFIGURE_DEPENDS ${cli_dir}/*.ab3 ${cli_dir}/*.bb)
 set(ted_tokens ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
 set(cli_made)
-foreach(pair incerr_tok_inc|incerr_tok_inc incother|incother_bb2tok incother|incother_ab3tok)
+foreach(pair incerr_tok_inc|incerr_tok_inc incother|incother_bb2tok incother|incother_ab3tok
+		inctok_ab3_inc|inctok_ab3_inc)
 	string(REPLACE "|" ";" pair "${pair}")
 	list(GET pair 0 in)
 	list(GET pair 1 out)
@@ -120,6 +121,13 @@ add_custom_command(OUTPUT ${cli_gen}/incother_ab3tok.bb2.xtra
 	COMMENT "AmiBlitz3 .xtra of incother_ab3tok.bb2"
 	VERBATIM)
 list(APPEND cli_made ${cli_gen}/incother_ab3tok.bb2.xtra)
+add_custom_command(OUTPUT ${cli_gen}/inctok_ab3_inc.bb2.xtra
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${cli_gen}
+	COMMAND ${MKTESTDATA} ${cli_dir}/ab3xtra.spec ${cli_gen}/inctok_ab3_inc.bb2.xtra
+	DEPENDS ${cli_dir}/ab3xtra.spec ${MKTESTDATA} host_tools
+	COMMENT "AmiBlitz3 .xtra of inctok_ab3_inc.bb2"
+	VERBATIM)
+list(APPEND cli_made ${cli_gen}/inctok_ab3_inc.bb2.xtra)
 add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 
 # ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-userlib]
@@ -182,8 +190,18 @@ ab3_cli_case(resident_path resident_path.ab3 REF)
 ab3_cli_case(noend noend.ab3 REF REF_EXPECT noend.ref.expect)
 # includes of text in both modes (task 3.5)
 ab3_cli_case(inctext inctext.ab3 REF)
-ab3_cli_case(inctext_bbname inctext_bbname.ab3 REF REF_EXPECT inctext_bbname.ref.expect)
+ab3_cli_case(inctext_bbname inctext_bbname.ab3 REF)
 ab3_cli_case(inctext_bb2 inctext_bb2.bb)
+# AB3 mode's tokeniser (ab3-mode-g2 task 1.2)
+ab3_cli_case(tokens tokens.ab3 REF)
+# AmiBlitz3's include rules in AB3 mode (ab3-mode-g2 task 4.1): the
+# extension fallback, a refused name, a tokenised include by its name, a
+# repeated XINCLUDE
+ab3_cli_case(incfallback incfallback.ab3 REF)
+ab3_cli_case(increfuse increfuse.ab3 REF)
+ab3_cli_case(inctok_ab3 inctok_ab3.ab3 REF)
+ab3_cli_case(incxtwice incxtwice.ab3 REF)
+ab3_cli_case(incitwice incitwice.ab3 REF)
 # AB3 mode's libraries: a userlib replacing a BigLib library, a missing
 # BigLib (task 4.2)
 ab3_cli_case(userlib userlib.ab3 TREE Blitz3-userlib REF)
@@ -262,3 +280,33 @@ foreach(t ab3_cli_broken ab3_cli_ref_broken)
 	set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION
 		"FAIL atoi: outmatch: [^\n]*expect line 14: \"12325\", output line [0-9]+: \"12324\"")
 endforeach()
+
+# AB3 mode's tokens against AmiBlitz3's (spec ab3-compat/tokenizer,
+# tokenise.cmake): AmiBlitz3 v3.14.0 loads every source in CLI mode and
+# writes its lines (-save NAME.bb2), ab3tok (shared/tokenizer, as ab3cli)
+# loads it with AB3 mode's token list, the lines must be equal.  Sources:
+# AmiBlitz3's test programs, those of cli/ and tokens/ (edge cases).
+# Label emulator; skipped (77) without Amiberry or the fetched files.
+file(GLOB tokenise_sources CONFIGURE_DEPENDS ${cli_dir}/*.ab3
+	${CMAKE_CURRENT_SOURCE_DIR}/tokens/*.ab3)
+string(REPLACE ";" "$<SEMICOLON>" tokenise_sources "${tokenise_sources}")
+# ab3_tokenise(NAME [BREAK]): the ctest; BREAK: the token of NPrint
+# changed in our list (the check itself)
+function(ab3_tokenise name)
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
+	set(brk)
+	if(ARGN)
+		set(brk -DBREAK=NPrint)
+	endif()
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+		-DBLITZTOKENS=${BLITZTOKENS} -DAB3TOK=${AB3TOK} -DBLITZ2=$<TARGET_FILE:blitz2-ab3>
+		-DAB3=${AB3_V314} -DSOURCES=${tokenise_sources} -DWORK=${work} ${brk}
+		-DTIMEOUT=${AB3_CLI_TIMEOUT} -P ${CMAKE_CURRENT_SOURCE_DIR}/tokenise.cmake)
+	math(EXPR limit "${AB3_CLI_TIMEOUT} + 120 + ${EMULATION_QUEUE_WAIT}")
+	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT ${limit})
+endfunction()
+ab3_tokenise(ab3_tokenise)
+ab3_tokenise(ab3_tokenise_broken BREAK)
+set_tests_properties(ab3_tokenise_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"FAIL atoi: ab3tok: [^\n]*atoi.ab3: line [0-9]+ differs from AmiBlitz3's")

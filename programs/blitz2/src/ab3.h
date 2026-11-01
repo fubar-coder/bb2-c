@@ -40,4 +40,9 @@ void ab3_sectpass(void);
 void ab3_bss(void);
 void ab3_chip(void);
 
+/** @brief The include depth: the includes open now (0 in the main
+ *         source, 1 inside an include, more in nested ones), for
+ *         AmiBlitz3's constant #__include (ab3inc.c). */
+UWORD ab3_incdepth(void);
+
 #endif

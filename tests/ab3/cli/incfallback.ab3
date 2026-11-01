@@ -1,0 +1,7 @@
+; AB3 mode: INCLUDE without an extension - AmiBlitz3's fallback finds
+; incfallback_lib.ab3 in the main source's directory (spec
+; ab3-compat/source-mode, "Extension fallback")
+NPrint "main"
+INCLUDE "incfallback_lib"
+NPrint "main again"
+End

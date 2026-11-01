@@ -332,7 +332,8 @@ it loads anything; then it runs as for the editor, but loads
 `PROGDIR:ab3cli` instead of `blitz2:ted` and hands it the job instead
 of a file name. `ab3cli` is a headless editor on the edstub frame with
 TED's core: it loads the source as TED does (a text source tokenised
-with the token list of the program's mode), hands the compiler the
+with the token list of the program's mode; in AB3 mode, since G2, with
+AmiBlitz3's tokeniser, below), hands the compiler the
 options (AmiBlitz3's embedded header as a Blitz 2 `.xtra` image, else
 the companion `.xtra`, else the compiler's own; `-r` switches runtime
 error checking, the debugger and debug information off), compiles with
@@ -340,9 +341,11 @@ CREATE EXECUTABLE and prints errors as `FILE:LINE: MESSAGE`.
 
 Includes: blitz2 only reads tokenised includes (`readinc`, design D4 of
 the change). In a command line run an include of text is therefore
-tokenised by `ab3cli` first – TED's way of loading a source, with the
-program's token list – and `readinc` reads those lines; an editor
-session reads includes exactly as `blitz2`. A tokenised include of the
+tokenised by `ab3cli` first – the mode's way of loading a source, with
+the program's token list – and `readinc` reads those lines; an editor
+session reads includes exactly as `blitz2`. Whether an include is text:
+in BB2 mode by its contents, in AB3 mode since G2 by its name (below,
+"Includes of AB3 mode"). A tokenised include of the
 other mode is refused ("Include of another mode: NAME"). A compile error
 inside an include is printed with the include's name and line
 (`INC:LINE: MESSAGE`): `blitz2-ab3` counts the lines `readinc` takes of
@@ -360,11 +363,13 @@ Limits of G1, found on the way:
 * A text line longer than TED's 128 characters is split as TED splits
   it; names that contain a command name are tokenised inside (`show2{`
   becomes `Show` + `2{`), as in TED and AmiBlitz3's tokenised sources.
+  (BB2 mode only since G2: in AB3 mode the text is tokenised by
+  AmiBlitz3's rules, below.)
 * `PROGDIR:` needs Kickstart 2.0; the editor session runs on 1.3 as
   `blitz2`. The `.xtra` image goes to the compiler through a temporary
   file in `T:` (else `RAM:`).
 * The line of an error in an include of text counts the lines as TED
-  loads them: after a line TED splits (longer than 128 characters) the
+  loads them (BB2 mode): after a line TED splits (longer than 128 characters) the
   number is one too high. Of more than 16 nested includes, an error in a
   deeper one is placed at the 16th.
 
@@ -420,10 +425,15 @@ implementation:
 The points (`ext.h`): `ext_makelibs`, `ext_loadlibs`,
 `ext_loaduserlibs`, `ext_freelibs` (libraries), `ext_resbegin`,
 `ext_loadres` (residents), `ext_compilestart` (the start of a compile),
-`ext_incopen`, `ext_readinc`, `ext_incline`, `ext_incdone` (includes),
+`ext_incname`, `ext_xinclude`, `ext_incopen`, `ext_readinc`,
+`ext_incline`, `ext_incdone` (includes),
 `ext_errpos` (a compile error), `ext_newtoken` (a built-in token),
-`ext_passstart` (the start of a pass), `ext_token` (a statement token
-of AB3 mode), `ext_newsyntax` (AmiBlitz3's new syntax),
+`ext_passstart`, `ext_passend` (a pass), `ext_token` (a statement
+token of AB3 mode), `ext_newsyntax` (AmiBlitz3's new syntax),
+`ext_macargs`, `ext_namelabel`, `ext_dotlabel`, `ext_stmtprefix`,
+`ext_comment`, `ext_letter`, `ext_shared`, `ext_sharedvar`,
+`ext_nextline` (AmiBlitz3's syntax rules), `ext_savefile` (the
+executable),
 `ext_cmdline`, `ext_editor`, `ext_editorarg`, `ext_result` (command
 line and editor); the data of the mode `ext_toklist` (asm `tokens`) and
 `ext_mathq` (asm `mathq`). A point that stands for a part of a chunk
@@ -445,6 +455,93 @@ earlier second build: the link of both programs checks it
 (CLAUDE.md, rule of 2026-11-01): the executables it writes for the
 corpus, the bug-orig tests and the CD's sources stay byte-identical.
 
+## AB3 mode's tokeniser (G2, 2026-11-01)
+
+In AB3 mode `ab3cli` tokenises a text main source and the includes of
+text with `shared/tokenizer` (change `ab3-mode-g2`, design D2/D3), which
+follows AmiBlitz3 v3.14.0's `preproc_Tokenize`
+(`Shared/preprocessor.include.ab3:358` at `@58a11658`), with the token
+list blitz2-ab3 hands its editor (its own tokens, then the libraries'; a
+name given twice keeps its first token):
+
+* names match byte for byte: `execbase`, `nprint`, `if` stay names;
+* only a whole word that starts with a letter is looked up, and only if
+  it starts at the line start or after a space, an operator, a bracket,
+  `:`, `,`, `;`, `"` or a control character - never directly after `.`,
+  `\`, `#`, `$`, `'`, `@`, `_`, a digit or a letter (`show2{`, `sub1`,
+  `\Width`, `#MAX`, `.ExecBase` stay as they are);
+* at a `$` `name$` is looked up first, then `name`; a word is looked up
+  when a character that is not a letter, digit, `_` (or a `$`/`#` that
+  belongs to no token) ends it - a word at the very end of the file
+  (no line end behind it) is not looked up, as in AmiBlitz3;
+* strings and comments are copied unchanged, except a TAB (a space);
+  outside them a TAB becomes a space, CR, DEL and the other control
+  characters are dropped, a byte from 128 becomes `?`; LF and a 0 byte
+  end a line;
+* the main source: its embedded header (to the line that reads `/XTRA`,
+  AmiBlitz3's `ParseAB3Header`; not for `.ab2`) is skipped - here as
+  empty lines, so that the line numbers of errors stay the file's - and
+  a line longer than 250 characters is cut there (`LoadSource`; in
+  AmiBlitz3 such a line also ends the source, below);
+* an include of text: its header (AmiBlitz3's `SkipXtraHeader`: leading
+  lines with a `;` up to a `/XTRA`, `/xtra` or `/Xtra`) skipped, as empty
+  lines; no line cut.
+
+A tokenised source and BB2 mode keep TED's way of loading (TED's own
+tokeniser stays for TED, a later change).
+
+`ab3_tokenise` (label `emulator`, `tests/ab3/tokenise.cmake`) checks the
+tokens: AmiBlitz3 v3.14.0 loads each source in CLI mode and writes its
+lines (`-save NAME.bb2`), `tools/ab3tok` loads it with `shared/tokenizer`
+and AB3 mode's token list, and the lines must be equal - for AmiBlitz3's
+test programs, the `.ab3` sources of `tests/ab3/cli/` and the edge cases
+of `tests/ab3/tokens/`. `ab3_tokenise_broken`: with another token for
+`NPrint` it must fail.
+
+## Includes of AB3 mode (G2, 2026-11-01)
+
+In AB3 mode an `INCLUDE`/`XINCLUDE` is found and judged as AmiBlitz3
+v3.14.0 does it (change `ab3-mode-g2`, design D4; `ab3inc.c` behind
+`ext_incname` and `ext_xinclude`, the name rules in `shared/tokenizer`;
+`AmiBlitz3.ab3` at `@58a11658`):
+
+* the name is the `INCDIR` string followed by the name (`makeiname`, as
+  BB2), searched (`check_incdir`, 25836) in `Blitz3:Sourcecodes/Includes`
+  (AmiBlitz3's default includes directory, `config\path_includes`), the
+  main source's directory, the directory of the innermost open include,
+  and `Blitz3:Sourcecodes/Includes` with the name's file part - joined
+  with `AddPart`, so a name with a device is taken as it is;
+* at each place the name as given, then its extension replaced by
+  `.ab3`, `.ab2`, `.bb2`, then these behind the old extension
+  (`ab3_GetIncludeLock`, 25796: `mylib` → `mylib.ab3`, `dos.include` →
+  `dos.include.ab3`); the found file's full name (`NameFromLock`, e.g.
+  `TEST:src/lib.ab3`) is the include's name from then on, also in
+  messages;
+* by the last three characters of that name, case-sensitively
+  (`processInclude`, 20754): `ab3`, `AB3`, `ab2` are tokenised as text
+  (by `ab3cli`, AmiBlitz3's tokeniser), `bb2` and `.bb` are read as
+  tokenised - a text file of such a name is one comment "line" -, any
+  other name stops the compile with "You can only include tokenized
+  files (.bb2 |.bb)" (also when no such file is there; a name like
+  `defs.h` is refused unless `defs.ab3` or another fallback exists);
+  a tokenised include still gets the check of its mode (its companion
+  `.xtra`, G1);
+* `XINCLUDE` skips a file whose file part was included with `XINCLUDE`
+  before (`do_xinclude`, 20615): `XINCLUDE "lib"` after `XINCLUDE
+  "lib.ab3"` is skipped; `INCLUDE` of a file that is open (an include of
+  itself) is "Already Included", one after the other is compiled each
+  time - as in AmiBlitz3 (`findinclude` looks at the open includes) and
+  BB2.
+
+The include depth (the includes open now: 0 in the main source) is
+`ab3_incdepth()` of `ab3.h`, for AmiBlitz3's `#__include`.
+
+`ab3_cli` cases: `incfallback` (the fallback), `increfuse` (a refused
+name), `inctok_ab3` (a `.bb2` with AmiBlitz3's `.xtra` read as
+tokenised), `incxtwice`, `incitwice` (repeated includes),
+`inctext_bbname` (a text `.bb` read as tokenised), all also in
+`ab3_cli_ref` with AmiBlitz3's results.
+
 ## Differences to AmiBlitz3's compiler (G2+, 2026-11-01)
 
 Found by `ab3_cli_ref` (AmiBlitz3 v3.14.0 in CLI mode on the same
@@ -452,12 +549,12 @@ machine); recorded, not changed in G1:
 
 | Case | AmiBlitz3 v3.14.0 | blitz2-ab3 | For |
 |---|---|---|---|
-| `exec_data` | line 1 `*exec.ExecBase = execbase` refused: "Can't convert types --> execbase", no executable | compiles: TED's tokeniser takes `execbase` in any case as the library function `ExecBase` (`$DE26`); the program prints exec's version | G2: case of names when tokenising (cause in AmiBlitz3 to be checked) |
+| `exec_data` | line 1 `*exec.ExecBase = execbase` refused: "Can't convert types --> execbase", no executable | compiles: since G2 `execbase` stays a variable as in AmiBlitz3 (case-sensitive tokeniser), a quick 0 assigned to the pointer; the program prints what is at address 0 (before G2: TED's tokeniser took `execbase` as `ExecBase`, `$DE26`). The error is AmiBlitz3's assignment rule, not its tokeniser: a pointer on the left takes only a pointer or a long (`AmiBlitz3.ab3` 23540-23570 at `@58a11658`, independent of `SYNTAX`) | open: the rule is not in the G2 specs |
 | `exec_data` | return code 0 after a compile error ("A unknow error happend!") | 10 (design D6) | none: ours is the documented convention |
-| `inctext_bbname` | an include is tokenised by its name only (`.ab3`, `.AB3`, `.ab2`; `processInclude`, `AmiBlitz3.ab3` 20735 at `@58a11658`); `.bb`/`.bb2` are read as tokenised (a text include becomes one comment "line"), other names are refused | an include of text is tokenised by its contents (`xtra_detect`), whatever its name | G2: AB3's include rules (names, refusal) |
 | `opt_fpu` | `OPTIMIZE 7` compiles on the reference machine (Amiberry's A1200 has a 68882, `fpu_model` of `default.uae`: `_checkfpu` finds it) and the program runs | refused: "Not supported: OPTIMIZE 2 (FPU)" (spec `ab3-compat/directives`) | G6: FPU code |
 | `runerrs` | in CLI mode without its debugger (`Defaultdbug`, not fetched) the executable has no runtime error checking: the array index out of range at the end is not seen | checked: blitz2's runtime error requester | none: the runtime part of AB3 mode |
 | `sect_both` | a relocation inside the chip section (`Dc.l zbss`) is written to the code hunk's list with its unshifted offset: the long stays wrong (0) | relocated in the chip hunk's own RELOC32 block: the address of `zbss` | none: ours is the correct executable |
+| `tokens/longline` | a main-source line of 250 characters or more ends the source: `LoadSource` re-reads it with `PeekT(…, 10)`, which goes past the line's 0 to the end of the buffer (no LF is left after tokenising), so the following lines are dropped (`CLIModeSupport.ab3` 480-497 at `@58a11658`, measured with `-save`) | the line is cut at 250 characters, the following lines stay | none: not reproduced |
 | `noend` | a program without `End` with runtime error checking ends normally | an empty requester at the end: blitz2's end code (`blitz2.s:2683 eopcode`, `moveq #3,d0 : trap #0`) without `End`, BUG(orig) #6 | with #6 (the runtime part of AB3 mode) |
 
 AmiBlitz3's console output in CLI mode also names files it does not

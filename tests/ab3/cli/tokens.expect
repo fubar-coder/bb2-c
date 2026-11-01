@@ -1,0 +1,8 @@
+[compile]
+rc=0
+[run]
+show 3
+7
+Print
+5
+rc=0

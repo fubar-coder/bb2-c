@@ -169,6 +169,10 @@ with expect files (`tools/outmatch`; docs/ab3/variant.md, "The command
 line"); `ab3_cli_ref` compiles the AmiBlitz3 cases with AmiBlitz3
 v3.14.0's own compiler in CLI mode and compares the programs' output
 with the same files (its differences: docs/ab3/variant.md).
+`ab3_tokenise` (`tests/ab3/tokenise.cmake`) compares the tokens of AB3
+mode with AmiBlitz3's: AmiBlitz3 writes the lines it loaded (`-save
+NAME.bb2`), `tools/ab3tok` tokenises the same sources with
+`shared/tokenizer` (docs/ab3/variant.md, "AB3 mode's tokeniser").
 
 ## IDE (CLion and others)
 
@@ -826,6 +830,11 @@ shared/xtra/                 the companion settings of a source (.xtra)
                              header, AmiBlitz3 embedded header (C99, no
                              libc; compiled by each user: blitz2-ab3,
                              ab3cli, the host tools)
+shared/tokenizer/            source text to tokenised lines with a rule
+                             set (AmiBlitz3's), the ends of AmiBlitz3's
+                             embedded headers, its 250-character lines
+                             (C99, no libc; compiled by each user: ab3cli,
+                             the host tools)
 host/                        the host side: everything built with the
                              native compiler (tools, host tests), as
                              ExternalProject (build/<preset>/host)
@@ -869,6 +878,7 @@ tools/                       host tools:
                              bblines (line edits of tokenised sources),
                              xtra (shared/xtra compiled for the host),
                              ab3job (shared/ab3job for the host),
+                             tokenizer (shared/tokenizer for the host),
                              teststats (the @stat line of the emulator
                              sessions, statistics of JUnit files);
                              blitzlib also compares declarations
@@ -879,7 +889,8 @@ tools/                       host tools:
   vasmlisting/, checklabels/,
   checkdata/, asmcmp/,
   mktestdata/, bb22/, blitzres/,
-  bblines/, xtra/, teststats/
+  bblines/, xtra/, teststats/,
+  ab3tok/
   tests/                     tests of lib/ with inputs from memory
 ```
 

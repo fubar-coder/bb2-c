@@ -10,9 +10,9 @@ behaviour only in `ab3*.c` behind extension points (D1).
 
 ## 1. Tokeniser component
 
-- [ ] 1.1 Add `shared/tokenizer` (D2): the object, AB3 rule set (case-sensitive whole words, word-start rules, `name$` first, first entry wins, strings/comments untouched, 250-character lines), m68k and host builds, host tests with every rule and broken input; verify: host tests pass, also with `-DHOST_SANITIZE=ON`
+- [x] 1.1 Add `shared/tokenizer` (D2): the object, AB3 rule set (case-sensitive whole words, word-start rules, `name$` first, first entry wins, strings/comments untouched, 250-character lines), m68k and host builds, host tests with every rule and broken input; verify: host tests pass, also with `-DHOST_SANITIZE=ON`
 - [ ] 1.2 Use it in `ab3cli` for AB3-mode sources and text includes (D3), TED's `tokit` for BB2 mode; verify: `ab3_cli` passes, `exec_data` now gives AmiBlitz3's error (expect files of `exec_data` updated, entry removed from "Differences" in `docs/ab3/variant.md`)
-- [ ] 1.3 Compare the tokens of the `ab3_cli` programs with AmiBlitz3's (`-save` in CLI mode or an equivalent dump; resolve the open question of design.md); verify: a ctest compares them, a changed token fails it
+- [x] 1.3 Compare the tokens of the `ab3_cli` programs with AmiBlitz3's (`-save` in CLI mode or an equivalent dump; resolve the open question of design.md); verify: a ctest compares them, a changed token fails it
 
 ## 2. Directives
 
@@ -31,7 +31,7 @@ behaviour only in `ab3*.c` behind extension points (D1).
 
 ## 4. Includes
 
-- [ ] 4.1 AmiBlitz3's include rules in AB3 mode (D4): INCDIR + name, search order, extension fallback, type by name, refusal, repeated `INCLUDE`/`XINCLUDE`; the G1 other-mode check kept; update the `inctext_bbname` case and the "Differences" entry; verify: the scenarios of the modified `ab3-compat/source-mode` in `ab3_cli`
+- [x] 4.1 AmiBlitz3's include rules in AB3 mode (D4): INCDIR + name, search order, extension fallback, type by name, refusal, repeated `INCLUDE`/`XINCLUDE`; the G1 other-mode check kept; update the `inctext_bbname` case and the "Differences" entry; verify: the scenarios of the modified `ab3-compat/source-mode` in `ab3_cli`
 
 ## 5. Test programs and integration
 

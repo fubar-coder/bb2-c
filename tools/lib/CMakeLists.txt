@@ -22,6 +22,8 @@
 #              AmiBlitz3 embedded header), compiled for the host
 #   ab3job     the command line of blitz2-ab3 (shared/ab3job), compiled for
 #              the host
+#   tokenizer  source text to tokenised lines (shared/tokenizer: AmiBlitz3's
+#              rules), compiled for the host
 #   teststats  the @stat line of the test runners' emulator sessions
 #              (lib_statline) and statistics of test runs from ctest's
 #              JUnit files: durations, flaky results, time limits, COST
@@ -44,5 +46,6 @@ add_subdirectory(blitzres)
 add_subdirectory(bblines)
 add_subdirectory(xtra)
 add_subdirectory(ab3job)
+add_subdirectory(tokenizer)
 add_subdirectory(teststats)
 add_subdirectory(outmatch)

@@ -41,6 +41,16 @@ void ext_compilestart(void)
 {
 }
 
+UWORD ext_incname(UWORD len)
+{
+    return len;
+}
+
+BOOL ext_xinclude(UWORD len)
+{
+    return FALSE;
+}
+
 void ext_incopen(struct include *inc)
 {
 }

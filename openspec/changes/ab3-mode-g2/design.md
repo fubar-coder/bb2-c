@@ -122,11 +122,70 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
 ## Open Questions
 
 - Whether AmiBlitz3's `-save` writes the tokenised form usable for the
-  token comparison (decided during the tokenizer task; the spec allows
-  "an equivalent dump").
+  token comparison: decided in task 1.3, it does (findings below).
 
-## Findings (implementation)
+## Findings during implementation
 
+- (Task 1.2, 2026-11-01) `exec_data`: with AmiBlitz3's tokeniser
+  `execbase` stays a variable, as in AmiBlitz3, but the program still
+  compiles (a quick 0 assigned to the pointer `*exec`). AmiBlitz3's
+  "Can't convert types --> execbase" is not its tokeniser but its
+  assignment rule: with a pointer on the left the right side must be a
+  pointer or a long (`AmiBlitz3.ab3` 23540-23570 at `58a11658`, after
+  `eval` in the assignment; independent of `SYNTAX`/`syntax_typecheck`).
+  That rule is in none of the G2 specs; the scenario "Lower-case library
+  name" of `ab3-compat/tokenizer` ("the compile gives the same result as
+  AmiBlitz3") and the verification of task 1.2 need it. Open: a spec
+  decision (a syntax rule of its own, or the scenario limited to the
+  tokens).
+- (Task 1.2) The embedded header of a main source and of an include is
+  skipped as AmiBlitz3 does, but as empty lines: the line numbers of
+  errors stay those of the file. AmiBlitz3's `ParseAB3Header` (main
+  source) and `SkipXtraHeader` (include) find the end differently; both
+  are kept (`shared/tokenizer`).
+- (Task 1.3) AmiBlitz3's `-save NAME.bb2` in CLI mode
+  (`Blitz3:Amiblitz3 -s SOURCE -save NAME.bb2`, no compile) writes the
+  editor's lines as loaded, each with its 0 (`SaveSource`,
+  `CLIModeSupport.ab3:1016`): the tokenised form, usable as it is. The
+  comparison (`ab3_tokenise`, `tests/ab3/tokenise.cmake`) runs it for
+  AmiBlitz3's test programs, the `.ab3` sources of `tests/ab3/cli/` and
+  edge cases (`tests/ab3/tokens/`), and compares on the host with
+  `tools/ab3tok` - `shared/tokenizer` with AB3 mode's token list
+  (`blitztokens -last 80DB` on blitz2-ab3 and AmiBlitz3's BigLibs, the
+  list `ab3_tokens` has equal to AmiBlitz3's), the same code ab3cli
+  tokenises with; the embedded header is left out there, as AmiBlitz3
+  does, where ab3cli keeps empty lines. All equal, including a word at
+  the end of the file without a line end (not tokenised by either).
+  `ab3_tokenise_broken` gives NPrint another token: it must fail.
+- (Task 4.1) "Including the same file a second time with INCLUDE SHALL
+  be an error" (spec `ab3-compat/source-mode`, "Repeated includes"):
+  AmiBlitz3's `findinclude` (`AmiBlitz3.ab3` 11243, `processInclude`
+  20737) looks only at the includes that are open, as BB2's `findinc`;
+  measured (`ab3_cli_ref` case `incitwice`): two `INCLUDE`s of a file one
+  after the other compile it twice, only an include of itself is
+  "already included". Implemented as AmiBlitz3 (BB2's check, with the
+  found full name); the requirement's wording should say "while it is
+  open" (spec text only, no scenario affected).
+- (Task 4.1) The found name is `NameFromLock`'s full name, as
+  AmiBlitz3's: messages about an include name it so (`TEST:src/...` in
+  the expect files). The type check (by name) comes before blitz2's
+  "Already Included", in AmiBlitz3 after it - a difference only for an
+  include of itself under a refused name. AmiBlitz3's includes directory
+  is its tooltype `INCLUDEDIR`, by default `Blitz3:Sourcecodes/Includes`;
+  blitz2-ab3 has no tooltypes and takes the default.
+- (Task 4.1) The include depth for `#__include` (task 3.5, the other
+  group): `ab3_incdepth()` in `ab3.h` (ab3inc.c) - the includes open now
+  (`numincs`), 0 in the main source; it changes where AmiBlitz3's
+  `_include` label does (`processInclude` sets it, `next_includefile`
+  clears it with the last include).
+- (Task 1.3) A main-source line of 250 or more characters: `LoadSource`
+  re-reads it with `PeekT(…, 10)`, which does not stop at the line's 0;
+  there is no LF left after tokenising, so the rest of the buffer is
+  taken as that line and cut to 250 bytes - AmiBlitz3 drops every line
+  after it (measured by `ab3_tokenise`). Ours cuts the line and keeps
+  the following ones: a documented difference (`docs/ab3/variant.md`),
+  not reproduced; the test source `tokens/longline.ab3` has the long
+  line last.
 - **2.1 OPTIMIZE** (`ab3dir.c`, points `ext_passstart`, `ext_token`,
   `ext_newsyntax`): the code of the statement is AmiBlitz3's, byte for
   byte: `move.l #0,d0` (`$203C`, a long 0) and `jsr` (`$4EB9`) to

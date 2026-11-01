@@ -1,0 +1,17 @@
+; AB3 mode's tokeniser (spec ab3-compat/tokenizer): a name that contains
+; a command name (show, sub1), a field after '\' and a command name in a
+; string stay as they are, Str$ is the string function
+NEWTYPE .box
+  Width.w
+End NEWTYPE
+Statement show{n.l}
+  NPrint "show ", n
+End Statement
+sub1.l = 3
+show{sub1}
+b.box\Width = 7
+NPrint b\Width
+NPrint "Print"
+a$ = Str$(5)
+NPrint a$
+End

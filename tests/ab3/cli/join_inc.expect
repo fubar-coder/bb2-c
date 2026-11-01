@@ -1,5 +1,5 @@
 [compile]
-join_inc_bad.ab3:3: Joining lines with @@ does not work in includes
+TEST:src/join_inc_bad.ab3:3: Joining lines with @@ does not work in includes
 rc=10
 [run]
 no executable
