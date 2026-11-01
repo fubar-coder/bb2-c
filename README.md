@@ -169,6 +169,10 @@ with expect files (`tools/outmatch`; docs/ab3/variant.md, "The command
 line"); `ab3_cli_ref` compiles the AmiBlitz3 cases with AmiBlitz3
 v3.14.0's own compiler in CLI mode and compares the programs' output
 with the same files (its differences: docs/ab3/variant.md).
+`ab3_tokenise` (`tests/ab3/tokenise.cmake`) compares the tokens of AB3
+mode with AmiBlitz3's: AmiBlitz3 writes the lines it loaded (`-save
+NAME.bb2`), `tools/ab3tok` tokenises the same sources with
+`shared/tokenizer` (docs/ab3/variant.md, "AB3 mode's tokeniser").
 
 ## IDE (CLion and others)
 
@@ -885,7 +889,8 @@ tools/                       host tools:
   vasmlisting/, checklabels/,
   checkdata/, asmcmp/,
   mktestdata/, bb22/, blitzres/,
-  bblines/, xtra/, teststats/
+  bblines/, xtra/, teststats/,
+  ab3tok/
   tests/                     tests of lib/ with inputs from memory
 ```
 

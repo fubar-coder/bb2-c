@@ -469,13 +469,22 @@ name given twice keeps its first token):
 * the main source: its embedded header (to the line that reads `/XTRA`,
   AmiBlitz3's `ParseAB3Header`; not for `.ab2`) is skipped - here as
   empty lines, so that the line numbers of errors stay the file's - and
-  a line longer than 250 characters is cut there (`LoadSource`);
+  a line longer than 250 characters is cut there (`LoadSource`; in
+  AmiBlitz3 such a line also ends the source, below);
 * an include of text: its header (AmiBlitz3's `SkipXtraHeader`: leading
   lines with a `;` up to a `/XTRA`, `/xtra` or `/Xtra`) skipped, as empty
   lines; no line cut.
 
 A tokenised source and BB2 mode keep TED's way of loading (TED's own
 tokeniser stays for TED, a later change).
+
+`ab3_tokenise` (label `emulator`, `tests/ab3/tokenise.cmake`) checks the
+tokens: AmiBlitz3 v3.14.0 loads each source in CLI mode and writes its
+lines (`-save NAME.bb2`), `tools/ab3tok` loads it with `shared/tokenizer`
+and AB3 mode's token list, and the lines must be equal - for AmiBlitz3's
+test programs, the `.ab3` sources of `tests/ab3/cli/` and the edge cases
+of `tests/ab3/tokens/`. `ab3_tokenise_broken`: with another token for
+`NPrint` it must fail.
 
 ## Differences to AmiBlitz3's compiler (G2+, 2026-11-01)
 
@@ -487,6 +496,7 @@ machine); recorded, not changed in G1:
 | `exec_data` | line 1 `*exec.ExecBase = execbase` refused: "Can't convert types --> execbase", no executable | compiles: since G2 `execbase` stays a variable as in AmiBlitz3 (case-sensitive tokeniser), a quick 0 assigned to the pointer; the program prints what is at address 0 (before G2: TED's tokeniser took `execbase` as `ExecBase`, `$DE26`). The error is AmiBlitz3's assignment rule, not its tokeniser: a pointer on the left takes only a pointer or a long (`AmiBlitz3.ab3` 23540-23570 at `@58a11658`, independent of `SYNTAX`) | open: the rule is not in the G2 specs |
 | `exec_data` | return code 0 after a compile error ("A unknow error happend!") | 10 (design D6) | none: ours is the documented convention |
 | `inctext_bbname` | an include is tokenised by its name only (`.ab3`, `.AB3`, `.ab2`; `processInclude`, `AmiBlitz3.ab3` 20735 at `@58a11658`); `.bb`/`.bb2` are read as tokenised (a text include becomes one comment "line"), other names are refused | an include of text is tokenised by its contents (`xtra_detect`), whatever its name | G2: AB3's include rules (names, refusal) |
+| `tokens/longline` | a main-source line of 250 characters or more ends the source: `LoadSource` re-reads it with `PeekT(…, 10)`, which goes past the line's 0 to the end of the buffer (no LF is left after tokenising), so the following lines are dropped (`CLIModeSupport.ab3` 480-497 at `@58a11658`, measured with `-save`) | the line is cut at 250 characters, the following lines stay | none: not reproduced |
 | `noend` | a program without `End` with runtime error checking ends normally | an empty requester at the end: blitz2's end code (`blitz2.s:2683 eopcode`, `moveq #3,d0 : trap #0`) without `End`, BUG(orig) #6 | with #6 (the runtime part of AB3 mode) |
 
 AmiBlitz3's console output in CLI mode also names files it does not

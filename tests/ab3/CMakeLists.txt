@@ -209,3 +209,33 @@ foreach(t ab3_cli_broken ab3_cli_ref_broken)
 	set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION
 		"FAIL atoi: outmatch: [^\n]*expect line 14: \"12325\", output line [0-9]+: \"12324\"")
 endforeach()
+
+# AB3 mode's tokens against AmiBlitz3's (spec ab3-compat/tokenizer,
+# tokenise.cmake): AmiBlitz3 v3.14.0 loads every source in CLI mode and
+# writes its lines (-save NAME.bb2), ab3tok (shared/tokenizer, as ab3cli)
+# loads it with AB3 mode's token list, the lines must be equal.  Sources:
+# AmiBlitz3's test programs, those of cli/ and tokens/ (edge cases).
+# Label emulator; skipped (77) without Amiberry or the fetched files.
+file(GLOB tokenise_sources CONFIGURE_DEPENDS ${cli_dir}/*.ab3
+	${CMAKE_CURRENT_SOURCE_DIR}/tokens/*.ab3)
+string(REPLACE ";" "$<SEMICOLON>" tokenise_sources "${tokenise_sources}")
+# ab3_tokenise(NAME [BREAK]): the ctest; BREAK: the token of NPrint
+# changed in our list (the check itself)
+function(ab3_tokenise name)
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
+	set(brk)
+	if(ARGN)
+		set(brk -DBREAK=NPrint)
+	endif()
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+		-DBLITZTOKENS=${BLITZTOKENS} -DAB3TOK=${AB3TOK} -DBLITZ2=$<TARGET_FILE:blitz2-ab3>
+		-DAB3=${AB3_V314} -DSOURCES=${tokenise_sources} -DWORK=${work} ${brk}
+		-DTIMEOUT=${AB3_CLI_TIMEOUT} -P ${CMAKE_CURRENT_SOURCE_DIR}/tokenise.cmake)
+	math(EXPR limit "${AB3_CLI_TIMEOUT} + 120 + ${EMULATION_QUEUE_WAIT}")
+	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT ${limit})
+endfunction()
+ab3_tokenise(ab3_tokenise)
+ab3_tokenise(ab3_tokenise_broken BREAK)
+set_tests_properties(ab3_tokenise_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"FAIL atoi: ab3tok: [^\n]*atoi.ab3: line [0-9]+ differs from AmiBlitz3's")

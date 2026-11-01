@@ -122,8 +122,7 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
 ## Open Questions
 
 - Whether AmiBlitz3's `-save` writes the tokenised form usable for the
-  token comparison (decided during the tokenizer task; the spec allows
-  "an equivalent dump").
+  token comparison: decided in task 1.3, it does (findings below).
 
 ## Findings during implementation
 
@@ -144,7 +143,25 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
   errors stay those of the file. AmiBlitz3's `ParseAB3Header` (main
   source) and `SkipXtraHeader` (include) find the end differently; both
   are kept (`shared/tokenizer`).
-- (Task 1.2) The 250-character cut of `LoadSource` re-reads a long line
-  with `PeekT(…, 10)`; after tokenising there is no LF left, so here the
-  line is taken to its 0 and cut (guess, checked by the token comparison
-  of task 1.3).
+- (Task 1.3) AmiBlitz3's `-save NAME.bb2` in CLI mode
+  (`Blitz3:Amiblitz3 -s SOURCE -save NAME.bb2`, no compile) writes the
+  editor's lines as loaded, each with its 0 (`SaveSource`,
+  `CLIModeSupport.ab3:1016`): the tokenised form, usable as it is. The
+  comparison (`ab3_tokenise`, `tests/ab3/tokenise.cmake`) runs it for
+  AmiBlitz3's test programs, the `.ab3` sources of `tests/ab3/cli/` and
+  edge cases (`tests/ab3/tokens/`), and compares on the host with
+  `tools/ab3tok` - `shared/tokenizer` with AB3 mode's token list
+  (`blitztokens -last 80DB` on blitz2-ab3 and AmiBlitz3's BigLibs, the
+  list `ab3_tokens` has equal to AmiBlitz3's), the same code ab3cli
+  tokenises with; the embedded header is left out there, as AmiBlitz3
+  does, where ab3cli keeps empty lines. All equal, including a word at
+  the end of the file without a line end (not tokenised by either).
+  `ab3_tokenise_broken` gives NPrint another token: it must fail.
+- (Task 1.3) A main-source line of 250 or more characters: `LoadSource`
+  re-reads it with `PeekT(…, 10)`, which does not stop at the line's 0;
+  there is no LF left after tokenising, so the rest of the buffer is
+  taken as that line and cut to 250 bytes - AmiBlitz3 drops every line
+  after it (measured by `ab3_tokenise`). Ours cuts the line and keeps
+  the following ones: a documented difference (`docs/ab3/variant.md`),
+  not reproduced; the test source `tokens/longline.ab3` has the long
+  line last.
