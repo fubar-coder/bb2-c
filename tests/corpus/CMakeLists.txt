@@ -178,3 +178,8 @@ cd_pass(corpus_cd $<TARGET_FILE:blitz2> ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd.ts
 add_test(NAME corpus_cd COMMAND ${CDRUN} ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd.pass)
 math(EXPR limit "3600 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(corpus_cd PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+# the same with blitz2-ab3 (BB2 mode: the editor is tedstub), against the
+# same table - spec ab3-compat/bb2-equivalence for the CD's sources
+cd_pass(corpus_cd_ab3 $<TARGET_FILE:blitz2-ab3> ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd_ab3.tsv ${CD_TABLE})
+add_test(NAME corpus_cd_ab3 COMMAND ${CDRUN} ${CMAKE_CURRENT_BINARY_DIR}/corpus_cd_ab3.pass)
+set_tests_properties(corpus_cd_ab3 PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
