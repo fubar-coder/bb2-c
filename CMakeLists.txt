@@ -130,6 +130,7 @@ add_subdirectory(programs/ted)
 add_subdirectory(programs/ab3cli)
 add_subdirectory(tests/corpus)
 add_subdirectory(tests/bug-orig)
+add_subdirectory(tests/bug-port)
 add_subdirectory(tests/ab3)
 add_subdirectory(tests/ted-ab)
 

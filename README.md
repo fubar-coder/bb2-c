@@ -279,7 +279,7 @@ presets say **where** the tests run:
 ctest --preset host       # on the host, without emulator (seconds)
 ctest --preset emulator   # in Amiberry (label emulator)
 ctest --preset all        # both
-ctest --preset bug-orig   # reproduced original bugs: fail on purpose
+ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on purpose
 ```
 
 * **host:** the tools with deliberately broken inputs, the host tests of
@@ -608,6 +608,23 @@ ctest --preset bug-orig   # reproduced original bugs: fail on purpose
   `.../ID/sNNN/vol/runs/ID/{R5,C5}`; `bug_orig_ted_lint` (host) checks
   the scripts, `bug_orig_ted_selftest_broken` (label `emulator`) must come
   out BROKEN. Adding a test: one file `ted/ID.drv`, found by a glob.
+* **bug-port:** tests of known defects of the port itself (not of the
+  original), each with an issue. The test checks the *correct* behaviour
+  and **fails** until the defect is fixed; the fix removes the label from
+  the test. Label `bug-port` (with `emulator`): `host`, `emulator` and
+  `all` exclude it like `bug-orig`; the preset `bug-orig` runs both
+  (`ctest --preset bug-orig -L bug-port`: only these). `tests/bug-port/`:
+  `bug_port_963_ted` and `bug_port_963_ab3cli` (#963): `lsclear`
+  (`amiga/lsclear.c`, no libc) dirties all free memory with `$AA` on the
+  `a500` machine (Kickstart 1.3), loads the program with `LoadSeg` and
+  checks that every byte between a hunk's stored block and its header
+  size is 0 (Kickstart 1.x clears only `HUNK_BSS`; the baserel programs
+  have their `.bss` there). The checker has tests of its own (label
+  `emulator`, they pass): `lsclear_selftest_a500` / `_a1200` (generated
+  load files with an unstored tail, a stored zero tail and a `HUNK_BSS`:
+  on Kickstart 1.3 only the first is FAIL, with counted bytes; all PASS
+  on Kickstart 3.2), `lsclear_selftest_wrong_*` (wrong expectations must
+  fail), `lsclear_ted_a1200` (control: `ted` passes on Kickstart 3.2).
 
 The oracle data of the TED tests (`tests/data/ted-oracle.sha256`: SHA-256
 of detok, tokit2 and load/save for every source of the CD;
