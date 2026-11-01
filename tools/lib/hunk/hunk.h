@@ -3,7 +3,8 @@
  *
  * load_parse() checks the structure (bounds, known hunk types) and lists
  * the hunks with their RELOC32 relocations and their symbols (HUNK_SYMBOL);
- * debug and name hunks are skipped.  Memory flags (bits 30/31) are removed from types and sizes.
+ * debug and name hunks are skipped.  Memory flags (bits 30/31) are removed from types and sizes;
+ * those of the header's size table are kept per hunk (memflags).
  */
 #ifndef HUNK_H
 #define HUNK_H
@@ -24,6 +25,9 @@
 #define HUNK_RELOC32SHORT  0x3FC
 #define HUNK_RELRELOC32    0x3FD
 
+#define HUNKF_CHIP         0x40000000   /* memory flags of a hunk */
+#define HUNKF_FAST         0x80000000
+
 /** @brief A symbol: the name points into the file (len bytes, not
     0-terminated). */
 struct hunk_symbol {
@@ -42,6 +46,8 @@ struct hunk {
     uint32_t *reloc_target;     /*   hunk it points into */
     uint32_t nsyms;             /* HUNK_SYMBOL entries of this hunk: */
     struct hunk_symbol *syms;
+    uint32_t memflags;          /* bits 30/31 of its size in the header:
+                                   HUNKF_CHIP, HUNKF_FAST */
 };
 
 /** @brief A load file: the file and its hunks (load_free). */

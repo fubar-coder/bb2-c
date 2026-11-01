@@ -3,6 +3,7 @@
  * hunkcheck.h).
  *
  *   hunkcheck FILE OFFSET:HEXBYTES...      e.g. hunkcheck ted 0:6100 4:48e7
+ *   hunkcheck --hunks LAYOUT FILE          e.g. hunkcheck --hunks code,bss exe
  *
  * Silent if everything is right; exit status 1 otherwise.
  */
@@ -12,7 +13,9 @@
 
 static const char usage[] =
     "usage: hunkcheck FILE OFFSET:HEXBYTES...\n"
-    "  check the start of the first hunk of a load file\n";
+    "       hunkcheck --hunks LAYOUT FILE\n"
+    "  check the start of the first hunk of a load file, or its hunks\n"
+    "  (LAYOUT: code|data|bss[+chip],... e.g. code,bss,data+chip)\n";
 
 int main(int argc, char **argv)
 {
@@ -23,6 +26,15 @@ int main(int argc, char **argv)
     if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
         fputs(usage, stdout);
         return 0;
+    }
+    if (argc == 4 && !strcmp(argv[1], "--hunks")) {
+        if (load_read(argv[3], &lf, err, sizeof err)) {
+            fprintf(stderr, "hunkcheck: %s: %s\n", argv[3], err);
+            return 1;
+        }
+        bad = hunk_layout(&lf, argv[2], argv[3], stderr);
+        load_free(&lf);
+        return bad;
     }
     if (argc < 3) {
         fputs(usage, stderr);

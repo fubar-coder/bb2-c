@@ -50,7 +50,7 @@ int main(void)
     FILE *f = tmpfile();
     uint8_t code[12] = { 0x4E, 0x71, 0x41, 0xF9, 0, 0, 0, 8, 0x4E, 0x75, 0, 0 };
     uint32_t reloc = 4, target = 0;
-    struct hunk h = { HUNK_CODE, code, sizeof code, 1, &reloc, &target, 0, NULL };
+    struct hunk h = { HUNK_CODE, code, sizeof code, 1, &reloc, &target, 0, NULL, 0 };
     size_t bad = 99;
     const char *s;
 

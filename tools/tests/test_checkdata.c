@@ -17,13 +17,13 @@ static struct listing_symbol labels[] = {
 
 static int run(const char *table, const uint8_t *cdata, uint32_t csize, char *msg, size_t len)
 {
-    struct hunk ref = { HUNK_CODE, refcode, sizeof refcode, 1, &refreloc, &reftarget, 0, NULL };
+    struct hunk ref = { HUNK_CODE, refcode, sizeof refcode, 1, &refreloc, &reftarget, 0, NULL, 0 };
     struct listing l = { NULL, 0, labels, 4, NULL, 0 };
     struct hunk_symbol data_syms[] = { { "_abcd", 5, 0 }, { "_ef", 3, 4 }, { "_ptr", 4, 6 } };
     struct hunk_symbol bss_syms[] = { { "_zero", 5, 0 } };
     struct hunk hunks[2] = {
-        { HUNK_DATA, cdata, csize, 0, NULL, NULL, 3, data_syms },
-        { HUNK_BSS, NULL, 16, 0, NULL, NULL, 1, bss_syms },
+        { HUNK_DATA, cdata, csize, 0, NULL, NULL, 3, data_syms, 0 },
+        { HUNK_BSS, NULL, 16, 0, NULL, NULL, 1, bss_syms, 0 },
     };
     struct loadfile c = { NULL, 0, NULL, 2, 2, hunks };
     struct checkdata_table t;

@@ -1,6 +1,7 @@
 /*
  * test_hunkcheck.c - hunk_check: match, mismatch, first hunk not code,
- * check behind the hunk, bad spec.
+ * check behind the hunk, bad spec; hunk_layout: match, another type, a
+ * missing chip flag, too few and too many hunks, bad layout.
  */
 #include "testutil.h"
 #include "hunkcheck.h"
@@ -28,6 +29,45 @@ static int check(uint32_t type, int n, char **specs, char *msg, size_t len)
     return r;
 }
 
+/* a load file of three hunks: code, bss, data in chip memory */
+static int layout(const char *want, char *msg, size_t len)
+{
+    struct buf f = { 0 };
+    struct loadfile lf;
+    char err[200];
+    FILE *out = tmpfile();
+    int r;
+
+    put32(&f, HUNK_HEADER);
+    put32(&f, 0);
+    put32(&f, 3);
+    put32(&f, 0);
+    put32(&f, 2);
+    put32(&f, 1);
+    put32(&f, 2);
+    put32(&f, 1 | HUNKF_CHIP);
+    put32(&f, HUNK_CODE);
+    put32(&f, 1);
+    put32(&f, 0x4e754e75);
+    put32(&f, HUNK_END);
+    put32(&f, HUNK_BSS);
+    put32(&f, 2);
+    put32(&f, HUNK_END);
+    put32(&f, HUNK_DATA);
+    put32(&f, 1);
+    put32(&f, 0x00010000);
+    put32(&f, HUNK_END);
+    if (load_parse(f.p, f.n, &lf, err, sizeof err))
+        abort();
+    r = hunk_layout(&lf, want, "exe", out);
+    rewind(out);
+    msg[fread(msg, 1, len - 1, out)] = 0;
+    fclose(out);
+    load_free(&lf);
+    free(f.p);
+    return r;
+}
+
 int main(void)
 {
     char msg[500];
@@ -43,6 +83,16 @@ int main(void)
     CHECK(check(HUNK_CODE, 1, behind, msg, sizeof msg) == 1 && strstr(msg, "only 8 bytes"));
     CHECK(check(HUNK_CODE, 1, bad1, msg, sizeof msg) == 1 && strstr(msg, "bad check"));
     CHECK(check(HUNK_CODE, 1, bad2, msg, sizeof msg) == 1 && strstr(msg, "bad check"));
+
+    CHECK(layout("code,bss,data+chip", msg, sizeof msg) == 0 && !*msg);
+    CHECK(layout("code,data,data+chip", msg, sizeof msg) == 1
+          && strstr(msg, "hunk 1 is bss, expected data"));
+    CHECK(layout("code,bss,data", msg, sizeof msg) == 1
+          && strstr(msg, "hunk 2 is data+chip, expected data"));
+    CHECK(layout("code,bss", msg, sizeof msg) == 1 && strstr(msg, "3 hunks, the layout \"code,bss\" has 2"));
+    CHECK(layout("code,bss,data+chip,bss", msg, sizeof msg) == 1 && strstr(msg, "has more"));
+    CHECK(layout("code,text", msg, sizeof msg) == 1 && strstr(msg, "bad layout"));
+    CHECK(layout("code,bss+fast,data+chip", msg, sizeof msg) == 1 && strstr(msg, "bad layout"));
 
     if (failures)
         fprintf(stderr, "test_hunkcheck: %d failures\n", failures);

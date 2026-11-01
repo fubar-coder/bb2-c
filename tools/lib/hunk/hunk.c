@@ -116,6 +116,7 @@ int load_parse(const uint8_t *buf, size_t size, struct loadfile *lf, char *err, 
     struct reader r = { buf, size, 0, 0 };
     long cur = -1;              /* index of the open hunk */
     uint32_t n, i, first, last;
+    uint32_t flags[64] = { 0 };                 /* of the first 64 hunks */
 
     memset(lf, 0, sizeof *lf);
     lf->data = buf;
@@ -129,9 +130,14 @@ int load_parse(const uint8_t *buf, size_t size, struct loadfile *lf, char *err, 
     last = rd32(&r);
     if (r.bad || last < first)
         return fail(lf, err, errlen, "broken HUNK_HEADER");
-    for (i = first; i <= last && !r.bad; i++)
-        if ((rd32(&r) & 0xC0000000) == 0xC0000000)
+    for (i = first; i <= last && !r.bad; i++) {
+        uint32_t sz = rd32(&r);
+
+        if (i - first < sizeof flags / sizeof flags[0])
+            flags[i - first] = sz & 0xC0000000;
+        if ((sz & 0xC0000000) == 0xC0000000)
             rd32(&r);                           /* extended memory flags */
+    }
 
     while (!r.bad && r.pos < r.size) {
         size_t at = r.pos;
@@ -153,6 +159,8 @@ int load_parse(const uint8_t *buf, size_t size, struct loadfile *lf, char *err, 
             h = &lf->hunks[cur];
             memset(h, 0, sizeof *h);
             h->type = t;
+            if (cur < (long)(sizeof flags / sizeof flags[0]))
+                h->memflags = flags[cur];
             n = rd32(&r) & 0x3FFFFFFF;
             h->size = n * 4;
             if (t != HUNK_BSS) {

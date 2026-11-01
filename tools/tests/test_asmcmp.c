@@ -20,7 +20,7 @@ static int is(const char *text, int rel, const char *want)
 static int spec(const char *s, const char *want)
 {
     struct loadfile c = { 0 };
-    struct hunk h = { HUNK_CODE, (const uint8_t *)"\x4e\x75", 2, 0, NULL, NULL, 0, NULL };
+    struct hunk h = { HUNK_CODE, (const uint8_t *)"\x4e\x75", 2, 0, NULL, NULL, 0, NULL, 0 };
     char msg[300];
     FILE *out = tmpfile();
     int r = asmcmp_routine("false", &h, &c, s, out);

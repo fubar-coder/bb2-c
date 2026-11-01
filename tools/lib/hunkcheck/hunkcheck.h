@@ -23,4 +23,17 @@
  */
 int hunk_check(const struct loadfile *lf, int nspecs, char **specs, const char *name, FILE *out);
 
+/**
+ * @brief Check the hunks of a load file: their number, types and chip
+ *        memory flags.
+ * @param lf      the load file
+ * @param layout  the hunks in order, separated by ',': code, data or bss,
+ *                each with "+chip" if it must be loaded to chip memory
+ *                (e.g. "code,bss,data+chip")
+ * @param name    the prefix of the messages
+ * @param out     the messages
+ * @return 0 = ok, 1 = another layout or a bad layout
+ */
+int hunk_layout(const struct loadfile *lf, const char *layout, const char *name, FILE *out);
+
 #endif

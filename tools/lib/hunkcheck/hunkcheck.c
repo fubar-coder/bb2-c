@@ -62,3 +62,61 @@ int hunk_check(const struct loadfile *lf, int nspecs, char **specs, const char *
     }
     return bad;
 }
+
+static const char *typename(uint32_t type)
+{
+    return type == HUNK_CODE ? "code" : type == HUNK_DATA ? "data" : "bss";
+}
+
+int hunk_layout(const struct loadfile *lf, const char *layout, const char *name, FILE *out)
+{
+    const char *p = layout;
+    uint32_t i = 0;
+
+    for (;;) {
+        size_t n = strcspn(p, ",");
+        uint32_t type, chip = 0;
+
+        if (n == 4 && !strncmp(p, "code", 4))
+            type = HUNK_CODE;
+        else if (n >= 4 && !strncmp(p, "data", 4))
+            type = HUNK_DATA;
+        else if (n >= 3 && !strncmp(p, "bss", 3))
+            type = HUNK_BSS;
+        else
+            type = 0;
+        if (type && n > (type == HUNK_BSS ? 3u : 4u)) {
+            size_t k = type == HUNK_BSS ? 3 : 4;
+
+            if (n - k == 5 && !strncmp(p + k, "+chip", 5))
+                chip = HUNKF_CHIP;
+            else
+                type = 0;
+        }
+        if (!type) {
+            fprintf(out, "%s: bad layout \"%s\" (code|data|bss[+chip],...)\n", name, layout);
+            return 1;
+        }
+        if (i >= lf->nhunks) {
+            fprintf(out, "%s: %u hunks, the layout \"%s\" has more\n", name,
+                    (unsigned)lf->nhunks, layout);
+            return 1;
+        }
+        if (lf->hunks[i].type != type || (lf->hunks[i].memflags & HUNKF_CHIP) != chip) {
+            fprintf(out, "%s: hunk %u is %s%s, expected %.*s\n", name, (unsigned)i,
+                    typename(lf->hunks[i].type),
+                    lf->hunks[i].memflags & HUNKF_CHIP ? "+chip" : "", (int)n, p);
+            return 1;
+        }
+        i++;
+        if (!p[n])
+            break;
+        p += n + 1;
+    }
+    if (i != lf->nhunks) {
+        fprintf(out, "%s: %u hunks, the layout \"%s\" has %u\n", name,
+                (unsigned)lf->nhunks, layout, (unsigned)i);
+        return 1;
+    }
+    return 0;
+}

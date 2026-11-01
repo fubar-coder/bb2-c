@@ -50,8 +50,8 @@ static int cmp(const struct variant *v, uint32_t extra_reloc, char *msg, size_t 
 {
     struct buf a = build(&base), b = build(v);
     uint32_t ra[1] = { 0x30 + 10 }, rb[2] = { 0x30 + 10, extra_reloc };
-    struct hunk ha = { HUNK_CODE, a.p, (uint32_t)a.n, 1, ra, NULL, 0, NULL };
-    struct hunk hb = { HUNK_CODE, b.p, (uint32_t)b.n, extra_reloc ? 2 : (v->sub ? 1 : 0), rb, NULL, 0, NULL };
+    struct hunk ha = { HUNK_CODE, a.p, (uint32_t)a.n, 1, ra, NULL, 0, NULL, 0 };
+    struct hunk hb = { HUNK_CODE, b.p, (uint32_t)b.n, extra_reloc ? 2 : (v->sub ? 1 : 0), rb, NULL, 0, NULL, 0 };
     FILE *out = tmpfile();
     int r;
 
@@ -109,8 +109,8 @@ int main(void)
     {
         struct buf a = build(&base);
         uint8_t shorty[8] = { 0 };
-        struct hunk ha = { HUNK_CODE, a.p, (uint32_t)a.n, 0, NULL, NULL, 0, NULL };
-        struct hunk hb = { HUNK_CODE, shorty, 8, 0, NULL, NULL, 0, NULL };
+        struct hunk ha = { HUNK_CODE, a.p, (uint32_t)a.n, 0, NULL, NULL, 0, NULL, 0 };
+        struct hunk hb = { HUNK_CODE, shorty, 8, 0, NULL, NULL, 0, NULL, 0 };
         FILE *out = tmpfile();
 
         CHECK(blitzlib_compare(&ha, &hb, "lib", out) == -1);
