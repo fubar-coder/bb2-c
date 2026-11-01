@@ -19,6 +19,7 @@
 
 #include "structs.h"
 #include "glue.h"
+#include "ext.h"      /* the extension points (ext_bb2.c, ab3*.c) */
 
 /* library bases (asm names: dos, int, maths; exec via 4.w) */
 extern struct ExecBase *SysBase;

@@ -10,7 +10,7 @@ touching AB3 code also `ab3_cli`, `ab3_cli_ref`, `ab3_tokens`,
 
 ## 1. Shared core and the extension header
 
-- [ ] 1.1 Add `programs/blitz2/src/ext.h` with the extension points of today's `#if` blocks (D2) and `ext_bb2.c` with their BB2 behaviour; move the mode-dependent data (`progmode`, `tokens`, `mathq`) behind it; verify: `blitz2` builds and its results are byte-identical, `ab3_*` pass
+- [x] 1.1 Add `programs/blitz2/src/ext.h` with the extension points of today's `#if` blocks (D2) and `ext_bb2.c` with their BB2 behaviour; move the mode-dependent data (`progmode`, `tokens`, `mathq`) behind it; verify: `blitz2` builds and its results are byte-identical, `ab3_*` pass
 - [ ] 1.2 Build the chunk files and glue once as the object library `blitz2_core`, linked by `blitz2` with `ext_bb2.c` and by `blitz2-ab3` with the AB3 modules; drop the define parameter of `blitz2_program`; verify: both programs link, results byte-identical, `ab3_*` pass
 
 ## 2. AB3 blocks into extension points, one area per task

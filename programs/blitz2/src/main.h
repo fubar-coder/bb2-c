@@ -138,13 +138,9 @@
 #define mostres     MOSTRES    /* 8, structs.h */
 #endif
 #define userand     0x7f80
-#if BLITZ2_AB3
-/* the library of the float power (eval.c dopow): AmiBlitz3's math library
-   is number 44 (AmiBlitz3.ab3 14565, token $1601), its 192 an OsLibs one */
-#define mathq       (progmode == XTRA_MODE_AB3 ? 44 : 247-55)
-#else
-#define mathq       (247-55)
-#endif
+/* the library of the float power (eval.c dopow): of the program's mode
+   (ext.h), 247-55 in BB2 mode */
+#define mathq       ext_mathq
 
 /* token numbering: 1..59 built-ins, fnum..tnum-1 asm mnemonics (118 + EndAsm),
    tnum..tnum+32 the second built-in block (tnum+3 "Ern" removed) */
@@ -208,16 +204,14 @@ void  sleepon(void);                        /* 1494 comdata+76 busy pointer */
 
 /* data handed to the editor (exact byte layout, see structs.h) */
 /* 283 first token; list ends at toktnum33.  The nodes are members of one
-   object (struct tokimage, defined in main.c), `tokens` is its first node */
+   object (struct tokimage, defined in main.c).  `tokens` is the first node
+   of the token list of the program's mode (ext.h): tokimg's in BB2 mode */
 extern struct tokimage tokimg;
 #if BLITZ2_AB3
 /* blitz2-ab3: AmiBlitz3's list (toklist.h) in AB3 mode */
 extern struct tokimage_ab3 tokimg_ab3;
-#define tokens (*(progmode == XTRA_MODE_AB3 ? (struct token *)&tokimg_ab3 \
-                                            : (struct token *)&tokimg))
-#else
-#define tokens (*(struct token *)&tokimg)
 #endif
+#define tokens (*ext_toklist)
 extern struct edstruct edstruct;      /* 274 */
 extern const char menus[];            /* 724 "COMPILER\0" + items "TEXT\0" key, 0 */
 
@@ -493,7 +487,8 @@ extern asmchkfn movemchk, movepchk, movechk, exgchk, bitchk,
 
 /* the mode of the program being compiled (enum xtra_mode, shared/xtra):
    XTRA_MODE_BB2 or XTRA_MODE_AB3 (docs/ab3/variant.md).  One mode per
-   compile; an editor session is always BB2 */
+   compile; an editor session is always BB2.  AB3 state (ab3main.c), not
+   an extension point: the chunk files call those of ext.h */
 extern int progmode;
 
 /* AB3 mode's libraries (design D5): AmiBlitz3's four BigLibs in its load

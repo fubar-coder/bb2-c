@@ -638,10 +638,6 @@ fail0:                                  /* 1477 */
     return returncode;
 }
 
-#if BLITZ2_AB3
-int progmode = XTRA_MODE_BB2;           /* main.h */
-#endif
-
 /* ================================================== main (wbheader) */
 
 /* wbheader:4 wb_header / fromcli / wb_exit + blitz2.s 253-261 mainbit:

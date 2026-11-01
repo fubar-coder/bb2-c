@@ -117,3 +117,21 @@ tests (`ab3_cli`, `ab3_cli_ref`, `ab3_tokens`, `ab3_bb2_equivalence*`,
 Small commits, one area each (core library and `ext.h`, libraries,
 residents, includes, errors and tokens, command line and editor, build
 check, docs); each with the acceptance of D5.
+
+## Findings during the implementation
+
+- *Order of the tasks:* the core can only be compiled once without a
+  define (task 1.2) when no `#if BLITZ2_AB3` block is left in it – before
+  that, `blitz2-ab3` would lose its AB3 mode. So 1.2 follows 2.5: until
+  then `blitz2-ab3` still compiles the chunk files itself with
+  `BLITZ2_AB3`, and every block that becomes an extension point is gone
+  from both builds.
+- *`progmode` is not an extension datum:* once the blocks are points, no
+  chunk file reads it – only the AB3 modules do. It is AB3 state
+  (defined in `ab3main.c`), `ext_bb2.c` has none; a chunk file that would
+  ask for the mode calls an extension point instead (the rule for G2).
+- *The data of the mode are objects:* `ext_toklist` (asm `tokens`) and
+  `ext_mathq` are variables with BB2's values in both implementations;
+  `blitz2-ab3` sets AB3's when its command line decides the mode, before
+  anything is loaded (the mode does not change after that). The asm names
+  stay as macros in `main.h` (`tokens`, `mathq`), with no build switch.
