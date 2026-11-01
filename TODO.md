@@ -390,9 +390,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      identifiers beginning with `_`), then G7 (68020), then G6 (FPU);
      the differences found against AmiBlitz3's compiler
      (`docs/ab3/variant.md`, "Differences").
-  3. [ ] Check whether TED's baserel data hunk (0x7c8 bytes of `.bss`
-     without startup code) is always cleared by LoadSeg, also on
-     Kickstart 1.3 (found 2026-11-01).
+  3. [x] Checked 2026-11-01 whether TED's baserel data hunk (0x7c8 bytes
+     of `.bss` without startup code) is cleared by LoadSeg: not on
+     Kickstart 1.3 (only `HUNK_BSS` is), yes on 3.2 – port defect #963.
 - [ ] **Tests for the issues labelled `needs-test`** (99 open issues at the
   start, 3 open on 2026-10-29: #14, #26, #42). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,
