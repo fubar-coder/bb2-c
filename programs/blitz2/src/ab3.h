@@ -7,6 +7,11 @@
 #define AB3_H
 
 #include "xtra.h"
+#include "ab3job.h"
+
+/** @brief The job of a command line run (ab3main.c); NULL in an editor
+ *         session. */
+extern struct ab3job *ab3job;
 
 /** @brief The mode of the program being compiled (enum xtra_mode,
  *         shared/xtra): XTRA_MODE_BB2 or XTRA_MODE_AB3.  One mode per
