@@ -1,0 +1,4 @@
+; joining lines inside an include after a ',' works
+INCLUDE "join_inc_ok.ab3"
+NPrint "main"
+End

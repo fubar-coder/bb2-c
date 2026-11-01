@@ -343,6 +343,7 @@ BOOL nextline(void)
                 bits[col] ^= 0xff;
             }
         }
+        ext_nextline();
         return TRUE;            /* asm: moveq #-1,d0 */
     }
     /* .skip3: do main stripe */
@@ -364,6 +365,8 @@ BOOL nextline(void)
         return FALSE;
     thisitem = thisitem->next;
     srcptr = (UBYTE *)thisitem + 9;     /* lea 9(a0),a5 */
+    if (thisitem)
+        ext_nextline();
     /* review: asm returns the Z flag of `move.l a0,thisitem` */
     return thisitem != NULL;
 }

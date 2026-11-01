@@ -119,6 +119,10 @@ struct var *ext_sharedvar(UWORD len)
     return NULL;
 }
 
+void ext_nextline(void)
+{
+}
+
 BOOL ext_cmdline(int argc, char **argv, int *rc)
 {
     return FALSE;

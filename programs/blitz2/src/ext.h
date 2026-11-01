@@ -178,6 +178,11 @@ BOOL ext_shared(UWORD c);
  *         a variable shared with every procedure, NULL if none. */
 struct var *ext_sharedvar(UWORD len);
 
+/** @brief nextline (compile.c): srcptr is on the next line of the program
+ *         (of the source or an include); may put it on another one (a
+ *         line joined with the following ones). */
+void ext_nextline(void);
+
 /* ======================================= the command line, the editor */
 
 /**

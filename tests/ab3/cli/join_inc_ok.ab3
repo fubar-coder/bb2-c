@@ -1,0 +1,3 @@
+; an include of join_inc.ab3: @@ after a ',' joins the next line
+NPrint "ok ", @@
+  "joined"

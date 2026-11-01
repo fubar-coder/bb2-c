@@ -185,3 +185,19 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
   - `:@` in a comment: comments are not tokenised (TED's tokeniser and
     AmiBlitz3's), so only code without keywords works after it, in both
     compilers (`; x :@NPrint "a"` is "Garbage at End of Line" in both).
+- **3.3 `@@`** (point `ext_nextline` in nextline): not at AmiBlitz3's
+  sites one by one, but where a line is read: a line with `@@` outside
+  strings and comments is joined with the following ones (the rest of
+  each line after `@@` dropped) into one buffer, so every place of the
+  compiler - parameter lists, macro definitions and calls, multiple
+  assignments - sees one line; inside an include only a `,` (and spaces)
+  before `@@` is allowed. `join`, `join_inc`, `join_incok` give
+  AmiBlitz3's output and error. More permissive than AmiBlitz3: a `@@`
+  elsewhere also joins (`x = 1 + @@`), and "after a parameter"
+  (`NPrint 1 @@` and `,2` on the next line) works here but is "Garbage
+  at the end of line" at the second line in AmiBlitz3 - the requirement's
+  "after a parameter" did not hold for `NPrint` there (not in a test).
+  The joined line is the last one read: an error in it has that line's
+  number; with runtime error checking the debug trap's offset into the
+  line item is meaningless for it (only the editor's debugger reads it).
+

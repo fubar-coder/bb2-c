@@ -1,0 +1,4 @@
+; an include of join_inc.ab3: @@ after a parameter does not work in an
+; include
+NPrint "bad" @@
+  ,"joined"

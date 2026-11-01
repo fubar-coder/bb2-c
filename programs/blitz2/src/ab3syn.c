@@ -245,3 +245,79 @@ struct var *ext_sharedvar(UWORD len)
     }
     return NULL;
 }
+
+/* ------------------------------------------------- joining lines: @@ */
+
+/* AmiBlitz3 joins the next line at "@@" in a parameter list, a macro and
+   a multiple assignment (AmiBlitz3.ab3:8116, 8283, 8299 fetchpees, 3110,
+   3222 macros, 20885 do_Macro, 23658 do_let), the rest of the line after
+   it ignored.  Here a line with "@@" outside strings and comments is
+   joined with the following ones when it is read, so every place of the
+   compiler sees one line. */
+#define JOINLEN 2048
+static UBYTE joinbuf[JOINLEN];
+static BOOL joining;
+
+/* the "@@" of the line at p outside strings and comments, NULL if none */
+static const UBYTE *findjoin(const UBYTE *p)
+{
+    BOOL instr = FALSE;
+
+    for (; *p; p++) {
+        if (*p & 0x80) {
+            if (!*++p)
+                break;
+            continue;
+        }
+        if (*p == '"')
+            instr = !instr;
+        else if (!instr && *p == ';')
+            break;
+        else if (!instr && p[0] == '@' && p[1] == '@')
+            return p;
+    }
+    return NULL;
+}
+
+void ext_nextline(void)
+{
+    const UBYTE *p, *at, *b;
+    ULONG n = 0;
+
+    if (progmode != XTRA_MODE_AB3 || joining || !(at = findjoin(srcptr)))
+        return;
+    joining = TRUE;
+    p = srcptr;
+    do {
+        /* inside an include only a ',' (and spaces) before the "@@": the
+           join of AmiBlitz3's mergeline (8299), the others stop there
+           (errorjoin) */
+        if (numincs) {
+            for (b = at; b > p && b[-1] == ' '; b--)
+                ;
+            if (b == p || b[-1] != ',') {
+                joining = FALSE;
+                err("Joining lines with @@ does not work in includes");
+            }
+        }
+        if (n + (ULONG)(at - p) >= JOINLEN) {
+            joining = FALSE;
+            err("Joined line too long");
+        }
+        memcpy(joinbuf + n, p, (size_t)(at - p));
+        n += (ULONG)(at - p);
+        if (!nextline()) {
+            joining = FALSE;
+            err("No line to join with @@");
+        }
+        p = srcptr;
+    } while ((at = findjoin(p)));
+    at = p + strlen((const char *)p) + 1;
+    if (n + (ULONG)(at - p) > JOINLEN) {
+        joining = FALSE;
+        err("Joined line too long");
+    }
+    memcpy(joinbuf + n, p, (size_t)(at - p));
+    joining = FALSE;
+    srcptr = joinbuf;
+}

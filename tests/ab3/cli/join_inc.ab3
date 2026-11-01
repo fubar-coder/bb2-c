@@ -1,0 +1,5 @@
+; joining lines inside includes: after a ',' it works, other forms are
+; an error at the line of the @@ (line 3 of join_inc_bad.ab3)
+INCLUDE "join_inc_ok.ab3"
+INCLUDE "join_inc_bad.ab3"
+End
