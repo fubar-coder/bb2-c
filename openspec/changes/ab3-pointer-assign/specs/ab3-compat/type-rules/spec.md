@@ -9,7 +9,7 @@ v3.14.0 applies to every program, independent of `SYNTAX`; the
 ## ADDED Requirements
 
 ### Requirement: A pointer takes no basic value other than long
-In AB3 mode an assignment to a pointer variable (`*name = …`, also `*name.Type = …`) without a cast SHALL stop the compile with "Can't convert types" when the right side's value is of a basic type other than long (byte, word, quick, float, string), as in AmiBlitz3, whether `SYNTAX` is set or not.
+In AB3 mode an assignment to a pointer variable (`*name = …`, also `*name.Type = …`) SHALL stop the compile with "Can't convert types" when the right side's last element (the last variable, address or function the expression reads, as in AmiBlitz3) is of a basic type other than long (byte, word, quick, float, string), as in AmiBlitz3, whether `SYNTAX` is set or not.
 
 #### Scenario: Undeclared quick variable
 - **WHEN** an AB3 program has `*exec.ExecBase = execbase` with `execbase` not declared (type `.q`)
@@ -20,7 +20,7 @@ In AB3 mode an assignment to a pointer variable (`*name = …`, also `*name.Type
 - **THEN** the compile fails with "Can't convert types"
 
 ### Requirement: Accepted right sides of a pointer assignment
-In AB3 mode a pointer assignment SHALL compile as before when the right side is a pointer, a long value, a value without a type (a constant or a function result without one), a NewType value, or has a cast; NewType against NewType is not checked until `SYNTAX 4` checks exist.
+In AB3 mode a pointer assignment SHALL compile as before when the right side's last element (as AmiBlitz3 judges it: the last variable, address or function the expression reads) is a pointer, a long, a NewType value, or a constant or library function without a basic non-long type; a `Function` without a declared type returns a quick and is refused, as in AmiBlitz3. NewType against NewType is not checked until `SYNTAX 4` checks exist; casts come with G5.
 
 #### Scenario: Long and function
 - **WHEN** an AB3 program has `*exec.ExecBase = Peek.l(4)` and `*e2.ExecBase = ExecBase`
