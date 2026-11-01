@@ -276,3 +276,17 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
   AmiBlitz3 (`sect_both.ref.expect`, docs/ab3/variant.md). The debug
   information of the labels (option "debug info") is not written for an
   executable with sections.
+- **3.5 not done: the spec does not match AmiBlitz3** (measured with
+  `ab3_cli_ref`, a throw-away probe): `@#name` is not an expression
+  element that gives -1/0. In AmiBlitz3 a `@` is only taken right after
+  `CNIF` (`AmiBlitz3.ab3` 10677-10686, `incnif`); in such a `CNIF` *every*
+  `#name` of the condition is a "defined?" test giving **1** or 0
+  (`fetch_Constant` 15400-15412), without an error for an undefined one:
+  `CNIF @#zq = 1` (defined), `CNIF @#zr = 0` (undefined),
+  `CNIF @#zq + #zq = 2` and `CNIF @#zq + #zr = 1` are all true; a `@`
+  elsewhere in the condition (`CNIF #zq + @#zq = 6`) is "Illegal
+  constant expression". `#__debug` is 0 in AmiBlitz3's CLI mode (no
+  debugger), `#__include` 0 in the main source, as the spec says. The
+  requirement "Constants of the include mechanism" needs this wording
+  before 3.5 is implemented (its include-guard scenario holds either
+  way); `ab3_incdepth` (ab3inc.c) is ready for `#__include`.
