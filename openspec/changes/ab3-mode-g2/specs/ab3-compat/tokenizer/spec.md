@@ -13,7 +13,7 @@ In AB3 mode a word SHALL become a token only if it equals a name of the token li
 
 #### Scenario: Lower-case library name
 - **WHEN** an AB3 source has `*exec.ExecBase = execbase`
-- **THEN** `execbase` stays a variable name (not the function `ExecBase`), and the compile gives the same result as AmiBlitz3 (its "Can't convert types" error)
+- **THEN** `execbase` stays a variable name (not the function `ExecBase`), with the same tokens as AmiBlitz3 gives the line (AmiBlitz3's "Can't convert types" for it comes from a type rule of assignments, not from tokenising; that rule belongs to the type checks, G8)
 
 #### Scenario: Exact name
 - **WHEN** an AB3 source has `NPrint "x"`

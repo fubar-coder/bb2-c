@@ -34,7 +34,7 @@ In AB3 mode a name ending (case-sensitively) in `ab3`, `AB3` or `ab2` SHALL be t
 - **THEN** it is read as tokenised and compiled
 
 ### Requirement: Repeated includes in an AB3 program
-In AB3 mode including the same file a second time with `INCLUDE` SHALL be an error, and a second `XINCLUDE` of the same file SHALL be skipped.
+In AB3 mode an `INCLUDE` of a file that is still open (an include of itself, directly or through other includes) SHALL be an error, as in AmiBlitz3; two `INCLUDE`s of the same file one after the other SHALL compile it twice; a second `XINCLUDE` of the same file SHALL be skipped.
 
 #### Scenario: Repeated XINCLUDE
 - **WHEN** an AB3 program has `XINCLUDE "lib.ab3"` twice
