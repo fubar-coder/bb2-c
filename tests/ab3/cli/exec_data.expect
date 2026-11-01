@@ -1,9 +1,5 @@
 [compile]
-rc=0
+exec_data.ab3:78: Can't convert types
+rc=10
 [run]
-~LibVersion: #
-~SoftVer: #
-~Frequency: #
-kick2_available: 1
-3
-rc=0
+no executable

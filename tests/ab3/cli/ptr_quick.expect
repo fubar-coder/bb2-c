@@ -1,0 +1,5 @@
+[compile]
+ptr_quick.ab3:7: Can't convert types
+rc=10
+[run]
+no executable

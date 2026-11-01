@@ -1,0 +1,6 @@
+; AB3 mode: a word value assigned to a pointer (line 4) is refused
+; (spec ab3-compat/type-rules)
+w.w = 4
+*p.l = w
+NPrint "not reached"
+End

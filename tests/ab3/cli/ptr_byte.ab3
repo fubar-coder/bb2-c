@@ -1,0 +1,6 @@
+; AB3 mode: a byte value assigned to a pointer (line 4) is refused
+; (spec ab3-compat/type-rules)
+b.b = 4
+*p.l = b
+NPrint "not reached"
+End

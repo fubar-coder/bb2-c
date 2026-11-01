@@ -175,3 +175,17 @@ BOOL ext_result(int *rc)
 {
     return FALSE;
 }
+
+/* AB3 mode's type rules (change ab3-pointer-assign) */
+
+void ext_assignstart(void)
+{
+}
+
+void ext_evalvalue(ULONG code, UWORD flags)
+{
+}
+
+void ext_assigncheck(UWORD vartype)
+{
+}

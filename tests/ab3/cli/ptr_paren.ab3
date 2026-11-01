@@ -1,0 +1,6 @@
+; AB3 mode: a word variable in brackets assigned to a pointer (line 4)
+NPrint "start"
+w.w = 1
+*p.l = (w)
+NPrint *p
+End

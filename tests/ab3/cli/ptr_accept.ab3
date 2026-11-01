@@ -1,0 +1,40 @@
+; XTRA
+; Residents       = "all.res"
+; /XTRA
+; AB3 mode: the right sides a pointer takes (spec ab3-compat/type-rules):
+; a library function, a pointer, a constant, a long, a typed constant, a
+; long function, a library function of a word, an expression whose last
+; variable is a long, a NewType value; a quick into a word is converted
+; as in BB2
+Function.l fl{}
+  Function Return Peek.l(4)
+End Function
+NEWTYPE.pt
+  x.w
+  y.w
+End NEWTYPE
+w.w = 4
+l.l = Peek.l(4)
+#c = 5
+v.pt\x = 3
+*exec.ExecBase = Peek.l(4)
+*e2.ExecBase = ExecBase
+If *exec = Peek.l(4) AND *e2 = *exec Then NPrint "exec ok"
+*a.l = 0
+*b.l = *a
+NPrint *b
+*c.l = l
+If *c = *exec Then NPrint "long ok"
+*d.l = #c
+NPrint *d
+*g.l = fl{}
+If *g = *exec Then NPrint "long function ok"
+*h.l = Peek.l(w)
+NPrint "peek ok"
+*i.l = w + l
+If *i = *exec + 4 Then NPrint "expression ok"
+*j.pt = v
+NPrint *j\x
+w = 2.5
+NPrint w
+End

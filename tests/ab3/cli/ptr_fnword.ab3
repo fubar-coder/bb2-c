@@ -1,0 +1,8 @@
+; AB3 mode: the result of a word function assigned to a pointer (line 6)
+Function.w fw{}
+  Function Return 4
+End Function
+NPrint "start"
+*p.l = fw{}
+NPrint *p
+End

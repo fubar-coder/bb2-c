@@ -175,7 +175,7 @@ endmacro()
 ab3_cli_case(atoi atoi.ab3 REF)
 ab3_cli_case(compilersignals compilersignals.ab3 REF)
 ab3_cli_case(data_restore_in_function data_restore_in_function.ab3 REF)
-ab3_cli_case(exec_data exec_data.ab3 REF REF_EXPECT exec_data.ref.expect)
+ab3_cli_case(exec_data exec_data.ab3 REF)
 ab3_cli_case(localization localization.ab3 REF)
 ab3_cli_case(fabrizio_speedquestion fabrizio_speedquestion.ab3 REF)
 ab3_cli_case(memoryleak_test memoryleak_test.ab3 REF)
@@ -252,8 +252,9 @@ ab3_cli_case(incguard incguard.ab3 REF)
 ab3_cli_case(cnifdef cnifdef.ab3 REF)
 ab3_cli_case(cnifat_err cnifat_err.ab3 REF)
 # AmiBlitz3's test programs G2 makes compile (ab3-mode-g2 task 5.1;
-# memoryleak_test above with its OPTIMIZE 13 line; exec_data above, its
-# error a type rule of G8; unknown_function an error in both).  Recorded
+# memoryleak_test above with its OPTIMIZE 13 line; exec_data above, an
+# error in both since ab3-pointer-assign; unknown_function an error in
+# both).  Recorded
 # differences (docs/ab3/variant.md): int_tests' Stop (-r: refused, with
 # runtime error checking it waits for the debugger; AmiBlitz3 ignores it
 # without its debugger) - the rest of it as int_tests_nostop; jsr's
@@ -270,6 +271,24 @@ ab3_cli_case(kick13 kick13.ab3 REF)
 # windowtags has no End: -r, without it blitz2's empty requester at the end
 # (BUG(orig) #6, case noend)
 ab3_cli_case(windowtags windowtags.ab3 ARGS -r REF)
+# the type rules of AB3 mode (change ab3-pointer-assign, spec
+# ab3-compat/type-rules): a pointer takes no basic value other than long.
+# AmiBlitz3 types the right side by its last variable or function outside
+# parameters (design D2): the refused right sides, those it takes, BB2
+# mode unchanged
+ab3_cli_case(ptr_word ptr_word.ab3 REF)
+ab3_cli_case(ptr_byte ptr_byte.ab3 REF)
+ab3_cli_case(ptr_float ptr_float.ab3 REF)
+ab3_cli_case(ptr_string ptr_string.ab3 REF)
+ab3_cli_case(ptr_quick ptr_quick.ab3 REF)
+ab3_cli_case(ptr_fnword ptr_fnword.ab3 REF)
+ab3_cli_case(ptr_fnnone ptr_fnnone.ab3 REF)
+ab3_cli_case(ptr_exprlast ptr_exprlast.ab3 REF)
+ab3_cli_case(ptr_exprconst ptr_exprconst.ab3 REF)
+ab3_cli_case(ptr_addr ptr_addr.ab3 REF)
+ab3_cli_case(ptr_paren ptr_paren.ab3 REF)
+ab3_cli_case(ptr_accept ptr_accept.ab3 REF)
+ab3_cli_case(ptr_bb2 ptr_bb2.bb)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)

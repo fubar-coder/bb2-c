@@ -1,0 +1,13 @@
+[compile]
+rc=0
+[run]
+exec ok
+0
+long ok
+5
+long function ok
+peek ok
+expression ok
+3
+2
+rc=0

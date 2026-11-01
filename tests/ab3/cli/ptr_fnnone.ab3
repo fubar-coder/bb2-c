@@ -1,0 +1,8 @@
+; AB3 mode: the result of a function without a type (a quick, the default
+; type) assigned to a pointer (line 6) is refused as in AmiBlitz3
+Function f{}
+  Function Return 4
+End Function
+*p.l = f{}
+NPrint *p
+End

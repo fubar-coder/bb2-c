@@ -1,0 +1,6 @@
+; AB3 mode: the address of a word variable assigned to a pointer (line 4)
+NPrint "start"
+w.w = 7
+*p.l = &w
+NPrint Peek.w(*p)
+End

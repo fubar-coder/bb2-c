@@ -1,0 +1,5 @@
+[compile]
+ptr_fnnone.ab3:6: Can't convert types
+rc=10
+[run]
+no executable

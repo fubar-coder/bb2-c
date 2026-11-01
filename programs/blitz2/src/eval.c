@@ -125,6 +125,7 @@ struct precent *precsp = precstack;     /* 9171 */
 struct forthent forthstack[32];         /* 9715 ds.b 18*32 */
 struct forthent *forthsp = forthstack;  /* 9716 */
 WORD fuckpos = 0;           /* 10303 */
+UWORD evaldepth = 0;        /* no asm counterpart (eval.h) */
 
 /* forward declarations of the internal routines */
 static void fdo2(WORD lvo);
@@ -719,7 +720,9 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
 
     asked = *type;
     t = asked;
+    evaldepth++;
     c = eval3(&t);
+    evaldepth--;
     if (asked && !unknown) {        /* type asked for */
         convtype(t, asked);         /* exg d2,d3 / convtype */
         t = asked;
@@ -1515,6 +1518,8 @@ static UWORD getelement2(UWORD *type)
     UWORD c = getchar3();
     struct forthent *f;
 
+    if (c & 0x8000)
+        ext_evalvalue(0, 0);        /* a token: a value without a type */
     if (c == '(' || c == '{')
         return bracket(type);
     if (c == '-')
@@ -1748,6 +1753,7 @@ UWORD ampersand2(UWORD *type)
     v = fetchvar(namelen, &t, &c);
     vartype = calcvar(&v, &t, &c, &off);
     *type = vartype;
+    ext_evalvalue(t ? t->u.code : 0, flagmask);    /* the variable's type */
 
     if ((vartype & 0xff) == T_STRING) {
         if (vartype & 0x8000) {                     /* .algot2 */
@@ -2279,6 +2285,7 @@ static UWORD variable(UWORD c, UWORD *type)
     v = fetchvar(namelen, &t, &c);
     vartype = calcvar(&v, &t, &c, &off);
     variable2(vartype, off, type);
+    ext_evalvalue(t ? t->u.code : 0, flagmask);
     return varcont(old, type);
 }
 
@@ -2377,6 +2384,7 @@ static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen)
         dopulla3();                 /* .nosb: fix up string base */
     }
     *type = rt;                     /* .nores: what it returns! */
+    ext_evalvalue(rt, 0);
     if (rt == T_STRING)
         pokewd(*putstlen | regat);
     getchar3();                     /* .notst */

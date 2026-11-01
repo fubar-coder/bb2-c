@@ -138,6 +138,11 @@ extern WORD fuckpos;
 UWORD maineval(WORD push, UWORD *type, WORD unknown);   /* 8860 */
 UWORD maineval2(WORD push, UWORD *type, WORD unknown);  /* 8879, no regat>=6 check */
 
+/* the nesting of maineval2 (no asm counterpart): 1 inside a statement's
+   expression, more inside the parameters or indices in it; for the
+   extension points of ext.h (ext_evalvalue) */
+extern UWORD evaldepth;
+
 /* entry variants (asm: which d1/d3 they load) */
 UWORD eval(UWORD *type);        /* 8857  push 0, convert            */
 UWORD bakeval(UWORD *type);     /* 8855  bakup; eval                */

@@ -1,3 +1,5 @@
 [compile]
+rc=0
 [run]
-no executable
+4
+rc=0

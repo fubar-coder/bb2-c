@@ -1,0 +1,9 @@
+; XTRA
+; Residents       = "all.res"
+; /XTRA
+; AB3 mode: an undeclared variable (a quick) assigned to a pointer
+; (line 7) is refused (spec ab3-compat/type-rules)
+NPrint "start"
+*exec.ExecBase = execbase
+NPrint "not reached"
+End

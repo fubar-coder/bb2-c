@@ -1093,7 +1093,9 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
             svmode = varmode;
             svoff = lastoffset;
             et = vartype & 0xff;
+            ext_assignstart();
             c = eval(&et);
+            ext_assigncheck(vartype);
             lastoffset = svoff;
             if (!commode)
                 pushput();

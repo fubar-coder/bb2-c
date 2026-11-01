@@ -1,0 +1,5 @@
+[compile]
+ptr_word.ab3:4: Can't convert types
+rc=10
+[run]
+no executable

@@ -226,6 +226,30 @@ void ext_passend(void);
  */
 BOOL ext_savefile(void);
 
+/* ================ AB3 mode's type rules (change ab3-pointer-assign) */
+
+/** @brief dolet2 (tokens2.c): the right side of an assignment to a
+ *         variable that is not a string is evaluated next (eval at
+ *         evaldepth + 1, eval.h). */
+void ext_assignstart(void);
+
+/**
+ * @brief eval.c: an element of an expression gave its value, at
+ *        evaldepth: a variable (variable, ampersand2), a function's
+ *        result (afunction) or a token (getelement2: a library or
+ *        built-in function, code 0).
+ * @param code   its type: the type code (1..7, struct type u.code;
+ *               >= 256 a NewType), 0 if none
+ * @param flags  flagmask of the variable (1: a pointer), 0 if none
+ */
+void ext_evalvalue(ULONG code, UWORD flags);
+
+/** @brief dolet2: the right side of the assignment ext_assignstart
+ *         announced is evaluated; vartype is the left side's (calcvar:
+ *         bit 15 its address in a2, bit 14 a pointer).  May stop the
+ *         compile with err(). */
+void ext_assigncheck(UWORD vartype);
+
 /* ======================================= the command line, the editor */
 
 /**

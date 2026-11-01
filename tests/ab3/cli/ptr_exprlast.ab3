@@ -1,0 +1,6 @@
+; AB3 mode: an expression assigned to a pointer whose last variable is
+; a word (line 4)
+l.l = 4 : w.w = 1
+*p.l = l + w
+NPrint *p
+End
