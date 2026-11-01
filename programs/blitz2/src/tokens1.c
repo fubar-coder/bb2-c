@@ -686,8 +686,11 @@ void doshared(UWORD c)
     struct type *t;
     UWORD len;
 
-    if (!pm)
+    if (!pm) {
+        if (ext_shared(c))
+            return;
         sharederr();
+    }
     procmode = 0;
     for (;;) {                                  /* .loop2 */
         c = getvname(c, &len);

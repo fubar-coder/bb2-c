@@ -90,6 +90,35 @@ BOOL ext_namelabel(UWORD c)
     return FALSE;
 }
 
+void ext_dotlabel(UWORD c)
+{
+}
+
+UWORD ext_stmtprefix(UWORD c)
+{
+    return c;
+}
+
+BOOL ext_comment(void)
+{
+    return FALSE;
+}
+
+BOOL ext_letter(UWORD c)
+{
+    return FALSE;
+}
+
+BOOL ext_shared(UWORD c)
+{
+    return FALSE;
+}
+
+struct var *ext_sharedvar(UWORD len)
+{
+    return NULL;
+}
+
 BOOL ext_cmdline(int argc, char **argv, int *rc)
 {
     return FALSE;

@@ -4,8 +4,20 @@
  * "new syntax" of OPTIMIZE bit 4 (ext_newsyntax, ab3dir.c) and the rules
  * AmiBlitz3 v3.14.0 has on in every program.  In BB2 mode none applies.
  */
+#include <string.h>
 #include "blitz2.h"
 #include "ab3.h"
+
+/* the variables of global SHARED statements (ext_shared): shared with
+   every procedure; the variables are freed between passes */
+#define MAXSHARED 256
+static struct var *gshared[MAXSHARED];
+static UWORD ngshared;
+
+void ab3_synpass(void)
+{
+    ngshared = 0;
+}
 
 /* AmiBlitz3's chartab (AmiBlitz3.ab3:1161-1191): the characters that end
    a name; the bytes from 128 are tokens */
@@ -142,4 +154,94 @@ BOOL ext_namelabel(UWORD c)
             return FALSE;
     labelend();
     return TRUE;
+}
+
+/* .name followed by a token is a label (AmiBlitz3.ab3:4284-4291
+   handlemouse), the token the next statement */
+void ext_dotlabel(UWORD c)
+{
+    if (progmode == XTRA_MODE_AB3 && (c & 0x8000))
+        labelend();
+}
+
+/* '+' at the start of a statement: "no type check" for it
+   (AmiBlitz3.ab3:4183, notypecheck); type checks are G8, so it is
+   skipped */
+UWORD ext_stmtprefix(UWORD c)
+{
+    if (progmode == XTRA_MODE_AB3 && c == '+')
+        return getchar3();
+    return c;
+}
+
+/* code after ":@" in a comment is compiled (AmiBlitz3.ab3:10593 getchar):
+   the comment ends there as a ':' */
+BOOL ext_comment(void)
+{
+    const UBYTE *p;
+
+    if (progmode != XTRA_MODE_AB3)
+        return FALSE;
+    for (p = srcptr; *p; p++)
+        if (p[0] == ':' && p[1] == '@') {
+            srcptr = (UBYTE *)p + 2;
+            return TRUE;
+        }
+    return FALSE;
+}
+
+/* AmiBlitz3's test_for_letter (AmiBlitz3.ab3:936-947, getelement 15139):
+   every character from 'A' to 'z' starts a variable, so also
+   [ \ ] ^ _ ` */
+BOOL ext_letter(UWORD c)
+{
+    return progmode == XTRA_MODE_AB3 && c >= '[' && c <= '`';
+}
+
+/* SHARED outside a procedure (AmiBlitz3.ab3:20505 do_shared,
+   proceduremode 0): the global variables named are shared with every
+   procedure compiled after it (ext_sharedvar) */
+BOOL ext_shared(UWORD c)
+{
+    struct type *t;
+    struct var *v;
+    UWORD len;
+
+    if (progmode != XTRA_MODE_AB3)
+        return FALSE;
+    for (;;) {
+        c = getvname(c, &len);
+        v = fetchvar(len, &t, &c);
+        if (ngshared == MAXSHARED)
+            err("Too many global SHARED variables");
+        gshared[ngshared++] = v;
+        if (flagmask & 2) {
+            c = getchar3();
+            if (c != ')')
+                syntaxerr();
+            c = getchar3();
+        }
+        if (c != ',')
+            break;
+        c = getchar3();
+    }
+    return TRUE;
+}
+
+/* in a procedure: a global SHARED variable of the name and kind, as
+   AmiBlitz3's fvaradd looks in sharebase before it adds a local one */
+struct var *ext_sharedvar(UWORD len)
+{
+    UWORD i;
+    struct var *v;
+
+    for (i = 0; i < ngshared; i++) {
+        v = gshared[i];
+        if ((UBYTE)v->flags == (UBYTE)flagmask && v->len - 16 == len
+            && !memcmp(v->name, namebuff, len)) {
+            varmode = 0;
+            return v;
+        }
+    }
+    return NULL;
 }

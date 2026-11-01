@@ -1,0 +1,7 @@
+; the text after a colon and an at sign in a comment is code (comments are
+; not tokenised: only code without keywords, as with AmiBlitz3)
+; note :@b=1
+NPrint b
+  ; indented :@c=b+1
+NPrint c
+End

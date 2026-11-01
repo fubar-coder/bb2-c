@@ -1,0 +1,11 @@
+; SHARED in the main program shares the variable with every procedure
+; after it: zinc increments the main program's zcnt
+SHARED zcnt.l
+zcnt = 5
+Statement zinc{}
+  zcnt + 1
+End Statement
+zinc{}
+zinc{}
+NPrint zcnt
+End

@@ -1,0 +1,7 @@
+; .name followed by a statement on the same line: the label, then the
+; statement - zgo is reached twice
+n = 0
+.zgo NPrint "go"
+n + 1
+If n < 2 Then Goto zgo
+End

@@ -474,6 +474,8 @@ UWORD getcharb(void)
         return c;
     }
     if (c == ';' && !quoteflag) {           /* comment: skip line */
+        if (ext_comment())
+            return ':';
         while (*srcptr++)
             ;
         lastchar = 0;
@@ -1126,6 +1128,9 @@ static struct var *fvarlocal(UWORD len, struct type **type, UWORD *c)
             return fvarfound(v, type, c);
         v = (struct var *)findlab((struct node *)v, NAMEOFF_VAR, len, NULL);
     }
+    v = ext_sharedvar(len);
+    if (v)
+        return fvarfound(v, type, c);
     /* .hendrix */
     varmode = -1;
     save = varoff;

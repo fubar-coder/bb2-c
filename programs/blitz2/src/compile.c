@@ -1161,6 +1161,7 @@ static void handlechar(void)
         handleeol(c);
         return;
     }
+    c = ext_stmtprefix(c);
     setsvars();
     if (smode())
         return;
@@ -1240,7 +1241,8 @@ static void handlemouse(void)
         handlelocal();
         return;
     }
-    len = makename2(NULL);
+    len = makename2(&c);
+    ext_dotlabel(c);
     handlelabel(len);           /* falls through into handlelabel */
 }
 

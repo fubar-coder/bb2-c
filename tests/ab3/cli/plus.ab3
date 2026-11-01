@@ -1,0 +1,5 @@
+; the + prefix of a statement (no type check): compiled as without it
+b.w = 3
++a.l = b.w
+NPrint a
+End

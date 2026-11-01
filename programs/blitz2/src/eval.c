@@ -1566,7 +1566,7 @@ static UWORD getelement2(UWORD *type)
     f->constgot = ~f->constgot;     /* .asmok: not -(a1) - non-const */
 
     /* Here, we have stuff which will fuck it! */
-    if (tstalpha(c) || c == '*' || c == '\\')
+    if (tstalpha(c) || c == '*' || c == '\\' || ext_letter(c))
         return variable(c, type);
     if (c == '"')
         return litstring(type);

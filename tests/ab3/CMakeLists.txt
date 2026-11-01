@@ -206,6 +206,11 @@ ab3_cli_case(macro_off macro_off.ab3 REF)
 ab3_cli_case(label_ns label_ns.ab3 REF)
 ab3_cli_case(label_proc label_proc.ab3 REF)
 ab3_cli_case(label_proc_off label_proc_off.ab3 REF)
+ab3_cli_case(shared_global shared_global.ab3 REF)
+ab3_cli_case(underscore underscore.ab3 REF)
+ab3_cli_case(dotlabel dotlabel.ab3 REF)
+ab3_cli_case(plus plus.ab3 REF)
+ab3_cli_case(comment_code comment_code.ab3 REF)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST]): the ctest
 function(ab3_cli name config cases)

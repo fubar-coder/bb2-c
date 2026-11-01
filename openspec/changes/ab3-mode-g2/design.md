@@ -167,3 +167,21 @@ memory flag; with the runtime debugger on they are ignored (AmiBlitz3's
   next one. `label_ns`, `label_proc` give AmiBlitz3's output;
   `label_proc_off` its error at the same line (blitz2's "Label reference
   out of context").
+- **3.4** (points `ext_shared`/`ext_sharedvar` in doshared/fvarlocal,
+  `ext_letter` in getelement2, `ext_dotlabel` in handlemouse,
+  `ext_stmtprefix` in handlechar, `ext_comment` in getcharb): every case
+  gives AmiBlitz3's output. Found on the way:
+  - Global `SHARED`: AmiBlitz3 moves the variable to its `sharebase`,
+    which its `fvaradd` searches before it adds a local one; here the
+    variable stays global and the procedures look it up after their own
+    `SHARED` ones (`ext_sharedvar`) - the same for the variables a
+    procedure has not made local before. AmiBlitz3 also refuses a new
+    variable without a type there (`vardeclareerr`) and a known one that
+    is not an array ("already declared"); those errors are not taken
+    over (only more programs compile; G8 for the declaration checks).
+  - The scenario "Underscore variable" says `Bin$(_start)` prints `101`:
+    both compilers print the 32 digits `000…0101` (`Bin$` of a long).
+    The spec's wording is short for that, no behaviour differs.
+  - `:@` in a comment: comments are not tokenised (TED's tokeniser and
+    AmiBlitz3's), so only code without keywords works after it, in both
+    compilers (`; x :@NPrint "a"` is "Garbage at End of Line" in both).

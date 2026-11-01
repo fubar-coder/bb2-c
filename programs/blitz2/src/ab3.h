@@ -29,4 +29,8 @@ void ab3_setmode(int mode);
  *         where there is no compile to stop yet; compile reports it. */
 extern const char *ab3liberr;
 
+/** @brief A pass starts: the state of the syntax rules (ab3syn.c) goes
+ *         back to its start (called by ext_passstart, ab3dir.c). */
+void ab3_synpass(void);
+
 #endif

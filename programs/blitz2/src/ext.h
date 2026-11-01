@@ -27,6 +27,7 @@ struct token;
 struct include;
 struct resentry;
 struct macro;
+struct var;
 
 /* ================================================ the data of the mode */
 
@@ -144,6 +145,38 @@ BOOL ext_macargs(struct macro *m, UBYTE **pp, WORD *narg);
  *         ends there): blitz2 compiles an assignment
  */
 BOOL ext_namelabel(UWORD c);
+
+/** @brief handlemouse (compile.c): the label .name is followed by c; may
+ *         end it before c (the source back at c, the statement ends
+ *         there). */
+void ext_dotlabel(UWORD c);
+
+/** @brief handlechar (compile.c): the first character c of a statement
+ *         (not its end); returns the one to compile it from. */
+UWORD ext_stmtprefix(UWORD c);
+
+/**
+ * @brief getcharb (parse.c): a comment starts at srcptr (behind ';').
+ * @return TRUE if code follows in it: srcptr is on that code, getcharb
+ *         returns ':' (blitz2 skips the rest of the line)
+ */
+BOOL ext_comment(void);
+
+/** @brief getelement2 (eval.c): does c start a variable (besides
+ *         blitz2's letters, '*', '\')? */
+BOOL ext_letter(UWORD c);
+
+/**
+ * @brief doshared (tokens1.c): SHARED outside a procedure, c its first
+ *        character.
+ * @return TRUE if handled (the statement is compiled): blitz2's error
+ */
+BOOL ext_shared(UWORD c);
+
+/** @brief fvarlocal (parse.c): the variable named namebuff (len, the
+ *         kind of flagmask) is not one of the procedure's SHARED ones:
+ *         a variable shared with every procedure, NULL if none. */
+struct var *ext_sharedvar(UWORD len);
 
 /* ======================================= the command line, the editor */
 
