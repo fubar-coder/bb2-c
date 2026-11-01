@@ -55,6 +55,11 @@ file(MAKE_DIRECTORY ${BLITZ2_DIR})
 # shared sources, compiled by each user with its own options
 set(FILEREQ_DIR ${PROJECT_SOURCE_DIR}/shared/filereq)
 
+# the linker script of the -fbaserel programs without C startup code (ted,
+# ab3cli): .bss stored as zeros in the data hunk, as Kickstart 1.x's
+# LoadSeg does not clear an unstored tail (#963; see the script)
+set(BASEREL_NOSTART_LD ${PROJECT_SOURCE_DIR}/cmake/baserel-nostart.ld)
+
 # the host side (host/): the tools (tools/) and the host tests of the
 # components, built with the native compiler before the tools are used.
 # The target keeps its name host_tools (the m68k steps depend on it).

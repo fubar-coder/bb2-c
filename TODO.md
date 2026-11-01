@@ -405,6 +405,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   5. [x] Checked 2026-11-01 whether TED's baserel data hunk (0x7c8 bytes
      of `.bss` without startup code) is cleared by LoadSeg: not on
      Kickstart 1.3 (only `HUNK_BSS` is), yes on 3.2 – port defect #963.
+     Fixed 2026-11-01: `cmake/baserel-nostart.ld` stores the `.bss` of
+     `ted` and `ab3cli` as zeros in the data hunk, `hunkcheck --stored`
+     checks it after every link.
   6. [x] AmiBlitz3's pointer assignment rule done (2026-11-01, OpenSpec
      change `ab3-pointer-assign`): in AB3 mode a pointer takes no basic
      value other than long ("Can't convert types", independent of

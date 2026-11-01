@@ -1,14 +1,18 @@
 # Tests of known defects of the port (label bug-port; README, "Tests"): the
 # test checks the correct behaviour and fails until the defect is fixed;
-# the fix removes the label.  The presets host, emulator and all exclude
-# the label, only the preset bug-orig (with its -L bug-port) runs them.
+# the fix removes the label (the BUG flag of bug_port_lsclear).  The
+# presets host, emulator and all exclude the label, only the preset
+# bug-orig (with its -L bug-port) runs them; with no open defect the label
+# has no test (ctest: "No tests were found", success).  The label stays
+# for future tests.
 #
-# #963  Kickstart 1.x's LoadSeg does not clear the tail of a CODE/DATA hunk
-#       beyond the stored block, where the baserel programs ted and ab3cli
-#       (no C startup) have their .bss.  lsclear (amiga/lsclear.c) dirties
-#       the memory of the a500 machine (Kickstart 1.3), loads the program
-#       with LoadSeg and checks that every byte between the stored block
-#       and the hunk size is 0.
+# #963  (fixed) Kickstart 1.x's LoadSeg does not clear the tail of a
+#       CODE/DATA hunk beyond the stored block, where the baserel programs
+#       ted and ab3cli (no C startup) had their .bss; now
+#       cmake/baserel-nostart.ld stores it.  lsclear (amiga/lsclear.c)
+#       dirties the memory of the a500 machine (Kickstart 1.3), loads the
+#       program with LoadSeg and checks that every byte between the stored
+#       block and the hunk size is 0.
 #
 # The checker itself (no label: it must pass): lsclear -gen writes three
 # load files in the emulator, one with an unstored tail, one with the tail
@@ -42,8 +46,8 @@ function(bug_port_lsclear name)
 endfunction()
 
 # #963: the programs on the a500 (Kickstart 1.3)
-bug_port_lsclear(bug_port_963_ted BUG MACHINE a500 FILES $<TARGET_FILE:ted>)
-bug_port_lsclear(bug_port_963_ab3cli BUG MACHINE a500 FILES $<TARGET_FILE:ab3cli>)
+bug_port_lsclear(bug_port_963_ted MACHINE a500 FILES $<TARGET_FILE:ted>)
+bug_port_lsclear(bug_port_963_ab3cli MACHINE a500 FILES $<TARGET_FILE:ab3cli>)
 
 # the checker's self test
 bug_port_lsclear(lsclear_selftest_a500 GEN MACHINE a500

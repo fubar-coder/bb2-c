@@ -86,7 +86,10 @@ foreach(exe ted ted_sym)
 	# whole archive: every core module is linked
 	target_link_libraries(${exe} PRIVATE -Wl,--whole-archive tedcore -Wl,--no-whole-archive)
 	if(TED_BASEREL)
-		target_link_options(${exe} PRIVATE -fbaserel)
+		# .bss stored in the data hunk: no startup code clears it, and
+		# Kickstart 1.x's LoadSeg does not (#963, cmake/baserel-nostart.ld)
+		target_link_options(${exe} PRIVATE -fbaserel -T ${BASEREL_NOSTART_LD})
+		set_property(TARGET ${exe} APPEND PROPERTY LINK_DEPENDS ${BASEREL_NOSTART_LD})
 	endif()
 endforeach()
 target_link_options(ted PRIVATE $<$<CONFIG:Release,MinSizeRel>:-s>
@@ -99,6 +102,9 @@ set_target_properties(ted_sym PROPERTIES OUTPUT_NAME ted.sym SUFFIX "")
 #   - hunk layout: blitz2 calls offset 4 of the first hunk (`outside`), DOS
 #     a standalone TED at offset 0: bsr.w edstart ($6100), outside_stub
 #     starts with movem.l ...,-(sp) ($48E7)
+#   - every CODE/DATA hunk stored whole (hunkcheck --stored): the .bss is
+#     in the data hunk, Kickstart 1.x's LoadSeg would not clear an
+#     unstored tail (#963)
 #   - no libgcc/libnix arithmetic helpers (they need UtilityBase, which TED
 #     never opens) and nothing else from the libraries but string/setjmp code
 #   - every code label of ted.s exactly once as "ted.s:NNN label" in src/
@@ -106,6 +112,7 @@ set_target_properties(ted_sym PROPERTIES OUTPUT_NAME ted.sym SUFFIX "")
 add_dependencies(ted host_tools)
 add_custom_command(TARGET ted POST_BUILD
 	COMMAND ${HUNKCHECK} $<TARGET_FILE:ted> 0:6100 4:48e7
+	COMMAND ${HUNKCHECK} --stored $<TARGET_FILE:ted>
 	COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/checklink.cmake
 		${CMAKE_CURRENT_BINARY_DIR}/ted.map
 	COMMAND ${CHECKLABELS} -q ${TED_ORIG_DIR}/ted.s ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -118,7 +125,7 @@ add_subdirectory(tests/oracle)
 # window, gadgets, menus, requesters (534 checks; relocated longs of the
 # reference are skipped).  ted is linked only after this check passed.
 add_dependencies(ted_sym ted_ref host_tools)
-set_target_properties(ted_sym PROPERTIES
+set_property(TARGET ted_sym APPEND PROPERTY
 	LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv;${REF_DIR}/ted.lst")
 add_custom_command(TARGET ted_sym POST_BUILD
 	COMMAND ${CHECKDATA} -q ${CMAKE_CURRENT_SOURCE_DIR}/checkdata.tsv

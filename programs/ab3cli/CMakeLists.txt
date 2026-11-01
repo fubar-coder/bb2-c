@@ -28,7 +28,10 @@ target_link_libraries(ab3cli PRIVATE tedcore)
 if(TED_BASEREL)
 	target_compile_options(ab3cli_frame PRIVATE -fbaserel)
 	target_compile_options(ab3cli PRIVATE -fbaserel)
-	target_link_options(ab3cli PRIVATE -fbaserel)
+	# .bss stored in the data hunk: no startup code clears it, and
+	# Kickstart 1.x's LoadSeg does not (#963, cmake/baserel-nostart.ld)
+	target_link_options(ab3cli PRIVATE -fbaserel -T ${BASEREL_NOSTART_LD})
+	set_property(TARGET ab3cli APPEND PROPERTY LINK_DEPENDS ${BASEREL_NOSTART_LD})
 endif()
 set_target_properties(ab3cli PROPERTIES OUTPUT_NAME ab3cli SUFFIX ""
 	RUNTIME_OUTPUT_DIRECTORY ${BLITZ2_DIR})
@@ -36,9 +39,13 @@ set_target_properties(ab3cli PROPERTIES OUTPUT_NAME ab3cli SUFFIX ""
 # checks after every link; if one fails, ab3cli does not count as built:
 #   - hunk layout of the frame: +0 moveq #20,d0 (shell start fails), +4
 #     movem.l (outside, blitz2 calls it), as the other edstub programs
+#   - every CODE/DATA hunk stored whole (hunkcheck --stored): the .bss is
+#     in the data hunk, Kickstart 1.x's LoadSeg would not clear an
+#     unstored tail (#963)
 # (no C library, -nostdlib: a libgcc or libnix helper - they need
 # UtilityBase, which nothing opens - does not even link)
 add_dependencies(ab3cli host_tools)
 add_custom_command(TARGET ab3cli POST_BUILD
 	COMMAND ${HUNKCHECK} $<TARGET_FILE:ab3cli> 0:7014 4:48e7
+	COMMAND ${HUNKCHECK} --stored $<TARGET_FILE:ab3cli>
 	VERBATIM)

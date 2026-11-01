@@ -238,7 +238,11 @@ again):
   binary match (`vasmlisting verify`). The reference for the port is this
   build, not the TED binary of the CD (a different build).
 * `ted` after every link (POST_BUILD): hunk layout (`tools/hunkcheck`:
-  offset 0 `bsr.w`, offset 4 `outside`) and `programs/ted/checklink.cmake`
+  offset 0 `bsr.w`, offset 4 `outside`; `--stored`: every hunk stored
+  whole, as `ted` and `ab3cli` have their `.bss` in the data hunk and
+  Kickstart 1.x's `LoadSeg` would not clear an unstored tail, #963 – the
+  linker script `cmake/baserel-nostart.ld` stores it as zeros; the same
+  for `ab3cli`) and `programs/ted/checklink.cmake`
   (no libgcc/libnix helper functions that would need `UtilityBase`) and
   `tools/checklabels`: every code label of `ted.s` exactly once as
   `ted.s:NNN label` in `programs/ted/src/` (completeness of the
@@ -613,13 +617,17 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   and **fails** until the defect is fixed; the fix removes the label from
   the test. Label `bug-port` (with `emulator`): `host`, `emulator` and
   `all` exclude it like `bug-orig`; the preset `bug-orig` runs both
-  (`ctest --preset bug-orig -L bug-port`: only these). `tests/bug-port/`:
-  `bug_port_963_ted` and `bug_port_963_ab3cli` (#963): `lsclear`
+  (`ctest --preset bug-orig -L bug-port`: only these; with no open
+  defect the label has no test, and ctest reports "No tests were found"
+  with success). `tests/bug-port/` (`bug_port_lsclear(... BUG ...)` sets
+  the label): `bug_port_963_ted` and `bug_port_963_ab3cli` (#963, fixed:
+  no label any more, they run in `emulator` and `all`): `lsclear`
   (`amiga/lsclear.c`, no libc) dirties all free memory with `$AA` on the
   `a500` machine (Kickstart 1.3), loads the program with `LoadSeg` and
   checks that every byte between a hunk's stored block and its header
   size is 0 (Kickstart 1.x clears only `HUNK_BSS`; the baserel programs
-  have their `.bss` there). The checker has tests of its own (label
+  without startup code have their `.bss` in the data hunk, which
+  `cmake/baserel-nostart.ld` stores whole). The checker has tests of its own (label
   `emulator`, they pass): `lsclear_selftest_a500` / `_a1200` (generated
   load files with an unstored tail, a stored zero tail and a `HUNK_BSS`:
   on Kickstart 1.3 only the first is FAIL, with counted bytes; all PASS
