@@ -363,8 +363,80 @@ static int has_key(const struct amiga_emulation_option *ch, size_t n, const char
     return 0;
 }
 
+/* the test's parameters with the changes of $AMIGA_EMULATION_CHANGES
+   (amiga_emulation.h), which replace the test's of the same key: q is p
+   with the merged changes, *own what to free (NULL without them); -1
+   with a message in err on a bad entry */
+static int env_changes(const struct amiga_emulation_params *p, struct amiga_emulation_params *q,
+                       struct amiga_emulation_option **own, char **text, char *err, size_t errlen)
+{
+    const char *env = getenv("AMIGA_EMULATION_CHANGES");
+    struct amiga_emulation_option *o;
+    size_t i, k = 0, nenv, max = 1;
+    char *s, *next;
+
+    *q = *p;
+    *own = NULL;
+    *text = NULL;
+    if (!env || !*env)
+        return 0;
+    for (s = (char *)env; *s; s++)
+        max += *s == ';';
+    if (!(*text = strdup(env)) || !(o = malloc((p->nchanges + max) * sizeof *o))) {
+        free(*text);
+        *text = NULL;
+        set_err(err, errlen, "out of memory");
+        return -1;
+    }
+    for (s = *text; s; s = next) {
+        char *eq;
+
+        if ((next = strchr(s, ';')))
+            *next++ = 0;
+        if (!*s)
+            continue;
+        if ((eq = strchr(s, '=')))
+            *eq++ = 0;
+        if (!*s || has_char(s, "\n") || (eq && has_char(eq, "\n"))) {
+            set_err(err, errlen, "bad entry \"%s\" in AMIGA_EMULATION_CHANGES", s);
+            free(o);
+            free(*text);
+            *text = NULL;
+            return -1;
+        }
+        o[k].key = s;
+        o[k++].value = eq;
+    }
+    nenv = k;
+    for (i = 0; i < p->nchanges; i++)
+        if (!has_key(o, nenv, p->changes[i].key, strlen(p->changes[i].key)))
+            o[k++] = p->changes[i];
+    q->changes = o;
+    q->nchanges = k;
+    *own = o;
+    return 0;
+}
+
+static char *config_text(const struct amiga_emulation_params *p, const char *emulation_dir,
+                         const char *test_dir, char *err, size_t errlen);
+
 char *amiga_emulation_config(const struct amiga_emulation_params *p, const char *emulation_dir,
                              const char *test_dir, char *err, size_t errlen)
+{
+    struct amiga_emulation_params q;
+    struct amiga_emulation_option *own;
+    char *text, *cfg;
+
+    if (env_changes(p, &q, &own, &text, err, errlen))
+        return NULL;
+    cfg = config_text(&q, emulation_dir, test_dir, err, errlen);
+    free(own);
+    free(text);
+    return cfg;
+}
+
+static char *config_text(const struct amiga_emulation_params *p, const char *emulation_dir,
+                         const char *test_dir, char *err, size_t errlen)
 {
     struct sb b = { 0 };
     const struct machine *m = find_machine(p->machine);
@@ -1176,7 +1248,15 @@ unsigned long long amiga_emulation_snapshot_key(const char *cfg, const char *slo
 unsigned long long amiga_emulation_snapshot_config_id(const struct amiga_emulation_params *p)
 {
     unsigned long long h = 0xcbf29ce484222325ULL;
+    struct amiga_emulation_params q;
+    struct amiga_emulation_option *own;
+    char *text, err[1];
     size_t i;
+
+    /* with $AMIGA_EMULATION_CHANGES: a state of its own (a bad one fails
+       in amiga_emulation_config) */
+    if (!env_changes(p, &q, &own, &text, err, sizeof err))
+        p = &q;
 
     h = fnv_str(h, p->machine ? p->machine : "a1200");
     h = fnv(h, &p->nchanges, sizeof p->nchanges);
@@ -1187,6 +1267,8 @@ unsigned long long amiga_emulation_snapshot_config_id(const struct amiga_emulati
         h = fnv_str(h, p->mounts[i].volume);
         h = fnv(h, p->mounts[i].writable ? "w" : "r", 1);
     }
+    free(own);
+    free(text);
     return h;
 }
 

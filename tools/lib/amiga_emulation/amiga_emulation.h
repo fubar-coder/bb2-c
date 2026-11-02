@@ -89,6 +89,14 @@
  *                               answered, its threads with state, CPU
  *                               ticks in one second and kernel wait
  *                               channel (Linux)
+ *   AMIGA_EMULATION_CHANGES="key=value;key;..."  changes of the
+ *                               configuration on top of the test's, which
+ *                               they replace for the same key; a key
+ *                               without "=" is removed (e.g.
+ *                               "cachesize=0" for a run without JIT).  A
+ *                               snapshot is of the configuration with
+ *                               them, so they do not replace the usual
+ *                               one.  A value cannot contain ";".
  */
 #ifndef AMIGA_EMULATION_H
 #define AMIGA_EMULATION_H
@@ -243,7 +251,8 @@ const char *amiga_emulation_snapshot_use_name(enum amiga_emulation_snapshot_use 
 void amiga_emulation_free(struct amiga_emulation *e);
 
 /* for tests and tools: the configuration text (malloc'd; NULL with a
-   message in err) and the script text run.script gets */
+   message in err), with the changes of $AMIGA_EMULATION_CHANGES, and the
+   script text run.script gets */
 char *amiga_emulation_config(const struct amiga_emulation_params *p, const char *emulation_dir,
                              const char *test_dir, char *err, size_t errlen);
 char *amiga_emulation_script(const char *script);

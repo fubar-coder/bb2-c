@@ -315,6 +315,36 @@ static void snapshot_key(void)
     rmdir(dir);
 }
 
+/* $AMIGA_EMULATION_CHANGES: on top of the test's changes, replacing
+   them for the same key, a key without "=" removed; a snapshot of its
+   own; a bad entry fails */
+static void env_changes(void)
+{
+    struct amiga_emulation_option ch[] = { { "sound_output", "normal" }, { "cpu_type", "68030" } };
+    struct amiga_emulation_params p = { 0 };
+    unsigned long long id0;
+    char err[200], *cfg;
+
+    p.changes = ch;
+    p.nchanges = 2;
+    id0 = amiga_emulation_snapshot_config_id(&p);
+    setenv("AMIGA_EMULATION_CHANGES", "cachesize=0;sound_output=none;chipmem_size;", 1);
+    cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
+    CHECK(cfg && key_lines(cfg, "cachesize") == 1 && lines_equal(cfg, "cachesize=0") == 1);
+    CHECK(cfg && key_lines(cfg, "sound_output") == 1 && lines_equal(cfg, "sound_output=none") == 1);
+    CHECK(cfg && key_lines(cfg, "chipmem_size") == 0);
+    CHECK(cfg && lines_equal(cfg, "cpu_type=68030") == 1);
+    free(cfg);
+    CHECK(amiga_emulation_snapshot_config_id(&p) != id0);
+    /* broken: an empty key */
+    setenv("AMIGA_EMULATION_CHANGES", "cachesize=0;=1", 1);
+    cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
+    CHECK(!cfg && strstr(err, "AMIGA_EMULATION_CHANGES"));
+    free(cfg);
+    unsetenv("AMIGA_EMULATION_CHANGES");
+    CHECK(amiga_emulation_snapshot_config_id(&p) == id0);
+}
+
 /* the configuration id: what the session asks for (machine, changes, the
    mounts' volumes and access), not the mounts' directories */
 static void snapshot_config_id(void)
@@ -600,6 +630,10 @@ int main(void)
     struct amiga_emulation_mount mounts[] = { { "CD", "/data/cd", 0 }, { "W", "/data/w", 1 } };
     struct amiga_emulation_params p = { 0 };
     char err[200], *cfg, *s;
+
+    /* the configuration as the test asks for it, not as the caller's
+       environment changes it */
+    unsetenv("AMIGA_EMULATION_CHANGES");
 
     /* default: placeholders replaced, TEST: as DH1 */
     cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
@@ -932,6 +966,7 @@ int main(void)
     snapshot_config();
     snapshot_key();
     snapshot_config_id();
+    env_changes();
     snapshot_drop_stale();
     snapshot_prune();
     snapshot_purge();
