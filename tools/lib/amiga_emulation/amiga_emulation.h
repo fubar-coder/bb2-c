@@ -81,6 +81,14 @@
  *   AMIGA_EMULATION_SHOTS=N     a screenshot every N seconds (0.2 too) while
  *                               the session runs, to shots/NNNN.png in the
  *                               work directory
+ *   AMIGA_EMULATION_TIMEOUT_STATE=1  at the time limit, before Amiberry is
+ *                               killed: the emulated machine's state
+ *                               (timeout.uss with its configuration
+ *                               timeout.uae, for Amiberry to load) and
+ *                               timeout.txt: whether Amiberry still
+ *                               answered, its threads with state, CPU
+ *                               ticks in one second and kernel wait
+ *                               channel (Linux)
  */
 #ifndef AMIGA_EMULATION_H
 #define AMIGA_EMULATION_H

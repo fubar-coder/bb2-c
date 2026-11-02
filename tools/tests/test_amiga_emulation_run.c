@@ -152,6 +152,15 @@ static void finish(int i, struct amiga_emulation *e)
         CHECK(!file_exists_in(amiga_emulation_test_dir(e), "run.done"));
         CHECK(file_exists_in(amiga_emulation_work_dir(e), "timeout.png"));
         CHECK(file_exists_in(amiga_emulation_work_dir(e), "shots/0001.png"));
+        /* the state at the limit: Amiberry answered, saved the machine */
+        s = read_text(amiga_emulation_work_dir(e), "timeout.txt");
+        CHECK(s && strstr(s, "screenshot: answered\n") && strstr(s, "state: timeout.uss\n"));
+#ifdef __linux__
+        CHECK(s && strstr(s, "threads (tid name state ticks/s wchan):\n  "));
+#endif
+        free(s);
+        CHECK(file_exists_in(amiga_emulation_work_dir(e), "timeout.uss"));
+        CHECK(file_exists_in(amiga_emulation_work_dir(e), "timeout.uae"));
         break;
     }
     amiga_emulation_free(e);
@@ -177,9 +186,12 @@ int main(void)
     /* in parallel as far as there are free slots: without one, the oldest
        run is ended first (the slot limit is hard) */
     for (i = 0; i < NRUNS; i++) {
-        /* screenshots every 2 seconds, only for the hanging run */
-        if (i == HANG_D)
+        /* screenshots every 2 seconds and the state at the limit, only
+           for the hanging run */
+        if (i == HANG_D) {
             setenv("AMIGA_EMULATION_SHOTS", "2", 1);
+            setenv("AMIGA_EMULATION_TIMEOUT_STATE", "1", 1);
+        }
         while (!(e[i] = amiga_emulation_start(p[i], err, sizeof err)) && amiga_emulation_no_slot()
                && oldest < i) {
             CHECK(errno == EAGAIN);
@@ -187,6 +199,7 @@ int main(void)
             e[oldest++] = NULL;
         }
         unsetenv("AMIGA_EMULATION_SHOTS");
+        unsetenv("AMIGA_EMULATION_TIMEOUT_STATE");
         if (!e[i] && i == 0) {
             fprintf(stderr, "skipped: %s\n", err);
             return 77;

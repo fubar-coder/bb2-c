@@ -144,6 +144,7 @@ struct amiga_emulation {
     double shots;               /* $AMIGA_EMULATION_SHOTS: seconds between screenshots */
     unsigned nshots;
     double next_shot;
+    int timeout_state;          /* $AMIGA_EMULATION_TIMEOUT_STATE: the state at the limit */
     enum amiga_emulation_status status;
     /* snapshot mode (amiga_emulation.h) */
     enum { SNAP_OFF, SNAP_CREATING, SNAP_RESTORING, SNAP_RUNNING } snap;
@@ -1450,6 +1451,30 @@ static int snap_write_job(struct amiga_emulation *e)
     return r;
 }
 
+/* SAVESTATE into path, its configuration into cfg: 1 if the file is
+   complete */
+static int save_state(struct amiga_emulation *e, const char *path, const char *cfg)
+{
+    const char *cmd[] = { "SAVESTATE", path, cfg, NULL };
+    char reply[256];
+    /* the reply may come before the file is complete: wait until its
+       size stays the same for 0.2 s (at most 5 s) */
+    double until;
+    off_t last = -1;
+    struct stat st;
+
+    if (command_wait(e, cmd, reply, sizeof reply, 5))
+        return 0;
+    until = now() + 5;
+    while (now() < until) {
+        sleep_ms(200);
+        if (!stat(path, &st) && st.st_size > 0 && st.st_size == last)
+            break;
+        last = stat(path, &st) ? -1 : st.st_size;
+    }
+    return !stat(path, &st) && st.st_size > 0 && st.st_size == last;
+}
+
 /* SAVESTATE into snap_path (through a temporary name), then the oldest
    snapshots of the slot beyond AMIGA_EMULATION_SNAP_KEEP removed */
 static int snap_save(struct amiga_emulation *e)
@@ -1457,26 +1482,8 @@ static int snap_save(struct amiga_emulation *e)
     char *tmp = str_printf("%s/save-%016llx-%016llx-%016llx.uss", e->slot_dir, e->snap_owner,
                            e->snap_id, e->snap_key);
     char *cfg = str_printf("%s/snapshot.uae", e->work_dir);
-    const char *cmd[] = { "SAVESTATE", tmp, cfg, NULL };
-    char reply[256];
-    int saved = 0;
+    int saved = tmp && cfg && save_state(e, tmp, cfg) && !rename(tmp, e->snap_path);
 
-    if (tmp && cfg && !command_wait(e, cmd, reply, sizeof reply, 5)) {
-        /* the reply may come before the file is complete: wait until its
-           size stays the same for 0.2 s (at most 5 s) */
-        double until = now() + 5;
-        off_t last = -1;
-        struct stat st;
-
-        while (now() < until) {
-            sleep_ms(200);
-            if (!stat(tmp, &st) && st.st_size > 0 && st.st_size == last)
-                break;
-            last = stat(tmp, &st) ? -1 : st.st_size;
-        }
-        saved = !stat(tmp, &st) && st.st_size > 0 && st.st_size == last
-                && !rename(tmp, e->snap_path);
-    }
     snap_log(e, saved ? "saved %s" : "not saved %s", e->snap_path);
     if (tmp)
         unlink(tmp);
@@ -1752,6 +1759,7 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     if (e->shots && mkdirs(e->work_dir, (const char *const[]){ "shots", NULL }))
         e->shots = 0;
     e->next_shot = now() + e->shots;
+    e->timeout_state = env_on("AMIGA_EMULATION_TIMEOUT_STATE");
     path = str_printf("%s/amiberry.log", e->work_dir);
     if (path)
         unlink(path);
@@ -1892,6 +1900,127 @@ static void stop_group(struct amiga_emulation *e)
     }
 }
 
+#ifdef __linux__
+/* state, utime + stime and name of a thread from /proc/PID/task/TID/stat;
+   0 if it cannot be read */
+static int thread_stat(const char *path, char *state, unsigned long long *ticks, char *comm,
+                       size_t commlen)
+{
+    char buf[1024], *open_, *close_, *p;
+    unsigned long long ut, st;
+    FILE *f = fopen(path, "r");
+    size_t n;
+    int i;
+
+    if (!f)
+        return 0;
+    n = fread(buf, 1, sizeof buf - 1, f);
+    fclose(f);
+    buf[n] = 0;
+    if (!(open_ = strchr(buf, '(')) || !(close_ = strrchr(buf, ')')) || close_ < open_)
+        return 0;
+    n = (size_t)(close_ - open_ - 1);
+    if (n >= commlen)
+        n = commlen - 1;
+    memcpy(comm, open_ + 1, n);
+    comm[n] = 0;
+    /* behind ")": 3 state, then 4..13, 14 utime, 15 stime */
+    p = close_ + 2;
+    *state = *p;
+    for (i = 3; i < 14 && p; i++)
+        p = strchr(p + 1, ' ');
+    if (!p || sscanf(p, " %llu %llu", &ut, &st) != 2)
+        return 0;
+    *ticks = ut + st;
+    return 1;
+}
+
+/* Amiberry's threads at the limit: name, state, CPU ticks in one second
+   (100 = one core busy) and the kernel function a waiting one is in */
+static void report_threads(struct amiga_emulation *e, struct sb *b)
+{
+    enum { MAXT = 128 };
+    long tid[MAXT];
+    unsigned long long ticks[MAXT];
+    char *dir = str_printf("/proc/%ld/task", (long)e->pid);
+    DIR *d = dir ? opendir(dir) : NULL;
+    struct dirent *de;
+    int n = 0, i;
+
+    if (!d) {
+        sb_str(b, "threads: cannot read /proc\n");
+        free(dir);
+        return;
+    }
+    while ((de = readdir(d)) && n < MAXT) {
+        char comm[64], state, *path;
+
+        if (de->d_name[0] == '.')
+            continue;
+        tid[n] = strtol(de->d_name, NULL, 10);
+        path = str_printf("%s/%ld/stat", dir, tid[n]);
+        if (path && thread_stat(path, &state, &ticks[n], comm, sizeof comm))
+            n++;
+        free(path);
+    }
+    closedir(d);
+    sleep_ms(1000);
+    sb_str(b, "threads (tid name state ticks/s wchan):\n");
+    for (i = 0; i < n; i++) {
+        char comm[64], state = '?', wchan[128] = "", *path, *line;
+        unsigned long long t = ticks[i];
+        FILE *f;
+
+        path = str_printf("%s/%ld/stat", dir, tid[i]);
+        if (!path || !thread_stat(path, &state, &t, comm, sizeof comm)) {
+            free(path);
+            continue;
+        }
+        free(path);
+        path = str_printf("%s/%ld/wchan", dir, tid[i]);
+        if (path && (f = fopen(path, "r"))) {
+            size_t k = fread(wchan, 1, sizeof wchan - 1, f);
+
+            wchan[k] = 0;
+            fclose(f);
+        }
+        free(path);
+        line = str_printf("  %ld %s %c %llu %s\n", tid[i], comm, state, t - ticks[i],
+                          *wchan ? wchan : "-");
+        if (line)
+            sb_str(b, line);
+        free(line);
+    }
+    free(dir);
+}
+#endif
+
+/* at the time limit with AMIGA_EMULATION_TIMEOUT_STATE: whether Amiberry
+   still answers, its threads (Linux) and the emulated machine's state
+   (timeout.uss, its configuration timeout.uae; Amiberry loads it), as
+   timeout.txt in the work directory */
+static void timeout_report(struct amiga_emulation *e, int shot_answered)
+{
+    struct sb b = { 0 };
+    char *uss = str_printf("%s/timeout.uss", e->work_dir);
+    char *cfg = str_printf("%s/timeout.uae", e->work_dir);
+    char *txt = str_printf("%s/timeout.txt", e->work_dir);
+    int saved;
+
+    sb_str(&b, shot_answered ? "screenshot: answered\n" : "screenshot: no answer\n");
+#ifdef __linux__
+    report_threads(e, &b);
+#endif
+    saved = uss && cfg && save_state(e, uss, cfg);
+    sb_str(&b, saved ? "state: timeout.uss\n" : "state: not saved\n");
+    if (txt && !b.bad)
+        write_file(txt, b.p);
+    free(b.p);
+    free(uss);
+    free(cfg);
+    free(txt);
+}
+
 /* ---------------------------------------------------------- supervisor */
 
 /* SIGTERM to the supervisor: amiga_emulation_free before the end */
@@ -2019,10 +2148,11 @@ static void supervise(struct amiga_emulation *e)
             char *png = str_printf("%s/timeout.png", e->work_dir);
             const char *shot[] = { "SCREENSHOT", png, NULL };
             char reply[256];
+            int answered = png && !command_wait(e, shot, reply, sizeof reply, 2);
 
-            if (png)
-                command_wait(e, shot, reply, sizeof reply, 2);
             free(png);
+            if (e->timeout_state)
+                timeout_report(e, answered);
             stop_group(e);
             e->status = AMIGA_EMULATION_TIMEOUT;
             break;
