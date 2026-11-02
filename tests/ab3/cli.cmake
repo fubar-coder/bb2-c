@@ -14,8 +14,9 @@
 # Amiblitz3/Tests, and int_tests_nostop.ab3: int_tests.ab3 without its Stop
 # line).  Blitz3: is one of three trees, built from AB3: Blitz3
 # (BlitzLibs/ with baseLibs, utilLibs, OsLibs, csLibs, Residents/all.res
-# and an empty UserLibs/; for ref the compiler Amiblitz3), Blitz3-nolib
-# (without csLibs), Blitz3-userlib (USERLIB in UserLibs/).
+# and an empty UserLibs/; an empty Libs/; for ref the compiler
+# Amiblitz3), Blitz3-nolib (without csLibs), Blitz3-userlib (USERLIB in
+# UserLibs/).
 # CASES: one line per case, NAME|TREE|SOURCE|ARGS|EXPECT[|REFEXPECT].  The
 # output of a case (TEST:out/NAME.txt) is
 #   [compile]   the compiler's console output, rc=RC
@@ -65,7 +66,10 @@ endforeach()
 file(COPY_FILE ${REQTRAP} ${test}/reqtrap)
 foreach(tree Blitz3 Blitz3-nolib Blitz3-userlib)
 	set(libs ${test}/${tree}/BlitzLibs)
-	file(MAKE_DIRECTORY ${libs}/Residents ${libs}/UserLibs)
+	# Libs/: AmiBlitz3 adds Blitz3:Libs to LIBS: without checking the lock
+	# (docs/ab3/variant.md); without the directory the entries pile up and
+	# ramlib crashes after some 36 compiles
+	file(MAKE_DIRECTORY ${libs}/Residents ${libs}/UserLibs ${test}/${tree}/Libs)
 	foreach(f IN LISTS biglibs)
 		if(NOT (tree STREQUAL "Blitz3-nolib" AND f STREQUAL "csLibs"))
 			file(COPY_FILE ${AB3}/BlitzLibs/${f} ${libs}/${f})
