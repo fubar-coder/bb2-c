@@ -235,9 +235,9 @@ void ext_cnifend(void)
 
 /* AmiBlitz3's constants of the include mechanism (AmiBlitz3.ab3:3405-3440,
    processInclude 20799, next_includefile 19534): #__include is 1 while an
-   include is open, else 0; #__debug is AmiBlitz3's debugmode, 0 here
-   (AB3 mode has no runtime debugger).  AmiBlitz3 has them in its constant
-   list, so a "defined?" test finds them. */
+   include is open, else 0.  #__debug (AmiBlitz3's debugmode) is the
+   core's, in both modes (eval.c debugconst).  AmiBlitz3 has both in its
+   constant list, so a "defined?" test finds them. */
 BOOL ext_constant(UWORD len, ULONG *value)
 {
     BOOL inc, dbg;
@@ -250,8 +250,6 @@ BOOL ext_constant(UWORD len, ULONG *value)
         *value = inc || dbg || findadd(len, NULL) != NULL;
     else if (inc)
         *value = ab3_incdepth() != 0;
-    else if (dbg)
-        *value = 0;
     else
         return FALSE;
     return TRUE;

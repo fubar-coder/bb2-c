@@ -556,8 +556,16 @@ The include depth (the includes open now: 0 in the main source) is
 mechanism (`ab3syn.c`, points `ext_constant` in fetchconst and
 `ext_cnifstart`/`ext_cnifend` in docnif): `#__include` is 1 while an
 include is open, 0 in the main source (also after the last include);
-`#__debug` is 0 (AmiBlitz3's `debugmode`; AB3 mode has no runtime
-debugger). An `@` right behind `CNIF` makes every `#name` of that
+`#__debug` is the core's, as in BB2 mode (README, "Extensions of
+blitz2", change `debug-constant`): −1 with runtime error checking, 0
+without, AmiBlitz3's `debugmode` (`AmiBlitz3.ab3` 3422-3443: added to
+the constant list before the source, so a defined-test finds it and a
+source's own `#__debug=…` replaces it; a resident's, as `all.res` has
+one, gets the value at the start of every compile). Cases
+`debugconst_on`, `debugconst_off`, `debugconst_r` (`-r`), `debugconst_res`,
+`debugconst_res_r` (`all.res`); in `ab3_cli_ref` `debugconst_off` as ours,
+`debugconst_on` and `debugconst_res` with AmiBlitz3's 0 ("Differences"). An `@`
+right behind `CNIF` makes every `#name` of that
 condition a "defined?" test giving 1 or 0, without "Constant Not Found"
 (`CNIF @#mylib_include=0`, the include guard of AmiBlitz3's includes);
 an `@` elsewhere in a condition is "Illegal Constant Expression", as in
@@ -583,8 +591,9 @@ machine); recorded, not changed in G1:
 | `runerrs` | in CLI mode without its debugger (`Defaultdbug`, not fetched) the executable has no runtime error checking: the array index out of range at the end is not seen | checked: blitz2's runtime error requester | none: the runtime part of AB3 mode |
 | `sect_both` | a relocation inside the chip section (`Dc.l zbss`) is written to the code hunk's list with its unshifted offset: the long stays wrong (0) | relocated in the chip hunk's own RELOC32 block: the address of `zbss` | none: ours is the correct executable |
 | `tokens/longline` | a main-source line of 250 characters or more ends the source: `LoadSource` re-reads it with `PeekT(…, 10)`, which goes past the line's 0 to the end of the buffer (no LF is left after tokenising), so the following lines are dropped (`CLIModeSupport.ab3` 480-497 at `@58a11658`, measured with `-save`) | the line is cut at 250 characters, the following lines stay | none: not reproduced |
-| `int_tests` | `Stop` without its debugger (CLI mode, no `Defaultdbug`) is compiled to nothing (`#stopignore`, `do_Stop`, `AmiBlitz3.ab3` 22810-22831 at `@58a11658`): the program runs on | blitz2's `Stop`: with `-r` "Debugger must be enabled for STOP" (line 92), with runtime error checking a call of debuglib's `Stop` (`$D501`), which waits for the debugger - the program hangs in a command line run. The rest of the program (`int_tests_nostop`, the `Stop` line empty) gives AmiBlitz3's output | open: not in the G2 specs (a rule for `Stop` in AB3 mode) |
+| `int_tests` | `Stop` without its debugger (CLI mode, no `Defaultdbug`) is compiled to nothing (`#stopignore`, `do_Stop`, `AmiBlitz3.ab3` 22810-22831 at `@58a11658`): the program runs on | blitz2's `Stop`: with `-r` "Debugger must be enabled for STOP" (line 92), with runtime error checking a call of debuglib's `Stop` (`$D501`), which waits for the debugger - the program hangs in a command line run. The rest of the program (`int_tests_nostop`, the `Stop` line empty) gives AmiBlitz3's output | none: BB2's `Stop` is kept in both modes (user decision 2026-11-01, change `debug-constant`); debug-only code goes into `CNIF #__debug … CEND` |
 | `noend` | a program without `End` with runtime error checking ends normally | an empty requester at the end: blitz2's end code (`blitz2.s:2683 eopcode`, `moveq #3,d0 : trap #0`) without `End`, BUG(orig) #6 | with #6 (the runtime part of AB3 mode) |
+| `debugconst_on`, `debugconst_res`, `cnifdef` without `-r` | in CLI mode without its debugger (`Defaultdbug`, not fetched: "Debugging is not possible") `#__debug` is 0, also with `RuntimeDebug = 1` in the header (measured; with the debugger it would be −1, `AmiBlitz3.ab3` 3422-3443 and `do_runerrson`) | runtime error checking as the options say (the header, else the compiler's own, on): −1 (`cnifdef` therefore runs with `-r`, `debugconst_on` and `debugconst_res` have AmiBlitz3's 0 as `.ref.expect`) | none: the runtime part of AB3 mode, as `runerrs` |
 
 AmiBlitz3's test programs of G2 (task 5.1 of `ab3-mode-g2`, fetched
 at `@58a11658`), in `ab3_cli` and `ab3_cli_ref`: `hex_error`

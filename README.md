@@ -94,6 +94,30 @@ blitz2 2.10 in Amiberry to `build/amiga/libs/userlibs/rwe/ref/NAME.obj`.
 An `RWE_LIBS` entry with REFERENCE `refbuild` is compared with that
 file.
 
+## Extensions of blitz2
+
+`blitz2` compiles a Blitz Basic 2 source to the same executable as the
+CD's compiler. Its extensions only give a meaning to sources the original
+refuses:
+
+* **`#__debug`** (AmiBlitz3's name and values; in `blitz2-ab3` in both
+  modes): predefined, −1 when the program is compiled with runtime error
+  checking, 0 without (the option at the start of the compile;
+  `RunErrsOff` does not change it). It can be used wherever a constant
+  can – expressions, `CNIF`, constant definitions, assembler operands –
+  and a source's own `#__debug=…` replaces it, as in AmiBlitz3; a
+  resident's `#__debug` (AmiBlitz3's `all.res` has one) gets the value of
+  the compile. Code for debugging only goes into `CNIF #__debug …
+  CEND`; `Stop` itself stays as in Blitz Basic 2 (without runtime error
+  checking: "Debugger must be enabled for STOP"). The original says
+  "Constant Not Found". Tests:
+  `blitz2_debug_on`, `blitz2_debug_off`, `blitz2_stop_off`
+  (`tests/blitz2/`), in AB3 mode `debugconst_on`, `debugconst_off`,
+  `debugconst_r`, `debugconst_res`, `debugconst_res_r` of `ab3_cli`;
+  `ab3_cli_ref` confirms `debugconst_off` (also the replacing definition)
+  with AmiBlitz3, whose command line has no debugger, so
+  `debugconst_on` and `debugconst_res` give 0 there (docs/ab3/variant.md).
+
 ## blitz2-ab3: AmiBlitz3 sources
 
 `blitz2-ab3` (in `build/<preset>/blitz2/`, with `ab3cli` next to it) is
@@ -316,7 +340,13 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   bytes) of those blitz2 2.10 of the CD and blitz2-c save with Create
   Resident of the same constants as Blitz source (`blitzres --source`,
   one corpusrun pass with `run=off` and tedstub `resident=`;
-  `libs/userlibs/rwe/residents.cmake`; skipped without the CD). Among
+  `libs/userlibs/rwe/residents.cmake`; skipped without the CD).
+  `blitz2_ID` (`tests/blitz2/`): the extensions of blitz2 (section
+  "Extensions of blitz2"), which have no reference to compare with:
+  blitz2 compiles and runs `ID.bas` (header `; @runerrs on|off`) with the
+  CD's and with the C libraries, and both results must equal `ID.expect`
+  (one corpusrun pass with `expect=` and `regression=on`, blitz2 itself
+  as the first configuration; skipped without the CD). Among
   them the corpus
   (`tests/corpus/`): `corpus` (68 test programs without runtime error
   checking), `corpus_runerr` (131 with), `corpus_req` (3 with blocking

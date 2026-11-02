@@ -222,6 +222,7 @@ void compile(void)
     numincs = 0;
     intstring = 0;
     smallpass = 0;
+    fixdebugconst();            /* change debug-constant */
     ext_compilestart();
 
 l_retry:

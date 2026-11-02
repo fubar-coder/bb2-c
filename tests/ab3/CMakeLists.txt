@@ -249,7 +249,17 @@ ab3_cli_case(join_inc join_inc.ab3 REF)
 ab3_cli_case(join_incok join_incok.ab3 REF)
 # the constants of the include mechanism: #__include, #__debug, CNIF @
 ab3_cli_case(incguard incguard.ab3 REF)
-ab3_cli_case(cnifdef cnifdef.ab3 REF)
+ab3_cli_case(cnifdef cnifdef.ab3 ARGS -r REF)
+# #__debug (change debug-constant): -1 with runtime error checking, 0
+# without; ab3_cli_ref passes no -r, so debugconst_r is ours only, and
+# AmiBlitz3 has no debugger in CLI mode (no Defaultdbug): 0 for
+# debugconst_on too (docs/ab3/variant.md)
+ab3_cli_case(debugconst_on debugconst_on.ab3 REF REF_EXPECT debugconst_on.ref.expect)
+ab3_cli_case(debugconst_off debugconst_off.ab3 REF)
+ab3_cli_case(debugconst_r debugconst_on.ab3 ARGS -r)
+# a resident with its own #__debug (all.res): the compile's value
+ab3_cli_case(debugconst_res debugconst_res.ab3 REF REF_EXPECT debugconst_res.ref.expect)
+ab3_cli_case(debugconst_res_r debugconst_res.ab3 ARGS -r)
 ab3_cli_case(cnifat_err cnifat_err.ab3 REF)
 # AmiBlitz3's test programs G2 makes compile (ab3-mode-g2 task 5.1;
 # memoryleak_test above with its OPTIMIZE 13 line; exec_data above, an

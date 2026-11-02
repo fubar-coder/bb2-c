@@ -230,6 +230,13 @@ ULONG fetchbin(UWORD *type, BOOL data);
    and emit the address (or string pointer) into D(regat).
    *type out = calcvar's d2 (with TF_ flags).  Returns the current char. */
 UWORD ampersand2(UWORD *type);
+/* change debug-constant: at the start of a compile, a resident's #__debug
+   (AmiBlitz3's all.res has one, =0, used by its macros) gets this
+   compile's value, as AmiBlitz3 sets its entry at the start of every
+   compile (AmiBlitz3.ab3 3422-3443).  Only the residents' constants (up to
+   lastrescon); none is added, so a resident made with Create Resident
+   stays as it was. */
+void fixdebugconst(void);
 
 /* blitz2.s:8709 getvname - in c = first char of the name (already read).
    Copies the name to namebuff (type suffix to namebuff2), sets flagmask

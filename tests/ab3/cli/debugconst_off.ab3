@@ -1,0 +1,18 @@
+; XTRA
+; Embedded .xtra Header
+;
+; Debugger
+; -------------------------------------------------------
+; RuntimeDebug    = 0
+; /XTRA
+; #__debug without runtime error checking: 0; a Stop inside CNIF #__debug
+; is skipped; a source's own #__debug replaces the predefined one
+NPrint #__debug
+CNIF #__debug : Stop : CEND
+CNIF #__debug = 0
+NPrint "release build"
+CEND
+#__debug = 5
+NPrint #__debug
+NPrint "end"
+End

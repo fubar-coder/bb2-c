@@ -1,0 +1,15 @@
+; XTRA
+; Embedded .xtra Header
+;
+; General Info
+; -------------------------------------------------------
+; Residents       = "all.res"
+;
+; Debugger
+; -------------------------------------------------------
+; RuntimeDebug    = 1
+; /XTRA
+; AmiBlitz3's all.res has its own #__debug (0): the compile sets it to its
+; value, -1 with runtime error checking (with -r, case debugconst_res_r, 0)
+NPrint #__debug
+End

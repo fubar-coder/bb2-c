@@ -397,8 +397,10 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   3. [ ] G3–G5 (escapes, optional parameters, `Null`, casts, `Dim KEEP`,
      `Data` constants), then G7 (68020), then G6 (FPU); the differences
      found against AmiBlitz3's compiler (`docs/ab3/variant.md`,
-     "Differences"), among them a rule of no group yet: `Stop` without
-     the debugger (`int_tests`).
+     "Differences"). The rule for `Stop` without the debugger (`int_tests`)
+     is decided (2026-11-01, change `debug-constant`): BB2's behaviour in
+     both modes, and the predefined `#__debug` for `CNIF #__debug … CEND`
+     (README, "Extensions of blitz2").
   4. [ ] `68k_crash_newtype` (AmiBlitz3's tokenised test program): the
      compile of blitz2-ab3 hangs (AmiBlitz3: "Garbage at the end of
      line" in line 1); found 2026-11-01 by the measurement of G2.

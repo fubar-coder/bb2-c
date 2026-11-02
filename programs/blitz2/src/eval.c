@@ -1711,6 +1711,42 @@ ULONG fetchbin(UWORD *type, BOOL data)
     return fetchnum2(value, type, data);
 }
 
+/* #__debug, predefined in both modes (change debug-constant, AmiBlitz3's
+   name and values): -1 when the program is compiled with runtime error
+   checking (the option, as AmiBlitz3's debugmode at the start of the
+   compile; RunErrsOff does not change it), else 0.  Only for a name the
+   source has not defined: AmiBlitz3 adds it to its constant list before
+   the source, so a source's own #__debug=... replaces it there, as here;
+   a resident's #__debug gets the value at the start of the compile
+   (fixdebugconst).  An extension of blitz2: the original says "Constant
+   Not Found". */
+static ULONG debugvalue(void)
+{
+    return (optreqga10.Flags & GFLG_SELECTED) ? 0xffffffffUL : 0;
+}
+
+static BOOL debugconst(UWORD len, ULONG *value)
+{
+    if (len != 7 || memcmp(namebuff, "__debug", 7))
+        return FALSE;
+    *value = debugvalue();
+    return TRUE;
+}
+
+void fixdebugconst(void)
+{
+    struct label *l;
+
+    if (lastrescon == (struct label *)&firstlabel)
+        return;                     /* no resident constants */
+    for (l = firstlabel; l; l = l->next) {
+        if (l->len == 19 + 7 + 1 && (ULONG)l->refs == 1 && !memcmp(l->name, "__debug", 7))
+            l->pc = debugvalue();
+        if (l == lastrescon)
+            break;
+    }
+}
+
 /* blitz2.s:9896 fetchconst - #name */
 static UWORD fetchconst(UWORD *type)
 {
@@ -1721,12 +1757,15 @@ static UWORD fetchconst(UWORD *type)
     len = makename(&c);             /* Z not tested (asm) */
     if (!ext_constant(len, &value)) {
         l = findadd(len, NULL);
+        if (!l && debugconst(len, &value))
+            goto have;
         if (!l)
             cnferr();
         if ((ULONG)l->refs != 1)
             cnferr();
         value = l->pc;
     }
+have:
     *type = saved;
     return (UWORD)fetchnum2(value, type, FALSE);  /* to right type. */
 }
@@ -2220,8 +2259,14 @@ static UWORD fetchasm(UWORD *type)
 
     len = makename2(&c);            /* get the things name */
     l = findadd(len, NULL);
-    if (!l)
-        cnferr();
+    if (!l) {
+        ULONG value;
+
+        if (!debugconst(len, &value))
+            cnferr();
+        *type = saved;              /* #__debug: a constant */
+        return (UWORD)fetchnum2(value, type, FALSE);
+    }
     if ((ULONG)l->refs != 1)
         asmtype = ~asmtype;         /* NB(orig): toggles (not asmtype) */
     *type = saved;                  /* .npc */

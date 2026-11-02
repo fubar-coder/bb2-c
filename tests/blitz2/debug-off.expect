@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+0
+release build
+5
+end
+rc=0

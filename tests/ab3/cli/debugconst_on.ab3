@@ -1,0 +1,20 @@
+; XTRA
+; Embedded .xtra Header
+;
+; Debugger
+; -------------------------------------------------------
+; RuntimeDebug    = 1
+; /XTRA
+; #__debug with runtime error checking (the header's RuntimeDebug): -1, in
+; an expression, CNIF and a constant definition; with -r (case
+; debugconst_r) 0
+NPrint #__debug
+CNIF #__debug
+NPrint "debug build"
+CEND
+CNIF #__debug = 0
+NPrint "release build"
+CEND
+#d = #__debug
+NPrint #d
+End
