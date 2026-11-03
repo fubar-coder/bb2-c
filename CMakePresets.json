@@ -48,6 +48,7 @@
 		  "output": { "outputOnFailure": true, "outputJUnitFile": "junit-emulator.xml",
 		              "maxPassedTestOutputSize": 1048576, "maxFailedTestOutputSize": 1048576,
 		              "testOutputTruncation": "tail" },
+		  "environment": { "AMIGA_EMULATION_TIMEOUT_STATE": "1", "AMIGA_EMULATION_LOG": "1" },
 		  "execution": { "jobs": 4 },
 		  "filter": { "include": { "label": "emulator" }, "exclude": { "label": "bug-orig|bug-port" } } },
 		{ "name": "all", "displayName": "All tests",
@@ -55,6 +56,7 @@
 		  "output": { "outputOnFailure": true, "outputJUnitFile": "junit-all.xml",
 		              "maxPassedTestOutputSize": 1048576, "maxFailedTestOutputSize": 1048576,
 		              "testOutputTruncation": "tail" },
+		  "environment": { "AMIGA_EMULATION_TIMEOUT_STATE": "1", "AMIGA_EMULATION_LOG": "1" },
 		  "execution": { "jobs": 4 },
 		  "filter": { "exclude": { "label": "bug-orig|bug-port" } } },
 		{ "name": "bug-orig", "displayName": "Reproduced original bugs (fail on purpose)",
@@ -62,6 +64,7 @@
 		  "output": { "outputOnFailure": true, "outputJUnitFile": "junit-bug-orig.xml",
 		              "maxPassedTestOutputSize": 1048576, "maxFailedTestOutputSize": 1048576,
 		              "testOutputTruncation": "tail" },
+		  "environment": { "AMIGA_EMULATION_TIMEOUT_STATE": "1", "AMIGA_EMULATION_LOG": "1" },
 		  "execution": { "jobs": 4 },
 		  "filter": { "include": { "label": "bug-orig|bug-port" } } }
 	]

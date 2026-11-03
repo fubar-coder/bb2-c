@@ -389,7 +389,14 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   and time; the configuration without the session's paths; the machine;
   Amiberry; the waiter), still matches; otherwise it boots, saves anew and
   removes the stale snapshot. `amiga_run --purge-snapshots [BUILDDIR]`
-  removes a build directory's snapshots by hand. `corpus_cd`: all 724
+  removes a build directory's snapshots by hand. The presets
+  `emulator`, `all` and `bug-orig` set `AMIGA_EMULATION_LOG=1` and
+  `AMIGA_EMULATION_TIMEOUT_STATE=1`: every session writes Amiberry's
+  log into `amiberry.log` of its working directory (in the build
+  directory), and a session that runs into its time limit leaves
+  `timeout.txt` there (CPU registers, whether Amiberry halted the CPU,
+  its threads) with the machine's state (`timeout.uss`, `timeout.uae`;
+  `tools/lib/amiga_emulation/amiga_emulation.h`). `corpus_cd`: all 724
   sources of the CD compiled with blitz2-c (like bb2's bb2corpus: `.xtra` of the sources,
   assigns to CD directories, directory of the relative INCLUDEs) and
   compared with `tests/data/blitz2-cd.tsv` (result, error line and
