@@ -401,9 +401,16 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      is decided (2026-11-01, change `debug-constant`): BB2's behaviour in
      both modes, and the predefined `#__debug` for `CNIF #__debug … CEND`
      (README, "Extensions of blitz2").
-  4. [ ] `68k_crash_newtype` (AmiBlitz3's tokenised test program): the
-     compile of blitz2-ab3 hangs (AmiBlitz3: "Garbage at the end of
-     line" in line 1); found 2026-11-01 by the measurement of G2.
+  4. [x] `68k_crash_newtype` (AmiBlitz3's tokenised test program) done
+     (2026-11-03): blitz2-ab3 compiles it in BB2 mode (rc 0). The hang
+     was the alert 8100 0005 at blitz2-ab3's end: its companion `.xtra`
+     sets a Macro Buffer of 40000, and blitz2 freed `macrobuff` with that
+     size instead of the allocated 8192 (original bug #336, fixed; test
+     `ab3_cli` case `macrobuf_xtra`). AmiBlitz3 stops with "Garbage at
+     the end of line" in line 1 because in CLI mode it takes a file
+     without the extension `.bb`/`.bb2` for text (`CLIModeSupport.ab3`
+     449-466 at `@58a11658`); 48 of the 68 test programs compile
+     (`docs/ab3/variant.md`, "Measured share").
   5. [x] Checked 2026-11-01 whether TED's baserel data hunk (0x7c8 bytes
      of `.bss` without startup code) is cleared by LoadSeg: not on
      Kickstart 1.3 (only `HUNK_BSS` is), yes on 3.2 – port defect #963.
@@ -424,8 +431,9 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      BB2's loader reads the six buffer sizes 2 bytes late (16384 →
      `$40000000`, `maxpc`/`maxlib`/Macro Buffer garbage); an older one
      with 14 words (`68k_crash_newtype.xtra`) is read right but carries
-     AmiBlitz3's Macro Buffer of 40000, which crashes blitz2-ab3 at its
-     end through #336. Only includes have such a companion in the tests
+     AmiBlitz3's Macro Buffer of 40000 (since the fix of #336 no crash,
+     `ab3_cli` case `macrobuf_xtra` with such a 14-word `.xtra`). Only
+     includes have a 15-word companion in the tests
      (`incother_ab3tok.bb2.xtra`, `inctok_ab3_inc.bb2.xtra`). To do: a
      test with a 15-word `.xtra` of a tokenised main source, then load
      AmiBlitz3's `.xtra` through `xtra_load` (the 15 words mapped to the

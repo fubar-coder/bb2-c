@@ -97,12 +97,12 @@ set(cli_gen ${CMAKE_CURRENT_BINARY_DIR}/cli-src)
 set(AB3_CLI_TIMEOUT 600 CACHE STRING
 	"ab3 command line tests: time limit of the emulator session (seconds)")
 # the sources of git, and those made in the build: the tokenised includes
-# (tedtok, BB2's token list) and the AmiBlitz3 .xtra of one of them
+# and main sources (tedtok, BB2's token list) and the .xtra of some of them
 file(GLOB cli_sources CONFIGURE_DEPENDS ${cli_dir}/*.ab3 ${cli_dir}/*.bb)
 set(ted_tokens ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
 set(cli_made)
 foreach(pair incerr_tok_inc|incerr_tok_inc incother|incother_bb2tok incother|incother_ab3tok
-		inctok_ab3_inc|inctok_ab3_inc)
+		inctok_ab3_inc|inctok_ab3_inc macrobuf_xtra|macrobuf_xtra)
 	string(REPLACE "|" ";" pair "${pair}")
 	list(GET pair 0 in)
 	list(GET pair 1 out)
@@ -128,6 +128,14 @@ add_custom_command(OUTPUT ${cli_gen}/inctok_ab3_inc.bb2.xtra
 	COMMENT "AmiBlitz3 .xtra of inctok_ab3_inc.bb2"
 	VERBATIM)
 list(APPEND cli_made ${cli_gen}/inctok_ab3_inc.bb2.xtra)
+# a tokenised main source with a BB2 .xtra of Macro Buffer 40000 (#336)
+add_custom_command(OUTPUT ${cli_gen}/macrobuf_xtra.bb2.xtra
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${cli_gen}
+	COMMAND ${MKTESTDATA} ${cli_dir}/macrobuf_xtra.xtra.spec ${cli_gen}/macrobuf_xtra.bb2.xtra
+	DEPENDS ${cli_dir}/macrobuf_xtra.xtra.spec ${MKTESTDATA} host_tools
+	COMMENT "BB2 .xtra of macrobuf_xtra.bb2"
+	VERBATIM)
+list(APPEND cli_made ${cli_gen}/macrobuf_xtra.bb2.xtra)
 add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 
 # ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-userlib]
@@ -225,6 +233,10 @@ ab3_cli_case(option_d atoi.ab3 ARGS -d)
 ab3_cli_case(syntax syntax.ab3)
 ab3_cli_case(incerr_text incerr_text.ab3)
 ab3_cli_case(incerr_tok incerr_tok.bb)
+# a tokenised main source whose companion .xtra (handed to blitz2's
+# loadxtra without -r) sets a Macro Buffer of 40000, as AmiBlitz3's
+# 68k_crash_newtype: blitz2 frees macrobuff with the allocated size (#336)
+ab3_cli_case(macrobuf_xtra macrobuf_xtra.bb2)
 # the directives of AB3 mode (change ab3-mode-g2, spec ab3-compat/directives)
 ab3_cli_case(opt_code opt_code.ab3 ARGS -r REF)
 ab3_cli_case(opt_expr opt_expr.ab3 REF)

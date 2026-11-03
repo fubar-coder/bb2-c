@@ -635,16 +635,23 @@ Amiberry's A1200 (`default.uae`, 68020 + 68882), with AmiBlitz3's
 `Sourcecodes/Includes` and `BlitzLibs/Residents` of the same commit;
 compile only, the programs are not run.
 
-* **blitz2-ab3 compiles 47 of 68 (69 %)**; AmiBlitz3 itself compiles 57
-  (84 %). Both give the same result (compiled or not) for 58: 47
-  compile in both, 11 fail in both. (The run measured 47 at the end of
-  G2, with `exec_data` compiled by blitz2-ab3 only and `jsr` by
-  AmiBlitz3 only; since `ab3-pointer-assign` `exec_data` fails in both,
-  since `ab3-function-statement` `jsr` compiles in both - each checked by
-  `ab3_cli`/`ab3_cli_ref`, the whole run not repeated.)
-* Compiled by blitz2-ab3 only: `exec_data` (AmiBlitz3's type rule of the
-  assignment). Since `ab3-pointer-assign` (2026-11-01) it fails in both
-  (`ab3_cli`, `ab3_cli_ref`).
+* **blitz2-ab3 compiles 48 of 68 (71 %)**; AmiBlitz3 itself compiles 57
+  (84 %). Both give the same result (compiled or not) for 57: 47
+  compile in both, 10 fail in both. (The run measured 47 at the end of
+  G2, with `exec_data` compiled by blitz2-ab3 only, `jsr` by AmiBlitz3
+  only and `68k_crash_newtype` by neither; since `ab3-pointer-assign`
+  `exec_data` fails in both, since `ab3-function-statement` `jsr`
+  compiles in both, since the fix of #336 blitz2-ab3 compiles
+  `68k_crash_newtype` - each checked by `ab3_cli`/`ab3_cli_ref` or the
+  case named below, the whole run not repeated.)
+* Compiled by blitz2-ab3 only: `68k_crash_newtype`, a tokenised source
+  with a companion `.xtra` of BB2's layout. blitz2-ab3 compiles it in
+  BB2 mode (rc 0); the `.xtra`'s Macro Buffer of 40000 freed with that
+  size at blitz2-ab3's end (#336, fixed) was the alert 8100 0005 that
+  ended the run (`ab3_cli` case `macrobuf_xtra`). AmiBlitz3 stops with
+  "Garbage at the end of line" in line 1: in CLI mode it takes a file
+  without the extension `.bb` or `.bb2` for text (`CLIModeSupport.ab3`
+  449-466 at `@58a11658`).
 * Not compiled by blitz2-ab3, by AmiBlitz3 (10): `benchmark2`,
   `putdiskobject`, `quickdivtest`, `serial_read`, `statementcalls`
   ("Can't Convert Types" in `error.include.ab3` 226: its optional
@@ -655,8 +662,8 @@ compile only, the programs are not run.
   `errorInIncludes` (errors on purpose), `include_dc`, `include_dc_main`,
   `includes_test` (`.h` includes), `_new_includes` (includes not in the
   repository), `printlib_test`, `unknown_function` (on purpose),
-  `68k_crash_newtype` - AmiBlitz3 stops with "Garbage at the end of
-  line" in line 1, **blitz2-ab3 hangs while compiling it** (open).
+  `exec_data` (AmiBlitz3's type rule of the assignment, since
+  `ab3-pointer-assign`; `ab3_cli`, `ab3_cli_ref`).
 * `int_tests` compiles with runtime error checking (its `Stop` hangs at
   run time, "Differences"), `windowtags`, `setwindowpointer`, `hunktest`
   compile; the research table (G2 research §9) expected 52 after G2 -
