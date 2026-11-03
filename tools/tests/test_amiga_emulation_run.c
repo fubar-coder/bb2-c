@@ -155,6 +155,8 @@ static void finish(int i, struct amiga_emulation *e)
         /* the state at the limit: Amiberry answered, saved the machine */
         s = read_text(amiga_emulation_work_dir(e), "timeout.txt");
         CHECK(s && strstr(s, "screenshot: answered\n") && strstr(s, "state: timeout.uss\n"));
+        /* the CPU of a script that waits: running, not halted */
+        CHECK(s && strstr(s, "cpu: D0=") && strstr(s, " SR=") && strstr(s, "cpu state: running\n"));
 #ifdef __linux__
         CHECK(s && strstr(s, "threads (tid name state ticks/s wchan):\n  "));
 #endif

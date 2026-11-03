@@ -86,9 +86,16 @@
  *                               (timeout.uss with its configuration
  *                               timeout.uae, for Amiberry to load) and
  *                               timeout.txt: whether Amiberry still
- *                               answered, its threads with state, CPU
- *                               ticks in one second and kernel wait
- *                               channel (Linux)
+ *                               answered, the emulated CPU's registers
+ *                               (GET_CPU_REGS) and whether Amiberry has
+ *                               halted it ("cpu state: halted by
+ *                               Amiberry": an emulator failure, not a
+ *                               hang of the test), Amiberry's threads
+ *                               with state, CPU ticks in one second and
+ *                               kernel wait channel (Linux)
+ *   AMIGA_EMULATION_LOG=1       as `log`: Amiberry's own log into
+ *                               amiberry.log (e.g. "CPU halted", "JIT:
+ *                               Caught SIGSEGV")
  *   AMIGA_EMULATION_CHANGES="key=value;key;..."  changes of the
  *                               configuration on top of the test's, which
  *                               they replace for the same key; a key

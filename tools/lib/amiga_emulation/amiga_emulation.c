@@ -1800,7 +1800,7 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
     e->timeout = p->timeout ? p->timeout : 60;
     e->amiberry = p->amiberry ? p->amiberry : "amiberry";
     e->visible = p->visible || env_on("AMIGA_EMULATION_VISIBLE");
-    e->log_on = p->log;
+    e->log_on = p->log || env_on("AMIGA_EMULATION_LOG");
     if (!p->cold && snapshot_wanted() && slot_index >= 0) {
         char *scfg = NULL;
 
@@ -2077,6 +2077,32 @@ static void report_threads(struct amiga_emulation *e, struct sb *b)
 }
 #endif
 
+/* the emulated CPU at the limit (GET_CPU_REGS: "OK\tD0=...\tPC=...\tSR=..."):
+   its registers, and whether Amiberry has halted it - user mode with
+   interrupt mask 7 is no state of a 68k, it is what Amiberry's cpu_halt
+   leaves (e.g. after a jump to no memory) */
+static void report_cpu(struct amiga_emulation *e, struct sb *b)
+{
+    static const char *const cmd[] = { "GET_CPU_REGS", NULL };
+    char reply[1024], *p, *sr;
+    unsigned v;
+
+    if (command_wait(e, cmd, reply, sizeof reply, 2) || strncmp(reply, "OK\t", 3)) {
+        sb_str(b, "cpu: no answer\n");
+        return;
+    }
+    for (p = reply; *p; p++)
+        if (*p == '\t' || *p == '\n')
+            *p = ' ';
+    sb_str(b, "cpu:");
+    sb_str(b, reply + 2);
+    sb_str(b, "\n");
+    if ((sr = strstr(reply, " SR=")) && sscanf(sr + 4, "%4x", &v) == 1)
+        sb_str(b, !(v & 0x2000) && ((v >> 8) & 7) == 7
+                      ? "cpu state: halted by Amiberry (user mode, interrupt mask 7)\n"
+                      : "cpu state: running\n");
+}
+
 /* at the time limit with AMIGA_EMULATION_TIMEOUT_STATE: whether Amiberry
    still answers, its threads (Linux) and the emulated machine's state
    (timeout.uss, its configuration timeout.uae; Amiberry loads it), as
@@ -2090,6 +2116,7 @@ static void timeout_report(struct amiga_emulation *e, int shot_answered)
     int saved;
 
     sb_str(&b, shot_answered ? "screenshot: answered\n" : "screenshot: no answer\n");
+    report_cpu(e, &b);
 #ifdef __linux__
     report_threads(e, &b);
 #endif
