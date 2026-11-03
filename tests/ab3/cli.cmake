@@ -68,8 +68,8 @@ file(COPY_FILE ${REQTRAP} ${test}/reqtrap)
 foreach(tree Blitz3 Blitz3-nolib Blitz3-userlib)
 	set(libs ${test}/${tree}/BlitzLibs)
 	# Libs/: AmiBlitz3 adds Blitz3:Libs to LIBS: without checking the lock
-	# (docs/ab3/variant.md); without the directory the entries pile up and
-	# ramlib crashes after some 36 compiles
+	# (docs/ab3/variant.md); without the directory an entry is left in
+	# LIBS: after every compile
 	file(MAKE_DIRECTORY ${libs}/Residents ${libs}/UserLibs ${test}/${tree}/Libs)
 	foreach(f IN LISTS biglibs)
 		if(NOT (tree STREQUAL "Blitz3-nolib" AND f STREQUAL "csLibs"))

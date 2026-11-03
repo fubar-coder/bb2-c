@@ -621,10 +621,7 @@ does not check the lock of the directory: without `Blitz3:Libs` it calls
 `AssignAdd_` with lock 0, which succeeds, so `LIBS:` gets an entry
 without a directory. The removal at the end then fails ("Could not
 remove assign: Blitz3:Libs"), and every compile leaves one more such
-entry. After some 36 compiles in one session `ramlib` follows them when
-it loads a library and crashes (80000004) or hangs; where depends on
-what is at address 0, so the case that fails changes with the date.
-`ab3_cli_ref` therefore has an empty `Libs/` in each Blitz3 tree
+entry. `ab3_cli_ref` therefore has an empty `Libs/` in each Blitz3 tree
 (`tests/ab3/cli.cmake`). `blitz2-ab3` makes no assigns.
 
 ## Measured share of AmiBlitz3's test programs (G2, 2026-11-01)
