@@ -131,11 +131,13 @@ list(APPEND cli_made ${cli_gen}/inctok_ab3_inc.bb2.xtra)
 add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 
 # ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-userlib]
-#              [ARGS ARG...] [REF] [REF_EXPECT FILE] [SAME CASE]
-#              [HUNKS LAYOUT]): a case of the suite; SAME: its executable
-#              is the one of the case CASE, HUNKS: its hunk layout
-#              (hunkcheck --hunks, e.g. code,bss,data+chip), in both
-#              configurations
+#              [ARGS ARG...] [REF] [REF_EXPECT FILE] [REF_NORUN]
+#              [SAME CASE] [HUNKS LAYOUT]): a case of the suite; SAME:
+#              its executable is the one of the case CASE, HUNKS: its hunk
+#              layout (hunkcheck --hunks, e.g. code,bss,data+chip), in both
+#              configurations; REF_NORUN (with REF_EXPECT): AmiBlitz3's
+#              executable is kept but not run (a broken executable that
+#              damages the session, docs/ab3/variant.md)
 set(cli_exe_cases "")
 set(cli_ref_cases "")
 set(cli_exe_same "")
@@ -143,7 +145,7 @@ set(cli_ref_same "")
 set(cli_exe_hunks "")
 set(cli_ref_hunks "")
 macro(ab3_cli_case name source)
-	cmake_parse_arguments(c "REF" "TREE;REF_EXPECT;SAME;HUNKS" "ARGS" ${ARGN})
+	cmake_parse_arguments(c "REF;REF_NORUN" "TREE;REF_EXPECT;SAME;HUNKS" "ARGS" ${ARGN})
 	if(NOT c_TREE)
 		set(c_TREE Blitz3)
 	endif()
@@ -159,6 +161,12 @@ macro(ab3_cli_case name source)
 	if(c_REF)
 		if(c_REF_EXPECT)
 			string(APPEND c_line "|${cli_dir}/${c_REF_EXPECT}")
+		endif()
+		if(c_REF_NORUN)
+			if(NOT c_REF_EXPECT)
+				message(FATAL_ERROR "ab3_cli_case ${name}: REF_NORUN needs REF_EXPECT")
+			endif()
+			string(APPEND c_line "|norun")
 		endif()
 		string(APPEND cli_ref_cases "${c_line}\n")
 		if(c_SAME)
@@ -229,7 +237,7 @@ ab3_cli_case(runerrs runerrs.ab3 REF REF_EXPECT runerrs.ref.expect)
 ab3_cli_case(runerrs_unpaired runerrs_unpaired.ab3 REF)
 ab3_cli_case(runerrs_overflow runerrs_overflow.ab3 REF)
 ab3_cli_case(sect_chip sect_chip.ab3 ARGS -r REF HUNKS code,data+chip)
-ab3_cli_case(sect_both sect_both.ab3 ARGS -r REF REF_EXPECT sect_both.ref.expect HUNKS code,bss,data+chip)
+ab3_cli_case(sect_both sect_both.ab3 ARGS -r REF REF_EXPECT sect_both.ref.expect REF_NORUN HUNKS code,bss,data+chip)
 ab3_cli_case(sect_bss2 sect_bss2.ab3 ARGS -r REF)
 # with runtime error checking BSS and Chip are ignored: one code hunk
 ab3_cli_case(sect_debug sect_chip.ab3 HUNKS code)

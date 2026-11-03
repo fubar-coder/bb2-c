@@ -17,10 +17,11 @@
 # and an empty UserLibs/; an empty Libs/; for ref the compiler
 # Amiblitz3), Blitz3-nolib (without csLibs), Blitz3-userlib (USERLIB in
 # UserLibs/).
-# CASES: one line per case, NAME|TREE|SOURCE|ARGS|EXPECT[|REFEXPECT].  The
-# output of a case (TEST:out/NAME.txt) is
+# CASES: one line per case, NAME|TREE|SOURCE|ARGS|EXPECT[|REFEXPECT[|norun]]
+# (norun: for ref, the executable is kept but not run).  The output of a
+# case (TEST:out/NAME.txt) is
 #   [compile]   the compiler's console output, rc=RC
-#   [run]       the program's output and rc=RC, or "no executable"
+#   [run]       the program's output and rc=RC, "not run" or "no executable"
 # and is compared with EXPECT by outmatch: exe the whole file, ref only
 # [run] (the console output of AmiBlitz3 is its own), against REFEXPECT if
 # given (a difference of AmiBlitz3 recorded in docs/ab3/variant.md).
@@ -107,6 +108,14 @@ foreach(c IN LISTS cases)
 	list(GET c 2 source)
 	list(GET c 3 args)
 	set(out TEST:out/${name}.txt)
+	list(LENGTH c n)
+	set(run "  TEST:reqtrap >>${out} RAM:${name}\n  Echo \"rc=$RC\" >>${out}\n")
+	if(CONFIG STREQUAL "ref" AND n GREATER 6)
+		list(GET c 6 mode)
+		if(mode STREQUAL "norun")
+			set(run "  Echo \"not run\" >>${out}\n")
+		endif()
+	endif()
 	if(CONFIG STREQUAL "ref")
 		set(cmd "Blitz3:Amiblitz3 >>${out} -s ${source} -e RAM:${name}")
 	else()
@@ -115,7 +124,7 @@ foreach(c IN LISTS cases)
 	string(APPEND script "Assign Blitz3: TEST:${tree}\n"
 		"Echo \"[compile]\" >${out}\n${cmd}\nEcho \"rc=$RC\" >>${out}\n"
 		"Echo \"[run]\" >>${out}\n"
-		"If EXISTS RAM:${name}\n  TEST:reqtrap >>${out} RAM:${name}\n  Echo \"rc=$RC\" >>${out}\n"
+		"If EXISTS RAM:${name}\n${run}"
 		"  Copy RAM:${name} TEST:out/${name}.exe QUIET\n"
 		"  Delete >NIL: RAM:${name} QUIET\nElse\n  Echo \"no executable\" >>${out}\nEndIf\n")
 endforeach()
