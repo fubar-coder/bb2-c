@@ -1,0 +1,7 @@
+[compile]
+rc=0
+[run]
+chip: -1 42
+to chip: -1
+to code: -1
+rc=0

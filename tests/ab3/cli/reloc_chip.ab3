@@ -1,0 +1,13 @@
+; Chip with longs to a Chip label and a code label: they are relocated in
+; the chip hunk's own RELOC32 block (AmiBlitz3 issue #128)
+b.l = ?zchip
+c.l = ?lbl
+lbl:
+NPrint "chip: ", (TypeOfMem_(b) AND 2) <> 0, " ", Peek.w(b)
+NPrint "to chip: ", Peek.l(b + 2) = b
+NPrint "to code: ", Peek.l(b + 6) = c
+End
+Chip
+zchip: Dc.w 42
+Dc.l zchip
+Dc.l lbl

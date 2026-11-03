@@ -1,0 +1,20 @@
+; Chip, then BSS: longs of the chip data to a BSS, a Chip and a code
+; label are relocated in the chip hunk's own RELOC32 block (AmiBlitz3
+; issue #128)
+b.l = ?zchip
+c.l = ?lbl
+lbl:
+a.l = ?zbss
+NPrint "bss: ", Peek.l(a), " ", (TypeOfMem_(a) AND 2) <> 0
+NPrint "chip: ", (TypeOfMem_(b) AND 2) <> 0, " ", Peek.w(b)
+NPrint "to bss: ", Peek.l(b + 2) = a
+NPrint "to chip: ", Peek.l(b + 6) = b
+NPrint "to code: ", Peek.l(b + 10) = c
+End
+Chip
+zchip: Dc.w 42
+Dc.l zbss
+Dc.l zchip
+Dc.l lbl
+BSS
+zbss: Ds.l 4

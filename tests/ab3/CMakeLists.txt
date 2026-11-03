@@ -135,9 +135,10 @@ add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 #              [SAME CASE] [HUNKS LAYOUT]): a case of the suite; SAME:
 #              its executable is the one of the case CASE, HUNKS: its hunk
 #              layout (hunkcheck --hunks, e.g. code,bss,data+chip), in both
-#              configurations; REF_NORUN (with REF_EXPECT): AmiBlitz3's
-#              executable is kept but not run (a broken executable that
-#              damages the session, docs/ab3/variant.md)
+#              configurations; REF_NORUN: AmiBlitz3's executable is kept
+#              but not run (a broken executable that damages the session,
+#              docs/ab3/variant.md), its [run] is compared with
+#              cli/norun.ref.expect
 set(cli_exe_cases "")
 set(cli_ref_cases "")
 set(cli_exe_same "")
@@ -163,10 +164,10 @@ macro(ab3_cli_case name source)
 			string(APPEND c_line "|${cli_dir}/${c_REF_EXPECT}")
 		endif()
 		if(c_REF_NORUN)
-			if(NOT c_REF_EXPECT)
-				message(FATAL_ERROR "ab3_cli_case ${name}: REF_NORUN needs REF_EXPECT")
+			if(c_REF_EXPECT)
+				message(FATAL_ERROR "ab3_cli_case ${name}: REF_NORUN and REF_EXPECT")
 			endif()
-			string(APPEND c_line "|norun")
+			string(APPEND c_line "|${cli_dir}/norun.ref.expect|norun")
 		endif()
 		string(APPEND cli_ref_cases "${c_line}\n")
 		if(c_SAME)
@@ -237,8 +238,15 @@ ab3_cli_case(runerrs runerrs.ab3 REF REF_EXPECT runerrs.ref.expect)
 ab3_cli_case(runerrs_unpaired runerrs_unpaired.ab3 REF)
 ab3_cli_case(runerrs_overflow runerrs_overflow.ab3 REF)
 ab3_cli_case(sect_chip sect_chip.ab3 ARGS -r REF HUNKS code,data+chip)
-ab3_cli_case(sect_both sect_both.ab3 ARGS -r REF REF_EXPECT sect_both.ref.expect REF_NORUN HUNKS code,bss,data+chip)
+ab3_cli_case(sect_both sect_both.ab3 ARGS -r REF REF_NORUN HUNKS code,bss,data+chip)
 ab3_cli_case(sect_bss2 sect_bss2.ab3 ARGS -r REF)
+# longs in the chip data to BSS, Chip and code labels: AmiBlitz3 v3.14.0
+# relocates them in the code hunk (issue #128, docs/ab3/variant.md), its
+# executables are not run; the expect files are the output of a correct
+# compiler
+ab3_cli_case(reloc_chip reloc_chip.ab3 ARGS -r REF REF_NORUN HUNKS code,data+chip)
+ab3_cli_case(reloc_chip_bss reloc_chip_bss.ab3 ARGS -r REF REF_NORUN HUNKS code,bss,data+chip)
+ab3_cli_case(reloc_bss_chip reloc_bss_chip.ab3 ARGS -r REF REF_NORUN HUNKS code,bss,data+chip)
 # with runtime error checking BSS and Chip are ignored: one code hunk
 ab3_cli_case(sect_debug sect_chip.ab3 HUNKS code)
 # the syntax rules of AB3 mode (spec ab3-compat/syntax-rules)
