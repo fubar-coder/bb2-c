@@ -470,6 +470,9 @@ int main(int argc, char **argv)
     setenv("FAKE_AMIBERRY", "1", 1);
     unsetenv("AMIGA_EMULATION_SNAPSHOT");
     unsetenv("AMIGA_EMULATION_SHOTS");
+    /* the timings below have no room for the report at the time limit
+       (set by the emulator test presets) */
+    unsetenv("AMIGA_EMULATION_TIMEOUT_STATE");
 
     join_order();
     restore_and_fallback();
