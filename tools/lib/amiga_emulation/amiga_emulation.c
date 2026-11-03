@@ -2099,7 +2099,8 @@ static void report_cpu(struct amiga_emulation *e, struct sb *b)
     sb_str(b, "\n");
     if ((sr = strstr(reply, " SR=")) && sscanf(sr + 4, "%4x", &v) == 1)
         sb_str(b, !(v & 0x2000) && ((v >> 8) & 7) == 7
-                      ? "cpu state: halted by Amiberry (user mode, interrupt mask 7)\n"
+                      ? "cpu state: halted (a double fault of the program or an emulator\n"
+                        "  failure; user mode, interrupt mask 7)\n"
                       : "cpu state: running\n");
 }
 

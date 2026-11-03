@@ -394,7 +394,7 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   `AMIGA_EMULATION_TIMEOUT_STATE=1`: every session writes Amiberry's
   log into `amiberry.log` of its working directory (in the build
   directory), and a session that runs into its time limit leaves
-  `timeout.txt` there (CPU registers, whether Amiberry halted the CPU,
+  `timeout.txt` there (CPU registers, whether the CPU is halted,
   its threads) with the machine's state (`timeout.uss`, `timeout.uae`;
   `tools/lib/amiga_emulation/amiga_emulation.h`). `corpus_cd`: all 724
   sources of the CD compiled with blitz2-c (like bb2's bb2corpus: `.xtra` of the sources,
