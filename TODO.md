@@ -416,6 +416,20 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      `SYNTAX`); `exec_data` now fails as with AmiBlitz3 (46 of the 68
      test programs compile). NewType left sides and the `SYNTAX 4` part
      stay for G8.
+  7. [ ] An AmiBlitz3 `.xtra` of a tokenised main source without `-r`
+     (found 2026-11-03, not measured): `ab3cli` hands the companion
+     `.xtra` unchecked to blitz2's `loadxtra` ("as TED: the file itself",
+     `programs/ab3cli/src/main.c:329-337`), in both modes. A current
+     AmiBlitz3 `.xtra` has 15 switch words (`docs/formats.md` §7), so
+     BB2's loader reads the six buffer sizes 2 bytes late (16384 →
+     `$40000000`, `maxpc`/`maxlib`/Macro Buffer garbage); an older one
+     with 14 words (`68k_crash_newtype.xtra`) is read right but carries
+     AmiBlitz3's Macro Buffer of 40000, which crashes blitz2-ab3 at its
+     end through #336. Only includes have such a companion in the tests
+     (`incother_ab3tok.bb2.xtra`, `inctok_ab3_inc.bb2.xtra`). To do: a
+     test with a 15-word `.xtra` of a tokenised main source, then load
+     AmiBlitz3's `.xtra` through `xtra_load` (the 15 words mapped to the
+     14 indices) instead of handing it raw to `loadxtra`.
 - [ ] **Tests for the issues labelled `needs-test`** (99 open issues at the
   start, 3 open on 2026-10-29: #14, #26, #42). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,
