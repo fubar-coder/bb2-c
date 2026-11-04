@@ -659,7 +659,7 @@ machine); recorded, not changed in G1:
 | `chr_float` (G3) | `f.f=@"AB"` stores the long unconverted in the float (prints `0.000015`; `@"A"` prints `0`) | converted: `16706`, `65` | none: as intended |
 | `chr_string` (G3) | `a$=@"AB"` compiles (its reading of `@"` checks only the byte, word and quick targets) to garbage: a line of 28 NUL bytes in the measured run | "Can't Convert Types" (spec `ab3-compat/strings`) | none: as intended |
 | `chr_toolong`, `chr_toolong_l`, `chr_off`, `chr_space`, `chr_quick`, `chr_const` (G3, no `.ref.expect`) | different error texts: too many characters "Too many chars for data type", new syntax off "You need 'newsyntax' mode for that", a constant expression (`#c=@"ILBM"`) "Illegal constant expression", a quick target "Can't convert types" | "Syntax Error" for the first two, "Illegal Constant Expression", "Can't Convert Types" (the spec names the errors) | none: only the `[run]` part is compared; the texts are blitz2's |
-| `b.l = 1 + @@` (G2, no case) | `@@` after an operator (not at a parameter boundary) is a syntax error | the next line is joined (`b.l = 1 + @@` and `2` on the next line give `3`) | none: ours is correct (user decision 2026-11-04) |
+| `join_op` (G2) | `@@` after an operator (not at a parameter boundary) is a syntax error | the next line is joined (`b.l = 1 + @@` and `2` on the next line give `3`) | none: ours is correct (user decision 2026-11-04) |
 
 AmiBlitz3's test programs of G2 (task 5.1 of `ab3-mode-g2`, fetched
 at `@58a11658`), in `ab3_cli` and `ab3_cli_ref`: `hex_error`
