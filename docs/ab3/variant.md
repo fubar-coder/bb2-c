@@ -445,7 +445,7 @@ implementation:
 | | `ab3res.c` | AmiBlitz3's residents directory, the set-up errors of a compile |
 | | `ab3inc.c` | the mode of a tokenised include, includes of text, the place of an error |
 | | `ab3tok.c` | the mode (`progmode`), AmiBlitz3's token list, the library of `^`, its tokens not compiled yet |
-| | `ab3syn.c` | AmiBlitz3's syntax rules (new syntax, `@@`, global `SHARED`, ...) |
+| | `ab3syn.c` | AmiBlitz3's syntax rules (new syntax, `@@`, global `SHARED`, the one-line `If` in macro lines, ...) |
 | | `ab3sect.c` | the sections `BSS` and `Chip`: their hunks in `savefile` |
 | | `ab3dir.c` | AmiBlitz3's directives (`OPTIMIZE`, `SYNTAX`, `RunErrsOff`/`LastRunErrsMode`; change `ab3-mode-g2`) |
 | | `ab3.h` | the state the AB3 modules share (not for the chunk files) |
@@ -461,7 +461,8 @@ The points (`ext.h`): `ext_makelibs`, `ext_loadlibs`,
 token of AB3 mode), `ext_newsyntax` (AmiBlitz3's new syntax),
 `ext_macargs`, `ext_namelabel`, `ext_dotlabel`, `ext_stmtprefix`,
 `ext_comment`, `ext_letter`, `ext_shared`, `ext_sharedvar`,
-`ext_nextline`, `ext_cnifstart`, `ext_cnifend`, `ext_constant`
+`ext_nextline`, `ext_cnifstart`, `ext_cnifend`, `ext_constant`,
+`ext_macrodef`, `ext_macrotoken`, `ext_macrolineend`
 (AmiBlitz3's syntax rules), `ext_funcstmt` (a `Function` called as a
 statement, change `ab3-function-statement`), `ext_savefile` (the
 executable),
@@ -636,6 +637,42 @@ decisions 2026-11-04). Each such deviation is a row tagged G3 in
   `ab3_cli_ref` (case options `DATESTAMP`, `RUN_DATESTAMP`); the cases
   are `esc_*` and `chr_*` in `tests/ab3/CMakeLists.txt`.
 
+### Macros: a one-line `If` ends with its macro line
+
+Spec `ab3-compat/macros`, design D9 of `ab3-mode-g3`. `domacro` stores a
+macro body as one line (each line end a `:`), and a one-line `If … Then`
+is closed only at the end of a physical line, so in Blitz Basic 2 the
+rest of the body and of the calling line belong to it (#967, kept in
+BB2 mode: "Illegaly nested Condition" before a `Wend`, case
+`macthen_bb2`). AmiBlitz3's `do_Macro` (`AmiBlitz3.ab3` 20833-20991 at
+`@58a11658`, flag `thenmode`) ends such a macro line with `: End If`. AB3
+mode does the same (extension points `ext_macrotoken`,
+`ext_macrolineend` in `domacro`, `ab3syn.c`), with or without new
+syntax:
+
+* each `Then` token of a macro line counts, outside strings (comments
+  are not stored); an `End If` or `EndIf` behind a `Then` closes it; at
+  the line end, `:` and `End If` (the tokens `$8002 $800B`, AmiBlitz3's
+  bytes) are written once for each `Then` still open, before the `:` of
+  the line end. The last line of the body gets them too (the trailing
+  `:` is removed as before);
+* an `End If` before the `Then` (of a block `If` of earlier lines) and
+  an `Else` on the line change nothing; lines joined with `@@` are one
+  macro line, the `End If` goes behind the last of them;
+* a caller's `If c Then !m{…}` still covers the whole expanded macro and
+  the rest of the calling line;
+* `@@` inside a `Macro` definition joins in an include too, also on the
+  `Macro` line itself (AmiBlitz3's `do_Macro` has no include check); a
+  macro call's parameters in an include keep the rule of parameter
+  lists (only `,` before the `@@`).
+
+AmiBlitz3 has one flag per line instead of a count, and only `End If`
+clears it: two `Then`s get one `End If` (the outer `If` stays open), and
+a line closed with `EndIf` gets a second one (an error); both are
+implemented as intended (rows `macthen_two`, `macthen_endifword` below).
+Cases: `macthen_*`, `join_incmacro` and `inc_longlong` in
+`tests/ab3/CMakeLists.txt`.
+
 ## Differences to AmiBlitz3's compiler (G2+, 2026-11-01)
 
 Found by `ab3_cli_ref` (AmiBlitz3 v3.14.0 in CLI mode on the same
@@ -664,6 +701,8 @@ machine); recorded, not changed in G1:
 | `chr_float` (G3) | `f.f=@"AB"` stores the long unconverted in the float (prints `0.000015`; `@"A"` prints `0`) | converted: `16706`, `65` | none: as intended |
 | `chr_string` (G3) | `a$=@"AB"` compiles (its reading of `@"` checks only the byte, word and quick targets) to garbage: a line of 28 NUL bytes in the measured run | "Can't Convert Types" (spec `ab3-compat/strings`) | none: as intended |
 | `chr_toolong`, `chr_toolong_l`, `chr_off`, `chr_space`, `chr_quick`, `chr_const` (G3, no `.ref.expect`) | different error texts: too many characters "Too many chars for data type", new syntax off "You need 'newsyntax' mode for that", a constant expression (`#c=@"ILBM"`) "Illegal constant expression", a quick target "Can't convert types" | "Syntax Error" for the first two, "Illegal Constant Expression", "Can't Convert Types" (the spec names the errors) | none: only the `[run]` part is compared; the texts are blitz2's |
+| `macthen_two` (G3) | a macro line with two `Then`s (`If a Then If b Then …`, also with one `End If` behind them) gets one `End If` at most (`thenmode` is a flag): it closes the inner `If`, the outer one stays open to the end of the expanded line, the next macro line is conditional (`0 5 0`) | one `End If` for each `Then` not closed on the line: the next macro line runs (`0 5 1`) | none: as intended (spec `ab3-compat/macros`: a one-line `If` covers only the rest of its macro line) |
+| `macthen_endifword` (G3) | a macro line closed with `EndIf` (its own token, not `End If`) still gets `: End If`: "'End' condition without condition", no executable | `EndIf` closes the `Then` like `End If`: the program runs (`0 15`) | none: as intended |
 | `join_op` (G2) | `@@` after an operator (not at a parameter boundary) is a syntax error | the next line is joined (`b.l = 1 + @@` and `2` on the next line give `3`) | none: ours is correct (user decision 2026-11-04) |
 
 AmiBlitz3's test programs of G2 (task 5.1 of `ab3-mode-g2`, fetched
@@ -785,12 +824,12 @@ AmiBlitz3's header (`Residents = "all.res"`), `OPTIMIZE 4` and
 * `ab3_cli`/`ab3_cli_ref` case `inc_datetime`: `datetime.include.ab3`
   (fetched, `cmake/fetch-originals.cmake`) in `Blitz3:Sourcecodes/
   Includes`, its month names joined with `\\0a`, its date functions under
-  `inject datestamp=`; both compilers give the same output. The other
-  three need a clipboard or printer device (compile only);
-  `longlong.include` is not a case yet: its use of the macros is blocked
-  by "Illegaly nested Condition", a known limitation of blitz2-ab3 (a
-  one-line `If … Then` in a macro body: AmiBlitz3 appends `: End If` in
-  `do_Macro`; a planned follow-up).
+  `inject datestamp=`; both compilers give the same output.
+* Case `inc_longlong`: `longlong.include.ab3` (fetched), `!ll_ToStr` (a
+  `While` loop around nested macros ending with one-line `If`s, section
+  "Macros" above) and `@"…"` chunk IDs written to a file and read back;
+  both compilers give the same output. The other two need a clipboard
+  or printer device (compile only).
 
 ## Spike result (2026-10-31)
 
