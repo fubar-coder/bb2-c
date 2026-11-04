@@ -1,0 +1,5 @@
+; the system date of the run is the date of inject datestamp= (the case's
+; RUN_DATESTAMP, 2026-10-25): SystemDate and Date$ take it from
+; dos.library's DateStamp
+NPrint "date: ", Date$(SystemDate)
+End

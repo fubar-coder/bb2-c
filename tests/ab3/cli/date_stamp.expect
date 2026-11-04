@@ -1,0 +1,9 @@
+[compile]
+~inject: datestamp: # calls answered
+inject: rc=0
+rc=0
+[run]
+date: 25/10/2026
+inject: datestamp: 1 calls answered
+inject: rc=0
+rc=0

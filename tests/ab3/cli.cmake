@@ -1,7 +1,7 @@
 # The command line tests of blitz2-ab3 in Amiberry (tests/ab3/CMakeLists.txt):
 #   cmake -DAMIGA_RUN=... -DOUTMATCH=... -DREQTRAP=... -DCONFIG=exe|ref
 #         -DCASES=FILE -DBLITZ2_DIR=DIR -DAB3=DIR -DSOURCES=FILE;...
-#         -DUSERLIB=OBJ -DWORK=DIR [-DTIMEOUT=SEC] [-DSAME=A=B,...]
+#         -DUSERLIB=OBJ -DINJECT=TOOL -DWORK=DIR [-DTIMEOUT=SEC] [-DSAME=A=B,...]
 #         [-DHUNKCHECK=TOOL -DHUNKS=NAME=LAYOUT|...] -P cli.cmake
 # One emulator session compiles every case of CASES and runs the program
 # through reqtrap (tests/corpus/amiga: a requester is printed and answered
@@ -18,8 +18,17 @@
 # Amiblitz3), Blitz3-nolib (without csLibs), Blitz3-userlib (USERLIB in
 # UserLibs/).
 # CASES: one line per case, NAME|TREE|SOURCE|ARGS|EXPECT[|REFEXPECT[|norun]]
-# (norun: for ref, the executable is kept but not run).  The output of a
-# case (TEST:out/NAME.txt) is
+# (norun: for ref, the executable is kept but not run), and after EXPECT,
+# in any order, the key=value fields datestamp=YYYY-MM-DD and
+# rundatestamp=YYYY-MM-DD: the compiler command is prefixed with "TEST:inject
+# datestamp=DATE ", the program is run as "TEST:reqtrap TEST:inject
+# datestamp=DATE PROGRAM" (inject, tests/bug-orig/amiga/inject.c:
+# dos.library's DateStamp gives that date to the command, so a compile-time
+# resp. a run-time date is fixed; blitz2-ab3 finds ab3cli as TEST:ab3cli).  Then
+# inject's own lines ("inject: datestamp: N calls answered", "inject:
+# rc=N") are part of [compile] resp. [run], and the "rc=" line behind
+# is inject's (0): the command's return code is the "inject: rc=" line.
+# The output of a case (TEST:out/NAME.txt) is
 #   [compile]   the compiler's console output, rc=RC
 #   [run]       the program's output and rc=RC, "not run" or "no executable"
 # and is compared with EXPECT by outmatch: exe the whole file, ref only
@@ -32,7 +41,7 @@
 # or the fetched AmiBlitz3 files.
 cmake_minimum_required(VERSION 3.29)
 
-foreach(v AMIGA_RUN OUTMATCH REQTRAP CONFIG CASES BLITZ2_DIR AB3 WORK)
+foreach(v AMIGA_RUN OUTMATCH REQTRAP INJECT CONFIG CASES BLITZ2_DIR AB3 WORK)
 	if(NOT ${v})
 		message(FATAL_ERROR "cli.cmake: -D${v}=... missing")
 	endif()
@@ -65,6 +74,9 @@ foreach(f blitz2-ab3 ab3cli acidlibs deflibs)
 	file(COPY_FILE ${BLITZ2_DIR}/${f} ${test}/blitz2/${f})
 endforeach()
 file(COPY_FILE ${REQTRAP} ${test}/reqtrap)
+file(COPY_FILE ${INJECT} ${test}/inject)
+# blitz2-ab3 under inject (datestamp=): its PROGDIR: is inject's
+file(COPY_FILE ${BLITZ2_DIR}/ab3cli ${test}/ab3cli)
 foreach(tree Blitz3 Blitz3-nolib Blitz3-userlib)
 	set(libs ${test}/${tree}/BlitzLibs)
 	# Libs/: AmiBlitz3 adds Blitz3:Libs to LIBS: without checking the lock
@@ -103,13 +115,28 @@ file(STRINGS ${CASES} cases)
 set(script "FailAt 21\nAssign blitz2: TEST:blitz2\nCd TEST:src\n")
 foreach(c IN LISTS cases)
 	string(REPLACE "|" ";" c "${c}")
+	# the key=value fields datestamp=DATE and rundatestamp=DATE (behind EXPECT) are taken
+	# out, the positional fields stay as they are
+	set(datestamp ${c})
+	list(FILTER datestamp INCLUDE REGEX "^datestamp=")
+	set(rundatestamp ${c})
+	list(FILTER rundatestamp INCLUDE REGEX "^rundatestamp=")
+	list(FILTER c EXCLUDE REGEX "^(run)?datestamp=")
 	list(GET c 0 name)
 	list(GET c 1 tree)
 	list(GET c 2 source)
 	list(GET c 3 args)
 	set(out TEST:out/${name}.txt)
 	list(LENGTH c n)
-	set(run "  TEST:reqtrap >>${out} RAM:${name}\n  Echo \"rc=$RC\" >>${out}\n")
+	# rundatestamp: reqtrap runs inject, which runs the program in its
+	# process (reqtrap starts its command as a process of its own, where
+	# inject's patch would not act)
+	set(prog RAM:${name})
+	if(rundatestamp)
+		string(REGEX REPLACE "^rundatestamp=" "" rundatestamp "${rundatestamp}")
+		set(prog "TEST:inject datestamp=${rundatestamp} RAM:${name}")
+	endif()
+	set(run "  TEST:reqtrap >>${out} ${prog}\n  Echo \"rc=$RC\" >>${out}\n")
 	if(CONFIG STREQUAL "ref" AND n GREATER 6)
 		list(GET c 6 mode)
 		if(mode STREQUAL "norun")
@@ -120,6 +147,10 @@ foreach(c IN LISTS cases)
 		set(cmd "Blitz3:Amiblitz3 >>${out} -s ${source} -e RAM:${name}")
 	else()
 		set(cmd "blitz2:blitz2-ab3 >>${out} -s ${source} -e RAM:${name} ${args}")
+	endif()
+	if(datestamp)
+		string(REGEX REPLACE "^datestamp=" "" datestamp "${datestamp}")
+		set(cmd "TEST:inject datestamp=${datestamp} ${cmd}")
 	endif()
 	string(APPEND script "Assign Blitz3: TEST:${tree}\n"
 		"Echo \"[compile]\" >${out}\n${cmd}\nEcho \"rc=$RC\" >>${out}\n"
@@ -142,6 +173,7 @@ endif()
 set(failed 0)
 foreach(c IN LISTS cases)
 	string(REPLACE "|" ";" c "${c}")
+	list(FILTER c EXCLUDE REGEX "^(run)?datestamp=")
 	list(GET c 0 name)
 	list(GET c 4 expect)
 	list(LENGTH c n)

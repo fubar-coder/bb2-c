@@ -149,7 +149,12 @@ add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 
 # ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-userlib]
 #              [ARGS ARG...] [REF] [REF_EXPECT FILE] [REF_NORUN]
-#              [SAME CASE] [HUNKS LAYOUT]): a case of the suite; SAME:
+#              [SAME CASE] [HUNKS LAYOUT] [DATESTAMP ISO-DATE]
+#              [RUN_DATESTAMP ISO-DATE]): a case of the suite; DATESTAMP: the
+#              compiler runs under inject datestamp=DATE (cli.cmake:
+#              dos.library's DateStamp gives that date, so a compile-time
+#              date is fixed), RUN_DATESTAMP: the same for the program (its
+#              SystemDate), in both configurations; SAME:
 #              its executable is the one of the case CASE, HUNKS: its hunk
 #              layout (hunkcheck --hunks, e.g. code,bss,data+chip), in both
 #              configurations; REF_NORUN: AmiBlitz3's executable is kept
@@ -163,13 +168,26 @@ set(cli_ref_same "")
 set(cli_exe_hunks "")
 set(cli_ref_hunks "")
 macro(ab3_cli_case name source)
-	cmake_parse_arguments(c "REF;REF_NORUN" "TREE;REF_EXPECT;SAME;HUNKS" "ARGS" ${ARGN})
+	cmake_parse_arguments(c "REF;REF_NORUN" "TREE;REF_EXPECT;SAME;HUNKS;DATESTAMP;RUN_DATESTAMP" "ARGS" ${ARGN})
+	set(c_datestamp)
+	if(c_DATESTAMP)
+		if(NOT c_DATESTAMP MATCHES "^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$")
+			message(FATAL_ERROR "ab3_cli_case ${name}: DATESTAMP ${c_DATESTAMP} is not YYYY-MM-DD")
+		endif()
+		set(c_datestamp "|datestamp=${c_DATESTAMP}")
+	endif()
+	if(c_RUN_DATESTAMP)
+		if(NOT c_RUN_DATESTAMP MATCHES "^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$")
+			message(FATAL_ERROR "ab3_cli_case ${name}: RUN_DATESTAMP ${c_RUN_DATESTAMP} is not YYYY-MM-DD")
+		endif()
+		string(APPEND c_datestamp "|rundatestamp=${c_RUN_DATESTAMP}")
+	endif()
 	if(NOT c_TREE)
 		set(c_TREE Blitz3)
 	endif()
 	list(JOIN c_ARGS " " c_args)
 	set(c_line "${name}|${c_TREE}|${source}|${c_args}|${cli_dir}/${name}.expect")
-	string(APPEND cli_exe_cases "${c_line}\n")
+	string(APPEND cli_exe_cases "${c_line}${c_datestamp}\n")
 	if(c_SAME)
 		list(APPEND cli_exe_same "${name}=${c_SAME}")
 	endif()
@@ -186,7 +204,7 @@ macro(ab3_cli_case name source)
 			endif()
 			string(APPEND c_line "|${cli_dir}/norun.ref.expect|norun")
 		endif()
-		string(APPEND cli_ref_cases "${c_line}\n")
+		string(APPEND cli_ref_cases "${c_line}${c_datestamp}\n")
 		if(c_SAME)
 			list(APPEND cli_ref_same "${name}=${c_SAME}")
 		endif()
@@ -351,6 +369,10 @@ ab3_cli_case(funcstmt_str funcstmt_str.ab3 REF)
 ab3_cli_case(funcstmt_nopar funcstmt_nopar.ab3 REF)
 ab3_cli_case(funcstmt_bb2 funcstmt_bb2.bb)
 ab3_cli_case(jsr jsr.ab3 REF)
+# the system date fixed by inject (ab3-mode-g3 task 1.2): the compiler and
+# the program run under inject datestamp=2026-10-25.  AmiBlitz3's
+# SystemDate (run time) and __DATE__ (compile time) go through DateStamp
+ab3_cli_case(date_stamp date_stamp.ab3 REF DATESTAMP 2026-10-25 RUN_DATESTAMP 2026-10-25)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)
@@ -362,7 +384,7 @@ function(ab3_cli name config cases)
 	set(sources ${cli_sources} ${cli_made})
 	string(REPLACE ";" "$<SEMICOLON>" sources "${sources}")
 	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
-		-DOUTMATCH=${OUTMATCH} -DREQTRAP=$<TARGET_FILE:reqtrap>
+		-DOUTMATCH=${OUTMATCH} -DREQTRAP=$<TARGET_FILE:reqtrap> -DINJECT=$<TARGET_FILE:inject>
 		-DCONFIG=${config} -DCASES=${work}.cases
 		-DBLITZ2_DIR=${BLITZ2_DIR} -DAB3=${AB3_V314} -DSOURCES=${sources}
 		-DUSERLIB=${CMAKE_CURRENT_BINARY_DIR}/amiga/ab3_userlib.obj
@@ -383,6 +405,15 @@ ab3_cli(ab3_cli_ref_broken ref "${broken}")
 foreach(t ab3_cli_broken ab3_cli_ref_broken)
 	set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION
 		"FAIL atoi: outmatch: [^\n]*expect line 14: \"12325\", output line [0-9]+: \"12324\"")
+endforeach()
+# the same for DATESTAMP/RUN_DATESTAMP: date_stamp with the date of another day
+# in the expect file (date_stamp.broken.expect)
+set(broken_date "date_stamp|Blitz3|date_stamp.ab3||${cli_dir}/date_stamp.broken.expect|datestamp=2026-10-25|rundatestamp=2026-10-25\n")
+ab3_cli(ab3_cli_broken_date exe "${broken_date}")
+ab3_cli(ab3_cli_ref_broken_date ref "${broken_date}")
+foreach(t ab3_cli_broken_date ab3_cli_ref_broken_date)
+	set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION
+		"FAIL date_stamp: outmatch: [^\n]*expect line [0-9]+: \"date: 26/10/2026\", output line [0-9]+: \"date: 25/10/2026\"")
 endforeach()
 
 # AB3 mode's tokens against AmiBlitz3's (spec ab3-compat/tokenizer,
