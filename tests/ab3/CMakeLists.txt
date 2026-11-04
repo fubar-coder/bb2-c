@@ -397,6 +397,15 @@ ab3_cli_case(esc_ver_none esc_ver_none.ab3 REF)
 ab3_cli_case(esc_pointer esc_pointer.ab3 REF REF_EXPECT esc_pointer.ref.expect)
 # the date of the compile (DateStamp under inject)
 ab3_cli_case(esc_date esc_date.ab3 REF DATESTAMP 2026-10-25)
+# the line counter and the current include: the main source behind its
+# header, a macro, a skipped CNIF block, an include, a repeated XINCLUDE;
+# an include with a header; lines joined with @@ (counted once, as
+# AmiBlitz3 does); nested includes (AmiBlitz3: the include opened last,
+# an empty name runs over)
+ab3_cli_case(esc_codeline esc_codeline.ab3 REF)
+ab3_cli_case(esc_codeline_hdr esc_codeline_hdr.ab3 REF)
+ab3_cli_case(esc_codeline_join esc_codeline_join.ab3 REF)
+ab3_cli_case(esc_include esc_include.ab3 REF REF_EXPECT esc_include.ref.expect)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)

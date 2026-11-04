@@ -51,4 +51,28 @@ extern ULONG ab3builds;
  *         AmiBlitz3's constant #__include (ab3inc.c). */
 UWORD ab3_incdepth(void);
 
+/* ---- the line counter and the current include (change ab3-mode-g3, D5) */
+
+/** @brief The empty lines the main source's embedded header became
+ *         (ab3cli keeps them, AmiBlitz3 has no such lines), 0 without
+ *         (ab3main.c): \\__CODELINE does not count them. */
+extern ULONG ab3hdrlines;
+
+/** @brief Is the line just read one of the empty lines the embedded
+ *         header of the innermost include became (ab3inc.c)? */
+BOOL ab3_incheaderline(void);
+
+/** @brief The file name, without its path, of the innermost open include,
+ *         "" in the main source (ab3inc.c): \\__THIS_INCLUDE. */
+const char *ab3_incfile(void);
+
+/** @brief The next line of the program is read (ext_nextline, ab3syn.c;
+ *         not the lines it joins with @@): \\__CODELINE counts it
+ *         (ab3str.c). */
+void ab3_strline(void);
+
+/** @brief A pass starts: the line counter of \\__CODELINE back to 0
+ *         (ab3str.c, called by ext_passstart). */
+void ab3_strpass(void);
+
 #endif

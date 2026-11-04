@@ -1,0 +1,6 @@
+; XTRA
+; Version         = 1.0.0
+; NumberOfBuilds  = 1
+; /XTRA
+; the include of esc_codeline_hdr.ab3, with an embedded header
+NPrint "> inc [\\__CODELINE]"

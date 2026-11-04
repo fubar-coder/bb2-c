@@ -1,0 +1,2 @@
+; the inner include of esc_include.ab3
+NPrint "> b [\\__THIS_INCLUDE]"

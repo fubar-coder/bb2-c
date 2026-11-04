@@ -1,0 +1,6 @@
+; \\__CODELINE (spec ab3-compat/strings) and lines joined with @@ (in
+; an include, where AmiBlitz3 joins them after a ',')
+OPTIMIZE 4
+INCLUDE "esc_codeline_jinc.ab3"
+NPrint "> after [\\__CODELINE]"
+End

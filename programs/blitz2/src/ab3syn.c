@@ -341,6 +341,10 @@ void ext_nextline(void)
     const UBYTE *p, *at, *b;
     ULONG n = 0;
 
+    /* \\__CODELINE (ab3str.c): a line joined to this one is not counted,
+       as in AmiBlitz3 (its mergeline enters nextline behind the count) */
+    if (!joining)
+        ab3_strline();
     if (progmode != XTRA_MODE_AB3 || joining || !(at = findjoin(srcptr)))
         return;
     joining = TRUE;

@@ -73,6 +73,9 @@ static int checkincmode(BPTR fh, UBYTE *buf)
 static struct {
     struct include *inc;                /* NULL: a free slot */
     ULONG line;                         /* its lines read so far */
+    ULONG hdr;                          /* its first hdr lines are the
+                                           empty lines of its embedded
+                                           header (ab3cli, AB3 mode) */
     UBYTE *mem;                         /* a text include: its lines,
                                            AllocMem(len + 1) by ab3cli */
     ULONG len, pos;
@@ -107,6 +110,7 @@ static void textinc(struct include *inc, const char *name)
         err(msg);                       /* ab3cli printed why */
     incs[i].mem = (UBYTE *)r.d[0];
     incs[i].len = r.d[1];
+    incs[i].hdr = r.d[2];
     incs[i].pos = 0;
 }
 
@@ -251,6 +255,24 @@ BOOL ext_xinclude(UWORD len)
 UWORD ab3_incdepth(void)
 {
     return (UWORD)numincs;
+}
+
+/* ---------------- the line being read, for the escapes (change ab3-mode-g3) */
+
+BOOL ab3_incheaderline(void)
+{
+    int i;
+
+    if (!numincs || !firstinc || (i = incslot(firstinc)) == MAXINC)
+        return FALSE;
+    return incs[i].line <= incs[i].hdr;
+}
+
+const char *ab3_incfile(void)
+{
+    if (!numincs || !firstinc)
+        return "";
+    return (const char *)FilePart((CONST_STRPTR)firstinc->name);
 }
 
 /* the tokenised lines of a text include, else the file (not handled) */

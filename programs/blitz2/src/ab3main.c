@@ -20,6 +20,7 @@
 #include <proto/dos.h>
 #include "blitz2.h"
 #include "ab3.h"
+#include "tokenizer.h"
 
 struct ab3job *ab3job;                  /* ab3.h */
 /* the editor of a command line run (instead of blitz2:ted) */
@@ -27,6 +28,7 @@ static const char ab3cliname[] = "PROGDIR:ab3cli";
 static struct ab3job job;
 UBYTE ab3version[3];                    /* ab3.h */
 ULONG ab3builds;
+ULONG ab3hdrlines;
 
 static void say(const char *s)
 {
@@ -84,6 +86,18 @@ static void headerversion(const UBYTE *src, LONG len)
     ab3builds = x.ab3.builds;
 }
 
+/* the empty lines ab3cli makes of the embedded header of the source src
+   (len bytes) in AB3 mode, as its ab3_loadsource does (a text source not
+   named .bb, .bb2 or .ab2): not counted by \\__CODELINE (ab3str.c) */
+static void headerlines(const UBYTE *src, LONG len)
+{
+    int type = xtra_detect(src, (size_t)len, job.source);
+
+    if ((type == XTRA_T_AB3 || type == XTRA_T_TEXT)
+        && (tokenizer_ab3_source(job.source, strlen(job.source)) & TOKENIZER_AB3_HEADER))
+        ab3hdrlines = tokenizer_lines(src, tokenizer_ab3_header(src, (size_t)len));
+}
+
 /* the command line (-s SOURCE -e EXE ...), before anything is loaded (the
    libraries depend on the mode): for a compile decide the program's mode
    and set ab3job.  Prints the usage and the messages of argument errors
@@ -120,8 +134,10 @@ static int cmdline(int argc, char **argv)
         x = readall(compname, &xlen);
     job.mode = (uint8_t)xtra_mode(job.force, src, (size_t)len, job.source, x,
                                   x ? (size_t)xlen : 0);
-    if (job.mode == XTRA_MODE_AB3)
+    if (job.mode == XTRA_MODE_AB3) {
         headerversion(src, len);
+        headerlines(src, len);
+    }
     if (x)
         FreeMem(x, (ULONG)xlen + 1);
     FreeMem(src, (ULONG)len + 1);

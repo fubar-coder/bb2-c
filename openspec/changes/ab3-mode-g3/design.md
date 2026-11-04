@@ -121,9 +121,17 @@ commented out.
   point that is called when the next source line is started (main
   source or include) increments it. It is reset at the start of every
   pass, through the existing pass-start point.
-- **The header lines:** In AB3 text sources, the embedded header is
-  removed by `ab3cli` before compiling. So the first counted line is
-  the first line after the header, as in AmiBlitz3.
+- **The header lines:** `ab3cli` keeps the embedded header of an AB3
+  text source as empty lines (G2: the lines keep their numbers), of the
+  main source and of a text include. AmiBlitz3 has no such lines: it
+  removes the header before tokenising. So the counter does not count
+  them: `blitz2-ab3` takes the number of the main source's header lines
+  from the source it reads for the mode (`ab3main.c`), and `ab3cli`'s
+  include service returns those of an include in `d2`. The first
+  counted line is the first line after the header, as in AmiBlitz3.
+- **Joined lines:** a line joined with `@@` is not counted again; the
+  joined line counts once, as in AmiBlitz3 (its `mergeline` enters
+  `.nextline` behind the count).
 - **The current include:** `\\__THIS_INCLUDE` takes the file name of
   the include whose line is being read, from the include state
   (`ab3inc.c`). Back in the including file, that file counts again.
@@ -229,3 +237,23 @@ reverting the commits.
   (`[` and NUL bytes, the rest of the string lost, the program goes on:
   matched as `~> [*`); `"[\\qq]abc"` gives `[QQ]ABC"qq]abc` with the
   warning "detected unknown const" once per pass.
+- (Task 2.4) Measured with AmiBlitz3 (`ab3_cli_ref`): `\\__CODELINE`
+  counts from the first line after the main source's header (line 21
+  of `esc_codeline.ab3`, 4 header lines: 17); a macro gives the line it
+  is expanded in, the lines of a skipped `CNIF` block count, an include
+  counts its lines, an `XINCLUDE` skipped as repeated counts none
+  (`esc_codeline`); an include's embedded header is not counted
+  (`esc_codeline_hdr`); a line joined with `@@` (in an include, after a
+  ',') counts once, both strings of `NPrint "[\\__CODELINE] ", @@` ⏎
+  `"[\\__CODELINE]"` give the number of the first line, and the
+  following lines count one less than their physical lines
+  (`esc_codeline_join`). All of these are the same in `blitz2-ab3`. The
+  `@@` behaviour is taken over as AmiBlitz3's rule: a joined line is
+  compiled as one line. (AmiBlitz3's `Dim … @@` path calls `nextline`
+  and counts the joined line; `blitz2-ab3` joins every `@@` in
+  `ext_nextline`, so there it counts once as well - not compared.)
+- (Task 2.4) `\\__THIS_INCLUDE` with AmiBlitz3 (`esc_include`,
+  `REF_EXPECT`): in the main source before any include the empty value
+  runs over (`[` and a NUL byte, rule 7 of its §4.5.2); after an
+  include ends it keeps the name of the include opened last (I-59), in
+  the outer include and in the main source.

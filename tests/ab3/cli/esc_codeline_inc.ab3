@@ -1,0 +1,10 @@
+; the include of esc_codeline.ab3: 10 lines, no header; its line 5
+; prints the line counted over the main source and this include, and
+; its name
+; line 4
+NPrint "> inc [\\__CODELINE] [\\__THIS_INCLUDE]"
+; line 6
+; line 7
+; line 8
+; line 9
+; line 10

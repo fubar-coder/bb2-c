@@ -1,0 +1,26 @@
+; XTRA
+; Version         = 1.0.0
+; NumberOfBuilds  = 1
+; /XTRA
+; \\__CODELINE (spec ab3-compat/strings): the line counted from the
+; first line after the embedded header (line 5 of the file is 1), over
+; the includes in compile order: a macro gives the line it is expanded
+; in, the lines of a skipped CNIF block count, an include of 10 lines
+; counts its 10 lines, an XINCLUDE skipped as repeated none
+Macro where
+NPrint "> macro [\\__CODELINE]"
+End Macro
+OPTIMIZE 4
+CNIF 1 = 0
+NPrint "skipped"
+CEND
+!where
+; line 18
+; line 19
+; line 20
+NPrint "> [\\__CODELINE]"
+XINCLUDE "esc_codeline_inc.ab3"
+NPrint "> after [\\__CODELINE]"
+XINCLUDE "esc_codeline_inc"
+NPrint "> again [\\__CODELINE]"
+End

@@ -1,0 +1,8 @@
+; \\__THIS_INCLUDE (spec ab3-compat/strings): the name of the include
+; whose line has the string, without its path; empty in the main source;
+; after an include ends the file that included it counts again
+OPTIMIZE 4
+NPrint "> main [\\__THIS_INCLUDE]"
+INCLUDE "esc_include_a.ab3"
+NPrint "> main again [\\__THIS_INCLUDE]"
+End

@@ -33,6 +33,7 @@ void ext_passstart(void)
     runerrsnest = 0;
     ab3_synpass();
     ab3_sectpass();
+    ab3_strpass();
 }
 
 BOOL ext_newsyntax(void)

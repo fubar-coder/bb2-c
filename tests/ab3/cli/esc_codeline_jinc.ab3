@@ -1,0 +1,4 @@
+; the include of esc_codeline_join.ab3: a line joined with the next one
+NPrint "> [\\__CODELINE] ", @@
+  "[\\__CODELINE]"
+NPrint "> next [\\__CODELINE]"

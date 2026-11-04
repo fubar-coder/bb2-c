@@ -1,0 +1,9 @@
+[compile]
+rc=0
+[run]
+> main []
+> b [esc_include_b.ab3]
+> a again [esc_include_a.ab3]
+> a [esc_include_a.ab3]
+> main again []
+rc=0

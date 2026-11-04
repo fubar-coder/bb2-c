@@ -1,0 +1,8 @@
+; the outer include of esc_include.ab3: a statement printing the name,
+; called after the inner include
+Statement esc_a{}
+  NPrint "> a [\\__THIS_INCLUDE]"
+End Statement
+INCLUDE "esc_include_b.ab3"
+NPrint "> a again [\\__THIS_INCLUDE]"
+esc_a{}

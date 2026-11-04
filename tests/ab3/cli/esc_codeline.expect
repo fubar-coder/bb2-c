@@ -1,0 +1,9 @@
+[compile]
+rc=0
+[run]
+> macro [13]
+> [17]
+> inc [23] [esc_codeline_inc.ab3]
+> after [29]
+> again [31]
+rc=0

@@ -1,0 +1,7 @@
+; \\__CODELINE (spec ab3-compat/strings) with an include that has an
+; embedded header: its lines count from the first line after it
+OPTIMIZE 4
+NPrint "> [\\__CODELINE]"
+INCLUDE "esc_codeline_hinc.ab3"
+NPrint "> after [\\__CODELINE]"
+End

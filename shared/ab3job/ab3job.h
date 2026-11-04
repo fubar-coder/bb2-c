@@ -61,7 +61,9 @@ struct ab3job {
        include's name; out d0 = its lines as the editor loads them (TED's
        readline: tokenised with the program's token list), each ending in
        its 0, in AllocMem(d1 + 1, MEMF_PUBLIC) memory the caller frees;
-       d1 = their length; d0 = 0: the file cannot be read (reported) */
+       d1 = their length; d2 = the empty lines its embedded header became
+       (AB3 mode; 0 without a header and in BB2 mode); d0 = 0: the file
+       cannot be read (reported) */
     void *tokfile;
     char source[AB3JOB_PATHLEN];        /* -s */
     char exe[AB3JOB_PATHLEN];           /* -e */

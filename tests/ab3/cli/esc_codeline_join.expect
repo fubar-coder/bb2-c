@@ -1,0 +1,7 @@
+[compile]
+rc=0
+[run]
+> [6] [6]
+> next [7]
+> after [8]
+rc=0

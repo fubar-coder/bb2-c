@@ -534,8 +534,8 @@ static int ab3_loadsource(const UBYTE *src, ULONG slen)
 
 /* an include of text in AB3 mode as AmiBlitz3's read_includeline
    tokenises it (AmiBlitz3.ab3:19412): its embedded header skipped (as
-   empty lines), no line cut */
-static UBYTE *ab3_tokenise_file(const char *name, ULONG *len)
+   *nh empty lines), no line cut */
+static UBYTE *ab3_tokenise_file(const char *name, ULONG *len, ULONG *nh)
 {
     LONG flen;
     UBYTE *src = readfile(name, &flen), *mem = 0;
@@ -546,8 +546,9 @@ static UBYTE *ab3_tokenise_file(const char *name, ULONG *len)
         return 0;
     }
     hdr = tokenizer_ab3_incheader(src, (ULONG)flen);
+    *nh = tokenizer_lines(src, hdr);
     if (ab3_tokenizer())
-        mem = ab3_tokenise(src + hdr, (ULONG)flen - hdr, tokenizer_lines(src, hdr), len);
+        mem = ab3_tokenise(src + hdr, (ULONG)flen - hdr, *nh, len);
     freefile(src, flen);
     return mem;
 }
@@ -600,13 +601,14 @@ fail:
 void ab3cli_tokfile_c(struct regs *r)
 {
     const char *name = (const char *)r->a[0];
-    ULONG len = 0;
+    ULONG len = 0, nh = 0;
 
     curfile = name;
     loaderr = 0;
-    r->d[0] = (ULONG)(job->mode == XTRA_MODE_AB3 ? ab3_tokenise_file(name, &len)
+    r->d[0] = (ULONG)(job->mode == XTRA_MODE_AB3 ? ab3_tokenise_file(name, &len, &nh)
                                                  : tokenise_file(name, &len));
     r->d[1] = len;
+    r->d[2] = nh;
     curfile = job->source;
 }
 

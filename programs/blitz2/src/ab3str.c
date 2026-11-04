@@ -124,6 +124,27 @@ static const struct escname *findname(const UBYTE *p, UWORD *n)
     return best;
 }
 
+/* ------------- the line counter of \\__CODELINE (design D5, ab3-mode-g3) */
+
+/* the lines of the program read in this pass: main source and includes in
+   compile order, from 1 (AmiBlitz3's globallinecount, AmiBlitz3.ab3:2697,
+   reset per pass at 27227).  The empty lines ab3cli made of an embedded
+   header are not counted: AmiBlitz3 has no such lines (it removes the
+   header of the main source and of a text include). */
+static ULONG codeline;
+
+void ab3_strpass(void)
+{
+    codeline = 0;
+}
+
+void ab3_strline(void)
+{
+    if (numincs ? ab3_incheaderline() : (UWORD)linenumat < ab3hdrlines)
+        return;
+    codeline++;
+}
+
 /* the date of the compile, dos.library's DateStamp, as AmiBlitz3 gives
    it (design D6): mm.dd.yyyy, ger dd.mm.yyyy */
 static void putdate(int ger, UWORD *len)
@@ -157,13 +178,17 @@ static void putname(const struct escname *e, UWORD *len)
            expanded in - as written in its definition */
         putstr(thisproc ? thisproc->name : "GLOBAL", len);
         return;
+    case ESC_THIS_INCLUDE:
+        /* the include whose line is read, "" in the main source (AmiBlitz3:
+           the include opened last, I-59 - taken as intended) */
+        putstr(ab3_incfile(), len);
+        return;
+    case ESC_CODELINE:
+        putnum(codeline, len);
+        return;
     case ESC_THIS_POINTER:
         /* AmiBlitz3 inserts an address of its own compile-time memory */
         err("Not supported: \\\\__THIS_POINTER");
-    default:
-        /* TODO(ab3-mode-g3 2.4): __THIS_INCLUDE and __CODELINE have no
-           value yet */
-        unknownerr();
     }
 }
 
