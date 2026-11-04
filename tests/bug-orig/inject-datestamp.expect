@@ -1,0 +1,47 @@
+[plain]
+~days=# minute=# tick=#
+[1978-01-01]
+days=0 minute=0 tick=0
+inject: datestamp: 1 calls answered
+inject: rc=0
+rc=0
+[2024-02-29]
+days=16860 minute=0 tick=0
+inject: datestamp: 1 calls answered
+inject: rc=0
+rc=0
+[2000-02-29]
+days=8094 minute=0 tick=0
+inject: datestamp: 1 calls answered
+inject: rc=0
+rc=0
+[2100-03-01]
+days=44619 minute=0 tick=0
+inject: datestamp: 1 calls answered
+inject: rc=0
+rc=0
+[2026-10-25]
+days=17829 minute=0 tick=0
+inject: datestamp: 1 calls answered
+inject: rc=0
+rc=0
+[2026-02-29]
+inject: bad option datestamp=2026-02-29
+rc=20
+[1977-12-31]
+inject: bad option datestamp=1977-12-31
+rc=20
+[2026-13-01]
+inject: bad option datestamp=2026-13-01
+rc=20
+[2026-1-05]
+inject: bad option datestamp=2026-1-05
+rc=20
+[2026-10-25x]
+inject: bad option datestamp=2026-10-25x
+rc=20
+[2026-00-10]
+inject: bad option datestamp=2026-00-10
+rc=20
+[after]
+~days=# minute=# tick=#

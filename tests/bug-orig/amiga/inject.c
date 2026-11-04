@@ -36,6 +36,11 @@
  *                          other tasks go through
  *   wbfrontfail            WBenchToFront returns FALSE (as with the
  *                          Workbench closed)
+ *   datestamp=YYYY-MM-DD   dos.library's DateStamp returns that date (days
+ *                          since 1978-01-01, minute 0, tick 0) to COMMAND:
+ *                          what a program takes as the system date
+ *                          (SystemDate, a compiler's __DATE__); 1978-01-01
+ *                          or later, an existing day
  *   nullnode=NUM/NAME      while COMMAND runs, the long word at address 0
  *                          (normally 0) points to a node {next 0, word NUM
  *                          (hex), NAME}: a list walked through a null
@@ -187,6 +192,7 @@
 #define LVO_ALLOCMEM (-198)
 #define LVO_FREEMEM  (-210)
 #define LVO_OPEN     (-30)
+#define LVO_DATESTAMP (-192)
 #define LVO_READ     (-42)
 #define LVO_WRITE    (-48)
 #define LVO_DISPLAYALERT (-90)
@@ -215,8 +221,9 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 /* -------------------------------------------------------------- options */
 
 static int o_signals, o_track, o_pad, o_guard, o_allocfail, o_createprocfail, o_alerts;
-static int o_wbfrontfail, o_handles, o_alertlog, o_ownedunlock, o_fill;
+static int o_wbfrontfail, o_handles, o_alertlog, o_ownedunlock, o_fill, o_datestamp;
 static UBYTE fill_byte;
+static ULONG ds_days, ds_done;
 static ULONG nn_num;
 static char nn_name[40];
 static ULONG wbf_done;
@@ -233,7 +240,8 @@ APTR old_cacheclearu, old_cachecleare;
 void cacheclearu_patch(void), cachecleare_patch(void);
 APTR old_write, old_alert, old_opendev, old_wbfront;
 void write_patch(void), alert_patch(void), opendev_patch(void), wbfront_patch(void);
-APTR old_execalert, old_openfromlock;
+APTR old_execalert, old_openfromlock, old_datestamp;
+void datestamp_patch(void);
 void execalert_patch(void), openfromlock_patch(void);
 void allocmem_patch(void), freemem_patch(void), open_patch(void), read_patch(void);
 void lock_patch(void), examine_patch(void), oldopenlib_patch(void), openlib_patch(void);
@@ -358,6 +366,20 @@ __asm__(
 "   move.l  _old_wbfront,-(sp)\n"
 "   rts\n"
 "10: moveq  #0,d0\n"
+"   rts\n"
+/* DateStamp(d1 date): datestamp_pre(date) != 0 -> date filled in, d0 = d1 */
+"   .even\n"
+"_datestamp_patch:\n"
+"   movem.l d0-d1/a0-a1,-(sp)\n"
+"   move.l  d1,-(sp)\n"
+"   jsr     _datestamp_pre\n"
+"   addq.l  #4,sp\n"
+"   tst.l   d0\n"
+"   movem.l (sp)+,d0-d1/a0-a1\n"
+"   bne.s   11f\n"
+"   move.l  _old_datestamp,-(sp)\n"
+"   rts\n"
+"11: move.l d1,d0\n"
 "   rts\n"
 /* DisplayAlert(d0 number, a0 string, d1 height): alert_pre != 0 -> FALSE */
 "   .even\n"
@@ -804,6 +826,17 @@ ULONG wbfront_pre(void)
     if (!o_wbfrontfail || !ours())
         return 0;
     wbf_done++;
+    return 1;
+}
+
+ULONG datestamp_pre(struct DateStamp *ds)
+{
+    if (!o_datestamp || !ours() || !ds)
+        return 0;
+    ds->ds_Days = (LONG)ds_days;
+    ds->ds_Minute = 0;
+    ds->ds_Tick = 0;
+    ds_done++;
     return 1;
 }
 
@@ -1302,6 +1335,25 @@ static int option(const char *a)
         return o_ownedunlock = 1;
     if (!strcmp(a, "wbfrontfail"))
         return o_wbfrontfail = 1;
+    if (!strncmp(a, "datestamp=", 10)) {
+        static const unsigned char mdays[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+        ULONG y, m, d, md, i;
+
+        s = a + 10;
+        if (!number(&s, &y) || s - a != 14 || *s++ != '-' || !number(&s, &m) || s - a != 17
+            || *s++ != '-' || !number(&s, &d) || s - a != 20 || *s || y < 1978 || m < 1 || m > 12)
+            return -1;
+        md = mdays[m - 1] + (m == 2 && !(y % 4) && ((y % 100) || !(y % 400)));
+        if (d < 1 || d > md)
+            return -1;
+        /* days since 1978-01-01: the years before, the months before, the day */
+        for (ds_days = 0, i = 1978; i < y; i++)
+            ds_days += 365 + (!(i % 4) && ((i % 100) || !(i % 400)));
+        for (i = 1; i < m; i++)
+            ds_days += mdays[i - 1] + (i == 2 && !(y % 4) && ((y % 100) || !(y % 400)));
+        ds_days += d - 1;
+        return o_datestamp = 1;
+    }
     if (!strncmp(a, "nullnode=", 9)) {
         const char *slash = strchr(a + 9, '/');
 
@@ -1438,7 +1490,11 @@ static void patch(int on)
         if (o_wbfrontfail)
             old_wbfront = SetFunction((struct Library *)IntuitionBase, LVO_WBENCHTOFRONT,
                                       (APTR)wbfront_patch);
+        if (o_datestamp)
+            old_datestamp = SetFunction(dos, LVO_DATESTAMP, (APTR)datestamp_patch);
     } else {
+        if (o_datestamp)
+            SetFunction(dos, LVO_DATESTAMP, old_datestamp);
         SetFunction(ex, LVO_CACHECLEARU, old_cacheclearu);
         SetFunction(ex, LVO_CACHECLEARE, old_cachecleare);
         SetFunction(dos, LVO_WRITE, old_write);
@@ -1506,7 +1562,7 @@ static const char usage[] =
     "  options: signals allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP] readfail=NAME/N\n"
     "    writefail=NAME/N alerts alertlog wbfrontfail examinefail=NAME ownedunlock\n"
     "    openlibfail=NAME opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
-    "    track pad guard fill=XX\n"
+    "    track pad guard fill=XX datestamp=YYYY-MM-DD\n"
     "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked\n"
     "    undobuf cacheflush=NAME\n"
     "    keys=TITLE/CODE@SECS[,CODE@SECS]...  (described in inject.c)\n";
@@ -1542,6 +1598,7 @@ int main(int argc, char **argv)
             "              [wbfrontfail] [handles] [nullnode=NUM/NAME]\n"
             "              [examinefail=NAME] [ownedunlock] [openlibfail=NAME] [opendevfail=NAME]\n"
             "              [createprocfail] [track] [pad] [guard] [fill=XX]\n"
+            "              [datestamp=YYYY-MM-DD]\n"
             "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
             "              [click=TITLE/TEXT]... [doslocked] [undobuf] [cacheflush=NAME]\n"
             "              [keys=TITLE/CODE@SECS[,CODE@SECS]...] COMMAND [ARGS]\n");
@@ -1688,6 +1745,10 @@ int main(int argc, char **argv)
     }
     if (o_wbfrontfail) {
         sprintf(line, "inject: wbfrontfail: %lu calls failed\n", wbf_done);
+        put(line);
+    }
+    if (o_datestamp) {
+        sprintf(line, "inject: datestamp: %lu calls answered\n", ds_done);
         put(line);
     }
     if (ef_name[0]) {
