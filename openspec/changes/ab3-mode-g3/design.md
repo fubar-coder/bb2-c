@@ -194,6 +194,29 @@ In the AB3 tests:
   AmiBlitz3's output. Each one also gets a row in "Differences" of
   `docs/ab3/variant.md`.
 
+### D9: `: End If` after a one-line `If` in a macro line
+
+Added 2026-11-04 (user decision, after the include case of task 4.2 failed;
+issue #967). `domacro` (`tokens1.c`) stores a macro body as one line, each
+line end becoming `:`; a one-line `If … Then` is closed only at the end of a
+physical line (`compile.c`, the "un-thens"). AmiBlitz3's `do_Macro`
+(`AmiBlitz3.ab3` 20903-20939, `thenmode`) appends `: End If` to a macro line
+that has `Then` ($8021) and no `End If` ($8002 $800B) after it; a line
+joined with `@@` is one line, the `End If` goes at its real end.
+
+- A new extension point in `domacro`, FALSE in `ext_bb2.c`, AB3 code in
+  `ab3*.c`: it watches the tokens of the current macro line (outside
+  strings and comments) and, at the line end, writes `:` and the tokens
+  `$8002 $800B` before the `:` of the line end, the same bytes as
+  AmiBlitz3.
+- Rejected: keeping the line ends of the body. It breaks `If c Then
+  !m{…}` with a multi-line macro (only the first line would be
+  conditional; 41 call sites in AmiBlitz3's sources rely on the whole
+  macro, measured), needs changes to the expansion buffer, `doline` and
+  the line counting, and fixes nothing more than this rule.
+- BB2 mode keeps the original's behaviour (#967 documents it; whether it
+  follows is a separate decision).
+
 ## Risks / Trade-offs
 
 - **[AmiBlitz3's `SystemDate` may not use `DateStamp`]** If it reads

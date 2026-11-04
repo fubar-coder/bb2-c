@@ -42,6 +42,10 @@ of 2026-11-04 fix the scope:
 - **Character literals `@"…"`** (AB3 mode, new syntax on) in run-time
   expressions: an integer from 1, 2 or 4 characters (byte, word or
   long target), big-endian.
+- **One-line `If` in macros** (AB3 mode): a macro line with `Then`
+  gets `: End If` appended, as AmiBlitz3 does, so the condition ends
+  with its macro line (issue #967; needed by AmiBlitz3's
+  `longlong.include.ab3`).
 - **Test infrastructure:** `inject datestamp=YYYY-MM-DD` patches
   `dos.library/DateStamp` for the process it starts. ISO 8601 is used
   only in this value. `inject` becomes usable in the `ab3_cli` and
@@ -56,6 +60,8 @@ of 2026-11-04 fix the scope:
 
 - `ab3-compat/strings`: escape sequences in string literals and in
   `Dc.b`, and character literals `@"…"` in AB3 mode.
+- `ab3-compat/macros`: a one-line `If … Then` in a macro body ends with
+  its macro line in AB3 mode.
 
 ### Modified Capabilities
 
