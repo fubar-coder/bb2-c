@@ -1,0 +1,8 @@
+[compile]
+~inject: datestamp: # calls answered
+inject: rc=0
+rc=0
+[run]
+> [10.25.2026] [25.10.2026]
+> [10.25.2026]
+rc=0

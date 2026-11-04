@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.28)
 
 # The host side of the build: everything built with the native compiler -
 # the tools the m68k build uses (tools/) and the host tests of the
-# components (programs/ted/tests/host).  The top-level CMakeLists.txt adds
-# this directory as ExternalProject (build/<preset>/host).
+# components (programs/ted/tests/host, programs/blitz2/tests/host).  The
+# top-level CMakeLists.txt adds this directory as ExternalProject
+# (build/<preset>/host).
 project(blitzbasic2_host LANGUAGES C CXX)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/emulation-queue.cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)   # for clangd (host side in .clangd)
@@ -19,6 +20,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Snitch.cmake)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../tools tools)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/ted/tests/host ted-tests-host)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/blitz2/tests/host blitz2-tests-host)
 # tools on the TED core: tedtok (tokenising like TED, for the corpus)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../programs/ted/tools/tedtok ted-tools/tedtok)
 # teddetok (a source as TED shows it: the readable library sources)

@@ -1,0 +1,7 @@
+; \\__DATE__ and \\__DATE_GER__ (spec ab3-compat/strings): the date of
+; dos.library's DateStamp at compile time (the case's DATESTAMP,
+; 2026-10-25) as mm.dd.yyyy and dd.mm.yyyy, the names in any case
+OPTIMIZE 4
+NPrint "> [\\__DATE__] [\\__DATE_GER__]"
+NPrint "> [\\__date__]"
+End

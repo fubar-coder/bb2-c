@@ -11,8 +11,10 @@
  * matches only in full, \\Rddc repeats c exactly dd times, unchanged.
  * Data strings take no escapes (dodata does not call litstring).
  */
+#include <proto/dos.h>
 #include "blitz2.h"
 #include "ab3.h"
+#include "ab3date.h"
 
 /* the kinds of the names after "\\" */
 enum esckind {
@@ -122,10 +124,26 @@ static const struct escname *findname(const UBYTE *p, UWORD *n)
     return best;
 }
 
+/* the date of the compile, dos.library's DateStamp, as AmiBlitz3 gives
+   it (design D6): mm.dd.yyyy, ger dd.mm.yyyy */
+static void putdate(int ger, UWORD *len)
+{
+    struct DateStamp ds;
+    char buf[AB3DATE_TEXTLEN];
+
+    DateStamp(&ds);
+    ab3_datetext((uint32_t)ds.ds_Days, ger, buf);
+    putstr(buf, len);
+}
+
 /* the value of the name e */
 static void putname(const struct escname *e, UWORD *len)
 {
     switch (e->kind) {
+    case ESC_DATE_US:
+    case ESC_DATE_GER:
+        putdate(e->kind == ESC_DATE_GER, len);
+        return;
     case ESC_VER_MAJOR:
     case ESC_VER_MINOR:
     case ESC_VER_PATCH:
@@ -143,8 +161,8 @@ static void putname(const struct escname *e, UWORD *len)
         /* AmiBlitz3 inserts an address of its own compile-time memory */
         err("Not supported: \\\\__THIS_POINTER");
     default:
-        /* TODO(ab3-mode-g3 2.3, 2.4): __DATE__, __DATE_GER__,
-           __THIS_INCLUDE and __CODELINE have no value yet */
+        /* TODO(ab3-mode-g3 2.4): __THIS_INCLUDE and __CODELINE have no
+           value yet */
         unknownerr();
     }
 }

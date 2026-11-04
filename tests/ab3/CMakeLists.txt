@@ -395,6 +395,8 @@ ab3_cli_case(esc_func esc_func.ab3 REF)
 ab3_cli_case(esc_ver esc_ver.ab3 REF)
 ab3_cli_case(esc_ver_none esc_ver_none.ab3 REF)
 ab3_cli_case(esc_pointer esc_pointer.ab3 REF REF_EXPECT esc_pointer.ref.expect)
+# the date of the compile (DateStamp under inject)
+ab3_cli_case(esc_date esc_date.ab3 REF DATESTAMP 2026-10-25)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)
