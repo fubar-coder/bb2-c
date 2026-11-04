@@ -1581,6 +1581,8 @@ static UWORD getelement2(UWORD *type)
         return ampersand(type);
     if (c == '?')
         return qmark(type);
+    if (ext_element(c, type, &c))
+        return c;
     syntaxerr();
 }
 

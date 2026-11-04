@@ -369,6 +369,26 @@ ab3_cli_case(funcstmt_str funcstmt_str.ab3 REF)
 ab3_cli_case(funcstmt_nopar funcstmt_nopar.ab3 REF)
 ab3_cli_case(funcstmt_bb2 funcstmt_bb2.bb)
 ab3_cli_case(jsr jsr.ab3 REF)
+# the character literals @"..." (change ab3-mode-g3, spec
+# ab3-compat/strings): byte, word and long targets, in memory and in a
+# file; the errors (too many characters, without new syntax, in BB2 mode,
+# a space behind the @, quick and string targets, a constant expression).
+# AmiBlitz3's text of an error is its own; its bugs are implemented as
+# intended, its output recorded with REF_EXPECT (docs/ab3/variant.md): it
+# writes the long of the characters into a float target unconverted, and
+# compiles a string target too (the line the program prints, 28 NUL bytes
+# in the measured run, is matched as any line)
+ab3_cli_case(chr_value chr_value.ab3 REF)
+ab3_cli_case(chr_mem chr_mem.ab3 REF)
+ab3_cli_case(chr_float chr_float.ab3 REF REF_EXPECT chr_float.ref.expect)
+ab3_cli_case(chr_toolong chr_toolong.ab3 REF)
+ab3_cli_case(chr_toolong_l chr_toolong_l.ab3 REF)
+ab3_cli_case(chr_off chr_off.ab3 REF)
+ab3_cli_case(chr_bb2 chr_bb2.bb)
+ab3_cli_case(chr_space chr_space.ab3 REF)
+ab3_cli_case(chr_quick chr_quick.ab3 REF)
+ab3_cli_case(chr_string chr_string.ab3 REF REF_EXPECT chr_string.ref.expect)
+ab3_cli_case(chr_const chr_const.ab3 REF)
 # the system date fixed by inject (ab3-mode-g3 task 1.2): the compiler and
 # the program run under inject datestamp=2026-10-25.  AmiBlitz3's
 # SystemDate (run time) and __DATE__ (compile time) go through DateStamp

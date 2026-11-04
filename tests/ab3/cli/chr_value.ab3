@@ -1,0 +1,31 @@
+; character literals (spec ab3-compat/strings): with new syntax, @"..."
+; is an integer of the character codes, the first one highest; up to 1,
+; 2 or 4 characters for a byte, word or long target, @"" is 0; a
+; comparison, Select/Case and an expression as AmiBlitz3's includes use
+OPTIMIZE 4
+a.l = @"ILBM"
+NPrint Hex$(a)
+a = @"AB"
+NPrint Hex$(a)
+a = @""
+NPrint Hex$(a)
+b.b = @"A"
+NPrint b
+b = @""
+NPrint b
+w.w = @"AB"
+NPrint Hex$(w)
+w = @"Z"
+NPrint w
+id.l = @"RIFF"
+If id = @"RIFF" AND id <> @"FORM" Then NPrint "cmp"
+Select id
+  Case @"FORM"
+    NPrint "form"
+  Case @"RIFF"
+    NPrint "riff"
+End Select
+n.w = 7
+NPrint Chr$(n + @"0")
+NPrint @"0" + 5
+End

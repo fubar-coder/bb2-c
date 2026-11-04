@@ -1,0 +1,6 @@
+; character literals only with new syntax (spec ab3-compat/strings):
+; without OPTIMIZE 4, @"ILBM" in line 4 is a syntax error
+NPrint "start"
+a.l = @"ILBM"
+NPrint a
+End

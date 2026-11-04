@@ -216,9 +216,10 @@ reverting the commits.
 
 ## Open Questions
 
-- The exact text of AmiBlitz3's "Can't Convert Types" path for a quick
-  target, to be compared in the `ab3_cli_ref` case. It does not change
-  the spec, which names the error.
+- None. (Answered in task 4.1: AmiBlitz3's text for `q.q=@"AB"` is
+  "Can't convert types", at the line of the literal (`ab3_cli_ref` case
+  `chr_quick`, console output of the run); ours is blitz2's "Can't
+  Convert Types". The spec names the error, so it is unchanged.)
 
 ## Findings during the implementation
 
@@ -257,3 +258,28 @@ reverting the commits.
   runs over (`[` and a NUL byte, rule 7 of its §4.5.2); after an
   include ends it keeps the name of the include opened last (I-59), in
   the outer include and in the main source.
+- (Task 4.1, 2026-11-04) `@"…"` is in a new `ab3chr.c` (not in
+  `ab3str.c`): `ext_element` is called by `getelement2` behind the last
+  element, before `syntaxerr`, as AmiBlitz3 tests `@` behind `?`. So a
+  constant expression has stopped before: `#c=@"ILBM"` is "Illegal
+  Constant Expression" (`cfetchmode`, blitz2's `badconerr`), AmiBlitz3's
+  is "Illegal constant expression". AmiBlitz3's other texts: too many
+  characters "Too many chars for data type", new syntax off "You need
+  'newsyntax' mode for that"; ours is "Syntax Error" (spec). Only the
+  `[run]` part is compared, so these cases (`chr_toolong`,
+  `chr_toolong_l`, `chr_off`, `chr_space`, `chr_quick`, `chr_const`) are
+  in `ab3_cli_ref` without `REF_EXPECT`.
+- (Task 4.1) AmiBlitz3's output of the cases with `REF_EXPECT`: a float
+  target gets the long unconverted (`f.f=@"AB"` prints `0.000015`,
+  `@"A"` prints `0`; ours `16706` and `65`, `chr_float`). A string target
+  (`a$=@"AB"`) compiles in AmiBlitz3 (its reading of `@"` checks only
+  the byte, word and quick targets); the program printed a line of 28
+  NUL bytes (`chr_string`, matched as any line). Ours is "Can't Convert
+  Types" (spec).
+- (Task 4.1) A byte above `$7F` between the quotes is read by
+  `getcharb` together with the next byte as a token; `ab3chr.c` counts
+  it as two characters (as written). Not compared with AmiBlitz3, which
+  reads bytes. AmiBlitz3 also shifts a value of fewer characters back
+  with `asr.l`, so three characters for a long whose first byte is above
+  `$7F` give it a sign-extended value (ours: arithmetic, `$00xxxxxx`);
+  not compared, no source has one.

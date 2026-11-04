@@ -1,0 +1,5 @@
+[compile]
+chr_bb2.bb:3: Syntax Error
+rc=10
+[run]
+no executable

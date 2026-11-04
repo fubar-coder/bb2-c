@@ -308,4 +308,17 @@ APTR ext_editorarg(APTR arg);
  */
 BOOL ext_result(int *rc);
 
+/* ============= AB3 mode's character literals (change ab3-mode-g3) */
+
+/**
+ * @brief getelement2 (eval.c): an element of a run-time expression
+ *        starts with the character c that blitz2 has no element for;
+ *        srcptr is behind it.
+ * @param type  the type of the expression (asm d2), set if handled
+ * @param ret   the next character if handled (as an element returns it)
+ * @return TRUE if handled: the element was read and its code made; may
+ *         stop the compile with err().  FALSE: blitz2's syntaxerr
+ */
+BOOL ext_element(UWORD c, UWORD *type, UWORD *ret);
+
 #endif

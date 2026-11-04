@@ -1,0 +1,7 @@
+; character literals: more characters than the target holds is a syntax
+; error (spec ab3-compat/strings), here three for a word in line 5
+OPTIMIZE 4
+NPrint "start"
+w.w = @"ABC"
+NPrint w
+End

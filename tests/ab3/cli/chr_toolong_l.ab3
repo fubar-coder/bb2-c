@@ -1,0 +1,6 @@
+; character literals: five characters for a long are a syntax error
+; (spec ab3-compat/strings), line 4
+OPTIMIZE 4
+a.l = @"ILBMX"
+NPrint a
+End

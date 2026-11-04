@@ -1,0 +1,24 @@
+; character literals in memory (spec ab3-compat/strings): the value of
+; @"ILBM" holds the characters in their written order, as Peek.b sees
+; them and as WriteMem writes them to a file (read back byte by byte);
+; the same for a word
+OPTIMIZE 4
+a.l = @"ILBM"
+NPrint Chr$(Peek.b(&a)), Chr$(Peek.b(&a + 1)), Chr$(Peek.b(&a + 2)), Chr$(Peek.b(&a + 3))
+w.w = @"AB"
+NPrint Chr$(Peek.b(&w)), Chr$(Peek.b(&w + 1))
+If OpenFile(0, "RAM:chr_mem.bin")
+  WriteMem 0, &a, 4
+  CloseFile 0
+EndIf
+b.l = 0
+If ReadFile(0, "RAM:chr_mem.bin")
+  NPrint "length ", Lof(0)
+  ReadMem 0, &b, 4
+  CloseFile 0
+EndIf
+For i.w = 0 To 3
+  Print Right$(Hex$(Peek.b(&b + i) & $FF), 2), " "
+Next
+NPrint ""
+End

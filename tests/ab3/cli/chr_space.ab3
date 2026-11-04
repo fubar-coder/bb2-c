@@ -1,0 +1,6 @@
+; character literals: the string follows the @ directly; @ "AB" in line
+; 4 is a syntax error (spec ab3-compat/strings)
+OPTIMIZE 4
+a.l = @ "AB"
+NPrint a
+End

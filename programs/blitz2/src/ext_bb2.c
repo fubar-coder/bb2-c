@@ -208,3 +208,10 @@ void ext_evalvalue(ULONG code, UWORD flags)
 void ext_assigncheck(UWORD vartype)
 {
 }
+
+/* AB3 mode's character literals (change ab3-mode-g3) */
+
+BOOL ext_element(UWORD c, UWORD *type, UWORD *ret)
+{
+    return FALSE;
+}

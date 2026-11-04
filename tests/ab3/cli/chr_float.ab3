@@ -1,0 +1,8 @@
+; character literals with a float target (spec ab3-compat/strings): the
+; long of the characters converted to float
+OPTIMIZE 4
+f.f = @"AB"
+NPrint f
+f = @"A"
+NPrint f
+End

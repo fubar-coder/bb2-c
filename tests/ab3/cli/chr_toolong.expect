@@ -1,0 +1,5 @@
+[compile]
+chr_toolong.ab3:5: Syntax Error
+rc=10
+[run]
+no executable

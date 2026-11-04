@@ -1,0 +1,5 @@
+[compile]
+chr_quick.ab3:4: Can't Convert Types
+rc=10
+[run]
+no executable

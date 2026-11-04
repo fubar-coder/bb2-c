@@ -1,0 +1,6 @@
+; character literals: not in a constant expression, as in AmiBlitz3
+; (spec ab3-compat/strings), line 4
+OPTIMIZE 4
+#c = @"ILBM"
+NPrint #c
+End

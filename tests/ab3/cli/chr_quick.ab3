@@ -1,0 +1,6 @@
+; character literals: a quick target can't take one (spec
+; ab3-compat/strings), line 4
+OPTIMIZE 4
+q.q = @"AB"
+NPrint q
+End
