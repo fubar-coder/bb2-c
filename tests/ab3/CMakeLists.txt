@@ -372,15 +372,17 @@ ab3_cli_case(jsr jsr.ab3 REF)
 # the character literals @"..." (change ab3-mode-g3, spec
 # ab3-compat/strings): byte, word and long targets, in memory and in a
 # file; the errors (too many characters, without new syntax, in BB2 mode,
-# a space behind the @, quick and string targets, a constant expression).
-# AmiBlitz3's text of an error is its own; its bugs are implemented as
-# intended, its output recorded with REF_EXPECT (docs/ab3/variant.md): it
-# writes the long of the characters into a float target unconverted, and
-# compiles a string target too (the line the program prints, 28 NUL bytes
-# in the measured run, is matched as any line)
+# a space behind the @, quick and string targets, a constant expression);
+# among AB3 mode's other forms with @ (chr_at).  AmiBlitz3's text of an
+# error is its own; its bugs are implemented as intended, its output
+# recorded with REF_EXPECT (docs/ab3/variant.md): it writes the long of the
+# characters into a float target unconverted, and compiles a string target
+# too (the line the program prints, 28 NUL bytes in the measured run, is
+# matched as any line)
 ab3_cli_case(chr_value chr_value.ab3 REF)
 ab3_cli_case(chr_mem chr_mem.ab3 REF)
 ab3_cli_case(chr_float chr_float.ab3 REF REF_EXPECT chr_float.ref.expect)
+ab3_cli_case(chr_at chr_at.ab3 REF)
 ab3_cli_case(chr_toolong chr_toolong.ab3 REF)
 ab3_cli_case(chr_toolong_l chr_toolong_l.ab3 REF)
 ab3_cli_case(chr_off chr_off.ab3 REF)

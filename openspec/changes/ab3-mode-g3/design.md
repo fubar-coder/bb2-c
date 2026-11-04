@@ -283,3 +283,24 @@ reverting the commits.
   with `asr.l`, so three characters for a long whose first byte is above
   `$7F` give it a sign-extended value (ours: arithmetic, `$00xxxxxx`);
   not compared, no source has one.
+- (Task 4.2) `@"…"` next to the other `@` forms: `CNIF @#name`, `@@`
+  after a `,` behind a literal and `@@` inside a literal (`@"@@AB"` is
+  `$40404142`) give the same results in both compilers (`chr_at`).
+  Found on the way, not part of G3: `b.l = 1 + @@` (a join after an
+  operator, not at a parameter boundary) is a syntax error in AmiBlitz3,
+  ours joins it (`3`).
+- (Task 4.2) An include case with a chunk ID is not added yet:
+  `file.include.ab3` needs optional parameters (`@pos.l`, G4), and
+  `longlong.include.ab3` (v3.14.0, no includes of its own; its macro
+  `ll_ToStr` makes digits with `Chr$(@"0"+…)`) gives "Illegaly nested
+  Condition" at the line calling `!ll_ToStr` in ours, while AmiBlitz3
+  compiles it (`1234567`). Not the literal: the same body without
+  `@"0"` fails the same way as a macro, and compiles written out in the
+  main source. It is a `While` loop around calls of the nested macros
+  `ll_Mod`/`ll_Divu`/`ll_Divu6432`/`ll_UShift` (`If … End If` blocks, a
+  one-line `While … Wend`); each of those alone, also inside a `While`
+  or another macro, compiles. A case for later: `XINCLUDE
+  "longlong.include.ab3"`, `!ll_ToStr{digits.s, x}` of 1234567, and an
+  IFF header `FORM`/`ILBM` written with `WriteMem` and read back,
+  compared with `Select`/`Case @"…"` and `Mkl$` (AmiBlitz3's output:
+  `1234567`, `FORM 4`, `ILBM ILBM`).

@@ -1,0 +1,18 @@
+; character literals among AB3 mode's other forms with @ (spec
+; ab3-compat/strings): CNIF @#name (defined?), @@ (line joining) behind a
+; literal (after a ',') and inside one, a literal of the character @
+OPTIMIZE 4
+#chr_guard = 1
+CNIF @#chr_guard = 1
+  a.l = @"OK"
+CEND
+CNIF @#chr_none = 1
+  a = 0
+CEND
+NPrint Hex$(a)
+NPrint @"A", " ", @@
+  @"B"
+c.l = @"@@AB"
+NPrint Hex$(c)
+NPrint Hex$(@"@")
+End
