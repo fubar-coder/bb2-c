@@ -33,7 +33,8 @@
 ## 4. Character literals
 
 - [x] 4.1 Add the extension point `ext_element` for `@"…"` (D4): byte, word, long and float targets, the byte order in memory, `@""`, syntax error when too long and with new syntax off, "Can't Convert Types" for quick and string targets, an error in constant expressions. Verify: `ab3_cli` cases for both requirements, including the scenarios "Bytes in memory" and "Word in memory"; `ab3_cli_ref` for byte, word and long (also in memory), `REF_EXPECT` for float (a deviation row in variant.md); the open question of design.md (AmiBlitz3's quick text) answered there
-- [ ] 4.2 Check `@"…"` against the other `@` forms (`@#name`, `@@`) and AmiBlitz3's includes using it (e.g. `file.include`'s chunk IDs). Verify: an `ab3_cli` case that includes such an include and writes and reads a chunk ID; `ab3_cli` and `ab3_cli_ref` pass as before
+- [x] 4.2 Check `@"…"` against the other `@` forms (`@#name`, `@@`) and AmiBlitz3's includes using it (e.g. `file.include`'s chunk IDs). Verify: an `ab3_cli` case that includes such an include and writes and reads a chunk ID; `ab3_cli` and `ab3_cli_ref` pass as before
+  Done with the other `@` forms (case `chr_at`); the include case (`longlong.include.ab3`, prepared) is blocked by "Illegaly nested Condition" with nested macro calls (under analysis) and is a follow-up in `TODO.md` (user decision 2026-11-04).
 
 ## 5. Integration
 
