@@ -24,7 +24,7 @@
 - [x] 2.3 `\\__DATE__` and `\\__DATE_GER__` (D6, day number to date in C). Verify: a host test of the date conversion (1978-01-01, leap days, 2000-02-29, 2026-10-25); `ab3_cli`/`ab3_cli_ref` cases with `DATESTAMP 2026-10-25` giving `[10.25.2026] [25.10.2026]`
 - [x] 2.4 The line counter and the current include (D5): `\\__CODELINE` and `\\__THIS_INCLUDE`. Verify: `ab3_cli` cases for both requirements (header offset, after an include, back in the main source); `ab3_cli_ref` cases for the main source and for macro, `@@`, `CNIF` and repeated `XINCLUDE` lines; differences recorded per design.md (Risks)
 - [x] 2.5 `\\__THIS_POINTER` refused (D3). Verify: the `ab3_cli` case of the requirement "The pointer escape is refused", `REF_EXPECT` with AmiBlitz3's output
-- [ ] 2.6 Document the escapes in `docs/ab3/variant.md`: the G3 section, and one "Differences" row each for `\\R`, the unknown and prefix forms, the empty values, `\\__THIS_POINTER` and `\\__THIS_INCLUDE` (I-59). Verify: every `REF_EXPECT` case of group 2 is named in a row
+- [x] 2.6 Document the escapes in `docs/ab3/variant.md`: the G3 section, and one "Differences" row each for `\\R`, the unknown and prefix forms, the empty values, `\\__THIS_POINTER` and `\\__THIS_INCLUDE` (I-59). Verify: every `REF_EXPECT` case of group 2 is named in a row
 
 ## 3. Dc.b
 
