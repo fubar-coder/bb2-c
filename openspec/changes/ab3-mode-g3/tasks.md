@@ -46,6 +46,7 @@
 - [ ] 6.1 bug-orig test for #967 (the reproducer of the issue and the semantic case; expected: what AmiBlitz3 does). Verify: REPRODUCED for the original and the port; the issue's Test section filled in
 - [ ] 6.2 Add the extension point in `domacro` and the AB3 code that appends `: End If` (D9). Verify: `ab3_cli` cases for each scenario of `ab3-compat/macros`, `ab3_cli_ref` where AmiBlitz3 runs them; the BB2-mode scenario; `blitz2`'s results byte-identical
 - [ ] 6.3 The include case of task 4.2: `longlong.include.ab3` (a fetch-originals entry, sha256 `0e1c7c65ef1921d5766e2de6c306beac6dbba85e05a58ed8ca98963f76046a50`) with `!ll_ToStr` and `@"…"` chunk IDs in `ab3_cli`/`ab3_cli_ref`. Verify: the case passes in both; TODO.md item 9 done
+- [ ] 6.5 `@@` in a `Macro` definition inside an include joins as in AmiBlitz3 (spec `ab3-compat/syntax-rules`, scenario "Macro definition in an include"; today `ab3syn.c` applies the include rule for parameter lists to every join). Verify: an `ab3_cli`/`ab3_cli_ref` case with the macro in an include; the existing include refusal cases unchanged
 - [ ] 6.4 Docs and full check: variant.md (G3 section, macro rule), a clean build without warnings, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts plus the new test
 
 ## Workflow follow-up
