@@ -539,6 +539,8 @@ void dodc(UWORD c)
                         syntaxerr();
                     if (c == '"')
                         break;
+                    if (c == '\\' && ext_dcbescape())
+                        continue;
                     pokebyte((UBYTE)c);
                 }
                 c = getchar3();                 /* .qdone */

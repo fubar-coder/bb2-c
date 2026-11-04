@@ -1,0 +1,18 @@
+; XTRA
+; Version         = 1.2.3
+; NumberOfBuilds  = 42
+; /XTRA
+; escapes in Dc.b (spec ab3-compat/strings): with or without new syntax
+; the date (the case's DATESTAMP, 2026-10-25) and version escapes, every
+; other \\ as written
+NPrint Peek$(?v)
+NPrint Peek$(?d)
+OPTIMIZE 4
+NPrint Peek$(?o)
+End
+.v
+Dc.b "V\\__VER_MAJOR.\\__VER_MINOR [\\41]",0
+.d
+Dc.b "[\\__DATE__] [\\__DATE_GER__] [\\__VER_PATCH/\\__VER_BUILD]",0
+.o
+Dc.b "[\\N] [\\\\] [\\__THIS_FUNCTION] [\\__CODELINE] [\\R03x]",0

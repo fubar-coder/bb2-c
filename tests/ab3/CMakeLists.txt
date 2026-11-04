@@ -406,6 +406,14 @@ ab3_cli_case(esc_codeline esc_codeline.ab3 REF)
 ab3_cli_case(esc_codeline_hdr esc_codeline_hdr.ab3 REF)
 ab3_cli_case(esc_codeline_join esc_codeline_join.ab3 REF)
 ab3_cli_case(esc_include esc_include.ab3 REF REF_EXPECT esc_include.ref.expect)
+# Dc.b strings: the date and version escapes in AB3 mode, with or without
+# new syntax, every other \\ as written; BB2 mode as written.  AmiBlitz3
+# compares the names in upper case and by a prefix (esc_dcb_names,
+# REF_EXPECT): a name in lower case is copied, \\__VER_XXXXX gives
+# {unknown compilerconstant}
+ab3_cli_case(esc_dcb esc_dcb.ab3 REF DATESTAMP 2026-10-25)
+ab3_cli_case(esc_dcb_names esc_dcb_names.ab3 REF REF_EXPECT esc_dcb_names.ref.expect DATESTAMP 2026-10-25)
+ab3_cli_case(esc_dcb_bb2 esc_dcb_bb2.bb)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)

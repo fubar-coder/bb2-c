@@ -1,0 +1,9 @@
+[compile]
+~inject: datestamp: # calls answered
+inject: rc=0
+rc=0
+[run]
+V1.2 [\\41]
+[10.25.2026] [25.10.2026] [3/42]
+[\\N] [\\\\] [\\__THIS_FUNCTION] [\\__CODELINE] [\\R03x]
+rc=0

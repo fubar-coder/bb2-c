@@ -250,6 +250,16 @@ BOOL ext_savefile(void);
  */
 BOOL ext_strescape(UWORD *len);
 
+/* ---- Dc.b strings (ab3-mode-g3 task 3.1) */
+
+/**
+ * @brief dodc (tokens1.c): the character read in a string of Dc.b is a
+ *        '\'; srcptr is behind it.
+ * @return TRUE if handled: an escape sequence was read and its bytes
+ *         written with pokebyte (the '\' is not written)
+ */
+BOOL ext_dcbescape(void);
+
 /* ================ AB3 mode's type rules (change ab3-pointer-assign) */
 
 /** @brief dolet2 (tokens2.c): the right side of an assignment to a

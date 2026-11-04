@@ -1,0 +1,5 @@
+[compile]
+rc=0
+[run]
+V\\__VER_MAJOR.\\__VER_MINOR [\\41] [\\__DATE__]
+rc=0

@@ -1,0 +1,11 @@
+; XTRA
+; Version         = 1.2.3
+; NumberOfBuilds  = 42
+; /XTRA
+; the names of the escapes in Dc.b (spec ab3-compat/strings): in any
+; case, as in string literals; a name that only begins like a known one
+; is copied as written
+NPrint Peek$(?v)
+End
+.v
+Dc.b "[\\__ver_major] [\\__Date_Ger__] [\\__VER_XXXXX]",0

@@ -188,6 +188,13 @@ BOOL ext_strescape(UWORD *len)
     return FALSE;
 }
 
+/* Dc.b strings (ab3-mode-g3 task 3.1) */
+
+BOOL ext_dcbescape(void)
+{
+    return FALSE;
+}
+
 /* AB3 mode's type rules (change ab3-pointer-assign) */
 
 void ext_assignstart(void)

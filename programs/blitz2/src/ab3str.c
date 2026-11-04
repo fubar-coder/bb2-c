@@ -9,7 +9,9 @@
  * its bugs implemented as intended (its Compiler-Spec 04-lexical.md
  * section 4.5.2, issues I-12 to I-15): an unknown form is an error, a name
  * matches only in full, \\Rddc repeats c exactly dd times, unchanged.
- * Data strings take no escapes (dodata does not call litstring).
+ * Data strings take no escapes (dodata does not call litstring).  Dc.b
+ * strings take the date and version names in AB3 mode, also without new
+ * syntax (ext_dcbescape).
  */
 #include <proto/dos.h>
 #include "blitz2.h"
@@ -81,9 +83,14 @@ static void skip(UWORD n)
         getchar3();
 }
 
-/* a byte of the string */
+/* a byte of the string: of a string literal (its length *len), or of a
+   Dc.b string (len NULL, into the code) */
 static void put(UBYTE b, UWORD *len)
 {
+    if (!len) {
+        pokebyte(b);
+        return;
+    }
     pokedata1b(b);
     (*len)++;
 }
@@ -231,5 +238,27 @@ BOOL ext_strescape(UWORD *len)
         putname(e, len);
     } else
         unknownerr();
+    return TRUE;
+}
+
+/* ----------------------------------- Dc.b strings (ab3-mode-g3 task 3.1) */
+
+/* dodc (tokens1.c) read a '\' of a Dc.b string: in AB3 mode, with or
+   without new syntax, "\\" followed by a date or version name gives its
+   value as in a string literal (AmiBlitz3.ab3:20285, compiledatedc,
+   version_string_dc); every other '\' is written as it is.  The names as
+   in string literals, case-insensitive and only in full (AmiBlitz3 compares
+   upper case prefixes, I-15 - taken as intended). */
+BOOL ext_dcbescape(void)
+{
+    const struct escname *e;
+    UWORD n;
+
+    if (progmode != XTRA_MODE_AB3 || *srcptr != '\\'
+        || !(e = findname(srcptr + 1, &n))
+        || e->kind > ESC_VER_BUILD)     /* only the date and version kinds */
+        return FALSE;
+    skip((UWORD)(n + 1));               /* the second '\' and the name */
+    putname(e, NULL);
     return TRUE;
 }
