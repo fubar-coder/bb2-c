@@ -444,6 +444,16 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      name). At the next version bump of the reference AmiBlitz3: take
      them out of `ab3_cli_ref` or record the difference, and decide
      whether AB3 mode follows.
+  9. [ ] Include case for `@"…"` (task 4.2 of `ab3-mode-g3`):
+     AmiBlitz3's `longlong.include.ab3` (v3.14.0) is blocked by "Illegaly
+     nested Condition" at the line calling `!ll_ToStr` (a `While` loop
+     around calls of the nested macros `ll_Mod`, `ll_Divu`,
+     `ll_Divu6432`, `ll_UShift`; not the literal, under analysis;
+     AmiBlitz3 compiles it). The case: `XINCLUDE "longlong.include.ab3"`,
+     `!ll_ToStr{digits.s, x}` of 1234567 and an IFF header written with
+     `WriteMem` and read back with `Select`/`Case @"…"` (AmiBlitz3's
+     output `1234567`, `FORM 4`, `ILBM ILBM`); `file.include.ab3` needs
+     G4's optional parameters (`docs/ab3/variant.md`, "Strings").
 - [ ] **Tests for the issues labelled `needs-test`** (99 open issues at the
   start, 3 open on 2026-10-29: #14, #26, #42). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,

@@ -586,6 +586,51 @@ tokenised), `incxtwice`, `incitwice` (repeated includes),
 `inctext_bbname` (a text `.bb` read as tokenised), all also in
 `ab3_cli_ref` with AmiBlitz3's results.
 
+## Strings: escapes and character literals (G3, 2026-11-04)
+
+Change `ab3-mode-g3`, spec `ab3-compat/strings`. The rules are those of
+AmiBlitz3's Compiler-Spec (`AmiBlitz/AmiBlitz3` `Docs/Compiler-Spec/04-lexical.md`
+§4.5, compiler source at `f0414b11`): AmiBlitz3's rules are taken
+over, and what is a bug of its own is implemented as intended (user
+decisions 2026-11-04). Each such deviation is a row tagged G3 in
+"Differences" below, with its `ab3_cli_ref` case and `.ref.expect`.
+
+* Escapes in string literals of run-time expressions, in AB3 mode with
+  new syntax (`OPTIMIZE` bit 4) only (extension point `ext_strescape`,
+  `ab3str.c`); `Data` strings and BB2 mode keep every byte as written.
+  An escape starts with `\\` (a single `\` is ordinary, `\\\\` gives
+  `\\`); names and hex digits are case-insensitive:
+  * `\\hh` one byte, `\\N` a line feed, `\\Rddc` the byte `c` dd times
+    (dd decimal, case unchanged, `00` an empty text);
+  * `\\__THIS_FUNCTION` (the procedure, `GLOBAL` outside; in a macro the
+    expanding procedure), `\\__THIS_INCLUDE` (the include's file name
+    without path, empty in the main source), `\\__CODELINE` (counted
+    from the line after the main source's embedded header; an include
+    counts its lines, an include's embedded header does not, a
+    `XINCLUDE` skipped as repeated counts none);
+  * `\\__VER_MAJOR`, `_MINOR`, `_PATCH`, `_BUILD` from the source's
+    header (`0` without one);
+  * `\\__DATE__` (`mm.dd.yyyy`) and `\\__DATE_GER__` (`dd.mm.yyyy`) from
+    `DateStamp` at compile time;
+  * an unknown form is the compile error "Unknown Escape Sequence";
+    `\\__THIS_POINTER` is refused ("Not supported").
+* `Dc.b "…"` in AB3 mode, with or without new syntax (extension point
+  `ext_dcbescape`): only `\\__DATE__`, `\\__DATE_GER__` and `\\__VER_*`
+  are replaced, every other `\\` is copied as written; BB2 mode copies
+  all (`esc_dcb`, `esc_dcb_bb2`).
+* Character literals `@"…"` (extension point `ext_element`, `ab3chr.c`)
+  in run-time expressions, AB3 mode with new syntax on: 1, 2 or 4
+  characters give a byte, word or long in big-endian order (`@"ILBM"` is
+  `$494C424D`, in memory `I L B M`); fewer characters than the target
+  holds are right-aligned (`@"AB"` as a long is `$00004142`); `@""` is 0.
+  More characters than the target holds, new syntax off and a constant
+  expression are errors; quick and string targets give "Can't Convert
+  Types"; the other `@` forms (`@#name`, `@@`) are unchanged (`chr_at`).
+* Tests: `inject datestamp=YYYY-MM-DD` (`tests/bug-orig/amiga/inject.c`)
+  fixes the date for the compiler and the program in `ab3_cli` and
+  `ab3_cli_ref` (case options `DATESTAMP`, `RUN_DATESTAMP`); the cases
+  are `esc_*` and `chr_*` in `tests/ab3/CMakeLists.txt`.
+
 ## Differences to AmiBlitz3's compiler (G2+, 2026-11-01)
 
 Found by `ab3_cli_ref` (AmiBlitz3 v3.14.0 in CLI mode on the same
@@ -602,6 +647,19 @@ machine); recorded, not changed in G1:
 | `int_tests` | `Stop` without its debugger (CLI mode, no `Defaultdbug`) is compiled to nothing (`#stopignore`, `do_Stop`, `AmiBlitz3.ab3` 22810-22831 at `@58a11658`): the program runs on | blitz2's `Stop`: with `-r` "Debugger must be enabled for STOP" (line 92), with runtime error checking a call of debuglib's `Stop` (`$D501`), which waits for the debugger - the program hangs in a command line run. The rest of the program (`int_tests_nostop`, the `Stop` line empty) gives AmiBlitz3's output | none: BB2's `Stop` is kept in both modes (user decision 2026-11-01, change `debug-constant`); debug-only code goes into `CNIF #__debug … CEND` |
 | `noend` | a program without `End` with runtime error checking ends normally | an empty requester at the end: blitz2's end code (`blitz2.s:2683 eopcode`, `moveq #3,d0 : trap #0`) without `End`, BUG(orig) #6 | with #6 (the runtime part of AB3 mode) |
 | `debugconst_on`, `debugconst_res`, `cnifdef` without `-r` | in CLI mode without its debugger (`Defaultdbug`, not fetched: "Debugging is not possible") `#__debug` is 0, also with `RuntimeDebug = 1` in the header (measured; with the debugger it would be −1, `AmiBlitz3.ab3` 3422-3443 and `do_runerrson`) | runtime error checking as the options say (the header, else the compiler's own, on): −1 (`cnifdef` therefore runs with `-r`, `debugconst_on` and `debugconst_res` have AmiBlitz3's 0 as `.ref.expect`) | none: the runtime part of AB3 mode, as `runerrs` |
+| `esc_repeat` (G3) | `\\R05*` gives 6 stars, `\\R03ab` gives `AAAab` (one repeat too many, and the character in upper case) | exactly dd repeats, case unchanged: `[*****]`, `[aaab]` | none: AmiBlitz3's rule implemented as intended (user decision 2026-11-04) |
+| `esc_repeat0` (G3) | `\\R00x` runs over: `[` and NUL bytes, the rest of the string is lost, the program goes on | an empty text | none: as intended |
+| `esc_repeat_quote` (G3, no `.ref.expect`) | `"[\\R03"` (`\\R` before the closing quote) gives `["""` (by its rule 3 the `"` is c; not checked in its source) | "Unknown Escape Sequence": the closing quote is no character of the string | none: as intended. Not compared: AmiBlitz3's `-save` of this source makes the `-save` of a later source in the same session end in a program error (8000000A), so `ab3_tokenise` leaves it out |
+| `esc_unknown` (G3) | an unknown form (`"[\\qq]abc"`): the rest of the line in upper case, the warning "detected unknown const" once per pass (`[QQ]ABC"qq]abc`) | "Unknown Escape Sequence" at the line, no executable | none: as intended |
+| `esc_prefix_func`, `esc_prefix_ver` (G3) | names match by their prefix: `\\__THIS_FUNCXYZ` gives `GLOBAL` and the rest of the string is lost (`> [GLOBAL`), `\\__VER_XXXXX` gives `{unknown compiler constant}` | a name matches only in full; `\\__THIS_FUNCXYZ` and `\\__VER_XXXXX` are "Unknown Escape Sequence" (`\\__THIS_FUNCTIONXY` is `GLOBALXY`) | none: as intended |
+| `esc_pointer` (G3) | `\\__THIS_POINTER` inserts a pointer into AmiBlitz3's own compile-time memory (`~*` in the run; no source uses it) | refused: "Not supported: \\__THIS_POINTER" | none: not reproduced |
+| `esc_include` (G3) | `\\__THIS_INCLUDE` keeps the name of the include opened last (I-59): after an include ends, the outer include and the main source show it (`> a again [esc_include_b.ab3]`, `> main again [esc_include_b.ab3]`); in the main source before any include the empty value runs over (`[` and a NUL byte) | the file whose line has the string; after an include ends the including file counts again; empty in the main source (`[]`) | none: as intended |
+| `esc_codeline_join` (G3) | `\\__CODELINE` counts lines joined with `@@` once: every string of a joined line gives the number of its first line, the lines after it count one less per joined line (`> [5] [5] [5]`, `> [8] [8]`, `> next [9]`, `> after [10]`) | the physical line numbers (`> [5] [6] [7]`, `> [10] [11]`, `> next [12]`, `> after [13]`) | none: ours is intended (user decision 2026-11-04) |
+| `esc_dcb_names` (G3) | `Dc.b` compares the names in upper case only and by a prefix: `\\__ver_major` and `\\__Date_Ger__` are copied as written, `\\__VER_XXXXX` gives `{unknown compilerconstant}` (`[\\__ver_major] [\\__Date_Ger__] [{unknown compilerconstant}]`) | names in any case and in full, as in string literals: `[1] [25.10.2026] [\\__VER_XXXXX]` (a name that only begins like a known one is copied) | none: as intended |
+| `chr_float` (G3) | `f.f=@"AB"` stores the long unconverted in the float (prints `0.000015`; `@"A"` prints `0`) | converted: `16706`, `65` | none: as intended |
+| `chr_string` (G3) | `a$=@"AB"` compiles (its reading of `@"` checks only the byte, word and quick targets) to garbage: a line of 28 NUL bytes in the measured run | "Can't Convert Types" (spec `ab3-compat/strings`) | none: as intended |
+| `chr_toolong`, `chr_toolong_l`, `chr_off`, `chr_space`, `chr_quick`, `chr_const` (G3, no `.ref.expect`) | different error texts: too many characters "Too many chars for data type", new syntax off "You need 'newsyntax' mode for that", a constant expression (`#c=@"ILBM"`) "Illegal constant expression", a quick target "Can't convert types" | "Syntax Error" for the first two, "Illegal Constant Expression", "Can't Convert Types" (the spec names the errors) | none: only the `[run]` part is compared; the texts are blitz2's |
+| `b.l = 1 + @@` (G2, no case) | `@@` after an operator (not at a parameter boundary) is a syntax error | the next line is joined (`b.l = 1 + @@` and `2` on the next line give `3`) | none: ours is correct (user decision 2026-11-04) |
 
 AmiBlitz3's test programs of G2 (task 5.1 of `ab3-mode-g2`, fetched
 at `@58a11658`), in `ab3_cli` and `ab3_cli_ref`: `hex_error`
