@@ -777,10 +777,9 @@ removes the assign when it ends).
   both: a `testme` label as an immediate), `includes_test` (`.h`
   includes), `_new_includes` (includes not in the repository),
   `printlib_test`
-  (AmiBlitz3 stops at `MOVE.l #test2start-#test2end`, "Constant not
-  found"; blitz2-ab3 at `Dc.b "J~"`, "Illegal Constant Expression":
-  `Dc.b "~"` is refused in both modes, also by the compiler before G3,
-  AmiBlitz3 takes it),
+  (both stop at line 80, `MOVE.l #test2start-#test2end`, "Constant
+  not found"; its `Dc.b "J~"` compiles, a `~` in a string being an
+  ordinary character, #966),
   `unknown_function` (on purpose), `exec_data` (AmiBlitz3's type rule
   of the assignment, since `ab3-pointer-assign`; `ab3_cli`,
   `ab3_cli_ref`).
