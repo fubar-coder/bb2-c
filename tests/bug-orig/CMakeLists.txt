@@ -307,6 +307,22 @@ bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/bug-orig-selftest-broken.bas
 bug_orig_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest/regression-selftest-broken.bas
 	regression_selftest_broken REGRESSION WANT 3)
 
+# inject's fill= option (inject-fill.cmake), and the check itself: a wrong
+# expect file must fail
+function(inject_fill name expect)
+	set(work ${CMAKE_CURRENT_BINARY_DIR}/${name})
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${AMIGA_RUN}
+		-DOUTMATCH=${OUTMATCH} -DINJECT=${INJECT} -DMEMFILL=$<TARGET_FILE:memfill>
+		-DEXPECT=${expect} -DWORK=${work}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/inject-fill.cmake)
+	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT 240)
+endfunction()
+inject_fill(inject_fill ${CMAKE_CURRENT_SOURCE_DIR}/inject-fill.expect)
+inject_fill(inject_fill_broken ${CMAKE_CURRENT_SOURCE_DIR}/inject-fill.broken.expect)
+set_tests_properties(inject_fill_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"FAIL:[ \n]+outmatch:[ \n]+[^ \n]+[ \n]+expect[ \n]+line[ \n]+10:[ \n]+\"plain:[ \n]+a5[^\"]*\",[ \n]+output[ \n]+line[ \n]+10:[ \n]+\"plain:[ \n]+00")
+
 add_custom_target(bug_orig_sources ALL DEPENDS ${bug_orig_sources} ${testdata_files})
 # for the equivalence of blitz2-ab3 (tests/ab3)
 set_property(GLOBAL PROPERTY BUG_ORIG_SOURCES ${bug_orig_sources})

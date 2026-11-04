@@ -1,0 +1,13 @@
+[plain]
+~plain:*
+clear: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[fill=a5]
+plain: a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+clear: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+inject: rc=0
+rc=0
+[fill=00]
+plain: a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+clear: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+inject: rc=0
+rc=0

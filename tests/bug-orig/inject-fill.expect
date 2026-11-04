@@ -1,0 +1,42 @@
+[plain]
+~plain:*
+clear: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[fill=a5]
+plain: a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+clear: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+inject: rc=0
+rc=0
+[fill=00]
+plain: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+clear: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+inject: rc=0
+rc=0
+[fill=Ff]
+plain: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+clear: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+inject: rc=0
+rc=0
+[fill=5a pad]
+plain: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a
+clear: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+behind: 00 00 00 00
+inject: rc=0
+rc=0
+[fill=]
+inject: bad option fill=
+rc=20
+[fill=a]
+inject: bad option fill=a
+rc=20
+[fill=a5a]
+inject: bad option fill=a5a
+rc=20
+[fill=g0]
+inject: bad option fill=g0
+rc=20
+[fill=-1]
+inject: bad option fill=-1
+rc=20
+[after]
+~plain:*
+clear: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

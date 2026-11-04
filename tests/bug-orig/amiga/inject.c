@@ -77,6 +77,14 @@
  *                          the sizes of the allocations written behind are
  *                          reported (a write past the end of a block, also
  *                          a copy from one padded block to another)
+ *   fill=XX                every AllocMem of the process without MEMF_CLEAR
+ *                          gets its bytes (the size asked, not the 64 of
+ *                          pad/guard) set to the byte XX (two hex digits):
+ *                          what COMMAND reads from memory it did not
+ *                          initialise is the same in every run, not what
+ *                          the reused memory happened to hold.  Nothing is
+ *                          reported (how many allocations a program makes
+ *                          differs between the original and the port)
  * What COMMAND leaves behind:
  *   opencount=NAME         how often the process opened a library whose
  *                          name ends in NAME (OpenLibrary, OldOpenLibrary)
@@ -207,7 +215,8 @@ static void put(const char *s) { Write(out, (APTR)s, strlen(s)); }
 /* -------------------------------------------------------------- options */
 
 static int o_signals, o_track, o_pad, o_guard, o_allocfail, o_createprocfail, o_alerts;
-static int o_wbfrontfail, o_handles, o_alertlog, o_ownedunlock;
+static int o_wbfrontfail, o_handles, o_alertlog, o_ownedunlock, o_fill;
+static UBYTE fill_byte;
 static ULONG nn_num;
 static char nn_name[40];
 static ULONG wbf_done;
@@ -567,6 +576,8 @@ void alloc_post(ULONG mem, ULONG size, ULONG flags)
 {
     ULONG h, i;
 
+    if (o_fill && mem && !(flags & MEMF_CLEAR) && ours())
+        memset((UBYTE *)mem, fill_byte, size);
     if ((!o_track && !o_pad) || !mem || !ours())
         return;
     if (o_guard) {
@@ -1224,6 +1235,18 @@ static int option(const char *a)
         return o_pad = o_guard = 1;
     if (!strcmp(a, "createprocfail"))
         return o_createprocfail = 1;
+    if (!strncmp(a, "fill=", 5)) {
+        int n, d;
+
+        for (n = 0, s = a + 5, fill_byte = 0; n < 2; n++, s++) {
+            d = *s >= '0' && *s <= '9' ? *s - '0'
+                : lower(*s) >= 'a' && lower(*s) <= 'f' ? lower(*s) - 'a' + 10 : -1;
+            if (d < 0)
+                return -1;
+            fill_byte = (UBYTE)(fill_byte * 16 + d);
+        }
+        return *s ? -1 : (o_fill = 1);
+    }
     if (!strncmp(a, "allocfail=", 10)) {
         s = a + 10;
         if (!number(&s, &af_min) || *s++ != '-' || !number(&s, &af_max) || af_min > af_max)
@@ -1483,7 +1506,7 @@ static const char usage[] =
     "  options: signals allocfail=MIN-MAX[/chip|/f=FLAGS][/COUNT][+SKIP] readfail=NAME/N\n"
     "    writefail=NAME/N alerts alertlog wbfrontfail examinefail=NAME ownedunlock\n"
     "    openlibfail=NAME opendevfail=NAME createprocfail handles nullnode=NUM/NAME\n"
-    "    track pad guard\n"
+    "    track pad guard fill=XX\n"
     "    opencount=NAME cd[=PATH] inuse=PATH click=TITLE/TEXT doslocked\n"
     "    undobuf cacheflush=NAME\n"
     "    keys=TITLE/CODE@SECS[,CODE@SECS]...  (described in inject.c)\n";
@@ -1518,7 +1541,7 @@ int main(int argc, char **argv)
             "              [readfail=NAME/N] [writefail=NAME/N] [alerts] [alertlog]\n"
             "              [wbfrontfail] [handles] [nullnode=NUM/NAME]\n"
             "              [examinefail=NAME] [ownedunlock] [openlibfail=NAME] [opendevfail=NAME]\n"
-            "              [createprocfail] [track] [pad] [guard]\n"
+            "              [createprocfail] [track] [pad] [guard] [fill=XX]\n"
             "              [opencount=NAME]... [cd[=PATH]] [inuse=PATH]...\n"
             "              [click=TITLE/TEXT]... [doslocked] [undobuf] [cacheflush=NAME]\n"
             "              [keys=TITLE/CODE@SECS[,CODE@SECS]...] COMMAND [ARGS]\n");
