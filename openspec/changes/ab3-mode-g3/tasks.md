@@ -38,7 +38,7 @@
 
 ## 5. Integration
 
-- [ ] 5.1 Remeasure AmiBlitz3's 68 test programs (the throw-away run of variant.md, "Measured share") and compile its `Sourcecodes/Includes` that use escapes or `@"…"`. Verify: the numbers are updated in variant.md, new compiling test programs are added to `ab3_cli`/`ab3_cli_ref` if they run headless, and each remaining difference is explained
+- [x] 5.1 Remeasure AmiBlitz3's 68 test programs (the throw-away run of variant.md, "Measured share") and compile its `Sourcecodes/Includes` that use escapes or `@"…"`. Verify: the numbers are updated in variant.md, new compiling test programs are added to `ab3_cli`/`ab3_cli_ref` if they run headless, and each remaining difference is explained
 - [ ] 5.2 Full check: a clean build without warnings, `blitz2`'s results unchanged, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts; `docs/ab3/variant.md` (G3 done) and `TODO.md` (item G3–G5: G3 done) updated
 
 ## Workflow follow-up
