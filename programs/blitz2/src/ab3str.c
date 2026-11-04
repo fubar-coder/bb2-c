@@ -191,7 +191,9 @@ static void putname(const struct escname *e, UWORD *len)
         putstr(ab3_incfile(), len);
         return;
     case ESC_CODELINE:
-        putnum(codeline, len);
+        /* in a joined line (@@) the line of the string: all its lines
+           are read before it is compiled */
+        putnum(codeline - ab3_joinback(srcptr), len);
         return;
     case ESC_THIS_POINTER:
         /* AmiBlitz3 inserts an address of its own compile-time memory */

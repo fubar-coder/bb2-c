@@ -314,6 +314,11 @@ struct var *ext_sharedvar(UWORD len)
 #define JOINLEN 2048
 static UBYTE joinbuf[JOINLEN];
 static BOOL joining;
+/* the lines of the joined line in joinbuf (\\__CODELINE): where each one
+   starts in joinbuf, their number, the bytes in joinbuf */
+#define JOINLINES 512
+static UWORD joinat[JOINLINES];
+static UWORD joinlines, joinlen;
 
 /* the "@@" of the line at p outside strings and comments, NULL if none */
 static const UBYTE *findjoin(const UBYTE *p)
@@ -341,13 +346,15 @@ void ext_nextline(void)
     const UBYTE *p, *at, *b;
     ULONG n = 0;
 
-    /* \\__CODELINE (ab3str.c): a line joined to this one is not counted,
-       as in AmiBlitz3 (its mergeline enters nextline behind the count) */
-    if (!joining)
-        ab3_strline();
+    /* \\__CODELINE (ab3str.c): every line read, also each line joined
+       here (AmiBlitz3 counts a joined line once - an intended deviation:
+       the number finds the line in the source) */
+    ab3_strline();
     if (progmode != XTRA_MODE_AB3 || joining || !(at = findjoin(srcptr)))
         return;
     joining = TRUE;
+    joinlines = 0;
+    joinlen = 0;
     p = srcptr;
     do {
         /* inside an include only a ',' (and spaces) before the "@@": the
@@ -361,10 +368,11 @@ void ext_nextline(void)
                 err("Joining lines with @@ does not work in includes");
             }
         }
-        if (n + (ULONG)(at - p) >= JOINLEN) {
+        if (n + (ULONG)(at - p) >= JOINLEN || joinlines == JOINLINES - 1) {
             joining = FALSE;
             err("Joined line too long");
         }
+        joinat[joinlines++] = (UWORD)n;
         memcpy(joinbuf + n, p, (size_t)(at - p));
         n += (ULONG)(at - p);
         if (!nextline()) {
@@ -378,7 +386,23 @@ void ext_nextline(void)
         joining = FALSE;
         err("Joined line too long");
     }
+    joinat[joinlines++] = (UWORD)n;
     memcpy(joinbuf + n, p, (size_t)(at - p));
+    joinlen = (UWORD)(n + (ULONG)(at - p));
     joining = FALSE;
     srcptr = joinbuf;
+}
+
+ULONG ab3_joinback(const UBYTE *p)
+{
+    UWORD off, k;
+
+    if (p < joinbuf || p >= joinbuf + joinlen)
+        return 0;
+    off = (UWORD)(p - joinbuf);
+    /* the last line starting at or before p (a line that added no bytes
+       starts where the next one does: the next one has p) */
+    for (k = joinlines; k > 1 && joinat[k - 1] > off; k--)
+        ;
+    return (ULONG)(joinlines - k);
 }

@@ -81,7 +81,7 @@ An escape sequence SHALL start with two backslashes `\\`. A single `\` SHALL be 
 - **THEN** it prints `[]`
 
 ### Requirement: The current code line
-`\\__CODELINE` SHALL give, in decimal, the number of the line that contains the string. Lines SHALL be counted over the main source and its includes in the order they are compiled. The main source SHALL be counted from the first line after its embedded header.
+`\\__CODELINE` SHALL give, in decimal, the number of the line that contains the string. Lines SHALL be counted over the main source and its includes in the order they are compiled. The main source SHALL be counted from the first line after its embedded header, an include from the first line after its own. Lines joined with `@@` SHALL each keep their number, so the number finds the line in the source.
 
 #### Scenario: Main source with header
 - **WHEN** new syntax is on and a source has a 4-line embedded header and line 21 of the file prints `"[\\__CODELINE]"`
@@ -90,6 +90,10 @@ An escape sequence SHALL start with two backslashes `\\`. A single `\` SHALL be 
 #### Scenario: After an include
 - **WHEN** new syntax is on and a line in the main source that follows an included file of 10 lines prints `"[\\__CODELINE]"`
 - **THEN** the number counts the 10 lines of the include as well
+
+#### Scenario: Joined lines
+- **WHEN** new syntax is on and lines 5 to 7 of a source without header are joined with `@@` into `NPrint "[\\__CODELINE] ", @@` ⏎ `"[\\__CODELINE] ", @@` ⏎ `"[\\__CODELINE]"`, and line 8 prints `"[\\__CODELINE]"`
+- **THEN** it prints `[5] [6] [7]`, then `[8]`: each string gives the number of its own line, and the lines after the join keep theirs
 
 ### Requirement: Version escapes
 `\\__VER_MAJOR`, `\\__VER_MINOR` and `\\__VER_PATCH` SHALL give, in decimal, the three parts of the `Version` value of the source's embedded header. `\\__VER_BUILD` SHALL give its `NumberOfBuilds`. Without such a value they SHALL give `0`.

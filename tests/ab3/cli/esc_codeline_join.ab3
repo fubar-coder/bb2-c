@@ -1,6 +1,10 @@
-; \\__CODELINE (spec ab3-compat/strings) and lines joined with @@ (in
-; an include, where AmiBlitz3 joins them after a ',')
+; \\__CODELINE (spec ab3-compat/strings) and lines joined with @@: a
+; string on a joined line gives the number of its own line, the lines
+; behind keep theirs - in the main source and in an include
 OPTIMIZE 4
+NPrint "> [\\__CODELINE] ", @@
+  "[\\__CODELINE] ", @@
+  "[\\__CODELINE]"
 INCLUDE "esc_codeline_jinc.ab3"
 NPrint "> after [\\__CODELINE]"
 End

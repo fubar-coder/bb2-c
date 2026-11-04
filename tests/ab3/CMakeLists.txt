@@ -421,12 +421,12 @@ ab3_cli_case(esc_pointer esc_pointer.ab3 REF REF_EXPECT esc_pointer.ref.expect)
 ab3_cli_case(esc_date esc_date.ab3 REF DATESTAMP 2026-10-25)
 # the line counter and the current include: the main source behind its
 # header, a macro, a skipped CNIF block, an include, a repeated XINCLUDE;
-# an include with a header; lines joined with @@ (counted once, as
-# AmiBlitz3 does); nested includes (AmiBlitz3: the include opened last,
-# an empty name runs over)
+# an include with a header; lines joined with @@ (each line keeps its
+# number; AmiBlitz3 counts a joined line once); nested includes
+# (AmiBlitz3: the include opened last, an empty name runs over)
 ab3_cli_case(esc_codeline esc_codeline.ab3 REF)
 ab3_cli_case(esc_codeline_hdr esc_codeline_hdr.ab3 REF)
-ab3_cli_case(esc_codeline_join esc_codeline_join.ab3 REF)
+ab3_cli_case(esc_codeline_join esc_codeline_join.ab3 REF REF_EXPECT esc_codeline_join.ref.expect)
 ab3_cli_case(esc_include esc_include.ab3 REF REF_EXPECT esc_include.ref.expect)
 # Dc.b strings: the date and version escapes in AB3 mode, with or without
 # new syntax, every other \\ as written; BB2 mode as written.  AmiBlitz3

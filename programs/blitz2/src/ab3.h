@@ -67,9 +67,15 @@ BOOL ab3_incheaderline(void);
 const char *ab3_incfile(void);
 
 /** @brief The next line of the program is read (ext_nextline, ab3syn.c;
- *         not the lines it joins with @@): \\__CODELINE counts it
+ *         also each line it joins with @@): \\__CODELINE counts it
  *         (ab3str.c). */
 void ab3_strline(void);
+
+/** @brief The lines between the one of the joined line (@@) that p is in
+ *         and its last line; 0 if p is not in the joined line being
+ *         compiled (ab3syn.c): \\__CODELINE of a string in an earlier
+ *         line of it. */
+ULONG ab3_joinback(const UBYTE *p);
 
 /** @brief A pass starts: the line counter of \\__CODELINE back to 0
  *         (ab3str.c, called by ext_passstart). */

@@ -129,8 +129,15 @@ commented out.
   from the source it reads for the mode (`ab3main.c`), and `ab3cli`'s
   include service returns those of an include in `d2`. The first
   counted line is the first line after the header, as in AmiBlitz3.
-- **Joined lines:** a line joined with `@@` is not counted again; the
-  joined line counts once, as in AmiBlitz3 (its `mergeline` enters
+- **Joined lines:** every line joined with `@@` is counted, and a
+  string gives the number of its own line (user decision 2026-11-04:
+  the number must find the line in the source; an intended deviation).
+  `blitz2-ab3` joins the lines when the first is read (`ext_nextline`,
+  `ab3syn.c`, the one join path for every `@@`, also `Dim`/`Let`), so
+  the counter is at the last of them when the line is compiled.
+  `ab3syn.c` keeps where each line starts in the joined text, and
+  `\\__CODELINE` takes off the lines behind the one the string is in.
+  AmiBlitz3 counts a joined line once (its `mergeline` enters
   `.nextline` behind the count).
 - **The current include:** `\\__THIS_INCLUDE` takes the file name of
   the include whose line is being read, from the include state
@@ -181,8 +188,9 @@ In the AB3 tests:
   - `\\__CODELINE` in the main source;
   - `@"…"` for byte, word and long.
 - **The intended deviations** (`\\R`, unknown forms, empty values,
-  `\\__THIS_POINTER`, `\\__THIS_INCLUDE` after an include, `@"…"` with
-  a float target): separate cases with `REF_EXPECT`, which records
+  `\\__THIS_POINTER`, `\\__THIS_INCLUDE` after an include,
+  `\\__CODELINE` in lines joined with `@@`, `@"…"` with a float
+  target): separate cases with `REF_EXPECT`, which records
   AmiBlitz3's output. Each one also gets a row in "Differences" of
   `docs/ab3/variant.md`.
 
@@ -244,15 +252,16 @@ reverting the commits.
   is expanded in, the lines of a skipped `CNIF` block count, an include
   counts its lines, an `XINCLUDE` skipped as repeated counts none
   (`esc_codeline`); an include's embedded header is not counted
-  (`esc_codeline_hdr`); a line joined with `@@` (in an include, after a
-  ',') counts once, both strings of `NPrint "[\\__CODELINE] ", @@` ⏎
-  `"[\\__CODELINE]"` give the number of the first line, and the
-  following lines count one less than their physical lines
-  (`esc_codeline_join`). All of these are the same in `blitz2-ab3`. The
-  `@@` behaviour is taken over as AmiBlitz3's rule: a joined line is
-  compiled as one line. (AmiBlitz3's `Dim … @@` path calls `nextline`
-  and counts the joined line; `blitz2-ab3` joins every `@@` in
-  `ext_nextline`, so there it counts once as well - not compared.)
+  (`esc_codeline_hdr`). All of these are the same in `blitz2-ab3`.
+- (Task 2.4) Lines joined with `@@` (`esc_codeline_join`, `REF_EXPECT`;
+  in the main source and in an include): AmiBlitz3 counts a joined line
+  once - every string of it gives the number of its first line, and the
+  lines after it count one less per joined line (`> [5] [5] [5]`,
+  `> [8] [8]`, `> next [9]`, `> after [10]`; `blitz2-ab3`:
+  `> [5] [6] [7]`, `> [10] [11]`, `> next [12]`, `> after [13]`).
+  Implemented as intended (user decision 2026-11-04, D5). AmiBlitz3's
+  `Dim … @@` path calls `nextline` and counts the joined line (not
+  compared); `blitz2-ab3` treats it like every other join.
 - (Task 2.4) `\\__THIS_INCLUDE` with AmiBlitz3 (`esc_include`,
   `REF_EXPECT`): in the main source before any include the empty value
   runs over (`[` and a NUL byte, rule 7 of its §4.5.2); after an
