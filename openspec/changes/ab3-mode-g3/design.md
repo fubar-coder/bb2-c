@@ -216,6 +216,29 @@ joined with `@@` is one line, the `End If` goes at its real end.
   the line counting, and fixes nothing more than this rule.
 - BB2 mode keeps the original's behaviour (#967 documents it; whether it
   follows is a separate decision).
+- Findings (task 6.2, measured with AmiBlitz3 v3.14.0): `thenmode` is a
+  flag, cleared at the start of the definition (20840, 20878), set by
+  every `Then` token (20929), cleared by `End` followed by `If` while set
+  (20932-20939) and after the append (20903-20907); the append comes
+  after `nextline`, only when text was stored (`d2`), before the `:` of
+  the line end, so the last body line gets it too (the trailing `:` is
+  removed by `.mclean`). Strings: `Then` there is no token; comments are
+  not stored. Two bugs, implemented as intended (ext points
+  `ext_macrotoken`/`ext_macrolineend`, `ab3syn.c` next to the `@@` joins
+  and `ext_macrodef`): two `Then`s on a line get one `End If` (the outer
+  `If` leaks to the end of the expanded line; ours counts), and `EndIf`
+  (its own token `$80C0`) does not clear the flag (a second `End If`,
+  "'End' condition without condition"; ours closes one `Then` with it).
+  Cases `macthen_two`, `macthen_endifword` with `REF_EXPECT`.
+- `@@` in a definition (task 6.5): `do_Macro` joins at a line end after
+  `@@` (20885) and at `@@` behind a character (20986-20991), both without
+  the `ininclude` check of the parameter joins (3113, 3224, 8117, 8286);
+  the rest of the `Macro` line is gathered the same way. Ours: lines read
+  while `domacro` gathers (`ext_macrodef`) and a line that starts with
+  `Macro` join every form in an include; a macro call keeps the rule.
+  By its source (not measured) AmiBlitz3 also joins at `@@` inside a
+  string of a macro line; ours keeps strings unchanged (spec
+  `ab3-compat/syntax-rules`).
 
 ## Risks / Trade-offs
 
