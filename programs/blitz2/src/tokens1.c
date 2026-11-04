@@ -899,6 +899,12 @@ void domacro(UWORD c)
             break;                              /* ':' is a token's low byte */
         n--;                                    /* .cdo */
     }
+    /* BUG(orig): textlen is a word (blitz2.s:12916 move d0,8(a2)), the
+       allocation takes the long n: a macro text of 65536 bytes or more
+       is cut to n & $ffff and later freed with that size (freemacs,
+       blitz2.s:6688), the rest of the block lost.  Reachable only with
+       a Macro Buffer over 65535 (#336 made the option effective).
+       Kept. */
     m->textlen = (UWORD)n;                      /* .cdone */
     if (m->textlen) {   /* text left unset when empty (never read then) */
         m->text = doallocmem(n, MEMF_PUBLIC);

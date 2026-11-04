@@ -163,6 +163,7 @@ extern WORD  lasta6qf[2];
 #define quoteflag (lasta6qf[1])
 extern UBYTE *macrobuff;                /* 14988 macro collection buffer */
 extern UBYTE *macrobufff;               /* 14989 end of above */
+extern ULONG macrobuffsize;             /* bytes allocated at macrobuff (#336) */
 extern struct macro *firstmacro;        /* 14990 */
 extern ULONG endop;                     /* 14991 end of program pc before finishups */
 extern struct label *firstlabel;        /* 14992 */

@@ -470,11 +470,10 @@ static WORD begin(void)
     if (!constpcat)
         goto failme;
     constlibat = constpcat + constmaxpc;
-    /* @1384 */
-    macrobuff = AllocMem(macrolen, MEMF_PUBLIC);
-    if (!macrobuff)
+    /* @1384: macrolen bytes (8192 here); fixed (#336): later changes of
+       macrolen reallocate it (makemacbuff) */
+    if (!makemacbuff())
         goto fail2;
-    macrobufff = macrobuff + macrolen;
     /* @1392 load the editor and call its init (seg+8 = ted `outside`):
        a1=edstruct in; Z=1 ok, a0=editor main entry, a1=comdata out */
     segadd = LoadSeg((CONST_STRPTR)ext_editor(segname));
@@ -523,9 +522,9 @@ fail3:                                  /* 1460 */
 fail2a:                                 /* 1462 */
     freeallox();
     /* fail2b 1463 - Fixed (#336): freed with the size of the allocation
-       (macrobufff - macrobuff); the original takes the current macrolen,
-       which options loaded later (an .xtra) change */
-    FreeMem(macrobuff, (ULONG)(macrobufff - macrobuff));
+       (macrobuffsize); the original takes the current macrolen, which
+       options loaded later (an .xtra) change */
+    FreeMem(macrobuff, macrobuffsize);
 fail2:                                  /* 1467 closedos */
     /* DIFF: asm closes dos.library here; libnix owns DOSBase and closes
        it at exit.  fail1a/fail1 (1468/1469): */

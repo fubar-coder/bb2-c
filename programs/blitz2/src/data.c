@@ -153,6 +153,7 @@ struct include *firstinc = NULL;        /* 14985 first include */
 WORD  lasta6qf[2] = {-1, 0};            /* 14986 lasta6 dc -1 / quoteflag dc 0 */
 UBYTE *macrobuff = NULL;                /* 14988 pointer to macro collection buffer */
 UBYTE *macrobufff = NULL;               /* 14989 end of above */
+ULONG macrobuffsize = 0;                /* bytes allocated at macrobuff (#336) */
 struct macro *firstmacro = NULL;        /* 14990 linked list of macro's */
 ULONG endop = 0;                        /* 14991 end of program pc - before finishups! */
 struct label *firstlabel = NULL;        /* 14992 label list */
@@ -1475,6 +1476,7 @@ done2:
     for (i = 0; i < MOSTRES; i++)
         resbuff[i].seg = 0;
     makeiallox();
+    makemacbuff();                      /* fixed (#336) */
     loadres();
 }
 
@@ -1612,8 +1614,10 @@ igot:
 /* blitz2.s:15592 optsdone */
 void optsdone(UWORD gadget, WORD allchg, WORD reschg)
 {
-    if (allchg)
+    if (allchg) {
         makeiallox();
+        makemacbuff();                  /* fixed (#336) */
+    }
     if (reschg)
         loadres();
     if (gadget == 18)

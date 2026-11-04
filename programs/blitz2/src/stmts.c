@@ -762,6 +762,39 @@ void freeallox(void)
     }
 }
 
+/* ======================================================== macro buffer */
+
+/* Fixed (#336): the original allocates macrobuff once at its start
+   (blitz2.s:1384) with the Macro Buffer of then (8192), so an .xtra or
+   the Compiler Options requester changes macrolen but not the buffer.
+   Called where the other option-sized buffers follow the options
+   (makeiallox in loadxtra and optsdone), outside of a compile: no macro
+   text is in the buffer then.  The limit of a macro's text (macputb) is
+   macrolen; at least MACROMIN bytes are allocated, because doincbin's
+   FileInfoBlock and the parameters of a macro call (unchecked, #4) use
+   the buffer too, as with the original's fixed 8192.  If the new buffer
+   cannot be allocated the old one and its limit stay. */
+#define MACROMIN 8192                   /* blitz2.s optreqsg5's default */
+
+BOOL makemacbuff(void)
+{
+    ULONG len = macrolen;
+    ULONG size = len < MACROMIN ? MACROMIN : len;
+    UBYTE *buf;
+
+    if (macrobuff && len == (ULONG)(macrobufff - macrobuff))
+        return TRUE;
+    buf = AllocMem(size, MEMF_PUBLIC);
+    if (!buf)
+        return FALSE;
+    if (macrobuff)
+        FreeMem(macrobuff, macrobuffsize);
+    macrobuff = buf;
+    macrobuffsize = size;
+    macrobufff = buf + len;
+    return TRUE;
+}
+
 /* ========================================================= menu3 (debug) */
 
 #if final == 0
