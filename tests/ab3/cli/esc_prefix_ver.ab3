@@ -1,0 +1,9 @@
+; XTRA
+; Version         = 1.2.3
+; NumberOfBuilds  = 42
+; /XTRA
+; a name that only begins like a known one is an unknown escape (spec
+; ab3-compat/strings)
+OPTIMIZE 4
+NPrint "> [\\__VER_XXXXX]"
+End

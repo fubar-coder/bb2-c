@@ -1,0 +1,5 @@
+[compile]
+rc=0
+[run]
+> [{unknown compiler constant}]
+rc=0

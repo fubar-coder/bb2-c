@@ -1,0 +1,4 @@
+; \\__VER_* without an embedded header (spec ab3-compat/strings): 0
+OPTIMIZE 4
+NPrint "> [\\__VER_MAJOR.\\__VER_MINOR.\\__VER_PATCH/\\__VER_BUILD]"
+End

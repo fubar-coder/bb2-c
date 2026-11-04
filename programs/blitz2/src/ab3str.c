@@ -86,6 +86,23 @@ static void put(UBYTE b, UWORD *len)
     (*len)++;
 }
 
+static void putstr(const char *s, UWORD *len)
+{
+    while (*s)
+        put((UBYTE)*s++, len);
+}
+
+static void putnum(ULONG v, UWORD *len)
+{
+    char buf[12], *p = buf + sizeof buf;
+
+    *--p = 0;
+    do
+        *--p = (char)('0' + v % 10);
+    while (v /= 10);
+    putstr(p, len);
+}
+
 /* the name at p (behind "\\"): the longest of escnames matching in full,
    NULL if none */
 static const struct escname *findname(const UBYTE *p, UWORD *n)
@@ -108,10 +125,24 @@ static const struct escname *findname(const UBYTE *p, UWORD *n)
 /* the value of the name e */
 static void putname(const struct escname *e, UWORD *len)
 {
-    (void)len;
     switch (e->kind) {
+    case ESC_VER_MAJOR:
+    case ESC_VER_MINOR:
+    case ESC_VER_PATCH:
+        putnum(ab3version[e->kind - ESC_VER_MAJOR], len);
+        return;
+    case ESC_VER_BUILD:
+        putnum(ab3builds, len);
+        return;
+    case ESC_THIS_FUNCTION:
+        /* the procedure being compiled - in a macro the one it is
+           expanded in - as written in its definition */
+        putstr(thisproc ? thisproc->name : "GLOBAL", len);
+        return;
     default:
-        /* TODO(ab3-mode-g3 2.2-2.5): the names have no value yet */
+        /* TODO(ab3-mode-g3 2.3-2.5): __DATE__, __DATE_GER__,
+           __THIS_INCLUDE, __CODELINE and __THIS_POINTER have no value
+           yet */
         unknownerr();
     }
 }

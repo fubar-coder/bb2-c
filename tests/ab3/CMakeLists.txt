@@ -375,10 +375,11 @@ ab3_cli_case(jsr jsr.ab3 REF)
 ab3_cli_case(date_stamp date_stamp.ab3 REF DATESTAMP 2026-10-25 RUN_DATESTAMP 2026-10-25)
 # the escape sequences of string literals (change ab3-mode-g3, spec
 # ab3-compat/strings): only with new syntax in AB3 mode, not in Data
-# strings, the forms AmiBlitz3 shares.  AmiBlitz3's bugs are implemented
-# as intended, its output recorded with REF_EXPECT (docs/ab3/variant.md):
-# \\R repeats once more and in upper case, \\R00 runs over, an unknown
-# form is copied
+# strings, the forms AmiBlitz3 shares, the procedure's name, the version
+# of the header.  AmiBlitz3's bugs are implemented as intended, its output
+# recorded with REF_EXPECT (docs/ab3/variant.md): \\R repeats once more
+# and in upper case, \\R00 runs over, an unknown form is copied, a name
+# that only begins like a known one is matched by its prefix
 ab3_cli_case(esc_off esc_off.ab3 REF)
 ab3_cli_case(esc_bb2 esc_bb2.bb)
 ab3_cli_case(esc_data esc_data.ab3 REF)
@@ -387,6 +388,11 @@ ab3_cli_case(esc_repeat esc_repeat.ab3 REF REF_EXPECT esc_repeat.ref.expect)
 ab3_cli_case(esc_repeat0 esc_repeat0.ab3 REF REF_EXPECT esc_repeat0.ref.expect)
 ab3_cli_case(esc_repeat_quote esc_repeat_quote.ab3)
 ab3_cli_case(esc_unknown esc_unknown.ab3 REF REF_EXPECT esc_unknown.ref.expect)
+ab3_cli_case(esc_prefix_func esc_prefix_func.ab3 REF REF_EXPECT esc_prefix_func.ref.expect)
+ab3_cli_case(esc_prefix_ver esc_prefix_ver.ab3 REF REF_EXPECT esc_prefix_ver.ref.expect)
+ab3_cli_case(esc_func esc_func.ab3 REF)
+ab3_cli_case(esc_ver esc_ver.ab3 REF)
+ab3_cli_case(esc_ver_none esc_ver_none.ab3 REF)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)

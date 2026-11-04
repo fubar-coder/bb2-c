@@ -1,0 +1,5 @@
+[compile]
+esc_prefix_ver.ab3:8: Unknown Escape Sequence
+rc=10
+[run]
+no executable

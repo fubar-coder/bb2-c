@@ -25,6 +25,8 @@ struct ab3job *ab3job;                  /* ab3.h */
 /* the editor of a command line run (instead of blitz2:ted) */
 static const char ab3cliname[] = "PROGDIR:ab3cli";
 static struct ab3job job;
+UBYTE ab3version[3];                    /* ab3.h */
+ULONG ab3builds;
 
 static void say(const char *s)
 {
@@ -67,6 +69,21 @@ static UBYTE *readall(const char *name, LONG *len)
     return buf;
 }
 
+/* the Version and NumberOfBuilds of AmiBlitz3's embedded header of the
+   source src (len bytes) for the escapes \\__VER_* (ab3str.c); 0 without
+   a header or a value.  A header xtra_load refuses is reported by ab3cli,
+   which loads it again for the options. */
+static void headerversion(const UBYTE *src, LONG len)
+{
+    static struct xtra x;               /* not on the shell's small stack */
+
+    if (xtra_detect(src, (size_t)len, job.source) != XTRA_T_AB3
+        || xtra_load(&x, XTRA_T_AB3, src, (size_t)len, 0, 0, 0) != XTRA_OK)
+        return;
+    memcpy(ab3version, x.ab3.version, sizeof ab3version);
+    ab3builds = x.ab3.builds;
+}
+
 /* the command line (-s SOURCE -e EXE ...), before anything is loaded (the
    libraries depend on the mode): for a compile decide the program's mode
    and set ab3job.  Prints the usage and the messages of argument errors
@@ -103,6 +120,8 @@ static int cmdline(int argc, char **argv)
         x = readall(compname, &xlen);
     job.mode = (uint8_t)xtra_mode(job.force, src, (size_t)len, job.source, x,
                                   x ? (size_t)xlen : 0);
+    if (job.mode == XTRA_MODE_AB3)
+        headerversion(src, len);
     if (x)
         FreeMem(x, (ULONG)xlen + 1);
     FreeMem(src, (ULONG)len + 1);

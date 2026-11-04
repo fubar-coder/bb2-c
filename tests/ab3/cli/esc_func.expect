@@ -1,0 +1,10 @@
+[compile]
+rc=0
+[run]
+> [GLOBAL]
+> [GLOBALXY]
+> macro [GLOBAL]
+> [st]
+> macro [st]
+> [MyFunc]
+rc=0

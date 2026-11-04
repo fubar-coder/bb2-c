@@ -1,0 +1,5 @@
+[compile]
+esc_prefix_func.ab3:4: Unknown Escape Sequence
+rc=10
+[run]
+no executable
