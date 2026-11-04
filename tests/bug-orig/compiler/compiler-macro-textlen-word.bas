@@ -4,8 +4,11 @@
 ; expands to a truncated text), and freemacs frees the block with the word
 ; length, the rest is lost. Only reachable with a Macro Buffer over 65535
 ; (#336: macrobuff follows the option). The original always has 8192
-; bytes and ends with "Macro too Big", so it cannot show the bug and the
-; verdict of the port stays DIFFERS (not REPRODUCED). The macro big has
+; bytes and reports "Macro too Big" (the macro's node is left half-built,
+; freemacs may free a text of garbage, #965), then it hangs at its exit
+; (alert 8100 0005: it frees 100000 bytes of its 8192 byte macrobuff,
+; #336). It cannot show the bug, the verdict of the port stays DIFFERS
+; (not REPRODUCED). The macro big has
 ; 1000 lines of 76 bytes and ends with b=7; b stays 0 if the text is cut.
 ; Correct: the macro expands to its whole text, the program prints 7, and
 ; the compiler frees what it allocated (inject track).
