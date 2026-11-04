@@ -1,0 +1,8 @@
+; an include of join_incmacro.ab3: @@ in its Macro definitions
+Macro a
+If `1 > 0 Then `1 = 0 : @@
+`2 = 0
+End Macro
+Macro b @@
+NPrint "b"
+End Macro

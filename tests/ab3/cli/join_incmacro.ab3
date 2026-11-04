@@ -1,0 +1,11 @@
+; joining lines inside an include: in a Macro definition every form joins,
+; also on the Macro line (AmiBlitz3 do_Macro has no include check)
+INCLUDE "join_incmacro_inc.ab3"
+x.l = 1 : y.l = 5
+!a{x, y}
+NPrint x, " ", y
+x = 0 : y = 5
+!a{x, y}
+NPrint x, " ", y
+!b{}
+End

@@ -311,6 +311,9 @@ ab3_cli_case(tilde_string tilde_string.ab3 REF)
 ab3_cli_case(join join.ab3 REF)
 ab3_cli_case(join_inc join_inc.ab3 REF)
 ab3_cli_case(join_incok join_incok.ab3 REF)
+# in an include @@ joins every form inside a Macro definition (also on
+# its Macro line), as in AmiBlitz3
+ab3_cli_case(join_incmacro join_incmacro.ab3 REF)
 ab3_cli_case(join_op join_op.ab3 REF REF_EXPECT join_op.ref.expect)
 # the constants of the include mechanism: #__include, #__debug, CNIF @
 ab3_cli_case(incguard incguard.ab3 REF)

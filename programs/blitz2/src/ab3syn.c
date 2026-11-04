@@ -16,10 +16,14 @@ static UWORD ngshared;
 
 static BOOL cnifdef;
 
+/* the lines read belong to a Macro definition (ext_macrodef) */
+static BOOL inmacrodef;
+
 void ab3_synpass(void)
 {
     ngshared = 0;
     cnifdef = FALSE;
+    inmacrodef = FALSE;     /* an error stopped a definition */
 }
 
 /* AmiBlitz3's chartab (AmiBlitz3.ab3:1161-1191): the characters that end
@@ -341,10 +345,19 @@ static const UBYTE *findjoin(const UBYTE *p)
     return NULL;
 }
 
+/* does the line at p start with Macro (a definition, not End Macro)? */
+static BOOL ismacroline(const UBYTE *p)
+{
+    while (*p == ' ')
+        p++;
+    return p[0] == 0x80 && p[1] == 0x0d;        /* Macro ($800D) */
+}
+
 void ext_nextline(void)
 {
     const UBYTE *p, *at, *b;
     ULONG n = 0;
+    BOOL incrule;
 
     /* \\__CODELINE (ab3str.c): every line read, also each line joined
        here (AmiBlitz3 counts a joined line once - an intended deviation:
@@ -356,11 +369,13 @@ void ext_nextline(void)
     joinlines = 0;
     joinlen = 0;
     p = srcptr;
+    /* inside an include only a ',' (and spaces) before the "@@": the
+       join of AmiBlitz3's mergeline (8299), the others stop there
+       (errorjoin, 3113, 3224, 8117, 8286); not in a Macro definition
+       (ext_macrodef), which joins every form */
+    incrule = numincs && !inmacrodef && !ismacroline(p);
     do {
-        /* inside an include only a ',' (and spaces) before the "@@": the
-           join of AmiBlitz3's mergeline (8299), the others stop there
-           (errorjoin) */
-        if (numincs) {
+        if (incrule) {
             for (b = at; b > p && b[-1] == ' '; b--)
                 ;
             if (b == p || b[-1] != ',') {
@@ -391,6 +406,14 @@ void ext_nextline(void)
     joinlen = (UWORD)(n + (ULONG)(at - p));
     joining = FALSE;
     srcptr = joinbuf;
+}
+
+/* AmiBlitz3's do_Macro gathers the rest of the Macro line and the lines
+   of the definition up to End Macro, joining at "@@" without the include
+   check of the parameter lists (AmiBlitz3.ab3:20885, 20986-20991) */
+void ext_macrodef(BOOL on)
+{
+    inmacrodef = on;
 }
 
 ULONG ab3_joinback(const UBYTE *p)

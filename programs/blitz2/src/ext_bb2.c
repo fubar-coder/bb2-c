@@ -215,3 +215,9 @@ BOOL ext_element(UWORD c, UWORD *type, UWORD *ret)
 {
     return FALSE;
 }
+
+/* AB3 mode's macros (change ab3-mode-g3) */
+
+void ext_macrodef(BOOL on)
+{
+}

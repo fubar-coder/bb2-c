@@ -321,4 +321,12 @@ BOOL ext_result(int *rc);
  */
 BOOL ext_element(UWORD c, UWORD *type, UWORD *ret);
 
+/* ======================== AB3 mode's macros (change ab3-mode-g3) */
+
+/** @brief domacro (tokens1.c): the lines read from here on belong to a
+ *         Macro definition (on TRUE, behind the name of its Macro line),
+ *         up to its End Macro line (FALSE, when the definition is
+ *         stored). */
+void ext_macrodef(BOOL on);
+
 #endif

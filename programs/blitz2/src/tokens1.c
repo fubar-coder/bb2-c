@@ -868,6 +868,7 @@ void domacro(UWORD c)
     mb.at = macrobuff;
     mb.got = 0;                                 /* flag for nothing got yet! */
     coolnest = 0;
+    ext_macrodef(TRUE);
     for (;;) {                                  /* .gather */
         c = getcharb();         /* get next character but not conditional stuff */
         if (c == 0) {
@@ -910,6 +911,7 @@ void domacro(UWORD c)
         macputw(&mb, c);                        /* .notend */
     }
     /* .macdone: DIFF: asm `addq #4,a7` dropped the return into doline */
+    ext_macrodef(FALSE);
     dolineabort = 1;
     n = mb.at - macrobuff;
     /* clean up leading and trailing ':'s (only trailing ones in fact).
