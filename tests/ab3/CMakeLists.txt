@@ -444,6 +444,25 @@ ab3_cli_case(esc_dcb_bb2 esc_dcb_bb2.bb)
 # (\\0a joins the month names), its date functions under the run's
 # inject datestamp=
 ab3_cli_case(inc_datetime inc_datetime.ab3 REF RUN_DATESTAMP 2026-10-25)
+# a one-line If in a macro ends with its macro line (change ab3-mode-g3,
+# spec ab3-compat/macros): AmiBlitz3 appends ": End If" to a macro line
+# with Then.  Inside a While of another macro, the line after it, a line
+# already closed, lines joined with @@, a caller's Then, Else, Then in a
+# string or comment, an End If before the Then, a block If around it; BB2
+# mode keeps blitz2's error (#967).  AmiBlitz3's bugs are implemented as
+# intended, its output recorded with REF_EXPECT (docs/ab3/variant.md): it
+# appends one End If for two Thens, and a second one after EndIf
+ab3_cli_case(macthen_while macthen_while.ab3 REF)
+ab3_cli_case(macthen_after macthen_after.ab3 REF)
+ab3_cli_case(macthen_closed macthen_closed.ab3 REF)
+ab3_cli_case(macthen_join macthen_join.ab3 REF)
+ab3_cli_case(macthen_caller macthen_caller.ab3 REF)
+ab3_cli_case(macthen_else macthen_else.ab3 REF)
+ab3_cli_case(macthen_string macthen_string.ab3 REF)
+ab3_cli_case(macthen_endif macthen_endif.ab3 REF)
+ab3_cli_case(macthen_two macthen_two.ab3 REF REF_EXPECT macthen_two.ref.expect)
+ab3_cli_case(macthen_endifword macthen_endifword.ab3 REF REF_EXPECT macthen_endifword.ref.expect)
+ab3_cli_case(macthen_bb2 macthen_bb2.bb)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)

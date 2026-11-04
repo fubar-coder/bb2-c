@@ -1,0 +1,28 @@
+; the End If of a block before a one-line If on the same macro line does
+; not close it; a block If around a one-liner in a macro
+Macro f
+If `1 > 0
+`2 = 1
+End If : If `2 > 0 Then `2 = 2
+`3 = 1
+End Macro
+Macro g
+If `1 > 0
+If `2 > 0 Then `2 = 0
+Else
+`2 = 9
+End If
+End Macro
+a.l = 0 : b.l = 0 : c.l = 0
+!f{a, b, c}
+NPrint a, " ", b, " ", c
+a = 1 : b = 0 : c = 0
+!f{a, b, c}
+NPrint a, " ", b, " ", c
+a = 1 : b = 5
+!g{a, b}
+NPrint b
+a = 0 : b = 5
+!g{a, b}
+NPrint b
+End

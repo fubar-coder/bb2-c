@@ -18,6 +18,8 @@ static BOOL cnifdef;
 
 /* the lines read belong to a Macro definition (ext_macrodef) */
 static BOOL inmacrodef;
+/* the Thens of the macro line being stored not closed (ext_macrotoken) */
+static UWORD macthens;
 
 void ab3_synpass(void)
 {
@@ -414,6 +416,35 @@ void ext_nextline(void)
 void ext_macrodef(BOOL on)
 {
     inmacrodef = on;
+    macthens = 0;
+}
+
+/* ------------------------------------------- a one-line If in a macro */
+
+/* AmiBlitz3's do_Macro (AmiBlitz3.ab3:20903-20939, thenmode) ends a
+   macro line that has Then and no End If behind it with ": End If", so
+   a one-line If covers only the rest of its macro line (blitz2 closes it
+   at the end of the expanded line, #967).  AmiBlitz3 has a flag and
+   clears it only on End If; here each Then counts and End If or EndIf
+   closes one (intended: two Thens get two End Ifs, a line closed with
+   EndIf none; docs/ab3/variant.md).  A token in a string does not
+   count; comments are not stored. */
+void ext_macrotoken(UWORD c, UWORD next)
+{
+    if (progmode != XTRA_MODE_AB3 || quoteflag)
+        return;
+    if (c == 0x8021)                            /* Then */
+        macthens++;
+    else if (macthens && ((c == 0x8002 && next == 0x800b) || c == 0x80c0))
+        macthens--;                             /* End If, EndIf */
+}
+
+UWORD ext_macrolineend(void)
+{
+    UWORD n = macthens;
+
+    macthens = 0;
+    return n;
 }
 
 ULONG ab3_joinback(const UBYTE *p)

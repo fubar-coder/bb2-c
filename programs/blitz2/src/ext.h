@@ -329,4 +329,14 @@ BOOL ext_element(UWORD c, UWORD *type, UWORD *ret);
  *         stored). */
 void ext_macrodef(BOOL on);
 
+/** @brief domacro: the token c is stored in the macro text; next is the
+ *         token or character read behind it if c is End ($8002, read
+ *         with getchar3), else 0. */
+void ext_macrotoken(UWORD c, UWORD next);
+
+/** @brief domacro: a line of the definition ends, and text was stored;
+ *         returns how many ": End If" (':', $8002, $800B) are stored
+ *         before the ':' of the line end. */
+UWORD ext_macrolineend(void);
+
 #endif

@@ -1,0 +1,12 @@
+; the line after a one-line If in a macro is not conditional
+Macro a
+If `1 > 0 Then `1 = 0
+`2 = `2 + 10
+End Macro
+x.l = 0 : y.l = 5
+!a{x, y}
+NPrint x, " ", y
+x = 1 : y = 5
+!a{x, y}
+NPrint x, " ", y
+End

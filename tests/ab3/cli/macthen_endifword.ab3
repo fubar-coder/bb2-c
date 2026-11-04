@@ -1,0 +1,10 @@
+; EndIf closes a one-line If on a macro line like End If (AmiBlitz3
+; appends a second End If: "End condition without condition")
+Macro a
+If `1 > 0 Then `1 = 0 : EndIf
+`2 = `2 + 10
+End Macro
+x.l = 1 : y.l = 5
+!a{x, y}
+NPrint x, " ", y
+End

@@ -221,3 +221,12 @@ BOOL ext_element(UWORD c, UWORD *type, UWORD *ret)
 void ext_macrodef(BOOL on)
 {
 }
+
+void ext_macrotoken(UWORD c, UWORD next)
+{
+}
+
+UWORD ext_macrolineend(void)
+{
+    return 0;
+}

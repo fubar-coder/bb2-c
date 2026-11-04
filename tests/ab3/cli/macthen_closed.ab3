@@ -1,0 +1,12 @@
+; a macro line already closed with End If gets no second one
+Macro a
+If `1 > 0 Then `1 = 0 : End If
+`2 = `2 + 10
+End Macro
+x.l = 1 : y.l = 5
+!a{x, y}
+NPrint x, " ", y
+x = 0 : y = 5
+!a{x, y}
+NPrint x, " ", y
+End

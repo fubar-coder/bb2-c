@@ -1,0 +1,12 @@
+; Then and Else on one macro line: one End If
+Macro e
+If `1 > 0 Then `2 = 1 Else `2 = 2
+`3 = 1
+End Macro
+a.l = 0 : b.l = 0 : c.l = 0
+!e{a, b, c}
+NPrint a, " ", b, " ", c
+a = 1 : b = 0 : c = 0
+!e{a, b, c}
+NPrint a, " ", b, " ", c
+End

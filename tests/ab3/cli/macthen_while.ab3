@@ -1,0 +1,12 @@
+; a one-line If in a macro ends with its macro line (AmiBlitz3 appends
+; ": End If"): macro a inside the While loop of macro b
+Macro a
+If `1 > 0 Then `1 = 0
+End Macro
+Macro b
+While `1 > 0
+  !a{`1}
+Wend
+End Macro
+x.l = 1 : !b{x} : NPrint x
+End

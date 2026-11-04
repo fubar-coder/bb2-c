@@ -1,0 +1,21 @@
+; a one-line If of the caller covers the whole macro and the rest of the
+; calling line, also with a one-line If inside the macro
+Macro m
+NPrint "m1"
+NPrint "m2"
+NPrint "m3"
+End Macro
+Macro r
+If `1 > 0 Then `1 - 1
+`2 + 100
+End Macro
+c.l = 0
+If c Then !m{}
+NPrint "after"
+c = 0 : e.l = 0
+If e Then !r{c, e} : e = 7
+NPrint c, " ", e
+c = 0 : e = 1
+If e Then !r{c, e} : e = 7
+NPrint c, " ", e
+End

@@ -1,0 +1,13 @@
+; lines joined with @@ are one macro line: the End If goes behind the
+; last of them, both assignments are conditional
+Macro a
+If `1 > 0 Then `1 = 0 : @@
+`2 = 0
+End Macro
+x.l = 0 : y.l = 5
+!a{x, y}
+NPrint x, " ", y
+x = 1 : y = 5
+!a{x, y}
+NPrint x, " ", y
+End

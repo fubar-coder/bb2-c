@@ -845,7 +845,7 @@ void domacro(UWORD c)
     struct macro *m;
     struct macbuild mb;
     WORD coolnest;              /* blitz2.s:12845 coolnest dc 0 */
-    UWORD len;
+    UWORD len, endifs;
     ULONG n;
 
     (void)c;
@@ -876,6 +876,11 @@ void domacro(UWORD c)
                 macenderr();
             if (!mb.got)
                 continue;
+            for (endifs = ext_macrolineend(); endifs; endifs--) {
+                macputb(&mb, ':');              /* AB3 mode: ": End If" */
+                macputw(&mb, 0x8002);
+                macputw(&mb, 0x800b);
+            }
             macputb(&mb, ':');                  /* .notend2 (58) */
             continue;
         }
@@ -906,7 +911,10 @@ void domacro(UWORD c)
                if it is End Macro, the macro ends on the glued copy, the
                copy is compiled as a statement and doend has no case for
                Macro ("Syntax Error" at the Include line).  Kept. */
+            ext_macrotoken(0x8002, c);
             macputw(&mb, 0x8002);
+        } else {
+            ext_macrotoken(c, 0);
         }
         macputw(&mb, c);                        /* .notend */
     }

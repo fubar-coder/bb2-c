@@ -1,0 +1,9 @@
+; Then in a string and in a comment of a macro line does not count
+Macro s
+NPrint "If Then" ; Then
+`1 = 1
+End Macro
+x.l = 0
+!s{x}
+NPrint x
+End

@@ -1,0 +1,5 @@
+[compile]
+macthen_bb2.bb:11: Illegaly nested Condition
+rc=10
+[run]
+no executable
