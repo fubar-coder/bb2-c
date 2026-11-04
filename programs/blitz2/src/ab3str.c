@@ -139,10 +139,12 @@ static void putname(const struct escname *e, UWORD *len)
            expanded in - as written in its definition */
         putstr(thisproc ? thisproc->name : "GLOBAL", len);
         return;
+    case ESC_THIS_POINTER:
+        /* AmiBlitz3 inserts an address of its own compile-time memory */
+        err("Not supported: \\\\__THIS_POINTER");
     default:
-        /* TODO(ab3-mode-g3 2.3-2.5): __DATE__, __DATE_GER__,
-           __THIS_INCLUDE, __CODELINE and __THIS_POINTER have no value
-           yet */
+        /* TODO(ab3-mode-g3 2.3, 2.4): __DATE__, __DATE_GER__,
+           __THIS_INCLUDE and __CODELINE have no value yet */
         unknownerr();
     }
 }

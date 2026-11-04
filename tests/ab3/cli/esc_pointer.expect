@@ -1,0 +1,5 @@
+[compile]
+esc_pointer.ab3:5: Not supported: \\__THIS_POINTER
+rc=10
+[run]
+no executable

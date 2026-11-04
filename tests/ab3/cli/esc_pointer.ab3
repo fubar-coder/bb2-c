@@ -1,0 +1,8 @@
+; \\__THIS_POINTER is refused (spec ab3-compat/strings): AmiBlitz3
+; inserts an address of its own compile-time memory
+OPTIMIZE 4
+Statement st{}
+  NPrint "\\__THIS_POINTER"
+End Statement
+st{}
+End
