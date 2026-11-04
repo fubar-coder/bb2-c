@@ -1,0 +1,7 @@
+[compile]
+error 120 Macro too Big
+[blitz2]
+inject: alertlog: 0 alerts
+inject: rc=0
+inject: track: 0 allocations left, 0 bytes
+rc=0
