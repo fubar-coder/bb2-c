@@ -248,7 +248,12 @@ AB3 mode.
    `ab3_cli_ref` with ten more of AmiBlitz3's test programs. Measured
    share of the 68 test programs: section "Measured share". After G2
    (OpenSpec change `ab3-function-statement`, 2026-11-01): a `Function`
-   called as a statement compiles as in AmiBlitz3 (`jsr`).
+   called as a statement compiles as in AmiBlitz3 (`jsr`). **G3 done
+   2026-11-04** (OpenSpec change `ab3-mode-g3`, spec
+   `ab3-compat/strings`): escapes in string literals and `Dc.b`,
+   character literals `@"…"`, `\\__CODELINE` over lines joined with
+   `@@`; section "Strings". AmiBlitz3's test programs: unchanged (48 of
+   68), section "Measured share".
 3. **G6, G7** (FPU and 68020; needs an A1200/FPU machine in the
    emulator for the tests).
 4. **G8** only if AB3's error behaviour or byte-equal executables are

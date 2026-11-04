@@ -395,11 +395,13 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      and `ab3-function-statement` (`jsr` compiles): the same result as
      AmiBlitz3 for 58.
   3. [ ] G3–G5 (escapes, optional parameters, `Null`, casts, `Dim KEEP`,
-     `Data` constants), then G7 (68020), then G6 (FPU); the differences
-     found against AmiBlitz3's compiler (`docs/ab3/variant.md`,
-     "Differences"). The rule for `Stop` without the debugger (`int_tests`)
-     is decided (2026-11-01, change `debug-constant`): BB2's behaviour in
-     both modes, and the predefined `#__debug` for `CNIF #__debug … CEND`
+     `Data` constants), then G7 (68020), then G6 (FPU). G3 done
+     (2026-11-04, change `ab3-mode-g3`): escapes in strings and `Dc.b`,
+     `@"…"`; 48 of the 68 test programs compile, as after G2.
+     Also open: the differences found against AmiBlitz3's compiler
+     (`docs/ab3/variant.md`, "Differences"). The rule for `Stop` without
+     the debugger (`int_tests`) is decided (2026-11-01, change
+     `debug-constant`): BB2's behaviour in both modes, and the predefined `#__debug` for `CNIF #__debug … CEND`
      (README, "Extensions of blitz2").
   4. [x] `68k_crash_newtype` (AmiBlitz3's tokenised test program) done
      (2026-11-03): blitz2-ab3 compiles it in BB2 mode (rc 0). The hang
@@ -448,9 +450,10 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      AmiBlitz3's `longlong.include.ab3` (v3.14.0) is blocked by "Illegaly
      nested Condition" at the line calling `!ll_ToStr` (a `While` loop
      around calls of the nested macros `ll_Mod`, `ll_Divu`,
-     `ll_Divu6432`, `ll_UShift`; not the literal, under analysis;
-     AmiBlitz3 compiles it). The case: `XINCLUDE "longlong.include.ab3"`,
-     `!ll_ToStr{digits.s, x}` of 1234567 and an IFF header written with
+     `ll_Divu6432`, `ll_UShift`; not the literal: a one-line `If … Then`
+     in a macro body stays open to the end of the expanded line,
+     AmiBlitz3 appends `: End If` there and compiles it). The case:
+     `XINCLUDE "longlong.include.ab3"`, `!ll_ToStr{digits.s, x}` of 1234567 and an IFF header written with
      `WriteMem` and read back with `Select`/`Case @"…"` (AmiBlitz3's
      output `1234567`, `FORM 4`, `ILBM ILBM`); `file.include.ab3` needs
      G4's optional parameters (`docs/ab3/variant.md`, "Strings").
