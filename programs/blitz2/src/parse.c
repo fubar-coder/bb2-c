@@ -429,7 +429,13 @@ UWORD getchar_(void)
         /* .done2 */
         if (!comflag)
             continue;
-        if (c == '~') {                     /* .cmake */
+        /* Fixed (#966): the original compares every character with '~'
+           here (blitz2.s:7062), also inside a string literal: "J~" gave
+           "Illegal Constant Expression", "a~1+2~b" was compiled as
+           "a3b".  A '~' inside quotes is an ordinary character now
+           (getcharb has toggled quoteflag at the opening quote and back
+           at the closing one), nothing is computed inside strings. */
+        if (c == '~' && !quoteflag) {       /* .cmake */
             UWORD term;
             ULONG val;
             char *end;
