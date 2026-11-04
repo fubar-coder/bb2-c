@@ -690,52 +690,102 @@ remove assign: Blitz3:Libs"), and every compile leaves one more such
 entry. `ab3_cli_ref` therefore has an empty `Libs/` in each Blitz3 tree
 (`tests/ab3/cli.cmake`). `blitz2-ab3` makes no assigns.
 
-## Measured share of AmiBlitz3's test programs (G2, 2026-11-01)
+## Measured share of AmiBlitz3's test programs (G3, 2026-11-04)
 
 A throw-away run (not in the repository): every one of the 68 test
 programs of `Sourcecodes/Amiblitz3/Tests` at `@58a11658` (67 `.ab3`, the
 includes among them, and the tokenised `68k_crash_newtype`) compiled
-once by `blitz2-ab3` (state of task 5.1 of `ab3-mode-g2`, the options of
-each program's header) and once by AmiBlitz3 v3.14.0 in CLI mode, in
-Amiberry's A1200 (`default.uae`, 68020 + 68882), with AmiBlitz3's
-`Sourcecodes/Includes` and `BlitzLibs/Residents` of the same commit;
-compile only, the programs are not run.
+once by `blitz2-ab3` (state of task 5.1 of `ab3-mode-g3`; the options of
+each program's header: `-r` where it says `RuntimeDebug = 0`) and once
+by AmiBlitz3 v3.14.0 in CLI mode, in Amiberry's A1200 (`default.uae`,
+68020 + 68882), with AmiBlitz3's `Sourcecodes/Includes` and the whole
+`BlitzLibs/Residents` of the same commit (`lesdebuglibtest` needs
+`asmmacs.res`); compile only, the programs are not run. AmiBlitz3's
+compiles ran under `reqtrap`, one `Assign Blitz3:` before each (it
+removes the assign when it ends).
 
 * **blitz2-ab3 compiles 48 of 68 (71 %)**; AmiBlitz3 itself compiles 57
   (84 %). Both give the same result (compiled or not) for 57: 47
-  compile in both, 10 fail in both. (The run measured 47 at the end of
-  G2, with `exec_data` compiled by blitz2-ab3 only, `jsr` by AmiBlitz3
-  only and `68k_crash_newtype` by neither; since `ab3-pointer-assign`
-  `exec_data` fails in both, since `ab3-function-statement` `jsr`
-  compiles in both, since the fix of #336 blitz2-ab3 compiles
-  `68k_crash_newtype` - each checked by `ab3_cli`/`ab3_cli_ref` or the
-  case named below, the whole run not repeated.)
+  compile in both, 10 fail in both. G3 changes none of the 68: only
+  three of them contain an escape or `@"…"` (`serial_read`,
+  `fpu_test2`, `printlib_test`), and each stops at another difference
+  first (below).
 * Compiled by blitz2-ab3 only: `68k_crash_newtype`, a tokenised source
   with a companion `.xtra` of BB2's layout. blitz2-ab3 compiles it in
-  BB2 mode (rc 0); the `.xtra`'s Macro Buffer of 40000 freed with that
-  size at blitz2-ab3's end (#336, fixed) was the alert 8100 0005 that
-  ended the run (`ab3_cli` case `macrobuf_xtra`). AmiBlitz3 stops with
+  BB2 mode (rc 0; the `.xtra`'s Macro Buffer of 40000 is freed with that
+  size at its end, `ab3_cli` case `macrobuf_xtra`). AmiBlitz3 stops with
   "Garbage at the end of line" in line 1: in CLI mode it takes a file
   without the extension `.bb` or `.bb2` for text (`CLIModeSupport.ab3`
   449-466 at `@58a11658`).
 * Not compiled by blitz2-ab3, by AmiBlitz3 (10): `benchmark2`,
   `putdiskobject`, `quickdivtest`, `serial_read`, `statementcalls`
   ("Can't Convert Types" in `error.include.ab3` 226: its optional
-  parameters `@titletext.s`, G4), `function_problem` (`@p`, G4),
-  `benchmark` (`FAST` in `convert.include.ab3`, G4), `data_constants`
-  (`Data.w #c`, G5), `double_print`, `fpu_test2` (`OPTIMIZE 2`, G6).
+  parameters `@errorcode.l`, `@onlyonce.l`, `@titletext.s`, G4),
+  `function_problem` (`Test{2}` of `Function.b Test{vaue.b, @text.s}`,
+  "Not Enough Parameters", G4), `benchmark` (`FAST` in
+  `convert.include.ab3` 219, G4), `data_constants` (`Data.w #c`, G5),
+  `double_print`, `fpu_test2` (`OPTIMIZE 3`/`6` have bit 2, "Not
+  supported: OPTIMIZE 2 (FPU)", G6).
 * Not compiled by either (10): `ab3_Errors`, `dimcrash`,
-  `errorInIncludes` (errors on purpose), `include_dc`, `include_dc_main`,
-  `includes_test` (`.h` includes), `_new_includes` (includes not in the
-  repository), `printlib_test`, `unknown_function` (on purpose),
-  `exec_data` (AmiBlitz3's type rule of the assignment, since
-  `ab3-pointer-assign`; `ab3_cli`, `ab3_cli_ref`).
-* `int_tests` compiles with runtime error checking (its `Stop` hangs at
-  run time, "Differences"), `windowtags`, `setwindowpointer`, `hunktest`
-  compile; the research table (G2 research §9) expected 52 after G2 -
-  `jsr` was counted for G2 wrongly (it compiles since the change
-  `ab3-function-statement`), the rest of the difference are its
-  upper bounds.
+  `errorInIncludes` (errors on purpose; the texts differ, e.g.
+  `dimcrash` "Syntax Error" against AmiBlitz3's "Can't convert
+  types"), `include_dc`, `include_dc_main` ("Illegal Immediate Value" in
+  both: a `testme` label as an immediate), `includes_test` (`.h`
+  includes), `_new_includes` (includes not in the repository),
+  `printlib_test`
+  (AmiBlitz3 stops at `MOVE.l #test2start-#test2end`, "Constant not
+  found"; blitz2-ab3 at `Dc.b "J~"`, "Illegal Constant Expression":
+  `Dc.b "~"` is refused in both modes, also by the compiler before G3,
+  AmiBlitz3 takes it),
+  `unknown_function` (on purpose), `exec_data` (AmiBlitz3's type rule
+  of the assignment, since `ab3-pointer-assign`; `ab3_cli`,
+  `ab3_cli_ref`).
+* `int_tests` and `joystick_test` (headers `RuntimeDebug = 1`) compile
+  with runtime error checking (their `Stop` hangs at run time,
+  "Differences" above; with `-r` it is "Debugger must be enabled for
+  STOP"). `windowtags`, `setwindowpointer`, `hunktest` compile. The
+  research table (G2 research §9) expected 54 after G2 and G3; its
+  figures are upper bounds.
+
+### AmiBlitz3's includes with `\\` or `@"`
+
+79 files of `Sourcecodes/Includes` (the includes, `NTUI/`, `PE/`) contain
+`\\` or `@"`. Each was compiled as the include of a main source with
+AmiBlitz3's header (`Residents = "all.res"`), `OPTIMIZE 4` and
+`XINCLUDE "…"` / `End`, by both compilers, compile only.
+
+* **blitz2-ab3 compiles 4**: `clipboard2.include` (`"\\n"`),
+  `datetime.include` (`"\\0a"` at its top level), `longlong.include`
+  (`@"0"`) and `PE/printer.include` (`"\\n"`).
+  AmiBlitz3 compiles these four too (and 35 more, 39 in all); 35 fail in
+  both. Five more do not end under AmiBlitz3 (the compile hangs or
+  ends the emulator session: `camd.include`,
+  `PE/ISO9796_hbci4java.include`, `PE/ISO9796p1.include`,
+  `PE/ISO9796Part1.include`, `PE/ISO9796Part1_byte.include`); blitz2-ab3
+  gives a compile error for them like for the other failures.
+* Of the 35 that AmiBlitz3 compiles and blitz2-ab3 does not: 31 stop at
+  `error.include.ab3` 226 (the optional parameters, G4: the file is
+  included by them, the include's own text behind it is not reached),
+  3 at `useful.include.ab3` 623 (`Function.s double2str{f.d}`, the type
+  `.d`, G6; the escapes and `@"…"` in the lines before it are accepted,
+  e.g. `Case @"{"` at line 384) and `ntui.include` at its `OPTIMIZE 2`
+  (G6).
+* Failing in both (35): the other errors come from the wrapper or from
+  libraries: the `NTUI/obj.*.ab3` files need the constants of
+  `ntui.include.ab3` ("Constant not found"), `keyread.include` and
+  `NTUI/png.ab3` call `dos_Exist{}` and `error{}` of includes the
+  wrapper does not include ("Procedure not found"), and 10 need a
+  library that is in no BigLib (AmiBlitz3: "Library not found:
+  $0026"; blitz2-ab3 stops earlier, at `error.include.ab3` 226).
+* `ab3_cli`/`ab3_cli_ref` case `inc_datetime`: `datetime.include.ab3`
+  (fetched, `cmake/fetch-originals.cmake`) in `Blitz3:Sourcecodes/
+  Includes`, its month names joined with `\\0a`, its date functions under
+  `inject datestamp=`; both compilers give the same output. The other
+  three need a clipboard or printer device (compile only);
+  `longlong.include` is not a case yet: its use of the macros is blocked
+  by "Illegaly nested Condition", a known limitation of blitz2-ab3 (a
+  one-line `If … Then` in a macro body: AmiBlitz3 appends `: End If` in
+  `do_Macro`; a planned follow-up).
 
 ## Spike result (2026-10-31)
 
