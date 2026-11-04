@@ -1,0 +1,8 @@
+; joining lines with @@ after an operator (spec ab3-compat/syntax-rules,
+; "Line joining with @@"): the expression goes on in the next line.
+; AmiBlitz3 gives a syntax error there (docs/ab3/variant.md, Differences)
+NPrint "start"
+b.l = 1 + @@
+  2
+NPrint b
+End

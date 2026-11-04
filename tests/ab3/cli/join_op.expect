@@ -1,0 +1,6 @@
+[compile]
+rc=0
+[run]
+start
+3
+rc=0
