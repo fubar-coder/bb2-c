@@ -14,8 +14,8 @@
 
 ## 1. Date patch for the tests
 
-- [ ] 1.1 Add `datestamp=YYYY-MM-DD` to `inject` (D7): the usage text, a `SetFunction` on `DateStamp`, the original restored at the end, a usage error for an invalid date. Check whether AmiBlitz3's `SystemDate` goes through `DateStamp` (a probe compiled by AmiBlitz3 under `inject datestamp`). Verify: a bug-orig-style self test of `inject`, where a program printing `DateStamp`'s days gives the patched value and an invalid date gives the usage error; the result for AmiBlitz3 is noted in design.md (Risks)
-- [ ] 1.2 Make `inject` usable in `tests/ab3`: `cli.cmake` copies it, the `ab3_cli_case` option `DATESTAMP <date>` and the case-line field, the header comment and `README.md` ("Tests") updated. Verify: an `ab3_cli` and an `ab3_cli_ref` case with `DATESTAMP` that runs a program printing the date through `Date$(SystemDate)` gives the patched date in both
+- [x] 1.1 Add `datestamp=YYYY-MM-DD` to `inject` (D7): the usage text, a `SetFunction` on `DateStamp`, the original restored at the end, a usage error for an invalid date. Check whether AmiBlitz3's `SystemDate` goes through `DateStamp` (a probe compiled by AmiBlitz3 under `inject datestamp`). Verify: a bug-orig-style self test of `inject`, where a program printing `DateStamp`'s days gives the patched value and an invalid date gives the usage error; the result for AmiBlitz3 is noted in design.md (Risks)
+- [x] 1.2 Make `inject` usable in `tests/ab3`: `cli.cmake` copies it, the `ab3_cli_case` option `DATESTAMP <date>` and the case-line field, the header comment and `README.md` ("Tests") updated. Verify: an `ab3_cli` and an `ab3_cli_ref` case with `DATESTAMP` that runs a program printing the date through `Date$(SystemDate)` gives the patched date in both
 
 ## 2. Escape sequences in string literals
 
