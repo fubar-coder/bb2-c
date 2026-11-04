@@ -856,6 +856,13 @@ void domacro(UWORD c)
         dupmacerr();
     m = (struct macro *)addhere(last, NAMEOFF_MACRO, len);
     m->usecnt = 0;
+    /* Fixed (#965): the original sets only usecnt (blitz2.s:12858) and
+       writes text and textlen at .cdone: an error before End Macro
+       ("Macro too Big", "Macro without End Macro") leaves them as the
+       memory of addhere held, and freemacs (errcont freeemup) frees
+       that text.  Cleared here, the half-built macro has no text. */
+    m->text = NULL;
+    m->textlen = 0;
     mb.at = macrobuff;
     mb.got = 0;                                 /* flag for nothing got yet! */
     coolnest = 0;
@@ -906,7 +913,7 @@ void domacro(UWORD c)
        a Macro Buffer over 65535 (#336 made the option effective).
        Kept. */
     m->textlen = (UWORD)n;                      /* .cdone */
-    if (m->textlen) {   /* text left unset when empty (never read then) */
+    if (m->textlen) {   /* text stays NULL when empty (never read then) */
         m->text = doallocmem(n, MEMF_PUBLIC);
         memcpy(m->text, macrobuff, m->textlen);
     }
