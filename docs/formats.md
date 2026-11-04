@@ -231,10 +231,11 @@ extensions); no product links it yet. Design of 2026-10-30 (rework):
   low word of a buffer would be the high word of the next, 16384 →
   `$40000000`), the text fields 0-terminated. An older AmiBlitz3 `.xtra`
   with 14 words (e.g. the 1296 bytes of `68k_crash_newtype.xtra`) is not
-  recognised (host test `xtra_ab3_binary`). Not loaded yet: its fields
-  fit into `struct xtra_ab3` (stack, version, builds, FuncOptimize,
-  CreateDbgFile) and `sw[]`; a loader would map the 15 words to the 14
-  indices.
+  recognised (host test `xtra_ab3_binary`). It is not loaded:
+  `blitz2-ab3` takes only the mode from it and ignores its options
+  (`ab3cli` prints a note, `docs/ab3/variant.md`), because AmiBlitz3
+  drops loading tokenised sources – the only sources with such a
+  companion – and no loader is written for it.
 
 ---
 

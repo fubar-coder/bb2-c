@@ -375,6 +375,14 @@ Limits of G1, found on the way:
 * The `Max NAME` lines of the embedded header are not used (a Blitz 2
   `.xtra` names the library by number; mapping needs the libraries):
   the compiler's maximums apply.
+* A companion `.xtra` in AmiBlitz3's binary format (15 switch words,
+  `xtra_is_ab3_xtra`) only gives the mode: `ab3cli` does not use its
+  options and prints `NAME.xtra: AmiBlitz3's format, its options are not
+  used`; the compiler's own options apply (with `-r` as above). Handed
+  to `loadxtra` its buffer sizes would be read 2 bytes late (16384 →
+  `$40000000`), and no loader for it is written: AmiBlitz3 drops loading
+  tokenised sources (`docs/formats.md` §7; `ab3_cli` cases `ab3xtra_tok`,
+  `ab3xtra_tok_r`).
 * A text line longer than TED's 128 characters is split as TED splits
   it; names that contain a command name are tokenised inside (`show2{`
   becomes `Show` + `2{`), as in TED and AmiBlitz3's tokenised sources.

@@ -423,21 +423,27 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      `SYNTAX`); `exec_data` now fails as with AmiBlitz3 (46 of the 68
      test programs compile). NewType left sides and the `SYNTAX 4` part
      stay for G8.
-  7. [ ] An AmiBlitz3 `.xtra` of a tokenised main source without `-r`
-     (found 2026-11-03, not measured): `ab3cli` hands the companion
-     `.xtra` unchecked to blitz2's `loadxtra` ("as TED: the file itself",
-     `programs/ab3cli/src/main.c:329-337`), in both modes. A current
-     AmiBlitz3 `.xtra` has 15 switch words (`docs/formats.md` §7), so
-     BB2's loader reads the six buffer sizes 2 bytes late (16384 →
-     `$40000000`, `maxpc`/`maxlib`/Macro Buffer garbage); an older one
-     with 14 words (`68k_crash_newtype.xtra`) is read right but carries
-     AmiBlitz3's Macro Buffer of 40000 (since the fix of #336 no crash,
-     `ab3_cli` case `macrobuf_xtra` with such a 14-word `.xtra`). Only
-     includes have a 15-word companion in the tests
-     (`incother_ab3tok.bb2.xtra`, `inctok_ab3_inc.bb2.xtra`). To do: a
-     test with a 15-word `.xtra` of a tokenised main source, then load
-     AmiBlitz3's `.xtra` through `xtra_load` (the 15 words mapped to the
-     14 indices) instead of handing it raw to `loadxtra`.
+  7. [x] An AmiBlitz3 `.xtra` of a tokenised main source done
+     (2026-11-04): a current AmiBlitz3 `.xtra` has 15 switch words
+     (`docs/formats.md` §7); `ab3cli` handed it to blitz2's `loadxtra`
+     without `-r`, which read the six buffer sizes 2 bytes late (16384 →
+     `$40000000`), and with `-r` `xtra_load` refused it (set-up error).
+     No loader is written (user decision 2026-11-04: AmiBlitz3's
+     developer plans to drop loading tokenised sources): `ab3cli` does
+     not use such a `.xtra` and prints `NAME.xtra: AmiBlitz3's format,
+     its options are not used`; the compiler's own options apply, the
+     mode (AB3) still comes from the `.xtra`. Tests: `ab3_cli` cases
+     `ab3xtra_tok` and `ab3xtra_tok_r` (a 15-word `.xtra` with
+     AmiBlitz3's default buffers, Macro Buffer 40000). An older 14-word
+     `.xtra` (`68k_crash_newtype.xtra`) is read right and handed over as
+     before (`macrobuf_xtra`).
+  8. [ ] An AmiBlitz3 release without tokenised sources breaks the
+     `ab3_cli_ref` cases that read a tokenised file: `inctok_ab3` (the
+     include `inctok_ab3_inc.bb2` with AmiBlitz3's `.xtra`) and
+     `inctext_bbname` (an include named `.bb`, read as tokenised by its
+     name). At the next version bump of the reference AmiBlitz3: take
+     them out of `ab3_cli_ref` or record the difference, and decide
+     whether AB3 mode follows.
 - [ ] **Tests for the issues labelled `needs-test`** (99 open issues at the
   start, 3 open on 2026-10-29: #14, #26, #42). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,

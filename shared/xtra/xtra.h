@@ -35,8 +35,8 @@
  * AmiBlitz3's binary .xtra (15 switch words, the CLI block's last 12
  * bytes as stack/version/builds, PED's XtraExtend after the pairs) is
  * only recognised (xtra_is_ab3_xtra: the mode of a tokenised source in
- * blitz2-ab3); loading it is for later - its fields fit into struct
- * xtra_ab3.
+ * blitz2-ab3), not loaded: AmiBlitz3 drops loading tokenised sources
+ * (docs/formats.md 7).
  */
 #ifndef XTRA_H
 #define XTRA_H

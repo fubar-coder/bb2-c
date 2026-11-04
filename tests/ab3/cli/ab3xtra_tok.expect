@@ -1,0 +1,6 @@
+[compile]
+ab3xtra_tok.bb2.xtra: AmiBlitz3's format, its options are not used
+rc=0
+[run]
+hello 1
+rc=0

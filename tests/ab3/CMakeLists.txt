@@ -102,7 +102,7 @@ file(GLOB cli_sources CONFIGURE_DEPENDS ${cli_dir}/*.ab3 ${cli_dir}/*.bb)
 set(ted_tokens ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
 set(cli_made)
 foreach(pair incerr_tok_inc|incerr_tok_inc incother|incother_bb2tok incother|incother_ab3tok
-		inctok_ab3_inc|inctok_ab3_inc macrobuf_xtra|macrobuf_xtra)
+		inctok_ab3_inc|inctok_ab3_inc macrobuf_xtra|macrobuf_xtra ab3xtra_tok|ab3xtra_tok)
 	string(REPLACE "|" ";" pair "${pair}")
 	list(GET pair 0 in)
 	list(GET pair 1 out)
@@ -136,6 +136,15 @@ add_custom_command(OUTPUT ${cli_gen}/macrobuf_xtra.bb2.xtra
 	COMMENT "BB2 .xtra of macrobuf_xtra.bb2"
 	VERBATIM)
 list(APPEND cli_made ${cli_gen}/macrobuf_xtra.bb2.xtra)
+# a tokenised main source with AmiBlitz3's .xtra of its default buffer
+# sizes: AB3 mode, the .xtra is not used
+add_custom_command(OUTPUT ${cli_gen}/ab3xtra_tok.bb2.xtra
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${cli_gen}
+	COMMAND ${MKTESTDATA} ${cli_dir}/ab3xtra_tok.xtra.spec ${cli_gen}/ab3xtra_tok.bb2.xtra
+	DEPENDS ${cli_dir}/ab3xtra_tok.xtra.spec ${MKTESTDATA} host_tools
+	COMMENT "AmiBlitz3 .xtra of ab3xtra_tok.bb2"
+	VERBATIM)
+list(APPEND cli_made ${cli_gen}/ab3xtra_tok.bb2.xtra)
 add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 
 # ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-userlib]
@@ -237,6 +246,12 @@ ab3_cli_case(incerr_tok incerr_tok.bb)
 # loadxtra without -r) sets a Macro Buffer of 40000, as AmiBlitz3's
 # 68k_crash_newtype: blitz2 frees macrobuff with the allocated size (#336)
 ab3_cli_case(macrobuf_xtra macrobuf_xtra.bb2)
+# a tokenised main source whose companion .xtra has AmiBlitz3's binary
+# format (AB3 mode): ab3cli does not use it - loadxtra would read its
+# buffer sizes 2 bytes late, xtra_load (-r) refuses it - and says so; the
+# compiler's own options (docs/formats.md 7)
+ab3_cli_case(ab3xtra_tok ab3xtra_tok.bb2)
+ab3_cli_case(ab3xtra_tok_r ab3xtra_tok.bb2 ARGS -r)
 # the directives of AB3 mode (change ab3-mode-g2, spec ab3-compat/directives)
 ab3_cli_case(opt_code opt_code.ab3 ARGS -r REF)
 ab3_cli_case(opt_expr opt_expr.ab3 REF)

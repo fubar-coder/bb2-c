@@ -13,7 +13,8 @@
  *     of the program's mode, a tokenised source is taken as it is),
  *   - hands the compiler the options of the source (loadxtra): from
  *     AmiBlitz3's embedded header (shared/xtra, written as a Blitz 2
- *     .xtra image), else from the companion SOURCE.xtra, else the
+ *     .xtra image), else from the companion SOURCE.xtra (not one in
+ *     AmiBlitz3's binary format: a note, it is not used), else the
  *     compiler's own; with -r without runtime error checking, debugger and
  *     debug information,
  *   - compiles with CREATE EXECUTABLE into EXE; an include of text is
@@ -293,8 +294,9 @@ static void xtraerror(const char *file, const struct xtra_error *e)
  * the options of the source
  * ------------------------------------------------------------------- */
 /* the options: AmiBlitz3's embedded header, else the companion .xtra
-   (handed over as it is unless -r changes it), else the compiler's own
-   (nothing to do unless -r).  1 = done, 0 = set-up error (printed) */
+   (handed over as it is unless -r changes it; one in AmiBlitz3's format
+   is not used), else the compiler's own (nothing to do unless -r).
+   1 = done, 0 = set-up error (printed) */
 /* the big ones static: this runs on the shell's stack (4096 bytes by
    default) below the compiler's loadxtra and loadres */
 static char xname[AB3JOB_PATHLEN + 8];
@@ -325,7 +327,17 @@ static int load_options(void)
     } else if (xtra_has_companion(type)
                && xtra_companion_name(job->source, xname, sizeof xname) == XTRA_OK
                && (xb = readfile(xname, &xlen))) {
-        if (!job->release_exe) {            /* as TED: the file itself */
+        if (xtra_is_ab3_xtra(xb, (size_t)xlen)) {
+            /* AmiBlitz3's binary .xtra (15 switch words): loadxtra would
+               read its buffer sizes 2 bytes late and xtra_load refuses it;
+               it is not loaded (AmiBlitz3 drops tokenised sources,
+               docs/formats.md 7), the compiler's own options are used */
+            OUT_BEGIN;
+
+            sbs(&L, xname);
+            sbs(&L, ": AmiBlitz3's format, its options are not used");
+            OUT_END;
+        } else if (!job->release_exe) {     /* as TED: the file itself */
             BPTR fh = Open((CONST_STRPTR)xname, MODE_OLDFILE);
 
             if (fh) {
@@ -334,12 +346,13 @@ static int load_options(void)
             }
             ok = 1;
             goto out;
+        } else {
+            if (xtra_load(&x, type, src, (size_t)slen, xb, (size_t)xlen, &e)) {
+                xtraerror(xname, &e);
+                goto out;
+            }
+            have = 1;
         }
-        if (xtra_load(&x, type, src, (size_t)slen, xb, (size_t)xlen, &e)) {
-            xtraerror(xname, &e);
-            goto out;
-        }
-        have = 1;
     } else if (xlen < 0) {
         report("cannot read the companion .xtra");
         goto out;
