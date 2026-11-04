@@ -1,0 +1,6 @@
+[compile]
+rc=0
+[run]
+start
+> [QQ]ABC"qq]abc
+rc=0

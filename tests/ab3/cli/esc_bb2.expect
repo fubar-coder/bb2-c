@@ -1,0 +1,5 @@
+[compile]
+rc=0
+[run]
+> [\\41] [\\n] [\\__THIS_FUNCTION]
+rc=0

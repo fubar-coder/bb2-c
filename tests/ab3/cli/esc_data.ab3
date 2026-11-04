@@ -1,0 +1,12 @@
+; a Data string takes no escapes, also with new syntax (spec
+; ab3-compat/strings; AmiBlitz3.ab3:20390)
+OPTIMIZE 4
+Restore strs
+Read a$
+NPrint "> ", a$
+Read a$
+NPrint "> ", a$
+End
+strs:
+Data$ "[\\41]"
+Data$ "[\\__THIS_FUNCTION]"

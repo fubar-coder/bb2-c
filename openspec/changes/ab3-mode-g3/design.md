@@ -211,3 +211,21 @@ reverting the commits.
 - The exact text of AmiBlitz3's "Can't Convert Types" path for a quick
   target, to be compared in the `ab3_cli_ref` case. It does not change
   the spec, which names the error.
+
+## Findings during the implementation
+
+- (Task 2.1, 2026-11-04) `\\Rdd` takes as c the next character of the
+  string; the closing quote or the end of the line is no character of
+  the string, so `"[\\R03"` is an unknown form ("Unknown Escape
+  Sequence", `ab3_cli` case `esc_repeat_quote`, not compared with
+  AmiBlitz3). By its rule 3 AmiBlitz3 takes the `"` as c (not checked).
+  The source is left out of `ab3_tokenise`: AmiBlitz3's `-save` writes
+  its lines, but the `-save` of a later source in the same session ends
+  in a program error (8000000A, at `incother_ab3`); without it the
+  session passes. Not investigated further.
+- (Task 2.1) AmiBlitz3's output of the cases with `REF_EXPECT` is that of
+  its Compiler-Spec (§4.5.2, probe `esc_newsyntax`): `\\R05*` gives 6
+  stars, `\\R03ab` gives `AAAab`, `\\R12-` 13 dashes; `\\R00x` runs over
+  (`[` and NUL bytes, the rest of the string lost, the program goes on:
+  matched as `~> [*`); `"[\\qq]abc"` gives `[QQ]ABC"qq]abc` with the
+  warning "detected unknown const" once per pass.

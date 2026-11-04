@@ -1,0 +1,8 @@
+; \\Rddc (spec ab3-compat/strings): the character c dd times, dd
+; decimal, c unchanged in case, reading goes on behind c
+OPTIMIZE 4
+NPrint "> [\\R05*]"
+NPrint "> [\\R03ab]"
+NPrint "> [\\r12-]"
+NPrint "> [\\R01*]"
+End

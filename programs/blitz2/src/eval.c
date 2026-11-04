@@ -2162,6 +2162,8 @@ static UWORD litstring(UWORD *type)
             notqerr();
         if (c == '"')
             break;
+        if (c == '\\' && ext_strescape(&len))
+            continue;
         len++;
         pokedata1b((UBYTE)c);
     }

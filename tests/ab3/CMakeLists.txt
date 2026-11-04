@@ -373,6 +373,20 @@ ab3_cli_case(jsr jsr.ab3 REF)
 # the program run under inject datestamp=2026-10-25.  AmiBlitz3's
 # SystemDate (run time) and __DATE__ (compile time) go through DateStamp
 ab3_cli_case(date_stamp date_stamp.ab3 REF DATESTAMP 2026-10-25 RUN_DATESTAMP 2026-10-25)
+# the escape sequences of string literals (change ab3-mode-g3, spec
+# ab3-compat/strings): only with new syntax in AB3 mode, not in Data
+# strings, the forms AmiBlitz3 shares.  AmiBlitz3's bugs are implemented
+# as intended, its output recorded with REF_EXPECT (docs/ab3/variant.md):
+# \\R repeats once more and in upper case, \\R00 runs over, an unknown
+# form is copied
+ab3_cli_case(esc_off esc_off.ab3 REF)
+ab3_cli_case(esc_bb2 esc_bb2.bb)
+ab3_cli_case(esc_data esc_data.ab3 REF)
+ab3_cli_case(esc_basic esc_basic.ab3 REF)
+ab3_cli_case(esc_repeat esc_repeat.ab3 REF REF_EXPECT esc_repeat.ref.expect)
+ab3_cli_case(esc_repeat0 esc_repeat0.ab3 REF REF_EXPECT esc_repeat0.ref.expect)
+ab3_cli_case(esc_repeat_quote esc_repeat_quote.ab3)
+ab3_cli_case(esc_unknown esc_unknown.ab3 REF REF_EXPECT esc_unknown.ref.expect)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)
@@ -424,6 +438,10 @@ endforeach()
 # Label emulator; skipped (77) without Amiberry or the fetched files.
 file(GLOB tokenise_sources CONFIGURE_DEPENDS ${cli_dir}/*.ab3
 	${CMAKE_CURRENT_SOURCE_DIR}/tokens/*.ab3)
+# not compared: esc_repeat_quote ("\\R03" before the closing quote) -
+# AmiBlitz3 writes its lines, but a later -save of the session ends in a
+# program error (8000000A), as if the line damaged its memory
+list(FILTER tokenise_sources EXCLUDE REGEX "/esc_repeat_quote\\.ab3$")
 string(REPLACE ";" "$<SEMICOLON>" tokenise_sources "${tokenise_sources}")
 # ab3_tokenise(NAME [BREAK]): the ctest; BREAK: the token of NPrint
 # changed in our list (the check itself)

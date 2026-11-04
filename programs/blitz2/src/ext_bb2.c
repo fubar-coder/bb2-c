@@ -181,6 +181,13 @@ BOOL ext_result(int *rc)
     return FALSE;
 }
 
+/* AB3 mode's strings (change ab3-mode-g3) */
+
+BOOL ext_strescape(UWORD *len)
+{
+    return FALSE;
+}
+
 /* AB3 mode's type rules (change ab3-pointer-assign) */
 
 void ext_assignstart(void)

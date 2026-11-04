@@ -1,0 +1,5 @@
+; an unknown escape is an error (spec ab3-compat/strings)
+OPTIMIZE 4
+NPrint "start"
+NPrint "> [\\qq]abc"
+End

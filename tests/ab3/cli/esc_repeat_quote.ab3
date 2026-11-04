@@ -1,0 +1,5 @@
+; \\Rdd needs a character c in the string: the closing quote is none, the
+; form is unknown (change ab3-mode-g3, design.md "Findings")
+OPTIMIZE 4
+NPrint "> [\\R03"
+End

@@ -237,6 +237,19 @@ void ext_passend(void);
  */
 BOOL ext_savefile(void);
 
+/* ======================== AB3 mode's strings (change ab3-mode-g3) */
+
+/**
+ * @brief litstring (eval.c): the character read in a string literal is
+ *        a '\'; srcptr is behind it.
+ * @param len  the length of the string so far; the bytes written are
+ *             added if handled
+ * @return TRUE if handled: an escape sequence was read and its bytes
+ *         written with pokedata1b (the '\' is not written); may stop the
+ *         compile with err()
+ */
+BOOL ext_strescape(UWORD *len);
+
 /* ================ AB3 mode's type rules (change ab3-pointer-assign) */
 
 /** @brief dolet2 (tokens2.c): the right side of an assignment to a

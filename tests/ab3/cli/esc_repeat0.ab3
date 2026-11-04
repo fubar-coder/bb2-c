@@ -1,0 +1,5 @@
+; \\R00c gives an empty text (spec ab3-compat/strings)
+OPTIMIZE 4
+NPrint "> [\\R00x]"
+NPrint "end"
+End
