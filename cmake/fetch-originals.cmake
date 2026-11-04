@@ -90,7 +90,8 @@ set(ab3v314_files
 	"Sourcecodes/Amiblitz3/Tests/unknown_function_include.ab3|e5ab24146a409e01d63625d8fbce805e61a8755d2b76dd05a89ce1b8aef8b9ed"
 	"Sourcecodes/Amiblitz3/Tests/kick13.ab3|4ee0f1d98eaa505679da143b85c5b53211f6abdcdcf8495040009a4052ffdb3a"
 	"Sourcecodes/Amiblitz3/Tests/windowtags.ab3|994f756fab869fcdf976ffe9dd18fbb42af857e809de5c99944fe40844dc38cb"
-	"Sourcecodes/Includes/datetime.include.ab3|2c421f2f596275b4298d7c9319fd90373b2af747525dc71d741a838bac720c8b")
+	"Sourcecodes/Includes/datetime.include.ab3|2c421f2f596275b4298d7c9319fd90373b2af747525dc71d741a838bac720c8b"
+	"Sourcecodes/Includes/longlong.include.ab3|0e1c7c65ef1921d5766e2de6c306beac6dbba85e05a58ed8ca98963f76046a50")
 foreach(f IN LISTS ab3v314_files)
 	string(REPLACE "|" ";" f "${f}")
 	list(GET f 0 path)

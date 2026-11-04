@@ -444,6 +444,10 @@ ab3_cli_case(esc_dcb_bb2 esc_dcb_bb2.bb)
 # (\\0a joins the month names), its date functions under the run's
 # inject datestamp=
 ab3_cli_case(inc_datetime inc_datetime.ab3 REF RUN_DATESTAMP 2026-10-25)
+# an AmiBlitz3 include with character literals: longlong.include (digits
+# with @"0", nested macros with one-line Ifs inside a While), and @"..."
+# chunk IDs written to a file and read back
+ab3_cli_case(inc_longlong inc_longlong.ab3 REF)
 # a one-line If in a macro ends with its macro line (change ab3-mode-g3,
 # spec ab3-compat/macros): AmiBlitz3 appends ": End If" to a macro line
 # with Then.  Inside a While of another macro, the line after it, a line

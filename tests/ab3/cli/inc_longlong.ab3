@@ -1,0 +1,31 @@
+; character literals in an AmiBlitz3 include and in a chunk ID (spec
+; ab3-compat/strings): longlong.include.ab3 of v3.14.0 (from Blitz3:
+; Sourcecodes/Includes) makes its digits with Chr$(@"0" + digit); an IFF
+; header written with WriteMem is read back and its IDs are compared
+OPTIMIZE 4
+XINCLUDE "longlong.include.ab3"
+!ll_SetLongLong{x.ll, 0, 1234567}
+!ll_ToStr{digits.s, x}
+NPrint digits
+id.l = @"FORM" : size.l = 4 : form.l = @"ILBM"
+If OpenFile(0, "RAM:chr_inc.iff")
+  WriteMem 0, &id, 4
+  WriteMem 0, &size, 4
+  WriteMem 0, &form, 4
+  CloseFile 0
+EndIf
+h.l = 0 : n.l = 0 : t.l = 0
+If ReadFile(0, "RAM:chr_inc.iff")
+  ReadMem 0, &h, 4
+  ReadMem 0, &n, 4
+  ReadMem 0, &t, 4
+  CloseFile 0
+EndIf
+If h = @"FORM" Then NPrint "FORM ", n
+Select t
+  Case @"8SVX"
+    NPrint "8SVX"
+  Case @"ILBM"
+    NPrint "ILBM ", Mkl$(t)
+End Select
+End
