@@ -1,0 +1,13 @@
+; a '~' inside a string literal is an ordinary character (#966): in Dc.b,
+; in string literals (also one that holds a valid ~expr~), in a Data$
+; string; nothing is computed inside strings
+Restore d1
+Read s$
+NPrint Peek$(?a1)
+NPrint "x~y"
+NPrint "a~1+2~b"
+NPrint s$
+End
+a1: Dc.b "J~",0
+Even
+d1: Data$ "d~1"
