@@ -24,7 +24,8 @@
 #                                           v3.14.0 on GitHub (commit
 #                                           58a1165840a7), paths as there:
 #                                           BigLibs, residents, compiler,
-#                                           test sources of the AB3 mode
+#                                           test sources of the AB3 mode,
+#                                           includes used by them
 # None of it is in git (.gitignore); archive/README.md lists the sources.
 # Already unpacked and checked material is not touched again.
 # At the end: archive/sources/ted-1.1 and blitz2-1.95 (in git) must equal
@@ -88,7 +89,8 @@ set(ab3v314_files
 	"Sourcecodes/Amiblitz3/Tests/unknown_function.ab3|7a12a957665f3168f7da33cda38691668c59f772ffd0325c1f6bfa15c27ba24d"
 	"Sourcecodes/Amiblitz3/Tests/unknown_function_include.ab3|e5ab24146a409e01d63625d8fbce805e61a8755d2b76dd05a89ce1b8aef8b9ed"
 	"Sourcecodes/Amiblitz3/Tests/kick13.ab3|4ee0f1d98eaa505679da143b85c5b53211f6abdcdcf8495040009a4052ffdb3a"
-	"Sourcecodes/Amiblitz3/Tests/windowtags.ab3|994f756fab869fcdf976ffe9dd18fbb42af857e809de5c99944fe40844dc38cb")
+	"Sourcecodes/Amiblitz3/Tests/windowtags.ab3|994f756fab869fcdf976ffe9dd18fbb42af857e809de5c99944fe40844dc38cb"
+	"Sourcecodes/Includes/datetime.include.ab3|2c421f2f596275b4298d7c9319fd90373b2af747525dc71d741a838bac720c8b")
 foreach(f IN LISTS ab3v314_files)
 	string(REPLACE "|" ";" f "${f}")
 	list(GET f 0 path)

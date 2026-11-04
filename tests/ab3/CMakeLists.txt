@@ -437,6 +437,10 @@ ab3_cli_case(esc_include esc_include.ab3 REF REF_EXPECT esc_include.ref.expect)
 ab3_cli_case(esc_dcb esc_dcb.ab3 REF DATESTAMP 2026-10-25)
 ab3_cli_case(esc_dcb_names esc_dcb_names.ab3 REF REF_EXPECT esc_dcb_names.ref.expect DATESTAMP 2026-10-25)
 ab3_cli_case(esc_dcb_bb2 esc_dcb_bb2.bb)
+# an AmiBlitz3 include with an escape at its top level: datetime.include
+# (\\0a joins the month names), its date functions under the run's
+# inject datestamp=
+ab3_cli_case(inc_datetime inc_datetime.ab3 REF RUN_DATESTAMP 2026-10-25)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)

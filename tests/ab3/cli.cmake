@@ -12,7 +12,8 @@
 #        -e RAM:NAME (CLI mode)
 # TEST:src holds SOURCES and AmiBlitz3's test programs (AB3/Sourcecodes/
 # Amiblitz3/Tests, and int_tests_nostop.ab3: int_tests.ab3 without its Stop
-# line).  Blitz3: is one of three trees, built from AB3: Blitz3
+# line); AmiBlitz3's includes (AB3/Sourcecodes/Includes) are in
+# Blitz3:Sourcecodes/Includes.  Blitz3: is one of three trees, built from AB3: Blitz3
 # (BlitzLibs/ with baseLibs, utilLibs, OsLibs, csLibs, Residents/all.res
 # and an empty UserLibs/; an empty Libs/; for ref the compiler
 # Amiblitz3), Blitz3-nolib (without csLibs), Blitz3-userlib (USERLIB in
@@ -77,6 +78,7 @@ file(COPY_FILE ${REQTRAP} ${test}/reqtrap)
 file(COPY_FILE ${INJECT} ${test}/inject)
 # blitz2-ab3 under inject (datestamp=): its PROGDIR: is inject's
 file(COPY_FILE ${BLITZ2_DIR}/ab3cli ${test}/ab3cli)
+file(GLOB ab3_includes ${AB3}/Sourcecodes/Includes/*.ab3)
 foreach(tree Blitz3 Blitz3-nolib Blitz3-userlib)
 	set(libs ${test}/${tree}/BlitzLibs)
 	# Libs/: AmiBlitz3 adds Blitz3:Libs to LIBS: without checking the lock
@@ -89,6 +91,13 @@ foreach(tree Blitz3 Blitz3-nolib Blitz3-userlib)
 		endif()
 	endforeach()
 	file(COPY_FILE ${AB3}/BlitzLibs/Residents/all.res ${libs}/Residents/all.res)
+	# Sourcecodes/Includes: AmiBlitz3's default includes directory (the
+	# fetched includes only)
+	file(MAKE_DIRECTORY ${test}/${tree}/Sourcecodes/Includes)
+	foreach(f IN LISTS ab3_includes)
+		get_filename_component(n ${f} NAME)
+		file(COPY_FILE ${f} ${test}/${tree}/Sourcecodes/Includes/${n})
+	endforeach()
 	if(CONFIG STREQUAL "ref")
 		file(COPY_FILE ${AB3}/Amiblitz3 ${test}/${tree}/Amiblitz3)
 	endif()

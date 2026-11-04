@@ -1,0 +1,10 @@
+; an AmiBlitz3 include that uses the string escape \\0a: datetime.include
+; of v3.14.0 (from Blitz3:Sourcecodes/Includes) joins the month names with
+; Chr$(10) written "\\0a" at its top level; the year and the date come from
+; the run's system date (the case's RUN_DATESTAMP, 2026-10-25)
+OPTIMIZE 4
+XINCLUDE "datetime.include.ab3"
+NPrint dt_monthNamesStr
+NPrint date_Today{}
+NPrint date_Years{}, " ", date_Months{}, " ", date_Days{}
+End

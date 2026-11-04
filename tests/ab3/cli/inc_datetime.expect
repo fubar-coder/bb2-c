@@ -1,0 +1,20 @@
+[compile]
+rc=0
+[run]
+January
+February
+March
+April
+May
+June
+July
+August
+September
+October
+November
+December
+25/10/2026
+2026 10 25
+~inject: datestamp: # calls answered
+inject: rc=0
+rc=0
