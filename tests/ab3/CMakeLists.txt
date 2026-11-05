@@ -149,7 +149,7 @@ add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 
 # ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-userlib]
 #              [ARGS ARG...] [REF] [REF_EXPECT FILE] [REF_NORUN]
-#              [SAME CASE] [HUNKS LAYOUT] [DATESTAMP ISO-DATE]
+#              [NORUN] [SAME CASE] [HUNKS LAYOUT] [DATESTAMP ISO-DATE]
 #              [RUN_DATESTAMP ISO-DATE]): a case of the suite; DATESTAMP: the
 #              compiler runs under inject datestamp=DATE (cli.cmake:
 #              dos.library's DateStamp gives that date, so a compile-time
@@ -160,7 +160,9 @@ add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 #              configurations; REF_NORUN: AmiBlitz3's executable is kept
 #              but not run (a broken executable that damages the session,
 #              docs/ab3/variant.md), its [run] is compared with
-#              cli/norun.ref.expect
+#              cli/norun.ref.expect; NORUN: neither executable is run (a
+#              program that needs hardware the session does not have:
+#              compile only), [run] is "not run" in both
 set(cli_exe_cases "")
 set(cli_ref_cases "")
 set(cli_exe_same "")
@@ -168,7 +170,7 @@ set(cli_ref_same "")
 set(cli_exe_hunks "")
 set(cli_ref_hunks "")
 macro(ab3_cli_case name source)
-	cmake_parse_arguments(c "REF;REF_NORUN" "TREE;REF_EXPECT;SAME;HUNKS;DATESTAMP;RUN_DATESTAMP" "ARGS" ${ARGN})
+	cmake_parse_arguments(c "REF;REF_NORUN;NORUN" "TREE;REF_EXPECT;SAME;HUNKS;DATESTAMP;RUN_DATESTAMP" "ARGS" ${ARGN})
 	set(c_datestamp)
 	if(c_DATESTAMP)
 		if(NOT c_DATESTAMP MATCHES "^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$")
@@ -187,7 +189,12 @@ macro(ab3_cli_case name source)
 	endif()
 	list(JOIN c_ARGS " " c_args)
 	set(c_line "${name}|${c_TREE}|${source}|${c_args}|${cli_dir}/${name}.expect")
-	string(APPEND cli_exe_cases "${c_line}${c_datestamp}\n")
+	if(c_NORUN)
+		string(APPEND cli_exe_cases "${c_line}|${cli_dir}/${name}.expect|norun${c_datestamp}\n")
+		set(c_REF_NORUN ON)
+	else()
+		string(APPEND cli_exe_cases "${c_line}${c_datestamp}\n")
+	endif()
 	if(c_SAME)
 		list(APPEND cli_exe_same "${name}=${c_SAME}")
 	endif()
@@ -527,7 +534,6 @@ ab3_cli_case(proc_bb2_at proc_bb2_at.bb)
 ab3_cli_case(proc_bb2_seven proc_bb2_seven.bb)
 ab3_cli_case(proc_bb2_fast proc_bb2_fast.bb)
 ab3_cli_case(proc_bb2_ntret proc_bb2_ntret.bb)
-
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)
 	cmake_parse_arguments(a "" "HUNKS" "SAME" ${ARGN})

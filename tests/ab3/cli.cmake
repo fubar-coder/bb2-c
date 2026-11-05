@@ -19,7 +19,8 @@
 # Amiblitz3), Blitz3-nolib (without csLibs), Blitz3-userlib (USERLIB in
 # UserLibs/).
 # CASES: one line per case, NAME|TREE|SOURCE|ARGS|EXPECT[|REFEXPECT[|norun]]
-# (norun: for ref, the executable is kept but not run), and after EXPECT,
+# (norun: the executable is kept but not run; in configuration exe
+# REFEXPECT is not read), and after EXPECT,
 # in any order, the key=value fields datestamp=YYYY-MM-DD and
 # rundatestamp=YYYY-MM-DD: the compiler command is prefixed with "TEST:inject
 # datestamp=DATE ", the program is run as "TEST:reqtrap TEST:inject
@@ -146,7 +147,7 @@ foreach(c IN LISTS cases)
 		set(prog "TEST:inject datestamp=${rundatestamp} RAM:${name}")
 	endif()
 	set(run "  TEST:reqtrap >>${out} ${prog}\n  Echo \"rc=$RC\" >>${out}\n")
-	if(CONFIG STREQUAL "ref" AND n GREATER 6)
+	if(n GREATER 6)
 		list(GET c 6 mode)
 		if(mode STREQUAL "norun")
 			set(run "  Echo \"not run\" >>${out}\n")
