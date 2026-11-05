@@ -25,15 +25,18 @@
 - [x] 4.4 `tools/lib/covsel` + `tools/covsel`: map + `git diff -U0` + ninja deps + `tools/covsel/rules.txt` → `selected.txt`; rules of D8 (header, test sources, `libs/`, build files, unknown files → all; new tests; stale map → all with a message). Host tests for each rule with inputs from memory
 - [x] 4.5 `cmake/coverage-select.cmake` (runs git, `ninja -t deps`, `ctest -N`, then `covsel`) and the usage `ctest --preset all --tests-from-file …` in README
 
+- [ ] 4.6 lcov as the one format (D6): `covmap` writes one tracefile per test, the merged `all.info` and the commit file instead of `map.tsv`; `covsel` builds its map from the tracefiles; `cmake/coverage-map.cmake`/`coverage-select.cmake`, README and the host tests of both tools adjusted. Verify: `genhtml` (if installed) reads `all.info`; the selection gives the same tests as with `map.tsv` for the sample diffs of 4.4
+
 ## 5. Check of stages 1 and 2
 
 - [ ] 5.1 Full coverage run (`ctest --preset coverage`) and map; check the scenarios of the specs: a TED core function named with its one host test, a change of one `eval.c` function selects only tests containing it, a header change, a CMake change (all), a new test, a stale map
 - [ ] 5.2 The list of blitz2 functions no test reaches (from the map), written to the scratch area and summarised in `docs/` (where the coverage is described) as the state at that commit
 - [ ] 5.3 Docs: README (coverage configuration, map, selected runs; full runs stay the acceptance), `TODO.md` entry; a clean normal build, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
 
-## 6. Stage 3: TED and the Blitz libraries
+## 6. Stage 3: TED and the Blitz libraries with gcov
 
-- [ ] 6.1 TED with the same module and flags in the coverage configuration, writing from its quit path; `ted_ab` and the TED bug-orig tests collect `ted.cov` (D9). Checks that cannot hold for an instrumented TED (`checkdata` against the reference) are skipped only in the coverage configuration
-- [ ] 6.2 The Blitz libraries instrumented in the coverage configuration (hook and bitmap inside the hunk behind a marker; `debuglib.c` excluded); `blitzlibcheck` still passes. `libs_tests` writes the bitmaps of the loaded libraries
-- [ ] 6.3 A coverage library whose finit routine finds the libraries' bitmaps in a compiled program and writes them; if needed a compiler option that always links it (coverage configuration only). Mapping of library offsets through `uselib3`'s placement and `NAME.linked`
-- [ ] 6.4 `covmap` and `covsel` for TED and the libraries (`libs/` changes then select by coverage instead of all emulator tests); check and docs as in 5.1 and 5.3
+- [ ] 6.1 Spike: a Blitz library compiled with `--coverage` (`gcov_info` table behind a marker): are the pointers inside the gcov data relocated when blitz2 copies the library into a program and when `libs_tests` loads it? Write the result into design.md; if not, the libraries use the function bitmap of stage 2 instead (D9)
+- [ ] 6.2 TED with gcov in the coverage configuration: `--coverage`, flat `.gcda` names, written from its quit path through `__gcov_info_to_gcda()` and dos.library; baserel kept if it fits, else not in the coverage configuration; `ted_ab` and the TED bug-orig tests collect the `.gcda` (D9)
+- [ ] 6.3 The Blitz libraries with gcov (or the bitmap, after 6.1); `debuglib.c` excluded; `blitzlibcheck` still passes; `libs_tests` writes the data of the loaded libraries
+- [ ] 6.4 A coverage library whose finit routine writes the libraries' data in a compiled program; a compiler option of the coverage configuration that links it into every program
+- [ ] 6.5 Collection: several `.gcda` sets of one test merged with `m68k-amigaos-gcov-tool merge`; `covmap` reads them with the coverage build's `.gcno`; `libs/` and `programs/ted/` changes then select by coverage (rules of D8 adjusted); check and docs as in 5.1 and 5.3

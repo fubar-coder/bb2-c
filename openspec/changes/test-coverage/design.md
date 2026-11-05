@@ -120,26 +120,29 @@ needed. Task 3.1 lists the runners: corpus, `ab3/cli.cmake`,
 `tests/blitz2`, `bug-orig`, `ted-ab` (TED starts the compiler) and the
 RWE reference build.
 
-### D6 Tools: `covmap` and `covsel`
+### D6 Tools: `covmap` and `covsel`, lcov as the one format
 These are C tools under `tools/`, with their logic in `tools/lib/cov*`
-and host tests with inputs from memory.
+and host tests with inputs from memory. The raw data stays in the format
+of its source (gcov's `.gcda`, the `.cov` bitmaps); everything after the
+collection on the host is lcov (tracefile format of lcov 2.x).
 
 - **`covmap`:**
   - It reads the per-test inputs:
-    - host: the gcov JSON (`gcov --json-format --stdout`, called from a
-      CMake script, which passes the text on);
-    - Amiga: the `.cov` bitmaps plus the program's link map.
-  - It writes `<build>/coverage/map.tsv`:
-    - a first line with the commit (`git rev-parse HEAD`, given by the
-      script);
-    - then one line per function: `program`, `file`, `function`, `first
-      line`, `last line` (empty where unknown), `tests`;
-    - one more line per object file, listing the tests that executed
-      any of its functions.
+    - host and stage 3: the gcov JSON (`gcov --json-format --stdout`,
+      called from a CMake script, which passes the text on);
+    - stage 2: the `.cov` bitmaps plus the program's link map and the
+      line ranges of the `-g` objects.
+  - It writes one tracefile per test, `<build>/coverage/lcov/<test>.info`
+    (`TN:<test>`, per file `SF:`, `FN:first,last,name`, `FNDA:count,name`,
+    and `DA`/`BRDA` where gcov gives them; the bitmaps give only `FN`/`FNDA`,
+    count 1 for a hit), a merged `<build>/coverage/lcov/all.info`, and
+    `<build>/coverage/commit` with the commit (`git rev-parse HEAD`, given
+    by the script).
 - **`covsel`:**
-  - It reads the map, the output of `git diff -U0 <base>`, the ninja
-    dependency list (`ninja -t deps`) and a rules file
-    `tools/covsel/rules.txt`.
+  - It reads the tracefiles and the commit file, the output of `git diff
+    -U0`, the ninja dependency list (`ninja -t deps`) and a rules file
+    `tools/covsel/rules.txt`. The map from functions to tests is built
+    in memory from the tracefiles.
   - The rules file maps path patterns to tests: `all`, ctest labels or
     name patterns.
   - It writes `<build>/coverage/selected.txt` for `ctest
@@ -147,6 +150,9 @@ and host tests with inputs from memory.
   - A CMake script `cmake/coverage-select.cmake` runs git and ninja and
     passes their output to `covsel`. The tool itself starts no
     processes.
+- **Reports for people:** the tracefiles are read by `genhtml`, editors
+  and coverage services; `genhtml` is optional, like Amiberry, and not
+  part of the build.
 
 ### D7 From changed lines to functions
 - **Host sources:** gcov's JSON gives start and end lines per function,
@@ -171,21 +177,36 @@ and host tests with inputs from memory.
 - **A stale map** (its commit not an ancestor of the base, `git
   merge-base --is-ancestor`): all tests, with a message.
 
-### D9 Stage 3 outline (own task group, after stages 1 and 2)
-- **TED:** compiled with the same flags and module. It writes from its
-  quit path, because TED has no libnix exit.
-- **Blitz libraries:** each library gets the hook and a bitmap inside
-  its single hunk, behind a magic marker.
-  - `libs_tests` finds the markers in the loaded library and writes the
-    bitmaps.
-  - For compiled programs, a coverage library's finit routine searches
-    the program's hunk for the markers and writes them. A compiler
-    option may force that library into every program.
-- **Mapping:** library offsets are mapped with `NAME.linked`'s symbols
-  and the per-library position the compiler copies the code to
-  (`asmlibs.c` `uselib3`).
+### D9 Stage 3: TED and the libraries with gcov (own task group)
+Stage 3 uses gcov (lines and branches) instead of the function bitmap.
+
+- **TED:** compiled with `--coverage` and `-fprofile-dir`/
+  `-fprofile-prefix-path`, so that the `.gcda` names are flat names in
+  `TEST:cov`. TED has no libnix startup: its quit path calls the
+  freestanding `__gcov_info_to_gcda()` with own write callbacks
+  (dos.library) for the `gcov_info` objects of its sources (found through
+  a table kept by the linker script). If the data and bss growth breaks
+  TED's base-relative 64 KB, the coverage configuration builds TED
+  without baserel; its byte checks against the reference (`checkdata`)
+  are skipped only there.
+- **Blitz libraries:** compiled with `--coverage`; each library keeps a
+  table of its `gcov_info` objects behind a magic marker in its single
+  hunk. First a spike: whether the pointers inside the gcov data
+  (counters, file names) are relocated when blitz2 copies a library into
+  a program (`asmlibs.c` `uselib3`) and when `libs_tests` loads it. If
+  not, the libraries fall back to the function bitmap of stage 2.
+  - `libs_tests` finds the markers in the loaded libraries and writes
+    their `.gcda`.
+  - In compiled programs a coverage library's finit routine finds the
+    markers and writes the `.gcda`; a compiler option of the coverage
+    configuration links it into every program.
+- **Several runs in one session:** each run writes its own `.gcda` set
+  (the freestanding writer does not merge); the host merges them with
+  `m68k-amigaos-gcov-tool merge` before `covmap`.
 - **Excluded:** `debuglib.c` has an inline asm that conflicts with the
-  instrumentation prologue (study, `debuglib.c:501`) and stays out.
+  instrumentation (study, `debuglib.c:501`) and stays out.
+- **Blitz source coverage** of compiled programs is a change of its own
+  (`blitz-coverage`), with lcov output as well.
 
 ## Risks / Trade-offs
 

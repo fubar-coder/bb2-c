@@ -34,16 +34,19 @@ without giving up `-fbaserel` or Kickstart 1.3. User decisions of
   stay unchanged.
 - **Collecting in the emulator**: the test runners create the coverage
   directory on `TEST:` and copy the bitmaps back after each test.
-- **Map and selection tools**: a C tool turns the coverage of every test
-  (gcov data, bitmaps with the map files' symbols) into a map from
-  functions to tests; a second step selects the tests for a `git diff`
-  (changed functions, plus rules for headers, data and build files) and
-  writes a list for `ctest --tests-from-file`.
-- **Later stage, same mechanism**: TED and the Blitz libraries
-  instrumented the same way. For the libraries inside compiled programs,
-  a coverage library whose finit routine writes the libraries' bitmaps,
-  if needed with a compiler option that always links it. This stage gets
-  its own tasks after the first two work.
+- **lcov as the one format, and the selection**: after the collection on
+  the host every kind of coverage (gcov data, compiler bitmaps) becomes an
+  lcov tracefile per test, readable by `genhtml`, editors and coverage
+  services. A C tool reads the tracefiles of a coverage run and selects the
+  tests for a `git diff` (changed functions, plus rules for headers, data
+  and build files), writing a list for `ctest --tests-from-file`.
+- **Later stage, with gcov**: TED and the Blitz libraries instrumented
+  with gcov (lines and branches). For the libraries inside compiled
+  programs, a coverage library whose finit routine writes their data,
+  with a compiler option of the coverage configuration that always links
+  it. Coverage of the Blitz source of compiled programs is a change of
+  its own (`blitz-coverage`). This stage gets its own tasks after the
+  first two work.
 
 ## Capabilities
 

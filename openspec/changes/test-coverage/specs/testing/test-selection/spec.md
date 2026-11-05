@@ -8,19 +8,27 @@ runs stay the acceptance of a program change.
 
 ## ADDED Requirements
 
-### Requirement: Map from functions to tests
-A full run of the coverage configuration SHALL produce a map that names, for every function executed by any test, the tests that executed it, together with the commit it was made from. The map SHALL be generated in the build directory and SHALL NOT be checked in.
+### Requirement: Coverage of each test as lcov
+A full run of the coverage configuration SHALL leave the coverage of every test as an lcov tracefile in the build directory (one file per test, named after it, with the test's name as `TN:`), plus a merged tracefile of all tests and a record of the commit the run was made from. Each function a test executed SHALL appear with its source file, its first and last line where known (`FN:first,last,name`) and its hit count (`FNDA`); line and branch counts (`DA`, `BRDA`) SHALL be included where the source of the data gives them. The files SHALL NOT be checked in.
 
 #### Scenario: A function and its tests
-- **WHEN** the map of a full coverage run is read for a function of the TED core that only one host test executes
-- **THEN** it names exactly that test
+- **WHEN** the tracefiles of a full coverage run are read for a function of the TED core that only one host test executes
+- **THEN** exactly that test's tracefile lists the function with a hit count above 0
 
-#### Scenario: Origin of the map
-- **WHEN** the map is read
-- **THEN** it states the commit of the sources it was made from
+#### Scenario: Compiler functions
+- **WHEN** the tracefile of a test that compiled a program with the coverage variant of `blitz2-ab3` is read
+- **THEN** it lists the executed functions of `programs/blitz2/src` with their line ranges and no line counts
+
+#### Scenario: Readable by lcov tools
+- **WHEN** the merged tracefile is given to `genhtml`
+- **THEN** it produces a report without errors
+
+#### Scenario: Origin of the data
+- **WHEN** the coverage data is read
+- **THEN** the commit of the sources it was made from is known
 
 ### Requirement: Tests for a change
-For a set of changes against a base commit the selection SHALL name every test that executed a changed function according to the map, and SHALL write the names as a list `ctest --tests-from-file` reads.
+For a set of changes against a base commit the selection SHALL read the tracefiles of the last coverage run and name every test that executed a changed function, and SHALL write the names as a list `ctest --tests-from-file` reads.
 
 #### Scenario: Change of one function
 - **WHEN** only the body of a function of `programs/blitz2/src/eval.c` changes
