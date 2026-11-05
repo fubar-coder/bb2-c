@@ -2,5 +2,6 @@
 ok
 [run]
 before
-after
+A cleared
+B untouched
 rc=0
