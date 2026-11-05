@@ -23,7 +23,7 @@
 - [x] 4.2 `cmake/coverage-map.cmake`: after a coverage test run, run gcov per host test and `covmap` over all collected data; a target or script entry documented in README
 - [x] 4.3 Function line ranges of the m68k sources: try `-g` objects of the coverage build with `m68k-amigaos-objdump`/`nm -l`; if it works, feed them to `covmap`, otherwise record object-level selection for m68k sources (D7)
 - [x] 4.4 `tools/lib/covsel` + `tools/covsel`: map + `git diff -U0` + ninja deps + `tools/covsel/rules.txt` → `selected.txt`; rules of D8 (header, test sources, `libs/`, build files, unknown files → all; new tests; stale map → all with a message). Host tests for each rule with inputs from memory
-- [ ] 4.5 `cmake/coverage-select.cmake` (runs git, `ninja -t deps`, `ctest -N`, then `covsel`) and the usage `ctest --preset all --tests-from-file …` in README
+- [x] 4.5 `cmake/coverage-select.cmake` (runs git, `ninja -t deps`, `ctest -N`, then `covsel`) and the usage `ctest --preset all --tests-from-file …` in README
 
 ## 5. Check of stages 1 and 2
 

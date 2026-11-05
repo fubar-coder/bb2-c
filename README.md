@@ -772,6 +772,43 @@ executed it, and per file the tests of all its functions (format:
 `tools/lib/covmap/covmap.h`). The inputs handed to covmap stay in
 `build/<preset>/coverage/map-inputs/`.
 
+While working on a change, the map chooses the tests it can affect:
+
+```
+cmake -DBUILD=build/amiga -DMAP=build/<coverage preset>/coverage/map.tsv \
+      [-DBASE=<commit>] -P cmake/coverage-select.cmake
+ctest --preset all --tests-from-file build/amiga/coverage/selected.txt
+ctest --preset bug-orig --tests-from-file build/amiga/coverage/selected.txt
+```
+
+`cmake/coverage-select.cmake` runs `git diff -U0` of the working tree
+against the map's commit (and lists the files git does not track),
+`ninja -t deps` and `ctest --show-only=json-v1` of the build and its
+host project, and hands it all to `tools/covsel`. It prints why each
+test is selected and writes `build/amiga/coverage/selected.txt`. The
+rules for what a change of a file selects are in
+`tools/covsel/rules.txt`, the first matching pattern counts:
+
+* a changed line of a measured source (`programs/blitz2/src/*.c`): the
+  tests that executed the function around it; a line outside every
+  function, or a source without line ranges, the tests of all its
+  functions;
+* a header of the compilers: the tests of every object that depends on
+  it;
+* a test source or expect file: the tests of its suite (by name or
+  label); a host test source: the host tests;
+* `libs/`: the emulator tests and the checks of the libraries;
+* documentation: no test;
+* the build (CMake files, presets), TED, shared code, the tools, the
+  test data, and every file no rule knows: all tests.
+
+Tests the map does not name (new ones, and those that run no measured
+program) are always selected. If the map's commit is not an ancestor of
+`BASE` (default: the map's commit), the map is stale and all tests are
+selected. The selection is for the work in between: the full runs
+(`ctest --preset all`, `ctest --preset bug-orig`) stay the acceptance of
+a change.
+
 ## Readable library sources
 
 The Blitz sources of the libraries (`bblibsrc.lha` in the Aminet archive,
