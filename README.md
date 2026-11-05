@@ -1045,6 +1045,13 @@ tools/                       host tools:
   bblines/, xtra/, teststats/,
   ab3tok/
   tests/                     tests of lib/ with inputs from memory
+openspec/                    OpenSpec: specs/ (what is specified),
+                             changes/ (planned and archived changes)
+.claude/agents/              agent definitions for Claude Code; the
+                             OpenSpec skills and commands
+                             (.claude/skills/, .claude/commands/) are
+                             created locally by `openspec init` or
+                             `openspec update` and are not in git
 ```
 
 The libraries are compiled with the Blitz conventions
