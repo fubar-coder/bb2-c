@@ -112,8 +112,10 @@ include(cmake/BlitzLibrary.cmake)
 enable_testing()
 add_test(NAME host COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}
 	--output-on-failure -LE emulator)
+# the emulator tests of the host side three at a time (each holds its own
+# emulator slots and waits for free ones)
 add_test(NAME host_emulator COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${HOST_DIR}
-	--output-on-failure -L emulator)
+	--output-on-failure -L emulator -j 3)
 math(EXPR limit "300 + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(host_emulator PROPERTIES LABELS emulator TIMEOUT ${limit})
 # the __saveds check of the configure step with a function without it
