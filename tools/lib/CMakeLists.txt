@@ -32,6 +32,8 @@
 #   covmap     the map from functions to the tests that executed them (gcov
 #              JSON of the host tests, coverage files of the Amiga programs
 #              with their link maps)
+#   covsel     the tests a change can affect, from that map, a diff, ninja's
+#              dependencies and rules
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -53,3 +55,4 @@ add_subdirectory(tokenizer)
 add_subdirectory(teststats)
 add_subdirectory(outmatch)
 add_subdirectory(covmap)
+add_subdirectory(covsel)

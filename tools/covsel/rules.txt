@@ -1,0 +1,52 @@
+# What a change of a file selects (covsel, README "Coverage"): per line a
+# path pattern (relative to the repository; '*' within a directory, '**'
+# across directories, "**/" also none) and selectors.  The first matching
+# rule counts; a file no rule matches selects all tests.  Selectors: all,
+# none, coverage (the tests of the changed functions, by the map), header
+# (the tests of the objects that include the file), label:LABEL,
+# name:PATTERN (ctest names; host tests are host/NAME).  Never fewer tests
+# than a change can affect: when in doubt, all.
+
+# documentation: no test reads it
+docs/**                         none
+openspec/**                     none
+.claude/**                      none
+*.md                            none
+amiga-emulation/README.md       none
+archive/README.md               none
+
+# the build: all tests
+**/CMakeLists.txt               all
+**/*.cmake                      all
+CMakePresets.json               all
+cmake/**                        all
+
+# the compilers, measured by the coverage configuration; glue is not
+# instrumented
+programs/blitz2/src/glue*.c     all
+programs/blitz2/src/*.c         coverage
+programs/blitz2/src/*.h         header
+
+# host test sources: the host tests
+programs/ted/tests/host/**      name:host/*
+programs/blitz2/tests/host/**   name:host/*
+tools/tests/**                  name:host/*
+tests/ted-ab/host/**            name:host/*
+
+# the runners of the emulator tests serve several suites
+tests/*/runner/**               all
+
+# test sources and expect files: the suite's tests
+tests/ab3/**                    name:ab3_*
+tests/blitz2/**                 name:blitz2_debug_* name:blitz2_stop_*
+tests/bug-orig/**               label:bug-orig
+tests/bug-port/**               label:bug-port
+tests/corpus/**                 name:corpus*
+tests/ted-ab/**                 name:ted_ab*
+
+# the Blitz libraries, not measured yet: every emulator test and the
+# tests of the libraries' declarations, token lists and comparisons
+libs/**                         label:emulator name:declarations_* name:tokens_* name:biglib_* name:blitzlibcompare_* name:asmcmp_* name:rwe_* name:variant_* name:ab3_tokens*
+
+# everything else (TED, shared code, the tools, the test data, the
+# originals): no rule, all tests
