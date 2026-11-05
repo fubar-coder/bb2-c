@@ -253,7 +253,11 @@ AB3 mode.
    `ab3-compat/strings`): escapes in string literals and `Dc.b`,
    character literals `@"…"`, `\\__CODELINE` over lines joined with
    `@@`; section "Strings". AmiBlitz3's test programs: unchanged (48 of
-   68), section "Measured share".
+   68), section "Measured share". **G4 done 2026-11-05** (OpenSpec
+   change `ab3-mode-g4`, spec `ab3-compat/procedures`): optional
+   parameters, up to ten parameters (7-10 on the stack), `FAST`, NewType
+   return types; section "Procedures". AmiBlitz3's test programs: 50 of
+   68.
 3. **G6, G7** (FPU and 68020; needs an A1200/FPU machine in the
    emulator for the tests).
 4. **G8** only if AB3's error behaviour or byte-equal executables are
@@ -448,6 +452,7 @@ implementation:
 | | `ab3syn.c` | AmiBlitz3's syntax rules (new syntax, `@@`, global `SHARED`, the one-line `If` in macro lines, ...) |
 | | `ab3sect.c` | the sections `BSS` and `Chip`: their hunks in `savefile` |
 | | `ab3dir.c` | AmiBlitz3's directives (`OPTIMIZE`, `SYNTAX`, `RunErrsOff`/`LastRunErrsMode`; change `ab3-mode-g2`) |
+| | `ab3proc.c` | AmiBlitz3's procedures (optional parameters, up to ten parameters, `FAST`, NewType return types; change `ab3-mode-g4`) |
 | | `ab3.h` | the state the AB3 modules share (not for the chunk files) |
 | | `shared/xtra`, `shared/ab3job` | the mode of a source, the arguments and the job of a command line run |
 
@@ -464,7 +469,12 @@ token of AB3 mode), `ext_newsyntax` (AmiBlitz3's new syntax),
 `ext_nextline`, `ext_cnifstart`, `ext_cnifend`, `ext_constant`,
 `ext_macrodef`, `ext_macrotoken`, `ext_macrolineend`
 (AmiBlitz3's syntax rules), `ext_funcstmt` (a `Function` called as a
-statement, change `ab3-function-statement`), `ext_savefile` (the
+statement, change `ab3-function-statement`), `ext_procrettype`,
+`ext_procfast`, `ext_procdef`, `ext_procoptional`, `ext_procmax`,
+`ext_procparam`, `ext_procentry`, `ext_procstackbytes`,
+`ext_procclrloc`, `ext_procstatics`, `ext_proctype`, `ext_procnoargs`,
+`ext_procargs`, `ext_procdefaults`, `ext_strpointer`, `ext_straddpop`
+(procedures, change `ab3-mode-g4`), `ext_savefile` (the
 executable),
 `ext_cmdline`, `ext_editor`, `ext_editorarg`, `ext_result` (command
 line and editor); the data of the mode `ext_toklist` (asm `tokens`) and
@@ -701,6 +711,84 @@ any other token; a line end closes the line's `Then`s with `: End If`
 as above (`If c Then End`). Cases: `macend_*` in
 `tests/ab3/CMakeLists.txt`.
 
+## Procedures (G4, 2026-11-05)
+
+Change `ab3-mode-g4`, spec `ab3-compat/procedures`. The rules were read
+from AmiBlitz3's compiler (`AmiBlitz3.ab3` at `@58a11658`: definition
+`do_function2` 22030-22340, calls `handle_statement` 4417-4556,
+`handle_function` 16612-16830, `fetchpees2` 8097-8466) and measured with
+probes in AmiBlitz3 v3.14.0; the cases `proc_*` in
+`tests/ab3/CMakeLists.txt` are those probes. AB3 mode only (`ab3proc.c`,
+extension points `ext_proc*` of `ext.h`); BB2 mode keeps blitz2's
+procedures (`proc_bb2_*`). AmiBlitz3 keeps the first optional parameter,
+`FAST` and the return type in its bigger procedure node; `ab3proc.c`
+keeps them in a side table found by the address of blitz2's node.
+
+* **Optional parameters:** an `@` in front of a parameter makes it and
+  every parameter behind it optional, also one written without `@`
+  (only the first `@` counts, `proc_optfirst`), whatever `OPTIMIZE` sets
+  (`proc_nonewsyntax`). The `@` is read before the parameter's name, so it
+  never reaches BB2's pointer flag.
+* **Defaults:** an omitted argument gets -1 for byte, word, long and a
+  pointer (also a NewType pointer, `proc_optnt`), -1.0 for quick
+  (`$ffff0000`) and float (FFP `$800000c1`), the empty string for a
+  string (pointer -1, which AmiBlitz3's `lastring` takes for "leave
+  empty"). Arguments are left out at the end only: a call that ends
+  before the first optional parameter is "Not Enough Parameters", an
+  empty argument in the middle or a trailing comma a "Syntax Error", more
+  arguments than parameters a "Syntax Error". `name{}` gives every
+  parameter its default when the first one is optional, also for seven
+  to ten parameters (`proc_onlyopt*`). The code is AmiBlitz3's for
+  parameters 1-6: behind the last argument `move.l #v,dN` (a string
+  also `pea 0 : subq.w #4,a7`), for `name{}` `moveq #-1,dN` (quick and
+  float `move.l #v,dN`; a string also two `move.l #0,-(a7)`).
+* **Up to ten parameters**, an 11th is "Too many parameters"
+  (`proc_eleven`). Parameters 1-6 are in d0-d5. Parameters 7-10 are
+  pushed on the stack in argument order by `maineval2`'s push, as the
+  arguments of a library command beyond the 6th: a word for byte and
+  word (2 bytes), a long for long, quick, float and a pointer (4).
+  Omitted, they are pushed as `move.w #-1,-(a7)`, `pea -1.w` or
+  `move.l #v,-(a7)`. Every push is counted in `stackuse`, and the
+  procedure's epilogue removes them (`afunction`/`handleproc` take its
+  bytes off `stackuse` after the call). At its entry the procedure copies
+  them from its frame into its locals: the slot of a parameter is at
+  8 plus the sizes of all slots pushed after it (`link a4`, 4(a4) the
+  return address), `move.w`/`move.l off(a4),x(a4)`, a byte from
+  `off+1`. AmiBlitz3 passes them in four static longs of `staticslib`
+  (`savetemp1`-`savetemp4`), which a call with seven or more parameters
+  inside an argument overwrites (row `proc_nested` below).
+* **String parameters** have AmiBlitz3's slot of two longs at every
+  position: the length (pushed by the string expression) and below it,
+  for a parameter from the 7th on, the start of the string, for one in
+  d0-d5 a filler (`pea 0` behind the string's code, `sbtolong`, extension
+  point `ext_strpointer`). The procedure takes the length from the higher
+  long and the start from its register or, from the 7th on, from the
+  lower long. An omitted string from the 7th on is `pea 0 : move.l
+  #-1,-(a7)`. A string added from two others at d6 (an argument from the
+  7th on, also of a library command) keeps its length: AmiBlitz3 removes
+  the d6 that `getelement` saved (`add_strings`, 14334); blitz2 adds it
+  to the length (BUG(orig), `addstrings` in `eval.c`; BB2 mode keeps
+  it, extension point `ext_straddpop`).
+* **`FAST`** between `Statement` or `Function[.type]` and the name (the
+  text `FAST` and a space, upper case only, not a token; `FAST{…}` is a
+  procedure named `FAST`, `proc_fastname`): the locals are not cleared
+  at the entry (no `jsr clrloc`), they keep what the stack holds
+  (`proc_fastkeep`). A `FAST` procedure that needs local memory
+  (`nstatics`: local strings, also a string literal, NewType variables,
+  arrays) is the error "FAST directive is not allowed if local strings
+  or newtypes are used" at its end (`proc_faststr`, `proc_fastnt`).
+* **NewType return type** `Function.nt`: the function returns the
+  pointer as a long; its value has the type of the NewType for the
+  pointer rule of the assignment (`*p.nt = mk{}`, `proc_ntret`).
+  AmiBlitz3's check of the `Function Return` expression against the
+  NewType is not made (G8, row `proc_ntret0` below).
+* AmiBlitz3's test program `function_problem` and the includes
+  `error.include.ab3` (`inc_error`) and `datetime.include.ab3`
+  (`inc_datetime`) give AmiBlitz3's output; `serial_read` compiles
+  (compiled only: it opens `serial.device`, case option `NORUN`).
+  Not in G4: FPU parameters and defaults (G6), the `SYNTAX` checks of
+  arguments, the function optimizer and an inline `Null` (G8).
+
 ## Differences to AmiBlitz3's compiler (G2+, 2026-11-01)
 
 Found by `ab3_cli_ref` (AmiBlitz3 v3.14.0 in CLI mode on the same
@@ -733,6 +821,12 @@ machine); recorded, not changed in G1:
 | `macthen_endifword` (G3) | a macro line closed with `EndIf` (its own token, not `End If`) still gets `: End If`: "'End' condition without condition", no executable | `EndIf` closes the `Then` like `End If`: the program runs (`0 15`) | none: as intended |
 | `join_op` (G2) | `@@` after an operator (not at a parameter boundary) is a syntax error | the next line is joined (`b.l = 1 + @@` and `2` on the next line give `3`) | none: ours is correct (user decision 2026-11-04) |
 | `join_endmacro`, `join_endmacro1` (G3) | `@@` on an `End Macro` line is ignored: the next line is compiled as a line of its own (`after`, `m`, `end`) | the error "Joining lines with @@ does not work after End Macro", no executable | none: ours is intended (user decision 2026-11-05) |
+| `proc_nested`, `proc_stack` (G4) | parameters 7-10 go through four static longs (`staticslib`'s `temp1`-`temp4`): a call with seven or more parameters inside an argument overwrites the outer call's (`p7=100 p8=100`; `<s3212>`) | on the stack: `p7=7 p8=100`, `<s3217>` | none: as intended (user decision 2026-11-04) |
+| `proc_onlyopt7`, `proc_onlyopt7s`, `proc_onlyopt8` (G4) | `name{}` of a procedure whose seven or more parameters are all optional is "Syntax error!" (`AmiBlitz3.ab3` 4491) | every parameter gets its default | none: as intended (user decision 2026-11-05) |
+| `proc_ntret0` (G4) | `Function Return 0` in a `Function.nt` is "Type Error: Function Returntype is diffrent to function declaration" (the expression's last variable must have the NewType, or be `Null`) | compiles; the returned type is not checked (`null`) | G8 |
+| `proc_strfunc` (G4) | a Function with a string parameter from the 7th on returns a wrong result (a string Function `0`, a long Function `3` or `6` instead of 7, varying) | the right result | none: ours is correct |
+| `proc_notenough` (G4, `ab3_cli` only) | a call that ends before the first optional parameter hangs the compiler (no message; `amiga_run` timeout) | "Not Enough Parameters" | none |
+| `proc_*` errors (G4, no `.ref.expect`) | "Not enough parameters", "Syntax error or too many parameters" (a statement), "a bracket } is expected here" (a function), "Syntax error!" | "Not Enough Parameters", "Syntax Error"; the `FAST` error with AmiBlitz3's first line of text | none: only the `[run]` part is compared; the texts are blitz2's |
 
 AmiBlitz3's test programs of G2 (task 5.1 of `ab3-mode-g2`, fetched
 at `@58a11658`), in `ab3_cli` and `ab3_cli_ref`: `hex_error`
@@ -818,6 +912,17 @@ removes the assign when it ends).
   STOP"). `windowtags`, `setwindowpointer`, `hunktest` compile. The
   research table (G2 research §9) expected 54 after G2 and G3; its
   figures are upper bounds.
+* **After G4 (2026-11-05, change `ab3-mode-g4`): blitz2-ab3 compiles 50
+  of 68 (74 %)**, the same result as AmiBlitz3 for 59 (49 compile in
+  both, 10 fail in both). Measured the same way with blitz2-ab3 before
+  and after the change, with only `all.res` in `Residents` (without
+  `asmmacs.res`, `lesdebuglibtest` stops in both: 47 and 49 there).
+  New: `function_problem` (`5`, `ab3_cli` case) and `serial_read`
+  (compile only). The others that stopped at G4 features now stop
+  later: `benchmark2`, `quickdivtest` (`Function.d`,
+  `eclock.include.ab3` 405, G6), `putdiskobject`, `statementcalls`
+  (`.d` in `useful.include.ab3` 623, G6), `benchmark` (68020 assembler,
+  `convert.include.ab3` 609, G7).
 
 ### AmiBlitz3's includes with `\\` or `@"`
 
@@ -837,7 +942,9 @@ AmiBlitz3's header (`Residents = "all.res"`), `OPTIMIZE 4` and
   gives a compile error for them like for the other failures.
 * Of the 35 that AmiBlitz3 compiles and blitz2-ab3 does not: 31 stop at
   `error.include.ab3` 226 (the optional parameters, G4: the file is
-  included by them, the include's own text behind it is not reached),
+  included by them, the include's own text behind it is not reached;
+  `error.include.ab3` compiles since G4, case `inc_error`, the 79 files
+  were not measured again),
   3 at `useful.include.ab3` 623 (`Function.s double2str{f.d}`, the type
   `.d`, G6; the escapes and `@"…"` in the lines before it are accepted,
   e.g. `Case @"{"` at line 384) and `ntui.include` at its `OPTIMIZE 2`

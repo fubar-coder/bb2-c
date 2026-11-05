@@ -30,9 +30,9 @@
 
 - [x] 6.1 `tests/ab3/cli` cases from the probes (sources in the session scratchpad `g4/probe/`, `g4b/probe/`), registered in `tests/ab3/CMakeLists.txt`; the running cases also in `ab3_cli_ref` against AmiBlitz3 (`REF_EXPECT` where ours differs on purpose: p11, p22, p18); AmiBlitz3's hanging p08 not in `ab3_cli_ref`
 - [x] 6.2 BB2-mode cases: `@` keeps the pointer flag ("Not Enough Parameters"), 7 parameters refused, `FAST` as a name; `inc_datetime` still passes with real optional parameters
-- [ ] 6.3 AmiBlitz3's sources: `function_problem` (prints `5`), `serial_read` (compiles), `error.include.ab3` as an include case (compile only); the measured share of the 68 test programs updated in `docs/ab3/variant.md`
-- [ ] 6.4 `docs/ab3/variant.md`: G4 section (rules, slot layout, defaults) and "Differences" rows (parameters 7-10 on the stack, `name{}` with 7+ optional parameters, no `Function Return` NewType check, our error texts, "Not enough parameters" without the hang); `TODO.md` G4 done
-- [ ] 6.5 Full check: a clean build without warnings, `blitz2` and BB2-mode results byte-identical (bb2-equivalence), `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
+- [x] 6.3 AmiBlitz3's sources: `function_problem` (prints `5`), `serial_read` (compiles), `error.include.ab3` as an include case (compile only); the measured share of the 68 test programs updated in `docs/ab3/variant.md`
+- [x] 6.4 `docs/ab3/variant.md`: G4 section (rules, slot layout, defaults) and "Differences" rows (parameters 7-10 on the stack, `name{}` with 7+ optional parameters, no `Function Return` NewType check, our error texts, "Not enough parameters" without the hang); `TODO.md` G4 done
+- [x] 6.5 Full check: a clean build without warnings, `blitz2` and BB2-mode results byte-identical (bb2-equivalence), `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
 
 ## Workflow follow-up
 

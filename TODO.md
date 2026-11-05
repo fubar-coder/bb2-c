@@ -397,7 +397,10 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   3. [ ] G3–G5 (escapes, optional parameters, `Null`, casts, `Dim KEEP`,
      `Data` constants), then G7 (68020), then G6 (FPU). G3 done
      (2026-11-04, change `ab3-mode-g3`): escapes in strings and `Dc.b`,
-     `@"…"`; 48 of the 68 test programs compile, as after G2.
+     `@"…"`; 48 of the 68 test programs compile, as after G2. G4 done
+     (2026-11-05, change `ab3-mode-g4`): optional parameters, up to ten
+     parameters (7-10 on the stack), `FAST`, NewType return types; 50 of
+     the 68 test programs compile.
      Also open: the differences found against AmiBlitz3's compiler
      (`docs/ab3/variant.md`, "Differences"). The rule for `Stop` without
      the debugger (`int_tests`) is decided (2026-11-01, change
@@ -455,7 +458,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      in a macro body open to the end of the expanded line, #967); AB3
      mode now ends such a macro line with `: End If` as AmiBlitz3 does
      (task 6.2). `file.include.ab3` needs G4's optional parameters
-     (`docs/ab3/variant.md`, "Strings").
+     (`docs/ab3/variant.md`, "Strings"; G4 done 2026-11-05).
   10. [ ] Empty string as a library constant: an omitted string
      parameter passes the pointer -1 as AmiBlitz3 does (G4), which
      AmiBlitz3's `lastring` recognises (strings2Lib.ab3:115-117) and
