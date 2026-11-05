@@ -216,3 +216,24 @@ the preset, the option, the module and the tools.
   spec holds).
 - How the m68k function line ranges are obtained (D7). The fallback
   keeps the spec's guarantee.
+
+## Findings
+
+### Function line ranges of the m68k sources (task 4.3, D7)
+- Objects compiled with `-g` carry DWARF 5 line tables in the hunk
+  object format, and `m68k-amigaos-objdump --dwarf=decodedline` reads
+  them (`nm -l` names no lines for them). `-g` leaves the code as it is:
+  the `.text` of `blitz2-ab3` built by the preset `amiga-debug` (`-Os
+  -g`) is byte-identical to the normal one.
+- objdump 2.46.1 (AmigaDev 16.2-rc22) crashes on the line tables of
+  several Amiga objects in one call; one call per object works.
+- `cmake/coverage-map.cmake` passes the tables to `covmap`. A function's
+  range is the smallest and largest line of the rows of its own source
+  file within its bytes; rows of inlined code from the same file widen
+  it, which can only select more. Static functions come from `nm -A` of
+  the objects (the link map lists only global symbols).
+- So the coverage configuration should compile with `-g`. Without it
+  the ranges stay empty, and a change in a file selects the tests of all
+  its functions (the object-level fallback of D7).
+- Symbols of constant data in `.text` (`nm` type `t`/`T`, e.g. tables)
+  appear in the map like functions, with no line range and no tests.

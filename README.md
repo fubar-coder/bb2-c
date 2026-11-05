@@ -738,6 +738,40 @@ duration; a test's duration includes its waits for emulator slots). Broken input
 a bad `@stat` line) is reported on stderr (exit status 1), the rest
 still counts.
 
+### Coverage
+
+Which functions each test executes, as a map from functions to tests
+(openspec change `test-coverage`). It is made from a coverage run, not
+checked in:
+
+* **host tests:** a build with `-DHOST_COVERAGE=ON` (gcov, `-O0`); each
+  host test `X` leaves its `.gcda` files below
+  `build/<preset>/host/coverage/X/` and is recorded as test `host/X`.
+* **compilers in the emulator:** the coverage configuration builds
+  `blitz2` and `blitz2-ab3` instrumented; each emulator test leaves the
+  coverage files of the compilers it ran as
+  `coverage/<test>/<program>.cov` in the build directory (format:
+  `shared/cov/covfmt.h`). Line ranges of their functions come from the
+  objects if they are compiled with `-g` (which leaves the code
+  unchanged); without them a change anywhere in a source file counts for
+  all its functions.
+
+After the run (clear `build/<preset>/host/coverage/` before it; gcov adds
+to data that is there):
+
+```
+cmake --build build/<preset> --target coverage-map
+```
+
+runs `cmake/coverage-map.cmake`: gcov per host test, `nm -A` and
+`objdump --dwarf=decodedline` of each measured program's objects, and
+`tools/covmap` over all of it. The result is
+`build/<preset>/coverage/map.tsv`: the commit it was made from, then per
+function (program, file, function, first and last line) the tests that
+executed it, and per file the tests of all its functions (format:
+`tools/lib/covmap/covmap.h`). The inputs handed to covmap stay in
+`build/<preset>/coverage/map-inputs/`.
+
 ## Readable library sources
 
 The Blitz sources of the libraries (`bblibsrc.lha` in the Aminet archive,

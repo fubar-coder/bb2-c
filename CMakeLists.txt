@@ -127,6 +127,13 @@ add_custom_target(fetch-originals
 	COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/fetch-originals.cmake
 	USES_TERMINAL
 	COMMENT "Downloading the original material (archive/README.md)")
+# the map from functions to tests after a coverage test run (README
+# "Coverage"; not part of ALL)
+add_custom_target(coverage-map
+	COMMAND ${CMAKE_COMMAND} -DBUILD=${CMAKE_BINARY_DIR} -P ${PROJECT_SOURCE_DIR}/cmake/coverage-map.cmake
+	USES_TERMINAL
+	COMMENT "Map from functions to tests: ${CMAKE_BINARY_DIR}/coverage/map.tsv")
+add_dependencies(coverage-map host_tools)
 
 add_subdirectory(shared/edstub)
 add_subdirectory(shared/xtra)
