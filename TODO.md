@@ -661,6 +661,20 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   near their limits (ctest `RESOURCE_LOCK` or a lower `AMIGA_EMULATION_MAX`
   for the agents). First step: record which limit ended each failure
   (the `@stat` line has `end=timeout`, README "Test statistics").
+- [ ] **rwe_residents_cd compares bytes**: since #970 Create Resident of
+  blitz2-c writes 0 into the bytes the loaders do not read (pad bytes,
+  a constant's data and procnum, pointer remains), so its residents are
+  reproducible; `tools/blitzres/check.cmake` still compares the dumps
+  (`blitzres --dump`), because the original's files differ in those
+  bytes. Measured (2026-11-05, `lvo`, `custom`, `datatypes`, `AHI`):
+  the port's files equal blitzres's byte for byte except the long word
+  padding at the end of the hunk, which menu5 fills from `hello`
+  (`'ZAP',0`, stmts.c) and blitzres with zeros (`lvo`, `custom`,
+  `datatypes`: 2 bytes each; `AHI` is equal). To do: blitzres pads with
+  `'ZAP',0` like menu5 (changes the residents of the build:
+  `libs/userlibs/rwe/residents/`), and `rwe_residents_cd` compares the
+  port's files with blitzres's byte for byte (the reference's still by
+  dump), with a test on a broken file.
 - [ ] **Immutable strings (idea, long term)**: in BB2 a string variable
   is string and string builder in one (the memory of the variable is
   changed in place: `MaxLen`, `&a$` with `Poke`, libraries writing the
