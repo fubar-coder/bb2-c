@@ -1,0 +1,20 @@
+; XTRA
+; Embedded .xtra Header
+;
+; General Info
+; -------------------------------------------------------
+; Residents       = "all.res"
+; /XTRA
+; an AmiBlitz3 include with optional parameters: error.include of v3.14.0
+; (from Blitz3:Sourcecodes/Includes, its EasyStruct from all.res),
+; error{} with its optional error code, once-flag and title left out, in
+; its console mode (no requester)
+OPTIMIZE 4
+XINCLUDE "error.include.ab3"
+error_SetFlags{#error_stdout}
+error{"first"}
+error{"second",5}
+error{"third",5,True}
+error{"fourth",6,True,"title"}
+NPrint error_GetCode{}
+End

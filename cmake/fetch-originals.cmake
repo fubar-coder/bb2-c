@@ -90,8 +90,12 @@ set(ab3v314_files
 	"Sourcecodes/Amiblitz3/Tests/unknown_function_include.ab3|e5ab24146a409e01d63625d8fbce805e61a8755d2b76dd05a89ce1b8aef8b9ed"
 	"Sourcecodes/Amiblitz3/Tests/kick13.ab3|4ee0f1d98eaa505679da143b85c5b53211f6abdcdcf8495040009a4052ffdb3a"
 	"Sourcecodes/Amiblitz3/Tests/windowtags.ab3|994f756fab869fcdf976ffe9dd18fbb42af857e809de5c99944fe40844dc38cb"
+	"Sourcecodes/Amiblitz3/Tests/function_problem.ab3|0b60e8d257c761a69aff04c4a0c541e9c423a1fbdfec0e813e1c71dea44cb171"
+	"Sourcecodes/Amiblitz3/Tests/serial_read.ab3|1a198072c6f6e7fe43be08a5f20653de55aeef06dfa9ecd12b7d112de46b8821"
 	"Sourcecodes/Includes/datetime.include.ab3|2c421f2f596275b4298d7c9319fd90373b2af747525dc71d741a838bac720c8b"
-	"Sourcecodes/Includes/longlong.include.ab3|0e1c7c65ef1921d5766e2de6c306beac6dbba85e05a58ed8ca98963f76046a50")
+	"Sourcecodes/Includes/longlong.include.ab3|0e1c7c65ef1921d5766e2de6c306beac6dbba85e05a58ed8ca98963f76046a50"
+	"Sourcecodes/Includes/error.include.ab3|d2fab91bc78b37b8c752067f8a36cd5d9054cfcf2365e8ef845401086bfa14b8"
+	"Sourcecodes/Includes/serial_device.include.ab3|d4b2005daf2adea40d146f76db759602ac9794ef6b35075c040c80e8ba03df04")
 foreach(f IN LISTS ab3v314_files)
 	string(REPLACE "|" ";" f "${f}")
 	list(GET f 0 path)

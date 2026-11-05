@@ -534,6 +534,13 @@ ab3_cli_case(proc_bb2_at proc_bb2_at.bb)
 ab3_cli_case(proc_bb2_seven proc_bb2_seven.bb)
 ab3_cli_case(proc_bb2_fast proc_bb2_fast.bb)
 ab3_cli_case(proc_bb2_ntret proc_bb2_ntret.bb)
+# AmiBlitz3's test programs and includes with optional parameters
+# (ab3-mode-g4 task 6.3): function_problem, serial_read (compiled only:
+# it opens serial.device), error.include in its console mode
+ab3_cli_case(function_problem function_problem.ab3 REF)
+ab3_cli_case(serial_read serial_read.ab3 REF NORUN)
+ab3_cli_case(inc_error inc_error.ab3 REF)
+
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)
 	cmake_parse_arguments(a "" "HUNKS" "SAME" ${ARGN})
