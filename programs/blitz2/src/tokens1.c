@@ -887,7 +887,22 @@ void domacro(UWORD c)
             if (c == 0x800d && --coolnest < 0)
                 break;                          /* .macdone */
             /* .notem.  A plain char after End is put as a word
-               ($00,char; the 0 ends the statement), spaces/comments after End are lost */
+               ($00,char; the 0 ends the statement), spaces/comments after End are lost.
+               BUG(orig) (#968): when the line ends right after End
+               (also after spaces or a comment), getcharb has stepped
+               past the line's NUL and returns 0 (blitz2.s:7147-7158),
+               and this 0 is stored unchecked ($8002,$0000;
+               .notem blitz2.s:12889-12893).  Only .gather handles a
+               line end (blitz2.s:12863-12869), the getchar3 after End
+               (blitz2.s:12884) does not call nextline: the stored 0
+               ends the expanded line (the rest of the macro and of the
+               calling line is never compiled; "If Without End If"), and
+               the collector goes on behind the line's terminator.  In an
+               include the next line follows directly and readinc hands
+               the same line out a second time (blitz2.s:11972-12018):
+               if it is End Macro, the macro ends on the glued copy, the
+               copy is compiled as a statement and doend has no case for
+               Macro ("Syntax Error" at the Include line).  Kept. */
             macputw(&mb, 0x8002);
         }
         macputw(&mb, c);                        /* .notend */
