@@ -608,6 +608,15 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     advance the note pointer, original bug, test done), #335
     (programs using blitzoslib hang at End: a compiler bug, calcmaxs
     before fixjsrs, test done).
+- [ ] **Immutable strings (idea, long term)**: in BB2 a string variable
+  is string and string builder in one (the memory of the variable is
+  changed in place: `MaxLen`, `&a$` with `Poke`, libraries writing the
+  length at -4). Immutable, shared strings as in .NET would need
+  reference counting (no garbage collector), a separate builder type,
+  constant strings in the code or data hunk (the hunk format has no
+  read-only type) and libraries written for them. Not for BB2 or AB3
+  mode (existing sources and AmiBlitz3's binary libraries rely on
+  mutable strings): only as a language variant of its own.
 
 ## 3 Only once §1 is done
 
