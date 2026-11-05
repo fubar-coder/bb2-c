@@ -24,6 +24,7 @@ endif()
 
 project(blitzbasic2 VERSION 1.95 LANGUAGES C CXX)
 include(cmake/emulation-queue.cmake)
+include(cmake/bug-orig-order.cmake)
 
 if(NOT AMIGAOS)
 	message(FATAL_ERROR "Wrong toolchain file ${CMAKE_TOOLCHAIN_FILE}: only AmigaOS (cmake/m68k-amigaos.cmake)")

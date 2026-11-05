@@ -667,6 +667,16 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   `.../ID/sNNN/vol/runs/ID/{R5,C5}`; `bug_orig_ted_lint` (host) checks
   the scripts, `bug_orig_ted_selftest_broken` (label `emulator`) must come
   out BROKEN. Adding a test: one file `ted/ID.drv`, found by a glob.
+
+  **Order of the bug-orig tests:** ctest with several jobs runs the
+  tests that failed in its last run first, in declaration order and
+  without regard to `COST`, and the bug-orig tests fail on purpose. So
+  all of them (those of `libs/tests` too) are recorded with
+  `bug_orig_add_test` and declared at the end of
+  `tests/bug-orig/CMakeLists.txt`, sorted by their `COST` (session limit
+  times sessions), the largest first (`cmake/bug-orig-order.cmake`);
+  ctest `bug_orig_order` (host) checks the order, `bug_orig_order_broken`
+  the check with a wrong one.
 * **bug-port:** tests of known defects of the port itself (not of the
   original), each with an issue. The test checks the *correct* behaviour
   and **fails** until the defect is fixed; the fix removes the label from

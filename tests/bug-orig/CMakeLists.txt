@@ -217,18 +217,6 @@ function(bug_orig_test bas name)
 	endif()
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 
-	if(DEFINED arg_WANT)
-		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN}
-			-DPASS=${work}.pass -DWANT=${arg_WANT} -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
-		set(labels emulator)
-	else()
-		add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
-		if(arg_REGRESSION)
-			set(labels emulator)
-		else()
-			set(labels "bug-orig;emulator")
-		endif()
-	endif()
 	# a session per configuration (ref and the judged ones), one after the
 	# other if there are not enough emulator slots free, each maybe
 	# waiting for one
@@ -238,12 +226,24 @@ function(bug_orig_test bas name)
 		"${BUG_ORIG_TIMEOUT} * ${nsessions} + 60 + ${nsessions} * ${EMULATION_QUEUE_WAIT}")
 	# the order: ctest learns the cost only from passing tests, and these
 	# fail on purpose; the session limit times the sessions puts the tests
-	# that can take long first
+	# that can take long first (cmake/bug-orig-order.cmake)
 	math(EXPR cost "${session_limit} * ${nsessions}")
-	set_tests_properties(${name} PROPERTIES LABELS "${labels}" SKIP_RETURN_CODE 77
-		TIMEOUT ${limit} COST ${cost})
 	list(REMOVE_DUPLICATES fixtures)
 	list(REMOVE_ITEM fixtures "")
+	if(NOT DEFINED arg_WANT AND NOT arg_REGRESSION)
+		bug_orig_add_test(${name} COST ${cost} COMMAND ${CORPUSRUN} ${work}.pass
+			LABELS bug-orig emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit}
+			FIXTURES_REQUIRED ${fixtures})
+		return()
+	endif()
+	if(DEFINED arg_WANT)
+		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN}
+			-DPASS=${work}.pass -DWANT=${arg_WANT} -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
+	else()
+		add_test(NAME ${name} COMMAND ${CORPUSRUN} ${work}.pass)
+	endif()
+	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT ${limit} COST ${cost})
 	if(fixtures)
 		set_tests_properties(${name} PROPERTIES FIXTURES_REQUIRED "${fixtures}")
 	endif()
@@ -394,22 +394,21 @@ function(bug_orig_ted_test scripts id name)
 		"blitz2_ref=${CD_BLITZ2}/BLITZ2\nblitz2_c=$<TARGET_FILE:blitz2>\n"
 		"timeout=${BUG_ORIG_TIMEOUT}\nparallel=${ted_parallel}\n")
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
-	if(DEFINED arg_WANT)
-		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${TEDAB}
-			-DPASS=${work}.pass -DWANT=${arg_WANT} -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
-		set(labels emulator)
-	else()
-		add_test(NAME ${name} COMMAND ${TEDAB} ${work}.pass)
-		set(labels "bug-orig;emulator")
-	endif()
 	# two sessions (one after the other with CORPUS_PARALLEL=1 or without
 	# enough free emulator slots), each maybe repeated once (gates failed),
 	# each maybe waiting for a slot
 	math(EXPR limit "${BUG_ORIG_TIMEOUT} * 4 + 120 + 4 * ${EMULATION_QUEUE_WAIT}")
 	# the order (see bug_orig_test): the limit of the two sessions
 	math(EXPR cost "${BUG_ORIG_TIMEOUT} * 2")
-	set_tests_properties(${name} PROPERTIES LABELS "${labels}" SKIP_RETURN_CODE 77
-		TIMEOUT ${limit} COST ${cost})
+	if(DEFINED arg_WANT)
+		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${TEDAB}
+			-DPASS=${work}.pass -DWANT=${arg_WANT} -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
+		set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+			TIMEOUT ${limit} COST ${cost})
+	else()
+		bug_orig_add_test(${name} COST ${cost} COMMAND ${TEDAB} ${work}.pass
+			LABELS bug-orig emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+	endif()
 endfunction()
 
 file(GLOB drvs CONFIGURE_DEPENDS ${ted_scripts}/*.drv)
@@ -435,3 +434,25 @@ endif()
 # original TED does must be reported as broken (exit status 3)
 bug_orig_ted_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest ted-bug-orig-selftest-broken
 	bug_orig_ted_selftest_broken WANT 3)
+
+# all bug-orig tests (also those of libs/tests), the longest first
+# (cmake/bug-orig-order.cmake)
+bug_orig_declare_tests()
+# the order as ctest has it, and the check itself: a test with a larger
+# COST after a smaller one must fail
+add_test(NAME bug_orig_order COMMAND ${CMAKE_COMMAND} -DBUILD=${CMAKE_BINARY_DIR} -DLABEL=bug-orig
+	-P ${PROJECT_SOURCE_DIR}/cmake/check-test-order.cmake)
+set(broken ${CMAKE_CURRENT_BINARY_DIR}/order-broken.json)
+file(WRITE ${broken} "{\"tests\":[\n"
+	"{\"name\":\"x_other\",\"properties\":[{\"name\":\"COST\",\"value\":900},"
+	"{\"name\":\"LABELS\",\"value\":[\"emulator\"]}]},\n"
+	"{\"name\":\"x_long\",\"properties\":[{\"name\":\"COST\",\"value\":270},"
+	"{\"name\":\"LABELS\",\"value\":[\"bug-orig\",\"emulator\"]}]},\n"
+	"{\"name\":\"x_short\",\"properties\":[{\"name\":\"COST\",\"value\":60},"
+	"{\"name\":\"LABELS\",\"value\":[\"emulator\",\"bug-orig\"]}]},\n"
+	"{\"name\":\"x_late\",\"properties\":[{\"name\":\"COST\",\"value\":180},"
+	"{\"name\":\"LABELS\",\"value\":[\"bug-orig\"]}]}]}\n")
+add_test(NAME bug_orig_order_broken COMMAND ${CMAKE_COMMAND} -DJSON=${broken} -DLABEL=bug-orig
+	-P ${PROJECT_SOURCE_DIR}/cmake/check-test-order.cmake)
+set_tests_properties(bug_orig_order_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"x_late \\(COST 180\\) is declared after[ \n]+x_short \\(COST 60\\)")

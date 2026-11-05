@@ -104,17 +104,17 @@ foreach(t cliargs-parpath-cli crunch-implode-overread crunch-decrunch-corrupt
 	if(t STREQUAL "crunch-implode-overread")
 		set(watch ON)
 	endif()
-	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
+	math(EXPR limit "${LIBS_BUG_ORIG_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+	# declared with the other bug-orig tests, in the order of their COST
+	# (ctest learns the cost only from passing tests, these fail on
+	# purpose): the limit of the one session (cmake/bug-orig-order.cmake)
+	bug_orig_add_test(${name} COST ${LIBS_BUG_ORIG_TIMEOUT} COMMAND ${CMAKE_COMMAND}
 		-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
 		-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON
 		-DILLEGAL_WATCH=${watch} -DFILTER=${t}
 		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DTIMEOUT=${LIBS_BUG_ORIG_TIMEOUT}
-		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
-	math(EXPR limit "${LIBS_BUG_ORIG_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
-	# the order (ctest learns the cost only from passing tests, these fail
-	# on purpose): the limit of the one session
-	set_tests_properties(${name} PROPERTIES LABELS "emulator;bug-orig" SKIP_RETURN_CODE 77
-		TIMEOUT ${limit} COST ${LIBS_BUG_ORIG_TIMEOUT})
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake
+		LABELS emulator bug-orig SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 endforeach()
 
 # the test variants (variants/selftest-*, built by ../CMakeLists.txt to
