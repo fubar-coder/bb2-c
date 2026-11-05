@@ -517,7 +517,8 @@ static int prog_ready(struct covmap *m, struct cov_prog *p)
     for (i = 0; i < p->nraw; i++)
         if (p->raw[i].from_nm)
             has_nm[p->raw[i].obj] = 1;
-    qsort(p->raw, p->nraw, sizeof *p->raw, cmp_raw);
+    if (p->nraw)
+        qsort(p->raw, p->nraw, sizeof *p->raw, cmp_raw);
     if (!(p->syms = malloc((p->nraw + 1) * sizeof *p->syms))) {
         free(has_nm);
         return -1;
@@ -724,7 +725,8 @@ static void write_tests(const struct covmap *m, int *ids, size_t n, FILE *out)
     size_t i;
     int last = -1;
 
-    qsort(ids, n, sizeof *ids, cmp_test);
+    if (n)
+        qsort(ids, n, sizeof *ids, cmp_test);
     for (i = 0; i < n; i++) {
         if (ids[i] == last)
             continue;
