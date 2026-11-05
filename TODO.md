@@ -463,6 +463,16 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      the same visible result). Afterwards: a real empty string from a
      library (as `Null` comes from `environlib`) instead of the -1; an
      intended deviation from AmiBlitz3's code.
+  11. [ ] `End d0` (G5): AmiBlitz3 ends the program with the value of
+     d0 as its return code (AmiBlitz3.ab3:22688-22691 sets `returncode`;
+     the program end then saves d0 with `move.l d0,(a7)` and returns
+     with `rts` instead of `moveq #0,d0 : rts`, 3626-3647 at
+     `@58a11658`). The flag holds for the whole program, so every `End`
+     returns d0 once one `End d0` is compiled - check whether to follow
+     that. Not taken over: `End noa7` (22682, 22795: patches the start of
+     the program end routine to `addq.l #4,a7`, so a7 is not reset to its
+     start value; undocumented, unused in AmiBlitz3's sources, purpose
+     unknown; not available in direct mode).
 - [ ] **Tests for the issues labelled `needs-test`** (99 open issues at the
   start, 3 open on 2026-10-29: #14, #26, #42). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,
