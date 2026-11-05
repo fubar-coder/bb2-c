@@ -13,6 +13,7 @@
 ; @rwe rishapeslib ripacklib riamosfunclib
 ; @pass file=s.le|@TESTDATA@/rishapeslib-cludged-shape-pop.le
 ; @pass runwrap=@INJECT@|inuse=CORPUS:s.le
+; @pass timeout=120
 DEFTYPE .l
 n$="CORPUS:s.le"
 f=Open_(&n$,1005)
