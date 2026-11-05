@@ -185,8 +185,12 @@ struct amiga_emulation_params {
  * never again after a job, and the key changes with every input it is
  * made from.  amiga_emulation_snapshot_purge removes an owner's
  * snapshots by hand (amiga_run --purge-snapshots).  A restore that does
- * not reach SNAP:started within 6 s (or whose Amiberry ends) is dropped,
- * the state file too, and the session boots cold.  A slot keeps its AMIGA_EMULATION_SNAP_KEEP most recently
+ * not reach SNAP:started within 15 s or whose Amiberry ends is dropped
+ * and the session boots cold; the state file is removed only if
+ * Amiberry ended or booted instead (SNAP:ready: the prologue ran) - a
+ * restore can be that slow on a busy host, the next session tries the
+ * file again.  A file that does not begin as a savestate ("ASF ") is
+ * removed before the restore, the session saves anew.  A slot keeps its AMIGA_EMULATION_SNAP_KEEP most recently
  * used snapshots.  Sessions end with SIGTERM right after run.done; at the
  * end TEST:run.script is the test's script again and the links are
  * removed.  The work directory's snapshot.log tells what the session did.

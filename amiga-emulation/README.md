@@ -168,9 +168,14 @@ of the booted system, taken when the system waits for its job (about
   A restored session sees its own `TEST:` and mounts through the slot's
   links, made anew for every session, and `SNAP:` is emptied before
   every start, so nothing of an earlier session reaches it.
-* **A restore that fails** (no `SNAP:started` within 6 s, also when
-  `TEST:` takes no file, or Amiberry ends) is dropped, the state file too, and the session boots cold
-  without snapshot. A test mount called `SNAP` also means a cold boot.
+* **A restore that fails** (no `SNAP:started` within 15 s, also when
+  `TEST:` takes no file, or Amiberry ends) is dropped and the session
+  boots cold without snapshot. The state file is removed only when
+  Amiberry ended or booted instead (it cannot load it); without a start
+  in time it stays (a restore on a busy host can be that slow) and the
+  next session tries it again. A state file that does not begin as a
+  savestate (`ASF `) is removed before the restore; the session saves
+  anew. A test mount called `SNAP` also means a cold boot.
 * **The supervisor:** every session (also without snapshot) is driven by
   a process of its own that the library forks at the start: it starts
   Amiberry, saves and restores, falls back, ends the session at

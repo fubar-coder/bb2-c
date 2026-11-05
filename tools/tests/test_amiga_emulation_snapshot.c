@@ -5,8 +5,10 @@
  * second, in a new process, restores it (TEST:, a writable and a
  * read-only mount through the slot's links); a copy of the hardfile, then
  * the same copy with another modification time, each boot and save anew
- * and remove the stale snapshot; a corrupted state is dropped and the
- * session boots cold, `cold` boots without snapshot.  After every session
+ * and remove the stale snapshot; a state whose restore gets no start is
+ * kept (the session boots cold, the next one restores it), a file that is
+ * no savestate is removed and the session saves anew, `cold` boots
+ * without snapshot.  After every session
  * the slot has no links or SNAP: left.  Exit 77 (skipped) without
  * Amiberry or the data.
  */
@@ -336,21 +338,23 @@ int main(int argc, char **argv)
     free(log);
 
     /* broken: a restored state whose TEST: takes no file (here: the
-       check writes to a volume that does not exist) gets no start and is
-       dropped, the session boots cold; then a new snapshot */
+       check writes to a volume that does not exist) gets no start, the
+       session boots cold; the state file stays (no start in time can
+       also be a busy host), the next session restores it */
     CHECK(snapshots(path, sizeof path) == 1);
     setenv("AMIGA_EMULATION_SNAP_CHECK_VOLUME", "NOSUCHVOLUME", 1);
     CHECK(session("notest", emu, 0, AMIGA_EMULATION_SNAP_FALLBACK, &log, &secs) == 1);
     unsetenv("AMIGA_EMULATION_SNAP_CHECK_VOLUME");
-    CHECK(log && strstr(log, "restore failed (no start)") && strstr(log, "boot cold"));
-    CHECK(snapshots(path, sizeof path) == 0);
+    CHECK(log && strstr(log, "restore failed (no start)") && strstr(log, "kept, boot cold"));
+    CHECK(snapshots(path, sizeof path) == 1);
     CHECK(slot_clean());
     free(log);
-    CHECK(session("again", emu, 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs) == 1);
+    CHECK(session("again", emu, 0, AMIGA_EMULATION_SNAP_RESTORED, &log, &secs) == 1);
     free(log);
     CHECK(slot_clean());
 
-    /* broken: a corrupted state is dropped, the session boots cold */
+    /* broken: a file that is no savestate is removed, the session boots
+       cold and saves anew */
     CHECK(snapshots(path, sizeof path) == 1);
     f = fopen(path, "wb");
     CHECK(f != NULL);
@@ -358,16 +362,16 @@ int main(int argc, char **argv)
         fputs("not a savestate", f);
         fclose(f);
     }
-    CHECK(session("corrupted", emu, 0, AMIGA_EMULATION_SNAP_FALLBACK, &log, &secs) == 1);
-    CHECK(log && strstr(log, "restore failed") && strstr(log, "boot cold"));
-    CHECK(snapshots(path, sizeof path) == 0);
+    CHECK(session("corrupted", emu, 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs) == 1);
+    CHECK(log && strstr(log, "not a savestate, removed") && strstr(log, "boot cold, save"));
+    CHECK(snapshots(path, sizeof path) == 1);
     CHECK(slot_clean());
     free(log);
 
     /* cold: no snapshot at all */
     CHECK(session("cold", NULL, 1, AMIGA_EMULATION_SNAP_COLD, &log, &secs) == 1);
     CHECK(log && !*log);
-    CHECK(snapshots(path, sizeof path) == 0);
+    CHECK(snapshots(path, sizeof path) == 1);       /* the one of "corrupted", untouched */
     free(log);
 
     if (!failures)

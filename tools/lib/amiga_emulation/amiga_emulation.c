@@ -302,6 +302,19 @@ static int file_exists(const char *path)
     return access(path, F_OK) == 0;
 }
 
+/* whether path begins as a savestate of Amiberry (an IFF-like file: the
+   chunk "ASF " first) */
+static int is_savestate(const char *path)
+{
+    unsigned char head[4];
+    FILE *f = fopen(path, "rb");
+    int ok = f && fread(head, 1, 4, f) == 4 && !memcmp(head, "ASF ", 4);
+
+    if (f)
+        fclose(f);
+    return ok;
+}
+
 static int rm_entry(const char *path, const struct stat *st, int flag, struct FTW *ftw)
 {
     (void)st; (void)flag; (void)ftw;
@@ -904,7 +917,9 @@ static void set_use(struct amiga_emulation *e, enum amiga_emulation_snapshot_use
 #define SNAP_WAITER         "waitjob"
 #define SNAP_LOG            "snapshot.log"  /* in the work directory */
 #define SNAP_SAVE_DELAY     0.5     /* seconds between SNAP:ready and SAVESTATE */
-#define SNAP_RESTORE_GRACE  6       /* seconds from the start to SNAP:started */
+#define SNAP_RESTORE_GRACE  15      /* seconds from the start to SNAP:started (a
+                                       restore takes about 1 s, much longer
+                                       on a busy host) */
 /* The version of how a state is made, in every key: count it up when a
    change here makes the states saved before unfit for a restore and the
    key does not see it otherwise (the configuration, the prologue, the
@@ -1732,6 +1747,12 @@ static int snap_setup(struct amiga_emulation *e, const struct amiga_emulation_pa
         *cfg = NULL;
         return -1;
     }
+    /* a file that is no savestate is removed: a restore of it would not
+       start (Amiberry boots instead), the session saves anew */
+    if (file_exists(e->snap_path) && !is_savestate(e->snap_path)) {
+        snap_log(e, "not a savestate, removed: %s", e->snap_path);
+        unlink(e->snap_path);
+    }
     e->snap = file_exists(e->snap_path) ? SNAP_RESTORING : SNAP_CREATING;
     if (snap_dirs(e, e->snap == SNAP_RESTORING) || snap_prepare(e)) {
         snap_log(e, "cold: cannot prepare the slot directory %s", e->slot_dir);
@@ -2231,22 +2252,33 @@ static void supervise(struct amiga_emulation *e)
         }
         if (e->snap == SNAP_RESTORING) {
             char *started = str_printf("%s/" SNAP_STARTED, e->ctl_dir);
+            char *ready = str_printf("%s/" SNAP_READY, e->ctl_dir);
             int ok = started && file_exists(started);
+            /* SNAP:ready comes from the prologue of a boot: Amiberry did
+               not load the state (a restored one waits for the job
+               behind that point) */
+            int booted = !ok && ready && file_exists(ready);
 
+            free(ready);
             if (ok) {
                 e->snap = SNAP_RUNNING;
                 snap_log(e, "job started");
-            } else if (reaped(e) || now() > e->restore_until) {
-                /* the snapshot does not work: dropped, the session as
-                   without snapshot */
+            } else if (booted || reaped(e) || now() > e->restore_until) {
+                /* the session as without snapshot.  Amiberry ended or
+                   booted instead: the snapshot does not work, dropped.
+                   No start in time: kept (on a busy host a good restore
+                   can take that long; the next session tries it again) */
                 char err[256];
+                int ended = !booted && e->exited && now() <= e->restore_until;
 
                 stop_group(e);
-                snap_log(e, "restore failed (%s)%s: dropped, boot cold",
-                         e->exited && now() <= e->restore_until ? "Amiberry ended" : "no start",
-                         started && file_exists(started) ? ", the job had just started" : "");
+                snap_log(e, "restore failed (%s)%s: %s, boot cold",
+                         booted ? "Amiberry booted" : ended ? "Amiberry ended" : "no start",
+                         started && file_exists(started) ? ", the job had just started" : "",
+                         booted || ended ? "dropped" : "kept");
                 free(started);
-                unlink(e->snap_path);
+                if (booted || ended)
+                    unlink(e->snap_path);
                 set_use(e, AMIGA_EMULATION_SNAP_FALLBACK);
                 if (snap_off(e) || launch(e, NULL, err, sizeof err)) {
                     e->status = AMIGA_EMULATION_FAILED;

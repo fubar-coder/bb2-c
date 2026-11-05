@@ -29,7 +29,7 @@
 #include "testutil.h"
 #include "amiga_emulation.h"
 
-#define FAKE_STATE "fake state\n"
+#define FAKE_STATE "ASF fake state\n"  /* begins as a savestate */
 
 static double now(void)
 {
@@ -343,23 +343,13 @@ out:
     CHECK(slot_clean(0) && slot_clean(1));
 }
 
-/* a later session restores the slot's snapshot; a broken one is dropped
-   and the session boots cold */
-static void restore_and_fallback(void)
+/* the snapshots of both slots get text */
+static void break_snapshots(const char *text)
 {
-    struct amiga_emulation *e = start("Echo ok", 5);
-    struct amiga_emulation_stats st;
     char path[700];
     DIR *d;
     struct dirent *de;
 
-    CHECK(e && amiga_emulation_join(e) == AMIGA_EMULATION_DONE);
-    if (e) {
-        amiga_emulation_stats(e, &st);
-        CHECK(st.snapshot == AMIGA_EMULATION_SNAP_RESTORED);
-    }
-    amiga_emulation_free(e);
-    /* break the snapshots of both slots */
     for (int k = 0; k < 2; k++) {
         char dir[300];
 
@@ -368,11 +358,41 @@ static void restore_and_fallback(void)
             while ((de = readdir(d)) != NULL)
                 if (!strncmp(de->d_name, "snap-", 5)) {
                     snprintf(path, sizeof path, "%s/%s", dir, de->d_name);
-                    write_text(path, "not a state\n");
+                    write_text(path, text);
                 }
             closedir(d);
         }
     }
+}
+
+/* a later session restores the slot's snapshot; a broken one that
+   Amiberry cannot load is dropped and the session boots cold; a file that
+   is no savestate at all is removed before, the session saves anew */
+static void restore_and_fallback(void)
+{
+    struct amiga_emulation *e = start("Echo ok", 5);
+    struct amiga_emulation_stats st;
+
+    CHECK(e && amiga_emulation_join(e) == AMIGA_EMULATION_DONE);
+    if (e) {
+        amiga_emulation_stats(e, &st);
+        CHECK(st.snapshot == AMIGA_EMULATION_SNAP_RESTORED);
+    }
+    amiga_emulation_free(e);
+    break_snapshots("not a state\n");
+    e = start("Echo ok", 5);
+    CHECK(e && amiga_emulation_join(e) == AMIGA_EMULATION_DONE);
+    if (e) {
+        char *log = snap_log(e);
+
+        amiga_emulation_stats(e, &st);
+        CHECK(st.snapshot == AMIGA_EMULATION_SNAP_FIRST_SAVE);
+        CHECK(log && strstr(log, "not a savestate, removed") && strstr(log, "job started"));
+        free(log);
+    }
+    amiga_emulation_free(e);
+    /* a savestate the fake cannot load: it ends */
+    break_snapshots("ASF broken state\n");
     e = start("Echo ok", 5);
     CHECK(e && amiga_emulation_join(e) == AMIGA_EMULATION_DONE);
     if (e) {
@@ -380,7 +400,8 @@ static void restore_and_fallback(void)
 
         amiga_emulation_stats(e, &st);
         CHECK(st.snapshot == AMIGA_EMULATION_SNAP_FALLBACK);
-        CHECK(log && strstr(log, "restore failed (Amiberry ended)") && strstr(log, "boot cold"));
+        CHECK(log && strstr(log, "restore failed (Amiberry ended)")
+              && strstr(log, "dropped, boot cold"));
         free(log);
     }
     amiga_emulation_free(e);
