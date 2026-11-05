@@ -658,6 +658,12 @@ void typemode(UWORD c)
         if (ftype != &bytetype)
             typelen = (typelen + 1) & ~1;
     }
+    /* Fixed (#973): a field of the type being defined, not a pointer
+       (x.a, or an untyped field behind *nxt.a), took the type's size
+       before End NEWTYPE sets it - whatever the node's memory held.  A
+       type cannot contain itself: "Illegal Type". */
+    if (ftype == thistype && !(flagmask & 1))
+        illtypeerr();
     /* .byte */
     size = (UWORD)ftype->size;
     prevtype = ftype;
