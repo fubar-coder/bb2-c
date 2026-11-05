@@ -1,0 +1,8 @@
+; compiler-data-pad-byte: the filler - non-zero bytes in data1 (a string
+; literal of 16 'E's, $45) and data2 (Data.w $EEEE) of the session's buffer
+s$="EEEEEEEEEEEEEEEE"
+Restore a
+Read x.w
+NPrint "filler ",Hex$(x)
+End
+a: Data.w $EEEE,$EEEE,$EEEE,$EEEE,$EEEE,$EEEE,$EEEE,$EEEE
