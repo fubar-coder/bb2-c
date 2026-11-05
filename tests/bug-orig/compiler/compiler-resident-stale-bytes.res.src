@@ -1,0 +1,10 @@
+NEWTYPE .abc
+x.w
+End NEWTYPE
+NEWTYPE .def
+y.abc
+End NEWTYPE
+Macro m
+a=1
+End Macro
+#a=1

@@ -849,7 +849,11 @@ struct node *addhere(struct node *link, UWORD nameoff, UWORD len)
     if (dirmode)
         illdirerr();
     size = nameoff + len + 1;
-    n = doallocmem(size, 1);
+    /* Fixed (intended deviation, #970): the node is cleared; the original
+       allocates it with MEMF_PUBLIC only, and the fields nobody sets keep
+       what the memory held - a constant's data and procnum went into the
+       resident file like that (Create Resident, resconsts) */
+    n = doallocmem(size, MEMF_PUBLIC | MEMF_CLEAR);
     link->next = n;
     n->next = NULL;                         /* clear next */
     p = (UBYTE *)n + nameoff - 1;

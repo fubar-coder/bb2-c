@@ -866,10 +866,26 @@ static void resoff(struct reswriter *w)
     addoff2(w->pos);
 }
 
+/* Write SIZE bytes from P and, if SIZE is odd, a 0 behind them: the
+   items of a resident are word aligned.  Fixed (intended deviation, #970):
+   the original writes the length rounded up to even from the item, for an
+   odd one the byte behind its allocation (addhere allocates exactly the
+   node length, domacro exactly the length of the text), which nothing
+   set: the same source gave a different file depending on the memory. */
+static void writepadded(struct reswriter *w, const void *p, ULONG size)
+{
+    static const UBYTE pad;
+
+    Write(w->fh, (APTR)p, size);
+    if (size & 1)
+        Write(w->fh, (APTR)&pad, 1);
+}
+
 /* blitz2.s:4223 writeitem - a2 = item, d5 = offset of its length byte */
 static void writeitem(struct reswriter *w, struct node *item, UWORD off)
 {
-    ULONG len = ((ULONG)B_((UBYTE *)item + off) + 1) & ~1UL; /* word align */
+    ULONG size = B_((UBYTE *)item + off);
+    ULONG len = (size + 1) & ~1UL;      /* word align */
     struct node *save = item->next;
 
     if (save) {
@@ -877,7 +893,7 @@ static void writeitem(struct reswriter *w, struct node *item, UWORD off)
         item->next = (struct node *)(w->pos + len);
     }
     w->pos += len;
-    Write(w->fh, item, len);
+    writepadded(w, item, size);         /* fixed (#970) */
     item->next = save;
 }
 
@@ -893,18 +909,21 @@ static void __attribute__((unused)) writelist(struct reswriter *w,
    pointer is replaced by its index in alltypes for the write */
 static void writeoffs(struct reswriter *w, struct var *field, UWORD off)
 {
-    struct type *t;
-    UWORD index, save;
+    struct type *t, *save;
+    UWORD index;
 
     for (; field; field = field->next) {
         index = 0;
         for (t = alltypes; t && t != field->type; t = t->next)
             index++;
-        /* move 10(a2),-(a7) / move d1,10(a2): high word of the pointer */
-        save = W_(&field->type);
-        W_(&field->type) = index;
+        /* the index in the high word, which fixtypes reads.  Fixed
+           (intended deviation, #970): the low word is 0; the original
+           replaces only the high word of the pointer (move d1,10(a2)),
+           the low word of the type's address stays */
+        save = field->type;
+        field->type = (struct type *)((ULONG)index << 16);
         writeitem(w, (struct node *)field, off);
-        W_(&field->type) = save;
+        field->type = save;
     }
 }
 
@@ -943,9 +962,9 @@ static void resmacs(struct reswriter *w)
             m->next = (struct macro *)w->pos;
             addoff2(start);
         }
-        Write(w->fh, m, len);
+        writepadded(w, m, m->len);              /* fixed (#970) */
         if (tlen)
-            Write(w->fh, savetext, tlen);
+            writepadded(w, savetext, m->textlen);
         m->text = savetext;
         m->next = savenext;
     }
@@ -954,7 +973,7 @@ static void resmacs(struct reswriter *w)
 /* blitz2.s:4324 restypes */
 static void restypes(struct reswriter *w)
 {
-    struct type *t = firsttype;
+    struct type *t = firsttype, *savenext;
     ULONG start, len, save;
 
     countem(w, (struct node *)t);
@@ -969,7 +988,13 @@ static void restypes(struct reswriter *w)
         addoff2(w->pos + 4);
         len = ((ULONG)t->len + 1) & ~1UL;
         w->pos += len;
-        Write(w->fh, t, len);
+        /* Fixed (intended deviation, #970): next is written as 0; the
+           original writes the pointer to the next type in its memory
+           (fixtypes links the types itself) */
+        savenext = t->next;
+        t->next = NULL;
+        writepadded(w, t, t->len);
+        t->next = savenext;
         t->u.code = save;
     }
 }
@@ -1003,7 +1028,7 @@ static void resconsts(struct reswriter *w)
             l->next = (struct label *)w->pos;
             addoff2(start);
         }
-        Write(w->fh, l, len);
+        writepadded(w, l, l->len);              /* fixed (#970) */
         l->next = save;
     }
 }
@@ -1130,7 +1155,8 @@ UBYTE *fixtypes(UBYTE *p)
     last = start = lastrestype;
     do {
         /* skip through offsets.  BUG(orig) (#35): a type without fields is not
-           handled (its raw next pointer is followed) */
+           handled (its next is followed: 0 in the residents of this
+           compiler (#970), the raw pointer in those of the original) */
         while (L_(p))
             p = (UBYTE *)L_(p);
         p += (WORD)(((UWORD)B_(p + 14) + 1) & ~1);     /* a3=type */

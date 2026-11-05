@@ -1324,6 +1324,8 @@ static void handleconst(void)
         illconerr();
     }
     c = reget();
+    /* without '=' (a line "#c") a new constant has the value 0 of the
+       cleared node (addhere, #970); in the original what the memory held */
     if (c == '=')
         l->pc = evalconst2(NULL, NULL);       /* .asscon */
 }

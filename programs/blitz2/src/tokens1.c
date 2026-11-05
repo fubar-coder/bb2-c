@@ -973,7 +973,8 @@ void domacro(UWORD c)
        Kept. */
     m->textlen = (UWORD)n;                      /* .cdone */
     if (m->textlen) {   /* text stays NULL when empty (never read then) */
-        m->text = doallocmem(n, MEMF_PUBLIC);
+        /* cleared like the nodes (#970) */
+        m->text = doallocmem(n, MEMF_PUBLIC | MEMF_CLEAR);
         memcpy(m->text, macrobuff, m->textlen);
     }
     getchar3();                                 /* .skip2 */

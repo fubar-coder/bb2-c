@@ -259,6 +259,14 @@ contains, one after the other:
 3. **Constants** (`resconsts`): `count.w`, label records with `mode.l` = 1,
    `value.l` at +8, length.b at +$12 and name at +$13.
 
+Every record is word aligned: one pad byte behind a record (or a macro
+body) of odd length. The loaders do not read some bytes: the pad bytes, a
+constant's `data.l` (+12) and `procnum.w` (+16), the low word of a field's
+type (+12) and a type's `next.l`. The original writes what its memory held
+there (the pad byte is the one behind the node's allocation, the type's
+`next` the pointer to the next type in memory); blitz2-c writes 0 (#970),
+so the same source gives the same file.
+
 `loadres`/`fixtypes`/`fixmacs`/`fixconsts`/`checkclash` are, instruction for
 instruction, the model for the AB3 routines of the same name. **Differences: none
 found.** The token words in macro bodies use the

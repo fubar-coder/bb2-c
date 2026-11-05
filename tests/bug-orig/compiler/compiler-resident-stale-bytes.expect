@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+types 2 macros 1 constants 1 text 3
+pad: field 0 type 0 macro 0 text 0 constant 0
+constant: data 0 procnum 0
+field type low word 0 type next 0
+rc=0
