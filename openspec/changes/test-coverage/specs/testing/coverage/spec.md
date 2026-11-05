@@ -21,7 +21,7 @@ The host build SHALL have an option that builds all host code with coverage inst
 - **THEN** no host program is instrumented and no coverage data is written
 
 ### Requirement: Coverage variants of the compilers
-A separate coverage configuration SHALL build `blitz2` and `blitz2-ab3` with every function call recorded. The variants SHALL generate byte-identical executables for the same source and options as the normal compilers, SHALL run on Kickstart 1.3 like them, and SHALL keep base-relative addressing. The normal configuration's programs, libraries and checks SHALL NOT change.
+A separate coverage configuration SHALL build `blitz2` and `blitz2-ab3` with every function call recorded. The variants SHALL generate byte-identical executables for the same source and options as the normal compilers, except for bytes that depend on where the compiler's own memory lies (the editor line references behind the runtime error checks' traps, padding the compiler does not write), as the corpus runner already masks them, SHALL run on Kickstart 1.3 like them, and SHALL keep base-relative addressing. The normal configuration's programs, libraries and checks SHALL NOT change.
 
 #### Scenario: Same output
 - **WHEN** a source of the corpus is compiled once with `blitz2` and once with its coverage variant
