@@ -120,7 +120,7 @@ set_tests_properties(host_emulator PROPERTIES LABELS emulator TIMEOUT ${limit})
 add_test(NAME toolchain_saveds_broken COMMAND ${CMAKE_COMMAND} -DCC=${CMAKE_C_COMPILER}
 	-DSRC=${PROJECT_SOURCE_DIR}/cmake/saveds/broken.c -P ${PROJECT_SOURCE_DIR}/cmake/check-saveds.cmake)
 set_tests_properties(toolchain_saveds_broken PROPERTIES
-	PASS_REGULAR_EXPRESSION "__saveds does not load a4")
+	PASS_REGULAR_EXPRESSION "__saveds does not[ \n]+load a4")  # CMake wraps long messages
 
 # downloading the originals the tests need (not part of ALL: needs network)
 add_custom_target(fetch-originals
