@@ -100,6 +100,14 @@ without the option; the map lists them without counts. Counting at
 assembler labels (the starts of basic blocks) is a possible later
 extension.
 
+**Statements treated like assembler.** `ALibJsr`, `BLibJsr`, `TokeJsr`,
+`SysJsr`, `GetReg` and `PutReg` are assembler in BASIC form (a `jsr` or a
+register move, mostly between assembler lines). They get no counter
+either. `ALibJsr` and `TokeJsr` already get none, because they are in
+`undodebug`'s list (`compile.c:1379-1383`), which `covundo` mirrors. A
+line with a macro use gets no counter at all (`expandmax` sets `macmask`
+before `debugstuff`, `compile.c:436`, `1073`).
+
 ### D3 Where counts are written
 The generated program saves the table at its end. `finit` routines of
 the system libraries run at program end (`End`, errors, window close),
@@ -169,3 +177,37 @@ Kickstart 1.3 is part of the corpus' existing KS variants.
   later; it would reuse D2-D4 unchanged.
 - Whether `covlib` should get its own library number or reuse a free
   slot is decided in task 2.1; the specs do not depend on it.
+
+## Findings
+
+### Condition codes across BASIC statements (corpus scan, 2026-11-05)
+The scan looked for assembler that sets condition codes, then BASIC
+statements, then assembler that reads the codes set before the BASIC
+code. Such code would break with a counter before the BASIC statement.
+
+**Searched:** 2 366 sources, 663 of them with inline assembler:
+- the CD and Aminet, detokenised with `teddetok`;
+- `bblibsrc` and `rwelibsrc`;
+- the AmiBlitz3 repository's `.ab3` sources.
+
+They hold 264 225 assembler statements and 26 878 consumers of condition
+codes (Bcc, DBcc with a condition, Scc, ADDX/SUBX/NEGX/ROXL/ROXR, MOVE
+from SR, TRAPV).
+
+**Result:**
+- No case carries condition codes, or the X bit, across a BASIC
+  statement. 2 435 sequences of assembler, 1-3 BASIC statements and
+  assembler exist, mostly `ALibJsr`, `BLibJsr` and `GetReg`, but none
+  carries the flags across.
+- 100 of the 111 raw reports branch on the result of a library call
+  (`MOVE.l #65536,d1 : ALibJsr AllocMem : BEQ _initerror`). The flags
+  come from the callee, so a counter before the call does no harm.
+- 1 report reads flags set by a library's caller on entry.
+- 10 are scanner false positives: FPU instructions, macro labels and
+  disassembly lines.
+
+**The generator:** no BASIC statement passes condition codes to the next
+one. Compare and branch are always in one statement (`doif2`,
+`tokens1.c:1000-1030`). So `addq.l` stays, and the flag-neutral counter
+is not needed. Task 2.2 confirms it dynamically with a corpus run.
+
