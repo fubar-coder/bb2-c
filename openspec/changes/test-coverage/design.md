@@ -325,3 +325,31 @@ the preset, the option, the module and the tools.
   port 30.3 s against 32.0 s. On the A500 (68000, no JIT) the 70
   compiles took 16.3 to 17.1 s against 13.5 to 14.7 s (+10 to 25 %).
   No time limit needs raising.
+
+### Collecting in the runners (tasks 3.1, 3.2, D5)
+- (Task 3.1) The runners that start `blitz2` or `blitz2-ab3` in the
+  emulator: the corpus runner `corpusrun` (`corpus*`,
+  `ab3_bb2_equivalence*`, `blitz2_*` of `tests/blitz2`, the bug-orig
+  tests of compiler, libs and rwe, `rwe_residents_cd`), `cdrun`
+  (`corpus_cd`, `corpus_cd_ab3`; `rwe_refbuild*` runs the CD's
+  compiler), `tests/ab3/cli.cmake` through `amiga_run` (`ab3_cli`,
+  `ab3_cli_broken*`; `ab3_cli_ref*` runs AmiBlitz3) and `tedab`
+  (`ted_ab` and the TED bug-orig tests: TED-C runs under `blitz2`).
+  The others (`tests/ab3/tokenise.cmake`, the TED oracle with the
+  original `blitz2`, `tests/bug-port`, `libs_emulator`, `help_amiga`)
+  start none. All of them run their sessions through
+  `tools/lib/amiga_emulation`, and none knows its ctest name. So D5 is
+  implemented once, in the session library: CMake gives every emulator
+  test of the coverage configuration (but `host_emulator`, the library's
+  own tests) `AMIGA_EMULATION_COVERAGE=<test's binary
+  directory>/coverage/<ctest name>` (`emulation_coverage` in
+  `cmake/emulation-queue.cmake`); with it a session creates `TEST:cov`
+  at its start, and its join moves the `.cov` files there, merged with a
+  file of the same name from an earlier session of the test (OR, under
+  `flock`; another build's file is replaced), and removes an empty
+  `TEST:cov`. A runner that starts no compiler leaves nothing.
+- (Task 3.2) `ctest --preset coverage -R 'corpus$|ab3_cli$'` leaves
+  `tests/corpus/coverage/corpus/blitz2.cov` and
+  `tests/ab3/coverage/ab3_cli/blitz2-ab3.cov` in the build directory and
+  no `TEST:cov` behind; the tests of the normal configuration have no
+  `AMIGA_EMULATION_COVERAGE`. No time limit is raised (task 2.4).

@@ -170,3 +170,7 @@ set_tests_properties(help_amiga PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 T
 # after all tests: every emulator test gets the owner of its snapshots,
 # this build directory (cmake/emulation-queue.cmake)
 emulation_snapshot_owner(${CMAKE_BINARY_DIR})
+# and in the coverage configuration the directory of its coverage files
+if(BLITZ2_COVERAGE)
+	emulation_coverage()
+endif()

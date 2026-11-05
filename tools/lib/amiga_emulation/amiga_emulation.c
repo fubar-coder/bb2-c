@@ -280,6 +280,15 @@ static int env_on(const char *name)
     return v && *v && strcmp(v, "0");
 }
 
+/* $AMIGA_EMULATION_COVERAGE: where the session's coverage files go (NULL:
+   no coverage) */
+static const char *coverage_dir(void)
+{
+    const char *v = getenv("AMIGA_EMULATION_COVERAGE");
+
+    return v && *v ? v : NULL;
+}
+
 static int file_exists(const char *path)
 {
     return access(path, F_OK) == 0;
@@ -1753,6 +1762,10 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
         goto fail;
     }
     e->test_dir = str_printf("%s/test", e->work_dir);
+    if (e->test_dir && coverage_dir() && amiga_emulation_cov_prepare(e->test_dir)) {
+        set_err(err, errlen, "cannot create %s/cov", e->test_dir);
+        goto fail;
+    }
     e->t0 = now();
     path = str_printf("%s/" SNAP_LOG, e->work_dir);
     if (path)
@@ -2439,6 +2452,12 @@ enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)
         collect(e);
     }
     e->joined = 1;
+    if (coverage_dir() && e->test_dir) {
+        char err[512];
+
+        if (amiga_emulation_cov_collect(e->test_dir, coverage_dir(), err, sizeof err) < 0)
+            fprintf(stderr, "amiga_emulation: coverage: %s\n", err);
+    }
     return e->status;
 }
 

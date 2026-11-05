@@ -13,6 +13,13 @@ target_link_libraries(test_amiga_emulation_supervisor PRIVATE lib_amiga_emulatio
 target_compile_options(test_amiga_emulation_supervisor PRIVATE -Wno-unused-function)
 add_test(NAME amiga_emulation_supervisor COMMAND test_amiga_emulation_supervisor)
 
+# collecting the coverage files of a session (no emulator)
+add_executable(test_amiga_emulation_cov test_amiga_emulation_cov.c)
+target_link_libraries(test_amiga_emulation_cov PRIVATE lib_amiga_emulation lib_hunk)
+target_include_directories(test_amiga_emulation_cov PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../shared/cov)
+target_compile_options(test_amiga_emulation_cov PRIVATE -Wno-unused-function)
+add_test(NAME amiga_emulation_cov COMMAND test_amiga_emulation_cov)
+
 add_executable(test_blitzlib_compare test_blitzlib_compare.c)
 target_link_libraries(test_blitzlib_compare PRIVATE lib_blitzlib lib_hunk)
 target_compile_options(test_blitzlib_compare PRIVATE -Wno-unused-function)

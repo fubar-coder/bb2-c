@@ -37,3 +37,27 @@ function(emulation_snapshot_owner owner)
 		endforeach()
 	endwhile()
 endfunction()
+
+# The coverage configuration (BLITZ2_COVERAGE, preset amiga-cov): every
+# emulator test but host_emulator (the emulation library's own tests) gets
+# AMIGA_EMULATION_COVERAGE, the directory its sessions' coverage files go
+# to (tools/lib/amiga_emulation/amiga_emulation.h, "Coverage"):
+# coverage/NAME in the test's binary directory, where ctest runs it.  Call
+# it after all add_test, like emulation_snapshot_owner.
+function(emulation_coverage)
+	set(dirs ${CMAKE_SOURCE_DIR})
+	while(dirs)
+		list(POP_FRONT dirs dir)
+		get_property(sub DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
+		list(APPEND dirs ${sub})
+		get_property(tests DIRECTORY ${dir} PROPERTY TESTS)
+		get_property(bin DIRECTORY ${dir} PROPERTY BINARY_DIR)
+		foreach(t IN LISTS tests)
+			get_property(labels TEST ${t} DIRECTORY ${dir} PROPERTY LABELS)
+			if("emulator" IN_LIST labels AND NOT t STREQUAL "host_emulator")
+				set_property(TEST ${t} DIRECTORY ${dir} APPEND PROPERTY
+					ENVIRONMENT AMIGA_EMULATION_COVERAGE=${bin}/coverage/${t})
+			endif()
+		endforeach()
+	endwhile()
+endfunction()

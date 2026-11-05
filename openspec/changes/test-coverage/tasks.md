@@ -14,8 +14,8 @@
 
 ## 3. Collecting in the runners
 
-- [ ] 3.1 List every runner that starts a compiler in the emulator (corpus, `tests/ab3/cli.cmake`, `tests/blitz2`, `tests/bug-orig`, `tests/ted-ab`, the RWE reference build, `libs/tests` if it compiles) and how each one knows its test name
-- [ ] 3.2 In the coverage configuration: create `cov/` in the test's `TEST:` directory before the session, move `cov/*.cov` to `<work>/coverage/<ctest name>/` afterwards (D5); raise time limits only there if 2.4 measured a need. Verify: `ctest --preset coverage -R 'corpus$|ab3_cli$'` leaves coverage files per test; the normal configuration's runs are unchanged
+- [x] 3.1 List every runner that starts a compiler in the emulator (corpus, `tests/ab3/cli.cmake`, `tests/blitz2`, `tests/bug-orig`, `tests/ted-ab`, the RWE reference build, `libs/tests` if it compiles) and how each one knows its test name
+- [x] 3.2 In the coverage configuration: create `cov/` in the test's `TEST:` directory before the session, move `cov/*.cov` to `<work>/coverage/<ctest name>/` afterwards (D5); raise time limits only there if 2.4 measured a need. Verify: `ctest --preset coverage -R 'corpus$|ab3_cli$'` leaves coverage files per test; the normal configuration's runs are unchanged
 
 ## 4. Map and selection tools
 

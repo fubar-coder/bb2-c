@@ -97,6 +97,8 @@
  *   AMIGA_EMULATION_LOG=1       as `log`: Amiberry's own log into
  *                               amiberry.log (e.g. "CPU halted", "JIT:
  *                               Caught SIGSEGV")
+ *   AMIGA_EMULATION_COVERAGE=DIR  coverage (below): the coverage files
+ *                               of the session go to DIR
  *   AMIGA_EMULATION_CHANGES="key=value;key;..."  changes of the
  *                               configuration on top of the test's, which
  *                               they replace for the same key; a key
@@ -266,6 +268,33 @@ char *amiga_emulation_config(const struct amiga_emulation_params *p, const char 
 char *amiga_emulation_script(const char *script);
 
 const char *amiga_emulation_status_name(enum amiga_emulation_status s);
+
+/*
+ * Coverage: the coverage variants of the programs (preset amiga-cov,
+ * shared/cov/cov.h) add the functions they ran to TEST:cov/PROGRAM.cov if
+ * TEST:cov exists.  With $AMIGA_EMULATION_COVERAGE (CMake sets it for the
+ * emulator tests of the coverage configuration: the test's binary
+ * directory/coverage/TEST NAME), every session gets TEST:cov at its start,
+ * and its join moves the .cov files of TEST:cov to that directory, each
+ * merged with the file of the same name there (another session of the
+ * same test), and removes TEST:cov if it is empty then.  A failure is
+ * reported on stderr; it does not change the session's result.
+ */
+/* OR the bitmap of old (oldn bytes, NULL: none) into cur, a coverage file
+   of curn bytes (shared/cov/covfmt.h): -1 cur is none (wrong magic,
+   version or length); 0 cur stays as it is (no old, old is none or of
+   another build: the header differs); 1 merged */
+int amiga_emulation_cov_merge(unsigned char *cur, size_t curn, const unsigned char *old,
+                              size_t oldn);
+/* creates test_dir/cov; 0 = ok (also if it exists), -1 = error */
+int amiga_emulation_cov_prepare(const char *test_dir);
+/* moves the .cov files of test_dir/cov into dest_dir (created), merged as
+   above with the file there (an flock on it while merging), and removes
+   test_dir/cov if it is empty then.  A file that is no coverage file stays where it
+   is.  The number of files moved; -1 on an error (message in err; the
+   other files are still moved) */
+int amiga_emulation_cov_collect(const char *test_dir, const char *dest_dir, char *err,
+                                size_t errlen);
 
 /* for tests: the configuration of the snapshot mode for slot directory
    slot_dir (TEST: slot_dir/test, mount I slot_dir/mnt-I, SNAP: slot_dir/

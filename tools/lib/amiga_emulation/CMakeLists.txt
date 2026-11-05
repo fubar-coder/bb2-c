@@ -22,9 +22,12 @@ add_custom_command(OUTPUT ${waiter}
 	COMMENT "Assembling SNAP:waitjob")
 add_custom_target(amiga_emulation_waiter DEPENDS ${waiter})
 
-add_library(lib_amiga_emulation STATIC amiga_emulation.c)
+add_library(lib_amiga_emulation STATIC amiga_emulation.c amiga_emulation_cov.c)
 set_target_properties(lib_amiga_emulation PROPERTIES OUTPUT_NAME amiga_emulation)
 target_include_directories(lib_amiga_emulation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# the layout of the coverage files (amiga_emulation_cov.c)
+target_include_directories(lib_amiga_emulation PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}/../../../shared/cov)
 target_compile_definitions(lib_amiga_emulation PRIVATE
 	AMIGA_EMULATION_DIR_DEFAULT="${emulation_dir}")
 target_compile_options(lib_amiga_emulation PRIVATE --embed-dir=${CMAKE_CURRENT_BINARY_DIR})
