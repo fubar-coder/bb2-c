@@ -14,6 +14,7 @@
 ; the compiler frees what it allocated (inject track).
 ; @pass wrap=@INJECT@|track
 ; @pass jobline=macrobuf=100000
+; @pass timeout=30
 b.l=0
 Macro big
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

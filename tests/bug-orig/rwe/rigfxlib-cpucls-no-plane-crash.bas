@@ -7,6 +7,7 @@
 ; Correct: CPUCls returns without doing anything, the program goes on.
 ; rigfxlib needs RIAmosFuncLib (SaveCMAP calls its BSave).
 ; @rwe rigfxlib riamosfunclib
+; @pass timeout=30
 NPrint "before"
 CPUCls 5
 NPrint "after"

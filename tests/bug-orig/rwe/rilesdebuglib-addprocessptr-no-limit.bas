@@ -7,6 +7,7 @@
 ; 21st entry ("U").
 ; Correct: the 21st entry is refused, "%U" gives nothing.
 ; @rwe rilesdebuglib
+; @pass timeout=30
 DEFTYPE .l
 b=AllocMem_(64,$10001)
 If b=0 Then NPrint "no memory" : End
