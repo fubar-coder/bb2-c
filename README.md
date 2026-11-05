@@ -426,8 +426,9 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   of the scripts and compares the runs pairwise (result, requesters,
   screen dumps, files). Needs the ref run of `corpus` (fixture, ctest
   starts it as well). Selection: `-DTED_AB_FILTER=02-*,29-cmp-*`,
-  `-DTED_AB_COMBOS=R5,C5`; report in `build/<preset>/tests/ted-ab/
-  ted_ab.txt`, about 13 minutes. Known bugs (`; @known REASON` in the
+  `-DTED_AB_COMBOS=R5,C5`, sessions at the same time
+  `-DTED_AB_PARALLEL=N` (default 5, as far as emulator slots are free);
+  report in `build/<preset>/tests/ted-ab/ted_ab.txt`, about 13 minutes. Known bugs (`; @known REASON` in the
   script) are not run and are listed as KNOWN in the report; an exact
   name in the filter runs them anyway. `ted_ab_lint` checks the scripts
   without the emulator.
