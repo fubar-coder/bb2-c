@@ -473,7 +473,7 @@ statement, change `ab3-function-statement`), `ext_procrettype`,
 `ext_procfast`, `ext_procdef`, `ext_procoptional`, `ext_procmax`,
 `ext_procparam`, `ext_procentry`, `ext_procstackbytes`,
 `ext_procclrloc`, `ext_procstatics`, `ext_proctype`, `ext_procnoargs`,
-`ext_procargs`, `ext_procdefaults`, `ext_strpointer`, `ext_straddpop`
+`ext_procargs`, `ext_procdefaults`, `ext_strpointer`
 (procedures, change `ab3-mode-g4`), `ext_savefile` (the
 executable),
 `ext_cmdline`, `ext_editor`, `ext_editorarg`, `ext_result` (command
@@ -766,9 +766,9 @@ keeps them in a side table found by the address of blitz2's node.
   lower long. An omitted string from the 7th on is `pea 0 : move.l
   #-1,-(a7)`. A string added from two others at d6 (an argument from the
   7th on, also of a library command) keeps its length: AmiBlitz3 removes
-  the d6 that `getelement` saved (`add_strings`, 14334); blitz2 adds it
-  to the length (BUG(orig), `addstrings` in `eval.c`; BB2 mode keeps
-  it, extension point `ext_straddpop`).
+  the d6 that `getelement` saved (`add_strings`, 14334); blitz2 1.95
+  adds it to the length, BB2 mode removes it too (#971, `addstrings` in
+  `eval.c`).
 * **`FAST`** between `Statement` or `Function[.type]` and the name (the
   text `FAST` and a space, upper case only, not a token; `FAST{…}` is a
   procedure named `FAST`, `proc_fastname`): the locals are not cleared

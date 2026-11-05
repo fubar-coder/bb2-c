@@ -443,9 +443,4 @@ BOOL ext_procdefaults(const struct proc *p, UWORD n);
  *         leaves the registers alone. */
 void ext_strpointer(void);
 
-/** @brief addstrings (eval.c): op is the instruction taking the right
- *         string's length off the stack into D(regat) (move.l (a7)+,Dn);
- *         returns the one to write. */
-UWORD ext_straddpop(UWORD op);
-
 #endif

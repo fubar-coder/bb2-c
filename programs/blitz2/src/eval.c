@@ -1127,17 +1127,21 @@ static void doflib(WORD lvo)
 }
 
 /* blitz2.s:9368 addstrings - add the lengths on the stack.
-   BUG(orig): at regat 6 (an argument from the 7th on) the right string
-   was read by getelement's spill: move.l d6,-(a7) before it, move.l
-   (a7)+,d6 after it, which pops the right length instead of the saved
-   d6; the move.l (a7)+,d6 here then pops the saved d6, whose value is
-   added to the left length.  AB3 mode removes the saved d6 instead, as
-   AmiBlitz3 does (ext_straddpop). */
+   Fixed (#971): at regat 6 (an argument from the 7th on, or an addition
+   nested that deep) the right string was read by getelement's spill:
+   move.l d6,-(a7) before it, move.l (a7)+,d6 after it, which pops the
+   right length instead of the saved d6, so blitz2's move.l (a7)+,d6 here
+   popped the saved d6 and added it to the left length.  The saved d6 is
+   removed instead, as AmiBlitz3 does (AmiBlitz3.ab3:14334 add_strings:
+   addq.l #4,a7); the right length is in d6 then. */
 UWORD addstrings(UWORD t)
 {
     UWORD regfield = regat << 9;
-    pokewd(ext_straddpop(regfield | addcode[0]));
-    pokewd(regfield | addcode[1]);
+    if (regat == 6)
+        pokewd(0x588f);                     /* addq.l #4,a7 */
+    else
+        pokewd(regfield | addcode[0]);      /* move.l (a7)+,Dn */
+    pokewd(regfield | addcode[1]);          /* add.l Dn,(a7) */
     return t;
 }
 

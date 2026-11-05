@@ -307,8 +307,3 @@ BOOL ext_procdefaults(const struct proc *p, UWORD n)
 void ext_strpointer(void)
 {
 }
-
-UWORD ext_straddpop(UWORD op)
-{
-    return op;
-}

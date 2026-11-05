@@ -419,15 +419,3 @@ void ext_strpointer(void)
     stackuse += 4;
     pokel(0x48780000);                      /* pea 0 */
 }
-
-/* the right length of a string addition at d6 (an argument from the 7th
-   on, of a procedure or a library command): getelement's spill has taken
-   it off the stack, the saved d6 is removed (AmiBlitz3.ab3:14334
-   add_strings: addq.l #4,a7) - blitz2 adds the saved d6 to the left
-   length (BUG(orig), eval.c addstrings) */
-UWORD ext_straddpop(UWORD op)
-{
-    if (progmode != XTRA_MODE_AB3 || regat != REGPARS)
-        return op;
-    return 0x588f;                          /* addq.l #4,a7 */
-}
