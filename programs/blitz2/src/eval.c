@@ -2183,7 +2183,12 @@ static UWORD litstring(UWORD *type)
         W_(litdata1) = 0;
         W_(litdata1 + 2) = len;
     }
-    data1 = (data1 + 1) & ~1UL;     /* .skip */
+    /* .skip - Fixed (#969): the original rounds data1 up to even
+       (blitz2.s:10346-10347) and never writes the pad byte: with
+       Compile/Run it holds the previous compile's byte. Written as 0,
+       pokedata1b bounds it like the string's bytes. */
+    if (data1 & 1)
+        pokedata1b(0);
     makelit();
     *type = T_STRING;
     return getchar3();

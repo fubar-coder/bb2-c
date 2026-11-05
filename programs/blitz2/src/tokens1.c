@@ -695,7 +695,12 @@ void dodata(UWORD c)
         }
         if (!nomemleft)                         /* .done */
             L_(lenat) = len;
-        data2 = (data2 + 1) & ~1UL;             /* .nopoke */
+        /* .nopoke - Fixed (#969): the original rounds data2 up to even
+           (blitz2.s:12710-12711) and never writes the pad byte: with
+           Compile/Run it holds the previous compile's byte. Written as
+           0, pokedata2b bounds it like the string's bytes. */
+        if (data2 & 1)
+            pokedata2b(0);
         if (c != ',')
             return;
     }

@@ -123,7 +123,8 @@ first) macbigerr cbraerr eselerr defaerr caseerr unterr1 unterr2.
   reget; ','-> loop}; addq #2,a7. .string: {pdt; push data2; pokedata2l placeholder;
   d1=len=0; getchar3 (Z->done); '"' quoted loop (getchar3, 0->notqerr, until '"' then
   getchar3); ','->done; unquoted: pokedata2b d0, len++, raw `getchar` until 0 or ',';
-  done: if !nomemleft store len.l at saved addr; data2=(data2+1)&~1; ','-> repeat}.
+  done: if !nomemleft store len.l at saved addr; data2=(data2+1)&~1, the pad byte not
+  written (BUG(orig) #969; the port writes it as 0); ','-> repeat}.
   Local `.isdone` unreferenced.
 
 ### Shared / Include / Macro

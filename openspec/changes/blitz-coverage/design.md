@@ -208,6 +208,6 @@ from SR, TRAPV).
 
 **The generator:** no BASIC statement passes condition codes to the next
 one. Compare and branch are always in one statement (`doif2`,
-`tokens1.c:1000-1030`). So `addq.l` stays, and the flag-neutral counter
+`tokens1.c:1005-1035`). So `addq.l` stays, and the flag-neutral counter
 is not needed. Task 2.2 confirms it dynamically with a corpus run.
 
