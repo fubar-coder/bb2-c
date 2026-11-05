@@ -1,0 +1,8 @@
+[compile]
+ok
+[run]
+six levels 15
+seven levels 16
+eight levels 17
+abcdefgh123456789
+rc=0
