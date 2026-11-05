@@ -175,7 +175,7 @@ int main(void)
     struct amiga_emulation *e[NRUNS] = { NULL };
     char err[300], reply[256];
     const char *status[] = { "GET_STATUS", NULL };
-    int i, oldest = 0, together = 0;
+    int i, together = 0;
 
     plain.script = "Version >TEST:version.txt\nEcho \"hallo\" >TEST:hallo.txt\n";
     plain.timeout = 60;
@@ -185,9 +185,12 @@ int main(void)
     hang.script = "Echo \"before\" >TEST:before.txt\nWait 200\n";
     hang.timeout = 25;
 
-    /* in parallel as far as there are free slots: without one, the oldest
-       run is ended first (the slot limit is hard) */
+    /* in parallel as far as there are free slots: without one, the start
+       is tried again (the slot limit is hard) and the runs that have
+       ended meanwhile are finished */
     for (i = 0; i < NRUNS; i++) {
+        int running = 0;
+
         /* screenshots every 2 seconds and the state at the limit, only
            for the hanging run */
         if (i == HANG_D) {
@@ -195,10 +198,14 @@ int main(void)
             setenv("AMIGA_EMULATION_TIMEOUT_STATE", "1", 1);
         }
         while (!(e[i] = amiga_emulation_start(p[i], err, sizeof err)) && amiga_emulation_no_slot()
-               && oldest < i) {
+               && i) {
+            int ended;
+
             CHECK(errno == EAGAIN);
-            finish(oldest, e[oldest]);
-            e[oldest++] = NULL;
+            if ((ended = amiga_emulation_wait_any(e, (size_t)i, AMIGA_EMULATION_SLOT_RETRY_MS)) >= 0) {
+                finish(ended, e[ended]);
+                e[ended] = NULL;
+            }
         }
         unsetenv("AMIGA_EMULATION_SHOTS");
         unsetenv("AMIGA_EMULATION_TIMEOUT_STATE");
@@ -211,16 +218,19 @@ int main(void)
             fprintf(stderr, "test_amiga_emulation_run: %s\n", err);
             return 1;
         }
-        if (i - oldest + 1 > together)
-            together = i - oldest + 1;
+        for (int k = 0; k <= i; k++)
+            running += e[k] != NULL;
+        if (running > together)
+            together = running;
         /* the control socket while it runs */
         if (i == PLAIN_A)
             CHECK(amiga_emulation_command(e[i], status, reply, sizeof reply) == 0
                   && !strncmp(reply, "OK", 2));
     }
     printf("test_amiga_emulation_run: up to %d runs at the same time\n", together);
-    for (; oldest < NRUNS; oldest++)
-        finish(oldest, e[oldest]);
+    for (i = 0; i < NRUNS; i++)
+        if (e[i])
+            finish(i, e[i]);
 #ifdef __linux__
     orphan();
 #endif

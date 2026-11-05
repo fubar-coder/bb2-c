@@ -56,6 +56,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include "amiga_emulation.h"
 #include "statline_emulation.h"
@@ -552,6 +553,22 @@ struct session {
     size_t run;                 /* its first run (runs[]) */
 };
 
+/* every session of ss[from..to) has ended */
+static int round_ended(const struct session *ss, unsigned from, unsigned to)
+{
+    for (unsigned w = from; w < to; w++)
+        if (!amiga_emulation_finished(ss[w].e))
+            return 0;
+    return 1;
+}
+
+static void nap_ms(unsigned ms)
+{
+    struct timespec ts = { ms / 1000, (long)(ms % 1000) * 1000000L };
+
+    nanosleep(&ts, NULL);
+}
+
 /* the next session from the queue: whole tests up to the budget */
 static size_t take(size_t *queue, size_t nq, size_t *pos)
 {
@@ -848,14 +865,23 @@ static int run(FILE *log)
                 ep.script = script;
                 ep.timeout = P.timeout;
                 ep.work_dir = emu;
-                s->e = amiga_emulation_start(&ep, err, sizeof err);
+                /* no free emulator slot while sessions of this round run:
+                   again every AMIGA_EMULATION_SLOT_RETRY_MS while one of
+                   them still runs (the slot limit is hard) */
+                for (int told = 0; !(s->e = amiga_emulation_start(&ep, err, sizeof err))
+                                   && round && amiga_emulation_no_slot()
+                                   && !round_ended(ss, first, nsess - 1);) {
+                    if (!told++)
+                        fprintf(log, "tedab: %s - waiting for a slot\n", err);
+                    nap_ms(AMIGA_EMULATION_SLOT_RETRY_MS);
+                }
             }
             free(script);
             free(vol);
             free(emu);
-            /* no free emulator slot while sessions of this round run: the
-               round ends here (the slot limit is hard), the rest of the
-               queue goes to the next one */
+            /* still no free emulator slot and every session of this round
+               has ended: the round ends here, the rest of the queue goes
+               to the next one */
             if (!s->e && round && amiga_emulation_no_slot()) {
                 char *sd = session_dir(s->no, "");
 

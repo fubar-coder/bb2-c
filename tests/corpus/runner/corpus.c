@@ -911,7 +911,7 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
     int *vbad = calloc(p->nconfigs, sizeof *vbad);             /* the verdict "differs" */
     char *text = corpus_script(p), err[300];
     struct text rep = { 0 };
-    size_t c, i, next = 0, done = 0;
+    size_t c, i, next = 0, done = 0, announced = 0;   /* announced: sessions logged */
     unsigned waiting_port = 0;  /* the port of resp[next] */
     long bad = 0;
     int rc = 2;
@@ -955,12 +955,16 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
     for (c = 0; c < p->nconfigs; c++)
         if (stage(p, c, log))
             goto out;
-    /* at most `parallel` sessions at a time, joined in start order; with
-       serial=on each one with its own port and remote end.  No free
-       emulator slot while sessions of this pass run: no further one until
-       the oldest has ended (the slot limit is hard; the remote end of the
-       session not started stays for the next try) */
+    /* at most `parallel` sessions at a time, started in order, each
+       collected as soon as it has ended; with serial=on each one with its
+       own port and remote end.  No free emulator slot while sessions of
+       this pass run: the start is tried again every
+       AMIGA_EMULATION_SLOT_RETRY_MS, any slot that becomes free is taken
+       (the slot limit is hard; the remote end of the session not started
+       stays for the next try) */
     while (done < p->nconfigs) {
+        int ended;
+
         while (next < p->nconfigs && next - done < p->parallel) {
             unsigned port = 0;
 
@@ -973,15 +977,20 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
                 goto out;
             }
             waiting_port = port;
-            fprintf(log, "corpus: %s: emulator session%s\n", p->configs[next].tag,
-                    port ? ", serial port" : "");
-            fflush(log);
+            if (next >= announced) {
+                fprintf(log, "corpus: %s: emulator session%s\n", p->configs[next].tag,
+                        port ? ", serial port" : "");
+                fflush(log);
+            }
             if (!(e[next] = start(p, next, text, port, err, sizeof err)) && next > done
                 && amiga_emulation_no_slot()) {
-                fprintf(log, "corpus: %s: %s - again after the session of %s\n", p->configs[next].tag,
-                        err, p->configs[done].tag);
+                if (next >= announced)
+                    fprintf(log, "corpus: %s: %s - waiting for a slot\n", p->configs[next].tag,
+                            err);
+                announced = next + 1;
                 break;
             }
+            announced = next + 1;
             if (!e[next]) {
                 fprintf(log, "corpus: %s: %s - skipped\n", p->configs[next].tag, err);
                 rc = next ? 2 : 77;
@@ -989,15 +998,19 @@ int corpus_run(const struct corpus_pass *p, FILE *log)
             }
             next++;
         }
-        st[done] = amiga_emulation_join(e[done]);
-        statline_session(&stl[done], p->work, p->configs[done].tag, e[done]);
-        amiga_emulation_free(e[done]);
-        e[done] = NULL;
-        if (resp[done]) {
-            char *out = dir_of(p, done, "vol/out");
+        /* the session that has ended; none within the time: start again */
+        if ((ended = amiga_emulation_wait_any(e, p->nconfigs, AMIGA_EMULATION_SLOT_RETRY_MS)) < 0)
+            continue;
+        c = (size_t)ended;
+        st[c] = amiga_emulation_join(e[c]);
+        statline_session(&stl[c], p->work, p->configs[c].tag, e[c]);
+        amiga_emulation_free(e[c]);
+        e[c] = NULL;
+        if (resp[c]) {
+            char *out = dir_of(p, c, "vol/out");
 
-            nsessions[done] = out ? serial_stop(resp[done], out) : -1;
-            resp[done] = NULL;
+            nsessions[c] = out ? serial_stop(resp[c], out) : -1;
+            resp[c] = NULL;
             free(out);
         }
         done++;

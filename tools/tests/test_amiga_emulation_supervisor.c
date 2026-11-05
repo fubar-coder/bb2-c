@@ -24,6 +24,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 #include "testutil.h"
@@ -467,6 +468,178 @@ out:
     CHECK(slot_clean(0) && slot_clean(1));
 }
 
+/* a runner's start that finds no free slot while sessions of its own run:
+   tried again every AMIGA_EMULATION_SLOT_RETRY_MS, the own sessions that
+   end meanwhile collected (the runners' loop) - c gets a slot; the time
+   until then */
+static struct amiga_emulation *start_retry(const char *script, unsigned timeout,
+                                           struct amiga_emulation **own, size_t n, int *collected)
+{
+    struct amiga_emulation_params p = { 0 };
+    struct amiga_emulation *e;
+    char err[512];
+    int ended;
+
+    p.changes = (const struct amiga_emulation_option[]){ { "kickstart_rom_file", NULL },
+                                                         { "hardfile2", NULL } };
+    p.nchanges = 2;
+    p.amiberry = self;
+    p.script = script;
+    p.timeout = timeout;
+    while (!(e = amiga_emulation_start(&p, err, sizeof err)) && amiga_emulation_no_slot()) {
+        CHECK(errno == EAGAIN);
+        if ((ended = amiga_emulation_wait_any(own, n, AMIGA_EMULATION_SLOT_RETRY_MS)) >= 0) {
+            CHECK(amiga_emulation_finished(own[ended]));
+            amiga_emulation_join(own[ended]);
+            amiga_emulation_free(own[ended]);
+            own[ended] = NULL;
+            (*collected)++;
+        }
+    }
+    if (!e)
+        fprintf(stderr, "test_amiga_emulation_supervisor: start: %s\n", err);
+    return e;
+}
+
+/* both slots are this process's: a runs until its limit (30 s), b ends at
+   its limit of 2 s.  The third start waits for b, which is collected; it
+   does not wait for a. */
+static void retry_own_ended(void)
+{
+    struct amiga_emulation *none[2] = { NULL, NULL };
+    double t0 = now(), t;
+    int collected = 0;
+
+    /* no sessions: nothing ends, the wait takes its time */
+    CHECK(amiga_emulation_finished(NULL));
+    CHECK(amiga_emulation_wait_any(NULL, 0, 0) == -1);
+    CHECK(amiga_emulation_wait_any(none, 2, 200) == -1 && now() - t0 >= 0.19);
+
+    struct amiga_emulation *own[2] = { start("HANG", 30), start("HANG", 2) }, *c = NULL;
+
+    t0 = now();
+
+    CHECK(own[0] && own[1]);
+    if (!own[0] || !own[1])
+        goto out;
+    CHECK(!amiga_emulation_finished(own[0]) && !amiga_emulation_finished(own[1]));
+    /* nothing ends within a short wait */
+    t = now();
+    CHECK(amiga_emulation_wait_any(own, 2, 300) == -1);
+    CHECK(now() - t >= 0.29 && now() - t < 2);
+    c = start_retry("Echo ok", 30, own, 2, &collected);
+    t = now() - t0;
+    CHECK(c != NULL);
+    CHECK(collected == 1 && own[0] && !own[1]);
+    CHECK(t > 1.5 && t < 8);
+    CHECK(own[0] && !amiga_emulation_finished(own[0]));
+    CHECK(c && amiga_emulation_join(c) == AMIGA_EMULATION_DONE);
+    if (failures)
+        fprintf(stderr, "test_amiga_emulation_supervisor: retry_own_ended: c after %.2f s\n", t);
+out:
+    amiga_emulation_free(c);
+    amiga_emulation_free(own[0]);
+    amiga_emulation_free(own[1]);
+    CHECK(slot_clean(0) && slot_clean(1));
+}
+
+/* the other slot belongs to another process (another runner) and is freed
+   after 1.5 s while this process's session runs on (30 s): the next start
+   takes it within a retry or two */
+static void retry_foreign_freed(void)
+{
+    struct amiga_emulation *own[1] = { NULL }, *c = NULL;
+    int fds[2], collected = 0;
+    char got = 0;
+    double t;
+    pid_t pid;
+
+    CHECK(pipe(fds) == 0);
+    pid = fork();
+    if (pid == 0) {
+        int x = amiga_emulation_slot(slots, AMIGA_EMULATION_SLOTS_AUTO, 1);
+
+        (void)!write(fds[1], x >= 0 ? "y" : "n", 1);
+        nap(1.5);
+        _exit(0);
+    }
+    CHECK(pid > 0);
+    close(fds[1]);
+    CHECK(read(fds[0], &got, 1) == 1 && got == 'y');
+    close(fds[0]);
+    own[0] = start("HANG", 30);
+    CHECK(own[0] != NULL);
+    t = now();
+    c = start_retry("Echo ok", 30, own, 1, &collected);
+    t = now() - t;
+    CHECK(c != NULL && collected == 0 && own[0] && !amiga_emulation_finished(own[0]));
+    CHECK(t > 0.5 && t < 4);
+    CHECK(c && amiga_emulation_join(c) == AMIGA_EMULATION_DONE);
+    if (failures)
+        fprintf(stderr, "test_amiga_emulation_supervisor: retry_foreign_freed: c after %.2f s\n", t);
+    if (pid > 0)
+        waitpid(pid, NULL, 0);
+    amiga_emulation_free(c);
+    amiga_emulation_free(own[0]);
+    CHECK(slot_clean(0) && slot_clean(1));
+}
+
+/* two runners (this process and a child), each with up to two sessions at
+   once and four in all, on two slots: both get through, none waits for
+   ever (every session ends at its limit of 2 s) */
+static int run_four(void)
+{
+    struct amiga_emulation *own[2] = { NULL, NULL };
+    int collected = 0, started = 0, bad = failures;
+
+    while (started < 4) {
+        size_t k = own[0] ? 1 : 0;
+
+        if (own[k]) {
+            /* both running: the next that ends */
+            int ended = amiga_emulation_wait_any(own, 2, AMIGA_EMULATION_SLOT_RETRY_MS);
+
+            if (ended >= 0) {
+                CHECK(amiga_emulation_join(own[ended]) == AMIGA_EMULATION_TIMEOUT);
+                amiga_emulation_free(own[ended]);
+                own[ended] = NULL;
+            }
+            continue;
+        }
+        own[k] = start_retry("HANG", 2, own, 2, &collected);
+        CHECK(own[k] != NULL);
+        if (!own[k])
+            break;
+        started++;
+    }
+    for (size_t k = 0; k < 2; k++) {
+        if (own[k])
+            CHECK(amiga_emulation_join(own[k]) == AMIGA_EMULATION_TIMEOUT);
+        amiga_emulation_free(own[k]);
+    }
+    return failures != bad;
+}
+
+static void retry_two_runners(void)
+{
+    double t = now();
+    int status = -1;
+    pid_t pid = fork();
+
+    if (pid == 0)
+        _exit(run_four());
+    CHECK(pid > 0);
+    CHECK(run_four() == 0);
+    CHECK(pid > 0 && waitpid(pid, &status, 0) == pid && WIFEXITED(status)
+          && WEXITSTATUS(status) == 0);
+    t = now() - t;
+    /* 8 sessions of about 2 s on 2 slots: 4 rounds */
+    CHECK(t < 30);
+    if (failures)
+        fprintf(stderr, "test_amiga_emulation_supervisor: retry_two_runners: %.2f s\n", t);
+    CHECK(slot_clean(0) && slot_clean(1));
+}
+
 /* without snapshot: the session ends with its job too, not at the join */
 static void cold(void)
 {
@@ -584,6 +757,9 @@ int main(int argc, char **argv)
     restore_and_fallback();
     free_running();
     slot_free_at_end();
+    retry_own_ended();
+    retry_foreign_freed();
+    retry_two_runners();
     cold();
     halt();
 

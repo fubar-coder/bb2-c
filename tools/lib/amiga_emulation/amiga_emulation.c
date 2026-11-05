@@ -109,6 +109,7 @@ const size_t amiga_emulation_rtg_count = sizeof amiga_emulation_rtg / sizeof ami
 #define SUP_STOP_GRACE 5        /* seconds amiga_emulation_free gives a supervisor */
 #define CPU_POLL    1           /* seconds between the supervisor's GET_CPU_REGS */
 #define CPU_REPLY   2           /* seconds it waits for the answer */
+#define WAIT_ANY_STEP 50        /* ms between the checks of amiga_emulation_wait_any */
 
 /* What a session's supervisor (the process that drives the session, see
    amiga_emulation_start) shares with the caller: a MAP_SHARED page.  Times
@@ -834,9 +835,9 @@ static char *slots_dir(void)
    limit is hard: every session holds a slot.  Only a process without a
    run of its own waits: one that already runs sessions (a runner with
    parallel > 1) takes a free slot if there is one, else the start fails
-   with no_slot - waiting while holding slots could deadlock two runners
-   that wait for each other's slots.  The runner then ends one of its own
-   sessions and tries again.  *index: the slot's number, -1 without a
+   with no_slot: the runner tries again every AMIGA_EMULATION_SLOT_RETRY_MS
+   and collects meanwhile its sessions that have ended (amiga_emulation.h).
+   *index: the slot's number, -1 without a
    limit (AMIGA_EMULATION_MAX=0); *lock: the path of its lock file (NULL
    without a slot number, or out of memory) */
 static int take_slot(int *index, char **lock, char *err, size_t errlen)
@@ -2534,6 +2535,26 @@ static void collect(struct amiga_emulation *e)
         e->end_at = now();
     }
     e->snap_use = (enum amiga_emulation_snapshot_use)atomic_load(&e->sh->snap_use);
+}
+
+int amiga_emulation_finished(struct amiga_emulation *e)
+{
+    return !e || e->joined || e->sup <= 0 || reaped(e);
+}
+
+int amiga_emulation_wait_any(struct amiga_emulation *const *e, size_t n, unsigned ms)
+{
+    double until = now() + ms / 1e3, left;
+
+    for (;;) {
+        for (size_t i = 0; i < n; i++)
+            if (e[i] && amiga_emulation_finished(e[i]))
+                return (int)i;
+        left = until - now();
+        if (left <= 0)
+            return -1;
+        sleep_ms(left < WAIT_ANY_STEP / 1e3 ? (long)(left * 1e3) + 1 : WAIT_ANY_STEP);
+    }
 }
 
 enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e)

@@ -56,11 +56,12 @@ still waits for an earlier session before it joins this one. A runner
 that runs several sessions at once (`parallel=`) waits for a slot only
 while it has no session of its own that it has not freed yet (one that
 has ended but is not joined counts); if no slot is free for a further
-one, it ends one of its own sessions first and starts the next then (it
-never waits for a slot while holding one, so two runners cannot block
-each other). A runner thus runs as many sessions at
-once as it gets slots, at least one, and its sessions may run one after
-the other.
+one, it tries again every half second and collects meanwhile those of
+its sessions that have ended, so it takes the next slot that any runner
+frees. Two runners cannot block each other: every session ends at its
+time limit on its own and frees its slot. A runner thus runs as many
+sessions at once as it gets slots, at least one, and its sessions may run
+one after the other.
 
 ## Snapshot mode
 

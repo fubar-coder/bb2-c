@@ -76,10 +76,13 @@
  * session holds a slot, so no more than the limit of Amiberry instances
  * run.  Only a process without a run of its own waits; for a runner that
  * already runs sessions, amiga_emulation_start takes a free slot or fails
- * at once with amiga_emulation_no_slot() set (no deadlock between runners
- * that each hold slots and wait for more).  The runner then ends one of
- * its own sessions (join, free) and starts again; with none of its own
- * left, that start waits as usual.
+ * at once with amiga_emulation_no_slot() set.  The runner then tries
+ * again every AMIGA_EMULATION_SLOT_RETRY_MS and collects (joins, frees)
+ * meanwhile those of its own sessions that have ended
+ * (amiga_emulation_wait_any), so it gets the next slot that any runner
+ * frees, not only one of its own; with none of its own left, the start
+ * waits as usual.  The retries cannot deadlock: every session ends at its
+ * time limit on its own (its supervisor) and frees its slot then.
  *
  * For debugging, from the environment (for every runner):
  *   AMIGA_EMULATION_VISIBLE=1   as `visible`: the window, host input
@@ -215,8 +218,9 @@ struct amiga_emulation;
 
 /* starts the run; NULL on error (message in err).  NULL with errno EAGAIN
    and amiga_emulation_no_slot() nonzero: no slot was free and this
-   process runs sessions of its own (see above) - not an error; end one of
-   them and start again. */
+   process runs sessions of its own (see above) - not an error; start
+   again after AMIGA_EMULATION_SLOT_RETRY_MS or as soon as one of them has
+   ended (amiga_emulation_wait_any). */
 struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_params *p,
                                               char *err, size_t errlen);
 
@@ -239,6 +243,19 @@ int amiga_emulation_command(struct amiga_emulation *e, const char *const *args,
 /* waits for the end of the run (the supervisor's, see above) and returns
    its result; again: the same result */
 enum amiga_emulation_status amiga_emulation_join(struct amiga_emulation *e);
+
+/* nonzero if the session has ended (amiga_emulation_join returns at
+   once), also for NULL; does not wait */
+int amiga_emulation_finished(struct amiga_emulation *e);
+
+/* waits up to ms milliseconds until one of the n sessions of e (NULL
+   entries are skipped) has ended: the index of the first ended one in e
+   (it may have ended before the call), -1 if none has within ms */
+int amiga_emulation_wait_any(struct amiga_emulation *const *e, size_t n, unsigned ms);
+
+/* how often a runner whose start found no free slot (amiga_emulation_no_slot)
+   tries again, in milliseconds (see above) */
+#define AMIGA_EMULATION_SLOT_RETRY_MS 500u
 
 /* what the snapshot mode did for a session */
 enum amiga_emulation_snapshot_use {

@@ -1028,10 +1028,11 @@ static int run(FILE *log)
     fprintf(log, "cdrun: %zu sources, %zu to compile, %u workers\n", njobs, ntok, nworkers);
 
     /* rounds: one session per worker that has jobs left.  No free emulator
-       slot while sessions of this round run: the oldest of them is ended
-       first (the slot limit is hard), then the start is tried again */
+       slot while sessions of this round run: the start is tried again
+       every AMIGA_EMULATION_SLOT_RETRY_MS (the slot limit is hard), the
+       sessions of the round that end meanwhile are finished */
     while (session < MAXSESSIONS) {
-        unsigned started_any = 0, s = ++session, oldest = 0;
+        unsigned started_any = 0, s = ++session;
 
         for (w = 0; w < nworkers; w++)
             e[w] = NULL;
@@ -1045,14 +1046,14 @@ static int run(FILE *log)
                 fprintf(log, "cdrun: cannot write the session files\n");
                 goto out;
             }
-            while (!(e[w] = start_session(w, script, err, sizeof err))
-                   && amiga_emulation_no_slot()) {
-                while (oldest < w && !e[oldest])
-                    oldest++;
-                if (oldest >= w)
-                    break;
-                fprintf(log, "cdrun: worker %u: %s - again after worker %u\n", w, err, oldest);
-                finish_session(oldest, s, e, list, unf, empty, log);
+            for (int told = 0; !(e[w] = start_session(w, script, err, sizeof err))
+                               && amiga_emulation_no_slot();) {
+                int ended;
+
+                if (!told++)
+                    fprintf(log, "cdrun: worker %u: %s - waiting for a slot\n", w, err);
+                if ((ended = amiga_emulation_wait_any(e, w, AMIGA_EMULATION_SLOT_RETRY_MS)) >= 0)
+                    finish_session((unsigned)ended, s, e, list, unf, empty, log);
             }
             free(script);
             if (!e[w]) {
