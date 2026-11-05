@@ -18,6 +18,13 @@
 			"cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "CMAKE_C_FLAGS_DEBUG": "-Os -g" }
 		},
 		{
+			"name": "amiga-cov",
+			"displayName": "AmigaOS, 68000, release, blitz2 with function coverage (TEST:cov)",
+			"inherits": "amiga",
+			"binaryDir": "${sourceDir}/build/amiga-cov",
+			"cacheVariables": { "BLITZ2_COVERAGE": "ON" }
+		},
+		{
 			"name": "native",
 			"displayName": "Host side only (tools, host tests), native compiler, debug - for IDEs",
 			"generator": "Ninja",
@@ -28,6 +35,7 @@
 	"buildPresets": [
 		{ "name": "amiga", "configurePreset": "amiga" },
 		{ "name": "amiga-debug", "configurePreset": "amiga-debug" },
+		{ "name": "amiga-cov", "configurePreset": "amiga-cov" },
 		{ "name": "native", "configurePreset": "native" }
 	],
 	"testPresets": [
@@ -66,6 +74,13 @@
 		              "testOutputTruncation": "tail" },
 		  "environment": { "AMIGA_EMULATION_TIMEOUT_STATE": "1", "AMIGA_EMULATION_LOG": "1" },
 		  "execution": { "jobs": 4 },
-		  "filter": { "include": { "label": "bug-orig|bug-port" } } }
+		  "filter": { "include": { "label": "bug-orig|bug-port" } } },
+		{ "name": "coverage", "displayName": "All tests and the original bugs with the coverage compilers (coverage/ per test)",
+		  "configurePreset": "amiga-cov",
+		  "output": { "outputOnFailure": true, "outputJUnitFile": "junit-coverage.xml",
+		              "maxPassedTestOutputSize": 1048576, "maxFailedTestOutputSize": 1048576,
+		              "testOutputTruncation": "tail" },
+		  "environment": { "AMIGA_EMULATION_TIMEOUT_STATE": "1", "AMIGA_EMULATION_LOG": "1" },
+		  "execution": { "jobs": 4 } }
 	]
 }

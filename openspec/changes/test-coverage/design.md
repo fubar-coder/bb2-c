@@ -211,9 +211,6 @@ the preset, the option, the module and the tools.
 
 ## Open Questions
 
-- Whether libnix13 runs `atexit` handlers on every exit path of blitz2,
-  or a direct call is needed (task 2.2; either way the behaviour in the
-  spec holds).
 - How the m68k function line ranges are obtained (D7). The fallback
   keeps the spec's guarantee.
 
@@ -263,3 +260,68 @@ the preset, the option, the module and the tools.
   run in the emulator (`declarations_*`, `tokens_*`, `asmcmp_*`, ...).
   Every `*.cmake` and `CMakeLists.txt` selects all tests, including the
   runner scripts of a single suite.
+
+### Coverage variants of the compilers (tasks 2.1-2.4, D2-D4)
+- (Task 2.1) `-finstrument-functions-once` (GCC 14 and later) instead of
+  `-finstrument-functions`: the hook is called at the first entry of a
+  function only; a guard byte per function in `.bss` (a4-relative) is
+  tested on every later call, and `__cyg_profile_func_exit` is called at
+  most once. A `__saveds` function (`runtheprog`) loads a4 before it
+  tests its guard. Sizes: `blitz2-ab3` text 0x18464 → 0x271b0 (+61 %),
+  bss +0x448 (the guards), data unchanged; `blitz2` text 0x1da0c.
+- (Task 2.1) The bitmap is not in `.bss`: `cov_start` allocates it
+  (`AllocMem`, `(__etext - __stext) / 16` bytes, about 10 KB for
+  `blitz2-ab3`) from libnix's constructor list, before `main`;
+  `cov_write` frees it.
+- (Task 2.1) The code range: `__stext` is 0 (the start of `nbcrt0.o`,
+  the first object), `__etext` the end of `.text`; both equal the code
+  hunk of the executable (`blitz2-ab3`: hunk size 0x9c6c longs =
+  0x271b0 = `__etext` in `blitz2-ab3.map`; `blitz2`: 0x7683 longs =
+  0x1da0c). A bit's offset is the function's address in the map.
+- (Task 2.1) The exclusion is a per-source `-fno-instrument-functions`
+  (`cov_exclude` in `shared/cov/cov.cmake`) instead of
+  `-finstrument-functions-exclude-file-list`, whose substring match on
+  paths would also hit directories that happen to contain the pattern.
+- (Task 2.3) `cov_instrument` compiles the instrumented programs with
+  `-g` as well, for the line tables of task 4.3; the release link strips
+  the programs, and their `.text` is the same with and without it.
+- (Task 2.2) libnix13 has no exit code of its own: `exit()` and the
+  return from `main` both go to `nbcrt0.o`'s `__exit`, which runs the
+  `__EXIT_LIST__` from the highest priority down (`atexit` handlers via
+  `__exitatexit`, priority 0, then `__exitlibraries`, priority -79, which
+  closes `dos.library`). blitz2 ends only this way (`main`'s return,
+  `exit(RETURN_FAIL)` in `parse.c`'s error path); the process of a
+  running program (`runtheprog`) never exits through libnix. `cov.c`
+  puts `cov_write` into that list with `ADD2EXIT` (priority 0) and
+  `cov_start` into the constructor list with `ADD2INIT`: no call in
+  blitz2's sources, and no `malloc`, which `atexit` would need.
+- (Task 2.4) Same output: the `corpus` sources (runtime error checking
+  off) give byte-identical executables with both compilers, on the
+  A1200 (configurations port and clib) and on the A500 (a compile-only
+  pass of the 70 sources with both compilers on Kickstart 1.3: 70
+  executables identical), and `corpus_cd` gives its 724 results. The
+  `ab3_cli` executables are identical apart from bytes that depend on
+  the memory layout, not on the instrumentation: 84 of 110 differ only
+  in the 8-byte blocks behind `trap #1`/`trap #4` of runtime error
+  checking (the address of the editor's line item, which the corpus
+  runner masks for this reason), and `tilde_string` also in the pad
+  byte of `Even` after `Dc.b "J~",0`: `doeven`/`alignpc` advance `pc`
+  without writing, so the byte is whatever the code buffer held there
+  (the original does the same). A compiler of another size moves its
+  allocations, so these bytes differ: the requirement's "byte-identical"
+  holds for executables without such bytes (open point for the spec).
+- (Task 2.4) Merging and the missing directory, in one session with
+  `blitz2-ab3` (compiles of `atoi`, `int_tests_nostop`, `atoi`): 310,
+  363, 363 bits set, each file a superset of the one before; a file of
+  another build in `TEST:cov` (code size 64) was replaced at the first
+  compile; after `Delete TEST:cov` a fourth compile wrote nothing, gave
+  rc 0 and the session ended without a requester. The tests without
+  `TEST:cov` (`corpus`, `corpus_cd`, `ab3_cli`) pass with the coverage
+  compilers. On the A500 (Kickstart 1.3) `blitz2` writes its file
+  (`bug_orig_deflibs_init_endless_retry`, the compile-only pass).
+- (Task 2.4) Slowdown: on the A1200 (JIT) none beyond the noise of the
+  shared emulator: `corpus_cd`'s three compile-only sessions 77.0 s
+  with the coverage `blitz2`, 79.6 s with the normal one; `corpus`
+  port 30.3 s against 32.0 s. On the A500 (68000, no JIT) the 70
+  compiles took 16.3 to 17.1 s against 13.5 to 14.7 s (+10 to 25 %).
+  No time limit needs raising.

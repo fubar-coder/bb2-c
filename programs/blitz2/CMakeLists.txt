@@ -14,6 +14,10 @@ file(GLOB blitz2_src_files CONFIGURE_DEPENDS src/*)
 # (data + bss must stay below 64 KB - the linker refuses a 16-bit a4
 # offset beyond it; entry stubs in glue*.c load a4)
 option(BLITZ2_BASEREL "address globals relative to a4 (-fbaserel)" ON)
+# the coverage configuration (preset amiga-cov): blitz2 and blitz2-ab3
+# record the functions they execute in TEST:cov (shared/cov/cov.h)
+option(BLITZ2_COVERAGE "blitz2 and blitz2-ab3 with function coverage" OFF)
+include(${PROJECT_SOURCE_DIR}/shared/cov/cov.cmake)
 # blitz2_compile(TARGET): the compiler options of the program's sources
 function(blitz2_compile target)
 	target_include_directories(${target} PRIVATE src)
@@ -24,6 +28,9 @@ function(blitz2_compile target)
 	if(BLITZ2_BASEREL)
 		target_compile_options(${target} PRIVATE -fbaserel)
 	endif()
+	if(BLITZ2_COVERAGE)
+		cov_instrument(${target})
+	endif()
 endfunction()
 
 # blitz2_core: the chunk files and the glue, compiled once and linked by
@@ -33,6 +40,9 @@ endfunction()
 # handled), blitz2-ab3 with the AB3 modules src/ab3*.c.
 add_library(blitz2_core OBJECT ${chunk_sources} ${glue_sources})
 blitz2_compile(blitz2_core)
+if(BLITZ2_COVERAGE)
+	cov_exclude(${glue_sources})        # their entry stubs load a4
+endif()
 
 # blitz2_program(TARGET SOURCES...): one compiler, the core with the
 # implementation of the extension points in SOURCES
@@ -40,6 +50,9 @@ function(blitz2_program target)
 	# the core's objects first, in the order of the chunks
 	add_executable(${target} $<TARGET_OBJECTS:blitz2_core> ${ARGN})
 	blitz2_compile(${target})
+	if(BLITZ2_COVERAGE)
+		cov_link(${target} ${target})
+	endif()
 	if(BLITZ2_BASEREL)
 		target_link_options(${target} PRIVATE -fbaserel)
 	endif()

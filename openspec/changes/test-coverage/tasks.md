@@ -7,10 +7,10 @@
 
 ## 2. Coverage variants of the compilers (stage 2)
 
-- [ ] 2.1 `shared/cov/cov.c`/`cov.h`: hook `__cyg_profile_func_enter`, bitmap over the code hunk, the start and end symbols checked against `blitz2-ab3.map` (D2). Excluded from instrumentation: the module and `glue*.c`
-- [ ] 2.2 `cov_write`: window pointer -1, `TEST:cov` lock, read-OR-write of `<name>.cov` with header, size mismatch overwrites, errors ignored; called on every exit path of blitz2 (find out whether libnix13 runs `atexit`, else direct calls) (D3)
-- [ ] 2.3 Option `BLITZ2_COVERAGE` in `programs/blitz2/CMakeLists.txt` (flags, exclude list, the module linked) and the presets `amiga-cov` (configure) and `coverage` (test) (D4). Verify: the `amiga-cov` build passes all its checks (`checklink`, `checkcore`) with no warnings; the normal build's `blitz2`, `blitz2-ab3`, `ted` and library files are byte-identical to before
-- [ ] 2.4 Check in the emulator: the coverage `blitz2` compiles the corpus with executables byte-identical to the normal `blitz2`'s; with `TEST:cov` it writes `blitz2.cov`, two runs merge; without the directory no file and no requester; on the A500 machine (Kickstart 1.3) it runs and writes. Measure the slowdown
+- [x] 2.1 `shared/cov/cov.c`/`cov.h`: hook `__cyg_profile_func_enter`, bitmap over the code hunk, the start and end symbols checked against `blitz2-ab3.map` (D2). Excluded from instrumentation: the module and `glue*.c`
+- [x] 2.2 `cov_write`: window pointer -1, `TEST:cov` lock, read-OR-write of `<name>.cov` with header, size mismatch overwrites, errors ignored; called on every exit path of blitz2 (find out whether libnix13 runs `atexit`, else direct calls) (D3)
+- [x] 2.3 Option `BLITZ2_COVERAGE` in `programs/blitz2/CMakeLists.txt` (flags, exclude list, the module linked) and the presets `amiga-cov` (configure) and `coverage` (test) (D4). Verify: the `amiga-cov` build passes all its checks (`checklink`, `checkcore`) with no warnings; the normal build's `blitz2`, `blitz2-ab3`, `ted` and library files are byte-identical to before
+- [x] 2.4 Check in the emulator: the coverage `blitz2` compiles the corpus with executables byte-identical to the normal `blitz2`'s; with `TEST:cov` it writes `blitz2.cov`, two runs merge; without the directory no file and no requester; on the A500 machine (Kickstart 1.3) it runs and writes. Measure the slowdown
 
 ## 3. Collecting in the runners
 
