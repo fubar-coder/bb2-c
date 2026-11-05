@@ -1,0 +1,8 @@
+; FAST with a local string: an error at End Statement
+OPTIMIZE 4
+Statement FAST sf{a.l}
+t.s="x"
+NPrint t
+End Statement
+sf{1}
+End

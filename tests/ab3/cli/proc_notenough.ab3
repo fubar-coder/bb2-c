@@ -1,0 +1,8 @@
+; a mandatory argument left out: "Not Enough Parameters" (AmiBlitz3's
+; compiler hangs, the case is not in ab3_cli_ref)
+OPTIMIZE 4
+Statement s{a.l,b.l,@c.l}
+NPrint a," ",b," ",c
+End Statement
+s{1}
+End

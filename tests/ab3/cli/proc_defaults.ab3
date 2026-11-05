@@ -1,0 +1,10 @@
+; an optional parameter of each type left out gets its default: -1,
+; quick and float -1.0
+OPTIMIZE 4
+Statement s{x.l,@b.b,@w.w,@l.l,@q.q,@f.f}
+NPrint x," ",b," ",w," ",l," ",q," ",f
+End Statement
+s{1}
+s{2,3,4,5,6.5,7.5}
+NPrint "end"
+End

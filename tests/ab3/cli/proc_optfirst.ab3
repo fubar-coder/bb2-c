@@ -1,0 +1,9 @@
+; a parameter without @ behind one with @ is optional too
+OPTIMIZE 4
+Statement s{@a.l,b.l}
+NPrint a," ",b
+End Statement
+s{}
+s{1}
+s{1,2}
+End

@@ -1,0 +1,31 @@
+; string Functions with parameters on the stack, string parameters from
+; the 7th on, string arguments with calls of string Functions in them
+; (AmiBlitz3 returns a wrong result from a Function with a string
+; parameter from the 7th on: f3 and f5)
+OPTIMIZE 4
+Function.s f1{a.s,b.w}
+Function Return a+"/"+Str$(b)
+End Function
+Function.s f2{a.l,b.l,c.l,d.l,e.l,f.l,g.l}
+Function Return "g"+Str$(g)
+End Function
+Function.s f3{a.l,b.l,c.l,d.l,e.l,f.l,g.l,h.s}
+Function Return "h"+h
+End Function
+Function.s f4{a.s,b.l,c.l,d.l,e.l,f.l,g.l}
+Function Return a+Str$(g)
+End Function
+Function.l f5{a.s,b.l,c.l,d.l,e.l,f.l,g.l,h.s}
+NPrint a,g,h
+Function Return g
+End Function
+Function.s f6{a.s,b.s}
+Function Return a+"|"+b
+End Function
+NPrint f1{"a",2}
+NPrint f6{"<"+f1{"a",2}+">","["+f4{"y",2,3,4,5,6,7}+"]"}
+NPrint f2{1,2,3,4,5,6,7}
+NPrint f3{1,2,3,4,5,6,7,"x"}
+NPrint f4{"y",2,3,4,5,6,7}
+NPrint f5{"y",2,3,4,5,6,7,"z"}
+End

@@ -1,0 +1,7 @@
+; an empty argument between two others is a syntax error
+OPTIMIZE 4
+Statement s{a.l,@b.l,@c.l}
+NPrint a," ",b," ",c
+End Statement
+s{1,,3}
+End

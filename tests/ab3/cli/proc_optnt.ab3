@@ -1,0 +1,10 @@
+; an optional NewType pointer left out is -1
+OPTIMIZE 4
+NEWTYPE .nt
+x.l
+End NEWTYPE
+Statement s{a.l,@*p.nt}
+If *p = -1 Then NPrint "minus one" Else NPrint "other"
+End Statement
+s{1}
+End

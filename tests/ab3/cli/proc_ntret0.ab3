@@ -1,0 +1,12 @@
+; a NewType return type with Function Return 0 (AmiBlitz3 refuses the
+; Return, the returned type is not checked here)
+OPTIMIZE 4
+NEWTYPE .nt
+x.l
+End NEWTYPE
+Function.nt mk{}
+Function Return 0
+End Function
+*p.nt = mk{}
+If *p = 0 Then NPrint "null" Else NPrint "other"
+End

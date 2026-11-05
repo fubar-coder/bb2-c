@@ -1,0 +1,5 @@
+[compile]
+proc_faststr.ab3:6: FAST directive is not allowed if local strings or newtypes are used
+rc=10
+[run]
+no executable

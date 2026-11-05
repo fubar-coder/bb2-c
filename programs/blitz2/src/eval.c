@@ -577,12 +577,15 @@ void sbtolong(void)
         if (used == 6) {
             pokewd(regfield | *movestst2);
             pokecode2(movestst2 + 1, movestst2f);
+            ext_strpointer();
             return;
         }
         pokewd(regfield | *movea7dn); /* .lenonly */
         pokel(L_(movea7dn + 1));
+        ext_strpointer();
         return;
     }
+    ext_strpointer();
     pokewd(regfield | *movestdn);   /* .skip2 */
     pokewd(uselib(65235)->varoff);
 }
@@ -1122,11 +1125,17 @@ static void doflib(WORD lvo)
     pokemovem(pull);
 }
 
-/* blitz2.s:9368 addstrings - add the lengths on the stack */
+/* blitz2.s:9368 addstrings - add the lengths on the stack.
+   BUG(orig): at regat 6 (an argument from the 7th on) the right string
+   was read by getelement's spill: move.l d6,-(a7) before it, move.l
+   (a7)+,d6 after it, which pops the right length instead of the saved
+   d6; the move.l (a7)+,d6 here then pops the saved d6, whose value is
+   added to the left length.  AB3 mode removes the saved d6 instead, as
+   AmiBlitz3 does (ext_straddpop). */
 UWORD addstrings(UWORD t)
 {
     UWORD regfield = regat << 9;
-    pokewd(regfield | addcode[0]);
+    pokewd(ext_straddpop(regfield | addcode[0]));
     pokewd(regfield | addcode[1]);
     return t;
 }
@@ -2386,7 +2395,7 @@ void makefjsr(ULONG addr)
 static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen)
 {
     struct proc *p = findproc(namelen, NULL);
-    UWORD rt, n, mask, c;
+    UWORD rt, mask, c;
     WORD ssg;
     ULONG addr;
 
@@ -2395,9 +2404,7 @@ static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen)
     if (p->rettype < 0)
         illprocerr();
     rt = (UBYTE)p->rettype;
-    n = p->nparams >> 4;
-    if (n)
-        stackuse -= n << 2;
+    stackuse -= ext_procstackbytes(p);  /* removed by the procedure */
     if (rt == T_STRING)             /* .skip: function type! */
         makesbase();
     ssg = sbasegot;                 /* .sss */
@@ -2411,7 +2418,7 @@ static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen)
     } else {
         UWORD sregat = regat;       /* .somepars: old regat */
         regat = 0;
-        c = fetchpees2(p->nparams, p->params);  /* pointer to var desc */
+        c = fetchprocps(p);         /* pointer to var desc */
         chkstak();
         makefjsr(addr);
         regat = sregat;
@@ -2433,7 +2440,7 @@ static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen)
         dopulla3();                 /* .nosb: fix up string base */
     }
     *type = rt;                     /* .nores: what it returns! */
-    ext_evalvalue(rt, 0);
+    ext_evalvalue(ext_proctype(p), 0);
     if (rt == T_STRING)
         pokewd(*putstlen | regat);
     getchar3();                     /* .notst */

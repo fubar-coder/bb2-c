@@ -1,0 +1,6 @@
+[compile]
+rc=0
+[run]
+p7=7 p8=100
+7
+rc=0

@@ -1,0 +1,7 @@
+; more arguments than parameters: a syntax error
+OPTIMIZE 4
+Statement s{a.l,@b.l}
+NPrint a," ",b
+End Statement
+s{1,2,3}
+End

@@ -481,6 +481,52 @@ ab3_cli_case(macend_then macend_then.ab3 REF)
 ab3_cli_case(macend_colon macend_colon.ab3 REF)
 ab3_cli_case(macend_inc macend_inc.ab3 REF)
 ab3_cli_case(macend_bb2 macend_bb2.bb)
+# the procedures of AB3 mode (change ab3-mode-g4, spec
+# ab3-compat/procedures).  Optional parameters (@): the defaults of each
+# type, the string default, name{} with only optional parameters (also
+# seven and eight of them: AmiBlitz3 refuses those, an intended
+# difference), the rules of the argument list, without new syntax, a
+# parameter without @ behind one with @, a NewType pointer.  Up to ten
+# parameters, 7 to 10 on the stack (AmiBlitz3: in static longs, which a
+# call inside an argument overwrites - proc_nested, proc_stack), every
+# type there, strings and string Functions (AmiBlitz3 returns a wrong
+# result from a Function with a string parameter from the 7th on -
+# proc_strfunc).  FAST (locals not cleared, refused with local memory, a
+# procedure named FAST), NewType return types (no check of Function
+# Return - proc_ntret0).  AmiBlitz3's hang at "Not enough parameters"
+# keeps proc_notenough out of ab3_cli_ref; the error texts are blitz2's.
+# BB2 mode keeps blitz2's procedures
+ab3_cli_case(proc_defaults proc_defaults.ab3 REF)
+ab3_cli_case(proc_defstr proc_defstr.ab3 REF)
+ab3_cli_case(proc_onlyopt proc_onlyopt.ab3 REF)
+ab3_cli_case(proc_onlyopt7 proc_onlyopt7.ab3 REF REF_EXPECT proc_onlyopt7.ref.expect)
+ab3_cli_case(proc_onlyopt7s proc_onlyopt7s.ab3 REF REF_EXPECT proc_onlyopt7s.ref.expect)
+ab3_cli_case(proc_onlyopt8 proc_onlyopt8.ab3 REF REF_EXPECT proc_onlyopt8.ref.expect)
+ab3_cli_case(proc_gap proc_gap.ab3 REF)
+ab3_cli_case(proc_trailing proc_trailing.ab3 REF)
+ab3_cli_case(proc_toomany proc_toomany.ab3 REF)
+ab3_cli_case(proc_notenough proc_notenough.ab3)
+ab3_cli_case(proc_nonewsyntax proc_nonewsyntax.ab3 REF)
+ab3_cli_case(proc_optfirst proc_optfirst.ab3 REF)
+ab3_cli_case(proc_optnt proc_optnt.ab3 REF)
+ab3_cli_case(proc_ten proc_ten.ab3 REF)
+ab3_cli_case(proc_eleven proc_eleven.ab3 REF)
+ab3_cli_case(proc_opt7 proc_opt7.ab3 REF)
+ab3_cli_case(proc_types7 proc_types7.ab3 REF)
+ab3_cli_case(proc_nested proc_nested.ab3 REF REF_EXPECT proc_nested.ref.expect)
+ab3_cli_case(proc_stack proc_stack.ab3 REF REF_EXPECT proc_stack.ref.expect)
+ab3_cli_case(proc_strfunc proc_strfunc.ab3 REF REF_EXPECT proc_strfunc.ref.expect)
+ab3_cli_case(proc_fast proc_fast.ab3 REF)
+ab3_cli_case(proc_fastkeep proc_fastkeep.ab3 REF)
+ab3_cli_case(proc_faststr proc_faststr.ab3 REF)
+ab3_cli_case(proc_fastnt proc_fastnt.ab3 REF)
+ab3_cli_case(proc_fastname proc_fastname.ab3 REF)
+ab3_cli_case(proc_ntret proc_ntret.ab3 REF)
+ab3_cli_case(proc_ntret0 proc_ntret0.ab3 REF REF_EXPECT proc_ntret0.ref.expect)
+ab3_cli_case(proc_bb2_at proc_bb2_at.bb)
+ab3_cli_case(proc_bb2_seven proc_bb2_seven.bb)
+ab3_cli_case(proc_bb2_fast proc_bb2_fast.bb)
+ab3_cli_case(proc_bb2_ntret proc_bb2_ntret.bb)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)

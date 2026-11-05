@@ -1,0 +1,5 @@
+[compile]
+proc_notenough.ab3:7: Not Enough Parameters
+rc=10
+[run]
+no executable

@@ -349,4 +349,103 @@ UWORD ext_macrolineend(void);
  *         as a word (BUG(orig) #968) */
 BOOL ext_macroend(UWORD next);
 
+/* ===================== AB3 mode's procedures (change ab3-mode-g4) */
+
+/* ---- the definition (tokens2.c dofunc, dofunc2) */
+
+/**
+ * @brief dofunc: the return type of a Function follows (the source is
+ *        back at it, as for sizespec2).
+ * @param mode  the type code if handled (procmode: 1..7)
+ * @return TRUE if handled: the type was read (blitz2: sizespec2, which
+ *         refuses a NewType)
+ */
+BOOL ext_procrettype(UWORD *mode);
+
+/** @brief dofunc2: the name of the procedure follows (prevloc is on its
+ *         first character, makename2 backs up to it); may read a word
+ *         before it and move prevloc behind it. */
+void ext_procfast(void);
+
+/** @brief dofunc2: the procedure p is defined (its node made, nothing of
+ *         its parameters read yet). */
+void ext_procdef(struct proc *p);
+
+/** @brief dofunc2: a parameter of p, the npar-th (0-based), starts with c;
+ *         returns the character its variable starts with (another one if
+ *         the mode reads a prefix). */
+UWORD ext_procoptional(const struct proc *p, UWORD npar, UWORD c);
+
+/** @brief dofunc2: the number of parameters that gives "Too many
+ *         parameters" (blitz2: 7). */
+UWORD ext_procmax(void);
+
+/**
+ * @brief dofunc2: the parameter npar (0-based, not a string) of type
+ *        partype (1..5) is the local at offset off(a4).
+ * @return TRUE if handled: its store is written by ext_procentry
+ *         (blitz2: move.x dN,off(a4) here)
+ */
+BOOL ext_procparam(UWORD npar, UWORD partype, WORD off);
+
+/**
+ * @brief dofunc2: the parameters of p are read (p->nparams, p->params set);
+ *        the string parameters are in st (nstrs pairs of parameter number
+ *        and local offset, as stbuff).
+ * @return TRUE if handled: the code taking the parameters from the stack
+ *         is written (blitz2: the string loop, one long per string)
+ */
+BOOL ext_procentry(const struct proc *p, const UWORD *st);
+
+/** @brief The bytes of p's parameters on the stack, removed by its
+ *         epilogue (endstate) and taken off stackuse after a call
+ *         (blitz2: 4 per string parameter). */
+UWORD ext_procstackbytes(const struct proc *p);
+
+/** @brief linkput (tokens2.c): are p's locals cleared at its entry (jsr
+ *         clrloc behind its link; blitz2: TRUE)? */
+BOOL ext_procclrloc(const struct proc *p);
+
+/** @brief procfixer (tokens2.c): p needs local memory (p->nstatics != 0)
+ *         and its setup code is called at its entry; may stop the
+ *         compile with err(). */
+void ext_procstatics(const struct proc *p);
+
+/* ---- the calls (compile.c handleproc, eval.c afunction, asmlibs.c) */
+
+/** @brief afunction: the type code of the Function p's result for
+ *         ext_evalvalue (blitz2: its return type). */
+ULONG ext_proctype(const struct proc *p);
+
+/**
+ * @brief fetchprocps (asmlibs.c): the arguments of a call of p follow
+ *        (srcptr behind the '{'; p has parameters).
+ * @return TRUE if handled: the call has none, and the code giving every
+ *         parameter its value is written; srcptr is still before the '}'
+ *         (blitz2: the arguments are fetched)
+ */
+BOOL ext_procnoargs(const struct proc *p);
+
+/** @brief fetchprocps: the arguments of a call of p are fetched from here
+ *         on (p), or they are fetched (NULL, for the innermost one). */
+void ext_procargs(const struct proc *p);
+
+/**
+ * @brief fetchpees_p (asmlibs.c): the argument list of a call of p ends
+ *        after n arguments (fewer than its parameters: no ',' follows).
+ * @return TRUE if handled: the code giving the parameters n and up their
+ *         value is written (blitz2: "Not Enough Parameters")
+ */
+BOOL ext_procdefaults(const struct proc *p, UWORD n);
+
+/** @brief sbtolong (eval.c): the code loading the start of the string
+ *         into D(regat) is written next to here; may write code that
+ *         leaves the registers alone. */
+void ext_strpointer(void);
+
+/** @brief addstrings (eval.c): op is the instruction taking the right
+ *         string's length off the stack into D(regat) (move.l (a7)+,Dn);
+ *         returns the one to write. */
+UWORD ext_straddpop(UWORD op);
+
 #endif

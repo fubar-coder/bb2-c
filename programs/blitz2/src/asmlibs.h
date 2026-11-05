@@ -91,6 +91,10 @@ UWORD fetchpees4(UWORD n, const UBYTE *types);
 UWORD fetchpees2(UWORD n, const UBYTE *types);
 UWORD fetchpees3(UWORD n, const UBYTE *types, UWORD pushmode);
 UWORD fetchpees(UWORD n, const UBYTE *types, UWORD pushmode);
+/* the arguments of a call of the procedure p (handleproc, afunction;
+   blitz2.s: fetchpees2 with its parameter count and types), through the
+   extension points of a procedure call (ext.h). */
+UWORD fetchprocps(const struct proc *p);
 /* pmode (handlep .. highadd): the asm's global push mode (5618), now a
    parameter.  Byte/word aliasing: the asm writes the whole word in
    fetchpees (pushmode 0/1) and the HIGH byte with move.b (handlep: $40

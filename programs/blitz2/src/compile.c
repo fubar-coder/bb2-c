@@ -1341,13 +1341,14 @@ static void handleproc(UWORD len)
         illprocerr();
     ppc = p->pc;                /* pc of proc. */
     if (p->nparams)
-        c = fetchpees2(p->nparams, p->params);          /* var desc list */
+        c = fetchprocps(p);                             /* var desc list */
     else
         c = getchar3();
     if (c != '}')
         syntaxerr();
     chkstak();
     makefjsr(ppc);
+    stackuse -= ext_procstackbytes(p);  /* removed by the procedure */
     getchar3();
 }
 

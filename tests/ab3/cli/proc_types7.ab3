@@ -1,0 +1,17 @@
+; parameters 7 to 10 of every type, given and left out, and strings
+; among them (one added from two)
+OPTIMIZE 4
+Statement sb{a.l,b.l,c.l,d.l,e.l,f.l,@g.b,@h.w,@i.q,@j.f}
+NPrint g," ",h," ",i," ",j
+End Statement
+Statement ss{a.l,b.l,c.l,d.l,e.l,f.l,@g.s,@h.l,@t.s,@*p.l}
+NPrint "[",g,"] ",h," [",t,"] ",*p
+End Statement
+sb{1,2,3,4,5,6}
+sb{1,2,3,4,5,6,-7,8,9.5,10.25}
+sb{1,2,3,4,5,6,7,-8}
+ss{1,2,3,4,5,6}
+ss{1,2,3,4,5,6,"gg",8,"t"+"t",12}
+x$="x"
+ss{1,2,3,4,5,6,x$+x$,-8,"t"+x$+"t",-12}
+End

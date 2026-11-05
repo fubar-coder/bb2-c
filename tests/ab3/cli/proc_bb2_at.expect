@@ -1,0 +1,5 @@
+[compile]
+proc_bb2_at.bb:7: Not Enough Parameters
+rc=10
+[run]
+no executable

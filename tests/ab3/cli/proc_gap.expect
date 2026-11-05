@@ -1,0 +1,5 @@
+[compile]
+proc_gap.ab3:6: Syntax Error
+rc=10
+[run]
+no executable

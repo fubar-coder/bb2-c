@@ -1,0 +1,5 @@
+[compile]
+rc=0
+[run]
+fast 3
+rc=0

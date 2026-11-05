@@ -235,3 +235,80 @@ BOOL ext_macroend(UWORD next)
 {
     return FALSE;
 }
+
+/* AB3 mode's procedures (change ab3-mode-g4) */
+
+BOOL ext_procrettype(UWORD *mode)
+{
+    return FALSE;
+}
+
+void ext_procfast(void)
+{
+}
+
+void ext_procdef(struct proc *p)
+{
+}
+
+UWORD ext_procoptional(const struct proc *p, UWORD npar, UWORD c)
+{
+    return c;
+}
+
+UWORD ext_procmax(void)
+{
+    return 7;
+}
+
+BOOL ext_procparam(UWORD npar, UWORD partype, WORD off)
+{
+    return FALSE;
+}
+
+BOOL ext_procentry(const struct proc *p, const UWORD *st)
+{
+    return FALSE;
+}
+
+UWORD ext_procstackbytes(const struct proc *p)
+{
+    return (UWORD)((p->nparams >> 4) << 2);
+}
+
+BOOL ext_procclrloc(const struct proc *p)
+{
+    return TRUE;
+}
+
+void ext_procstatics(const struct proc *p)
+{
+}
+
+ULONG ext_proctype(const struct proc *p)
+{
+    return (UBYTE)p->rettype;
+}
+
+BOOL ext_procnoargs(const struct proc *p)
+{
+    return FALSE;
+}
+
+void ext_procargs(const struct proc *p)
+{
+}
+
+BOOL ext_procdefaults(const struct proc *p, UWORD n)
+{
+    return FALSE;
+}
+
+void ext_strpointer(void)
+{
+}
+
+UWORD ext_straddpop(UWORD op)
+{
+    return op;
+}

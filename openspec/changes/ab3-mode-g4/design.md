@@ -191,3 +191,41 @@ checks (corpus with both compilers, `ab3_bb2_equivalence`) cover it.
 ## Open Questions
 
 None. The decisions are the user's of 2026-11-04/05.
+
+## Findings during the implementation
+
+- (Task 2.3, 2026-11-05) A string added from two others in an argument
+  from the 7th on (`"t"+"t"`, at d6) got a wrong length: `getelement`
+  saves d6 on the stack around the right operand (`regat` 7), its
+  restore `move.l (a7)+,d6` takes the right length instead, and
+  `addstrings`' `move.l (a7)+,d6` then adds the saved d6 to the left
+  length. blitz2 has this for library commands too (BUG(orig) in
+  `eval.c` `addstrings`, reported). AmiBlitz3 writes `addq.l #4,a7`
+  there (`add_strings`, `AmiBlitz3.ab3` 14334-14346), which AB3 mode
+  does now (extension point `ext_straddpop`); without it the spec's
+  "strings at every position" would not hold for such expressions
+  (`proc_types7`, `proc_stack`).
+- (Task 2.1) blitz2's `stbuff` holds 8 string parameters; AB3 mode
+  needs 10, so it has 10 entries (the 7th string of a BB2 procedure is
+  stored before "Too many parameters", as before).
+- (Task 2.3) AmiBlitz3's `sbtolong` writes the filler `pea 0` after the
+  `movea7dn` form and before the `movestdn` form, but not after the
+  `movestst2` form (a string with a pushed type word); AB3 mode writes
+  it in all three, so the slot is always 8 bytes. The `movestst2` form
+  is reached only with a pushed type (`pushflag` > 0), which a
+  procedure argument never has.
+- (Task 6.1) Measured with AmiBlitz3 (`ab3_cli_ref`): a Function with a
+  string parameter from the 7th on returns a wrong result (a string
+  Function `0`, a long Function `3` or `6` instead of 7: varying);
+  ours returns the right one (`proc_strfunc`, `REF_EXPECT` with
+  patterns). A Statement with such a parameter works in both
+  (`proc_opt7`, `proc_types7`). Recorded in `docs/ab3/variant.md`,
+  "Differences".
+- (Task 6.1) `proc_stack`: a call with eight parameters inside the
+  string argument of another one (`fs{…,7,"s"+Str$(f{…,2,3})}`) gives
+  AmiBlitz3 `<s3212>` (the inner call's 7th overwrites `temp1`), ours
+  `<s3217>`, the same intended difference as `proc_nested`.
+- (Task 6.5) The extension points are calls in the chunk files, so the
+  program `blitz2` changes with this change (as with every change that
+  adds extension points); its results stay byte-identical (corpus and
+  `ab3_bb2_equivalence`).

@@ -1,0 +1,14 @@
+; a call with seven parameters in the 8th argument of another call:
+; parameters 7 to 10 are on the stack (AmiBlitz3 passes them in static
+; longs, which the inner call overwrites: p7=100)
+OPTIMIZE 4
+Function.l g{a.l,b.l,c.l,d.l,e.l,f.l,gg.l}
+Function Return gg
+End Function
+Function.l f{a.l,b.l,c.l,d.l,e.l,f.l,p7.l,p8.l}
+NPrint "p7=",p7," p8=",p8
+Function Return p7
+End Function
+r.l=f{1,2,3,4,5,6,7,g{1,2,3,4,5,6,100}}
+NPrint r
+End

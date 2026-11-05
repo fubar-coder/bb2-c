@@ -1,0 +1,9 @@
+; name{} of a Statement with seven optional parameters, a string as the
+; 7th (AmiBlitz3: a syntax error)
+OPTIMIZE 4
+Statement s{@a.l,@b.l,@c.l,@d.l,@e.l,@f.l,@t.s}
+NPrint a," ",f," [",t,"] ",Len(t)
+End Statement
+s{1,2,3,4,5,6,"xy"}
+s{}
+End

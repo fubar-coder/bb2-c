@@ -1,0 +1,5 @@
+[compile]
+proc_bb2_ntret.bb:5: Illegal Type
+rc=10
+[run]
+no executable

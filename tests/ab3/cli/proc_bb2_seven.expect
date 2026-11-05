@@ -1,0 +1,5 @@
+[compile]
+proc_bb2_seven.bb:2: Too many parameters
+rc=10
+[run]
+no executable

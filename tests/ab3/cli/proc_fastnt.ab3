@@ -1,0 +1,11 @@
+; FAST with a local NewType variable: an error at End Statement
+OPTIMIZE 4
+NEWTYPE .nt
+x.l
+End NEWTYPE
+Statement FAST sf{a.l}
+v.nt\x = a
+NPrint v\x
+End Statement
+sf{1}
+End

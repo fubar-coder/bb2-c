@@ -1,0 +1,7 @@
+; optional parameters without new syntax
+OPTIMIZE 0
+Statement s{a.l,@b.l}
+NPrint a," ",b
+End Statement
+s{1}
+End

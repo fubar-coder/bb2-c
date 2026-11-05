@@ -132,7 +132,7 @@ extern WORD  stackuse;                  /* 14949 stack used gathering lib params
 extern WORD  numreps;                   /* 14950 repeats in a repeatable param list */
 extern UBYTE *locloc;                   /* 14952 saved source pointer (storeloc) */
 extern WORD  locchar;                   /* 14953 */
-extern ULONG stbuff[8];                 /* 14954 string varoffs */
+extern ULONG stbuff[10];                /* 14954 string varoffs (AB3 mode: ten) */
 extern WORD  commode;                   /* 14955 in comma mode */
 extern ULONG lastoffset;                /* 14956 last offset in calcvar */
 extern WORD  linenumat;                 /* 14957 =-1 line being processed */

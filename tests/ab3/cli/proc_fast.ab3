@@ -1,0 +1,12 @@
+; a FAST Function and a FAST Statement
+OPTIMIZE 4
+Function.l FAST ff{a.l,b.l}
+c.l = a+b
+Function Return c
+End Function
+Statement FAST sf{a.l}
+NPrint a
+End Statement
+NPrint ff{2,3}
+sf{7}
+End

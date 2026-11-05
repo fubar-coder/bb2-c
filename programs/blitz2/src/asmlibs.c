@@ -532,8 +532,10 @@ done:
 
 /* fetchpees with the type pointer advanced (asm a2).  The asm kept the
    push mode in the global pmode and saved/restored it around the loop (in
-   case of recursion); C hands it down to handlep. */
-static UWORD fetchpees_p(UWORD n, const UBYTE **tp, UWORD pushmode)
+   case of recursion); C hands it down to handlep.  proc: the procedure
+   called (fetchprocps), NULL for a library. */
+static UWORD fetchpees_p(UWORD n, const UBYTE **tp, UWORD pushmode,
+                         const struct proc *proc)
 {
     UWORD cnt = n;
     UWORD c;
@@ -545,9 +547,26 @@ static UWORD fetchpees_p(UWORD n, const UBYTE **tp, UWORD pushmode)
         c = handlep(t, pushmode);
         if (--cnt == 0)
             break;
-        if (c != ',')
+        if (c != ',') {
+            if (proc && ext_procdefaults(proc, n - cnt))
+                break;
             notparerr();
+        }
     }
+    return c;
+}
+
+/* the arguments of a procedure call (asmlibs.h) */
+UWORD fetchprocps(const struct proc *p)
+{
+    const UBYTE *types = p->params;
+    UWORD c;
+
+    if (ext_procnoargs(p))
+        return getchar3();
+    ext_procargs(p);
+    c = fetchpees_p(p->nparams & 15, &types, 0, p);
+    ext_procargs(NULL);
     return c;
 }
 
@@ -563,7 +582,7 @@ UWORD fetchlibps(UWORD spec, const UBYTE *types)
     first = spec >> 12;                 /* d0 = start of reps */
     if (first) {
         spec = (spec & 0xff00) | (UBYTE)(spec - first); /* new number to fetch */
-        c = fetchpees_p(first & 15, &types, 0); /* fetch first parms */
+        c = fetchpees_p(first & 15, &types, 0, NULL); /* fetch first parms */
         if (c != ',')
             syntaxerr();
     }
@@ -572,7 +591,7 @@ UWORD fetchlibps(UWORD spec, const UBYTE *types)
     while ((UBYTE)spec >= nreps) {
         const UBYTE *t = types;         /* a2 restored per repeat */
         spec = (spec & 0xff00) | (UBYTE)(spec - nreps);
-        c = fetchpees_p(nreps & 15, &t, 1);
+        c = fetchpees_p(nreps & 15, &t, 1, NULL);
         numreps++;
     }
     if (numreps == 0)
@@ -585,32 +604,32 @@ UWORD fetchlibps(UWORD spec, const UBYTE *types)
         syntaxerr();
 noreps:
     if (spec)
-        return fetchpees_p(spec & 15, &types, 0);
+        return fetchpees_p(spec & 15, &types, 0, NULL);
     return 0;
 }
 
 /* blitz2.s:5620 fetchpees4 - always push */
 UWORD fetchpees4(UWORD n, const UBYTE *types)
 {
-    return fetchpees_p(n & 15, &types, 1);
+    return fetchpees_p(n & 15, &types, 1, NULL);
 }
 
 /* blitz2.s:5623 fetchpees2 - dont push unless told */
 UWORD fetchpees2(UWORD n, const UBYTE *types)
 {
-    return fetchpees_p(n & 15, &types, 0);
+    return fetchpees_p(n & 15, &types, 0, NULL);
 }
 
 /* blitz2.s:5624 fetchpees3 */
 UWORD fetchpees3(UWORD n, const UBYTE *types, UWORD pushmode)
 {
-    return fetchpees_p(n & 15, &types, pushmode);
+    return fetchpees_p(n & 15, &types, pushmode, NULL);
 }
 
 /* blitz2.s:5626 fetchpees - fetch a list of parameters */
 UWORD fetchpees(UWORD n, const UBYTE *types, UWORD pushmode)
 {
-    return fetchpees_p(n, &types, pushmode);
+    return fetchpees_p(n, &types, pushmode, NULL);
 }
 
 /* blitz2.s:5653 handlep - d2=what to get.

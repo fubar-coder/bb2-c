@@ -124,7 +124,7 @@ WORD  stackuse = 0;                     /* 14949 stack used when gathering lib p
 WORD  numreps = 0;                      /* 14950 repeats in a repeatable parameter list */
 UBYTE *locloc = NULL;                   /* 14952 */
 WORD  locchar = 0;                      /* 14953 */
-ULONG stbuff[8];                        /* 14954 six string varoffs */
+ULONG stbuff[10];                       /* 14954 string varoffs (asm: 8; AB3 mode: ten) */
 WORD  commode = 0;                      /* 14955 in comma mode... */
 ULONG lastoffset = 0;                   /* 14956 last offset in calcvar! */
 WORD  linenumat = -1;                   /* 14957 line being processed */

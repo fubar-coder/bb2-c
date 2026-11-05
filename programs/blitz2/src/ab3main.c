@@ -171,6 +171,7 @@ APTR ext_editorarg(APTR arg)
 /* a command line run: ab3cli's return code (it left it in the job) */
 BOOL ext_result(int *rc)
 {
+    ab3_procfree();
     if (!ab3job)
         return FALSE;
     if (!job.started) {

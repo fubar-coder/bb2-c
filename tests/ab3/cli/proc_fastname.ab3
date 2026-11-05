@@ -1,0 +1,7 @@
+; FAST without a space behind it is the name of the procedure
+OPTIMIZE 4
+Statement FAST{a.l}
+NPrint "fast ",a
+End Statement
+FAST{3}
+End

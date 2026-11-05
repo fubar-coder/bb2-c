@@ -81,4 +81,13 @@ ULONG ab3_joinback(const UBYTE *p);
  *         (ab3str.c, called by ext_passstart). */
 void ab3_strpass(void);
 
+/* ---- the procedures (change ab3-mode-g4, ab3proc.c) */
+
+/** @brief A pass starts: the procedures of the pass before are gone
+ *         (called by ext_passstart). */
+void ab3_procpass(void);
+
+/** @brief The compiler is done: free what ab3proc.c holds (ext_result). */
+void ab3_procfree(void);
+
 #endif

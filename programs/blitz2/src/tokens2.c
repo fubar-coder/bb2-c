@@ -264,14 +264,15 @@ void dostate(UWORD c)
 /* blitz2.s:13498 dofunc */
 void dofunc(UWORD c)
 {
-    WORD mode;
+    UWORD mode;
 
     if (c == 0x8007) {
         funcret(c);
         return;
     }
     bakup();
-    mode = sizespec2();
+    if (!ext_procrettype(&mode))
+        mode = sizespec2();
     c = getchar3();
     dofunc2(mode, c);       /* falls through into dofunc2 */
 }
@@ -296,6 +297,7 @@ static void dofunc2(WORD mode, UWORD c)
     procnum = procnum2;
     procmode = mode;
     locvaroff = 0;
+    ext_procfast();
     len = makename2(&c);
     if (c != '{')
         syntaxerr();
@@ -309,6 +311,7 @@ static void dofunc2(WORD mode, UWORD c)
     p = (struct proc *)addhere(last, NAMEOFF_PROC, len);
     p->pc = pc;             /* new! */
     thisproc = p;
+    ext_procdef(p);
     pokecode2(nops8, nopsf);
     if (debugga) {
         maketrap(4);
@@ -323,6 +326,7 @@ static void dofunc2(WORD mode, UWORD c)
     c = getchar3();
     if (c != '}') {
         for (;;) {
+            c = ext_procoptional(p, npars, c);
             c = getvname(c, &namelen);
             v = fetchvar(namelen, &t, &c);
             if (t->u.code == T_STRING) {
@@ -343,12 +347,14 @@ static void dofunc2(WORD mode, UWORD c)
                     else if (partype < 2)
                         op ^= 0x3000;       /* move.b */
                 }
-                op |= npars;
-                pokewd(op);
-                pokewd(v->offset);
+                if (!ext_procparam(npars, partype, v->offset)) {
+                    op |= npars;
+                    pokewd(op);
+                    pokewd(v->offset);
+                }
             }
             npars++;
-            if (npars >= 7)
+            if (npars >= ext_procmax())
                 toovarerr();
             *types++ = partype;
             if (c != ',')
@@ -362,13 +368,15 @@ static void dofunc2(WORD mode, UWORD c)
     p->nparams = npars | (nstrs << 4);
     /* do all the string things */
     st = (UWORD *)stbuff;
-    for (i = nstrs; i-- > 0;) {
-        funcst[1] = i * 4 + 8;
-        pokel(tl(funcst));
-        pokewd(*st++ | movedna3[0]);
-        least[1] = *st++;
-        pokel(tl(least));
-        tokejsr(lastring);
+    if (!ext_procentry(p, st)) {
+        for (i = nstrs; i-- > 0;) {
+            funcst[1] = i * 4 + 8;
+            pokel(tl(funcst));
+            pokewd(*st++ | movedna3[0]);
+            least[1] = *st++;
+            pokel(tl(least));
+            tokejsr(lastring);
+        }
     }
     getchar3();
 }
@@ -383,7 +391,8 @@ static void linkput(ULONG at)
     save = pc;
     pc = at;
     pokel(tl(linka4));
-    tokejsr2(clrloc);
+    if (ext_procclrloc(thisproc))
+        tokejsr2(clrloc);
     pc = save;
 }
 
@@ -414,6 +423,7 @@ static void procfixer(void)
     /* .cont */
     if (!nomemleft) {
         ULONG save = pc;
+        ext_procstatics(p);
         pc = at;
         pokewd(0x4eb9);     /* jsr */
         addoff();
@@ -478,12 +488,12 @@ static void endstate(void)
     }
     /* fix the stacked string lengths! */
     p = thisproc;
-    n = p->nparams >> 4;
+    n = ext_procstackbytes(p);
     if (n) {
-        if (n == 1)
+        if (n == 4)
             pokewd(fix1[0]);
         else {
-            UWORD size = n << 2;
+            UWORD size = n;
             moverts[1] = size;
             pokel(tl(moverts));
             if (size <= 8)

@@ -34,6 +34,7 @@ void ext_passstart(void)
     ab3_synpass();
     ab3_sectpass();
     ab3_strpass();
+    ab3_procpass();
 }
 
 BOOL ext_newsyntax(void)

@@ -1,0 +1,14 @@
+; a NewType return type: the pointer, assigned to a pointer of the NewType
+OPTIMIZE 4
+NEWTYPE .nt
+x.l
+End NEWTYPE
+DEFTYPE .nt one
+Function.nt mk{}
+SHARED one
+Function Return &one
+End Function
+*p.nt = mk{}
+*p\x = 5
+NPrint one\x
+End

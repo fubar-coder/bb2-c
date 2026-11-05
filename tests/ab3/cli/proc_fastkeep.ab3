@@ -1,0 +1,9 @@
+; FAST: the locals are not cleared, c keeps 42 from the call before
+OPTIMIZE 4
+Statement FAST sf{a.l}
+If a = 1 Then c.l = 42
+NPrint c
+End Statement
+sf{1}
+sf{2}
+End

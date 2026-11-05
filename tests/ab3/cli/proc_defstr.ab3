@@ -1,0 +1,9 @@
+; an optional string parameter left out is the empty string
+OPTIMIZE 4
+Statement s{x.l,@t.s}
+NPrint x," [",t,"] ",Len(t)
+End Statement
+s{1}
+s{2,"hi"}
+NPrint "end"
+End

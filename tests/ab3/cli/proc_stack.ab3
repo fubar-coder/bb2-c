@@ -1,0 +1,18 @@
+; calls with parameters on the stack inside the arguments of a library
+; command, inside a string expression and in a recursion
+OPTIMIZE 4
+Function.l f{a.l,b.l,c.l,d.l,e.l,f.l,g.l,h.w}
+Function Return a+g*10+h*100
+End Function
+Function.s fs{a.l,b.l,c.l,d.l,e.l,f.l,g.l,t.s}
+Function Return t+Str$(g)
+End Function
+Function.l r{n.l,b.l,c.l,d.l,e.l,f.l,g.l,h.l}
+If n=0 Then Function Return g+h
+Function Return r{n-1,b,c,d,e,f,g+1,h*2}
+End Function
+NPrint "x",f{1,0,0,0,0,0,2,3},"y",f{4,0,0,0,0,0,5,6}
+a$="<"+fs{1,2,3,4,5,6,7,"s"+Str$(f{1,0,0,0,0,0,2,3})}+">"
+NPrint a$
+NPrint r{3,0,0,0,0,0,1,1}
+End
