@@ -503,13 +503,35 @@ void dodcb(UWORD c)
     } while (--cnt);
 }
 
-/* blitz2.s:12532 dods */
+/* Fixed (#969): moves pc to `to` and writes the bytes it skips as 0, the
+   way pokebyte writes (bounded by libat, nomemleft past it, bigpc).  The
+   original's alignment (Even, Even4, Even8, alignpc: blitz2.s:12600-12612)
+   and Ds (12532) move pc only: the bytes hold what the object buffer held
+   there, with runtime error checking on the debug record undodebug
+   withdrew, with Compile/Run the bytes of the previous compile.  A pc that
+   would wrap (Ds with a huge count) moves as in the original. */
+static void zeropc(ULONG to)
+{
+    ULONG at = pc;
+
+    if (to > at) {
+        if (at < libat)
+            memset((void *)at, 0, (to < libat ? to : libat) - at);
+        if (to > libat)
+            nomemleft = -1;
+        if (to > bigpc && !cfetchmode)
+            bigpc = to;
+    }
+    pc = to;
+}
+
+/* blitz2.s:12532 dods - Fixed (#969): the storage is written as 0 */
 void dods(UWORD c)
 {
     UWORD size = getsize2(c);
     ULONG n = evalconst2(NULL, NULL);
 
-    pc += n << size;
+    zeropc(pc + (n << size));
 }
 
 /* blitz2.s:12540 insasm2 */
@@ -574,24 +596,24 @@ void dodc(UWORD c)
     } while (c == ',');
 }
 
-/* blitz2.s:12600 doeven4 - long align */
+/* blitz2.s:12600 doeven4 - long align; Fixed (#969): pad bytes 0 */
 void doeven4(UWORD c)
 {
     (void)c;
-    pc = (pc + 3) & ~3UL;
+    zeropc((pc + 3) & ~3UL);
 }
 
-/* blitz2.s:12605 doeven8 - phrase align */
+/* blitz2.s:12605 doeven8 - phrase align; Fixed (#969): pad bytes 0 */
 void doeven8(UWORD c)
 {
     (void)c;
-    pc = (pc + 7) & ~7UL;
+    zeropc((pc + 7) & ~7UL);
 }
 
-/* blitz2.s:12611 alignpc */
+/* blitz2.s:12611 alignpc - Fixed (#969): the pad byte is written as 0 */
 void alignpc(void)
 {
-    pc = (pc + 1) & ~1UL;
+    zeropc((pc + 1) & ~1UL);
 }
 
 /* blitz2.s:12610 doeven - word align (same address as alignpc) */

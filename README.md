@@ -409,6 +409,11 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   cmake --build --preset amiga --target blitz2-cd-reference   # about 35 s
   ```
 
+  A row whose note begins with an issue number (`#969: …`) holds the
+  port's result for an intended deviation (`docs/libs/deviations.md`,
+  kind F) with the reference's hash in the note; regenerating the table
+  writes the reference's row there, put the port's row back.
+
   TED A/B (`tests/ted-ab/`): `ted_ab` plays the scripts
   `tests/ted-ab/scripts/*.drv` with `teddrive` against TED, in four
   combinations (R5: original TED + blitz2 2.10, C5: TED-C + 2.10, Cc:

@@ -31,7 +31,7 @@ tokhandler dorestore;   /* 12351 Restore [label] */
 tokhandler doread;      /* 12384 Read v,... */
 tokhandler dodcb;       /* 12501 Dcb.s n,v  (asm: dodcb = dodcb2) */
 #define dodcb2 dodcb
-tokhandler dods;        /* 12532 Ds.s n */
+tokhandler dods;        /* 12532 Ds.s n (the storage written as 0, #969) */
 tokhandler dodc;        /* 12548 Dc.s v,... */
 tokhandler doeven4;     /* 12600 Even4: pc=(pc+3)&~3 */
 tokhandler doeven8;     /* 12605 Even8: pc=(pc+7)&~7 */
@@ -73,7 +73,8 @@ void doif2(UWORD kind, WORD negate);
    variant now. */
 UBYTE *getmaxel(UWORD c);
 
-/* 12611 alignpc: pc = (pc+1) & ~1 */
+/* 12611 alignpc: pc = (pc+1) & ~1, the pad byte written as 0 (#969; also
+   doeven4/doeven8) */
 void alignpc(void);
 
 /* 12315 compare: asm a0 = compare routine that sets the CCR, d1 = condition
