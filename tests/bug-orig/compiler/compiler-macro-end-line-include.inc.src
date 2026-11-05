@@ -1,0 +1,3 @@
+Macro m
+NPrint "x" : End
+End Macro
