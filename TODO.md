@@ -618,6 +618,46 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     advance the note pointer, original bug, test done), #335
     (programs using blitzoslib hang at End: a compiler bug, calcmaxs
     before fixjsrs, test done).
+- [ ] **Emulator tests that fail under load near their time limits**
+  (observed 2026-11-05, several agents using the emulator at once): the
+  session time limits are fixed numbers of seconds that count from the
+  start of the Amiberry process, so a slow machine eats the margin
+  (`amiga_emulation.h:46-57`: the wait for a slot does not count; a
+  first-save session's cold boot until the save has a limit of the same
+  length). Observed:
+  * `regression_ricompactdisclib_scsi_after_plain`: ref session 61.8 s
+    against the 60 s of its `; @pass timeout=60`
+    (`tests/bug-orig/regression/ricompactdisclib-scsi-after-plain.bas:13`)
+    for its first-save snapshot; alone and in other runs it passed
+    (76.85 s total). The default `BUG_ORIG_TIMEOUT` is 90
+    (`tests/bug-orig/CMakeLists.txt:73`).
+  * `host_emulator` (ctest `CMakeLists.txt:113-116`, 300 s plus the queue
+    wait; runs the host tests with the label emulator, among them the
+    snapshot test, session `p.timeout = 90`,
+    `tools/tests/test_amiga_emulation_snapshot.c:139`): "no free emulator
+    slot". `take_slot` (`tools/lib/amiga_emulation/amiga_emulation.c:797-805`)
+    fails at once, without waiting, when the process already has a
+    session running and every slot is taken (`AMIGA_EMULATION_MAX`,
+    default 4).
+  * `ted_ab` (`TED_AB_TIMEOUT` 120, `tests/ted-ab/CMakeLists.txt:39`),
+    `ab3_bb2_equivalence_runerr` (`AB3_EQUIVALENCE_TIMEOUT` 600,
+    `tests/ab3/CMakeLists.txt:30`), `corpus` (`CORPUS_TIMEOUT` 300,
+    `tests/corpus/CMakeLists.txt:53`; the output of
+    `tests/corpus/tests/t73_menus.bas`): failed occasionally, passed when
+    rerun alone. The cause was not analysed; the limit in question
+    (session, ctest `TIMEOUT` or the slot) is not recorded for these.
+  The ctest `TIMEOUT` of the tests already includes
+  `EMULATION_QUEUE_WAIT` (7200 s, `cmake/emulation-queue.cmake`) per
+  session; only the session limits (`timeout=` of the runners, `@pass
+  timeout=`, `AMIGA_RUN --timeout`) and the fixed `host_emulator` /
+  `amiga_emulation_*` limits (`tools/tests/CMakeLists.txt:51-62`) have no
+  allowance for load. To decide: (a) raise the limits (the session
+  limits of tests close to them; hangs are then caught later), (b) scale
+  them with the load (e.g. by the number of busy slots or the measured
+  boot time of the session), or (c) serialise the tests that run
+  near their limits (ctest `RESOURCE_LOCK` or a lower `AMIGA_EMULATION_MAX`
+  for the agents). First step: record which limit ended each failure
+  (the `@stat` line has `end=timeout`, README "Test statistics").
 - [ ] **Immutable strings (idea, long term)**: in BB2 a string variable
   is string and string builder in one (the memory of the variable is
   changed in place: `MaxLen`, `&a$` with `Poke`, libraries writing the
