@@ -456,6 +456,13 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      mode now ends such a macro line with `: End If` as AmiBlitz3 does
      (task 6.2). `file.include.ab3` needs G4's optional parameters
      (`docs/ab3/variant.md`, "Strings").
+  10. [ ] Empty string as a library constant: an omitted string
+     parameter passes the pointer -1 as AmiBlitz3 does (G4), which
+     AmiBlitz3's `lastring` recognises (strings2Lib.ab3:115-117) and
+     `libs/acidlibs/strings2lib.c` does not (it copies 0 bytes from -1,
+     the same visible result). Afterwards: a real empty string from a
+     library (as `Null` comes from `environlib`) instead of the -1; an
+     intended deviation from AmiBlitz3's code.
 - [ ] **Tests for the issues labelled `needs-test`** (99 open issues at the
   start, 3 open on 2026-10-29: #14, #26, #42). A failing test is added with label
   `bug-orig` (README, "Tests"), named in the section "Test" of the issue,
