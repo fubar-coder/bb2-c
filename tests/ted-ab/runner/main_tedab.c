@@ -39,7 +39,9 @@
  *                      of them: 3 before 4 before 1), 2 = error
  *
  * The runs are packed into sessions (the combinations of a test stay
- * together).  A session that ends early (hang: time limit) leaves runs
+ * together); the next session starts as soon as one has ended (up to
+ * parallel=), so a long session holds back no others.  A session that ends
+ * early (hang: time limit) leaves runs
  * that were not reached; they go into a later session once more if their
  * test did not start there or its first run is OK.  The rest stays
  * "NOTRUN".  Each session's directory: work/sNNN/vol (the volume TEDAB:)
@@ -56,7 +58,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
 #include "amiga_emulation.h"
 #include "statline_emulation.h"
@@ -545,29 +546,14 @@ static int stage_session(unsigned s, const struct tedab_run *rs, size_t n, FILE 
 
 struct session {
     unsigned no;
-    size_t first, n;            /* runs list[first..first+n) */
+    size_t *ids, n;             /* its runs: runs[ids[0..n)] */
+    char *script;               /* until it has started */
     struct amiga_emulation *e;
     int gates_ok;
     struct text gate, events;
     struct statline stat;       /* its @stat line (statline.h); test[0]: joined */
     size_t run;                 /* its first run (runs[]) */
 };
-
-/* every session of ss[from..to) has ended */
-static int round_ended(const struct session *ss, unsigned from, unsigned to)
-{
-    for (unsigned w = from; w < to; w++)
-        if (!amiga_emulation_finished(ss[w].e))
-            return 0;
-    return 1;
-}
-
-static void nap_ms(unsigned ms)
-{
-    struct timespec ts = { ms / 1000, (long)(ms % 1000) * 1000000L };
-
-    nanosleep(&ts, NULL);
-}
 
 /* the next session from the queue: whole tests up to the budget */
 static size_t take(size_t *queue, size_t nq, size_t *pos)
@@ -756,7 +742,10 @@ static int run(FILE *log)
     struct session *ss = calloc(MAXSESSIONS + 1, sizeof *ss);
     size_t *queue = NULL, nq = 0, i, k;
     struct teddump_fonts fonts;
-    unsigned nsess = 0;
+    unsigned nsess = 0, running = 0;     /* running: sessions started, not evaluated */
+    struct session *pending = NULL;     /* staged, waiting for a slot */
+    struct amiga_emulation **act = NULL; /* act[no - 1]: the running sessions */
+    int told = 0;
     struct text rep = { 0 };
     int rc = 2, all_ok = 1, c, worst = -1;
 
@@ -809,139 +798,134 @@ static int run(FILE *log)
     fprintf(log, "tedab: %zu tests, %zu runs, at most %u sessions at the same time\n", ntests,
             nruns, P.parallel);
 
-    /* rounds: up to `parallel` sessions from the queue */
-    while (nq && nsess < MAXSESSIONS) {
-        size_t pos = 0, *list = calloc(nq, sizeof *list), *next = calloc(nq, sizeof *next),
-               nn = 0;
-        unsigned round = 0, first = nsess;
+    /* up to `parallel` sessions at a time: the next one is made from the
+       front of the queue as soon as one ends, and a session that has
+       ended is evaluated at once; its runs to repeat go to the front of the
+       queue.  No free emulator slot while sessions run: the staged session
+       is started again every AMIGA_EMULATION_SLOT_RETRY_MS (the slot limit
+       is hard) */
+    act = calloc(MAXSESSIONS + 1, sizeof *act);
+    if (!act)
+        goto out;
+    while (running || pending || (nq && nsess < MAXSESSIONS)) {
+        struct session *s;
+        int ended;
 
-        if (!list || !next) {
-            free(list);
-            free(next);
-            goto out;
-        }
-        memcpy(list, queue, nq * sizeof *list);
-        while (round < P.parallel && pos < nq && nsess < MAXSESSIONS) {
-            struct session *s = &ss[nsess];
+        if (!pending && running < P.parallel && nq && nsess < MAXSESSIONS) {
             struct tedab_run *rs;
-            char *script, *vol, *emu, err[300];
-            size_t at = pos, m = take(list, nq, &pos);
+            char *script, *sp;
+            size_t pos = 0, m = take(queue, nq, &pos);
 
+            s = &ss[nsess];
             s->no = ++nsess;
-            s->first = at;
             s->n = m;
+            s->ids = malloc(m * sizeof *s->ids);
             rs = calloc(m, sizeof *rs);
-            for (k = 0; rs && k < m; k++)
-                rs[k] = runs[list[at + k]].r;
-            if (!rs || stage_session(s->no, rs, m, log)) {
+            if (!s->ids || !rs) {
                 free(rs);
-                free(list);
-                free(next);
+                goto out;
+            }
+            memcpy(s->ids, queue, m * sizeof *s->ids);
+            memmove(queue, queue + m, (nq - m) * sizeof *queue);
+            nq -= m;
+            for (k = 0; k < m; k++)
+                rs[k] = runs[s->ids[k]].r;
+            if (stage_session(s->no, rs, m, log)) {
+                free(rs);
                 goto out;
             }
             script = tedab_session_script(rs, m, P.stack);
             free(rs);
             if (!script || tedab_check_script(script, log)) {
                 free(script);
-                free(list);
-                free(next);
                 goto out;
             }
-            vol = session_dir(s->no, "vol");
-            emu = session_dir(s->no, "emu");
-            {
-                char *sp = session_dir(s->no, "vol/session.script");
+            sp = session_dir(s->no, "vol/session.script");
+            if (sp)
+                write_file(sp, script, strlen(script));
+            free(sp);
+            s->script = script;
+            pending = s;
+            told = 0;
+        }
+        if (pending) {
+            char *vol = session_dir(pending->no, "vol"), *emu = session_dir(pending->no, "emu"),
+                 err[300] = "";
 
-                if (sp)
-                    write_file(sp, script, strlen(script));
-                free(sp);
-            }
+            s = pending;
             if (vol && emu && !mkdir_p(emu)) {
                 struct amiga_emulation_mount mnt = { TEDAB_VOL, vol, 1 };
                 struct amiga_emulation_params ep = { 0 };
 
                 ep.mounts = &mnt;
                 ep.nmounts = 1;
-                ep.script = script;
+                ep.script = s->script;
                 ep.timeout = P.timeout;
                 ep.work_dir = emu;
-                /* no free emulator slot while sessions of this round run:
-                   again every AMIGA_EMULATION_SLOT_RETRY_MS while one of
-                   them still runs (the slot limit is hard) */
-                for (int told = 0; !(s->e = amiga_emulation_start(&ep, err, sizeof err))
-                                   && round && amiga_emulation_no_slot()
-                                   && !round_ended(ss, first, nsess - 1);) {
-                    if (!told++)
-                        fprintf(log, "tedab: %s - waiting for a slot\n", err);
-                    nap_ms(AMIGA_EMULATION_SLOT_RETRY_MS);
-                }
+                s->e = amiga_emulation_start(&ep, err, sizeof err);
             }
-            free(script);
             free(vol);
             free(emu);
-            /* still no free emulator slot and every session of this round
-               has ended: the round ends here, the rest of the queue goes
-               to the next one */
-            if (!s->e && round && amiga_emulation_no_slot()) {
-                char *sd = session_dir(s->no, "");
-
-                fprintf(log, "tedab: %s - the round ends with %u sessions\n", err, round);
-                if (sd)
-                    rm_tree(sd);
-                free(sd);
-                nsess--;
-                pos = at;
-                break;
-            }
-            if (!s->e) {
+            if (!s->e && running && amiga_emulation_no_slot()) {
+                if (!told++)
+                    fprintf(log, "tedab: session %03u: %s - waiting for a slot\n", s->no, err);
+            } else if (!s->e) {
                 fprintf(log, "tedab: %s - skipped\n", err);
-                free(list);
-                free(next);
                 rc = 77;
                 goto out;
-            }
-            for (k = 0; k < m; k++) {
-                struct run *r = &runs[list[at + k]];
+            } else {
+                for (k = 0; k < s->n; k++) {
+                    struct run *r = &runs[s->ids[k]];
 
-                r->session = s->no;
-                r->attempts++;
-                free(r->dir);
-                r->dir = str_printf("%s/s%03u/vol/runs/%s/%s", P.work, s->no, r->r.test->name,
-                                    tedab_combo_names[r->r.combo]);
+                    r->session = s->no;
+                    r->attempts++;
+                    free(r->dir);
+                    r->dir = str_printf("%s/s%03u/vol/runs/%s/%s", P.work, s->no,
+                                        r->r.test->name, tedab_combo_names[r->r.combo]);
+                }
+                fprintf(log, "tedab: session %03u: %zu runs\n", s->no, s->n);
+                fflush(log);
+                free(s->script);
+                s->script = NULL;
+                act[s->no - 1] = s->e;
+                pending = NULL;
+                running++;
+                continue;
             }
-            fprintf(log, "tedab: session %03u: %zu runs\n", s->no, m);
-            round++;
         }
-        /* the rest of the queue waits for the next round */
-        for (k = pos; k < nq; k++)
-            next[nn++] = list[k];
-        for (unsigned w = first; w < nsess; w++) {
-            struct session *s = &ss[w];
+        /* the next session that ends; none within the time: start again */
+        if ((ended = amiga_emulation_wait_any(act, nsess, AMIGA_EMULATION_SLOT_RETRY_MS)) < 0)
+            continue;
+        s = &ss[ended];
+        act[ended] = NULL;
+        running--;
+        {
             enum amiga_emulation_status st = amiga_emulation_join(s->e);
             char *lp = session_dir(s->no, "vol/session.log"), *gd = session_dir(s->no,
                                                                                 "vol/gate/out");
-            size_t len, again = 0;
+            size_t len, again = 0, nn = 0;
+            size_t *next = calloc(s->n, sizeof *next);
             char *text = lp ? (char *)read_file(lp, &len) : NULL;
             struct tedab_run *rs = calloc(s->n, sizeof *rs);
-            int *state = calloc(s->n, sizeof *state);
+            int *state = calloc(s->n, sizeof *state), bad = !next || !rs || !state;
             char sname[16];
 
             /* the session's @stat line: the combination of its run in the
                bug-orig mode, else the session */
             snprintf(sname, sizeof sname, "s%03u", s->no);
-            s->run = list[s->first];
+            s->run = s->ids[0];
             statline_session(&s->stat, P.work,
                              P.bugorig ? tedab_combo_names[runs[s->run].r.combo] : sname, s->e);
             s->stat.runs = (int)s->n;
             amiga_emulation_free(s->e);
             s->e = NULL;
             for (k = 0; rs && k < s->n; k++)
-                rs[k] = runs[list[s->first + k]].r;
+                rs[k] = runs[s->ids[k]].r;
             if (rs && state)
                 tedab_session_log(text, rs, s->n, state, &s->events);
             s->gates_ok = gd ? tedab_eval_gate(gd, &s->gate) : 0;
-            for (k = 0; rs && state && k < s->n; k++) {
-                struct run *r = &runs[list[s->first + k]];
+            for (k = 0; !bad && k < s->n; k++) {
+                struct run *r = &runs[s->ids[k]];
                 size_t f, d;
                 int requeue = 0;
 
@@ -955,11 +939,11 @@ static int run(FILE *log)
                    command for the file argument */
                 for (d = k; d && state[d] == TEDAB_SKIPPED; d = tedab_session_waits_for(rs, d))
                     ;
-                if ((hit340(r) || (r->state == TEDAB_SKIPPED && hit340(&runs[list[s->first + d]])))
+                if ((hit340(r) || (r->state == TEDAB_SKIPPED && hit340(&runs[s->ids[d]])))
                     && !r->r.test->command && r->attempts < 3) {
                     fprintf(log, "tedab: %s %s: #340 (a0toname), again\n", r->r.test->name,
                             tedab_combo_names[r->r.combo]);
-                    next[nn++] = list[s->first + k];
+                    next[nn++] = s->ids[k];
                     again++;
                     continue;
                 }
@@ -976,56 +960,42 @@ static int run(FILE *log)
                 if (f == k)
                     requeue = 1;
                 else {
-                    char *ok = str_printf("%s/out/ok", runs[list[s->first + f]].dir);
+                    char *ok = str_printf("%s/out/ok", runs[s->ids[f]].dir);
 
                     requeue = state[f] == TEDAB_NOTRUN || (ok && !access(ok, R_OK));
                     free(ok);
                 }
                 if (requeue && r->attempts < 2) {
-                    next[nn++] = list[s->first + k];
+                    next[nn++] = s->ids[k];
                     again++;
                 } else
                     r->done = 1;
             }
             /* outside bug-orig: ok if the gates and every run are */
             if (!P.bugorig) {
-                int ok = s->gates_ok && rs && state;
+                int ok = s->gates_ok && !bad;
                 char buf[300];
 
                 for (k = 0; ok && k < s->n; k++)
-                    ok = !strcmp(state_text(&runs[list[s->first + k]], buf, sizeof buf), "OK");
+                    ok = !strcmp(state_text(&runs[s->ids[k]], buf, sizeof buf), "OK");
                 statline_set(s->stat.verdict, sizeof s->stat.verdict, ok ? "ok" : "fail");
             }
             fprintf(log, "tedab: session %03u: %s, gates %s, %zu runs again\n", s->no,
                     amiga_emulation_status_name(st), s->gates_ok ? "OK" : "FAILED", again);
+            /* the runs to repeat go first */
+            memmove(queue + nn, queue, nq * sizeof *queue);
+            if (nn)
+                memcpy(queue, next, nn * sizeof *queue);
+            nq += nn;
+            free(next);
             free(rs);
             free(state);
             free(text);
             free(lp);
             free(gd);
-        }
-        /* the runs to repeat go first */
-        {
-            size_t nr = 0;
-            size_t *tmp = calloc(nn + 1, sizeof *tmp);
-
-            if (!tmp) {
-                free(list);
-                free(next);
+            if (bad)
                 goto out;
-            }
-            for (k = 0; k < nn; k++)
-                if (runs[next[k]].attempts)
-                    tmp[nr++] = next[k];
-            for (k = 0; k < nn; k++)
-                if (!runs[next[k]].attempts)
-                    tmp[nr++] = next[k];
-            memcpy(queue, tmp, nr * sizeof *queue);
-            nq = nr;
-            free(tmp);
         }
-        free(list);
-        free(next);
         fflush(log);
     }
 
@@ -1128,8 +1098,11 @@ out:
         }
         free(ss[w].gate.p);
         free(ss[w].events.p);
+        free(ss[w].ids);
+        free(ss[w].script);
     }
     free(ss);
+    free(act);
     free(queue);
     free(rep.p);
     return rc;
