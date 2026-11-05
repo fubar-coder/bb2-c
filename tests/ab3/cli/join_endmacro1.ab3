@@ -1,0 +1,7 @@
+; @@ on a one-line Macro definition behind its End Macro is an error, as
+; on an End Macro line of its own (join_endmacro.ab3)
+Macro m:NPrint "m":End Macro @@
+NPrint "after"
+!m
+NPrint "end"
+End

@@ -1,0 +1,11 @@
+; @@ on an End Macro line is an error (spec ab3-compat/syntax-rules,
+; "Line joining with @@"): joined, the next line would be dropped with
+; the rest of the End Macro line.  AmiBlitz3 ignores the @@ there
+; (docs/ab3/variant.md, Differences)
+Macro m
+NPrint "m"
+End Macro @@
+NPrint "after"
+!m
+NPrint "end"
+End

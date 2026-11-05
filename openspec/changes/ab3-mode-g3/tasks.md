@@ -48,6 +48,7 @@
 - [x] 6.3 The include case of task 4.2: `longlong.include.ab3` (a fetch-originals entry, sha256 `0e1c7c65ef1921d5766e2de6c306beac6dbba85e05a58ed8ca98963f76046a50`) with `!ll_ToStr` and `@"…"` chunk IDs in `ab3_cli`/`ab3_cli_ref`. Verify: the case passes in both; TODO.md item 9 done
 - [x] 6.5 `@@` in a `Macro` definition inside an include joins as in AmiBlitz3 (spec `ab3-compat/syntax-rules`, scenario "Macro definition in an include"; today `ab3syn.c` applies the include rule for parameter lists to every join). Verify: an `ab3_cli`/`ab3_cli_ref` case with the macro in an include; the existing include refusal cases unchanged
 - [x] 6.4 Docs and full check: variant.md (G3 section, macro rule), a clean build without warnings, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts plus the new test
+- [x] 6.6 `@@` on an `End Macro` line is an error instead of joining the next line into it (spec `ab3-compat/syntax-rules`, scenario "End Macro with @@"; user decision 2026-11-05). Verify: `ab3_cli` cases for an `End Macro` line of its own and a one-line definition, `ab3_cli_ref` with AmiBlitz3's output (it ignores the `@@`) as `.ref.expect` and a row in variant.md; the macro joins of `join`, `join_incmacro`, `macthen_join` unchanged; a clean build, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
 
 ## Workflow follow-up
 

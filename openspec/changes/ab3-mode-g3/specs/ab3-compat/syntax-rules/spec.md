@@ -3,7 +3,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Line joining with @@
-In AB3 mode `@@` at a parameter boundary (start of a parameter list, after a parameter, after `,`; also in macro text and definitions and in multiple assignments) SHALL join the next line, the rest of the line after `@@` being ignored; strings and comments SHALL not be affected. `@@` at other places of an expression, for example after an operator, SHALL join the next line as well (AmiBlitz3: syntax error; intended deviation). Inside an include, outside a `Macro` definition, only `,` followed by `@@` SHALL be allowed, other forms giving "Joining lines with @@ does not work in includes". Inside a `Macro` definition every form SHALL join, also in an include, as in AmiBlitz3.
+In AB3 mode `@@` at a parameter boundary (start of a parameter list, after a parameter, after `,`; also in macro text and definitions and in multiple assignments) SHALL join the next line, the rest of the line after `@@` being ignored; strings and comments SHALL not be affected. `@@` at other places of an expression, for example after an operator, SHALL join the next line as well (AmiBlitz3: syntax error; intended deviation). Inside an include, outside a `Macro` definition, only `,` followed by `@@` SHALL be allowed, other forms giving "Joining lines with @@ does not work in includes". Inside a `Macro` definition every form SHALL join, also in an include, as in AmiBlitz3. `@@` on a line with `End Macro` before it SHALL be the error "Joining lines with @@ does not work after End Macro" (AmiBlitz3: the `@@` is ignored; intended deviation).
 
 #### Scenario: Tag list over lines
 - **WHEN** a statement's parameters are split with `,@@` over three lines
@@ -20,3 +20,7 @@ In AB3 mode `@@` at a parameter boundary (start of a parameter list, after a par
 #### Scenario: Macro definition in an include
 - **WHEN** an include defines a macro with the line `` If `1 > 0 Then `1 = 0 : @@ `` followed by `` `2 = 0 ``, and the main source includes it and calls the macro
 - **THEN** it compiles, and the two lines are one line of the macro
+
+#### Scenario: End Macro with @@
+- **WHEN** a macro definition ends with the line `End Macro @@` followed by `NPrint "after"`
+- **THEN** the compile fails with "Joining lines with @@ does not work after End Macro" at the `End Macro` line and no executable is written

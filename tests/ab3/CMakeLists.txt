@@ -315,6 +315,9 @@ ab3_cli_case(join_incok join_incok.ab3 REF)
 # its Macro line), as in AmiBlitz3
 ab3_cli_case(join_incmacro join_incmacro.ab3 REF)
 ab3_cli_case(join_op join_op.ab3 REF REF_EXPECT join_op.ref.expect)
+# @@ on an End Macro line is an error (AmiBlitz3 ignores it there)
+ab3_cli_case(join_endmacro join_endmacro.ab3 REF REF_EXPECT join_endmacro.ref.expect)
+ab3_cli_case(join_endmacro1 join_endmacro1.ab3 REF REF_EXPECT join_endmacro.ref.expect)
 # the constants of the include mechanism: #__include, #__debug, CNIF @
 ab3_cli_case(incguard incguard.ab3 REF)
 ab3_cli_case(cnifdef cnifdef.ab3 ARGS -r REF)

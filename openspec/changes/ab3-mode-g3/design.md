@@ -359,3 +359,13 @@ reverting the commits.
   IFF header `FORM`/`ILBM` written with `WriteMem` and read back,
   compared with `Select`/`Case @"…"` and `Mkl$` (AmiBlitz3's output:
   `1234567`, `FORM 4`, `ILBM ILBM`).
+- (Task 6.6, 2026-11-05) `End Macro @@` followed by `NPrint "after"`
+  (an `End Macro` line of its own and behind a one-line definition,
+  `join_endmacro`, `join_endmacro1`): `blitz2-ab3` joined the next line
+  onto the `End Macro` line and `domacro` dropped the rest behind
+  `End Macro` (`dolineabort`), so the line was lost without a message
+  (`m`, `end`). AmiBlitz3 v3.14.0 ignores the `@@` there and compiles
+  the next line on its own (`after`, `m`, `end`). User decision: an
+  error ("Joining lines with @@ does not work after End Macro", at the
+  `End Macro` line; `isendmacro` in `ext_nextline`), not AmiBlitz3's
+  behaviour; recorded as a difference in variant.md.

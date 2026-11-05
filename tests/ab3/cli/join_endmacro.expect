@@ -1,0 +1,5 @@
+[compile]
+join_endmacro.ab3:7: Joining lines with @@ does not work after End Macro
+rc=10
+[run]
+no executable

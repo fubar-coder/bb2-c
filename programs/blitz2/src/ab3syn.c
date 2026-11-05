@@ -355,6 +355,32 @@ static BOOL ismacroline(const UBYTE *p)
     return p[0] == 0x80 && p[1] == 0x0d;        /* Macro ($800D) */
 }
 
+/* is there an End Macro outside strings between p and the "@@" at at?
+   Joined, the next line would be part of the End Macro line, which
+   domacro drops after End Macro (AmiBlitz3's do_Macro ignores the "@@"
+   there: an intended deviation, an error instead) */
+static BOOL isendmacro(const UBYTE *p, const UBYTE *at)
+{
+    BOOL instr = FALSE;
+    const UBYTE *q;
+
+    for (; p < at; p++) {
+        if (*p & 0x80) {
+            if (!instr && p[0] == 0x80 && p[1] == 0x02) {   /* End */
+                for (q = p + 2; *q == ' '; q++)
+                    ;
+                if (q[0] == 0x80 && q[1] == 0x0d)           /* Macro */
+                    return TRUE;
+            }
+            p++;
+            continue;
+        }
+        if (*p == '"')
+            instr = !instr;
+    }
+    return FALSE;
+}
+
 void ext_nextline(void)
 {
     const UBYTE *p, *at, *b;
@@ -377,6 +403,10 @@ void ext_nextline(void)
        (ext_macrodef), which joins every form */
     incrule = numincs && !inmacrodef && !ismacroline(p);
     do {
+        if (isendmacro(p, at)) {
+            joining = FALSE;
+            err("Joining lines with @@ does not work after End Macro");
+        }
         if (incrule) {
             for (b = at; b > p && b[-1] == ' '; b--)
                 ;

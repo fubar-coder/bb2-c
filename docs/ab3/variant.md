@@ -664,13 +664,19 @@ syntax:
 * `@@` inside a `Macro` definition joins in an include too, also on the
   `Macro` line itself (AmiBlitz3's `do_Macro` has no include check); a
   macro call's parameters in an include keep the rule of parameter
-  lists (only `,` before the `@@`).
+  lists (only `,` before the `@@`);
+* `@@` on an `End Macro` line (also behind the `End Macro` of a one-line
+  definition) is the error "Joining lines with @@ does not work after
+  End Macro" at that line: joined, the next line would belong to the
+  `End Macro` line, whose rest `domacro` drops, so the line would be lost
+  silently (user decision 2026-11-05; AmiBlitz3 ignores the `@@` there,
+  row `join_endmacro` below).
 
 AmiBlitz3 has one flag per line instead of a count, and only `End If`
 clears it: two `Then`s get one `End If` (the outer `If` stays open), and
 a line closed with `EndIf` gets a second one (an error); both are
 implemented as intended (rows `macthen_two`, `macthen_endifword` below).
-Cases: `macthen_*`, `join_incmacro` and `inc_longlong` in
+Cases: `macthen_*`, `join_incmacro`, `join_endmacro*` and `inc_longlong` in
 `tests/ab3/CMakeLists.txt`.
 
 ## Differences to AmiBlitz3's compiler (G2+, 2026-11-01)
@@ -704,6 +710,7 @@ machine); recorded, not changed in G1:
 | `macthen_two` (G3) | a macro line with two `Then`s (`If a Then If b Then …`, also with one `End If` behind them) gets one `End If` at most (`thenmode` is a flag): it closes the inner `If`, the outer one stays open to the end of the expanded line, the next macro line is conditional (`0 5 0`) | one `End If` for each `Then` not closed on the line: the next macro line runs (`0 5 1`) | none: as intended (spec `ab3-compat/macros`: a one-line `If` covers only the rest of its macro line) |
 | `macthen_endifword` (G3) | a macro line closed with `EndIf` (its own token, not `End If`) still gets `: End If`: "'End' condition without condition", no executable | `EndIf` closes the `Then` like `End If`: the program runs (`0 15`) | none: as intended |
 | `join_op` (G2) | `@@` after an operator (not at a parameter boundary) is a syntax error | the next line is joined (`b.l = 1 + @@` and `2` on the next line give `3`) | none: ours is correct (user decision 2026-11-04) |
+| `join_endmacro`, `join_endmacro1` (G3) | `@@` on an `End Macro` line is ignored: the next line is compiled as a line of its own (`after`, `m`, `end`) | the error "Joining lines with @@ does not work after End Macro", no executable | none: ours is intended (user decision 2026-11-05) |
 
 AmiBlitz3's test programs of G2 (task 5.1 of `ab3-mode-g2`, fetched
 at `@58a11658`), in `ab3_cli` and `ab3_cli_ref`: `hex_error`
