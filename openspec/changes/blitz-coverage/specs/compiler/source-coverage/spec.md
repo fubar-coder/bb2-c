@@ -35,7 +35,7 @@ The coverage mode SHALL work with and without runtime error checking (`-r`), and
 - **THEN** it reports the error exactly as without `-coverage`, and the counts up to the error are written
 
 ### Requirement: Statements are counted
-A program compiled with `-coverage` SHALL count, for every statement of its source that produces code, how many times the statement was executed, and SHALL write the counts when it ends, also when it ends through `End`, a runtime error or the user closing it.
+A program compiled with `-coverage` SHALL count, for every BASIC statement of its source that produces code, how many times the statement was executed; inline assembler lines SHALL not be counted and SHALL generate the same code as without the option. The program SHALL write the counts when it ends, also when it ends through `End`, a runtime error or the user closing it.
 
 #### Scenario: Loop
 - **WHEN** a program has a `For`/`Next` loop of 10 iterations with a body of one statement per line and ends normally
@@ -44,6 +44,10 @@ A program compiled with `-coverage` SHALL count, for every statement of its sour
 #### Scenario: Not executed
 - **WHEN** a statement is never reached (after an `End`, or in a branch not taken)
 - **THEN** its count is 0 and it still appears in the report
+
+#### Scenario: Inline assembler
+- **WHEN** a program with inline assembler (a compare on one line and a branch on the next) is compiled with `-coverage`
+- **THEN** it runs as without the option, and its assembler lines appear in the report without counts
 
 #### Scenario: Kickstart 1.3
 - **WHEN** a program compiled with `-coverage` runs under Kickstart 1.3

@@ -81,7 +81,24 @@ program's other global data). The two mechanisms are independent:
   in release builds.
 - *A `jsr` to a counting routine:* smaller code but needs registers
   and a library; `addq.l` to memory touches no register. The condition
-  codes are dead between statements (verified in task 2.2).
+  codes are dead between BASIC statements: the compiler generates
+  compare and branch within one statement (verified in task 2.2).
+- *A flag-neutral counter* (`pea (a0)`, `movea.l cnt,a0`, `addq.l #1,a0`,
+  `movem.l a0,cnt`, `movea.l (a7)+,a0`: none of these changes the
+  condition codes; about 22 bytes): the fallback if task 2.2 finds a BASIC
+  statement whose code passes condition codes to the next one. `move
+  sr,<ea>` is privileged from the 68010 on (a privilege violation in a
+  user-mode program on the A1200), `move ccr,<ea>` does not exist on the
+  68000, so saving the flags is not an option.
+
+**Inline assembler is not counted.** Each assembler line is a statement
+of its own, and it may pass condition codes (`CMP` on one line, `Bcc` on
+the next), the X bit (`ADDX` chains) or rely on distances (`Bcc.s`
+ranges, `DC.w l2-l1` tables, `?l2-?l1`). Any inserted code could break
+it, so assembler lines get no counter and generate the same code as
+without the option; the map lists them without counts. Counting at
+assembler labels (the starts of basic blocks) is a possible later
+extension.
 
 ### D3 Where counts are written
 The generated program saves the table at its end. `finit` routines of
