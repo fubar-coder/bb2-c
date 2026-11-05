@@ -328,7 +328,9 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   (`tools/blitzres/check.cmake`) notices other contents. The host side on its own:
   `ctest --test-dir build/amiga/host`.
   With `-DHOST_SANITIZE=ON` the host side is built with AddressSanitizer
-  and UBSan.
+  and UBSan. With `-DHOST_COVERAGE=ON` it is built with gcov
+  (`--coverage -O0`), and each host test `X` writes its `.gcda` files
+  below `build/<preset>/host/coverage/X/` (`GCOV_PREFIX`).
 * **emulator:** runs in Amiberry; without Amiberry or without the data in
   `amiga-emulation/` they are skipped. `libs_emulator`: the test program
   `libs/tests/libs_tests` (snitch, m68k) loads every acidlib of this build

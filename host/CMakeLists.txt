@@ -14,6 +14,14 @@ if(HOST_SANITIZE)
 	add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
 	add_link_options(-fsanitize=address,undefined)
 endif()
+# gcov coverage of all host code; -O0, so that inlining hides no function.
+# Each test writes its data below coverage/<test> (GCOV_PREFIX, set at the
+# end of this file); cmake/coverage-map.cmake reads it.
+option(HOST_COVERAGE "gcov coverage for all host code, the data of each host test apart" OFF)
+if(HOST_COVERAGE)
+	add_compile_options(--coverage -O0)
+	add_link_options(--coverage)
+endif()
 
 enable_testing()
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Snitch.cmake)
@@ -45,3 +53,21 @@ endforeach()
 set(AMIGA_EMULATION_OWNER ${CMAKE_BINARY_DIR} CACHE PATH
 	"owner of the emulator snapshots of this build's tests (the build directory)")
 emulation_snapshot_owner(${AMIGA_EMULATION_OWNER})
+
+# HOST_COVERAGE: every test of this project (all directories) writes its
+# .gcda files below coverage/<test>/<absolute object path> - one set per
+# test, read by cmake/coverage-map.cmake as test host/<test>
+if(HOST_COVERAGE)
+	function(host_coverage_prefix dir)
+		get_property(tests DIRECTORY ${dir} PROPERTY TESTS)
+		foreach(t IN LISTS tests)
+			set_property(TEST ${t} DIRECTORY ${dir} APPEND PROPERTY
+				ENVIRONMENT "GCOV_PREFIX=${CMAKE_BINARY_DIR}/coverage/${t}")
+		endforeach()
+		get_property(subdirs DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
+		foreach(s IN LISTS subdirs)
+			host_coverage_prefix(${s})
+		endforeach()
+	endfunction()
+	host_coverage_prefix(${CMAKE_CURRENT_SOURCE_DIR})
+endif()

@@ -2,8 +2,8 @@
 
 ## 1. Host coverage (stage 1)
 
-- [ ] 1.1 Option `HOST_COVERAGE` in `host/CMakeLists.txt` (`--coverage -O0`) passed through from the top level like `HOST_SANITIZE` (D1). Verify: a host build with the option has `.gcno` files, one without has none; a clean normal build has no warnings and the same programs
-- [ ] 1.2 Per-test `GCOV_PREFIX` for every host test, set in one place after all tests are defined (D1). Verify: after `ctest --test-dir <host build>` each test has its own directory under `coverage/`, and a TED core test's data names TED core functions
+- [x] 1.1 Option `HOST_COVERAGE` in `host/CMakeLists.txt` (`--coverage -O0`) passed through from the top level like `HOST_SANITIZE` (D1). Verify: a host build with the option has `.gcno` files, one without has none; a clean normal build has no warnings and the same programs
+- [x] 1.2 Per-test `GCOV_PREFIX` for every host test, set in one place after all tests are defined (D1). Verify: after `ctest --test-dir <host build>` each test has its own directory under `coverage/`, and a TED core test's data names TED core functions
 
 ## 2. Coverage variants of the compilers (stage 2)
 

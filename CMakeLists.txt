@@ -88,6 +88,7 @@ set(CORPUSRUN ${HOST_DIR}/corpus-runner/corpusrun)              # one corpus pas
 set(CDRUN ${HOST_DIR}/corpus-runner/cdrun)                      # the CD through one compiler
 set(TEDAB ${HOST_DIR}/ted-ab-runner/tedab)                      # the TED A/B tests in Amiberry
 option(HOST_SANITIZE "host side with address/undefined behaviour sanitizers" OFF)
+option(HOST_COVERAGE "host side with gcov coverage, the data of each host test apart" OFF)
 ExternalProject_Add(host_tools
 	SOURCE_DIR ${PROJECT_SOURCE_DIR}/host
 	BINARY_DIR ${HOST_DIR}
@@ -95,6 +96,7 @@ ExternalProject_Add(host_tools
 		-DAMIGA_EMULATION_DIR=${PROJECT_SOURCE_DIR}/amiga-emulation
 		-DAMIGA_EMULATION_VASM=${VASM}
 		-DHOST_SANITIZE=${HOST_SANITIZE}
+		-DHOST_COVERAGE=${HOST_COVERAGE}
 		-DAMIGA_EMULATION_OWNER=${CMAKE_BINARY_DIR}
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
