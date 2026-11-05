@@ -289,13 +289,11 @@ the preset, the option, the module and the tools.
   tracefiles of an earlier run first. A test name that cannot be such a
   path (empty, absolute, `.`/`..` components, `all`) or a `TN:` (comma,
   tab, newline) is an input error.
-- **`TN:`** is the test's name as it is (spec). lcov 2.x keeps only
-  `[A-Za-z0-9_]` in test names and reads every other character as `_`,
-  with a warning per tracefile ("invalid characters removed from
-  testname"); so `genhtml` warns once for `all.info` and for each
-  `host/...` or hyphenated test, without errors. `covsel` accepts the
-  name in either form. If the warning should go, the spec's "the test's
-  name as `TN:`" would have to allow lcov's form.
+- **`TN:`** holds the test's name in lcov's form (user decision
+  2026-11-05): lcov 2.x keeps only `[A-Za-z0-9_]` in test names and warns
+  per tracefile otherwise, so every other character becomes `_`
+  (`host/ted_core_a` → `host_ted_core_a`). The real name is the
+  tracefile's path; `covsel` takes it from the path.
 - **`all.info`** is the sections of all tests one after the other, in the
   order of their names: lcov's own form of tracefiles of different tests
   merged (`lcov -a` keeps a section per test name); `genhtml` adds them

@@ -9,7 +9,7 @@ runs stay the acceptance of a program change.
 ## ADDED Requirements
 
 ### Requirement: Coverage of each test as lcov
-A full run of the coverage configuration SHALL leave the coverage of every test as an lcov tracefile in the build directory (one file per test, named after it, with the test's name as `TN:`), plus a merged tracefile of all tests and a record of the commit the run was made from. Each function a test executed SHALL appear with its source file, its first and last line where known (`FN:first,last,name`) and its hit count (`FNDA`); line and branch counts (`DA`, `BRDA`) SHALL be included where the source of the data gives them. The files SHALL NOT be checked in.
+A full run of the coverage configuration SHALL leave the coverage of every test as an lcov tracefile in the build directory (one file per test, named after the test; `TN:` holds the test's name in the form lcov accepts, every character other than `A-Z`, `a-z`, `0-9` and `_` replaced by `_`), plus a merged tracefile of all tests and a record of the commit the run was made from. Each function a test executed SHALL appear with its source file, its first and last line where known (`FN:first,last,name`) and its hit count (`FNDA`); line and branch counts (`DA`, `BRDA`) SHALL be included where the source of the data gives them. The files SHALL NOT be checked in.
 
 #### Scenario: A function and its tests
 - **WHEN** the tracefiles of a full coverage run are read for a function of the TED core that only one host test executes
