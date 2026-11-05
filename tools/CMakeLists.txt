@@ -25,5 +25,6 @@ add_subdirectory(xtra)
 add_subdirectory(teststats)
 add_subdirectory(outmatch)
 add_subdirectory(ab3tok)
+add_subdirectory(covmap)
 
 add_subdirectory(tests)

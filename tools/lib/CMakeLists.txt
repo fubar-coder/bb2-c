@@ -29,6 +29,9 @@
 #              JUnit files: durations, flaky results, time limits, COST
 #   outmatch   the output of a test run against an expect file (the
 #              emulator tests of blitz2-ab3)
+#   covmap     the map from functions to the tests that executed them (gcov
+#              JSON of the host tests, coverage files of the Amiga programs
+#              with their link maps)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -49,3 +52,4 @@ add_subdirectory(ab3job)
 add_subdirectory(tokenizer)
 add_subdirectory(teststats)
 add_subdirectory(outmatch)
+add_subdirectory(covmap)
