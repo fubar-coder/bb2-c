@@ -158,6 +158,23 @@ int main(void)
     CHECK(judge("[log]\n...\nJOB*\n...\nBATCH\tstart\n...\n", &b, &a) == BUGORIG_DIFFERS);
     CHECK(judge("[session]\ntimeout\n[log]\n...\nRESULT\tj000\terror*\n...\n", &a, &b) == BUGORIG_FIXED);
     CHECK(judge("[session]\ntimeout\n[log]\n...\nRESULT\tj000\terror*\n...\n", &b, &a) == BUGORIG_BROKEN);
+    /* a halt (the emulated CPU halted) is an observation of its own: a
+       port that halts as the original reproduces it, one that hangs
+       until the limit instead does not */
+    bugorig_free(&c);
+    bugorig_free(&d);
+    observe(&c, "halt", LOG_ERR, NULL, NULL);
+    observe(&d, "halt", LOG_ERR, NULL, NULL);
+    CHECK(!strcmp(bugorig_get(&c, "session"), "halt\n"));
+    CHECK(judge("[compile]\nerror 3 Syntax Error\n", &c, &d) == BUGORIG_REPRODUCED);
+    CHECK(judge("[compile]\nerror 3 Syntax Error\n", &c, &b) == BUGORIG_DIFFERS);
+    CHECK(judge("[session]\nhalt\n", &c, &d) == BUGORIG_BROKEN);
+    CHECK(judge("[session]\nhalt\n", &b, &c) == BUGORIG_FIXED);
+    CHECK(judge("[session]\nhalt\n", &b, &a) == BUGORIG_DIFFERS);
+    bugorig_free(&c);
+    bugorig_free(&d);
+    observe(&c, "done", LOG_OK, "rc=0\n", "42\nrc=0\n");
+    observe(&d, "done", LOG_OK, "rc=0\n", "41\nrc=0\n");
     /* port regression: the expectation is what the original does (a
        prints 42); c does the same, d not */
     CHECK(judge_regression("[run]\n42\nrc=0\n", &a, &c) == BUGORIG_FIXED);

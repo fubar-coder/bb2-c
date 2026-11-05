@@ -819,7 +819,7 @@ static int judge(const struct corpus_pass *p, const enum amiga_emulation_status 
         goto out;
     }
     /* a session that could not run is no observation (a timeout is one: a
-       crash or a hang) */
+       crash or a hang; a halt too: a crash that halted the CPU) */
     for (c = 0; c < p->nconfigs; c++)
         if (st[c] == AMIGA_EMULATION_FAILED || st[c] == AMIGA_EMULATION_EXITED) {
             fprintf(log, "corpus: %s: session %s (%s/%s/emu)\n", p->configs[c].tag,

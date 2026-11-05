@@ -620,6 +620,40 @@ static void snapshot_purge(void)
     free(oxdg);
 }
 
+/* the halt check: answers of GET_CPU_REGS in a row */
+static void cpu_halted(void)
+{
+#define REGS(pc, sr) "OK\tD0=00000001\tD1=00000000\tA7=40140318\tPC=" pc "\tSR=" sr \
+                     "\tT=0\tS=0\tUSP=4014024C\tISP=40002338"
+    /* the halts of the tests: a jump to no memory (user mode, mask 7),
+       a double fault (supervisor mode, mask 7) */
+    CHECK(amiga_emulation_cpu_halted(REGS("FFFFFFAC", "0700"), REGS("FFFFFFAC", "0700")));
+    CHECK(amiga_emulation_cpu_halted(REGS("00F81234", "2708"), REGS("00F81234", "2708")));
+    CHECK(amiga_emulation_cpu_halted(REGS("00F81234", "27ff"), REGS("00F81234", "27ff")));
+    /* the SR as the last field */
+    CHECK(amiga_emulation_cpu_halted("OK\tPC=00000000\tSR=2700", "OK\tPC=00000000\tSR=2700"));
+    /* running: another mask, or the registers changed */
+    CHECK(!amiga_emulation_cpu_halted(REGS("00F81234", "2000"), REGS("00F81234", "2000")));
+    CHECK(!amiga_emulation_cpu_halted(REGS("00F81234", "2600"), REGS("00F81234", "2600")));
+    CHECK(!amiga_emulation_cpu_halted(REGS("00F81234", "2700"), REGS("00F81236", "2700")));
+    CHECK(!amiga_emulation_cpu_halted(REGS("00F81234", "2000"), REGS("00F81234", "2700")));
+    /* broken on purpose: no answer, no OK, no SR or not four hex digits */
+    CHECK(!amiga_emulation_cpu_halted(NULL, REGS("FFFFFFAC", "0700")));
+    CHECK(!amiga_emulation_cpu_halted(REGS("FFFFFFAC", "0700"), NULL));
+    CHECK(!amiga_emulation_cpu_halted("", ""));
+    CHECK(!amiga_emulation_cpu_halted("OK", "OK"));
+    CHECK(!amiga_emulation_cpu_halted("ERR\tSR=2700", "ERR\tSR=2700"));
+    CHECK(!amiga_emulation_cpu_halted("OK\tPC=0\tXSR=2700", "OK\tPC=0\tXSR=2700"));
+    CHECK(!amiga_emulation_cpu_halted("OK\tPC=0 SR=2700", "OK\tPC=0 SR=2700"));  /* no tab before */
+    CHECK(!amiga_emulation_cpu_halted(REGS("0", "27G0"), REGS("0", "27G0")));
+    CHECK(!amiga_emulation_cpu_halted(REGS("0", "270"), REGS("0", "270")));
+    CHECK(!amiga_emulation_cpu_halted(REGS("0", "27000"), REGS("0", "27000")));
+    CHECK(!amiga_emulation_cpu_halted("OK\tSR=", "OK\tSR="));
+#undef REGS
+    CHECK(!strcmp(amiga_emulation_status_name(AMIGA_EMULATION_HALT), "halt"));
+    CHECK(!strcmp(amiga_emulation_status_name(AMIGA_EMULATION_TIMEOUT), "timeout"));
+}
+
 int main(void)
 {
     struct amiga_emulation_option ch[] = {
@@ -970,6 +1004,7 @@ int main(void)
     snapshot_drop_stale();
     snapshot_prune();
     snapshot_purge();
+    cpu_halted();
 
     /* the names of the @stat lines (tools/lib/teststats/statline.h) */
     CHECK(!strcmp(amiga_emulation_snapshot_use_name(AMIGA_EMULATION_SNAP_COLD), "cold"));

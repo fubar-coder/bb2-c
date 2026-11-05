@@ -32,7 +32,9 @@
  *             save or a fallback restarts it; amiga_emulation.h)
  *   limit     the time limit of the session (seconds)
  *   end       done (the script ran to its end), timeout (killed at the
- *             limit), exited (Amiberry ended before the script), failed
+ *             limit), halt (killed after the emulated CPU halted, before
+ *             the limit), exited (Amiberry ended before the script),
+ *             failed
  *   verdict   optional: the result for this config - bug-orig FIXED,
  *             REPRODUCED, DIFFERS, BROKEN (tedab also NOTRUN), the
  *             reference "reference"; corpus same / differs; tedab outside

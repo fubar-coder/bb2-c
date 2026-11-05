@@ -99,11 +99,35 @@ static int volume_dir(const char *cfg, const char *vol, char *dir, size_t len)
     return 0;
 }
 
+/* the CPU of the job (GET_CPU_REGS): FAKE_CPU_NONE answers OK only (no
+   registers); a job with HALT halts the CPU (the registers never change,
+   SR with interrupt mask 7 in supervisor mode, as Amiberry's cpu_halt
+   leaves a double fault); one with MASK7 runs at interrupt mask 7, its
+   registers change (not halted) */
+static enum { FAKE_CPU_NONE, FAKE_CPU_HALTED, FAKE_CPU_MASK7 } fake_cpu;
+static unsigned fake_ticks;
+
+static const char *fake_regs(void)
+{
+    static char buf[512];
+
+    if (fake_cpu == FAKE_CPU_NONE)
+        return "OK\n";
+    if (fake_cpu == FAKE_CPU_MASK7)
+        fake_ticks++;
+    snprintf(buf, sizeof buf,
+             "OK\tD0=00000001\tD1=%08X\tA7=40140318\tPC=%08X\tSR=2708\tT=0\tS=1\tX=0\tN=1\tZ=0\tV=0"
+             "\tC=0\tUSP=4014024C\tISP=40002338\n",
+             fake_ticks, fake_cpu == FAKE_CPU_MASK7 ? 0x00F80000u + (fake_ticks & 0xfe) : 0xFFFFFFACu);
+    return buf;
+}
+
 /* one command line of the control socket; 1 = QUIT */
 static int fake_command(int fd)
 {
     char line[4096], *tab;
     ssize_t n = read(fd, line, sizeof line - 1);
+    const char *answer = "OK\n";
     int quit = 0;
 
     if (n > 0) {
@@ -120,8 +144,10 @@ static int fake_command(int fd)
             write_text(tab, FAKE_STATE);
         }
         quit = !strcmp(line, "QUIT");
+        if (!strcmp(line, "GET_CPU_REGS"))
+            answer = fake_regs();
     }
-    if (write(fd, "OK\n", 3) != 3)
+    if (write(fd, answer, strlen(answer)) != (ssize_t)strlen(answer))
         quit = 1;               /* the library has gone */
     close(fd);
     return quit;
@@ -201,7 +227,11 @@ static int fake_amiberry(int argc, char **argv)
                 snprintf(started, sizeof started, "%s/started", snap);
                 write_text(started, "started\n");
             }
-            if (job && !strstr(job, "HANG")) {
+            if (job && strstr(job, "HALT"))
+                fake_cpu = FAKE_CPU_HALTED;
+            else if (job && strstr(job, "MASK7"))
+                fake_cpu = FAKE_CPU_MASK7;
+            else if (job && !strstr(job, "HANG")) {
                 snprintf(path, sizeof path, "%s/run.done", test);
                 write_text(path, "done\n");
             }
@@ -440,6 +470,61 @@ static void cold(void)
     unsetenv("AMIGA_EMULATION_SNAPSHOT");
 }
 
+/* a job whose CPU halts ends as halt long before its limit, with the
+   report of AMIGA_EMULATION_TIMEOUT_STATE; one at interrupt mask 7 whose
+   registers change is no halt (it runs to its limit); without snapshot
+   the halt ends the session too */
+static void halt(void)
+{
+    struct amiga_emulation *a, *b;
+    struct amiga_emulation_stats st;
+    char path[4200], *s;
+
+    setenv("AMIGA_EMULATION_TIMEOUT_STATE", "1", 1);
+    a = start("HALT", 30);
+    b = start("MASK7", 6);
+    unsetenv("AMIGA_EMULATION_TIMEOUT_STATE");
+    CHECK(a && b);
+    if (!a || !b)
+        goto out;
+    CHECK(amiga_emulation_join(a) == AMIGA_EMULATION_HALT);
+    amiga_emulation_stats(a, &st);
+    CHECK(st.status == AMIGA_EMULATION_HALT && st.timed > 1.5 && st.timed < 10);
+    snprintf(path, sizeof path, "%s/timeout.txt", amiga_emulation_work_dir(a));
+    s = read_text(path);
+    CHECK(s && !strncmp(s, "end: halt\n", 10) && strstr(s, " SR=2708 ")
+          && strstr(s, "cpu state: halted"));
+    free(s);
+    s = snap_log(a);
+    CHECK(s && strstr(s, "job started") && strstr(s, "CPU halted"));
+    free(s);
+    CHECK(amiga_emulation_join(b) == AMIGA_EMULATION_TIMEOUT);
+    amiga_emulation_stats(b, &st);
+    CHECK(st.timed >= 6);
+    snprintf(path, sizeof path, "%s/timeout.txt", amiga_emulation_work_dir(b));
+    s = read_text(path);
+    CHECK(s && !strncmp(s, "end: timeout\n", 13) && strstr(s, " SR=2708 ")
+          && strstr(s, "cpu state: running"));
+    free(s);
+    if (failures) {
+        show("a", a);
+        show("b", b);
+    }
+out:
+    amiga_emulation_free(a);
+    amiga_emulation_free(b);
+    CHECK(slot_clean(0) && slot_clean(1));
+    setenv("AMIGA_EMULATION_SNAPSHOT", "0", 1);
+    a = start("HALT", 30);
+    CHECK(a && amiga_emulation_join(a) == AMIGA_EMULATION_HALT);
+    if (a) {
+        amiga_emulation_stats(a, &st);
+        CHECK(st.snapshot == AMIGA_EMULATION_SNAP_COLD && st.timed < 10);
+    }
+    amiga_emulation_free(a);
+    unsetenv("AMIGA_EMULATION_SNAPSHOT");
+}
+
 static int rm_entry(const char *path, const struct stat *st, int flag, struct FTW *ftw)
 {
     (void)st; (void)flag; (void)ftw;
@@ -479,6 +564,7 @@ int main(int argc, char **argv)
     free_running();
     slot_free_at_end();
     cold();
+    halt();
 
     if (!failures)
         nftw(base, rm_entry, 16, FTW_DEPTH | FTW_PHYS);

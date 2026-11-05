@@ -5,9 +5,10 @@
  * *correct* behaviour.
  *
  * Observation: what one configuration showed, as sections
- *   [session]  done | timeout | exited early | failed  (the emulator
- *              session: a crash or a hang of the compiler or the program
- *              ends in timeout)
+ *   [session]  done | timeout | halt | exited early | failed  (the
+ *              emulator session: a crash or a hang of the compiler or the
+ *              program ends in timeout, a crash that halts the emulated
+ *              CPU in halt)
  *   [compile]  the result of the job: ok | error LINE MESSAGE |
  *              failed REASON | none (no RESULT line: the compiler did not
  *              get that far)

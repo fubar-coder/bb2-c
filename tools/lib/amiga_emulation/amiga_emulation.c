@@ -107,6 +107,8 @@ const size_t amiga_emulation_rtg_count = sizeof amiga_emulation_rtg / sizeof ami
 #define QUIT_GRACE  1           /* seconds between QUIT and SIGTERM */
 #define KILL_GRACE  1           /* seconds between SIGTERM and SIGKILL */
 #define SUP_STOP_GRACE 5        /* seconds amiga_emulation_free gives a supervisor */
+#define CPU_POLL    1           /* seconds between the supervisor's GET_CPU_REGS */
+#define CPU_REPLY   2           /* seconds it waits for the answer */
 
 /* What a session's supervisor (the process that drives the session, see
    amiga_emulation_start) shares with the caller: a MAP_SHARED page.  Times
@@ -145,6 +147,12 @@ struct amiga_emulation {
     unsigned nshots;
     double next_shot;
     int timeout_state;          /* $AMIGA_EMULATION_TIMEOUT_STATE: the state at the limit */
+    /* the halt check (supervise): the last answer of GET_CPU_REGS ("": none
+       since Amiberry's start) and the answers in a row that showed the CPU
+       halted */
+    char cpu_regs[1024];
+    unsigned cpu_halted;
+    double next_cpu_poll;
     enum amiga_emulation_status status;
     /* snapshot mode (amiga_emulation.h) */
     enum { SNAP_OFF, SNAP_CREATING, SNAP_RESTORING, SNAP_RUNNING } snap;
@@ -546,9 +554,24 @@ const char *amiga_emulation_status_name(enum amiga_emulation_status s)
     switch (s) {
     case AMIGA_EMULATION_DONE: return "done";
     case AMIGA_EMULATION_TIMEOUT: return "timeout";
+    case AMIGA_EMULATION_HALT: return "halt";
     case AMIGA_EMULATION_EXITED: return "exited early";
     default: return "failed";
     }
+}
+
+int amiga_emulation_cpu_halted(const char *before, const char *after)
+{
+    const char *sr;
+
+    if (!before || !after || strncmp(after, "OK\t", 3) || strcmp(before, after)
+        || !(sr = strstr(after, "\tSR=")))
+        return 0;
+    sr += 4;
+    /* four hex digits, the field ends there */
+    if (strspn(sr, "0123456789abcdefABCDEF") != 4 || (sr[4] && sr[4] != '\t'))
+        return 0;
+    return (strtoul((char[]){ sr[0], sr[1], sr[2], sr[3], 0 }, NULL, 16) >> 8 & 7) == 7;
 }
 
 /* ----------------------------------------------------------------- run */
@@ -846,6 +869,9 @@ static int launch(struct amiga_emulation *e, const char *statefile, char *err, s
     unlink(e->socket_path);
     e->exited = 0;
     e->deadline = now() + e->timeout;
+    e->cpu_regs[0] = 0;
+    e->cpu_halted = 0;
+    e->next_cpu_poll = now() + CPU_POLL;
     e->pid = fork();
     if (e->pid < 0) {
         set_err(err, errlen, "fork: %s", strerror(errno));
@@ -1903,8 +1929,10 @@ static int reaped(struct amiga_emulation *e)
     return e->exited;
 }
 
-static int command_wait(struct amiga_emulation *e, const char *const *args, char *reply,
-                        size_t len, double wait)
+/* one command over the control socket: wait seconds for the connection,
+   reply_wait for the answer */
+static int command_io(struct amiga_emulation *e, const char *const *args, char *reply, size_t len,
+                      double wait, double reply_wait)
 {
     struct sockaddr_un sa;
     double until = now() + wait;
@@ -1946,7 +1974,7 @@ static int command_wait(struct amiga_emulation *e, const char *const *args, char
     }
     free(line.p);
     /* one reply line */
-    until = now() + 10;
+    until = now() + reply_wait;
     while (len && got < len - 1) {
         struct pollfd pfd = { fd, POLLIN, 0 };
         ssize_t n;
@@ -1970,6 +1998,12 @@ static int command_wait(struct amiga_emulation *e, const char *const *args, char
         reply[strcspn(reply, "\r\n")] = 0;
     }
     return len && !strncmp(reply, "OK", 2) ? 0 : 1;
+}
+
+static int command_wait(struct amiga_emulation *e, const char *const *args, char *reply,
+                        size_t len, double wait)
+{
+    return command_io(e, args, reply, len, wait, 10);
 }
 
 int amiga_emulation_command(struct amiga_emulation *e, const char *const *args, char *reply,
@@ -2090,37 +2124,37 @@ static void report_threads(struct amiga_emulation *e, struct sb *b)
 }
 #endif
 
-/* the emulated CPU at the limit (GET_CPU_REGS: "OK\tD0=...\tPC=...\tSR=..."):
-   its registers, and whether Amiberry has halted it - user mode with
-   interrupt mask 7 is no state of a 68k, it is what Amiberry's cpu_halt
-   leaves (e.g. after a jump to no memory) */
+/* the emulated CPU at the end (GET_CPU_REGS: "OK\tD0=...\tPC=...\tSR=..."):
+   its registers, and whether Amiberry has halted it: the answer is that of
+   the supervisor's last poll (amiga_emulation_cpu_halted; cpu_halt sets
+   the interrupt mask to 7, in user or supervisor mode, and the CPU runs no
+   more, e.g. after a jump to no memory) */
 static void report_cpu(struct amiga_emulation *e, struct sb *b)
 {
     static const char *const cmd[] = { "GET_CPU_REGS", NULL };
-    char reply[1024], *p, *sr;
-    unsigned v;
+    char reply[sizeof e->cpu_regs], *p;
+    int halted;
 
     if (command_wait(e, cmd, reply, sizeof reply, 2) || strncmp(reply, "OK\t", 3)) {
         sb_str(b, "cpu: no answer\n");
         return;
     }
+    halted = amiga_emulation_cpu_halted(e->cpu_regs, reply);
     for (p = reply; *p; p++)
         if (*p == '\t' || *p == '\n')
             *p = ' ';
     sb_str(b, "cpu:");
     sb_str(b, reply + 2);
     sb_str(b, "\n");
-    if ((sr = strstr(reply, " SR=")) && sscanf(sr + 4, "%4x", &v) == 1)
-        sb_str(b, !(v & 0x2000) && ((v >> 8) & 7) == 7
-                      ? "cpu state: halted (a double fault of the program or an emulator\n"
-                        "  failure; user mode, interrupt mask 7)\n"
-                      : "cpu state: running\n");
+    sb_str(b, halted ? "cpu state: halted (a double fault of the program or an emulator\n"
+                       "  failure; interrupt mask 7, the registers as at the last poll)\n"
+                     : "cpu state: running\n");
 }
 
-/* at the time limit with AMIGA_EMULATION_TIMEOUT_STATE: whether Amiberry
-   still answers, its threads (Linux) and the emulated machine's state
-   (timeout.uss, its configuration timeout.uae; Amiberry loads it), as
-   timeout.txt in the work directory */
+/* at the time limit or a halt with AMIGA_EMULATION_TIMEOUT_STATE: how
+   the session ended, whether Amiberry still answers, its threads (Linux)
+   and the emulated machine's state (timeout.uss, its configuration
+   timeout.uae; Amiberry loads it), as timeout.txt in the work directory */
 static void timeout_report(struct amiga_emulation *e, int shot_answered)
 {
     struct sb b = { 0 };
@@ -2129,6 +2163,7 @@ static void timeout_report(struct amiga_emulation *e, int shot_answered)
     char *txt = str_printf("%s/timeout.txt", e->work_dir);
     int saved;
 
+    sb_str(&b, e->status == AMIGA_EMULATION_HALT ? "end: halt\n" : "end: timeout\n");
     sb_str(&b, shot_answered ? "screenshot: answered\n" : "screenshot: no answer\n");
     report_cpu(e, &b);
 #ifdef __linux__
@@ -2153,6 +2188,25 @@ static void on_term(int sig)
 {
     (void)sig;
     stop_asked = 1;
+}
+
+/* the halt check: the CPU's registers (GET_CPU_REGS), compared with the
+   last answer; e->cpu_halted counts the answers in a row that showed the
+   CPU halted (amiga_emulation_cpu_halted).  No answer (Amiberry starts,
+   or is busy): the count starts again. */
+static void poll_cpu(struct amiga_emulation *e)
+{
+    static const char *const cmd[] = { "GET_CPU_REGS", NULL };
+    char reply[sizeof e->cpu_regs];
+
+    e->next_cpu_poll = now() + CPU_POLL;
+    if (command_io(e, cmd, reply, sizeof reply, 0, CPU_REPLY) || strncmp(reply, "OK\t", 3)) {
+        e->cpu_regs[0] = 0;
+        e->cpu_halted = 0;
+        return;
+    }
+    e->cpu_halted = amiga_emulation_cpu_halted(e->cpu_regs, reply) ? e->cpu_halted + 1 : 0;
+    memcpy(e->cpu_regs, reply, sizeof reply);
 }
 
 /* the session in the supervisor, from Amiberry's first start to its end:
@@ -2267,17 +2321,26 @@ static void supervise(struct amiga_emulation *e)
             free(png);
             e->next_shot = now() + e->shots;
         }
-        if (!quit_until && now() > e->deadline) {
+        /* the CPU, while the job runs (not while a snapshot is made or
+           restored) */
+        if (!quit_until && (e->snap == SNAP_OFF || e->snap == SNAP_RUNNING)
+            && now() >= e->next_cpu_poll)
+            poll_cpu(e);
+        if (!quit_until && (now() > e->deadline || e->cpu_halted + 1 >= AMIGA_EMULATION_HALT_SAMPLES)) {
             char *png = str_printf("%s/timeout.png", e->work_dir);
             const char *shot[] = { "SCREENSHOT", png, NULL };
             char reply[256];
-            int answered = png && !command_wait(e, shot, reply, sizeof reply, 2);
+            int answered;
 
+            e->status = e->cpu_halted + 1 >= AMIGA_EMULATION_HALT_SAMPLES ? AMIGA_EMULATION_HALT
+                                                                          : AMIGA_EMULATION_TIMEOUT;
+            answered = png && !command_wait(e, shot, reply, sizeof reply, 2);
             free(png);
+            if (e->status == AMIGA_EMULATION_HALT && e->snap != SNAP_OFF)
+                snap_log(e, "CPU halted");
             if (e->timeout_state)
                 timeout_report(e, answered);
             stop_group(e);
-            e->status = AMIGA_EMULATION_TIMEOUT;
             break;
         }
         sleep_ms(100);

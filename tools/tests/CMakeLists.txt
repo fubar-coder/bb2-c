@@ -36,6 +36,15 @@ add_test(NAME amiga_emulation_run COMMAND test_amiga_emulation_run)
 math(EXPR limit "300 + 5 * ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(amiga_emulation_run PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+# a program that halts the emulated CPU: the session ends as halt, long
+# before its limit
+add_executable(test_amiga_emulation_halt test_amiga_emulation_halt.c)
+target_link_libraries(test_amiga_emulation_halt PRIVATE lib_amiga_emulation lib_hunk)
+target_compile_options(test_amiga_emulation_halt PRIVATE -Wno-unused-function)
+add_test(NAME amiga_emulation_halt COMMAND test_amiga_emulation_halt)
+math(EXPR limit "120 + ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(amiga_emulation_halt PROPERTIES
+	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 # the A500 machines (Kickstart 1.3), one run after the other
 add_executable(test_amiga_emulation_a500 test_amiga_emulation_a500.c)
 target_link_libraries(test_amiga_emulation_a500 PRIVATE lib_amiga_emulation lib_hunk)

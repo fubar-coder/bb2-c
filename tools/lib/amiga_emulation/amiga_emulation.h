@@ -31,7 +31,12 @@
  * it: it waits for run.done,
  * then ends Amiberry over the control socket (QUIT); at the time limit it
  * takes a screenshot (timeout.png in the work directory) and kills
- * Amiberry's process group; in snapshot mode (below) it also saves,
+ * Amiberry's process group.  While the job runs it asks Amiberry for the
+ * emulated CPU's registers once a second (GET_CPU_REGS): a CPU that
+ * Amiberry has halted (a double fault, a jump to no memory) never runs
+ * again, so the session ends as soon as AMIGA_EMULATION_HALT_SAMPLES
+ * answers in a row show it halted (amiga_emulation_cpu_halted), with the
+ * screenshot as at the limit.  In snapshot mode (below) it also saves,
  * restores and falls back.  amiga_emulation_join waits for the
  * supervisor's end and takes its result (a page shared with it), so a
  * runner that joins its sessions in start order no longer delays the
@@ -81,16 +86,21 @@
  *   AMIGA_EMULATION_SHOTS=N     a screenshot every N seconds (0.2 too) while
  *                               the session runs, to shots/NNNN.png in the
  *                               work directory
- *   AMIGA_EMULATION_TIMEOUT_STATE=1  at the time limit, before Amiberry is
- *                               killed: the emulated machine's state
+ *   AMIGA_EMULATION_TIMEOUT_STATE=1  at the time limit or a halt, before
+ *                               Amiberry is killed: the emulated machine's
+ *                               state
  *                               (timeout.uss with its configuration
  *                               timeout.uae, for Amiberry to load) and
- *                               timeout.txt: whether Amiberry still
- *                               answered, the emulated CPU's registers
- *                               (GET_CPU_REGS) and whether the CPU is
- *                               halted ("cpu state: halted": a double
- *                               bus or address error, the program's
- *                               crash, or an emulator failure),
+ *                               timeout.txt: how the session ended
+ *                               ("end: timeout" or "end: halt"), whether
+ *                               Amiberry still answered, the emulated
+ *                               CPU's registers (GET_CPU_REGS) and
+ *                               whether the CPU is halted ("cpu state:
+ *                               halted", amiga_emulation_cpu_halted
+ *                               against the last answer of the
+ *                               supervisor's poll: a double bus or
+ *                               address error, the program's crash, or
+ *                               an emulator failure),
  *                               Amiberry's threads
  *                               with state, CPU ticks in one second and
  *                               kernel wait channel (Linux)
@@ -191,6 +201,8 @@ extern const size_t amiga_emulation_rtg_count;
 enum amiga_emulation_status {
     AMIGA_EMULATION_DONE,       /* the script ran to its end */
     AMIGA_EMULATION_TIMEOUT,    /* killed at the time limit */
+    AMIGA_EMULATION_HALT,       /* killed after the emulated CPU halted
+                                   (see above): before the time limit */
     AMIGA_EMULATION_EXITED,     /* Amiberry ended before the script did */
     AMIGA_EMULATION_FAILED      /* the run could not be handled */
 };
@@ -267,7 +279,19 @@ char *amiga_emulation_config(const struct amiga_emulation_params *p, const char 
                              const char *test_dir, char *err, size_t errlen);
 char *amiga_emulation_script(const char *script);
 
+/* "done", "timeout", "halt", "exited early", "failed" */
 const char *amiga_emulation_status_name(enum amiga_emulation_status s);
+
+/* the answers of GET_CPU_REGS ("OK\tD0=...\tPC=...\tSR=...\t...") in a
+   row of a halted CPU: the halt (Amiberry's cpu_halt) sets the interrupt
+   mask to 7 and the CPU stops, its registers never change again.  A
+   running 68k is at mask 7 only for moments (a running program does not
+   keep it, the machine would take no interrupts), so: 1 if both answers
+   are OK, equal and have an SR with interrupt mask 7, in user or
+   supervisor mode; 0 otherwise (also for NULL, a missing or broken SR) */
+int amiga_emulation_cpu_halted(const char *before, const char *after);
+/* the answers in a row, a second apart, that end a session as halted */
+#define AMIGA_EMULATION_HALT_SAMPLES 3u
 
 /*
  * Coverage: the coverage variants of the programs (preset amiga-cov,

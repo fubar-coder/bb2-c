@@ -391,13 +391,18 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   and time; the configuration without the session's paths; the machine;
   Amiberry; the waiter), still matches; otherwise it boots, saves anew and
   removes the stale snapshot. `amiga_run --purge-snapshots [BUILDDIR]`
-  removes a build directory's snapshots by hand. The presets
+  removes a build directory's snapshots by hand. A session whose
+  emulated CPU Amiberry has halted (a double fault, a jump to no memory:
+  it never runs again) ends at once with the state `halt` instead of
+  waiting for its time limit (`timeout`); the session's supervisor asks
+  for the CPU's registers once a second and takes three equal answers
+  with interrupt mask 7 for a halt. The presets
   `emulator`, `all` and `bug-orig` set `AMIGA_EMULATION_LOG=1` and
   `AMIGA_EMULATION_TIMEOUT_STATE=1`: every session writes Amiberry's
   log into `amiberry.log` of its working directory (in the build
-  directory), and a session that runs into its time limit leaves
-  `timeout.txt` there (CPU registers, whether the CPU is halted,
-  its threads) with the machine's state (`timeout.uss`, `timeout.uae`;
+  directory), and a session that runs into its time limit or halts leaves
+  `timeout.txt` there (how it ended, CPU registers, whether the CPU is
+  halted, its threads) with the machine's state (`timeout.uss`, `timeout.uae`;
   `tools/lib/amiga_emulation/amiga_emulation.h`). `corpus_cd`: all 724
   sources of the CD compiled with blitz2-c (like bb2's bb2corpus: `.xtra` of the sources,
   assigns to CD directories, directory of the relative INCLUDEs) and
@@ -481,7 +486,8 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   libraries of the CD, clib: blitz2-c with the C libraries), one emulator
   session each (in parallel), skipped without the CD. What a
   configuration shows (the *observation*) are sections: `[session]`
-  (`done`, `timeout` for a crash or hang), `[compile]` (`ok`,
+  (`done`, `timeout` for a crash or hang, `halt` for a crash that halted
+  the emulated CPU), `[compile]` (`ok`,
   `error LINE MESSAGE`, `none`), `[run]` (output of the program with
   `rc=N`), `[blitz2]` (what the compiler or the wrapper writes besides
   the log, with `rc=N`), `[log]` (the log of tedstub). The expectation is
@@ -645,7 +651,7 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   emulator session of its own (in parallel), and gives the verdict like
   corpusrun (FIXED, REPRODUCED, BROKEN, DIFFERS; same exit status). The
   observation of a run is its result (OK, `FAIL step N ...`, `TIMEOUT`
-  for a crash or hang) and the expectations it misses; REPRODUCED needs
+  for a crash or hang, `HALT` for a crash that halted the emulated CPU) and the expectations it misses; REPRODUCED needs
   the same observation and, when both runs are OK, the A/B comparison
   SAME. Made for these tests: `; @file NAME "DATA"` (a file in `work/`,
   `"..."` with `\n`, `\t`, `\xHH`, repeated lines append), `; @source F
@@ -722,8 +728,8 @@ test (the pass), config (corpus: ref/port/clib; TED: R5/C5/... in the
 bug-orig mode, else the session sNNN; cdrun: the worker), machine, what
 the snapshot mode did (cold, restored, first-save, fallback), the session
 time without the wait for an emulator slot, the wait, the part counted
-against the time limit, the limit, the end (done, timeout, exited,
-failed) and the verdict of the config (bug-orig FIXED/REPRODUCED/DIFFERS/
+against the time limit, the limit, the end (done, timeout, halt,
+exited, failed) and the verdict of the config (bug-orig FIXED/REPRODUCED/DIFFERS/
 BROKEN, reference; corpus same/differs; TED A/B ok/fail). The format is
 defined in `tools/lib/teststats/statline.h`. `teststats` reads one or
 more JUnit files (each one a run):

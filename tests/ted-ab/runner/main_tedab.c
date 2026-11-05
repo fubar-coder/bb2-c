@@ -77,6 +77,7 @@ struct run {
     struct tedab_run r;
     int state, attempts, done, gates_ok;  /* gates_ok: of its last session */
     unsigned session;           /* the last one it was in */
+    int halted;                 /* that session ended because the CPU halted */
     char *dir;                  /* its run directory (work/sNNN/vol/runs/T/XX) */
     const char *verdict;        /* bug-orig: its verdict ("reference" for the reference) */
 };
@@ -647,7 +648,12 @@ static const char *state_text(const struct run *r, char *buf, size_t len)
         snprintf(buf, len, "SKIPPED (reference not OK)");
         break;
     case TEDAB_STARTED:
-        snprintf(buf, len, res && *res ? "TIMEOUT (%s)" : "TIMEOUT", res);
+        /* started, no end: the session ended at its limit, or earlier
+           because the emulated CPU halted */
+        if (r->halted)
+            snprintf(buf, len, res && *res ? "HALT (%s)" : "HALT", res);
+        else
+            snprintf(buf, len, res && *res ? "TIMEOUT (%s)" : "TIMEOUT", res);
         break;
     default:
         snprintf(buf, len, "%s", res && *res ? res : "NORESULT");
@@ -915,6 +921,7 @@ static int run(FILE *log)
 
                 r->state = state[k];
                 r->gates_ok = s->gates_ok;
+                r->halted = st == AMIGA_EMULATION_HALT;
                 /* the run hit #340 (TED's a0toname, depends on the memory
                    layout), or was skipped because the run it waited for did
                    (tedab_session_waits_for): again, first in a new session.

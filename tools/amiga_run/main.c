@@ -222,7 +222,8 @@ int main(int argc, char **argv)
         print_results(amiga_emulation_test_dir(e));
     if (st != AMIGA_EMULATION_DONE)
         fprintf(stderr, "amiga_run: %s%s\n", amiga_emulation_status_name(st),
-                st == AMIGA_EMULATION_TIMEOUT && p.work_dir ? " (screenshot: timeout.png)" : "");
+                (st == AMIGA_EMULATION_TIMEOUT || st == AMIGA_EMULATION_HALT) && p.work_dir
+                    ? " (screenshot: timeout.png)" : "");
     amiga_emulation_free(e);
     free(script);
     free(changes);

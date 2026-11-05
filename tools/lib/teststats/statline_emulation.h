@@ -26,6 +26,7 @@ static inline void statline_session(struct statline *s, const char *work, const 
 {
     static const char *const ends[] = { [AMIGA_EMULATION_DONE] = "done",
                                         [AMIGA_EMULATION_TIMEOUT] = "timeout",
+                                        [AMIGA_EMULATION_HALT] = "halt",
                                         [AMIGA_EMULATION_EXITED] = "exited",
                                         [AMIGA_EMULATION_FAILED] = "failed" };
     struct amiga_emulation_stats st;
