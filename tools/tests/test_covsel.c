@@ -12,26 +12,46 @@
 
 static char err[512];
 
-static const char map[] =
-    "# commit abc123\n"
-    "# program\tfile\tfunction\tfirst\tlast\ttests\n"
-    "blitz2\tprograms/blitz2/src/eval.c\teval5\t10\t50\tab3_cli corpus\n"
-    "blitz2\tprograms/blitz2/src/eval.c\tpokewd\t60\t70\tab3_cli\n"
-    "blitz2\tprograms/blitz2/src/eval.c\tunused\t80\t90\t\n"
-    "blitz2\tprograms/blitz2/src/eval.c\t\t\t\tab3_cli corpus\n"
-    "blitz2-ab3\tprograms/blitz2/src/eval.c\teval5\t10\t50\tab3_cli\n"
-    "blitz2-ab3\tprograms/blitz2/src/eval.c\tpokewd\t60\t70\t\n"
-    "blitz2-ab3\tprograms/blitz2/src/eval.c\tunused\t80\t90\t\n"
-    "blitz2-ab3\tprograms/blitz2/src/eval.c\t\t\t\tab3_cli\n"
-    "blitz2\tprograms/blitz2/src/stmts.c\tdoline\t5\t100\tbug_orig_x\n"
-    "blitz2\tprograms/blitz2/src/stmts.c\t\t\t\tbug_orig_x\n"
-    "blitz2\tprograms/blitz2/src/parse.c\tparse\t\t\tcorpus_req\n"
-    "blitz2\tprograms/blitz2/src/parse.c\tparse2\t\t\tcorpus_serial\n"
-    "blitz2\tprograms/blitz2/src/parse.c\t\t\t\tcorpus_req corpus_serial\n"
-    "host\tprograms/ted/src/core/tokit.c\ttokit\t10\t20\thost/ted_core_tokit\n"
-    "host\tprograms/ted/src/core/tokit.c\t\t\t\thost/ted_core_tokit\n"
-    "host\ttools/lib/amiga_emulation/run.c\trun\t1\t9\thost/amiga_emulation_run\n"
-    "host\ttools/lib/amiga_emulation/run.c\t\t\t\thost/amiga_emulation_run\n";
+/* the tracefiles of a coverage run (covmap's lcov/<test>.info): eval.c
+   (functions with line ranges; unused executed by no test), stmts.c,
+   parse.c (no line ranges: FN without a last line), host functions;
+   files outside the root are left out */
+#define EVAL(e, p) "SF:" ROOT "/programs/blitz2/src/eval.c\n" \
+    "FN:10,50,eval5\nFN:60,70,pokewd\nFN:80,90,unused\n" \
+    "FNDA:" e ",eval5\nFNDA:" p ",pokewd\nFNDA:0,unused\nend_of_record\n"
+#define PARSE(a, b) "SF:" ROOT "/programs/blitz2/src/parse.c\n" \
+    "FN:1,parse\nFN:1,parse2\nFNDA:" a ",parse\nFNDA:" b ",parse2\nend_of_record\n"
+
+static const char *const traces[][2] = {
+    { "ab3_cli", "TN:ab3_cli\n" EVAL("4", "1") },
+    { "corpus", "TN:corpus\n" EVAL("1", "0")
+      "SF:/usr/include/stdio.h\nFN:1,2,printf\nFNDA:1,printf\nend_of_record\n" },
+    { "bug_orig_x", "TN:bug_orig_x\n" EVAL("0", "0")
+      "SF:" ROOT "/programs/blitz2/src/stmts.c\nFN:5,100,doline\nFNDA:1,doline\n"
+      "DA:5,1\nDA:6,0\nLF:2\nLH:1\nend_of_record\n" },
+    { "corpus_req", "TN:corpus_req\n" PARSE("1", "0") },
+    { "corpus_serial", "TN:corpus_serial\n" PARSE("0", "1") },
+    /* no TN, a relative path, a comment, branches */
+    { "host/ted_core_tokit", "# host\nSF:programs/ted/src/core/tokit.c\nFN:10,20,tokit\n"
+      "FNDA:12345678901234567890,tokit\nBRDA:11,0,0,-\nBRDA:11,0,1,2\nBRF:2\nBRH:1\n"
+      "end_of_record\n" },
+    { "host/amiga_emulation_run", "TN:host/amiga_emulation_run\n"
+      "SF:" ROOT "/tools/lib/amiga_emulation/run.c\nFN:1,9,run\nFNDA:1,run\nend_of_record\n" },
+    /* a test that executed nothing measured: not named by the map */
+    { "newtest", "TN:newtest\n" EVAL("0", "0") },
+};
+
+/* a selection with the map read */
+static struct covsel *with_map(void)
+{
+    struct covsel *s = covsel_new(ROOT);
+    size_t i;
+
+    CHECK(s && !covsel_set_commit(s, "abc123\n", err, sizeof err));
+    for (i = 0; s && i < sizeof traces / sizeof *traces; i++)
+        CHECK(!covsel_read_lcov(s, traces[i][0], traces[i][1], err, sizeof err));
+    return s;
+}
 
 #define TEST(name, labels) "{\"name\": \"" name "\", \"command\": [\"x\"], \"properties\": " \
     "[{\"name\": \"LABELS\", \"value\": [" labels "]}, {\"name\": \"TIMEOUT\", \"value\": 9}]}"
@@ -90,14 +110,12 @@ static const char deps[] =
 static char *select_for(const char *rules_text, const char *diff, const char *newfile, int stale)
 {
     static char out[4096];
-    struct covsel *s = covsel_new(ROOT);
+    struct covsel *s = with_map();
     size_t i;
 
     out[0] = 0;
-    CHECK(s);
     if (!s)
         return out;
-    CHECK(!covsel_read_map(s, map, err, sizeof err));
     CHECK(!covsel_read_rules(s, rules_text, err, sizeof err));
     CHECK(!covsel_read_tests(s, tests, 0, err, sizeof err));
     CHECK(!covsel_read_tests(s, host_tests, 1, err, sizeof err));
@@ -279,14 +297,27 @@ static void test_real_rules(void)
 static void test_broken(void)
 {
     struct covsel *s = covsel_new(ROOT);
-    static const char *const bad_maps[][2] = {
-        { "", "empty" },
-        { "blitz2\tx.c\tf\t1\t2\tt\n", "no \"# commit\"" },
-        { "# commit a\nblitz2\tx.c\tf\t1\t2\n", "not 6 fields" },
-        { "# commit a\nblitz2\tx.c\tf\t1\t2\tt\tu\n", "not 6 fields" },
-        { "# commit a\nblitz2\tx.c\tf\tx\t2\tt\n", "bad program" },
-        { "# commit a\nblitz2\tx.c\tf\t5\t2\tt\n", "bad program" },
-        { "# commit a\n\tx.c\tf\t1\t2\tt\n", "bad program" },
+    static const char *const bad_commits[] = { "", "\n", "abc 123\n", "HEAD\n", "abc123\nx\n" };
+    static const char *const bad_traces[][2] = {
+        { "FN:1,f\n", "line 1: \"FN:1,f\" outside a section" },
+        { "SF:x.c\nend_of_record\nDA:1,1\n", "line 3: \"DA:1,1\" outside a section" },
+        { "SF:x.c\nTN:t\nend_of_record\n", "TN: inside a section" },
+        { "TN:other\nSF:x.c\nend_of_record\n", "TN:other is not this test" },
+        { "SF:x.c\nSF:y.c\nend_of_record\n", "SF: inside a section" },
+        { "SF:\nend_of_record\n", "SF: without a file" },
+        { "SF:x.c\nFN:1,f\n", "no end_of_record" },
+        { "SF:x.c\nFN:0,f\nend_of_record\n", "bad FN:" },
+        { "SF:x.c\nFN:x,f\nend_of_record\n", "bad FN:" },
+        { "SF:x.c\nFN:5,2,f\nend_of_record\n", "ends before it starts" },
+        { "SF:x.c\nFN:5,\nend_of_record\n", "without a name" },
+        { "SF:x.c\nFN:5,6,\nend_of_record\n", "without a name" },
+        { "SF:x.c\nFN:1,f\nFNDA:1,g\nend_of_record\n", "line 3: FNDA: of a function without FN:" },
+        { "SF:x.c\nFN:1,f\nFNDA:-1,f\nend_of_record\n", "bad FNDA:" },
+        { "SF:x.c\nFN:1,f\nFNDA:1\nend_of_record\n", "bad FNDA:" },
+        { "SF:x.c\nFN:1,f\nFNDA:1,\nend_of_record\n", "bad FNDA:" },
+        { "SF:x.c\nXX:1\nend_of_record\n", "not an lcov record: XX:1" },
+        { "SF:x.c\nend_of_records\n", "not an lcov record" },
+        { "this is no tracefile\n", "outside a section" },
     };
     static const char *const bad_rules[][2] = {
         { "docs/** nothing\n", "unknown selector \"nothing\"" },
@@ -304,8 +335,11 @@ static void test_broken(void)
     size_t i;
 
     CHECK(s);
-    for (i = 0; i < sizeof bad_maps / sizeof *bad_maps; i++)
-        CHECK(covsel_read_map(s, bad_maps[i][0], err, sizeof err) && strstr(err, bad_maps[i][1]));
+    for (i = 0; i < sizeof bad_commits / sizeof *bad_commits; i++)
+        CHECK(covsel_set_commit(s, bad_commits[i], err, sizeof err) && strstr(err, "no commit"));
+    for (i = 0; i < sizeof bad_traces / sizeof *bad_traces; i++)
+        CHECK(covsel_read_lcov(s, "t", bad_traces[i][0], err, sizeof err)
+              && strstr(err, bad_traces[i][1]) && !strncmp(err, "t: ", 3));
     for (i = 0; i < sizeof bad_rules / sizeof *bad_rules; i++)
         CHECK(covsel_read_rules(s, bad_rules[i][0], err, sizeof err) && strstr(err, bad_rules[i][1]));
     for (i = 0; i < sizeof bad_diffs / sizeof *bad_diffs; i++)
@@ -317,9 +351,12 @@ static void test_broken(void)
     CHECK(covsel_read_deps(s, "not deps\n", err, sizeof err));
     covsel_free(s);
 
-    /* the map's commit */
-    s = covsel_new(ROOT);
-    CHECK(!covsel_read_map(s, map, err, sizeof err) && !strcmp(covsel_commit(s), "abc123"));
+    /* the map's commit; a test's name in TN: as it is and as lcov has it */
+    s = with_map();
+    CHECK(s && !strcmp(covsel_commit(s), "abc123"));
+    CHECK(s && !covsel_read_lcov(s, "a-b/c.d", "TN:a_b_c_d\n", err, sizeof err));
+    CHECK(s && !covsel_read_lcov(s, "a-b/c.d", "TN:a-b/c.d\n", err, sizeof err));
+    CHECK(s && covsel_read_lcov(s, "a-b/c.d", "TN:a_b/c.d\n", err, sizeof err));
     covsel_free(s);
 }
 

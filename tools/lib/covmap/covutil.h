@@ -66,4 +66,8 @@ char *cov_object_source(const char *object);
    NULL at the end */
 const char *cov_next_line(const char *text, size_t len, size_t *pos, size_t *linelen);
 
+/* the TN: of a test in an lcov tracefile: its name with each character but
+   [A-Za-z0-9_] as '_' (lcov's test names); allocated */
+char *cov_lcov_test_name(const char *test);
+
 #endif

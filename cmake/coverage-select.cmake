@@ -1,35 +1,36 @@
-# The tests a change can affect (README "Coverage"), from the map of a
-# coverage run (cmake/coverage-map.cmake): runs git, ninja and ctest and
+# The tests a change can affect (README "Coverage"), from the tracefiles of
+# a coverage run (cmake/coverage-map.cmake): runs git, ninja and ctest and
 # hands their output to tools/covsel with tools/covsel/rules.txt.  Writes
 # <build>/coverage/selected.txt for
 #   ctest --preset all --tests-from-file <build>/coverage/selected.txt
 # (and the same with --preset bug-orig).
 #
-#   cmake -DBUILD=<build dir> [-DMAP=<map.tsv>] [-DBASE=<commit>]
+#   cmake -DBUILD=<build dir> [-DCOVERAGE=<coverage dir>] [-DBASE=<commit>]
 #         -P cmake/coverage-select.cmake
 #
-# BUILD: the build whose tests are selected (default map:
-# <build>/coverage/map.tsv).  The changes are those of the working tree
-# against the map's commit (the map's line numbers are of that commit),
-# files git does not track included.  BASE (default: the map's commit):
-# if the map's commit is not an ancestor of it, the map is stale and all
-# tests are selected.
+# BUILD: the build whose tests are selected.  COVERAGE (default:
+# <build>/coverage): the output of coverage-map.cmake, the tracefiles
+# lcov/<test>.info and the commit file commit.  The changes are those of
+# the working tree against the coverage's commit (the line numbers of the
+# tracefiles are of that commit), files git does not track included.  BASE
+# (default: the coverage's commit): if the coverage's commit is not an
+# ancestor of it, the coverage is stale and all tests are selected.
 cmake_minimum_required(VERSION 3.28)
 
 if(NOT BUILD)
-	message(FATAL_ERROR "usage: cmake -DBUILD=<build dir> [-DMAP=<map.tsv>] [-DBASE=<commit>] "
-		"-P coverage-select.cmake")
+	message(FATAL_ERROR "usage: cmake -DBUILD=<build dir> [-DCOVERAGE=<coverage dir>] "
+		"[-DBASE=<commit>] -P coverage-select.cmake")
 endif()
 get_filename_component(BUILD ${BUILD} ABSOLUTE)
 get_filename_component(SRC ${CMAKE_CURRENT_LIST_DIR}/.. ABSOLUTE)
-if(NOT MAP)
-	set(MAP ${BUILD}/coverage/map.tsv)
+if(NOT COVERAGE)
+	set(COVERAGE ${BUILD}/coverage)
 endif()
-get_filename_component(MAP ${MAP} ABSOLUTE)
+get_filename_component(COVERAGE ${COVERAGE} ABSOLUTE)
 set(COVSEL ${BUILD}/host/tools/covsel/covsel)
 set(IN ${BUILD}/coverage/select-inputs)
 set(OUT ${BUILD}/coverage/selected.txt)
-foreach(f ${MAP} ${COVSEL})
+foreach(f ${COVERAGE}/commit ${COVERAGE}/lcov ${COVSEL})
 	if(NOT EXISTS ${f})
 		message(FATAL_ERROR "${f} is missing (README \"Coverage\")")
 	endif()
@@ -37,9 +38,9 @@ endforeach()
 file(REMOVE_RECURSE ${IN})
 file(MAKE_DIRECTORY ${IN})
 
-file(STRINGS ${MAP} first LIMIT_COUNT 1)
-if(NOT first MATCHES "^# commit ([0-9a-f]+)$")
-	message(FATAL_ERROR "${MAP}: no \"# commit\" line")
+file(STRINGS ${COVERAGE}/commit first LIMIT_COUNT 1)
+if(NOT first MATCHES "^([0-9a-f]+)$")
+	message(FATAL_ERROR "${COVERAGE}/commit: no commit")
 endif()
 set(commit ${CMAKE_MATCH_1})
 if(NOT BASE)
@@ -51,7 +52,7 @@ execute_process(COMMAND git -C ${SRC} merge-base --is-ancestor ${commit} ${BASE}
 	RESULT_VARIABLE r ERROR_QUIET)
 if(r)
 	set(stale --stale)
-	message(STATUS "The map's commit ${commit} is not an ancestor of ${BASE}: all tests")
+	message(STATUS "The coverage's commit ${commit} is not an ancestor of ${BASE}: all tests")
 endif()
 
 execute_process(COMMAND git -C ${SRC} diff -U0 --no-color --no-ext-diff --no-renames
@@ -98,7 +99,7 @@ if(EXISTS ${BUILD}/host/CTestTestfile.cmake)
 	set(host --host-tests ${IN}/host-tests.json)
 endif()
 
-execute_process(COMMAND ${COVSEL} --root ${SRC} --map ${MAP} --rules ${SRC}/tools/covsel/rules.txt
+execute_process(COMMAND ${COVSEL} --root ${SRC} --coverage ${COVERAGE} --rules ${SRC}/tools/covsel/rules.txt
 		--tests ${IN}/tests.json ${host} --diff ${IN}/diff.txt ${deps}
 		--untracked ${IN}/untracked.txt ${stale} -o ${OUT}
 	RESULT_VARIABLE r)

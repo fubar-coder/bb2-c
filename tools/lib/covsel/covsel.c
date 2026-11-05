@@ -15,8 +15,10 @@ struct ids {
     size_t n, cap;
 };
 
+/* a function of the map, or a file (name -1): the tests of all its
+   functions */
 struct mapline {
-    int prog, file, name;       /* name -1: the object line */
+    int file, name;             /* ids in strs */
     int first, last;            /* 0: no range */
     struct ids tests;
 };
@@ -49,10 +51,11 @@ struct change {
 struct covsel {
     char *root;
     char *commit;
-    struct strtab strs;         /* programs, files, function names */
+    struct strtab strs;         /* files, function names */
     struct strtab tests;        /* test names: of the map and of ctest */
     struct mapline *lines;
     size_t nlines;
+    struct strtab keys;         /* "FILE\tNAME" of each line, in their order */
     char *in_map;               /* by test id: named by the map */
     size_t nin_map;
     struct rule *rules;
@@ -150,6 +153,7 @@ void covsel_free(struct covsel *s)
     cov_deps_free(&s->deps);
     strtab_free(&s->strs);
     strtab_free(&s->tests);
+    strtab_free(&s->keys);
     free(s->in_map);
     free(s->selected);
     free(s->result);
@@ -186,85 +190,216 @@ static int mark_in_map(struct covsel *s, int t)
     return 0;
 }
 
-static int parse_line_number(const char *f, size_t n, int *v)
+int covsel_set_commit(struct covsel *s, const char *text, char *err, size_t errsz)
 {
-    long x = 0;
-    size_t i;
+    size_t n = strlen(text), i;
 
-    *v = 0;
-    if (!n)
-        return 1;
-    for (i = 0; i < n; i++) {
-        if (f[i] < '0' || f[i] > '9' || x > 100000000)
-            return 0;
-        x = 10 * x + (f[i] - '0');
-    }
-    *v = (int)x;
-    return x > 0;
+    while (n && (text[n - 1] == '\n' || text[n - 1] == '\r' || text[n - 1] == ' '))
+        n--;
+    for (i = 0; i < n; i++)
+        if (!((text[i] >= '0' && text[i] <= '9') || (text[i] >= 'a' && text[i] <= 'f')))
+            break;
+    if (!n || i < n)
+        return error(err, errsz, "the commit file holds no commit");
+    free(s->commit);
+    if (!(s->commit = strndup(text, n)))
+        return OOM();
+    return 0;
 }
 
-int covsel_read_map(struct covsel *s, const char *text, char *err, size_t errsz)
+/* "FILE\tNAME", the key of a line (name "" for the file); allocated */
+static char *line_key(const struct covsel *s, int file, const char *name)
+{
+    const char *fs = s->strs.str[file];
+    size_t n = strlen(fs) + strlen(name) + 2;
+    char *key = malloc(n);
+
+    if (key)
+        snprintf(key, n, "%s\t%s", fs, name);
+    return key;
+}
+
+/* the line of (file, name), added if new (name -1: the file); -1 if out of
+   memory */
+static int get_line(struct covsel *s, int file, int name)
+{
+    char *key = line_key(s, file, name >= 0 ? s->strs.str[name] : "");
+    int id = key ? strtab_add(&s->keys, key) : -1;
+    struct mapline *ml;
+
+    free(key);
+    if (id < 0 || (size_t)id < s->nlines)
+        return id;
+    if (!(ml = grow(s->lines, s->nlines, sizeof *ml)))
+        return -1;
+    s->lines = ml;
+    ml = &s->lines[s->nlines++];
+    memset(ml, 0, sizeof *ml);
+    ml->file = file;
+    ml->name = name;
+    return id;
+}
+
+/* the line of the function name of file; -1 if there is none, -2 if out of
+   memory */
+static int find_line(struct covsel *s, int file, const char *name)
+{
+    char *key = line_key(s, file, name);
+    int id;
+
+    if (!key)
+        return -2;
+    id = strtab_find(&s->keys, key);
+    free(key);
+    return id;
+}
+
+/* a line number of a record: 1 if there is one (at most 100000000) */
+static int parse_number(const char **p, long *v)
+{
+    const char *q = *p;
+
+    *v = 0;
+    if (*q < '0' || *q > '9')
+        return 0;
+    for (; *q >= '0' && *q <= '9'; q++) {
+        if (*v > 100000000)
+            return 0;
+        *v = 10 * *v + (*q - '0');
+    }
+    *p = q;
+    return *v <= 100000000;
+}
+
+/* the records of a section that need nothing here */
+static int other_record(const char *line, size_t n)
+{
+    static const char *const tags[] = {
+        "DA:", "BRDA:", "FNF:", "FNH:", "BRF:", "BRH:", "LF:", "LH:", "VER:", "FNL:", "FNA:",
+        "MCDC:", "MCF:", "MCH:",
+    };
+    size_t k;
+
+    for (k = 0; k < sizeof tags / sizeof *tags; k++)
+        if (n > strlen(tags[k]) && !memcmp(line, tags[k], strlen(tags[k])))
+            return 1;
+    return 0;
+}
+
+static int add_test_once(struct ids *d, int t)
+{
+    return d->n && d->v[d->n - 1] == t ? 0 : ids_add(d, t);
+}
+
+int covsel_read_lcov(struct covsel *s, const char *test, const char *text, char *err, size_t errsz)
 {
     size_t pos = 0, len = strlen(text), n, lineno = 0;
     const char *line;
+    char *tn = cov_lcov_test_name(test), buf[4096];
+    int t = strtab_add(&s->tests, test), section = 0, file = -1, fileline = -1;
 
+    if (!tn || t < 0) {
+        free(tn);
+        return OOM();
+    }
+#define BAD(...) do { free(tn); return error(err, errsz, __VA_ARGS__); } while (0)
     while ((line = cov_next_line(text, len, &pos, &n))) {
-        const char *f[7], *p = line, *end = line + n;
-        size_t fl[7];
-        int k = 0;
-        struct mapline *ml;
+        const char *p;
+        long a, b;
+        int name, l, hit;
 
         lineno++;
-        if (lineno == 1) {
-            if (n < 10 || strncmp(line, "# commit ", 9))
-                return error(err, errsz, "map line 1: no \"# commit\" line");
-            free(s->commit);
-            if (!(s->commit = strndup(line + 9, n - 9)))
-                return OOM();
+        if (n >= sizeof buf)
+            BAD("%s: tracefile line %zu: too long", test, lineno);
+        memcpy(buf, line, n);
+        buf[n] = 0;
+        if (!n || buf[0] == '#')
+            continue;
+        if (!strncmp(buf, "TN:", 3)) {
+            if (section)
+                BAD("%s: tracefile line %zu: TN: inside a section", test, lineno);
+            if (buf[3] && strcmp(buf + 3, test) && strcmp(buf + 3, tn))
+                BAD("%s: tracefile line %zu: TN:%s is not this test", test, lineno, buf + 3);
             continue;
         }
-        if (!n || line[0] == '#')
+        if (!strncmp(buf, "SF:", 3)) {
+            char *rel;
+
+            if (section)
+                BAD("%s: tracefile line %zu: SF: inside a section", test, lineno);
+            if (!buf[3])
+                BAD("%s: tracefile line %zu: SF: without a file", test, lineno);
+            section = 1;
+            file = fileline = -1;
+            if (!(rel = cov_relpath(buf + 3, s->root)))
+                continue;       /* outside the root: left out */
+            file = strtab_add(&s->strs, rel);
+            free(rel);
+            if (file < 0 || (fileline = get_line(s, file, -1)) < 0)
+                BAD("out of memory");
             continue;
-        for (;;) {
-            const char *tab = memchr(p, '\t', (size_t)(end - p));
-
-            f[k] = p;
-            fl[k] = tab ? (size_t)(tab - p) : (size_t)(end - p);
-            k++;
-            if (!tab || k == 7)
-                break;
-            p = tab + 1;
         }
-        if (k != 6)
-            return error(err, errsz, "map line %zu: not 6 fields", lineno);
-        if (!(ml = grow(s->lines, s->nlines, sizeof *ml)))
-            return OOM();
-        s->lines = ml;
-        ml = &s->lines[s->nlines];
-        memset(ml, 0, sizeof *ml);
-        if (!parse_line_number(f[3], fl[3], &ml->first) || !parse_line_number(f[4], fl[4], &ml->last)
-            || (ml->first && ml->last < ml->first) || !fl[0] || !fl[1])
-            return error(err, errsz, "map line %zu: bad program, file or line range", lineno);
-        s->nlines++;
-        if ((ml->prog = strtab_addn(&s->strs, f[0], fl[0])) < 0
-            || (ml->file = strtab_addn(&s->strs, f[1], fl[1])) < 0
-            || (ml->name = fl[2] ? strtab_addn(&s->strs, f[2], fl[2]) : -1) < -1)
-            return OOM();
-        for (p = f[5]; p < end;) {
-            const char *sp = memchr(p, ' ', (size_t)(end - p));
-            size_t tl = sp ? (size_t)(sp - p) : (size_t)(end - p);
-            int t;
+        if (!section)
+            BAD("%s: tracefile line %zu: \"%s\" outside a section", test, lineno, buf);
+        if (!strcmp(buf, "end_of_record")) {
+            section = 0;
+            continue;
+        }
+        if (!strncmp(buf, "FN:", 3)) {
+            /* FN:FIRST,[LAST,]NAME; without LAST the range is not known */
+            p = buf + 3;
+            if (!parse_number(&p, &a) || a < 1 || *p++ != ',')
+                BAD("%s: tracefile line %zu: bad FN: record", test, lineno);
+            b = 0;
+            {
+                const char *q = p;
 
-            if (tl) {
-                if ((t = strtab_addn(&s->tests, p, tl)) < 0 || ids_add(&ml->tests, t)
-                    || mark_in_map(s, t))
-                    return OOM();
+                if (parse_number(&q, &b) && *q == ',') {
+                    if (b < a)
+                        BAD("%s: tracefile line %zu: FN: ends before it starts", test, lineno);
+                    p = q + 1;
+                } else
+                    b = 0;
             }
-            p += tl + 1;
+            if (!*p)
+                BAD("%s: tracefile line %zu: FN: without a name", test, lineno);
+            if (file < 0)
+                continue;
+            if ((name = strtab_add(&s->strs, p)) < 0 || (l = get_line(s, file, name)) < 0)
+                BAD("out of memory");
+            if (b && (!s->lines[l].first || a < s->lines[l].first))
+                s->lines[l].first = (int)a;
+            if (b > s->lines[l].last)
+                s->lines[l].last = (int)b;
+            continue;
         }
+        if (!strncmp(buf, "FNDA:", 5)) {
+            /* FNDA:COUNT,NAME */
+            p = buf + 5;
+            if (*p < '0' || *p > '9')
+                BAD("%s: tracefile line %zu: bad FNDA: record", test, lineno);
+            for (hit = 0; *p >= '0' && *p <= '9'; p++)
+                hit |= *p != '0';
+            if (*p++ != ',' || !*p)
+                BAD("%s: tracefile line %zu: bad FNDA: record", test, lineno);
+            if (file < 0)
+                continue;
+            if ((l = find_line(s, file, p)) == -2)
+                BAD("out of memory");
+            if (l < 0)
+                BAD("%s: tracefile line %zu: FNDA: of a function without FN:", test, lineno);
+            if (hit && (add_test_once(&s->lines[l].tests, t)
+                        || add_test_once(&s->lines[fileline].tests, t) || mark_in_map(s, t)))
+                BAD("out of memory");
+            continue;
+        }
+        if (!other_record(buf, n))
+            BAD("%s: tracefile line %zu: not an lcov record: %s", test, lineno, buf);
     }
-    if (!s->commit)
-        return error(err, errsz, "the map is empty");
+    if (section)
+        BAD("%s: tracefile: the last section has no end_of_record", test);
+#undef BAD
+    free(tn);
     return 0;
 }
 
@@ -708,61 +843,58 @@ static void select_ids(struct covsel *s, const struct ids *d)
    memory */
 static int select_coverage(struct covsel *s, const struct change *c, FILE *log)
 {
-    int file = strtab_find(&s->strs, c->path);
-    size_t i, j, k, nprog = 0;
+    int file = strtab_find(&s->strs, c->path), whole = c->whole, fl;
+    size_t j, k, nf = 0;
+    int *funcs;
     char *hit;
 
-    if (file < 0)
+    if (file < 0 || (fl = find_line(s, file, "")) == -1)
         return 0;
-    if (!(hit = calloc(s->nlines + 1, 1)))
+    if (fl < 0 || !(funcs = malloc((s->nlines + 1) * sizeof *funcs)))
         return -1;
-    for (i = 0; i < s->nlines; i++) {
-        const struct mapline *o = &s->lines[i];
-        int whole = c->whole;
+    if (!(hit = calloc(s->nlines + 1, 1))) {
+        free(funcs);
+        return -1;
+    }
+    for (j = 0; j < s->nlines; j++)
+        if (s->lines[j].name >= 0 && s->lines[j].file == file)
+            funcs[nf++] = (int)j;
+    /* the changed lines in the file's functions */
+    for (k = 0; !whole && k < c->nranges; k++) {
+        long a = c->ranges[k].first, b = a + c->ranges[k].count - 1, l;
 
-        if (o->name >= 0 || o->file != file)
-            continue;
-        nprog++;
-        /* the changed lines in this program's functions of the file */
-        for (k = 0; !whole && k < c->nranges; k++) {
-            long a = c->ranges[k].first, b = a + c->ranges[k].count - 1, l;
+        if (!c->ranges[k].count)
+            b = a + 1;          /* inserted after line a: a and a + 1 */
+        if (a < 1)
+            a = 1;
+        for (l = a; l <= b && !whole; l++) {
+            int inside = 0;
 
-            if (!c->ranges[k].count)
-                b = a + 1;      /* inserted after line a: a and a + 1 */
-            if (a < 1)
-                a = 1;
-            for (l = a; l <= b && !whole; l++) {
-                int inside = 0;
+            for (j = 0; j < nf; j++) {
+                const struct mapline *f = &s->lines[funcs[j]];
 
-                for (j = 0; j < s->nlines; j++) {
-                    const struct mapline *f = &s->lines[j];
-
-                    if (f->name >= 0 && f->prog == o->prog && f->file == file && f->first
-                        && l >= f->first && l <= f->last)
-                        hit[j] = 1, inside = 1;
-                }
-                whole = !inside;
+                if (f->first && l >= f->first && l <= f->last)
+                    hit[funcs[j]] = 1, inside = 1;
             }
-        }
-        if (whole) {
-            select_ids(s, &o->tests);
-            say(log, "%s: %s, %s: the tests of all its functions: %zu test(s)\n", c->path,
-                s->strs.str[o->prog], c->whole ? "the whole file" : "a line outside its functions",
-                o->tests.n);
-            continue;
-        }
-        for (j = 0; j < s->nlines; j++) {
-            const struct mapline *f = &s->lines[j];
-
-            if (hit[j] && f->prog == o->prog) {
-                select_ids(s, &f->tests);
-                say(log, "%s: %s %s: %zu test(s)\n", c->path, s->strs.str[o->prog],
-                    s->strs.str[f->name], f->tests.n);
-            }
+            whole = !inside;
         }
     }
+    if (whole) {
+        select_ids(s, &s->lines[fl].tests);
+        say(log, "%s: %s: the tests of all its functions: %zu test(s)\n", c->path,
+            c->whole ? "the whole file" : "a line outside its functions", s->lines[fl].tests.n);
+    } else
+        for (j = 0; j < nf; j++) {
+            const struct mapline *f = &s->lines[funcs[j]];
+
+            if (hit[funcs[j]]) {
+                select_ids(s, &f->tests);
+                say(log, "%s: %s: %zu test(s)\n", c->path, s->strs.str[f->name], f->tests.n);
+            }
+        }
     free(hit);
-    return nprog > 0;
+    free(funcs);
+    return 1;
 }
 
 static int select_change(struct covsel *s, const struct change *c, FILE *log, int depth);

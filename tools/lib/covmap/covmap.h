@@ -1,11 +1,11 @@
 /*
- * covmap.h - the map from functions to the tests that executed them
- * (tools/covmap, openspec change test-coverage, D6/D7).
+ * covmap.h - the coverage of each test as lcov tracefiles (tools/covmap,
+ * openspec change test-coverage, D6/D7).
  *
  * Inputs, all as text or bytes in memory:
  *   - host: the gcov JSON of one host test (`gcov --json-format --stdout`
  *     over the test's .gcda files: one JSON document per object, one
- *     after the other); program "host";
+ *     after the other);
  *   - Amiga: per program its link map (ld -Map: the objects in the code
  *     hunk and their global symbols), optionally `nm -A` of its objects
  *     (all function symbols, the static ones too) and `objdump
@@ -14,19 +14,31 @@
  *     covfmt.h);
  *   - `ninja -t deps` of the build: the source of each object.
  *
- * Paths are kept relative to the repository root; functions in files
- * outside it or below a dropped prefix (the build directories) are left
- * out.
+ * Functions in files outside the repository root or below a dropped
+ * prefix (the build directories) are left out.
  *
- * The output (map.tsv), tab-separated:
- *   # commit <sha>
- *   # program  file  function  first  last  tests
- *   PROGRAM  FILE  FUNCTION  FIRST  LAST  TEST TEST ...
- *   PROGRAM  FILE  (empty)   (empty) (empty)  TEST TEST ...
- * A function line per function (FIRST, LAST its line range, empty if not
- * known; tests separated by spaces, sorted, maybe none); after the
- * functions of a file one line with an empty function: the object line,
- * every test that executed any function of the file.
+ * The output: one lcov tracefile (lcov 2.x) per test, and all of them in
+ * one (all.info, the tests' sections in the order of their names, as lcov
+ * merges tracefiles of different tests).  Per test:
+ *   TN:<the test's name> (lcov reads each character but [A-Za-z0-9_] as '_')
+ * and per source file a section
+ *   SF:<absolute path>
+ *   FN:<first>,<last>,<name>   per function, in the order of their lines;
+ *                              FN:1,<name> (no last line) if the lines are
+ *                              not known
+ *   FNDA:<count>,<name>        gcov: its calls; coverage file: 1 if it was
+ *                              entered, else 0
+ *   FNF:<functions> FNH:<functions with a count above 0>
+ *   BRDA:<line>,<block>,<branch>,<taken or ->  gcov only; the block is the
+ *                              number of the line's entry in gcov's list
+ *   BRF:<branches> BRH:<branches taken>
+ *   DA:<line>,<count>          gcov only
+ *   LF:<lines> LH:<lines with a count above 0>
+ *   end_of_record
+ * A test lists every function of the programs it ran (the coverage files)
+ * or of the objects gcov names for it, executed or not; counts of the same
+ * function in several inputs of a test add up (coverage files: the
+ * largest, 1).
  */
 #ifndef COVMAP_H
 #define COVMAP_H
@@ -37,10 +49,25 @@
 #include "covutil.h"
 
 struct cov_func {
-    int prog, file, name;       /* ids in covmap.strs */
+    int file, name;             /* ids in covmap.strs */
     int first, last;            /* line range, 0 if not known */
-    int *tests;                 /* ids in covmap.tests, maybe twice */
-    size_t ntests, cap;
+};
+
+/* a function in the tracefile of a test */
+struct cov_hit {
+    int test, func;             /* ids in covmap.tests, index in covmap.funcs */
+    int bitmap;                 /* from a coverage file: merged as the largest */
+    unsigned long long count;
+};
+
+/* a line (gcov), and a branch (gcov; taken -1: its block never ran) */
+struct cov_line {
+    int test, file, line;
+    unsigned long long count;
+};
+struct cov_branch {
+    int test, file, line, block, branch;
+    long long taken;
 };
 
 struct cov_obj {
@@ -77,11 +104,19 @@ struct covmap {
     struct strtab tests;
     struct cov_func *funcs;
     size_t nfuncs, cap;
-    int *fslot;                 /* hash of funcs by (prog, file, name), -1 empty */
+    int *fslot;                 /* hash of funcs by (file, name), -1 empty */
     size_t nfslot;
     struct cov_prog *progs;
     size_t nprogs;
     struct cov_deps deps;
+    struct cov_hit *hits;
+    size_t nhits, caphits;
+    struct cov_line *lines;
+    size_t nlines, caplines;
+    struct cov_branch *branches;
+    size_t nbranches, capbranches;
+    int done;                   /* sorted and merged for writing */
+    int *order;                 /* the test ids in the order of their names */
 };
 
 void covmap_init(struct covmap *m, const char *root);
@@ -102,7 +137,17 @@ int covmap_add_lines(struct covmap *m, const char *program, const char *text,
 int covmap_add_cov(struct covmap *m, const char *test, const char *program,
                    const unsigned char *data, size_t len, char *err, size_t errsz);
 
-/* write map.tsv */
-int covmap_write(struct covmap *m, const char *commit, FILE *out);
+/* a test name usable as the path of its tracefile and as its TN: (relative,
+   no empty, "." or ".." component, not "all", no comma, tab or newline) */
+int covmap_test_name_ok(const char *test);
+
+/* the tests, in the order of their names (after all inputs; -1 if out of
+   memory) */
+long covmap_tests(struct covmap *m);
+const char *covmap_test(const struct covmap *m, size_t i);
+/* the tracefile of test i; of all tests (all.info); 0, or -1 if out of
+   memory or a write failed */
+int covmap_write_test(struct covmap *m, size_t i, FILE *out);
+int covmap_write_all(struct covmap *m, FILE *out);
 
 #endif

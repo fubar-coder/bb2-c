@@ -1,7 +1,8 @@
 /*
  * test_covmap.c - lib/covmap: the JSON reader, paths, ninja's dependency
- * lists, and the map from host gcov JSON and from Amiga coverage files
- * with link map, nm and objdump line tables; broken inputs of each kind.
+ * lists, and the lcov tracefiles from host gcov JSON and from Amiga
+ * coverage files with link map, nm and objdump line tables, checked
+ * against the tracefile format of lcov; broken inputs of each kind.
  */
 #include "testutil.h"
 #include "covfmt.h"
@@ -12,16 +13,146 @@
 
 static char err[512];
 
-/* the map as text */
-static char *map_text(struct covmap *m)
+/* the tracefile of test i as text, of all tests for -1 */
+static char *trace_text(struct covmap *m, long i)
 {
     char *s = NULL;
     size_t n = 0;
     FILE *f = open_memstream(&s, &n);
 
-    CHECK(f && !covmap_write(m, "abc123", f));
+    CHECK(f && !(i < 0 ? covmap_write_all(m, f) : covmap_write_test(m, (size_t)i, f)));
     fclose(f);
     return s;
+}
+
+/*
+ * The tracefile format of lcov 2.x (geninfo(1) "TRACEFILE FORMAT",
+ * genhtml's reader): optional TN: with a name without ',' (lcov keeps
+ * [A-Za-z0-9_] and reads every other character as '_', with a warning);
+ * sections
+ * SF: ... end_of_record; in a section FN:<line>[,<end line>],<name> with
+ * lines above 0 and each name once, FNDA:<count>,<name> of a function of
+ * an FN: before it, FNF/FNH the number of functions and of those with a
+ * count above 0, BRDA:<line>,<block>,<branch>,<taken or -> with BRF/BRH,
+ * DA:<line>,<count> with LF/LH; the count records after the records they
+ * count.  NULL if text keeps to it, else why not.
+ */
+static const char *lcov_check(const char *text)
+{
+    static char why[700];
+    char names[64][200];
+    size_t pos = 0, len = strlen(text), n, nfn = 0, fnda = 0, fnh = 0, br = 0, brh = 0, da = 0,
+           dah = 0, k, lineno = 0;
+    const char *line;
+    int section = 0;
+
+#define NO(...) do { snprintf(why, sizeof why, __VA_ARGS__); return why; } while (0)
+    while ((line = cov_next_line(text, len, &pos, &n))) {
+        char buf[512], name[200], taken[32];
+        unsigned long long a, b, c;
+        int used;
+
+        lineno++;
+        if (n >= sizeof buf)
+            NO("line %zu: too long", lineno);
+        memcpy(buf, line, n);
+        buf[n] = 0;
+        if (!strncmp(buf, "TN:", 3)) {
+            if (section || strchr(buf, ','))
+                NO("line %zu: bad TN:", lineno);
+        } else if (!strncmp(buf, "SF:", 3)) {
+            if (section || n == 3)
+                NO("line %zu: bad SF:", lineno);
+            section = 1;
+            nfn = fnda = fnh = br = brh = da = dah = 0;
+        } else if (!section) {
+            NO("line %zu: outside a section", lineno);
+        } else if (!strcmp(buf, "end_of_record")) {
+            section = 0;
+        } else if (sscanf(buf, "FN:%llu,%llu,%199s%n", &a, &b, name, &used) == 3 && !buf[used]) {
+            if (!a || b < a || fnda || nfn == 64)
+                NO("line %zu: bad FN:", lineno);
+            for (k = 0; k < nfn; k++)
+                if (!strcmp(names[k], name))
+                    NO("line %zu: FN: twice", lineno);
+            snprintf(names[nfn++], sizeof *names, "%s", name);
+        } else if (sscanf(buf, "FN:%llu,%199s%n", &a, name, &used) == 2 && !buf[used]) {
+            if (!a || fnda || nfn == 64)
+                NO("line %zu: bad FN:", lineno);
+            snprintf(names[nfn++], sizeof *names, "%s", name);
+        } else if (sscanf(buf, "FNDA:%llu,%199s%n", &a, name, &used) == 2 && !buf[used]) {
+            for (k = 0; k < nfn && strcmp(names[k], name); k++)
+                ;
+            if (k == nfn)
+                NO("line %zu: FNDA: without FN:", lineno);
+            fnda++;
+            fnh += a > 0;
+        } else if (sscanf(buf, "FNF:%llu%n", &a, &used) == 1 && !buf[used]) {
+            if (a != nfn)
+                NO("line %zu: FNF:%llu, %zu functions", lineno, a, nfn);
+        } else if (sscanf(buf, "FNH:%llu%n", &a, &used) == 1 && !buf[used]) {
+            if (a != fnh || fnda != nfn)
+                NO("line %zu: FNH:%llu, %zu hit", lineno, a, fnh);
+        } else if (sscanf(buf, "BRDA:%llu,%llu,%llu,%31s%n", &a, &b, &c, taken, &used) == 4
+                   && !buf[used]) {
+            if (!a || (strcmp(taken, "-") && strspn(taken, "0123456789") != strlen(taken)))
+                NO("line %zu: bad BRDA:", lineno);
+            br++;
+            brh += strcmp(taken, "-") && strcmp(taken, "0");
+        } else if (sscanf(buf, "BRF:%llu%n", &a, &used) == 1 && !buf[used]) {
+            if (a != br)
+                NO("line %zu: BRF:%llu, %zu branches", lineno, a, br);
+        } else if (sscanf(buf, "BRH:%llu%n", &a, &used) == 1 && !buf[used]) {
+            if (a != brh)
+                NO("line %zu: BRH:%llu, %zu taken", lineno, a, brh);
+        } else if (sscanf(buf, "DA:%llu,%llu%n", &a, &b, &used) == 2 && !buf[used]) {
+            if (!a)
+                NO("line %zu: bad DA:", lineno);
+            da++;
+            dah += b > 0;
+        } else if (sscanf(buf, "LF:%llu%n", &a, &used) == 1 && !buf[used]) {
+            if (a != da)
+                NO("line %zu: LF:%llu, %zu lines", lineno, a, da);
+        } else if (sscanf(buf, "LH:%llu%n", &a, &used) == 1 && !buf[used]) {
+            if (a != dah)
+                NO("line %zu: LH:%llu, %zu hit", lineno, a, dah);
+        } else
+            NO("line %zu: not a record: %s", lineno, buf);
+    }
+    if (section)
+        NO("no end_of_record");
+#undef NO
+    return NULL;
+}
+
+/* the checker itself: broken tracefiles */
+static void test_lcov_check(void)
+{
+    static const char *const bad[][2] = {
+        { "TN:a,b\n", "bad TN:" },
+        { "SF:a.c\nTN:a\nend_of_record\n", "bad TN:" },
+        { "FN:1,f\n", "outside a section" },
+        { "SF:a.c\nFN:1,f\n", "no end_of_record" },
+        { "SF:a.c\nFN:0,f\nend_of_record\n", "bad FN:" },
+        { "SF:a.c\nFN:5,4,f\nend_of_record\n", "bad FN:" },
+        { "SF:a.c\nFN:1,2,f\nFN:3,4,f\nend_of_record\n", "FN: twice" },
+        { "SF:a.c\nFN:1,2,f\nFNDA:1,g\nend_of_record\n", "without FN:" },
+        { "SF:a.c\nFN:1,2,f\nFNDA:1,f\nFNF:2\nend_of_record\n", "FNF:2" },
+        { "SF:a.c\nFN:1,2,f\nFNDA:0,f\nFNF:1\nFNH:1\nend_of_record\n", "FNH:1" },
+        { "SF:a.c\nBRDA:1,0,0,x\nend_of_record\n", "bad BRDA:" },
+        { "SF:a.c\nBRDA:1,0,0,-\nBRF:1\nBRH:1\nend_of_record\n", "BRH:1" },
+        { "SF:a.c\nDA:0,1\nend_of_record\n", "bad DA:" },
+        { "SF:a.c\nDA:1,0\nLF:1\nLH:1\nend_of_record\n", "LH:1" },
+        { "SF:a.c\nDA:1\nend_of_record\n", "not a record" },
+    };
+    size_t i;
+    const char *why;
+
+    CHECK(!lcov_check("TN:t_1\nSF:/a.c\nFN:1,2,f\nFN:3,g\nFNDA:2,f\nFNDA:0,g\nFNF:2\nFNH:1\n"
+                      "BRDA:1,0,0,-\nBRDA:1,0,1,3\nBRF:2\nBRH:1\nDA:1,2\nDA:2,0\nLF:2\nLH:1\n"
+                      "end_of_record\nTN:\nSF:/b.c\nend_of_record\n"));
+    for (i = 0; i < sizeof bad / sizeof *bad; i++)
+        CHECK((why = lcov_check(bad[i][0])) && strstr(why, bad[i][1]));
 }
 
 static int contains(const char *text, const char *line)
@@ -134,22 +265,32 @@ static void test_deps(void)
     cov_deps_free(&d);
 }
 
-/* gcov JSON of one object: f1 run, f2 not; a system header, a build
-   directory file */
+/* gcov JSON of one object: tokit run, tokskip not, lines with branches
+   (line 12 twice: two blocks; line 25 not run); a system header, a build
+   directory file; a second object with alpha.c and tokit.c again (counts
+   add up) */
 static const char gcov_a[] =
     "{\"format_version\": \"2\", \"current_working_directory\": \"" ROOT "/build/host\","
     " \"data_file\": \"x.gcda\", \"files\": ["
     " {\"file\": \"" ROOT "/programs/ted/src/core/tokit.c\", \"functions\": ["
     "  {\"name\": \"tokit\", \"start_line\": 10, \"end_line\": 20, \"execution_count\": 3},"
     "  {\"name\": \"tokskip\", \"start_line\": 22, \"end_line\": 30, \"execution_count\": 0}],"
-    "  \"lines\": [{\"line_number\": 10, \"count\": 3}]},"
+    "  \"lines\": [{\"line_number\": 10, \"count\": 3, \"branches\": []},"
+    "   {\"line_number\": 12, \"count\": 3, \"unexecuted_block\": false, \"branches\": ["
+    "     {\"count\": 2, \"throw\": false, \"fallthrough\": true}, {\"count\": 1}]},"
+    "   {\"line_number\": 25, \"count\": 0, \"branches\": [{\"count\": 0}, {\"count\": 0}]},"
+    "   {\"line_number\": 12, \"count\": 1, \"branches\": [{\"count\": 0}]}]},"
     " {\"file\": \"/usr/include/stdio.h\", \"functions\": ["
     "  {\"name\": \"printf\", \"start_line\": 1, \"end_line\": 2, \"execution_count\": 1}]},"
     " {\"file\": \"_deps/snitch-src/snitch.cpp\", \"functions\": ["
     "  {\"name\": \"run\", \"start_line\": 1, \"end_line\": 2, \"execution_count\": 1}]}]}\n"
     "{\"current_working_directory\": \"" ROOT "/build/host\", \"files\": ["
     " {\"file\": \"../../programs/ted/src/core/alpha.c\", \"functions\": ["
-    "  {\"name\": \"alpha\", \"start_line\": 5, \"end_line\": 9, \"execution_count\": 1}]}]}\n";
+    "  {\"name\": \"alpha\", \"start_line\": 5, \"end_line\": 9, \"execution_count\": 1}]},"
+    " {\"file\": \"" ROOT "/programs/ted/src/core/tokit.c\", \"functions\": ["
+    "  {\"name\": \"tokit\", \"start_line\": 10, \"end_line\": 20, \"execution_count\": 2}],"
+    "  \"lines\": [{\"line_number\": 10, \"count\": 1},"
+    "   {\"line_number\": 12, \"count\": 2, \"branches\": [{\"count\": 1}, {\"count\": 1}]}]}]}\n";
 /* the second test runs tokskip */
 static const char gcov_b[] =
     "{\"current_working_directory\": \"" ROOT "/build/host\", \"files\": ["
@@ -161,32 +302,59 @@ static void test_gcov(void)
 {
     struct covmap m;
     char *t;
+    const char *why;
 
     covmap_init(&m, ROOT);
     CHECK(!covmap_drop(&m, ROOT "/build"));
     CHECK(!covmap_add_gcov(&m, "host/ted_core_b", gcov_b, strlen(gcov_b), err, sizeof err));
     CHECK(!covmap_add_gcov(&m, "host/ted_core_a", gcov_a, strlen(gcov_a), err, sizeof err));
-    t = map_text(&m);
-    CHECK(!strncmp(t, "# commit abc123\n", 16));
-    CHECK(contains(t, "host\tprograms/ted/src/core/tokit.c\ttokit\t10\t20\thost/ted_core_a host/ted_core_b"));
-    CHECK(contains(t, "host\tprograms/ted/src/core/tokit.c\ttokskip\t22\t30\thost/ted_core_b"));
-    CHECK(contains(t, "host\tprograms/ted/src/core/tokit.c\t\t\t\thost/ted_core_a host/ted_core_b"));
-    CHECK(contains(t, "host\tprograms/ted/src/core/alpha.c\talpha\t5\t9\thost/ted_core_a"));
+    CHECK(covmap_tests(&m) == 2);
+    CHECK(!strcmp(covmap_test(&m, 0), "host/ted_core_a") && !strcmp(covmap_test(&m, 1), "host/ted_core_b"));
+    CHECK(!covmap_test(&m, 2));
+    t = trace_text(&m, 0);
+    CHECK(!strcmp(t, "TN:host/ted_core_a\n"
+                     "SF:" ROOT "/programs/ted/src/core/alpha.c\n"
+                     "FN:5,9,alpha\nFNDA:1,alpha\nFNF:1\nFNH:1\nend_of_record\n"
+                     "SF:" ROOT "/programs/ted/src/core/tokit.c\n"
+                     "FN:10,20,tokit\nFN:22,30,tokskip\nFNDA:5,tokit\nFNDA:0,tokskip\nFNF:2\nFNH:1\n"
+                     "BRDA:12,0,0,3\nBRDA:12,0,1,2\nBRDA:12,1,0,0\nBRDA:25,0,0,-\nBRDA:25,0,1,-\n"
+                     "BRF:5\nBRH:2\n"
+                     "DA:10,4\nDA:12,6\nDA:25,0\nLF:3\nLH:2\nend_of_record\n"));
+    CHECK(!(why = lcov_check(t)));
+    free(t);
+    t = trace_text(&m, 1);
+    CHECK(!strcmp(t, "TN:host/ted_core_b\n"
+                     "SF:" ROOT "/programs/ted/src/core/tokit.c\n"
+                     "FN:10,20,tokit\nFN:22,30,tokskip\nFNDA:1,tokit\nFNDA:2,tokskip\nFNF:2\nFNH:2\n"
+                     "end_of_record\n"));
+    free(t);
+    /* all.info: both, in the order of their names */
+    t = trace_text(&m, -1);
+    CHECK(!(why = lcov_check(t)));
+    CHECK(strstr(t, "TN:host/ted_core_a\n") == t && strstr(t, "\nTN:host/ted_core_b\n"));
     CHECK(!strstr(t, "stdio.h") && !strstr(t, "snitch"));
-    /* the object line follows the file's functions */
-    CHECK(strstr(t, "tokskip") < strstr(t, "tokit.c\t\t\t\t"));
     free(t);
 
-    /* broken: no JSON, JSON that is no gcov output, a function without name */
+    /* broken: no JSON, JSON that is no gcov output, a function without
+       name, a line without number; names no tracefile can have */
     static const char *const bad[][2] = {
         { "{\"files\": [", "gcov JSON" },
         { "{\"a\": 1}", "no \"files\"" },
         { "{\"files\": [{\"file\": \"a.c\", \"functions\": [{}]}]}", "without \"name\"" },
         { "{\"files\": [{\"file\": \"a.c\"}]}", "without \"file\" or \"functions\"" },
+        { "{\"files\": [{\"file\": \"a.c\", \"functions\": [], \"lines\": [{\"count\": 1}]}]}",
+          "without \"line_number\"" },
+        { "{\"files\": [{\"file\": \"a.c\", \"functions\": [], \"lines\": {}}]}", "no array" },
     };
     for (size_t i = 0; i < sizeof bad / sizeof *bad; i++)
         CHECK(covmap_add_gcov(&m, "host/x", bad[i][0], strlen(bad[i][0]), err, sizeof err)
               && strstr(err, bad[i][1]));
+    static const char *const bad_names[] = { "", "all", "/abs", "a//b", "a/../b", "./a", "a/", "a\tb", "a,b" };
+    for (size_t i = 0; i < sizeof bad_names / sizeof *bad_names; i++)
+        CHECK(covmap_add_gcov(&m, bad_names[i], gcov_b, strlen(gcov_b), err, sizeof err)
+              && strstr(err, "no usable test name"));
+    CHECK(covmap_test_name_ok("host/ted_core_a") && covmap_test_name_ok("all2")
+          && covmap_test_name_ok("a/all") && covmap_test_name_ok("x.y-z"));
     covmap_free(&m);
 }
 
@@ -287,16 +455,32 @@ static void test_amiga(void)
     c = cov_file(0x200, COVFMT_BITMAP_LEN(0x200), run2, 2, &len);
     CHECK(!covmap_add_cov(&m, "ab3_cli", "blitz2", c, len, err, sizeof err));
     free(c);
-    t = map_text(&m);
-    /* main.c: source from the deps, no line ranges (no -g object) */
-    CHECK(contains(t, "blitz2\tprograms/blitz2/src/main.c\tmain\t\t\tcorpus"));
-    CHECK(contains(t, "blitz2\tprograms/blitz2/src/main.c\tcompile\t\t\tab3_cli"));
-    CHECK(contains(t, "blitz2\tprograms/blitz2/src/main.c\t\t\t\tab3_cli corpus"));
+    /* a second program of the same sources run by corpus: a function
+       entered in both counts 1 */
+    CHECK(!covmap_add_linkmap(&m, "blitz2-ab3", linkmap, err, sizeof err));
+    c = cov_file(0x200, COVFMT_BITMAP_LEN(0x200), run1, 2, &len);
+    CHECK(!covmap_add_cov(&m, "corpus", "blitz2-ab3", c, len, err, sizeof err));
+    free(c);
+    CHECK(covmap_tests(&m) == 2 && !strcmp(covmap_test(&m, 0), "ab3_cli"));
     /* eval.c: the static function from nm, its range from the line table
-       (the header's rows do not count) */
-    CHECK(contains(t, "blitz2\tprograms/blitz2/src/eval.c\teval\t100\t120\tcorpus"));
-    CHECK(contains(t, "blitz2\tprograms/blitz2/src/eval.c\tevalsub\t200\t230\tab3_cli"));
-    CHECK(contains(t, "blitz2\tprograms/blitz2/src/eval.c\t\t\t\tab3_cli corpus"));
+       (the header's rows do not count); main.c: source from the deps, no
+       line ranges (no -g object): line 1 without a last line; every
+       function of the program, run or not */
+    t = trace_text(&m, 1);
+    CHECK(!strcmp(t, "TN:corpus\n"
+                     "SF:" ROOT "/programs/blitz2/src/eval.c\n"
+                     "FN:100,120,eval\nFN:200,230,evalsub\nFNDA:1,eval\nFNDA:0,evalsub\nFNF:2\nFNH:1\n"
+                     "end_of_record\n"
+                     "SF:" ROOT "/programs/blitz2/src/main.c\n"
+                     "FN:1,compile\nFN:1,main\nFNDA:0,compile\nFNDA:1,main\nFNF:2\nFNH:1\n"
+                     "end_of_record\n"));
+    free(t);
+    t = trace_text(&m, 0);
+    CHECK(strstr(t, "TN:ab3_cli\n") == t && strstr(t, "\nFNDA:0,eval\nFNDA:1,evalsub\n")
+          && strstr(t, "\nFNDA:1,compile\nFNDA:0,main\n"));
+    free(t);
+    t = trace_text(&m, -1);
+    CHECK(!lcov_check(t));
     /* the startup code is outside the root: left out; no data symbols */
     CHECK(!strstr(t, "exit") && !strstr(t, "table") && !strstr(t, "globalvar") && !strstr(t, "notlinked"));
     free(t);
@@ -318,7 +502,7 @@ static void test_amiga(void)
     c[7] = 2;
     CHECK(covmap_add_cov(&m, "x", "blitz2", c, len, err, sizeof err) && strstr(err, "version 2"));
     free(c);
-    CHECK(covmap_add_cov(&m, "x", "blitz2-ab3", NULL, 0, err, sizeof err) && strstr(err, "no link map"));
+    CHECK(covmap_add_cov(&m, "x", "ted", NULL, 0, err, sizeof err) && strstr(err, "no link map"));
     /* broken link maps, symbols, line tables */
     CHECK(covmap_add_linkmap(&m, "blitz2", linkmap, err, sizeof err) && strstr(err, "second"));
     CHECK(covmap_add_linkmap(&m, "ted", "nothing here\n", err, sizeof err) && strstr(err, "no .text"));
@@ -343,11 +527,16 @@ static void test_amiga(void)
     c = cov_file(0x200, COVFMT_BITMAP_LEN(0x200), run2, 2, &len);
     CHECK(!covmap_add_cov(&m, "ab3_cli", "blitz2", c, len, err, sizeof err));
     free(c);
-    t = map_text(&m);
+    t = trace_text(&m, 0);
     /* 0x120 is in the static function, which only the map's eval holds */
-    CHECK(contains(t, "blitz2\tprograms/blitz2/src/eval.c\teval\t\t\tab3_cli"));
-    CHECK(contains(t, "blitz2\tprograms/blitz2/src/main.c\tmain\t\t\t"));
+    CHECK(contains(t, "FN:1,eval") && contains(t, "FNDA:1,eval"));
+    CHECK(contains(t, "FNDA:1,compile") && contains(t, "FNDA:0,main"));
+    CHECK(!lcov_check(t));
     free(t);
+    /* a test name no tracefile can have */
+    c = cov_file(0x200, COVFMT_BITMAP_LEN(0x200), run2, 2, &len);
+    CHECK(covmap_add_cov(&m, "../x", "blitz2", c, len, err, sizeof err) && strstr(err, "no usable"));
+    free(c);
     covmap_free(&m);
 }
 
@@ -356,6 +545,7 @@ int main(void)
     test_json();
     test_paths();
     test_deps();
+    test_lcov_check();
     test_gcov();
     test_amiga();
     if (failures)

@@ -1,5 +1,7 @@
-# The map from functions to tests (README "Coverage"), after a coverage
-# test run: <build>/coverage/map.tsv, made by tools/covmap from
+# The coverage of each test as lcov tracefile (README "Coverage"), after a
+# coverage test run: <build>/coverage/lcov/<test>.info, all tests in
+# <build>/coverage/lcov/all.info and the commit in <build>/coverage/commit,
+# made by tools/covmap from
 #   - the host tests' gcov data (HOST_COVERAGE: <build>/host/coverage/<test>/,
 #     read with gcov per test, recorded as test host/<test>),
 #   - the coverage files the emulator tests left (<dir>/coverage/<test>/
@@ -89,7 +91,7 @@ if(IS_DIRECTORY ${BUILD}/host/coverage)
 		if(NOT args)
 			continue()
 		endif()
-		execute_process(COMMAND ${GCOV} --json-format --stdout ${args}
+		execute_process(COMMAND ${GCOV} --json-format --branch-probabilities --stdout ${args}
 			WORKING_DIRECTORY ${IN}/gcov
 			OUTPUT_FILE ${IN}/gcov/${t}.json ERROR_VARIABLE e RESULT_VARIABLE r)
 		if(r)
@@ -158,10 +160,12 @@ foreach(cov IN LISTS covs)
 endforeach()
 
 file(WRITE ${IN}/inputs.txt "${inputs}")
+# the tracefiles of an earlier run go, so that none of a test of then stays
+file(REMOVE_RECURSE ${OUT}/lcov ${OUT}/commit)
 execute_process(COMMAND ${COVMAP} --commit ${commit} --root ${SRC} --drop ${BUILD}
-	--inputs ${IN}/inputs.txt -o ${OUT}/map.tsv RESULT_VARIABLE r)
+	--inputs ${IN}/inputs.txt -o ${OUT} RESULT_VARIABLE r)
 if(r)
 	message(FATAL_ERROR "covmap failed")
 endif()
-message(STATUS "${OUT}/map.tsv (commit ${commit}): ${nhost} host tests, "
-	"${namiga} coverage files of ${programs}")
+message(STATUS "${OUT}/lcov/ (commit ${commit}): ${nhost} host tests, "
+	"${namiga} coverage files of ${programs}; all tests in ${OUT}/lcov/all.info")

@@ -25,7 +25,7 @@
 - [x] 4.4 `tools/lib/covsel` + `tools/covsel`: map + `git diff -U0` + ninja deps + `tools/covsel/rules.txt` → `selected.txt`; rules of D8 (header, test sources, `libs/`, build files, unknown files → all; new tests; stale map → all with a message). Host tests for each rule with inputs from memory
 - [x] 4.5 `cmake/coverage-select.cmake` (runs git, `ninja -t deps`, `ctest -N`, then `covsel`) and the usage `ctest --preset all --tests-from-file …` in README
 
-- [ ] 4.6 lcov as the one format (D6): `covmap` writes one tracefile per test, the merged `all.info` and the commit file instead of `map.tsv`; `covsel` builds its map from the tracefiles; `cmake/coverage-map.cmake`/`coverage-select.cmake`, README and the host tests of both tools adjusted. Verify: `genhtml` (if installed) reads `all.info`; the selection gives the same tests as with `map.tsv` for the sample diffs of 4.4
+- [x] 4.6 lcov as the one format (D6): `covmap` writes one tracefile per test, the merged `all.info` and the commit file instead of `map.tsv`; `covsel` builds its map from the tracefiles; `cmake/coverage-map.cmake`/`coverage-select.cmake`, README and the host tests of both tools adjusted. Verify: `genhtml` (if installed) reads `all.info`; the selection gives the same tests as with `map.tsv` for the sample diffs of 4.4
 
 ## 5. Check of stages 1 and 2
 

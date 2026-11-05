@@ -1,22 +1,27 @@
 /*
- * covmap - the map from functions to the tests that executed them
+ * covmap - the coverage of each test as lcov tracefiles
  * (lib/covmap/covmap.h; cmake/coverage-map.cmake runs it after a coverage
  * test run).
  *
- *   covmap --commit SHA [--root DIR] [--drop PREFIX]... [INPUT]... -o MAP
+ *   covmap --commit SHA [--root DIR] [--drop PREFIX]... [INPUT]... -o DIR
  *
- * Exit status 0 if the map is written, 1 if an input is broken (the
- * message on stderr), 2 on wrong arguments or a file that cannot be read.
+ * Writes DIR/lcov/<test>.info per test, DIR/lcov/all.info with all tests
+ * and DIR/commit with SHA.  Exit status 0 if they are written, 1 if an
+ * input is broken (the message on stderr), 2 on wrong arguments or a file
+ * that cannot be read or written.
  */
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include "covmap.h"
 
 static void usage(FILE *f)
 {
-    fprintf(f, "usage: covmap --commit SHA [--root DIR] [--drop PREFIX]... [INPUT]... -o MAP\n"
-               "Write the map from functions to the tests that executed them (map.tsv).\n"
+    fprintf(f, "usage: covmap --commit SHA [--root DIR] [--drop PREFIX]... [INPUT]... -o DIR\n"
+               "Write the coverage of each test as lcov tracefile DIR/lcov/<test>.info, all\n"
+               "of them as DIR/lcov/all.info, and SHA as DIR/commit.\n"
                "INPUT:\n"
                "  --deps FILE              ninja -t deps of a build (the source of each object)\n"
                "  --linkmap PROGRAM FILE   the link map of an Amiga program\n"
@@ -133,12 +138,75 @@ static int read_inputs(const char *path)
     return 0;
 }
 
+/* path with its missing parent directories (path itself is a file) */
+static int make_parents(char *path)
+{
+    char *s;
+
+    for (s = path + 1; (s = strchr(s, '/')); s++) {
+        *s = 0;
+        if (mkdir(path, 0777) && errno != EEXIST) {
+            perror(path);
+            *s = '/';
+            return 0;
+        }
+        *s = '/';
+    }
+    return 1;
+}
+
+/* write a file of dir: one tracefile (test i), all.info (i -1) or the
+   commit file (commit); 0, or 2 */
+static int write_one(struct covmap *m, const char *dir, const char *name, long i,
+                     const char *commit)
+{
+    size_t n = strlen(dir) + strlen(name) + 16;
+    char *path = malloc(n);
+    FILE *out = NULL;
+    int r = 2;
+
+    if (!path)
+        return 2;
+    if (commit)
+        snprintf(path, n, "%s/%s", dir, name);
+    else
+        snprintf(path, n, "%s/lcov/%s.info", dir, name);
+    if (make_parents(path) && (out = fopen(path, "w"))) {
+        if (commit)
+            r = fprintf(out, "%s\n", commit) < 0;
+        else
+            r = i < 0 ? covmap_write_all(m, out) : covmap_write_test(m, (size_t)i, out);
+        r = (r | fclose(out)) ? 2 : 0;
+    }
+    if (r)
+        fprintf(stderr, "covmap: %s: cannot write\n", path);
+    free(path);
+    return r;
+}
+
+static int write_output(struct covmap *m, const char *commit, const char *dir)
+{
+    long n = covmap_tests(m), i;
+    int r = 0;
+
+    if (n < 0) {
+        fprintf(stderr, "covmap: out of memory\n");
+        return 2;
+    }
+    for (i = 0; i < n && !r; i++)
+        r = write_one(m, dir, covmap_test(m, (size_t)i), i, NULL);
+    if (!r)
+        r = write_one(m, dir, "all", -1, NULL);
+    if (!r)
+        r = write_one(m, dir, "commit", 0, commit);
+    return r;
+}
+
 int main(int argc, char **argv)
 {
     const char *commit = NULL, *output = NULL;
     char *root = NULL, err[512];
     struct covmap m;
-    FILE *out;
     size_t i;
     int a, k, r = 0;
 
@@ -214,17 +282,8 @@ int main(int argc, char **argv)
                 r = 1;
             }
         }
-    if (!r) {
-        if (!(out = fopen(output, "w"))) {
-            perror(output);
-            r = 2;
-        } else {
-            if (covmap_write(&m, commit, out) | fclose(out)) {
-                fprintf(stderr, "covmap: %s: cannot write\n", output);
-                r = 2;
-            }
-        }
-    }
+    if (!r)
+        r = write_output(&m, commit, output);
     covmap_free(&m);
     for (i = 0; i < ninputs; i++)
         for (a = 0; a < 3; a++)

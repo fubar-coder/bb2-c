@@ -211,6 +211,16 @@ const char *cov_next_line(const char *text, size_t len, size_t *pos, size_t *lin
     return line;
 }
 
+char *cov_lcov_test_name(const char *test)
+{
+    char *s = strdup(test), *c;
+
+    for (c = s; c && *c; c++)
+        if (!(*c >= 'A' && *c <= 'Z') && !(*c >= 'a' && *c <= 'z') && !(*c >= '0' && *c <= '9'))
+            *c = '_';
+    return s;
+}
+
 void cov_deps_free(struct cov_deps *d)
 {
     size_t i, j;

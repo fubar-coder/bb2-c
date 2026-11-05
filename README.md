@@ -763,9 +763,8 @@ still counts.
 
 ### Coverage
 
-Which functions each test executes, as a map from functions to tests
-(openspec change `test-coverage`). It is made from a coverage run, not
-checked in:
+Which code each test executes, as one lcov tracefile per test (openspec
+change `test-coverage`). It is made from a coverage run, not checked in:
 
 * **host tests:** a build with `-DHOST_COVERAGE=ON` (gcov, `-O0`); each
   host test `X` leaves its `.gcda` files below
@@ -788,24 +787,35 @@ cmake --build build/<preset> --target coverage-map
 
 runs `cmake/coverage-map.cmake`: gcov per host test, `nm -A` and
 `objdump --dwarf=decodedline` of each measured program's objects, and
-`tools/covmap` over all of it. The result is
-`build/<preset>/coverage/map.tsv`: the commit it was made from, then per
-function (program, file, function, first and last line) the tests that
-executed it, and per file the tests of all its functions (format:
-`tools/lib/covmap/covmap.h`). The inputs handed to covmap stay in
-`build/<preset>/coverage/map-inputs/`.
+`tools/covmap` over all of it. The results, in `build/<preset>/coverage/`:
 
-While working on a change, the map chooses the tests it can affect:
+* `lcov/<test>.info`: the lcov tracefile (format of lcov 2.x) of each
+  test (`lcov/host/X.info` for host test `X`), its name as `TN:` (in
+  lcov's characters: `[A-Za-z0-9_]`, every other one as `_`). Per source
+  file every function of the measured code the test ran with its first
+  and last line (`FN:`) and its count (`FNDA:`); the host tests also with
+  line and branch counts (`DA:`, `BRDA:`). The compilers' coverage files
+  give each function a count of 1 if it was entered, else 0, and no line
+  counts; a function whose lines are not known has `FN:1,<name>` without
+  a last line. Details: `tools/lib/covmap/covmap.h`.
+* `lcov/all.info`: all tests in one tracefile, for `genhtml`
+  (`genhtml -o <dir> build/<preset>/coverage/lcov/all.info`, lcov is not
+  needed by the build), editors and coverage services.
+* `commit`: the commit the run was made from.
+
+The inputs handed to covmap stay in `build/<preset>/coverage/map-inputs/`.
+
+While working on a change, the tracefiles choose the tests it can affect:
 
 ```
-cmake -DBUILD=build/amiga -DMAP=build/<coverage preset>/coverage/map.tsv \
+cmake -DBUILD=build/amiga -DCOVERAGE=build/<coverage preset>/coverage \
       [-DBASE=<commit>] -P cmake/coverage-select.cmake
 ctest --preset all --tests-from-file build/amiga/coverage/selected.txt
 ctest --preset bug-orig --tests-from-file build/amiga/coverage/selected.txt
 ```
 
 `cmake/coverage-select.cmake` runs `git diff -U0` of the working tree
-against the map's commit (and lists the files git does not track),
+against the coverage's commit (and lists the files git does not track),
 `ninja -t deps` and `ctest --show-only=json-v1` of the build and its
 host project, and hands it all to `tools/covsel`. It prints why each
 test is selected and writes `build/amiga/coverage/selected.txt`. The
@@ -826,10 +836,10 @@ rules for what a change of a file selects are in
 * the build (CMake files, presets), TED, shared code, the tools, the
   test data, and every file no rule knows: all tests.
 
-Tests the map does not name (new ones, and those that run no measured
-program) are always selected. If the map's commit is not an ancestor of
-`BASE` (default: the map's commit), the map is stale and all tests are
-selected. The selection is for the work in between: the full runs
+Tests without a tracefile that names an executed function (new ones, and
+those that run no measured program) are always selected. If the
+coverage's commit is not an ancestor of `BASE` (default: the coverage's
+commit), the coverage is stale and all tests are selected. The selection is for the work in between: the full runs
 (`ctest --preset all`, `ctest --preset bug-orig`) stay the acceptance of
 a change.
 

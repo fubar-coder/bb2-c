@@ -1,6 +1,5 @@
 /*
- * covmap.c - the map from functions to the tests that executed them
- * (covmap.h).
+ * covmap.c - the coverage of each test as lcov tracefiles (covmap.h).
  */
 #include "covmap.h"
 
@@ -36,9 +35,11 @@ void covmap_free(struct covmap *m)
     for (i = 0; i < m->ndrops; i++)
         free(m->drops[i]);
     free(m->drops);
-    for (i = 0; i < m->nfuncs; i++)
-        free(m->funcs[i].tests);
     free(m->funcs);
+    free(m->hits);
+    free(m->lines);
+    free(m->branches);
+    free(m->order);
     free(m->fslot);
     for (i = 0; i < m->nprogs; i++) {
         free(m->progs[i].objs);
@@ -94,11 +95,10 @@ static int file_id(struct covmap *m, const char *dir, const char *path)
     return id;
 }
 
-static size_t fhash(int prog, int file, int name)
+static size_t fhash(int file, int name)
 {
-    size_t h = (size_t)prog * 2654435761u;
+    size_t h = (size_t)file * 2654435761u;
 
-    h = (h ^ (size_t)file) * 2246822519u;
     h = (h ^ (size_t)name) * 3266489917u;
     return h ^ (h >> 15);
 }
@@ -115,7 +115,7 @@ static int frehash(struct covmap *m)
     for (i = 0; i < m->nfuncs; i++) {
         const struct cov_func *f = &m->funcs[i];
 
-        j = fhash(f->prog, f->file, f->name) & (n - 1);
+        j = fhash(f->file, f->name) & (n - 1);
         while (slot[j] >= 0)
             j = (j + 1) & (n - 1);
         slot[j] = (int)i;
@@ -126,18 +126,18 @@ static int frehash(struct covmap *m)
     return 1;
 }
 
-/* the function (prog, file, name), added if new; -1 if out of memory */
-static int get_func(struct covmap *m, int prog, int file, int name)
+/* the function (file, name), added if new; -1 if out of memory */
+static int get_func(struct covmap *m, int file, int name)
 {
     size_t j;
     struct cov_func *f;
 
     if (2 * (m->nfuncs + 1) > m->nfslot && !frehash(m))
         return -1;
-    j = fhash(prog, file, name) & (m->nfslot - 1);
+    j = fhash(file, name) & (m->nfslot - 1);
     while (m->fslot[j] >= 0) {
         f = &m->funcs[m->fslot[j]];
-        if (f->prog == prog && f->file == file && f->name == name)
+        if (f->file == file && f->name == name)
             return m->fslot[j];
         j = (j + 1) & (m->nfslot - 1);
     }
@@ -152,27 +152,41 @@ static int get_func(struct covmap *m, int prog, int file, int name)
     }
     f = &m->funcs[m->nfuncs];
     memset(f, 0, sizeof *f);
-    f->prog = prog;
     f->file = file;
     f->name = name;
     m->fslot[j] = (int)m->nfuncs;
     return (int)m->nfuncs++;
 }
 
-static int add_test(struct cov_func *f, int test)
+/* room for one more element at the end of *pv (n elements of size bytes,
+   room for cap); NULL if out of memory */
+static void *push(void *pv, size_t *n, size_t *cap, size_t size)
 {
-    if (f->ntests && f->tests[f->ntests - 1] == test)
-        return 0;
-    if (f->ntests == f->cap) {
-        size_t cap = f->cap ? 2 * f->cap : 4;
-        int *v = realloc(f->tests, cap * sizeof *v);
+    void **v = pv;
 
-        if (!v)
-            return -1;
-        f->tests = v;
-        f->cap = cap;
+    if (*n == *cap) {
+        size_t c = *cap ? 2 * *cap : 1024;
+        void *x = realloc(*v, c * size);
+
+        if (!x)
+            return NULL;
+        *v = x;
+        *cap = c;
     }
-    f->tests[f->ntests++] = test;
+    return (char *)*v + (*n)++ * size;
+}
+
+static int add_hit(struct covmap *m, int test, int func, unsigned long long count, int bitmap)
+{
+    struct cov_hit *h = push(&m->hits, &m->nhits, &m->caphits, sizeof *h);
+
+    if (!h)
+        return -1;
+    h->test = test;
+    h->func = func;
+    h->count = count;
+    h->bitmap = bitmap;
+    m->done = 0;
     return 0;
 }
 
@@ -186,6 +200,35 @@ static void widen(struct cov_func *f, int first, int last)
         f->last = last;
 }
 
+int covmap_test_name_ok(const char *test)
+{
+    const char *c = test;
+
+    if (!*test || *test == '/' || !strcmp(test, "all") || strpbrk(test, ",\t\n\r"))
+        return 0;
+    for (;;) {
+        size_t n = strcspn(c, "/");
+
+        if (!n || (n == 1 && c[0] == '.') || (n == 2 && c[0] == '.' && c[1] == '.'))
+            return 0;
+        if (!c[n])
+            return 1;
+        c += n + 1;
+    }
+}
+
+/* the id of a test; -1 with a message if its name is not usable */
+static int test_id(struct covmap *m, const char *test, char *err, size_t errsz)
+{
+    int t;
+
+    if (!covmap_test_name_ok(test))
+        return error(err, errsz, "\"%s\" is no usable test name", test);
+    if ((t = strtab_add(&m->tests, test)) < 0)
+        return OOM();
+    return t;
+}
+
 int covmap_add_deps(struct covmap *m, const char *text, char *err, size_t errsz)
 {
     return cov_deps_parse(&m->deps, text, err, errsz);
@@ -193,8 +236,73 @@ int covmap_add_deps(struct covmap *m, const char *text, char *err, size_t errsz)
 
 /* ---- host: gcov JSON ---- */
 
-static int gcov_doc(struct covmap *m, int prog, int test, const struct json *doc,
-                    char *err, size_t errsz)
+static unsigned long long count_of(const struct json *j)
+{
+    double d = j && j->type == JSON_NUMBER ? j->number : 0;
+
+    return d > 0 ? (unsigned long long)d : 0;
+}
+
+/* the lines and branches of a file of the gcov JSON */
+static int gcov_lines(struct covmap *m, int test, int file, const struct json *lines,
+                      char *err, size_t errsz)
+{
+    size_t k, b, maxline = 0;
+    int *seen;
+
+    if (!lines)
+        return 0;
+    if (lines->type != JSON_ARRAY)
+        return error(err, errsz, "not gcov JSON (\"lines\" is no array)");
+    for (k = 0; k < lines->n; k++) {
+        double ln = json_get_number(&lines->items[k], "line_number", 0);
+
+        if (ln < 1 || ln > 1e8)
+            return error(err, errsz, "not gcov JSON (a line without \"line_number\")");
+        if ((size_t)ln > maxline)
+            maxline = (size_t)ln;
+    }
+    m->done = 0;
+    /* by line: its entries with branches so far (the block of the next) */
+    if (!(seen = calloc(maxline + 1, sizeof *seen)))
+        return OOM();
+    for (k = 0; k < lines->n; k++) {
+        const struct json *e = &lines->items[k], *br = json_get(e, "branches");
+        int ln = (int)json_get_number(e, "line_number", 0);
+        unsigned long long count = count_of(json_get(e, "count"));
+        struct cov_line *l = push(&m->lines, &m->nlines, &m->caplines, sizeof *l);
+
+        if (!l) {
+            free(seen);
+            return OOM();
+        }
+        l->test = test;
+        l->file = file;
+        l->line = ln;
+        l->count = count;
+        if (!br || br->type != JSON_ARRAY || !br->n)
+            continue;
+        for (b = 0; b < br->n; b++) {
+            struct cov_branch *x = push(&m->branches, &m->nbranches, &m->capbranches, sizeof *x);
+
+            if (!x) {
+                free(seen);
+                return OOM();
+            }
+            x->test = test;
+            x->file = file;
+            x->line = ln;
+            x->block = seen[ln];
+            x->branch = (int)b;
+            x->taken = count ? (long long)count_of(json_get(&br->items[b], "count")) : -1;
+        }
+        seen[ln]++;
+    }
+    free(seen);
+    return 0;
+}
+
+static int gcov_doc(struct covmap *m, int test, const struct json *doc, char *err, size_t errsz)
 {
     const struct json *files = json_get(doc, "files");
     const char *cwd = json_get_string(doc, "current_working_directory");
@@ -218,13 +326,15 @@ static int gcov_doc(struct covmap *m, int prog, int test, const struct json *doc
 
             if (!name)
                 return error(err, errsz, "not gcov JSON (a function without \"name\")");
-            if ((id = strtab_add(&m->strs, name)) < 0 || (f = get_func(m, prog, file, id)) < 0)
+            if ((id = strtab_add(&m->strs, name)) < 0 || (f = get_func(m, file, id)) < 0)
                 return OOM();
             widen(&m->funcs[f], (int)json_get_number(fn, "start_line", 0),
                   (int)json_get_number(fn, "end_line", 0));
-            if (json_get_number(fn, "execution_count", 0) > 0 && add_test(&m->funcs[f], test))
+            if (add_hit(m, test, f, count_of(json_get(fn, "execution_count")), 0))
                 return OOM();
         }
+        if (gcov_lines(m, test, file, json_get(fe, "lines"), err, errsz))
+            return -1;
     }
     return 0;
 }
@@ -233,14 +343,14 @@ int covmap_add_gcov(struct covmap *m, const char *test, const char *text, size_t
                     char *err, size_t errsz)
 {
     size_t pos = 0;
-    int prog = strtab_add(&m->strs, "host"), t = strtab_add(&m->tests, test);
+    int t = test_id(m, test, err, errsz);
     char jerr[200];
     struct json *doc;
 
-    if (prog < 0 || t < 0)
-        return OOM();
+    if (t < 0)
+        return -1;
     while ((doc = json_parse(text, len, &pos, jerr, sizeof jerr))) {
-        int r = gcov_doc(m, prog, t, doc, err, errsz);
+        int r = gcov_doc(m, t, doc, err, errsz);
 
         json_free(doc);
         if (r)
@@ -532,7 +642,7 @@ static int prog_ready(struct covmap *m, struct cov_prog *p)
             continue;
         if (p->nsyms && p->syms[p->nsyms - 1].addr == r->addr)
             continue;           /* a second name of the same function */
-        if ((f = get_func(m, p->name, o->file, r->name)) < 0) {
+        if ((f = get_func(m, o->file, r->name)) < 0) {
             free(has_nm);
             return -1;
         }
@@ -659,6 +769,7 @@ int covmap_add_cov(struct covmap *m, const char *test, const char *program,
 {
     struct cov_prog *p = find_prog(m, program);
     uint32_t code, bytes, i;
+    char *entered;
     int t;
 
     if (!p)
@@ -678,110 +789,257 @@ int covmap_add_cov(struct covmap *m, const char *test, const char *program,
         return error(err, errsz, "%s: %s: bitmap of %zu bytes, the header says %u, %u needed",
                      test, program, len - COVFMT_HEADER_SIZE, (unsigned)bytes,
                      (unsigned)COVFMT_BITMAP_LEN(code));
-    if ((t = strtab_add(&m->tests, test)) < 0 || prog_ready(m, p))
-        return OOM();
     data += COVFMT_HEADER_SIZE;
-    for (i = 0; i < 8 * bytes; i++) {
-        const struct cov_sym *sym;
-
-        if (!(data[i >> 3] & 1 << (i & 7)))
-            continue;
-        if (2 * i >= code)
+    for (i = (code + 1) / 2; i < 8 * bytes; i++)
+        if (data[i >> 3] & 1 << (i & 7))
             return error(err, errsz, "%s: %s: a bit beyond the code hunk (offset 0x%x)", test,
                          program, (unsigned)(2 * i));
-        if ((sym = find_sym(p, 2 * i)) && add_test(&m->funcs[sym->func], t))
-            return OOM();
+    if ((t = test_id(m, test, err, errsz)) < 0)
+        return -1;
+    if (prog_ready(m, p) || !(entered = calloc(p->nsyms + 1, 1)))
+        return OOM();
+    for (i = 0; i < (code + 1) / 2; i++) {
+        const struct cov_sym *sym;
+
+        if ((data[i >> 3] & 1 << (i & 7)) && (sym = find_sym(p, 2 * i)))
+            entered[sym - p->syms] = 1;
     }
+    /* every function of the program, entered or not */
+    for (i = 0; i < p->nsyms; i++)
+        if (add_hit(m, t, p->syms[i].func, entered[i], 1)) {
+            free(entered);
+            return OOM();
+        }
+    free(entered);
     return 0;
 }
 
-/* ---- map.tsv ---- */
+/* ---- the tracefiles ---- */
 
 static const struct covmap *sort_map;
 
-static int cmp_func(const void *a, const void *b)
+static int cmp_strid(int a, int b)
 {
-    const struct cov_func *x = &sort_map->funcs[*(const int *)a];
-    const struct cov_func *y = &sort_map->funcs[*(const int *)b];
-    char *const *s = sort_map->strs.str;
+    return a == b ? 0 : strcmp(sort_map->strs.str[a], sort_map->strs.str[b]);
+}
+
+static int cmp_int(int a, int b)
+{
+    return a < b ? -1 : a > b;
+}
+
+/* by test, file, first line, name */
+static int cmp_hit(const void *a, const void *b)
+{
+    const struct cov_hit *x = a, *y = b;
+    const struct cov_func *f = &sort_map->funcs[x->func], *g = &sort_map->funcs[y->func];
     int c;
 
-    if ((c = strcmp(s[x->prog], s[y->prog])) || (c = strcmp(s[x->file], s[y->file])))
+    if ((c = cmp_int(x->test, y->test)) || (c = cmp_strid(f->file, g->file))
+        || (c = cmp_int(f->first, g->first)))
         return c;
-    if (x->first != y->first)
-        return x->first < y->first ? -1 : 1;
-    return strcmp(s[x->name], s[y->name]);
+    return cmp_strid(f->name, g->name);
+}
+
+/* by test, file, line */
+static int cmp_line(const void *a, const void *b)
+{
+    const struct cov_line *x = a, *y = b;
+    int c;
+
+    if ((c = cmp_int(x->test, y->test)) || (c = cmp_strid(x->file, y->file)))
+        return c;
+    return cmp_int(x->line, y->line);
+}
+
+/* by test, file, line, block, branch */
+static int cmp_branch(const void *a, const void *b)
+{
+    const struct cov_branch *x = a, *y = b;
+    int c;
+
+    if ((c = cmp_int(x->test, y->test)) || (c = cmp_strid(x->file, y->file))
+        || (c = cmp_int(x->line, y->line)) || (c = cmp_int(x->block, y->block)))
+        return c;
+    return cmp_int(x->branch, y->branch);
 }
 
 static int cmp_test(const void *a, const void *b)
 {
-    const int x = *(const int *)a, y = *(const int *)b;
-
-    return strcmp(sort_map->tests.str[x], sort_map->tests.str[y]);
+    return strcmp(sort_map->tests.str[*(const int *)a], sort_map->tests.str[*(const int *)b]);
 }
 
-static void write_tests(const struct covmap *m, int *ids, size_t n, FILE *out)
+/* sort the hits, lines and branches, and merge those of the same test
+   and function, line or branch */
+static int prepare(struct covmap *m)
+{
+    size_t i, n;
+
+    if (m->done)
+        return 0;
+    sort_map = m;
+    if (m->nhits)
+        qsort(m->hits, m->nhits, sizeof *m->hits, cmp_hit);
+    for (i = n = 0; i < m->nhits; i++) {
+        struct cov_hit *h = &m->hits[i], *p = n ? &m->hits[n - 1] : NULL;
+
+        if (p && p->test == h->test && p->func == h->func) {
+            if (p->bitmap && h->bitmap)
+                p->count = p->count > h->count ? p->count : h->count;
+            else
+                p->count += h->count;
+            p->bitmap &= h->bitmap;
+        } else
+            m->hits[n++] = *h;
+    }
+    m->nhits = n;
+    if (m->nlines)
+        qsort(m->lines, m->nlines, sizeof *m->lines, cmp_line);
+    for (i = n = 0; i < m->nlines; i++) {
+        struct cov_line *l = &m->lines[i];
+
+        if (n && !cmp_line(&m->lines[n - 1], l))
+            m->lines[n - 1].count += l->count;
+        else
+            m->lines[n++] = *l;
+    }
+    m->nlines = n;
+    if (m->nbranches)
+        qsort(m->branches, m->nbranches, sizeof *m->branches, cmp_branch);
+    for (i = n = 0; i < m->nbranches; i++) {
+        struct cov_branch *b = &m->branches[i], *p = n ? &m->branches[n - 1] : NULL;
+
+        if (p && !cmp_branch(p, b)) {
+            if (b->taken >= 0)
+                p->taken = (p->taken < 0 ? 0 : p->taken) + b->taken;
+        } else
+            m->branches[n++] = *b;
+    }
+    m->nbranches = n;
+    free(m->order);
+    if (!(m->order = malloc((m->tests.n + 1) * sizeof *m->order)))
+        return -1;
+    for (i = 0; i < m->tests.n; i++)
+        m->order[i] = (int)i;
+    if (m->tests.n)
+        qsort(m->order, m->tests.n, sizeof *m->order, cmp_test);
+    m->done = 1;
+    return 0;
+}
+
+long covmap_tests(struct covmap *m)
+{
+    return prepare(m) ? -1 : (long)m->tests.n;
+}
+
+const char *covmap_test(const struct covmap *m, size_t i)
+{
+    return m->done && i < m->tests.n ? m->tests.str[m->order[i]] : NULL;
+}
+
+/* the first element of a sorted array whose test is t: elements of size
+   bytes, the test an int at offset 0 */
+static size_t first_of(const void *v, size_t n, size_t size, int t)
+{
+    size_t lo = 0, hi = n;
+
+    while (lo < hi) {
+        size_t mid = (lo + hi) / 2;
+
+        if (*(const int *)(const void *)((const char *)v + mid * size) < t)
+            lo = mid + 1;
+        else
+            hi = mid;
+    }
+    return lo;
+}
+
+static int write_test(struct covmap *m, int t, FILE *out)
+{
+    size_t h = first_of(m->hits, m->nhits, sizeof *m->hits, t);
+    size_t l = first_of(m->lines, m->nlines, sizeof *m->lines, t);
+    size_t b = first_of(m->branches, m->nbranches, sizeof *m->branches, t);
+    char *const *s = m->strs.str;
+
+    fprintf(out, "TN:%s\n", m->tests.str[t]);
+    for (;;) {
+        int file = -1, hf = -1, lf = -1, bf = -1;
+        size_t k, n, nhit;
+
+        /* the next file: the first of the three in the order of paths */
+        if (h < m->nhits && m->hits[h].test == t)
+            file = hf = m->funcs[m->hits[h].func].file;
+        if (l < m->nlines && m->lines[l].test == t) {
+            lf = m->lines[l].file;
+            if (file < 0 || strcmp(s[lf], s[file]) < 0)
+                file = lf;
+        }
+        if (b < m->nbranches && m->branches[b].test == t) {
+            bf = m->branches[b].file;
+            if (file < 0 || strcmp(s[bf], s[file]) < 0)
+                file = bf;
+        }
+        if (file < 0)
+            break;
+        if (m->root)
+            fprintf(out, "SF:%s%s%s\n", m->root, m->root[strlen(m->root) - 1] == '/' ? "" : "/",
+                    s[file]);
+        else
+            fprintf(out, "SF:%s\n", s[file]);
+        for (k = h; hf == file && k < m->nhits && m->hits[k].test == t
+                    && m->funcs[m->hits[k].func].file == file; k++) {
+            const struct cov_func *f = &m->funcs[m->hits[k].func];
+
+            if (f->first)
+                fprintf(out, "FN:%d,%d,%s\n", f->first, f->last, s[f->name]);
+            else
+                fprintf(out, "FN:1,%s\n", s[f->name]);
+        }
+        for (n = k - h, nhit = 0; h < k; h++) {
+            fprintf(out, "FNDA:%llu,%s\n", m->hits[h].count, s[m->funcs[m->hits[h].func].name]);
+            nhit += m->hits[h].count > 0;
+        }
+        if (n)
+            fprintf(out, "FNF:%zu\nFNH:%zu\n", n, nhit);
+        for (n = nhit = 0; bf == file && b < m->nbranches && m->branches[b].test == t
+                           && m->branches[b].file == file; b++, n++) {
+            const struct cov_branch *x = &m->branches[b];
+
+            if (x->taken < 0)
+                fprintf(out, "BRDA:%d,%d,%d,-\n", x->line, x->block, x->branch);
+            else
+                fprintf(out, "BRDA:%d,%d,%d,%lld\n", x->line, x->block, x->branch, x->taken);
+            nhit += x->taken > 0;
+        }
+        if (n)
+            fprintf(out, "BRF:%zu\nBRH:%zu\n", n, nhit);
+        for (n = nhit = 0; lf == file && l < m->nlines && m->lines[l].test == t
+                           && m->lines[l].file == file; l++, n++) {
+            fprintf(out, "DA:%d,%llu\n", m->lines[l].line, m->lines[l].count);
+            nhit += m->lines[l].count > 0;
+        }
+        if (n)
+            fprintf(out, "LF:%zu\nLH:%zu\n", n, nhit);
+        fputs("end_of_record\n", out);
+    }
+    return ferror(out) ? -1 : 0;
+}
+
+int covmap_write_test(struct covmap *m, size_t i, FILE *out)
+{
+    if (prepare(m) || i >= m->tests.n)
+        return -1;
+    return write_test(m, m->order[i], out);
+}
+
+int covmap_write_all(struct covmap *m, FILE *out)
 {
     size_t i;
-    int last = -1;
 
-    if (n)
-        qsort(ids, n, sizeof *ids, cmp_test);
-    for (i = 0; i < n; i++) {
-        if (ids[i] == last)
-            continue;
-        fprintf(out, "%s%s", last < 0 ? "" : " ", m->tests.str[ids[i]]);
-        last = ids[i];
-    }
-    fputc('\n', out);
-}
-
-int covmap_write(struct covmap *m, const char *commit, FILE *out)
-{
-    int *order, *all = NULL;
-    size_t i, j, nall = 0, capall = 0;
-
-    for (i = 0; i < m->nprogs; i++)
-        if (prog_ready(m, &m->progs[i]))
-            return -1;
-    if (!(order = malloc((m->nfuncs + 1) * sizeof *order)))
+    if (prepare(m))
         return -1;
-    for (i = 0; i < m->nfuncs; i++)
-        order[i] = (int)i;
-    sort_map = m;
-    qsort(order, m->nfuncs, sizeof *order, cmp_func);
-    fprintf(out, "# commit %s\n# program\tfile\tfunction\tfirst\tlast\ttests\n", commit);
-    for (i = 0; i < m->nfuncs; i++) {
-        struct cov_func *f = &m->funcs[order[i]];
-        const struct cov_func *next = i + 1 < m->nfuncs ? &m->funcs[order[i + 1]] : NULL;
-
-        fprintf(out, "%s\t%s\t%s\t", m->strs.str[f->prog], m->strs.str[f->file], m->strs.str[f->name]);
-        if (f->first)
-            fprintf(out, "%d\t%d\t", f->first, f->last);
-        else
-            fputs("\t\t", out);
-        write_tests(m, f->tests, f->ntests, out);
-        for (j = 0; j < f->ntests; j++) {
-            if (nall == capall) {
-                int *v;
-
-                capall = capall ? 2 * capall : 256;
-                if (!(v = realloc(all, capall * sizeof *v))) {
-                    free(all);
-                    free(order);
-                    return -1;
-                }
-                all = v;
-            }
-            all[nall++] = f->tests[j];
-        }
-        if (!next || next->prog != f->prog || next->file != f->file) {
-            fprintf(out, "%s\t%s\t\t\t\t", m->strs.str[f->prog], m->strs.str[f->file]);
-            write_tests(m, all, nall, out);
-            nall = 0;
-        }
-    }
-    free(all);
-    free(order);
-    return ferror(out) ? -1 : 0;
+    for (i = 0; i < m->tests.n; i++)
+        if (write_test(m, m->order[i], out))
+            return -1;
+    return 0;
 }

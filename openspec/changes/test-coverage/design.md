@@ -282,6 +282,62 @@ the preset, the option, the module and the tools.
   Every `*.cmake` and `CMakeLists.txt` selects all tests, including the
   runner scripts of a single suite.
 
+### lcov tracefiles (task 4.6, D6)
+- **Files:** `covmap -o <build>/coverage` writes
+  `lcov/<test>.info` (host test `X`: `lcov/host/X.info`),
+  `lcov/all.info` and `commit`; `coverage-map.cmake` removes the
+  tracefiles of an earlier run first. A test name that cannot be such a
+  path (empty, absolute, `.`/`..` components, `all`) or a `TN:` (comma,
+  tab, newline) is an input error.
+- **`TN:`** is the test's name as it is (spec). lcov 2.x keeps only
+  `[A-Za-z0-9_]` in test names and reads every other character as `_`,
+  with a warning per tracefile ("invalid characters removed from
+  testname"); so `genhtml` warns once for `all.info` and for each
+  `host/...` or hyphenated test, without errors. `covsel` accepts the
+  name in either form. If the warning should go, the spec's "the test's
+  name as `TN:`" would have to allow lcov's form.
+- **`all.info`** is the sections of all tests one after the other, in the
+  order of their names: lcov's own form of tracefiles of different tests
+  merged (`lcov -a` keeps a section per test name); `genhtml` adds them
+  up per file.
+- **Functions without known lines** (objects without `-g`, data symbols
+  in `.text`) are written `FN:1,<name>` without a last line: lcov rejects
+  line 0, and an `FN:` without a last line is lcov's older form. `covsel`
+  reads an `FN:` without a last line as "range not known"; a change in
+  such a file selects the tests of all its functions.
+- **What a tracefile lists:** every function gcov names for the test, and
+  every function of each program whose coverage file the test left, with
+  `FNDA:0` if it did not run (lcov's convention: found and hit
+  functions). gcov counts of one function, line or branch in several
+  objects of a test add up; a function entered in two programs of one
+  test (`blitz2`, `blitz2-ab3`) counts 1. `BRDA:`'s block is the number of
+  the line's entry in gcov's list of the file (a line of several blocks
+  or inlined copies has several entries), the taken count `-` if the line
+  did not run.
+- **Selection:** `covsel --coverage <dir>` reads `commit` and every
+  tracefile below `lcov/` but `all.info`, the test's name from the path.
+  A test counts as named by the map if its tracefile has a function with
+  a count above 0. The map does not tell the programs apart: a file's
+  functions are those of all programs (one source, one set of line
+  ranges). `test_covsel`'s sample diffs select the same tests from the
+  tracefiles as they did from `map.tsv`.
+- **Format check:** `genhtml` is not installed here. `test_covmap`
+  checks the written tracefiles against the reader rules of lcov 2.x
+  (`lib/lcovutil.pm` of lcov at 1ad5aed: sections, line numbers above 0,
+  `FN:` before `FNDA:`, each function once, the `FNF`/`FNH`, `BRF`/`BRH`,
+  `LF`/`LH` counts), with a broken tracefile for each rule.
+- **Branches need `gcov --branch-probabilities`:** without it gcov 16's
+  JSON has empty `branches` lists; `coverage-map.cmake` passes it.
+- **End to end** (`amiga-cov` with `-DHOST_COVERAGE=ON`, `ctest --preset
+  coverage -R '^(host|corpus|ab3_cli)$'`, the target `coverage-map`, 34 s):
+  tracefiles of 98 host tests and of `corpus` (`blitz2`, 14 files, 560
+  functions entered) and `ab3_cli` (`blitz2-ab3`, 31 files, 682);
+  `all.info` 3.2 MB, 636 sections, 97048 `BRDA:` records, consistent by
+  the rules above. `coverage-select.cmake` on that build, and `covsel`
+  with a change in `eval.c`'s `pokewd` (entered by both tests) or
+  `pokewda5d` (entered by none), selects `corpus` and `ab3_cli`, or
+  neither, besides the tests without a tracefile.
+
 ### Coverage variants of the compilers (tasks 2.1-2.4, D2-D4)
 - (Task 2.1) `-finstrument-functions-once` (GCC 14 and later) instead of
   `-finstrument-functions`: the hook is called at the first entry of a
