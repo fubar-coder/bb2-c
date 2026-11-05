@@ -2,5 +2,5 @@
 ok
 [run]
 before
-after
+buffer untouched
 rc=0
