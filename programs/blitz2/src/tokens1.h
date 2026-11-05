@@ -77,6 +77,10 @@ UBYTE *getmaxel(UWORD c);
    doeven4/doeven8) */
 void alignpc(void);
 
+/* zeropc: pc = to, the bytes it skips written as 0 the way pokebyte writes
+   (#969; alignpc, doeven4, doeven8, dods and pokewd's alignment) */
+void zeropc(ULONG to);
+
 /* 12315 compare: asm a0 = compare routine that sets the CCR, d1 = condition
    index (from collif, 0..11).  C: the caller runs the compare routine
    (numcom / strcom, chunk 07) and passes its sign as `res` (<0 / 0 / >0,

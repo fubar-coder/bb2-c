@@ -505,12 +505,12 @@ void dodcb(UWORD c)
 
 /* Fixed (#969): moves pc to `to` and writes the bytes it skips as 0, the
    way pokebyte writes (bounded by libat, nomemleft past it, bigpc).  The
-   original's alignment (Even, Even4, Even8, alignpc: blitz2.s:12600-12612)
-   and Ds (12532) move pc only: the bytes hold what the object buffer held
-   there, with runtime error checking on the debug record undodebug
-   withdrew, with Compile/Run the bytes of the previous compile.  A pc that
-   would wrap (Ds with a huge count) moves as in the original. */
-static void zeropc(ULONG to)
+   original's alignment (Even, Even4, Even8, alignpc: blitz2.s:12600-12612,
+   pokewd: 8478-8479) and Ds (12532) move pc only: the bytes hold what the
+   object buffer held there, with runtime error checking on the debug record
+   undodebug withdrew, with Compile/Run the bytes of the previous compile.
+   A pc that would wrap (Ds with a huge count) moves as in the original. */
+void zeropc(ULONG to)
 {
     ULONG at = pc;
 

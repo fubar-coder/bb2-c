@@ -11,7 +11,8 @@ Notation: "Z-in" = handler entered with flags from getchar3 (Z=1 if d0 is 0 / ':
 
 - `pc` (14900) is a GLOBAL `dc.l`: current output pointer into the object buffer (absolute address),
   NOT the CPU program counter. `move.l pc,x` = "remember current output address".
-- `pokewd` (8476): emits d1.w at `pc` (word aligns pc first), sets `nomemleft=-1` on overflow
+- `pokewd` (8476): emits d1.w at `pc` (word aligns pc first, the skipped pad byte is not
+  written: BUG(orig) #969, the port writes it as 0), sets `nomemleft=-1` on overflow
   (pc >= libat), keeps pc advancing; updates `bigpc`. `pokel`: emits d1.l (high word first).
   `pokecode` a0=start,a1=end: copies words [a0,a1) (always at least one word).
   `pokewda5s`: pokewd, but clears bit0 if `varmode` (turns `(a5)` into `(a4)` base reg).

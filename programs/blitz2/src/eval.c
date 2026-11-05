@@ -201,12 +201,13 @@ void pokelc(ULONG l)
     pokewd((UWORD)l);               /* falls through into pokewd */
 }
 
-/* blitz2.s:8476 pokewd - poke d1.w into pc - not an opcode */
+/* blitz2.s:8476 pokewd - poke d1.w into pc - not an opcode; Fixed (#969):
+   the pad byte of the alignment is written as 0 (the original skips it) */
 void pokewd(UWORD w)
 {
     ULONG at;
 
-    pc = (pc + 1) & ~1UL;           /* addq.l #1,pc / bclr #0,pc+3 */
+    zeropc((pc + 1) & ~1UL);        /* addq.l #1,pc / bclr #0,pc+3 */
     at = pc;
     if (at >= libat) {
         nomemleft = -1;             /* .over */

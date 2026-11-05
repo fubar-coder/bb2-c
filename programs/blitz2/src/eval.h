@@ -54,7 +54,7 @@
    cfetchmode == 0, bigpc follows the highest pc.  (asm: a4 = new pc after the
    call; use `pc` instead.) */
 
-/* blitz2.s:8476 pokewd - poke d1.w into pc (pc rounded up to even first) */
+/* blitz2.s:8476 pokewd - poke d1.w into pc (made even first, pad 0: #969) */
 void pokewd(UWORD w);
 /* blitz2.s:8472 pokel - two pokewd, high word first */
 void pokel(ULONG l);
