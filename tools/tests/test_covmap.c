@@ -27,9 +27,8 @@ static char *trace_text(struct covmap *m, long i)
 
 /*
  * The tracefile format of lcov 2.x (geninfo(1) "TRACEFILE FORMAT",
- * genhtml's reader): optional TN: with a name without ',' (lcov keeps
- * [A-Za-z0-9_] and reads every other character as '_', with a warning);
- * sections
+ * genhtml's reader): optional TN: with a name of [A-Za-z0-9_] (lcov reads
+ * every other character as '_', with a warning: here an error); sections
  * SF: ... end_of_record; in a section FN:<line>[,<end line>],<name> with
  * lines above 0 and each name once, FNDA:<count>,<name> of a function of
  * an FN: before it, FNF/FNH the number of functions and of those with a
@@ -58,7 +57,9 @@ static const char *lcov_check(const char *text)
         memcpy(buf, line, n);
         buf[n] = 0;
         if (!strncmp(buf, "TN:", 3)) {
-            if (section || strchr(buf, ','))
+            if (section
+                || strspn(buf + 3, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_")
+                       != n - 3)
                 NO("line %zu: bad TN:", lineno);
         } else if (!strncmp(buf, "SF:", 3)) {
             if (section || n == 3)
@@ -130,6 +131,8 @@ static void test_lcov_check(void)
 {
     static const char *const bad[][2] = {
         { "TN:a,b\n", "bad TN:" },
+        { "TN:host/a\n", "bad TN:" },
+        { "TN:a-b\n", "bad TN:" },
         { "SF:a.c\nTN:a\nend_of_record\n", "bad TN:" },
         { "FN:1,f\n", "outside a section" },
         { "SF:a.c\nFN:1,f\n", "no end_of_record" },
@@ -312,7 +315,7 @@ static void test_gcov(void)
     CHECK(!strcmp(covmap_test(&m, 0), "host/ted_core_a") && !strcmp(covmap_test(&m, 1), "host/ted_core_b"));
     CHECK(!covmap_test(&m, 2));
     t = trace_text(&m, 0);
-    CHECK(!strcmp(t, "TN:host/ted_core_a\n"
+    CHECK(!strcmp(t, "TN:host_ted_core_a\n"
                      "SF:" ROOT "/programs/ted/src/core/alpha.c\n"
                      "FN:5,9,alpha\nFNDA:1,alpha\nFNF:1\nFNH:1\nend_of_record\n"
                      "SF:" ROOT "/programs/ted/src/core/tokit.c\n"
@@ -323,7 +326,7 @@ static void test_gcov(void)
     CHECK(!(why = lcov_check(t)));
     free(t);
     t = trace_text(&m, 1);
-    CHECK(!strcmp(t, "TN:host/ted_core_b\n"
+    CHECK(!strcmp(t, "TN:host_ted_core_b\n"
                      "SF:" ROOT "/programs/ted/src/core/tokit.c\n"
                      "FN:10,20,tokit\nFN:22,30,tokskip\nFNDA:1,tokit\nFNDA:2,tokskip\nFNF:2\nFNH:2\n"
                      "end_of_record\n"));
@@ -331,7 +334,7 @@ static void test_gcov(void)
     /* all.info: both, in the order of their names */
     t = trace_text(&m, -1);
     CHECK(!(why = lcov_check(t)));
-    CHECK(strstr(t, "TN:host/ted_core_a\n") == t && strstr(t, "\nTN:host/ted_core_b\n"));
+    CHECK(strstr(t, "TN:host_ted_core_a\n") == t && strstr(t, "\nTN:host_ted_core_b\n"));
     CHECK(!strstr(t, "stdio.h") && !strstr(t, "snitch"));
     free(t);
 
@@ -355,6 +358,21 @@ static void test_gcov(void)
               && strstr(err, "no usable test name"));
     CHECK(covmap_test_name_ok("host/ted_core_a") && covmap_test_name_ok("all2")
           && covmap_test_name_ok("a/all") && covmap_test_name_ok("x.y-z"));
+    covmap_free(&m);
+
+    /* two tests with the same lcov form: two tests, two tracefiles with the
+       same TN: (their paths keep them apart) */
+    covmap_init(&m, ROOT);
+    CHECK(!covmap_add_gcov(&m, "x/a-b", gcov_b, strlen(gcov_b), err, sizeof err));
+    CHECK(!covmap_add_gcov(&m, "x_a_b", gcov_a, strlen(gcov_a), err, sizeof err));
+    CHECK(covmap_tests(&m) == 2 && !strcmp(covmap_test(&m, 0), "x/a-b")
+          && !strcmp(covmap_test(&m, 1), "x_a_b"));
+    t = trace_text(&m, 0);
+    CHECK(!lcov_check(t) && strstr(t, "TN:x_a_b\n") == t && contains(t, "FNDA:2,tokskip"));
+    free(t);
+    t = trace_text(&m, 1);
+    CHECK(!lcov_check(t) && strstr(t, "TN:x_a_b\n") == t && contains(t, "FNDA:1,alpha"));
+    free(t);
     covmap_free(&m);
 }
 

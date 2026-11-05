@@ -20,7 +20,9 @@
  * The output: one lcov tracefile (lcov 2.x) per test, and all of them in
  * one (all.info, the tests' sections in the order of their names, as lcov
  * merges tracefiles of different tests).  Per test:
- *   TN:<the test's name> (lcov reads each character but [A-Za-z0-9_] as '_')
+ *   TN:<the test's name in lcov's form: each character but [A-Za-z0-9_] as
+ *      '_' (cov_lcov_test_name); the name itself is the tracefile's path>
+ * (all.info: two tests with the same lcov form share their TN:)
  * and per source file a section
  *   SF:<absolute path>
  *   FN:<first>,<last>,<name>   per function, in the order of their lines;

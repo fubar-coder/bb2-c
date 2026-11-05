@@ -960,8 +960,12 @@ static int write_test(struct covmap *m, int t, FILE *out)
     size_t l = first_of(m->lines, m->nlines, sizeof *m->lines, t);
     size_t b = first_of(m->branches, m->nbranches, sizeof *m->branches, t);
     char *const *s = m->strs.str;
+    char *tn = cov_lcov_test_name(m->tests.str[t]);
 
-    fprintf(out, "TN:%s\n", m->tests.str[t]);
+    if (!tn)
+        return -1;
+    fprintf(out, "TN:%s\n", tn);
+    free(tn);
     for (;;) {
         int file = -1, hf = -1, lf = -1, bf = -1;
         size_t k, n, nhit;

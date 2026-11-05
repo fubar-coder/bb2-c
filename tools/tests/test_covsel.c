@@ -35,7 +35,7 @@ static const char *const traces[][2] = {
     { "host/ted_core_tokit", "# host\nSF:programs/ted/src/core/tokit.c\nFN:10,20,tokit\n"
       "FNDA:12345678901234567890,tokit\nBRDA:11,0,0,-\nBRDA:11,0,1,2\nBRF:2\nBRH:1\n"
       "end_of_record\n" },
-    { "host/amiga_emulation_run", "TN:host/amiga_emulation_run\n"
+    { "host/amiga_emulation_run", "TN:host_amiga_emulation_run\n"
       "SF:" ROOT "/tools/lib/amiga_emulation/run.c\nFN:1,9,run\nFNDA:1,run\nend_of_record\n" },
     /* a test that executed nothing measured: not named by the map */
     { "newtest", "TN:newtest\n" EVAL("0", "0") },
@@ -360,12 +360,66 @@ static void test_broken(void)
     covsel_free(s);
 }
 
+/* two tests whose names have the same lcov form (TN:x_a): the name comes
+   from the tracefile's path, so a change selects only the test that ran it */
+static void test_same_tn(void)
+{
+    static const char two[] =
+        "{\"kind\": \"ctestInfo\", \"tests\": [" TEST("x-a", "") "," TEST("x_a", "") "]}";
+    const char *diff = diff1("programs/blitz2/src/eval.c", "@@ -65 +65 @@", "-a\n+b\n");
+    struct covsel *s = covsel_new(ROOT);
+
+    CHECK(s && !covsel_set_commit(s, "abc123\n", err, sizeof err));
+    CHECK(s && !covsel_read_lcov(s, "x-a", "TN:x_a\n" EVAL("1", "0"), err, sizeof err));
+    CHECK(s && !covsel_read_lcov(s, "x_a", "TN:x_a\n" EVAL("0", "1"), err, sizeof err));
+    CHECK(s && !covsel_read_rules(s, "** coverage\n", err, sizeof err));
+    CHECK(s && !covsel_read_tests(s, two, 0, err, sizeof err));
+    CHECK(s && !covsel_read_diff(s, diff, err, sizeof err));
+    CHECK(s && !covsel_run(s, NULL));
+    CHECK(s && covsel_count(s) == 1 && !strcmp(covsel_name(s, 0), "x_a"));
+    covsel_free(s);
+}
+
+/* two tests whose names have the same lcov form (TN:x_a): their tracefiles'
+   paths keep them apart, a change selects the one that ran the function */
+static void test_tn_collision(void)
+{
+    static const char ctest[] = "{\"kind\": \"ctestInfo\", \"tests\": ["
+                                TEST("x-a", "") "," TEST("x_a", "") "]}";
+    struct covsel *s = covsel_new(ROOT);
+
+    CHECK(s && !covsel_set_commit(s, "abc123\n", err, sizeof err));
+    CHECK(s && !covsel_read_lcov(s, "x-a", "TN:x_a\n" EVAL("1", "0"), err, sizeof err));
+    CHECK(s && !covsel_read_lcov(s, "x_a", "TN:x_a\n" EVAL("0", "1"), err, sizeof err));
+    CHECK(s && !covsel_read_rules(s, "** coverage\n", err, sizeof err));
+    CHECK(s && !covsel_read_tests(s, ctest, 0, err, sizeof err));
+    CHECK(s && !covsel_read_diff(s, diff1("programs/blitz2/src/eval.c", "@@ -65 +65 @@", "-a\n+b\n"),
+                                 err, sizeof err));
+    CHECK(s && !covsel_run(s, NULL));
+    CHECK(s && covsel_count(s) == 1 && !strcmp(covsel_name(s, 0), "x_a"));
+    covsel_free(s);
+
+    s = covsel_new(ROOT);
+    CHECK(s && !covsel_set_commit(s, "abc123\n", err, sizeof err));
+    CHECK(s && !covsel_read_lcov(s, "x-a", "TN:x_a\n" EVAL("1", "0"), err, sizeof err));
+    CHECK(s && !covsel_read_lcov(s, "x_a", "TN:x_a\n" EVAL("0", "1"), err, sizeof err));
+    CHECK(s && !covsel_read_rules(s, "** coverage\n", err, sizeof err));
+    CHECK(s && !covsel_read_tests(s, ctest, 0, err, sizeof err));
+    CHECK(s && !covsel_read_diff(s, diff1("programs/blitz2/src/eval.c", "@@ -12 +12 @@", "-a\n+b\n"),
+                                 err, sizeof err));
+    CHECK(s && !covsel_run(s, NULL));
+    CHECK(s && covsel_count(s) == 1 && !strcmp(covsel_name(s, 0), "x-a"));
+    covsel_free(s);
+}
+
 int main(void)
 {
     test_match();
     test_select();
     test_real_rules();
     test_broken();
+    test_tn_collision();
+    test_same_tn();
     if (failures)
         fprintf(stderr, "%d failure(s)\n", failures);
     return failures != 0;
