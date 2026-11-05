@@ -202,7 +202,7 @@ counts 68020 code even inside `CNIF` blocks.
 | Phase | Features | Examples (226) | Tests (68) | C effort (guess) |
 |---|---|---|---|---|
 | G1 AB3 mode | text sources and includes, embedded header, AB3 token table, AB3 binary libraries and residents (section 2) | 136 (60 %) | 44 (65 %) | 1500–2500 lines |
-| G2 directives | `SYNTAX` (accepted; checks later), `OPTIMIZE` (bit 4 "new syntax": about 10 branch points in AB3's compiler, e.g. local labels, line joining `@@`, global `SHARED`, assignment shortcut), `RunErrsOn`/`Off`, `LastRunErrsMode` | 153 (68 %) | 54 (79 %) | 500–1000 |
+| G2 directives | `SYNTAX` (accepted; checks later), `OPTIMIZE` (bit 4 "new syntax": about 10 branch points in AB3's compiler, e.g. local labels, global `SHARED`, assignment shortcut), line joining `@@` (AB3 mode, independent of `OPTIMIZE`), `RunErrsOn`/`Off`, `LastRunErrsMode` | 153 (68 %) | 54 (79 %) | 500–1000 |
 | G3 strings | escapes `\n`, `\XX`, `\Rnn`, `\__THIS_FUNCTION`, `\__CODELINE`, `\__DATE__` …, `@"ABCD"` | 163 (72 %) | 54 | 300–500 |
 | G4 procedures | optional parameters `@p` (missing = −1/""), up to 10 parameters, `FAST` | 172 (76 %) | 57 (84 %) | 800–1500 |
 | G5 small | `USELASTPATH`, `Null`, casts `(.type)`, `Dim KEEP`, `Dim List a(0)`, constants in `Data` | 176 (78 %) | 60 (88 %) | 500–800 |
