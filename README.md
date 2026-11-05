@@ -465,7 +465,8 @@ ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on p
   or the name runs them). Tests in the emulator also have the label
   `emulator` and are skipped (77) without Amiberry. So far
   (`libs/tests/bugorig.c`, in Amiberry, only the C build of the
-  libraries, no CD needed, one emulator run each):
+  libraries, no CD needed, one emulator run each, time limit
+  `LIBS_BUG_ORIG_TIMEOUT`, default 60 s):
   `bug_orig_cliargs_parpath_cli` (ParPath$ of a CLI argument: lock 0 to
   NameFromLock), `bug_orig_crunch_implode_overread` (Implode reads
   behind its data: the data end at the end of the highest memory region,

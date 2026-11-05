@@ -92,6 +92,10 @@ endif()
 # runs them.  One emulator run each (a corrupt decrunch may crash it),
 # only the C build (no CD needed).  ILLEGAL_WATCH: Amiberry logs accesses
 # to unmapped memory, emulator.cmake checks the ranges the program names.
+# Their own time limit: a run takes seconds, a hang (the bug, e.g.
+# crunchlib-crm2-readtab) needs no more.
+set(LIBS_BUG_ORIG_TIMEOUT 60 CACHE STRING
+	"libs bug-orig tests: time limit of the emulator run (seconds)")
 foreach(t cliargs-parpath-cli crunch-implode-overread crunch-decrunch-corrupt
 		crunchlib-crm-minsecdist crunchlib-crm-overlap-4gb crunchlib-crm2-readtab
 		crunchlib-pp-readd1 debuglib-findoff-flags)
@@ -104,9 +108,9 @@ foreach(t cliargs-parpath-cli crunch-implode-overread crunch-decrunch-corrupt
 		-DAMIGA_RUN=${AMIGA_RUN} -DPROGRAM=$<TARGET_FILE:libs_tests>
 		-DLIBS=${CMAKE_BINARY_DIR}/libs/acidlibs -DNO_ORIGINALS=ON
 		-DILLEGAL_WATCH=${watch} -DFILTER=${t}
-		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DTIMEOUT=${LIBS_TESTS_TIMEOUT}
+		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DTIMEOUT=${LIBS_BUG_ORIG_TIMEOUT}
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
-	math(EXPR limit "300 + ${EMULATION_QUEUE_WAIT}")
+	math(EXPR limit "${LIBS_BUG_ORIG_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(${name} PROPERTIES LABELS "emulator;bug-orig" SKIP_RETURN_CODE 77
 		TIMEOUT ${limit})
 endforeach()
