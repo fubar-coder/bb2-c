@@ -3,9 +3,10 @@
 # across directories, "**/" also none) and selectors.  The first matching
 # rule counts; a file no rule matches selects all tests.  Selectors: all,
 # none, coverage (the tests of the changed functions, by the map), header
-# (the tests of the objects that include the file), label:LABEL,
-# name:PATTERN (ctest names; host tests are host/NAME).  Never fewer tests
-# than a change can affect: when in doubt, all.
+# (each source that includes the file counts as changed as a whole, by
+# its own rule), label:LABEL, name:PATTERN (ctest names; host tests are
+# host/NAME).  Never fewer tests than a change can affect: when in doubt,
+# all.
 
 # documentation: no test reads it
 docs/**                         none

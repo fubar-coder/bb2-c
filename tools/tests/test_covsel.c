@@ -56,6 +56,7 @@ static const char rules[] =
     "# comment\n"
     "docs/**                 none\n"
     "**/CMakeLists.txt       all   # trailing comment\n"
+    "programs/blitz2/src/glue*.c all\n"
     "programs/blitz2/src/*.c coverage\n"
     "programs/blitz2/src/*.h header\n"
     "programs/ted/src/**     coverage name:ted_ab*\n"
@@ -76,6 +77,10 @@ static const char deps[] =
     "programs/blitz2/CMakeFiles/blitz2_core.dir/src/parse.c.obj: #deps 2, deps mtime 1 (VALID)\n"
     "    " ROOT "/programs/blitz2/src/parse.c\n"
     "    " ROOT "/programs/blitz2/src/parse.h\n"
+    "\n"
+    "programs/blitz2/CMakeFiles/blitz2_core.dir/src/glue.c.obj: #deps 2, deps mtime 1 (VALID)\n"
+    "    " ROOT "/programs/blitz2/src/glue.c\n"
+    "    " ROOT "/programs/blitz2/src/glue.h\n"
     "\n"
     "tools/xtra/CMakeFiles/xtra.dir/main.c.o: #deps 2, deps mtime 1 (VALID)\n"
     "    " ROOT "/tools/xtra/main.c\n"
@@ -172,8 +177,11 @@ static void test_select(void)
     CHECK(!strcmp(r, "ab3_cli bug_orig_x corpus newtest"));
     r = select_for(rules, diff1("programs/blitz2/src/stmts.h", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, "bug_orig_x newtest"));
-    /* ... an object not in the map includes it, none includes it: all */
+    /* ... a source whose rule selects all (not measured, no rule) includes
+       it, none includes it: all */
     r = select_for(rules, diff1("programs/blitz2/src/parse.h", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, ALL));
+    r = select_for(rules, diff1("programs/blitz2/src/glue.h", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, ALL));
     r = select_for(rules, diff1("programs/blitz2/src/unused.h", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, ALL));

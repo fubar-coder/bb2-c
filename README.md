@@ -793,8 +793,9 @@ rules for what a change of a file selects are in
   tests that executed the function around it; a line outside every
   function, or a source without line ranges, the tests of all its
   functions;
-* a header of the compilers: the tests of every object that depends on
-  it;
+* a header of the compilers: each source whose object depends on it
+  counts as changed as a whole, by its own rule (a measured source: the
+  tests of all its functions; glue, which is not measured: all tests);
 * a test source or expect file: the tests of its suite (by name or
   label); a host test source: the host tests;
 * `libs/`: the emulator tests and the checks of the libraries;

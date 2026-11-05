@@ -16,9 +16,11 @@
  *                    whose functions have no line ranges: the tests of
  *                    all functions of the file; a file not in the map:
  *                    all tests
- *       header       the tests of every function of each object that
- *                    depends on the file (ninja -t deps); a file no
- *                    object depends on, or an object not in the map: all
+ *       header       the source of each object that depends on the file
+ *                    (ninja -t deps) counts as changed as a whole, by its
+ *                    own rule (a measured source: the tests of all its
+ *                    functions; glue or an unknown file: all); a file no
+ *                    object depends on: all
  *       label:L      the tests with ctest label L
  *       name:PATTERN the tests whose name matches PATTERN
  *   - the tests: ctest --show-only=json-v1 of the build, and of its host

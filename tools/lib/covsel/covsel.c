@@ -765,17 +765,23 @@ static int select_coverage(struct covsel *s, const struct change *c, FILE *log)
     return nprog > 0;
 }
 
-/* header: the objects depending on the file; 0 if one of them is not in
-   the map or none depends on it */
-static int select_header(struct covsel *s, const struct change *c, FILE *log)
+static int select_change(struct covsel *s, const struct change *c, FILE *log, int depth);
+
+/* header: every source whose object depends on the file, as if that
+   source changed as a whole (by its own rule); 0 if no object depends on
+   it, -1 if out of memory */
+static int select_header(struct covsel *s, const struct change *c, FILE *log, int depth)
 {
     size_t i, k, nobj = 0;
+    char **done = NULL;
+    size_t ndone = 0;
+    int r = 0;
 
-    for (i = 0; i < s->deps.n; i++) {
+    for (i = 0; i < s->deps.n && !r; i++) {
         const struct cov_dep *d = &s->deps.v[i];
         const char *src;
         char *rel;
-        int found = 0, file;
+        int found = 0;
 
         for (k = 0; k < d->ndeps && !found; k++) {
             char *p = cov_relpath(d->deps[k], s->root);
@@ -787,26 +793,103 @@ static int select_header(struct covsel *s, const struct change *c, FILE *log)
             continue;
         nobj++;
         if (!(src = cov_dep_source(d)) || !(rel = cov_relpath(src, s->root))) {
-            say(log, "%s: %s depends on it, its source is not known\n", c->path, d->object);
-            return 0;
+            say(log, "%s: %s depends on it, its source is not known: all tests\n", c->path, d->object);
+            select_all(s);
+            continue;
         }
-        file = strtab_find(&s->strs, rel);
-        if (file < 0) {
-            say(log, "%s: %s depends on it, %s is not in the map\n", c->path, d->object, rel);
+        for (k = 0; k < ndone && strcmp(done[k], rel); k++)
+            ;
+        if (k < ndone || !strcmp(rel, c->path)) {
             free(rel);
-            return 0;
+            continue;           /* the same source in another object */
         }
-        for (k = 0; k < s->nlines; k++)
-            if (s->lines[k].name < 0 && s->lines[k].file == file) {
-                select_ids(s, &s->lines[k].tests);
-                say(log, "%s: %s depends on it: %s %s: %zu test(s)\n", c->path, d->object,
-                    s->strs.str[s->lines[k].prog], rel, s->lines[k].tests.n);
-            }
+        say(log, "%s: %s depends on it\n", c->path, rel);
+        {
+            struct change whole = { rel, 1, NULL, 0 };
+
+            r = select_change(s, &whole, log, depth + 1);
+        }
+        if (push_string(&done, &ndone, rel, strlen(rel)))
+            r = -1;
         free(rel);
     }
+    free_strings(done, ndone);
+    if (r)
+        return r;
     if (!nobj)
         say(log, "%s: no object depends on it\n", c->path);
     return nobj > 0;
+}
+
+/* the tests a change selects by its rule */
+static int select_change(struct covsel *s, const struct change *c, FILE *log, int depth)
+{
+    const struct rule *r = NULL;
+    size_t k, l;
+
+    for (k = 0; k < s->nrules && !r; k++)
+        if (covsel_match(s->rules[k].pattern, c->path))
+            r = &s->rules[k];
+    if (!r) {
+        say(log, "%s: no rule: all tests\n", c->path);
+        select_all(s);
+        return 0;
+    }
+    if (r->flags & SEL_ALL) {
+        say(log, "%s: rule %d (%s): all tests\n", c->path, r->line, r->pattern);
+        select_all(s);
+    }
+    if (r->flags & SEL_NONE)
+        say(log, "%s: rule %d (%s): no test\n", c->path, r->line, r->pattern);
+    if (r->flags & SEL_COVERAGE) {
+        int found = select_coverage(s, c, log);
+
+        if (found < 0)
+            return -1;
+        if (!found) {
+            say(log, "%s: not in the map: all tests\n", c->path);
+            select_all(s);
+        }
+    }
+    if (r->flags & SEL_HEADER) {
+        int found = depth ? 0 : select_header(s, c, log, depth);
+
+        if (found < 0)
+            return -1;
+        if (!found) {
+            say(log, "%s: all tests\n", c->path);
+            select_all(s);
+        }
+    }
+    for (k = 0; k < r->nlabels; k++) {
+        size_t n = 0;
+
+        for (l = 0; l < s->nctests; l++) {
+            const struct test *t = &s->ctests[l];
+            size_t m;
+
+            for (m = 0; m < t->nlabels; m++)
+                if (!strcmp(t->labels[m], r->labels[k])) {
+                    s->selected[t->runner] = 1;
+                    n++;
+                    break;
+                }
+        }
+        say(log, "%s: rule %d (%s): label %s: %zu test(s)\n", c->path, r->line, r->pattern,
+            r->labels[k], n);
+    }
+    for (k = 0; k < r->nnames; k++) {
+        size_t n = 0;
+
+        for (l = 0; l < s->nctests; l++)
+            if (covsel_match(r->names[k], s->tests.str[s->ctests[l].name])) {
+                s->selected[s->ctests[l].runner] = 1;
+                n++;
+            }
+        say(log, "%s: rule %d (%s): name %s: %zu test(s)\n", c->path, r->line, r->pattern,
+            r->names[k], n);
+    }
+    return 0;
 }
 
 static const struct covsel *sort_sel;
@@ -818,7 +901,7 @@ static int cmp_result(const void *a, const void *b)
 
 int covsel_run(struct covsel *s, FILE *log)
 {
-    size_t i, k, l;
+    size_t i;
 
     free(s->selected);
     if (!(s->selected = calloc(s->tests.n + 1, 1)))
@@ -848,67 +931,9 @@ int covsel_run(struct covsel *s, FILE *log)
             }
         }
         free(runs_others);
-        for (i = 0; i < s->nchanges; i++) {
-            const struct change *c = &s->changes[i];
-            const struct rule *r = NULL;
-
-            for (k = 0; k < s->nrules && !r; k++)
-                if (covsel_match(s->rules[k].pattern, c->path))
-                    r = &s->rules[k];
-            if (!r) {
-                say(log, "%s: no rule: all tests\n", c->path);
-                select_all(s);
-                continue;
-            }
-            if (r->flags & SEL_ALL) {
-                say(log, "%s: rule %d (%s): all tests\n", c->path, r->line, r->pattern);
-                select_all(s);
-            }
-            if (r->flags & SEL_NONE)
-                say(log, "%s: rule %d (%s): no test\n", c->path, r->line, r->pattern);
-            if (r->flags & SEL_COVERAGE) {
-                int found = select_coverage(s, c, log);
-
-                if (found < 0)
-                    return -1;
-                if (!found) {
-                    say(log, "%s: not in the map: all tests\n", c->path);
-                    select_all(s);
-                }
-            }
-            if ((r->flags & SEL_HEADER) && !select_header(s, c, log)) {
-                say(log, "%s: all tests\n", c->path);
-                select_all(s);
-            }
-            for (k = 0; k < r->nlabels; k++) {
-                size_t n = 0;
-
-                for (l = 0; l < s->nctests; l++) {
-                    const struct test *t = &s->ctests[l];
-                    size_t m;
-
-                    for (m = 0; m < t->nlabels; m++)
-                        if (!strcmp(t->labels[m], r->labels[k])) {
-                            s->selected[t->runner] = 1;
-                            n++;
-                            break;
-                        }
-                }
-                say(log, "%s: rule %d (%s): label %s: %zu test(s)\n", c->path, r->line, r->pattern,
-                    r->labels[k], n);
-            }
-            for (k = 0; k < r->nnames; k++) {
-                size_t n = 0;
-
-                for (l = 0; l < s->nctests; l++)
-                    if (covsel_match(r->names[k], s->tests.str[s->ctests[l].name])) {
-                        s->selected[s->ctests[l].runner] = 1;
-                        n++;
-                    }
-                say(log, "%s: rule %d (%s): name %s: %zu test(s)\n", c->path, r->line, r->pattern,
-                    r->names[k], n);
-            }
-        }
+        for (i = 0; i < s->nchanges; i++)
+            if (select_change(s, &s->changes[i], log, 0))
+                return -1;
     }
     free(s->result);
     s->nresult = 0;

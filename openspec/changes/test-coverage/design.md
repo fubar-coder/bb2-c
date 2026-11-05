@@ -237,3 +237,29 @@ the preset, the option, the module and the tools.
   its functions (the object-level fallback of D7).
 - Symbols of constant data in `.text` (`nm` type `t`/`T`, e.g. tables)
   appear in the map like functions, with no line range and no tests.
+
+### Selection (tasks 4.4, 4.5, D6, D8)
+- **The changes are taken against the map's commit**, not against the
+  base: the map's line numbers are those of its commit, and the changes
+  since the map include those since any later base. The base only
+  decides whether the map is stale (`git merge-base --is-ancestor`).
+  Untracked files count as new files.
+- **Header:** each source whose object depends on the header counts as
+  changed as a whole, by its own rule. A measured source gives the tests
+  of all its functions. `glue*.c` is in the map, but it is not
+  instrumented and has no tests there, so its rule is `all`. Every
+  compiler header that `glue.c` includes (`blitz2.h`) therefore selects
+  all tests.
+- **Host tests:** the map names them `host/X`; ctest runs them through
+  the top-level tests `host` and `host_emulator` (label `emulator`).
+  `covsel` reads the host project's `ctest --show-only=json-v1` and
+  selects the runner.
+- **Tests absent from the map** are always selected (spec): new tests,
+  and every test that runs no measured program (the library checks, the
+  host-only checks). With only the compilers measured, that is a fixed
+  part of every selection.
+- **Rules beyond D8:** `none` for documentation (`docs/`, `openspec/`,
+  top-level `*.md`). `libs/` also selects the library checks that do not
+  run in the emulator (`declarations_*`, `tokens_*`, `asmcmp_*`, ...).
+  Every `*.cmake` and `CMakeLists.txt` selects all tests, including the
+  runner scripts of a single suite.
