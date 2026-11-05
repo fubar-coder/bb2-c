@@ -105,6 +105,7 @@ function(bug_orig_test bas name)
 	set(configs port clib)
 	set(rwe "")
 	set(extra "")
+	set(session_limit ${BUG_ORIG_TIMEOUT})
 	# the header lines begin with ';' - the list separator: replaced first.
 	# They make the pass file: a changed header configures again.
 	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${bas})
@@ -123,6 +124,9 @@ function(bug_orig_test bas name)
 			string(REPLACE "<semicolon>" ";" line "${CMAKE_MATCH_1}")
 			string(CONFIGURE "${line}" line @ONLY)
 			string(APPEND extra "${line}\n")
+			if(line MATCHES "^timeout=([0-9]+)$")
+				set(session_limit ${CMAKE_MATCH_1})
+			endif()
 		else()
 			message(FATAL_ERROR "bug-orig: ${bas}: bad header line: ${h}")
 		endif()
@@ -232,8 +236,12 @@ function(bug_orig_test bas name)
 	math(EXPR nsessions "${nsessions} + 1")
 	math(EXPR limit
 		"${BUG_ORIG_TIMEOUT} * ${nsessions} + 60 + ${nsessions} * ${EMULATION_QUEUE_WAIT}")
+	# the order: ctest learns the cost only from passing tests, and these
+	# fail on purpose; the session limit times the sessions puts the tests
+	# that can take long first
+	math(EXPR cost "${session_limit} * ${nsessions}")
 	set_tests_properties(${name} PROPERTIES LABELS "${labels}" SKIP_RETURN_CODE 77
-		TIMEOUT ${limit})
+		TIMEOUT ${limit} COST ${cost})
 	list(REMOVE_DUPLICATES fixtures)
 	list(REMOVE_ITEM fixtures "")
 	if(fixtures)
@@ -398,8 +406,10 @@ function(bug_orig_ted_test scripts id name)
 	# enough free emulator slots), each maybe repeated once (gates failed),
 	# each maybe waiting for a slot
 	math(EXPR limit "${BUG_ORIG_TIMEOUT} * 4 + 120 + 4 * ${EMULATION_QUEUE_WAIT}")
+	# the order (see bug_orig_test): the limit of the two sessions
+	math(EXPR cost "${BUG_ORIG_TIMEOUT} * 2")
 	set_tests_properties(${name} PROPERTIES LABELS "${labels}" SKIP_RETURN_CODE 77
-		TIMEOUT ${limit})
+		TIMEOUT ${limit} COST ${cost})
 endfunction()
 
 file(GLOB drvs CONFIGURE_DEPENDS ${ted_scripts}/*.drv)

@@ -111,8 +111,10 @@ foreach(t cliargs-parpath-cli crunch-implode-overread crunch-decrunch-corrupt
 		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/${name} -DTIMEOUT=${LIBS_BUG_ORIG_TIMEOUT}
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/emulator.cmake)
 	math(EXPR limit "${LIBS_BUG_ORIG_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+	# the order (ctest learns the cost only from passing tests, these fail
+	# on purpose): the limit of the one session
 	set_tests_properties(${name} PROPERTIES LABELS "emulator;bug-orig" SKIP_RETURN_CODE 77
-		TIMEOUT ${limit})
+		TIMEOUT ${limit} COST ${LIBS_BUG_ORIG_TIMEOUT})
 endforeach()
 
 # the test variants (variants/selftest-*, built by ../CMakeLists.txt to
