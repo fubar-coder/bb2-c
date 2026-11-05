@@ -239,6 +239,22 @@ joined with `@@` is one line, the `End If` goes at its real end.
   By its source (not measured) AmiBlitz3 also joins at `@@` inside a
   string of a macro line; ours keeps strings unchanged (spec
   `ab3-compat/syntax-rules`).
+- `End` at the end of a macro line (task 6.7, issue #968, user decision
+  2026-11-05: AB3 mode only, BB2 mode keeps the original). `domacro`
+  reads the character behind `End` with `getchar3`; a line end (0, also
+  for a `;` comment: `getcharb` has stepped past the line's NUL) is
+  stored as a word and the gathering goes on behind the line. AmiBlitz3's
+  `do_Macro` (20944-20957) peeks with `a5` saved and, for 0, `:` or `;`,
+  stores only `$8002` and returns to `'gather`. Ours: extension point
+  `ext_macroend` after `End` is stored; in AB3 mode, for 0 or `:`,
+  `domacro` backs up (`bakup`: `srcptr` and `quoteflag` as before the
+  character) and gathers it again, so the line end goes through
+  `nextline` and `ext_macrolineend` (`If c Then End` gets its `: End
+  If`). A `;` comment needs no own test: `getcharb` returns it as the
+  line end. AmiBlitz3 also stores only `End` before `End noa7`, a
+  statement AB3 mode does not have. Cases `macend_*`, among them the
+  include case of the issue (`macend_inc`, `End` right before `End
+  Macro`).
 
 ## Risks / Trade-offs
 

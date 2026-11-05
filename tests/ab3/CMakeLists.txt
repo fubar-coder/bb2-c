@@ -470,6 +470,17 @@ ab3_cli_case(macthen_endif macthen_endif.ab3 REF)
 ab3_cli_case(macthen_two macthen_two.ab3 REF REF_EXPECT macthen_two.ref.expect)
 ab3_cli_case(macthen_endifword macthen_endifword.ab3 REF REF_EXPECT macthen_endifword.ref.expect)
 ab3_cli_case(macthen_bb2 macthen_bb2.bb)
+# End at the end of a macro line ends its statement (change ab3-mode-g3,
+# spec ab3-compat/macros): AmiBlitz3 stores only End before a line end,
+# a comment or a ':', the rest of the macro is kept.  Inside a block If,
+# If ... Then End with a comment (the Then closed at the line end),
+# End : and End with trailing spaces, End right before End Macro in an
+# include; BB2 mode keeps blitz2's loss of the rest of the macro (#968)
+ab3_cli_case(macend_if macend_if.ab3 REF)
+ab3_cli_case(macend_then macend_then.ab3 REF)
+ab3_cli_case(macend_colon macend_colon.ab3 REF)
+ab3_cli_case(macend_inc macend_inc.ab3 REF)
+ab3_cli_case(macend_bb2 macend_bb2.bb)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)

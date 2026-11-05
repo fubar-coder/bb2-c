@@ -1,0 +1,4 @@
+; an include of macend_inc.ab3: End at the end of a macro line
+Macro m
+NPrint "x" : End
+End Macro

@@ -910,9 +910,14 @@ void domacro(UWORD c)
                the same line out a second time (blitz2.s:11972-12018):
                if it is End Macro, the macro ends on the glued copy, the
                copy is compiled as a statement and doend has no case for
-               Macro ("Syntax Error" at the Include line).  Kept. */
+               Macro ("Syntax Error" at the Include line).  Kept; AB3 mode
+               stores only End there (ext_macroend). */
             ext_macrotoken(0x8002, c);
             macputw(&mb, 0x8002);
+            if (ext_macroend(c)) {
+                bakup();                        /* .gather reads c again */
+                continue;
+            }
         } else {
             ext_macrotoken(c, 0);
         }

@@ -1,0 +1,14 @@
+; End before a ':' and End with spaces behind it at the line end; the
+; End is still the statement End
+Macro m
+If `1
+NPrint "in" : End : NPrint "not reached"
+End If
+If `1 = 2
+End
+EndIf
+NPrint "after"
+End Macro
+!m{0}
+!m{1}
+End

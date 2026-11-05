@@ -230,3 +230,8 @@ UWORD ext_macrolineend(void)
 {
     return 0;
 }
+
+BOOL ext_macroend(UWORD next)
+{
+    return FALSE;
+}

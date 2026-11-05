@@ -46,6 +46,10 @@ of 2026-11-04 fix the scope:
   gets `: End If` appended, as AmiBlitz3 does, so the condition ends
   with its macro line (issue #967; needed by AmiBlitz3's
   `longlong.include.ab3`).
+- **`End` at the end of a macro line** (AB3 mode): only `End` is
+  stored before a line end, a comment or a `:`, as AmiBlitz3 does, so
+  the rest of the macro is kept (issue #968; AmiBlitz3's includes rely
+  on it).
 - **Test infrastructure:** `inject datestamp=YYYY-MM-DD` patches
   `dos.library/DateStamp` for the process it starts. ISO 8601 is used
   only in this value. `inject` becomes usable in the `ab3_cli` and

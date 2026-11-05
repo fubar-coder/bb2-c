@@ -477,6 +477,21 @@ UWORD ext_macrolineend(void)
     return n;
 }
 
+/* ------------------------------------------- End at the end of a line */
+
+/* AmiBlitz3's do_Macro (AmiBlitz3.ab3:20944-20957 at 58a11658) peeks
+   behind End and stores only End when the line ends there (0, also for a
+   comment) or a ':' follows; the ':' and the line end are then gathered
+   as after any other token, a Then of the line closed with ": End If".
+   blitz2 stores the line end as a word and gathers on behind the line
+   (BUG(orig) #968: the rest of the macro is lost).  AmiBlitz3 also
+   stores only End before its statement End noa7 (doend2, 22682), which
+   AB3 mode does not have. */
+BOOL ext_macroend(UWORD next)
+{
+    return progmode == XTRA_MODE_AB3 && (next == 0 || next == ':');
+}
+
 ULONG ab3_joinback(const UBYTE *p)
 {
     UWORD off, k;

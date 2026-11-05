@@ -1,0 +1,5 @@
+[compile]
+macend_bb2.bb:9: If Without End If
+rc=10
+[run]
+no executable

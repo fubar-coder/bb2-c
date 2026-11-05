@@ -1,0 +1,11 @@
+; If ... Then End with a comment behind it: the line end closes the Then
+; with ": End If", the next macro line is not conditional
+Macro m
+If `1 Then End ; stop here
+NPrint "after"
+End Macro
+!m{0}
+NPrint "done"
+!m{1}
+NPrint "not reached"
+End
