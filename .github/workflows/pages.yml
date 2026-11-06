@@ -6,6 +6,12 @@ on:
     paths:
       - 'site/**'
       - '.github/workflows/pages.yml'
+      - 'Doxyfile'
+      - 'libs/include/**'
+      - 'libs/deflibs/deflib.h'
+      - 'libs/acidlibs/**'
+      - 'libs/userlibs/rwe/**'
+      - 'shared/**'
   workflow_dispatch:
 
 permissions:
@@ -16,7 +22,30 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  api:
+    # The API reference (Doxyfile) in Doxygen's official image, pinned by
+    # tag; warnings fail the run. On the runner, not in a container job: the
+    # image's entry point is doxygen itself.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Doxygen
+        run: |
+          mkdir -p site/static/api
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/src" -w /src \
+            ghcr.io/doxygen/doxygen:Release_1_18_0 Doxyfile
+
+      - name: Upload the API reference
+        uses: actions/upload-artifact@v7
+        with:
+          name: api
+          path: site/static/api
+          if-no-files-found: error
+
   build:
+    needs: api
     runs-on: ubuntu-latest
     # Same image as the local preview (site/README.md); the tag pins Hugo.
     container: hugomods/hugo:exts-0.154.5
@@ -29,6 +58,12 @@ jobs:
       - name: Trust the workspace
         # The container user differs from the owner of the checkout.
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Put the API reference in place
+        uses: actions/download-artifact@v8
+        with:
+          name: api
+          path: site/static/api
 
       - name: Configure Pages
         id: pages

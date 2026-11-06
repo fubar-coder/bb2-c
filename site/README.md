@@ -68,6 +68,20 @@ intro: |
 Without the file, the page has a generated description and no
 introduction.
 
+## API reference
+
+`static/api/` holds the Doxygen HTML of the library headers and sources
+and of `shared/` when the Pages workflow builds the site: a job runs
+Doxygen 1.18 in its official image with the repository's `Doxyfile`
+(warnings are errors) before Hugo, and Hugo copies the
+tree as it is to `/bb2-c/api/`. It is not committed (`.gitignore`). To
+build it locally, from the repository root:
+
+```
+mkdir -p site/static/api
+podman run --rm -v $PWD:/src -w /src ghcr.io/doxygen/doxygen:Release_1_18_0 Doxyfile
+```
+
 ## Writing pages
 
 * One directory per chapter in `content/docs/`, each with an `_index.md`; the
