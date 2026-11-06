@@ -1,0 +1,136 @@
+{
+  "name": "datatypeslib",
+  "group": "deflibs",
+  "number": 239,
+  "opens": "datatypes.library",
+  "entries": [
+    {
+      "name": "RLDispatch_",
+      "kind": "oscall",
+      "help": "(rmsg,result)",
+      "base": 239,
+      "offset": -30,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ObtainDataTypeA_",
+      "kind": "oscall",
+      "help": "(type,handle,attrs)",
+      "base": 239,
+      "offset": -36,
+      "registers": ["d0", "a0", "a1"]
+    },
+    {
+      "name": "ReleaseDataType_",
+      "kind": "oscall",
+      "help": "(dt)",
+      "base": 239,
+      "offset": -42,
+      "registers": ["a0"]
+    },
+    {
+      "name": "NewDTObjectA_",
+      "kind": "oscall",
+      "help": "(name,attrs)",
+      "base": 239,
+      "offset": -48,
+      "registers": ["d0", "a0"]
+    },
+    {
+      "name": "DisposeDTObject_",
+      "kind": "oscall",
+      "help": "(o)",
+      "base": 239,
+      "offset": -54,
+      "registers": ["a0"]
+    },
+    {
+      "name": "SetDTAttrsA_",
+      "kind": "oscall",
+      "help": "(o,win,req,attrs)",
+      "base": 239,
+      "offset": -60,
+      "registers": ["a0", "a1", "a2", "a3"]
+    },
+    {
+      "name": "GetDTAttrsA_",
+      "kind": "oscall",
+      "help": "(o,attrs)",
+      "base": 239,
+      "offset": -66,
+      "registers": ["a0", "a2"]
+    },
+    {
+      "name": "AddDTObject_",
+      "kind": "oscall",
+      "help": "(win,req,o,pos)",
+      "base": 239,
+      "offset": -72,
+      "registers": ["a0", "a1", "a2", "d0"]
+    },
+    {
+      "name": "RefreshDTObjectA_",
+      "kind": "oscall",
+      "help": "(o,win,req,attrs)",
+      "base": 239,
+      "offset": -78,
+      "registers": ["a0", "a1", "a2", "a3"]
+    },
+    {
+      "name": "DoAsyncLayout_",
+      "kind": "oscall",
+      "help": "(o,gpl)",
+      "base": 239,
+      "offset": -84,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "DoDTMethodA_",
+      "kind": "oscall",
+      "help": "(o,win,req,msg)",
+      "base": 239,
+      "offset": -90,
+      "registers": ["a0", "a1", "a2", "a3"]
+    },
+    {
+      "name": "RemoveDTObject_",
+      "kind": "oscall",
+      "help": "(win,o)",
+      "base": 239,
+      "offset": -96,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "GetDTMethods_",
+      "kind": "oscall",
+      "help": "(object)",
+      "base": 239,
+      "offset": -102,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GetDTTriggerMethods_",
+      "kind": "oscall",
+      "help": "(object)",
+      "base": 239,
+      "offset": -108,
+      "registers": ["a0"]
+    },
+    {
+      "name": "PrintDTObjectA_",
+      "kind": "oscall",
+      "help": "(o,w,r,msg)",
+      "base": 239,
+      "offset": -114,
+      "registers": ["a0", "a1", "a2", "a3"]
+    },
+    {
+      "name": "GetDTString_",
+      "kind": "oscall",
+      "help": "(id)",
+      "base": 239,
+      "offset": -138,
+      "registers": ["d0"]
+    }
+  ]
+}

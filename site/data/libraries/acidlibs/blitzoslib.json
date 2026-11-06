@@ -1,0 +1,246 @@
+{
+  "name": "blitzoslib",
+  "group": "acidlibs",
+  "number": 117,
+  "object": {"name": "Page", "maximum": 4},
+  "entries": [
+    {
+      "name": "Page",
+      "kind": "object",
+      "help": ""
+    },
+    {
+      "name": "InitPage",
+      "kind": "statement",
+      "help": "Page#,BitMap#,NumBoxes",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FreePage",
+      "kind": "statement",
+      "help": "Page#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "AddBox",
+      "kind": "statement",
+      "help": "Page#,Box#,x,y,w,h,type[,text$]|[,shape,shape]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "RedrawPage",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RedrawBox",
+      "kind": "statement",
+      "help": "Box#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SelectBox",
+      "kind": "statement",
+      "help": "[Box#]|[x+,y+][0,x,y] ;deselects previously selected",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DeSelectBox",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ActivateSelectedBox",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "SetBox",
+      "kind": "statement",
+      "help": "Box#[,Value]|[xprop,yprop]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "quick", "code": 4}, {"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "BoxValue",
+      "kind": "function",
+      "help": "(Box#)|(Page#,Box#)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetBoxString",
+      "kind": "statement",
+      "help": "Box#,String$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "BoxString",
+      "kind": "function",
+      "help": "(Box#)|(Page#,Box#)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BoxShow",
+      "kind": "statement",
+      "help": "Box#[,Bitmap#,x,y]|[dx,dy]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BoxSelected",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BoxPrint",
+      "kind": "statement",
+      "help": "Box#[,String$]|[Bank#,Line]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetBoxColor",
+      "kind": "statement",
+      "help": "Box#,color",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BlitzEvent",
+      "kind": "function",
+      "help": ";handles user input and returns event",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "SetBoxTitle",
+      "kind": "statement",
+      "help": "Box#,String$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "DisableBox",
+      "kind": "statement",
+      "help": "Box#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "EnableBox",
+      "kind": "statement",
+      "help": "Box#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MouseEnabled",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "SetPagePens",
+      "kind": "statement",
+      "help": "Page#,c0,c1,c2,c3 (defaults: 3,1,2,3)",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BoxPropX",
+      "kind": "function",
+      "help": "Box#",
+      "result": "quick",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BoxPropY",
+      "kind": "function",
+      "help": "Box#",
+      "result": "quick",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ChangeBox",
+      "kind": "statement",
+      "help": "Page#,Box#,Value",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ToggleBox",
+      "kind": "statement",
+      "help": "Box#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SpotBox",
+      "kind": "function",
+      "help": "; returns box that mouse is over",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

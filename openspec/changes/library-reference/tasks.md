@@ -10,8 +10,8 @@
 
 ## 3. The check in the build
 
-- [ ] 3.1 `blitz_library(... CMDREF GROUP)`: `cmdref` and `cmake -E compare_files` in the library's build step; acidlibs and deflibs of the default variant and every RWE userlib; target `cmdref_update`; the JSON files committed under `site/data/libraries/` (D3). Verify: a clean build passes the check; `cmdref_check_broken` fails as it should; a changed committed file fails the build step
-- [ ] 3.2 ctest `cmdref_complete` and `cmdref_complete_broken` (D3). Verify: both pass (the broken one by failing)
+- [x] 3.1 `blitz_library(... CMDREF GROUP)`: `cmdref` and `cmake -E compare_files` in the library's build step; acidlibs and deflibs of the default variant and every RWE userlib; target `cmdref_update`; the JSON files committed under `site/data/libraries/` (D3). Verify: a clean build passes the check; `cmdref_check_broken` fails as it should; a changed committed file fails the build step
+- [x] 3.2 ctest `cmdref_complete` and `cmdref_complete_broken` (D3). Verify: both pass (the broken one by failing)
 
 ## 4. The pages
 

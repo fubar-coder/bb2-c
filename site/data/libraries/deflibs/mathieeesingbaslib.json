@@ -1,0 +1,104 @@
+{
+  "name": "mathieeesingbaslib",
+  "group": "deflibs",
+  "number": 227,
+  "opens": "mathieeesingbas.library",
+  "entries": [
+    {
+      "name": "IEEESPFix_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 227,
+      "offset": -30,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPFlt_",
+      "kind": "oscall",
+      "help": "(integer)",
+      "base": 227,
+      "offset": -36,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPCmp_",
+      "kind": "oscall",
+      "help": "(leftParm,rightParm)",
+      "base": 227,
+      "offset": -42,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEESPTst_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 227,
+      "offset": -48,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPAbs_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 227,
+      "offset": -54,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPNeg_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 227,
+      "offset": -60,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPAdd_",
+      "kind": "oscall",
+      "help": "(leftParm,rightParm)",
+      "base": 227,
+      "offset": -66,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEESPSub_",
+      "kind": "oscall",
+      "help": "(leftParm,rightParm)",
+      "base": 227,
+      "offset": -72,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEESPMul_",
+      "kind": "oscall",
+      "help": "(leftParm,rightParm)",
+      "base": 227,
+      "offset": -78,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEESPDiv_",
+      "kind": "oscall",
+      "help": "(dividend,divisor)",
+      "base": 227,
+      "offset": -84,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEESPFloor_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 227,
+      "offset": -90,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPCeil_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 227,
+      "offset": -96,
+      "registers": ["d0"]
+    }
+  ]
+}

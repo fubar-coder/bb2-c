@@ -1,0 +1,251 @@
+{
+  "name": "stringfunclib",
+  "group": "acidlibs",
+  "number": 185,
+  "entries": [
+    {
+      "name": "Left$",
+      "kind": "function",
+      "help": "(String$,Length)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Right$",
+      "kind": "function",
+      "help": "(String$,Length)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Mid$",
+      "kind": "function",
+      "help": "(String$,Startchar[,Length])",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Hex$",
+      "kind": "function",
+      "help": "(Expression)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Bin$",
+      "kind": "function",
+      "help": "(Expression)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Chr$",
+      "kind": "function",
+      "help": "(Expression)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Asc",
+      "kind": "function",
+      "help": "(String$)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "String$",
+      "kind": "function",
+      "help": "(String$,Repeats)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Instr",
+      "kind": "function",
+      "help": "(String$,Findstring$[,Startpos])",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Replace$",
+      "kind": "function",
+      "help": "(String$,Findstring$,Replacestring$)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "Mki$",
+      "kind": "function",
+      "help": "(Integer)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Mkl$",
+      "kind": "function",
+      "help": "(Long)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Cvi",
+      "kind": "function",
+      "help": "(String$)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "Cvl",
+      "kind": "function",
+      "help": "(String$)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "Len",
+      "kind": "function",
+      "help": "(String$)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "UnLeft$",
+      "kind": "function",
+      "help": "(String$,Length)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "UnRight$",
+      "kind": "function",
+      "help": "(String$,Length)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "StripLead$",
+      "kind": "function",
+      "help": "(String$,Ascii)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "StripTrail$",
+      "kind": "function",
+      "help": "(String$,Ascii)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "LSet$",
+      "kind": "function",
+      "help": "(String$,Characters)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RSet$",
+      "kind": "function",
+      "help": "(String$,Characters)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Centre$",
+      "kind": "function",
+      "help": "(String$,Characters)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "LCase$",
+      "kind": "function",
+      "help": "(String$)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "UCase$",
+      "kind": "function",
+      "help": "(String$)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "CaseSense",
+      "kind": "statement",
+      "help": "On|Off",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Mkq$",
+      "kind": "function",
+      "help": "(Quick)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "Cvq",
+      "kind": "function",
+      "help": "(String$)",
+      "result": "quick",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    }
+  ]
+}

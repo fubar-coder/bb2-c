@@ -1,0 +1,43 @@
+{
+  "name": "ristonecrackerlib",
+  "group": "userlibs",
+  "number": 17,
+  "entries": [
+    {
+      "name": "STCLength",
+      "kind": "function",
+      "help": "address   -- returns unpacked size",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "STCStart",
+      "kind": "function",
+      "help": "address   -- returns address of unpacked data",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "STCSafeLen",
+      "kind": "function",
+      "help": "address   -- safe unpack buffer size",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "STCLoad",
+      "kind": "command",
+      "help": "filename$,address",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,278 @@
+{
+  "name": "neilsreqtoolslib",
+  "group": "userlibs",
+  "number": 54,
+  "entries": [
+    {
+      "name": "RTEZRequest",
+      "kind": "function",
+      "help": "(Title$,BodyText$,GadgetText$ [,ReqPosition [,DefaultResponse,Flags]])",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "any", "code": 8}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "any", "code": 8}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "any", "code": 8}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RTEZLoadFile",
+      "kind": "function",
+      "help": "(Title$,Filename$)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RTEZFontRequest",
+      "kind": "function",
+      "help": "(Title$)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RTEZScreenModeRequest",
+      "kind": "function",
+      "help": "(Title$ [,DisplayFlags])",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RTEZPaletteRequest",
+      "kind": "function",
+      "help": "(Title$,FirstColour)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RTEZGetLong",
+      "kind": "function",
+      "help": "(Title$,BodyText$ [,DefaultValue])",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RTEZGetLongRange",
+      "kind": "function",
+      "help": "(Title$,BodyText$,Min,Max [,DefaultValue])",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RTEZGetString",
+      "kind": "function",
+      "help": "(Title$,BodyText$,MaxChars [,DefaultString])",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RTEZSaveFile",
+      "kind": "function",
+      "help": "(Title$,Filename$)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RTEZSetDefaultDirectory",
+      "kind": "statement",
+      "help": "Requester#,Directory$",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RTEZPathRequest",
+      "kind": "function",
+      "help": "(Title$)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RTLockWindow",
+      "kind": "function",
+      "help": "(Window#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RTUnlockWindow",
+      "kind": "statement",
+      "help": "Window#,Lock",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RTEZSetPattern",
+      "kind": "statement",
+      "help": "Requester#,Pattern$",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RTEZFreePattern",
+      "kind": "statement",
+      "help": "Requester#",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RTEZFlagsRequest",
+      "kind": "function",
+      "help": "(Title$,BodyText$,GadgetText$,IDCMPFlags [,ReqPosition])",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RTRequest",
+      "kind": "function",
+      "help": "(BodyText$,GadgetText$,TagList)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RTFileRequest",
+      "kind": "function",
+      "help": "(Title$,FileName$,TagList)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RTEZMultiLoadFile",
+      "kind": "function",
+      "help": "(Title$)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RTNextPathEntry",
+      "kind": "function",
+      "help": "",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RTASyncRequest",
+      "kind": "function",
+      "help": "(Title$,BodyText$,GadgetText$)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RTCheckASyncRequest",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RTEndASyncRequest",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RTVersion",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RTRevision",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "IsReqToolsActive",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RTASyncPaletteRequest",
+      "kind": "function",
+      "help": "(Title$,FirstColour)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RTCheckASyncPaletteRequest",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RTEndASyncPaletteRequest",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RTReturnValue",
+      "kind": "function",
+      "help": "-- return value of last RT command",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

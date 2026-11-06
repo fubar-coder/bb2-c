@@ -1,0 +1,295 @@
+{
+  "name": "gtlib",
+  "group": "acidlibs",
+  "number": 141,
+  "object": {"name": "GTList", "maximum": 5},
+  "entries": [
+    {
+      "name": "GTList",
+      "kind": "object",
+      "help": "A GadTools GadgetList"
+    },
+    {
+      "name": "GTButton",
+      "kind": "statement",
+      "help": "GTList#,id,x,y,w,h,Text$,flags",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GTCheckBox",
+      "kind": "statement",
+      "help": "GTList#,id,x,y,w,h,Text$,flags",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GTCycle",
+      "kind": "statement",
+      "help": "GTList#,id,x,y,w,h,Text$,flags,Options$[,active]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "string", "code": 7}, {"type": "word", "code": 66, "flags": ["stack"]}]}
+      ]
+    },
+    {
+      "name": "GTInteger",
+      "kind": "statement",
+      "help": "GTList#,id,x,y,w,h,Text$,flags,default",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GTListView",
+      "kind": "statement",
+      "help": "GTList#,id,x,y,w,h,Text$,flags,list()[,selected[,top]]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "array", "code": 96, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "array", "code": 96, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "array", "code": 96, "flags": ["stack"]}]}
+      ]
+    },
+    {
+      "name": "GTMX",
+      "kind": "statement",
+      "help": "GTList#,id,x,y,w,h,Text$,flags,Options$[,active]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "string", "code": 7}, {"type": "word", "code": 66, "flags": ["stack"]}]}
+      ]
+    },
+    {
+      "name": "GTNumber",
+      "kind": "statement",
+      "help": "GTList#,id,x,y,w,h,Text$,flags,value",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GTPalette",
+      "kind": "statement",
+      "help": "GTList#,id,x,y,w,h,Text$,flags,depth[,Color]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 66, "flags": ["stack"]}]}
+      ]
+    },
+    {
+      "name": "GTScroller",
+      "kind": "statement",
+      "help": "GTList#,id,x,y,w,h,Text$,flags,Visible,Total[,Top]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 66, "flags": ["stack"]}]}
+      ]
+    },
+    {
+      "name": "GTSlider",
+      "kind": "statement",
+      "help": "GTList#,id,x,y,w,h,Text$,flags,Min,Max[,Level]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 66, "flags": ["stack"]}]}
+      ]
+    },
+    {
+      "name": "GTString",
+      "kind": "statement",
+      "help": "GTList#,id,x,y,w,h,Text$,flags,MaxChars [,default$]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "string", "code": 71, "flags": ["stack"]}]}
+      ]
+    },
+    {
+      "name": "GTText",
+      "kind": "statement",
+      "help": "GTList#,id,x,y,w,h,Text$,flags,Display$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "AttachGTList",
+      "kind": "statement",
+      "help": "GTList#,Window#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTTags",
+      "kind": "statement",
+      "help": "Tag,Value [,Tag,Value...]",
+      "forms": [
+        {"args": [{"type": "long", "code": 67, "flags": ["stack"]}, {"type": "long", "code": 67, "flags": ["stack"]}], "repeat": {"from": 0, "count": 2}}
+      ]
+    },
+    {
+      "name": "GTGadPtr",
+      "kind": "function",
+      "help": "(GTList#,id)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTBevelBox",
+      "kind": "statement",
+      "help": "GTList#,x,y,w,h,flags",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GTChangeList",
+      "kind": "statement",
+      "help": "GTList#,id [ ,List() ]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "array", "code": 96, "flags": ["stack"]}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTSetAttrs",
+      "kind": "command",
+      "help": "GTList#,id [,Tag,Value...]",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 67, "flags": ["stack"]}, {"type": "long", "code": 67, "flags": ["stack"]}], "repeat": {"from": 2, "count": 2}}
+      ]
+    },
+    {
+      "name": "GTSetString",
+      "kind": "statement",
+      "help": "GTList#,id,string$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "GTSetInteger",
+      "kind": "statement",
+      "help": "GTList#,id,value",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GTGetString",
+      "kind": "function",
+      "help": "GTList#,id",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTGetInteger",
+      "kind": "function",
+      "help": "GTList#,id",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTShape",
+      "kind": "statement",
+      "help": "GTList#,id,x,y,flags,Shape#[,Shape#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTGetAttrs",
+      "kind": "function",
+      "help": "(GTList#,id,Tag)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GTEnable",
+      "kind": "statement",
+      "help": "GTList#,Id",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTDisable",
+      "kind": "statement",
+      "help": "GTList#,Id",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTToggle",
+      "kind": "statement",
+      "help": "GTList#,Id [,On|Off]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTStatus",
+      "kind": "function",
+      "help": "GTList#,Id",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTArrowSize",
+      "kind": "statement",
+      "help": "size",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DetachGTList",
+      "kind": "statement",
+      "help": "GTList#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTGimmeCludge",
+      "kind": "statement",
+      "help": "On/Off",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTSetHighlight",
+      "kind": "statement",
+      "help": "GTList#,id,value",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GTFreeGadget",
+      "kind": "command",
+      "help": "GTList#,id",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

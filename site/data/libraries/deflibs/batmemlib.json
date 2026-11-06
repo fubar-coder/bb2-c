@@ -1,0 +1,40 @@
+{
+  "name": "batmemlib",
+  "group": "deflibs",
+  "number": 245,
+  "opens": "battmem.resource",
+  "entries": [
+    {
+      "name": "ObtainBattSemaphore_",
+      "kind": "oscall",
+      "help": "",
+      "base": 245,
+      "offset": -6,
+      "registers": []
+    },
+    {
+      "name": "ReleaseBattSemaphore_",
+      "kind": "oscall",
+      "help": "",
+      "base": 245,
+      "offset": -12,
+      "registers": []
+    },
+    {
+      "name": "ReadBattMem_",
+      "kind": "oscall",
+      "help": "(buffer,offset,length)",
+      "base": 245,
+      "offset": -18,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "WriteBattMem_",
+      "kind": "oscall",
+      "help": "(buffer,offset,length)",
+      "base": 245,
+      "offset": -24,
+      "registers": ["a0", "d0", "d1"]
+    }
+  ]
+}

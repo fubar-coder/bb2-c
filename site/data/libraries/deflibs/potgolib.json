@@ -1,0 +1,32 @@
+{
+  "name": "potgolib",
+  "group": "deflibs",
+  "number": 223,
+  "opens": "potgo.resource",
+  "entries": [
+    {
+      "name": "AllocPotBits_",
+      "kind": "oscall",
+      "help": "(bits)",
+      "base": 223,
+      "offset": -6,
+      "registers": ["d0"]
+    },
+    {
+      "name": "FreePotBits_",
+      "kind": "oscall",
+      "help": "(bits)",
+      "base": 223,
+      "offset": -12,
+      "registers": ["d0"]
+    },
+    {
+      "name": "WritePotgo_",
+      "kind": "oscall",
+      "help": "(word,mask)",
+      "base": 223,
+      "offset": -18,
+      "registers": ["d0", "d1"]
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "name": "blitlib",
+  "group": "acidlibs",
+  "number": 150,
+  "entries": [
+    {
+      "name": "Blit",
+      "kind": "statement",
+      "help": "Shape#,X,Y[,Excessonoff]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BlitMode",
+      "kind": "statement",
+      "help": "BLTCON0",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CookieMode",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "EraseMode",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "InvMode",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "SolidMode",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "Block",
+      "kind": "statement",
+      "help": "Shape#,X,Y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BlitColl",
+      "kind": "function",
+      "help": "(Shape#,x,y)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,208 @@
+{
+  "name": "rizonejoylib",
+  "group": "userlibs",
+  "number": 64,
+  "entries": [
+    {
+      "name": "ZoneInit",
+      "kind": "statement",
+      "help": "[zone_num#]|[#start_num,#end_num] - intialize zones",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "SetZone",
+      "kind": "command",
+      "help": "num,x1,y1[,x2,y2]|[,radius]",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Zone",
+      "kind": "function",
+      "help": "(x,y)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ZoneTest",
+      "kind": "function",
+      "help": "(start_num[,end_num],x,y)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ZoneTable",
+      "kind": "function",
+      "help": "- returns address of the current zone table",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "JFire",
+      "kind": "function",
+      "help": "(port)",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "JVert",
+      "kind": "function",
+      "help": "(port)",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "JHoriz",
+      "kind": "function",
+      "help": "(port)",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "AllFire",
+      "kind": "function",
+      "help": "([joybits])",
+      "result": "byte",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "ZoneTableSize",
+      "kind": "function",
+      "help": "- returns size of the current zone table",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "NewZoneTable",
+      "kind": "function",
+      "help": "table#,num_zones",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "UseZoneTable",
+      "kind": "command",
+      "help": " - select a zone table for use",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FreeZoneTable",
+      "kind": "function",
+      "help": "table#",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ZoneTableNumber",
+      "kind": "function",
+      "help": "- returns the number of the current zone table",
+      "result": "byte",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ZoneMode",
+      "kind": "function",
+      "help": " - returns -1 for 68020 mode or 0 for 68000 mode",
+      "result": "byte",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "SetZoneMode",
+      "kind": "statement",
+      "help": "mode",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "JAdaptorStatus",
+      "kind": "command",
+      "help": "On/Off - status of four player adaptor reading",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "GetZoneX1",
+      "kind": "function",
+      "help": "(zone) - returns the start x pos of a zone",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetZoneY1",
+      "kind": "function",
+      "help": "(zone) - returns the start y pos of a zone",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetZoneX2",
+      "kind": "function",
+      "help": "(zone) - returns the end x pos of a zone",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetZoneY2",
+      "kind": "function",
+      "help": "(zone) - returns the end pos of a zone",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ReadJoyPad",
+      "kind": "function",
+      "help": "port#      --B,R,Y,G,FF,RW,PL,0",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

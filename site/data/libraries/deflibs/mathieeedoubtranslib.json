@@ -1,0 +1,144 @@
+{
+  "name": "mathieeedoubtranslib",
+  "group": "deflibs",
+  "number": 228,
+  "opens": "mathieeedoubtrans.library",
+  "entries": [
+    {
+      "name": "IEEEDPAtan_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -30,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPSin_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -36,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPCos_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -42,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPTan_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -48,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPSincos_",
+      "kind": "oscall",
+      "help": "(pf2,parm)",
+      "base": 228,
+      "offset": -54,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "IEEEDPSinh_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -60,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPCosh_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -66,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPTanh_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -72,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPExp_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -78,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPLog_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -84,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPPow_",
+      "kind": "oscall",
+      "help": "(exp,arg)",
+      "base": 228,
+      "offset": -90,
+      "registers": ["d2", "d3", "d0", "d1"]
+    },
+    {
+      "name": "IEEEDPSqrt_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -96,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPTieee_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -102,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPFieee_",
+      "kind": "oscall",
+      "help": "(single)",
+      "base": 228,
+      "offset": -108,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEEDPAsin_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -114,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPAcos_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -120,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPLog10_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 228,
+      "offset": -126,
+      "registers": ["d0", "d1"]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "name": "rievallib",
+  "group": "userlibs",
+  "number": 121,
+  "entries": [
+    {
+      "name": "ConvToPostFix",
+      "kind": "statement",
+      "help": "string,buffer",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "PFEvaluate",
+      "kind": "function",
+      "help": "(string)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "PFRegisters",
+      "kind": "statement",
+      "help": "*registerblock - pointer to registers",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "PFErrorType",
+      "kind": "function",
+      "help": "- returns error number or 0 for none",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "PFErrorText",
+      "kind": "function",
+      "help": "- returns error text corresponding to error",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "PFIndirectAddr",
+      "kind": "function",
+      "help": "- returns last indirect lookup",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

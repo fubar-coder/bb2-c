@@ -1,0 +1,223 @@
+{
+  "name": "doslib2",
+  "group": "deflibs",
+  "number": 249,
+  "entries": [
+    {
+      "name": "ReadItem_",
+      "kind": "oscall",
+      "help": "(name,maxchars,cSource)",
+      "base": 252,
+      "offset": -810,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "StrToLong_",
+      "kind": "oscall",
+      "help": "(string,value)",
+      "base": 252,
+      "offset": -816,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "MatchFirst_",
+      "kind": "oscall",
+      "help": "(pat,anchor)",
+      "base": 252,
+      "offset": -822,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "MatchNext_",
+      "kind": "oscall",
+      "help": "(anchor)",
+      "base": 252,
+      "offset": -828,
+      "registers": ["d1"]
+    },
+    {
+      "name": "MatchEnd_",
+      "kind": "oscall",
+      "help": "(anchor)",
+      "base": 252,
+      "offset": -834,
+      "registers": ["d1"]
+    },
+    {
+      "name": "ParsePattern_",
+      "kind": "oscall",
+      "help": "(pat,buf,buflen)",
+      "base": 252,
+      "offset": -840,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "MatchPattern_",
+      "kind": "oscall",
+      "help": "(pat,str)",
+      "base": 252,
+      "offset": -846,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "FreeArgs_",
+      "kind": "oscall",
+      "help": "(args)",
+      "base": 252,
+      "offset": -858,
+      "registers": ["d1"]
+    },
+    {
+      "name": "FilePart_",
+      "kind": "oscall",
+      "help": "(path)",
+      "base": 252,
+      "offset": -870,
+      "registers": ["d1"]
+    },
+    {
+      "name": "PathPart_",
+      "kind": "oscall",
+      "help": "(path)",
+      "base": 252,
+      "offset": -876,
+      "registers": ["d1"]
+    },
+    {
+      "name": "AddPart_",
+      "kind": "oscall",
+      "help": "(dirname,filename,size)",
+      "base": 252,
+      "offset": -882,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "StartNotify_",
+      "kind": "oscall",
+      "help": "(notify)",
+      "base": 252,
+      "offset": -888,
+      "registers": ["d1"]
+    },
+    {
+      "name": "EndNotify_",
+      "kind": "oscall",
+      "help": "(notify)",
+      "base": 252,
+      "offset": -894,
+      "registers": ["d1"]
+    },
+    {
+      "name": "SetVar_",
+      "kind": "oscall",
+      "help": "(name,buffer,size,flags)",
+      "base": 252,
+      "offset": -900,
+      "registers": ["d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "GetVar_",
+      "kind": "oscall",
+      "help": "(name,buffer,size,flags)",
+      "base": 252,
+      "offset": -906,
+      "registers": ["d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "DeleteVar_",
+      "kind": "oscall",
+      "help": "(name,flags)",
+      "base": 252,
+      "offset": -912,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "FindVar_",
+      "kind": "oscall",
+      "help": "(name,type)",
+      "base": 252,
+      "offset": -918,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "CliInitNewcli_",
+      "kind": "oscall",
+      "help": "(dp)",
+      "base": 252,
+      "offset": -930,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CliInitRun_",
+      "kind": "oscall",
+      "help": "(dp)",
+      "base": 252,
+      "offset": -936,
+      "registers": ["a0"]
+    },
+    {
+      "name": "WriteChars_",
+      "kind": "oscall",
+      "help": "(buf,buflen)",
+      "base": 252,
+      "offset": -942,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "PutStr_",
+      "kind": "oscall",
+      "help": "(str)",
+      "base": 252,
+      "offset": -948,
+      "registers": ["d1"]
+    },
+    {
+      "name": "VPrintf_",
+      "kind": "oscall",
+      "help": "(format,argarray)",
+      "base": 252,
+      "offset": -954,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "ParsePatternNoCase_",
+      "kind": "oscall",
+      "help": "(pat,buf,buflen)",
+      "base": 252,
+      "offset": -966,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "MatchPatternNoCase_",
+      "kind": "oscall",
+      "help": "(pat,str)",
+      "base": 252,
+      "offset": -972,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "SameDevice_",
+      "kind": "oscall",
+      "help": "(lock1,lock2)",
+      "base": 252,
+      "offset": -984,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "ExAllEnd_",
+      "kind": "oscall",
+      "help": "(lock,buffer,size,data,control)",
+      "base": 252,
+      "offset": -990,
+      "registers": ["d1", "d2", "d3", "d4", "d5"]
+    },
+    {
+      "name": "SetOwner_",
+      "kind": "oscall",
+      "help": "(name,owner_info)",
+      "base": 252,
+      "offset": -996,
+      "registers": ["d1", "d2"]
+    }
+  ]
+}

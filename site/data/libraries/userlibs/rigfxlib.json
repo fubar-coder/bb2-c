@@ -1,0 +1,130 @@
+{
+  "name": "rigfxlib",
+  "group": "userlibs",
+  "number": 65,
+  "entries": [
+    {
+      "name": "PalRed",
+      "kind": "function",
+      "help": "(colour#)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "PalGreen",
+      "kind": "function",
+      "help": "(colour#)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "PalBlue",
+      "kind": "function",
+      "help": "(colour#)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "PaletteInfo",
+      "kind": "statement",
+      "help": "palette#",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "AGAPalRed",
+      "kind": "function",
+      "help": "(colour#)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "AGAPalGreen",
+      "kind": "function",
+      "help": "(colour#)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "AGAPalBlue",
+      "kind": "function",
+      "help": "(colour#)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "PalAdjust",
+      "kind": "statement",
+      "help": "palette#,ratio.q[,start_col,end_col]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "quick", "code": 4}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "quick", "code": 4}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FillPalette",
+      "kind": "statement",
+      "help": "palette#,r,g,b[,start_col,end_col] - fill palette with r,g,b values",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "AGAFillPalette",
+      "kind": "statement",
+      "help": "palette#,r,g,b[,start_col,end_col] - fill palette with AGA r,g,b values",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CopyColour",
+      "kind": "command",
+      "help": "sourcepal#,destpal#,colsource#,coldest#",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CPUCls",
+      "kind": "statement",
+      "help": "bitmap#",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "SaveCMAP",
+      "kind": "command",
+      "help": "palette#,filename$",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "MergeBitplanes",
+      "kind": "statement",
+      "help": "srcbitmap,srcbitmap,destbitmap,numplanes",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "name": "rifxlib",
+  "group": "userlibs",
+  "number": 66,
+  "entries": [
+    {
+      "name": "ClearBitmap",
+      "kind": "statement",
+      "help": "bitmap#,delay[,height,offset]",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FadeInBitmap",
+      "kind": "statement",
+      "help": "bitmapsource#,bitmapdest#,delay[,height,offset1,offset2]",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ZoomX4",
+      "kind": "statement",
+      "help": "source#,dest#,sourceadd,destadd,width,height[,xy_select]",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}, {"type": "byte", "code": 1}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "byte", "code": 1}, {"type": "byte", "code": 1}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "Derez",
+      "kind": "command",
+      "help": "source#,dest#,sourceadd,destadd,derez_value,height",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ZoomXY",
+      "kind": "statement",
+      "help": "xzoom,yzoom,height",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "InitZoomXY",
+      "kind": "statement",
+      "help": "source#,dest#,sourceadd,destadd",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ZoomX2",
+      "kind": "statement",
+      "help": "source#,dest#,sourceadd,destadd,width,height",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetZoomTables",
+      "kind": "function",
+      "help": "- return pointer to array of tables",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ZoomX8",
+      "kind": "statement",
+      "help": "source#,dest#,sourceadd,destadd,width,height",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}, {"type": "byte", "code": 1}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ADDValue",
+      "kind": "function",
+      "help": "(bitmap#,x,y)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ReduceX2",
+      "kind": "statement",
+      "help": "source#,dest#,sourceadd,destadd,width,height",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}, {"type": "byte", "code": 1}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ZoomyZoom",
+      "kind": "statement",
+      "help": "bitmap#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

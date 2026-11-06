@@ -1,0 +1,60 @@
+{
+  "name": "ilbmifflib",
+  "group": "acidlibs",
+  "number": 161,
+  "entries": [
+    {
+      "name": "ILBMInfo",
+      "kind": "command",
+      "help": "Filename$",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "ILBMWidth",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ILBMHeight",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ILBMDepth",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ILBMViewMode",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "DecodeILBM",
+      "kind": "statement",
+      "help": "Bitmap#,MemoryLocation",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

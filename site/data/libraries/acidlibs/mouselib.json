@@ -1,0 +1,76 @@
+{
+  "name": "mouselib",
+  "group": "acidlibs",
+  "number": 108,
+  "entries": [
+    {
+      "name": "Mouse",
+      "kind": "statement",
+      "help": "On|Off",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Pointer",
+      "kind": "statement",
+      "help": "Sprite#,Sprite Channel",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": []}
+      ]
+    },
+    {
+      "name": "MouseArea",
+      "kind": "statement",
+      "help": "Minx,Miny,Maxx,Maxy",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MouseX",
+      "kind": "function",
+      "help": "",
+      "result": "quick",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "MouseY",
+      "kind": "function",
+      "help": "",
+      "result": "quick",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "MouseXSpeed",
+      "kind": "function",
+      "help": "",
+      "result": "quick",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "MouseYSpeed",
+      "kind": "function",
+      "help": "",
+      "result": "quick",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "PositionMouse",
+      "kind": "statement",
+      "help": "x,y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

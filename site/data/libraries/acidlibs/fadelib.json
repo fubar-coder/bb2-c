@@ -1,0 +1,52 @@
+{
+  "name": "fadelib",
+  "group": "acidlibs",
+  "number": 157,
+  "entries": [
+    {
+      "name": "FadeIn",
+      "kind": "statement",
+      "help": "Palette#[,Rate[,Low Colour,High Colour]]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FadeOut",
+      "kind": "statement",
+      "help": "Palette#[,Rate[,Low Colour,High Colour]]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ASyncFade",
+      "kind": "statement",
+      "help": "On|Off",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DoFade",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "FadeStatus",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

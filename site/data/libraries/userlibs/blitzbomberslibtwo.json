@@ -1,0 +1,39 @@
+{
+  "name": "blitzbomberslibtwo",
+  "group": "userlibs",
+  "number": 31,
+  "entries": [
+    {
+      "name": "KillInvader",
+      "kind": "statement",
+      "help": "sprad,x,y,offset",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DrawStarField",
+      "kind": "statement",
+      "help": "table,bitplane",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "DrawBullet",
+      "kind": "statement",
+      "help": "bitm,x,y",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "EraseBullet",
+      "kind": "statement",
+      "help": "bitm,x,y",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

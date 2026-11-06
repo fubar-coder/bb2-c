@@ -1,0 +1,206 @@
+{
+  "name": "palettelib",
+  "group": "acidlibs",
+  "number": 156,
+  "object": {"name": "Palette", "maximum": 4},
+  "entries": [
+    {
+      "name": "LoadPalette",
+      "kind": "statement",
+      "help": "Palette#,Filename$[,Palette Offset]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Cycle",
+      "kind": "statement",
+      "help": "Palette#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "RGB",
+      "kind": "statement",
+      "help": "Colour Register,Red,Green,Blue",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Red",
+      "kind": "function",
+      "help": "(Colour Register)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Green",
+      "kind": "function",
+      "help": "(Colour Register)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Blue",
+      "kind": "function",
+      "help": "(Colour Register)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Palette",
+      "kind": "object",
+      "help": "colour and cycling information"
+    },
+    {
+      "name": "PalRGB",
+      "kind": "statement",
+      "help": "Palette#,Colour Register,Red,Green,Blue",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetCycle",
+      "kind": "statement",
+      "help": "Palette#,Cycle,Low Colour,High Colour[,Speed]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "StopCycle",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "AGARGB",
+      "kind": "statement",
+      "help": "Colour Register,Red,Green,Blue",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "AGAPalRGB",
+      "kind": "statement",
+      "help": "Palette#,Colour Register,Red,Green,Blue",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "AGARed",
+      "kind": "function",
+      "help": "(Colour Register)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "AGAGreen",
+      "kind": "function",
+      "help": "(Colour Register)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "AGABlue",
+      "kind": "function",
+      "help": "(Colour Register)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ShowPalette",
+      "kind": "statement",
+      "help": "Palette#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "NewPaletteMode",
+      "kind": "statement",
+      "help": "On|Off",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CyclePalette",
+      "kind": "statement",
+      "help": "Palette#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FadePalette",
+      "kind": "statement",
+      "help": "SrcPalette#,DestPalette#,Brightness.q",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "InitPalette",
+      "kind": "statement",
+      "help": "Palette#,NumColors",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "PaletteRange",
+      "kind": "statement",
+      "help": "Palette#,StartCol,EndCol,r0,g0,b0,r1,g1,b1",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DuplicatePalette",
+      "kind": "statement",
+      "help": "SrcPalette#,DestPalette#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DecodePalette",
+      "kind": "statement",
+      "help": "Palette#,MemoryLocation[,Palette Offset]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "MixPalette",
+      "kind": "statement",
+      "help": "Palette#,Palette#,DestPalette#,fraction",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "quick", "code": 4}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "name": "ridebuglib",
+  "group": "userlibs",
+  "number": 51,
+  "entries": [
+    {
+      "name": "AddVarTrace",
+      "kind": "statement",
+      "help": "variable,string$,output - add a variable trace",
+      "forms": [
+        {"args": [{"type": "any", "code": 136, "flags": ["address"]}, {"type": "string", "code": 7}, {"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "DelVarTrace",
+      "kind": "statement",
+      "help": "variable$ - remove a trace on a named variable",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "VarTraceWindow",
+      "kind": "statement",
+      "help": "- open the variable trace window on the debugger screen",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "DisAsmWindow",
+      "kind": "statement",
+      "help": "- open the disassembly window on the debugger screen",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CopperTrace",
+      "kind": "statement",
+      "help": "address,[,offset] - offset<>0 for CopList objects",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ProcControl",
+      "kind": "statement",
+      "help": "[On/Off]",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "MemoryWindow",
+      "kind": "statement",
+      "help": "num#,address - open a memory window on the debugger screen",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "name": "shapeslib",
+  "group": "acidlibs",
+  "number": 154,
+  "object": {"name": "Shape", "maximum": 100},
+  "entries": [
+    {
+      "name": "LoadShape",
+      "kind": "statement",
+      "help": "Shape#,Filename$[,Palette#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MakeCookie",
+      "kind": "statement",
+      "help": "Shape#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ShapeWidth",
+      "kind": "function",
+      "help": "(Shape#)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ShapeHeight",
+      "kind": "function",
+      "help": "(Shape#)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Handle",
+      "kind": "statement",
+      "help": "Shape#,X,Y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "AutoCookie",
+      "kind": "statement",
+      "help": "On|Off",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CopyShape",
+      "kind": "statement",
+      "help": "Shape#,Shape#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetaShape",
+      "kind": "statement",
+      "help": "Shape#,X,Y,Width,Height",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SaveShapes",
+      "kind": "statement",
+      "help": "Shape#,Shape#,Filename$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "LoadShapes",
+      "kind": "statement",
+      "help": "Shape#[,Shape#],Filename$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "Shape",
+      "kind": "object",
+      "help": "- image"
+    },
+    {
+      "name": "MidHandle",
+      "kind": "statement",
+      "help": "Shape#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DecodeShapes",
+      "kind": "statement",
+      "help": "Shape#[,Shape#],MemoryLocation",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "InitShape",
+      "kind": "statement",
+      "help": "Shape#,Width,Height,Depth",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

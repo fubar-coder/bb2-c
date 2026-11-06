@@ -1,0 +1,32 @@
+{
+  "name": "battclocklib",
+  "group": "deflibs",
+  "number": 246,
+  "opens": "battclock.resource",
+  "entries": [
+    {
+      "name": "ResetBattClock_",
+      "kind": "oscall",
+      "help": "",
+      "base": 246,
+      "offset": -6,
+      "registers": []
+    },
+    {
+      "name": "ReadBattClock_",
+      "kind": "oscall",
+      "help": "",
+      "base": 246,
+      "offset": -12,
+      "registers": []
+    },
+    {
+      "name": "WriteBattClock_",
+      "kind": "oscall",
+      "help": "(time)",
+      "base": 246,
+      "offset": -18,
+      "registers": ["d0"]
+    }
+  ]
+}

@@ -1,0 +1,216 @@
+{
+  "name": "commoditieslib",
+  "group": "deflibs",
+  "number": 240,
+  "opens": "commodities.library",
+  "entries": [
+    {
+      "name": "CreateCxObj_",
+      "kind": "oscall",
+      "help": "(type,arg1,arg2)",
+      "base": 240,
+      "offset": -30,
+      "registers": ["d0", "a0", "a1"]
+    },
+    {
+      "name": "CxBroker_",
+      "kind": "oscall",
+      "help": "(nb,error)",
+      "base": 240,
+      "offset": -36,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "ActivateCxObj_",
+      "kind": "oscall",
+      "help": "(co,true)",
+      "base": 240,
+      "offset": -42,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "DeleteCxObj_",
+      "kind": "oscall",
+      "help": "(co)",
+      "base": 240,
+      "offset": -48,
+      "registers": ["a0"]
+    },
+    {
+      "name": "DeleteCxObjAll_",
+      "kind": "oscall",
+      "help": "(co)",
+      "base": 240,
+      "offset": -54,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CxObjType_",
+      "kind": "oscall",
+      "help": "(co)",
+      "base": 240,
+      "offset": -60,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CxObjError_",
+      "kind": "oscall",
+      "help": "(co)",
+      "base": 240,
+      "offset": -66,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ClearCxObjError_",
+      "kind": "oscall",
+      "help": "(co)",
+      "base": 240,
+      "offset": -72,
+      "registers": ["a0"]
+    },
+    {
+      "name": "SetCxObjPri_",
+      "kind": "oscall",
+      "help": "(co,pri)",
+      "base": 240,
+      "offset": -78,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "AttachCxObj_",
+      "kind": "oscall",
+      "help": "(headObj,co)",
+      "base": 240,
+      "offset": -84,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "EnqueueCxObj_",
+      "kind": "oscall",
+      "help": "(headObj,co)",
+      "base": 240,
+      "offset": -90,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "InsertCxObj_",
+      "kind": "oscall",
+      "help": "(headObj,co,pred)",
+      "base": 240,
+      "offset": -96,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "RemoveCxObj_",
+      "kind": "oscall",
+      "help": "(co)",
+      "base": 240,
+      "offset": -102,
+      "registers": ["a0"]
+    },
+    {
+      "name": "SetTranslate_",
+      "kind": "oscall",
+      "help": "(translator,events)",
+      "base": 240,
+      "offset": -114,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "SetFilter_",
+      "kind": "oscall",
+      "help": "(filter,text)",
+      "base": 240,
+      "offset": -120,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "SetFilterIX_",
+      "kind": "oscall",
+      "help": "(filter,ix)",
+      "base": 240,
+      "offset": -126,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ParseIX_",
+      "kind": "oscall",
+      "help": "(description,ix)",
+      "base": 240,
+      "offset": -132,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "CxMsgType_",
+      "kind": "oscall",
+      "help": "(cxm)",
+      "base": 240,
+      "offset": -138,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CxMsgData_",
+      "kind": "oscall",
+      "help": "(cxm)",
+      "base": 240,
+      "offset": -144,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CxMsgID_",
+      "kind": "oscall",
+      "help": "(cxm)",
+      "base": 240,
+      "offset": -150,
+      "registers": ["a0"]
+    },
+    {
+      "name": "DivertCxMsg_",
+      "kind": "oscall",
+      "help": "(cxm,headObj,returnObj)",
+      "base": 240,
+      "offset": -156,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "RouteCxMsg_",
+      "kind": "oscall",
+      "help": "(cxm,co)",
+      "base": 240,
+      "offset": -162,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "DisposeCxMsg_",
+      "kind": "oscall",
+      "help": "(cxm)",
+      "base": 240,
+      "offset": -168,
+      "registers": ["a0"]
+    },
+    {
+      "name": "InvertKeyMap_",
+      "kind": "oscall",
+      "help": "(ansiCode,event,km)",
+      "base": 240,
+      "offset": -174,
+      "registers": ["d0", "a0", "a1"]
+    },
+    {
+      "name": "AddIEvents_",
+      "kind": "oscall",
+      "help": "(events)",
+      "base": 240,
+      "offset": -180,
+      "registers": ["a0"]
+    },
+    {
+      "name": "MatchIX_",
+      "kind": "oscall",
+      "help": "(event,ix)",
+      "base": 240,
+      "offset": -204,
+      "registers": ["a0", "a1"]
+    }
+  ]
+}

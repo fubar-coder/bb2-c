@@ -1,0 +1,120 @@
+{
+  "name": "rigtmenulib",
+  "group": "userlibs",
+  "number": 37,
+  "object": {"name": "GTMenuList", "maximum": 5},
+  "entries": [
+    {
+      "name": "GTMenuList",
+      "kind": "object",
+      "help": "List of GT Menus"
+    },
+    {
+      "name": "CreateMenuStrip",
+      "kind": "command",
+      "help": "GTMenuList#",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTSetMenu",
+      "kind": "statement",
+      "help": "GTMenuList#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTUnSetMenu",
+      "kind": "statement",
+      "help": "- removes the gtmenulist from the current window",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "GTMenuTitle",
+      "kind": "statement",
+      "help": "GTMenuList#,menu,title$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "GTMenuItem",
+      "kind": "statement",
+      "help": "GTMenuList#,flags,menu,item[,itemtext$[,shortcut$[,mutualexclude[,UserData]]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GTMenuState",
+      "kind": "statement",
+      "help": "GTMenuList#[,Menu[,Item[,Subitem]]],On|Off",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTSubItem",
+      "kind": "statement",
+      "help": "GTMenuList#,flags,menu,item,subitem[,itemtext$[,shortcut$[,mutualexclude[,UserData]]]]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "string", "code": 71, "flags": ["stack"]}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GTMenuChecked",
+      "kind": "function",
+      "help": "(GTMenuList#,Menu,Item[,Subitem])",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTSetMenuChecked",
+      "kind": "statement",
+      "help": "GTMenuList#,Menu,Item[,Subitem],Off|On",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTFreeMenu",
+      "kind": "statement",
+      "help": "GTMenuList#,Menu[,Item[,Subitem]]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GTGetUserData",
+      "kind": "function",
+      "help": "(GTMenuList#,Menu,Item[,Subitem])",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

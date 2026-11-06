@@ -1,0 +1,327 @@
+{
+  "name": "graphicslib2",
+  "group": "deflibs",
+  "number": 250,
+  "entries": [
+    {
+      "name": "EraseRect_",
+      "kind": "oscall",
+      "help": "(rp,xMin,yMin,xMax,yMax)",
+      "base": 254,
+      "offset": -810,
+      "registers": ["a1", "d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "ExtendFont_",
+      "kind": "oscall",
+      "help": "(font,fontTags)",
+      "base": 254,
+      "offset": -816,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "StripFont_",
+      "kind": "oscall",
+      "help": "(font)",
+      "base": 254,
+      "offset": -822,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CalcIVG_",
+      "kind": "oscall",
+      "help": "(v,vp)",
+      "base": 254,
+      "offset": -828,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "AttachPalExtra_",
+      "kind": "oscall",
+      "help": "(cm,vp)",
+      "base": 254,
+      "offset": -834,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ObtainBestPenA_",
+      "kind": "oscall",
+      "help": "(cm,r,g,b,tags)",
+      "base": 254,
+      "offset": -840,
+      "registers": ["a0", "d1", "d2", "d3", "a1"]
+    },
+    {
+      "name": "GfxInternal3_",
+      "kind": "oscall",
+      "help": "",
+      "base": 254,
+      "offset": -846,
+      "registers": []
+    },
+    {
+      "name": "SetRGB32_",
+      "kind": "oscall",
+      "help": "(vp,n,r,g,b)",
+      "base": 254,
+      "offset": -852,
+      "registers": ["a0", "d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "GetAPen_",
+      "kind": "oscall",
+      "help": "(rp)",
+      "base": 254,
+      "offset": -858,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GetBPen_",
+      "kind": "oscall",
+      "help": "(rp)",
+      "base": 254,
+      "offset": -864,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GetDrMd_",
+      "kind": "oscall",
+      "help": "(rp)",
+      "base": 254,
+      "offset": -870,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GetOutlinePen_",
+      "kind": "oscall",
+      "help": "(rp)",
+      "base": 254,
+      "offset": -876,
+      "registers": ["a0"]
+    },
+    {
+      "name": "LoadRGB32_",
+      "kind": "oscall",
+      "help": "(vp,table)",
+      "base": 254,
+      "offset": -882,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "SetChipRev_",
+      "kind": "oscall",
+      "help": "(want)",
+      "base": 254,
+      "offset": -888,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SetABPenDrMd_",
+      "kind": "oscall",
+      "help": "(rp,apen,bpen,drawmode)",
+      "base": 254,
+      "offset": -894,
+      "registers": ["a1", "d0", "d1", "d2"]
+    },
+    {
+      "name": "GetRGB32_",
+      "kind": "oscall",
+      "help": "(cm,firstcolor,ncolors,table)",
+      "base": 254,
+      "offset": -900,
+      "registers": ["a0", "d0", "d1", "a1"]
+    },
+    {
+      "name": "GfxSpare1_",
+      "kind": "oscall",
+      "help": "",
+      "base": 254,
+      "offset": -906,
+      "registers": []
+    },
+    {
+      "name": "AllocBitMap_",
+      "kind": "oscall",
+      "help": "(sizex,sizey,depth,flags,friend_bitmap)",
+      "base": 254,
+      "offset": -918,
+      "registers": ["d0", "d1", "d2", "d3", "a0"]
+    },
+    {
+      "name": "FreeBitMap_",
+      "kind": "oscall",
+      "help": "(bm)",
+      "base": 254,
+      "offset": -924,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GetExtSpriteA_",
+      "kind": "oscall",
+      "help": "(ss,tags)",
+      "base": 254,
+      "offset": -930,
+      "registers": ["a2", "a1"]
+    },
+    {
+      "name": "CoerceMode_",
+      "kind": "oscall",
+      "help": "(vp,monitorid,flags)",
+      "base": 254,
+      "offset": -936,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "ChangeVPBitMap_",
+      "kind": "oscall",
+      "help": "(vp,bm,db)",
+      "base": 254,
+      "offset": -942,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "ReleasePen_",
+      "kind": "oscall",
+      "help": "(cm,n)",
+      "base": 254,
+      "offset": -948,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "ObtainPen_",
+      "kind": "oscall",
+      "help": "(cm,n,r,g,b,f)",
+      "base": 254,
+      "offset": -954,
+      "registers": ["a0", "d0", "d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "GetBitMapAttr_",
+      "kind": "oscall",
+      "help": "(bm,attrnum)",
+      "base": 254,
+      "offset": -960,
+      "registers": ["a0", "d1"]
+    },
+    {
+      "name": "AllocDBufInfo_",
+      "kind": "oscall",
+      "help": "(vp)",
+      "base": 254,
+      "offset": -966,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FreeDBufInfo_",
+      "kind": "oscall",
+      "help": "(dbi)",
+      "base": 254,
+      "offset": -972,
+      "registers": ["a1"]
+    },
+    {
+      "name": "SetOutlinePen_",
+      "kind": "oscall",
+      "help": "(rp,pen)",
+      "base": 254,
+      "offset": -978,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "SetWriteMask_",
+      "kind": "oscall",
+      "help": "(rp,msk)",
+      "base": 254,
+      "offset": -984,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "SetMaxPen_",
+      "kind": "oscall",
+      "help": "(rp,maxpen)",
+      "base": 254,
+      "offset": -990,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "SetRGB32CM_",
+      "kind": "oscall",
+      "help": "(cm,n,r,g,b)",
+      "base": 254,
+      "offset": -996,
+      "registers": ["a0", "d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "ScrollRasterBF_",
+      "kind": "oscall",
+      "help": "(rp,dx,dy,xMin,yMin,xMax,yMax)",
+      "base": 254,
+      "offset": -1002,
+      "registers": ["a1", "d0", "d1", "d2", "d3", "d4", "d5"]
+    },
+    {
+      "name": "FindColor_",
+      "kind": "oscall",
+      "help": "(cm,r,g,b,maxcolor)",
+      "base": 254,
+      "offset": -1008,
+      "registers": ["a3", "d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "GfxSpare2_",
+      "kind": "oscall",
+      "help": "",
+      "base": 254,
+      "offset": -1014,
+      "registers": []
+    },
+    {
+      "name": "AllocSpriteDataA_",
+      "kind": "oscall",
+      "help": "(bm,tags)",
+      "base": 254,
+      "offset": -1020,
+      "registers": ["a2", "a1"]
+    },
+    {
+      "name": "ChangeExtSpriteA_",
+      "kind": "oscall",
+      "help": "(vp,oldsprite,newsprite,tags)",
+      "base": 254,
+      "offset": -1026,
+      "registers": ["a0", "a1", "a2", "a3"]
+    },
+    {
+      "name": "FreeSpriteData_",
+      "kind": "oscall",
+      "help": "(sp)",
+      "base": 254,
+      "offset": -1032,
+      "registers": ["a2"]
+    },
+    {
+      "name": "SetRPAttrsA_",
+      "kind": "oscall",
+      "help": "(rp,tags)",
+      "base": 254,
+      "offset": -1038,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "GetRPAttrsA_",
+      "kind": "oscall",
+      "help": "(rp,tags)",
+      "base": 254,
+      "offset": -1044,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "BestModeIDA_",
+      "kind": "oscall",
+      "help": "(tags)",
+      "base": 254,
+      "offset": -1050,
+      "registers": ["a0"]
+    }
+  ]
+}

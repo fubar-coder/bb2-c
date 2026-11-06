@@ -1,0 +1,272 @@
+{
+  "name": "rimapeditorlib",
+  "group": "userlibs",
+  "number": 8,
+  "object": {"name": "MapObject", "maximum": 5},
+  "entries": [
+    {
+      "name": "MapObject",
+      "kind": "object",
+      "help": ""
+    },
+    {
+      "name": "ShapeTo1616",
+      "kind": "statement",
+      "help": "source shape,dest shape",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ShapeMaskFill",
+      "kind": "statement",
+      "help": "shape#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ScanShapes",
+      "kind": "command",
+      "help": "startnum,highest - returns last shape scanned (null shape)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ScanMaxWidth",
+      "kind": "function",
+      "help": "- returns max width found after Scan",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ScanMaxheight",
+      "kind": "function",
+      "help": "- returns max height found after Scan",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ScanMaxdepth",
+      "kind": "function",
+      "help": "- returns max depth found after Scan",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "MapDataChanged",
+      "kind": "command",
+      "help": "[newstate] - has map changed since last load?",
+      "result": "word",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FillBitplane",
+      "kind": "statement",
+      "help": "bitmap#,width,height",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CreateMap",
+      "kind": "statement",
+      "help": "map#,width,height,bwidth,bheight,name$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "MapDataAdr",
+      "kind": "function",
+      "help": "[x,y] - returns adress of the current map",
+      "result": "long",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MapDataSize",
+      "kind": "function",
+      "help": "- returns byte size of map data",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "MapObjWidth",
+      "kind": "function",
+      "help": "- returns width of the current map",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "MapObjheight",
+      "kind": "function",
+      "help": "- returns height of the current map",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "MapDataGrab",
+      "kind": "statement",
+      "help": "address,datasize,mapnull",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MapObjName$",
+      "kind": "function",
+      "help": "- returns name of the current map",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "SetMapObjName$",
+      "kind": "statement",
+      "help": "name$",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "MapObjViewX",
+      "kind": "function",
+      "help": "- returns viewx of the current map",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "MapObjViewY",
+      "kind": "function",
+      "help": "- returns viewy of the current map",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "MapOutText",
+      "kind": "statement",
+      "help": "x,y,rastport,address/string",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "any", "code": 8}]}
+      ]
+    },
+    {
+      "name": "RubThroughMap",
+      "kind": "command",
+      "help": "[mapobject#]",
+      "result": "long",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "SetStencil",
+      "kind": "statement",
+      "help": "<array> - a byte array holding stencil data",
+      "forms": [
+        {"args": [{"type": "array", "code": 32}]}
+      ]
+    },
+    {
+      "name": "MapCanDraw",
+      "kind": "function",
+      "help": "(shape#,mapx,mapy)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MapCanDrawAddr",
+      "kind": "function",
+      "help": "- returns last address calculated by DoDraw",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ClearRubThroughMap",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "MapOutTextPen",
+      "kind": "statement",
+      "help": "rastport,pen",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MapOutTextCenter",
+      "kind": "statement",
+      "help": "x,y,rastport,address/string",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "any", "code": 8}]}
+      ]
+    },
+    {
+      "name": "MapOutTextRight",
+      "kind": "statement",
+      "help": "x,y,rastport,address/string",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "any", "code": 8}]}
+      ]
+    },
+    {
+      "name": "SetWindowDraw",
+      "kind": "statement",
+      "help": "mode    -- 0=normal, 1=meshed",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "M_InitParse",
+      "kind": "statement",
+      "help": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "M_NextArg$",
+      "kind": "function",
+      "help": "- get next parameter",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

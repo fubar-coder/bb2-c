@@ -1,0 +1,72 @@
+{
+  "name": "fontlib",
+  "group": "acidlibs",
+  "number": 142,
+  "object": {"name": "BlitzFont", "maximum": 4},
+  "entries": [
+    {
+      "name": "LoadBlitzFont",
+      "kind": "statement",
+      "help": "BlitzFont#,Fontname.font$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "BitMapOutput",
+      "kind": "statement",
+      "help": "Bitmap#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Colour",
+      "kind": "statement",
+      "help": "Foreground Colour[,Background Colour]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Locate",
+      "kind": "statement",
+      "help": "X,Y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "CursX",
+      "kind": "function",
+      "help": "",
+      "result": "quick",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CursY",
+      "kind": "function",
+      "help": "",
+      "result": "quick",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BitMapInput",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BlitzFont",
+      "kind": "object",
+      "help": ""
+    }
+  ]
+}

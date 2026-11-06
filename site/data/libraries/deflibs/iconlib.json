@@ -1,0 +1,120 @@
+{
+  "name": "iconlib",
+  "group": "deflibs",
+  "number": 235,
+  "opens": "icon.library",
+  "entries": [
+    {
+      "name": "GetIcon_",
+      "kind": "oscall",
+      "help": "(name,icon,freelist)",
+      "base": 235,
+      "offset": -42,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "PutIcon_",
+      "kind": "oscall",
+      "help": "(name,icon)",
+      "base": 235,
+      "offset": -48,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "FreeFreeList_",
+      "kind": "oscall",
+      "help": "(freelist)",
+      "base": 235,
+      "offset": -54,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AddFreeList_",
+      "kind": "oscall",
+      "help": "(freelist,mem,size)",
+      "base": 235,
+      "offset": -72,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "GetDiskObject_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 235,
+      "offset": -78,
+      "registers": ["a0"]
+    },
+    {
+      "name": "PutDiskObject_",
+      "kind": "oscall",
+      "help": "(name,diskobj)",
+      "base": 235,
+      "offset": -84,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "FreeDiskObject_",
+      "kind": "oscall",
+      "help": "(diskobj)",
+      "base": 235,
+      "offset": -90,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FindToolType_",
+      "kind": "oscall",
+      "help": "(toolTypeArray,typeName)",
+      "base": 235,
+      "offset": -96,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "MatchToolValue_",
+      "kind": "oscall",
+      "help": "(typeString,value)",
+      "base": 235,
+      "offset": -102,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "BumpRevision_",
+      "kind": "oscall",
+      "help": "(newname,oldname)",
+      "base": 235,
+      "offset": -108,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "GetDefDiskObject_",
+      "kind": "oscall",
+      "help": "(type)",
+      "base": 235,
+      "offset": -120,
+      "registers": ["d0"]
+    },
+    {
+      "name": "PutDefDiskObject_",
+      "kind": "oscall",
+      "help": "(diskObject)",
+      "base": 235,
+      "offset": -126,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GetDiskObjectNew_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 235,
+      "offset": -132,
+      "registers": ["a0"]
+    },
+    {
+      "name": "DeleteDiskObject_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 235,
+      "offset": -138,
+      "registers": ["a0"]
+    }
+  ]
+}

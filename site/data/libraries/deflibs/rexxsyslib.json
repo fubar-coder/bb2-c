@@ -1,0 +1,88 @@
+{
+  "name": "rexxsyslib",
+  "group": "deflibs",
+  "number": 222,
+  "opens": "rexxsyslib.library",
+  "entries": [
+    {
+      "name": "CreateArgstring_",
+      "kind": "oscall",
+      "help": "(string,length)",
+      "base": 222,
+      "offset": -126,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "DeleteArgstring_",
+      "kind": "oscall",
+      "help": "(argstring)",
+      "base": 222,
+      "offset": -132,
+      "registers": ["a0"]
+    },
+    {
+      "name": "LengthArgstring_",
+      "kind": "oscall",
+      "help": "(argstring)",
+      "base": 222,
+      "offset": -138,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CreateRexxMsg_",
+      "kind": "oscall",
+      "help": "(port,extension,host)",
+      "base": 222,
+      "offset": -144,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "DeleteRexxMsg_",
+      "kind": "oscall",
+      "help": "(packet)",
+      "base": 222,
+      "offset": -150,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ClearRexxMsg_",
+      "kind": "oscall",
+      "help": "(msgptr,count)",
+      "base": 222,
+      "offset": -156,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "FillRexxMsg_",
+      "kind": "oscall",
+      "help": "(msgptr,count,mask)",
+      "base": 222,
+      "offset": -162,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "IsRexxMsg_",
+      "kind": "oscall",
+      "help": "(msgptr)",
+      "base": 222,
+      "offset": -168,
+      "registers": ["a0"]
+    },
+    {
+      "name": "LockRexxBase_",
+      "kind": "oscall",
+      "help": "(resource)",
+      "base": 222,
+      "offset": -450,
+      "registers": ["d0"]
+    },
+    {
+      "name": "UnlockRexxBase_",
+      "kind": "oscall",
+      "help": "(resource)",
+      "base": 222,
+      "offset": -456,
+      "registers": ["d0"]
+    }
+  ]
+}

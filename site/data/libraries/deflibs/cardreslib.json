@@ -1,0 +1,144 @@
+{
+  "name": "cardreslib",
+  "group": "deflibs",
+  "number": 243,
+  "opens": "card.resource",
+  "entries": [
+    {
+      "name": "OwnCard_",
+      "kind": "oscall",
+      "help": "(handle)",
+      "base": 243,
+      "offset": -6,
+      "registers": ["a1"]
+    },
+    {
+      "name": "ReleaseCard_",
+      "kind": "oscall",
+      "help": "(handle,flags)",
+      "base": 243,
+      "offset": -12,
+      "registers": ["a1", "d0"]
+    },
+    {
+      "name": "GetCardMap_",
+      "kind": "oscall",
+      "help": "",
+      "base": 243,
+      "offset": -18,
+      "registers": []
+    },
+    {
+      "name": "BeginCardAccess_",
+      "kind": "oscall",
+      "help": "(handle)",
+      "base": 243,
+      "offset": -24,
+      "registers": ["a1"]
+    },
+    {
+      "name": "EndCardAccess_",
+      "kind": "oscall",
+      "help": "(handle)",
+      "base": 243,
+      "offset": -30,
+      "registers": ["a1"]
+    },
+    {
+      "name": "ReadCardStatus_",
+      "kind": "oscall",
+      "help": "",
+      "base": 243,
+      "offset": -36,
+      "registers": []
+    },
+    {
+      "name": "CardResetRemove_",
+      "kind": "oscall",
+      "help": "(handle,flag)",
+      "base": 243,
+      "offset": -42,
+      "registers": ["a1", "d0"]
+    },
+    {
+      "name": "CardMiscControl_",
+      "kind": "oscall",
+      "help": "(handle,control_bits)",
+      "base": 243,
+      "offset": -48,
+      "registers": ["a1", "d1"]
+    },
+    {
+      "name": "CardAccessSpeed_",
+      "kind": "oscall",
+      "help": "(handle,nanoseconds)",
+      "base": 243,
+      "offset": -54,
+      "registers": ["a1", "d0"]
+    },
+    {
+      "name": "CardProgramVoltage_",
+      "kind": "oscall",
+      "help": "(handle,voltage)",
+      "base": 243,
+      "offset": -60,
+      "registers": ["a1", "d0"]
+    },
+    {
+      "name": "CardResetCard_",
+      "kind": "oscall",
+      "help": "(handle)",
+      "base": 243,
+      "offset": -66,
+      "registers": ["a1"]
+    },
+    {
+      "name": "CopyTuple_",
+      "kind": "oscall",
+      "help": "(handle,buffer,tuplecode,size)",
+      "base": 243,
+      "offset": -72,
+      "registers": ["a1", "a0", "d1", "d0"]
+    },
+    {
+      "name": "DeviceTuple_",
+      "kind": "oscall",
+      "help": "(tuple_data,storage)",
+      "base": 243,
+      "offset": -78,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "IfAmigaXIP_",
+      "kind": "oscall",
+      "help": "(handle)",
+      "base": 243,
+      "offset": -84,
+      "registers": ["a2"]
+    },
+    {
+      "name": "CardForceChange_",
+      "kind": "oscall",
+      "help": "",
+      "base": 243,
+      "offset": -90,
+      "registers": []
+    },
+    {
+      "name": "CardChangeCount_",
+      "kind": "oscall",
+      "help": "",
+      "base": 243,
+      "offset": -96,
+      "registers": []
+    },
+    {
+      "name": "CardInterface_",
+      "kind": "oscall",
+      "help": "",
+      "base": 243,
+      "offset": -102,
+      "registers": []
+    }
+  ]
+}

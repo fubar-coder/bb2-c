@@ -1,0 +1,85 @@
+{
+  "name": "banklib",
+  "group": "acidlibs",
+  "number": 76,
+  "object": {"name": "Bank", "maximum": 5},
+  "entries": [
+    {
+      "name": "Bank",
+      "kind": "function",
+      "help": "(bank#)  ;returns location of bank, 0 if not in use",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "InitBank",
+      "kind": "statement",
+      "help": "bank#,size,memtype ;0=fast 2=chip 65536=clrmem",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FreeBank",
+      "kind": "statement",
+      "help": "bank#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "LoadBank",
+      "kind": "statement",
+      "help": "bank#,filename$[,memtype]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "SaveBank",
+      "kind": "statement",
+      "help": "bank#,filename$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "BankLoc",
+      "kind": "function",
+      "help": "(bank#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BankSize",
+      "kind": "function",
+      "help": "(bank#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "AllocMem",
+      "kind": "function",
+      "help": "(size,memtype) memtype: 0=fast 2=chip 65536=clrmem",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FreeMem",
+      "kind": "statement",
+      "help": "address,size",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

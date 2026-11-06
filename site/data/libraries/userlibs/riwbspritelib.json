@@ -1,0 +1,60 @@
+{
+  "name": "riwbspritelib",
+  "group": "userlibs",
+  "number": 10,
+  "entries": [
+    {
+      "name": "GetWBSprite",
+      "kind": "function",
+      "help": "x,y,shape[,spritechannel]",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FreeWBSprite",
+      "kind": "statement",
+      "help": "sprite_channel",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "MoveWBSprite",
+      "kind": "command",
+      "help": "viewport,x,y,sprite_channel",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ChangeWBSprite",
+      "kind": "command",
+      "help": "viewport,sprite_channel,shape#",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "WBSpriteX",
+      "kind": "function",
+      "help": "sprite_channel",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "WBSpriteY",
+      "kind": "function",
+      "help": "sprite_channel",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

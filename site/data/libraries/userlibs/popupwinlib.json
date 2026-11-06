@@ -1,0 +1,23 @@
+{
+  "name": "popupwinlib",
+  "group": "userlibs",
+  "number": 16,
+  "entries": [
+    {
+      "name": "PopUpInit",
+      "kind": "statement",
+      "help": "-- initialise the popup window system",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "PopUpWindow",
+      "kind": "statement",
+      "help": "Screen#,*items",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

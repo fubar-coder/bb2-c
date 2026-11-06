@@ -1,0 +1,40 @@
+{
+  "name": "ciaalib",
+  "group": "deflibs",
+  "number": 242,
+  "opens": "ciaa.resource",
+  "entries": [
+    {
+      "name": "AddICRVector_a",
+      "kind": "oscall",
+      "help": "(resource,iCRBit,interrupt)",
+      "base": 242,
+      "offset": -6,
+      "registers": ["a6", "d0", "a1"]
+    },
+    {
+      "name": "RemICRVector_a",
+      "kind": "oscall",
+      "help": "(resource,iCRBit,interrupt)",
+      "base": 242,
+      "offset": -12,
+      "registers": ["a6", "d0", "a1"]
+    },
+    {
+      "name": "AbleICR_a",
+      "kind": "oscall",
+      "help": "(resource,mask)",
+      "base": 242,
+      "offset": -18,
+      "registers": ["a6", "d0"]
+    },
+    {
+      "name": "SetICR_a",
+      "kind": "oscall",
+      "help": "(resource,mask)",
+      "base": 242,
+      "offset": -24,
+      "registers": ["a6", "d0"]
+    }
+  ]
+}

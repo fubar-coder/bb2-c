@@ -9,6 +9,13 @@
 #                 directory), e.g. in the userlibs directory of a variant
 #   CHECK FILES   in the same step: its number is in none of FILES (the
 #                 acidlibs and deflibs it is loaded with; biglib check)
+#   CMDREF G/N    in the same step: the command table of the library
+#                 (tools/cmdref, CMDREF_DIR/G/N.json) equals the committed
+#                 site/data/libraries/G/N.json, the data of the website's
+#                 command reference (tools/cmdref/check.cmake: cmake -E
+#                 compare_files).  After an
+#                 intended change: build the target cmdref_update, which
+#                 copies the generated files into the site
 #   libNAME.a     the library as static library
 #   NAME.linked   the link with symbols (for disassembly and comparisons)
 #   NAME.obj      the library file in Blitz 2 format (one code hunk, header
@@ -36,8 +43,19 @@ if(NOT EXISTS ${BLITZ_DEFAULT_VARIANT_DIR}/libnums.h)
 	message(FATAL_ERROR "BLITZ_DEFAULT_VARIANT ${BLITZ_DEFAULT_VARIANT}: no ${BLITZ_DEFAULT_VARIANT_DIR}/libnums.h")
 endif()
 
+# the command tables of the libraries with CMDREF, as tools/cmdref
+# generates them (site/data/libraries holds the committed ones)
+set(CMDREF_DIR ${CMAKE_BINARY_DIR}/cmdref)
+set(CMDREF_SITE_DIR ${CMAKE_CURRENT_LIST_DIR}/../site/data/libraries)
+cmake_path(NORMAL_PATH CMDREF_SITE_DIR)
+# the variant whose acidlibs and deflibs the committed files describe (its
+# library numbers): with another BLITZ_DEFAULT_VARIANT they are not checked
+set(CMDREF_VARIANT bb2-2.10)
+set(CMDREF_CHECK ${CMAKE_CURRENT_LIST_DIR}/../tools/cmdref/check.cmake)
+cmake_path(NORMAL_PATH CMDREF_CHECK)
+
 function(blitz_library name)
-	cmake_parse_arguments(PARSE_ARGV 1 arg "" "VARIANT;OBJ" "CHECK")
+	cmake_parse_arguments(PARSE_ARGV 1 arg "" "VARIANT;OBJ;CMDREF" "CHECK")
 	add_library(${name} STATIC ${arg_UNPARSED_ARGUMENTS})
 	if(NOT arg_VARIANT)
 		set(arg_VARIANT ${BLITZ_DEFAULT_VARIANT_DIR})
@@ -63,7 +81,31 @@ function(blitz_library name)
 	if(arg_CHECK)
 		set(check COMMAND ${BIGLIB} check ${obj} ${arg_CHECK})
 	endif()
+	set(cmdref)
+	set(cmdref_files)
+	set(cmdref_deps)
+	if(arg_CMDREF)
+		string(REGEX MATCH "^([^/]+)/([^/]+)$" m "${arg_CMDREF}")
+		if(NOT m)
+			message(FATAL_ERROR "blitz_library(${name}): CMDREF ${arg_CMDREF} is not GROUP/NAME")
+		endif()
+		set(generated ${CMDREF_DIR}/${arg_CMDREF}.json)
+		set(committed ${CMDREF_SITE_DIR}/${arg_CMDREF}.json)
+		file(MAKE_DIRECTORY ${CMDREF_DIR}/${CMAKE_MATCH_1})
+		set(cmdref COMMAND ${CMAKE_COMMAND} -DCMDREF=${CMDREF} -DLIB=${obj}
+			-DGROUP=${CMAKE_MATCH_1} -DNAME=${CMAKE_MATCH_2} -DOUT=${generated}
+			-DCOMMITTED=${committed} -P ${CMDREF_CHECK})
+		set(cmdref_files ${generated})
+		set_property(GLOBAL APPEND PROPERTY CMDREF_LIBRARIES ${arg_CMDREF})
+		# a new library has no committed file yet: the check fails until
+		# cmdref_update has copied it (then configure again)
+		set(cmdref_deps ${CMDREF} ${CMDREF_CHECK})
+		if(EXISTS ${committed})
+			list(APPEND cmdref_deps ${committed})
+		endif()
+	endif()
 	add_custom_command(OUTPUT ${obj}
+		BYPRODUCTS ${cmdref_files}
 		COMMAND ${CMAKE_C_COMPILER} -m${AMIGA_CPU} -noixemul -nostartfiles -nostdlib
 			-Wl,-T,${BLITZLIB_LD}
 			-Wl,--whole-archive $<TARGET_FILE:${name}> -Wl,--no-whole-archive -lgcc
@@ -71,7 +113,8 @@ function(blitz_library name)
 		COMMAND ${CMAKE_STRIP} -o ${obj} ${linked}
 		COMMAND ${BLITZLIBCHECK} ${obj}
 		${check}
-		DEPENDS ${name} ${BLITZLIB_LD} ${BLITZLIBCHECK} ${arg_CHECK} host_tools
+		${cmdref}
+		DEPENDS ${name} ${BLITZLIB_LD} ${BLITZLIBCHECK} ${arg_CHECK} ${cmdref_deps} host_tools
 		COMMENT "Blitz library ${name}.obj"
 		VERBATIM)
 	add_custom_target(${name}_obj ALL DEPENDS ${obj})

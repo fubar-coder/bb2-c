@@ -1,0 +1,944 @@
+{
+  "name": "execlib",
+  "group": "deflibs",
+  "number": 253,
+  "opens": "exec.library",
+  "entries": [
+    {
+      "name": "Supervisor_",
+      "kind": "oscall",
+      "help": "(userFunction)",
+      "base": 253,
+      "offset": -30,
+      "registers": ["a5"]
+    },
+    {
+      "name": "InitCode_",
+      "kind": "oscall",
+      "help": "(startClass,version)",
+      "base": 253,
+      "offset": -72,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "InitStruct_",
+      "kind": "oscall",
+      "help": "(initTable,memory,size)",
+      "base": 253,
+      "offset": -78,
+      "registers": ["a1", "a2", "d0"]
+    },
+    {
+      "name": "MakeLibrary_",
+      "kind": "oscall",
+      "help": "(funcInit,structInit,libInit,dataSize,segList)",
+      "base": 253,
+      "offset": -84,
+      "registers": ["a0", "a1", "a2", "d0", "d1"]
+    },
+    {
+      "name": "MakeFunctions_",
+      "kind": "oscall",
+      "help": "(target,functionArray,funcDispBase)",
+      "base": 253,
+      "offset": -90,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "FindResident_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 253,
+      "offset": -96,
+      "registers": ["a1"]
+    },
+    {
+      "name": "InitResident_",
+      "kind": "oscall",
+      "help": "(resident,segList)",
+      "base": 253,
+      "offset": -102,
+      "registers": ["a1", "d1"]
+    },
+    {
+      "name": "Alert_",
+      "kind": "oscall",
+      "help": "(alertNum)",
+      "base": 253,
+      "offset": -108,
+      "registers": ["d7"]
+    },
+    {
+      "name": "Debug_",
+      "kind": "oscall",
+      "help": "(flags)",
+      "base": 253,
+      "offset": -114,
+      "registers": ["d0"]
+    },
+    {
+      "name": "Disable_",
+      "kind": "oscall",
+      "help": "",
+      "base": 253,
+      "offset": -120,
+      "registers": []
+    },
+    {
+      "name": "Enable_",
+      "kind": "oscall",
+      "help": "",
+      "base": 253,
+      "offset": -126,
+      "registers": []
+    },
+    {
+      "name": "Forbid_",
+      "kind": "oscall",
+      "help": "",
+      "base": 253,
+      "offset": -132,
+      "registers": []
+    },
+    {
+      "name": "Permit_",
+      "kind": "oscall",
+      "help": "",
+      "base": 253,
+      "offset": -138,
+      "registers": []
+    },
+    {
+      "name": "SetSR_",
+      "kind": "oscall",
+      "help": "(newSR,mask)",
+      "base": 253,
+      "offset": -144,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "SuperState_",
+      "kind": "oscall",
+      "help": "",
+      "base": 253,
+      "offset": -150,
+      "registers": []
+    },
+    {
+      "name": "UserState_",
+      "kind": "oscall",
+      "help": "(sysStack)",
+      "base": 253,
+      "offset": -156,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SetIntVector_",
+      "kind": "oscall",
+      "help": "(intNumber,interrupt)",
+      "base": 253,
+      "offset": -162,
+      "registers": ["d0", "a1"]
+    },
+    {
+      "name": "AddIntServer_",
+      "kind": "oscall",
+      "help": "(intNumber,interrupt)",
+      "base": 253,
+      "offset": -168,
+      "registers": ["d0", "a1"]
+    },
+    {
+      "name": "RemIntServer_",
+      "kind": "oscall",
+      "help": "(intNumber,interrupt)",
+      "base": 253,
+      "offset": -174,
+      "registers": ["d0", "a1"]
+    },
+    {
+      "name": "Cause_",
+      "kind": "oscall",
+      "help": "(interrupt)",
+      "base": 253,
+      "offset": -180,
+      "registers": ["a1"]
+    },
+    {
+      "name": "Allocate_",
+      "kind": "oscall",
+      "help": "(freeList,byteSize)",
+      "base": 253,
+      "offset": -186,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "Deallocate_",
+      "kind": "oscall",
+      "help": "(freeList,memoryBlock,byteSize)",
+      "base": 253,
+      "offset": -192,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "AllocMem_",
+      "kind": "oscall",
+      "help": "(byteSize,requirements)",
+      "base": 253,
+      "offset": -198,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "AllocAbs_",
+      "kind": "oscall",
+      "help": "(byteSize,location)",
+      "base": 253,
+      "offset": -204,
+      "registers": ["d0", "a1"]
+    },
+    {
+      "name": "FreeMem_",
+      "kind": "oscall",
+      "help": "(memoryBlock,byteSize)",
+      "base": 253,
+      "offset": -210,
+      "registers": ["a1", "d0"]
+    },
+    {
+      "name": "AvailMem_",
+      "kind": "oscall",
+      "help": "(requirements)",
+      "base": 253,
+      "offset": -216,
+      "registers": ["d1"]
+    },
+    {
+      "name": "AllocEntry_",
+      "kind": "oscall",
+      "help": "(entry)",
+      "base": 253,
+      "offset": -222,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FreeEntry_",
+      "kind": "oscall",
+      "help": "(entry)",
+      "base": 253,
+      "offset": -228,
+      "registers": ["a0"]
+    },
+    {
+      "name": "Insert_",
+      "kind": "oscall",
+      "help": "(list,node,pred)",
+      "base": 253,
+      "offset": -234,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "AddHead_",
+      "kind": "oscall",
+      "help": "(list,node)",
+      "base": 253,
+      "offset": -240,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "AddTail_",
+      "kind": "oscall",
+      "help": "(list,node)",
+      "base": 253,
+      "offset": -246,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "Remove_",
+      "kind": "oscall",
+      "help": "(node)",
+      "base": 253,
+      "offset": -252,
+      "registers": ["a1"]
+    },
+    {
+      "name": "RemHead_",
+      "kind": "oscall",
+      "help": "(list)",
+      "base": 253,
+      "offset": -258,
+      "registers": ["a0"]
+    },
+    {
+      "name": "RemTail_",
+      "kind": "oscall",
+      "help": "(list)",
+      "base": 253,
+      "offset": -264,
+      "registers": ["a0"]
+    },
+    {
+      "name": "Enqueue_",
+      "kind": "oscall",
+      "help": "(list,node)",
+      "base": 253,
+      "offset": -270,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "FindName_",
+      "kind": "oscall",
+      "help": "(list,name)",
+      "base": 253,
+      "offset": -276,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "AddTask_",
+      "kind": "oscall",
+      "help": "(task,initPC,finalPC)",
+      "base": 253,
+      "offset": -282,
+      "registers": ["a1", "a2", "a3"]
+    },
+    {
+      "name": "RemTask_",
+      "kind": "oscall",
+      "help": "(task)",
+      "base": 253,
+      "offset": -288,
+      "registers": ["a1"]
+    },
+    {
+      "name": "FindTask_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 253,
+      "offset": -294,
+      "registers": ["a1"]
+    },
+    {
+      "name": "SetTaskPri_",
+      "kind": "oscall",
+      "help": "(task,priority)",
+      "base": 253,
+      "offset": -300,
+      "registers": ["a1", "d0"]
+    },
+    {
+      "name": "SetSignal_",
+      "kind": "oscall",
+      "help": "(newSignals,signalSet)",
+      "base": 253,
+      "offset": -306,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "SetExcept_",
+      "kind": "oscall",
+      "help": "(newSignals,signalSet)",
+      "base": 253,
+      "offset": -312,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "Wait_",
+      "kind": "oscall",
+      "help": "(signalSet)",
+      "base": 253,
+      "offset": -318,
+      "registers": ["d0"]
+    },
+    {
+      "name": "Signal_",
+      "kind": "oscall",
+      "help": "(task,signalSet)",
+      "base": 253,
+      "offset": -324,
+      "registers": ["a1", "d0"]
+    },
+    {
+      "name": "AllocSignal_",
+      "kind": "oscall",
+      "help": "(signalNum)",
+      "base": 253,
+      "offset": -330,
+      "registers": ["d0"]
+    },
+    {
+      "name": "FreeSignal_",
+      "kind": "oscall",
+      "help": "(signalNum)",
+      "base": 253,
+      "offset": -336,
+      "registers": ["d0"]
+    },
+    {
+      "name": "AllocTrap_",
+      "kind": "oscall",
+      "help": "(trapNum)",
+      "base": 253,
+      "offset": -342,
+      "registers": ["d0"]
+    },
+    {
+      "name": "FreeTrap_",
+      "kind": "oscall",
+      "help": "(trapNum)",
+      "base": 253,
+      "offset": -348,
+      "registers": ["d0"]
+    },
+    {
+      "name": "AddPort_",
+      "kind": "oscall",
+      "help": "(port)",
+      "base": 253,
+      "offset": -354,
+      "registers": ["a1"]
+    },
+    {
+      "name": "RemPort_",
+      "kind": "oscall",
+      "help": "(port)",
+      "base": 253,
+      "offset": -360,
+      "registers": ["a1"]
+    },
+    {
+      "name": "PutMsg_",
+      "kind": "oscall",
+      "help": "(port,message)",
+      "base": 253,
+      "offset": -366,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "GetMsg_",
+      "kind": "oscall",
+      "help": "(port)",
+      "base": 253,
+      "offset": -372,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ReplyMsg_",
+      "kind": "oscall",
+      "help": "(message)",
+      "base": 253,
+      "offset": -378,
+      "registers": ["a1"]
+    },
+    {
+      "name": "WaitPort_",
+      "kind": "oscall",
+      "help": "(port)",
+      "base": 253,
+      "offset": -384,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FindPort_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 253,
+      "offset": -390,
+      "registers": ["a1"]
+    },
+    {
+      "name": "AddLibrary_",
+      "kind": "oscall",
+      "help": "(library)",
+      "base": 253,
+      "offset": -396,
+      "registers": ["a1"]
+    },
+    {
+      "name": "RemLibrary_",
+      "kind": "oscall",
+      "help": "(library)",
+      "base": 253,
+      "offset": -402,
+      "registers": ["a1"]
+    },
+    {
+      "name": "OldOpenLibrary_",
+      "kind": "oscall",
+      "help": "(libName)",
+      "base": 253,
+      "offset": -408,
+      "registers": ["a1"]
+    },
+    {
+      "name": "CloseLibrary_",
+      "kind": "oscall",
+      "help": "(library)",
+      "base": 253,
+      "offset": -414,
+      "registers": ["a1"]
+    },
+    {
+      "name": "SetFunction_",
+      "kind": "oscall",
+      "help": "(library,funcOffset,newFunction)",
+      "base": 253,
+      "offset": -420,
+      "registers": ["a1", "a0", "d0"]
+    },
+    {
+      "name": "SumLibrary_",
+      "kind": "oscall",
+      "help": "(library)",
+      "base": 253,
+      "offset": -426,
+      "registers": ["a1"]
+    },
+    {
+      "name": "AddDevice_",
+      "kind": "oscall",
+      "help": "(device)",
+      "base": 253,
+      "offset": -432,
+      "registers": ["a1"]
+    },
+    {
+      "name": "RemDevice_",
+      "kind": "oscall",
+      "help": "(device)",
+      "base": 253,
+      "offset": -438,
+      "registers": ["a1"]
+    },
+    {
+      "name": "OpenDevice_",
+      "kind": "oscall",
+      "help": "(devName,unit,ioRequest,flags)",
+      "base": 253,
+      "offset": -444,
+      "registers": ["a0", "d0", "a1", "d1"]
+    },
+    {
+      "name": "CloseDevice_",
+      "kind": "oscall",
+      "help": "(ioRequest)",
+      "base": 253,
+      "offset": -450,
+      "registers": ["a1"]
+    },
+    {
+      "name": "DoIO_",
+      "kind": "oscall",
+      "help": "(ioRequest)",
+      "base": 253,
+      "offset": -456,
+      "registers": ["a1"]
+    },
+    {
+      "name": "SendIO_",
+      "kind": "oscall",
+      "help": "(ioRequest)",
+      "base": 253,
+      "offset": -462,
+      "registers": ["a1"]
+    },
+    {
+      "name": "CheckIO_",
+      "kind": "oscall",
+      "help": "(ioRequest)",
+      "base": 253,
+      "offset": -468,
+      "registers": ["a1"]
+    },
+    {
+      "name": "WaitIO_",
+      "kind": "oscall",
+      "help": "(ioRequest)",
+      "base": 253,
+      "offset": -474,
+      "registers": ["a1"]
+    },
+    {
+      "name": "AbortIO_",
+      "kind": "oscall",
+      "help": "(ioRequest)",
+      "base": 253,
+      "offset": -480,
+      "registers": ["a1"]
+    },
+    {
+      "name": "AddResource_",
+      "kind": "oscall",
+      "help": "(resource)",
+      "base": 253,
+      "offset": -486,
+      "registers": ["a1"]
+    },
+    {
+      "name": "RemResource_",
+      "kind": "oscall",
+      "help": "(resource)",
+      "base": 253,
+      "offset": -492,
+      "registers": ["a1"]
+    },
+    {
+      "name": "OpenResource_",
+      "kind": "oscall",
+      "help": "(resName)",
+      "base": 253,
+      "offset": -498,
+      "registers": ["a1"]
+    },
+    {
+      "name": "RawDoFmt_",
+      "kind": "oscall",
+      "help": "(formatString,dataStream,putChProc,putChData)",
+      "base": 253,
+      "offset": -522,
+      "registers": ["a0", "a1", "a2", "a3"]
+    },
+    {
+      "name": "GetCC_",
+      "kind": "oscall",
+      "help": "",
+      "base": 253,
+      "offset": -528,
+      "registers": []
+    },
+    {
+      "name": "TypeOfMem_",
+      "kind": "oscall",
+      "help": "(address)",
+      "base": 253,
+      "offset": -534,
+      "registers": ["a1"]
+    },
+    {
+      "name": "Procure_",
+      "kind": "oscall",
+      "help": "(sigSem,bidMsg)",
+      "base": 253,
+      "offset": -540,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "Vacate_",
+      "kind": "oscall",
+      "help": "(sigSem,bidMsg)",
+      "base": 253,
+      "offset": -546,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "OpenLibrary_",
+      "kind": "oscall",
+      "help": "(libName,version)",
+      "base": 253,
+      "offset": -552,
+      "registers": ["a1", "d0"]
+    },
+    {
+      "name": "InitSemaphore_",
+      "kind": "oscall",
+      "help": "(sigSem)",
+      "base": 253,
+      "offset": -558,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ObtainSemaphore_",
+      "kind": "oscall",
+      "help": "(sigSem)",
+      "base": 253,
+      "offset": -564,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ReleaseSemaphore_",
+      "kind": "oscall",
+      "help": "(sigSem)",
+      "base": 253,
+      "offset": -570,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AttemptSemaphore_",
+      "kind": "oscall",
+      "help": "(sigSem)",
+      "base": 253,
+      "offset": -576,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ObtainSemaphoreList_",
+      "kind": "oscall",
+      "help": "(sigSem)",
+      "base": 253,
+      "offset": -582,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ReleaseSemaphoreList_",
+      "kind": "oscall",
+      "help": "(sigSem)",
+      "base": 253,
+      "offset": -588,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FindSemaphore_",
+      "kind": "oscall",
+      "help": "(sigSem)",
+      "base": 253,
+      "offset": -594,
+      "registers": ["a1"]
+    },
+    {
+      "name": "AddSemaphore_",
+      "kind": "oscall",
+      "help": "(sigSem)",
+      "base": 253,
+      "offset": -600,
+      "registers": ["a1"]
+    },
+    {
+      "name": "RemSemaphore_",
+      "kind": "oscall",
+      "help": "(sigSem)",
+      "base": 253,
+      "offset": -606,
+      "registers": ["a1"]
+    },
+    {
+      "name": "SumKickData_",
+      "kind": "oscall",
+      "help": "",
+      "base": 253,
+      "offset": -612,
+      "registers": []
+    },
+    {
+      "name": "AddMemList_",
+      "kind": "oscall",
+      "help": "(size,attributes,pri,base,name)",
+      "base": 253,
+      "offset": -618,
+      "registers": ["d0", "d1", "d2", "a0", "a1"]
+    },
+    {
+      "name": "CopyMem_",
+      "kind": "oscall",
+      "help": "(source,dest,size)",
+      "base": 253,
+      "offset": -624,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "CopyMemQuick_",
+      "kind": "oscall",
+      "help": "(source,dest,size)",
+      "base": 253,
+      "offset": -630,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "CacheClearU_",
+      "kind": "oscall",
+      "help": "",
+      "base": 253,
+      "offset": -636,
+      "registers": []
+    },
+    {
+      "name": "CacheClearE_",
+      "kind": "oscall",
+      "help": "(address,length,caches)",
+      "base": 253,
+      "offset": -642,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "CacheControl_",
+      "kind": "oscall",
+      "help": "(cacheBits,cacheMask)",
+      "base": 253,
+      "offset": -648,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "CreateIORequest_",
+      "kind": "oscall",
+      "help": "(port,size)",
+      "base": 253,
+      "offset": -654,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "DeleteIORequest_",
+      "kind": "oscall",
+      "help": "(iorequest)",
+      "base": 253,
+      "offset": -660,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CreateMsgPort_",
+      "kind": "oscall",
+      "help": "",
+      "base": 253,
+      "offset": -666,
+      "registers": []
+    },
+    {
+      "name": "DeleteMsgPort_",
+      "kind": "oscall",
+      "help": "(port)",
+      "base": 253,
+      "offset": -672,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ObtainSemaphoreShared_",
+      "kind": "oscall",
+      "help": "(sigSem)",
+      "base": 253,
+      "offset": -678,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AllocVec_",
+      "kind": "oscall",
+      "help": "(byteSize,requirements)",
+      "base": 253,
+      "offset": -684,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "FreeVec_",
+      "kind": "oscall",
+      "help": "(memoryBlock)",
+      "base": 253,
+      "offset": -690,
+      "registers": ["a1"]
+    },
+    {
+      "name": "CreatePool_",
+      "kind": "oscall",
+      "help": "(requirements,puddleSize,threshSize)",
+      "base": 253,
+      "offset": -696,
+      "registers": ["d0", "d1", "d2"]
+    },
+    {
+      "name": "DeletePool_",
+      "kind": "oscall",
+      "help": "(poolHeader)",
+      "base": 253,
+      "offset": -702,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AllocPooled_",
+      "kind": "oscall",
+      "help": "(poolHeader,memSize)",
+      "base": 253,
+      "offset": -708,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "FreePooled_",
+      "kind": "oscall",
+      "help": "(poolHeader,memory,memSize)",
+      "base": 253,
+      "offset": -714,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "AttemptSemaphoreShared_",
+      "kind": "oscall",
+      "help": "(sigSem)",
+      "base": 253,
+      "offset": -720,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ColdReboot_",
+      "kind": "oscall",
+      "help": "",
+      "base": 253,
+      "offset": -726,
+      "registers": []
+    },
+    {
+      "name": "StackSwap_",
+      "kind": "oscall",
+      "help": "(newStack)",
+      "base": 253,
+      "offset": -732,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ChildFree_",
+      "kind": "oscall",
+      "help": "(tid)",
+      "base": 253,
+      "offset": -738,
+      "registers": ["d0"]
+    },
+    {
+      "name": "ChildOrphan_",
+      "kind": "oscall",
+      "help": "(tid)",
+      "base": 253,
+      "offset": -744,
+      "registers": ["d0"]
+    },
+    {
+      "name": "ChildStatus_",
+      "kind": "oscall",
+      "help": "(tid)",
+      "base": 253,
+      "offset": -750,
+      "registers": ["d0"]
+    },
+    {
+      "name": "ChildWait_",
+      "kind": "oscall",
+      "help": "(tid)",
+      "base": 253,
+      "offset": -756,
+      "registers": ["d0"]
+    },
+    {
+      "name": "CachePreDMA_",
+      "kind": "oscall",
+      "help": "(address,length,flags)",
+      "base": 253,
+      "offset": -762,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "CachePostDMA_",
+      "kind": "oscall",
+      "help": "(address,length,flags)",
+      "base": 253,
+      "offset": -768,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "AddMemHandler_",
+      "kind": "oscall",
+      "help": "(memhand)",
+      "base": 253,
+      "offset": -774,
+      "registers": ["a1"]
+    },
+    {
+      "name": "RemMemHandler_",
+      "kind": "oscall",
+      "help": "(memhand)",
+      "base": 253,
+      "offset": -780,
+      "registers": ["a1"]
+    }
+  ]
+}

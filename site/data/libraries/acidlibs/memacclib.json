@@ -1,0 +1,43 @@
+{
+  "name": "memacclib",
+  "group": "acidlibs",
+  "number": 180,
+  "entries": [
+    {
+      "name": "Poke",
+      "kind": "statement",
+      "typed": true,
+      "help": "[.Type] Address,Data",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "suffix", "code": 0}]}
+      ]
+    },
+    {
+      "name": "Peek",
+      "kind": "function",
+      "typed": true,
+      "help": "[.Type](Address)",
+      "result": "suffix",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Peeks$",
+      "kind": "function",
+      "help": "(Address,Length)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Call",
+      "kind": "statement",
+      "help": "Address",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,328 @@
+{
+  "name": "iffparselib",
+  "group": "deflibs",
+  "number": 234,
+  "opens": "iffparse.library",
+  "entries": [
+    {
+      "name": "AllocIFF_",
+      "kind": "oscall",
+      "help": "",
+      "base": 234,
+      "offset": -30,
+      "registers": []
+    },
+    {
+      "name": "OpenIFF_",
+      "kind": "oscall",
+      "help": "(iff,rwMode)",
+      "base": 234,
+      "offset": -36,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "ParseIFF_",
+      "kind": "oscall",
+      "help": "(iff,control)",
+      "base": 234,
+      "offset": -42,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "CloseIFF_",
+      "kind": "oscall",
+      "help": "(iff)",
+      "base": 234,
+      "offset": -48,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FreeIFF_",
+      "kind": "oscall",
+      "help": "(iff)",
+      "base": 234,
+      "offset": -54,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ReadChunkBytes_",
+      "kind": "oscall",
+      "help": "(iff,buf,numBytes)",
+      "base": 234,
+      "offset": -60,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "WriteChunkBytes_",
+      "kind": "oscall",
+      "help": "(iff,buf,numBytes)",
+      "base": 234,
+      "offset": -66,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "ReadChunkRecords_",
+      "kind": "oscall",
+      "help": "(iff,buf,bytesPerRecord,numRecords)",
+      "base": 234,
+      "offset": -72,
+      "registers": ["a0", "a1", "d0", "d1"]
+    },
+    {
+      "name": "WriteChunkRecords_",
+      "kind": "oscall",
+      "help": "(iff,buf,bytesPerRecord,numRecords)",
+      "base": 234,
+      "offset": -78,
+      "registers": ["a0", "a1", "d0", "d1"]
+    },
+    {
+      "name": "PushChunk_",
+      "kind": "oscall",
+      "help": "(iff,type,id,size)",
+      "base": 234,
+      "offset": -84,
+      "registers": ["a0", "d0", "d1", "d2"]
+    },
+    {
+      "name": "PopChunk_",
+      "kind": "oscall",
+      "help": "(iff)",
+      "base": 234,
+      "offset": -90,
+      "registers": ["a0"]
+    },
+    {
+      "name": "EntryHandler_",
+      "kind": "oscall",
+      "help": "(iff,type,id,position,handler,object)",
+      "base": 234,
+      "offset": -102,
+      "registers": ["a0", "d0", "d1", "d2", "a1", "a2"]
+    },
+    {
+      "name": "ExitHandler_",
+      "kind": "oscall",
+      "help": "(iff,type,id,position,handler,object)",
+      "base": 234,
+      "offset": -108,
+      "registers": ["a0", "d0", "d1", "d2", "a1", "a2"]
+    },
+    {
+      "name": "PropChunk_",
+      "kind": "oscall",
+      "help": "(iff,type,id)",
+      "base": 234,
+      "offset": -114,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "PropChunks_",
+      "kind": "oscall",
+      "help": "(iff,propArray,numPairs)",
+      "base": 234,
+      "offset": -120,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "StopChunk_",
+      "kind": "oscall",
+      "help": "(iff,type,id)",
+      "base": 234,
+      "offset": -126,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "StopChunks_",
+      "kind": "oscall",
+      "help": "(iff,propArray,numPairs)",
+      "base": 234,
+      "offset": -132,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "CollectionChunk_",
+      "kind": "oscall",
+      "help": "(iff,type,id)",
+      "base": 234,
+      "offset": -138,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "CollectionChunks_",
+      "kind": "oscall",
+      "help": "(iff,propArray,numPairs)",
+      "base": 234,
+      "offset": -144,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "StopOnExit_",
+      "kind": "oscall",
+      "help": "(iff,type,id)",
+      "base": 234,
+      "offset": -150,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "FindProp_",
+      "kind": "oscall",
+      "help": "(iff,type,id)",
+      "base": 234,
+      "offset": -156,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "FindCollection_",
+      "kind": "oscall",
+      "help": "(iff,type,id)",
+      "base": 234,
+      "offset": -162,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "FindPropContext_",
+      "kind": "oscall",
+      "help": "(iff)",
+      "base": 234,
+      "offset": -168,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CurrentChunk_",
+      "kind": "oscall",
+      "help": "(iff)",
+      "base": 234,
+      "offset": -174,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ParentChunk_",
+      "kind": "oscall",
+      "help": "(contextNode)",
+      "base": 234,
+      "offset": -180,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AllocLocalItem_",
+      "kind": "oscall",
+      "help": "(type,id,ident,dataSize)",
+      "base": 234,
+      "offset": -186,
+      "registers": ["d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "LocalItemData_",
+      "kind": "oscall",
+      "help": "(localItem)",
+      "base": 234,
+      "offset": -192,
+      "registers": ["a0"]
+    },
+    {
+      "name": "SetLocalItemPurge_",
+      "kind": "oscall",
+      "help": "(localItem,purgeHook)",
+      "base": 234,
+      "offset": -198,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "FreeLocalItem_",
+      "kind": "oscall",
+      "help": "(localItem)",
+      "base": 234,
+      "offset": -204,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FindLocalItem_",
+      "kind": "oscall",
+      "help": "(iff,type,id,ident)",
+      "base": 234,
+      "offset": -210,
+      "registers": ["a0", "d0", "d1", "d2"]
+    },
+    {
+      "name": "StoreLocalItem_",
+      "kind": "oscall",
+      "help": "(iff,localItem,position)",
+      "base": 234,
+      "offset": -216,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "StoreItemInContext_",
+      "kind": "oscall",
+      "help": "(iff,localItem,contextNode)",
+      "base": 234,
+      "offset": -222,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "InitIFF_",
+      "kind": "oscall",
+      "help": "(iff,flags,streamHook)",
+      "base": 234,
+      "offset": -228,
+      "registers": ["a0", "d0", "a1"]
+    },
+    {
+      "name": "InitIFFasDOS_",
+      "kind": "oscall",
+      "help": "(iff)",
+      "base": 234,
+      "offset": -234,
+      "registers": ["a0"]
+    },
+    {
+      "name": "InitIFFasClip_",
+      "kind": "oscall",
+      "help": "(iff)",
+      "base": 234,
+      "offset": -240,
+      "registers": ["a0"]
+    },
+    {
+      "name": "OpenClipboard_",
+      "kind": "oscall",
+      "help": "(unitNumber)",
+      "base": 234,
+      "offset": -246,
+      "registers": ["d0"]
+    },
+    {
+      "name": "CloseClipboard_",
+      "kind": "oscall",
+      "help": "(clipHandle)",
+      "base": 234,
+      "offset": -252,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GoodID_",
+      "kind": "oscall",
+      "help": "(id)",
+      "base": 234,
+      "offset": -258,
+      "registers": ["d0"]
+    },
+    {
+      "name": "GoodType_",
+      "kind": "oscall",
+      "help": "(type)",
+      "base": 234,
+      "offset": -264,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IDtoStr_",
+      "kind": "oscall",
+      "help": "(id,buf)",
+      "base": 234,
+      "offset": -270,
+      "registers": ["d0", "a0"]
+    }
+  ]
+}

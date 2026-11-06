@@ -1,0 +1,210 @@
+{
+  "name": "ricompactdisclib",
+  "group": "userlibs",
+  "number": 14,
+  "entries": [
+    {
+      "name": "OpenCD",
+      "kind": "command",
+      "help": "[devicename,unit,scsiflag] - open a CD compatible device",
+      "result": "long",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CloseCD",
+      "kind": "command",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CDDoor",
+      "kind": "statement",
+      "help": "on/off",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CDPlayTrack",
+      "kind": "command",
+      "help": "track#,numtracks",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CDReadTOC",
+      "kind": "command",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CDStatus",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CDStop",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CDVolume",
+      "kind": "command",
+      "help": "volume,lengthoffade",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CDNumTracks",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CDFirstTrack",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CDLastTrack",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CDTrackLength",
+      "kind": "function",
+      "help": "track#",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CDUpdateInfo",
+      "kind": "command",
+      "help": "- update track playing/time information",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CDFlush",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CDPause",
+      "kind": "statement",
+      "help": "on/off",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CDRewind",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CDFastForward",
+      "kind": "command",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CDNormalSpeed",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CDSpeed",
+      "kind": "statement",
+      "help": "speed",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CDTrackMins",
+      "kind": "function",
+      "help": "[offset] - mins for current track",
+      "result": "word",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CDTrackSecs",
+      "kind": "function",
+      "help": "[offset] - secs for current track",
+      "result": "word",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CDTrackPlaying",
+      "kind": "function",
+      "help": "- current track being played",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CDMotor",
+      "kind": "statement",
+      "help": "on|off",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

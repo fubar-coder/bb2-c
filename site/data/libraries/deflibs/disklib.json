@@ -1,0 +1,56 @@
+{
+  "name": "disklib",
+  "group": "deflibs",
+  "number": 238,
+  "opens": "disk.resource",
+  "entries": [
+    {
+      "name": "AllocUnit_",
+      "kind": "oscall",
+      "help": "(unitNum)",
+      "base": 238,
+      "offset": -6,
+      "registers": ["d0"]
+    },
+    {
+      "name": "FreeUnit_",
+      "kind": "oscall",
+      "help": "(unitNum)",
+      "base": 238,
+      "offset": -12,
+      "registers": ["d0"]
+    },
+    {
+      "name": "GetUnit_",
+      "kind": "oscall",
+      "help": "(unitPointer)",
+      "base": 238,
+      "offset": -18,
+      "registers": ["a1"]
+    },
+    {
+      "name": "GiveUnit_",
+      "kind": "oscall",
+      "help": "",
+      "base": 238,
+      "offset": -24,
+      "registers": []
+    },
+    {
+      "name": "GetUnitID_",
+      "kind": "oscall",
+      "help": "(unitNum)",
+      "base": 238,
+      "offset": -30,
+      "registers": ["d0"]
+    },
+    {
+      "name": "ReadUnitID_",
+      "kind": "oscall",
+      "help": "(unitNum)",
+      "base": 238,
+      "offset": -36,
+      "registers": ["d0"]
+    }
+  ]
+}

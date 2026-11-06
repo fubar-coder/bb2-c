@@ -1,0 +1,160 @@
+{
+  "name": "gadtoolslib",
+  "group": "deflibs",
+  "number": 236,
+  "opens": "gadtools.library",
+  "entries": [
+    {
+      "name": "CreateGadgetA_",
+      "kind": "oscall",
+      "help": "(kind,gad,ng,taglist)",
+      "base": 236,
+      "offset": -30,
+      "registers": ["d0", "a0", "a1", "a2"]
+    },
+    {
+      "name": "FreeGadgets_",
+      "kind": "oscall",
+      "help": "(gad)",
+      "base": 236,
+      "offset": -36,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GT_SetGadgetAttrsA_",
+      "kind": "oscall",
+      "help": "(gad,win,req,taglist)",
+      "base": 236,
+      "offset": -42,
+      "registers": ["a0", "a1", "a2", "a3"]
+    },
+    {
+      "name": "CreateMenusA_",
+      "kind": "oscall",
+      "help": "(newmenu,taglist)",
+      "base": 236,
+      "offset": -48,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "FreeMenus_",
+      "kind": "oscall",
+      "help": "(menu)",
+      "base": 236,
+      "offset": -54,
+      "registers": ["a0"]
+    },
+    {
+      "name": "LayoutMenuItemsA_",
+      "kind": "oscall",
+      "help": "(firstitem,vi,taglist)",
+      "base": 236,
+      "offset": -60,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "LayoutMenusA_",
+      "kind": "oscall",
+      "help": "(firstmenu,vi,taglist)",
+      "base": 236,
+      "offset": -66,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "GT_GetIMsg_",
+      "kind": "oscall",
+      "help": "(iport)",
+      "base": 236,
+      "offset": -72,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GT_ReplyIMsg_",
+      "kind": "oscall",
+      "help": "(imsg)",
+      "base": 236,
+      "offset": -78,
+      "registers": ["a1"]
+    },
+    {
+      "name": "GT_RefreshWindow_",
+      "kind": "oscall",
+      "help": "(win,req)",
+      "base": 236,
+      "offset": -84,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "GT_BeginRefresh_",
+      "kind": "oscall",
+      "help": "(win)",
+      "base": 236,
+      "offset": -90,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GT_EndRefresh_",
+      "kind": "oscall",
+      "help": "(win,complete)",
+      "base": 236,
+      "offset": -96,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "GT_FilterIMsg_",
+      "kind": "oscall",
+      "help": "(imsg)",
+      "base": 236,
+      "offset": -102,
+      "registers": ["a1"]
+    },
+    {
+      "name": "GT_PostFilterIMsg_",
+      "kind": "oscall",
+      "help": "(imsg)",
+      "base": 236,
+      "offset": -108,
+      "registers": ["a1"]
+    },
+    {
+      "name": "CreateContext_",
+      "kind": "oscall",
+      "help": "(glistptr)",
+      "base": 236,
+      "offset": -114,
+      "registers": ["a0"]
+    },
+    {
+      "name": "DrawBevelBoxA_",
+      "kind": "oscall",
+      "help": "(rport,left,top,width,height,taglist)",
+      "base": 236,
+      "offset": -120,
+      "registers": ["a0", "d0", "d1", "d2", "d3", "a1"]
+    },
+    {
+      "name": "GetVisualInfoA_",
+      "kind": "oscall",
+      "help": "(screen,taglist)",
+      "base": 236,
+      "offset": -126,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "FreeVisualInfo_",
+      "kind": "oscall",
+      "help": "(vi)",
+      "base": 236,
+      "offset": -132,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GT_GetGadgetAttrsA_",
+      "kind": "oscall",
+      "help": "(gad,win,req,taglist)",
+      "base": 236,
+      "offset": -174,
+      "registers": ["a0", "a1", "a2", "a3"]
+    }
+  ]
+}

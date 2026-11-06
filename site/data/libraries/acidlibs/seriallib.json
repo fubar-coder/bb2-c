@@ -1,0 +1,109 @@
+{
+  "name": "seriallib",
+  "group": "acidlibs",
+  "number": 90,
+  "entries": [
+    {
+      "name": "OpenSerial",
+      "kind": "function",
+      "help": "device$,unit#,baud,io_serflags",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "WriteSerial",
+      "kind": "statement",
+      "help": "unit#,byte",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "WriteSerialString",
+      "kind": "statement",
+      "help": "unit#,string[,Flags 1=DoIO 2=TrueString] ",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ReadSerial",
+      "kind": "function",
+      "help": "(unit#[,flags 1=wait on])  returns -1 if nothing waiting",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ReadSerialString",
+      "kind": "function",
+      "help": "(unit#)  returns null if nothing waiting",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CloseSerial",
+      "kind": "statement",
+      "help": "unit#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetSerialBuffer",
+      "kind": "statement",
+      "help": "unit#,bufferlength",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "SetSerialLens",
+      "kind": "statement",
+      "help": "unit#,readlen,writelen,stopbits",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "byte", "code": 1}, {"type": "byte", "code": 1}, {"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "SetSerialParams",
+      "kind": "statement",
+      "help": "unit#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SerialEvent",
+      "kind": "function",
+      "help": "(unit#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ReadSerialMem",
+      "kind": "statement",
+      "help": "unit#,Address,Length",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "WriteSerialMem",
+      "kind": "statement",
+      "help": "unit#,Address,Length",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

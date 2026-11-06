@@ -1,0 +1,105 @@
+{
+  "name": "ridoslib",
+  "group": "userlibs",
+  "number": 33,
+  "entries": [
+    {
+      "name": "AddNotify",
+      "kind": "command",
+      "help": "idno,filespec$",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RemNotify",
+      "kind": "statement",
+      "help": "notify#",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CheckNotify",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "WaitNotify",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "GetDeviceList",
+      "kind": "command",
+      "help": "flags",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "NextDevice",
+      "kind": "function",
+      "help": "",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "FreeDeviceList",
+      "kind": "command",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "NotifyPort",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "GetFileName",
+      "kind": "function",
+      "help": "filepath$",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "GetPathName",
+      "kind": "function",
+      "help": "filepath$",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "DeviceEntryType",
+      "kind": "function",
+      "help": "    -- dev=0,dir=1,vol=2,late=3,nonbind=4",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

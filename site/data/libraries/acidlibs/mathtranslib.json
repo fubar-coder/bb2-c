@@ -1,0 +1,124 @@
+{
+  "name": "mathtranslib",
+  "group": "acidlibs",
+  "number": 192,
+  "entries": [
+    {
+      "name": "ACos",
+      "kind": "function",
+      "help": "(Float)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "ASin",
+      "kind": "function",
+      "help": "(Float)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "ATan",
+      "kind": "function",
+      "help": "(Float)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "Cos",
+      "kind": "function",
+      "help": "(Float)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "HCos",
+      "kind": "function",
+      "help": "(Float)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "Exp",
+      "kind": "function",
+      "help": "(Float)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "Log10",
+      "kind": "function",
+      "help": "(Float)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "Log",
+      "kind": "function",
+      "help": "(Float)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "Sin",
+      "kind": "function",
+      "help": "(Float)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "HSin",
+      "kind": "function",
+      "help": "(Float)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "Sqr",
+      "kind": "function",
+      "help": "(Float)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "Tan",
+      "kind": "function",
+      "help": "(Float)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "HTan",
+      "kind": "function",
+      "help": "(Float)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    }
+  ]
+}

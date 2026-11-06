@@ -1,0 +1,289 @@
+{
+  "name": "rilesdebuglib",
+  "group": "userlibs",
+  "number": 49,
+  "entries": [
+    {
+      "name": "D_FindVolume",
+      "kind": "function",
+      "help": "(volumename)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "D_GetSR",
+      "kind": "statement",
+      "help": "buffer,SR",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "D_HexWord",
+      "kind": "statement",
+      "help": "source,address,num",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "D_CheckNMove",
+      "kind": "statement",
+      "help": "source_address,dest_address[,count]",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "D_FindStringPtr",
+      "kind": "function",
+      "help": "areg5,lookfor",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GetCopIns$",
+      "kind": "function",
+      "help": "copdata",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FLocate",
+      "kind": "statement",
+      "help": "x,y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FPrint",
+      "kind": "statement",
+      "help": "a$",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "FNPrint",
+      "kind": "statement",
+      "help": "a$",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "FInverse",
+      "kind": "statement",
+      "help": "inversemode",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetProgMode",
+      "kind": "statement",
+      "help": "mode,buffer",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FYOffset",
+      "kind": "statement",
+      "help": "pixel_offset - offset from vertical y cursor to print at",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SearchMem",
+      "kind": "function",
+      "help": "type,value,start_ad,end_ad",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}, {"type": "any", "code": 8}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "SearchMemFound",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "PeekMax$",
+      "kind": "function",
+      "help": "(address,max_chars)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "D_CheckNMoveWord",
+      "kind": "statement",
+      "help": "source_address,dest_address[,count]",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetHex$",
+      "kind": "function",
+      "help": "value,mode  (1=byte, 2=word, 3=longword)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetHexAdr$",
+      "kind": "function",
+      "help": "*value,mode  (1=byte, 2=word, 3=longword)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetCustomReg",
+      "kind": "function",
+      "help": "address",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetCustomRegAdr",
+      "kind": "function",
+      "help": "name$",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "FPrintDetoke",
+      "kind": "statement",
+      "help": "tokenised_string,cio,typ,lineoffset",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetupLESDebug",
+      "kind": "statement",
+      "help": "token_addr,tokenise",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "ExtractLabel",
+      "kind": "function",
+      "help": "label_string",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "OutText",
+      "kind": "statement",
+      "help": "x,y,rastport,address/string",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "any", "code": 8}]}
+      ]
+    },
+    {
+      "name": "D_CheckNMoveA",
+      "kind": "statement",
+      "help": "source_address,dest_address[,count]",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "OutTextPen",
+      "kind": "statement",
+      "help": "rastport,pen",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "D_InitParse",
+      "kind": "statement",
+      "help": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "D_NextArg$",
+      "kind": "function",
+      "help": "- get next parameter",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ProcessString",
+      "kind": "function",
+      "help": "string",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "AddProcessPtr",
+      "kind": "statement",
+      "help": "character,string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ClearProcessPtrs",
+      "kind": "statement",
+      "help": "-- reset process string pointers",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "FindLineToken",
+      "kind": "function",
+      "help": "Start_Address",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GetDataItem",
+      "kind": "function",
+      "help": "address,size  -- size=1 byte, size=2 word, otherwise long",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

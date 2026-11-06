@@ -1,0 +1,41 @@
+{
+  "name": "iffmakelib",
+  "group": "acidlibs",
+  "number": 114,
+  "entries": [
+    {
+      "name": "SaveBitmap",
+      "kind": "statement",
+      "help": "BitMap#,Filename$[,Palette#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SaveScreen",
+      "kind": "statement",
+      "help": "Screen#,Filename$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "SaveShape",
+      "kind": "statement",
+      "help": "Shape#,Filename$[,Palette#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SavePalette",
+      "kind": "statement",
+      "help": "Palette#,Filename$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    }
+  ]
+}

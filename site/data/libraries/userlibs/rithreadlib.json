@@ -1,0 +1,24 @@
+{
+  "name": "rithreadlib",
+  "group": "userlibs",
+  "number": 44,
+  "entries": [
+    {
+      "name": "CreateThread",
+      "kind": "statement",
+      "help": "name,address",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ActiveThreads",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

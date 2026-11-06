@@ -1,0 +1,200 @@
+{
+  "name": "localelib",
+  "group": "deflibs",
+  "number": 231,
+  "opens": "locale.library",
+  "entries": [
+    {
+      "name": "CloseCatalog_",
+      "kind": "oscall",
+      "help": "(catalog)",
+      "base": 231,
+      "offset": -36,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CloseLocale_",
+      "kind": "oscall",
+      "help": "(locale)",
+      "base": 231,
+      "offset": -42,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ConvToLower_",
+      "kind": "oscall",
+      "help": "(locale,character)",
+      "base": 231,
+      "offset": -48,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "ConvToUpper_",
+      "kind": "oscall",
+      "help": "(locale,character)",
+      "base": 231,
+      "offset": -54,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "FormatDate_",
+      "kind": "oscall",
+      "help": "(locale,template,date,putCharFunc)",
+      "base": 231,
+      "offset": -60,
+      "registers": ["a0", "a1", "a2", "a3"]
+    },
+    {
+      "name": "FormatString_",
+      "kind": "oscall",
+      "help": "(locale,string,dataStream,putCharFunc)",
+      "base": 231,
+      "offset": -66,
+      "registers": ["a0", "a1", "a2", "a3"]
+    },
+    {
+      "name": "GetCatalogStr_",
+      "kind": "oscall",
+      "help": "(catalog,stringNum,defaultString)",
+      "base": 231,
+      "offset": -72,
+      "registers": ["a0", "d0", "a1"]
+    },
+    {
+      "name": "GetLocaleStr_",
+      "kind": "oscall",
+      "help": "(locale,stringNum)",
+      "base": 231,
+      "offset": -78,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "IsAlNum_",
+      "kind": "oscall",
+      "help": "(locale,character)",
+      "base": 231,
+      "offset": -84,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "IsAlpha_",
+      "kind": "oscall",
+      "help": "(locale,character)",
+      "base": 231,
+      "offset": -90,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "IsCntrl_",
+      "kind": "oscall",
+      "help": "(locale,character)",
+      "base": 231,
+      "offset": -96,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "IsDigit_",
+      "kind": "oscall",
+      "help": "(locale,character)",
+      "base": 231,
+      "offset": -102,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "IsGraph_",
+      "kind": "oscall",
+      "help": "(locale,character)",
+      "base": 231,
+      "offset": -108,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "IsLower_",
+      "kind": "oscall",
+      "help": "(locale,character)",
+      "base": 231,
+      "offset": -114,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "IsPrint_",
+      "kind": "oscall",
+      "help": "(locale,character)",
+      "base": 231,
+      "offset": -120,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "IsPunct_",
+      "kind": "oscall",
+      "help": "(locale,character)",
+      "base": 231,
+      "offset": -126,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "IsSpace_",
+      "kind": "oscall",
+      "help": "(locale,character)",
+      "base": 231,
+      "offset": -132,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "IsUpper_",
+      "kind": "oscall",
+      "help": "(locale,character)",
+      "base": 231,
+      "offset": -138,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "IsXDigit_",
+      "kind": "oscall",
+      "help": "(locale,character)",
+      "base": 231,
+      "offset": -144,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "OpenCatalogA_",
+      "kind": "oscall",
+      "help": "(locale,name,tags)",
+      "base": 231,
+      "offset": -150,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "OpenLocale_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 231,
+      "offset": -156,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ParseDate_",
+      "kind": "oscall",
+      "help": "(locale,date,template,getCharFunc)",
+      "base": 231,
+      "offset": -162,
+      "registers": ["a0", "a1", "a2", "a3"]
+    },
+    {
+      "name": "StrConvert_",
+      "kind": "oscall",
+      "help": "(locale,string,buffer,bufferSize,type)",
+      "base": 231,
+      "offset": -174,
+      "registers": ["a0", "a1", "a2", "d0", "d1"]
+    },
+    {
+      "name": "StrnCmp_",
+      "kind": "oscall",
+      "help": "(locale,string1,string2,length,type)",
+      "base": 231,
+      "offset": -180,
+      "registers": ["a0", "a1", "a2", "d0", "d1"]
+    }
+  ]
+}

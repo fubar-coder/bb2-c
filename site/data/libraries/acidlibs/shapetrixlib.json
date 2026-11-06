@@ -1,0 +1,40 @@
+{
+  "name": "shapetrixlib",
+  "group": "acidlibs",
+  "number": 118,
+  "entries": [
+    {
+      "name": "Scale",
+      "kind": "statement",
+      "help": "Shape#,X Ratio,Y Ratio[,Palette#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "quick", "code": 4}, {"type": "quick", "code": 4}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "quick", "code": 4}, {"type": "quick", "code": 4}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "XFlip",
+      "kind": "statement",
+      "help": "Shape#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "YFlip",
+      "kind": "statement",
+      "help": "Shape#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Rotate",
+      "kind": "statement",
+      "help": "Shape#,Angle Ratio",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "quick", "code": 4}]}
+      ]
+    }
+  ]
+}

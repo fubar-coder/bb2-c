@@ -1,0 +1,71 @@
+{
+  "name": "rianimlib",
+  "group": "userlibs",
+  "number": 57,
+  "entries": [
+    {
+      "name": "RIAnimInit",
+      "kind": "command",
+      "help": "(address,bitmap#,palette# [,xy_offset]|[,x,y])",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RINextAnimFrame",
+      "kind": "command",
+      "help": "(bitmap#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "AnimLoop",
+      "kind": "statement",
+      "help": "On|Off",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "RIAnimFrameCount",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RIAnimDepth",
+      "kind": "function",
+      "help": "address -- address of your animation file",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RIAnimWidth",
+      "kind": "function",
+      "help": "address -- address of your animation file",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RIAnimHeight",
+      "kind": "function",
+      "help": "address -- address of your animation file",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

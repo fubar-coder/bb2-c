@@ -1,0 +1,40 @@
+{
+  "name": "ciablib",
+  "group": "deflibs",
+  "number": 241,
+  "opens": "ciab.resource",
+  "entries": [
+    {
+      "name": "AddICRVector_b",
+      "kind": "oscall",
+      "help": "(resource,iCRBit,interrupt)",
+      "base": 241,
+      "offset": -6,
+      "registers": ["a6", "d0", "a1"]
+    },
+    {
+      "name": "RemICRVector_b",
+      "kind": "oscall",
+      "help": "(resource,iCRBit,interrupt)",
+      "base": 241,
+      "offset": -12,
+      "registers": ["a6", "d0", "a1"]
+    },
+    {
+      "name": "AbleICR_b",
+      "kind": "oscall",
+      "help": "(resource,mask)",
+      "base": 241,
+      "offset": -18,
+      "registers": ["a6", "d0"]
+    },
+    {
+      "name": "SetICR_b",
+      "kind": "oscall",
+      "help": "(resource,mask)",
+      "base": 241,
+      "offset": -24,
+      "registers": ["a6", "d0"]
+    }
+  ]
+}

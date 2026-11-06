@@ -1,0 +1,16 @@
+{
+  "name": "freqlib",
+  "group": "acidlibs",
+  "number": 152,
+  "entries": [
+    {
+      "name": "FileRequest$",
+      "kind": "function",
+      "help": "Title$,Pathname$,Filename$",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 135, "flags": ["address"]}, {"type": "string", "code": 135, "flags": ["address"]}]}
+      ]
+    }
+  ]
+}

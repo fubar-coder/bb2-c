@@ -1,0 +1,134 @@
+{
+  "name": "rifastseriallib",
+  "group": "userlibs",
+  "number": 36,
+  "entries": [
+    {
+      "name": "InitSerialIO",
+      "kind": "command",
+      "help": "baud,numbytes,inbuf,outbuf",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FinitSerialIO",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "SetSerialMode",
+      "kind": "statement",
+      "help": "mode   -- determine master/slave",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "EndSerialIO",
+      "kind": "statement",
+      "help": "- disable serial read/write",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "PutSerial",
+      "kind": "statement",
+      "help": "address,bytes | byte",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GetSerial",
+      "kind": "command",
+      "help": "[address,bytes]",
+      "result": "byte",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FlushSerialIO",
+      "kind": "statement",
+      "help": "- make sure serial port is empty",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "SyncSerial",
+      "kind": "command",
+      "help": "syncbyte",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "DoSerialIO",
+      "kind": "statement",
+      "help": "[numbytes-1]",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetIOBuffers",
+      "kind": "statement",
+      "help": "inbuf,outbuf",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "SetIOSpeed",
+      "kind": "statement",
+      "help": "baudrate",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetIOSize",
+      "kind": "statement",
+      "help": "bytes",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CheckSerial",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "SyncPut",
+      "kind": "statement",
+      "help": "address,bytes",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "SyncGet",
+      "kind": "statement",
+      "help": "address,bytes",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "cliargslib",
+  "group": "acidlibs",
+  "number": 106,
+  "entries": [
+    {
+      "name": "NumPars",
+      "kind": "function",
+      "help": "  pars.w=NumPars  Number of paramters passed to program.",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "Par$",
+      "kind": "function",
+      "help": "  parameter$=Par$(Paramter#)   Returns the string value of a parameter.",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FromCLI",
+      "kind": "function",
+      "help": "  result=FromCLI   0=Run from WorkBench, -1=Run from CLI",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ParPath$",
+      "kind": "function",
+      "help": "  path$=ParPath$(Par#,#type)  Full/Dir path of WB arg. (v36+ only!)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

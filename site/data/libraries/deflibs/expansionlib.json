@@ -1,0 +1,176 @@
+{
+  "name": "expansionlib",
+  "group": "deflibs",
+  "number": 237,
+  "opens": "expansion.library",
+  "entries": [
+    {
+      "name": "AddConfigDev_",
+      "kind": "oscall",
+      "help": "(configDev)",
+      "base": 237,
+      "offset": -30,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AddBootNode_",
+      "kind": "oscall",
+      "help": "(bootPri,flags,deviceNode,configDev)",
+      "base": 237,
+      "offset": -36,
+      "registers": ["d0", "d1", "a0", "a1"]
+    },
+    {
+      "name": "AllocBoardMem_",
+      "kind": "oscall",
+      "help": "(slotSpec)",
+      "base": 237,
+      "offset": -42,
+      "registers": ["d0"]
+    },
+    {
+      "name": "AllocConfigDev_",
+      "kind": "oscall",
+      "help": "",
+      "base": 237,
+      "offset": -48,
+      "registers": []
+    },
+    {
+      "name": "AllocExpansionMem_",
+      "kind": "oscall",
+      "help": "(numSlots,slotAlign)",
+      "base": 237,
+      "offset": -54,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "ConfigBoard_",
+      "kind": "oscall",
+      "help": "(board,configDev)",
+      "base": 237,
+      "offset": -60,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ConfigChain_",
+      "kind": "oscall",
+      "help": "(baseAddr)",
+      "base": 237,
+      "offset": -66,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FindConfigDev_",
+      "kind": "oscall",
+      "help": "(oldConfigDev,manufacturer,product)",
+      "base": 237,
+      "offset": -72,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "FreeBoardMem_",
+      "kind": "oscall",
+      "help": "(startSlot,slotSpec)",
+      "base": 237,
+      "offset": -78,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "FreeConfigDev_",
+      "kind": "oscall",
+      "help": "(configDev)",
+      "base": 237,
+      "offset": -84,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FreeExpansionMem_",
+      "kind": "oscall",
+      "help": "(startSlot,numSlots)",
+      "base": 237,
+      "offset": -90,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "ReadExpansionByte_",
+      "kind": "oscall",
+      "help": "(board,offset)",
+      "base": 237,
+      "offset": -96,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "ReadExpansionRom_",
+      "kind": "oscall",
+      "help": "(board,configDev)",
+      "base": 237,
+      "offset": -102,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "RemConfigDev_",
+      "kind": "oscall",
+      "help": "(configDev)",
+      "base": 237,
+      "offset": -108,
+      "registers": ["a0"]
+    },
+    {
+      "name": "WriteExpansionByte_",
+      "kind": "oscall",
+      "help": "(board,offset,byte)",
+      "base": 237,
+      "offset": -114,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "ObtainConfigBinding_",
+      "kind": "oscall",
+      "help": "",
+      "base": 237,
+      "offset": -120,
+      "registers": []
+    },
+    {
+      "name": "ReleaseConfigBinding_",
+      "kind": "oscall",
+      "help": "",
+      "base": 237,
+      "offset": -126,
+      "registers": []
+    },
+    {
+      "name": "SetCurrentBinding_",
+      "kind": "oscall",
+      "help": "(currentBinding,bindingSize)",
+      "base": 237,
+      "offset": -132,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "GetCurrentBinding_",
+      "kind": "oscall",
+      "help": "(currentBinding,bindingSize)",
+      "base": 237,
+      "offset": -138,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "MakeDosNode_",
+      "kind": "oscall",
+      "help": "(parmPacket)",
+      "base": 237,
+      "offset": -144,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AddDosNode_",
+      "kind": "oscall",
+      "help": "(bootPri,flags,deviceNode)",
+      "base": 237,
+      "offset": -150,
+      "registers": ["d0", "d1", "a0"]
+    }
+  ]
+}

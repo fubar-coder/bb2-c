@@ -1,0 +1,141 @@
+{
+  "name": "screenslib",
+  "group": "acidlibs",
+  "number": 158,
+  "object": {"name": "Screen", "maximum": 5},
+  "entries": [
+    {
+      "name": "Screen",
+      "kind": "statement",
+      "help": "[Screen#,Mode[,Title$]]|[Screen#,X,Y,W,H,D,Viewmode,Title$,Dpen,Bpen[,BitMap#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "long", "code": 3}, {"type": "string", "code": 7}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "long", "code": 3}, {"type": "string", "code": 7}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "WbToScreen",
+      "kind": "statement",
+      "help": "Screen#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "LoadScreen",
+      "kind": "statement",
+      "help": "Screen#,Filename$[,Palette#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FindScreen",
+      "kind": "statement",
+      "help": "Screen#[,Title$]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "SMouseX",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "SMouseY",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ShowScreen",
+      "kind": "statement",
+      "help": "Screen#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ScreenPens",
+      "kind": "statement",
+      "help": "Text,Shine,Shadow,Fill,FillText,Background,HighLight",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ViewPort",
+      "kind": "function",
+      "help": "(Screen#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ShowBitMap",
+      "kind": "statement",
+      "help": "[BitMap#]",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CloseScreen",
+      "kind": "statement",
+      "help": "Screen#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "HideScreen",
+      "kind": "statement",
+      "help": "Screen#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BeepScreen",
+      "kind": "statement",
+      "help": "Screen#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MoveScreen",
+      "kind": "statement",
+      "help": "Screen#,deltax,deltay",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ScreenTags",
+      "kind": "command",
+      "help": "Screen#,Title$ [&TagList] or [[,Tag,Data]...]",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "long", "code": 67, "flags": ["stack"]}, {"type": "long", "code": 67, "flags": ["stack"]}], "repeat": {"from": 2, "count": 2}}
+      ]
+    }
+  ]
+}

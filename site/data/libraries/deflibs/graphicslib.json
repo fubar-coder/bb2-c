@@ -1,0 +1,1024 @@
+{
+  "name": "graphicslib",
+  "group": "deflibs",
+  "number": 254,
+  "opens": "graphics.library",
+  "entries": [
+    {
+      "name": "BltBitMap_",
+      "kind": "oscall",
+      "help": "(srcBitMap,xSrc,ySrc,destBitMap,xDest,yDest,xSize,ySize,minterm,mask,tempA)",
+      "base": 254,
+      "offset": -30,
+      "registers": ["a0", "d0", "d1", "a1", "d2", "d3", "d4", "d5", "d6", "d7", "a2"]
+    },
+    {
+      "name": "BltTemplate_",
+      "kind": "oscall",
+      "help": "(source,xSrc,srcMod,destRP,xDest,yDest,xSize,ySize)",
+      "base": 254,
+      "offset": -36,
+      "registers": ["a0", "d0", "d1", "a1", "d2", "d3", "d4", "d5"]
+    },
+    {
+      "name": "ClearEOL_",
+      "kind": "oscall",
+      "help": "(rp)",
+      "base": 254,
+      "offset": -42,
+      "registers": ["a1"]
+    },
+    {
+      "name": "ClearScreen_",
+      "kind": "oscall",
+      "help": "(rp)",
+      "base": 254,
+      "offset": -48,
+      "registers": ["a1"]
+    },
+    {
+      "name": "TextLength_",
+      "kind": "oscall",
+      "help": "(rp,string,count)",
+      "base": 254,
+      "offset": -54,
+      "registers": ["a1", "a0", "d0"]
+    },
+    {
+      "name": "Text_",
+      "kind": "oscall",
+      "help": "(rp,string,count)",
+      "base": 254,
+      "offset": -60,
+      "registers": ["a1", "a0", "d0"]
+    },
+    {
+      "name": "SetFont_",
+      "kind": "oscall",
+      "help": "(rp,textFont)",
+      "base": 254,
+      "offset": -66,
+      "registers": ["a1", "a0"]
+    },
+    {
+      "name": "OpenFont_",
+      "kind": "oscall",
+      "help": "(textAttr)",
+      "base": 254,
+      "offset": -72,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CloseFont_",
+      "kind": "oscall",
+      "help": "(textFont)",
+      "base": 254,
+      "offset": -78,
+      "registers": ["a1"]
+    },
+    {
+      "name": "AskSoftStyle_",
+      "kind": "oscall",
+      "help": "(rp)",
+      "base": 254,
+      "offset": -84,
+      "registers": ["a1"]
+    },
+    {
+      "name": "SetSoftStyle_",
+      "kind": "oscall",
+      "help": "(rp,style,enable)",
+      "base": 254,
+      "offset": -90,
+      "registers": ["a1", "d0", "d1"]
+    },
+    {
+      "name": "AddBob_",
+      "kind": "oscall",
+      "help": "(bob,rp)",
+      "base": 254,
+      "offset": -96,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "AddVSprite_",
+      "kind": "oscall",
+      "help": "(vSprite,rp)",
+      "base": 254,
+      "offset": -102,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "DoCollision_",
+      "kind": "oscall",
+      "help": "(rp)",
+      "base": 254,
+      "offset": -108,
+      "registers": ["a1"]
+    },
+    {
+      "name": "DrawGList_",
+      "kind": "oscall",
+      "help": "(rp,vp)",
+      "base": 254,
+      "offset": -114,
+      "registers": ["a1", "a0"]
+    },
+    {
+      "name": "InitGels_",
+      "kind": "oscall",
+      "help": "(head,tail,gelsInfo)",
+      "base": 254,
+      "offset": -120,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "InitMasks_",
+      "kind": "oscall",
+      "help": "(vSprite)",
+      "base": 254,
+      "offset": -126,
+      "registers": ["a0"]
+    },
+    {
+      "name": "RemIBob_",
+      "kind": "oscall",
+      "help": "(bob,rp,vp)",
+      "base": 254,
+      "offset": -132,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "RemVSprite_",
+      "kind": "oscall",
+      "help": "(vSprite)",
+      "base": 254,
+      "offset": -138,
+      "registers": ["a0"]
+    },
+    {
+      "name": "SetCollision_",
+      "kind": "oscall",
+      "help": "(num,routine,gelsInfo)",
+      "base": 254,
+      "offset": -144,
+      "registers": ["d0", "a0", "a1"]
+    },
+    {
+      "name": "SortGList_",
+      "kind": "oscall",
+      "help": "(rp)",
+      "base": 254,
+      "offset": -150,
+      "registers": ["a1"]
+    },
+    {
+      "name": "AddAnimOb_",
+      "kind": "oscall",
+      "help": "(anOb,anKey,rp)",
+      "base": 254,
+      "offset": -156,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "Animate_",
+      "kind": "oscall",
+      "help": "(anKey,rp)",
+      "base": 254,
+      "offset": -162,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "GetGBuffers_",
+      "kind": "oscall",
+      "help": "(anOb,rp,flag)",
+      "base": 254,
+      "offset": -168,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "InitGMasks_",
+      "kind": "oscall",
+      "help": "(anOb)",
+      "base": 254,
+      "offset": -174,
+      "registers": ["a0"]
+    },
+    {
+      "name": "DrawEllipse_",
+      "kind": "oscall",
+      "help": "(rp,xCenter,yCenter,a,b)",
+      "base": 254,
+      "offset": -180,
+      "registers": ["a1", "d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "AreaEllipse_",
+      "kind": "oscall",
+      "help": "(rp,xCenter,yCenter,a,b)",
+      "base": 254,
+      "offset": -186,
+      "registers": ["a1", "d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "LoadRGB4_",
+      "kind": "oscall",
+      "help": "(vp,colors,count)",
+      "base": 254,
+      "offset": -192,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "InitRastPort_",
+      "kind": "oscall",
+      "help": "(rp)",
+      "base": 254,
+      "offset": -198,
+      "registers": ["a1"]
+    },
+    {
+      "name": "InitVPort_",
+      "kind": "oscall",
+      "help": "(vp)",
+      "base": 254,
+      "offset": -204,
+      "registers": ["a0"]
+    },
+    {
+      "name": "MrgCop_",
+      "kind": "oscall",
+      "help": "(view)",
+      "base": 254,
+      "offset": -210,
+      "registers": ["a1"]
+    },
+    {
+      "name": "MakeVPort_",
+      "kind": "oscall",
+      "help": "(view,vp)",
+      "base": 254,
+      "offset": -216,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "LoadView_",
+      "kind": "oscall",
+      "help": "(view)",
+      "base": 254,
+      "offset": -222,
+      "registers": ["a1"]
+    },
+    {
+      "name": "WaitBlit_",
+      "kind": "oscall",
+      "help": "",
+      "base": 254,
+      "offset": -228,
+      "registers": []
+    },
+    {
+      "name": "SetRast_",
+      "kind": "oscall",
+      "help": "(rp,pen)",
+      "base": 254,
+      "offset": -234,
+      "registers": ["a1", "d0"]
+    },
+    {
+      "name": "Move_",
+      "kind": "oscall",
+      "help": "(rp,x,y)",
+      "base": 254,
+      "offset": -240,
+      "registers": ["a1", "d0", "d1"]
+    },
+    {
+      "name": "Draw_",
+      "kind": "oscall",
+      "help": "(rp,x,y)",
+      "base": 254,
+      "offset": -246,
+      "registers": ["a1", "d0", "d1"]
+    },
+    {
+      "name": "AreaMove_",
+      "kind": "oscall",
+      "help": "(rp,x,y)",
+      "base": 254,
+      "offset": -252,
+      "registers": ["a1", "d0", "d1"]
+    },
+    {
+      "name": "AreaDraw_",
+      "kind": "oscall",
+      "help": "(rp,x,y)",
+      "base": 254,
+      "offset": -258,
+      "registers": ["a1", "d0", "d1"]
+    },
+    {
+      "name": "AreaEnd_",
+      "kind": "oscall",
+      "help": "(rp)",
+      "base": 254,
+      "offset": -264,
+      "registers": ["a1"]
+    },
+    {
+      "name": "WaitTOF_",
+      "kind": "oscall",
+      "help": "",
+      "base": 254,
+      "offset": -270,
+      "registers": []
+    },
+    {
+      "name": "QBlit_",
+      "kind": "oscall",
+      "help": "(blit)",
+      "base": 254,
+      "offset": -276,
+      "registers": ["a1"]
+    },
+    {
+      "name": "InitArea_",
+      "kind": "oscall",
+      "help": "(areaInfo,vectorBuffer,maxVectors)",
+      "base": 254,
+      "offset": -282,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "SetRGB4_",
+      "kind": "oscall",
+      "help": "(vp,index,red,green,blue)",
+      "base": 254,
+      "offset": -288,
+      "registers": ["a0", "d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "QBSBlit_",
+      "kind": "oscall",
+      "help": "(blit)",
+      "base": 254,
+      "offset": -294,
+      "registers": ["a1"]
+    },
+    {
+      "name": "BltClear_",
+      "kind": "oscall",
+      "help": "(memBlock,byteCount,flags)",
+      "base": 254,
+      "offset": -300,
+      "registers": ["a1", "d0", "d1"]
+    },
+    {
+      "name": "RectFill_",
+      "kind": "oscall",
+      "help": "(rp,xMin,yMin,xMax,yMax)",
+      "base": 254,
+      "offset": -306,
+      "registers": ["a1", "d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "BltPattern_",
+      "kind": "oscall",
+      "help": "(rp,mask,xMin,yMin,xMax,yMax,maskBPR)",
+      "base": 254,
+      "offset": -312,
+      "registers": ["a1", "a0", "d0", "d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "ReadPixel_",
+      "kind": "oscall",
+      "help": "(rp,x,y)",
+      "base": 254,
+      "offset": -318,
+      "registers": ["a1", "d0", "d1"]
+    },
+    {
+      "name": "WritePixel_",
+      "kind": "oscall",
+      "help": "(rp,x,y)",
+      "base": 254,
+      "offset": -324,
+      "registers": ["a1", "d0", "d1"]
+    },
+    {
+      "name": "Flood_",
+      "kind": "oscall",
+      "help": "(rp,mode,x,y)",
+      "base": 254,
+      "offset": -330,
+      "registers": ["a1", "d2", "d0", "d1"]
+    },
+    {
+      "name": "PolyDraw_",
+      "kind": "oscall",
+      "help": "(rp,count,polyTable)",
+      "base": 254,
+      "offset": -336,
+      "registers": ["a1", "d0", "a0"]
+    },
+    {
+      "name": "SetAPen_",
+      "kind": "oscall",
+      "help": "(rp,pen)",
+      "base": 254,
+      "offset": -342,
+      "registers": ["a1", "d0"]
+    },
+    {
+      "name": "SetBPen_",
+      "kind": "oscall",
+      "help": "(rp,pen)",
+      "base": 254,
+      "offset": -348,
+      "registers": ["a1", "d0"]
+    },
+    {
+      "name": "SetDrMd_",
+      "kind": "oscall",
+      "help": "(rp,drawMode)",
+      "base": 254,
+      "offset": -354,
+      "registers": ["a1", "d0"]
+    },
+    {
+      "name": "InitView_",
+      "kind": "oscall",
+      "help": "(view)",
+      "base": 254,
+      "offset": -360,
+      "registers": ["a1"]
+    },
+    {
+      "name": "CBump_",
+      "kind": "oscall",
+      "help": "(copList)",
+      "base": 254,
+      "offset": -366,
+      "registers": ["a1"]
+    },
+    {
+      "name": "CMove_",
+      "kind": "oscall",
+      "help": "(copList,destination,data)",
+      "base": 254,
+      "offset": -372,
+      "registers": ["a1", "d0", "d1"]
+    },
+    {
+      "name": "CWait_",
+      "kind": "oscall",
+      "help": "(copList,v,h)",
+      "base": 254,
+      "offset": -378,
+      "registers": ["a1", "d0", "d1"]
+    },
+    {
+      "name": "VBeamPos_",
+      "kind": "oscall",
+      "help": "",
+      "base": 254,
+      "offset": -384,
+      "registers": []
+    },
+    {
+      "name": "InitBitMap_",
+      "kind": "oscall",
+      "help": "(bitMap,depth,width,height)",
+      "base": 254,
+      "offset": -390,
+      "registers": ["a0", "d0", "d1", "d2"]
+    },
+    {
+      "name": "ScrollRaster_",
+      "kind": "oscall",
+      "help": "(rp,dx,dy,xMin,yMin,xMax,yMax)",
+      "base": 254,
+      "offset": -396,
+      "registers": ["a1", "d0", "d1", "d2", "d3", "d4", "d5"]
+    },
+    {
+      "name": "WaitBOVP_",
+      "kind": "oscall",
+      "help": "(vp)",
+      "base": 254,
+      "offset": -402,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GetSprite_",
+      "kind": "oscall",
+      "help": "(sprite,num)",
+      "base": 254,
+      "offset": -408,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "FreeSprite_",
+      "kind": "oscall",
+      "help": "(num)",
+      "base": 254,
+      "offset": -414,
+      "registers": ["d0"]
+    },
+    {
+      "name": "ChangeSprite_",
+      "kind": "oscall",
+      "help": "(vp,sprite,newData)",
+      "base": 254,
+      "offset": -420,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "MoveSprite_",
+      "kind": "oscall",
+      "help": "(vp,sprite,x,y)",
+      "base": 254,
+      "offset": -426,
+      "registers": ["a0", "a1", "d0", "d1"]
+    },
+    {
+      "name": "LockLayerRom_",
+      "kind": "oscall",
+      "help": "(layer)",
+      "base": 254,
+      "offset": -432,
+      "registers": ["a5"]
+    },
+    {
+      "name": "UnlockLayerRom_",
+      "kind": "oscall",
+      "help": "(layer)",
+      "base": 254,
+      "offset": -438,
+      "registers": ["a5"]
+    },
+    {
+      "name": "SyncSBitMap_",
+      "kind": "oscall",
+      "help": "(layer)",
+      "base": 254,
+      "offset": -444,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CopySBitMap_",
+      "kind": "oscall",
+      "help": "(layer)",
+      "base": 254,
+      "offset": -450,
+      "registers": ["a0"]
+    },
+    {
+      "name": "OwnBlitter_",
+      "kind": "oscall",
+      "help": "",
+      "base": 254,
+      "offset": -456,
+      "registers": []
+    },
+    {
+      "name": "DisownBlitter_",
+      "kind": "oscall",
+      "help": "",
+      "base": 254,
+      "offset": -462,
+      "registers": []
+    },
+    {
+      "name": "InitTmpRas_",
+      "kind": "oscall",
+      "help": "(tmpRas,buffer,size)",
+      "base": 254,
+      "offset": -468,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "AskFont_",
+      "kind": "oscall",
+      "help": "(rp,textAttr)",
+      "base": 254,
+      "offset": -474,
+      "registers": ["a1", "a0"]
+    },
+    {
+      "name": "AddFont_",
+      "kind": "oscall",
+      "help": "(textFont)",
+      "base": 254,
+      "offset": -480,
+      "registers": ["a1"]
+    },
+    {
+      "name": "RemFont_",
+      "kind": "oscall",
+      "help": "(textFont)",
+      "base": 254,
+      "offset": -486,
+      "registers": ["a1"]
+    },
+    {
+      "name": "AllocRaster_",
+      "kind": "oscall",
+      "help": "(width,height)",
+      "base": 254,
+      "offset": -492,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "FreeRaster_",
+      "kind": "oscall",
+      "help": "(p,width,height)",
+      "base": 254,
+      "offset": -498,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "AndRectRegion_",
+      "kind": "oscall",
+      "help": "(region,rectangle)",
+      "base": 254,
+      "offset": -504,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "OrRectRegion_",
+      "kind": "oscall",
+      "help": "(region,rectangle)",
+      "base": 254,
+      "offset": -510,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "NewRegion_",
+      "kind": "oscall",
+      "help": "",
+      "base": 254,
+      "offset": -516,
+      "registers": []
+    },
+    {
+      "name": "ClearRectRegion_",
+      "kind": "oscall",
+      "help": "(region,rectangle)",
+      "base": 254,
+      "offset": -522,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ClearRegion_",
+      "kind": "oscall",
+      "help": "(region)",
+      "base": 254,
+      "offset": -528,
+      "registers": ["a0"]
+    },
+    {
+      "name": "DisposeRegion_",
+      "kind": "oscall",
+      "help": "(region)",
+      "base": 254,
+      "offset": -534,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FreeVPortCopLists_",
+      "kind": "oscall",
+      "help": "(vp)",
+      "base": 254,
+      "offset": -540,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FreeCopList_",
+      "kind": "oscall",
+      "help": "(copList)",
+      "base": 254,
+      "offset": -546,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ClipBlit_",
+      "kind": "oscall",
+      "help": "(srcRP,xSrc,ySrc,destRP,xDest,yDest,xSize,ySize,minterm)",
+      "base": 254,
+      "offset": -552,
+      "registers": ["a0", "d0", "d1", "a1", "d2", "d3", "d4", "d5", "d6"]
+    },
+    {
+      "name": "XorRectRegion_",
+      "kind": "oscall",
+      "help": "(region,rectangle)",
+      "base": 254,
+      "offset": -558,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "FreeCprList_",
+      "kind": "oscall",
+      "help": "(cprList)",
+      "base": 254,
+      "offset": -564,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GetColorMap_",
+      "kind": "oscall",
+      "help": "(entries)",
+      "base": 254,
+      "offset": -570,
+      "registers": ["d0"]
+    },
+    {
+      "name": "FreeColorMap_",
+      "kind": "oscall",
+      "help": "(colorMap)",
+      "base": 254,
+      "offset": -576,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GetRGB4_",
+      "kind": "oscall",
+      "help": "(colorMap,entry)",
+      "base": 254,
+      "offset": -582,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "ScrollVPort_",
+      "kind": "oscall",
+      "help": "(vp)",
+      "base": 254,
+      "offset": -588,
+      "registers": ["a0"]
+    },
+    {
+      "name": "UCopperListInit_",
+      "kind": "oscall",
+      "help": "(uCopList,n)",
+      "base": 254,
+      "offset": -594,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "FreeGBuffers_",
+      "kind": "oscall",
+      "help": "(anOb,rp,flag)",
+      "base": 254,
+      "offset": -600,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "BltBitMapRastPort_",
+      "kind": "oscall",
+      "help": "(srcBitMap,xSrc,ySrc,destRP,xDest,yDest,xSize,ySize,minterm)",
+      "base": 254,
+      "offset": -606,
+      "registers": ["a0", "d0", "d1", "a1", "d2", "d3", "d4", "d5", "d6"]
+    },
+    {
+      "name": "OrRegionRegion_",
+      "kind": "oscall",
+      "help": "(srcRegion,destRegion)",
+      "base": 254,
+      "offset": -612,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "XorRegionRegion_",
+      "kind": "oscall",
+      "help": "(srcRegion,destRegion)",
+      "base": 254,
+      "offset": -618,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "AndRegionRegion_",
+      "kind": "oscall",
+      "help": "(srcRegion,destRegion)",
+      "base": 254,
+      "offset": -624,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "SetRGB4CM_",
+      "kind": "oscall",
+      "help": "(colorMap,index,red,green,blue)",
+      "base": 254,
+      "offset": -630,
+      "registers": ["a0", "d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "BltMaskBitMapRastPort_",
+      "kind": "oscall",
+      "help": "(srcBitMap,xSrc,ySrc,destRP,xDest,yDest,xSize,ySize,minterm,bltMask)",
+      "base": 254,
+      "offset": -636,
+      "registers": ["a0", "d0", "d1", "a1", "d2", "d3", "d4", "d5", "d6", "a2"]
+    },
+    {
+      "name": "GfxInternal1_",
+      "kind": "oscall",
+      "help": "",
+      "base": 254,
+      "offset": -642,
+      "registers": []
+    },
+    {
+      "name": "GfxInternal2_",
+      "kind": "oscall",
+      "help": "",
+      "base": 254,
+      "offset": -648,
+      "registers": []
+    },
+    {
+      "name": "AttemptLockLayerRom_",
+      "kind": "oscall",
+      "help": "(layer)",
+      "base": 254,
+      "offset": -654,
+      "registers": ["a5"]
+    },
+    {
+      "name": "GfxNew_",
+      "kind": "oscall",
+      "help": "(gfxNodeType)",
+      "base": 254,
+      "offset": -660,
+      "registers": ["d0"]
+    },
+    {
+      "name": "GfxFree_",
+      "kind": "oscall",
+      "help": "(gfxNodePtr)",
+      "base": 254,
+      "offset": -666,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GfxAssociate_",
+      "kind": "oscall",
+      "help": "(associateNode,gfxNodePtr)",
+      "base": 254,
+      "offset": -672,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "BitMapScale_",
+      "kind": "oscall",
+      "help": "(bitScaleArgs)",
+      "base": 254,
+      "offset": -678,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ScalerDiv_",
+      "kind": "oscall",
+      "help": "(factor,numerator,denominator)",
+      "base": 254,
+      "offset": -684,
+      "registers": ["d0", "d1", "d2"]
+    },
+    {
+      "name": "TextExtent_",
+      "kind": "oscall",
+      "help": "(rp,string,count,textExtent)",
+      "base": 254,
+      "offset": -690,
+      "registers": ["a1", "a0", "d0", "a2"]
+    },
+    {
+      "name": "TextFit_",
+      "kind": "oscall",
+      "help": "(rp,string,strLen,textExtent,constrainingExtent,strDirection,constrainingBitWidth,constrainingBitHeight)",
+      "base": 254,
+      "offset": -696,
+      "registers": ["a1", "a0", "d0", "a2", "a3", "d1", "d2", "d3"]
+    },
+    {
+      "name": "GfxLookUp_",
+      "kind": "oscall",
+      "help": "(associateNode)",
+      "base": 254,
+      "offset": -702,
+      "registers": ["a0"]
+    },
+    {
+      "name": "VideoControl_",
+      "kind": "oscall",
+      "help": "(colorMap,tagarray)",
+      "base": 254,
+      "offset": -708,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "OpenMonitor_",
+      "kind": "oscall",
+      "help": "(monitorName,displayID)",
+      "base": 254,
+      "offset": -714,
+      "registers": ["a1", "d0"]
+    },
+    {
+      "name": "CloseMonitor_",
+      "kind": "oscall",
+      "help": "(monitorSpec)",
+      "base": 254,
+      "offset": -720,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FindDisplayInfo_",
+      "kind": "oscall",
+      "help": "(displayID)",
+      "base": 254,
+      "offset": -726,
+      "registers": ["d0"]
+    },
+    {
+      "name": "NextDisplayInfo_",
+      "kind": "oscall",
+      "help": "(displayID)",
+      "base": 254,
+      "offset": -732,
+      "registers": ["d0"]
+    },
+    {
+      "name": "GetDisplayInfoData_",
+      "kind": "oscall",
+      "help": "(handle,buf,size,tagID,displayID)",
+      "base": 254,
+      "offset": -756,
+      "registers": ["a0", "a1", "d0", "d1", "d2"]
+    },
+    {
+      "name": "FontExtent_",
+      "kind": "oscall",
+      "help": "(font,fontExtent)",
+      "base": 254,
+      "offset": -762,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ReadPixelLine8_",
+      "kind": "oscall",
+      "help": "(rp,xstart,ystart,width,array,tempRP)",
+      "base": 254,
+      "offset": -768,
+      "registers": ["a0", "d0", "d1", "d2", "a2", "a1"]
+    },
+    {
+      "name": "WritePixelLine8_",
+      "kind": "oscall",
+      "help": "(rp,xstart,ystart,width,array,tempRP)",
+      "base": 254,
+      "offset": -774,
+      "registers": ["a0", "d0", "d1", "d2", "a2", "a1"]
+    },
+    {
+      "name": "ReadPixelArray8_",
+      "kind": "oscall",
+      "help": "(rp,xstart,ystart,xstop,ystop,array,temprp)",
+      "base": 254,
+      "offset": -780,
+      "registers": ["a0", "d0", "d1", "d2", "d3", "a2", "a1"]
+    },
+    {
+      "name": "WritePixelArray8_",
+      "kind": "oscall",
+      "help": "(rp,xstart,ystart,xstop,ystop,array,temprp)",
+      "base": 254,
+      "offset": -786,
+      "registers": ["a0", "d0", "d1", "d2", "d3", "a2", "a1"]
+    },
+    {
+      "name": "GetVPModeID_",
+      "kind": "oscall",
+      "help": "(vp)",
+      "base": 254,
+      "offset": -792,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ModeNotAvailable_",
+      "kind": "oscall",
+      "help": "(modeID)",
+      "base": 254,
+      "offset": -798,
+      "registers": ["d0"]
+    },
+    {
+      "name": "WeighTAMatch_",
+      "kind": "oscall",
+      "help": "(reqTextAttr,targetTextAttr,targetTags)",
+      "base": 254,
+      "offset": -804,
+      "registers": ["a0", "a1", "a2"]
+    }
+  ]
+}

@@ -29,6 +29,34 @@ add_subdirectory(acidlibs)
 add_subdirectory(deflibs)
 add_subdirectory(userlibs)
 
+# the command reference of the website: the command tables the library
+# build steps generate (blitz_library CMDREF) are the committed ones of
+# site/data/libraries.  cmdref_update copies the generated files there
+# after an intended change (the build step of a changed library fails
+# until then); cmdref_complete: no committed file without a library and
+# no library without one; the checks with broken input: another library's
+# file (cmdref_check_broken), a library missing from the list
+# (cmdref_complete_broken)
+get_property(cmdref_libraries GLOBAL PROPERTY CMDREF_LIBRARIES)
+add_custom_target(cmdref_update
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMDREF_DIR} ${CMDREF_SITE_DIR}
+	COMMENT "Copying the generated command tables into site/data/libraries"
+	VERBATIM)
+add_test(NAME cmdref_complete COMMAND ${CMAKE_COMMAND} -DDIR=${CMDREF_SITE_DIR}
+	"-DLIBRARIES=${cmdref_libraries}" -P ${PROJECT_SOURCE_DIR}/tools/cmdref/complete.cmake)
+list(SUBLIST cmdref_libraries 1 -1 cmdref_missing)
+add_test(NAME cmdref_complete_broken COMMAND ${CMAKE_COMMAND} -DDIR=${CMDREF_SITE_DIR}
+	"-DLIBRARIES=${cmdref_missing}" -P ${PROJECT_SOURCE_DIR}/tools/cmdref/complete.cmake)
+set_tests_properties(cmdref_complete_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "no library of the build")
+add_test(NAME cmdref_check_broken COMMAND ${CMAKE_COMMAND}
+	-DCMDREF=${CMDREF} -DLIB=${CMAKE_CURRENT_BINARY_DIR}/acidlibs/fadelib.obj
+	-DGROUP=acidlibs -DNAME=fadelib -DOUT=${CMAKE_CURRENT_BINARY_DIR}/cmdref_check_broken.json
+	-DCOMMITTED=${CMDREF_SITE_DIR}/acidlibs/trackerlib.json
+	-P ${CMDREF_CHECK})
+set_tests_properties(cmdref_check_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "differs from[ \n]+[^ \n]*/acidlibs/trackerlib\\.json")
+
 # the declarations of every library (header, entries, !libfin; code
 # offsets only set or not) against the originals of the CD, same libraries
 # in the same order (the compiler's token list order); skipped without the

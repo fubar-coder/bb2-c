@@ -1,0 +1,51 @@
+{
+  "name": "rinonvolatilelib",
+  "group": "userlibs",
+  "number": 35,
+  "entries": [
+    {
+      "name": "IsNonvolatile",
+      "kind": "function",
+      "help": "-- returns true if library is open",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "StoreNVData",
+      "kind": "command",
+      "help": "AppName,ItemName,data,byte_length",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "any", "code": 8}, {"type": "any", "code": 8}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GetCopyNV",
+      "kind": "function",
+      "help": "AppName,ItemName",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "any", "code": 8}, {"type": "any", "code": 8}]}
+      ]
+    },
+    {
+      "name": "FreeNVData",
+      "kind": "statement",
+      "help": "APTR",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GetNVList",
+      "kind": "function",
+      "help": "appname",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "any", "code": 8}]}
+      ]
+    }
+  ]
+}

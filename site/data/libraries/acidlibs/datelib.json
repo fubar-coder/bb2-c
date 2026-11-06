@@ -1,0 +1,105 @@
+{
+  "name": "datelib",
+  "group": "acidlibs",
+  "number": 78,
+  "entries": [
+    {
+      "name": "SystemDate",
+      "kind": "function",
+      "help": "Returns system date as number of days since 1/1/1978",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "Date$",
+      "kind": "function",
+      "help": "days.l ;converts days since 1/1/1978 to date string",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "NumDays",
+      "kind": "function",
+      "help": "date$ ;converts dd/mm/yyyy to days since 1/1/1978",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "DateFormat",
+      "kind": "statement",
+      "help": "0=dd/mm/yyyy 1=mm/dd/yyyy",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Days",
+      "kind": "function",
+      "help": " ;returns day calculated in last call to date$",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "Months",
+      "kind": "function",
+      "help": " ;returns month calculated in last call to date$",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "Years",
+      "kind": "function",
+      "help": " ;returns year calculated in last call to date$",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "WeekDay",
+      "kind": "function",
+      "help": " ;returns day of week calculated in last call to date$",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "Hours",
+      "kind": "function",
+      "help": " ;gets system time and returns hour of day",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "Mins",
+      "kind": "function",
+      "help": " ;returns minutes calculated at last call to hour",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "Secs",
+      "kind": "function",
+      "help": " ;returns seconds calculated at last call to hour",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

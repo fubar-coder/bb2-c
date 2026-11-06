@@ -1,0 +1,1024 @@
+{
+  "name": "doslib",
+  "group": "deflibs",
+  "number": 252,
+  "opens": "dos.library",
+  "entries": [
+    {
+      "name": "Open_",
+      "kind": "oscall",
+      "help": "(name,accessMode)",
+      "base": 252,
+      "offset": -30,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "Close_",
+      "kind": "oscall",
+      "help": "(file)",
+      "base": 252,
+      "offset": -36,
+      "registers": ["d1"]
+    },
+    {
+      "name": "Read_",
+      "kind": "oscall",
+      "help": "(file,buffer,length)",
+      "base": 252,
+      "offset": -42,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "Write_",
+      "kind": "oscall",
+      "help": "(file,buffer,length)",
+      "base": 252,
+      "offset": -48,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "Input_",
+      "kind": "oscall",
+      "help": "",
+      "base": 252,
+      "offset": -54,
+      "registers": []
+    },
+    {
+      "name": "Output_",
+      "kind": "oscall",
+      "help": "",
+      "base": 252,
+      "offset": -60,
+      "registers": []
+    },
+    {
+      "name": "Seek_",
+      "kind": "oscall",
+      "help": "(file,position,offset)",
+      "base": 252,
+      "offset": -66,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "DeleteFile_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 252,
+      "offset": -72,
+      "registers": ["d1"]
+    },
+    {
+      "name": "Rename_",
+      "kind": "oscall",
+      "help": "(oldName,newName)",
+      "base": 252,
+      "offset": -78,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "Lock_",
+      "kind": "oscall",
+      "help": "(name,type)",
+      "base": 252,
+      "offset": -84,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "UnLock_",
+      "kind": "oscall",
+      "help": "(lock)",
+      "base": 252,
+      "offset": -90,
+      "registers": ["d1"]
+    },
+    {
+      "name": "DupLock_",
+      "kind": "oscall",
+      "help": "(lock)",
+      "base": 252,
+      "offset": -96,
+      "registers": ["d1"]
+    },
+    {
+      "name": "Examine_",
+      "kind": "oscall",
+      "help": "(lock,fileInfoBlock)",
+      "base": 252,
+      "offset": -102,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "ExNext_",
+      "kind": "oscall",
+      "help": "(lock,fileInfoBlock)",
+      "base": 252,
+      "offset": -108,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "Info_",
+      "kind": "oscall",
+      "help": "(lock,parameterBlock)",
+      "base": 252,
+      "offset": -114,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "CreateDir_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 252,
+      "offset": -120,
+      "registers": ["d1"]
+    },
+    {
+      "name": "CurrentDir_",
+      "kind": "oscall",
+      "help": "(lock)",
+      "base": 252,
+      "offset": -126,
+      "registers": ["d1"]
+    },
+    {
+      "name": "IoErr_",
+      "kind": "oscall",
+      "help": "",
+      "base": 252,
+      "offset": -132,
+      "registers": []
+    },
+    {
+      "name": "CreateProc_",
+      "kind": "oscall",
+      "help": "(name,pri,segList,stackSize)",
+      "base": 252,
+      "offset": -138,
+      "registers": ["d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "Exit_",
+      "kind": "oscall",
+      "help": "(returnCode)",
+      "base": 252,
+      "offset": -144,
+      "registers": ["d1"]
+    },
+    {
+      "name": "LoadSeg_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 252,
+      "offset": -150,
+      "registers": ["d1"]
+    },
+    {
+      "name": "UnLoadSeg_",
+      "kind": "oscall",
+      "help": "(seglist)",
+      "base": 252,
+      "offset": -156,
+      "registers": ["d1"]
+    },
+    {
+      "name": "DeviceProc_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 252,
+      "offset": -174,
+      "registers": ["d1"]
+    },
+    {
+      "name": "SetComment_",
+      "kind": "oscall",
+      "help": "(name,comment)",
+      "base": 252,
+      "offset": -180,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "SetProtection_",
+      "kind": "oscall",
+      "help": "(name,protect)",
+      "base": 252,
+      "offset": -186,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "DateStamp_",
+      "kind": "oscall",
+      "help": "(date)",
+      "base": 252,
+      "offset": -192,
+      "registers": ["d1"]
+    },
+    {
+      "name": "Delay_",
+      "kind": "oscall",
+      "help": "(timeout)",
+      "base": 252,
+      "offset": -198,
+      "registers": ["d1"]
+    },
+    {
+      "name": "WaitForChar_",
+      "kind": "oscall",
+      "help": "(file,timeout)",
+      "base": 252,
+      "offset": -204,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "ParentDir_",
+      "kind": "oscall",
+      "help": "(lock)",
+      "base": 252,
+      "offset": -210,
+      "registers": ["d1"]
+    },
+    {
+      "name": "IsInteractive_",
+      "kind": "oscall",
+      "help": "(file)",
+      "base": 252,
+      "offset": -216,
+      "registers": ["d1"]
+    },
+    {
+      "name": "Execute_",
+      "kind": "oscall",
+      "help": "(string,file,file2)",
+      "base": 252,
+      "offset": -222,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "AllocDosObject_",
+      "kind": "oscall",
+      "help": "(type,tags)",
+      "base": 252,
+      "offset": -228,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "FreeDosObject_",
+      "kind": "oscall",
+      "help": "(type,ptr)",
+      "base": 252,
+      "offset": -234,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "DoPkt_",
+      "kind": "oscall",
+      "help": "(port,action,arg1,arg2,arg3,arg4,arg5)",
+      "base": 252,
+      "offset": -240,
+      "registers": ["d1", "d2", "d3", "d4", "d5", "d6", "d7"]
+    },
+    {
+      "name": "SendPkt_",
+      "kind": "oscall",
+      "help": "(dp,port,replyport)",
+      "base": 252,
+      "offset": -246,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "WaitPkt_",
+      "kind": "oscall",
+      "help": "",
+      "base": 252,
+      "offset": -252,
+      "registers": []
+    },
+    {
+      "name": "ReplyPkt_",
+      "kind": "oscall",
+      "help": "(dp,res1,res2)",
+      "base": 252,
+      "offset": -258,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "AbortPkt_",
+      "kind": "oscall",
+      "help": "(port,pkt)",
+      "base": 252,
+      "offset": -264,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "LockRecord_",
+      "kind": "oscall",
+      "help": "(fh,offset,length,mode,timeout)",
+      "base": 252,
+      "offset": -270,
+      "registers": ["d1", "d2", "d3", "d4", "d5"]
+    },
+    {
+      "name": "LockRecords_",
+      "kind": "oscall",
+      "help": "(recArray,timeout)",
+      "base": 252,
+      "offset": -276,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "UnLockRecord_",
+      "kind": "oscall",
+      "help": "(fh,offset,length)",
+      "base": 252,
+      "offset": -282,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "UnLockRecords_",
+      "kind": "oscall",
+      "help": "(recArray)",
+      "base": 252,
+      "offset": -288,
+      "registers": ["d1"]
+    },
+    {
+      "name": "SelectInput_",
+      "kind": "oscall",
+      "help": "(fh)",
+      "base": 252,
+      "offset": -294,
+      "registers": ["d1"]
+    },
+    {
+      "name": "SelectOutput_",
+      "kind": "oscall",
+      "help": "(fh)",
+      "base": 252,
+      "offset": -300,
+      "registers": ["d1"]
+    },
+    {
+      "name": "FGetC_",
+      "kind": "oscall",
+      "help": "(fh)",
+      "base": 252,
+      "offset": -306,
+      "registers": ["d1"]
+    },
+    {
+      "name": "FPutC_",
+      "kind": "oscall",
+      "help": "(fh,ch)",
+      "base": 252,
+      "offset": -312,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "UnGetC_",
+      "kind": "oscall",
+      "help": "(fh,character)",
+      "base": 252,
+      "offset": -318,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "FRead_",
+      "kind": "oscall",
+      "help": "(fh,block,blocklen,number)",
+      "base": 252,
+      "offset": -324,
+      "registers": ["d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "FWrite_",
+      "kind": "oscall",
+      "help": "(fh,block,blocklen,number)",
+      "base": 252,
+      "offset": -330,
+      "registers": ["d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "FGets_",
+      "kind": "oscall",
+      "help": "(fh,buf,buflen)",
+      "base": 252,
+      "offset": -336,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "FPuts_",
+      "kind": "oscall",
+      "help": "(fh,str)",
+      "base": 252,
+      "offset": -342,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "VFWritef_",
+      "kind": "oscall",
+      "help": "(fh,format,argarray)",
+      "base": 252,
+      "offset": -348,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "VFPrintf_",
+      "kind": "oscall",
+      "help": "(fh,format,argarray)",
+      "base": 252,
+      "offset": -354,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "Flush_",
+      "kind": "oscall",
+      "help": "(fh)",
+      "base": 252,
+      "offset": -360,
+      "registers": ["d1"]
+    },
+    {
+      "name": "SetVBuf_",
+      "kind": "oscall",
+      "help": "(fh,buff,type,size)",
+      "base": 252,
+      "offset": -366,
+      "registers": ["d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "DupLockFromFH_",
+      "kind": "oscall",
+      "help": "(fh)",
+      "base": 252,
+      "offset": -372,
+      "registers": ["d1"]
+    },
+    {
+      "name": "OpenFromLock_",
+      "kind": "oscall",
+      "help": "(lock)",
+      "base": 252,
+      "offset": -378,
+      "registers": ["d1"]
+    },
+    {
+      "name": "ParentOfFH_",
+      "kind": "oscall",
+      "help": "(fh)",
+      "base": 252,
+      "offset": -384,
+      "registers": ["d1"]
+    },
+    {
+      "name": "ExamineFH_",
+      "kind": "oscall",
+      "help": "(fh,fib)",
+      "base": 252,
+      "offset": -390,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "SetFileDate_",
+      "kind": "oscall",
+      "help": "(name,date)",
+      "base": 252,
+      "offset": -396,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "NameFromLock_",
+      "kind": "oscall",
+      "help": "(lock,buffer,len)",
+      "base": 252,
+      "offset": -402,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "NameFromFH_",
+      "kind": "oscall",
+      "help": "(fh,buffer,len)",
+      "base": 252,
+      "offset": -408,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "SplitName_",
+      "kind": "oscall",
+      "help": "(name,seperator,buf,oldpos,size)",
+      "base": 252,
+      "offset": -414,
+      "registers": ["d1", "d2", "d3", "d4", "d5"]
+    },
+    {
+      "name": "SameLock_",
+      "kind": "oscall",
+      "help": "(lock1,lock2)",
+      "base": 252,
+      "offset": -420,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "SetMode_",
+      "kind": "oscall",
+      "help": "(fh,mode)",
+      "base": 252,
+      "offset": -426,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "ExAll_",
+      "kind": "oscall",
+      "help": "(lock,buffer,size,data,control)",
+      "base": 252,
+      "offset": -432,
+      "registers": ["d1", "d2", "d3", "d4", "d5"]
+    },
+    {
+      "name": "ReadLink_",
+      "kind": "oscall",
+      "help": "(port,lock,path,buffer,size)",
+      "base": 252,
+      "offset": -438,
+      "registers": ["d1", "d2", "d3", "d4", "d5"]
+    },
+    {
+      "name": "MakeLink_",
+      "kind": "oscall",
+      "help": "(name,dest,soft)",
+      "base": 252,
+      "offset": -444,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "ChangeMode_",
+      "kind": "oscall",
+      "help": "(type,fh,newmode)",
+      "base": 252,
+      "offset": -450,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "SetFileSize_",
+      "kind": "oscall",
+      "help": "(fh,pos,mode)",
+      "base": 252,
+      "offset": -456,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "SetIoErr_",
+      "kind": "oscall",
+      "help": "(result)",
+      "base": 252,
+      "offset": -462,
+      "registers": ["d1"]
+    },
+    {
+      "name": "Fault_",
+      "kind": "oscall",
+      "help": "(code,header,buffer,len)",
+      "base": 252,
+      "offset": -468,
+      "registers": ["d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "PrintFault_",
+      "kind": "oscall",
+      "help": "(code,header)",
+      "base": 252,
+      "offset": -474,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "ErrorReport_",
+      "kind": "oscall",
+      "help": "(code,type,arg1,device)",
+      "base": 252,
+      "offset": -480,
+      "registers": ["d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "Cli_",
+      "kind": "oscall",
+      "help": "",
+      "base": 252,
+      "offset": -492,
+      "registers": []
+    },
+    {
+      "name": "CreateNewProc_",
+      "kind": "oscall",
+      "help": "(tags)",
+      "base": 252,
+      "offset": -498,
+      "registers": ["d1"]
+    },
+    {
+      "name": "RunCommand_",
+      "kind": "oscall",
+      "help": "(seg,stack,paramptr,paramlen)",
+      "base": 252,
+      "offset": -504,
+      "registers": ["d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "GetConsoleTask_",
+      "kind": "oscall",
+      "help": "",
+      "base": 252,
+      "offset": -510,
+      "registers": []
+    },
+    {
+      "name": "SetConsoleTask_",
+      "kind": "oscall",
+      "help": "(task)",
+      "base": 252,
+      "offset": -516,
+      "registers": ["d1"]
+    },
+    {
+      "name": "GetFileSysTask_",
+      "kind": "oscall",
+      "help": "",
+      "base": 252,
+      "offset": -522,
+      "registers": []
+    },
+    {
+      "name": "SetFileSysTask_",
+      "kind": "oscall",
+      "help": "(task)",
+      "base": 252,
+      "offset": -528,
+      "registers": ["d1"]
+    },
+    {
+      "name": "GetArgStr_",
+      "kind": "oscall",
+      "help": "",
+      "base": 252,
+      "offset": -534,
+      "registers": []
+    },
+    {
+      "name": "SetArgStr_",
+      "kind": "oscall",
+      "help": "(string)",
+      "base": 252,
+      "offset": -540,
+      "registers": ["d1"]
+    },
+    {
+      "name": "FindCliProc_",
+      "kind": "oscall",
+      "help": "(num)",
+      "base": 252,
+      "offset": -546,
+      "registers": ["d1"]
+    },
+    {
+      "name": "MaxCli_",
+      "kind": "oscall",
+      "help": "",
+      "base": 252,
+      "offset": -552,
+      "registers": []
+    },
+    {
+      "name": "SetCurrentDirName_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 252,
+      "offset": -558,
+      "registers": ["d1"]
+    },
+    {
+      "name": "GetCurrentDirName_",
+      "kind": "oscall",
+      "help": "(buf,len)",
+      "base": 252,
+      "offset": -564,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "SetProgramName_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 252,
+      "offset": -570,
+      "registers": ["d1"]
+    },
+    {
+      "name": "GetProgramName_",
+      "kind": "oscall",
+      "help": "(buf,len)",
+      "base": 252,
+      "offset": -576,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "SetPrompt_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 252,
+      "offset": -582,
+      "registers": ["d1"]
+    },
+    {
+      "name": "GetPrompt_",
+      "kind": "oscall",
+      "help": "(buf,len)",
+      "base": 252,
+      "offset": -588,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "SetProgramDir_",
+      "kind": "oscall",
+      "help": "(lock)",
+      "base": 252,
+      "offset": -594,
+      "registers": ["d1"]
+    },
+    {
+      "name": "GetProgramDir_",
+      "kind": "oscall",
+      "help": "",
+      "base": 252,
+      "offset": -600,
+      "registers": []
+    },
+    {
+      "name": "SystemTagList_",
+      "kind": "oscall",
+      "help": "(command,tags)",
+      "base": 252,
+      "offset": -606,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "AssignLock_",
+      "kind": "oscall",
+      "help": "(name,lock)",
+      "base": 252,
+      "offset": -612,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "AssignLate_",
+      "kind": "oscall",
+      "help": "(name,path)",
+      "base": 252,
+      "offset": -618,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "AssignPath_",
+      "kind": "oscall",
+      "help": "(name,path)",
+      "base": 252,
+      "offset": -624,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "AssignAdd_",
+      "kind": "oscall",
+      "help": "(name,lock)",
+      "base": 252,
+      "offset": -630,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "RemAssignList_",
+      "kind": "oscall",
+      "help": "(name,lock)",
+      "base": 252,
+      "offset": -636,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "GetDeviceProc_",
+      "kind": "oscall",
+      "help": "(name,dp)",
+      "base": 252,
+      "offset": -642,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "FreeDeviceProc_",
+      "kind": "oscall",
+      "help": "(dp)",
+      "base": 252,
+      "offset": -648,
+      "registers": ["d1"]
+    },
+    {
+      "name": "LockDosList_",
+      "kind": "oscall",
+      "help": "(flags)",
+      "base": 252,
+      "offset": -654,
+      "registers": ["d1"]
+    },
+    {
+      "name": "UnLockDosList_",
+      "kind": "oscall",
+      "help": "(flags)",
+      "base": 252,
+      "offset": -660,
+      "registers": ["d1"]
+    },
+    {
+      "name": "AttemptLockDosList_",
+      "kind": "oscall",
+      "help": "(flags)",
+      "base": 252,
+      "offset": -666,
+      "registers": ["d1"]
+    },
+    {
+      "name": "RemDosEntry_",
+      "kind": "oscall",
+      "help": "(dlist)",
+      "base": 252,
+      "offset": -672,
+      "registers": ["d1"]
+    },
+    {
+      "name": "AddDosEntry_",
+      "kind": "oscall",
+      "help": "(dlist)",
+      "base": 252,
+      "offset": -678,
+      "registers": ["d1"]
+    },
+    {
+      "name": "FindDosEntry_",
+      "kind": "oscall",
+      "help": "(dlist,name,flags)",
+      "base": 252,
+      "offset": -684,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "NextDosEntry_",
+      "kind": "oscall",
+      "help": "(dlist,flags)",
+      "base": 252,
+      "offset": -690,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "MakeDosEntry_",
+      "kind": "oscall",
+      "help": "(name,type)",
+      "base": 252,
+      "offset": -696,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "FreeDosEntry_",
+      "kind": "oscall",
+      "help": "(dlist)",
+      "base": 252,
+      "offset": -702,
+      "registers": ["d1"]
+    },
+    {
+      "name": "IsFileSystem_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 252,
+      "offset": -708,
+      "registers": ["d1"]
+    },
+    {
+      "name": "Format_",
+      "kind": "oscall",
+      "help": "(filesystem,volumename,dostype)",
+      "base": 252,
+      "offset": -714,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "Relabel_",
+      "kind": "oscall",
+      "help": "(drive,newname)",
+      "base": 252,
+      "offset": -720,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "Inhibit_",
+      "kind": "oscall",
+      "help": "(name,onoff)",
+      "base": 252,
+      "offset": -726,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "AddBuffers_",
+      "kind": "oscall",
+      "help": "(name,number)",
+      "base": 252,
+      "offset": -732,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "CompareDates_",
+      "kind": "oscall",
+      "help": "(date1,date2)",
+      "base": 252,
+      "offset": -738,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "DateToStr_",
+      "kind": "oscall",
+      "help": "(datetime)",
+      "base": 252,
+      "offset": -744,
+      "registers": ["d1"]
+    },
+    {
+      "name": "StrToDate_",
+      "kind": "oscall",
+      "help": "(datetime)",
+      "base": 252,
+      "offset": -750,
+      "registers": ["d1"]
+    },
+    {
+      "name": "InternalLoadSeg_",
+      "kind": "oscall",
+      "help": "(fh,table,funcarray,stack)",
+      "base": 252,
+      "offset": -756,
+      "registers": ["d0", "a0", "a1", "a2"]
+    },
+    {
+      "name": "InternalUnLoadSeg_",
+      "kind": "oscall",
+      "help": "(seglist,freefunc)",
+      "base": 252,
+      "offset": -762,
+      "registers": ["d1", "a1"]
+    },
+    {
+      "name": "NewLoadSeg_",
+      "kind": "oscall",
+      "help": "(file,tags)",
+      "base": 252,
+      "offset": -768,
+      "registers": ["d1", "d2"]
+    },
+    {
+      "name": "AddSegment_",
+      "kind": "oscall",
+      "help": "(name,seg,system)",
+      "base": 252,
+      "offset": -774,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "FindSegment_",
+      "kind": "oscall",
+      "help": "(name,seg,system)",
+      "base": 252,
+      "offset": -780,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "RemSegment_",
+      "kind": "oscall",
+      "help": "(seg)",
+      "base": 252,
+      "offset": -786,
+      "registers": ["d1"]
+    },
+    {
+      "name": "CheckSignal_",
+      "kind": "oscall",
+      "help": "(mask)",
+      "base": 252,
+      "offset": -792,
+      "registers": ["d1"]
+    },
+    {
+      "name": "ReadArgs_",
+      "kind": "oscall",
+      "help": "(template,array,args)",
+      "base": 252,
+      "offset": -798,
+      "registers": ["d1", "d2", "d3"]
+    },
+    {
+      "name": "FindArg_",
+      "kind": "oscall",
+      "help": "(keyword,template)",
+      "base": 252,
+      "offset": -804,
+      "registers": ["d1", "d2"]
+    }
+  ]
+}

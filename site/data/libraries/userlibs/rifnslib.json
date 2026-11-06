@@ -1,0 +1,174 @@
+{
+  "name": "rifnslib",
+  "group": "userlibs",
+  "number": 93,
+  "entries": [
+    {
+      "name": "FNSPrint",
+      "kind": "statement",
+      "help": "fontnum,x,y,a$/string_address[,prefs,colour]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "any", "code": 8}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "any", "code": 8}, {"type": "byte", "code": 1}, {"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "InstallFNS",
+      "kind": "command",
+      "help": "(fontnum,address)",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FNSOutput",
+      "kind": "statement",
+      "help": "bitmap[,clip_update (On|Off)]",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "FNSInk",
+      "kind": "statement",
+      "help": "colour",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FNSPrefs",
+      "kind": "statement",
+      "help": "prefs[,colour]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FNSHeight",
+      "kind": "function",
+      "help": "(fontnum)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "FNSClip",
+      "kind": "statement",
+      "help": "xmin,ymin,xmax,ymax",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FNSClipOutput",
+      "kind": "statement",
+      "help": "- set clipping zone to output bitmap size",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RemoveFNS",
+      "kind": "statement",
+      "help": "fontnum",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "FNSUnderline",
+      "kind": "function",
+      "help": "(fontnum)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "FNSLength",
+      "kind": "function",
+      "help": "(fontnum,a$[,prefs])",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}, {"type": "any", "code": 8}]},
+        {"args": [{"type": "byte", "code": 1}, {"type": "any", "code": 8}, {"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "FNSVersion",
+      "kind": "function",
+      "help": "- returns quick, lastest version=1.1",
+      "result": "quick",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "FNSOrigin",
+      "kind": "statement",
+      "help": "[x,y]",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FNSWidth",
+      "kind": "function",
+      "help": "(fontnum)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "FNSLoad",
+      "kind": "command",
+      "help": "(fontname$,fontslot)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "FNSSlot",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "FNSUnload",
+      "kind": "statement",
+      "help": "fontslot",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FNSSetTab",
+      "kind": "statement",
+      "help": "tab_size - set tab size in pixels",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FNSShadowPrint",
+      "kind": "statement",
+      "help": "fontnum,x,y,a$/string_address,[prefs,colour[,shadow]]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "any", "code": 8}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "any", "code": 8}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "any", "code": 8}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

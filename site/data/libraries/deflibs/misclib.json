@@ -1,0 +1,24 @@
+{
+  "name": "misclib",
+  "group": "deflibs",
+  "number": 224,
+  "opens": "misc.resource",
+  "entries": [
+    {
+      "name": "AllocMiscResource_",
+      "kind": "oscall",
+      "help": "(unitNum,name)",
+      "base": 224,
+      "offset": -6,
+      "registers": ["d0", "a1"]
+    },
+    {
+      "name": "FreeMiscResource_",
+      "kind": "oscall",
+      "help": "(unitNum)",
+      "base": 224,
+      "offset": -12,
+      "registers": ["d0"]
+    }
+  ]
+}

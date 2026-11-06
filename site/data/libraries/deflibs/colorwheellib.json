@@ -1,0 +1,24 @@
+{
+  "name": "colorwheellib",
+  "group": "deflibs",
+  "number": 219,
+  "opens": "gadgets/colorwheel.gadget",
+  "entries": [
+    {
+      "name": "ConvertHSBToRGB_",
+      "kind": "oscall",
+      "help": "(hsb,rgb)",
+      "base": 219,
+      "offset": -30,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ConvertRGBToHSB_",
+      "kind": "oscall",
+      "help": "(rgb,hsb)",
+      "base": 219,
+      "offset": -36,
+      "registers": ["a0", "a1"]
+    }
+  ]
+}

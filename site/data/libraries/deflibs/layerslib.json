@@ -1,0 +1,264 @@
+{
+  "name": "layerslib",
+  "group": "deflibs",
+  "number": 232,
+  "opens": "layers.library",
+  "entries": [
+    {
+      "name": "InitLayers_",
+      "kind": "oscall",
+      "help": "(li)",
+      "base": 232,
+      "offset": -30,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CreateUpfrontLayer_",
+      "kind": "oscall",
+      "help": "(li,bm,x0,y0,x1,y1,flags,bm2)",
+      "base": 232,
+      "offset": -36,
+      "registers": ["a0", "a1", "d0", "d1", "d2", "d3", "d4", "a2"]
+    },
+    {
+      "name": "CreateBehindLayer_",
+      "kind": "oscall",
+      "help": "(li,bm,x0,y0,x1,y1,flags,bm2)",
+      "base": 232,
+      "offset": -42,
+      "registers": ["a0", "a1", "d0", "d1", "d2", "d3", "d4", "a2"]
+    },
+    {
+      "name": "UpfrontLayer_",
+      "kind": "oscall",
+      "help": "(dummy,layer)",
+      "base": 232,
+      "offset": -48,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "BehindLayer_",
+      "kind": "oscall",
+      "help": "(dummy,layer)",
+      "base": 232,
+      "offset": -54,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "MoveLayer_",
+      "kind": "oscall",
+      "help": "(dummy,layer,dx,dy)",
+      "base": 232,
+      "offset": -60,
+      "registers": ["a0", "a1", "d0", "d1"]
+    },
+    {
+      "name": "SizeLayer_",
+      "kind": "oscall",
+      "help": "(dummy,layer,dx,dy)",
+      "base": 232,
+      "offset": -66,
+      "registers": ["a0", "a1", "d0", "d1"]
+    },
+    {
+      "name": "ScrollLayer_",
+      "kind": "oscall",
+      "help": "(dummy,layer,dx,dy)",
+      "base": 232,
+      "offset": -72,
+      "registers": ["a0", "a1", "d0", "d1"]
+    },
+    {
+      "name": "BeginUpdate_",
+      "kind": "oscall",
+      "help": "(l)",
+      "base": 232,
+      "offset": -78,
+      "registers": ["a0"]
+    },
+    {
+      "name": "EndUpdate_",
+      "kind": "oscall",
+      "help": "(layer,flag)",
+      "base": 232,
+      "offset": -84,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "DeleteLayer_",
+      "kind": "oscall",
+      "help": "(dummy,layer)",
+      "base": 232,
+      "offset": -90,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "LockLayer_",
+      "kind": "oscall",
+      "help": "(dummy,layer)",
+      "base": 232,
+      "offset": -96,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "UnlockLayer_",
+      "kind": "oscall",
+      "help": "(layer)",
+      "base": 232,
+      "offset": -102,
+      "registers": ["a0"]
+    },
+    {
+      "name": "LockLayers_",
+      "kind": "oscall",
+      "help": "(li)",
+      "base": 232,
+      "offset": -108,
+      "registers": ["a0"]
+    },
+    {
+      "name": "UnlockLayers_",
+      "kind": "oscall",
+      "help": "(li)",
+      "base": 232,
+      "offset": -114,
+      "registers": ["a0"]
+    },
+    {
+      "name": "LockLayerInfo_",
+      "kind": "oscall",
+      "help": "(li)",
+      "base": 232,
+      "offset": -120,
+      "registers": ["a0"]
+    },
+    {
+      "name": "SwapBitsRastPortClipRect_",
+      "kind": "oscall",
+      "help": "(rp,cr)",
+      "base": 232,
+      "offset": -126,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "WhichLayer_",
+      "kind": "oscall",
+      "help": "(li,x,y)",
+      "base": 232,
+      "offset": -132,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "UnlockLayerInfo_",
+      "kind": "oscall",
+      "help": "(li)",
+      "base": 232,
+      "offset": -138,
+      "registers": ["a0"]
+    },
+    {
+      "name": "NewLayerInfo_",
+      "kind": "oscall",
+      "help": "",
+      "base": 232,
+      "offset": -144,
+      "registers": []
+    },
+    {
+      "name": "DisposeLayerInfo_",
+      "kind": "oscall",
+      "help": "(li)",
+      "base": 232,
+      "offset": -150,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FattenLayerInfo_",
+      "kind": "oscall",
+      "help": "(li)",
+      "base": 232,
+      "offset": -156,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ThinLayerInfo_",
+      "kind": "oscall",
+      "help": "(li)",
+      "base": 232,
+      "offset": -162,
+      "registers": ["a0"]
+    },
+    {
+      "name": "MoveLayerInFrontOf_",
+      "kind": "oscall",
+      "help": "(layer_to_move,other_layer)",
+      "base": 232,
+      "offset": -168,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "InstallClipRegion_",
+      "kind": "oscall",
+      "help": "(layer,region)",
+      "base": 232,
+      "offset": -174,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "MoveSizeLayer_",
+      "kind": "oscall",
+      "help": "(layer,dx,dy,dw,dh)",
+      "base": 232,
+      "offset": -180,
+      "registers": ["a0", "d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "CreateUpfrontHookLayer_",
+      "kind": "oscall",
+      "help": "(li,bm,x0,y0,x1,y1,flags,hook,bm2)",
+      "base": 232,
+      "offset": -186,
+      "registers": ["a0", "a1", "d0", "d1", "d2", "d3", "d4", "a3", "a2"]
+    },
+    {
+      "name": "CreateBehindHookLayer_",
+      "kind": "oscall",
+      "help": "(li,bm,x0,y0,x1,y1,flags,hook,bm2)",
+      "base": 232,
+      "offset": -192,
+      "registers": ["a0", "a1", "d0", "d1", "d2", "d3", "d4", "a3", "a2"]
+    },
+    {
+      "name": "InstallLayerHook_",
+      "kind": "oscall",
+      "help": "(layer,hook)",
+      "base": 232,
+      "offset": -198,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "InstallLayerInfoHook_",
+      "kind": "oscall",
+      "help": "(li,hook)",
+      "base": 232,
+      "offset": -204,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "SortLayerCR_",
+      "kind": "oscall",
+      "help": "(layer,dx,dy)",
+      "base": 232,
+      "offset": -210,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "DoHookClipRects_",
+      "kind": "oscall",
+      "help": "(hook,rport,rect)",
+      "base": 232,
+      "offset": -216,
+      "registers": ["a0", "a1", "a2"]
+    }
+  ]
+}

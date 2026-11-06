@@ -1,0 +1,116 @@
+{
+  "name": "ricopperfxlib",
+  "group": "userlibs",
+  "number": 11,
+  "entries": [
+    {
+      "name": "DoColSplit",
+      "kind": "command",
+      "help": "cols_adr,numlines,colour_register",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "RedoColSplit",
+      "kind": "statement",
+      "help": "cols_adr,numlines,ccoffset",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CopperReset",
+      "kind": "statement",
+      "help": "coplist#,startline[,ccoffset]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CopperEnd",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CopperInfoBlock",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CopperCommand",
+      "kind": "statement",
+      "help": "copins1,copins2",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CopperMove",
+      "kind": "statement",
+      "help": "register,value",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CopperWait",
+      "kind": "statement",
+      "help": "x,y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CopperSkip",
+      "kind": "statement",
+      "help": "x,y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetCCOffset",
+      "kind": "function",
+      "help": "- get current custom copper offset",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CopperAGACol",
+      "kind": "command",
+      "help": "col#,r,g,b",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CopperResetAdr",
+      "kind": "statement",
+      "help": "coplist#,startline",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ColSplitBplcon3",
+      "kind": "statement",
+      "help": "bplcon3 - low byte of bplcon 3",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    }
+  ]
+}

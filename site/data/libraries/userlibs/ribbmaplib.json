@@ -1,0 +1,321 @@
+{
+  "name": "ribbmaplib",
+  "group": "userlibs",
+  "number": 34,
+  "entries": [
+    {
+      "name": "SetBBMapLoc",
+      "kind": "command",
+      "help": "address",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "SetBBScenarioLoc",
+      "kind": "command",
+      "help": "address",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "BBScenarioName",
+      "kind": "function",
+      "help": "",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBScenarioAuthor",
+      "kind": "function",
+      "help": "",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBScenarioDepth",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBScenarioShapeLoc",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBScenarioSounds",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBScenarioBaddiesLoc",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBScenarioPalette",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBScenarioLowCol",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBScenarioHighCol",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBScenarioLevel",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBNumBackGround",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBNumDestruct",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBNumIndestruct",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBScenarioPrefix",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBNumTunnels",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBShadowValue",
+      "kind": "function",
+      "help": "shadowset",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BBTunnelHoles",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBTunnelsLoc",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBGetPalette",
+      "kind": "statement",
+      "help": "palette#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BBDestructLoc",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBMapScenarioID",
+      "kind": "function",
+      "help": "- returns scenarios of map",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBMapWidth",
+      "kind": "function",
+      "help": "- returns map width",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBMapHeight",
+      "kind": "function",
+      "help": "- returns map height",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBMapPowerUps",
+      "kind": "function",
+      "help": "- returns location of custom powerups",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBMapData",
+      "kind": "function",
+      "help": "- returns location of actual map data",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBMapStartPos",
+      "kind": "function",
+      "help": "- returns location of start position data",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBMapName$",
+      "kind": "function",
+      "help": "- returns the name of the map",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBMapInfo",
+      "kind": "function",
+      "help": "- returns map information chunk",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBMapPUMask",
+      "kind": "function",
+      "help": "- returns map powerup mask (or zero for none)",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBMapDBOverLay",
+      "kind": "function",
+      "help": "- returns map destructible block overlay (or zero for none)",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBMapOnePlayerInfo",
+      "kind": "function",
+      "help": "- returns one player data chunk (or zero for none)",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBMapObjects",
+      "kind": "function",
+      "help": "- returns one player object chunk (or zero for none)",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BBNumBaddies",
+      "kind": "function",
+      "help": "- returns number of baddies",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

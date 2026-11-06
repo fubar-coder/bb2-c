@@ -1,0 +1,48 @@
+{
+  "name": "diskfontlib",
+  "group": "deflibs",
+  "number": 251,
+  "opens": "diskfont.library",
+  "entries": [
+    {
+      "name": "OpenDiskFont_",
+      "kind": "oscall",
+      "help": "(textAttr)",
+      "base": 251,
+      "offset": -30,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AvailFonts_",
+      "kind": "oscall",
+      "help": "(buffer,bufBytes,flags)",
+      "base": 251,
+      "offset": -36,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "NewFontContents_",
+      "kind": "oscall",
+      "help": "(fontsLock,fontName)",
+      "base": 251,
+      "offset": -42,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "DisposeFontContents_",
+      "kind": "oscall",
+      "help": "(fontContentsHeader)",
+      "base": 251,
+      "offset": -48,
+      "registers": ["a1"]
+    },
+    {
+      "name": "NewScaledDiskFont_",
+      "kind": "oscall",
+      "help": "(sourceFont,destTextAttr)",
+      "base": 251,
+      "offset": -54,
+      "registers": ["a0", "a1"]
+    }
+  ]
+}

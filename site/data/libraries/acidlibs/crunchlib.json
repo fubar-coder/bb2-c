@@ -1,0 +1,42 @@
+{
+  "name": "crunchlib",
+  "group": "acidlibs",
+  "number": 74,
+  "entries": [
+    {
+      "name": "Implode",
+      "kind": "function",
+      "help": "Error/CrunchedLen=Bufferadr,DataLen",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Deplode",
+      "kind": "function",
+      "help": "Success=Startadr",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CrMDecrunch",
+      "kind": "statement",
+      "help": "Bufferadr",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "PPDecrunch",
+      "kind": "statement",
+      "help": "Bufferadr,Bufferend,Destinationadr",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

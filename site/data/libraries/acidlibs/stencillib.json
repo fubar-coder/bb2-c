@@ -1,0 +1,33 @@
+{
+  "name": "stencillib",
+  "group": "acidlibs",
+  "number": 122,
+  "object": {"name": "Stencil", "maximum": 5},
+  "entries": [
+    {
+      "name": "Stencil",
+      "kind": "statement",
+      "help": "Stencil#,BitMap#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SBlit",
+      "kind": "statement",
+      "help": "Stencil#,Shape#,X,Y[,Excessonoff]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SBlitMode",
+      "kind": "statement",
+      "help": "BLTCON0",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "name": "collslib",
+  "group": "acidlibs",
+  "number": 104,
+  "entries": [
+    {
+      "name": "SetCollOdd",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "SetColl",
+      "kind": "statement",
+      "help": "Colour,Bitplanes[,Playfield 1=front, 2=back]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetCollHi",
+      "kind": "statement",
+      "help": "Bitplanes",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ShapesHit",
+      "kind": "function",
+      "help": "(Shape#,X,Y,Shape#,X,Y)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ShapeSpriteHit",
+      "kind": "function",
+      "help": "(Shape#,X,Y,Sprite#,X,Y)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SpritesHit",
+      "kind": "function",
+      "help": "(Sprite#,X,Y,Sprite#,X,Y)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "RectsHit",
+      "kind": "function",
+      "help": "(X1,Y1,Width1,Height1,X2,Y2,Width2,Height2)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SColl",
+      "kind": "function",
+      "help": "(Sprite Channel,Sprite Channel)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "PColl",
+      "kind": "function",
+      "help": "(Sprite Channel)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DoColl",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

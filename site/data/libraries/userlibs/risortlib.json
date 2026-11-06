@@ -1,0 +1,52 @@
+{
+  "name": "risortlib",
+  "group": "userlibs",
+  "number": 13,
+  "entries": [
+    {
+      "name": "StringSort",
+      "kind": "command",
+      "help": "list,sizeof.type[,offset] - sort from start of list",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "array", "code": 32}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "array", "code": 32}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ListBase",
+      "kind": "function",
+      "help": "(list)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "array", "code": 32}]}
+      ]
+    },
+    {
+      "name": "StringSortItem",
+      "kind": "command",
+      "help": "list,sizeof.type[,offset] - sort from current list item",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "array", "code": 32}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "array", "code": 32}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "StringSortDir",
+      "kind": "statement",
+      "help": "direction",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SortPriorityOffset",
+      "kind": "statement",
+      "help": "offset -- -1 = disabled",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "name": "mathieeesingtranslib",
+  "group": "deflibs",
+  "number": 226,
+  "opens": "mathieeesingtrans.library",
+  "entries": [
+    {
+      "name": "IEEESPAtan_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -30,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPSin_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -36,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPCos_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -42,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPTan_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -48,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPSincos_",
+      "kind": "oscall",
+      "help": "(cosptr,parm)",
+      "base": 226,
+      "offset": -54,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "IEEESPSinh_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -60,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPCosh_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -66,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPTanh_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -72,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPExp_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -78,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPLog_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -84,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPPow_",
+      "kind": "oscall",
+      "help": "(exp,arg)",
+      "base": 226,
+      "offset": -90,
+      "registers": ["d1", "d0"]
+    },
+    {
+      "name": "IEEESPSqrt_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -96,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPTieee_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -102,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPFieee_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -108,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPAsin_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -114,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPAcos_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -120,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEESPLog10_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 226,
+      "offset": -126,
+      "registers": ["d0"]
+    }
+  ]
+}

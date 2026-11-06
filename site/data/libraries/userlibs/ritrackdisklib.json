@@ -1,0 +1,120 @@
+{
+  "name": "ritrackdisklib",
+  "group": "userlibs",
+  "number": 91,
+  "entries": [
+    {
+      "name": "OpenDisk",
+      "kind": "command",
+      "help": "unit#[,devicename$]",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "MotorOn",
+      "kind": "command",
+      "help": "unit#",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CloseDisk",
+      "kind": "command",
+      "help": "unit#",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ReadSector",
+      "kind": "command",
+      "help": "unit#,sector#,buffer[,numsectors]",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "MotorOff",
+      "kind": "command",
+      "help": "unit#",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "WriteSector",
+      "kind": "command",
+      "help": "unit#,sector#,buffer[,numsectors]",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FormatTrack",
+      "kind": "command",
+      "help": "unit#,track#,buffer[,numtracks]",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "WriteBoot",
+      "kind": "command",
+      "help": "unit#[,bootdata]",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "DiskStatus",
+      "kind": "function",
+      "help": "unit#",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "DiskIO",
+      "kind": "function",
+      "help": "unit#",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "BootProg",
+      "kind": "command",
+      "help": "unit#,memoryaddress",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "DiskMotor",
+      "kind": "function",
+      "help": "  ; Returns -1 if motor is on",
+      "result": "byte",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

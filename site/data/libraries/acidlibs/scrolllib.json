@@ -1,0 +1,51 @@
+{
+  "name": "scrolllib",
+  "group": "acidlibs",
+  "number": 100,
+  "entries": [
+    {
+      "name": "Scroll",
+      "kind": "statement",
+      "help": "X1,Y1,Width,Height,X2,Y2[,BitMap#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Plot",
+      "kind": "statement",
+      "help": "X,Y,Colour",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Point",
+      "kind": "function",
+      "help": "X,Y,Colour",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Cls",
+      "kind": "statement",
+      "help": "[Colour]",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BlockScroll",
+      "kind": "statement",
+      "help": "X1,Y1,Width,Height,X2,Y2[,BitMap#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 66, "flags": ["stack"]}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

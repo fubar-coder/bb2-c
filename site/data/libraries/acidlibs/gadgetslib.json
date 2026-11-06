@@ -1,0 +1,264 @@
+{
+  "name": "gadgetslib",
+  "group": "acidlibs",
+  "number": 140,
+  "object": {"name": "GadgetList", "maximum": 5},
+  "entries": [
+    {
+      "name": "TextGadget",
+      "kind": "statement",
+      "help": "GadgetList#,X,Y,Flags,Id,Text$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "StringGadget",
+      "kind": "statement",
+      "help": "GadgetList#,X,Y,Flags,Id,Maxlen,Width",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "PropGadget",
+      "kind": "statement",
+      "help": "GadgetList#,X,Y,Flags,Id,Width,Height",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ShapeGadget",
+      "kind": "statement",
+      "help": "GadgetList#,X,Y,Flags,Id,Shape#[,Shape#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetHProp",
+      "kind": "statement",
+      "help": "GadgetList#,Id,Pot,Body",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "quick", "code": 4}, {"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "SetVProp",
+      "kind": "statement",
+      "help": "GadgetList#,Id,Pot,Body",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "quick", "code": 4}, {"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "HPropPot",
+      "kind": "function",
+      "help": "(GadgetList#,Id)",
+      "result": "quick",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "HPropBody",
+      "kind": "function",
+      "help": "(GadgetList#,Id)",
+      "result": "quick",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "VPropPot",
+      "kind": "function",
+      "help": "(GadgetList#,Id)",
+      "result": "quick",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "VPropBody",
+      "kind": "function",
+      "help": "(GadgetList#,Id)",
+      "result": "quick",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Redraw",
+      "kind": "statement",
+      "help": "Window#,Id",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Toggle",
+      "kind": "statement",
+      "help": "GadgetList#,Id [,On|Off]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GadgetBorder",
+      "kind": "statement",
+      "help": "X,Y,Width,Height",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Borders",
+      "kind": "statement",
+      "help": "[On|Off]|[Width,Height]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ActivateString",
+      "kind": "statement",
+      "help": "Window#,Id",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ResetString",
+      "kind": "statement",
+      "help": "GadgetList#,Id",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "StringText$",
+      "kind": "function",
+      "help": "(GadgetList#,Id)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ClearString",
+      "kind": "statement",
+      "help": "GadgetList#,Id",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GadgetList",
+      "kind": "object",
+      "help": "List of Gadgets"
+    },
+    {
+      "name": "GadgetPens",
+      "kind": "statement",
+      "help": "Foreground Colour[,Background Colour]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BorderPens",
+      "kind": "statement",
+      "help": "Highlight Colour,Shadow Colour",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GadgetJam",
+      "kind": "statement",
+      "help": "Jammode",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SelectMode",
+      "kind": "statement",
+      "help": "1=Box, 0=Inverse",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetString",
+      "kind": "statement",
+      "help": "GadgetList#,Id,String$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "ButtonGroup",
+      "kind": "statement",
+      "help": "Group",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GadgetStatus",
+      "kind": "function",
+      "help": "(GadgetList#,Id)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ButtonId",
+      "kind": "function",
+      "help": "(GadgetList#,ButtonGroup)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Enable",
+      "kind": "statement",
+      "help": "(GadgetList#,Id)",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Disable",
+      "kind": "statement",
+      "help": "(GadgetList#,Id)",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetGadgetStatus",
+      "kind": "statement",
+      "help": "(GadgetList#,Id,Value)",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetTextGadget",
+      "kind": "statement",
+      "help": "GadgetList#,Id,Text$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    }
+  ]
+}

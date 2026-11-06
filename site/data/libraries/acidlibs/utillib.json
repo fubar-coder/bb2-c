@@ -1,0 +1,42 @@
+{
+  "name": "utillib",
+  "group": "acidlibs",
+  "number": 194,
+  "entries": [
+    {
+      "name": "CreateMsgPort",
+      "kind": "function",
+      "help": " *UserPort.port=CreateMsgPort(PortName$)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "DeleteMsgPort",
+      "kind": "statement",
+      "help": " *UserPort",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Wait",
+      "kind": "command",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "TaskName$",
+      "kind": "function",
+      "help": "task",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

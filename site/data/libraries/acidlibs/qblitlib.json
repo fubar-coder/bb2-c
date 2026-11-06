@@ -1,0 +1,50 @@
+{
+  "name": "qblitlib",
+  "group": "acidlibs",
+  "number": 148,
+  "object": {"name": "Queue", "maximum": 10},
+  "entries": [
+    {
+      "name": "Queue",
+      "kind": "statement",
+      "help": "Queue#,Max Items",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "QBlit",
+      "kind": "statement",
+      "help": "Queue#,Shape#,X,Y[,Excessonoff]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "UnQueue",
+      "kind": "statement",
+      "help": "Queue#[,BitMap#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "QBlitMode",
+      "kind": "statement",
+      "help": "BLTCON0",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FlushQueue",
+      "kind": "statement",
+      "help": "Queue#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

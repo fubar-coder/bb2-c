@@ -1,0 +1,77 @@
+{
+  "name": "polylib",
+  "group": "acidlibs",
+  "number": 121,
+  "entries": [
+    {
+      "name": "ChunkyCLS",
+      "kind": "statement",
+      "help": "color",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ChunkyPlot",
+      "kind": "statement",
+      "help": "x,y,color,[,CLIP]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ChunkyVlin",
+      "kind": "statement",
+      "help": "x,y1,y2,color,[,CLIP]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ChunkyPoly",
+      "kind": "statement",
+      "help": "numpts,*coords.w,color[,noblitter]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BitMapPoly",
+      "kind": "statement",
+      "help": "numpts,*coords.w,color[,ditherbitmap]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "RenderToBitmap",
+      "kind": "statement",
+      "help": "BitMap#[,DitherBitMap#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "RenderToChunky",
+      "kind": "statement",
+      "help": "CopList#[,split]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "RenderPoly",
+      "kind": "statement",
+      "help": "numpts,*coords.w,color",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

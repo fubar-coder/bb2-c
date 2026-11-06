@@ -49,6 +49,16 @@ again):
   code; the originals have such references, the port has them fixed).
   `acidlibs`/`deflibs`
   are made only from checked libraries.
+* the command reference of the website (`tools/cmdref`, in the same
+  step as link and strip of every library file of acidlibs and deflibs of
+  the default variant and of every RWE userlib): the command table the
+  tool writes from the library file (`build/<preset>/cmdref/GROUP/NAME.json`)
+  equals the committed `site/data/libraries/GROUP/NAME.json`. After an
+  intended change of a library's declarations, build the target
+  `cmdref_update` (copies the generated files into the site) and commit
+  them with the change. ctest `cmdref_complete`: no committed file
+  without a library; `cmdref_check_broken`, `cmdref_complete_broken`:
+  the checks with broken input.
 * `acidlibs`, `deflibs` (also of every variant), in the same step as the
   join, and every userlib in its build step (against the acidlibs and
   deflibs of its variant): no library number twice (`biglib check`; deflibs together with

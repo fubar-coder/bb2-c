@@ -1,0 +1,152 @@
+{
+  "name": "riapplib",
+  "group": "userlibs",
+  "number": 61,
+  "entries": [
+    {
+      "name": "AddAppWindow",
+      "kind": "command",
+      "help": "(windownumber)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 67, "flags": ["stack"]}]}
+      ]
+    },
+    {
+      "name": "DelAppWindow",
+      "kind": "command",
+      "help": "(windownumber)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "AddAppMenu",
+      "kind": "command",
+      "help": "(id,text$)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "DelAppMenu",
+      "kind": "command",
+      "help": "(id)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "AddAppIcon",
+      "kind": "command",
+      "help": "(id,text$,filename$[,x,y])",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "string", "code": 7}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "DelAppIcon",
+      "kind": "command",
+      "help": "(id)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "AppEvent",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "AppEventType",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "AppEventID",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "NextAppFile",
+      "kind": "function",
+      "help": "",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "AppFile",
+      "kind": "function",
+      "help": "(num)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "AppNumFiles",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "AppLock",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "AppMessage",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "AppMsgPort",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "AppEventIDCMP",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

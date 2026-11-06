@@ -1,0 +1,104 @@
+{
+  "name": "mathffplib",
+  "group": "deflibs",
+  "number": 230,
+  "opens": "mathffp.library",
+  "entries": [
+    {
+      "name": "SPFix_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 230,
+      "offset": -30,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPFlt_",
+      "kind": "oscall",
+      "help": "(integer)",
+      "base": 230,
+      "offset": -36,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPCmp_",
+      "kind": "oscall",
+      "help": "(leftParm,rightParm)",
+      "base": 230,
+      "offset": -42,
+      "registers": ["d1", "d0"]
+    },
+    {
+      "name": "SPTst_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 230,
+      "offset": -48,
+      "registers": ["d1"]
+    },
+    {
+      "name": "SPAbs_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 230,
+      "offset": -54,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPNeg_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 230,
+      "offset": -60,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPAdd_",
+      "kind": "oscall",
+      "help": "(leftParm,rightParm)",
+      "base": 230,
+      "offset": -66,
+      "registers": ["d1", "d0"]
+    },
+    {
+      "name": "SPSub_",
+      "kind": "oscall",
+      "help": "(leftParm,rightParm)",
+      "base": 230,
+      "offset": -72,
+      "registers": ["d1", "d0"]
+    },
+    {
+      "name": "SPMul_",
+      "kind": "oscall",
+      "help": "(leftParm,rightParm)",
+      "base": 230,
+      "offset": -78,
+      "registers": ["d1", "d0"]
+    },
+    {
+      "name": "SPDiv_",
+      "kind": "oscall",
+      "help": "(leftParm,rightParm)",
+      "base": 230,
+      "offset": -84,
+      "registers": ["d1", "d0"]
+    },
+    {
+      "name": "SPFloor_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 230,
+      "offset": -90,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPCeil_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 230,
+      "offset": -96,
+      "registers": ["d0"]
+    }
+  ]
+}

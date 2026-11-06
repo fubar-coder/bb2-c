@@ -1,0 +1,58 @@
+{
+  "name": "blitzkeyslib",
+  "group": "acidlibs",
+  "number": 98,
+  "entries": [
+    {
+      "name": "BlitzKeys",
+      "kind": "statement",
+      "help": "On|Off",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "RawStatus",
+      "kind": "function",
+      "help": "(Rawkey)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BlitzRepeat",
+      "kind": "statement",
+      "help": "Delay,Speed",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BlitzQualifier",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "HandleRawKey",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BlitzKey",
+      "kind": "function",
+      "help": ";same as inkey$ after a bitmapinput",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

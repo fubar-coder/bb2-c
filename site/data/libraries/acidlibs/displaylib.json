@@ -1,0 +1,171 @@
+{
+  "name": "displaylib",
+  "group": "acidlibs",
+  "number": 143,
+  "object": {"name": "CopList", "maximum": 10},
+  "entries": [
+    {
+      "name": "CopList",
+      "kind": "object",
+      "help": ""
+    },
+    {
+      "name": "InitCopList",
+      "kind": "statement",
+      "help": "CopList#[,type]|[,ypos,height,type,sprites,colors,numcustoms]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CreateDisplay",
+      "kind": "statement",
+      "help": "CopList#[,CopList#..]",
+      "forms": [
+        {"args": [{"type": "word", "code": 66, "flags": ["stack"]}], "repeat": {"from": 0, "count": 1}}
+      ]
+    },
+    {
+      "name": "DisplayBitMap",
+      "kind": "statement",
+      "help": "CopList#,bmap[,x,y] [,bmap[,x,y]]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "quick", "code": 4}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "quick", "code": 4}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "quick", "code": 4}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DisplaySprite",
+      "kind": "statement",
+      "help": "CopList#,Sprite#,X,Y,Sprite Channel",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "quick", "code": 4}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DisplayPalette",
+      "kind": "statement",
+      "help": "CopList#,Palette# [,coloroffset] [,coloroffset,bankoffset]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DisplayControls",
+      "kind": "statement",
+      "help": "CopList#,BPLCON2,BPLCON3,BPLCON4",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DisplayAdjust",
+      "kind": "statement",
+      "help": "CopList#,fetchwid,ddfstrt,ddfstop,diwstrt,diwstop",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CustomColors",
+      "kind": "statement",
+      "help": "CopList#,CCOffset,YPos,Palette,startcol,numcols[,thru256flag]  ;ecs=2+n aga=2+n+n+n/16",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CustomString",
+      "kind": "statement",
+      "help": "CopList#,CCOffset,YPos,Copper$  ;2+n {n=len(a$)/4}",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "DisplayDblScan",
+      "kind": "statement",
+      "help": "CopList#,Mode[,copoffset]   ;2",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DisplayRainbow",
+      "kind": "statement",
+      "help": "CopList#,Register,Palette[,copoffset] ;ecs=1 aga=4",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DisplayRGB",
+      "kind": "statement",
+      "help": "CopList#,Register,line,r,g,b[,copoffset] ;ecs=1 aga=4",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DisplayUser",
+      "kind": "statement",
+      "help": "CopList#,Line,String[,Offset]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DisplayScroll",
+      "kind": "statement",
+      "help": "CopList#,&xpos.q(n),&xpos.q(n)[,Offset]   ;3",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CustomSprites",
+      "kind": "statement",
+      "help": "CopList#,CCOffset,YPos,NumSprites ;4n+2",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CustomChunky",
+      "kind": "statement",
+      "help": "CopList#,CCOffset,YPos,width,height,res[,splitpos] ;4n+2",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CustomChunkySize",
+      "kind": "function",
+      "help": "width,height",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DisplayGenlock",
+      "kind": "statement",
+      "help": "BPLCON0     ;2=use external sync 4=interlace",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

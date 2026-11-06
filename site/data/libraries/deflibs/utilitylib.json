@@ -1,0 +1,312 @@
+{
+  "name": "utilitylib",
+  "group": "deflibs",
+  "number": 221,
+  "opens": "utility.library",
+  "entries": [
+    {
+      "name": "FindTagItem_",
+      "kind": "oscall",
+      "help": "(tagVal,tagList)",
+      "base": 221,
+      "offset": -30,
+      "registers": ["d0", "a0"]
+    },
+    {
+      "name": "GetTagData_",
+      "kind": "oscall",
+      "help": "(tagValue,defaultVal,tagList)",
+      "base": 221,
+      "offset": -36,
+      "registers": ["d0", "d1", "a0"]
+    },
+    {
+      "name": "PackBoolTags_",
+      "kind": "oscall",
+      "help": "(initialFlags,tagList,boolMap)",
+      "base": 221,
+      "offset": -42,
+      "registers": ["d0", "a0", "a1"]
+    },
+    {
+      "name": "NextTagItem_",
+      "kind": "oscall",
+      "help": "(tagListPtr)",
+      "base": 221,
+      "offset": -48,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FilterTagChanges_",
+      "kind": "oscall",
+      "help": "(changeList,originalList,apply)",
+      "base": 221,
+      "offset": -54,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "MapTags_",
+      "kind": "oscall",
+      "help": "(tagList,mapList,mapType)",
+      "base": 221,
+      "offset": -60,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "AllocateTagItems_",
+      "kind": "oscall",
+      "help": "(numTags)",
+      "base": 221,
+      "offset": -66,
+      "registers": ["d0"]
+    },
+    {
+      "name": "CloneTagItems_",
+      "kind": "oscall",
+      "help": "(tagList)",
+      "base": 221,
+      "offset": -72,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FreeTagItems_",
+      "kind": "oscall",
+      "help": "(tagList)",
+      "base": 221,
+      "offset": -78,
+      "registers": ["a0"]
+    },
+    {
+      "name": "RefreshTagItemClones_",
+      "kind": "oscall",
+      "help": "(clone,original)",
+      "base": 221,
+      "offset": -84,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "TagInArray_",
+      "kind": "oscall",
+      "help": "(tagValue,tagArray)",
+      "base": 221,
+      "offset": -90,
+      "registers": ["d0", "a0"]
+    },
+    {
+      "name": "FilterTagItems_",
+      "kind": "oscall",
+      "help": "(tagList,filterArray,logic)",
+      "base": 221,
+      "offset": -96,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "CallHookPkt_",
+      "kind": "oscall",
+      "help": "(hook,object,paramPacket)",
+      "base": 221,
+      "offset": -102,
+      "registers": ["a0", "a2", "a1"]
+    },
+    {
+      "name": "Amiga2Date_",
+      "kind": "oscall",
+      "help": "(seconds,result)",
+      "base": 221,
+      "offset": -120,
+      "registers": ["d0", "a0"]
+    },
+    {
+      "name": "Date2Amiga_",
+      "kind": "oscall",
+      "help": "(date)",
+      "base": 221,
+      "offset": -126,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CheckDate_",
+      "kind": "oscall",
+      "help": "(date)",
+      "base": 221,
+      "offset": -132,
+      "registers": ["a0"]
+    },
+    {
+      "name": "SMult32_",
+      "kind": "oscall",
+      "help": "(arg1,arg2)",
+      "base": 221,
+      "offset": -138,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "UMult32_",
+      "kind": "oscall",
+      "help": "(arg1,arg2)",
+      "base": 221,
+      "offset": -144,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "SDivMod32_",
+      "kind": "oscall",
+      "help": "(dividend,divisor)",
+      "base": 221,
+      "offset": -150,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "UDivMod32_",
+      "kind": "oscall",
+      "help": "(dividend,divisor)",
+      "base": 221,
+      "offset": -156,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "Stricmp_",
+      "kind": "oscall",
+      "help": "(string1,string2)",
+      "base": 221,
+      "offset": -162,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "Strnicmp_",
+      "kind": "oscall",
+      "help": "(string1,string2,length)",
+      "base": 221,
+      "offset": -168,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "ToUpper_",
+      "kind": "oscall",
+      "help": "(character)",
+      "base": 221,
+      "offset": -174,
+      "registers": ["d0"]
+    },
+    {
+      "name": "ToLower_",
+      "kind": "oscall",
+      "help": "(character)",
+      "base": 221,
+      "offset": -180,
+      "registers": ["d0"]
+    },
+    {
+      "name": "ApplyTagChanges_",
+      "kind": "oscall",
+      "help": "(list,changeList)",
+      "base": 221,
+      "offset": -186,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "SMult64_",
+      "kind": "oscall",
+      "help": "(arg1,arg2)",
+      "base": 221,
+      "offset": -198,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "UMult64_",
+      "kind": "oscall",
+      "help": "(arg1,arg2)",
+      "base": 221,
+      "offset": -204,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "PackStructureTags_",
+      "kind": "oscall",
+      "help": "(pack,packtable,tagList)",
+      "base": 221,
+      "offset": -210,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "UnpackStructureTags_",
+      "kind": "oscall",
+      "help": "(pack,packtable,tagList)",
+      "base": 221,
+      "offset": -216,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "AddNamedObject_",
+      "kind": "oscall",
+      "help": "(namespace,object)",
+      "base": 221,
+      "offset": -222,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "AllocNamedObjectA_",
+      "kind": "oscall",
+      "help": "(name,tags)",
+      "base": 221,
+      "offset": -228,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "AttemptRemNamedObject_",
+      "kind": "oscall",
+      "help": "(object)",
+      "base": 221,
+      "offset": -234,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FindNamedObject_",
+      "kind": "oscall",
+      "help": "(namespace,name,lastobject)",
+      "base": 221,
+      "offset": -240,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "FreeNamedObject_",
+      "kind": "oscall",
+      "help": "(object)",
+      "base": 221,
+      "offset": -246,
+      "registers": ["a0"]
+    },
+    {
+      "name": "NamedObjectName_",
+      "kind": "oscall",
+      "help": "(object)",
+      "base": 221,
+      "offset": -252,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ReleaseNamedObject_",
+      "kind": "oscall",
+      "help": "(object)",
+      "base": 221,
+      "offset": -258,
+      "registers": ["a0"]
+    },
+    {
+      "name": "RemNamedObject_",
+      "kind": "oscall",
+      "help": "(object,message)",
+      "base": 221,
+      "offset": -264,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "GetUniqueID_",
+      "kind": "oscall",
+      "help": "",
+      "base": 221,
+      "offset": -270,
+      "registers": []
+    }
+  ]
+}

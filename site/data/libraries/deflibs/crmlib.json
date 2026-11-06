@@ -1,0 +1,72 @@
+{
+  "name": "crmlib",
+  "group": "deflibs",
+  "number": 200,
+  "opens": "CrM.library",
+  "entries": [
+    {
+      "name": "cmCheckCrunched_",
+      "kind": "oscall",
+      "help": "(DataHeader)",
+      "base": 200,
+      "offset": -42,
+      "registers": ["a0"]
+    },
+    {
+      "name": "cmDecrunch_",
+      "kind": "oscall",
+      "help": "(Source,Destination,DataHeader)",
+      "base": 200,
+      "offset": -48,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "cmProcessPW_",
+      "kind": "oscall",
+      "help": "(Password,Action)",
+      "base": 200,
+      "offset": -54,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "cmCryptData_",
+      "kind": "oscall",
+      "help": "(DataHeader,Data,Password,Action)",
+      "base": 200,
+      "offset": -60,
+      "registers": ["a0", "a1", "a2", "d0"]
+    },
+    {
+      "name": "cmProcessCrunchStructA_",
+      "kind": "oscall",
+      "help": "(CrunchStruct,Action,Tags)",
+      "base": 200,
+      "offset": -66,
+      "registers": ["a1", "d0", "a0"]
+    },
+    {
+      "name": "cmCrunchData_",
+      "kind": "oscall",
+      "help": "(CrunchStruct)",
+      "base": 200,
+      "offset": -72,
+      "registers": ["a0"]
+    },
+    {
+      "name": "cmAllocCrunchStructA_",
+      "kind": "oscall",
+      "help": "(Tags)",
+      "base": 200,
+      "offset": -78,
+      "registers": ["a0"]
+    },
+    {
+      "name": "cmFreeCrunchStruct_",
+      "kind": "oscall",
+      "help": "(CrunchStruct)",
+      "base": 200,
+      "offset": -84,
+      "registers": ["a0"]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "name": "riintuilib",
+  "group": "userlibs",
+  "number": 15,
+  "object": {"name": "Rast", "maximum": 7},
+  "entries": [
+    {
+      "name": "IPBitMap",
+      "kind": "statement",
+      "help": "rast,bitmap",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "IPLocate",
+      "kind": "statement",
+      "help": "x,y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "IPColour",
+      "kind": "statement",
+      "help": "fgpen[,bgpen]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "IPOutput",
+      "kind": "statement",
+      "help": "rast",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Rast",
+      "kind": "object",
+      "help": ""
+    }
+  ]
+}

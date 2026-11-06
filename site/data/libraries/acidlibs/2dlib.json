@@ -1,0 +1,143 @@
+{
+  "name": "2dlib",
+  "group": "acidlibs",
+  "number": 119,
+  "entries": [
+    {
+      "name": "Circle",
+      "kind": "statement",
+      "help": "x,y,rx[,ry],color",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Circlef",
+      "kind": "statement",
+      "help": "x,y,rx[,ry],color",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Box",
+      "kind": "statement",
+      "help": "x1,y1,x2,y2,color",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Boxf",
+      "kind": "statement",
+      "help": "x1,y1,x2,y2,color",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Line",
+      "kind": "statement",
+      "help": "[x1,y1,]x2,y2,color[,width]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FreeFill",
+      "kind": "statement",
+      "help": "frees memory allocated for 2d fill routines",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "AllocFill",
+      "kind": "statement",
+      "help": "for internal use only (polylib.obj)",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ReMap",
+      "kind": "statement",
+      "help": "colour# to replace,destination colour# [,BitMap destintion",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FloodFill",
+      "kind": "statement",
+      "help": "x,y,colour [,border colour]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Poly",
+      "kind": "statement",
+      "help": "numpts,*coords.w,color",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Polyf",
+      "kind": "statement",
+      "help": "numpts,*coords.w,color[,color2]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BitPlanesBitMap",
+      "kind": "statement",
+      "help": "srcbitmap,destbitmap,planepick",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ClipBlit",
+      "kind": "statement",
+      "help": "Shape#,X,Y,[Excess]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ClipBlitMode",
+      "kind": "statement",
+      "help": "BPLCON0",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BitMapWindow",
+      "kind": "statement",
+      "help": "srcbitmap,destbitmap,x,y,w,h",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BitMapOrigin",
+      "kind": "statement",
+      "help": "BitMap#,x,y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

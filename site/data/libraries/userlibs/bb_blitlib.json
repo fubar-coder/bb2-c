@@ -1,0 +1,106 @@
+{
+  "name": "bb_blitlib",
+  "group": "userlibs",
+  "number": 19,
+  "entries": [
+    {
+      "name": "SpecialBlock",
+      "kind": "statement",
+      "help": "topshape,bottomshape,(x,y)|offset",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SpecialBlockBitmap",
+      "kind": "statement",
+      "help": "topshape,bitmap,(x,y)|offset",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "TBlock",
+      "kind": "statement",
+      "help": "shape,x,y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "PredatorBlit",
+      "kind": "command",
+      "help": "shape,x,y",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BPredatorBlit",
+      "kind": "statement",
+      "help": "buffer,shape,x,y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetupMapTwo",
+      "kind": "statement",
+      "help": "ebwidth",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CreateShape",
+      "kind": "statement",
+      "help": "start_shape,count,chipmemblock,like_shape",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SpecialBlockToShape",
+      "kind": "statement",
+      "help": "topshape,bottomshape,destshape",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BlockToShape",
+      "kind": "statement",
+      "help": "shape,destshape",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BColourBlit",
+      "kind": "statement",
+      "help": "buffer,shape,x,y,colour",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "TBlockImage",
+      "kind": "statement",
+      "help": "image_addr,image,x,y",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BTBlockImage",
+      "kind": "statement",
+      "help": "buffer,image_addr,x,y,image",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "rilvcallhooklib",
+  "group": "userlibs",
+  "number": 27,
+  "entries": [
+    {
+      "name": "RetrieveCallHook",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,164 @@
+{
+  "name": "fileiolib",
+  "group": "acidlibs",
+  "number": 124,
+  "object": {"name": "File", "maximum": 5},
+  "entries": [
+    {
+      "name": "OpenFile",
+      "kind": "function",
+      "help": "(File#,Filename$)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "CloseFile",
+      "kind": "statement",
+      "help": "File#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "KillFile",
+      "kind": "statement",
+      "help": "Filename$",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "Fields",
+      "kind": "statement",
+      "help": "File#,Var1[,Var2...]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "any", "code": 128, "flags": ["address"]}], "repeat": {"from": 1, "count": 1}}
+      ]
+    },
+    {
+      "name": "Put",
+      "kind": "statement",
+      "help": "File#,Record",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Get",
+      "kind": "statement",
+      "help": "File#,Record",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FileOutput",
+      "kind": "statement",
+      "help": "File#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FileInput",
+      "kind": "statement",
+      "help": "File#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Lof",
+      "kind": "function",
+      "help": "(File#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FileSeek",
+      "kind": "statement",
+      "help": "File#,Position",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Loc",
+      "kind": "function",
+      "help": "(File#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Eof",
+      "kind": "function",
+      "help": "(File#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DosBuffLen",
+      "kind": "statement",
+      "help": "Bytes",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "File",
+      "kind": "object",
+      "help": ""
+    },
+    {
+      "name": "ReadFile",
+      "kind": "function",
+      "help": "(File#,Filename$)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "WriteFile",
+      "kind": "function",
+      "help": "(File#,Filename$)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "WriteMem",
+      "kind": "statement",
+      "help": "File#,Address,Length",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ReadMem",
+      "kind": "statement",
+      "help": "File#,Address,Length",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Exists",
+      "kind": "function",
+      "help": "(Filename$)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    }
+  ]
+}

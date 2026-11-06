@@ -1,0 +1,152 @@
+{
+  "name": "vallib",
+  "group": "acidlibs",
+  "number": 120,
+  "entries": [
+    {
+      "name": "Val",
+      "kind": "function",
+      "help": "(String$)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "Int",
+      "kind": "function",
+      "help": "(Expression)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "any", "code": 8}]}
+      ]
+    },
+    {
+      "name": "Sgn",
+      "kind": "function",
+      "help": "(Expression)",
+      "result": "quick",
+      "forms": [
+        {"args": [{"type": "any", "code": 8}]}
+      ]
+    },
+    {
+      "name": "Frac",
+      "kind": "function",
+      "help": "(Expression)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "QFrac",
+      "kind": "function",
+      "help": "(Quick)",
+      "result": "quick",
+      "forms": [
+        {"args": [{"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "QWrap",
+      "kind": "function",
+      "help": "(Quick,Low,High)",
+      "result": "quick",
+      "forms": [
+        {"args": [{"type": "quick", "code": 4}, {"type": "quick", "code": 4}, {"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "Rnd",
+      "kind": "function",
+      "help": "[(Range)]",
+      "result": "quick",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "QAbs",
+      "kind": "function",
+      "help": "(Quick)",
+      "result": "quick",
+      "forms": [
+        {"args": [{"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "Abs",
+      "kind": "function",
+      "help": "(Expression)",
+      "result": "float",
+      "forms": [
+        {"args": [{"type": "any", "code": 8}]}
+      ]
+    },
+    {
+      "name": "QLimit",
+      "kind": "function",
+      "help": "(Quick,Low,High)",
+      "result": "quick",
+      "forms": [
+        {"args": [{"type": "quick", "code": 4}, {"type": "quick", "code": 4}, {"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "NTSC",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "DispHeight",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "VPos",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "True",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "False",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "QAngle",
+      "kind": "function",
+      "help": "(Src X,Src Y,Dest X,Dest Y)",
+      "result": "quick",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

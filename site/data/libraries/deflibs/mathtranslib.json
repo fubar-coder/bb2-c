@@ -1,0 +1,144 @@
+{
+  "name": "mathtranslib",
+  "group": "deflibs",
+  "number": 225,
+  "opens": "mathtrans.library",
+  "entries": [
+    {
+      "name": "SPAtan_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -30,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPSin_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -36,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPCos_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -42,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPTan_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -48,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPSincos_",
+      "kind": "oscall",
+      "help": "(cosResult,parm)",
+      "base": 225,
+      "offset": -54,
+      "registers": ["d1", "d0"]
+    },
+    {
+      "name": "SPSinh_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -60,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPCosh_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -66,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPTanh_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -72,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPExp_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -78,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPLog_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -84,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPPow_",
+      "kind": "oscall",
+      "help": "(power,arg)",
+      "base": 225,
+      "offset": -90,
+      "registers": ["d1", "d0"]
+    },
+    {
+      "name": "SPSqrt_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -96,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPTieee_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -102,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPFieee_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -108,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPAsin_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -114,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPAcos_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -120,
+      "registers": ["d0"]
+    },
+    {
+      "name": "SPLog10_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 225,
+      "offset": -126,
+      "registers": ["d0"]
+    }
+  ]
+}

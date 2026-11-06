@@ -1,0 +1,145 @@
+{
+  "name": "brexxlib",
+  "group": "acidlibs",
+  "number": 132,
+  "object": {"name": "Tape", "maximum": 5},
+  "entries": [
+    {
+      "name": "Record",
+      "kind": "statement",
+      "help": "[Tape#]",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "PlayBack",
+      "kind": "statement",
+      "help": "[Tape#]",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SaveTape",
+      "kind": "statement",
+      "help": "Tape#,Filename$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "LoadTape",
+      "kind": "statement",
+      "help": "Tape#,filename$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "AbsMouse",
+      "kind": "statement",
+      "help": "X,Y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "RelMouse",
+      "kind": "statement",
+      "help": "X Offset,Y Offset",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MouseButton",
+      "kind": "statement",
+      "help": "Button,On|Off : 0=Left",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ClickButton",
+      "kind": "statement",
+      "help": "Button : 0=Left",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MacroKey",
+      "kind": "statement",
+      "help": "Tape#,Rawkey,Qualifier",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "TapeTrap",
+      "kind": "statement",
+      "help": "[Tape#]",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "QuietTrap",
+      "kind": "statement",
+      "help": "On|Off",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Type",
+      "kind": "statement",
+      "help": "String$",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "QuickPlay",
+      "kind": "statement",
+      "help": "On|Off",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "XStatus",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "PlayWait",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Tape",
+      "kind": "object",
+      "help": "A BREXX Macro"
+    },
+    {
+      "name": "FreeMacroKey",
+      "kind": "statement",
+      "help": "Rawkey,Qualifier",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

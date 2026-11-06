@@ -1,0 +1,221 @@
+{
+  "name": "rimisclib",
+  "group": "userlibs",
+  "number": 47,
+  "entries": [
+    {
+      "name": "TimerReset",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "PortSigBit",
+      "kind": "function",
+      "help": "msgport",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "WorkbenchHere",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "EZRequest",
+      "kind": "command",
+      "help": "[title$,]body$[,gadget$] | title$,body$,gadget$[,var..]",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "any", "code": 72, "flags": ["stack"]}], "repeat": {"from": 3, "count": 1}}
+      ]
+    },
+    {
+      "name": "Flip$",
+      "kind": "function",
+      "help": "(String$)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "InitArgParse",
+      "kind": "statement",
+      "help": "parameter$",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "NextArg$",
+      "kind": "function",
+      "help": "- get next parameter",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "EZOutput",
+      "kind": "statement",
+      "help": "[win#]",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]},
+        {"args": []}
+      ]
+    },
+    {
+      "name": "EZRequestArgs",
+      "kind": "command",
+      "help": "args..",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "any", "code": 72, "flags": ["stack"]}], "repeat": {"from": 0, "count": 1}}
+      ]
+    },
+    {
+      "name": "EZSeparator",
+      "kind": "statement",
+      "help": "char",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "ClickWait",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ProgPath$",
+      "kind": "function",
+      "help": "",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ProgDir$",
+      "kind": "function",
+      "help": "",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ProgName$",
+      "kind": "function",
+      "help": "",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "FromBlitz",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "LtoS",
+      "kind": "function",
+      "help": "(longword) -- convert LONG to STRING",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ASCRaw",
+      "kind": "function",
+      "help": "(rawkey)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "RawASC",
+      "kind": "function",
+      "help": "(char)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "OpenFontPrefs",
+      "kind": "command",
+      "help": "[filename$]",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CloseFontPrefs",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "DefaultFontHeight",
+      "kind": "function",
+      "help": "fonttype  (0=Icon,1=System,2=Screen)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DefaultFontName",
+      "kind": "function",
+      "help": "fonttype  (0=Icon,1=System,2=Screen)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "NextArgChar$",
+      "kind": "function",
+      "help": "char - get next parameter up until char",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BInstr",
+      "kind": "function",
+      "help": "(String$,Findstring$)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    }
+  ]
+}

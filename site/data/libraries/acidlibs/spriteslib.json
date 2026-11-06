@@ -1,0 +1,78 @@
+{
+  "name": "spriteslib",
+  "group": "acidlibs",
+  "number": 112,
+  "object": {"name": "Sprite", "maximum": 20},
+  "entries": [
+    {
+      "name": "GetaSprite",
+      "kind": "statement",
+      "help": "Sprite#,Shape#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ShowSprite",
+      "kind": "statement",
+      "help": "Sprite#,X,Y,Sprite Channel",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "InFront",
+      "kind": "statement",
+      "help": "Sprite Channel",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "InFrontF",
+      "kind": "statement",
+      "help": "Sprite Channel",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "InFrontB",
+      "kind": "statement",
+      "help": "Sprite Channel",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SaveSprites",
+      "kind": "statement",
+      "help": "Sprite#,Sprite#,Filename$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "LoadSprites",
+      "kind": "statement",
+      "help": "Sprite#[,Sprite#],Filename$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "SpriteMode",
+      "kind": "statement",
+      "help": "0=16 1=32 2=64",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Sprite",
+      "kind": "object",
+      "help": ""
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "speaklib",
+  "group": "acidlibs",
+  "number": 88,
+  "entries": [
+    {
+      "name": "Speak",
+      "kind": "statement",
+      "help": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "SetVoice",
+      "kind": "statement",
+      "help": "rate(150),pitch(110),expression(1),sex,volume(64),freq(22200)",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Translate$",
+      "kind": "function",
+      "help": "returns phoneme translation of a string",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "PhoneticSpeak",
+      "kind": "statement",
+      "help": "phonetic string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "VoiceLoc",
+      "kind": "function",
+      "help": "returns location of newvoice struct",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

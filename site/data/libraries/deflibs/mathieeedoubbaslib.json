@@ -1,0 +1,104 @@
+{
+  "name": "mathieeedoubbaslib",
+  "group": "deflibs",
+  "number": 229,
+  "opens": "mathieeedoubbas.library",
+  "entries": [
+    {
+      "name": "IEEEDPFix_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 229,
+      "offset": -30,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPFlt_",
+      "kind": "oscall",
+      "help": "(integer)",
+      "base": 229,
+      "offset": -36,
+      "registers": ["d0"]
+    },
+    {
+      "name": "IEEEDPCmp_",
+      "kind": "oscall",
+      "help": "(leftParm,rightParm)",
+      "base": 229,
+      "offset": -42,
+      "registers": ["d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "IEEEDPTst_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 229,
+      "offset": -48,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPAbs_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 229,
+      "offset": -54,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPNeg_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 229,
+      "offset": -60,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPAdd_",
+      "kind": "oscall",
+      "help": "(leftParm,rightParm)",
+      "base": 229,
+      "offset": -66,
+      "registers": ["d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "IEEEDPSub_",
+      "kind": "oscall",
+      "help": "(leftParm,rightParm)",
+      "base": 229,
+      "offset": -72,
+      "registers": ["d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "IEEEDPMul_",
+      "kind": "oscall",
+      "help": "(factor1,factor2)",
+      "base": 229,
+      "offset": -78,
+      "registers": ["d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "IEEEDPDiv_",
+      "kind": "oscall",
+      "help": "(dividend,divisor)",
+      "base": 229,
+      "offset": -84,
+      "registers": ["d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "IEEEDPFloor_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 229,
+      "offset": -90,
+      "registers": ["d0", "d1"]
+    },
+    {
+      "name": "IEEEDPCeil_",
+      "kind": "oscall",
+      "help": "(parm)",
+      "base": 229,
+      "offset": -96,
+      "registers": ["d0", "d1"]
+    }
+  ]
+}

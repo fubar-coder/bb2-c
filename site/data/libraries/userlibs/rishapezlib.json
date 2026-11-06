@@ -1,0 +1,32 @@
+{
+  "name": "rishapezlib",
+  "group": "userlibs",
+  "number": 21,
+  "entries": [
+    {
+      "name": "CludgeAcid",
+      "kind": "statement",
+      "help": "on|off",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "PeekByte",
+      "kind": "function",
+      "help": "addres",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "SetWinDrawShapeZ",
+      "kind": "statement",
+      "help": "mode    -- 0=normal, 1=meshed",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

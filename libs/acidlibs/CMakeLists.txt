@@ -37,7 +37,12 @@ function(acidlibs_build prefix variant output)
 		if(prefix)
 			set(obj ${CMAKE_CURRENT_BINARY_DIR}/variants/${prefix}${name}.obj)
 		endif()
-		blitz_library(${prefix}${name} VARIANT ${variant} OBJ ${obj} ${name}.c)
+		# the default variant's: checked against the command reference
+		set(cmdref CMDREF acidlibs/${name})
+		if(prefix OR NOT BLITZ_DEFAULT_VARIANT STREQUAL CMDREF_VARIANT)
+			set(cmdref)
+		endif()
+		blitz_library(${prefix}${name} VARIANT ${variant} OBJ ${obj} ${cmdref} ${name}.c)
 		list(APPEND objs ${obj})
 	endforeach()
 

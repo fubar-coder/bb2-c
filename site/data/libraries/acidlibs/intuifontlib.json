@@ -1,0 +1,22 @@
+{
+  "name": "intuifontlib",
+  "group": "acidlibs",
+  "number": 134,
+  "object": {"name": "IntuiFont", "maximum": 5},
+  "entries": [
+    {
+      "name": "LoadFont",
+      "kind": "statement",
+      "help": "IntuiFont#,Fontname.font$,Y size [,style]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "IntuiFont",
+      "kind": "object",
+      "help": "A Font for use by intuition"
+    }
+  ]
+}

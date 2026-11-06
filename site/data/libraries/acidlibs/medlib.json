@@ -1,0 +1,104 @@
+{
+  "name": "medlib",
+  "group": "acidlibs",
+  "number": 82,
+  "object": {"name": "MedModule", "maximum": 8},
+  "entries": [
+    {
+      "name": "LoadMedModule",
+      "kind": "statement",
+      "help": "MedModule#,Name",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "StartMedModule",
+      "kind": "statement",
+      "help": "MedModule#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "PlayMed",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "StopMed",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "JumpMed",
+      "kind": "statement",
+      "help": "Pattern#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetMedVolume",
+      "kind": "statement",
+      "help": "Volume",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetMedVolume",
+      "kind": "function",
+      "help": "Channel",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetMedNote",
+      "kind": "function",
+      "help": "Channel",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetMedInstr",
+      "kind": "function",
+      "help": "Channel",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetMedMask",
+      "kind": "statement",
+      "help": "Channel Mask",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "DecodeMedModule",
+      "kind": "statement",
+      "help": "MedModule#,MemoryLocation",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "MedModule",
+      "kind": "object",
+      "help": ""
+    }
+  ]
+}

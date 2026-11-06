@@ -1,0 +1,37 @@
+{
+  "name": "trackerlib",
+  "group": "acidlibs",
+  "number": 96,
+  "object": {"name": "Module", "maximum": 5},
+  "entries": [
+    {
+      "name": "Module",
+      "kind": "object",
+      "help": "A Sound or Noise tracker module"
+    },
+    {
+      "name": "LoadModule",
+      "kind": "statement",
+      "help": "Module#,Filename$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "PlayModule",
+      "kind": "statement",
+      "help": "Module#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "StopModule",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "name": "riarexxlib",
+  "group": "userlibs",
+  "number": 133,
+  "entries": [
+    {
+      "name": "RXCreatePort",
+      "kind": "function",
+      "help": "(name$)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RXDeletePort",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RXReadPort",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RXWaitPort",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RXReplyMsg",
+      "kind": "statement",
+      "help": "errcode[,result$]",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RXRunCommand",
+      "kind": "command",
+      "help": "[portname$,]command$",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RXSendersName",
+      "kind": "function",
+      "help": "",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RXSendCommand",
+      "kind": "command",
+      "help": "[portname$,]command$",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RXNumArgs",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RXGetArg",
+      "kind": "function",
+      "help": "argnum",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RXExecuteScript",
+      "kind": "command",
+      "help": "scriptname$",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RXRunScript",
+      "kind": "command",
+      "help": "scriptname$",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RXDefaultPort",
+      "kind": "statement",
+      "help": "portname$",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RXNextArg",
+      "kind": "function",
+      "help": "argnum",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RXReturnCode",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RXTokenise",
+      "kind": "statement",
+      "help": "on|off",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "RXMessageList",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "RXQuoteChar",
+      "kind": "statement",
+      "help": "char$",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "name": "printlib",
+  "group": "acidlibs",
+  "number": 187,
+  "entries": [
+    {
+      "name": "Print",
+      "kind": "statement",
+      "help": "Expression[,Expression...]",
+      "forms": [
+        {"args": [{"type": "any", "code": 8}], "repeat": {"from": 0, "count": 1}}
+      ]
+    },
+    {
+      "name": "NPrint",
+      "kind": "statement",
+      "help": "Expression[,Expression...]",
+      "forms": [
+        {"args": [{"type": "any", "code": 8}], "repeat": {"from": 0, "count": 1}}
+      ]
+    },
+    {
+      "name": "Str$",
+      "kind": "function",
+      "help": "(Expression)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "any", "code": 8}]}
+      ]
+    },
+    {
+      "name": "Format",
+      "kind": "statement",
+      "help": "FormatString",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "FloatMode",
+      "kind": "statement",
+      "help": "Mode : -1=standard, 0=guess, 1=exp",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "UStr$",
+      "kind": "function",
+      "help": "(Expression)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "any", "code": 8}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "name": "riencryptlib",
+  "group": "userlibs",
+  "number": 52,
+  "entries": [
+    {
+      "name": "Encrypt",
+      "kind": "statement",
+      "help": "memadr,length[,wheel1,wheel2,wheel3]",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Decrypt",
+      "kind": "statement",
+      "help": "memadr,length,wheel1,wheel2,wheel3[,mode]",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetWheel",
+      "kind": "function",
+      "help": "wheel#",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    }
+  ]
+}

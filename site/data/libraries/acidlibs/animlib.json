@@ -1,0 +1,48 @@
+{
+  "name": "animlib",
+  "group": "acidlibs",
+  "number": 94,
+  "object": {"name": "Anim", "maximum": 10},
+  "entries": [
+    {
+      "name": "Anim",
+      "kind": "object",
+      "help": "- IFF Anim"
+    },
+    {
+      "name": "LoadAnim",
+      "kind": "statement",
+      "help": "Anim#,Filename$[,Palette#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "InitAnim",
+      "kind": "statement",
+      "help": "Anim#[,BitMap#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "NextFrame",
+      "kind": "statement",
+      "help": "Anim#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Frames",
+      "kind": "function",
+      "help": "(Anim#)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

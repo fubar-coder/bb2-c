@@ -1,0 +1,57 @@
+{
+  "name": "bitmaplib",
+  "group": "acidlibs",
+  "number": 160,
+  "object": {"name": "BitMap", "maximum": 10},
+  "entries": [
+    {
+      "name": "BitMap",
+      "kind": "statement",
+      "help": "BitMap#,Width,Height,Depth",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "LoadBitMap",
+      "kind": "statement",
+      "help": "BitMap#,Filename$[,Palette#]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ScreensBitMap",
+      "kind": "statement",
+      "help": "Screen#,BitMap#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CopyBitMap",
+      "kind": "statement",
+      "help": "Src BitMap#,Dest BitMap#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ShapesBitMap",
+      "kind": "statement",
+      "help": "Shape#,BitMap#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "CludgeBitMap",
+      "kind": "statement",
+      "help": "BitMap#,Width,Height,Depth,Memory",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

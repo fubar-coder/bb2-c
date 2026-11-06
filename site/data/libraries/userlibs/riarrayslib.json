@@ -1,0 +1,16 @@
+{
+  "name": "riarrayslib",
+  "group": "userlibs",
+  "number": 7,
+  "entries": [
+    {
+      "name": "FillArray",
+      "kind": "statement",
+      "help": "array(),value -- only byte/word/long arrays!",
+      "forms": [
+        {"args": [{"type": "array", "code": 56, "flags": ["arraytype", "arrayend"]}, {"type": "any", "code": 8}]},
+        {"args": [{"type": "array", "code": 56, "flags": ["arraytype", "arrayend"]}]}
+      ]
+    }
+  ]
+}

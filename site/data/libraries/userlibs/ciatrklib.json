@@ -1,0 +1,186 @@
+{
+  "name": "ciatrklib",
+  "group": "userlibs",
+  "number": 56,
+  "entries": [
+    {
+      "name": "LoadTrackerModule",
+      "kind": "function",
+      "help": "(TrackerModule#,Name)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "StartTracker",
+      "kind": "function",
+      "help": "(TrackerModule#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "StopTracker",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "DecodeModule",
+      "kind": "statement",
+      "help": "TrackerModule#,ModuleAddress",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GetTrackerSize",
+      "kind": "function",
+      "help": "(TrackerModule#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "GetTrackerLocation",
+      "kind": "function",
+      "help": "(TrackerModule#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FreeTrackerModule",
+      "kind": "statement",
+      "help": "TrackerModule#",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GetTrackerEvent",
+      "kind": "function",
+      "help": "",
+      "result": "byte",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CheckTrackerEvent",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "WaitTrackerEvent",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "CheckTrackerID",
+      "kind": "function",
+      "help": "(TrackerModule#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ModuleToChip",
+      "kind": "function",
+      "help": "(TrackerModule#)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GetModuleName$",
+      "kind": "function",
+      "help": "(TrackerModule#)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ModulePositionJump",
+      "kind": "statement",
+      "help": "(Position#)",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "GetModulePosition",
+      "kind": "function",
+      "help": "",
+      "result": "byte",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "PauseModule",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ChangeTrackerVBlank",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "PlayTracker",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "TrackerVolume",
+      "kind": "statement",
+      "help": "(Volume Range: 0-64)",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ChangeTrackerMask",
+      "kind": "statement",
+      "help": "Channel_Mask",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ModulePatterns",
+      "kind": "function",
+      "help": "(Module #)",
+      "result": "byte",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

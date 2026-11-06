@@ -1,0 +1,63 @@
+{
+  "name": "ritrackerlib",
+  "group": "userlibs",
+  "number": 58,
+  "entries": [
+    {
+      "name": "TrackInit",
+      "kind": "statement",
+      "help": "address",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "TrackPlay",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "TrackStop",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "TrackDMA",
+      "kind": "statement",
+      "help": "dmawait.w",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Tracker",
+      "kind": "statement",
+      "help": "on+off",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "TrackerChannels",
+      "kind": "statement",
+      "help": "mask",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    },
+    {
+      "name": "TrackerPause",
+      "kind": "statement",
+      "help": "On|Off",
+      "forms": [
+        {"args": [{"type": "byte", "code": 1}]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "name": "keymaplib",
+  "group": "deflibs",
+  "number": 233,
+  "opens": "keymap.library",
+  "entries": [
+    {
+      "name": "SetKeyMapDefault_",
+      "kind": "oscall",
+      "help": "(keyMap)",
+      "base": 233,
+      "offset": -30,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AskKeyMapDefault_",
+      "kind": "oscall",
+      "help": "",
+      "base": 233,
+      "offset": -36,
+      "registers": []
+    },
+    {
+      "name": "MapRawKey_",
+      "kind": "oscall",
+      "help": "(event,buffer,length,keyMap)",
+      "base": 233,
+      "offset": -42,
+      "registers": ["a0", "a1", "d1", "a2"]
+    },
+    {
+      "name": "MapANSI_",
+      "kind": "oscall",
+      "help": "(string,count,buffer,length,keyMap)",
+      "base": 233,
+      "offset": -48,
+      "registers": ["a0", "d0", "a1", "d1", "a2"]
+    }
+  ]
+}

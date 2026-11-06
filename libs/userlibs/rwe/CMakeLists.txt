@@ -184,7 +184,7 @@ foreach(l IN LISTS RWE_LIBS)
 	set(vout ${BLITZ_VARIANTS_DIR}/${v})
 	set(obj ${vout}/userlibs/rwe/${name}.obj)
 	blitz_library(${v}-${name} VARIANT ${PROJECT_SOURCE_DIR}/libs/variants/${v} OBJ ${obj}
-		${name}.c CHECK ${vout}/acidlibs ${vout}/deflibs)
+		CMDREF userlibs/${name} ${name}.c CHECK ${vout}/acidlibs ${vout}/deflibs)
 	if(v STREQUAL RWE_VARIANT)
 		list(APPEND objs ${obj})
 	else()

@@ -1,0 +1,307 @@
+{
+  "name": "riamosfunclib",
+  "group": "userlibs",
+  "number": 75,
+  "entries": [
+    {
+      "name": "CachesOn",
+      "kind": "command",
+      "help": "bitmask",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Reboot",
+      "kind": "statement",
+      "help": " -- performs a cold reboot",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "Lisa",
+      "kind": "function",
+      "help": " -- returns Lisa chip version",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "MakeDir",
+      "kind": "command",
+      "help": "(dirname$)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "Rename",
+      "kind": "command",
+      "help": "(oldfilename$,newfilename$)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "MemFree",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "GTTagValue",
+      "kind": "function",
+      "help": "([tagvalue])",
+      "result": "long",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Timer",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "Min",
+      "kind": "function",
+      "help": "(a,b)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CopyByte",
+      "kind": "statement",
+      "help": "sourceaddr,destaddr,bytes",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CopyWord",
+      "kind": "statement",
+      "help": "sourceaddr,destaddr,words",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CopyLong",
+      "kind": "statement",
+      "help": "sourceaddr,destaddr,longs",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Max",
+      "kind": "function",
+      "help": "(a,b)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FileSize",
+      "kind": "function",
+      "help": "(filename$)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "BLoad",
+      "kind": "command",
+      "help": "(filename$,[address,[,length,[offset,[memtype]]]])",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "BSave",
+      "kind": "command",
+      "help": "(filename$,address/bank[,length])",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Start",
+      "kind": "function",
+      "help": "(bank)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Length",
+      "kind": "function",
+      "help": "(bank)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "Erase",
+      "kind": "statement",
+      "help": "bank",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "EraseAll",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "Reserve",
+      "kind": "command",
+      "help": "(length)|(bank,length[,requirements])",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "NextBank",
+      "kind": "function",
+      "help": "[startbank]",
+      "result": "long",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CachesOff",
+      "kind": "command",
+      "help": "bitmask",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FillMem",
+      "kind": "statement",
+      "help": "address,length[,value]",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "KeyCode",
+      "kind": "function",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "BlitterDone",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "WaitBlitter",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "FindVolume",
+      "kind": "function",
+      "help": "(volumename)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "SwapBank",
+      "kind": "command",
+      "help": "(sourcebank,destbank)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "DeviceName$",
+      "kind": "function",
+      "help": "(volumename$)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "ChangeDir",
+      "kind": "command",
+      "help": "dir$",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "BankLimit",
+      "kind": "command",
+      "help": "[numbanks]",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]},
+        {"args": []}
+      ]
+    },
+    {
+      "name": "SaveExec",
+      "kind": "command",
+      "help": "filename$,list()",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "array", "code": 32}]}
+      ]
+    }
+  ]
+}

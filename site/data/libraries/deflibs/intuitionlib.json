@@ -1,0 +1,1000 @@
+{
+  "name": "intuitionlib",
+  "group": "deflibs",
+  "number": 255,
+  "opens": "intuition.library",
+  "entries": [
+    {
+      "name": "OpenIntuition_",
+      "kind": "oscall",
+      "help": "",
+      "base": 255,
+      "offset": -30,
+      "registers": []
+    },
+    {
+      "name": "Intuition_",
+      "kind": "oscall",
+      "help": "(iEvent)",
+      "base": 255,
+      "offset": -36,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AddGadget_",
+      "kind": "oscall",
+      "help": "(window,gadget,position)",
+      "base": 255,
+      "offset": -42,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "ClearDMRequest_",
+      "kind": "oscall",
+      "help": "(window)",
+      "base": 255,
+      "offset": -48,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ClearMenuStrip_",
+      "kind": "oscall",
+      "help": "(window)",
+      "base": 255,
+      "offset": -54,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ClearPointer_",
+      "kind": "oscall",
+      "help": "(window)",
+      "base": 255,
+      "offset": -60,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CloseScreen_",
+      "kind": "oscall",
+      "help": "(screen)",
+      "base": 255,
+      "offset": -66,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CloseWindow_",
+      "kind": "oscall",
+      "help": "(window)",
+      "base": 255,
+      "offset": -72,
+      "registers": ["a0"]
+    },
+    {
+      "name": "CloseWorkBench_",
+      "kind": "oscall",
+      "help": "",
+      "base": 255,
+      "offset": -78,
+      "registers": []
+    },
+    {
+      "name": "CurrentTime_",
+      "kind": "oscall",
+      "help": "(seconds,micros)",
+      "base": 255,
+      "offset": -84,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "DisplayAlert_",
+      "kind": "oscall",
+      "help": "(alertNumber,string,height)",
+      "base": 255,
+      "offset": -90,
+      "registers": ["d0", "a0", "d1"]
+    },
+    {
+      "name": "DisplayBeep_",
+      "kind": "oscall",
+      "help": "(screen)",
+      "base": 255,
+      "offset": -96,
+      "registers": ["a0"]
+    },
+    {
+      "name": "DoubleClick_",
+      "kind": "oscall",
+      "help": "(sSeconds,sMicros,cSeconds,cMicros)",
+      "base": 255,
+      "offset": -102,
+      "registers": ["d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "DrawBorder_",
+      "kind": "oscall",
+      "help": "(rp,border,leftOffset,topOffset)",
+      "base": 255,
+      "offset": -108,
+      "registers": ["a0", "a1", "d0", "d1"]
+    },
+    {
+      "name": "DrawImage_",
+      "kind": "oscall",
+      "help": "(rp,image,leftOffset,topOffset)",
+      "base": 255,
+      "offset": -114,
+      "registers": ["a0", "a1", "d0", "d1"]
+    },
+    {
+      "name": "EndRequest_",
+      "kind": "oscall",
+      "help": "(requester,window)",
+      "base": 255,
+      "offset": -120,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "GetDefPrefs_",
+      "kind": "oscall",
+      "help": "(preferences,size)",
+      "base": 255,
+      "offset": -126,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "GetPrefs_",
+      "kind": "oscall",
+      "help": "(preferences,size)",
+      "base": 255,
+      "offset": -132,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "InitRequester_",
+      "kind": "oscall",
+      "help": "(requester)",
+      "base": 255,
+      "offset": -138,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ItemAddress_",
+      "kind": "oscall",
+      "help": "(menuStrip,menuNumber)",
+      "base": 255,
+      "offset": -144,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "ModifyIDCMP_",
+      "kind": "oscall",
+      "help": "(window,flags)",
+      "base": 255,
+      "offset": -150,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "ModifyProp_",
+      "kind": "oscall",
+      "help": "(gadget,window,requester,flags,horizPot,vertPot,horizBody,vertBody)",
+      "base": 255,
+      "offset": -156,
+      "registers": ["a0", "a1", "a2", "d0", "d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "MoveScreen_",
+      "kind": "oscall",
+      "help": "(screen,dx,dy)",
+      "base": 255,
+      "offset": -162,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "MoveWindow_",
+      "kind": "oscall",
+      "help": "(window,dx,dy)",
+      "base": 255,
+      "offset": -168,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "OffGadget_",
+      "kind": "oscall",
+      "help": "(gadget,window,requester)",
+      "base": 255,
+      "offset": -174,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "OffMenu_",
+      "kind": "oscall",
+      "help": "(window,menuNumber)",
+      "base": 255,
+      "offset": -180,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "OnGadget_",
+      "kind": "oscall",
+      "help": "(gadget,window,requester)",
+      "base": 255,
+      "offset": -186,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "OnMenu_",
+      "kind": "oscall",
+      "help": "(window,menuNumber)",
+      "base": 255,
+      "offset": -192,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "OpenScreen_",
+      "kind": "oscall",
+      "help": "(newScreen)",
+      "base": 255,
+      "offset": -198,
+      "registers": ["a0"]
+    },
+    {
+      "name": "OpenWindow_",
+      "kind": "oscall",
+      "help": "(newWindow)",
+      "base": 255,
+      "offset": -204,
+      "registers": ["a0"]
+    },
+    {
+      "name": "OpenWorkBench_",
+      "kind": "oscall",
+      "help": "",
+      "base": 255,
+      "offset": -210,
+      "registers": []
+    },
+    {
+      "name": "PrintIText_",
+      "kind": "oscall",
+      "help": "(rp,iText,left,top)",
+      "base": 255,
+      "offset": -216,
+      "registers": ["a0", "a1", "d0", "d1"]
+    },
+    {
+      "name": "RefreshGadgets_",
+      "kind": "oscall",
+      "help": "(gadgets,window,requester)",
+      "base": 255,
+      "offset": -222,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "RemoveGadget_",
+      "kind": "oscall",
+      "help": "(window,gadget)",
+      "base": 255,
+      "offset": -228,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ReportMouse_",
+      "kind": "oscall",
+      "help": "(flag,window)",
+      "base": 255,
+      "offset": -234,
+      "registers": ["d0", "a0"]
+    },
+    {
+      "name": "Request_",
+      "kind": "oscall",
+      "help": "(requester,window)",
+      "base": 255,
+      "offset": -240,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ScreenToBack_",
+      "kind": "oscall",
+      "help": "(screen)",
+      "base": 255,
+      "offset": -246,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ScreenToFront_",
+      "kind": "oscall",
+      "help": "(screen)",
+      "base": 255,
+      "offset": -252,
+      "registers": ["a0"]
+    },
+    {
+      "name": "SetDMRequest_",
+      "kind": "oscall",
+      "help": "(window,requester)",
+      "base": 255,
+      "offset": -258,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "SetMenuStrip_",
+      "kind": "oscall",
+      "help": "(window,menu)",
+      "base": 255,
+      "offset": -264,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "SetPointer_",
+      "kind": "oscall",
+      "help": "(window,pointer,height,width,xOffset,yOffset)",
+      "base": 255,
+      "offset": -270,
+      "registers": ["a0", "a1", "d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "SetWindowTitles_",
+      "kind": "oscall",
+      "help": "(window,windowTitle,screenTitle)",
+      "base": 255,
+      "offset": -276,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "ShowTitle_",
+      "kind": "oscall",
+      "help": "(screen,showIt)",
+      "base": 255,
+      "offset": -282,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "SizeWindow_",
+      "kind": "oscall",
+      "help": "(window,dx,dy)",
+      "base": 255,
+      "offset": -288,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "ViewAddress_",
+      "kind": "oscall",
+      "help": "",
+      "base": 255,
+      "offset": -294,
+      "registers": []
+    },
+    {
+      "name": "ViewPortAddress_",
+      "kind": "oscall",
+      "help": "(window)",
+      "base": 255,
+      "offset": -300,
+      "registers": ["a0"]
+    },
+    {
+      "name": "WindowToBack_",
+      "kind": "oscall",
+      "help": "(window)",
+      "base": 255,
+      "offset": -306,
+      "registers": ["a0"]
+    },
+    {
+      "name": "WindowToFront_",
+      "kind": "oscall",
+      "help": "(window)",
+      "base": 255,
+      "offset": -312,
+      "registers": ["a0"]
+    },
+    {
+      "name": "WindowLimits_",
+      "kind": "oscall",
+      "help": "(window,widthMin,heightMin,widthMax,heightMax)",
+      "base": 255,
+      "offset": -318,
+      "registers": ["a0", "d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "SetPrefs_",
+      "kind": "oscall",
+      "help": "(preferences,size,inform)",
+      "base": 255,
+      "offset": -324,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "IntuiTextLength_",
+      "kind": "oscall",
+      "help": "(iText)",
+      "base": 255,
+      "offset": -330,
+      "registers": ["a0"]
+    },
+    {
+      "name": "WBenchToBack_",
+      "kind": "oscall",
+      "help": "",
+      "base": 255,
+      "offset": -336,
+      "registers": []
+    },
+    {
+      "name": "WBenchToFront_",
+      "kind": "oscall",
+      "help": "",
+      "base": 255,
+      "offset": -342,
+      "registers": []
+    },
+    {
+      "name": "AutoRequest_",
+      "kind": "oscall",
+      "help": "(window,body,posText,negText,pFlag,nFlag,width,height)",
+      "base": 255,
+      "offset": -348,
+      "registers": ["a0", "a1", "a2", "a3", "d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "BeginRefresh_",
+      "kind": "oscall",
+      "help": "(window)",
+      "base": 255,
+      "offset": -354,
+      "registers": ["a0"]
+    },
+    {
+      "name": "BuildSysRequest_",
+      "kind": "oscall",
+      "help": "(window,body,posText,negText,flags,width,height)",
+      "base": 255,
+      "offset": -360,
+      "registers": ["a0", "a1", "a2", "a3", "d0", "d1", "d2"]
+    },
+    {
+      "name": "EndRefresh_",
+      "kind": "oscall",
+      "help": "(window,complete)",
+      "base": 255,
+      "offset": -366,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "FreeSysRequest_",
+      "kind": "oscall",
+      "help": "(window)",
+      "base": 255,
+      "offset": -372,
+      "registers": ["a0"]
+    },
+    {
+      "name": "MakeScreen_",
+      "kind": "oscall",
+      "help": "(screen)",
+      "base": 255,
+      "offset": -378,
+      "registers": ["a0"]
+    },
+    {
+      "name": "RemakeDisplay_",
+      "kind": "oscall",
+      "help": "",
+      "base": 255,
+      "offset": -384,
+      "registers": []
+    },
+    {
+      "name": "RethinkDisplay_",
+      "kind": "oscall",
+      "help": "",
+      "base": 255,
+      "offset": -390,
+      "registers": []
+    },
+    {
+      "name": "AllocRemember_",
+      "kind": "oscall",
+      "help": "(rememberKey,size,flags)",
+      "base": 255,
+      "offset": -396,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "AlohaWorkbench_",
+      "kind": "oscall",
+      "help": "(wbport)",
+      "base": 255,
+      "offset": -402,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FreeRemember_",
+      "kind": "oscall",
+      "help": "(rememberKey,reallyForget)",
+      "base": 255,
+      "offset": -408,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "LockIBase_",
+      "kind": "oscall",
+      "help": "(dontknow)",
+      "base": 255,
+      "offset": -414,
+      "registers": ["d0"]
+    },
+    {
+      "name": "UnlockIBase_",
+      "kind": "oscall",
+      "help": "(ibLock)",
+      "base": 255,
+      "offset": -420,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GetScreenData_",
+      "kind": "oscall",
+      "help": "(buffer,size,type,screen)",
+      "base": 255,
+      "offset": -426,
+      "registers": ["a0", "d0", "d1", "a1"]
+    },
+    {
+      "name": "RefreshGList_",
+      "kind": "oscall",
+      "help": "(gadgets,window,requester,numGad)",
+      "base": 255,
+      "offset": -432,
+      "registers": ["a0", "a1", "a2", "d0"]
+    },
+    {
+      "name": "AddGList_",
+      "kind": "oscall",
+      "help": "(window,gadget,position,numGad,requester)",
+      "base": 255,
+      "offset": -438,
+      "registers": ["a0", "a1", "d0", "d1", "a2"]
+    },
+    {
+      "name": "RemoveGList_",
+      "kind": "oscall",
+      "help": "(remPtr,gadget,numGad)",
+      "base": 255,
+      "offset": -444,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "ActivateWindow_",
+      "kind": "oscall",
+      "help": "(window)",
+      "base": 255,
+      "offset": -450,
+      "registers": ["a0"]
+    },
+    {
+      "name": "RefreshWindowFrame_",
+      "kind": "oscall",
+      "help": "(window)",
+      "base": 255,
+      "offset": -456,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ActivateGadget_",
+      "kind": "oscall",
+      "help": "(gadgets,window,requester)",
+      "base": 255,
+      "offset": -462,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "NewModifyProp_",
+      "kind": "oscall",
+      "help": "(gadget,window,requester,flags,horizPot,vertPot,horizBody,vertBody,numGad)",
+      "base": 255,
+      "offset": -468,
+      "registers": ["a0", "a1", "a2", "d0", "d1", "d2", "d3", "d4", "d5"]
+    },
+    {
+      "name": "QueryOverscan_",
+      "kind": "oscall",
+      "help": "(displayID,rect,oScanType)",
+      "base": 255,
+      "offset": -474,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "MoveWindowInFrontOf_",
+      "kind": "oscall",
+      "help": "(window,behindWindow)",
+      "base": 255,
+      "offset": -480,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ChangeWindowBox_",
+      "kind": "oscall",
+      "help": "(window,left,top,width,height)",
+      "base": 255,
+      "offset": -486,
+      "registers": ["a0", "d0", "d1", "d2", "d3"]
+    },
+    {
+      "name": "SetEditHook_",
+      "kind": "oscall",
+      "help": "(hook)",
+      "base": 255,
+      "offset": -492,
+      "registers": ["a0"]
+    },
+    {
+      "name": "SetMouseQueue_",
+      "kind": "oscall",
+      "help": "(window,queueLength)",
+      "base": 255,
+      "offset": -498,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "ZipWindow_",
+      "kind": "oscall",
+      "help": "(window)",
+      "base": 255,
+      "offset": -504,
+      "registers": ["a0"]
+    },
+    {
+      "name": "LockPubScreen_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 255,
+      "offset": -510,
+      "registers": ["a0"]
+    },
+    {
+      "name": "UnlockPubScreen_",
+      "kind": "oscall",
+      "help": "(name,screen)",
+      "base": 255,
+      "offset": -516,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "LockPubScreenList_",
+      "kind": "oscall",
+      "help": "",
+      "base": 255,
+      "offset": -522,
+      "registers": []
+    },
+    {
+      "name": "UnlockPubScreenList_",
+      "kind": "oscall",
+      "help": "",
+      "base": 255,
+      "offset": -528,
+      "registers": []
+    },
+    {
+      "name": "NextPubScreen_",
+      "kind": "oscall",
+      "help": "(screen,namebuf)",
+      "base": 255,
+      "offset": -534,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "SetDefaultPubScreen_",
+      "kind": "oscall",
+      "help": "(name)",
+      "base": 255,
+      "offset": -540,
+      "registers": ["a0"]
+    },
+    {
+      "name": "SetPubScreenModes_",
+      "kind": "oscall",
+      "help": "(modes)",
+      "base": 255,
+      "offset": -546,
+      "registers": ["d0"]
+    },
+    {
+      "name": "PubScreenStatus_",
+      "kind": "oscall",
+      "help": "(screen,statusFlags)",
+      "base": 255,
+      "offset": -552,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "ObtainGIRPort_",
+      "kind": "oscall",
+      "help": "(gInfo)",
+      "base": 255,
+      "offset": -558,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ReleaseGIRPort_",
+      "kind": "oscall",
+      "help": "(rp)",
+      "base": 255,
+      "offset": -564,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GadgetMouse_",
+      "kind": "oscall",
+      "help": "(gadget,gInfo,mousePoint)",
+      "base": 255,
+      "offset": -570,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "GetDefaultPubScreen_",
+      "kind": "oscall",
+      "help": "(nameBuffer)",
+      "base": 255,
+      "offset": -582,
+      "registers": ["a0"]
+    },
+    {
+      "name": "EasyRequestArgs_",
+      "kind": "oscall",
+      "help": "(window,easyStruct,idcmpPtr,args)",
+      "base": 255,
+      "offset": -588,
+      "registers": ["a0", "a1", "a2", "a3"]
+    },
+    {
+      "name": "BuildEasyRequestArgs_",
+      "kind": "oscall",
+      "help": "(window,easyStruct,idcmp,args)",
+      "base": 255,
+      "offset": -594,
+      "registers": ["a0", "a1", "d0", "a3"]
+    },
+    {
+      "name": "SysReqHandler_",
+      "kind": "oscall",
+      "help": "(window,idcmpPtr,waitInput)",
+      "base": 255,
+      "offset": -600,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "OpenWindowTagList_",
+      "kind": "oscall",
+      "help": "(newWindow,tagList)",
+      "base": 255,
+      "offset": -606,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "OpenScreenTagList_",
+      "kind": "oscall",
+      "help": "(newScreen,tagList)",
+      "base": 255,
+      "offset": -612,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "DrawImageState_",
+      "kind": "oscall",
+      "help": "(rp,image,leftOffset,topOffset,state,drawInfo)",
+      "base": 255,
+      "offset": -618,
+      "registers": ["a0", "a1", "d0", "d1", "d2", "a2"]
+    },
+    {
+      "name": "PointInImage_",
+      "kind": "oscall",
+      "help": "(point,image)",
+      "base": 255,
+      "offset": -624,
+      "registers": ["d0", "a0"]
+    },
+    {
+      "name": "EraseImage_",
+      "kind": "oscall",
+      "help": "(rp,image,leftOffset,topOffset)",
+      "base": 255,
+      "offset": -630,
+      "registers": ["a0", "a1", "d0", "d1"]
+    },
+    {
+      "name": "NewObjectA_",
+      "kind": "oscall",
+      "help": "(classPtr,classID,tagList)",
+      "base": 255,
+      "offset": -636,
+      "registers": ["a0", "a1", "a2"]
+    },
+    {
+      "name": "DisposeObject_",
+      "kind": "oscall",
+      "help": "(object)",
+      "base": 255,
+      "offset": -642,
+      "registers": ["a0"]
+    },
+    {
+      "name": "SetAttrsA_",
+      "kind": "oscall",
+      "help": "(object,tagList)",
+      "base": 255,
+      "offset": -648,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "GetAttr_",
+      "kind": "oscall",
+      "help": "(attrID,object,storagePtr)",
+      "base": 255,
+      "offset": -654,
+      "registers": ["d0", "a0", "a1"]
+    },
+    {
+      "name": "SetGadgetAttrsA_",
+      "kind": "oscall",
+      "help": "(gadget,window,requester,tagList)",
+      "base": 255,
+      "offset": -660,
+      "registers": ["a0", "a1", "a2", "a3"]
+    },
+    {
+      "name": "NextObject_",
+      "kind": "oscall",
+      "help": "(objectPtrPtr)",
+      "base": 255,
+      "offset": -666,
+      "registers": ["a0"]
+    },
+    {
+      "name": "MakeClass_",
+      "kind": "oscall",
+      "help": "(classID,superClassID,superClassPtr,instanceSize,flags)",
+      "base": 255,
+      "offset": -678,
+      "registers": ["a0", "a1", "a2", "d0", "d1"]
+    },
+    {
+      "name": "AddClass_",
+      "kind": "oscall",
+      "help": "(classPtr)",
+      "base": 255,
+      "offset": -684,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GetScreenDrawInfo_",
+      "kind": "oscall",
+      "help": "(screen)",
+      "base": 255,
+      "offset": -690,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FreeScreenDrawInfo_",
+      "kind": "oscall",
+      "help": "(screen,drawInfo)",
+      "base": 255,
+      "offset": -696,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ResetMenuStrip_",
+      "kind": "oscall",
+      "help": "(window,menu)",
+      "base": 255,
+      "offset": -702,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "RemoveClass_",
+      "kind": "oscall",
+      "help": "(classPtr)",
+      "base": 255,
+      "offset": -708,
+      "registers": ["a0"]
+    },
+    {
+      "name": "FreeClass_",
+      "kind": "oscall",
+      "help": "(classPtr)",
+      "base": 255,
+      "offset": -714,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AllocScreenBuffer_",
+      "kind": "oscall",
+      "help": "(sc,bm,flags)",
+      "base": 255,
+      "offset": -768,
+      "registers": ["a0", "a1", "d0"]
+    },
+    {
+      "name": "FreeScreenBuffer_",
+      "kind": "oscall",
+      "help": "(sc,sb)",
+      "base": 255,
+      "offset": -774,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ChangeScreenBuffer_",
+      "kind": "oscall",
+      "help": "(sc,sb)",
+      "base": 255,
+      "offset": -780,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ScreenDepth_",
+      "kind": "oscall",
+      "help": "(screen,flags,reserved)",
+      "base": 255,
+      "offset": -786,
+      "registers": ["a0", "d0", "a1"]
+    },
+    {
+      "name": "ScreenPosition_",
+      "kind": "oscall",
+      "help": "(screen,flags,x1,y1,x2,y2)",
+      "base": 255,
+      "offset": -792,
+      "registers": ["a0", "d0", "d1", "d2", "d3", "d4"]
+    },
+    {
+      "name": "ScrollWindowRaster_",
+      "kind": "oscall",
+      "help": "(win,dx,dy,xMin,yMin,xMax,yMax)",
+      "base": 255,
+      "offset": -798,
+      "registers": ["a1", "d0", "d1", "d2", "d3", "d4", "d5"]
+    },
+    {
+      "name": "LendMenus_",
+      "kind": "oscall",
+      "help": "(fromwindow,towindow)",
+      "base": 255,
+      "offset": -804,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "DoGadgetMethodA_",
+      "kind": "oscall",
+      "help": "(gad,win,req,message)",
+      "base": 255,
+      "offset": -810,
+      "registers": ["a0", "a1", "a2", "a3"]
+    },
+    {
+      "name": "SetWindowPointerA_",
+      "kind": "oscall",
+      "help": "(win,taglist)",
+      "base": 255,
+      "offset": -816,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "TimedDisplayAlert_",
+      "kind": "oscall",
+      "help": "(alertNumber,string,height,time)",
+      "base": 255,
+      "offset": -822,
+      "registers": ["d0", "a0", "d1", "a1"]
+    },
+    {
+      "name": "HelpControl_",
+      "kind": "oscall",
+      "help": "(win,flags)",
+      "base": 255,
+      "offset": -828,
+      "registers": ["a0", "d0"]
+    }
+  ]
+}

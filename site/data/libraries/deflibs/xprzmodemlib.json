@@ -1,0 +1,56 @@
+{
+  "name": "xprzmodemlib",
+  "group": "deflibs",
+  "number": 2,
+  "opens": "xprzmodem.library",
+  "entries": [
+    {
+      "name": "XProtocolCleanup_",
+      "kind": "oscall",
+      "help": "(io)",
+      "base": 2,
+      "offset": -30,
+      "registers": ["a0"]
+    },
+    {
+      "name": "XProtocolSetup_",
+      "kind": "oscall",
+      "help": "(io)",
+      "base": 2,
+      "offset": -36,
+      "registers": ["a0"]
+    },
+    {
+      "name": "XProtocolSend_",
+      "kind": "oscall",
+      "help": "(io)",
+      "base": 2,
+      "offset": -42,
+      "registers": ["a0"]
+    },
+    {
+      "name": "XProtocolReceive_",
+      "kind": "oscall",
+      "help": "(io)",
+      "base": 2,
+      "offset": -48,
+      "registers": ["a0"]
+    },
+    {
+      "name": "XProtocolHostMon_",
+      "kind": "oscall",
+      "help": "(io,serbuff,actual,maxsize)",
+      "base": 2,
+      "offset": -54,
+      "registers": ["a0", "a1", "d0", "d1"]
+    },
+    {
+      "name": "XProtocolUserMon_",
+      "kind": "oscall",
+      "help": "(io,serbuff,actual,maxsize)",
+      "base": 2,
+      "offset": -60,
+      "registers": ["a0", "a1", "d0", "d1"]
+    }
+  ]
+}

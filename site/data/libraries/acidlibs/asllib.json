@@ -1,0 +1,47 @@
+{
+  "name": "asllib",
+  "group": "acidlibs",
+  "number": 80,
+  "entries": [
+    {
+      "name": "ASLFileRequest$",
+      "kind": "function",
+      "help": "Title$,Pathname$,Filename$ [,Pattern$] [,x,y,w,h]",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 135, "flags": ["address"]}, {"type": "string", "code": 135, "flags": ["address"]}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 135, "flags": ["address"]}, {"type": "string", "code": 135, "flags": ["address"]}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 135, "flags": ["address"]}, {"type": "string", "code": 135, "flags": ["address"]}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 135, "flags": ["address"]}, {"type": "string", "code": 135, "flags": ["address"]}, {"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ASLFontRequest",
+      "kind": "function",
+      "help": "enable flags (1=pen 2=bckgrnd 4=style 8=drawmode 16=fixedsize)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ASLScreenRequest",
+      "kind": "function",
+      "help": "enable flags (1=width 2=height 4=depth 8=overscan 16=scroll)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ASLPathRequest$",
+      "kind": "function",
+      "help": "Title$,Pathname$ [,x,y,w,h]",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 135, "flags": ["address"]}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 135, "flags": ["address"]}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

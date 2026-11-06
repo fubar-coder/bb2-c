@@ -1,0 +1,48 @@
+{
+  "name": "bulletlib",
+  "group": "deflibs",
+  "number": 244,
+  "opens": "bullet.library",
+  "entries": [
+    {
+      "name": "OpenEngine_",
+      "kind": "oscall",
+      "help": "",
+      "base": 244,
+      "offset": -30,
+      "registers": []
+    },
+    {
+      "name": "CloseEngine_",
+      "kind": "oscall",
+      "help": "(glyphEngine)",
+      "base": 244,
+      "offset": -36,
+      "registers": ["a0"]
+    },
+    {
+      "name": "SetInfoA_",
+      "kind": "oscall",
+      "help": "(glyphEngine,tagList)",
+      "base": 244,
+      "offset": -42,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ObtainInfoA_",
+      "kind": "oscall",
+      "help": "(glyphEngine,tagList)",
+      "base": 244,
+      "offset": -48,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "ReleaseInfoA_",
+      "kind": "oscall",
+      "help": "(glyphEngine,tagList)",
+      "base": 244,
+      "offset": -54,
+      "registers": ["a0", "a1"]
+    }
+  ]
+}

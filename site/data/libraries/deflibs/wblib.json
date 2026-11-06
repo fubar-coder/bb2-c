@@ -1,0 +1,64 @@
+{
+  "name": "wblib",
+  "group": "deflibs",
+  "number": 220,
+  "opens": "workbench.library",
+  "entries": [
+    {
+      "name": "AddAppWindowA_",
+      "kind": "oscall",
+      "help": "(id,userdata,window,msgport,taglist)",
+      "base": 220,
+      "offset": -48,
+      "registers": ["d0", "d1", "a0", "a1", "a2"]
+    },
+    {
+      "name": "RemoveAppWindow_",
+      "kind": "oscall",
+      "help": "(appWindow)",
+      "base": 220,
+      "offset": -54,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AddAppIconA_",
+      "kind": "oscall",
+      "help": "(id,userdata,text,msgport,lock,diskobj,taglist)",
+      "base": 220,
+      "offset": -60,
+      "registers": ["d0", "d1", "a0", "a1", "a2", "a3", "a4"]
+    },
+    {
+      "name": "RemoveAppIcon_",
+      "kind": "oscall",
+      "help": "(appIcon)",
+      "base": 220,
+      "offset": -66,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AddAppMenuItemA_",
+      "kind": "oscall",
+      "help": "(id,userdata,text,msgport,taglist)",
+      "base": 220,
+      "offset": -72,
+      "registers": ["d0", "d1", "a0", "a1", "a2"]
+    },
+    {
+      "name": "RemoveAppMenuItem_",
+      "kind": "oscall",
+      "help": "(appMenuItem)",
+      "base": 220,
+      "offset": -78,
+      "registers": ["a0"]
+    },
+    {
+      "name": "WBInfo_",
+      "kind": "oscall",
+      "help": "(lock,name,screen)",
+      "base": 220,
+      "offset": -90,
+      "registers": ["a0", "a1", "a2"]
+    }
+  ]
+}

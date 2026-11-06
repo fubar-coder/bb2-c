@@ -1,0 +1,39 @@
+{
+  "name": "inputoutputlib",
+  "group": "acidlibs",
+  "number": 164,
+  "entries": [
+    {
+      "name": "DefaultInput",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "DefaultOutput",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "PopInput",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "PopOutput",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "name": "bblitlib",
+  "group": "acidlibs",
+  "number": 146,
+  "object": {"name": "Buffer", "maximum": 10},
+  "entries": [
+    {
+      "name": "Buffer",
+      "kind": "statement",
+      "help": "Buffer#,Memorylen",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "BBlit",
+      "kind": "statement",
+      "help": "Buffer#,Shape#,X,Y[,Excessonoff]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "UnBuffer",
+      "kind": "statement",
+      "help": "Buffer#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BBlitMode",
+      "kind": "statement",
+      "help": "BLTCON0",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ShowStencil",
+      "kind": "statement",
+      "help": "Buffer#,Stencil#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FlushBuffer",
+      "kind": "statement",
+      "help": "Buffer#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

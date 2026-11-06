@@ -1,0 +1,321 @@
+{
+  "name": "riregistrylib",
+  "group": "userlibs",
+  "number": 3,
+  "entries": [
+    {
+      "name": "IsRegistryOpen",
+      "kind": "function",
+      "help": "-- returns 0 if registry not opened",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "LockRegistry",
+      "kind": "function",
+      "help": "AccessMode",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "UnlockRegistry",
+      "kind": "statement",
+      "help": "-- unlock and release the registry",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "SetRegistryBaseLibrary",
+      "kind": "command",
+      "help": "LibraryName",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "ExistsRegistryLibrary",
+      "kind": "function",
+      "help": "LibraryName",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "GetLibraryValue$",
+      "kind": "function",
+      "help": "LibraryName",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "GetRegistryVariable",
+      "kind": "function",
+      "help": "VariableName",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "SetRegistryVariable",
+      "kind": "command",
+      "help": "VariableName,Value$ OR VariableName,Address,ByteSize",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ChangeRegistryVariable",
+      "kind": "command",
+      "help": "VariableName,Data,Type,ByteSize",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "NewRegistryLibrary",
+      "kind": "command",
+      "help": "LibraryName,LibraryValue[,VariableFilename]",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "ParseRegistryLibrary",
+      "kind": "command",
+      "help": "LibraryName",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "NextParseItem",
+      "kind": "command",
+      "help": "",
+      "result": "word",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ChangeRegistryAccess",
+      "kind": "statement",
+      "help": "-- Change registry to read access",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "DeleteRegistryLibrary",
+      "kind": "command",
+      "help": "LibraryName",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "DeleteRegistryVariable",
+      "kind": "command",
+      "help": "VariableName",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "NumRegistryLibraryVariables",
+      "kind": "function",
+      "help": "VariableName",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "SaveRegistryLibrary",
+      "kind": "command",
+      "help": "LibraryName,FileName",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "LoadRegistryLibrary",
+      "kind": "command",
+      "help": "LibraryName,FileName",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "GetRegistryStringVariable",
+      "kind": "function",
+      "help": "VariableName",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "SetRegistryBoolVariable",
+      "kind": "command",
+      "help": "VariableName,True/False",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ParseItemName$",
+      "kind": "function",
+      "help": "-- return the name associated with the last parse",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "ParseItemValue$",
+      "kind": "function",
+      "help": "-- return the string value associated with the last parse",
+      "result": "string",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "GetRegistryBoolVariable",
+      "kind": "function",
+      "help": "VariableName",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "SetRegistryIntVariable",
+      "kind": "command",
+      "help": "VariableName,#",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GetRegistryIntVariable",
+      "kind": "function",
+      "help": "VariableName",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "DeleteRegistryLibraryVariables",
+      "kind": "statement",
+      "help": "LibraryName",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "SetLibraryValue",
+      "kind": "command",
+      "help": "LibraryName,Value",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "SetRegistryVariableIndex",
+      "kind": "command",
+      "help": "VariableName,Data,Type,ByteSize,Index",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RenameRegistryVariable",
+      "kind": "command",
+      "help": "VariableName,NewVariableName",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "SaveLibraryVariables",
+      "kind": "command",
+      "help": "LibraryName,Filename",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "RenameRegistryLibrary",
+      "kind": "command",
+      "help": "LibraryName,NewLibraryName",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "InsertNewRegistryLibrary",
+      "kind": "command",
+      "help": "LibraryName,LibraryValue,InsertBefore[,VariableFilename]",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "GetStructureVariables",
+      "kind": "command",
+      "help": "Description,Structure",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FreeStructureVariables",
+      "kind": "statement",
+      "help": "-- release data allocated by GetStructureVariables",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "LoadLibraryVariables",
+      "kind": "command",
+      "help": "LibraryName,Filename",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    }
+  ]
+}

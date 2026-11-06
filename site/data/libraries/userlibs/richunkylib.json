@@ -1,0 +1,57 @@
+{
+  "name": "richunkylib",
+  "group": "userlibs",
+  "number": 24,
+  "object": {"name": "ChunkyBitmap", "maximum": 8},
+  "entries": [
+    {
+      "name": "ChunkyBitmap",
+      "kind": "statement",
+      "help": "bitmap#,width,height",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ChunkyToPlanar",
+      "kind": "statement",
+      "help": "chunkybitmap,bitmap    --320x256x8 bitmap",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "PlanarToChunky",
+      "kind": "statement",
+      "help": "bitmap,chunkybitmap    --320x256x8 bitmap",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ChunkyLoadBitMap",
+      "kind": "statement",
+      "help": "filename$,chunkybitmap#",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ChunkyData",
+      "kind": "function",
+      "help": "chunkybitmap#",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "RaycastSky",
+      "kind": "statement",
+      "help": "chunkybitmap#,x,height,column,&texture",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

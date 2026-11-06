@@ -1,0 +1,144 @@
+{
+  "name": "amigaguidelib",
+  "group": "deflibs",
+  "number": 248,
+  "opens": "amigaguide.library",
+  "entries": [
+    {
+      "name": "AGARexxHost_",
+      "kind": "oscall",
+      "help": "(rmsg,result)",
+      "base": 248,
+      "offset": -30,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "LockAmigaGuideBase_",
+      "kind": "oscall",
+      "help": "(handle)",
+      "base": 248,
+      "offset": -36,
+      "registers": ["a0"]
+    },
+    {
+      "name": "UnlockAmigaGuideBase_",
+      "kind": "oscall",
+      "help": "(key)",
+      "base": 248,
+      "offset": -42,
+      "registers": ["d0"]
+    },
+    {
+      "name": "OpenAmigaGuideA_",
+      "kind": "oscall",
+      "help": "(nag,*)",
+      "base": 248,
+      "offset": -54,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "OpenAmigaGuideAsyncA_",
+      "kind": "oscall",
+      "help": "(nag,attrs)",
+      "base": 248,
+      "offset": -60,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "CloseAmigaGuide_",
+      "kind": "oscall",
+      "help": "(cl)",
+      "base": 248,
+      "offset": -66,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AmigaGuideSignal_",
+      "kind": "oscall",
+      "help": "(cl)",
+      "base": 248,
+      "offset": -72,
+      "registers": ["a0"]
+    },
+    {
+      "name": "GetAmigaGuideMsg_",
+      "kind": "oscall",
+      "help": "(cl)",
+      "base": 248,
+      "offset": -78,
+      "registers": ["a0"]
+    },
+    {
+      "name": "ReplyAmigaGuideMsg_",
+      "kind": "oscall",
+      "help": "(amsg)",
+      "base": 248,
+      "offset": -84,
+      "registers": ["a0"]
+    },
+    {
+      "name": "SetAmigaGuideContextA_",
+      "kind": "oscall",
+      "help": "(cl,id,attrs)",
+      "base": 248,
+      "offset": -90,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "SendAmigaGuideContextA_",
+      "kind": "oscall",
+      "help": "(cl,attrs)",
+      "base": 248,
+      "offset": -96,
+      "registers": ["a0", "d0"]
+    },
+    {
+      "name": "SendAmigaGuideCmdA_",
+      "kind": "oscall",
+      "help": "(cl,cmd,attrs)",
+      "base": 248,
+      "offset": -102,
+      "registers": ["a0", "d0", "d1"]
+    },
+    {
+      "name": "SetAmigaGuideAttrsA_",
+      "kind": "oscall",
+      "help": "(cl,attrs)",
+      "base": 248,
+      "offset": -108,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "GetAmigaGuideAttr_",
+      "kind": "oscall",
+      "help": "(tag,cl,storage)",
+      "base": 248,
+      "offset": -114,
+      "registers": ["d0", "a0", "a1"]
+    },
+    {
+      "name": "AddAmigaGuideHostA_",
+      "kind": "oscall",
+      "help": "(h,name,attrs)",
+      "base": 248,
+      "offset": -138,
+      "registers": ["a0", "d0", "a1"]
+    },
+    {
+      "name": "RemoveAmigaGuideHostA_",
+      "kind": "oscall",
+      "help": "(hh,attrs)",
+      "base": 248,
+      "offset": -144,
+      "registers": ["a0", "a1"]
+    },
+    {
+      "name": "GetAmigaGuideString_",
+      "kind": "oscall",
+      "help": "(id)",
+      "base": 248,
+      "offset": -210,
+      "registers": ["d0"]
+    }
+  ]
+}

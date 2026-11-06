@@ -1,0 +1,42 @@
+{
+  "name": "risnowlib",
+  "group": "userlibs",
+  "number": 195,
+  "entries": [
+    {
+      "name": "LDoSnow",
+      "kind": "statement",
+      "help": "listnum,randomtable",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "InitSnowDrop",
+      "kind": "command",
+      "help": "listnum,numpoints,bitmap,bp_size",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "KillPoint",
+      "kind": "command",
+      "help": "listnum,x,y",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "LDoSnowActivate",
+      "kind": "command",
+      "help": "listnum",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

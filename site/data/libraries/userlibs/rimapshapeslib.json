@@ -1,0 +1,89 @@
+{
+  "name": "rimapshapeslib",
+  "group": "userlibs",
+  "number": 6,
+  "entries": [
+    {
+      "name": "ShapeToMapShape",
+      "kind": "statement",
+      "help": "source shape,dest Mapshape",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BlitMapShape",
+      "kind": "statement",
+      "help": "window#,mapshape#,x,y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "RemapMapShape",
+      "kind": "statement",
+      "help": "mapshape#,botcol,topcol",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BlitMapShapeSize",
+      "kind": "statement",
+      "help": "window#,mapshape#,x,y,width,height",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SetNumMapShapes",
+      "kind": "statement",
+      "help": "num",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MapShapeAddr",
+      "kind": "function",
+      "help": "mapshape#",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "FreeMapShapes",
+      "kind": "statement",
+      "help": "first,last",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "AddGroupMember",
+      "kind": "statement",
+      "help": "shape#,dx,dy",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "BlitGroup",
+      "kind": "statement",
+      "help": "window#,x,y",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ResetGroup",
+      "kind": "command",
+      "help": "blockwidth,blockheight",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

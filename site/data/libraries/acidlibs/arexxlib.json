@@ -1,0 +1,127 @@
+{
+  "name": "arexxlib",
+  "group": "acidlibs",
+  "number": 92,
+  "entries": [
+    {
+      "name": "CreateRexxMsg",
+      "kind": "function",
+      "help": "MsgPtr=CreateRexxMsg(ReplyPort,Exten,Host)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "DeleteRexxMsg",
+      "kind": "statement",
+      "help": "rexxmsg.l",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "FillRexxMsg",
+      "kind": "statement",
+      "help": "rexxmsg,&FillStruct",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ClearRexxMsg",
+      "kind": "statement",
+      "help": "rexxmsg",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CreateArgString",
+      "kind": "function",
+      "help": "ArgString=CreateArgString(String)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "DeleteArgString",
+      "kind": "statement",
+      "help": "argstring",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "SendRexxCommand",
+      "kind": "statement",
+      "help": "rexxmsg,CommandString,ActionCodes",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "string", "code": 7}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ReplyRexxMsg",
+      "kind": "statement",
+      "help": "rexxmsg,Result1,Result2,ResultString",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "GetRexxResult",
+      "kind": "function",
+      "help": "Result=GetRexxResult(rexxmsg,ResultNum)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GetRexxCommand",
+      "kind": "function",
+      "help": "String=GetRexxCommand(rexxmsg,ARGNum)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "GetResultString",
+      "kind": "function",
+      "help": "String=GetResultString(rexxmsg)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RexxEvent",
+      "kind": "function",
+      "help": "rexxmsg=RexxEvent(PortAddress)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "IsRexxMsg",
+      "kind": "function",
+      "help": "Boolean=IsRexxMsg(rexxmsg)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "RexxError",
+      "kind": "function",
+      "help": "ErrorString=RexxError(ErrorCode)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

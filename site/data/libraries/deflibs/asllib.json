@@ -1,0 +1,56 @@
+{
+  "name": "asllib",
+  "group": "deflibs",
+  "number": 247,
+  "opens": "asl.library",
+  "entries": [
+    {
+      "name": "AllocFileRequest_",
+      "kind": "oscall",
+      "help": "",
+      "base": 247,
+      "offset": -30,
+      "registers": []
+    },
+    {
+      "name": "FreeFileRequest_",
+      "kind": "oscall",
+      "help": "(fileReq)",
+      "base": 247,
+      "offset": -36,
+      "registers": ["a0"]
+    },
+    {
+      "name": "RequestFile_",
+      "kind": "oscall",
+      "help": "(fileReq)",
+      "base": 247,
+      "offset": -42,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AllocAslRequest_",
+      "kind": "oscall",
+      "help": "(reqType,tagList)",
+      "base": 247,
+      "offset": -48,
+      "registers": ["d0", "a0"]
+    },
+    {
+      "name": "FreeAslRequest_",
+      "kind": "oscall",
+      "help": "(requester)",
+      "base": 247,
+      "offset": -54,
+      "registers": ["a0"]
+    },
+    {
+      "name": "AslRequest_",
+      "kind": "oscall",
+      "help": "(requester,tagList)",
+      "base": 247,
+      "offset": -60,
+      "registers": ["a0", "a1"]
+    }
+  ]
+}

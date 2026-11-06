@@ -1,0 +1,52 @@
+{
+  "name": "gameiolib",
+  "group": "acidlibs",
+  "number": 190,
+  "entries": [
+    {
+      "name": "Joyx",
+      "kind": "function",
+      "help": "(Port)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Joyy",
+      "kind": "function",
+      "help": "(Port)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Joyr",
+      "kind": "function",
+      "help": "(Port)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Joyb",
+      "kind": "function",
+      "help": "(Port)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "Gameb",
+      "kind": "function",
+      "help": "(Port)",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    }
+  ]
+}

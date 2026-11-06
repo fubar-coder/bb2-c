@@ -1,0 +1,80 @@
+{
+  "name": "ripacklib",
+  "group": "userlibs",
+  "number": 73,
+  "entries": [
+    {
+      "name": "PackPBM",
+      "kind": "function",
+      "help": "sourceaddr,destaddr,length",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "DeIce",
+      "kind": "command",
+      "help": "(sourceaddr,destaddr)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "UnpackIFF",
+      "kind": "command",
+      "help": "(sourceaddr,bitmap#[,numlines,xy_offset])",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ILBMPalette",
+      "kind": "command",
+      "help": "(sourceaddr,palette#[,#offset)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "ILBMGrab",
+      "kind": "statement",
+      "help": "sourceaddr,bitmap#,palette#",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "LoadIFF",
+      "kind": "command",
+      "help": "(filename$,bitmap[,palette])",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "string", "code": 7}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ChunkHeader",
+      "kind": "function",
+      "help": "(a$)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "UnPackPBM",
+      "kind": "statement",
+      "help": "sourceaddr,destaddr,length,destlength",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    }
+  ]
+}

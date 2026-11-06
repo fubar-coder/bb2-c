@@ -1,0 +1,108 @@
+{
+  "name": "menuslib",
+  "group": "acidlibs",
+  "number": 136,
+  "object": {"name": "MenuList", "maximum": 5},
+  "entries": [
+    {
+      "name": "MenuTitle",
+      "kind": "statement",
+      "help": "MenuList#,Menu,Title$",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "SetMenu",
+      "kind": "statement",
+      "help": "Menulist#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MenuItem",
+      "kind": "statement",
+      "help": "MenuList#,Flags,Menu,Item,Itemtext$[,Shortcut$]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 67, "flags": ["stack"]}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 67, "flags": ["stack"]}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "SubItem",
+      "kind": "statement",
+      "help": "MenuList#,Flags,Menu,Item,Subitem,Subitemtext$[,Shortcut$]",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 67, "flags": ["stack"]}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 67, "flags": ["stack"]}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "ShapeItem",
+      "kind": "statement",
+      "help": "MenuList#,Flags,Menu,Item,Shape#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 67, "flags": ["stack"]}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "ShapeSub",
+      "kind": "statement",
+      "help": "MenuList#,Flags,Menu,Item,Subitem,Shape#",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "long", "code": 67, "flags": ["stack"]}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MenuGap",
+      "kind": "statement",
+      "help": "X Gap,Y Gap",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "SubItemOff",
+      "kind": "statement",
+      "help": "X Offset,Y Offset",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MenuState",
+      "kind": "statement",
+      "help": "MenuList#[,Menu[,Item[,Subitem]]],On|Off",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MenuColour",
+      "kind": "statement",
+      "help": "Colour",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MenuChecked",
+      "kind": "function",
+      "help": "(MenuList#,Menu,Item[,Subitem])",
+      "result": "word",
+      "forms": [
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]},
+        {"args": [{"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}, {"type": "word", "code": 2}]}
+      ]
+    },
+    {
+      "name": "MenuList",
+      "kind": "object",
+      "help": "List of Menus"
+    }
+  ]
+}

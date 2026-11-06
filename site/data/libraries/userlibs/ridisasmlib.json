@@ -1,0 +1,25 @@
+{
+  "name": "ridisasmlib",
+  "group": "userlibs",
+  "number": 50,
+  "entries": [
+    {
+      "name": "DisAssemble$",
+      "kind": "function",
+      "help": "(address.l)",
+      "result": "string",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "InstrSize",
+      "kind": "function",
+      "help": "- returns size of last instruction disassembled",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}

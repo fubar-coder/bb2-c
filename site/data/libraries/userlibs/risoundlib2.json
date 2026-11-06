@@ -1,0 +1,86 @@
+{
+  "name": "risoundlib2",
+  "group": "userlibs",
+  "number": 45,
+  "entries": [
+    {
+      "name": "CludgeSound",
+      "kind": "command",
+      "help": "sound#,address",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "OpenAHI",
+      "kind": "command",
+      "help": "unit,[deviceID]",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "CloseAHI",
+      "kind": "statement",
+      "help": "",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "PlaySoundAHI",
+      "kind": "statement",
+      "help": "sound,[volume,[balance]]",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "quick", "code": 4}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "quick", "code": 4}, {"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "PlayRawAHI",
+      "kind": "statement",
+      "help": "address,length,frequency,[volume,[balance]]",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "quick", "code": 4}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "quick", "code": 4}, {"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "AHIOutputRequest",
+      "kind": "function",
+      "help": "[x,y,width,height[,modeid,[frequency]]]",
+      "result": "long",
+      "forms": [
+        {"args": []},
+        {"args": [{"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]},
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "AHIRequestedID",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "AHIRequestedFreq",
+      "kind": "function",
+      "help": "",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    }
+  ]
+}
