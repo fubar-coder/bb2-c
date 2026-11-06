@@ -92,6 +92,11 @@ source or a test; a kept bug of the original names its issue as a link
 content adapter `content/docs/libraries/_content.gotmpl` merges both files
 into the pages.
 
+In both files, a plain (unquoted) value must not contain `": "`: YAML
+reads it as a new key and the build fails ("mapping value is not
+allowed"). Quote such a value, or write it as a block scalar (`|` or
+`>`), as `intro` and `notes` above.
+
 ## API reference
 
 `static/api/` holds the Doxygen HTML of the library headers and sources
