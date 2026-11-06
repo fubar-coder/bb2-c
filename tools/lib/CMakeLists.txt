@@ -34,6 +34,8 @@
 #              with their link maps)
 #   covsel     the tests a change can affect, from that map, a diff, ninja's
 #              dependencies and rules
+#   hdf        AmigaDOS hardfiles: RDB or raw partition, OFS/FFS files read
+#              and written (the setup of the emulation data)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -56,3 +58,4 @@ add_subdirectory(teststats)
 add_subdirectory(outmatch)
 add_subdirectory(covmap)
 add_subdirectory(covsel)
+add_subdirectory(hdf)

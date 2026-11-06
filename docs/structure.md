@@ -85,7 +85,9 @@ tools/                       host tools:
                              ab3job (shared/ab3job for the host),
                              tokenizer (shared/tokenizer for the host),
                              teststats (the @stat line of the emulator
-                             sessions, statistics of JUnit files);
+                             sessions, statistics of JUnit files),
+                             hdf (AmigaDOS hardfiles: RDB or raw
+                             partition, OFS/FFS files read and written);
                              blitzlib also compares declarations
   biglib/, blitzlibcheck/,   the tools: one main.c each around lib/
   blitzlibcompare/,
@@ -95,7 +97,7 @@ tools/                       host tools:
   checkdata/, asmcmp/,
   mktestdata/, bb22/, blitzres/,
   bblines/, xtra/, teststats/,
-  ab3tok/
+  ab3tok/, hdftool/
   tests/                     tests of lib/ with inputs from memory
 openspec/                    OpenSpec: specs/ (what is specified),
                              changes/ (planned and archived changes)
