@@ -1,0 +1,221 @@
+"D_FindVolume":
+  text: Looks up a device, volume or assign by name and returns the address of its entry in the DOS list, or 0 if there is none. `volumename` is the address of the name, without the colon.
+  notes: |
+    Amiga mode only; needs Kickstart 2.0 or later.
+"D_GetSR":
+  text: Writes the condition codes of the status register `SR` as text into `buffer`, for example `X-Z--`; a flag that is not set shows as `-`.
+  notes: |
+    The text is the five letters `XNZVC` and a 0 byte, six bytes in all.
+"D_HexWord":
+  text: Writes `num` words of memory from `source` as hexadecimal text to `address`, five characters per word (four digits and a space). No 0 byte is written at the end.
+  notes: |
+    Bytes at addresses below $420 show as `**`.
+
+    Kept from the original: a `num` of 0 writes 65536 words
+    ([#701](https://github.com/fubar-coder/bb2-c/issues/701)); at an odd
+    `source` each word shows as its two bytes with a space between them
+    and none behind ([#715](https://github.com/fubar-coder/bb2-c/issues/715));
+    addresses from $80000000 on also show as `*`
+    ([#717](https://github.com/fubar-coder/bb2-c/issues/717)).
+"D_CheckNMove":
+  text: Copies `count` longs (1 without `count`) from `source_address` to `dest_address` as four characters each, leaving one byte free behind each long.
+  notes: |
+    The bytes are copied as they are, 0 bytes included.
+
+    Kept from the original: a `count` of 0 copies 65536 longs
+    ([#701](https://github.com/fubar-coder/bb2-c/issues/701)).
+"D_FindStringPtr":
+  text: Searches the 32768 bytes below `areg5`, in steps of 2 bytes, for the long `lookfor` and returns the address of the first match, or -1 if there is none.
+  notes: |
+    Kept from the original: the long at `areg5` itself is never compared
+    ([#705](https://github.com/fubar-coder/bb2-c/issues/705)).
+"GetCopIns$":
+  text: The copper instruction (two words) at the address `copdata` as text, for example `MOVE 0FFF to COLOR00` or `WAIT (xx,yy) MASK (xx,yy)`.
+  notes: |
+    A MOVE shows the value and the register's name, padded to 8
+    characters. A WAIT or SKIP shows the position and the mask, each as
+    two hexadecimal numbers, and `[BFD]` if the blitter finish disable
+    bit is set.
+
+    Kept from the original: the horizontal position and mask lose the
+    lowest bit of both digits, so odd digits never show
+    ([#711](https://github.com/fubar-coder/bb2-c/issues/711)).
+"FLocate":
+  text: Sets the cursor of the font printer to column `x` and row `y`, both counted in characters of 8 pixels.
+"FPrint":
+  text: Prints a string with the library's 8x8 font at the cursor into the first bitplane of the used bitmap; the cursor moves on.
+  notes: |
+    The bitmap must be 80 bytes (640 pixels) wide; its other bitplanes
+    are not touched. With `FInverse` on, the characters are inverted.
+    Printing stops at column 80; nothing checks the height of the
+    bitmap.
+
+    Kept from the original: a cursor in a column from 208 to 255 still
+    prints (and runs on into columns 0 to 79)
+    ([#707](https://github.com/fubar-coder/bb2-c/issues/707)); a string
+    of 32769 characters or more prints nothing
+    ([#710](https://github.com/fubar-coder/bb2-c/issues/710)).
+"FNPrint":
+  text: Like `FPrint`, then the cursor goes to the start of the next row.
+"FInverse":
+  text: Switches inverse printing of the font printer on (any value but 0) or off (0).
+  notes: |
+    Kept from the original: `FPrintDetoke` looks only at the upper byte
+    of the value, so `FInverse 1` inverts `FPrint` but not
+    `FPrintDetoke`, and `FPrintDetoke` changes that byte itself when it
+    draws its marker ([#706](https://github.com/fubar-coder/bb2-c/issues/706)).
+"GetProgMode":
+  text: Writes the name of a program mode as six characters into `buffer`, without a 0 byte; `BLITZ ` for a negative `mode`, `AMIGA ` for 0 and `QAMIGA` for a positive one.
+"FYOffset":
+  text: Sets a number of pixel lines that the font printer adds to the row of the cursor, to print between the rows of 8 pixels.
+"SearchMem":
+  text: Searches memory from `start_ad` up to `end_ad` (excluded) for a value and returns -1 if found, 0 if not, and 1 if the search was stopped with the space bar.
+  notes: |
+    `type` is 1 for a byte, 2 for a word, 3, 5 or 6 for a long and 4 for
+    a string, which `value` then is (or its address); any other type
+    finds nothing. Every byte address is tried, odd ones too. The
+    address found is given by `SearchMemFound`. Holding down the space
+    bar stops a long search; `SearchMemFound` then keeps its value.
+
+    Kept from the original: the string search does not go back after a
+    partial match, so `ab` is not found in `aab`
+    ([#723](https://github.com/fubar-coder/bb2-c/issues/723)); an empty
+    string compares the bytes behind it
+    ([#721](https://github.com/fubar-coder/bb2-c/issues/721)); a word or
+    long search compares up to 1 or 3 bytes behind `end_ad`
+    ([#722](https://github.com/fubar-coder/bb2-c/issues/722)).
+"SearchMemFound":
+  text: The address the last `SearchMem` found, or 0 if it found nothing.
+"PeekMax$":
+  text: The 0-terminated string at `address`, but at most `max_chars` characters of it.
+  notes: |
+    Low addresses are not checked.
+
+    Kept from the original: for a longer string, one more character is
+    written into string memory behind the result
+    ([#718](https://github.com/fubar-coder/bb2-c/issues/718)).
+"D_CheckNMoveWord":
+  text: Copies `count` words (1 without `count`) from `source_address` to `dest_address` as two characters each, without a gap. A 0 byte becomes the character 1, and bytes at addresses below $420 become `*`.
+  notes: |
+    Kept from the original: a `count` of 0 or $8000 copies 32768 words
+    ([#701](https://github.com/fubar-coder/bb2-c/issues/701)); addresses
+    from $80000000 on also give `*`
+    ([#717](https://github.com/fubar-coder/bb2-c/issues/717)).
+"GetHex$":
+  text: The value as hexadecimal text with upper case digits; `mode` 1 gives 2 digits (a byte), 2 gives 4 (a word) and any other mode 8 (a long).
+"GetHexAdr$":
+  text: Like `GetHex$`, for the byte, word or long at the address `value`.
+  notes: |
+    Low addresses are not checked. On a 68000, a word or long at an odd
+    address is an address error.
+"GetCustomReg":
+  text: The name of the custom chip register at offset `address` ($000 to $1FC), for example `DMACON` for $096; an empty string for an offset out of range.
+  notes: |
+    The last register, $1FE, counts as out of range.
+
+    Kept from the original: for a name of 8 characters, one more
+    character is written into string memory behind the result
+    ([#712](https://github.com/fubar-coder/bb2-c/issues/712)); a negative
+    offset can read in front of the table of names and return rubbish
+    ([#714](https://github.com/fubar-coder/bb2-c/issues/714)).
+"GetCustomRegAdr":
+  text: The offset of the custom chip register named `name$`, for example $180 for `COLOR00`, or -1 if the name is not known. The names are in upper case.
+  notes: |
+    Kept from the original: the name only has to start with a register's
+    name, so `DMACONXYZ` gives $096, and names of 8 characters are never
+    found ([#713](https://github.com/fubar-coder/bb2-c/issues/713)); the
+    last register, $1FE `NOOP`, is never found
+    ([#702](https://github.com/fubar-coder/bb2-c/issues/702)).
+"FPrintDetoke":
+  text: Prints a tokenised Blitz source line with the font printer, its tokens as their names. A marker goes before the character at `cio`, `lineoffset` characters are skipped from the left, and the cursor moves on.
+  notes: |
+    `tokenised_string` is the address of the line, ended by a 0 byte.
+    The names come from the token list given to `SetupLESDebug`; a token
+    not in it prints as `?????`. With `SetupLESDebug`'s `tokenise` set,
+    the names are drawn into the second bitplane too, so they show in
+    another colour. The marker is `>` for a `typ` of 0, otherwise an
+    inverse space.
+
+    Kept from the original: `FInverse 1` does not invert the line, as
+    this command reads only the upper byte of the setting, and the marker
+    changes that byte ([#706](https://github.com/fubar-coder/bb2-c/issues/706));
+    inverse token names in two bitplanes get a wrong character in the
+    second plane ([#709](https://github.com/fubar-coder/bb2-c/issues/709));
+    the `>` marker can be followed by an extra inverse space
+    ([#708](https://github.com/fubar-coder/bb2-c/issues/708)); the
+    column limit works as in `FPrint`, and the marker takes a column
+    without that check
+    ([#707](https://github.com/fubar-coder/bb2-c/issues/707)).
+"SetupLESDebug":
+  text: Gives the library the token list that `FPrintDetoke` takes the token names from; with `tokenise` not 0, `FPrintDetoke` draws the names into the second bitplane too.
+  notes: |
+    `token_addr` is the address of the first entry of a chain: each
+    entry holds the address of the next (a long), the token number (a
+    word) and the name. Its address in hexadecimal is also what
+    `ProcessString` puts for `%c`.
+"ExtractLabel":
+  text: The name of a label in a line of text at the address `label_string`. From the tenth character on, the first `.` is searched; the name runs from behind it to a `:` or the end of the line.
+  notes: |
+    Kept from the original: if there is no `.`, the search runs on
+    through memory ([#703](https://github.com/fubar-coder/bb2-c/issues/703)),
+    and a space does not end the name
+    ([#704](https://github.com/fubar-coder/bb2-c/issues/704)).
+"OutText":
+  text: Prints a 0-terminated string (or the string at an address) on a rastport, with its top-left corner at `x`,`y`.
+  notes: |
+    The text is placed by the baseline of the rastport's font, so `y` is
+    the top of the text, and drawn in the rastport's pen (see
+    `OutTextPen`).
+"D_CheckNMoveA":
+  text: Like `D_CheckNMove`, but a 0 byte becomes the character 1, and bytes at addresses below $420 become `*`.
+  notes: |
+    Kept from the original: a `count` of 0 copies 65536 longs
+    ([#701](https://github.com/fubar-coder/bb2-c/issues/701)); addresses
+    from $80000000 on also give `*`
+    ([#717](https://github.com/fubar-coder/bb2-c/issues/717)).
+"OutTextPen":
+  text: Sets the pen that `OutText` draws with on a rastport.
+"D_InitParse":
+  text: Starts splitting the 0-terminated string at the address `string` into arguments separated by commas; `D_NextArg$` then gives them one by one.
+  notes: |
+    The string is copied into the parser's buffer of 256 bytes.
+
+    Kept from the original: a longer string is not cut and overwrites
+    the memory behind the buffer
+    ([#716](https://github.com/fubar-coder/bb2-c/issues/716)).
+"D_NextArg$":
+  text: The next argument of the string given to `D_InitParse`, up to the next comma; an empty string after the last one.
+  notes: |
+    Spaces are kept as they are.
+"ProcessString":
+  text: The rest of the parser's string (from `D_InitParse`) with its `%` codes replaced. `%p` becomes `REDDebugger`, `%c` the address of the token list in hexadecimal, `%%` a `%`, and the codes added with `AddProcessPtr` their strings.
+  notes: |
+    It takes no argument: it works on the parser's text from its
+    current place, so after a `D_NextArg$` only the rest is processed. A
+    `%` code without an entry is dropped.
+
+    Kept from the original: called before `D_InitParse`, or after the
+    last argument, it reads from memory address 0
+    ([#719](https://github.com/fubar-coder/bb2-c/issues/719)); a `%` at
+    the end of the text runs on into the memory behind it
+    ([#720](https://github.com/fubar-coder/bb2-c/issues/720)).
+"AddProcessPtr":
+  text: Adds a `%` code for `ProcessString`; `character` is a string whose first character is the code, `string` the address of the 0-terminated text to put for it.
+  notes: |
+    There is room for 20 codes besides `%p` and `%c`.
+
+    Kept from the original: further codes are not refused and overwrite
+    the memory behind the table
+    ([#700](https://github.com/fubar-coder/bb2-c/issues/700)).
+"ClearProcessPtrs":
+  text: Removes all codes added with `AddProcessPtr`; `%p` and `%c` stay.
+"FindLineToken":
+  text: The first token of a tokenised Blitz source line at `Start_Address`, as a word without its top bit, or 0 if the line holds no token.
+"GetDataItem":
+  text: The byte (`size` 1), word (2) or long (any other size) at `address`, read byte by byte, so odd addresses work too; 0 for an address below $420.
+  notes: |
+    Kept from the original: a `size` of 0 or below reads thousands of
+    bytes (65536 for 0) and returns the last four of them
+    ([#701](https://github.com/fubar-coder/bb2-c/issues/701)); addresses
+    from $80000000 on also give 0
+    ([#717](https://github.com/fubar-coder/bb2-c/issues/717)).

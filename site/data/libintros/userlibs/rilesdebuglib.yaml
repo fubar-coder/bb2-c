@@ -1,0 +1,42 @@
+description: The helper library of the REDDebugger program, by Leading Edge Software - memory and registers as text, a fast 8x8 font printer, copper and custom chip register names, an argument parser and a memory search.
+intro: |
+  This library was written for REDDebugger, a debugger program of Red
+  When Excited; the program itself is not part of the release. Its
+  commands are plain helpers that do not talk to the runtime debugger
+  (that is the job of the RI Debug Lib). Most of them are useful only
+  in a program like a debugger or a monitor:
+
+  * Memory and registers as text: `D_HexWord`, `D_CheckNMove`,
+    `D_CheckNMoveA`, `D_CheckNMoveWord`, `D_GetSR`, `GetHex$`,
+    `GetHexAdr$`, `PeekMax$` and `GetDataItem`. Some of them
+    (`D_HexWord`, `D_CheckNMoveA`, `D_CheckNMoveWord`) show bytes at
+    addresses below $420 as `*` instead of reading them.
+  * A font printer: `FLocate`, `FPrint`, `FNPrint`, `FInverse` and
+    `FYOffset` print with the library's own 8x8 font into the first
+    bitplane of the used bitmap, which must be 640 pixels (80 bytes)
+    wide. `FPrintDetoke` prints a tokenised Blitz source line with the
+    names of its tokens, from the token list given to `SetupLESDebug`.
+  * The copper and the custom chips: `GetCopIns$` shows a copper
+    instruction as text, `GetCustomReg` and `GetCustomRegAdr` turn
+    register offsets into names and back.
+  * Text on a rastport: `OutText` and `OutTextPen`.
+  * Parsing: `D_InitParse` and `D_NextArg$` split a string at its
+    commas; `ProcessString`, `AddProcessPtr` and `ClearProcessPtrs`
+    replace `%` codes in it.
+  * Searching: `SearchMem` and `SearchMemFound` search memory for a
+    value; `D_FindStringPtr`, `FindLineToken`, `ExtractLabel` and
+    `D_FindVolume` look up other things.
+
+  Many commands take addresses rather than strings and check nothing, so
+  a wrong address reads or overwrites memory. The library opens
+  graphics.library itself. All commands work in Amiga and Blitz mode
+  except `D_FindVolume`, which is Amiga mode only and needs Kickstart
+  2.0 or later.
+
+  Register names and hexadecimal text:
+
+  ```blitzbasic
+  NPrint GetCustomReg($096)
+  NPrint GetHex$(255,1)
+  NPrint GetHex$(GetCustomRegAdr("COLOR00"),2)
+  ```

@@ -1,0 +1,14 @@
+description: Four drawing routines of the space invaders game in Blitz Bombers 2, by Reflective Images - clearing invaders in sprite images, moving a star field and drawing bullets.
+intro: |
+  This library holds four fast drawing routines that Reflective Images
+  wrote for the space invaders game of Blitz Bombers 2. They are of little
+  use outside that game: the sizes are constants of the game and nothing
+  is checked, so wrong addresses or positions overwrite memory.
+
+  The routines write straight into memory with the processor. They
+  assume the layout of the game: sprite images with rows of 16 bytes,
+  bitmaps 320 pixels (40 bytes) wide, and a playfield that ends at line
+  236 and is 204 lines high. `DrawBullet` and `EraseBullet` take the
+  address of a bitmap object and use its first four bitplanes;
+  `KillInvader` and `DrawStarField` take plain addresses. The commands
+  work in Amiga and Blitz mode.

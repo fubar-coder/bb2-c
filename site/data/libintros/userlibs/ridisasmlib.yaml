@@ -1,0 +1,31 @@
+description: A 680x0 disassembler by Leading Edge Software - one instruction at a time as a line of text, and the size of the instruction.
+intro: |
+  This library turns machine code into assembler text, one instruction
+  per call. `DisAssemble$` reads the instruction at an address and
+  returns it as a line; `InstrSize` then gives the number of bytes that
+  instruction took, so the next instruction starts that many bytes
+  further on. It knows the instructions and addressing modes of the
+  68000 to the 68030, including the extended addressing modes of the
+  68020, register lists of `MOVEM` and the control registers of `MOVEC`.
+
+  The line of a known instruction is 34 characters long, padded with spaces: the
+  instruction name with its size and condition, in lower case, in the
+  first 9 columns, the operands from column 10 on. Addresses and
+  immediate values are shown in hexadecimal (`$` and upper case digits),
+  displacements as signed decimal numbers. An instruction the library
+  does not know gives `?????`.
+
+  The library needs no other library and works in Amiga and Blitz mode.
+  The address must be even on a 68000.
+
+  This lists the first instructions of the program's own code at the
+  label `start`:
+
+  ```blitzbasic
+  start:
+  a.l=?start
+  For i=1 To 5
+    NPrint DisAssemble$(a)
+    a=a+InstrSize
+  Next
+  ```

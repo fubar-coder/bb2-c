@@ -1,0 +1,19 @@
+"DisAssemble$":
+  text: The instruction at `address` as a line of assembler text, 34 characters long; `?????` for an instruction the library does not know.
+  notes: |
+    Longer operands are cut at the end of the 34 characters.
+
+    Kept from the original: a displacement or offset of 0 is not shown
+    as `0` but as a few bytes of whatever lies at memory address 8
+    ([#614](https://github.com/fubar-coder/bb2-c/issues/614)); a `MOVEM`
+    with an empty register list as its first operand still gets a comma
+    ([#615](https://github.com/fubar-coder/bb2-c/issues/615)); an
+    instruction with two very long operands (memory indirect with 32 bit
+    displacements) overruns the library's line buffer and can disturb
+    the instruction size and the next line
+    ([#616](https://github.com/fubar-coder/bb2-c/issues/616)); and on a
+    68000 an odd address is an address error, as the code is read in
+    words and the result written in words
+    ([#617](https://github.com/fubar-coder/bb2-c/issues/617)).
+"InstrSize":
+  text: The size in bytes of the instruction last disassembled with `DisAssemble$`; 2 for an unknown one, 0 before the first call.

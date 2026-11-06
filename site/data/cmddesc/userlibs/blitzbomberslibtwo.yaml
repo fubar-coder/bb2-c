@@ -1,0 +1,26 @@
+"KillInvader":
+  text: Clears an invader in four sprite images. `sprad` is the address of a table of image addresses, `x` and `y` are the invader's column and row, and `offset` is the distance in bytes to the second pair of images.
+  notes: |
+    The first image is the long at `sprad` plus `(x/4)*16`, the second
+    the long 48 bytes behind it. In each image, 8 rows of 16 bytes are
+    cleared from `(x mod 4)*2 + y*224` bytes on: in every row the word at
+    its start and the word 8 bytes on. The same rows `offset` bytes
+    further on are cleared too, which makes four images. Nothing is
+    checked.
+"DrawStarField":
+  text: Moves every star of a table one step on a bitplane. Each star clears its pixel, moves on and sets its pixel at the new place.
+  notes: |
+    `table` is the address of a list of stars of three words each: the
+    speed (bytes added to the offset per call), the bit within the byte
+    (taken modulo 8, bit 0 is the rightmost pixel) and the byte offset
+    in the bitplane. A negative speed ends the list. The new offset is
+    stored back into the table; an offset from line 236 on (40 bytes per
+    line) moves back by 204 lines, so the stars wrap around in the
+    playfield.
+"DrawBullet":
+  text: Draws a bullet one pixel wide and three pixels high in colour 4 at `x`,`y` of a bitmap 320 pixels wide. `bitm` is the address of the bitmap object.
+  notes: |
+    Only the first four bitplanes are changed; the bitmap must have at
+    least four. Nothing is checked.
+"EraseBullet":
+  text: Erases a bullet drawn with `DrawBullet` by setting its three pixels to colour 0 in the first four bitplanes.

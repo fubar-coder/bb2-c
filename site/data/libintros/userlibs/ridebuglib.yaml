@@ -1,0 +1,30 @@
+description: Commands by Leading Edge Software that give the Blitz Basic 2 runtime debugger instructions from the program - variable traces, procedure control and opening its windows.
+intro: |
+  This library lets a program talk to the runtime debugger while it
+  runs: it can add and remove variable traces, switch the debugger's
+  procedure control and open the debugger's variable trace, disassembly,
+  copper and memory windows at a chosen place. The library only sends
+  the instructions; the debugger carries them out.
+
+  The commands work only when the program is compiled with runtime
+  error checking, that is, with the debugger. Without it they do
+  nothing, so they can stay in the source. They work in Amiga mode only: in Blitz mode multitasking is
+  off and the debugger cannot react.
+
+  Variable traces are shown only while the debugger steps or traces the
+  program; a program running on its own does not update the debugger's
+  windows.
+
+  Watch a counter in hexadecimal in the variable trace window:
+
+  ```blitzbasic
+  DEFTYPE .l
+  count=0
+  AddVarTrace count,"count",2
+  VarTraceWindow
+  For i=1 To 100
+    count=count+1
+  Next
+  ```
+
+  *Based on the RI Debug Lib guide by Red When Excited.*
