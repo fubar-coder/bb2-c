@@ -17,13 +17,11 @@
 "ReqOutput":
   text: Makes the requesters of the library appear on the window with the number given.
   notes: |
-    Without it, the window is left empty and req.library chooses where
-    the requesters appear.
+    Without it, the requesters are given no window.
 "ReqFlags":
   text: Sets the flags of the file requester for all later calls of `ReqFileRequest`.
   notes: |
-    The flags are those of req.library: %1 shows `.info` files, %10
-    allows extended select, %100 caches directories, %1000 makes it a font
+    The flags are those of req.library: %10 allows extended select, %100 caches directories, %1000 makes it a font
     requester, %10000 adds the gadget that hides `.info` files, %100000 hides the show and
     hide wildcard gadgets, %1000000 uses absolute positions, %10000000
     purges the cache when a directory changes, %100000000 caches only
@@ -33,8 +31,8 @@
     select a directory.
 
     Kept from the original: the flags at the start are not caching,
-    info gadget and cache purge, as the library means, but %111: show
-    `.info` files, extended select and caching
+    info gadget and cache purge, as the library means, but %111 (bits 0
+    to 2: extended select and caching among them)
     ([#787](https://github.com/fubar-coder/bb2-c/issues/787)).
 "ReqColour":
   text: Opens the colour requester of req.library on the window of `ReqOutput` and returns its result.

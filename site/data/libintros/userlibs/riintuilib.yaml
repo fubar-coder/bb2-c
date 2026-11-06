@@ -13,9 +13,8 @@ intro: |
   Kept from the original: the text of `IPOutput` is always drawn at the
   top left corner of the Rast, whatever `IPLocate` set
   ([#697](https://github.com/fubar-coder/bb2-c/issues/697)), and every
-  `Print` draws over the text before it. The Rast does not clip, so a
-  text wider than the bitmap runs on into the following rows and, past
-  the end of the bitmap, into other memory.
+  `Print` draws over the text before it. The Rast has no layer, and the
+  library does not clip the text to the bitmap.
 
   ```blitzbasic
   BitMap 0,320,64,2

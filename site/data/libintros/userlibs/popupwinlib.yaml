@@ -4,13 +4,12 @@ intro: |
   window with a bevelled frame, in the font of the screen, opened at the
   top left corner of a screen. Moving the mouse over an item highlights
   it; an item with a sub menu opens the sub menu at once, in a window to
-  the right of the item. A mouse button closes all menus again. It needs
-  Kickstart 2.0 or later, as it opens its windows with tags.
+  the right of the item. A mouse button closes all menus again.
 
   The program builds the menu itself in memory, as a list of items.
   Each item starts with a long that points to the next item (0 for the
   last), a long that points to its text, a string that ends in a zero
-  byte (0 makes the item a separator line), two words the library does
+  byte (a pointer of 0 makes the item a separator line), two words the library does
   not use, and a long that points to the first item of its sub menu (0
   for none).
 

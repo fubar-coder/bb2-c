@@ -13,8 +13,8 @@
       ([#471](https://github.com/fubar-coder/bb2-c/issues/471));
     * every menu with sub menus switches the power light and the audio
       filter ([#468](https://github.com/fubar-coder/bb2-c/issues/468));
-    * without free memory for a menu, the command overwrites memory at
-      address 0 and waits with a window of garbage; if a window cannot
+    * without free memory for a menu, the command uses memory at
+      address 0 as the menu's data and writes to it; if a window cannot
       be opened, the whole menu closes at once
       ([#467](https://github.com/fubar-coder/bb2-c/issues/467));
     * closing a sub menu throws away the mouse messages waiting for the

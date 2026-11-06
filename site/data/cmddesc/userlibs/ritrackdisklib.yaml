@@ -4,7 +4,7 @@
     Kept from the original: a device name is kept for every later
     `OpenDisk` without a name
     ([#859](https://github.com/fubar-coder/bb2-c/issues/859)), and a name
-    longer than 57 characters overwrites the library's data
+    of 57 characters or more overwrites the library's data
     ([#860](https://github.com/fubar-coder/bb2-c/issues/860)). Opening a
     unit that is already open loses the first request, which stays open
     ([#862](https://github.com/fubar-coder/bb2-c/issues/862)); a negative

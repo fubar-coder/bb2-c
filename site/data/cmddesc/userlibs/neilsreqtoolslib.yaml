@@ -45,8 +45,6 @@
 "RTEZPaletteRequest":
   text: Opens the palette requester, starting at the colour `FirstColour`. Returns the colour selected last, or -1 if the user cancels.
   notes: |
-    Changes of the colours show at once on the screen of the requester.
-
     Kept from the original: `RTReturnValue` is not set by this command
     ([#464](https://github.com/fubar-coder/bb2-c/issues/464)).
 "RTEZGetLong":
@@ -54,9 +52,9 @@
   notes: |
     Without `DefaultValue`, the number entered last is offered.
 
-    Kept from the original: when the user cancels, the command returns
-    the number in the field all the same; only `RTReturnValue`, 0 after a
-    cancel, tells the two apart
+    Kept from the original: when the user cancels, the command returns a
+    number all the same; only `RTReturnValue`, 0 after a cancel, tells
+    the two apart
     ([#457](https://github.com/fubar-coder/bb2-c/issues/457)).
 "RTEZGetLongRange":
   text: Like `RTEZGetLong`, but the number must lie between `Min` and `Max`, both included. Returns 0 if the user cancels.

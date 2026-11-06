@@ -20,8 +20,8 @@
 "BPredatorBlit":
   text: Like `PredatorBlit`, but saves the background into the buffer `buffer` first, so that `UnBuffer` restores it, and places the shape by its handle.
   notes: |
-    The buffer gets one line less than the shape's height, as Blitz
-    Bombers needed it. Kept from the original: the next line is found
+    The saved background and the effect cover one line less than the
+    shape's height. Kept from the original: the next line is found
     with the line width of `SetupMapTwo`, not with that of the bitmap
     ([#426](https://github.com/fubar-coder/bb2-c/issues/426)).
 "SetupMapTwo":
@@ -48,7 +48,7 @@
     one word of every line is copied, so shapes wider than 16 pixels are
     copied in part ([#425](https://github.com/fubar-coder/bb2-c/issues/425)).
 "BColourBlit":
-  text: Draws the outline of a shape's cookie in one colour, `colour`, into the current bitmap at `x`,`y`, placed by the shape's handle, after saving the background into the buffer `buffer` for `UnBuffer`.
+  text: Draws the area of a shape's cookie in one colour, `colour`, into the current bitmap at `x`,`y`, placed by the shape's handle, after saving the background into the buffer `buffer` for `UnBuffer`.
 "TBlockImage":
   text: Draws image number `image` of a block of 16 by 16 images at `image_addr` through its mask onto the first 6 bitplanes of the current bitmap at `x`,`y`.
   notes: |

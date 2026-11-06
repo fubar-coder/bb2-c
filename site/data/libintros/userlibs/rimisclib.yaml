@@ -16,9 +16,9 @@ intro: |
     `PortSigBit`, `WorkbenchHere`.
 
   The library opens dos.library and intuition.library when the program
-  starts. The requesters, the program path and the font preferences use
-  functions of Kickstart 2.0 and work only in Amiga mode; the other
-  commands also work in Blitz mode.
+  starts. `EZRequest`, `EZRequestArgs`, `EZSeparator`, the program path,
+  `OpenFontPrefs`, `CloseFontPrefs` and `WorkbenchHere` work only in
+  Amiga mode; the other commands also work in Blitz mode.
 
   Splitting a line into its words; a word in quotes may contain spaces:
 

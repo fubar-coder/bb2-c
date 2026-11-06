@@ -1,21 +1,16 @@
 "SerialBaud":
   text: Sets the baud rate of the serial port, for example 9600.
   notes: |
-    The rate is calculated from the clock of a PAL Amiga; on an NTSC
-    Amiga the real rate is about 1% higher.
+    The rate is calculated from the clock of a PAL Amiga.
 "SerialOpen":
-  text: Installs the library's receive and transmit interrupts and empties both buffers; with `baudrate`, it sets the baud rate first. A port already open is left as it is.
+  text: Installs the library's receive and transmit interrupts and empties both buffers; with `baudrate`, it sets the baud rate first. A port already open keeps its interrupts and buffers; `SerialOpen baudrate` still sets the rate.
   notes: |
     Without `baudrate` the port keeps the rate it has, from `SerialBaud`
     or from the system.
 
     Kept from the original: the interrupt vectors are written at their
     fixed addresses, so a moved vector base of a 68010 or later processor
-    is ignored ([#804](https://github.com/fubar-coder/bb2-c/issues/804)),
-    and the instruction cache is not cleared after the library changes
-    its own code, which can make the interrupts jump to an old address on
-    a processor with a cache
-    ([#791](https://github.com/fubar-coder/bb2-c/issues/791)).
+    is ignored ([#804](https://github.com/fubar-coder/bb2-c/issues/804)).
 "SerialClose":
   text: Removes the library's interrupts and puts back the ones that were there before. Nothing happens if the port is not open.
   notes: |
@@ -54,8 +49,8 @@
     throws away the bytes already in the buffer
     ([#798](https://github.com/fubar-coder/bb2-c/issues/798)); a length
     of 1 never ends ([#799](https://github.com/fubar-coder/bb2-c/issues/799));
-    and ended with `SerialStop`, it returns to a wrong address and the
-    program crashes ([#803](https://github.com/fubar-coder/bb2-c/issues/803)).
+    and ended with `SerialStop`, it returns to a wrong address
+    ([#803](https://github.com/fubar-coder/bb2-c/issues/803)).
 "SerialFlush":
   text: Empties the receive buffer.
   notes: |
@@ -65,14 +60,14 @@
   text: Meant to send a string; it does not work.
   notes: |
     Kept from the original: instead of the characters of the string, the
-    command sends the same meaningless byte several times
+    command sends the low byte of the string's address one or more times
     ([#801](https://github.com/fubar-coder/bb2-c/issues/801)); and it
     does not open the port ([#793](https://github.com/fubar-coder/bb2-c/issues/793)).
 "SerialReadString":
-  text: Meant to return the received characters up to a 0 byte; it does not work reliably.
+  text: Meant to return the received characters up to a 0 byte; it does not work.
   notes: |
     Kept from the original: with the port open, the command returns to a
-    wrong place and the program crashes
+    wrong place
     ([#796](https://github.com/fubar-coder/bb2-c/issues/796)); it may not
     stop at the 0 byte ([#797](https://github.com/fubar-coder/bb2-c/issues/797));
     and it leaves the string memory in a wrong state

@@ -29,15 +29,13 @@ intro: |
 
   ```blitzbasic
   ChangeTrackerVBlank
-  If LoadTrackerModule(0,"mod.tune")=-1
-    If StartTracker(0)
-      SetInt 5
-        PlayTracker
-      End SetInt
-      MouseWait
-      StopTracker
-    EndIf
-  EndIf
+  If LoadTrackerModule(0,"mod.tune")<>-1 Then End
+  x=StartTracker(0)
+  SetInt 5
+    PlayTracker
+  End SetInt
+  MouseWait
+  StopTracker
   ```
 
   `LoadTrackerModule` reads the file with AmigaDOS. The play routine's

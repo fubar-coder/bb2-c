@@ -18,8 +18,7 @@ intro: |
   colour register, `RedoColSplit` changes the colours of such a split in
   place, and `CopperMove`, `CopperWait`, `CopperSkip`, `CopperCommand`,
   `CopperAGACol` and `CopperEnd` add single instructions. The colour
-  splits and `CopperAGACol` use the 24 bit colours of the AGA chip set
-  (A1200, A4000, CD32) and must not be used on other machines. The
+  splits and `CopperAGACol` use the 24 bit colours of the AGA chip set. The
   commands only write into memory and touch no hardware themselves, so
   they work in Amiga and in Blitz mode; the copper list takes effect
   when the display library shows the coplist.

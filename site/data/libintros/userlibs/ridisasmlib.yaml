@@ -5,8 +5,10 @@ intro: |
   returns it as a line; `InstrSize` then gives the number of bytes that
   instruction took, so the next instruction starts that many bytes
   further on. It knows the instructions and addressing modes of the
-  68000 to the 68030, including the extended addressing modes of the
-  68020, register lists of `MOVEM` and the control registers of `MOVEC`.
+  68000 and part of the 68020's, including the extended addressing modes
+  of the 68020, register lists of `MOVEM` and the control registers of
+  `MOVEC`; floating point, MMU, bit field and `CAS` instructions are not
+  known.
 
   The line of a known instruction is 34 characters long, padded with spaces: the
   instruction name with its size and condition, in lower case, in the
@@ -19,11 +21,11 @@ intro: |
   The address must be even on a 68000.
 
   This lists the first instructions of the program's own code at the
-  label `start`:
+  label `mycode`:
 
   ```blitzbasic
-  start:
-  a.l=?start
+  mycode:
+  a.l=?mycode
   For i=1 To 5
     NPrint DisAssemble$(a)
     a=a+InstrSize

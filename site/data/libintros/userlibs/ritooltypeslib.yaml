@@ -3,7 +3,7 @@ intro: |
   This library reads and changes the icon (the `.info` file) of a file
   through the system's icon.library: its tool types, its default tool,
   its type and its images. Without icon.library, every command does
-  nothing and returns 0. All commands are Amiga mode only.
+  nothing and returns 0 (`SetIconType` returns its argument). All commands are Amiga mode only.
 
   The library works on one icon at a time, not on numbered objects.
   `GetIconObject` loads the icon of a file, the other commands work on
@@ -15,7 +15,8 @@ intro: |
   the icon's information window. A tool type in brackets, `(NAME=value)`,
   is switched off: the system ignores it. Names are compared without
   regard to case, though they are usually written in capitals. The
-  library keeps up to 100 tool types per icon.
+  library has room for 99 tool types per icon (its list has 100
+  entries, the last one for the end of the list).
 
   The commands `ShapeToIcon` and `IconToShape` exchange the icon's images
   with the shape objects of Blitz Basic 2.

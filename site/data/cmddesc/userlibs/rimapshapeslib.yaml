@@ -2,8 +2,8 @@
   text: Makes a map shape from a Blitz shape, with its width, height and depth. The map shape uses the planes of the shape; nothing is copied.
   notes: |
     Kept from the original: a shape of depth 0 writes 65536 plane
-    pointers over memory, and a depth above 8 overwrites the following
-    map shapes ([#903](https://github.com/fubar-coder/bb2-c/issues/903)).
+    pointers over memory, and a depth of 14 or more overwrites the
+    following map shape ([#903](https://github.com/fubar-coder/bb2-c/issues/903)).
 "BlitMapShape":
   text: Copies a whole map shape into the RastPort of a window, with its top left corner at `x`,`y`. An empty map shape draws nothing.
 "RemapMapShape":

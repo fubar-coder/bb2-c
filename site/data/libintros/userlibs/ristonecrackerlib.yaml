@@ -13,13 +13,12 @@ intro: |
   header of a file that is already in memory and return 0 if the memory
   holds no StoneCracker 4.04 file.
 
-  `STCLoad` loads a file and unpacks it in one step. It needs
-  dos.library from Kickstart 2.0 on, which the library opens when the
-  program starts; as a file command it belongs in Amiga mode. The other
-  functions work in Amiga and Blitz mode.
+  `STCLoad` loads a file and unpacks it in one step, with dos.library,
+  which the library opens when the program starts. The other functions
+  use no operating system calls.
 
   The unpacking code does not check the data: a damaged file writes
-  below the start of the buffer and can crash the machine
+  below the start of the buffer
   ([#833](https://github.com/fubar-coder/bb2-c/issues/833)).
 
   *Based on the RI STC Lib guide by Reflective Images.*

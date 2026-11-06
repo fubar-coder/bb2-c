@@ -1,6 +1,6 @@
 description: A render hook for GadTools listviews by Red When Excited, which draws each item as columns of text and bitmaps, with an optional tree indent.
 intro: |
-  GadTools listviews of Workbench 3 can let a program draw their items
+  GadTools listviews can let a program draw their items
   itself, through a render hook given with the tag `GTLV_CallBack`. This
   library has such a hook ready: it draws an item as a row of fields,
   each a text or a bitmap, which makes a listview with columns. Its one
@@ -20,7 +20,8 @@ intro: |
 
   The colour table, to which every node points, holds two pairs of
   words: the foreground and background pen of an item in its normal
-  state, then of an item in any other state, such as selected. The
+  state (also when disabled), then of an item in any other state, such
+  as selected. The
   fields are drawn from left to
   right in the item's area; the last one is cut at the right edge. A
   text is cut to the width of its field, a bitmap to the size of its

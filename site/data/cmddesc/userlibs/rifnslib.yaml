@@ -64,7 +64,9 @@
 "FNSLoad":
   text: Loads a font file into slot `fontslot` and returns the slot number, or -1 if the file could not be loaded.
   notes: |
-    Amiga mode only. The file is not checked to be an FNS font. It is
+    Amiga mode only. The file name is a long, the address of a name that
+    ends in a zero byte, for example `&f$`. The file is not checked to be
+    an FNS font. It is
     loaded into bank 55 plus the slot number of the RI Amos Func
     library, which must be present as well. That library has 50 banks
     unless the program raises the number with `BankLimit`; a bank number
@@ -73,7 +75,7 @@
     number first. Erasing the bank, for example with `EraseAll`, removes
     the font.
 "FNSSlot":
-  text: The address of the 16 font slots, one long each that holds the address of the font in that slot or 0; useful mostly for testing.
+  text: The address of the 16 font slots, one long each that holds the address of the font in that slot or 0.
 "FNSUnload":
   text: Empties a slot filled by `FNSLoad` and frees the bank the font was loaded into.
 "FNSSetTab":

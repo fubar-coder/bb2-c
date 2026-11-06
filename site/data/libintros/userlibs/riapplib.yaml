@@ -10,7 +10,8 @@ intro: |
 
   The library needs workbench.library, dos.library and icon.library of
   version 37 or later, so Kickstart 2.04 or later. Without them the
-  commands do nothing and return 0. All commands but `AppEventIDCMP`
+  commands do nothing and return 0 or an empty string (`AppMsgPort` and
+  `AppEventIDCMP` excepted). All commands but `AppEventIDCMP`
   work in Amiga mode only.
 
   Every App object has an id from 0 to 15, one set of 16 for each kind;

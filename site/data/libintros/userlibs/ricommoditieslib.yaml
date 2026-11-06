@@ -17,13 +17,13 @@ intro: |
   Kept from the original, and to keep in mind for every program:
 
   * the library does not check that commodities.library could be
-    opened; without it, `MakeCommodity` crashes the system
-    ([#559](https://github.com/fubar-coder/bb2-c/issues/559));
-  * the messages are never answered, so the memory of every message is
-    lost ([#561](https://github.com/fubar-coder/bb2-c/issues/561));
+    opened; without it, `MakeCommodity` calls the library through a
+    base of 0 ([#559](https://github.com/fubar-coder/bb2-c/issues/559));
+  * the messages are never replied to, and the port is deleted at the
+    end with the messages still waiting in it ([#561](https://github.com/fubar-coder/bb2-c/issues/561));
   * `MakeCommodity` should be called only once: a second commodity of
-    the program stays registered when the program ends and crashes the
-    system as soon as it gets a message
+    the program stays registered when the program ends, with the
+    program's message port, which is deleted
     ([#560](https://github.com/fubar-coder/bb2-c/issues/560));
   * at the end of the program, the hotkeys are not freed
     ([#557](https://github.com/fubar-coder/bb2-c/issues/557)), and the

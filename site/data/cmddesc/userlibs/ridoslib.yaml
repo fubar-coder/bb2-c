@@ -52,7 +52,7 @@
 "GetFileName":
   text: The file part of a path, everything behind the last `/` or `:`. `GetFileName("Work:Test/test.txt")` returns "test.txt".
   notes: |
-    Kept from the original: a file part longer than 256 characters
+    Kept from the original: a file part of 256 characters or more
     overwrites memory of the library
     ([#627](https://github.com/fubar-coder/bb2-c/issues/627)).
 "GetPathName":
@@ -60,8 +60,9 @@
   notes: |
     Kept from the original: the first character is never looked at, so
     "/abc" and ":x" give "" instead of "/" and ":"
-    ([#624](https://github.com/fubar-coder/bb2-c/issues/624)); a path
-    longer than 256 characters overwrites memory of the library
+    ([#624](https://github.com/fubar-coder/bb2-c/issues/624)); a
+    directory part of 256 characters or more overwrites memory of the
+    library
     ([#627](https://github.com/fubar-coder/bb2-c/issues/627)).
 "DeviceEntryType":
   text: The kind of the entry `NextDevice` returned last - 0 device, 1 assign (directory), 2 volume, 3 late assign, 4 non-binding assign; -1 if there is none.

@@ -9,8 +9,8 @@
     with an empty register list as its first operand still gets a comma
     ([#615](https://github.com/fubar-coder/bb2-c/issues/615)); an
     instruction with two very long operands (memory indirect with 32 bit
-    displacements) overruns the library's line buffer and can disturb
-    the instruction size and the next line
+    displacements) overruns the library's line buffer and overwrites
+    some of the library's own variables
     ([#616](https://github.com/fubar-coder/bb2-c/issues/616)); and on a
     68000 an odd address is an address error, as the code is read in
     words and the result written in words

@@ -20,7 +20,7 @@
   notes: |
     Kept from the original: `numlines` is not checked, as with
     `DoColSplit` ([#589](https://github.com/fubar-coder/bb2-c/issues/589)),
-    and a `ccoffset` of 65536 or more points to a wrong place
+    and a `ccoffset` of 16384 or more points to a wrong place
     ([#594](https://github.com/fubar-coder/bb2-c/issues/594)).
 "CopperReset":
   text: Makes the library work on the custom space of a coplist. `startline` is the line where the next colour split starts; the optional `ccoffset` is the place in the custom space, in instructions from its start, where the next instruction goes (0 without it).
@@ -28,9 +28,9 @@
     It must be called before the other commands. If the coplist has no
     custom space, the other commands do nothing.
 "CopperEnd":
-  text: Ends the custom instructions with four of its own, a wait for line 300 (line 44 if the list has not passed line 255), bitplane and sprite DMA off, colour bank 0 and colour 0 black. Use it when the custom instructions reach below line 255.
+  text: Ends the custom instructions with four of its own, a wait for line 300 (line 44 if the list has not passed line 255), bitplane and sprite DMA off, colour bank 0 and colour 0 black.
 "CopperInfoBlock":
-  text: Returns the address of the library's internal state, 20 bytes; meant for debugging.
+  text: Returns the address of the library's internal state, 20 bytes.
 "CopperCommand":
   text: Writes one copper instruction, given as its two words, into the custom space.
 "CopperMove":
@@ -39,7 +39,7 @@
   text: Writes a copper wait instruction for the position `x`,`y`. The copper resolves `x` only in steps of 4 low resolution pixels.
   notes: |
     Only the low 8 bits of `y` are used. Kept from the original: an `x`
-    of 500 or more spills into the line and waits for a wrong line
+    from 500 to 511 spills into the line and waits for a wrong line
     ([#591](https://github.com/fubar-coder/bb2-c/issues/591)).
 "CopperSkip":
   text: Writes a copper skip instruction for the position `x`,`y`, which skips the next instruction once the beam has passed that position.

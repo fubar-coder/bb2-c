@@ -39,7 +39,7 @@
     animation of depth 0 or of more than 8 bitplanes reaches beyond the
     bitmap ([#509](https://github.com/fubar-coder/bb2-c/issues/509)).
 "AnimLoop":
-  text: With `On`, the default, `RINextAnimFrame` starts over after the last frame; with `Off` it stops there.
+  text: With `On`, the default, `RINextAnimFrame` goes on with the third frame after the last one; with `Off` it stops there.
 "RIAnimFrameCount":
   text: The number of frames of the animation started with `RIAnimInit`, 0 before the first `RIAnimInit`.
   notes: |

@@ -1,14 +1,14 @@
 "ChunkyBitmap":
   text: Makes a chunky bitmap of `width` x `height` pixels, one byte each, all 0. Data the object held before is freed first.
   notes: |
-    Amiga mode only. If the memory cannot be allocated, the object has a
-    width and height of 0 and no data.
+    Amiga mode only. If the memory cannot be allocated, the program
+    stops with the runtime error "Out of Memory!".
 
     Kept from the original: data at an address below 65536 is never
     freed, and making a new chunky bitmap on such an object loses it
     ([#885](https://github.com/fubar-coder/bb2-c/issues/885)). Freeing a
-    chunky bitmap that holds data, at the end of the program, toggles
-    the power LED and the audio filter
+    chunky bitmap that holds data, when it is made again or at the end
+    of the program, toggles the power LED and the audio filter
     ([#886](https://github.com/fubar-coder/bb2-c/issues/886)).
 "ChunkyToPlanar":
   text: Converts a chunky bitmap of 320 x 256 pixels into the eight bitplanes of a bitmap. The bitplanes must lie one after the other in memory, 10240 bytes each, from the bitmap's first plane on.

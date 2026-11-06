@@ -12,7 +12,7 @@
     `sizeof.type` of 0 exchanges 65536 bytes per item and overwrites
     memory ([#827](https://github.com/fubar-coder/bb2-c/issues/827)).
 "ListBase":
-  text: The base address of a linked list, where the list's own data and its pointers to the first and the current item are; useful mostly for debugging.
+  text: The address of the linked list `list`, unchanged; the list's own data, with its pointers to the first and the current item, lies just in front of it.
 "StringSortItem":
   text: Like `StringSort`, but sorts the list only from its current item on, so that a part of a list can be sorted. It also returns 0 if the list has no current item.
 "StringSortDir":

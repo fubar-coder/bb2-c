@@ -22,8 +22,7 @@ intro: |
   The second part reads the joysticks directly from the hardware: port 1
   is the joystick port, port 2 the mouse port, and ports 3 and 4 the two
   ports of a four player adaptor on the parallel port. `ReadJoyPad` reads
-  the extra buttons of a CD32 pad. All commands work in Amiga and Blitz
-  mode.
+  the extra buttons of a CD32 pad.
 
   ```blitzbasic
   SetZone 0,10,10,100,50

@@ -1,5 +1,5 @@
 "CludgeSound":
-  text: Makes sound object `sound#` from the IFF 8SVX file at `address` in memory, copying its sample into chip memory. As a function it returns -1 on success, and 0 if the file is no 8SVX file, has no sample data among its first chunks or there is not enough chip memory.
+  text: Makes sound object `sound#` from the IFF 8SVX file at `address` in memory, copying its sample into chip memory. As a function it returns -1 on success, and 0 if the file is no 8SVX file or has no sample data among its first chunks; without enough chip memory the program stops with the runtime error "Out of Memory!".
   notes: |
     The old sample of the sound object is freed first. The playback rate
     comes from the file's header; the sound has no loop. The search for

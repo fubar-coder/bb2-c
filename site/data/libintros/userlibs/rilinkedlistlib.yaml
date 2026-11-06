@@ -5,29 +5,30 @@ intro: |
   are not of one fixed type: each item stores a copy of whatever variable
   was put into it, and the list moves on and back through its items. The
   commands are meant for variables of a NewType. Each list has a current
-  item, which the commands work on. All commands except `AddrListItem`
-  can be used as functions, which return -1 on success and 0 on failure.
-  They work in Amiga and Blitz mode.
+  item, which the commands work on. `AddrListItem` and `SizeOfListItem`
+  are functions; all other commands can be used as functions too, and
+  most of them return -1 on success and 0 on failure. When there is not
+  enough memory for an item or a copy, the program stops with the error
+  "Out of Memory!".
 
   The library copies with a command of the RI Amos Func library, which
-  must be present as well. The lists are not freed when the program
-  ends.
+  must be present as well. The library frees nothing itself; the memory
+  of the lists is freed with the program's other memory when it ends.
 
-  The library's own guide calls it an early test version, and it
-  behaves like one. Kept from the original are these errors a program
-  can run into:
+  Kept from the original are these errors a program can run into:
 
   - No command checks the list number: a list number of 5 or more
     overwrites the other lists or memory
     ([#732](https://github.com/fubar-coder/bb2-c/issues/732)).
-  - Only `DelListItem` checks that the list has a current item; the other
-    commands, used on a list that was never started with `InitList`,
-    read and write memory at address 0
+  - Only `DelListItem` checks that the list has a current item; the
+    other commands that work on the current item, used on a list that
+    was never started with `InitList`, read and write memory from
+    address 0 on
     ([#733](https://github.com/fubar-coder/bb2-c/issues/733)).
   - `DelListItem` frees the wrong memory for an item that holds a copy,
     and the program stops with the error "Unable to Free Memory"
     ([#729](https://github.com/fubar-coder/bb2-c/issues/729)).
-  - The backward links of a list are wrong after `AddListItem` in the
+  - The links of a list are wrong after `AddListItem` in the
     middle of a list, `AddFirstListItem` or `DelListItem` of the first
     item, so moving through such a list goes astray (see the commands).
 

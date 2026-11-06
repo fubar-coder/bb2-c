@@ -12,10 +12,9 @@ intro: |
   There are two kinds of commands. The ones with `EZ` in their name come
   with a sensible set of options and need only a title and a few
   values; `RTRequest` and `RTFileRequest` take a tag list of reqtools
-  options from the program instead. The requesters lock the window they
-  belong to while they are open: the window that receives the DOS error
-  requesters, which the program can choose with `Use Window` and
-  `CatchDosErrs`. Without that, they appear on the Workbench screen.
+  options from the program instead. The library asks reqtools to lock
+  the requester's parent window while a requester is open; it names no
+  window or screen for the requesters itself.
 
   The file requesters are numbered for the commands that change their
   settings: 0 is the one of `RTEZLoadFile`, 1 of `RTEZSaveFile`, 2 of

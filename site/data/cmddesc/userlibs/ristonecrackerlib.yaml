@@ -11,7 +11,7 @@
     A smaller buffer is overwritten past its end when the file is
     unpacked.
 "STCLoad":
-  text: Loads the StoneCracker 4.04 file `filename$` to the memory at `address` and unpacks it there in place. As a function it returns the address of the unpacked data, as `STCStart` does, or 0 if the file could not be opened.
+  text: Loads the StoneCracker 4.04 file `filename$` to the memory at `address` and unpacks it there in place. As a function it returns the address of the unpacked data, as `STCStart` does, or 0 if the file could not be locked or opened.
   notes: |
     The program provides the buffer; it must hold `STCSafeLen` bytes
     and the whole file, which is read whatever its length.

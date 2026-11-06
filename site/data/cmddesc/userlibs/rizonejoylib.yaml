@@ -103,8 +103,5 @@
 "ReadJoyPad":
   text: The extra buttons of a CD32 pad in port 1 or 2, as bits - 2 play/pause, 4 reverse, 8 forward, 16 green, 32 yellow, 64 red, 128 blue.
   notes: |
-    Read a pad at most once per frame, and only after reading its
-    directions with `JVert` or `JHoriz`.
-
     Kept from the original: every port number other than 2 reads port 1
     ([#877](https://github.com/fubar-coder/bb2-c/issues/877)).

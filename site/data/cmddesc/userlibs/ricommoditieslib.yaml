@@ -6,10 +6,11 @@
     Exchange's show and hide buttons are available for the commodity.
 
     Kept from the original: without commodities.library the command
-    crashes the system
+    calls the library through a base of 0
     ([#559](https://github.com/fubar-coder/bb2-c/issues/559)); a second
     call makes a second commodity without removing the first, which
-    crashes the system after the program has ended
+    stays registered after the program has ended, with the deleted
+    message port of the program
     ([#560](https://github.com/fubar-coder/bb2-c/issues/560)).
 "SetHotKey":
   text: Adds the hotkey `hotkey$`, a commodities input description such as `"lalt lshift a"`, with the number `hotkeynum` from 0 to 15, which `HotKeyHit` returns. Returns -1 on success, 0 on failure.

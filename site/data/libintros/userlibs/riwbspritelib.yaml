@@ -2,10 +2,10 @@ description: Hardware sprites on the Workbench screen by Reflective Images - Bli
 intro: |
   This library puts hardware sprites on the Workbench screen, or any
   other Intuition screen, in a way the system allows: it uses the sprite
-  functions of graphics.library, so it needs Kickstart 3.0 or newer. A
+  functions of graphics.library, so it needs Kickstart 3.0 or newer (the
+  library does not check the version). A
   Blitz shape is converted into a sprite and gets one of the 8 sprite
   channels; the commands then name the sprite by its channel, 0 to 7.
-  Channel 0 usually holds the mouse pointer.
 
   All commands work in Amiga mode only. `MoveWBSprite` and
   `ChangeWBSprite` need the address of the screen's ViewPort, which the
@@ -23,9 +23,11 @@ intro: |
   memory beside the library's sprite table
   ([#916](https://github.com/fubar-coder/bb2-c/issues/916)).
 
-  A sprite on any free channel of the Workbench screen, moved to 100,50:
+  A sprite made of a loaded shape on any free channel of the Workbench
+  screen, moved to 100,50:
 
   ```blitzbasic
+  LoadShape 0,"sprite.shape"
   WbToScreen 0
   vp.l=ViewPort(0)
   ch=GetWBSprite(0,0,0,-1)

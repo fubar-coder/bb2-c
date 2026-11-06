@@ -20,8 +20,7 @@ intro: |
   and `SetIOSpeed` crash
   ([#647](https://github.com/fubar-coder/bb2-c/issues/647)). Kept from
   the original as well: `FinitSerialIO`, also at the end of the program,
-  does not switch the serial interrupts back on, so serial.device may not
-  work afterwards
+  does not switch the serial interrupts back on
   ([#651](https://github.com/fubar-coder/bb2-c/issues/651),
   [#648](https://github.com/fubar-coder/bb2-c/issues/648)).
 

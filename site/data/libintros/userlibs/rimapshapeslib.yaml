@@ -13,7 +13,7 @@ intro: |
   map shapes lie at address 0
   ([#906](https://github.com/fubar-coder/bb2-c/issues/906)). The
   commands that blit work on a window of the windows library and draw
-  through the system, so call them in Amiga mode.
+  through the graphics library.
 
   A group collects map shapes at offsets measured in blocks, to draw
   them in one go with `BlitGroup`. `ResetGroup` starts a group and sets

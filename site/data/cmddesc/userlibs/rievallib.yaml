@@ -1,7 +1,8 @@
 "ConvToPostFix":
   text: Converts the expression in `string` into postfix form, with operands and operators separated by spaces, and writes it to the memory at `buffer`, ending with a zero byte. Read it with `Peek$(buffer)`.
   notes: |
-    The buffer should be at least twice as long as the expression. A `-`
+    The buffer should be at least twice as long as the expression, plus
+    one byte. A `-`
     counts as a sign at the start of the expression, after an operator
     and after `(`.
 

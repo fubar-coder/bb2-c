@@ -1,8 +1,9 @@
 "GetIconObject":
   text: Loads the icon of the file `filename$`, given without `.info`, for the other commands of the library. Returns the address of the icon's disk object, or 0 if it cannot be loaded or an icon is loaded already.
   notes: |
-    Kept from the original: an icon with more than 100 tool types
-    overwrites the memory behind the library's list of tool types
+    Kept from the original: an icon with 100 tool types leaves the
+    library's list without its end, and one with more than 100
+    overwrites the memory behind the list
     ([#855](https://github.com/fubar-coder/bb2-c/issues/855)).
 "FindToolValue":
   text: The value of the tool type `tooltype$`, the part after the `=`. An empty string if the tool type is not found, has no value, or no icon is loaded.
@@ -45,7 +46,7 @@
     The command does not check whether the tool type exists already.
 
     Kept from the original: the number of tool types is not checked, so
-    more than 100 overwrite memory
+    the 100th already overwrites the memory behind the library's list
     ([#855](https://github.com/fubar-coder/bb2-c/issues/855)), and an
     empty name copies whatever follows it in memory into the new tool
     type ([#841](https://github.com/fubar-coder/bb2-c/issues/841)).
@@ -54,20 +55,19 @@
 "ClearToolTypes":
   text: Removes all tool types of the loaded icon. Their memory is not freed until the icon is freed.
 "SetIconHit":
-  text: Sets the size of the loaded icon's hit box, the area that reacts to the mouse, in pixels. It should not be smaller than the icon's image.
+  text: Sets the size of the loaded icon's hit box, the area that reacts to the mouse, in pixels.
 "ShapeToIcon":
   text: Makes a shape the image of the loaded icon, and a second shape its selected image. The hit box becomes the size of the first shape, one pixel higher.
   notes: |
     The shape's graphics are not copied: the icon uses the shape's
-    memory, so keep the shapes until the icon is written. The second
-    shape should not be larger than the first.
+    memory, so keep the shapes until the icon is written.
 
     Kept from the original: with two shapes, all other render flags of
     the icon are replaced by 6 (the selected image is shown when the icon
     is selected), and the selected image is set up to draw none of its
     bitplanes ([#854](https://github.com/fubar-coder/bb2-c/issues/854)).
 "SetIconType":
-  text: Sets the type of the loaded icon, 1 disk, 2 drawer, 3 tool, 4 project or 5 trashcan, as the Type menu of the icon editor. Returns -1, or 0 for another value.
+  text: Sets the type of the loaded icon, 1 disk, 2 drawer, 3 tool, 4 project or 5 trashcan. Returns -1, or 0 for another value.
   notes: |
     Kept from the original: without a loaded icon, the result is the
     argument instead of 0
@@ -97,11 +97,12 @@
     check, a name over 253 characters overwrites memory
     ([#842](https://github.com/fubar-coder/bb2-c/issues/842)).
 "IconToShape":
-  text: Copies the image of the loaded icon into a shape, and its selected image into a second shape. A shape that is in use is freed first. Nothing happens if no icon is loaded or the icon has no such image.
+  text: Copies the image of the loaded icon into a shape, and its selected image into a second shape. A shape that is in use is freed first. Nothing happens if no icon is loaded; if the icon has no such image, the shape is only freed.
   notes: |
     Kept from the original: a shape that was not in use gets no cookie,
     and the command writes into other memory instead; use shapes that
-    are in use ([#849](https://github.com/fubar-coder/bb2-c/issues/849)).
+    are in use. With two shapes, the second gets no cookie of its own
+    ([#849](https://github.com/fubar-coder/bb2-c/issues/849)).
     When the width of the image is a multiple of 16, the command copies
     one word per row too many and writes behind the shape's memory
     ([#847](https://github.com/fubar-coder/bb2-c/issues/847)).

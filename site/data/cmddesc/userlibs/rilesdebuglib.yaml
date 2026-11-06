@@ -1,7 +1,7 @@
 "D_FindVolume":
   text: Looks up a device, volume or assign by name and returns the address of its entry in the DOS list, or 0 if there is none. `volumename` is the address of the name, without the colon.
   notes: |
-    Amiga mode only; needs Kickstart 2.0 or later.
+    Amiga mode only.
 "D_GetSR":
   text: Writes the condition codes of the status register `SR` as text into `buffer`, for example `X-Z--`; a flag that is not set shows as `-`.
   notes: |
@@ -51,7 +51,7 @@
     bitmap.
 
     Kept from the original: a cursor in a column from 208 to 255 still
-    prints (and runs on into columns 0 to 79)
+    prints, beyond the end of its row
     ([#707](https://github.com/fubar-coder/bb2-c/issues/707)); a string
     of 32769 characters or more prints nothing
     ([#710](https://github.com/fubar-coder/bb2-c/issues/710)).
@@ -111,9 +111,8 @@
 "GetCustomReg":
   text: The name of the custom chip register at offset `address` ($000 to $1FC), for example `DMACON` for $096; an empty string for an offset out of range.
   notes: |
-    The last register, $1FE, counts as out of range.
-
-    Kept from the original: for a name of 8 characters, one more
+    Kept from the original: the last register, $1FE, counts as out of
+    range ([#702](https://github.com/fubar-coder/bb2-c/issues/702)); for a name of 8 characters, one more
     character is written into string memory behind the result
     ([#712](https://github.com/fubar-coder/bb2-c/issues/712)); a negative
     offset can read in front of the table of names and return rubbish

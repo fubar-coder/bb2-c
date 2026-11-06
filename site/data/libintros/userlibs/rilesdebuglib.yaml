@@ -30,8 +30,7 @@ intro: |
   Many commands take addresses rather than strings and check nothing, so
   a wrong address reads or overwrites memory. The library opens
   graphics.library itself. All commands work in Amiga and Blitz mode
-  except `D_FindVolume`, which is Amiga mode only and needs Kickstart
-  2.0 or later.
+  except `D_FindVolume`, which is Amiga mode only.
 
   Register names and hexadecimal text:
 

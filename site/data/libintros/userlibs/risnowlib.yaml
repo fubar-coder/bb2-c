@@ -17,8 +17,8 @@ intro: |
   flake, from a table of random positions that the program provides.
 
   The random table is memory the program fills: a word, the index of
-  the next position, which the library steps on by 2 up to 1024 and
-  then wraps to 0, followed by 512 pairs of bytes. The first byte of a
+  the next position, which the library steps on by 2 (after 1022 it
+  wraps to 0), followed by 512 pairs of bytes. The first byte of a
   pair is the byte offset in the bitplane, so new flakes start in the
   first rows of the bitmap; the second is the bit in that byte, 0 to 7,
   7 being the leftmost pixel.

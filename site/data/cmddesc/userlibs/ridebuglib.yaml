@@ -3,11 +3,8 @@
   notes: |
     The name need not be the variable's name: `"a (counter)"` reminds
     you what `a` is used for. The type of the variable is passed along
-    automatically. For a number, `output` 1 shows it in decimal, 2 in
-    hexadecimal and 3 in binary (quicks and floats only in decimal); for
-    a string, 2 also shows its length and maximum length. An `output`
-    of 0 is sent as 1. The same variable can be added more than once,
-    for example to see it in decimal and in hexadecimal.
+    automatically. `output` is passed on to the debugger as it is; an
+    `output` of 0 is sent as 1.
 
     Kept from the original: an empty name takes the characters behind it
     in memory up to the next 0
@@ -16,9 +13,9 @@
     behind the library's message
     ([#613](https://github.com/fubar-coder/bb2-c/issues/613)); a variable
     whose type is not one of the basic types reaches the debugger with a
-    random type ([#609](https://github.com/fubar-coder/bb2-c/issues/609)).
+    meaningless type ([#609](https://github.com/fubar-coder/bb2-c/issues/609)).
 "DelVarTrace":
-  text: Removes all traces with the name `variable$` from the debugger's list. The name must be the one given to `AddVarTrace`, which need not be the variable's.
+  text: Asks the debugger to remove the trace with the name `variable$` from its list. The name must be the one given to `AddVarTrace`, which need not be the variable's.
   notes: |
     Kept from the original: the name reaches the debugger four bytes too
     far on, behind bytes left from the previous instruction, so the
@@ -31,7 +28,7 @@
 "VarTraceWindow":
   text: Opens the debugger's variable trace window.
 "DisAsmWindow":
-  text: Opens the debugger's disassembly window at the place of this command in the program. This helps where the address of a label cannot be found, as inside an assembler statement or function.
+  text: Opens the debugger's disassembly window at the place of this command in the program.
   notes: |
     Kept from the original: the search for the place of the command has
     no limit ([#611](https://github.com/fubar-coder/bb2-c/issues/611)).
@@ -45,8 +42,6 @@
     CopperTrace Addr CopList(0),4
     ```
 "ProcControl":
-  text: Switches the debugger's procedure control on or off; without an argument, it toggles it. With procedure control on, the debugger runs statements and functions as single commands instead of stepping or tracing through them.
-  notes: |
-    This is the same as the procedure control gadget of the debugger.
+  text: Switches the debugger's procedure control on or off; without an argument, it toggles it.
 "MemoryWindow":
-  text: Opens the debugger's memory window `num` (0 or 1) at `address`, or moves it there if it is open.
+  text: Opens the debugger's memory window `num` at `address`.

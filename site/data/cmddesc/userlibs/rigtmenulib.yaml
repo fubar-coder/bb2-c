@@ -5,15 +5,14 @@
     original: the memory of the title texts is not freed
     ([#695](https://github.com/fubar-coder/bb2-c/issues/695)).
 "CreateMenuStrip":
-  text: Makes a GadTools menu strip of the list of a `GTMenuList` object, laid out for the screen in use; an old strip of the object is freed first. As a function it returns -1, and 0 without gadtools.library or memory.
+  text: Makes a GadTools menu strip of the list of a `GTMenuList` object, laid out for the screen in use; an old strip of the object is freed first. As a function it returns -1, and 0 without gadtools.library.
   notes: |
     A screen must be in use. Call it again after the list has changed;
     take the strip off its window with `GTUnSetMenu` first. With the
     debugger, an empty list is reported as an error.
 
     Kept from the original: without the debugger, a list without titles
-    makes the command read its menus from address 0, which can crash
-    the system; whether GadTools could make the strip is not checked
+    makes the command read its menus from address 0; whether GadTools could make the strip is not checked
     ([#689](https://github.com/fubar-coder/bb2-c/issues/689)).
 "GTSetMenu":
   text: Attaches the menu strip of a `GTMenuList` object to the window in use, replacing the menu strip the window has. If there is no strip yet, `CreateMenuStrip` is called first.

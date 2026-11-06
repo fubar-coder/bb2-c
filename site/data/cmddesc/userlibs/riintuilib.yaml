@@ -13,8 +13,8 @@
   text: Sets the foreground pen, and the background pen if given, of the Rast in use and of the text of `IPOutput`. A negative pen leaves that pen unchanged.
   notes: |
     Kept from the original: with two pens and a negative `fgpen`, the
-    background pen is not set on the Rast but written into memory that
-    belongs to the program, which can crash it
+    background pen is not set on the Rast but written into other memory
+    of the program
     ([#696](https://github.com/fubar-coder/bb2-c/issues/696)). The pen of
     the text of `IPOutput` is still set.
 "IPOutput":

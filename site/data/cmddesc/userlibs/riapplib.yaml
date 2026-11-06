@@ -1,8 +1,7 @@
 "AddAppWindow":
   text: Makes the window with the number given an App window, so that files can be dragged into it; the window number is its id. Returns -1 on success, 0 on failure.
   notes: |
-    The window must be on the Workbench screen. Window numbers above 15
-    overwrite memory.
+    Window numbers above 15 overwrite memory.
 "DelAppWindow":
   text: Makes the App window with the number given a plain window again. Returns -1.
   notes: |

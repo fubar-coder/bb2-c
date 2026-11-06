@@ -38,7 +38,7 @@
 "NextParseItem":
   text: Moves to the next item of the library started with `ParseRegistryLibrary` and returns registry.library's result; `ParseItemName$` and `ParseItemValue$` read the item.
 "ChangeRegistryAccess":
-  text: Changes the current lock to read access.
+  text: Calls registry.library's function of the same name for the current lock; the command's own description says it changes the registry to read access.
 "DeleteRegistryLibrary":
   text: Deletes a library and returns registry.library's result.
 "DeleteRegistryVariable":

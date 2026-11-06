@@ -16,10 +16,11 @@
 "RXReadPort":
   text: Takes the messages that have arrived at the port and makes the next one the current message. Returns its address, or 0 if no message is waiting.
   notes: |
-    Replies to the program's own messages are handled here too. Messages
-    that are not ARexx messages are replied at once.
+    Replies to the program's own messages are handled here too. Anything
+    at the port that is neither a message nor a reply is replied at once,
+    and the reading stops there.
 "RXWaitPort":
-  text: Like `RXReadPort`, but waits for a message if none is waiting. Returns the address of the new current message.
+  text: Like `RXReadPort`, but waits for a message if none is waiting. Returns the address of the new current message, or 0 if only replies to the program's own messages arrived.
 "RXReplyMsg":
   text: Replies to the current message with the return code `errcode`, 0 for no error, and the optional result string `result$`. Nothing happens if there is no current message.
   notes: |

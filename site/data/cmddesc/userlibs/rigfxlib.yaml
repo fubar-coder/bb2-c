@@ -23,7 +23,8 @@
     Kept from the original: without a range, the number of colours of
     the source palette counts, not of the target
     ([#685](https://github.com/fubar-coder/bb2-c/issues/685)); an
-    `end_col` one below `start_col` adjusts 65536 colours
+    `end_col` below `start_col` is not refused: one below adjusts 65536
+    colour values, about 21845 colours
     ([#684](https://github.com/fubar-coder/bb2-c/issues/684)), and colour
     numbers from 2731 on reach before the palette
     ([#677](https://github.com/fubar-coder/bb2-c/issues/677)).
@@ -33,7 +34,9 @@
     Unlike `PalAdjust`, this command names its palette itself and does not
     use the one of `PaletteInfo`. A range is not checked against the size
     of the palette. An `end_col` of 0 fills up to the last colour; kept
-    from the original, so does an `end_col` whose low 16 bits are 0
+    from the original, this test looks at the whole register, so
+    depending on the code before the command an `end_col` of 0 can fill
+    only colour 0 or nothing
     ([#683](https://github.com/fubar-coder/bb2-c/issues/683)).
 "AGAFillPalette":
   text: Like `FillPalette`, with red, green and blue from 0 to 255.
@@ -54,7 +57,7 @@
     of depth 0 counts as 65536 planes
     ([#679](https://github.com/fubar-coder/bb2-c/issues/679)).
 "SaveCMAP":
-  text: Saves a palette as an IFF ILBM file that holds only the colours. As a function it returns the result of the file write, and 0 if the palette is empty or there is no memory.
+  text: Saves a palette as an IFF ILBM file that holds only the colours. As a function it returns -1 if the file was written, and 0 if it was not, if the palette has no data or if there is no memory.
   notes: |
     Amiga mode only. The file name is a long, the address of a name that
     ends in a zero byte, for example `&f$`. The library writes the file

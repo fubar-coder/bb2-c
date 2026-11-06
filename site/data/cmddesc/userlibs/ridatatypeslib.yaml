@@ -1,5 +1,5 @@
 "DataTypeOpen":
-  text: Opens a file and finds the datatype that matches it. Returns a value other than 0 on success, and 0 if the file cannot be found or another file is still open.
+  text: Opens a file and finds the datatype that matches it. Returns a value other than 0 on success, and 0 if the file cannot be found, another file is still open or datatypes.library could not be opened.
   notes: |
     Kept from the original: a file name longer than 383 characters
     overwrites the library's memory
@@ -19,7 +19,7 @@
 "DataTypeBaseName":
   text: The base name of the datatype of the open file, the name of the datatype's own library without `.datatype`, for example `ilbm`. An empty string if no file is open.
 "DataTypeID":
-  text: The ID of the datatype of the open file, up to four characters, for example `ilbm`; for an IFF file the FORM type. An empty string if no file is open.
+  text: The ID of the datatype of the open file, up to four characters, for example `ILBM`; for an IFF file the FORM type. An empty string if no file is open.
 "DataTypeCreate":
   text: Loads the open file into a datatype object, for the commands that work on the object. Returns the object's address, or 0 if it cannot be made. The optional tag list is passed to the system when the object is made.
   notes: |
@@ -42,8 +42,9 @@
     Kept from the original: the form without a position takes the size
     from `DataTypeBitmap` and reads nonsense if that was not called
     first ([#595](https://github.com/fubar-coder/bb2-c/issues/595)).
-    The form with a position and size passes only their low 16 bits on,
-    so they can reach the system with wrong values
+    The form with a position and size puts its word arguments into the
+    tag list as longs without clearing their upper 16 bits, so they can
+    reach the system with wrong values
     ([#597](https://github.com/fubar-coder/bb2-c/issues/597)). The form
     with a tag list ignores the tag list and uses the ID as its address
     instead ([#596](https://github.com/fubar-coder/bb2-c/issues/596)).

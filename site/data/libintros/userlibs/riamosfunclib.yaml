@@ -17,9 +17,7 @@ intro: |
 
   The file and directory commands (`BLoad`, `BSave`, `FileSize`,
   `MakeDir`, `Rename`, `ChangeDir`, `FindVolume`, `DeviceName$`,
-  `SaveExec`) work in Amiga mode only. `FindVolume`, `DeviceName$`,
-  `CachesOn`, `CachesOff` and `Reboot` use system functions of Kickstart
-  2.0 and need it.
+  `SaveExec`) work in Amiga mode only.
 
   Loading a file into a new bank and saving it again:
 

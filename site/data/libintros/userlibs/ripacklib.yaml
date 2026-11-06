@@ -12,8 +12,8 @@ intro: |
 
   All commands except `ILBMGrab` and `UnPackPBM` can be used as functions
   that return -1 on success and 0 on failure, or a length (`PackPBM`) or
-  a long (`ChunkHeader`). They work in Amiga and Blitz mode, except
-  `LoadIFF`, which loads a file and belongs in Amiga mode.
+  a long (`ChunkHeader`). `LoadIFF` reads a file through DOS, so use it
+  in Amiga mode.
 
   `LoadIFF` loads the file into a memory bank of the RI Amos Func
   library, which must be present as well. It takes the first free bank

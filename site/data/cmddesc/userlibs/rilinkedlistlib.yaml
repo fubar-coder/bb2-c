@@ -1,18 +1,18 @@
 "InitList":
-  text: Starts list `list#` (0 to 4) with one item that holds a copy of the variable `var`; this item becomes the current one. As a function it returns -1, or 0 if there is not enough memory.
+  text: Starts list `list#` (0 to 4) with one item that holds a copy of the variable `var`; this item becomes the current one. As a function it returns -1.
   notes: |
     Kept from the original: a list that is already there is not freed
     first, its memory is lost
     ([#731](https://github.com/fubar-coder/bb2-c/issues/731)).
 "AddListItem":
-  text: Adds an empty item behind the current item of a list and makes it the current one; put a copy into it with `SetListItem`. As a function it returns -1, or 0 if there is not enough memory.
+  text: Adds an empty item behind the current item of a list and makes it the current one; put a copy into it with `SetListItem`. As a function it returns -1.
   notes: |
     Kept from the original: in the middle of a list, the item behind the
     new one still links back to the old current item, so `PrevListItem`
     from there skips the new item
     ([#727](https://github.com/fubar-coder/bb2-c/issues/727)).
 "SetListItem":
-  text: Stores a copy of the variable `var` in the current item of a list. As a function it returns -1, or 0 if there is not enough memory.
+  text: Stores a copy of the variable `var` in the current item of a list. As a function it returns -1.
   notes: |
     Kept from the original: a copy the item already held is not freed,
     its memory is lost
@@ -42,7 +42,7 @@
     function it returns four times the list number instead of -1, so 0
     for list 0 ([#725](https://github.com/fubar-coder/bb2-c/issues/725)).
 "AddLastListItem":
-  text: Adds an empty item behind the last item of a list and makes it the current one. As a function it returns -1, or 0 if there is not enough memory.
+  text: Adds an empty item behind the last item of a list and makes it the current one. As a function it returns -1.
 "DelListItem":
   text: Deletes the current item of a list; the next item, or at the end of the list the previous one, becomes the current one. As a function it returns -1, or 0 if the list has no current item or this is its only item, which is not deleted.
   notes: |

@@ -8,12 +8,8 @@ intro: |
 
   The commands work only when the program is compiled with runtime
   error checking, that is, with the debugger. Without it they do
-  nothing, so they can stay in the source. They work in Amiga mode only: in Blitz mode multitasking is
-  off and the debugger cannot react.
-
-  Variable traces are shown only while the debugger steps or traces the
-  program; a program running on its own does not update the debugger's
-  windows.
+  nothing, so they can stay in the source. They can be used in Amiga
+  mode only.
 
   Watch a counter in hexadecimal in the variable trace window:
 

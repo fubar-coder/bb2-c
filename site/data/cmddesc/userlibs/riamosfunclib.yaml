@@ -3,7 +3,7 @@
 "Reboot":
   text: Reboots the Amiga at once (a cold reboot); it does not return.
 "Lisa":
-  text: The contents of the chip ID register of Denise or Lisa, for example $F8 on an AGA machine.
+  text: The contents of the chip ID register of Denise or Lisa.
 "MakeDir":
   text: Creates a directory. Returns -1 if it was created, else 0.
   notes: |
@@ -16,7 +16,7 @@
 "Rename":
   text: Renames a file or directory. Returns -1 on success, else 0.
   notes: |
-    Amiga mode only. Both names must be on the same volume.
+    Amiga mode only.
 "MemFree":
   text: The number of bytes of free public memory.
 "GTTagValue":
@@ -59,7 +59,8 @@
     memory). An address must point to enough memory.
 
     The form with the name alone returns -1 for an empty or missing file
-    and 0 when no bank is free. Kept from the original: it returns the
+    and 0 when no bank is free or there is not enough memory (see
+    `Reserve`). Kept from the original: it returns the
     bank also when reading the file fails
     ([#486](https://github.com/fubar-coder/bb2-c/issues/486)); the other
     forms keep a bank they reserved for a file that cannot be opened
@@ -91,11 +92,12 @@
   text: Allocates a bank. `Reserve(length)` takes the next free bank and returns its number, or -1 if there is not enough memory; `Reserve(bank,length[,requirements])` returns -1 on success and 0 otherwise.
   notes: |
     `requirements` are exec's memory flags, added together: 1 public, 2
-    chip, 4 fast, $10000 cleared; without them the memory is public. A
-    bank already in use is erased first, also when the new allocation
-    fails.
+    chip, 4 fast, $10000 cleared; without them the memory is public.
 
-    Kept from the original: `Reserve(length)` returns 0 for a negative
+    Kept from the original: a bank already in use is erased first, also
+    when the new allocation fails
+    ([#499](https://github.com/fubar-coder/bb2-c/issues/499)).
+    `Reserve(length)` returns 0 for a negative
     length, which looks like bank 0
     ([#500](https://github.com/fubar-coder/bb2-c/issues/500)), and when
     every bank is in use it does not fail but writes before the bank
@@ -143,7 +145,10 @@
     Kept from the original: the directory the program was started in is
     not restored; when the program ends, or with `BankLimit`, the
     directory chosen last is released while it is still the current one
-    ([#491](https://github.com/fubar-coder/bb2-c/issues/491)).
+    ([#491](https://github.com/fubar-coder/bb2-c/issues/491)). If the
+    previous current directory was 0, the directory is changed but the
+    command returns 0 and does not remember the new one
+    ([#490](https://github.com/fubar-coder/bb2-c/issues/490)).
 "BankLimit":
   text: Without an argument, the number of banks (50 at the start). `BankLimit numbanks` sets a new number of banks and frees every bank in use.
   notes: |
@@ -158,6 +163,7 @@
     Kept from the original: if the file cannot be created, the result is
     an address instead of 0; an empty list leaves the file open
     ([#501](https://github.com/fubar-coder/bb2-c/issues/501)); the
-    header and the relocations it writes are only correct for a single
-    code hunk ([#503](https://github.com/fubar-coder/bb2-c/issues/503),
+    header and the relocations it writes are only correct for a list
+    that holds a single code hunk and nothing else
+    ([#503](https://github.com/fubar-coder/bb2-c/issues/503),
     [#502](https://github.com/fubar-coder/bb2-c/issues/502)).

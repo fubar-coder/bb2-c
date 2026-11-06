@@ -20,10 +20,10 @@ intro: |
   result does not overwrite the part still to be read.
 
   `Derez` and `ZoomXY` work only on low resolution bitmaps 320 pixels
-  (40 bytes) wide; the others work on bitmaps of any width. The bitmaps
+  (40 bytes) wide, and `ZoomyZoom` on bitmaps 640 pixels wide; the
+  others work on bitmaps of any width. The bitmaps
   may have at most 8 bitplanes. The zooms by 2, 4 and 8, `ReduceX2` and
-  `ZoomyZoom` use tables the library builds at program start; without
-  memory for them these commands do nothing.
+  `ZoomyZoom` use tables the library builds at program start.
 
   A picture zoomed to twice its size from its middle, then faded in on
   another bitmap and cleared again:

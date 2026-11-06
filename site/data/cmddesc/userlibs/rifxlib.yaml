@@ -64,7 +64,7 @@
     with a width below 8 or a height below 1. The number of bitplanes is
     that of the source.
 "GetZoomTables":
-  text: Returns the address of four longs, the addresses of the library's tables for `ReduceX2` (256 bytes), the zoom by 2 (256 words), by 4 (256 longs) and by 8 (16 longs); each is 0 if the tables could not be allocated.
+  text: Returns the address of four longs, the addresses of the library's tables for `ReduceX2` (256 bytes), the zoom by 2 (256 words), by 4 (256 longs) and by 8 (16 longs).
 "ZoomX8":
   text: Enlarges a rectangle of `width` x `height` pixels eight times in both directions, from byte offset `sourceadd` of the source bitmap to byte offset `destadd` of the destination.
   notes: |

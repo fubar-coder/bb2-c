@@ -30,17 +30,14 @@
     more lines than the picture has unpack whatever follows its data.
     For the limits on chunks, widths and packing, see the introduction.
 "ILBMPalette":
-  text: Takes the colours of the CMAP chunk at or behind `sourceaddr` (an IFF file or a CMAP chunk in memory) into palette `palette#`. As a function it returns -1, or 0 if no CMAP chunk is found or there is not enough memory.
+  text: Takes the colours of the CMAP chunk at or behind `sourceaddr` (an IFF file or a CMAP chunk in memory) into palette `palette#`. As a function it returns -1, or 0 if no CMAP chunk is found.
   notes: |
     Without `offset`, the palette object is given exactly as many
     colours as the CMAP holds; any colours it had are freed. With
     `offset`, the colours are written from colour number `offset` on
     into the palette as it is. Kept from the original: if the palette is
     too small for that, the offset is ignored and the palette replaced as
-    without one ([#769](https://github.com/fubar-coder/bb2-c/issues/769));
-    and if memory runs out while the palette is replaced, the palette
-    object is left pointing to freed memory
-    ([#768](https://github.com/fubar-coder/bb2-c/issues/768)).
+    without one ([#769](https://github.com/fubar-coder/bb2-c/issues/769)).
 "ILBMGrab":
   text: Unpacks the IFF ILBM picture at `sourceaddr` into bitmap `bitmap#` and its colours into palette `palette#`, the same as `UnpackIFF` and `ILBMPalette` together.
   notes: |
@@ -49,7 +46,8 @@
 "LoadIFF":
   text: Loads the IFF ILBM picture file `filename$` into bitmap `bitmap`, and its colours into palette `palette` if given. As a function it returns -1, or 0 if there is no free bank or the file cannot be loaded.
   notes: |
-    Amiga mode only. The file is loaded into a free bank of the RI Amos
+    It reads the file through DOS, so use it in Amiga mode. The file is
+    loaded into a free bank of the RI Amos
     Func library and unpacked from there, so there must be memory for the
     whole file; the bank is freed again afterwards. See the introduction
     for `BankLimit`, which this command needs.

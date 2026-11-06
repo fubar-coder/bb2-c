@@ -3,8 +3,9 @@ intro: |
   With datatypes, a program can load any file format for which a
   datatype is installed: a picture viewer that knows only IFF ILBM
   reads GIF or JPEG pictures as well. This library makes the system's
-  datatypes.library usable from Blitz Basic 2. It needs Workbench 3.0
-  or later; all its commands are Amiga mode only.
+  datatypes.library usable from Blitz Basic 2. It opens datatypes.library
+  (version 37 or later) when the program starts; without it the commands
+  do nothing. All its commands are Amiga mode only.
 
   The library works on one file at a time, not on numbered objects.
   `DataTypeOpen` chooses the file and finds its datatype; `DataTypeName`,

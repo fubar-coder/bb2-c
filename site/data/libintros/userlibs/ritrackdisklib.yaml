@@ -7,7 +7,7 @@ intro: |
 
   The units are the drives 0 to 3 (DF0: to DF3:). `OpenDisk` opens a unit
   and must come first; `CloseDisk` closes it again. Every other command
-  names the unit it works on and returns 0 for a unit that is not open.
+  except `DiskMotor` names the unit it works on and returns 0 for a unit that is not open.
   The sector commands return the device's error code, 0 if they worked
   (for example 29 when there is no disk in the drive).
 

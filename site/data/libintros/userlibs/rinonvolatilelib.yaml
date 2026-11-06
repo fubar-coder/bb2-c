@@ -3,8 +3,7 @@ intro: |
   This library lets a program use the system's nonvolatile.library, which
   keeps small items of data across a power cycle: in the nonvolatile
   memory of a CD32, or, on other Amigas, in a place on disk that the
-  library uses instead. It is the only proper way to write to the
-  nonvolatile memory of the CD32.
+  library uses instead.
 
   Each item is named by two names, the name of the application and the
   name of the item, so one program can keep several items, for example
@@ -12,9 +11,8 @@ intro: |
   copy of it, `GetNVList` lists the items of an application, and
   `FreeNVData` frees what the last two returned.
 
-  nonvolatile.library is part of OS 3.1 (and of the CD32's ROM). The
-  library opens it when the program starts; `IsNonvolatile` tells whether
-  that worked. Without it every command does nothing and returns 0.
+  The library opens nonvolatile.library (any version) when the program
+  starts; `IsNonvolatile` tells whether that worked. Without it every command does nothing and returns 0.
   `StoreNVData` and `GetCopyNV` work in Amiga mode only.
 
   ```blitzbasic

@@ -13,8 +13,9 @@ intro: |
   `CDFirstTrack`, `CDLastTrack` and `CDTrackLength` read from it, so it
   must come first. `CDPlayTrack` starts playing and returns at once.
   `CDUpdateInfo` asks the drive for the current position, which
-  `CDTrackPlaying`, `CDTrackMins` and `CDTrackSecs` then return. Most
-  commands return the device's error code, 0 if they worked.
+  `CDTrackPlaying`, `CDTrackMins` and `CDTrackSecs` then return.
+  `CDVolume` and `CDFastForward` return the device's error code, 0 if
+  they worked.
 
   All commands except `OpenCD`, `CloseCD`, `CDTrackMins`, `CDTrackSecs`
   and `CDTrackPlaying` work in Amiga mode only. The third argument of

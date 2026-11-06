@@ -6,7 +6,7 @@
     ([#647](https://github.com/fubar-coder/bb2-c/issues/647)); as a
     function it only returns its `baud` argument, also when it did
     nothing ([#650](https://github.com/fubar-coder/bb2-c/issues/650));
-    and a baud rate of 1773448 or more leaves the library uninitialised
+    and a baud rate from 1773448 to 3546895 leaves the library uninitialised
     ([#653](https://github.com/fubar-coder/bb2-c/issues/653)).
 "FinitSerialIO":
   text: Ends the serial transfers started with `InitSerialIO`; it is called by itself when the program ends.
@@ -43,7 +43,7 @@
     both start at the same moment, both become the master
     ([#655](https://github.com/fubar-coder/bb2-c/issues/655)).
 "DoSerialIO":
-  text: Exchanges the buffers of `InitSerialIO` with the other machine, byte for byte. Without an argument it transfers the number of bytes of `InitSerialIO` or `SetIOSize`; with one, that number plus 1.
+  text: Exchanges the buffers of `InitSerialIO` with the other machine, byte for byte. Without an argument it transfers the number of bytes given to `InitSerialIO`, or the value of the last `SetIOSize` plus 1; with an argument, that number plus 1.
   notes: |
     Both machines must call it at the same time, one as the master and
     one as the slave (`SetSerialMode`).

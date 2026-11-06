@@ -31,14 +31,15 @@
     original: a negative quick or float value comes out as a large
     positive number, -3.5 as 65532
     ([#750](https://github.com/fubar-coder/bb2-c/issues/750)); a float
-    argument is converted reliably only right after a
-    float calculation; otherwise the value can be wrong or the program
-    crashes ([#749](https://github.com/fubar-coder/bb2-c/issues/749)); and more
+    argument is converted without the right library base, so the result
+    depends on what the program left in a processor register
+    ([#749](https://github.com/fubar-coder/bb2-c/issues/749)); and more
     than 16 longs of arguments (a string counts one) overwrite memory
     ([#748](https://github.com/fubar-coder/bb2-c/issues/748)).
 
     ```blitzbasic
-    NPrint EZRequest("Request","It is %s|The time is %ld:%ld","So|What","Sunday",12,23)
+    h.l=12 : m.l=23
+    NPrint EZRequest("Request","It is %s|The time is %ld:%ld","So|What","Sunday",h,m)
     ```
 "Flip$":
   text: The string `String$` reversed.
@@ -50,7 +51,7 @@
   text: Starts splitting a text into words with `NextArg$` or into fields with `NextArgChar$`. The parameter is the address of the text, which ends in a zero byte, for example `&a$`.
   notes: |
     The text is copied, so the string may change afterwards. Kept from
-    the original: a text longer than 255 characters overwrites the memory
+    the original: a text longer than 251 characters overwrites the memory
     behind the copy ([#752](https://github.com/fubar-coder/bb2-c/issues/752)).
 "NextArg$":
   text: The next word of the text given to `InitArgParse`, or "" at the end. Words are separated by spaces; a word in double quotes may contain spaces, and two double quotes within it stand for one.
@@ -113,7 +114,7 @@
   text: Reads the font preferences of the system, the file `ENV:SYS/Font.Prefs`, for `DefaultFontHeight` and `DefaultFontName`. As a function it returns -1, or 0 if the file is missing or holds no font preferences. Amiga mode only.
   notes: |
     Kept from the original: if there is not enough memory for the file,
-    the command crashes
+    the command reads it to address 0
     ([#756](https://github.com/fubar-coder/bb2-c/issues/756)); a second
     call without `CloseFontPrefs` in between loses the memory of the first
     ([#757](https://github.com/fubar-coder/bb2-c/issues/757)).
