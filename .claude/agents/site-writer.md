@@ -82,8 +82,12 @@ Every change is built and looked at before you commit it:
    resolve here.
 2. Check the links in the output: no href starts with `/` without
    `/bb2-c/`, and every internal target exists.
-3. Look at the result. Serve the build or use the user's running
-   preview at `http://localhost:1313/bb2-c/` if it is there. Take
+3. Look at the result. Use the user's running preview at
+   `http://localhost:1313/bb2-c/` if it answers (`curl -sI`); it shows
+   the main checkout, so it fits only work there. Otherwise serve your
+   tree with the pinned image (`hugo server` on another port, as in
+   `site/README.md`), not with any other web server, and stop every
+   server you started before you report. Take
    screenshots with
    `google-chrome-stable --headless=new --disable-gpu --user-data-dir=<scratch>/chrome --window-size=1400,1000 --screenshot=<scratch>/<page>.png <url>`
    and read them. Check every page you changed in the light theme, and
