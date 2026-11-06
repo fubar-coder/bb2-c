@@ -34,8 +34,9 @@ function.
 the number the AmigaOS documentation calls its offset (LVO). The
 compiler calls the function at this offset from the library's base.
 
-Some AmigaOS libraries are declared by two `deflibs` libraries, the
-second adding newer functions; their calls are on one page.
+Some AmigaOS libraries are declared by two `deflibs` libraries: a
+library has room for only 127 declarations, so the second holds the
+functions at the highest offsets. Their calls are on one page.
 
 ## The libraries
 
