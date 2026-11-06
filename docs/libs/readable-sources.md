@@ -140,6 +140,24 @@ build/amiga/host/tools/bbdetok/bbdetok --unknown --blitz2 build/amiga/blitz2/bli
     --lib build/amiga/blitz2/acidlibs --lib build/amiga/blitz2/deflibs IN > /dev/null
 ```
 
+The build stores the snapshots of `archive/sources/` as text this way,
+with AmiBlitz 2.42's compiler, `AcidLibs` and `Deflibs` and `--strict`
+(target `archive_text`, part of `ALL` when the Aminet distribution is
+there, else it only reports that it is skipped):
+
+```
+cmake --build --preset amiga --target archive_text
+build/amiga/archive-text/PATH.txt     # for archive/sources/PATH, e.g.
+diff build/amiga/archive-text/amiblitz2-2.41/ped.bb2.txt \
+     build/amiga/archive-text/amiblitz2-2.43b12/ped.bb2.txt
+```
+
+Every `*.bb2` there except `compiler_gui.bb2` of 2.50beta, which is
+plain text already. All tokens of the snapshots are known to that list
+(also those of AmiBlitz3 3.00.19a; whether every name is still the one
+AmiBlitz3 3.00 had is not checked, its libraries are not in the
+archive).
+
 Exit status 1 if a file cannot be read, a token list is refused, the
 source ends with a token byte (no second byte), `--strict` finds an
 unknown token or `OUT` cannot be written (`OUT` is then removed); 2 for

@@ -82,6 +82,7 @@ set(CHECKDATA ${HOST_TOOLS_DIR}/checkdata/checkdata)           # C data vs refer
 set(MKTESTDATA ${HOST_TOOLS_DIR}/mktestdata/mktestdata)         # test data from a description
 set(BLITZRES ${HOST_TOOLS_DIR}/blitzres/blitzres)               # resident files with constants
 set(BBLINES ${HOST_TOOLS_DIR}/bblines/bblines)                  # line edits of tokenised sources
+set(BBDETOK ${HOST_TOOLS_DIR}/bbdetok/bbdetok)                  # tokenised sources as plain text
 set(BB22 ${HOST_TOOLS_DIR}/bb22/bb22)                           # BB22 sources in TED's format
 set(OUTMATCH ${HOST_TOOLS_DIR}/outmatch/outmatch)               # an output against an expect file
 set(AB3TOK ${HOST_TOOLS_DIR}/ab3tok/ab3tok)                     # tokenise as AmiBlitz3 loads a source
@@ -103,7 +104,7 @@ ExternalProject_Add(host_tools
 		-DAMIGA_EMULATION_OWNER=${CMAKE_BINARY_DIR}
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${BLITZTOKENS} ${CMDREF} ${ASMCMP} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BB22} ${OUTMATCH} ${AB3TOK} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${CDRUN} ${TEDAB})
+	BUILD_BYPRODUCTS ${BIGLIB} ${BLITZLIBCHECK} ${BLITZLIBCOMPARE} ${BLITZTOKENS} ${CMDREF} ${ASMCMP} ${HUNKCHECK} ${AMIGA_RUN} ${VASMLISTING} ${CHECKLABELS} ${CHECKDATA} ${MKTESTDATA} ${BLITZRES} ${BBLINES} ${BBDETOK} ${BB22} ${OUTMATCH} ${AB3TOK} ${TEDTOK} ${TEDDETOK} ${CORPUSRUN} ${CDRUN} ${TEDAB})
 
 include(cmake/BlitzLibrary.cmake)
 
@@ -156,6 +157,8 @@ add_subdirectory(tests/ted-ab)
 
 # the Blitz sources of the libraries, readable: build/<preset>/bblibsrc/
 include(programs/ted/tools/teddetok/bblibsrc.cmake)
+# the source snapshots of archive/sources/ as text: build/<preset>/archive-text/
+include(tools/bbdetok/archive_text.cmake)
 
 # cmake --install: a blitz2: directory (default build/<preset>/install/blitz2);
 # ab3cli next to blitz2-ab3, which loads it as PROGDIR:ab3cli

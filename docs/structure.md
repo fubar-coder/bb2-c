@@ -108,6 +108,8 @@ tools/                       host tools:
   bblines/, bbdetok/, xtra/,
   teststats/,
   ab3tok/, hdftool/, cmdref/
+  bbdetok/archive_text.cmake the target archive_text: archive/sources/
+                             as text (build/<preset>/archive-text/)
   tests/                     tests of lib/ with inputs from memory
 openspec/                    OpenSpec: specs/ (what is specified),
                              changes/ (planned and archived changes)
