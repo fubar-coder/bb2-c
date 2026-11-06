@@ -49,7 +49,8 @@ from the sources. The next page shows how.
   ([Building the BB2 C port]({{< relref "/docs/introduction/building" >}})).
 * **An Amiga emulator, or an Amiga**, with your own Kickstart ROM and
   Workbench, to run what you built. They are not part of the port and
-  cannot be shipped with it.
+  cannot be shipped with it
+  ([Running it in an emulator]({{< relref "/docs/introduction/emulator" >}})).
 
 ## Your programs and the licence
 
@@ -64,4 +65,6 @@ gives the details.
 
 {{< cards >}}
   {{< card link="building" title="Building the BB2 C port" subtitle="From a fresh clone to the blitz2 directory." >}}
+  {{< card link="emulator" title="Running it in an emulator" subtitle="Amiberry with Kickstart and Workbench from Amiga Forever, and the first start of blitz2." >}}
+  {{< card link="first-program" title="Your first program" subtitle="Type, run, save and compile a program, in the editor and from the Shell." >}}
 {{< /cards >}}
