@@ -1,5 +1,5 @@
 ---
-title: bb2-c
+title: BB2 C port
 layout: hextra-home
 ---
 
@@ -23,38 +23,39 @@ layout: hextra-home
 
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card
-    title="The original, in C"
-    subtitle="Blitz Basic 2 was the BASIC many Amiga programmers used for games and tools in the 1990s. bb2-c translates the compiler, the editor and the libraries into C."
-    icon="code"
-  >}}
-  {{< hextra/feature-card
-    title="Same programs as before"
-    subtitle="The translation behaves like the original. Where it differs on purpose, for example a fixed bug, the documentation says so."
-    icon="badge-check"
-    link="docs/compared-with-original"
-  >}}
-  {{< hextra/feature-card
-    title="Built with a current toolchain"
-    subtitle="The result runs on the Amiga (68000) and is built with a modern cross compiler instead of an assembler."
-    icon="chip"
+    title="Introduction"
+    subtitle="What the BB2 C port is, how to build it and how to try the results in an emulator."
+    icon="play"
     link="docs/introduction"
   >}}
   {{< hextra/feature-card
-    title="How it works"
-    subtitle="How the project is laid out, and how the compiler turns a program into an executable."
+    title="How blitz2 works"
+    subtitle="A program on its way through the compiler, from the source text to an executable."
     icon="light-bulb"
     link="docs/how-blitz2-works"
   >}}
   {{< hextra/feature-card
+    title="blitz2 internals"
+    subtitle="How the libraries the compiler reads are built, and the library variants."
+    icon="cog"
+    link="docs/blitz2-internals"
+  >}}
+  {{< hextra/feature-card
     title="Libraries"
-    subtitle="How libraries are built, and what the commands of each library do."
+    subtitle="The commands each library provides."
     icon="collection"
     link="docs/libraries"
   >}}
   {{< hextra/feature-card
     title="AB3 mode"
-    subtitle="A second mode of the compiler that understands the sources of AmiBlitz3."
+    subtitle="A second mode of the compiler that compiles the sources of AmiBlitz3."
     icon="switch-horizontal"
     link="docs/ab3-mode"
+  >}}
+  {{< hextra/feature-card
+    title="Differences from the original"
+    subtitle="The port behaves like Blitz Basic 2. Where it deliberately differs, for example a fixed bug, it is listed here."
+    icon="scale"
+    link="docs/compared-with-original"
   >}}
 {{< /hextra/feature-grid >}}

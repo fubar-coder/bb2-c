@@ -1,5 +1,5 @@
 ---
-title: bb2-c compared with the original
+title: Differences from the original
 weight: 8
 ---
 
