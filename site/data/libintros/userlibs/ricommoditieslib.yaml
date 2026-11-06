@@ -1,0 +1,47 @@
+description: Commodities for Blitz Basic 2 by Reflective Images - a program appears in the Exchange program, gets its commands and reacts to hotkeys.
+intro: |
+  This library turns a program into a commodity: it is listed by the
+  Exchange program of the system, which can enable, disable, show, hide
+  and quit it, and it can have hotkeys that work whichever program is
+  active. It needs commodities.library of version 37 or later, so
+  Kickstart 2.04 or later. All commands but `CommodityMsgPort` work in
+  Amiga mode only.
+
+  `MakeCommodity` registers the program; then `SetHotKey` adds hotkeys,
+  numbered 0 to 15. `CommodityEvent` fetches the next message without
+  waiting, `WaitCommodity` waits for one. `HotKeyHit` then tells which
+  hotkey was pressed, and `ExchangeMessage` which command Exchange sent;
+  the `Cx` functions are the values of those commands, and the
+  `Exchange` functions compare the last message with one of them.
+
+  Kept from the original, and to keep in mind for every program:
+
+  * the library does not check that commodities.library could be
+    opened; without it, `MakeCommodity` crashes the system
+    ([#559](https://github.com/fubar-coder/bb2-c/issues/559));
+  * the messages are never answered, so the memory of every message is
+    lost ([#561](https://github.com/fubar-coder/bb2-c/issues/561));
+  * `MakeCommodity` should be called only once: a second commodity of
+    the program stays registered when the program ends and crashes the
+    system as soon as it gets a message
+    ([#560](https://github.com/fubar-coder/bb2-c/issues/560));
+  * at the end of the program, the hotkeys are not freed
+    ([#557](https://github.com/fubar-coder/bb2-c/issues/557)), and the
+    commodity is removed only after commodities.library has been closed
+    ([#556](https://github.com/fubar-coder/bb2-c/issues/556)).
+
+  A commodity with one hotkey that ends when Exchange tells it to:
+
+  ```blitzbasic
+  If MakeCommodity("BlitzCx","Blitz commodity","Prints a hotkey")=0 Then End
+  SetHotKey 0,"lalt lshift a"
+  Repeat
+    VWait
+    If CommodityEvent
+      If HotKeyHit=0 Then NPrint "Hotkey"
+      em.l=ExchangeMessage
+    EndIf
+  Until em=CxKill
+  ```
+
+  *Based on the RI Commodities Library guide by Reflective Images (Red When Excited).*

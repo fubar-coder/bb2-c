@@ -1,0 +1,35 @@
+"IPBitMap":
+  text: Sets up the Rast object `rast` and gives it the bitmap object `bitmap` to draw on.
+  notes: |
+    The Rast is set up anew, with the default pens and position; it does
+    not become the Rast in use.
+"IPLocate":
+  text: Moves the drawing position of the Rast in use to `x`,`y`.
+  notes: |
+    Kept from the original: the text of `IPOutput` is always drawn at the
+    top left corner, so this position has no effect on `Print`
+    ([#697](https://github.com/fubar-coder/bb2-c/issues/697)).
+"IPColour":
+  text: Sets the foreground pen, and the background pen if given, of the Rast in use and of the text of `IPOutput`. A negative pen leaves that pen unchanged.
+  notes: |
+    Kept from the original: with two pens and a negative `fgpen`, the
+    background pen is not set on the Rast but written into memory that
+    belongs to the program, which can crash it
+    ([#696](https://github.com/fubar-coder/bb2-c/issues/696)). The pen of
+    the text of `IPOutput` is still set.
+"IPOutput":
+  text: Makes the Rast object `rast` the output channel, so that `Print` and `NPrint` draw their text on its bitmap until `DefaultOutput` or another output command.
+  notes: |
+    The text is drawn with the pens of the last `IPColour` and without a
+    background. Kept from the original:
+
+    * every text is drawn at the top left corner of the Rast
+      ([#697](https://github.com/fubar-coder/bb2-c/issues/697));
+    * a single character sent to the output on its own is not drawn as
+      that character but as the byte at a low memory address
+      ([#699](https://github.com/fubar-coder/bb2-c/issues/699));
+    * a text longer than 1024 characters overwrites the pens, which then
+      change for the next text
+      ([#698](https://github.com/fubar-coder/bb2-c/issues/698)).
+"Rast":
+  text: The object of this library, a RastPort that draws on a bitmap, set up with `IPBitMap`; `Use Rast` makes one the Rast in use.

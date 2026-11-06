@@ -1,0 +1,45 @@
+description: App windows, App icons and App menu items of Workbench for Blitz Basic 2, by Reflective Images - files dropped on a window or icon, or an item chosen in the Tools menu, reach the program.
+intro: |
+  This library makes a program part of Workbench. An App window is a
+  window on the Workbench screen that files can be dragged into; an App
+  icon is an icon on the Workbench desktop that files can be dropped on
+  or that can be double-clicked; an App menu item is an item in the
+  Tools menu of Workbench. Each of them sends a message to the program
+  when the user uses it, together with the files that were dropped or
+  selected.
+
+  The library needs workbench.library, dos.library and icon.library of
+  version 37 or later, so Kickstart 2.04 or later. Without them the
+  commands do nothing and return 0. All commands but `AppEventIDCMP`
+  work in Amiga mode only.
+
+  Every App object has an id from 0 to 15, one set of 16 for each kind;
+  for an App window the id is the number of its window. The ids are not
+  checked: a larger one overwrites memory. Adding an object with an id
+  that is in use removes the old one first.
+
+  `AppEvent` fetches the next message; `AppEventType`, `AppEventID`,
+  `AppNumFiles`, `NextAppFile` and `AppFile` then tell what happened.
+  The library removes the objects that are left when the program ends.
+
+  Kept from the original: on a 68000, an App window, icon or menu item
+  with an odd id that is still there when the program ends crashes the
+  machine; remove them with the `Del` commands before the end
+  ([#524](https://github.com/fubar-coder/bb2-c/issues/524)).
+
+  An App icon that prints the files dropped on it:
+
+  ```blitzbasic
+  If AddAppIcon(0,"Drop here","SYS:System/Format")=0 Then End
+  Repeat
+    VWait
+    If AppEvent
+      For n=1 To AppNumFiles
+        NPrint NextAppFile
+      Next
+    EndIf
+  Until Joyb(0)
+  DelAppIcon 0
+  ```
+
+  *Based on the RI App Library guide by Reflective Images (Red When Excited).*

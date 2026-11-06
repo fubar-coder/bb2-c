@@ -1,0 +1,21 @@
+"PopUpInit":
+  text: Gives the menu windows a new message port. The library makes one when the program starts, so this command is not needed.
+  notes: |
+    The argument is not used. Kept from the original: the old port is
+    not deleted, so its memory is lost
+    ([#470](https://github.com/fubar-coder/bb2-c/issues/470)).
+"PopUpWindow":
+  text: Shows the menu whose first item is at the address `*items` at the top left corner of the screen object `Screen#`, and returns when a mouse button is pressed.
+  notes: |
+    Kept from the original:
+
+    * the item chosen is not passed on to the program
+      ([#471](https://github.com/fubar-coder/bb2-c/issues/471));
+    * every menu with sub menus switches the power light and the audio
+      filter ([#468](https://github.com/fubar-coder/bb2-c/issues/468));
+    * without free memory for a menu, the command overwrites memory at
+      address 0 and waits with a window of garbage; if a window cannot
+      be opened, the whole menu closes at once
+      ([#467](https://github.com/fubar-coder/bb2-c/issues/467));
+    * closing a sub menu throws away the mouse messages waiting for the
+      other menus ([#469](https://github.com/fubar-coder/bb2-c/issues/469)).

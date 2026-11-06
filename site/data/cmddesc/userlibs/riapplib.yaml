@@ -1,0 +1,85 @@
+"AddAppWindow":
+  text: Makes the window with the number given an App window, so that files can be dragged into it; the window number is its id. Returns -1 on success, 0 on failure.
+  notes: |
+    The window must be on the Workbench screen. Window numbers above 15
+    overwrite memory.
+"DelAppWindow":
+  text: Makes the App window with the number given a plain window again. Returns -1.
+  notes: |
+    Kept from the original: a number that is no App window still
+    returns -1 and passes an empty App window to the operating system
+    ([#523](https://github.com/fubar-coder/bb2-c/issues/523)).
+"AddAppMenu":
+  text: Adds an item with the text `text$` and the id `id` to the Tools menu of Workbench. Returns a value other than 0 on success, 0 on failure.
+  notes: |
+    Kept from the original: on success the result is not -1 but the
+    address of the menu item in the system
+    ([#518](https://github.com/fubar-coder/bb2-c/issues/518)), so test it
+    with `<>0`.
+"DelAppMenu":
+  text: Removes the item with the id `id` from the Tools menu of Workbench. Returns -1, or 0 if there is no such item.
+"AddAppIcon":
+  text: Puts an App icon with the label `text$` and the id `id` on the Workbench desktop, with the image of the icon of the file `filename$`. Returns -1 on success, 0 on failure.
+  notes: |
+    `filename$` is the name of the file without `.info`. With `x` and
+    `y` the icon appears at that position, without them Workbench
+    chooses one.
+
+    Kept from the original: after the command, the program's string
+    work writes into the data of the icon, and the local variables of
+    procedures are read and written in the wrong place
+    ([#516](https://github.com/fubar-coder/bb2-c/issues/516)). If the
+    command fails for an id that is in use, the old icon is gone from
+    Workbench, but `DelAppIcon` or the end of the program removes it a
+    second time ([#517](https://github.com/fubar-coder/bb2-c/issues/517)).
+"DelAppIcon":
+  text: Removes the App icon with the id `id` from the Workbench desktop. Returns -1, or 0 if there is no such icon.
+"AppEvent":
+  text: Answers the message fetched before and fetches the next message of an App window, icon or menu item. Returns $800000 if there is one, else 0.
+  notes: |
+    The message stays the current one, for `AppEventType`, `AppEventID`,
+    `AppNumFiles`, `NextAppFile`, `AppFile`, `AppLock` and `AppMessage`,
+    until the next `AppEvent`.
+
+    Kept from the original: at the end of the program, the messages that
+    are still waiting are answered only if `AppEvent` fetched a message
+    last ([#525](https://github.com/fubar-coder/bb2-c/issues/525)).
+"AppEventType":
+  text: The kind of object that sent the current message - 1 an App window, 2 an App icon, 3 an App menu item - or 0 if there is no message.
+"AppEventID":
+  text: The id of the object that sent the current message, or 0 if there is no message.
+"NextAppFile":
+  text: The full path of the next file, drawer or disk of the current message, beginning with the first after each `AppEvent`; an empty string if there is none left.
+  notes: |
+    Kept from the original: unless the file lies in the root of a disk, the
+    command gives Workbench's lock on the file's drawer back and clears
+    it in the message, so asking for the same file again with `AppFile`
+    returns a wrong path
+    ([#521](https://github.com/fubar-coder/bb2-c/issues/521)).
+"AppFile":
+  text: The full path of file `num` of the current message, counted from 1; an empty string if there is no such file. The position of `NextAppFile` stays.
+  notes: |
+    Kept from the original: `num` of 0 or less is not refused, and
+    returns a path made of whatever lies in memory in front of the list
+    of files ([#520](https://github.com/fubar-coder/bb2-c/issues/520));
+    see also `NextAppFile`.
+"AppNumFiles":
+  text: The number of files, drawers and disks of the current message, or 0 if there is no message.
+"AppLock":
+  text: The lock of the drawer of the first file of the current message, or 0 if there is no message.
+  notes: |
+    Kept from the original: for a message without files, as an App menu
+    item chosen without icons selected sends, the result is a value from
+    memory that is no lock
+    ([#522](https://github.com/fubar-coder/bb2-c/issues/522)).
+"AppMessage":
+  text: The address of the current message (an AppMessage of the operating system), or 0 if there is none.
+"AppMsgPort":
+  text: The address of the message port that receives the messages of all App objects of the program.
+  notes: |
+    Kept from the original: if the library could not open what it needs
+    when the program started, the port has already been deleted again,
+    but its address is returned all the same
+    ([#526](https://github.com/fubar-coder/bb2-c/issues/526)).
+"AppEventIDCMP":
+  text: The value $800000 that `AppEvent` returns for a message. Works in Blitz mode too.

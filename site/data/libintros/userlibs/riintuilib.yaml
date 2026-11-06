@@ -1,0 +1,28 @@
+description: Text output on a bitmap through a RastPort of its own, by Reflective Images - Print draws on a bitmap without a window or screen.
+intro: |
+  This library gives Blitz Basic 2 a new object, `Rast`: a RastPort of
+  the operating system that draws on a bitmap object. `IPBitMap` sets up
+  a Rast for a bitmap; `IPOutput` makes it the output channel, so that `Print` and
+  `NPrint` draw their text on the bitmap; `DefaultOutput` ends that.
+
+  `IPLocate` and `IPColour` work on the Rast in use, chosen with
+  `Use Rast`. The pens of `IPColour` are also the pens of the text of
+  `IPOutput`: pen 1 on pen 0 at first, drawn without a background
+  (only the pixels of the characters are set).
+
+  Kept from the original: the text of `IPOutput` is always drawn at the
+  top left corner of the Rast, whatever `IPLocate` set
+  ([#697](https://github.com/fubar-coder/bb2-c/issues/697)), and every
+  `Print` draws over the text before it. The Rast does not clip, so a
+  text wider than the bitmap runs on into the following rows and, past
+  the end of the bitmap, into other memory.
+
+  ```blitzbasic
+  BitMap 0,320,64,2
+  IPBitMap 0,0
+  Use Rast 0
+  IPColour 2
+  IPOutput 0
+  Print "Hello"
+  DefaultOutput
+  ```

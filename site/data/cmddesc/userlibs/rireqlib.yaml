@@ -1,0 +1,46 @@
+"ReqFileRequest":
+  text: Opens the file requester of req.library and returns the path in the library's path buffer, or an empty string if the user cancels. `title$` is the text of the title bar, `flags` the flags of the requester; without `flags`, the last setting is used.
+  notes: |
+    Amiga mode only. Kept from the original:
+
+    * the requester is not given the library's buffers, so the result
+      is not the path the user chose but whatever the program wrote to
+      the address of `ReqFileLoc`, an empty string if nothing
+      ([#785](https://github.com/fubar-coder/bb2-c/issues/785));
+    * `flags` stay set for later calls, as with `ReqFlags`, and a title
+      stays for later calls without one
+      ([#789](https://github.com/fubar-coder/bb2-c/issues/789));
+    * without req.library the command crashes the system
+      ([#788](https://github.com/fubar-coder/bb2-c/issues/788)).
+"ReqFileLoc":
+  text: The address of the library's path buffer of 320 bytes, whose contents `ReqFileRequest` returns. 0 if req.library or the memory for the buffers was missing.
+"ReqOutput":
+  text: Makes the requesters of the library appear on the window with the number given.
+  notes: |
+    Without it, the window is left empty and req.library chooses where
+    the requesters appear.
+"ReqFlags":
+  text: Sets the flags of the file requester for all later calls of `ReqFileRequest`.
+  notes: |
+    The flags are those of req.library: %1 shows `.info` files, %10
+    allows extended select, %100 caches directories, %1000 makes it a font
+    requester, %10000 adds the gadget that hides `.info` files, %100000 hides the show and
+    hide wildcard gadgets, %1000000 uses absolute positions, %10000000
+    purges the cache when a directory changes, %100000000 caches only
+    complete directories, %1000000000 does not sort, %10000000000 leaves
+    out the drag bar and depth gadgets, %100000000000 selects a file to
+    save, %1000000000000 files to load, %10000000000000 lets the user
+    select a directory.
+
+    Kept from the original: the flags at the start are not caching,
+    info gadget and cache purge, as the library means, but %111: show
+    `.info` files, extended select and caching
+    ([#787](https://github.com/fubar-coder/bb2-c/issues/787)).
+"ReqColour":
+  text: Opens the colour requester of req.library on the window of `ReqOutput` and returns its result.
+  notes: |
+    Kept from the original: `colour` is ignored, the requester always
+    starts on colour 0
+    ([#786](https://github.com/fubar-coder/bb2-c/issues/786)), and
+    without req.library the command crashes the system
+    ([#788](https://github.com/fubar-coder/bb2-c/issues/788)).

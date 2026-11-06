@@ -1,0 +1,82 @@
+"GTMenuList":
+  text: The object of this library, a list of menu titles, items and sub items and the menu strip that `CreateMenuStrip` makes of it.
+  notes: |
+    Freeing the object frees the menu strip and the list. Kept from the
+    original: the memory of the title texts is not freed
+    ([#695](https://github.com/fubar-coder/bb2-c/issues/695)).
+"CreateMenuStrip":
+  text: Makes a GadTools menu strip of the list of a `GTMenuList` object, laid out for the screen in use; an old strip of the object is freed first. As a function it returns -1, and 0 without gadtools.library or memory.
+  notes: |
+    A screen must be in use. Call it again after the list has changed;
+    take the strip off its window with `GTUnSetMenu` first. With the
+    debugger, an empty list is reported as an error.
+
+    Kept from the original: without the debugger, a list without titles
+    makes the command read its menus from address 0, which can crash
+    the system; whether GadTools could make the strip is not checked
+    ([#689](https://github.com/fubar-coder/bb2-c/issues/689)).
+"GTSetMenu":
+  text: Attaches the menu strip of a `GTMenuList` object to the window in use, replacing the menu strip the window has. If there is no strip yet, `CreateMenuStrip` is called first.
+"GTUnSetMenu":
+  text: Takes the menu strip off the window in use.
+"GTMenuTitle":
+  text: Inserts a menu title with the text `title$` as title number `menu` into the list of a `GTMenuList` object.
+  notes: |
+    Titles are numbered from 0; the title before the new one must exist,
+    otherwise the command does nothing. The titles behind it move up by
+    one.
+"GTMenuItem":
+  text: Inserts an item as item number `item` of title `menu` into the list of a `GTMenuList` object. Without `itemtext$` it is a bar between items.
+  notes: |
+    `flags` are the flags of a GadTools menu item, for example `$1` for
+    an item with a check mark, `$8` for one that toggles, `$100` for one
+    checked at the start, `$10` for a disabled one. `shortcut$` is the
+    key that selects the item with the Amiga key. `mutualexclude` is a
+    bit mask of the items of the same title that are unchecked when this
+    one is checked. `UserData` is a long that `GTGetUserData` returns.
+    The title and the item before the new one must exist, otherwise the
+    command does nothing.
+
+    Kept from the original: the form with `UserData` ignores
+    `mutualexclude` and takes the one of the item or sub item added
+    before ([#692](https://github.com/fubar-coder/bb2-c/issues/692)); a
+    `shortcut$` whose text lies at an address divisible by 65536 is
+    ignored ([#694](https://github.com/fubar-coder/bb2-c/issues/694)).
+"GTSubItem":
+  text: Inserts a sub item as sub item number `subitem` of item `item` of title `menu` into the list of a `GTMenuList` object. Without `itemtext$` it is a bar.
+  notes: |
+    The arguments are those of `GTMenuItem`; `mutualexclude` applies to
+    the sub items of the same item. The title, the item and the sub item
+    before the new one must exist, otherwise the command does nothing.
+
+    Kept from the original: a `shortcut$` whose text lies at an address
+    divisible by 65536 is ignored
+    ([#694](https://github.com/fubar-coder/bb2-c/issues/694)).
+"GTMenuState":
+  text: Enables (`On`) or disables (`Off`) a title, an item or a sub item of the menu strip of a `GTMenuList` object; with no menu given, all titles.
+  notes: |
+    Kept from the original: the strip is changed directly, also while it
+    is attached to a window, and a strip made again by `CreateMenuStrip`
+    loses the change
+    ([#693](https://github.com/fubar-coder/bb2-c/issues/693)).
+"GTMenuChecked":
+  text: Returns -1 if the item or sub item of the menu strip of a `GTMenuList` object has its check mark, else 0.
+"GTSetMenuChecked":
+  text: Sets (`On`) or clears (`Off`) the check mark of an item or sub item of the menu strip of a `GTMenuList` object.
+  notes: |
+    Kept from the original: the strip is changed directly, also while it
+    is attached to a window, and a strip made again by `CreateMenuStrip`
+    loses the change
+    ([#693](https://github.com/fubar-coder/bb2-c/issues/693)).
+"GTFreeMenu":
+  text: Removes a title, an item or a sub item from the list of a `GTMenuList` object, with the items and sub items that belong to it. The menu strip changes only when `CreateMenuStrip` makes it again.
+  notes: |
+    An entry that does not exist is ignored. Kept from the original:
+    whether the item and sub item numbers count is decided by bits that
+    the program does not set, so the command can remove the whole title
+    or item instead
+    ([#691](https://github.com/fubar-coder/bb2-c/issues/691)), and the
+    memory of a title's text is not freed
+    ([#695](https://github.com/fubar-coder/bb2-c/issues/695)).
+"GTGetUserData":
+  text: Returns the `UserData` of an item or sub item of the menu strip of a `GTMenuList` object, as given to `GTMenuItem` or `GTSubItem`. A `Subitem` of -1 means the item itself.

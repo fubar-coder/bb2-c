@@ -1,0 +1,48 @@
+description: GadTools menus for Blitz Basic 2 by Reflective Images - menu strips laid out by the operating system, with bar items, check marks, mutual exclude and user data.
+intro: |
+  This library builds menus with GadTools, so the operating system lays
+  them out: it positions the items, takes the font of the screen into
+  account and draws bar items and check marks in the look of OS 2. It
+  needs gadtools.library, so Kickstart 2.0 or later; without it, the
+  commands do nothing.
+
+  The library has its own object, `GTMenuList`. A program first builds
+  the menus in a list of the object: `GTMenuTitle` adds titles,
+  `GTMenuItem` items and `GTSubItem` sub items, and `GTFreeMenu` removes
+  them again. Titles, items and sub items are numbered from 0, and a new
+  entry is inserted at its number: the entry before it must exist,
+  otherwise the command does nothing. `CreateMenuStrip` then turns the
+  list into a menu strip for the screen in use, and `GTSetMenu` attaches
+  it to the window in use; `GTUnSetMenu` takes it off again.
+
+  `GTMenuState`, `GTMenuChecked`, `GTSetMenuChecked` and
+  `GTGetUserData` work on the menu strip itself, so `CreateMenuStrip`
+  or `GTSetMenu` must have made it. A strip made again starts from the
+  list, so the changes of `GTMenuState` and `GTSetMenuChecked` are lost.
+  Before the list of a strip that is attached to a window is made again,
+  the strip must be taken off with `GTUnSetMenu`.
+
+  The numbers of menus, items and sub items are checked only when the
+  program runs with the debugger, which reports an illegal number;
+  without it, a number that does not exist makes these commands read
+  and write near address 0.
+
+  For the full look of OS 2 menus, open the window with the flag
+  `$200000` (new look menus). A menu with two items and a bar between
+  them, and an item with a shortcut:
+
+  ```blitzbasic
+  WbToScreen 0
+  Window 0,0,20,320,100,$20100f,"Menus",1,2
+  GTMenuTitle 0,0,"Project"
+  GTMenuItem 0,0,0,0,"Open...","O"
+  GTMenuItem 0,0,0,1
+  GTMenuItem 0,0,0,2,"Quit","Q"
+  GTSetMenu 0
+  Repeat
+    ev.l=WaitEvent
+    If ev=$100 Then NPrint MenuHit," ",ItemHit
+  Until ev=$200
+  ```
+
+  *Based on the RI GTMenus Lib guide by Reflective Images (Red When Excited).*
