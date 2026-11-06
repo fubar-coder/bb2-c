@@ -11,7 +11,22 @@
 "GTMX":
   text: Adds a mutual exclude gadget, a set of radio buttons for the choices in `Options$`, separated by `|`; `active` is the one selected first, from 0.
 "GTListView":
-  text: Adds a list view that shows the entries of a list array of strings, optionally with the entry selected and the first entry shown; a flag makes it read only.
+  text: Adds a list view that shows the entries of a list array, optionally with the entry selected and the first entry shown; a flag makes it read only.
+  notes: |
+    The list array must be of a type whose first field is a word and
+    whose second field is the string shown, as GadTools reads its entries
+    as system list nodes:
+
+    ```blitzbasic
+    NEWTYPE .entry
+      pri.w
+      name$
+    End NEWTYPE
+    Dim List files.entry(20)
+    ```
+
+    While the list view shows the list, change the list only between two
+    `GTChangeList` calls.
 "GTSlider":
   text: Adds a slider from `Min` to `Max`, at `Level`; a flag makes it vertical.
 "GTScroller":
@@ -44,11 +59,28 @@
 "DetachGTList":
   text: Removes the gadgets of the GTList from its window.
 "GTTags":
-  text: Further GadTools tags, as tag and value pairs, for the next gadget made.
+  text: Further GadTools tags, as tag and value pairs, for the next gadget made; at most 15 pairs, which nothing checks.
+  notes: |
+    The tags are those of `gadtools.library`, described in the AmigaOS
+    autodocs; they start at `$80080000`. This makes a slider that shows
+    its level, with the format `%2ld` (`GTSL_LevelFormat`, `$8008002A`)
+    in up to 4 characters (`GTSL_MaxLevelLen`, `$80080029`):
+
+    ```blitzbasic
+    f$="%2ld"
+    GTTags $8008002A,&f$,$80080029,4
+    GTSlider 0,2,90,70,120,12,"Level",2,0,10
+    ```
 "GTSetAttrs":
-  text: Changes a gadget through GadTools tags, given as tag and value pairs.
+  text: Changes a gadget through GadTools tags, given as tag and value pairs; at most 15 pairs.
+  notes: |
+    Most tags of a gadget's kind can be changed this way, for example the
+    level of a slider (`GTSL_Level`, `$80080028`), the choice of a cycle
+    gadget (`GTCY_Active`, `$8008000F`) or the state of a check box
+    (`GTCB_Checked`, `$80080004`). Tags that only set up a gadget, such as
+    the format of a slider's level, cannot be changed afterwards.
 "GTGetAttrs":
-  text: The value of one GadTools tag of a gadget.
+  text: The value of one GadTools tag of a gadget, or 0 if there is no such gadget. It needs AmigaOS 3.0 or newer.
 "GTSetString":
   text: Sets the text of a string gadget or a text gadget.
 "GTGetString":
@@ -72,9 +104,9 @@
 "GTStatus":
   text: 1 if the gadget is selected, else 0.
 "GTArrowSize":
-  text: The size of the arrows of scrollers made from now on with arrows.
+  text: The size of the arrows of scrollers made from now on with arrows; the start value is 16.
 "GTGimmeCludge":
-  text: With `On`, the positions of gadgets made from now on are taken as they are, without adding the window's borders and the height of the screen's font.
+  text: With `On`, the positions of gadgets made from now on are taken as they are, without adding the window's borders and the height of the screen's font. Use it for a GimmeZeroZero window, whose positions already start inside the borders.
 "GTFreeGadget":
   text: Removes the gadget, or all gadgets in a row with that `id`, from the GTList and frees them.
   notes: |

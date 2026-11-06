@@ -7,9 +7,34 @@ intro: |
   `id`, position, size, label and flags, and `AttachGTList` adds all of
   them to a window. `GadgetHit` then gives the `id` of the gadget used.
 
-  The flags of a gadget switch on options of its kind, such as disabled,
-  checked or vertical; `GTTags` gives the next gadget further GadTools
-  tags. Positions are relative to the inside of the window, unless
+  ```blitzbasic
+  GTButton 0,1,10,10,100,14,"Quit",16
+  GTCheckBox 0,2,10,30,26,11,"Sound",2+256
+  GTSlider 0,3,90,50,120,12,"Volume",1,0,64,32
+  AttachGTList 0,0
+  ```
+
+  The flags of a gadget are the sum of these values. The low ones place
+  the label `Text$`; the others switch on options of the gadget kinds
+  named:
+
+  | Value | Meaning |
+  |---|---|
+  | 1, 2, 4, 8 | label left of, right of, above or below the gadget |
+  | 16 | label inside the gadget |
+  | 32 | label highlighted |
+  | 64 | disabled (all kinds but text and number gadgets) |
+  | 128 | reports when it is pressed, not only when it is released (button, integer, string, slider, scroller, shape) |
+  | 256 | checked at the start (check box) |
+  | 512 | scaled to the given size (check box, mutual exclude) |
+  | 1024 | vertical (slider, scroller) |
+  | 2048 | with arrows (scroller) |
+  | 4096 | read only (list view) |
+  | 8192 | a toggle button that stays selected (button) |
+
+  `GTTags` gives the next gadget further GadTools tags. Positions are
+  relative to the inside of the window: the window's borders and the
+  height of the screen's font are added to them, unless
   `GTGimmeCludge On` is set. `GTSetAttrs`, `GTGetAttrs` and the
   `GTSet...`/`GTGet...` commands read and change gadgets later.
 
@@ -21,3 +46,5 @@ intro: |
   commands that change gadgets through tags must not be used inside a
   string expression
   ([#328](https://github.com/fubar-coder/bb2-c/issues/328)).
+
+  *Based on the bbgtlib guide by Acid Software.*
