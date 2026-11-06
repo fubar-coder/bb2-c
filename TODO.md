@@ -762,6 +762,38 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   through on 3.1 and prints "at most 255" - the expectation does not see
   the overwrite); `bb_blitlib_createshape_count0` (clib: timeout instead
   of the original's halt, DIFFERS; ref and port REPRODUCED).
+- [x] **Accepted bug-orig DIFFERS (memory layout)** decided (2026-11-06):
+  these tests come out DIFFERS in every saved run, because the C build's
+  memory layout differs from the original's, so the overflow reaches other
+  data (or the crash happens elsewhere) and the session ends differently
+  (original: done or timeout, C build: halt or timeout). The bugs are
+  reproduced as far as they can be; the verdict stays DIFFERS until a test
+  observes the bug before the crash (as 87f5f38 did for
+  `regression_ricompactdisclib_scsi_after_plain`: hold the program after
+  the observation, expectation `[session] timeout`):
+  - [ ] `compiler-incdir-overflow` (#16): the port has other data behind
+    `incdir` (BSS followed by `comdata`), so the compiler itself crashes;
+  - [ ] `ridoslib-path-buffer-overflow` (#627): original done, port halts
+    (the 300-character argument becomes a pointer the library uses at End);
+  - [ ] `ripacklib-unpackiff-zero-planes` (#777): original timeout, port
+    halts (256 plane pointers over other data);
+  - [ ] `rilesdebuglib-addprocessptr-no-limit` (#700): original done, port
+    halts;
+  - [ ] `rimisclib-ezrequest-args-unbounded` (#748, #756): original
+    timeout, port halts;
+  - [ ] `compiler-macro-textlen-word` (#964): original timeout, port done.
+  Each can be reworked on its own; so far no test observes its bug before
+  the crash. `riarexxlib-parser-no-limit` (#537) was DIFFERS for the same
+  reason since the `halt` session end (d147c8a: the original hung, the
+  C build halted) and is reworked (2026-11-06): the command is the word
+  "aaa", 253 spaces and the bytes of `CLR.l d0 : RTS`, which overwrite the
+  first instruction of `_nextparsearg` (the message has 0 arguments, the
+  C build reads the word a second time from `stringbuffer`: 2); nothing
+  crashes, ref, port and clib are REPRODUCED (`one argument 0`, session
+  done), 3 of 3 runs. Separate: a `wbrun` reference session can die under
+  host load (alert `87000004`, AN_AsyncPkt, then the requester idles until
+  the time limit; seen once in `compiler-wb-info-shortread`, REPRODUCED in
+  the other runs).
 - [ ] **Immutable strings (idea, long term)**: in BB2 a string variable
   is string and string builder in one (the memory of the variable is
   changed in place: `MaxLen`, `&a$` with `Poke`, libraries writing the
