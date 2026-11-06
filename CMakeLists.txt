@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 4.2.3)
 
 # Blitz Basic 2 in C: the compiler (blitz2), the editor (ted) and the
 # libraries blitz2 reads (acidlibs, deflibs), built for AmigaOS with the
@@ -12,7 +12,7 @@ cmake_minimum_required(VERSION 3.28)
 # host code in an IDE (docs/development.md, "IDE").
 option(BLITZ2_HOST "only the host side (tools, host tests) with the native compiler" OFF)
 if(BLITZ2_HOST)
-	cmake_minimum_required(VERSION 3.28)
+	cmake_minimum_required(VERSION 4.2.3)
 	project(blitzbasic2_native LANGUAGES C CXX)
 	enable_testing()
 	add_subdirectory(host)

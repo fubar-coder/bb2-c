@@ -14,7 +14,7 @@
 #
 #   cmake -DBUILD=<build dir> [-DGCOV=gcov] -P cmake/coverage-map.cmake
 #   (or the target coverage-map)
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 4.2.3)
 
 if(NOT BUILD)
 	message(FATAL_ERROR "usage: cmake -DBUILD=<build dir> [-DGCOV=gcov] -P coverage-map.cmake")

@@ -37,7 +37,7 @@
 #                           added
 #   workbench-311-rtg.hdf   the same with the uaegfx monitor
 #                           (Storage/Monitors/UAE) in Devs/Monitors
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 4.2.3)
 
 get_filename_component(root ${CMAKE_CURRENT_LIST_DIR}/.. ABSOLUTE)
 if(NOT DEST)

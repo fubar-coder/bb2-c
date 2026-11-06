@@ -12,7 +12,7 @@
 # members in allowed_libnix (plain string/setjmp code without library
 # bases).  Anything else - in particular every helper of libgcc/libnix20 and
 # anything that references UtilityBase - fails the check.
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 4.2.3)
 
 set(allowed_libnix setjmp.o longjmp.o memset.o memcpy.o memmove.o memcmp.o
 	strlen.o strcmp.o strncmp.o strcpy.o strncpy.o bcopy.o bzero.o)

@@ -2,7 +2,7 @@
 # "ADDR<tab>NAME<tab>FILE:LINE", ADDR = offset in the code hunk).
 #   cmake -DLABELS=ted.labels -DOUT=ted_labels.h -DNAMES="a;b" -P labels.cmake
 # Every name must be there exactly once.
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 4.2.3)
 
 file(STRINGS ${LABELS} lines)
 set(defs "")

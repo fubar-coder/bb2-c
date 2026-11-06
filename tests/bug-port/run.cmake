@@ -12,7 +12,7 @@
 #           fails; a FAIL also needs a non-zero tail_nonzero (the checker
 #           must count the garbage), a PASS needs 0 (EXPECT: list separated by |)
 # Exit 77 (skipped) without Amiberry or its data.
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 4.2.3)
 
 foreach(v AMIGA_RUN LSCLEAR MACHINE WORK)
 	if(NOT ${v})

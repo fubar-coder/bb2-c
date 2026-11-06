@@ -15,7 +15,7 @@
 # the run needs at least one logged access to START from outside the code
 # range (the program's probe: the range is unmapped and the log works) and
 # fails if code in [CODESTART,CODEEND) accessed [START,END).
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 4.2.3)
 
 set(required AMIGA_RUN PROGRAM LIBS WORK)
 if(NOT NO_ORIGINALS)

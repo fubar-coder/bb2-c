@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 4.2.3)
 
 # The host side of the build: everything built with the native compiler -
 # the tools the m68k build uses (tools/) and the host tests of the

@@ -15,7 +15,7 @@
 # BREAK: the check itself - the token of NAME changed in our list, the
 # comparison must fail.  Exit status 0 if every source is equal; 77
 # (skipped) without the emulator or the fetched AmiBlitz3 files.
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 4.2.3)
 
 foreach(v AMIGA_RUN BLITZTOKENS AB3TOK BLITZ2 AB3 SOURCES WORK)
 	if(NOT ${v})

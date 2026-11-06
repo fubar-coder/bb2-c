@@ -41,7 +41,7 @@
 # layout of the executable of a case (hunkcheck --hunks LAYOUT).
 # Exit status 0 if every case matches; 77 (skipped) without the emulator
 # or the fetched AmiBlitz3 files.
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 4.2.3)
 
 foreach(v AMIGA_RUN OUTMATCH REQTRAP INJECT CONFIG CASES BLITZ2_DIR AB3 WORK)
 	if(NOT ${v})

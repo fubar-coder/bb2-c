@@ -15,7 +15,7 @@
 # tracefiles are of that commit), files git does not track included.  BASE
 # (default: the coverage's commit): if the coverage's commit is not an
 # ancestor of it, the coverage is stale and all tests are selected.
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 4.2.3)
 
 if(NOT BUILD)
 	message(FATAL_ERROR "usage: cmake -DBUILD=<build dir> [-DCOVERAGE=<coverage dir>] "

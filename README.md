@@ -25,7 +25,7 @@ reproduced bugs fail on purpose (`tests/README.md`).
 
 ## Requirements
 
-* CMake ≥ 3.28 and Ninja
+* CMake ≥ 4.2.3 and Ninja
 * m68k-amigaos-gcc (bebbo/AmigaDev) in `PATH`, otherwise
   `-DAMIGA_TOOLCHAIN_PREFIX=…` or the environment variable of the same
   name; configure checks that it is recent enough

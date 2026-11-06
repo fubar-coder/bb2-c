@@ -14,7 +14,7 @@
 #   - any library base stub (libstubs.a) of a library that Kickstart 1.3 does
 #     not have (allowed_stubs),
 #   - a defined UtilityBase.
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 4.2.3)
 
 # library bases of Kickstart 1.3 (ROM and LIBS:) blitz2 may reference
 set(allowed_stubs dos.o exec.o graphics.o intuition.o layers.o icon.o

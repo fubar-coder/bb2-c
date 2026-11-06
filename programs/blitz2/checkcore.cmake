@@ -9,7 +9,7 @@
 # ext_bb2.c for blitz2 and by the AB3 modules ab3*.c for blitz2-ab3
 # (docs/ab3/variant.md, "Structure").  The define of the former second
 # build, BLITZ2_AB3, must not come back in any of them.
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 4.2.3)
 
 math(EXPR last "${CMAKE_ARGC} - 1")
 if(last LESS 3)
