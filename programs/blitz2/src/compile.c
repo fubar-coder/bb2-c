@@ -824,7 +824,11 @@ void dopass(void)
     }
 
     /* end of whole program! */
-    endop = pc;                 /* where end goes... */
+    /* BUG(orig) (#979): pc is not rounded up to even here: an IncBin (or
+       Dc.b) of odd length as the last statement leaves the end code (the
+       library finits, moveq #0,d0 / rts) on an odd address, where End
+       jumps: an address error. */
+    endop = pc;               /* where end goes... */
 
     if (blitzmode)
         doamiga(0);             /* back to amiga if in blitz! */
