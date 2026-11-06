@@ -248,6 +248,51 @@ int blitztokens_write(FILE *f, const struct blitztokens *list)
     return 0;
 }
 
+static int hexdigit(char c)
+{
+    if (c >= '0' && c <= '9')
+        return c - '0';
+    if (c >= 'A' && c <= 'F')
+        return c - 'A' + 10;
+    if (c >= 'a' && c <= 'f')
+        return c - 'a' + 10;
+    return -1;
+}
+
+int blitztokens_read(char *buf, size_t size, struct blitztokens *out, char *err,
+                     size_t errlen)
+{
+    size_t pos = 0, line = 0;
+
+    while (pos < size) {
+        char *s = buf + pos, *nl = memchr(s, '\n', size - pos);
+        size_t len = nl ? (size_t)(nl - s) : size - pos;
+        unsigned num = 0;
+        int i, d;
+
+        line++;
+        pos += len + (nl != NULL);
+        if (len && s[len - 1] == '\r')
+            len--;
+        if (!len)
+            continue;
+        for (i = 0; i < 4 && (size_t)i < len && (d = hexdigit(s[i])) >= 0; i++)
+            num = num << 4 | (unsigned)d;
+        if (i < 4 || len < 6 || s[4] != ' ' || memchr(s, 0, len)) {
+            snprintf(err, errlen, "line %zu: not \"XXXX name\"", line);
+            return -1;
+        }
+        if (!(num & 0x8000)) {
+            snprintf(err, errlen, "line %zu: token $%04X without bit 15", line, num);
+            return -1;
+        }
+        s[len] = 0;
+        if (add(out, (uint16_t)num, s + 5, err, errlen))
+            return -1;
+    }
+    return 0;
+}
+
 void blitztokens_free(struct blitztokens *list)
 {
     free(list->t);

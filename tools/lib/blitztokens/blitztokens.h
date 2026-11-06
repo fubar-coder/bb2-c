@@ -83,6 +83,23 @@ int blitztokens_libraries(const uint8_t *buf, size_t size, struct blitztokens *o
  */
 int blitztokens_write(FILE *f, const struct blitztokens *list);
 
+/**
+ * @brief Add the tokens of a list file as blitztokens_write writes it
+ *        (tests/data/ted-tokens.txt): "XXXX name" per line, XXXX four hex
+ *        digits with bit 15 set, the name up to the end of the line (LF,
+ *        CR LF); empty lines are skipped, anything else is refused.
+ * @param buf     the file and one byte more (the 0 behind a last line
+ *                without LF); changed: every line end becomes 0, the
+ *                names point into it
+ * @param size    the file's size
+ * @param out     the list the tokens are appended to
+ * @param err     the message of an error ("line N: ...")
+ * @param errlen  the size of err
+ * @return 0 = ok, -1 = error (out keeps the tokens before the line)
+ */
+int blitztokens_read(char *buf, size_t size, struct blitztokens *out, char *err,
+                     size_t errlen);
+
 /** @brief Free the list (not the names: they point into the files). */
 void blitztokens_free(struct blitztokens *list);
 

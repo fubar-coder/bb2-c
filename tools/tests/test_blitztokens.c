@@ -231,6 +231,27 @@ int main(void)
           && strstr(err, "loop"));
     blitztokens_free(&l);
 
+    /* a list file read back: LF, CR LF, an empty line, the last line
+       without LF; broken: no name, no hex number, no bit 15 */
+    {
+        char text[] = "8001 NEWTYPE\r\n\nB201 Print Two\nFF9A x";
+        char bad1[] = "8001 NEWTYPE\n8002\n", bad2[] = "80G1 End\n", bad3[] = "0001 End\n";
+
+        CHECK(blitztokens_read(text, sizeof text - 1, &l, err, sizeof err) == 0);
+        CHECK(l.n == 3 && has(&l, 0, 0x8001, "NEWTYPE") && has(&l, 1, 0xB201, "Print Two")
+              && has(&l, 2, 0xFF9A, "x"));
+        blitztokens_free(&l);
+        CHECK(blitztokens_read(bad1, sizeof bad1 - 1, &l, err, sizeof err) == -1
+              && !strcmp(err, "line 2: not \"XXXX name\"") && l.n == 1);
+        blitztokens_free(&l);
+        CHECK(blitztokens_read(bad2, sizeof bad2 - 1, &l, err, sizeof err) == -1
+              && strstr(err, "line 1: not"));
+        blitztokens_free(&l);
+        CHECK(blitztokens_read(bad3, sizeof bad3 - 1, &l, err, sizeof err) == -1
+              && strstr(err, "without bit 15"));
+        blitztokens_free(&l);
+    }
+
     /* AmiBlitz 2: nodes at odd offsets; broken: a next behind the hunk */
     free(c.p);
     c = compiler_odd();
