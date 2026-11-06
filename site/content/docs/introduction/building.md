@@ -3,7 +3,6 @@ title: Building the BB2 C port
 weight: 1
 description: From a fresh clone to the blitz2 directory - the tools you need, the cross compiler, and the commands.
 prev: /docs/introduction
-next: /docs/how-blitz2-works
 ---
 
 Before this page you should know what the port is
