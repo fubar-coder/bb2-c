@@ -1,0 +1,34 @@
+description: Reading and changing the icons of files, by Reflective Images - tool types, default tool, icon type and the icon's images as shapes.
+intro: |
+  This library reads and changes the icon (the `.info` file) of a file
+  through the system's icon.library: its tool types, its default tool,
+  its type and its images. Without icon.library, every command does
+  nothing and returns 0. All commands are Amiga mode only.
+
+  The library works on one icon at a time, not on numbered objects.
+  `GetIconObject` loads the icon of a file, the other commands work on
+  it, and `PutIconObject` writes it back, to the same file or another
+  one; `FreeIconObject` drops it without writing. A second
+  `GetIconObject` fails while an icon is loaded.
+
+  Tool types are the lines of the form `NAME=value` or just `NAME` in
+  the icon's information window. A tool type in brackets, `(NAME=value)`,
+  is switched off: the system ignores it. Names are compared without
+  regard to case, though they are usually written in capitals. The
+  library keeps up to 100 tool types per icon.
+
+  The commands `ShapeToIcon` and `IconToShape` exchange the icon's images
+  with the shape objects of Blitz Basic 2.
+
+  Reading a tool type and changing it:
+
+  ```blitzbasic
+  If GetIconObject("myprog")
+    NPrint "Window: ",FindToolValue("WINDOW")
+    If FindToolType("DONOTWAIT") Then NPrint "DONOTWAIT is set"
+    SetToolValue "WINDOW","CON:0/0/640/200"
+    PutIconObject "myprog"
+  EndIf
+  ```
+
+  *Based on the RI ToolTypes Lib guide by Reflective Images.*

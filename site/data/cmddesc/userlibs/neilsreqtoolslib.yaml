@@ -1,0 +1,160 @@
+"RTEZRequest":
+  text: Opens a message requester with the text `BodyText$` and the buttons of `GadgetText$`, separated by `|`. Returns the number of the button chosen, counted from 1 at the left; the rightmost button, usually Cancel, gives 0.
+  notes: |
+    An empty `Title$` gives the requester reqtools' default title. A `_`
+    before a letter of a button makes that letter its keyboard shortcut;
+    a `Chr$(10)` in the body text starts a new line. `BodyText$` may also
+    be the address of a text.
+
+    `ReqPosition` places the requester: 0 at the mouse pointer, 1 in the
+    centre of the window, 2 in the centre of the screen (the default),
+    3 at the top left of the window, 4 at the top left of the screen.
+    `DefaultResponse` is the button that Return chooses, 1 by default.
+    `Flags` adds 1 to switch Return off, 2 to limit the shortcuts to Left
+    Amiga with V and B, and 4 to centre the text. All three apply to this
+    call only.
+"RTEZLoadFile":
+  text: Opens the file requester for loading and returns the path of the chosen file, the directory and the file name. An empty string if the user cancels.
+  notes: |
+    `Filename$` is the file name the requester starts with; it is not
+    changed. The requester shows only the files that match a pattern
+    after `RTEZSetPattern`.
+
+    Kept from the original: when more text follows the function in a
+    string expression, a 0 byte stays between the path and that text
+    ([#461](https://github.com/fubar-coder/bb2-c/issues/461)); assign
+    the result to a string variable first.
+"RTEZFontRequest":
+  text: Opens the font requester and returns the address of a `TextAttr` structure of the chosen font, its name, size, style and flags; 0 if the user cancels.
+  notes: |
+    The structure belongs to the library and changes with the next call;
+    the name points into the requester.
+"RTEZScreenModeRequest":
+  text: Meant to open the screen mode requester and return the address of a block with the chosen mode; 0 if the user cancels.
+  notes: |
+    The block holds the display ID (a long), width, height, depth and
+    overscan type (words) and the autoscroll setting (a long).
+    `DisplayFlags` chooses the gadgets of the requester, as the
+    `SCREQF_` flags of reqtools; without it, the requester has width,
+    height and depth gadgets. The flags stay until a mode is chosen.
+
+    Kept from the original: the command calls reqtools' font requester
+    with the screen mode requester's data, so which requester appears and
+    what the block holds depends on reqtools
+    ([#466](https://github.com/fubar-coder/bb2-c/issues/466)).
+"RTEZPaletteRequest":
+  text: Opens the palette requester, starting at the colour `FirstColour`. Returns the colour selected last, or -1 if the user cancels.
+  notes: |
+    Changes of the colours show at once on the screen of the requester.
+
+    Kept from the original: `RTReturnValue` is not set by this command
+    ([#464](https://github.com/fubar-coder/bb2-c/issues/464)).
+"RTEZGetLong":
+  text: Asks the user for a number, with the text `BodyText$` and the optional `DefaultValue` in the input field. Returns the number.
+  notes: |
+    Without `DefaultValue`, the number entered last is offered.
+
+    Kept from the original: when the user cancels, the command returns
+    the number in the field all the same; only `RTReturnValue`, 0 after a
+    cancel, tells the two apart
+    ([#457](https://github.com/fubar-coder/bb2-c/issues/457)).
+"RTEZGetLongRange":
+  text: Like `RTEZGetLong`, but the number must lie between `Min` and `Max`, both included. Returns 0 if the user cancels.
+"RTEZGetString":
+  text: Asks the user for a text of up to `MaxChars` characters, with the text `BodyText$` and the optional `DefaultString` in the input field. Returns the text, or an empty string if the user cancels.
+  notes: |
+    Kept from the original: after a cancel, the memory of the input is
+    not freed until the program ends
+    ([#458](https://github.com/fubar-coder/bb2-c/issues/458)).
+"RTEZSaveFile":
+  text: Opens the file requester for saving and returns the path of the chosen file; an empty string if the user cancels. Its button says Save, double-clicking a file does not choose it, and a directory that does not exist can be created.
+  notes: |
+    `Filename$` is the file name the requester starts with.
+
+    Kept from the original: when more text follows the function in a
+    string expression, that text overwrites the end of the path or leaves
+    other bytes in between
+    ([#465](https://github.com/fubar-coder/bb2-c/issues/465)); assign the
+    result to a string variable first.
+"RTEZSetDefaultDirectory":
+  text: Sets the directory that a file requester shows, 0 for loading, 1 for saving, 2 for the path requester and 3 for the multi-load requester. Other numbers do nothing.
+"RTEZPathRequest":
+  text: Opens a requester for choosing a directory and returns it, with a `/` at its end unless it ends in `:`. An empty string if the user cancels.
+"RTLockWindow":
+  text: Locks the window `Window#` against input, with a wait pointer, until `RTUnlockWindow`. Returns the lock that `RTUnlockWindow` needs; keep it.
+"RTUnlockWindow":
+  text: Unlocks the window `Window#` that was locked with `RTLockWindow`; `Lock` is the value that returned.
+"RTEZSetPattern":
+  text: Adds a pattern gadget to a file requester and sets its pattern, so that the requester shows only the matching files; 0 for loading, 1 for saving, 3 for the multi-load requester. Other numbers do nothing.
+"RTEZFreePattern":
+  text: Removes the pattern gadget of a file requester again, 0 for loading and 1 for saving.
+  notes: |
+    Kept from the original: the multi-load requester is 2 here, not 3 as
+    in `RTEZSetPattern`
+    ([#456](https://github.com/fubar-coder/bb2-c/issues/456)).
+"RTEZFlagsRequest":
+  text: Like `RTEZRequest`, but the requester also ends on the window events of `IDCMPFlags`, for example a disk inserted. Returns the number of the button, or the event's flag if an event ended it.
+  notes: |
+    An empty `GadgetText$` gives a requester without buttons, which only
+    an event can end; use that with care.
+
+    Kept from the original: the requester never shows `Title$` but
+    reqtools' default title
+    ([#455](https://github.com/fubar-coder/bb2-c/issues/455)).
+"RTRequest":
+  text: Opens a message requester like `RTEZRequest`, set up by the reqtools tag list at the address `TagList`. Returns the number of the button chosen.
+"RTFileRequest":
+  text: Opens a file requester of its own, set up by the reqtools tag list at the address `TagList`, and returns the path of the chosen file. An empty string if the user cancels.
+  notes: |
+    Kept from the original: when more text follows the function in a
+    string expression, a 0 byte stays between the path and that text
+    ([#461](https://github.com/fubar-coder/bb2-c/issues/461)).
+"RTEZMultiLoadFile":
+  text: Opens a file requester in which the user can choose several files. Returns -1 if files were chosen and 0 if the user cancels; the paths of the files then come from `RTNextPathEntry`.
+  notes: |
+    The list of the previous call is freed first, also when the user
+    cancels.
+
+    Kept from the original: now and then the result is another value
+    than -1 when files were chosen, so test it for not 0 rather than for
+    -1 ([#462](https://github.com/fubar-coder/bb2-c/issues/462)).
+"RTNextPathEntry":
+  text: The path of the next file chosen with `RTEZMultiLoadFile`, or an empty string after the last one.
+"RTASyncRequest":
+  text: Opens a message requester that stays open while the program goes on, for example to let the user stop a long task. Returns -1 if the requester is open.
+  notes: |
+    The program must have a current window. The requester is then
+    watched with `RTCheckASyncRequest`.
+
+    Kept from the original: the program cannot wait for the requester,
+    only poll it with `RTCheckASyncRequest`
+    ([#454](https://github.com/fubar-coder/bb2-c/issues/454)).
+"RTCheckASyncRequest":
+  text: Returns -1 while the requester of `RTASyncRequest` is open; once the user has closed it, the number of the button chosen.
+"RTEndASyncRequest":
+  text: Closes the requester of `RTASyncRequest` from the program. Do not call it after the user has closed the requester.
+"RTVersion":
+  text: The version number of the reqtools.library in use.
+"RTRevision":
+  text: The revision number of the reqtools.library in use.
+"IsReqToolsActive":
+  text: Returns -1 if reqtools.library could be opened and the library's requesters prepared when the program started, and 0 if not.
+  notes: |
+    Without it, the other commands of the library must not be used.
+"RTASyncPaletteRequest":
+  text: Opens a palette requester, starting at the colour `FirstColour`, that stays open while the program goes on. Returns -1 if the requester is open.
+  notes: |
+    The program must have a current window. Kept from the original:
+    `RTReturnValue` is not set by this command
+    ([#464](https://github.com/fubar-coder/bb2-c/issues/464)), and the
+    requester can only be polled
+    ([#454](https://github.com/fubar-coder/bb2-c/issues/454)).
+"RTCheckASyncPaletteRequest":
+  text: Returns -1 while the requester of `RTASyncPaletteRequest` is open, and 0 once the user has closed it; how it was closed cannot be told.
+"RTEndASyncPaletteRequest":
+  text: Closes the requester of `RTASyncPaletteRequest` from the program.
+"RTReturnValue":
+  text: What reqtools answered to the last requester of the library, for example 0 after a cancelled number requester.
+  notes: |
+    The palette requesters, the commands that check or end an
+    asynchronous requester and the window commands do not change it.

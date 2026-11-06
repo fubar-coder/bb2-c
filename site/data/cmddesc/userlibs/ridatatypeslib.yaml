@@ -1,0 +1,101 @@
+"DataTypeOpen":
+  text: Opens a file and finds the datatype that matches it. Returns a value other than 0 on success, and 0 if the file cannot be found or another file is still open.
+  notes: |
+    Kept from the original: a file name longer than 383 characters
+    overwrites the library's memory
+    ([#604](https://github.com/fubar-coder/bb2-c/issues/604)). A file for
+    which no datatype is found is not handled: the library reads a
+    nonsense datatype, and the file stays locked even after
+    `DataTypeClose`, so every later `DataTypeOpen` fails
+    ([#605](https://github.com/fubar-coder/bb2-c/issues/605)).
+"DataTypeClose":
+  text: Frees the datatype object and closes the file opened with `DataTypeOpen`.
+  notes: |
+    Kept from the original: an object that is still attached to a window
+    is freed without being removed from it; call `DetachDataType` first
+    ([#599](https://github.com/fubar-coder/bb2-c/issues/599)).
+"DataTypeName":
+  text: The name of the datatype of the open file, for example `ILBM`. An empty string if no file is open.
+"DataTypeBaseName":
+  text: The base name of the datatype of the open file, the name of the datatype's own library without `.datatype`, for example `ilbm`. An empty string if no file is open.
+"DataTypeID":
+  text: The ID of the datatype of the open file, up to four characters, for example `ilbm`; for an IFF file the FORM type. An empty string if no file is open.
+"DataTypeCreate":
+  text: Loads the open file into a datatype object, for the commands that work on the object. Returns the object's address, or 0 if it cannot be made. The optional tag list is passed to the system when the object is made.
+  notes: |
+    With a tag list, the command returns 0 when no file is open.
+
+    Kept from the original: without a tag list, the command does not
+    check for an open file and loads the file opened last, if there was
+    one ([#601](https://github.com/fubar-coder/bb2-c/issues/601)). A
+    second `DataTypeCreate` replaces the object without freeing it, so
+    its memory is lost
+    ([#600](https://github.com/fubar-coder/bb2-c/issues/600)).
+"AttachDataType":
+  text: Adds the datatype object to a window as a gadget with the ID `id`, at 0,0 in the size of the picture, at `x`,`y` in the size `width`,`height`, or with a tag list. Returns -1, or 0 if no file is open or an object is attached already.
+  notes: |
+    The object sends its update messages to the window as
+    `IDCMP_IDCMPUPDATE` events; it is not ready to be drawn until
+    `DataTypeReady` returns -1. The colours of a picture are not
+    remapped. Only one object can be attached at a time.
+
+    Kept from the original: the form without a position takes the size
+    from `DataTypeBitmap` and reads nonsense if that was not called
+    first ([#595](https://github.com/fubar-coder/bb2-c/issues/595)).
+    The form with a position and size passes only their low 16 bits on,
+    so they can reach the system with wrong values
+    ([#597](https://github.com/fubar-coder/bb2-c/issues/597)). The form
+    with a tag list ignores the tag list and uses the ID as its address
+    instead ([#596](https://github.com/fubar-coder/bb2-c/issues/596)).
+"DetachDataType":
+  text: Removes the datatype object from the window it was attached to with `AttachDataType`. Nothing happens if it is not attached.
+"DataTypeSuper":
+  text: The name of the class of the datatype object, for example `ilbm.datatype`. An empty string if there is no object.
+"DataTypeBitmap":
+  text: Reads the bitmap header of a picture object, which holds the picture's size and depth, and returns its address; 0 if there is no object. Call it before `DataTypeWidth`, `DataTypeHeight`, `DataTypeDepth` and `DataTypeModeID`.
+  notes: |
+    Kept from the original: for an object that is not a picture, the
+    command returns whatever address the library's buffer holds, and the
+    commands that use the header read nonsense
+    ([#598](https://github.com/fubar-coder/bb2-c/issues/598)).
+"DataTypesPalette":
+  text: Copies the colours of the picture object into the palette object `palette#`, as many as the palette object has. Returns a value other than 0 after copying, and 0 if there is no object.
+  notes: |
+    The palette object must already exist. The object does not have to
+    be attached to a window.
+
+    Kept from the original: the palette object must not have more
+    colours than the picture, because the command copies as many colours
+    as the palette has and reads behind the picture's colours; a palette
+    of 0 colours counts as 65536
+    ([#606](https://github.com/fubar-coder/bb2-c/issues/606)). When the
+    object has no colours, the result is not always 0
+    ([#607](https://github.com/fubar-coder/bb2-c/issues/607)).
+"DataTypeWidth":
+  text: The width of the picture in pixels, from `DataTypeBitmap`; 0 if that was not called.
+"DataTypeHeight":
+  text: The height of the picture in pixels, from `DataTypeBitmap`; 0 if that was not called.
+"DataTypeDepth":
+  text: The depth of the picture in bitplanes, from `DataTypeBitmap`; 0 if that was not called.
+"DataTypeReady":
+  text: Returns -1 when the system has finished preparing the attached object and it can be drawn, and 0 while it is still working or when no object is attached.
+"SetDataTypeAttr":
+  text: Changes attributes of the datatype object, given as the address of a tag list or as pairs of attribute and value. Nothing happens if there is no object.
+"GetDataTypeAttr":
+  text: Reads one attribute of the datatype object and returns the address where its value is stored, not the value itself; read it with `Peek.l`. Returns 0 if there is no object.
+  notes: |
+    The value is kept in a buffer that the next command of the library
+    may overwrite.
+"DataTypeModeID":
+  text: The display mode ID that suits the size and depth of the picture best, for example to open a screen for it; 0 if `DataTypeBitmap` was not called.
+  notes: |
+    Kept from the original: the form with a tag list does not pass the
+    program's tags on but overwrites the first four entries of the list
+    with its own ([#603](https://github.com/fubar-coder/bb2-c/issues/603)).
+"DataTypeGroup":
+  text: The group of the datatype of the open file, four characters, for example `pict` for pictures. An empty string if no file is open.
+  notes: |
+    The groups of the system are `pict` (picture), `anim` (animation),
+    `movi` (movie), `text` (text), `docu` (hypertext document), `musi`
+    (music), `soun` (sound), `inst` (musical instrument) and `syst`
+    (system file).

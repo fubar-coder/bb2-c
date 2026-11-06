@@ -1,0 +1,48 @@
+description: The requesters of reqtools.library for Blitz programs, by Neil O'Rourke with changes by Steve Matty - message, file, path, font, screen mode, palette, number and string requesters.
+intro: |
+  This library makes the requesters of reqtools.library, a widely used
+  system extension by Nico François, usable from Blitz Basic 2. It needs
+  reqtools.library version 38 or later in `LIBS:`. When the program
+  starts, the library opens it and prepares its requesters;
+  `IsReqToolsActive` tells whether that worked. Check it before using
+  any other command: they do not check it themselves, and without
+  reqtools.library they crash the machine
+  ([#463](https://github.com/fubar-coder/bb2-c/issues/463)).
+
+  There are two kinds of commands. The ones with `EZ` in their name come
+  with a sensible set of options and need only a title and a few
+  values; `RTRequest` and `RTFileRequest` take a tag list of reqtools
+  options from the program instead. The requesters lock the window they
+  belong to while they are open: the window that receives the DOS error
+  requesters, which the program can choose with `Use Window` and
+  `CatchDosErrs`. Without that, they appear on the Workbench screen.
+
+  The file requesters are numbered for the commands that change their
+  settings: 0 is the one of `RTEZLoadFile`, 1 of `RTEZSaveFile`, 2 of
+  `RTEZPathRequest` and 3 of `RTEZMultiLoadFile`. Each keeps its own
+  directory between calls. `RTFileRequest` has a requester of its own.
+
+  `RTASyncRequest` and `RTASyncPaletteRequest` open a requester that
+  stays open while the program goes on; the program asks with
+  `RTCheckASyncRequest` or `RTCheckASyncPaletteRequest` whether it is
+  still open and closes it with `RTEndASyncRequest` or
+  `RTEndASyncPaletteRequest`. Only one of each can be open at a time.
+
+  `RTReturnValue` returns what reqtools itself answered to the last
+  requester, which tells for example a cancelled requester from a
+  chosen value.
+
+  Choosing a file and asking before loading it:
+
+  ```blitzbasic
+  If IsReqToolsActive
+    f$=RTEZLoadFile("Choose a file","")
+    If f$<>""
+      If RTEZRequest("Load","Load "+f$+"?","Load|Cancel")=1
+        NPrint "Loading ",f$
+      EndIf
+    EndIf
+  EndIf
+  ```
+
+  *Based on the documentation of ReqToolsLib by Neil O'Rourke.*

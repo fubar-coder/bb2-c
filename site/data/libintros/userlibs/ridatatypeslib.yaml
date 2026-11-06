@@ -1,0 +1,40 @@
+description: Loading files through the datatypes of Workbench 3, by Steve Matty of Leading Edge Software for Red When Excited - the datatype of a file, its picture size, depth and colours, and showing it in a window.
+intro: |
+  With datatypes, a program can load any file format for which a
+  datatype is installed: a picture viewer that knows only IFF ILBM
+  reads GIF or JPEG pictures as well. This library makes the system's
+  datatypes.library usable from Blitz Basic 2. It needs Workbench 3.0
+  or later; all its commands are Amiga mode only.
+
+  The library works on one file at a time, not on numbered objects.
+  `DataTypeOpen` chooses the file and finds its datatype; `DataTypeName`,
+  `DataTypeBaseName`, `DataTypeID` and `DataTypeGroup` describe it.
+  `DataTypeCreate` loads the file into a datatype object. For a picture,
+  `DataTypeBitmap` then reads its size and depth, which `DataTypeWidth`,
+  `DataTypeHeight`, `DataTypeDepth` and `DataTypeModeID` return, and
+  `DataTypesPalette` copies its colours into a Blitz palette object.
+  `AttachDataType` adds the object to a Blitz window as a gadget,
+  `DetachDataType` removes it again, and `DataTypeClose` frees the file
+  and the object. Only one file can be open: `DataTypeOpen` fails until
+  `DataTypeClose` is called.
+
+  The commands were written for pictures; other groups may work with the
+  commands that do not need a picture. An attached object is laid out
+  by the system in the background: `DataTypeReady` tells when it is
+  done, and the window gets `IDCMP_IDCMPUPDATE` messages from it.
+
+  Showing the type and size of a picture:
+
+  ```blitzbasic
+  If DataTypeOpen("picture.iff")
+    NPrint DataTypeName," (",DataTypeGroup,")"
+    If DataTypeCreate
+      If DataTypeBitmap
+        NPrint DataTypeWidth,"x",DataTypeHeight,"x",DataTypeDepth
+      EndIf
+    EndIf
+    DataTypeClose
+  EndIf
+  ```
+
+  *Based on the RI DataTypes Lib guide by Red When Excited.*

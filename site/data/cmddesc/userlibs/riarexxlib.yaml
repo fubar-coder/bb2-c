@@ -1,0 +1,126 @@
+"RXCreatePort":
+  text: Makes the program's public message port with the name `name$`. Returns the port's address, or 0 if the program has a port already or the port cannot be made.
+  notes: |
+    The command does not check whether a port of that name exists
+    already; choose a name of your own program.
+
+    Kept from the original: when the port cannot be set up completely,
+    it is freed but stays in the system's list of public ports
+    ([#528](https://github.com/fubar-coder/bb2-c/issues/528)).
+"RXDeletePort":
+  text: Removes the program's message port. Messages that are still waiting are replied with the return code 5 first.
+  notes: |
+    Kept from the original: the memory of the message lists and of the
+    port's name is not freed
+    ([#530](https://github.com/fubar-coder/bb2-c/issues/530)).
+"RXReadPort":
+  text: Takes the messages that have arrived at the port and makes the next one the current message. Returns its address, or 0 if no message is waiting.
+  notes: |
+    Replies to the program's own messages are handled here too. Messages
+    that are not ARexx messages are replied at once.
+"RXWaitPort":
+  text: Like `RXReadPort`, but waits for a message if none is waiting. Returns the address of the new current message.
+"RXReplyMsg":
+  text: Replies to the current message with the return code `errcode`, 0 for no error, and the optional result string `result$`. Nothing happens if there is no current message.
+  notes: |
+    Read the arguments of a message before replying to it: after the
+    reply, the sender may free it.
+
+    Kept from the original: the replied message stays the current one,
+    so `RXGetArg` and `RXReplyMsg` can still reach it until the next
+    `RXReadPort` or `RXWaitPort`
+    ([#541](https://github.com/fubar-coder/bb2-c/issues/541)). A result
+    string is passed even if the sender did not ask for one
+    ([#539](https://github.com/fubar-coder/bb2-c/issues/539)). The reply
+    goes to the port named in the message; if no such port exists, the
+    message is not replied
+    ([#540](https://github.com/fubar-coder/bb2-c/issues/540)).
+"RXRunCommand":
+  text: Sends `command$` to the port `portname$`, or to the default port, and does not wait for the reply. Returns 0 if the port is not found.
+  notes: |
+    Kept from the original: otherwise the result is a value left by the
+    system, not a reliable sign of success
+    ([#543](https://github.com/fubar-coder/bb2-c/issues/543)). The
+    replies are freed only in part and stay in the library's list of
+    sent messages, so memory is lost with every command, and after 32
+    commands the list overflows into other memory
+    ([#531](https://github.com/fubar-coder/bb2-c/issues/531)).
+"RXSendersName":
+  text: The name stored in the current message, which for messages sent by this library is the name of the sender's port. An empty string if there is no current message.
+"RXSendCommand":
+  text: Sends `command$` to the port `portname$`, or to the default port, waits for the reply and returns its result string. An empty string if the port is not found or the reply has no result.
+  notes: |
+    Messages that arrive while the command waits are kept for
+    `RXReadPort` and `RXWaitPort`.
+
+    Kept from the original: when the command fails, the reply carries an
+    error number instead of a result string, and the command still reads
+    it as a string ([#545](https://github.com/fubar-coder/bb2-c/issues/545)).
+    Each reply's result string is never freed
+    ([#546](https://github.com/fubar-coder/bb2-c/issues/546)).
+"RXNumArgs":
+  text: The number of arguments of the current message, 0 if there is no current message.
+"RXGetArg":
+  text: The argument `argnum`, 1 to 16, of the current message. An empty string if there is no such argument or no current message.
+"RXExecuteScript":
+  text: Meant to run the ARexx script `scriptname$` through ARexx, without waiting. Returns 0 if ARexx is not running.
+  notes: |
+    The message always goes to the port `REXX`, not to the default port.
+
+    Kept from the original: the command sends the name as a command
+    string, so ARexx does not load the script file but executes the text
+    itself as ARexx source; it works the same as `RXRunScript` and
+    returns no result ([#544](https://github.com/fubar-coder/bb2-c/issues/544)).
+    The other notes of `RXRunCommand` apply too.
+"RXRunScript":
+  text: Meant to run the ARexx script `scriptname$` through ARexx, without waiting. Returns 0 if ARexx is not running.
+  notes: |
+    The message always goes to the port `REXX`, not to the default port.
+
+    Kept from the original: the command sends the name as a command
+    string, so ARexx does not load the script file but executes the text
+    itself as ARexx source
+    ([#544](https://github.com/fubar-coder/bb2-c/issues/544)). The other
+    notes of `RXRunCommand` apply too.
+"RXDefaultPort":
+  text: Sets the port that `RXRunCommand` and `RXSendCommand` send to when they are given no port name. It is `REXX` at the start.
+  notes: |
+    Kept from the original: a name longer than 65 characters overwrites
+    the library's other data
+    ([#529](https://github.com/fubar-coder/bb2-c/issues/529)). After a
+    name of five or more characters, a program run again from the editor
+    can start with a wrong default port, such as `REXXP`
+    ([#532](https://github.com/fubar-coder/bb2-c/issues/532)).
+"RXNextArg":
+  text: The next argument of the current message, starting with the first. An empty string after the last one.
+  notes: |
+    Kept from the original: an empty argument is returned again and
+    again instead of moving on to the next one
+    ([#534](https://github.com/fubar-coder/bb2-c/issues/534)).
+"RXReturnCode":
+  text: The return code of the reply to the last `RXSendCommand`, 0 when it succeeded.
+  notes: |
+    Kept from the original: the function returns 0 unless a received
+    message is current, so it often gives 0 even after a failed command
+    ([#542](https://github.com/fubar-coder/bb2-c/issues/542)).
+"RXTokenise":
+  text: With `On`, the default, commands are split into words, each sent as an argument of its own; with `Off`, a command is sent as one argument.
+  notes: |
+    Spaces separate the words; text between two quote characters is one
+    word, and inside it a doubled quote character stands for one quote.
+
+    Kept from the original: an empty quoted word ends the arguments
+    ([#536](https://github.com/fubar-coder/bb2-c/issues/536)); a
+    character right after a closing quote is dropped, and when a command
+    ends with a quoted word, words of an earlier, longer command are
+    sent again as extra arguments
+    ([#538](https://github.com/fubar-coder/bb2-c/issues/538)); after a
+    doubled quote, the closing quote no longer ends the word
+    ([#535](https://github.com/fubar-coder/bb2-c/issues/535)). More than
+    16 words, or a command or word longer than 255 characters, overwrite
+    memory ([#527](https://github.com/fubar-coder/bb2-c/issues/527),
+    [#537](https://github.com/fubar-coder/bb2-c/issues/537)).
+"RXMessageList":
+  text: The address of the library's list of received messages that have not yet become current, a list of message addresses ending with 0; 0 before `RXCreatePort`.
+"RXQuoteChar":
+  text: Sets the quote character that groups words when commands are split, the first character of `char$`. It is `"` at the start; `'` saves typing `Chr$(34)`.

@@ -1,0 +1,107 @@
+"GetIconObject":
+  text: Loads the icon of the file `filename$`, given without `.info`, for the other commands of the library. Returns the address of the icon's disk object, or 0 if it cannot be loaded or an icon is loaded already.
+  notes: |
+    Kept from the original: an icon with more than 100 tool types
+    overwrites the memory behind the library's list of tool types
+    ([#855](https://github.com/fubar-coder/bb2-c/issues/855)).
+"FindToolValue":
+  text: The value of the tool type `tooltype$`, the part after the `=`. An empty string if the tool type is not found, has no value, or no icon is loaded.
+  notes: |
+    Use `FindToolType` to tell a tool type without a value from a missing
+    one.
+
+    Kept from the original: the value ends at the first `)`, also when
+    the `)` is part of the value
+    ([#844](https://github.com/fubar-coder/bb2-c/issues/844)).
+"SetToolValue":
+  text: Replaces the first tool type that begins with `tooltype$` by `tooltype$=value$`, or by `tooltype$` alone if `value$` is empty. Returns -1, or 0 if the tool type is not found, there is no memory, or no icon is loaded.
+  notes: |
+    With `status` 0, the new tool type is switched off:
+    `(tooltype$=value$)`. A switched-off tool type is found and replaced
+    like the others. The memory of the old string is not freed until the
+    icon is freed, so change tool types sparingly.
+
+    Kept from the original: a name matches every tool type that begins
+    with it, so `FL` replaces `FLAG`
+    ([#853](https://github.com/fubar-coder/bb2-c/issues/853)), and an
+    empty name copies whatever follows it in memory into the new tool
+    type ([#841](https://github.com/fubar-coder/bb2-c/issues/841)).
+"PutIconObject":
+  text: Writes the loaded icon as the icon of the file `filename$` and drops it. Returns -1, or 0 if no icon is loaded. With `icontype`, the icon's type is set first (the values of `SetIconType`); 0 keeps it.
+  notes: |
+    After `PutIconObject`, load the icon again to work on it.
+
+    Kept from the original: the result is -1 even if the icon could not
+    be written ([#851](https://github.com/fubar-coder/bb2-c/issues/851)),
+    and the memory of the icon is not freed
+    ([#850](https://github.com/fubar-coder/bb2-c/issues/850)).
+"FreeIconObject":
+  text: Frees the loaded icon without writing it; all changes are lost. Returns -1, or 0 if no icon was loaded.
+"MatchToolValue":
+  text: Returns -1 if the tool type `tooltype$` has the value `value$`, and 0 if not, if the tool type is not found or no icon is loaded. A tool type can have several values separated by `|`, as in `LANGUAGE=ENGLISH|FRENCH`; each of them matches.
+"NewToolType":
+  text: Adds the tool type `tooltype$=value$`, or `tooltype$` alone if `value$` is empty, after the last one. With `status` 0 it is switched off, `(tooltype$=value$)`. Returns -1, or 0 if there is no memory or no icon is loaded.
+  notes: |
+    The command does not check whether the tool type exists already.
+
+    Kept from the original: the number of tool types is not checked, so
+    more than 100 overwrite memory
+    ([#855](https://github.com/fubar-coder/bb2-c/issues/855)), and an
+    empty name copies whatever follows it in memory into the new tool
+    type ([#841](https://github.com/fubar-coder/bb2-c/issues/841)).
+"FindToolNumber":
+  text: The whole tool type at the position `tooltype#`, counted from 0, for example `CLOCKX=157`. An empty string if there is no tool type at that position or no icon is loaded.
+"ClearToolTypes":
+  text: Removes all tool types of the loaded icon. Their memory is not freed until the icon is freed.
+"SetIconHit":
+  text: Sets the size of the loaded icon's hit box, the area that reacts to the mouse, in pixels. It should not be smaller than the icon's image.
+"ShapeToIcon":
+  text: Makes a shape the image of the loaded icon, and a second shape its selected image. The hit box becomes the size of the first shape, one pixel higher.
+  notes: |
+    The shape's graphics are not copied: the icon uses the shape's
+    memory, so keep the shapes until the icon is written. The second
+    shape should not be larger than the first.
+
+    Kept from the original: with two shapes, all other render flags of
+    the icon are replaced by 6 (the selected image is shown when the icon
+    is selected), and the selected image is set up to draw none of its
+    bitplanes ([#854](https://github.com/fubar-coder/bb2-c/issues/854)).
+"SetIconType":
+  text: Sets the type of the loaded icon, 1 disk, 2 drawer, 3 tool, 4 project or 5 trashcan, as the Type menu of the icon editor. Returns -1, or 0 for another value.
+  notes: |
+    Kept from the original: without a loaded icon, the result is the
+    argument instead of 0
+    ([#852](https://github.com/fubar-coder/bb2-c/issues/852)).
+"IconRender":
+  text: Sets the render flags of the loaded icon, which tell Workbench how to show the icon when it is selected.
+  notes: |
+    The value is the flags word of the icon's gadget. Its two lowest bits
+    choose the highlight: 0 inverts the image, 1 draws a box around it,
+    2 shows the selected image and 3 does nothing; 4 is added when the
+    icon has an image. So 4 is the usual value, and 6 an icon that
+    changes to its selected image.
+"IconDefTool":
+  text: Sets the default tool of the loaded icon, the program that a project icon is opened with. Returns -1, or 0 if `tool$` is empty, there is no memory or no icon is loaded.
+  notes: |
+    Kept from the original: inside an expression with strings, the
+    command can damage the strings built before it in the same statement
+    ([#846](https://github.com/fubar-coder/bb2-c/issues/846)).
+"FindToolType":
+  text: Returns -1 if the loaded icon has the tool type `tooltype$`, and 0 if not or if no icon is loaded. With `bracket_check`, a switched-off `(tooltype$)` is also looked for, and found it returns 1.
+  notes: |
+    Any value of `bracket_check` switches the check on, also 0.
+
+    Kept from the original: the check stays on for later calls without
+    `bracket_check` until a search for the switched-off form has run
+    ([#843](https://github.com/fubar-coder/bb2-c/issues/843)); with the
+    check, a name over 253 characters overwrites memory
+    ([#842](https://github.com/fubar-coder/bb2-c/issues/842)).
+"IconToShape":
+  text: Copies the image of the loaded icon into a shape, and its selected image into a second shape. A shape that is in use is freed first. Nothing happens if no icon is loaded or the icon has no such image.
+  notes: |
+    Kept from the original: a shape that was not in use gets no cookie,
+    and the command writes into other memory instead; use shapes that
+    are in use ([#849](https://github.com/fubar-coder/bb2-c/issues/849)).
+    When the width of the image is a multiple of 16, the command copies
+    one word per row too many and writes behind the shape's memory
+    ([#847](https://github.com/fubar-coder/bb2-c/issues/847)).

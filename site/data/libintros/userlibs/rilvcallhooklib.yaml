@@ -1,0 +1,34 @@
+description: A render hook for GadTools listviews by Red When Excited, which draws each item as columns of text and bitmaps, with an optional tree indent.
+intro: |
+  GadTools listviews of Workbench 3 can let a program draw their items
+  itself, through a render hook given with the tag `GTLV_CallBack`. This
+  library has such a hook ready: it draws an item as a row of fields,
+  each a text or a bitmap, which makes a listview with columns. Its one
+  function, `RetrieveCallHook`, returns the address of the hook's code,
+  for the `h_Entry` field of the program's `Hook` structure. Call it
+  before the listview is drawn: the hook needs what the call sets up.
+
+  The `h_Data` field of the hook points to a field table that tells the
+  hook where to find each column's data in the list nodes. The table is
+  made of entries of 7 words (14 bytes):
+
+  | Entry | Words |
+  |---|---|
+  | first | offset in the node of the indent word (0 for no indent), offset in the node of the pointer to the colour table, then 5 unused words |
+  | one per field | width in pixels, offset in the node of the text or bitmap pointer, alignment (1 right, otherwise left), 0 for a text or not 0 for a bitmap, then 3 unused words |
+  | end | a width of 0 |
+
+  The colour table, to which every node points, holds two pairs of
+  words: the foreground and background pen of an item in its normal
+  state, then of an item in any other state, such as selected. The
+  fields are drawn from left to
+  right in the item's area; the last one is cut at the right edge. A
+  text is cut to the width of its field, a bitmap to the size of its
+  field, and both are centred vertically. Disabled items are drawn
+  ghosted.
+
+  With an indent word, the item starts that many pixels to the right,
+  and the indent is drawn with dotted tree lines, one every 16 pixels.
+
+  The hook keeps its state in the library, so it must not be used by
+  two listviews that are drawn at the same time by different tasks.

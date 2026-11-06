@@ -1,0 +1,46 @@
+description: An ARexx port for Blitz programs, by Red When Excited - receiving and replying to ARexx messages, and sending commands to other programs' ports and to ARexx.
+intro: |
+  This library gives a program a public message port through which
+  ARexx and other programs can send it commands, and lets the program
+  send commands to the ports of other programs. It needs
+  rexxsyslib.library, which comes with ARexx. All commands that work
+  with the port are Amiga mode only.
+
+  The library has one port, not numbered objects. `RXCreatePort` makes
+  it and must come before most other commands; with runtime error
+  checking on, they stop with the error "No message port opened!"
+  without it. `RXDeletePort` removes the port again; the program does
+  that by itself when it ends.
+
+  Received messages are kept in a list. `RXReadPort` and `RXWaitPort`
+  take the next one from it and make it the current message, which
+  `RXNumArgs`, `RXGetArg`, `RXNextArg` and `RXSendersName` read and
+  `RXReplyMsg` answers. Every received message must be replied, or its
+  sender waits for ever.
+
+  `RXSendCommand` sends a command and waits for the reply and its result
+  string; `RXRunCommand` sends a command without waiting. Both send to
+  the port named in their call or, without a name, to the default port,
+  `REXX` unless `RXDefaultPort` sets another one. By default a command
+  is split into words, each sent as an argument of its own; text
+  between quote characters (`"` unless `RXQuoteChar` sets another one)
+  is one word. A receiving program that reads only the first argument
+  sees only the first word; `RXTokenise Off` sends the whole command as
+  one argument instead.
+
+  A program that answers commands until it gets `QUIT`:
+
+  ```blitzbasic
+  If RXCreatePort("MYAPP")
+    Repeat
+      If RXWaitPort
+        cmd$=RXGetArg(1)
+        NPrint "Command: ",cmd$
+        RXReplyMsg 0
+      EndIf
+    Until UCase$(cmd$)="QUIT"
+    RXDeletePort
+  EndIf
+  ```
+
+  *Based on the RI ARexx Lib guide by Red When Excited.*

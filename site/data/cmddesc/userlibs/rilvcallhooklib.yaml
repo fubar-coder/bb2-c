@@ -1,0 +1,16 @@
+"RetrieveCallHook":
+  text: The address of the library's listview render hook, for the `h_Entry` field of a `Hook` structure whose `h_Data` points to a field table. Call it before the hook is used.
+  notes: |
+    Kept from the original: whether the tree lines of an indent are
+    drawn depends on a value the caller of the hook leaves behind: they
+    can be missing, or for an indent below 16 pixels 65536 lines can be
+    drawn ([#737](https://github.com/fubar-coder/bb2-c/issues/737)). The
+    shortened tree line of the last item of a level is decided by the
+    next node's word at the offset given by the first field's width, not
+    by its indent, and an odd width there can crash a 68000
+    ([#739](https://github.com/fubar-coder/bb2-c/issues/739)). A
+    right-aligned bitmap is drawn too far to the right, by the field's
+    horizontal position in the window
+    ([#740](https://github.com/fubar-coder/bb2-c/issues/740)). A text
+    field whose pointer is 0 shows the bytes at address 0 as text
+    ([#742](https://github.com/fubar-coder/bb2-c/issues/742)).
