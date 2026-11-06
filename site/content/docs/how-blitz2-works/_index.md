@@ -2,7 +2,7 @@
 title: How blitz2 works
 weight: 2
 description: How the compiler, the editor and the libraries work together, from the line you type to the executable.
-prev: /docs/introduction
+prev: /docs/introduction/building
 next: /docs/how-blitz2-works/editor-and-compiler
 ---
 
