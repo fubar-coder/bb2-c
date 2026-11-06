@@ -81,6 +81,13 @@ glyph `ROR.l`/`SWAP` as `data << (16 - x & 15)`.
 * FNSSetTab 0: a tab divides by 0 (#666). The underline is clipped at
   x = 0, not at xmin (#667). A font height of 0 draws 65536 rows (#663).
   Codes from 160 end the text (signed byte compare) (#657).
+* FNSLoad loads into RIAmosFuncLib bank 55 + slot, which is above its
+  default of 50 banks: `BLoad` takes the number as an address and reads the
+  file to the address 55 + slot (a real font destroys the vector table),
+  `Start` returns 0 and FNSLoad -1; with `BankLimit` above 55 + slot it
+  works. Same mismatch as ripacklib's LoadIFF (#770). Test
+  `rifnslib-fnsload-bank-55` (a 1-byte font file touches only address 55).
+  FNSUnload erases the same bank number (not checked). (#984)
 
 ## DIFF
 

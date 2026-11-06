@@ -1,0 +1,6 @@
+[compile]
+ok
+[run]
+default: 0 0
+limit 80: 0 0
+rc=0

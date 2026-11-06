@@ -923,6 +923,10 @@ static void BLITZ_ROUTINE origin_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
  *
  * RIAmosFuncLib BLoad into bank 55 + slot, then its Start into the slot
  * (no "FNS." check).  Amiga mode only.
+ * BUG(orig) (#984): bank 55 + slot is at or above RIAmosFuncLib's default of
+ * 50 banks, so BLoad takes it as an address and reads the file to the
+ * address 55 + slot; Start(55 + slot) is then 0 and the result -1 (it works
+ * after BankLimit above 55 + slot).
  * @param name  d0: the file name
  * @param slot  d1: the slot (& 15)
  * @return d0.w: the slot, -1 if the load failed
