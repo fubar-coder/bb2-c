@@ -478,7 +478,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      unknown; not available in direct mode).
 - [ ] **Tests for the issues labelled `needs-test`** (99 open issues at the
   start, 3 open on 2026-10-29: #14, #26, #42). A failing test is added with label
-  `bug-orig` (README, "Tests"), named in the section "Test" of the issue,
+  `bug-orig` (`tests/README.md`, "bug-orig tests"), named in the section "Test" of the issue,
   and `needs-test` is removed (allowed for these issues, 2026-10-28).
   State 2026-10-31 (open with `needs-test`: #361, #366, #369, #655):
   - [x] #42 (a500-68010); a batch with the new tools (`inject
@@ -601,7 +601,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     others see above.
   - *RWE userlibs* (about 180 issues, labels `lib:ri…`, `ciatrklib`,
     `bb_blitlib` ...; 2026-10-30): Blitz programs in
-    `tests/bug-orig/rwe/ID.bas` with `; @rwe NAME...` (README, "Tests"):
+    `tests/bug-orig/rwe/ID.bas` with `; @rwe NAME...` (`tests/README.md`, "bug-orig tests"):
     ref = blitz2 2.10 of the CD with the library's reference (`RWE_LIBS`;
     a reference build requires the fixture `rwe_refbuild`), port/clib
     with the C build; the pass file's `file=DEST|SRC|TAG` stages a file
@@ -660,7 +660,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   boot time of the session), or (c) serialise the tests that run
   near their limits (ctest `RESOURCE_LOCK` or a lower `AMIGA_EMULATION_MAX`
   for the agents). First step: record which limit ended each failure
-  (the `@stat` line has `end=timeout`, README "Test statistics").
+  (the `@stat` line has `end=timeout`, `tests/README.md` "Test statistics").
 - [ ] **rwe_residents_cd compares bytes**: since #970 Create Resident of
   blitz2-c writes 0 into the bytes the loaders do not read (pad bytes,
   a constant's data and procnum, pointer remains), so its residents are

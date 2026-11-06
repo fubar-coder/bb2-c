@@ -1,4 +1,4 @@
-# Tests of known defects of the port (label bug-port; README, "Tests"): the
+# Tests of known defects of the port (label bug-port; tests/README.md, "bug-port tests"): the
 # test checks the correct behaviour and fails until the defect is fixed;
 # the fix removes the label (the BUG flag of bug_port_lsclear).  The
 # presets host, emulator and all exclude the label, only the preset

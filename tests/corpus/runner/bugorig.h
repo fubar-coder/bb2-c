@@ -1,5 +1,5 @@
 /*
- * bugorig.h - the verdict of a bug-orig test (README, "Tests"): a program
+ * bugorig.h - the verdict of a bug-orig test (tests/README.md, "bug-orig tests"): a program
  * that triggers a bug of the original, compiled and run by the original
  * blitz2 1.95 (the reference) and by the port; the expectation is the
  * *correct* behaviour.

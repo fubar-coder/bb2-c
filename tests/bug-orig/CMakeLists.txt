@@ -1,4 +1,4 @@
-# The bug-orig tests with a Blitz program (README, "Tests"): a program that
+# The bug-orig tests with a Blitz program (tests/README.md, "bug-orig tests"): a program that
 # triggers a bug of the original, compiled and run in Amiberry by the
 # original blitz2 1.95 with the CD's libraries (ref) and by the port (port:
 # blitz2-c with the CD's libraries, clib: blitz2-c with the C libraries).
@@ -25,8 +25,8 @@
 #                                           1.x the compiler and the
 #                                           program run there too (no
 #                                           gate, no @INJECT@/@WBRUN@:
-#                                           they need V36; README,
-#                                           "Tests")
+#                                           they need V36; tests/README.md,
+#                                           "bug-orig tests")
 #                      ; @rwe NAME...       RWE userlibs (libs/userlibs/
 #                                           rwe/NAME.c) in blitz2:userlibs/
 #                                           rwe/: ref (blitz2 2.10 of the

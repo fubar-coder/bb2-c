@@ -7,7 +7,7 @@
  *   teststats [--tsv] [--factor X] [--floor SEC] JUNIT.xml...
  *
  * Every file is one run (ctest --preset P writes build/amiga/junit-P.xml;
- * keep runs apart with --output-junit NAME, README.md).  Problems (a
+ * keep runs apart with --output-junit NAME, tests/README.md).  Problems (a
  * malformed file, a testcase without name or time, a broken @stat line)
  * go to stderr; the rest is reported.  Exit status 0, 1 = problems
  * (reported), 2 = usage or a file that cannot be read.

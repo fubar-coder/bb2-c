@@ -1,4 +1,4 @@
-# The coverage of each test as lcov tracefile (README "Coverage"), after a
+# The coverage of each test as lcov tracefile (tests/README.md "Coverage"), after a
 # coverage test run: <build>/coverage/lcov/<test>.info, all tests in
 # <build>/coverage/lcov/all.info and the commit in <build>/coverage/commit,
 # made by tools/covmap from

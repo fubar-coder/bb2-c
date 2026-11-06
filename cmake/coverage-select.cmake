@@ -1,4 +1,4 @@
-# The tests a change can affect (README "Coverage"), from the tracefiles of
+# The tests a change can affect (tests/README.md "Coverage"), from the tracefiles of
 # a coverage run (cmake/coverage-map.cmake): runs git, ninja and ctest and
 # hands their output to tools/covsel with tools/covsel/rules.txt.  Writes
 # <build>/coverage/selected.txt for
@@ -32,7 +32,7 @@ set(IN ${BUILD}/coverage/select-inputs)
 set(OUT ${BUILD}/coverage/selected.txt)
 foreach(f ${COVERAGE}/commit ${COVERAGE}/lcov ${COVSEL})
 	if(NOT EXISTS ${f})
-		message(FATAL_ERROR "${f} is missing (README \"Coverage\")")
+		message(FATAL_ERROR "${f} is missing (tests/README.md \"Coverage\")")
 	endif()
 endforeach()
 file(REMOVE_RECURSE ${IN})

@@ -130,7 +130,7 @@ add_custom_target(fetch-originals
 	COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/fetch-originals.cmake
 	USES_TERMINAL
 	COMMENT "Downloading the original material (archive/README.md)")
-# the coverage of each test as lcov tracefile after a coverage test run (README
+# the coverage of each test as lcov tracefile after a coverage test run (tests/README.md
 # "Coverage"; not part of ALL)
 add_custom_target(coverage-map
 	COMMAND ${CMAKE_COMMAND} -DBUILD=${CMAKE_BINARY_DIR} -P ${PROJECT_SOURCE_DIR}/cmake/coverage-map.cmake

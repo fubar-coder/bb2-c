@@ -6,7 +6,7 @@ model: sonnet
 
 You write and fix tests in a git worktree of the repository and commit
 there; the coordinator merges. Start with `git merge --ff-only main`.
-Follow the patterns of the neighbouring tests (README sections on the
+Follow the patterns of the neighbouring tests (the sections of tests/README.md on the
 test suites, `tests/bug-orig/`, `tests/ab3/`, `tools/tests/`).
 
 Project rules (CLAUDE.md and README.md of the repository are binding –
