@@ -155,11 +155,13 @@ add_subdirectory(tests/ted-ab)
 # the Blitz sources of the libraries, readable: build/<preset>/bblibsrc/
 include(programs/ted/tools/teddetok/bblibsrc.cmake)
 
-# cmake --install: a blitz2: directory (default build/<preset>/install/blitz2)
+# cmake --install: a blitz2: directory (default build/<preset>/install/blitz2);
+# ab3cli next to blitz2-ab3, which loads it as PROGDIR:ab3cli
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 	set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "" FORCE)
 endif()
-install(PROGRAMS ${BLITZ2_DIR}/blitz2 ${BLITZ2_DIR}/ted DESTINATION blitz2)
+install(PROGRAMS ${BLITZ2_DIR}/blitz2 ${BLITZ2_DIR}/ted
+	${BLITZ2_DIR}/blitz2-ab3 ${BLITZ2_DIR}/ab3cli DESTINATION blitz2)
 install(FILES ${BLITZ2_DIR}/acidlibs ${BLITZ2_DIR}/deflibs DESTINATION blitz2)
 
 # -h / --help of the Amiga test tools, in Amiberry

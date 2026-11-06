@@ -47,7 +47,7 @@ cmake --install build/amiga        # optional: build/amiga/install/blitz2/
 ```
 
 The result in `build/amiga/blitz2/` is the contents of the `blitz2:`
-directory:
+directory; `cmake --install` copies all of it:
 
 | File | Contents |
 |---|---|
@@ -56,7 +56,7 @@ directory:
 | `acidlibs` | the command libraries |
 | `deflibs` | the declaration libraries of the AmigaOS calls |
 | `blitz2-ab3` | the compiler with AmiBlitz3's mode as well |
-| `ab3cli` | the headless editor of a command line run of `blitz2-ab3` |
+| `ab3cli` | the headless editor of a command line run of `blitz2-ab3` (loaded as `PROGDIR:ab3cli`, so it stays next to `blitz2-ab3`) |
 
 The preset `amiga-debug` builds the same code (`-Os`) with symbols and
 without strip. The build checks its results itself; if a check fails, the
