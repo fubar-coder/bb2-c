@@ -1,0 +1,31 @@
+description: Drawing on bitmaps - lines, boxes, circles, ellipses and polygons, flood fill, colour remapping, clipped blits and windows into bitmaps.
+intro: |
+  These commands draw on the used bitmap, in both modes, mostly with the
+  blitter. A colour of -1 inverts the pixels drawn instead of setting
+  them. Drawing is clipped to the edges of the bitmap.
+
+  ```blitzbasic
+  Use BitMap 0
+  Line 0,0,319,199,1
+  Box 10,10,100,60,2
+  Circlef 160,100,40,20,3
+  ```
+
+  `Poly` and `Polyf` take their points from memory, as pairs of words:
+  an array or a NewType of words, given by the address of its first
+  element.
+
+  ```blitzbasic
+  Dim pts.w(5)
+  pts(0)=10 : pts(1)=10 : pts(2)=100 : pts(3)=10 : pts(4)=50 : pts(5)=80
+  Polyf 3,&pts(0),2
+  ```
+
+  The filled commands (`Circlef`, `Boxf`, `FloodFill`, `ReMap`) work
+  through a buffer of one bitplane the size of the bitmap, which the
+  library makes when it first needs it; `FreeFill` frees it.
+  `BitMapOrigin` moves the point 0,0 of a bitmap for `Line`, `Poly`,
+  `Box` and `Circle`. `BitPlanesBitMap` and `BitMapWindow` make a second
+  bitmap object that shows a part of another one.
+
+  *Based on the 2dlib guide by Acid Software.*

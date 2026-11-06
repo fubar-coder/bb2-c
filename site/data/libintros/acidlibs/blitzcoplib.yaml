@@ -1,0 +1,53 @@
+description: Slices - the Blitz mode display made of horizontal bands, each with its own bitmaps, resolution, sprites and colours, and colour splits and custom copper instructions.
+intro: |
+  In Blitz mode, a program builds its own display from *slices*. A slice
+  is a Blitz object, numbered from 0, for a horizontal band of the
+  screen with its own resolution, number of bitplanes, sprite channels
+  and colours. All slices, colour splits and custom copper instructions
+  together make up one copper list, the program of the Amiga's copper
+  chip that builds the picture. `Show`, `ShowF` and `ShowB` show bitmaps
+  in the used slice; the palette and sprite commands also work on it.
+
+  ```blitzbasic
+  BitMap 0,320,256,4
+  BLITZ
+  Slice 0,44,4
+  Show 0
+  ```
+
+  The quick form `Slice Slice#,Y,Flags` makes a slice the full width of
+  the screen, 256 lines high (200 on an NTSC Amiga), with 8 sprite
+  channels and 32 colours. Its `Flags` is the number of bitplanes, plus
+  8 for high resolution, 16 for a dual playfield and 32 for hold and
+  modify (HAM). `Y` is the line of the top of the slice; 44 is about the
+  top of the display.
+
+  The long form gives everything: the width and height in pixels, the
+  number of bitplanes, sprite channels (up to 8) and colours (up to 32),
+  and the widths of the bitmaps for the front and the back playfield,
+  which may be wider than the slice for scrolling. For a slice that is
+  not a dual playfield, give the same width twice. The top slice should
+  have all 8 sprite channels, so that unused sprites do not flicker.
+  These values of its `Flags` give the usual slices:
+
+  | Flags | Slice | Bitplanes |
+  |---|---|---|
+  | $FFF8 | low resolution | up to 6 |
+  | $FFF9 | high resolution | up to 4 |
+  | $FFFA | low resolution, dual playfield | up to 6 |
+  | $FFFB | high resolution, dual playfield | up to 4 |
+  | $FFFC | hold and modify (HAM) | 6 |
+
+  Each bit of the flags adds a part to the slice's copper instructions,
+  so a slice can also change only some registers: bit 0 high resolution,
+  1 dual playfield, 2 HAM, 3 smooth scrolling, 4 two blank lines above
+  the slice, 7 and 8 the modulos of the two playfields, 10 the data fetch
+  registers, 12 the display window, 13, 14 and 15 the registers BPLCON2,
+  BPLCON1 and BPLCON0. In a dual playfield slice, bit 15 of the number of
+  bitplanes makes it show only a front bitmap, bit 14 only a back
+  bitmap, so that a slice further down can change one playfield and
+  leave the other.
+
+  Slices cannot be freed one by one; `FreeSlices` frees all of them.
+
+  *Based on the blitzcoplib guide by Acid Software.*

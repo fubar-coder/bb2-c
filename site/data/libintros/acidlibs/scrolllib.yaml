@@ -1,0 +1,24 @@
+description: Pixels and areas of bitmaps - plotting and reading pixels, clearing a bitmap and copying areas with the blitter.
+intro: |
+  These commands work on the used bitmap, in both modes. `Plot` and
+  `Point` set and read single pixels; `Cls` fills the whole bitmap with
+  one colour; `Scroll` and `BlockScroll` copy a rectangle to another
+  place of the bitmap, or from another bitmap, with the blitter. Moving a
+  part of a bitmap this way is how many games scroll the playfield.
+
+  ```blitzbasic
+  Use BitMap 0
+  Cls 0
+  Plot 10,10,1
+  Scroll 0,0,320,200,0,8
+  ```
+
+  Positions are taken from the bitmap's origin. With runtime error
+  checking, a bitmap that has not been made is the error "Uninitialized
+  BitMap", and an area of `Scroll` or `BlockScroll` outside a bitmap is
+  "Illegal Scroll Area".
+
+  Kept from the original: a bitmap with no bitplanes makes these commands
+  run very long ([#393](https://github.com/fubar-coder/bb2-c/issues/393)).
+
+  *Based on the scrolllib guide by Acid Software.*

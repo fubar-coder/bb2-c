@@ -1,0 +1,30 @@
+description: Fading - the colours of the used slice faded in from black to a palette, or out to black, at once or step by step.
+intro: |
+  `FadeIn` fades the colours of the used slice from black up to those of
+  a palette, `FadeOut` from the palette down to black, in 16 steps. A
+  fade works on slices in Blitz mode only. Normally the command waits
+  until the fade is done, with a `VWait Rate` between two steps; 0, the
+  start value, is the fastest fade.
+
+  ```blitzbasic
+  FadeIn 0,1
+  ```
+
+  With `ASyncFade On`, `FadeIn` and `FadeOut` only set the fade up. The
+  program then calls `DoFade` for each step, for example once per frame
+  in its main loop, and `FadeStatus` tells whether steps are left:
+
+  ```blitzbasic
+  ASyncFade On
+  FadeOut 0
+  While FadeStatus
+    VWait
+    DoFade
+    ; move the game on
+  Wend
+  ```
+
+  Kept from the original: from palette 2 on, the first colour of a fade
+  comes out wrong ([#134](https://github.com/fubar-coder/bb2-c/issues/134)).
+
+  *Based on the fadelib guide by Acid Software.*

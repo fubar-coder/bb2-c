@@ -1,0 +1,25 @@
+description: Fast filled polygons for 3D graphics - on bitmaps, with dithering, and on the copper chunky areas of the display library.
+intro: |
+  This library draws filled polygons fast, for 3D graphics. The points
+  of a polygon are pairs of words in memory, given by the address of the
+  first, as for `Polyf`; they must run clockwise, and the bitmap's origin
+  is not used ([#419](https://github.com/fubar-coder/bb2-c/issues/419)).
+
+  `BitMapPoly` draws on the used bitmap; with a dither bitmap, it mixes
+  two colours in a pattern for more shades. The `Chunky...` commands draw
+  on the chunky area of the used CopList, made by `CustomChunky` of the
+  display library: there each pixel is a colour register that the copper
+  changes, and a colour is a value for the register, such as $F00 for
+  red. `RenderToBitmap` and `RenderToChunky` choose where `RenderPoly`
+  draws, so that one program can draw on both.
+
+  ```blitzbasic
+  Dim pts.w(5)
+  pts(0)=10 : pts(1)=10 : pts(2)=100 : pts(3)=40 : pts(4)=20 : pts(5)=80
+  RenderToBitmap 0
+  RenderPoly 3,&pts(0),2
+  ```
+
+  Kept from the original: a polygon with more than 16 points or more than
+  10 edges on one side overwrites memory
+  ([#395](https://github.com/fubar-coder/bb2-c/issues/395)).

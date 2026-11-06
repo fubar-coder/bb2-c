@@ -1,0 +1,47 @@
+"Slice":
+  text: Makes a slice from line `Y` down, in the quick or the long form the introduction describes, and makes it the used slice. In Blitz mode the new display is shown at once.
+  notes: |
+    With runtime error checking, a slice that is already in use is the
+    error "Slice already in use", and the width of a low resolution
+    slice must be a multiple of 16, that of a high resolution slice a
+    multiple of 32. Kept from the original: `Show` into a slice made
+    without the BPLCON1 instruction writes to a wrong address
+    ([#407](https://github.com/fubar-coder/bb2-c/issues/407)).
+"Show":
+  text: Shows a bitmap in the used slice, from its point `X,Y` if it is given, else from its top left corner. The slice must not be a dual playfield slice.
+  notes: |
+    A position helps with a bitmap larger than the slice: changing it
+    scrolls the bitmap.
+"ShowF":
+  text: Shows a bitmap as the front playfield of the used dual playfield slice, from its point `X,Y` if it is given.
+  notes: |
+    `ShowB X` is the horizontal position of the back playfield, for a
+    slice made to show only a front bitmap.
+"ShowB":
+  text: Shows a bitmap as the back playfield of the used dual playfield slice, from its point `X,Y` if it is given.
+  notes: |
+    `ShowF X` is the horizontal position of the front playfield, for a
+    slice made to show only a back bitmap.
+"ColSplit":
+  text: Changes colour register `Colour Register` (0 to 31) to the components `Red,Green,Blue` (0 to 15) from line `Y` of the used slice on, so that a register can show other colours further down.
+"CustomCop":
+  text: Adds the copper instructions in `Copins$`, four bytes each, at line `Y` of the display.
+  notes: |
+    Kept from the original: an empty string overwrites memory
+    ([#404](https://github.com/fubar-coder/bb2-c/issues/404)).
+"CopLoc":
+  text: The address of the copper list of the slices, in chip memory.
+"CopLen":
+  text: The length in bytes of the copper list of the slices.
+"ShowBlitz":
+  text: Shows the slices again, for example after a visit to Amiga mode. Blitz mode only.
+"FreeSlices":
+  text: Frees all slices and their copper list and gives the display back to the system.
+"DisplayOff":
+  text: Switches the display off, both the bitplanes and the copper, after waiting for the vertical blank. Blitz mode only.
+"DisplayOn":
+  text: Switches the display on again after `DisplayOff`, after waiting for the vertical blank. Blitz mode only.
+"SetBPLCON0":
+  text: Bits that every slice made after it adds to its BPLCON0 register; 2 uses an external sync signal (for a genlock), 4 makes the display interlaced, 8 enables a light pen.
+"SetBLWait":
+  text: The copper wait instruction the copper list uses to get past line 256; the start value is $FFE1FFFE.

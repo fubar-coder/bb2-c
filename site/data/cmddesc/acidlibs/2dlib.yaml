@@ -1,0 +1,60 @@
+"Circle":
+  text: Draws a circle of radius `rx` around `x,y`, or an ellipse with the radii `rx` and `ry`.
+  notes: |
+    Kept from the original: a circle that reaches above the top edge of
+    the bitmap writes outside it
+    ([#392](https://github.com/fubar-coder/bb2-c/issues/392)).
+"Circlef":
+  text: Draws a filled circle of radius `rx` around `x,y`, or a filled ellipse with the radii `rx` and `ry`.
+  notes: |
+    Kept from the original: as with `Circle`, a circle that reaches above
+    the top edge writes outside the bitmap
+    ([#392](https://github.com/fubar-coder/bb2-c/issues/392)).
+"Box":
+  text: Draws the outline of a rectangle with the corners `x1,y1` and `x2,y2`.
+  notes: |
+    Kept from the original: the origin set with `BitMapOrigin` is added
+    twice ([#391](https://github.com/fubar-coder/bb2-c/issues/391)).
+"Boxf":
+  text: Draws a filled rectangle with the corners `x1,y1` and `x2,y2`.
+"Line":
+  text: Draws a line from `x1,y1` to `x2,y2`; without `x1,y1`, from the end of the last line drawn. `width` makes the line thicker by that many pixels.
+"Poly":
+  text: Draws the outline of a polygon of `numpts` points, which are pairs of words at the address given.
+  notes: |
+    Kept from the original: a polygon of one point makes it run very long
+    ([#396](https://github.com/fubar-coder/bb2-c/issues/396)).
+"Polyf":
+  text: Draws a filled polygon of `numpts` points, which are pairs of words at the address given. A polygon whose points run anticlockwise is drawn in `color2` if it is given, which helps to show the back of a face in 3D graphics.
+  notes: |
+    The direction is taken from the first three points. Kept from the
+    original: more than 16 points, or more than 10 edges on one side,
+    overwrite memory ([#395](https://github.com/fubar-coder/bb2-c/issues/395)).
+"FloodFill":
+  text: Fills the area around `x,y` with `colour`. Without `border colour`, the area is all connected pixels of the colour at `x,y`; with it, all pixels up to a border of that colour.
+"ReMap":
+  text: Gives every pixel of the used bitmap that has the first colour the second colour. With a destination bitmap, the pixels of the first colour get the second colour there instead.
+"FreeFill":
+  text: Frees the fill buffer that `Circlef`, `Boxf`, `FloodFill` and `ReMap` use; the next of them makes it again.
+  notes: |
+    Kept from the original: after `FreeFill`, a fill command on a bitmap
+    less than 8 pixels wide gets the freed buffer back
+    ([#394](https://github.com/fubar-coder/bb2-c/issues/394)).
+"AllocFill":
+  text: Makes the fill buffer for the used bitmap. The library guide calls it for internal use only; a program does not need it.
+  notes: |
+    Kept from the original: called from a program, it takes a wrong
+    bitmap ([#390](https://github.com/fubar-coder/bb2-c/issues/390)).
+"BitPlanesBitMap":
+  text: Makes `destbitmap` a bitmap that shows only the bitplanes of `srcbitmap` selected by the bits of `planepick`. Drawing on fewer planes is faster, for example for shadows.
+"BitMapWindow":
+  text: Makes `destbitmap` a bitmap that shows the area of `srcbitmap` at `x,y`, `w` pixels wide and `h` high. Drawing, printing and blitting into it stay inside that area.
+  notes: |
+    `x` and `w` are rounded down to multiples of 16. Nothing happens
+    when `destbitmap` already holds a bitmap.
+"BitMapOrigin":
+  text: Moves the point 0,0 of the bitmap to `x,y`, for `Line`, `Poly`, `Box` and `Circle`.
+"ClipBlit":
+  text: Draws a shape as `Blit` does, but cuts it at the edges of the used bitmap. `Excess` sets the bitplanes beyond the shape's depth under the shape, a bit for each, 1 to set and 0 to clear.
+"ClipBlitMode":
+  text: The blitter mode (the value of the BLTCON0 register) with which `ClipBlit` draws; the start value is $FCA, as for `BlitMode`.

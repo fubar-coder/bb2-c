@@ -1,0 +1,19 @@
+"Plot":
+  text: Sets the pixel at `X,Y` of the used bitmap to `Colour`; a negative colour, such as -1, inverts the pixel instead. A pixel outside the bitmap is left alone.
+"Point":
+  text: The colour of the pixel at `X,Y` of the used bitmap, or 0 for a point outside it.
+"Cls":
+  text: Fills the whole used bitmap with `Colour`, or with colour 0 without it.
+"Scroll":
+  text: Copies the rectangle of `Width` by `Height` pixels at `X1,Y1` to `X2,Y2` of the used bitmap. With `BitMap#`, the rectangle comes from that bitmap instead.
+  notes: |
+    The rectangles may overlap. Only as many bitplanes are copied as the
+    shallower of the two bitmaps has. With runtime error checking, a
+    height above 1024 is the error "Scroll area to large".
+"BlockScroll":
+  text: As `Scroll`, but faster, for areas whose `X1`, `X2` and `Width` are multiples of 8; the positions are rounded down to whole bytes.
+  notes: |
+    It helps with block scrolling: draw the new blocks on one side of
+    the bitmap only and copy them to the other side with `BlockScroll`.
+    Unlike `Scroll`, it always copies from the top down, so a destination
+    below an overlapping source is not right.

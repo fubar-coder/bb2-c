@@ -1,0 +1,21 @@
+"FadeIn":
+  text: Fades the colours of the used slice from black to those of the palette, from `Low Colour` to `High Colour` if they are given, else all colours both have. Blitz mode only.
+  notes: |
+    Kept from the original: the colour range given is not limited to
+    the colours of the palette and the slice
+    ([#136](https://github.com/fubar-coder/bb2-c/issues/136)), and with
+    runtime error checking some mistakes give the wrong message
+    ([#330](https://github.com/fubar-coder/bb2-c/issues/330),
+    [#331](https://github.com/fubar-coder/bb2-c/issues/331)).
+"FadeOut":
+  text: Fades the colours of the used slice from those of the palette to black, from `Low Colour` to `High Colour` if they are given. Blitz mode only.
+  notes: |
+    The slice should show the colours of the palette before, for example
+    after `Use Palette`; the fade starts from the palette, not from the
+    colours on the screen.
+"ASyncFade":
+  text: With `On`, `FadeIn` and `FadeOut` only set the fade up and `DoFade` does its steps; with `Off`, the start value, they do the whole fade before the program goes on.
+"DoFade":
+  text: Does the next step of the fade set up by `FadeIn` or `FadeOut` with `ASyncFade On`; nothing if no steps are left. Blitz mode only.
+"FadeStatus":
+  text: The number of steps of the fade still to do, so it is true while the fade goes on and false (0) at its end. Blitz mode only.
