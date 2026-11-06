@@ -256,5 +256,8 @@ binary in acidlibs, followed on 2026-10-29.
   returning trap; visible in a normal run are seriallib
   ReadSerial in string expressions and WindowTags &TagList (memory behind
   the tag list).
-* **F – fixed original bugs (intended):** displaylib's error routines in
-  the normal code (#412).
+* **F – fixed original bugs (intended):** the rows of kind **F** in the
+  tables above, each with its issue and test; mostly error routines and
+  their messages moved out of the error check area, overruns, leaks and
+  wrong compares. They change the output of the affected cases on
+  purpose.
