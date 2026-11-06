@@ -441,3 +441,54 @@ the preset, the option, the module and the tools.
   `tests/ab3/coverage/ab3_cli/blitz2-ab3.cov` in the build directory and
   no `TEST:cov` behind; the tests of the normal configuration have no
   `AMIGA_EMULATION_COVERAGE`. No time limit is raised (task 2.4).
+
+### Check of the full coverage run (tasks 5.1, 5.2)
+- **The run:** `ctest --preset coverage` (495 tests, 4 jobs) took 1545 s;
+  204 pass and 291 fail, exactly the tests of reproduced original bugs.
+  The normal runs on the same machine: `ctest --preset all` 852 s (with
+  one hang of `ab3_cli_ref` into its 600 s limit, 31 s when run alone),
+  `ctest --preset bug-orig` 1090 s. The coverage compilers add no time
+  that matters; `coverage-map` takes about 10 s.
+- **The preset:** `amiga-cov` left `HOST_COVERAGE` off, so a full run had
+  no host data; it sets both options now.
+- **The map:** 103 host tests (the 104th, a CMake script, runs no
+  instrumented code) and 334 coverage files of 332 emulator tests;
+  `all.info` 15.7 MB, 134 source files. `genhtml` of lcov 2.0 and 2.5
+  (Debian packages in a container) reads it without a message once two
+  `covmap` defects were fixed (data symbols in `.text` written as
+  functions, a gcov function count of 0 with lines run; see above).
+  `genhtml --branch-coverage` still refuses it (open point in TODO.md).
+- **Scenarios:** (1) TED core: e.g. `blocktab` and `alphad0` are listed
+  with a count above 0 only in `host/ted_core_search`'s tracefile. (2) A
+  body change of `eval.c`'s `domaximum` selects `corpus_cd` and
+  `corpus_cd_ab3`, the two tests whose coverage holds it, and no other
+  test of the map: 164 tests, 162 of them absent from the map. (3) A
+  header: `ab3date.h` (included by `ab3date.c` and `ab3str.c`, and by a
+  host test source) selects the six tests that entered functions of the
+  two objects and the host tests; `eval.h`, like every header reached
+  through `blitz2.h`, selects all tests because `glue.c` includes it and
+  is not measured. No header other than those through `blitz2.h` is
+  included by both `eval.c` and `stmts.c`. (4) A change of
+  `programs/blitz2/CMakeLists.txt` selects all 495 tests. (5) A new test
+  (a new source in `tests/blitz2/`) is selected as absent from the map.
+  (6) With `BASE` a commit the map's commit does not descend from, the
+  selection says the map is stale and selects all tests. `ctest
+  --tests-from-file` with the list runs exactly the listed tests (164;
+  131 with `--preset all`, 33 with `--preset bug-orig`).
+- **Tests always selected:** the 162 tests absent from the map are those
+  that run no measured program (library checks, RWE, TED bug-orig tests,
+  host-only checks) and three bug-orig tests whose compiler never reaches
+  its normal end (`compiler_loadalib_readerr`, `compiler_incdir_overflow`,
+  `compiler_optreqprep_allocmem`): the coverage file is written there.
+- **The rules** selected only the tests named after a suite for a change
+  of its directory, but the suites read each other's files (the Amiga
+  helper programs, the corpus and bug-orig sources, the TED A/B scripts),
+  and some tests of a directory lack its label; `tools/covsel/rules.txt`
+  is fixed.
+- **Relative list file:** ctest reads a relative `--tests-from-file` in
+  the build directory; the usage in `tests/README.md` gives
+  `coverage/selected.txt`.
+- **Unreached functions (task 5.2):** of the 1132 functions of the
+  compilers' map, 888 are entered by an emulator test, 53 only by host
+  tests, 191 by none (9 of them not measured: glue and `cov.c`). The
+  summary is in `tests/README.md` "Compiler functions no test reaches".

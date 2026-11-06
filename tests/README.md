@@ -542,6 +542,20 @@ still counts.
 Which code each test executes, as one lcov tracefile per test (openspec
 change `test-coverage`). It is made from a coverage run, not checked in:
 
+```
+cmake --preset amiga-cov && cmake --build --preset amiga-cov
+ctest --preset coverage                                  # about 26 minutes
+cmake --build build/amiga-cov --target coverage-map      # seconds
+```
+
+The configure preset `amiga-cov` (directory `build/amiga-cov/`) builds
+`blitz2` and `blitz2-ab3` with function coverage (`BLITZ2_COVERAGE`) and
+the host side with gcov (`HOST_COVERAGE`); the normal configuration and
+its results stay as they are. The test preset `coverage` runs every test,
+`all` and `bug-orig` together, in that build: the tests of reproduced
+original bugs fail on purpose there as in `ctest --preset bug-orig` (291),
+all others pass.
+
 * **host tests:** a build with `-DHOST_COVERAGE=ON` (gcov, `-O0`); each
   host test `X` leaves its `.gcda` files below
   `build/<preset>/host/coverage/X/` and is recorded as test `host/X`.
@@ -554,11 +568,14 @@ change `test-coverage`). It is made from a coverage run, not checked in:
   unchanged); without them a change anywhere in a source file counts for
   all its functions.
 
-After the run (clear `build/<preset>/host/coverage/` before it; gcov adds
-to data that is there):
+Before a run clear `build/amiga-cov/host/coverage/` (gcov adds to data
+that is there). A rebuild of the host side after the run makes gcov refuse
+the data of the rebuilt objects (a stamp mismatch, and `coverage-map`
+fails): run the host tests again (`ctest --preset coverage -R
+'^(host|host_emulator)$'`). After the run
 
 ```
-cmake --build build/<preset> --target coverage-map
+cmake --build build/amiga-cov --target coverage-map
 ```
 
 runs `cmake/coverage-map.cmake`: gcov per host test, `nm -A` and
@@ -575,8 +592,9 @@ runs `cmake/coverage-map.cmake`: gcov per host test, `nm -A` and
   counts; a function whose lines are not known has `FN:1,<name>` without
   a last line. Details: `tools/lib/covmap/covmap.h`.
 * `lcov/all.info`: all tests in one tracefile, for `genhtml`
-  (`genhtml -o <dir> build/<preset>/coverage/lcov/all.info`, lcov is not
-  needed by the build), editors and coverage services.
+  (`genhtml -o <dir> build/amiga-cov/coverage/lcov/all.info`, lcov 2.0
+  or later; lcov is not needed by the build), editors and coverage
+  services. `genhtml --branch-coverage` does not read it yet (TODO.md).
 * `commit`: the commit the run was made from.
 
 The inputs handed to covmap stay in `build/<preset>/coverage/map-inputs/`.
@@ -584,11 +602,13 @@ The inputs handed to covmap stay in `build/<preset>/coverage/map-inputs/`.
 While working on a change, the tracefiles choose the tests it can affect:
 
 ```
-cmake -DBUILD=build/amiga -DCOVERAGE=build/<coverage preset>/coverage \
+cmake -DBUILD=build/amiga -DCOVERAGE=build/amiga-cov/coverage \
       [-DBASE=<commit>] -P cmake/coverage-select.cmake
-ctest --preset all --tests-from-file build/amiga/coverage/selected.txt
-ctest --preset bug-orig --tests-from-file build/amiga/coverage/selected.txt
+ctest --preset all --tests-from-file coverage/selected.txt
+ctest --preset bug-orig --tests-from-file coverage/selected.txt
 ```
+
+(ctest reads a relative `--tests-from-file` in the build directory.)
 
 `cmake/coverage-select.cmake` runs `git diff -U0` of the working tree
 against the coverage's commit (and lists the files git does not track),
@@ -614,10 +634,46 @@ rules for what a change of a file selects are in
 * the build (CMake files, presets), TED, shared code, the tools, the
   test data, and every file no rule knows: all tests.
 
-Tests without a tracefile that names an executed function (new ones, and
-those that run no measured program) are always selected. If the
-coverage's commit is not an ancestor of `BASE` (default: the coverage's
-commit), the coverage is stale and all tests are selected. The selection is for the work in between: the full runs
-(`ctest --preset all`, `ctest --preset bug-orig`) stay the acceptance of
-a change.
+Tests without a tracefile that names an executed function are always
+selected: new ones, those that run no measured program, and those whose
+compiler never reaches its normal end (the coverage file is written
+there: a compiler that hangs or crashes under a bug-orig test leaves
+none). With the map of the coverage run below that is a fixed part of
+162 of the 495 tests in every selection; a change of one `eval.c`
+function entered by two tests selects 164. If the coverage's commit is
+not an ancestor of `BASE` (default: the coverage's commit), the coverage
+is stale and all tests are selected. The selection is for the work in
+between: the full runs (`ctest --preset all`, `ctest --preset bug-orig`)
+stay the acceptance of every program change.
+
+### Compiler functions no test reaches
+
+The coverage run of commit `e2db70e` (all 495 tests): of the 1132
+functions of `blitz2` and `blitz2-ab3` (their sources in
+`programs/blitz2/src/` and the shared code they link), 888 are entered by
+an emulator test, 53 only by host tests (the shared code of the `.xtra`
+files and the tokenizer), and 191
+by no test. Of these, 9 are not measured (the assembler entry points of
+`glue.c` and `glue_direct.c`, and `shared/cov/cov.c` itself); the other
+182:
+
+* 103 of the 108 in `parse.c` are compile error entry points (one
+  function per message, `alconsterr` "Constant already defined",
+  `mismatcherr` "Type Mismatch", ...): the tests provoke few compile
+  errors. Four more such functions are in `compile.c`, `main.c` and
+  `tokens1.c`;
+* the editor side of the compiler: 23 of the 27 functions of `data.c`
+  (the menu actions: options, Create Resident, the list and type
+  requesters) and 10 in `main.c` (`ed_*` screen, gadget and tokenising
+  calls, `flash`, `menu8`): the tests compile from the CLI or through
+  `tedstub`;
+* 11 in `eval.c` (code emitters of rarely used operators such as
+  `doeorb`, `doasrb`, `dolslb`, and `pevalu`/`bakpevalu`), 5 in
+  `ext_bb2.c` (the BB2 side of extension points whose syntax no test
+  uses, e.g. `ext_dcbescape`), the rest single functions in `asmlibs.c`
+  (`fetchpees*`), `stmts.c`, `tokens1.c`, `tokens2.c`, `compile.c`,
+  `main.c` and `libcall.c`.
+
+The list (file, function, lines) is made from the tracefiles of a
+coverage run: the functions with `FNDA:0` in every tracefile.
 

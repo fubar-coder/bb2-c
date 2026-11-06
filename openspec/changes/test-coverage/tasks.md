@@ -29,9 +29,9 @@
 
 ## 5. Check of stages 1 and 2
 
-- [ ] 5.1 Full coverage run (`ctest --preset coverage`) and map; check the scenarios of the specs: a TED core function named with its one host test, a change of one `eval.c` function selects only tests containing it, a header change, a CMake change (all), a new test, a stale map
-- [ ] 5.2 The list of blitz2 functions no test reaches (from the map), written to the scratch area and summarised in `docs/` (where the coverage is described) as the state at that commit
-- [ ] 5.3 Docs: `tests/README.md` (coverage configuration, map, selected runs; full runs stay the acceptance), `TODO.md` entry; a clean normal build, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
+- [x] 5.1 Full coverage run (`ctest --preset coverage`) and map; check the scenarios of the specs: a TED core function named with its one host test, a change of one `eval.c` function selects only tests containing it, a header change, a CMake change (all), a new test, a stale map
+- [x] 5.2 The list of blitz2 functions no test reaches (from the map), written to the scratch area and summarised in `docs/` (where the coverage is described) as the state at that commit
+- [x] 5.3 Docs: `tests/README.md` (coverage configuration, map, selected runs; full runs stay the acceptance), `TODO.md` entry; a clean normal build, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
 
 ## 6. Stage 3: TED and the Blitz libraries with gcov
 

@@ -675,6 +675,21 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   `libs/userlibs/rwe/residents/`), and `rwe_residents_cd` compares the
   port's files with blitzres's byte for byte (the reference's still by
   dump), with a test on a broken file.
+- [ ] **Coverage: open points** (openspec change `test-coverage`,
+  `tests/README.md` "Coverage"):
+  1. [ ] `genhtml --branch-coverage` refuses `all.info` (without the
+     option it reads it): lcov 2.0's consistency check finds host lines
+     run with no branch of them taken (gcov data of tests whose processes
+     fork and end with `_exit`, e.g. `test_amiga_emulation_run.c:200`),
+     and lcov 2.5 fails on its own count check when it merges a branch
+     taken 0 times in one test with one taken in another
+     (`BranchElement::merge` in `lcovutil.pm` marks no change then).
+     Decide whether `covmap` leaves out the branches of such lines, or
+     whether the branch data waits for lcov.
+  2. [ ] Tests for the 182 measured compiler functions no test reaches
+     (most of them compile error entry points and the editor side of
+     the compiler); the list comes from the tracefiles of a coverage
+     run.
 - [ ] **Immutable strings (idea, long term)**: in BB2 a string variable
   is string and string builder in one (the memory of the variable is
   changed in place: `MaxLen`, `&a$` with `Poke`, libraries writing the
