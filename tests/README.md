@@ -448,6 +448,12 @@ times sessions), the largest first (`cmake/bug-orig-order.cmake`);
 ctest `bug_orig_order` (host) checks the order, `bug_orig_order_broken`
 the check with a wrong one.
 
+**Order of the long tests of the all suite:** the longest tests
+(`ted_ab`, the ab3 equivalence passes, `libs_emulator`, the corpus
+passes, ...) get a `COST` (rounded seconds, `cmake/test-cost.cmake`), so
+that a cold run, without `CTestCostData.txt`, starts them first and does
+not end with one of them alone.
+
 ## bug-port tests
 
 Tests of known defects of the port itself (not of the
