@@ -1,0 +1,15 @@
+"Joyx":
+  text: The horizontal direction of the joystick in the port, -1 for left, 1 for right and 0 for neither.
+"Joyy":
+  text: The vertical direction of the joystick in the port, -1 for up, 1 for down and 0 for neither.
+"Joyr":
+  text: The direction of the joystick in the port as a number from 0 to 7, clockwise from up, or 8 if it is not moved, as the table of the introduction shows.
+"Joyb":
+  text: The buttons held down on the joystick or mouse in the port, 1 for the left (fire) button, 2 for the right one, 3 for both and 0 for none.
+"Gameb":
+  text: The buttons held down on a CD32 game pad in the port, the sum of 1 play/pause, 2 reverse, 4 forward, 8 green, 16 yellow, 32 red and 64 blue.
+  notes: |
+    Test a single button with `And`, for example `If Gameb(1) And 32`
+    for the red button. Kept from the original: reading port 0 leaves
+    the port's control lines set as for port 1
+    ([#415](https://github.com/fubar-coder/bb2-c/issues/415)).

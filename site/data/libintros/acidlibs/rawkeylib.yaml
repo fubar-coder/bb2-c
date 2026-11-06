@@ -1,0 +1,10 @@
+description: Raw key codes and characters - the conversion between them for the keyboard commands of other libraries.
+intro: |
+  This library turns the raw key codes of the keyboard, the numbers of
+  the keys, into characters with the system's keymap, and characters
+  back into raw key codes. The keyboard commands of other libraries use
+  it, such as `Inkey$` in a window or in Blitz mode with `BlitzKeys`.
+
+  Some keys give fixed codes instead of characters: F1 to F10 give 129
+  to 138, Help gives 139, and the cursor keys up, down, right and left
+  give 28 to 31. In Blitz mode, Ctrl with a letter gives 1 to 26.

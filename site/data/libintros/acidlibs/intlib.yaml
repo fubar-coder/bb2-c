@@ -1,0 +1,19 @@
+description: Interrupts - the handlers of SetInt ... End SetInt, ClrInt and VWait, in Amiga and Blitz mode.
+intro: |
+  This library runs the interrupt handlers of a program. The compiler
+  turns the commands `SetInt`, `End SetInt`, `ClrInt` and `VWait` into
+  calls of it, so they have no entries here. Between `SetInt` and
+  `End SetInt` stands code that runs at every interrupt of the given
+  type, for example 5 for the vertical blank, fifty times a second on a
+  PAL Amiga:
+
+  ```blitzbasic
+  SetInt 5
+    frames+1
+  End SetInt
+  ```
+
+  `ClrInt` removes the handlers of a type again, and `VWait` waits for
+  the next vertical blank. The library keeps the handlers of Amiga mode
+  and of Blitz mode apart and switches them when the program changes
+  mode; at the end of the program it removes all of them.

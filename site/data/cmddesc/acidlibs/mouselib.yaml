@@ -1,0 +1,21 @@
+"Mouse":
+  text: With `On`, the mouse is read at every vertical blank, for `MouseX`, `MouseY`, the speeds and the pointer; `Off` stops it. Blitz mode only.
+  notes: |
+    Kept from the original: right after `Mouse On`, the position can jump
+    once ([#223](https://github.com/fubar-coder/bb2-c/issues/223)).
+"Pointer":
+  text: Makes a sprite the mouse pointer, shown on the sprite channel given in the slice used at this moment; it then follows the mouse. Blitz mode only.
+  notes: |
+    Make the sprite and the slice first, and use `Mouse On`.
+"MouseArea":
+  text: The area the mouse position stays inside, from `Minx,Miny` up to, but not including, `Maxx,Maxy`. The start value is 0,0 to 320,200.
+"MouseX":
+  text: The horizontal position of the mouse, read since `Mouse On`. Blitz mode only.
+"MouseY":
+  text: The vertical position of the mouse, read since `Mouse On`. Blitz mode only.
+"MouseXSpeed":
+  text: How far the mouse moved horizontally between the last two vertical blanks; negative to the left. Blitz mode only.
+"MouseYSpeed":
+  text: How far the mouse moved vertically between the last two vertical blanks; negative upwards. Blitz mode only.
+"PositionMouse":
+  text: Sets the mouse position to `x,y`. It is not clipped to `MouseArea` until the mouse moves.

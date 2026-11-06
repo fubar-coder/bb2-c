@@ -1,0 +1,30 @@
+description: The keyboard in Blitz mode - Inkey$ without the system, the state of single keys and the qualifier keys.
+intro: |
+  In Blitz mode the system does not read the keyboard for the program.
+  `BlitzKeys On` makes the library the input of the program, so that
+  `Inkey$` returns the keys typed, read straight from the keyboard's
+  buffer. `RawStatus` tells whether a single key is held down at this
+  moment, which suits games better:
+
+  ```blitzbasic
+  BLITZ
+  BlitzKeys On
+  Repeat
+    VWait
+    If RawStatus($4F) Then x-1
+    If RawStatus($4E) Then x+1
+  Until RawStatus($45)
+  ```
+
+  `RawStatus` takes the raw key code of a key, the number of its place
+  on the keyboard. Some of them:
+
+  | Key | Code | Key | Code | Key | Code |
+  |---|---|---|---|---|---|
+  | Esc | $45 | Space | $40 | Return | $44 |
+  | F1 to F10 | $50 to $59 | Cursor up, down | $4C, $4D | Cursor right, left | $4E, $4F |
+  | Left Shift | $60 | Right Shift | $61 | Ctrl | $63 |
+  | Left Alt | $64 | Right Alt | $65 | Left, right Amiga | $66, $67 |
+  | 1 to 9, 0 | $01 to $0A | Q W E R T Y | $10 to $15 | A S D F G H | $20 to $25 |
+
+  *Based on the blitzkeyslib guide by Acid Software.*

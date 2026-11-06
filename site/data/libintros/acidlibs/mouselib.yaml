@@ -1,0 +1,22 @@
+description: The mouse in Blitz mode - its position and speed, the area it can move in, and a sprite as its pointer.
+intro: |
+  In Blitz mode the system does not read the mouse for the program.
+  `Mouse On` makes the library read it at every vertical blank, fifty
+  times a second on a PAL Amiga. `MouseX` and `MouseY` then give its
+  position, clipped to the area set with `MouseArea`, 0,0 to 320,200 at
+  the start, and `MouseXSpeed` and `MouseYSpeed` how far it moved.
+  `Pointer` makes a sprite follow the mouse:
+
+  ```blitzbasic
+  LoadShape 0,"pointer.iff"
+  GetaSprite 0,0
+  BLITZ
+  Slice 0,44,4
+  Mouse On
+  Pointer 0,0
+  Repeat : VWait : Until Joyb(0)
+  ```
+
+  `Joyb(0)` of the gameiolib library reads the mouse buttons.
+
+  *Based on the mouselib guide by Acid Software.*

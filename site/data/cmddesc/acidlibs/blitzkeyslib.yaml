@@ -1,0 +1,16 @@
+"BlitzKeys":
+  text: With `On`, `Inkey$` reads the keyboard in Blitz mode. Blitz mode only.
+  notes: |
+    Kept from the original: `BlitzKeys Off` does not give the input back
+    to what it was before
+    ([#408](https://github.com/fubar-coder/bb2-c/issues/408)).
+"RawStatus":
+  text: True (-1) if the key with the raw key code given is held down, else false (0).
+"BlitzKey":
+  text: The next key typed, as `Inkey$` returns it after `BlitzKeys On`; the value -1 if no key is waiting.
+"BlitzQualifier":
+  text: The qualifier keys, such as Shift, Alt and Ctrl, that were held down with the last key read in Blitz mode, as the bits of the system's qualifier word.
+"BlitzRepeat":
+  text: Meant to set the delay and the speed of the key repeat in Blitz mode; it does nothing.
+"HandleRawKey":
+  text: Does nothing; the library has no code for it.

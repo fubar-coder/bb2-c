@@ -1,0 +1,25 @@
+description: Joysticks, mouse buttons and CD32 pads - read straight from the hardware, in Amiga and Blitz mode.
+intro: |
+  These functions read the game ports from the hardware, so they work in
+  both modes. Each takes the port: 0 is the port the mouse is normally
+  plugged into, 1 the joystick port. With runtime error checking, any
+  other port is the error "Joyport must be 0 or 1".
+
+  ```blitzbasic
+  Repeat
+    VWait
+    x+Joyx(1) : y+Joyy(1)
+  Until Joyb(1)
+  ```
+
+  `Joyr` gives the direction as one number:
+
+  | Direction | Joyr | Direction | Joyr |
+  |---|---|---|---|
+  | up | 0 | down | 4 |
+  | up and right | 1 | down and left | 5 |
+  | right | 2 | left | 6 |
+  | down and right | 3 | up and left | 7 |
+  | none | 8 | | |
+
+  *Based on the gameiolib guide by Acid Software.*
