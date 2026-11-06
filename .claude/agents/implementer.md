@@ -39,8 +39,9 @@ read them first):
   findings in the change's design.md; if a spec would have to change,
   stop and report.
 * Worktree data: symlink the main checkout's ignored data
-  (`archive/cd`, `archive/aminet`, `archive/amiblitz3`, `.cache`, the
-  files of `amiga-emulation/`) into the worktree; never commit them.
+  (`archive/cd`, `archive/aminet`, `archive/amiblitz3`, `archive/bernd`,
+  `.cache`, the files of `amiga-emulation/`) into the worktree; never
+  commit them.
   Tests write only to `TEST:`/`RAM:`.
 * Pause and report if the brief needs work beyond its scope or you would
   narrow specified behaviour.

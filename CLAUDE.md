@@ -75,7 +75,7 @@ ctest --preset oracle                                  # AmiBlitz3's compiler ch
   generated test data under `tests/data/`. Material without a clear
   license (CD) is not checked in but loaded with
   `cmake/fetch-originals.cmake` (`archive/cd/`, `archive/aminet/`,
-  ignored); tests that need it are skipped without it.
+  `archive/bernd/`, ignored); tests that need it are skipped without it.
 * **Do not fix original bugs**, only document them (`BUG(orig)` in the
   code, list of deviations in `docs/*/deviations.md`); `DIFF` only where
   technically necessary. Applies only to the port: once it is complete

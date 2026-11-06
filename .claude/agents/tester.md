@@ -31,6 +31,7 @@ read them first):
   trailer `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`; no
   push; do not edit GitHub issues.
 * Worktree data: symlink the main checkout's ignored data
-  (`archive/cd`, `archive/aminet`, `archive/amiblitz3`, `.cache`, the
-  files of `amiga-emulation/`) into the worktree; never commit them.
+  (`archive/cd`, `archive/aminet`, `archive/amiblitz3`, `archive/bernd`,
+  `.cache`, the files of `amiga-emulation/`) into the worktree; never
+  commit them.
 * Report back: commits, test results, defects found, open points.
