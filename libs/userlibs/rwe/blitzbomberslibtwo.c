@@ -80,7 +80,6 @@ BLITZ_LIBFIN();
  * @param x       d1.w: the invader's column
  * @param y       d2.w: the invader's row
  * @param offset  d3.w: the offset of the second pair of images
- * @return nothing
  */
 static void BLITZ_ROUTINE killinvader_c(UBYTE *sprad BL_REG(d0), UWORD x BL_REG(d1),
                                         UWORD y BL_REG(d2), UWORD offset BL_REG(d3))
@@ -132,7 +131,6 @@ static_assert(sizeof(struct star) == 6);
  * memory address a byte; not a defect).
  * @param s      d0: the table (struct star, ended by a negative speed)
  * @param plane  d1: the bitplane (40 bytes per row)
- * @return nothing
  */
 static void BLITZ_ROUTINE drawstarfield_c(struct star *s BL_REG(d0), UBYTE *plane BL_REG(d1))
 {
@@ -179,7 +177,6 @@ static void bullet(struct BitMap *bitm, UWORD x, UWORD y, int set)
  * @param bitm  d0: the bitmap (struct BitMap)
  * @param x     d1.w: the column
  * @param y     d2.w: the top row
- * @return nothing
  */
 static void BLITZ_ROUTINE drawbullet_c(struct BitMap *bitm BL_REG(d0), UWORD x BL_REG(d1),
                                        UWORD y BL_REG(d2))
@@ -194,7 +191,6 @@ static void BLITZ_ROUTINE drawbullet_c(struct BitMap *bitm BL_REG(d0), UWORD x B
  * @param bitm  d0: the bitmap (struct BitMap)
  * @param x     d1.w: the column
  * @param y     d2.w: the top row
- * @return nothing
  */
 static void BLITZ_ROUTINE erasebullet_c(struct BitMap *bitm BL_REG(d0), UWORD x BL_REG(d1),
                                         UWORD y BL_REG(d2))

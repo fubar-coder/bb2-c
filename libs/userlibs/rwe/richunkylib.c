@@ -142,7 +142,6 @@ static_assert(sizeof(struct chunky) == 16);
  *
  * The two commands are declared but do nothing (their arguments are
  * ignored).
- * @return nothing
  */
 static void BLITZ_ROUTINE nothing_c(void)
 {
@@ -179,7 +178,6 @@ static void freechunky(struct chunky *o, ULONG callerd1)
  * cleared and BUG(orig) (#886) the CIA-A PRA bit 1 toggled.
  * @param callerd1  d1: the caller's d1 (its upper word goes to lmullib)
  * @param o         a3: the object
- * @return nothing
  */
 static void BLITZ_ROUTINE dofreechunkybitmap_c(ULONG callerd1 BL_REG(d1), struct chunky *o BL_REG(a3))
 {
@@ -199,7 +197,6 @@ static void BLITZ_ROUTINE dofreechunkybitmap_c(ULONG callerd1 BL_REG(d1), struct
  * @param w  d1: the width (a word)
  * @param h  d2: the height (a word)
  * @param o  a0: the object (!libs #richunkylib,#ia0|#pd0)
- * @return nothing
  */
 static void BLITZ_ROUTINE chunkybitmap_c(ULONG w BL_REG(d1), ULONG h BL_REG(d2),
                                          struct chunky *o BL_REG(a0))
@@ -248,7 +245,6 @@ static ULONG BLITZ_ROUTINE chunkydata_c(struct chunky *o BL_REG(a0))
  * @param col  d3: the column in the texture (a signed word)
  * @param tex  d4: the texture
  * @param o    a0: the object
- * @return nothing
  */
 static void BLITZ_ROUTINE raycastsky_c(ULONG x BL_REG(d1), ULONG h BL_REG(d2),
                                        ULONG col BL_REG(d3), ULONG tex BL_REG(d4),
@@ -288,7 +284,6 @@ static ULONG merge2(ULONG x)
  * depth test compares Flags and Depth as one signed word (#883).
  * @param o   a0: the chunky object
  * @param bm  a1: the bitmap (a struct BitMap)
- * @return nothing
  */
 static void BLITZ_ROUTINE c2p_c(struct chunky *o BL_REG(a0), struct BitMap *bm BL_REG(a1))
 {

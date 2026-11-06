@@ -319,13 +319,15 @@ BLITZ_THUNK(doqangle, doqangle_c, "d1/a0-a1");
 
 /**
  * @brief True - the constant -1 (inline: MOVEQ #-1,d0).
- * @return d0: -1 (a word function: Blitz's true)
+ * @par Result
+ * d0: -1 (a word function: Blitz's true)
  */
 BLITZ_INLINE(dotrue, "   moveq   #-1,d0");
 
 /**
  * @brief False - the constant 0 (inline: MOVEQ #0,d0).
- * @return d0: 0
+ * @par Result
+ * d0: 0
  */
 BLITZ_INLINE(dofalse, "   moveq   #0,d0");
 
@@ -335,7 +337,8 @@ BLITZ_INLINE(dofalse, "   moveq   #0,d0");
  * MOVE.l $dff004,d0 (pick up whole long word...):LSR.l #8,d0:AND #$1ff,d0
  * (the AND is word sized: the upper word keeps VPOSR>>8).
  *
- * @return d0: the beam line 0..511 in the low word
+ * @par Result
+ * d0: the beam line 0..511 in the low word
  */
 BLITZ_INLINE(dobeamy,
     "   move.l  0xdff004,d0\n"
@@ -539,8 +542,9 @@ BLITZ_ERRCHK_THUNK(intchk, intchk_c, "d0-d1/a0-a1");
  *
  * TST.l d0:BPL:NEG.l d0, SWAP:CLR:SWAP.
  *
- * @param q d0: the Quick value
- * @return d0: Quick, the fraction of |q| (the low word)
+ * @arg q d0: the Quick value
+ * @par Result
+ * d0: Quick, the fraction of |q| (the low word)
  */
 BLITZ_INLINE(doqfrac,
     "   tst.l   d0\n"
@@ -556,10 +560,11 @@ BLITZ_INLINE(doqfrac,
  * Below low: +high-low, at or above high: -high+low (once, signed long
  * compares).
  *
- * @param q d0: the Quick value
- * @param low d1: the lower limit
- * @param high d2: the upper limit (exclusive)
- * @return d0: the wrapped value
+ * @arg q d0: the Quick value
+ * @arg low d1: the lower limit
+ * @arg high d2: the upper limit (exclusive)
+ * @par Result
+ * d0: the wrapped value
  */
 BLITZ_INLINE(doqwrap,
     "   cmp.l   d1,d0\n"
@@ -577,8 +582,9 @@ BLITZ_INLINE(doqwrap,
  *
  * NEG.l d0:BPL 'skip:NEG.l d0 ($80000000 stays).
  *
- * @param q d0: the Quick value
- * @return d0: |q|
+ * @arg q d0: the Quick value
+ * @par Result
+ * d0: |q|
  */
 BLITZ_INLINE(doqabs,
     "   neg.l   d0\n"

@@ -309,7 +309,8 @@ BLITZ_THUNK_POST(goqamiga, goqamiga_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
  * The device list walk has no end check (not a bug: keyboard.device is
  * always there).
  *
- * @return d0: the keyboard.device base, the library's init value
+ * @par Result
+ * d0: the keyboard.device base, the library's init value
  */
 ULONG BLITZ_ROUTINE doinit(void)
 {

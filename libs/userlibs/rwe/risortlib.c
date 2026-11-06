@@ -152,7 +152,6 @@ static void BLITZ_ROUTINE libfinit_c(void)
  * Signed; the larger priority comes first, equal priorities are sorted
  * by the string.  -1 (the default, every negative value) disables it.
  * @param off  d0.w: the offset in the data, -1 = disabled
- * @return nothing
  */
 static void BLITZ_ROUTINE sortpriorityoffset_c(UWORD off BL_REG(d0))
 {
@@ -162,7 +161,6 @@ static void BLITZ_ROUTINE sortpriorityoffset_c(UWORD off BL_REG(d0))
 /**
  * @brief StringSortDir direction: the order of the string sorts.
  * @param dir  d0.w: 0 ascending, any other value descending
- * @return nothing
  */
 static void BLITZ_ROUTINE stringsortdir_c(UWORD dir BL_REG(d0))
 {

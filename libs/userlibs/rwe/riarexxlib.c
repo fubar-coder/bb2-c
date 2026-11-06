@@ -428,7 +428,6 @@ BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
  * @brief RXQuoteChar char$: the quote character of the parser (RXTokenise
  * on; default '"').
  * @param s  d0: the string, its first character
- * @return nothing
  */
 static void BLITZ_ROUTINE rxquotechar_c(const UBYTE *s BL_REG(d0))
 {
@@ -453,7 +452,6 @@ BLITZ_THUNK(_rxmessagelist, rxmessagelist_c, "d1/a0-a1");
  * BUG(orig) (#547): MOVE.l d0 stores the upper word of the word argument
  * too.
  * @param on  d0.w: 0 off, else on (the whole register is stored)
- * @return nothing
  */
 static void BLITZ_ROUTINE rxtokenise_c(ULONG on BL_REG(d0))
 {
@@ -480,7 +478,6 @@ BLITZ_THUNK(_rxreturncode, rxreturncode_c, "d1/a0-a1");
  * BUG(orig) (#529): copied without a limit into the 66 bytes of
  * rexxportname, over the variables behind it.
  * @param s  d0: portname$
- * @return nothing
  */
 static void BLITZ_ROUTINE rxdefportname_c(const UBYTE *s BL_REG(d0))
 {
@@ -922,7 +919,6 @@ static BB_BOOL replymsg(ULONG code, const UBYTE *res, const ULONG *args)
  * was asked for (#539); if the port of the message's ln_Name no longer
  * exists, it is not replied (#540).
  * @param code  d0: Result1
- * @return nothing
  */
 static void BLITZ_ROUTINE replymsg_c(ULONG code BL_REG(d0))
 {
@@ -939,7 +935,6 @@ BLITZ_THUNK(_replymsg, replymsg_c, "d0-d1/a0-a1");
  * @param code  d0: Result1
  * @param res   d1: result$, Result2
  * @param args  a2: the argument stack, -4(a2) the length of result$
- * @return nothing
  */
 static void BLITZ_ROUTINE replymsg2_c(ULONG code BL_REG(d0), const UBYTE *res BL_REG(d1),
                                       const ULONG *args BL_REG(a2))
@@ -1058,7 +1053,6 @@ static void deleteport(void)
  * message, then ReplyMsg for the rest of the message list), then
  * RemPort, DeleteMsgPort.  BUG(orig) (#530): neither the
  * lists nor the name are freed.  Error check portchk.
- * @return nothing
  */
 static void BLITZ_ROUTINE rxdeleteport_c(void)
 {

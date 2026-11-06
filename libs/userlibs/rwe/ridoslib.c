@@ -409,7 +409,6 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
  * BUG(orig) (#621): the requests are removed from id 63 down only while
  * the counter is not 0.  The port is deleted only if dos.library was
  * open (always, where CreateMsgPort exists: no defect).
- * @return nothing
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {

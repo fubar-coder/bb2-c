@@ -281,7 +281,6 @@ ULONG BLITZ_ROUTINE c_AnimHeight(ULONG address BL_REG(d0))
 /**
  * @brief AnimLoop On|Off: go on with the third frame at the end of the ANIM (default On).
  * @param on  d0: the byte of On (-1) or Off (0)
- * @return nothing
  */
 void BLITZ_ROUTINE c_AnimLoop(UBYTE on BL_REG(d0))
 {

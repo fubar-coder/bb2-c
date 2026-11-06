@@ -77,7 +77,7 @@ static struct Library *gfxbase;
  * @brief init: open graphics.library 39.
  *
  * The base is only used by finit (to know that the library is open).
- * @return nothing (BL_NORET)
+ * Returns nothing (BL_NORET).
  */
 static void BLITZ_ROUTINE codeinit_c(void)
 {
@@ -90,7 +90,6 @@ static void BLITZ_ROUTINE codeinit_c(void)
  * Nothing happens if init could not open the library.  Only the list of
  * the last InitView is freed, the earlier ones are lost (BUG(orig)
  * (#891)); after a failed AllocMem this is FreeMem(0, size) (#888).
- * @return nothing
  */
 static void BLITZ_ROUTINE codefinit_c(void)
 {
@@ -160,7 +159,6 @@ static ULONG BLITZ_ROUTINE initview_c(UWORD height BL_REG(d0), UWORD depth BL_RE
  *
  * a0 = the bitmap object (!libs #bitmaplib) is not used; d0 stays
  * unchanged.
- * @return nothing
  */
 static void BLITZ_ROUTINE nothing_c(void)
 {

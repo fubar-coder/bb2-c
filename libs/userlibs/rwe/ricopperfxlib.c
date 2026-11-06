@@ -331,7 +331,6 @@ ULONG BLITZ_ROUTINE c_docolsplit(const struct colsplit *cols BL_REG(d0),
  * @param cols      d0: the colours (cols_adr)
  * @param numlines  d1: the number of lines
  * @param ccoffset  d2: the split's offset in instructions (4 bytes)
- * @return nothing
  */
 void BLITZ_ROUTINE c_redocolsplit(const struct colsplit *cols BL_REG(d0),
                                          UWORD numlines BL_REG(d1),
@@ -371,7 +370,6 @@ void BLITZ_ROUTINE c_redocolsplit(const struct colsplit *cols BL_REG(d0),
  * @param startline  d1: the line of the next colour split
  * @param ccoffset   d2: the offset of the next instruction, in instructions
  * @param coplist    a0: the coplist object (!libs #displaylib,#ia0|#pd0)
- * @return nothing
  */
 void BLITZ_ROUTINE c_splitreset(UWORD startline BL_REG(d1),
                                        UWORD ccoffset BL_REG(d2),
@@ -387,7 +385,6 @@ void BLITZ_ROUTINE c_splitreset(UWORD startline BL_REG(d1),
  * @brief CopperReset coplist#,startline: c_splitreset() with ccoffset 0.
  * @param startline  d1: the line of the next colour split
  * @param coplist    a0: the coplist object
- * @return nothing
  */
 void BLITZ_ROUTINE c_splitreset2(UWORD startline BL_REG(d1),
                                         struct bb_coplist *coplist BL_REG(a0))
@@ -402,7 +399,6 @@ void BLITZ_ROUTINE c_splitreset2(UWORD startline BL_REG(d1),
  * ccoffset 0.
  * @param custom     d0: the address of the custom space
  * @param startline  d1: the line of the next colour split
- * @return nothing
  */
 void BLITZ_ROUTINE c_splitresethard(UBYTE *custom BL_REG(d0),
                                            UWORD startline BL_REG(d1))
@@ -431,7 +427,6 @@ ULONG BLITZ_ROUTINE c_getccoffset(void)
 /**
  * @brief ColSplitBplcon3 bplcon3: the low byte of BPLCON3 for the next DoColSplit.
  * @param lo  d0: the low byte
- * @return nothing
  */
 void BLITZ_ROUTINE c_splitbplcon3(UBYTE lo BL_REG(d0))
 {
@@ -444,7 +439,6 @@ void BLITZ_ROUTINE c_splitbplcon3(UBYTE lo BL_REG(d0))
  * Also the end of CopperMove/Wait/Skip.  Nothing without a custom space.
  * @param ins1  d0: the first word
  * @param ins2  d1: the second word
- * @return nothing
  */
 void BLITZ_ROUTINE c_CustomCommand(UWORD ins1 BL_REG(d0),
                                           UWORD ins2 BL_REG(d1))
@@ -462,7 +456,6 @@ void BLITZ_ROUTINE c_CustomCommand(UWORD ins1 BL_REG(d0),
  * @brief CopperMove register,value: a MOVE instruction (bit 0 of the register cleared).
  * @param reg    d0: the custom chip register offset
  * @param value  d1: the value
- * @return nothing
  */
 void BLITZ_ROUTINE c_CustomMove(UWORD reg BL_REG(d0), UWORD value BL_REG(d1))
 {
@@ -476,7 +469,6 @@ void BLITZ_ROUTINE c_CustomMove(UWORD reg BL_REG(d0), UWORD value BL_REG(d1))
  * so the +6 can carry into the line bits (x >= 500).
  * @param x  d0: the x position
  * @param y  d1: the line
- * @return nothing
  */
 void BLITZ_ROUTINE c_CustomWait(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
 {
@@ -489,7 +481,6 @@ void BLITZ_ROUTINE c_CustomWait(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
  * @brief CopperSkip x,y: a SKIP instruction for the position x,y.
  * @param x  d0: the x position (bit 0 cleared)
  * @param y  d1: the line
- * @return nothing
  */
 void BLITZ_ROUTINE c_CustomSkip(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
 {
@@ -500,7 +491,6 @@ void BLITZ_ROUTINE c_CustomSkip(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
  * @brief CopperEnd: end the custom part: WAIT line $2c, DMA off, BPLCON3 bank 0, COLOR00 = 0.
  *
  * Four instructions; nothing without a custom space.
- * @return nothing
  */
 void BLITZ_ROUTINE c_EndSplit(void)
 {
@@ -556,7 +546,6 @@ ULONG BLITZ_ROUTINE c_InfoBlock(void)
 
 /**
  * @brief init and finit: nothing (_libinit/_libfinit are an RTS).
- * @return nothing
  */
 void BLITZ_ROUTINE c_libinit(void)
 {

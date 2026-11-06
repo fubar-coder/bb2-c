@@ -224,7 +224,6 @@ static LONG colindex(ULONG c)
  * Remembers the address of its colour 0 (paladdr); the object's data
  * pointer is taken as it is, not checked.
  * @param obj  a0: the palette object (!libs #palettelib,#ia0|#pd0)
- * @return nothing
  */
 static void BLITZ_ROUTINE paletteinfo_c(struct bb_palette *obj BL_REG(a0))
 {
@@ -318,7 +317,6 @@ BLITZ_THUNK(agapalblue, agapalblue_c, "d1/a0-a1");
  * @param ratio  d1: the ratio, a Quick (16.16)
  * @param start  d2: the first colour
  * @param end    d3: the last colour
- * @return nothing
  */
 static void BLITZ_ROUTINE paladjust2_c(struct bb_palette *obj BL_REG(a0), ULONG ratio BL_REG(d1),
                                         ULONG start BL_REG(d2), ULONG end BL_REG(d3))
@@ -348,7 +346,6 @@ BLITZ_THUNK(paladjust2, paladjust2_c, "d0-d1/a0-a1");
  * @param obj    a0: the target palette object
  * @param ratio  d1: the ratio, a Quick (16.16)
  * @param end    d3: the caller's d3 (its low word is replaced)
- * @return nothing
  */
 static void BLITZ_ROUTINE paladjust_c(struct bb_palette *obj BL_REG(a0), ULONG ratio BL_REG(d1),
                                        ULONG end BL_REG(d3))
@@ -404,7 +401,6 @@ static ULONG nib(ULONG v)
  * @param b      d3: blue
  * @param start  d4: the first colour
  * @param end    d5: the last colour (0: the palette's last)
- * @return nothing
  */
 static void BLITZ_ROUTINE agafillpalette2_c(struct bb_palette *obj BL_REG(a0), ULONG r BL_REG(d1),
     ULONG g BL_REG(d2), ULONG b BL_REG(d3), ULONG start BL_REG(d4), ULONG end BL_REG(d5))
@@ -419,7 +415,6 @@ BLITZ_THUNK(agafillpalette2, agafillpalette2_c, "d0-d1/a0-a1");
  * @param r    d1: red
  * @param g    d2: green
  * @param b    d3: blue
- * @return nothing
  */
 static void BLITZ_ROUTINE agafillpalette_c(struct bb_palette *obj BL_REG(a0), ULONG r BL_REG(d1),
     ULONG g BL_REG(d2), ULONG b BL_REG(d3))
@@ -439,7 +434,6 @@ BLITZ_THUNK(agafillpalette, agafillpalette_c, "d0-d1/a0-a1");
  * @param b      d3: blue
  * @param start  d4: the first colour
  * @param end    d5: the last colour (0: the palette's last)
- * @return nothing
  */
 static void BLITZ_ROUTINE fillpalette2_c(struct bb_palette *obj BL_REG(a0), ULONG r BL_REG(d1),
     ULONG g BL_REG(d2), ULONG b BL_REG(d3), ULONG start BL_REG(d4), ULONG end BL_REG(d5))
@@ -454,7 +448,6 @@ BLITZ_THUNK(fillpalette2, fillpalette2_c, "d0-d1/a0-a1");
  * @param r    d1: red
  * @param g    d2: green
  * @param b    d3: blue
- * @return nothing
  */
 static void BLITZ_ROUTINE fillpalette_c(struct bb_palette *obj BL_REG(a0), ULONG r BL_REG(d1),
     ULONG g BL_REG(d2), ULONG b BL_REG(d3))
@@ -531,7 +524,6 @@ static void clearplane(UBYTE *end, ULONG moves)
  * (#682); an odd rest byte stays (#681); the depth is the word
  * Flags<<8|Depth, 0 planes = 65536 (#679).
  * @param bm  a0: the bitmap object (!libs #bitmaplib,#ia0|#pd0)
- * @return nothing
  */
 static void BLITZ_ROUTINE cpucls_c(struct bb_bitmap *bm BL_REG(a0))
 {
@@ -643,7 +635,6 @@ BLITZ_THUNK(savecmap, savecmap_c, "d1/a0-a1");
  * @param src2    a1: the second source bitmap object (#ia1)
  * @param dst     a2: the target bitmap object (#ia2)
  * @param planes  d3: numplanes
- * @return nothing
  */
 static void BLITZ_ROUTINE mergebitplanes_c(struct bb_bitmap *src1 BL_REG(a0),
                                             struct bb_bitmap *src2 BL_REG(a1),

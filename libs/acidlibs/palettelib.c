@@ -1221,11 +1221,12 @@ static ULONG getcol_b(ULONG c, struct bb_slice *slice, int shift)
  * Errors (debugger only, colchk): "Uninitialized Screen", "Uninitialized
  * Slice".
  *
- * @param c d0: the colour register.
- * @param scr a0: Amiga mode: the used screen (object).
- * @param gfx a6: Amiga mode: graphics.library.
- * @param slice a0: Blitz mode: the used slice.
- * @return d0.w: the component (0-15).
+ * @arg c d0: the colour register.
+ * @arg scr a0: Amiga mode: the used screen (object).
+ * @arg gfx a6: Amiga mode: graphics.library.
+ * @arg slice a0: Blitz mode: the used slice.
+ * @par Result
+ * d0.w: the component (0-15).
  */
 COLFN(dored, 8);
 COLFN(dogreen, 4);

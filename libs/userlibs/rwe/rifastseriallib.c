@@ -242,7 +242,6 @@ static void setbaud(ULONG baud)
 
 /**
  * @brief init: nothing.
- * @return nothing
  */
 void BLITZ_ROUTINE c_codeinit(void)
 {
@@ -256,7 +255,6 @@ void BLITZ_ROUTINE c_codeinit(void)
  * inten is always $F01C (#651), whose bits 11 and 0 are clear, so it
  * never writes; the write would go to the absolute address $9A, not
  * INTENA (#648).
- * @return nothing
  */
 void BLITZ_ROUTINE c_finitserialio(void)
 {
@@ -286,7 +284,6 @@ void BLITZ_ROUTINE c_finitserialio(void)
  * into inbuf; slave: the other way round.  n + 1 bytes (DBRA).  Does not
  * check the initialisation (BUG(orig) (#652)).
  * @param n  d0: the number of bytes - 1
- * @return nothing
  */
 void BLITZ_ROUTINE c_doserialIO(UWORD n BL_REG(d0))
 {
@@ -307,7 +304,6 @@ void BLITZ_ROUTINE c_doserialIO(UWORD n BL_REG(d0))
 
 /**
  * @brief DoSerialIO: c_doserialIO() with the count of InitSerialIO/SetIOSize.
- * @return nothing
  */
 void BLITZ_ROUTINE c_doserialIO2(void)
 {
@@ -347,7 +343,6 @@ ULONG BLITZ_ROUTINE c_initserialio(ULONG baud BL_REG(d0), UWORD numbytes BL_REG(
 /**
  * @brief SetSerialMode mode: master (<> 0) or slave (0) for DoSerialIO.
  * @param mode  d0: the mode (a byte; the first byte of the word mode)
- * @return nothing
  */
 void BLITZ_ROUTINE c_setserialmode(UBYTE mode BL_REG(d0))
 {
@@ -356,7 +351,6 @@ void BLITZ_ROUTINE c_setserialmode(UBYTE mode BL_REG(d0))
 
 /**
  * @brief EndSerialIO: "disable serial read/write" - does nothing (an RTS).
- * @return nothing
  */
 void BLITZ_ROUTINE c_endserialio(void)
 {
@@ -368,7 +362,6 @@ void BLITZ_ROUTINE c_endserialio(void)
  * Waits for TBE and writes the byte with a stop bit to SERDAT; nothing
  * if not initialised.
  * @param b  d0: the byte
- * @return nothing
  */
 void BLITZ_ROUTINE c_putserial(UBYTE b BL_REG(d0))
 {
@@ -385,7 +378,6 @@ void BLITZ_ROUTINE c_putserial(UBYTE b BL_REG(d0))
  * (SUBQ.l: BNE).
  * @param p  d0: the address of the data
  * @param n  d1: the number of bytes
- * @return nothing
  */
 void BLITZ_ROUTINE c_putserial2(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
@@ -446,7 +438,6 @@ ULONG BLITZ_ROUTINE c_getserial2(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 
 /**
  * @brief FlushSerialIO: "make sure serial port is empty" - acknowledge RBF in INTREQ.
- * @return nothing
  */
 void BLITZ_ROUTINE c_flushserialio(void)
 {
@@ -460,7 +451,6 @@ void BLITZ_ROUTINE c_flushserialio(void)
  * BUG(orig): 0 bytes are 2^32 (#646); no initialisation check (#652).
  * @param p  d0: the data
  * @param n  d1: the number of bytes
- * @return nothing
  */
 void BLITZ_ROUTINE c_syncput(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
@@ -478,7 +468,6 @@ void BLITZ_ROUTINE c_syncput(const UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
  * BUG(orig): 0 bytes are 2^32 (#646); no initialisation check (#652).
  * @param p  d0: the buffer
  * @param n  d1: the number of bytes
- * @return nothing
  */
 void BLITZ_ROUTINE c_syncget(UBYTE *p BL_REG(d0), ULONG n BL_REG(d1))
 {
@@ -541,7 +530,6 @@ BB_BOOL BLITZ_ROUTINE c_syncserial(UBYTE sync BL_REG(d0))
  * DIVU.L as in InitSerialIO (68020, #647); BUG(orig) (#654): it divides
  * by all of d0, also the upper word of its #word argument.
  * @param baud  d0: the baud rate
- * @return nothing
  */
 void BLITZ_ROUTINE c_setiospeed(ULONG baud BL_REG(d0))
 {
@@ -556,7 +544,6 @@ void BLITZ_ROUTINE c_setiospeed(ULONG baud BL_REG(d0))
  * Stored as it is (DoSerialIO transfers count + 1 bytes); InitSerialIO
  * stores numbytes - 1.
  * @param n  d0: the count
- * @return nothing
  */
 void BLITZ_ROUTINE c_setiosize(UWORD n BL_REG(d0))
 {
@@ -567,7 +554,6 @@ void BLITZ_ROUTINE c_setiosize(UWORD n BL_REG(d0))
  * @brief SetIOBuffers inbuf,outbuf: the buffers of DoSerialIO.
  * @param in   d0: the receive buffer
  * @param out  d1: the send buffer
- * @return nothing
  */
 void BLITZ_ROUTINE c_setiobuf(UBYTE *in BL_REG(d0), UBYTE *out BL_REG(d1))
 {

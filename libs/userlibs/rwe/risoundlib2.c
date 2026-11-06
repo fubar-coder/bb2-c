@@ -268,7 +268,6 @@ ULONG BLITZ_ROUTINE c_libinit(void)
  * ahidevice is set, which never happens (BUG(orig) (#924)); then
  * DeleteIORequest, DeleteMsgPort, ahibase = 0.  CloseAHI is this
  * routine: a later OpenAHI uses request 0 (BUG(orig) (#927)).
- * @return nothing
  */
 void BLITZ_ROUTINE c_libfinit(void)
 {

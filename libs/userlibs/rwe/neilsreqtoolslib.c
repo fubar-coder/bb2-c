@@ -635,7 +635,6 @@ failed:                                 /* BUG(orig): nothing given back (#460) 
  *
  * Only if init succeeded (IsReqToolsActive).  BUG(orig) (#460): nothing
  * is cleared - a second finit frees again.
- * @return nothing
  */
 static void BLITZ_ROUTINE cleanupreqlib_c(void)
 {

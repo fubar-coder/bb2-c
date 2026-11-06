@@ -166,7 +166,7 @@ BLITZ_THUNK(dopoke, dopoke_c, "d0-d1/a1");
  * Blitz program; a C call would have to assume that it keeps
  * d2-d7/a2-a6, which user code need not do.
  *
- * @param d0 the address of the code.
+ * @arg d0 the address of the code.
  */
 BLITZ_ASM_ROUTINE(docall,
     "   move.l  d0,a0\n"

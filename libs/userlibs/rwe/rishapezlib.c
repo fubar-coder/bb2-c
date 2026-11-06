@@ -111,7 +111,6 @@ static const UWORD mypattern[2] = { 0xaaaa, 0x5555 };
  * only the mode.
  * @param mode  d1: 0 normal, else meshed (the word)
  * @param win   a0: the used window object (its first long the Window)
- * @return nothing
  */
 static void BLITZ_ROUTINE setwindowdraw_c(UWORD mode BL_REG(d1),
                                           struct Window **win BL_REG(a0))

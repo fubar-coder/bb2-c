@@ -477,7 +477,6 @@ static ULONG returnstring(void)
  * @brief init: opens registry.library (any version).
  *
  * Without it IsRegistryOpen is 0 and every command returns 0.
- * @return nothing
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -490,7 +489,6 @@ static void BLITZ_ROUTINE libinit_c(void)
  * UnlockRegistry on structs[curstruct] ... structs[4] (those not 0, with
  * d0 = the index, a1 = the stack), then CloseLibrary.  BUG(orig) (#779):
  * regstruct and the base stay set.
- * @return nothing
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
@@ -557,7 +555,6 @@ static ULONG BLITZ_ROUTINE lockregistry_c(ULONG mode BL_REG(d0))
  * then the stack slot is cleared and the structure below becomes current.
  * BUG(orig) (#781): also without a lock - it goes below the stack (the end
  * of the token table, DIFF further below).
- * @return nothing
  */
 static void BLITZ_ROUTINE unlockregistry_c(void)
 {

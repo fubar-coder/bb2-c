@@ -371,7 +371,6 @@ endthis:
  * uses it after it).
  * @param str  d0: the expression (changed: lower case)
  * @param buf  d1: the output buffer
- * @return nothing
  */
 static void BLITZ_ROUTINE convtopostfix_c(UBYTE *str BL_REG(d0), UBYTE *buf BL_REG(d1))
 {
@@ -729,7 +728,6 @@ static ULONG BLITZ_ROUTINE evaluate_c(UBYTE *str BL_REG(d0), ULONG caller_d1 BL_
  * Longs d0-d7, a0-a7, pc (index * 4); 0 = none (register operands fail
  * with error 2).
  * @param block  d0: the address of the block
- * @return nothing
  */
 static void BLITZ_ROUTINE registers_c(ULONG block BL_REG(d0))
 {
@@ -785,7 +783,6 @@ static ULONG BLITZ_ROUTINE indirectaddr_c(void)
 
 /**
  * @brief init: nothing (RTS).
- * @return nothing
  */
 void BLITZ_ROUTINE _libinit(void)
 {
@@ -793,7 +790,6 @@ void BLITZ_ROUTINE _libinit(void)
 
 /**
  * @brief finit: nothing (RTS).
- * @return nothing
  */
 void BLITZ_ROUTINE _libfinit(void)
 {

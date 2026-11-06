@@ -24,7 +24,7 @@
  * leaves d1 = the character (kept: thunk).
  * qconvertkey: table normal (qualifier & 3 = 0) or shifted; with CTRL
  * (bit 3) A-Z/a-z -> 1-26 and the other characters 65-122 except 91-96
- * (`AND #$FFDF:SUB #64`: [ \ ] ^ _ ` stay), else CAPS LOCK (bit 2) makes
+ * (`AND #$FFDF:SUB #64`: [ \ ] ^ _ and the backquote stay), else CAPS LOCK (bit 2) makes
  * a-z upper case.
  *
  * BUG(orig) (#245), kept: qconvertkey indexes the table with the raw code & 255
@@ -188,7 +188,7 @@ BLITZ_THUNK_POST(unconvert, unconvert_c, "a0-a1", "move.l  _rawkey_d1,d1");
  *
  * The normal table (qualifier & 3 = 0) or the shifted one; with CTRL
  * (bit 3) A-Z/a-z -> 1-26 and the other characters 65-122 except 91-96
- * (`AND #$FFDF:SUB #64`: [ \ ] ^ _ ` stay), else CAPS LOCK (bit 2) makes
+ * (`AND #$FFDF:SUB #64`: [ \ ] ^ _ and the backquote stay), else CAPS LOCK (bit 2) makes
  * a-z upper case.  Only the low word of d0 changes.
  *
  * BUG(orig) (#245): the table is indexed with the raw code & 255 - codes
@@ -236,7 +236,8 @@ BLITZ_THUNK(qconvertkey, qconvertkey_c, "d1/a0-a1");
  * 0-104 with convertkey(code, 0) and convertkey(code, 1) (shift).  Neither
  * the signal nor OpenDevice is checked.
  *
- * @return d0: d0 of the last convertkey call (code 104, shifted); stored
+ * @par Result
+ * d0: d0 of the last convertkey call (code 104, shifted); stored
  *         by the compiler, used by nobody
  */
 ULONG BLITZ_ROUTINE codeinit(void)

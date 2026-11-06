@@ -37,8 +37,9 @@ __asm__(
  *
  * Called from the program start code.  Assembler (it saves sp).
  *
- * @param d0  the address of the cleanup code
- * @return d0: the address of quit, the init value used by `End`
+ * @arg d0  the address of the cleanup code
+ * @par Result
+ * d0: the address of quit, the init value used by `End`
  */
 BLITZ_ASM_ROUTINE(codeinit,
 "   move.l  d0,cleanup\n"

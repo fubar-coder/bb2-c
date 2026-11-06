@@ -269,7 +269,6 @@ static ULONG BLITZ_ROUTINE initsnowdrop_c(ULONG n BL_REG(d0), ULONG num BL_REG(d
  * lists (#914); a bit above 7 reads behind the side tables (#910).
  * @param n   d0: the list number
  * @param rt  d1: the random table (index.w, then pairs offset.b, bit.b)
- * @return nothing
  */
 static void BLITZ_ROUTINE asmdosnow_c(ULONG n BL_REG(d0), struct randomtable *rt BL_REG(d1))
 {

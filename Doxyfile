@@ -1,0 +1,102 @@
+# Doxygen configuration of the API reference for C developers: the
+# library headers, the sources of the command libraries and the RWE
+# userlibs, and shared/ (the code compiled into several programs). Not
+# part of the CMake build: the Pages workflow runs it in the official
+# image (ghcr.io/doxygen/doxygen:Release_1_18_0) from the repository root
+# into site/static/api/, served as api/ of the website (site/README.md).
+# Only the settings that differ from Doxygen's defaults are listed.
+#
+# The sources are read as text, with no Amiga toolchain: the GCC-only
+# constructs (register parameters, attributes) and the macros that emit a
+# library's declaration table are defined away below, so that the
+# routines are listed with their comments and the table is not listed as
+# functions.
+
+PROJECT_NAME           = "BB2 C port"
+PROJECT_BRIEF          = "API reference: Blitz libraries in C and the shared code"
+OUTPUT_DIRECTORY       = site/static/api
+HTML_OUTPUT            = .
+GENERATE_LATEX         = NO
+HAVE_DOT               = NO
+FULL_PATH_NAMES        = YES
+STRIP_FROM_PATH        = .
+OPTIMIZE_OUTPUT_FOR_C  = YES
+# the routines of a library are static behind their thunks
+EXTRACT_ALL            = YES
+EXTRACT_STATIC         = YES
+# Blitz notation such as #ld0 or `Window#` in comments is no link
+AUTOLINK_SUPPORT       = NO
+MARKDOWN_SUPPORT       = YES
+SOURCE_BROWSER         = NO
+STRIP_CODE_COMMENTS    = NO
+QUIET                  = YES
+# comment errors (a @param of no parameter, ...) fail the run;
+# undocumented and partly documented routines do not
+WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_INCOMPLETE_DOC = NO
+WARN_NO_PARAMDOC       = NO
+WARN_IF_DOC_ERROR      = YES
+WARN_AS_ERROR          = FAIL_ON_WARNINGS
+
+INPUT                  = libs/include \
+                         libs/deflibs/deflib.h \
+                         libs/acidlibs \
+                         libs/userlibs/rwe \
+                         shared
+FILE_PATTERNS          = *.c *.h
+RECURSIVE              = YES
+
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+SEARCH_INCLUDES        = NO
+# GCC-only constructs and the declaration-table macros of blitzlib.h
+PREDEFINED             = "BL_REG(r)=" \
+                         "BLITZ_ROUTINE=" \
+                         "BLITZ_ERRCHK=" \
+                         "BL_HEAD=" \
+                         "BL_PACKED=" \
+                         "__asm(x)=" \
+                         "__asm__(x)=" \
+                         "__attribute__(x)=" \
+                         "__saveds=" \
+                         "BLITZ_SYSLIBHEADER(...)=" \
+                         "BLITZ_SYSLIBHEADER7(...)=" \
+                         "BLITZ_LIBHEADER(...)=" \
+                         "BLITZ_OSLIBHEADER(...)=" \
+                         "BLITZ_ASTATEMENT()=" \
+                         "BLITZ_USTATEMENT()=" \
+                         "BLITZ_AFUNCTION(t)=" \
+                         "BLITZ_UFUNCTION()=" \
+                         "BLITZ_ACOMMAND(t)=" \
+                         "BLITZ_ARGS(...)=" \
+                         "BLITZ_ARGS0()=" \
+                         "BLITZ_REPARGS(...)=" \
+                         "BLITZ_LIBS(...)=" \
+                         "BLITZ_LIBS0()=" \
+                         "BLITZ_SUBS(...)=" \
+                         "BLITZ_NAME(...)=" \
+                         "BLITZ_NAME_AT(...)=" \
+                         "BLITZ_NULLSUB(...)=" \
+                         "BLITZ_NULLSUB_AT(...)=" \
+                         "BLITZ_DUMTOKE(...)=" \
+                         "BLITZ_LIBFIN()=" \
+                         "BLITZ_LIBFIN7(...)=" \
+                         "BLITZ_OSCALL(...)=" \
+                         "BLITZ_ENTRY_DECL(x)=" \
+                         "BLITZ_ENTRY_C(x)=" \
+                         "BLITZ_ERRCHK_MESSAGE(l,t)=" \
+                         "BLITZ_THUNK(e,c,s)=void e(void);" \
+                         "BLITZ_THUNK_Z(e,c,s)=void e(void);" \
+                         "BLITZ_THUNK_PRE(e,c,s,p)=void e(void);" \
+                         "BLITZ_THUNK_POST(e,c,s,p)=void e(void);" \
+                         "BLITZ_THUNK_POP(e,c,s,p,t,o)=void e(void);" \
+                         "BLITZ_ERRCHK_THUNK(e,c,s)=void e(void);" \
+                         "BLITZ_ERRCHK_AB(e,b,a)=void e(void);" \
+                         "BLITZ_ASM_ROUTINE(e,t)=void e(void);" \
+                         "BLITZ_INLINE(e,t)=void e(void);" \
+                         "BLITZ_AB_ROUTINE(e,b,t)=void e(void);"
+# parameter lists shared by several routines of a library (defined there)
+EXPAND_AS_DEFINED      = STDARGS SHAPEARGS FREQ_ARGS ITEMARGS SUBARGS \
+                         SCROLL_REGS REG_ARGS BBLIT_REGS QBLIT_REGS SBLIT_REGS \
+                         SHOWARGS

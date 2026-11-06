@@ -294,7 +294,6 @@ static void BLITZ_ROUTINE initmem_c(void);
  *
  * BUG(orig) (#871): the entries stay set (and #868: FreeZoneTable leaves
  * its freed block there, freed here again).
- * @return nothing
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
@@ -381,7 +380,6 @@ static ULONG BLITZ_ROUTINE zoneinit2_c(ULONG zonenum BL_REG(d0))
  * bytes, MEMF_PUBLIC) is the current one, all zones cleared; without
  * memory there is no table.  BUG(orig) (#871): only entry 0 of the list
  * is cleared.
- * @return nothing
  */
 static void BLITZ_ROUTINE initmem_c(void)
 {
@@ -691,7 +689,6 @@ static ULONG BLITZ_ROUTINE zonemode_c(void)
 /**
  * @brief SetZoneMode mode: sets the zone test mode, only on a 68020 or better.
  * @param mode  d0.b: the mode byte (non-zero: 68020 mode)
- * @return nothing
  */
 static void BLITZ_ROUTINE setzonemode_c(ULONG mode BL_REG(d0))
 {

@@ -1383,7 +1383,6 @@ static void getnewnote(void)
  * ChangeTrackerVBlank the program calls PlayTracker itself, once per
  * tick.  Nothing happens unless a module plays (mt_Enable).  The bugs of
  * the Protracker 2.3A routine are listed in the head of the file.
- * @return nothing
  */
 static void BLITZ_ROUTINE mt_music_c(void)
 {
@@ -1536,7 +1535,6 @@ static BB_BOOL modtochip(ULONG num)
  * the slot.
  * @param num   d0: the slot
  * @param addr  d1: the module
- * @return nothing
  */
 static void BLITZ_ROUTINE decodemod_c(ULONG num BL_REG(d0), ULONG addr BL_REG(d1))
 {
@@ -1581,7 +1579,6 @@ static ULONG BLITZ_ROUTINE gettrkloc_c(ULONG num BL_REG(d0))
  * from the slot is not stopped (BUG(orig) (#436)).  Error check
  * (_slotcheck): slots 0-8.
  * @param num  d0: the slot
- * @return nothing
  */
 static void BLITZ_ROUTINE freetrk_c(ULONG num BL_REG(d0))
 {
@@ -1682,7 +1679,6 @@ static ULONG BLITZ_ROUTINE starttrkmodule_c(ULONG num BL_REG(d0))
 
 /**
  * @brief StopTracker: stop playing (mt_end: volumes 0, audio DMA off).
- * @return nothing
  */
 static void BLITZ_ROUTINE stoptracker_c(void)
 {
@@ -1746,7 +1742,6 @@ static ULONG BLITZ_ROUTINE checktrackerevent_c(ULONG old BL_REG(d0))
  * changes - through whatever a6 holds: no !libs (BUG(orig) (#453)).
  * @param caller_a6  a6: the caller's a6 (graphics.library, if it
  *                   happens to be)
- * @return nothing
  */
 static void BLITZ_ROUTINE waittrackerevent_c(const void *caller_a6 BL_REG(a6))
 {
@@ -1767,7 +1762,6 @@ static void BLITZ_ROUTINE waittrackerevent_c(const void *caller_a6 BL_REG(a6))
  * At the next tick mt_NextPosition increments it: the song continues at
  * position n + 1 (BUG(orig) (#447)).
  * @param pos  d0.b: the position
- * @return nothing
  */
 static void BLITZ_ROUTINE modulepositionjump_c(ULONG pos BL_REG(d0))
 {
@@ -1791,7 +1785,6 @@ static ULONG BLITZ_ROUTINE getmoduleposition_c(ULONG old BL_REG(d0))
  *
  * Toggles: the first call stops (mt_end), the next enables playing
  * again.
- * @return nothing
  */
 static void BLITZ_ROUTINE pausemodule_c(void)
 {
@@ -1810,7 +1803,6 @@ static void BLITZ_ROUTINE pausemodule_c(void)
  * Stops playing (mt_end) and removes the CIA interrupt (ResetCIAInt,
  * with its bugs #448, #449); from then on the program calls PlayTracker
  * itself and StartTracker installs no interrupt.
- * @return nothing
  */
 static void BLITZ_ROUTINE change_playtype_c(void)
 {
@@ -1827,7 +1819,6 @@ static void BLITZ_ROUTINE change_playtype_c(void)
  * 64 does not (BUG(orig) (#452)); new notes get note volume * master /
  * 64.
  * @param vol  d0.w: the volume
- * @return nothing
  */
 static void BLITZ_ROUTINE volume_control_c(ULONG vol BL_REG(d0))
 {
@@ -1854,7 +1845,6 @@ static void BLITZ_ROUTINE volume_control_c(ULONG vol BL_REG(d0))
  * Bit 0 = voice 1 ... bit 3 = voice 4.  A masked voice writes its
  * registers into fake_channel; its volume is set to 0 at once.
  * @param mask  d0.w: the voice bits
- * @return nothing
  */
 static void BLITZ_ROUTINE changetrackermask_c(ULONG mask BL_REG(d0))
 {
@@ -1876,7 +1866,6 @@ static void BLITZ_ROUTINE changetrackermask_c(ULONG mask BL_REG(d0))
  * SetCIAInt (mt_music every 1/50 s on timer A of ciaa, else timer B of
  * ciab; its ICR bit comes from the addresses 1 and 2, BUG(orig) (#450)),
  * slots 0-7 cleared (DBNE from 7), master volume 64, all four voices on.
- * @return nothing
  */
 static void BLITZ_ROUTINE inittrackerlib_c(void)
 {
@@ -1900,7 +1889,6 @@ static void BLITZ_ROUTINE inittrackerlib_c(void)
  * ResetCIAInt (unless ChangeTrackerVBlank removed it) removes the vector
  * with bit 0 (#448) and toggles the filter (#449).  The module slots are
  * not freed here.
- * @return nothing
  */
 static void BLITZ_ROUTINE finittrackerlib_c(void)
 {

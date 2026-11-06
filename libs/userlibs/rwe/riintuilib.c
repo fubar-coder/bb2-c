@@ -127,7 +127,6 @@ static struct BL_PACKED {
  * @brief init: opens graphics.library and intuition.library.
  *
  * Any version; the results are not checked.
- * @return nothing
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -137,7 +136,6 @@ static void BLITZ_ROUTINE libinit_c(void)
 
 /**
  * @brief finit: closes intuition.library and graphics.library.
- * @return nothing
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
@@ -153,7 +151,6 @@ static void BLITZ_ROUTINE libfinit_c(void)
  * InitRastPort on the Rast, then its BitMap = the Blitz bitmap object.
  * @param rp  a0: the Rast object (#ia0|#pd0)
  * @param bm  a1: the bitmap object (bitmaplib, #ia1|#pd1)
- * @return nothing
  */
 static void BLITZ_ROUTINE ipbitmap_c(struct RastPort *rp BL_REG(a0),
                                      struct BitMap *bm BL_REG(a1))
@@ -170,7 +167,6 @@ static void BLITZ_ROUTINE ipbitmap_c(struct RastPort *rp BL_REG(a0),
  * @param x   d0: x (a word)
  * @param y   d1: y (a word)
  * @param rp  a0: the used Rast (#ua0)
- * @return nothing
  */
 static void BLITZ_ROUTINE iplocate_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
                                      struct RastPort *rp BL_REG(a0))
@@ -189,7 +185,6 @@ static void BLITZ_ROUTINE iplocate_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
  * @param bg      d1: the background pen (a word)
  * @param rp      a0: the used Rast (#ua0)
  * @param bpenrp  a2: the caller's a2 (SetBPen's RastPort with fg < 0)
- * @return nothing
  */
 static void BLITZ_ROUTINE ipcolour2_c(ULONG fg BL_REG(d0), ULONG bg BL_REG(d1),
                                       struct RastPort *rp BL_REG(a0),
@@ -214,7 +209,6 @@ static void BLITZ_ROUTINE ipcolour2_c(ULONG fg BL_REG(d0), ULONG bg BL_REG(d1),
  * @param fg      d0: the foreground pen (a word)
  * @param rp      a0: the used Rast (#ua0)
  * @param bpenrp  a2: the caller's a2
- * @return nothing
  */
 static void BLITZ_ROUTINE ipcolour_c(ULONG fg BL_REG(d0), struct RastPort *rp BL_REG(a0),
                                      struct RastPort *bpenrp BL_REG(a2))
@@ -244,7 +238,6 @@ static void doipprint(void)
  * character is read from the address d0 (MOVE.l d0,a0:MOVE.b (a0)+,...),
  * i.e. low memory, not d0 itself.
  * @param chaddr  d0: the character (used as an address)
- * @return nothing
  */
 static void BLITZ_ROUTINE ipprint_c(ULONG chaddr BL_REG(d0))
 {
@@ -260,7 +253,6 @@ static void BLITZ_ROUTINE ipprint_c(ULONG chaddr BL_REG(d0))
  *
  * Printed directly (the IntuiText points to it).
  * @param s  a0: the string
- * @return nothing
  */
 static void BLITZ_ROUTINE ipprint0_c(UBYTE *s BL_REG(a0))
 {
@@ -277,7 +269,6 @@ static void BLITZ_ROUTINE ipprint0_c(UBYTE *s BL_REG(a0))
  * change the pens of the next text only).
  * @param n  d0: the number of characters (a word)
  * @param s  a0: the characters
- * @return nothing
  */
 static void BLITZ_ROUTINE ipprint1_c(UWORD n BL_REG(d0), const UBYTE *s BL_REG(a0))
 {
@@ -300,7 +291,6 @@ static void BLITZ_ROUTINE ipprint1_c(UWORD n BL_REG(d0), const UBYTE *s BL_REG(a
  * dosetout (TOK_setout).  The text is printed by PrintIText at 0,0 of
  * the Rast (BUG(orig) #697), JAM1, with the pens of the last IPColour.
  * @param rp  a0: the Rast object (#ia0|#pd0)
- * @return nothing
  */
 static void BLITZ_ROUTINE ipoutput_c(struct RastPort *rp BL_REG(a0))
 {

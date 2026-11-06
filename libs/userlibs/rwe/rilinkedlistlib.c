@@ -229,7 +229,6 @@ static ULONG getvarsize(ULONG var)
 
 /**
  * @brief init: nothing.
- * @return nothing
  */
 void BLITZ_ROUTINE c_libinit(void)
 {

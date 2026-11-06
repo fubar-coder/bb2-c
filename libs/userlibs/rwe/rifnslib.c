@@ -675,7 +675,8 @@ BLITZ_ASM_ROUTINE(_fnsshadowprint3,
  * @brief FNSVersion: the version of the library, 1.1 as a Quick.
  *
  * Inline: MOVE.l #65536+6553,d0.
- * @return d0: 1.1 (a Quick)
+ * @par Result
+ * d0: 1.1 (a Quick)
  */
 BLITZ_INLINE(_fnsversion, "move.l #65536+6553,d0");
 
@@ -683,7 +684,6 @@ BLITZ_INLINE(_fnsversion, "move.l #65536+6553,d0");
 
 /**
  * @brief init: slot 0 = the built-in font, origin 0,0.
- * @return nothing
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -694,7 +694,6 @@ static void BLITZ_ROUTINE libinit_c(void)
 
 /**
  * @brief finit: nothing.
- * @return nothing
  */
 void BLITZ_ROUTINE _libfinit(void)
 {
@@ -720,7 +719,6 @@ static ULONG BLITZ_ROUTINE installfns_c(ULONG n BL_REG(d0), const UBYTE *font BL
 /**
  * @brief RemoveFNS fontnum: empties a font slot.
  * @param n  d0: the slot (& 15)
- * @return nothing
  */
 static void BLITZ_ROUTINE removefns_c(ULONG n BL_REG(d0))
 {
@@ -731,7 +729,6 @@ static void BLITZ_ROUTINE removefns_c(ULONG n BL_REG(d0))
  * @brief FNSClipOutput: the clipping zone = the whole output bitmap.
  *
  * xmin, ymin 0, xmax = the bytes per row * 8, ymax = the rows - 1.
- * @return nothing
  */
 static void BLITZ_ROUTINE clipoutput_c(void)
 {
@@ -751,7 +748,6 @@ static void BLITZ_ROUTINE clipoutput_c(void)
  * or depth 0 hundreds or 65536.
  * @param clip  d1: On: also FNSClipOutput (a byte)
  * @param bm    a0: the bitmap object (!bmap)
- * @return nothing
  */
 static void BLITZ_ROUTINE output_c(UWORD clip BL_REG(d1), struct BitMap *bm BL_REG(a0))
 {
@@ -768,7 +764,6 @@ static void BLITZ_ROUTINE output_c(UWORD clip BL_REG(d1), struct BitMap *bm BL_R
 /**
  * @brief FNSOutput bitmap: as FNSOutput bitmap,Off (the clipping zone stays).
  * @param bm  a0: the bitmap object
- * @return nothing
  */
 static void BLITZ_ROUTINE output2_c(struct BitMap *bm BL_REG(a0))
 {
@@ -778,7 +773,6 @@ static void BLITZ_ROUTINE output2_c(struct BitMap *bm BL_REG(a0))
 /**
  * @brief FNSInk colour: the colour of FNSPrint without prefs,colour.
  * @param c  d0: the colour (its low byte)
- * @return nothing
  */
 static void BLITZ_ROUTINE ink_c(UWORD c BL_REG(d0))
 {
@@ -788,7 +782,6 @@ static void BLITZ_ROUTINE ink_c(UWORD c BL_REG(d0))
 /**
  * @brief FNSPrefs prefs: the prefs of FNSPrint without prefs,colour.
  * @param p  d0: the prefs (its low byte)
- * @return nothing
  */
 static void BLITZ_ROUTINE prefs2_c(UWORD p BL_REG(d0))
 {
@@ -799,7 +792,6 @@ static void BLITZ_ROUTINE prefs2_c(UWORD p BL_REG(d0))
  * @brief FNSPrefs prefs,colour: the prefs and the colour of FNSPrint without them.
  * @param p  d0: the prefs (its low byte)
  * @param c  d1: the colour (its low byte)
- * @return nothing
  */
 static void BLITZ_ROUTINE prefs_c(UWORD p BL_REG(d0), UWORD c BL_REG(d1))
 {
@@ -854,7 +846,6 @@ static ULONG BLITZ_ROUTINE width_c(ULONG n BL_REG(d0))
  * @param y0  d1: ymin
  * @param x1  d2: xmax
  * @param y1  d3: ymax
- * @return nothing
  */
 static void BLITZ_ROUTINE clipset_c(UWORD x0 BL_REG(d0), UWORD y0 BL_REG(d1),
                                     UWORD x1 BL_REG(d2), UWORD y1 BL_REG(d3))
@@ -907,7 +898,6 @@ static ULONG BLITZ_ROUTINE length2_c(UWORD n BL_REG(d0), const UBYTE *str BL_REG
 
 /**
  * @brief FNSOrigin: the origin of FNSPrint back to 0,0.
- * @return nothing
  */
 static void BLITZ_ROUTINE origin2_c(void)
 {
@@ -919,7 +909,6 @@ static void BLITZ_ROUTINE origin2_c(void)
  * @brief FNSOrigin x,y: the origin added to FNSPrint's x,y.
  * @param x  d0: x
  * @param y  d1: y
- * @return nothing
  */
 static void BLITZ_ROUTINE origin_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
 {
@@ -956,7 +945,6 @@ static ULONG BLITZ_ROUTINE load_c(ULONG name BL_REG(d0), ULONG slot BL_REG(d1))
 /**
  * @brief FNSUnload fontslot: empties the slot and erases bank 55 + slot.
  * @param slot  d0: the slot (& 15)
- * @return nothing
  */
 static void BLITZ_ROUTINE unload_c(ULONG slot BL_REG(d0))
 {
@@ -982,7 +970,6 @@ static ULONG BLITZ_ROUTINE slot_c(void)
  *
  * BUG(orig) (#666): 0 makes chr$(9) divide by 0.
  * @param t  d0: the tab size
- * @return nothing
  */
 static void BLITZ_ROUTINE settab_c(UWORD t BL_REG(d0))
 {

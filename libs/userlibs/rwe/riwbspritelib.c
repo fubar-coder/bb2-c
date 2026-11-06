@@ -219,7 +219,6 @@ static LONG changeextsprite(ULONG vp, ULONG old, ULONG new, ULONG tags)
 /**
  * @brief init: opens graphics.library, any version (the sprite functions
  * need 39).
- * @return nothing
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -232,7 +231,6 @@ static void BLITZ_ROUTINE libinit_c(void)
  *
  * BUG(orig) (#919): the base is kept, a second finit closes
  * graphics.library again.
- * @return nothing
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {

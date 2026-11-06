@@ -263,7 +263,6 @@ static_assert(sizeof pa == 36 * 4);
  *
  * Nothing if init could not allocate them.  BUG(orig) (#673): the table
  * pointers stay set after the free.
- * @return nothing
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
@@ -284,7 +283,6 @@ BLITZ_THUNK(libfinit, libfinit_c, "d1/a0-a1");
  * bit twice; zoomx4: 256 longs, every bit four times; zoomx8: 16 longs,
  * four bits eight times each.  Without memory the pointers stay 0 and the
  * zooms that need a table do nothing.
- * @return nothing
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -447,7 +445,7 @@ static void clearbitmap_c(ULONG delay, UWORD h, UWORD off, ULONG bm)
  * than 16 planes overrun the pointer arrays (#674).
  * @param delay  d1: turns of the busy loop per line
  * @param bm     a0: the bitmap (struct BitMap) of bitmap# (d0)
- * @return nothing (keeps a4-a6 only)
+ * Returns nothing (keeps a4-a6 only).
  */
 static void BLITZ_ROUTINE clearbitmap2(ULONG delay BL_REG(d1), ULONG bm BL_REG(a0))
 {
@@ -468,7 +466,7 @@ static void BLITZ_ROUTINE clearbitmap2(ULONG delay BL_REG(d1), ULONG bm BL_REG(a
  * @param h      d2.w: the number of lines
  * @param off    d3.w: the first line
  * @param bm     a0: the bitmap of bitmap# (d0)
- * @return nothing (keeps a4-a6 only)
+ * Returns nothing (keeps a4-a6 only).
  */
 static void BLITZ_ROUTINE clearbitmap(ULONG delay BL_REG(d1), ULONG h BL_REG(d2),
                                       ULONG off BL_REG(d3), ULONG bm BL_REG(a0))
@@ -560,7 +558,7 @@ static void fadein_c(ULONG delay, UWORD h, UWORD off1, UWORD off2, ULONG src, UL
  * @param delay  d2: turns of the busy loop per line
  * @param src    a0: the source bitmap (bitmapsource#, d0)
  * @param dst    a1: the destination bitmap (bitmapdest#, d1)
- * @return nothing (keeps a4-a6 only)
+ * Returns nothing (keeps a4-a6 only).
  */
 static void BLITZ_ROUTINE fadeinbitmap2(ULONG delay BL_REG(d2), ULONG src BL_REG(a0),
                                         ULONG dst BL_REG(a1))
@@ -584,7 +582,7 @@ static void BLITZ_ROUTINE fadeinbitmap2(ULONG delay BL_REG(d2), ULONG src BL_REG
  * @param off2   d5.w: the first destination line
  * @param src    a0: the source bitmap (d0)
  * @param dst    a1: the destination bitmap (d1)
- * @return nothing (keeps a4-a6 only)
+ * Returns nothing (keeps a4-a6 only).
  */
 static void BLITZ_ROUTINE fadeinbitmap(ULONG delay BL_REG(d2), ULONG h BL_REG(d3),
                                        ULONG off1 BL_REG(d4), ULONG off2 BL_REG(d5),
@@ -705,7 +703,7 @@ static void zoomx4_c(UBYTE sel, ULONG srcadd, ULONG dstadd, UWORD width, UWORD h
  * @param h       d5.w: the number of source lines
  * @param src     a0: the source bitmap (source#, d0)
  * @param dst     a1: the destination bitmap (dest#, d1)
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE zoomx4_6_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(d3),
                                      ULONG width BL_REG(d4), ULONG h BL_REG(d5),
@@ -729,7 +727,7 @@ static void BLITZ_ROUTINE zoomx4_6_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_RE
  * @param src     a0: the source bitmap (d0)
  * @param dst     a1: the destination bitmap (d1)
  * @param args    a2: the argument stack, xy_select the byte at -1(a2)
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE zoomx4_7_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(d3),
                                      ULONG width BL_REG(d4), ULONG h BL_REG(d5),
@@ -756,7 +754,7 @@ BLITZ_THUNK(zoomx4_xy, zoomx4_7_c, "d0-d1/a0-a1");
  * @param h       d5.w: the number of source lines
  * @param src     a0: the source bitmap (source#, d0)
  * @param dst     a1: the destination bitmap (dest#, d1)
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE zoomx2_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(d3),
                                    ULONG width BL_REG(d4), ULONG h BL_REG(d5),
@@ -811,7 +809,7 @@ BLITZ_THUNK(zoomx2, zoomx2_c, "d0-d1/a0-a1");
  * @param h       d5.w: the number of source lines
  * @param src     a0: the source bitmap (source#, d0)
  * @param dst     a1: the destination bitmap (dest#, d1)
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE zoomx8_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(d3),
                                    ULONG width BL_REG(d4), ULONG h BL_REG(d5),
@@ -878,7 +876,7 @@ BLITZ_THUNK(zoomx8, zoomx8_c, "d0-d1/a0-a1");
  * doubled in place (from the right, so nothing is read after it is
  * written).  Nothing without the table.
  * @param bm  a0: the bitmap of bitmap# (d0)
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE dozoomy_c(ULONG bm BL_REG(a0))
 {
@@ -917,7 +915,7 @@ BLITZ_THUNK(dozoomy, dozoomy_c, "d0-d1/a0-a1");
  * @param h       d5.w: the number of source lines
  * @param src     a0: the source bitmap (source#, d0)
  * @param dst     a1: the destination bitmap (dest#, d1)
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE reducex2_c(ULONG srcadd BL_REG(d2), ULONG dstadd BL_REG(d3),
                                      ULONG width BL_REG(d4), ULONG h BL_REG(d5),
@@ -1250,7 +1248,7 @@ BLITZ_THUNK(asmderez, asmderez_c, "d1/a0-a1");
  * @param dadd  d3: byte offset added to every destination plane
  * @param src   a0: the source bitmap (source#, d0)
  * @param dst   a1: the destination bitmap (dest#, d1)
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE initzoomxy_c(ULONG sadd BL_REG(d2), ULONG dadd BL_REG(d3),
                                        ULONG src BL_REG(a0), ULONG dst BL_REG(a1))
@@ -1273,7 +1271,7 @@ BLITZ_THUNK(InitZoomxy, initzoomxy_c, "d0-d1/a0-a1");
  * @param xz  d0.w: xzoom
  * @param yz  d1.w: yzoom
  * @param h   d2.w: the number of lines
- * @return nothing (keeps d1-d7/a0-a6, and d0 if it does nothing)
+ * Returns nothing (keeps d1-d7/a0-a6, and d0 if it does nothing).
  */
 static void BLITZ_ROUTINE asmzoom_c(ULONG xz BL_REG(d0), ULONG yz BL_REG(d1), ULONG h BL_REG(d2))
 {

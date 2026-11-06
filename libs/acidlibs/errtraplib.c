@@ -93,7 +93,8 @@ BLITZ_THUNK(dofail, dofail_c, "d1/a0-a1");
  *
  * Assembler (it reads sp): the stack pointer after the return.
  *
- * @return d0: the stack pointer (a0 too)
+ * @par Result
+ * d0: the stack pointer (a0 too)
  */
 BLITZ_ASM_ROUTINE(dogetsp,
 "   lea     4(sp),a0\n"
@@ -106,7 +107,7 @@ BLITZ_ASM_ROUTINE(dogetsp,
  * Assembler: sets sp to d0 and returns through the return address taken
  * from the old stack.
  *
- * @param d0  the new stack pointer
+ * @arg d0  the new stack pointer
  */
 BLITZ_ASM_ROUTINE(doputsp,
 "   move.l  (sp),a0\n"                  /* return address */
@@ -155,7 +156,7 @@ BLITZ_THUNK(codefinit, codefinit_c, "d0-d1/a0-a1");
  * pointer of the caller (after the return).  A later runtime error
  * (TRAP #0 in user mode) continues at the handler with that stack.
  *
- * @param d0  the code to jump to on an error
+ * @arg d0  the code to jump to on an error
  */
 BLITZ_ASM_ROUTINE(dosettrap,
 "   move.l  d0,_ercode\n"

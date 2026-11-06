@@ -1188,7 +1188,6 @@ nonewposyet:
 
 /**
  * @brief init: nothing plays yet (playing = 0).
- * @return nothing
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -1197,7 +1196,6 @@ static void BLITZ_ROUTINE libinit_c(void)
 
 /**
  * @brief finit: silence the voices (mt_end) if TrackInit was called.
- * @return nothing
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
@@ -1216,7 +1214,6 @@ static void BLITZ_ROUTINE libfinit_c(void)
  * or TrackerPause 0 (BUG(orig) (#572)).  While off, TrackInit does not
  * initialise the song (#573).
  * @param on  d0.b: 0 off, else on (any nonzero byte)
- * @return nothing
  */
 static void BLITZ_ROUTINE tracker_c(UBYTE on BL_REG(d0))
 {
@@ -1241,7 +1238,6 @@ static void BLITZ_ROUTINE tracker_c(UBYTE on BL_REG(d0))
  * #571).
  * @param module  d0: the module (a Protracker file in memory, 31
  *                samples, "M.K."; not checked)
- * @return nothing
  */
 static void BLITZ_ROUTINE initmodule_c(UBYTE *module BL_REG(d0))
 {
@@ -1257,7 +1253,6 @@ static void BLITZ_ROUTINE initmodule_c(UBYTE *module BL_REG(d0))
  *
  * The waits run DMA_Wait + 1 passes; the default is 4000.
  * @param wait  d0.w: the count
- * @return nothing
  */
 static void BLITZ_ROUTINE tracksetdma_c(UWORD wait BL_REG(d0))
 {
@@ -1268,7 +1263,6 @@ static void BLITZ_ROUTINE tracksetdma_c(UWORD wait BL_REG(d0))
  * @brief TrackStop: stop playing (mt_end: volumes 0, audio DMA off).
  *
  * The module address goes to mt_olddata, which nothing reads.
- * @return nothing
  */
 static void BLITZ_ROUTINE stopmodule_c(void)
 {
@@ -1282,7 +1276,6 @@ static void BLITZ_ROUTINE stopmodule_c(void)
  * Nonzero stops (mt_end), 0 continues (_contmodule): enables playing and
  * plays one tick at once.
  * @param pause  d0.b: nonzero pause, 0 continue
- * @return nothing
  */
 static void BLITZ_ROUTINE trackerpause_c(UBYTE pause BL_REG(d0))
 {
@@ -1313,7 +1306,6 @@ static void cut(aud_t *hw)
  * voices play the notes of the voice before (BUG(orig) (#568)); effects
  * and the loop pointers still go to all four voices (#567).
  * @param mask  d0.b: the voice bits
- * @return nothing
  */
 static void BLITZ_ROUTINE trackermask_c(UBYTE mask BL_REG(d0))
 {
@@ -1332,7 +1324,7 @@ static void BLITZ_ROUTINE trackermask_c(UBYTE mask BL_REG(d0))
  * blank handler); does nothing unless playing is enabled and Tracker is
  * on.  The known PT2.3A bugs of the routine are listed in the head of
  * the file.
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE music_c(void)
 {

@@ -184,7 +184,6 @@ static void BLITZ_ROUTINE libfinit_c(void)
  *
  * The default is BUG(orig) (#787): bit numbers ORed, 7.
  * @param flags  d0: the req.library file requester flags
- * @return nothing
  */
 static void BLITZ_ROUTINE reqflags_c(ULONG flags BL_REG(d0))
 {
@@ -285,7 +284,6 @@ static ULONG BLITZ_ROUTINE colourreq_c(void)
  * @brief ReqOutput window#: the window of both requesters.
  * @param win  a0: the window object (windowslib, #ia0|#pd0), its first
  *             long the Window
- * @return nothing
  */
 static void BLITZ_ROUTINE reqoutput_c(APTR *win BL_REG(a0))
 {

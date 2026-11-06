@@ -813,8 +813,9 @@ BLITZ_THUNK(dosetevfilter, dosetevfilter_c, "d0-d1/a0-a1");
  *
  * Errors (debugger only, wchk): "Uninitialized Window".
  *
- * @param w a1: the window object
- * @return d0: the RastPort
+ * @arg w a1: the window object
+ * @par Result
+ * d0: the RastPort
  */
 BLITZ_INLINE(dowrport, "move.l (a1),a1\n   move.l 50(a1),d0");
 

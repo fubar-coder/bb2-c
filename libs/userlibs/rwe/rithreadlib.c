@@ -176,7 +176,6 @@ ULONG BLITZ_ROUTINE c_activethreads(void)
  * @param r  a0: the registers of the call as the thunk pushed them,
  *           d0-d7/a0-a6 (d0 = name$, the process name as it is, which
  *           CreateNewProc copies; d1 = address)
- * @return nothing
  */
 void BLITZ_ROUTINE c_createthread(const ULONG *r BL_REG(a0))
 {

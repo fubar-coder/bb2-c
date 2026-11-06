@@ -223,7 +223,6 @@ static ULONG doio(struct IOStdReq *req)
  * BUG(orig): clears only entries 0-2, not 3 (#863); CreateMsgPort is
  * exec V36, called without a version check (#941).  Without a port
  * (msgport 0) every command returns 0.
- * @return nothing
  */
 void BLITZ_ROUTINE c_libinit(void)
 {
@@ -275,7 +274,6 @@ BB_BOOL BLITZ_ROUTINE c_closedisk(LONG unit BL_REG(d0))
  * @brief finit: CloseDisk 0, 1, 2 and DeleteMsgPort.
  *
  * BUG(orig): unit 3 is not closed (#863); DeleteMsgPort is V36 (#941).
- * @return nothing
  */
 void BLITZ_ROUTINE c_libfinit(void)
 {

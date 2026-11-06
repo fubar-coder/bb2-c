@@ -102,7 +102,6 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
  * @brief finit: close nonvolatile.library if it is open.
  *
  * libbase stays set (no defect: it is the last call, see the head).
- * @return nothing
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {

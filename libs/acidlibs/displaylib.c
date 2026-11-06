@@ -807,7 +807,7 @@ static void initcoplist(ULONG ypos, ULONG height, ULONG type, ULONG sprites, ULO
  * @param type     d3: bitplanes (bits 0-3), resolution, fetch mode,
  *                 sprite resolution and AGA flags
  * @param sprites  d4: the number of sprite channels
- * @param colors   d5: the number of colours
+ * @param colours  d5: the number of colours
  * @param used     d6: the offset of the "used" variable (!libs
  *                 {#displaylib,$0604})
  * @param args     a2: the argument stack, numcustoms below it

@@ -141,7 +141,7 @@ BLITZ_THUNK(dodocoll, dodocoll_c, "d0-d1/a0-a1");
  * @brief SColl(Sprite Channel,Sprite Channel): whether two sprites collided.
  *
  * Tests the bit of the pair in the CLXDAT value latched by DoColl (bits
- * 9-14 = sprite pairs) - with BTST Dn,<memory>: a bit of the HIGH byte
+ * 9-14 = sprite pairs) - with `BTST Dn,<memory>`: a bit of the HIGH byte
  * of the latched word, bit number mod 8.  Blitz mode only.  A word
  * function: the upper word of d0 is the caller's.
  * Errors (debugger only): "Illegal Sprite channel" (>= 8), "Sprite

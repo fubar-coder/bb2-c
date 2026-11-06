@@ -418,7 +418,6 @@ static void BLITZ_ROUTINE libfinit_c(void)
  * @brief TimerReset: set the CIA-A TOD counter to 0.
  *
  * Writing the high byte stops it, the low byte starts it again.
- * @return nothing
  */
 static void BLITZ_ROUTINE resettimer_c(void)
 {
@@ -432,7 +431,6 @@ static void BLITZ_ROUTINE resettimer_c(void)
  *
  * Busy waits on CIA-A until the button is pressed, a short delay (DBRA
  * of 12767), until it is released.
- * @return nothing
  */
 static void BLITZ_ROUTINE doclickwait_c(void)
 {
@@ -647,7 +645,6 @@ static ULONG BLITZ_ROUTINE binstr_c(const UBYTE *src BL_REG(d0), const UBYTE *fi
  * Copies it into the 256 byte buffer with four more 0 behind it.
  * BUG(orig) (#752): the copy has no limit.
  * @param s  d0: the string
- * @return nothing
  */
 static void BLITZ_ROUTINE parseinit_c(const UBYTE *s BL_REG(d0))
 {
@@ -927,7 +924,6 @@ static ULONG BLITZ_ROUTINE doeasy6_c(UBYTE *args BL_REG(a2), ULONG reps BL_REG(d
  * @brief EZOutput win#: the window of the EZRequests.
  * @param w  a0: the window object (windowslib, #ia0|#pd0), its first long
  *           the Window
- * @return nothing
  */
 static void BLITZ_ROUTINE ezoutput_c(struct Window **w BL_REG(a0))
 {
@@ -936,7 +932,6 @@ static void BLITZ_ROUTINE ezoutput_c(struct Window **w BL_REG(a0))
 
 /**
  * @brief EZOutput: the EZRequests on the default screen again (no window).
- * @return nothing
  */
 static void BLITZ_ROUTINE ezoutput2_c(void)
 {
@@ -947,7 +942,6 @@ static void BLITZ_ROUTINE ezoutput2_c(void)
  * @brief EZSeparator char: the separator EZRequestArgs puts between the
  * arguments (default '|', a line feed).
  * @param s  d0: the string, its first character
- * @return nothing
  */
 static void BLITZ_ROUTINE doeasysep_c(const UBYTE *s BL_REG(d0))
 {

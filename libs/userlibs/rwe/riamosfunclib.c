@@ -441,7 +441,7 @@ static BB_BOOL newbank(LONG bank, ULONG len, ULONG flags)
  *
  * BUG(orig) (#484): no range check for negative banks.
  * @param bank  d0: the bank
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE erase_c(LONG bank BL_REG(d0))
 {
@@ -455,7 +455,7 @@ static void BLITZ_ROUTINE erase_c(LONG bank BL_REG(d0))
  * BUG(orig) (#495): DBRA on the low word, the bank number is the whole
  * long - with more than 65536 banks only those down to the next multiple
  * of 65536 are freed, BankLimit 0 runs through 65536 negative banks.
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE eraseall_c(void)
 {
@@ -571,7 +571,7 @@ static BB_BOOL BLITZ_ROUTINE swapbank_c(LONG a BL_REG(d0), LONG b BL_REG(d1))
  * @param adr  d0: the address or bank
  * @param len  d1: the number of bytes
  * @param v    d2.b: the value
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE fillmem_c(ULONG adr BL_REG(d0), ULONG len BL_REG(d1),
                                     UBYTE v BL_REG(d2))
@@ -593,7 +593,7 @@ static void BLITZ_ROUTINE fillmem_c(ULONG adr BL_REG(d0), ULONG len BL_REG(d1),
  * @brief FillMem address,length: as above with 0.
  * @param adr  d0: the address or bank
  * @param len  d1: the number of bytes
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE fillmemzeros_c(ULONG adr BL_REG(d0), ULONG len BL_REG(d1))
 {
@@ -626,7 +626,6 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
  *
  * BUG(orig) (#491): the lock is unlocked while it is still the current
  * directory, and oldlock is not cleared (a second finit unlocks again).
- * @return nothing
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
@@ -1117,8 +1116,7 @@ static ULONG BLITZ_ROUTINE cacheoff_c(ULONG mask BL_REG(d0))
 }
 
 /**
- * @brief Reboot: a cold reboot (exec ColdReboot).
- * @return does not return
+ * @brief Reboot: a cold reboot (exec ColdReboot); does not return.
  */
 static void BLITZ_ROUTINE reboot_c(void)
 {
@@ -1180,7 +1178,7 @@ static BB_BOOL BLITZ_ROUTINE blitdone_c(void)
 
 /**
  * @brief WaitBlitter: waits until the blitter is idle (DMACONR's BBUSY).
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE blitwait_c(void)
 {
@@ -1287,7 +1285,8 @@ static ULONG BLITZ_ROUTINE copylong_c(const ULONG *src BL_REG(d0), ULONG *d BL_R
  * tagvalue in d0) - inline code, copied by the compiler.
  *
  * _gttags: the form with an argument (ADDI.l to d0), _gttags2: without.
- * @return d0: the tag
+ * @par Result
+ * d0: the tag
  */
 BLITZ_INLINE(_gttags, "addi.l #0x80080000,d0");
 BLITZ_INLINE(_gttags2, "move.l #0x80080000,d0");

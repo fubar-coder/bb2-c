@@ -450,7 +450,6 @@ static const UBYTE customchipnames[256][8] = {
 /**
  * @brief init: open graphics.library (any version) and set ProcessString's
  * %p ("REDDebugger") and %c (the token list address in hex) entries.
- * @return nothing
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -461,7 +460,6 @@ static void BLITZ_ROUTINE libinit_c(void)
 
 /**
  * @brief finit: close graphics.library.
- * @return nothing
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {
@@ -503,7 +501,6 @@ static ULONG BLITZ_ROUTINE finddev_c(CONST_STRPTR name BL_REG(d0),
  * "XNZVC" with '-' for the bits not set, and a 0 (6 bytes).
  * @param buf  d0: the buffer
  * @param sr   d1.b: the status register (its low byte)
- * @return nothing
  */
 static void BLITZ_ROUTINE getsr_c(UBYTE *buf BL_REG(d0), UBYTE sr BL_REG(d1))
 {
@@ -543,7 +540,6 @@ static UBYTE *hexbyte(UBYTE *d, const UBYTE **s)
  * @param src  d0: the source address
  * @param dst  d1: the buffer
  * @param num  d2.w: the number of words
- * @return nothing
  */
 static void BLITZ_ROUTINE hexword_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_REG(d1),
                                     UWORD num BL_REG(d2))
@@ -587,7 +583,6 @@ static void BLITZ_ROUTINE hexword_c(const UBYTE *src BL_REG(d0), UBYTE *dst BL_R
  * @param s      d0: the source
  * @param d      d1: the destination (5 bytes per long)
  * @param count  d2.w: the number of longs
- * @return nothing
  */
 static void BLITZ_ROUTINE checknmove2_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_REG(d1),
                                         UWORD count BL_REG(d2))
@@ -608,7 +603,6 @@ static void BLITZ_ROUTINE checknmove2_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_R
  * @brief D_CheckNMove source_address,dest_address: one long (count 1).
  * @param s  d0: the source
  * @param d  d1: the destination
- * @return nothing
  */
 static void BLITZ_ROUTINE checknmove_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_REG(d1))
 {
@@ -638,7 +632,6 @@ static UBYTE *checkbyte(UBYTE *d, const UBYTE **s)
  * @param s      d0: the source
  * @param d      d1: the destination (5 bytes per long)
  * @param count  d2.w: the number of longs
- * @return nothing
  */
 static void BLITZ_ROUTINE checknmovea2_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_REG(d1),
                                          UWORD count BL_REG(d2))
@@ -657,7 +650,6 @@ static void BLITZ_ROUTINE checknmovea2_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_
  * @brief D_CheckNMoveA source_address,dest_address: one long (count 1).
  * @param s  d0: the source
  * @param d  d1: the destination
- * @return nothing
  */
 static void BLITZ_ROUTINE checknmovea_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_REG(d1))
 {
@@ -673,7 +665,6 @@ static void BLITZ_ROUTINE checknmovea_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_R
  * @param s      d0: the source
  * @param d      d1: the destination
  * @param count  d2.w: the number of words
- * @return nothing
  */
 static void BLITZ_ROUTINE checknmoveword2_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_REG(d1),
                                             UWORD count BL_REG(d2))
@@ -689,7 +680,6 @@ static void BLITZ_ROUTINE checknmoveword2_c(const UBYTE *s BL_REG(d0), UBYTE *d 
  * @brief D_CheckNMoveWord source_address,dest_address: one word (count 1).
  * @param s  d0: the source
  * @param d  d1: the destination
- * @return nothing
  */
 static void BLITZ_ROUTINE checknmoveword_c(const UBYTE *s BL_REG(d0), UBYTE *d BL_REG(d1))
 {
@@ -873,7 +863,6 @@ static ULONG cursor_offset(void)
  * @brief FLocate x,y: the cursor of the font printer.
  * @param x  d0.w: the column (8 pixels each)
  * @param y  d1.w: the row (8 pixels each)
- * @return nothing
  */
 static void BLITZ_ROUTINE flocate_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
 {
@@ -887,7 +876,6 @@ static void BLITZ_ROUTINE flocate_c(UWORD x BL_REG(d0), UWORD y BL_REG(d1))
  * FPrint tests the word, FPrintDetoke only its high byte: FInverse 1
  * inverts FPrint only (BUG(orig) (#706)).
  * @param on  d0.w: nonzero inverse
- * @return nothing
  */
 static void BLITZ_ROUTINE finverse_c(UWORD on BL_REG(d0))
 {
@@ -898,7 +886,6 @@ static void BLITZ_ROUTINE finverse_c(UWORD on BL_REG(d0))
  * @brief FYOffset pixel_offset: the pixel offset added to the cursor's
  * row.
  * @param off  d0.w: the offset in pixel lines
- * @return nothing
  */
 static void BLITZ_ROUTINE fyoffset_c(UWORD off BL_REG(d0))
 {
@@ -917,7 +904,6 @@ static void BLITZ_ROUTINE fyoffset_c(UWORD off BL_REG(d0))
  * @param s     d0: the string
  * @param bm    a0: the used bitmap (!libs #bitmaplib)
  * @param args  a2: the argument stack, the string's length at -4(a2)
- * @return nothing
  */
 static void BLITZ_ROUTINE fprint_c(const UBYTE *s BL_REG(d0), struct BitMap *bm BL_REG(a0),
                                    const ULONG *args BL_REG(a2))
@@ -953,7 +939,6 @@ out:
  * @param s     d0: the string
  * @param bm    a0: the used bitmap (!libs #bitmaplib)
  * @param args  a2: the argument stack, the string's length at -4(a2)
- * @return nothing
  */
 static void BLITZ_ROUTINE fnprint_c(const UBYTE *s BL_REG(d0), struct BitMap *bm BL_REG(a0),
                                     const ULONG *args BL_REG(a2))
@@ -1015,7 +1000,6 @@ static UWORD draw_char(struct dt *t, UWORD glyph)
  * @param callercol  d6: the caller's d6, its high word kept in the column
  *                   count
  * @param bm         a0: the used bitmap (!libs #bitmaplib)
- * @return nothing
  */
 static void BLITZ_ROUTINE fprintdetoke_c(const UBYTE *line BL_REG(d0), UWORD cio BL_REG(d1),
                                          UWORD typ BL_REG(d2), UWORD lineoff BL_REG(d3),
@@ -1105,7 +1089,6 @@ out:
  * @param y   d1.w: the y position (of the top of the text)
  * @param rp  d2: the RastPort
  * @param s   d3: the string (an address or a string)
- * @return nothing
  */
 static void BLITZ_ROUTINE outtext_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
                                     struct RastPort *rp BL_REG(d2), CONST_STRPTR s BL_REG(d3))
@@ -1125,7 +1108,6 @@ static void BLITZ_ROUTINE outtext_c(ULONG x BL_REG(d0), ULONG y BL_REG(d1),
  * @param rp   d0: the RastPort
  * @param pen  d1.w: the pen (SetAPen gets d0's high word, the rastport's,
  *             with the pen as the low word)
- * @return nothing
  */
 static void BLITZ_ROUTINE outtextpen_c(struct RastPort *rp BL_REG(d0), UWORD pen BL_REG(d1))
 {
@@ -1260,7 +1242,6 @@ static ULONG BLITZ_ROUTINE getcustomregadr_c(const UBYTE *name BL_REG(d0))
  * Six characters, no 0: "BLITZ " (< 0), "AMIGA " (0), "QAMIGA" (> 0).
  * @param mode  d0.w: the mode
  * @param buf   d1: the buffer
- * @return nothing
  */
 static void BLITZ_ROUTINE getprogmode_c(WORD mode BL_REG(d0), UBYTE *buf BL_REG(d1))
 {
@@ -1396,7 +1377,6 @@ static ULONG BLITZ_ROUTINE searchmemfound_c(void)
  * @param tok       d0: the token list
  * @param tokenise  d1.b: nonzero: FPrintDetoke draws token names into
  *                  plane 1 too
- * @return nothing
  */
 static void BLITZ_ROUTINE setuplesdebug_c(ULONG tok BL_REG(d0), UBYTE tokenise BL_REG(d1))
 {
@@ -1446,7 +1426,6 @@ static ULONG BLITZ_ROUTINE extractlabel_c(const UBYTE *s BL_REG(d0))
  * The string is copied into the parser's 256 byte buffer without a limit
  * (BUG(orig) (#716)); the position goes to its start.
  * @param s  d0: the string
- * @return nothing
  */
 static void BLITZ_ROUTINE initparse_c(const UBYTE *s BL_REG(d0))
 {
@@ -1534,7 +1513,6 @@ static ULONG BLITZ_ROUTINE processstring_c(void)
  * data (BUG(orig) (#700)).
  * @param ch  d0: the string whose first character is x
  * @param s   d1: the string %x stands for
- * @return nothing
  */
 static void BLITZ_ROUTINE addprocessptr_c(const UBYTE *ch BL_REG(d0), const UBYTE *s BL_REG(d1))
 {
@@ -1552,7 +1530,6 @@ static void BLITZ_ROUTINE addprocessptr_c(const UBYTE *ch BL_REG(d0), const UBYT
  *
  * Only the first entry is cleared: it ends the lookup, and the next
  * AddProcessPtr reuses it (no defect).  %p and %c stay.
- * @return nothing
  */
 static void BLITZ_ROUTINE clearprocessptrs_c(void)
 {

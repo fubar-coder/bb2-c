@@ -329,7 +329,7 @@ int xtra_companion_name(const char *path, char *out, size_t cap);
 
 /**
  * @brief Whether a companion .xtra has AmiBlitz3's binary format with 15
- *        switch words (since AmiBlitz/AmiBlitz3@bdae3f9e, docs/formats.md
+ *        switch words (since AmiBlitz/AmiBlitz3\@bdae3f9e, docs/formats.md
  *        1.3) - not Blitz 2's 14.
  *
  * The layout as AmiBlitz3's write_xtrafile writes it: vers 1, icon, 15

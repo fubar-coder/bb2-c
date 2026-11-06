@@ -354,7 +354,6 @@ static void rs_return(void)
 
 /**
  * @brief init: LECompressShapes off.
- * @return nothing
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -373,7 +372,7 @@ BLITZ_ASM_ROUTINE(_libfinit, "   rts");
  * @brief LEAutoCookie on|off: whether CludgeShapes makes the cookies of
  * its shapes (on at the start).
  * @param on  d0: any nonzero value is on
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE leautocookie_c(BB_BOOL on BL_REG(d0))
 {
@@ -385,7 +384,7 @@ BLITZ_THUNK(_leautocookie, leautocookie_c, "d0-d1/a0-a1");
  * @brief LECompressShapes True|False: whether LESaveShapes packs the shape
  * data (PackPBM of RIPackLib).
  * @param on  d0.w: negative (True) packs, else stored
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE setcompress_c(BB_BOOL on BL_REG(d0))
 {
@@ -430,7 +429,7 @@ BLITZ_THUNK(_leMaxShapeDepth, maxdepth_c, "d1/a0-a1");
  * Signed word compares; empty shapes (width 0) are skipped.
  * @param shape  a2: the first shape object
  * @param last   a3: the last shape object
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE lescanshapes_c(UBYTE *shape BL_REG(a2), UBYTE *last BL_REG(a3))
 {
@@ -644,7 +643,7 @@ static void shapesizes(UBYTE *shape, int init)
  * @param height  d2.w: the height
  * @param depth   d3.w: the depth
  * @param shape   a2: the shape object of shape# (d0)
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE leinitshape_c(ULONG width BL_REG(d1), ULONG height BL_REG(d2),
                                         ULONG depth BL_REG(d3), UBYTE *shape BL_REG(a2))
@@ -805,7 +804,7 @@ static int __attribute__((noinline)) readshapes(UBYTE *data)
  * @param palette  a0: the palette object of palette# (d3)
  * @param first    a2: the first shape object
  * @param last     a3: the last shape object
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE lecludgeshapes2_c(ULONG file BL_REG(d2), ULONG copymem BL_REG(d4),
                                             UBYTE *palette BL_REG(a0), UBYTE *first BL_REG(a2),
@@ -854,7 +853,7 @@ BLITZ_THUNK_PRE(_lecludgeshapes2, lecludgeshapes2_c, "d0-d1/a0-a1", "move.l sp,_
  * @param palette  a0: the palette object of palette# (d3)
  * @param first    a2: the first shape object
  * @param last     a3: the last shape object
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE lecludgeshapes_c(ULONG file BL_REG(d2), UBYTE *palette BL_REG(a0),
                                            UBYTE *first BL_REG(a2), UBYTE *last BL_REG(a3))
@@ -1003,7 +1002,7 @@ static ULONG leloadshapes(ULONG shape1, ULONG shape2, ULONG name, UBYTE *palette
  * @param first    a2: the first shape object
  * @param last     a3: the last shape object
  * @param dos      a6: dos.library
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE leloadshapesp_c(ULONG shape1 BL_REG(d0), ULONG shape2 BL_REG(d1),
                                           ULONG name BL_REG(d2), UBYTE *palette BL_REG(a0),
@@ -1023,7 +1022,7 @@ BLITZ_THUNK_PRE(_leloadshapes, leloadshapesp_c, "d0-d1/a0-a1", "move.l sp,_rs_sp
  * @param first   a2: the first shape object
  * @param last    a3: the last shape object
  * @param dos     a6: dos.library
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE leloadshapesnop_c(ULONG shape1 BL_REG(d0), ULONG shape2 BL_REG(d1),
                                             ULONG name BL_REG(d2), UBYTE *first BL_REG(a2),
@@ -1050,7 +1049,7 @@ BLITZ_THUNK_PRE(_leloadshapesnop, leloadshapesnop_c, "d0-d1/a0-a1", "move.l sp,_
  * @param first      a2: the shape object of shape#
  * @param objects    a3: the first shape object (item 0)
  * @param dos        a6: dos.library
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE leloadshapesingle_c(ULONG shapenum BL_REG(d0), ULONG name BL_REG(d1),
                                               ULONG maxshapes BL_REG(d4),
@@ -1073,7 +1072,7 @@ BLITZ_THUNK_PRE(_leloadshapesingle, leloadshapesingle_c, "d0-d1/a0-a1", "move.l 
  * @param first      a2: the shape object of shape#
  * @param objects    a3: the first shape object (item 0)
  * @param dos        a6: dos.library
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE leloadshapesinglenop_c(ULONG shapenum BL_REG(d0), ULONG name BL_REG(d1),
                                                  ULONG maxshapes BL_REG(d4),
@@ -1234,7 +1233,7 @@ static ULONG writeshapes(BPTR fh, ULONG bufsize)
  * @param first    a2: the first shape object
  * @param last     a3: the last shape object
  * @param dos      a6: dos.library
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE lesaveshapes_c(ULONG shape1 BL_REG(d0), ULONG shape2 BL_REG(d1),
                                          ULONG name BL_REG(d2), UBYTE *palette BL_REG(a0),
@@ -1285,7 +1284,7 @@ BLITZ_THUNK(_lesaveshapes, lesaveshapes_c, "d0-d1/a0-a1");
  * @param first   a2: the first shape object
  * @param last    a3: the last shape object
  * @param dos     a6: dos.library
- * @return nothing (all registers kept)
+ * Returns nothing (all registers kept).
  */
 static void BLITZ_ROUTINE lesaveshapesnop_c(ULONG shape1 BL_REG(d0), ULONG shape2 BL_REG(d1),
                                             ULONG name BL_REG(d2), UBYTE *first BL_REG(a2),

@@ -134,7 +134,6 @@ static ULONG stcdecrunch(UBYTE *a)
  * @brief init (codeinit): opens dos.library, any version.
  *
  * BUG(orig) (#834): it is never closed (finit is 0).
- * @return nothing
  */
 static void BLITZ_ROUTINE codeinit_c(void)
 {

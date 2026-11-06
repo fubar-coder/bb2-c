@@ -186,7 +186,6 @@ static const char cname[] = "commodities.library";
  *
  * BUG(orig) (#559): not checked - without the library every command
  * calls through a base of 0.
- * @return nothing
  */
 static void BLITZ_ROUTINE libinit_c(void)
 {
@@ -208,7 +207,6 @@ static void delmsgport(struct MsgPort *p)
  * BUG(orig): CloseLibrary first, then DeleteCxObj through the closed base
  * (#556); only the broker is deleted, not its filters and senders
  * (#557); the port is deleted with the messages still queued (#561).
- * @return nothing
  */
 static void BLITZ_ROUTINE libfinit_c(void)
 {

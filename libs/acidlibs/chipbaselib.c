@@ -27,6 +27,7 @@ BLITZ_LIBFIN();
  * the init value is the global the compiler uses for hardware access in
  * Blitz mode.
  *
- * @return d0: $DFF000
+ * @par Result
+ * d0: $DFF000
  */
 BLITZ_INLINE(_codeinit, "move.l #0xdff000,d0");

@@ -19,7 +19,7 @@
 
 ## 5. API reference
 
-- [ ] 5.1 `Doxyfile` (D5) and the comment fixes it needs, comments only. Verify: Doxygen 1.18 in its official image runs with no warning; the table macros are not listed; programs, acidlibs, deflibs and every library file byte-identical to the build before; clean build with no warnings
+- [x] 5.1 `Doxyfile` (D5) and the comment fixes it needs, comments only. Verify: Doxygen 1.18 in its official image runs with no warning; the table macros are not listed; programs, acidlibs, deflibs and every library file byte-identical to the build before; clean build with no warnings
 - [ ] 5.2 Pages workflow: job `api`, artifact into `site/static/api/` before Hugo; `.gitignore`. Verify: the workflow file is valid YAML and the steps run locally in the same images (Doxygen, then Hugo with `static/api/` present); screenshot of the API start page
 
 ## 6. Convention and docs

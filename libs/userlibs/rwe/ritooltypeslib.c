@@ -284,7 +284,6 @@ static APTR nofree(void)
  * @brief init: opens icon.library (any version).
  *
  * Without it (iconlibbase 0) the commands do nothing and return 0.
- * @return nothing
  */
 void BLITZ_ROUTINE c_libinit(void)
 {
@@ -308,7 +307,6 @@ BB_BOOL BLITZ_ROUTINE c_Close_icon(void)
 
 /**
  * @brief finit: frees the open icon, closes icon.library.
- * @return nothing
  */
 void BLITZ_ROUTINE c_libfinit(void)
 {
@@ -356,7 +354,6 @@ ULONG BLITZ_ROUTINE c_getstructure(CONST_STRPTR name BL_REG(d0))
  *
  * Clears the entries of the array up to the first empty one; nothing
  * without an icon.
- * @return nothing
  */
 void BLITZ_ROUTINE c_cleartooltypes(void)
 {
@@ -685,7 +682,7 @@ BB_BOOL BLITZ_ROUTINE c_NewTool2(const char *name BL_REG(d0), const char *value 
  * @brief SetIconHit width,height: the size of the icon's gadget (the hit box).
  * @param w  d0: the width
  * @param h  d1: the height
- * @return nothing (nothing happens without an icon)
+ * Returns nothing (nothing happens without an icon).
  */
 void BLITZ_ROUTINE c_seticonhit(UWORD w BL_REG(d0), UWORD h BL_REG(d1))
 {
@@ -701,7 +698,7 @@ void BLITZ_ROUTINE c_seticonhit(UWORD w BL_REG(d0), UWORD h BL_REG(d1))
  * The gadget gets the shape's width and height + 1, its GadgetRender
  * Image the shape's width, height, depth and data.
  * @param shape  a0: the shape object (#ia0|#pd0)
- * @return nothing (nothing happens without an icon)
+ * Returns nothing (nothing happens without an icon).
  */
 void BLITZ_ROUTINE c_shapetoicon(const struct bb_shape *shape BL_REG(a0))
 {
@@ -728,7 +725,7 @@ void BLITZ_ROUTINE c_shapetoicon(const struct bb_shape *shape BL_REG(a0))
  * dropped.  DIFF: a3 unchanged.
  * @param shape   a0: the shape for the image (#ia0|#pd0)
  * @param shape2  a1: the shape for the selected image (#ia1|#pd1)
- * @return nothing (nothing happens without an icon)
+ * Returns nothing (nothing happens without an icon).
  */
 void BLITZ_ROUTINE c_shapetoicon2(const struct bb_shape *shape BL_REG(a0),
                                   const struct bb_shape *shape2 BL_REG(a1))
@@ -764,7 +761,7 @@ ULONG BLITZ_ROUTINE c_icontype(ULONG type BL_REG(d0))
 /**
  * @brief IconRender render_flags: the flags of the icon's gadget.
  * @param flags  d0: the gadget flags (a word)
- * @return nothing (nothing happens without an icon)
+ * Returns nothing (nothing happens without an icon).
  */
 void BLITZ_ROUTINE c_selectrender(UWORD flags BL_REG(d0))
 {
@@ -910,7 +907,7 @@ static void icontoshape_jump(ULONG shapearg, struct bb_shape *shape, UWORD rende
  * gets the caller's a3 unless the shape was in use (#849).  DIFF: a3 kept.
  * @param shapearg  d0: the shape's offset (shape# << 5)
  * @param shape     a0: the shape object (#ia0|#pd0)
- * @return nothing (nothing happens without an icon or image)
+ * Returns nothing (nothing happens without an icon or image).
  */
 void BLITZ_ROUTINE c_icontoshape(ULONG shapearg BL_REG(d0), struct bb_shape *shape BL_REG(a0))
 {
@@ -930,7 +927,6 @@ void BLITZ_ROUTINE c_icontoshape(ULONG shapearg BL_REG(d0), struct bb_shape *sha
  * @param shapearg2  d1: the second shape's offset
  * @param shape      a0: the shape for the image (#ia0|#pd0)
  * @param shape2     a1: the shape for the selected image (#ia1|#pd1)
- * @return nothing
  */
 void BLITZ_ROUTINE c_icontoshape2(ULONG shapearg BL_REG(d0),
                                   ULONG shapearg2 BL_REG(d1),

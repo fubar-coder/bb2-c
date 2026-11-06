@@ -431,7 +431,6 @@ BLITZ_THUNK(_CreateMenuStrip, createmenustrip_c, "d1/a0-a1");
  * @param win    a1: the used window object, its first long the Window
  * @param obj    a3: the GTMenuList object
  * @param intui  a6: intuition.library
- * @return nothing
  */
 static void BLITZ_ROUTINE setmenu_c(struct Screen **scr BL_REG(a0), struct Window **win BL_REG(a1),
                                     struct gtmenulist *obj BL_REG(a3),
@@ -457,7 +456,6 @@ BLITZ_THUNK(_setmenu, setmenu_c, "d0-d1/a0-a1");
  * has one).
  * @param win    a2: the used window object
  * @param intui  a6: intuition.library
- * @return nothing
  */
 static void BLITZ_ROUTINE gtunsetmenu_c(struct Window **win BL_REG(a2),
                                         struct Library *intui BL_REG(a6))
@@ -481,7 +479,6 @@ BLITZ_THUNK(_gtunsetmenu, gtunsetmenu_c, "d0-d1/a0-a1");
  * @param text  d2: title$
  * @param args  a2: the argument stack, -4(a2) the length of title$
  * @param obj   a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE gtmenutitle_c(ULONG menu BL_REG(d1), ULONG text BL_REG(d2),
                                         const ULONG *args BL_REG(a2),
@@ -586,7 +583,6 @@ static void do_gtitem(ULONG itemflags, ULONG menu, ULONG itemno, ULONG text, ULO
  * @param itemno     d3.w: the item's number
  * @param stack      a2: the argument stack
  * @param obj        a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE gtmenuitem2_c(ITEMARGS)
 {
@@ -608,7 +604,6 @@ BLITZ_THUNK(_gtmenuitem2, gtmenuitem2_c, "d0-d1/a0-a1");
  * @param text       d4: itemtext$
  * @param stack      a2: the argument stack (the string lengths)
  * @param obj        a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE gtmenuitem3_c(ITEMARGS)
 {
@@ -632,7 +627,6 @@ BLITZ_THUNK(_gtmenuitem3, gtmenuitem3_c, "d0-d1/a0-a1");
  * @param shortcut   d5: shortcut$
  * @param stack      a2: the argument stack (the string lengths)
  * @param obj        a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE gtmenuitem_c(ITEMARGS)
 {
@@ -653,7 +647,6 @@ BLITZ_THUNK(_gtmenuitem, gtmenuitem_c, "d0-d1/a0-a1");
  * @param exclude    d6: the mutual exclude mask
  * @param stack      a2: the argument stack (the string lengths)
  * @param obj        a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE gtmenuitem4_c(ITEMARGS)
 {
@@ -677,7 +670,6 @@ BLITZ_THUNK(_gtmenuitem4, gtmenuitem4_c, "d0-d1/a0-a1");
  * @param exclude    d6: the mutual exclude mask (ignored, #692)
  * @param stack      a2: the argument stack, UserData at -16(a2)
  * @param obj        a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE gtmenuitem5_c(ITEMARGS)
 {
@@ -728,7 +720,6 @@ static void do_gtsubitem(ULONG itemflags, ULONG menu, ULONG itemno, ULONG subno,
  * @param subno      d4.w: the sub item's number
  * @param stack      a2: the argument stack
  * @param obj        a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE gtsubitem2_c(SUBARGS)
 {
@@ -749,7 +740,6 @@ BLITZ_THUNK(_gtsubitem2, gtsubitem2_c, "d0-d1/a0-a1");
  * @param text       d5: itemtext$
  * @param stack      a2: the argument stack (the string lengths)
  * @param obj        a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE gtsubitem3_c(SUBARGS)
 {
@@ -776,7 +766,6 @@ BLITZ_THUNK(_gtsubitem3, gtsubitem3_c, "d0-d1/a0-a1");
  * @param stack      a2: the argument stack (the string lengths, the
  *                   pushed shortcut$)
  * @param obj        a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE gtsubitem_c(SUBARGS)
 {
@@ -797,7 +786,6 @@ BLITZ_THUNK(_gtsubitem, gtsubitem_c, "d0-d1/a0-a1");
  * @param shortcut   d6: shortcut$ (#694)
  * @param stack      a2: the argument stack, the mutual exclude at -16(a2)
  * @param obj        a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE gtsubitem4_c(SUBARGS)
 {
@@ -819,7 +807,6 @@ BLITZ_THUNK(_gtsubitem4, gtsubitem4_c, "d0-d1/a0-a1");
  * @param stack      a2: the argument stack, the mutual exclude at -16(a2),
  *                   UserData at -20(a2)
  * @param obj        a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE gtsubitem5_c(SUBARGS)
 {
@@ -868,7 +855,6 @@ static void freeitemlist(struct gtentry *it, ULONG n)
  * exists only if it was open).  BUG(orig) (#695): the title strings are
  * never freed.  The object is cleared (+0, +4, the long at +8).
  * @param obj  a3: the object
- * @return nothing
  */
 static void BLITZ_ROUTINE freemenu_c(struct gtmenulist *obj BL_REG(a3))
 {
@@ -940,7 +926,6 @@ static struct gtentry *finditem(struct gtmenulist *obj, ULONG menu, ULONG itemno
  * again by CreateMenuStrip).
  * @param menu  d1.w: the title
  * @param obj   a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE freetitle_c(ULONG menu BL_REG(d1), struct gtmenulist *obj BL_REG(a3))
 {
@@ -965,7 +950,6 @@ BLITZ_THUNK(_freetitle, freetitle_c, "d0-d1/a0-a1");
  * @param menu    d1.w: the title
  * @param itemno  d2: the item
  * @param obj     a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE freeitem_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                      struct gtmenulist *obj BL_REG(a3))
@@ -988,7 +972,6 @@ BLITZ_THUNK(_freeitem, freeitem_c, "d0-d1/a0-a1");
  * @param itemno  d2: the item
  * @param subno   d3: the sub item
  * @param obj     a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE freesubitem_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                         ULONG subno BL_REG(d3), struct gtmenulist *obj BL_REG(a3))
@@ -1031,7 +1014,6 @@ static void changestate(struct Menu *m, UWORD on, UBYTE bit)
  * is attached to a window.
  * @param on   d1.w: 0 off, else on
  * @param obj  a3: the GTMenuList object (0x1380: #ia3)
- * @return nothing
  */
 static void BLITZ_ROUTINE domenustate_c(ULONG on BL_REG(d1), struct gtmenulist *obj BL_REG(a3))
 {
@@ -1053,7 +1035,6 @@ BLITZ_THUNK(domenustate, domenustate_c, "d0-d1/a0-a1");
  * @param menu  d1.w: the menu
  * @param on    d2.w: 0 off, else on
  * @param obj   a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE domenustate2_c(ULONG menu BL_REG(d1), ULONG on BL_REG(d2),
                                          struct gtmenulist *obj BL_REG(a3))
@@ -1071,7 +1052,6 @@ BLITZ_THUNK(domenustate2, domenustate2_c, "d0-d1/a0-a1");
  * @param itemno  d2.w: the item
  * @param on      d3.w: 0 off, else on
  * @param obj     a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE domenustate3_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                          ULONG on BL_REG(d3), struct gtmenulist *obj BL_REG(a3))
@@ -1090,7 +1070,6 @@ BLITZ_THUNK(domenustate3, domenustate3_c, "d0-d1/a0-a1");
  * @param subno   d3.w: the sub item
  * @param on      d4.w: 0 off, else on
  * @param obj     a3: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE domenustate4_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                          ULONG subno BL_REG(d3), ULONG on BL_REG(d4),
@@ -1162,7 +1141,6 @@ static void setchecked(struct MenuItem *mi, UWORD on)
  * @param itemno  d2.w: the item
  * @param on      d3.w: 0 off, else on
  * @param obj     a2: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE setmenuchecked_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                            ULONG on BL_REG(d3), struct gtmenulist *obj BL_REG(a2))
@@ -1181,7 +1159,6 @@ BLITZ_THUNK(setmenuchecked, setmenuchecked_c, "d0-d1/a0-a1");
  * @param subno   d3.w: the sub item
  * @param on      d4.w: 0 off, else on
  * @param obj     a2: the GTMenuList object
- * @return nothing
  */
 static void BLITZ_ROUTINE setmenuchecked2_c(ULONG menu BL_REG(d1), ULONG itemno BL_REG(d2),
                                             ULONG subno BL_REG(d3), ULONG on BL_REG(d4),
