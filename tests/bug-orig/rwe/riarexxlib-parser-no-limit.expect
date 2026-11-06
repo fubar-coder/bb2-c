@@ -2,5 +2,5 @@
 ok
 [run]
 received -1
-arg xxx
+one argument -1
 rc=0
