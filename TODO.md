@@ -353,8 +353,12 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     the code in `shared/` (xtra, filereq, …) and `tools/lib/`.
   Comments only, every output byte-identical. Possible later: a check
   with clang's `-Wdocumentation` in the host build (an `@param` that does
-  not match the parameters), and an optional `doxygen` target outside
-  the build.
+  not match the parameters). Doxygen runs outside the build: the Pages
+  workflow builds the API reference from `Doxyfile` with warnings as
+  errors (OpenSpec change `library-reference`, 2026-11-06); the
+  conventions, among them the command name at the start of a library
+  routine's `@brief`, are in `docs/development.md` ("Function comments
+  and the references").
 - [x] **Warnings of `blitzlibcheck`** done (2026-10-31): all 73 sites per
   acidlibs set fixed (displaylib #412; screenslib #251, animlib #398,
   iffmakelib #185, fontlib #955, memlib #956, trackerlib #957,

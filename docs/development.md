@@ -36,6 +36,46 @@ include paths of the toolchain found; not in the repository). After
 changing the toolchain, delete `.clangd` and configure again; switch off
 with `-DBLITZ2_CLANGD=OFF`.
 
+## Function comments and the references
+
+The functions are documented with Doxygen comments
+(`/** @brief ... @param ... @return ... */`), which clangd shows on
+hover and from which the API reference of the website is made. In the
+libraries:
+
+* The `@brief` of a routine that implements a Blitz command starts with
+  the command's name (`@brief WMouseY - ...`, `@brief GTMenuItem
+  GTMenuList#,...: ...`); a routine for several commands names them all.
+  The Blitz syntax itself stays in `BLITZ_NAME`.
+* `@param NAME REG: ...` and `@return REG: ...` give the register
+  (`@param a d0: the dividend`, `@return d0: the quotient`); a void
+  routine has no `@return`; what it keeps is a sentence (`Returns
+  nothing (all registers kept).`).
+* Routines in assembler (`BLITZ_INLINE`, `BLITZ_ASM_ROUTINE`,
+  `BLITZ_AB_ROUTINE`) have no C parameters and no C result: their
+  register arguments are `@arg` items and their result a paragraph
+  `@par Result` followed by `REG: ...`. The same holds for an init or
+  finit routine whose name another library also has as a global
+  function (`codeinit`, `doinit`): Doxygen joins global functions of one
+  name, so their `@param`/`@return` would clash.
+* Original bugs: `BUG(orig) (#NNN)`; Blitz notation (`#ld0`, `Window#`)
+  is no link.
+
+**API reference** (C developers): `Doxyfile` in the repository root,
+over `libs/include`, `deflib.h`, the sources of acidlibs and the RWE
+userlibs, and `shared/` (main page `docs/api-mainpage.md`). Not part of
+the CMake build: the Pages workflow runs it in
+`ghcr.io/doxygen/doxygen:Release_1_18_0` with warnings as errors into
+`site/static/api/` (not committed), served as `/bb2-c/api/`. A comment
+error (a `@param` of no parameter, a `@return` on a void routine, an
+unclosed backquote) fails the publication of the site; run it locally
+as `site/README.md` describes.
+
+**Command reference** (Blitz programmers): the command tables of the
+built library files, `tools/cmdref`, committed in `site/data/libraries/`
+and rendered by Hugo (`site/README.md`); checked in the build, see
+below.
+
 ## Checks in the build
 
 The build checks its results itself; if a check fails, the result counts

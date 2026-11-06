@@ -24,4 +24,4 @@
 
 ## 6. Convention and docs
 
-- [ ] 6.1 The `@brief` convention (command name first) in `docs/development.md`, the API reference and the command reference in `docs/development.md`/`docs/structure.md`; `TODO.md` entry of the function documentation updated (the optional Doxygen target is the Pages job)
+- [x] 6.1 The `@brief` convention (command name first) in `docs/development.md`, the API reference and the command reference in `docs/development.md`/`docs/structure.md`; `TODO.md` entry of the function documentation updated (the optional Doxygen target is the Pages job)

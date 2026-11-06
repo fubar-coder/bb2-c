@@ -34,6 +34,11 @@ shared/xtra/                 the companion settings of a source (.xtra)
                              header, AmiBlitz3 embedded header (C99, no
                              libc; compiled by each user: blitz2-ab3,
                              ab3cli, the host tools)
+Doxyfile                     the API reference (Doxygen, Pages workflow;
+                             docs/development.md)
+site/                        the website (Hugo, site/README.md); data/
+                             libraries/: the command tables of the
+                             libraries (tools/cmdref, checked by the build)
 shared/tokenizer/            source text to tokenised lines with a rule
                              set (AmiBlitz3's), the ends of AmiBlitz3's
                              embedded headers, its 250-character lines
@@ -87,7 +92,9 @@ tools/                       host tools:
                              teststats (the @stat line of the emulator
                              sessions, statistics of JUnit files),
                              hdf (AmigaDOS hardfiles: RDB or raw
-                             partition, OFS/FFS files read and written);
+                             partition, OFS/FFS files read and written),
+                             cmdref (the command table of a library file
+                             as JSON, the website's command reference);
                              blitzlib also compares declarations
   biglib/, blitzlibcheck/,   the tools: one main.c each around lib/
   blitzlibcompare/,
@@ -97,7 +104,7 @@ tools/                       host tools:
   checkdata/, asmcmp/,
   mktestdata/, bb22/, blitzres/,
   bblines/, xtra/, teststats/,
-  ab3tok/, hdftool/
+  ab3tok/, hdftool/, cmdref/
   tests/                     tests of lib/ with inputs from memory
 openspec/                    OpenSpec: specs/ (what is specified),
                              changes/ (planned and archived changes)

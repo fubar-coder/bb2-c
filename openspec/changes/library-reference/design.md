@@ -143,4 +143,31 @@ puts it in place before Hugo runs. `.gitignore` excludes the tree.
 
 ## Findings
 
-(filled in during the work)
+- **Data** (2026-11-06): 175 command tables - 83 acidlibs, 39 deflibs,
+  53 RWE userlibs; 605 statements, 506 functions, 147 commands, 18
+  object names, 992 AmigaOS calls. 28 libraries declare no commands
+  (the compiler's own libraries, numbers 64000 and up, and three helper
+  libraries); their pages say so. 28 libraries manage objects. No help
+  text has a byte outside ASCII; 45 have a `|` (none of an AmigaOS call).
+- **`opens`**: the scan of the code for the library name finds the right
+  name in all 37 deflibs libraries with an init (`gadgets/colorwheel.gadget`
+  included); `doslib2` and `graphicslib2` have none and are merged into
+  the pages of dos.library and graphics.library. The scan takes a
+  printable run that ends in the name; if code bytes in front of a name
+  were printable, the name would get a prefix - the committed files
+  would show it, and the build check catches any later change.
+- **Hugo**: the content adapter needs `description` as a top-level key
+  of `AddPage` (in `params` it is not the page's description); partials
+  that build Markdown return strings (`return`), so html/template does
+  not escape them. Sorting entries by name is case-insensitive.
+- **Doxygen** (1.18.0): with the configuration of D5, 731 warnings on
+  the first run, then 311 with the parameter-list macros expanded and
+  the thunk/assembler macros as declarations, 0 after the comment
+  fixes. Global functions of one name in several library files
+  (`codeinit`, `codefinit`, `doinit`, `_libfinit`) are joined by
+  Doxygen into one entity, across files; where their docs clashed the
+  comments use `@arg`/`@par Result`. The joined pages remain: such a
+  function's page can show the description of a namesake from another
+  library. `SOURCE_BROWSER` is off (26 MB of HTML instead of 52 MB; the
+  sources are on GitHub). `OUTPUT_DIRECTORY` is created only one level
+  deep, so the workflow creates `site/static/api` first.
