@@ -42,6 +42,13 @@ comments of these sources, describes the C side: the macros a library is
 written with and the routines of each library, for anyone who writes or
 changes a library in C.
 
+## Libraries in your program
+
+What happens to a library when you compile a program, when its code is
+copied in and when its start and end routines run, is explained in
+[Libraries in a compiled program](in-a-program). It also tells what
+brings in the libraries that have no commands.
+
 ## What the libraries provide
 
 **Text and numbers.** Printing (`Print`, `NPrint`, `Format`), the string
