@@ -917,6 +917,34 @@ static int prepare(struct covmap *m)
             m->lines[n++] = *l;
     }
     m->nlines = n;
+    /* a function gcov counts 0 with lines of it run: entered in a process
+       that never wrote its data (it ended by _exit or a signal), the lines
+       after a fork counted by its child; it ran, with at least the count
+       of its most run line */
+    for (i = 0; i < m->nhits; i++) {
+        struct cov_hit *h = &m->hits[i];
+        const struct cov_func *f = &m->funcs[h->func];
+        struct cov_line key;
+        size_t lo = 0, hi = m->nlines;
+
+        if (h->count || h->bitmap || !f->first)
+            continue;
+        key.test = h->test;
+        key.file = f->file;
+        key.line = f->first;
+        while (lo < hi) {
+            size_t mid = (lo + hi) / 2;
+
+            if (cmp_line(&m->lines[mid], &key) < 0)
+                lo = mid + 1;
+            else
+                hi = mid;
+        }
+        for (; lo < m->nlines && m->lines[lo].test == h->test && m->lines[lo].file == f->file
+               && m->lines[lo].line <= f->last; lo++)
+            if (m->lines[lo].count > h->count)
+                h->count = m->lines[lo].count;
+    }
     if (m->nbranches)
         qsort(m->branches, m->nbranches, sizeof *m->branches, cmp_branch);
     for (i = n = 0; i < m->nbranches; i++) {

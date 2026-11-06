@@ -33,7 +33,10 @@
  *                              switch tables, assembler stubs, out-of-line
  *                              copies of header functions), is no function
  *                              of that source and is left out
- *   FNDA:<count>,<name>        gcov: its calls; coverage file: 1 if it was
+ *   FNDA:<count>,<name>        gcov: its calls (if 0 with a line of it run:
+ *                              the count of its most run line, as when it
+ *                              was entered in a process that wrote no
+ *                              data); coverage file: 1 if it was
  *                              entered, else 0
  *   FNF:<functions> FNH:<functions with a count above 0>
  *   BRDA:<line>,<block>,<branch>,<taken or ->  gcov only; the block is the

@@ -305,6 +305,13 @@ the preset, the option, the module and the tools.
   order of their names: lcov's own form of tracefiles of different tests
   merged (`lcov -a` keeps a section per test name); `genhtml` adds them
   up per file.
+- **A gcov function count of 0 with lines of it run** (task 5.1,
+  `amiga_emulation.c`'s `launch`): the function was entered in a process
+  that never wrote its data (the session supervisor ends with `_exit`),
+  and the lines after its `fork` were counted by the child, which writes
+  its data before `exec`. `covmap` gives such a function the count of its
+  most run line: it ran, so `covsel` must name the test for it, and
+  `genhtml` refuses a function not hit with a line of it hit.
 - **Functions without known lines** (objects without `-g`) are written `FN:1,<name>` without a last line: lcov rejects
   line 0, and an `FN:` without a last line is lcov's older form. `covsel`
   reads an `FN:` without a last line as "range not known"; a change in

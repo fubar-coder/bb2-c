@@ -34,12 +34,15 @@ static char *trace_text(struct covmap *m, long i)
  * an FN: before it, FNF/FNH the number of functions and of those with a
  * count above 0, BRDA:<line>,<block>,<branch>,<taken or -> with BRF/BRH,
  * DA:<line>,<count> with LF/LH; the count records after the records they
- * count.  NULL if text keeps to it, else why not.
+ * count; no function with a count of 0 whose lines hold a DA: with a count
+ * above 0 (genhtml's consistency check; here FNDA: before DA:, as covmap
+ * writes them).  NULL if text keeps to it, else why not.
  */
 static const char *lcov_check(const char *text)
 {
     static char why[700];
     char names[64][200];
+    unsigned long long first[64], last[64], hits[64];
     size_t pos = 0, len = strlen(text), n, nfn = 0, fnda = 0, fnh = 0, br = 0, brh = 0, da = 0,
            dah = 0, k, lineno = 0;
     const char *line;
@@ -76,16 +79,21 @@ static const char *lcov_check(const char *text)
             for (k = 0; k < nfn; k++)
                 if (!strcmp(names[k], name))
                     NO("line %zu: FN: twice", lineno);
+            first[nfn] = a;
+            last[nfn] = b;
+            hits[nfn] = 0;
             snprintf(names[nfn++], sizeof *names, "%s", name);
         } else if (sscanf(buf, "FN:%llu,%199s%n", &a, name, &used) == 2 && !buf[used]) {
             if (!a || fnda || nfn == 64)
                 NO("line %zu: bad FN:", lineno);
+            first[nfn] = last[nfn] = hits[nfn] = 0;
             snprintf(names[nfn++], sizeof *names, "%s", name);
         } else if (sscanf(buf, "FNDA:%llu,%199s%n", &a, name, &used) == 2 && !buf[used]) {
             for (k = 0; k < nfn && strcmp(names[k], name); k++)
                 ;
             if (k == nfn)
                 NO("line %zu: FNDA: without FN:", lineno);
+            hits[k] = a;
             fnda++;
             fnh += a > 0;
         } else if (sscanf(buf, "FNF:%llu%n", &a, &used) == 1 && !buf[used]) {
@@ -109,6 +117,9 @@ static const char *lcov_check(const char *text)
         } else if (sscanf(buf, "DA:%llu,%llu%n", &a, &b, &used) == 2 && !buf[used]) {
             if (!a)
                 NO("line %zu: bad DA:", lineno);
+            for (k = 0; b && k < nfn; k++)
+                if (!hits[k] && first[k] <= a && a <= last[k])
+                    NO("line %zu: function %s not hit, its line %llu is", lineno, names[k], a);
             da++;
             dah += b > 0;
         } else if (sscanf(buf, "LF:%llu%n", &a, &used) == 1 && !buf[used]) {
@@ -146,6 +157,7 @@ static void test_lcov_check(void)
         { "SF:a.c\nBRDA:1,0,0,-\nBRF:1\nBRH:1\nend_of_record\n", "BRH:1" },
         { "SF:a.c\nDA:0,1\nend_of_record\n", "bad DA:" },
         { "SF:a.c\nDA:1,0\nLF:1\nLH:1\nend_of_record\n", "LH:1" },
+        { "SF:a.c\nFN:1,3,f\nFNDA:0,f\nDA:1,0\nDA:2,1\nend_of_record\n", "f not hit, its line 2" },
         { "SF:a.c\nDA:1\nend_of_record\n", "not a record" },
     };
     size_t i;
@@ -300,6 +312,37 @@ static const char gcov_b[] =
     " {\"file\": \"" ROOT "/programs/ted/src/core/tokit.c\", \"functions\": ["
     "  {\"name\": \"tokit\", \"start_line\": 10, \"end_line\": 20, \"execution_count\": 1},"
     "  {\"name\": \"tokskip\", \"start_line\": 22, \"end_line\": 30, \"execution_count\": 2}]}]}";
+
+/* gcov data of a function entered in a process that wrote none (the lines
+   after its fork counted by the child): launch counts 0, its lines 3 and
+   5; idle and its line not run; a line outside every function */
+static const char gcov_fork[] =
+    "{\"current_working_directory\": \"" ROOT "/build/host\", \"files\": ["
+    " {\"file\": \"" ROOT "/tools/lib/run.c\", \"functions\": ["
+    "  {\"name\": \"launch\", \"start_line\": 10, \"end_line\": 20, \"execution_count\": 0},"
+    "  {\"name\": \"idle\", \"start_line\": 22, \"end_line\": 24, \"execution_count\": 0}],"
+    "  \"lines\": [{\"line_number\": 10, \"count\": 0}, {\"line_number\": 15, \"count\": 3},"
+    "   {\"line_number\": 16, \"count\": 5}, {\"line_number\": 23, \"count\": 0},"
+    "   {\"line_number\": 30, \"count\": 7}]}]}";
+
+static void test_gcov_fork(void)
+{
+    struct covmap m;
+    char *t;
+    const char *why;
+
+    covmap_init(&m, ROOT);
+    CHECK(!covmap_add_gcov(&m, "host/run", gcov_fork, strlen(gcov_fork), err, sizeof err));
+    CHECK(covmap_tests(&m) == 1);
+    t = trace_text(&m, 0);
+    CHECK(!strcmp(t, "TN:host_run\n"
+                     "SF:" ROOT "/tools/lib/run.c\n"
+                     "FN:10,20,launch\nFN:22,24,idle\nFNDA:5,launch\nFNDA:0,idle\nFNF:2\nFNH:1\n"
+                     "DA:10,0\nDA:15,3\nDA:16,5\nDA:23,0\nDA:30,7\nLF:5\nLH:3\nend_of_record\n"));
+    CHECK(!(why = lcov_check(t)));
+    free(t);
+    covmap_free(&m);
+}
 
 static void test_gcov(void)
 {
@@ -611,6 +654,7 @@ int main(void)
     test_deps();
     test_lcov_check();
     test_gcov();
+    test_gcov_fork();
     test_amiga();
     test_amiga_nonfunctions();
     if (failures)
