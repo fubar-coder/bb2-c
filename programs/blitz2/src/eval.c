@@ -2217,6 +2217,13 @@ struct label *makealab2(UWORD len, UWORD *c)
 
     (void)c;
     if (l) {
+        /* BUG(orig) (#977): "made" is decided by the value alone. A constant
+           of value 0 (pc is its value, refs == 1) with this name counts as a
+           label not defined yet: a reference is chained in front of the
+           constant's refs (next pointer 1), and the later definition of the
+           label walks it ("Label reference out of context" at a random
+           line, or an address error / random write). Only a constant with
+           a value other than 0 reaches gotit and illlaberr. */
         if (l->pc)
             goto gotit;             /* already made */
     } else {
