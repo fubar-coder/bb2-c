@@ -284,7 +284,7 @@ add_test(NAME rwe_refbuild_compare_broken COMMAND ${CMAKE_COMMAND}
 	-DREF=${CMAKE_CURRENT_SOURCE_DIR}/refbuild-compare.cmake
 	-DORIG=${CMAKE_CURRENT_SOURCE_DIR}/refbuild-stage.cmake
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/refbuild-compare.cmake)
-set_tests_properties(rwe_refbuild_compare_broken PROPERTIES PASS_REGULAR_EXPRESSION "differs from")
+set_tests_properties(rwe_refbuild_compare_broken PROPERTIES PASS_REGULAR_EXPRESSION "differs[ \n]+from")
 
 # the font of the LES debug library is the one of the CD's binary (BUM
 # RILESDEBUGLIB.OBJ at 3460; skipped without the CD), and the check with
@@ -298,4 +298,4 @@ add_test(NAME rwe_lesfont_broken COMMAND ${CMAKE_COMMAND}
 	-DFONT=${CMAKE_CURRENT_SOURCE_DIR}/rilesdebuglib-font.bin
 	-DBIN=${CMAKE_CURRENT_SOURCE_DIR}/rilesdebuglib-font.bin -DOFFSET=1 -P ${lesfont_check})
 set_tests_properties(rwe_lesfont_broken PROPERTIES
-	PASS_REGULAR_EXPRESSION "differs from the 2048 bytes at 1")
+	PASS_REGULAR_EXPRESSION "differs[ \n]+from[ \n]+the[ \n]+2048[ \n]+bytes[ \n]+at[ \n]+1")
