@@ -1,0 +1,40 @@
+description: Shape helpers by Reflective Images - shapes made from memory, an IFF shapes file format with an optional palette and packed data, empty shapes and size scans.
+intro: |
+  This library works on the shape objects of Blitz Basic 2 and adds what
+  the shapes library of Acid Software lacks. It brings a shapes file
+  format of its own, the LE shapes file: an IFF file (`FORM LESH`) that
+  holds the shapes, optionally a palette, and optionally packed shape
+  data. `LESaveShapes` writes such a file, `LELoadShapes` reads it from
+  disk and `LECludgeShapes` decodes one that is already in memory, for
+  example included with `IncBin`. `LELoadShapes` hands a file that is no
+  IFF file to `LoadShapes` of the shapes library.
+
+  `CludgeShapes` and `CludgeShapesToAddress` make shapes from memory that
+  holds them in the form `SaveShapes` writes. The other commands make an
+  empty shape (`LEInitShape`), find the largest width, height and depth
+  of a range of shapes (`LEScanShapes`) and check whether a shape fits
+  into the current bitmap (`SafeToBlit`).
+
+  Shape data and cookies go into chip memory. Packing and unpacking use
+  the pack library of Reflective Images (RIPackLib), which must be
+  installed too. The commands that read or write files go through
+  AmigaDOS, so call them in Amiga mode.
+
+  Kept from the original: `LESaveShapes` takes the shape numbers divided
+  by 32 for the count it stores, so the file loads back only about one
+  shape per 32 shape numbers of the range; a file of shapes 0 to 31 loads
+  back as a single shape
+  ([#815](https://github.com/fubar-coder/bb2-c/issues/815)). The cookie
+  of a shape that `LELoadShapes`, `LECludgeShapes` or `LEInitShape`
+  replaces is never freed, so chip memory is lost each time
+  ([#810](https://github.com/fubar-coder/bb2-c/issues/810)).
+
+  The largest size of ten shapes:
+
+  ```blitzbasic
+  LoadShapes 0,9,"ship.shapes"
+  LEScanShapes 0,9
+  NPrint LEMaxShapeWidth," x ",LEMaxShapeHeight
+  ```
+
+  *Based on the RI Shapes Lib guide by Red When Excited.*

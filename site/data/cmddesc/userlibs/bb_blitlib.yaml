@@ -1,0 +1,62 @@
+"SpecialBlock":
+  text: Draws a 16 by 16 block made of two shapes into the current bitmap, the top shape through its cookie over the bottom shape, at `x`,`y` or at the byte `offset` in the bitmap.
+  notes: |
+    Both shapes must be 16 by 16 pixels, and the bitmap must have the
+    line width of `SetupMapTwo`. `x` is used in steps of 8 pixels.
+"SpecialBlockBitmap":
+  text: Draws a shape of any size through its cookie over the same area of another bitmap into the current bitmap, at `x`,`y` or at the byte `offset`, which counts in both bitmaps.
+  notes: |
+    `x` is used in steps of 8 pixels. Here the line width is that of the
+    current bitmap, not the one of `SetupMapTwo`.
+"TBlock":
+  text: Draws a 16 by 16 shape through its cookie into the current bitmap at `x`,`y`, so that the bitmap shows where the shape has colour 0.
+  notes: |
+    The bitmap must have the line width of `SetupMapTwo`. `x` is used in
+    steps of 8 pixels.
+"PredatorBlit":
+  text: The "predator" effect of Blitz Bombers - inside the outline of a 16 by 16 shape's cookie at `x`,`y`, the bitmap is replaced by its next line, shifted by one pixel. As a function it returns the address of the shape's cookie.
+  notes: |
+    The bitmap must have the line width of `SetupMapTwo`.
+"BPredatorBlit":
+  text: Like `PredatorBlit`, but saves the background into the buffer `buffer` first, so that `UnBuffer` restores it, and places the shape by its handle.
+  notes: |
+    The buffer gets one line less than the shape's height, as Blitz
+    Bombers needed it. Kept from the original: the next line is found
+    with the line width of `SetupMapTwo`, not with that of the bitmap
+    ([#426](https://github.com/fubar-coder/bb2-c/issues/426)).
+"SetupMapTwo":
+  text: Sets the line width in bytes, 40 at the start, that `SpecialBlock`, `TBlock` and the predator commands assume for the current bitmap.
+"CreateShape":
+  text: Makes `count` shapes from `start_shape` on with the size of `like_shape`, whose data lie one after another in the chip memory at `chipmemblock`.
+  notes: |
+    The shapes get no cookie, and their data is marked as not their own,
+    so freeing them does not free the memory. Kept from the original: a
+    `count` of 0 makes 65536 shapes
+    ([#428](https://github.com/fubar-coder/bb2-c/issues/428)).
+"SpecialBlockToShape":
+  text: Like `SpecialBlock`, but draws the block into the data of the shape `destshape` instead of a bitmap.
+  notes: |
+    With runtime error checking, a destination shape without data is the
+    error "Destination shape MUST be pre-reserved!", and one of another
+    size than the top shape "Shapes must be the same size!".
+"BlockToShape":
+  text: Copies the data of a 16 by 16 shape into the shape `destshape`.
+  notes: |
+    With runtime error checking, a destination shape without data is the
+    error "Destination shape MUST be pre-reserved!", and one of another
+    size "Shapes must be the same size!". Kept from the original: only
+    one word of every line is copied, so shapes wider than 16 pixels are
+    copied in part ([#425](https://github.com/fubar-coder/bb2-c/issues/425)).
+"BColourBlit":
+  text: Draws the outline of a shape's cookie in one colour, `colour`, into the current bitmap at `x`,`y`, placed by the shape's handle, after saving the background into the buffer `buffer` for `UnBuffer`.
+"TBlockImage":
+  text: Draws image number `image` of a block of 16 by 16 images at `image_addr` through its mask onto the first 6 bitplanes of the current bitmap at `x`,`y`.
+  notes: |
+    An image is 224 bytes: a mask of 32 bytes, then 6 bitplanes of 32
+    bytes each. `x` is used in steps of 8 pixels.
+"BTBlockImage":
+  text: Like `TBlockImage`, but at any x position, after saving the background into the buffer `buffer` for `UnBuffer`.
+  notes: |
+    Kept from the original: from image 147 on, the image is taken from
+    memory before `image_addr`
+    ([#427](https://github.com/fubar-coder/bb2-c/issues/427)).

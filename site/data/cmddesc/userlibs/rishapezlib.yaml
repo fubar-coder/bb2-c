@@ -1,0 +1,13 @@
+"CludgeAcid":
+  text: With 1, restores the pointer to the local variables of the Blitz program that an earlier `CludgeAcid` saved; with any other value, saves it.
+  notes: |
+    Only the low byte counts, so `True` (-1) saves like 0. A
+    `CludgeAcid 1` before anything was saved sets the pointer to 0.
+"PeekByte":
+  text: The byte at `addres`, from 0 to 255.
+"SetWinDrawShapeZ":
+  text: Sets the area pattern of the current window's RastPort to a mesh (every other pixel) for a `mode` other than 0, and removes it for 0.
+  notes: |
+    The command takes two values, a window number and the mode, although
+    its help names only the mode. The window number is not used: the
+    pattern always goes to the current window.

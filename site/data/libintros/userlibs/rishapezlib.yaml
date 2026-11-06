@@ -1,0 +1,9 @@
+description: Three small helpers by Reflective Images - saving and restoring the locals pointer of the Blitz program, reading a byte from memory, and a mesh pattern for window fills.
+intro: |
+  A small library of Reflective Images with three unrelated helpers.
+  `PeekByte` reads one byte from memory. `SetWinDrawShapeZ` gives the
+  current window a mesh pattern for the system's area fills, or takes it
+  away again. `CludgeAcid` saves the pointer to the local variables of
+  the Blitz program and restores it later.
+
+  The library uses no objects of its own and needs no setup.

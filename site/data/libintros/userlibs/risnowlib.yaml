@@ -1,0 +1,30 @@
+description: Falling snow in a bitmap by Reflective Images - snow flakes kept as lists of pixels that fall, pile up and fall again.
+intro: |
+  This library lets snow fall through a bitmap. The flakes are pixels in
+  the first bitplane of the bitmap; the second bitplane holds the snow
+  that has come to rest, and the third holds "blue" pixels, which the
+  program can remove with `KillPoint` so that the snow resting on them
+  falls on. The bitmap therefore needs at least 3 bitplanes, and the
+  library takes every row as 40 bytes long: it works on bitmaps 320
+  pixels wide only.
+
+  A snow field is set up with `InitSnowDrop`, which allocates its lists.
+  There are 4 snow fields, numbered 0 to 3; the numbers are not checked
+  ([#913](https://github.com/fubar-coder/bb2-c/issues/913)). Each
+  `LDoSnow` moves every flake of a field one step: one row down if the
+  pixel there is free, else to a free side, and if it cannot move and
+  rests on settled snow, it settles too. Each step also adds one new
+  flake, from a table of random positions that the program provides.
+
+  The random table is memory the program fills: a word, the index of
+  the next position, which the library steps on by 2 up to 1024 and
+  then wraps to 0, followed by 512 pairs of bytes. The first byte of a
+  pair is the byte offset in the bitplane, so new flakes start in the
+  first rows of the bitmap; the second is the bit in that byte, 0 to 7,
+  7 being the leftmost pixel.
+
+  Kept from the original: `LDoSnow` flashes the background colour
+  (colour 0 of the hardware) red while it runs and leaves it black. A
+  field has room for `numpoints` times 4 flakes; the lists are not
+  limited and more flakes overwrite memory
+  ([#914](https://github.com/fubar-coder/bb2-c/issues/914)).

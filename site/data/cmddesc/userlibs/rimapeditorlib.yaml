@@ -1,0 +1,127 @@
+"MapObject":
+  text: The object of a block map, as the introduction describes.
+  notes: |
+    When a MapObject is freed, its data and its name are freed with it.
+"ShapeTo1616":
+  text: Copies the top left 16 by 16 pixels of every plane of the source shape into the data of the destination shape, which must be a 16 by 16 shape with at least the depth of the source. Rows the source does not have are cleared.
+  notes: |
+    Kept from the original: the destination shape's size is not checked,
+    16 rows are written for every plane of the source
+    ([#900](https://github.com/fubar-coder/bb2-c/issues/900)); a source of
+    height or depth 0 writes far over memory
+    ([#895](https://github.com/fubar-coder/bb2-c/issues/895)).
+"ShapeMaskFill":
+  text: Sets the first 32 bytes of the shape's cookie, which make the whole cookie of a 16 by 16 shape of one plane, so the shape is drawn as a solid block.
+  notes: |
+    The shape must have a cookie.
+"ScanShapes":
+  text: Finds the largest width, height and depth of the shapes from `startnum` on, up to `highest` or the first empty shape, for `ScanMaxWidth`, `ScanMaxheight` and `ScanMaxdepth`. Returns the number of the last shape scanned, the empty one or `highest`.
+  notes: |
+    If `startnum` is above `highest`, the scan goes on to the first empty
+    shape.
+"ScanMaxWidth":
+  text: The largest width found by the last `ScanShapes`.
+"ScanMaxheight":
+  text: The largest height found by the last `ScanShapes`.
+"ScanMaxdepth":
+  text: The largest depth found by the last `ScanShapes`.
+"MapDataChanged":
+  text: Without a value, returns the changed flag of the current map; with `newstate`, sets the flag and returns the old one.
+  notes: |
+    The library only keeps the flag: `CreateMap` sets it to 0, and the
+    program sets it when it changes the map.
+"FillBitplane":
+  text: Fills the first bitplane of a bitmap with a mesh, `width` pixels (rounded down to a multiple of 16) by `height` rows from the top left corner.
+  notes: |
+    Kept from the original: a height of 0, or a width below 16, writes
+    65536 rows or words over memory
+    ([#895](https://github.com/fubar-coder/bb2-c/issues/895)).
+"CreateMap":
+  text: Makes a map of `width` by `height` cells, all 0, with blocks of `bwidth` by `bheight` pixels and the name `name$`, and makes it the current map. A map the object held before is freed.
+  notes: |
+    If there is no memory, or `width` or `height` is 0, the map gets the
+    size 0.
+
+    Kept from the original: whether the old map is freed is decided by
+    the wrong field, so now and then its memory is lost
+    ([#894](https://github.com/fubar-coder/bb2-c/issues/894)).
+"MapDataAdr":
+  text: Without values, the address of the data of the current map; with `x`,`y`, the address of the cell at that position. The position is not checked.
+"MapDataSize":
+  text: The size of the data of the current map in bytes, 2 bytes per cell.
+"MapObjWidth":
+  text: The width of the current map, in cells.
+"MapObjheight":
+  text: The height of the current map, in cells.
+"MapDataGrab":
+  text: Fills all cells of the current map from memory at `address`, with `mapnull` added to every value. A `datasize` of 0 reads one byte per cell, any other value one word.
+  notes: |
+    Kept from the original: with bytes, a value plus `mapnull` above 255
+    adds 256 to the following cells
+    ([#898](https://github.com/fubar-coder/bb2-c/issues/898)); a map of
+    width or height 0 reads and writes far over memory
+    ([#895](https://github.com/fubar-coder/bb2-c/issues/895)).
+"MapObjName$":
+  text: The name of the current map, or an empty string if it has none.
+  notes: |
+    Kept from the original: of a name of 256 characters or more, only the
+    length modulo 256 is returned
+    ([#899](https://github.com/fubar-coder/bb2-c/issues/899)).
+"SetMapObjName$":
+  text: Gives the current map a new name.
+"MapObjViewX":
+  text: The view x position stored with the current map. `CreateMap` sets it to 0; no command of the library changes it.
+"MapObjViewY":
+  text: The view y position stored with the current map. `CreateMap` sets it to 0; no command of the library changes it.
+"MapOutText":
+  text: Prints a text into a RastPort with its top left corner at `x`,`y`, in the RastPort's font and pen. The text is a string or the address of a text that ends in a zero byte.
+"RubThroughMap":
+  text: With a map number, makes that map the rub-through map of the current map; without, returns the address of the current map's rub-through map, or 0 if it has none.
+  notes: |
+    While a map has a rub-through map, `MapCanDraw` takes the value of a
+    cell from the rub-through map instead of the shape number, and also
+    refuses positions outside the rub-through map.
+"SetStencil":
+  text: Sets the stencil of `MapCanDraw`, a byte array with one byte for each cell value; a byte other than 0 forbids drawing over cells of that value.
+  notes: |
+    Kept from the original: `MapCanDraw` reads the stencil also when none
+    was set, from address 0, so call `SetStencil` first
+    ([#893](https://github.com/fubar-coder/bb2-c/issues/893)). Cell values
+    from 32768 on index the array backwards.
+"MapCanDraw":
+  text: Whether a shape may be put at `mapx`,`mapy` of the current map. Returns -1 if not - outside the map, the cell holds this value already, or the stencil forbids the value in the cell - and otherwise the value for the cell, `shape#` plus 1.
+  notes: |
+    With a rub-through map, the value is that map's cell at the position
+    instead of `shape#` plus 1. The address of the cell is kept for
+    `MapCanDrawAddr`, unless the position is outside the map.
+
+    Kept from the original: negative positions are not refused and reach
+    memory far behind the map
+    ([#892](https://github.com/fubar-coder/bb2-c/issues/892)).
+"MapCanDrawAddr":
+  text: The address of the cell that the last `MapCanDraw` on the current map looked at.
+"ClearRubThroughMap":
+  text: Removes the rub-through map of the current map.
+"MapOutTextPen":
+  text: Sets the foreground pen of a RastPort, the colour in which the text commands print.
+"MapOutTextCenter":
+  text: Like `MapOutText`, but the text is centred on `x`.
+"MapOutTextRight":
+  text: Like `MapOutText`, but the text ends at `x`.
+"SetWindowDraw":
+  text: Sets the area pattern of the current window's RastPort to a mesh (every other pixel) for a `mode` other than 0, and removes it for 0.
+  notes: |
+    The command takes two values, a window number and the mode, although
+    its help names only the mode. The window number is not used: the
+    pattern always goes to the current window.
+"M_InitParse":
+  text: Sets the text that `M_NextArg$` splits, given as the address of a text that ends in a zero byte. The text is copied.
+  notes: |
+    Kept from the original: a text of more than 255 characters overwrites
+    memory behind the library's buffer
+    ([#897](https://github.com/fubar-coder/bb2-c/issues/897)).
+"M_NextArg$":
+  text: The next part of the text of `M_InitParse`, up to the next comma; after the last part, and before any `M_InitParse`, an empty string.
+  notes: |
+    Spaces are kept. An empty part between two commas gives an empty
+    string too.

@@ -1,0 +1,31 @@
+description: Map shapes by Reflective Images - Blitz shapes seen as system bitmaps, blitted into windows singly or in groups, for the blocks of a map editor.
+intro: |
+  This library comes from Reflective Images' map editor. It turns Blitz
+  shapes into map shapes: a map shape describes the planes of a shape as
+  a system bitmap, so the graphics library can blit it into the RastPort
+  of a window. A map shape uses the data of its shape and copies
+  nothing, so the shape must stay in memory as long as the map shape is
+  used.
+
+  Map shapes are numbered from 0, but they are no Blitz objects: call
+  `SetNumMapShapes` first, which allocates room for them. The numbers
+  are not checked against that number, and before `SetNumMapShapes` the
+  map shapes lie at address 0
+  ([#906](https://github.com/fubar-coder/bb2-c/issues/906)). The
+  commands that blit work on a window of the windows library and draw
+  through the system, so call them in Amiga mode.
+
+  A group collects map shapes at offsets measured in blocks, to draw
+  them in one go with `BlitGroup`. `ResetGroup` starts a group and sets
+  the block size, `AddGroupMember` adds to it. A group has room for 63
+  members.
+
+  Two shapes as map shapes, drawn into window 0:
+
+  ```blitzbasic
+  SetNumMapShapes 2
+  ShapeToMapShape 0,0
+  ShapeToMapShape 1,1
+  BlitMapShape 0,0,10,10
+  BlitMapShape 0,1,42,10
+  ```

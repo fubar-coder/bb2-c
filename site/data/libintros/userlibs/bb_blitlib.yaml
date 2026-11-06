@@ -1,0 +1,22 @@
+description: The blitter routines of the game Blitz Bombers, by Stephen McNamara of Reflective Images - blocks of two shapes, shapes through their cookies, a "predator" effect, one-colour shapes and 6-plane images.
+intro: |
+  This library holds the custom blitter code of Reflective Images' game
+  Blitz Bombers. Its commands draw shapes, bitmaps and images in chip
+  memory into the current bitmap. They program the blitter registers
+  directly, without asking the system for the blitter, so they are meant
+  for Blitz mode. They check almost nothing: shapes and bitmaps must
+  exist and be of the sizes a command expects.
+
+  Several commands are written for the 16 by 16 blocks of a map and
+  assume that the bitmap has the line width set with `SetupMapTwo`, 40
+  bytes (320 pixels) unless changed. They draw without shifting, at a
+  byte position: their x position is used in steps of 8 pixels and
+  should be a multiple of 16.
+
+  The commands that begin with `B` save the background they draw over in
+  a buffer of the buffered blit commands (`Buffer`, `BBlit`), so that
+  `UnBuffer` restores it, and shift the shape to any x position.
+
+  Kept from the original: a shape or bitmap of depth 0 makes a command
+  loop 65536 times over memory
+  ([#429](https://github.com/fubar-coder/bb2-c/issues/429)).

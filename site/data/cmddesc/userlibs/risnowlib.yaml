@@ -1,0 +1,30 @@
+"LDoSnow":
+  text: Moves every flake of snow field `listnum` one step and adds one new flake from the random table at `randomtable`.
+  notes: |
+    A flake falls one row if the pixel below is clear; otherwise it moves
+    to the side, left or right first in turns, where that pixel and the
+    one below it are clear. A flake that cannot move and has settled snow
+    below it settles: it is set in the second bitplane and leaves the
+    list. A flake that reaches `bp_size` is removed.
+
+    Kept from the original: the command sets the hardware background
+    colour to red while it runs and to black at its end. A bit number
+    above 7 in the random table reads beyond the library's tables
+    ([#910](https://github.com/fubar-coder/bb2-c/issues/910)).
+"InitSnowDrop":
+  text: Sets up snow field `listnum`, 0 to 3, on a bitmap, with lists for `numpoints` times 4 flakes, all empty. `bp_size` is the size of a bitplane in bytes; flakes are removed at its end. Returns the address of the library's table of lists.
+  notes: |
+    Kept from the original: setting up a field again does not free its
+    old lists ([#911](https://github.com/fubar-coder/bb2-c/issues/911)),
+    and from `numpoints` 1024 on the memory allocated is too small for the
+    lists ([#912](https://github.com/fubar-coder/bb2-c/issues/912)).
+"KillPoint":
+  text: Removes a blue pixel, set in the third bitplane, at `x`,`y`, clearing it in the first three bitplanes, so that `LDoSnowActivate` lets the snow above it fall. Returns -1, or 0 if there is no blue pixel at `x`,`y`.
+"LDoSnowActivate":
+  text: Lets settled snow next to the removed pixels of snow field `listnum` fall again, and moves each removed pixel where snow fell one row up for the next call. Returns the number of removed pixels looked at plus 1.
+  notes: |
+    Kept from the original: called before the first `LDoSnow` of the
+    field, it writes to address 0
+    ([#908](https://github.com/fubar-coder/bb2-c/issues/908)); a second
+    call without an `LDoSnow` between them overwrites the flakes the first
+    one added ([#909](https://github.com/fubar-coder/bb2-c/issues/909)).

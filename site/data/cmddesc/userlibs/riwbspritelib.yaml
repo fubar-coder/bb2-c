@@ -1,0 +1,38 @@
+"GetWBSprite":
+  text: Makes a sprite of a shape and takes the sprite channel `spritechannel` for it, or any free channel for -1. Returns the channel, or 0 or -1 if it failed.
+  notes: |
+    `x` and `y` are stored as the sprite's position; `MoveWBSprite` moves
+    it. The channel is not optional, although the help shows it so.
+
+    The result is 0 if graphics.library could not be opened, if the shape
+    is narrower than 16 pixels or if the channel is taken, and -1 if the
+    shape has no data or there is no memory for a copy of it.
+
+    Kept from the original: if the channel is taken but holds an earlier
+    sprite of this library, the channel is returned as if it had worked
+    ([#920](https://github.com/fubar-coder/bb2-c/issues/920)).
+"FreeWBSprite":
+  text: Frees the sprite of a channel and gives the channel back to the system. Nothing happens if the library has no sprite on that channel.
+"MoveWBSprite":
+  text: Moves the sprite of a channel to `x`,`y` of the ViewPort at `viewport`. Nothing happens if the library has no sprite on that channel.
+  notes: |
+    Kept from the original: as a function it returns a value without
+    meaning ([#921](https://github.com/fubar-coder/bb2-c/issues/921)).
+"ChangeWBSprite":
+  text: Gives the sprite of a channel the image of another shape, at the same position. As a function it returns -1 on success and 0 if the channel has no sprite of this library, the shape has no data or the change failed.
+  notes: |
+    Kept from the original: when the system refuses the change, the
+    memory of the converted shape is not freed
+    ([#915](https://github.com/fubar-coder/bb2-c/issues/915)).
+"WBSpriteX":
+  text: The x position of the sprite of a channel.
+  notes: |
+    Kept from the original: for a channel without a sprite, the result is
+    read from address 6 and means nothing
+    ([#922](https://github.com/fubar-coder/bb2-c/issues/922)).
+"WBSpriteY":
+  text: The y position of the sprite of a channel.
+  notes: |
+    Kept from the original: for a channel without a sprite, the result is
+    read from address 8 and means nothing
+    ([#922](https://github.com/fubar-coder/bb2-c/issues/922)).

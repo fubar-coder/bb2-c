@@ -1,0 +1,49 @@
+"ShapeToMapShape":
+  text: Makes a map shape from a Blitz shape, with its width, height and depth. The map shape uses the planes of the shape; nothing is copied.
+  notes: |
+    Kept from the original: a shape of depth 0 writes 65536 plane
+    pointers over memory, and a depth above 8 overwrites the following
+    map shapes ([#903](https://github.com/fubar-coder/bb2-c/issues/903)).
+"BlitMapShape":
+  text: Copies a whole map shape into the RastPort of a window, with its top left corner at `x`,`y`. An empty map shape draws nothing.
+"RemapMapShape":
+  text: Does nothing; the command was left unfinished in the original.
+"BlitMapShapeSize":
+  text: Like `BlitMapShape`, but copies only `width` by `height` pixels from the top left corner of the map shape. The height is limited to that of the map shape, the width is not.
+"SetNumMapShapes":
+  text: Makes room for `num` map shapes, numbered from 0, all empty. Map shapes made before are lost.
+  notes: |
+    Kept from the original: if there is no memory, or `num` is 0, the
+    map shapes lie at address 0 and the commands that use them overwrite
+    memory there ([#906](https://github.com/fubar-coder/bb2-c/issues/906)).
+"MapShapeAddr":
+  text: The address of a map shape in memory, 64 bytes, a width word followed by a system bitmap structure.
+"FreeMapShapes":
+  text: Makes the map shapes from `first` to `last` empty. Nothing happens if `last` is below `first`.
+  notes: |
+    The room of the map shapes stays allocated; the Blitz shapes they
+    used are not freed.
+"AddGroupMember":
+  text: Adds a map shape to the group, `dx` blocks to the right and `dy` blocks down, with the block size of the last `ResetGroup`.
+  notes: |
+    The first number is a map shape number, although the help names it
+    `shape#`.
+
+    Kept from the original: before the first `ResetGroup` the member is
+    written at address 0
+    ([#901](https://github.com/fubar-coder/bb2-c/issues/901)), and the
+    number of members is not limited: the 64th member writes behind the
+    room of the group
+    ([#904](https://github.com/fubar-coder/bb2-c/issues/904)).
+"BlitGroup":
+  text: Copies every map shape of the group into the RastPort of a window, each at `x`,`y` plus its offset. Empty map shapes are skipped.
+  notes: |
+    Kept from the original: the command calls the graphics library
+    without loading its base, so it works only if the program happens to
+    have it at hand and can crash otherwise
+    ([#902](https://github.com/fubar-coder/bb2-c/issues/902)).
+"ResetGroup":
+  text: Empties the group and sets the block size, in pixels, for the offsets of `AddGroupMember`. As a function it returns the address of the group.
+  notes: |
+    The group is a list of 8-byte members (map shape address, x offset
+    and y offset in pixels), ended by an address of 0.

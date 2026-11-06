@@ -1,0 +1,40 @@
+description: The helpers of Reflective Images' map editor - block maps as MapObject objects, shape and bitmap helpers, text output into a RastPort and a parser of comma separated arguments.
+intro: |
+  This library was written by Reflective Images for their block map
+  editor, MapEd, and holds what the editor needed beside the standard
+  libraries.
+
+  Its object is the MapObject, a block map: a grid of `width` by
+  `height` cells of one word each, with the size of a block in pixels
+  (`bwidth`, `bheight`), a name and a "changed" flag. MapObjects are
+  numbered from 0; there are 5 unless the program asks for more.
+  `CreateMap` makes a map and makes it the current one; all other map
+  commands work on the current map. The data of a map is plain memory:
+  `MapDataAdr` gives its address, so a program can read and write the
+  cells with `Peek.w` and `Poke.w`. By the convention of
+  `MapCanDraw`, a cell holds a shape number plus 1, and 0 for an empty
+  cell.
+
+  `MapCanDraw` tells whether a shape may be put into a cell. It can take
+  two more things into account: a stencil, a byte array set with
+  `SetStencil` that forbids drawing over certain cell values, and a
+  rub-through map, a second map whose cells give the value instead of
+  the shape number.
+
+  The other commands are independent of the maps: shape helpers
+  (`ScanShapes`, `ShapeTo1616`, `ShapeMaskFill`), a mesh pattern for a
+  bitmap (`FillBitplane`) or a window (`SetWindowDraw`), text output
+  into any RastPort (`MapOutText` and its forms), and a parser that
+  splits a text at commas (`M_InitParse`, `M_NextArg$`). The library
+  opens graphics.library for the text commands.
+
+  A map of 40 by 25 cells of 16 by 16 pixels, and a shape put into a
+  cell:
+
+  ```blitzbasic
+  CreateMap 0,40,25,16,16,"level1"
+  Dim stencil.b(255)
+  SetStencil stencil()
+  v=MapCanDraw(3,10,5)
+  If v<>-1 Then Poke.w MapDataAdr(10,5),v
+  ```
