@@ -118,7 +118,8 @@ exists; otherwise a generated description.
 
 A committed `Doxyfile` at the repository root (inputs relative to it).
 `INPUT`: `libs/include`, `libs/deflibs/deflib.h`, `libs/acidlibs`,
-`libs/userlibs/rwe`, `shared`; `EXTRACT_STATIC = YES` (most entry
+`libs/userlibs` (all userlibs, a new directory included), `shared`;
+`EXTRACT_STATIC = YES` (most entry
 routines are static behind a thunk); `AUTOLINK_SUPPORT = NO`;
 `ENABLE_PREPROCESSING = YES`, `MACRO_EXPANSION = YES`,
 `EXPAND_ONLY_PREDEF = YES` with `PREDEFINED` empty definitions for

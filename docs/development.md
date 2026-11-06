@@ -68,8 +68,9 @@ libraries:
   is no link.
 
 **API reference** (C developers): `Doxyfile` in the repository root,
-over `libs/include`, `deflib.h`, the sources of acidlibs and the RWE
-userlibs, and `shared/` (main page `docs/api-mainpage.md`). Not part of
+over `libs/include`, `deflib.h`, the sources of acidlibs and of all
+userlibs (`libs/userlibs`, a new userlib directory is included), and
+`shared/` (main page `docs/api-mainpage.md`). Not part of
 the CMake build: the Pages workflow runs it in
 `ghcr.io/doxygen/doxygen:Release_1_18_0` with warnings as errors into
 `site/static/api/` (not committed), served as `/bb2-c/api/`. A comment

@@ -15,8 +15,8 @@ What it covers:
   `blitzhelp.h`, `blitzexec.h`, `blitzobj.h` (the objects of the
   libraries), `deflib.h` of the AmigaOS call libraries and `optidec.h`
   of the RWE userlibs.
-- **The command libraries** (`libs/acidlibs`) and **the RWE userlibs**
-  (`libs/userlibs/rwe`): every routine with its comment - what the
+- **The command libraries** (`libs/acidlibs`) and **the userlibs**
+  (`libs/userlibs`, the RWE userlibs in `rwe/`): every routine with its comment - what the
   command does, its arguments with their registers, its result, and the
   notes on original bugs (`BUG(orig)` with the issue number).
 - **The shared code** (`shared/`): the parts compiled into several
