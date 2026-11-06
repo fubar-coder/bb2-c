@@ -10,8 +10,8 @@ served beside the website.
 
 ### Requirement: Doxygen configuration in the repository
 A committed Doxyfile SHALL describe the API reference: the library
-headers (`libs/include`, the headers of deflibs and the RWE userlibs),
-the sources of acidlibs and the RWE userlibs, and `shared/`; not
+headers (`libs/include`, `deflib.h`), the sources of acidlibs and of
+every userlib directory in the repository, and `shared/`; not
 `tools/` and not the programs. It SHALL treat the sources as text (no
 Amiga toolchain), SHALL NOT list the declaration-table macros
 (`BLITZ_NAME`, `BLITZ_ARGS`, ...) as functions, and SHALL NOT read the
