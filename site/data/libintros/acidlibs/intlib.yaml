@@ -17,3 +17,12 @@ intro: |
   the next vertical blank. The library keeps the handlers of Amiga mode
   and of Blitz mode apart and switches them when the program changes
   mode; at the end of the program it removes all of them.
+
+  A `SetInt` block stands at the top level of the program, like a
+  `Statement` or `Function`. If a `SetInt` comes while another block is
+  still open, the compiler stops with the error of that block: "Select
+  without End Select" for a `Select`, "Repeat without Until" for a
+  `Repeat`, "SetInt without End SetInt" for another `SetInt`, "If Without
+  End If" for an `If` or a `While`, "Unterminated Procedure" inside a
+  `Statement` or `Function`, and "For Without Next" for a `For`. When
+  several blocks are open, the first kind in this list is reported.
