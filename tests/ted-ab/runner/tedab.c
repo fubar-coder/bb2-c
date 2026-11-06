@@ -917,7 +917,7 @@ char *tedab_session_script(const struct tedab_run *runs, size_t n, unsigned stac
                  "  Echo \"boot\" >" TEDAB_VOL ":booted\n"
                  "  Echo \"SESSION start\" %s\n"
                  "  Stack %u\n"
-                 "  " TEDAB_VOL ":tools/tedprobe " TEDAB_VOL ":gate/out/gate0.txt >NIL:\n"
+                 "  " TEDAB_VOL ":tools/tedprobe " TEDAB_VOL ":gate/out/gate0.txt " TEDAB_KEYMAP " >NIL:\n"
                  "  If WARN\n"
                  "    Echo \"GATE0 FAIL\" %s\n"
                  "  Else\n"

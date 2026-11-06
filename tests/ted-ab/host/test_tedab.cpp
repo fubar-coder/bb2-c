@@ -185,6 +185,7 @@ TEST_CASE("session script", "[script]")
     std::string sc(s);
     CHECK(sc.find("If EXISTS TEDAB:booted\n") == 0);
     CHECK(sc.find("  Stack 40000\n") != std::string::npos);
+    CHECK(sc.find("  TEDAB:tools/tedprobe TEDAB:gate/out/gate0.txt d >NIL:\n") != std::string::npos);
     CHECK(sc.find("TEDAB:tools/reqtrap TEDAB:tools/teddrive TEDAB:tests/01a-rt-t01.drv TEDRUN:out/ "
                   "blitz2:blitz2 TEDRUN:work/t01_int.bb2 >TEDRUN:out/stdout\n") != std::string::npos);
     CHECK(sc.find("TEDAB:tests/00-start.drv TEDRUN:out/ blitz2:blitz2 >TEDRUN:out/stdout\n")

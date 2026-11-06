@@ -78,6 +78,10 @@
    booted) */
 #define TEDAB_VOL "TEDAB"
 
+/* the default keymap of the session (tedprobe sets it): the scripts type
+   umlauts with the German keymap (28-long) */
+#define TEDAB_KEYMAP "d"
+
 /* gate D: teddrivetest's filled rectangle (pen 3), screen coordinates */
 #define TEDAB_GATE_X0 16
 #define TEDAB_GATE_Y0 32

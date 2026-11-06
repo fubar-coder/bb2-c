@@ -2,13 +2,19 @@
  * tedprobe - gate 0 of the TED A/B tests (bb2 ted-c/notes/PHASE3-PLAN.md
  * 3.3): what TED will find when it clones the Workbench screen.
  *
- *   tedprobe OUTFILE      "key value" lines to stdout and OUTFILE
+ *   tedprobe OUTFILE [KEYMAP]   "key value" lines to stdout and OUTFILE
  *
  * TED's calcscreen reads GetScreenData(84 bytes, WBENCHSCREEN): Width,
  * Height, ViewPort.Modes; it opens its screen with SA_LikeWorkbench and
  * SA_Depth 2 and then draws into BitMap->Planes[0/1] with the CPU and the
  * blitter.  That only works if the Workbench bitmap is planar chip memory
  * (no RTG) and the file requester needs a screen below 605 lines.
+ *
+ * KEYMAP (e.g. d): first make that keymap the default one, as IPrefs
+ * does for the keymap of the input prefs - the drivers type with MapANSI
+ * and TED converts with RawKeyConvert, both with the default keymap, and
+ * the scripts' umlauts need the German one (28-long); the session sets it
+ * instead of depending on the input prefs of the hardfile.
  *
  * Last line: "gate0 OK" (return 0) or "gate0 FAIL reason..." (return 5,
  * WARN - the session script skips the rest).  Everything else is
@@ -67,9 +73,40 @@ static int exists(const char *path)
     return l != 0;
 }
 
+/* the keymap NAME as the default keymap: the one of keymap.resource's
+   list, else DEVS:Keymaps/NAME loaded (its first hunk starts with the
+   KeyMapNode) and added to the list, where it stays (as IPrefs leaves
+   it); 0 if there is none */
+static int setkeymap(const char *name)
+{
+    struct KeyMapResource *kr = (struct KeyMapResource *)OpenResource((CONST_STRPTR)"keymap.resource");
+    struct KeyMapNode *kn;
+    char path[64];
+    BPTR seg;
+
+    if (!kr || strlen(name) > sizeof path - 14)
+        return 0;
+    Forbid();
+    kn = (struct KeyMapNode *)FindName(&kr->kr_List, (CONST_STRPTR)name);
+    Permit();
+    if (!kn) {
+        strcpy(path, "DEVS:Keymaps/");
+        strcat(path, name);
+        if (!exists(path) || !(seg = LoadSeg((CONST_STRPTR)path)))
+            return 0;
+        kn = (struct KeyMapNode *)((BPTR *)BADDR(seg) + 1);
+        Forbid();
+        AddHead(&kr->kr_List, &kn->kn_Node);
+        Permit();
+    }
+    SetKeyMapDefault(&kn->kn_KeyMap);
+    return 1;
+}
+
 static const char usage[] =
-    "usage: tedprobe OUTFILE\n"
-    "  gate 0 of the TED A/B tests: what TED finds when it clones the Workbench\n";
+    "usage: tedprobe OUTFILE [KEYMAP]\n"
+    "  gate 0 of the TED A/B tests: what TED finds when it clones the Workbench;\n"
+    "  KEYMAP: make it the default keymap first\n";
 
 int main(int argc, char **argv)
 {
@@ -82,8 +119,8 @@ int main(int argc, char **argv)
         Write(Output(), (APTR)usage, sizeof usage - 1);
         return 0;
     }
-    if (argc != 2) {
-        o_str("usage: tedprobe OUTFILE");
+    if (argc != 2 && argc != 3) {
+        o_str("usage: tedprobe OUTFILE [KEYMAP]");
         o_line();
         return 20;
     }
@@ -182,6 +219,8 @@ int main(int argc, char **argv)
 
     /* keymap (teddrive types with MapANSI, TED converts with
        RawKeyConvert of console.device - both use the default keymap) */
+    if (argc == 3 && !setkeymap(argv[2]))
+        fail("keymap not found (keymap.resource, DEVS:Keymaps)");
     {
         struct KeyMap *km = AskKeyMapDefault();
         struct KeyMapNode *kn = km ? (struct KeyMapNode *)((UBYTE *)km - sizeof(struct Node)) : NULL;
