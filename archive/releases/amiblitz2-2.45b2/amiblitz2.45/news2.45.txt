@@ -1,0 +1,724 @@
+AB2.45b2
+
+add feature to Ped that Menu "build help from include dir" scan too dirs in blitz:include.
+Feature add from Sven Dröge to Ped
+
+add the docu of jpeg.library to work as AB2 online Help and update the library file
+update help of vallib.
+Feature add from Blackbird
+
+when start amiblitz and lopad config F4 always the Main sourcewindow is activate
+
+all.res update
+
+cout macro work now in diffrent functions.
+
+UBYTE macro add.usefull if you want compare unsigned values(for example midi data) values
+and dont want change in signed notation.
+
+If (\status=!UBYTE{$90}) OR (\status=!UBYTE{$80})
+
+Macro fpuround_nearest
+Macro fpuround_zero
+Macro fpuround_smallest
+Macro fpuround_highest
+
+add to change roundcontrol of the FPU
+
+ab2.44b9
+
+bugfix compare constant to constant of constants betweeen 128 and 255 work now
+
+ped2.44b9
+
+when debug a program and click on a filebutton below ped dont crash now.
+change the screentitle now correct when a debug is end
+
+
+reddebug 2.65
+
+workaround for OS4 bug of wrong working move.l USP,a0
+with pre4 the debugger work now
+
+debuggingprocess use more stack now
+the size of the windows with large bottom borders is now correct draw
+
+reddebug 2.64
+
+bugfix depend on timingproblem when reddebug quit too fast (if few windows open)
+
+new feature in Menü project Trace log.all instructions done with step or trace are log in a console window.
+when you use kingcon on OS3.x or MOS you can save the content to file if you wish
+
+quit hard Menu remove.this dont work in older versions
+
+reddebug on own screen work now better
+
+CTR+ALT+C to stop program work system friendly with rawkeystate so it work on MOS too
+
+redraw problem fixed that at end or begin of file the line is repeat in source window
+
+2.44b7
+
+detachgtlist flush now all messages of the gadgets before do this to avoid crash on freegadgets
+
+Tooltype CURSORBLINKRATE add.With setting >0 you can choose the rate of cursor blinking in Ped
+
+added openurl and wizard library to deflibs.See davidsdeflibs.txt for numbers
+
+fixed a optimizer 1 Bug that happen with MuiCycle Command
+reddebug 2.63 show now control window correct if you use birdie or other windowborder tools
+
+2.44b6
+
+acidlibs fix gtgetstring work now with gttext Gadget.
+Add to all gadtools examples wbstartup
+
+2.44b5
+
+removed the change dir requester in ped.It is useless because it dont work correct in old blitz
+now when compile and run is the directory set that choose in create exe
+
+if you have problems let me know.
+
+add shortcuts for add some often used text
+
+CTRL+f  enter text in source
+                             function.l { }
+
+                             function return 0
+                             end function
+
+CTRL+n  enter text in source
+                             newtype .
+
+                             end newtype
+
+CTRL+e  enter text in source
+                             end if
+
+
+if no reqtools.library is here (used for debugger) then a warning is show (thanks Peter Thor for report)
+
+2.44b4
+
+pow ^ command have better accuracy on emulators which support no 80 bit fpu when fpu optimize is on
+
+old code was
+
+FLOGN.X FP1
+FMUL.X  FP2,FP1
+FETOX.X FP1
+
+much better rounding precision for pow() with this code:
+
+FLOG2.X FP1
+FMUL.X  FP2,FP1
+FTWOTOX.X FP1
+
+Peter Keunecke was so friendly and send me this better code snipped
+
+this testprog work now well with that code.but it is better to use integer when you need no floats
+
+res.l = res + (1 LSL (y-1) * Vallong(by$))
+
+optimize 7
+
+ x$ = "123456"
+ For y.l = 1 To 6
+  by$ = Mid$(x$,7-y,1)
+lab1
+  res.l = res + (2^(y-1) * Val(by$))
+  DefaultOutput
+  NPrint y," ",by$,"   ",res
+ Next
+MouseWait
+
+If you notice problems with that let me know.It shoulkd be 100% compatible
+
+ped bugfix of Demon's Report that with his ped.prefs no file can load in
+
+MOS fix for screentitle help and fontselect problem
+
+2.44b3
+
+reddebug 2.62.
+Now wait 2 sec and if screen cant close because of visitor windows bring closerequester 
+with shift+m you can show in mem window the mem at adress you have get by your last click to a var
+when show large values by click on a var the hex value is wrong because of val problem when no fpu is used
+
+new acidlibs system friendly bitmap commands
+
+systembitmap 1 switch that on.Now you can acsess blitz bitmaps with all commands that need a rastport
+so you can easy change old system unfriendly games with system friendly commands.The command BitmapRastport
+return the rastport.clipping is done in the bitmap Dimensions
+
+In deflibs the ttengine.library1 was wrong all the time.the convert from sfs file contain more entries than
+libarary really have
+
+IMPORTANT:when you use commands from that (TT_),you must save in ab2 with old deflibs,and load that ab2 in with new
+deflibs
+
+2.44b2
+
+jpeg/xpkmaster/render/asyncio libs add to deflibs.see davidsdeflibs.txt for numbers
+3d lib and screenshot add
+
+Bugfix with float when more than 6 parameters are use and this parameter must calculate
+
+debugger work now on own screen.it can open a own screen ab2debuggerscreen.
+vartrace work on local strings now
+
+new ttengine.library1.old have bugs
+
+2.43b40
+
+jump to function (left alt+click on function call name)bugfix and work now too over files
+If the file is not in,it is load and cursor is set to function.
+
+Backjump (lalt+mid Mousebutton)does not work yet,is more work,i think thats not need,because click on file below
+give too the position
+
+field command give error if a stringsize is not large enough.
+so no totalcrashs are possible dee to wrong files or load save order
+
+command eventvanillakey add.in a #IDCMP_RAWKEY you can do that
+
+case #IDCMP_RAWKEY
+select eventvanillakey
+
+case @"w"                   ;key w
+
+command setmenuverifyhandler add.So you are able to add own popup menues
+
+see in example prog menuverifytest.bb2 in guide
+
+command lastrunnerrsmode add.
+
+This choose the runerrsmode that was before a runerrsof command.usefull if runtimecheck should never
+possible in some code,but dont change the state global
+
+
+2.43b33
+
+constant div in functions is now done in float so nprint 3/5 show correct value
+reddebug 2.61.when debug windows cant fit the screen,debugger dont crash
+
+2.43b32
+
+reddebug 2.60.large macros can show in debugger max line size is increase to 1000
+
+compiler bugfix:
+A dc.l value in macro when build with runtimecheck get wrong values so cout macro dont work
+when runtimecheck is on.
+
+A "Intern optimizer 2 Stack error Please report line" Error is fixed thanks help from Thilo
+
+Thanks to Sven,he have modified the compiler GUI to look better.I use this now with little changes
+
+Also debugger settings Window work now fontsensitiv
+
+2.43b31
+
+macros are add now when build help from includesdir
+
+bugfix: sometimes the menustate of runtimechecking is wrong show
+
+reddebug2.59 You can now choose a font and most windows work fontsensitive and without size limit
+
+compiler options requester is now fontsensitve too.The runtime error options are still old way.
+
+Thanks a lot to Sven Dröge for his wz_table include which make it easy to do
+maximum object settings in table format with 2 Columns
+
+In acidlibs add:
+Rastport work without par now too and return rastport of used window
+Command count=textfit(str,xpos) add.This make it easy to find out in propfonts the correct clickpos
+Command fontheight=WinFontHeight add.returns the fontheight of the used window
+
+2.43b30
+
+more 6 pars work now with strings bugfix.Important use newest acidlibs
+readtype writetype support now string arrays in types
+
+use newest acidlibs from the beta 28
+
+2.43beta26
+
+acidlibs change the puddle size of alloc pooled from 2000 to 16384 increase speed of memfree/alloc by 8
+
+functions can now called too with or without returnpar
+
+functions can now have upto 10 stringpars
+
+show macros in the debugger
+
+source
+
+Macro test
+x=Peek.l(a)+b+c:q=q+4
+End Macro
+Macro test2
+x=Peek.l(`1)+`2+c:q=q+4:
+v=v*2:v=v*2:q=q+4:
+End Macro
+
+Macro test3
+r=Tags `1
+End Macro
+v=v+1
+Stop
+!test
+!test2 {par1,par2}
+!test3 {(10,20,40,40)}
+NPrint x
+
+show debugger 
+
+=> !test
+x=Peek.l(a)+b+c:q=q+4
+!test2 {par1,par2}
+x=Peek.l(par1)+par2+c:q=q+4:v=v*2:v=v*2:q=q+4
+!test3 {(10,20,40,40)}
+r=Tags (10,20,40,40)
+NPrint x
+
+Autoexit macro written from Thilo Koehler add to all.res
+!autoexit {mycode}
+
+This function is execute when your program reach the end or is exit from
+debugger
+
+2.43beta25
+
+smaller codesize with stringoptimizer
+added commamds UPrint UNPRint(acidlibs).Thats same as print but do it always unformatet
+debugger work now too when the format is change with format
+memloss fix in dynamic strings
+faster memlib thru double link lists.freeing stringmem blitzmem is about 10* faster on many strings allocs
+screen command now use correct color for boopsi gadgets
+wizardlib update.Better errorhandling and add command WZID.
+This give from the editor string the obj ID number
+
+
+2.43beta17
+
+bugfix of writetype readtype
+asyncreq bugfix
+
+2.43beta13
+
+Now esc work when string gadget is activate to close help/newtype window
+
+bugfix in prefs requester larger colorgadget,correct color set on open...
+
+Variable show in typebrowser.(need a compile of surce before)
+
+2.43beta12
+
+press help over \ list now the typestruct of a var declared by deftype
+
+If your source is not compile typewindow give out message in windowtitle
+
+Compile the file to see all
+
+This is necessary because types in your source can only show after compile
+If your source get a compile error,all newtypes compiled before the error
+can show
+
+Note: amiblitz and ped must be b12 or greater so ped can see the variables
+of amiblitz
+
+Palette problem fix 16 colors can set and select in truetype mode
+
+tooltype TokenBackPen add to set the background Pen of tokens
+This is disable by default in tooltypes.If you enable it you can choose with
+color 9 the color in prefs
+
+Keys for load window config F4 F5 F6 work now too when a stringgad is activate
+With tab key in all browser windows you jump to sourcecode window
+(work too when stringgad is activate)
+
+Now errorline in windowtitle is only show when a macro cause a compile error
+Hope this avoid crap window titles
+
+2.43beta11
+Fix a bad bug that can possible make memtrash when you build a debug build
+Fix syntax show in reddebug 2.58 (cause too enforcerhits)
+2.43beta10
+
+bugfixes in prefs requester when use diffrent screen font and better look
+in diffrent than topaz8 font.Thanks Mrod for lots of report
+
+colors can now set in prefs in 16/24/32 bit mode and source show immidiatly the results
+
+2.43beta8
+
+Add command usepath2.Work same as newpath,but you acsess type with \\
+uselastpath go back now 2 steps
+See example secondpath.bb for a testprog
+
+Show a more precise error report when @"asdl" is used and newsyntax mode
+is not on.
+
+bugfixes:
+Errorline in macro is show wrong
+If a include file cannot open in a nestet include,the file and sourcepos is
+now show corect
+Fix Bug when choose in prefs use wb color
+
+2.43beta7
+
+Bugfix in backfill.ab example work without layerpointer (OS4 crash here)
+correct
+
+Find requester is only async if you set Tooltype FIND_ASYNC in amiblitz
+
+Fix a bug that filenames longer 30 chars do wired effects in ped
+
+Fix a bug that the save window config does not activate label window
+in F4 config
+
+Fix a bug in Build help from includedir
+(type before function name does not add to browsfile.txt list)
+
+Add to includes dir tcpfuncs.bb2 and to examples tcp_example.bb2
+Thanks Lorence Lombardo for his Code
+
+Choose the menu Build help from include dir in ped to get online help support
+
+2.43beta5
+
+added bsdsocket lib to number 26 in deflibs.
+Add readtype writetype copytype cleartpye to support full string tree
+in types
+
+2.43beta4
+
+macro Bugfix in newsyntaxmode.Thanks to Steffen Nitz for example code
+!macro AND !macro fail because newsyntax mode think AND is parameter
+
+double float peek.d and poke.d work now
+Thanks to Steffen for report
+
+bugfix of optimizer 2.Thanks to Thilo for example code
+a.f=var.f+Val(a$) fail
+
+ped now compiled with no window borders
+
+warning message when no ted.library is in libs:dir
+
+2.43beta3
+
+ped change dir work now correct.
+Fix old BB2 bug that sometimes the default change when compile and run
+
+Screen instruction can now open CGX/P96 screen if depth >8 is set
+And they can return screenaddr and 0 if no screen is open
+
+Depth 9  open a 8 bit screen
+Depth 16 open a 16bit screen
+Depth 24 open a 24bit screen
+Depth 32 open a 32bit screen
+
+If depth is 0 then you can set in Viewmode a 32bit displayid
+(get from screenmoderequester)
+
+See the updatet guide of screen screentags command for more examples
+
+window command does now not support the last bitmap parameter
+for superbitmap windows.
+This dont work and cause only crashes if you use it,so its remove now
+
+ped Bugfix of clipboard single line
+
+updatet tklibs.res image_save help syntax fix.All sources updatet
+to compile with constant double error
+
+Note: the rawkey include is not necessary you can use the command
+rawkeystate in same way as !rawkey_test.And you save to add code for
+init and release
+
+2.43beta2
+
+CTRL+crsr right /left do tab untab block(same as golded)
+Please note:
+Only when no block is marked the instruction completion win is open
+
+Ped now use window borders with close/depth Gadget
+
+updatet usermacro and usermacro_ger guide. Thanks to blackbird for doing
+this.Note currently there is no rawkey in current tklibs.res,
+because this dont work on MOS or OS4 with USB.include this file manual for now
+
+Menupoint create executable absolut smallest add.This compile 5 times
+to strip out all functions that recursivly not used
+
+Paste lines that have odd character size in some apps work now
+
+On PPC OS all Ped browse windows work now (fix help all storm wizard gui)
+
+Type window go only to root type when you change file
+
+correct redraw of labelwindow when lines are changed and you select
+labelwindow
+clipboard fix when paste lines from YAM that are not black work now
+
+Tooltype SCROLLRATE add.Now you can set the fps per sec when scroll text.
+SCROLLRATE=36 is a good noflicker value when you have a 72 hz screen
+
+When ped show the filename in screentitle the Directory is show too
+
+protect for stringbufferoverflow on stringoperations without speedloss
+
+ngetcliptext increase now the stringbuffer if clipsize is larger than stringbuffer
+
+ability to set stringbuffer in program.
+See example dynamicstringbuffer.ab2
+
+move.l #200000,d0
+SysJsr $c603
+
+Set the stringbuffer to 200000
+
+moveq #0,d0
+sysjsr $c603
+
+Get the adress of the stringbufferpointer adrress in a0
+and size of stringbuffer in d0
+
+example:
+moveq #0,d0
+SysJsr $c603
+move.l (a0),a1
+move.b #"a",(a1)
+
+write a "a" to stringbuffer
+
+2.43beta1
+
+Systemconstant #__debug add.when you have runtimecheck on its -1
+otheriwse its 0
+
+Command WeekDay give now correct day of the week
+
+New fontsensitive async search requester.It is done with
+TUI(The GUI System from Thilo Koehler).See includes from his page
+
+You can debug subtasks.See in dir examples threaddemo.ab2
+
+You can debug in includes.reddebug 2.57 must be copy in blitz2:dbug and
+acidlibs copy to blitz2:
+Work too with older amiblitz
+
+
+!!!!!WARNING!!!!!!
+
+When you build a exe and in your first line stand DEBUG,all source of
+includes is add.So make sure dont spread this file
+
+New runtimecheck handling,work now over
+task Traps that can set for very task independent,
+so there can no problems occur if 2 or more AB2
+programs run.Old BB2 use the global 68k Trap vektors.
+
+Work also with older compilers
+acidlibs reddebug are compatible
+
+Debugger now support usepath when you click on types
+When you click on \ the requester still open to ask path so if the automatic
+go wrong this help
+
+auto help browser now work correct with tui_setbutton{ and others
+if no space between command and {
+
+Tooltype incdir add.You can choose a dir now to put your includefiles.
+INCDIR=blitz2:includes/
+
+open new open now a filerequester.If you dont want load
+click cancel or press esc
+
+load file under cursor try to load now in include dir if the file can not found
+
+added getashape to classic command highlight.It work only on Chipset screens
+
+fixed bug when paste from YAM or editpad empty lines are add at end
+
+Important Fix !!!!!
+
+fixed bug that in some selden situations a line in current source is lost
+when choose menu open new
+
+CTRL+click of current filebutton below sourcecode save if the file is changed
+ and create a exe
+ALT+CLICK save the source file if changed and compile and run
+
+Use this feature only if you have amiblitz2.43b1 or higher installed
+
+If you click on a filebutton that is not selectet.The current source
+is save then select the new source save the new source and compile or create exe.
+exe
+
+This make sense for example if you have change something in a include file
+Now you need only click on your main file and all is compiled well
+
+GetaShape add to classic Highlighting.It wont work on graphiccards
+
+2.42
+
+Bugfix of old Blitz Bug,sometimes no error message come if
+a constant and a label have same name
+
+Ped have below text shortbuttons that show first 9 chars of the filename
+of each file in ped.You can click on this to select the file.
+A * before name mean that file is modified
+
+enhanced error message of precedence stack overflow change to
+
+CNIF #lang=0
+   Dc.b "Precedence Stack Overflow",10
+   Dc.b "Increase Stack of AB2 Icon and your exe icon",0
+CELSE
+   Dc.b "Vorrausgehender Stack überlauf",10
+   Dc.b "Erhöhe den Stack vom AB2 Icon und dem exe icon",0
+CEND
+
+Fix of optimizer "if function{} then "that produce sometimes wrong code
+Fix of optimizer "if floatval then"
+
+Add comand in brexxlib rawkeystate rawqualifier,can use to
+check keys and mouse in OS friendly way. Should work on PPC OS
+
+Add check for scriptbit that online guide can work
+
+added new gadtools lib from David (fix gtcycle Bug)
+
+fixed Bug in standardeditmode
+when ped scroll horizontal and press return (Report from Demon)
+
+You can build automatic commandline help for your
+bb2(for example stats&funcs.bb2) files that contain functions and statements
+
+To do this copy this files in dir blitz2:includes or choose one with the
+tooltype incdir="myincludedir"
+
+include and xinclude statements search last
+before they give error in this dir
+
+choose Menu edit->Build help from includedir
+
+Now a file is build browsefile.txt in blitz2: dir
+
+This file is used by ped to support help
+Now if press help over such a command give the commandline help.
+
+when you press help there also popup a window below code which close
+with cursor up down or esc.It show the filename in which the function is
+If direct after the function is
+;% help
+
+All lines are show then too
+To see in praxis type the command  ahi_bytes2samps and press help
+
+also it is possible that you build amiga guide help.
+To do this add the text in usermacros.guide or usermacrosgerman.guide
+
+I currrently dont add feature that this win close when do mousemove,
+i think so it is more usefull.But if you want it close by mousemove let me
+know,i add then a option.Also other ideas are welcome
+
+With CTRL+right cursor you can open instruction helper for command
+completion below cursor
+
+To see the browsefile.txt help in Instructionbrowser press the toggle button
+incdir
+
+acidlibs bugfix
+allocmem is 8 byte allign(some chipset modes need this)
+editlib  edit commands dont give error if no Blitz window is,open
+         because it should be possible that you write programs
+         without blitzwindows
+menulib  fixed harmless enforcer hit on menutitles with string ""
+
+deflibs bugfix
+
+nclipboardlib bugfix some tst.l are forget after OS call to fix OS4 Problems
+
+NOTE:I think the Coder of nlib dont know that RKM say dont assume
+     on correct flags
+     so all nlibs have this problem.If your program should run on OS4
+     avoid nlibs.I have no source of other nlibs to fix it
+
+If you get token not found $d505 then you not use this new acidlibs
+because getd0 from wizard.obj is now intern mapped
+to $d505 token (in editlib).This avoid load of wizard.library
+and 30 kb memsave if you dont need it
+(Thilo includes use this)
+
+This acidlibs file work also on older AB2 and BB2 correct
+
+ped and debugger work better with fonts diffrent topaz 8
+New ped menus in edit
+Choose file and add to code ->open a filerequester and add the filename
+                              to source
+Load file under cursor      ->load the file under the cursor into new ped
+                               window
+Example
+
+include "myinclude" when cursor is between the " load the file myinclude in
+
+Show in last line filebuttons which can click to switch to file in ped
+
+Error of compiler in include now load the file and position cursor on that line
+
+IMPORTANT BUGFIX: New System friendly compile progressbar add because
+old BB2 code trash memory at end of Z3 mem when you use a screen >800*600*32bit
+
+fixed old ted random crash when choose a font
+
+global variables add
+
+Command
+SHARED out of a funktion do that.See in examples dir sharedtest.bb2
+
+debugger have now a bubblehelp.click in source window on a expression
+calc this expression.This string is then the default for add variable
+and eval Requester so you can add or change fast
+
+Faster source win and disasm redraw
+
+s and d key for step or step over have autorepeat.As long you press
+the debugger execute steps.
+
+
+2.41
+
+New acidlibs:
+
+New command readline$ add.See example that print user-startup
+Most it is used to parse bb2 source on which edit$ fail due to missed
+$0a and $0d
+
+bugfix in eventdoubleclick
+read a line of text from a file in the string very fast
+
+horizontal scroll work on PPC OS
+
+ped do highlight commands that are classic only
+
+To select the colors easy:
+Load a source
+choose menu prefs
+select a 8 bit screen 16 color or more
+new select use
+Now you see in realtime in your source,when you change the colors of highlighting
+Now change to your desired 16 24 32 bit screen you want
+
+Systemconstant #__include
+If the file is include from another file it is set to 1.
+This is need for new thilo includes to run automatic the demo,when
+you compile and run the include standalone
+
+cnif @#test. @ is indicator that say that if #test is not define
+give no compiler error and let it 0.If #test is set than it is 1
+Same as the C  IFDEF check

@@ -1,0 +1,19 @@
+Short:        AmiBlitz 2.42 full distribution
+Author:       Acidsoft /Red When Excited /berndroesch1@compuserve.de
+Uploader:     Cj-Stroker web de
+Type:         dev/blitz
+Version:      2.42
+Replaces:     All older Versions
+Requires:     http://www.amiforce.de
+Architecture: m68k-amigaos
+Distribution: Aminet
+
+*** Important, for updates check: http://www.david-mcminn.co.uk/bernd ***
+
+This is version 2.42 of AmiBlitz, BlitzBasic "gpl`ed". It is a stable release,
+but not the most recent. The most recent version can be downloaded from the 
+site mentioned above. There is documentation in this archive describing 
+everything and it can be installed using the installer script.
+
+For lots of Blitz related material(source code, documentation etc.) check
+http://www.blitz-2000.co.uk and http://www.amiforce.de
