@@ -381,6 +381,23 @@ static void tocfuncs(int from, int to)
     }
 }
 
+/* CDVolume volume,fade; with a device open the request is checked for the
+   BUG(orig) (#982): CDVolume puts the volume into io_Length and the fade time
+   into io_Offset, the reverse of cd.device's CD_ATTENUATE (io_Offset = volume,
+   io_Length = fade in frames); both builds send the swapped fields */
+static void volume(ULONG vol, ULONG fade)
+{
+    ULONG n0[2] = { last[0].n, last[1].n };
+
+    CALL2(VOLUME, "CDVolume", vol, fade);
+    for (cur = 0; cur < 2; cur++)
+        if (last[cur].n > n0[cur]) {
+            check("CDVolume: CD_ATTENUATE", last[cur].cmd == 44);
+            check("CDVolume: io_Length is the volume (BUG(orig), #982)", last[cur].len == vol);
+            check("CDVolume: io_Offset is the fade (BUG(orig), #982)", last[cur].off == fade);
+        }
+}
+
 /* every command; with a device open the CD commands, else 0 */
 static void commands(const char *what)
 {
@@ -405,9 +422,9 @@ static void commands(const char *what)
     CALL2(PLAY, "CDPlayTrack", 3, 2);
     CALL0(STOP, "CDStop");
     sprintf(VEC, "%s 200,75", what);
-    CALL2(VOLUME, "CDVolume", 200, 75);
+    volume(200, 75);
     sprintf(VEC, "%s 0x7fff,0", what);
-    CALL2(VOLUME, "CDVolume", 0x7fff, 0);
+    volume(0x7fff, 0);
     updateinfo();
     qcode();
 }

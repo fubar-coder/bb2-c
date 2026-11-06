@@ -76,6 +76,11 @@ d1/d2 (CDTrackLength) are not reproduced.
   only, the index is the whole word, the high bytes of d0 stay in the
   result; no limit. They and `CDTrackPlaying` do not check for an open
   device. (#586)
+* `CDVolume volume,fade` sends CD_ATTENUATE with the volume in `io_Length`
+  and the fade time in `io_Offset`; cd.device wants it the other way round
+  (`io_Offset` = volume, `io_Length` = fade in frames), so
+  `CDVolume 32767,0` asks for silence with a fade of 32767 frames. The
+  library test checks the swapped fields in both builds. (#982)
 
 **Test** (`libs/tests/rwe/ricompactdisclib.c`, snitch case "rwe
 ricompactdisclib"): C build and reference build side by side, each with

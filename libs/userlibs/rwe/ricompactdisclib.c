@@ -44,6 +44,8 @@
  *   - OpenCD while open: the old request stays open, lost.  If OpenDevice
  *     fails the request is deleted but stays in ioreq, and OpenCD returns
  *     d0 of DeleteIORequest (not 0) (#578, #575).
+ *   - CDVolume volume,fade puts the volume into io_Length and the fade into
+ *     io_Offset, the reverse of cd.device's CD_ATTENUATE (#982).
  *   - CDStop (also in CloseCD) is AbortIO only: no WaitIO, and it sets
  *     io_Command of the request first (#574).
  *   - CDPlayTrack with scsiflag ignores its arguments: it plays the
@@ -529,7 +531,10 @@ ULONG BLITZ_ROUTINE c_gettoc(void)
     return (ULONG)-1;
 }
 
-/* CDVolume volume,lengthoffade: CD_ATTENUATE */
+/* CDVolume volume,lengthoffade: CD_ATTENUATE.
+   BUG(orig) (#982): volume goes into io_Length and the fade time into
+   io_Offset, the reverse of cd.device (io_Offset = volume, io_Length =
+   fade in frames). */
 ULONG BLITZ_ROUTINE c_cdvolume(ULONG vol BL_REG(d0), ULONG fade BL_REG(d1))
 {
     if (!cd.flag)
