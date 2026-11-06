@@ -1,0 +1,46 @@
+description: Blitz OS - pages of boxes (buttons, string boxes, props, lists, views and drag boxes) on a bitmap, worked with joystick, keys and mouse in Blitz mode.
+intro: |
+  Blitz OS gives a Blitz mode program a simple user interface of its
+  own, drawn into a bitmap with the drawing commands of Blitz mode. A
+  *page* is a Blitz object, numbered from 0, that holds a number of
+  *boxes*. `InitPage` makes a page for a bitmap, `AddBox` defines each
+  box, `RedrawPage` draws them, and `BlitzEvent`, called in the main
+  loop, lets the user work them with the joystick, the cursor keys, the
+  keyboard and the mouse.
+
+  ```blitzbasic
+  InitPage 0,0,3
+  AddBox 0,0,10,10,80,16,2,"Start"
+  AddBox 0,1,10,30,80,16,2,"Quit"
+  RedrawPage
+  SelectBox 0
+  Repeat
+    VWait
+    e=BlitzEvent
+  Until e=-1 AND BoxSelected=1
+  ```
+
+  The `type` of `AddBox` is the kind of box times 2, plus 1 for a bevel
+  drawn the other way round:
+
+  | Kind | Box |
+  |---|---|
+  | 0 | view: shows a part of a bitmap, or lines printed with `BoxPrint` |
+  | 1 | button; a text with several parts separated by `\|` makes it step through them |
+  | 2 | string box, for typing a text after the prompt given as text |
+  | 3 | prop, a knob moved horizontally, vertically or both |
+  | 4 | shape or display box |
+  | 5 | list |
+  | 6 | drag box, which the user can move |
+
+  `BlitzEvent` returns -1 when a button was clicked, 1 when a box was
+  activated, 2 when a prop knob or a drag box moved, and 0 otherwise.
+  Return works as the fire button; left Alt with left Amiga and right
+  Amiga with right Alt work as the mouse buttons. The mouse needs
+  `Mouse On`.
+
+  The commands that name only a box work on the used page, the one made
+  or used last. A page that is not made is the error "UnInitialised
+  Page", a box beyond the page's number of boxes "Illegal Box# For
+  Page"; these checks are always on. Most commands that change a box do
+  not draw it; `RedrawBox` does.

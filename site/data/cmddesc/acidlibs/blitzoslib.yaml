@@ -1,0 +1,74 @@
+"Page":
+  text: The object of a page of boxes, as the introduction describes.
+"InitPage":
+  text: Makes a page of `NumBoxes` empty boxes that draws into the bitmap `BitMap#`, and makes it the used page. Old boxes of the page are freed.
+"FreePage":
+  text: Frees the boxes of a page.
+"SetPagePens":
+  text: The colours of a page, `c0` dark, `c1` light, `c2` the middle colour of the boxes and `c3` the text. `InitPage` sets 1, 3, 2 and 1, not the defaults the help text names.
+"AddBox":
+  text: Defines box `Box#` of a page at `x,y`, `w` by `h` pixels, of the `type` the introduction describes. With `text$`, a button or view shows the text and a string box gets it as its prompt; with two shapes, a button shows a shape from the first to the second, chosen by its value.
+  notes: |
+    The box is not drawn. A string box needs room for its prompt, else
+    this is the error "No Room For String". Kept from the original: a
+    string box from 8 to 15 pixels wide overwrites memory
+    ([#84](https://github.com/fubar-coder/bb2-c/issues/84)).
+"SetBoxTitle":
+  text: Gives a box a new text, as `AddBox` with a text does. The box is not drawn.
+"SetBox":
+  text: Sets the value of a box, which of its texts or shapes it shows; a negative value counts from the end. For a prop box, `xprop,yprop` set the position of the knob, from 0 to 1. The box is not drawn.
+  notes: |
+    A value beyond the box's number of texts is the error "Value Out of
+    Range"; the prop form on another box "Not a Prop Box".
+"ChangeBox":
+  text: As `SetBox` with a value, for a box of the page given.
+"SetBoxString":
+  text: Puts a text into a string box, after its prompt. The box is not drawn.
+"SetBoxColor":
+  text: Sets the background colour of a box and draws it.
+"ToggleBox":
+  text: Turns the bevel of a box the other way round. The box is not drawn.
+"DisableBox":
+  text: Disables a box; it is drawn plain and cannot be selected. The box is not drawn.
+"EnableBox":
+  text: Enables a disabled box again. The box is not drawn.
+"BoxValue":
+  text: The value of a box of the used page, or of the page given.
+"BoxString":
+  text: The text typed into a string box, without the spaces at its end, of the used page or of the page given.
+  notes: |
+    Kept from the original: an answer of only spaces reads beyond the
+    box's text ([#85](https://github.com/fubar-coder/bb2-c/issues/85)).
+"BoxPropX":
+  text: The horizontal position of the knob of a prop box.
+"BoxPropY":
+  text: The vertical position of the knob of a prop box.
+"BoxSelected":
+  text: The number of the selected box of the used page.
+"RedrawPage":
+  text: Draws all boxes of the used page.
+"RedrawBox":
+  text: Draws a box of the used page.
+"BoxShow":
+  text: Shows in a view box the part of `Bitmap#` from `x,y` on; with `dx,dy`, moves that part by so many pixels.
+"BoxPrint":
+  text: Prints `String$`, or line `Line` of a text in bank `Bank#`, into a view box. A box of one line scrolls it to the left; a higher box scrolls up by one line and prints into its last line.
+  notes: |
+    Kept from the original: the bank form changes the bank, writing a 0
+    over the end of the line printed
+    ([#87](https://github.com/fubar-coder/bb2-c/issues/87)).
+"SelectBox":
+  text: Selects box `Box#` and draws it and the box selected before; `0,x,y` selects the box at `x,y`, and `x+,y+` the nearest box in that direction from the selected one.
+"DeSelectBox":
+  text: Draws the selected box as not pressed and ends typing, moving a knob or dragging.
+  notes: |
+    Kept from the original: the box stays the selected one
+    ([#94](https://github.com/fubar-coder/bb2-c/issues/94)).
+"ActivateSelectedBox":
+  text: Activates the selected box, as pressing fire does; a string box starts taking text, a prop box its knob, a drag box dragging.
+"BlitzEvent":
+  text: Handles the input of the user on the used page once and returns what happened, as the introduction describes. Call it once per frame.
+"SpotBox":
+  text: The box the mouse pointer was over at the last `BlitzEvent`.
+"MouseEnabled":
+  text: True while `BlitzEvent` follows the mouse, after it moved; the joystick or the cursor keys switch back to the selection by direction.
