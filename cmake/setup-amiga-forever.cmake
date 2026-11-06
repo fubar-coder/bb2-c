@@ -21,9 +21,9 @@
 # written as NAME.part beside the target and renamed when it is right.
 # Files in DEST that already have the expected contents stay untouched.
 #
-# Results (the a500 machine's configuration, a500.uae, uses the 1.3 ones;
-# the 3.1 ones are for the a1200 and a600, which still use AmigaOS 3.2,
-# TODO.md):
+# Results (the configurations of the machines use them: a500.uae the 1.3
+# ones, default.uae and a600.uae the 3.1 ones, the RTG variant
+# workbench-311-rtg.hdf):
 #   amiga-os-130.rom        Kickstart 1.3 (34.5), encrypted
 #   rom.key                 Amiga Forever's key of the encrypted ROMs
 #   workbench-135.hdf       Workbench 1.3.5: RDB hardfile (FFS in the RDB),

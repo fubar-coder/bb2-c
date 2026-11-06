@@ -21,7 +21,7 @@
 #                                           a1200 default, a500 = 68000
 #                                           with Kickstart 1.3,
 #                                           a500-68010, a600 = 68000
-#                                           with Kickstart 3.2); on Kickstart
+#                                           with Kickstart 3.1); on Kickstart
 #                                           1.x the compiler and the
 #                                           program run there too (no
 #                                           gate, no @INJECT@/@WBRUN@:

@@ -12,34 +12,54 @@ tests are skipped (return value 77). How the test runs use the emulator:
 Amiberry ≥ 8.4 in `PATH`. The configurations of the machines below were
 taken from Amiberry 8.5.0.
 
-## Machine a1200 (default): Kickstart 3.2, AGA
+## Machine a1200 (default): Kickstart 3.1, AGA
 
-For the emulator tests, a Kickstart ROM and two hardfiles are stored in
-`amiga-emulation/`:
-
-| File | Contents | Size | SHA-256 (as of 2026-10-27) |
-|---|---|---|---|
-| `A1200.47.115.rom` | Kickstart 3.2 (47.115), A1200 | 524288 | `27ddaf0a460e2ee85935139cbac1df234c283b3979c50526d118e9a55c61100a` |
-| `Workbench_OS3.2-AB3-AGA.hdf` | AmigaOS 3.2, Workbench native (PAL HighRes Laced, 256 colors) – default | 67108864 | – |
-| `Workbench_OS3.2-AB3.hdf` | AmigaOS 3.2, Workbench on RTG (uaegfx, 1680×1050) | 67108864 | – |
-
-Everyone has set up the hardfiles themselves, so there is no checksum for
-them; they only have to meet the conditions below.
+The a1200 (and the a600, below) run on Amiga Forever 11's Kickstart 3.1
+and Workbench 3.1, the reference set of the emulator tests. The setup
+from Amiga Forever (next section) stores them in `amiga-emulation/`:
+`amiga-os-310-a1200.rom` (Kickstart 40.68, encrypted, with `rom.key`),
+`workbench-311.hdf` (the Workbench on the native screen, the default) and
+`workbench-311-rtg.hdf` (the same with the uaegfx monitor).
 
 ### Configuration
 
 `tools/lib/amiga_emulation/default.uae` is the default configuration
-(A1200, AGA, 68020/68882, 8 MB chip, 128 MB Z3 fast, the AGA image).
+(A1200, AGA, 68020/68882, 8 MB chip, 128 MB Z3 fast, `workbench-311.hdf`).
 Tests change it only by key=value differences. The RTG variant:
 
 ```
 gfxcard_size=16
 gfxcard_type=ZorroIII
-hardfile2 / uaehf0: Workbench_OS3.2-AB3.hdf instead of Workbench_OS3.2-AB3-AGA.hdf
+hardfile2 / uaehf0: workbench-311-rtg.hdf instead of workbench-311.hdf
 ```
 
 TED can only be tested with the AGA variant (on RTG its bitplanes would be
 in graphics card memory, where the blitter cannot reach them).
+
+### What the tests bring along
+
+Nothing is installed on the Workbench besides `S:User-Startup`; what a
+test needs beyond Workbench 3.1, it brings itself:
+
+* AmiBlitz3 v3.14.0 (`ab3_cli_ref`, `ab3_tokenise`) opens its
+  `ab3pft.library`: fetched with the other AmiBlitz3 files
+  (`cmake/fetch-originals.cmake`, the AmiBlitz3 repository, Apache-2.0)
+  and copied to the test's `Blitz3:Libs`, which AmiBlitz3 adds to `LIBS:`.
+* The TED A/B scripts type umlauts with the German keymap: `tedprobe`
+  (gate 0) makes `DEVS:Keymaps/d` the default keymap of the session.
+
+### Another Kickstart or Workbench
+
+A Kickstart 3.2 ROM and a Workbench 3.2 hardfile (also `DOS\5`) work as
+well, in an emulation directory of their own (`AMIGA_EMULATION_DIR`,
+below) under the names above and with the conditions below; they are not
+needed. Some results depend on the system and expect 3.1 there: the
+Kickstart version the `amiga_emulation_*` tests check (40), the
+executables of `corpus_cd`'s table that use float constants (the compiler
+evaluates them with the ROM's `mathffp.library`, whose last bit differs
+between Kickstart 3.1 and 3.2: `LINE_TORUS*`), the volume name `Ram Disk`
+and the float results of `mathtrans.library` in AmiBlitz3's test programs
+(their expect files allow both).
 
 ## Setup from Amiga Forever 11
 
@@ -54,13 +74,8 @@ cmake --preset amiga && cmake --build --preset amiga      # builds hdftool
 cmake -DAMIGA_FOREVER=/run/media/$USER/AmigaForever -P cmake/setup-amiga-forever.cmake
 ```
 
-It is the way to set up the a500 machine (below), whose configuration
-uses these files. The Workbench 3.1 files are made for the a1200 and a600
-as well, but those machines still use the AmigaOS 3.2 files above: on
-Workbench 3.1 as Amiga Forever ships it, part of the emulator tests fail
-for lack of software the 3.2 hardfiles have (AmiBlitz3's
-`ab3pft.library`, fonts such as `helvetica.font`, further libraries;
-TODO.md).
+It sets up all machines: the a1200 and a600 (Kickstart and Workbench 3.1)
+and the a500 (Kickstart 1.3, Workbench 1.3.5).
 
 `AMIGA_FOREVER` is the medium or installation (a directory with
 `Amiga Files/Shared`, `Shared`, or directly `rom/` and `hdf/`); it is only
@@ -168,8 +183,9 @@ changed ROM or hardfile that is not noticed), `amiga_run
   run until the time limit – also by system programs: `ShowConfig` writes
   to `SYS:` and therefore hangs (checked 2026-10-27). Tests write only to
   `TEST:` or `RAM:`.
-* **Format:** raw images of one partition (`DOS\5`, no RDB, no container
-  like VHD), with the geometry of the `hardfile2` line (32 sectors per
+* **Format:** raw images of one partition (`DOS\3` for Workbench 3.1,
+  which Kickstart 3.1's FFS in the ROM mounts; no RDB, no container like
+  VHD), with the geometry of the `hardfile2` line (32 sectors per
   track, 1 surface, 2 reserved blocks, 512-byte blocks).
 * To change an image: start with a separate, writable configuration, or
   change it on the host with a tool that reads Amiga hardfiles (`hdftool
@@ -229,7 +245,7 @@ setup from Amiga Forever (above) makes them.
   a short script in about 14 s; `TEST:` (uae filesystem, directory mount)
   works under Kickstart 1.3, also writing, `MakeDir`, `Copy`.
 
-## A600 machine (68000, Kickstart 3.2)
+## A600 machine (68000, Kickstart 3.1)
 
 The machine `a600` (`--machine a600`, pass file `machine=a600`, bug-orig
 header `; @machine a600`) is for bugs that only show on a 68000 (address
@@ -241,11 +257,9 @@ with 24-bit addressing, not cycle-exact, `chipmem_size=4` (2 MB chip),
 `bogomem_size=4` (1 MB slow memory), no fast memory and no RTG card.
 Amiberry 8.5.0 crashes at the start with 8 MB of Zorro II fast memory
 together with a Zorro II RTG card, in `clear_bank()`
-(`src/expansion.cpp`; reported as `BlitterStudio/amiberry#2585`). It boots the a1200's Workbench 3.2 hardfile
-read-only.
-
-| File | Contents | Size | SHA-256 (as of 2026-10-31) |
-|---|---|---|---|
-| `CDTVA500A600A2000.47.115.bin` | Kickstart 3.2 (47.115), A500/A600/A2000/CDTV | 524288 | `2f48c3991748f4d812f1c0d13a99581cc17a058261d73856aee9bafda2d07fee` |
+(`src/expansion.cpp`; reported as `BlitterStudio/amiberry#2585`). It
+boots the a1200's `workbench-311.hdf` read-only, with
+`amiga-os-310-a600.rom` (Kickstart 40.63, A500/A600/A2000) of the setup
+from Amiga Forever.
 
 Without the ROM the a600 part of `amiga_emulation_a500` is skipped.

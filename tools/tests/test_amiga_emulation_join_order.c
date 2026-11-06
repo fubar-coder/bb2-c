@@ -145,7 +145,7 @@ int main(void)
     CHECK(log && strstr(log, " saved ") && strstr(log, "job started") && strstr(log, "done"));
     free(log);
     v = read_text(amiga_emulation_test_dir(b), "version.txt");
-    CHECK(v && strstr(v, "Kickstart 47"));
+    CHECK(v && strstr(v, "Kickstart 40"));
     free(v);
     fprintf(stderr, "test_amiga_emulation_join_order: first joined after %.1f s, the second's "
             "session %.1f s\n", joined_a, st.session);

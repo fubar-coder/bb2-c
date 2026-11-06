@@ -141,7 +141,7 @@ struct amiga_emulation_params {
     const char *machine;        /* NULL or "a1200": default.uae; "a500":
                                    a500.uae (68000, Kickstart 1.3);
                                    "a500-68010": a500.uae with a 68010;
-                                   "a600": a600.uae (68000, Kickstart 3.2) */
+                                   "a600": a600.uae (68000, Kickstart 3.1) */
     const struct amiga_emulation_option *changes;   /* to the machine's template */
     size_t nchanges;
     const struct amiga_emulation_mount *mounts;     /* besides TEST: */
@@ -407,7 +407,7 @@ int amiga_emulation_check_rom(const char *rom, char *err, size_t errlen);
 int amiga_emulation_machine_known(const char *name);
 
 /* the version of the Kickstart (exec) of machine name (NULL: the
-   default), e.g. 34 = 1.3, 47 = 3.2; 0 = unknown machine.  Below 36 the
+   default), e.g. 34 = 1.3, 40 = 3.1; 0 = unknown machine.  Below 36 the
    scripts need AmigaDOS 1.3 syntax (tools/lib/amiga_emulation/README.md, "Machine a500") */
 int amiga_emulation_machine_kickstart(const char *name);
 

@@ -127,7 +127,7 @@ of the booted system, taken when the system waits for its job (about
     `floppyN`, `cdimageN`, the image of every `hardfile2` line – and of
     `rom.key` beside the ROM and of the Amiberry program: real path,
     device, inode, size, modification time. Not a hash of the content:
-    the hardfiles have 64 MB each, which would cost every session more
+    the hardfiles have several MB each, which would cost every session more
     time than the restore; a change through the file system changes the
     time, a copy the inode;
   * the prologue, the waiter and a version of the library's way of

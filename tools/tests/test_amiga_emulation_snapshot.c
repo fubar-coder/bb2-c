@@ -168,7 +168,7 @@ static int session(const char *name, const char *emu, int cold, enum amiga_emula
     ok = ok && s && !strncmp(s, "read-only", 9);
     free(s);
     s = read_text(test, "version.txt");
-    ok = ok && s && strstr(s, "Kickstart 47");
+    ok = ok && s && strstr(s, "Kickstart 40");
     free(s);
     /* TEST:run.script is the test's script, as without snapshot */
     s = read_text(test, "run.script");
@@ -244,7 +244,7 @@ static int copy_file(const char *src, const char *dst)
    a copy of the hardfile (another identity, the same content) */
 static int changed_emulation_dir(char *emu, size_t len)
 {
-    static const char *const links[] = { "A1200.47.115.rom", "rom.key" };
+    static const char *const links[] = { "amiga-os-310-a1200.rom", "rom.key" };
     const char *src = getenv("AMIGA_EMULATION_DIR");
     char from[600], to[600];
     size_t i;
@@ -260,8 +260,8 @@ static int changed_emulation_dir(char *emu, size_t len)
         if (!access(from, F_OK) && symlink(from, to))
             return -1;
     }
-    snprintf(from, sizeof from, "%s/Workbench_OS3.2-AB3-AGA.hdf", src);
-    snprintf(to, sizeof to, "%s/Workbench_OS3.2-AB3-AGA.hdf", emu);
+    snprintf(from, sizeof from, "%s/workbench-311.hdf", src);
+    snprintf(to, sizeof to, "%s/workbench-311.hdf", emu);
     return copy_file(from, to);
 }
 
@@ -326,7 +326,7 @@ int main(int argc, char **argv)
     CHECK(slot_clean());
     free(log);
     /* the copy's modification time changed: again */
-    snprintf(path, sizeof path, "%s/Workbench_OS3.2-AB3-AGA.hdf", emu);
+    snprintf(path, sizeof path, "%s/workbench-311.hdf", emu);
     CHECK(utimensat(AT_FDCWD, path, old, 0) == 0);
     snprintf(before, sizeof before, "%s", name);
     CHECK(session("mtime", emu, 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs) == 1);

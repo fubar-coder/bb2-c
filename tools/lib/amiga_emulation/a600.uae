@@ -6,14 +6,15 @@
 ; A600 (Gayle, IDE, PCMCIA), ECS, 68000 with 24-bit addressing, not
 ; cycle-exact, 2 MB chip (chipmem_size=4), 1 MB slow (bogomem_size=4), no
 ; fast memory (Zorro II fast RAM together with a Zorro II RTG card crashes
-; Amiberry 8.5.0 at the start), Kickstart 3.2 (47.115, the A500/A600/A2000
-; ROM), the Workbench 3.2 hardfile of the a1200, read-only.
+; Amiberry 8.5.0 at the start), Kickstart 3.1 (40.63, the A500/A600/A2000
+; ROM, Amiga Forever's amiga-os-310-a600.rom), the Workbench 3.1 hardfile
+; of the a1200, read-only.
 config_hardware=true
 config_host=true
 config_version=8.5.0
 use_gui=no
 use_debugger=false
-kickstart_rom_file=@EMULATION_DIR@/CDTVA500A600A2000.47.115.bin
+kickstart_rom_file=@EMULATION_DIR@/amiga-os-310-a600.rom
 pcmcia_mb_rom_file=:ENABLED
 ide_mb_rom_file=:ENABLED
 flash_file=
@@ -116,8 +117,8 @@ fpu_strict=false
 debug_mem=false
 log_illegal_mem=false
 kbd_lang=us
-hardfile2=ro,DH0:@EMULATION_DIR@/Workbench_OS3.2-AB3-AGA.hdf,32,1,2,512,0,,uae0
-uaehf0=hdf,ro,DH0:@EMULATION_DIR@/Workbench_OS3.2-AB3-AGA.hdf,32,1,2,512,0,,uae0
+hardfile2=ro,DH0:@EMULATION_DIR@/workbench-311.hdf,32,1,2,512,0,,uae0
+uaehf0=hdf,ro,DH0:@EMULATION_DIR@/workbench-311.hdf,32,1,2,512,0,,uae0
 input.config=0
 input.joymouse_speed_analog=25
 input.joymouse_speed_digital=10

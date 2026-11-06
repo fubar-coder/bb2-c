@@ -130,7 +130,7 @@ static void snapshot_config(void)
     /* the ROM and the hardfile by their real paths: two emulation
        directories with links to the same files give the same text */
     {
-        static const char *const files[] = { "A1200.47.115.rom", "Workbench_OS3.2-AB3-AGA.hdf" };
+        static const char *const files[] = { "amiga-os-310-a1200.rom", "workbench-311.hdf" };
         char dir[] = "/tmp/amiga-emulation-snapreal-XXXXXX", path[160], link[160], real[160];
         char *a, *b;
         size_t i;
@@ -164,7 +164,7 @@ static void snapshot_config(void)
         free(b);
         /* broken: missing files stay as they are */
         a = amiga_emulation_snapshot_config(&p, "/emu", "/slots/slot-3", err, sizeof err);
-        CHECK(a && lines_equal(a, "kickstart_rom_file=/emu/A1200.47.115.rom") == 1);
+        CHECK(a && lines_equal(a, "kickstart_rom_file=/emu/amiga-os-310-a1200.rom") == 1);
         free(a);
         for (i = 0; i < 2; i++)
             for (k = 0; k < 3; k++) {
@@ -201,7 +201,7 @@ static unsigned long long key_of(const struct amiga_emulation_params *p, const c
    missing file is a key of its own */
 static void snapshot_key(void)
 {
-    static const char *const files[] = { "A1200.47.115.rom", "Workbench_OS3.2-AB3-AGA.hdf",
+    static const char *const files[] = { "amiga-os-310-a1200.rom", "workbench-311.hdf",
                                          "rom.key", "amiberry", "cd.iso" };
     char dir[] = "/tmp/amiga-emulation-snapkey-XXXXXX", path[5][96], tmp[110], err[200], *cfg;
     struct amiga_emulation_mount mounts[] = { { "CD", "/data/cd", 0 }, { "W", "/data/w", 1 } };
@@ -673,8 +673,8 @@ int main(void)
     cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
     CHECK(cfg != NULL);
     CHECK(cfg && !strstr(cfg, "@EMULATION_DIR@"));
-    CHECK(cfg && lines_equal(cfg, "kickstart_rom_file=/emu/A1200.47.115.rom") == 1);
-    CHECK(cfg && lines_equal(cfg, "hardfile2=ro,DH0:/emu/Workbench_OS3.2-AB3-AGA.hdf,32,1,2,512,0,,uae0") == 1);
+    CHECK(cfg && lines_equal(cfg, "kickstart_rom_file=/emu/amiga-os-310-a1200.rom") == 1);
+    CHECK(cfg && lines_equal(cfg, "hardfile2=ro,DH0:/emu/workbench-311.hdf,32,1,2,512,0,,uae0") == 1);
     CHECK(cfg && lines_equal(cfg, "filesystem2=rw,DH1:TEST:/run/test,0") == 1);
     CHECK(cfg && lines_equal(cfg, "uaehf1=dir,rw,DH1:TEST:/run/test,0") == 1);
     CHECK(cfg && lines_equal(cfg, "use_gui=no") == 1 && lines_equal(cfg, "sound_output=interrupts") == 1);
@@ -701,14 +701,14 @@ int main(void)
     cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
     CHECK(cfg && lines_equal(cfg, "gfxcard_size=16") == 1 && lines_equal(cfg, "gfxcard_type=ZorroIII") == 1);
     CHECK(cfg && key_lines(cfg, "hardfile2") == 1
-          && lines_equal(cfg, "hardfile2=ro,DH0:/emu/Workbench_OS3.2-AB3.hdf,32,1,2,512,0,,uae0") == 1);
+          && lines_equal(cfg, "hardfile2=ro,DH0:/emu/workbench-311-rtg.hdf,32,1,2,512,0,,uae0") == 1);
     free(cfg);
 
     /* the machines: a1200 is the default; a500 has its own template */
     p.nchanges = 0;
     p.machine = "a1200";
     cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
-    CHECK(cfg && lines_equal(cfg, "kickstart_rom_file=/emu/A1200.47.115.rom") == 1);
+    CHECK(cfg && lines_equal(cfg, "kickstart_rom_file=/emu/amiga-os-310-a1200.rom") == 1);
     free(cfg);
     p.machine = "a500";
     cfg = amiga_emulation_config(&p, "/emu", "/run/test", err, sizeof err);
@@ -745,8 +745,8 @@ int main(void)
     /* refused: an unknown machine */
     CHECK(amiga_emulation_machine_known(NULL) && amiga_emulation_machine_known("a500-68010"));
     CHECK(!amiga_emulation_machine_known("a3000") && !amiga_emulation_machine_known(""));
-    CHECK(amiga_emulation_machine_kickstart(NULL) == 47
-          && amiga_emulation_machine_kickstart("a1200") == 47);
+    CHECK(amiga_emulation_machine_kickstart(NULL) == 40
+          && amiga_emulation_machine_kickstart("a1200") == 40);
     CHECK(amiga_emulation_machine_kickstart("a500") == 34
           && amiga_emulation_machine_kickstart("a500-68010") == 34);
     CHECK(amiga_emulation_machine_kickstart("a3000") == 0);

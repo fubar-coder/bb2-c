@@ -61,10 +61,10 @@ static const struct machine {
     size_t nchanges;
     int kickstart;                                  /* exec's version */
 } machines[] = {
-    { "a1200", default_uae, NULL, 0, 47 },
+    { "a1200", default_uae, NULL, 0, 40 },
     { "a500", a500_uae, NULL, 0, 34 },
     { "a500-68010", a500_uae, a500_68010, sizeof a500_68010 / sizeof a500_68010[0], 34 },
-    { "a600", a600_uae, NULL, 0, 47 },
+    { "a600", a600_uae, NULL, 0, 40 },
 };
 
 static const struct machine *find_machine(const char *name)
@@ -94,8 +94,8 @@ int amiga_emulation_machine_kickstart(const char *name)
 const struct amiga_emulation_option amiga_emulation_rtg[] = {
     { "gfxcard_size", "16" },
     { "gfxcard_type", "ZorroIII" },
-    { "hardfile2", "ro,DH0:@EMULATION_DIR@/Workbench_OS3.2-AB3.hdf,32,1,2,512,0,,uae0" },
-    { "uaehf0", "hdf,ro,DH0:@EMULATION_DIR@/Workbench_OS3.2-AB3.hdf,32,1,2,512,0,,uae0" },
+    { "hardfile2", "ro,DH0:@EMULATION_DIR@/workbench-311-rtg.hdf,32,1,2,512,0,,uae0" },
+    { "uaehf0", "hdf,ro,DH0:@EMULATION_DIR@/workbench-311-rtg.hdf,32,1,2,512,0,,uae0" },
 };
 const size_t amiga_emulation_rtg_count = sizeof amiga_emulation_rtg / sizeof amiga_emulation_rtg[0];
 

@@ -140,7 +140,7 @@ static void finish(int i, struct amiga_emulation *e)
         break;
     case RTG_B:
         s = read_text(amiga_emulation_test_dir(e), "version.txt");
-        CHECK(s && strstr(s, "Kickstart 47"));
+        CHECK(s && strstr(s, "Kickstart 40"));
         free(s);
         break;
     case PLAIN_C:

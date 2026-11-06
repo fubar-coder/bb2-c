@@ -716,28 +716,35 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      of the compiler tests in the six files the host tests measure too;
      a diagnostic, no error). Details: openspec change `test-coverage`,
      design.md, task 7.4.
-- [ ] **a1200 and a600 on Amiga Forever's Workbench 3.1** (user decision:
-  Amiga Forever 11 as the reference set; `AMIGA-EMULATION-SETUP.md`,
-  "Setup from Amiga Forever 11"): `cmake/setup-amiga-forever.cmake` makes
-  `amiga-os-310-a1200.rom`, `amiga-os-310-a600.rom`, `workbench-311.hdf`
-  and `workbench-311-rtg.hdf`, and all three boot and run
-  `TEST:run.script`, but the configurations (`default.uae`, `a600.uae`,
-  the RTG variant) still name the AmigaOS 3.2 files. With them switched
-  to 3.1, `ctest --preset emulator` (2026-11-06) failed 11 of 90 tests,
-  10 of them only on 3.1 (passing on the 3.2 files): `ab3_cli`,
-  `ab3_cli_ref` and their `_broken` variants, `ab3_tokenise`,
-  `ab3_tokenise_broken` (AmiBlitz3 asks for `ab3pft.library`, no
-  executable), `libs_emulator` (rimisclib: no `helvetica.font`, font
-  prefs; rilesdebuglib OutText; mathtranslib finit registers), `ted_ab`
-  (`28-long`: "character needs more than one key (MapANSI)", the
-  `29-cmp-*` runs skipped), `corpus_cd`/`corpus_cd_ab3` (6 executables
-  of `LINE_TORUS*.BB2` differ), `regression_ricompactdisclib_scsi_after_plain`
-  (timeout of the reference run). Needed: decide which software the 3.1
-  reference gets on top (AmiBlitz3's libraries, fonts, further
-  libraries; added by the setup with `hdftool`, from a source with a
-  clear licence) or which tests depend on the 3.2 hardfile's software,
-  then switch the configurations and the Kickstart version checks of
-  the `amiga_emulation` tests (3.2 = 47 to 3.1 = 40).
+- [x] **a1200 and a600 on Amiga Forever's Workbench 3.1** done
+  (2026-11-06; user decision: Amiga Forever 11 as the reference set, fewer
+  dependencies): `default.uae`, `a600.uae` and the RTG variant use
+  `amiga-os-310-a1200.rom`/`amiga-os-310-a600.rom`, `workbench-311.hdf`
+  and `workbench-311-rtg.hdf` of `cmake/setup-amiga-forever.cmake`; the
+  Kickstart checks of the `amiga_emulation` tests expect 40. Nothing is
+  added to the Workbench; the tests that depended on the AmigaOS 3.2
+  hardfile by accident bring what they need (`AMIGA-EMULATION-SETUP.md`,
+  "What the tests bring along"): AmiBlitz3's `ab3pft.library` (fetched,
+  v3.14.0) in `Blitz3:Libs` and `Blitz3:` assigned before every
+  compile (AmiBlitz3 removes it, `docs/ab3/variant.md`); `tedprobe` sets
+  the German keymap; rimisclib's font prefs in a private `ENV:` (3.1's
+  IPrefs kept the broken file in use); rilesdebuglib's RastPort planes
+  in chip memory (3.1's Text() draws with the blitter); systest_cmdlibs
+  holds mathtrans.library open over the finit comparison (the last
+  CloseLibrary of mathtrans.library 37.1 leaves another a1); the expect
+  files of AmiBlitz3's programs allow `Ram Disk`, the Kickstart version
+  and SPPow's 2.249999 of mathtrans.library 37.1. `tests/data/blitz2-cd.tsv`:
+  the six `LINE_TORUS*.BB2` from the original blitz2 on 3.1 (the compiler
+  folds float constants with the ROM's mathffp.library, whose last bit
+  differs on 3.2: `11*(2*Pi/200)` = `$B0EF3B3F` on 3.1, `$B0EF3A3F` on
+  3.2; blitz2-c gives the same as the original on both).
+- [ ] **regression_ricompactdisclib_scsi_after_plain on Workbench 3.1**:
+  the reference run (the original ricompactdisclib) plays, then stops
+  with the alert `8100 0005` (corrupt memory list): uaescsi.device's 34
+  bytes of CDInfo for the 26 of `CDStatus` go behind the original's data
+  (BUG(orig) #948), which on 3.1 hits memory that matters. The test is
+  BROKEN there (the expectation is what the original does); needed: a
+  decision how the regression test of #946 keeps its meaning on 3.1.
 - [ ] **Immutable strings (idea, long term)**: in BB2 a string variable
   is string and string builder in one (the memory of the variable is
   changed in place: `MaxLen`, `&a$` with `Poke`, libraries writing the

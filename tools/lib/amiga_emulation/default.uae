@@ -3,15 +3,15 @@
 ; lines removed.  @EMULATION_DIR@ is <repo>/amiga-emulation; TEST: and
 ; everything else a test needs is added by the library.  Tests change it
 ; only by key=value differences (e.g. the RTG variant, AMIGA-EMULATION-SETUP.md).
-; A1200, AGA, 68020/68882, 8 MB chip, 128 MB Z3 fast, Kickstart 3.2 (47.115);
-; Workbench in PAL HighRes Laced, 256 colours, hardfile read-only.
+; A1200, AGA, 68020/68882, 8 MB chip, 128 MB Z3 fast, Kickstart 3.1 (40.68,
+; Amiga Forever's amiga-os-310-a1200.rom); Workbench 3.1 as a raw partition
+; image (cmake/setup-amiga-forever.cmake), hardfile read-only.
 config_hardware=true
 config_host=true
 config_version=8.4.2
 use_gui=no
 use_debugger=false
-kickstart_rom_file=@EMULATION_DIR@/A1200.47.115.rom
-kickstart_rom_file_id=B18D3B67,KS ROM v3.2.3 (A1200)
+kickstart_rom_file=@EMULATION_DIR@/amiga-os-310-a1200.rom
 pcmcia_mb_rom_file=:ENABLED
 ide_mb_rom_file=:ENABLED
 cart_file=
@@ -159,8 +159,8 @@ rtg_noautomodes=false
 debug_mem=false
 log_illegal_mem=false
 kbd_lang=us
-hardfile2=ro,DH0:@EMULATION_DIR@/Workbench_OS3.2-AB3-AGA.hdf,32,1,2,512,0,,uae0
-uaehf0=hdf,ro,DH0:@EMULATION_DIR@/Workbench_OS3.2-AB3-AGA.hdf,32,1,2,512,0,,uae0
+hardfile2=ro,DH0:@EMULATION_DIR@/workbench-311.hdf,32,1,2,512,0,,uae0
+uaehf0=hdf,ro,DH0:@EMULATION_DIR@/workbench-311.hdf,32,1,2,512,0,,uae0
 input.config=0
 input.joymouse_speed_analog=100
 input.joymouse_speed_digital=10

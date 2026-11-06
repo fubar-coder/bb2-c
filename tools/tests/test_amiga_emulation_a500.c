@@ -1,6 +1,6 @@
 /*
  * test_amiga_emulation_a500.c - the 68000 machines a500, a500-68010 and
- * a600 with the emulator, one after the other: the Kickstart (1.3, 3.2 on
+ * a600 with the emulator, one after the other: the Kickstart (1.3, 3.1 on
  * the a600) boots from the hardfile, its startup runs TEST:run.script
  * (AmigaDOS 1.3: the redirection right behind the command name), the run
  * ends with run.done; Amiberry's log names the CPU.  Exit 77 (skipped)
@@ -64,7 +64,7 @@ int main(void)
         return 77;
     CHECK(r == 1);
     CHECK(run("a500-68010", "Kickstart version 34.5", "CPU=68010,") == 1);
-    r = run("a600", "Kickstart 47.115", "CPU=68000,");
+    r = run("a600", "Kickstart 40.63", "CPU=68000,");
     if (r < 0)
         fprintf(stderr, "test_amiga_emulation_a500: a600 skipped (no ROM)\n");
     else
