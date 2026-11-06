@@ -5,7 +5,7 @@
  * (AmigaDOS 1.3: the redirection right behind the command name), the run
  * ends with run.done; Amiberry's log names the CPU.  Exit 77 (skipped)
  * without Amiberry or the A500 data; the a600 is skipped alone without
- * its ROM (amiga-emulation/README.md, "A500", "A600").
+ * its ROM (AMIGA-EMULATION-SETUP.md, "A500 machine", "A600 machine").
  */
 #include "testutil.h"
 #include "amiga_emulation.h"

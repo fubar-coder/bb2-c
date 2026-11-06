@@ -1,5 +1,5 @@
 ; waitjob.s - SNAP:waitjob of the snapshot mode of amiga_emulation
-; (amiga_emulation.c, amiga-emulation/README.md "Snapshot mode").
+; (amiga_emulation.c, tools/lib/amiga_emulation/README.md "Snapshot mode").
 ;
 ; Returns as soon as SNAP:job.script exists: polls it with Lock every
 ; 2 ticks (40 ms).  The prologue TEST:run.script runs it after it has

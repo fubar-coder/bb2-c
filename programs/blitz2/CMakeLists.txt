@@ -133,7 +133,7 @@ set_tests_properties(blitz2_checkcore_broken PROPERTIES PASS_REGULAR_EXPRESSION
 # -kick1hunks: the relocations as HUNK_RELOC32 like Devpac, not vasm's
 # short form (HUNK_DREL32), which LoadSeg only knows from Kickstart 2.0
 # on - the reference runs on the A500 with Kickstart 1.3 as well
-# (amiga-emulation/README.md, "A500").
+# (AMIGA-EMULATION-SETUP.md, "A500 machine").
 if(NOT VASM)
 	find_program(VASM vasmm68k_mot REQUIRED)
 endif()

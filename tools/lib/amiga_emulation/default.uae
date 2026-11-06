@@ -2,7 +2,7 @@
 ; Taken from the user's A1200-AB3-AGA.uae (Amiberry 8.4.2), host-specific
 ; lines removed.  @EMULATION_DIR@ is <repo>/amiga-emulation; TEST: and
 ; everything else a test needs is added by the library.  Tests change it
-; only by key=value differences (e.g. the RTG variant, amiga-emulation/README.md).
+; only by key=value differences (e.g. the RTG variant, AMIGA-EMULATION-SETUP.md).
 ; A1200, AGA, 68020/68882, 8 MB chip, 128 MB Z3 fast, Kickstart 3.2 (47.115);
 ; Workbench in PAL HighRes Laced, 256 colours, hardfile read-only.
 config_hardware=true

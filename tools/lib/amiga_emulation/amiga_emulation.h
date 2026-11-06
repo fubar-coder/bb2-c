@@ -7,7 +7,7 @@
  *     the generated configuration, Amiberry's XDG directories and log
  *   - its own XDG_RUNTIME_DIR (short path under /tmp: the control socket
  *     $XDG_RUNTIME_DIR/amiberry.sock must fit into sun_path)
- *   - the hardfile read-only (amiga-emulation/README.md): the script may
+ *   - the hardfile read-only (AMIGA-EMULATION-SETUP.md): the script may
  *     write only to TEST: or RAM:, a write to SYS: blocks on a requester
  * Without `visible`, SDL gets the offscreen video and the dummy audio
  * driver: no window, no host input.  Amiberry's output goes to
@@ -408,7 +408,7 @@ int amiga_emulation_machine_known(const char *name);
 
 /* the version of the Kickstart (exec) of machine name (NULL: the
    default), e.g. 34 = 1.3, 47 = 3.2; 0 = unknown machine.  Below 36 the
-   scripts need AmigaDOS 1.3 syntax (amiga-emulation/README.md, "A500") */
+   scripts need AmigaDOS 1.3 syntax (tools/lib/amiga_emulation/README.md, "Machine a500") */
 int amiga_emulation_machine_kickstart(const char *name);
 
 /* the slots (see above): takes a free one of max in dir (created if

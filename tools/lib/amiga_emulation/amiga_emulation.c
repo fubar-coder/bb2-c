@@ -599,7 +599,7 @@ int amiga_emulation_check_rom(const char *rom, char *err, size_t errlen)
     int encrypted, r = 0;
 
     if (!f) {
-        set_err(err, errlen, "Kickstart ROM %s missing (see amiga-emulation/README.md)", rom);
+        set_err(err, errlen, "Kickstart ROM %s missing (see AMIGA-EMULATION-SETUP.md)", rom);
         return -1;
     }
     encrypted = fread(head, 1, sizeof head, f) == sizeof head && !memcmp(head, magic, sizeof head);
@@ -612,7 +612,7 @@ int amiga_emulation_check_rom(const char *rom, char *err, size_t errlen)
     key = slash ? str_printf("%.*s/rom.key", (int)(slash - real), real) : NULL;
     if (!key || !file_exists(key)) {
         set_err(err, errlen, "Kickstart ROM %s is encrypted (Cloanto), rom.key missing beside %s "
-                "(see amiga-emulation/README.md)", rom, real ? real : rom);
+                "(see AMIGA-EMULATION-SETUP.md)", rom, real ? real : rom);
         r = -1;
     }
     free(key);
@@ -635,7 +635,7 @@ static int check_files(const char *cfg, char *err, size_t errlen)
         if (p && (c = strchr(p + 4, ',')) != NULL) {
             path = strndup(p + 4, (size_t)(c - p - 4));
             if (path && !file_exists(path)) {
-                set_err(err, errlen, "hardfile %s missing (see amiga-emulation/README.md)", path);
+                set_err(err, errlen, "hardfile %s missing (see AMIGA-EMULATION-SETUP.md)", path);
                 bad = 1;
             }
         }

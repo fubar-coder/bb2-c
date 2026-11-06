@@ -569,9 +569,9 @@ out:
     return r;
 }
 
-/* AmigaDOS 1.3 (Kickstart 1.x, amiga-emulation/README.md "A500"): the
-   redirection right behind the command name, no $RC and no >> - rcput
-   appends rc=N; no gate (corpus_parse) */
+/* AmigaDOS 1.3 (Kickstart 1.x, tools/lib/amiga_emulation/README.md "Machine
+   a500"): the redirection right behind the command name, no $RC and no >> -
+   rcput appends rc=N; no gate (corpus_parse) */
 static char *script13(const struct corpus_pass *p)
 {
     struct text s = { 0 };

@@ -11,7 +11,7 @@
 set(EMULATION_QUEUE_WAIT 7200 CACHE STRING
 	"seconds added to the ctest TIMEOUT of emulator tests for the wait for an emulator slot")
 
-# The owner of the snapshots (amiga-emulation/README.md, "Snapshot mode"):
+# The owner of the snapshots (tools/lib/amiga_emulation/README.md, "Snapshot mode"):
 # the snapshots of the snapshot mode belong to a build directory, the
 # value of AMIGA_EMULATION_OWNER in every emulator test's environment.
 # They are kept across ctest runs; a session restores one only if its key

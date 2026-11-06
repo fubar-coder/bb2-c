@@ -1,4 +1,4 @@
-# What a change of a file selects (covsel, README "Coverage"): per line a
+# What a change of a file selects (covsel, tests/README.md "Coverage"): per line a
 # path pattern (relative to the repository; '*' within a directory, '**'
 # across directories, "**/" also none) and selectors.  The first matching
 # rule counts; a file no rule matches selects all tests.  Selectors: all,
@@ -13,7 +13,7 @@ docs/**                         none
 openspec/**                     none
 .claude/**                      none
 *.md                            none
-amiga-emulation/README.md       none
+**/README.md                    none
 archive/README.md               none
 
 # the build: all tests

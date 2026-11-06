@@ -23,7 +23,7 @@
  * nothing else (amiga_emulation_snapshot_purge); exit status 0, also
  * without a slot directory, 2 on usage errors.  For manual use: the tests
  * keep their snapshots across runs, and a session discards one whose
- * inputs have changed by itself (amiga-emulation/README.md, "Snapshot
+ * inputs have changed by itself (tools/lib/amiga_emulation/README.md, "Snapshot
  * mode").
  */
 #define _XOPEN_SOURCE 700       /* scandir */
