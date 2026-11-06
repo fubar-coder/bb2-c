@@ -279,6 +279,7 @@ static int gcov_lines(struct covmap *m, int test, int file, const struct json *l
         l->test = test;
         l->file = file;
         l->line = ln;
+        l->entry = 0;
         l->count = count;
         if (!br || br->type != JSON_ARRAY || !br->n)
             continue;
@@ -906,14 +907,41 @@ static int prepare(struct covmap *m)
             m->hits[n++] = *h;
     }
     m->nhits = n;
+    /* the entry lines: the first line of each function a coverage file
+       counts, with its count (genhtml reports only files with DA:
+       records); made anew each time, so the old ones go first */
+    for (i = n = 0; i < m->nlines; i++)
+        if (!m->lines[i].entry)
+            m->lines[n++] = m->lines[i];
+    m->nlines = n;
+    for (i = 0; i < m->nhits; i++) {
+        const struct cov_hit *h = &m->hits[i];
+        const struct cov_func *f = &m->funcs[h->func];
+        struct cov_line *l;
+
+        if (!h->bitmap || !f->first)
+            continue;
+        if (!(l = push(&m->lines, &m->nlines, &m->caplines, sizeof *l)))
+            return -1;
+        l->test = h->test;
+        l->file = f->file;
+        l->line = f->first;
+        l->entry = 1;
+        l->count = h->count;
+    }
     if (m->nlines)
         qsort(m->lines, m->nlines, sizeof *m->lines, cmp_line);
     for (i = n = 0; i < m->nlines; i++) {
-        struct cov_line *l = &m->lines[i];
+        struct cov_line *l = &m->lines[i], *p = n ? &m->lines[n - 1] : NULL;
 
-        if (n && !cmp_line(&m->lines[n - 1], l))
-            m->lines[n - 1].count += l->count;
-        else
+        if (p && !cmp_line(p, l)) {
+            /* an entry line is no count of the line: the largest */
+            if (p->entry || l->entry)
+                p->count = p->count > l->count ? p->count : l->count;
+            else
+                p->count += l->count;
+            p->entry &= l->entry;
+        } else
             m->lines[n++] = *l;
     }
     m->nlines = n;

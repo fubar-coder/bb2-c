@@ -17,7 +17,7 @@ A full run of the coverage configuration SHALL leave the coverage of every test 
 
 #### Scenario: Compiler functions
 - **WHEN** the tracefile of a test that compiled a program with the coverage variant of `blitz2-ab3` is read
-- **THEN** it lists the executed functions of `programs/blitz2/src` with their line ranges and no line counts
+- **THEN** it lists the executed functions of `programs/blitz2/src` with their line ranges and no line counts: the only line record of such a function is one `DA` on its first line holding the function's count (its entry, so that lcov's reports show the file), none for its other lines
 
 #### Scenario: Readable by lcov tools
 - **WHEN** the merged tracefile is given to `genhtml`

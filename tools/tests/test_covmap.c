@@ -526,11 +526,14 @@ static void test_amiga(void)
     /* eval.c: the static function from nm, its range from the line table
        (the header's rows do not count); main.c: source from the deps, no
        line ranges (no -g object): line 1 without a last line; every
-       function of the program, run or not */
+       function of the program, run or not; a function with known lines
+       has one DA: on its first line with its count (its entry), one
+       without has none */
     t = trace_text(&m, 1);
     CHECK(!strcmp(t, "TN:corpus\n"
                      "SF:" ROOT "/programs/blitz2/src/eval.c\n"
                      "FN:100,120,eval\nFN:200,230,evalsub\nFNDA:1,eval\nFNDA:0,evalsub\nFNF:2\nFNH:1\n"
+                     "DA:100,1\nDA:200,0\nLF:2\nLH:1\n"
                      "end_of_record\n"
                      "SF:" ROOT "/programs/blitz2/src/main.c\n"
                      "FN:1,compile\nFN:1,main\nFNDA:0,compile\nFNDA:1,main\nFNF:2\nFNH:1\n"
@@ -538,7 +541,19 @@ static void test_amiga(void)
     free(t);
     t = trace_text(&m, 0);
     CHECK(strstr(t, "TN:ab3_cli\n") == t && strstr(t, "\nFNDA:0,eval\nFNDA:1,evalsub\n")
+          && strstr(t, "\nDA:100,0\nDA:200,1\nLF:2\nLH:1\n")
           && strstr(t, "\nFNDA:1,compile\nFNDA:0,main\n"));
+    free(t);
+    t = trace_text(&m, -1);
+    CHECK(!lcov_check(t));
+    /* the entry lines are made anew for each output: a second write after
+       a further input neither repeats nor adds them up */
+    c = cov_file(0x200, COVFMT_BITMAP_LEN(0x200), run1, 3, &len);
+    CHECK(!covmap_add_cov(&m, "corpus", "blitz2", c, len, err, sizeof err));
+    free(c);
+    free(t);
+    t = trace_text(&m, 1);
+    CHECK(strstr(t, "\nDA:100,1\nDA:200,0\nLF:2\nLH:1\nend_of_record\n"));
     free(t);
     t = trace_text(&m, -1);
     CHECK(!lcov_check(t));
@@ -638,6 +653,7 @@ static void test_amiga_nonfunctions(void)
     CHECK(!strcmp(t, "TN:corpus\n"
                      "SF:" ROOT "/programs/blitz2/src/eval.c\n"
                      "FN:100,110,eval\nFNDA:1,eval\nFNF:1\nFNH:1\n"
+                     "DA:100,1\nLF:1\nLH:1\n"
                      "end_of_record\n"
                      "SF:" ROOT "/programs/blitz2/src/main.c\n"
                      "FN:1,compile\nFN:1,main\nFNDA:0,compile\nFNDA:0,main\nFNF:2\nFNH:0\n"

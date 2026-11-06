@@ -15,10 +15,13 @@ static char err[512];
 /* the tracefiles of a coverage run (covmap's lcov/<test>.info): eval.c
    (functions with line ranges; unused executed by no test), stmts.c,
    parse.c (no line ranges: FN without a last line), host functions;
-   files outside the root are left out */
+   files outside the root are left out; eval.c with the entry lines covmap
+   writes for a coverage file (one DA: per function, on its first line),
+   which the selection does not read */
 #define EVAL(e, p) "SF:" ROOT "/programs/blitz2/src/eval.c\n" \
     "FN:10,50,eval5\nFN:60,70,pokewd\nFN:80,90,unused\n" \
-    "FNDA:" e ",eval5\nFNDA:" p ",pokewd\nFNDA:0,unused\nend_of_record\n"
+    "FNDA:" e ",eval5\nFNDA:" p ",pokewd\nFNDA:0,unused\n" \
+    "DA:10," e "\nDA:60," p "\nDA:80,0\nLF:3\nend_of_record\n"
 #define PARSE(a, b) "SF:" ROOT "/programs/blitz2/src/parse.c\n" \
     "FN:1,parse\nFN:1,parse2\nFNDA:" a ",parse\nFNDA:" b ",parse2\nend_of_record\n"
 
@@ -182,6 +185,10 @@ static void test_select(void)
     CHECK(!strcmp(r, "ab3_cli newtest"));
     r = select_for(rules, diff1("programs/blitz2/src/eval.c", "@@ -12 +12 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, "ab3_cli corpus newtest"));
+    /* the first line of a function (its entry line) selects as its other
+       lines do: by the function */
+    r = select_for(rules, diff1("programs/blitz2/src/eval.c", "@@ -60 +60 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "ab3_cli newtest"));
     /* a function no test executes: no test */
     r = select_for(rules, diff1("programs/blitz2/src/eval.c", "@@ -85 +85 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, "newtest"));

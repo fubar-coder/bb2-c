@@ -705,11 +705,17 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      (most of them compile error entry points and the editor side of
      the compiler); the list comes from the tracefiles of a coverage
      run.
-  3. [ ] `genhtml` (lcov 2.6) leaves the compilers' files out of its
-     report and its totals without a message: their records have `FN:`
-     and `FNDA:` but no `DA:` (function bitmaps). Decide whether `covmap`
-     writes line records for them (e.g. the first line of each function
-     with its count) so that the report shows the compilers' functions.
+  3. [x] **Compiler files in the `genhtml` report** done (2026-11-06):
+     lcov 2.6 left them out of its report and totals (function bitmaps:
+     `FN:`/`FNDA:` but no `DA:`). `covmap` now writes one `DA:` per
+     function whose first line is known, on that line with the function's
+     count (its entry, not a line count); `covsel` still selects by the
+     functions. On the map inputs of a full run the report went from 13
+     to 38 source files (functions 243 of 254 to 1081 of 1281);
+     `--branch-coverage` adds 36 `inconsistent` warnings (no branch data
+     of the compiler tests in the six files the host tests measure too;
+     a diagnostic, no error). Details: openspec change `test-coverage`,
+     design.md, task 7.4.
 - [ ] **a1200 and a600 on Amiga Forever's Workbench 3.1** (user decision:
   Amiga Forever 11 as the reference set; `AMIGA-EMULATION-SETUP.md`,
   "Setup from Amiga Forever 11"): `cmake/setup-amiga-forever.cmake` makes

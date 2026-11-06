@@ -142,7 +142,9 @@ collection on the host is lcov (tracefile format of lcov 2.x).
   - It writes one tracefile per test, `<build>/coverage/lcov/<test>.info`
     (`TN:<test>`, per file `SF:`, `FN:first,last,name`, `FNDA:count,name`,
     and `DA`/`BRDA` where gcov gives them; the bitmaps give only `FN`/`FNDA`,
-    count 1 for a hit), a merged `<build>/coverage/lcov/all.info`, and
+    count 1 for a hit, plus one `DA` per function on its first line with
+    that count, its entry and not a line count, so that `genhtml` shows the
+    file), a merged `<build>/coverage/lcov/all.info`, and
     `<build>/coverage/commit` with the commit (`git rev-parse HEAD`, given
     by the script).
 - **`covsel`:**
@@ -525,12 +527,37 @@ the preset, the option, the module and the tools.
   tests of it), which is no longer measured. So `covmap` drops no branch
   records; the user-approved fallback (dropping the branches of lines run
   with no branch evaluated) is not needed.
-- **genhtml shows only files with line data:** lcov 2.6's report (and its
-  totals: 13 source files, 254 functions) lists the host-measured files;
-  the compilers' files, which have `FN:`/`FNDA:` but no `DA:` (function
-  bitmaps), are left out of it without a message. The tracefiles are
-  complete (covsel reads them); a report of the compilers' functions
-  would need line records (open point in TODO.md).
+- **genhtml shows only files with line data** (task 7.4): lcov 2.6 leaves
+  a section without `DA:` out of its report and its totals without a
+  message, so with `FN:`/`FNDA:` alone (function bitmaps) the report
+  listed only the host-measured files (13 source files, 254 functions).
+  `covmap` therefore writes, in a test's section from a coverage file,
+  one `DA:<first line>,<count>` per function whose first line is known,
+  with the function's count, and `LF`/`LH` for them. That record is the
+  function's entry, not a count of the line: the bitmaps count no lines,
+  and the other lines of the function have no record. The entry lines
+  are made when the tracefiles are written (merged with a gcov line of
+  the same test and line as the larger count); functions without known
+  lines (`FN:1,<name>`) get none. `covsel` reads no `DA:` (it selects by
+  the functions' ranges and counts; same selection with and without the
+  entry lines for changes of `eval.c` on and inside a function).
+  Measured with the map inputs of the full run above: the host tests'
+  tracefiles are unchanged, `all.info` differs only by the added
+  `DA:`/`LF:`/`LH:` records; genhtml's totals went from 13 source files,
+  lines 3282 of 3546, functions 243 of 254 to 38 source files (25 of
+  `programs/blitz2/src`), lines 4120 of 4573, functions 1081 of 1281,
+  without a message. The 39th file, `glue_direct.c`, has no known lines
+  (an object without line rows) and stays out. Its line totals mix real
+  line counts (host) and entry lines (compilers).
+  `genhtml --branch-coverage` gives the same report with branches 1928 of
+  2181, and 36 warnings `inconsistent: no branch data for <test> in
+  <file>` (no error): for the six files measured both on the host (with
+  branches) and by the compilers (`ab3date.c`, `shared/xtra/xtra.c`,
+  `xtra_ab3.c`, `xtra_mode.c`, `shared/ab3job/ab3args.c`,
+  `shared/tokenizer/tokenizer.c`), lcov's `checkTestcaseData` notes the
+  six compiler tests that have line but no branch data there. It is a
+  diagnostic only (lcov changes no data); `--ignore-errors inconsistent`
+  silences it.
 - **Selection rules for the tools** (task 7.2): the tools and the runners
   are not measured, so they select by rule. Every emulator test and the
   host tests for what the emulator tests run on the host: the session

@@ -42,7 +42,11 @@
  *   BRDA:<line>,<block>,<branch>,<taken or ->  gcov only; the block is the
  *                              number of the line's entry in gcov's list
  *   BRF:<branches> BRH:<branches taken>
- *   DA:<line>,<count>          gcov only
+ *   DA:<line>,<count>          gcov: each line it lists; coverage file:
+ *                              the first line of each function whose lines
+ *                              are known, with the function's count (its
+ *                              entry, not a count of the line: genhtml
+ *                              reports only files with DA: records)
  *   LF:<lines> LH:<lines with a count above 0>
  *   end_of_record
  * A test lists every function of the programs it ran (the coverage files)
@@ -70,9 +74,12 @@ struct cov_hit {
     unsigned long long count;
 };
 
-/* a line (gcov), and a branch (gcov; taken -1: its block never ran) */
+/* a line (gcov, or entry: the first line of a function from a coverage
+   file, made by prepare), and a branch (gcov; taken -1: its block never
+   ran) */
 struct cov_line {
     int test, file, line;
+    int entry;                  /* made from a coverage file's hit */
     unsigned long long count;
 };
 struct cov_branch {

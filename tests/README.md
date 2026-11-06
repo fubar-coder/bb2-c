@@ -614,15 +614,22 @@ runs `cmake/coverage-map.cmake`: gcov per host test, `nm -A` and
   and last line (`FN:`) and its count (`FNDA:`); the host tests also with
   line and branch counts (`DA:`, `BRDA:`). The compilers' coverage files
   give each function a count of 1 if it was entered, else 0, and no line
-  counts; a function whose lines are not known has `FN:1,<name>` without
-  a last line. Details: `tools/lib/covmap/covmap.h`.
+  counts: the one `DA:` of such a function is on its first line and holds
+  the function's count (its entry, so that `genhtml` shows the file); a
+  function whose lines are not known has `FN:1,<name>` without a last
+  line and no `DA:`. Details: `tools/lib/covmap/covmap.h`.
 * `lcov/all.info`: all tests in one tracefile, for `genhtml`
   (`genhtml -o <dir> build/amiga-cov/coverage/lcov/all.info`, lcov 2.0
   or later; lcov is not needed by the build), editors and coverage
   services; `--branch-coverage` adds the host tests' branches (checked
-  with lcov 2.6). genhtml's report shows only files with line counts,
-  so the compilers' files (function counts only) are not in it
-  (TODO.md).
+  with lcov 2.6). The report lists the compilers' files with their
+  functions; their "lines" are the functions' entry lines, so a file's
+  line rate there is the rate of its functions. With
+  `--branch-coverage`, lcov warns `inconsistent: no branch data for
+  <test> in <file>` for the files both the host tests and the compilers
+  measure (the compilers give no branches); it is a diagnostic only
+  (`--ignore-errors inconsistent` silences it). A file whose function
+  lines are not known (`glue_direct.c`) is not in the report.
 * `commit`: the commit the run was made from.
 
 The inputs handed to covmap stay in `build/<preset>/coverage/map-inputs/`.
