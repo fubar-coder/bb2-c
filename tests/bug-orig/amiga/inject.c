@@ -681,6 +681,21 @@ static int ends(const char *name, const char *suffix)
     return 1;
 }
 
+/* a new file handle: a counted one of the same value was closed - else
+   the reads or writes on another file, which got the freed memory, would
+   count as the old file's (how often depends on the system's allocator) */
+static void fh_new(ULONG fh)
+{
+    int i;
+
+    for (i = 0; i < NAMED; i++) {
+        if (rf_fh[i] == fh)
+            rf_fh[i] = 0;
+        if (wf_fh[i] == fh)
+            wf_fh[i] = 0;
+    }
+}
+
 void named_post(ULONG result, const char *name, ULONG which)
 {
     ULONG *list = which ? ef_lock : rf_fh;
@@ -692,6 +707,8 @@ void named_post(ULONG result, const char *name, ULONG which)
         for (i = 0; i < NAMED; i++)
             if (owned_lock[i] == result)
                 owned_lock[i] = 0;
+    if (!which && result)
+        fh_new(result);
     if (which && result && name && rf_name[0] && ours() && ends(name, rf_name))
         for (i = 0; i < NAMED; i++)
             if (!rf_lock[i]) {
@@ -721,6 +738,8 @@ void openfromlock_post(ULONG fh, ULONG lock)
 {
     int i;
 
+    if (fh)
+        fh_new(fh);
     if (!fh || !lock || !ours())
         return;
     if (o_ownedunlock)
