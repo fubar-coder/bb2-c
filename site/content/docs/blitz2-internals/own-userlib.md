@@ -118,7 +118,10 @@ Copy twicelib.obj blitz2:userlibs/mylibs/
 
 If blitz2 is already running, choose RELOAD ALL LIBS in the COMPILER
 menu: it loads the userlibs again and adds their commands to the names
-the editor and the compiler know. Otherwise start blitz2 again.
+the editor and the compiler know. Otherwise start blitz2 again. A line you
+typed before the reload still holds the new command's name as plain text
+and gives a compile error: type it again, and the editor turns the name
+into the new token.
 
 ### Use it
 
