@@ -522,17 +522,22 @@ static void fprintdetoke(void)
     sameplanes();
 }
 
-/* OutText/OutTextPen on a RastPort of the test */
+/* OutText/OutTextPen on a RastPort of the test; its planes in chip memory:
+   Text() draws with the blitter (graphics.library 40 of Workbench 3.1
+   draws nothing into planes in fast memory) */
+#define RPPLANE (80 * 40)
 static void outtext(void)
 {
     static const char *texts[] = { "Hello", "", "A longer line of text" };
-    static UBYTE rpplanes[2][2][80 * 40];
+    UBYTE (*rpplanes)[2][RPPLANE] = AllocMem(sizeof(UBYTE[2][2][RPPLANE]), MEMF_CHIP | MEMF_CLEAR);
     static struct BitMap rbm[2];
     static struct RastPort rp[2];
     unsigned i;
     int s;
 
-    memset(rpplanes, 0, sizeof rpplanes);
+    check("rilesdebuglib: the RastPort's planes in chip memory", rpplanes != NULL);
+    if (!rpplanes)
+        return;
     for (s = 0; s < 2; s++) {
         InitBitMap(&rbm[s], 2, 640, 40);
         rbm[s].Planes[0] = rpplanes[s][0];
@@ -553,15 +558,16 @@ static void outtext(void)
             R[cur].d[2] = (ULONG)&rp[cur]; R[cur].d[3] = (ULONG)out[cur] + 600);
         SAME("cp_x", rp[cur].cp_x);
         SAME("cp_y", rp[cur].cp_y);
-        SAMEBYTES("plane 0", ((UBYTE *[]){ rpplanes[0][0], rpplanes[1][0] }), sizeof rpplanes[0][0]);
-        SAMEBYTES("plane 1", ((UBYTE *[]){ rpplanes[0][1], rpplanes[1][1] }), sizeof rpplanes[0][1]);
+        SAMEBYTES("plane 0", ((UBYTE *[]){ rpplanes[0][0], rpplanes[1][0] }), RPPLANE);
+        SAMEBYTES("plane 1", ((UBYTE *[]){ rpplanes[0][1], rpplanes[1][1] }), RPPLANE);
     }
     for (cur = 0; cur < 2; cur++) {
         ULONG n = 0;
-        for (i = 0; i < sizeof rpplanes[0][0]; i++)
+        for (i = 0; i < RPPLANE; i++)
             n += rpplanes[cur][0][i] != 0;
         BOTH("text drawn", n > 0);
     }
+    FreeMem(rpplanes, sizeof(UBYTE[2][2][RPPLANE]));
 }
 
 /* ------------------------------------------------------------ SearchMem */
