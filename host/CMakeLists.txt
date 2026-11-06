@@ -14,12 +14,19 @@ if(HOST_SANITIZE)
 	add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
 	add_link_options(-fsanitize=address,undefined)
 endif()
-# gcov coverage of all host code; -O0, so that inlining hides no function.
-# Each test writes its data below coverage/<test> (GCOV_PREFIX, set at the
-# end of this file); cmake/coverage-map.cmake reads it.
-option(HOST_COVERAGE "gcov coverage for all host code, the data of each host test apart" OFF)
+# gcov coverage of the program code the host tests compile: the sources
+# below programs/*/src and shared/ (TED core, shared/xtra, the tokeniser,
+# ...), not the tools, the test sources or the TED tools - gcc instruments
+# only the functions of files the filter matches (-fprofile-filter-files,
+# a regex on the source path as CMake passes it: absolute).  -O0, so that
+# inlining hides no function.  Each test writes its data below
+# coverage/<test> (GCOV_PREFIX, set at the end of this file);
+# cmake/coverage-map.cmake reads it.
+option(HOST_COVERAGE "gcov coverage of the program code of the host tests, the data of each test apart" OFF)
 if(HOST_COVERAGE)
-	add_compile_options(--coverage -O0)
+	get_filename_component(repo ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
+	string(REGEX REPLACE "([][.*+?^$(){}|\\])" "\\\\\\1" repo_re "${repo}")
+	add_compile_options(--coverage -O0 "-fprofile-filter-files=^${repo_re}/(programs/[^/]+/src|shared)/")
 	add_link_options(--coverage)
 endif()
 

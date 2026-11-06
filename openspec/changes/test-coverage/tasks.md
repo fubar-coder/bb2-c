@@ -40,3 +40,9 @@
 - [ ] 6.3 The Blitz libraries with gcov (or the bitmap, after 6.1); `debuglib.c` excluded; `blitzlibcheck` still passes; `libs_tests` writes the data of the loaded libraries
 - [ ] 6.4 A coverage library whose finit routine writes the libraries' data in a compiled program; a compiler option of the coverage configuration that links it into every program
 - [ ] 6.5 Collection: several `.gcda` sets of one test merged with `m68k-amigaos-gcov-tool merge`; `covmap` reads them with the coverage build's `.gcno`; `libs/` and `programs/ted/` changes then select by coverage (rules of D8 adjusted); check and docs as in 5.1 and 5.3
+
+## 7. Coverage of the programs only
+
+- [x] 7.1 `HOST_COVERAGE` instruments only the program code the host tests compile (`programs/*/src/`, `shared/`), not `tools/`, the test sources and the TED tools (`-fprofile-filter-files`, D1). Verify: the `.gcno` files with functions are those of `programs/*/src/` and `shared/`; a full `ctest --preset coverage` and `coverage-map` give tracefiles that name no file outside them
+- [x] 7.2 `tools/covsel/rules.txt` for the tools and the runners: what the emulator tests run on the host selects every emulator test and the host tests, a tool only the host tests use the host tests, a tool of the build all tests; `test_covsel` checks each kind with the real rules. Verify: the scenarios of 5.1 on the new map, and a change of `tools/lib/amiga_emulation`, a runner, `tools/lib/covmap` and `tools/lib/biglib`
+- [x] 7.3 `genhtml` and `genhtml --branch-coverage` (lcov 2.6) read `all.info` without errors; if branch errors remained, `covmap` would drop the branch records of lines run with no branch evaluated (not needed: none remain, design.md)

@@ -34,11 +34,32 @@ programs/blitz2/tests/host/**   name:host/*
 tools/tests/**                  name:host/*
 tests/ted-ab/host/**            name:host/*
 
-# the runners and the Amiga helper programs of the emulator tests serve
-# several suites (tedstub and reqtrap of tests/corpus, inject of
-# tests/bug-orig, teddrive of tests/ted-ab)
-tests/*/runner/**               all
+# the runners (host programs that drive the emulator sessions; no build
+# step runs them) serve the emulator tests of several suites, their own
+# tests are host tests; the Amiga helper programs of the emulator tests
+# serve several suites too (tedstub and reqtrap of tests/corpus, inject
+# of tests/bug-orig, teddrive of tests/ted-ab)
+tests/*/runner/**               label:emulator name:host/*
 tests/*/amiga/**                all
+
+# the tools (host side, not measured; their tests are host tests).  What
+# the emulator tests run on the host - the emulator sessions, amiga_run,
+# the @stat line of the runners, the output comparison of the ab3 and
+# inject tests - selects every emulator test; the tools only the coverage
+# scripts and the host tests use select the host tests; every other tool
+# makes or checks results in the build (biglib, blitzlibcheck, hunkcheck,
+# xtra, ab3tok, ...) and selects all tests
+tools/lib/amiga_emulation/**    label:emulator name:host/*
+tools/amiga_run/**              label:emulator name:host/*
+tools/lib/teststats/**          label:emulator name:host/*
+tools/lib/outmatch/**           label:emulator name:host/*
+tools/outmatch/**               label:emulator name:host/*
+tools/teststats/**              name:host/*
+tools/lib/covmap/**             name:host/*
+tools/covmap/**                 name:host/*
+tools/lib/covsel/**             name:host/*
+tools/covsel/**                 name:host/*
+tools/**                        all
 
 # test sources and expect files: the tests of the suites that read them
 # (the corpus and bug-orig sources also by ab3_bb2_equivalence, the TED
@@ -55,5 +76,5 @@ tests/ted-ab/**                 name:ted_ab* name:bug_orig_ted_*
 # tests of the libraries' declarations, token lists and comparisons
 libs/**                         label:emulator name:declarations_* name:tokens_* name:biglib_* name:blitzlibcompare_* name:asmcmp_* name:rwe_* name:variant_* name:ab3_tokens*
 
-# everything else (TED, shared code, the tools, the test data, the
-# originals): no rule, all tests
+# everything else (TED, shared code, the test data, the originals): no
+# rule, all tests

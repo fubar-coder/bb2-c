@@ -688,19 +688,24 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   dump), with a test on a broken file.
 - [ ] **Coverage: open points** (openspec change `test-coverage`,
   `tests/README.md` "Coverage"):
-  1. [ ] `genhtml --branch-coverage` refuses `all.info` (without the
-     option it reads it): lcov 2.0's consistency check finds host lines
-     run with no branch of them taken (gcov data of tests whose processes
-     fork and end with `_exit`, e.g. `test_amiga_emulation_run.c:200`),
-     and lcov 2.5 fails on its own count check when it merges a branch
-     taken 0 times in one test with one taken in another
-     (`BranchElement::merge` in `lcovutil.pm` marks no change then).
-     Decide whether `covmap` leaves out the branches of such lines, or
-     whether the branch data waits for lcov.
+  1. [x] **`genhtml --branch-coverage`** done (2026-11-06): lcov 2.6
+     reads `all.info` with and without the option without a message.
+     The host coverage measures only the program code now
+     (`programs/*/src/`, `shared/`; user decision), so the branch records
+     lcov 2.0 refused (tools code whose processes fork and end with
+     `_exit`, e.g. `test_amiga_emulation_run.c:200`) are gone, and
+     `covmap` drops no branches. lcov 2.5's count check on merged
+     branches (`BranchElement::merge` in `lcovutil.pm`) was not rechecked
+     (only lcov 2.6 is installed).
   2. [ ] Tests for the 182 measured compiler functions no test reaches
      (most of them compile error entry points and the editor side of
      the compiler); the list comes from the tracefiles of a coverage
      run.
+  3. [ ] `genhtml` (lcov 2.6) leaves the compilers' files out of its
+     report and its totals without a message: their records have `FN:`
+     and `FNDA:` but no `DA:` (function bitmaps). Decide whether `covmap`
+     writes line records for them (e.g. the first line of each function
+     with its count) so that the report shows the compilers' functions.
 - [ ] **a1200 and a600 on Amiga Forever's Workbench 3.1** (user decision:
   Amiga Forever 11 as the reference set; `AMIGA-EMULATION-SETUP.md`,
   "Setup from Amiga Forever 11"): `cmake/setup-amiga-forever.cmake` makes

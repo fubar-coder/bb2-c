@@ -46,7 +46,14 @@
 
 ### D1 Host coverage with gcov, per-test prefix
 `HOST_COVERAGE` adds `--coverage` (and `-O0`, so that inlining does not
-hide functions) to the host build, next to `HOST_SANITIZE`. Each host
+hide functions) to the host build, next to `HOST_SANITIZE`. Only the
+program code is measured (user decision 2026-11-06): the sources below
+`programs/*/src/` and `shared/` that the host tests compile, not the
+tools (`tools/`), the test sources and the TED tools
+(`programs/ted/tools/`). gcc filters it itself: `-fprofile-filter-files`
+with a regex of those directories under the repository's absolute path
+(CMake passes absolute source paths) instruments only the functions of
+matching files; an object without any writes no `.gcda`. Each host
 test gets the environment `GCOV_PREFIX=<host build>/coverage/<test>`
 through a test property set in one place, after all tests are defined
 (a directory-wide loop over the tests). The coverage of host test `X` is
@@ -492,3 +499,58 @@ the preset, the option, the module and the tools.
   compilers' map, 888 are entered by an emulator test, 53 only by host
   tests, 191 by none (9 of them not measured: glue and `cov.c`). The
   summary is in `tests/README.md` "Compiler functions no test reaches".
+
+### Coverage of the programs only (tasks 7.1-7.3)
+- **Filter in the compiler** (task 7.1): `-fprofile-filter-files` is
+  chosen over dropping `tools/` data in `covmap`: the tools are not
+  instrumented at all (no counters, no `.gcda` of tool runs, and the
+  emulator tests' host programs run at full speed), and `covmap` keeps no
+  rule about paths. Per-target flags would not do: the host tests compile
+  the program sources into their own targets (`tedcore_host`,
+  `lib_xtra`, `lib_tokenizer`, `lib_ab3job`, ...), and a target of
+  `tools/lib` holds sources of `shared/`. The filter matches the path of
+  each function's file as gcc sees it; the regex escapes the repository's
+  path (a `.` in it is literal). A header function of `programs/*/src`
+  compiled into an object of a tool is not instrumented either (gcc
+  filters by the translation unit as well).
+- **The map** (full `ctest --preset coverage`, 495 tests, 204 passed,
+  291 failed - the tests of reproduced original bugs; 4677 s on a loaded
+  machine): tracefiles of 42 host tests (the others run no program code)
+  and of 334 coverage files; `all.info` names 39 source files, all below
+  `programs/*/src/` and `shared/`.
+- **`genhtml --branch-coverage`** (lcov 2.6, task 7.3) reads `all.info`
+  without a message, and so does `genhtml` without it: the branch
+  records lcov refused came from tools code (the forked session
+  supervisor of `tools/lib/amiga_emulation` ending with `_exit`, the
+  tests of it), which is no longer measured. So `covmap` drops no branch
+  records; the user-approved fallback (dropping the branches of lines run
+  with no branch evaluated) is not needed.
+- **genhtml shows only files with line data:** lcov 2.6's report (and its
+  totals: 13 source files, 254 functions) lists the host-measured files;
+  the compilers' files, which have `FN:`/`FNDA:` but no `DA:` (function
+  bitmaps), are left out of it without a message. The tracefiles are
+  complete (covsel reads them); a report of the compilers' functions
+  would need line records (open point in TODO.md).
+- **Selection rules for the tools** (task 7.2): the tools and the runners
+  are not measured, so they select by rule. Every emulator test and the
+  host tests for what the emulator tests run on the host: the session
+  library `tools/lib/amiga_emulation`, `amiga_run`, the runners
+  `tests/*/runner/` (`corpusrun`, `cdrun`, `tedab`, `teddump`; no build
+  step runs them), the `@stat` line `tools/lib/teststats` and `outmatch`
+  (the output comparison of `tests/ab3/cli.cmake` and the inject tests).
+  The host tests for the tools only they and the coverage scripts use
+  (`covmap`, `covsel`, `teststats`). All tests for every other tool: the
+  build runs them to make or check results (`biglib` joins acidlibs and
+  deflibs, `blitzlibcheck`, `hunkcheck`, `checkdata`, `asmcmp`,
+  `vasmlisting` and `checklabels` check, `xtra`, `ab3tok`, `blitztokens`,
+  `bb22`, `blitzres`, `bblines` and `mktestdata` make data). The
+  scenarios on the map above: `tools/lib/amiga_emulation` and
+  `tests/corpus/runner` select the 440 emulator tests and the host tests
+  (with the 163 tests always selected: all 495), `tools/lib/covmap` only
+  the 163 always selected (`host` and `host_emulator` are among them),
+  `tools/lib/biglib` all tests. The scenarios of task 5.1 hold on the new
+  map: `domaximum` selects `corpus_cd` and `corpus_cd_ab3` (165 with the
+  163 always selected), `ab3date.h` six tests and the host tests,
+  `eval.h`, a `CMakeLists.txt` and a stale map all tests, a new file in
+  `tests/blitz2/` the `blitz2_*` tests, and `blocktab` (TED core) has a
+  count above 0 only in `host/ted_core_search`'s tracefile.

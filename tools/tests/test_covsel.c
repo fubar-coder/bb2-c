@@ -39,6 +39,9 @@ static const char *const traces[][2] = {
       "SF:" ROOT "/tools/lib/amiga_emulation/run.c\nFN:1,9,run\nFNDA:1,run\nend_of_record\n" },
     /* a test that executed nothing measured: not named by the map */
     { "newtest", "TN:newtest\n" EVAL("0", "0") },
+    /* a test outside the emulator named by the map (a file of its own) */
+    { "declarations_x", "TN:declarations_x\n"
+      "SF:" ROOT "/programs/blitz2/src/other.c\nFN:1,9,other\nFNDA:1,other\nend_of_record\n" },
 };
 
 /* a selection with the map read */
@@ -63,6 +66,7 @@ static const char tests[] =
     TEST("corpus_req", "\"emulator\"") ","
     TEST("corpus_serial", "\"emulator\"") ","
     TEST("bug_orig_x", "\"emulator\", \"bug-orig\"") ","
+    TEST("declarations_x", "") ","
     TEST("host", "") ","
     TEST("host_emulator", "\"emulator\"") ","
     "{\"name\": \"newtest\", \"properties\": []}]}";
@@ -150,7 +154,9 @@ static char *diff1(const char *path, const char *hunk, const char *body)
     return d;
 }
 
-#define ALL "ab3_cli bug_orig_x corpus corpus_req corpus_serial host host_emulator newtest"
+#define ALL "ab3_cli bug_orig_x corpus corpus_req corpus_serial declarations_x host host_emulator newtest"
+/* every emulator test and the host tests */
+#define EMU "ab3_cli bug_orig_x corpus corpus_req corpus_serial host host_emulator newtest"
 
 static void test_select(void)
 {
@@ -296,6 +302,31 @@ static void test_real_rules(void)
     r = select_for(real_rules, diff1("programs/ted/src/core/tokit.c", "@@ -15 +15 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, ALL));
     r = select_for(real_rules, diff1("shared/xtra/xtra.c", "@@ -15 +15 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, ALL));
+    /* the tools: the emulator sessions and the runners select every
+       emulator test and the host tests, a tool only the host tests use the
+       host tests, a tool of the build all tests */
+    r = select_for(real_rules, diff1("tools/lib/amiga_emulation/amiga_emulation.c", "@@ -3 +3 @@", "-a\n+b\n"),
+                   NULL, 0);
+    CHECK(!strcmp(r, EMU));
+    r = select_for(real_rules, diff1("tools/amiga_run/main.c", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, EMU));
+    r = select_for(real_rules, diff1("tests/corpus/runner/corpusrun.c", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, EMU));
+    r = select_for(real_rules, diff1("tools/lib/outmatch/outmatch.c", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, EMU));
+    r = select_for(real_rules, diff1("tools/lib/covmap/covmap.c", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "host host_emulator newtest"));
+    r = select_for(real_rules, diff1("tools/covsel/rules.txt", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "host host_emulator newtest"));
+    r = select_for(real_rules, diff1("tools/tests/test_hunk.c", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "host host_emulator newtest"));
+    r = select_for(real_rules, diff1("tools/lib/biglib/biglib.c", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, ALL));
+    r = select_for(real_rules, diff1("tools/hunkcheck/main.c", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, ALL));
+    r = select_for(real_rules, diff1("tools/lib/amiga_emulation/CMakeLists.txt", "@@ -3 +3 @@", "-a\n+b\n"),
+                   NULL, 0);
     CHECK(!strcmp(r, ALL));
 }
 

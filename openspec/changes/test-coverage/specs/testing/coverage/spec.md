@@ -10,11 +10,15 @@ no test reaches.
 ## ADDED Requirements
 
 ### Requirement: Host coverage is an option of the host build
-The host build SHALL have an option that builds all host code with coverage instrumentation, off by default; with it, every host test SHALL leave its coverage data apart from the other tests', so that the data of one test can be read on its own.
+The host build SHALL have an option that builds the program code the host tests compile (the sources of the programs and the shared code, `programs/*/src` and `shared/`) with coverage instrumentation, off by default; the tools (`tools/`), the test sources and the tools of the programs SHALL NOT be instrumented. With the option, every host test SHALL leave its coverage data apart from the other tests', so that the data of one test can be read on its own.
 
 #### Scenario: Coverage of one host test
 - **WHEN** the host side is built with the coverage option and the host tests run
 - **THEN** each test's coverage data is stored under the test's name, and reading it lists the functions that test executed (for example the TED core functions of a TED host test)
+
+#### Scenario: Tools are not measured
+- **WHEN** the host side is built with the coverage option and a host test of a tool runs (for example one of the emulator sessions in `tools/lib/amiga_emulation`)
+- **THEN** its coverage data names no function of `tools/` and of the test sources
 
 #### Scenario: Default build
 - **WHEN** the host side is built without the option

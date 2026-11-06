@@ -65,8 +65,10 @@ here; `tokens_broken` checks that a missing library is noticed.
 `ctest --test-dir build/amiga/host`.
 With `-DHOST_SANITIZE=ON` the host side is built with AddressSanitizer
 and UBSan. With `-DHOST_COVERAGE=ON` it is built with gcov
-(`--coverage -O0`), and each host test `X` writes its `.gcda` files
-below `build/<preset>/host/coverage/X/` (`GCOV_PREFIX`).
+(`--coverage -O0`) for the program code the host tests compile (the
+sources below `programs/*/src/` and `shared/`; not the tools, the test
+sources or the TED tools), and each host test `X` writes its `.gcda`
+files below `build/<preset>/host/coverage/X/` (`GCOV_PREFIX`).
 
 ## emulator tests
 
@@ -562,9 +564,13 @@ its results stay as they are. The test preset `coverage` runs every test,
 original bugs fail on purpose there as in `ctest --preset bug-orig` (291),
 all others pass.
 
-* **host tests:** a build with `-DHOST_COVERAGE=ON` (gcov, `-O0`); each
-  host test `X` leaves its `.gcda` files below
-  `build/<preset>/host/coverage/X/` and is recorded as test `host/X`.
+* **host tests:** a build with `-DHOST_COVERAGE=ON` (gcov, `-O0`) of the
+  program code they compile (`programs/*/src/`, `shared/`: the TED core,
+  the `.xtra` model, the tokenizer, ...; gcc's
+  `-fprofile-filter-files`); the tools, the test sources and the TED
+  tools are not instrumented. Each host test `X` leaves its `.gcda` files
+  below `build/<preset>/host/coverage/X/` and is recorded as test
+  `host/X`.
 * **compilers in the emulator:** the coverage configuration builds
   `blitz2` and `blitz2-ab3` instrumented; each emulator test leaves the
   coverage files of the compilers it ran as
@@ -600,7 +606,10 @@ runs `cmake/coverage-map.cmake`: gcov per host test, `nm -A` and
 * `lcov/all.info`: all tests in one tracefile, for `genhtml`
   (`genhtml -o <dir> build/amiga-cov/coverage/lcov/all.info`, lcov 2.0
   or later; lcov is not needed by the build), editors and coverage
-  services. `genhtml --branch-coverage` does not read it yet (TODO.md).
+  services; `--branch-coverage` adds the host tests' branches (checked
+  with lcov 2.6). genhtml's report shows only files with line counts,
+  so the compilers' files (function counts only) are not in it
+  (TODO.md).
 * `commit`: the commit the run was made from.
 
 The inputs handed to covmap stay in `build/<preset>/coverage/map-inputs/`.
@@ -632,13 +641,22 @@ rules for what a change of a file selects are in
   counts as changed as a whole, by its own rule (a measured source: the
   tests of all its functions; glue, which is not measured: all tests);
 * a test source or expect file: the tests of the suites that read it (by
-  name or label); a host test source: the host tests; the runners and
-  Amiga helper programs of the suites (`tests/*/runner/`,
-  `tests/*/amiga/`), which several suites use: all tests;
+  name or label); a host test source: the host tests; the Amiga helper
+  programs of the suites (`tests/*/amiga/`), which several suites use:
+  all tests;
+* what the emulator tests run on the host: the runners
+  (`tests/*/runner/`), the emulator sessions
+  (`tools/lib/amiga_emulation/`), `amiga_run`, the `@stat` line
+  (`tools/lib/teststats/`) and `outmatch`: every emulator test and the
+  host tests;
+* the tools only the host tests and the coverage scripts use (`covmap`,
+  `covsel`, `teststats`): the host tests; every other tool makes or
+  checks results of the build (`biglib`, `blitzlibcheck`, `hunkcheck`,
+  `xtra`, `ab3tok`, ...): all tests;
 * `libs/`: the emulator tests and the checks of the libraries;
 * documentation: no test;
-* the build (CMake files, presets), TED, shared code, the tools, the
-  test data, and every file no rule knows: all tests.
+* the build (CMake files, presets), TED, shared code, the test data, and
+  every file no rule knows: all tests.
 
 Tests without a tracefile that names an executed function are always
 selected: new ones, those that run no measured program, and those whose
