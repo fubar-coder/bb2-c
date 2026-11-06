@@ -34,3 +34,5 @@
   notes: |
     With the address 0, the error is "Shapes file at memory location 0?
     NOWAY!".
+"Shape":
+  text: The object of a shape, as the introduction describes.

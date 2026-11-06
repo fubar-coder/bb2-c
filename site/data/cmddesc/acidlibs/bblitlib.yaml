@@ -1,5 +1,5 @@
 "Buffer":
-  text: Sets the buffer up with `Memorylen` bytes of chip memory; an old buffer of the object is freed.
+  text: Sets the buffer up with `Memorylen` bytes of chip memory; an old buffer of the object is freed. 16384 bytes are enough for many programs; with runtime error checking, a buffer that is too small gives the error "Buffer Overflow".
 "BBlit":
   text: Saves the area of the used bitmap under the shape into the buffer, then draws the shape like `Blit`. With `Excessonoff`, the bitplanes beyond the shape's depth are set or cleared under the shape, as with `Blit`.
 "UnBuffer":
@@ -7,6 +7,6 @@
 "BBlitMode":
   text: The blit mode of the following `BBlit` commands, as `BlitMode`; the start value is the cookie mode.
 "ShowStencil":
-  text: Puts back the saved background through a stencil, only where the stencil has pixels; the buffer stays as it is.
+  text: Puts back the saved background through a stencil, only where the stencil has pixels; the buffer stays as it is. This lets shapes move between background and foreground. The bitmap holds both, the stencil only the foreground, and after the `BBlit` commands `ShowStencil` draws the foreground over the shapes again.
 "FlushBuffer":
-  text: Empties the buffer without putting the background back.
+  text: Empties the buffer without putting the background back, so that the next `UnBuffer` does nothing.

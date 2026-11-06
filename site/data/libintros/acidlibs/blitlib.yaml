@@ -18,3 +18,5 @@ intro: |
   error checking, a blit outside the bitmap is the error "Coords outside of
   BitMap", and a shape without a cookie the error "Shape does not have a
   cookie cut".
+
+  *Based on the blitlib guide by Acid Software.*

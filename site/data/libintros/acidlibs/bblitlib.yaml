@@ -14,3 +14,5 @@ intro: |
   Kept from the original: only runtime error checking notices that the
   buffer is too small
   ([#73](https://github.com/fubar-coder/bb2-c/issues/73)).
+
+  *Based on the bblitlib guide by Acid Software.*

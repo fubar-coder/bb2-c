@@ -7,4 +7,4 @@
 "QBlitMode":
   text: The blit mode of the following `QBlit` commands, as `BlitMode`; the start value is the cookie mode.
 "FlushQueue":
-  text: Empties the queue without touching the bitmap.
+  text: Empties the queue without touching the bitmap, so that the next `UnQueue` does nothing.

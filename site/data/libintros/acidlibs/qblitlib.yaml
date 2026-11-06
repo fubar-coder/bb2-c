@@ -13,3 +13,5 @@ intro: |
   Kept from the original: only runtime error checking notices that more
   blits are queued than the queue has room for
   ([#423](https://github.com/fubar-coder/bb2-c/issues/423)).
+
+  *Based on the qblitlib guide by Acid Software.*
