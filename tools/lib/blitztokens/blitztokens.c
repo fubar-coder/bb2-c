@@ -47,7 +47,8 @@ static int string_at(const struct hunk *h, uint32_t off)
     return off < h->size && memchr(h->data + off, 0, h->size - off) != NULL;
 }
 
-/* a first node: next relocated, num 1, "NEWTYPE" */
+/* a first node: next relocated, num 1, "NEWTYPE"; at any offset (the
+   nodes of AmiBlitz 2's compilers are not word-aligned) */
 static int is_first(const struct hunk *h, uint32_t p)
 {
     static const char first[] = "NEWTYPE";
@@ -67,7 +68,7 @@ static int walk(const struct loadfile *lf, size_t size, uint32_t hunk, uint32_t 
         const struct hunk *h = &lf->hunks[hunk];
         uint32_t next, target;
 
-        if (off & 1 || off > h->size || h->size - off < 7 || !string_at(h, off + 6)) {
+        if (off > h->size || h->size - off < 7 || !string_at(h, off + 6)) {
             snprintf(err, errlen, "token node at hunk %u $%X outside its hunk",
                      (unsigned)hunk, (unsigned)off);
             return -1;
@@ -113,7 +114,7 @@ int blitztokens_compiler_last(const uint8_t *buf, size_t size, uint16_t last,
 
         if (!h->data)
             continue;
-        for (p = 0; p + 6 <= h->size; p += 2) {
+        for (p = 0; p + 6 <= h->size; p++) {
             struct blitztokens l = { 0 };
 
             if (!is_first(h, p))

@@ -65,6 +65,33 @@ static struct buf compiler2(void)
     return f;
 }
 
+/* a compiler as AmiBlitz 2's: the nodes not word-aligned, the first one at
+   an odd offset */
+static struct buf compiler_odd(void)
+{
+    struct buf code = { 0 }, f;
+    uint32_t relocs[2], n0, n1, n2;
+
+    putbytes(&code, "\x70\x00\x4E\x75\x00", 5);
+    n0 = (uint32_t)code.n;              /* 5 */
+    n1 = n0 + 4 + 2 + 8 + 3;            /* NEWTYPE, help "Ab\0": 22 */
+    n2 = n1 + 4 + 2 + 4 + 1;            /* End: 33 */
+    put32(&code, n1);
+    put16(&code, 1);
+    putbytes(&code, "NEWTYPE\0Ab\0", 11);
+    put32(&code, n2);
+    put16(&code, 2);
+    putbytes(&code, "End\0\0", 5);
+    put32(&code, 0);
+    put16(&code, 3);
+    putbytes(&code, "Let\0\0", 5);
+    relocs[0] = n0;
+    relocs[1] = n1;
+    f = loadfile1(1, HUNK_CODE, &code, relocs, 2, 0);
+    free(code.p);
+    return f;
+}
+
 /* a library: header with libnum, then statement A, a nullsub, dumtoke D,
    statement B */
 static void stmt(struct buf *b, const char *name)
@@ -202,6 +229,18 @@ int main(void)
     blitztokens_free(&l);
     CHECK(blitztokens_compiler_last(c.p, c.n, 0x8003, &l, err, sizeof err) == -1
           && strstr(err, "loop"));
+    blitztokens_free(&l);
+
+    /* AmiBlitz 2: nodes at odd offsets; broken: a next behind the hunk */
+    free(c.p);
+    c = compiler_odd();
+    CHECK(blitztokens_compiler(c.p, c.n, &l, err, sizeof err) == 0);
+    CHECK(l.n == 3 && has(&l, 0, 0x8001, "NEWTYPE") && has(&l, 1, 0x8002, "End")
+          && has(&l, 2, 0x8003, "Let"));
+    blitztokens_free(&l);
+    c.p[0x20 + 5 + 3] = 0x7F;           /* NEWTYPE's next: $7F */
+    CHECK(blitztokens_compiler(c.p, c.n, &l, err, sizeof err) == -1
+          && strstr(err, "$7F outside its hunk"));
     blitztokens_free(&l);
 
     /* two lists: only one with -last, chosen by its last token */

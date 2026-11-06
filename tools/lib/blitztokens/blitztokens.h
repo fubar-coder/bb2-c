@@ -3,7 +3,8 @@
  * it and hands it to the editor (edstruct, the list TED tokenises with):
  * the compiler's own tokens (blitz2.s 283 `tokens`: the BASIC keywords and
  * the assembler mnemonics, a linked list of nodes next.l num.w "name",0
- * "help",0) and then the tokens of the libraries in the order the compiler
+ * "help",0, word-aligned in blitz2, not in AmiBlitz 2's compilers: a node
+ * may begin at any offset) and then the tokens of the libraries in the order the compiler
  * links them (blitz2.s loadlibs: acidlibs, deflibs, then the libraries of
  * blitz2:userlibs).  The number of a library entry (blitz2.s fixlibs):
  * counted from libnum*128+1 for a user library, from libnum for a system
