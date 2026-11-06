@@ -702,6 +702,11 @@ static struct textsize textcalc(const ULONG **sp, const UBYTE *s, UWORD item,
     sussflags(BL_POPL(*sp), item);
     extent.height = menuyxs + menuyxs + fonthite;
     len = BL_POPL(*sp);
+    /* BUG(orig) (#981): allocst returns 0 for a text of length 0; the 0
+       becomes the IntuiText's IText and IntuiTextLength reads the string
+       at address 0 (the item gets that width). MenuTitle (domenutitle) also
+       stores MenuName 0 for an empty title, but computes its width from
+       the length alone. */
     extent.text = allocst(s, len);
     dumintuitext.IText = extent.text;
     extent.width = (WORD)IntuiTextLength(&dumintuitext) + menuxxs + menuxxs;

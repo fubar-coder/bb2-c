@@ -1,0 +1,4 @@
+[run]
+item width 8 IText nonzero 1
+subitem width 8 IText nonzero 1
+rc=0

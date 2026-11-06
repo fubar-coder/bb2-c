@@ -138,6 +138,7 @@ intended deviations (kind **F**), each with its issue.
 | collslib | – | no deviation | – | – |
 | iffmakelib | – | no deviation (check functions in the check area since c4a736d, see section 6) | – | – |
 | iffmakelib err2 (iffmakelib.c:49) | "Can't open File" (err2) traps in normal code, its message is in the error check area (without debugger d0 behind the lib) | message in normal code | **F** | #185: the same runtime error with the debugger; without it TRAP #0 with the right message (test `iffmakelib-openerr-errarea`) |
+| menuslib textcalc (menuslib.c:700) | the text of an item or subitem is copied with `allocst`, which returns 0 for a text of length 0; the 0 becomes the IntuiText's `IText` and `IntuiTextLength` is called on it: it reads the string at address 0 (Enforcer hit) and the item's width is that of whatever is there (with "ABC" at address 0: 32 instead of the 8 of the gaps alone). `MenuTitle` with an empty title also stores `MenuName` 0 (measured), but computes its width from the length alone | the same (reproduced) | – | #981: original bug carried over, not fixed (test `menuslib-empty-item-text`, measured with the CD's library and the C library; with a non-empty string for an empty text the test comes out FIXED). AmiBlitz 2.42 lists the fix, AmiBlitz3's first commit allocates a length of at least 1 |
 
 ## 4. deflibs (AmigaOS call declarations)
 
