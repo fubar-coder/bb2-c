@@ -21,36 +21,43 @@ layout: hextra-home
 
 <div class="hx:mt-6"></div>
 
-{{< hextra/feature-grid >}}
+{{< hextra/feature-grid cols="2" >}}
   {{< hextra/feature-card
-    title="Introduction"
-    subtitle="What the BB2 C port is, how to build it and how to try the results in an emulator."
-    icon="play"
-    link="docs/introduction"
-  >}}
-  {{< hextra/feature-card
-    title="How blitz2 works"
-    subtitle="A program on its way through the compiler, from the source text to an executable."
-    icon="light-bulb"
-    link="docs/how-blitz2-works"
-  >}}
-  {{< hextra/feature-card
-    title="blitz2 internals"
-    subtitle="How the libraries the compiler reads are built, and the library variants."
+    title="Building the BB2 C port"
+    subtitle="You want to try it: build the compiler, the editor and the libraries from the sources on Linux."
     icon="cog"
-    link="docs/blitz2-internals"
+    link="docs/introduction/building"
   >}}
   {{< hextra/feature-card
-    title="Libraries"
-    subtitle="The commands each library provides."
-    icon="collection"
-    link="docs/libraries"
+    title="Your first program"
+    subtitle="You wrote Blitz Basic 2 programs and want to again: type, run and compile a program in the emulator."
+    icon="play"
+    link="docs/introduction/first-program"
+  >}}
+  {{< hextra/feature-card
+    title="Writing your own userlib"
+    subtitle="You want to add commands: write a Blitz library in C, build it and call it from a program."
+    icon="puzzle"
+    link="docs/blitz2-internals/own-userlib"
   >}}
   {{< hextra/feature-card
     title="AB3 mode"
-    subtitle="A second mode of the compiler that compiles the sources of AmiBlitz3."
+    subtitle="You use AmiBlitz3: compile its sources from the Shell with AmiBlitz3's own libraries."
     icon="switch-horizontal"
     link="docs/ab3-mode"
+  >}}
+{{< /hextra/feature-grid >}}
+
+<div class="hx:mt-16 hx:mb-6">
+{{< hextra/hero-section heading="h2" >}}Advanced topics{{< /hextra/hero-section >}}
+</div>
+
+{{< hextra/feature-grid cols="2" >}}
+  {{< hextra/feature-card
+    title="How blitz2 works"
+    subtitle="A program on its way through the compiler, from the line you type to the executable."
+    icon="light-bulb"
+    link="docs/how-blitz2-works"
   >}}
   {{< hextra/feature-card
     title="Differences from the original"
