@@ -14,7 +14,7 @@ For working with the repository:
 |---|---|
 | [development.md](development.md) | IDE profiles (CLion and others), `.clangd`, the checks the build runs on its results |
 | [structure.md](structure.md) | the directory structure of the repository in full |
-| [blitz2/extensions.md](blitz2/extensions.md) | what `blitz2` accepts beyond Blitz Basic 2 (`#__debug`) |
+| [blitz2/extensions.md](blitz2/extensions.md) | what `blitz2` accepts beyond Blitz Basic 2 |
 | [libs/variants.md](libs/variants.md) | variants of the libraries, userlibs of a variant, the reference build of the RWE sources |
 | [libs/readable-sources.md](libs/readable-sources.md) | the library sources as TED shows them (`bblibsrc`, `teddetok`, `bb22`, `xtra`) |
 | [ab3/usage.md](ab3/usage.md) | `blitz2-ab3`: compiling AmiBlitz3 sources from the command line |
