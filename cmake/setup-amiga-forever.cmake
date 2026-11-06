@@ -97,8 +97,8 @@ set(results
 	"amiga-os-310-a600.rom|03ec7583249c686a3f63b5b92634b12e14ce72fc27b0066a8c3cca57f869443e"
 	"amiga-os-130.rom|caa4910942b8d558c9ae2284405af81db3752535192cc25f7939765c3ea2d5e0"
 	"rom.key|f3b3b35593fef9a677225f559f8155e2b5d97b5bbfb2ccf24ee93738124d9a71"
-	"workbench-311.hdf|e150f30f91d8b2861f9478deed90c18b9bcad1c7be0419b440dcd3a80ab1579f"
-	"workbench-311-rtg.hdf|33dba185784a838450334f502539db758081c5d3aad6a161f0cbe53b122108df"
+	"workbench-311.hdf|b3963c5dafb75027ffd6a5f5a1a6572246337bfb7d0f1b31cfdb50b3ae843c01"
+	"workbench-311-rtg.hdf|f092de1ec92bff7854701c32bc5ad9f54f16de9264ef09dffba010816a77fba4"
 	"workbench-135.hdf|a7b4fd7e1509a6086baf04f14c44894af41107c3ee9093e585261154665d5c28")
 
 # S:User-Startup: TEST:run.script if TEST: is mounted (without asking for
@@ -126,6 +126,27 @@ string(REGEX REPLACE "^\n" "" user_startup_13 "${user_startup_13}")
 # (no ';' in these texts: they pass through a CMake list)
 set(ss13_old "\n\nLoadWB DELAY")
 set(ss13_new "\n\nIF EXISTS S:User-Startup\nExecute S:User-Startup\nENDIF\n\nLoadWB DELAY")
+
+# ENVARC:Sys/font.prefs (Workbench 3.1 has none; ENV: is filled from ENVARC:
+# at boot): the file Workbench 3.1's Font preferences saves with the default
+# fonts, an IFF FORM PREF (prefs/font.h, prefs/prefhdr.h): PRHD (version 0,
+# type 0, flags 0) and three FONT chunks of 156 bytes (struct FontPrefs:
+# 3 reserved longs, a reserved word, fp_Type 0 Workbench / 1 system / 2
+# screen, FrontPen 1, BackPen 0, DrawMode JAM2, SpecialDrawMode 0, TextAttr
+# {name pointer 0 - IPrefs sets it, YSize 8, style 0, flags ROMFONT}, name
+# "topaz.font" in 128 bytes): topaz 8 for all three, as without the file.
+# FORM size = 4 + 8 + 6 + 3 * 164 = 510.
+string(REPEAT "00" 118 font_name_pad)
+set(font_prefs "464f524d000001fe50524546" "5052484400000006000000000000")
+foreach(type 0 1 2)
+	list(APPEND font_prefs "464f4e540000009c" "000000000000000000000000" "0000" "000${type}"
+		"01000100" "00000000" "0008" "00" "01" "746f70617a2e666f6e74${font_name_pad}")
+endforeach()
+string(REPLACE ";" "" font_prefs "${font_prefs}")
+string(LENGTH "${font_prefs}" font_prefs_len)
+if(NOT font_prefs_len EQUAL 1036)
+	message(FATAL_ERROR "font.prefs: ${font_prefs_len} hex digits, expected 1036 (518 bytes)")
+endif()
 
 # make DEST/name as NAME.part with the command after the name (the
 # placeholder @OUT@ for the output path; COPY: copy the input), check it
@@ -177,9 +198,11 @@ make_result(amiga-os-310-a600.rom COPY "${shared}/rom/amiga-os-310-a600.rom")
 make_result(amiga-os-130.rom COPY "${shared}/rom/amiga-os-130.rom")
 make_result(rom.key COPY "${shared}/rom/rom.key")
 make_result(workbench-311.hdf edit "${shared}/hdf/workbench-311.hdf" @OUT@ --partition
-	--write S/User-Startup "${user_startup_31}")
+	--write S/User-Startup "${user_startup_31}"
+	--write-hex Prefs/Env-Archive/Sys/font.prefs "${font_prefs}")
 make_result(workbench-311-rtg.hdf edit "${shared}/hdf/workbench-311.hdf" @OUT@ --partition
 	--write S/User-Startup "${user_startup_31}"
+	--write-hex Prefs/Env-Archive/Sys/font.prefs "${font_prefs}"
 	--copy Storage/Monitors/UAE Devs/Monitors/UAE
 	--copy Storage/Monitors/UAE.info Devs/Monitors/UAE.info)
 make_result(workbench-135.hdf edit "${shared}/hdf/workbench-135.hdf" @OUT@

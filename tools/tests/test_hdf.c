@@ -340,6 +340,32 @@ static void broken(void)
     free(img);
 }
 
+static void hexfiles(void)
+{
+    struct hdf h;
+    char err[200];
+    uint8_t *img = calloc(64, HDF_BLOCK), *back;
+    size_t len;
+
+    CHECK(img != NULL);
+    CHECK(hdf_format(img, 64 * HDF_BLOCK, DOS(3), "Hex", 0, err, sizeof err) == 0);
+    CHECK(hdf_open(&h, img, 64 * HDF_BLOCK, err, sizeof err) == 0);
+    CHECK(hdf_write_hex(&h, "Bin", "00ff7F80aBcD", err, sizeof err) == 0);
+    CHECK(hdf_read(&h, "Bin", &back, &len, err, sizeof err) == 0);
+    CHECK(len == 6 && !memcmp(back, "\x00\xff\x7f\x80\xab\xcd", 6));
+    free(back);
+    CHECK(hdf_write_hex(&h, "Empty", "", err, sizeof err) == 0);
+    CHECK(hdf_check(&h, err, sizeof err) == 0);
+    /* broken input: nothing is written */
+    CHECK(hdf_write_hex(&h, "Odd", "abc", err, sizeof err) == -1 && strstr(err, "odd"));
+    CHECK(hdf_write_hex(&h, "Bad", "0g", err, sizeof err) == -1 && strstr(err, "bad digit"));
+    CHECK(hdf_write_hex(&h, "Bad", "0 ", err, sizeof err) == -1 && strstr(err, "bad digit"));
+    CHECK(hdf_read(&h, "Odd", &back, &len, err, sizeof err) == -1);
+    CHECK(hdf_read(&h, "Bad", &back, &len, err, sizeof err) == -1);
+    hdf_close(&h);
+    free(img);
+}
+
 static void listing(void)
 {
     uint8_t *img = formatted(100, DOS(3));
@@ -371,6 +397,7 @@ int main(void)
     rdb();
     broken();
     listing();
+    hexfiles();
     CHECK(hdf_format(img, sizeof img, DOS(4), "x", 0, err, sizeof err) == -1);
     CHECK(hdf_format(img, sizeof img, DOS(1), "", 0, err, sizeof err) == -1);
     if (failures)

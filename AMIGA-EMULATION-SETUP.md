@@ -38,7 +38,8 @@ in graphics card memory, where the blitter cannot reach them).
 
 ### What the tests bring along
 
-Nothing is installed on the Workbench besides `S:User-Startup`; what a
+Nothing is installed on the Workbench besides `S:User-Startup` and
+`ENVARC:Sys/font.prefs` (see "What the script changes"); what a
 test needs beyond Workbench 3.1, it brings itself:
 
 * AmiBlitz3 v3.14.0 (`ab3_cli_ref`, `ab3_tokenise`) opens its
@@ -106,8 +107,8 @@ read. Further options: `-DDEST=DIR` (default `amiga-emulation/`),
 | `workbench-135.hdf` | Workbench 1.3.5 (34.34), RDB hardfile, partition DH0 (DOS\1, FFS in the RDB) | 3145728 | `a7b4fd7e1509a6086baf04f14c44894af41107c3ee9093e585261154665d5c28` |
 | `amiga-os-310-a1200.rom` | Kickstart 3.1 (40.68), A1200, Cloanto-encrypted | 524299 | `541f7467bce4f4b07a6eb5250d4586a4679c2da51ad30b48ba93421a901b1bb0` |
 | `amiga-os-310-a600.rom` | Kickstart 3.1 (40.63), A500/A600/A2000, Cloanto-encrypted | 524299 | `03ec7583249c686a3f63b5b92634b12e14ce72fc27b0066a8c3cca57f869443e` |
-| `workbench-311.hdf` | Workbench 3.1 (40.42), raw partition image, DOS\3 | 6258688 | `e150f30f91d8b2861f9478deed90c18b9bcad1c7be0419b440dcd3a80ab1579f` |
-| `workbench-311-rtg.hdf` | the same with the uaegfx monitor | 6258688 | `33dba185784a838450334f502539db758081c5d3aad6a161f0cbe53b122108df` |
+| `workbench-311.hdf` | Workbench 3.1 (40.42), raw partition image, DOS\3 | 6258688 | `b3963c5dafb75027ffd6a5f5a1a6572246337bfb7d0f1b31cfdb50b3ae843c01` |
+| `workbench-311-rtg.hdf` | the same with the uaegfx monitor | 6258688 | `f092de1ec92bff7854701c32bc5ad9f54f16de9264ef09dffba010816a77fba4` |
 
 What the script changes in Amiga Forever's hardfiles (both are RDB
 hardfiles with one partition `DH0`; `S:User-Startup` as in "Conditions
@@ -122,12 +123,22 @@ for the hardfiles"):
   to 383 of 32 blocks, 1 surface, 2 reserved blocks: the geometry of the
   `hardfile2` line of the a1200 and a600, mounted by Kickstart 3.1's FFS
   in the ROM), and a new `S/User-Startup`, which its `S/Startup-Sequence`
-  already executes (before `S:AFShared-Startup` and `LoadWB`).
+  already executes (before `S:AFShared-Startup` and `LoadWB`), and a new
+  `Prefs/Env-Archive/Sys/font.prefs` (`ENVARC:Sys/font.prefs`, copied to
+  `ENV:` at boot): Workbench 3.1 ships none (the 3.2 image had one), but
+  tests such as `bug_orig_rimisclib_openfontprefs_alloc_unchecked` read
+  `ENV:SYS/Font.Prefs`. It is the file Font preferences saves with the
+  default fonts (neither Amiga Forever's disks nor hardfiles have one, so
+  the script writes it with `hdftool edit --write-hex`): an IFF FORM PREF
+  with PRHD and three FONT chunks (Workbench, system, screen; `struct
+  FontPrefs` of `prefs/font.h`), topaz 8 each, 518 bytes. IPrefs takes
+  it at boot without a requester and the fonts stay as without it.
 * `workbench-311-rtg.hdf`: as `workbench-311.hdf`, plus
   `Storage/Monitors/UAE` and `UAE.info` (Picasso96 with
   `BOARDTYPE=uaegfx`) copied to `Devs/Monitors`, so the Startup-Sequence
   starts the monitor and the RTG modes exist; the Workbench itself stays
-  on the native screen (no `screenmode.prefs`).
+  on the native screen (no `screenmode.prefs`). It has the font prefs as
+  well.
 
 Checked 2026-11-06 (Amiberry, `AMIGA_EMULATION_DIR` on a separate
 directory): all three Kickstarts boot their hardfile and run

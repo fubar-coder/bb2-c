@@ -753,8 +753,10 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   `freqlib_libs_not_closed`, `blitzcoplib_maxslice_zero` (DIFFERS ->
   REPRODUCED: the reference run timed out on 3.2). To look at:
   `rimisclib_openfontprefs_alloc_unchecked` (REPRODUCED -> BROKEN:
-  Workbench 3.1 has no `ENV:SYS/Font.Prefs`, so OpenFontPrefs reads
-  nothing - the test needs the file, without IPrefs seeing a broken one);
+  Workbench 3.1 has no `ENV:SYS/Font.Prefs`; done 2026-11-06: the setup
+  script writes `ENVARC:Sys/font.prefs` into both 3.1 hardfiles
+  (`hdftool edit --write-hex`), REPRODUCED again, `ctest --preset
+  emulator` 87 of 87; rerun the setup with `-DFORCE=ON`);
   `rimisclib_initargparse_unbounded` (DIFFERS -> BROKEN: the original's
   overwritten NextArgChar$ code, `$78` bytes = `moveq #$78,d4`, runs
   through on 3.1 and prints "at most 255" - the expectation does not see

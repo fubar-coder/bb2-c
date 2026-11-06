@@ -9,6 +9,7 @@
  *   hdftool check IMAGE
  *   hdftool edit IN OUT [--partition] OP...
  *     --write PATH TEXT     write a file (create or replace)
+ *     --write-hex PATH HEX  the same, the contents as hexadecimal digits
  *     --replace PATH OLD NEW  replace text that occurs exactly once
  *     --copy FROM TO        copy a file inside the image
  *
@@ -35,6 +36,7 @@ static const char usage[] =
     "  applies the operations, checks the file system and writes OUT, which\n"
     "  must not exist; --partition writes only the partition (no RDB).\n"
     "  OP: --write PATH TEXT      write a file (create or replace)\n"
+    "      --write-hex PATH HEX   the same, the contents as hexadecimal digits\n"
     "      --replace PATH OLD NEW replace text that occurs exactly once\n"
     "      --copy FROM TO         copy a file inside the image\n";
 
@@ -103,6 +105,9 @@ static int edit(struct hdf *h, const char *out, int argc, char **argv)
     while (i < argc) {
         if (!strcmp(argv[i], "--write") && i + 2 < argc) {
             r = hdf_write(h, argv[i + 1], argv[i + 2], strlen(argv[i + 2]), err, sizeof err);
+            i += 3;
+        } else if (!strcmp(argv[i], "--write-hex") && i + 2 < argc) {
+            r = hdf_write_hex(h, argv[i + 1], argv[i + 2], err, sizeof err);
             i += 3;
         } else if (!strcmp(argv[i], "--replace") && i + 3 < argc) {
             r = hdf_replace(h, argv[i + 1], argv[i + 2], argv[i + 3], err, sizeof err);

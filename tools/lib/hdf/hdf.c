@@ -694,6 +694,43 @@ int hdf_write(struct hdf *h, const char *path, const void *data, size_t len, cha
     return write_file(h, path, data, len, NULL, 0, err, errlen);
 }
 
+static int hexval(char c)
+{
+    if (c >= '0' && c <= '9')
+        return c - '0';
+    if (c >= 'a' && c <= 'f')
+        return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F')
+        return c - 'A' + 10;
+    return -1;
+}
+
+int hdf_write_hex(struct hdf *h, const char *path, const char *hex, char *err, size_t errlen)
+{
+    size_t n = strlen(hex), i;
+    uint8_t *buf;
+    int r;
+
+    if (n % 2)
+        return fail(err, errlen, "hex contents of %s: odd number of digits", path);
+    buf = malloc(n / 2 + 1);
+    if (!buf)
+        return fail(err, errlen, "out of memory");
+    for (i = 0; i < n; i += 2) {
+        int a = hexval(hex[i]), b = hexval(hex[i + 1]);
+
+        if (a < 0 || b < 0) {
+            free(buf);
+            return fail(err, errlen, "hex contents of %s: bad digit at %zu", path,
+                        a < 0 ? i : i + 1);
+        }
+        buf[i / 2] = (uint8_t)(a << 4 | b);
+    }
+    r = hdf_write(h, path, buf, n / 2, err, errlen);
+    free(buf);
+    return r;
+}
+
 int hdf_copy(struct hdf *h, const char *from, const char *to, char *err, size_t errlen)
 {
     uint32_t n;

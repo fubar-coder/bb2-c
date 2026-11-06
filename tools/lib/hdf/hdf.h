@@ -81,6 +81,15 @@ int hdf_write(struct hdf *h, const char *path, const void *data, size_t len, cha
               size_t errlen);
 
 /**
+ * @brief Write a file whose contents are given as hexadecimal digits (two
+ *        per byte, upper or lower case, no separators): binary files
+ *        that cannot be an argument text.
+ * @return 0, or -1 with err set (odd number of digits, a character that
+ *         is no hexadecimal digit, or as hdf_write)
+ */
+int hdf_write_hex(struct hdf *h, const char *path, const char *hex, char *err, size_t errlen);
+
+/**
  * @brief Copy a file inside the image (the copy gets the source's date
  *        and protection bits); an existing target is replaced.
  */
