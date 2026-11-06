@@ -745,6 +745,19 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   (BUG(orig) #948), which on 3.1 hits memory that matters. The test is
   BROKEN there (the expectation is what the original does); needed: a
   decision how the regression test of #946 keeps its meaning on 3.1.
+- [ ] **bug-orig verdicts that changed with Workbench 3.1** (`ctest
+  --preset bug-orig`, 2026-11-06, against the 3.2 run of the same day:
+  339 of 346 the same): better on 3.1 `freqlib_doslist_unlocked`,
+  `freqlib_libs_not_closed`, `blitzcoplib_maxslice_zero` (DIFFERS ->
+  REPRODUCED: the reference run timed out on 3.2). To look at:
+  `rimisclib_openfontprefs_alloc_unchecked` (REPRODUCED -> BROKEN:
+  Workbench 3.1 has no `ENV:SYS/Font.Prefs`, so OpenFontPrefs reads
+  nothing - the test needs the file, without IPrefs seeing a broken one);
+  `rimisclib_initargparse_unbounded` (DIFFERS -> BROKEN: the original's
+  overwritten NextArgChar$ code, `$78` bytes = `moveq #$78,d4`, runs
+  through on 3.1 and prints "at most 255" - the expectation does not see
+  the overwrite); `bb_blitlib_createshape_count0` (clib: timeout instead
+  of the original's halt, DIFFERS; ref and port REPRODUCED).
 - [ ] **Immutable strings (idea, long term)**: in BB2 a string variable
   is string and string builder in one (the memory of the variable is
   changed in place: `MaxLen`, `&a$` with `Poke`, libraries writing the
