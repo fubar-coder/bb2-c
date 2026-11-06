@@ -81,3 +81,5 @@
     Kept from the original: freeing the last gadget of a list makes the
     next gadget made for that list link into freed memory
     ([#962](https://github.com/fubar-coder/bb2-c/issues/962)).
+"GTList":
+  text: The object that collects GadTools gadgets, as the introduction describes.

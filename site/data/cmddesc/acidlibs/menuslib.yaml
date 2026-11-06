@@ -40,3 +40,5 @@
     Kept from the original: for a subitem, the search goes wrong unless
     the item and subitem are both 0
     ([#217](https://github.com/fubar-coder/bb2-c/issues/217)).
+"MenuList":
+  text: The object that holds a list of menus made with the commands of this library, as the introduction describes.

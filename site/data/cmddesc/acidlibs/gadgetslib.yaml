@@ -69,3 +69,5 @@
   notes: |
     Kept from the original: it has no effect
     ([#952](https://github.com/fubar-coder/bb2-c/issues/952)).
+"GadgetList":
+  text: The object that holds a list of gadgets made with the commands of this library, as the introduction describes.
