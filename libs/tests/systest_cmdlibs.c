@@ -332,6 +332,7 @@ static void test_mathtranslib(void)
 {
     int i;
     ULONG base[2];
+    struct Library *hold;
 
     ROUT = "mathtranslib init";
     strcpy(VEC, "");
@@ -346,9 +347,17 @@ static void test_mathtranslib(void)
         SAME("prefix+len", L(E("mathtranslib", i)));
         SAME("code", L(E("mathtranslib", i) + 4));
     }
+    /* the test holds mathtrans.library open itself: neither finit's
+       CloseLibrary is the last one, which on Workbench 3.1 (mathtrans.library
+       37.1 from LIBS:) goes another way through the library's Close and
+       leaves another a1 - it would depend on the order of the two calls */
     ROUT = "mathtranslib finit";
     strcpy(VEC, "");
+    hold = OpenLibrary((CONST_STRPTR)"mathtrans.library", 0);
+    check("mathtranslib: mathtrans.library held open", hold != NULL);
     DO2(E("mathtranslib", 15), R[cur].a[1] = base[cur]);
+    if (hold)
+        CloseLibrary(hold);
 }
 
 /* ------------------------------------------------------------ utillib */
