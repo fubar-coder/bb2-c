@@ -112,7 +112,10 @@ podman run --rm -v $PWD:/src -w /src ghcr.io/doxygen/doxygen:Release_1_18_0 Doxy
   order in the sidebar comes from `weight` in the front matter.
 * Texts are plain English, explain instead of listing, and give examples
   instead of line numbers. No repository file names in page texts.
-* Nothing from the CD or the original manual.
+* The original documentation (the Blitz Basic 2 manual, Acid's and Red
+  When Excited's library guides) is GPL and may be used: only where it is
+  correct for the port, corrected or reworded where a clearer or correct
+  wording exists, with the source named on the page.
 * Internal links: always `{{< relref "/docs/chapter/page" >}}` in a link
   target (`[text]({{< relref "/docs/libraries" >}})`), also for a sibling page
   and with an anchor (`"/docs/chapter/page#heading"`). A relative link

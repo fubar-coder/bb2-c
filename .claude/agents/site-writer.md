@@ -33,9 +33,14 @@ pages next to the one you write.
   "Blitz Basic 2" and the AmiBlitz3 support "AB3 mode".
 * **Facts only:** take them from the repository's code, tests and
   `docs/`, and check every claim there. Write the current state, with no
-  history notes ("formerly", "was changed", "now"). Use nothing from the
-  CD or the original manual (no license for it): describe in your own
-  words what you verified.
+  history notes ("formerly", "was changed", "now").
+* **Original documentation:** the Blitz Basic 2 manual, Acid's and RWE's
+  library guides (CD, AmiBlitz2/AmiBlitz3 archives) count as GPL (user
+  decision 2026-11-06) and may be used as a source. Take a text over only
+  where it is correct for the port (check it against the code and
+  tests); correct or rewrite it where a clearer or correct wording
+  exists, and do not reword merely to differ. Name the source on the page
+  (e.g. a line "Based on the Blitz Basic 2 manual by Acid Software").
 * **English**, with consistent capitalisation (sentence case for
   headings).
 * **Every link and card must hold what it promises.** Name a card or
