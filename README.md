@@ -84,12 +84,19 @@ give a meaning to sources the original refuses: `docs/blitz2/extensions.md`.
 `blitz2-ab3` compiles Blitz Basic 2 sources exactly as `blitz2` and, from
 the shell without the editor, AmiBlitz3 sources with AmiBlitz3's token
 list and binary libraries (AB3 mode). It needs AmiBlitz3's files under
-`Blitz3:`. Example:
+`Blitz3:`. Example: a text file `hello.ab3` with
 
 ```
-cd Blitz3:
-blitz2:blitz2-ab3 -s Sourcecodes/Amiblitz3/Tests/atoi.ab3 -e RAM:atoi
-RAM:atoi
+a$ = Trim$("  Hello  ")
+NPrint "[", a$, "]"
+End
+```
+
+(`Trim$` exists only in AmiBlitz3's libraries) is compiled and run with
+
+```
+blitz2:blitz2-ab3 -s hello.ab3 -e RAM:hello
+RAM:hello
 ```
 
 Usage, the supported AmiBlitz3 version and the tests:
