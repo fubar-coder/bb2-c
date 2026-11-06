@@ -1,6 +1,6 @@
 description: colorwheel.gadget - the colour wheel gadget class, with conversions between RGB and HSB colours.
 intro: |
-  The colour wheel is a gadget class of AmigaOS 3.0 and newer, a wheel
+  The colour wheel is a gadget class of AmigaOS, a wheel
   for choosing a colour by hue and saturation. Its two calls convert
   colours between RGB and HSB values. A program that uses these calls
   opens the gadget when it starts; on a system without it, the calls

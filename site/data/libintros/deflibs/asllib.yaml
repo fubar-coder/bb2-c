@@ -1,4 +1,4 @@
-description: asl.library - the standard file, font and screen mode requesters of AmigaOS 2.0 and newer.
+description: asl.library - the standard file, font and screen mode requesters.
 intro: |
   `asl.library` gives the standard requesters for files, fonts and
   screen modes. The asllib command library offers them as Blitz

@@ -1,6 +1,6 @@
 description: datatypes.library - loading pictures, sounds, texts and other files of any format the system has a datatype for.
 intro: |
-  `datatypes.library` of AmigaOS 3.0 and newer loads files through
+  `datatypes.library` loads files through
   *datatypes*, classes that each know one file format: pictures, sounds,
   texts, AmigaGuide documents and more. A program can load and show any
   format the system has a datatype for. A program that uses these calls
