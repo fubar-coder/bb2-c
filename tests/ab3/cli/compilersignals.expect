@@ -3,6 +3,6 @@ rc=0
 [run]
 FromCli: -1
 Number of Parameters: 0
-Progdir: RAM Disk:
+~Progdir: R* Disk:
 0, 20, 40, 60, 80, 100, ende
 rc=0

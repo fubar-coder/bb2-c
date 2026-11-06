@@ -4,7 +4,7 @@ rc=0
 hallo
 CPU = 2
 FPU = 2
-ROM = 47
+~ROM = #
 
 testfloat.f = 123.4499
 int float    =123
