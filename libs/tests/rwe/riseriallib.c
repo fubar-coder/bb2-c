@@ -341,6 +341,28 @@ static void sendblock(const char *what, ULONG off, ULONG len)
     readfunc("SerialProgress", PROGRESS, 0);
 }
 
+/* 200 bytes in the 128-word transmit ring, no interrupt in between.
+   BUG(orig) (#983): _writeser never tests whether the ring is full, byte 129
+   overwrites the word of byte 1 (the oldest unsent one), and the index wrend
+   runs on; in a real run the transmit interrupt sends a byte or two meanwhile
+   and the receiver gets the end of the block, not the start.  Both builds. */
+static void ringfull(void)
+{
+    UWORD wbig0[2], wrend0[2];
+
+    for (cur = 0; cur < 2; cur++) {
+        wbig0[cur] = *(UWORD *)wrp[cur];
+        wrend0[cur] = *(UWORD *)(wrp[cur] + 2);
+    }
+    sendblock("200 bytes (ring wraps)", 0, 200);
+    BOTH("200 bytes: wbig unchanged", *(UWORD *)wrp[cur] == wbig0[cur]);
+    BOTH("200 bytes: wrend ran 400 on (BUG(orig), #983)",
+         *(UWORD *)(wrp[cur] + 2) == (UWORD)((wrend0[cur] + 400) & 0xff));
+    /* the slot byte 1 went to holds byte 129 (0xC1), not byte 1 (0x41) */
+    BOTH("200 bytes: slot of byte 1 holds byte 129 (BUG(orig), #983)",
+         *(UWORD *)(wrp[cur] + 4 + wrend0[cur]) == (UWORD)(0x0100 | databuf[cur][128]));
+}
+
 /* SerialSendString: d0 = a string with the same low address byte in
    both sets, a2 = longs to read downwards */
 static void sendstring(const char *what)
@@ -585,7 +607,7 @@ int main(int argc, char **argv)
     sendblock("length -3", 7, (ULONG)-3);
     stmt("SerialStop", STOP, 0, 0, 0);
     sendblock("stopped", 8, 5);
-    sendblock("200 bytes (ring wraps)", 0, 200);
+    ringfull();
 
     /* strings and longs with the port open */
     stmt("SerialStop", STOP, 0, 0, 0);

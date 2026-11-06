@@ -100,6 +100,13 @@ Assembler:
 * `SerialWriteLong` sends the low byte of its argument and then three
   times `$01` (it rotates the register `SerialWrite` changed) (#805).
 * `SerialGot` returns −1/0, not a count (#802).
+* `SerialWrite` (so `SerialSendBlock`, `SerialSendString`, `SerialWriteLong`)
+  never tests whether the 128-word transmit ring is full and does not wait:
+  byte 129 on overwrites the words of bytes 1, 2 ... that the interrupt has
+  not sent yet, and `wrend == wbig` counts as an empty ring. A block of
+  more than about 128 bytes loses what is in between. The library test
+  sends 200 bytes without an interrupt and checks `wrend`, `wbig` and that
+  the slot of byte 1 holds byte 129, in both builds. (#983)
 
 No defects: `SerialProgress` gives the remaining count of the last send
 or receive block, what it is meant to give; `SerialBaud 0` divides by 0

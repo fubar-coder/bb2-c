@@ -87,6 +87,10 @@
  *   - SerialWriteLong sends the low byte of its argument and then three
  *     times $01 (it rotates the register SerialWrite changed) (#805).
  *   - SerialGot returns -1/0, not a count (#802).
+ *   - SerialWrite never tests whether the 128-word transmit ring is full:
+ *     SerialSendBlock/SerialSendString/SerialWriteLong run on faster than the
+ *     line sends, byte 129 on overwrites the unsent bytes 1, 2 ... and
+ *     wrend == wbig counts as an empty ring (#983).
  *
  * No defects: SerialProgress gives the remaining count of the last send
  * (or receive) block, what it is meant to give; SerialBaud 0 divides by 0
