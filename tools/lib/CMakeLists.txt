@@ -18,6 +18,8 @@
 #   blitzres   Blitz Basic 2 resident files: constants written, contents
 #              read; the constants of NDK FD files and includes
 #   bblines    edits of the lines of a tokenised Blitz 2 source (bytes)
+#   bbdetok    a tokenised Blitz 2 / AmiBlitz source as plain text (TED's
+#              or AmiBlitz's rules, unknown tokens as {L:N})
 #   xtra       the .xtra model of shared/xtra (Blitz 2 .xtra, BB22 header,
 #              AmiBlitz3 embedded header), compiled for the host
 #   ab3job     the command line of blitz2-ab3 (shared/ab3job), compiled for
@@ -53,6 +55,7 @@ add_subdirectory(mktestdata)
 add_subdirectory(bb22)
 add_subdirectory(blitzres)
 add_subdirectory(bblines)
+add_subdirectory(bbdetok)
 add_subdirectory(xtra)
 add_subdirectory(ab3job)
 add_subdirectory(tokenizer)

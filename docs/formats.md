@@ -349,6 +349,39 @@ uses the file pattern `(#?.bb|#?.bb2)`, TED 1.1 and the compiler do not check th
 extension at all. `.xtra` is appended to the full name (`x.bb.xtra`).
 **Confidence: high.**
 
+### 3.4 Sources of PED, AmiBlitz 2 and AmiBlitz3 **[B]** **[C]**
+
+The sources in `archive/sources/` (AmiBlitz 2.41 to AmiBlitz3 3.00.19a:
+the compilers and PED, 2004–2007) have the same format, lines ended by
+`$00` with token words, but their editor treats strings and comments
+differently from TED:
+
+* **Strings and comments are text.** Bytes from `$80` inside `"…"` and
+  after a `;` are ISO 8859-1 characters (the umlauts of the German
+  messages: `Dc.b "Ungültige …"`, `ü` = `$FC`), not tokens; AmiBlitz3's
+  detokeniser (`preproc_Detokenize`,
+  `Shared/preprocessor.include.ab3`) copies both as they are. Read
+  with TED's rule (every byte from `$80` a token), `ü` and the letter
+  after it become an unknown token.
+* **A comment can still hold tokens**: a line commented out by typing
+  `;` in front of it keeps its token words (`Dc.w $4a71,$0a00;` +
+  `TST` + `.w 0(a1,d0.l*2)`). AmiBlitz3's detokeniser copies those
+  bytes too. In these sources no umlaut and the byte after it make the
+  number of a known token.
+* **Token numbers** are the same scheme as Blitz 2's (`$8000` + library
+  number × 128 + entry, `tools/lib/blitztokens`), but the libraries are
+  AmiBlitz 2's: the sources resolve completely with the compiler,
+  `AcidLibs` and `Deflibs` of the AmiBlitz 2.42 distribution
+  (`archive/aminet/ab2.42-distri`), not with the CD's (`$EC82` is
+  `fmove`, `$ED11` `optimize`, `$B58D` `Request`), and the compiler's
+  own tokens differ like AmiBlitz3's (§5.2: `$8014` `Syntax`, `$803B`
+  `EXTB`, `$807F` `Chip`, `$80AD` `BSS`, `$80D4`… `USELASTPATH` …).
+* **AmiBlitz 2.42's compiler** keeps its token list as blitz2 does
+  (§5.2), but the nodes are not word-aligned (no `even` behind the help
+  text).
+
+`tools/bbdetok` reads both kinds (`docs/libs/readable-sources.md`).
+
 ---
 
 ## 4 Editor TED

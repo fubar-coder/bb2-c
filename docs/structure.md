@@ -86,6 +86,8 @@ tools/                       host tools:
                              blitzres (residents: constants written,
                              contents read; NDK FD files and includes),
                              bblines (line edits of tokenised sources),
+                             bbdetok (tokenised sources as text, TED's or
+                             AmiBlitz's rules),
                              xtra (shared/xtra compiled for the host),
                              ab3job (shared/ab3job for the host),
                              tokenizer (shared/tokenizer for the host),
@@ -103,7 +105,8 @@ tools/                       host tools:
   vasmlisting/, checklabels/,
   checkdata/, asmcmp/,
   mktestdata/, bb22/, blitzres/,
-  bblines/, xtra/, teststats/,
+  bblines/, bbdetok/, xtra/,
+  teststats/,
   ab3tok/, hdftool/, cmdref/
   tests/                     tests of lib/ with inputs from memory
 openspec/                    OpenSpec: specs/ (what is specified),

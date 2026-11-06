@@ -89,3 +89,62 @@ in memory (also broken ones), `xtra_tool` the tool on files,
 (read and written again byte for byte) and the 9 `BB22` sources with
 their `.xtra`, `xtra_ab3_examples` five AmiBlitz3 sources from GitHub
 (`fetch-originals`; both skipped without the material).
+
+## Sources of other editors and libraries: `bbdetok`
+
+`teddetok` shows a source exactly as TED does and fails on a token TED
+does not know. For sources written with other editors and libraries –
+PED, AmiBlitz 2 and AmiBlitz3, like the snapshots in `archive/sources/` –
+`tools/bbdetok` writes the text line for line (line N of the text = line
+N of the file, no line split, TAB and other bytes as they are, each line
+ended by an LF):
+
+```
+build/amiga/host/tools/bbdetok/bbdetok [--ted] [--strict] [--unknown] TOKENS... IN [OUT]
+```
+
+The token list is made from `TOKENS`, in the compiler's order (the first
+entry of a number wins): `--tokens FILE` (a list file as
+`tools/blitztokens` writes it, e.g. `tests/data/ted-tokens.txt`),
+`--blitz2 FILE` (a compiler's own tokens; `--last XXXX` before it picks
+one of several lists as `blitztokens -last`, blitz2-ab3: `80DB`) and
+`--lib FILE` (a library or BigLib file). Without `OUT` the text goes to
+stdout.
+
+* **Rules.** By default AmiBlitz's (`docs/formats.md` §3.4): strings and
+  comments are text, their bytes from `$80` ISO 8859-1 characters; in a
+  comment a known token number is still a token (a line commented out).
+  `--ted`: TED's, every byte from `$80` starts a token.
+* **Unknown tokens** are written as `{L:N}`: the word is
+  `$8000 + L*128 + N`, L the library number, N the entry of a user
+  library counted from 1 (`{217:2}` is `$EC82`). The count goes to
+  stderr; `--unknown` lists every number (`{217:2} $EC82 14`),
+  `--strict` makes them an error.
+* **Which list.** The token numbers depend on the libraries the source
+  was written with, not on ours. AmiBlitz 2 and AmiBlitz3 3.00 sources
+  resolve with AmiBlitz 2.42's compiler and libraries (Aminet
+  distribution, `cmake -P cmake/fetch-originals.cmake`); with our
+  `blitz2`, `acidlibs` and `deflibs` (the CD's numbers) dozens of
+  tokens per source stay unknown (the AmiBlitz 2 libraries) and the
+  compiler's own `$8014`, `$803B`, `$807F`, `$80AD` read `Jimi`,
+  `Jimi`, `MOVEP`, `TAS` instead of `Syntax`, `EXTB`, `Chip`, `BSS`;
+  with AmiBlitz3 v3.14.0's (`blitz2-ab3` and the BigLibs of
+  `archive/amiblitz3/github-58a11658`) fewer stay unknown, but some
+  numbers have other names (AmiBlitz 2's `optimize` is `ftan` there).
+
+```
+d=archive/aminet/ab2.42-distri/Amiblitz2
+build/amiga/host/tools/bbdetok/bbdetok --blitz2 $d/Amiblitz2 --lib $d/AcidLibs \
+    --lib $d/Deflibs archive/sources/amiblitz2-2.41/ped.bb2 ped-2.41.txt
+build/amiga/host/tools/bbdetok/bbdetok --unknown --blitz2 build/amiga/blitz2/blitz2 \
+    --lib build/amiga/blitz2/acidlibs --lib build/amiga/blitz2/deflibs IN > /dev/null
+```
+
+Exit status 1 if a file cannot be read, a token list is refused, the
+source ends with a token byte (no second byte), `--strict` finds an
+unknown token or `OUT` cannot be written (`OUT` is then removed); 2 for
+wrong arguments. A last line without its `0` (a text file) is written
+with a note. ctest `bbdetok` checks the logic with sources built in
+memory (also broken ones), `bbdetok_tool` the tool on files (a text
+tokenised by `ab3tok` and back, an unknown token, broken arguments,
+lists and sources).
