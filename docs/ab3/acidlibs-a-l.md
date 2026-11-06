@@ -17,7 +17,8 @@ nothing here is taken over yet. Part m–z: `docs/ab3/acidlibs-m-z.md`.
   * Binaries, two states compared with the CD:
     * `BlitzLibs/AcidLibs` of `AmiBlitz/AmiBlitz3@ea8c25c7` (SVN r1,
       2009-02-10). This is already AmiBlitz 2.x and carries all pre-git
-      changes; they are listed as "≤ 2009" with this commit.
+      changes; they are listed with this commit, as "≤ 2009" or with
+      the AmiBlitz version that brought them.
     * The BigLibs of HEAD (last changed by
       `AmiBlitz/AmiBlitz3@c79fee82`, 2026-10-16): AB3 split the old
       acidlibs into `BlitzLibs/baseLibs`, `csLibs` (chipset/Blitz mode
@@ -32,7 +33,12 @@ nothing here is taken over yet. Part m–z: `docs/ab3/acidlibs-m-z.md`.
     `asllib.ab3`, `gadgetslib.ab3` are the BUM sources, the binary is
     the AB2 one).
   * Changelogs: `Docs/Changelog.guide` at `AmiBlitz/AmiBlitz3@ea8c25c7`,
-    `Docs/Miscellaneous/Changelog.guide` at HEAD.
+    `Docs/Miscellaneous/Changelog.guide` at HEAD; for AmiBlitz 2.4–2.45
+    Bernd Rösch's news files in `archive/releases/`.
+* **AmiBlitz before git:** the AcidLibs of the releases 2.42 … 3.00
+  beta 4 and Bernd's last one (2007-12), fetched to `archive/aminet/`
+  and `archive/bernd/` – they date the "≤ 2009" rows (section "Dating
+  the pre-git changes").
 * **Method:** every library extracted with `biglib extract` (all
   numbers probed) from the CD, the 2009 and the HEAD BigLibs; tokens
   listed with `blitztokens` (CD `BLITZ2` + the single library),
@@ -70,6 +76,67 @@ nothing here is taken over yet. Part m–z: `docs/ab3/acidlibs-m-z.md`.
   `gadtoolslib`), and the many "disassembled …", "added comments",
   "source improvements without changes" commits.
 
+## Dating the pre-git changes
+
+The rows "≤ 2009" below (and "≤2009-02-10" in part m–z) are the state of
+`AmiBlitz/AmiBlitz3@ea8c25c7`. AmiBlitz's releases before git
+(`archive/README.md`) date them: every acidlibs library of the CD that
+`ea8c25c7` changed was extracted (`biglib extract`) from the AcidLibs of
+AmiBlitz 2.42 (`archive/aminet/ab2.42-distri/Amiblitz2/AcidLibs`,
+2004-08-14), 2.43b2 (`archive/bernd/ab2.43b2_upd/amiblitz2.43/AcidLibs`,
+2004-10-27), 2.43 (`archive/bernd/ab2.42_upd_to_2.43/amiblitz2.43/AcidLibs`,
+2005-07-20), AmiBlitz3 3.00 beta 4
+(`archive/bernd/ab3/AmiBlitz3full_beta4/AmiBlitz3/BlitzLibs/AcidLibs`,
+2007-05-29) and Bernd's last one (`archive/bernd/acidlibs/AcidLibs`,
+2007-12-30), and compared byte by byte with the library of `ea8c25c7`.
+"Since" is the first of these states with the library of `ea8c25c7`; the
+changelog entries say what came when. Changelogs (all in `archive/`):
+H = `releases/amiblitz2-2.42/Amiblitz2/amiblitzHistory.txt` (2.2–2.27),
+N4 = `releases/amiblitz2-2.42/Amiblitz2/news2.4.txt` (2.4, 2003),
+N41 = `releases/amiblitz2-2.42/Amiblitz2/news2.41b1.txt` (2.41b4),
+N42 = `releases/amiblitz2-2.42/Amiblitz2/news2.42.txt` (2.41, 2.42, 2004),
+N43 = `releases/amiblitz2-2.43/amiblitz2.43/news2.43.txt` (2.43beta1 …
+2.43b40, 2004-09 … 2005-07), N45 =
+`releases/amiblitz2-2.45b2/amiblitz2.45/news2.45.txt` (2.44b2 …
+2.45b2, 2006), C = AmiBlitz3's `Changelog.guide`
+(`releases/amiblitz3-3.00-beta4/AmiBlitz3/Docs/Changelog.guide`).
+
+| Library | Since | Changelog entries (version, source) |
+|---|---|---|
+| arrayslib | 2.42 (2004-08) | `Dim KEEP` 2.26 (H) |
+| bbgtlib (gtlib) | 3.00 beta 4 (2007-05) | David McMinn's GadTools library "fix gtcycle Bug" 2.42 (N42); `GTGetString` on a `GTText` gadget 2.44b6, `DetachGTList` replies the pending messages first 2.44b7 (N45) |
+| bitmaplib | 3.00 beta 4 | `SystemBitMap`, `BitmapRastport` 2.44b3 (N45, 2006) |
+| brexxlib | 3.00 beta 4 | `Type` with a qualifier 2.27 (H), `RawKeyState`, `RawQualifier` 2.42 (N42) |
+| datelib | 2.43b2 (2004-10) | "Command WeekDay give now correct day of the week" 2.43beta1 (N43; the `Date$` rewrite is in the same state) |
+| debuglib | 3.00 beta 4 | runtime error checking through task traps instead of the global 68k trap vectors 2.43beta1 (N43: "Old BB2 use the global 68k Trap vektors") |
+| dhandlerlib | 3.00 beta 4 | – (the AB2 debugger, reddebug 2.5x/2.6x) |
+| editlib | 3.00 beta 4 | `ReadLine$` 2.41 (N42), Edit commands without a Blitz window and `GetD0` as token `$D505` 2.42 (N42) |
+| environlib | 2.42 | – |
+| exitslib | 2.42 | exit handlers ("new exitslib.obj") 2.25 (H) |
+| fileiolib | 3.00 beta 4 | `WriteType`/`ReadType` 2.27 (H), `CopyType` 2.41b4 (N41), `ClearType` and strings in types 2.43beta5, fixes 2.43beta17, string arrays in types 2.43b30, `Fields` with a too short string is an error 2.43b40 (N43) |
+| fpulib (not on the CD) | 2.43b2 | new fpulib 2.21b1 (H); FPCR set to 0 at program start 2.4 (N4) |
+| gadgetslib | 2.42 | "memaccess after memrelase in gadgetslib fixed" (H, with reddebug 2.51) |
+| linklistlib | 3.00 beta 4 | lists through `Disable`/`Enable`, `NextItemFast` ("nextlistitemfast") 2.4 (N4) |
+| memacclib | 2.42 | – |
+| memlib | 3.00 beta 4 | `AllocMem` 8-byte aligned 2.42 (N42); doubly linked blocks ("freeing stringmem blitzmem is about 10* faster") 2.43beta25, puddle size of the pools 2000 → 16384 2.43beta26 (N43); the memlib of 2.43 already allocates from exec pools (`CreatePool`/`AllocPooled`) |
+| menuslib | 2.42 | "fixed harmless enforcer hit on menutitles with string """ 2.42 (N42) |
+| myasllib | AcidLibs 2007-12 | "fixed crash, when trying to select an other screenmode (due to an bug in myasllib)" PED 3.00.14, 2007 (C) |
+| printlib | 3.00 beta 4 | `Print`/`NPrint` of floats in 64 bit 2.4 (N4); `UPrint`, `UNPrint` 2.43beta25 (N43) |
+| runerrlib | 2.43 (2005-07) | task traps 2.43beta1, `LastRunErrsMode` 2.43b40 (N43) (?) |
+| screenslib | 2.43 | `CloseScreen` as a function 2.4 (N4); depth > 8 through CyberGraphX/Picasso96, `Screen` returns the screen or 0 2.43beta3, colours of BOOPSI gadgets 2.43beta25 (N43) |
+| staticslib | 2.43 | – |
+| stringfunclib | 2.42 | – |
+| strings1lib | 2.43b2 | string buffer overflow protection, string buffer size settable (`SysJsr $c603`) 2.43beta2 (N43) |
+| strings2lib | 2.43 | internal `$c702`/`$c704` ("string2func alibjsr") 2.27 (H) |
+| vallib | 3.00 beta 4 | `Val`/`Str$` in 64 bit 2.4 (N4) |
+| varslib | 2.42 | – |
+| wbstartuplib | 3.00 beta 4 | – |
+| windowslib | 3.00 beta 4 | `SetFont` fix 2.27 (H); `EventDoubleClick` fixes 2.4 and 2.41, `WindowBackFillHook` 2.4 (N4, N42); `Window` without the SuperBitMap form 2.43beta3, `TextFit`, `WinFontHeight`, `RastPort` without a parameter 2.43b31, `EventVanillaKey`, `SetMenuVerifyHandler` 2.43b40 (N43); `BlitzMsgPort`, `EventVanillaKey`, `IDCMPFlag`, `RawKeys`, `SetMenuVerifyHandler` are documented in the 2.43 guide (`archive/bernd/ab2.42_upd_to_2.43/amiblitz2.43/redhelp/acidguides/WINDOWSLIB.guide`, 2005-07-26) |
+
+All other acidlibs libraries of the CD are unchanged in every one of
+these states. AmiBlitz's own additions (algebralib, renderlib, wzlib)
+are not BB2 libraries.
+
 ## Libraries without relevant AB3 changes
 
 Code identical to the CD (HEAD binary; at most 16 bytes of padding at the
@@ -98,7 +165,7 @@ Code identical, but with an AB3-internal history:
 
 | AB3 commit | Date | Class | What | Our issue |
 |---|---|---|---|---|
-| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | ≤ 2009 | extension, incompatible | Two new entries `$C405`/`$C406` (`newarr2`/`newlocarr2`): re-`Dim` that keeps the contents (AllocMem + CopyMem, refuses if the largest free block < size+200000). Only called by the AB3 compiler. | – |
+| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | AB2 2.26 (≤ 2004-08) | extension, incompatible | Two new entries `$C405`/`$C406` (`newarr2`/`newlocarr2`): re-`Dim` that keeps the contents (AllocMem + CopyMem, refuses if the largest free block < size+200000). Only called by the AB3 compiler. | – |
 | `AmiBlitz/AmiBlitz3@f9c423e5` | 2020-07-15 | (AB3-internal) | Kick 1.3 check for memory pools, `MULU.L` on the 68000 removed (AB3 regression). | – |
 | `AmiBlitz/AmiBlitz3@23a4611b`, `@590b856d`, `@22751b30` | 2026-06 … 09 | incompatible | List creation/deletion moved to linklistlib (ALibJsr `$4024`/`$4025`); list header 40 instead of 32 bytes (pool pointer, element size, mode); `Dim List a(0)` = dynamic list in a memlib pool. Global arrays now via globalalloc. | #59 (?) – size 0 is redefined as "dynamic list", the old linking loop is gone |
 
@@ -130,7 +197,7 @@ in the repository still has them).
 
 | AB3 commit | Date | Class | What | Our issue |
 |---|---|---|---|---|
-| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | ≤ 2009 | extension | `SystemBitMap` (mode: give bitmaps a layer + RastPort), `BitMapRastPort`; bitmap object gets a layer pointer. Needs layers.library. | – |
+| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | AB2 2.44b3 (2006) | extension | `SystemBitMap` (mode: give bitmaps a layer + RastPort), `BitMapRastPort`; bitmap object gets a layer pointer. Needs layers.library. `news2.45.txt` 2.44b3: "new acidlibs system friendly bitmap commands … so you can easy change old system unfriendly games with system friendly commands". | – |
 | `AmiBlitz/AmiBlitz3@899c4511` | 2020-07-03 | fix (?) | "memory alignment bugfix in bitmaplib (works now with 68000 again)" – most likely an AB2/AB3 regression. | – (?) |
 | `AmiBlitz/AmiBlitz3@64435749` | 2026-04-09 | extension | `BitMapDepth` (from ElmoreHardwareLib `Depth`). | – |
 
@@ -149,7 +216,7 @@ Otherwise unchanged; #81–#91, #94 not fixed.
 
 | AB3 commit | Date | Class | What | Our issue |
 |---|---|---|---|---|
-| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | ≤ 2009 | extension | `RawKeyState`, `RawQualifier`; `Type` accepts a qualifier (changelog 2.27). | – |
+| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | AB2 2.27, 2.42 (2004) | extension | `RawKeyState`, `RawQualifier` (2.42, `news2.42.txt`: "check keys and mouse in OS friendly way"); `Type` accepts a qualifier (changelog 2.27). | – |
 | same | ≤ 2009 | incompatible | The new tokens are inserted before `Tape`/`FreeMacroKey`: their token numbers move ($12/$13 → $14/$15). | – |
 
 #95–#104 not checked.
@@ -166,7 +233,7 @@ Imploder/CrM/PP code only relocated (?); #112–#120 not fixed (?).
 
 | AB3 commit | Date | Class | What | Our issue |
 |---|---|---|---|---|
-| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | ≤ 2009 | fix | `Date$`: the day → day/month/year conversion is rewritten as a year loop (365/366) and a month table with February 28/29, instead of the 4-year-cycle division. Day 366 of a cycle no longer becomes 32/12. Leap years only by "divisible by 4" (the 100/400 test is dead code). | #120 |
+| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | AB2 2.43b2 (2004-10) | fix | (Library state of 2.43b2; `news2.43.txt` 2.43beta1: "Command WeekDay give now correct day of the week", our #121 (?).) `Date$`: the day → day/month/year conversion is rewritten as a year loop (365/366) and a month table with February 28/29, instead of the 4-year-cycle division. Day 366 of a cycle no longer becomes 32/12. Leap years only by "divisible by 4" (the 100/400 test is dead code). | #120 |
 | same | ≤ 2009 | cosmetic | Help texts (`datelib_new`). | – |
 
 Not fixed: `NumDays` unchanged (#122–#125). #121 (`WeekDay`) not checked
@@ -176,7 +243,7 @@ Not fixed: `NumDays` unchanged (#122–#125). #121 (`WeekDay`) not checked
 
 | AB3 commit | Date | Class | What | Our issue |
 |---|---|---|---|---|
-| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1, `@1d7d56e7` SVN r598, `@7f5ba4d1` SVN r599 | ≤ 2009 … 2016-05-10 | extension, incompatible | Bernd's task trap handler (`#tasktrap`, new entry `$D50A` `dochangetrap`, changed trap register handling, "UPrint"); reassembled 2016. Part of the AB2/AB3 debugger interface. | – |
+| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1, `@1d7d56e7` SVN r598, `@7f5ba4d1` SVN r599 | AB2 2.43beta1 (≤2004-10) … 2016-05-10 | extension, incompatible | Bernd's task trap handler (`#tasktrap`, new entry `$D50A` `dochangetrap`, changed trap register handling, "UPrint"); `news2.43.txt` 2.43beta1: "New runtimecheck handling, work now over task Traps that can set for very task independent, so there can no problems occur if 2 or more AB2 programs run. Old BB2 use the global 68k Trap vektors."; reassembled 2016. Part of the AB2/AB3 debugger interface. | – |
 | `AmiBlitz/AmiBlitz3@7cde5dce`, `@820697d9` | 2023-08-25, 2026-10-13 | incompatible | Debugger data structures changed (ComDataVersionID `$EEE9`), token base passed via `tc_UserData`. Only works with AB3's debugger/compiler. | – |
 
 Not fixed: #127 (`dofindoff` unchanged), #126 not checked.
@@ -194,7 +261,7 @@ Not fixed: #127 (`dofindoff` unchanged), #126 not checked.
 
 | AB3 commit | Date | Class | What | Our issue |
 |---|---|---|---|---|
-| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | ≤ 2009 | extension | `ReadLine$` (fast read up to 2000 chars), `GetRegD0`/`PutRegD0`. | – |
+| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | AB2 2.41, 2.42 (2004) | extension | `ReadLine$` (fast read up to 2000 chars; 2.41, `news2.42.txt`: "Most it is used to parse bb2 source on which edit$ fail due to missed $0a and $0d"), `GetRegD0`/`PutRegD0` (2.42: wizard.obj's `getd0` "is now intern mapped to $d505 token (in editlib)"). | – |
 | `AmiBlitz/AmiBlitz3@9cabe785` | 2022-11-16 | incompatible | `GetRegD0`/`PutRegD0` moved to environlib (token change). | – |
 | source since `AmiBlitz/AmiBlitz3@0e2ff1db`, in the HEAD binary | ≤ 2026 | extension | `Input$`, `Input` (aliases of `Edit$`/`Edit`). | – |
 | `AmiBlitz/AmiBlitz3@dbc34db6` | 2026-04-24 | incompatible | library number 186 → 79. | – |
@@ -219,13 +286,13 @@ Not fixed: #131 (buffer still 80 bytes). #128–#130, #132 not checked.
 
 | AB3 commit | Date | Class | What | Our issue |
 |---|---|---|---|---|
-| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | ≤ 2009 | extension | Entry `$C801` `addexithandler` (chain of exit handlers, changelog 2.24); used by the AB3 compiler. | – |
+| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | AB2 2.25 (≤ 2004-08) | extension | Entry `$C801` `addexithandler` (chain of exit handlers, changelog 2.25: "exithandlers can install to do automatic cleanup (new exitslib.obj)"); used by the AB3 compiler. | – |
 
 ### fileiolib (124)
 
 | AB3 commit | Date | Class | What | Our issue |
 |---|---|---|---|---|
-| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | ≤ 2009 | extension | `WriteType`, `ReadType`, `CopyType`, `ClearType` (whole NEWTYPEs incl. strings); `FileSeek` can be used as a function (`!acommand{#long}`); error messages 9/10. | – |
+| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | AB2 2.27 … 2.43b40 (≤ 2005-07; library state ≤ 2007-05) | extension | `WriteType`, `ReadType` (2.27), `CopyType` (2.41b4), `ClearType` and strings in types (2.43beta5), string arrays in types (2.43b30) (whole NEWTYPEs incl. strings); `FileSeek` can be used as a function (`!acommand{#long}`); error messages 9/10. | – |
 
 Core code from the BUM source (2009 = HEAD binary); #138, #140, #141,
 #143, #144 not checked in the binary.
@@ -290,7 +357,7 @@ Original routines unchanged: #199 (lmullib), #200 (ldivlib) not fixed.
 
 | AB3 commit | Date | Class | What | Our issue |
 |---|---|---|---|---|
-| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | ≤ 2009 | extension | `SetItem`, `CountList`, `CountItem`, `NextItemFast`, `FillArray`, pointer lists (`CreateListPtr`, `NextPtrItem` … `FreePtrList`, 14 commands). | – |
+| `AmiBlitz/AmiBlitz3@ea8c25c7` SVN r1 | ≤ 2007-05 (`NextItemFast` AB2 2.4, 2003) | extension | `SetItem`, `CountList`, `CountItem`, `NextItemFast`, `FillArray`, pointer lists (`CreateListPtr`, `NextPtrItem` … `FreePtrList`, 14 commands). | – |
 | `AmiBlitz/AmiBlitz3@f9c423e5`, `@8a783d5c`, `@dce9f699` | 2020-07-15, 2024-03-14, 2026-09-24 | (AB3-internal) | Kick 1.3/68000 fixes of AB3's pools, ClearList crash of AB3's own free option. | – |
 | `AmiBlitz/AmiBlitz3@0989b2d3` | 2025-04-14 | incompatible | `FillArray` removed (now in sortlib); later tokens shift. | – |
 | `AmiBlitz/AmiBlitz3@97b92dca`, `@36fae0df` | 2026-05-18/29 | extension | `GetItem`, `SwapItems`, `IsList`; reverse order for `SortList`; free memory option for `ClearList`. | – |

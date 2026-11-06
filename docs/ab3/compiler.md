@@ -19,10 +19,18 @@
   (`git log --follow`).
 * **Pre-git delta**: the 2009 source is already AmiBlitz 2.x (Bernd
   Roesch, 1999–2008) plus the first AmiBlitz3 betas. These changes are
-  known only from `Docs/Changelog.guide` (at `ea8c25c7`; HEAD:
+  known from `Docs/Changelog.guide` (at `ea8c25c7`; HEAD:
   `Docs/Miscellaneous/Changelog.guide`, which also has the release notes
-  3.7.0–3.14.0) and from the code itself. Changes Bernd made are marked
-  `; new >` … `; < new` in the source.
+  3.7.0–3.14.0; both have 2.2–2.3 and 2.50 on), from Bernd's news files
+  for 2.4–2.45 (`archive/releases/amiblitz2-2.42/Amiblitz2/news2.4.txt`,
+  `news2.41b1.txt`, `news2.42.txt`,
+  `archive/releases/amiblitz2-2.43/amiblitz2.43/news2.43.txt`,
+  `archive/releases/amiblitz2-2.45b2/amiblitz2.45/news2.45.txt`), from
+  the source snapshots `archive/sources/amiblitz2-2.41/`, `-2.43b12/`,
+  `-2.50beta/`, `-2.517beta/` and `amiblitz3-3.00.19a/` (tokenised; the
+  2.50/2.51 header comments give the reasons of those versions) and from
+  the code itself. Changes Bernd made are marked `; new >` … `; < new`
+  in the source.
 * **Baseline**: `archive/sources/blitz2-1.95/blitz2.s`, the 2.10 changes
   in [`docs/v2.10/blitz2.md`](../v2.10/blitz2.md), our issues
   (`fubar-coder/bb2-c`, label `bug-orig` + `compiler`).
@@ -49,8 +57,15 @@
 | pre-git (AB2 2.22), changelog only | ≤2008 | "memtrash bug if object buffer increases between compiles (object+lib buffer)" | – (?) | `alloxinc`/`makeiallox` (?) |
 | pre-git (AB2 2.27), changelog only | ≤2008 | `type\a,1,2,3,4,5` wrong when the start is not word-aligned | – (?) | – |
 | pre-git (AB2 2.26/2.3), changelog only | ≤2008 | Characters ≥ 128 in `Data$`; `a && 4` gives "can't get address of constant" | – (?) | – |
-| pre-git (AB2 2.25/2.27), changelog only | ≤2008 | Macros: `End` and `If … Then` inside macros, parameter line joining | – (?) | – |
+| pre-git (AB2 2.25/2.27), changelog only | ≤2008 | Macros: `End` and `If … Then` inside macros, parameter line joining | #968, #967 (?) | – |
 | pre-git (AB2 2.27), changelog only | ≤2008 | "object address calculations work with 32 bit instead of 16 bit, up to 32000 objects" – **not found**: HEAD `getmaxel`/`free`/`use` still emit `lsl.w` + `adda.w` | #939 (not in code) (?) | 12196–12266 |
+| pre-git (AB2 2.4), `news2.4.txt` | 2003 | "Bugfix of old BB2 Bug": `a.b=$90 : If a=$90` – a byte variable is fetched sign-extended (`ext.w`), the constant 128–255 as a positive word, so `cmp.w` never matches; AB2 fixed it only with `Optimize 3` | – (code-checked: reproduced by blitz2 2.10) | 10479–10486 (`varcont`), 10940–10944 (`consttype2`) |
+| pre-git (AB2 2.41b4), `news2.41b1.txt` | 2004 | "end / incbin let program crash on exit when size of incbin file is odd": after an `IncBin` of odd length at the end, the end code (`endop`, finits, `moveq #0,d0 / rts`) is written at an odd address | – (code-checked) | 2640 (`move.l pc,endop`, no `alignpc`) |
+| pre-git (AB2 2.42), `news2.42.txt` | 2004 | "New System friendly compile progressbar add because old BB2 code trash memory at end of Z3 mem when you use a screen >800*600*32bit": the racing stripe XORs bytes of TED's screen bitmap at `botline` = 9 × bytes per row, added as a word (`add botline(pc),a1`): from 3641 bytes per row (e.g. 1024 pixels × 32 bit) it is negative and the stripe writes before the bitmap | – (code-checked) | 1923–1943, 2069, 2088 (`nextline`) |
+| pre-git (AB2 2.42), `news2.43.txt` | 2004 | "Bugfix of old Blitz Bug, sometimes no error message come if a constant and a label have same name": `makealab2` takes a constant of value 0 for a label not yet defined and chains a reference in front of the constant's marker (`refs` = 1); `foo:` then walks to address 1 (address error or garbage), without `foo:` "Label not Found" at a random line. AB2 2.43b12 adds a `btst #0` check in the reference walk | – (code-checked) | 10363–10379 (`makealab2`), 3033–3063 (`handlelab2`) |
+| pre-git (AB2 2.43beta1), `news2.43.txt` | 2004 | Runtime error checking through task traps instead of the global 68k trap vectors ("so there can no problems occur if 2 or more AB2 programs run") | – (?) | – |
+| pre-git (AB2 2.43b33), `news2.43.txt` | 2005 | "constant div in functions is now done in float so nprint 3/5 show correct value" – not a BB2 bug: a constant expression without a wanted float type is integer (`3/5` = 0) inside and outside procedures; AB2 changed the semantics | – (not a bug) | 9472–9482 (`dodivb`) |
+| pre-git (AB2 2.44b9), `news2.45.txt` | 2006 | "bugfix compare constant to constant of constants betweeen 128 and 255" – not reproducible in BB2 2.10 (both sides are sized as words); probably a bug of AB2's own optimizer | – (not in BB2) | 10913–10948 (`consttype2`) |
 
 Spot-checked in HEAD and **unchanged** (no AB3 fix): #9 (`=<`,
 `.noteqgt`), #15 (`muld1`, ×256), #37 (`Dcb` count 0), #16/#17/#325/#341
@@ -72,7 +87,7 @@ loading (BASIC, `AmiBlitz/AmiBlitz3@3bf667d9`, `AmiBlitz/AmiBlitz3@d3a79260`;
 
 | AB3 commit / version | What |
 |---|---|
-| pre-git AB2 2.2–2.51 | Optional parameters (`@par`, missing = −1/""), 6 → 10 procedure parameters, 68020 addressing modes and `extb.l` in inline asm, `Dim KEEP` (redim), `Syntax` bits (declare, type checks), "new syntax" (`Optimize 4/5`), string escapes `\\xx`/`\\Rnn`, `@"ILBM"` string-to-long, FPU register variables (`regload`/`regsave`), `FAST` functions, local `List`s, `Dim` in functions, `End d0`, `Debug`, removal of unused functions (function optimizer), Include search in IncDir and source dir, `.res` search in `blitzlibs/residents/` |
+| pre-git AB2 2.2–2.51 | Optional parameters (`@par`, missing = −1/""; 2.27; calls without any parameter fixed in 2.51, optional string parameters in 2.51x, 2006), 6 → 10 procedure parameters (2.26; up to 10 string parameters and calls with or without using the result 2.43beta26, strings beyond the 6th parameter fixed 2.43b30, 2005; calculated float parameters beyond the 6th fixed 2.44b2, 2006), 68020 addressing modes and `extb.l` in inline asm (2.26), `Dim KEEP` (redim, 2.26), `Syntax` bits (declare, type checks; 2.26), "new syntax" (`Optimize 4/5`, 2.21b1), string escapes `\\xx`/`\\Rnn` (2.27), `\\__DATE__`, `\\__DATE_GER__`, `\\n` (2.4, 2003), `@"ILBM"` string-to-long (2.27), FPU register variables (`regload`/`regsave`, 2.27), `FAST` functions (checked from 2.26), local `List`s (2.22), `Dim` in functions (2.26), `End d0` (2.21b1), `Debug` (2.27), 64-bit float type `.d` (2.4), auto constants `#@name`/`#__autoconstant` and array initialisation lists `a(0)=1,2,3` (2.4), `CNIF @#c` and `#__include` (2.41, 2004), global variables by `Shared` outside procedures (2.42, 2004), `#__debug` (2.43beta1), `UsePath2` (2.43beta8), removal of unused functions (function optimizer, menu "create executable absolut smallest", 2.43beta2), Include search in the include directory of the tooltype `INCDIR` (2.42) and in the source dir (2.50, 2006), `.res` search in `blitzlibs/residents/` (3.00x beta, 2007). Versions from `amiblitzHistory.txt`/`Changelog.guide` (≤ 2.3), the news files (2.4–2.45) and the 2.517beta header (2.50/2.51), all in `archive/` (see above) |
 | pre-git AB3 3.00–3.01 | Compiler constants `__THIS_FUNCTION`, `__CODELINE`, `__THIS_INCLUDE`, `VER_MAJOR/MINOR/PATCH/BUILD` |
 | `@0379077e` r44, `@5727df1e` r43, `@e3d8e6b2` r112, `@c9d7be8b` r201 | ASCII sources and includes (`.ab2`, `.ab3`), include extension fallback `.ab3`/`.ab2`/`.bb2` |
 | `@70d37cb1` r132 and follow-ups | `.dbg` file (hunk offset → source line) |

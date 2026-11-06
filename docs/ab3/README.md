@@ -23,9 +23,32 @@ AmiBlitz3's editors (PED, IDE) are out of scope.
   SVN history; the SVN revision numbers come from a git-svn import of the
   same history (identical trees).
 * The history starts with AmiBlitz 2.x (Bernd Roesch, 1999–2008): the
-  first commit already carries all changes made before 2009. Those are
-  known only from the difference to BB2 2.10 and from
-  `Docs/Changelog.guide`.
+  first commit already carries all changes made before 2009. They are
+  dated and explained by AmiBlitz's own changelogs and releases before
+  git (`archive/README.md`):
+  * `Docs/Changelog.guide` of AmiBlitz3 has the history 2.2–2.3 and the
+    entries from 2.50 on ("following changes were made to the last
+    official AmiBlitz2 Version 2.44"); the same text for 2.2–2.27 is
+    `archive/releases/amiblitz2-2.42/Amiblitz2/amiblitzHistory.txt`,
+    and the beta 4 copy of 2007
+    (`archive/releases/amiblitz3-3.00-beta4/AmiBlitz3/Docs/Changelog.guide`)
+    has 3.00.09–3.00.20.
+  * The gap 2.4–2.45 (2003–2006) is in Bernd's news files:
+    `archive/releases/amiblitz2-2.42/Amiblitz2/news2.4.txt`,
+    `news2.41b1.txt`, `news2.42.txt` (2.4–2.42),
+    `archive/releases/amiblitz2-2.43/amiblitz2.43/news2.43.txt`
+    (2.41–2.43b40, 2004–2005) and
+    `archive/releases/amiblitz2-2.45b2/amiblitz2.45/news2.45.txt`
+    (2.44b2–2.45b2, 2006).
+  * The compiler sources 2.41 (2004), 2.43b12 (2005), 2.50beta,
+    2.517beta (2006) and 3.00.19a (2007) are in `archive/sources/`
+    (tokenised); the 2.50/2.51 reasons are in their header comments.
+  * The AcidLibs and DefLibs of the releases 2.42 (2004-08), 2.43b2
+    (2004-10), 2.43 (2005-07), 3.00 beta 4 (2007-05) and Bernd's last
+    AcidLibs (2007-12) are fetched to `archive/aminet/ab2.42-distri/`
+    and `archive/bernd/`; comparing their libraries with those of the
+    first commit gives the release by which a library had its 2009
+    state ([acidlibs-a-l.md](acidlibs-a-l.md#dating-the-pre-git-changes)).
 
 ## Classes
 
