@@ -6,13 +6,23 @@
     doubled for interlace. A screen that the object already holds is
     freed first. With a bitmap smaller than the screen, the error is
     "Can't use specified BitMap".
+
+    The view mode of the long form is that of the graphics library,
+    combined with `|`: `$8000` high resolution, `$20` super high
+    resolution (together with `$8000`), `$4` interlace, `$800` HAM and
+    `$80` extra half-brite; 0 is low resolution. For example, a super high
+    resolution screen with 256 colours on an AGA Amiga:
+
+    ```blitzbasic
+    Screen 0,0,0,1280,256,8,$8020,"MyScreen",1,0
+    ```
 "ScreenTags":
   text: Opens a screen through Intuition's tag list call, with the title and extra tags as tag and data pairs or as the address of a tag list; used as a function, it returns the screen or Intuition's error code.
   notes: |
     Kept from the original: a tag list is copied without a limit
     ([#249](https://github.com/fubar-coder/bb2-c/issues/249)).
 "WbToScreen":
-  text: Takes the Workbench screen as the screen object and makes it the used screen.
+  text: Takes the Workbench screen as the screen object and makes it the used screen, mostly to open windows on it.
   notes: |
     Kept from the original: a screen that the object held before is
     closed if the program opened it
@@ -28,7 +38,7 @@
 "CloseScreen":
   text: Closes the screen if the program opened it; a screen taken with `WbToScreen` or `FindScreen` is only forgotten.
 "LoadScreen":
-  text: Loads an IFF ILBM picture into the screen's bitmap, and with `Palette#` also its colours into that palette object.
+  text: Loads an IFF ILBM picture into the screen's bitmap, and with `Palette#` also its colours into that palette object; `Use Palette` then shows them on the screen.
 "ShowScreen":
   text: Brings the screen to the front.
 "HideScreen":
@@ -38,7 +48,7 @@
 "MoveScreen":
   text: Moves the screen by the given distances.
 "ShowBitMap":
-  text: Shows a bitmap in the used screen instead of its own, or without an argument its own bitmap again, for example for double buffering.
+  text: Shows a bitmap in the used screen instead of its own, or without an argument its own bitmap again, for example for double buffering. Wait with `VWait` after it before drawing into the bitmap that was shown before, so that the new one is really on the display.
 "ScreenPens":
   text: The pens of Intuition's look, such as the text, shine and shadow pens, for the screens opened from now on; `ScreenPens On` and `Off` switch them on or off.
 "SMouseX":

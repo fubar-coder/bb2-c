@@ -12,3 +12,5 @@ intro: |
   A screen that cannot be opened is the runtime error "Can't open Screen".
   With runtime error checking, using a screen object that holds no screen
   is the error "Uninitialized Screen".
+
+  *Based on the screenslib guide by Acid Software.*

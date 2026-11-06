@@ -4,7 +4,9 @@ intro: |
   `TextGadget`, `StringGadget`, `PropGadget` and `ShapeGadget` add a
   gadget with a number of its own, its `Id`, to a list, and `Window ...,
   GadgetList#` opens a window with all of them. The `Id` comes back from
-  `GadgetHit` when the gadget is used.
+  `GadgetHit` when the gadget is used, so the gadgets of a list should
+  have different `Id`s, all greater than 0. A gadget placed relative to
+  the right or bottom edge of the window takes a negative x or y.
 
   The look of the gadgets made from now on is set beforehand: `GadgetPens`
   and `GadgetJam` for their texts, `Borders` and `BorderPens` for their
@@ -21,3 +23,5 @@ intro: |
   ([#166](https://github.com/fubar-coder/bb2-c/issues/166)), and freeing a
   list leaves the memory of its string and proportional gadgets in use
   ([#163](https://github.com/fubar-coder/bb2-c/issues/163)).
+
+  *Based on the gadgetslib guide by Acid Software.*

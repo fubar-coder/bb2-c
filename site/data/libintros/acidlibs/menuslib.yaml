@@ -2,9 +2,13 @@ description: Intuition menus - menu lists with titles, items and subitems of tex
 intro: |
   A menu list is a Blitz object, numbered from 0. `MenuTitle` adds a menu,
   `MenuItem` and `ShapeItem` add items to it, and `SubItem` and `ShapeSub`
-  add subitems to an item; menus, items and subitems are numbered from 0.
-  `SetMenu` gives the menu list to the used window. When the user picks an
-  item, `MenuHit`, `ItemHit` and `SubHit` of the window library tell which.
+  add subitems to an item; menus, items and subitems are numbered from 0,
+  menu 0 on the left and item 0 at the top. `SetMenu` gives the menu list
+  to the used window; a window has one menu list at a time. The menus
+  appear while the user holds the right mouse button. When the user picks
+  an item, the window reports an event of class `$100` (part of the
+  default IDCMP flags), and `MenuHit`, `ItemHit` and `SubHit` of the
+  window library tell which item it was.
 
   An entry is placed after the ones before it, so they are best made in
   order; making an entry again with the same number replaces it. The
@@ -16,3 +20,5 @@ intro: |
   Kept from the original: menu, item and subitem numbers are checked only
   with runtime error checking; without it, a wrong number reads beyond the
   end of the lists ([#416](https://github.com/fubar-coder/bb2-c/issues/416)).
+
+  *Based on the menuslib guide by Acid Software.*

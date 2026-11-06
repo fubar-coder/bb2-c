@@ -5,6 +5,23 @@
     Window". Kept from the original: a super bitmap window (flag `$80`)
     uses the bitmap of the last `Window` that named one
     ([#319](https://github.com/fubar-coder/bb2-c/issues/319)).
+
+    The flags are those of Intuition, combined with `|`; for example
+    `$1|$2|$1000` gives a window with a sizing gadget and a drag bar that
+    is active when it opens:
+
+    | Flag | Effect |
+    |---|---|
+    | `$1` | sizing gadget in the bottom right corner |
+    | `$2` | the window can be dragged by its title bar |
+    | `$4` | depth gadget, to move the window behind or in front of others |
+    | `$8` | close gadget |
+    | `$10`, `$20` | with `$400` and `$1`, keep a margin for the sizing gadget at the right or the bottom |
+    | `$80` | super bitmap window: the window shows a bitmap of its own, which may be larger and which keeps the contents |
+    | `$100` | backdrop window, behind all others (without `$4`) |
+    | `$400` | the border is kept apart from the inner area, so drawing cannot overwrite it; this takes more memory |
+    | `$800` | no border |
+    | `$1000` | the window is active when it opens |
 "WindowTags":
   text: Opens a window like `Window`, but through Intuition's tag list call; extra tags come as tag and data pairs, or as the address of a tag list.
   notes: |
@@ -14,7 +31,7 @@
 "CloseWindow":
   text: Closes the window. Its waiting events are dropped; those of the other windows stay. Nothing happens if the window is not open.
 "WaitEvent":
-  text: Waits for the next event of any window and returns its IDCMP class. As a statement, it only waits.
+  text: Waits for the next event of any window and returns its IDCMP class. As a statement, it only waits. The class is a long value, so keep it in a long variable, such as `ev.l=WaitEvent`.
 "Event":
   text: The IDCMP class of the next event of any window, or 0 if there is none; it does not wait.
   notes: |
@@ -26,7 +43,7 @@
 "EventWindow":
   text: The number of the window of the last event.
 "GadgetHit":
-  text: The number of the gadget of the last gadget event.
+  text: The number of the gadget of the last gadget event. Gadgets in different windows can have the same number; `EventWindow` tells the window.
 "MenuHit":
   text: The menu number of the last menu event, or -1 if there was none.
 "ItemHit":
@@ -45,6 +62,27 @@
   text: Sets the IDCMP flags, the kinds of events, of the windows opened from now on.
   notes: |
     With runtime error checking, 0 is the error "IDCMP must not be 0".
+
+    Without `DefaultIDCMP`, windows report
+    `$2|$4|$8|$20|$40|$100|$200|$400|$40000|$80000`. Whoever changes the
+    flags must keep the ones the program needs: a window with menus needs
+    `$100`, or menu choices are never reported. The classes:
+
+    | Class | Event |
+    |---|---|
+    | `$2` | the window has a new size |
+    | `$4` | the contents of the window must be drawn again |
+    | `$8` | a mouse button |
+    | `$10` | the mouse has moved |
+    | `$20` | a gadget is pressed |
+    | `$40` | a gadget is released |
+    | `$100` | a menu choice |
+    | `$200` | the close gadget |
+    | `$400` | a key |
+    | `$8000` | a disk is inserted |
+    | `$10000` | a disk is removed |
+    | `$40000` | the window is activated |
+    | `$80000` | the window is deactivated |
 "AddIDCMP":
   text: Adds IDCMP flags to those of the windows opened from now on.
 "SubIDCMP":

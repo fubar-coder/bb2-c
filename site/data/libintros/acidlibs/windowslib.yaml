@@ -17,3 +17,5 @@ intro: |
   The commands that use Intuition work in Amiga mode only, not in Blitz
   mode. With runtime error checking, using a window that is not open is
   the error "Uninitialized Window".
+
+  *Based on the windowslib guide by Acid Software.*

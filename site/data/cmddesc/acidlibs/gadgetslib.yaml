@@ -1,14 +1,14 @@
 "TextGadget":
-  text: Adds a text gadget, a button with a text, to the gadget list. The flags select a toggle gadget, positions and sizes relative to the window, membership in the current button group and others.
+  text: Adds a text gadget, a button with a text, to the gadget list. A plain one is on only while it is held down; a toggle gadget changes between on and off with each click. The flags select a toggle gadget, positions and sizes relative to the window, membership in the current button group and others.
 "StringGadget":
-  text: Adds a string gadget, a field for typing text, with room for `Maxlen` characters and the given width.
+  text: Adds a string gadget, a field for typing text, with room for `Maxlen` characters and the given width in pixels; a longer text scrolls inside the gadget. `StringText$` reads what was typed.
   notes: |
     Kept from the original: with `Borders Off` it writes to low memory
     ([#164](https://github.com/fubar-coder/bb2-c/issues/164)), and a
     `Maxlen` of 0 overwrites memory
     ([#165](https://github.com/fubar-coder/bb2-c/issues/165)).
 "PropGadget":
-  text: Adds a proportional gadget, a slider or scroller, with the given size; flags select horizontal, vertical or both directions.
+  text: Adds a proportional gadget, a slider or scroller, with the given size; flags select horizontal, vertical or both directions. Its *pot* is where the knob is and its *body* how large it is, both from 0 to 1. A slider for the values 0 to 15 has a body of 1/16.
 "ShapeGadget":
   text: Adds a gadget that shows a shape, optionally with a second shape for the selected state.
 "SetHProp":
