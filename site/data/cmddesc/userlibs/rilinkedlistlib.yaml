@@ -1,0 +1,57 @@
+"InitList":
+  text: Starts list `list#` (0 to 4) with one item that holds a copy of the variable `var`; this item becomes the current one. As a function it returns -1, or 0 if there is not enough memory.
+  notes: |
+    Kept from the original: a list that is already there is not freed
+    first, its memory is lost
+    ([#731](https://github.com/fubar-coder/bb2-c/issues/731)).
+"AddListItem":
+  text: Adds an empty item behind the current item of a list and makes it the current one; put a copy into it with `SetListItem`. As a function it returns -1, or 0 if there is not enough memory.
+  notes: |
+    Kept from the original: in the middle of a list, the item behind the
+    new one still links back to the old current item, so `PrevListItem`
+    from there skips the new item
+    ([#727](https://github.com/fubar-coder/bb2-c/issues/727)).
+"SetListItem":
+  text: Stores a copy of the variable `var` in the current item of a list. As a function it returns -1, or 0 if there is not enough memory.
+  notes: |
+    Kept from the original: a copy the item already held is not freed,
+    its memory is lost
+    ([#734](https://github.com/fubar-coder/bb2-c/issues/734)).
+"NextListItem":
+  text: Makes the next item of a list the current one. As a function it returns -1, or 0 at the end of the list, where the current item stays.
+"GetListItem":
+  text: Copies the contents of the current item of a list into the variable `var`. As a function it returns -1, or 0 if the item holds no copy.
+  notes: |
+    Kept from the original: it copies as many bytes as `var` has, not as
+    the stored copy has; a variable larger than the copy gets bytes from
+    beyond it ([#730](https://github.com/fubar-coder/bb2-c/issues/730)).
+"PrevListItem":
+  text: Makes the previous item of a list the current one. As a function it returns -1, or 0 at the start of the list, where the current item stays.
+"FirstListItem":
+  text: Makes the first item of a list the current one; as a function it returns -1.
+"LastListItem":
+  text: Makes the last item of a list the current one; as a function it returns -1.
+"AddFirstListItem":
+  text: Adds an empty item in front of the first item of a list and makes it the current one.
+  notes: |
+    Kept from the original: the old first item gets the new one as its
+    next item instead of its previous one, so the list runs in a circle
+    from there ([#724](https://github.com/fubar-coder/bb2-c/issues/724));
+    the new item is not cleared and may seem to hold a copy
+    ([#726](https://github.com/fubar-coder/bb2-c/issues/726)); and as a
+    function it returns four times the list number instead of -1, so 0
+    for list 0 ([#725](https://github.com/fubar-coder/bb2-c/issues/725)).
+"AddLastListItem":
+  text: Adds an empty item behind the last item of a list and makes it the current one. As a function it returns -1, or 0 if there is not enough memory.
+"DelListItem":
+  text: Deletes the current item of a list; the next item, or at the end of the list the previous one, becomes the current one. As a function it returns -1, or 0 if the list has no current item or this is its only item, which is not deleted.
+  notes: |
+    Kept from the original: for an item that holds a copy it frees the
+    wrong memory, and the program stops with the error "Unable to Free
+    Memory" ([#729](https://github.com/fubar-coder/bb2-c/issues/729)).
+    Deleting the first item cuts off the rest of the list behind the new
+    first item ([#728](https://github.com/fubar-coder/bb2-c/issues/728)).
+"AddrListItem":
+  text: The address of the current item of a list, 0 if it has none.
+"SizeOfListItem":
+  text: The size in bytes that the list commands copy for the variable `var`.

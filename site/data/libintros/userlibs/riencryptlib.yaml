@@ -1,0 +1,24 @@
+description: A simple three-wheel cipher by Reflective Images for encrypting and decrypting blocks of memory in place.
+intro: |
+  This library scrambles any block of memory with a simple cipher and
+  restores it again. The cipher has three "wheels", byte values from 0 to
+  255 that step on like an odometer: before each byte, wheel 1 moves on
+  by one, wheel 2 when wheel 1 wraps round, and wheel 3 when wheel 2
+  wraps round; the sum of the three wheels is added to the byte.
+
+  `Encrypt` starts from wheel positions you give, or from random ones.
+  To decrypt the block, `Decrypt` needs the positions the wheels stopped
+  at, which `GetWheel` tells after `Encrypt`: keep them, the data cannot
+  be retrieved without them. The commands work in place, on memory the
+  program provides, in Amiga and Blitz mode.
+
+  ```blitzbasic
+  a$="A secret message"
+  l=Len(a$)
+  Encrypt &a$,l
+  w1=GetWheel(1) : w2=GetWheel(2) : w3=GetWheel(3)
+  Decrypt &a$,l,w1,w2,w3
+  NPrint a$
+  ```
+
+  *Based on the RI Encrypt Lib guide by Reflective Images.*

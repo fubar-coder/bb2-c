@@ -1,0 +1,42 @@
+description: Sorting of Blitz linked lists by a string field of their items, by Reflective Images.
+intro: |
+  This library sorts the items of a linked list, an array declared with
+  `Dim List`, into alphabetical order by a string field of the items. The
+  comparison ignores the case of letters. Optionally a long field of the
+  items can serve as a priority that is compared before the string. The
+  library needs utility.library, which it opens when the program starts;
+  without it the sorts do nothing and return 0. The commands work in
+  Amiga and Blitz mode.
+
+  The sort exchanges the contents of the items, not their links, so the
+  list keeps its order of items and each item gets other contents. It is
+  a simple method that compares every item with every following one:
+  fast enough for most lists, but slow for long ones.
+
+  Kept from the original: with the priority switched off, as it is by
+  default, the sort reads a long from an odd address, which crashes a
+  plain 68000 with an address error; processors from the 68020 on are not
+  affected ([#825](https://github.com/fubar-coder/bb2-c/issues/825)).
+
+  A list whose items hold a word and then a string, sorted by the string
+  at offset 2:
+
+  ```blitzbasic
+  NEWTYPE .listitem
+    pad.w
+    text$
+  End NEWTYPE
+
+  Dim List myitems.listitem(10)
+  If AddLast(myitems()) Then myitems()\text="World"
+  If AddLast(myitems()) Then myitems()\text="Hello"
+
+  StringSort myitems(),SizeOf .listitem,2
+
+  ResetList myitems()
+  While NextItem(myitems())
+    NPrint myitems()\text
+  Wend
+  ```
+
+  *Based on the RI Sort Lib guide by Reflective Images.*

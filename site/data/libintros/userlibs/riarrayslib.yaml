@@ -1,0 +1,14 @@
+description: One command by Reflective Images that fills every element of a byte, word or long array with one value.
+intro: |
+  This library has a single statement, `FillArray`, which sets every
+  element of an array to one value, or to 0, faster than a `For` loop.
+  It works only on arrays of the types byte, word and long; on an array
+  of any other type, such as quick, float or string, it does nothing.
+  The command is copied into the program at each place it is used, and
+  works in Amiga and Blitz mode.
+
+  ```blitzbasic
+  Dim a.w(99)
+  FillArray a(),-1
+  FillArray a()
+  ```

@@ -1,0 +1,86 @@
+"FNSPrint":
+  text: Prints a text in the font of slot `fontnum` at `x`,`y` (plus the origin of `FNSOrigin`) into the bitmap chosen with `FNSOutput`. The text is a string or the address of a text in memory that ends in a zero byte.
+  notes: |
+    `prefs` and `colour` set the style and the colour for this print
+    only; without them, those of `FNSPrefs` and `FNSInk` are used. If the
+    slot holds no font, nothing is printed.
+
+    Kept from the original: an empty text with the style underlined
+    sets one pixel, and centred it can move the position far to the left
+    ([#659](https://github.com/fubar-coder/bb2-c/issues/659)); with a tab
+    size of 0, a tab character crashes
+    ([#666](https://github.com/fubar-coder/bb2-c/issues/666)); the
+    underline is clipped at the left edge of the bitmap, not of the
+    clipping zone ([#667](https://github.com/fubar-coder/bb2-c/issues/667));
+    with a clipping zone that begins at a negative x, a character at a
+    negative x is drawn about 64 KB away in memory
+    ([#664](https://github.com/fubar-coder/bb2-c/issues/664));
+    characters of 48 and 64 pixel fonts come out garbled when their top
+    rows are clipped ([#656](https://github.com/fubar-coder/bb2-c/issues/656));
+    and a font of height 0 draws 65536 rows
+    ([#663](https://github.com/fubar-coder/bb2-c/issues/663)).
+"InstallFNS":
+  text: Puts the FNS font at `address` in memory into slot `fontnum` and returns the slot number, or 0 if there is no FNS font at the address.
+  notes: |
+    Only the low 4 bits of `fontnum` count, so 16 is slot 0 again. The
+    font stays where it is and must stay in memory while the slot is
+    used.
+"FNSOutput":
+  text: Chooses the bitmap object that `FNSPrint` and `FNSShadowPrint` print into. With `clip_update` On, the clipping zone is also set to the whole bitmap, as by `FNSClipOutput`.
+  notes: |
+    It must be used before the first print. The bitmap may have up to 8
+    bitplanes.
+"FNSInk":
+  text: Sets the colour, 0 to 255, of the prints that do not give one.
+"FNSPrefs":
+  text: Sets the style of the prints that do not give one, and optionally their colour. The style bits are 1 centred, 2 bold, 4 underlined and 8 right-aligned.
+"FNSHeight":
+  text: The height in pixels of the font in slot `fontnum`, or -1 if the slot holds no font.
+"FNSClip":
+  text: Sets the clipping zone, the rectangle of the bitmap that prints may draw in. The x values are rounded down to multiples of 16; `xmax` is the first column not drawn in, `ymax` the last row drawn in.
+"FNSClipOutput":
+  text: Sets the clipping zone to the whole bitmap chosen with `FNSOutput`.
+"RemoveFNS":
+  text: Empties font slot `fontnum`. The font's memory is not freed.
+"FNSUnderline":
+  text: The distance in pixels from the top of the font in slot `fontnum` to its underline, or -1 if the slot holds no font.
+"FNSLength":
+  text: The width in pixels of `a$` printed in the font of slot `fontnum`, with the style `prefs` (bold adds one pixel per character), or -1 if the slot holds no font.
+  notes: |
+    Kept from the original: the result is 2 less than the width, but at
+    least 0 ([#662](https://github.com/fubar-coder/bb2-c/issues/662));
+    without `prefs` it takes the style of the last `FNSPrint`, not the one
+    of `FNSPrefs` ([#661](https://github.com/fubar-coder/bb2-c/issues/661));
+    and a font number outside 0 to 15 is not wrapped, it gives a
+    meaningless result ([#660](https://github.com/fubar-coder/bb2-c/issues/660)).
+"FNSVersion":
+  text: The version of the library as a quick value, 1.1.
+"FNSOrigin":
+  text: Sets an origin that is added to the position of every print; without parameters the origin goes back to 0,0.
+  notes: |
+    The clipping zone is not moved with it.
+"FNSWidth":
+  text: The width in pixels of the characters of the font in slot `fontnum` - 16, 32, 48 or 64 - or -1 if the slot holds no font.
+"FNSLoad":
+  text: Loads a font file into slot `fontslot` and returns the slot number, or -1 if the file could not be loaded.
+  notes: |
+    Amiga mode only. The file is not checked to be an FNS font. It is
+    loaded into bank 55 plus the slot number of the RI Amos Func
+    library, which must be present as well. That library has 50 banks
+    unless the program raises the number with `BankLimit`; a bank number
+    beyond it is taken as a memory address, and the file is loaded into
+    low memory there. So raise `BankLimit` to more than 55 plus the slot
+    number first. Erasing the bank, for example with `EraseAll`, removes
+    the font.
+"FNSSlot":
+  text: The address of the 16 font slots, one long each that holds the address of the font in that slot or 0; useful mostly for testing.
+"FNSUnload":
+  text: Empties a slot filled by `FNSLoad` and frees the bank the font was loaded into.
+"FNSSetTab":
+  text: Sets the distance in pixels between tab positions, which is 32 at first.
+  notes: |
+    Kept from the original: a tab size of 0 makes a tab character in a
+    text crash the program
+    ([#666](https://github.com/fubar-coder/bb2-c/issues/666)).
+"FNSShadowPrint":
+  text: Prints a text like `FNSPrint`, but first once more one pixel to the right and below in the colour `shadow` (0 without it), which gives a shadow.

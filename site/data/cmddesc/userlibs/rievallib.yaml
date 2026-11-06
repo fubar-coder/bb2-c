@@ -1,0 +1,61 @@
+"ConvToPostFix":
+  text: Converts the expression in `string` into postfix form, with operands and operators separated by spaces, and writes it to the memory at `buffer`, ending with a zero byte. Read it with `Peek$(buffer)`.
+  notes: |
+    The buffer should be at least twice as long as the expression. A `-`
+    counts as a sign at the start of the expression, after an operator
+    and after `(`.
+
+    Kept from the original: a `-` after a space is a subtraction, so
+    `3 -4` is 3-4
+    ([#633](https://github.com/fubar-coder/bb2-c/issues/633)); a character
+    in an operand that cannot belong to one is dropped without an error
+    ([#632](https://github.com/fubar-coder/bb2-c/issues/632)); and a `.` at
+    the very end of the expression makes the command read and convert
+    whatever follows the string in memory
+    ([#631](https://github.com/fubar-coder/bb2-c/issues/631)).
+"PFEvaluate":
+  text: Evaluates a postfix expression as `ConvToPostFix` makes it and returns its value. On an error it returns 0; check `PFErrorType` afterwards.
+  notes: |
+    The errors are 1 "Need 2 arguments for expression!", 2 "Register
+    structure not found!" (a register without `PFRegisters`), 3 "Divide
+    by 0 error!", 4 "No result value!", 5 "No close bracket on
+    indirect!" and 6 "Invalid size for indirection!". An empty string
+    returns 0 without an error.
+
+    Kept from the original, among others:
+
+    - `x^0` and `x^1` are both `x`, and `0^n` is 1
+      ([#641](https://github.com/fubar-coder/bb2-c/issues/641)).
+    - A product that overflows 32 bits comes out with a wrong value
+      ([#639](https://github.com/fubar-coder/bb2-c/issues/639)).
+    - A negative hexadecimal or binary number, such as `-$10`, gives a
+      wrong value ([#643](https://github.com/fubar-coder/bb2-c/issues/643)),
+      and invalid digits are not refused
+      ([#634](https://github.com/fubar-coder/bb2-c/issues/634)).
+    - Only the last value is the result: values left over are no error
+      ([#635](https://github.com/fubar-coder/bb2-c/issues/635)); with 128
+      or more values pending, every operator fails with error 1
+      ([#645](https://github.com/fubar-coder/bb2-c/issues/645)).
+    - A string of spaces gives error 4 and a meaningless value
+      ([#644](https://github.com/fubar-coder/bb2-c/issues/644)).
+    - A register inside `{}` mostly fails with error 5
+      ([#637](https://github.com/fubar-coder/bb2-c/issues/637)); the
+      character after `a` or `d` is not checked, so a name such as `d9`
+      reads another entry of the register block or memory behind it ([#642](https://github.com/fubar-coder/bb2-c/issues/642)).
+    - `{address}` reads any address; an odd one crashes a 68000
+      ([#636](https://github.com/fubar-coder/bb2-c/issues/636)).
+"PFRegisters":
+  text: Sets the register block whose values `PFEvaluate` uses for the register names. The block is 17 longs, in this order - `d0` to `d7`, `a0` to `a7` and `pc`.
+  notes: |
+    The program fills the block with the values it wants the names to
+    stand for; they need not be real register values.
+"PFErrorType":
+  text: The number of the error of the last `PFEvaluate`, 1 to 6, or 0 if it succeeded.
+"PFErrorText":
+  text: The text of the error of the last `PFEvaluate`, such as "Divide by 0 error!".
+  notes: |
+    Kept from the original: call it only after an error; when there was
+    none, it returns a string of meaningless length
+    ([#640](https://github.com/fubar-coder/bb2-c/issues/640)).
+"PFIndirectAddr":
+  text: The address read by the last `{address}` in an expression that `PFEvaluate` evaluated.

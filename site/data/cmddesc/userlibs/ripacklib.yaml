@@ -1,0 +1,68 @@
+"PackPBM":
+  text: Packs `length` bytes from `sourceaddr` to `destaddr` with ByteRun1 and returns the packed length, or -1 if the packed data would not be smaller than the source.
+  notes: |
+    The destination needs room for `length` bytes.
+
+    Kept from the original: when the data cannot be packed smaller, the
+    command goes on to unpack whatever lies at the start of memory into
+    the destination before it returns -1; this overwrites the
+    destination, and depending on the state of the program memory
+    behind it too ([#772](https://github.com/fubar-coder/bb2-c/issues/772)).
+"DeIce":
+  text: Unpacks the Pack-Ice 2.40 data at `sourceaddr` to `destaddr`. As a function it returns -1, or 0 if the source is not Pack-Ice data (it does not begin with `ICE!`).
+  notes: |
+    The data are not checked; the destination must hold the unpacked
+    length. Kept from the original: data packed with the picture option
+    of Pack-Ice overwrite memory below the end of the unpacked data, at
+    least 120 KB of it
+    ([#767](https://github.com/fubar-coder/bb2-c/issues/767)).
+"UnpackIFF":
+  text: Unpacks the IFF ILBM picture at `sourceaddr` in memory into bitmap `bitmap#`. As a function it returns -1, or 0 if the picture's chunks are not found or the bitmap is narrower or less deep than the picture.
+  notes: |
+    `sourceaddr` is the start of the IFF file in memory, in chip or fast
+    memory. `numlines` unpacks only that many lines, and a negative value
+    all lines; 0 unpacks nothing and returns 0. No more lines than the
+    bitmap has are unpacked; a taller picture is cut off, not refused.
+    `xy_offset` is a byte offset from the start of each bitplane, where
+    the picture is put.
+
+    The number of lines is not limited to the height of the picture:
+    more lines than the picture has unpack whatever follows its data.
+    For the limits on chunks, widths and packing, see the introduction.
+"ILBMPalette":
+  text: Takes the colours of the CMAP chunk at or behind `sourceaddr` (an IFF file or a CMAP chunk in memory) into palette `palette#`. As a function it returns -1, or 0 if no CMAP chunk is found or there is not enough memory.
+  notes: |
+    Without `offset`, the palette object is given exactly as many
+    colours as the CMAP holds; any colours it had are freed. With
+    `offset`, the colours are written from colour number `offset` on
+    into the palette as it is. Kept from the original: if the palette is
+    too small for that, the offset is ignored and the palette replaced as
+    without one ([#769](https://github.com/fubar-coder/bb2-c/issues/769));
+    and if memory runs out while the palette is replaced, the palette
+    object is left pointing to freed memory
+    ([#768](https://github.com/fubar-coder/bb2-c/issues/768)).
+"ILBMGrab":
+  text: Unpacks the IFF ILBM picture at `sourceaddr` into bitmap `bitmap#` and its colours into palette `palette#`, the same as `UnpackIFF` and `ILBMPalette` together.
+  notes: |
+    It does not tell whether it succeeded; use the two commands by
+    themselves for that.
+"LoadIFF":
+  text: Loads the IFF ILBM picture file `filename$` into bitmap `bitmap`, and its colours into palette `palette` if given. As a function it returns -1, or 0 if there is no free bank or the file cannot be loaded.
+  notes: |
+    Amiga mode only. The file is loaded into a free bank of the RI Amos
+    Func library and unpacked from there, so there must be memory for the
+    whole file; the bank is freed again afterwards. See the introduction
+    for `BankLimit`, which this command needs.
+
+    Kept from the original: it returns -1 even if the picture could not
+    be unpacked into the bitmap
+    ([#771](https://github.com/fubar-coder/bb2-c/issues/771)).
+"ChunkHeader":
+  text: The first four characters of `a$` as a long, the form in which an IFF chunk name such as `"CMAP"` appears in memory; the same as `Peek.l(&a$)`.
+"UnPackPBM":
+  text: Unpacks the ByteRun1 data of `length` bytes at `sourceaddr` to `destaddr`, writing at most about `destlength` bytes.
+  notes: |
+    Kept from the original: the ends are tested only after each byte, so
+    the byte behind the source is read and one byte more than
+    `destlength` can be written
+    ([#778](https://github.com/fubar-coder/bb2-c/issues/778)).

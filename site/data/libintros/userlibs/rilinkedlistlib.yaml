@@ -1,0 +1,51 @@
+description: Up to five doubly linked lists that hold copies of variables, by Steven Matty (Leading Edge Software), from the Reflective Images libraries.
+intro: |
+  This library keeps up to five linked lists, numbered 0 to 4, whose
+  items hold copies of variables. Unlike a `Dim List` array, the items
+  are not of one fixed type: each item stores a copy of whatever variable
+  was put into it, and the list moves on and back through its items. The
+  commands are meant for variables of a NewType. Each list has a current
+  item, which the commands work on. All commands except `AddrListItem`
+  can be used as functions, which return -1 on success and 0 on failure.
+  They work in Amiga and Blitz mode.
+
+  The library copies with a command of the RI Amos Func library, which
+  must be present as well. The lists are not freed when the program
+  ends.
+
+  The library's own guide calls it an early test version, and it
+  behaves like one. Kept from the original are these errors a program
+  can run into:
+
+  - No command checks the list number: a list number of 5 or more
+    overwrites the other lists or memory
+    ([#732](https://github.com/fubar-coder/bb2-c/issues/732)).
+  - Only `DelListItem` checks that the list has a current item; the other
+    commands, used on a list that was never started with `InitList`,
+    read and write memory at address 0
+    ([#733](https://github.com/fubar-coder/bb2-c/issues/733)).
+  - `DelListItem` frees the wrong memory for an item that holds a copy,
+    and the program stops with the error "Unable to Free Memory"
+    ([#729](https://github.com/fubar-coder/bb2-c/issues/729)).
+  - The backward links of a list are wrong after `AddListItem` in the
+    middle of a list, `AddFirstListItem` or `DelListItem` of the first
+    item, so moving through such a list goes astray (see the commands).
+
+  A list of three items, walked from the first one:
+
+  ```blitzbasic
+  NEWTYPE .t
+    a.l
+  End NEWTYPE
+  DEFTYPE .t v
+  v\a=1 : InitList 0,v
+  v\a=2 : AddLastListItem 0 : SetListItem 0,v
+  v\a=3 : AddLastListItem 0 : SetListItem 0,v
+  FirstListItem 0
+  Repeat
+    GetListItem 0,v
+    NPrint v\a
+  Until NextListItem(0)=0
+  ```
+
+  *Based on the RI LinkList Library guide by Steven Matty.*

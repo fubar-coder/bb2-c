@@ -1,0 +1,5 @@
+"FillArray":
+  text: Sets every element of a byte, word or long array to `value`, or to 0 without a value. The array is given with empty brackets, as `a()`.
+  notes: |
+    Arrays of other types are left unchanged. For a byte or word array,
+    only the low byte or word of the value is stored.

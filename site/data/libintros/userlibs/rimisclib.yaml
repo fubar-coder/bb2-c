@@ -1,0 +1,34 @@
+description: Miscellaneous commands by Reflective Images and Steve Matty - system requesters, parsing argument strings, the program's path, the default fonts of the font preferences, and string and keyboard helpers.
+intro: |
+  This library collects commands of several kinds that have no library
+  of their own:
+
+  - system requesters: `EZRequest`, `EZRequestArgs`, with `EZOutput` and
+    `EZSeparator`;
+  - splitting a string into words or fields: `InitArgParse`, `NextArg$`,
+    `NextArgChar$`;
+  - the program's own path: `ProgPath$`, `ProgDir$`, `ProgName$`, and
+    `FromBlitz`, which tells whether it runs from Blitz Basic 2;
+  - the default fonts of the font preferences: `OpenFontPrefs`,
+    `DefaultFontHeight`, `DefaultFontName`, `CloseFontPrefs`;
+  - strings and keys: `Flip$`, `BInstr`, `LtoS`, `ASCRaw`, `RawASC`;
+  - the hardware and the system: `TimerReset`, `ClickWait`,
+    `PortSigBit`, `WorkbenchHere`.
+
+  The library opens dos.library and intuition.library when the program
+  starts. The requesters, the program path and the font preferences use
+  functions of Kickstart 2.0 and work only in Amiga mode; the other
+  commands also work in Blitz mode.
+
+  Splitting a line into its words; a word in quotes may contain spaces:
+
+  ```blitzbasic
+  a$="OPEN FILE "+Chr$(34)+"Work:My File"+Chr$(34)+" SHARED"
+  InitArgParse &a$
+  Repeat
+    b$=NextArg$
+    If b$<>"" Then NPrint b$
+  Until b$=""
+  ```
+
+  *Based on the RI Misc Lib guide by Reflective Images.*

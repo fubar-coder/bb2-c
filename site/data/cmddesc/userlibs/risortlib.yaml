@@ -1,0 +1,27 @@
+"StringSort":
+  text: Sorts a whole linked list by the string at `offset` (0 without it) in each item; `sizeof.type` is the size of an item, `SizeOf` of its type. As a function it returns -1 when the list is sorted and 0 if it could not be sorted.
+  notes: |
+    It returns 0 if utility.library could not be opened, if the array is
+    no list, or if the string field of an item holds no string at all
+    (the pointer is 0); in the last case the list is left partly sorted.
+
+    Kept from the original: when two items are exchanged because of their
+    priority (`SortPriorityOffset`), the next comparisons use the wrong
+    string and priority, and the list may come out unsorted
+    ([#826](https://github.com/fubar-coder/bb2-c/issues/826)). A
+    `sizeof.type` of 0 exchanges 65536 bytes per item and overwrites
+    memory ([#827](https://github.com/fubar-coder/bb2-c/issues/827)).
+"ListBase":
+  text: The base address of a linked list, where the list's own data and its pointers to the first and the current item are; useful mostly for debugging.
+"StringSortItem":
+  text: Like `StringSort`, but sorts the list only from its current item on, so that a part of a list can be sorted. It also returns 0 if the list has no current item.
+"StringSortDir":
+  text: Sets the order of the sorts, 0 for ascending (A to Z), any other value for descending (Z to A).
+  notes: |
+    The direction applies to the strings only: with `SortPriorityOffset`,
+    the item with the higher priority comes first in both directions.
+"SortPriorityOffset":
+  text: Makes the sorts compare a long priority field at `offset` in each item first, and the strings only for items of equal priority; items with a higher priority come first. A negative offset, such as -1, switches the priority off, which is the default.
+  notes: |
+    Kept from the original: sorting by priority can leave the list
+    unsorted ([#826](https://github.com/fubar-coder/bb2-c/issues/826)).

@@ -1,0 +1,51 @@
+description: Evaluation of integer expressions held in strings, with registers and memory reads, by Reflective Images.
+intro: |
+  This library lets a program evaluate expressions that the user types,
+  such as `2+6*3`, without parsing them itself: a calculator, or a
+  debugger that reads registers and memory, needs only a few commands.
+  It works with integers (longs) only, not with floating point values.
+
+  Evaluation takes two steps. `ConvToPostFix` converts the expression
+  into postfix form, where each operator follows its two operands (`2+6`
+  becomes `2 6 +`), and writes it to a buffer; `PFEvaluate` evaluates
+  such a postfix string. After `PFEvaluate`, `PFErrorType` and
+  `PFErrorText` tell whether an error occurred.
+
+  An operand is a decimal number, a hexadecimal number after `$`, a
+  binary number after `%`, one of the registers `d0` to `d7`, `a0` to
+  `a7` and `pc` of a block set with `PFRegisters`, or a value read from
+  memory: `{address}` reads the long at the address, `{address}.w` a word
+  and `{address}.b` a byte. A `-` in front of an operand makes it
+  negative. The operators, from the lowest precedence to the highest:
+
+  - `=` (equal), `&` (bitwise and) and `|` (bitwise or),
+  - `<` and `>`,
+  - `+` and `-`,
+  - `*` and `/`,
+  - `^` (power).
+
+  The comparisons `=`, `<` and `>` give -1 for true and 0 for false.
+  Kept from the original: `<` means "less than or equal" and compares
+  without sign, `>` compares with sign
+  ([#638](https://github.com/fubar-coder/bb2-c/issues/638)). Brackets
+  group operands and change the precedence. Upper and lower case are the
+  same. The commands work in Amiga and Blitz mode.
+
+  The library has the number of a library of Blitz Basic 2's own set, so
+  it can only be used with the library variant rwe-1999-eval, which moves
+  that library to another number (see
+  [The RWE userlibs]({{< relref "/docs/blitz2-internals/rwe-userlibs" >}})).
+
+  ```blitzbasic
+  e$="2+6*3"
+  b$=String$(" ",80)
+  ConvToPostFix e$,&b$
+  v.l=PFEvaluate(Peek$(&b$))
+  If PFErrorType=0
+    NPrint v
+  Else
+    NPrint PFErrorText
+  EndIf
+  ```
+
+  *Based on the RI Eval Lib guide by Reflective Images.*

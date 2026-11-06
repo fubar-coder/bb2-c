@@ -1,0 +1,50 @@
+description: Proportional bitmap fonts in Reflective Images' own FNS format, printed into a bitmap by the processor in Amiga or Blitz mode.
+intro: |
+  This library prints text in proportional fonts of its own format, FNS,
+  into a bitmap object. It draws with the processor and needs no
+  operating system, so it works in Blitz mode as well as in Amiga mode.
+  A font character is 16, 32, 48 or 64 pixels wide at most, of any
+  height, and the text can be printed in up to 256 colours, left-aligned,
+  centred or right-aligned, bold and underlined.
+
+  Fonts are kept in 16 slots, numbered 0 to 15. Slot 0 holds a small
+  font built into the library, which is there from the start; its
+  characters go from the space to `z`. Other fonts are put into a slot
+  with `InstallFNS`, from memory, or with `FNSLoad`, from a file.
+  `FNSLoad` and `FNSUnload` keep the file in a memory bank of the RI
+  Amos Func library, which must be present as well.
+
+  Before printing, choose the bitmap with `FNSOutput` and a clipping
+  zone: the zone is empty at first, so nothing is printed until
+  `FNSClip`, `FNSClipOutput` or `FNSOutput` with its second parameter set
+  one. A character that would reach past the right edge of the zone ends
+  the print, with any lines after it. The style and colour of the text
+  are set with `FNSPrefs` and `FNSInk`, or for a single print with the
+  optional parameters of `FNSPrint`. The style is a number whose bits choose:
+
+  - bit 0 (1): centred on x,
+  - bit 1 (2): bold,
+  - bit 2 (4): underlined,
+  - bit 3 (8): right-aligned, ending at x.
+
+  A text can hold control characters: `Chr$(1)` followed by a character
+  whose code is the new colour changes the colour within the text,
+  `Chr$(9)` moves on to the next tab position (`FNSSetTab`), and
+  `Chr$(10)` starts a new line below, aligned like the first. Any other
+  character below the space ends the text. Kept from the original, so
+  does any character from code 160 on, such as the accented letters
+  ([#657](https://github.com/fubar-coder/bb2-c/issues/657)).
+
+  Kept from the original: printing before `FNSOutput` has chosen a bitmap
+  crashes the machine
+  ([#665](https://github.com/fubar-coder/bb2-c/issues/665)), and so may a
+  bitmap with more than 8 bitplanes
+  ([#658](https://github.com/fubar-coder/bb2-c/issues/658)).
+
+  ```blitzbasic
+  BitMap 0,320,256,3
+  FNSOutput 0,On
+  FNSPrint 0,160,100,"Hello"+Chr$(10)+"out there!",%101,1
+  ```
+
+  *Based on the RI FNS Lib guide by Reflective Images.*

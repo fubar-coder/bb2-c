@@ -1,0 +1,25 @@
+description: Functions by Reflective Images for data files packed with StoneCracker 4.04 - their sizes, and loading and unpacking one in place.
+intro: |
+  StoneCracker was a popular packer on the Amiga. This library handles
+  data files packed with its version 4.04 (files that begin with the
+  letters `S404`) inside a program; it cannot pack files, and it does
+  not handle packed executables. Together with `STCDecrunch` of the
+  RI STC Decrunch library it covers everything needed to use packed data.
+
+  A packed file is unpacked in place: the unpacked data end up a little
+  behind the start of the buffer, at a "security offset" the file names.
+  `STCSafeLen` gives the size the buffer needs for that, `STCStart` where
+  the data begin, and `STCLength` their length. All three read only the
+  header of a file that is already in memory and return 0 if the memory
+  holds no StoneCracker 4.04 file.
+
+  `STCLoad` loads a file and unpacks it in one step. It needs
+  dos.library from Kickstart 2.0 on, which the library opens when the
+  program starts; as a file command it belongs in Amiga mode. The other
+  functions work in Amiga and Blitz mode.
+
+  The unpacking code does not check the data: a damaged file writes
+  below the start of the buffer and can crash the machine
+  ([#833](https://github.com/fubar-coder/bb2-c/issues/833)).
+
+  *Based on the RI STC Lib guide by Reflective Images.*

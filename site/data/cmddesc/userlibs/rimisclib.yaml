@@ -1,0 +1,141 @@
+"TimerReset":
+  text: Sets the time-of-day counter of the first CIA chip to 0, the counter that counts the frames of the display.
+"PortSigBit":
+  text: The signal bit, 0 to 31, of the message port at address `msgport`.
+"WorkbenchHere":
+  text: Meant to return -1 if the Workbench screen is open, and 0 if not, by looking for a screen whose title contains "Workbench". Amiga mode only.
+  notes: |
+    Kept from the original: the function does not work. It takes the
+    address of the system's screen list from whatever value the program
+    last left in a processor register
+    ([#759](https://github.com/fubar-coder/bb2-c/issues/759)), does not
+    stop at the end of the list, so it never returns 0 and may hang
+    ([#761](https://github.com/fubar-coder/bb2-c/issues/761)), hangs on a
+    title that ends in the beginning of "Workbench", such as "My Work"
+    ([#762](https://github.com/fubar-coder/bb2-c/issues/762)), and misses
+    a title like "WWorkbench"
+    ([#760](https://github.com/fubar-coder/bb2-c/issues/760)).
+"EZRequest":
+  text: Shows a system requester with the title `title$`, the text `body$` and the gadgets `gadget$`, and returns the gadget chosen - 1 for the first, 2 for the second and so on, 0 for the last. Amiga mode only.
+  notes: |
+    A `|` in `body$` starts a new line, a `|` in `gadget$` separates two
+    gadgets. Without `title$` the requester has the default title, without
+    `gadget$` a single gadget "Ok". The requester opens on the screen of
+    the window chosen with `EZOutput`, otherwise on the default public
+    screen.
+
+    In the form with further arguments, `body$` and `gadget$` can hold
+    placeholders that the arguments fill in, in order: `%s` for a string,
+    `%ld` for a long, quick or float, and `%d` for a word or byte. Quick
+    and float values are passed as their whole part. Kept from the
+    original: a negative quick or float value comes out as a large
+    positive number, -3.5 as 65532
+    ([#750](https://github.com/fubar-coder/bb2-c/issues/750)); a float
+    argument is converted reliably only right after a
+    float calculation; otherwise the value can be wrong or the program
+    crashes ([#749](https://github.com/fubar-coder/bb2-c/issues/749)); and more
+    than 16 longs of arguments (a string counts one) overwrite memory
+    ([#748](https://github.com/fubar-coder/bb2-c/issues/748)).
+
+    ```blitzbasic
+    NPrint EZRequest("Request","It is %s|The time is %ld:%ld","So|What","Sunday",12,23)
+    ```
+"Flip$":
+  text: The string `String$` reversed.
+  notes: |
+    Kept from the original: a string of 0 or 1 characters makes the
+    function exchange 65536 pairs of bytes around the string, which
+    overwrites memory ([#751](https://github.com/fubar-coder/bb2-c/issues/751)).
+"InitArgParse":
+  text: Starts splitting a text into words with `NextArg$` or into fields with `NextArgChar$`. The parameter is the address of the text, which ends in a zero byte, for example `&a$`.
+  notes: |
+    The text is copied, so the string may change afterwards. Kept from
+    the original: a text longer than 255 characters overwrites the memory
+    behind the copy ([#752](https://github.com/fubar-coder/bb2-c/issues/752)).
+"NextArg$":
+  text: The next word of the text given to `InitArgParse`, or "" at the end. Words are separated by spaces; a word in double quotes may contain spaces, and two double quotes within it stand for one.
+  notes: |
+    Kept from the original: after such a pair of double quotes, the next
+    double quote does not end the word but is copied with the character
+    behind it, so `"a""b" c` gives the single word `a"b c`
+    ([#755](https://github.com/fubar-coder/bb2-c/issues/755)).
+"EZOutput":
+  text: Makes the requesters of `EZRequest` and `EZRequestArgs` open on the screen of window `win#`; without a parameter they open on the default public screen again.
+"EZRequestArgs":
+  text: Shows a system requester whose text is the values of the arguments, each on a line of its own, with the gadget "Ok"; handy for looking at variables while debugging. Amiga mode only.
+  notes: |
+    `EZSeparator` sets another separator between the values. Quick and
+    float values show their whole part, with the same errors as in
+    `EZRequest` for negative values
+    ([#750](https://github.com/fubar-coder/bb2-c/issues/750)) and for
+    floats ([#749](https://github.com/fubar-coder/bb2-c/issues/749)).
+
+    Kept from the original: when the text is shorter than that of the
+    call before, the end of the old text stays behind the new one
+    ([#747](https://github.com/fubar-coder/bb2-c/issues/747)), and more
+    than 16 longs of arguments overwrite memory
+    ([#748](https://github.com/fubar-coder/bb2-c/issues/748)).
+"EZSeparator":
+  text: Sets the character that `EZRequestArgs` puts between the values, the first character of `char`; the default `|` starts a new line. Amiga mode only.
+"ClickWait":
+  text: Waits until the left mouse button is pressed and released again. It reads the hardware directly, so it also works in Blitz mode.
+"ProgPath$":
+  text: The full path of the running program, its directory and its name. Amiga mode only.
+  notes: |
+    When the program has no directory of its own, as when it is
+    resident, the current directory is used, and when it has no name,
+    the name of its task.
+"ProgDir$":
+  text: The directory of the running program, as in `ProgPath$`. Amiga mode only.
+"ProgName$":
+  text: The name of the running program, as in `ProgPath$`. Amiga mode only.
+"FromBlitz":
+  text: -1 if the program was started from Blitz Basic 2, 0 if it runs as a program of its own.
+"LtoS":
+  text: The four bytes of `longword` as a four-character string, the highest byte first, like `Mkl$`.
+  notes: |
+    Kept from the original: every byte below 32 or from 128 on becomes
+    character 128 ([#753](https://github.com/fubar-coder/bb2-c/issues/753)).
+"ASCRaw":
+  text: The character of the key with the raw key code `rawkey`, as a one-character string.
+  notes: |
+    Kept from the original: a code above 113, such as the code of a key
+    being released, or a negative code, is not refused and gives a
+    meaningless character ([#744](https://github.com/fubar-coder/bb2-c/issues/744)).
+"RawASC":
+  text: The raw key code of the key that types the first character of `char`.
+  notes: |
+    Characters typed with Shift, such as upper case letters, `!` or `<`,
+    have no code of their own. Kept from the original: a character that
+    no key types gives a meaningless code
+    ([#744](https://github.com/fubar-coder/bb2-c/issues/744)).
+"OpenFontPrefs":
+  text: Reads the font preferences of the system, the file `ENV:SYS/Font.Prefs`, for `DefaultFontHeight` and `DefaultFontName`. As a function it returns -1, or 0 if the file is missing or holds no font preferences. Amiga mode only.
+  notes: |
+    Kept from the original: if there is not enough memory for the file,
+    the command crashes
+    ([#756](https://github.com/fubar-coder/bb2-c/issues/756)); a second
+    call without `CloseFontPrefs` in between loses the memory of the first
+    ([#757](https://github.com/fubar-coder/bb2-c/issues/757)).
+"CloseFontPrefs":
+  text: Frees the memory of the font preferences that `OpenFontPrefs` read. The program does this by itself when it ends. Amiga mode only.
+"DefaultFontHeight":
+  text: The height of a default font of the font preferences read with `OpenFontPrefs` - `fonttype` 0 for the icon font, 1 for the system font, 2 for the screen font - or 0 if it is not set.
+  notes: |
+    Kept from the original: the search goes on past the end of the file
+    into the rest of the memory read for it, so a font type that the
+    file does not set may give a value from leftover memory
+    ([#745](https://github.com/fubar-coder/bb2-c/issues/745)).
+"DefaultFontName":
+  text: The name of a default font of the font preferences read with `OpenFontPrefs`, with `fonttype` as for `DefaultFontHeight`, or "" if it is not set.
+  notes: |
+    The same search past the end of the file as in `DefaultFontHeight`
+    applies ([#745](https://github.com/fubar-coder/bb2-c/issues/745)).
+"NextArgChar$":
+  text: The text given to `InitArgParse` from the current position up to the next character with the code `char`, for example `Asc(",")`, or up to the end; the position goes on behind that character.
+  notes: |
+    Kept from the original: before `InitArgParse`, or after `NextArg$`
+    has reached the end of the text, it reads from memory address 0
+    ([#754](https://github.com/fubar-coder/bb2-c/issues/754)).
+"BInstr":
+  text: The position, counted from 1, of the last place where `Findstring$` occurs in `String$`, or 0 if it does not occur or is empty.

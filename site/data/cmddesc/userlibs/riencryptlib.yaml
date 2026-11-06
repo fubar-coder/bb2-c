@@ -1,0 +1,22 @@
+"Encrypt":
+  text: Encrypts `length` bytes of memory from `memadr` on, in place. The optional `wheel1`, `wheel2` and `wheel3`, from 0 to 255, are the start positions of the wheels; without them the start positions are random.
+  notes: |
+    Read the positions the wheels stopped at with `GetWheel` afterwards:
+    `Decrypt` needs them.
+
+    Kept from the original: a length of 0 still encrypts one byte, the
+    one at `memadr` ([#630](https://github.com/fubar-coder/bb2-c/issues/630)).
+"Decrypt":
+  text: Decrypts `length` bytes of memory from `memadr` on, in place, with the wheel positions that `GetWheel` returned after `Encrypt`. The wheels are not optional.
+  notes: |
+    With `mode` 1, the wheels are instead the start positions given to
+    `Encrypt`, and the command works out the end positions from the
+    length itself. Kept from the original: it does so without the carry
+    from one wheel to the next, so for many combinations of start
+    positions and length the data comes out wrong; prefer the end
+    positions ([#629](https://github.com/fubar-coder/bb2-c/issues/629)).
+
+    Kept from the original: a length of 0 still changes one byte, the one
+    before `memadr` ([#630](https://github.com/fubar-coder/bb2-c/issues/630)).
+"GetWheel":
+  text: The position, 0 to 255, of wheel 1, 2 or 3 after the last `Encrypt` or `Decrypt`; -1 for any other wheel number.

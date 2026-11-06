@@ -1,0 +1,15 @@
+description: One function by Reflective Images that unpacks StoneCracker 4.04 data files held in memory, in place or to another address.
+intro: |
+  This library has one function, `STCDecrunch`, which unpacks a data file
+  packed with StoneCracker 4.04 (a file that begins with the letters
+  `S404`) that is already in memory. It unpacks the file either over
+  itself or to a separate block of memory the program provides. It is
+  the counterpart of the RI StoneCracker library, whose functions tell
+  the sizes needed and where the data are after unpacking in place. It
+  works in Amiga and Blitz mode.
+
+  The unpacking code does not check the data: a damaged file writes
+  below the start of the destination and can crash the machine
+  ([#833](https://github.com/fubar-coder/bb2-c/issues/833)).
+
+  *Based on the RI STCDecrunch Lib guide by Reflective Images.*

@@ -1,0 +1,7 @@
+"STCDecrunch":
+  text: Unpacks the StoneCracker 4.04 file at `source` in memory. With only `source`, it unpacks the file over itself and returns the address of the unpacked data; with `dest`, it unpacks to `dest` and returns 1. Both forms return 0 if `source` holds no such file.
+  notes: |
+    Unpacking in place needs a block of at least `STCSafeLen` bytes, and
+    the data begin at the address the function returns, the same as
+    `STCStart`. A `dest` block must hold the unpacked length, which
+    `STCLength` tells.
