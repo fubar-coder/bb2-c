@@ -1,0 +1,52 @@
+description: Custom copper instructions for the coplists of the Blitz mode display library by Reflective Images - AGA colour splits, single moves, waits and skips.
+intro: |
+  This library writes copper instructions into the custom space of a
+  coplist object of the display library, the space given to the coplist
+  when it is set up with `InitCopList`. A coplist without custom space
+  cannot be used: every command then does nothing. `CopperResetAdr`
+  points the library at a custom space of a copper list of your own
+  instead, for programs that build their copper lists themselves.
+
+  `CopperReset` must come first. It chooses the coplist, the line at
+  which the next colour split starts and the place in the custom space,
+  counted in copper instructions of 4 bytes, where the next instruction
+  goes. Each command then appends its instructions and moves that place
+  on. Nothing checks the size of the custom space: make it large enough
+  for everything you add.
+
+  `DoColSplit` writes a colour gradient over a number of lines into one
+  colour register, `RedoColSplit` changes the colours of such a split in
+  place, and `CopperMove`, `CopperWait`, `CopperSkip`, `CopperCommand`,
+  `CopperAGACol` and `CopperEnd` add single instructions. The colour
+  splits and `CopperAGACol` use the 24 bit colours of the AGA chip set
+  (A1200, A4000, CD32) and must not be used on other machines. The
+  commands only write into memory and touch no hardware themselves, so
+  they work in Amiga and in Blitz mode; the copper list takes effect
+  when the display library shows the coplist.
+
+  The colours of a split are six longs, the red, green and blue of the
+  first line and then of the last line, each from 0 to 255. A fade of
+  colour 0 from black to white over 200 lines, from line 44 of coplist
+  0 on, and later the same split in other colours:
+
+  ```blitzbasic
+  NEWTYPE .colourinfo
+    r1.l
+    g1.l
+    b1.l
+    r2.l
+    g2.l
+    b2.l
+  End NEWTYPE
+  DEFTYPE .colourinfo cols
+  cols\r1=0,0,0,255,255,255
+  CopperReset 0,44
+  pos.w=GetCCOffset
+  DoColSplit &cols,200,0
+  CopperEnd
+  ; ...
+  cols\r1=255,0,0,0,0,255
+  RedoColSplit &cols,200,pos
+  ```
+
+  *Based on the RI CopperFX Lib guide by Reflective Images.*

@@ -1,0 +1,92 @@
+"SetBBMapLoc":
+  text: Chooses the map file at `address` for the `BBMap` functions and finds its information chunk. Returns -1, or 0 if the file is not an IFF file of type `BMAP`.
+  notes: |
+    Kept from the original: a failed call still changes the address the
+    map functions search, while `BBMapScenarioID`, `BBMapWidth`,
+    `BBMapHeight` and `BBMapInfo` keep reading the map before
+    ([#554](https://github.com/fubar-coder/bb2-c/issues/554)). For a map
+    without an information chunk, these four read from a wrong address
+    instead of returning 0
+    ([#551](https://github.com/fubar-coder/bb2-c/issues/551)).
+"SetBBScenarioLoc":
+  text: Chooses the scenario file at `address` for the scenario functions. Returns -1, or 0 if the file is not an IFF file of type `SCEN`; then the scenario chosen before stays.
+"BBScenarioName":
+  text: The name of the scenario, the first string of its `ANNO` chunk; an empty string without the chunk.
+"BBScenarioAuthor":
+  text: The author of the scenario, the second string of its `ANNO` chunk; an empty string without the chunk.
+"BBScenarioDepth":
+  text: The number stored in the `DEPF` chunk of the scenario, 0 without it.
+"BBScenarioShapeLoc":
+  text: The address of the graphics of the scenario, the data of its `GFX!` chunk; 0 without it.
+"BBScenarioSounds":
+  text: The address of the sounds of the scenario, the data of its `SFX!` chunk; 0 without it.
+"BBScenarioBaddiesLoc":
+  text: The address of the baddies of the scenario, the data of its `BAD!` chunk behind its first two bytes; 0 without it.
+"BBScenarioPalette":
+  text: The address of the colours of the scenario in its `COLR` chunk, three bytes red, green and blue per colour; 0 without the chunk.
+"BBScenarioLowCol":
+  text: The number of the first colour in the `COLR` chunk of the scenario, 0 without it.
+  notes: |
+    Kept from the original: a colour number above 127 is returned
+    negative ([#550](https://github.com/fubar-coder/bb2-c/issues/550)).
+"BBScenarioHighCol":
+  text: The number of the last colour in the `COLR` chunk of the scenario, 0 without it.
+  notes: |
+    Kept from the original: a colour number above 127 is returned
+    negative ([#550](https://github.com/fubar-coder/bb2-c/issues/550)).
+"BBScenarioLevel":
+  text: The level number stored in the `LEVL` chunk of the scenario, 0 without it.
+"BBNumBackGround":
+  text: The number of background shapes, the first word of the `SHAP` chunk of the scenario; 0 without it.
+"BBNumDestruct":
+  text: The number of destructible block shapes, the second word of the `SHAP` chunk of the scenario; 0 without it.
+"BBNumIndestruct":
+  text: The number of indestructible block shapes, the third word of the `SHAP` chunk of the scenario; 0 without it.
+"BBScenarioPrefix":
+  text: The long stored in the `PRFX` chunk of the scenario, 0 without it.
+"BBNumTunnels":
+  text: The number of tunnels, the first word of the `TUNL` chunk of the scenario; 0 without it.
+"BBShadowValue":
+  text: The long number `shadowset` (counted from 0) of the `SHDW` chunk of the scenario, 0 without the chunk. The number is not checked against the size of the chunk.
+"BBTunnelHoles":
+  text: The long behind the first word of the `TUNL` chunk of the scenario, 0 without it.
+"BBTunnelsLoc":
+  text: The address of the tunnel data, the `TUNL` chunk of the scenario from its ninth byte on; 0 without it.
+"BBGetPalette":
+  text: Copies the colours of the `COLR` chunk of the scenario into a palette object, from its first to its last colour number. A palette with too few colours is enlarged.
+  notes: |
+    Nothing happens without the chunk. Kept from the original: an
+    enlarged palette counts one colour less than it holds, so its last
+    colour is not used
+    ([#548](https://github.com/fubar-coder/bb2-c/issues/548)), and a
+    chunk whose first colour number is above its last writes one colour,
+    possibly beyond the palette
+    ([#549](https://github.com/fubar-coder/bb2-c/issues/549)).
+"BBDestructLoc":
+  text: The address of the data of the `DEST` chunk of the scenario, 0 without it.
+"BBMapScenarioID":
+  text: The scenario id of the map, from its information chunk (`MFRM`); 0 before the first `SetBBMapLoc`.
+"BBMapWidth":
+  text: The width of the map, from its information chunk; 0 before the first `SetBBMapLoc`.
+"BBMapHeight":
+  text: The height of the map, from its information chunk; 0 before the first `SetBBMapLoc`.
+"BBMapPowerUps":
+  text: The address of the custom power-ups of the map, the data of its `PWUP` chunk; 0 without it.
+"BBMapData":
+  text: The address of the map data, the data of its `MDAT` chunk; 0 without it.
+"BBMapStartPos":
+  text: The address of the start positions of the map, the data of its `STRT` chunk; 0 without it.
+"BBMapName$":
+  text: The name of the map, from its `NAME` chunk; an empty string without it.
+"BBMapInfo":
+  text: The address of the information chunk (`MFRM`) of the map; 0 before the first `SetBBMapLoc`.
+"BBMapPUMask":
+  text: The address of the power-up mask of the map, the data of its `PWMK` chunk; 0 without it.
+"BBMapDBOverLay":
+  text: The address of the destructible block overlay of the map, the data of its `DBOL` chunk; 0 without it.
+"BBMapOnePlayerInfo":
+  text: The address of the one player data of the map, the data of its `1PLY` chunk; 0 without it.
+"BBMapObjects":
+  text: The address of the one player objects of the map, the data of its `OBJS` chunk; 0 without it.
+"BBNumBaddies":
+  text: The number of baddies, the first byte of the `BAD!` chunk of the scenario; 0 without it.

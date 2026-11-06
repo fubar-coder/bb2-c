@@ -1,0 +1,17 @@
+"InitView":
+  text: Allocates a copper list in chip memory, writes its first four moves and returns its address. The list is never shown.
+  notes: |
+    Kept from the original: the colour count is ignored, the size is
+    16 bytes per sprite and per bitplane plus 8 bytes per line plus 38,
+    computed as a word, so large values give a wrong or negative size
+    ([#890](https://github.com/fubar-coder/bb2-c/issues/890)). The four
+    moves are not the intended display registers but words read from
+    fixed low memory addresses, two of them odd, which crashes a 68000
+    ([#889](https://github.com/fubar-coder/bb2-c/issues/889)). When the
+    memory cannot be allocated, the words are written to address 0 and
+    overwrite system memory
+    ([#888](https://github.com/fubar-coder/bb2-c/issues/888)). Every call
+    allocates a new list; only the last one is freed at the end of the
+    program ([#891](https://github.com/fubar-coder/bb2-c/issues/891)).
+"ViewBitmap":
+  text: Does nothing; the command was never written.

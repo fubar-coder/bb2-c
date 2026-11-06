@@ -1,0 +1,87 @@
+"ClearBitmap":
+  text: Clears a bitmap line by line from the bottom up, each line first through a dither pattern and 19 lines later fully. `delay` slows the effect down; with `height` and `offset` only `height` lines from line `offset` on are cleared.
+  notes: |
+    The delay is the number of turns of an empty loop after every line,
+    so its effect depends on the speed of the machine.
+
+    Kept from the original: a delay of 0 waits 4294967296 turns per line,
+    and the program seems to hang
+    ([#669](https://github.com/fubar-coder/bb2-c/issues/669)). The last
+    word of the area stays and the word before it is cleared, for an
+    `offset` of 0 the word before the bitplane
+    ([#668](https://github.com/fubar-coder/bb2-c/issues/668)). The depth
+    is read together with the flags of the bitmap, so a bitmap with flags
+    set is taken for one with hundreds of bitplanes and memory is
+    overwritten ([#670](https://github.com/fubar-coder/bb2-c/issues/670));
+    more than 16 bitplanes overwrite the library's data
+    ([#674](https://github.com/fubar-coder/bb2-c/issues/674)).
+"FadeInBitmap":
+  text: Copies one bitmap onto another line by line from the top down, each line first through a dither pattern and 19 lines later fully, so that the picture fades in. `delay` slows the effect down; with the optional values only `height` lines are copied, from line `offset1` of the source to line `offset2` of the destination.
+  notes: |
+    Width and depth come from the source bitmap, and the destination is
+    walked with the width of the source, so both should have the same
+    width and the destination at least the depth of the source. The
+    delay is as for `ClearBitmap`.
+
+    Kept from the original: a delay of 0 waits 4294967296 turns per line
+    ([#669](https://github.com/fubar-coder/bb2-c/issues/669)); a bitmap
+    with flags set counts as one with hundreds of bitplanes
+    ([#670](https://github.com/fubar-coder/bb2-c/issues/670)); and from 9
+    bitplanes on the bitplanes get mixed up and the library's data is
+    overwritten ([#674](https://github.com/fubar-coder/bb2-c/issues/674)).
+"ZoomX4":
+  text: Enlarges a rectangle of `width` x `height` pixels four times in both directions, from byte offset `sourceadd` of the source bitmap to byte offset `destadd` of the destination. With `xy_select` 1 only the width is enlarged, with 2 only the height.
+  notes: |
+    Nothing happens with a width below 8 or a height below 1. The number
+    of bitplanes is that of the source.
+"Derez":
+  text: Copies a rectangle of a low resolution bitmap to another and makes it blocky, every block of `derez_value` x `derez_value` pixels in the colour of its top left pixel. The result is 320 pixels wide and `height` lines high; a `derez_value` of 1 copies, 0 does nothing.
+  notes: |
+    Both bitmaps must be 320 pixels (40 bytes) wide. Kept from the
+    original: used as a function it returns no useful value
+    ([#672](https://github.com/fubar-coder/bb2-c/issues/672)); a source
+    bitmap of depth 0 counts as 65536 bitplanes and overwrites memory
+    ([#947](https://github.com/fubar-coder/bb2-c/issues/947)), and after
+    that the depth of the following calls of `Derez` and `ZoomXY` is
+    wrong ([#675](https://github.com/fubar-coder/bb2-c/issues/675)); more
+    than 16 bitplanes overwrite the library's data
+    ([#674](https://github.com/fubar-coder/bb2-c/issues/674)).
+"ZoomXY":
+  text: Enlarges the source chosen with `InitZoomXY` into its destination, every pixel `xzoom` pixels wide and every line `yzoom` lines high. The result is clipped to 320 pixels in width and `height` lines; 1,1 copies, and a factor of 0 does nothing.
+  notes: |
+    Only for low resolution bitmaps 320 pixels (40 bytes) wide, and only
+    after `InitZoomXY`. Kept from the original: a depth 0 source and more
+    than 16 bitplanes overwrite memory as with `Derez`
+    ([#947](https://github.com/fubar-coder/bb2-c/issues/947),
+    [#675](https://github.com/fubar-coder/bb2-c/issues/675),
+    [#674](https://github.com/fubar-coder/bb2-c/issues/674)).
+"InitZoomXY":
+  text: Chooses the source and destination bitmap of `ZoomXY` and the byte offsets in them where it starts reading and writing.
+"ZoomX2":
+  text: Enlarges a rectangle of `width` x `height` pixels twice in both directions, from byte offset `sourceadd` of the source bitmap to byte offset `destadd` of the destination.
+  notes: |
+    The width counts whole bytes (multiples of 8 pixels); nothing happens
+    with a width below 8 or a height below 1. The number of bitplanes is
+    that of the source.
+"GetZoomTables":
+  text: Returns the address of four longs, the addresses of the library's tables for `ReduceX2` (256 bytes), the zoom by 2 (256 words), by 4 (256 longs) and by 8 (16 longs); each is 0 if the tables could not be allocated.
+"ZoomX8":
+  text: Enlarges a rectangle of `width` x `height` pixels eight times in both directions, from byte offset `sourceadd` of the source bitmap to byte offset `destadd` of the destination.
+  notes: |
+    Works on bitmaps of any width. Nothing happens with a width below 8
+    or a height below 1. The number of bitplanes is that of the source.
+"ADDValue":
+  text: Returns the byte offset of the pixel `x`,`y` in a bitplane of the bitmap, y times its bytes per row plus x/8, as the zoom commands take it.
+"ReduceX2":
+  text: Halves a rectangle of `width` x `height` pixels in both directions, from byte offset `sourceadd` of the source bitmap to byte offset `destadd` of the destination, keeping every second pixel of every second line.
+  notes: |
+    The width should be a multiple of 16; nothing happens with a width
+    below 16 or a height below 2.
+"ZoomyZoom":
+  text: Doubles the left half of the first 32 lines of a bitmap 640 pixels wide in place, so it fills the whole width.
+  notes: |
+    Kept from the original: the size of the bitmap is ignored, the
+    command always works on 32 lines of 80 bytes
+    ([#676](https://github.com/fubar-coder/bb2-c/issues/676)), and a
+    bitmap with flags set counts as one with hundreds of bitplanes
+    ([#670](https://github.com/fubar-coder/bb2-c/issues/670)).

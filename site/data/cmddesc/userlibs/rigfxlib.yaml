@@ -1,0 +1,76 @@
+"PaletteInfo":
+  text: Chooses the palette that `PalRed`, `PalGreen`, `PalBlue`, their AGA forms and `PalAdjust` read from.
+"PalRed":
+  text: The red value, 0 to 15, of a colour of the palette chosen with `PaletteInfo`.
+"PalGreen":
+  text: The green value, 0 to 15, of a colour of the palette chosen with `PaletteInfo`.
+"PalBlue":
+  text: The blue value, 0 to 15, of a colour of the palette chosen with `PaletteInfo`.
+"AGAPalRed":
+  text: The red value, 0 to 255, of a colour of the palette chosen with `PaletteInfo`.
+"AGAPalGreen":
+  text: The green value, 0 to 255, of a colour of the palette chosen with `PaletteInfo`.
+"AGAPalBlue":
+  text: The blue value, 0 to 255, of a colour of the palette chosen with `PaletteInfo`.
+"PalAdjust":
+  text: Multiplies the colours of the palette chosen with `PaletteInfo` by a ratio and stores the result in another palette. A ratio below 1 darkens, above 1 brightens, and 1 copies the colours.
+  notes: |
+    The ratio is a quick or a float; each colour value is limited to the
+    largest value, so a ratio above 1 cannot overflow. The target palette
+    must have at least as many colours as the source. With `start_col`
+    and `end_col`, only that range is adjusted and stored.
+
+    Kept from the original: without a range, the number of colours of
+    the source palette counts, not of the target
+    ([#685](https://github.com/fubar-coder/bb2-c/issues/685)); an
+    `end_col` one below `start_col` adjusts 65536 colours
+    ([#684](https://github.com/fubar-coder/bb2-c/issues/684)), and colour
+    numbers from 2731 on reach before the palette
+    ([#677](https://github.com/fubar-coder/bb2-c/issues/677)).
+"FillPalette":
+  text: Sets all colours of a palette, or the range `start_col` to `end_col`, to one colour, with red, green and blue from 0 to 15.
+  notes: |
+    Unlike `PalAdjust`, this command names its palette itself and does not
+    use the one of `PaletteInfo`. A range is not checked against the size
+    of the palette. An `end_col` of 0 fills up to the last colour; kept
+    from the original, so does an `end_col` whose low 16 bits are 0
+    ([#683](https://github.com/fubar-coder/bb2-c/issues/683)).
+"AGAFillPalette":
+  text: Like `FillPalette`, with red, green and blue from 0 to 255.
+"CopyColour":
+  text: Copies a colour from one palette to another, or within one palette. As a function it returns -1 on success and 0 if a colour number is not below the number of colours of its palette.
+  notes: |
+    Kept from the original: negative colour numbers are not refused
+    ([#678](https://github.com/fubar-coder/bb2-c/issues/678)).
+"CPUCls":
+  text: Clears all bitplanes of a bitmap with the processor instead of the blitter.
+  notes: |
+    Kept from the original: a bitmap without a first bitplane crashes
+    ([#680](https://github.com/fubar-coder/bb2-c/issues/680)); a bitplane
+    smaller than 40 bytes clears 2.6 MB of memory below it
+    ([#682](https://github.com/fubar-coder/bb2-c/issues/682)); when the
+    size of a bitplane is odd, its first byte stays
+    ([#681](https://github.com/fubar-coder/bb2-c/issues/681)); and a bitmap
+    of depth 0 counts as 65536 planes
+    ([#679](https://github.com/fubar-coder/bb2-c/issues/679)).
+"SaveCMAP":
+  text: Saves a palette as an IFF ILBM file that holds only the colours. As a function it returns the result of the file write, and 0 if the palette is empty or there is no memory.
+  notes: |
+    Amiga mode only. The file name is a long, the address of a name that
+    ends in a zero byte, for example `&f$`. The library writes the file
+    with `BSave` of the AMOS functions library, which must be installed
+    too.
+
+    Kept from the original: a palette with an odd number of colours gives
+    a colour chunk without its pad byte
+    ([#687](https://github.com/fubar-coder/bb2-c/issues/687)), and a
+    palette of 0 colours overwrites memory
+    ([#688](https://github.com/fubar-coder/bb2-c/issues/688)).
+"MergeBitplanes":
+  text: Builds a bitmap from the bitplanes of two others. The target bitmap gets the bitplanes of the first source and then those of the second, `numplanes` planes in all, and the size of the first source.
+  notes: |
+    No bitplane is copied: the target uses the memory of the sources, and
+    freeing the target does not free it. Both sources must be bitmaps in
+    use and the target a bitmap number not in use; if not, or if
+    `numplanes` is larger than the depths of both sources together,
+    nothing happens.

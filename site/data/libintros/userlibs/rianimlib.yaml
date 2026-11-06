@@ -1,0 +1,45 @@
+description: Plays ANIM5 and ANIM7 animations from memory into bitmaps - by Reflective Images.
+intro: |
+  This library plays IFF animations (ANIM files) in the two common delta
+  formats, ANIM5 and ANIM7. The animation must be loaded into memory by
+  the program, in chip or fast memory; the library works on its address.
+  Frames are drawn into bitmap objects, at any position inside the
+  bitmap, and colour changes of the frames go into a palette object.
+  `RIAnimWidth`, `RIAnimHeight` and `RIAnimDepth` tell the size of the
+  animation, so suitable bitmaps can be made before playing it.
+
+  `RIAnimInit` unpacks the first frame into a bitmap and sets the
+  palette; each `RINextAnimFrame` then changes a bitmap into the next
+  frame. In these formats every frame is stored as the change against
+  the frame two steps before it, so an animation is played double
+  buffered: two bitmaps that both start with the first frame, and the
+  frames drawn into them in turn. Nothing checks the size of the
+  bitmaps: they must be large and deep enough for the animation at the
+  chosen position. A first frame stored as a delta instead of a full
+  picture is not supported. Kept from the original: the library steps
+  from chunk to chunk without the pad byte the IFF standard puts behind a
+  chunk of odd length, so a file with such chunks is read wrong
+  ([#505](https://github.com/fubar-coder/bb2-c/issues/505)).
+
+  The library uses the RI Pack library to unpack the first frame and to
+  read the palettes, so that library must be installed too.
+
+  With an animation loaded at address `m`, played once through bitmaps
+  0 and 1:
+
+  ```blitzbasic
+  w=RIAnimWidth(m) : h=RIAnimHeight(m) : d=RIAnimDepth(m)
+  BitMap 0,w,h,d
+  BitMap 1,w,h,d
+  If RIAnimInit(m,0,0)
+    CopyBitMap 0,1
+    AnimLoop Off
+    b=1
+    While RINextAnimFrame(b)
+      ; show bitmap b here
+      b=1-b
+    Wend
+  EndIf
+  ```
+
+  *Based on the RI Anim Lib guide by Reflective Images.*

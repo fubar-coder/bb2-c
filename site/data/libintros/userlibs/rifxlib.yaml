@@ -1,0 +1,40 @@
+description: Bitmap effects by Reflective Images - dithered fades and clears, fast zooms by 2, 4 and 8, halving, derez and free zooms of planar bitmaps.
+intro: |
+  This library makes effects with the bitmap objects of Blitz Basic 2.
+  None of its commands uses the blitter: all of them work with the
+  processor, in Amiga and in Blitz mode.
+
+  `ClearBitmap` and `FadeInBitmap` clear a bitmap or copy one onto
+  another line by line through a dither pattern, slowed down by a delay
+  so the effect can be seen. `ZoomX2`, `ZoomX4` and `ZoomX8` enlarge a
+  rectangle of a bitmap two, four or eight times into another bitmap,
+  and `ReduceX2` halves one. `Derez` makes a picture blocky, and
+  `ZoomXY`, after `InitZoomXY`, enlarges by any whole factors.
+
+  The zoom commands take the position of the rectangle as a byte offset
+  into the bitplanes, which `ADDValue` computes from x and y. The
+  position therefore moves in steps of 8 pixels, and widths count whole
+  bytes. Nothing is clipped: the rectangle and its enlargement must fit
+  inside the bitmaps. The destination needs at least the depth of the
+  source; source and destination can be the same bitmap as long as the
+  result does not overwrite the part still to be read.
+
+  `Derez` and `ZoomXY` work only on low resolution bitmaps 320 pixels
+  (40 bytes) wide; the others work on bitmaps of any width. The bitmaps
+  may have at most 8 bitplanes. The zooms by 2, 4 and 8, `ReduceX2` and
+  `ZoomyZoom` use tables the library builds at program start; without
+  memory for them these commands do nothing.
+
+  A picture zoomed to twice its size from its middle, then faded in on
+  another bitmap and cleared again:
+
+  ```blitzbasic
+  BitMap 0,320,256,4
+  BitMap 1,320,256,4
+  LoadBitMap 0,"picture.iff"
+  ZoomX2 0,1,ADDValue(0,80,64),0,160,128
+  FadeInBitmap 0,1,500
+  ClearBitmap 1,500
+  ```
+
+  *Based on the RI FX Lib guide by Reflective Images.*

@@ -1,0 +1,13 @@
+description: The unfinished start of a display library by Reflective Images - it allocates a copper list but never shows anything.
+intro: |
+  This library is the beginning of a display library by Reflective
+  Images that was meant to build its own copper list. It was never
+  finished: `InitView` allocates a copper list in chip memory and fills
+  its first words, and `ViewBitmap` does nothing. The list is never
+  installed, so the library does not change the display. It is of no
+  use in a program; it is part of the BB2 C port only to keep the set of
+  libraries complete.
+
+  The library opens graphics.library version 39 (OS 3.0) at program
+  start and closes it at the end, together with the last list
+  `InitView` allocated.

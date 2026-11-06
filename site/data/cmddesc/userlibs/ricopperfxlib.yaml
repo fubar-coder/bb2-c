@@ -1,0 +1,72 @@
+"DoColSplit":
+  text: Writes a 24 bit colour gradient into one colour register (0 to 255) over `numlines` lines, from the current start line on. `cols_adr` is the address of six longs, the red, green and blue of the first line and of the last, each 0 to 255.
+  notes: |
+    AGA only. Each line takes five copper instructions; a line 256 gets
+    one more, the wait that the copper needs to reach the lines below
+    255. Afterwards the start line is the line after the split, so
+    several splits can follow each other. Without a coplist or custom
+    space nothing is written.
+
+    Kept from the original: `numlines` is not checked; 0 divides by zero
+    and stops the program with a processor exception, and a negative
+    count writes up to 65536 lines over the memory after the custom
+    space ([#589](https://github.com/fubar-coder/bb2-c/issues/589)). The
+    extra wait for line 256 is also written for a split that starts at
+    line 0 ([#588](https://github.com/fubar-coder/bb2-c/issues/588)).
+    Used as a function, it returns no useful value
+    ([#592](https://github.com/fubar-coder/bb2-c/issues/592)).
+"RedoColSplit":
+  text: Writes new colours into a colour split made by `DoColSplit`, without building it again. `cols_adr` and `numlines` are as for `DoColSplit`; `ccoffset` is the place of the split in the custom space, in instructions, as `GetCCOffset` returned it just before the `DoColSplit`.
+  notes: |
+    Kept from the original: `numlines` is not checked, as with
+    `DoColSplit` ([#589](https://github.com/fubar-coder/bb2-c/issues/589)),
+    and a `ccoffset` of 65536 or more points to a wrong place
+    ([#594](https://github.com/fubar-coder/bb2-c/issues/594)).
+"CopperReset":
+  text: Makes the library work on the custom space of a coplist. `startline` is the line where the next colour split starts; the optional `ccoffset` is the place in the custom space, in instructions from its start, where the next instruction goes (0 without it).
+  notes: |
+    It must be called before the other commands. If the coplist has no
+    custom space, the other commands do nothing.
+"CopperEnd":
+  text: Ends the custom instructions with four of its own, a wait for line 300 (line 44 if the list has not passed line 255), bitplane and sprite DMA off, colour bank 0 and colour 0 black. Use it when the custom instructions reach below line 255.
+"CopperInfoBlock":
+  text: Returns the address of the library's internal state, 20 bytes; meant for debugging.
+"CopperCommand":
+  text: Writes one copper instruction, given as its two words, into the custom space.
+"CopperMove":
+  text: Writes a copper move instruction that puts a word `value` into a custom chip register, given as its offset from the start of the registers (for example `$180` for colour 0).
+"CopperWait":
+  text: Writes a copper wait instruction for the position `x`,`y`. The copper resolves `x` only in steps of 4 low resolution pixels.
+  notes: |
+    Only the low 8 bits of `y` are used. Kept from the original: an `x`
+    of 500 or more spills into the line and waits for a wrong line
+    ([#591](https://github.com/fubar-coder/bb2-c/issues/591)).
+"CopperSkip":
+  text: Writes a copper skip instruction for the position `x`,`y`, which skips the next instruction once the beam has passed that position.
+  notes: |
+    Unlike `CopperWait`, `x` is not converted: it is the horizontal
+    position as the copper counts it, with bit 0 cleared and only its low
+    8 bits used. Only the low 8 bits of `y` are used.
+"GetCCOffset":
+  text: Returns the place of the next instruction in the custom space, in instructions from its start, or -1 if no coplist was chosen with `CopperReset`.
+  notes: |
+    Kept from the original: after `CopperResetAdr` it returns -1 too,
+    although the other commands work
+    ([#593](https://github.com/fubar-coder/bb2-c/issues/593)).
+"CopperAGACol":
+  text: Sets one AGA colour register (0 to 255) to the red, green and blue values `r`,`g`,`b` (0 to 255), with four copper instructions.
+  notes: |
+    AGA only. Kept from the original: as a function it returns its
+    `col#` argument, and 1234 when no custom space is set, nothing that
+    tells whether it worked
+    ([#590](https://github.com/fubar-coder/bb2-c/issues/590)).
+"CopperResetAdr":
+  text: Makes the library work on a copper list of your own. The first argument is not a coplist number but the address of the space in your copper list that the library may fill; `startline` is the line where the next colour split starts.
+  notes: |
+    The place of the next instruction starts at 0. Nothing checks the
+    size of the space.
+"ColSplitBplcon3":
+  text: Sets the low byte of the register BPLCON3 that colour splits and their colour changes write, for example to blank the border or to set the sprite resolution.
+  notes: |
+    It applies to the `DoColSplit` calls that follow; `CopperAGACol` and
+    `CopperEnd` do not use it.

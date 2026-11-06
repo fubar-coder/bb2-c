@@ -1,0 +1,34 @@
+description: Palette and bitmap helpers by Reflective Images - reading and changing the colours of palette objects, fades, saving a palette as an IFF file, and clearing bitmaps with the CPU.
+intro: |
+  This library works on the palette and bitmap objects of Blitz Basic 2.
+  Most of its commands read or change the colours of a palette object;
+  they change only the object, so after a change the palette must be
+  shown again, with `Use Palette`, `ShowPalette` or `DisplayPalette`,
+  whichever the program uses.
+
+  The functions that read a colour (`PalRed`, `AGAPalRed` and the others)
+  and `PalAdjust` work on the palette chosen last with `PaletteInfo`.
+  Call `PaletteInfo` first: the library does not check that a palette
+  was chosen ([#686](https://github.com/fubar-coder/bb2-c/issues/686)).
+  The commands that fill or copy colours name their palettes themselves.
+
+  The plain commands use the 4 bit colour values of the original chip
+  set, 0 to 15; the commands that begin with `AGA` use 8 bit values, 0 to
+  255, which only an AGA machine can show in full. Colour numbers are not
+  checked against the size of the palette, except by `CopyColour`.
+
+  A fade to black in 16 steps: palette 0 keeps the colours of a picture,
+  palette 1, of the same size, gets the faded ones and is shown:
+
+  ```blitzbasic
+  LoadPalette 0,"picture.iff"
+  LoadPalette 1,"picture.iff"
+  PaletteInfo 0
+  For i=16 To 0 Step -1
+    PalAdjust 1,i/16
+    VWait
+    Use Palette 1
+  Next
+  ```
+
+  *Based on the RI GFX Lib guide by Reflective Images.*

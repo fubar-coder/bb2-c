@@ -1,0 +1,26 @@
+description: Chunky bitmaps (one byte per pixel) by Reflective Images, with a chunky to planar conversion for 320 x 256 pixels in 256 colours.
+intro: |
+  This library keeps chunky bitmaps: images with one byte per pixel,
+  which a program can draw into with plain `Poke`s, and converts them to
+  the planar bitmaps the Amiga displays. Chunky bitmaps are numbered
+  Blitz objects of their own, 0 to 7 by default; `ChunkyBitmap` makes
+  one and `ChunkyData` gives the address of its pixels, row after row.
+  The memory of a chunky bitmap is freed at the end of the program.
+
+  The library is fixed to one size: `ChunkyToPlanar` and `RaycastSky`
+  assume 320 x 256 pixels in 8 bitplanes (256 colours) and check no
+  size. The bitmap for `ChunkyToPlanar` must have its eight bitplanes one
+  after the other in one block of memory, 10240 bytes each.
+  `PlanarToChunky` and `ChunkyLoadBitMap` were never written and do
+  nothing. `ChunkyBitmap` works in Amiga mode only.
+
+  A chunky bitmap with one dot, converted into a bitmap whose planes lie
+  in one block of chip memory:
+
+  ```blitzbasic
+  ChunkyBitmap 0,320,256
+  Poke.b ChunkyData(0)+100*320+160,255
+  m.l=AllocMem_(81920,$10002)
+  CludgeBitMap 1,320,256,8,m
+  ChunkyToPlanar 0,1
+  ```

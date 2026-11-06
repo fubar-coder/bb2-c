@@ -1,0 +1,33 @@
+description: Reads the map and scenario files of the game Blitz Bombers from memory - by Reflective Images.
+intro: |
+  This library was written for the game Blitz Bombers by Reflective
+  Images. It reads its two kinds of data file, maps and scenarios, which
+  are IFF files of the types `BMAP` and `SCEN`. The program loads a file
+  into memory itself and hands its address to `SetBBMapLoc` or
+  `SetBBScenarioLoc`; the other commands then look up the chunks of that
+  file. One map and one scenario can be chosen at a time.
+
+  Most functions return the address of the data of a chunk, or a number
+  stored in it, and 0 if the file has no such chunk. The string
+  functions return the names stored in the file. The library only reads
+  the files; the meaning of the data is that of the game and is not
+  described here. `BBGetPalette` is the one command that changes
+  something: it copies the colours of a scenario into a palette object.
+
+  Choose the file before the other commands: without it they search from
+  a meaningless address. The chunks are found by walking the file from
+  chunk to chunk, without the pad byte the IFF standard puts behind a
+  chunk of odd length. Kept from the original: a chunk behind one of odd
+  length is not found, or crashes a 68000
+  ([#552](https://github.com/fubar-coder/bb2-c/issues/552)); and the walk
+  reads one chunk id beyond the end of the file and accepts it if it
+  matches ([#553](https://github.com/fubar-coder/bb2-c/issues/553)).
+
+  With a scenario file loaded at address `m`:
+
+  ```blitzbasic
+  If SetBBScenarioLoc(m)
+    NPrint BBScenarioName," by ",BBScenarioAuthor
+    NPrint "Level ",BBScenarioLevel
+  EndIf
+  ```

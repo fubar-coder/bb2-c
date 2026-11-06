@@ -1,0 +1,53 @@
+"RIAnimInit":
+  text: Starts an animation held in memory at `address` - unpacks its first frame into the bitmap and copies its palette into the palette object. Returns -1 on success, 0 if the data is not an animation with a first frame and a bitmap header.
+  notes: |
+    The optional position is either a byte offset into the bitplanes,
+    (x/8)+y*(bytes per row), or a pixel position `x`,`y`; x is rounded
+    down to a multiple of 8. The frames that `RINextAnimFrame` draws use
+    the same position. Nothing checks that the animation fits into the
+    bitmap at that position.
+
+    Kept from the original: the bitmap header is searched beyond the
+    first frame, so a later one may be used
+    ([#511](https://github.com/fubar-coder/bb2-c/issues/511)); after a
+    failed call, `RIAnimFrameCount` and `RINextAnimFrame` may still work
+    on parts of the failed data and of the animation before
+    ([#512](https://github.com/fubar-coder/bb2-c/issues/512)). Data
+    that is not an IFF file but holds the name of a searched chunk at its
+    ninth byte crashes Blitz Basic 2; the BB2 C port takes the chunk as
+    found and goes on
+    ([#513](https://github.com/fubar-coder/bb2-c/issues/513)).
+"RINextAnimFrame":
+  text: Changes the bitmap into the next frame of the animation started with `RIAnimInit`; a new palette of the frame goes into the palette object given to `RIAnimInit`. Returns -1 if a frame was drawn, 0 if not.
+  notes: |
+    After the last frame it goes on with the third frame if `AnimLoop` is
+    on, the default, and returns 0 if it is off. Animations end with two
+    loop frames that lead back to the start; without them, keep
+    `AnimLoop` off. It also returns 0 before an `RIAnimInit` and for a
+    frame of another delta format.
+
+    Kept from the original: a frame without delta data crashes the
+    program ([#515](https://github.com/fubar-coder/bb2-c/issues/515)). An
+    ANIM7 animation is always read in its long form, so one stored in
+    the short form is drawn wrong
+    ([#504](https://github.com/fubar-coder/bb2-c/issues/504)). A width
+    that is not a multiple of 32 pixels (ANIM7) or 8 pixels (ANIM5) loses
+    its right edge, and a narrower one writes far beyond the bitmap
+    ([#507](https://github.com/fubar-coder/bb2-c/issues/507)); a run
+    count of 0 in the data counts as 256
+    ([#508](https://github.com/fubar-coder/bb2-c/issues/508)); and an
+    animation of depth 0 or of more than 8 bitplanes reaches beyond the
+    bitmap ([#509](https://github.com/fubar-coder/bb2-c/issues/509)).
+"AnimLoop":
+  text: With `On`, the default, `RINextAnimFrame` starts over after the last frame; with `Off` it stops there.
+"RIAnimFrameCount":
+  text: The number of frames of the animation started with `RIAnimInit`, 0 before the first `RIAnimInit`.
+  notes: |
+    Kept from the original: every chunk of the animation counts, not only
+    the frames ([#510](https://github.com/fubar-coder/bb2-c/issues/510)).
+"RIAnimDepth":
+  text: The number of bitplanes of the animation at `address`, 0 if it is not an animation with a bitmap header.
+"RIAnimWidth":
+  text: The width in pixels of the animation at `address`, 0 if it is not an animation with a bitmap header.
+"RIAnimHeight":
+  text: The height in pixels of the animation at `address`, 0 if it is not an animation with a bitmap header.
