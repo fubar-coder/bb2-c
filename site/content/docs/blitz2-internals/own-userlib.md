@@ -148,6 +148,93 @@ again, choose RELOAD ALL LIBS and press the HELP key with the cursor on
 `Twice` in the editor.
 {{< /callout >}}
 
+## Documenting the library
+
+A library has two kinds of documentation, for two kinds of readers.
+
+**The help text in the table** is for the Blitz programmer. It is the
+second argument of `BLITZ_NAME`, here `"(Value)  Value times two"`: the
+command's arguments in Blitz notation and a few words on what it does.
+It is part of the library file, so the editor's HELP key shows it in the
+title bar, and it is what the
+[command reference]({{< relref "/docs/libraries" >}}) of this site lists
+for every command, generated from the built library files. Write the
+Blitz syntax there, and nowhere else.
+
+**The comment of the routine** is for the C developer who reads or changes
+the library. The port writes it as a Doxygen comment, from which the
+[API reference](https://fubar-coder.github.io/bb2-c/api/) is made and
+which editors with clangd show on hover. For `Twice`:
+
+```c
+/**
+ * @file
+ * twicelib - a userlib with one function: Twice(Value) returns Value*2.
+ */
+```
+
+at the top of the file, and before the routine:
+
+```c
+/**
+ * @brief Twice(Value): the value times two.
+ *
+ * The product is not checked: a value beyond the range of a long gives
+ * the low 32 bits of the product.
+ *
+ * @param value d0: the value
+ * @return d0: value * 2
+ */
+LONG BLITZ_ROUTINE twice(LONG value BL_REG(d0))
+```
+
+The conventions of the port's libraries:
+
+* The `@brief` of a routine that implements a command starts with the
+  command's name, so that the routine is found by the name a Blitz
+  programmer knows.
+* `@param` and `@return` name the register first (`d0: ...`), since that
+  is how the routine is called. A routine that returns nothing has no
+  `@return`.
+* A routine in assembler, written with `BLITZ_ASM_ROUTINE` or
+  `BLITZ_INLINE`, has no C parameters: its register arguments are `@arg`
+  items and its result is a paragraph `@par Result`.
+
+The full rules are in the repository's
+[development notes](https://github.com/fubar-coder/bb2-c/blob/main/docs/development.md#function-comments-and-the-references).
+
+### The API reference of your own library
+
+The API reference of the site covers the libraries of Blitz Basic 2, the
+RWE userlibs and the shared code, not other directories under
+`libs/userlibs/`. For your own library, run Doxygen locally with the
+repository's configuration and your directory as its input. From the
+repository's root, with Doxygen in its official container:
+
+```
+mkdir -p build/api-mylibs
+{ cat Doxyfile
+  echo 'INPUT = libs/include libs/userlibs/mylibs'
+  echo 'OUTPUT_DIRECTORY = build/api-mylibs'
+  echo 'USE_MDFILE_AS_MAINPAGE ='
+} | podman run --rm -i -v "$PWD":/src -w /src ghcr.io/doxygen/doxygen:Release_1_18_0 -
+```
+
+The configuration treats comment errors as errors, so a `@param` for a
+parameter that does not exist stops the run. The result is HTML in
+`build/api-mylibs/`; open `build/api-mylibs/index.html` in a browser.
+
+### The command reference
+
+The command reference lists the libraries whose command tables are part
+of the repository: the build of such a library, with the option
+`CMDREF userlibs/<name>` of `blitz_library()`, checks that the table it
+generates from the built file equals the committed file in
+`site/data/libraries/`, and the target `cmdref_update` copies the
+generated files there. That is for libraries that become part of the
+port. A library of your own does not need it: its help texts are in the
+library file, and the editor's HELP key shows them.
+
 ## Going further
 
 * **More commands**: add further entries before `BLITZ_LIBFIN()`. The
