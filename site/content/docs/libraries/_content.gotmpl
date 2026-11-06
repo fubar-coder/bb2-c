@@ -1,0 +1,62 @@
+{{- /*
+  The command reference: one page per library, made from the command
+  tables in data/libraries/GROUP/NAME.json (generated from the built
+  library files by tools/cmdref and checked by the build; see
+  site/README.md). The Markdown comes from the partials in
+  layouts/_partials/cmdref/.
+
+  A hand-written description and introduction of a library, if there is
+  one: data/libintros/GROUP/NAME.yaml with the keys "description" (one
+  sentence, for lists and search) and "intro" (Markdown, shown above the
+  commands).
+*/ -}}
+{{- $intros := site.Data.libintros | default dict -}}
+
+{{- /* command libraries (acidlibs) and userlibs: one page each */ -}}
+{{- range $group, $section := dict "acidlibs" "commands" "userlibs" "userlibs" -}}
+  {{- $groupintros := index $intros $group | default dict -}}
+  {{- range $name, $lib := index site.Data.libraries $group -}}
+    {{- $intro := index $groupintros $name | default dict -}}
+    {{- $n := len (where $lib.entries "kind" "in" (slice "statement" "function" "command")) -}}
+    {{- $desc := printf "The %d commands of %s, with their forms and argument types." $n $name -}}
+    {{- $content := partial "cmdref/commands.html" (dict "lib" $lib "intro" $intro.intro) -}}
+    {{- $.AddPage (dict
+      "path" (printf "%s/%s" $section $name)
+      "title" $name
+      "description" ($intro.description | default $desc)
+      "params" (dict
+        "cmdref" (dict "number" $lib.number "count" $n "about" ($intro.description | default "")))
+      "content" (dict "mediaType" "text/markdown" "value" $content)) -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* AmigaOS libraries (deflibs): one page per library or resource that
+  a deflibs library opens, with the calls of every deflibs library that
+  uses its base */ -}}
+{{- $deflibs := site.Data.libraries.deflibs -}}
+{{- $groupintros := index $intros "deflibs" | default dict -}}
+{{- range $name, $lib := $deflibs -}}
+  {{- with $lib.opens -}}
+    {{- $intro := index $groupintros $name | default dict -}}
+    {{- $calls := slice -}}
+    {{- $numbers := slice -}}
+    {{- range sort $deflibs "number" "desc" -}}
+      {{- with where .entries "base" $lib.number -}}
+        {{- $calls = $calls | append . -}}
+      {{- end -}}
+      {{- if where .entries "base" $lib.number -}}
+        {{- $numbers = $numbers | append .number -}}
+      {{- end -}}
+    {{- end -}}
+    {{- $n := len $calls -}}
+    {{- $desc := printf "The %d calls of %s that a program can use directly, with their registers." $n . -}}
+    {{- $content := partial "cmdref/oscalls.html" (dict "lib" $lib "calls" $calls "numbers" $numbers "intro" $intro.intro) -}}
+    {{- $.AddPage (dict
+      "path" (printf "amigaos/%s" $name)
+      "title" .
+      "description" ($intro.description | default $desc)
+      "params" (dict
+        "cmdref" (dict "number" $lib.number "count" $n "about" ($intro.description | default "")))
+      "content" (dict "mediaType" "text/markdown" "value" $content)) -}}
+  {{- end -}}
+{{- end -}}

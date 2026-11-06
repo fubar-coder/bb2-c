@@ -1,0 +1,9 @@
+{{- /*
+  A name as Markdown text: the characters Markdown would read as markup
+  escaped with a backslash. Context: the string. Returns a string.
+*/ -}}
+{{- $s := . -}}
+{{- range slice "\\" "`" "*" "_" "[" "]" "<" ">" "#" "|" -}}
+  {{- $s = replace $s . (printf "\\%s" .) -}}
+{{- end -}}
+{{- return $s -}}

@@ -1,0 +1,44 @@
+{{- /*
+  The Markdown of one entry of a command library: a statement, function,
+  command, object name or keyword. Context: the entry of the data
+  (tools/cmdref). Returns a string.
+*/ -}}
+{{- $notation := dict
+  "byte" ".b" "word" ".w" "long" ".l" "quick" ".q" "float" ".f"
+  "string" "$" "any" "any" -}}
+{{- $kinds := dict
+  "statement" "Statement" "function" "Function"
+  "command" "Statement or function" "object" "Object name" "keyword" "Keyword" -}}
+{{- $facts := slice (index $kinds .kind | default .kind) -}}
+{{- if .typed -}}
+  {{- $facts = $facts | append "takes a type suffix such as `.w`" -}}
+{{- end -}}
+{{- with .result -}}
+  {{- if eq . "suffix" -}}
+    {{- $facts = $facts | append "result of the type of the suffix" -}}
+  {{- else -}}
+    {{- $facts = $facts | append (printf "result `%s`" (index $notation . | default .)) -}}
+  {{- end -}}
+{{- end -}}
+{{- $md := printf "### %s\n\n%s." (partial "cmdref/escape.html" .name) (delimit $facts ", ") -}}
+{{- if .help -}}
+  {{- $md = printf "%s Help text: `%s`" $md .help -}}
+{{- else -}}
+  {{- $md = printf "%s No help text." $md -}}
+{{- end -}}
+{{- with .forms -}}
+  {{- if and (eq (len .) 1) (not (index . 0).args) -}}
+    {{- $md = printf "%s\\\nNo arguments.\n\n" $md -}}
+  {{- else if eq (len .) 1 -}}
+    {{- $md = printf "%s\\\nArguments: %s\n\n" $md (partial "cmdref/form.html" (index . 0)) -}}
+  {{- else -}}
+    {{- $md = printf "%s\\\n%d forms:\n\n" $md (len .) -}}
+    {{- range . -}}
+      {{- $md = printf "%s- %s\n" $md (partial "cmdref/form.html" .) -}}
+    {{- end -}}
+    {{- $md = printf "%s\n" $md -}}
+  {{- end -}}
+{{- else -}}
+  {{- $md = printf "%s\n\n" $md -}}
+{{- end -}}
+{{- return $md -}}

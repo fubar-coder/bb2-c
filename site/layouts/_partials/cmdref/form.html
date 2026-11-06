@@ -1,0 +1,27 @@
+{{- /*
+  The arguments of one form in Blitz notation, a repetition group as
+  "{ ... }...". Context: the form {args, repeat}. Returns a string.
+*/ -}}
+{{- $args := slice -}}
+{{- range .args -}}
+  {{- $args = $args | append (partial "cmdref/arg.html" .) -}}
+{{- end -}}
+{{- $s := "" -}}
+{{- if not $args -}}
+  {{- $s = "no arguments" -}}
+{{- else if .repeat -}}
+  {{- $from := int .repeat.from -}}
+  {{- $count := int .repeat.count -}}
+  {{- $parts := slice -}}
+  {{- if gt $from 0 -}}
+    {{- $parts = $parts | append (delimit (first $from $args) ", ") -}}
+  {{- end -}}
+  {{- $parts = $parts | append (printf "{ %s }..." (delimit (first $count (after $from $args)) ", ")) -}}
+  {{- with after (add $from $count) $args -}}
+    {{- $parts = $parts | append (delimit . ", ") -}}
+  {{- end -}}
+  {{- $s = printf "`%s`" (delimit $parts ", ") -}}
+{{- else -}}
+  {{- $s = printf "`%s`" (delimit $args ", ") -}}
+{{- end -}}
+{{- return $s -}}

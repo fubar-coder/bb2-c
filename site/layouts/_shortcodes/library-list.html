@@ -1,0 +1,28 @@
+{{- /*
+  The libraries of a section of the command reference as a table: name
+  (linked), library number, number of commands or calls, and the
+  hand-written description (data/libintros) if any library of the
+  section has one. The pages come from
+  content/docs/libraries/_content.gotmpl.
+
+    {{< library-list what="commands" >}}     the header of the count column
+*/ -}}
+{{- $what := .Get "what" | default "commands" -}}
+{{- $pages := .Page.RegularPages.ByTitle -}}
+{{- $about := where $pages "Params.cmdref.about" "!=" "" -}}
+<table>
+  <thead>
+    <tr><th>Library</th><th>Number</th><th>{{ $what | strings.FirstUpper }}</th>
+      {{- if $about }}<th>About</th>{{ end }}</tr>
+  </thead>
+  <tbody>
+    {{- range $pages }}
+    <tr>
+      <td><a href="{{ .RelPermalink }}">{{ .Title }}</a></td>
+      <td>{{ .Params.cmdref.number }}</td>
+      <td>{{ .Params.cmdref.count }}</td>
+      {{- if $about }}<td>{{ .Params.cmdref.about }}</td>{{ end }}
+    </tr>
+    {{- end }}
+  </tbody>
+</table>

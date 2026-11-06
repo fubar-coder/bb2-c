@@ -1,0 +1,24 @@
+{{- /*
+  The Markdown of the page of a command library (acidlibs, userlibs).
+  Context: dict "lib" (the data of the library, tools/cmdref) and "intro"
+  (the hand-written introduction, Markdown, may be empty). Returns a
+  string.
+*/ -}}
+{{- $lib := .lib -}}
+{{- $md := "" -}}
+{{- with .intro -}}
+  {{- $md = printf "%s\n\n" . -}}
+{{- end -}}
+{{- $facts := printf "Library number %v" $lib.number -}}
+{{- with $lib.object -}}
+  {{- $facts = printf "%s. It manages `%s` objects, by default at most %v (the compiler options set the maximum)" $facts .name .maximum -}}
+{{- end -}}
+{{- if $lib.entries -}}
+  {{- $md = printf "%s%s.\n\n## Commands\n\n" $md $facts -}}
+  {{- range sort $lib.entries "name" -}}
+    {{- $md = printf "%s%s" $md (partial "cmdref/entry.html" .) -}}
+  {{- end -}}
+{{- else -}}
+  {{- $md = printf "%s%s.\n\nThis library declares no commands. Its routines are used by the compiler, by the code it generates or by other libraries.\n" $md $facts -}}
+{{- end -}}
+{{- return $md -}}

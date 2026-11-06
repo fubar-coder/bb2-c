@@ -15,7 +15,7 @@
 
 ## 4. The pages
 
-- [ ] 4.1 Content adapter, partials and the `library-list` shortcode; sections `commands`, `amigaos`, `userlibs` with hand-written `_index.md`; the slot `site/data/libintros/`; the Libraries overview links the sections and the API reference; `site/README.md` describes data, slot and update (D4). Verify: the site builds with no errors or warnings; links checked; screenshots of an overview, a command library (windowslib), an AmigaOS library (dos.library with doslib2's calls), a userlib
+- [x] 4.1 Content adapter, partials and the `library-list` shortcode; sections `commands`, `amigaos`, `userlibs` with hand-written `_index.md`; the slot `site/data/libintros/`; the Libraries overview links the sections and the API reference; `site/README.md` describes data, slot and update (D4). Verify: the site builds with no errors or warnings; links checked; screenshots of an overview, a command library (windowslib), an AmigaOS library (dos.library with doslib2's calls), a userlib
 
 ## 5. API reference
 

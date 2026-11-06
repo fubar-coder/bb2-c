@@ -1,0 +1,25 @@
+{{- /*
+  The Markdown of the page of an AmigaOS library: its calls, from every
+  deflibs library whose calls use its base. Context: dict "lib" (the
+  library that opens it), "calls" (the call entries, tools/cmdref),
+  "numbers" (the library numbers that declare them) and "intro" (the
+  hand-written introduction, Markdown, may be empty). Returns a string.
+*/ -}}
+{{- $md := "" -}}
+{{- with .intro -}}
+  {{- $md = printf "%s\n\n" . -}}
+{{- end -}}
+{{- $numbers := slice -}}
+{{- range .numbers -}}
+  {{- $numbers = $numbers | append (string .) -}}
+{{- end -}}
+{{- $md = printf "%sDeclared by deflibs %s %s.\n\n" $md (cond (gt (len $numbers) 1) "libraries" "library") (delimit $numbers ", " " and ") -}}
+{{- $md = printf "%s## Calls\n\n| Call | Arguments | Registers | Offset |\n|---|---|---|---:|\n" $md -}}
+{{- range sort .calls "name" -}}
+  {{- $args := "" -}}
+  {{- with .help -}}
+    {{- $args = printf "`%s`" (replace . "|" "\\|") -}}
+  {{- end -}}
+  {{- $md = printf "%s| `%s` | %s | %s | %v |\n" $md .name $args (delimit .registers ", ") .offset -}}
+{{- end -}}
+{{- return $md -}}

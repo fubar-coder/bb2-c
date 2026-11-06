@@ -1,0 +1,12 @@
+{{- /*
+  One argument of a form in Blitz notation (the data: tools/cmdref).
+  Context: the argument {type, code, flags}. Returns a string.
+*/ -}}
+{{- $notation := dict
+  "byte" ".b" "word" ".w" "long" ".l" "quick" ".q" "float" ".f"
+  "string" "$" "any" "any" "suffix" ".Type" "array" "array()" -}}
+{{- $s := index $notation .type | default .type -}}
+{{- if in (.flags | default slice) "address" -}}
+  {{- $s = printf "&%s" $s -}}
+{{- end -}}
+{{- return $s -}}
