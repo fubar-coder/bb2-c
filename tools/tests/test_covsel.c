@@ -286,6 +286,11 @@ static void test_real_rules(void)
     CHECK(!strcmp(r, ALL));
     r = select_for(real_rules, diff1("tests/bug-orig/x/expect.txt", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, "bug_orig_x newtest"));
+    /* an Amiga helper program of one suite serves others too */
+    r = select_for(real_rules, diff1("tests/corpus/amiga/tedstub.c", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, ALL));
+    r = select_for(real_rules, diff1("tests/corpus/tests/x.bas", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "corpus corpus_req corpus_serial newtest"));
     r = select_for(real_rules, diff1("README.md", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
     CHECK(!strcmp(r, "newtest"));
     r = select_for(real_rules, diff1("programs/ted/src/core/tokit.c", "@@ -15 +15 @@", "-a\n+b\n"), NULL, 0);

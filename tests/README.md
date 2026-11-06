@@ -605,8 +605,10 @@ rules for what a change of a file selects are in
 * a header of the compilers: each source whose object depends on it
   counts as changed as a whole, by its own rule (a measured source: the
   tests of all its functions; glue, which is not measured: all tests);
-* a test source or expect file: the tests of its suite (by name or
-  label); a host test source: the host tests;
+* a test source or expect file: the tests of the suites that read it (by
+  name or label); a host test source: the host tests; the runners and
+  Amiga helper programs of the suites (`tests/*/runner/`,
+  `tests/*/amiga/`), which several suites use: all tests;
 * `libs/`: the emulator tests and the checks of the libraries;
 * documentation: no test;
 * the build (CMake files, presets), TED, shared code, the tools, the
