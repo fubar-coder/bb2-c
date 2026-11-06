@@ -19,10 +19,10 @@
 		},
 		{
 			"name": "amiga-cov",
-			"displayName": "AmigaOS, 68000, release, blitz2 with function coverage (TEST:cov)",
+			"displayName": "AmigaOS, 68000, release, blitz2 with function coverage (TEST:cov), host side with gcov",
 			"inherits": "amiga",
 			"binaryDir": "${sourceDir}/build/amiga-cov",
-			"cacheVariables": { "BLITZ2_COVERAGE": "ON" }
+			"cacheVariables": { "BLITZ2_COVERAGE": "ON", "HOST_COVERAGE": "ON" }
 		},
 		{
 			"name": "native",
