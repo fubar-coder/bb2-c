@@ -217,7 +217,7 @@ mkdir -p build/api-mylibs
   echo 'INPUT = libs/include libs/userlibs/mylibs'
   echo 'OUTPUT_DIRECTORY = build/api-mylibs'
   echo 'USE_MDFILE_AS_MAINPAGE ='
-} | podman run --rm -i -v "$PWD":/src -w /src ghcr.io/doxygen/doxygen:Release_1_18_0 -
+} | podman run --rm -i -v "$PWD":/src -w /src ghcr.io/doxygen/doxygen:Release_1_16_1 -
 ```
 
 The configuration treats comment errors as errors, so a `@param` for a

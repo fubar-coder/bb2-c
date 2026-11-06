@@ -25,7 +25,7 @@ the site:
 
 ```
 mkdir -p site/static/api
-podman run --rm -v $PWD:/src -w /src ghcr.io/doxygen/doxygen:Release_1_18_0 Doxyfile
+podman run --rm -v $PWD:/src -w /src ghcr.io/doxygen/doxygen:Release_1_16_1 Doxyfile
 ```
 
 The configuration treats a comment error, such as a `@param` for a

@@ -72,7 +72,7 @@ over `libs/include`, `deflib.h`, the sources of acidlibs and of all
 userlibs (`libs/userlibs`, a new userlib directory is included), and
 `shared/` (main page `docs/api-mainpage.md`). Not part of
 the CMake build: the Pages workflow runs it in
-`ghcr.io/doxygen/doxygen:Release_1_18_0` with warnings as errors into
+`ghcr.io/doxygen/doxygen:Release_1_16_1` with warnings as errors into
 `site/static/api/` (not committed), served as `/bb2-c/api/`. A comment
 error (a `@param` of no parameter, a `@return` on a void routine, an
 unclosed backquote) fails the publication of the site; run it locally

@@ -130,7 +130,7 @@ NO`, `OUTPUT_DIRECTORY = site/static/api`, `HTML_OUTPUT = .`,
 `GENERATE_LATEX = NO`. The Pages workflow gets a job `api` on the
 runner itself (not in the Hugo container: a container job cannot start
 another container) that runs the official image on the checkout
-(`docker run --rm -v $PWD:/src -w /src ghcr.io/doxygen/doxygen:Release_1_18_0`)
+(`docker run --rm -v $PWD:/src -w /src ghcr.io/doxygen/doxygen:Release_1_16_1`)
 and passes `site/static/api/` as an artifact to the build job, which
 puts it in place before Hugo runs. `.gitignore` excludes the tree.
 
@@ -161,7 +161,7 @@ puts it in place before Hugo runs. `.gitignore` excludes the tree.
   of `AddPage` (in `params` it is not the page's description); partials
   that build Markdown return strings (`return`), so html/template does
   not escape them. Sorting entries by name is case-insensitive.
-- **Doxygen** (1.18.0): with the configuration of D5, 731 warnings on
+- **Doxygen** (1.18.0; the pinned image is 1.16.1, which gives the same result without the broken letter-index links of 1.17 and 1.18): with the configuration of D5, 731 warnings on
   the first run, then 311 with the parameter-list macros expanded and
   the thunk/assembler macros as declarations, 0 after the comment
   fixes. Global functions of one name in several files (`codeinit`,

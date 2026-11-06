@@ -23,7 +23,7 @@ the CMake build.
 - **THEN** it lists the library's routines with their comments, and no `BLITZ_NULLSUB`, `BLITZ_LIBFIN` or other table macro as a function
 
 ### Requirement: Built without warnings in the Pages workflow
-The Pages workflow SHALL run Doxygen 1.18 in its official container
+The Pages workflow SHALL run Doxygen 1.16.1 in its official container
 image, pinned by tag, with warnings treated as errors, into
 `site/static/api/` before Hugo builds the site, so that the reference is
 served under `api/` of the website. The generated tree SHALL NOT be

@@ -16,7 +16,7 @@ User decisions of 2026-11-06 (analysis O1):
    that the committed file equals the generated one. Hugo renders the
    data with a content adapter, one page per library. acidlibs and
    deflibs are included, the RWE userlibs too.
-2. The API reference for C developers is Doxygen 1.18 (official image)
+2. The API reference for C developers is Doxygen 1.16.1 (official image)
    run in the Pages workflow from a committed Doxyfile into
    `site/static/api/` (not committed), served as `/bb2-c/api/`. Scope:
    the library headers, the library sources of acidlibs and userlibs,
@@ -48,7 +48,7 @@ User decisions of 2026-11-06 (analysis O1):
   libraries, AmigaOS libraries, userlibs), with a slot for a hand-written
   description and introduction per library (`site/data/libintros/`).
 - A committed `Doxyfile`; the Pages workflow runs Doxygen in
-  `ghcr.io/doxygen/doxygen:Release_1_18_0` with warnings as errors before
+  `ghcr.io/doxygen/doxygen:Release_1_16_1` with warnings as errors before
   Hugo; `site/static/api/` is ignored by git.
 - Comments that make Doxygen warn are corrected (comments only; all
   results byte-identical).

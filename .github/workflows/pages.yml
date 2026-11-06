@@ -35,7 +35,7 @@ jobs:
         run: |
           mkdir -p site/static/api
           docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/src" -w /src \
-            ghcr.io/doxygen/doxygen:Release_1_18_0 Doxyfile
+            ghcr.io/doxygen/doxygen:Release_1_16_1 Doxyfile
 
       - name: Upload the API reference
         uses: actions/upload-artifact@v7

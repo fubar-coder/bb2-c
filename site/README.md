@@ -96,14 +96,14 @@ into the pages.
 
 `static/api/` holds the Doxygen HTML of the library headers and sources
 and of `shared/` when the Pages workflow builds the site: a job runs
-Doxygen 1.18 in its official image with the repository's `Doxyfile`
+Doxygen 1.16.1 in its official image with the repository's `Doxyfile`
 (warnings are errors) before Hugo, and Hugo copies the
 tree as it is to `/bb2-c/api/`. It is not committed (`.gitignore`). To
 build it locally, from the repository root:
 
 ```
 mkdir -p site/static/api
-podman run --rm -v $PWD:/src -w /src ghcr.io/doxygen/doxygen:Release_1_18_0 Doxyfile
+podman run --rm -v $PWD:/src -w /src ghcr.io/doxygen/doxygen:Release_1_16_1 Doxyfile
 ```
 
 ## Writing pages
