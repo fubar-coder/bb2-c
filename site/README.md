@@ -6,6 +6,10 @@ a [Hugo](https://gohugo.io/) site (extended edition) with the
 part of the CMake build; GitHub Actions builds and publishes it
 (`.github/workflows/pages.yml`) on every push to `main` that touches `site/`.
 
+The steps to build the site, the API reference and the command reference,
+and how the Pages workflow does it, are also on the site itself:
+<https://fubar-coder.github.io/bb2-c/docs/project-structure/build-docs/>.
+
 The site is written for readers of the project, not for browsing the
 repository. `docs/` stays the internal developer documentation and is the
 source of facts, but is not included here; the pages are new texts.

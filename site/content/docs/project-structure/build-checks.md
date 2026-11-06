@@ -2,7 +2,6 @@
 title: What the build checks
 weight: 3
 description: The checks every result of the build must pass before it counts as built, and what each one refuses.
-next: /docs
 ---
 
 Before this page you should know the two sides of the build

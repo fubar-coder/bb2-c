@@ -65,4 +65,5 @@ its licence is listed in the repository's
   {{< card link="repository" title="Finding your way in the repository" subtitle="The directories and what you find in them." >}}
   {{< card link="tests" title="Tests" subtitle="The test runs, what they compare, and how to set up the emulator tests." >}}
   {{< card link="build-checks" title="What the build checks" subtitle="The checks a result must pass before it counts as built." >}}
+  {{< card link="build-docs" title="Building the documentation" subtitle="The website, its API reference and the command reference, locally and in the Pages workflow." >}}
 {{< /cards >}}
