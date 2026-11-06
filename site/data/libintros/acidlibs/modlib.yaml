@@ -1,0 +1,5 @@
+description: The MOD operator for every numeric type.
+intro: |
+  The compiler turns `MOD`, the remainder of a division, into calls of
+  this library, one for each type of number. A negative remainder gets
+  the divisor added once, so that `-7 MOD 3` is 2.

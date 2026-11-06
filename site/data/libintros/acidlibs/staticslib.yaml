@@ -1,0 +1,6 @@
+description: The memory of NewType variables, global and local.
+intro: |
+  A variable of a NewType holds its fields in a block of memory of its
+  own. The compiler turns the start of a program, and of every procedure
+  with such local variables, into a call of this library, which gives
+  each of them cleared memory of its type's size.

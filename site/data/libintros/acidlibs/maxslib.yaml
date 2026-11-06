@@ -1,0 +1,7 @@
+description: The memory of the Blitz objects - the tables of shapes, windows, screens and the other objects, and copies of strings.
+intro: |
+  Each kind of Blitz object, such as `Shape`, `Window` or `Palette`, has
+  a table with room for its maximum number of objects, which the
+  compiler options set. This library makes these tables when the
+  program starts. Other libraries also use it to keep copies of strings,
+  such as the titles of windows.

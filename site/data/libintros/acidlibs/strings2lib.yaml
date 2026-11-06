@@ -1,0 +1,5 @@
+description: String assignment - storing a string in a global, local or shared string variable.
+intro: |
+  The compiler turns every assignment to a string variable, such as
+  `a$="Hello"`, into a call of this library, which stores the new string
+  in the variable, for global and local variables alike.

@@ -1,0 +1,9 @@
+description: Runtime error checks - array bounds, object numbers, stack, loops and number conversions of programs compiled with runtime error checking.
+intro: |
+  With runtime error checking switched on in the compiler options, the
+  compiler adds checks to the program: of array indexes, of object
+  numbers against their maximum, of the stack, of `Return` and `Next`
+  without their partners, and of numbers that do not fit their type.
+  The checks are the routines of this library; a failed check is a
+  runtime error, which the debugger reports with the line of the
+  program.

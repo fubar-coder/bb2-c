@@ -1,0 +1,8 @@
+description: Division of longs and quicks, for the 68000.
+intro: |
+  The 68000 cannot divide 32 bit numbers by itself. The compiler turns
+  `/` on longs and quicks into calls of this library.
+
+  Kept from the original: a division by 0 is not an error and gives the
+  largest positive number
+  ([#200](https://github.com/fubar-coder/bb2-c/issues/200)).

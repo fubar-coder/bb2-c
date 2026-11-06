@@ -1,0 +1,7 @@
+description: The memory management of Blitz programs - memory that the libraries and the program take, freed when the program ends.
+intro: |
+  The libraries and the code the compiler makes take their memory from
+  this library. It keeps a list of every block, so that all memory still
+  in use is freed when the program ends, also after a runtime error.
+  This is why a Blitz program need not free its objects, banks and
+  arrays itself.

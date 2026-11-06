@@ -1,0 +1,5 @@
+description: The start of the program's Data statements, for Read and Restore.
+intro: |
+  The values of the program's `Data` statements lie in one block of the
+  program. This library tells `Read` and `Restore` where that block
+  starts.

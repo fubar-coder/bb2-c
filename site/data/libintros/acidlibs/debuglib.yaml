@@ -1,0 +1,9 @@
+description: The run time part of the Blitz debugger - runtime errors, single steps, breakpoints and the trace of procedures and interrupts.
+intro: |
+  A program compiled with the debugger, and run from the editor,
+  contains checks and break points that come to this library. It
+  reports runtime errors, stops at `Stop` and at breakpoints, steps
+  through the program line by line and keeps track of procedures and
+  interrupt routines, so that the debugger can show where the program
+  is. The dhandlerlib library connects it with the debugger's window.
+  Executables made without the debugger do not contain it.

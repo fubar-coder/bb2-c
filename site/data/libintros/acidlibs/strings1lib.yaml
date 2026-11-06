@@ -1,0 +1,6 @@
+description: The string work buffer - where string expressions are built, and copying strings into it.
+intro: |
+  String expressions, such as `a$+" "+b$`, are built in a work buffer
+  before their result is stored or used. This library makes that buffer
+  when the program starts, in the size the compiler options give, and
+  copies strings into it.

@@ -1,0 +1,6 @@
+description: Conversion between quicks and floats.
+intro: |
+  A quick is a fixed point number of 16 bits before and 16 bits after
+  the point; a float is a Motorola FFP number. The compiler turns every
+  conversion between the two types, for example `q.q=f.f`, into a call
+  of this library.

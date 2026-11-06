@@ -1,0 +1,4 @@
+description: Clearing the local variables of a procedure.
+intro: |
+  When a procedure starts, its local variables are 0. The compiler
+  calls this library at the start of a procedure to clear them.

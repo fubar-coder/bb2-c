@@ -1,0 +1,5 @@
+description: The base of mathffp.library, for the floating point numbers of Blitz programs.
+intro: |
+  Floats in Blitz Basic 2 are Motorola fast floating point (FFP) numbers.
+  This library opens the system's `mathffp.library`, which the code the
+  compiler makes and other libraries use for float arithmetic.

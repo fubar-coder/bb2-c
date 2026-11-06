@@ -1,0 +1,13 @@
+description: The modes of a program - BLITZ, AMIGA and QAMIGA, switching between the running system and direct use of the hardware.
+intro: |
+  A Blitz program runs in one of three modes. In *Amiga mode* the system
+  runs as usual, with screens and windows. In *Blitz mode*, after
+  `BLITZ`, the system's display and multitasking are switched off and
+  the program has the hardware to itself, for fast games; files and
+  windows cannot be used then. *QAmiga mode*, after `QAMIGA`, lets the
+  system run again but keeps the program's own display. `AMIGA` returns
+  to Amiga mode.
+
+  The compiler turns these commands into calls of this library. It also
+  gives the display libraries the blitter and the copper list, and it
+  tells the interrupt library which handlers to run in which mode.

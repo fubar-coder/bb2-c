@@ -1,0 +1,6 @@
+description: The End command - leaving the program from anywhere, also from inside procedures and subroutines.
+intro: |
+  This library makes `End` work from anywhere in a program, also deep
+  inside procedures and subroutines: it remembers the stack of the
+  program's start and goes back to it, so that the program's cleanup
+  runs and every library frees what it holds.

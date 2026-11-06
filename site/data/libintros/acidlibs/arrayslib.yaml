@@ -1,0 +1,7 @@
+description: The memory of arrays and list arrays for Dim and Dim List.
+intro: |
+  The compiler turns `Dim` and `Dim List` into calls of this library,
+  which computes the size of an array from its dimensions and gives it
+  cleared memory, for global arrays and for the local arrays of
+  procedures. For a list array it also sets up the list of its items,
+  which the commands of the linklistlib library work on.

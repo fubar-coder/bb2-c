@@ -1,0 +1,6 @@
+description: The connection between a program run from the editor and the debugger's user interface.
+intro: |
+  When a program runs from the editor with the debugger, this library
+  connects the run time part of the debugger, the debuglib library, with
+  the debugger's window in the editor, which shows the program's state
+  and takes the user's commands. Executables use rundebuglib instead.

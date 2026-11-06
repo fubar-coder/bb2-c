@@ -1,0 +1,20 @@
+description: Error trapping - SetErr ... End SetErr, ClrErr, Ern and ErrFail, the handling of runtime errors in a program.
+intro: |
+  This library lets a program handle its own runtime errors. The
+  compiler turns `SetErr`, `End SetErr`, `ClrErr`, `Ern` and `ErrFail`
+  into calls of it, so they have no entries here. The code between
+  `SetErr` and `End SetErr` runs when a runtime error happens, instead
+  of the program stopping; `ClrErr` removes it again, and `ErrFail`
+  inside it reports the error after all, which normally ends the
+  program.
+
+  ```blitzbasic
+  SetErr
+    NPrint "Something went wrong"
+    End
+  End SetErr
+  ```
+
+  Kept from the original: `Ern`, meant to give the number of the error,
+  returns a random value
+  ([#133](https://github.com/fubar-coder/bb2-c/issues/133)).

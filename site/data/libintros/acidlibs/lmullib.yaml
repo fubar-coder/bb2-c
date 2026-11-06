@@ -1,0 +1,5 @@
+description: Multiplication of longs and quicks, for the 68000.
+intro: |
+  The 68000 can multiply only 16 bit numbers by itself. The compiler
+  turns `*` on longs and quicks into calls of this library, which builds
+  the product from parts.

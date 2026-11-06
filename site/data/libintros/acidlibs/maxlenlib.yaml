@@ -1,0 +1,7 @@
+description: MaxLen - a string variable with a fixed buffer of a given length.
+intro: |
+  `MaxLen a$=n` gives a string variable a buffer of `n` characters that
+  stays where it is. Commands that write into a string variable directly,
+  such as `FileRequest$` with its path and file name, or the record
+  fields of `Fields`, need such a variable. The compiler turns `MaxLen`
+  into a call of this library, for global and for local strings.

@@ -1,0 +1,6 @@
+description: The memory of the global variables of a program.
+intro: |
+  This library gives a program the memory for its global variables when
+  it starts, and frees it when it ends. The code the compiler makes
+  reaches every global variable through one address register, which
+  allows up to 64 KB of globals.

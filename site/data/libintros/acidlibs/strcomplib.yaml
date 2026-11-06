@@ -1,0 +1,6 @@
+description: String comparison - the operators = <> < <= > >= on strings, and Select and Case with strings.
+intro: |
+  The compiler turns the comparison of two strings, with `=`, `<>`, `<`,
+  `<=`, `>` or `>=`, and `Select` and `Case` with strings, into calls of
+  this library. Strings are compared character by character, by their
+  character codes. The `Sort` command uses it for string arrays too.
