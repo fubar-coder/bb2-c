@@ -1,0 +1,48 @@
+{{- /*
+  Tables on the AmigaOS library pages (the "Calls" table of
+  cmdref/oscalls.html), rendered as Hugo renders a table, except that an
+  argument list such as (rp,string,strLen,...) may break after each
+  comma: the lists have no spaces, and without a break opportunity the
+  longest ones make the table wider than the content column.
+*/ -}}
+<table
+  {{- range $k, $v := .Attributes }}
+    {{- if $v }}
+      {{- printf " %s=%q" $k $v | safeHTMLAttr }}
+    {{- end }}
+  {{- end }}>
+  <thead>
+    {{- range .THead }}
+      <tr>
+        {{- range . }}
+          <th
+            {{- with .Alignment }}
+              {{- printf " style=%q" (printf "text-align: %s" .) | safeHTMLAttr }}
+            {{- end -}}
+          >
+            {{- .Text -}}
+          </th>
+        {{- end }}
+      </tr>
+    {{- end }}
+  </thead>
+  <tbody>
+    {{- range .TBody }}
+      <tr>
+        {{- range . }}
+          {{- $text := string .Text -}}
+          {{- if hasPrefix $text "<code>(" -}}
+            {{- $text = replace $text "," ",<wbr>" -}}
+          {{- end }}
+          <td
+            {{- with .Alignment }}
+              {{- printf " style=%q" (printf "text-align: %s" .) | safeHTMLAttr }}
+            {{- end -}}
+          >
+            {{- $text | safeHTML -}}
+          </td>
+        {{- end }}
+      </tr>
+    {{- end }}
+  </tbody>
+</table>
