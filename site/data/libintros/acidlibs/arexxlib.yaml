@@ -1,0 +1,37 @@
+description: ARexx - sending commands and scripts to ARexx, receiving commands from ARexx scripts as a host, and their results.
+intro: |
+  ARexx is the scripting language of AmigaOS. With these commands a
+  program can start ARexx scripts and send them commands, and it can be
+  an ARexx *host*: a program with a named message port to which scripts
+  send their commands. The library needs `rexxsyslib.library`.
+
+  ARexx talks through messages. `CreateRexxMsg` makes one for a reply
+  port of the program, `SendRexxCommand` sends it with a command, and the
+  reply comes back to that port. `RexxEvent` takes the next message from
+  the port: either a reply to a message sent, with `GetRexxResult` and
+  `GetResultString` for its results, or a command of a script, which
+  `GetRexxCommand` reads and `ReplyRexxMsg` answers.
+
+  ```blitzbasic
+  ; port.l is the address of a public message port named "MYHOST"
+  msg.l=CreateRexxMsg(port,"rexx","MYHOST")
+  SendRexxCommand msg,"myscript",$01020000 ; RXCOMM with RXFF_RESULT
+  ```
+
+  Strings to and from ARexx are *ArgStrings*: the address of the text,
+  with ARexx's information about it in front of it. `CreateArgString`
+  and `DeleteArgString` make and free them; most commands of the library
+  do it themselves. Messages and ArgStrings the program made are freed
+  at its end.
+
+  The action codes of `SendRexxCommand` are those of ARexx: $01000000
+  (RXCOMM) runs a command or script, $02000000 (RXFUNC) calls a function
+  with the number of arguments in the low byte, and modifiers are added
+  to them, such as $00020000 (RXFF_RESULT) to ask for a result string or
+  $00040000 (RXFF_STRING) for a script given as the command string
+  itself. When something fails, such as missing memory or a missing
+  ARexx port, the library shows a recoverable alert, which waits for a
+  mouse button, and the command returns a small error code (4 or 8)
+  instead of its result.
+
+  *Based on the arexxlib guide by Acid Software.*

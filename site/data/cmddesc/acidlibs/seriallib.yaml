@@ -1,0 +1,40 @@
+"OpenSerial":
+  text: Opens unit `unit#` of the serial device `device$` at the baud rate `baud`, with the flags `io_serflags`, and returns the address of its system request, or 0 if it cannot be opened.
+  notes: |
+    The flags are the sum of 1 parity on, 2 odd parity (else even), 4
+    seven wire handshake, 8 a break waits until the buffer is empty, 16
+    high speed mode, 32 shared use of the port, 64 end of file checking
+    and 128 no xON/xOFF.
+"CloseSerial":
+  text: Closes a unit opened with `OpenSerial`.
+  notes: |
+    Kept from the original: a write still going on is not stopped
+    ([#258](https://github.com/fubar-coder/bb2-c/issues/258)).
+"WriteSerial":
+  text: Sends one byte to the unit, for a character for example `Asc("b")`, and waits until it is sent.
+"WriteSerialString":
+  text: Sends a string to the unit. With the flag 2, the whole string is sent and the command waits until it is sent; without it, the string is sent up to its first zero byte and the program goes on at once.
+  notes: |
+    Kept from the original: the flag 1 that the help text names has no
+    effect, and the form without flags takes the address of a string
+    ([#254](https://github.com/fubar-coder/bb2-c/issues/254)).
+"WriteSerialMem":
+  text: Sends `Length` bytes from memory at `Address` to the unit and waits until they are sent.
+"ReadSerial":
+  text: The next byte that came in on the unit, or -1 if none is waiting. Use a word variable, as in `c.w=ReadSerial(0)`, to tell -1 from 255.
+  notes: |
+    Kept from the original: the flag that makes it wait for a byte is 2,
+    not 1 as the help text says
+    ([#255](https://github.com/fubar-coder/bb2-c/issues/255)).
+"ReadSerialString":
+  text: All bytes waiting on the unit, as a string; an empty string if none is waiting.
+"ReadSerialMem":
+  text: Reads `Length` bytes from the unit into memory at `Address` and waits until they have come.
+"SetSerialBuffer":
+  text: Sets the size in bytes of the unit's read buffer.
+"SetSerialLens":
+  text: Sets the number of bits of a byte read and written and the number of stop bits of the unit.
+"SetSerialParams":
+  text: Passes the settings of the unit's request to the device again, for example after changing the request directly.
+"SerialEvent":
+  text: Whether a signal of the unit has come, for a program that waits for several things at once; 0 if none has.

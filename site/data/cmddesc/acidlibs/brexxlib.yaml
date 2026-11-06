@@ -1,0 +1,56 @@
+"Tape":
+  text: The object of a tape of mouse and keyboard events, as the introduction describes.
+"Record":
+  text: Starts recording all mouse and keyboard input onto the tape; without a tape, stops the recording.
+"PlayBack":
+  text: Starts playing back the tape, as if the user moved the mouse and typed again; without a tape, stops the playback.
+"QuickPlay":
+  text: With `On`, tapes are played back without the pauses between the events; with `Off`, the start value, with them, which is needed when a program on the tape must wait, for example for the disk.
+"PlayWait":
+  text: Meant to wait until a playback has finished.
+  notes: |
+    Kept from the original: while a tape is playing it starts the tape
+    again before it waits, and otherwise it returns at once
+    ([#99](https://github.com/fubar-coder/bb2-c/issues/99)). Waiting until
+    `XStatus` is 0 does the same reliably.
+"XStatus":
+  text: What the library is doing, 0 nothing, 1 recording (with `Record` or `TapeTrap`) and 2 playing back.
+  notes: |
+    Kept from the original: while an event is waiting to be sent, $8000
+    is added to the value
+    ([#103](https://github.com/fubar-coder/bb2-c/issues/103)); test it with
+    `And 255`.
+"SaveTape":
+  text: Saves a tape into a file, for `LoadTape`.
+"LoadTape":
+  text: Loads a tape saved with `SaveTape`.
+  notes: |
+    A file that cannot be opened is the error "Can't Open File". Kept from
+    the original: a damaged file is not noticed
+    ([#101](https://github.com/fubar-coder/bb2-c/issues/101)).
+"MacroKey":
+  text: Makes the key with the raw key code `Rawkey`, pressed with the qualifier keys `Qualifier`, play back the tape.
+"FreeMacroKey":
+  text: Removes the tape from the key `Rawkey` with the qualifier keys `Qualifier` again.
+"AbsMouse":
+  text: Moves the mouse pointer to `X,Y` of the display, X from 0 to 639 and Y from 0 to 399 (NTSC) or 511 (PAL).
+"RelMouse":
+  text: Moves the mouse pointer by `X Offset,Y Offset` from where it is; positive values move it right and down.
+"MouseButton":
+  text: Presses (`On`) or releases (`Off`) a mouse button, 0 the left and 1 the right one.
+"ClickButton":
+  text: Presses and releases a mouse button, 0 the left and 1 the right one, as two `MouseButton` commands do; for example to select a gadget.
+  notes: |
+    Kept from the original: under `TapeTrap` with `QuietTrap On`,
+    `ClickButton 0` records the release of the right button
+    ([#97](https://github.com/fubar-coder/bb2-c/issues/97)).
+"Type":
+  text: Types the characters of `String$`, as if they came from the keyboard; they normally go to the active window.
+"TapeTrap":
+  text: Makes the following `AbsMouse`, `RelMouse`, `MouseButton`, `ClickButton` and `Type` commands go onto the tape; without a tape, it is meant to end that.
+  notes: |
+    Kept from the original: the form without a tape does not end the
+    trapping but adds the events to a wrong place in memory
+    ([#95](https://github.com/fubar-coder/bb2-c/issues/95)).
+"QuietTrap":
+  text: With `On`, the commands caught by `TapeTrap` only go onto the tape; with `Off`, the start value, they also take effect.

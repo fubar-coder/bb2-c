@@ -1,0 +1,27 @@
+description: The serial port - opening a serial device, reading and writing bytes, strings and memory, and its settings.
+intro: |
+  These commands use a serial device of the system, normally
+  `serial.device`, for a modem, another computer or a MIDI interface.
+  `OpenSerial` opens a unit of the device with a baud rate and returns 0
+  if that fails; the other commands then name the unit. All units still
+  open are closed when the program ends.
+
+  ```blitzbasic
+  If OpenSerial("serial.device",0,9600,0)
+    WriteSerialString 0,"ATZ"+Chr$(13),2
+    Repeat
+      c.w=ReadSerial(0)
+    Until c<>-1
+    CloseSerial 0
+  EndIf
+  ```
+
+  Using a unit that is not open is the error "Serial Device Not Open",
+  also without runtime error checking.
+
+  Kept from the original: only unit 0 works with all commands; for other
+  units, `CloseSerial`, `SetSerialBuffer`, `SetSerialLens`,
+  `SetSerialParams` and `SerialEvent` reach a wrong unit
+  ([#252](https://github.com/fubar-coder/bb2-c/issues/252)).
+
+  *Based on the seriallib guide by Acid Software.*

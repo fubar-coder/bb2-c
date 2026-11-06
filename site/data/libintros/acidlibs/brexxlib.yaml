@@ -1,0 +1,28 @@
+description: BREXX macros - recording and playing back mouse and keyboard input on tapes, and simulated mouse moves, clicks and typing.
+intro: |
+  A *tape* is a Blitz object, numbered from 0, that holds a sequence of
+  mouse and keyboard events. `Record` records what the user does with
+  the mouse and the keyboard onto a tape, and `PlayBack` plays it back
+  later, as if the user did it again, into any program on the system.
+  `SaveTape` and `LoadTape` keep tapes in files, and `MacroKey` lets a
+  key start a tape.
+
+  The program can also make events itself: `AbsMouse` and `RelMouse` move
+  the mouse pointer, `MouseButton` and `ClickButton` press the buttons
+  and `Type` types a text. After `TapeTrap Tape#`, these commands go onto
+  the tape instead, which makes tapes without recording; with
+  `QuietTrap On` they only go onto the tape and do nothing else.
+
+  ```blitzbasic
+  Record 0
+  VWait 250 ; five seconds of input on a PAL Amiga
+  Record
+  PlayBack 0
+  Repeat : VWait : Until XStatus=0
+  ```
+
+  Kept from the original: adding an event to a tape stops a recording or
+  a playback that is running
+  ([#96](https://github.com/fubar-coder/bb2-c/issues/96)).
+
+  *Based on the brexxlib guide by Acid Software.*

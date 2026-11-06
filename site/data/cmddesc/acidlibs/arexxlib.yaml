@@ -1,0 +1,42 @@
+"CreateRexxMsg":
+  text: Makes an ARexx message and returns its address. `ReplyPort` is the address of the program's message port to which ARexx replies, `Exten` the file extension of the scripts (such as "rexx"), and `Host` the name of the host port, which is case sensitive.
+"DeleteRexxMsg":
+  text: Frees an ARexx message made with `CreateRexxMsg`.
+"FillRexxMsg":
+  text: Fills the 16 argument slots of an ARexx message from a NewType of a word of flags and 16 longs, given by its address. A set flag bit makes its slot a number; for a clear bit, the long is the address of a string, which becomes an ArgString. Bit 15 belongs to the first slot, bit 14 to the second, and so on.
+  notes: |
+    It is needed for function calls (RXFUNC) and other advanced uses of
+    ARexx. Kept from the original: a value of 0 ends the list, also a
+    number 0 ([#50](https://github.com/fubar-coder/bb2-c/issues/50)).
+"ClearRexxMsg":
+  text: Deletes the ArgStrings in the argument slots of an ARexx message, from the first slot on. `RexxEvent` does this itself for a reply.
+  notes: |
+    Kept from the original: it goes on beyond the 16 slots until it finds
+    a 0 ([#49](https://github.com/fubar-coder/bb2-c/issues/49)).
+"CreateArgString":
+  text: Makes an ArgString from a string and returns its address, which is that of the text.
+"DeleteArgString":
+  text: Frees an ArgString, whether the program or ARexx made it.
+"SendRexxCommand":
+  text: Sends an ARexx message to ARexx with `CommandString`, normally the name of a script, and the action codes the introduction describes. ARexx looks for the script also with the message's extension added.
+"ReplyRexxMsg":
+  text: Answers a command that came from an ARexx script, with the results `Result1` (0 for success) and `Result2`, and `ResultString` as the result string if the script asked for one.
+  notes: |
+    Kept from the original: the result string is made for the wrong kind
+    of message, for function calls instead of for messages that asked
+    for a result ([#48](https://github.com/fubar-coder/bb2-c/issues/48)).
+"GetRexxResult":
+  text: Result number `ResultNum` (1 or 2) of a message ARexx replied to; result 1 is 0 for success, else an error level.
+"GetRexxCommand":
+  text: The text of argument slot `ARGNum` of a message, from 1; slot 1 holds the command a script sent.
+"GetResultString":
+  text: The result string of a message ARexx replied to; the ArgString is freed afterwards.
+  notes: |
+    Kept from the original: the message still points to the freed result
+    ([#53](https://github.com/fubar-coder/bb2-c/issues/53)).
+"RexxEvent":
+  text: Takes the next message from the message port at `PortAddress` and returns its address, or 0 if none is waiting; a reply is cleared with `ClearRexxMsg` first.
+"IsRexxMsg":
+  text: True if the message is an ARexx message, else false (0).
+"RexxError":
+  text: The text of an ARexx error code, such as the second result of a failed command.
