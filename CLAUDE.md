@@ -26,6 +26,8 @@ over. State of the takeover: `TODO.md`.
 cmake --preset amiga && cmake --build --preset amiga   # result: build/amiga/blitz2/
 ctest --preset host                                    # tests without emulator (seconds)
 ctest --preset emulator                                # tests in Amiberry
+ctest --preset oracle                                  # AmiBlitz3's compiler checks tests/ab3's expectations;
+                                                       # run it before merging changes of tests/ab3
 ```
 
 * Toolchain via `PATH` (`m68k-amigaos-gcc`, gcc ≥ 15 because of
