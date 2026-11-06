@@ -9,13 +9,35 @@
 #include <stdio.h>
 #include "hunk.h"
 
+/** @brief A form of a statement, function or command (`!args`,
+    `!repargs`): the arguments it takes. */
+struct blitzlib_form {
+    uint16_t head;              /* first<<12 | num<<8 | count: count arguments,
+                                   of them num from index first repeated
+                                   (`!repargs`; 0 = no repetition) */
+    const uint8_t *types;       /* the count argument types, inside the code
+                                   (blitzlib.h of the libraries: BL_WORD ...
+                                   with the flags BL_VARPTR ...) */
+};
+
 /** @brief An entry of the token table. */
 struct blitzlib_entry {
     uint32_t offset;            /* of the entry in the code */
     uint16_t kind;              /* 8 dumtoke, &4 AmigaOS call, &$F 0 nullsub,
-                                   else statement/function/command */
+                                   else statement/function/command (low 2 bits
+                                   1/2/3, +8 typed by the suffix, the high
+                                   byte the result type) */
     const char *name;           /* inside the code (0-terminated); NULL for nullsubs */
     const char *help;
+    unsigned form;              /* statement/function/command: the first of
+                                   its forms in blitzlib.forms */
+    unsigned nforms;            /*   and their number */
+    uint16_t oslib;             /* AmigaOS call: the library whose init result is the base */
+    int16_t lvo;                /*   the offset of the call */
+    const uint8_t *regs;        /*   the argument registers (bit 4 address
+                                     register, bits 0-2 the number), inside
+                                     the code */
+    unsigned nregs;             /*   their number */
 };
 
 /** @brief A library as read by blitzlib_read (blitzlib_free). */
@@ -27,6 +49,12 @@ struct blitzlib {
     unsigned nentries;
     struct blitzlib_entry *entries;
     uint32_t libfin;            /* offset of !libfin's toke field, 0 if the long is 0 */
+    const char *object;         /* !libfin: the name its toke points to (the
+                                   object of an object library), NULL if
+                                   there is none or it is not a string */
+    uint16_t defmax;            /* !libfin: the default maximum of the objects */
+    unsigned nforms;
+    struct blitzlib_form *forms;    /* the forms of all entries */
     uint32_t codestart;         /* first byte behind the token table */
     uint8_t *mask;              /* per byte of [0, codestart): BLITZLIB_* */
 };

@@ -2,7 +2,7 @@
 
 ## 1. Table data
 
-- [ ] 1.1 `tools/lib/blitzlib`: keep forms (count word, type bytes), result type, AmigaOS-call base/offset/registers and the `!libfin` object (D1). Verify: `test_blitzlib` checks them on tables built in memory (a function with two forms and a repetition group, an AmigaOS call, an object library); `blitzlibcheck`, `blitzlibcompare` and `blitztokens` tests unchanged; `ctest --preset host`
+- [x] 1.1 `tools/lib/blitzlib`: keep forms (count word, type bytes), result type, AmigaOS-call base/offset/registers and the `!libfin` object (D1). Verify: `test_blitzlib` checks them on tables built in memory (a function with two forms and a repetition group, an AmigaOS call, an object library); `blitzlibcheck`, `blitzlibcompare` and `blitztokens` tests unchanged; `ctest --preset host`
 
 ## 2. The tool
 

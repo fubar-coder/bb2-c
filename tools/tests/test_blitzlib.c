@@ -82,6 +82,71 @@ int main(void)
         CHECK(blitzlib_read(&h, &lib, err, sizeof err) == -1 && strstr(err, "shorter"));
     }
 
+    /* the table data: a function with two forms (the second with a
+       repetition group), an AmigaOS call, an object name and !libfin */
+    {
+        struct buf t = { 0 };
+        struct hunk h = { HUNK_CODE, NULL, 0, 0, NULL, NULL, 0, NULL, 0, 0 };
+        struct blitzlib lib;
+        const struct blitzlib_entry *e;
+        char err[200];
+        uint32_t objname;
+
+        header(&t, 0);
+        put16(&t, 0x0302); put32(&t, 0);   /* function, result long */
+        put16(&t, 0x0002); put8(&t, 2); put8(&t, 7);    /* .w, $ */
+        put16(&t, 0);
+        put32(&t, 0x80); put32(&t, 0); put32(&t, 0);
+        put16(&t, 0x1103); put8(&t, 3); put8(&t, 8); put8(&t, 0x83); put8(&t, 0);
+        put16(&t, 0);
+        put32(&t, 0x80); put32(&t, 0); put32(&t, 0);
+        put16(&t, 0xFFFF); put32(&t, 0); put16(&t, 0);
+        putbytes(&t, "Fn\0(a,b)\0", 9); put8(&t, 0);
+        put16(&t, 6); put32(&t, 0);         /* AmigaOS call */
+        put16(&t, 252); put16(&t, (uint16_t)-30);
+        put8(&t, 0x01); put8(&t, 0x10); put8(&t, 0xFF); put8(&t, 0);
+        put32(&t, 0); put16(&t, 0);
+        putbytes(&t, "Open_\0(n)\0", 10);
+        put16(&t, 8); put32(&t, 0);         /* dumtoke */
+        put32(&t, 0); put16(&t, 0);
+        objname = (uint32_t)t.n;
+        putbytes(&t, "Obj\0x\0", 6);
+        put16(&t, 0xFFFF);
+        put32(&t, objname);                 /* !libfin: toke ... */
+        put32(&t, 0); put32(&t, 0); put32(&t, 0); put32(&t, 0);
+        put16(&t, 0); put16(&t, 20); put16(&t, 3);
+        put16(&t, 0x4E75);
+        h.data = t.p;
+        h.size = (uint32_t)t.n;
+
+        CHECK(blitzlib_read(&h, &lib, err, sizeof err) == 0);
+        CHECK(lib.nentries == 3 && lib.nforms == 2);
+        e = &lib.entries[0];
+        CHECK(e->kind == 0x0302 && !strcmp(e->name, "Fn") && !strcmp(e->help, "(a,b)"));
+        CHECK(e->form == 0 && e->nforms == 2);
+        CHECK(lib.forms[0].head == 2 && lib.forms[0].types[0] == 2 && lib.forms[0].types[1] == 7);
+        CHECK(lib.forms[1].head == 0x1103 && lib.forms[1].types[2] == 0x83);
+        e = &lib.entries[1];
+        CHECK(e->kind == 6 && !strcmp(e->name, "Open_") && e->nforms == 0);
+        CHECK(e->oslib == 252 && e->lvo == -30 && e->nregs == 2);
+        CHECK(e->regs[0] == 0x01 && e->regs[1] == 0x10);
+        e = &lib.entries[2];
+        CHECK(e->kind == 8 && !strcmp(e->name, "Obj") && !strcmp(e->help, "x"));
+        CHECK(lib.object && !strcmp(lib.object, "Obj") && lib.defmax == 20);
+        CHECK(lib.codestart == t.n - 2);
+        blitzlib_free(&lib);
+
+        /* a toke that is no string: no object */
+        {
+            uint32_t at = (uint32_t)t.n - 2 - 26;       /* the toke long */
+
+            t.p[at] = 0xFF;
+            CHECK(blitzlib_read(&h, &lib, err, sizeof err) == 0 && !lib.object);
+            blitzlib_free(&lib);
+        }
+        free(t.p);
+    }
+
     /* deflibs: 4 zero bytes instead of MOVEQ #0,d0:RTS */
     b = (struct buf){ 0 };
     putbytes(&b, ok.p, ok.n);

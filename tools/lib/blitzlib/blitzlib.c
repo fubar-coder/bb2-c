@@ -97,6 +97,22 @@ static uint32_t namblock(struct cursor *c, uint32_t p, int lead, struct blitzlib
     return pad(c, p + 1);
 }
 
+static void add_form(struct cursor *c, uint32_t p, uint16_t head)
+{
+    struct blitzlib *lib = c->lib;
+
+    if (lib->nforms % 32 == 0) {
+        struct blitzlib_form *n = realloc(lib->forms, (lib->nforms + 32) * sizeof *n);
+
+        if (!n)
+            stop(c, p, "out of memory");
+        lib->forms = n;
+    }
+    lib->forms[lib->nforms].head = head;
+    lib->forms[lib->nforms].types = c->code + p + 2;
+    lib->nforms++;
+}
+
 static void add(struct cursor *c, const struct blitzlib_entry *e)
 {
     struct blitzlib *lib = c->lib;
@@ -117,16 +133,20 @@ static void parse(struct cursor *c)
     uint32_t p = 0x30;
 
     while (!(W(c, p) & 0x8000)) {
-        struct blitzlib_entry e = { p, W(c, p), NULL, NULL };
+        struct blitzlib_entry e = { .offset = p, .kind = W(c, p), .form = c->lib->nforms };
 
         mark(c, p + 2, 4, BLITZLIB_IGNORE);
         p += 6;
         if (e.kind == 8) {                      /* dumtoke */
             p = namblock(c, p, 0, &e);
         } else if (e.kind & 4) {                /* AmigaOS call */
-            p += 4;                             /* library, LVO */
+            e.oslib = W(c, p);                  /* library, LVO */
+            e.lvo = (int16_t)W(c, p + 2);
+            p += 4;
+            e.regs = c->code + p;
             while (B(c, p) != 0xFF)             /* registers */
                 p++;
+            e.nregs = (unsigned)(p - (uint32_t)(e.regs - c->code));
             p = namblock(c, pad(c, p + 1), 0, &e);
         } else if ((e.kind & 0xF) == 0) {       /* nullsub */
             p = libs(c, p);
@@ -137,6 +157,8 @@ static void parse(struct cursor *c)
             while (W(c, p) != 0xFFFF) {
                 uint16_t head = W(c, p);
 
+                add_form(c, p, head);
+                e.nforms++;
                 p = pad(c, p + 2 + (head & 0xFF));      /* argument types */
                 p = libs(c, p);
                 L(c, p + 8);
@@ -151,8 +173,15 @@ static void parse(struct cursor *c)
         stop(c, p, "expected $FFFF behind the entries");
     p += 2;
     if (L(c, p)) {                              /* !libfin */
+        uint32_t toke = L(c, p), q;
+
         c->lib->libfin = p;
         W(c, p + 24);
+        c->lib->defmax = W(c, p + 22);
+        for (q = toke; q < c->size && c->code[q]; q++)
+            ;
+        if (q < c->size && q > toke)
+            c->lib->object = (const char *)c->code + toke;
         mark(c, p, 20, BLITZLIB_CODE);          /* toke load save use free */
         mark(c, p + 20, 2, BLITZLIB_IGNORE);
         p += 26;
@@ -208,6 +237,7 @@ int blitzlib_read(const struct hunk *h, struct blitzlib *lib, char *err, size_t 
 void blitzlib_free(struct blitzlib *lib)
 {
     free(lib->entries);
+    free(lib->forms);
     free(lib->mask);
     memset(lib, 0, sizeof *lib);
 }
