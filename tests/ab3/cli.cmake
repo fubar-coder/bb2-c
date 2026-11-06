@@ -39,6 +39,8 @@
 # The executable of a case is kept as TEST:out/NAME.exe; SAME lists pairs
 # of cases whose executables must be byte-identical (A=B), HUNKS the hunk
 # layout of the executable of a case (hunkcheck --hunks LAYOUT).
+# Configuration ref runs Amiberry without the JIT (see below).  If the session
+# does not end, the message names amiga_run's status and the running case.
 # Exit status 0 if every case matches; 77 (skipped) without the emulator
 # or the fetched AmiBlitz3 files.
 cmake_minimum_required(VERSION 4.2.3)
@@ -170,13 +172,47 @@ foreach(c IN LISTS cases)
 		"  Delete >NIL: RAM:${name} QUIET\nElse\n  Echo \"no executable\" >>${out}\nEndIf\n")
 endforeach()
 file(WRITE ${WORK}/run.script "${script}")
-execute_process(COMMAND ${AMIGA_RUN} --timeout ${TIMEOUT} --dir ${WORK} ${WORK}/run.script
-	RESULT_VARIABLE rc)
+# ref: the JIT is off.  AmiBlitz3 v3.14.0's compiler crashes in its exit
+# path after a compile when the JIT is on and the host is loaded (a6 = 0 at
+# jsr -414(a6), or a line-F trap and a "Software Failure" requester whose
+# task stays suspended until the session limit; #976).
+set(run_options)
+if(CONFIG STREQUAL "ref")
+	set(run_options --set cachesize=0)
+endif()
+execute_process(COMMAND ${AMIGA_RUN} --timeout ${TIMEOUT} ${run_options} --dir ${WORK}
+		${WORK}/run.script
+	RESULT_VARIABLE rc ERROR_VARIABLE run_msg)
 if(rc EQUAL 77)
 	cmake_language(EXIT 77)
 endif()
 if(rc)
-	message(STATUS "cli.cmake: the emulator session did not end (${WORK})")
+	# amiga_run's status (done/timeout/halt, ...) and the case that was
+	# running: the first one whose output has no end of its [run] section
+	string(STRIP "${run_msg}" run_msg)
+	set(running "none of the cases (before the first)")
+	foreach(c IN LISTS cases)
+		string(REPLACE "|" ";" c "${c}")
+		list(GET c 0 name)
+		set(o ${test}/out/${name}.txt)
+		set(done FALSE)
+		if(EXISTS ${o})
+			file(READ ${o} otext)
+			string(FIND "${otext}" "\n[run]\n" at)
+			if(NOT at EQUAL -1)
+				string(SUBSTRING "${otext}" ${at} -1 otext)
+				if(otext MATCHES "\n(rc=[0-9-]+|not run|no executable)\n")
+					set(done TRUE)
+				endif()
+			endif()
+		endif()
+		if(NOT done)
+			set(running ${name})
+			break()
+		endif()
+	endforeach()
+	message(STATUS "cli.cmake: the emulator session did not end (${WORK}): "
+		"amiga_run exit ${rc}: ${run_msg}; running case: ${running}")
 endif()
 
 # the comparison
