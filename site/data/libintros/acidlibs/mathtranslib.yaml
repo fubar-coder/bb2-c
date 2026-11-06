@@ -1,0 +1,11 @@
+description: The transcendental functions for floats - square root, trigonometric, hyperbolic, exponential and logarithmic - and the power operator.
+intro: |
+  Every function of this library is one call of the system's
+  `mathtrans.library`, on fast floating point values; the compiler puts
+  the call directly into the program. Angles are in radians. The library
+  also provides the operator `^` for floats.
+
+  A program that uses one of these functions opens `mathtrans.library` at
+  its start. Kept from the original: if the library cannot be opened, the
+  program tries again forever
+  ([#202](https://github.com/fubar-coder/bb2-c/issues/202)).

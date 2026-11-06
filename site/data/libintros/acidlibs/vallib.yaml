@@ -1,0 +1,12 @@
+description: Numbers - the value of a string, integer and fractional parts, sign and absolute value, random numbers, limits for quick values, and a few facts about the display.
+intro: |
+  `Val` turns a string into a number, `Int`, `Frac`, `Sgn` and `Abs` work
+  on numbers of any type, and `Rnd` gives random numbers. The functions
+  whose names begin with `Q` work on quick values, the fixed point numbers
+  of Blitz Basic with 16 bits before and 16 bits after the point, and are
+  fast because they need no floating point. `True` and `False` are the
+  values -1 and 0 that Blitz Basic uses for true and false. `NTSC`,
+  `DispHeight` and `VPos` tell a program about the display it runs on.
+
+  Floating point values are Motorola fast floating point numbers, computed
+  with the system's `mathffp.library`.

@@ -1,0 +1,48 @@
+"Val":
+  text: The numeric value of the string, as a float. Leading spaces are skipped; a `$` in front reads a hexadecimal number, a `%` a binary one, and a `-` a negative one. The empty string gives 0.
+  notes: |
+    Kept from the original: hexadecimal, binary and negative numbers read
+    one character behind the string
+    ([#302](https://github.com/fubar-coder/bb2-c/issues/302)); the length
+    of the string counts only up to a limit, so very long strings give 0
+    ([#303](https://github.com/fubar-coder/bb2-c/issues/303)); and a very
+    long fraction is dropped
+    ([#304](https://github.com/fubar-coder/bb2-c/issues/304)).
+"Int":
+  text: The integer part of the value, as a long; the fraction is cut off towards 0. Takes a value of any numeric type.
+"Frac":
+  text: The fractional part of the float value, with the sign of the value.
+"Sgn":
+  text: The sign of the value, -1, 0 or 1. Takes a value of any numeric type.
+  notes: |
+    Kept from the original: for a float, the result is always 1, whatever
+    the value ([#301](https://github.com/fubar-coder/bb2-c/issues/301)).
+"Abs":
+  text: The absolute value, as a float. Takes a value of any numeric type.
+"Rnd":
+  text: A random number, from 0 up to but not including 1 without an argument, or up to but not including `Range` with one.
+  notes: |
+    `Range` is taken as an unsigned word, so `Rnd(-1)` is the same as
+    `Rnd(65535)`. The numbers come from the hardware's beam position, a
+    joystick register and a CIA timer, not from a sequence that can be
+    repeated.
+"QFrac":
+  text: The fractional part of the absolute value of the quick value.
+"QAbs":
+  text: The absolute value of the quick value.
+"QWrap":
+  text: The quick value wrapped into the range from `Low` up to but not including `High`, by adding or subtracting the size of the range once.
+"QLimit":
+  text: The quick value limited to the range from `Low` to `High`.
+"QAngle":
+  text: The direction of the line from the destination point to the source point, as a quick value from 0 up to but not including 1, the fraction of a full turn.
+"True":
+  text: The value -1, Blitz Basic's true.
+"False":
+  text: The value 0, Blitz Basic's false.
+"NTSC":
+  text: True (-1) if the display is NTSC, false (0) if it is PAL.
+"DispHeight":
+  text: The height of the display, 200 lines for NTSC or 256 for PAL.
+"VPos":
+  text: The line the video beam is on at this moment.

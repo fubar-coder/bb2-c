@@ -1,0 +1,26 @@
+"Sqr":
+  text: The square root.
+"Sin":
+  text: The sine of an angle in radians.
+"Cos":
+  text: The cosine of an angle in radians.
+"Tan":
+  text: The tangent of an angle in radians.
+"ASin":
+  text: The arc sine, an angle in radians.
+"ACos":
+  text: The arc cosine, an angle in radians.
+"ATan":
+  text: The arc tangent, an angle in radians.
+"HSin":
+  text: The hyperbolic sine.
+"HCos":
+  text: The hyperbolic cosine.
+"HTan":
+  text: The hyperbolic tangent.
+"Exp":
+  text: The exponential function, e to the power of the value.
+"Log":
+  text: The natural logarithm.
+"Log10":
+  text: The logarithm to the base 10.

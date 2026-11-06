@@ -1,0 +1,15 @@
+description: The string functions - parts of strings, searching and replacing, case, padding, and numbers as characters or bytes.
+intro: |
+  The functions of this library take strings apart and build new ones:
+  `Left$`, `Right$` and `Mid$` cut out parts, `Instr` and `Replace$`
+  search, `UCase$` and `LCase$` change the case, `LSet$`, `RSet$` and
+  `Centre$` pad to a width, and `Hex$`, `Bin$`, `Chr$` and `Asc` convert
+  between numbers and characters. `Mki$`, `Mkl$` and `Mkq$` turn a number
+  into its bytes, and `Cvi`, `Cvl` and `Cvq` read them back, for example
+  to write numbers into a file or read them from one.
+
+  Positions count from 1. A length or count below 0 counts as 0, and a
+  length beyond the end of a string takes the string to its end. Searches
+  and replacements compare upper and lower case as different unless
+  `CaseSense Off` is set; the case of the letters `a` to `z` only is
+  changed or ignored.

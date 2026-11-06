@@ -1,0 +1,25 @@
+"Print":
+  text: Writes the values, one after the other without separators, to the current output; the cursor stays behind the last one.
+"NPrint":
+  text: Writes the values like `Print` and then a line end.
+"Str$":
+  text: The value as `Print` would write it, as a string; a format set with `Format` applies.
+  notes: |
+    Kept from the original: `Str$` of a string gives a number, not the
+    string ([#242](https://github.com/fubar-coder/bb2-c/issues/242)).
+"UStr$":
+  text: Like `Str$`, but always without the format set by `Format`.
+"Format":
+  text: Sets the format string for numbers printed by `Print`, `NPrint` and `Str$`; an empty string switches it off. With a format, floats are always printed in fixed point form.
+  notes: |
+    The format string may have at most 32 characters; with runtime error
+    checking, a longer one is the error "Format String too long".
+
+    Kept from the original: a carry that rounds out of the first digit is
+    lost ([#235](https://github.com/fubar-coder/bb2-c/issues/235)), numbers
+    without a digit before the point are not rounded
+    ([#236](https://github.com/fubar-coder/bb2-c/issues/236)), and the sign
+    is lost when the format has no `-` or `+`
+    ([#237](https://github.com/fubar-coder/bb2-c/issues/237)).
+"FloatMode":
+  text: "How floats are printed: `1` always in exponent form, `-1` always in fixed point form, `0` (the start value) in fixed point form for values from 1E-9 to below 1E+7 and in exponent form otherwise."

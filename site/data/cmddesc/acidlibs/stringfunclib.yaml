@@ -1,0 +1,77 @@
+"Left$":
+  text: The first `Length` characters of `String$`.
+"Right$":
+  text: The last `Length` characters of `String$`.
+  notes: |
+    Kept from the original: with a string of 32768 characters or more,
+    characters from before the string can be taken
+    ([#285](https://github.com/fubar-coder/bb2-c/issues/285)).
+"Mid$":
+  text: The characters of `String$` from position `Startchar` on, `Length` of them or, without `Length`, all to the end. A start beyond the end gives the empty string.
+  notes: |
+    Kept from the original: a huge `Length`, one that overflows when
+    added to the start, copies that many bytes
+    ([#286](https://github.com/fubar-coder/bb2-c/issues/286)).
+"UnLeft$":
+  text: "`String$` without its last `Length` characters."
+"UnRight$":
+  text: "`String$` without its first `Length` characters."
+"Hex$":
+  text: The value as eight hexadecimal digits, in upper case.
+"Bin$":
+  text: The value as 32 binary digits.
+"Chr$":
+  text: A string of one character, the one with the given code.
+"Asc":
+  text: The code of the first character of the string, or -1 for the empty string.
+"String$":
+  text: "`Repeats` copies of `String$` joined together; a count of 0 or less gives the empty string."
+"Instr":
+  text: The position of `Findstring$` in `String$`, searching from the first character or from `Startpos`; 0 if it is not found.
+  notes: |
+    Kept from the original: a `Startpos` of 0 or less is not checked, and
+    the search then starts before the string
+    ([#287](https://github.com/fubar-coder/bb2-c/issues/287)).
+"Replace$":
+  text: "`String$` with every occurrence of `Findstring$` replaced by `Replacestring$`."
+  notes: |
+    With an empty `Findstring$` the string comes back unchanged.
+"Mki$":
+  text: The low word of the value as a string of two bytes, the high byte first.
+"Mkl$":
+  text: The long value as a string of four bytes, the high byte first.
+"Mkq$":
+  text: The quick value as a string of four bytes, the high byte first.
+"Cvi":
+  text: The first two bytes of the string as a word; the reverse of `Mki$`.
+  notes: |
+    The length of the string is not checked: a shorter string gives the
+    bytes behind it ([#288](https://github.com/fubar-coder/bb2-c/issues/288)).
+"Cvl":
+  text: The first four bytes of the string as a long; the reverse of `Mkl$`.
+  notes: |
+    The length of the string is not checked
+    ([#288](https://github.com/fubar-coder/bb2-c/issues/288)).
+"Cvq":
+  text: The first four bytes of the string as a quick value; the reverse of `Mkq$`.
+  notes: |
+    The length of the string is not checked
+    ([#288](https://github.com/fubar-coder/bb2-c/issues/288)).
+"Len":
+  text: The number of characters in the string.
+"StripLead$":
+  text: "`String$` without the characters with the code `Ascii` at its start."
+"StripTrail$":
+  text: "`String$` without the characters with the code `Ascii` at its end."
+"LSet$":
+  text: "`String$` in a field of `Characters` characters, left aligned: filled with spaces at the end, or cut to that length."
+"RSet$":
+  text: "`String$` in a field of `Characters` characters, right aligned: spaces in front, or only its last characters if it is longer."
+"Centre$":
+  text: "`String$` centred in a field of `Characters` characters, with spaces on both sides; of a longer string the middle characters."
+"LCase$":
+  text: The string with the letters `A` to `Z` in lower case.
+"UCase$":
+  text: The string with the letters `a` to `z` in upper case.
+"CaseSense":
+  text: "`CaseSense On` makes `Instr` and `Replace$` tell upper and lower case apart, as they do at the start of a program; `CaseSense Off` makes them ignore the case of `a` to `z`."

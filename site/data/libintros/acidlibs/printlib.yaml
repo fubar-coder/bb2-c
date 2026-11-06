@@ -1,0 +1,24 @@
+description: Printing values with Print and NPrint, numbers as strings with Str$, and the format of printed numbers.
+intro: |
+  `Print` and `NPrint` write values of any type to the current output:
+  the console window of a program run from the editor or the Shell, or
+  whatever a program has chosen as its output, such as a window or a file.
+  `Str$` gives the same text as a string instead of printing it.
+
+  How numbers look:
+
+  * Bytes, words and longs are printed in decimal, with a `-` for negative
+    values.
+  * Quick values are printed with up to four decimals; trailing zeros are
+    left out, and so is a `0` before the point (`.5`).
+  * Floats are printed with seven significant digits. `FloatMode` decides
+    between the fixed point form and the exponent form (`1.234567E+7`).
+  * With a format string set by `Format`, all numbers are printed in that
+    format instead.
+
+  A format string describes each position: `#` is a digit or a space, `0`
+  a digit or a zero, `.` the decimal point, `-` a minus sign for negative
+  numbers or a space, `+` a plus or minus sign, and `,` a comma (a space
+  where the number has no digits yet). Every other character is printed
+  as it is. A number with more digits before the point than the format
+  has gives a `?`.
