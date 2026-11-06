@@ -37,6 +37,10 @@ jobs:
       - name: Build
         run: hugo --gc --minify --source site --baseURL "${{ steps.pages.outputs.base_url }}/"
 
+      - name: Install GNU tar
+        # The image's BusyBox tar lacks the options upload-pages-artifact uses.
+        run: apk add --no-cache tar
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
