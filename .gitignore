@@ -17,6 +17,6 @@ cmake-build-*/
 # Claude Code: agent definitions are in git, the rest is local
 /.claude/worktrees/
 /.claude/settings.local.json
-# created by `openspec init` / `openspec update` (README, "Structure")
+# created by `openspec init` / `openspec update` (`docs/structure.md`)
 /.claude/commands/
 /.claude/skills/

@@ -598,7 +598,7 @@ static void BLITZ_ERRCHK sschk2_c(UWORD *shape BL_REG(a0), ULONG *pal BL_REG(a1)
 
 /* the thunks after all check functions: BLITZ_ERRCHK_THUNK ends with
    .text, and GCC would not switch back to the error check area for a
-   check function behind it (see README) */
+   check function behind it (see docs/development.md) */
 BLITZ_ERRCHK_THUNK(scrchk, scrchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(bitchk, bitchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(bitchk2, bitchk2_c, "d0-d1/a0-a1");

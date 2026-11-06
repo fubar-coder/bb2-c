@@ -195,7 +195,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
 
 * Default configuration `tools/lib/amiga_emulation/default.uae` (from the
   AGA configuration, cleaned up; RTG variant = changes) and
-  `amiga-emulation/` with README (expected files, checksum of the ROM,
+  `amiga-emulation/` with `AMIGA-EMULATION-SETUP.md` (expected files, checksum of the ROM,
   conditions) are in place (2026-10-27); the user has stored the ROM and
   the adapted hardfiles, both images checked. Open: CMake reports
   missing files.
@@ -405,7 +405,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
      (`docs/ab3/variant.md`, "Differences"). The rule for `Stop` without
      the debugger (`int_tests`) is decided (2026-11-01, change
      `debug-constant`): BB2's behaviour in both modes, and the predefined `#__debug` for `CNIF #__debug … CEND`
-     (README, "Extensions of blitz2").
+     (`docs/blitz2/extensions.md`).
   4. [x] `68k_crash_newtype` (AmiBlitz3's tokenised test program) done
      (2026-11-03): blitz2-ab3 compiles it in BB2 mode (rc 0). The hang
      was the alert 8100 0005 at blitz2-ab3's end: its companion `.xtra`
@@ -870,7 +870,7 @@ several versions.
       REFERENCE `refbuild` in `RWE_LIBS`. `AHI.res` of risoundlib2
       done (2026-10-30): constants only, from the AHI SDK of the
       toolchain (`rwe_residents_cd`). Open: the further includes of the
-      sources not yet buildable (README §3.1). The RWE userlibs (their numbers: AmiBlitz3's
+      sources not yet buildable (`docs/rwelibs/README.md` §3.1). The RWE userlibs (their numbers: AmiBlitz3's
       libnums, the matching binaries, `#riarrayslib` = 7 from
       `defaultdbug50.bb2`; `docs/rwelibs/README.md` §3.1). ptlib is
       ported after all (decision 2026-10-30, `archive/README.md`); no

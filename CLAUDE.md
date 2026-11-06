@@ -3,9 +3,10 @@
 C translation of Blitz Basic 2: compiler `blitz2` (v2.10: `blitz2.s` 1.95
 with the changes of the CD's compiler, `docs/v2.10/`),
 editor `ted` (TED 1.1, `ted.s`) and the libraries `acidlibs`/`deflibs`,
-built for AmigaOS (68000) with m68k-amigaos-gcc. Structure, building and
-the checks in the build: `README.md`. Open items: `TODO.md`, as task
-lists: `- [ ] **Title** …` open, `- [x] **Title** done (date): …` done or
+built for AmigaOS (68000) with m68k-amigaos-gcc. Overview and
+building: `README.md`; structure: `docs/structure.md`; the checks in the
+build: `docs/development.md`; the tests: `tests/README.md`. Open items:
+`TODO.md`, as task lists: `- [ ] **Title** …` open, `- [x] **Title** done (date): …` done or
 decided (also for numbered steps, `1. [x] …`); no strikethrough.
 
 **This repository is the reference** for the code (decision of
@@ -37,7 +38,7 @@ ctest --preset emulator                                # tests in Amiberry
   originals have are fixed, 2026-10-31, TODO.md).
 * CMake generates `.clangd` on the first configure (not in git).
 * Emulator: the Kickstart ROM and hardfiles are local in
-  `amiga-emulation/` (not in git, see the README there); default
+  `amiga-emulation/` (not in git, see `AMIGA-EMULATION-SETUP.md`); default
   configuration `tools/lib/amiga_emulation/default.uae`. Hardfiles are
   read-only: tests write only to `TEST:` or `RAM:` (system programs like
   `ShowConfig` also write to `SYS:` and then hang).

@@ -1,5 +1,5 @@
-# the directory with the Kickstart ROM and the hardfiles (amiga-emulation/
-# README.md); at run time $AMIGA_EMULATION_DIR or the params override it
+# the directory with the Kickstart ROM and the hardfiles
+# (AMIGA-EMULATION-SETUP.md); at run time $AMIGA_EMULATION_DIR or the params override it
 set(AMIGA_EMULATION_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../amiga-emulation
 	CACHE PATH "directory with the Kickstart ROM and the hardfiles")
 get_filename_component(emulation_dir ${AMIGA_EMULATION_DIR} ABSOLUTE)

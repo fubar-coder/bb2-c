@@ -74,7 +74,7 @@ None.
   `tests/blitz2`, `tests/bug-orig`, `libs/tests` (create and collect the
   coverage directory).
 - New tools in `tools/` with their logic in `tools/lib/` and host tests.
-- README (how to run a coverage build and a selected test run),
+- `tests/README.md` (how to run a coverage build and a selected test run),
   `TODO.md`.
 - No change of results: the normal build's programs, libraries and the
   executables the compilers generate stay byte-identical; the coverage

@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.28)
 # the host tests) with the native compiler, as a project of its own - the
 # m68k build has it as ExternalProject (build/<preset>/host), which an IDE
 # does not see; this profile is for working on, running and debugging the
-# host code in an IDE (README "IDE").
+# host code in an IDE (docs/development.md, "IDE").
 option(BLITZ2_HOST "only the host side (tools, host tests) with the native compiler" OFF)
 if(BLITZ2_HOST)
 	cmake_minimum_required(VERSION 3.28)

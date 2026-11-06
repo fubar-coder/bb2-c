@@ -57,6 +57,6 @@ lists other options and is not affected.
   map writer, and a small run-time part of the generated program.
 - `tools/blitzcov` with its logic in `tools/lib/blitzcov` and host tests.
 - `tests/ab3/cli`, `tests/corpus`: cases and runner options for the mode.
-- README, `docs/ab3/compiler.md` (the option), `TODO.md`.
+- `tests/README.md`, `docs/ab3/compiler.md` (the option), `TODO.md`.
 - No change of results without the option: compiled programs, libraries,
   `acidlibs`, `deflibs` and the written files stay byte-identical.

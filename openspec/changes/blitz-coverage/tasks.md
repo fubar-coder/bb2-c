@@ -16,4 +16,4 @@
 
 - [ ] 3.1 Write `blitzcov` and `tools/lib/blitzcov` with host tests (line = largest count, `FN`/`FNDA`, merge of several files, mismatched id, truncated count file, `--strip`).
 - [ ] 3.2 Add the coverage switch to the `ab3/cli` and corpus runners and the lcov output under `<build>/coverage/lcov/<test>.info`; verify with one test of each runner that the file exists and names its Blitz sources.
-- [ ] 3.3 Document the option in `docs/ab3/compiler.md` and the README, note the BB2/AB3 differences, add a `TODO.md` entry; verify that the documented commands run as written.
+- [ ] 3.3 Document the option in `docs/ab3/compiler.md` and `tests/README.md`, note the BB2/AB3 differences, add a `TODO.md` entry; verify that the documented commands run as written.

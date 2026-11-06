@@ -20,10 +20,10 @@
 ## 4. Map and selection tools
 
 - [x] 4.1 `tools/lib/covmap` + `tools/covmap`: read gcov JSON (host) and `.cov` bitmaps with a link map (Amiga), write `map.tsv` with the commit, per-function and per-object lines (D6). Host tests with inputs from memory, including broken inputs (bad JSON, bitmap size not matching the map)
-- [x] 4.2 `cmake/coverage-map.cmake`: after a coverage test run, run gcov per host test and `covmap` over all collected data; a target or script entry documented in README
+- [x] 4.2 `cmake/coverage-map.cmake`: after a coverage test run, run gcov per host test and `covmap` over all collected data; a target or script entry documented in `tests/README.md`
 - [x] 4.3 Function line ranges of the m68k sources: try `-g` objects of the coverage build with `m68k-amigaos-objdump`/`nm -l`; if it works, feed them to `covmap`, otherwise record object-level selection for m68k sources (D7)
 - [x] 4.4 `tools/lib/covsel` + `tools/covsel`: map + `git diff -U0` + ninja deps + `tools/covsel/rules.txt` → `selected.txt`; rules of D8 (header, test sources, `libs/`, build files, unknown files → all; new tests; stale map → all with a message). Host tests for each rule with inputs from memory
-- [x] 4.5 `cmake/coverage-select.cmake` (runs git, `ninja -t deps`, `ctest -N`, then `covsel`) and the usage `ctest --preset all --tests-from-file …` in README
+- [x] 4.5 `cmake/coverage-select.cmake` (runs git, `ninja -t deps`, `ctest -N`, then `covsel`) and the usage `ctest --preset all --tests-from-file …` in `tests/README.md`
 
 - [x] 4.6 lcov as the one format (D6): `covmap` writes one tracefile per test, the merged `all.info` and the commit file instead of `map.tsv`; `covsel` builds its map from the tracefiles; `cmake/coverage-map.cmake`/`coverage-select.cmake`, README and the host tests of both tools adjusted. Verify: `genhtml` (if installed) reads `all.info`; the selection gives the same tests as with `map.tsv` for the sample diffs of 4.4
 
@@ -31,7 +31,7 @@
 
 - [ ] 5.1 Full coverage run (`ctest --preset coverage`) and map; check the scenarios of the specs: a TED core function named with its one host test, a change of one `eval.c` function selects only tests containing it, a header change, a CMake change (all), a new test, a stale map
 - [ ] 5.2 The list of blitz2 functions no test reaches (from the map), written to the scratch area and summarised in `docs/` (where the coverage is described) as the state at that commit
-- [ ] 5.3 Docs: README (coverage configuration, map, selected runs; full runs stay the acceptance), `TODO.md` entry; a clean normal build, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
+- [ ] 5.3 Docs: `tests/README.md` (coverage configuration, map, selected runs; full runs stay the acceptance), `TODO.md` entry; a clean normal build, `ctest --preset all` and `ctest --preset bug-orig` with the known verdicts
 
 ## 6. Stage 3: TED and the Blitz libraries with gcov
 
