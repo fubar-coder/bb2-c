@@ -1,10 +1,12 @@
 {{- /*
   The Markdown of the page of a command library (acidlibs, userlibs).
-  Context: dict "lib" (the data of the library, tools/cmdref) and "intro"
-  (the hand-written introduction, Markdown, may be empty). Returns a
-  string.
+  Context: dict "lib" (the data of the library, tools/cmdref), "intro"
+  (the hand-written introduction, Markdown, may be empty) and "descs"
+  (the hand-written descriptions of its commands from data/cmddesc,
+  keyed by command name, may be empty). Returns a string.
 */ -}}
 {{- $lib := .lib -}}
+{{- $descs := .descs | default dict -}}
 {{- $md := "" -}}
 {{- with .intro -}}
   {{- $md = printf "%s\n\n" . -}}
@@ -16,7 +18,7 @@
 {{- if $lib.entries -}}
   {{- $md = printf "%s%s.\n\n## Commands\n\n" $md $facts -}}
   {{- range sort $lib.entries "name" -}}
-    {{- $md = printf "%s%s" $md (partial "cmdref/entry.html" .) -}}
+    {{- $md = printf "%s%s" $md (partial "cmdref/entry.html" (dict "entry" . "desc" (index $descs .name))) -}}
   {{- end -}}
 {{- else -}}
   {{- $md = printf "%s%s.\n\nThis library declares no commands. Its routines are used by the compiler, by the code it generates or by other libraries.\n" $md $facts -}}

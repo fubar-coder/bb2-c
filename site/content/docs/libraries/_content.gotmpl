@@ -9,8 +9,14 @@
   one: data/libintros/GROUP/NAME.yaml with the keys "description" (one
   sentence, for lists and search) and "intro" (Markdown, shown above the
   commands).
+
+  Hand-written descriptions of single commands, if there are any:
+  data/cmddesc/GROUP/NAME.yaml, keyed by the command's name, each with
+  "text" (one or two sentences, shown under the command's heading) and
+  optionally "notes" (Markdown, shown after its forms).
 */ -}}
 {{- $intros := site.Data.libintros | default dict -}}
+{{- $cmddescs := site.Data.cmddesc | default dict -}}
 
 {{- /* command libraries (acidlibs) and userlibs: one page each */ -}}
 {{- range $group, $section := dict "acidlibs" "commands" "userlibs" "userlibs" -}}
@@ -19,7 +25,8 @@
     {{- $intro := index $groupintros $name | default dict -}}
     {{- $n := len (where $lib.entries "kind" "in" (slice "statement" "function" "command")) -}}
     {{- $desc := printf "The %d commands of %s, with their forms and argument types." $n $name -}}
-    {{- $content := partial "cmdref/commands.html" (dict "lib" $lib "intro" $intro.intro) -}}
+    {{- $descs := index (index $cmddescs $group | default dict) $name | default dict -}}
+    {{- $content := partial "cmdref/commands.html" (dict "lib" $lib "intro" $intro.intro "descs" $descs) -}}
     {{- $.AddPage (dict
       "path" (printf "%s/%s" $section $name)
       "title" $name

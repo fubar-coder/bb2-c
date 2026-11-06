@@ -72,6 +72,26 @@ intro: |
 Without the file, the page has a generated description and no
 introduction.
 
+A hand-written description of single commands goes into
+`data/cmddesc/GROUP/NAME.yaml` (GROUP `acidlibs` or `userlibs`, NAME the
+library), keyed by the command's name as the library declares it
+(quote names with `$`):
+
+```
+"Left$":
+  text: The first `Length` characters of `String$`.
+  notes: |
+    Markdown, shown after the command's forms (optional).
+```
+
+`text` (one or two sentences) is shown under the command's heading,
+`notes` after its forms. A command without an entry shows only what the
+library declares. Every statement must be checked against the library's
+source or a test; a kept bug of the original names its issue as a link
+(`([#285](https://github.com/fubar-coder/bb2-c/issues/285))`). The
+content adapter `content/docs/libraries/_content.gotmpl` merges both files
+into the pages.
+
 ## API reference
 
 `static/api/` holds the Doxygen HTML of the library headers and sources
