@@ -207,6 +207,10 @@ void compile(void)
         titleadd[0] = (WORD)q;
     }
     bmapmul = CD_W(CD_BMAPMUL);
+    /* BUG(orig) (#980): the offset is a word, and nextline adds it as a
+       signed word (add.w to an address register): from 3641 bytes per row
+       (RTG screens) 9 * bmapmul is above 32767 and the stripe's bottom line
+       is XORed about 28 KB before TED's bitmap. */
     botline = (UWORD)(bmapmul * 9);     /* offset to bottom of racing stripe */
 
     /* sne debugga: only the high byte is written */
