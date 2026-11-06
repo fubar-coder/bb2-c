@@ -584,6 +584,11 @@ foreach(t ab3_cli_broken_date ab3_cli_ref_broken_date)
 	set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION
 		"FAIL date_stamp: outmatch: [^\n]*expect line [0-9]+: \"date: 26/10/2026\", output line [0-9]+: \"date: 25/10/2026\"")
 endforeach()
+# the oracle: ab3_cli_ref* check our expect files against AmiBlitz3 v3.14.0's own
+# compiler, which never changes; they matter only when cases or expectations
+# change.  Label oracle instead of emulator: the presets emulator and all
+# leave them out, the preset oracle runs them (tests/README.md).
+set_tests_properties(ab3_cli_ref ab3_cli_ref_broken ab3_cli_ref_broken_date PROPERTIES LABELS oracle)
 
 # AB3 mode's tokens against AmiBlitz3's (spec ab3-compat/tokenizer,
 # tokenise.cmake): AmiBlitz3 v3.14.0 loads every source in CLI mode and

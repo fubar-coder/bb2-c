@@ -8,6 +8,7 @@ labels select within them.
 | `host` | tools with broken inputs, host tests, declaration and instruction comparisons, token lists (seconds) | native compiler; the CD for some |
 | `emulator` | libraries against the CD's, corpus, TED A/B, compilers' extensions, CD corpus, RWE reference build | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD for most |
 | `all` | both | both |
+| `oracle` | `ab3_cli_ref` and its broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
 | `bug-orig` | reproduced original bugs (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose | Amiberry; the CD for most |
 
 Setting up the emulator (ROMs, hardfiles, slot limit):
@@ -42,7 +43,19 @@ ctest --preset host       # on the host, without emulator (seconds)
 ctest --preset emulator   # in Amiberry (label emulator)
 ctest --preset all        # both
 ctest --preset bug-orig   # reproduced original bugs, known port bugs: fail on purpose
+ctest --preset oracle     # AmiBlitz3's own compiler checks the expectations of tests/ab3
 ```
+
+The preset `oracle` (label `oracle`) holds the tests that run the original
+tool to validate our expectations: `ab3_cli_ref` compiles the cases of
+`tests/ab3` marked REF with AmiBlitz3 v3.14.0's own compiler (Amiberry
+without the JIT: the compiler crashes in its exit path under the JIT when
+the host is loaded, #976) and compares the program output with the same
+expect files; `ab3_cli_ref_broken` and `ab3_cli_ref_broken_date` check it with a wrong expect file.
+The compiler never changes, so the result changes only with the cases and
+expectations: run `ctest --preset oracle` before merging a change of
+`tests/ab3` (cases, `cli/`, expect files, `cli.cmake`); `covsel` selects the
+tests then. `host`, `emulator` and `all` leave them out.
 
 ## host tests
 

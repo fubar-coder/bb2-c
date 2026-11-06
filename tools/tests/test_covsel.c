@@ -38,6 +38,9 @@ static const char *const traces[][2] = {
     { "host/amiga_emulation_run", "TN:host_amiga_emulation_run\n"
       "SF:" ROOT "/tools/lib/amiga_emulation/run.c\nFN:1,9,run\nFNDA:1,run\nend_of_record\n" },
     /* a test that executed nothing measured: not named by the map */
+    /* the oracle tests (tests/ab3, AmiBlitz3's own compiler) */
+    { "ab3_cli_ref", "TN:ab3_cli_ref\n" EVAL("4", "1") },
+    { "ab3_cli_ref_broken", "TN:ab3_cli_ref_broken\n" EVAL("4", "1") },
     { "newtest", "TN:newtest\n" EVAL("0", "0") },
     /* a test outside the emulator named by the map (a file of its own) */
     { "declarations_x", "TN:declarations_x\n"
@@ -70,6 +73,16 @@ static const char tests[] =
     TEST("host", "") ","
     TEST("host_emulator", "\"emulator\"") ","
     "{\"name\": \"newtest\", \"properties\": []}]}";
+
+/* the list with the oracle tests (label oracle, not emulator) */
+static const char oracle_tests[] =
+    "{\"kind\": \"ctestInfo\", \"version\": {\"major\": 1, \"minor\": 0}, \"tests\": ["
+    TEST("ab3_cli", "\"emulator\"") ","
+    TEST("ab3_cli_ref", "\"oracle\"") ","
+    TEST("ab3_cli_ref_broken", "\"oracle\"") ","
+    TEST("corpus", "\"emulator\"") ","
+    "{\"name\": \"newtest\", \"properties\": []}]}";
+static const char *cur_tests = tests;
 
 static const char host_tests[] =
     "{\"kind\": \"ctestInfo\", \"tests\": ["
@@ -121,7 +134,7 @@ static char *select_for(const char *rules_text, const char *diff, const char *ne
     if (!s)
         return out;
     CHECK(!covsel_read_rules(s, rules_text, err, sizeof err));
-    CHECK(!covsel_read_tests(s, tests, 0, err, sizeof err));
+    CHECK(!covsel_read_tests(s, cur_tests, 0, err, sizeof err));
     CHECK(!covsel_read_tests(s, host_tests, 1, err, sizeof err));
     CHECK(!covsel_read_deps(s, deps, err, sizeof err));
     CHECK(!covsel_read_diff(s, diff, err, sizeof err));
@@ -330,6 +343,28 @@ static void test_real_rules(void)
     CHECK(!strcmp(r, ALL));
 }
 
+/* the oracle tests run when tests/ab3 changes: its sources, expect files,
+   case lists and cli.cmake (the label oracle takes them out of the presets
+   emulator and all; the selection still names them) */
+static void test_oracle(void)
+{
+    char *r;
+
+    cur_tests = oracle_tests;
+    r = select_for(real_rules, diff1("tests/ab3/cli/atoi.expect", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "ab3_cli ab3_cli_ref ab3_cli_ref_broken newtest"));
+    r = select_for(real_rules, diff1("tests/ab3/cli/proc_ten.ab3", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "ab3_cli ab3_cli_ref ab3_cli_ref_broken newtest"));
+    r = select_for(real_rules, diff1("tests/ab3/CMakeLists.txt", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(strstr(r, "ab3_cli_ref ab3_cli_ref_broken"));
+    r = select_for(real_rules, diff1("tests/ab3/cli.cmake", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(strstr(r, "ab3_cli_ref ab3_cli_ref_broken"));
+    /* a change elsewhere does not select them */
+    r = select_for(real_rules, diff1("tests/corpus/tests/x.bas", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "corpus newtest"));
+    cur_tests = tests;
+}
+
 static void test_broken(void)
 {
     struct covsel *s = covsel_new(ROOT);
@@ -453,6 +488,7 @@ int main(void)
     test_match();
     test_select();
     test_real_rules();
+    test_oracle();
     test_broken();
     test_tn_collision();
     test_same_tn();
