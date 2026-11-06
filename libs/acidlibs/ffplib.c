@@ -40,8 +40,7 @@ static const char ffpname[] = "mathffp.library";
  * BUG(orig) (#137): the result is not checked; with 0 the first float
  * operation jumps to a negative offset from 0.
  *
- * @par Result
- * d0: the library base (the init value, $C900 getffpbase loads
+ * @return d0: the library base (the init value, $C900 getffpbase loads
  * it into a6), 0 if it could not be opened
  */
 static ULONG BLITZ_ROUTINE codeinit(void)
@@ -54,7 +53,7 @@ static ULONG BLITZ_ROUTINE codeinit(void)
  *
  * MOVE.l 4,a6:JMP _CloseLibrary(a6).
  *
- * @arg lib  a1: the init value, the library base (!libs 64935,#la1)
+ * @param lib a1: the init value, the library base (!libs 64935,#la1)
  */
 static void BLITZ_ROUTINE codefinit(struct Library *lib BL_REG(a1))
 {

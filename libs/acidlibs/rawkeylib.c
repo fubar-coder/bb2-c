@@ -236,8 +236,7 @@ BLITZ_THUNK(qconvertkey, qconvertkey_c, "d1/a0-a1");
  * 0-104 with convertkey(code, 0) and convertkey(code, 1) (shift).  Neither
  * the signal nor OpenDevice is checked.
  *
- * @par Result
- * d0: d0 of the last convertkey call (code 104, shifted); stored
+ * @return d0: d0 of the last convertkey call (code 104, shifted); stored
  *         by the compiler, used by nobody
  */
 static ULONG BLITZ_ROUTINE codeinit(void)

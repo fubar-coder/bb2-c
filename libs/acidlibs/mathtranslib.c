@@ -69,8 +69,7 @@ static const char libname[] = "mathtrans.library";
  * BUG(orig) (#202): if the library cannot be opened, the init tries
  * again forever (TST.l d0:BEQ initloop).
  *
- * @par Result
- * d0: the library base, the init value (a6 of the functions).
+ * @return d0: the library base, the init value (a6 of the functions).
  */
 static ULONG BLITZ_ROUTINE codeinit(void)
 {
@@ -87,7 +86,7 @@ static ULONG BLITZ_ROUTINE codeinit(void)
  *
  * MOVE.l 4,a6:JMP _CloseLibrary(a6).
  *
- * @arg lib a1: the library base (!libs #mathtranslib,#la1).
+ * @param lib a1: the library base (!libs #mathtranslib,#la1).
  */
 static void BLITZ_ROUTINE codefinit(struct Library *lib BL_REG(a1))
 {
