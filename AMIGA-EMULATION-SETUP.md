@@ -41,6 +41,84 @@ hardfile2 / uaehf0: Workbench_OS3.2-AB3.hdf instead of Workbench_OS3.2-AB3-AGA.h
 TED can only be tested with the AGA variant (on RTG its bitplanes would be
 in graphics card memory, where the blitter cannot reach them).
 
+## Setup from Amiga Forever 11
+
+Amiga Forever 11 (Cloanto), which every developer buys for themselves,
+has Kickstart ROMs and Workbench hardfiles. The script
+`cmake/setup-amiga-forever.cmake` copies them from the Amiga Forever
+medium (or installation) and adapts the hardfiles for the tests, with
+CMake and `hdftool` (`tools/hdftool`, a host tool of this build) only:
+
+```
+cmake --preset amiga && cmake --build --preset amiga      # builds hdftool
+cmake -DAMIGA_FOREVER=/run/media/$USER/AmigaForever -P cmake/setup-amiga-forever.cmake
+```
+
+It is the way to set up the a500 machine (below), whose configuration
+uses these files. The Workbench 3.1 files are made for the a1200 and a600
+as well, but those machines still use the AmigaOS 3.2 files above: on
+Workbench 3.1 as Amiga Forever ships it, part of the emulator tests fail
+for lack of software the 3.2 hardfiles have (AmiBlitz3's
+`ab3pft.library`, fonts such as `helvetica.font`, further libraries;
+TODO.md).
+
+`AMIGA_FOREVER` is the medium or installation (a directory with
+`Amiga Files/Shared`, `Shared`, or directly `rom/` and `hdf/`); it is only
+read. Further options: `-DDEST=DIR` (default `amiga-emulation/`),
+`-DHDFTOOL=PROGRAM` (default `build/amiga/host/tools/hdftool/hdftool`),
+`-DFORCE=ON`.
+
+* **Inputs:** every file used must have the size and SHA-256 of Amiga
+  Forever 11 (`rom/amiga-os-310-a1200.rom`, `rom/amiga-os-310-a600.rom`,
+  `rom/amiga-os-130.rom`, `rom/rom.key`, `hdf/workbench-311.hdf`,
+  `hdf/workbench-135.hdf`); another edition is refused.
+* **Results:** `hdftool` works reproducibly (no host clock, a fixed
+  order of the blocks), so every result has a known SHA-256 too, which the
+  script checks. A result is written as `NAME.part` and renamed when it is
+  right.
+* **Existing files** in `DEST` with the expected contents stay untouched;
+  a file with other contents stops the script (nothing is overwritten)
+  unless `-DFORCE=ON` is given.
+* **Another directory:** the tests take the emulation data from
+  `$AMIGA_EMULATION_DIR` if it is set (else from `amiga-emulation/`), e.g.
+  `AMIGA_EMULATION_DIR=$PWD/build/af-emulation ctest --preset emulator`
+  after a setup with `-DDEST=build/af-emulation`.
+
+| File | Contents | Size | SHA-256 |
+|---|---|---|---|
+| `amiga-os-130.rom` | Kickstart 1.3 (34.5), A500/A1000/A2000, Cloanto-encrypted (`AMIROMTYPE1`) | 262155 | `caa4910942b8d558c9ae2284405af81db3752535192cc25f7939765c3ea2d5e0` |
+| `rom.key` | the key of the encrypted ROMs (a500 machine, below) | 1426 | `f3b3b35593fef9a677225f559f8155e2b5d97b5bbfb2ccf24ee93738124d9a71` |
+| `workbench-135.hdf` | Workbench 1.3.5 (34.34), RDB hardfile, partition DH0 (DOS\1, FFS in the RDB) | 3145728 | `a7b4fd7e1509a6086baf04f14c44894af41107c3ee9093e585261154665d5c28` |
+| `amiga-os-310-a1200.rom` | Kickstart 3.1 (40.68), A1200, Cloanto-encrypted | 524299 | `541f7467bce4f4b07a6eb5250d4586a4679c2da51ad30b48ba93421a901b1bb0` |
+| `amiga-os-310-a600.rom` | Kickstart 3.1 (40.63), A500/A600/A2000, Cloanto-encrypted | 524299 | `03ec7583249c686a3f63b5b92634b12e14ce72fc27b0066a8c3cca57f869443e` |
+| `workbench-311.hdf` | Workbench 3.1 (40.42), raw partition image, DOS\3 | 6258688 | `e150f30f91d8b2861f9478deed90c18b9bcad1c7be0419b440dcd3a80ab1579f` |
+| `workbench-311-rtg.hdf` | the same with the uaegfx monitor | 6258688 | `33dba185784a838450334f502539db758081c5d3aad6a161f0cbe53b122108df` |
+
+What the script changes in Amiga Forever's hardfiles (both are RDB
+hardfiles with one partition `DH0`; `S:User-Startup` as in "Conditions
+for the hardfiles"):
+
+* `workbench-135.hdf`: stays an RDB hardfile (Kickstart 1.3 has no FFS in
+  the ROM; the FFS comes from the RDB). Workbench 1.3's
+  `S/Startup-Sequence` knows no User-Startup: before `LoadWB DELAY` it
+  gets `IF EXISTS S:User-Startup` / `Execute S:User-Startup` / `ENDIF`,
+  and `S/User-Startup` is new (1.3 syntax).
+* `workbench-311.hdf`: the partition alone, without the RDB (cylinders 2
+  to 383 of 32 blocks, 1 surface, 2 reserved blocks: the geometry of the
+  `hardfile2` line of the a1200 and a600, mounted by Kickstart 3.1's FFS
+  in the ROM), and a new `S/User-Startup`, which its `S/Startup-Sequence`
+  already executes (before `S:AFShared-Startup` and `LoadWB`).
+* `workbench-311-rtg.hdf`: as `workbench-311.hdf`, plus
+  `Storage/Monitors/UAE` and `UAE.info` (Picasso96 with
+  `BOARDTYPE=uaegfx`) copied to `Devs/Monitors`, so the Startup-Sequence
+  starts the monitor and the RTG modes exist; the Workbench itself stays
+  on the native screen (no `screenmode.prefs`).
+
+Checked 2026-11-06 (Amiberry, `AMIGA_EMULATION_DIR` on a separate
+directory): all three Kickstarts boot their hardfile and run
+`TEST:run.script` (`Version`: 34.5/34.34, 40.68/40.42 on the a1200 and
+with RTG, 40.63/40.42 on the a600).
+
 ## How many emulators at once (slots)
 
 At most 4 Amiberry instances run at the same time on the machine, over
@@ -94,8 +172,9 @@ changed ROM or hardfile that is not noticed), `amiga_run
   like VHD), with the geometry of the `hardfile2` line (32 sectors per
   track, 1 surface, 2 reserved blocks, 512-byte blocks).
 * To change an image: start with a separate, writable configuration, or
-  change it on the host with a tool that reads Amiga hardfiles (e.g.
-  `xdftool` of amitools) – not while tests run. The changed file gets a
+  change it on the host with a tool that reads Amiga hardfiles (`hdftool
+  edit` of this build for OFS/FFS without dircache, `xdftool` of amitools)
+  – not while tests run. The changed file gets a
   new modification time, so the snapshots made from it are not used
   again (`tools/lib/amiga_emulation/README.md`, "Snapshot mode").
 
@@ -113,11 +192,8 @@ Zorro II RTG card of the user's configuration, `BlitterStudio/amiberry#2585`), t
 hardfile read-only. `a500-68010` is the same machine with a 68010
 (`cpu_type`/`cpu_model`, e.g. for #42).
 
-| File | Contents | Size | SHA-256 (as of 2026-10-30) |
-|---|---|---|---|
-| `amiga-os-130.rom` | Kickstart 1.3 (34.5), A500/A1000/A2000, Cloanto-encrypted (`AMIROMTYPE1`) | 262155 | `caa4910942b8d558c9ae2284405af81db3752535192cc25f7939765c3ea2d5e0` |
-| `rom.key` | the Cloanto key for the encrypted ROM (Amiga Forever) | 1426 | – |
-| `workbench-135.hdf` | Workbench 1.3.5 (34.34, Amiga Forever), RDB hardfile, partition DH0 (DOS\1, FFS in the RDB) | 3145728 | – |
+It uses `amiga-os-130.rom`, `rom.key` and `workbench-135.hdf` as the
+setup from Amiga Forever (above) makes them.
 
 * **`rom.key`:** Amiberry decrypts the ROM only with `rom.key` in the
   directory of the ROM's real path (it resolves symbolic links; a key
@@ -132,12 +208,10 @@ hardfile read-only. `a500-68010` is the same machine with a 68010
   product's key - a licence measure, not a protection: the key is the
   same for every copy of the product, not personal. Both files belong to
   the user's own licence and are, like everything here, not in git: the
-  ROM must not be uploaded, every developer provides their own. The
-  documented way is therefore the one Amiga Forever installs: copy its
-  `amiga-os-130.rom` and `rom.key` (e.g. from `~/Amiberry/ROMs/` or the
-  Amiga Forever `Shared/rom` directory) here unchanged.
-* **The hardfile's startup:** `S:Startup-Sequence` ends with
-  `IF EXISTS S:User-Startup` / `Execute S:User-Startup`, and
+  ROM must not be uploaded, every developer provides their own, with
+  the setup above (which copies both unchanged).
+* **The hardfile's startup** (made by the setup): `S:Startup-Sequence`
+  executes `S:User-Startup` before `LoadWB`, and
   `S:User-Startup` executes `TEST:run.script` (same conditions as above,
   in 1.3 syntax):
 
