@@ -12,6 +12,7 @@ AmiBlitz3's editors (PED, IDE) are out of scope.
 | [deflibs.md](deflibs.md) | the AmigaOS call libraries (`deflibs`) |
 | [acidlibs-a-l.md](acidlibs-a-l.md), [acidlibs-m-z.md](acidlibs-m-z.md) | the command libraries (`acidlibs`) |
 | [userlibs.md](userlibs.md) | the RWE and third-party userlibs (`libs/userlibs/rwe`) |
+| [usage.md](usage.md) | `blitz2-ab3` in use: the command line, the modes, `ab3cli`, the tests |
 | [variant.md](variant.md) | plan: compiling AmiBlitz3 sources with AmiBlitz3's libraries (not decided) |
 
 ## Sources

@@ -135,7 +135,7 @@ signatures are agreed – changes only per §9.
 
 * Amiga: `cmake --build --preset amiga` (without warnings as far as sensible);
   bb2: `--target headers`, `ctest --preset amiga` (`ref_verify`, `checkhunk`,
-  `checkdata`, `checklabels`) – here checks in the build step (README).
+  `checkdata`, `checklabels`) – here checks in the build step (`docs/development.md`).
 * Host: bb2 `cmake --build --preset host`, `ctest --preset host`; with
   sanitizers `-DHOST_SANITIZE=ON` (bb2: `TED_SANITIZE`). Single test with
   output: bb2 `build/host/tests/host/test_tokit build/host/fixtures -v`.

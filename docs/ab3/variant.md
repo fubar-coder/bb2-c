@@ -580,8 +580,8 @@ The include depth (the includes open now: 0 in the main source) is
 mechanism (`ab3syn.c`, points `ext_constant` in fetchconst and
 `ext_cnifstart`/`ext_cnifend` in docnif): `#__include` is 1 while an
 include is open, 0 in the main source (also after the last include);
-`#__debug` is the core's, as in BB2 mode (README, "Extensions of
-blitz2", change `debug-constant`): −1 with runtime error checking, 0
+`#__debug` is the core's, as in BB2 mode (`docs/blitz2/extensions.md`,
+"#__debug"; change `debug-constant`): −1 with runtime error checking, 0
 without, AmiBlitz3's `debugmode` (`AmiBlitz3.ab3` 3422-3443: added to
 the constant list before the source, so a defined-test finds it and a
 source's own `#__debug=…` replaces it; a resident's, as `all.res` has

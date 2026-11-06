@@ -6,6 +6,40 @@ deviations from the original, conventions. This is where the reasons for
 code comments like `BUG(orig)`, `DIFF`, `ted.s:NNN` or `blitz2.s:NNN`
 are given.
 
+## Index
+
+For working with the repository:
+
+| File | Content |
+|---|---|
+| [development.md](development.md) | IDE profiles (CLion and others), `.clangd`, the checks the build runs on its results |
+| [structure.md](structure.md) | the directory structure of the repository in full |
+| [blitz2/extensions.md](blitz2/extensions.md) | what `blitz2` accepts beyond Blitz Basic 2 (`#__debug`) |
+| [libs/variants.md](libs/variants.md) | variants of the libraries, userlibs of a variant, the reference build of the RWE sources |
+| [libs/readable-sources.md](libs/readable-sources.md) | the library sources as TED shows them (`bblibsrc`, `teddetok`, `bb22`, `xtra`) |
+| [ab3/usage.md](ab3/usage.md) | `blitz2-ab3`: compiling AmiBlitz3 sources from the command line |
+
+Outside `docs/`: [../README.md](../README.md) (overview),
+[../tests/README.md](../tests/README.md) (the test suites),
+[../AMIGA-EMULATION-SETUP.md](../AMIGA-EMULATION-SETUP.md) (local setup of
+the emulator tests),
+[../tools/lib/amiga_emulation/README.md](../tools/lib/amiga_emulation/README.md)
+(the emulation tool).
+
+The analysis of the originals and the notes on the translation:
+
+| Directory or file | Content |
+|---|---|
+| [architecture.md](architecture.md), [documentation.md](documentation.md), [formats.md](formats.md), [token-table.md](token-table.md) | the overall architecture, the documentation of the originals, file formats, the token table |
+| [blitz2/](blitz2/) | compiler: surveys, reviews, conventions, changes |
+| [ted/](ted/) | editor: plans, deviations, conventions |
+| [libs/](libs/) | libraries: deviations, declaration notes, conventions |
+| [ab3/](ab3/README.md) | what AmiBlitz3 changed relative to BB2 2.10, and the AB3 mode |
+| [rwelibs/](rwelibs/README.md) | Red When Excited's libraries |
+| [v2.10/](v2.10/README.md) | the CD's compiler 2.10 against 1.95 |
+
+## Origin of the texts
+
 **Taken over from the working repository bb2, state `ee6174b`
 (28.10.2026), unchanged in content and translated to English line by
 line.** Paths, commands and line references have since been adapted to
@@ -28,7 +62,7 @@ structure of the files is mostly that of bb2.
 Not taken over: the work orders (`*BRIEF*.md`), the detokenised library
 sources (`libs-c/bb2src/*.bb`, from material without a clear licence;
 the same files are generated locally by the build target `bblibsrc`, see
-`README.md`), the results of the corpus runs (`compilerlauf/`), token
+`libs/readable-sources.md`), the results of the corpus runs (`compilerlauf/`), token
 dumps (`tokens/`), `toolchain.md` and `ci-exploration.md`.
 
 Reading the texts:
