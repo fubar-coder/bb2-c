@@ -2368,6 +2368,10 @@ static UWORD variable(UWORD c, UWORD *type)
    value: ext byte to word, bump the type up to the old one */
 static UWORD varcont(UWORD oldtype, UWORD *type)
 {
+    /* BUG(orig) (#978): a byte variable is always fetched sign-extended
+       ($90 -> $FF90), while consttype2 takes a constant from 128 to 255 as
+       a positive word ($0090): the word compare of "a.b=$90" with
+       "a=$90" never matches (only a=-112 does). */
     if (*type == T_BYTE)
         pokewd(regat | 0x4880);     /* ALWAYS CONVERT BYTE TO WORD. ext.w Dn */
     /* .notabyte */

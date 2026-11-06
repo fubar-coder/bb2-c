@@ -330,6 +330,9 @@ byte:
     if ((LONG)val <= 127 && (LONG)val >= -128)
         goto done;                  /* .dobword */
 over1:
+    /* BUG(orig) (#978): a constant from 128 to 255 becomes a positive
+       word ($0090) and stays so against a byte variable, which varcont
+       sign-extends ($FF90): "a.b=$90 : If a=$90" compares different words. */
     newtype = T_WORD;
     if ((LONG)val <= 32767 && (LONG)val >= -32768)
         goto done;
