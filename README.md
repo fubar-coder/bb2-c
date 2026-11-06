@@ -2,7 +2,8 @@
 
 A C translation of Blitz Basic 2, built for AmigaOS (68000) with
 m68k-amigaos-gcc. It produces the same executables as the original
-compiler and is tested against the originals.
+compiler, apart from documented fixes of original bugs
+(`docs/libs/deviations.md`), and is tested against the originals.
 
 | Part | What it is |
 |---|---|
@@ -20,8 +21,9 @@ editor and libraries in an emulator) and the notes on the translation in
 
 Open items, decisions and the state of the port are in `TODO.md`. The
 port reproduces the bugs of the original and documents them (`BUG(orig)`
-in the code, `docs/*/deviations.md`) instead of fixing them, except where
-a fix is a deliberate deviation; the tests of the reproduced bugs fail on
+in the code, `docs/*/deviations.md`); deliberate fixes are listed there as
+intended deviations and can change the executables, and a few sources that
+compiled now give an error. The tests of the reproduced bugs fail on
 purpose (`tests/README.md`).
 
 ## Requirements
@@ -81,11 +83,12 @@ and coverage: `tests/README.md`.
 ## Extensions of blitz2
 
 `blitz2` compiles a Blitz Basic 2 source to the same executable as the
-CD's compiler. Its extensions only give a meaning to sources the original
-refuses. The one a program author meets is `#__debug`, a constant the
-compiler defines: −1 if the program is compiled with runtime error
-checking, 0 without. Code for debugging only goes between `CNIF` and
-`CEND`:
+CD's compiler, apart from the documented bug fixes
+(`docs/libs/deviations.md`). Its extensions only give a meaning to
+sources the original refuses. The one a program author meets is
+`#__debug`, a constant the compiler defines: −1 if the program is
+compiled with runtime error checking, 0 without. Code for debugging
+only goes between `CNIF` and `CEND`:
 
 ```
 CNIF #__debug
