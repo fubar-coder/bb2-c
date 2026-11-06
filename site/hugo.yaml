@@ -11,14 +11,14 @@ module:
 markup:
   goldmark:
     renderer:
-      unsafe: false
+      unsafe: true # the home page lays out its hero with HTML
   highlight:
     noClasses: false
 
 menu:
   main:
     - name: Documentation
-      pageRef: /introduction
+      pageRef: /docs
       weight: 1
     - name: Search
       weight: 2

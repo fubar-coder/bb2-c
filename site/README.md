@@ -39,13 +39,13 @@ newer release, run `hugo mod get github.com/imfing/hextra@vX.Y.Z` and
 
 ## Writing pages
 
-* One directory per chapter in `content/`, each with an `_index.md`; the
+* One directory per chapter in `content/docs/`, each with an `_index.md`; the
   order in the sidebar comes from `weight` in the front matter.
 * Texts are plain English, explain instead of listing, and give examples
   instead of line numbers. No repository file names in page texts.
 * Nothing from the CD or the original manual.
-* Internal links: use `{{< relref "/chapter/page" >}}` in a link target
-  (`[text]({{< relref "/libraries" >}})`) whenever the target is more than
+* Internal links: use `{{< relref "/docs/chapter/page" >}}` in a link target
+  (`[text]({{< relref "/docs/libraries" >}})`) whenever the target is more than
   one level away; a link to a sibling page may be relative.
 * External links: always the full URL, including the menu entries in
   `hugo.yaml`. The site lives under the `/bb2-c/` subpath, and Hugo prefixes
