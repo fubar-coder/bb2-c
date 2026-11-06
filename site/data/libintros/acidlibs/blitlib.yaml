@@ -1,0 +1,20 @@
+description: Blitting - drawing shapes into the used bitmap with the blitter, in several modes, and testing for collisions.
+intro: |
+  `Blit` draws a shape into the used bitmap at a position, with the
+  blitter; the shape's handle is placed at that position. The blitter
+  works directly on the bitmap, so blitting is fast, but nothing remembers
+  what was under the shape. To draw a shape and remove it again later, use
+  queued blits (`QBlit`) or buffered blits (`BBlit`).
+
+  How the shape is combined with what is already in the bitmap is the
+  blit mode, set with `BlitMode`. `CookieMode` (the start value),
+  `EraseMode`, `InvMode` and `SolidMode` give the usual modes, for example
+  `BlitMode EraseMode`: with the cookie mode, the shape's pixels of colour
+  0 leave the background visible. This needs the shape's cookie
+  ([shapeslib]({{< relref "/docs/libraries/commands/shapeslib" >}})).
+
+  In Amiga mode the commands take the blitter from the system and give it
+  back after each blit; in Blitz mode they use it directly. With runtime
+  error checking, a blit outside the bitmap is the error "Coords outside of
+  BitMap", and a shape without a cookie the error "Shape does not have a
+  cookie cut".

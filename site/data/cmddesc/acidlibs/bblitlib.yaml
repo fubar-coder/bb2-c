@@ -1,0 +1,12 @@
+"Buffer":
+  text: Sets the buffer up with `Memorylen` bytes of chip memory; an old buffer of the object is freed.
+"BBlit":
+  text: Saves the area of the used bitmap under the shape into the buffer, then draws the shape like `Blit`. With `Excessonoff`, the bitplanes beyond the shape's depth are set or cleared under the shape, as with `Blit`.
+"UnBuffer":
+  text: Puts back the background of all shapes drawn with `BBlit`, the newest first, and empties the buffer.
+"BBlitMode":
+  text: The blit mode of the following `BBlit` commands, as `BlitMode`; the start value is the cookie mode.
+"ShowStencil":
+  text: Puts back the saved background through a stencil, only where the stencil has pixels; the buffer stays as it is.
+"FlushBuffer":
+  text: Empties the buffer without putting the background back.

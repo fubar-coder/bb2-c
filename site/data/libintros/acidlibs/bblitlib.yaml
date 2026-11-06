@@ -1,0 +1,16 @@
+description: Buffered blits - drawing shapes after saving the background under them, to restore it exactly later.
+intro: |
+  A buffer is a Blitz object, numbered from 0, with chip memory for the
+  background under shapes. `BBlit` first saves the area of the used bitmap
+  that the shape will cover into the buffer, then draws the shape like
+  `Blit`. `UnBuffer` puts all saved areas back, the newest first, and
+  empties the buffer. Unlike queued blits, this restores any background,
+  not only colour 0.
+
+  `Buffer` sets the buffer up with a number of bytes; it needs room for the
+  area under every shape drawn until the next `UnBuffer`, in all bitplanes
+  of the bitmap.
+
+  Kept from the original: only runtime error checking notices that the
+  buffer is too small
+  ([#73](https://github.com/fubar-coder/bb2-c/issues/73)).

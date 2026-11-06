@@ -1,0 +1,23 @@
+"BitMap":
+  text: Makes a bitmap of the given width, height and depth in chip memory and makes it the used bitmap; a bitmap the object held before is freed. With runtime error checking, a depth of 0 or more than 8 is an error.
+  notes: |
+    Kept from the original: the pointers to bitplanes beyond the depth are
+    not cleared in the object ([#80](https://github.com/fubar-coder/bb2-c/issues/80)).
+"LoadBitMap":
+  text: Loads an IFF ILBM picture into a bitmap that is already set up, and with `Palette#` its colours into that palette object. Amiga mode only.
+"ScreensBitMap":
+  text: Takes the bitmap of a screen as the bitmap object and makes it the used bitmap, so that the blitting and drawing commands draw on the screen.
+"ShapesBitMap":
+  text: Takes the bitplanes of a shape as a bitmap and makes it the used bitmap, so that a program can draw into the shape.
+  notes: |
+    Kept from the original: a plane size of 32768 bytes or more is added
+    wrongly ([#79](https://github.com/fubar-coder/bb2-c/issues/79)).
+"CopyBitMap":
+  text: Makes the second bitmap a copy of the first, in chip memory of its own. The used bitmap does not change.
+  notes: |
+    With runtime error checking, a destination that borrows its memory is
+    the error "Can't copy borrowed Bitmap". Kept from the original: a
+    bitmap of size 0 makes the copy run over memory
+    ([#78](https://github.com/fubar-coder/bb2-c/issues/78)).
+"CludgeBitMap":
+  text: Takes memory of the program, such as included data, as a bitmap of the given width, height and depth, with the planes one after the other, and makes it the used bitmap.

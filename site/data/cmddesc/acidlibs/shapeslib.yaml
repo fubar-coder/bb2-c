@@ -1,0 +1,36 @@
+"LoadShape":
+  text: Loads an IFF ILBM picture as a shape, and with `Palette#` its colours into that palette object. An IFF ANIM file gives its first frame in this shape and each further frame in the next shape number.
+  notes: |
+    Only ANIM files of the usual compression (method 5) are read; others
+    give "ANIM format not supported". Kept from the original: the frames
+    of an animation are not checked against the highest shape number
+    ([#265](https://github.com/fubar-coder/bb2-c/issues/265)), and the
+    file's picture data is not checked to be what it claims
+    ([#264](https://github.com/fubar-coder/bb2-c/issues/264)).
+"InitShape":
+  text: Makes an empty shape of the given width, height and depth.
+"GetaShape":
+  text: Makes a shape from an area of the used bitmap.
+"CopyShape":
+  text: Copies the first shape into the second.
+"MakeCookie":
+  text: Makes the cookie of the shape, the mask of all its pixels that are not colour 0.
+"AutoCookie":
+  text: With `On`, the shapes loaded or made from now on get their cookie automatically; `On` is the start value.
+"Handle":
+  text: Sets the handle of the shape, the point placed at the position given to drawing commands.
+"MidHandle":
+  text: Puts the handle of the shape in its middle.
+"ShapeWidth":
+  text: The width of the shape in pixels.
+"ShapeHeight":
+  text: The height of the shape in pixels.
+"SaveShapes":
+  text: Saves a range of shapes, from the first to the second number, into a file in Blitz's shapes format.
+"LoadShapes":
+  text: Loads shapes from a file saved with `SaveShapes`, into the range of shape numbers given, or from the first number on.
+"DecodeShapes":
+  text: Reads shapes in the format of `SaveShapes` from memory, such as data included in the program with `IncBin`. Data in chip memory is used where it is.
+  notes: |
+    With the address 0, the error is "Shapes file at memory location 0?
+    NOWAY!".

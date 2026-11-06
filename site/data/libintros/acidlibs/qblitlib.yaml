@@ -1,0 +1,15 @@
+description: Queued blits - drawing shapes and remembering where, to clear or restore those areas again later, as in games.
+intro: |
+  A queue is a Blitz object, numbered from 0, that remembers the areas of
+  the bitmap that `QBlit` has drawn on. `UnQueue` then clears all of them
+  to colour 0, or copies them from another bitmap that holds the
+  background, and empties the queue. A typical game loop draws its moving
+  shapes with `QBlit` and removes them with `UnQueue` before drawing the
+  next frame.
+
+  `Queue` sets a queue up for a number of blits. `QBlit` draws like
+  `Blit` of the blitting library, in the mode set with `QBlitMode`.
+
+  Kept from the original: only runtime error checking notices that more
+  blits are queued than the queue has room for
+  ([#423](https://github.com/fubar-coder/bb2-c/issues/423)).

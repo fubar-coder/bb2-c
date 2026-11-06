@@ -1,0 +1,10 @@
+"Queue":
+  text: Sets the queue up for at most `Max Items` blits; an old queue of the object is freed.
+"QBlit":
+  text: Draws the shape into the used bitmap like `Blit` and remembers the area in the queue. With `Excessonoff`, the bitplanes beyond the shape's depth are set or cleared under the shape, as with `Blit`.
+"UnQueue":
+  text: Clears all areas remembered in the queue to colour 0, or copies them from the same place of `BitMap#`, and empties the queue.
+"QBlitMode":
+  text: The blit mode of the following `QBlit` commands, as `BlitMode`; the start value is the cookie mode.
+"FlushQueue":
+  text: Empties the queue without touching the bitmap.

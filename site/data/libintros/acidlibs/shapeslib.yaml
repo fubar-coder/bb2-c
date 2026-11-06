@@ -1,0 +1,21 @@
+description: Shapes - graphics in chip memory for blitting, loaded from IFF pictures, cut from a bitmap, or saved and loaded as shapes files.
+intro: |
+  A shape is a Blitz object, numbered from 0: a graphic of its own width,
+  height and depth, kept in chip memory, so that the blitter can draw it
+  fast. The blitting libraries draw shapes into bitmaps, `WBlit` into
+  windows, and gadgets and menu items can show them.
+
+  A shape has a *handle*, the point of it that a drawing command places
+  at the given position; it is the top left corner unless `Handle` or
+  `MidHandle` moves it. A shape can also have a *cookie*, a mask of all
+  its pixels that are not colour 0, which drawing commands use to leave
+  the background visible around the shape. With `AutoCookie On`, which is
+  the start value, every shape that is loaded or made gets its cookie
+  automatically.
+
+  `LoadShape` loads an IFF ILBM picture as a shape; an IFF ANIM file
+  gives one shape per frame, in the following shape numbers. `SaveShapes`
+  and `LoadShapes` save and load shapes in Blitz's own file format, and
+  `DecodeShapes` reads that format from memory, for example from data
+  included in the program. With runtime error checking, using a shape
+  that is not there is the error "Uninitialized Shape".

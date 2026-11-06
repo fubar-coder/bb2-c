@@ -1,0 +1,17 @@
+description: Bitmaps - the drawing surfaces of Blitz Basic, in chip memory, taken from a screen or a shape, or loaded from IFF pictures.
+intro: |
+  A bitmap is a Blitz object, numbered from 0: a drawing surface of a
+  width, height and depth, the number of bitplanes. The blitting and
+  drawing commands draw into the *used* bitmap; `BitMap`, `ScreensBitMap`,
+  `ShapesBitMap` and `CludgeBitMap` make the bitmap they set up the used
+  one, and `Use BitMap` chooses another.
+
+  `BitMap` allocates a bitmap in chip memory of its own, which is freed
+  with the object. `ScreensBitMap`, `ShapesBitMap` and `CludgeBitMap`
+  only borrow the memory of a screen, a shape or the program; it is not
+  freed with the bitmap. With runtime error checking, using a bitmap that
+  is not set up is an error.
+
+  Kept from the original: the size of a bitmap is computed with 16 bit
+  multiplications, so very large bitmaps get a wrong size
+  ([#76](https://github.com/fubar-coder/bb2-c/issues/76)).
