@@ -30,7 +30,7 @@
 # Already unpacked and checked material is not touched again.
 # At the end: archive/sources/ted-1.1 and blitz2-1.95 (in git) must equal
 # the files of bb2src.zip in the Aminet archive.
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 3.28)
 
 get_filename_component(root ${CMAKE_CURRENT_LIST_DIR}/.. ABSOLUTE)
 if(NOT DOWNLOAD_DIR)
@@ -211,6 +211,22 @@ foreach(l "bblibsrc|bblibsrc.lha|bblibsrc|209" "rwelibsrc|RWELibSourc.lha|Libs|2
 	set(dest ${aminet}/${name})
 	unpack(${aminet}/amiblitz2source/${lha} ${dest})
 	if(unpacked)
+		# bblibsrc.lha stores bblibsrc/oldgtlib.xtra with an MS-DOS
+		# separator; the libarchive of CMake before 4 (at least up to 3.31)
+		# extracts it as one name "bblibsrc\oldgtlib.xtra" next to the
+		# directory (file(GLOB) of CMake 3.28 already shows it with "/"):
+		# put such entries where they belong
+		file(GLOB entries RELATIVE ${dest}.part ${dest}.part/*)
+		foreach(e IN LISTS entries)
+			string(REPLACE "\\" "/" to "${e}")
+			string(FIND "${to}" "/" pos)
+			if(pos GREATER -1)
+				string(REPLACE "/" "\\" from "${to}")
+				get_filename_component(dir ${dest}.part/${to} DIRECTORY)
+				file(MAKE_DIRECTORY ${dir})
+				file(RENAME ${dest}.part/${from} ${dest}.part/${to})
+			endif()
+		endforeach()
 		if(NOT IS_DIRECTORY ${dest}.part/${top})
 			message(FATAL_ERROR "${lha}: directory ${top}/ not found")
 		endif()
