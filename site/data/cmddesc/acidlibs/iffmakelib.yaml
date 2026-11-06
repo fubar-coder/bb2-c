@@ -1,0 +1,8 @@
+"SaveBitmap":
+  text: Saves a bitmap as an IFF ILBM picture, with the colours of `Palette#` if it is given. Amiga mode only.
+"SaveScreen":
+  text: Saves a screen as an IFF ILBM picture, with its colours (at most 256). Amiga mode only.
+"SaveShape":
+  text: Saves a shape as an IFF ILBM picture of the shape's size, with the colours of `Palette#` if it is given. Amiga mode only.
+"SavePalette":
+  text: Saves the colours of a palette as an IFF colour map chunk (CMAP), three bytes per colour, without an IFF FORM around it. Nothing is written for a palette without colours. Amiga mode only.

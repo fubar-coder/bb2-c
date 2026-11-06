@@ -1,0 +1,20 @@
+"Scale":
+  text: Stretches or shrinks a shape, its width by `X Ratio` and its height by `Y Ratio`; a ratio above 1 enlarges, below 1 reduces, and 1 keeps that size. The two ratios may differ.
+  notes: |
+    When the shape shrinks, each new pixel gets the colour that covers
+    most of the pixels it replaces. With `Palette#`, the colours are
+    weighed by their brightness in that palette instead, so that bright
+    details survive. Kept from the original: a size that would fall below
+    one pixel reads beyond the edge of the shape
+    ([#273](https://github.com/fubar-coder/bb2-c/issues/273)).
+"Rotate":
+  text: Turns a shape by `Angle Ratio` of a full turn, from 0 to 1; .25 turns it by 90 degrees and .5 by 180 degrees. The shape gets the size of the turned image, and its handle becomes the top left corner.
+"XFlip":
+  text: Mirrors a shape horizontally, from left to right.
+  notes: |
+    Kept from the original: the processor may start to mirror before the
+    blitter has finished its part, so that a shape whose width is not a
+    multiple of 8 can come out wrong
+    ([#271](https://github.com/fubar-coder/bb2-c/issues/271)).
+"YFlip":
+  text: Mirrors a shape vertically, upside down.

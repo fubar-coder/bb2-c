@@ -1,0 +1,23 @@
+"Anim":
+  text: The object of an IFF animation, as the introduction describes.
+"LoadAnim":
+  text: Loads an IFF ANIM file into an anim object, and its colours into `Palette#` if it is given. An anim the object held before is freed. Amiga mode only.
+  notes: |
+    Kept from the original: a file without a first picture
+    ([#400](https://github.com/fubar-coder/bb2-c/issues/400)) or with a
+    single change ([#401](https://github.com/fubar-coder/bb2-c/issues/401))
+    is not caught.
+"InitAnim":
+  text: Draws the first picture of the anim into the used bitmap and, with `BitMap#`, also into that bitmap, and starts the animation from its beginning.
+  notes: |
+    Use the form with two bitmaps for double buffering. With runtime
+    error checking, a bitmap smaller than the anim is the error "BitMap
+    not large enough for ANIM".
+"NextFrame":
+  text: Draws the next frame of the anim into the used bitmap; after the last frame, it goes on from the start.
+  notes: |
+    With runtime error checking, an anim not set up with `InitAnim` is the
+    error "Anim not Initialized", and one of a single frame "Anim has only
+    1 frame".
+"Frames":
+  text: The number of frames of the anim.

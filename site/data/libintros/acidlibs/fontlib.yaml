@@ -1,0 +1,27 @@
+description: Text on bitmaps - Print and Edit on a Blitz bitmap with 8 by 8 BlitzFonts, colours and cursor position.
+intro: |
+  `BitMapOutput` sends the output of `Print` and `NPrint` to a bitmap
+  instead of a window, which makes text possible in Blitz mode, where
+  windows cannot be used. The text is drawn with a *BlitzFont*, a Blitz
+  object numbered from 0 that holds a font of 8 by 8 pixel characters.
+  BlitzFont 0 is the system's topaz font from the start; `LoadBlitzFont`
+  loads others. `Colour` sets the colours of the text, and `Locate`,
+  `CursX` and `CursY` set and read the cursor position, in characters.
+
+  ```blitzbasic
+  BLITZ
+  BitMapOutput 0
+  Colour 1,0
+  Locate 2,1
+  Print "Score: ",score
+  ```
+
+  `BitMapInput` lets `Edit$` and `Edit` read a line on the bitmap as
+  well, with a cursor; it needs `BlitzKeys On` for the keyboard in Blitz
+  mode.
+
+  Characters outside the range the font has, and text below the bottom
+  of the bitmap, are not drawn. At the right edge of the bitmap the text
+  goes on in a new line.
+
+  *Based on the fontlib guide by Acid Software.*

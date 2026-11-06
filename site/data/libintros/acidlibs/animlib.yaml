@@ -1,0 +1,30 @@
+description: IFF animations - loading Deluxe Paint style ANIM files and playing them frame by frame on bitmaps.
+intro: |
+  An anim is a Blitz object, numbered from 0, that holds an IFF ANIM
+  file of the kind Deluxe Paint writes: a first picture and, for every
+  further frame, the changes from the frame two before (the compression
+  called ANIM 5). Such an animation is meant for double buffering, two
+  bitmaps shown in turn. `LoadAnim` loads it, in Amiga mode; `ILBMInfo`
+  tells the size and mode of the screen it needs. `InitAnim` draws the
+  first frames into the bitmaps, and every `NextFrame` draws the next
+  frame into the used bitmap:
+
+  ```blitzbasic
+  LoadAnim 0,"walk.anim",0
+  BitMap 0,320,200,5 : BitMap 1,320,200,5
+  Use BitMap 0
+  InitAnim 0,1
+  ; then, per frame, alternating the bitmaps:
+  ; Use BitMap db : NextFrame 0 : show bitmap db
+  ```
+
+  After the last frame, `NextFrame` goes on from the start. The whole
+  animation has one palette.
+
+  A file that cannot be opened is the error "Can't Open Anim File", and a
+  file with another kind of compression "Anim format not supported".
+  Kept from the original: the first picture is always unpacked as
+  compressed data, whatever the file says
+  ([#397](https://github.com/fubar-coder/bb2-c/issues/397)).
+
+  *Based on the animlib guide by Acid Software.*

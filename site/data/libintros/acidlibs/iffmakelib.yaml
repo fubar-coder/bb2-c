@@ -1,0 +1,19 @@
+description: Saving IFF files - bitmaps, screens and shapes as ILBM pictures, palettes as colour maps.
+intro: |
+  These commands write the Amiga's standard IFF formats, so that a paint
+  program or another Blitz program can load the result. `SaveBitmap`,
+  `SaveScreen` and `SaveShape` write IFF ILBM pictures, packed with the
+  usual ByteRun1 compression; with a palette, the file also holds the
+  colours. `SavePalette` writes only the colours. All four work in Amiga
+  mode only, and a file that cannot be created is the error "Can't open
+  File".
+
+  ```blitzbasic
+  SaveBitmap 0,"RAM:picture.iff",0
+  ```
+
+  Kept from the original: a palette with an odd number of colours gives a
+  colour chunk without its pad byte, which strict IFF readers reject
+  ([#184](https://github.com/fubar-coder/bb2-c/issues/184)).
+
+  *Based on the iffmakelib guide by Acid Software.*

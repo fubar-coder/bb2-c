@@ -1,0 +1,11 @@
+description: Reading IFF files for other libraries - a buffered reader of bytes, words, longs and chunks.
+intro: |
+  This library reads IFF files, the
+  Amiga's standard format for pictures, sounds and animations, through a
+  buffer of 2048 bytes, and finds the chunks in them. The commands that
+  load such files use it: `LoadPalette`, `LoadAnim`, `ILBMInfo`, the
+  picture loaders and `LoadSound`. It reads one file at a time.
+
+  Kept from the original: a read error is not noticed, and the old
+  contents of the buffer are read as data
+  ([#177](https://github.com/fubar-coder/bb2-c/issues/177)).

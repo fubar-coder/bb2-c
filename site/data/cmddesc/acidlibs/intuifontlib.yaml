@@ -1,0 +1,10 @@
+"IntuiFont":
+  text: The object of a system font for screens, windows and gadgets, as the introduction describes.
+"LoadFont":
+  text: Loads the font `Fontname.font$` from `FONTS:` in the height `Y size` into an IntuiFont object, which becomes the used one. An old font of the object is closed. Amiga mode only.
+  notes: |
+    With runtime error checking, a font that cannot be loaded is the
+    error "Can't Open Font". The style is meant to be the sum of 1
+    underlined, 2 bold, 4 italic and 8 extended. Kept from the original:
+    the style is not applied, the value goes into the flags of the font
+    instead ([#197](https://github.com/fubar-coder/bb2-c/issues/197)).

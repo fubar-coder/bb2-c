@@ -1,0 +1,24 @@
+"ILBMInfo":
+  text: Reads the header of an IFF ILBM file, for `ILBMWidth`, `ILBMHeight`, `ILBMDepth` and `ILBMViewMode`. As a function, it returns true (-1) if the file could be read, else false (0).
+  notes: |
+    Kept from the original: a file that cannot be opened is closed all the
+    same ([#186](https://github.com/fubar-coder/bb2-c/issues/186)).
+"ILBMWidth":
+  text: The width in pixels of the picture read by the last `ILBMInfo`.
+"ILBMHeight":
+  text: The height in pixels of the picture read by the last `ILBMInfo`.
+"ILBMDepth":
+  text: The number of bitplanes of the picture read by the last `ILBMInfo`.
+"ILBMViewMode":
+  text: The display mode of the picture read by the last `ILBMInfo`, from the page size in the file; $8000 for high resolution (a page at least 480 pixels wide) plus 4 for interlace (at least 300 lines high), else 0.
+"DecodeILBM":
+  text: Unpacks the IFF ILBM picture at the memory address given into a bitmap.
+  notes: |
+    A picture without a header is the error "Can't Find IFF 'BMHD'", one
+    without picture data "Can't Find IFF 'BODY'". Kept from the original:
+    the bitmap must have at least the depth and the width of the picture,
+    else memory is overwritten
+    ([#190](https://github.com/fubar-coder/bb2-c/issues/190),
+    [#191](https://github.com/fubar-coder/bb2-c/issues/191)); and the
+    chunks of the file are read without their pad bytes
+    ([#189](https://github.com/fubar-coder/bb2-c/issues/189)).

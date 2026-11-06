@@ -1,0 +1,19 @@
+description: Changing shapes - scaling, rotating and mirroring shape objects.
+intro: |
+  These commands change a shape object in place: `Scale` stretches or
+  shrinks it, `Rotate` turns it, and `XFlip` and `YFlip` mirror it. The
+  shape gets new image data, and a new cookie if it had one, so it can be
+  drawn at once. Each change works on the pixels, so repeated changes
+  lose detail: to show several sizes or angles of one image, make each
+  from a copy of the original shape, for example with `CopyShape`.
+
+  ```blitzbasic
+  LoadShape 0,"ship.iff"
+  CopyShape 0,1
+  Rotate 1,.25
+  Scale 1,.5,.5
+  ```
+
+  The ratios and the angle are numbers with a fraction, as quick values.
+
+  *Based on the shapetrixlib guide by Acid Software.*

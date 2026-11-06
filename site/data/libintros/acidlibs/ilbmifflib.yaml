@@ -1,0 +1,19 @@
+description: IFF ILBM pictures - the size, depth and mode of a picture file, and pictures unpacked from memory into bitmaps.
+intro: |
+  IFF ILBM is the Amiga's standard picture format, the one Deluxe Paint
+  writes. `ILBMInfo` reads the header of such a file, and `ILBMWidth`,
+  `ILBMHeight`, `ILBMDepth` and `ILBMViewMode` then tell its size, number
+  of bitplanes and display mode, so that a program can open a screen or
+  make a bitmap that fits before it loads the picture:
+
+  ```blitzbasic
+  If ILBMInfo("pic.iff")
+    BitMap 0,ILBMWidth,ILBMHeight,ILBMDepth
+    LoadBitMap 0,"pic.iff",0
+  EndIf
+  ```
+
+  `DecodeILBM` unpacks a picture that is already in memory, for example
+  one included in the program with `IncBin`.
+
+  *Based on the ilbmifflib guide by Acid Software.*

@@ -1,0 +1,17 @@
+description: Fonts for Intuition - loading system fonts of any size for screens, windows and gadgets.
+intro: |
+  An IntuiFont is a Blitz object, numbered from 0, that holds a font of
+  the system, of any size and also proportional, unlike the 8 by 8
+  BlitzFonts of bitmap output. Screens, windows and gadgets made after
+  `LoadFont` or `Use IntuiFont` use the used IntuiFont for their text;
+  `WindowFont` sets the font of the text printed in a window. Before any
+  `LoadFont`, the font is topaz 8.
+
+  ```blitzbasic
+  LoadFont 0,"helvetica.font",13
+  Window 0,0,0,320,100,$100f,"Hello",1,2
+  WindowFont 0
+  Print "Text in Helvetica"
+  ```
+
+  *Based on the intuifontlib guide by Acid Software.*
