@@ -145,6 +145,8 @@ The full listing: `docs/structure.md`.
 * `AMIGA-EMULATION-SETUP.md`: setting up the emulator tests locally
 * `tools/lib/amiga_emulation/README.md`: the emulation tool, for developers
 * `docs/ab3/`: AmiBlitz3's changes and the AB3 mode
+* <https://fubar-coder.github.io/bb2-c/>: the project website (sources in
+  `site/`, see `site/README.md`)
 * `TODO.md`: open items; `CLAUDE.md`: working rules of the repository
 * `archive/README.md`: the originals and their licenses
 
