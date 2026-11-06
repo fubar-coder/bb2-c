@@ -249,7 +249,7 @@ int asmcmp_routine(const char *objdump, const struct hunk *orig, const struct lo
                    const char *spec, FILE *out)
 {
     char buf[256], *f[4], *plus, *end, err[300], **a = NULL, **b = NULL;
-    uint32_t oaddr, caddr;
+    uint32_t oaddr, caddr = 0; /* set by csymbol() or strtoul(); GCC 15 cannot see it */
     unsigned count, i, k = 0;
     long off = 0;
     int same, ok;
