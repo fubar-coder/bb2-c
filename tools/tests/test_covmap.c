@@ -527,7 +527,7 @@ static void test_amiga(void)
     CHECK(covmap_add_linkmap(&m, "ted2", ".text   nonsense\n", err, sizeof err) && strstr(err, "without address"));
     CHECK(covmap_add_objsyms(&m, "blitz2", objsyms, err, sizeof err) && strstr(err, "after the coverage"));
     CHECK(covmap_add_objsyms(&m, "nope", objsyms, err, sizeof err) && strstr(err, "before the link map"));
-    CHECK(covmap_add_lines(&m, "blitz2", "garbage\n", err, sizeof err) && strstr(err, "decodedline"));
+    CHECK(covmap_add_lines(&m, "blitz2", lines, err, sizeof err) && strstr(err, "after the coverage"));
     covmap_free(&m);
 
     covmap_init(&m, ROOT);
@@ -536,6 +536,7 @@ static void test_amiga(void)
     CHECK(covmap_add_objsyms(&m, "blitz2",
                              "programs/blitz2/CMakeFiles/blitz2_core.dir/src/eval.c.obj:00000100 T _x\n",
                              err, sizeof err) && strstr(err, "outside"));
+    CHECK(covmap_add_lines(&m, "blitz2", "garbage\n", err, sizeof err) && strstr(err, "decodedline"));
     covmap_free(&m);
 
     /* without nm and deps: the map's globals, the source from the object
@@ -558,6 +559,51 @@ static void test_amiga(void)
     covmap_free(&m);
 }
 
+/* symbols in the code that are no functions of their object's source: an
+   out-of-line copy of a header's function (its rows are of the header
+   only) and a switch table (no rows), both in an object with rows; the
+   object without rows (main.c) keeps its functions without lines */
+static void test_amiga_nonfunctions(void)
+{
+    static const char syms[] =
+        "programs/blitz2/CMakeFiles/blitz2_core.dir/src/eval.c.obj:00000000 T _eval\n"
+        "programs/blitz2/CMakeFiles/blitz2_core.dir/src/eval.c.obj:00000040 t _strlen\n"
+        "programs/blitz2/CMakeFiles/blitz2_core.dir/src/eval.c.obj:00000080 t CSWTCH.1\n";
+    static const char rows[] =
+        "programs/blitz2/CMakeFiles/blitz2_core.dir/src/eval.c.obj:     file format amiga\n"
+        ROOT "/programs/blitz2/src/eval.c:\n"
+        "eval.c                                   100                   0               x\n"
+        "eval.c                                   110                0x3e               x\n"
+        ROOT "/programs/blitz2/src/blitz2.h:\n"
+        "blitz2.h                                  10                0x40               x\n";
+    const uint32_t run[] = { 0xc0, 0x100, 0x140 };
+    struct covmap m;
+    unsigned char *c;
+    size_t len;
+    char *t;
+
+    covmap_init(&m, ROOT);
+    CHECK(!covmap_add_deps(&m, deps_text, err, sizeof err));
+    CHECK(!covmap_add_linkmap(&m, "blitz2", linkmap, err, sizeof err));
+    CHECK(!covmap_add_objsyms(&m, "blitz2", syms, err, sizeof err));
+    CHECK(!covmap_add_lines(&m, "blitz2", rows, err, sizeof err));
+    c = cov_file(0x200, COVFMT_BITMAP_LEN(0x200), run, 3, &len);
+    CHECK(!covmap_add_cov(&m, "corpus", "blitz2", c, len, err, sizeof err));
+    free(c);
+    CHECK(covmap_tests(&m) == 1);
+    t = trace_text(&m, 0);
+    CHECK(!strcmp(t, "TN:corpus\n"
+                     "SF:" ROOT "/programs/blitz2/src/eval.c\n"
+                     "FN:100,110,eval\nFNDA:1,eval\nFNF:1\nFNH:1\n"
+                     "end_of_record\n"
+                     "SF:" ROOT "/programs/blitz2/src/main.c\n"
+                     "FN:1,compile\nFN:1,main\nFNDA:0,compile\nFNDA:0,main\nFNF:2\nFNH:0\n"
+                     "end_of_record\n"));
+    CHECK(!lcov_check(t));
+    free(t);
+    covmap_free(&m);
+}
+
 int main(void)
 {
     test_json();
@@ -566,6 +612,7 @@ int main(void)
     test_lcov_check();
     test_gcov();
     test_amiga();
+    test_amiga_nonfunctions();
     if (failures)
         fprintf(stderr, "%d failure(s)\n", failures);
     return failures != 0;

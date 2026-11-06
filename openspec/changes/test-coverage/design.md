@@ -253,8 +253,15 @@ the preset, the option, the module and the tools.
 - So the coverage configuration should compile with `-g`. Without it
   the ranges stay empty, and a change in a file selects the tests of all
   its functions (the object-level fallback of D7).
-- Symbols of constant data in `.text` (`nm` type `t`/`T`, e.g. tables)
-  appear in the map like functions, with no line range and no tests.
+- Symbols in `.text` (`nm` type `t`/`T`) whose bytes hold no row of their
+  object's source, in an object with rows, are no functions of that source
+  and are left out of the tracefiles (task 5.1): constant data
+  (`CSWTCH.*`, `order.0`, tables like `atokens`), the assembler stubs of
+  `glue.c`, and out-of-line copies of libnix's inline string functions
+  (`strcpy`, `strlen`, `memcmp`: rows of `strsup.h` only). As functions
+  without a range they made `genhtml` derive ranges that covered lines a
+  host test ran (`xtra_ab3.c`, `ab3args.c`: "function is not hit but line
+  is", an error).
 
 ### Selection (tasks 4.4, 4.5, D6, D8)
 - **The changes are taken against the map's commit**, not against the
@@ -298,8 +305,7 @@ the preset, the option, the module and the tools.
   order of their names: lcov's own form of tracefiles of different tests
   merged (`lcov -a` keeps a section per test name); `genhtml` adds them
   up per file.
-- **Functions without known lines** (objects without `-g`, data symbols
-  in `.text`) are written `FN:1,<name>` without a last line: lcov rejects
+- **Functions without known lines** (objects without `-g`) are written `FN:1,<name>` without a last line: lcov rejects
   line 0, and an `FN:` without a last line is lcov's older form. `covsel`
   reads an `FN:` without a last line as "range not known"; a change in
   such a file selects the tests of all its functions.

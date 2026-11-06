@@ -514,6 +514,7 @@ int covmap_add_linkmap(struct covmap *m, const char *program, const char *text,
                 o->size = size;
                 o->path = path;
                 o->file = object_file(m, s);
+                o->has_lines = 0;
                 cur = (long)p->nobjs++;
             }
             continue;
@@ -650,6 +651,7 @@ static int prog_ready(struct covmap *m, struct cov_prog *p)
         p->syms[p->nsyms].end = o->base + o->size;
         p->syms[p->nsyms].func = f;
         p->syms[p->nsyms].obj = r->obj;
+        p->syms[p->nsyms].has_lines = 0;
         if (p->nsyms && p->syms[p->nsyms - 1].end > r->addr)
             p->syms[p->nsyms - 1].end = r->addr;
         p->nsyms++;
@@ -660,7 +662,7 @@ static int prog_ready(struct covmap *m, struct cov_prog *p)
 }
 
 /* the symbol whose function holds addr, NULL if none */
-static const struct cov_sym *find_sym(const struct cov_prog *p, uint32_t addr)
+static struct cov_sym *find_sym(const struct cov_prog *p, uint32_t addr)
 {
     size_t lo = 0, hi = p->nsyms;
 
@@ -689,6 +691,8 @@ int covmap_add_lines(struct covmap *m, const char *program, const char *text,
 
     if (!p)
         return error(err, errsz, "%s: lines before the link map", program);
+    if (p->counted)
+        return error(err, errsz, "%s: lines after the coverage", program);
     if (prog_ready(m, p))
         return OOM();
     while ((line = cov_next_line(text, len, &pos, &n))) {
@@ -696,7 +700,7 @@ int covmap_add_lines(struct covmap *m, const char *program, const char *text,
         char *s, *end;
         long ln;
         unsigned long addr;
-        const struct cov_sym *sym;
+        struct cov_sym *sym;
 
         if (n >= sizeof buf)
             n = sizeof buf - 1;
@@ -750,8 +754,11 @@ int covmap_add_lines(struct covmap *m, const char *program, const char *text,
         addr = strtoul(end, &s, 16);
         if (s == end)
             continue;
-        if ((sym = find_sym(p, p->objs[obj].base + (uint32_t)addr)) && sym->obj == (size_t)obj)
+        p->objs[obj].has_lines = 1;
+        if ((sym = find_sym(p, p->objs[obj].base + (uint32_t)addr)) && sym->obj == (size_t)obj) {
+            sym->has_lines = 1;
             widen(&m->funcs[sym->func], (int)ln, (int)ln);
+        }
     }
     if (!headers && len)
         return error(err, errsz, "%s: lines without an object header (not objdump --dwarf=decodedline)",
@@ -804,12 +811,18 @@ int covmap_add_cov(struct covmap *m, const char *test, const char *program,
         if ((data[i >> 3] & 1 << (i & 7)) && (sym = find_sym(p, 2 * i)))
             entered[sym - p->syms] = 1;
     }
-    /* every function of the program, entered or not */
-    for (i = 0; i < p->nsyms; i++)
+    p->counted = 1;
+    /* every function of the program, entered or not; a symbol without a
+       row of its source in an object with rows is none (data, assembler,
+       a header's function) */
+    for (i = 0; i < p->nsyms; i++) {
+        if (!p->syms[i].has_lines && p->objs[p->syms[i].obj].has_lines)
+            continue;
         if (add_hit(m, t, p->syms[i].func, entered[i], 1)) {
             free(entered);
             return OOM();
         }
+    }
     free(entered);
     return 0;
 }

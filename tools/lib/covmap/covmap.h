@@ -27,7 +27,12 @@
  *   SF:<absolute path>
  *   FN:<first>,<last>,<name>   per function, in the order of their lines;
  *                              FN:1,<name> (no last line) if the lines are
- *                              not known
+ *                              not known; a symbol in the code whose bytes
+ *                              hold no row of its object's source, in an
+ *                              object with rows (data in .text such as
+ *                              switch tables, assembler stubs, out-of-line
+ *                              copies of header functions), is no function
+ *                              of that source and is left out
  *   FNDA:<count>,<name>        gcov: its calls; coverage file: 1 if it was
  *                              entered, else 0
  *   FNF:<functions> FNH:<functions with a count above 0>
@@ -76,12 +81,14 @@ struct cov_obj {
     uint32_t base, size;        /* its .text in the code hunk */
     int path;                   /* object path (strs) */
     int file;                   /* its source (strs), -1 if left out */
+    int has_lines;              /* rows of its source in the line table */
 };
 
 struct cov_sym {
     uint32_t addr, end;         /* the function's bytes in the code hunk */
     int func;                   /* index in covmap.funcs */
     size_t obj;                 /* index in cov_prog.objs */
+    int has_lines;              /* rows of the object's source in its bytes */
 };
 
 struct cov_prog {
@@ -96,6 +103,7 @@ struct cov_prog {
     struct cov_sym *syms;       /* sorted by addr, after covmap_prog_ready */
     size_t nsyms;
     int ready;
+    int counted;                /* a coverage file read: no more lines */
 };
 
 struct covmap {
