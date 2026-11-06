@@ -944,7 +944,10 @@ debug block:
 
 ## 8 Open points
 
-* Exact function of `defaultdbug`: only known from `makeinits`. `dhandlerlib`
+* `defaultdbug` is the compiled `bblibsrc/dhandler.bb2` of the Aminet
+  sources (the debugger window: END, STOP, RUN, STEP, TRACE, SHOW ALL,
+  EVALUATE); the port's `blitz2-ab3` compiles it in BB2 mode to a working
+  module (TODO.md, "`defaultdbug` built by the port"). `dhandlerlib`
   (lib 1) is ported and described in `docs/libs/cmdlibs-port.md`: it
   starts the program at `dseg` as the debugger process and connects it
   with debuglib.

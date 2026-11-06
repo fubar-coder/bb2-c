@@ -250,6 +250,17 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
 
 ## 2 Further open items
 
+- [ ] **`defaultdbug` built by the port** (user decision 2026-11-06):
+  blitz2 loads `blitz2:defaultdbug` for programs run from the editor with
+  runtime error checking; without it such a program ends silently at its
+  first runtime error. The Aminet sources' `bblibsrc/dhandler.bb2`
+  (fetched by `cmake/fetch-originals.cmake`) compiles with `blitz2-ab3`
+  in BB2 mode, and the result works as `blitz2:defaultdbug` and with LOAD
+  DEBUG MODULE (checked in Amiberry, Workbench 3.1). For now the website
+  describes how to build it by hand. Next: a target `defaultdbug` outside
+  the normal build that compiles it with `amiga_run` (needs the
+  originals and the emulator), so release builds can contain it.
+  Translating the debugger to C is a project of its own, after the port.
 - [x] **`__saveds` instead of hand-written a4 loads** (user decision
   2026-10-29): since m68k-amigaos-gcc 16.2-rc21 (AmigaPorts/gcc#141)
   `__saveds` loads a4 again (`jsr ___restore_a4`); older versions accept
