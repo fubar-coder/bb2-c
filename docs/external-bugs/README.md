@@ -6,4 +6,4 @@ names its URL at the top.
 
 | File | Tool | Effect here |
 |---|---|---|
-| `doxygen-member-index-letters.md` | Doxygen 1.17, 1.18 | the API reference is built with 1.16.1 |
+| `doxygen-member-index-letters.md` (example project: `doxygen-member-index-letters-example/`) | Doxygen 1.17, 1.18 | the API reference is built with 1.16.1 |

@@ -1,0 +1,7 @@
+# Minimal configuration: run "doxygen" in this directory.
+INPUT                = src
+OUTPUT_DIRECTORY     = out
+GENERATE_LATEX       = NO
+EXTRACT_ALL          = YES
+WARN_IF_UNDOCUMENTED = NO
+QUIET                = YES
