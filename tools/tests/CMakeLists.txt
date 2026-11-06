@@ -1,6 +1,6 @@
 # tests of lib/, with inputs built in memory (testutil.h)
 foreach(t hunk blitzlib biglib blitztokens hunkcheck amiga_emulation vasmlisting sha256 checklabels checkdata asmcmp mktestdata bb22 blitzres bblines statline teststats
-		outmatch covmap covsel hdf)
+		outmatch covmap covsel hdf cmdref)
 	add_executable(test_${t} test_${t}.c)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk)
 	target_compile_options(test_${t} PRIVATE -Wno-unused-function)
@@ -131,3 +131,8 @@ set_tests_properties(amiga_run_purge_two_owners PROPERTIES WILL_FAIL ON)
 
 # covsel's tests embed tools/covsel/rules.txt
 target_compile_definitions(test_covsel PRIVATE COVSEL_RULES="${CMAKE_CURRENT_SOURCE_DIR}/../covsel/rules.txt")
+
+# cmdref on a file that is no library: an error, exit status 1
+add_test(NAME cmdref_not_a_library COMMAND cmdref -group acidlibs -name x
+	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
+set_tests_properties(cmdref_not_a_library PROPERTIES WILL_FAIL TRUE)

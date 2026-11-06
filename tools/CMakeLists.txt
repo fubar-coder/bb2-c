@@ -28,5 +28,6 @@ add_subdirectory(ab3tok)
 add_subdirectory(covmap)
 add_subdirectory(covsel)
 add_subdirectory(hdftool)
+add_subdirectory(cmdref)
 
 add_subdirectory(tests)

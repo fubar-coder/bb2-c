@@ -36,6 +36,8 @@
 #              dependencies and rules
 #   hdf        AmigaDOS hardfiles: RDB or raw partition, OFS/FFS files read
 #              and written (the setup of the emulation data)
+#   cmdref     the command table of a library file as JSON (the website's
+#              command reference)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -59,3 +61,4 @@ add_subdirectory(outmatch)
 add_subdirectory(covmap)
 add_subdirectory(covsel)
 add_subdirectory(hdf)
+add_subdirectory(cmdref)

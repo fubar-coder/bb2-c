@@ -6,7 +6,7 @@
 
 ## 2. The tool
 
-- [ ] 2.1 `tools/lib/cmdref` + `tools/cmdref/main.c`: JSON of one library file (D2), including `opens`. Verify: host tests with inputs from memory - a command library, an AmigaOS call library with and without a library name, escaping of a non-ASCII help byte, broken inputs (table past the end, two library names) give an error and no output file
+- [x] 2.1 `tools/lib/cmdref` + `tools/cmdref/main.c`: JSON of one library file (D2), including `opens`. Verify: host tests with inputs from memory - a command library, an AmigaOS call library with and without a library name, escaping of a non-ASCII help byte, broken inputs (table past the end, two library names) give an error and no output file
 
 ## 3. The check in the build
 
