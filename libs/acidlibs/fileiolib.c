@@ -111,7 +111,8 @@ struct bfile {
 
 /* entry points (thunks / C, defined below) */
 void dofileoutput(void), dofileinput(void), doloc(void), doeof(void);
-void dodbufflen(void), codeinit(void), racchk(void), fchk(void), dbchk(void);
+void dodbufflen(void), fileiolib_codeinit(void), racchk(void);
+void fileiolib_fchk(void), dbchk(void);
 ULONG BLITZ_ROUTINE doexists(const UBYTE *name BL_REG(d0),
                              struct Library *dosbase BL_REG(a6));
 void BLITZ_ROUTINE dowritemem(ULONG fileno BL_REG(d0), struct bfile *f BL_REG(a2),
@@ -135,7 +136,8 @@ BB_BOOL BLITZ_ROUTINE doreadfile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(
 BB_BOOL BLITZ_ROUTINE dowritefile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG(d1),
                                 const ULONG *lens BL_REG(a2),
                                 struct Library *dosbase BL_REG(a6));
-void BLITZ_ROUTINE dorecord(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2));
+static void BLITZ_ROUTINE dorecord(UWORD n BL_REG(d7),
+                                  const UBYTE *args BL_REG(a2));
 void BLITZ_ROUTINE doput(ULONG fileno BL_REG(d0), UWORD record BL_REG(d1),
                          struct Library *dosbase BL_REG(a6));
 void BLITZ_ROUTINE doget(ULONG fileno BL_REG(d0), UWORD record BL_REG(d1),
@@ -201,25 +203,25 @@ BLITZ_NULLSUB(0, 0, 0);
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS(LIB_fileiolib, 0x1280, LIB_doslib, BL_LA(6));
-BLITZ_SUBS(dolof, fchk, 0);
+BLITZ_SUBS(dolof, fileiolib_fchk, 0);
 BLITZ_NAME("Lof", "(File#)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG);
 BLITZ_LIBS(LIB_fileiolib, 0x1280, LIB_doslib, BL_LA(6));
-BLITZ_SUBS(dofileseek, fchk, 0);
+BLITZ_SUBS(dofileseek, fileiolib_fchk, 0);
 BLITZ_NAME("FileSeek", "File#,Position");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS(LIB_fileiolib, 0x1280);
-BLITZ_SUBS(doloc, fchk, 0);
+BLITZ_SUBS(doloc, fileiolib_fchk, 0);
 BLITZ_NAME("Loc", "(File#)");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS(LIB_fileiolib, 0x1280, LIB_doslib, BL_LA(6));
-BLITZ_SUBS(doeof, fchk, 0);
+BLITZ_SUBS(doeof, fileiolib_fchk, 0);
 BLITZ_NAME("Eof", "(File#)");
 
 BLITZ_ASTATEMENT();
@@ -228,7 +230,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(dodbufflen, dbchk, 0);
 BLITZ_NAME("DosBuffLen", "Bytes");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0, LIB_doslib, BL_LD(0));
+BLITZ_NULLSUB_AT(init, fileiolib_codeinit, 0, 0, LIB_doslib, BL_LD(0));
 
 BLITZ_DUMTOKE(_toke, "File", "");
 
@@ -247,13 +249,13 @@ BLITZ_NAME("WriteFile", "(File#,Filename$)");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_LONG);
 BLITZ_LIBS(LIB_fileiolib, 0x1280, LIB_doslib, BL_LA(6));
-BLITZ_SUBS(dowritemem, fchk, 0);
+BLITZ_SUBS(dowritemem, fileiolib_fchk, 0);
 BLITZ_NAME("WriteMem", "File#,Address,Length");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_LONG, BL_LONG);
 BLITZ_LIBS(LIB_fileiolib, 0x1280, LIB_doslib, BL_LA(6));
-BLITZ_SUBS(doreadmem, fchk, 0);
+BLITZ_SUBS(doreadmem, fileiolib_fchk, 0);
 BLITZ_NAME("ReadMem", "File#,Address,Length");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -588,7 +590,7 @@ static void BLITZ_ROUTINE codeinit_c(struct Library *dos BL_REG(d0))
 {
     dosbase_g = dos;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(fileiolib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /* dofreefile - close the file (a3), free the buffer and the record
    fields.  Returns a2 (cursor) as the original leaves it: unchanged, or
@@ -743,7 +745,8 @@ BB_BOOL BLITZ_ROUTINE dowritefile(struct bfile *f BL_REG(a1), UBYTE *name BL_REG
  * @param n  d7: the number of variables
  * @param args  a2: the argument stack
  */
-void BLITZ_ROUTINE dorecord(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2))
+static void BLITZ_ROUTINE dorecord(UWORD n BL_REG(d7),
+                                  const UBYTE *args BL_REG(a2))
 {
     struct bfile *f = (struct bfile *)blitz_string;
     const UBYTE *sp = args;
@@ -1047,5 +1050,5 @@ static void BLITZ_ERRCHK dbchk_c(ULONG n BL_REG(d0))
 
 /* the checks only test: they keep every register */
 BLITZ_ERRCHK_THUNK(racchk, racchk_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(fchk, fchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(fileiolib_fchk, fchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(dbchk, dbchk_c, "d0-d1/a0-a1");

@@ -10,15 +10,15 @@
 #include "blitzexec.h"
 
 /* entry points (thunks / asm, defined below) */
-void codeinit(void);
-void BLITZ_ROUTINE codefinit(ULONG size BL_REG(d0));
+void varslib_codeinit(void);
+static void BLITZ_ROUTINE codefinit(ULONG size BL_REG(d0));
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
 
 /* !syslibheader{#varslib,0,0,init,1,finit,0} */
 BLITZ_SYSLIBHEADER7(LIB_varslib, 0, 0, init, BL_LONGRET, finit, 0);
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, varslib_codeinit, 0, 0);
 BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
 BLITZ_LIBFIN();
 
@@ -50,7 +50,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(ULONG size BL_REG(d0))
  * its own return address and the start code's return address) and so
  * returns from the program start - the program ends.
  */
-BLITZ_ASM_ROUTINE(codeinit,
+BLITZ_ASM_ROUTINE(varslib_codeinit,
 "   move.l  a0,-(sp)\n"
 "   jsr     _codeinit_c\n"
 "   tst.l   d0\n"
@@ -67,7 +67,7 @@ BLITZ_ASM_ROUTINE(codeinit,
  *
  * @param size d0: the size of the globals, as given to codeinit
  */
-void BLITZ_ROUTINE codefinit(ULONG size BL_REG(d0))
+static void BLITZ_ROUTINE codefinit(ULONG size BL_REG(d0))
 {
     FreeMem(blitz_globals - 0x8000, size);
 }

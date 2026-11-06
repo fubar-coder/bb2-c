@@ -32,8 +32,8 @@
 #undef __NOLIBBASE__
 
 /* entry points (C, defined below) */
-void BLITZ_ROUTINE codeinit(void);
-void BLITZ_ROUTINE codefinit(void);
+static void BLITZ_ROUTINE codeinit(void);
+static void BLITZ_ROUTINE codefinit(void);
 void BLITZ_ROUTINE printerr(ULONG msg BL_REG(d0));
 void mytrap0(void), mytrap1(void), mytrap2(void);
 void mytrap3(void), mytrap4(void), mytrap5(void);
@@ -138,7 +138,7 @@ void BLITZ_ROUTINE printerr(ULONG msg BL_REG(d0))
  * oldtrap and replaced by mytrap0..mytrap5; ctrlc is cleared.
  * OldOpenLibrary is not checked.
  */
-void BLITZ_ROUTINE codeinit(void)
+static void BLITZ_ROUTINE codeinit(void)
 {
     struct bl_regs r = { 0, 0, 0, 0 };
     ULONG *v;
@@ -179,7 +179,7 @@ static void fixtraps(void)
  * @brief Library finit: put the old TRAP #0..#5 vectors back (fixtraps)
  * and close intuition.
  */
-void BLITZ_ROUTINE codefinit(void)
+static void BLITZ_ROUTINE codefinit(void)
 {
     fixtraps();
     CloseLibrary((struct Library *)myint);

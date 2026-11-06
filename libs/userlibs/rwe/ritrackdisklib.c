@@ -70,12 +70,12 @@
 #include <stddef.h>
 
 /* entries (thunks below) */
-void libinit(void), libfinit(void);
+void ritrackdisklib_libinit(void), ritrackdisklib_libfinit(void);
 void opentrack(void), opentrack2(void), motoron(void), closedisk(void);
-void readsector1(void), readsector2(void), motoroff(void);
-void writesector1(void), writesector2(void);
-void formatsector1(void), formatsector2(void), install1(void), install2(void);
-void iostatus(void), ioreq(void), bootprog(void), diskmotor(void);
+void readsector1(void), readsector2(void), motoroff(void), writesector1(void);
+void writesector2(void), formatsector1(void), formatsector2(void);
+void install1(void), install2(void), iostatus(void), ioreq(void);
+void bootprog(void), diskmotor(void);
 
 BLITZ_ENTRY_DECL(finit);
 BLITZ_ENTRY_DECL(init);
@@ -170,8 +170,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(BLITZ_AMIGAONLY(diskmotor), 0, 0);
 BLITZ_NAME("DiskMotor", "  ; Returns -1 if motor is on");
 
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, ritrackdisklib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, ritrackdisklib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -224,7 +224,7 @@ static ULONG doio(struct IOStdReq *req)
  * exec V36, called without a version check (#941).  Without a port
  * (msgport 0) every command returns 0.
  */
-void BLITZ_ROUTINE c_libinit(void)
+static void BLITZ_ROUTINE c_libinit(void)
 {
     td.iorequests[0] = NULL;            /* BUG(orig): not [3] (#863) */
     td.iorequests[1] = NULL;
@@ -275,7 +275,7 @@ BB_BOOL BLITZ_ROUTINE c_closedisk(LONG unit BL_REG(d0))
  *
  * BUG(orig): unit 3 is not closed (#863); DeleteMsgPort is V36 (#941).
  */
-void BLITZ_ROUTINE c_libfinit(void)
+static void BLITZ_ROUTINE c_libfinit(void)
 {
     c_closedisk(0);                     /* BUG(orig): not 3 (#863) */
     c_closedisk(1);
@@ -570,8 +570,8 @@ ULONG BLITZ_ROUTINE c_diskmotor(void)
 }
 
 /* entries: keep d1/a0/a1 (and d0 in init/finit) */
-BLITZ_THUNK(libinit, c_libinit, "d0-d1/a0-a1");
-BLITZ_THUNK(libfinit, c_libfinit, "d0-d1/a0-a1");
+BLITZ_THUNK(ritrackdisklib_libinit, c_libinit, "d0-d1/a0-a1");
+BLITZ_THUNK(ritrackdisklib_libfinit, c_libfinit, "d0-d1/a0-a1");
 BLITZ_THUNK(opentrack, c_opentrack, "d1/a0-a1");
 BLITZ_THUNK(opentrack2, c_opentrack2, "d1/a0-a1");
 BLITZ_THUNK(motoron, c_motoron, "d1/a0-a1");

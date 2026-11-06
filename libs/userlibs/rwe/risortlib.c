@@ -55,8 +55,8 @@
 /* entry points (thunks, below) */
 void _stringlistsort2(void), _stringlistsort(void), _listbase(void);
 void _stringlistsortitem2(void), _stringlistsortitem(void);
-void _stringsortdir(void), _sortpriorityoffset(void);
-void _libinit(void), _libfinit(void);
+void _stringsortdir(void), _sortpriorityoffset(void), risortlib_libinit(void);
+void risortlib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -100,8 +100,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_sortpriorityoffset, 0, 0);
 BLITZ_NAME("SortPriorityOffset", "offset -- -1 = disabled");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, risortlib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, risortlib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -324,8 +324,8 @@ static BB_BOOL BLITZ_ROUTINE stringlistsortitem_c(UBYTE *list BL_REG(d0), UWORD 
    d5-d7/a0-a1/a3/a6 and d1 when they swap.  The thunks keep
    d0-d1/a0-a1 (statements, init, finit) or d1/a0-a1 (the others), the C
    code d2-d7/a2-a6. */
-BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(risortlib_libinit, libinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(risortlib_libfinit, libfinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_sortpriorityoffset, sortpriorityoffset_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_stringsortdir, stringsortdir_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_listbase, listbase_c, "d1/a0-a1");

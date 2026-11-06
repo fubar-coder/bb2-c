@@ -68,16 +68,20 @@
 #undef __NOLIBBASE__
 
 /* entry points (thunks, defined below) */
-void _CreateMenuStrip(void), _setmenu(void), _gtunsetmenu(void), _gtmenutitle(void);
-void _gtmenuitem2(void), _gtmenuitem3(void), _gtmenuitem(void), _gtmenuitem4(void);
-void _gtmenuitem5(void), domenustate(void), domenustate2(void), domenustate3(void);
-void domenustate4(void), _gtsubitem2(void), _gtsubitem3(void), _gtsubitem(void);
-void _gtsubitem4(void), _gtsubitem5(void), domenuchecked(void), domenuchecked2(void);
-void setmenuchecked(void), setmenuchecked2(void), _freetitle(void), _freeitem(void);
+void _CreateMenuStrip(void), _setmenu(void), _gtunsetmenu(void);
+void _gtmenutitle(void), _gtmenuitem2(void), _gtmenuitem3(void);
+void _gtmenuitem(void), _gtmenuitem4(void), _gtmenuitem5(void);
+void rigtmenulib_domenustate(void), rigtmenulib_domenustate2(void);
+void rigtmenulib_domenustate3(void), rigtmenulib_domenustate4(void);
+void _gtsubitem2(void), _gtsubitem3(void), _gtsubitem(void), _gtsubitem4(void);
+void _gtsubitem5(void), rigtmenulib_domenuchecked(void);
+void rigtmenulib_domenuchecked2(void), setmenuchecked(void);
+void setmenuchecked2(void), _freetitle(void), _freeitem(void);
 void _freesubitem(void), _GetUserData(void), _GetUserData2(void);
-void _libinit(void), _libfinit(void), freemenu(void);
-void createchk(void), setchk(void), statechk2(void), statechk3(void), statechk4(void);
-void chkchk3(void), chkchk4(void), chkchk5(void);
+void rigtmenulib_libinit(void), rigtmenulib_libfinit(void), freemenu(void);
+void createchk(void), setchk(void), rigtmenulib_statechk2(void);
+void rigtmenulib_statechk3(void), rigtmenulib_statechk4(void);
+void rigtmenulib_chkchk3(void), rigtmenulib_chkchk4(void), chkchk5(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -143,16 +147,16 @@ BLITZ_NAME("GTMenuItem",
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(W, W);
 BLITZ_LIBS(LIB_rigtmenulib, 0x1380);
-BLITZ_SUBS(domenustate, 0, 0);
+BLITZ_SUBS(rigtmenulib_domenustate, 0, 0);
 BLITZ_ARGS(W, W, W);
 BLITZ_LIBS(LIB_rigtmenulib, 0x1380);
-BLITZ_SUBS(domenustate2, statechk2, 0);
+BLITZ_SUBS(rigtmenulib_domenustate2, rigtmenulib_statechk2, 0);
 BLITZ_ARGS(W, W, W, W);
 BLITZ_LIBS(LIB_rigtmenulib, 0x1380);
-BLITZ_SUBS(domenustate3, statechk3, 0);
+BLITZ_SUBS(rigtmenulib_domenustate3, rigtmenulib_statechk3, 0);
 BLITZ_ARGS(W, W, W, W, W);
 BLITZ_LIBS(LIB_rigtmenulib, 0x1380);
-BLITZ_SUBS(domenustate4, statechk4, 0);
+BLITZ_SUBS(rigtmenulib_domenustate4, rigtmenulib_statechk4, 0);
 BLITZ_NAME("GTMenuState", "GTMenuList#[,Menu[,Item[,Subitem]]],On|Off");
 
 BLITZ_ASTATEMENT();
@@ -177,19 +181,19 @@ BLITZ_NAME("GTSubItem", "GTMenuList#,flags,menu,item,subitem[,itemtext$[,shortcu
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(W, W, W);
 BLITZ_LIBS(LIB_rigtmenulib, 0x1280);
-BLITZ_SUBS(domenuchecked, chkchk3, 0);
+BLITZ_SUBS(rigtmenulib_domenuchecked, rigtmenulib_chkchk3, 0);
 BLITZ_ARGS(W, W, W, W);
 BLITZ_LIBS(LIB_rigtmenulib, 0x1280);
-BLITZ_SUBS(domenuchecked2, chkchk4, 0);
+BLITZ_SUBS(rigtmenulib_domenuchecked2, rigtmenulib_chkchk4, 0);
 BLITZ_NAME("GTMenuChecked", "(GTMenuList#,Menu,Item[,Subitem])");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(W, W, W, W);
 BLITZ_LIBS(LIB_rigtmenulib, 0x1280);
-BLITZ_SUBS(setmenuchecked, chkchk3, 0);
+BLITZ_SUBS(setmenuchecked, rigtmenulib_chkchk3, 0);
 BLITZ_ARGS(W, W, W, W, W);
 BLITZ_LIBS(LIB_rigtmenulib, 0x1280);
-BLITZ_SUBS(setmenuchecked2, chkchk4, 0);
+BLITZ_SUBS(setmenuchecked2, rigtmenulib_chkchk4, 0);
 BLITZ_NAME("GTSetMenuChecked", "GTMenuList#,Menu,Item[,Subitem],Off|On");
 
 BLITZ_ASTATEMENT();
@@ -207,14 +211,14 @@ BLITZ_NAME("GTFreeMenu", "GTMenuList#,Menu[,Item[,Subitem]]");
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(W, W, W);
 BLITZ_LIBS(LIB_rigtmenulib, 0x1280);
-BLITZ_SUBS(_GetUserData, chkchk3, 0);
+BLITZ_SUBS(_GetUserData, rigtmenulib_chkchk3, 0);
 BLITZ_ARGS(W, W, W, W);
 BLITZ_LIBS(LIB_rigtmenulib, 0x1280);
 BLITZ_SUBS(_GetUserData2, chkchk5, 0);
 BLITZ_NAME("GTGetUserData", "(GTMenuList#,Menu,Item[,Subitem])");
 
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, rigtmenulib_libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rigtmenulib_libfinit, 0, 0);
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, 0, 0, 0);
@@ -322,7 +326,7 @@ static void BLITZ_ROUTINE libinit_c(void)
 {
     gtbase = OpenLibrary((CONST_STRPTR)gtname, 0);
 }
-BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rigtmenulib_libinit, libinit_c, "d0-d1/a0-a1");
 
 /**
  * @brief finit: close gadtools.library.
@@ -337,7 +341,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
         gtbase = NULL;
     }
 }
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rigtmenulib_libfinit, libfinit_c, "d0-d1/a0-a1");
 
 /* ------------------------------------------------------- the menu strip */
 
@@ -1024,7 +1028,7 @@ static void BLITZ_ROUTINE domenustate_c(ULONG on BL_REG(d1), struct gtmenulist *
         changestate((struct Menu *)p, (UWORD)on, MENUENABLED);
     }
 }
-BLITZ_THUNK(domenustate, domenustate_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rigtmenulib_domenustate, domenustate_c, "d0-d1/a0-a1");
 
 /**
  * @brief GTMenuState GTMenuList#,menu,On|Off: enable or disable a menu
@@ -1041,7 +1045,7 @@ static void BLITZ_ROUTINE domenustate2_c(ULONG menu BL_REG(d1), ULONG on BL_REG(
 {
     changestate(MENU(obj, (UWORD)menu), (UWORD)on, MENUENABLED);
 }
-BLITZ_THUNK(domenustate2, domenustate2_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rigtmenulib_domenustate2, domenustate2_c, "d0-d1/a0-a1");
 
 /**
  * @brief GTMenuState GTMenuList#,menu,item,On|Off: enable or disable an
@@ -1058,7 +1062,7 @@ static void BLITZ_ROUTINE domenustate3_c(ULONG menu BL_REG(d1), ULONG itemno BL_
 {
     changestate((struct Menu *)item(obj, (UWORD)menu, (UWORD)itemno), (UWORD)on, ITEMENABLED);
 }
-BLITZ_THUNK(domenustate3, domenustate3_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rigtmenulib_domenustate3, domenustate3_c, "d0-d1/a0-a1");
 
 /**
  * @brief GTMenuState GTMenuList#,menu,item,subitem,On|Off: enable or
@@ -1078,7 +1082,7 @@ static void BLITZ_ROUTINE domenustate4_c(ULONG menu BL_REG(d1), ULONG itemno BL_
     changestate((struct Menu *)SUBITEM(item(obj, (UWORD)menu, (UWORD)itemno), (UWORD)subno),
                 (UWORD)on, ITEMENABLED);
 }
-BLITZ_THUNK(domenustate4, domenustate4_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rigtmenulib_domenustate4, domenustate4_c, "d0-d1/a0-a1");
 
 /**
  * @brief GTMenuChecked(GTMenuList#,Menu,Item): whether an item of the
@@ -1099,7 +1103,7 @@ static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG result BL_REG(d0), ULONG menu B
                    (FLAGS_HI(item(obj, (UWORD)menu, (UWORD)itemno)->Flags) & (CHECKED >> 8))
                        ? 0xffff : 0);
 }
-BLITZ_THUNK(domenuchecked, domenuchecked_c, "d1/a0-a1");
+BLITZ_THUNK(rigtmenulib_domenuchecked, domenuchecked_c, "d1/a0-a1");
 
 /**
  * @brief GTMenuChecked(GTMenuList#,Menu,Item,Subitem): whether a sub item
@@ -1121,7 +1125,7 @@ static ULONG BLITZ_ROUTINE domenuchecked2_c(ULONG result BL_REG(d0), ULONG menu 
 
     return BL_SETW(result, (FLAGS_HI(mi->Flags) & (CHECKED >> 8)) ? 0xffff : 0);
 }
-BLITZ_THUNK(domenuchecked2, domenuchecked2_c, "d1/a0-a1");
+BLITZ_THUNK(rigtmenulib_domenuchecked2, domenuchecked2_c, "d1/a0-a1");
 
 static void setchecked(struct MenuItem *mi, UWORD on)
 {
@@ -1310,9 +1314,9 @@ static void BLITZ_ERRCHK chkchk5_c(CHKARGS, struct gtmenulist *obj BL_REG(a2))
    (docs/libs/deviations.md, section 6) */
 BLITZ_ERRCHK_THUNK(createchk, listchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(setchk, listchk_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(statechk2, statechk2_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(statechk3, statechk3_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(statechk4, statechk4_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(chkchk3, chkchk3_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(chkchk4, chkchk4_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(rigtmenulib_statechk2, statechk2_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(rigtmenulib_statechk3, statechk3_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(rigtmenulib_statechk4, statechk4_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(rigtmenulib_chkchk3, chkchk3_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(rigtmenulib_chkchk4, chkchk4_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(chkchk5, chkchk5_c, "d0-d1/a0-a1");

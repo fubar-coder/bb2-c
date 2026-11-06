@@ -10,13 +10,13 @@
 #include "blitzlib.h"
 
 /* entry points (thunks / asm, defined below) */
-void _codeinit(void);
+void chipbaselib_codeinit(void);
 
 BLITZ_ENTRY_DECL(_init);
 
 /* !syslibheader{#chipbaselib,0,0,_init,1,0,0} */
 BLITZ_SYSLIBHEADER7(LIB_chipbaselib, 0, 0, _init, BL_LONGRET, 0, 0);
-BLITZ_NULLSUB_AT(_init, _codeinit, 0, 0);
+BLITZ_NULLSUB_AT(_init, chipbaselib_codeinit, 0, 0);
 BLITZ_LIBFIN();
 
 /**
@@ -30,4 +30,4 @@ BLITZ_LIBFIN();
  * @par Result
  * d0: $DFF000
  */
-BLITZ_INLINE(_codeinit, "move.l #0xdff000,d0");
+BLITZ_INLINE(chipbaselib_codeinit, "move.l #0xdff000,d0");

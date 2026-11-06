@@ -71,10 +71,10 @@
 
 /* entry points (thunks / inline code, defined below) */
 void dosmousex(void), dosmousey(void), doshowscreen(void), doscreenpens2(void);
-void doscreenpens(void), dosviewport(void), freescreen(void), dohidescreen(void);
-void dobeepscreen(void), domovescreen(void), doinit(void);
-void modechk(void), prescreen(void), prescreen2(void), loadscreenchk(void);
-void showbmchk0(void), showbmchk(void);
+void doscreenpens(void), dosviewport(void), freescreen(void);
+void dohidescreen(void), dobeepscreen(void), domovescreen(void);
+void screenslib_doinit(void), modechk(void), prescreen(void), prescreen2(void);
+void loadscreenchk(void), showbmchk0(void), showbmchk(void);
 /* C routines with register parameters, for the table: e_NAME = NAME */
 BLITZ_ENTRY_C(domode);
 BLITZ_ENTRY_C(domode2);
@@ -227,7 +227,7 @@ BLITZ_LIBS(LIB_intuitionlib, BL_LA(6), LIB_screenslib, 0x1380, LIB_intuifontlib,
 BLITZ_SUBS(BLITZ_AMIGAONLY(e_doscreentags), 0, 0);
 BLITZ_NAME("ScreenTags", "Screen#,Title$ [&TagList] or [[,Tag,Data]...]");
 
-BLITZ_NULLSUB_AT(init, doinit, 0, 0);
+BLITZ_NULLSUB_AT(init, screenslib_doinit, 0, 0);
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, 0, 0, 0);
@@ -322,7 +322,7 @@ static void BLITZ_ROUTINE doinit_c(void)
         sd.pens[2 + i] = defpens[i];
     sd.romrevision = execversion();
 }
-BLITZ_THUNK(doinit, doinit_c, "d1/a0-a1");
+BLITZ_THUNK(screenslib_doinit, doinit_c, "d1/a0-a1");
 
 /* --------------------------------------------------------- ScreenPens */
 

@@ -79,9 +79,9 @@
 
 /* entry points (thunks, below) */
 void _addnotify(void), _remnotify(void), _checknotify(void), _waitnotify(void);
-void _lockdoslist(void), _nextlistitem(void), _unlockdoslist(void);
+void _lockdoslist(void), ridoslib_nextlistitem(void), _unlockdoslist(void);
 void _notifyport(void), _getfilename(void), _getpathname(void);
-void _dosentrytype(void), _libinit(void), _libfinit(void);
+void _dosentrytype(void), ridoslib_libinit(void), ridoslib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -122,7 +122,7 @@ BLITZ_NAME("GetDeviceList", "flags");
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS0();
 BLITZ_LIBS(LIB_doslib, BL_LA(6));
-BLITZ_SUBS(_nextlistitem, 0, 0);
+BLITZ_SUBS(ridoslib_nextlistitem, 0, 0);
 BLITZ_NAME("NextDevice", "");
 
 BLITZ_ACOMMAND(BL_LONG);
@@ -155,8 +155,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_dosentrytype, 0, 0);
 BLITZ_NAME("DeviceEntryType", "    -- dev=0,dir=1,vol=2,late=3,nonbind=4");
 
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, ridoslib_libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, ridoslib_libfinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -525,9 +525,9 @@ BLITZ_THUNK(_checknotify, checknotify_c, "d1/a0-a1");
 BLITZ_THUNK(_waitnotify, waitnotify_c, "d1/a0-a1");
 BLITZ_THUNK(_remnotify, remnotify_c, "d1/a0-a1");
 BLITZ_THUNK(_addnotify, addnotify_c, "d1/a0-a1");
-BLITZ_THUNK(_libinit, libinit_c, "d1/a0-a1");
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(ridoslib_libinit, libinit_c, "d1/a0-a1");
+BLITZ_THUNK(ridoslib_libfinit, libfinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_lockdoslist, lockdoslist_c, "d1/a0-a1");
-BLITZ_THUNK(_nextlistitem, nextlistitem_c, "d1/a0-a1");
+BLITZ_THUNK(ridoslib_nextlistitem, nextlistitem_c, "d1/a0-a1");
 BLITZ_THUNK(_dosentrytype, dosentrytype_c, "d1/a0-a1");
 BLITZ_THUNK(_unlockdoslist, unlockdoslist_c, "d1/a0-a1");

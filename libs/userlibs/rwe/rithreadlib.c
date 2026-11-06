@@ -55,8 +55,8 @@
 #define LVO_CreateNewProc (-498)
 
 /* entries (thunks below) */
-void _createthread(void), _activethreads(void), _libinit(void), _libfinit(void);
-void startupcode(void), cleanup(void);
+void _createthread(void), _activethreads(void), rithreadlib_libinit(void);
+void rithreadlib_libfinit(void), startupcode(void), cleanup(void);
 
 BLITZ_ENTRY_DECL(finit);
 BLITZ_ENTRY_DECL(init);
@@ -76,8 +76,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(BLITZ_AMIGAONLY(_activethreads), 0, 0);
 BLITZ_NAME("ActiveThreads", "");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rithreadlib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, rithreadlib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -222,7 +222,7 @@ void BLITZ_ROUTINE c_createthread(const ULONG *r BL_REG(a0))
  * The highest free signal of 31 down to 17; without one, dos.library is
  * not opened (dbase = 0, every CreateThread does nothing).
  */
-void BLITZ_ROUTINE c_libinit(void)
+static void BLITZ_ROUTINE c_libinit(void)
 {
     LONG sig, n;
 
@@ -248,7 +248,7 @@ void BLITZ_ROUTINE c_libinit(void)
  * earlier time the count was 0 lets it go on while threads run; the
  * signal is never freed, dos.library's base not cleared (#839).
  */
-void BLITZ_ROUTINE c_libfinit(void)
+static void BLITZ_ROUTINE c_libfinit(void)
 {
     if (!th.dbase)
         return;
@@ -261,6 +261,6 @@ void BLITZ_ROUTINE c_libfinit(void)
    all), the others keep d0-d1/a0-a1 that are not the result */
 BLITZ_THUNK_PRE(_createthread, c_createthread, "d0-d7/a0-a6", "move.l  sp,a0");
 BLITZ_THUNK(_activethreads, c_activethreads, "d1/a0-a1");
-BLITZ_THUNK(_libinit, c_libinit, "d0-d1/a0-a1");
-BLITZ_THUNK(_libfinit, c_libfinit, "d0-d1/a0-a1");
+BLITZ_THUNK(rithreadlib_libinit, c_libinit, "d0-d1/a0-a1");
+BLITZ_THUNK(rithreadlib_libfinit, c_libfinit, "d0-d1/a0-a1");
 BLITZ_THUNK(cleanup, c_cleanup, "d0-d1/a0-a1");

@@ -82,7 +82,7 @@ void event(void), exchangemessage(void), disabled(void), enable(void);
 void appear(void), disappear(void), kill(void), list(void), unqiue(void);
 void cxdisable(void), cxenable(void), cxappear(void), cxdisappear(void);
 void cxkill(void), cxlist(void), cxunique(void), status(void), port(void);
-void libinit(void), libfinit(void);
+void ricommoditieslib_libinit(void), ricommoditieslib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -146,8 +146,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(port, 0, 0);
 BLITZ_NAME("CommodityMsgPort", "  -- returns the message port address");
 
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, ricommoditieslib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, ricommoditieslib_libinit, 0, 0);
 BLITZ_LIBFIN();
 
 /* ------------------------------------------------------------ variables */
@@ -191,7 +191,7 @@ static void BLITZ_ROUTINE libinit_c(void)
 {
     st_cbase = OpenLibrary((CONST_STRPTR)cname, 37);
 }
-BLITZ_THUNK(libinit, libinit_c, "d1/a0-a1");
+BLITZ_THUNK(ricommoditieslib_libinit, libinit_c, "d1/a0-a1");
 
 /* delmsgport */
 static void delmsgport(struct MsgPort *p)
@@ -220,7 +220,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
     delmsgport(st.msgport);
     st.msgport = 0;
 }
-BLITZ_THUNK(libfinit, libfinit_c, "d1/a0-a1");
+BLITZ_THUNK(ricommoditieslib_libfinit, libfinit_c, "d1/a0-a1");
 
 /* GetMsg(port) and its condition codes: *ne = 0xff if exec returns with
    Z clear.  Assembler because the original branches on these flags (BNE

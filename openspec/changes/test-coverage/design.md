@@ -213,7 +213,7 @@ Stage 3 uses gcov (lines and branches) instead of the function bitmap.
   (the freestanding writer does not merge); the host merges them with
   `m68k-amigaos-gcov-tool merge` before `covmap`.
 - **Excluded:** `debuglib.c` has an inline asm that conflicts with the
-  instrumentation (study, `debuglib.c:501`) and stays out.
+  instrumentation (study, `debuglib.c:502`) and stays out.
 - **Blitz source coverage** of compiled programs is a change of its own
   (`blitz-coverage`), with lcov output as well.
 

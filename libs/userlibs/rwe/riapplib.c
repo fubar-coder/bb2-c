@@ -78,7 +78,7 @@ void addwindow(void), delwindow(void), addmenu(void), delmenu(void);
 void addicon(void), addicon3(void), delicon(void), appevent(void);
 void appeventcode(void), appeventid(void), appfile(void), appfilemine(void);
 void appfiles(void), applock(void), appmessage(void), appmsgport(void);
-void appeventidcmp(void), libinit(void), libfinit(void);
+void appeventidcmp(void), riapplib_libinit(void), riapplib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -189,8 +189,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(appeventidcmp, 0, 0);
 BLITZ_NAME("AppEventIDCMP", "");
 
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, riapplib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, riapplib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -274,7 +274,7 @@ static void BLITZ_ROUTINE libinit_c(void)
     }
     libflag = -1;
 }
-BLITZ_THUNK(libinit, libinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(riapplib_libinit, libinit_c, "d0-d1/a0-a1");
 
 /* delapp: remove every object of a table of 16; BUG(orig) (#524): the slot that
    is cleared is the long at byte offset index*4/4 (an odd address for
@@ -330,7 +330,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
     CloseLibrary(wbbase);
     CloseLibrary(iconbase);
 }
-BLITZ_THUNK(libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(riapplib_libfinit, libfinit_c, "d0-d1/a0-a1");
 
 /* ----------------------------------------------------- message functions */
 

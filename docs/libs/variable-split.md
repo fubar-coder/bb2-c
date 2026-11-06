@@ -42,7 +42,7 @@ asmderez's value after yloop (BUG(orig) #672), riwbspritelib's
     "OKAY!" gadgets)
   - shapeslib.c:691-692 `bmode`, `offs`
   - 2dlib.c:255 `tempadd`
-  - fileiolib.c:277 and inputoutputlib.c:128 `temp`
+  - fileiolib.c:279 and inputoutputlib.c:128 `temp`
   - iffmakelib.c:120-122 `tempcols`, `temppal`, `tempbm`
   - rianimlib `mytemp`, `animwidthtemp`
   - rimisclib `tempstorage`

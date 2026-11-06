@@ -17,8 +17,8 @@
 #include "blitzexec.h"
 
 /* entry points (defined below) */
-ULONG codeinit(void);
-void codefinit(struct Library *lib BL_REG(a1));
+static ULONG codeinit(void);
+static void codefinit(struct Library *lib BL_REG(a1));
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -44,7 +44,7 @@ static const char ffpname[] = "mathffp.library";
  * d0: the library base (the init value, $C900 getffpbase loads
  * it into a6), 0 if it could not be opened
  */
-ULONG BLITZ_ROUTINE codeinit(void)
+static ULONG BLITZ_ROUTINE codeinit(void)
 {
     return (ULONG)OldOpenLibrary((CONST_STRPTR)ffpname);
 }
@@ -56,7 +56,7 @@ ULONG BLITZ_ROUTINE codeinit(void)
  *
  * @arg lib  a1: the init value, the library base (!libs 64935,#la1)
  */
-void BLITZ_ROUTINE codefinit(struct Library *lib BL_REG(a1))
+static void BLITZ_ROUTINE codefinit(struct Library *lib BL_REG(a1))
 {
     CloseLibrary(lib);
 }

@@ -63,7 +63,8 @@
 
 /* entry points (C routines / thunks / prefixes, defined below) */
 void doplaymod(void), b_doplaymod(void), dostopmod(void), b_dostopmod(void);
-void codefinit(void), freemod(void), freemod_b(void), myint(void), playchk(void);
+void trackerlib_codefinit(void), freemod(void), freemod_b(void), myint(void);
+void playchk(void);
 BLITZ_ENTRY_C(doloadmod);
 
 BLITZ_ENTRY_DECL(finit);
@@ -95,7 +96,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(dostopmod, 0, 0);
 BLITZ_NAME("StopModule", "");
 
-BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, trackerlib_codefinit, 0, 0);
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, 0, 0, 0);
@@ -720,7 +721,7 @@ BLITZ_AB_ROUTINE(dostopmod, b_dostopmod,
 "   jsr     _dostopmod_a\n"
 "   movem.l (sp)+,d1/a0-a1\n"
 "   rts");
-BLITZ_THUNK(codefinit, dostopmod_a, "d1/a0-a1");
+BLITZ_THUNK(trackerlib_codefinit, dostopmod_a, "d1/a0-a1");
 
 BLITZ_THUNK(freemod_b, freemod_b_c, "d1/a0-a1");
 BLITZ_AB_ROUTINE(freemod, freemod_b,

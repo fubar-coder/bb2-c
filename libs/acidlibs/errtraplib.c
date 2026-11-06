@@ -23,9 +23,8 @@
 /* entry points (thunks / C / asm, defined below) */
 void doreadern(void), dosettrap(void), doclrerr(void);
 void dogetsp(void), doputsp(void), dofail(void);
-void BLITZ_ROUTINE codeinit(void);
-void codefinit(void);
-void newtrap(void);
+static void BLITZ_ROUTINE codeinit(void);
+void errtraplib_codefinit(void), newtrap(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -39,7 +38,7 @@ BLITZ_NULLSUB(dogetsp, 0, 0);                   /* $D203 (getsp) */
 BLITZ_NULLSUB(doputsp, 0, 0);                   /* $D204 (putsp) */
 BLITZ_NULLSUB(dofail, 0, 0);                    /* $D205 errfail */
 BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, errtraplib_codefinit, 0, 0);
 BLITZ_LIBFIN();
 
 /* data: in the code hunk, read pc-relative by the trap code */
@@ -115,7 +114,7 @@ BLITZ_ASM_ROUTINE(doputsp,
 "   jmp     (a0)");
 
 /* codeinit - find the VBR (68010+), install newtrap */
-void BLITZ_ROUTINE codeinit(void)
+static void BLITZ_ROUTINE codeinit(void)
 {
     UWORD f = SysBase->AttnFlags & 15;
     UWORD n = 0;
@@ -147,7 +146,7 @@ static void BLITZ_ROUTINE codefinit_c(void)
 {
     vbr_[TRAP0] = oldtrap;
 }
-BLITZ_THUNK(codefinit, codefinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(errtraplib_codefinit, codefinit_c, "d0-d1/a0-a1");
 
 /**
  * @brief SetErr ($D201 seterr): install an error handler.

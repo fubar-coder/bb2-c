@@ -87,14 +87,15 @@
 #include <stddef.h>
 
 /* entries (thunks below) */
-void libinit(void), libfinit(void);
+void ricompactdisclib_libinit(void), ricompactdisclib_libfinit(void);
 void opencd(void), opencd2(void), opencd3(void), closecd(void), eject(void);
-void playtrack(void), gettoc(void), cdstatus(void), stoptrack(void), cdvolume(void);
-void cdnumtracks(void), cdfirsttrack(void), cdlasttrack(void), cdtracklength(void);
-void cdtracktime(void), cdflush(void), cdpause(void), cdrewind(void);
-void cdfastforward(void), cdnormalspeed(void), cdchangespeed(void);
-void cdtrackmins2(void), cdtrackmins(void), cdtracksecs2(void), cdtracksecs(void);
-void cdtrackplaying(void), cdmotor(void);
+void playtrack(void), gettoc(void), cdstatus(void), stoptrack(void);
+void cdvolume(void), cdnumtracks(void), cdfirsttrack(void), cdlasttrack(void);
+void cdtracklength(void), cdtracktime(void), cdflush(void), cdpause(void);
+void cdrewind(void), cdfastforward(void), cdnormalspeed(void);
+void cdchangespeed(void), cdtrackmins2(void), cdtrackmins(void);
+void cdtracksecs2(void), cdtracksecs(void), cdtrackplaying(void);
+void cdmotor(void);
 
 BLITZ_ENTRY_DECL(finit);
 BLITZ_ENTRY_DECL(init);
@@ -252,8 +253,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(BLITZ_AMIGAONLY(cdmotor), 0, 0);
 BLITZ_NAME("CDMotor", "on|off");
 
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, ricompactdisclib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, ricompactdisclib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -354,7 +355,7 @@ static ULONG doscsi(UBYTE *command, UWORD cmdlen, APTR buf, ULONG len, UBYTE fla
     return reqcall(LVO_DoIO, req);
 }
 
-void BLITZ_ROUTINE c_libinit(void)
+static void BLITZ_ROUTINE c_libinit(void)
 {
     struct MsgPort *mp;
 
@@ -397,7 +398,7 @@ ULONG BLITZ_ROUTINE c_closecd(void)
     return (ULONG)-1;
 }
 
-void BLITZ_ROUTINE c_libfinit(void)
+static void BLITZ_ROUTINE c_libfinit(void)
 {
     if (!cd.msgport)
         return;
@@ -672,8 +673,8 @@ ULONG BLITZ_ROUTINE c_cdnormalspeed(void)
 }
 
 /* entries: keep d1/a0/a1 (and d0 in init/finit) */
-BLITZ_THUNK(libinit, c_libinit, "d0-d1/a0-a1");
-BLITZ_THUNK(libfinit, c_libfinit, "d0-d1/a0-a1");
+BLITZ_THUNK(ricompactdisclib_libinit, c_libinit, "d0-d1/a0-a1");
+BLITZ_THUNK(ricompactdisclib_libfinit, c_libfinit, "d0-d1/a0-a1");
 BLITZ_THUNK(opencd, c_opencd, "d1/a0-a1");
 BLITZ_THUNK(opencd2, c_opencd2, "d1/a0-a1");
 BLITZ_THUNK(opencd3, c_opencd3, "d1/a0-a1");

@@ -54,7 +54,8 @@
 
 /* entries */
 void disoneline(void), instrsize(void);
-void libinit(void), libfinit(void);
+static void libinit(void);
+static void libfinit(void);
 
 BLITZ_ENTRY_DECL(finit);
 BLITZ_ENTRY_DECL(init);
@@ -1049,14 +1050,14 @@ ULONG BLITZ_ROUTINE c_instrsize(void)
 /**
  * @brief init: nothing (RTS), the library needs no system library.
  */
-void BLITZ_ROUTINE libinit(void)
+static void BLITZ_ROUTINE libinit(void)
 {
 }
 
 /**
  * @brief finit: nothing (RTS).
  */
-void BLITZ_ROUTINE libfinit(void)
+static void BLITZ_ROUTINE libfinit(void)
 {
 }
 

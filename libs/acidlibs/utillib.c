@@ -43,7 +43,7 @@
 /* entry points (thunks, defined below) */
 void _CreateMsgPort(void), _DeleteMsgPort(void);
 ULONG _dowait(void);
-void _taskname(void), _startup(void), CloseRoutine(void);
+void _taskname(void), _startup(void), utillib_CloseRoutine(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -76,7 +76,7 @@ BLITZ_SUBS(_taskname, 0, 0);
 BLITZ_NAME("TaskName$", "task");
 
 BLITZ_NULLSUB_AT(init, _startup, 0, 0);
-BLITZ_NULLSUB_AT(finit, CloseRoutine, 0, 0);
+BLITZ_NULLSUB_AT(finit, utillib_CloseRoutine, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -313,4 +313,4 @@ static void BLITZ_ROUTINE closeroutine_c(void)
     while ((n = PortListStart.next) != NULL)
         deletemsgport_c(&n->port);
 }
-BLITZ_THUNK(CloseRoutine, closeroutine_c, "d1/a1");
+BLITZ_THUNK(utillib_CloseRoutine, closeroutine_c, "d1/a1");

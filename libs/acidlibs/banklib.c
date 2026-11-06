@@ -59,7 +59,7 @@ struct bank {
 
 /* entry points (thunks / C, defined below) */
 void _bankloc(void), _banksize(void), _initbank(void), _freebank(void);
-void _allocmem(void), _freemem(void);
+void banklib_allocmem(void), _freemem(void);
 void BLITZ_ROUTINE _bankload(const UBYTE *name BL_REG(d1),
                              struct Library *dosbase BL_REG(a6));
 void BLITZ_ROUTINE _bankloadb(const UBYTE *name BL_REG(d1), ULONG memtype BL_REG(d2),
@@ -118,7 +118,7 @@ BLITZ_NAME("BankSize", "(bank#)");
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_allocmem, 0, 0);
+BLITZ_SUBS(banklib_allocmem, 0, 0);
 BLITZ_NAME("AllocMem", "(size,memtype) memtype: 0=fast 2=chip 65536=clrmem");
 
 BLITZ_ASTATEMENT();
@@ -328,7 +328,7 @@ static ULONG BLITZ_ROUTINE allocmem_c(ULONG size BL_REG(d0), ULONG memtype BL_RE
 
     return BLITZ_ALIBJSR(TOK_globalloc, r);
 }
-BLITZ_THUNK(_allocmem, allocmem_c, "a0-a1");
+BLITZ_THUNK(banklib_allocmem, allocmem_c, "a0-a1");
 
 /**
  * @brief FreeMem address,size: memlib globfree (a1 = address, d0 =

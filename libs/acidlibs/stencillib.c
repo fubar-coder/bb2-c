@@ -24,8 +24,8 @@
 #undef __NOLIBBASE__
 
 /* entry points (thunks / C / asm, defined below) */
-void dostencil(void), doblit(void), doblitex(void), doblitmode(void);
-void dofreestencil(void), sblitchk(void);
+void dostencil(void), stencillib_doblit(void), stencillib_doblitex(void);
+void stencillib_doblitmode(void), dofreestencil(void), sblitchk(void);
 
 /* !libheader{#stencillib,0,0,0,errors} */
 BLITZ_LIBHEADER(LIB_stencillib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
@@ -43,16 +43,16 @@ BLITZ_NAME_AT(_toke, "Stencil", "Stencil#,BitMap#");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 SBLIT_LIBS;
-BLITZ_SUBS(doblit, sblitchk, 0);
+BLITZ_SUBS(stencillib_doblit, sblitchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 SBLIT_LIBS;
-BLITZ_SUBS(doblitex, sblitchk, 0);
+BLITZ_SUBS(stencillib_doblitex, sblitchk, 0);
 BLITZ_NAME("SBlit", "Stencil#,Shape#,X,Y[,Excessonoff]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(doblitmode, 0, 0);
+BLITZ_SUBS(stencillib_doblitmode, 0, 0);
 BLITZ_NAME("SBlitMode", "BLTCON0");
 
 BLITZ_ENTRY_DECL(_load);
@@ -93,7 +93,7 @@ static void BLITZ_ROUTINE doblitmode_c(UWORD m BL_REG(d0))
 {
     bcon0 = m;
 }
-BLITZ_THUNK(doblitmode, doblitmode_c, "d0-d1/a0-a1");
+BLITZ_THUNK(stencillib_doblitmode, doblitmode_c, "d0-d1/a0-a1");
 
 /* dofreestencil (_free) */
 static void freest(struct stencil *s)
@@ -227,10 +227,10 @@ static void sblit(const struct stencil *s, const struct bb_shape *shape,
     st->plane = (UBYTE **)bm->planes;
     n = shape->depth - 1;
     st->size = shape->bltsize;
-    goto doblit;
+    goto stencillib_doblit;
     do {
         BL_BLITWAIT(cb);
-doblit:
+stencillib_doblit:
         BL_CUSTOML(cb, 0x50) = st->cookie;
         {
             ULONG d = (ULONG)*st->plane++ + st->off;
@@ -276,7 +276,7 @@ static void sblitex(const struct stencil *s, const struct bb_shape *shape,
 #define SBLIT_REGS WORD x BL_REG(d2), WORD y BL_REG(d3), const struct stencil *s BL_REG(a0), \
                    UBYTE *cb BL_REG(a1), const struct bb_bitmap *bm BL_REG(a2)
 
-void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS);
+static void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS);
 /**
  * @brief SBlit Stencil#,Shape#,X,Y - blit a shape and add its cookie to
  * the stencil (Blitz mode variant).
@@ -295,14 +295,15 @@ void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS);
  * @param cb a1: the chip base (chipbaselib)
  * @param bm a2: the used bitmap; a3: the shape
  */
-void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS)
+static void BLITZ_ROUTINE b_doblit_c(SBLIT_REGS)
 {
     struct blitstate st;
 
     sblit(s, (const struct bb_shape *)blitz_string, bm, cb, x, y, &st);
 }
 
-void BLITZ_ROUTINE a_doblit_c(SBLIT_REGS, struct Library *gfx BL_REG(a6));
+static void BLITZ_ROUTINE a_doblit_c(SBLIT_REGS,
+                                     struct Library *gfx BL_REG(a6));
 /**
  * @brief SBlit Stencil#,Shape#,X,Y - Amiga mode variant: as the Blitz
  * mode one between OwnBlitter and DisownBlitter.
@@ -314,7 +315,8 @@ void BLITZ_ROUTINE a_doblit_c(SBLIT_REGS, struct Library *gfx BL_REG(a6));
  * @param bm  a2: the used bitmap; a3: the shape
  * @param gfx a6: graphics.library
  */
-void BLITZ_ROUTINE a_doblit_c(SBLIT_REGS, struct Library *gfx BL_REG(a6))
+static void BLITZ_ROUTINE a_doblit_c(SBLIT_REGS,
+                                     struct Library *gfx BL_REG(a6))
 {
     struct blitstate st;
 
@@ -323,9 +325,9 @@ void BLITZ_ROUTINE a_doblit_c(SBLIT_REGS, struct Library *gfx BL_REG(a6))
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
-BLITZ_AB_ROUTINE(doblit, b_doblit_c, "   jmp     _a_doblit_c");
+BLITZ_AB_ROUTINE(stencillib_doblit, b_doblit_c, "   jmp     _a_doblit_c");
 
-void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4));
+static void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4));
 /**
  * @brief SBlit Stencil#,Shape#,X,Y,Excessonoff - SBlit, then the bitmap's
  * planes beyond the shape's depth (Blitz mode variant).
@@ -342,13 +344,13 @@ void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4));
  * @param bm   a2: the used bitmap; a3: the shape
  * @param bits d4.w: one bit per excess plane
  */
-void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4))
+static void BLITZ_ROUTINE b_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4))
 {
     sblitex(s, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
 }
 
-void BLITZ_ROUTINE a_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4),
-                                struct Library *gfx BL_REG(a6));
+static void BLITZ_ROUTINE a_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4),
+                                       struct Library *gfx BL_REG(a6));
 /**
  * @brief SBlit Stencil#,Shape#,X,Y,Excessonoff - Amiga mode variant: as
  * the Blitz mode one between OwnBlitter and DisownBlitter.
@@ -361,15 +363,16 @@ void BLITZ_ROUTINE a_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4),
  * @param bits d4.w: one bit per excess plane
  * @param gfx  a6: graphics.library
  */
-void BLITZ_ROUTINE a_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4),
-                                struct Library *gfx BL_REG(a6))
+static void BLITZ_ROUTINE a_doblitex_c(SBLIT_REGS, UWORD bits BL_REG(d4),
+                                       struct Library *gfx BL_REG(a6))
 {
     OwnBlitter();
     sblitex(s, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
-BLITZ_AB_ROUTINE(doblitex, b_doblitex_c, "   jmp     _a_doblitex_c");
+BLITZ_AB_ROUTINE(stencillib_doblitex, b_doblitex_c,
+                 "   jmp     _a_doblitex_c");
 
 /* ------------------------------------------- error checks (debugger only) */
 

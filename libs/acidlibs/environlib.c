@@ -28,9 +28,9 @@
 #include <intuition/screens.h>
 
 /* entry points (thunks, defined below) */
-void codeinit(void);
-void dowbwidth(void), dowbhite(void), dowbdepth(void), dowbviewmode(void);
-void doprocessor(void), docr_vbr(void), doexecversion(void), doextwbviewmode(void);
+void environlib_codeinit(void), dowbwidth(void), dowbhite(void);
+void dowbdepth(void), dowbviewmode(void), doprocessor(void), docr_vbr(void);
+void doexecversion(void), doextwbviewmode(void);
 
 BLITZ_ENTRY_DECL(init);
 
@@ -53,7 +53,7 @@ ENV_FUNC(BL_LONG, docr_vbr, "cr_vbr");
 ENV_FUNC(BL_WORD, doexecversion, "ExecVersion");
 ENV_FUNC(BL_WORD, doextwbviewmode, "WBExtViewMode");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0, LIB_intuitionlib, BL_LA(6));
+BLITZ_NULLSUB_AT(init, environlib_codeinit, 0, 0, LIB_intuitionlib, BL_LA(6));
 
 BLITZ_LIBFIN();
 
@@ -110,7 +110,7 @@ static void BLITZ_ROUTINE codeinit_c(const void *intuition BL_REG(a6))
         vbr_ = vbr;
     }
 }
-BLITZ_THUNK(codeinit, codeinit_c, "a0-a1");
+BLITZ_THUNK(environlib_codeinit, codeinit_c, "a0-a1");
 
 /**
  * @brief WBWidth: the width of the Workbench screen.

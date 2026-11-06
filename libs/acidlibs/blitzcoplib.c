@@ -62,13 +62,13 @@
 
 /* entry points (thunks / C routines, defined below) */
 void doqslice(void), doslice(void), docoploc(void), docustomcop(void);
-void doshow2(void), doshow(void), doshowf2(void), doshowf3(void), doshowf(void);
-void doshowb2(void), doshowb3(void), doshowb(void), docoplen(void);
-void docolsplit(void), doshowblitz(void), dokillslices(void);
-void dodisplayoff(void), dodisplayon(void), dosetbplcon0(void), dosetblwait(void);
-void doinit(void), freeslice(void);
-void slicechk(void), slicechk2(void), nshowchk(void), showfchk(void);
-void showbchk(void), cspltst(void), sbchk(void);
+void doshow2(void), doshow(void), doshowf2(void), doshowf3(void);
+void doshowf(void), doshowb2(void), doshowb3(void), doshowb(void);
+void docoplen(void), blitzcoplib_docolsplit(void), doshowblitz(void);
+void dokillslices(void), dodisplayoff(void), dodisplayon(void);
+void dosetbplcon0(void), dosetblwait(void), blitzcoplib_doinit(void);
+void freeslice(void), slicechk(void), slicechk2(void), nshowchk(void);
+void showfchk(void), showbchk(void), cspltst(void), blitzcoplib_sbchk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(_load);
@@ -146,13 +146,13 @@ BLITZ_NAME("CopLen", "");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_blitzcoplib, 0x1102);
-BLITZ_SUBS(docolsplit, cspltst, 0);
+BLITZ_SUBS(blitzcoplib_docolsplit, cspltst, 0);
 BLITZ_NAME("ColSplit", "Colour Register,Red,Green,Blue,Y");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
 BLITZ_LIBS0();
-BLITZ_SUBS(doshowblitz, (char *)sbchk + 1, 0);
+BLITZ_SUBS(doshowblitz, (char *)blitzcoplib_sbchk + 1, 0);
 BLITZ_NAME("ShowBlitz", "");
 
 BLITZ_ASTATEMENT();
@@ -185,7 +185,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(dosetblwait, 0, 0);
 BLITZ_NAME("SetBLWait", "Wait move for line 256 (eg:$ffe1fffe");
 
-BLITZ_NULLSUB_AT(init, doinit, 0, 0, LIB_blitzcoplib, 0x1001, LIB_blitzcoplib, 0x0003);
+BLITZ_NULLSUB_AT(init, blitzcoplib_doinit, 0, 0, LIB_blitzcoplib, 0x1001, LIB_blitzcoplib, 0x0003);
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, 0, 0, 0);
@@ -389,7 +389,7 @@ static void BLITZ_ROUTINE doinit_c(struct bb_slice *base BL_REG(a0), UWORD max B
     blwait = 0xffe1fffe;
     makedumcop();
 }
-BLITZ_THUNK(doinit, doinit_c, "a2");
+BLITZ_THUNK(blitzcoplib_doinit, doinit_c, "a2");
 
 /**
  * @brief CopLoc: the address of the slices' copper list (chip memory).
@@ -971,7 +971,8 @@ BLITZ_THUNK_POST(bdocustomcop, bdocustomcop_c, "a1", "move.l _mycop,d1");
 BLITZ_THUNK_POST(a_colsplit_t, a_colsplit_c, "a1", "move.l _mycop,d1");
 BLITZ_THUNK_POST(b_colsplit, b_colsplit_c, "a1", "move.l _mycop,d1");
 BLITZ_AB_ROUTINE(docustomcop, bdocustomcop, "   jmp     _customcop_a");
-BLITZ_AB_ROUTINE(docolsplit, b_colsplit, "   jmp     _a_colsplit_t");
+BLITZ_AB_ROUTINE(blitzcoplib_docolsplit, b_colsplit,
+                 "   jmp     _a_colsplit_t");
 
 /* ------------------------------------------------- Show, ShowF, ShowB */
 
@@ -1294,4 +1295,4 @@ BLITZ_ERRCHK_THUNK(slicechk2, slicechk2_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(nshowchk, nshowchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(showfchk, showfchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(showbchk, showbchk_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(sbchk, sbchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(blitzcoplib_sbchk, sbchk_c, "d0-d1/a0-a1");

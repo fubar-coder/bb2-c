@@ -68,7 +68,8 @@ void _bbmapheight(void), _bbmappowerups(void), _bbmapdata(void);
 void _bbmapstartpos(void), _bbmapname(void), _bbmapinfo(void);
 void _bbmappumask(void), _bbmapdboverlay(void), _bbmaponeplayerinfo(void);
 void _bbmapobjects(void), _bbnumbaddies(void);
-void codeinit(void), codefinit(void);
+static void codeinit(void);
+static void codefinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -156,14 +157,14 @@ BLITZ_LIBFIN();
 /**
  * @brief init: does nothing (RTS).
  */
-void BLITZ_ROUTINE codeinit(void)
+static void BLITZ_ROUTINE codeinit(void)
 {
 }
 
 /**
  * @brief finit: does nothing (RTS).
  */
-void BLITZ_ROUTINE codefinit(void)
+static void BLITZ_ROUTINE codefinit(void)
 {
 }
 

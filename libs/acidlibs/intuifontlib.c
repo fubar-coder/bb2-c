@@ -36,7 +36,7 @@
 #define LVO_CloseFont    (-78)  /* graphics: a1 = font */
 
 /* entry points (thunks, defined below) */
-void dosetifont(void), dosetifont2(void), codeinit(void);
+void dosetifont(void), dosetifont2(void), intuifontlib_codeinit(void);
 void douseifont(void), dofreeifont(void), loadchk(void);
 
 BLITZ_ENTRY_DECL(init);
@@ -61,7 +61,7 @@ BLITZ_NAME("LoadFont", "IntuiFont#,Fontname.font$,Y size [,style]");
 
 BLITZ_DUMTOKE(_toke, "IntuiFont", "A Font for use by intuition");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, intuifontlib_codeinit, 0, 0);
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, douseifont, 0, 0);
@@ -98,7 +98,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(void)
     fd.defattr.font = 0;
     return (ULONG)&fd.textattr;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
+BLITZ_THUNK(intuifontlib_codeinit, codeinit_c, "d1/a0-a1");
 
 /* ----------------------------------------------------- free / use font */
 

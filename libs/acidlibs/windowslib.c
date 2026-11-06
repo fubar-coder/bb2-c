@@ -169,24 +169,21 @@ static_assert(sizeof(struct evnode) == 24);
    struct bb_shape, struct bb_intuifont (blitzobj.h) */
 
 /* entry points (thunks / C / asm, defined below) */
-void dogadgethit(void), doeventwindow(void);
-void dowindowidcmp(void), domenuhit(void), doitemhit(void), dosubhit(void);
-void dowlocate(void);
+void dogadgethit(void), doeventwindow(void), dowindowidcmp(void);
+void domenuhit(void), doitemhit(void), dosubhit(void), dowlocate(void);
 void doinwindow(void), dooutwindow(void), doqual(void), dorawkey(void);
 void docursor(void), doeditat(void), doeditfrom(void), doeditfrom2(void);
-void doeditexit(void), dowmousex(void), dowmousey(void);
-void dosetpens(void), dosetpens2(void), dosetjam(void);
-void dowindowx(void), dowindowy(void);
-void dowcursx(void), dowcursy(void);
-void dowindowwidth(void), dowindowheight(void), dogzzwidth(void), dogzzheight(void);
-void dowtopoff(void), dowleftoff(void);
+void doeditexit(void), dowmousex(void), dowmousey(void), dosetpens(void);
+void dosetpens2(void), dosetjam(void), dowindowx(void), dowindowy(void);
+void dowcursx(void), dowcursy(void), dowindowwidth(void), dowindowheight(void);
+void dogzzwidth(void), dogzzheight(void), dowtopoff(void), dowleftoff(void);
 void doslimits(void), doslimits2(void), doemousex(void), doemousey(void);
 void doaddidcmp(void), dosubidcmp(void), doflushevents(void);
 void docatchdoserrs(void), dowrport(void), dosetevfilter(void);
-void doeventcode(void), doeventqualifier(void);
-void dousewindow(void);
-void idcmpchk(void), wfontchk(void), wchk(void), wlinechk(void), wpointerchk(void);
-void wmovechk(void), wsizechk(void), wblitchk(void), wbtowchk(void);
+void doeventcode(void), doeventqualifier(void), dousewindow(void);
+void idcmpchk(void), wfontchk(void), windowslib_wchk(void), wlinechk(void);
+void wpointerchk(void), wmovechk(void), wsizechk(void), wblitchk(void);
+void wbtowchk(void);
 void BLITZ_ROUTINE doactivate(struct bwin *w BL_REG(a1),
                               struct Library *intbase BL_REG(a6));
 ULONG BLITZ_ROUTINE doevent(void);
@@ -300,9 +297,9 @@ void BLITZ_ROUTINE dowindowtags3(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1)
                                  struct Screen **scr BL_REG(a1),
                                  WORD usedoff BL_REG(d6), const ULONG *lens BL_REG(a2),
                                  struct Library *intbase BL_REG(a6));
-ULONG BLITZ_ROUTINE codeinit(struct Library *gfx BL_REG(a0),
-                             struct Library *intb BL_REG(a1));
-void BLITZ_ROUTINE codefinit(void);
+static ULONG BLITZ_ROUTINE codeinit(struct Library *gfx BL_REG(a0),
+                                    struct Library *intb BL_REG(a1));
+static void BLITZ_ROUTINE codefinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -372,26 +369,26 @@ BLITZ_NAME("WindowFont", "IntuiFont# [,SoftStyle]");
     BLITZ_SUBS(BLITZ_AMIGAONLY(code), chk, 0);                \
     BLITZ_NAME(name, help)
 
-GFX_STMT(dowplot, wchk, "WPlot", "X,Y,Colour", BL_WORD, BL_WORD, BL_WORD);
-GFX_STMT(dowbox, wchk, "WBox", "X1,Y1,X2,Y2,Colour", BL_WORD, BL_WORD, BL_WORD, BL_WORD,
+GFX_STMT(dowplot, windowslib_wchk, "WPlot", "X,Y,Colour", BL_WORD, BL_WORD, BL_WORD);
+GFX_STMT(dowbox, windowslib_wchk, "WBox", "X1,Y1,X2,Y2,Colour", BL_WORD, BL_WORD, BL_WORD, BL_WORD,
          BL_WORD);
-GFX_STMT(dowcircle, wchk, "WCircle", "X,Y,Radius,Colour", BL_WORD, BL_WORD, BL_WORD, BL_WORD);
-GFX_STMT(dowellipse, wchk, "WEllipse", "X,Y,X Radius,Y Radius,Colour", BL_WORD, BL_WORD,
+GFX_STMT(dowcircle, windowslib_wchk, "WCircle", "X,Y,Radius,Colour", BL_WORD, BL_WORD, BL_WORD, BL_WORD);
+GFX_STMT(dowellipse, windowslib_wchk, "WEllipse", "X,Y,X Radius,Y Radius,Colour", BL_WORD, BL_WORD,
          BL_WORD, BL_WORD, BL_WORD);
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
 BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_graphicslib, BL_LA(6));
-BLITZ_SUBS(BLITZ_AMIGAONLY(dowcls), wchk, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(dowcls), windowslib_wchk, 0);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_graphicslib, BL_LA(6));
-BLITZ_SUBS(BLITZ_AMIGAONLY(dowcls2), wchk, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(dowcls2), windowslib_wchk, 0);
 BLITZ_NAME("WCls", "[Colour]");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_windowslib, 0x1102);
-BLITZ_SUBS(dowlocate, wchk, 0);
+BLITZ_SUBS(dowlocate, windowslib_wchk, 0);
 BLITZ_NAME("WLocate", "Cursor x,Cursor y");
 
 BLITZ_ASTATEMENT();
@@ -428,14 +425,14 @@ BLITZ_NAME("EditFrom", "[Characterpos]");
 
 SIMPLE_FN(BL_WORD, doeditexit, "EditExit");
 
-GFX_STMT(dowscroll, wchk, "WScroll", "X1,Y1,X2,Y2,Delta X,Delta Y", BL_WORD, BL_WORD, BL_WORD,
+GFX_STMT(dowscroll, windowslib_wchk, "WScroll", "X1,Y1,X2,Y2,Delta X,Delta Y", BL_WORD, BL_WORD, BL_WORD,
          BL_WORD, BL_WORD, BL_WORD);
 
 #define USED_FN(code, name)                             \
     BLITZ_AFUNCTION(BL_WORD);                           \
     BLITZ_ARGS0();                                      \
     BLITZ_LIBS(LIB_windowslib, 0x1102);                 \
-    BLITZ_SUBS(code, wchk, 0);                          \
+    BLITZ_SUBS(code, windowslib_wchk, 0);                          \
     BLITZ_NAME(name, "")
 
 USED_FN(dowmousex, "WMouseX");
@@ -465,7 +462,7 @@ BLITZ_NAME("WLine", "X1,Y1,X2,Y3[,Xn,Yn...],Colour");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS(LIB_windowslib, 0x1180, LIB_intuitionlib, BL_LA(6));
-BLITZ_SUBS(BLITZ_AMIGAONLY(doactivate), wchk, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(doactivate), windowslib_wchk, 0);
 BLITZ_NAME("Activate", "Window#");
 
 USED_FN(dowindowx, "WindowX");
@@ -520,10 +517,10 @@ USED_FN(dogzzheight, "InnerHeight");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
 BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_graphicslib, BL_LA(6));
-BLITZ_SUBS(BLITZ_AMIGAONLY(doinnercls), wchk, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(doinnercls), windowslib_wchk, 0);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_graphicslib, BL_LA(6));
-BLITZ_SUBS(BLITZ_AMIGAONLY(doinnercls2), wchk, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(doinnercls2), windowslib_wchk, 0);
 BLITZ_NAME("InnerCls", "[Colour]");
 
 USED_FN(dowtopoff, "WTopOff");
@@ -565,13 +562,13 @@ BLITZ_NAME("FlushEvents", "[IDCMP_Flag]");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
 BLITZ_LIBS(LIB_windowslib, 0x1102);
-BLITZ_SUBS(docatchdoserrs, wchk, 0);
+BLITZ_SUBS(docatchdoserrs, windowslib_wchk, 0);
 BLITZ_NAME("CatchDosErrs", "");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS(LIB_windowslib, 0x1180);
-BLITZ_SUBS(dowrport, wchk, 0);
+BLITZ_SUBS(dowrport, windowslib_wchk, 0);
 BLITZ_NAME("RastPort", "(Window#)");
 
 BLITZ_ASTATEMENT();
@@ -583,7 +580,7 @@ BLITZ_NAME("SetEventFilter", "preprocess,postprocess");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_STRING, BL_STRING);
 BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_intuitionlib, BL_LA(6));
-BLITZ_SUBS(dowtitle, wchk, 0);
+BLITZ_SUBS(dowtitle, windowslib_wchk, 0);
 BLITZ_NAME("WTitle", "windowtitle$,screentitle$");
 
 BLITZ_ASTATEMENT();
@@ -595,7 +592,7 @@ BLITZ_NAME("CloseWindow", "Window#");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
 BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_graphicslib, BL_LA(6));
-BLITZ_SUBS(dowprintscroll, wchk, 0);
+BLITZ_SUBS(dowprintscroll, windowslib_wchk, 0);
 BLITZ_NAME("WPrintScroll", "");
 
 BLITZ_ASTATEMENT();
@@ -3275,7 +3272,7 @@ void BLITZ_ROUTINE dowindowtags2(UWORD objoff BL_REG(d0), ULONG flags BL_REG(d1)
  * @param intb a1: the intuition base
  * @return d0: the port's address (the init value, #long)
  */
-ULONG BLITZ_ROUTINE codeinit(struct Library *gfx BL_REG(a0), struct Library *intb BL_REG(a1))
+static ULONG BLITZ_ROUTINE codeinit(struct Library *gfx BL_REG(a0), struct Library *intb BL_REG(a1))
 {
     struct List *l = &myport.mp_MsgList;
 
@@ -3318,7 +3315,7 @@ ULONG BLITZ_ROUTINE codeinit(struct Library *gfx BL_REG(a0), struct Library *int
 /**
  * @brief finit - free the port's signal, restore the old pr_WindowPtr.
  */
-void BLITZ_ROUTINE codefinit(void)
+static void BLITZ_ROUTINE codefinit(void)
 {
     FreeSignal(myport.mp_SigBit);
     THISPROC->pr_WindowPtr = oldwptr;
@@ -3439,7 +3436,7 @@ static void BLITZ_ERRCHK wbtowchk_c(const ULONG *w BL_REG(a0), const UBYTE *bm B
 
 /* the original checks change d6/d7, a1/a2 (wmovechk, wsizechk); the C
    checks keep d0-d1/a0-a1 */
-BLITZ_ERRCHK_THUNK(wchk, wchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(windowslib_wchk, wchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(wfontchk, wfontchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(wlinechk, wlinechk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(wpointerchk, wpointerchk_c, "d0-d1/a0-a1");

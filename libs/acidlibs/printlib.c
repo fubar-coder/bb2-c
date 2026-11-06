@@ -91,7 +91,8 @@
 #include <stddef.h>
 
 /* entry points (thunks / C routines, defined below) */
-void doformat(void), dofloatmode(void), codeinit(void), formatchk(void);
+void doformat(void), dofloatmode(void), printlib_codeinit(void);
+void formatchk(void);
 void BLITZ_ROUTINE doprint(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2));
 void BLITZ_ROUTINE donprint(UWORD n BL_REG(d7), const UBYTE *args BL_REG(a2));
 ULONG BLITZ_ROUTINE dostrstr(ULONG v BL_REG(d0), const UBYTE *args BL_REG(a2));
@@ -138,7 +139,7 @@ BLITZ_LIBS(LIB_ffplib, BL_LA(6));
 BLITZ_SUBS(doustrstr, 0, 0);
 BLITZ_NAME("UStr$", "(Expression)");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, printlib_codeinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -513,7 +514,7 @@ static void BLITZ_ROUTINE codeinit_c(void)
     pl.formlen = 0;
     pl.floatmode = 0;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(printlib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /* --------------------------------------------------- integer -> ASCII */
 

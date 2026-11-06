@@ -116,14 +116,16 @@
 #undef __NOLIBBASE__
 
 /* entry points (thunks, below) */
-void _loadtrkmodule(void), _StartTrkModule(void), _StopTracker(void), _decodemod(void);
-void _gettrklen(void), _gettrkloc(void), _freetrackermodule(void), _gettrackerevent(void);
-void _checktrackerevent(void), _waittrackerevent(void), _checkid(void), _modtochip2(void);
-void _getmodulename(void), _modulepositionjump(void), _getmoduleposition(void);
-void _pausemodule(void), _change_playtype(void), _Play_Tracker(void), _Volume_Control(void);
-void _ChangeTrackerMask(void), _maxpatterns(void), _inittrackerlib(void);
-void _finittrackerlib(void), mt_music(void);
-void _loadcheck(void), _checkused(void), _decodecheck(void), _slotcheck(void);
+void _loadtrkmodule(void), _StartTrkModule(void), _StopTracker(void);
+void _decodemod(void), _gettrklen(void), _gettrkloc(void);
+void _freetrackermodule(void), _gettrackerevent(void);
+void _checktrackerevent(void), _waittrackerevent(void), _checkid(void);
+void _modtochip2(void), _getmodulename(void), _modulepositionjump(void);
+void _getmoduleposition(void), _pausemodule(void), _change_playtype(void);
+void _Play_Tracker(void), _Volume_Control(void), _ChangeTrackerMask(void);
+void _maxpatterns(void), _inittrackerlib(void), _finittrackerlib(void);
+void ciatrklib_mt_music(void), _loadcheck(void), _checkused(void);
+void _decodecheck(void), _slotcheck(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -309,7 +311,7 @@ static struct {
     char musintname[20];
 } ciapart = {
     125, NULL, "ciaa.resource", "ciab.resource", NULL, 0, 0, NULL, "graphics.library",
-    { { NULL, NULL, NT_INTERRUPT, 5, ciapart.musintname }, NULL, (VOID (*)())mt_music },
+    { { NULL, NULL, NT_INTERRUPT, 5, ciapart.musintname }, NULL, (VOID (*)())ciatrklib_mt_music },
     "Protracker MusicInt",
 };
 
@@ -1918,7 +1920,7 @@ BLITZ_THUNK(_getmoduleposition, getmoduleposition_c, "d1/a0-a1");
 BLITZ_THUNK(_pausemodule, pausemodule_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_change_playtype, change_playtype_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_Play_Tracker, mt_music_c, "d0-d1/a0-a1");
-BLITZ_THUNK(mt_music, mt_music_c, "d0-d1/a0-a1");       /* is_Code */
+BLITZ_THUNK(ciatrklib_mt_music, mt_music_c, "d0-d1/a0-a1"); /* is_Code */
 BLITZ_THUNK(_Volume_Control, volume_control_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_ChangeTrackerMask, changetrackermask_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_maxpatterns, maxpatterns_c, "d1/a0-a1");

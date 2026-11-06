@@ -32,9 +32,10 @@
 #undef __NOLIBBASE__
 
 /* entry points (thunks, defined below) */
-void goblitz(void), goamiga(void), goqamiga(void), doownblit(void);
-void dodisownblit(void), setcoplist(void), goblitzS(void), goqamigaS(void);
-ULONG doinit(void);
+void switchlib_goblitz(void), switchlib_goamiga(void), goqamiga(void);
+void doownblit(void), dodisownblit(void), setcoplist(void), goblitzS(void);
+void goqamigaS(void);
+static ULONG doinit(void);
 void dofinit(void);
 
 BLITZ_ENTRY_DECL(init);
@@ -42,8 +43,8 @@ BLITZ_ENTRY_DECL(finit);
 
 /* !syslibheader{#switchlib,$c200,$c208,init,1,finit,0} */
 BLITZ_SYSLIBHEADER7(LIB_switchlib, 0xc200, 0xc208, init, BL_LONGRET, finit, 0);
-BLITZ_NULLSUB(goblitz, 0, 0);                   /* $C200 */
-BLITZ_NULLSUB(goamiga, 0, 0);                   /* $C201 */
+BLITZ_NULLSUB(switchlib_goblitz, 0, 0);         /* $C200 */
+BLITZ_NULLSUB(switchlib_goamiga, 0, 0);         /* $C201 */
 BLITZ_NULLSUB(goqamiga, 0, 0);                  /* $C202 */
 BLITZ_NULLSUB(doownblit, 0, 0);                 /* $C203 */
 BLITZ_NULLSUB(dodisownblit, 0, 0);              /* $C204 */
@@ -263,7 +264,8 @@ static UWORD BLITZ_ROUTINE goblitz_c(void)
     intjsr(intgoblitz);
     return setmode(-1);
 }
-BLITZ_THUNK_POST(goblitz, goblitz_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
+BLITZ_THUNK_POST(switchlib_goblitz, goblitz_c, "d0-d1/a0-a1",
+                 "move.w d0,2(sp)");
 
 /**
  * @brief $C201 AMIGA - switch to Amiga mode.
@@ -281,7 +283,8 @@ static UWORD BLITZ_ROUTINE goamiga_c(void)
     doviewon();
     return setmode(0);
 }
-BLITZ_THUNK_POST(goamiga, goamiga_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
+BLITZ_THUNK_POST(switchlib_goamiga, goamiga_c, "d0-d1/a0-a1",
+                 "move.w d0,2(sp)");
 
 /**
  * @brief $C202 QAMIGA - switch to QAmiga mode (OS running, the program's
@@ -312,7 +315,7 @@ BLITZ_THUNK_POST(goqamiga, goqamiga_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
  * @par Result
  * d0: the keyboard.device base, the library's init value
  */
-ULONG BLITZ_ROUTINE doinit(void)
+static ULONG BLITZ_ROUTINE doinit(void)
 {
     static const char kbd[] = "keyboard.";
     struct Node *n;

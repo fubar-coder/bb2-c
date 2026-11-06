@@ -40,8 +40,8 @@
 
 /* entry points (C routines / thunks / prefixes, defined below) */
 void doscroll(void), b_doscroll(void), docls(void), docls2(void);
-void doblockscroll(void), codeinit(void), doplot(void), dopoint(void);
-void scchk1(void), scchk2(void), bmchk(void);
+void doblockscroll(void), scrolllib_codeinit(void), doplot(void);
+void dopoint(void), scchk1(void), scchk2(void), bmchk(void);
 
 BLITZ_ENTRY_DECL(init);
 
@@ -93,7 +93,7 @@ BLITZ_LIBS(LIB_bitmaplib, 0x1302, LIB_bitmaplib, 0x1084, LIB_chipbaselib, BL_LA(
 BLITZ_SUBS(doblockscroll, scchk2, 0);
 BLITZ_NAME("BlockScroll", "X1,Y1,Width,Height,X2,Y2[,BitMap#]");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, scrolllib_codeinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -397,7 +397,7 @@ static void BLITZ_ROUTINE codeinit_c(void)
         *p++ = 0xffffffff;
     offset = 0;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
+BLITZ_THUNK(scrolllib_codeinit, codeinit_c, "d1/a0-a1");
 
 /* -------------------------------------------------------------- Scroll */
 

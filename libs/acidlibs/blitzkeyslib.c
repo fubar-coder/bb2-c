@@ -41,7 +41,7 @@
 void dorstat(void), doblitzqualifier(void), binkey(void);
 void BLITZ_ROUTINE dobkeys(WORD on BL_REG(d0));
 void BLITZ_ROUTINE doblitzrepeat(void);
-void BLITZ_ROUTINE codeinit(UBYTE *kd BL_REG(a0));
+static void BLITZ_ROUTINE codeinit(UBYTE *kd BL_REG(a0));
 
 BLITZ_ENTRY_DECL(init);
 
@@ -126,7 +126,7 @@ BLITZ_THUNK_POST(doblitzqualifier, doblitzqualifier_c, "d0-d1/a0-a1", "move.w d0
  * @param kd  a0: switchlib's init value, the keyboard.device base
  *            (!libs{#switchlib,#la0}; switchlib walks the device list)
  */
-void BLITZ_ROUTINE codeinit(UBYTE *kd BL_REG(a0))
+static void BLITZ_ROUTINE codeinit(UBYTE *kd BL_REG(a0))
 {
     key = kd;
     ison = 0;

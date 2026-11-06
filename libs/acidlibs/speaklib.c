@@ -36,7 +36,8 @@
 #define LVO_Translate (-30)     /* translator: a0 = in, d0 = len, a1 = out, d1 = size */
 
 /* entry points (thunks / C routines, defined below) */
-void _setvoice(void), _voiceloc(void), libinit(void), libfinit(void);
+void _setvoice(void), _voiceloc(void), speaklib_libinit(void);
+void speaklib_libfinit(void);
 ULONG BLITZ_ROUTINE _translate(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2));
 void BLITZ_ROUTINE _speak(const UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2));
 void BLITZ_ROUTINE _phospeak(UBYTE *s BL_REG(d0), const ULONG *lens BL_REG(a2));
@@ -77,8 +78,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_voiceloc, 0, 0);
 BLITZ_NAME("VoiceLoc", "returns location of newvoice struct");
 
-BLITZ_NULLSUB_AT(init, libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, speaklib_libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, speaklib_libfinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -135,7 +136,7 @@ static void BLITZ_ROUTINE libinit_c(void)
 failed:
     BLITZ_RUNERR(report);
 }
-BLITZ_THUNK(libinit, libinit_c, "d1/a0-a1");
+BLITZ_THUNK(speaklib_libinit, libinit_c, "d1/a0-a1");
 
 static void BLITZ_ROUTINE libfinit_c(void)
 {
@@ -145,7 +146,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
     FreeSignal((UBYTE)port.mp_SigBit);
     CloseLibrary(TransBase);
 }
-BLITZ_THUNK(libfinit, libfinit_c, "d1/a0-a1");
+BLITZ_THUNK(speaklib_libfinit, libfinit_c, "d1/a0-a1");
 
 /* ---------------------------------------------------------- SetVoice */
 

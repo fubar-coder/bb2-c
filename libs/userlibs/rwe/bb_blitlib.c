@@ -66,7 +66,8 @@ void _specialblockbitmap2(void), _tblock(void), _predatorblit(void), _bpredatorb
 void _MapInfo(void), _createshape(void), _specialblocktoshape(void), _blocktoshape(void);
 void docolblit(void), _tblockimage(void), _btblockimage(void);
 void _errSBlockToShape(void), _errBlockToShape(void);
-void _libinit(void), _libfinit(void);
+static void _libinit(void);
+static void _libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -166,14 +167,14 @@ BLITZ_LIBFIN();
 /**
  * @brief init: does nothing (RTS).
  */
-void BLITZ_ROUTINE _libinit(void)
+static void BLITZ_ROUTINE _libinit(void)
 {
 }
 
 /**
  * @brief finit: does nothing (RTS).
  */
-void BLITZ_ROUTINE _libfinit(void)
+static void BLITZ_ROUTINE _libfinit(void)
 {
 }
 

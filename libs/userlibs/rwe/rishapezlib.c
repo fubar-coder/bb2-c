@@ -26,8 +26,9 @@
 #include <intuition/intuition.h>
 
 /* entry points (below) */
-void _cludgeacid(void), _peekb(void), _SetWindowDraw(void);
-void _libinit(void), _libfinit(void);
+void _cludgeacid(void), _peekb(void), rishapezlib_SetWindowDraw(void);
+static void _libinit(void);
+static void _libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -50,7 +51,7 @@ BLITZ_NAME("PeekByte", "addres");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_windowslib, BL_LA(0) | BL_USED);
-BLITZ_SUBS(_SetWindowDraw, 0, 0);
+BLITZ_SUBS(rishapezlib_SetWindowDraw, 0, 0);
 BLITZ_NAME("SetWinDrawShapeZ", "mode    -- 0=normal, 1=meshed");
 
 BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
@@ -59,12 +60,12 @@ BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
 BLITZ_LIBFIN();
 
 /** @brief init: nothing (RTS). */
-void _libinit(void)
+static void _libinit(void)
 {
 }
 
 /** @brief finit: nothing (RTS). */
-void _libfinit(void)
+static void _libfinit(void)
 {
 }
 
@@ -125,4 +126,4 @@ static void BLITZ_ROUTINE setwindowdraw_c(UWORD mode BL_REG(d1),
         rp->AreaPtSz = 0;
     }
 }
-BLITZ_THUNK(_SetWindowDraw, setwindowdraw_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rishapezlib_SetWindowDraw, setwindowdraw_c, "d0-d1/a0-a1");

@@ -27,9 +27,10 @@
 #undef __NOLIBBASE__
 
 /* entry points (thunks / C / asm, defined below) */
-void doqueue(void), doblit(void), doblitex(void), dounqueue(void), dounqueue2(void);
-void doqblitmode(void), doflushqueue(void), codeinit(void), freequeue(void);
-void qblitchk(void), unqueuechk(void), unqueuechk2(void);
+void doqueue(void), qblitlib_doblit(void), qblitlib_doblitex(void);
+void dounqueue(void), dounqueue2(void), doqblitmode(void), doflushqueue(void);
+void qblitlib_codeinit(void), freequeue(void), qblitchk(void);
+void unqueuechk(void), unqueuechk2(void);
 
 BLITZ_ENTRY_DECL(init);
 
@@ -49,10 +50,10 @@ BLITZ_NAME_AT(_toke, "Queue", "Queue#,Max Items");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 QBLIT_LIBS;
-BLITZ_SUBS(doblit, qblitchk, 0);
+BLITZ_SUBS(qblitlib_doblit, qblitchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 QBLIT_LIBS;
-BLITZ_SUBS(doblitex, qblitchk, 0);
+BLITZ_SUBS(qblitlib_doblitex, qblitchk, 0);
 BLITZ_NAME("QBlit", "Queue#,Shape#,X,Y[,Excessonoff]");
 
 BLITZ_ASTATEMENT();
@@ -77,7 +78,7 @@ BLITZ_LIBS(LIB_qblitlib, 0x1380);
 BLITZ_SUBS(doflushqueue, unqueuechk, 0);
 BLITZ_NAME("FlushQueue", "Queue#");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, qblitlib_codeinit, 0, 0);
 
 BLITZ_ENTRY_DECL(_load);
 BLITZ_ENTRY_DECL(_save);
@@ -143,7 +144,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(ULONG hiword BL_REG(d0))
     bcon0 = 0xfca;
     return (hiword & 0xffff0000UL) | 0xfca;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
+BLITZ_THUNK(qblitlib_codeinit, codeinit_c, "d1/a0-a1");
 
 /**
  * @brief FlushQueue Queue# - empty the queue without touching the bitmaps.
@@ -239,10 +240,10 @@ static void qblit(struct queue *q, const struct bb_shape *shape, const struct bb
     item->off = st->off;
     q->pos = item + 1;
     st->plane = (UBYTE **)bm->planes;
-    goto doblit;
+    goto qblitlib_doblit;
     do {
         BL_BLITWAIT(cb);
-doblit:
+qblitlib_doblit:
         BL_CUSTOML(cb, 0x50) = st->cookie;
         {
             ULONG d = (ULONG)*st->plane++ + st->off;
@@ -376,8 +377,8 @@ start:
  * @param cb a1: the chip base ($DFF000, chipbaselib)
  * @param bm a2: the used bitmap
  */
-void BLITZ_ROUTINE b_doblit_c(QBLIT_REGS);
-void BLITZ_ROUTINE b_doblit_c(QBLIT_REGS)
+static void BLITZ_ROUTINE b_doblit_c(QBLIT_REGS);
+static void BLITZ_ROUTINE b_doblit_c(QBLIT_REGS)
 {
     struct blitstate st;
 
@@ -390,8 +391,10 @@ void BLITZ_ROUTINE b_doblit_c(QBLIT_REGS)
  *
  * @param gfx a6: graphics.library
  */
-void BLITZ_ROUTINE a_doblit_c(QBLIT_REGS, struct Library *gfx BL_REG(a6));
-void BLITZ_ROUTINE a_doblit_c(QBLIT_REGS, struct Library *gfx BL_REG(a6))
+static void BLITZ_ROUTINE a_doblit_c(QBLIT_REGS,
+                                     struct Library *gfx BL_REG(a6));
+static void BLITZ_ROUTINE a_doblit_c(QBLIT_REGS,
+                                     struct Library *gfx BL_REG(a6))
 {
     struct blitstate st;
 
@@ -400,7 +403,7 @@ void BLITZ_ROUTINE a_doblit_c(QBLIT_REGS, struct Library *gfx BL_REG(a6))
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
-BLITZ_AB_ROUTINE(doblit, b_doblit_c, "   jmp     _a_doblit_c");
+BLITZ_AB_ROUTINE(qblitlib_doblit, b_doblit_c, "   jmp     _a_doblit_c");
 
 /**
  * @brief QBlit Queue#,Shape#,X,Y,Excessonoff - QBlit and fill the bitmap's
@@ -415,8 +418,8 @@ BLITZ_AB_ROUTINE(doblit, b_doblit_c, "   jmp     _a_doblit_c");
  *
  * @param bits d4.w: one bit per excess plane
  */
-void BLITZ_ROUTINE b_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4));
-void BLITZ_ROUTINE b_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4))
+static void BLITZ_ROUTINE b_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4));
+static void BLITZ_ROUTINE b_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4))
 {
     qblitex(q, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
 }
@@ -428,17 +431,17 @@ void BLITZ_ROUTINE b_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4))
  * @param bits d4.w: one bit per excess plane
  * @param gfx  a6: graphics.library
  */
-void BLITZ_ROUTINE a_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4),
-                                struct Library *gfx BL_REG(a6));
-void BLITZ_ROUTINE a_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4),
-                                struct Library *gfx BL_REG(a6))
+static void BLITZ_ROUTINE a_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4),
+                                       struct Library *gfx BL_REG(a6));
+static void BLITZ_ROUTINE a_doblitex_c(QBLIT_REGS, UWORD bits BL_REG(d4),
+                                       struct Library *gfx BL_REG(a6))
 {
     OwnBlitter();
     qblitex(q, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
-BLITZ_AB_ROUTINE(doblitex, b_doblitex_c, "   jmp     _a_doblitex_c");
+BLITZ_AB_ROUTINE(qblitlib_doblitex, b_doblitex_c, "   jmp     _a_doblitex_c");
 
 /**
  * @brief UnQueue Queue# - clear all queued areas and empty the queue (Blitz mode).

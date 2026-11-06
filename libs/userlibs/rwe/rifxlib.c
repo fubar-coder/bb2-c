@@ -80,10 +80,10 @@ static void BLITZ_ROUTINE fadeinbitmap2(ULONG delay BL_REG(d2), ULONG src BL_REG
 static void BLITZ_ROUTINE fadeinbitmap(ULONG delay BL_REG(d2), ULONG h BL_REG(d3),
                                        ULONG off1 BL_REG(d4), ULONG off2 BL_REG(d5),
                                        ULONG src BL_REG(a0), ULONG dst BL_REG(a1));
-void zoomxy_no_xy(void), zoomx4_xy(void), asmderez(void);
-void AsmZoom(void), InitZoomxy(void), zoomx2(void), zoomtables(void);
-void zoomx8(void), ADDValue(void), ReduceX2(void), dozoomy(void);
-void libinit(void), libfinit(void);
+void zoomxy_no_xy(void), zoomx4_xy(void), asmderez(void), AsmZoom(void);
+void InitZoomxy(void), zoomx2(void), zoomtables(void), zoomx8(void);
+void ADDValue(void), ReduceX2(void), dozoomy(void), rifxlib_libinit(void);
+void rifxlib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -181,8 +181,8 @@ BLITZ_LIBS(RI_BMAP(0, 0));
 BLITZ_SUBS(dozoomy, 0, 0);
 BLITZ_NAME("ZoomyZoom", "bitmap#");
 
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rifxlib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, rifxlib_libinit, 0, 0);
 BLITZ_LIBFIN();
 
 /* ------------------------------------------------------------ memory */
@@ -273,7 +273,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
     r = (struct bl_regs){ .d0 = TABLESIZE, .a1 = tableaddress };
     BLITZ_ALIBJSR(TOK_globfree, r);     /* BUG(orig) (#673): the pointers stay */
 }
-BLITZ_THUNK(libfinit, libfinit_c, "d1/a0-a1");
+BLITZ_THUNK(rifxlib_libfinit, libfinit_c, "d1/a0-a1");
 
 /**
  * @brief init: allocates the zoom tables (memlib globalloc, 1856 bytes
@@ -340,7 +340,7 @@ static void BLITZ_ROUTINE libinit_c(void)
         table += 4;
     }
 }
-BLITZ_THUNK(libinit, libinit_c, "d1/a0-a1");
+BLITZ_THUNK(rifxlib_libinit, libinit_c, "d1/a0-a1");
 
 /**
  * @brief GetZoomTables: the address of the four table pointers.

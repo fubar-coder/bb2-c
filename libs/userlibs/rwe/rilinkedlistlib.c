@@ -65,10 +65,12 @@
 #define TOK_copybyte ((LIB_riamosfunclib << 7) + 10)
 
 /* entry points (thunks, defined below) */
-void _initlist(void), _addlistitem(void), _setlistitem(void), _nextlistitem(void);
-void _getlistitem(void), _prevlistitem(void), _firstlistitem(void), _lastlistitem(void);
-void _addfirstitem(void), _addlastitem(void), _dellistitem(void), _addrlistitem(void);
-void _sizeoflistitem(void), _libinit(void), _libfinit(void);
+void _initlist(void), _addlistitem(void), _setlistitem(void);
+void rilinkedlistlib_nextlistitem(void), _getlistitem(void);
+void _prevlistitem(void), _firstlistitem(void), _lastlistitem(void);
+void _addfirstitem(void), _addlastitem(void), _dellistitem(void);
+void _addrlistitem(void), _sizeoflistitem(void), rilinkedlistlib_libinit(void);
+void rilinkedlistlib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -97,7 +99,7 @@ BLITZ_NAME("SetListItem", "list#,var");
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_nextlistitem, 0, 0);
+BLITZ_SUBS(rilinkedlistlib_nextlistitem, 0, 0);
 BLITZ_NAME("NextListItem", "list#");
 
 BLITZ_ACOMMAND(BL_LONG);
@@ -154,8 +156,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_sizeoflistitem, 0, 0);
 BLITZ_NAME("SizeOfListItem", "var");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rilinkedlistlib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, rilinkedlistlib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -230,7 +232,7 @@ static ULONG getvarsize(ULONG var)
 /**
  * @brief init: nothing.
  */
-void BLITZ_ROUTINE c_libinit(void)
+static void BLITZ_ROUTINE c_libinit(void)
 {
 }
 
@@ -238,7 +240,7 @@ void BLITZ_ROUTINE c_libinit(void)
  * @brief finit: nothing (the lists are not freed).
  * @return d0: 0
  */
-ULONG BLITZ_ROUTINE c_libfinit(void)
+static ULONG BLITZ_ROUTINE c_libfinit(void)
 {
     return 0;
 }
@@ -555,15 +557,15 @@ BB_BOOL BLITZ_ROUTINE c_dellistitem(ULONG list BL_REG(d0))
 }
 
 /* entries: keep every one of d0/d1/a0/a1 that is not the result */
-BLITZ_THUNK(_libinit, c_libinit, "d0-d1/a0-a1");
-BLITZ_THUNK(_libfinit, c_libfinit, "d1/a0-a1");
+BLITZ_THUNK(rilinkedlistlib_libinit, c_libinit, "d0-d1/a0-a1");
+BLITZ_THUNK(rilinkedlistlib_libfinit, c_libfinit, "d1/a0-a1");
 BLITZ_THUNK(_sizeoflistitem, c_sizeoflistitem, "d1/a0-a1");
 BLITZ_THUNK(_addrlistitem, c_addrlistitem, "d1/a0-a1");
 BLITZ_THUNK(_initlist, c_initlist, "d1/a0-a1");
 BLITZ_THUNK(_addlistitem, c_addlistitem, "d1/a0-a1");
 BLITZ_THUNK(_setlistitem, c_setlistitem, "d1/a0-a1");
 BLITZ_THUNK(_getlistitem, c_getlistitem, "d1/a0-a1");
-BLITZ_THUNK(_nextlistitem, c_nextlistitem, "d1/a0-a1");
+BLITZ_THUNK(rilinkedlistlib_nextlistitem, c_nextlistitem, "d1/a0-a1");
 BLITZ_THUNK(_firstlistitem, c_firstlistitem, "d1/a0-a1");
 BLITZ_THUNK(_lastlistitem, c_lastlistitem, "d1/a0-a1");
 BLITZ_THUNK(_prevlistitem, c_prevlistitem, "d1/a0-a1");

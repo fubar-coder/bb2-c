@@ -64,9 +64,9 @@
 
 /* entry points (thunks / C routines / inline code, defined below) */
 void dodplay2(void), dodplay(void), dodiskbuff(void), dofilter(void);
-void dovolume(void), dosdata(void), dopsound(void), codeinit(void), codefinit(void);
-void dofreesound(void);
-void sndchk(void), dpchk(void), vchk(void), ischk1(void), ischk2(void), sdatachk(void);
+void dovolume(void), dosdata(void), dopsound(void), audiolib_codeinit(void);
+void audiolib_codefinit(void), dofreesound(void), sndchk(void), dpchk(void);
+void vchk(void), ischk1(void), ischk2(void), sdatachk(void);
 BLITZ_ENTRY_C(doloadsound); BLITZ_ENTRY_C(dosound2); BLITZ_ENTRY_C(dosound); BLITZ_ENTRY_C(dosoundl2); BLITZ_ENTRY_C(dosoundl);
 BLITZ_ENTRY_C(doisound2); BLITZ_ENTRY_C(doisound3); BLITZ_ENTRY_C(doisound); BLITZ_ENTRY_C(_cludgesound); BLITZ_ENTRY_C(_setperiod);
 
@@ -167,8 +167,8 @@ BLITZ_LIBS(LIB_audiolib, 0x1380);
 BLITZ_SUBS(e__setperiod, sndchk, 0);
 BLITZ_NAME("SetPeriod", "Sound#,Period");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
+BLITZ_NULLSUB_AT(init, audiolib_codeinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, audiolib_codefinit, 0, 0);
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, 0, 0, 0);
@@ -851,7 +851,7 @@ static void BLITZ_ROUTINE codeinit_c(void)
     chzero = (UWORD *)alloc(2, MEMF_CHIP);
     *chzero = 0;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
+BLITZ_THUNK(audiolib_codeinit, codeinit_c, "d1/a0-a1");
 
 /**
  * @brief finit: audio DMA off, the volume of all channels 0.
@@ -864,7 +864,7 @@ static void BLITZ_ROUTINE codefinit_c(void)
     for (ch = 0; ch < 4; ch++)
         *(volatile UWORD *)AUD(ch, 8) = 0;
 }
-BLITZ_THUNK(codefinit, codefinit_c, "d1/a0-a1");
+BLITZ_THUNK(audiolib_codefinit, codefinit_c, "d1/a0-a1");
 
 /* ------------------------------------------- error checks (debugger only) */
 

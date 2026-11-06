@@ -91,13 +91,13 @@
 #include <stddef.h>
 
 /* entries (thunks below) */
-void libinit(void), libfinit(void);
+void ritooltypeslib_libinit(void), ritooltypeslib_libfinit(void);
 void getstructure(void), gettooltype(void), PutTool2(void), PutTool(void);
 void Put_icon2(void), Put_icon(void), Close_icon(void), Matchtoolvalue(void);
 void NewTool2(void), NewTool(void), gettoolnumber(void), cleartooltypes(void);
 void seticonhit(void), shapetoicon(void), shapetoicon2(void), icontype(void);
-void selectrender(void), defaulttool(void), istooltype(void), istooltype2(void);
-void icontoshape(void), icontoshape2(void);
+void selectrender(void), defaulttool(void), istooltype(void);
+void istooltype2(void), icontoshape(void), icontoshape2(void);
 
 BLITZ_ENTRY_DECL(finit);
 BLITZ_ENTRY_DECL(init);
@@ -221,8 +221,8 @@ BLITZ_LIBS(LIB_shapeslib, BL_LA(0) | BL_ITEM | BL_PD(0),
 BLITZ_SUBS(BLITZ_AMIGAONLY(icontoshape2), 0, 0);
 BLITZ_NAME("IconToShape", "shape[,shape]");
 
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, ritooltypeslib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, ritooltypeslib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -285,7 +285,7 @@ static APTR nofree(void)
  *
  * Without it (iconlibbase 0) the commands do nothing and return 0.
  */
-void BLITZ_ROUTINE c_libinit(void)
+static void BLITZ_ROUTINE c_libinit(void)
 {
     iconlibbase = OpenLibrary((CONST_STRPTR)"icon.library", 0);
     tooltype = NULL;
@@ -308,7 +308,7 @@ BB_BOOL BLITZ_ROUTINE c_Close_icon(void)
 /**
  * @brief finit: frees the open icon, closes icon.library.
  */
-void BLITZ_ROUTINE c_libfinit(void)
+static void BLITZ_ROUTINE c_libfinit(void)
 {
     if (!iconlibbase)
         return;
@@ -942,8 +942,8 @@ void BLITZ_ROUTINE c_icontoshape2(ULONG shapearg BL_REG(d0),
 }
 
 /* entries: keep every one of d0/d1/a0/a1 that is not the result */
-BLITZ_THUNK(libinit, c_libinit, "d0-d1/a0-a1");
-BLITZ_THUNK(libfinit, c_libfinit, "d0-d1/a0-a1");
+BLITZ_THUNK(ritooltypeslib_libinit, c_libinit, "d0-d1/a0-a1");
+BLITZ_THUNK(ritooltypeslib_libfinit, c_libfinit, "d0-d1/a0-a1");
 BLITZ_THUNK(getstructure, c_getstructure, "d1/a0-a1");
 BLITZ_THUNK(gettooltype, c_gettooltype, "d1/a0-a1");
 BLITZ_THUNK(PutTool2, c_PutTool2, "d1/a0-a1");

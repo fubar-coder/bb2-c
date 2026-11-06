@@ -66,7 +66,8 @@
 #undef __NOLIBBASE__
 
 /* entry points (thunks, below) */
-void _retrievecallhook(void), _libinit(void), _libfinit(void);
+void _retrievecallhook(void), rilvcallhooklib_libinit(void);
+void rilvcallhooklib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -80,8 +81,8 @@ BLITZ_LIBS(LIB_graphicslib, BL_LA(6));
 BLITZ_SUBS(_retrievecallhook, 0, 0);
 BLITZ_NAME("RetrieveCallHook", "");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rilvcallhooklib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, rilvcallhooklib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -396,7 +397,7 @@ static ULONG BLITZ_ROUTINE hookfunc_c(struct Hook *hook BL_REG(a0), struct LVDra
    in RetrieveCallHook and d0 (LVCB_UNKNOWN) or d0-d1/a0-a1 (LVCB_OK) in
    the hook; the thunks keep d1/a0-a1 (the hook's a3 too: TextFit's
    constrainingExtent is a3), the C code d2-d7/a2/a4-a6. */
-BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_libfinit, libinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rilvcallhooklib_libinit, libinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rilvcallhooklib_libfinit, libinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_retrievecallhook, retrievecallhook_c, "d1/a0-a1");
 BLITZ_THUNK(hookfunc, hookfunc_c, "d1/a0-a1/a3");

@@ -69,7 +69,7 @@
  * In: d0 = BPTR of the debugger program loaded by the editor (0: none),
  * a6 = dos, d6 = graphics.
  */
-void codeinit(void);
+void dhandlerlib_codeinit(void);
 /**
  * @brief Library finit (assembler below): ends the debugger process.
  *
@@ -81,7 +81,7 @@ void codeinit(void);
  *
  * In: a6 = dos, d6 = graphics.
  */
-void codefinit(void);
+void dhandlerlib_codefinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -94,10 +94,10 @@ __asm__("   .section .blitzlib.head\ndh_hunk0:\n");
 /* !libheader{#dhandlerlib,init,0,finit,0} */
 BLITZ_LIBHEADER(LIB_dhandlerlib, init, BL_NORET, finit, 0);
 /* init:!nullsub{codeinit,0,0,#doslib,#la6,#graphicslib,#ld6} */
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0,
+BLITZ_NULLSUB_AT(init, dhandlerlib_codeinit, 0, 0,
                  LIB_doslib, BL_LA(6), LIB_graphicslib, BL_LD(6));
 /* finit:!nullsub{codefinit,0,0,#doslib,#la6,#graphicslib,#ld6} */
-BLITZ_NULLSUB_AT(finit, codefinit, 0, 0,
+BLITZ_NULLSUB_AT(finit, dhandlerlib_codefinit, 0, 0,
                  LIB_doslib, BL_LA(6), LIB_graphicslib, BL_LD(6));
 BLITZ_LIBFIN();
 
@@ -181,8 +181,8 @@ __asm__(
    (CacheClearU): with instruction cache (68020+), and above all with
    the copyback data cache of the 68040/060, the process may execute what
    was in that memory before. */
-"   .globl  _codeinit\n"
-"_codeinit:\n"
+"   .globl  _dhandlerlib_codeinit\n"
+"_dhandlerlib_codeinit:\n"
 "   clr.w   taskdone\n"
 "   clr.l   handler\n"
 "   move.l  d0,segadd\n"
@@ -245,8 +245,8 @@ __asm__(
    BUG(orig) (#410): the segment is freed as soon as taskdone is set, but
    the process still has to execute the RTS behind ST taskdone in it (a
    small window: codefinit only looks again after a WaitTOF). */
-"   .globl  _codefinit\n"
-"_codefinit:\n"
+"   .globl  _dhandlerlib_codefinit\n"
+"_dhandlerlib_codefinit:\n"
 "   move.l  segadd(pc),d1\n"
 "   beq.w   9f\n"
 "   move.w  #0x8035,d0\n"

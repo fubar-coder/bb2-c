@@ -18,7 +18,7 @@
 #include "blitzlib.h"
 
 /* entry points (thunks / asm, defined below) */
-void dopeek(void), dopoke(void), docall(void);
+void dopeek(void), dopoke(void), memacclib_docall(void);
 ULONG dopeeks(ULONG loc BL_REG(d0), ULONG n BL_REG(d1));
 
 /* !libheader{#memacclib,0,0,0,0} */
@@ -45,7 +45,7 @@ BLITZ_NAME("Peeks$", "(Address,Length)");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(docall, 0, 0);
+BLITZ_SUBS(memacclib_docall, 0, 0);
 BLITZ_NAME("Call", "Address");
 
 BLITZ_LIBFIN();
@@ -168,6 +168,6 @@ BLITZ_THUNK(dopoke, dopoke_c, "d0-d1/a1");
  *
  * @arg d0 the address of the code.
  */
-BLITZ_ASM_ROUTINE(docall,
+BLITZ_ASM_ROUTINE(memacclib_docall,
     "   move.l  d0,a0\n"
     "   jmp     (a0)");

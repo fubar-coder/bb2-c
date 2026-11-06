@@ -41,7 +41,7 @@
 
 /* entry points (thunks / C, defined below) */
 void fadechk0(void), fadechk(void), dosetfade(void), dofadestatus(void);
-void codeinit(void);
+void fadelib_codeinit(void);
 void BLITZ_ROUTINE dofadein2(ULONG palofs BL_REG(d0), const struct bb_palette *pal BL_REG(a0),
                              struct bb_slice *slice BL_REG(a1));
 void BLITZ_ROUTINE dofadein3(ULONG palofs BL_REG(d0), UWORD rate BL_REG(d1),
@@ -102,7 +102,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(dofadestatus, BLITZ_BLITZONLY, 0);
 BLITZ_NAME("FadeStatus", "");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, fadelib_codeinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -130,7 +130,7 @@ static void BLITZ_ROUTINE codeinit_c(void)
 {
     *(ULONG *)&F.fadenum = 0;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(fadelib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /**
  * @brief ASyncFade On|Off: fade synchronously or step by step.

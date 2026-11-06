@@ -62,7 +62,8 @@
 #undef __NOLIBBASE__
 
 /* entry points (thunks, defined below) */
-void _popupinit(void), _dopopup(void), _libinit(void), _libfinit(void);
+void _popupinit(void), _dopopup(void), popupwinlib_libinit(void);
+void popupwinlib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -84,8 +85,8 @@ BLITZ_LIBS(LIB_screenslib, IA(0, 0));
 BLITZ_SUBS(_dopopup, 0, 0);
 BLITZ_NAME("PopUpWindow", "Screen#,*items");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, popupwinlib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, popupwinlib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -599,7 +600,7 @@ static ULONG BLITZ_ROUTINE dopopup_c(struct Screen **scr BL_REG(a0), struct pite
    a0-a2 there, everything the system calls change in init, finit and
    PopUpInit.  The thunks keep d0 (the statements), d1/a0/a1, the C code
    d2-d7/a2-a6. */
-BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(popupwinlib_libinit, libinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(popupwinlib_libfinit, libfinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_popupinit, popupinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_dopopup, dopopup_c, "d1/a0-a1");

@@ -42,8 +42,9 @@ void stackchk(void), arrerr(void), maxerr(void), gosuper(void), gouser(void);
 void sarraychk(void), aarraychk(void), datachk(void), bmodechk(void);
 void amodechk(void), casechkw(void), casechkl(void), currentchk(void);
 void ltobover(void), wtobover(void), ltowover(void), qtobover(void);
-void ftobover(void), ftowover(void), ftolover(void), getvbr(void), getcpu(void);
-void codeinit(void), codefinit(void);
+void ftobover(void), ftowover(void), ftolover(void), getvbr(void);
+void getcpu(void), runerrlib_codeinit(void);
+static void codefinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -81,7 +82,7 @@ BLITZ_NULLSUB(ftowover, 0, 0, LIB_ffplib, BL_LA(6));    /* $C31B */
 BLITZ_NULLSUB(ftolover, 0, 0, LIB_ffplib, BL_LA(6));    /* $C31C */
 BLITZ_NULLSUB(getvbr, 0, 0);                    /* $C31D */
 BLITZ_NULLSUB(getcpu, 0, 0);                    /* $C31E */
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, runerrlib_codeinit, 0, 0);
 BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
 BLITZ_LIBFIN();
 
@@ -544,10 +545,11 @@ static void BLITZ_ROUTINE codeinit_c(UBYTE *sp BL_REG(a0), ULONG stack BL_REG(d2
     }
     vbr_ = vbr;
 }
-BLITZ_THUNK_PRE(codeinit, codeinit_c, "d0-d1/a0-a1", "lea 16(sp),a0");
+BLITZ_THUNK_PRE(runerrlib_codeinit, codeinit_c, "d0-d1/a0-a1",
+                "lea 16(sp),a0");
 
 /** @brief Library finit: restore the task's trap handler. */
-void BLITZ_ROUTINE codefinit(void)
+static void BLITZ_ROUTINE codefinit(void)
 {
     SysBase->ThisTask->tc_TrapCode = oldtrap;
 }

@@ -86,7 +86,7 @@ void _ClearRexxMsg(void), _CreateArgString(void), _DeleteArgString(void);
 void _SendRexxCommand(void), _ReplyRexxMsg(void), _GetRexxResult(void);
 void _GetRexxCommand(void), _GetResultString(void), _RexxEvent(void);
 void _IsRexxMsg(void), _RexxError(void), SetUpRoutine(void);
-void CloseRoutine(void);
+void arexxlib_CloseRoutine(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -179,7 +179,7 @@ BLITZ_SUBS(_RexxError, 0, 0);
 BLITZ_NAME("RexxError", "ErrorString=RexxError(ErrorCode)");
 
 BLITZ_NULLSUB_AT(init, SetUpRoutine, 0, 0);
-BLITZ_NULLSUB_AT(finit, CloseRoutine, 0, 0);
+BLITZ_NULLSUB_AT(finit, arexxlib_CloseRoutine, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -363,7 +363,7 @@ static void BLITZ_ROUTINE close_c(void)
     if (RexxSysBase)
         CloseLibrary((struct Library *)RexxSysBase);
 }
-BLITZ_THUNK(CloseRoutine, close_c, "d0-d1/a0-a1");
+BLITZ_THUNK(arexxlib_CloseRoutine, close_c, "d0-d1/a0-a1");
 
 /**
  * @brief CreateRexxMsg(ReplyPort,Exten,Host): a RexxMsg of 128 bytes.

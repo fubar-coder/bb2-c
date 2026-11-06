@@ -44,7 +44,7 @@
 /* entry points (thunks, below) */
 void _requestfile(void), _requestfiletitle(void), _requestfiletitleflags(void);
 void _file(void), _reqoutput(void), _reqflags(void), _colourreq(void);
-void _libinit(void), _libfinit(void);
+void rireqlib_libinit(void), rireqlib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -88,8 +88,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_colourreq, 0, 0);
 BLITZ_NAME("ReqColour", "(colour)");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rireqlib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, rireqlib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -297,8 +297,8 @@ static void BLITZ_ROUTINE reqoutput_c(APTR *win BL_REG(a0))
    ReqOutput only a0/d0), init/finit d0/d1/a0/a1/a6 (system calls), the
    requesters what req.library changes (and d3, a6); the C code keeps
    a2-a6, the thunks d1/a0/a1 where the original keeps them. */
-BLITZ_THUNK(_libinit, libinit_c, "d1/a0-a1");
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rireqlib_libinit, libinit_c, "d1/a0-a1");
+BLITZ_THUNK(rireqlib_libfinit, libfinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_reqflags, reqflags_c, "d0-d1/a1");
 BLITZ_THUNK_POST(_file, file_c, "d1/a1", "move.l d0,a0");
 BLITZ_THUNK(_reqoutput, reqoutput_c, "d1/a1");

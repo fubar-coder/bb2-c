@@ -54,10 +54,16 @@ libraries:
 * Routines in assembler (`BLITZ_INLINE`, `BLITZ_ASM_ROUTINE`,
   `BLITZ_AB_ROUTINE`) have no C parameters and no C result: their
   register arguments are `@arg` items and their result a paragraph
-  `@par Result` followed by `REG: ...`. The same holds for an init or
-  finit routine whose name another library also has as a global
-  function (`codeinit`, `doinit`): Doxygen joins global functions of one
-  name, so their `@param`/`@return` would clash.
+  `@par Result` followed by `REG: ...`.
+* A global function name occurs only once in the input of the API
+  reference: Doxygen joins global functions of one name across files,
+  so one library's page would show another's description. A routine
+  that only its own file refers to is `static` (init/finit routines in
+  C such as `codeinit`, `a_doblit_c`); an entry point in assembler (a
+  thunk, `BLITZ_ASM_ROUTINE`, `BLITZ_INLINE`, ...) whose name another
+  library also has gets the library's name as prefix
+  (`audiolib_codeinit`, `debuglib_docall`). Comments keep the original's
+  label (`codeinit`).
 * Original bugs: `BUG(orig) (#NNN)`; Blitz notation (`#ld0`, `Window#`)
   is no link.
 

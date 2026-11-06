@@ -63,10 +63,10 @@
 #define LVO_CloseFont    (-78)  /* graphics: a1 = font */
 
 /* entry points (thunks / C routines, defined below) */
-void dobitmapoutput(void), dobitmapinput(void), docolour(void), docolour2(void);
-void dolocate(void), docursx(void), docursy(void), codeinit(void);
-void dousefont(void), dofreefont(void), bitout2(void), bitout3(void);
-void locatechk(void), bitout(void), doinput1(void);
+void dobitmapoutput(void), dobitmapinput(void), docolour(void);
+void docolour2(void), dolocate(void), docursx(void), docursy(void);
+void fontlib_codeinit(void), dousefont(void), dofreefont(void), bitout2(void);
+void bitout3(void), locatechk(void), bitout(void), doinput1(void);
 void BLITZ_ROUTINE doloadfont(const UBYTE *name BL_REG(d1), WORD used BL_REG(d5),
                               const void *gfx BL_REG(d6), const void *diskfont BL_REG(a6));
 
@@ -125,7 +125,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(dobitmapinput, 1, 0);                /* error1 = 1: Blitz mode bit */
 BLITZ_NAME("BitMapInput", "");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0, LIB_fontlib, 0x1301, LIB_fontlib, 0x0504,
+BLITZ_NULLSUB_AT(init, fontlib_codeinit, 0, 0, LIB_fontlib, 0x1301, LIB_fontlib, 0x0504,
                  LIB_diskfontlib, BL_LA(6));
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
@@ -250,7 +250,7 @@ static void BLITZ_ROUTINE codeinit_c(WORD used BL_REG(d5), const void *gfx BL_RE
     pback = 0;
     doloadfont((const UBYTE *)deffont, used, gfx, diskfont);
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
+BLITZ_THUNK(fontlib_codeinit, codeinit_c, "d1/a0-a1");
 
 /* ----------------------------------------------- Colour, Locate, CursX/Y */
 

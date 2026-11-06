@@ -60,7 +60,7 @@
 
 /* entry points (thunks, below) */
 void _stclength(void), _stcstart(void), _stcsafelen(void), _stcload(void);
-void codeinit(void);
+void ristonecrackerlib_codeinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -92,7 +92,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_stcload, 0, 0);
 BLITZ_NAME("STCLoad", "filename$,address");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, ristonecrackerlib_codeinit, 0, 0);
 BLITZ_NULLSUB_AT(finit, 0, 0, 0);
 
 BLITZ_LIBFIN();
@@ -231,7 +231,7 @@ static ULONG BLITZ_ROUTINE stcload_c(CONST_STRPTR name BL_REG(d0), UBYTE *ad BL_
    STCSafeLen), d0-d1/a0-a1/a6 (init), and d0-d7/a0-a1/a6 (STCLoad: the
    system calls and the decruncher); the thunks keep d1/a0/a1, the C code
    d2-d7/a2-a6. */
-BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(ristonecrackerlib_codeinit, codeinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_stclength, stclength_c, "d1/a0-a1");
 BLITZ_THUNK(_stcstart, stcstart_c, "d1/a0-a1");
 BLITZ_THUNK(_stcsafelen, stcsafelen_c, "d1/a0-a1");

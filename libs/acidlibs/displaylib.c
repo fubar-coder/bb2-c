@@ -74,18 +74,18 @@
 
 /* entry points (thunks / C routines, defined below) */
 void _initcoplist2(void), _initcoplist(void), _createdisplay(void);
-void _displaybmap(void), _displaybmap2(void), _displaydbmap(void), _displaydbmap2(void);
-void _displaysprite(void), _displaypalette(void), _displaypalette2(void);
-void _displaypalette3(void), _dobplcons(void), _doadjust(void);
-void _customcols2(void), _customcols(void), _customstring(void);
-void _displaydblscan0(void), _displaydblscan(void);
-void _displayrainbow0(void), _displayrainbow(void);
-void _displayrgb0(void), _displayrgb(void), _displayuser0(void), _displayuser(void);
+void _displaybmap(void), _displaybmap2(void), _displaydbmap(void);
+void _displaydbmap2(void), _displaysprite(void), _displaypalette(void);
+void _displaypalette2(void), _displaypalette3(void), _dobplcons(void);
+void _doadjust(void), _customcols2(void), _customcols(void);
+void _customstring(void), _displaydblscan0(void), _displaydblscan(void);
+void _displayrainbow0(void), _displayrainbow(void), _displayrgb0(void);
+void _displayrgb(void), _displayuser0(void), _displayuser(void);
 void _displayscroll0(void), _displayscroll(void), _customsprites(void);
 void _customchunky(void), _customchunky2(void), _customchunkysize(void);
-void _setgenlock(void), _codeinit(void), _checkcoplist(void);
+void _setgenlock(void), displaylib_codeinit(void), _checkcoplist(void);
 void BLITZ_ROUTINE _freecoplist(void);
-void BLITZ_ROUTINE _codefinit(void);
+static void BLITZ_ROUTINE _codefinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -254,7 +254,7 @@ BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, 0, 0, 0);
 BLITZ_NULLSUB_AT(_free, _freecoplist, 0, 0);
-BLITZ_NULLSUB_AT(init, _codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, displaylib_codeinit, 0, 0);
 BLITZ_NULLSUB_AT(finit, _codefinit, 0, 0);
 
 BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 10, 7);
@@ -461,12 +461,12 @@ static void BLITZ_ROUTINE _codeinit_c(void)
     else
         d.agamac = 0;
 }
-BLITZ_THUNK(_codeinit, _codeinit_c, "a0-a1");
+BLITZ_THUNK(displaylib_codeinit, _codeinit_c, "a0-a1");
 
 /**
  * @brief Library finit: nothing.
  */
-void BLITZ_ROUTINE _codefinit(void)
+static void BLITZ_ROUTINE _codefinit(void)
 {
 }
 

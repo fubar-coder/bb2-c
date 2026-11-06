@@ -69,8 +69,10 @@
 #include "blitzlib.h"
 
 /* entry points (thunks, below) */
-void _ConvToPostFix(void), _evaluate(void), _registers(void), _PFErrorType(void);
-void _PFErrorText(void), _PFIndirectAddr(void), _libinit(void), _libfinit(void);
+void _ConvToPostFix(void), _evaluate(void), _registers(void);
+void _PFErrorType(void), _PFErrorText(void), _PFIndirectAddr(void);
+static void _libinit(void);
+static void _libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -784,14 +786,14 @@ static ULONG BLITZ_ROUTINE indirectaddr_c(void)
 /**
  * @brief init: nothing (RTS).
  */
-void BLITZ_ROUTINE _libinit(void)
+static void BLITZ_ROUTINE _libinit(void)
 {
 }
 
 /**
  * @brief finit: nothing (RTS).
  */
-void BLITZ_ROUTINE _libfinit(void)
+static void BLITZ_ROUTINE _libfinit(void)
 {
 }
 

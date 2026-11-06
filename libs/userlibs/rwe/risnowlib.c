@@ -61,8 +61,8 @@
 #include <graphics/gfx.h>
 
 /* entry points (thunks, below) */
-void _AsmDoSnow(void), _InitSnowDrop(void), _KillPoint(void), _DoKillList(void);
-void _libinit(void), _libfinit(void);
+void _AsmDoSnow(void), _InitSnowDrop(void), _KillPoint(void);
+void _DoKillList(void), risnowlib_libinit(void), risnowlib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -96,8 +96,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_DoKillList, 0, 0);
 BLITZ_NAME("LDoSnowActivate", "listnum");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, risnowlib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, risnowlib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -462,8 +462,8 @@ static BB_BOOL BLITZ_ROUTINE killpoint_c(ULONG n BL_REG(d0), ULONG x BL_REG(d1),
 /* Registers: the original changes d0-d7/a0-a3 (keeps a4-a6); the thunks
    keep d1/a0/a1 (and d0 for init and finit, which change nothing), the C
    code d2-d7/a2-a6. */
-BLITZ_THUNK(_libinit, nothing_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_libfinit, nothing_c, "d0-d1/a0-a1");
+BLITZ_THUNK(risnowlib_libinit, nothing_c, "d0-d1/a0-a1");
+BLITZ_THUNK(risnowlib_libfinit, nothing_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_InitSnowDrop, initsnowdrop_c, "d1/a0-a1");
 BLITZ_THUNK(_AsmDoSnow, asmdosnow_c, "d1/a0-a1");
 BLITZ_THUNK(_DoKillList, dokilllist_c, "d1/a0-a1");

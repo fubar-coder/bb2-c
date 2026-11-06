@@ -61,13 +61,14 @@
 /* maxslib: string copies in global memory */
 
 /* entry points (thunks / C, defined below) */
-void doshapeitem(void), doshapesub(void);
-void domenugap(void), dosubitemoff(void), domenustate(void), domenustate2(void);
-void domenustate3(void), domenustate4(void), domenupens(void);
-void domenuchecked(void), domenuchecked2(void);
-void menutitlechk(void), setmenuchk(void), itemchk2(void), subchk2(void);
-void shapeitemchk(void), shapesubchk(void), statechk2(void), statechk3(void);
-void statechk4(void), chkchk3(void), chkchk4(void);
+void doshapeitem(void), doshapesub(void), domenugap(void), dosubitemoff(void);
+void menuslib_domenustate(void), menuslib_domenustate2(void);
+void menuslib_domenustate3(void), menuslib_domenustate4(void);
+void domenupens(void), menuslib_domenuchecked(void);
+void menuslib_domenuchecked2(void), menutitlechk(void), setmenuchk(void);
+void itemchk2(void), subchk2(void), shapeitemchk(void), shapesubchk(void);
+void menuslib_statechk2(void), menuslib_statechk3(void);
+void menuslib_statechk4(void), menuslib_chkchk3(void), menuslib_chkchk4(void);
 void BLITZ_ROUTINE dosetmenu(struct Window **win BL_REG(a2),
                              struct Library *intbase BL_REG(a6));
 void BLITZ_ROUTINE domenutitle(WORD m BL_REG(d1), const UBYTE *text BL_REG(d2),
@@ -94,7 +95,7 @@ void BLITZ_ROUTINE dosubitem2(WORD m BL_REG(d1), WORD i BL_REG(d2), WORD s BL_RE
                               struct TextAttr **font BL_REG(a1),
                               const ULONG *lens BL_REG(a2),
                               struct Library *intbase BL_REG(a6));
-void BLITZ_ROUTINE freemenu(void);
+static void BLITZ_ROUTINE freemenu(void);
 
 /* !libheader{#menuslib,0,0,0,errors} */
 BLITZ_LIBHEADER(LIB_menuslib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
@@ -158,16 +159,16 @@ BLITZ_NULLSUB(0, 0, 0);
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_menuslib, 0x1380);
-BLITZ_SUBS(domenustate, 0, 0);
+BLITZ_SUBS(menuslib_domenustate, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_menuslib, 0x1380);
-BLITZ_SUBS(domenustate2, statechk2, 0);
+BLITZ_SUBS(menuslib_domenustate2, menuslib_statechk2, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_menuslib, 0x1380);
-BLITZ_SUBS(domenustate3, statechk3, 0);
+BLITZ_SUBS(menuslib_domenustate3, menuslib_statechk3, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_menuslib, 0x1380);
-BLITZ_SUBS(domenustate4, statechk4, 0);
+BLITZ_SUBS(menuslib_domenustate4, menuslib_statechk4, 0);
 BLITZ_NAME("MenuState", "MenuList#[,Menu[,Item[,Subitem]]],On|Off");
 
 BLITZ_ASTATEMENT();
@@ -179,10 +180,10 @@ BLITZ_NAME("MenuColour", "Colour");
 BLITZ_AFUNCTION(BL_WORD);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_menuslib, 0x1280);
-BLITZ_SUBS(domenuchecked, chkchk3, 0);
+BLITZ_SUBS(menuslib_domenuchecked, menuslib_chkchk3, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_menuslib, 0x1280);
-BLITZ_SUBS(domenuchecked2, chkchk4, 0);
+BLITZ_SUBS(menuslib_domenuchecked2, menuslib_chkchk4, 0);
 BLITZ_NAME("MenuChecked", "(MenuList#,Menu,Item[,Subitem])");
 
 BLITZ_DUMTOKE(_toke, "MenuList", "List of Menus");
@@ -394,10 +395,10 @@ static void BLITZ_ROUTINE domenustate4_c(UWORD m BL_REG(d1), UWORD i BL_REG(d2),
     changestate(walk(p, s), on, 4);
 }
 /* the original changes d7, a3 and keeps d0-d1/a0-a1 */
-BLITZ_THUNK(domenustate, domenustate_c, "d0-d1/a0-a1");
-BLITZ_THUNK(domenustate2, domenustate2_c, "d0-d1/a0-a1");
-BLITZ_THUNK(domenustate3, domenustate3_c, "d0-d1/a0-a1");
-BLITZ_THUNK(domenustate4, domenustate4_c, "d0-d1/a0-a1");
+BLITZ_THUNK(menuslib_domenustate, domenustate_c, "d0-d1/a0-a1");
+BLITZ_THUNK(menuslib_domenustate2, domenustate2_c, "d0-d1/a0-a1");
+BLITZ_THUNK(menuslib_domenustate3, domenustate3_c, "d0-d1/a0-a1");
+BLITZ_THUNK(menuslib_domenustate4, domenustate4_c, "d0-d1/a0-a1");
 
 /* checked: BTST #0,12(a2):SNE d0:EXT d0 - upper word of d0 stays */
 static ULONG checked(ULONG hiword, const UBYTE *p)
@@ -427,7 +428,7 @@ static ULONG BLITZ_ROUTINE domenuchecked_c(ULONG hiword BL_REG(d0), UBYTE *p BL_
     p = walk(p, m) + M_FIRST;
     return checked(hiword, walk(p, i));
 }
-BLITZ_THUNK(domenuchecked, domenuchecked_c, "d1/a0-a1");
+BLITZ_THUNK(menuslib_domenuchecked, domenuchecked_c, "d1/a0-a1");
 
 /**
  * @brief MenuChecked(MenuList#,Menu,Item,Subitem) - whether a toggle
@@ -465,7 +466,7 @@ menuloop:                                       /* loop1 */
         goto menuloop;
     return checked(hiword, p);
 }
-BLITZ_THUNK(domenuchecked2, domenuchecked2_c, "d1/a0-a1");
+BLITZ_THUNK(menuslib_domenuchecked2, domenuchecked2_c, "d1/a0-a1");
 
 /* sussflags - the flags argument (popped long) -> menflags, mexclude;
    d5 = item number (for the exclusion) */
@@ -993,7 +994,7 @@ static void freeitem(struct MenuItem *e)
  *
  * The list is in a3; it is cleared first.
  */
-void BLITZ_ROUTINE freemenu(void)
+static void BLITZ_ROUTINE freemenu(void)
 {
     struct Menu *m = *(struct Menu **)blitz_string, *nm;
     struct MenuItem *it, *sub, *n;
@@ -1198,8 +1199,8 @@ BLITZ_ERRCHK_THUNK(itemchk2, itemchk2_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(shapeitemchk, shapeitemchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(subchk2, subchk2_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(shapesubchk, shapesubchk_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(statechk2, statechk2_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(statechk3, statechk3_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(statechk4, statechk4_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(chkchk3, chkchk3_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(chkchk4, chkchk4_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(menuslib_statechk2, statechk2_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(menuslib_statechk3, statechk3_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(menuslib_statechk4, statechk4_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(menuslib_chkchk3, chkchk3_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(menuslib_chkchk4, chkchk4_c, "d0-d1/a0-a1");

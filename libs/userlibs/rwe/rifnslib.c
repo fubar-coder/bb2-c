@@ -89,11 +89,13 @@
 /* entry points (thunks, below) */
 void _fnsprint(void), _fnsprint2(void), _installfns(void), _fnsoutput2(void);
 void _fnsoutput(void), _fnsink(void), _fnsprefs2(void), _fnsprefs(void);
-void _fnsheight(void), _fnsclipset(void), _fnsclipoutputset(void), _removefns(void);
-void _fnsunderline(void), _fnslength2(void), _fnslength(void), _fnsversion(void);
-void _fnsorigin2(void), _fnsorigin(void), _fnswidth(void), _fnsload(void);
-void _fnsslot(void), _fnsunload(void), _fnssettab(void), _fnsshadowprint(void);
-void _fnsshadowprint2(void), _fnsshadowprint3(void), _libinit(void), _libfinit(void);
+void _fnsheight(void), _fnsclipset(void), _fnsclipoutputset(void);
+void _removefns(void), _fnsunderline(void), _fnslength2(void);
+void _fnslength(void), _fnsversion(void), _fnsorigin2(void), _fnsorigin(void);
+void _fnswidth(void), _fnsload(void), _fnsslot(void), _fnsunload(void);
+void _fnssettab(void), _fnsshadowprint(void), _fnsshadowprint2(void);
+void _fnsshadowprint3(void), rifnslib_libinit(void);
+static void _libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -240,7 +242,7 @@ BLITZ_SUBS(_fnsshadowprint3, 0, 0);
 BLITZ_NAME("FNSShadowPrint", "fontnum,x,y,a$/string_address,[prefs,colour[,shadow]]");
 
 BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(init, rifnslib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -695,7 +697,7 @@ static void BLITZ_ROUTINE libinit_c(void)
 /**
  * @brief finit: nothing.
  */
-void BLITZ_ROUTINE _libfinit(void)
+static void BLITZ_ROUTINE _libfinit(void)
 {
 }
 
@@ -979,7 +981,7 @@ static void BLITZ_ROUTINE settab_c(UWORD t BL_REG(d0))
 /* Registers: the original changes d0 (and a0, d1, d2, d7 in places, the
    RIAmosFuncLib calls more); the thunks keep d1/a0/a1, FNSLength all
    but d0 as the original. */
-BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rifnslib_libinit, libinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_installfns, installfns_c, "d1/a0-a1");
 BLITZ_THUNK(_removefns, removefns_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_fnsoutput, output_c, "d0-d1/a0-a1");

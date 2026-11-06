@@ -8,15 +8,14 @@
 #include "blitzlib.h"
 
 /* entry points (thunks / asm, defined below) */
-void getstart(void);
-void codeinit(void);
+void getstart(void), datalib_codeinit(void);
 
 BLITZ_ENTRY_DECL(init);
 
 /* !syslibheader{#datalib,$cd00,$cd01,init,1,0,0} */
 BLITZ_SYSLIBHEADER7(LIB_datalib, 0xcd00, 0xcd01, init, BL_LONGRET, 0, 0);
 BLITZ_NULLSUB(getstart, 0, 0);                  /* $CD00 getdstart */
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);         /* init */
+BLITZ_NULLSUB_AT(init, datalib_codeinit, 0, 0); /* init */
 BLITZ_LIBFIN();
 
 static ULONG datastart;
@@ -34,7 +33,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(ULONG start BL_REG(d0))
     datastart = start;
     return start;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
+BLITZ_THUNK(datalib_codeinit, codeinit_c, "d1/a0-a1");
 
 /**
  * @brief getdstart ($CD00): the start of the program's DATA area.

@@ -35,9 +35,9 @@
 #include "blitzobj.h"
 
 /* entry points (thunks, defined below) */
-void dopointer(void), dopointer2(void), domousearea(void);
-void domousex(void), domousey(void), domousexs(void), domouseys(void);
-void doposmouse(void), codeinit(void), sspchk(void);
+void dopointer(void), dopointer2(void), domousearea(void), domousex(void);
+void domousey(void), domousexs(void), domouseys(void), doposmouse(void);
+void mouselib_codeinit(void), mouselib_sspchk(void);
 void BLITZ_ROUTINE domouse(WORD on BL_REG(d0));
 
 BLITZ_ENTRY_DECL(init);
@@ -56,7 +56,7 @@ BLITZ_NAME("Mouse", "On|Off");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_spriteslib, 0x1380, LIB_blitzcoplib, 0x1202);   /* used slice */
-BLITZ_SUBS(dopointer, BLITZ_BLITZONLY_CHK(sspchk), 0);
+BLITZ_SUBS(dopointer, BLITZ_BLITZONLY_CHK(mouselib_sspchk), 0);
 BLITZ_ARGS0();
 BLITZ_LIBS0();
 BLITZ_SUBS(dopointer2, BLITZ_BLITZONLY, 0);
@@ -98,7 +98,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(doposmouse, 0, 0);
 BLITZ_NAME("PositionMouse", "x,y");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0, LIB_blitzcoplib, 0x0004);
+BLITZ_NULLSUB_AT(init, mouselib_codeinit, 0, 0, LIB_blitzcoplib, 0x0004);
 
 BLITZ_LIBFIN();
 
@@ -180,7 +180,7 @@ static void BLITZ_ROUTINE codeinit_c(WORD off BL_REG(d0))
     maxy = 200;
     snum = -1;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(mouselib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /**
  * @brief Pointer Sprite#,Sprite Channel - show a sprite as the mouse
@@ -332,4 +332,4 @@ static void BLITZ_ERRCHK sspchk_c(WORD chan BL_REG(d1), const struct bb_slice *s
     else if ((UWORD)(chan + spr->count) > slice->sprites)
         BLITZ_RUNERR(mess6);
 }
-BLITZ_ERRCHK_THUNK(sspchk, sspchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(mouselib_sspchk, sspchk_c, "d0-d1/a0-a1");

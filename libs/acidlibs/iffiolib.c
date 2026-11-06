@@ -55,7 +55,7 @@
 /* entry points (thunks, defined below) */
 void iffopen(void), iffclose(void), iffbyte(void), iffword(void);
 void ifflong(void), ifffind(void), iffskip(void), iffread(void);
-ULONG codeinit(struct DosLibrary *dos BL_REG(a0));
+static ULONG codeinit(struct DosLibrary *dos BL_REG(a0));
 
 BLITZ_ENTRY_DECL(init);
 
@@ -103,7 +103,7 @@ UBYTE *iff_a0;
  * @param dos  a0: dos.library (!libs #doslib,#la0)
  * @return d0: the buffer's address (the library's init value)
  */
-ULONG BLITZ_ROUTINE codeinit(struct DosLibrary *dos BL_REG(a0))
+static ULONG BLITZ_ROUTINE codeinit(struct DosLibrary *dos BL_REG(a0))
 {
     struct bl_regs r = { .d0 = BUFSIZE, .d1 = MEMF_PUBLIC };
 

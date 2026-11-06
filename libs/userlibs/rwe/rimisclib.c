@@ -117,16 +117,15 @@
 #undef __NOLIBBASE__
 
 /* entry points (thunks, below) */
-void _resettimer(void), _getsigbit(void), _iswbhere(void);
-void _doeasy(void), _doeasy2(void), _doeasy3(void), _doeasy4(void);
-void _doflip(void), _parseinit(void), _nextparsearg(void);
-void _ezoutput(void), _ezoutput2(void), _doeasy6(void), _doeasysep(void);
-void _doclickwait(void), _doprogpath(void), _doprogdir(void), _doprogname(void);
-void _fromblitz(void), _ltos(void), _ascraw(void), _rawasc(void);
-void _openfontprefs(void), _closefontprefs(void);
-void _defaultfontheight(void), _defaultfontname(void);
-void _nextparseuntilchar(void), _binstr(void);
-void _libinit(void), _libfinit(void);
+void _resettimer(void), _getsigbit(void), _iswbhere(void), _doeasy(void);
+void _doeasy2(void), _doeasy3(void), _doeasy4(void), _doflip(void);
+void _parseinit(void), rimisclib_nextparsearg(void), _ezoutput(void);
+void _ezoutput2(void), _doeasy6(void), _doeasysep(void), _doclickwait(void);
+void _doprogpath(void), _doprogdir(void), _doprogname(void), _fromblitz(void);
+void _ltos(void), _ascraw(void), _rawasc(void), _openfontprefs(void);
+void _closefontprefs(void), _defaultfontheight(void), _defaultfontname(void);
+void _nextparseuntilchar(void), _binstr(void), rimisclib_libinit(void);
+void rimisclib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -186,7 +185,7 @@ BLITZ_NAME("InitArgParse", "parameter$");
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS0();
 BLITZ_LIBS0();
-BLITZ_SUBS(_nextparsearg, 0, 0);
+BLITZ_SUBS(rimisclib_nextparsearg, 0, 0);
 BLITZ_NAME("NextArg$", "- get next parameter");
 
 BLITZ_ASTATEMENT();
@@ -294,8 +293,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_binstr, 0, 0);
 BLITZ_NAME("BInstr", "(String$,Findstring$)");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0, LIB_doslib, BL_LA(6));
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rimisclib_libfinit, 0, 0, LIB_doslib, BL_LA(6));
+BLITZ_NULLSUB_AT(init, rimisclib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -1147,8 +1146,8 @@ static ULONG BLITZ_ROUTINE defaultfontname_c(UWORD type BL_REG(d0))
    calls), d2 (LtoS, Flip$, NextArg$...), d6/d7 (EZRequest, BInstr), a2/a3
    (EZRequest, BInstr); the thunks keep d1/a0/a1, the statements that keep
    d0 also d0, the C code d2-d7/a2-a6. */
-BLITZ_THUNK(_libinit, libinit_c, "d1/a0-a1");
-BLITZ_THUNK(_libfinit, libfinit_c, "d1/a0-a1");
+BLITZ_THUNK(rimisclib_libinit, libinit_c, "d1/a0-a1");
+BLITZ_THUNK(rimisclib_libfinit, libfinit_c, "d1/a0-a1");
 BLITZ_THUNK(_resettimer, resettimer_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_doclickwait, doclickwait_c, "d1/a0-a1");
 BLITZ_THUNK(_getsigbit, getsigbit_c, "d1/a0-a1");
@@ -1160,7 +1159,7 @@ BLITZ_THUNK(_rawasc, rawasc_c, "d1/a0-a1");
 BLITZ_THUNK(_doflip, doflip_c, "d1/a0-a1");
 BLITZ_THUNK(_binstr, binstr_c, "d1/a0-a1");
 BLITZ_THUNK(_parseinit, parseinit_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_nextparsearg, nextparsearg_c, "d1/a0-a1");
+BLITZ_THUNK(rimisclib_nextparsearg, nextparsearg_c, "d1/a0-a1");
 BLITZ_THUNK(_nextparseuntilchar, nextparseuntilchar_c, "d1/a0-a1");
 BLITZ_THUNK(_doeasy, doeasy_c, "d1/a0-a1");
 BLITZ_THUNK(_doeasy2, doeasy2_c, "d1/a0-a1");

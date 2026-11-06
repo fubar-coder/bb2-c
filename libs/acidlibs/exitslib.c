@@ -14,15 +14,14 @@
 #include "blitzlib.h"
 
 /* entry points (asm, defined below) */
-void quit(void);
-void codeinit(void);
+void quit(void), exitslib_codeinit(void);
 
 BLITZ_ENTRY_DECL(init);
 
 /* !syslibheader{#exitslib,$c800,$c801,init,1,0,0} */
 BLITZ_SYSLIBHEADER7(LIB_exitslib, 0xc800, 0xc801, init, BL_LONGRET, 0, 0);
 BLITZ_NULLSUB(quit, 0, 0);                      /* $C800 endjmp */
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);         /* init */
+BLITZ_NULLSUB_AT(init, exitslib_codeinit, 0, 0); /* init */
 BLITZ_LIBFIN();
 
 __asm__(
@@ -41,7 +40,7 @@ __asm__(
  * @par Result
  * d0: the address of quit, the init value used by `End`
  */
-BLITZ_ASM_ROUTINE(codeinit,
+BLITZ_ASM_ROUTINE(exitslib_codeinit,
 "   move.l  d0,cleanup\n"
 "   move.l  sp,stack\n"
 "   move.l  #_quit,d0\n"

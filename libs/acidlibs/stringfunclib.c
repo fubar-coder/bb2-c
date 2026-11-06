@@ -51,10 +51,10 @@ void leftstring(void), rightstring(void), midstring(void), midstring2(void);
 void hexstring(void), binstring(void), chrstring(void), ascii(void);
 void stringstr(void), instrstring(void), instrstring2(void), replace(void);
 void mkistring(void), mklstring(void), cvistring(void), cvlstring(void);
-void lenstring(void), unleftstring(void), unrightstring(void);
-void striplead(void), striptrail(void), lsetstring(void), rsetstring(void);
-void centrestring(void), lcasestring(void), ucasestring(void);
-void casesensestring(void), codeinit(void), movestring(void);
+void lenstring(void), unleftstring(void), unrightstring(void), striplead(void);
+void striptrail(void), lsetstring(void), rsetstring(void), centrestring(void);
+void lcasestring(void), ucasestring(void), casesensestring(void);
+void stringfunclib_codeinit(void), movestring(void);
 
 BLITZ_ENTRY_DECL(init);
 
@@ -229,7 +229,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(cvlstring, 0, 0);
 BLITZ_NAME("Cvq", "(String$)");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, stringfunclib_codeinit, 0, 0);
 BLITZ_LIBFIN();
 
 /* ------------------------------------------------------------- helpers */
@@ -280,7 +280,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(void)
     csense = 0xffff;
     return (ULONG)movestring;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
+BLITZ_THUNK(stringfunclib_codeinit, codeinit_c, "d1/a0-a1");
 
 /**
  * @brief CaseSense On|Off - case sensitive or insensitive Instr and

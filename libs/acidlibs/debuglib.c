@@ -55,7 +55,8 @@
 /* entry points (thunks / asm, defined below) */
 void donewmode(void), dostop(void), dosethandler(void), dodetoke(void);
 void doevaluate(void), doexecute(void), doquit(void), dofindoff(void);
-void doskip(void), docall(void), codeinit(void), codefinit(void);
+void doskip(void), debuglib_docall(void), debuglib_codeinit(void);
+static void codefinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -71,8 +72,8 @@ BLITZ_NULLSUB(doexecute, 0, 0);                 /* $D505 */
 BLITZ_NULLSUB(doquit, 0, 0);                    /* $D506 */
 BLITZ_NULLSUB(dofindoff, 0, 0);                 /* $D507 */
 BLITZ_NULLSUB(doskip, 0, 0);                    /* $D508 */
-BLITZ_NULLSUB(docall, 0, 0);                    /* $D509 */
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB(debuglib_docall, 0, 0);           /* $D509 */
+BLITZ_NULLSUB_AT(init, debuglib_codeinit, 0, 0);
 BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
 BLITZ_LIBFIN();
 
@@ -631,12 +632,12 @@ static void BLITZ_ROUTINE codeinit_c(ULONG autorun BL_REG(d0))
     vbr[36] = mytrap4;
     vbr[37] = mytrap5;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(debuglib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /**
  * @brief Library finit: nothing (the trap vectors stay set).
  */
-void BLITZ_ROUTINE codefinit(void)
+static void BLITZ_ROUTINE codefinit(void)
 {
 }
 
@@ -728,7 +729,7 @@ void BLITZ_ROUTINE donewmode(void)
  * New in the binary (not in the source).  All registers are passed
  * through to the handler and back (a1 = the handler's address).
  */
-BLITZ_ASM_ROUTINE(docall,
+BLITZ_ASM_ROUTINE(debuglib_docall,
 "   move.l  _h6(pc),a1\n"
 "   jsr     (a1)\n"
 "   rts");

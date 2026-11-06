@@ -66,7 +66,8 @@
 void _shapetomapshape(void), _blitmapshape(void), _remapmapshape(void);
 void _blitmapshapesize(void), _setnummapshapes(void), _mapshapeaddr(void);
 void _freemapshapes(void), _addgroupmember(void), _blitgroup(void);
-void _resetgroup(void), _libinit(void), _libfinit(void);
+void _resetgroup(void), rimapshapeslib_libinit(void);
+void rimapshapeslib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -137,8 +138,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_resetgroup, 0, 0);
 BLITZ_NAME("ResetGroup", "blockwidth,blockheight");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rimapshapeslib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, rimapshapeslib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -181,7 +182,7 @@ static void BLITZ_ROUTINE libinit_c(void)
 {
     groupaddr = AllocVec(512, MEMF_PUBLIC | MEMF_CLEAR);
 }
-BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rimapshapeslib_libinit, libinit_c, "d0-d1/a0-a1");
 
 /**
  * @brief finit: frees the map shapes and the group block.
@@ -194,7 +195,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
     }
     FreeVec(groupaddr);
 }
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rimapshapeslib_libfinit, libfinit_c, "d0-d1/a0-a1");
 
 /* ---------------------------------------------------------- map shapes */
 

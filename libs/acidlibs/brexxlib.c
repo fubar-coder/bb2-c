@@ -80,7 +80,7 @@ void dosavetape(void), doloadtape(void), doabsmouse(void), dorelmouse(void);
 void domousebutton(void), doclickbutton(void), domacrokey(void);
 void dotapeadd(void), dotapeadd2(void), dotapemode(void), dotype(void);
 void doqplay(void), doxstatus(void), doplaywait(void), dofreemacrokey(void);
-void codeinit(void), codefinit(void), freetape(void);
+void brexxlib_codeinit(void), brexxlib_codefinit(void), freetape(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -193,8 +193,8 @@ BLITZ_LIBS(TAPEOBJ);
 BLITZ_SUBS(doplaywait, 0, 0);
 BLITZ_NAME("PlayWait", "");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
+BLITZ_NULLSUB_AT(init, brexxlib_codeinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, brexxlib_codefinit, 0, 0);
 
 BLITZ_DUMTOKE(_toke, "Tape", "A BREXX Macro");
 
@@ -862,7 +862,7 @@ static void BLITZ_ROUTINE codeinit_c(void)
     mysig = ((LONG)sig & 63) < 32 ? 1UL << ((LONG)sig & 63) : 0;  /* LSL.l d0,d1 */
     mytask = FindTask(0);
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(brexxlib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /**
  * @brief The finit routine: stop a playback, remove the handler.
@@ -879,7 +879,7 @@ static void BLITZ_ROUTINE codefinit_c(void)
     BL_FREESIGNAL(io_request.port.mp_SigBit);
     BL_FREESIGNAL(mybit);
 }
-BLITZ_THUNK(codefinit, codefinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(brexxlib_codefinit, codefinit_c, "d0-d1/a0-a1");
 
 /* ----------------------------------------------------- the handler */
 

@@ -78,21 +78,25 @@
 
 /* entry points (thunks, defined below) */
 void _isregistryopen(void), _lockregistry(void), _unlockregistry(void);
-void _setregistrybaselibrary(void), _existsregistrylibrary(void), _getlibraryvalue(void);
-void _getregistryvariable(void), _setregistryvariable(void), _setregistryvariable2(void);
-void _changeregistryvariable(void), _newregistrylibrary(void), _newregistrylibrary2(void);
-void _parseregistrylibrary(void), _nextparseitem(void), _changeregistryaccess(void);
+void _setregistrybaselibrary(void), _existsregistrylibrary(void);
+void _getlibraryvalue(void), _getregistryvariable(void);
+void _setregistryvariable(void), _setregistryvariable2(void);
+void _changeregistryvariable(void), _newregistrylibrary(void);
+void _newregistrylibrary2(void), _parseregistrylibrary(void);
+void _nextparseitem(void), _changeregistryaccess(void);
 void _deleteregistrylibrary(void), _deleteregistryvariable(void);
 void _numregistrylibraryvariables(void), _saveregistrylibrary(void);
 void _loadregistrylibrary(void), _getregistrystringvariable(void);
-void _setregistryboolvariable(void), _parseitemname(void), _parseitemvalue(void);
-void _getregistryboolvariable(void), _setregistryintvariable(void);
-void _getregistryintvariable(void), _deleteregistrylibraryvariables(void);
-void _setlibraryvalue(void), _setregistryvariableindex(void), _renameregistryvariable(void);
+void _setregistryboolvariable(void), _parseitemname(void);
+void _parseitemvalue(void), _getregistryboolvariable(void);
+void _setregistryintvariable(void), _getregistryintvariable(void);
+void _deleteregistrylibraryvariables(void), _setlibraryvalue(void);
+void _setregistryvariableindex(void), _renameregistryvariable(void);
 void _savelibraryvariables(void), _renameregistrylibrary(void);
 void _insertnewregistrylibrary(void), _insertnewregistrylibrary2(void);
 void _getstructurevariables(void), _freestructurevariables(void);
-void _loadlibraryvariables(void), _libinit(void), _libfinit(void);
+void _loadlibraryvariables(void), riregistrylib_libinit(void);
+void riregistrylib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -323,8 +327,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_loadlibraryvariables, 0, 0);
 BLITZ_NAME("LoadLibraryVariables", "LibraryName,Filename");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, riregistrylib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, riregistrylib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -906,8 +910,8 @@ static ULONG BLITZ_ROUTINE parseitemvalue_c(void)
    (NewRegistryLibrary form 1), d3 (InsertNewRegistryLibrary form 1), a3
    (the string functions).  The thunks keep d0 (statements), d1/a0/a1,
    the C code d2-d7/a2-a6 (a3 but in the string functions). */
-BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(riregistrylib_libinit, libinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(riregistrylib_libfinit, libfinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_isregistryopen, isregistryopen_c, "d1/a0-a1");
 BLITZ_THUNK(_lockregistry, lockregistry_c, "d1/a0-a1");
 BLITZ_THUNK(_unlockregistry, unlockregistry_c, "d0-d1/a0-a1");

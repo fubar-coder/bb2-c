@@ -13,8 +13,7 @@
 #include "blitzlib.h"
 
 /* entry points (thunks, defined below) */
-void stringmode(void);
-void codeinit(void);
+void stringmode(void), strings1lib_codeinit(void);
 
 BLITZ_ENTRY_DECL(init);
 
@@ -22,7 +21,7 @@ BLITZ_ENTRY_DECL(init);
 BLITZ_SYSLIBHEADER7(LIB_strings1lib, 0xc600, 0xc602, init, BL_LONGRET, 0, 0);
 BLITZ_NULLSUB(stringmode, 0, 0);                        /* $C600 copstring */
 BLITZ_NULLSUB(0, 0, 0, LIB_strings1lib, BL_LA(3));      /* $C601 workstart */
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, strings1lib_codeinit, 0, 0);
 BLITZ_LIBFIN();
 
 /**
@@ -40,7 +39,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(ULONG size BL_REG(d0))
     struct bl_regs r = { .d0 = size, .d1 = MEMF_PUBLIC };
     return BLITZ_ALIBJSR(TOK_globalloc, r);
 }
-BLITZ_THUNK(codeinit, codeinit_c, "a0-a1");
+BLITZ_THUNK(strings1lib_codeinit, codeinit_c, "a0-a1");
 
 /**
  * @brief $C600 (copstring) - copy a string into the work buffer at a3.

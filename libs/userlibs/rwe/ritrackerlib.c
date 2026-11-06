@@ -97,9 +97,10 @@
 typedef volatile struct AudChannel aud_t;
 
 /* entries (thunks below) */
-void _initmodule(void), mt_music(void), _stopmodule(void), _trackSetDMA(void);
-void _tracker(void), _trackermask(void), _trackerpause(void);
-void _libinit(void), _libfinit(void);
+void _initmodule(void), ritrackerlib_mt_music(void), _stopmodule(void);
+void _trackSetDMA(void), _tracker(void), _trackermask(void);
+void _trackerpause(void), ritrackerlib_libinit(void);
+void ritrackerlib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -116,7 +117,7 @@ BLITZ_NAME("TrackInit", "address");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS0();
 BLITZ_LIBS0();
-BLITZ_SUBS(mt_music, 0, 0);
+BLITZ_SUBS(ritrackerlib_mt_music, 0, 0);
 BLITZ_NAME("TrackPlay", "");
 
 BLITZ_ASTATEMENT();
@@ -149,8 +150,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_trackerpause, 0, 0);
 BLITZ_NAME("TrackerPause", "On|Off");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, ritrackerlib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, ritrackerlib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -1335,11 +1336,11 @@ static void BLITZ_ROUTINE music_c(void)
    TrackInit, a0 in TrackStop and TrackerChannels; every thunk keeps
    d0/d1/a0/a1 (no results), GCC keeps the others. */
 BLITZ_THUNK(_initmodule, initmodule_c, "d0-d1/a0-a1");
-BLITZ_THUNK(mt_music, music_c, "d0-d1/a0-a1");
+BLITZ_THUNK(ritrackerlib_mt_music, music_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_stopmodule, stopmodule_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_trackSetDMA, tracksetdma_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_tracker, tracker_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_trackermask, trackermask_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_trackerpause, trackerpause_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(ritrackerlib_libinit, libinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(ritrackerlib_libfinit, libfinit_c, "d0-d1/a0-a1");

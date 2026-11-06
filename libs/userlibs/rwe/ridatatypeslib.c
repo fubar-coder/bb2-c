@@ -99,7 +99,7 @@ void _datatypebitmap(void), _datatypespalette(void), _datatypewidth(void);
 void _datatypeheight(void), _datatypedepth(void), _datatypeready(void);
 void _setdatatypeattr(void), _setdatatypeattr2(void), _getdatatypeattr(void);
 void _getmodeid(void), _getmodeid2(void), _datatypegroup(void);
-void _libinit(void), _libfinit(void);
+void ridatatypeslib_libinit(void), ridatatypeslib_libfinit(void);
 
 BLITZ_ENTRY_DECL(finit);
 BLITZ_ENTRY_DECL(init);
@@ -241,8 +241,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(BLITZ_AMIGAONLY(_datatypegroup), 0, 0);
 BLITZ_NAME("DataTypeGroup", "");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, ridatatypeslib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, ridatatypeslib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -281,7 +281,7 @@ static UWORD attachtobitmap;
  * A library that does not open leaves its base 0; the commands that test
  * the base then do nothing.
  */
-void BLITZ_ROUTINE c_libinit(void)
+static void BLITZ_ROUTINE c_libinit(void)
 {
     struct bl_regs r = { .d0 = 1024, .d1 = MEMF_CLEAR };
     int i;
@@ -340,7 +340,7 @@ void BLITZ_ROUTINE c_datatypeclose(void)
  * BUG(orig) (#602): closes the libraries only up to the first one that
  * did not open.
  */
-void BLITZ_ROUTINE c_libfinit(void)
+static void BLITZ_ROUTINE c_libfinit(void)
 {
     struct Library **p;
     struct bl_regs r;
@@ -835,8 +835,8 @@ ULONG BLITZ_ROUTINE c_getmodeid2(struct TagItem *tags BL_REG(d0))
 }
 
 /* entries: keep every one of d0/d1/a0/a1 that is not the result */
-BLITZ_THUNK(_libinit, c_libinit, "d0-d1/a0-a1");
-BLITZ_THUNK(_libfinit, c_libfinit, "d0-d1/a0-a1");
+BLITZ_THUNK(ridatatypeslib_libinit, c_libinit, "d0-d1/a0-a1");
+BLITZ_THUNK(ridatatypeslib_libfinit, c_libfinit, "d0-d1/a0-a1");
 BLITZ_THUNK(_datatypeopen, c_datatypeopen, "d1/a0-a1");
 BLITZ_THUNK(_datatypeclose, c_datatypeclose, "d0-d1/a0-a1");
 BLITZ_THUNK(_datatypename, c_datatypename, "d1/a0-a1");

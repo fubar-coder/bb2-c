@@ -80,12 +80,14 @@
 #include <devices/ahi.h>
 
 /* entry points (thunks, below) */
-void _loadsounds(void), _libinit(void), _libfinit(void), _OpenAHI(void), _OpenAHI2(void);
-void _CloseAHI(void), _PlaySoundAHI(void), _PlaySoundAHI1(void), _PlaySoundAHI2(void);
-void _PlayRawAHI(void), _PlayRawAHI1(void), _PlayRawAHI2(void);
-void _AHIOutputRequest1(void), _AHIOutputRequest2(void), _AHIOutputRequest3(void);
-void _AHIOutputRequest4(void), _AHIOutputRequest5(void), _AHIOutputRequest6(void);
-void _AHIRequestedID(void), _AHIRequestedFreq(void);
+void risoundlib2_loadsounds(void), risoundlib2_libinit(void);
+void risoundlib2_libfinit(void), _OpenAHI(void), _OpenAHI2(void);
+void _CloseAHI(void), _PlaySoundAHI(void), _PlaySoundAHI1(void);
+void _PlaySoundAHI2(void), _PlayRawAHI(void), _PlayRawAHI1(void);
+void _PlayRawAHI2(void), _AHIOutputRequest1(void), _AHIOutputRequest2(void);
+void _AHIOutputRequest3(void), _AHIOutputRequest4(void);
+void _AHIOutputRequest5(void), _AHIOutputRequest6(void), _AHIRequestedID(void);
+void _AHIRequestedFreq(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -98,7 +100,7 @@ BLITZ_LIBHEADER(LIB_risoundlib, init, BL_NORET, finit, 0);
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG);
 BLITZ_LIBS(LIB_audiolib, BL_LA(0) | BL_ITEM | BL_PD(0), LIB_execlib, BL_LA(6));
-BLITZ_SUBS(_loadsounds, 0, 0);
+BLITZ_SUBS(risoundlib2_loadsounds, 0, 0);
 BLITZ_NAME("CludgeSound", "sound#,address");
 
 BLITZ_ACOMMAND(BL_LONG);
@@ -175,8 +177,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_AHIRequestedFreq, 0, 0);
 BLITZ_NAME("AHIRequestedFreq", "");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0, LIB_doslib, BL_LA(6));
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, risoundlib2_libfinit, 0, 0, LIB_doslib, BL_LA(6));
+BLITZ_NULLSUB_AT(init, risoundlib2_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -248,7 +250,7 @@ static char ahiname[] = "ahi.device";
  * @return d0: the request, 0 if the port or the request could not be
  *         made (a port made stays)
  */
-ULONG BLITZ_ROUTINE c_libinit(void)
+static ULONG BLITZ_ROUTINE c_libinit(void)
 {
     ahimsgport = CreateMsgPort();
     if (!ahimsgport)
@@ -269,7 +271,7 @@ ULONG BLITZ_ROUTINE c_libinit(void)
  * DeleteIORequest, DeleteMsgPort, ahibase = 0.  CloseAHI is this
  * routine: a later OpenAHI uses request 0 (BUG(orig) (#927)).
  */
-void BLITZ_ROUTINE c_libfinit(void)
+static void BLITZ_ROUTINE c_libfinit(void)
 {
     if (!ahimsgport)
         return;
@@ -666,9 +668,9 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
 
 /* Registers: the originals change d0/d1/a0/a1 (exec, AHI, memlib), a6
    and AHIOutputRequest d2-d5 as well; the thunks keep d1/a0/a1. */
-BLITZ_THUNK(_loadsounds, loadsounds_c, "d1/a0-a1");
-BLITZ_THUNK(_libinit, c_libinit, "d1/a0-a1");
-BLITZ_THUNK(_libfinit, c_libfinit, "d0-d1/a0-a1");
+BLITZ_THUNK(risoundlib2_loadsounds, loadsounds_c, "d1/a0-a1");
+BLITZ_THUNK(risoundlib2_libinit, c_libinit, "d1/a0-a1");
+BLITZ_THUNK(risoundlib2_libfinit, c_libfinit, "d0-d1/a0-a1");
 BLITZ_THUNK(_CloseAHI, c_libfinit, "d0-d1/a0-a1");
 BLITZ_THUNK(_OpenAHI, c_openahi, "d1/a0-a1");
 BLITZ_THUNK(_OpenAHI2, c_openahi2, "d1/a0-a1");

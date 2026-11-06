@@ -96,11 +96,12 @@
 
 /* entries (thunks below) */
 void _setbaud(void), _openserial(void), _openserial2(void), _closeserial(void);
-void _readser(void), _writeser(void), info(void), _showloc(void), _sersend(void);
-void _serreceive(void), _flushser(void), _sendserialstring(void);
-void _readserialstring(void), _buffpos(void), _readlong(void), _writelong(void);
-void _abortxfer(void), _buffcount(void), _buffcount2(void), _libfinit(void);
-void readint(void), writeint(void);
+void _readser(void), _writeser(void), info(void), _showloc(void);
+void _sersend(void), _serreceive(void), _flushser(void);
+void _sendserialstring(void), _readserialstring(void), _buffpos(void);
+void _readlong(void), _writelong(void), _abortxfer(void), _buffcount(void);
+void _buffcount2(void), riseriallib_libfinit(void), readint(void);
+void writeint(void);
 
 BLITZ_ENTRY_DECL(finit);
 
@@ -218,7 +219,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_buffcount2, 0, 0);
 BLITZ_NAME("SerialWait", "   -- waits for serial buffer to receive a byte");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, riseriallib_libfinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -693,7 +694,7 @@ BLITZ_THUNK(_setbaud, c_setbaud, "d0-d1/a0-a1");
 BLITZ_THUNK(_openserial, c_openserial, "d0-d1/a0-a1");
 BLITZ_THUNK(_openserial2, c_openserial2, "d0-d1/a0-a1");
 BLITZ_THUNK(_closeserial, c_closeserial, "d0-d1/a0-a1");
-BLITZ_THUNK(_libfinit, c_closeserial, "d0-d1/a0-a1");
+BLITZ_THUNK(riseriallib_libfinit, c_closeserial, "d0-d1/a0-a1");
 BLITZ_THUNK(_readser, c_readser, "d1/a0-a1");
 BLITZ_THUNK(_writeser, c_writeser, "d0-d1/a0-a1");
 BLITZ_THUNK(info, c_info, "d1/a0-a1");

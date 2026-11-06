@@ -72,8 +72,8 @@ void doshapeh(void), dohandle(void), doautocookie(void), docopyshape(void);
 void dogetashape(void), b_getashape(void), dosaveshapes(void);
 void doloadshapes(void), doloadshapes2(void), domidhandle(void);
 void _cludgeshapes(void), _cludgeshapes2(void), _initshape(void);
-void codeinit(void), freeashape(void);
-void cookiechk(void), funcchk(void), gschk(void), schkz(void);
+void shapeslib_codeinit(void), freeashape(void), cookiechk(void);
+void funcchk(void), gschk(void), schkz(void);
 
 #define AMIGAONLY(entry) ((char *)(entry) + 1)
 
@@ -180,7 +180,7 @@ BLITZ_LIBS(LIB_shapeslib, 0x1380);
 BLITZ_SUBS(_initshape, 0, 0);
 BLITZ_NAME("InitShape", "Shape#,Width,Height,Depth");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, shapeslib_codeinit, 0, 0);
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, 0, 0, 0);
@@ -287,7 +287,7 @@ static void BLITZ_ROUTINE codeinit_c(void)
 {
     autocook = 0xffff;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(shapeslib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /* free a shape's data and cookie (a3) */
 static void freeashape_(struct bb_shape *s)

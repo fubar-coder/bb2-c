@@ -125,16 +125,19 @@
 #define RAW_SPACE 64
 
 /* entry points (thunks, below) */
-void _finddev(void), _getsr(void), _hexword(void), _checknmove(void), _checknmove2(void);
-void _findstringptr(void), _getcopins(void), _flocate(void), _fprint(void), _fnprint(void);
+void rilesdebuglib_finddev(void), _getsr(void), _hexword(void);
+void _checknmove(void), _checknmove2(void), _findstringptr(void);
+void _getcopins(void), _flocate(void), _fprint(void), _fnprint(void);
 void _finverse(void), _getprogmode(void), _fyoffset(void), _searchmem(void);
-void _searchmemfound(void), _peekmax(void), _checknmoveword(void), _checknmoveword2(void);
-void _gethex(void), _gethexadr(void), _getcustomreg(void), _getcustomregadr(void);
-void _fprintdetoke(void), _setuplesdebug(void), _extractlabel(void), _outtext(void);
-void _checknmovea(void), _checknmovea2(void), _outtextpen(void), _initparse(void);
-void _nextparsearg(void), _processstring(void), _addprocessptr(void);
-void _clearprocessptrs(void), _findlinetoken(void), _getdataitem(void);
-void _libinit(void), _libfinit(void);
+void _searchmemfound(void), _peekmax(void), _checknmoveword(void);
+void _checknmoveword2(void), _gethex(void), _gethexadr(void);
+void _getcustomreg(void), _getcustomregadr(void), _fprintdetoke(void);
+void _setuplesdebug(void), _extractlabel(void), _outtext(void);
+void _checknmovea(void), _checknmovea2(void), _outtextpen(void);
+void _initparse(void), rilesdebuglib_nextparsearg(void), _processstring(void);
+void _addprocessptr(void), _clearprocessptrs(void), _findlinetoken(void);
+void _getdataitem(void), rilesdebuglib_libinit(void);
+void rilesdebuglib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -145,7 +148,7 @@ BLITZ_LIBHEADER(LIB_riLESDEBUGlib, init, BL_NORET, finit, 0);
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS(LIB_doslib, BL_LA(6));
-BLITZ_SUBS(BLITZ_AMIGAONLY(_finddev), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(rilesdebuglib_finddev), 0, 0);
 BLITZ_NAME("D_FindVolume", "(volumename)");
 
 BLITZ_ASTATEMENT();
@@ -316,7 +319,7 @@ BLITZ_NAME("D_InitParse", "string");
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS0();
 BLITZ_LIBS0();
-BLITZ_SUBS(_nextparsearg, 0, 0);
+BLITZ_SUBS(rilesdebuglib_nextparsearg, 0, 0);
 BLITZ_NAME("D_NextArg$", "- get next parameter");
 
 BLITZ_AFUNCTION(BL_STRING);
@@ -349,8 +352,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_getdataitem, 0, 0);
 BLITZ_NAME("GetDataItem", "address,size  -- size=1 byte, size=2 word, otherwise long");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rilesdebuglib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, rilesdebuglib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -1539,9 +1542,9 @@ static void BLITZ_ROUTINE clearprocessptrs_c(void)
 /* Registers: the original changes d0, d1 and a0/a1 in most routines, more
    in some (d2, d3, d5-d7, a2, a3, a6); the thunks keep d1/a0/a1, the
    statements also d0, the C code d2-d7/a2-a6. */
-BLITZ_THUNK(_libinit, libinit_c, "d1/a0-a1");
-BLITZ_THUNK(_libfinit, libfinit_c, "d1/a0-a1");
-BLITZ_THUNK(_finddev, finddev_c, "d1/a0-a1");
+BLITZ_THUNK(rilesdebuglib_libinit, libinit_c, "d1/a0-a1");
+BLITZ_THUNK(rilesdebuglib_libfinit, libfinit_c, "d1/a0-a1");
+BLITZ_THUNK(rilesdebuglib_finddev, finddev_c, "d1/a0-a1");
 BLITZ_THUNK(_getsr, getsr_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_hexword, hexword_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_checknmove, checknmove_c, "d0-d1/a0-a1");
@@ -1571,7 +1574,7 @@ BLITZ_THUNK(_checknmovea, checknmovea_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_checknmovea2, checknmovea2_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_outtextpen, outtextpen_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_initparse, initparse_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_nextparsearg, nextparsearg_c, "d1/a0-a1");
+BLITZ_THUNK(rilesdebuglib_nextparsearg, nextparsearg_c, "d1/a0-a1");
 BLITZ_THUNK(_processstring, processstring_c, "d1/a0-a1");
 BLITZ_THUNK(_addprocessptr, addprocessptr_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_clearprocessptrs, clearprocessptrs_c, "d0-d1/a0-a1");

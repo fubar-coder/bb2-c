@@ -33,9 +33,10 @@
 #undef __NOLIBBASE__
 
 /* entry points (thunks / C / asm, defined below) */
-void dobuffer(void), doblit(void), doblitex(void), dounbuffer(void);
-void dobblitmode(void), doshowstencil(void), doflushbuff(void), codeinit(void);
-void freebuffer(void), bblitchk(void), unbufferchk(void), unbufferchk2(void);
+void dobuffer(void), bblitlib_doblit(void), bblitlib_doblitex(void);
+void dounbuffer(void), dobblitmode(void), doshowstencil(void);
+void doflushbuff(void), bblitlib_codeinit(void), freebuffer(void);
+void bblitchk(void), unbufferchk(void), unbufferchk2(void);
 
 BLITZ_ENTRY_DECL(init);
 
@@ -55,10 +56,10 @@ BLITZ_NAME_AT(_toke, "Buffer", "Buffer#,Memorylen");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BBLIT_LIBS;
-BLITZ_SUBS(doblit, bblitchk, 0);
+BLITZ_SUBS(bblitlib_doblit, bblitchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BBLIT_LIBS;
-BLITZ_SUBS(doblitex, bblitchk, 0);
+BLITZ_SUBS(bblitlib_doblitex, bblitchk, 0);
 BLITZ_NAME("BBlit", "Buffer#,Shape#,X,Y[,Excessonoff]");
 
 BLITZ_ASTATEMENT();
@@ -86,7 +87,7 @@ BLITZ_LIBS(LIB_bblitlib, 0x1380);
 BLITZ_SUBS(doflushbuff, unbufferchk, 0);
 BLITZ_NAME("FlushBuffer", "Buffer#");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, bblitlib_codeinit, 0, 0);
 
 BLITZ_ENTRY_DECL(_load);
 BLITZ_ENTRY_DECL(_save);
@@ -158,7 +159,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(ULONG incoming BL_REG(d0))
     bcon0 = 0xfca;
     return (incoming & 0xffff0000UL) | 0xfca;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
+BLITZ_THUNK(bblitlib_codeinit, codeinit_c, "d1/a0-a1");
 
 /* freebuffer (_free) - a3 = buffer */
 static void freebuf(struct buffer *b)
@@ -298,10 +299,10 @@ saveplane:                                      /* saveit2 */
     BL_CUSTOMW(cb, 0x46) = 0;
     BL_CUSTOML(cb, 0x4c) = (ULONG)shape->data;
     st->cookie = (ULONG)shape->cookie;
-    goto doblit;
+    goto bblitlib_doblit;
     do {
         BL_BLITWAIT(cb);
-doblit:
+bblitlib_doblit:
         BL_CUSTOML(cb, 0x50) = st->cookie;
         {
             ULONG dst = (ULONG)*st->plane++ + st->off;
@@ -448,8 +449,8 @@ nextplane:                                      /* loop3a */
  * @param cb   a1: the custom chip base $DFF000 (chipbaselib)
  * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
  */
-void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS);
-void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS)
+static void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS);
+static void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS)
 {
     struct blitstate st;
 
@@ -479,8 +480,10 @@ void BLITZ_ROUTINE b_doblit_c(BBLIT_REGS)
  * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
  * @param gfx  a6: graphics.library (!libs {#graphicslib,$5600})
  */
-void BLITZ_ROUTINE a_doblit_c(BBLIT_REGS, struct Library *gfx BL_REG(a6));
-void BLITZ_ROUTINE a_doblit_c(BBLIT_REGS, struct Library *gfx BL_REG(a6))
+static void BLITZ_ROUTINE a_doblit_c(BBLIT_REGS,
+                                     struct Library *gfx BL_REG(a6));
+static void BLITZ_ROUTINE a_doblit_c(BBLIT_REGS,
+                                     struct Library *gfx BL_REG(a6))
 {
     struct blitstate st;
 
@@ -489,7 +492,7 @@ void BLITZ_ROUTINE a_doblit_c(BBLIT_REGS, struct Library *gfx BL_REG(a6))
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
-BLITZ_AB_ROUTINE(doblit, b_doblit_c, "   jmp     _a_doblit_c");
+BLITZ_AB_ROUTINE(bblitlib_doblit, b_doblit_c, "   jmp     _a_doblit_c");
 
 /**
  * @brief BBlit Buffer#,Shape#,X,Y,Excessonoff (Blitz mode).
@@ -506,8 +509,8 @@ BLITZ_AB_ROUTINE(doblit, b_doblit_c, "   jmp     _a_doblit_c");
  * @param bm   a2: the used bitmap (!libs {#bitmaplib,$1202})
  * @param bits d4.w: Excessonoff, one bit per excess plane (set = $FA)
  */
-void BLITZ_ROUTINE b_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4));
-void BLITZ_ROUTINE b_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4))
+static void BLITZ_ROUTINE b_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4));
+static void BLITZ_ROUTINE b_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4))
 {
     bblitex(b, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
 }
@@ -529,17 +532,17 @@ void BLITZ_ROUTINE b_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4))
  * @param bits d4.w: Excessonoff, one bit per excess plane (set = $FA)
  * @param gfx  a6: graphics.library (!libs {#graphicslib,$5600})
  */
-void BLITZ_ROUTINE a_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4),
-                                struct Library *gfx BL_REG(a6));
-void BLITZ_ROUTINE a_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4),
-                                struct Library *gfx BL_REG(a6))
+static void BLITZ_ROUTINE a_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4),
+                                       struct Library *gfx BL_REG(a6));
+static void BLITZ_ROUTINE a_doblitex_c(BBLIT_REGS, UWORD bits BL_REG(d4),
+                                       struct Library *gfx BL_REG(a6))
 {
     OwnBlitter();
     bblitex(b, (const struct bb_shape *)blitz_string, bm, cb, x, y, bits);
     BL_BLITWAIT(cb);
     DisownBlitter();
 }
-BLITZ_AB_ROUTINE(doblitex, b_doblitex_c, "   jmp     _a_doblitex_c");
+BLITZ_AB_ROUTINE(bblitlib_doblitex, b_doblitex_c, "   jmp     _a_doblitex_c");
 
 /**
  * @brief UnBuffer Buffer#: restore the background of all BBlits of the

@@ -55,7 +55,7 @@ BB_BOOL BLITZ_ROUTINE doprevitem(UBYTE *base BL_REG(d0));
 BB_BOOL BLITZ_ROUTINE dolastitem(UBYTE *base BL_REG(d0));
 void BLITZ_ROUTINE setstack(ULONG n BL_REG(d0));
 void BLITZ_ROUTINE dosortlist(UBYTE *base BL_REG(d0), WORD offset BL_REG(d1));
-void BLITZ_ROUTINE doinit(void);
+static void BLITZ_ROUTINE doinit(void);
 /* error checks (debugger only, thunks below) */
 void lchk(void), lchk2(void), pushchk(void), popchk(void);
 
@@ -199,7 +199,7 @@ static void linkitem(struct bb_listitem *item, struct bb_listitem *after)
 }
 
 /** @brief The library's init: an empty item stack of 8 entries. */
-void BLITZ_ROUTINE doinit(void)
+static void BLITZ_ROUTINE doinit(void)
 {
     currstack = 0;
     currsp = 0;

@@ -92,15 +92,15 @@
 void dopalload(void), dopalload2(void), getpal(void), getpal2(void);
 void docycle(void), dorgb(void), dored(void), dogreen(void), doblue(void);
 void do4bitpalrgb(void), dopalrgb(void), dosetcycle1(void), dosetcycle2(void);
-void dostopcycle(void), doaargb(void), make4bitrgbs(void);
-void doagared(void), doagagreen(void), doagablue(void), showpal(void);
-void newpalmode(void), _cyclepalette(void), _fadepalette(void), _initpalette(void);
+void dostopcycle(void), doaargb(void), make4bitrgbs(void), doagared(void);
+void doagagreen(void), doagablue(void), showpal(void), newpalmode(void);
+void _cyclepalette(void), _fadepalette(void), _initpalette(void);
 void _paletterange(void), _duplicatepalette(void), _cludgepalette(void);
 void _cludgepalette2(void), _mixpalette(void), usepal(void), freepal(void);
-void codeinit(void), codefinit(void), cycleem(void);
-void rgbchk(void), colchk(void), prgbchk(void), setcyclechk(void), setcyclechk2(void);
-void aargbchk(void), aaprgbchk(void), agacolchk(void), showpalchk(void);
-void usepalchk(void), docyclechk(void);
+void palettelib_codeinit(void), palettelib_codefinit(void), cycleem(void);
+void rgbchk(void), colchk(void), prgbchk(void), setcyclechk(void);
+void setcyclechk2(void), aargbchk(void), aaprgbchk(void), agacolchk(void);
+void showpalchk(void), usepalchk(void), docyclechk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -270,8 +270,8 @@ BLITZ_NULLSUB_AT(_load, 0, 0, 0);
 BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, usepal, usepalchk, 0, L_SCRA2, L_GFXA, L_SLICE);
 BLITZ_NULLSUB_AT(_free, freepal, 0, 0);
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0, LIB_graphicslib, BL_LA(0));
-BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
+BLITZ_NULLSUB_AT(init, palettelib_codeinit, 0, 0, LIB_graphicslib, BL_LA(0));
+BLITZ_NULLSUB_AT(finit, palettelib_codefinit, 0, 0);
 
 /* !libfin{_toke,_load,_save,_use,_free,4,7} */
 BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 4, 7);
@@ -484,7 +484,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(ULONG callerd0 BL_REG(d0), struct Library 
     agamode = (WORD)v >= 39 ? -1 : 0;
     return (v & 0xffff0000UL) | (UWORD)agamode;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d1");
+BLITZ_THUNK(palettelib_codeinit, codeinit_c, "d1");
 
 /**
  * @brief Library finit (cycoff) - cycling interrupt off, cycle list freed.
@@ -508,7 +508,7 @@ static void BLITZ_ROUTINE codefinit_c(void)
         n = next;
     }
 }
-BLITZ_THUNK(codefinit, codefinit_c, "a3");
+BLITZ_THUNK(palettelib_codefinit, codefinit_c, "a3");
 
 /* ------------------------------------------------------ loading (IFF) */
 

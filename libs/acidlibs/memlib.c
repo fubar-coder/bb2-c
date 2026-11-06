@@ -32,7 +32,8 @@
 
 /* entry points (thunks / asm, defined below) */
 void localloc(void), locfree(void), globalloc(void), globfree(void);
-void newmem(void), freelast(void), codeinit(void), codefinit(void);
+void newmem(void), freelast(void), memlib_codeinit(void);
+void memlib_codefinit(void);
 extern char membase[];
 
 BLITZ_ENTRY_DECL(init);
@@ -46,9 +47,9 @@ BLITZ_NULLSUB(globalloc, 0, 0);         /* $C002 */
 BLITZ_NULLSUB(globfree, 0, 0);          /* $C003 */
 BLITZ_NULLSUB(newmem, 0, 0);            /* $C004 */
 BLITZ_NULLSUB(freelast, 0, 0);          /* $C005 */
-BLITZ_NULLSUB(codefinit, 0, 0);         /* $C006 - free ALL memory allocated! */
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
+BLITZ_NULLSUB(memlib_codefinit, 0, 0);  /* $C006 - free ALL memory allocated! */
+BLITZ_NULLSUB_AT(init, memlib_codeinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, memlib_codefinit, 0, 0);
 BLITZ_LIBFIN();
 
 struct memblock {
@@ -83,7 +84,7 @@ static void BLITZ_ROUTINE codefinit_c(void)
     while (freelast_c())
         ;
 }
-BLITZ_THUNK(codefinit, codefinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(memlib_codefinit, codefinit_c, "d0-d1/a0-a1");
 
 /* err1 - out of memory: free everything, runtime error.
    DIFF: the original jumps here from localloc/newmem with their saved
@@ -132,7 +133,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(void)
     memerr = 0;
     return (ULONG)membase;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d1/a0-a1");
+BLITZ_THUNK(memlib_codeinit, codeinit_c, "d1/a0-a1");
 
 /* membase - the init value: BRA localloc / locfree / globalloc / globfree
    (4 bytes each, called through the table by other code) */

@@ -74,11 +74,11 @@
 #define CALCFACTOR (1 << ROLFACTOR)
 
 /* entries (thunks below) */
-void libinit(void), libfinit(void);
-void docolsplit(void), redocolsplit(void), splitreset2(void), splitreset(void);
-void EndSplit(void), InfoBlock(void), CustomCommand(void), CustomMove(void);
-void CustomWait(void), CustomSkip(void), getccoffset(void), CustomAGACol(void);
-void splitresethard(void), splitbplcon3(void);
+void ricopperfxlib_libinit(void), ricopperfxlib_libfinit(void);
+void ricopperfxlib_docolsplit(void), redocolsplit(void), splitreset2(void);
+void splitreset(void), EndSplit(void), InfoBlock(void), CustomCommand(void);
+void CustomMove(void), CustomWait(void), CustomSkip(void), getccoffset(void);
+void CustomAGACol(void), splitresethard(void), splitbplcon3(void);
 
 BLITZ_ENTRY_DECL(finit);
 BLITZ_ENTRY_DECL(init);
@@ -89,7 +89,7 @@ BLITZ_LIBHEADER(LIB_ricopperfx, init, BL_NORET, finit, 0);
 BLITZ_ACOMMAND(BL_WORD);
 BLITZ_ARGS(BL_LONG, BL_WORD, BL_WORD);
 BLITZ_LIBS0();
-BLITZ_SUBS(docolsplit, 0, 0);
+BLITZ_SUBS(ricopperfxlib_docolsplit, 0, 0);
 BLITZ_NAME("DoColSplit", "cols_adr,numlines,colour_register");
 
 BLITZ_ASTATEMENT();
@@ -167,8 +167,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(splitbplcon3, 0, 0);
 BLITZ_NAME("ColSplitBplcon3", "bplcon3 - low byte of bplcon 3");
 
-BLITZ_NULLSUB_AT(finit, libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, ricopperfxlib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, ricopperfxlib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -547,12 +547,12 @@ ULONG BLITZ_ROUTINE c_InfoBlock(void)
 /**
  * @brief init and finit: nothing (_libinit/_libfinit are an RTS).
  */
-void BLITZ_ROUTINE c_libinit(void)
+static void BLITZ_ROUTINE c_libinit(void)
 {
 }
 
 /* entries: keep every one of d0/d1/a0/a1 that is not the result */
-BLITZ_THUNK(docolsplit, c_docolsplit, "d1/a0-a1");
+BLITZ_THUNK(ricopperfxlib_docolsplit, c_docolsplit, "d1/a0-a1");
 BLITZ_THUNK(redocolsplit, c_redocolsplit, "d0-d1/a0-a1");
 BLITZ_THUNK(splitreset2, c_splitreset2, "d0-d1/a0-a1");
 BLITZ_THUNK(splitreset, c_splitreset, "d0-d1/a0-a1");
@@ -567,5 +567,5 @@ BLITZ_THUNK(CustomAGACol, c_CustomAGACol, "d1/a0-a1");
 BLITZ_THUNK(splitresethard, c_splitresethard, "d0-d1/a0-a1");
 BLITZ_THUNK(splitbplcon3, c_splitbplcon3, "d0-d1/a0-a1");
 /* _libinit/_libfinit: RTS (nothing to set up) */
-BLITZ_THUNK(libinit, c_libinit, "d0-d1/a0-a1");
-BLITZ_THUNK(libfinit, c_libinit, "d0-d1/a0-a1");
+BLITZ_THUNK(ricopperfxlib_libinit, c_libinit, "d0-d1/a0-a1");
+BLITZ_THUNK(ricopperfxlib_libfinit, c_libinit, "d0-d1/a0-a1");

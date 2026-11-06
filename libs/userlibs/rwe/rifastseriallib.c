@@ -62,10 +62,10 @@
 #include "blitzlib.h"
 
 /* entries (thunks below) */
-void codeinit(void), codefinit(void);
+void rifastseriallib_codeinit(void), rifastseriallib_codefinit(void);
 void initserialio(void), finitserialio(void), setserialmode(void);
-void endserialio(void), putserial(void), putserial2(void);
-void getserial(void), getserial2(void), flushserialio(void), syncserial(void);
+void endserialio(void), putserial(void), putserial2(void), getserial(void);
+void getserial2(void), flushserialio(void), syncserial(void);
 void doserialIO2(void), doserialIO(void), setiobuf(void), setiospeed(void);
 void setiosize(void), checkserial(void), syncput(void), syncget(void);
 
@@ -174,8 +174,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(syncget, 0, 0);
 BLITZ_NAME("SyncGet", "address,bytes");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
+BLITZ_NULLSUB_AT(init, rifastseriallib_codeinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rifastseriallib_codefinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -562,8 +562,8 @@ void BLITZ_ROUTINE c_setiobuf(UBYTE *in BL_REG(d0), UBYTE *out BL_REG(d1))
 }
 
 /* entries: keep every one of d0/d1/a0/a1 that is not the result */
-BLITZ_THUNK(codeinit, c_codeinit, "d0-d1/a0-a1");
-BLITZ_THUNK(codefinit, c_finitserialio, "d0-d1/a0-a1");
+BLITZ_THUNK(rifastseriallib_codeinit, c_codeinit, "d0-d1/a0-a1");
+BLITZ_THUNK(rifastseriallib_codefinit, c_finitserialio, "d0-d1/a0-a1");
 BLITZ_THUNK(finitserialio, c_finitserialio, "d0-d1/a0-a1");
 BLITZ_THUNK(doserialIO2, c_doserialIO2, "d0-d1/a0-a1");
 BLITZ_THUNK(doserialIO, c_doserialIO, "d0-d1/a0-a1");

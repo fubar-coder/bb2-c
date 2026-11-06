@@ -39,7 +39,8 @@
 #include "blitzexec.h"
 
 /* entry points (thunks, below) */
-void _initview(void), _viewbitmap(void), codeinit(void), codefinit(void);
+void _initview(void), _viewbitmap(void), ridisplaylib_codeinit(void);
+void ridisplaylib_codefinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -59,8 +60,8 @@ BLITZ_LIBS(LIB_bitmaplib, BL_LA(0) | BL_PD(0));
 BLITZ_SUBS(_viewbitmap, 0, 0);
 BLITZ_NAME("ViewBitmap", "bitmap");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
+BLITZ_NULLSUB_AT(init, ridisplaylib_codeinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, ridisplaylib_codefinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -167,7 +168,7 @@ static void BLITZ_ROUTINE nothing_c(void)
 /* Registers: the original changes d0, d1, a0, a1, a6 (init, finit) and
    d0-d6/a0/a1/a6 (InitView); the thunks keep d1/a0/a1 (and d0 for
    ViewBitmap, which changes nothing), the C code d2-d7/a2-a6. */
-BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
-BLITZ_THUNK(codefinit, codefinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(ridisplaylib_codeinit, codeinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(ridisplaylib_codefinit, codefinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_initview, initview_c, "d1/a0-a1");
 BLITZ_THUNK(_viewbitmap, nothing_c, "d0-d1/a0-a1");

@@ -103,18 +103,22 @@
 
 /* entry points (defined below) */
 void _gtbutton(void), _gtcheckbox(void), _gtcycle(void), _gtcycle2(void);
-void _gtinteger(void), _gtlistview(void), _gtlistview1(void), _gtlistview2(void);
-void _gtmx(void), _gtmx2(void), _gtnumber(void), _gtpalette(void), _gtpalette2(void);
-void _gtscroller(void), _gtscroller2(void), _gtslider(void), _gtslider2(void);
-void _gtstring(void), _gtstring2(void), _gttext(void), _attachgtlist(void);
-void _gttags(void), _gtptr(void), _gtbevel(void), _gtchnglist1(void);
-void _gtchnglist2(void), _gtsetattrs(void), _gtsetstring(void), _gtsetint(void);
+void _gtinteger(void), _gtlistview(void), _gtlistview1(void);
+void _gtlistview2(void), _gtmx(void), _gtmx2(void), _gtnumber(void);
+void _gtpalette(void), _gtpalette2(void), _gtscroller(void);
+void _gtscroller2(void), _gtslider(void), _gtslider2(void), _gtstring(void);
+void _gtstring2(void), _gttext(void), _attachgtlist(void), gtlib_gttags(void);
+void _gtptr(void), _gtbevel(void), _gtchnglist1(void), _gtchnglist2(void);
+void _gtsetattrs(void), _gtsetstring(void), _gtsetint(void);
 void _gtgetstring(void), _gtgetint(void), _gtshape(void), _gtshape2(void);
-void _gtgetattrs(void), doenable(void), dodisable(void), doselect(void);
-void doselect2(void), _gtgetstatus(void), _gtarrowsize(void), _detachgtlist(void);
-void _gtcludge(void), _gtsethighlight(void), _gtfreegadget(void);
-void _codeinit(void), _codefinit(void), _freecontext(void);
-void sgchk(void), sgchk2(void), attachchk(void), detachchk(void), freegadchk(void);
+void _gtgetattrs(void), gtlib_doenable(void), gtlib_dodisable(void);
+void gtlib_doselect(void), gtlib_doselect2(void), _gtgetstatus(void);
+void _gtarrowsize(void), _detachgtlist(void), _gtcludge(void);
+void _gtsethighlight(void), _gtfreegadget(void), _freecontext(void);
+static void _codeinit(void);
+static void _codefinit(void);
+void gtlib_sgchk(void), gtlib_sgchk2(void), attachchk(void), detachchk(void);
+void freegadchk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -234,7 +238,7 @@ BLITZ_NAME("AttachGTList", "GTList#,Window#");
 BLITZ_ASTATEMENT();
 BLITZ_REPARGS(0, 2, BL_LONG | BL_PUSH, BL_LONG | BL_PUSH);
 BLITZ_LIBS0();
-BLITZ_SUBS(A _gttags + 1, 0, 0);
+BLITZ_SUBS(A gtlib_gttags + 1, 0, 0);
 BLITZ_NAME("GTTags", "Tag,Value [,Tag,Value...]");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -292,11 +296,11 @@ BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_LONG, BL_WORD);
 BLITZ_LIBS(LIB_mygadtoolslib, 0x1380, LIB_intuifontlib, BL_LA(0), LIB_screenslib, 0x1102,
            LIB_shapeslib, 0x1685);
-BLITZ_SUBS(A _gtshape + 1, sgchk, 0);
+BLITZ_SUBS(A _gtshape + 1, gtlib_sgchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD, BL_LONG, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_mygadtoolslib, 0x1380, LIB_intuifontlib, BL_LA(0), LIB_screenslib, 0x1102,
            LIB_shapeslib, 0x1685, LIB_shapeslib, 0x1286);
-BLITZ_SUBS(A _gtshape2 + 1, sgchk2, 0);
+BLITZ_SUBS(A _gtshape2 + 1, gtlib_sgchk2, 0);
 BLITZ_NAME("GTShape", "GTList#,id,x,y,flags,Shape#[,Shape#]");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -308,22 +312,22 @@ BLITZ_NAME("GTGetAttrs", "(GTList#,id,Tag)");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
-BLITZ_SUBS(doenable, 0, 0);
+BLITZ_SUBS(gtlib_doenable, 0, 0);
 BLITZ_NAME("GTEnable", "GTList#,Id");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
-BLITZ_SUBS(dodisable, 0, 0);
+BLITZ_SUBS(gtlib_dodisable, 0, 0);
 BLITZ_NAME("GTDisable", "GTList#,Id");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
-BLITZ_SUBS(doselect, 0, 0);
+BLITZ_SUBS(gtlib_doselect, 0, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_mygadtoolslib, 0x1180);
-BLITZ_SUBS(doselect2, 0, 0);
+BLITZ_SUBS(gtlib_doselect2, 0, 0);
 BLITZ_NAME("GTToggle", "GTList#,Id [,On|Off]");
 
 BLITZ_AFUNCTION(BL_BYTE);
@@ -612,7 +616,7 @@ static ULONG BLITZ_ROUTINE posthandler_c(struct IntuiMessage *m BL_REG(d0))
 BLITZ_THUNK_POST(_posthandler, posthandler_c, "d1", "move.l  4.w,a6");
 void _prehandler(void), _posthandler(void);
 
-void BLITZ_ROUTINE _codeinit(void)
+static void BLITZ_ROUTINE _codeinit(void)
 {
     cludge = -1;
     gtbase = OpenLibrary((CONST_STRPTR)"gadtools.library", 0);
@@ -622,7 +626,7 @@ void BLITZ_ROUTINE _codeinit(void)
     }
 }
 
-void BLITZ_ROUTINE _codefinit(void)
+static void BLITZ_ROUTINE _codefinit(void)
 {
     if (gtbase) {
         CloseLibrary(gtbase);
@@ -1944,17 +1948,17 @@ E(_gtgetattrs, gtgetattrs_c);
 E(_gtshape, gtshape_c);
 E(_gtshape2, gtshape2_c);
 /* small ones keep what the original keeps */
-BLITZ_THUNK(_gttags, gttags_c, "d0-d1/a0-a1");
+BLITZ_THUNK(gtlib_gttags, gttags_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_gtptr, gtptr_c, "d1/a1");
 BLITZ_THUNK(_gtgetstring, gtgetstring_c, "d1/a1");
 BLITZ_THUNK(_gtgetint, gtgetint_c, "d1/a1");
 BLITZ_THUNK(_gtgetstatus, gtgetstatus_c, "d1/a1");
 BLITZ_THUNK(_gtarrowsize, gtarrowsize_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_gtcludge, gtcludge_c, "d0/a0-a1");
-BLITZ_THUNK(doenable, doenable_c, "d1/a1");
-BLITZ_THUNK(dodisable, dodisable_c, "d1/a1");
-BLITZ_THUNK(doselect, doselect_c, "d1/a1");
-BLITZ_THUNK(doselect2, doselect2_c, "d1/a1");
+BLITZ_THUNK(gtlib_doenable, doenable_c, "d1/a1");
+BLITZ_THUNK(gtlib_dodisable, dodisable_c, "d1/a1");
+BLITZ_THUNK(gtlib_doselect, doselect_c, "d1/a1");
+BLITZ_THUNK(gtlib_doselect2, doselect2_c, "d1/a1");
 
 /* ------------------------------------------- error checks (debugger only) */
 
@@ -1998,8 +2002,8 @@ static void BLITZ_ERRCHK freegadchk_c(struct gtcontext *c BL_REG(a1))
 }
 
 /* the thunks last (see gadgetslib.c) */
-BLITZ_ERRCHK_THUNK(sgchk2, sgchk2_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(sgchk, sgchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(gtlib_sgchk2, sgchk2_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(gtlib_sgchk, sgchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(attachchk, attachchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(detachchk, detachchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(freegadchk, freegadchk_c, "d0-d1/a0-a1");

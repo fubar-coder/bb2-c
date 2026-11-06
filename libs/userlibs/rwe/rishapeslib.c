@@ -109,7 +109,7 @@ void _leloadshapesingle(void), _lesaveshapesnop(void), _lesaveshapes(void);
 void _setcompress(void), _lecludgeshapes(void), _lecludgeshapes2(void);
 void _leinitshape(void), _lescanshapes(void), _leMaxShapeWidth(void);
 void _leMaxShapeHeight(void), _leMaxShapeDepth(void), _leautocookie(void);
-void _libinit(void), _libfinit(void);
+void rishapeslib_libinit(void), rishapeslib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -222,8 +222,8 @@ BLITZ_LIBS(LIB_execlib, BL_LA(6));
 BLITZ_SUBS(_loadshapestoaddress, 0, 0);
 BLITZ_NAME("CludgeShapesToAddress", "Address,numshapes,address");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0, LIB_doslib, BL_LA(6));
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rishapeslib_libfinit, 0, 0, LIB_doslib, BL_LA(6));
+BLITZ_NULLSUB_AT(init, rishapeslib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -359,12 +359,12 @@ static void BLITZ_ROUTINE libinit_c(void)
 {
     compress = 0;
 }
-BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rishapeslib_libinit, libinit_c, "d0-d1/a0-a1");
 
 /**
  * @brief finit (_libfinit): nothing, an RTS.
  */
-BLITZ_ASM_ROUTINE(_libfinit, "   rts");
+BLITZ_ASM_ROUTINE(rishapeslib_libfinit, "   rts");
 
 /* ----------------------------------------------------- small commands */
 

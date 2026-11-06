@@ -85,8 +85,7 @@ void dovproppot(void);
 void dovpropbody(void);
 void BLITZ_ROUTINE doredraw(UWORD id BL_REG(d1), struct Window **win BL_REG(a1),
                              struct Library *intbase BL_REG(a6));
-void doselect(void);
-void doselect2(void);
+void gadgetslib_doselect(void), gadgetslib_doselect2(void);
 void BLITZ_ROUTINE dogborder(WORD x BL_REG(d0), WORD y BL_REG(d1),
                              WORD w BL_REG(d2), WORD h BL_REG(d3),
                              struct Window **win BL_REG(a1),
@@ -96,27 +95,16 @@ void dogb(void);
 ULONG BLITZ_ROUTINE dostringactivate(UWORD id BL_REG(d1),
                                      struct Window **win BL_REG(a1),
                                      struct Library *intbase BL_REG(a6));
-void dostringreset(void);
-void dostringtext(void);
-void dostringclear(void);
-void dogpens2(void);
-void dogpens(void);
-void dobpens(void);
-void dogjam(void);
-void doselectmode(void);
-void dosetstring(void);
-void dobgroup(void);
-void dogstatus(void);
-void dobuttonid(void);
-void doenable(void);
-void dodisable(void);
-void setdogstatus(void);
-void settextgadget(void);
-void codeinit(void);
+void dostringreset(void), dostringtext(void), dostringclear(void);
+void dogpens2(void), dogpens(void), dobpens(void), dogjam(void);
+void doselectmode(void), dosetstring(void), dobgroup(void), dogstatus(void);
+void dobuttonid(void), gadgetslib_doenable(void), gadgetslib_dodisable(void);
+void setdogstatus(void), settextgadget(void), gadgetslib_codeinit(void);
 void BLITZ_ROUTINE freegadget(void);
 /* error checks (debugger only, thunks below) */
-void sgchk(void), sgchk2(void), propchk(void), redrawchk(void), gchk(void);
-void wchk(void), actchk(void), reschk(void), settest(void), bgroupchk(void);
+void gadgetslib_sgchk(void), gadgetslib_sgchk2(void), propchk(void);
+void redrawchk(void), gchk(void), gadgetslib_wchk(void), actchk(void);
+void reschk(void), settest(void), bgroupchk(void);
 
 BLITZ_ENTRY_DECL(init);
 
@@ -144,10 +132,10 @@ BLITZ_NAME("PropGadget", "GadgetList#,X,Y,Flags,Id,Width,Height");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_LONG, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_gadgetslib, 0x1380, LIB_shapeslib, 0x1285);
-BLITZ_SUBS(doshapegadget, sgchk, 0);
+BLITZ_SUBS(doshapegadget, gadgetslib_sgchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_LONG, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_gadgetslib, 0x1380, LIB_shapeslib, 0x1285, LIB_shapeslib, 0x1186);
-BLITZ_SUBS(doshapegadget2, sgchk2, 0);
+BLITZ_SUBS(doshapegadget2, gadgetslib_sgchk2, 0);
 BLITZ_NAME("ShapeGadget", "GadgetList#,X,Y,Flags,Id,Shape#[,Shape#]");
 
 BLITZ_ASTATEMENT();
@@ -199,10 +187,10 @@ BLITZ_NULLSUB(0, 0, 0);
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_gadgetslib, 0x1180);
-BLITZ_SUBS(doselect, gchk, 0);
+BLITZ_SUBS(gadgetslib_doselect, gchk, 0);
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_gadgetslib, 0x1180);
-BLITZ_SUBS(doselect2, gchk, 0);
+BLITZ_SUBS(gadgetslib_doselect2, gchk, 0);
 BLITZ_NAME("Toggle", "GadgetList#,Id [,On|Off]");
 
 BLITZ_NULLSUB(0, 0, 0);
@@ -210,7 +198,7 @@ BLITZ_NULLSUB(0, 0, 0);
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_windowslib, 0x1102, LIB_intuitionlib, BL_LA(6));
-BLITZ_SUBS(BLITZ_AMIGAONLY(dogborder), wchk, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(dogborder), gadgetslib_wchk, 0);
 BLITZ_NAME("GadgetBorder", "X,Y,Width,Height");
 
 BLITZ_ASTATEMENT();
@@ -302,13 +290,13 @@ BLITZ_NAME("ButtonId", "(GadgetList#,ButtonGroup)");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_gadgetslib, 0x1180);
-BLITZ_SUBS(doenable, gchk, 0);
+BLITZ_SUBS(gadgetslib_doenable, gchk, 0);
 BLITZ_NAME("Enable", "(GadgetList#,Id)");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_gadgetslib, 0x1180);
-BLITZ_SUBS(dodisable, gchk, 0);
+BLITZ_SUBS(gadgetslib_dodisable, gchk, 0);
 BLITZ_NAME("Disable", "(GadgetList#,Id)");
 
 BLITZ_ASTATEMENT();
@@ -323,7 +311,7 @@ BLITZ_LIBS(LIB_gadgetslib, 0x1180);
 BLITZ_SUBS(settextgadget, gchk, 0);
 BLITZ_NAME("SetTextGadget", "GadgetList#,Id,Text$");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB_AT(init, gadgetslib_codeinit, 0, 0);
 
 BLITZ_ENTRY_DECL(_load);
 BLITZ_ENTRY_DECL(_save);
@@ -454,7 +442,7 @@ static void BLITZ_ROUTINE codeinit_c(void)
     g.bordersok = -1;
     g.fontattr = 0;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(gadgetslib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /**
  * @brief ButtonGroup Group: the button group of the following gadgets.
@@ -1201,7 +1189,7 @@ static void BLITZ_ROUTINE doselect_c(UWORD id BL_REG(d1), UWORD on BL_REG(d2),
     else
         GFLAGS_LO(gad) &= ~0x80;
 }
-BLITZ_THUNK(doselect, doselect_c, "d0-d1/a1");
+BLITZ_THUNK(gadgetslib_doselect, doselect_c, "d0-d1/a1");
 
 /**
  * @brief Toggle GadgetList#,Id: flip the SELECTED state of a gadget.
@@ -1216,7 +1204,7 @@ static void BLITZ_ROUTINE doselect2_c(UWORD id BL_REG(d1), struct Gadget **list 
 {
     GFLAGS_LO(findgadget(list, id)) ^= 0x80;
 }
-BLITZ_THUNK(doselect2, doselect2_c, "d0-d1/a1");
+BLITZ_THUNK(gadgetslib_doselect2, doselect2_c, "d0-d1/a1");
 
 /**
  * @brief Enable GadgetList#,Id: clear DISABLED of a gadget.
@@ -1231,7 +1219,7 @@ static void BLITZ_ROUTINE doenable_c(UWORD id BL_REG(d1), struct Gadget **list B
 {
     GFLAGS_HI(findgadget(list, id)) &= ~1;
 }
-BLITZ_THUNK(doenable, doenable_c, "d0-d1/a1");
+BLITZ_THUNK(gadgetslib_doenable, doenable_c, "d0-d1/a1");
 
 /**
  * @brief Disable GadgetList#,Id: set DISABLED of a gadget.
@@ -1246,7 +1234,7 @@ static void BLITZ_ROUTINE dodisable_c(UWORD id BL_REG(d1), struct Gadget **list 
 {
     GFLAGS_HI(findgadget(list, id)) |= 1;
 }
-BLITZ_THUNK(dodisable, dodisable_c, "d0-d1/a1");
+BLITZ_THUNK(gadgetslib_dodisable, dodisable_c, "d0-d1/a1");
 
 /**
  * @brief SetGadgetStatus GadgetList#,Id,Value: show text part Value of a
@@ -1645,7 +1633,7 @@ BLITZ_ERRCHK_THUNK(redrawchk, redrawchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(actchk, actchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(reschk, reschk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(settest, settest_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(wchk, wchk_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(sgchk2, sgchk2_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(sgchk, sgchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(gadgetslib_wchk, wchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(gadgetslib_sgchk2, sgchk2_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(gadgetslib_sgchk, sgchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(bgroupchk, bgroupchk_c, "d0-d1/a0-a1");

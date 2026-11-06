@@ -50,7 +50,7 @@
 
 /* entry points (thunks, defined below) */
 void _ipbitmap(void), _iplocate(void), _ipcolour(void), _ipcolour2(void);
-void _ipoutput(void), _libinit(void), _libfinit(void);
+void _ipoutput(void), riintuilib_libinit(void), riintuilib_libfinit(void);
 void ipprint(void), ipprint0(void), ipprint1(void);
 
 BLITZ_ENTRY_DECL(init);
@@ -103,8 +103,8 @@ BLITZ_NULLSUB_AT(_free, 0, 0, 0);
 /* !libfin{_toke,_load,_save,_use,_free,7,7}: 128 byte objects */
 BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 7, 7);
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, riintuilib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, riintuilib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -305,8 +305,8 @@ static void BLITZ_ROUTINE ipoutput_c(struct RastPort *rp BL_REG(a0))
    IPBitMap) through the graphics/intuition calls, a2 in IPColour with a
    pen >= 0; the handlers keep d3/d6 only.  The thunks keep d0/d1/a0/a1,
    the C code d2-d7/a2-a6. */
-BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(riintuilib_libinit, libinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(riintuilib_libfinit, libfinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_ipbitmap, ipbitmap_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_iplocate, iplocate_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_ipcolour, ipcolour_c, "d0-d1/a0-a1");

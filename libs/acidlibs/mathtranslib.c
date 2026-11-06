@@ -19,8 +19,8 @@
 #include "blitzexec.h"
 
 /* entry points (defined below) */
-ULONG codeinit(void);
-void codefinit(struct Library *lib BL_REG(a1));
+static ULONG codeinit(void);
+static void codefinit(struct Library *lib BL_REG(a1));
 void dopow(void), spacos(void), spasin(void), spatan(void), spcos(void);
 void spcosh(void), spexp(void), splog10(void), splog(void), spsin(void);
 void spsinh(void), spsqrt(void), sptan(void), sptanh(void);
@@ -72,7 +72,7 @@ static const char libname[] = "mathtrans.library";
  * @par Result
  * d0: the library base, the init value (a6 of the functions).
  */
-ULONG BLITZ_ROUTINE codeinit(void)
+static ULONG BLITZ_ROUTINE codeinit(void)
 {
     struct Library *base;
 
@@ -89,7 +89,7 @@ ULONG BLITZ_ROUTINE codeinit(void)
  *
  * @arg lib a1: the library base (!libs #mathtranslib,#la1).
  */
-void BLITZ_ROUTINE codefinit(struct Library *lib BL_REG(a1))
+static void BLITZ_ROUTINE codefinit(struct Library *lib BL_REG(a1))
 {
     CloseLibrary(lib);
 }

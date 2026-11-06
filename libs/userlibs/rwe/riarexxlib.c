@@ -84,12 +84,13 @@
 
 /* entry points (thunks, defined below) */
 void _rxcreateport(void), _rxdeleteport(void), readport(void), waitport(void);
-void _replymsg(void), _replymsg2(void), _rxruncommand2(void), _rxruncommand(void);
-void _rxsendersname(void), _rxsendcommand2(void), _rxsendcommand(void);
-void _rxnumargs(void), _rxgetarg(void), _rxexecutescript(void), _rxrunscript(void);
-void _rxdefportname(void), _rxnextarg(void), _rxreturncode(void), _rxtokenise(void);
-void _rxmessagelist(void), _rxquotechar(void), _libinit(void), _libfinit(void);
-void portchk(void);
+void _replymsg(void), _replymsg2(void), _rxruncommand2(void);
+void _rxruncommand(void), _rxsendersname(void), _rxsendcommand2(void);
+void _rxsendcommand(void), _rxnumargs(void), _rxgetarg(void);
+void _rxexecutescript(void), _rxrunscript(void), _rxdefportname(void);
+void _rxnextarg(void), _rxreturncode(void), _rxtokenise(void);
+void _rxmessagelist(void), _rxquotechar(void), riarexxlib_libinit(void);
+void riarexxlib_libfinit(void), portchk(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -233,8 +234,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_rxquotechar, 0, 0);
 BLITZ_NAME("RXQuoteChar", "char$");
 
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, riarexxlib_libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, riarexxlib_libfinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -406,7 +407,7 @@ static ULONG BLITZ_ROUTINE libinit_c(void)
     v.rexxbase = OpenLibrary((CONST_STRPTR)rexxname, 34);
     return 0;
 }
-BLITZ_THUNK(_libinit, libinit_c, "d1/a0-a1");
+BLITZ_THUNK(riarexxlib_libinit, libinit_c, "d1/a0-a1");
 
 static void deleteport(void);
 
@@ -420,7 +421,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
     if (msgport)
         deleteport();
 }
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(riarexxlib_libfinit, libfinit_c, "d0-d1/a0-a1");
 
 /* ----------------------------------------------------- small commands */
 

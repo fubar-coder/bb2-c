@@ -31,8 +31,7 @@
 #undef __NOLIBBASE__
 
 /* entry points (thunks, defined below) */
-void codeinit(void);
-void codefinit(void);
+void wbstartuplib_codeinit(void), wbstartuplib_codefinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -41,8 +40,8 @@ BLITZ_ENTRY_DECL(finit);
 BLITZ_SYSLIBHEADER7(LIB_wbstartuplib, 0xbf00, 0xbf01, init, BL_LONGRET, finit,
                     BLITZ_ERROR_AREA);
 BLITZ_NULLSUB(0, 0, 0);                         /* $BF00 */
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
-BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
+BLITZ_NULLSUB_AT(init, wbstartuplib_codeinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, wbstartuplib_codefinit, 0, 0);
 BLITZ_LIBFIN();
 
 #define DATSIZE 14
@@ -228,7 +227,7 @@ static ULONG BLITZ_ROUTINE codeinit_c(UBYTE *argptr BL_REG(a0), ULONG magic BL_R
     }
     return (ULONG)&argData;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d1/a1");
+BLITZ_THUNK(wbstartuplib_codeinit, codeinit_c, "d1/a1");
 
 /**
  * @brief finit - free the arguments, reply the Workbench message.
@@ -253,4 +252,4 @@ static void BLITZ_ROUTINE codefinit_c(void)
         ReplyMsg(wbMsg);
     }
 }
-BLITZ_THUNK(codefinit, codefinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(wbstartuplib_codefinit, codefinit_c, "d0-d1/a0-a1");

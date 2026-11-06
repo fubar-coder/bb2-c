@@ -77,14 +77,17 @@
 /* entry points (thunks and inline routines, below) */
 void _shapetosquare(void), _shapemaskfill(void), _scanshapes(void);
 void _scanmaxwidth(void), _scanmaxheight(void), _scanmaxdepth(void);
-void _mapdatachanged(void), _mapdatachanged2(void), _fillbitplane(void), _newmap(void);
-void _mapdataadr(void), _mapdataadr2(void), _mapdatasize(void), _mapobjwidth(void);
-void _mapobjheight(void), _mapgrab(void), _mapobjname(void), _setmapobjname(void);
-void _mapobjviewx(void), _mapobjviewy(void), _OutText(void), _rubthroughmap1(void);
-void _rubthroughmap2(void), _setstencil(void), _candraw(void), _lastcandrawaddress(void);
-void _clearrubthroughmap(void), _OutTextPen(void), _OutTextCenter(void);
-void _OutTextRight(void), _SetWindowDraw(void), _InitParse(void), _nextparsearg(void);
-void _freemap(void), _libinit(void), _libfinit(void);
+void _mapdatachanged(void), _mapdatachanged2(void), _fillbitplane(void);
+void _newmap(void), _mapdataadr(void), _mapdataadr2(void), _mapdatasize(void);
+void _mapobjwidth(void), _mapobjheight(void), _mapgrab(void);
+void _mapobjname(void), _setmapobjname(void), _mapobjviewx(void);
+void _mapobjviewy(void), _OutText(void), _rubthroughmap1(void);
+void _rubthroughmap2(void), _setstencil(void), _candraw(void);
+void _lastcandrawaddress(void), _clearrubthroughmap(void), _OutTextPen(void);
+void _OutTextCenter(void), _OutTextRight(void);
+void rimapeditorlib_SetWindowDraw(void), _InitParse(void);
+void rimapeditorlib_nextparsearg(void), _freemap(void);
+void rimapeditorlib_libinit(void), rimapeditorlib_libfinit(void);
 
 BLITZ_ENTRY_DECL(_load);
 BLITZ_ENTRY_DECL(_save);
@@ -281,7 +284,7 @@ BLITZ_NAME("MapOutTextRight", "x,y,rastport,address/string");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_windowslib, UA(0));
-BLITZ_SUBS(_SetWindowDraw, 0, 0);
+BLITZ_SUBS(rimapeditorlib_SetWindowDraw, 0, 0);
 BLITZ_NAME("SetWindowDraw", "mode    -- 0=normal, 1=meshed");
 
 BLITZ_ASTATEMENT();
@@ -293,7 +296,7 @@ BLITZ_NAME("M_InitParse", "string");
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS0();
 BLITZ_LIBS0();
-BLITZ_SUBS(_nextparsearg, 0, 0);
+BLITZ_SUBS(rimapeditorlib_nextparsearg, 0, 0);
 BLITZ_NAME("M_NextArg$", "- get next parameter");
 
 BLITZ_NULLSUB_AT(_load, 0, 0, 0);
@@ -301,8 +304,8 @@ BLITZ_NULLSUB_AT(_save, 0, 0, 0);
 BLITZ_NULLSUB_AT(_use, 0, 0, 0);
 BLITZ_NULLSUB_AT(_free, _freemap, 0, 0);
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rimapeditorlib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, rimapeditorlib_libinit, 0, 0);
 
 /* !libfin {_toke,_load,_save,_use,_free,5,5} */
 BLITZ_LIBFIN7(_toke.n, _load, _save, _use, _free, 5, 5);
@@ -355,7 +358,7 @@ static void BLITZ_ROUTINE libinit_c(void)
 {
     gfxbase = OpenLibrary((CONST_STRPTR)"graphics.library", 0);
 }
-BLITZ_THUNK(_libinit, libinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rimapeditorlib_libinit, libinit_c, "d0-d1/a0-a1");
 
 /**
  * @brief finit: closes graphics.library.
@@ -367,7 +370,7 @@ static void BLITZ_ROUTINE libfinit_c(void)
     CloseLibrary(gfxbase);
     gfxbase = NULL;
 }
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rimapeditorlib_libfinit, libfinit_c, "d0-d1/a0-a1");
 
 /* ------------------------------------------------------- inline readers */
 
@@ -1016,7 +1019,7 @@ static void BLITZ_ROUTINE setwindowdraw_c(UWORD mode BL_REG(d1),
         rp->AreaPtSz = 0;
     }
 }
-BLITZ_THUNK(_SetWindowDraw, setwindowdraw_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rimapeditorlib_SetWindowDraw, setwindowdraw_c, "d0-d1/a0-a1");
 
 /* -------------------------------------------------------------- parsing */
 
@@ -1067,4 +1070,4 @@ static ULONG BLITZ_ROUTINE nextparsearg_c(void)
         n++;
     }
 }
-BLITZ_THUNK(_nextparsearg, nextparsearg_c, "d1/a0-a1");
+BLITZ_THUNK(rimapeditorlib_nextparsearg, nextparsearg_c, "d1/a0-a1");

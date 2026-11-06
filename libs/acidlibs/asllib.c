@@ -63,8 +63,9 @@ void doaslfreqa(void), doaslfreqb(void), doaslfreqc(void);
 void doaslfreqd(void), doaslfreqe(void), doaslfreqf(void);
 ULONG BLITZ_ROUTINE doaslfont(ULONG flags BL_REG(d0), struct Screen **scr BL_REG(a1));
 ULONG BLITZ_ROUTINE doaslscreen(ULONG flags BL_REG(d0), struct Screen **scr BL_REG(a1));
-void BLITZ_ROUTINE codeinit(void), codefinit(void);
-void freqchk(void), freqchk2(void);
+static void BLITZ_ROUTINE codeinit(void);
+static void BLITZ_ROUTINE codefinit(void);
+void asllib_freqchk(void), freqchk2(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -77,16 +78,16 @@ BLITZ_LIBHEADER(LIB_myasllib, init, BL_NORET, finit, BLITZ_ERROR_AREA);
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_STRING, SVAR, SVAR);
 BLITZ_LIBS(LIB_screenslib, 0x1102);
-BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqa), freqchk, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqa), asllib_freqchk, 0);
 BLITZ_ARGS(BL_STRING, SVAR, SVAR, BL_STRING);
 BLITZ_LIBS(LIB_screenslib, 0x1102);
-BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqb), freqchk, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqb), asllib_freqchk, 0);
 BLITZ_ARGS(BL_STRING, SVAR, SVAR, BL_LONG, BL_LONG, BL_LONG, BL_LONG);
 BLITZ_LIBS(LIB_screenslib, 0x1102);
-BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqc), freqchk, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqc), asllib_freqchk, 0);
 BLITZ_ARGS(BL_STRING, SVAR, SVAR, BL_STRING, BL_LONG, BL_LONG, BL_LONG, BL_LONG);
 BLITZ_LIBS(LIB_screenslib, 0x1102);
-BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqd), freqchk, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(doaslfreqd), asllib_freqchk, 0);
 BLITZ_NAME("ASLFileRequest$", "Title$,Pathname$,Filename$ [,Pattern$] [,x,y,w,h]");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -199,7 +200,7 @@ static ULONG allocst(ULONG s, ULONG len)
 /**
  * @brief init: OpenLibrary("asl.library",0) -> aslbase (0 if not there).
  */
-void BLITZ_ROUTINE codeinit(void)
+static void BLITZ_ROUTINE codeinit(void)
 {
     aslbase = OpenLibrary((CONST_STRPTR)"asl.library", 0);
 }
@@ -207,7 +208,7 @@ void BLITZ_ROUTINE codeinit(void)
 /**
  * @brief finit: CloseLibrary(aslbase) if it was opened.
  */
-void BLITZ_ROUTINE codefinit(void)
+static void BLITZ_ROUTINE codefinit(void)
 {
     if (aslbase) {
         CloseLibrary(aslbase);
@@ -587,5 +588,5 @@ static void BLITZ_ERRCHK freqchk2_c(ULONG path BL_REG(d1))
         BLITZ_RUNERR(mess2);
 }
 
-BLITZ_ERRCHK_THUNK(freqchk, freqchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(asllib_freqchk, freqchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(freqchk2, freqchk2_c, "d0-d1/a0-a1");

@@ -31,7 +31,8 @@
 
 /* entry points (thunks / asm, defined below) */
 void setint(void), clrint(void), newint(void), oldint(void), dovwait(void);
-void cleanup(void), goblitz(void), goamiga(void), codeinit(void);
+void intlib_goblitz(void), intlib_goamiga(void), intlib_codeinit(void);
+static void cleanup(void);
 
 BLITZ_ENTRY_DECL(init);
 
@@ -45,9 +46,9 @@ BLITZ_NULLSUB(oldint, 0, 0);                    /* $C103 */
    original (graphics base in a6) */
 BLITZ_NULLSUB(dovwait, 0, 0, LIB_graphicslib, 0x5600); /* $C104 */
 BLITZ_NULLSUB(cleanup, 0, 0);                   /* $C105 */
-BLITZ_NULLSUB(goblitz, 0, 0);                   /* $C106 */
-BLITZ_NULLSUB(goamiga, 0, 0);                   /* $C107 */
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0);
+BLITZ_NULLSUB(intlib_goblitz, 0, 0);            /* $C106 */
+BLITZ_NULLSUB(intlib_goamiga, 0, 0);            /* $C107 */
+BLITZ_NULLSUB_AT(init, intlib_codeinit, 0, 0);
 BLITZ_LIBFIN();
 
 struct intnode {
@@ -118,7 +119,7 @@ static void BLITZ_ROUTINE codeinit_c(void)
         allints[i] = NULL;
     inta5 = blitz_globals;
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(intlib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /* intson/intsoff - add/remove the servers of all lists of a set */
 static void intson(struct intnode **set)
@@ -148,7 +149,7 @@ static void intsoff(struct intnode **set)
  * blitzintson is not reset (not a bug: a program ends in Amiga mode
  * anyway).  The original changes d0-d2/a0-a3/a6.
  */
-void BLITZ_ROUTINE cleanup(void)
+static void BLITZ_ROUTINE cleanup(void)
 {
     struct intnode **l, *n, *next;
     int i;
@@ -316,7 +317,7 @@ static void BLITZ_ROUTINE goblitz_c(void)
     blitzintson = 0xff00;               /* ST */
     intson(bints);
 }
-BLITZ_THUNK(goblitz, goblitz_c, "d0-d1/a0-a1");
+BLITZ_THUNK(intlib_goblitz, goblitz_c, "d0-d1/a0-a1");
 
 /** @brief goamiga ($C107, switchlib): back to Amiga mode, remove the blitz
     servers (if they are on). */
@@ -327,4 +328,4 @@ static void BLITZ_ROUTINE goamiga_c(void)
     blitzintson = 0;                    /* SF */
     intsoff(bints);
 }
-BLITZ_THUNK(goamiga, goamiga_c, "d0-d1/a0-a1");
+BLITZ_THUNK(intlib_goamiga, goamiga_c, "d0-d1/a0-a1");

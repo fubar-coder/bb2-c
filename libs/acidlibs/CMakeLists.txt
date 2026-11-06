@@ -115,22 +115,23 @@ asm_check(debuglib 64060
 	evaluate:98c:astring+11e:29
 	dirdone:a10:doutx+-5a:21
 	douttab:a6c:douthandler+-8:2
-	docall:bd2:docall:3)
+	docall:bd2:debuglib_docall:3)
 
 # dhandlerlib: all code is assembler (the process segment template
 # mystart with off_1/off_2, the ltable stubs, init/finit, the VBlank
-# server check_c).  Only _codeinit/_codefinit are global:
+# server check_c).  Only _dhandlerlib_codeinit/_dhandlerlib_codefinit
+# are global:
 #   mystart code = codeinit-$94, l0 = codeinit-$4e, check_c = codeinit+$90
 #   codefinit includes the trailing MOVEQ #0,d0:RTS (program end)
 asm_check(dhandlerlib 1
-	mystart:9c:codeinit+-94:7
-	ltable_stubs:e2:codeinit+-4e:19
-	codeinit:130:codeinit:35
-	check_c:1c0:codeinit+90:18
-	codefinit:20a:codefinit:21)
+	mystart:9c:dhandlerlib_codeinit+-94:7
+	ltable_stubs:e2:dhandlerlib_codeinit+-4e:19
+	codeinit:130:dhandlerlib_codeinit:35
+	check_c:1c0:dhandlerlib_codeinit+90:18
+	codefinit:20a:dhandlerlib_codefinit:21)
 
 # memacclib: Call (JMP with every register passed through).  The inline
 # routines of mathtranslib are compared byte by byte in the emulator tests
 # (still in bb2: systest_cmdlibs).
 asm_check(memacclib 180
-	docall:186:docall:2)
+	docall:186:memacclib_docall:2)

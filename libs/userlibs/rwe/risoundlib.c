@@ -44,7 +44,9 @@
 #include "blitzobj.h"
 
 /* entry points (thunks, below) */
-void _loadsounds(void), _libinit(void), _libfinit(void);
+void risoundlib_loadsounds(void);
+static void _libinit(void);
+static void _libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -55,7 +57,7 @@ BLITZ_LIBHEADER(LIB_risoundlib, init, BL_NORET, finit, 0);
 BLITZ_ACOMMAND(BL_LONG);
 BLITZ_ARGS(BL_LONG, BL_LONG);
 BLITZ_LIBS(LIB_audiolib, BL_LA(0) | BL_ITEM | BL_PD(0), LIB_execlib, BL_LA(6));
-BLITZ_SUBS(_loadsounds, 0, 0);
+BLITZ_SUBS(risoundlib_loadsounds, 0, 0);
 BLITZ_NAME("CludgeSound", "sound#,address");
 
 BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0, LIB_doslib, BL_LA(6));
@@ -70,12 +72,12 @@ BLITZ_LIBFIN();
 /* the sound object of audiolib: struct bb_sound (blitzobj.h) */
 
 /** @brief init: RTS (nothing to set up). */
-void BLITZ_ROUTINE _libinit(void)
+static void BLITZ_ROUTINE _libinit(void)
 {
 }
 
 /** @brief finit: RTS (nothing to free). */
-void BLITZ_ROUTINE _libfinit(void)
+static void BLITZ_ROUTINE _libfinit(void)
 {
 }
 
@@ -160,4 +162,4 @@ static BB_BOOL BLITZ_ROUTINE loadsounds_c(ULONG sound BL_REG(d0), UBYTE *sram BL
 
 /* Registers: the original changes d0-d2/a0-a1 (on success a0 = the
    object again) and what memlib changes; the thunk keeps d1/a0/a1. */
-BLITZ_THUNK(_loadsounds, loadsounds_c, "d1/a0-a1");
+BLITZ_THUNK(risoundlib_loadsounds, loadsounds_c, "d1/a0-a1");

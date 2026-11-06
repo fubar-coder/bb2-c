@@ -48,8 +48,8 @@
 
 /* entry points (thunks / C routines, defined below) */
 void convertkey(void), unconvert(void), qconvertkey(void);
-ULONG BLITZ_ROUTINE codeinit(void);
-void BLITZ_ROUTINE codefinit(void);
+static ULONG BLITZ_ROUTINE codeinit(void);
+static void BLITZ_ROUTINE codefinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -240,7 +240,7 @@ BLITZ_THUNK(qconvertkey, qconvertkey_c, "d1/a0-a1");
  * d0: d0 of the last convertkey call (code 104, shifted); stored
  *         by the compiler, used by nobody
  */
-ULONG BLITZ_ROUTINE codeinit(void)
+static ULONG BLITZ_ROUTINE codeinit(void)
 {
     UBYTE *p = (UBYTE *)&con;
     struct List *l = &con.port.mp_MsgList;
@@ -273,7 +273,7 @@ ULONG BLITZ_ROUTINE codeinit(void)
 }
 
 /** @brief Library finit: free the signal and close console.device. */
-void BLITZ_ROUTINE codefinit(void)
+static void BLITZ_ROUTINE codefinit(void)
 {
     FreeSignal((UBYTE)con.port.mp_SigBit);      /* MOVEQ #0,d0:MOVE.b */
     CloseDevice((struct IORequest *)&con.io);

@@ -41,7 +41,8 @@
 
 /* entry points (thunks, below) */
 void _isnonvolatile(void), _storenvdata(void), _getcopynv(void);
-void _freenvdata(void), _getnvlist(void), _libinit(void), _libfinit(void);
+void _freenvdata(void), _getnvlist(void), rinonvolatilelib_libinit(void);
+void rinonvolatilelib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -79,8 +80,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_getnvlist, 0, 0);
 BLITZ_NAME("GetNVList", "appname");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rinonvolatilelib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, rinonvolatilelib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -206,8 +207,8 @@ static ULONG BLITZ_ROUTINE getnvlist_c(CONST_STRPTR app BL_REG(d0))
 /* Registers: the original changes d0 and, through the system calls,
    d1/a0/a1 (and a6, StoreNVData also a2); the thunks keep d1/a0/a1, the
    C code a2/a6.  IsNonvolatile keeps the upper word of d0 (EXT.w). */
-BLITZ_THUNK(_libinit, libinit_c, "d1/a0-a1");
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rinonvolatilelib_libinit, libinit_c, "d1/a0-a1");
+BLITZ_THUNK(rinonvolatilelib_libfinit, libfinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK_POST(_isnonvolatile, isnonvolatile_c, "d0-d1/a0-a1", "move.w d0,2(sp)");
 BLITZ_THUNK(_storenvdata, storenvdata_c, "d1/a0-a1");
 BLITZ_THUNK(_getcopynv, getcopynv_c, "d1/a0-a1");

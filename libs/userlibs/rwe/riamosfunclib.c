@@ -104,16 +104,18 @@
 #undef __NOLIBBASE__
 
 /* entry points (thunks and asm, below) */
-void _cacheon(void), _cacheoff(void), _reboot(void), _lisa(void), _makedir(void);
-void _rename(void), _memfree(void), _gttags(void), _gttags2(void), _timer(void);
-void _min(void), _max(void), _copybyte(void), _copyword(void), _copylong(void);
-void _filesize(void), _bload4(void), _bload1(void), _bload0(void), _bload(void);
-void _bload2(void), _bsave2(void), _bsave(void), _start(void), _length(void);
-void _erase(void), _eraseall(void), _allocmem2(void), _allocmem1(void), _allocmem(void);
+void _cacheon(void), _cacheoff(void), _reboot(void), _lisa(void);
+void _makedir(void), _rename(void), _memfree(void), riamosfunclib_gttags(void);
+void _gttags2(void), _timer(void), _min(void), _max(void), _copybyte(void);
+void _copyword(void), _copylong(void), _filesize(void), _bload4(void);
+void _bload1(void), _bload0(void), _bload(void), _bload2(void), _bsave2(void);
+void _bsave(void), _start(void), _length(void), _erase(void), _eraseall(void);
+void _allocmem2(void), _allocmem1(void), riamosfunclib_allocmem(void);
 void _findfreebank(void), _fillmemzeros(void), _fillmem(void), _keycode(void);
-void _blitdone(void), _blitwait(void), _finddev(void), _swapbank(void);
-void _getdevname(void), _cd(void), _banklimit(void), _getbanklimit(void);
-void _saveexec(void), _libinit(void), _libfinit(void);
+void _blitdone(void), _blitwait(void), riamosfunclib_finddev(void);
+void _swapbank(void), _getdevname(void), _cd(void), _banklimit(void);
+void _getbanklimit(void), _saveexec(void), riamosfunclib_libinit(void);
+void riamosfunclib_libfinit(void);
 static void bloadchk(void);
 
 BLITZ_ENTRY_DECL(init);
@@ -164,7 +166,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_gttags2, 0, 0);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_gttags, 0, 0);
+BLITZ_SUBS(riamosfunclib_gttags, 0, 0);
 BLITZ_NAME("GTTagValue", "([tagvalue])");
 
 BLITZ_AFUNCTION(BL_WORD);
@@ -269,7 +271,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_allocmem1, 0, 0);
 BLITZ_ARGS(BL_LONG, BL_LONG, BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(_allocmem, 0, 0);
+BLITZ_SUBS(riamosfunclib_allocmem, 0, 0);
 BLITZ_NAME("Reserve", "(length)|(bank,length[,requirements])");
 
 BLITZ_AFUNCTION(BL_LONG);
@@ -323,7 +325,7 @@ BLITZ_NAME("WaitBlitter", "");
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_LONG);
 BLITZ_LIBS0();
-BLITZ_SUBS(BLITZ_AMIGAONLY(_finddev), 0, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(riamosfunclib_finddev), 0, 0);
 BLITZ_NAME("FindVolume", "(volumename)");
 
 BLITZ_NULLSUB(0, 0, 0);
@@ -362,8 +364,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS(BLITZ_AMIGAONLY(_saveexec), 0, 0);
 BLITZ_NAME("SaveExec", "filename$,list()");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, riamosfunclib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, riamosfunclib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -1288,7 +1290,7 @@ static ULONG BLITZ_ROUTINE copylong_c(const ULONG *src BL_REG(d0), ULONG *d BL_R
  * @par Result
  * d0: the tag
  */
-BLITZ_INLINE(_gttags, "addi.l #0x80080000,d0");
+BLITZ_INLINE(riamosfunclib_gttags, "addi.l #0x80080000,d0");
 BLITZ_INLINE(_gttags2, "move.l #0x80080000,d0");
 
 /* the error check of BLoad: BUG(orig) (#485) the original starts with an RTS -
@@ -1327,19 +1329,19 @@ BLITZ_THUNK(_erase, erase_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_eraseall, eraseall_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_allocmem2, allocmem2_c, "d1/a0-a1");
 BLITZ_THUNK(_allocmem1, allocmem1_c, "d1/a0-a1");
-BLITZ_THUNK(_allocmem, allocmem_c, "d1/a0-a1");
+BLITZ_THUNK(riamosfunclib_allocmem, allocmem_c, "d1/a0-a1");
 BLITZ_THUNK(_findfreebank, findfreebank_c, "d1/a0-a1");
 BLITZ_THUNK(_fillmemzeros, fillmemzeros_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_fillmem, fillmem_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_keycode, keycode_c, "d1/a0-a1");
 BLITZ_THUNK(_blitdone, blitdone_c, "d1/a0-a1");
 BLITZ_THUNK(_blitwait, blitwait_c, "d0-d1/a0-a1");
-BLITZ_THUNK(_finddev, finddev_c, "d1/a0-a1");
+BLITZ_THUNK(riamosfunclib_finddev, finddev_c, "d1/a0-a1");
 BLITZ_THUNK(_swapbank, swapbank_c, "d1/a0-a1");
 BLITZ_THUNK(_getdevname, getdevname_c, "d1/a0-a1");
 BLITZ_THUNK(_cd, cd_c, "d1/a0-a1");
 BLITZ_THUNK(_banklimit, banklimit_c, "d1/a0-a1");
 BLITZ_THUNK(_getbanklimit, getbanklimit_c, "d1/a0-a1");
 BLITZ_THUNK(_saveexec, saveexec_c, "d1/a0-a1");
-BLITZ_THUNK(_libinit, libinit_c, "d1/a0-a1");
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(riamosfunclib_libinit, libinit_c, "d1/a0-a1");
+BLITZ_THUNK(riamosfunclib_libfinit, libfinit_c, "d0-d1/a0-a1");

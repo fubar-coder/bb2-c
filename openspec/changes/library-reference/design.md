@@ -163,11 +163,16 @@ puts it in place before Hugo runs. `.gitignore` excludes the tree.
 - **Doxygen** (1.18.0): with the configuration of D5, 731 warnings on
   the first run, then 311 with the parameter-list macros expanded and
   the thunk/assembler macros as declarations, 0 after the comment
-  fixes. Global functions of one name in several library files
-  (`codeinit`, `codefinit`, `doinit`, `_libfinit`) are joined by
-  Doxygen into one entity, across files; where their docs clashed the
-  comments use `@arg`/`@par Result`. The joined pages remain: such a
-  function's page can show the description of a namesake from another
-  library. `SOURCE_BROWSER` is off (26 MB of HTML instead of 52 MB; the
+  fixes. Global functions of one name in several files (`codeinit`,
+  `codefinit`, `doinit`, `_libfinit`) are joined by Doxygen into one
+  entity, across files, so a function's page would show the
+  description of a namesake from another library. The sources keep
+  such names unique (`docs/development.md`): of 56 names shared by
+  acidlibs and the RWE userlibs (102 files), the 75 routines in C are
+  `static` and the 193 entry points in assembler have the library's
+  name as prefix; the library files are byte-identical either way (no
+  symbols in them). The only functions Doxygen joins are a header's
+  declaration with its definition. The init/finit routines whose docs
+  clashed use `@arg`/`@par Result`. `SOURCE_BROWSER` is off (26 MB of HTML instead of 52 MB; the
   sources are on GitHub). `OUTPUT_DIRECTORY` is created only one level
   deep, so the workflow creates `site/static/api` first.

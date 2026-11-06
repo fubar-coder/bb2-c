@@ -67,8 +67,8 @@
 void dodefin(void), dodefout(void), dosetin(void), dosetout(void);
 void dogetsingle(void), dogetstring(void), dooutsingle(void);
 void dooutstring1(void), dooutstring2(void), dopopinput(void);
-void dopopoutput(void), codeinit(void);
-void popinputcheck(void), popoutputcheck(void);
+void dopopoutput(void), inputoutputlib_codeinit(void), popinputcheck(void);
+void popoutputcheck(void);
 
 BLITZ_ENTRY_DECL(init);
 
@@ -107,7 +107,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(dopopoutput, popoutputcheck, 0);
 BLITZ_NAME("PopOutput", "");
 
-BLITZ_NULLSUB_AT(init, codeinit, 0, 0, LIB_doslib, BL_LA(6));
+BLITZ_NULLSUB_AT(init, inputoutputlib_codeinit, 0, 0, LIB_doslib, BL_LA(6));
 
 BLITZ_LIBFIN();
 
@@ -318,7 +318,7 @@ static void BLITZ_ROUTINE codeinit_c(struct DosLibrary *dos BL_REG(a6))
     setchannel(&iochan_in, defin);
     setchannel(&iochan_out, defout);
 }
-BLITZ_THUNK(codeinit, codeinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(inputoutputlib_codeinit, codeinit_c, "d0-d1/a0-a1");
 
 /* ------------------------------------------------- channel dispatchers */
 

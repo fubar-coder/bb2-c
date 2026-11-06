@@ -25,7 +25,8 @@
 
 /* entry points (inline routines and init/finit, below) */
 void _fillarray(void), _fillarray2(void);
-void _libinit(void), _libfinit(void);
+static void _libinit(void);
+static void _libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -48,12 +49,12 @@ BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
 BLITZ_LIBFIN();
 
 /** @brief init: nothing (RTS). */
-void _libinit(void)
+static void _libinit(void)
 {
 }
 
 /** @brief finit: nothing (RTS). */
-void _libfinit(void)
+static void _libfinit(void)
 {
 }
 

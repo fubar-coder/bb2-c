@@ -43,8 +43,8 @@
 /* palettelib getpal: load a palette (a0 = name, a1 = palette) */
 
 /* entry points (thunks / C, defined below) */
-void _bitmapchk(void), _bitloadchk(void), sbchk(void), cbchk(void), shchk(void);
-void _usechk(void), extbitmap(void);
+void _bitmapchk(void), _bitloadchk(void), bitmaplib_sbchk(void), cbchk(void);
+void shchk(void), _usechk(void), extbitmap(void);
 void BLITZ_ROUTINE _bitmap(UWORD w BL_REG(d1), UWORD h BL_REG(d2), UWORD d BL_REG(d3),
                            WORD usedoff BL_REG(d6));
 void BLITZ_ROUTINE _bitload(const UBYTE *name BL_REG(d1), struct bb_bitmap *bm BL_REG(a1));
@@ -78,7 +78,7 @@ BLITZ_NAME("LoadBitMap", "BitMap#,Filename$[,Palette#]");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_screenslib, 0x1280, LIB_bitmaplib, 0x1381, LIB_bitmaplib, 0x0604);
-BLITZ_SUBS(doscbitmap, sbchk, 0);
+BLITZ_SUBS(doscbitmap, bitmaplib_sbchk, 0);
 BLITZ_NAME("ScreensBitMap", "Screen#,BitMap#");
 
 BLITZ_NULLSUB(extbitmap, 0, 0);
@@ -503,6 +503,6 @@ static void BLITZ_ERRCHK cbchk_c(const struct bb_bitmap *b BL_REG(a2))
 BLITZ_ERRCHK_THUNK(_bitmapchk, _bitmapchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(_usechk, _usechk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(_bitloadchk, _bitloadchk_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(sbchk, sbchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(bitmaplib_sbchk, sbchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(shchk, shchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(cbchk, cbchk_c, "d0-d1/a0-a1");

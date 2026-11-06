@@ -49,8 +49,8 @@
 #undef __NOLIBBASE__
 
 /* entry points (thunks / assembler, defined below) */
-void doscale(void), doscale2(void), doxflip(void), doyflip(void), dorotate(void);
-void scalechk(void), scalechk2(void), fchk(void);
+void doscale(void), doscale2(void), doxflip(void), doyflip(void);
+void dorotate(void), scalechk(void), scalechk2(void), shapetrixlib_fchk(void);
 
 /* !libheader{#shapetrixlib,0,0,0,errors} */
 BLITZ_LIBHEADER(LIB_shapetrixlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
@@ -67,19 +67,19 @@ BLITZ_NAME("Scale", "Shape#,X Ratio,Y Ratio[,Palette#]");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS(LIB_shapeslib, 0x1380, LIB_chipbaselib, BL_LA(1), LIB_graphicslib, 0x5600);
-BLITZ_SUBS(doxflip, fchk, 0);
+BLITZ_SUBS(doxflip, shapetrixlib_fchk, 0);
 BLITZ_NAME("XFlip", "Shape#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD);
 BLITZ_LIBS(LIB_shapeslib, 0x1380);
-BLITZ_SUBS(doyflip, fchk, 0);
+BLITZ_SUBS(doyflip, shapetrixlib_fchk, 0);
 BLITZ_NAME("YFlip", "Shape#");
 
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_QUICK);
 BLITZ_LIBS(LIB_shapeslib, 0x1380);
-BLITZ_SUBS(dorotate, fchk, 0);
+BLITZ_SUBS(dorotate, shapetrixlib_fchk, 0);
 BLITZ_NAME("Rotate", "Shape#,Angle Ratio");
 
 BLITZ_LIBFIN();
@@ -695,5 +695,5 @@ static void BLITZ_ERRCHK scalechk_c(struct bb_palette *pal BL_REG(a2))
    .text, which GCC does not notice (a check function after a thunk would
    end up in the normal code) */
 BLITZ_ERRCHK_THUNK(scalechk2, scalechk2_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(fchk, scalechk2_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(shapetrixlib_fchk, scalechk2_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(scalechk, scalechk_c, "d0-d1/a0-a1");

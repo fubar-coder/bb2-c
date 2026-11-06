@@ -68,7 +68,8 @@
 void packpbm(void), deice(void), iff1(void), unpackiff(void);
 void ilbmpalette(void), ilbmpalette2(void), ilbmgrab(void);
 void ilbmloadnopal(void), ilbmload(void), chunkheader(void), unpackpbm(void);
-void libinit(void), libfinit(void);
+static void libinit(void);
+static void libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -157,14 +158,14 @@ BLITZ_LIBFIN();
 /**
  * @brief init: does nothing (RTS).
  */
-void BLITZ_ROUTINE libinit(void)
+static void BLITZ_ROUTINE libinit(void)
 {
 }
 
 /**
  * @brief finit: does nothing (RTS).
  */
-void BLITZ_ROUTINE libfinit(void)
+static void BLITZ_ROUTINE libfinit(void)
 {
 }
 

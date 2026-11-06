@@ -54,8 +54,8 @@
 void dogetsprite(void), doshowsprite(void), doinfront1(void), doinfront2(void);
 void dosavesprites(void), doloadsprites(void), doloadsprites2(void);
 void dospritemode(void), freeasprite(void);
-ULONG codeinit(void);
-void gspchk(void), sspchk(void), infchk(void), ssz(void);
+static ULONG codeinit(void);
+void gspchk(void), spriteslib_sspchk(void), infchk(void), ssz(void);
 
 #define AMIGAONLY(entry) ((char *)(entry) + 1)
 #define BLITZONLY(chk)   ((char *)(chk) + 1)
@@ -78,7 +78,7 @@ BLITZ_NAME("GetaSprite", "Sprite#,Shape#");
 BLITZ_ASTATEMENT();
 BLITZ_ARGS(BL_WORD, BL_WORD, BL_WORD, BL_WORD);
 BLITZ_LIBS(LIB_spriteslib, 0x1380, LIB_blitzcoplib, 0x1202);
-BLITZ_SUBS(doshowsprite, BLITZONLY(sspchk), 0);
+BLITZ_SUBS(doshowsprite, BLITZONLY(spriteslib_sspchk), 0);
 BLITZ_NAME("ShowSprite", "Sprite#,X,Y,Sprite Channel");
 
 BLITZ_ASTATEMENT();
@@ -183,7 +183,7 @@ static ULONG spsize(const struct bb_sprite *sp)
     return (ULONG)lslw(sp->height, sv.shift) * sp->count;
 }
 
-ULONG BLITZ_ROUTINE codeinit(void)
+static ULONG BLITZ_ROUTINE codeinit(void)
 {
     sv.mode = 0;
     sv.shift = 2;
@@ -671,6 +671,6 @@ static void BLITZ_ERRCHK ssz_c(UBYTE *last BL_REG(a2))
    .text, which GCC does not notice (a check function after a thunk would
    end up in the normal code) */
 BLITZ_ERRCHK_THUNK(gspchk, gspchk_c, "d0-d1/a0-a1");
-BLITZ_ERRCHK_THUNK(sspchk, sspchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(spriteslib_sspchk, sspchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(infchk, infchk_c, "d0-d1/a0-a1");
 BLITZ_ERRCHK_THUNK(ssz, ssz_c, "d0-d1/a0-a1");

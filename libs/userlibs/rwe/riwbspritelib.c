@@ -60,8 +60,9 @@
 #include <utility/tagitem.h>
 
 /* entry points (thunks, below) */
-void _GetWBSprite(void), _freesprite(void), _movewbsprite(void), _changewbsprite(void);
-void _wbspritex(void), _wbspritey(void), _libinit(void), _libfinit(void);
+void _GetWBSprite(void), _freesprite(void), _movewbsprite(void);
+void _changewbsprite(void), _wbspritex(void), _wbspritey(void);
+void riwbspritelib_libinit(void), riwbspritelib_libfinit(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -108,8 +109,8 @@ BLITZ_LIBS0();
 BLITZ_SUBS((char *)_wbspritey + 1, 0, 0);
 BLITZ_NAME("WBSpriteY", "sprite_channel");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
-BLITZ_NULLSUB_AT(init, _libinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, riwbspritelib_libfinit, 0, 0);
+BLITZ_NULLSUB_AT(init, riwbspritelib_libinit, 0, 0);
 
 BLITZ_LIBFIN();
 
@@ -492,8 +493,8 @@ static ULONG BLITZ_ROUTINE wbspritey_c(ULONG ch BL_REG(d0))
 
 /* Registers: the original changes d0-d7/a0-a2/a6 (keeps a3-a5); the
    thunks keep d1/a0/a1, the C code d2-d7/a2-a6. */
-BLITZ_THUNK(_libinit, libinit_c, "d1/a0-a1");
-BLITZ_THUNK(_libfinit, libfinit_c, "d1/a0-a1");
+BLITZ_THUNK(riwbspritelib_libinit, libinit_c, "d1/a0-a1");
+BLITZ_THUNK(riwbspritelib_libfinit, libfinit_c, "d1/a0-a1");
 BLITZ_THUNK(_GetWBSprite, getwbsprite_c, "d1/a0-a1");
 BLITZ_THUNK(_freesprite, freesprite_c, "d1/a0-a1");
 BLITZ_THUNK(_movewbsprite, movewbsprite_c, "d1/a0-a1");

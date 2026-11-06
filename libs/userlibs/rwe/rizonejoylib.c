@@ -63,13 +63,15 @@
 #include <stddef.h>
 
 /* entry points (thunks, below) */
-void _ZoneInit1(void), _ZoneInit2(void), _ZoneInit(void), _SetZone2(void), _SetZone(void);
-void _ZoneTest(void), _TestZoneRange2(void), _TestZoneRange(void), _ZoneTable(void);
-void _jfire(void), _jvert(void), _jhoriz(void), _allfire(void), _allfire2(void);
-void _ZoneTableSize(void), _NewZoneTable(void), _UseZoneTable(void), _FreeZoneTable(void);
-void _zonetablenumber(void), _zonemode(void), _setzonemode(void), _fouradaptor(void);
-void _zoneinfox1(void), _zoneinfoy1(void), _zoneinfox2(void), _zoneinfoy2(void);
-void _readjoypad(void), _libfinit(void), _Initmem(void);
+void _ZoneInit1(void), _ZoneInit2(void), _ZoneInit(void), _SetZone2(void);
+void _SetZone(void), _ZoneTest(void), _TestZoneRange2(void);
+void _TestZoneRange(void), _ZoneTable(void), _jfire(void), _jvert(void);
+void _jhoriz(void), _allfire(void), _allfire2(void), _ZoneTableSize(void);
+void _NewZoneTable(void), _UseZoneTable(void), _FreeZoneTable(void);
+void _zonetablenumber(void), _zonemode(void), _setzonemode(void);
+void _fouradaptor(void), _zoneinfox1(void), _zoneinfoy1(void);
+void _zoneinfox2(void), _zoneinfoy2(void), _readjoypad(void);
+void rizonejoylib_libfinit(void), _Initmem(void);
 
 BLITZ_ENTRY_DECL(init);
 BLITZ_ENTRY_DECL(finit);
@@ -224,7 +226,7 @@ BLITZ_LIBS0();
 BLITZ_SUBS(_readjoypad, 0, 0);
 BLITZ_NAME("ReadJoyPad", "port#      --B,R,Y,G,FF,RW,PL,0");
 
-BLITZ_NULLSUB_AT(finit, _libfinit, 0, 0);
+BLITZ_NULLSUB_AT(finit, rizonejoylib_libfinit, 0, 0);
 BLITZ_NULLSUB_AT(init, _Initmem, 0, 0);
 
 BLITZ_LIBFIN();
@@ -952,7 +954,7 @@ static ULONG BLITZ_ROUTINE readjoypad_c(UWORD port BL_REG(d0))
 /* Registers: the original changes d0 and, depending on the routine,
    d1-d7, a0, a1, a6; the thunks keep d1/a0/a1, the C code d2-d7/a2-a6.
    ZoneMode replaces only the low byte of d0 (MOVE.b). */
-BLITZ_THUNK(_libfinit, libfinit_c, "d0-d1/a0-a1");
+BLITZ_THUNK(rizonejoylib_libfinit, libfinit_c, "d0-d1/a0-a1");
 BLITZ_THUNK(_Initmem, initmem_c, "d1/a0-a1");
 BLITZ_THUNK(_ZoneInit1, zoneinit1_c, "d1/a0-a1");
 BLITZ_THUNK(_ZoneInit2, zoneinit2_c, "d1/a0-a1");

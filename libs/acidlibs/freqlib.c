@@ -67,7 +67,7 @@
 #include "blitzexec.h"
 
 /* entry points (defined below) */
-void dofreq(void), freqchk(void);
+void dofreq(void), freqlib_freqchk(void);
 
 /* !libheader{#freqlib,0,0,0,errors} */
 BLITZ_LIBHEADER(LIB_freqlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
@@ -75,7 +75,7 @@ BLITZ_LIBHEADER(LIB_freqlib, 0, BL_NORET, 0, BLITZ_ERROR_AREA);
 BLITZ_AFUNCTION(BL_STRING);
 BLITZ_ARGS(BL_STRING, BL_VARPTR | BL_STRING, BL_VARPTR | BL_STRING);
 BLITZ_LIBS(LIB_screenslib, 0x1102);
-BLITZ_SUBS(BLITZ_AMIGAONLY(dofreq), freqchk, 0);
+BLITZ_SUBS(BLITZ_AMIGAONLY(dofreq), freqlib_freqchk, 0);
 BLITZ_NAME("FileRequest$", "Title$,Pathname$,Filename$");
 
 BLITZ_LIBFIN();
@@ -145,5 +145,5 @@ static void BLITZ_ERRCHK freqchk_c(ULONG path BL_REG(d1), ULONG file BL_REG(d2))
         BLITZ_RUNERR(mess3);
 }
 
-BLITZ_ERRCHK_THUNK(freqchk, freqchk_c, "d0-d1/a0-a1");
+BLITZ_ERRCHK_THUNK(freqlib_freqchk, freqchk_c, "d0-d1/a0-a1");
 
