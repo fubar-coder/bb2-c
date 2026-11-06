@@ -738,13 +738,15 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   folds float constants with the ROM's mathffp.library, whose last bit
   differs on 3.2: `11*(2*Pi/200)` = `$B0EF3B3F` on 3.1, `$B0EF3A3F` on
   3.2; blitz2-c gives the same as the original on both).
-- [ ] **regression_ricompactdisclib_scsi_after_plain on Workbench 3.1**:
-  the reference run (the original ricompactdisclib) plays, then stops
-  with the alert `8100 0005` (corrupt memory list): uaescsi.device's 34
-  bytes of CDInfo for the 26 of `CDStatus` go behind the original's data
-  (BUG(orig) #948), which on 3.1 hits memory that matters. The test is
-  BROKEN there (the expectation is what the original does); needed: a
-  decision how the regression test of #946 keeps its meaning on 3.1.
+- [x] **regression_ricompactdisclib_scsi_after_plain on Workbench 3.1** done (2026-11-06):
+  the original's reference run played, then stopped with the alert `8100 0005`
+  (corrupt memory list) when the program ended: uaescsi.device's 34 bytes of
+  CDInfo for the 26 of `CDStatus` go behind the original's data (BUG(orig)
+  #948) and on 3.1 hit the free chunk behind the executable. The program
+  now holds (`Repeat : Forever`) after "played" and the expectation is
+  `[session] timeout` with the output up to "played", so the test keeps
+  checking what #946 is about (playing after a plain run) without the
+  original reaching its own crash; limit 20 s; 3 of 3 runs passed.
 - [ ] **bug-orig verdicts that changed with Workbench 3.1** (`ctest
   --preset bug-orig`, 2026-11-06, against the 3.2 run of the same day:
   339 of 346 the same): better on 3.1 `freqlib_doslist_unlocked`,

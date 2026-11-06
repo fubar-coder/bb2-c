@@ -1,7 +1,8 @@
+[session]
+timeout
 [run]
 open -1
 status 7
 open scsi -1
 tracks scsi 2
 played
-rc=0
