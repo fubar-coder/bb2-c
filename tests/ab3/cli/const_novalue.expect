@@ -1,0 +1,7 @@
+[compile]
+rc=0
+[run]
+0
+cnif false
+5
+rc=0

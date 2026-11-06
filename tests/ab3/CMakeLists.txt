@@ -383,6 +383,8 @@ ab3_cli_case(funcstmt_str funcstmt_str.ab3 REF)
 ab3_cli_case(funcstmt_nopar funcstmt_nopar.ab3 REF)
 ab3_cli_case(funcstmt_bb2 funcstmt_bb2.bb)
 ab3_cli_case(jsr jsr.ab3 REF)
+# a constant without a value is 0 (#972; the same in AmiBlitz3)
+ab3_cli_case(const_novalue const_novalue.ab3 REF)
 # the character literals @"..." (change ab3-mode-g3, spec
 # ab3-compat/strings): byte, word and long targets, in memory and in a
 # file; the errors (too many characters, without new syntax, in BB2 mode,

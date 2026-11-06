@@ -1,0 +1,14 @@
+; a constant defined without a value (a line "#c", no '=') is 0, CNIF is
+; false; "#d=5" then "#d" keeps 5 (#972, the same in AmiBlitz3)
+OPTIMIZE 4
+#c
+#d=5
+#d
+NPrint #c
+CNIF #c
+  NPrint "cnif true"
+CELSE
+  NPrint "cnif false"
+CEND
+NPrint #d
+End
