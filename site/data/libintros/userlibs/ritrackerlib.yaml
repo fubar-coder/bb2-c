@@ -1,0 +1,37 @@
+description: A Protracker module player by Reflective Images, with the Protracker 2.3A play routine, driven by the program one tick at a time.
+intro: |
+  This library plays Protracker modules: files in the usual "M.K."
+  format with 31 samples and four voices. Its play routine is the
+  Protracker 2.3A routine by Peter "Crayon" Hanning of Mushroom Studios,
+  which was released as public domain, with commands by Reflective Images
+  around it. It is not the module player of Blitz Basic 2 itself
+  ([trackerlib]({{< relref "/docs/libraries/commands/trackerlib" >}})):
+  the two have no commands in common, and this one has no module objects.
+
+  The module is a Protracker file that the program has in chip memory,
+  for example loaded into a bank with chip memory as the memory type.
+  `TrackInit` takes its address. The library does not play by itself:
+  the program calls `TrackPlay` once per tick, 50 times a second,
+  usually from a vertical blank interrupt handler. The speed commands of
+  a module (`Fxx` below 32) work; tempo commands, which a CIA timer would
+  need, do not change the speed
+  ([#571](https://github.com/fubar-coder/bb2-c/issues/571)).
+
+  ```blitzbasic
+  LoadBank 0,"mod.tune",2
+  TrackInit Bank(0)
+  SetInt 5
+    TrackPlay
+  End SetInt
+  MouseWait
+  TrackStop
+  ```
+
+  `TrackerChannels` keeps voices free for sound effects, `TrackerPause`
+  pauses and continues the module, and `Tracker` switches the player off
+  and on. The play routine's known faults are kept, for example with
+  some effect commands
+  ([#472](https://github.com/fubar-coder/bb2-c/issues/472),
+  [#473](https://github.com/fubar-coder/bb2-c/issues/473),
+  [#478](https://github.com/fubar-coder/bb2-c/issues/478),
+  [#482](https://github.com/fubar-coder/bb2-c/issues/482)).

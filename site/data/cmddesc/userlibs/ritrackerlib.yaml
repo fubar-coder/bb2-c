@@ -1,0 +1,57 @@
+"TrackInit":
+  text: Prepares the Protracker module at `address` in chip memory, from the first song position, and enables playing. The module plays as the program calls `TrackPlay`.
+  notes: |
+    The module is not checked; it must be a module with 31 samples in the
+    "M.K." format.
+
+    Kept from the original: while the player is switched off with
+    `Tracker Off`, `TrackInit` does not prepare the module but still
+    enables playing, so `Tracker On` then plays the module of before, or
+    from address 0 if there was none
+    ([#573](https://github.com/fubar-coder/bb2-c/issues/573)). Empty
+    samples at the end of the module make `TrackInit` clear 4 bytes
+    behind it ([#570](https://github.com/fubar-coder/bb2-c/issues/570)).
+"TrackPlay":
+  text: Plays one tick of the module. Call it 50 times a second, for example from a vertical blank interrupt handler (`SetInt 5`).
+  notes: |
+    Nothing happens unless a module was started with `TrackInit` and the
+    player is not paused, stopped or switched off.
+
+    Kept from the original: a tempo command (`F20` to `F7F`) does not
+    change the speed and writes to a CIA timer that the library never
+    reserved ([#571](https://github.com/fubar-coder/bb2-c/issues/571));
+    `F80` to `FFF` set the speed to 128 to 255
+    ([#569](https://github.com/fubar-coder/bb2-c/issues/569)); and after an
+    `F00` on voices 1 to 3, the voices after it in the same row play
+    notes read from the hardware registers instead of the pattern
+    ([#475](https://github.com/fubar-coder/bb2-c/issues/475)).
+"TrackStop":
+  text: Stops the module and silences the four voices.
+  notes: |
+    `TrackerPause 0` continues it, and `TrackInit` starts it from the
+    beginning.
+"TrackDMA":
+  text: Sets how long the play routine waits for the sound hardware after starting a sample, as a loop count; the default is 4000.
+  notes: |
+    The wait is a busy loop, so how long it takes depends on the
+    processor.
+"Tracker":
+  text: Switches the player off with 0 and on with any other value. Switching it off stops the module and silences the voices.
+  notes: |
+    The player starts switched on.
+
+    Kept from the original: `Tracker On` after `Tracker Off` does not
+    continue the module; it stays stopped until `TrackInit` or
+    `TrackerPause 0`
+    ([#572](https://github.com/fubar-coder/bb2-c/issues/572)).
+"TrackerChannels":
+  text: Chooses the voices the module plays on, bit 3 for voice 1 down to bit 0 for voice 4; the default is 15, all four. A voice left out is silenced at once.
+  notes: |
+    Kept from the original: the voices after a left-out voice play the
+    notes of the voice before them
+    ([#568](https://github.com/fubar-coder/bb2-c/issues/568)), and the
+    effects and sample loops of the module still reach the left-out
+    voices ([#567](https://github.com/fubar-coder/bb2-c/issues/567)), so
+    they are not really free for sound effects.
+"TrackerPause":
+  text: Pauses the module with any value other than 0, which silences the voices; with 0 it continues the module and plays one tick at once.

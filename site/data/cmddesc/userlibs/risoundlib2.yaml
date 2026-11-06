@@ -1,0 +1,85 @@
+"CludgeSound":
+  text: Makes sound object `sound#` from the IFF 8SVX file at `address` in memory, copying its sample into chip memory. As a function it returns -1 on success, and 0 if the file is no 8SVX file, has no sample data among its first chunks or there is not enough chip memory.
+  notes: |
+    The same command as in the first sound library, with its faults kept
+    from the original (see there): a failing call leaves freed memory in
+    the sound object
+    ([#831](https://github.com/fubar-coder/bb2-c/issues/831)), a sound
+    made with `DecodeSound` from chip memory cannot be replaced
+    ([#945](https://github.com/fubar-coder/bb2-c/issues/945)), the rate is
+    right only for the usual header
+    ([#832](https://github.com/fubar-coder/bb2-c/issues/832)) and a rate of
+    0 hangs ([#830](https://github.com/fubar-coder/bb2-c/issues/830)), an
+    odd chunk before the sample data is not passed correctly
+    ([#828](https://github.com/fubar-coder/bb2-c/issues/828)), and empty
+    samples or samples of 64 KB or more go wrong
+    ([#829](https://github.com/fubar-coder/bb2-c/issues/829)).
+
+    Also kept from the original, and only in this library: the sample rate
+    is stored behind the sound object, over the start of the next one, so
+    making sound `n` damages the sample address of sound `n+1`, and for
+    the last sound object whatever follows the objects
+    ([#926](https://github.com/fubar-coder/bb2-c/issues/926)). The mark
+    that audiolib keeps for a sound made with `DecodeSound` is not cleared
+    ([#925](https://github.com/fubar-coder/bb2-c/issues/925)).
+"OpenAHI":
+  text: Opens unit `unit` of ahi.device, version 4 or newer. As a function it returns -1 on success and 0 if the device cannot be opened.
+  notes: |
+    Amiga mode only. `deviceID` is stored but not used.
+
+    Kept from the original: a second `OpenAHI` opens the device again
+    instead of noticing that it is open
+    ([#924](https://github.com/fubar-coder/bb2-c/issues/924)), and
+    `OpenAHI` after `CloseAHI` writes to memory address 48 and calls the
+    device with no request
+    ([#927](https://github.com/fubar-coder/bb2-c/issues/927)).
+"CloseAHI":
+  text: Frees the I/O request and message port that the library made for AHI. The library does the same when the program ends.
+  notes: |
+    Amiga mode only. Nothing is freed while the request is still in use.
+
+    Kept from the original: the device is not closed
+    ([#924](https://github.com/fubar-coder/bb2-c/issues/924)), and `OpenAHI`
+    cannot be used after `CloseAHI`
+    ([#927](https://github.com/fubar-coder/bb2-c/issues/927)).
+"PlaySoundAHI":
+  text: Meant to play sound object `sound` through AHI, at `volume` (default 1, full) and `balance` (default 0.5, the middle). It plays nothing.
+  notes: |
+    Kept from the original: the command returns at once and never reaches
+    the device ([#924](https://github.com/fubar-coder/bb2-c/issues/924)).
+"PlayRawAHI":
+  text: Meant to play `length` bytes of an 8 bit mono sample at `address` through AHI at `frequency` Hz, with `volume` (default 1, full) and `balance` (default 0.5, the middle). It plays nothing.
+  notes: |
+    Kept from the original: the command returns at once and never reaches
+    the device ([#924](https://github.com/fubar-coder/bb2-c/issues/924)).
+"AHIOutputRequest":
+  text: Shows AHI's requester for choosing an audio mode. Returns nonzero if the user chose a mode, and 0 if the user cancelled, the requester could not be made or `OpenAHI` was not called.
+  notes: |
+    Amiga mode only. The arguments are meant as the requester's position
+    and size, and the mode and mixing frequency it starts with.
+
+    Kept from the original:
+
+    * The forms with 1, 2 and 4 arguments run the code of another form, so
+      their arguments are lost or taken as other values
+      ([#928](https://github.com/fubar-coder/bb2-c/issues/928)).
+    * Only `x` and `y` reach the requester as meant; width, height, mode
+      and frequency are written over the requester's settings in the
+      wrong places, and a mode of 0 ends the settings early
+      ([#931](https://github.com/fubar-coder/bb2-c/issues/931)).
+    * The requester does not open on the program's current screen
+      ([#929](https://github.com/fubar-coder/bb2-c/issues/929)).
+    * Every call makes a new requester and none is ever freed
+      ([#930](https://github.com/fubar-coder/bb2-c/issues/930)).
+"AHIRequestedID":
+  text: Meant to return the audio mode the user chose in `AHIOutputRequest`. It returns -1 while AHI is open, and 0 if it is not.
+  notes: |
+    Kept from the original: the value is the mode the requester starts
+    with, never the user's choice
+    ([#934](https://github.com/fubar-coder/bb2-c/issues/934)).
+"AHIRequestedFreq":
+  text: Meant to return the mixing frequency the user chose in `AHIOutputRequest`. It returns 0.
+  notes: |
+    Kept from the original: the value is the frequency the requester
+    starts with, never the user's choice
+    ([#934](https://github.com/fubar-coder/bb2-c/issues/934)).

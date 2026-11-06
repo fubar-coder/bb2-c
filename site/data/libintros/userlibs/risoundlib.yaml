@@ -1,0 +1,31 @@
+description: CludgeSound by Reflective Images - turning an IFF 8SVX sample that is already in memory into a sound object of Blitz Basic 2.
+intro: |
+  This library has one command, `CludgeSound`. It does for sounds what
+  `CludgeShapes` does for shapes: it takes an IFF 8SVX sample that the
+  program already has in memory, for example loaded into a bank, and
+  makes a sound object of it, the same object that `LoadSound` of
+  [audiolib]({{< relref "/docs/libraries/commands/audiolib" >}}) fills.
+  The sample is copied into chip memory, so the file in memory can be
+  freed afterwards, and the sound is played with `Sound` as usual.
+
+  The sound gets no loop: it plays once. Only the usual form of an 8SVX
+  file works reliably, with a header chunk of 20 bytes and the sample data
+  among the first chunks of the file (see the command's notes).
+
+  Its successor, the second sound library
+  ([risoundlib2]({{< relref "/docs/libraries/userlibs/risoundlib2" >}})),
+  has the same library number and the same `CludgeSound`, so only one of
+  the two can be installed. This one belongs to the library variant
+  rwe-1999; the variant rwe-1999-ahi has the second one instead
+  ([The RWE userlibs]({{< relref "/docs/blitz2-internals/rwe-userlibs" >}})).
+
+  ```blitzbasic
+  LoadBank 0,"sound.8svx"
+  If CludgeSound(0,Bank(0))
+    FreeBank 0
+    Sound 0,1
+  EndIf
+  MouseWait
+  ```
+
+  *Based on the RI Sound Lib guide by Red When Excited.*

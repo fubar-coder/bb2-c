@@ -1,0 +1,28 @@
+"CludgeSound":
+  text: Makes sound object `sound#` from the IFF 8SVX file at `address` in memory, copying its sample into chip memory. As a function it returns -1 on success, and 0 if the file is no 8SVX file, has no sample data among its first chunks or there is not enough chip memory.
+  notes: |
+    The old sample of the sound object is freed first. The playback rate
+    comes from the file's header; the sound has no loop. The search for
+    the sample data looks at the first seven chunks of the file, the
+    header chunk included.
+
+    Kept from the original:
+
+    * The old sample is freed even when the call then fails, and the
+      sound object still points to the freed memory; replacing the sound
+      later frees it a second time
+      ([#831](https://github.com/fubar-coder/bb2-c/issues/831)).
+    * A sound object that holds a sound made with `DecodeSound` from
+      chip memory cannot be replaced: its sample was never allocated,
+      and freeing it fails with the error "Unable to Free Memory"
+      ([#945](https://github.com/fubar-coder/bb2-c/issues/945)).
+    * The rate is read from the right place only when the header chunk
+      has the usual length of 20 bytes
+      ([#832](https://github.com/fubar-coder/bb2-c/issues/832)); a rate
+      of 0 makes the command hang
+      ([#830](https://github.com/fubar-coder/bb2-c/issues/830)).
+    * A chunk of odd length before the sample data, written correctly
+      with its pad byte, makes the search miss the sample data
+      ([#828](https://github.com/fubar-coder/bb2-c/issues/828)).
+    * An empty sample overwrites memory, and a sample of 64 KB or more
+      is cut ([#829](https://github.com/fubar-coder/bb2-c/issues/829)).

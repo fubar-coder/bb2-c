@@ -1,0 +1,139 @@
+"LoadTrackerModule":
+  text: Loads the module file `Name` into chip memory, into slot `TrackerModule#` (0 to 8). Returns -1 when the file was read, and the AmigaDOS error code after a read error.
+  notes: |
+    A file that cannot be found or examined is a runtime error. With the
+    debugger's checks, the slot must be empty; without them, a module in
+    the slot is freed first. Do not load into the slot of the module that
+    is playing.
+
+    Kept from the original:
+
+    * The memory is the file size plus 3, computed in the lowest byte
+      only: a file whose size ends in the byte $FD, $FE or $FF is loaded
+      253 bytes short
+      ([#442](https://github.com/fubar-coder/bb2-c/issues/442)).
+    * The library calls AmigaDOS without setting up its library base, so
+      the call works only if the program happens to have it at hand
+      ([#443](https://github.com/fubar-coder/bb2-c/issues/443)).
+    * After a read error the file's lock is released a second time
+      ([#444](https://github.com/fubar-coder/bb2-c/issues/444)).
+"StartTracker":
+  text: Plays the module of slot `TrackerModule#` from the beginning, in place of the module that played before. Returns -1.
+  notes: |
+    Unless `ChangeTrackerVBlank` was used, the CIA interrupt is set up
+    again. With the debugger's checks, an empty slot is a runtime error.
+
+    Kept from the original: without the checks, an empty slot returns the
+    slot number instead of 0
+    ([#451](https://github.com/fubar-coder/bb2-c/issues/451)).
+"StopTracker":
+  text: Stops the module and silences the four voices.
+"DecodeModule":
+  text: Puts the module at `ModuleAddress` into slot `TrackerModule#` (0 to 8). A module in chip memory is used where it is; one in other memory is copied into chip memory.
+  notes: |
+    The module is not checked; `CheckTrackerID` tells whether it looks
+    like one. With the debugger's checks, the slot must not hold a module
+    that was loaded or copied.
+
+    Kept from the original: memory at addresses from $80000000 on is
+    taken for chip memory, so a module there is not copied and cannot be
+    heard ([#432](https://github.com/fubar-coder/bb2-c/issues/432)); the
+    size of the copy is computed in the lower 16 bits only, so a module
+    whose size ends in $FFFD to $FFFF is copied 64 KB short
+    ([#434](https://github.com/fubar-coder/bb2-c/issues/434)).
+"GetTrackerSize":
+  text: The number of bytes a slot's module takes in memory, the file size plus 3 for a loaded module. A module that `DecodeModule` left where it was gives 1.
+"GetTrackerLocation":
+  text: The address of a slot's module in memory.
+"FreeTrackerModule":
+  text: Frees the module of slot `TrackerModule#`. The memory of a loaded or copied module is freed; a module that `DecodeModule` left in place is only forgotten.
+  notes: |
+    Kept from the original: a module that is playing is not stopped and
+    keeps playing from freed memory; call `StopTracker` first
+    ([#436](https://github.com/fubar-coder/bb2-c/issues/436)).
+"GetTrackerEvent":
+  text: The value of the most recent tracker event, the effect `8xx` of the module.
+  notes: |
+    Kept from the original: an `8xx` is seen only on the ticks after the
+    first of its row, so it comes one tick late and never at speed 1
+    ([#435](https://github.com/fubar-coder/bb2-c/issues/435)).
+"CheckTrackerEvent":
+  text: Returns -1 if a new tracker event came since the last check; `GetTrackerEvent` gives its value.
+  notes: |
+    Kept from the original: without a new event the result is not 0 but
+    holds the value of the last event, so compare it with -1
+    ([#431](https://github.com/fubar-coder/bb2-c/issues/431)).
+"WaitTrackerEvent":
+  text: Waits until the next tracker event comes, checking once per frame.
+  notes: |
+    Kept from the original: the library calls the graphics library's
+    wait without setting up its library base, so the call works only if
+    the program happens to have it at hand
+    ([#453](https://github.com/fubar-coder/bb2-c/issues/453)).
+"CheckTrackerID":
+  text: Returns -1 if the slot's module has the Protracker mark "M.K." or "M!K!".
+  notes: |
+    Kept from the original: otherwise the result is not 0 but the
+    contents of memory address 0
+    ([#430](https://github.com/fubar-coder/bb2-c/issues/430)).
+"ModuleToChip":
+  text: Does nothing; `DecodeModule` copies a module into chip memory itself.
+  notes: |
+    Kept from the original: it returns its argument
+    ([#446](https://github.com/fubar-coder/bb2-c/issues/446)).
+"GetModuleName$":
+  text: The name of a slot's module, up to 20 characters.
+  notes: |
+    Kept from the original: without the debugger's checks, an empty slot
+    gives a string of slot number × 10 undefined characters
+    ([#437](https://github.com/fubar-coder/bb2-c/issues/437)).
+"ModulePositionJump":
+  text: Makes the module continue at another song position at the next tick. The position is not checked.
+  notes: |
+    Kept from the original: the module continues at the position after
+    the one given ([#447](https://github.com/fubar-coder/bb2-c/issues/447)).
+"GetModulePosition":
+  text: The song position the module is playing.
+"PauseModule":
+  text: Pauses the module and silences the voices; the next call continues it.
+"ChangeTrackerVBlank":
+  text: Switches to playing without the CIA interrupt. It stops the module and removes the interrupt; from then on the program calls `PlayTracker` 50 times a second itself.
+  notes: |
+    Call it before `StartTracker`. Tempo commands of a module have no
+    effect in this mode.
+
+    Kept from the original: removing the interrupt always removes the
+    vector of timer A of the CIA in use, whichever interrupt that is,
+    which can take an interrupt of the system away
+    ([#448](https://github.com/fubar-coder/bb2-c/issues/448)), and it
+    switches the audio filter, and with it the power LED, over
+    ([#449](https://github.com/fubar-coder/bb2-c/issues/449)). The same
+    happens when a program ends that did not use `ChangeTrackerVBlank`.
+"PlayTracker":
+  text: Plays one tick of the module. After `ChangeTrackerVBlank`, call it 50 times a second, for example from a vertical blank interrupt handler (`SetInt 5`).
+  notes: |
+    Nothing happens unless a module was started and is not stopped or
+    paused.
+
+    Kept from the original: after an `F00` on voices 1 to 3, the voices
+    after it in the same row play notes read from the hardware registers
+    instead of the pattern
+    ([#475](https://github.com/fubar-coder/bb2-c/issues/475)); an `E8x`
+    on a sample with a loop length of 0 overwrites 64 KB of memory
+    ([#439](https://github.com/fubar-coder/bb2-c/issues/439)).
+"TrackerVolume":
+  text: Sets the master volume of the module, 0 to 64; the default is 64. Values above 64 are ignored.
+  notes: |
+    Kept from the original: 0 and 64 change the volume only of the notes
+    that start afterwards, not of those that play
+    ([#452](https://github.com/fubar-coder/bb2-c/issues/452)).
+"ChangeTrackerMask":
+  text: Chooses the voices the module plays on, bit 0 for voice 1 up to bit 3 for voice 4; the default is all four. A voice left out is silenced at once and stays free for sound effects.
+  notes: |
+    `ChangeTrackerMask %1001` plays voices 1 and 4 and leaves voices 2
+    and 3 to the program.
+"ModulePatterns":
+  text: Meant to return the number of patterns of a slot's module; it returns the song length, the number of song positions.
+  notes: |
+    Kept from the original
+    ([#445](https://github.com/fubar-coder/bb2-c/issues/445)).

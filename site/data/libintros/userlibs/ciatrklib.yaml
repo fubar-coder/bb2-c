@@ -1,0 +1,51 @@
+description: The CIA Protracker library by Crossbones/Binary Assault, after Neil O'Rourke - loading and playing Protracker modules, with a master volume, a channel mask and tracker events for synchronising a program with its music.
+intro: |
+  This library plays Protracker modules: files in the "M.K." format with
+  31 samples and four voices. Its play routine is the Protracker 2.3A CIA
+  routine by Peter "Crayon" Hanning of Mushroom Studios, released as
+  public domain, extended with a master volume (`TrackerVolume`), a
+  channel mask that keeps voices free for sound effects
+  (`ChangeTrackerMask`) and tracker events: the effect `8xx`, which
+  Protracker does not use, passes its value to the program, which can
+  wait for it or check for it to time graphics to the music.
+
+  Modules live in the library's own numbered slots, 0 to 8; they are
+  not Blitz objects. `LoadTrackerModule` loads a module file into chip
+  memory, `DecodeModule` takes a module that is already in memory and
+  copies it into chip memory if it is elsewhere. `StartTracker` plays
+  the module of a slot from the beginning.
+
+  The library can play in two ways. By default it sets up a CIA timer
+  interrupt when the program starts, which plays the module by itself at
+  the right tempo. That part is broken in the original and kept so
+  ([#450](https://github.com/fubar-coder/bb2-c/issues/450)): it passes
+  wrong values to the system when it sets the interrupt up, so on a 68000
+  the program crashes at its start, and on other machines whether the
+  music plays depends on the machine (in the emulator used for the tests
+  it stays silent). The other way does not depend on it: after
+  `ChangeTrackerVBlank` the program calls `PlayTracker` 50 times a second
+  itself, for example from a vertical blank interrupt handler. In that
+  mode tempo commands of a module have no effect.
+
+  ```blitzbasic
+  ChangeTrackerVBlank
+  If LoadTrackerModule(0,"mod.tune")=-1
+    If StartTracker(0)
+      SetInt 5
+        PlayTracker
+      End SetInt
+      MouseWait
+      StopTracker
+    EndIf
+  EndIf
+  ```
+
+  `LoadTrackerModule` reads the file with AmigaDOS. The play routine's
+  known faults are kept, for example with some effect commands
+  ([#472](https://github.com/fubar-coder/bb2-c/issues/472),
+  [#473](https://github.com/fubar-coder/bb2-c/issues/473),
+  [#478](https://github.com/fubar-coder/bb2-c/issues/478),
+  [#482](https://github.com/fubar-coder/bb2-c/issues/482)).
+
+  *Based on the CIA Protracker Library documentation by Crossbones/Binary
+  Assault.*

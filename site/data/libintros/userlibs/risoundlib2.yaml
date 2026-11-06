@@ -1,0 +1,24 @@
+description: The second sound library by Reflective Images - CludgeSound for IFF 8SVX samples in memory, and commands meant for sound output through AHI that do not work.
+intro: |
+  This library is the successor of the first sound library
+  ([risoundlib]({{< relref "/docs/libraries/userlibs/risoundlib" >}})):
+  it has its `CludgeSound`, which makes a sound object of
+  [audiolib]({{< relref "/docs/libraries/commands/audiolib" >}}) from an
+  IFF 8SVX sample in memory, and adds commands for AHI, the retargetable
+  audio system for the Amiga (ahi.device, version 4 or newer): opening the
+  device, playing sound objects and raw samples through it, and AHI's
+  requester for choosing an audio mode.
+
+  The AHI part was never finished. Because of a fault kept from the
+  original, `PlaySoundAHI` and `PlayRawAHI` never play anything, and
+  `CloseAHI` does not close the device
+  ([#924](https://github.com/fubar-coder/bb2-c/issues/924)). What works is
+  opening the device and showing the requester, and even the requester
+  does not report the user's choice. A sound made with `CludgeSound` is
+  played with `Sound` of audiolib; this library's `CludgeSound` also
+  writes into the sound object after the one it makes (see its notes).
+
+  The library has the same number and the same `CludgeSound` as the first
+  sound library, so only one of the two can be installed. It belongs to
+  the library variant rwe-1999-ahi, which has it instead of the first one
+  ([The RWE userlibs]({{< relref "/docs/blitz2-internals/rwe-userlibs" >}})).
