@@ -9,7 +9,9 @@
  * window, the EasyStruct with its strings and the argument array and
  * returns a chosen value; GetProgramDir/GetProgramName are replaced for
  * the fallback paths of ProgPath$; the font prefs are a file the test
- * writes to ENV:SYS/Font.Prefs (the one there is put back afterwards).
+ * writes to ENV:SYS/Font.Prefs, with ENV: assigned to a directory of its
+ * own for that part (envprivate) - the system's IPrefs watches the real
+ * one and keeps a broken file in use (Workbench 3.1).
  * Covered: init; TimerReset (the TOD after it); PortSigBit; WorkbenchHere
  * on a fake IntuitionBase with fake screens (found in the first/a later
  * screen, after a partial match, an empty title); EZOutput both forms;
@@ -617,33 +619,49 @@ static void conversions(void)
 
 #define FPFILE "ENV:SYS/Font.Prefs"
 #define FPSIZE 16384
+#define FPENV "RAM:rimisclib-env"
 
-static UBYTE *saved;
-static LONG savedlen = -1;
+/* ENV: of the font prefs part: FPENV with an empty SYS directory.  The
+   real ENV:SYS/Font.Prefs is watched by IPrefs (a notification), which
+   reads every file the test writes there and so changes the system's
+   fonts; Workbench 3.1's IPrefs (Amiga Forever) even keeps the file with
+   the bad PRHD in use for good, so every later write fails
+   (ERROR_OBJECT_IN_USE).
+   The library opens the name ENV:SYS/Font.Prefs, so it reads the private
+   file too.  oldenv: the lock of the real ENV: (0: no private ENV:) */
+static BPTR oldenv;
 
-static void savefp(void)
+static BOOL envprivate(void)
 {
-    BPTR fh = Open((STRPTR)FPFILE, MODE_OLDFILE);
-    if (!fh)
-        return;
-    saved = AllocMem(FPSIZE * 2, MEMF_ANY);
-    if (saved)
-        savedlen = Read(fh, saved, FPSIZE * 2);
-    Close(fh);
+    BPTR l;
+
+    DeleteFile((STRPTR)FPENV "/SYS/Font.Prefs");
+    if ((l = CreateDir((STRPTR)FPENV)))
+        UnLock(l);
+    if ((l = CreateDir((STRPTR)FPENV "/SYS")))
+        UnLock(l);
+    oldenv = Lock((STRPTR)"ENV:", SHARED_LOCK);
+    l = Lock((STRPTR)FPENV, SHARED_LOCK);
+    check("rimisclib: a private ENV: for the font prefs", oldenv && l);
+    if (!oldenv || !l || !AssignLock((STRPTR)"ENV", l)) {
+        if (l)
+            UnLock(l);
+        if (oldenv)
+            UnLock(oldenv);
+        oldenv = 0;
+    }
+    return oldenv != 0;
 }
 
-static void restorefp(void)
+/* the real ENV: again (AssignLock unlocks the private one), FPENV removed */
+static void envrestore(void)
 {
-    if (savedlen >= 0) {
-        BPTR fh = Open((STRPTR)FPFILE, MODE_NEWFILE);
-        if (fh) {
-            Write(fh, saved, savedlen);
-            Close(fh);
-        }
-    } else
-        DeleteFile((STRPTR)FPFILE);
-    if (saved)
-        FreeMem(saved, FPSIZE * 2);
+    if (oldenv && !AssignLock((STRPTR)"ENV", oldenv))
+        UnLock(oldenv);
+    oldenv = 0;
+    DeleteFile((STRPTR)FPENV "/SYS/Font.Prefs");
+    DeleteFile((STRPTR)FPENV "/SYS");
+    DeleteFile((STRPTR)FPENV);
 }
 
 static UBYTE fp[FPSIZE + 100];
@@ -726,7 +744,8 @@ static void fontprefs(void)
     static const char *bad[] = { "bad FORM", "bad PREF", "bad PRHD", "bad FONT" };
     int i;
 
-    savefp();
+    if (!envprivate())
+        return;
     fontq("not open");
     closefp("not open");
     DeleteFile((STRPTR)FPFILE);
@@ -757,7 +776,7 @@ static void fontprefs(void)
     closefp("");
     writefp(0, 6, FPSIZE);
     openfp("open for finit");
-    restorefp();
+    envrestore();
 }
 
 /* ------------------------------------------------------------- BInstr */

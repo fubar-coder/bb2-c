@@ -142,7 +142,10 @@ EasyRequestArgs is replaced (SetFunction) by a stub that records window,
 EasyStruct, its three strings and 16 longs of arguments and returns a
 chosen value; GetProgramName/GetProgramDir are replaced by `moveq #0,d0`
 for ProgPath$'s fallbacks; the font prefs are files the test writes to
-`ENV:SYS/Font.Prefs` (the file there is put back at the end). Compared
+`ENV:SYS/Font.Prefs`, with `ENV:` assigned to a directory of its own
+(`RAM:rimisclib-env`) for that part: the system's IPrefs watches the real
+file and reads every version of it (Workbench 3.1's keeps the one with
+the bad PRHD in use, every later write fails). Compared
 with the reference build: init (d0 = IntuitionBase); TimerReset (the TOD
 right after it); PortSigBit; WorkbenchHere on a fake IntuitionBase with
 1-4 fake screens (found first, later, after partial matches, empty
