@@ -51,8 +51,8 @@ both do. Each comes out as one of:
 | BROKEN | The original already behaves correctly: the test does not show a bug. |
 
 Because they fail on purpose, these tests are not part of the normal test
-runs; they have a run of their own, described in the chapter
-[Project structure]({{< relref "/docs/project-structure" >}}).
+runs; they have a run of their own
+([Tests]({{< relref "/docs/project-structure/tests" >}})).
 
 ## Bugs of the port itself
 

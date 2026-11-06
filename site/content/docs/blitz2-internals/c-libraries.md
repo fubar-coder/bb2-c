@@ -35,9 +35,8 @@ area. The library build therefore compiles every library with:
 
 A linker script puts the header and the table at the very start of the
 single code hunk, followed by the code and data, and the error check
-routines last. The result is stripped and checked; the chapter
-[Project structure]({{< relref "/docs/project-structure" >}}) describes
-the checks.
+routines last. The result is stripped and checked
+([What the build checks]({{< relref "/docs/project-structure/build-checks" >}})).
 
 You do not set these options yourself: the CMake function
 `blitz_library()` does it for every library it builds.

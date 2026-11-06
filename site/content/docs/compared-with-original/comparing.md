@@ -6,7 +6,7 @@ next: /docs/ab3-mode
 ---
 
 Before this page you should have built the port and run its tests
-(see the chapter [Project structure]({{< relref "/docs/project-structure" >}})).
+([Tests]({{< relref "/docs/project-structure/tests" >}})).
 
 The claims of this chapter are checked by tests that run the original
 Blitz Basic 2 and the port side by side in an emulator. You can use the
