@@ -1,0 +1,35 @@
+description: AMOS-style helpers by Red When Excited - memory banks, loading and saving files, directory and volume functions, memory copies and fills, caches and a few hardware registers.
+intro: |
+  This library began as a set of commands that work like their AMOS
+  counterparts and grew into a collection of small helpers: memory banks,
+  file loading and saving, directory and volume functions, memory copies
+  and fills, the processor caches and a few hardware registers.
+
+  A bank is a block of memory with a number, from 0 to 49 by default;
+  `BankLimit` changes the number of banks. `Reserve` allocates a bank,
+  `Start` and `Length` give its address and size, `Erase` frees it, and
+  all banks still in use are freed when the program ends. `FillMem`,
+  `BLoad` and `BSave` take a bank or an address: a number below the bank
+  limit is a bank, anything larger an address. Bank numbers are not
+  checked against the limit; a negative or too large number reads or
+  writes outside the library's tables
+  ([#484](https://github.com/fubar-coder/bb2-c/issues/484)).
+
+  The file and directory commands (`BLoad`, `BSave`, `FileSize`,
+  `MakeDir`, `Rename`, `ChangeDir`, `FindVolume`, `DeviceName$`,
+  `SaveExec`) work in Amiga mode only. `FindVolume`, `DeviceName$`,
+  `CachesOn`, `CachesOff` and `Reboot` use system functions of Kickstart
+  2.0 and need it.
+
+  Loading a file into a new bank and saving it again:
+
+  ```blitzbasic
+  b=BLoad("s:startup-sequence")
+  If b>=0
+    NPrint "bank ",b,", ",Length(b)," bytes"
+    r=BSave("ram:copy",b)
+    Erase b
+  EndIf
+  ```
+
+  *Based on the RI AMOS Func Library guide by Red When Excited.*

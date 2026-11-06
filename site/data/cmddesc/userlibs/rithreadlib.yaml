@@ -1,0 +1,19 @@
+"CreateThread":
+  text: Starts the code at `address` (a label given with `?label`, ending with `RTS`) as a new DOS process called `name`, which runs alongside the program.
+  notes: |
+    Amiga mode only. The command returns at once, before the thread has
+    started to run. The thread shares the program's global variables and
+    gets 10 KB of cleared working memory of its own.
+
+    Kept from the original: a second `CreateThread` before the first
+    thread has started gives both threads the second one's code and
+    memory ([#838](https://github.com/fubar-coder/bb2-c/issues/838)).
+"ActiveThreads":
+  text: The number of threads started with `CreateThread` that have not ended yet.
+  notes: |
+    Amiga mode only.
+
+    When the program ends, it waits for the running threads. Kept from
+    the original: if all threads had ended once before and new ones were
+    started later, the program may not wait for them and end while they
+    still run ([#837](https://github.com/fubar-coder/bb2-c/issues/837)).

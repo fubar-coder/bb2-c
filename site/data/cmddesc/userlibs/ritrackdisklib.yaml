@@ -1,0 +1,64 @@
+"OpenDisk":
+  text: Opens a unit (0 to 3) of trackdisk.device, or of the device `devicename$`, for the other commands. Returns -1 if it worked, else 0.
+  notes: |
+    Kept from the original: a device name is kept for every later
+    `OpenDisk` without a name
+    ([#859](https://github.com/fubar-coder/bb2-c/issues/859)), and a name
+    longer than 57 characters overwrites the library's data
+    ([#860](https://github.com/fubar-coder/bb2-c/issues/860)). Opening a
+    unit that is already open loses the first request, which stays open
+    ([#862](https://github.com/fubar-coder/bb2-c/issues/862)); a negative
+    unit is not refused and loses its request as well
+    ([#861](https://github.com/fubar-coder/bb2-c/issues/861)).
+"MotorOn":
+  text: Switches the motor of the unit's drive on. As a function it returns the device's error code, 0 if it worked.
+"CloseDisk":
+  text: Switches the motor off and closes the unit. Returns -1 if the unit was open, else 0.
+"ReadSector":
+  text: Reads `numsectors` sectors, or one, from sector `sector#` on into the memory at `buffer`. As a function it returns the device's error code, 0 if it worked.
+  notes: |
+    The buffer must hold 512 bytes per sector.
+"MotorOff":
+  text: Switches the motor of the unit's drive off. As a function it returns the device's error code, 0 if it worked.
+"WriteSector":
+  text: Writes `numsectors` sectors, or one, from the memory at `buffer` to the disk, from sector `sector#` on. As a function it returns the device's error code, 0 if it worked.
+"FormatTrack":
+  text: Formats track `track#` and the tracks after it, writing the data at `buffer`. As a function it returns the device's error code, 0 if it worked.
+  notes: |
+    Kept from the original: the length given to the device is 512 bytes
+    per track instead of a whole track of 11 sectors
+    ([#858](https://github.com/fubar-coder/bb2-c/issues/858)).
+"WriteBoot":
+  text: Meant to write a boot block of 1024 bytes to the disk, the library's own or the one at `bootdata`; it does not work as described.
+  notes: |
+    Kept from the original: without `bootdata`, it writes 8 bytes of a
+    boot block and then 1016 bytes of whatever memory follows them
+    ([#865](https://github.com/fubar-coder/bb2-c/issues/865)); with
+    `bootdata`, it ignores the address and writes from an unpredictable
+    one ([#864](https://github.com/fubar-coder/bb2-c/issues/864)). Use
+    `BootProg` or `WriteSector` instead.
+"DiskStatus":
+  text: Returns a value other than 0 if the unit's last request has finished, else 0.
+  notes: |
+    Amiga mode only. The commands of this library wait for their request
+    to finish, so after them the result is not 0.
+"DiskIO":
+  text: The address of the unit's I/O request (an IOStdReq), for calling the device directly; 0 if the unit is not open.
+  notes: |
+    Amiga mode only.
+"BootProg":
+  text: Marks the 1024 bytes at `memoryaddress` as a DOS boot block, puts a checksum in, and writes them to the first two sectors. Returns the device's error code, 0 if it worked.
+  notes: |
+    Amiga mode only.
+
+    Kept from the original: the checksum is calculated in a wrong way, so
+    the Amiga does not boot from the disk
+    ([#856](https://github.com/fubar-coder/bb2-c/issues/856)).
+"DiskMotor":
+  text: Reads the state of the motor line of the floppy drives.
+  notes: |
+    Amiga mode only.
+
+    Kept from the original: the result is -1 when the motor is off and 0
+    when it is on, the other way round from the help text
+    ([#857](https://github.com/fubar-coder/bb2-c/issues/857)).

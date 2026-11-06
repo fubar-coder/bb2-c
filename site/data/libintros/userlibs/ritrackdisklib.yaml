@@ -1,0 +1,35 @@
+description: Floppy sector access by Red When Excited - reading and writing sectors, formatting tracks, boot blocks and the drive motor through trackdisk.device.
+intro: |
+  This library reads and writes the sectors of a floppy disk directly,
+  through trackdisk.device or another device of the same kind, without
+  the file system. A sector holds 512 bytes; a double-density disk has 11
+  sectors per track, 1760 in all, numbered from 0.
+
+  The units are the drives 0 to 3 (DF0: to DF3:). `OpenDisk` opens a unit
+  and must come first; `CloseDisk` closes it again. Every other command
+  names the unit it works on and returns 0 for a unit that is not open.
+  The sector commands return the device's error code, 0 if they worked
+  (for example 29 when there is no disk in the drive).
+
+  The library needs Kickstart 2.0 or later; on Kickstart 1.3 every program
+  that uses it crashes at start-up
+  ([#941](https://github.com/fubar-coder/bb2-c/issues/941)). The units
+  still open are closed when the program ends, except unit 3, which a
+  program should close itself
+  ([#863](https://github.com/fubar-coder/bb2-c/issues/863)). `DiskStatus`,
+  `DiskIO`, `BootProg` and `DiskMotor` work in Amiga mode only.
+
+  Reading the boot block of the disk in DF0:
+
+  ```blitzbasic
+  Dim buf.l(255)
+  If OpenDisk(0)
+    MotorOn 0
+    e=ReadSector(0,0,&buf(0),2)
+    MotorOff 0
+    CloseDisk 0
+    NPrint "error ",e
+  EndIf
+  ```
+
+  *Based on the RI TrackDisk Lib guide by Red When Excited.*

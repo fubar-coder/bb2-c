@@ -1,0 +1,163 @@
+"CachesOn":
+  text: Switches on the processor caches whose bits are set in `bitmask` (the bits of exec's `CacheControl`) and returns the previous cache bits.
+"Reboot":
+  text: Reboots the Amiga at once (a cold reboot); it does not return.
+"Lisa":
+  text: The contents of the chip ID register of Denise or Lisa, for example $F8 on an AGA machine.
+"MakeDir":
+  text: Creates a directory. Returns -1 if it was created, else 0.
+  notes: |
+    Amiga mode only.
+
+    Kept from the original: the library gives the directory's lock back
+    in a way that only works with some versions of dos.library; with
+    others the lock may stay or something else is unlocked
+    ([#496](https://github.com/fubar-coder/bb2-c/issues/496)).
+"Rename":
+  text: Renames a file or directory. Returns -1 on success, else 0.
+  notes: |
+    Amiga mode only. Both names must be on the same volume.
+"MemFree":
+  text: The number of bytes of free public memory.
+"GTTagValue":
+  text: The base value of the GadTools tags, $80080000, plus `tagvalue` if given.
+"Timer":
+  text: The count of the time-of-day counter of the CIA-A chip, which advances once per vertical blank, 50 or 60 times a second; as a word function, its low 16 bits.
+"Min":
+  text: The smaller of two signed long values.
+"CopyByte":
+  text: Copies `bytes` bytes from `sourceaddr` to `destaddr`, from the first byte upwards. A negative count copies nothing.
+  notes: |
+    Because the copy runs upwards, overlapping areas copy correctly only
+    when `destaddr` is below `sourceaddr`.
+
+    Kept from the original: a count of 0 copies 4 GB, which overwrites
+    all memory ([#492](https://github.com/fubar-coder/bb2-c/issues/492)).
+"CopyWord":
+  text: Like `CopyByte`, copying `words` words (2 bytes each); both addresses must be even.
+  notes: |
+    Kept from the original: a count of 0 copies 2^32 words
+    ([#492](https://github.com/fubar-coder/bb2-c/issues/492)).
+"CopyLong":
+  text: Like `CopyByte`, copying `longs` longs (4 bytes each); both addresses must be even.
+  notes: |
+    Kept from the original: a count of 0 copies 2^32 longs
+    ([#492](https://github.com/fubar-coder/bb2-c/issues/492)).
+"Max":
+  text: The larger of two signed long values.
+"FileSize":
+  text: The size of a file in bytes, or 0 if it cannot be found.
+  notes: |
+    Amiga mode only.
+"BLoad":
+  text: Loads a file into memory. With the name alone, it reserves the next free bank of the file's size and returns its number; with a bank or an address, it returns -1 if something was read and 0 otherwise.
+  notes: |
+    Amiga mode only. A `length` of 0, or none, loads the whole file;
+    `offset` is the position in the file to start at. A bank given to
+    `BLoad` is erased and reserved anew with that length and with the
+    memory type `memtype` (the flags of `Reserve`; 0 or none for any
+    memory). An address must point to enough memory.
+
+    The form with the name alone returns -1 for an empty or missing file
+    and 0 when no bank is free. Kept from the original: it returns the
+    bank also when reading the file fails
+    ([#486](https://github.com/fubar-coder/bb2-c/issues/486)); the other
+    forms keep a bank they reserved for a file that cannot be opened
+    ([#487](https://github.com/fubar-coder/bb2-c/issues/487)) and report
+    a read error as success
+    ([#488](https://github.com/fubar-coder/bb2-c/issues/488)).
+"BSave":
+  text: Saves a bank, or `length` bytes from an address, as a file. Returns -1 if the file was written, else 0.
+  notes: |
+    Amiga mode only. Without a `length`, or with 0, a bank is saved
+    whole; an address needs a length.
+
+    Kept from the original: with a bank, a `length` larger than the bank
+    is not limited to the bank's size, so memory behind the bank is
+    saved too ([#489](https://github.com/fubar-coder/bb2-c/issues/489)).
+"Start":
+  text: The address of a bank, or 0 if the bank is not in use or not below the bank limit.
+"Length":
+  text: The length of a bank in bytes, or 0 if the bank is not in use or not below the bank limit.
+"Erase":
+  text: Frees a bank. A bank not in use is left alone.
+"EraseAll":
+  text: Frees every bank in use.
+  notes: |
+    Kept from the original: with a bank limit above 65536, the banks
+    below the highest multiple of 65536 stay allocated
+    ([#495](https://github.com/fubar-coder/bb2-c/issues/495)).
+"Reserve":
+  text: Allocates a bank. `Reserve(length)` takes the next free bank and returns its number, or -1 if there is not enough memory; `Reserve(bank,length[,requirements])` returns -1 on success and 0 otherwise.
+  notes: |
+    `requirements` are exec's memory flags, added together: 1 public, 2
+    chip, 4 fast, $10000 cleared; without them the memory is public. A
+    bank already in use is erased first, also when the new allocation
+    fails.
+
+    Kept from the original: `Reserve(length)` returns 0 for a negative
+    length, which looks like bank 0
+    ([#500](https://github.com/fubar-coder/bb2-c/issues/500)), and when
+    every bank is in use it does not fail but writes before the bank
+    tables ([#498](https://github.com/fubar-coder/bb2-c/issues/498)).
+"NextBank":
+  text: The number of the first free bank from `startbank` on, or -1 if none is free.
+  notes: |
+    Kept from the original: without `startbank` the search starts at an
+    unpredictable number, so the result may be a later free bank or -1;
+    write `NextBank(0)` to search from the first bank
+    ([#497](https://github.com/fubar-coder/bb2-c/issues/497)).
+"CachesOff":
+  text: Switches off the processor caches whose bits are set in `bitmask` (the bits of exec's `CacheControl`) and returns the previous cache bits.
+"FillMem":
+  text: Fills `length` bytes from an address, or from the start of a bank, with the byte `value`, or with 0 without it. A bank not in use is left alone.
+  notes: |
+    Kept from the original: a length of 0 fills 4 GB, which overwrites
+    all memory ([#492](https://github.com/fubar-coder/bb2-c/issues/492)).
+"KeyCode":
+  text: The raw byte of the keyboard's serial register, as the keyboard last sent it, not decoded into a key number.
+"BlitterDone":
+  text: Returns -1 if the blitter is idle and 0 if it is still busy.
+"WaitBlitter":
+  text: Waits until the blitter is idle.
+"FindVolume":
+  text: Looks for a device, volume or assign of that name, without the colon, and returns its entry in the DOS list, or 0 if there is none. No "Please insert volume" requester appears.
+  notes: |
+    Amiga mode only. The argument is a long, the address of a name that
+    ends in a zero byte, for example `&v$`.
+"SwapBank":
+  text: Exchanges two banks, so that each number refers to the other's memory. Returns -1 if both banks are in use and were swapped, else 0.
+"DeviceName$":
+  text: The name of the device that holds a volume, with a colon, or "" if there is no such device or volume. The colon at the end of the argument is optional.
+  notes: |
+    Amiga mode only.
+
+    Kept from the original: a device without a running handler makes the
+    command read from near address 0 and return nonsense
+    ([#494](https://github.com/fubar-coder/bb2-c/issues/494)).
+"ChangeDir":
+  text: Makes a directory the current one. Returns -1 on success and 0 if the directory cannot be found.
+  notes: |
+    Amiga mode only.
+
+    Kept from the original: the directory the program was started in is
+    not restored; when the program ends, or with `BankLimit`, the
+    directory chosen last is released while it is still the current one
+    ([#491](https://github.com/fubar-coder/bb2-c/issues/491)).
+"BankLimit":
+  text: Without an argument, the number of banks (50 at the start). `BankLimit numbanks` sets a new number of banks and frees every bank in use.
+  notes: |
+    Kept from the original: used as a function with an argument, it
+    returns a memory address instead of a useful value
+    ([#483](https://github.com/fubar-coder/bb2-c/issues/483)).
+"SaveExec":
+  text: Writes an executable file built from a Blitz list of code hunks (a NEWTYPE `.hunk` with type, address, length, relocation table and its length, and memory flags). Returns -1 on success.
+  notes: |
+    Amiga mode only. Only code hunks are written; others are skipped.
+
+    Kept from the original: if the file cannot be created, the result is
+    an address instead of 0; an empty list leaves the file open
+    ([#501](https://github.com/fubar-coder/bb2-c/issues/501)); the
+    header and the relocations it writes are only correct for a single
+    code hunk ([#503](https://github.com/fubar-coder/bb2-c/issues/503),
+    [#502](https://github.com/fubar-coder/bb2-c/issues/502)).

@@ -1,0 +1,35 @@
+description: DOS helpers by Red When Excited - file notification, walking the DOS device list, and splitting a path into directory and file name.
+intro: |
+  This library gives a program three kinds of DOS helpers. File
+  notification tells the program when a file or directory changes; the
+  device list names the devices, volumes and assigns the system knows;
+  `GetFileName` and `GetPathName` split a path into its two parts.
+
+  The library needs dos.library version 36 or later (Kickstart 2.0). It
+  opens it itself when the program starts, together with one message
+  port that receives all notifications; when the program ends, the
+  notifications still active are ended and the port is deleted.
+
+  A notification is not a Blitz object but a slot of an internal table of
+  64 entries, numbered 0 to 63, chosen by the program with `AddNotify`.
+  When DOS reports a change, `CheckNotify` or `WaitNotify` returns the
+  slot number. Because 0 also means "no message", slot 0 is best left
+  unused. Slot numbers are not checked, and a slot used twice loses its
+  first request ([#626](https://github.com/fubar-coder/bb2-c/issues/626),
+  [#620](https://github.com/fubar-coder/bb2-c/issues/620)).
+
+  The device list is locked with `GetDeviceList`; while it is locked, no
+  other program can change it, so `FreeDeviceList` should follow as soon
+  as the names are read:
+
+  ```blitzbasic
+  If GetDeviceList(%1000)
+    Repeat
+      a$=NextDevice
+      If a$<>"" Then NPrint a$
+    Until a$=""
+    FreeDeviceList
+  EndIf
+  ```
+
+  *Based on the RI DOS Lib guide by Red When Excited.*

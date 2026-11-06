@@ -1,0 +1,31 @@
+description: Threads by Reflective Images - running a part of a Blitz program as a separate DOS process alongside the main program.
+intro: |
+  This library runs a piece of the program as a thread: a DOS process of
+  its own that runs at the same time as the main program. `CreateThread`
+  starts the code at a label, given with `?label`; the code ends with
+  `RTS`, and the thread ends with it. `ActiveThreads` tells how many
+  threads are still running. When the program ends, it waits for its
+  threads to end first (with one exception, see `ActiveThreads`).
+
+  A thread shares the program's global variables, so the main program and
+  its threads can talk through them; it gets 10 KB of cleared working
+  memory of its own, which is freed when the program ends. The library
+  needs Kickstart 2.0 or later, and works in Amiga mode only.
+
+  ```blitzbasic
+  DEFTYPE .l count
+  CreateThread "counter",?counter
+  While ActiveThreads>0
+    Delay_ 5
+  Wend
+  NPrint count
+  End
+
+  counter:
+  For i=1 To 1000 : count=count+1 : Next
+  RTS
+  ```
+
+  Start one thread at a time: a second `CreateThread` before the first
+  thread has begun to run starts both threads with the second one's code
+  ([#838](https://github.com/fubar-coder/bb2-c/issues/838)).

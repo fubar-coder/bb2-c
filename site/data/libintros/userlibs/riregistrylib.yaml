@@ -1,0 +1,18 @@
+description: Interface by Red When Excited to registry.library, a settings database that was only given out as a pre-release and is not available.
+intro: |
+  This library is the Blitz Basic interface to registry.library, Red When
+  Excited's database of program settings: "libraries" of named variables
+  that hold strings, data, booleans or integers. That library was only
+  given out as a pre-release and cannot be found any more, and neither can
+  its documentation, so this library is of no practical use; it is part of
+  the BB2 C port for completeness. What a command does beyond calling
+  registry.library is described here; what registry.library itself does
+  with the call is not known.
+
+  The library opens registry.library when the program starts;
+  `IsRegistryOpen` tells whether that worked. Without it every command
+  does nothing and returns 0. The commands work on the registry structure
+  that `LockRegistry` returned last; before the first `LockRegistry`, or
+  if it returned 0, they call nothing and return 0. Locks can be nested,
+  and `UnlockRegistry` returns to the one before. Locks still held are
+  released when the program ends.

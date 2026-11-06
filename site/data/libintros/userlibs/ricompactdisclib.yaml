@@ -1,0 +1,42 @@
+description: Audio CD control by Red When Excited - playing tracks, pausing, searching, the tray and the track times through cd.device or a compatible device.
+intro: |
+  This library plays audio CDs through cd.device, the CD drive of the
+  CD32, or through another device that understands the same commands.
+  `OpenCD` opens the device, unit 0 of cd.device unless another device
+  and unit are given; every other command does nothing and returns 0
+  until it worked. `CloseCD` closes it again; a device still open is
+  closed when the program ends. Only one device can be open at a time:
+  call `CloseCD` before opening another
+  ([#578](https://github.com/fubar-coder/bb2-c/issues/578)).
+
+  `CDReadTOC` reads the table of contents of the CD; `CDNumTracks`,
+  `CDFirstTrack`, `CDLastTrack` and `CDTrackLength` read from it, so it
+  must come first. `CDPlayTrack` starts playing and returns at once.
+  `CDUpdateInfo` asks the drive for the current position, which
+  `CDTrackPlaying`, `CDTrackMins` and `CDTrackSecs` then return. Most
+  commands return the device's error code, 0 if they worked.
+
+  All commands except `OpenCD`, `CloseCD`, `CDTrackMins`, `CDTrackSecs`
+  and `CDTrackPlaying` work in Amiga mode only. The third argument of
+  `OpenCD`, the SCSI flag, is not usable
+  ([#580](https://github.com/fubar-coder/bb2-c/issues/580)).
+
+  Playing the first track and showing its time:
+
+  ```blitzbasic
+  ok=OpenCD
+  If ok=-1
+    If CDReadTOC
+      CDPlayTrack CDFirstTrack,1
+      Repeat
+        VWait 50
+        r=CDUpdateInfo
+        NPrint CDTrackMins,":",CDTrackSecs
+      Until Joyb(0)
+      CDStop
+    EndIf
+    CloseCD
+  EndIf
+  ```
+
+  *Based on the RI CompactDisk Lib guide by Red When Excited.*

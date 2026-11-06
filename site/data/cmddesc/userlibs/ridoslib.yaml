@@ -1,0 +1,67 @@
+"AddNotify":
+  text: Asks DOS to report changes of a file or directory, in the slot `idno` (0 to 63). As a function it returns -1 if the notification was started, else 0.
+  notes: |
+    The messages arrive at the port of `NotifyPort` and are read with
+    `CheckNotify` or `WaitNotify`, which return `idno`.
+
+    Kept from the original: the slot number is not checked, so a number
+    outside 0 to 63 writes outside the table
+    ([#626](https://github.com/fubar-coder/bb2-c/issues/626)); a slot used
+    a second time loses its first request, which then keeps sending
+    messages and cannot be ended
+    ([#620](https://github.com/fubar-coder/bb2-c/issues/620)); when there
+    is no free memory, the library writes to address 0
+    ([#619](https://github.com/fubar-coder/bb2-c/issues/619)); and a
+    request that could not be started stays in its slot and may never be
+    freed when the program ends
+    ([#621](https://github.com/fubar-coder/bb2-c/issues/621)).
+"RemNotify":
+  text: Ends the notification in a slot and frees it. An empty slot is left alone.
+  notes: |
+    Kept from the original: the slot number is not checked
+    ([#626](https://github.com/fubar-coder/bb2-c/issues/626)).
+"CheckNotify":
+  text: The slot number of the next notification message, or 0 if no message is waiting. It does not wait.
+"WaitNotify":
+  text: Waits for the next notification message and returns its slot number.
+  notes: |
+    Without any active notification it waits for ever.
+"GetDeviceList":
+  text: Locks the DOS device list for reading with `NextDevice`. `flags` chooses the entries - %100 devices, %1000 volumes, %10000 assigns, added together for more than one kind. As a function it returns -1 on success and 0 otherwise.
+  notes: |
+    The library sets the read bit (bit 0) itself; never set bit 1, which
+    asks for write access. While the list is locked, no other program can
+    change it: call `FreeDeviceList` as soon as possible.
+"NextDevice":
+  text: The name of the next entry of the list locked with `GetDeviceList`, without a colon, or "" after the last entry.
+  notes: |
+    Kept from the original: called without `GetDeviceList`, it returns a
+    string of an unpredictable length
+    ([#625](https://github.com/fubar-coder/bb2-c/issues/625)).
+"FreeDeviceList":
+  text: Unlocks the DOS device list locked with `GetDeviceList`.
+  notes: |
+    Kept from the original: the command does not check that the list is
+    locked. A second `FreeDeviceList`, or one without `GetDeviceList`,
+    makes exec raise an alert and breaks the task's `Forbid`
+    ([#623](https://github.com/fubar-coder/bb2-c/issues/623)), and after
+    it `DeviceEntryType` still reads the last entry of the unlocked list
+    ([#622](https://github.com/fubar-coder/bb2-c/issues/622)).
+"NotifyPort":
+  text: The address of the message port that receives the notification messages, for example to wait for it together with other ports.
+"GetFileName":
+  text: The file part of a path, everything behind the last `/` or `:`. `GetFileName("Work:Test/test.txt")` returns "test.txt".
+  notes: |
+    Kept from the original: a file part longer than 256 characters
+    overwrites memory of the library
+    ([#627](https://github.com/fubar-coder/bb2-c/issues/627)).
+"GetPathName":
+  text: The directory part of a path, up to and including the last `/` or `:`; "" if there is none. `GetPathName("Work:Test/test.txt")` returns "Work:Test/".
+  notes: |
+    Kept from the original: the first character is never looked at, so
+    "/abc" and ":x" give "" instead of "/" and ":"
+    ([#624](https://github.com/fubar-coder/bb2-c/issues/624)); a path
+    longer than 256 characters overwrites memory of the library
+    ([#627](https://github.com/fubar-coder/bb2-c/issues/627)).
+"DeviceEntryType":
+  text: The kind of the entry `NextDevice` returned last - 0 device, 1 assign (directory), 2 volume, 3 late assign, 4 non-binding assign; -1 if there is none.

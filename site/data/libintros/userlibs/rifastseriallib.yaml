@@ -1,0 +1,37 @@
+description: Fast serial links between two Amigas by Red When Excited - bytes and blocks sent straight through the serial hardware, with a master and a slave exchanging buffers in lockstep.
+intro: |
+  This library is meant for games that link two Amigas with a serial
+  cable and need to exchange data quickly. It drives the serial port
+  hardware directly, without serial.device and without interrupts: every
+  command waits for the port itself until a byte can be sent or has
+  arrived. While the library is in use, no other program may use the
+  serial port. A program that does not need the speed should use
+  serial.device instead.
+
+  `InitSerialIO` sets the baud rate and the two buffers and switches off
+  the system's serial interrupts. One machine is the master and the other
+  the slave: `SyncSerial` decides that between the two and
+  `SetSerialMode` sets it by hand. `DoSerialIO` then exchanges the
+  buffers, byte for byte, the master sending first and the slave
+  receiving first. `PutSerial`, `GetSerial`, `SyncPut` and `SyncGet`
+  move single bytes or blocks.
+
+  The library needs a 68020 or later processor: on a 68000 `InitSerialIO`
+  and `SetIOSpeed` crash
+  ([#647](https://github.com/fubar-coder/bb2-c/issues/647)). Kept from
+  the original as well: `FinitSerialIO`, also at the end of the program,
+  does not switch the serial interrupts back on, so serial.device may not
+  work afterwards
+  ([#651](https://github.com/fubar-coder/bb2-c/issues/651),
+  [#648](https://github.com/fubar-coder/bb2-c/issues/648)).
+
+  ```blitzbasic
+  Dim inb.b(63),outb.b(63)
+  InitSerialIO 19200,64,&inb(0),&outb(0)
+  master=SyncSerial(42)
+  SetSerialMode master
+  DoSerialIO
+  FinitSerialIO
+  ```
+
+  *Based on the RI FastSerial Lib guide by Red When Excited.*

@@ -1,0 +1,72 @@
+"InitSerialIO":
+  text: Prepares the serial port for the library - sets the baud rate, the number of bytes `DoSerialIO` exchanges and the input and output buffers, and switches the system's serial interrupts off. A second call without `FinitSerialIO` in between does nothing.
+  notes: |
+    Kept from the original: the command needs a 68020 or later processor
+    and crashes on a 68000
+    ([#647](https://github.com/fubar-coder/bb2-c/issues/647)); as a
+    function it only returns its `baud` argument, also when it did
+    nothing ([#650](https://github.com/fubar-coder/bb2-c/issues/650));
+    and a baud rate of 1773448 or more leaves the library uninitialised
+    ([#653](https://github.com/fubar-coder/bb2-c/issues/653)).
+"FinitSerialIO":
+  text: Ends the serial transfers started with `InitSerialIO`; it is called by itself when the program ends.
+  notes: |
+    Kept from the original: it does not switch the system's serial
+    interrupts back on, as it is meant to
+    ([#651](https://github.com/fubar-coder/bb2-c/issues/651),
+    [#648](https://github.com/fubar-coder/bb2-c/issues/648)).
+"SetSerialMode":
+  text: Makes this machine the master (-1) or the slave (0) for `DoSerialIO`. The master sends each byte before it receives one, the slave the other way round.
+"EndSerialIO":
+  text: Does nothing.
+"PutSerial":
+  text: Sends one byte, or `bytes` bytes from `address`, waiting until the port can take each one. Nothing is sent before `InitSerialIO`.
+  notes: |
+    Kept from the original: a block of 0 bytes sends 4 GB
+    ([#646](https://github.com/fubar-coder/bb2-c/issues/646)).
+"GetSerial":
+  text: Without arguments, waits for a byte and returns it. With `address,bytes`, waits for that many bytes and stores them from `address` on.
+  notes: |
+    Kept from the original: the block form returns a meaningless value
+    ([#649](https://github.com/fubar-coder/bb2-c/issues/649)), and a
+    block of 0 bytes waits for 4 GB
+    ([#646](https://github.com/fubar-coder/bb2-c/issues/646)). Neither
+    form checks that `InitSerialIO` was called
+    ([#652](https://github.com/fubar-coder/bb2-c/issues/652)).
+"FlushSerialIO":
+  text: Throws away a byte waiting at the serial port.
+"SyncSerial":
+  text: Synchronises with the other machine on the byte `syncbyte` and decides which is the master. Returns -1 if this machine is the master and 0 if it is the slave.
+  notes: |
+    The machine that is started second, and finds the other's sync byte
+    already waiting, becomes the slave. Kept from the original: when
+    both start at the same moment, both become the master
+    ([#655](https://github.com/fubar-coder/bb2-c/issues/655)).
+"DoSerialIO":
+  text: Exchanges the buffers of `InitSerialIO` with the other machine, byte for byte. Without an argument it transfers the number of bytes of `InitSerialIO` or `SetIOSize`; with one, that number plus 1.
+  notes: |
+    Both machines must call it at the same time, one as the master and
+    one as the slave (`SetSerialMode`).
+"SetIOBuffers":
+  text: Sets the input and output buffers that `DoSerialIO` uses.
+"SetIOSpeed":
+  text: Changes the baud rate after `InitSerialIO`; before it, nothing happens.
+  notes: |
+    Kept from the original: the command needs a 68020 or later processor
+    ([#647](https://github.com/fubar-coder/bb2-c/issues/647)), and it can
+    set a wrong rate, because it also uses the unused upper half of its
+    argument ([#654](https://github.com/fubar-coder/bb2-c/issues/654)).
+"SetIOSize":
+  text: Sets the number of bytes that `DoSerialIO` without an argument transfers, minus 1.
+"CheckSerial":
+  text: The byte waiting at the serial port, or -1 if there is none. It does not wait.
+"SyncPut":
+  text: Sends `bytes` bytes from `address`, waiting after each one for the other machine's answer, so that a slow receiver loses nothing. The other machine receives them with `SyncGet`.
+  notes: |
+    Kept from the original: a block of 0 bytes is 4 GB
+    ([#646](https://github.com/fubar-coder/bb2-c/issues/646)).
+"SyncGet":
+  text: Receives `bytes` bytes to `address`, answering each one, as the partner of `SyncPut`.
+  notes: |
+    Kept from the original: a block of 0 bytes is 4 GB
+    ([#646](https://github.com/fubar-coder/bb2-c/issues/646)).

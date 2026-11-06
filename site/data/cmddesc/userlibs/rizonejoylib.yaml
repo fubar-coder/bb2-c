@@ -1,0 +1,110 @@
+"ZoneInit":
+  text: Clears all zones of the current zone table, or one zone, or the zones from `start_num` to `end_num`. A cleared zone contains no point.
+"SetZone":
+  text: Defines a zone of the current table - a rectangle with the corners `x1,y1` and `x2,y2`, or a circle around `x,y` with `radius`. As a function it returns -1 if the zone was set and 0 if its number is beyond the table.
+  notes: |
+    The corners of a rectangle may be given in any order. The edges
+    belong to the zone.
+
+    Kept from the original: a radius of 256 or more does not work
+    ([#867](https://github.com/fubar-coder/bb2-c/issues/867)), and in
+    the 68020 mode not even a radius of 182 or more
+    ([#880](https://github.com/fubar-coder/bb2-c/issues/880)). Without any
+    zone table the result is -1 although nothing was set
+    ([#876](https://github.com/fubar-coder/bb2-c/issues/876)).
+"Zone":
+  text: The number of the first zone of the current table that contains the point `x,y`, or -1 if there is none.
+  notes: |
+    Kept from the original: the two test methods differ. In the 68000 mode
+    a point more than 32767 pixels left of or above the far edge of a
+    rectangle is not found
+    ([#879](https://github.com/fubar-coder/bb2-c/issues/879)), and in the
+    68020 mode every zone with a negative `y2` counts as a circle
+    ([#866](https://github.com/fubar-coder/bb2-c/issues/866)).
+"ZoneTest":
+  text: Like `Zone`, testing only the zone `start_num`, or the zones from `start_num` to `end_num`. Returns the number of the first zone that contains `x,y`, or -1.
+  notes: |
+    A `start_num` beyond the table counts as the last zone. Kept from the
+    original: from zone 256 on, the command tests other zones than the
+    ones asked for ([#881](https://github.com/fubar-coder/bb2-c/issues/881)).
+"ZoneTable":
+  text: The address of the current zone table. The table starts with the number of zones as a long; then each zone takes 8 bytes, the words x1, x2, y1 and y2.
+  notes: |
+    A circle keeps its centre in x1 and y1, the radius squared in x2 and
+    -1 in y2; a cleared zone has -1 in x1.
+
+    Kept from the original: without any zone table the result is -1, not
+    0 ([#876](https://github.com/fubar-coder/bb2-c/issues/876)).
+"JFire":
+  text: The fire buttons of a joystick port - 0 none, 1 the first button, 2 the second, 3 both. Ports 3 and 4 of the four player adaptor have one button.
+"JVert":
+  text: The vertical direction of a joystick port - -1 up, 1 down, 0 none.
+"JHoriz":
+  text: The horizontal direction of a joystick port - -1 left, 1 right, 0 none.
+"AllFire":
+  text: The first fire buttons of the four ports as bits - bit 0 port 1, bit 1 port 2, bit 2 port 3, bit 3 port 4. A bit is set while the button is pressed.
+  notes: |
+    With `joybits`, only the ports whose bits are set are tested; for
+    example `AllFire(%0011)` tests ports 1 and 2.
+"ZoneTableSize":
+  text: The number of zones of the current zone table, or 0 if there is none.
+"NewZoneTable":
+  text: Creates zone table `table#` (1 to 15) with `num_zones` zones (2 to 65535), freeing a table of that number first. Returns -1 if it worked, else 0; the new table does not become the current one.
+  notes: |
+    Kept from the original: the zones of the new table are not cleared,
+    but those of the current table are; call `UseZoneTable` and then
+    `ZoneInit` before using the new table
+    ([#875](https://github.com/fubar-coder/bb2-c/issues/875)). If there is
+    not enough memory for a table that replaces another, the old,
+    already freed table stays registered
+    ([#874](https://github.com/fubar-coder/bb2-c/issues/874)).
+"UseZoneTable":
+  text: Makes zone table `table#` the current one, for all zone commands. Returns -1 if it worked and 0 if there is no such table.
+"FreeZoneTable":
+  text: Frees zone table `table#` (1 to 15) and makes table 0 the current one. Returns -1 if it worked, else 0.
+  notes: |
+    Kept from the original: table 0 becomes the current one even when
+    another table was current
+    ([#869](https://github.com/fubar-coder/bb2-c/issues/869)); the freed
+    table stays registered, so `UseZoneTable` still accepts it and it is
+    freed a second time at the end of the program
+    ([#868](https://github.com/fubar-coder/bb2-c/issues/868)).
+"ZoneTableNumber":
+  text: The number of the current zone table.
+"ZoneMode":
+  text: Returns -1 when zones are tested with the 68020 method and 0 when with the 68000 method. The 68020 method is the default on a 68020 or later processor.
+"SetZoneMode":
+  text: Chooses the zone test method - -1 for the 68020 method, 0 for the 68000 method. On a 68000 or 68010 the command does nothing.
+"JAdaptorStatus":
+  text: Switches the reading of ports 3 and 4 of the four player adaptor on (-1) or off (0); while it is off, they read as nothing pressed. As a function it returns the previous setting. It is on at the start.
+"GetZoneX1":
+  text: The x1 value of a zone of the current table - the left edge of a rectangle, the centre of a circle, -1 for a cleared zone.
+  notes: |
+    Kept from the original: the zone number is not checked against the
+    size of the table ([#870](https://github.com/fubar-coder/bb2-c/issues/870)).
+"GetZoneY1":
+  text: The y1 value of a zone of the current table - the top edge of a rectangle, the centre of a circle, -1 for a cleared zone.
+  notes: |
+    Kept from the original: the zone number is not checked against the
+    size of the table, and a table of up to 4 zones always returns -1
+    ([#870](https://github.com/fubar-coder/bb2-c/issues/870)).
+"GetZoneX2":
+  text: The x2 value of a zone of the current table - the right edge of a rectangle, the radius squared of a circle, -1 for a cleared zone.
+  notes: |
+    Kept from the original: the zone number is not checked against the
+    size of the table, and a table of 2 zones always returns -1
+    ([#870](https://github.com/fubar-coder/bb2-c/issues/870)).
+"GetZoneY2":
+  text: The y2 value of a zone of the current table - the bottom edge of a rectangle, -1 for a circle or a cleared zone.
+  notes: |
+    Kept from the original: the zone number is not checked against the
+    size of the table, and a table of up to 6 zones always returns -1
+    ([#870](https://github.com/fubar-coder/bb2-c/issues/870)).
+"ReadJoyPad":
+  text: The extra buttons of a CD32 pad in port 1 or 2, as bits - 2 play/pause, 4 reverse, 8 forward, 16 green, 32 yellow, 64 red, 128 blue.
+  notes: |
+    Read a pad at most once per frame, and only after reading its
+    directions with `JVert` or `JHoriz`.
+
+    Kept from the original: every port number other than 2 reads port 1
+    ([#877](https://github.com/fubar-coder/bb2-c/issues/877)).

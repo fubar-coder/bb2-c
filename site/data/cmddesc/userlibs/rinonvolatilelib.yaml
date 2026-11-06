@@ -1,0 +1,26 @@
+"IsNonvolatile":
+  text: Returns -1 if nonvolatile.library could be opened when the program started, else 0. Without it, the other commands of the library do nothing.
+"StoreNVData":
+  text: Stores `byte_length` bytes from the address `data` as the item `ItemName` of the application `AppName`. As a function it returns 0 if the item was stored, else an error code of nonvolatile.library.
+  notes: |
+    Amiga mode only. The memory is reserved in units of 10 bytes, so the
+    length is rounded up to the next multiple of 10.
+
+    Kept from the original: the item is deleted before it is stored again,
+    so if storing fails, the old item is lost as well
+    ([#763](https://github.com/fubar-coder/bb2-c/issues/763)); the result
+    is also 0, "stored", when nonvolatile.library is not open
+    ([#765](https://github.com/fubar-coder/bb2-c/issues/765)); and a
+    length of 655360 bytes or more is stored with a wrong, much smaller
+    size ([#764](https://github.com/fubar-coder/bb2-c/issues/764)).
+"GetCopyNV":
+  text: The address of a copy of the item `ItemName` of the application `AppName`, or 0 if there is no such item. Free the copy with `FreeNVData` when done.
+  notes: |
+    Amiga mode only.
+"FreeNVData":
+  text: Frees the memory returned by `GetCopyNV` or `GetNVList`.
+"GetNVList":
+  text: The address of a list of the items that the application `appname` has stored, or 0. Free it with `FreeNVData` when done.
+  notes: |
+    The list is an exec list (a MinList) of the NVEntry structures of
+    nonvolatile.library, each with the item's name, size and protection.

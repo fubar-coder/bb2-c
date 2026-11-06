@@ -1,0 +1,36 @@
+description: Zones and joysticks by Reflective Images - testing which rectangle or circle of a zone table a point lies in, and reading joysticks, the four player adaptor and the CD32 pad straight from the hardware.
+intro: |
+  This library has two parts. The first tests points against zones:
+  rectangles and circles on the screen, numbered from 0, for example the
+  buttons of a game's control panel. `SetZone` defines a zone, `Zone(x,y)`
+  returns the first zone that contains a point, and `ZoneTest` tests one
+  zone or a range.
+
+  Zones are kept in zone tables. Table 0 holds 256 zones and is created
+  when the program starts; `NewZoneTable` creates the tables 1 to 15 with
+  up to 65535 zones each, `UseZoneTable` chooses the table the zone
+  commands work on, and `FreeZoneTable` frees one. All tables are freed
+  when the program ends. Zone and table numbers are not checked for
+  negative values; a negative number writes outside the table
+  ([#873](https://github.com/fubar-coder/bb2-c/issues/873),
+  [#872](https://github.com/fubar-coder/bb2-c/issues/872)).
+
+  On a 68020 or later processor the zones are tested with a faster
+  method, which `SetZoneMode` can switch off. The two methods differ in a
+  few edge cases, described with `Zone`.
+
+  The second part reads the joysticks directly from the hardware: port 1
+  is the joystick port, port 2 the mouse port, and ports 3 and 4 the two
+  ports of a four player adaptor on the parallel port. `ReadJoyPad` reads
+  the extra buttons of a CD32 pad. All commands work in Amiga and Blitz
+  mode.
+
+  ```blitzbasic
+  SetZone 0,10,10,100,50
+  SetZone 1,200,100,40
+  NPrint Zone(50,20)     ; 0
+  NPrint Zone(210,110)   ; 1
+  NPrint Zone(5,5)       ; -1
+  ```
+
+  *Based on the RI ZoneJoy Lib guide by Reflective Images.*

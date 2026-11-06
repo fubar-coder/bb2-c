@@ -1,0 +1,94 @@
+"IsRegistryOpen":
+  text: Returns a value other than 0 if registry.library could be opened when the program started, else 0.
+"LockRegistry":
+  text: Locks the registry with an access mode and makes the registry structure it returns the current one, on which the other commands work. Returns that structure, or 0.
+  notes: |
+    Kept from the original: locks nested more than 15 deep overwrite the
+    library's own data ([#781](https://github.com/fubar-coder/bb2-c/issues/781)).
+"UnlockRegistry":
+  text: Releases the current lock; the lock before it becomes the current one again.
+  notes: |
+    Kept from the original: `UnlockRegistry` without a matching
+    `LockRegistry` is not refused and reads and writes memory outside the
+    library's list of locks
+    ([#781](https://github.com/fubar-coder/bb2-c/issues/781)).
+"SetRegistryBaseLibrary":
+  text: Passes a library name to registry.library's function of the same name and returns its result.
+"ExistsRegistryLibrary":
+  text: Asks registry.library whether a library of that name exists and returns its answer.
+"GetLibraryValue$":
+  text: Asks registry.library for the value of a library and returns it if it is a string, else "".
+  notes: |
+    Kept from the original: called before any lock, it reads near
+    address 0 ([#780](https://github.com/fubar-coder/bb2-c/issues/780)).
+"GetRegistryVariable":
+  text: Asks registry.library for a variable and returns its result, the variable's type - 1 string, 2 data, 3 boolean, 4 integer.
+"SetRegistryVariable":
+  text: Sets a variable to a string, or to `ByteSize` bytes of data from `Address`, and returns registry.library's result.
+  notes: |
+    Kept from the original: in the string form the size passed to
+    registry.library is an unpredictable value
+    ([#782](https://github.com/fubar-coder/bb2-c/issues/782)).
+"ChangeRegistryVariable":
+  text: Changes a variable to new data of the given type and size and returns registry.library's result.
+"NewRegistryLibrary":
+  text: Creates a library with a value, and optionally a file for its variables, and returns registry.library's result.
+"ParseRegistryLibrary":
+  text: Starts going through the items of a library and returns registry.library's result; `NextParseItem` goes on.
+"NextParseItem":
+  text: Moves to the next item of the library started with `ParseRegistryLibrary` and returns registry.library's result; `ParseItemName$` and `ParseItemValue$` read the item.
+"ChangeRegistryAccess":
+  text: Changes the current lock to read access.
+"DeleteRegistryLibrary":
+  text: Deletes a library and returns registry.library's result.
+"DeleteRegistryVariable":
+  text: Deletes a variable and returns registry.library's result.
+"NumRegistryLibraryVariables":
+  text: Asks registry.library for the number of variables of a library and returns its result.
+"SaveRegistryLibrary":
+  text: Saves a library to a file and returns registry.library's result.
+"LoadRegistryLibrary":
+  text: Loads a library from a file and returns registry.library's result.
+"GetRegistryStringVariable":
+  text: The value of a variable if it is a string, else "".
+  notes: |
+    Kept from the original: called before any lock, it reads near
+    address 0 ([#780](https://github.com/fubar-coder/bb2-c/issues/780)).
+"SetRegistryBoolVariable":
+  text: Sets a boolean variable and returns registry.library's result.
+  notes: |
+    Kept from the original: the size passed to registry.library is an
+    unpredictable value ([#782](https://github.com/fubar-coder/bb2-c/issues/782)).
+"ParseItemName$":
+  text: The name of the item reached last with `NextParseItem`.
+"ParseItemValue$":
+  text: The value of the item reached last with `NextParseItem`, if it is a string, else "".
+"GetRegistryBoolVariable":
+  text: The value of a boolean or integer variable, or 0 for a variable of another type.
+"SetRegistryIntVariable":
+  text: Sets an integer variable and returns registry.library's result.
+  notes: |
+    Kept from the original: the size passed to registry.library is an
+    unpredictable value ([#782](https://github.com/fubar-coder/bb2-c/issues/782)).
+"GetRegistryIntVariable":
+  text: The value of an integer or boolean variable, or 0 for a variable of another type.
+"DeleteRegistryLibraryVariables":
+  text: Deletes the variables of a library.
+"SetLibraryValue":
+  text: Sets the value of a library and returns registry.library's result.
+"SetRegistryVariableIndex":
+  text: Sets a variable to data of the given type and size at an index and returns registry.library's result.
+"RenameRegistryVariable":
+  text: Renames a variable and returns registry.library's result.
+"SaveLibraryVariables":
+  text: Saves the variables of a library to a file and returns registry.library's result.
+"RenameRegistryLibrary":
+  text: Renames a library and returns registry.library's result.
+"InsertNewRegistryLibrary":
+  text: Like `NewRegistryLibrary`, placing the new library before the library `InsertBefore`.
+"GetStructureVariables":
+  text: Passes a description and a structure to registry.library's function of the same name and returns its result; `FreeStructureVariables` releases what it allocated.
+"FreeStructureVariables":
+  text: Releases the data allocated by `GetStructureVariables`, with the same two arguments.
+"LoadLibraryVariables":
+  text: Loads the variables of a library from a file and returns registry.library's result.

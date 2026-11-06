@@ -1,0 +1,32 @@
+description: Access to the system's nonvolatile.library by Reflective Images - storing small items of data, such as saved games, in the CD32's nonvolatile memory or its disk-based replacement.
+intro: |
+  This library lets a program use the system's nonvolatile.library, which
+  keeps small items of data across a power cycle: in the nonvolatile
+  memory of a CD32, or, on other Amigas, in a place on disk that the
+  library uses instead. It is the only proper way to write to the
+  nonvolatile memory of the CD32.
+
+  Each item is named by two names, the name of the application and the
+  name of the item, so one program can keep several items, for example
+  several saved games. `StoreNVData` stores an item, `GetCopyNV` reads a
+  copy of it, `GetNVList` lists the items of an application, and
+  `FreeNVData` frees what the last two returned.
+
+  nonvolatile.library is part of OS 3.1 (and of the CD32's ROM). The
+  library opens it when the program starts; `IsNonvolatile` tells whether
+  that worked. Without it every command does nothing and returns 0.
+  `StoreNVData` and `GetCopyNV` work in Amiga mode only.
+
+  ```blitzbasic
+  level.l=5
+  If IsNonvolatile
+    r=StoreNVData("MyGame","Level",&level,4)
+    a.l=GetCopyNV("MyGame","Level")
+    If a
+      NPrint "level ",Peek.l(a)
+      FreeNVData a
+    EndIf
+  EndIf
+  ```
+
+  *Based on the RI NonVolatile Lib guide by Red When Excited.*
